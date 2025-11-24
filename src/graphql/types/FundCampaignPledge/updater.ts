@@ -20,6 +20,47 @@ export const resolveUpdater = async (
 	}
 
 	const currentUserId = ctx.currentClient.user.id;
+
+	// Allow users to see updater for their own pledges
+	if (parent.pledgerId === currentUserId) {
+		if (parent.updaterId === null) {
+			return null;
+		}
+
+		if (parent.updaterId === currentUserId) {
+			const currentUser = await ctx.drizzleClient.query.usersTable.findFirst({
+				where: (fields, operators) => operators.eq(fields.id, currentUserId),
+			});
+
+			if (currentUser === undefined) {
+				throw new TalawaGraphQLError({
+					extensions: {
+						code: "unauthenticated",
+					},
+				});
+			}
+
+			return currentUser;
+		}
+
+		const existingUser = await ctx.drizzleClient.query.usersTable.findFirst({
+			where: (fields, operators) => operators.eq(fields.id, updaterId),
+		});
+
+		if (existingUser === undefined) {
+			ctx.log.error(
+				"Postgres select operation returned an empty array for a fund campaign pledge's updater id that isn't null.",
+			);
+			throw new TalawaGraphQLError({
+				extensions: {
+					code: "unexpected",
+				},
+			});
+		}
+
+		return existingUser;
+	}
+
 	const [currentUser, existingFundCampaign] = await Promise.all([
 		ctx.drizzleClient.query.usersTable.findFirst({
 			where: (fields, operators) => operators.eq(fields.id, currentUserId),

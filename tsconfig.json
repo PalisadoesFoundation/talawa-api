@@ -2,7 +2,7 @@
 {
 	"$schema": "https://json.schemastore.org/tsconfig",
 	"compilerOptions": {
-		"baseUrl": "./" /* Specify the base directory to resolve non-relative module names. */,
+		"baseUrl": "." /* Specify the base directory to resolve non-relative module names. */,
 		"esModuleInterop": true /* Emit additional JavaScript to ease support for importing CommonJS modules. This enables 'allowSyntheticDefaultImports' for type compatibility. */,
 		"forceConsistentCasingInFileNames": true /* Ensure that casing is correct in imports. */,
 		"isolatedModules": true /* Ensure that each file can be safely transpiled without relying on other imports. */,
@@ -32,7 +32,25 @@
 		"skipLibCheck": true /* Skip type checking all .d.ts files. */,
 		"strict": true /* Enable all strict type-checking options. */,
 		"target": "ESNext" /* Set the JavaScript language version for emitted JavaScript and include compatible library declarations. */,
-		"useUnknownInCatchVariables": true /* Default catch clause variables as 'unknown' instead of 'any'. */
+		"useUnknownInCatchVariables": true /* Default catch clause variables as 'unknown' instead of 'any'. */,
+		// tsconfig settings for /docs
+		"jsx": "react",
+		"noImplicitAny": true,
+		"strictNullChecks": true
 	},
-	"exclude": ["docs", "node_modules", "src/plugin/available"]
+	"exclude": [
+		"docs/*",
+		"docs/.docusaurus",
+		"docs/build",
+		"node_modules",
+		"docs/node_modules",
+		"docs/src/vite-env.d.ts",
+		"docs/**/*.spec.ts",
+		"docs/**/*.test.ts",
+		"docs/**/*.spec.tsx",
+		"docs/**/*.test.tsx",
+		"docs/**/__tests__/**",
+		"docs/**/__mocks__/**",
+		"docs/**/README.md"
+	]
 }

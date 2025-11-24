@@ -1,11 +1,11 @@
-[Admin Docs](/)
+[API Docs](/)
 
 ***
 
 # Variable: usersTable
 
-> `const` **usersTable**: `PgTableWithColumns`\<\{\}\>
+> `const` **usersTable**: `PgTableWithColumns`\<\{ \}\>
 
-Defined in: [src/drizzle/tables/users.ts:59](https://github.com/PalisadoesFoundation/talawa-api/blob/c34688c69eb12a5eb721ebc8a0cd60b53e5fbf81/src/drizzle/tables/users.ts#L59)
+Defined in: [src/drizzle/tables/users.ts:56](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/drizzle/tables/users.ts#L56)
 
 Drizzle orm postgres table definition for users.

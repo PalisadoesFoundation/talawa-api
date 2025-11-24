@@ -25,7 +25,7 @@ jobs:
 
             // Filter reviews by a user whose login includes "coderabbit" (case-insensitive)
             const codeRabbitReviews = reviews.filter(review =>
-              review.user.login.toLowerCase().includes('coderabbit')
+              review.user.login.toLowerCase().includes('coderabbit') || review.user.login.toLowerCase().includes('coderabbitai')
             );
 
             // Fail if no CodeRabbit reviews are found

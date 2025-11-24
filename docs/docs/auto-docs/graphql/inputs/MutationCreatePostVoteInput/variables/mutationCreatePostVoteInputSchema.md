@@ -1,9 +1,9 @@
-[Admin Docs](/)
+[API Docs](/)
 
 ***
 
 # Variable: mutationCreatePostVoteInputSchema
 
-> `const` **mutationCreatePostVoteInputSchema**: `ZodObject`\<`Pick`\<\{\}, `never`\>, `"strip"`, \{\}, \{\}\>
+> `const` **mutationCreatePostVoteInputSchema**: `ZodObject`\<`Pick`\<\{ `createdAt`: `ZodOptional`\<`ZodDate`\>; `creatorId`: `ZodOptional`\<`ZodNullable`\<`ZodString`\>\>; `id`: `ZodOptional`\<`ZodString`\>; `postId`: `ZodString`; `type`: `ZodEnum`\<\[`"down_vote"`, `"up_vote"`\]\>; `updatedAt`: `ZodOptional`\<`ZodNullable`\<`ZodDate`\>\>; \}, `"type"` \| `"postId"`\>, `"strip"`, `ZodTypeAny`, \{ `postId`: `string`; `type`: `"down_vote"` \| `"up_vote"`; \}, \{ `postId`: `string`; `type`: `"down_vote"` \| `"up_vote"`; \}\>
 
-Defined in: [src/graphql/inputs/MutationCreatePostVoteInput.ts:6](https://github.com/PalisadoesFoundation/talawa-api/blob/c34688c69eb12a5eb721ebc8a0cd60b53e5fbf81/src/graphql/inputs/MutationCreatePostVoteInput.ts#L6)
+Defined in: [src/graphql/inputs/MutationCreatePostVoteInput.ts:6](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/graphql/inputs/MutationCreatePostVoteInput.ts#L6)

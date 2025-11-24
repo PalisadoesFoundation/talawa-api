@@ -140,7 +140,7 @@ describe("Plugin Index Integration", () => {
 						type: "query",
 						name: "testQuery",
 						file: "test.js",
-						resolver: "testResolver",
+						builderDefinition: "testBuilder",
 					},
 				],
 				database: [
@@ -161,7 +161,7 @@ describe("Plugin Index Integration", () => {
 				type: "query",
 				name: "testQuery",
 				file: "test.js",
-				resolver: "testResolver",
+				builderDefinition: "testBuilder",
 			};
 
 			expect(graphqlExtension.name).toBe("testQuery");
@@ -205,6 +205,7 @@ describe("Plugin Index Integration", () => {
 				graphqlResolvers: {},
 				databaseTables: {},
 				hooks: {},
+				webhooks: {},
 			};
 
 			expect(loadedPlugin.id).toBe("test_plugin");
@@ -214,10 +215,7 @@ describe("Plugin Index Integration", () => {
 		it("should have compatible extension registry types", () => {
 			const extensionRegistry: IExtensionRegistry = {
 				graphql: {
-					queries: {},
-					mutations: {},
-					subscriptions: {},
-					types: {},
+					builderExtensions: [],
 				},
 				database: {
 					tables: {},
@@ -227,6 +225,9 @@ describe("Plugin Index Integration", () => {
 				hooks: {
 					pre: {},
 					post: {},
+				},
+				webhooks: {
+					handlers: {},
 				},
 			};
 

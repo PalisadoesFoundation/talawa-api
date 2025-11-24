@@ -1,9 +1,9 @@
-[Admin Docs](/)
+[API Docs](/)
 
 ***
 
 # Variable: queryChatMessageInputSchema
 
-> `const` **queryChatMessageInputSchema**: `ZodObject`\<\{ `id`: `any`; \}, `"strip"`, \{ `[key: string]`: `any`;  `id`: `unknown`; \}, \{ `[key: string]`: `any`;  `id`: `unknown`; \}\>
+> `const` **queryChatMessageInputSchema**: `ZodObject`\<\{ `id`: `ZodString`; \}, `"strip"`, `ZodTypeAny`, \{ `id`: `string`; \}, \{ `id`: `string`; \}\>
 
-Defined in: [src/graphql/inputs/QueryChatMessageInput.ts:5](https://github.com/PalisadoesFoundation/talawa-api/blob/c34688c69eb12a5eb721ebc8a0cd60b53e5fbf81/src/graphql/inputs/QueryChatMessageInput.ts#L5)
+Defined in: [src/graphql/inputs/QueryChatMessageInput.ts:5](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/graphql/inputs/QueryChatMessageInput.ts#L5)

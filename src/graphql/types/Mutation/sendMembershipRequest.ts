@@ -5,6 +5,7 @@ import {
 	MutationSendMembershipRequestInput,
 	sendMembershipRequestInputSchema,
 } from "~/src/graphql/inputs/MutationSendMembershipRequestInput";
+import { notificationEventBus } from "~/src/graphql/types/Notification/EventBus/eventBus";
 import { MembershipRequestObject } from "~/src/graphql/types/Organization/MembershipRequestObject";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 
@@ -50,11 +51,23 @@ builder.mutationField("sendMembershipRequest", (t) =>
 
 			const currentUserId = ctx.currentClient.user.id;
 
-			const organization =
-				await ctx.drizzleClient.query.organizationsTable.findFirst({
+			const [currentUser, organization] = await Promise.all([
+				ctx.drizzleClient.query.usersTable.findFirst({
+					columns: { name: true },
+					where: (fields, operators) => operators.eq(fields.id, currentUserId),
+				}),
+				ctx.drizzleClient.query.organizationsTable.findFirst({
+					columns: { name: true, userRegistrationRequired: true },
 					where: (fields, operators) =>
 						operators.eq(fields.id, parsedArgs.input.organizationId),
+				}),
+			]);
+
+			if (!currentUser) {
+				throw new TalawaGraphQLError({
+					extensions: { code: "unauthenticated" },
 				});
+			}
 
 			if (!organization) {
 				throw new TalawaGraphQLError({
@@ -104,6 +117,21 @@ builder.mutationField("sendMembershipRequest", (t) =>
 				if (newRequest.length === 0) {
 					throw new TalawaGraphQLError({ extensions: { code: "unexpected" } });
 				}
+
+				// Emit join request notification to organization admins
+				if (!newRequest[0]) {
+					throw new TalawaGraphQLError({ extensions: { code: "unexpected" } });
+				}
+				notificationEventBus.emitJoinRequestSubmitted(
+					{
+						requestId: newRequest[0].membershipRequestId,
+						userId: currentUserId,
+						userName: currentUser.name,
+						organizationId: parsedArgs.input.organizationId,
+						organizationName: organization.name,
+					},
+					ctx,
+				);
 
 				return newRequest[0];
 			}

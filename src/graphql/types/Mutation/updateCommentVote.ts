@@ -23,7 +23,8 @@ builder.mutationField("updateCommentVote", (t) =>
 			}),
 		},
 		complexity: envConfig.API_GRAPHQL_OBJECT_FIELD_COST,
-		description: "Mutation field to update a comment vote.",
+		description:
+			"Mutation field to create, update, or delete a comment vote. If type is null, the vote will be deleted.",
 		resolve: async (_parent, args, ctx) => {
 			if (!ctx.currentClient.isAuthenticated) {
 				throw new TalawaGraphQLError({
@@ -53,29 +54,21 @@ builder.mutationField("updateCommentVote", (t) =>
 
 			const currentUserId = ctx.currentClient.user.id;
 
-			const [currentUser, existingComment] = await Promise.all([
+			const [currentUser, existingComment, existingVote] = await Promise.all([
 				ctx.drizzleClient.query.usersTable.findFirst({
-					columns: {
-						role: true,
-					},
+					columns: { role: true },
 					where: (fields, operators) => operators.eq(fields.id, currentUserId),
 				}),
 				ctx.drizzleClient.query.commentsTable.findFirst({
 					with: {
 						post: {
-							columns: {
-								pinnedAt: true,
-							},
+							columns: { pinnedAt: true },
 							with: {
 								organization: {
-									columns: {
-										countryCode: true,
-									},
+									columns: { countryCode: true },
 									with: {
 										membershipsWhereOrganization: {
-											columns: {
-												role: true,
-											},
+											columns: { role: true },
 											where: (fields, operators) =>
 												operators.eq(fields.memberId, currentUserId),
 										},
@@ -83,93 +76,99 @@ builder.mutationField("updateCommentVote", (t) =>
 								},
 							},
 						},
-						votesWhereComment: {
-							columns: {
-								type: true,
-							},
-							where: (fields, operators) =>
-								operators.eq(fields.creatorId, currentUserId),
-						},
 					},
 					where: (fields, operators) =>
 						operators.eq(fields.id, parsedArgs.input.commentId),
 				}),
+				ctx.drizzleClient.query.commentVotesTable.findFirst({
+					columns: { type: true },
+					where: (fields, operators) =>
+						operators.and(
+							operators.eq(fields.creatorId, currentUserId),
+							operators.eq(fields.commentId, parsedArgs.input.commentId),
+						),
+				}),
 			]);
 
-			if (currentUser === undefined) {
+			if (!currentUser) {
 				throw new TalawaGraphQLError({
-					extensions: {
-						code: "unauthenticated",
-					},
+					extensions: { code: "unauthenticated" },
 				});
 			}
 
-			if (existingComment === undefined) {
-				throw new TalawaGraphQLError({
-					extensions: {
-						code: "arguments_associated_resources_not_found",
-						issues: [
-							{
-								argumentPath: ["input", "commentId"],
-							},
-						],
-					},
-				});
-			}
-
-			const existingCommentVote = existingComment.votesWhereComment[0];
-
-			if (existingCommentVote === undefined) {
+			if (!existingComment) {
 				throw new TalawaGraphQLError({
 					extensions: {
 						code: "arguments_associated_resources_not_found",
-						issues: [
-							{
-								argumentPath: ["input", "commentId"],
-							},
-						],
+						issues: [{ argumentPath: ["input", "commentId"] }],
 					},
 				});
 			}
 
-			const currentUserOrganizationMembership =
-				existingComment.post.organization.membershipsWhereOrganization[0];
+			const isAuthorized =
+				currentUser.role === "administrator" ||
+				existingComment.post.organization.membershipsWhereOrganization.length >
+					0;
 
-			if (
-				currentUser.role !== "administrator" &&
-				currentUserOrganizationMembership === undefined
-			) {
+			if (!isAuthorized) {
 				throw new TalawaGraphQLError({
 					extensions: {
 						code: "unauthorized_action_on_arguments_associated_resources",
-						issues: [
-							{
-								argumentPath: ["input", "commentId"],
-							},
-						],
+						issues: [{ argumentPath: ["input", "commentId"] }],
 					},
 				});
 			}
 
-			const [updatedCommentVote] = await ctx.drizzleClient
-				.update(commentVotesTable)
-				.set({
-					type: parsedArgs.input.type,
-				})
-				.where(
-					and(
-						eq(commentVotesTable.commentId, parsedArgs.input.commentId),
-						eq(commentVotesTable.creatorId, currentUserId),
-					),
-				)
-				.returning();
+			let voteResult = undefined;
 
-			// Updated comment vote not being returned means that either it was deleted or its `commentId` or `voterId` columns were changed by external entities before this delete operation could take place.
-			if (updatedCommentVote === undefined) {
+			if (parsedArgs.input.type === null) {
+				// DELETE the vote if type is null
+				if (existingVote) {
+					[voteResult] = await ctx.drizzleClient
+						.delete(commentVotesTable)
+						.where(
+							and(
+								eq(commentVotesTable.creatorId, currentUserId),
+								eq(commentVotesTable.commentId, parsedArgs.input.commentId),
+							),
+						)
+						.returning();
+				} else {
+					// If no vote exists and trying to delete, treat as successful no-op
+					voteResult = {
+						id: "",
+						creatorId: currentUserId,
+						commentId: parsedArgs.input.commentId,
+						type: null,
+					};
+				}
+			} else if (existingVote) {
+				// UPDATE the vote if type is not null
+				[voteResult] = await ctx.drizzleClient
+					.update(commentVotesTable)
+					.set({ type: parsedArgs.input.type })
+					.where(
+						and(
+							eq(commentVotesTable.creatorId, currentUserId),
+							eq(commentVotesTable.commentId, parsedArgs.input.commentId),
+						),
+					)
+					.returning();
+			} else {
+				// CREATE new vote if type is not null
+				[voteResult] = await ctx.drizzleClient
+					.insert(commentVotesTable)
+					.values({
+						creatorId: currentUserId,
+						commentId: parsedArgs.input.commentId,
+						type: parsedArgs.input.type,
+					})
+					.returning();
+			}
+
+			if (!voteResult) {
 				throw new TalawaGraphQLError({
-					extensions: {
-						code: "unexpected",
-					},
+					extensions: { code: "unexpected" },
 				});
 			}
 

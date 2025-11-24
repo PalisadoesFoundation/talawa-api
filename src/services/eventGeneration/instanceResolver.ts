@@ -1,7 +1,9 @@
 import type { eventsTable } from "~/src/drizzle/tables/events";
 import type { eventExceptionsTable } from "~/src/drizzle/tables/recurringEventExceptions";
-import type { recurringEventInstancesTable } from "~/src/drizzle/tables/recurringEventInstances";
-import type { ResolvedRecurringEventInstance } from "~/src/drizzle/tables/recurringEventInstances";
+import type {
+	ResolvedRecurringEventInstance,
+	recurringEventInstancesTable,
+} from "~/src/drizzle/tables/recurringEventInstances";
 import type { ResolveInstanceInput, ServiceDependencies } from "./types";
 
 /**
@@ -22,6 +24,7 @@ export function resolveInstanceWithInheritance(
 		// Core instance metadata
 		id: generatedInstance.id,
 		baseRecurringEventId: generatedInstance.baseRecurringEventId,
+		originalSeriesId: generatedInstance.originalSeriesId,
 		recurrenceRuleId: generatedInstance.recurrenceRuleId,
 		originalInstanceStartTime: generatedInstance.originalInstanceStartTime,
 		actualStartTime: generatedInstance.actualStartTime,
@@ -162,12 +165,20 @@ export function resolveMultipleInstances(
 			continue;
 		}
 
-		// Find exception for this specific instance using composite key
-		const exceptionKey = createExceptionKey(
-			instance.baseRecurringEventId,
-			instance.originalInstanceStartTime,
-		);
-		const exception = exceptionsMap.get(exceptionKey);
+		// Find exception for this specific instance using direct ID lookup
+		const exception = exceptionsMap.get(instance.id);
+
+		// Debug logging for exceptions
+		if (exception) {
+			logger.debug(
+				{
+					instanceId: instance.id,
+					exceptionId: exception.id,
+					exceptionData: exception.exceptionData,
+				},
+				`Found exception for instance ${instance.id}`,
+			);
+		}
 
 		const resolved = resolveInstanceWithInheritance({
 			generatedInstance: instance,
@@ -213,10 +224,8 @@ export function createExceptionLookupMap(
 	>();
 
 	for (const exception of exceptions) {
-		const key = createExceptionKey(
-			exception.baseRecurringEventId,
-			exception.instanceStartTime,
-		);
+		// Use direct instance ID as the key for the new clean design
+		const key = exception.recurringEventInstanceId;
 		exceptionMap.set(key, exception);
 	}
 
@@ -257,6 +266,7 @@ export function validateResolvedInstance(
 	const requiredFields = [
 		"id",
 		"baseRecurringEventId",
+		"originalSeriesId",
 		"originalInstanceStartTime",
 		"actualStartTime",
 		"actualEndTime",

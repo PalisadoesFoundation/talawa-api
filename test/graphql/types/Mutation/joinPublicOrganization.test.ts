@@ -1,6 +1,6 @@
 import { faker } from "@faker-js/faker";
 import { eq } from "drizzle-orm";
-import { afterEach, expect, suite, test } from "vitest";
+import { afterEach, expect, suite, test, vi } from "vitest";
 import {
 	organizationMembershipsTable,
 	organizationsTable,
@@ -71,9 +71,11 @@ async function getAdminAuthTokenAndId(): Promise<{
 				"Admin authentication succeeded but no user id was returned",
 			);
 		}
-		cachedAdminToken = adminSignInResult.data.signIn.authenticationToken;
-		cachedAdminId = adminSignInResult.data.signIn.user.id;
-		return { cachedAdminToken, cachedAdminId };
+		const token = adminSignInResult.data.signIn.authenticationToken;
+		const id = adminSignInResult.data.signIn.user.id;
+		cachedAdminToken = token;
+		cachedAdminId = id;
+		return { cachedAdminToken: token, cachedAdminId: id };
 	} catch (error) {
 		// Wrap and rethrow with more context
 		throw new Error(
@@ -347,6 +349,8 @@ suite("Mutation joinPublicOrganization", () => {
 			}
 			// Reset the cleanup functions array
 			testCleanupFunctions.length = 0;
+			// Restore all mocks
+			vi.restoreAllMocks();
 		});
 
 		test("Returns an error when the organization does not exist", async () => {
@@ -563,6 +567,44 @@ suite("Mutation joinPublicOrganization", () => {
 
 			expect(membership).toBeDefined();
 			expect(membership?.role).toEqual("regular");
+		});
+
+		test("Returns an 'unexpected' error when the database insert returns no data", async () => {
+			// Create a regular user
+			const regularUser = await createRegularUserUsingAdmin();
+			// Get the user's auth token
+			const { authToken } = regularUser;
+
+			// Create an organization
+			const organization = await createTestOrganization();
+			testCleanupFunctions.push(organization.cleanup);
+
+			vi.spyOn(server.drizzleClient, "transaction").mockResolvedValue([]);
+
+			const joinPublicOrganizationResult = await mercuriusClient.mutate(
+				Mutation_joinPublicOrganization,
+				{
+					headers: {
+						authorization: `bearer ${authToken}`,
+					},
+					variables: {
+						input: {
+							organizationId: organization.orgId,
+						},
+					},
+				},
+			);
+			expect(joinPublicOrganizationResult.errors).toBeDefined();
+			expect(joinPublicOrganizationResult.errors).toEqual(
+				expect.arrayContaining<TalawaGraphQLFormattedError>([
+					expect.objectContaining<TalawaGraphQLFormattedError>({
+						extensions: expect.objectContaining({
+							code: "unexpected",
+						}),
+						message: expect.any(String),
+					}),
+				]),
+			);
 		});
 	});
 });

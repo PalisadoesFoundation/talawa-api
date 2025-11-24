@@ -24,6 +24,10 @@ describe("ActionItem Resolver - Organization Field", () => {
 			creatorId: "user-admin",
 			updaterId: "user-update",
 			eventId: null,
+			isTemplate: false,
+			recurringEventInstanceId: null,
+			volunteerId: null,
+			volunteerGroupId: null,
 			createdAt: new Date("2024-01-01T09:00:00Z"),
 			updatedAt: new Date("2024-01-01T10:00:00Z"),
 		} as ActionItemType;

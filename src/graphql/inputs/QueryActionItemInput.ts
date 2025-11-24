@@ -1,12 +1,12 @@
 import { z } from "zod";
-import { actionsTableInsertSchema } from "~/src/drizzle/tables/actions";
+import { actionItemsTableInsertSchema } from "~/src/drizzle/tables/actionItems";
 import { builder } from "~/src/graphql/builder";
 
 /**
  * Defines the Zod validation schema for querying ActionItems by organizationId.
  */
 export const queryActionItemsByOrgInputSchema = z.object({
-	organizationId: actionsTableInsertSchema.shape.organizationId,
+	organizationId: actionItemsTableInsertSchema.shape.organizationId,
 });
 
 /**
@@ -27,25 +27,57 @@ export const QueryActionItemsByOrganizationInput = builder
 	});
 
 /**
- * Defines the Zod validation schema for querying ActionItems by userId.
+ * Defines the Zod validation schema for querying ActionItems by volunteerId.
  */
-export const queryActionItemsByUserInputSchema = z.object({
-	userId: actionsTableInsertSchema.shape.assigneeId.unwrap(), // Make userId required
-	organizationId: actionsTableInsertSchema.shape.organizationId.optional(), // Optional org filter
+export const queryActionItemsByVolunteerInputSchema = z.object({
+	volunteerId: actionItemsTableInsertSchema.shape.volunteerId.unwrap(), // Make volunteerId required
+	organizationId: actionItemsTableInsertSchema.shape.organizationId.optional(), // Optional org filter
 });
 
 /**
- * GraphQL Input Type for querying ActionItems by userId.
+ * GraphQL Input Type for querying ActionItems by volunteerId.
  */
-export const QueryActionItemsByUserInput = builder
-	.inputRef<z.infer<typeof queryActionItemsByUserInputSchema>>(
-		"QueryActionItemsByUserInput",
+export const QueryActionItemsByVolunteerInput = builder
+	.inputRef<z.infer<typeof queryActionItemsByVolunteerInputSchema>>(
+		"QueryActionItemsByVolunteerInput",
 	)
 	.implement({
-		description: "Input schema for querying ActionItems assigned to a user.",
+		description:
+			"Input schema for querying ActionItems assigned to a volunteer.",
 		fields: (t) => ({
-			userId: t.string({
-				description: "ID of the user to fetch assigned action items for.",
+			volunteerId: t.string({
+				description: "ID of the volunteer to fetch assigned action items for.",
+				required: true,
+			}),
+			organizationId: t.string({
+				description: "Optional ID of organization to filter action items by.",
+			}),
+		}),
+	});
+
+/**
+ * Defines the Zod validation schema for querying ActionItems by volunteerGroupId.
+ */
+export const queryActionItemsByVolunteerGroupInputSchema = z.object({
+	volunteerGroupId:
+		actionItemsTableInsertSchema.shape.volunteerGroupId.unwrap(), // Make volunteerGroupId required
+	organizationId: actionItemsTableInsertSchema.shape.organizationId.optional(), // Optional org filter
+});
+
+/**
+ * GraphQL Input Type for querying ActionItems by volunteerGroupId.
+ */
+export const QueryActionItemsByVolunteerGroupInput = builder
+	.inputRef<z.infer<typeof queryActionItemsByVolunteerGroupInputSchema>>(
+		"QueryActionItemsByVolunteerGroupInput",
+	)
+	.implement({
+		description:
+			"Input schema for querying ActionItems assigned to a volunteer group.",
+		fields: (t) => ({
+			volunteerGroupId: t.string({
+				description:
+					"ID of the volunteer group to fetch assigned action items for.",
 				required: true,
 			}),
 			organizationId: t.string({

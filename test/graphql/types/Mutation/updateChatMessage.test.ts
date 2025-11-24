@@ -163,6 +163,12 @@ suite("Mutation field updateChatMessage", () => {
 				const adminToken =
 					administratorUserSignInResult.data.signIn.authenticationToken;
 
+				assertToBeNonNullish(
+					administratorUserSignInResult.data.signIn?.user?.id,
+				);
+
+				const adminUserId = administratorUserSignInResult.data.signIn.user.id;
+
 				// Create a non-admin user
 				const createUserResult = await mercuriusClient.mutate(
 					Mutation_createUser,
@@ -209,6 +215,27 @@ suite("Mutation field updateChatMessage", () => {
 
 				const organizationId = organizationResult.data?.createOrganization?.id;
 				assertToBeNonNullish(organizationId);
+
+				// Add admin user to the organization
+				const createAdminMembershipResult = await mercuriusClient.mutate(
+					Mutation_createOrganizationMembership,
+					{
+						headers: {
+							authorization: `bearer ${adminToken}`,
+						},
+						variables: {
+							input: {
+								organizationId,
+								memberId: adminUserId,
+								role: "administrator",
+							},
+						},
+					},
+				);
+
+				assertToBeNonNullish(
+					createAdminMembershipResult.data?.createOrganizationMembership?.id,
+				);
 
 				const createOrganizationResult = await mercuriusClient.mutate(
 					Mutation_createOrganizationMembership,

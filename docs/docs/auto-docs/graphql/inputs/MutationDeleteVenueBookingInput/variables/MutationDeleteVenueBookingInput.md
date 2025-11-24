@@ -1,9 +1,9 @@
-[Admin Docs](/)
+[API Docs](/)
 
 ***
 
 # Variable: MutationDeleteVenueBookingInput
 
-> `const` **MutationDeleteVenueBookingInput**: `InputObjectRef`\<`ExtendDefaultTypes`\<\{ `Context`: [`GraphQLContext`](../../../context/type-aliases/GraphQLContext.md); `Scalars`: [`CustomScalars`](../../../scalars/type-aliases/CustomScalars.md); \}\>, \{\}\>
+> `const` **MutationDeleteVenueBookingInput**: `InputObjectRef`\<`ExtendDefaultTypes`\<\{ `Context`: [`GraphQLContext`](../../../context/type-aliases/GraphQLContext.md); `Scalars`: [`CustomScalars`](../../../scalars/type-aliases/CustomScalars.md); \}\>, \{ `eventId`: `string`; `venueId`: `string`; \}\>
 
-Defined in: [src/graphql/inputs/MutationDeleteVenueBookingInput.ts:11](https://github.com/PalisadoesFoundation/talawa-api/blob/c34688c69eb12a5eb721ebc8a0cd60b53e5fbf81/src/graphql/inputs/MutationDeleteVenueBookingInput.ts#L11)
+Defined in: [src/graphql/inputs/MutationDeleteVenueBookingInput.ts:11](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/graphql/inputs/MutationDeleteVenueBookingInput.ts#L11)

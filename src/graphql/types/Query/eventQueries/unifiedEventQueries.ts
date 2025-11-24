@@ -65,12 +65,12 @@ export async function getUnifiedEventsInDateRange(
 	try {
 		let allEvents: EventWithAttachments[] = [];
 
-		// Step 1: Get standalone events
+		// Step 1: Get standalone events - use requested limit
 		const standaloneEventsInput: GetStandaloneEventsInput = {
 			organizationId,
 			startDate,
 			endDate,
-			limit: Math.floor(limit * 0.6), // Reserve 60% of limit for standalone events
+			limit: limit,
 		};
 
 		const standaloneEvents = await getStandaloneEventsInDateRange(
@@ -94,7 +94,7 @@ export async function getUnifiedEventsInDateRange(
 				startDate,
 				endDate,
 				includeCancelled: false,
-				limit: Math.floor(limit * 0.4), // Reserve 40% of limit for generated instances
+				limit: limit,
 			};
 
 			const generatedInstances = await getRecurringEventInstancesInDateRange(
@@ -105,36 +105,40 @@ export async function getUnifiedEventsInDateRange(
 
 			// Transform generated instances to unified format
 			const enrichedGeneratedInstances: EventWithAttachments[] =
-				generatedInstances.map((instance) => ({
-					// Core event properties (resolved from template + exceptions)
-					id: instance.id, // Use generated instance ID
-					name: instance.name,
-					description: instance.description,
-					startAt: instance.actualStartTime,
-					endAt: instance.actualEndTime,
-					location: instance.location,
-					allDay: instance.allDay,
-					isPublic: instance.isPublic,
-					isRegisterable: instance.isRegisterable,
-					organizationId: instance.organizationId,
-					creatorId: instance.creatorId,
-					updaterId: instance.updaterId,
-					createdAt: instance.createdAt,
-					updatedAt: instance.updatedAt,
+				generatedInstances.map((instance) => {
+					const transformedInstance = {
+						// Core event properties (resolved from template + exceptions)
+						id: instance.id, // Use generated instance ID
+						name: instance.name,
+						description: instance.description,
+						startAt: instance.actualStartTime,
+						endAt: instance.actualEndTime,
+						location: instance.location,
+						allDay: instance.allDay,
+						isPublic: instance.isPublic,
+						isRegisterable: instance.isRegisterable,
+						organizationId: instance.organizationId,
+						creatorId: instance.creatorId,
+						updaterId: instance.updaterId,
+						createdAt: instance.createdAt,
+						updatedAt: instance.updatedAt,
 
-					// Generated instance metadata
-					isRecurringEventTemplate: false, // Instances are never templates
+						// Generated instance metadata
+						isRecurringEventTemplate: false, // Instances are never templates
 
-					// Additional generated properties
-					baseRecurringEventId: instance.baseRecurringEventId,
-					sequenceNumber: instance.sequenceNumber,
-					totalCount: instance.totalCount,
-					hasExceptions: instance.hasExceptions,
-					isGenerated: true,
+						// Additional generated properties
+						baseRecurringEventId: instance.baseRecurringEventId,
+						sequenceNumber: instance.sequenceNumber,
+						totalCount: instance.totalCount,
+						hasExceptions: instance.hasExceptions,
+						isGenerated: true,
 
-					attachments: [],
-					eventType: "generated" as const,
-				}));
+						attachments: [],
+						eventType: "generated" as const,
+					};
+
+					return transformedInstance;
+				});
 
 			allEvents.push(...enrichedGeneratedInstances);
 		}
@@ -149,30 +153,20 @@ export async function getUnifiedEventsInDateRange(
 			return aTime - bTime;
 		});
 
-		// Step 4: Apply final limit
+		// Step 4: Apply final limit after sorting - this ensures we get the earliest events regardless of type
 		if (allEvents.length > limit) {
 			allEvents = allEvents.slice(0, limit);
 		}
 
-		logger.debug("Retrieved unified events", {
-			organizationId,
-			standaloneCount: standaloneEvents.length,
-			generatedCount: includeRecurring
-				? allEvents.filter((e) => e.eventType === "generated").length
-				: 0,
-			totalCount: allEvents.length,
-			dateRange: {
-				start: startDate.toISOString(),
-				end: endDate.toISOString(),
-			},
-		});
-
 		return allEvents;
 	} catch (error) {
-		logger.error("Failed to get unified events", {
-			organizationId,
-			error,
-		});
+		logger.error(
+			{
+				organizationId,
+				error,
+			},
+			"Failed to get unified events",
+		);
 		throw error;
 	}
 }
@@ -253,19 +247,25 @@ export async function getEventsByIds(
 			events.push(...generatedEvents);
 		}
 
-		logger.debug("Retrieved events by IDs", {
-			requestedIds: eventIds.length,
-			foundStandalone: standaloneEvents.length,
-			foundGenerated: events.length - standaloneEvents.length,
-			totalFound: events.length,
-		});
+		logger.debug(
+			{
+				requestedIds: eventIds.length,
+				foundStandalone: standaloneEvents.length,
+				foundGenerated: events.length - standaloneEvents.length,
+				totalFound: events.length,
+			},
+			"Retrieved events by IDs",
+		);
 
 		return events;
 	} catch (error) {
-		logger.error("Failed to get events by IDs", {
-			eventIds,
-			error,
-		});
+		logger.error(
+			{
+				eventIds,
+				error,
+			},
+			"Failed to get events by IDs",
+		);
 		throw error;
 	}
 }

@@ -1,5 +1,26 @@
+/* ---------------FUTURE IMPROVEMENTS------------------------
+ * use DATALOADER to batch and cache these N+1 queries
+ */
+/**
+ * Note: currently the computed unread fields treat a missing membership.lastReadAt
+ * as epoch (new Date(0)), which makes a chat's creator or other authors see their
+ * own newly-created messages as unread until they mark the chat as read.
+ *
+ * Frontend currently mitigates this by calling a mutation after message creation
+ * to mark messages as read for the creating user. In the future this should be
+ * implemented server-side in a more humanized way. Possible approaches:
+ *  - Ignore messages authored by the current user when counting unread messages;
+ *  - Set the creating user's chatMembership.lastReadAt when they create a message.
+ *
+ * Keep behaviour consistent across clients and ensure read-receipt semantics are
+ * preserved when introducing changes.
+ */
+import { and, asc, desc, eq, gt, sql } from "drizzle-orm";
+import { chatMessagesTable } from "~/src/drizzle/tables/chatMessages";
 import type { chatsTable } from "~/src/drizzle/tables/chats";
 import { builder } from "~/src/graphql/builder";
+import { ChatMessage } from "~/src/graphql/types/ChatMessage/ChatMessage";
+import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 
 export type Chat = typeof chatsTable.$inferSelect;
 
@@ -21,6 +42,132 @@ Chat.implement({
 		}),
 		name: t.exposeString("name", {
 			description: "Name of the chat.",
+		}),
+		//this field beneath here contains N+1 Queries so this not used by default .
+		//if someone wants to use it they can explicitly ask for it in the query but this needs to be optimized later .
+		unreadMessagesCount: t.int({
+			description:
+				"Number of unread messages for the current user in this chat.",
+			resolve: async (parent, _args, ctx) => {
+				if (!ctx.currentClient.isAuthenticated) {
+					throw new TalawaGraphQLError({
+						extensions: { code: "unauthenticated" },
+					});
+				}
+
+				const currentUserId = ctx.currentClient.user.id;
+				const membership =
+					await ctx.drizzleClient.query.chatMembershipsTable.findFirst({
+						where: (fields, operators) =>
+							and(
+								operators.eq(fields.chatId, parent.id),
+								operators.eq(fields.memberId, currentUserId),
+							),
+					});
+
+				if (!membership) return 0;
+				const lastReadAt = membership.lastReadAt ?? new Date(0);
+
+				const countRes = await ctx.drizzleClient
+					.select({ cnt: sql<number>`COUNT(*)::int` })
+					.from(chatMessagesTable)
+					.where(
+						and(
+							eq(chatMessagesTable.chatId, parent.id),
+							gt(chatMessagesTable.createdAt, lastReadAt),
+						),
+					);
+				return countRes[0]?.cnt ?? 0;
+			},
+		}),
+		hasUnread: t.boolean({
+			description: "Whether the current user has unread messages in this chat.",
+			resolve: async (parent, _args, ctx) => {
+				if (!ctx.currentClient.isAuthenticated) {
+					throw new TalawaGraphQLError({
+						extensions: { code: "unauthenticated" },
+					});
+				}
+				const currentUserId = ctx.currentClient.user.id;
+				const membership =
+					await ctx.drizzleClient.query.chatMembershipsTable.findFirst({
+						where: (fields, operators) =>
+							and(
+								operators.eq(fields.chatId, parent.id),
+								operators.eq(fields.memberId, currentUserId),
+							),
+					});
+				if (!membership) return false;
+				const lastReadAt = membership.lastReadAt ?? new Date(0);
+
+				const found = await ctx.drizzleClient
+					.select({ id: chatMessagesTable.id })
+					.from(chatMessagesTable)
+					.where(
+						and(
+							eq(chatMessagesTable.chatId, parent.id),
+							gt(chatMessagesTable.createdAt, lastReadAt),
+						),
+					)
+					.limit(1);
+				return found.length > 0;
+			},
+		}),
+		firstUnreadMessageId: t.id({
+			description:
+				"ID of the first unread message for the current user in this chat, if any.",
+			nullable: true,
+			resolve: async (parent, _args, ctx) => {
+				if (!ctx.currentClient.isAuthenticated) {
+					throw new TalawaGraphQLError({
+						extensions: { code: "unauthenticated" },
+					});
+				}
+				const currentUserId = ctx.currentClient.user.id;
+				const membership =
+					await ctx.drizzleClient.query.chatMembershipsTable.findFirst({
+						where: (fields, operators) =>
+							and(
+								operators.eq(fields.chatId, parent.id),
+								operators.eq(fields.memberId, currentUserId),
+							),
+					});
+				if (!membership) return null;
+				const lastReadAt = membership.lastReadAt ?? new Date(0);
+
+				const firstUnread = await ctx.drizzleClient
+					.select({ id: chatMessagesTable.id })
+					.from(chatMessagesTable)
+					.where(
+						and(
+							eq(chatMessagesTable.chatId, parent.id),
+							gt(chatMessagesTable.createdAt, lastReadAt),
+						),
+					)
+					.orderBy(asc(chatMessagesTable.createdAt))
+					.limit(1);
+
+				return firstUnread[0]?.id ?? null;
+			},
+		}),
+		lastMessage: t.field({
+			description: "Most recent message in this chat.",
+			nullable: true,
+			type: ChatMessage,
+			resolve: async (parent, _args, ctx) => {
+				if (!ctx.currentClient.isAuthenticated) {
+					throw new TalawaGraphQLError({
+						extensions: { code: "unauthenticated" },
+					});
+				}
+				const last = await ctx.drizzleClient
+					.select()
+					.from(chatMessagesTable)
+					.where(eq(chatMessagesTable.chatId, parent.id))
+					.orderBy(desc(chatMessagesTable.createdAt))
+					.limit(1);
+				return last[0] ?? null;
+			},
 		}),
 	}),
 });

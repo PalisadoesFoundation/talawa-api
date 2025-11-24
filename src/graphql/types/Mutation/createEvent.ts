@@ -1,5 +1,6 @@
 import type { FileUpload } from "graphql-upload-minimal";
 import { ulid } from "ulidx";
+import { uuidv7 } from "uuidv7";
 import { z } from "zod";
 import { eventAttachmentMimeTypeEnum } from "~/src/drizzle/enums/eventAttachmentMimeType";
 import { eventAttachmentsTable } from "~/src/drizzle/tables/eventAttachments";
@@ -11,6 +12,7 @@ import {
 	mutationCreateEventInputSchema,
 } from "~/src/graphql/inputs/MutationCreateEventInput";
 import { Event } from "~/src/graphql/types/Event/Event";
+import { notificationEventBus } from "~/src/graphql/types/Notification/EventBus/eventBus";
 import {
 	generateInstancesForRecurringEvent,
 	initializeGenerationWindow,
@@ -129,12 +131,14 @@ builder.mutationField("createEvent", (t) =>
 				ctx.drizzleClient.query.usersTable.findFirst({
 					columns: {
 						role: true,
+						name: true,
 					},
 					where: (fields, operators) => operators.eq(fields.id, currentUserId),
 				}),
 				ctx.drizzleClient.query.organizationsTable.findFirst({
 					columns: {
 						countryCode: true,
+						name: true,
 					},
 					with: {
 						membershipsWhereOrganization: {
@@ -174,11 +178,7 @@ builder.mutationField("createEvent", (t) =>
 			const currentUserOrganizationMembership =
 				existingOrganization.membershipsWhereOrganization[0];
 
-			if (
-				currentUser.role !== "administrator" &&
-				(currentUserOrganizationMembership === undefined ||
-					currentUserOrganizationMembership.role !== "administrator")
-			) {
+			if (currentUserOrganizationMembership === undefined) {
 				throw new TalawaGraphQLError({
 					extensions: {
 						code: "unauthorized_action_on_arguments_associated_resources",
@@ -234,9 +234,12 @@ builder.mutationField("createEvent", (t) =>
 						);
 
 						// Create recurrence rule
+						// For new events, the originalSeriesId is the same as the rule's own ID
+						const ruleId = uuidv7();
 						const [createdRecurrenceRule] = await tx
 							.insert(recurrenceRulesTable)
 							.values({
+								id: ruleId,
 								recurrenceRuleString: rruleString,
 								frequency: parsedArgs.input.recurrence.frequency,
 								interval: parsedArgs.input.recurrence.interval || 1,
@@ -248,6 +251,7 @@ builder.mutationField("createEvent", (t) =>
 								byMonth: parsedArgs.input.recurrence.byMonth,
 								byMonthDay: parsedArgs.input.recurrence.byMonthDay,
 								baseRecurringEventId: createdEvent.id,
+								originalSeriesId: ruleId, // For new events, originalSeriesId is the rule's own ID
 								organizationId: parsedArgs.input.organizationId,
 								creatorId: currentUserId,
 							})
@@ -266,12 +270,12 @@ builder.mutationField("createEvent", (t) =>
 						}
 
 						ctx.log.info(
-							"Created recurring event template and recurrence rule",
 							{
 								baseEventId: createdEvent.id,
 								recurrenceRuleId: createdRecurrenceRule.id,
 								rruleString: rruleString,
 							},
+							"Created recurring event template and recurrence rule",
 						);
 
 						// Ensure generation window exists for the organization
@@ -304,11 +308,14 @@ builder.mutationField("createEvent", (t) =>
 						const windowStartDate = new Date(parsedArgs.input.startAt);
 						let windowEndDate: Date;
 
-						ctx.log.debug("FIXED: Window calculation", {
-							eventStartAt: parsedArgs.input.startAt.toISOString(),
-							windowStartDate: windowStartDate.toISOString(),
-							currentTime: new Date().toISOString(),
-						});
+						ctx.log.debug(
+							{
+								eventStartAt: parsedArgs.input.startAt.toISOString(),
+								windowStartDate: windowStartDate.toISOString(),
+								currentTime: new Date().toISOString(),
+							},
+							"FIXED: Window calculation",
+						);
 
 						if (parsedArgs.input.recurrence.endDate) {
 							// For events with end dates, materialize up to the end date
@@ -351,18 +358,21 @@ builder.mutationField("createEvent", (t) =>
 							ctx.log,
 						);
 
-						ctx.log.info("Materialized initial instances for recurring event", {
-							baseEventId: createdEvent.id,
-							windowStart: windowStartDate.toISOString(),
-							windowEnd: windowEndDate.toISOString(),
-							recurrenceType: parsedArgs.input.recurrence.never
-								? "never-ending"
-								: parsedArgs.input.recurrence.endDate
-									? "end-date"
-									: "count-based",
-							originalRecurrenceInput: parsedArgs.input.recurrence,
-							createdRecurrenceRuleId: createdRecurrenceRule.id,
-						});
+						ctx.log.info(
+							{
+								baseEventId: createdEvent.id,
+								windowStart: windowStartDate.toISOString(),
+								windowEnd: windowEndDate.toISOString(),
+								recurrenceType: parsedArgs.input.recurrence.never
+									? "never-ending"
+									: parsedArgs.input.recurrence.endDate
+										? "end-date"
+										: "count-based",
+								originalRecurrenceInput: parsedArgs.input.recurrence,
+								createdRecurrenceRuleId: createdRecurrenceRule.id,
+							},
+							"Materialized initial instances for recurring event",
+						);
 					}
 
 					// Handle attachments (same logic for both recurring and standalone events)
@@ -406,6 +416,18 @@ builder.mutationField("createEvent", (t) =>
 						isPublic: createdEvent.isPublic ?? false,
 						isRegisterable: createdEvent.isRegisterable ?? false,
 					});
+
+					notificationEventBus.emitEventCreated(
+						{
+							eventId: finalEvent.id,
+							eventName: finalEvent.name,
+							organizationId: finalEvent.organizationId,
+							organizationName: existingOrganization.name,
+							startDate: finalEvent.startAt.toISOString(),
+							creatorName: currentUser.name,
+						},
+						ctx,
+					);
 
 					return finalEvent;
 				},

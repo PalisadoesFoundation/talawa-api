@@ -545,6 +545,56 @@ export async function insertCollections(
 					break;
 				}
 
+				case "event_volunteers": {
+					const eventVolunteers = JSON.parse(fileContent).map(
+						(volunteer: {
+							createdAt: string | number | Date;
+							updatedAt: string | number | Date;
+						}) => ({
+							...volunteer,
+							createdAt: parseDate(volunteer.createdAt),
+							updatedAt: parseDate(volunteer.updatedAt),
+						}),
+					) as (typeof schema.eventVolunteersTable.$inferInsert)[];
+
+					await checkAndInsertData(
+						schema.eventVolunteersTable,
+						eventVolunteers,
+						schema.eventVolunteersTable.id,
+						1000,
+					);
+
+					console.log(
+						"\x1b[35mAdded: Event Volunteers table data (skipping duplicates)\x1b[0m",
+					);
+					break;
+				}
+
+				case "event_volunteer_memberships": {
+					const eventVolunteerMemberships = JSON.parse(fileContent).map(
+						(membership: {
+							createdAt: string | number | Date;
+							updatedAt: string | number | Date;
+						}) => ({
+							...membership,
+							createdAt: parseDate(membership.createdAt),
+							updatedAt: parseDate(membership.updatedAt),
+						}),
+					) as (typeof schema.eventVolunteerMembershipsTable.$inferInsert)[];
+
+					await checkAndInsertData(
+						schema.eventVolunteerMembershipsTable,
+						eventVolunteerMemberships,
+						schema.eventVolunteerMembershipsTable.id,
+						1000,
+					);
+
+					console.log(
+						"\x1b[35mAdded: Event Volunteer Memberships table data (skipping duplicates)\x1b[0m",
+					);
+					break;
+				}
+
 				case "action_categories": {
 					const actionCategories = JSON.parse(fileContent).map(
 						(category: {
@@ -559,12 +609,12 @@ export async function insertCollections(
 								? new Date(category.updatedAt)
 								: new Date(),
 						}),
-					) as (typeof schema.actionCategoriesTable.$inferInsert)[];
+					) as (typeof schema.actionItemCategoriesTable.$inferInsert)[];
 
 					await checkAndInsertData(
-						schema.actionCategoriesTable,
+						schema.actionItemCategoriesTable,
 						actionCategories,
-						schema.actionCategoriesTable.id,
+						schema.actionItemCategoriesTable.id,
 						1000,
 					);
 
@@ -609,17 +659,57 @@ export async function insertCollections(
 									? action_item.eventId
 									: null,
 						}),
-					) as (typeof schema.actionsTable.$inferInsert)[];
+					) as (typeof schema.actionItemsTable.$inferInsert)[];
 
 					await checkAndInsertData(
-						schema.actionsTable,
+						schema.actionItemsTable,
 						action_items,
-						schema.actionsTable.id,
+						schema.actionItemsTable.id,
 						1000,
 					);
 
 					console.log(
 						"\x1b[35mAdded: Action Items table data (skipping duplicates)\x1b[0m",
+					);
+					break;
+				}
+				case "notification_templates": {
+					const fileContent = await fs.readFile(
+						`${process.cwd()}/scripts/dbManagement/sample_data/notification_templates.json`,
+						"utf-8",
+					);
+					const notificationTemplatesRaw = JSON.parse(fileContent);
+					type NotificationTemplate = {
+						name: string;
+						eventType: string;
+						title: string;
+						body: string;
+						channelType: string;
+						linkedRouteName: string;
+					};
+
+					const now = new Date();
+					const notificationTemplates = notificationTemplatesRaw.map(
+						(tpl: NotificationTemplate) => ({
+							id: uuidv7(),
+							name: tpl.name,
+							eventType: tpl.eventType,
+							title: tpl.title,
+							body: tpl.body,
+							channelType: tpl.channelType,
+							linkedRouteName: tpl.linkedRouteName,
+							createdAt: now,
+							creatorId: "0194e194-c6b3-7802-b074-362efea24dbc",
+							updatedAt: now,
+							updaterId: "0194e194-c6b3-7802-b074-362efea24dbc",
+						}),
+					);
+					await db
+						.insert(schema.notificationTemplatesTable)
+						.values(notificationTemplates);
+
+					console.log(
+						"\x1b[35mAdded: Notification_templates table data (skipping duplicates)\x1b[0m",
 					);
 					break;
 				}
@@ -667,9 +757,17 @@ export async function checkDataSize(stage: string): Promise<boolean> {
 			{ name: "comments", table: schema.commentsTable },
 			{ name: "membership_requests", table: schema.membershipRequestsTable },
 			{ name: "comment_votes", table: schema.commentVotesTable },
-			{ name: "action_items", table: schema.actionsTable },
+			{ name: "action_items", table: schema.actionItemsTable },
 			{ name: "events", table: schema.eventsTable },
-			{ name: "action_categories", table: schema.actionCategoriesTable },
+			{ name: "event_volunteers", table: schema.eventVolunteersTable },
+			{
+				name: "event_volunteer_memberships",
+				table: schema.eventVolunteerMembershipsTable,
+			},
+			{
+				name: "actionitem_categories",
+				table: schema.actionItemCategoriesTable,
+			},
 		];
 
 		console.log(`\nRecord Counts ${stage} Import:\n`);

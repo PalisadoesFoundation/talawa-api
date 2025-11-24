@@ -22,3 +22,7 @@ import "./MembershipRequestObject";
 import "./membershipRequests";
 import "./membersInfo";
 import "./isMember";
+import "./membershipRequestCount";
+import "./eventsCount";
+import "./blockedUsersCount";
+import "./venuesCount";

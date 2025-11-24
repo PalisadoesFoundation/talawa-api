@@ -1,6 +1,8 @@
-import { and, eq, gte } from "drizzle-orm";
+import { and, eq, gte, inArray } from "drizzle-orm";
 import { z } from "zod";
+import { actionItemsTable } from "~/src/drizzle/tables/actionItems";
 import { recurrenceRulesTable } from "~/src/drizzle/tables/recurrenceRules";
+import { eventExceptionsTable } from "~/src/drizzle/tables/recurringEventExceptions";
 import { recurringEventInstancesTable } from "~/src/drizzle/tables/recurringEventInstances";
 import { builder } from "~/src/graphql/builder";
 import {
@@ -73,6 +75,7 @@ builder.mutationField("deleteThisAndFollowingEvents", (t) =>
 						isCancelled: true,
 						recurrenceRuleId: true,
 						organizationId: true,
+						originalSeriesId: true,
 						generatedAt: true,
 						lastUpdatedAt: true,
 						version: true,
@@ -158,9 +161,9 @@ builder.mutationField("deleteThisAndFollowingEvents", (t) =>
 
 			// Authorization check
 			if (
-				currentUser.role !== "administrator" &&
 				(currentUserOrganizationMembership === undefined ||
-					currentUserOrganizationMembership.role !== "administrator")
+					currentUserOrganizationMembership.role !== "administrator") &&
+				existingInstance.baseRecurringEvent.creatorId !== currentUserId
 			) {
 				throw new TalawaGraphQLError({
 					extensions: {
@@ -191,14 +194,49 @@ builder.mutationField("deleteThisAndFollowingEvents", (t) =>
 						eq(recurrenceRulesTable.id, existingInstance.recurrenceRuleId),
 					);
 
-				// Delete all instances from this one forward (including this instance)
+				// First, get all instances that will be deleted to clean up their exceptions
+				const instancesToDelete = await tx
+					.select({ id: recurringEventInstancesTable.id })
+					.from(recurringEventInstancesTable)
+					.where(
+						and(
+							eq(
+								recurringEventInstancesTable.originalSeriesId,
+								existingInstance.originalSeriesId,
+							),
+							gte(
+								recurringEventInstancesTable.actualStartTime,
+								existingInstance.actualStartTime,
+							),
+						),
+					);
+
+				// Delete exceptions for instances that will be deleted
+				if (instancesToDelete.length > 0) {
+					await tx.delete(eventExceptionsTable).where(
+						inArray(
+							eventExceptionsTable.recurringEventInstanceId,
+							instancesToDelete.map((instance) => instance.id),
+						),
+					);
+
+					// Also delete action items associated with these instances
+					await tx.delete(actionItemsTable).where(
+						inArray(
+							actionItemsTable.recurringEventInstanceId,
+							instancesToDelete.map((instance) => instance.id),
+						),
+					);
+				}
+
+				// Delete all instances from this one forward across all templates in the same logical series
 				await tx
 					.delete(recurringEventInstancesTable)
 					.where(
 						and(
 							eq(
-								recurringEventInstancesTable.baseRecurringEventId,
-								existingInstance.baseRecurringEventId,
+								recurringEventInstancesTable.originalSeriesId,
+								existingInstance.originalSeriesId,
 							),
 							gte(
 								recurringEventInstancesTable.actualStartTime,

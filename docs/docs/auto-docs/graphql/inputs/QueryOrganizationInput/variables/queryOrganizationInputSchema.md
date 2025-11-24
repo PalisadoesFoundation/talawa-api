@@ -1,9 +1,9 @@
-[Admin Docs](/)
+[API Docs](/)
 
 ***
 
 # Variable: queryOrganizationInputSchema
 
-> `const` **queryOrganizationInputSchema**: `ZodObject`\<\{ `id`: `any`; \}, `"strip"`, \{ `[key: string]`: `any`;  `id`: `unknown`; \}, \{ `[key: string]`: `any`;  `id`: `unknown`; \}\>
+> `const` **queryOrganizationInputSchema**: `ZodObject`\<\{ `id`: `ZodEffects`\<`ZodOptional`\<`ZodNullable`\<`ZodString`\>\>, `string`, `string` \| `null` \| `undefined`\>; \}, `"strip"`, `ZodTypeAny`, \{ `id`: `string`; \}, \{ `id?`: `string` \| `null`; \}\>
 
-Defined in: [src/graphql/inputs/QueryOrganizationInput.ts:5](https://github.com/PalisadoesFoundation/talawa-api/blob/c34688c69eb12a5eb721ebc8a0cd60b53e5fbf81/src/graphql/inputs/QueryOrganizationInput.ts#L5)
+Defined in: [src/graphql/inputs/QueryOrganizationInput.ts:6](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/graphql/inputs/QueryOrganizationInput.ts#L6)

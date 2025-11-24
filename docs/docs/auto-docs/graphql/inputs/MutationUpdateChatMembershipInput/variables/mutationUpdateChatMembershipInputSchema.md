@@ -1,9 +1,9 @@
-[Admin Docs](/)
+[API Docs](/)
 
 ***
 
 # Variable: mutationUpdateChatMembershipInputSchema
 
-> `const` **mutationUpdateChatMembershipInputSchema**: `ZodObject`\<`Pick`\<\{\}, `never`\>, `"strip"`, \{\}, \{\}\>
+> `const` **mutationUpdateChatMembershipInputSchema**: `ZodObject`\<`Pick`\<\{ `chatId`: `ZodString`; `createdAt`: `ZodOptional`\<`ZodDate`\>; `creatorId`: `ZodOptional`\<`ZodNullable`\<`ZodString`\>\>; `lastReadAt`: `ZodOptional`\<`ZodNullable`\<`ZodDate`\>\>; `memberId`: `ZodString`; `role`: `ZodEnum`\<\[`"administrator"`, `"regular"`\]\>; `updatedAt`: `ZodOptional`\<`ZodNullable`\<`ZodDate`\>\>; `updaterId`: `ZodOptional`\<`ZodNullable`\<`ZodString`\>\>; \}, `"role"` \| `"chatId"` \| `"memberId"`\>, `"strip"`, `ZodTypeAny`, \{ `chatId`: `string`; `memberId`: `string`; `role`: `"administrator"` \| `"regular"`; \}, \{ `chatId`: `string`; `memberId`: `string`; `role`: `"administrator"` \| `"regular"`; \}\>
 
-Defined in: [src/graphql/inputs/MutationUpdateChatMembershipInput.ts:6](https://github.com/PalisadoesFoundation/talawa-api/blob/c34688c69eb12a5eb721ebc8a0cd60b53e5fbf81/src/graphql/inputs/MutationUpdateChatMembershipInput.ts#L6)
+Defined in: [src/graphql/inputs/MutationUpdateChatMembershipInput.ts:6](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/graphql/inputs/MutationUpdateChatMembershipInput.ts#L6)

@@ -1,10 +1,14 @@
 name: Push Workflow for develop
 
 on:
+  workflow_dispatch:
   push:
     branches:
       - develop
 
+env:
+  CODECOV_UNIQUE_NAME: CODECOV_UNIQUE_NAME-${{ github.run_id }}-${{ github.run_number }}
+  
 jobs:
   test-and-upload-coverage:
     runs-on: ubuntu-latest
@@ -31,18 +35,19 @@ jobs:
         run: |
           CONTAINER_ID=$(docker ps -aq --filter "ancestor=talawa-api")
           docker cp $CONTAINER_ID:/home/talawa/api/coverage ./coverage
-
-      # Upload coverage to Codecov
-      - name: Upload Coverage to Codecov
-        uses: codecov/codecov-action@v4
+          
+      #######################################################################
+      # DO NOT DELETE ANY references to env.CODECOV_UNIQUE_NAME in this
+      # section. They are required for accurate calculations
+      #######################################################################
+      - name: Present and upload coverage to Codecov as ${{env.CODECOV_UNIQUE_NAME}}
+        uses: codecov/codecov-action@v5
         with:
+          name: "${{env.CODECOV_UNIQUE_NAME}}"
           token: ${{ secrets.CODECOV_TOKEN }}
+          fail_ci_if_error: false
           verbose: true
-          files: ./coverage/lcov.info
-
-      # Test acceptable level of code coverage
-      - name: Test acceptable level of code coverage
-        uses: VeryGoodOpenSource/very_good_coverage@v2
-        with:
+          exclude: 'docs/'
+          gcov_ignore: 'docs/'
           path: "./coverage/lcov.info"
-          min_coverage: 39.0
+

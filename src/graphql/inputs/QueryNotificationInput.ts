@@ -1,0 +1,33 @@
+import { z } from "zod";
+import { builder } from "~/src/graphql/builder";
+
+export const queryNotificationInputSchema = z.object({
+	first: z.number().min(1).max(100).optional(),
+	skip: z.number().min(0).optional(),
+	isRead: z.boolean().optional(),
+});
+
+export const QueryNotificationInput = builder
+	.inputRef<z.infer<typeof queryNotificationInputSchema>>(
+		"QueryNotificationInput",
+	)
+	.implement({
+		description: "Input type for querying notifications for a specific user.",
+		fields: (t) => ({
+			first: t.int({
+				description:
+					"Number of notifications to return (default: 20, max: 100).",
+				required: false,
+				defaultValue: 20,
+			}),
+			skip: t.int({
+				description: "Number of notifications to skip for pagination.",
+				required: false,
+				defaultValue: 0,
+			}),
+			isRead: t.boolean({
+				description: "Filter by read status (true for read, false for unread).",
+				required: false,
+			}),
+		}),
+	});

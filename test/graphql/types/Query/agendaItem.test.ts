@@ -31,9 +31,14 @@ import {
  * @returns {Promise<string>} Admin authentication token
  */
 let cachedAdminToken: string | null = null;
-async function getAdminAuthToken(): Promise<string> {
-	if (cachedAdminToken) {
-		return cachedAdminToken;
+let cachedAdminUserId: string | null = null;
+
+async function getAdminAuthTokenAndId(): Promise<{
+	authToken: string;
+	userId: string;
+}> {
+	if (cachedAdminToken && cachedAdminUserId) {
+		return { authToken: cachedAdminToken, userId: cachedAdminUserId };
 	}
 
 	try {
@@ -63,21 +68,32 @@ async function getAdminAuthToken(): Promise<string> {
 			);
 		}
 		// Check for missing data
-		if (!adminSignInResult.data?.signIn?.authenticationToken) {
+		if (
+			!adminSignInResult.data?.signIn?.authenticationToken ||
+			!adminSignInResult.data?.signIn?.user?.id
+		) {
 			throw new Error(
-				"Admin authentication succeeded but no token was returned",
+				"Admin authentication succeeded but no token or user ID was returned",
 			);
 		}
-		cachedAdminToken = adminSignInResult.data.signIn.authenticationToken;
-		return cachedAdminToken;
+		const token = adminSignInResult.data.signIn.authenticationToken;
+		const id = adminSignInResult.data.signIn.user.id;
+		cachedAdminToken = token;
+		cachedAdminUserId = id;
+		return { authToken: token, userId: id };
 	} catch (error) {
 		// Wrap and rethrow with more context
 		throw new Error(
-			`Failed to get admin authentication token: ${
+			`Failed to get admin authentication token and user ID: ${
 				error instanceof Error ? error.message : "Unknown error"
 			}`,
 		);
 	}
+}
+
+async function getAdminAuthToken(): Promise<string> {
+	const { authToken } = await getAdminAuthTokenAndId();
+	return authToken;
 }
 
 suite("Query field agendaItem", () => {
@@ -375,7 +391,8 @@ async function createRegularUser(): Promise<TestUser> {
 }
 
 async function createTestAgendaItem(): Promise<TestAgendaItem> {
-	const adminAuthToken = await getAdminAuthToken();
+	const { authToken: adminAuthToken, userId: adminUserId } =
+		await getAdminAuthTokenAndId();
 
 	// Create organization
 	const createOrgResult = await mercuriusClient.mutate(
@@ -396,6 +413,31 @@ async function createTestAgendaItem(): Promise<TestAgendaItem> {
 	assertToBeNonNullish(createOrgResult.data);
 	assertToBeNonNullish(createOrgResult.data.createOrganization);
 	const orgId = createOrgResult.data.createOrganization.id;
+
+	// Create organization membership for the admin user
+	const membershipResult = await mercuriusClient.mutate(
+		Mutation_createOrganizationMembership,
+		{
+			headers: {
+				authorization: `bearer ${adminAuthToken}`,
+			},
+			variables: {
+				input: {
+					organizationId: orgId,
+					memberId: adminUserId,
+					role: "administrator",
+				},
+			},
+		},
+	);
+
+	if (membershipResult.errors) {
+		throw new Error(
+			`Failed to create organization membership. Errors: ${JSON.stringify(
+				membershipResult.errors,
+			)}`,
+		);
+	}
 
 	// Create event
 	const createEventResult = await mercuriusClient.mutate(Mutation_createEvent, {

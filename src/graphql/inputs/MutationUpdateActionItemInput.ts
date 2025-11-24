@@ -1,17 +1,18 @@
 import type { z } from "zod";
-import { actionsTableInsertSchema } from "~/src/drizzle/tables/actions";
+import { actionItemsTableInsertSchema } from "~/src/drizzle/tables/actionItems";
 import { builder } from "~/src/graphql/builder";
 
-export const MutationUpdateActionItemInputSchema = actionsTableInsertSchema
+export const MutationUpdateActionItemInputSchema = actionItemsTableInsertSchema
 	.pick({
 		postCompletionNotes: true,
 		preCompletionNotes: true,
 		categoryId: true,
-		assigneeId: true,
+		volunteerId: true,
+		volunteerGroupId: true,
 		isCompleted: true,
 	})
 	.extend({
-		id: actionsTableInsertSchema.shape.id.unwrap(), // require the id for update
+		id: actionItemsTableInsertSchema.shape.id.unwrap(), // require the id for update
 	});
 
 export const MutationUpdateActionItemInput = builder
@@ -33,8 +34,13 @@ export const MutationUpdateActionItemInput = builder
 			categoryId: t.id({
 				description: "Category identifier for the action item.",
 			}),
-			assigneeId: t.id({
-				description: "Identifier for the assignee of the action item.",
+			volunteerId: t.id({
+				description:
+					"Identifier for the volunteer assigned to the action item.",
+			}),
+			volunteerGroupId: t.id({
+				description:
+					"Identifier for the volunteer group assigned to the action item.",
 			}),
 			isCompleted: t.boolean({
 				description: "Completion status of the action item.",

@@ -4,7 +4,6 @@ import {
 	chatMembershipsTable,
 	chatMembershipsTableInsertSchema,
 } from "~/src/drizzle/tables/chatMemberships";
-import { User } from "~/src/graphql/types/User/User";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import {
 	defaultGraphQLConnectionArgumentsSchema,
@@ -13,6 +12,7 @@ import {
 } from "~/src/utilities/defaultGraphQLConnection";
 import envConfig from "~/src/utilities/graphqLimits";
 import { Chat } from "./Chat";
+import { ChatMember } from "./ChatMember";
 const membersArgumentsSchema = defaultGraphQLConnectionArgumentsSchema
 	.transform(transformDefaultGraphQLConnectionArguments)
 	.transform((arg, ctx) => {
@@ -155,6 +155,7 @@ Chat.implement({
 							columns: {
 								createdAt: true,
 								memberId: true,
+								role: true,
 							},
 							limit,
 							orderBy,
@@ -185,12 +186,12 @@ Chat.implement({
 									memberId: chatMembership.memberId,
 								}),
 							).toString("base64url"),
-						createNode: (chatMembership) => chatMembership.member,
+						createNode: (chatMembership) => chatMembership,
 						parsedArgs,
 						rawNodes: chatMemberships,
 					});
 				},
-				type: User,
+				type: ChatMember,
 			},
 			{
 				edgesField: {

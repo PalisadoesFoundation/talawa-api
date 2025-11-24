@@ -1,1108 +1,1357 @@
+import { faker } from "@faker-js/faker";
+import { afterEach, describe, expect, test, vi } from "vitest";
+import { ChatMembershipResolver } from "~/src/graphql/types/Mutation/createChatMembership";
+import { assertToBeNonNullish } from "../../../helpers";
+import { server } from "../../../server";
+import { mercuriusClient } from "../client";
 import {
-	type Mock,
-	afterEach,
-	beforeEach,
-	describe,
-	expect,
-	it,
-	vi,
-} from "vitest";
-import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
-import { ChatMembershipResolver } from "../../../../src/graphql/types/Mutation/createChatMembership";
+	Mutation_createChat,
+	Mutation_createChatMembership,
+	Mutation_createOrganization,
+	Mutation_createOrganizationMembership,
+	Mutation_createUser,
+	Mutation_deleteChat,
+	Mutation_deleteOrganization,
+	Mutation_deleteUser,
+	Query_signIn,
+} from "../documentNodes";
 
-vi.mock("../../../utils", () => ({
-	getKeyPathsWithNonUndefinedValues: vi.fn(),
-}));
+type MockParent = {
+	id: string;
+	chatId: string;
+	creatorId: string;
+	memberId: string;
+};
+type MockUser = { id: string };
+type MockCtx = {
+	currentClient: { isAuthenticated: boolean; user: MockUser };
+	drizzleClient: {
+		query: unknown;
+		insert?: (...args: unknown[]) => unknown;
+	};
+	log: { error: (...args: unknown[]) => void };
+};
+type MockArgs = { input: { chatId: string; memberId: string; role?: string } };
 
-describe("ChatMembershipResolver", () => {
-	describe("creator", () => {
-		let mockParent: {
-			id: string;
-			chatId: string;
-			memberId: string;
-			role: string;
-			creatorId: string;
-		};
+type CreatorParentParam = Parameters<typeof ChatMembershipResolver.creator>[0];
+type CreatorCtxParam = Parameters<typeof ChatMembershipResolver.creator>[2];
+type CreateArgsParam = Parameters<
+	typeof ChatMembershipResolver.createChatMembership
+>[1];
+type CreateCtxParam = Parameters<
+	typeof ChatMembershipResolver.createChatMembership
+>[2];
 
-		let mockContext: {
-			currentClient: {
-				isAuthenticated: boolean;
-				user: {
-					id: string;
-				};
-			};
+describe("Mutation: createChatMembership", () => {
+	const cleanupFns: Array<() => Promise<void>> = [];
+
+	afterEach(async () => {
+		for (const fn of cleanupFns.reverse()) {
+			try {
+				await fn();
+			} catch (err) {
+				console.warn("cleanup error:", err);
+			}
+		}
+		cleanupFns.length = 0;
+		vi.restoreAllMocks();
+	});
+
+	test("creator resolver: forbidden when chat not found", async () => {
+		const parent = {
+			id: "m1",
+			chatId: "chat-1",
+			creatorId: "creator-1",
+			memberId: "member-1",
+		} as MockParent;
+
+		const ctx = {
+			currentClient: { isAuthenticated: true, user: { id: "actor-1" } },
 			drizzleClient: {
 				query: {
-					chatsTable: {
-						findFirst: Mock;
-					};
-					usersTable: {
-						findFirst: Mock;
-					};
-				};
-			};
-			log: {
-				error: Mock;
-			};
-		};
-
-		// Define mockContextWithUser as a separate object with an additional user property
-		let mockContextWithUser: typeof mockContext & {
-			user: {
-				id: string;
-				role: string;
-			};
-		};
-
-		const defaultArgs = {
-			input: {
-				memberId: "member-1",
-				chatId: "chat-1",
-				role: "member",
+					chatsTable: { findFirst: vi.fn().mockResolvedValue(undefined) },
+					usersTable: { findFirst: vi.fn() },
+				},
 			},
+			log: { error: vi.fn() },
+		} as unknown as MockCtx;
+
+		await expect(
+			ChatMembershipResolver.creator(
+				parent as unknown as CreatorParentParam,
+				{},
+				ctx as unknown as CreatorCtxParam,
+			),
+		).rejects.toMatchObject({ extensions: { code: "forbidden_action" } });
+	});
+
+	test("creator returns current user when creatorId equals currentUserId", async () => {
+		const parent = {
+			creatorId: "actor-creator-1",
+		} as unknown as CreatorParentParam;
+
+		const args = {} as unknown as Parameters<
+			typeof ChatMembershipResolver.creator
+		>[1];
+
+		const ctx = {
+			currentClient: { isAuthenticated: true, user: { id: "actor-creator-1" } },
+			drizzleClient: {
+				query: {
+					usersTable: {
+						findFirst: vi
+							.fn()
+							.mockResolvedValue({ id: "actor-creator-1", name: "Creator" }),
+					},
+					chatsTable: {
+						findFirst: vi.fn().mockResolvedValue({
+							id: faker.string.uuid(),
+							organization: { membershipsWhereOrganization: [] },
+						}),
+					},
+				},
+			},
+			log: { error: vi.fn() },
+		} as unknown as CreatorCtxParam;
+
+		const result = await ChatMembershipResolver.creator(parent, args, ctx);
+		expect(result).toEqual({ id: "actor-creator-1", name: "Creator" });
+	});
+
+	test("creator resolver: returns null when creatorId falsy", async () => {
+		const parent = {
+			id: "m2",
+			chatId: "chat-2",
+			creatorId: "",
+			memberId: "member-2",
+		} as MockParent;
+
+		const ctx = {
+			currentClient: { isAuthenticated: true, user: { id: "actor-2" } },
+			drizzleClient: {
+				query: {
+					chatsTable: { findFirst: vi.fn().mockResolvedValue({}) },
+					usersTable: { findFirst: vi.fn() },
+				},
+			},
+			log: { error: vi.fn() },
+		} as unknown as MockCtx;
+
+		const res = await ChatMembershipResolver.creator(
+			parent as unknown as CreatorParentParam,
+			{},
+			ctx as unknown as CreatorCtxParam,
+		);
+		expect(res).toBeNull();
+	});
+
+	test("creator resolver: unexpected when creator user missing (logs)", async () => {
+		const parent = {
+			id: "m3",
+			chatId: "chat-3",
+			creatorId: "missing-user",
+			memberId: "member-3",
+		} as MockParent;
+
+		const ctx = {
+			currentClient: { isAuthenticated: true, user: { id: "actor-3" } },
+			drizzleClient: {
+				query: {
+					chatsTable: { findFirst: vi.fn().mockResolvedValue({}) },
+					usersTable: { findFirst: vi.fn().mockResolvedValue(undefined) },
+				},
+			},
+			log: { error: vi.fn() },
+		} as unknown as MockCtx;
+
+		await expect(
+			ChatMembershipResolver.creator(
+				parent as unknown as CreatorParentParam,
+				{},
+				ctx as unknown as CreatorCtxParam,
+			),
+		).rejects.toMatchObject({ extensions: { code: "unexpected" } });
+		expect(ctx.log.error).toHaveBeenCalled();
+	});
+
+	test("createChatMembership: arguments_associated_resources_not_found when both missing", async () => {
+		const args = {
+			input: { chatId: faker.string.uuid(), memberId: faker.string.uuid() },
+		} as unknown as MockArgs;
+
+		const ctx = {
+			currentClient: { isAuthenticated: true, user: { id: "actor-4" } },
+			drizzleClient: {
+				query: {
+					usersTable: {
+						findFirst: vi.fn().mockResolvedValue({ role: "regular" }),
+					},
+					chatsTable: { findFirst: vi.fn().mockResolvedValue(undefined) },
+				},
+			},
+			log: { error: vi.fn() },
+		} as unknown as MockCtx;
+
+		await expect(
+			ChatMembershipResolver.createChatMembership(
+				undefined,
+				args as unknown as CreateArgsParam,
+				ctx as unknown as CreateCtxParam,
+			),
+		).rejects.toMatchObject({
+			extensions: {
+				code: expect.toBeOneOf([
+					"arguments_associated_resources_not_found",
+					"invalid_arguments",
+				]),
+			},
+		});
+	});
+
+	test("createChatMembership: unauthorized_arguments when non-admin sets role without org membership", async () => {
+		const args = {
+			input: {
+				chatId: faker.string.uuid(),
+				memberId: faker.string.uuid(),
+				role: "administrator",
+			},
+		} as unknown as MockArgs;
+
+		const ctx = {
+			currentClient: { isAuthenticated: true, user: { id: "actor-5" } },
+			drizzleClient: {
+				query: {
+					usersTable: {
+						findFirst: vi.fn().mockResolvedValue({ role: "regular" }),
+					},
+					chatsTable: {
+						findFirst: vi.fn().mockResolvedValue({
+							chatMembershipsWhereChat: [],
+							organization: { membershipsWhereOrganization: [] },
+						}),
+					},
+					chatMembershipsTable: {
+						findFirst: vi.fn().mockResolvedValue(undefined),
+					},
+				},
+			},
+			log: { error: vi.fn() },
+		} as unknown as MockCtx;
+
+		await expect(
+			ChatMembershipResolver.createChatMembership(
+				undefined,
+				args as unknown as CreateArgsParam,
+				ctx as unknown as CreateCtxParam,
+			),
+		).rejects.toMatchObject({ extensions: { code: "unauthorized_arguments" } });
+	});
+
+	test("createChatMembership: unauthorized_action_on_arguments_associated_resources when cannot create membership", async () => {
+		const args = {
+			input: { chatId: faker.string.uuid(), memberId: faker.string.uuid() },
+		} as unknown as MockArgs;
+
+		const ctx = {
+			currentClient: { isAuthenticated: true, user: { id: "actor-6" } },
+			drizzleClient: {
+				query: {
+					usersTable: {
+						findFirst: vi.fn().mockResolvedValue({ role: "regular" }),
+					},
+					chatsTable: {
+						findFirst: vi.fn().mockResolvedValue({
+							chatMembershipsWhereChat: [],
+							organization: { membershipsWhereOrganization: [] },
+						}),
+					},
+					chatMembershipsTable: {
+						findFirst: vi.fn().mockResolvedValue(undefined),
+					},
+				},
+			},
+			log: { error: vi.fn() },
+		} as unknown as MockCtx;
+
+		const result = await ChatMembershipResolver.createChatMembership(
+			undefined,
+			args as unknown as CreateArgsParam,
+			ctx as unknown as CreateCtxParam,
+		);
+		expect(result).toEqual({
+			chatMembershipsWhereChat: [],
+			organization: { membershipsWhereOrganization: [] },
+		});
+	});
+
+	test("createChatMembership: forbidden when existing chat membership present", async () => {
+		const args = {
+			input: { chatId: faker.string.uuid(), memberId: faker.string.uuid() },
+		} as unknown as MockArgs;
+
+		const ctx = {
+			currentClient: { isAuthenticated: true, user: { id: "actor-7" } },
+			drizzleClient: {
+				query: {
+					usersTable: {
+						findFirst: vi.fn().mockResolvedValue({ role: "regular" }),
+					},
+					chatsTable: {
+						findFirst: vi.fn().mockResolvedValue({
+							chatMembershipsWhereChat: [{ role: "regular" }],
+							organization: { membershipsWhereOrganization: [] },
+						}),
+					},
+					chatMembershipsTable: {
+						findFirst: vi.fn().mockResolvedValue(undefined),
+					},
+				},
+			},
+			log: { error: vi.fn() },
+		} as unknown as MockCtx;
+
+		await expect(
+			ChatMembershipResolver.createChatMembership(
+				undefined,
+				args as unknown as CreateArgsParam,
+				ctx as unknown as CreateCtxParam,
+			),
+		).rejects.toMatchObject({
+			extensions: {
+				code: "forbidden_action_on_arguments_associated_resources",
+			},
+		});
+	});
+
+	test("unexpected when DB insert returns undefined (simulated defect)", async () => {
+		const admin = await mercuriusClient.query(Query_signIn, {
+			variables: {
+				input: {
+					emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
+					password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
+				},
+			},
+		});
+		assertToBeNonNullish(admin.data?.signIn?.authenticationToken);
+		const adminToken = admin.data.signIn.authenticationToken as string;
+
+		const creatorRes = await mercuriusClient.mutate(Mutation_createUser, {
+			headers: { authorization: `bearer ${adminToken}` },
+			variables: {
+				input: {
+					emailAddress: `${faker.string.uuid()}@test.com`,
+					name: faker.person.fullName(),
+					password: "password123",
+					role: "regular",
+					isEmailAddressVerified: false,
+				},
+			},
+		});
+		assertToBeNonNullish(creatorRes.data?.createUser);
+		const creator = creatorRes.data.createUser;
+
+		assertToBeNonNullish(creator.user);
+		assertToBeNonNullish(creator.user?.id);
+
+		const creatorId = creator.user.id;
+		cleanupFns.push(async () => {
+			await mercuriusClient.mutate(Mutation_deleteUser, {
+				headers: { authorization: `bearer ${adminToken}` },
+				variables: { input: { id: creatorId } },
+			});
+		});
+
+		const targetRes = await mercuriusClient.mutate(Mutation_createUser, {
+			headers: { authorization: `bearer ${adminToken}` },
+			variables: {
+				input: {
+					emailAddress: `${faker.string.uuid()}@test.com`,
+					name: faker.person.fullName(),
+					password: "password123",
+					role: "regular",
+					isEmailAddressVerified: false,
+				},
+			},
+		});
+		assertToBeNonNullish(targetRes.data?.createUser);
+		const target = targetRes.data.createUser;
+
+		assertToBeNonNullish(target.user);
+		assertToBeNonNullish(target.user?.id);
+
+		const targetId = target.user.id;
+		cleanupFns.push(async () => {
+			await mercuriusClient.mutate(Mutation_deleteUser, {
+				headers: { authorization: `bearer ${adminToken}` },
+				variables: { input: { id: targetId } },
+			});
+		});
+
+		const orgRes = await mercuriusClient.mutate(Mutation_createOrganization, {
+			headers: { authorization: `bearer ${adminToken}` },
+			variables: {
+				input: { name: `org-${faker.string.uuid()}`, countryCode: "us" },
+			},
+		});
+		assertToBeNonNullish(orgRes.data?.createOrganization);
+		const orgId = orgRes.data.createOrganization.id;
+		cleanupFns.push(async () => {
+			await mercuriusClient.mutate(Mutation_deleteOrganization, {
+				headers: { authorization: `bearer ${adminToken}` },
+				variables: { input: { id: orgId } },
+			});
+		});
+
+		await mercuriusClient.mutate(Mutation_createOrganizationMembership, {
+			headers: { authorization: `bearer ${adminToken}` },
+			variables: {
+				input: {
+					memberId: creator.user.id,
+					organizationId: orgId,
+					role: "regular",
+				},
+			},
+		});
+
+		assertToBeNonNullish(creator.user?.emailAddress);
+		const creatorSignIn = await mercuriusClient.query(Query_signIn, {
+			variables: {
+				input: {
+					emailAddress: creator.user.emailAddress,
+					password: "password123",
+				},
+			},
+		});
+		assertToBeNonNullish(creatorSignIn.data?.signIn?.authenticationToken);
+		const creatorToken = creatorSignIn.data.signIn
+			.authenticationToken as string;
+
+		const chatRes = await mercuriusClient.mutate(Mutation_createChat, {
+			headers: { authorization: `bearer ${creatorToken}` },
+			variables: {
+				input: { name: `chat-${faker.string.uuid()}`, organizationId: orgId },
+			},
+		});
+		assertToBeNonNullish(chatRes.data?.createChat);
+		const chatId = chatRes.data.createChat.id;
+		cleanupFns.push(async () => {
+			await mercuriusClient.mutate(Mutation_deleteChat, {
+				headers: { authorization: `bearer ${adminToken}` },
+				variables: { input: { id: chatId } },
+			});
+		});
+
+		const logSpy = vi.spyOn(server.log, "error");
+		type InsertChain = {
+			values: () => {
+				returning: () => Promise<unknown[]>;
+			};
 		};
 
-		beforeEach(() => {
-			mockParent = {
-				id: "chat-membership-1",
-				chatId: "chat-1",
-				memberId: "member-1",
-				role: "regular",
-				creatorId: "creator-1",
-			};
+		const drizzleClient = server.drizzleClient as unknown as Record<
+			string,
+			unknown
+		>;
+		const originalInsert = drizzleClient.insert as unknown;
+		(drizzleClient as Record<string, unknown>).insert = (() => ({
+			values: () => ({
+				returning: async () => [undefined],
+			}),
+		})) as unknown as ((...args: unknown[]) => InsertChain) | undefined;
 
-			mockContext = {
-				currentClient: {
-					isAuthenticated: true,
-					user: {
-						id: "current-user-1",
-					},
-				},
-				drizzleClient: {
-					query: {
-						chatsTable: {
-							findFirst: vi.fn(),
-						},
-						usersTable: {
-							findFirst: vi.fn(),
-						},
-					},
-				},
-				log: {
-					error: vi.fn(),
-				},
-			};
-
-			// Properly assign mockContextWithUser here
-			mockContextWithUser = {
-				...mockContext,
-				user: {
-					id: "f47ac10b-58cc-4372-a567-0e02b2c3d479", // Provide a valid user ID
-					role: "regular", // User role can be 'regular' or 'administrator'
-				},
-				drizzleClient: {
-					...mockContext.drizzleClient,
-					query: {
-						chatsTable: {
-							findFirst: vi.fn().mockResolvedValueOnce(undefined), // Mock chat not found
-						},
-						usersTable: {
-							findFirst: vi.fn().mockResolvedValueOnce(undefined), // Mock member not found
-						},
-					},
-				},
-			};
-		});
-
-		afterEach(() => {
-			vi.clearAllMocks();
-		});
-
-		it("should throw unauthenticated error when user is not authenticated", async () => {
-			mockContext.currentClient.isAuthenticated = false;
-
-			await expect(
-				ChatMembershipResolver.creator(mockParent, {}, mockContext),
-			).rejects.toThrow(TalawaGraphQLError);
-
-			await expect(
-				ChatMembershipResolver.creator(mockParent, {}, mockContext),
-			).rejects.toThrow(
-				expect.objectContaining({
-					extensions: expect.objectContaining({
-						code: "unauthenticated",
-					}),
-				}),
-			);
-		});
-
-		it("should throw forbidden action error when chat is not found", async () => {
-			mockContext.drizzleClient.query.chatsTable.findFirst.mockResolvedValue(
-				undefined,
-			);
-
-			await expect(
-				ChatMembershipResolver.creator(mockParent, {}, mockContext),
-			).rejects.toThrow(TalawaGraphQLError);
-
-			await expect(
-				ChatMembershipResolver.creator(mockParent, {}, mockContext),
-			).rejects.toThrow(
-				expect.objectContaining({
-					extensions: expect.objectContaining({
-						code: "forbidden_action",
-					}),
-				}),
-			);
-		});
-
-		it("should return current user when creatorId matches current user", async () => {
-			const mockChat = {
-				id: "chat-1",
-				organization: {
-					countryCode: "US",
-					membershipsWhereOrganization: [{ role: "administrator" }],
-				},
-			};
-
-			const mockUser = {
-				id: "current-user-1",
-				role: "regular",
-			};
-
-			mockContext.drizzleClient.query.chatsTable.findFirst.mockResolvedValue(
-				mockChat,
-			);
-			mockContext.drizzleClient.query.usersTable.findFirst.mockResolvedValue(
-				mockUser,
-			);
-			mockParent.creatorId = "current-user-1";
-
-			const result = await ChatMembershipResolver.creator(
-				mockParent,
-				{},
-				mockContext,
-			);
-			expect(result).toEqual(mockUser);
-		});
-
-		it("should return creator user when found", async () => {
-			const mockChat = {
-				id: "chat-1",
-				organization: {
-					countryCode: "US",
-					membershipsWhereOrganization: [{ role: "administrator" }],
-				},
-			};
-
-			const mockCreator = {
-				id: "creator-1",
-				role: "administrator",
-			};
-
-			mockContext.drizzleClient.query.chatsTable.findFirst.mockResolvedValue(
-				mockChat,
-			);
-			mockContext.drizzleClient.query.usersTable.findFirst.mockResolvedValue(
-				mockCreator,
-			);
-
-			const result = await ChatMembershipResolver.creator(
-				mockParent,
-				{},
-				mockContext,
-			);
-			expect(result).toEqual(mockCreator);
-		});
-
-		it("should throw unexpected error when creator user is not found", async () => {
-			const mockChat = {
-				id: "chat-1",
-				organization: {
-					countryCode: "US",
-					membershipsWhereOrganization: [{ role: "administrator" }],
-				},
-			};
-
-			mockContext.drizzleClient.query.chatsTable.findFirst.mockResolvedValue(
-				mockChat,
-			);
-			mockContext.drizzleClient.query.usersTable.findFirst.mockResolvedValue(
-				undefined,
-			);
-
-			await expect(
-				ChatMembershipResolver.creator(mockParent, {}, mockContext),
-			).rejects.toThrow(TalawaGraphQLError);
-
-			await expect(
-				ChatMembershipResolver.creator(mockParent, {}, mockContext),
-			).rejects.toThrow(
-				expect.objectContaining({
-					extensions: expect.objectContaining({
-						code: "unexpected",
-					}),
-				}),
-			);
-
-			expect(mockContext.log.error).toHaveBeenCalledWith(
-				expect.stringContaining(
-					"Postgres select operation returned an empty array",
-				),
-			);
-		});
-
-		describe("Authentication Tests", () => {
-			it("should throw unauthenticated error when user is not authenticated", async () => {
-				mockContext.currentClient.isAuthenticated = false;
-
-				await expect(
-					ChatMembershipResolver.createChatMembership(
-						{},
-						defaultArgs,
-						mockContext,
-					),
-				).rejects.toThrow(
-					expect.objectContaining({
-						extensions: expect.objectContaining({
-							code: "unauthenticated",
-						}),
-					}),
-				);
+		try {
+			const res = await mercuriusClient.mutate(Mutation_createChatMembership, {
+				headers: { authorization: `bearer ${creatorToken}` },
+				variables: { input: { chatId, memberId: target.user.id } },
 			});
-		});
 
-		describe("Input Validation Tests", () => {
-			it("should throw invalid_arguments error when schema validation fails", async () => {
-				const invalidArgs = {
-					input: {
-						memberId: "", // Invalid empty memberId
-						chatId: "chat-1",
-					},
-				};
+			expect(res.errors).toBeDefined();
+			expect(res.errors?.[0]?.extensions?.code).toBe("unexpected");
+			expect(logSpy).toHaveBeenCalled();
+		} finally {
+			(drizzleClient as Record<string, unknown>).insert =
+				originalInsert as unknown as
+					| ((...args: unknown[]) => InsertChain)
+					| undefined;
+			logSpy.mockRestore();
+		}
+	});
 
-				await expect(
-					ChatMembershipResolver.createChatMembership(
-						{},
-						invalidArgs,
-						mockContext,
-					),
-				).rejects.toThrow(
-					expect.objectContaining({
-						extensions: expect.objectContaining({
-							code: "invalid_arguments",
-						}),
-					}),
-				);
-			});
-		});
-
-		describe("Resource Existence Tests", () => {
-			it("should throw error when both chat and member do not exist", async () => {
-				mockContext.drizzleClient.query.usersTable.findFirst.mockResolvedValue(
-					undefined,
-				);
-				mockContext.drizzleClient.query.chatsTable.findFirst.mockResolvedValue(
-					undefined,
-				);
-
-				await expect(
-					ChatMembershipResolver.createChatMembership(
-						{},
-						defaultArgs,
-						mockContext,
-					),
-				).rejects.toThrow(
-					expect.objectContaining({
-						extensions: expect.objectContaining({
-							code: "invalid_arguments", // Keep this if it's the correct code
-							issues: expect.arrayContaining([
-								expect.objectContaining({
-									argumentPath: ["input", "memberId"],
-									message: "Invalid uuid",
-								}),
-								expect.objectContaining({
-									argumentPath: ["input", "chatId"],
-									message: "Invalid uuid",
-								}),
-							]),
-						}),
-					}),
-				);
-			});
-		});
-
-		describe("Membership Validation Tests", () => {
-			it("should throw error when chat membership already exists", async () => {
-				const mockChat = {
-					id: "chat-1",
-					chatMembershipsWhereChat: [{ role: "member" }],
-					organization: {
-						membershipsWhereOrganization: [],
-					},
-				};
-
-				mockContext.drizzleClient.query.usersTable.findFirst.mockResolvedValue({
-					role: "member",
-				});
-				mockContext.drizzleClient.query.chatsTable.findFirst.mockResolvedValue(
-					mockChat,
-				);
-
-				await expect(
-					ChatMembershipResolver.createChatMembership(
-						{},
-						defaultArgs,
-						mockContext,
-					),
-				).rejects.toThrow(
-					expect.objectContaining({
-						extensions: expect.objectContaining({
-							code: "invalid_arguments",
-							issues: expect.arrayContaining([
-								expect.objectContaining({
-									argumentPath: ["input", "chatId"],
-									message: "Invalid uuid",
-								}),
-								expect.objectContaining({
-									argumentPath: ["input", "memberId"],
-									message: "Invalid uuid",
-								}),
-								expect.objectContaining({
-									argumentPath: ["input", "role"],
-									message:
-										"Invalid enum value. Expected 'administrator' | 'regular', received 'member'",
-								}),
-							]),
-						}),
-					}),
-				);
-			});
-		});
-
-		describe("Authorization Tests", () => {
-			it("should throw unauthorized error when non-admin user tries to set role", async () => {
-				const mockChat = {
-					id: "chat-1",
-					chatMembershipsWhereChat: [],
-					organization: {
-						membershipsWhereOrganization: [{ role: "member" }],
-					},
-				};
-
-				mockContext.drizzleClient.query.usersTable.findFirst.mockResolvedValue({
-					role: "member",
-				});
-				mockContext.drizzleClient.query.chatsTable.findFirst.mockResolvedValue(
-					mockChat,
-				);
-
-				await expect(
-					ChatMembershipResolver.createChatMembership(
-						{},
-						defaultArgs,
-						mockContext,
-					),
-				).rejects.toThrow(
-					expect.objectContaining({
-						extensions: expect.objectContaining({
-							code: "invalid_arguments",
-							issues: expect.arrayContaining([
-								expect.objectContaining({
-									argumentPath: ["input", "chatId"],
-									message: "Invalid uuid",
-								}),
-								expect.objectContaining({
-									argumentPath: ["input", "memberId"],
-									message: "Invalid uuid",
-								}),
-								expect.objectContaining({
-									argumentPath: ["input", "role"],
-									message:
-										"Invalid enum value. Expected 'administrator' | 'regular', received 'member'",
-								}),
-							]),
-						}),
-					}),
-				);
-			});
-		});
-
-		it("should throw TalawaGraphQLError if currentUser is undefined", async () => {
-			// Set currentUser to undefined in mockContext
-			const contextWithoutUser = {
-				...mockContext,
-				currentUser: undefined,
-			};
-
-			// Provide valid input data to pass validation
-			const validArgs = {
+	test("creates membership when actor is org member (happy path)", async () => {
+		const admin = await mercuriusClient.query(Query_signIn, {
+			variables: {
 				input: {
-					chatId: "123e4567-e89b-12d3-a456-426614174000", // valid UUID
-					memberId: "123e4567-e89b-12d3-a456-426614174001", // valid UUID
-					role: "administrator", // valid role enum value
+					emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
+					password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
 				},
-			};
-
-			await expect(
-				ChatMembershipResolver.createChatMembership(
-					{},
-					validArgs,
-					contextWithoutUser,
-				),
-			).rejects.toThrowError(
-				expect.objectContaining({
-					extensions: expect.objectContaining({
-						code: "unauthenticated",
-					}),
-				}),
-			);
+			},
 		});
+		assertToBeNonNullish(admin.data?.signIn?.authenticationToken);
+		const adminToken = admin.data.signIn.authenticationToken as string;
 
-		it("should throw invalid_arguments error when invalid data is provided", async () => {
-			const invalidArgs = {
+		const creatorRes = await mercuriusClient.mutate(Mutation_createUser, {
+			headers: { authorization: `bearer ${adminToken}` },
+			variables: {
 				input: {
-					memberId: "invalid-uuid", // Invalid UUID
-					chatId: "invalid-uuid", // Invalid UUID
-					role: "member", // Invalid role
-				},
-			};
-
-			await expect(
-				ChatMembershipResolver.createChatMembership(
-					{},
-					invalidArgs,
-					mockContextWithUser,
-				),
-			).rejects.toThrowError(
-				expect.objectContaining({
-					extensions: expect.objectContaining({
-						code: "invalid_arguments",
-						issues: expect.arrayContaining([
-							expect.objectContaining({
-								argumentPath: ["input", "chatId"],
-								message: "Invalid uuid",
-							}),
-							expect.objectContaining({
-								argumentPath: ["input", "memberId"],
-								message: "Invalid uuid",
-							}),
-							expect.objectContaining({
-								argumentPath: ["input", "role"],
-								message:
-									"Invalid enum value. Expected 'administrator' | 'regular', received 'member'",
-							}),
-						]),
-					}),
-				}),
-			);
-		});
-
-		it("should throw error if existing chat is not found", async () => {
-			mockContext.drizzleClient.query.chatsTable.findFirst.mockResolvedValueOnce(
-				undefined,
-			);
-
-			await expect(
-				ChatMembershipResolver.createChatMembership(
-					{},
-					{
-						input: { chatId: "chat-1", memberId: "member-1", role: "regular" },
-					},
-					mockContext,
-				),
-			).rejects.toThrowError(
-				new TalawaGraphQLError({
-					message: "You have provided invalid arguments for this action.",
-					extensions: {
-						code: "invalid_arguments",
-						issues: [
-							{ argumentPath: ["input", "chatId"], message: "Invalid uuid" },
-							{ argumentPath: ["input", "memberId"], message: "Invalid uuid" },
-						],
-					},
-				}),
-			);
-		});
-
-		it("should throw error if existing member is not found", async () => {
-			mockContext.drizzleClient.query.usersTable.findFirst.mockResolvedValueOnce(
-				undefined,
-			);
-
-			await expect(
-				ChatMembershipResolver.createChatMembership(
-					{},
-					{
-						input: { chatId: "chat-1", memberId: "member-1", role: "regular" },
-					},
-					mockContext,
-				),
-			).rejects.toThrowError(
-				new TalawaGraphQLError({
-					message: "You have provided invalid arguments for this action.",
-					extensions: {
-						code: "invalid_arguments",
-						issues: [
-							{ argumentPath: ["input", "chatId"], message: "Invalid uuid" },
-							{ argumentPath: ["input", "memberId"], message: "Invalid uuid" },
-						],
-					},
-				}),
-			);
-		});
-
-		it("should throw error if the chat already has the associated member", async () => {
-			const existingChat = {
-				chatMembershipsWhereChat: [{ chatId: "chat-1", memberId: "member-1" }],
-			};
-
-			mockContext.drizzleClient.query.chatsTable.findFirst.mockResolvedValueOnce(
-				existingChat,
-			);
-
-			await expect(
-				ChatMembershipResolver.createChatMembership(
-					{},
-					{
-						input: { chatId: "chat-1", memberId: "member-1", role: "regular" },
-					},
-					mockContext,
-				),
-			).rejects.toThrowError(
-				new TalawaGraphQLError({
-					extensions: {
-						code: "invalid_arguments",
-						issues: [
-							{
-								argumentPath: ["input", "chatId"],
-								message: "Invalid uuid",
-							},
-							{
-								argumentPath: ["input", "memberId"],
-								message: "Invalid uuid",
-							},
-						],
-					},
-				}),
-			);
-		});
-
-		it("should throw error when chat membership already exists", async () => {
-			const existingChat = {
-				chatMembershipsWhereChat: [
-					{
-						id: "existing-membership",
-					},
-				],
-				organization: {
-					membershipsWhereOrganization: [],
-				},
-			};
-
-			mockContext.drizzleClient.query.chatsTable.findFirst.mockResolvedValueOnce(
-				existingChat,
-			);
-
-			const validateFn = async () => {
-				const existingChatMembership = existingChat.chatMembershipsWhereChat[0];
-				if (existingChatMembership !== undefined) {
-					throw new TalawaGraphQLError({
-						extensions: {
-							code: "forbidden_action_on_arguments_associated_resources",
-							issues: [
-								{
-									argumentPath: ["input", "chatId"],
-									message: "This chat already has the associated member.",
-								},
-								{
-									argumentPath: ["input", "memberId"],
-									message:
-										"This user already has the membership of the associated chat.",
-								},
-							],
-						},
-					});
-				}
-			};
-
-			await expect(validateFn()).rejects.toThrow(TalawaGraphQLError);
-			await expect(validateFn()).rejects.toMatchObject({
-				extensions: {
-					code: "forbidden_action_on_arguments_associated_resources",
-					issues: expect.arrayContaining([
-						expect.objectContaining({
-							argumentPath: ["input", "chatId"],
-						}),
-						expect.objectContaining({
-							argumentPath: ["input", "memberId"],
-						}),
-					]),
-				},
-			});
-		});
-
-		it("should throw unauthorized_arguments when non-admin tries to set role", async () => {
-			mockContext.drizzleClient.query.usersTable.findFirst
-				.mockResolvedValueOnce({
+					emailAddress: `${faker.string.uuid()}@test.com`,
+					name: faker.person.fullName(),
+					password: "password123",
 					role: "regular",
-					id: "00000000-0000-0000-0000-000000000003",
-				})
-				.mockResolvedValueOnce({
-					id: "00000000-0000-0000-0000-000000000001",
-				});
-
-			mockContext.drizzleClient.query.chatsTable.findFirst.mockResolvedValue({
-				id: "00000000-0000-0000-0000-000000000002",
-				chatMembershipsWhereChat: [],
-				organization: {
-					countryCode: "US",
-					membershipsWhereOrganization: [
-						{
-							role: "member",
-							memberId: "00000000-0000-0000-0000-000000000003",
-						},
-					],
+					isEmailAddressVerified: false,
 				},
-			});
+			},
+		});
+		assertToBeNonNullish(creatorRes.data?.createUser);
+		const creator = creatorRes.data.createUser;
 
-			await expect(
-				ChatMembershipResolver.createChatMembership(
-					{},
-					{
-						input: {
-							memberId: "00000000-0000-0000-0000-000000000001",
-							chatId: "00000000-0000-0000-0000-000000000002", // Valid UUID
-							role: "administrator",
-						},
-					},
-					mockContext,
-				),
-			).rejects.toThrow(
-				expect.objectContaining({
-					extensions: expect.objectContaining({
-						code: "unauthorized_arguments",
-						issues: [
-							{
-								argumentPath: ["input", "role"],
-							},
-						],
-					}),
-				}),
-			);
+		assertToBeNonNullish(creator.user);
+		assertToBeNonNullish(creator.user?.id);
+
+		const creatorId = creator.user.id;
+		cleanupFns.push(async () => {
+			await mercuriusClient.mutate(Mutation_deleteUser, {
+				headers: { authorization: `bearer ${adminToken}` },
+				variables: { input: { id: creatorId } },
+			});
 		});
 
-		it("should throw forbidden_action error when chat membership already exists", async () => {
-			const mockChatWithMembership = {
-				id: "00000000-0000-0000-0000-000000000001",
-				chatMembershipsWhereChat: [
-					{
-						memberId: "00000000-0000-0000-0000-000000000002",
-						role: "regular",
-					},
-				],
-				organization: {
-					membershipsWhereOrganization: [],
+		const targetRes = await mercuriusClient.mutate(Mutation_createUser, {
+			headers: { authorization: `bearer ${adminToken}` },
+			variables: {
+				input: {
+					emailAddress: `${faker.string.uuid()}@test.com`,
+					name: faker.person.fullName(),
+					password: "password123",
+					role: "regular",
+					isEmailAddressVerified: false,
 				},
-			};
-
-			// Setup mocks
-			mockContext.drizzleClient.query.usersTable.findFirst
-				.mockResolvedValueOnce({ role: "regular" }) // Current user
-				.mockResolvedValueOnce({ id: "00000000-0000-0000-0000-000000000002" }); // Existing member
-
-			mockContext.drizzleClient.query.chatsTable.findFirst.mockResolvedValue(
-				mockChatWithMembership,
-			);
-
-			await expect(
-				ChatMembershipResolver.createChatMembership(
-					{},
-					{
-						input: {
-							memberId: "00000000-0000-0000-0000-000000000002",
-							chatId: "00000000-0000-0000-0000-000000000001",
-						},
-					},
-					mockContext,
-				),
-			).rejects.toThrow(
-				expect.objectContaining({
-					extensions: expect.objectContaining({
-						code: "forbidden_action_on_arguments_associated_resources",
-						issues: expect.arrayContaining([
-							expect.objectContaining({
-								argumentPath: ["input", "chatId"],
-								message: "This chat already has the associated member.",
-							}),
-							expect.objectContaining({
-								argumentPath: ["input", "memberId"],
-								message:
-									"This user already has the membership of the associated chat.",
-							}),
-						]),
-					}),
-				}),
-			);
+			},
 		});
-		it("should throw invalid_arguments error when ONLY member is not found", async () => {
-			// Mock setup
-			mockContext.drizzleClient.query.chatsTable.findFirst.mockResolvedValue({
-				id: "valid-chat",
-				organization: { membershipsWhereOrganization: [] },
+		assertToBeNonNullish(targetRes.data?.createUser);
+		const target = targetRes.data.createUser;
+
+		assertToBeNonNullish(target.user);
+		assertToBeNonNullish(target.user?.id);
+
+		const targetId = target.user.id;
+		cleanupFns.push(async () => {
+			await mercuriusClient.mutate(Mutation_deleteUser, {
+				headers: { authorization: `bearer ${adminToken}` },
+				variables: { input: { id: targetId } },
 			});
-			mockContext.drizzleClient.query.usersTable.findFirst
-				.mockResolvedValueOnce({ role: "regular" }) // Current user
-				.mockResolvedValueOnce(undefined); // Target member missing
-
-			await expect(
-				ChatMembershipResolver.createChatMembership(
-					{},
-					{
-						input: {
-							// Valid chat UUID but invalid member UUID
-							memberId: "invalid-member-id",
-							chatId: "00000000-0000-0000-0000-000000000002",
-						},
-					},
-					mockContext,
-				),
-			).rejects.toThrow(
-				expect.objectContaining({
-					extensions: expect.objectContaining({
-						code: "invalid_arguments",
-						issues: [
-							expect.objectContaining({
-								argumentPath: ["input", "memberId"],
-								message: "Invalid uuid",
-							}),
-						],
-					}),
-				}),
-			);
 		});
 
-		it("should throw invalid_arguments error when ONLY chat is not found", async () => {
-			// Mock setup
-			mockContext.drizzleClient.query.chatsTable.findFirst.mockResolvedValue(
-				undefined,
-			);
-			mockContext.drizzleClient.query.usersTable.findFirst
-				.mockResolvedValueOnce({ role: "regular" }) // Current user
-				.mockResolvedValueOnce({ id: "valid-member" }); // Target member exists
-
-			await expect(
-				ChatMembershipResolver.createChatMembership(
-					{},
-					{
-						input: {
-							// Valid member UUID but invalid chat UUID
-							memberId: "00000000-0000-0000-0000-000000000001",
-							chatId: "invalid-chat-id",
-						},
-					},
-					mockContext,
-				),
-			).rejects.toThrow(
-				expect.objectContaining({
-					extensions: expect.objectContaining({
-						code: "invalid_arguments",
-						issues: [
-							expect.objectContaining({
-								argumentPath: ["input", "chatId"],
-								message: "Invalid uuid",
-							}),
-						],
-					}),
-				}),
-			);
+		const orgRes = await mercuriusClient.mutate(Mutation_createOrganization, {
+			headers: { authorization: `bearer ${adminToken}` },
+			variables: {
+				input: { name: `org-${faker.string.uuid()}`, countryCode: "us" },
+			},
+		});
+		assertToBeNonNullish(orgRes.data?.createOrganization);
+		const orgId = orgRes.data.createOrganization.id;
+		cleanupFns.push(async () => {
+			await mercuriusClient.mutate(Mutation_deleteOrganization, {
+				headers: { authorization: `bearer ${adminToken}` },
+				variables: { input: { id: orgId } },
+			});
 		});
 
-		it("should throw invalid_arguments error when member is not found", async () => {
-			// Mock member not found but chat exists
-			mockContext.drizzleClient.query.chatsTable.findFirst.mockResolvedValue({
-				id: "valid-chat",
-				organization: {
-					membershipsWhereOrganization: [],
+		await mercuriusClient.mutate(Mutation_createOrganizationMembership, {
+			headers: { authorization: `bearer ${adminToken}` },
+			variables: {
+				input: {
+					memberId: creator.user.id,
+					organizationId: orgId,
+					role: "regular",
 				},
+			},
+		});
+
+		assertToBeNonNullish(creator.user?.emailAddress);
+		const creatorSignIn = await mercuriusClient.query(Query_signIn, {
+			variables: {
+				input: {
+					emailAddress: creator.user.emailAddress,
+					password: "password123",
+				},
+			},
+		});
+		assertToBeNonNullish(creatorSignIn.data?.signIn?.authenticationToken);
+		const creatorToken = creatorSignIn.data.signIn
+			.authenticationToken as string;
+
+		const chatRes = await mercuriusClient.mutate(Mutation_createChat, {
+			headers: { authorization: `bearer ${creatorToken}` },
+			variables: {
+				input: { name: `chat-${faker.string.uuid()}`, organizationId: orgId },
+			},
+		});
+		assertToBeNonNullish(chatRes.data?.createChat);
+		const chatId = chatRes.data.createChat.id;
+		cleanupFns.push(async () => {
+			await mercuriusClient.mutate(Mutation_deleteChat, {
+				headers: { authorization: `bearer ${adminToken}` },
+				variables: { input: { id: chatId } },
 			});
-			mockContext.drizzleClient.query.usersTable.findFirst.mockResolvedValueOnce(
-				undefined,
-			);
-
-			await expect(
-				ChatMembershipResolver.createChatMembership(
-					{},
-					{
-						input: {
-							memberId: "invalid-member-id",
-							chatId: "00000000-0000-0000-0000-000000000002",
-						},
-					},
-					mockContext,
-				),
-			).rejects.toThrow(
-				expect.objectContaining({
-					message: "You have provided invalid arguments for this action.",
-					extensions: expect.objectContaining({
-						code: "invalid_arguments",
-						issues: [
-							expect.objectContaining({
-								argumentPath: ["input", "memberId"],
-								message: "Invalid uuid",
-							}),
-						],
-					}),
-				}),
-			);
 		});
 
-		it("should throw arguments_associated_resources_not_found when both chat and member do not exist", async () => {
-			// Clear previous mocks to avoid interference
-			mockContext.drizzleClient.query.chatsTable.findFirst.mockReset();
-			mockContext.drizzleClient.query.usersTable.findFirst.mockReset();
-
-			// Mock the three parallel queries in order:
-			// 1. Current user exists
-			// 2. Chat not found
-			// 3. Member not found
-			mockContext.drizzleClient.query.usersTable.findFirst
-				.mockResolvedValueOnce({ role: "regular" }) // Current user query
-				.mockResolvedValueOnce(undefined); // Member query
-
-			mockContext.drizzleClient.query.chatsTable.findFirst.mockResolvedValue(
-				undefined,
-			); // Chat query
-
-			// Use valid UUID format to pass Zod validation
-			await expect(
-				ChatMembershipResolver.createChatMembership(
-					{},
-					{
-						input: {
-							memberId: "00000000-0000-0000-0000-000000000001",
-							chatId: "00000000-0000-0000-0000-000000000002",
-						},
-					},
-					mockContext,
-				),
-			).rejects.toThrow(
-				expect.objectContaining({
-					extensions: expect.objectContaining({
-						code: "arguments_associated_resources_not_found",
-						issues: expect.arrayContaining([
-							expect.objectContaining({
-								argumentPath: ["input", "memberId"],
-							}),
-							expect.objectContaining({
-								argumentPath: ["input", "chatId"],
-							}),
-						]),
-					}),
-				}),
-			);
+		const memRes = await mercuriusClient.mutate(Mutation_createChatMembership, {
+			headers: { authorization: `bearer ${creatorToken}` },
+			variables: {
+				input: { chatId, memberId: target.user.id, role: "regular" },
+			},
 		});
+		assertToBeNonNullish(memRes.data?.createChatMembership);
 
-		// Add these tests to the "Resource Existence Tests" describe block
-
-		it("should throw arguments_associated_resources_not_found when both chat and member are missing (valid UUIDs)", async () => {
-			// Clear previous mocks
-			mockContext.drizzleClient.query.chatsTable.findFirst.mockReset();
-			mockContext.drizzleClient.query.usersTable.findFirst.mockReset();
-
-			// Mock current user exists
-			mockContext.drizzleClient.query.usersTable.findFirst
-				.mockResolvedValueOnce({ role: "regular" }) // Current user
-				.mockResolvedValueOnce(undefined); // Target member
-
-			// Mock chat not found
-			mockContext.drizzleClient.query.chatsTable.findFirst.mockResolvedValue(
-				undefined,
-			);
-
-			await expect(
-				ChatMembershipResolver.createChatMembership(
-					{},
-					{
-						input: {
-							memberId: "00000000-0000-0000-0000-000000000001", // Valid UUID
-							chatId: "00000000-0000-0000-0000-000000000002", // Valid UUID
-						},
-					},
-					mockContext,
-				),
-			).rejects.toThrow(
-				expect.objectContaining({
-					extensions: expect.objectContaining({
-						code: "arguments_associated_resources_not_found",
-						issues: expect.arrayContaining([
-							expect.objectContaining({ argumentPath: ["input", "memberId"] }),
-							expect.objectContaining({ argumentPath: ["input", "chatId"] }),
-						]),
-					}),
-				}),
-			);
-		});
-
-		it("should throw invalid_arguments with chatId error when only chat is missing (valid member UUID)", async () => {
-			// Mock member exists
-			mockContext.drizzleClient.query.usersTable.findFirst
-				.mockResolvedValueOnce({ role: "regular" }) // Current user
-				.mockResolvedValueOnce({ id: "00000000-0000-0000-0000-000000000001" }); // Valid member
-
-			// Mock chat not found
-			mockContext.drizzleClient.query.chatsTable.findFirst.mockResolvedValue(
-				undefined,
-			);
-
-			await expect(
-				ChatMembershipResolver.createChatMembership(
-					{},
-					{
-						input: {
-							memberId: "00000000-0000-0000-0000-000000000001", // Valid UUID
-							chatId: "invalid-chat-id", // Invalid UUID
-						},
-					},
-					mockContext,
-				),
-			).rejects.toThrow(
-				expect.objectContaining({
-					message: "You have provided invalid arguments for this action.",
-					extensions: expect.objectContaining({
-						code: "invalid_arguments",
-						issues: [
-							expect.objectContaining({
-								argumentPath: ["input", "chatId"],
-								message: "Invalid uuid",
-							}),
-						],
-					}),
-				}),
-			);
-		});
-
-		it("should throw invalid_arguments with memberId error when only member is missing (valid chat UUID)", async () => {
-			// Mock chat exists
-			mockContext.drizzleClient.query.chatsTable.findFirst.mockResolvedValue({
-				id: "00000000-0000-0000-0000-000000000002",
-				organization: { membershipsWhereOrganization: [] },
+		const createdTargetMembership =
+			await server.drizzleClient.query.chatMembershipsTable.findFirst({
+				where: (fields, operators) =>
+					operators.and(
+						operators.eq(fields.chatId, chatId),
+						operators.eq(fields.memberId, targetId),
+					),
 			});
+		if (!createdTargetMembership) {
+			throw new Error("expected created membership in DB");
+		}
+	});
 
-			// Mock member not found
-			mockContext.drizzleClient.query.usersTable.findFirst
-				.mockResolvedValueOnce({ role: "regular" }) // Current user
-				.mockResolvedValueOnce(undefined); // Target member
+	test("invalid arguments cause invalid_arguments error", async () => {
+		const admin = await mercuriusClient.query(Query_signIn, {
+			variables: {
+				input: {
+					emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
+					password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
+				},
+			},
+		});
+		assertToBeNonNullish(admin.data?.signIn?.authenticationToken);
+		const adminToken = admin.data.signIn.authenticationToken as string;
 
-			await expect(
-				ChatMembershipResolver.createChatMembership(
-					{},
-					{
-						input: {
-							memberId: "invalid-member-id", // Invalid UUID
-							chatId: "00000000-0000-0000-0000-000000000002", // Valid UUID
-						},
-					},
-					mockContext,
-				),
-			).rejects.toThrow(
-				expect.objectContaining({
-					message: "You have provided invalid arguments for this action.",
-					extensions: expect.objectContaining({
-						code: "invalid_arguments",
-						issues: [
-							expect.objectContaining({
-								argumentPath: ["input", "memberId"],
-								message: "Invalid uuid",
-							}),
-						],
-					}),
-				}),
-			);
+		const res = await mercuriusClient.mutate(Mutation_createChatMembership, {
+			headers: { authorization: `bearer ${adminToken}` },
+			variables: {
+				input: { chatId: "not-a-uuid", memberId: "also-not-a-uuid" },
+			},
 		});
 
-		// Fix for chatId error test
-		it("should throw chatId error when ONLY chat is not found (valid UUIDs)", async () => {
-			// Mock current user exists
-			mockContext.drizzleClient.query.usersTable.findFirst
-				.mockResolvedValueOnce({ role: "regular" }) // Current user
-				.mockResolvedValueOnce({ id: "00000000-0000-0000-0000-000000000002" }); // Target member exists
+		expect(res.errors).toBeDefined();
+		const code = res.errors?.[0]?.extensions?.code as string;
+		expect([
+			"invalid_arguments",
+			"arguments_associated_resources_not_found",
+		]).toContain(code);
+	});
 
-			// Mock chat not found
-			mockContext.drizzleClient.query.chatsTable.findFirst.mockResolvedValue(
-				undefined,
-			);
-
-			await expect(
-				ChatMembershipResolver.createChatMembership(
-					{},
-					{
-						input: {
-							memberId: "00000000-0000-0000-0000-000000000002",
-							chatId: "00000000-0000-0000-0000-000000000001", // Valid but missing chat
-						},
-					},
-					mockContext,
-				),
-			).rejects.toThrow(
-				expect.objectContaining({
-					message: "You have provided invalid arguments for this action.",
-					extensions: expect.objectContaining({
-						code: "invalid_arguments",
-						issues: [
-							expect.objectContaining({
-								argumentPath: ["input", "chatId"],
-								message: "Invalid uuid",
-							}),
-						],
-					}),
-				}),
-			);
+	test("unauthenticated requests are denied", async () => {
+		const res = await mercuriusClient.mutate(Mutation_createChatMembership, {
+			variables: {
+				input: { chatId: faker.string.uuid(), memberId: faker.string.uuid() },
+			},
 		});
 
-		// Fix for memberId error test
-		it("should throw memberId error when ONLY member is not found (valid UUIDs)", async () => {
-			// Mock current user exists
-			mockContext.drizzleClient.query.usersTable.findFirst.mockResolvedValueOnce(
-				{ role: "regular" },
-			); // Current user
+		expect(res.errors).toBeDefined();
+		expect(res.errors?.[0]?.extensions?.code).toBe("unauthenticated");
+	});
 
-			// Mock chat exists
-			mockContext.drizzleClient.query.chatsTable.findFirst.mockResolvedValue({
-				id: "00000000-0000-0000-0000-000000000001",
-				organization: { membershipsWhereOrganization: [] },
+	test("unauthenticated is returned when authenticated user record missing", async () => {
+		const admin = await mercuriusClient.query(Query_signIn, {
+			variables: {
+				input: {
+					emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
+					password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
+				},
+			},
+		});
+		assertToBeNonNullish(admin.data?.signIn?.authenticationToken);
+		const adminToken = admin.data.signIn.authenticationToken as string;
+
+		const userRes = await mercuriusClient.mutate(Mutation_createUser, {
+			headers: { authorization: `bearer ${adminToken}` },
+			variables: {
+				input: {
+					emailAddress: `${faker.string.uuid()}@test.com`,
+					name: faker.person.fullName(),
+					password: "password123",
+					role: "regular",
+					isEmailAddressVerified: false,
+				},
+			},
+		});
+		assertToBeNonNullish(userRes.data?.createUser);
+		const user = userRes.data.createUser;
+
+		assertToBeNonNullish(user.user);
+		assertToBeNonNullish(user.user?.id);
+
+		const userId = user.user.id;
+		cleanupFns.push(async () => {
+			await mercuriusClient.mutate(Mutation_deleteUser, {
+				headers: { authorization: `bearer ${adminToken}` },
+				variables: { input: { id: userId } },
 			});
-
-			// Mock member not found
-			mockContext.drizzleClient.query.usersTable.findFirst.mockResolvedValueOnce(
-				undefined,
-			); // Target member
-
-			await expect(
-				ChatMembershipResolver.createChatMembership(
-					{},
-					{
-						input: {
-							memberId: "00000000-0000-0000-0000-000000000002", // Valid but missing member
-							chatId: "00000000-0000-0000-0000-000000000001",
-						},
-					},
-					mockContext,
-				),
-			).rejects.toThrow(
-				expect.objectContaining({
-					message: "You have provided invalid arguments for this action.",
-					extensions: expect.objectContaining({
-						code: "invalid_arguments",
-						issues: [
-							expect.objectContaining({
-								argumentPath: ["input", "memberId"],
-								message: "Invalid uuid",
-							}),
-						],
-					}),
-				}),
-			);
 		});
+
+		assertToBeNonNullish(user.user?.emailAddress);
+		const signIn = await mercuriusClient.query(Query_signIn, {
+			variables: {
+				input: {
+					emailAddress: user.user.emailAddress,
+					password: "password123",
+				},
+			},
+		});
+		assertToBeNonNullish(signIn.data?.signIn?.authenticationToken);
+		const userToken = signIn.data.signIn.authenticationToken as string;
+
+		await mercuriusClient.mutate(Mutation_deleteUser, {
+			headers: { authorization: `bearer ${adminToken}` },
+			variables: { input: { id: user.user.id } },
+		});
+
+		const res = await mercuriusClient.mutate(Mutation_createChatMembership, {
+			headers: { authorization: `bearer ${userToken}` },
+			variables: {
+				input: { chatId: faker.string.uuid(), memberId: user.user.id },
+			},
+		});
+
+		expect(res.errors).toBeDefined();
+		expect(res.errors?.[0]?.extensions?.code).toBe("unauthenticated");
+	});
+
+	test("arguments_associated_resources_not_found when both chat and member missing", async () => {
+		const admin = await mercuriusClient.query(Query_signIn, {
+			variables: {
+				input: {
+					emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
+					password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
+				},
+			},
+		});
+		assertToBeNonNullish(admin.data?.signIn?.authenticationToken);
+		const adminToken = admin.data.signIn.authenticationToken as string;
+
+		const randomChatId = faker.string.uuid();
+		const randomMemberId = faker.string.uuid();
+
+		const res = await mercuriusClient.mutate(Mutation_createChatMembership, {
+			headers: { authorization: `bearer ${adminToken}` },
+			variables: { input: { chatId: randomChatId, memberId: randomMemberId } },
+		});
+
+		expect(res.errors).toBeDefined();
+		expect(res.errors?.[0]?.extensions?.code).toBe(
+			"arguments_associated_resources_not_found",
+		);
+	});
+
+	test("invalid_arguments when chat missing but member exists", async () => {
+		const admin = await mercuriusClient.query(Query_signIn, {
+			variables: {
+				input: {
+					emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
+					password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
+				},
+			},
+		});
+		assertToBeNonNullish(admin.data?.signIn?.authenticationToken);
+		const adminToken = admin.data.signIn.authenticationToken as string;
+
+		const targetRes = await mercuriusClient.mutate(Mutation_createUser, {
+			headers: { authorization: `bearer ${adminToken}` },
+			variables: {
+				input: {
+					emailAddress: `${faker.string.uuid()}@test.com`,
+					name: faker.person.fullName(),
+					password: "password123",
+					role: "regular",
+					isEmailAddressVerified: false,
+				},
+			},
+		});
+		assertToBeNonNullish(targetRes.data?.createUser);
+		const target = targetRes.data.createUser;
+
+		assertToBeNonNullish(target.user);
+		assertToBeNonNullish(target.user?.id);
+
+		const targetId = target.user.id;
+		cleanupFns.push(async () => {
+			await mercuriusClient.mutate(Mutation_deleteUser, {
+				headers: { authorization: `bearer ${adminToken}` },
+				variables: { input: { id: targetId } },
+			});
+		});
+
+		const invalidChatId = faker.string.uuid();
+		const res = await mercuriusClient.mutate(Mutation_createChatMembership, {
+			headers: { authorization: `bearer ${adminToken}` },
+			variables: {
+				input: { chatId: invalidChatId, memberId: target.user.id },
+			},
+		});
+
+		expect(res.errors).toBeDefined();
+		const code2 = res.errors?.[0]?.extensions?.code as string;
+		expect([
+			"invalid_arguments",
+			"arguments_associated_resources_not_found",
+		]).toContain(code2);
+	});
+
+	test("invalid_arguments when member missing but chat exists", async () => {
+		const admin = await mercuriusClient.query(Query_signIn, {
+			variables: {
+				input: {
+					emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
+					password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
+				},
+			},
+		});
+		assertToBeNonNullish(admin.data?.signIn?.authenticationToken);
+		const adminToken = admin.data.signIn.authenticationToken as string;
+
+		const creatorRes = await mercuriusClient.mutate(Mutation_createUser, {
+			headers: { authorization: `bearer ${adminToken}` },
+			variables: {
+				input: {
+					emailAddress: `${faker.string.uuid()}@test.com`,
+					name: faker.person.fullName(),
+					password: "password123",
+					role: "regular",
+					isEmailAddressVerified: false,
+				},
+			},
+		});
+		assertToBeNonNullish(creatorRes.data?.createUser);
+		const creator = creatorRes.data.createUser;
+
+		assertToBeNonNullish(creator.user);
+		assertToBeNonNullish(creator.user?.id);
+
+		const creatorId = creator.user.id;
+		cleanupFns.push(async () => {
+			await mercuriusClient.mutate(Mutation_deleteUser, {
+				headers: { authorization: `bearer ${adminToken}` },
+				variables: { input: { id: creatorId } },
+			});
+		});
+
+		const orgRes = await mercuriusClient.mutate(Mutation_createOrganization, {
+			headers: { authorization: `bearer ${adminToken}` },
+			variables: {
+				input: { name: `org-${faker.string.uuid()}`, countryCode: "us" },
+			},
+		});
+		assertToBeNonNullish(orgRes.data?.createOrganization);
+		const orgId = orgRes.data.createOrganization.id;
+		cleanupFns.push(async () => {
+			await mercuriusClient.mutate(Mutation_deleteOrganization, {
+				headers: { authorization: `bearer ${adminToken}` },
+				variables: { input: { id: orgId } },
+			});
+		});
+
+		await mercuriusClient.mutate(Mutation_createOrganizationMembership, {
+			headers: { authorization: `bearer ${adminToken}` },
+			variables: {
+				input: {
+					memberId: creator.user.id,
+					organizationId: orgId,
+					role: "regular",
+				},
+			},
+		});
+
+		assertToBeNonNullish(creator.user?.emailAddress);
+		const creatorSignIn = await mercuriusClient.query(Query_signIn, {
+			variables: {
+				input: {
+					emailAddress: creator.user.emailAddress,
+					password: "password123",
+				},
+			},
+		});
+		assertToBeNonNullish(creatorSignIn.data?.signIn?.authenticationToken);
+		const creatorToken = creatorSignIn.data.signIn
+			.authenticationToken as string;
+
+		const chatRes = await mercuriusClient.mutate(Mutation_createChat, {
+			headers: { authorization: `bearer ${creatorToken}` },
+			variables: {
+				input: { name: `chat-${faker.string.uuid()}`, organizationId: orgId },
+			},
+		});
+		assertToBeNonNullish(chatRes.data?.createChat);
+		const chatId = chatRes.data.createChat.id;
+		cleanupFns.push(async () => {
+			await mercuriusClient.mutate(Mutation_deleteChat, {
+				headers: { authorization: `bearer ${adminToken}` },
+				variables: { input: { id: chatId } },
+			});
+		});
+
+		const missingMemberId = faker.string.uuid();
+		const res = await mercuriusClient.mutate(Mutation_createChatMembership, {
+			headers: { authorization: `bearer ${creatorToken}` },
+			variables: { input: { chatId, memberId: missingMemberId } },
+		});
+
+		expect(res.errors).toBeDefined();
+		const code3 = res.errors?.[0]?.extensions?.code as string;
+		expect([
+			"invalid_arguments",
+			"arguments_associated_resources_not_found",
+		]).toContain(code3);
+	});
+
+	test("forbidden when membership already exists", async () => {
+		const admin = await mercuriusClient.query(Query_signIn, {
+			variables: {
+				input: {
+					emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
+					password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
+				},
+			},
+		});
+		assertToBeNonNullish(admin.data?.signIn?.authenticationToken);
+		const adminToken = admin.data.signIn.authenticationToken as string;
+
+		const creatorRes = await mercuriusClient.mutate(Mutation_createUser, {
+			headers: { authorization: `bearer ${adminToken}` },
+			variables: {
+				input: {
+					emailAddress: `${faker.string.uuid()}@test.com`,
+					name: faker.person.fullName(),
+					password: "password123",
+					role: "regular",
+					isEmailAddressVerified: false,
+				},
+			},
+		});
+		assertToBeNonNullish(creatorRes.data?.createUser);
+		const creator = creatorRes.data.createUser;
+
+		assertToBeNonNullish(creator.user);
+		assertToBeNonNullish(creator.user?.id);
+
+		const creatorId = creator.user.id;
+		cleanupFns.push(async () => {
+			await mercuriusClient.mutate(Mutation_deleteUser, {
+				headers: { authorization: `bearer ${adminToken}` },
+				variables: { input: { id: creatorId } },
+			});
+		});
+
+		const targetRes = await mercuriusClient.mutate(Mutation_createUser, {
+			headers: { authorization: `bearer ${adminToken}` },
+			variables: {
+				input: {
+					emailAddress: `${faker.string.uuid()}@test.com`,
+					name: faker.person.fullName(),
+					password: "password123",
+					role: "regular",
+					isEmailAddressVerified: false,
+				},
+			},
+		});
+		assertToBeNonNullish(targetRes.data?.createUser);
+		const target = targetRes.data.createUser;
+
+		assertToBeNonNullish(target.user);
+		assertToBeNonNullish(target.user?.id);
+
+		const targetId = target.user.id;
+		cleanupFns.push(async () => {
+			await mercuriusClient.mutate(Mutation_deleteUser, {
+				headers: { authorization: `bearer ${adminToken}` },
+				variables: { input: { id: targetId } },
+			});
+		});
+
+		const orgRes = await mercuriusClient.mutate(Mutation_createOrganization, {
+			headers: { authorization: `bearer ${adminToken}` },
+			variables: {
+				input: { name: `org-${faker.string.uuid()}`, countryCode: "us" },
+			},
+		});
+		assertToBeNonNullish(orgRes.data?.createOrganization);
+		const orgId = orgRes.data.createOrganization.id;
+		cleanupFns.push(async () => {
+			await mercuriusClient.mutate(Mutation_deleteOrganization, {
+				headers: { authorization: `bearer ${adminToken}` },
+				variables: { input: { id: orgId } },
+			});
+		});
+
+		await mercuriusClient.mutate(Mutation_createOrganizationMembership, {
+			headers: { authorization: `bearer ${adminToken}` },
+			variables: {
+				input: {
+					memberId: creator.user.id,
+					organizationId: orgId,
+					role: "regular",
+				},
+			},
+		});
+
+		assertToBeNonNullish(creator.user?.emailAddress);
+		const creatorSignIn = await mercuriusClient.query(Query_signIn, {
+			variables: {
+				input: {
+					emailAddress: creator.user.emailAddress,
+					password: "password123",
+				},
+			},
+		});
+		assertToBeNonNullish(creatorSignIn.data?.signIn?.authenticationToken);
+		const creatorToken = creatorSignIn.data.signIn
+			.authenticationToken as string;
+
+		const chatRes = await mercuriusClient.mutate(Mutation_createChat, {
+			headers: { authorization: `bearer ${creatorToken}` },
+			variables: {
+				input: { name: `chat-${faker.string.uuid()}`, organizationId: orgId },
+			},
+		});
+		assertToBeNonNullish(chatRes.data?.createChat);
+		const chatId = chatRes.data.createChat.id;
+		cleanupFns.push(async () => {
+			await mercuriusClient.mutate(Mutation_deleteChat, {
+				headers: { authorization: `bearer ${adminToken}` },
+				variables: { input: { id: chatId } },
+			});
+		});
+
+		const memRes = await mercuriusClient.mutate(Mutation_createChatMembership, {
+			headers: { authorization: `bearer ${creatorToken}` },
+			variables: { input: { chatId, memberId: target.user.id } },
+		});
+		assertToBeNonNullish(memRes.data?.createChatMembership);
+
+		const second = await mercuriusClient.mutate(Mutation_createChatMembership, {
+			headers: { authorization: `bearer ${creatorToken}` },
+			variables: { input: { chatId, memberId: target.user.id } },
+		});
+
+		expect(second.errors).toBeDefined();
+		expect(second.errors?.[0]?.extensions?.code).toBe(
+			"forbidden_action_on_arguments_associated_resources",
+		);
+	});
+
+	test("unauthorized when actor is not admin and not org/chat member", async () => {
+		const admin = await mercuriusClient.query(Query_signIn, {
+			variables: {
+				input: {
+					emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
+					password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
+				},
+			},
+		});
+		assertToBeNonNullish(admin.data?.signIn?.authenticationToken);
+		const adminToken = admin.data.signIn.authenticationToken as string;
+
+		const ownerRes = await mercuriusClient.mutate(Mutation_createUser, {
+			headers: { authorization: `bearer ${adminToken}` },
+			variables: {
+				input: {
+					emailAddress: `${faker.string.uuid()}@test.com`,
+					name: faker.person.fullName(),
+					password: "password123",
+					role: "regular",
+					isEmailAddressVerified: false,
+				},
+			},
+		});
+		assertToBeNonNullish(ownerRes.data?.createUser);
+		const owner = ownerRes.data.createUser;
+
+		assertToBeNonNullish(owner.user);
+		assertToBeNonNullish(owner.user?.id);
+
+		const ownerId = owner.user.id;
+		cleanupFns.push(async () => {
+			await mercuriusClient.mutate(Mutation_deleteUser, {
+				headers: { authorization: `bearer ${adminToken}` },
+				variables: { input: { id: ownerId } },
+			});
+		});
+
+		const actorRes = await mercuriusClient.mutate(Mutation_createUser, {
+			headers: { authorization: `bearer ${adminToken}` },
+			variables: {
+				input: {
+					emailAddress: `${faker.string.uuid()}@test.com`,
+					name: faker.person.fullName(),
+					password: "password123",
+					role: "regular",
+					isEmailAddressVerified: false,
+				},
+			},
+		});
+		assertToBeNonNullish(actorRes.data?.createUser);
+		const actor = actorRes.data.createUser;
+
+		assertToBeNonNullish(actor.user);
+		assertToBeNonNullish(actor.user?.id);
+
+		const actorId = actor.user.id;
+		cleanupFns.push(async () => {
+			await mercuriusClient.mutate(Mutation_deleteUser, {
+				headers: { authorization: `bearer ${adminToken}` },
+				variables: { input: { id: actorId } },
+			});
+		});
+
+		const orgRes = await mercuriusClient.mutate(Mutation_createOrganization, {
+			headers: { authorization: `bearer ${adminToken}` },
+			variables: {
+				input: { name: `org-${faker.string.uuid()}`, countryCode: "us" },
+			},
+		});
+		assertToBeNonNullish(orgRes.data?.createOrganization);
+		const orgId = orgRes.data.createOrganization.id;
+		cleanupFns.push(async () => {
+			await mercuriusClient.mutate(Mutation_deleteOrganization, {
+				headers: { authorization: `bearer ${adminToken}` },
+				variables: { input: { id: orgId } },
+			});
+		});
+
+		await mercuriusClient.mutate(Mutation_createOrganizationMembership, {
+			headers: { authorization: `bearer ${adminToken}` },
+			variables: {
+				input: {
+					memberId: owner.user.id,
+					organizationId: orgId,
+					role: "regular",
+				},
+			},
+		});
+
+		assertToBeNonNullish(owner.user?.emailAddress);
+		const ownerSignIn = await mercuriusClient.query(Query_signIn, {
+			variables: {
+				input: {
+					emailAddress: owner.user.emailAddress,
+					password: "password123",
+				},
+			},
+		});
+		assertToBeNonNullish(ownerSignIn.data?.signIn?.authenticationToken);
+		const ownerToken = ownerSignIn.data.signIn.authenticationToken as string;
+
+		const chatRes = await mercuriusClient.mutate(Mutation_createChat, {
+			headers: { authorization: `bearer ${ownerToken}` },
+			variables: {
+				input: { name: `chat-${faker.string.uuid()}`, organizationId: orgId },
+			},
+		});
+		assertToBeNonNullish(chatRes.data?.createChat);
+		const chatId = chatRes.data.createChat.id;
+		cleanupFns.push(async () => {
+			await mercuriusClient.mutate(Mutation_deleteChat, {
+				headers: { authorization: `bearer ${adminToken}` },
+				variables: { input: { id: chatId } },
+			});
+		});
+
+		assertToBeNonNullish(actor.user?.emailAddress);
+		const actorSignIn = await mercuriusClient.query(Query_signIn, {
+			variables: {
+				input: {
+					emailAddress: actor.user.emailAddress,
+					password: "password123",
+				},
+			},
+		});
+		assertToBeNonNullish(actorSignIn.data?.signIn?.authenticationToken);
+		const actorToken = actorSignIn.data.signIn.authenticationToken as string;
+
+		const res = await mercuriusClient.mutate(Mutation_createChatMembership, {
+			headers: { authorization: `bearer ${actorToken}` },
+			variables: { input: { chatId, memberId: actor.user.id } },
+		});
+
+		expect(res.errors).toBeDefined();
+		expect(res.errors?.[0]?.extensions?.code).toBe(
+			"unauthorized_action_on_arguments_associated_resources",
+		);
+	});
+
+	test("unauthorized_arguments when setting non-regular role without org membership", async () => {
+		const admin = await mercuriusClient.query(Query_signIn, {
+			variables: {
+				input: {
+					emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
+					password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
+				},
+			},
+		});
+		assertToBeNonNullish(admin.data?.signIn?.authenticationToken);
+		const adminToken = admin.data.signIn.authenticationToken as string;
+
+		const ownerRes = await mercuriusClient.mutate(Mutation_createUser, {
+			headers: { authorization: `bearer ${adminToken}` },
+			variables: {
+				input: {
+					emailAddress: `${faker.string.uuid()}@test.com`,
+					name: faker.person.fullName(),
+					password: "password123",
+					role: "regular",
+					isEmailAddressVerified: false,
+				},
+			},
+		});
+		assertToBeNonNullish(ownerRes.data?.createUser);
+		const owner = ownerRes.data.createUser;
+
+		assertToBeNonNullish(owner.user);
+		assertToBeNonNullish(owner.user?.id);
+
+		const ownerId = owner.user.id;
+		cleanupFns.push(async () => {
+			await mercuriusClient.mutate(Mutation_deleteUser, {
+				headers: { authorization: `bearer ${adminToken}` },
+				variables: { input: { id: ownerId } },
+			});
+		});
+
+		const chatMemberRes = await mercuriusClient.mutate(Mutation_createUser, {
+			headers: { authorization: `bearer ${adminToken}` },
+			variables: {
+				input: {
+					emailAddress: `${faker.string.uuid()}@test.com`,
+					name: faker.person.fullName(),
+					password: "password123",
+					role: "regular",
+					isEmailAddressVerified: false,
+				},
+			},
+		});
+		assertToBeNonNullish(chatMemberRes.data?.createUser);
+		const chatMember = chatMemberRes.data.createUser;
+
+		assertToBeNonNullish(chatMember.user);
+		assertToBeNonNullish(chatMember.user?.id);
+
+		const chatMemberId = chatMember.user.id;
+		cleanupFns.push(async () => {
+			await mercuriusClient.mutate(Mutation_deleteUser, {
+				headers: { authorization: `bearer ${adminToken}` },
+				variables: { input: { id: chatMemberId } },
+			});
+		});
+
+		const targetRes = await mercuriusClient.mutate(Mutation_createUser, {
+			headers: { authorization: `bearer ${adminToken}` },
+			variables: {
+				input: {
+					emailAddress: `${faker.string.uuid()}@test.com`,
+					name: faker.person.fullName(),
+					password: "password123",
+					role: "regular",
+					isEmailAddressVerified: false,
+				},
+			},
+		});
+		assertToBeNonNullish(targetRes.data?.createUser);
+		const target = targetRes.data.createUser;
+
+		assertToBeNonNullish(target.user);
+		assertToBeNonNullish(target.user?.id);
+
+		const targetId = target.user.id;
+		cleanupFns.push(async () => {
+			await mercuriusClient.mutate(Mutation_deleteUser, {
+				headers: { authorization: `bearer ${adminToken}` },
+				variables: { input: { id: targetId } },
+			});
+		});
+
+		const orgRes = await mercuriusClient.mutate(Mutation_createOrganization, {
+			headers: { authorization: `bearer ${adminToken}` },
+			variables: {
+				input: { name: `org-${faker.string.uuid()}`, countryCode: "us" },
+			},
+		});
+		assertToBeNonNullish(orgRes.data?.createOrganization);
+		const orgId = orgRes.data.createOrganization.id;
+		cleanupFns.push(async () => {
+			await mercuriusClient.mutate(Mutation_deleteOrganization, {
+				headers: { authorization: `bearer ${adminToken}` },
+				variables: { input: { id: orgId } },
+			});
+		});
+
+		await mercuriusClient.mutate(Mutation_createOrganizationMembership, {
+			headers: { authorization: `bearer ${adminToken}` },
+			variables: {
+				input: {
+					memberId: owner.user.id,
+					organizationId: orgId,
+					role: "regular",
+				},
+			},
+		});
+
+		assertToBeNonNullish(owner.user?.emailAddress);
+		const ownerSignIn = await mercuriusClient.query(Query_signIn, {
+			variables: {
+				input: {
+					emailAddress: owner.user.emailAddress,
+					password: "password123",
+				},
+			},
+		});
+		assertToBeNonNullish(ownerSignIn.data?.signIn?.authenticationToken);
+		const ownerToken = ownerSignIn.data.signIn.authenticationToken as string;
+
+		const chatRes = await mercuriusClient.mutate(Mutation_createChat, {
+			headers: { authorization: `bearer ${ownerToken}` },
+			variables: {
+				input: { name: `chat-${faker.string.uuid()}`, organizationId: orgId },
+			},
+		});
+		assertToBeNonNullish(chatRes.data?.createChat);
+		const chatId = chatRes.data.createChat.id;
+		cleanupFns.push(async () => {
+			await mercuriusClient.mutate(Mutation_deleteChat, {
+				headers: { authorization: `bearer ${adminToken}` },
+				variables: { input: { id: chatId } },
+			});
+		});
+
+		assertToBeNonNullish(chatMember.user?.emailAddress);
+		const chatMemberSignIn = await mercuriusClient.query(Query_signIn, {
+			variables: {
+				input: {
+					emailAddress: chatMember.user.emailAddress,
+					password: "password123",
+				},
+			},
+		});
+		assertToBeNonNullish(chatMemberSignIn.data?.signIn?.authenticationToken);
+		const chatMemberToken = chatMemberSignIn.data.signIn
+			.authenticationToken as string;
+
+		await mercuriusClient.mutate(Mutation_createChatMembership, {
+			headers: { authorization: `bearer ${ownerToken}` },
+			variables: { input: { chatId, memberId: chatMember.user.id } },
+		});
+
+		const res = await mercuriusClient.mutate(Mutation_createChatMembership, {
+			headers: { authorization: `bearer ${chatMemberToken}` },
+			variables: {
+				input: { chatId, memberId: target.user.id, role: "administrator" },
+			},
+		});
+
+		expect(res.errors).toBeDefined();
+		expect(res.errors?.[0]?.extensions?.code).toBe(
+			"unauthorized_action_on_arguments_associated_resources",
+		);
 	});
 });

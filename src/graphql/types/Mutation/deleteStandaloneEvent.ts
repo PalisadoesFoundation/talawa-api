@@ -1,5 +1,6 @@
 import { eq } from "drizzle-orm";
 import { z } from "zod";
+import { actionItemsTable } from "~/src/drizzle/tables/actionItems";
 import { eventsTable } from "~/src/drizzle/tables/events";
 import { builder } from "~/src/graphql/builder";
 import {
@@ -64,6 +65,7 @@ builder.mutationField("deleteStandaloneEvent", (t) =>
 					columns: {
 						startAt: true,
 						isRecurringEventTemplate: true,
+						creatorId: true,
 					},
 					with: {
 						attachmentsWhereEvent: true,
@@ -128,9 +130,9 @@ builder.mutationField("deleteStandaloneEvent", (t) =>
 				existingEvent.organization.membershipsWhereOrganization[0];
 
 			if (
-				currentUser.role !== "administrator" &&
 				(currentUserOrganizationMembership === undefined ||
-					currentUserOrganizationMembership.role !== "administrator")
+					currentUserOrganizationMembership.role !== "administrator") &&
+				existingEvent.creatorId !== currentUserId
 			) {
 				throw new TalawaGraphQLError({
 					extensions: {
@@ -145,6 +147,11 @@ builder.mutationField("deleteStandaloneEvent", (t) =>
 			}
 
 			return await ctx.drizzleClient.transaction(async (tx) => {
+				// First, delete any action items associated with the event
+				await tx
+					.delete(actionItemsTable)
+					.where(eq(actionItemsTable.eventId, parsedArgs.input.id));
+
 				const [deletedEvent] = await tx
 					.delete(eventsTable)
 					.where(eq(eventsTable.id, parsedArgs.input.id))

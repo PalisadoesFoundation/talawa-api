@@ -6,6 +6,7 @@ import {
 	MutationRejectMembershipRequestInput,
 	rejectMembershipRequestInputSchema,
 } from "~/src/graphql/inputs/MutationRejectMembershipRequestInput";
+import { notificationEventBus } from "~/src/graphql/types/Notification/EventBus/eventBus";
 import { RejectMembershipResponse } from "~/src/graphql/types/Organization/RejectMembershipResponse";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 
@@ -78,6 +79,11 @@ builder.mutationField("rejectMembershipRequest", (t) =>
 								},
 							},
 						},
+						user: {
+							columns: {
+								name: true,
+							},
+						},
 					},
 				}),
 			]);
@@ -137,6 +143,17 @@ builder.mutationField("rejectMembershipRequest", (t) =>
 					},
 				});
 			}
+
+			// Notify the user about membership request rejection
+			notificationEventBus.emitMembershipRequestRejected(
+				{
+					userId: membershipRequest.userId,
+					userName: membershipRequest.user.name,
+					organizationId: membershipRequest.organizationId,
+					organizationName: membershipRequest.organization.name,
+				},
+				ctx,
+			);
 
 			return {
 				success: true,

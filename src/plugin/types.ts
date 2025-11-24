@@ -16,6 +16,16 @@ export interface IPluginManifest {
 	license?: string;
 	tags?: string[];
 	dependencies?: Record<string, string>;
+	docker?: {
+		enabled?: boolean;
+		composeFile?: string;
+		service?: string;
+		buildOnInstall?: boolean;
+		upOnActivate?: boolean;
+		downOnDeactivate?: boolean;
+		removeOnUninstall?: boolean;
+		env?: Record<string, string>;
+	};
 }
 
 // Extension Point Types
@@ -23,14 +33,16 @@ export interface IExtensionPoints {
 	graphql?: IGraphQLExtension[];
 	database?: IDatabaseExtension[];
 	hooks?: IHookExtension[];
+	webhooks?: IWebhookExtension[];
 }
 
 export interface IGraphQLExtension {
 	type: "query" | "mutation" | "subscription";
 	name: string;
 	file: string;
-	resolver: string;
 	description?: string;
+	// Builder-first approach
+	builderDefinition: string; // Function name that defines the GraphQL field using Pothos builder
 }
 
 export interface IDatabaseExtension {
@@ -46,6 +58,13 @@ export interface IHookExtension {
 	file?: string;
 }
 
+export interface IWebhookExtension {
+	path: string;
+	handler: string;
+	method?: "GET" | "POST" | "PUT" | "DELETE" | "PATCH";
+	description?: string;
+}
+
 // Plugin Manager Types
 export interface ILoadedPlugin {
 	id: string;
@@ -53,21 +72,27 @@ export interface ILoadedPlugin {
 	graphqlResolvers: Record<string, unknown>;
 	databaseTables: Record<string, Record<string, unknown>>;
 	hooks: Record<string, (...args: unknown[]) => unknown>;
+	webhooks: Record<
+		string,
+		(request: unknown, reply: unknown) => Promise<unknown>
+	>;
 	status: PluginStatus;
 	errorMessage?: string;
 }
 
-export interface IGraphQLExtensionResolver {
+// Builder-first GraphQL extension interface
+export interface IGraphQLBuilderExtension {
 	pluginId: string;
-	resolver: (parent: unknown, args: unknown, context: unknown) => unknown;
+	type: "query" | "mutation" | "subscription";
+	fieldName: string;
+	builderFunction: (builder: unknown) => void; // Function that registers with Pothos builder
+	description?: string;
 }
 
 export interface IExtensionRegistry {
 	graphql: {
-		queries: Record<string, IGraphQLExtensionResolver>;
-		mutations: Record<string, IGraphQLExtensionResolver>;
-		subscriptions: Record<string, IGraphQLExtensionResolver>;
-		types: Record<string, unknown>;
+		// Builder-first extensions only
+		builderExtensions: IGraphQLBuilderExtension[];
 	};
 	database: {
 		tables: Record<string, unknown>;
@@ -77,6 +102,12 @@ export interface IExtensionRegistry {
 	hooks: {
 		pre: Record<string, ((...args: unknown[]) => unknown)[]>;
 		post: Record<string, ((...args: unknown[]) => unknown)[]>;
+	};
+	webhooks: {
+		handlers: Record<
+			string,
+			(request: unknown, reply: unknown) => Promise<unknown>
+		>;
 	};
 }
 
@@ -112,9 +143,11 @@ export interface IPluginContext {
 
 // Plugin Lifecycle Types
 export interface IPluginLifecycle {
+	onInstall?(context: IPluginContext): Promise<void>;
 	onLoad?(context: IPluginContext): Promise<void>;
 	onActivate?(context: IPluginContext): Promise<void>;
 	onDeactivate?(context: IPluginContext): Promise<void>;
+	onUninstall?(context: IPluginContext): Promise<void>;
 	onUnload?(context: IPluginContext): Promise<void>;
 }
 
@@ -122,7 +155,13 @@ export interface IPluginLifecycle {
 export interface IPluginError {
 	pluginId: string;
 	error: Error;
-	phase: "load" | "activate" | "deactivate" | "unload";
+	phase:
+		| "load"
+		| "activate"
+		| "deactivate"
+		| "unload"
+		| "install"
+		| "uninstall";
 	timestamp: Date;
 }
 

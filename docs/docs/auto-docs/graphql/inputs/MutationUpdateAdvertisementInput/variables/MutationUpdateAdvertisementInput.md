@@ -1,9 +1,9 @@
-[Admin Docs](/)
+[API Docs](/)
 
 ***
 
 # Variable: MutationUpdateAdvertisementInput
 
-> `const` **MutationUpdateAdvertisementInput**: `InputObjectRef`\<`ExtendDefaultTypes`\<\{ `Context`: [`GraphQLContext`](../../../context/type-aliases/GraphQLContext.md); `Scalars`: [`CustomScalars`](../../../scalars/type-aliases/CustomScalars.md); \}\>, `any`\>
+> `const` **MutationUpdateAdvertisementInput**: `InputObjectRef`\<`ExtendDefaultTypes`\<\{ `Context`: [`GraphQLContext`](../../../context/type-aliases/GraphQLContext.md); `Scalars`: [`CustomScalars`](../../../scalars/type-aliases/CustomScalars.md); \}\>, \{ `description?`: `string` \| `null`; `endAt?`: `Date` \| `null`; `id`: `string`; `name?`: `string` \| `null`; `startAt?`: `Date` \| `null`; `type?`: `NonNullable`\<`"banner"` \| `"menu"` \| `"pop_up"` \| `undefined`\> \| `null`; \}\>
 
-Defined in: [src/graphql/inputs/MutationUpdateAdvertisementInput.ts:40](https://github.com/PalisadoesFoundation/talawa-api/blob/c34688c69eb12a5eb721ebc8a0cd60b53e5fbf81/src/graphql/inputs/MutationUpdateAdvertisementInput.ts#L40)
+Defined in: [src/graphql/inputs/MutationUpdateAdvertisementInput.ts:40](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/graphql/inputs/MutationUpdateAdvertisementInput.ts#L40)

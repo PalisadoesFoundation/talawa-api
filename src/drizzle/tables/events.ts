@@ -12,9 +12,7 @@ import { uuidv7 } from "uuidv7";
 import { z } from "zod";
 import { agendaFoldersTable } from "./agendaFolders";
 import { eventAttachmentsTable } from "./eventAttachments";
-import { eventAttendancesTable } from "./eventAttendances";
 import { organizationsTable } from "./organizations";
-import { eventExceptionsTable } from "./recurringEventExceptions";
 import { usersTable } from "./users";
 import { venueBookingsTable } from "./venueBookings";
 
@@ -165,12 +163,7 @@ export const eventsTableRelations = relations(eventsTable, ({ many, one }) => ({
 	attachmentsWhereEvent: many(eventAttachmentsTable, {
 		relationName: "event_attachments.event_id:events.id",
 	}),
-	/**
-	 * One to many relationship from `events` table to `event_attendances` table.
-	 */
-	eventAttendancesWhereEvent: many(eventAttendancesTable, {
-		relationName: "event_attendances.event_id:events.id",
-	}),
+
 	/**
 	 * Many to one relationship from `events` table to `organizations` table.
 	 */
@@ -192,21 +185,6 @@ export const eventsTableRelations = relations(eventsTable, ({ many, one }) => ({
 	 */
 	venueBookingsWhereEvent: many(venueBookingsTable, {
 		relationName: "events.id:venue_bookings.event_id",
-	}),
-
-	// EVENT EXCEPTION RELATIONSHIPS
-	/**
-	 * One to many relationship from events table to event_exceptions table (as instance).
-	 */
-	exceptionsWhereEventInstance: many(eventExceptionsTable, {
-		relationName: "event_exceptions.event_instance_id:events.id",
-	}),
-
-	/**
-	 * One to many relationship from events table to event_exceptions table (as template).
-	 */
-	exceptionsWhereRecurringEvent: many(eventExceptionsTable, {
-		relationName: "event_exceptions.recurring_event_id:events.id",
 	}),
 }));
 

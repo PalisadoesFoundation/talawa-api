@@ -53,7 +53,9 @@ async function getAdminAuthTokenAndId(): Promise<{
 		// Check for GraphQL errors
 		if (adminSignInResult.errors) {
 			throw new Error(
-				`Admin authentication failed: ${adminSignInResult.errors[0]?.message || "Unknown error"}`,
+				`Admin authentication failed: ${
+					adminSignInResult.errors[0]?.message || "Unknown error"
+				}`,
 			);
 		}
 		// Check for missing data
@@ -67,13 +69,17 @@ async function getAdminAuthTokenAndId(): Promise<{
 				"Admin authentication succeeded but no user id was returned",
 			);
 		}
-		cachedAdminToken = adminSignInResult.data.signIn.authenticationToken;
-		cachedAdminId = adminSignInResult.data.signIn.user.id;
-		return { cachedAdminToken, cachedAdminId };
+		const token = adminSignInResult.data.signIn.authenticationToken;
+		const id = adminSignInResult.data.signIn.user.id;
+		cachedAdminToken = token;
+		cachedAdminId = id;
+		return { cachedAdminToken: token, cachedAdminId: id };
 	} catch (error) {
 		// Wrap and rethrow with more context
 		throw new Error(
-			`Failed to get admin authentication token: ${error instanceof Error ? error.message : "Unknown error"}`,
+			`Failed to get admin authentication token: ${
+				error instanceof Error ? error.message : "Unknown error"
+			}`,
 		);
 	}
 }
@@ -109,7 +115,9 @@ async function createTestOrganization(
 	// Check for errors before asserting
 	if (!createOrgResult.data || !createOrgResult.data.createOrganization) {
 		throw new Error(
-			`Failed to create test organization: ${createOrgResult.errors?.[0]?.message || "Unknown error"}`,
+			`Failed to create test organization: ${
+				createOrgResult.errors?.[0]?.message || "Unknown error"
+			}`,
 		);
 	}
 

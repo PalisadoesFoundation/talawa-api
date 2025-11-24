@@ -1,9 +1,9 @@
-[Admin Docs](/)
+[API Docs](/)
 
 ***
 
 # Variable: subscriptionChatMessageCreateInputSchema
 
-> `const` **subscriptionChatMessageCreateInputSchema**: `ZodObject`\<\{ `id`: `any`; \}, `"strip"`, \{ `[key: string]`: `any`;  `id`: `unknown`; \}, \{ `[key: string]`: `any`;  `id`: `unknown`; \}\>
+> `const` **subscriptionChatMessageCreateInputSchema**: `ZodObject`\<\{ `id`: `ZodString`; \}, `"strip"`, `ZodTypeAny`, \{ `id`: `string`; \}, \{ `id`: `string`; \}\>
 
-Defined in: [src/graphql/inputs/SubscriptionChatMessageCreateInput.ts:5](https://github.com/PalisadoesFoundation/talawa-api/blob/c34688c69eb12a5eb721ebc8a0cd60b53e5fbf81/src/graphql/inputs/SubscriptionChatMessageCreateInput.ts#L5)
+Defined in: [src/graphql/inputs/SubscriptionChatMessageCreateInput.ts:5](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/graphql/inputs/SubscriptionChatMessageCreateInput.ts#L5)

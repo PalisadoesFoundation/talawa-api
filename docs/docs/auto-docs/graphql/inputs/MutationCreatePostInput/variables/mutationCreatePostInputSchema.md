@@ -1,9 +1,9 @@
-[Admin Docs](/)
+[API Docs](/)
 
 ***
 
 # Variable: mutationCreatePostInputSchema
 
-> `const` **mutationCreatePostInputSchema**: `ZodObject`\<`extendShape`\<`Pick`\<\{ `caption`: `ZodArray`\<ZodArray\<ZodArray\<ZodArray\<ZodArray\<ZodArray\<ZodArray\<ZodArray\<ZodArray\<ZodArray\<ZodArray\<ZodArray\<..., "many"\>, "many"\>, "many"\>, "many"\>, "many"\>, "many"\>, "many"\>, "many"\>, "many"\>, "many"\>, "many"\>\>; \}, `"caption"`\>, \{ `attachments`: `ZodOptional`\<`ZodArray`\<`ZodType`\<`Promise`\<`FileUpload`\>, `Promise`\<`FileUpload`\>\>\>\>; `isPinned`: `ZodOptional`\<`ZodBoolean`\>; \}\>, `"strip"`, \{ `attachments`: `Promise`\<`FileUpload`\>[]; `caption`: `unknown`[]; `isPinned`: `boolean`; \}, \{ `attachments`: `Promise`\<`FileUpload`\>[]; `caption`: `unknown`[]; `isPinned`: `boolean`; \}\>
+> `const` **mutationCreatePostInputSchema**: `ZodObject`\<`Pick`\<\{ `caption`: `ZodString`; `createdAt`: `ZodOptional`\<`ZodDate`\>; `creatorId`: `ZodString`; `id`: `ZodOptional`\<`ZodString`\>; `organizationId`: `ZodString`; `pinnedAt`: `ZodOptional`\<`ZodNullable`\<`ZodDate`\>\>; `updatedAt`: `ZodOptional`\<`ZodNullable`\<`ZodDate`\>\>; `updaterId`: `ZodOptional`\<`ZodNullable`\<`ZodString`\>\>; \}, `"organizationId"` \| `"caption"`\> & `object`, `"strip"`, `ZodTypeAny`, \{ `attachments?`: `object`[]; `caption`: `string`; `isPinned?`: `boolean`; `organizationId`: `string`; \}, \{ `attachments?`: `object`[]; `caption`: `string`; `isPinned?`: `boolean`; `organizationId`: `string`; \}\>
 
-Defined in: [src/graphql/inputs/MutationCreatePostInput.ts:6](https://github.com/PalisadoesFoundation/talawa-api/blob/c34688c69eb12a5eb721ebc8a0cd60b53e5fbf81/src/graphql/inputs/MutationCreatePostInput.ts#L6)
+Defined in: [src/graphql/inputs/MutationCreatePostInput.ts:49](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/graphql/inputs/MutationCreatePostInput.ts#L49)
