@@ -1,12 +1,12 @@
-name: Talawa-API Pull Request Review
+name: Pull Request Review
 
 on:
   pull_request_review:
-    types: [submitted]
+    types: [submitted, edited, dismissed]
 
 jobs:
   Check-CodeRabbit-Approval:
-    name: Check CodeRabbit Approval for Talawa-API
+    name: Check CodeRabbit Approval
     runs-on: ubuntu-latest
     permissions:
       pull-requests: read
@@ -16,15 +16,15 @@ jobs:
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
-            // List all reviews for the current pull request
+            // List all reviews for the PR
             const { data: reviews } = await github.rest.pulls.listReviews({
               owner: context.repo.owner,
               repo: context.repo.repo,
               pull_number: context.payload.pull_request.number
             });
 
-            // Filter reviews by a user whose login includes "coderabbit" (case-insensitive)
-            const codeRabbitReviews = reviews.filter(review =>
+            // Filter reviews that have a user login containing "coderabbit" (case-insensitive)
+            const codeRabbitReviews = reviews.filter(review => 
               review.user.login.toLowerCase().includes('coderabbit') || review.user.login.toLowerCase().includes('coderabbitai')
             );
 
@@ -34,13 +34,13 @@ jobs:
               return;
             }
 
-            // Sort reviews by submission time in descending order
+            // Sort reviews by submitted_at date in descending order
             codeRabbitReviews.sort((a, b) => new Date(b.submitted_at) - new Date(a.submitted_at));
             const latestReview = codeRabbitReviews[0];
 
-            // Check if the latest CodeRabbit review is "APPROVED"
+            // Fail if the latest review from CodeRabbit is not "APPROVED"
             if (latestReview.state !== 'APPROVED') {
               core.setFailed('ERROR: CodeRabbit approval is required before merging this PR.');
             } else {
-              console.log('Success: CodeRabbit has approved this PR for Talawa-API.');
+              console.log('Success: CodeRabbit has approved this PR.');
             }
