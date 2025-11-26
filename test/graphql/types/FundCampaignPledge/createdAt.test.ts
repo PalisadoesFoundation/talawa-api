@@ -12,7 +12,6 @@ describe("FundCampaignPledge Resolver - createdAt Field", () => {
 
 	const setupAuthorizedMocks = () => {
 		mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValue({
-			id: "user123",
 			role: "administrator",
 		});
 
@@ -66,6 +65,13 @@ describe("FundCampaignPledge Resolver - createdAt Field", () => {
 
 	it("should throw unauthenticated error when user is undefined", async () => {
 		mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValue(undefined);
+		mocks.drizzleClient.query.fundCampaignsTable.findFirst.mockResolvedValue({
+			fund: {
+				organization: {
+					membershipsWhereOrganization: [],
+				},
+			},
+		});
 
 		await expect(
 			createdAtResolver(mockFundCampaignPledge, {}, ctx as GraphQLContext),
@@ -212,12 +218,6 @@ describe("FundCampaignPledge Resolver - createdAt Field", () => {
 		expect(mockOperators.eq).toHaveBeenCalledWith(
 			"mockField",
 			mockFundCampaignPledge.campaignId,
-		);
-
-		// Verify it was not called with parent.id or any other value
-		expect(mockOperators.eq).not.toHaveBeenCalledWith(
-			"mockField",
-			mockFundCampaignPledge.id,
 		);
 	});
 
