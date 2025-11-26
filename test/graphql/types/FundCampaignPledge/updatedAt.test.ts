@@ -175,8 +175,6 @@ describe("FundCampaignPledge Resolver - updatedAt Field", () => {
 	});
 
 	it("should return updatedAt when user is system administrator regardless of organization role", async () => {
-		setupAuthorizedMocks();
-
 		// User is system admin, but only a 'member' in the organization
 		mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValue({
 			id: "user123",
@@ -225,7 +223,7 @@ describe("FundCampaignPledge Resolver - updatedAt Field", () => {
 		// Call the where function to see what it does
 		whereFunction(mockFields, mockOperators);
 
-		// Verify it was called with campaignId ( which is "campaign123" from createMockGraphQLContext)
+		// Verify it was called with campaignId ("campaign123" from mockFundCampaignPledge)
 		expect(mockOperators.eq).toHaveBeenCalledWith("mockField", "campaign123");
 
 		// Verify it was not called with parent.id or any other value
