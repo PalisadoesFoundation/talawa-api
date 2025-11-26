@@ -86,7 +86,6 @@ describe("FundCampaignPledge Resolver - createdAt Field", () => {
 
 	it("should throw unauthorized_action error when user has no organization memberships", async () => {
 		mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValue({
-			id: "user123",
 			role: "member",
 		});
 
@@ -111,7 +110,6 @@ describe("FundCampaignPledge Resolver - createdAt Field", () => {
 
 	it("should throw unauthorized_action when membershipsWhereOrganization.role is not an administrator", async () => {
 		mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValue({
-			id: "user123",
 			role: "member",
 		});
 
@@ -168,7 +166,6 @@ describe("FundCampaignPledge Resolver - createdAt Field", () => {
 	it("should return createdAt when user is system administrator regardless of organization role", async () => {
 		// User is system admin, but only a 'member' in the organization
 		mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValue({
-			id: "user123",
 			role: "administrator",
 		});
 		mocks.drizzleClient.query.fundCampaignsTable.findFirst.mockResolvedValue({
@@ -338,25 +335,28 @@ describe("FundCampaignPledge Resolver - createdAt Field", () => {
 			},
 		];
 
-		expect(callArgs).toBeDefined();
-		expect(callArgs[0]).toBeDefined();
-		expect(callArgs[0].with).toBeDefined();
-		expect(callArgs[0].with.fund).toBeDefined();
-		expect(callArgs[0].with.fund.with).toBeDefined();
-		expect(callArgs[0].with.fund.with.organization).toBeDefined();
-		expect(callArgs[0].with.fund.with.organization.with).toBeDefined();
-		expect(
-			callArgs[0].with.fund.with.organization.with.membershipsWhereOrganization,
-		).toBeDefined();
-		expect(
-			callArgs[0].with.fund.with.organization.with.membershipsWhereOrganization
-				.columns,
-		).toBeDefined();
+		const getMembershipsConfig = (args: unknown) => {
+			const config = args as {
+				with?: {
+					fund?: {
+						with?: {
+							organization?: {
+								with?: { membershipsWhereOrganization?: unknown };
+							};
+						};
+					};
+				};
+			};
+			return config?.with?.fund?.with?.organization?.with
+				?.membershipsWhereOrganization;
+		};
+
+		const membershipsConfig = getMembershipsConfig(callArgs[0]);
+		expect(membershipsConfig).toBeDefined();
 
 		// Verify that role column is set to true
 		expect(
-			callArgs[0].with.fund.with.organization.with.membershipsWhereOrganization
-				.columns.role,
+			(membershipsConfig as { columns: { role: boolean } }).columns.role,
 		).toBe(true);
 	});
 });
