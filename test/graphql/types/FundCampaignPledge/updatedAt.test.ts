@@ -134,8 +134,6 @@ describe("FundCampaignPledge Resolver - updatedAt Field", () => {
 			isAuthenticated: true,
 		});
 
-		setupAuthorizedMocks();
-
 		await expect(
 			updatedAtResolver(
 				{ ...mockFundCampaignPledge, pledgerId: "user123" },
