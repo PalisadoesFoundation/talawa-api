@@ -12,7 +12,8 @@ describe("FundCampaignPledge Resolver - createdAt Field", () => {
 
 	const setupAuthorizedMocks = () => {
 		mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValue({
-			role: "administrator",
+			// Non–system-admin; access granted via organization membership
+			role: "member",
 		});
 
 		mocks.drizzleClient.query.fundCampaignsTable.findFirst.mockResolvedValue({
