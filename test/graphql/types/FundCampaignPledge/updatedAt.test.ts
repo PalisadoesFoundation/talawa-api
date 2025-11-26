@@ -17,11 +17,8 @@ describe("FundCampaignPledge Resolver - updatedAt Field", () => {
 		});
 
 		mocks.drizzleClient.query.fundCampaignsTable.findFirst.mockResolvedValue({
-			currencyCode: "USD",
 			fund: {
-				isTaxDeductible: true,
 				organization: {
-					countryCode: "US",
 					membershipsWhereOrganization: [{ role: "administrator" }],
 				},
 			},
@@ -82,20 +79,15 @@ describe("FundCampaignPledge Resolver - updatedAt Field", () => {
 	});
 
 	it("should throw unauthorized_action error when user has no organization memberships", async () => {
-		setupAuthorizedMocks();
 
-		//Override to make user a member and remove organization memberships
 		mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValue({
 			id: "user123",
 			role: "member",
 		});
 
 		mocks.drizzleClient.query.fundCampaignsTable.findFirst.mockResolvedValue({
-			currencyCode: "USD",
 			fund: {
-				isTaxDeductible: true,
 				organization: {
-					countryCode: "US",
 					membershipsWhereOrganization: [],
 				},
 			},
@@ -113,20 +105,15 @@ describe("FundCampaignPledge Resolver - updatedAt Field", () => {
 	});
 
 	it("should throw unauthorized_action when membershipsWhereOrganization.role is not an administrator", async () => {
-		setupAuthorizedMocks();
 
-		//Override to make user a member and remove organization memberships
 		mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValue({
 			id: "user123",
 			role: "member",
 		});
 
 		mocks.drizzleClient.query.fundCampaignsTable.findFirst.mockResolvedValue({
-			currencyCode: "USD",
 			fund: {
-				isTaxDeductible: true,
 				organization: {
-					countryCode: "US",
 					membershipsWhereOrganization: [{ role: "member" }],
 				},
 			},
@@ -160,7 +147,7 @@ describe("FundCampaignPledge Resolver - updatedAt Field", () => {
 		).resolves.toEqual(mockFundCampaignPledge.updatedAt);
 	});
 
-	it("should throw unexpected error when fund campagin does not exist", async () => {
+	it("should throw unexpected error when fund campaign does not exist", async () => {
 		setupAuthorizedMocks();
 
 		// Override to return undefined for fund campaign
@@ -200,11 +187,8 @@ describe("FundCampaignPledge Resolver - updatedAt Field", () => {
 			role: "administrator",
 		});
 		mocks.drizzleClient.query.fundCampaignsTable.findFirst.mockResolvedValue({
-			currencyCode: "USD",
 			fund: {
-				isTaxDeductible: true,
 				organization: {
-					countryCode: "US",
 					membershipsWhereOrganization: [{ role: "member" }],
 				},
 			},
@@ -339,105 +323,6 @@ describe("FundCampaignPledge Resolver - updatedAt Field", () => {
 		whereFunction(mockFields, mockOperators);
 
 		expect(mockOperators.eq).toHaveBeenCalledWith("mockField", "123");
-	});
-
-	it("should select currencyCode column as true in fundCampaignsTable query", async () => {
-		setupAuthorizedMocks();
-
-		await updatedAtResolver(mockFundCampaignPledge, {}, ctx as GraphQLContext);
-
-		expect(
-			mocks.drizzleClient.query.fundCampaignsTable.findFirst,
-		).toHaveBeenCalled();
-
-		// Get the call arguments and verify currencyCode column is set to true
-		const callArgs = mocks.drizzleClient.query.fundCampaignsTable.findFirst.mock
-			.calls[0] as unknown as [
-			{
-				columns: {
-					currencyCode: boolean;
-				};
-			},
-		];
-
-		expect(callArgs).toBeDefined();
-		expect(callArgs[0]).toBeDefined();
-		expect(callArgs[0].columns).toBeDefined();
-
-		// Verify that currencyCode column is set to true
-		expect(callArgs[0].columns.currencyCode).toBe(true);
-	});
-
-	it("should select isTaxDeductible column as true in fund", async () => {
-		setupAuthorizedMocks();
-
-		await updatedAtResolver(mockFundCampaignPledge, {}, ctx as GraphQLContext);
-
-		expect(
-			mocks.drizzleClient.query.fundCampaignsTable.findFirst,
-		).toHaveBeenCalled();
-
-		const callArgs = mocks.drizzleClient.query.fundCampaignsTable.findFirst.mock
-			.calls[0] as unknown as [
-			{
-				with: {
-					fund: {
-						columns: {
-							isTaxDeductible: boolean;
-						};
-					};
-				};
-			},
-		];
-
-		expect(callArgs).toBeDefined();
-		expect(callArgs[0]).toBeDefined();
-		expect(callArgs[0].with).toBeDefined();
-		expect(callArgs[0].with.fund).toBeDefined();
-		expect(callArgs[0].with.fund.columns).toBeDefined();
-
-		// Verify that isTaxDeductible column is set to true
-		expect(callArgs[0].with.fund.columns.isTaxDeductible).toBe(true);
-	});
-
-	it("should select countryCode column as true in organization", async () => {
-		setupAuthorizedMocks();
-
-		await updatedAtResolver(mockFundCampaignPledge, {}, ctx as GraphQLContext);
-
-		expect(
-			mocks.drizzleClient.query.fundCampaignsTable.findFirst,
-		).toHaveBeenCalled();
-
-		const callArgs = mocks.drizzleClient.query.fundCampaignsTable.findFirst.mock
-			.calls[0] as unknown as [
-			{
-				with: {
-					fund: {
-						with: {
-							organization: {
-								columns: {
-									countryCode: boolean;
-								};
-							};
-						};
-					};
-				};
-			},
-		];
-
-		expect(callArgs).toBeDefined();
-		expect(callArgs[0]).toBeDefined();
-		expect(callArgs[0].with).toBeDefined();
-		expect(callArgs[0].with.fund).toBeDefined();
-		expect(callArgs[0].with.fund.with).toBeDefined();
-		expect(callArgs[0].with.fund.with.organization).toBeDefined();
-		expect(callArgs[0].with.fund.with.organization.columns).toBeDefined();
-
-		// Verify that countryCode column is set to true
-		expect(callArgs[0].with.fund.with.organization.columns.countryCode).toBe(
-			true,
-		);
 	});
 
 	it("should select role column as true in membershipsWhereOrganization", async () => {

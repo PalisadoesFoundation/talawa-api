@@ -35,19 +35,13 @@ export const updatedAtResolver = async (
 			where: (fields, operators) => operators.eq(fields.id, currentUserId),
 		}),
 		ctx.drizzleClient.query.fundCampaignsTable.findFirst({
-			columns: {
-				currencyCode: true,
-			},
+			columns: {},
 			with: {
 				fund: {
-					columns: {
-						isTaxDeductible: true,
-					},
+					columns: {},
 					with: {
 						organization: {
-							columns: {
-								countryCode: true,
-							},
+							columns: {},
 							with: {
 								membershipsWhereOrganization: {
 									columns: {
