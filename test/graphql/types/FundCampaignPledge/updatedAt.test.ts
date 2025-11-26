@@ -79,7 +79,6 @@ describe("FundCampaignPledge Resolver - updatedAt Field", () => {
 	});
 
 	it("should throw unauthorized_action error when user has no organization memberships", async () => {
-
 		mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValue({
 			id: "user123",
 			role: "member",
@@ -105,7 +104,6 @@ describe("FundCampaignPledge Resolver - updatedAt Field", () => {
 	});
 
 	it("should throw unauthorized_action when membershipsWhereOrganization.role is not an administrator", async () => {
-
 		mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValue({
 			id: "user123",
 			role: "member",
