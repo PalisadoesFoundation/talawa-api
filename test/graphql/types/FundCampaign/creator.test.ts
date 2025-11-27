@@ -123,7 +123,7 @@ describe("FundCampaign Resolver - Creator Field", () => {
 		);
 	});
 
-	it("returns null if creatordId is null", async () => {
+	it("returns null if creatorId is null", async () => {
 		setupAuthorizedMocks();
 
 		const result = await creatorResolver(
@@ -426,12 +426,14 @@ describe("FundCampaign Resolver - Creator Field", () => {
 	});
 
 	it("should query usersTable with creatorId when fetching creator user", async () => {
-		setupAuthorizedMocks();
-
-		// Override to return different users for current user and creator user
-		mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValueOnce({
-			id: "creator-456",
-			name: "Creator User",
+		// Setup mocks explicitly for clarity - first call returns currentUser, second returns creator
+		mocks.drizzleClient.query.usersTable.findFirst
+			.mockResolvedValueOnce({ id: "user123", role: "administrator" }) // currentUser
+			.mockResolvedValueOnce({ id: "creator-456", name: "Creator User" }); // creator
+		mocks.drizzleClient.query.fundsTable.findFirst.mockResolvedValue({
+			organization: {
+				membershipsWhereOrganization: [{ role: "administrator" }],
+			},
 		});
 
 		await creatorResolver(
