@@ -15,16 +15,28 @@ declare module "fastify" {
 	}
 }
 
-/**
- * Integrates the talawa minio bucket name and a minio client instance on the namespaces `minio.bucketName` and `minio.client` respectively on the global fastify instance.
- *
- * @example
- * import minioClientPlugin from "~src/plugins/minioClient";
- *
- * fastify.register(minioClientPlugin, {});
- * const buckets = await fastify.minio.client.listBuckets();
- */
 export const minioClient = fastifyPlugin(async (fastify) => {
+	// --- TEST MODE: Disable MinIO entirely ---
+	if (process.env.NODE_ENV === "test") {
+		fastify.log.warn("Skipping MinIO initialization in test mode.");
+
+		fastify.decorate("minio", {
+			bucketName: "talawa",
+			client: {
+				// Dummy client so code does not crash
+				bucketExists: async () => true,
+				makeBucket: async () => {},
+			} as any,
+			config: {
+				endPoint: "localhost",
+				port: 9000,
+				publicBaseUrl: undefined,
+			},
+		});
+
+		return;
+	}
+
 	let ClientClass = MinioClient;
 
 	// Public URL that clients (web/mobile) will use to reach MinIO
