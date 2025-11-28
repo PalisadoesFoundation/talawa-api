@@ -264,4 +264,110 @@ describe("Setup", () => {
 
 		expect(envFileBackup).toHaveBeenCalledWith(true);
 	});
+	it("should not call envFileBackup when .env file does not exist", async () => {
+		process.env.CI = "false";
+
+		if (fs.existsSync(".env")) {
+			fs.unlinkSync(".env");
+		}
+
+		vi.spyOn(fs, "existsSync").mockImplementation((path) => {
+			if (path === ".env") return false;
+			return true;
+		});
+
+		vi.spyOn(inquirer, "prompt").mockResolvedValue({
+			CI: "false",
+			useDefaultMinio: true,
+			useDefaultCloudbeaver: true,
+			useDefaultPostgres: true,
+			useDefaultCaddy: true,
+			useDefaultApi: true,
+			API_ADMINISTRATOR_USER_EMAIL_ADDRESS: "test@email.com",
+		});
+
+		await setup();
+
+		expect(envFileBackup).not.toHaveBeenCalled();
+	});
+
+	it("should call envFileBackup with true when user confirms backup in interactive mode", async () => {
+		process.env.CI = "false";
+		const originalIsTTY = process.stdin.isTTY;
+		Object.defineProperty(process.stdin, "isTTY", {
+			value: true,
+			configurable: true,
+		});
+
+		Reflect.deleteProperty(process.env, "TALAWA_SKIP_ENV_BACKUP");
+
+		fs.writeFileSync(".env", "EXISTING=content");
+
+		vi.spyOn(fs, "existsSync").mockReturnValue(true);
+
+		const promptMock = vi.spyOn(inquirer, "prompt");
+		promptMock.mockResolvedValueOnce({ envReconfigure: true });
+		promptMock.mockResolvedValueOnce({ shouldBackup: true });
+		promptMock.mockResolvedValueOnce({ CI: "false" });
+		promptMock.mockResolvedValueOnce({ useDefaultMinio: true });
+		promptMock.mockResolvedValueOnce({ useDefaultCloudbeaver: true });
+		promptMock.mockResolvedValueOnce({ useDefaultPostgres: true });
+		promptMock.mockResolvedValueOnce({ useDefaultCaddy: true });
+		promptMock.mockResolvedValueOnce({ useDefaultApi: true });
+		promptMock.mockResolvedValueOnce({
+			API_ADMINISTRATOR_USER_EMAIL_ADDRESS: "test@email.com",
+		});
+
+		await setup();
+
+		expect(envFileBackup).toHaveBeenCalledWith(true);
+
+		if (fs.existsSync(".env")) {
+			fs.unlinkSync(".env");
+		}
+		Object.defineProperty(process.stdin, "isTTY", {
+			value: originalIsTTY,
+			configurable: true,
+		});
+	});
+
+	it("should call envFileBackup with false when user denies backup in interactive mode", async () => {
+		process.env.CI = "false";
+		const originalIsTTY = process.stdin.isTTY;
+		Object.defineProperty(process.stdin, "isTTY", {
+			value: true,
+			configurable: true,
+		});
+
+		Reflect.deleteProperty(process.env, "TALAWA_SKIP_ENV_BACKUP");
+
+		fs.writeFileSync(".env", "EXISTING=content");
+
+		vi.spyOn(fs, "existsSync").mockReturnValue(true);
+
+		const promptMock = vi.spyOn(inquirer, "prompt");
+		promptMock.mockResolvedValueOnce({ envReconfigure: true });
+		promptMock.mockResolvedValueOnce({ shouldBackup: false });
+		promptMock.mockResolvedValueOnce({ CI: "false" });
+		promptMock.mockResolvedValueOnce({ useDefaultMinio: true });
+		promptMock.mockResolvedValueOnce({ useDefaultCloudbeaver: true });
+		promptMock.mockResolvedValueOnce({ useDefaultPostgres: true });
+		promptMock.mockResolvedValueOnce({ useDefaultCaddy: true });
+		promptMock.mockResolvedValueOnce({ useDefaultApi: true });
+		promptMock.mockResolvedValueOnce({
+			API_ADMINISTRATOR_USER_EMAIL_ADDRESS: "test@email.com",
+		});
+
+		await setup();
+
+		expect(envFileBackup).toHaveBeenCalledWith(false);
+
+		if (fs.existsSync(".env")) {
+			fs.unlinkSync(".env");
+		}
+		Object.defineProperty(process.stdin, "isTTY", {
+			value: originalIsTTY,
+			configurable: true,
+		});
+	});
 });
