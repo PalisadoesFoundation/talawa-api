@@ -8,6 +8,7 @@ vi.mock("scripts/setup/envFileBackup/envFileBackup", () => ({
 import fs from "node:fs";
 import dotenv from "dotenv";
 import inquirer from "inquirer";
+import { envFileBackup } from "scripts/setup/envFileBackup/envFileBackup";
 import { setup } from "scripts/setup/setup";
 import * as SetupModule from "scripts/setup/setup";
 
@@ -211,5 +212,56 @@ describe("Setup", () => {
 		copyFileSpy.mockRestore();
 		existsSyncSpy.mockRestore();
 		readdirSyncSpy.mockRestore();
+	});
+
+	it("should skip backup when CI=true and TALAWA_SKIP_ENV_BACKUP=true", async () => {
+		process.env.CI = "true";
+		process.env.TALAWA_SKIP_ENV_BACKUP = "true";
+
+		if (fs.existsSync(".env")) {
+			fs.unlinkSync(".env");
+		}
+		fs.writeFileSync(".env", "DUMMY=content");
+
+		vi.spyOn(fs, "existsSync").mockReturnValue(true);
+		vi.spyOn(inquirer, "prompt").mockResolvedValue({
+			envReconfigure: true,
+			CI: "true",
+			useDefaultMinio: true,
+			useDefaultPostgres: true,
+			useDefaultCaddy: true,
+			useDefaultApi: true,
+			API_ADMINISTRATOR_USER_EMAIL_ADDRESS: "test@email.com",
+		});
+
+		await setup();
+
+		expect(envFileBackup).toHaveBeenCalledWith(false);
+	});
+
+	it("should backup by default when CI=true and TALAWA_SKIP_ENV_BACKUP is not set", async () => {
+		process.env.CI = "true";
+		process.env.TALAWA_SKIP_ENV_BACKUP = undefined;
+
+		if (fs.existsSync(".env")) {
+			fs.unlinkSync(".env");
+		}
+
+		fs.writeFileSync(".env", "DUMMY=content");
+
+		vi.spyOn(fs, "existsSync").mockReturnValue(true);
+		vi.spyOn(inquirer, "prompt").mockResolvedValue({
+			envReconfigure: true,
+			CI: "true",
+			useDefaultMinio: true,
+			useDefaultPostgres: true,
+			useDefaultCaddy: true,
+			useDefaultApi: true,
+			API_ADMINISTRATOR_USER_EMAIL_ADDRESS: "test@email.com",
+		});
+
+		await setup();
+
+		expect(envFileBackup).toHaveBeenCalledWith(true);
 	});
 });

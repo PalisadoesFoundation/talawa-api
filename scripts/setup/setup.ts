@@ -676,7 +676,7 @@ export async function setup(): Promise<SetupAnswers> {
 				throw err;
 			}
 		} else {
-			shouldBackup = true;
+			shouldBackup = process.env.TALAWA_SKIP_ENV_BACKUP !== "true";
 		}
 
 		try {
