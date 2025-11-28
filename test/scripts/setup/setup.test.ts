@@ -168,7 +168,42 @@ describe("Setup", () => {
 		const fsExistsSyncSpy = vi.spyOn(fs, "existsSync").mockReturnValue(true);
 		const fsReadFileSyncSpy = vi
 			.spyOn(fs, "readFileSync")
-			.mockReturnValue("API_PORT=4000");
+			.mockReturnValue(
+				[
+					"API_BASE_URL=http://127.0.0.1:4000",
+					"API_HOST=0.0.0.0",
+					"API_PORT=4000",
+					"API_IS_APPLY_DRIZZLE_MIGRATIONS=true",
+					"API_IS_GRAPHIQL=false",
+					"API_IS_PINO_PRETTY=false",
+					"API_JWT_EXPIRES_IN=2592000000",
+					"API_LOG_LEVEL=info",
+					"API_MINIO_ACCESS_KEY=talawa",
+					"API_MINIO_END_POINT=minio",
+					"API_MINIO_PORT=9000",
+					"API_MINIO_SECRET_KEY=password",
+					"API_MINIO_TEST_END_POINT=minio-test",
+					"API_MINIO_USE_SSL=false",
+					"API_POSTGRES_DATABASE=talawa",
+					"API_POSTGRES_HOST=postgres",
+					"API_POSTGRES_PASSWORD=password",
+					"API_POSTGRES_PORT=5432",
+					"API_POSTGRES_SSL_MODE=false",
+					"API_POSTGRES_TEST_HOST=postgres-test",
+					"API_POSTGRES_USER=talawa",
+					"CI=true",
+					"MINIO_ROOT_PASSWORD=password",
+					"MINIO_ROOT_USER=talawa",
+					"CADDY_HTTP_MAPPED_PORT=80",
+					"CADDY_HTTPS_MAPPED_PORT=443",
+					"CADDY_HTTP3_MAPPED_PORT=443",
+					"CADDY_TALAWA_API_DOMAIN_NAME=localhost",
+					"CADDY_TALAWA_API_EMAIL=talawa@email.com",
+					"CADDY_TALAWA_API_HOST=api",
+					"CADDY_TALAWA_API_PORT=4000",
+					"API_ADMINISTRATOR_USER_EMAIL_ADDRESS=test@email.com",
+				].join("\n"),
+			);
 
 		await setup();
 
@@ -356,17 +391,17 @@ describe("Setup", () => {
 			return originalExistsSync(path as fs.PathLike);
 		});
 
+		const originalReadFileSync = fs.readFileSync;
 		const fsReadFileSyncSpy = vi
 			.spyOn(fs, "readFileSync")
-			.mockImplementation((path) => {
+			.mockImplementation((path, options) => {
 				if (
 					String(path) === "envFiles/.env.devcontainer" ||
 					String(path) === "envFiles/.env.ci"
 				) {
 					return "API_PORT=4000\nAPI_HOST=0.0.0.0";
 				}
-				const realFs = require("node:fs");
-				return realFs.readFileSync(path);
+				return originalReadFileSync(path, options);
 			});
 
 		vi.spyOn(inquirer, "prompt").mockResolvedValue({
