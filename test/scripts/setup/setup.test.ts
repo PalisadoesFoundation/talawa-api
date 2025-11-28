@@ -1,23 +1,88 @@
-import { type MockInstance, afterEach, describe, expect, it, vi } from "vitest";
+import {
+	type MockInstance,
+	afterEach,
+	beforeAll,
+	beforeEach,
+	describe,
+	expect,
+	it,
+	vi,
+} from "vitest";
 
-vi.mock("inquirer");
 vi.mock("scripts/setup/envFileBackup/envFileBackup", () => ({
-	envFileBackup: vi.fn(),
+	envFileBackup: vi.fn().mockResolvedValue(undefined),
 }));
 
+vi.mock("env-schema", () => ({
+	envSchema: () => ({
+		API_GRAPHQL_SCALAR_FIELD_COST: 1,
+		API_GRAPHQL_SCALAR_RESOLVER_FIELD_COST: 1,
+		API_GRAPHQL_OBJECT_FIELD_COST: 1,
+		API_GRAPHQL_LIST_FIELD_COST: 1,
+		API_GRAPHQL_NON_PAGINATED_LIST_FIELD_COST: 1,
+		API_GRAPHQL_MUTATION_BASE_COST: 1,
+		API_GRAPHQL_SUBSCRIPTION_BASE_COST: 1,
+	}),
+}));
+
+vi.mock("inquirer");
 import fs from "node:fs";
 import dotenv from "dotenv";
 import inquirer from "inquirer";
 import { envFileBackup } from "scripts/setup/envFileBackup/envFileBackup";
-import { setup } from "scripts/setup/setup";
-import * as SetupModule from "scripts/setup/setup";
 
 describe("Setup", () => {
-	const originalEnv = { ...process.env };
+	let setup: () => Promise<Record<string, string>>;
+	let SetupModule: typeof import("scripts/setup/setup");
+
+	beforeAll(async () => {
+		process.env.API_GRAPHQL_SCALAR_FIELD_COST = "1";
+		process.env.API_GRAPHQL_SCALAR_RESOLVER_FIELD_COST = "1";
+		process.env.API_GRAPHQL_OBJECT_FIELD_COST = "1";
+		process.env.API_GRAPHQL_LIST_FIELD_COST = "1";
+		process.env.API_GRAPHQL_NON_PAGINATED_LIST_FIELD_COST = "1";
+		process.env.API_GRAPHQL_MUTATION_BASE_COST = "1";
+		process.env.API_GRAPHQL_SUBSCRIPTION_BASE_COST = "1";
+
+		vi.doMock("env-schema", () => ({
+			envSchema: () => ({
+				API_GRAPHQL_SCALAR_FIELD_COST: 1,
+				API_GRAPHQL_SCALAR_RESOLVER_FIELD_COST: 1,
+				API_GRAPHQL_OBJECT_FIELD_COST: 1,
+				API_GRAPHQL_LIST_FIELD_COST: 1,
+				API_GRAPHQL_NON_PAGINATED_LIST_FIELD_COST: 1,
+				API_GRAPHQL_MUTATION_BASE_COST: 1,
+				API_GRAPHQL_SUBSCRIPTION_BASE_COST: 1,
+			}),
+		}));
+
+		const module = await import("scripts/setup/setup");
+		setup = module.setup;
+		SetupModule = module;
+	});
+
+	const originalIsTTY = process.stdin.isTTY;
+	const originalExistsSync = fs.existsSync;
+	let originalEnv: NodeJS.ProcessEnv;
+
+	beforeEach(() => {
+		originalEnv = { ...process.env };
+	});
 
 	afterEach(() => {
-		process.env = { ...originalEnv };
-		vi.resetAllMocks();
+		process.env = originalEnv;
+		vi.restoreAllMocks();
+
+		Object.defineProperty(process.stdin, "isTTY", {
+			value: originalIsTTY,
+			configurable: true,
+		});
+
+		try {
+			if (originalExistsSync(".env")) {
+				fs.unlinkSync(".env");
+			}
+		} catch {}
 	});
 
 	it("should set up environment variables with default configuration when CI=false", async () => {
@@ -84,6 +149,7 @@ describe("Setup", () => {
 	});
 
 	it("should correctly set up environment variables when CI=true (skips CloudBeaver)", async () => {
+		process.env.CI = "true";
 		const mockResponses = [
 			{ envReconfigure: true },
 			{ CI: "true" },
@@ -98,6 +164,11 @@ describe("Setup", () => {
 		for (const response of mockResponses) {
 			promptMock.mockResolvedValueOnce(response);
 		}
+
+		const fsExistsSyncSpy = vi.spyOn(fs, "existsSync").mockReturnValue(true);
+		const fsReadFileSyncSpy = vi
+			.spyOn(fs, "readFileSync")
+			.mockReturnValue("API_PORT=4000");
 
 		await setup();
 
@@ -139,6 +210,9 @@ describe("Setup", () => {
 		for (const [key, value] of Object.entries(expectedEnv)) {
 			expect(process.env[key]).toBe(value);
 		}
+
+		fsExistsSyncSpy.mockRestore();
+		fsReadFileSyncSpy.mockRestore();
 	});
 	it("should restore .env from backup and exit when envReconfigure is false", async () => {
 		const processExitSpy = vi.spyOn(process, "exit").mockImplementation(() => {
@@ -264,17 +338,36 @@ describe("Setup", () => {
 
 		expect(envFileBackup).toHaveBeenCalledWith(true);
 	});
+
 	it("should not call envFileBackup when .env file does not exist", async () => {
 		process.env.CI = "false";
 
-		if (fs.existsSync(".env")) {
+		if (originalExistsSync(".env")) {
 			fs.unlinkSync(".env");
 		}
 
 		vi.spyOn(fs, "existsSync").mockImplementation((path) => {
-			if (path === ".env") return false;
-			return true;
+			if (String(path) === ".env") return false;
+			if (
+				String(path) === "envFiles/.env.devcontainer" ||
+				String(path) === "envFiles/.env.ci"
+			)
+				return true;
+			return originalExistsSync(path as fs.PathLike);
 		});
+
+		const fsReadFileSyncSpy = vi
+			.spyOn(fs, "readFileSync")
+			.mockImplementation((path) => {
+				if (
+					String(path) === "envFiles/.env.devcontainer" ||
+					String(path) === "envFiles/.env.ci"
+				) {
+					return "API_PORT=4000\nAPI_HOST=0.0.0.0";
+				}
+				const realFs = require("node:fs");
+				return realFs.readFileSync(path);
+			});
 
 		vi.spyOn(inquirer, "prompt").mockResolvedValue({
 			CI: "false",
@@ -289,11 +382,11 @@ describe("Setup", () => {
 		await setup();
 
 		expect(envFileBackup).not.toHaveBeenCalled();
+		fsReadFileSyncSpy.mockRestore();
 	});
 
 	it("should call envFileBackup with true when user confirms backup in interactive mode", async () => {
 		process.env.CI = "false";
-		const originalIsTTY = process.stdin.isTTY;
 		Object.defineProperty(process.stdin, "isTTY", {
 			value: true,
 			configurable: true,
