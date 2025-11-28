@@ -193,8 +193,6 @@ export function initializeEnvFile(answers: SetupAnswers): void {
 
 	try {
 		const parsedEnv = dotenv.parse(fs.readFileSync(envFileToUse));
-		dotenv.config({ path: envFileName });
-
 		const safeContent = Object.entries(parsedEnv)
 			.map(([key, value]) => {
 				const escaped = value
@@ -206,6 +204,7 @@ export function initializeEnvFile(answers: SetupAnswers): void {
 			.join("\n");
 
 		fs.writeFileSync(envFileName, safeContent, { encoding: "utf-8" });
+		dotenv.config({ path: envFileName });
 		console.log(
 			`✅ Environment variables loaded successfully from ${envFileToUse}`,
 		);
@@ -670,10 +669,7 @@ export async function setup(): Promise<SetupAnswers> {
 					true,
 				);
 			} catch (err) {
-				if (
-					process.env.NODE_ENV === "production" ||
-					process.env.CI === "true"
-				) {
+				if (process.env.NODE_ENV === "production" || initialCI === "true") {
 					console.error("Prompt failed (fatal):", err);
 					process.exit(1);
 				}
@@ -686,7 +682,7 @@ export async function setup(): Promise<SetupAnswers> {
 		try {
 			await envFileBackup(shouldBackup);
 		} catch (err) {
-			if (process.env.NODE_ENV === "production" || process.env.CI === "true") {
+			if (process.env.NODE_ENV === "production" || initialCI === "true") {
 				console.error("envFileBackup failed (fatal):", err);
 				process.exit(1);
 			}

@@ -2,7 +2,7 @@ import fs from "node:fs";
 import { updateEnvVariable } from "scripts/setup/updateEnvVariable";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-vi.mock("fs");
+vi.mock("node:fs");
 
 describe("updateEnvVariable", () => {
 	let envFileName: string;

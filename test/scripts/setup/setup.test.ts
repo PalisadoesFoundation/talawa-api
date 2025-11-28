@@ -1,12 +1,16 @@
 import { type MockInstance, afterEach, describe, expect, it, vi } from "vitest";
 
 vi.mock("inquirer");
+vi.mock("scripts/setup/envFileBackup/envFileBackup", () => ({
+	envFileBackup: vi.fn(),
+}));
 
 import fs from "node:fs";
 import dotenv from "dotenv";
 import inquirer from "inquirer";
 import { setup } from "scripts/setup/setup";
 import * as SetupModule from "scripts/setup/setup";
+
 describe("Setup", () => {
 	const originalEnv = { ...process.env };
 

@@ -32,4 +32,3 @@ export const envFileBackup = async (shouldBackup: boolean): Promise<void> => {
 		throw new Error(`Failed to backup .env file: ${(error as Error).message}`);
 	}
 };
-export default envFileBackup;

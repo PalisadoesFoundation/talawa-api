@@ -113,7 +113,6 @@ describe("Setup -> minioSetup", () => {
 
 		// Verify inquirer was called the correct number of times (including the extra prompt)
 		expect(promptMock).toHaveBeenCalledTimes(8);
-		expect(promptMock).toHaveBeenCalledTimes(8);
 	});
 	it("should handle prompt errors correctly", async () => {
 		const processExitSpy = vi
