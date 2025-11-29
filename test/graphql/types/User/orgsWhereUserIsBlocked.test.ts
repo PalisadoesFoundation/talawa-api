@@ -240,6 +240,25 @@ describe("resolveOrgsWhereUserIsBlocked", () => {
 		expect(mockFindMany).not.toHaveBeenCalled();
 	});
 
+	test("throws an unauthorized error if a non-administrator queries their own blocked organizations", async () => {
+		mockDrizzleClient.query.usersTable.findFirst.mockResolvedValue({
+			id: "user123",
+			role: "member", // non-admin
+		});
+
+		const selfUserParent = {
+			id: "user123",
+			role: "member",
+		} as unknown as User;
+
+		await expect(
+			resolveOrgsWhereUserIsBlocked(selfUserParent, noCursorArgs, baseMockCtx),
+		).rejects.toThrow(TalawaGraphQLError);
+
+		expect(mockFindMany).not.toHaveBeenCalled();
+	});
+
+
 	test("throws invalid arguments error for invalid cursor", async () => {
 		const invalidArgs = { first: 10, after: "invalid-cursor" };
 
