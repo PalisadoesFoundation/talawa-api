@@ -639,7 +639,7 @@ export async function setup(): Promise<SetupAnswers> {
 	if (checkEnvFile()) {
 		const envReconfigure = await promptConfirm(
 			"envReconfigure",
-			"Env file found. Re-configure? (Y)/N",
+			"Env file found. Re-configure?",
 			true,
 		);
 		if (!envReconfigure) {
@@ -695,7 +695,7 @@ export async function setup(): Promise<SetupAnswers> {
 
 	const useDefaultMinio = await promptConfirm(
 		"useDefaultMinio",
-		"Use recommended default Minio settings? (Y)/N",
+		"Use recommended default Minio settings?",
 		true,
 	);
 
@@ -706,7 +706,7 @@ export async function setup(): Promise<SetupAnswers> {
 	if (answers.CI === "false") {
 		const useDefaultCloudbeaver = await promptConfirm(
 			"useDefaultCloudbeaver",
-			"Use recommended default CloudBeaver settings? (Y)/N",
+			"Use recommended default CloudBeaver settings?",
 			true,
 		);
 		if (!useDefaultCloudbeaver) {
@@ -716,7 +716,7 @@ export async function setup(): Promise<SetupAnswers> {
 
 	const useDefaultPostgres = await promptConfirm(
 		"useDefaultPostgres",
-		"Use recommended default Postgres settings? (Y)/N",
+		"Use recommended default Postgres settings?",
 		true,
 	);
 	if (!useDefaultPostgres) {
@@ -725,7 +725,7 @@ export async function setup(): Promise<SetupAnswers> {
 
 	const useDefaultCaddy = await promptConfirm(
 		"useDefaultCaddy",
-		"Use recommended default Caddy settings? (Y)/N",
+		"Use recommended default Caddy settings?",
 		true,
 	);
 	if (!useDefaultCaddy) {
@@ -734,7 +734,7 @@ export async function setup(): Promise<SetupAnswers> {
 
 	const useDefaultApi = await promptConfirm(
 		"useDefaultApi",
-		"Use recommended default API settings? (Y)/N",
+		"Use recommended default API settings?",
 		true,
 	);
 
