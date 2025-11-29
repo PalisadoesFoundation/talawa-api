@@ -145,6 +145,19 @@ export const resolveOrgsWhereUserIsBlocked = async (
 		},
 	);
 
+	if (cursorData !== undefined && blockedUsers.length === 0) {
+		throw new TalawaGraphQLError({
+			extensions: {
+				code: "arguments_associated_resources_not_found",
+				issues: [
+					{
+						argumentPath: [parsedArgs.isInversed ? "before" : "after"],
+					},
+				],
+			},
+		});
+	}
+
 	return transformToDefaultGraphQLConnection({
 		createCursor: (blockedUser) =>
 			Buffer.from(

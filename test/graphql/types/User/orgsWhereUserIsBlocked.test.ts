@@ -240,6 +240,17 @@ describe("resolveOrgsWhereUserIsBlocked", () => {
 		expect(mockFindMany).not.toHaveBeenCalled();
 	});
 
+	test("throws arguments_associated_resources_not_found error for stale cursor", async () => {
+		// Simulate a valid cursor but no rows found
+		mockFindMany.mockResolvedValueOnce([]);
+
+		await expect(
+			resolveOrgsWhereUserIsBlocked(mockUserParent, globalArgs, baseMockCtx),
+		).rejects.toMatchObject({
+			extensions: { code: "arguments_associated_resources_not_found" },
+		});
+	});
+
 	test("throws an unauthorized error if a non-administrator queries their own blocked organizations", async () => {
 		mockDrizzleClient.query.usersTable.findFirst.mockResolvedValue({
 			id: "user123",
