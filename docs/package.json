@@ -20,6 +20,7 @@
     "@mdx-js/react": "^3.0.0",
     "clsx": "^2.0.0",
     "docusaurus": "^1.14.7",
+    "prettier": "^3.6.2",
     "prism-react-renderer": "^2.3.0",
     "react": "^18.0.0",
     "react-dom": "^18.0.0"
@@ -27,6 +28,8 @@
   "devDependencies": {
     "@docusaurus/module-type-aliases": "^3.9.2",
     "@docusaurus/types": "^3.9.2",
+    "@graphql-markdown/docusaurus": "^1.30.3",
+    "@graphql-tools/graphql-file-loader": "^8.1.6",
     "@types/react": "18.2.48",
     "typescript": "~5.7.3"
   },

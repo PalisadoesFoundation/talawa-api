@@ -1,0 +1,159 @@
+---
+id: event-volunteer-group
+title: EventVolunteerGroup
+---
+
+export const Bullet = () => (
+  <>
+    <span
+      style={{
+        fontWeight: "normal",
+        fontSize: ".5em",
+        color: "var(--ifm-color-secondary-darkest)",
+      }}
+    >
+      &nbsp;●&nbsp;
+    </span>
+  </>
+);
+
+export const SpecifiedBy = (props) => (
+  <>
+    Specification
+    <a
+      className="link"
+      style={{ fontSize: "1.5em", paddingLeft: "4px" }}
+      target="_blank"
+      href={props.url}
+      title={"Specified by " + props.url}
+    >
+      ⎘
+    </a>
+  </>
+);
+
+export const Badge = (props) => (
+  <>
+    <span className={props.class}>{props.text}</span>
+  </>
+);
+
+import { useState } from "react";
+
+export const Details = ({
+  dataOpen,
+  dataClose,
+  children,
+  startOpen = false,
+}) => {
+  const [open, setOpen] = useState(startOpen);
+  return (
+    <details
+      {...(open ? { open: true } : {})}
+      className="details"
+      style={{
+        border: "none",
+        boxShadow: "none",
+        background: "var(--ifm-background-color)",
+      }}
+    >
+      <summary
+        onClick={(e) => {
+          e.preventDefault();
+          setOpen((open) => !open);
+        }}
+        style={{ listStyle: "none" }}
+      >
+        {open ? dataOpen : dataClose}
+      </summary>
+      {open && children}
+    </details>
+  );
+};
+
+No description
+
+```graphql
+type EventVolunteerGroup {
+  createdAt: DateTime
+  creator: User
+  description: String
+  event: Event
+  id: ID
+  isInstanceException: Boolean
+  isTemplate: Boolean
+  leader: User
+  name: String
+  recurringEventInstance: Event
+  updatedAt: DateTime
+  updater: User
+  volunteers: [EventVolunteer!]
+  volunteersRequired: Int
+}
+```
+
+### Fields
+
+#### [<code style={{ fontWeight: 'normal' }}>EventVolunteerGroup.<b>createdAt</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>DateTime</b></code>](/auto-schema/types/scalars/date-time.mdx) <Badge class="badge badge--secondary " text="scalar"/>
+
+Date time at the time the event volunteer group was created.
+
+#### [<code style={{ fontWeight: 'normal' }}>EventVolunteerGroup.<b>creator</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>User</b></code>](/auto-schema/types/objects/user.mdx) <Badge class="badge badge--secondary " text="object"/>
+
+The user who created this volunteer group.
+
+#### [<code style={{ fontWeight: 'normal' }}>EventVolunteerGroup.<b>description</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>String</b></code>](/auto-schema/types/scalars/string.mdx) <Badge class="badge badge--secondary " text="scalar"/>
+
+Description of the volunteer group.
+
+#### [<code style={{ fontWeight: 'normal' }}>EventVolunteerGroup.<b>event</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>Event</b></code>](/auto-schema/types/objects/event.mdx) <Badge class="badge badge--secondary " text="object"/>
+
+The event this volunteer group is for.
+
+#### [<code style={{ fontWeight: 'normal' }}>EventVolunteerGroup.<b>id</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>ID</b></code>](/auto-schema/types/scalars/id.mdx) <Badge class="badge badge--secondary " text="scalar"/>
+
+Primary unique identifier of the event volunteer group.
+
+#### [<code style={{ fontWeight: 'normal' }}>EventVolunteerGroup.<b>isInstanceException</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>Boolean</b></code>](/auto-schema/types/scalars/boolean.mdx) <Badge class="badge badge--secondary " text="scalar"/>
+
+Indicates whether this volunteer group is currently showing instance-specific exception data.
+
+#### [<code style={{ fontWeight: 'normal' }}>EventVolunteerGroup.<b>isTemplate</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>Boolean</b></code>](/auto-schema/types/scalars/boolean.mdx) <Badge class="badge badge--secondary " text="scalar"/>
+
+Boolean indicating if this is a template volunteer group (for recurring events).
+
+#### [<code style={{ fontWeight: 'normal' }}>EventVolunteerGroup.<b>leader</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>User</b></code>](/auto-schema/types/objects/user.mdx) <Badge class="badge badge--secondary " text="object"/>
+
+The leader of the volunteer group.
+
+#### [<code style={{ fontWeight: 'normal' }}>EventVolunteerGroup.<b>name</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>String</b></code>](/auto-schema/types/scalars/string.mdx) <Badge class="badge badge--secondary " text="scalar"/>
+
+Name of the volunteer group.
+
+#### [<code style={{ fontWeight: 'normal' }}>EventVolunteerGroup.<b>recurringEventInstance</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>Event</b></code>](/auto-schema/types/objects/event.mdx) <Badge class="badge badge--secondary " text="object"/>
+
+The recurring event instance associated with this volunteer group.
+
+#### [<code style={{ fontWeight: 'normal' }}>EventVolunteerGroup.<b>updatedAt</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>DateTime</b></code>](/auto-schema/types/scalars/date-time.mdx) <Badge class="badge badge--secondary " text="scalar"/>
+
+Date time at the time the event volunteer group was last updated.
+
+#### [<code style={{ fontWeight: 'normal' }}>EventVolunteerGroup.<b>updater</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>User</b></code>](/auto-schema/types/objects/user.mdx) <Badge class="badge badge--secondary " text="object"/>
+
+The user who last updated this volunteer group.
+
+#### [<code style={{ fontWeight: 'normal' }}>EventVolunteerGroup.<b>volunteers</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>[EventVolunteer!]</b></code>](/auto-schema/types/objects/event-volunteer.mdx) <Badge class="badge badge--secondary " text="list"/> <Badge class="badge badge--secondary " text="object"/>
+
+List of volunteers who have accepted invitations to this group.
+
+#### [<code style={{ fontWeight: 'normal' }}>EventVolunteerGroup.<b>volunteersRequired</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>Int</b></code>](/auto-schema/types/scalars/int.mdx) <Badge class="badge badge--secondary " text="scalar"/>
+
+Number of volunteers required for this group.
+
+### Returned By
+
+[`createEventVolunteerGroup`](/auto-schema/operations/mutations/create-event-volunteer-group.mdx) <Badge class="badge badge--secondary badge--relation" text="mutation"/><Bullet />[`deleteEventVolunteerGroup`](/auto-schema/operations/mutations/delete-event-volunteer-group.mdx) <Badge class="badge badge--secondary badge--relation" text="mutation"/><Bullet />[`deleteEventVolunteerGroupForInstance`](/auto-schema/operations/mutations/delete-event-volunteer-group-for-instance.mdx) <Badge class="badge badge--secondary badge--relation" text="mutation"/><Bullet />[`getEventVolunteerGroups`](/auto-schema/operations/queries/get-event-volunteer-groups.mdx) <Badge class="badge badge--secondary badge--relation" text="query"/><Bullet />[`updateEventVolunteerGroup`](/auto-schema/operations/mutations/update-event-volunteer-group.mdx) <Badge class="badge badge--secondary badge--relation" text="mutation"/>
+
+### Member Of
+
+[`ActionItem`](/auto-schema/types/objects/action-item.mdx) <Badge class="badge badge--secondary badge--relation" text="object"/><Bullet />[`Event`](/auto-schema/types/objects/event.mdx) <Badge class="badge badge--secondary badge--relation" text="object"/><Bullet />[`EventVolunteer`](/auto-schema/types/objects/event-volunteer.mdx) <Badge class="badge badge--secondary badge--relation" text="object"/><Bullet />[`VolunteerMembership`](/auto-schema/types/objects/volunteer-membership.mdx) <Badge class="badge badge--secondary badge--relation" text="object"/>

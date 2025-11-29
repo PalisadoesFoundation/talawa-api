@@ -19,10 +19,25 @@ const config: Config = {
   onBrokenLinks: "throw",
   markdown: {
     hooks: {
-      onBrokenMarkdownLinks: 'warn', // Or 'throw', 'ignore'
+      onBrokenMarkdownLinks: "warn", // Or 'throw', 'ignore'
     },
   },
-  
+
+  plugins: [
+    [
+      "@graphql-markdown/docusaurus",
+      {
+        schema: "../schema.graphql",
+        rootPath: "docs",
+        baseURL: "auto-schema",
+        loaders: {
+          GraphQLFileLoader: "@graphql-tools/graphql-file-loader",
+        },
+        homepage: false,
+        pretty: true,
+      },
+    ],
+  ],
   // Even if you don't use internationalization, you can use this field to set
   // useful metadata like html lang. For example, if your site is Chinese, you
   // may want to replace "en" with "zh-Hans".
@@ -31,19 +46,21 @@ const config: Config = {
     locales: ["en"],
   },
 
+  // Remote css file fetched from talawa-docs
   stylesheets: ["https://docs.talawa.io/css/styles-latest.css"],
 
   presets: [
     [
       "classic",
-      /** @type {import('@docusaurus/preset-classic').Options} */
       {
         docs: {
           sidebarPath: require.resolve("./sidebars.js"),
           editUrl: ({ docPath }: { docPath: string }) => {
             return `https://github.com/PalisadoesFoundation/talawa-api/edit/develop/docs/docs/${docPath}`;
           },
-          exclude : ["**/auto-docs/graphql/types/Plugin/inputs/variables/queryPluginInputSchema.md"],
+          exclude: [
+            "**/auto-docs/graphql/types/Plugin/inputs/variables/queryPluginInputSchema.md",
+          ],
         },
         blog: {
           showReadingTime: true,
@@ -51,15 +68,19 @@ const config: Config = {
             "https://github.com/PalisadoesFoundation/talawa-api/tree/develop/docs/docs",
         },
         theme: {
-          customCss: undefined,
+          // custom css file with project-specific styling
+          customCss: require.resolve("./src/css/custom.css"),
         },
       },
     ],
   ],
 
   themeConfig: {
-    // Replace with your project's social card
-    image: "img/docusaurus-social-card.jpg",
+    docs: {
+      sidebar: {
+        hideable: false,
+      },
+    },
     navbar: {
       title: "Talawa",
       logo: {
@@ -184,7 +205,7 @@ const config: Config = {
       defaultMode: "light",
       disableSwitch: false,
       respectPrefersColorScheme: true,
-    },         
+    },
     prism: {
       theme: prismThemes.github,
       darkTheme: prismThemes.dracula,
