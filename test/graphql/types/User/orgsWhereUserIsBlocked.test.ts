@@ -113,7 +113,7 @@ describe("resolveOrgsWhereUserIsBlocked", () => {
 				},
 				limit: 11,
 				orderBy: expectedOrderBy,
-				with: { organization: true },
+				with: { organization: true, user: true },
 				where: expectedWhere,
 			}),
 		);
@@ -126,7 +126,12 @@ describe("resolveOrgsWhereUserIsBlocked", () => {
 		expect(result.edges.length).toBeGreaterThan(0);
 		expect(result.edges[0]?.node).toEqual({
 			id: "org1",
-			name: "Test Organization",
+			organization: {
+				id: "org1",
+				name: "Test Organization",
+			},
+			user: undefined,
+			createdAt: expect.any(Date),
 		});
 	});
 
