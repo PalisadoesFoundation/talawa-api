@@ -14,15 +14,19 @@ interface HomeCallToActionProps {}
       >
         Learn More
       </ActionButton>
-      <ActionButton
-        type="secondary"
+      <a
         href="https://github.com/PalisadoesFoundation/talawa-api"
-        buttonClassName="custom-button"
-         target="_blank"
-      
+        target="_blank"
+        rel="noopener noreferrer"
       >
-        GitHub
-      </ActionButton>
+        <ActionButton
+          type="secondary"
+          href="#"
+          buttonClassName="custom-button"
+        >
+          GitHub
+        </ActionButton>
+      </a>
     </>
   );
 };
