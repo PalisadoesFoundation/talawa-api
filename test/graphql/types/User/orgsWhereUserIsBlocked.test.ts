@@ -258,7 +258,6 @@ describe("resolveOrgsWhereUserIsBlocked", () => {
 		expect(mockFindMany).not.toHaveBeenCalled();
 	});
 
-
 	test("throws invalid arguments error for invalid cursor", async () => {
 		const invalidArgs = { first: 10, after: "invalid-cursor" };
 

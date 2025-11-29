@@ -5196,7 +5196,7 @@ type UserOrganizationsWhereMemberConnectionEdge {
 }
 
 type UserOrgsWhereUserIsBlockedConnection {
-  """Edge containing an organization and cursor."""
+  """Edge containing a BlockedUser record and cursor."""
   edges: [UserOrgsWhereUserIsBlockedConnectionEdge]
   pageInfo: PageInfo!
 }
@@ -5204,7 +5204,9 @@ type UserOrgsWhereUserIsBlockedConnection {
 type UserOrgsWhereUserIsBlockedConnectionEdge {
   cursor: String!
 
-  """Organization where the user is blocked."""
+  """
+  BlockedUser record including the organization where the user is blocked.
+  """
   node: BlockedUser
 }
 

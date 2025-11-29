@@ -190,7 +190,8 @@ User.implement({
 			},
 			{
 				nodeField: {
-					description: "BlockedUser record including the organization where the user is blocked.",
+					description:
+						"BlockedUser record including the organization where the user is blocked.",
 					complexity: {
 						field: envConfig.API_GRAPHQL_OBJECT_FIELD_COST,
 						multiplier: 1,
