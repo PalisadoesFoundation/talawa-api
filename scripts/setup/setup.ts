@@ -1,8 +1,10 @@
 import crypto from "node:crypto";
 import fs from "node:fs";
+import path from "node:path";
 import process from "node:process";
 import dotenv from "dotenv";
 import inquirer from "inquirer";
+import { envFileBackup } from "./envFileBackup/envFileBackup";
 import { updateEnvVariable } from "./updateEnvVariable";
 
 interface SetupAnswers {
@@ -45,6 +47,47 @@ async function promptConfirm(
 }
 
 const envFileName = ".env";
+
+function restoreLatestBackup(): void {
+	const backupDir = ".backup";
+	const envPrefix = ".env.";
+
+	if (fs.existsSync(backupDir)) {
+		try {
+			const files = fs.readdirSync(backupDir);
+			const backupFiles = files.filter((file) => file.startsWith(envPrefix));
+
+			if (backupFiles.length > 0) {
+				const sortedBackups = backupFiles
+					.map((fileName) => {
+						const epochStr = fileName.substring(envPrefix.length);
+						return {
+							name: fileName,
+							epoch: Number.parseInt(epochStr, 10),
+						};
+					})
+					.filter((file) => !Number.isNaN(file.epoch))
+					.sort((a, b) => b.epoch - a.epoch);
+
+				const latestBackup = sortedBackups[0];
+
+				if (latestBackup) {
+					const backupPath = path.join(backupDir, latestBackup.name);
+					console.log(`Restoring from latest backup: ${backupPath}`);
+					fs.copyFileSync(backupPath, ".env");
+				} else {
+					console.warn("No valid backup files found with epoch timestamps");
+				}
+			} else {
+				console.warn("No backup files found in .backup directory");
+			}
+		} catch (readError) {
+			console.error("Error reading backup directory:", readError);
+		}
+	} else {
+		console.warn("Backup directory .backup does not exist");
+	}
+}
 
 export function generateJwtSecret(): string {
 	try {
@@ -129,9 +172,7 @@ export function validateCloudBeaverURL(input: string): true | string {
 
 function handlePromptError(err: unknown): never {
 	console.error(err);
-	if (fs.existsSync(".env.backup")) {
-		fs.copyFileSync(".env.backup", ".env");
-	}
+	restoreLatestBackup();
 	process.exit(1);
 }
 
@@ -140,11 +181,6 @@ export function checkEnvFile(): boolean {
 }
 
 export function initializeEnvFile(answers: SetupAnswers): void {
-	if (fs.existsSync(envFileName)) {
-		fs.copyFileSync(envFileName, `${envFileName}.backup`);
-		console.log(`✅ Backup created at ${envFileName}.backup`);
-	}
-
 	const envFileToUse =
 		answers.CI === "true" ? "envFiles/.env.ci" : "envFiles/.env.devcontainer";
 
@@ -157,8 +193,6 @@ export function initializeEnvFile(answers: SetupAnswers): void {
 
 	try {
 		const parsedEnv = dotenv.parse(fs.readFileSync(envFileToUse));
-		dotenv.config({ path: envFileName });
-
 		const safeContent = Object.entries(parsedEnv)
 			.map(([key, value]) => {
 				const escaped = value
@@ -170,6 +204,7 @@ export function initializeEnvFile(answers: SetupAnswers): void {
 			.join("\n");
 
 		fs.writeFileSync(envFileName, safeContent, { encoding: "utf-8" });
+		dotenv.config({ path: envFileName });
 		console.log(
 			`✅ Environment variables loaded successfully from ${envFileToUse}`,
 		);
@@ -599,11 +634,12 @@ export async function caddySetup(answers: SetupAnswers): Promise<SetupAnswers> {
 }
 
 export async function setup(): Promise<SetupAnswers> {
+	const initialCI = process.env.CI;
 	let answers: SetupAnswers = {};
 	if (checkEnvFile()) {
 		const envReconfigure = await promptConfirm(
 			"envReconfigure",
-			"Env file found. Re-configure? (Y)/N",
+			"Env file found. Re-configure?",
 			true,
 		);
 		if (!envReconfigure) {
@@ -616,18 +652,50 @@ export async function setup(): Promise<SetupAnswers> {
 	process.on("SIGINT", () => {
 		console.log("\nProcess interrupted! Undoing changes...");
 		answers = {};
-		if (fs.existsSync(".env.backup")) {
-			fs.copyFileSync(".env.backup", ".env");
-		}
+		restoreLatestBackup();
 		process.exit(1);
 	});
+
+	if (checkEnvFile()) {
+		const isInteractive =
+			initialCI !== "true" && process.stdin && process.stdin.isTTY;
+		let shouldBackup = true;
+
+		if (isInteractive) {
+			try {
+				shouldBackup = await promptConfirm(
+					"shouldBackup",
+					"Would you like to back up the current .env file before setup modifies it?",
+					true,
+				);
+			} catch (err) {
+				if (process.env.NODE_ENV === "production" || initialCI === "true") {
+					console.error("Prompt failed (fatal):", err);
+					process.exit(1);
+				}
+				throw err;
+			}
+		} else {
+			shouldBackup = process.env.TALAWA_SKIP_ENV_BACKUP !== "true";
+		}
+
+		try {
+			await envFileBackup(shouldBackup);
+		} catch (err) {
+			if (process.env.NODE_ENV === "production" || initialCI === "true") {
+				console.error("envFileBackup failed (fatal):", err);
+				process.exit(1);
+			}
+			throw err;
+		}
+	}
 
 	answers = await setCI(answers);
 	initializeEnvFile(answers);
 
 	const useDefaultMinio = await promptConfirm(
 		"useDefaultMinio",
-		"Use recommended default Minio settings? (Y)/N",
+		"Use recommended default Minio settings?",
 		true,
 	);
 
@@ -638,7 +706,7 @@ export async function setup(): Promise<SetupAnswers> {
 	if (answers.CI === "false") {
 		const useDefaultCloudbeaver = await promptConfirm(
 			"useDefaultCloudbeaver",
-			"Use recommended default CloudBeaver settings? (Y)/N",
+			"Use recommended default CloudBeaver settings?",
 			true,
 		);
 		if (!useDefaultCloudbeaver) {
@@ -648,7 +716,7 @@ export async function setup(): Promise<SetupAnswers> {
 
 	const useDefaultPostgres = await promptConfirm(
 		"useDefaultPostgres",
-		"Use recommended default Postgres settings? (Y)/N",
+		"Use recommended default Postgres settings?",
 		true,
 	);
 	if (!useDefaultPostgres) {
@@ -657,7 +725,7 @@ export async function setup(): Promise<SetupAnswers> {
 
 	const useDefaultCaddy = await promptConfirm(
 		"useDefaultCaddy",
-		"Use recommended default Caddy settings? (Y)/N",
+		"Use recommended default Caddy settings?",
 		true,
 	);
 	if (!useDefaultCaddy) {
@@ -666,7 +734,7 @@ export async function setup(): Promise<SetupAnswers> {
 
 	const useDefaultApi = await promptConfirm(
 		"useDefaultApi",
-		"Use recommended default API settings? (Y)/N",
+		"Use recommended default API settings?",
 		true,
 	);
 
@@ -678,8 +746,5 @@ export async function setup(): Promise<SetupAnswers> {
 
 	updateEnvVariable(answers);
 	console.log("Configuration complete.");
-	if (fs.existsSync(".env.backup")) {
-		fs.unlinkSync(".env.backup");
-	}
 	return answers;
 }
