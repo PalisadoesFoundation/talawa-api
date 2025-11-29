@@ -2,13 +2,15 @@ import fs from "node:fs";
 import { updateEnvVariable } from "scripts/setup/updateEnvVariable";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-vi.mock("fs");
+vi.mock("node:fs");
 
 describe("updateEnvVariable", () => {
-	const envFileName = ".env";
-	const backupFile = `${envFileName}.backup`;
+	let envFileName: string;
+	let backupFile: string;
 
 	beforeEach(() => {
+		envFileName = process.env.NODE_ENV === "test" ? ".env_test" : ".env";
+		backupFile = `${envFileName}.backup`;
 		vi.resetAllMocks();
 		vi.spyOn(fs, "existsSync").mockReturnValue(true); // Assume `.env` exists
 	});

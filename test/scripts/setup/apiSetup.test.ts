@@ -1,3 +1,5 @@
+vi.mock("inquirer");
+
 import crypto from "node:crypto";
 import fs from "node:fs";
 import dotenv from "dotenv";
@@ -10,9 +12,15 @@ import {
 	validatePort,
 	validateURL,
 } from "scripts/setup/setup";
-import { afterEach, beforeAll, describe, expect, it, vi } from "vitest";
-
-vi.mock("inquirer");
+import {
+	type MockInstance,
+	afterEach,
+	beforeAll,
+	describe,
+	expect,
+	it,
+	vi,
+} from "vitest";
 
 describe("Setup -> apiSetup", () => {
 	const originalEnv = { ...process.env };
@@ -105,7 +113,15 @@ describe("Setup -> apiSetup", () => {
 		const processExitSpy = vi
 			.spyOn(process, "exit")
 			.mockImplementation(() => undefined as never);
-		const fsExistsSyncSpy = vi.spyOn(fs, "existsSync").mockReturnValue(true);
+		vi.spyOn(fs, "existsSync").mockImplementation((path) => {
+			if (path === ".backup") return true;
+			return false;
+		});
+		(
+			vi.spyOn(fs, "readdirSync") as unknown as MockInstance<
+				(path: fs.PathLike) => string[]
+			>
+		).mockImplementation(() => [".env.1600000000", ".env.1700000000"]);
 		const fsCopyFileSyncSpy = vi
 			.spyOn(fs, "copyFileSync")
 			.mockImplementation(() => undefined);
@@ -118,8 +134,10 @@ describe("Setup -> apiSetup", () => {
 		await apiSetup({});
 
 		expect(consoleErrorSpy).toHaveBeenCalledWith(mockError);
-		expect(fsExistsSyncSpy).toHaveBeenCalledWith(".env.backup");
-		expect(fsCopyFileSyncSpy).toHaveBeenCalledWith(".env.backup", ".env");
+		expect(fsCopyFileSyncSpy).toHaveBeenCalledWith(
+			".backup/.env.1700000000",
+			".env",
+		);
 		expect(processExitSpy).toHaveBeenCalledWith(1);
 
 		vi.clearAllMocks();
@@ -308,7 +326,7 @@ describe("Error handling without backup", () => {
 		await apiSetup({});
 
 		expect(consoleErrorSpy).toHaveBeenCalledWith(mockError);
-		expect(fsExistsSyncSpy).toHaveBeenCalledWith(".env.backup");
+		expect(fsExistsSyncSpy).toHaveBeenCalledWith(".backup");
 		expect(fsCopyFileSyncSpy).not.toHaveBeenCalled();
 		expect(processExitSpy).toHaveBeenCalledWith(1);
 
@@ -331,7 +349,7 @@ describe("Error handling without backup", () => {
 		expect(consoleLogSpy).toHaveBeenCalledWith(
 			"\nProcess interrupted! Undoing changes...",
 		);
-		expect(fsExistsSyncSpy).toHaveBeenCalledWith(".env.backup");
+		expect(fsExistsSyncSpy).toHaveBeenCalledWith(".backup");
 		expect(fsCopyFileSyncSpy).not.toHaveBeenCalled();
 		expect(processExitSpy).toHaveBeenCalledWith(1);
 
