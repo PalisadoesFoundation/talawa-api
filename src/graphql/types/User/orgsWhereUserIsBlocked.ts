@@ -12,8 +12,8 @@ import {
 	transformDefaultGraphQLConnectionArguments,
 	transformToDefaultGraphQLConnection,
 } from "~/src/utilities/defaultGraphQLConnection";
-import { BlockedUser } from "../BlockedUser/BlockedUser";
 import envConfig from "~/src/utilities/graphqLimits";
+import { BlockedUser } from "../BlockedUser/BlockedUser";
 
 type ContextType = ExplicitGraphQLContext & ImplicitMercuriusContext;
 
