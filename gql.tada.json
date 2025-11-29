@@ -1,0 +1,7 @@
+{
+	"$schema": "https://unpkg.com/gql.tada@latest/schema.json",
+	"schema": "schema.graphql",
+	"documents": ["src/**/*.ts"],
+	"exclude": ["test/**/*"],
+	"failOnWarn": false
+}
