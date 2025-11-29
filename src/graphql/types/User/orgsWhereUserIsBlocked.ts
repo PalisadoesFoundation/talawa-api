@@ -5,7 +5,6 @@ import type {
 	ExplicitGraphQLContext,
 	ImplicitMercuriusContext,
 } from "~/src/graphql/context";
-import { Organization } from "~/src/graphql/types/Organization/Organization";
 import { User } from "~/src/graphql/types/User/User";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import {
@@ -13,6 +12,8 @@ import {
 	transformDefaultGraphQLConnectionArguments,
 	transformToDefaultGraphQLConnection,
 } from "~/src/utilities/defaultGraphQLConnection";
+import { BlockedUser } from "../BlockedUser/BlockedUser";
+import envConfig from "~/src/utilities/graphqLimits";
 
 type ContextType = ExplicitGraphQLContext & ImplicitMercuriusContext;
 
@@ -55,7 +56,7 @@ export const resolveOrgsWhereUserIsBlocked = async (
 	args: Record<string, unknown>,
 	ctx: ContextType,
 ): Promise<
-	ReturnType<typeof transformToDefaultGraphQLConnection<unknown, Organization>>
+	ReturnType<typeof transformToDefaultGraphQLConnection<unknown, BlockedUser>>
 > => {
 	if (!ctx.currentClient.isAuthenticated) {
 		throw new TalawaGraphQLError({
@@ -138,6 +139,7 @@ export const resolveOrgsWhereUserIsBlocked = async (
 			orderBy,
 			with: {
 				organization: true,
+				user: true,
 			},
 			where,
 		},
@@ -151,7 +153,12 @@ export const resolveOrgsWhereUserIsBlocked = async (
 					organizationId: blockedUser.organizationId,
 				}),
 			).toString("base64url"),
-		createNode: (blockedUser) => blockedUser.organization,
+		createNode: (blockedUser) => ({
+			id: blockedUser.organizationId,
+			organization: blockedUser.organization,
+			user: blockedUser.user,
+			createdAt: blockedUser.createdAt,
+		}),
 		parsedArgs,
 		rawNodes: blockedUsers,
 	});
@@ -164,16 +171,30 @@ User.implement({
 				description:
 					"GraphQL connection to retrieve organizations where the user is blocked.",
 				resolve: resolveOrgsWhereUserIsBlocked,
-				type: Organization,
+				type: BlockedUser,
+				complexity: (args) => {
+					return {
+						field: envConfig.API_GRAPHQL_OBJECT_FIELD_COST,
+						multiplier: args.first || args.last || 1,
+					};
+				},
 			},
 			{
 				edgesField: {
 					description: "Edge containing an organization and cursor.",
+					complexity: {
+						field: envConfig.API_GRAPHQL_OBJECT_FIELD_COST,
+						multiplier: 1,
+					},
 				},
 			},
 			{
 				nodeField: {
 					description: "Organization where the user is blocked.",
+					complexity: {
+						field: envConfig.API_GRAPHQL_OBJECT_FIELD_COST,
+						multiplier: 1,
+					},
 				},
 			},
 		),

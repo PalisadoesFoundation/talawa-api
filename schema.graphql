@@ -5205,7 +5205,7 @@ type UserOrgsWhereUserIsBlockedConnectionEdge {
   cursor: String!
 
   """Organization where the user is blocked."""
-  node: Organization
+  node: BlockedUser
 }
 
 """Possible variants of the role assigned to a user."""
