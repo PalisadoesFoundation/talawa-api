@@ -1,12 +1,17 @@
-import { describe, it, expect, beforeEach } from "vitest";
-
+import { describe, it, expect, beforeEach, beforeAll, afterAll } from "vitest";
 import { server } from "../../../../../test/server";
 import { membershipRequestsTable } from "~/src/drizzle/tables/membershipRequests";
 import { usersTable } from "~/src/drizzle/tables/users";
 import { eq } from "drizzle-orm";
 import { randomUUID } from "crypto";
 
+beforeAll(async () => {
+  await server.ready();
+});
 
+afterAll(async () => {
+  await server.close();
+});
 
 const mutation = `
   mutation Cancel($input: MutationCancelMembershipRequestInput!) {
@@ -16,8 +21,6 @@ const mutation = `
     }
   }
 `;
-
-
 
 async function createUser(drizzle: any) {
   const id = randomUUID();
@@ -40,7 +43,6 @@ async function createMembershipRequest(drizzle: any, userId: string, status = "p
   });
   return requestId;
 }
-
 
 describe("Mutation.cancelMembershipRequest", () => {
   const url = "/graphql";
@@ -65,7 +67,7 @@ describe("Mutation.cancelMembershipRequest", () => {
   });
 
   it("invalid_arguments for invalid UUID", async () => {
-    const userId = randomUUID();
+    const userId = await createUser(drizzle);
 
     const res = await server.inject({
       method: "POST",
@@ -127,7 +129,7 @@ describe("Mutation.cancelMembershipRequest", () => {
       },
     });
 
-    expect(res.json().data.cancelMembershipRequest.success).toBe(true);
+    expect(res.json().data.cancelMembershipRequest.success).toEqual(true);
 
     const row = await drizzle
       .select()
