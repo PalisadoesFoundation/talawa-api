@@ -53,6 +53,9 @@ describe("Mutation.cancelMembershipRequest", () => {
     await drizzle.delete(usersTable);
   });
 
+
+  // if user is not logged-in 
+
   it("unauthenticated if no Authorization header", async () => {
     const res = await server.inject({
       method: "POST",
@@ -65,6 +68,8 @@ describe("Mutation.cancelMembershipRequest", () => {
 
     expect(res.json().errors[0].extensions.code).toBe("unauthenticated");
   });
+
+
 
   it("invalid_arguments for invalid UUID", async () => {
     const userId = await createUser(drizzle);
@@ -82,6 +87,8 @@ describe("Mutation.cancelMembershipRequest", () => {
     expect(res.json().errors[0].extensions.code).toBe("invalid_arguments");
   });
 
+  // when no membership is actually their 
+
   it("unexpected when membership request not found", async () => {
     const userId = await createUser(drizzle);
 
@@ -97,6 +104,8 @@ describe("Mutation.cancelMembershipRequest", () => {
 
     expect(res.json().errors[0].extensions.code).toBe("unexpected");
   });
+
+  // if their is no any pending request
 
   it("forbidden_action if request is not pending", async () => {
     const userId = await createUser(drizzle);
@@ -114,6 +123,8 @@ describe("Mutation.cancelMembershipRequest", () => {
 
     expect(res.json().errors[0].extensions.code).toBe("forbidden_action");
   });
+
+  // when we got actual condition to cancel 
 
   it("successfully cancels a pending request", async () => {
     const userId = await createUser(drizzle);
