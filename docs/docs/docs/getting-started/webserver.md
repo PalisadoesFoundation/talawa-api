@@ -2,7 +2,7 @@
 id: webserver
 title: Webserver Setup
 slug: /webserver
-sidebar_position: 3
+sidebar_position: 100
 ---
 
 This page outlines how to run Talawa API on a cloud based server using SSL certificates.
