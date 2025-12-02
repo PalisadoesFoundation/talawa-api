@@ -81,15 +81,19 @@ describe("Mutation.cancelMembershipRequest", () => {
   // ---------------------------------------------------------
   // Test: Invalid UUID input
   // ---------------------------------------------------------
-  it("returns invalid_arguments for malformed membershipRequestId", async () => {
-    const userId = randomUUID();
+  // ---------------------------------------------------------
+  // Test: Invalid UUID input
+  // ---------------------------------------------------------
+  it("returns invalid_arguments when membershipRequestId is not a valid UUID", async () => {
+    const userId = await createUser(drizzle); // real user for future-proofing
+
     const res = await server.inject({
       method: "POST",
       url,
       headers: { authorization: `Bearer ${userId}` },
       payload: {
         query: mutation,
-        variables: { input: { membershipRequestId: "not-a-uuid" } },
+        variables: { input: { membershipRequestId: "invalid-uuid" } },
       },
     });
 
