@@ -81,9 +81,6 @@ describe("Mutation.cancelMembershipRequest", () => {
   // ---------------------------------------------------------
   // Test: Invalid UUID input
   // ---------------------------------------------------------
-  // ---------------------------------------------------------
-  // Test: Invalid UUID input
-  // ---------------------------------------------------------
   it("returns invalid_arguments when membershipRequestId is not a valid UUID", async () => {
     const userId = await createUser(drizzle); // real user for future-proofing
 
