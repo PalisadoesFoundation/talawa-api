@@ -7,10 +7,8 @@ import { membershipRequestsTable } from "~/src/drizzle/tables/membershipRequests
 import { usersTable } from "~/src/drizzle/tables/users";
 import { randomUUID } from "crypto";
 import { eq } from "drizzle-orm";
-
 // Correct type: Use the actual drizzle client instance type
 type DrizzleClient = typeof server.drizzleClient;
-
 // ---------------------------------------------------------
 // GRAPHQL MUTATION
 // ---------------------------------------------------------
@@ -22,13 +20,11 @@ const mutation = `
     }
   }
 `;
-
 // ---------------------------------------------------------
 // HELPER FUNCTIONS
 // ---------------------------------------------------------
 async function createUser(drizzle: DrizzleClient) {
   const id = randomUUID();
-
   // MINIMUM REQUIRED FIELDS based on usersTable schema
   await drizzle.insert(usersTable).values({
     id,
@@ -38,7 +34,6 @@ async function createUser(drizzle: DrizzleClient) {
     passwordHash: "dummy",
     role: "regular", // must exist in enum
   });
-
   return id;
 }
 
@@ -48,7 +43,6 @@ async function createMembershipRequest(
   status: "pending" | "approved" | "rejected" = "pending"
 ) {
   const requestId = randomUUID();
-
   await drizzle.insert(membershipRequestsTable).values({
     membershipRequestId: requestId,
     userId,
@@ -58,7 +52,6 @@ async function createMembershipRequest(
 
   return requestId;
 }
-
 // ---------------------------------------------------------
 // TEST SUITE
 // ---------------------------------------------------------
@@ -70,7 +63,6 @@ describe("Mutation.cancelMembershipRequest", () => {
     await drizzle.delete(membershipRequestsTable);
     await drizzle.delete(usersTable);
   });
-
   // ---------------------------------------------------------
   // Test: Unauthenticated access
   // ---------------------------------------------------------
@@ -86,13 +78,11 @@ describe("Mutation.cancelMembershipRequest", () => {
 
     expect(res.json().errors[0].extensions.code).toBe("unauthenticated");
   });
-
   // ---------------------------------------------------------
   // Test: Invalid UUID input
   // ---------------------------------------------------------
   it("returns invalid_arguments for malformed membershipRequestId", async () => {
     const userId = randomUUID();
-
     const res = await server.inject({
       method: "POST",
       url,
@@ -105,13 +95,11 @@ describe("Mutation.cancelMembershipRequest", () => {
 
     expect(res.json().errors[0].extensions.code).toBe("invalid_arguments");
   });
-
   // ---------------------------------------------------------
   // Test: Membership request does not exist
   // ---------------------------------------------------------
   it("returns unexpected when membership request does not exist", async () => {
     const userId = await createUser(drizzle);
-
     const res = await server.inject({
       method: "POST",
       url,
@@ -124,14 +112,12 @@ describe("Mutation.cancelMembershipRequest", () => {
 
     expect(res.json().errors[0].extensions.code).toBe("unexpected");
   });
-
   // ---------------------------------------------------------
   // Test: Non-pending request
   // ---------------------------------------------------------
   it("returns forbidden_action when request status is not pending", async () => {
     const userId = await createUser(drizzle);
     const requestId = await createMembershipRequest(drizzle, userId, "approved");
-
     const res = await server.inject({
       method: "POST",
       url,
@@ -144,7 +130,6 @@ describe("Mutation.cancelMembershipRequest", () => {
 
     expect(res.json().errors[0].extensions.code).toBe("forbidden_action");
   });
-  
   // ---------------------------------------------------------
   // Test: User cannot cancel another user's membership request
   // ---------------------------------------------------------
@@ -152,7 +137,6 @@ describe("Mutation.cancelMembershipRequest", () => {
     const userA = await createUser(drizzle);
     const userB = await createUser(drizzle);
     const requestId = await createMembershipRequest(drizzle, userA);
-
     const res = await server.inject({
       method: "POST",
       url,
@@ -162,9 +146,7 @@ describe("Mutation.cancelMembershipRequest", () => {
         variables: { input: { membershipRequestId: requestId } },
       },
     });
-
     expect(res.json().errors[0].extensions.code).toBe("unexpected");
-
     const result = await drizzle
       .select()
       .from(membershipRequestsTable)
@@ -178,7 +160,6 @@ describe("Mutation.cancelMembershipRequest", () => {
   it("successfully cancels a pending membership request", async () => {
     const userId = await createUser(drizzle);
     const requestId = await createMembershipRequest(drizzle, userId);
-
     const res = await server.inject({
       method: "POST",
       url,
@@ -188,10 +169,8 @@ describe("Mutation.cancelMembershipRequest", () => {
         variables: { input: { membershipRequestId: requestId } },
       },
     });
-
     const body = res.json();
     expect(body.data.cancelMembershipRequest.success).toBe(true);
-
     const result = await drizzle
       .select()
       .from(membershipRequestsTable)
