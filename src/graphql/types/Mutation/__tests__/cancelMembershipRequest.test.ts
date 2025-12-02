@@ -144,9 +144,7 @@ describe("Mutation.cancelMembershipRequest", () => {
 
     expect(res.json().errors[0].extensions.code).toBe("forbidden_action");
   });
-
-
-
+  
   // ---------------------------------------------------------
   // Test: User cannot cancel another user's membership request
   // ---------------------------------------------------------
@@ -174,8 +172,6 @@ describe("Mutation.cancelMembershipRequest", () => {
 
     expect(result.length).toBe(1);
   });
-
-
   // ---------------------------------------------------------
   // Test: Successful cancellation
   // ---------------------------------------------------------
