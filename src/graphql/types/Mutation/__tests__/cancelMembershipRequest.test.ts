@@ -147,33 +147,33 @@ describe("Mutation.cancelMembershipRequest", () => {
 
 
 
-// ---------------------------------------------------------
-// Test: User cannot cancel another user's membership request
-// ---------------------------------------------------------
-it("returns unexpected when user tries to cancel another user's membership request", async () => {
-  const userA = await createUser(drizzle);
-  const userB = await createUser(drizzle);
-  const requestId = await createMembershipRequest(drizzle, userA);
+  // ---------------------------------------------------------
+  // Test: User cannot cancel another user's membership request
+  // ---------------------------------------------------------
+  it("returns unexpected when user tries to cancel another user's membership request", async () => {
+    const userA = await createUser(drizzle);
+    const userB = await createUser(drizzle);
+    const requestId = await createMembershipRequest(drizzle, userA);
 
-  const res = await server.inject({
-    method: "POST",
-    url,
-    headers: { authorization: `Bearer ${userB}` },
-    payload: {
-      query: mutation,
-      variables: { input: { membershipRequestId: requestId } },
-    },
+    const res = await server.inject({
+      method: "POST",
+      url,
+      headers: { authorization: `Bearer ${userB}` },
+      payload: {
+        query: mutation,
+        variables: { input: { membershipRequestId: requestId } },
+      },
+    });
+
+    expect(res.json().errors[0].extensions.code).toBe("unexpected");
+
+    const result = await drizzle
+      .select()
+      .from(membershipRequestsTable)
+      .where(eq(membershipRequestsTable.membershipRequestId, requestId));
+
+    expect(result.length).toBe(1);
   });
-
-  expect(res.json().errors[0].extensions.code).toBe("unexpected");
-
-  const result = await drizzle
-    .select()
-    .from(membershipRequestsTable)
-    .where(eq(membershipRequestsTable.membershipRequestId, requestId));
-
-  expect(result.length).toBe(1);
-});
 
 
   // ---------------------------------------------------------
