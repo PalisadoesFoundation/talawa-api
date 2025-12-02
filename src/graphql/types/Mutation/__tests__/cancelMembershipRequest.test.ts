@@ -1,12 +1,15 @@
 // ---------------------------------------------------------
 // IMPORTS
 // ---------------------------------------------------------
-import { describe, it, expect, beforeEach } from "vitest";
+// ---------------------------------------------------------
+// IMPORTS
+// ---------------------------------------------------------
+import { beforeEach, describe, expect, it } from "vitest";
+import { eq } from "drizzle-orm";
+import { randomUUID } from "node:crypto";
 import { server } from "../../../../../test/server";
 import { membershipRequestsTable } from "~/src/drizzle/tables/membershipRequests";
 import { usersTable } from "~/src/drizzle/tables/users";
-import { randomUUID } from "crypto";
-import { eq } from "drizzle-orm";
 // Correct type: Use the actual drizzle client instance type
 type DrizzleClient = typeof server.drizzleClient;
 // ---------------------------------------------------------
