@@ -566,8 +566,9 @@ describe("TagFolder Tags Resolver Tests", () => {
 			expect(result.pageInfo).toBeDefined();
 			expect(result.pageInfo.hasNextPage).toBe(false);
 			expect(result.pageInfo.hasPreviousPage).toBe(false);
-			expect(result.pageInfo.startCursor).toBeDefined();
-			expect(result.pageInfo.endCursor).toBeDefined();
+			expect(result.pageInfo.startCursor).not.toBeNull();
+			expect(result.pageInfo.endCursor).not.toBeNull();
+			expect(result.pageInfo.startCursor).toBe(result.pageInfo.endCursor);
 		});
 	});
 });
