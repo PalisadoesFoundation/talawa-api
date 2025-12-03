@@ -219,8 +219,8 @@ suite("cancelMembershipRequest", () => {
         });
     });
 
-    suite("cancelMembershipRequest - success", () => {
-        test("should cancel and delete a pending membership request", async () => {
+    suite("cancelMembershipRequest - forbidden when not pending", () => {
+        test("should return forbidden_action for non-pending status", async () => {
             const { authToken } = await createRegularUserUsingAdmin();
             const orgId = await createTestOrganization();
 
@@ -231,9 +231,13 @@ suite("cancelMembershipRequest", () => {
                     variables: { input: { organizationId: orgId } },
                 },
             );
-
             const reqId = sendRes.data?.sendMembershipRequest?.membershipRequestId;
             expect(reqId).toBeDefined();
+            // update status to approved manually
+            await server.drizzleClient
+                .update(membershipRequestsTable)
+                .set({ status: "approved" })
+                .where(eq(membershipRequestsTable.membershipRequestId, reqId));
 
             const cancelRes = await mercuriusClient.mutate(
                 Mutation_cancelMembershipRequest,
@@ -242,15 +246,22 @@ suite("cancelMembershipRequest", () => {
                     variables: { input: { membershipRequestId: reqId } },
                 },
             );
-
-            expect(cancelRes.data?.cancelMembershipRequest?.success).toBe(true);
-            // verify deletion in DB
+            expect(cancelRes.data?.cancelMembershipRequest ?? null).toBeNull();
+            expect(cancelRes.errors).toEqual(
+                expect.arrayContaining([
+                    expect.objectContaining({
+                        extensions: expect.objectContaining({ code: "forbidden_action" }),
+                    }),
+                ]),
+            );
             const rows = await server.drizzleClient
                 .select()
                 .from(membershipRequestsTable)
                 .where(eq(membershipRequestsTable.membershipRequestId, reqId));
 
-            expect(rows.length).toBe(0);
+            expect(rows.length).toBe(1);
+            expect(rows[0]!.status).toBe("approved");
         });
     });
+
 });
