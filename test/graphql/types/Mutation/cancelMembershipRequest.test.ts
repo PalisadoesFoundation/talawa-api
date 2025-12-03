@@ -35,6 +35,7 @@ async function createTestOrganization() {
 
     const adminToken = signInResult.data?.signIn?.authenticationToken;
     expect(adminToken).toBeDefined();
+    expect(signInResult.errors ?? []).toEqual([]); 
     const createOrgResult = await mercuriusClient.mutate(
         Mutation_createOrganization,
         {
@@ -50,6 +51,7 @@ async function createTestOrganization() {
     );
     const orgId = createOrgResult.data?.createOrganization?.id;
     expect(orgId).toBeDefined();
+    expect(createOrgResult.errors ?? []).toEqual([]);
     return orgId;
 }
 suite("cancelMembershipRequest", () => {
@@ -163,7 +165,7 @@ suite("cancelMembershipRequest", () => {
             const rows = await server.drizzleClient
                 .select()
                 .from(membershipRequestsTable)
-                .where(eq(membershipRequestsTable.membershipRequestId, reqId));
+                .where(eq(membershipRequestsTable.membershipRequestId, reqId!));
 
             expect(rows.length).toBe(1);
         });
@@ -210,7 +212,7 @@ suite("cancelMembershipRequest", () => {
             const rows = await server.drizzleClient
                 .select()
                 .from(membershipRequestsTable)
-                .where(eq(membershipRequestsTable.membershipRequestId, reqId));
+                .where(eq(membershipRequestsTable.membershipRequestId, reqId!));
 
             expect(rows.length).toBe(1);
             expect(rows[0]!.status).toBe("approved");
@@ -242,11 +244,12 @@ suite("cancelMembershipRequest", () => {
             );
 
             expect(cancelRes.data?.cancelMembershipRequest?.success).toBe(true);
+            expect(cancelRes.errors).toBeUndefined();
 
             const rows = await server.drizzleClient
                 .select()
                 .from(membershipRequestsTable)
-                .where(eq(membershipRequestsTable.membershipRequestId, reqId));
+                .where(eq(membershipRequestsTable.membershipRequestId, reqId!));
 
             expect(rows.length).toBe(0);
         });
