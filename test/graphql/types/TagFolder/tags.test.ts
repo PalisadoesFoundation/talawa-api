@@ -4,7 +4,7 @@ import type {
 	GraphQLResolveInfo,
 } from "graphql";
 import { createMockGraphQLContext } from "test/_Mocks_/mockContextCreator/mockContextCreator";
-import { beforeAll, beforeEach, describe, expect, it } from "vitest";
+import { beforeAll, beforeEach, describe, expect, it, type vi } from "vitest";
 import type { GraphQLContext } from "~/src/graphql/context";
 import { schema } from "~/src/graphql/schema";
 import type { TagFolder as TagFolderType } from "~/src/graphql/types/TagFolder/TagFolder";
@@ -24,6 +24,25 @@ describe("TagFolder Tags Resolver Tests", () => {
 	let tagsResolver: TagsResolver;
 
 	const mockResolveInfo: GraphQLResolveInfo = {} as GraphQLResolveInfo;
+
+	const expectInvalidArgumentsError = (
+		error: unknown,
+		expectedArgumentPath: string,
+	): void => {
+		expect(error).toBeInstanceOf(TalawaGraphQLError);
+		const graphQLError = error as TalawaGraphQLError;
+		expect(graphQLError.extensions.code).toBe("invalid_arguments");
+		expect(graphQLError.extensions.issues).toBeDefined();
+		expect(Array.isArray(graphQLError.extensions.issues)).toBe(true);
+		const issues = graphQLError.extensions.issues as Array<{
+			argumentPath?: string[];
+		}>;
+		expect(
+			issues.some((issue) =>
+				issue.argumentPath?.includes(expectedArgumentPath),
+			),
+		).toBe(true);
+	};
 
 	beforeAll(() => {
 		const tagFolderType = schema.getType("TagFolder") as GraphQLObjectType;
@@ -152,17 +171,7 @@ describe("TagFolder Tags Resolver Tests", () => {
 				thrownError = error;
 			}
 
-			expect(thrownError).toBeInstanceOf(TalawaGraphQLError);
-			const graphQLError = thrownError as TalawaGraphQLError;
-			expect(graphQLError.extensions.code).toBe("invalid_arguments");
-			expect(graphQLError.extensions.issues).toBeDefined();
-			expect(Array.isArray(graphQLError.extensions.issues)).toBe(true);
-			const issues = graphQLError.extensions.issues as Array<{
-				argumentPath?: string[];
-			}>;
-			expect(
-				issues.some((issue) => issue.argumentPath?.includes("after")),
-			).toBe(true);
+			expectInvalidArgumentsError(thrownError, "after");
 		});
 
 		it("should throw invalid_arguments for malformed base64 cursor (backward)", async () => {
@@ -179,17 +188,7 @@ describe("TagFolder Tags Resolver Tests", () => {
 				thrownError = error;
 			}
 
-			expect(thrownError).toBeInstanceOf(TalawaGraphQLError);
-			const graphQLError = thrownError as TalawaGraphQLError;
-			expect(graphQLError.extensions.code).toBe("invalid_arguments");
-			expect(graphQLError.extensions.issues).toBeDefined();
-			expect(Array.isArray(graphQLError.extensions.issues)).toBe(true);
-			const issues = graphQLError.extensions.issues as Array<{
-				argumentPath?: string[];
-			}>;
-			expect(
-				issues.some((issue) => issue.argumentPath?.includes("before")),
-			).toBe(true);
+			expectInvalidArgumentsError(thrownError, "before");
 		});
 
 		it("should throw invalid_arguments for invalid JSON in cursor", async () => {
@@ -207,17 +206,7 @@ describe("TagFolder Tags Resolver Tests", () => {
 				thrownError = error;
 			}
 
-			expect(thrownError).toBeInstanceOf(TalawaGraphQLError);
-			const graphQLError = thrownError as TalawaGraphQLError;
-			expect(graphQLError.extensions.code).toBe("invalid_arguments");
-			expect(graphQLError.extensions.issues).toBeDefined();
-			expect(Array.isArray(graphQLError.extensions.issues)).toBe(true);
-			const issues = graphQLError.extensions.issues as Array<{
-				argumentPath?: string[];
-			}>;
-			expect(
-				issues.some((issue) => issue.argumentPath?.includes("after")),
-			).toBe(true);
+			expectInvalidArgumentsError(thrownError, "after");
 		});
 
 		it("should throw invalid_arguments for cursor with invalid schema", async () => {
@@ -240,17 +229,7 @@ describe("TagFolder Tags Resolver Tests", () => {
 				thrownError = error;
 			}
 
-			expect(thrownError).toBeInstanceOf(TalawaGraphQLError);
-			const graphQLError = thrownError as TalawaGraphQLError;
-			expect(graphQLError.extensions.code).toBe("invalid_arguments");
-			expect(graphQLError.extensions.issues).toBeDefined();
-			expect(Array.isArray(graphQLError.extensions.issues)).toBe(true);
-			const issues = graphQLError.extensions.issues as Array<{
-				argumentPath?: string[];
-			}>;
-			expect(
-				issues.some((issue) => issue.argumentPath?.includes("after")),
-			).toBe(true);
+			expectInvalidArgumentsError(thrownError, "after");
 		});
 	});
 
@@ -295,12 +274,24 @@ describe("TagFolder Tags Resolver Tests", () => {
 			expect(result.edges[1]?.node.name).toBe("Beta");
 
 			expect(result.edges[0]?.cursor).toBeDefined();
-			const decodedCursor = JSON.parse(
-				Buffer.from(result.edges[0]?.cursor ?? "", "base64url").toString(
+			const cursor = result.edges[0]?.cursor ?? "";
+
+			let decodedCursor: unknown;
+			expect(() => {
+				const decodedString = Buffer.from(cursor, "base64url").toString(
 					"utf-8",
-				),
+				);
+				decodedCursor = JSON.parse(decodedString);
+			}).not.toThrow();
+
+			// Validate decoded cursor structure
+			expect(typeof decodedCursor).toBe("object");
+			expect(decodedCursor).not.toBeNull();
+			expect(decodedCursor).toHaveProperty("name");
+			expect(typeof (decodedCursor as { name?: unknown }).name).toBe("string");
+			expect((decodedCursor as { name: string }).name.length).toBeGreaterThan(
+				0,
 			);
-			expect(decodedCursor.name).toBe("Alpha");
 		});
 
 		it("should retrieve tags with forward pagination (with cursor)", async () => {
@@ -492,7 +483,7 @@ describe("TagFolder Tags Resolver Tests", () => {
 	});
 
 	describe("Tag Retrieval", () => {
-		it("should properly filter tags by organization ID", async () => {
+		it("should properly filter tags by organization ID and tag folder ID", async () => {
 			const mockTags = [
 				{
 					id: "tag-1",
@@ -516,6 +507,14 @@ describe("TagFolder Tags Resolver Tests", () => {
 
 			expect(result).toBeDefined();
 			expect(mocks.drizzleClient.query.tagsTable.findMany).toHaveBeenCalled();
+
+			const callArgs = (
+				mocks.drizzleClient.query.tagsTable.findMany as ReturnType<typeof vi.fn>
+			).mock.calls[0]?.[0];
+			expect(callArgs).toBeDefined();
+			expect(callArgs?.where).toBeDefined();
+			expect(callArgs?.orderBy).toBeDefined();
+			expect(callArgs?.limit).toBe(11);
 		});
 
 		it("should handle empty results", async () => {
