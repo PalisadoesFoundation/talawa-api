@@ -1,5 +1,3 @@
-
-
 import { faker } from "@faker-js/faker";
 import { expect, suite, test } from "vitest";
 import { gql } from "graphql-tag";
@@ -24,9 +22,8 @@ const Mutation_cancelMembershipRequest = gql(`
     }
   }
 `);
-/** Helper to create a test organization */
+/** Helper to create an organization */
 async function createTestOrganization() {
-    // sign in as admin
     const signInResult = await mercuriusClient.query(Query_signIn, {
         variables: {
             input: {
@@ -38,7 +35,6 @@ async function createTestOrganization() {
 
     const adminToken = signInResult.data?.signIn?.authenticationToken;
     expect(adminToken).toBeDefined();
-    // create org
     const createOrgResult = await mercuriusClient.mutate(
         Mutation_createOrganization,
         {
@@ -52,15 +48,15 @@ async function createTestOrganization() {
             },
         },
     );
-
     const orgId = createOrgResult.data?.createOrganization?.id;
     expect(orgId).toBeDefined();
-
     return orgId;
 }
-
 suite("cancelMembershipRequest", () => {
-    suite("cancelMembershipRequest - unauthenticated", () => {
+    // ----------------------------------------------------------
+    // UNAUTHENTICATED
+    // ----------------------------------------------------------
+    suite("unauthenticated", () => {
         test("should return unauthenticated error", async () => {
             const result = await mercuriusClient.mutate(
                 Mutation_cancelMembershipRequest,
@@ -82,20 +78,20 @@ suite("cancelMembershipRequest", () => {
             );
         });
     });
-
-    suite("cancelMembershipRequest - invalid arguments", () => {
+    // ----------------------------------------------------------
+    // INVALID ARGUMENTS
+    // ----------------------------------------------------------
+    suite("invalid arguments", () => {
         test("should return invalid_arguments for malformed UUID", async () => {
             const { authToken } = await createRegularUserUsingAdmin();
-            expect(authToken).toBeDefined();
 
             const result = await mercuriusClient.mutate(
                 Mutation_cancelMembershipRequest,
                 {
                     headers: { authorization: `bearer ${authToken}` },
-                    variables: { input: { membershipRequestId: "" } }, // invalid uuid
+                    variables: { input: { membershipRequestId: "" } },
                 },
             );
-
             expect(result.data?.cancelMembershipRequest ?? null).toBeNull();
             expect(result.errors).toEqual(
                 expect.arrayContaining([
@@ -107,8 +103,10 @@ suite("cancelMembershipRequest", () => {
             );
         });
     });
-
-    suite("cancelMembershipRequest - membership request not found", () => {
+    // ----------------------------------------------------------
+    // REQUEST DOES NOT EXIST
+    // ----------------------------------------------------------
+    suite("membership request not found", () => {
         test("should return unexpected for nonexistent membership request", async () => {
             const { authToken } = await createRegularUserUsingAdmin();
 
@@ -133,12 +131,13 @@ suite("cancelMembershipRequest", () => {
             );
         });
     });
-
-    suite("cancelMembershipRequest - cross-user authorization", () => {
+    // ----------------------------------------------------------
+    // CROSS-USER AUTHORIZATION
+    // ----------------------------------------------------------
+    suite("cross-user authorization", () => {
         test("User B cannot cancel User A's membership request", async () => {
             const userA = await createRegularUserUsingAdmin();
             const userB = await createRegularUserUsingAdmin();
-
             const orgId = await createTestOrganization();
 
             const sendRes = await mercuriusClient.mutate(
@@ -160,7 +159,6 @@ suite("cancelMembershipRequest", () => {
                 },
             );
 
-            // userB cannot cancel A's request → unexpected
             expect(cancelRes.data?.cancelMembershipRequest ?? null).toBeNull();
             expect(cancelRes.errors).toEqual(
                 expect.arrayContaining([
@@ -169,18 +167,20 @@ suite("cancelMembershipRequest", () => {
                     }),
                 ]),
             );
-            // verify request still exists
+
             const rows = await server.drizzleClient
                 .select()
                 .from(membershipRequestsTable)
                 .where(eq(membershipRequestsTable.membershipRequestId, reqId));
 
-            expect(rows.length).toBe(1);
+            expect(rows.length).toBe(1); // still exists
         });
     });
-
-    suite("cancelMembershipRequest - forbidden when not pending", () => {
-        test("should return forbidden_action for non-pending status", async () => {
+    // ----------------------------------------------------------
+    // FORBIDDEN WHEN NOT PENDING
+    // ----------------------------------------------------------
+    suite("forbidden when not pending", () => {
+        test("should return forbidden_action for non-pending request", async () => {
             const { authToken } = await createRegularUserUsingAdmin();
             const orgId = await createTestOrganization();
 
@@ -194,7 +194,7 @@ suite("cancelMembershipRequest", () => {
 
             const reqId = sendRes.data?.sendMembershipRequest?.membershipRequestId;
             expect(reqId).toBeDefined();
-            // update status to approved manually
+
             await server.drizzleClient
                 .update(membershipRequestsTable)
                 .set({ status: "approved" })
@@ -216,11 +216,21 @@ suite("cancelMembershipRequest", () => {
                     }),
                 ]),
             );
+
+            const rows = await server.drizzleClient
+                .select()
+                .from(membershipRequestsTable)
+                .where(eq(membershipRequestsTable.membershipRequestId, reqId));
+
+            expect(rows.length).toBe(1);
+            expect(rows[0]!.status).toBe("approved"); // reviewer suggestion
         });
     });
-
-    suite("cancelMembershipRequest - forbidden when not pending", () => {
-        test("should return forbidden_action for non-pending status", async () => {
+    // ----------------------------------------------------------
+    // SUCCESS
+    // ----------------------------------------------------------
+    suite("success", () => {
+        test("should cancel and delete a pending request", async () => {
             const { authToken } = await createRegularUserUsingAdmin();
             const orgId = await createTestOrganization();
 
@@ -231,13 +241,9 @@ suite("cancelMembershipRequest", () => {
                     variables: { input: { organizationId: orgId } },
                 },
             );
+
             const reqId = sendRes.data?.sendMembershipRequest?.membershipRequestId;
             expect(reqId).toBeDefined();
-            // update status to approved manually
-            await server.drizzleClient
-                .update(membershipRequestsTable)
-                .set({ status: "approved" })
-                .where(eq(membershipRequestsTable.membershipRequestId, reqId));
 
             const cancelRes = await mercuriusClient.mutate(
                 Mutation_cancelMembershipRequest,
@@ -246,22 +252,15 @@ suite("cancelMembershipRequest", () => {
                     variables: { input: { membershipRequestId: reqId } },
                 },
             );
-            expect(cancelRes.data?.cancelMembershipRequest ?? null).toBeNull();
-            expect(cancelRes.errors).toEqual(
-                expect.arrayContaining([
-                    expect.objectContaining({
-                        extensions: expect.objectContaining({ code: "forbidden_action" }),
-                    }),
-                ]),
-            );
+
+            expect(cancelRes.data?.cancelMembershipRequest?.success).toBe(true);
+
             const rows = await server.drizzleClient
                 .select()
                 .from(membershipRequestsTable)
                 .where(eq(membershipRequestsTable.membershipRequestId, reqId));
 
-            expect(rows.length).toBe(1);
-            expect(rows[0]!.status).toBe("approved");
+            expect(rows.length).toBe(0); // deleted
         });
     });
-
 });
