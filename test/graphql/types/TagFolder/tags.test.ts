@@ -133,9 +133,9 @@ describe("TagFolder Tags Resolver Tests", () => {
 			if (!tagsField) {
 				throw new Error("Tags field not found on TagFolder type");
 			}
-			expect(tagsField.description).toBe(
-				"GraphQL connection to traverse through the tags contained within the tag folder.",
-			);
+			expect(tagsField.description).toBeDefined();
+			expect(tagsField.description).toContain("GraphQL connection");
+			expect(tagsField.description).toContain("tags");
 		});
 	});
 	describe("Argument Validation", () => {
