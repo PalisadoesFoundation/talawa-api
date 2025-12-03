@@ -4,8 +4,8 @@ import type {
 	GraphQLResolveInfo,
 } from "graphql";
 import { createMockGraphQLContext } from "test/_Mocks_/mockContextCreator/mockContextCreator";
-// biome-ignore lint/style/useImportType: vi must be imported as a value for runtime usage
-import { beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
+import { beforeAll, beforeEach, describe, expect, it } from "vitest";
+import type { Mock } from "vitest";
 import type { GraphQLContext } from "~/src/graphql/context";
 import { schema } from "~/src/graphql/schema";
 import type { TagFolder as TagFolderType } from "~/src/graphql/types/TagFolder/TagFolder";
@@ -508,9 +508,8 @@ describe("TagFolder Tags Resolver Tests", () => {
 			expect(result).toBeDefined();
 			expect(mocks.drizzleClient.query.tagsTable.findMany).toHaveBeenCalled();
 
-			const callArgs = (
-				mocks.drizzleClient.query.tagsTable.findMany as ReturnType<typeof vi.fn>
-			).mock.calls[0]?.[0];
+			const callArgs = (mocks.drizzleClient.query.tagsTable.findMany as Mock)
+				.mock.calls[0]?.[0];
 			expect(callArgs).toBeDefined();
 			expect(callArgs?.where).toBeDefined();
 			expect(callArgs?.orderBy).toBeDefined();
