@@ -4,6 +4,7 @@ import type {
 	GraphQLResolveInfo,
 } from "graphql";
 import { createMockGraphQLContext } from "test/_Mocks_/mockContextCreator/mockContextCreator";
+// biome-ignore lint/style/useImportType: vi must be imported as a value for runtime usage
 import { beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 import type { GraphQLContext } from "~/src/graphql/context";
 import { schema } from "~/src/graphql/schema";
