@@ -4,7 +4,7 @@ import type {
 	GraphQLResolveInfo,
 } from "graphql";
 import { createMockGraphQLContext } from "test/_Mocks_/mockContextCreator/mockContextCreator";
-import { beforeAll, beforeEach, describe, expect, it, type vi } from "vitest";
+import { beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 import type { GraphQLContext } from "~/src/graphql/context";
 import { schema } from "~/src/graphql/schema";
 import type { TagFolder as TagFolderType } from "~/src/graphql/types/TagFolder/TagFolder";
@@ -13,8 +13,7 @@ import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 type TagsResolver = GraphQLFieldResolver<
 	TagFolderType,
 	GraphQLContext,
-	Record<string, unknown>,
-	unknown
+	Record<string, unknown>
 >;
 
 describe("TagFolder Tags Resolver Tests", () => {
@@ -483,7 +482,7 @@ describe("TagFolder Tags Resolver Tests", () => {
 	});
 
 	describe("Tag Retrieval", () => {
-		it("should properly filter tags by organization ID and tag folder ID", async () => {
+		it("should query tags with where clause, orderBy, and pagination limit", async () => {
 			const mockTags = [
 				{
 					id: "tag-1",
