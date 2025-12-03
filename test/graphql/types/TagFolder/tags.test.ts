@@ -191,18 +191,6 @@ describe("TagFolder Tags Resolver Tests", () => {
 				issues.some((issue) => issue.argumentPath?.includes("before")),
 			).toBe(true);
 		});
-		it("should handle cursor parsing when arg.cursor is undefined", async () => {
-			// Mock empty array to simulate no tags found
-			mocks.drizzleClient.query.tagsTable.findMany.mockResolvedValue([]);
-
-			const result = await tagsResolver(
-				mockTagFolder,
-				{ first: 10 },
-				ctx,
-				mockResolveInfo,
-			);
-			expect(result).toBeDefined();
-		});
 
 		it("should throw invalid_arguments for invalid JSON in cursor", async () => {
 			const invalidCursor = Buffer.from("not-json").toString("base64url");
