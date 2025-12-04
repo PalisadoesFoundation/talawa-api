@@ -1,16 +1,19 @@
 import { faker } from "@faker-js/faker";
-import { expect, suite, test } from "vitest";
+import { eq } from "drizzle-orm";
 import { gql } from "graphql-tag";
+import { expect, suite, test } from "vitest";
+
+import { membershipRequestsTable } from "~/src/drizzle/tables/membershipRequests";
+
 import { server } from "../../../server";
 import { mercuriusClient } from "../client";
 import { createRegularUserUsingAdmin } from "../createRegularUserUsingAdmin";
 import {
-    Mutation_sendMembershipRequest,
     Mutation_createOrganization,
+    Mutation_sendMembershipRequest,
     Query_signIn,
 } from "../documentNodes";
-import { membershipRequestsTable } from "~/src/drizzle/tables/membershipRequests";
-import { eq } from "drizzle-orm";
+
 
 const Mutation_cancelMembershipRequest = gql(`
   mutation Mutation_cancelMembershipRequest(
@@ -42,7 +45,7 @@ async function createTestOrganization() {
             headers: { authorization: `bearer ${adminToken}` },
             variables: {
                 input: {
-                    name: "TestOrg-" + Date.now(),
+                    name: `TestOrg-${Date.now()}`,
                     countryCode: "us",
                     isUserRegistrationRequired: true,
                 },
@@ -144,12 +147,13 @@ suite("cancelMembershipRequest", () => {
 
             const reqId = sendRes.data?.sendMembershipRequest?.membershipRequestId;
             expect(reqId).toBeDefined();
+            const id = reqId as string
 
             const cancelRes = await mercuriusClient.mutate(
                 Mutation_cancelMembershipRequest,
                 {
                     headers: { authorization: `bearer ${userB.authToken}` },
-                    variables: { input: { membershipRequestId: reqId! } },
+                    variables: { input: { membershipRequestId: id } },
                 },
             );
 
@@ -165,7 +169,7 @@ suite("cancelMembershipRequest", () => {
             const rows = await server.drizzleClient
                 .select()
                 .from(membershipRequestsTable)
-                .where(eq(membershipRequestsTable.membershipRequestId, reqId!));
+                .where(eq(membershipRequestsTable.membershipRequestId, id));
 
             expect(rows.length).toBe(1);
         });
@@ -186,17 +190,18 @@ suite("cancelMembershipRequest", () => {
 
             const reqId = sendRes.data?.sendMembershipRequest?.membershipRequestId;
             expect(reqId).toBeDefined();
+            const id = reqId as string
 
             await server.drizzleClient
                 .update(membershipRequestsTable)
                 .set({ status: "approved" })
-                .where(eq(membershipRequestsTable.membershipRequestId, reqId!));
+                .where(eq(membershipRequestsTable.membershipRequestId, id));
 
             const cancelRes = await mercuriusClient.mutate(
                 Mutation_cancelMembershipRequest,
                 {
                     headers: { authorization: `bearer ${authToken}` },
-                    variables: { input: { membershipRequestId: reqId! } },
+                    variables: { input: { membershipRequestId: id } },
                 },
             );
 
@@ -212,10 +217,10 @@ suite("cancelMembershipRequest", () => {
             const rows = await server.drizzleClient
                 .select()
                 .from(membershipRequestsTable)
-                .where(eq(membershipRequestsTable.membershipRequestId, reqId!));
+                .where(eq(membershipRequestsTable.membershipRequestId, id));
 
             expect(rows.length).toBe(1);
-            expect(rows[0]!.status).toBe("approved");
+            expect(rows[0]?.status).toBe("approved");
         });
     });
     // SUCCESS
@@ -234,12 +239,13 @@ suite("cancelMembershipRequest", () => {
 
             const reqId = sendRes.data?.sendMembershipRequest?.membershipRequestId;
             expect(reqId).toBeDefined();
+            const id = reqId as string
 
             const cancelRes = await mercuriusClient.mutate(
                 Mutation_cancelMembershipRequest,
                 {
                     headers: { authorization: `bearer ${authToken}` },
-                    variables: { input: { membershipRequestId: reqId! } },
+                    variables: { input: { membershipRequestId: id } },
                 },
             );
 
@@ -249,7 +255,7 @@ suite("cancelMembershipRequest", () => {
             const rows = await server.drizzleClient
                 .select()
                 .from(membershipRequestsTable)
-                .where(eq(membershipRequestsTable.membershipRequestId, reqId!));
+                .where(eq(membershipRequestsTable.membershipRequestId, id));
 
             expect(rows.length).toBe(0);
         });
