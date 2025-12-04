@@ -190,7 +190,7 @@ suite("cancelMembershipRequest", () => {
             await server.drizzleClient
                 .update(membershipRequestsTable)
                 .set({ status: "approved" })
-                .where(eq(membershipRequestsTable.membershipRequestId, reqId));
+                .where(eq(membershipRequestsTable.membershipRequestId, reqId!));
 
             const cancelRes = await mercuriusClient.mutate(
                 Mutation_cancelMembershipRequest,
