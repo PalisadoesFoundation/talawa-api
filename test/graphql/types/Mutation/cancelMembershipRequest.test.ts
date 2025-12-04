@@ -149,7 +149,7 @@ suite("cancelMembershipRequest", () => {
                 Mutation_cancelMembershipRequest,
                 {
                     headers: { authorization: `bearer ${userB.authToken}` },
-                    variables: { input: { membershipRequestId: reqId } },
+                    variables: { input: { membershipRequestId: reqId! } },
                 },
             );
 
@@ -196,7 +196,7 @@ suite("cancelMembershipRequest", () => {
                 Mutation_cancelMembershipRequest,
                 {
                     headers: { authorization: `bearer ${authToken}` },
-                    variables: { input: { membershipRequestId: reqId } },
+                    variables: { input: { membershipRequestId: reqId! } },
                 },
             );
 
@@ -239,7 +239,7 @@ suite("cancelMembershipRequest", () => {
                 Mutation_cancelMembershipRequest,
                 {
                     headers: { authorization: `bearer ${authToken}` },
-                    variables: { input: { membershipRequestId: reqId } },
+                    variables: { input: { membershipRequestId: reqId! } },
                 },
             );
 
