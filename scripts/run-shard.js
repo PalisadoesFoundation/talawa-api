@@ -52,6 +52,13 @@ child.on("error", (err) => {
 	process.exit(1);
 });
 
-child.on("exit", (code) => {
-	process.exit(code || 0);
+child.on("exit", (code, signal) => {
+	if (signal) {
+		console.error(`Test process terminated by signal: ${signal}`);
+		// Use a non-zero exit for abnormal termination
+		process.exit(1);
+	}
+
+	// Preserve non-zero exit codes from Vitest
+	process.exit(code ?? 1);
 });
