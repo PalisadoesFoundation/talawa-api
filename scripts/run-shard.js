@@ -39,7 +39,6 @@ const env = {
 	NODE_OPTIONS: process.env.NODE_OPTIONS || "--max-old-space-size=4096",
 };
 
-
 const child = spawn("npx", args, { stdio: "inherit", shell: true, env });
 
 child.on("error", (err) => {

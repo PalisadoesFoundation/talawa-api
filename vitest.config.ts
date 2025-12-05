@@ -68,7 +68,6 @@ export default defineConfig({
 			concurrent: false, // Disable within-file concurrency for stability
 		},
 
-		
 		passWithNoTests: true,
 		teardownTimeout: 10000,
 		hookTimeout: 30000, // 30 seconds for hooks
