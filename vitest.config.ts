@@ -12,7 +12,11 @@ export default defineConfig({
 		sourcemap: false, // Disable sourcemaps for faster tests
 	},
 	test: {
-		include: ["src/**/*.{spec,test}.{js,ts}", "test/**/*.{spec,test}.{js,ts}"],
+		include: [
+			...configDefaults.include,
+			"src/**/*.{spec,test}.{js,ts}",
+			"test/**/*.{spec,test}.{js,ts}",
+		],
 
 		exclude: [
 			...configDefaults.exclude,

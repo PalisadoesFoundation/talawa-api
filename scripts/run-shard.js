@@ -41,6 +41,12 @@ const env = {
 
 const child = spawn("npx", args, { stdio: "inherit", shell: true, env });
 
+for (const signal of ["SIGTERM", "SIGINT"]) {
+	process.on(signal, () => {
+		child.kill(signal);
+	});
+}
+
 child.on("error", (err) => {
 	console.error("Failed to spawn test process:", err);
 	process.exit(1);
