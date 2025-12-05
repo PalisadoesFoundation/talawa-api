@@ -14,7 +14,6 @@ import {
     Query_signIn,
 } from "../documentNodes";
 
-
 const Mutation_cancelMembershipRequest = gql(`
   mutation Mutation_cancelMembershipRequest(
     $input: MutationCancelMembershipRequestInput!
@@ -25,6 +24,7 @@ const Mutation_cancelMembershipRequest = gql(`
     }
   }
 `);
+
 /** Helper to create an organization */
 async function createTestOrganization() {
     const signInResult = await mercuriusClient.query(Query_signIn, {
@@ -36,9 +36,11 @@ async function createTestOrganization() {
         },
     });
 
+    expect(signInResult.errors ?? []).toEqual([]);
+
     const adminToken = signInResult.data?.signIn?.authenticationToken;
     expect(adminToken).toBeDefined();
-    expect(signInResult.errors ?? []).toEqual([]); 
+
     const createOrgResult = await mercuriusClient.mutate(
         Mutation_createOrganization,
         {
@@ -52,11 +54,15 @@ async function createTestOrganization() {
             },
         },
     );
+
+    expect(createOrgResult.errors ?? []).toEqual([]);
+
     const orgId = createOrgResult.data?.createOrganization?.id;
     expect(orgId).toBeDefined();
-    expect(createOrgResult.errors ?? []).toEqual([]);
-    return orgId;
+
+    return orgId as string;
 }
+
 suite("cancelMembershipRequest", () => {
     // UNAUTHENTICATED
     suite("unauthenticated", () => {
@@ -81,6 +87,7 @@ suite("cancelMembershipRequest", () => {
             );
         });
     });
+
     // INVALID ARGUMENTS
     suite("invalid arguments", () => {
         test("should return invalid_arguments for malformed UUID", async () => {
@@ -93,6 +100,7 @@ suite("cancelMembershipRequest", () => {
                     variables: { input: { membershipRequestId: "" } },
                 },
             );
+
             expect(result.data?.cancelMembershipRequest ?? null).toBeNull();
             expect(result.errors).toEqual(
                 expect.arrayContaining([
@@ -104,6 +112,7 @@ suite("cancelMembershipRequest", () => {
             );
         });
     });
+
     // REQUEST DOES NOT EXIST
     suite("membership request not found", () => {
         test("should return unexpected for nonexistent membership request", async () => {
@@ -130,7 +139,8 @@ suite("cancelMembershipRequest", () => {
             );
         });
     });
-    // CROSS-USER AUTHORIZATION    
+
+    // CROSS-USER AUTHORIZATION
     suite("cross-user authorization", () => {
         test("User B cannot cancel User A's membership request", async () => {
             const userA = await createRegularUserUsingAdmin();
@@ -147,7 +157,7 @@ suite("cancelMembershipRequest", () => {
 
             const reqId = sendRes.data?.sendMembershipRequest?.membershipRequestId;
             expect(reqId).toBeDefined();
-            const id = reqId as string
+            const id: string = reqId as string;
 
             const cancelRes = await mercuriusClient.mutate(
                 Mutation_cancelMembershipRequest,
@@ -174,6 +184,7 @@ suite("cancelMembershipRequest", () => {
             expect(rows.length).toBe(1);
         });
     });
+
     // FORBIDDEN WHEN NOT PENDING
     suite("forbidden when not pending", () => {
         test("should return forbidden_action for non-pending request", async () => {
@@ -190,7 +201,7 @@ suite("cancelMembershipRequest", () => {
 
             const reqId = sendRes.data?.sendMembershipRequest?.membershipRequestId;
             expect(reqId).toBeDefined();
-            const id = reqId as string
+            const id: string = reqId as string;
 
             await server.drizzleClient
                 .update(membershipRequestsTable)
@@ -223,6 +234,7 @@ suite("cancelMembershipRequest", () => {
             expect(rows[0]?.status).toBe("approved");
         });
     });
+
     // SUCCESS
     suite("success", () => {
         test("should cancel and delete a pending request", async () => {
@@ -239,7 +251,7 @@ suite("cancelMembershipRequest", () => {
 
             const reqId = sendRes.data?.sendMembershipRequest?.membershipRequestId;
             expect(reqId).toBeDefined();
-            const id = reqId as string
+            const id: string = reqId as string;
 
             const cancelRes = await mercuriusClient.mutate(
                 Mutation_cancelMembershipRequest,
