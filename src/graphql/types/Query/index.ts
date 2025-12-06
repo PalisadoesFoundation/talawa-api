@@ -18,6 +18,7 @@ import "./fundCampaignPledge";
 import "./getPledgesByUserId";
 import "./getUserPledgesByCampaignID";
 import "./organization";
+import "./organizationPosts";
 import "./plugins";
 import "./post";
 import "./renewAuthenticationToken";
