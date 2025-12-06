@@ -9,7 +9,7 @@ const testEnvConfig = envSchema<TestEnvConfig>({
 	schema: testEnvConfigSchema,
 });
 
-console.log("DEBUG: testEnvConfig", testEnvConfig);
+export const server = await createServer({
 
 export const server = await createServer({
 	envConfig: {
