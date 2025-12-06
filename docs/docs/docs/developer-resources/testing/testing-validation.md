@@ -427,6 +427,43 @@ suite.concurrent("non-flaky concurrent tests", async () => {
 });
 ```
 
+## Mock Isolation & Cleanup
+
+To ensure tests run reliably in parallel and do not interfere with each other, strict mock isolation is enforced.
+
+### The Rule
+Every test file that uses mocks (`vi.mock`, `vi.fn`, `vi.spyOn`) **MUST** include an `afterEach` hook to clean up.
+
+**Valid Cleanup Methods:**
+- `vi.clearAllMocks()` (Preferred: clears call history)
+- `vi.restoreAllMocks()` (Use when using `vi.spyOn`)
+- `vi.resetModules()` (Use for module mocks)
+- `vi.resetAllMocks()` (Allowed but discouraged as it removes implementations)
+
+**Example:**
+```typescript
+afterEach(() => {
+  vi.clearAllMocks();
+});
+```
+
+### Automated Verification
+
+We have a script to enforce this rule. It runs automatically on pre-commit and in CI.
+
+**Run check manually:**
+```bash
+npm run check_mock_isolation
+```
+
+### CI & Pre-commit
+
+- **Pre-commit:** The check runs automatically on staged files. Currently, it **warns** about violations but does not block the commit.
+- **CI:** The `check_mock_isolation` job runs on every Pull Request and will report warnings.
+
+> [!NOTE]
+> We are currently in a transition phase. Please fix warnings in your new code, but existing files may still trigger warnings.
+
 ## Test DB Usage
 
 Here is some important information about how the test DB is used both for your tests and the CI/CD pipeline.

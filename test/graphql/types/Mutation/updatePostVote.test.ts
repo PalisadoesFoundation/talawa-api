@@ -1,15 +1,23 @@
 import { faker } from "@faker-js/faker";
-import { expect, suite, test, vi } from "vitest";
+import { afterEach,  expect, suite, test, vi  } from "vitest";
 import { assertToBeNonNullish } from "../../../helpers";
 import { server } from "../../../server";
 import { mercuriusClient } from "../client";
 import { createRegularUserUsingAdmin } from "../createRegularUserUsingAdmin";
 import {
+
+
+
 	Mutation_createUser,
 	Mutation_deleteCurrentUser,
 	Query_signIn,
 	Mutation_updatePostVote as UPDATE_POST_VOTE,
 } from "../documentNodes";
+
+afterEach(() => {
+    vi.clearAllMocks();
+});
+
 
 const signInResult = await mercuriusClient.query(Query_signIn, {
 	variables: {

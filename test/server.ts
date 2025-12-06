@@ -9,6 +9,7 @@ const testEnvConfig = envSchema<TestEnvConfig>({
 	schema: testEnvConfigSchema,
 });
 
+
 export const server = await createServer({
 	envConfig: {
 		/**
@@ -18,10 +19,18 @@ export const server = await createServer({
 		/**
 		 * This makes the server test instance connect to the minio test server.
 		 */
-		API_MINIO_END_POINT: testEnvConfig.API_MINIO_TEST_END_POINT,
+		API_MINIO_END_POINT: "localhost",
 		/**
 		 * This makes the server test instance connect to the postgres test database.
 		 */
-		API_POSTGRES_HOST: testEnvConfig.API_POSTGRES_TEST_HOST,
+		API_POSTGRES_HOST: "localhost",
+		API_POSTGRES_USER: "talawa",
+		API_POSTGRES_PASSWORD: "password",
+		API_POSTGRES_DATABASE: "talawa",
+		API_POSTGRES_PORT: 5434,
+		/**
+		 * This makes the server test instance connect to the redis test database.
+		 */
+		API_REDIS_HOST: "localhost",
 	},
 });

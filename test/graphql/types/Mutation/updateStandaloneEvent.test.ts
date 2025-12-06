@@ -1,15 +1,23 @@
 import { faker } from "@faker-js/faker";
-import { expect, suite, test, vi } from "vitest";
+import { afterEach,  expect, suite, test, vi  } from "vitest";
 import { assertToBeNonNullish } from "../../../helpers";
 import { server } from "../../../server";
 import { mercuriusClient } from "../client";
 import { createRegularUserUsingAdmin } from "../createRegularUserUsingAdmin";
 import {
+
+
+
 	Mutation_createOrganization,
 	Mutation_deleteCurrentUser,
 	Mutation_updateStandaloneEvent,
 	Query_signIn,
 } from "../documentNodes";
+
+afterEach(() => {
+    vi.clearAllMocks();
+});
+
 
 // Helper function to create a test organization
 async function createTestOrganization(authToken: string) {

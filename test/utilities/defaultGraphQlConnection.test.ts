@@ -1,10 +1,18 @@
-import { expect, suite, test, vi } from "vitest";
+import { afterEach,  expect, suite, test, vi  } from "vitest";
 import {
+
+
+
 	type ParsedDefaultGraphQLConnectionArguments,
 	defaultGraphQLConnectionArgumentsSchema,
 	transformDefaultGraphQLConnectionArguments,
 	transformToDefaultGraphQLConnection,
 } from "../../src/utilities/defaultGraphQLConnection";
+
+afterEach(() => {
+    vi.clearAllMocks();
+});
+
 
 suite("defaultGraphQLConnection utilities", () => {
 	suite("defaultGraphQLConnectionArgumentsSchema", () => {

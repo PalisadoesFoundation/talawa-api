@@ -1,5 +1,5 @@
 import { faker } from "@faker-js/faker";
-import { expect, suite, test, vi } from "vitest";
+import { afterEach,  expect, suite, test, vi  } from "vitest";
 import type { eventsTable } from "~/src/drizzle/tables/events";
 import type { recurrenceRulesTable } from "~/src/drizzle/tables/recurrenceRules";
 import type { eventExceptionsTable } from "~/src/drizzle/tables/recurringEventExceptions";
@@ -10,9 +10,17 @@ import {
 	validateRecurrenceRule,
 } from "~/src/services/eventGeneration/occurrenceCalculator";
 import type {
+
+
+
 	OccurrenceCalculationConfig,
 	ServiceDependencies,
 } from "~/src/services/eventGeneration/types";
+
+afterEach(() => {
+    vi.clearAllMocks();
+});
+
 
 suite("occurrenceCalculator", () => {
 	const mockLogger = {

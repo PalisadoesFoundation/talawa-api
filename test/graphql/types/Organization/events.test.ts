@@ -4,12 +4,20 @@ import type {
 	GraphQLResolveInfo,
 } from "graphql";
 import { createMockGraphQLContext } from "test/_Mocks_/mockContextCreator/mockContextCreator";
-import { beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach,  beforeAll, beforeEach, describe, expect, it, vi  } from "vitest";
 import type { GraphQLContext } from "~/src/graphql/context";
 import { schema } from "~/src/graphql/schema";
 import type { Organization as OrganizationType } from "~/src/graphql/types/Organization/Organization";
 import { getUnifiedEventsInDateRange } from "~/src/graphql/types/Query/eventQueries";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
+
+afterEach(() => {
+    vi.clearAllMocks();
+});
+
+
+
+
 
 // Mock the external dependency
 vi.mock("~/src/graphql/types/Query/eventQueries", () => ({
