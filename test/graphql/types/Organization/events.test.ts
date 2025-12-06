@@ -631,4 +631,147 @@ describe("Organization Events Resolver Tests", () => {
 			);
 		});
 	});
+
+	describe("Code Coverage Scenarios", () => {
+		beforeEach(() => {
+			const mockUserData: MockUser = {
+				id: "user-123",
+				role: "administrator",
+				organizationMembershipsWhereMember: [],
+			};
+			mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValue(
+				mockUserData,
+			);
+		});
+
+		it("should handle null values for optional arguments", async () => {
+			mockGetUnifiedEventsInDateRange.mockResolvedValue(mockEvents);
+			const result = await eventsResolver(
+				mockOrganization,
+				{ first: 10, after: null, before: null, last: null },
+				ctx,
+				mockResolveInfo,
+			);
+			expect(result).toBeDefined();
+		});
+
+		it("should throw error when first is null and last is undefined", async () => {
+			await expect(
+				eventsResolver(mockOrganization, { first: null }, ctx, mockResolveInfo),
+			).rejects.toThrow(
+				new TalawaGraphQLError({
+					extensions: {
+						code: "invalid_arguments",
+						issues: [
+							{
+								argumentPath: ["first"],
+								message:
+									'A non-null value for argument "first" must be provided.',
+							},
+						],
+					},
+				}),
+			);
+		});
+
+		it("should use default date ranges when not provided", async () => {
+			mockGetUnifiedEventsInDateRange.mockResolvedValue([]);
+			await eventsResolver(
+				mockOrganization,
+				{ first: 10 },
+				ctx,
+				mockResolveInfo,
+			);
+
+			const callArgs = mockGetUnifiedEventsInDateRange.mock.calls[0]?.[0];
+			if (!callArgs)
+				throw new Error("Expected getUnifiedEventsInDateRange to be called");
+
+			const now = new Date();
+			now.setHours(0, 0, 0, 0);
+			expect(callArgs.startDate.getTime()).toBe(now.getTime());
+
+			const expectedEnd = new Date();
+			expectedEnd.setMonth(expectedEnd.getMonth() + 1);
+			expectedEnd.setHours(23, 59, 59, 999);
+
+			// Allow small difference
+			expect(
+				Math.abs(callArgs.endDate.getTime() - expectedEnd.getTime()),
+			).toBeLessThan(1000);
+		});
+
+		it("should handle upcomingOnly: true with default end date logic", async () => {
+			mockGetUnifiedEventsInDateRange.mockResolvedValue([]);
+			await eventsResolver(
+				mockOrganization,
+				{ first: 10, upcomingOnly: true },
+				ctx,
+				mockResolveInfo,
+			);
+
+			const callArgs = mockGetUnifiedEventsInDateRange.mock.calls[0]?.[0];
+			if (!callArgs)
+				throw new Error("Expected getUnifiedEventsInDateRange to be called");
+
+			// effectiveStartDate should be close to now
+			expect(
+				Math.abs(callArgs.startDate.getTime() - new Date().getTime()),
+			).toBeLessThan(1000);
+
+			// effectiveEndDate should be 1 year from now
+			const expectedEnd = new Date();
+			expectedEnd.setFullYear(expectedEnd.getFullYear() + 1);
+			expect(
+				Math.abs(callArgs.endDate.getTime() - expectedEnd.getTime()),
+			).toBeLessThan(1000);
+		});
+
+		it("should ignore provided endDate when upcomingOnly is true", async () => {
+			const futureDate = new Date();
+			futureDate.setFullYear(futureDate.getFullYear() + 2);
+
+			mockGetUnifiedEventsInDateRange.mockResolvedValue([]);
+			await eventsResolver(
+				mockOrganization,
+				{ first: 10, upcomingOnly: true, endDate: futureDate },
+				ctx,
+				mockResolveInfo,
+			);
+
+			const callArgs = mockGetUnifiedEventsInDateRange.mock.calls[0]?.[0];
+			if (!callArgs)
+				throw new Error("Expected getUnifiedEventsInDateRange to be called");
+
+			// Should be default 1 year from now, ignoring the 2 year future date
+			const expectedEnd = new Date();
+			expectedEnd.setFullYear(expectedEnd.getFullYear() + 1);
+			expect(
+				Math.abs(callArgs.endDate.getTime() - expectedEnd.getTime()),
+			).toBeLessThan(1000);
+		});
+
+		it("should report error on 'before' when using 'last' with invalid cursor", async () => {
+			await expect(
+				eventsResolver(
+					mockOrganization,
+					{ last: 10, before: "invalid-cursor" },
+					ctx,
+					mockResolveInfo,
+				),
+			).rejects.toThrow(
+				new TalawaGraphQLError({
+					extensions: {
+						code: "invalid_arguments",
+						issues: [
+							{
+								argumentPath: ["before"],
+								message: "Not a valid cursor.",
+							},
+						],
+					},
+				}),
+			);
+		});
+	});
 });
