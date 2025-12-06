@@ -100,6 +100,7 @@ import "./QueryFundCampaignInput";
 import "./QueryFundCampaignPledgeInput";
 import "./QueryFundInput";
 import "./QueryOrganizationInput";
+import "./QueryOrganizationPostsInput";
 import "./QueryPostInput";
 import "./QuerySignInInput";
 import "./QueryTagFolderInput";
