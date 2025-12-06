@@ -9,6 +9,8 @@ const testEnvConfig = envSchema<TestEnvConfig>({
 	schema: testEnvConfigSchema,
 });
 
+console.log("DEBUG: testEnvConfig", testEnvConfig);
+
 export const server = await createServer({
 	envConfig: {
 		/**
@@ -23,5 +25,9 @@ export const server = await createServer({
 		 * This makes the server test instance connect to the postgres test database.
 		 */
 		API_POSTGRES_HOST: testEnvConfig.API_POSTGRES_TEST_HOST,
+		/**
+		 * This makes the server test instance connect to the redis test database.
+		 */
+		API_REDIS_HOST: testEnvConfig.API_REDIS_TEST_HOST,
 	},
 });

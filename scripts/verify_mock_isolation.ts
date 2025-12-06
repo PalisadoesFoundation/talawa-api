@@ -94,10 +94,16 @@ if (errors > 0) {
     console.log(`\n⚠️  Found ${errors} files with missing mock isolation.`);
     console.log(
         "Please add the following to your test file:\n" +
-        'afterEach(() => {\n  vi.clearAllMocks();\n});'
+        'afterEach(() => {\n  vi.clearAllMocks();\n});\n\n' +
+        "Alternatively, you can use vi.restoreAllMocks(), vi.resetAllMocks(), or vi.resetModules()."
     );
-    // Intentionally exiting with 0 to warn only, as per PR strategy
-    process.exit(0);
+
+    // Exit with error if configured, otherwise warn
+    if (process.env.MOCK_ISOLATION_FAIL_ON_ERROR === "true") {
+        process.exit(1);
+    } else {
+        process.exit(0);
+    }
 } else {
     console.log("\n✅ All checked test files have proper mock isolation.");
     process.exit(0);

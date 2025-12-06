@@ -110,21 +110,62 @@ async function createOrgEventFolder(
 	authToken: string,
 	adminUserId: string,
 ): Promise<{ orgId: string; eventId: string; folderId: string }> {
+	const orgResult = await mercuriusClient.mutate(Mutation_createOrganization, {
+		headers: { authorization: `bearer ${authToken}` },
+		variables: {
+			input: {
+				name: `Org ${faker.string.uuid()}`,
+				countryCode: "us",
+			},
+		},
+	});
+	assertToBeNonNullish(orgResult.data?.createOrganization?.id);
+	const orgId = orgResult.data.createOrganization.id as string;
+
+	await retryMembershipCreation(authToken, orgId, adminUserId);
+
+	const eventResult = await mercuriusClient.mutate(Mutation_createEvent, {
+		headers: { authorization: `bearer ${authToken}` },
+		variables: {
+			input: {
+				name: `Event ${faker.string.uuid()}`,
+				organizationId: orgId,
+				startAt: new Date().toISOString(),
+				endAt: new Date(Date.now() + 60 * 60 * 1000).toISOString(),
+				description: "Test event",
+			},
+		},
+	});
+	assertToBeNonNullish(eventResult.data?.createEvent?.id);
+	const eventId = eventResult.data.createEvent.id as string;
+
+	const folderResult = await mercuriusClient.mutate(
+		Mutation_createAgendaFolder,
+		{
+			headers: { authorization: `bearer ${authToken}` },
+			variables: {
+				input: {
+					name: `Folder ${faker.string.uuid()}`,
+					eventId,
+					isAgendaItemFolder: true,
+				},
+			},
+		},
+	);
+	assertToBeNonNullish(folderResult.data?.createAgendaFolder?.id);
+	const folderId = folderResult.data.createAgendaFolder.id as string;
+
+	return { orgId, eventId, folderId };
+}
+
+async function retryMembershipCreation(
+	authToken: string,
+	orgId: string,
+	adminUserId: string,
+) {
 	let retries = 2;
 	while (retries > 0) {
 		try {
-			const orgResult = await mercuriusClient.mutate(Mutation_createOrganization, {
-				headers: { authorization: `bearer ${authToken}` },
-				variables: {
-					input: {
-						name: `Org ${faker.string.uuid()}`,
-						countryCode: "us",
-					},
-				},
-			});
-			assertToBeNonNullish(orgResult.data?.createOrganization?.id);
-			const orgId = orgResult.data.createOrganization.id as string;
-
 			const membership = await mercuriusClient.mutate(
 				Mutation_createOrganizationMembership,
 				{
@@ -138,55 +179,16 @@ async function createOrgEventFolder(
 					},
 				},
 			);
-			if (membership.errors) {
-				console.error("createOrganizationMembership failed:", JSON.stringify(membership.errors, null, 2));
-			}
-			// If this fails, we catch and retry
 			if (!membership.data?.createOrganizationMembership?.id) {
 				throw new Error("createOrganizationMembership returned null");
 			}
-			assertToBeNonNullish(membership.data?.createOrganizationMembership?.id);
-
-			const eventResult = await mercuriusClient.mutate(Mutation_createEvent, {
-				headers: { authorization: `bearer ${authToken}` },
-				variables: {
-					input: {
-						name: `Event ${faker.string.uuid()}`,
-						organizationId: orgId,
-						startAt: new Date().toISOString(),
-						endAt: new Date(Date.now() + 60 * 60 * 1000).toISOString(),
-						description: "Test event",
-					},
-				},
-			});
-			assertToBeNonNullish(eventResult.data?.createEvent?.id);
-			const eventId = eventResult.data.createEvent.id as string;
-
-			const folderResult = await mercuriusClient.mutate(
-				Mutation_createAgendaFolder,
-				{
-					headers: { authorization: `bearer ${authToken}` },
-					variables: {
-						input: {
-							name: `Folder ${faker.string.uuid()}`,
-							eventId,
-							isAgendaItemFolder: true,
-						},
-					},
-				},
-			);
-			assertToBeNonNullish(folderResult.data?.createAgendaFolder?.id);
-			const folderId = folderResult.data.createAgendaFolder.id as string;
-
-			return { orgId, eventId, folderId };
+			return;
 		} catch (error) {
 			retries--;
 			if (retries === 0) throw error;
-			console.log(`createOrgEventFolder failed, retrying... (${error})`);
-			await new Promise(resolve => setTimeout(resolve, 1000));
+			await new Promise((resolve) => setTimeout(resolve, 500));
 		}
 	}
-	throw new Error("createOrgEventFolder failed after retries");
 }
 
 async function cleanup(
