@@ -456,4 +456,76 @@ suite("Mutation field updateOrganization", () => {
 			]),
 		);
 	});
+	test("should return an error when updating to an existing organization name", async () => {
+		const createOrg1Result = await mercuriusClient.mutate(
+			Mutation_createOrganization,
+			{
+				headers: { authorization: `bearer ${authToken}` },
+				variables: {
+					input: {
+						name: "Org Name 1",
+						countryCode: "us",
+					},
+				},
+			},
+		);
+		const orgId1 = createOrg1Result.data?.createOrganization?.id;
+		assertToBeNonNullish(orgId1);
+		testCleanupFunctions.push(async () => {
+			await mercuriusClient.mutate(Mutation_deleteOrganization, {
+				headers: { authorization: `bearer ${authToken}` },
+				variables: { input: { id: orgId1 } },
+			});
+		});
+
+		const createOrg2Result = await mercuriusClient.mutate(
+			Mutation_createOrganization,
+			{
+				headers: { authorization: `bearer ${authToken}` },
+				variables: {
+					input: {
+						name: "Org Name 2",
+						countryCode: "us",
+					},
+				},
+			},
+		);
+		const orgId2 = createOrg2Result.data?.createOrganization?.id;
+		assertToBeNonNullish(orgId2);
+		testCleanupFunctions.push(async () => {
+			await mercuriusClient.mutate(Mutation_deleteOrganization, {
+				headers: { authorization: `bearer ${authToken}` },
+				variables: { input: { id: orgId2 } },
+			});
+		});
+
+		const result = await mercuriusClient.mutate(Mutation_updateOrganization, {
+			headers: { authorization: `bearer ${authToken}` },
+			variables: {
+				input: {
+					id: orgId2,
+					name: "Org Name 1",
+				},
+			},
+		});
+
+		expect(result.data?.updateOrganization).toBeNull();
+		expect(result.errors).toEqual(
+			expect.arrayContaining([
+				expect.objectContaining({
+					message: "Organization name already exists",
+					extensions: expect.objectContaining({
+						code: "invalid_arguments",
+						issues: expect.arrayContaining([
+							expect.objectContaining({
+								argumentPath: ["input", "name"],
+								message: "Organization name already exists",
+							}),
+						]),
+					}),
+					path: ["updateOrganization"],
+				}),
+			]),
+		);
+	});
 });

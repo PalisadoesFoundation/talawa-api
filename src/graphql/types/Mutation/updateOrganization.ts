@@ -144,6 +144,35 @@ builder.mutationField("updateOrganization", (t) =>
 				avatarMimeType = parsedArgs.input.avatar.mimetype;
 			}
 
+			if (parsedArgs.input.name !== undefined) {
+				const name = parsedArgs.input.name;
+
+				const duplicateOrganizationName =
+					await ctx.drizzleClient.query.organizationsTable.findFirst({
+						columns: { id: true },
+						where: (fields, operators) =>
+							operators.and(
+								operators.eq(fields.name, name),
+								operators.ne(fields.id, parsedArgs.input.id),
+							),
+					});
+
+				if (duplicateOrganizationName !== undefined) {
+					throw new TalawaGraphQLError({
+						message: "Organization name already exists",
+						extensions: {
+							code: "invalid_arguments",
+							issues: [
+								{
+									argumentPath: ["input", "name"],
+									message: "Organization name already exists",
+								},
+							],
+						},
+					});
+				}
+			}
+
 			return await ctx.drizzleClient.transaction(async (tx) => {
 				const [updatedOrganization] = await tx
 					.update(organizationsTable)

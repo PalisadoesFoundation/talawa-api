@@ -265,7 +265,7 @@ describe("AgendaFolder.createdAt resolver", () => {
 						input: {
 							organizationId: orgId,
 							memberId: regularUser.userId,
-							role: "member",
+							role: "regular",
 						},
 					},
 				});
@@ -624,7 +624,7 @@ describe("AgendaFolder.createdAt resolver - Unit tests for branch coverage", () 
 				countryCode: "US",
 				membershipsWhereOrganization: [
 					{
-						role: "member", // Not administrator
+						role: "regular", // Not administrator
 					},
 				],
 			},
