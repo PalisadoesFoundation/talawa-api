@@ -56,8 +56,8 @@ export const createServer = async (options?: {
 			level: envConfig.API_LOG_LEVEL,
 			transport: envConfig.API_IS_PINO_PRETTY
 				? {
-						target: "pino-pretty",
-					}
+					target: "pino-pretty",
+				}
 				: undefined,
 		},
 	}).withTypeProvider<TypeBoxTypeProvider>();

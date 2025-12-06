@@ -25,9 +25,6 @@ afterEach(() => {
 	vi.clearAllMocks();
 });
 
-
-
-
 const gql = initGraphQLTada<{
 	introspection: introspection;
 	scalars: ClientCustomScalars;

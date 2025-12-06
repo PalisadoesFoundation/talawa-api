@@ -1,5 +1,5 @@
 import { faker } from "@faker-js/faker";
-import { afterEach,  expect, suite, test, vi  } from "vitest";
+import { afterEach, expect, suite, test, vi } from "vitest";
 import type { eventsTable } from "~/src/drizzle/tables/events";
 import type { eventExceptionsTable } from "~/src/drizzle/tables/recurringEventExceptions";
 import type { recurringEventInstancesTable } from "~/src/drizzle/tables/recurringEventInstances";
@@ -19,12 +19,8 @@ import type {
 import type { ResolvedRecurringEventInstance } from "~/src/drizzle/tables/recurringEventInstances";
 
 afterEach(() => {
-    vi.clearAllMocks();
+	vi.clearAllMocks();
 });
-
-
-
-
 
 type ResolvedEventInstance = ResolvedRecurringEventInstance;
 

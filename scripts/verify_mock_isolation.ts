@@ -1,81 +1,45 @@
-import fs from "node:fs";
-
-import { glob } from "glob";
+import { readFileSync } from "node:fs";
+import { globSync } from "glob";
 import ts from "typescript";
 
+const TEST_FILES_GLOB = "test/**/*.{test,spec}.ts";
 
-
-/**
- * Checks if a test file has proper mock isolation.
- * Rule: If a file uses `vi.mock`, `vi.fn`, or `vi.spyOn`, it MUST have `afterEach(() => { vi.clearAllMocks(); })`.
- */
 function checkFile(filePath: string): boolean {
-    const content = fs.readFileSync(filePath, "utf-8");
+    const content = readFileSync(filePath, "utf-8");
     const sourceFile = ts.createSourceFile(
         filePath,
         content,
         ts.ScriptTarget.Latest,
-        true,
+        true
     );
 
-    let hasMocks = false;
+    let hasMockUsage = false;
     let hasCleanup = false;
 
     function visit(node: ts.Node) {
-        // Check for vi.mock(), vi.fn(), vi.spyOn()
+        // Check for mock usage: vi.mock, vi.fn, vi.spyOn
         if (
             ts.isCallExpression(node) &&
             ts.isPropertyAccessExpression(node.expression) &&
             ts.isIdentifier(node.expression.expression) &&
-            node.expression.expression.text === "vi"
+            node.expression.expression.text === "vi" &&
+            ["mock", "fn", "spyOn"].includes(node.expression.name.text)
         ) {
-            const method = node.expression.name.text;
-            if (["mock", "fn", "spyOn"].includes(method)) {
-                hasMocks = true;
-            }
+            hasMockUsage = true;
         }
 
-        // Check for afterEach(() => { vi.clearAllMocks(); })
+        // Check for cleanup in afterEach
         if (
             ts.isCallExpression(node) &&
             ts.isIdentifier(node.expression) &&
             node.expression.text === "afterEach"
         ) {
-            const arg = node.arguments[0];
-            if (arg && (ts.isArrowFunction(arg) || ts.isFunctionExpression(arg))) {
-                const body = arg.body;
-                if (ts.isBlock(body)) {
-                    // Check statements inside the block
-                    for (const stmt of body.statements) {
-                        if (
-                            ts.isExpressionStatement(stmt) &&
-                            ts.isCallExpression(stmt.expression) &&
-                            ts.isPropertyAccessExpression(stmt.expression.expression) &&
-                            ts.isIdentifier(stmt.expression.expression.expression) &&
-                            stmt.expression.expression.expression.text === "vi" &&
-                            [
-                                "clearAllMocks",
-                                "restoreAllMocks",
-                                "resetAllMocks",
-                                "resetModules",
-                            ].includes(stmt.expression.expression.name.text)
-                        ) {
-                            hasCleanup = true;
-                        }
-                    }
-                } else if (
-                    ts.isCallExpression(body) &&
-                    ts.isPropertyAccessExpression(body.expression) &&
-                    ts.isIdentifier(body.expression.expression) &&
-                    body.expression.expression.text === "vi" &&
-                    [
-                        "clearAllMocks",
-                        "restoreAllMocks",
-                        "resetAllMocks",
-                        "resetModules",
-                    ].includes(body.expression.name.text)
-                ) {
-                    // Implicit return: afterEach(() => vi.clearAllMocks())
+            const callback = node.arguments[0];
+            if (
+                callback &&
+                (ts.isArrowFunction(callback) || ts.isFunctionExpression(callback))
+            ) {
+                if (containsCleanupCall(callback.body)) {
                     hasCleanup = true;
                 }
             }
@@ -84,53 +48,57 @@ function checkFile(filePath: string): boolean {
         ts.forEachChild(node, visit);
     }
 
+    function containsCleanupCall(node: ts.Node): boolean {
+        let found = false;
+        function search(n: ts.Node) {
+            if (found) return;
+
+            if (
+                ts.isCallExpression(n) &&
+                ts.isPropertyAccessExpression(n.expression) &&
+                ts.isIdentifier(n.expression.expression) &&
+                n.expression.expression.text === "vi" &&
+                ["clearAllMocks", "restoreAllMocks", "resetAllMocks", "resetModules"].includes(n.expression.name.text)
+            ) {
+                found = true;
+                return;
+            }
+            ts.forEachChild(n, search);
+        }
+        search(node);
+        return found;
+    }
+
     visit(sourceFile);
 
-    if (hasMocks && !hasCleanup) {
-        console.log(
-            `⚠️  Warning: ${filePath} is missing mock cleanup (vi.clearAllMocks, vi.restoreAllMocks, etc.) in 'afterEach'`,
-        );
+    if (hasMockUsage && !hasCleanup) {
         return false;
     }
 
     return true;
 }
 
-async function main() {
-    const args = process.argv.slice(2);
-    // Support passing specific files (e.g. from lefthook)
-    const files =
-        args.length > 0
-            ? args
-            : await glob("test/**/*.{test,spec}.ts", { ignore: "node_modules/**" });
+const files = globSync(TEST_FILES_GLOB, { cwd: process.cwd() });
+let errors = 0;
 
-    let errors = 0;
+console.log(`Checking ${files.length} test files for mock isolation...`);
 
-    console.log(`Checking ${files.length} files for mock isolation...`);
-
-    for (const file of files) {
-        try {
-            if (!checkFile(file)) {
-                errors++;
-            }
-        } catch (err) {
-            console.error(`Error parsing ${file}:`, err);
-        }
+for (const file of files) {
+    if (!checkFile(file)) {
+        console.error(`❌ Missing mock cleanup in: ${file}`);
+        errors++;
     }
-
-    if (errors > 0) {
-        console.log(`\n⚠️  Found ${errors} files with missing mock isolation.`);
-        console.log(
-            "   Please add 'afterEach(() => { vi.clearAllMocks(); })' (or restoreAllMocks/resetModules) to these files.",
-        );
-        // process.exit(1); // Do not fail the build, just warn
-    } else {
-        console.log("\n✅ All checked test files have proper mock isolation.");
-    }
-    process.exit(0);
 }
 
-main().catch((err) => {
-    console.error(err);
-    process.exit(1);
-});
+if (errors > 0) {
+    console.log(`\n⚠️  Found ${errors} files with missing mock isolation.`);
+    console.log(
+        "Please add the following to your test file:\n" +
+        'afterEach(() => {\n  vi.clearAllMocks();\n});'
+    );
+    // Intentionally exiting with 0 to warn only, as per PR strategy
+    process.exit(0);
+} else {
+    console.log("\n✅ All checked test files have proper mock isolation.");
+    process.exit(0);
+}
