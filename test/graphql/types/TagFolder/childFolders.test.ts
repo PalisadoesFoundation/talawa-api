@@ -10,6 +10,16 @@ import { schema } from "~/src/graphql/schema";
 import type { TagFolder as TagFolderType } from "~/src/graphql/types/TagFolder/TagFolder";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 
+interface Connection {
+	edges: Array<{ node: Record<string, unknown> }>;
+	pageInfo: {
+		hasNextPage: boolean;
+		hasPreviousPage: boolean;
+		startCursor?: string | null;
+		endCursor?: string | null;
+	};
+}
+
 type ChildFoldersResolver = GraphQLFieldResolver<
 	TagFolderType,
 	GraphQLContext,
@@ -80,7 +90,6 @@ describe("TagFolder childFolders Resolver", () => {
 			from: vi.fn().mockReturnThis(),
 			where: vi.fn().mockReturnThis(),
 		};
-		// @ts-ignore - mocking internal drizzle method
 		mocks.drizzleClient.select = vi.fn().mockReturnValue(mockSelect);
 	});
 
@@ -130,6 +139,102 @@ describe("TagFolder childFolders Resolver", () => {
 				}),
 			);
 		});
+
+		it("should throw invalid_arguments error when both first and last are provided", async () => {
+			await expect(
+				childFoldersResolver(
+					mockTagFolder,
+					{ first: 10, last: 10 },
+					ctx,
+					mockResolveInfo,
+				),
+			).rejects.toThrow(
+				new TalawaGraphQLError({
+					extensions: {
+						code: "invalid_arguments",
+						issues: [
+							{
+								argumentPath: ["last"],
+								message:
+									'Argument "last" cannot be provided with argument "first".',
+							},
+						],
+					},
+				}),
+			);
+		});
+
+		it("should throw invalid_arguments error when first is used with before", async () => {
+			await expect(
+				childFoldersResolver(
+					mockTagFolder,
+					{ first: 10, before: "some-cursor" },
+					ctx,
+					mockResolveInfo,
+				),
+			).rejects.toThrow(
+				new TalawaGraphQLError({
+					extensions: {
+						code: "invalid_arguments",
+						issues: [
+							{
+								argumentPath: ["before"],
+								message:
+									'Argument "before" cannot be provided with argument "first".',
+							},
+						],
+					},
+				}),
+			);
+		});
+
+		it("should throw invalid_arguments error when last is used with after", async () => {
+			await expect(
+				childFoldersResolver(
+					mockTagFolder,
+					{ last: 10, after: "some-cursor" },
+					ctx,
+					mockResolveInfo,
+				),
+			).rejects.toThrow(
+				new TalawaGraphQLError({
+					extensions: {
+						code: "invalid_arguments",
+						issues: [
+							{
+								argumentPath: ["after"],
+								message:
+									'Argument "after" cannot be provided with argument "last".',
+							},
+						],
+					},
+				}),
+			);
+		});
+
+		it("should throw invalid_arguments error when neither first nor last is provided", async () => {
+			await expect(
+				childFoldersResolver(mockTagFolder, {}, ctx, mockResolveInfo),
+			).rejects.toThrow(
+				new TalawaGraphQLError({
+					extensions: {
+						code: "invalid_arguments",
+						issues: [
+							{
+								argumentPath: ["first"],
+								message:
+									'A non-null value for argument "first" must be provided.',
+							},
+							{
+								argumentPath: ["last"],
+								message:
+									'A non-null value for argument "last" must be provided.',
+							},
+						],
+					},
+				}),
+			);
+		});
 	});
 
 	describe("Data Fetching", () => {
@@ -146,16 +251,39 @@ describe("TagFolder childFolders Resolver", () => {
 			);
 
 			expect(result).toBeDefined();
+
+			// Validate connection structure
+			const connection = result as Connection;
+			expect(connection.edges).toBeDefined();
+			expect(connection.pageInfo).toBeDefined();
+			expect(connection.edges).toHaveLength(mockChildFolders.length);
+
+			// Validate node content
+			const firstEdge = connection.edges[0];
+			const secondEdge = connection.edges[1];
+			const firstMock = mockChildFolders[0];
+			const secondMock = mockChildFolders[1];
+
+			if (!firstEdge || !secondEdge || !firstMock || !secondMock) {
+				throw new Error("Missing edges or mock data");
+			}
+
+			expect(firstEdge.node).toEqual(firstMock);
+			expect(secondEdge.node).toEqual(secondMock);
+
+			// Validate pageInfo
+			// Since we returned 2 items and limit was 11 (first + 1), hasNextPage should be false
+			expect(connection.pageInfo.hasNextPage).toBe(false);
+			expect(connection.pageInfo.hasPreviousPage).toBe(false);
+
 			expect(
 				mocks.drizzleClient.query.tagFoldersTable.findMany,
 			).toHaveBeenCalledWith(
 				expect.objectContaining({
 					limit: 11, // first + 1
-					// We can't easily check the exact SQL object structure for orderBy/where here without more complex mocking
 				}),
 			);
 		});
-
 		it("should fetch child folders with backward pagination", async () => {
 			mocks.drizzleClient.query.tagFoldersTable.findMany.mockResolvedValue(
 				mockChildFolders,
@@ -183,8 +311,7 @@ describe("TagFolder childFolders Resolver", () => {
 				"base64url",
 			);
 
-			const folder = mockChildFolders[1];
-			if (!folder) throw new Error("Mock folder not found");
+			const folder = mockChildFolders[1] as (typeof mockChildFolders)[number];
 
 			mocks.drizzleClient.query.tagFoldersTable.findMany.mockResolvedValue([
 				folder,
@@ -205,8 +332,7 @@ describe("TagFolder childFolders Resolver", () => {
 				"base64url",
 			);
 
-			const folder = mockChildFolders[0];
-			if (!folder) throw new Error("Mock folder not found");
+			const folder = mockChildFolders[0] as (typeof mockChildFolders)[number];
 
 			mocks.drizzleClient.query.tagFoldersTable.findMany.mockResolvedValue([
 				folder,
@@ -249,6 +375,106 @@ describe("TagFolder childFolders Resolver", () => {
 				}),
 			);
 		});
+
+		it("should handle empty connection", async () => {
+			mocks.drizzleClient.query.tagFoldersTable.findMany.mockResolvedValue([]);
+
+			// Test with first
+			const resultForward = (await childFoldersResolver(
+				mockTagFolder,
+				{ first: 10 },
+				ctx,
+				mockResolveInfo,
+			)) as Connection;
+
+			expect(resultForward.edges).toEqual([]);
+			expect(resultForward.pageInfo.hasNextPage).toBe(false);
+			expect(resultForward.pageInfo.hasPreviousPage).toBe(false);
+			expect(resultForward.pageInfo.startCursor).toBeNull();
+			expect(resultForward.pageInfo.endCursor).toBeNull();
+
+			// Test with last
+			const resultBackward = (await childFoldersResolver(
+				mockTagFolder,
+				{ last: 10 },
+				ctx,
+				mockResolveInfo,
+			)) as Connection;
+
+			expect(resultBackward.edges).toEqual([]);
+			expect(resultBackward.pageInfo.hasNextPage).toBe(false);
+			expect(resultBackward.pageInfo.hasPreviousPage).toBe(false);
+			expect(resultBackward.pageInfo.startCursor).toBeNull();
+			expect(resultBackward.pageInfo.endCursor).toBeNull();
+		});
+
+		it("should handle sentinel boundary pagination (forward)", async () => {
+			const manyMockFolders = Array.from({ length: 11 }, (_, i) => ({
+				id: `folder-${i}`,
+				name: `Folder ${i}`,
+				organizationId: "org-id",
+				parentFolderId: "parent-folder-id",
+				createdAt: new Date(),
+				updatedAt: new Date(),
+				creatorId: "user-1",
+				updaterId: null,
+			}));
+
+			mocks.drizzleClient.query.tagFoldersTable.findMany.mockResolvedValue(
+				manyMockFolders,
+			);
+
+			const result = (await childFoldersResolver(
+				mockTagFolder,
+				{ first: 10 },
+				ctx,
+				mockResolveInfo,
+			)) as Connection;
+
+			expect(result.edges).toHaveLength(10);
+			expect(result.pageInfo.hasNextPage).toBe(true);
+			expect(
+				mocks.drizzleClient.query.tagFoldersTable.findMany,
+			).toHaveBeenCalledWith(
+				expect.objectContaining({
+					limit: 11,
+				}),
+			);
+		});
+
+		it("should handle sentinel boundary pagination (backward)", async () => {
+			const manyMockFolders = Array.from({ length: 11 }, (_, i) => ({
+				id: `folder-${i}`,
+				name: `Folder ${i}`,
+				organizationId: "org-id",
+				parentFolderId: "parent-folder-id",
+				createdAt: new Date(),
+				updatedAt: new Date(),
+				creatorId: "user-1",
+				updaterId: null,
+			}));
+
+			mocks.drizzleClient.query.tagFoldersTable.findMany.mockResolvedValue(
+				manyMockFolders,
+			);
+
+			const result = (await childFoldersResolver(
+				mockTagFolder,
+				{ last: 10 },
+				ctx,
+				mockResolveInfo,
+			)) as Connection;
+
+			expect(result.edges).toHaveLength(10);
+			expect(result.pageInfo.hasPreviousPage).toBe(true);
+			expect(
+				mocks.drizzleClient.query.tagFoldersTable.findMany,
+			).toHaveBeenCalledWith(
+				expect.objectContaining({
+					limit: 11,
+				}),
+			);
+		});
 	});
 
 	describe("Complexity", () => {
@@ -277,27 +503,20 @@ describe("TagFolder childFolders Resolver", () => {
 					| ComplexityFunction
 					| undefined);
 
-			if (typeof complexityFn !== "function") {
-				console.warn(
-					"Could not find complexity function on field. Skipping complexity test.",
-				);
-				return;
-			}
+			expect(typeof complexityFn).toBe("function");
+			if (typeof complexityFn !== "function") return;
 
-			expect(complexityFn({ first: 10 }, {}, 0)).toEqual({
-				field: expect.any(Number),
-				multiplier: 10,
-			});
+			const resultFirst = complexityFn({ first: 10 }, {}, 0);
+			expect(resultFirst.field).toBeGreaterThan(0);
+			expect(resultFirst.multiplier).toBe(10);
 
-			expect(complexityFn({ last: 5 }, {}, 0)).toEqual({
-				field: expect.any(Number),
-				multiplier: 5,
-			});
+			const resultLast = complexityFn({ last: 5 }, {}, 0);
+			expect(resultLast.field).toBeGreaterThan(0);
+			expect(resultLast.multiplier).toBe(5);
 
-			expect(complexityFn({}, {}, 0)).toEqual({
-				field: expect.any(Number),
-				multiplier: 1,
-			});
+			const resultDefault = complexityFn({}, {}, 0);
+			expect(resultDefault.field).toBeGreaterThan(0);
+			expect(resultDefault.multiplier).toBe(1);
 		});
 	});
 });
