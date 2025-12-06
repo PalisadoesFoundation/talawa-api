@@ -194,6 +194,7 @@ suite("Query eventsByIds", () => {
 
 		assertToBeNonNullish(adminSignIn.data?.signIn);
 
+		assertToBeNonNullish(adminSignIn.data.signIn.user);
 		const adminUserId = adminSignIn.data.signIn.user.id;
 		const adminToken = adminSignIn.data.signIn.authenticationToken;
 
@@ -214,7 +215,7 @@ suite("Query eventsByIds", () => {
 		const inputObject = {
 			organizationId: organizationId,
 			memberId: adminUserId,
-			role: "administrator",
+			role: "administrator" as const,
 		};
 
 		const membershipResult = await mercuriusClient.mutate(
@@ -289,7 +290,9 @@ suite("Query eventsByIds", () => {
 			throw new Error("No generated event instances found.");
 		}
 
-		const generatedEventId = generatedInstances[0].id;
+		const firstInstance = generatedInstances[0];
+		assertToBeNonNullish(firstInstance);
+		const generatedEventId = firstInstance.id;
 		assertToBeNonNullish(generatedEventId);
 
 		const result = await mercuriusClient.query(Query_eventsByIds, {
