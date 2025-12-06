@@ -402,6 +402,58 @@ Defined in: [src/graphql/types/Notification/EventBus/eventBus.ts:10](https://git
 
 ***
 
+### emitSendEventInvite()
+
+> **emitSendEventInvite**(`data`, `ctx`): `Promise`\<`void`\>
+
+Defined in: [src/graphql/types/Notification/EventBus/eventBus.ts:429](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/graphql/types/Notification/EventBus/eventBus.ts#L429)
+
+#### Parameters
+
+##### data
+
+###### eventId?
+
+`string`
+
+###### eventName?
+
+`string`
+
+###### invitationToken
+
+`string`
+
+###### invitationUrl
+
+`string`
+
+###### inviteeEmail
+
+`string`
+
+###### inviteeName?
+
+`string`
+
+###### inviterId
+
+`string`
+
+###### organizationId
+
+`string`
+
+##### ctx
+
+[`GraphQLContext`](../../../../../context/type-aliases/GraphQLContext.md)
+
+#### Returns
+
+`Promise`\<`void`\>
+
+***
+
 ### emitUserBlocked()
 
 > **emitUserBlocked**(`data`, `ctx`): `Promise`\<`void`\>

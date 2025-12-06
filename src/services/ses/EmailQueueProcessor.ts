@@ -56,6 +56,9 @@ export class EmailQueueProcessor {
 
 			const results = await this.emailService.sendBulkEmails(emailJobs);
 
+			// Log raw results to help debug SES failures
+			this.ctx.log.info({ results }, "Email send results");
+
 			for (const result of results) {
 				const email = pendingEmails.find(
 					(e: EmailNotification) => e.id === result.id,
@@ -74,6 +77,10 @@ export class EmailQueueProcessor {
 						})
 						.where(eq(emailNotificationsTable.id, result.id));
 				} else {
+					this.ctx.log.warn(
+						{ id: result.id, error: result.error },
+						"Email send failed for job",
+					);
 					await this.handleEmailFailure(email, result.error || "Unknown error");
 				}
 			}
@@ -98,6 +105,15 @@ export class EmailQueueProcessor {
 		const newRetryCount = (email.retryCount ?? 0) + 1;
 
 		if (newRetryCount >= email.maxRetries) {
+			this.ctx.log.warn(
+				{
+					emailId: email.id,
+					retryCount: newRetryCount,
+					maxRetries: email.maxRetries,
+					error,
+				},
+				"Marking email as failed permanently",
+			);
 			await this.ctx.drizzleClient
 				.update(emailNotificationsTable)
 				.set({
@@ -108,6 +124,10 @@ export class EmailQueueProcessor {
 				})
 				.where(eq(emailNotificationsTable.id, email.id));
 		} else {
+			this.ctx.log.info(
+				{ emailId: email.id, retryCount: newRetryCount },
+				"Scheduling retry for email",
+			);
 			await this.ctx.drizzleClient
 				.update(emailNotificationsTable)
 				.set({

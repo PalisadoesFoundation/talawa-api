@@ -15,7 +15,7 @@ export interface EmailJob {
 	email: string;
 	subject: string;
 	htmlBody: string;
-	userId: string;
+	userId: string | null;
 }
 
 /**
