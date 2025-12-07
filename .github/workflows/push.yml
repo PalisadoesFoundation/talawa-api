@@ -182,6 +182,7 @@ jobs:
           COVERAGE_FILE_THRESHOLD=${COVERAGE_FILE_THRESHOLD:-100}
           if [ "$SF_COUNT" -lt "$COVERAGE_FILE_THRESHOLD" ]; then
             echo "::warning::Only $SF_COUNT files in coverage (expected ${COVERAGE_FILE_THRESHOLD}+). This might indicate incomplete coverage merge."
+          fi
 
           echo "First 30 lines of merged coverage:"
           head -30 ./coverage/vitest/lcov.info
