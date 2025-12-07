@@ -23,11 +23,8 @@ vi.mock("node:path", async () => {
 import { promises as fs } from "node:fs";
 
 afterEach(() => {
-    vi.clearAllMocks();
+	vi.clearAllMocks();
 });
-
-
-
 
 const mockedFs = vi.mocked(fs);
 

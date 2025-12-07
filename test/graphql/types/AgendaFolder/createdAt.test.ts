@@ -200,13 +200,13 @@ async function cleanup(
 			headers: { authorization: `bearer ${authToken}` },
 			variables: { input: { id: eventId } },
 		});
-	} catch { }
+	} catch {}
 	try {
 		await mercuriusClient.mutate(Mutation_deleteOrganization, {
 			headers: { authorization: `bearer ${authToken}` },
 			variables: { input: { id: orgId } },
 		});
-	} catch { }
+	} catch {}
 }
 
 describe("AgendaFolder.createdAt resolver", () => {
@@ -290,7 +290,7 @@ describe("AgendaFolder.createdAt resolver", () => {
 						input: {
 							organizationId: orgId,
 							memberId: regularUser.userId,
-							role: "member",
+							role: "regular",
 						},
 					},
 				});

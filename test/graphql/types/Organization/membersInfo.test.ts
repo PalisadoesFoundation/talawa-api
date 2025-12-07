@@ -1,6 +1,6 @@
 import { and, eq } from "drizzle-orm";
 import { createMockGraphQLContext } from "test/_Mocks_/mockContextCreator/mockContextCreator";
-import { afterEach,  describe, expect, it, vi  } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { organizationMembershipsTable } from "~/src/drizzle/tables/organizationMemberships";
 import { isMemberResolver } from "~/src/graphql/types/Organization/isMember";
 import {
@@ -10,12 +10,8 @@ import {
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 
 afterEach(() => {
-    vi.clearAllMocks();
+	vi.clearAllMocks();
 });
-
-
-
-
 
 // Parent organization mock
 const mockParent = {

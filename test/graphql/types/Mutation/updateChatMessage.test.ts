@@ -1,5 +1,5 @@
 import { faker } from "@faker-js/faker";
-import { afterEach,  expect, suite, test, vi  } from "vitest";
+import { afterEach, expect, suite, test, vi } from "vitest";
 import type {
 	TalawaGraphQLFormattedError,
 	UnauthenticatedExtensions,
@@ -8,9 +8,6 @@ import { assertToBeNonNullish } from "../../../helpers";
 import { server } from "../../../server";
 import { mercuriusClient } from "../client";
 import {
-
-
-
 	Mutation_createChat,
 	Mutation_createChatMessage,
 	Mutation_createOrganization,
@@ -22,9 +19,8 @@ import {
 } from "../documentNodes";
 
 afterEach(() => {
-    vi.clearAllMocks();
+	vi.clearAllMocks();
 });
-
 
 suite("Mutation field updateChatMessage", () => {
 	suite(
