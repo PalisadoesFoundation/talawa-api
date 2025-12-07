@@ -293,9 +293,7 @@ describe("AgendaFolder.createdAt resolver", () => {
 							role: "regular",
 						},
 					},
-				});
-
-				// Query as regular member
+				}); // Query as regular member
 				const result = await mercuriusClient.query(
 					Query_agendaFolder_createdAt,
 					{

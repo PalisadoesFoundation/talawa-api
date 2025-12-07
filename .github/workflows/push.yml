@@ -8,10 +8,16 @@ on:
 
 env:
   CODECOV_UNIQUE_NAME: CODECOV_UNIQUE_NAME-${{ github.run_id }}-${{ github.run_number }}
+  TOTAL_SHARDS: 12
   
 jobs:
   test-and-upload-coverage:
+    name: Run tests (Shard ${{ matrix.shard }})
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
 
     steps:
       # Checkout the repository
@@ -26,15 +32,82 @@ jobs:
       - name: Build Talawa API compose testing environment
         run: docker compose build
 
-      # Run tests
-      - name: Run tests
-        run: docker compose up --exit-code-from api
+      # Run tests with sharding
+      - name: Run tests (shard ${{ matrix.shard }}/${{ env.TOTAL_SHARDS }})
+        env:
+          SHARD_INDEX: ${{ matrix.shard }}
+          SHARD_COUNT: ${{ env.TOTAL_SHARDS }}
+        run: |
+          docker compose run --rm \
+            -e SHARD_INDEX=$SHARD_INDEX \
+            -e SHARD_COUNT=$SHARD_COUNT \
+            api pnpm test:shard:coverage
 
       # Copy coverage from container
       - name: Copy coverage from container
+        if: always()
         run: |
-          CONTAINER_ID=$(docker ps -aq --filter "ancestor=talawa-api")
-          docker cp $CONTAINER_ID:/home/talawa/api/coverage ./coverage
+          CONTAINER_ID=$(docker ps -aq --filter "label=com.docker.compose.service=api" | head -n 1)
+          if [ -n "$CONTAINER_ID" ]; then
+            docker cp $CONTAINER_ID:/home/talawa/api/coverage ./coverage || echo "No coverage to copy from running container"
+          fi
+          # Also try to get from exited containers
+          EXITED_CONTAINER=$(docker ps -aq --filter "label=com.docker.compose.service=api" --filter "status=exited" | head -n 1)
+          if [ -n "$EXITED_CONTAINER" ]; then
+            docker cp $EXITED_CONTAINER:/home/talawa/api/coverage ./coverage || echo "No coverage to copy from exited container"
+          fi
+
+      - name: Upload coverage artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-shard-${{ matrix.shard }}
+          path: ./coverage/
+          retention-days: 1
+
+  merge-coverage:
+    name: Merge Coverage Reports
+    runs-on: ubuntu-latest
+    needs: [test-and-upload-coverage]
+    if: always()
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - uses: pnpm/action-setup@v4
+        with:
+          run_install: false
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24.x'
+          cache: 'pnpm'
+
+      - name: Download all coverage artifacts
+        uses: actions/download-artifact@v4
+        with:
+          pattern: coverage-shard-*
+          path: ./coverage-shards/
+
+      - name: Prepare dependency store
+        run: pnpm fetch
+
+      - name: Install dependencies (offline)
+        run: pnpm install --frozen-lockfile --offline
+
+      - name: Merge coverage reports
+        run: |
+          # Install nyc for merging coverage
+          pnpm add -D nyc
+
+          # Create merged coverage directory
+          mkdir -p ./coverage
+
+          # Merge all lcov files
+          find ./coverage-shards -name 'lcov.info' -exec cat {} + > ./coverage/lcov.info
+
+          echo "Coverage reports merged successfully"
           
       #######################################################################
       # DO NOT DELETE ANY references to env.CODECOV_UNIQUE_NAME in this

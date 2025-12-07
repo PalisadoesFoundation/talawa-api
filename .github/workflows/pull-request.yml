@@ -391,9 +391,15 @@ jobs:
           exit 1
 
   Run-Tests:
-    name: Run tests for talawa api
+    name: Run tests for talawa api (Shard ${{ matrix.shard }})
     runs-on: ubuntu-latest
     needs: [Code-Quality-Checks, python_checks, check_type_errors, check_mock_isolation, check_drizzle_migrations, check_gql_tada, Check-AutoDocs, Check_unused_code, Generate-Schema-Docs]
+    env:
+      TOTAL_SHARDS: 12
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
     steps:
       - name: Checkout this repository
         uses: actions/checkout@v4.2.2
@@ -422,12 +428,79 @@ jobs:
           else
             echo "Postgres is ready."
           fi
-      - name: Run tests
-        run: docker compose up --exit-code-from api
-      - name: Copy coverage from container
+      - name: Run tests (shard ${{ matrix.shard }}/${{ env.TOTAL_SHARDS }})
+        env:
+          SHARD_INDEX: ${{ matrix.shard }}
+          SHARD_COUNT: ${{ env.TOTAL_SHARDS }}
         run: |
-          CONTAINER_ID=$(docker ps -aq --filter "ancestor=talawa-api")
-          docker cp $CONTAINER_ID:/home/talawa/api/coverage ./coverage
+          # Update compose.testing.yaml to use sharded test command
+          docker compose run --rm \
+            -e SHARD_INDEX=$SHARD_INDEX \
+            -e SHARD_COUNT=$SHARD_COUNT \
+            api pnpm test:shard:coverage
+      - name: Copy coverage from container
+        if: always()
+        run: |
+          CONTAINER_ID=$(docker ps -aq --filter "label=com.docker.compose.service=api" | head -n 1)
+          if [ -n "$CONTAINER_ID" ]; then
+            docker cp $CONTAINER_ID:/home/talawa/api/coverage ./coverage || echo "No coverage to copy from running container"
+          fi
+          # Also try to get from exited containers
+          EXITED_CONTAINER=$(docker ps -aq --filter "label=com.docker.compose.service=api" --filter "status=exited" | head -n 1)
+          if [ -n "$EXITED_CONTAINER" ]; then
+            docker cp $EXITED_CONTAINER:/home/talawa/api/coverage ./coverage || echo "No coverage to copy from exited container"
+          fi
+      - name: Upload coverage artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-shard-${{ matrix.shard }}
+          path: ./coverage/
+          retention-days: 1
+
+  Merge-Coverage:
+    name: Merge Coverage Reports
+    runs-on: ubuntu-latest
+    needs: [Run-Tests]
+    if: always()
+    steps:
+      - name: Checkout this repository
+        uses: actions/checkout@v4.2.2
+
+      - uses: pnpm/action-setup@v4
+        with:
+          run_install: false
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24.x'
+          cache: 'pnpm'
+
+      - name: Download all coverage artifacts
+        uses: actions/download-artifact@v4
+        with:
+          pattern: coverage-shard-*
+          path: ./coverage-shards/
+
+      - name: Prepare dependency store
+        run: pnpm fetch
+
+      - name: Install dependencies (offline)
+        run: pnpm install --frozen-lockfile --offline
+
+      - name: Merge coverage reports
+        run: |
+          # Install nyc for merging coverage
+          pnpm add -D nyc
+
+          # Create merged coverage directory
+          mkdir -p ./coverage
+
+          # Merge all lcov files
+          find ./coverage-shards -name 'lcov.info' -exec cat {} + > ./coverage/lcov.info
+
+          echo "Coverage reports merged successfully"
 
       #######################################################################
       # DO NOT DELETE ANY references to env.CODECOV_UNIQUE_NAME in this
@@ -451,7 +524,7 @@ jobs:
   Test-Docusaurus-Deployment:
     name: Test Deployment to https://docs-api.talawa.io
     runs-on: ubuntu-latest
-    needs: [Run-Tests]
+    needs: [Merge-Coverage]
     # Run only if the develop branch and not dependabot
     if: ${{ github.actor != 'dependabot[bot]' && github.event.pull_request.base.ref == 'develop' }}
     steps:
