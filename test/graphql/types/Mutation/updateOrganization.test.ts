@@ -1,5 +1,8 @@
 import { faker } from "@faker-js/faker";
+import { eq } from "drizzle-orm";
+import type { FastifyInstance } from "fastify";
 import { afterEach, expect, suite, test } from "vitest";
+import { organizationsTable } from "~/src/drizzle/tables/organizations";
 import { assertToBeNonNullish } from "../../../helpers";
 import { server } from "../../../server";
 import { mercuriusClient } from "../client";
@@ -721,5 +724,73 @@ suite("Mutation field updateOrganization", () => {
 		// Should succeed if whitespace is not trimmed and check is strict
 		expect(result.errors).toBeUndefined();
 		expect(result.data?.updateOrganization?.name).toBe("Whitespace Org ");
+	});
+	test("should remove avatar when avatar is set to null", async () => {
+		// Create organization
+		const createOrgResult = await mercuriusClient.mutate(
+			Mutation_createOrganization,
+			{
+				headers: { authorization: `bearer ${authToken}` },
+				variables: {
+					input: {
+						name: "Avatar Removal Org",
+						description: "Organization for avatar removal test",
+						countryCode: "us",
+						state: "CA",
+						city: "San Francisco",
+						postalCode: "94101",
+						addressLine1: "123 Avatar St",
+						addressLine2: "Suite 100",
+					},
+				},
+			},
+		);
+		const orgId = createOrgResult.data?.createOrganization?.id;
+		assertToBeNonNullish(orgId);
+
+		testCleanupFunctions.push(async () => {
+			await mercuriusClient.mutate(Mutation_deleteOrganization, {
+				headers: { authorization: `bearer ${authToken}` },
+				variables: { input: { id: orgId } },
+			});
+		});
+
+		// Manually set an avatar in the database
+		await (server as FastifyInstance).drizzleClient
+			.update(organizationsTable)
+			.set({
+				avatarName: "test-avatar.png",
+				avatarMimeType: "image/png",
+			})
+			.where(eq(organizationsTable.id, orgId));
+
+		// Call updateOrganization with avatar: null
+		const result = await mercuriusClient.mutate(Mutation_updateOrganization, {
+			headers: { authorization: `bearer ${authToken}` },
+			variables: {
+				input: {
+					id: orgId,
+					avatar: null,
+				},
+			},
+		});
+
+		expect(result.errors).toBeUndefined();
+		// Verify returned object has null avatar
+		expect(result.data?.updateOrganization?.avatarMimeType).toBeNull();
+
+		// Verify database state
+		const updatedOrg = await (
+			server as FastifyInstance
+		).drizzleClient.query.organizationsTable.findFirst({
+			where: eq(organizationsTable.id, orgId),
+			columns: {
+				avatarName: true,
+				avatarMimeType: true,
+			},
+		});
+
+		expect(updatedOrg?.avatarName).toBeNull();
+		expect(updatedOrg?.avatarMimeType).toBeNull();
 	});
 });
