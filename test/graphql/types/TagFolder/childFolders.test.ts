@@ -15,6 +15,28 @@ const createCursor = (data: Record<string, unknown>): string => {
 	return Buffer.from(JSON.stringify(data)).toString("base64url");
 };
 
+const makeResolveInfo = (
+	overrides: Partial<GraphQLResolveInfo> = {},
+): GraphQLResolveInfo => {
+	return {
+		fieldName: "childFolders",
+		fieldNodes: [],
+		returnType: schema.getType("TagFolder") as GraphQLObjectType,
+		parentType: schema.getType("TagFolder") as GraphQLObjectType,
+		path: { key: "childFolders", prev: undefined },
+		schema: schema,
+		fragments: {},
+		rootValue: {},
+		operation: {
+			kind: "OperationDefinition",
+			operation: "query",
+			selectionSet: { kind: "SelectionSet", selections: [] },
+		},
+		variableValues: {},
+		...overrides,
+	} as GraphQLResolveInfo;
+};
+
 interface Connection {
 	edges: Array<{ node: Record<string, unknown> }>;
 	pageInfo: {
@@ -62,7 +84,7 @@ describe("TagFolder childFolders Resolver", () => {
 	];
 
 	// The resolver does not use the info argument, so we can cast an empty object.
-	const mockResolveInfo: GraphQLResolveInfo = {} as GraphQLResolveInfo;
+	const mockResolveInfo = makeResolveInfo();
 
 	beforeAll(() => {
 		const tagFolderType = schema.getType("TagFolder") as GraphQLObjectType;
