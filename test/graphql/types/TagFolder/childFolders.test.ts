@@ -5,10 +5,15 @@ import type {
 } from "graphql";
 import { createMockGraphQLContext } from "test/_Mocks_/mockContextCreator/mockContextCreator";
 import { beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
+import { tagFoldersTable } from "~/src/drizzle/tables/tagFolders";
 import type { GraphQLContext } from "~/src/graphql/context";
 import { schema } from "~/src/graphql/schema";
 import type { TagFolder as TagFolderType } from "~/src/graphql/types/TagFolder/TagFolder";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
+
+const createCursor = (data: Record<string, unknown>): string => {
+	return Buffer.from(JSON.stringify(data)).toString("base64url");
+};
 
 interface Connection {
 	edges: Array<{ node: Record<string, unknown> }>;
@@ -56,6 +61,7 @@ describe("TagFolder childFolders Resolver", () => {
 		},
 	];
 
+	// The resolver does not use the info argument, so we can cast an empty object.
 	const mockResolveInfo: GraphQLResolveInfo = {} as GraphQLResolveInfo;
 
 	beforeAll(() => {
@@ -239,9 +245,9 @@ describe("TagFolder childFolders Resolver", () => {
 
 	describe("Data Fetching", () => {
 		it("should fetch child folders with forward pagination", async () => {
-			mocks.drizzleClient.query.tagFoldersTable.findMany.mockResolvedValue(
-				mockChildFolders,
-			);
+			mocks.drizzleClient.query.tagFoldersTable.findMany.mockResolvedValue([
+				...mockChildFolders,
+			]);
 
 			const result = await childFoldersResolver(
 				mockTagFolder,
@@ -285,9 +291,9 @@ describe("TagFolder childFolders Resolver", () => {
 			);
 		});
 		it("should fetch child folders with backward pagination", async () => {
-			mocks.drizzleClient.query.tagFoldersTable.findMany.mockResolvedValue(
-				mockChildFolders,
-			);
+			mocks.drizzleClient.query.tagFoldersTable.findMany.mockResolvedValue([
+				...mockChildFolders,
+			]);
 
 			const result = await childFoldersResolver(
 				mockTagFolder,
@@ -307,9 +313,7 @@ describe("TagFolder childFolders Resolver", () => {
 		});
 
 		it("should handle cursor-based pagination (forward)", async () => {
-			const cursor = Buffer.from(JSON.stringify({ name: "Folder A" })).toString(
-				"base64url",
-			);
+			const cursor = createCursor({ name: "Folder A" });
 
 			const folder = mockChildFolders[1] as (typeof mockChildFolders)[number];
 
@@ -325,12 +329,19 @@ describe("TagFolder childFolders Resolver", () => {
 			);
 
 			expect(result).toBeDefined();
+
+			// Verify exists() check was constructed
+			expect(mocks.drizzleClient.select).toHaveBeenCalled();
+			const mockSelect = mocks.drizzleClient.select.mock.results[0]?.value;
+			if (!mockSelect) {
+				throw new Error("Mock select return value is undefined");
+			}
+			expect(mockSelect.from).toHaveBeenCalledWith(tagFoldersTable);
+			expect(mockSelect.where).toHaveBeenCalled();
 		});
 
 		it("should handle cursor-based pagination (backward)", async () => {
-			const cursor = Buffer.from(JSON.stringify({ name: "Folder B" })).toString(
-				"base64url",
-			);
+			const cursor = createCursor({ name: "Folder B" });
 
 			const folder = mockChildFolders[0] as (typeof mockChildFolders)[number];
 
@@ -346,12 +357,19 @@ describe("TagFolder childFolders Resolver", () => {
 			);
 
 			expect(result).toBeDefined();
+
+			// Verify exists() check was constructed
+			expect(mocks.drizzleClient.select).toHaveBeenCalled();
+			const mockSelect = mocks.drizzleClient.select.mock.results[0]?.value;
+			if (!mockSelect) {
+				throw new Error("Mock select return value is undefined");
+			}
+			expect(mockSelect.from).toHaveBeenCalledWith(tagFoldersTable);
+			expect(mockSelect.where).toHaveBeenCalled();
 		});
 
 		it("should throw arguments_associated_resources_not_found if cursor returns no results", async () => {
-			const cursor = Buffer.from(
-				JSON.stringify({ name: "NonExistent" }),
-			).toString("base64url");
+			const cursor = createCursor({ name: "NonExistent" });
 
 			mocks.drizzleClient.query.tagFoldersTable.findMany.mockResolvedValue([]);
 
@@ -377,9 +395,7 @@ describe("TagFolder childFolders Resolver", () => {
 		});
 
 		it("should throw arguments_associated_resources_not_found if cursor returns no results (backward)", async () => {
-			const cursor = Buffer.from(JSON.stringify({ name: "Folder A" })).toString(
-				"base64url",
-			);
+			const cursor = createCursor({ name: "Folder A" });
 
 			mocks.drizzleClient.query.tagFoldersTable.findMany.mockResolvedValue([]);
 
@@ -502,6 +518,81 @@ describe("TagFolder childFolders Resolver", () => {
 					limit: 11,
 				}),
 			);
+		});
+
+		it("should set correct startCursor and endCursor values", async () => {
+			mocks.drizzleClient.query.tagFoldersTable.findMany.mockResolvedValue([
+				...mockChildFolders,
+			]);
+
+			const result = (await childFoldersResolver(
+				mockTagFolder,
+				{ first: 10 },
+				ctx,
+				mockResolveInfo,
+			)) as Connection;
+
+			expect(result.pageInfo.startCursor).toBeDefined();
+			expect(result.pageInfo.endCursor).toBeDefined();
+
+			// Verify cursors can be decoded
+			if (result.pageInfo.startCursor) {
+				const decodedStart = JSON.parse(
+					Buffer.from(result.pageInfo.startCursor, "base64url").toString(
+						"utf-8",
+					),
+				);
+				expect(decodedStart.name).toBe("Folder A");
+			}
+
+			if (result.pageInfo.endCursor) {
+				const decodedEnd = JSON.parse(
+					Buffer.from(result.pageInfo.endCursor, "base64url").toString("utf-8"),
+				);
+				expect(decodedEnd.name).toBe("Folder B");
+			}
+		});
+
+		it("should set hasPreviousPage to true when using after cursor in forward pagination", async () => {
+			const cursor = createCursor({ name: "Folder A" });
+
+			const folder = mockChildFolders[1] as (typeof mockChildFolders)[number];
+
+			mocks.drizzleClient.query.tagFoldersTable.findMany.mockResolvedValue([
+				folder,
+			]);
+
+			const result = (await childFoldersResolver(
+				mockTagFolder,
+				{ first: 10, after: cursor },
+				ctx,
+				mockResolveInfo,
+			)) as Connection;
+
+			// When using 'after' cursor in forward pagination, hasPreviousPage should be true
+			expect(result.pageInfo.hasPreviousPage).toBe(true);
+			expect(result.pageInfo.hasNextPage).toBe(false);
+		});
+
+		it("should set hasNextPage to true when using before cursor in backward pagination", async () => {
+			const cursor = createCursor({ name: "Folder B" });
+
+			const folder = mockChildFolders[0] as (typeof mockChildFolders)[number];
+
+			mocks.drizzleClient.query.tagFoldersTable.findMany.mockResolvedValue([
+				folder,
+			]);
+
+			const result = (await childFoldersResolver(
+				mockTagFolder,
+				{ last: 10, before: cursor },
+				ctx,
+				mockResolveInfo,
+			)) as Connection;
+
+			// When using 'before' cursor in backward pagination, hasNextPage should be true
+			expect(result.pageInfo.hasNextPage).toBe(true);
+			expect(result.pageInfo.hasPreviousPage).toBe(false);
 		});
 	});
 
