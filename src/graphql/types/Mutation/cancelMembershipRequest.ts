@@ -27,7 +27,7 @@ builder.mutationField("cancelMembershipRequest", (t) =>
 			// ✅ Ensure user is authenticated
 			if (!ctx.currentClient.isAuthenticated) {
 				throw new TalawaGraphQLError({
-					extensions: { code: "unauthenticated" },
+					extensions: { code: "unauthenticated", message: "You must be logged in to cancel a membership request." },
 				});
 			}
 
@@ -42,6 +42,7 @@ builder.mutationField("cancelMembershipRequest", (t) =>
 				throw new TalawaGraphQLError({
 					extensions: {
 						code: "invalid_arguments",
+						message: "Invalid input provided.",
 						issues: error.issues.map((issue) => ({
 							argumentPath: issue.path,
 							message: issue.message,
@@ -69,8 +70,7 @@ builder.mutationField("cancelMembershipRequest", (t) =>
 				throw new TalawaGraphQLError({
 					extensions: {
 						code: "unexpected",
-						message:
-							"Membership request not found or you do not have permission to cancel it.",
+						message: "Membership request not found or you do not have permission to cancel it.",
 					},
 				});
 			}
@@ -98,7 +98,7 @@ builder.mutationField("cancelMembershipRequest", (t) =>
 
 			if (deletedRequest.length === 0) {
 				throw new TalawaGraphQLError({
-					extensions: { code: "unexpected" },
+					extensions: { code: "unexpected", message: "Failed to cancel the membership request." },
 				});
 			}
 
