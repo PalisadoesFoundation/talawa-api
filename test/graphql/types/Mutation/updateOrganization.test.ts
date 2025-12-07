@@ -456,4 +456,95 @@ suite("Mutation field updateOrganization", () => {
 			]),
 		);
 	});
+	test("should return an error when organization name already exists", async () => {
+		// Create first organization
+		const createOrg1Result = await mercuriusClient.mutate(
+			Mutation_createOrganization,
+			{
+				headers: { authorization: `bearer ${authToken}` },
+				variables: {
+					input: {
+						name: "Duplicate Org 1",
+						description: "First organization for duplicate test",
+						countryCode: "us",
+						state: "NY",
+						city: "New York",
+						postalCode: "10001",
+						addressLine1: "123 Dup St",
+						addressLine2: "Suite 100",
+					},
+				},
+			},
+		);
+		const org1Id = createOrg1Result.data?.createOrganization?.id;
+		assertToBeNonNullish(org1Id);
+
+		// Add cleanup for the first organization
+		testCleanupFunctions.push(async () => {
+			await mercuriusClient.mutate(Mutation_deleteOrganization, {
+				headers: { authorization: `bearer ${authToken}` },
+				variables: { input: { id: org1Id } },
+			});
+		});
+
+		// Create second organization
+		const createOrg2Result = await mercuriusClient.mutate(
+			Mutation_createOrganization,
+			{
+				headers: { authorization: `bearer ${authToken}` },
+				variables: {
+					input: {
+						name: "Duplicate Org 2",
+						description: "Second organization for duplicate test",
+						countryCode: "us",
+						state: "CA",
+						city: "Los Angeles",
+						postalCode: "90001",
+						addressLine1: "456 Dup Ave",
+						addressLine2: "Suite 200",
+					},
+				},
+			},
+		);
+		const org2Id = createOrg2Result.data?.createOrganization?.id;
+		assertToBeNonNullish(org2Id);
+
+		// Add cleanup for the second organization
+		testCleanupFunctions.push(async () => {
+			await mercuriusClient.mutate(Mutation_deleteOrganization, {
+				headers: { authorization: `bearer ${authToken}` },
+				variables: { input: { id: org2Id } },
+			});
+		});
+
+		// Try to update second organization with first organization's name
+		const result = await mercuriusClient.mutate(Mutation_updateOrganization, {
+			headers: { authorization: `bearer ${authToken}` },
+			variables: {
+				input: {
+					id: org2Id,
+					name: "Duplicate Org 1",
+				},
+			},
+		});
+
+		expect(result.data?.updateOrganization).toBeNull();
+		expect(result.errors).toEqual(
+			expect.arrayContaining([
+				expect.objectContaining({
+					message: "Organization name already exists",
+					extensions: expect.objectContaining({
+						code: "invalid_arguments",
+						issues: [
+							{
+								argumentPath: ["input", "name"],
+								message: "Organization name already exists",
+							},
+						],
+					}),
+					path: ["updateOrganization"],
+				}),
+			]),
+		);
+	});
 });

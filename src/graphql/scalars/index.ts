@@ -33,4 +33,5 @@ export type ClientCustomScalars = {
 	DateTime: string;
 	PhoneNumber: string;
 	EmailAddress: string;
+	Upload: unknown;
 };
