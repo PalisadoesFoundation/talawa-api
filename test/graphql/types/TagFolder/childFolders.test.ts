@@ -376,6 +376,34 @@ describe("TagFolder childFolders Resolver", () => {
 			);
 		});
 
+		it("should throw arguments_associated_resources_not_found if cursor returns no results (backward)", async () => {
+			const cursor = Buffer.from(JSON.stringify({ name: "Folder A" })).toString(
+				"base64url",
+			);
+
+			mocks.drizzleClient.query.tagFoldersTable.findMany.mockResolvedValue([]);
+
+			await expect(
+				childFoldersResolver(
+					mockTagFolder,
+					{ last: 10, before: cursor },
+					ctx,
+					mockResolveInfo,
+				),
+			).rejects.toThrow(
+				new TalawaGraphQLError({
+					extensions: {
+						code: "arguments_associated_resources_not_found",
+						issues: [
+							{
+								argumentPath: ["before"],
+							},
+						],
+					},
+				}),
+			);
+		});
+
 		it("should handle empty connection", async () => {
 			mocks.drizzleClient.query.tagFoldersTable.findMany.mockResolvedValue([]);
 
