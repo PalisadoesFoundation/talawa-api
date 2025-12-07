@@ -7,6 +7,16 @@
 
 import { spawn } from "node:child_process";
 
+const isCI = !!process.env.CI;
+
+// In CI, require SHARD_INDEX and SHARD_COUNT to be set; locally, use defaults
+if (isCI && (!process.env.SHARD_INDEX || !process.env.SHARD_COUNT)) {
+	console.error(
+		"[CI Error] SHARD_INDEX and SHARD_COUNT must be set in CI environment",
+	);
+	process.exit(1);
+}
+
 const shardIndex = process.env.SHARD_INDEX || "1";
 const shardCount = process.env.SHARD_COUNT || "1";
 const withCoverage = process.argv.includes("--coverage");
@@ -21,8 +31,12 @@ if (
 	count < 1 ||
 	idx > count
 ) {
+	const prefix = isCI ? "[CI Error]" : "[Error]";
 	console.error(
-		`Invalid shard configuration: SHARD_INDEX=${shardIndex}, SHARD_COUNT=${shardCount}`,
+		`${prefix} Invalid shard configuration: SHARD_INDEX=${shardIndex}, SHARD_COUNT=${shardCount}`,
+	);
+	console.error(
+		`${prefix} Requirements: both must be integers, 1 <= SHARD_INDEX <= SHARD_COUNT`,
 	);
 	process.exit(1);
 }

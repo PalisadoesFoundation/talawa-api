@@ -22,7 +22,7 @@ jobs:
     steps:
       # Checkout the repository
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4.2.2
 
       # Create .env file for Talawa API testing environment
       - name: Create .env file for Talawa API testing environment
@@ -72,7 +72,7 @@ jobs:
     if: success()
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4.2.2
 
       - uses: pnpm/action-setup@v4
         with:
@@ -114,6 +114,11 @@ jobs:
       - name: Merge coverage reports
         if: steps.check-artifacts.outputs.artifacts_found == 'true'
         run: |
+          # Coverage merging strategy:
+          # - Vitest uses v8 provider to generate coverage-final.json per shard
+          # - nyc merges JSON files (more accurate than merging lcov files)
+          # - nyc generates final lcov report from merged JSON
+          # - lcov-result-merger is fallback if only lcov.info files exist
           mkdir -p ./coverage/vitest
           mkdir -p ./coverage/tmp
 
