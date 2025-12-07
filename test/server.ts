@@ -10,11 +10,9 @@ const testEnvConfig = envSchema<TestEnvConfig>({
 });
 
 export const server = await createServer({
-
-export const server = await createServer({
 	envConfig: {
 		/**
-		 * This makes the server test instance listen on a random port that is free at the time of initialization. This way the tests don't make use of ports that are already acquired by other tests or unrelated processes external to the tests. More information at this link: {@link https://fastify.dev/docs/latest/Reference/Server/#listentextresolver}.
+		 * This makes the server test instance listen on a random port that is free at the time of initialization.
 		 */
 		API_PORT: undefined,
 		/**
