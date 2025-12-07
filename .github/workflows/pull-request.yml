@@ -380,17 +380,15 @@ jobs:
         env:
           CHANGED_UNAUTH_FILES: ${{ steps.changed-unauth-files.outputs.all_changed_files }}
         run: |
-          echo "::warning::Unauthorized changes detected in sensitive files - maintainer approval required:"
+          echo "::error::Unauthorized changes detected in sensitive files:"
           echo ""
           for file in $CHANGED_UNAUTH_FILES; do
-            echo "::warning::  - $file"
+            echo "- $file"
           done
           echo ""
-          echo "::notice::To approve these changes, a maintainer must add the 'ignore-sensitive-files-pr' label to this PR."
-          echo "::notice::This check will not block other CI jobs (tests, codecov) from running."
-          # Don't exit 1 - allow other jobs to continue but mark this job as failed
+          echo "To override:"
+          echo "Add the 'ignore-sensitive-files-pr' label to this PR."
           exit 1
-        continue-on-error: true
 
   Run-Tests:
     name: Run tests for talawa api (Shard ${{ matrix.shard }})
