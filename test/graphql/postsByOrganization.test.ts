@@ -499,12 +499,11 @@ suite("Query field postsByOrganization", () => {
             expect(backwardResult.data?.postsByOrganization?.pageInfo.hasPreviousPage).toBe(true);
             expect(backwardResult.data?.postsByOrganization?.pageInfo.hasNextPage).toBe(true);
 
-            // Verify correct posts are returned (should be posts at index 1 and 2)
+            // Verify correct posts are returned in the correct order
             const returnedCaptions = backwardResult.data?.postsByOrganization?.edges.map(
                 (e: any) => e.node.caption,
             );
-            expect(returnedCaptions).toContain("Post 4");
-            expect(returnedCaptions).toContain("Post 3");
+            expect(returnedCaptions).toEqual(["Post 4", "Post 3"]);
         });
 
         test("returns error with invalid/malformed cursor", async () => {
