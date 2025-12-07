@@ -213,10 +213,14 @@ suite("Query eventsByIds", () => {
 
 		const organizationId = orgResult.data.createOrganization.id;
 
-		const inputObject = {
+		const inputObject: {
+			organizationId: string;
+			memberId: string;
+			role: "administrator" | "regular";
+		} = {
 			organizationId: organizationId,
 			memberId: adminUserId,
-			role: "administrator" as const,
+			role: "administrator",
 		};
 
 		const membershipResult = await mercuriusClient.mutate(

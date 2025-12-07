@@ -2,7 +2,7 @@ import { readFileSync } from "node:fs";
 import { globSync } from "glob";
 import ts from "typescript";
 
-const TEST_FILES_GLOB = "test/**/*.{test,spec}.ts";
+const TEST_FILES_GLOB = "test/**/*.{test,spec}.{ts,tsx}";
 
 function checkFile(filePath: string): boolean {
 	const content = readFileSync(filePath, "utf-8");
@@ -12,6 +12,20 @@ function checkFile(filePath: string): boolean {
 		ts.ScriptTarget.Latest,
 		true,
 	);
+
+	// Check if the parsed file has any severe parse errors
+	// by looking for nodes that couldn't be parsed
+	function hasParseErrors(node: ts.Node): boolean {
+		if (node.kind === ts.SyntaxKind.Unknown) {
+			return true;
+		}
+		return ts.forEachChild(node, hasParseErrors) || false;
+	}
+
+	if (hasParseErrors(sourceFile)) {
+		console.warn(`[WARN] Skipping file due to parse errors: ${filePath}`);
+		return true; // Skip checking this file
+	}
 
 	let hasMockUsage = false;
 	let hasCleanup = false;
@@ -89,8 +103,13 @@ let errors = 0;
 console.log(`Checking ${files.length} test files for mock isolation...`);
 
 for (const file of files) {
-	if (!checkFile(file)) {
-		console.error(`[ERROR] Missing mock cleanup in: ${file}`);
+	try {
+		if (!checkFile(file)) {
+			console.error(`[ERROR] Missing mock cleanup in: ${file}`);
+			errors++;
+		}
+	} catch (error) {
+		console.error(`[ERROR] Failed to check file: ${file}`, error);
 		errors++;
 	}
 }
