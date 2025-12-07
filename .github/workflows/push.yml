@@ -8,15 +8,21 @@ on:
 
 env:
   CODECOV_UNIQUE_NAME: CODECOV_UNIQUE_NAME-${{ github.run_id }}-${{ github.run_number }}
+  TOTAL_SHARDS: 12
   
 jobs:
   test-and-upload-coverage:
+    name: Run tests (Shard ${{ matrix.shard }})
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
 
     steps:
       # Checkout the repository
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4.2.2
 
       # Create .env file for Talawa API testing environment
       - name: Create .env file for Talawa API testing environment
@@ -26,28 +32,265 @@ jobs:
       - name: Build Talawa API compose testing environment
         run: docker compose build
 
-      # Run tests
-      - name: Run tests
-        run: docker compose up --exit-code-from api
+      # Start test services (postgres-test, minio-test, redis-test)
+      - name: Start test services
+        run: docker compose up -d postgres-test minio-test redis-test
 
-      # Copy coverage from container
-      - name: Copy coverage from container
+      # Wait for test services to be healthy
+      - name: Wait for test services to be ready
         run: |
-          CONTAINER_ID=$(docker ps -aq --filter "ancestor=talawa-api")
-          docker cp $CONTAINER_ID:/home/talawa/api/coverage ./coverage
+          set -euo pipefail
+          echo "Waiting for Postgres test service..."
+          timeout=90
+          until docker compose exec -T postgres-test pg_isready -h localhost -p 5432 -U postgres >/dev/null 2>&1 || [ $timeout -eq 0 ]; do
+            echo "Postgres not ready yet... ($timeout seconds remaining)"
+            sleep 1
+            ((timeout--))
+          done
+          if [ $timeout -eq 0 ]; then
+            echo "Error: Postgres failed to start"
+            docker compose ps
+            docker compose logs postgres-test
+            docker compose down -v
+            exit 1
+          fi
+          echo "Postgres is ready."
+          
+          # Wait for minio-test health check
+          echo "Waiting for Minio test service..."
+          timeout=60
+          until docker compose exec -T minio-test mc ready local >/dev/null 2>&1 || [ $timeout -eq 0 ]; do
+            echo "Minio not ready yet... ($timeout seconds remaining)"
+            sleep 1
+            ((timeout--))
+          done
+          if [ $timeout -eq 0 ]; then
+            echo "::warning::Minio health check timed out, continuing anyway"
+          else
+            echo "Minio is ready."
+          fi
+          
+          # Wait for redis-test health check
+          echo "Waiting for Redis test service..."
+          timeout=60
+          until docker compose exec -T redis-test redis-cli ping >/dev/null 2>&1 || [ $timeout -eq 0 ]; do
+            echo "Redis not ready yet... ($timeout seconds remaining)"
+            sleep 1
+            ((timeout--))
+          done
+          if [ $timeout -eq 0 ]; then
+            echo "::warning::Redis health check timed out, continuing anyway"
+          else
+            echo "Redis is ready."
+          fi
+          
+          echo "All test services are ready."
+
+      # Run tests with sharding
+      - name: Run tests (shard ${{ matrix.shard }}/${{ env.TOTAL_SHARDS }})
+        env:
+          SHARD_INDEX: ${{ matrix.shard }}
+          SHARD_COUNT: ${{ env.TOTAL_SHARDS }}
+        run: |
+          # Run tests without --rm to allow coverage extraction
+          docker compose run --name talawa-api-test-shard-${{ matrix.shard }} \
+            -e SHARD_INDEX=$SHARD_INDEX \
+            -e SHARD_COUNT=$SHARD_COUNT \
+            api pnpm test:shard:coverage
+
+      - name: Copy coverage from container
+        if: always()
+        run: |
+          # Copy coverage from the named container
+          docker cp talawa-api-test-shard-${{ matrix.shard }}:/home/talawa/api/coverage ./coverage || echo "::warning::Failed to copy coverage from container talawa-api-test-shard-${{ matrix.shard }}"
+          
+      - name: Cleanup test container
+        if: always()
+        run: |
+          # Remove the test container
+          docker rm -f talawa-api-test-shard-${{ matrix.shard }} || true
+
+      - name: Upload coverage artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-shard-${{ matrix.shard }}
+          path: ./coverage/
+          retention-days: 1
+
+  merge-coverage:
+    name: Merge Coverage Reports
+    runs-on: ubuntu-latest
+    needs: [test-and-upload-coverage]
+    if: success()
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4.2.2
+
+      - uses: pnpm/action-setup@v4
+        with:
+          run_install: false
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24.x'
+          cache: 'pnpm'
+
+      - name: Download all coverage artifacts
+        id: download-artifacts
+        continue-on-error: true
+        uses: actions/download-artifact@v4
+        with:
+          pattern: coverage-shard-*
+          path: ./coverage-shards/
+          merge-multiple: false
+
+      - name: Prepare dependency store
+        run: pnpm fetch
+
+      - name: Install dependencies (offline)
+        run: pnpm install --frozen-lockfile --offline
+
+      - name: Check if artifacts were downloaded
+        id: check-artifacts
+        run: |
+          # Check if any coverage files exist
+          if find coverage-shards -name "lcov.info" -type f | grep -q .; then
+            echo "artifacts_found=true" >> $GITHUB_OUTPUT
+            echo "Coverage artifacts found"
+          else
+            echo "artifacts_found=false" >> $GITHUB_OUTPUT
+            echo "No coverage artifacts found - tests may have been skipped"
+          fi
+
+      - name: Merge coverage reports
+        if: steps.check-artifacts.outputs.artifacts_found == 'true'
+        run: |
+          mkdir -p ./coverage/vitest
+          mkdir -p .nyc_output
+
+          # Find all coverage directories from shards
+          echo "Finding coverage data from shards..."
+          SHARD_DIRS=$(find coverage-shards -type d -name "coverage-shard-*" 2>/dev/null || true)
+
+          if [ -z "$SHARD_DIRS" ]; then
+            echo "ERROR: No shard directories found!"
+            ls -la coverage-shards/ || true
+            exit 1
+          fi
+
+          echo "Found shard directories:"
+          echo "$SHARD_DIRS"
+
+          # Use JSON coverage files for proper nyc merging
+          echo "Looking for coverage-final.json files..."
+          find coverage-shards -name "coverage-final.json" -type f > json-files.txt
+
+          if [ ! -s json-files.txt ]; then
+            echo "ERROR: No coverage-final.json files found!"
+            echo "Available files in coverage-shards:"
+            find coverage-shards -type f -name "*.json" -o -name "*.info" | head -20
+            exit 1
+          fi
+
+          echo "Found JSON coverage files:"
+          cat json-files.txt
+
+          # Count files
+          JSON_COUNT=$(wc -l < json-files.txt)
+          echo "Total JSON files: $JSON_COUNT"
+
+          # Copy JSON files to .nyc_output with unique names for nyc merge
+          SHARD_NUM=0
+          while IFS= read -r file; do
+            if [ ! -f "$file" ]; then
+              echo "ERROR: Coverage file does not exist: $file"
+              exit 1
+            fi
+            if [ ! -s "$file" ]; then
+              echo "ERROR: Coverage file is empty: $file"
+              exit 1
+            fi
+            cp "$file" ".nyc_output/coverage-shard-${SHARD_NUM}.json"
+            echo "  Copied $file to .nyc_output/coverage-shard-${SHARD_NUM}.json"
+            SHARD_NUM=$((SHARD_NUM + 1))
+          done < json-files.txt
+
+          echo "Files in .nyc_output:"
+          ls -la .nyc_output/
+
+          # Use nyc merge to properly merge coverage data
+          echo "Merging coverage with nyc merge..."
+          pnpm exec nyc merge .nyc_output ./coverage/vitest/coverage-final.json
+
+          # Validate merged file exists and is not empty
+          if [ ! -s ./coverage/vitest/coverage-final.json ]; then
+            echo "ERROR: Merged coverage file is empty or missing!"
+            exit 1
+          fi
+
+          echo "Coverage merge successful"
+          echo "Merged JSON file size: $(wc -c < ./coverage/vitest/coverage-final.json) bytes"
+
+          # Rewrite paths in coverage JSON from Docker paths to runner paths
+          # Docker container uses: /home/talawa/api/src/...
+          # Runner has files at: $GITHUB_WORKSPACE/src/...
+          echo "Rewriting coverage paths from Docker to runner paths..."
+          DOCKER_PATH="/home/talawa/api"
+          RUNNER_PATH="$GITHUB_WORKSPACE"
+          sed -i "s|${DOCKER_PATH}|${RUNNER_PATH}|g" ./coverage/vitest/coverage-final.json
+          echo "Path rewriting complete"
+
+          # Generate lcov report from merged JSON using nyc report
+          echo "Generating lcov report..."
+          mkdir -p .nyc_output
+          cp ./coverage/vitest/coverage-final.json .nyc_output/
+          pnpm exec nyc report --reporter=lcov --report-dir=./coverage/vitest
+
+          # Validate lcov file exists
+          if [ ! -s ./coverage/vitest/lcov.info ]; then
+            echo "ERROR: lcov.info file is empty or missing!"
+            exit 1
+          fi
+
+          # Count number of source files in merged coverage
+          SF_COUNT=$(grep -c "^SF:" ./coverage/vitest/lcov.info || echo "0")
+          echo "Number of files in merged coverage: $SF_COUNT"
+
+          # Threshold of 100 source files is based on the project's historical baseline.
+          # The talawa-api codebase has 700+ source files, so a merged coverage report
+          # with fewer than 100 files likely indicates a failed or incomplete merge.
+          # This is a sanity check, not a hard failure - coverage may still be valid.
+          COVERAGE_FILE_THRESHOLD=${COVERAGE_FILE_THRESHOLD:-100}
+          if [ "$SF_COUNT" -lt "$COVERAGE_FILE_THRESHOLD" ]; then
+            echo "::warning::Only $SF_COUNT files in coverage (expected ${COVERAGE_FILE_THRESHOLD}+). This might indicate incomplete coverage merge."
+          fi
+
+          echo "First 30 lines of merged coverage:"
+          head -30 ./coverage/vitest/lcov.info
+
+      - name: Clean up individual shard coverage files
+        if: steps.check-artifacts.outputs.artifacts_found == 'true'
+        run: |
+          echo "Final coverage file to upload:"
+          ls -lh ./coverage/vitest/lcov.info
           
       #######################################################################
       # DO NOT DELETE ANY references to env.CODECOV_UNIQUE_NAME in this
       # section. They are required for accurate calculations
       #######################################################################
       - name: Present and upload coverage to Codecov as ${{env.CODECOV_UNIQUE_NAME}}
+        if: steps.check-artifacts.outputs.artifacts_found == 'true'
         uses: codecov/codecov-action@v5
         with:
           name: "${{env.CODECOV_UNIQUE_NAME}}"
           token: ${{ secrets.CODECOV_TOKEN }}
-          fail_ci_if_error: false
+          fail_ci_if_error: true
           verbose: true
           exclude: 'docs/'
           gcov_ignore: 'docs/'
-          path: "./coverage/lcov.info"
+          files: ./coverage/vitest/lcov.info
+          flags: vitest
+
 

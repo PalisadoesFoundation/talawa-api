@@ -11,7 +11,7 @@
  * - Plugin types and interfaces
  */
 
-import { describe, expect, it, test, vi } from "vitest";
+import { afterEach, describe, expect, it, test, vi } from "vitest";
 
 import {
 	ExtensionPointType,
@@ -42,6 +42,10 @@ import {
 	sortExtensionPoints,
 	validatePluginManifest,
 } from "~/src/plugin";
+
+afterEach(() => {
+	vi.clearAllMocks();
+});
 
 describe("Plugin System Index", () => {
 	describe("Core exports", () => {

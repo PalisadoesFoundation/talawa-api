@@ -1,6 +1,6 @@
 import { faker } from "@faker-js/faker";
 import { and, eq, lt } from "drizzle-orm";
-import { type Mock, expect, suite, test, vi } from "vitest";
+import { type Mock, afterEach, expect, suite, test, vi } from "vitest";
 import { eventGenerationWindowsTable } from "~/src/drizzle/tables/eventGenerationWindows";
 import type { CreateGenerationWindowInput } from "~/src/drizzle/tables/eventGenerationWindows";
 import { recurringEventInstancesTable } from "~/src/drizzle/tables/recurringEventInstances";
@@ -15,6 +15,10 @@ import {
 	initializeGenerationWindow,
 	validateWindowConfig,
 } from "~/src/services/eventGeneration/windowManager";
+
+afterEach(() => {
+	vi.clearAllMocks();
+});
 
 suite("windowManager", () => {
 	const mockLogger = {

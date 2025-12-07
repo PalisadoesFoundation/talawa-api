@@ -12,7 +12,7 @@ const testEnvConfig = envSchema<TestEnvConfig>({
 export const server = await createServer({
 	envConfig: {
 		/**
-		 * This makes the server test instance listen on a random port that is free at the time of initialization. This way the tests don't make use of ports that are already acquired by other tests or unrelated processes external to the tests. More information at this link: {@link https://fastify.dev/docs/latest/Reference/Server/#listentextresolver}.
+		 * This makes the server test instance listen on a random port that is free at the time of initialization.
 		 */
 		API_PORT: undefined,
 		/**
@@ -23,5 +23,9 @@ export const server = await createServer({
 		 * This makes the server test instance connect to the postgres test database.
 		 */
 		API_POSTGRES_HOST: testEnvConfig.API_POSTGRES_TEST_HOST,
+		/**
+		 * This makes the server test instance connect to the redis test database.
+		 */
+		API_REDIS_HOST: testEnvConfig.API_REDIS_TEST_HOST,
 	},
 });

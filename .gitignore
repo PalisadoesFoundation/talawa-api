@@ -845,3 +845,5 @@ yarn.lock
 # Plugin related
 /src/plugin/available/*
 !/src/plugin/available/readme.md
+# Test and debug output files
+debug_test_output_*.txt
