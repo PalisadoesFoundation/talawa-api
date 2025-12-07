@@ -6,6 +6,7 @@
 	"ignoreDependencies": [
 		"graphql-tag",
 		"mercurius-integration-testing",
+		"nyc",
 		"pino-pretty"
 	]
 }
