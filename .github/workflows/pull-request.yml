@@ -407,14 +407,14 @@ jobs:
         run: cp ./envFiles/.env.ci ./.env
       - name: Build talawa api compose testing environment
         run: docker compose build
-      - name: Start Postgres service
-        run: docker compose up -d postgres
-      - name: Wait for Postgres to be ready
+      - name: Start test services (postgres-test, minio-test, redis-test)
+        run: docker compose up -d postgres-test minio-test redis-test
+      - name: Wait for test services to be ready
         run: |
           set -euo pipefail
-          echo "Waiting for Postgres (service: postgres)…"
+          echo "Waiting for Postgres test service..."
           timeout=90
-          until docker compose exec -T postgres pg_isready -h localhost -p 5432 -U postgres >/dev/null 2>&1 || [ $timeout -eq 0 ]; do
+          until docker compose exec -T postgres-test pg_isready -h localhost -p 5432 -U postgres >/dev/null 2>&1 || [ $timeout -eq 0 ]; do
             echo "Postgres not ready yet... ($timeout seconds remaining)"
             sleep 1
             ((timeout--))
@@ -422,12 +422,41 @@ jobs:
           if [ $timeout -eq 0 ]; then
             echo "Error: Postgres failed to start"
             docker compose ps
-            docker compose logs postgres
+            docker compose logs postgres-test
             docker compose down -v
             exit 1
-          else
-            echo "Postgres is ready."
           fi
+          echo "Postgres is ready."
+          
+          # Wait for minio-test health check
+          echo "Waiting for Minio test service..."
+          timeout=60
+          until docker compose exec -T minio-test mc ready local >/dev/null 2>&1 || [ $timeout -eq 0 ]; do
+            echo "Minio not ready yet... ($timeout seconds remaining)"
+            sleep 1
+            ((timeout--))
+          done
+          if [ $timeout -eq 0 ]; then
+            echo "::warning::Minio health check timed out, continuing anyway"
+          else
+            echo "Minio is ready."
+          fi
+          
+          # Wait for redis-test health check
+          echo "Waiting for Redis test service..."
+          timeout=60
+          until docker compose exec -T redis-test redis-cli ping >/dev/null 2>&1 || [ $timeout -eq 0 ]; do
+            echo "Redis not ready yet... ($timeout seconds remaining)"
+            sleep 1
+            ((timeout--))
+          done
+          if [ $timeout -eq 0 ]; then
+            echo "::warning::Redis health check timed out, continuing anyway"
+          else
+            echo "Redis is ready."
+          fi
+          
+          echo "All test services are ready."
       - name: Run tests (shard ${{ matrix.shard }}/${{ env.TOTAL_SHARDS }})
         env:
           SHARD_INDEX: ${{ matrix.shard }}
