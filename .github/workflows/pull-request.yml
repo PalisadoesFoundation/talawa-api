@@ -156,6 +156,17 @@ jobs:
         run: docker buildx build --file ./docker/api.Containerfile --tag talawa_api --target non_production ./
       - name: Check type errors
         run: docker container run talawa_api pnpm typecheck
+
+  check_mock_isolation:
+    name: Check mock isolation
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout this repository
+        uses: actions/checkout@v4.2.2
+      - name: Build talawa api non production environment docker image
+        run: docker buildx build --file ./docker/api.Containerfile --tag talawa_api --target non_production ./
+      - name: Check mock isolation
+        run: docker container run talawa_api pnpm check_mock_isolation
   Generate-Schema-Docs:
     if: ${{ github.actor != 'dependabot[bot]' }}
     name: Generate GraphQL Schema Documentation
@@ -382,7 +393,7 @@ jobs:
   Run-Tests:
     name: Run tests for talawa api
     runs-on: ubuntu-latest
-    needs: [Code-Quality-Checks, python_checks, check_type_errors, check_drizzle_migrations, check_gql_tada, Check-AutoDocs, Check_unused_code, Generate-Schema-Docs]
+    needs: [Code-Quality-Checks, python_checks, check_type_errors, check_mock_isolation, check_drizzle_migrations, check_gql_tada, Check-AutoDocs, Check_unused_code, Generate-Schema-Docs]
     steps:
       - name: Checkout this repository
         uses: actions/checkout@v4.2.2

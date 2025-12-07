@@ -20,6 +20,10 @@ import { getUnifiedEventsInDateRange } from "~/src/graphql/types/Query/eventQuer
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import envConfig from "~/src/utilities/graphqLimits";
 
+afterEach(() => {
+	vi.clearAllMocks();
+});
+
 // Mock the external dependency
 vi.mock("~/src/graphql/types/Query/eventQueries", () => ({
 	getUnifiedEventsInDateRange: vi.fn(),
@@ -135,7 +139,6 @@ describe("Organization Events Resolver Tests", () => {
 			postalCode: null,
 			userRegistrationRequired: false,
 		};
-		mockGetUnifiedEventsInDateRange.mockClear();
 	});
 
 	describe("Authentication and Authorization", () => {

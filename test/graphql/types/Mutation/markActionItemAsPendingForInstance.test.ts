@@ -1,5 +1,5 @@
 import { faker } from "@faker-js/faker";
-import { expect, suite, test, vi } from "vitest";
+import { afterEach, expect, suite, test, vi } from "vitest";
 import { assertToBeNonNullish } from "../../../helpers";
 import { server } from "../../../server";
 import { mercuriusClient } from "../client";
@@ -14,6 +14,10 @@ import {
 	Mutation_createUser,
 	Query_signIn,
 } from "../documentNodes";
+
+afterEach(() => {
+	vi.clearAllMocks();
+});
 
 // Sign in as admin to get an authentication token and admin user id.
 const signInResult = await mercuriusClient.query(Query_signIn, {
