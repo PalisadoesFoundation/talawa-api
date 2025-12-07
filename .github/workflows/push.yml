@@ -179,11 +179,20 @@ jobs:
           echo "Coverage merge successful"
           echo "Merged JSON file size: $(wc -c < ./coverage/vitest/coverage-final.json) bytes"
 
+          # Rewrite paths in coverage JSON from Docker paths to runner paths
+          # Docker container uses: /home/talawa/api/src/...
+          # Runner has files at: $GITHUB_WORKSPACE/src/...
+          echo "Rewriting coverage paths from Docker to runner paths..."
+          DOCKER_PATH="/home/talawa/api"
+          RUNNER_PATH="$GITHUB_WORKSPACE"
+          sed -i "s|${DOCKER_PATH}|${RUNNER_PATH}|g" ./coverage/vitest/coverage-final.json
+          echo "Path rewriting complete"
+
           # Generate lcov report from merged JSON using nyc report
           echo "Generating lcov report..."
-          mkdir -p .nyc_output_merged
-          cp ./coverage/vitest/coverage-final.json .nyc_output_merged/
-          pnpm exec nyc report --temp-dir .nyc_output_merged --reporter=lcov --report-dir=./coverage/vitest
+          mkdir -p .nyc_output
+          cp ./coverage/vitest/coverage-final.json .nyc_output/
+          pnpm exec nyc report --reporter=lcov --report-dir=./coverage/vitest
 
           # Validate lcov file exists
           if [ ! -s ./coverage/vitest/lcov.info ]; then
