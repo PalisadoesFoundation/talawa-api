@@ -113,13 +113,7 @@ jobs:
       - name: Merge coverage reports
         if: steps.check-artifacts.outputs.artifacts_found == 'true'
         run: |
-          # Coverage merging strategy:
-          # - Vitest uses v8 provider to generate coverage-final.json per shard
-          # - nyc merges JSON files (more accurate than merging lcov files)
-          # - nyc generates final lcov report from merged JSON
-          # - lcov-result-merger is fallback if only lcov.info files exist
           mkdir -p ./coverage/vitest
-          mkdir -p ./coverage/tmp
 
           # Find all coverage directories from shards
           echo "Finding coverage data from shards..."
@@ -134,74 +128,39 @@ jobs:
           echo "Found shard directories:"
           echo "$SHARD_DIRS"
 
-          # Check if we have JSON coverage files (better for merging)
-          JSON_FILES=$(find coverage-shards -name "coverage-final.json" -type f 2>/dev/null || true)
+          # Use lcov files for merging (works without source files)
+          echo "Using LCOV files for merging..."
+          find coverage-shards -name "lcov.info" -type f > lcov-files.txt
 
-          if [ -n "$JSON_FILES" ]; then
-            echo "Using JSON coverage files for accurate merging..."
-            
-            # Copy all JSON files to a temp directory for nyc merge
-            for shard_dir in coverage-shards/coverage-shard-*/; do
-              if [ -f "${shard_dir}coverage-final.json" ]; then
-                echo "Found JSON coverage in: $shard_dir"
-                cp "${shard_dir}coverage-final.json" "./coverage/tmp/coverage-shard-$(basename $shard_dir).json"
-              fi
-            done
-            
-            # Validate JSON files before merging
-            echo "Validating JSON coverage files..."
-            JSON_COUNT=$(find ./coverage/tmp -name "*.json" -type f | wc -l)
-            echo "Found $JSON_COUNT JSON files to merge"
-            if [ "$JSON_COUNT" -eq 0 ]; then
-              echo "ERROR: No JSON coverage files found!"
-              exit 1
-            fi
-              
-            # Show sample of file count in each JSON
-            for json_file in ./coverage/tmp/*.json; do
-              FILE_COUNT=$(jq 'keys | length' "$json_file" 2>/dev/null || echo "0")
-              echo "  $(basename $json_file): $FILE_COUNT files"
-            done
-            
-            # Merge using nyc (more accurate than lcov merge)
-            echo "Merging coverage with nyc..."
-            pnpm exec nyc merge ./coverage/tmp ./.nyc_output/coverage-final.json
-            
-            # Validate merged JSON
-            MERGED_FILE_COUNT=$(jq 'keys | length' ./.nyc_output/coverage-final.json 2>/dev/null || echo "0")
-            echo "Merged coverage contains $MERGED_FILE_COUNT files"
-            
-            # Generate lcov from merged JSON
-            echo "Generating lcov report from merged coverage..."
-            pnpm exec nyc report --reporter=lcov --report-dir=./coverage/vitest
-          else
-            echo "Using LCOV files for merging..."
-            # Find all lcov.info files from shards
-            find coverage-shards -name "lcov.info" -type f > lcov-files.txt
-
-            if [ ! -s lcov-files.txt ]; then
-              echo "ERROR: No lcov.info files found!"
-              exit 1
-            fi
-            
-            echo "Found coverage files:"
-            cat lcov-files.txt
-
-            # Validate each file exists and is not empty (fail-fast)
-            while IFS= read -r file; do
-              if [ ! -f "$file" ]; then
-                echo "ERROR: Coverage file does not exist: $file"
-                exit 1
-              fi
-              if [ ! -s "$file" ]; then
-                echo "ERROR: Coverage file is empty: $file"
-                exit 1
-              fi
-            done < lcov-files.txt
-
-            # Use lcov-result-merger as fallback
-            pnpm exec lcov-result-merger "coverage-shards/*/lcov.info" ./coverage/vitest/lcov.info
+          if [ ! -s lcov-files.txt ]; then
+            echo "ERROR: No lcov.info files found!"
+            exit 1
           fi
+
+          echo "Found coverage files:"
+          cat lcov-files.txt
+
+          # Count files
+          LCOV_COUNT=$(wc -l < lcov-files.txt)
+          echo "Total lcov files: $LCOV_COUNT"
+
+          # Validate each file exists and is not empty
+          while IFS= read -r file; do
+            if [ ! -f "$file" ]; then
+              echo "ERROR: Coverage file does not exist: $file"
+              exit 1
+            fi
+            if [ ! -s "$file" ]; then
+              echo "ERROR: Coverage file is empty: $file"
+              exit 1
+            fi
+            SF_COUNT=$(grep -c "^SF:" "$file" || echo "0")
+            echo "  $file: $SF_COUNT source files"
+          done < lcov-files.txt
+
+          # Merge using lcov-result-merger
+          echo "Merging coverage with lcov-result-merger..."
+          pnpm exec lcov-result-merger "coverage-shards/*/lcov.info" ./coverage/vitest/lcov.info
 
           # Validate merged file exists and is not empty
           if [ ! -s ./coverage/vitest/lcov.info ]; then
@@ -227,17 +186,6 @@ jobs:
       - name: Clean up individual shard coverage files
         if: steps.check-artifacts.outputs.artifacts_found == 'true'
         run: |
-          echo "Cleaning up individual shard coverage files..."
-          # Remove all individual coverage JSON files to prevent Codecov from finding them
-          # This ensures only the merged lcov.info is uploaded
-          find ./coverage -name "coverage-*.json" -type f -delete
-          find ./coverage -name "coverage-final.json" -type f -delete
-          rm -rf ./coverage/tmp ./.nyc_output 2>/dev/null || true
-
-          echo "Cleanup complete. Remaining coverage files:"
-          find ./coverage -type f \( -name "*.info" -o -name "*.json" \)
-
-          echo ""
           echo "Final coverage file to upload:"
           ls -lh ./coverage/vitest/lcov.info
           
