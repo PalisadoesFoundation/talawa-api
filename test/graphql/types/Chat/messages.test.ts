@@ -423,6 +423,12 @@ describe("Chat.messages integration tests", () => {
 			});
 		});
 
+		// Add creator as chat member so they can query messages
+		await mercuriusClient.mutate(Mutation_createChatMembership, {
+			headers: { authorization: `bearer ${creatorToken}` },
+			variables: { input: { chatId: chat.id, memberId: creator.user.id } },
+		});
+
 		// Create a fake cursor with non-existent message ID
 		const fakeCursorObj = { id: faker.string.uuid() };
 		const fakeCursor = Buffer.from(JSON.stringify(fakeCursorObj)).toString(
@@ -570,6 +576,17 @@ describe("Chat.messages integration tests", () => {
 			variables: {
 				input: {
 					memberId: creator.user.id,
+					organizationId: org.id,
+					role: "regular",
+				},
+			},
+		});
+
+		await mercuriusClient.mutate(Mutation_createOrganizationMembership, {
+			headers: { authorization: `bearer ${adminToken}` },
+			variables: {
+				input: {
+					memberId: outsider.user.id,
 					organizationId: org.id,
 					role: "regular",
 				},
