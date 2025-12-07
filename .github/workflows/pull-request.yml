@@ -455,7 +455,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: coverage-shard-${{ matrix.shard }}
-          path: ./coverage/
+          path: ./coverage/vitest/
           retention-days: 1
 
   Merge-Coverage:
