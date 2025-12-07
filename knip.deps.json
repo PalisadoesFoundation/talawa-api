@@ -5,8 +5,8 @@
 	"ignoreExportsUsedInFile": true,
 	"ignoreDependencies": [
 		"graphql-tag",
-		"lcov-result-merger",
 		"mercurius-integration-testing",
+		"nyc",
 		"pino-pretty"
 	]
 }
