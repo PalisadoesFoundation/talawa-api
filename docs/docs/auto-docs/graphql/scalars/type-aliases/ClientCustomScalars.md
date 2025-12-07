@@ -49,3 +49,11 @@ Defined in: [src/graphql/scalars/index.ts:35](https://github.com/PalisadoesFound
 > **PhoneNumber**: `string`
 
 Defined in: [src/graphql/scalars/index.ts:34](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/graphql/scalars/index.ts#L34)
+
+***
+
+### Upload
+
+> **Upload**: `unknown`
+
+Defined in: [src/graphql/scalars/index.ts:36](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/graphql/scalars/index.ts#L36)
