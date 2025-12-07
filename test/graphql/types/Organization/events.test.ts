@@ -138,7 +138,6 @@ describe("Organization Events Resolver Tests", () => {
 			postalCode: null,
 			userRegistrationRequired: false,
 		};
-		mockGetUnifiedEventsInDateRange.mockClear();
 	});
 
 	describe("Authentication and Authorization", () => {

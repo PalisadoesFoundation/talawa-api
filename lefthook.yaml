@@ -35,7 +35,7 @@ pre-commit:
       run: pnpm typecheck
 
     9_check_mock_isolation:
-      glob: "test/**/*.{test,spec}.ts"
+      glob: "test/**/*.{test,spec}.{ts,tsx}"
       run: pnpm run check_mock_isolation {staged_files}
 
     11_generate_docs:
