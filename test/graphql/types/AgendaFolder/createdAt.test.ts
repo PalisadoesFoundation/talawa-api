@@ -304,11 +304,11 @@ describe("AgendaFolder.createdAt resolver", () => {
 					},
 				);
 
-				// Should throw unauthorized_action at field level
-				// because member role is not sufficient to access createdAt field
+				// Should throw unauthorized_action_on_arguments_associated_resources at query level
+				// because member role is not sufficient to access agendaFolder query
 				expect(result.errors).toBeDefined();
 				expect(result.errors?.[0]?.extensions?.code).toBe(
-					"unauthorized_action",
+					"unauthorized_action_on_arguments_associated_resources",
 				);
 			} finally {
 				await cleanup(adminAuth.token, { orgId, eventId, folderId });
