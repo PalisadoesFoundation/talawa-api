@@ -489,6 +489,7 @@ suite("Query field postsByOrganization", () => {
                             organizationId: orgId,
                             last: 2,
                             before: cursor,
+                            sortOrder: "DESC",
                         },
                     },
                 },
