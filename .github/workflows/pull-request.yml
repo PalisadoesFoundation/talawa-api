@@ -443,7 +443,7 @@ jobs:
         if: always()
         run: |
           # Copy coverage from the named container
-          docker cp talawa-api-test-shard-${{ matrix.shard }}:/home/talawa/api/coverage ./coverage || echo "Failed to copy coverage"
+          docker cp talawa-api-test-shard-${{ matrix.shard }}:/home/talawa/api/coverage ./coverage || echo "::warning::Failed to copy coverage from container talawa-api-test-shard-${{ matrix.shard }}"
           
       - name: Cleanup test container
         if: always()
@@ -571,10 +571,13 @@ jobs:
           SF_COUNT=$(grep -c "^SF:" ./coverage/vitest/lcov.info || echo "0")
           echo "Number of files in merged coverage: $SF_COUNT"
 
-          if [ "$SF_COUNT" -lt 100 ]; then
-            echo "WARNING: Only $SF_COUNT files in coverage (expected 100+)"
-            echo "This might indicate incomplete coverage merge"
-          fi
+          # Threshold of 100 source files is based on the project's historical baseline.
+          # The talawa-api codebase has 700+ source files, so a merged coverage report
+          # with fewer than 100 files likely indicates a failed or incomplete merge.
+          # This is a sanity check, not a hard failure - coverage may still be valid.
+          COVERAGE_FILE_THRESHOLD=${COVERAGE_FILE_THRESHOLD:-100}
+          if [ "$SF_COUNT" -lt "$COVERAGE_FILE_THRESHOLD" ]; then
+            echo "::warning::Only $SF_COUNT files in coverage (expected ${COVERAGE_FILE_THRESHOLD}+). This might indicate incomplete coverage merge."
 
           echo "First 30 lines of merged coverage:"
           head -30 ./coverage/vitest/lcov.info
