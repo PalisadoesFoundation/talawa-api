@@ -54,7 +54,7 @@
     "glob": "^13.0.0",
     "gql.tada": "^1.8.12",
     "knip": "^5.67.0",
-    "lcov-result-merger": "^6.0.2",
+    "lcov-result-merger": "^5.0.1",
     "lefthook": "^2.0.4",
     "mercurius-integration-testing": "^9.0.1",
     "nyc": "^17.1.0",
