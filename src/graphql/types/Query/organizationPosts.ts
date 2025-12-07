@@ -1,4 +1,4 @@
-import { type SQL, and, asc, desc, eq, exists, gt, lt } from "drizzle-orm";
+import { type SQL, and, asc, desc, eq, exists, gt, lt, or } from "drizzle-orm";
 import { z } from "zod";
 import { postsTable, postsTableInsertSchema } from "~/src/drizzle/tables/posts";
 import { builder } from "~/src/graphql/builder";
@@ -47,6 +47,7 @@ const queryOrganizationPostsArgumentsSchema = z
 	});
 
 const cursorSchema = z.object({
+	createdAt: postsTableInsertSchema.shape.createdAt.unwrap(),
 	id: postsTableInsertSchema.shape.id.unwrap(),
 });
 
@@ -165,69 +166,49 @@ builder.queryField("organizationPosts", (t) =>
 					});
 				}
 
-				const { cursor, isInversed, limit } = parsedArgs;
+			const { cursor, isInversed, limit } = parsedArgs;
 
-				const orderBy = isInversed
-					? [asc(postsTable.id)]
-					: [desc(postsTable.id)];
+			const orderBy = isInversed
+				? [asc(postsTable.createdAt), asc(postsTable.id)]
+				: [desc(postsTable.createdAt), desc(postsTable.id)];
 
-				let where: SQL | undefined;
+			let where: SQL | undefined;
 
-				if (isInversed) {
-					if (cursor !== undefined) {
-						where = and(
-							exists(
-								ctx.drizzleClient
-									.select()
-									.from(postsTable)
-									.where(
-										and(
-											eq(postsTable.id, cursor.id),
-											eq(
-												postsTable.organizationId,
-												parsedArgs.input.organizationId,
-											),
-										),
+			// Dynamic comparison operators based on direction
+			const createdAtComparator = isInversed ? gt : lt;
+			const idComparator = isInversed ? gt : lt;
+
+			if (cursor !== undefined) {
+				where = and(
+					exists(
+						ctx.drizzleClient
+							.select()
+							.from(postsTable)
+							.where(
+								and(
+									eq(postsTable.id, cursor.id),
+									eq(
+										postsTable.organizationId,
+										parsedArgs.input.organizationId,
 									),
+								),
 							),
-							eq(postsTable.organizationId, parsedArgs.input.organizationId),
-							gt(postsTable.id, cursor.id),
-						);
-					} else {
-						where = eq(
-							postsTable.organizationId,
-							parsedArgs.input.organizationId,
-						);
-					}
-				} else {
-					if (cursor !== undefined) {
-						where = and(
-							exists(
-								ctx.drizzleClient
-									.select()
-									.from(postsTable)
-									.where(
-										and(
-											eq(postsTable.id, cursor.id),
-											eq(
-												postsTable.organizationId,
-												parsedArgs.input.organizationId,
-											),
-										),
-									),
-							),
-							eq(postsTable.organizationId, parsedArgs.input.organizationId),
-							lt(postsTable.id, cursor.id),
-						);
-					} else {
-						where = eq(
-							postsTable.organizationId,
-							parsedArgs.input.organizationId,
-						);
-					}
-				}
-
-				const posts = await ctx.drizzleClient.query.postsTable.findMany({
+					),
+					eq(postsTable.organizationId, parsedArgs.input.organizationId),
+					or(
+						createdAtComparator(postsTable.createdAt, cursor.createdAt),
+						and(
+							eq(postsTable.createdAt, cursor.createdAt),
+							idComparator(postsTable.id, cursor.id),
+						),
+					),
+				);
+			} else {
+				where = eq(
+					postsTable.organizationId,
+					parsedArgs.input.organizationId,
+				);
+			}				const posts = await ctx.drizzleClient.query.postsTable.findMany({
 					limit,
 					orderBy,
 					with: {
@@ -253,6 +234,7 @@ builder.queryField("organizationPosts", (t) =>
 					createCursor: (post) =>
 						Buffer.from(
 							JSON.stringify({
+								createdAt: post.createdAt,
 								id: post.id,
 							}),
 						).toString("base64url"),
