@@ -462,7 +462,7 @@ jobs:
     name: Merge Coverage Reports
     runs-on: ubuntu-latest
     needs: [Run-Tests]
-    if: always()
+    if: success()
     steps:
       - name: Checkout this repository
         uses: actions/checkout@v4.2.2
