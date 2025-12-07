@@ -61,7 +61,7 @@ export default defineConfig({
 		],
 		coverage: {
 			provider: "v8", // or 'istanbul' if you prefer
-			reporter: ["text", "lcov", "html"],
+			reporter: ["text", "lcov", "html", "json"],
 			exclude: [
 				...(configDefaults.coverage?.exclude ?? []),
 				"dist/**",
