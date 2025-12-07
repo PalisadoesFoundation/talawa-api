@@ -494,16 +494,29 @@ describe("AgendaFolder.createdAt resolver - Unit tests for branch coverage", () 
 			const currentUserOrganizationMembership =
 				existingEvent.organization.membershipsWhereOrganization[0];
 
-			if (
-				currentUser.role !== "administrator" &&
-				(currentUserOrganizationMembership === undefined ||
-					currentUserOrganizationMembership.role !== "administrator")
-			) {
-				throw new TalawaGraphQLError({
-					extensions: {
-						code: "unauthorized_action",
-					},
-				});
+			if (currentUser.role !== "administrator") {
+				if (currentUserOrganizationMembership === undefined) {
+					// User is neither a super admin nor a member of the organization
+					throw new TalawaGraphQLError({
+						extensions: {
+							code: "unauthorized_action",
+						},
+					});
+				}
+
+				// User is a member, but membership role is insufficient for this action
+				if (currentUserOrganizationMembership.role !== "administrator") {
+					throw new TalawaGraphQLError({
+						extensions: {
+							code: "unauthorized_action_on_arguments_associated_resources",
+							issues: [
+								{
+									argumentPath: [],
+								},
+							],
+						},
+					});
+				}
 			}
 
 			return parent.createdAt;
@@ -629,7 +642,7 @@ describe("AgendaFolder.createdAt resolver - Unit tests for branch coverage", () 
 		);
 	});
 
-	it("should throw unauthorized_action error when user has membership but is not organization admin", async () => {
+	it("should throw unauthorized_action_on_arguments_associated_resources error when user has membership but is not organization admin", async () => {
 		const { context: mockContext, mocks } = createMockGraphQLContext(
 			true,
 			"user-123",
@@ -649,7 +662,7 @@ describe("AgendaFolder.createdAt resolver - Unit tests for branch coverage", () 
 				countryCode: "US",
 				membershipsWhereOrganization: [
 					{
-						role: "member", // Not administrator
+						role: "regular", // Not administrator
 					},
 				],
 			},
@@ -660,7 +673,12 @@ describe("AgendaFolder.createdAt resolver - Unit tests for branch coverage", () 
 		await expect(resolver(mockParent, {}, mockContext)).rejects.toThrow(
 			new TalawaGraphQLError({
 				extensions: {
-					code: "unauthorized_action",
+					code: "unauthorized_action_on_arguments_associated_resources",
+					issues: [
+						{
+							argumentPath: [],
+						},
+					],
 				},
 			}),
 		);
