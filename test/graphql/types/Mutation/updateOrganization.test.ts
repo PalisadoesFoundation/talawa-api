@@ -547,4 +547,179 @@ suite("Mutation field updateOrganization", () => {
 			]),
 		);
 	});
+	test("should allow updating organization to its own current name", async () => {
+		// Create organization
+		const createOrgResult = await mercuriusClient.mutate(
+			Mutation_createOrganization,
+			{
+				headers: { authorization: `bearer ${authToken}` },
+				variables: {
+					input: {
+						name: "Self Update Org",
+						description: "Test self update",
+						countryCode: "us",
+						state: "CA",
+						city: "San Francisco",
+						postalCode: "94101",
+						addressLine1: "123 Test St",
+						addressLine2: "Suite 100",
+					},
+				},
+			},
+		);
+		const orgId = createOrgResult.data?.createOrganization?.id;
+		assertToBeNonNullish(orgId);
+
+		testCleanupFunctions.push(async () => {
+			await mercuriusClient.mutate(Mutation_deleteOrganization, {
+				headers: { authorization: `bearer ${authToken}` },
+				variables: { input: { id: orgId } },
+			});
+		});
+
+		// Update with same name - should succeed
+		const result = await mercuriusClient.mutate(Mutation_updateOrganization, {
+			headers: { authorization: `bearer ${authToken}` },
+			variables: {
+				input: {
+					id: orgId,
+					name: "Self Update Org",
+					description: "Updated description",
+				},
+			},
+		});
+
+		expect(result.errors).toBeUndefined();
+		expect(result.data?.updateOrganization?.name).toBe("Self Update Org");
+		expect(result.data?.updateOrganization?.description).toBe(
+			"Updated description",
+		);
+	});
+
+	test("should handle case sensitivity for duplicate names (case-sensitive by default)", async () => {
+		// Create "Case Org"
+		const createOrg1Result = await mercuriusClient.mutate(
+			Mutation_createOrganization,
+			{
+				headers: { authorization: `bearer ${authToken}` },
+				variables: {
+					input: {
+						name: "Case Org",
+						countryCode: "us",
+					},
+				},
+			},
+		);
+		const org1Id = createOrg1Result.data?.createOrganization?.id;
+		assertToBeNonNullish(org1Id);
+
+		testCleanupFunctions.push(async () => {
+			await mercuriusClient.mutate(Mutation_deleteOrganization, {
+				headers: { authorization: `bearer ${authToken}` },
+				variables: { input: { id: org1Id } },
+			});
+		});
+
+		// Create another org
+		const createOrg2Result = await mercuriusClient.mutate(
+			Mutation_createOrganization,
+			{
+				headers: { authorization: `bearer ${authToken}` },
+				variables: {
+					input: {
+						name: "Other Org",
+						countryCode: "us",
+					},
+				},
+			},
+		);
+		const org2Id = createOrg2Result.data?.createOrganization?.id;
+		assertToBeNonNullish(org2Id);
+
+		testCleanupFunctions.push(async () => {
+			await mercuriusClient.mutate(Mutation_deleteOrganization, {
+				headers: { authorization: `bearer ${authToken}` },
+				variables: { input: { id: org2Id } },
+			});
+		});
+
+		// Try to update second org to "case org" (lowercase) - should succeed if case-sensitive
+		const result = await mercuriusClient.mutate(Mutation_updateOrganization, {
+			headers: { authorization: `bearer ${authToken}` },
+			variables: {
+				input: {
+					id: org2Id,
+					name: "case org",
+				},
+			},
+		});
+
+		// If current implementation is case-sensitive, this should succeed (no error)
+		// If it fails, that means it's case-insensitive
+		expect(result.errors).toBeUndefined();
+		expect(result.data?.updateOrganization?.name).toBe("case org");
+	});
+
+	test("should handle whitespace in organization names (strict check)", async () => {
+		// Create "Whitespace Org"
+		const createOrg1Result = await mercuriusClient.mutate(
+			Mutation_createOrganization,
+			{
+				headers: { authorization: `bearer ${authToken}` },
+				variables: {
+					input: {
+						name: "Whitespace Org",
+						countryCode: "us",
+					},
+				},
+			},
+		);
+		const org1Id = createOrg1Result.data?.createOrganization?.id;
+		assertToBeNonNullish(org1Id);
+
+		testCleanupFunctions.push(async () => {
+			await mercuriusClient.mutate(Mutation_deleteOrganization, {
+				headers: { authorization: `bearer ${authToken}` },
+				variables: { input: { id: org1Id } },
+			});
+		});
+
+		// Create another org
+		const createOrg2Result = await mercuriusClient.mutate(
+			Mutation_createOrganization,
+			{
+				headers: { authorization: `bearer ${authToken}` },
+				variables: {
+					input: {
+						name: "Other Whitespace Org",
+						countryCode: "us",
+					},
+				},
+			},
+		);
+		const org2Id = createOrg2Result.data?.createOrganization?.id;
+		assertToBeNonNullish(org2Id);
+
+		testCleanupFunctions.push(async () => {
+			await mercuriusClient.mutate(Mutation_deleteOrganization, {
+				headers: { authorization: `bearer ${authToken}` },
+				variables: { input: { id: org2Id } },
+			});
+		});
+
+		// Try to update second org to "Whitespace Org " (trailing space)
+		const result = await mercuriusClient.mutate(Mutation_updateOrganization, {
+			headers: { authorization: `bearer ${authToken}` },
+			variables: {
+				input: {
+					id: org2Id,
+					name: "Whitespace Org ",
+				},
+			},
+		});
+
+		// Should succeed if whitespace is not trimmed and check is strict
+		expect(result.errors).toBeUndefined();
+		expect(result.data?.updateOrganization?.name).toBe("Whitespace Org ");
+	});
 });
