@@ -152,9 +152,9 @@ const config: Config = {
           title: "Community",
           items: [
             {
-              label: "Slack",
-              to: "https://github.com/PalisadoesFoundation",
-              className: "footer__icon footer__slack",
+              label: "Forums",
+              to: "https://community.talawa.io/",
+              className: "footer__icon footer__news",
             },
             {
               label: "News",
