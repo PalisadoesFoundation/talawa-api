@@ -9,11 +9,20 @@ on:
 env:
   CODECOV_UNIQUE_NAME: CODECOV_UNIQUE_NAME-${{ github.run_id }}-${{ github.run_number }}
   TOTAL_SHARDS: 12
-  
+
 jobs:
+  Merge-Conflict-Check:
+    runs-on: ubuntu-latest
+    name: Find merge conflicts
+    steps:
+      - uses: actions/checkout@v4
+      - name: Merge conflict finder
+        uses: olivernybroe/action-conflict-finder@v4
+
   test-and-upload-coverage:
     name: Run tests (Shard ${{ matrix.shard }})
     runs-on: ubuntu-latest
+    needs: [Merge-Conflict-Check]
     strategy:
       fail-fast: false
       matrix:
@@ -55,7 +64,7 @@ jobs:
             exit 1
           fi
           echo "Postgres is ready."
-          
+
           # Wait for minio-test health check
           echo "Waiting for Minio test service..."
           timeout=60
@@ -69,7 +78,7 @@ jobs:
           else
             echo "Minio is ready."
           fi
-          
+
           # Wait for redis-test health check
           echo "Waiting for Redis test service..."
           timeout=60
@@ -83,7 +92,7 @@ jobs:
           else
             echo "Redis is ready."
           fi
-          
+
           echo "All test services are ready."
 
       # Run tests with sharding
@@ -103,7 +112,7 @@ jobs:
         run: |
           # Copy coverage from the named container
           docker cp talawa-api-test-shard-${{ matrix.shard }}:/home/talawa/api/coverage ./coverage || echo "::warning::Failed to copy coverage from container talawa-api-test-shard-${{ matrix.shard }}"
-          
+
       - name: Cleanup test container
         if: always()
         run: |
@@ -134,8 +143,8 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '24.x'
-          cache: 'pnpm'
+          node-version: "24.x"
+          cache: "pnpm"
 
       - name: Download all coverage artifacts
         id: download-artifacts
@@ -275,7 +284,7 @@ jobs:
         run: |
           echo "Final coverage file to upload:"
           ls -lh ./coverage/vitest/lcov.info
-          
+
       #######################################################################
       # DO NOT DELETE ANY references to env.CODECOV_UNIQUE_NAME in this
       # section. They are required for accurate calculations
@@ -288,9 +297,7 @@ jobs:
           token: ${{ secrets.CODECOV_TOKEN }}
           fail_ci_if_error: true
           verbose: true
-          exclude: 'docs/'
-          gcov_ignore: 'docs/'
+          exclude: "docs/"
+          gcov_ignore: "docs/"
           files: ./coverage/vitest/lcov.info
           flags: vitest
-
-
