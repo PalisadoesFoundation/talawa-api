@@ -152,7 +152,7 @@ const config: Config = {
           title: "Community",
           items: [
             {
-              label: 'Forums',
+              label: "Forums",
               to: "https://community.talawa.io/",
               className: "footer__icon footer__news",
             },
