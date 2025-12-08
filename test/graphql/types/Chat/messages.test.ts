@@ -46,6 +46,8 @@ const Query_chat_messages = graphql(`
 	}
 `);
 
+const TEST_PASSWORD = "password123";
+
 async function signinAdmin() {
 	const adminSignIn = await mercuriusClient.query(Query_signIn, {
 		variables: {
@@ -65,7 +67,7 @@ async function createCreator(adminToken: string) {
 			input: {
 				emailAddress: `${faker.string.uuid()}@test.com`,
 				name: faker.person.fullName(),
-				password: "password123",
+				password: TEST_PASSWORD,
 				role: "regular",
 				isEmailAddressVerified: false,
 			},
