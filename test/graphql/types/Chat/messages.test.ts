@@ -108,7 +108,6 @@ describe("Chat.messages integration tests", () => {
 			}
 		}
 		cleanupFns.length = 0;
-		vi.restoreAllMocks();
 	});
 
 	test("returns all messages and supports forward pagination and backward pagination with last/before", async () => {
