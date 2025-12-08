@@ -109,6 +109,22 @@ describe("FundCampaignPledge Resolver - pledger Field", () => {
     );
   });
 
+  it("should return existing user when user is administrator without organization membership", async () => {
+    mocks.drizzleClient.query.usersTable.findFirst
+      .mockResolvedValueOnce({ id: "123", role: "administrator" })
+      .mockResolvedValueOnce({ id: "pledger123", role: "member" });
+    mocks.drizzleClient.query.fundCampaignsTable.findFirst.mockResolvedValue({
+      fund: {
+        organization: {
+          membershipsWhereOrganization: [],
+        },
+      },
+    });
+
+    const result = await pledgerResolver(mockFundCampaignPledge, {}, ctx);
+    expect(result).toEqual({ id: "pledger123", role: "member" });
+  });
+
   it("should return existing user when membership exists even if not administrator", async () => {
     mocks.drizzleClient.query.usersTable.findFirst
       .mockResolvedValueOnce({ role: "member" })
