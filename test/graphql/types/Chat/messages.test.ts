@@ -643,6 +643,119 @@ describe("Chat.messages integration tests", () => {
 		expect(result.errors?.[0]?.extensions?.code).toBe("unauthorized_action");
 	});
 
+	test("non-org member can not access messages in chat", async () => {
+		const adminSignIn = await signinAdmin();
+		const adminToken = adminSignIn.data?.signIn?.authenticationToken as string;
+
+		const creatorRes = await createCreator(adminToken);
+		assertToBeNonNullish(creatorRes.data?.createUser);
+		const creator = creatorRes.data?.createUser;
+
+		assertToBeNonNullish(creator.user);
+		assertToBeNonNullish(creator.user?.id);
+
+		const creatorId = creator.user.id;
+		cleanupFns.push(async () => {
+			await mercuriusClient.mutate(Mutation_deleteUser, {
+				headers: { authorization: `bearer ${adminToken}` },
+				variables: { input: { id: creatorId } },
+			});
+		});
+
+		const nonOrgMemberRes = await mercuriusClient.mutate(Mutation_createUser, {
+			headers: { authorization: `bearer ${adminToken}` },
+			variables: {
+				input: {
+					emailAddress: `${faker.string.uuid()}@test.com`,
+					name: faker.person.fullName(),
+					password: TEST_PASSWORD,
+					role: "regular",
+					isEmailAddressVerified: false,
+				},
+			},
+		});
+		assertToBeNonNullish(nonOrgMemberRes.data?.createUser);
+		const nonOrgMember = nonOrgMemberRes.data?.createUser;
+
+		assertToBeNonNullish(nonOrgMember.user);
+		assertToBeNonNullish(nonOrgMember.user?.id);
+
+		const nonOrgMemberId = nonOrgMember.user.id;
+		cleanupFns.push(async () => {
+			await mercuriusClient.mutate(Mutation_deleteUser, {
+				headers: { authorization: `bearer ${adminToken}` },
+				variables: { input: { id: nonOrgMemberId } },
+			});
+		});
+
+		const orgRes = await createOrgMutation(adminToken);
+		assertToBeNonNullish(orgRes.data?.createOrganization);
+		const org = orgRes.data?.createOrganization;
+		cleanupFns.push(async () => {
+			await mercuriusClient.mutate(Mutation_deleteOrganization, {
+				headers: { authorization: `bearer ${adminToken}` },
+				variables: { input: { id: org.id } },
+			});
+		});
+
+		// Make creator regular org member
+		await mercuriusClient.mutate(Mutation_createOrganizationMembership, {
+			headers: { authorization: `bearer ${adminToken}` },
+			variables: {
+				input: {
+					memberId: creator.user.id,
+					organizationId: org.id,
+					role: "regular",
+				},
+			},
+		});
+
+		// Creator signin
+		assertToBeNonNullish(creator.user?.emailAddress);
+		const creatorSignIn = await mercuriusClient.query(Query_signIn, {
+			variables: {
+				input: {
+					emailAddress: creator.user.emailAddress,
+					password: TEST_PASSWORD,
+				},
+			},
+		});
+		assertToBeNonNullish(creatorSignIn.data?.signIn?.authenticationToken);
+		const creatorToken = creatorSignIn.data?.signIn
+			?.authenticationToken as string;
+
+		const chatRes = await createChatMutation(creatorToken, org.id);
+		assertToBeNonNullish(chatRes.data?.createChat);
+		const chat = chatRes.data?.createChat;
+		cleanupFns.push(async () => {
+			await mercuriusClient.mutate(Mutation_deleteChat, {
+				headers: { authorization: `bearer ${adminToken}` },
+				variables: { input: { id: chat.id } },
+			});
+		});
+
+		// Add creator as chat member so they can send messages
+		await mercuriusClient.mutate(Mutation_createChatMembership, {
+			headers: { authorization: `bearer ${creatorToken}` },
+			variables: { input: { chatId: chat.id, memberId: creator.user.id } },
+		});
+
+		await mercuriusClient.mutate(Mutation_createChatMessage, {
+			headers: { authorization: `bearer ${creatorToken}` },
+			variables: { input: { chatId: chat.id, body: "Test message" } },
+		});
+
+		// Fetch message from non-org member should result in error
+		const result = await mercuriusClient.query(Query_chat_messages, {
+			headers: { authorization: `bearer ${nonOrgMember.authenticationToken}` },
+			variables: { input: { id: chat.id }, first: 10 },
+		});
+		expect(result.errors).toBeDefined();
+		expect(result.errors?.[0]?.extensions?.code).toBe(
+			"unauthorized_action_on_arguments_associated_resources",
+		);
+	});
+
 	test("organization admin can access chat messages", async () => {
 		const adminSignIn = await signinAdmin();
 		const adminToken = adminSignIn.data?.signIn?.authenticationToken as string;
