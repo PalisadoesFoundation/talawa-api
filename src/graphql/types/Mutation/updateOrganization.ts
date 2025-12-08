@@ -133,6 +133,35 @@ builder.mutationField("updateOrganization", (t) =>
 				});
 			}
 
+			if (parsedArgs.input.name !== undefined) {
+				const name = parsedArgs.input.name;
+
+				const duplicateOrganizationName =
+					await ctx.drizzleClient.query.organizationsTable.findFirst({
+						columns: { id: true },
+						where: (fields, operators) =>
+							operators.and(
+								operators.eq(fields.name, name),
+								operators.ne(fields.id, parsedArgs.input.id),
+							),
+					});
+
+				if (duplicateOrganizationName !== undefined) {
+					throw new TalawaGraphQLError({
+						message: "Organization name already exists",
+						extensions: {
+							code: "invalid_arguments",
+							issues: [
+								{
+									argumentPath: ["input", "name"],
+									message: "Organization name already exists",
+								},
+							],
+						},
+					});
+				}
+			}
+
 			let avatarMimeType: z.infer<typeof imageMimeTypeEnum>;
 			let avatarName: string;
 
@@ -150,12 +179,14 @@ builder.mutationField("updateOrganization", (t) =>
 					.set({
 						addressLine1: parsedArgs.input.addressLine1,
 						addressLine2: parsedArgs.input.addressLine2,
-						avatarMimeType: isNotNullish(parsedArgs.input.avatar)
-							? avatarMimeType
-							: null,
-						avatarName: isNotNullish(parsedArgs.input.avatar)
-							? avatarName
-							: null,
+						...(parsedArgs.input.avatar !== undefined && {
+							avatarMimeType: isNotNullish(parsedArgs.input.avatar)
+								? avatarMimeType
+								: null,
+							avatarName: isNotNullish(parsedArgs.input.avatar)
+								? avatarName
+								: null,
+						}),
 						city: parsedArgs.input.city,
 						countryCode: parsedArgs.input.countryCode,
 						description: parsedArgs.input.description,
