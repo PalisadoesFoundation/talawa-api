@@ -183,15 +183,11 @@ describe("Chat.messages integration tests", () => {
 		});
 		assertToBeNonNullish(msg1.data?.createChatMessage);
 
-		await new Promise((res) => setTimeout(res, 10));
-
 		const msg2 = await mercuriusClient.mutate(Mutation_createChatMessage, {
 			headers: { authorization: `bearer ${creatorToken}` },
 			variables: { input: { chatId: chat.id, body: "Second message" } },
 		});
 		assertToBeNonNullish(msg2.data?.createChatMessage);
-
-		await new Promise((res) => setTimeout(res, 10));
 
 		const msg3 = await mercuriusClient.mutate(Mutation_createChatMessage, {
 			headers: { authorization: `bearer ${creatorToken}` },
