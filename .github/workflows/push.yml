@@ -17,7 +17,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Merge conflict finder
-        uses: olivernybroe/action-conflict-finder@v4
+        uses: olivernybroe/action-conflict-finder@v4.1
 
   test-and-upload-coverage:
     name: Run tests (Shard ${{ matrix.shard }})
@@ -301,3 +301,4 @@ jobs:
           gcov_ignore: "docs/"
           files: ./coverage/vitest/lcov.info
           flags: vitest
+
