@@ -179,6 +179,24 @@ describe("Chat.messages integration tests", () => {
 			variables: { input: { chatId: chat.id, memberId: creator.user.id } },
 		});
 
+		// Querying empty chat for messages should not return an error
+		const emptyChat = await mercuriusClient.query(Query_chat_messages, {
+			headers: { authorization: `bearer ${creatorToken}` },
+			variables: { input: { id: chat.id }, first: 10 },
+		});
+		expect(emptyChat.errors).toBeUndefined();
+
+		const emptyEdges = emptyChat.data?.chat?.messages?.edges as Array<{
+			cursor: string;
+			node: { id: string; body: string };
+		}>;
+		expect(Array.isArray(emptyEdges)).toBe(true);
+		expect(emptyEdges.length).toBe(0);
+		expect(emptyChat.data?.chat?.messages?.pageInfo?.hasNextPage).toBe(false);
+		expect(emptyChat.data?.chat?.messages?.pageInfo?.hasPreviousPage).toBe(
+			false,
+		);
+
 		// Create multiple messages in the chat
 		const msg1 = await mercuriusClient.mutate(Mutation_createChatMessage, {
 			headers: { authorization: `bearer ${creatorToken}` },
