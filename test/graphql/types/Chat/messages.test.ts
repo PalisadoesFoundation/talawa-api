@@ -634,9 +634,23 @@ describe("Chat.messages integration tests", () => {
 			});
 		});
 
+		// Outsider Signin
+		assertToBeNonNullish(outsider.user?.emailAddress);
+		const outsiderSignin = await mercuriusClient.query(Query_signIn, {
+			variables: {
+				input: {
+					emailAddress: outsider.user.emailAddress,
+					password: TEST_PASSWORD,
+				},
+			},
+		});
+		assertToBeNonNullish(outsiderSignin.data?.signIn?.authenticationToken);
+		const outsiderToken = outsiderSignin.data?.signIn
+			?.authenticationToken as string;
+
 		// Try to access messages as non-member
 		const result = await mercuriusClient.query(Query_chat_messages, {
-			headers: { authorization: `bearer ${outsider.authenticationToken}` },
+			headers: { authorization: `bearer ${outsiderToken}` },
 			variables: { input: { id: chat.id }, first: 10 },
 		});
 		expect(result.errors).toBeDefined();
@@ -745,9 +759,23 @@ describe("Chat.messages integration tests", () => {
 			variables: { input: { chatId: chat.id, body: "Test message" } },
 		});
 
+		// Non org member signin
+		assertToBeNonNullish(nonOrgMember.user?.emailAddress);
+		const nonOrgMemberSignin = await mercuriusClient.query(Query_signIn, {
+			variables: {
+				input: {
+					emailAddress: nonOrgMember.user.emailAddress,
+					password: TEST_PASSWORD,
+				},
+			},
+		});
+		assertToBeNonNullish(nonOrgMemberSignin.data?.signIn?.authenticationToken);
+		const nonOrgMemberToken = nonOrgMemberSignin.data?.signIn
+			?.authenticationToken as string;
+
 		// Fetch message from non-org member should result in error
 		const result = await mercuriusClient.query(Query_chat_messages, {
-			headers: { authorization: `bearer ${nonOrgMember.authenticationToken}` },
+			headers: { authorization: `bearer ${nonOrgMemberToken}` },
 			variables: { input: { id: chat.id }, first: 10 },
 		});
 		expect(result.errors).toBeDefined();
