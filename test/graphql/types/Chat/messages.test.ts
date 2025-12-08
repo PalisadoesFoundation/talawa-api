@@ -57,6 +57,7 @@ async function signinAdmin() {
 			},
 		},
 	});
+	assertToBeNonNullish(adminSignIn.data?.signIn?.authenticationToken);
 	return adminSignIn;
 }
 
@@ -159,6 +160,7 @@ describe("Chat.messages integration tests", () => {
 				},
 			},
 		});
+		assertToBeNonNullish(creatorSignIn.data?.signIn?.authenticationToken);
 		const creatorToken = creatorSignIn.data?.signIn
 			?.authenticationToken as string;
 
@@ -327,6 +329,7 @@ describe("Chat.messages integration tests", () => {
 				},
 			},
 		});
+		assertToBeNonNullish(creatorSignIn.data?.signIn?.authenticationToken);
 		const creatorToken = creatorSignIn.data?.signIn
 			?.authenticationToken as string;
 
@@ -408,6 +411,7 @@ describe("Chat.messages integration tests", () => {
 				},
 			},
 		});
+		assertToBeNonNullish(creatorSignIn.data?.signIn?.authenticationToken);
 		const creatorToken = creatorSignIn.data?.signIn
 			?.authenticationToken as string;
 
@@ -491,6 +495,7 @@ describe("Chat.messages integration tests", () => {
 				},
 			},
 		});
+		assertToBeNonNullish(creatorSignIn.data?.signIn?.authenticationToken);
 		const creatorToken = creatorSignIn.data?.signIn
 			?.authenticationToken as string;
 
@@ -600,6 +605,7 @@ describe("Chat.messages integration tests", () => {
 				},
 			},
 		});
+		assertToBeNonNullish(creatorSignIn.data?.signIn?.authenticationToken);
 		const creatorToken = creatorSignIn.data?.signIn
 			?.authenticationToken as string;
 
@@ -712,6 +718,7 @@ describe("Chat.messages integration tests", () => {
 				},
 			},
 		});
+		assertToBeNonNullish(creatorSignIn.data?.signIn?.authenticationToken);
 		const creatorToken = creatorSignIn.data?.signIn
 			?.authenticationToken as string;
 
@@ -724,6 +731,7 @@ describe("Chat.messages integration tests", () => {
 				},
 			},
 		});
+		assertToBeNonNullish(orgAdminSignIn.data?.signIn?.authenticationToken);
 		const orgAdminToken = orgAdminSignIn.data?.signIn
 			?.authenticationToken as string;
 
