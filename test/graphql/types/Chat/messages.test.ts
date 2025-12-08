@@ -155,7 +155,7 @@ describe("Chat.messages integration tests", () => {
 			variables: {
 				input: {
 					emailAddress: creator.user.emailAddress,
-					password: "password123",
+					password: TEST_PASSWORD,
 				},
 			},
 		});
@@ -323,7 +323,7 @@ describe("Chat.messages integration tests", () => {
 			variables: {
 				input: {
 					emailAddress: creator.user.emailAddress,
-					password: "password123",
+					password: TEST_PASSWORD,
 				},
 			},
 		});
@@ -404,7 +404,7 @@ describe("Chat.messages integration tests", () => {
 			variables: {
 				input: {
 					emailAddress: creator.user.emailAddress,
-					password: "password123",
+					password: TEST_PASSWORD,
 				},
 			},
 		});
@@ -487,7 +487,7 @@ describe("Chat.messages integration tests", () => {
 			variables: {
 				input: {
 					emailAddress: creator.user.emailAddress,
-					password: "password123",
+					password: TEST_PASSWORD,
 				},
 			},
 		});
@@ -539,7 +539,7 @@ describe("Chat.messages integration tests", () => {
 				input: {
 					emailAddress: `${faker.string.uuid()}@test.com`,
 					name: faker.person.fullName(),
-					password: "password123",
+					password: TEST_PASSWORD,
 					role: "regular",
 					isEmailAddressVerified: false,
 				},
@@ -596,7 +596,7 @@ describe("Chat.messages integration tests", () => {
 			variables: {
 				input: {
 					emailAddress: creator.user.emailAddress,
-					password: "password123",
+					password: TEST_PASSWORD,
 				},
 			},
 		});
@@ -649,7 +649,7 @@ describe("Chat.messages integration tests", () => {
 				input: {
 					emailAddress: `${faker.string.uuid()}@test.com`,
 					name: faker.person.fullName(),
-					password: "password123",
+					password: TEST_PASSWORD,
 					role: "regular",
 					isEmailAddressVerified: false,
 				},
@@ -708,7 +708,7 @@ describe("Chat.messages integration tests", () => {
 			variables: {
 				input: {
 					emailAddress: creator.user.emailAddress,
-					password: "password123",
+					password: TEST_PASSWORD,
 				},
 			},
 		});
@@ -720,7 +720,7 @@ describe("Chat.messages integration tests", () => {
 			variables: {
 				input: {
 					emailAddress: orgAdmin.user.emailAddress,
-					password: "password123",
+					password: TEST_PASSWORD,
 				},
 			},
 		});
