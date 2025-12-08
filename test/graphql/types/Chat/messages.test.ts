@@ -180,7 +180,7 @@ describe("Chat.messages integration tests", () => {
 			variables: { input: { chatId: chat.id, memberId: creator.user.id } },
 		});
 
-		// Create multiple messages with delays to ensure different timestamps for ordering
+		// Create multiple messages in the chat
 		const msg1 = await mercuriusClient.mutate(Mutation_createChatMessage, {
 			headers: { authorization: `bearer ${creatorToken}` },
 			variables: { input: { chatId: chat.id, body: "First message" } },
@@ -216,6 +216,13 @@ describe("Chat.messages integration tests", () => {
 		expect(edges[1]?.node.body).toBe("Second message");
 		expect(edges[2]?.node.body).toBe("Third message");
 
+		// Query all messages by super admin
+		const allByAdmin = await mercuriusClient.query(Query_chat_messages, {
+			headers: { authorization: `bearer ${adminToken}` },
+			variables: { input: { id: chat.id }, first: 10 },
+		});
+		expect(allByAdmin.errors).toBeUndefined();
+		
 		// Test forward pagination
 		const page1 = await mercuriusClient.query(Query_chat_messages, {
 			headers: { authorization: `bearer ${creatorToken}` },
@@ -444,6 +451,15 @@ describe("Chat.messages integration tests", () => {
 		expect(missing.errors).toBeDefined();
 		const code = missing.errors?.[0]?.extensions?.code as string;
 		expect(code).toBe("arguments_associated_resources_not_found");
+
+		// backward pagination with non-existent cursor should return error
+		const missingBefore = await mercuriusClient.query(Query_chat_messages, {
+			headers: { authorization: `bearer ${creatorToken}` },
+			variables: { input: { id: chat.id }, last: 1, before: fakeCursor },
+		});
+		expect(missingBefore.errors).toBeDefined();
+		const codeBefore = missingBefore.errors?.[0]?.extensions?.code as string;
+		expect(codeBefore).toBe("arguments_associated_resources_not_found");		
 	});
 
 	test("unauthenticated request returns error", async () => {
