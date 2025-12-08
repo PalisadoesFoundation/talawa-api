@@ -49,7 +49,6 @@ describe("FundCampaignPledge Resolver - pledger Field", () => {
   });
 
   it("should return the current user when pledgerId equals currentUserId", async () => {
-    // Set pledgerId same as current user
     mockFundCampaignPledge.pledgerId = ctx.currentClient.user!.id;
     const currentUser = { id: "123", role: "member" };
     mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValue(currentUser);
@@ -58,7 +57,6 @@ describe("FundCampaignPledge Resolver - pledger Field", () => {
   });
 
   it("should throw unauthenticated error when current user is not found", async () => {
-    // Simulate current user not found in database
     mockFundCampaignPledge.pledgerId = ctx.currentClient.user!.id;
     mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValue(undefined);
     await expect(
