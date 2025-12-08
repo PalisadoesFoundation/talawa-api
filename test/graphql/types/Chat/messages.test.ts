@@ -222,7 +222,7 @@ describe("Chat.messages integration tests", () => {
 			variables: { input: { id: chat.id }, first: 10 },
 		});
 		expect(allByAdmin.errors).toBeUndefined();
-		
+
 		// Test forward pagination
 		const page1 = await mercuriusClient.query(Query_chat_messages, {
 			headers: { authorization: `bearer ${creatorToken}` },
@@ -459,7 +459,7 @@ describe("Chat.messages integration tests", () => {
 		});
 		expect(missingBefore.errors).toBeDefined();
 		const codeBefore = missingBefore.errors?.[0]?.extensions?.code as string;
-		expect(codeBefore).toBe("arguments_associated_resources_not_found");		
+		expect(codeBefore).toBe("arguments_associated_resources_not_found");
 	});
 
 	test("unauthenticated request returns error", async () => {
