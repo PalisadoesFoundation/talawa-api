@@ -355,7 +355,7 @@ describe("FundCampaign.createdAt field resolver - Unit tests", () => {
 			id: "user123",
 			role: "administrator",
 		});
-		mocks.drizzleClient.query.usersTable.findFirst.mockImplementation(
+		mocks.drizzleClient.query.fundsTable.findFirst.mockImplementation(
 			(...funcArgs: unknown[]) => {
 				const args = funcArgs[0] as {
 					where?: (fields: unknown, operators: unknown) => void;
@@ -363,7 +363,7 @@ describe("FundCampaign.createdAt field resolver - Unit tests", () => {
 
 				// Execute the where callback to ensure coverage and verify filtering logic
 				if (args?.where) {
-					const fields = { id: "users.id" };
+					const fields = { id: "funds.id" };
 					const operators = { eq: vi.fn() };
 					args.where(fields, operators);
 				}
