@@ -190,7 +190,20 @@ describe("AgendaFolder childFolders Resolver", () => {
 					ctx,
 					mockResolveInfo,
 				),
-			).rejects.toThrow();
+			).rejects.toThrow(
+				new TalawaGraphQLError({
+					extensions: {
+						code: "invalid_arguments",
+						issues: [
+							{
+								argumentPath: ["before"],
+								message:
+									'Argument "before" cannot be provided with argument "first".',
+							},
+						],
+					},
+				}),
+			);
 		});
 
 		it("last + after conflict", async () => {
@@ -201,13 +214,38 @@ describe("AgendaFolder childFolders Resolver", () => {
 					ctx,
 					mockResolveInfo,
 				),
-			).rejects.toThrow();
+			).rejects.toThrow(
+				new TalawaGraphQLError({
+					extensions: {
+						code: "invalid_arguments",
+						issues: [
+							{
+								argumentPath: ["after"],
+								message:
+									'Argument "after" cannot be provided with argument "last".',
+							},
+						],
+					},
+				}),
+			);
 		});
 
 		it("missing first/last", async () => {
 			await expect(
 				childFoldersResolver(mockAgendaFolder, {}, ctx, mockResolveInfo),
-			).rejects.toThrow();
+			).rejects.toThrow(
+				new TalawaGraphQLError({
+					extensions: {
+						code: "invalid_arguments",
+						issues: [
+							{
+								argumentPath: [],
+								message: 'Either argument "first" or "last" must be provided.',
+							},
+						],
+					},
+				}),
+			);
 		});
 	});
 
@@ -301,10 +339,19 @@ describe("AgendaFolder childFolders Resolver", () => {
 		});
 
 		it("cursor not found (forward)", async () => {
-			const cursor = createCursor({ id: "x", name: "NonExistent" });
+			const cursor = createCursor({
+				id: "00000000-0000-4000-8000-999999999999",
+				name: "NonExistent",
+			});
 			mocks.drizzleClient.query.agendaFoldersTable.findMany.mockResolvedValue(
 				[],
 			);
+
+			const mockSelect = {
+				from: vi.fn().mockReturnThis(),
+				where: vi.fn().mockReturnValue([]),
+			};
+			mocks.drizzleClient.select = vi.fn().mockReturnValue(mockSelect);
 
 			await expect(
 				childFoldersResolver(
@@ -313,7 +360,18 @@ describe("AgendaFolder childFolders Resolver", () => {
 					ctx,
 					mockResolveInfo,
 				),
-			).rejects.toThrow();
+			).rejects.toThrow(
+				new TalawaGraphQLError({
+					extensions: {
+						code: "arguments_associated_resources_not_found",
+						issues: [
+							{
+								argumentPath: ["after"],
+							},
+						],
+					},
+				}),
+			);
 		});
 
 		it("cursor not found (backward)", async () => {
@@ -335,7 +393,18 @@ describe("AgendaFolder childFolders Resolver", () => {
 					ctx,
 					mockResolveInfo,
 				),
-			).rejects.toThrow();
+			).rejects.toThrow(
+				new TalawaGraphQLError({
+					extensions: {
+						code: "arguments_associated_resources_not_found",
+						issues: [
+							{
+								argumentPath: ["before"],
+							},
+						],
+					},
+				}),
+			);
 		});
 
 		it("empty connection", async () => {
@@ -478,13 +547,19 @@ describe("AgendaFolder childFolders Resolver", () => {
 
 			if (!field) throw new Error("childFolders field not found");
 
+			type ComplexityFunction = (
+				args: Record<string, unknown>,
+				childComplexity: unknown,
+				multiplier: number,
+			) => { multiplier: number };
+
 			interface FieldWithComplexity extends GraphQLField<unknown, unknown> {
-				complexity?: unknown;
+				complexity?: ComplexityFunction;
 			}
 
 			const fn =
 				(field as FieldWithComplexity).complexity ||
-				field.extensions?.complexity;
+				(field.extensions?.complexity as ComplexityFunction | undefined);
 
 			expect(typeof fn).toBe("function");
 			if (typeof fn !== "function") return;
