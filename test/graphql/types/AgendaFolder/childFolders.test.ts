@@ -239,8 +239,14 @@ describe("AgendaFolder childFolders Resolver", () => {
 						code: "invalid_arguments",
 						issues: [
 							{
-								argumentPath: [],
-								message: 'Either argument "first" or "last" must be provided.',
+								argumentPath: ["first"],
+								message:
+									'A non-null value for argument "first" must be provided.',
+							},
+							{
+								argumentPath: ["last"],
+								message:
+									'A non-null value for argument "last" must be provided.',
 							},
 						],
 					},
