@@ -1,5 +1,5 @@
 import { faker } from "@faker-js/faker";
-import { expect, suite, test, vi } from "vitest";
+import { afterEach, expect, suite, test, vi } from "vitest";
 import { assertToBeNonNullish } from "../../../helpers";
 import { server } from "../../../server";
 import { mercuriusClient } from "../client";
@@ -10,6 +10,10 @@ import {
 	Mutation_sendMembershipRequest,
 	Query_signIn,
 } from "../documentNodes";
+
+afterEach(() => {
+	vi.clearAllMocks();
+});
 
 suite("rejectMembershipRequest", () => {
 	suite("rejectMembershipRequest - unauthenticated", () => {

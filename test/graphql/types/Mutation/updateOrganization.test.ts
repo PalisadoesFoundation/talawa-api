@@ -1,5 +1,8 @@
 import { faker } from "@faker-js/faker";
+import { eq } from "drizzle-orm";
+import type { FastifyInstance } from "fastify";
 import { afterEach, expect, suite, test } from "vitest";
+import { organizationsTable } from "~/src/drizzle/tables/organizations";
 import { assertToBeNonNullish } from "../../../helpers";
 import { server } from "../../../server";
 import { mercuriusClient } from "../client";
@@ -455,5 +458,339 @@ suite("Mutation field updateOrganization", () => {
 				}),
 			]),
 		);
+	});
+	test("should return an error when organization name already exists", async () => {
+		// Create first organization
+		const createOrg1Result = await mercuriusClient.mutate(
+			Mutation_createOrganization,
+			{
+				headers: { authorization: `bearer ${authToken}` },
+				variables: {
+					input: {
+						name: "Duplicate Org 1",
+						description: "First organization for duplicate test",
+						countryCode: "us",
+						state: "NY",
+						city: "New York",
+						postalCode: "10001",
+						addressLine1: "123 Dup St",
+						addressLine2: "Suite 100",
+					},
+				},
+			},
+		);
+		const org1Id = createOrg1Result.data?.createOrganization?.id;
+		assertToBeNonNullish(org1Id);
+
+		// Add cleanup for the first organization
+		testCleanupFunctions.push(async () => {
+			await mercuriusClient.mutate(Mutation_deleteOrganization, {
+				headers: { authorization: `bearer ${authToken}` },
+				variables: { input: { id: org1Id } },
+			});
+		});
+
+		// Create second organization
+		const createOrg2Result = await mercuriusClient.mutate(
+			Mutation_createOrganization,
+			{
+				headers: { authorization: `bearer ${authToken}` },
+				variables: {
+					input: {
+						name: "Duplicate Org 2",
+						description: "Second organization for duplicate test",
+						countryCode: "us",
+						state: "CA",
+						city: "Los Angeles",
+						postalCode: "90001",
+						addressLine1: "456 Dup Ave",
+						addressLine2: "Suite 200",
+					},
+				},
+			},
+		);
+		const org2Id = createOrg2Result.data?.createOrganization?.id;
+		assertToBeNonNullish(org2Id);
+
+		// Add cleanup for the second organization
+		testCleanupFunctions.push(async () => {
+			await mercuriusClient.mutate(Mutation_deleteOrganization, {
+				headers: { authorization: `bearer ${authToken}` },
+				variables: { input: { id: org2Id } },
+			});
+		});
+
+		// Try to update second organization with first organization's name
+		const result = await mercuriusClient.mutate(Mutation_updateOrganization, {
+			headers: { authorization: `bearer ${authToken}` },
+			variables: {
+				input: {
+					id: org2Id,
+					name: "Duplicate Org 1",
+				},
+			},
+		});
+
+		expect(result.data?.updateOrganization).toBeNull();
+		expect(result.errors).toEqual(
+			expect.arrayContaining([
+				expect.objectContaining({
+					message: "Organization name already exists",
+					extensions: expect.objectContaining({
+						code: "invalid_arguments",
+						issues: [
+							{
+								argumentPath: ["input", "name"],
+								message: "Organization name already exists",
+							},
+						],
+					}),
+					path: ["updateOrganization"],
+				}),
+			]),
+		);
+	});
+	test("should allow updating organization to its own current name", async () => {
+		// Create organization
+		const createOrgResult = await mercuriusClient.mutate(
+			Mutation_createOrganization,
+			{
+				headers: { authorization: `bearer ${authToken}` },
+				variables: {
+					input: {
+						name: "Self Update Org",
+						description: "Test self update",
+						countryCode: "us",
+						state: "CA",
+						city: "San Francisco",
+						postalCode: "94101",
+						addressLine1: "123 Test St",
+						addressLine2: "Suite 100",
+					},
+				},
+			},
+		);
+		const orgId = createOrgResult.data?.createOrganization?.id;
+		assertToBeNonNullish(orgId);
+
+		testCleanupFunctions.push(async () => {
+			await mercuriusClient.mutate(Mutation_deleteOrganization, {
+				headers: { authorization: `bearer ${authToken}` },
+				variables: { input: { id: orgId } },
+			});
+		});
+
+		// Update with same name - should succeed
+		const result = await mercuriusClient.mutate(Mutation_updateOrganization, {
+			headers: { authorization: `bearer ${authToken}` },
+			variables: {
+				input: {
+					id: orgId,
+					name: "Self Update Org",
+					description: "Updated description",
+				},
+			},
+		});
+
+		expect(result.errors).toBeUndefined();
+		expect(result.data?.updateOrganization?.name).toBe("Self Update Org");
+		expect(result.data?.updateOrganization?.description).toBe(
+			"Updated description",
+		);
+	});
+
+	test("should handle case sensitivity for duplicate names (case-sensitive by default)", async () => {
+		// Create "Case Org"
+		const createOrg1Result = await mercuriusClient.mutate(
+			Mutation_createOrganization,
+			{
+				headers: { authorization: `bearer ${authToken}` },
+				variables: {
+					input: {
+						name: "Case Org",
+						countryCode: "us",
+					},
+				},
+			},
+		);
+		const org1Id = createOrg1Result.data?.createOrganization?.id;
+		assertToBeNonNullish(org1Id);
+
+		testCleanupFunctions.push(async () => {
+			await mercuriusClient.mutate(Mutation_deleteOrganization, {
+				headers: { authorization: `bearer ${authToken}` },
+				variables: { input: { id: org1Id } },
+			});
+		});
+
+		// Create another org
+		const createOrg2Result = await mercuriusClient.mutate(
+			Mutation_createOrganization,
+			{
+				headers: { authorization: `bearer ${authToken}` },
+				variables: {
+					input: {
+						name: "Other Org",
+						countryCode: "us",
+					},
+				},
+			},
+		);
+		const org2Id = createOrg2Result.data?.createOrganization?.id;
+		assertToBeNonNullish(org2Id);
+
+		testCleanupFunctions.push(async () => {
+			await mercuriusClient.mutate(Mutation_deleteOrganization, {
+				headers: { authorization: `bearer ${authToken}` },
+				variables: { input: { id: org2Id } },
+			});
+		});
+
+		// Try to update second org to "case org" (lowercase) - should succeed if case-sensitive
+		const result = await mercuriusClient.mutate(Mutation_updateOrganization, {
+			headers: { authorization: `bearer ${authToken}` },
+			variables: {
+				input: {
+					id: org2Id,
+					name: "case org",
+				},
+			},
+		});
+
+		// If current implementation is case-sensitive, this should succeed (no error)
+		// If it fails, that means it's case-insensitive
+		expect(result.errors).toBeUndefined();
+		expect(result.data?.updateOrganization?.name).toBe("case org");
+	});
+
+	test("should handle whitespace in organization names (strict check)", async () => {
+		// Create "Whitespace Org"
+		const createOrg1Result = await mercuriusClient.mutate(
+			Mutation_createOrganization,
+			{
+				headers: { authorization: `bearer ${authToken}` },
+				variables: {
+					input: {
+						name: "Whitespace Org",
+						countryCode: "us",
+					},
+				},
+			},
+		);
+		const org1Id = createOrg1Result.data?.createOrganization?.id;
+		assertToBeNonNullish(org1Id);
+
+		testCleanupFunctions.push(async () => {
+			await mercuriusClient.mutate(Mutation_deleteOrganization, {
+				headers: { authorization: `bearer ${authToken}` },
+				variables: { input: { id: org1Id } },
+			});
+		});
+
+		// Create another org
+		const createOrg2Result = await mercuriusClient.mutate(
+			Mutation_createOrganization,
+			{
+				headers: { authorization: `bearer ${authToken}` },
+				variables: {
+					input: {
+						name: "Other Whitespace Org",
+						countryCode: "us",
+					},
+				},
+			},
+		);
+		const org2Id = createOrg2Result.data?.createOrganization?.id;
+		assertToBeNonNullish(org2Id);
+
+		testCleanupFunctions.push(async () => {
+			await mercuriusClient.mutate(Mutation_deleteOrganization, {
+				headers: { authorization: `bearer ${authToken}` },
+				variables: { input: { id: org2Id } },
+			});
+		});
+
+		// Try to update second org to "Whitespace Org " (trailing space)
+		const result = await mercuriusClient.mutate(Mutation_updateOrganization, {
+			headers: { authorization: `bearer ${authToken}` },
+			variables: {
+				input: {
+					id: org2Id,
+					name: "Whitespace Org ",
+				},
+			},
+		});
+
+		// Should succeed if whitespace is not trimmed and check is strict
+		expect(result.errors).toBeUndefined();
+		expect(result.data?.updateOrganization?.name).toBe("Whitespace Org ");
+	});
+	test("should remove avatar when avatar is set to null", async () => {
+		// Create organization
+		const createOrgResult = await mercuriusClient.mutate(
+			Mutation_createOrganization,
+			{
+				headers: { authorization: `bearer ${authToken}` },
+				variables: {
+					input: {
+						name: "Avatar Removal Org",
+						description: "Organization for avatar removal test",
+						countryCode: "us",
+						state: "CA",
+						city: "San Francisco",
+						postalCode: "94101",
+						addressLine1: "123 Avatar St",
+						addressLine2: "Suite 100",
+					},
+				},
+			},
+		);
+		const orgId = createOrgResult.data?.createOrganization?.id;
+		assertToBeNonNullish(orgId);
+
+		testCleanupFunctions.push(async () => {
+			await mercuriusClient.mutate(Mutation_deleteOrganization, {
+				headers: { authorization: `bearer ${authToken}` },
+				variables: { input: { id: orgId } },
+			});
+		});
+
+		// Manually set an avatar in the database
+		await (server as FastifyInstance).drizzleClient
+			.update(organizationsTable)
+			.set({
+				avatarName: "test-avatar.png",
+				avatarMimeType: "image/png",
+			})
+			.where(eq(organizationsTable.id, orgId));
+
+		// Call updateOrganization with avatar: null
+		const result = await mercuriusClient.mutate(Mutation_updateOrganization, {
+			headers: { authorization: `bearer ${authToken}` },
+			variables: {
+				input: {
+					id: orgId,
+					avatar: null,
+				},
+			},
+		});
+
+		expect(result.errors).toBeUndefined();
+		// Verify returned object has null avatar
+		expect(result.data?.updateOrganization?.avatarMimeType).toBeNull();
+
+		// Verify database state
+		const updatedOrg = await (
+			server as FastifyInstance
+		).drizzleClient.query.organizationsTable.findFirst({
+			where: eq(organizationsTable.id, orgId),
+			columns: {
+				avatarName: true,
+				avatarMimeType: true,
+			},
+		});
+
+		expect(updatedOrg?.avatarName).toBeNull();
+		expect(updatedOrg?.avatarMimeType).toBeNull();
 	});
 });

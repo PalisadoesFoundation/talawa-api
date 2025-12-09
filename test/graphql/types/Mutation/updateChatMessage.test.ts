@@ -1,5 +1,5 @@
 import { faker } from "@faker-js/faker";
-import { expect, suite, test, vi } from "vitest";
+import { afterEach, expect, suite, test, vi } from "vitest";
 import type {
 	TalawaGraphQLFormattedError,
 	UnauthenticatedExtensions,
@@ -17,6 +17,10 @@ import {
 	Mutation_updateChatMessage,
 	Query_signIn,
 } from "../documentNodes";
+
+afterEach(() => {
+	vi.clearAllMocks();
+});
 
 suite("Mutation field updateChatMessage", () => {
 	suite(

@@ -1,5 +1,5 @@
 import { initGraphQLTada } from "gql.tada";
-import { describe, expect, it, vi } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import type { ClientCustomScalars } from "~/src/graphql/scalars";
 import type { AgendaItem as AgendaItemType } from "~/src/graphql/types/AgendaItem/AgendaItem";
 import "~/src/graphql/types/AgendaItem/createdAt";
@@ -18,6 +18,10 @@ import {
 	Query_signIn,
 } from "../documentNodes";
 import type { introspection } from "../gql.tada";
+
+afterEach(() => {
+	vi.clearAllMocks();
+});
 
 const gql = initGraphQLTada<{
 	introspection: introspection;
