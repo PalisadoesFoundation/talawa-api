@@ -3,11 +3,11 @@ import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import envConfig from "~/src/utilities/graphqLimits";
 import {
 	FundCampaign,
-	type FundCampaign as FundCampaignType,
+	type FundCampaign as FundCampaignRecord,
 } from "./FundCampaign";
 
 export const createdAtResolver = async (
-	parent: FundCampaignType,
+	parent: FundCampaignRecord,
 	_args: Record<string, never>,
 	ctx: GraphQLContext,
 ) => {

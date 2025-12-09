@@ -276,6 +276,7 @@ describe("FundCampaign.createdAt field resolver - Unit tests", () => {
 	};
 
 	beforeEach(() => {
+		vi.clearAllMocks();
 		const { context, mocks: newMocks } = createMockGraphQLContext(true, "123");
 		ctx = context;
 		mocks = newMocks;
@@ -292,8 +293,6 @@ describe("FundCampaign.createdAt field resolver - Unit tests", () => {
 			startAt: new Date("2024-01-01T00:00:00Z"),
 			endAt: new Date("2024-12-31T23:59:59Z"),
 		};
-
-		vi.clearAllMocks();
 	});
 
 	it("should throw unauthenticated error when user is not authenticated", async () => {
