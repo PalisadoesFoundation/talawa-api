@@ -106,3 +106,46 @@ mongosh","version":"6.12.0|2.3.8"},"platform":"Node.js v20.18.1, LE","os":{"name
 {"t":{"$date":"2025-02-22T01:14:08.040+00:00"},"s":"I",  "c":"NETWORK",  "id":22943,   "ctx":"listener","msg":"Connection accepted","attr":{"remote":"127.0.0.1:36848","uuid":{"uuid":{"$uuid":"1ef5fcbd-4913-45fe-bc66-7bc3600a941a"}},"connectionId":2195,"connectionCount":24}}
 {"t":{"$date":"2025-02-22T01:14:08.043+00:00"},"s":"I",  "c":"NETWORK",  "id":22943,   "ctx":"listener","msg":"Connection accepted","attr":{"remote":"127.0.0.1:36854","uuid":{"uuid":{"$uuid":"48522796-7b00-46df-a5d1-3e2a9ec7edd8"}},"connectionId":2196,"connectionCount":25}}
 ```
+
+## Non Docker
+
+When running the application directly on your host machine (without Docker), use these steps.
+
+### Status Validation
+
+1. Confirm the Node.js process is running:
+
+   ```bash
+   pgrep -fl "talawa-api|start_production_server|start_development_server"
+   ```
+
+1. Verify the API port is listening (defaults to 4000 unless `API_PORT` is set):
+
+   ```bash
+   ss -ltnp | grep :${API_PORT:-4000}
+   ```
+
+### Checking Running Ports
+
+To quickly confirm the server port is bound, use either of these commands:
+
+```bash
+sudo lsof -i :${API_PORT:-4000}
+ss -ltnp | grep :${API_PORT:-4000}
+```
+
+### Viewing Application Logs
+
+1. If you started the app in the foreground (for example with `pnpm start_production_server`), the logs stream in that same terminal. Press `Ctrl+C` there to stop the server.
+1. If you started it in the background (for example `nohup pnpm start_production_server > ~/talawa-api.log 2>&1 &`), tail the log file to watch activity:
+
+   ```bash
+   tail -f ~/talawa-api.log
+   ```
+
+1. When using a process manager like `systemd`, use these commands to review and follow logs:
+
+   ```bash
+   sudo systemctl status talawa-api
+   sudo journalctl -u talawa-api -f
+   ```

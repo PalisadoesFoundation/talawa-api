@@ -39,6 +39,26 @@ To stop the Docker Server, use this command:
 docker compose down
 ```
 
+### Production Server Shutdown (Non Docker)
+
+If you started the production server directly on the host (for example with `pnpm start_production_server`), stop it from the same terminal session by pressing `Ctrl+C`.
+
+If the server was started in the background, first identify the process and then stop it:
+
+```bash
+# Find the running server by port (defaults to 4000 unless API_PORT is set)
+sudo lsof -i :${API_PORT:-4000}
+
+# Gracefully stop it using the PID from the previous command
+kill <PID>
+```
+
+If you manage the server with `systemd`, stop it with:
+
+```bash
+sudo systemctl stop talawa-api
+```
+
 ## Development Environment Operation
 
 We make heavy use of Docker containers in our workflows. Since containers are a Linux-based technology, on non-Linux platforms they require Linux emulation through virtual machines, which can impact performance. So, you should be aware that there are performance penalties and certain limitations with running containers on platforms like MacOS and Windows.
