@@ -328,8 +328,11 @@ describe("FundCampaign.createdAt field resolver - Unit tests", () => {
 				// Execute the where callback to ensure coverage and verify filtering logic
 				if (args?.where) {
 					const fields = { id: "users.id" };
-					const operators = { eq: vi.fn() };
+					const eqMock = vi.fn();
+					const operators = { eq: eqMock };
 					args.where(fields, operators);
+					// Verify the resolver filters by currentUserId
+					expect(eqMock).toHaveBeenCalledWith("users.id", "123");
 				}
 
 				return Promise.resolve(undefined);
@@ -431,6 +434,7 @@ describe("FundCampaign.createdAt field resolver - Unit tests", () => {
 	});
 
 	it("should return createdAt when user is an organization administrator", async () => {
+		setupAuthorizedMocks();
 		mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValue({
 			id: "user123",
 			role: "member",
