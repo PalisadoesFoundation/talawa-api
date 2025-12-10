@@ -22,10 +22,6 @@ const Query_chat_organization = graphql(`
                 id
                 name
                 countryCode
-                creator {
-                    name
-                    id
-                }
             }
         }
     }
@@ -166,9 +162,5 @@ describe("Chat.organization integration test", () => {
 		expect(organization.data.chat?.organization?.name).toBe(org.name);
 		expect(organization.data.chat?.organization?.id).toBe(org.id);
 		expect(organization.data.chat?.organization?.countryCode).toBe("us");
-		expect(organization.data.chat?.organization?.creator?.id).toBe(creatorId);
-		expect(organization.data.chat?.organization?.creator?.name).toBe(
-			creator.user.name,
-		);
 	});
 });
