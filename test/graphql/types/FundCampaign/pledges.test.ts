@@ -389,6 +389,54 @@ describe("FundCampaign Resolver - pledges Field", () => {
 				"01952911-82da-793f-a5bf-98381d9aefc9",
 			);
 		});
+
+		it("should return pledges with backward pagination using before cursor", async () => {
+			const mockPledges = [
+				{
+					id: "01952911-82da-793f-a5bf-98381d9aefc7",
+					amount: 1500,
+					campaignId: "campaign-456",
+					pledgerId: "user-earlier",
+					createdAt: new Date("2024-03-04T10:00:00Z"),
+					creatorId: "user-earlier",
+					updatedAt: null,
+					updaterId: null,
+					note: null,
+				},
+			];
+
+			const cursor = Buffer.from(
+				JSON.stringify({ id: "01952911-82da-793f-a5bf-98381d9aefc8" }),
+			).toString("base64url");
+
+			// Mock the exists() subquery to validate cursor exists
+			const mockSelectChain = {
+				from: vi.fn().mockReturnThis(),
+				where: vi
+					.fn()
+					.mockReturnValue([{ id: "01952911-82da-793f-a5bf-98381d9aefc8" }]),
+			};
+			mocks.drizzleClient.select = vi.fn().mockReturnValue(mockSelectChain);
+
+			mocks.drizzleClient.query.fundCampaignPledgesTable.findMany.mockResolvedValue(
+				mockPledges,
+			);
+
+			const result = (await pledgesResolver(
+				mockFundCampaign,
+				{ last: 5, before: cursor },
+				ctx,
+				mockResolveInfo,
+			)) as {
+				edges: Array<{ cursor: string; node: { id: string } }>;
+			};
+
+			expect(result).toBeDefined();
+			expect(result.edges.length).toBe(1);
+			expect(result.edges[0]?.node.id).toBe(
+				"01952911-82da-793f-a5bf-98381d9aefc7",
+			);
+		});
 	});
 
 	describe("Complexity calculation", () => {
