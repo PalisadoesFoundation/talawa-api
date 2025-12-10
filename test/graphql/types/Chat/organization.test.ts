@@ -1,7 +1,9 @@
 import { faker } from "@faker-js/faker";
 import { graphql } from "gql.tada";
+import type { GraphQLObjectType, GraphQLResolveInfo } from "graphql";
 import { assertToBeNonNullish } from "test/helpers";
 import { afterEach, describe, expect, test } from "vitest";
+import { schemaManager } from "~/src/graphql/schemaManager";
 import { server } from "../../../server";
 import { mercuriusClient } from "../client";
 import {
@@ -162,5 +164,68 @@ describe("Chat.organization integration test", () => {
 		expect(organization.data.chat?.organization?.name).toBe(org.name);
 		expect(organization.data.chat?.organization?.id).toBe(org.id);
 		expect(organization.data.chat?.organization?.countryCode).toBe("us");
+	});
+
+	test("organization resolver throws unexpected error when organization not found", async () => {
+		// First create the test setup
+		const adminSignIn = await signinAdmin();
+		const adminToken = adminSignIn.data?.signIn?.authenticationToken as string;
+
+		const creatorRes = await createCreator(adminToken);
+		assertToBeNonNullish(creatorRes.data?.createUser?.user);
+		const creatorId = creatorRes.data.createUser.user.id;
+
+		cleanupFns.push(async () => {
+			await mercuriusClient.mutate(Mutation_deleteUser, {
+				headers: { authorization: `bearer ${adminToken}` },
+				variables: { input: { id: creatorId } },
+			});
+		});
+
+		const orgRes = await createOrgMutation(adminToken);
+		assertToBeNonNullish(orgRes.data?.createOrganization);
+		const orgId = orgRes.data.createOrganization.id;
+
+		cleanupFns.push(async () => {
+			await mercuriusClient.mutate(Mutation_deleteOrganization, {
+				headers: { authorization: `bearer ${adminToken}` },
+				variables: { input: { id: orgId } },
+			});
+		});
+
+		// Get the schema and organization field resolver
+		const schema = await schemaManager.buildInitialSchema();
+		const fields = (schema.getType("Chat") as GraphQLObjectType).getFields();
+		if (!fields.organization)
+			throw new Error("Chat.organization field not found");
+		const organizationField = fields.organization;
+
+		// Create parent with non-existent organizationId to simulate corruption
+		const parent = {
+			id: faker.string.uuid(),
+			organizationId: faker.string.uuid(), // UUID that doesn't exist in DB
+			creatorId: creatorId,
+		};
+
+		const ctx = {
+			currentClient: { isAuthenticated: true, user: { id: creatorId } },
+			drizzleClient: server.drizzleClient,
+			log: server.log,
+			envConfig: server.envConfig,
+			jwt: server.jwt,
+			minio: server.minio,
+		};
+
+		// Invoke resolver directly and expect error
+		await expect(async () =>
+			organizationField.resolve?.(
+				parent,
+				{},
+				ctx,
+				undefined as unknown as GraphQLResolveInfo,
+			),
+		).rejects.toMatchObject({
+			extensions: expect.objectContaining({ code: "unexpected" }),
+		});
 	});
 });
