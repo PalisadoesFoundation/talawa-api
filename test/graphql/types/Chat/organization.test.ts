@@ -167,5 +167,8 @@ describe("Chat.organization integration test", () => {
 		expect(organization.data.chat?.organization?.id).toBe(org.id);
 		expect(organization.data.chat?.organization?.countryCode).toBe("us");
 		expect(organization.data.chat?.organization?.creator?.id).toBe(creatorId);
+		expect(organization.data.chat?.organization?.creator?.name).toBe(
+			creator.user.name,
+		);
 	});
 });
