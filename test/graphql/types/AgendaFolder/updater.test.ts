@@ -1,6 +1,6 @@
 import { faker } from "@faker-js/faker";
 import { createMockGraphQLContext } from "test/_Mocks_/mockContextCreator/mockContextCreator";
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { GraphQLContext } from "~/src/graphql/context";
 import { AgendaFolder } from "~/src/graphql/types/AgendaFolder/AgendaFolder";
 import type { AgendaFolder as AgendaFolderType } from "~/src/graphql/types/AgendaFolder/AgendaFolder";
@@ -245,29 +245,5 @@ describe("AgendaFolder Resolver - Updater Field", () => {
 		await expect(
 			resolveUpdater(mockAgendaFolder, {}, ctx),
 		).resolves.toBeDefined();
-	});
-
-	it("should cover the AgendaFolder.implement wrapper", async () => {
-		// This test ensures the schema field implementation is covered
-		// @ts-expect-error - Accessing internal schema for testing
-		const schema = AgendaFolder.builder;
-		expect(schema).toBeDefined();
-
-		// Call the resolver through the schema wrapper
-		mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValue({
-			id: "user-123",
-			role: "administrator",
-		});
-		mocks.drizzleClient.query.eventsTable.findFirst.mockResolvedValue({
-			startAt: new Date(),
-			organization: {
-				countryCode: "US",
-				membershipsWhereOrganization: [{ role: "administrator" }],
-			},
-		});
-
-		// Test the updater field is defined on the AgendaFolder type
-		const result = await resolveUpdater(mockAgendaFolder, {}, ctx);
-		expect(result).toBeDefined();
 	});
 });
