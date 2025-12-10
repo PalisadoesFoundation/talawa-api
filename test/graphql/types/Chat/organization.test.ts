@@ -162,7 +162,7 @@ describe("Chat.organization integration test", () => {
 			headers: { authorization: `bearer ${creatorToken}` },
 			variables: { input: { id: chat.id } },
 		});
-		expect(organization.errors).toBe(undefined);
+		expect(organization.errors).toBeUndefined();
 		expect(organization.data.chat?.organization?.name).toBe(org.name);
 		expect(organization.data.chat?.organization?.id).toBe(org.id);
 		expect(organization.data.chat?.organization?.countryCode).toBe("us");
