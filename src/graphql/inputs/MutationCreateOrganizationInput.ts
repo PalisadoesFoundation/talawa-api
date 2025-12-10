@@ -62,7 +62,7 @@ export const MutationCreateOrganizationInput = builder
 				description:
 					"Flag to indicate if user registration is required to access the organization.",
 			}),
-			state: t.string({
+			state: t.string({  
 				description: "Name of the state the organization resides in.",
 			}),
 		}),
