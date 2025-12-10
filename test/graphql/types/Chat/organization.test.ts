@@ -1,8 +1,7 @@
-import test from "node:test";
 import { faker } from "@faker-js/faker";
 import { graphql } from "gql.tada";
 import { assertToBeNonNullish } from "test/helpers";
-import { afterEach, describe, expect } from "vitest";
+import { afterEach, describe, expect, test } from "vitest";
 import { server } from "../../../server";
 import { mercuriusClient } from "../client";
 import {
