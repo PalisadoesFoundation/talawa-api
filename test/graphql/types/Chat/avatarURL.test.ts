@@ -107,6 +107,11 @@ suite("Chat field avatarURL", () => {
 	let adminUserId: string;
 	let organizationId: string;
 	let testChatId: string;
+	let avatarURLResolver!: NonNullable<
+		NonNullable<
+			ReturnType<GraphQLObjectType["getFields"]>["avatarURL"]
+		>["resolve"]
+	>;
 
 	beforeAll(async () => {
 		const admin = await getAdminToken();
@@ -123,6 +128,14 @@ suite("Chat field avatarURL", () => {
 		);
 
 		testChatId = await createTestChat(adminAuthToken, organizationId);
+
+		// Build schema once and cache avatarURL field resolver
+		const schema = await schemaManager.buildInitialSchema();
+		const chatType = schema.getType("Chat") as GraphQLObjectType;
+		const avatarURLField = chatType.getFields().avatarURL;
+		assertToBeNonNullish(avatarURLField);
+		assertToBeNonNullish(avatarURLField.resolve);
+		avatarURLResolver = avatarURLField.resolve;
 	});
 
 	afterAll(async () => {
@@ -140,6 +153,18 @@ suite("Chat field avatarURL", () => {
 			});
 		} catch (error) {}
 	});
+
+	// Helper function to construct ctx object
+	function createTestContext() {
+		return {
+			currentClient: { isAuthenticated: true, user: { id: adminUserId } },
+			drizzleClient: server.drizzleClient,
+			log: server.log,
+			envConfig: server.envConfig,
+			jwt: server.jwt,
+			minio: server.minio,
+		};
+	}
 
 	test("returns null when avatarName is null", async () => {
 		const result = await mercuriusClient.query(Query_chat_with_avatarURL, {
@@ -160,17 +185,6 @@ suite("Chat field avatarURL", () => {
 	});
 
 	test("constructs proper URL when avatarName is non-null (direct resolver invocation)", async () => {
-		const schema = await schemaManager.buildInitialSchema();
-
-		const chatType = schema.getType("Chat") as GraphQLObjectType;
-		const fields = chatType.getFields();
-		expect(fields.avatarURL).toBeDefined();
-
-		const avatarURLField = fields.avatarURL;
-		assertToBeNonNullish(avatarURLField);
-		const resolver = avatarURLField.resolve;
-		assertToBeNonNullish(resolver);
-
 		const testAvatarName = "test-avatar-image.png";
 		const parent = {
 			id: testChatId,
@@ -178,16 +192,12 @@ suite("Chat field avatarURL", () => {
 			avatarName: testAvatarName,
 		};
 
-		const ctx = {
-			currentClient: { isAuthenticated: true, user: { id: adminUserId } },
-			drizzleClient: server.drizzleClient,
-			log: server.log,
-			envConfig: server.envConfig,
-			jwt: server.jwt,
-			minio: server.minio,
-		};
-
-		const result = await resolver(parent, {}, ctx, {} as never);
+		const result = await avatarURLResolver(
+			parent,
+			{},
+			createTestContext(),
+			{} as never,
+		);
 
 		expect(result).toBe(
 			new URL(
@@ -202,33 +212,18 @@ suite("Chat field avatarURL", () => {
 	});
 
 	test("returns null when avatarName is null (direct resolver invocation)", async () => {
-		const schema = await schemaManager.buildInitialSchema();
-
-		const chatType = schema.getType("Chat") as GraphQLObjectType;
-		const fields = chatType.getFields();
-		expect(fields.avatarURL).toBeDefined();
-
-		const avatarURLField = fields.avatarURL;
-		assertToBeNonNullish(avatarURLField);
-		const resolver = avatarURLField.resolve;
-		assertToBeNonNullish(resolver);
-
 		const parent = {
 			id: testChatId,
 			organizationId,
 			avatarName: null,
 		};
 
-		const ctx = {
-			currentClient: { isAuthenticated: true, user: { id: adminUserId } },
-			drizzleClient: server.drizzleClient,
-			log: server.log,
-			envConfig: server.envConfig,
-			jwt: server.jwt,
-			minio: server.minio,
-		};
-
-		const result = await resolver(parent, {}, ctx, {} as never);
+		const result = await avatarURLResolver(
+			parent,
+			{},
+			createTestContext(),
+			{} as never,
+		);
 
 		expect(result).toBeNull();
 	});
