@@ -129,7 +129,6 @@ suite("Chat field avatarURL", () => {
 
 		testChatId = await createTestChat(adminAuthToken, organizationId);
 
-		// Build schema once and cache avatarURL field resolver
 		const schema = await schemaManager.buildInitialSchema();
 		const chatType = schema.getType("Chat") as GraphQLObjectType;
 		const avatarURLField = chatType.getFields().avatarURL;
@@ -154,7 +153,6 @@ suite("Chat field avatarURL", () => {
 		} catch (error) {}
 	});
 
-	// Helper function to construct ctx object
 	function createTestContext() {
 		return {
 			currentClient: { isAuthenticated: true, user: { id: adminUserId } },
@@ -244,15 +242,6 @@ suite("Chat field avatarURL", () => {
 	});
 
 	test("URL construction uses correct base URL and path format", async () => {
-		const schema = await schemaManager.buildInitialSchema();
-
-		const chatType = schema.getType("Chat") as GraphQLObjectType;
-		const fields = chatType.getFields();
-		const avatarURLField = fields.avatarURL;
-		assertToBeNonNullish(avatarURLField);
-		const resolver = avatarURLField.resolve;
-		assertToBeNonNullish(resolver);
-
 		const testCases = [
 			"avatar1.jpg",
 			"subfolder/avatar2.png",
@@ -266,16 +255,12 @@ suite("Chat field avatarURL", () => {
 				avatarName,
 			};
 
-			const ctx = {
-				currentClient: { isAuthenticated: true, user: { id: adminUserId } },
-				drizzleClient: server.drizzleClient,
-				log: server.log,
-				envConfig: server.envConfig,
-				jwt: server.jwt,
-				minio: server.minio,
-			};
-
-			const result = await resolver(parent, {}, ctx, {} as never);
+			const result = await avatarURLResolver(
+				parent,
+				{},
+				createTestContext(),
+				{} as never,
+			);
 
 			expect(result).toBe(
 				new URL(
