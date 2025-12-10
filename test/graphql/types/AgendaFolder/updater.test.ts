@@ -5,8 +5,6 @@ import type { GraphQLContext } from "~/src/graphql/context";
 import { AgendaFolder } from "~/src/graphql/types/AgendaFolder/AgendaFolder";
 import type { AgendaFolder as AgendaFolderType } from "~/src/graphql/types/AgendaFolder/AgendaFolder";
 import { resolveUpdater } from "~/src/graphql/types/AgendaFolder/updater";
-// Import the actual implementation to ensure it's loaded for coverage
-import "~/src/graphql/types/AgendaFolder/updater";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 
 describe("AgendaFolder Resolver - Updater Field", () => {
@@ -212,10 +210,14 @@ describe("AgendaFolder Resolver - Updater Field", () => {
 	});
 
 	it("should allow access if user is a superadmin (role: administrator)", async () => {
-		mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValue({
+		const currentUser = {
 			id: "user-123",
 			role: "administrator",
-		});
+		};
+
+		mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValue(
+			currentUser,
+		);
 		mocks.drizzleClient.query.eventsTable.findFirst.mockResolvedValue({
 			startAt: new Date(),
 			organization: {
@@ -224,16 +226,19 @@ describe("AgendaFolder Resolver - Updater Field", () => {
 			},
 		});
 
-		await expect(
-			resolveUpdater(mockAgendaFolder, {}, ctx),
-		).resolves.toBeDefined();
+		const result = await resolveUpdater(mockAgendaFolder, {}, ctx);
+		expect(result).toEqual(currentUser);
 	});
 
 	it("should allow access if user is organization administrator", async () => {
-		mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValue({
+		const currentUser = {
 			id: "user-123",
 			role: "member",
-		});
+		};
+
+		mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValue(
+			currentUser,
+		);
 		mocks.drizzleClient.query.eventsTable.findFirst.mockResolvedValue({
 			startAt: new Date(),
 			organization: {
@@ -242,8 +247,7 @@ describe("AgendaFolder Resolver - Updater Field", () => {
 			},
 		});
 
-		await expect(
-			resolveUpdater(mockAgendaFolder, {}, ctx),
-		).resolves.toBeDefined();
+		const result = await resolveUpdater(mockAgendaFolder, {}, ctx);
+		expect(result).toEqual(currentUser);
 	});
 });
