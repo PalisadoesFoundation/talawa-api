@@ -157,7 +157,7 @@ importers:
         specifier: ^13.0.0
         version: 13.1.2
       tsx:
-        specifier: ^4.20.6
+        specifier: ^4.20.3
         version: 4.20.6
       typedoc:
         specifier: ^0.28.13
