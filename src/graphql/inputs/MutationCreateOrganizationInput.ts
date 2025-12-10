@@ -17,6 +17,7 @@ export const mutationCreateOrganizationInputSchema =
 			state: true,
 		})
 		.extend({
+			addressLine2: z.string().nullish(), // allow empty string
 			avatar: z.custom<Promise<FileUpload>>().nullish(),
 			isUserRegistrationRequired: z.boolean().nullish(),
 		});
@@ -33,12 +34,13 @@ export const MutationCreateOrganizationInput = builder
 			}),
 			addressLine2: t.string({
 				description: "Address line 2 of the organization's address.",
+				required: false,
 			}),
 			avatar: t.field({
 				description: "Avatar of the organization.",
 				type: "Upload",
 			}),
-			city: t.string({
+			city: t.string({		
 				description: "Name of the city where the organization resides in.",
 			}),
 			countryCode: t.field({
