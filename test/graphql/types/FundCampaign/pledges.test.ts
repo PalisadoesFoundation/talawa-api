@@ -1,3 +1,4 @@
+import { asc, desc, eq } from "drizzle-orm";
 import type {
 	GraphQLFieldResolver,
 	GraphQLObjectType,
@@ -5,10 +6,10 @@ import type {
 } from "graphql";
 import { createMockGraphQLContext } from "test/_Mocks_/mockContextCreator/mockContextCreator";
 import { beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
+import { fundCampaignPledgesTable } from "~/src/drizzle/tables/fundCampaignPledges";
 import type { GraphQLContext } from "~/src/graphql/context";
 import { schema } from "~/src/graphql/schema";
 import type { FundCampaign as FundCampaignType } from "~/src/graphql/types/FundCampaign/FundCampaign";
-import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 
 type PledgesResolver = GraphQLFieldResolver<
 	FundCampaignType,
@@ -101,19 +102,17 @@ describe("FundCampaign Resolver - pledges Field", () => {
 					ctx,
 					mockResolveInfo,
 				),
-			).rejects.toThrow(
-				new TalawaGraphQLError({
-					extensions: {
-						code: "invalid_arguments",
-						issues: [
-							expect.objectContaining({
-								argumentPath: ["after"],
-								message: "Not a valid cursor.",
-							}),
-						],
-					},
-				}),
-			);
+			).rejects.toMatchObject({
+				extensions: {
+					code: "invalid_arguments",
+					issues: [
+						expect.objectContaining({
+							argumentPath: ["after"],
+							message: "Not a valid cursor.",
+						}),
+					],
+				},
+			});
 		});
 
 		it("should throw invalid_arguments error when before cursor is not valid Base64", async () => {
@@ -124,19 +123,17 @@ describe("FundCampaign Resolver - pledges Field", () => {
 					ctx,
 					mockResolveInfo,
 				),
-			).rejects.toThrow(
-				new TalawaGraphQLError({
-					extensions: {
-						code: "invalid_arguments",
-						issues: [
-							expect.objectContaining({
-								argumentPath: ["before"],
-								message: "Not a valid cursor.",
-							}),
-						],
-					},
-				}),
-			);
+			).rejects.toMatchObject({
+				extensions: {
+					code: "invalid_arguments",
+					issues: [
+						expect.objectContaining({
+							argumentPath: ["before"],
+							message: "Not a valid cursor.",
+						}),
+					],
+				},
+			});
 		});
 
 		it("should throw invalid_arguments error when cursor contains invalid JSON", async () => {
@@ -149,19 +146,17 @@ describe("FundCampaign Resolver - pledges Field", () => {
 					ctx,
 					mockResolveInfo,
 				),
-			).rejects.toThrow(
-				new TalawaGraphQLError({
-					extensions: {
-						code: "invalid_arguments",
-						issues: [
-							expect.objectContaining({
-								argumentPath: ["after"],
-								message: "Not a valid cursor.",
-							}),
-						],
-					},
-				}),
-			);
+			).rejects.toMatchObject({
+				extensions: {
+					code: "invalid_arguments",
+					issues: [
+						expect.objectContaining({
+							argumentPath: ["after"],
+							message: "Not a valid cursor.",
+						}),
+					],
+				},
+			});
 		});
 
 		it("should throw invalid_arguments error when cursor has invalid schema", async () => {
@@ -176,18 +171,16 @@ describe("FundCampaign Resolver - pledges Field", () => {
 					ctx,
 					mockResolveInfo,
 				),
-			).rejects.toThrow(
-				new TalawaGraphQLError({
-					extensions: {
-						code: "invalid_arguments",
-						issues: [
-							expect.objectContaining({
-								argumentPath: ["after"],
-							}),
-						],
-					},
-				}),
-			);
+			).rejects.toMatchObject({
+				extensions: {
+					code: "invalid_arguments",
+					issues: [
+						expect.objectContaining({
+							argumentPath: ["after"],
+						}),
+					],
+				},
+			});
 		});
 	});
 
@@ -215,14 +208,12 @@ describe("FundCampaign Resolver - pledges Field", () => {
 					ctx,
 					mockResolveInfo,
 				),
-			).rejects.toThrow(
-				new TalawaGraphQLError({
-					extensions: {
-						code: "arguments_associated_resources_not_found",
-						issues: [expect.objectContaining({ argumentPath: ["after"] })],
-					},
-				}),
-			);
+			).rejects.toMatchObject({
+				extensions: {
+					code: "arguments_associated_resources_not_found",
+					issues: [expect.objectContaining({ argumentPath: ["after"] })],
+				},
+			});
 		});
 
 		it("should throw arguments_associated_resources_not_found when before cursor yields no pledges", async () => {
@@ -248,14 +239,12 @@ describe("FundCampaign Resolver - pledges Field", () => {
 					ctx,
 					mockResolveInfo,
 				),
-			).rejects.toThrow(
-				new TalawaGraphQLError({
-					extensions: {
-						code: "arguments_associated_resources_not_found",
-						issues: [expect.objectContaining({ argumentPath: ["before"] })],
-					},
-				}),
-			);
+			).rejects.toMatchObject({
+				extensions: {
+					code: "arguments_associated_resources_not_found",
+					issues: [expect.objectContaining({ argumentPath: ["before"] })],
+				},
+			});
 		});
 	});
 
@@ -462,14 +451,19 @@ describe("FundCampaign Resolver - pledges Field", () => {
 				mockResolveInfo,
 			);
 
-			expect(
-				mocks.drizzleClient.query.fundCampaignPledgesTable.findMany,
-			).toHaveBeenCalledWith(
-				expect.objectContaining({
-					where: expect.anything(),
-					orderBy: expect.anything(),
-					limit: expect.any(Number),
-				}),
+			const calls = mocks.drizzleClient.query.fundCampaignPledgesTable.findMany
+				.mock.calls as unknown as Array<
+				[{ where: unknown; orderBy: unknown; limit: number }]
+			>;
+			const callArgs = calls[0]?.[0];
+
+			// Verify the where clause filters by campaign ID
+			const expectedWhere = eq(
+				fundCampaignPledgesTable.campaignId,
+				mockFundCampaign.id,
+			);
+			expect(callArgs?.where?.toString().trim()).toBe(
+				expectedWhere.toString().trim(),
 			);
 		});
 
@@ -487,9 +481,11 @@ describe("FundCampaign Resolver - pledges Field", () => {
 
 			const calls = mocks.drizzleClient.query.fundCampaignPledgesTable.findMany
 				.mock.calls as unknown as Array<[{ orderBy: Array<unknown> }]>;
-			const callArgs = calls[0]?.[0] as { orderBy: Array<unknown> };
-			expect(callArgs?.orderBy).toBeDefined();
-			expect(Array.isArray(callArgs?.orderBy)).toBe(true);
+			const callArgs = calls[0]?.[0];
+
+			// Verify descending order on id column for forward pagination
+			const expectedOrderBy = [desc(fundCampaignPledgesTable.id)];
+			expect(callArgs?.orderBy).toEqual(expectedOrderBy);
 		});
 
 		it("should use ascending order for backward pagination", async () => {
@@ -506,9 +502,11 @@ describe("FundCampaign Resolver - pledges Field", () => {
 
 			const calls = mocks.drizzleClient.query.fundCampaignPledgesTable.findMany
 				.mock.calls as unknown as Array<[{ orderBy: Array<unknown> }]>;
-			const callArgs = calls[0]?.[0] as { orderBy: Array<unknown> };
-			expect(callArgs?.orderBy).toBeDefined();
-			expect(Array.isArray(callArgs?.orderBy)).toBe(true);
+			const callArgs = calls[0]?.[0];
+
+			// Verify ascending order on id column for backward pagination
+			const expectedOrderBy = [asc(fundCampaignPledgesTable.id)];
+			expect(callArgs?.orderBy).toEqual(expectedOrderBy);
 		});
 	});
 
