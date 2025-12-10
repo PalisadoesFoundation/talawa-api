@@ -1,8 +1,6 @@
-import { faker } from "@faker-js/faker";
 import { createMockGraphQLContext } from "test/_Mocks_/mockContextCreator/mockContextCreator";
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it } from "vitest";
 import type { GraphQLContext } from "~/src/graphql/context";
-import { AgendaFolder } from "~/src/graphql/types/AgendaFolder/AgendaFolder";
 import type { AgendaFolder as AgendaFolderType } from "~/src/graphql/types/AgendaFolder/AgendaFolder";
 import { resolveUpdater } from "~/src/graphql/types/AgendaFolder/updater";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
