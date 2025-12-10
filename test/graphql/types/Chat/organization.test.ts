@@ -81,7 +81,7 @@ describe("Chat.organization integration test", () => {
 	const cleanupFns: Array<() => Promise<void>> = [];
 
 	afterEach(async () => {
-		for (const fn of cleanupFns.reverse()) {
+		for (const fn of [...cleanupFns].reverse()) {
 			try {
 				await fn();
 			} catch (err) {
