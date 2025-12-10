@@ -133,6 +133,13 @@ describe("Chat.organization integration test", () => {
 			},
 		});
 
+		cleanupFns.push(async () => {
+			await mercuriusClient.mutate(Mutation_deleteOrganization, {
+				headers: { authorization: `bearer ${adminToken}` },
+				variables: { input: { id: org.id } },
+			});
+		});
+
 		assertToBeNonNullish(creator.user?.emailAddress);
 		const creatorSignIn = await mercuriusClient.query(Query_signIn, {
 			variables: {
@@ -179,17 +186,6 @@ describe("Chat.organization integration test", () => {
 			await mercuriusClient.mutate(Mutation_deleteUser, {
 				headers: { authorization: `bearer ${adminToken}` },
 				variables: { input: { id: creatorId } },
-			});
-		});
-
-		const orgRes = await createOrgMutation(adminToken);
-		assertToBeNonNullish(orgRes.data?.createOrganization);
-		const orgId = orgRes.data.createOrganization.id;
-
-		cleanupFns.push(async () => {
-			await mercuriusClient.mutate(Mutation_deleteOrganization, {
-				headers: { authorization: `bearer ${adminToken}` },
-				variables: { input: { id: orgId } },
 			});
 		});
 
