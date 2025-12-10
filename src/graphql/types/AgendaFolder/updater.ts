@@ -119,9 +119,7 @@ AgendaFolder.implement({
 		updater: t.field({
 			description: "User who last updated the agenda folder.",
 			complexity: envConfig.API_GRAPHQL_OBJECT_FIELD_COST,
-			resolve: async (parent, _args, ctx) => {
-				return resolveUpdater(parent, _args, ctx);
-			},
+			resolve: resolveUpdater,
 			type: User,
 		}),
 	}),
