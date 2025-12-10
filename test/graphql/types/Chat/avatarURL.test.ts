@@ -288,10 +288,6 @@ suite("Chat field avatarURL", () => {
 					server.envConfig.API_BASE_URL,
 				).toString(),
 			);
-
-			expect(result).toContain(server.envConfig.API_BASE_URL);
-
-			expect(result).toContain("/objects/");
 		}
 	});
 });
