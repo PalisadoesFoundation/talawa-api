@@ -89,6 +89,55 @@ describe("AgendaFolder Resolver - Updater Field", () => {
 		);
 	});
 
+	it("should validate membershipsWhereOrganization filters by current user ID", async () => {
+		const currentUser = {
+			id: "user-123",
+			role: "member",
+		};
+
+		mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValue(
+			currentUser,
+		);
+
+		// Mock implementation to capture and validate the where clause
+		let whereClauseValidated = false;
+		mocks.drizzleClient.query.eventsTable.findFirst.mockImplementation(
+			async ({ with: withClause }: any) => {
+				// Verify that membershipsWhereOrganization where clause exists
+				const membership =
+					withClause?.organization?.with?.membershipsWhereOrganization;
+				expect(membership).toBeDefined();
+				expect(membership.where).toBeDefined();
+
+				// Mock the operators object that Drizzle provides
+				const mockOperators = {
+					eq: (field: any, value: any) => {
+						// Verify the where clause is filtering by memberId === currentUserId
+						expect(value).toBe("user-123");
+						whereClauseValidated = true;
+						return true;
+					},
+				};
+
+				// Call the where clause with mock fields and operators
+				const mockFields = { memberId: "user-123" };
+				membership.where(mockFields, mockOperators);
+
+				return {
+					startAt: new Date(),
+					organization: {
+						countryCode: "US",
+						membershipsWhereOrganization: [{ role: "administrator" }],
+					},
+				};
+			},
+		);
+
+		const result = await resolveUpdater(mockAgendaFolder, {}, ctx);
+		expect(result).toEqual(currentUser);
+		expect(whereClauseValidated).toBe(true);
+	});
+
 	it("should throw unauthorized_action error if user is not an administrator and organization membership is undefined", async () => {
 		mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValue({
 			id: "user-123",
