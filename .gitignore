@@ -15,6 +15,7 @@
 /.env.*
 /.env-*
 /.env_*
+.backup/
 
 # Ignore the deploy compose file
 /compose.deploy.yaml
@@ -844,3 +845,5 @@ yarn.lock
 # Plugin related
 /src/plugin/available/*
 !/src/plugin/available/readme.md
+# Test and debug output files
+debug_test_output_*.txt

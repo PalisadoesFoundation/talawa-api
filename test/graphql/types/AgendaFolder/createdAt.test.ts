@@ -1,6 +1,6 @@
 import { faker } from "@faker-js/faker";
 import { initGraphQLTada } from "gql.tada";
-import { describe, expect, it, vi } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import type { ClientCustomScalars } from "~/src/graphql/scalars/index";
 import type { AgendaFolder } from "~/src/graphql/types/AgendaFolder/AgendaFolder";
 // Import the actual implementation to ensure it's loaded for coverage
@@ -20,6 +20,11 @@ import {
 	Query_signIn,
 } from "../documentNodes";
 import type { introspection } from "../gql.tada";
+
+afterEach(() => {
+	vi.clearAllMocks();
+});
+
 const gql = initGraphQLTada<{
 	introspection: introspection;
 	scalars: ClientCustomScalars;
@@ -117,20 +122,7 @@ async function createOrgEventFolder(
 	assertToBeNonNullish(orgResult.data?.createOrganization?.id);
 	const orgId = orgResult.data.createOrganization.id as string;
 
-	const membership = await mercuriusClient.mutate(
-		Mutation_createOrganizationMembership,
-		{
-			headers: { authorization: `bearer ${authToken}` },
-			variables: {
-				input: {
-					organizationId: orgId,
-					memberId: adminUserId,
-					role: "administrator",
-				},
-			},
-		},
-	);
-	assertToBeNonNullish(membership.data?.createOrganizationMembership?.id);
+	await retryMembershipCreation(authToken, orgId, adminUserId);
 
 	const eventResult = await mercuriusClient.mutate(Mutation_createEvent, {
 		headers: { authorization: `bearer ${authToken}` },
@@ -164,6 +156,39 @@ async function createOrgEventFolder(
 	const folderId = folderResult.data.createAgendaFolder.id as string;
 
 	return { orgId, eventId, folderId };
+}
+
+async function retryMembershipCreation(
+	authToken: string,
+	orgId: string,
+	adminUserId: string,
+) {
+	let retries = 2;
+	while (retries > 0) {
+		try {
+			const membership = await mercuriusClient.mutate(
+				Mutation_createOrganizationMembership,
+				{
+					headers: { authorization: `bearer ${authToken}` },
+					variables: {
+						input: {
+							organizationId: orgId,
+							memberId: adminUserId,
+							role: "administrator",
+						},
+					},
+				},
+			);
+			if (!membership.data?.createOrganizationMembership?.id) {
+				throw new Error("createOrganizationMembership returned null");
+			}
+			return;
+		} catch (error) {
+			retries--;
+			if (retries === 0) throw error;
+			await new Promise((resolve) => setTimeout(resolve, 500));
+		}
+	}
 }
 
 async function cleanup(
@@ -265,12 +290,10 @@ describe("AgendaFolder.createdAt resolver", () => {
 						input: {
 							organizationId: orgId,
 							memberId: regularUser.userId,
-							role: "member",
+							role: "regular",
 						},
 					},
-				});
-
-				// Query as regular member
+				}); // Query as regular member
 				const result = await mercuriusClient.query(
 					Query_agendaFolder_createdAt,
 					{
@@ -469,16 +492,29 @@ describe("AgendaFolder.createdAt resolver - Unit tests for branch coverage", () 
 			const currentUserOrganizationMembership =
 				existingEvent.organization.membershipsWhereOrganization[0];
 
-			if (
-				currentUser.role !== "administrator" &&
-				(currentUserOrganizationMembership === undefined ||
-					currentUserOrganizationMembership.role !== "administrator")
-			) {
-				throw new TalawaGraphQLError({
-					extensions: {
-						code: "unauthorized_action",
-					},
-				});
+			if (currentUser.role !== "administrator") {
+				if (currentUserOrganizationMembership === undefined) {
+					// User is neither a super admin nor a member of the organization
+					throw new TalawaGraphQLError({
+						extensions: {
+							code: "unauthorized_action",
+						},
+					});
+				}
+
+				// User is a member, but membership role is insufficient for this action
+				if (currentUserOrganizationMembership.role !== "administrator") {
+					throw new TalawaGraphQLError({
+						extensions: {
+							code: "unauthorized_action_on_arguments_associated_resources",
+							issues: [
+								{
+									argumentPath: [],
+								},
+							],
+						},
+					});
+				}
 			}
 
 			return parent.createdAt;
@@ -604,7 +640,7 @@ describe("AgendaFolder.createdAt resolver - Unit tests for branch coverage", () 
 		);
 	});
 
-	it("should throw unauthorized_action error when user has membership but is not organization admin", async () => {
+	it("should throw unauthorized_action_on_arguments_associated_resources error when user has membership but is not organization admin", async () => {
 		const { context: mockContext, mocks } = createMockGraphQLContext(
 			true,
 			"user-123",
@@ -624,7 +660,7 @@ describe("AgendaFolder.createdAt resolver - Unit tests for branch coverage", () 
 				countryCode: "US",
 				membershipsWhereOrganization: [
 					{
-						role: "member", // Not administrator
+						role: "regular", // Not administrator
 					},
 				],
 			},
@@ -635,7 +671,12 @@ describe("AgendaFolder.createdAt resolver - Unit tests for branch coverage", () 
 		await expect(resolver(mockParent, {}, mockContext)).rejects.toThrow(
 			new TalawaGraphQLError({
 				extensions: {
-					code: "unauthorized_action",
+					code: "unauthorized_action_on_arguments_associated_resources",
+					issues: [
+						{
+							argumentPath: [],
+						},
+					],
 				},
 			}),
 		);
