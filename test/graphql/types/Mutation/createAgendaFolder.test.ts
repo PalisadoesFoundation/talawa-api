@@ -356,7 +356,7 @@ suite("Mutation field createAgendaFolder", () => {
 			);
 		});
 
-		test("Allows super admin to create folder without organization membership", async () => {
+		test("Allows super admin to create folder as organization administrator", async () => {
 			const { token: adminAuthToken } = await getAdminAuth();
 
 			const { cleanup, eventId } = await createOrganizationAndEvent(
