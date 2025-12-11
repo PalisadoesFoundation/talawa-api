@@ -6,7 +6,6 @@ import {
 	organizationMembershipsTable,
 	organizationsTable,
 	postsTable,
-	
 } from "~/src/drizzle/schema";
 import { assertToBeNonNullish } from "../../../helpers";
 import { server } from "../../../server";
@@ -142,7 +141,6 @@ suite("Comment: post field", () => {
 			headers: { authorization: `bearer ${token}` },
 			variables: { input: { id: commentId } },
 		});
-
 
 		expect(response.errors).toBeUndefined();
 		assertToBeNonNullish(response.data?.comment?.post);
