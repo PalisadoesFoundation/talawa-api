@@ -6,7 +6,7 @@ import {
 	organizationMembershipsTable,
 	organizationsTable,
 	postsTable,
-	usersTable,
+	
 } from "~/src/drizzle/schema";
 import { assertToBeNonNullish } from "../../../helpers";
 import { server } from "../../../server";
@@ -143,12 +143,6 @@ suite("Comment: post field", () => {
 			variables: { input: { id: commentId } },
 		});
 
-		if (response.errors) {
-			console.error(
-				"GraphQL Errors:",
-				JSON.stringify(response.errors, null, 2),
-			);
-		}
 
 		expect(response.errors).toBeUndefined();
 		assertToBeNonNullish(response.data?.comment?.post);
