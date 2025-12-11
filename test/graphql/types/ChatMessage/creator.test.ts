@@ -8,8 +8,11 @@ import "~/src/graphql/types/ChatMessage/creator";
 import { createMockGraphQLContext } from "test/_Mocks_/mockContextCreator/mockContextCreator";
 
 // Get the creator resolver from the schema
-const chatMessageType = schema.getType("ChatMessage") as GraphQLObjectType;
-const creatorField = chatMessageType.getFields().creator;
+const chatMessageType = schema.getType("ChatMessage");
+if (!chatMessageType || !("getFields" in chatMessageType)) {
+	throw new Error("ChatMessage type not found or is not an object type");
+}
+const creatorField = (chatMessageType as GraphQLObjectType).getFields().creator;
 if (!creatorField) {
 	throw new Error("creator field not found on ChatMessage type");
 }
