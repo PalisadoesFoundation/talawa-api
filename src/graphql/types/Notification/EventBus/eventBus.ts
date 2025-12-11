@@ -457,13 +457,16 @@ export class NotificationEventBus extends EventEmitter {
 					NotificationChannelType.EMAIL,
 				);
 
-			ctx.log.info({
-				inviteeEmail: data.inviteeEmail,
-				inviterId: data.inviterId,
-				eventId: data.eventId,
-			}, "Send event invite notification created");
-		} catch (error) {
-			ctx.log.error(error, "Failed to send event invite notification:");
+				ctx.log.info(
+					{
+						inviteeEmail: data.inviteeEmail,
+						inviterId: data.inviterId,
+						eventId: data.eventId,
+					},
+					"Send event invite notification created",
+				);
+			} catch (error) {
+				ctx.log.error(error, "Failed to send event invite notification:");
 			}
 		});
 	}

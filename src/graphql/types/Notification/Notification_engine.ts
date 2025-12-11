@@ -447,10 +447,13 @@ export class NotificationEngine {
 			.insert(emailNotificationsTable)
 			.values(emailNotifications);
 
-		this.ctx.log.info({
-			count: emailNotifications.length,
-			recipientEmails: emails,
-		}, "Direct email notification(s) created");
+		this.ctx.log.info(
+			{
+				count: emailNotifications.length,
+				recipientEmails: emails,
+			},
+			"Direct email notification(s) created",
+		);
 
 		return notificationLog.id;
 	}
