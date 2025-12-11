@@ -140,7 +140,7 @@ describe("Comment.creator field resolver - Unit tests", () => {
 
 			// Verify eq was called with correct parameters
 			expect(eqMock).toHaveBeenCalledWith("users.id", mockComment.creatorId);
-            expect(eqMock).toHaveBeenCalledTimes(1);
+			expect(eqMock).toHaveBeenCalledTimes(1);
 		});
 	});
 });
