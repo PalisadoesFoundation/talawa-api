@@ -735,12 +735,12 @@ describe("NotificationEventBus", () => {
 			await waitForSetImmediate();
 
 			expect(infoSpy).toHaveBeenCalledWith(
-				"Send event invite notification created",
 				{
 					inviteeEmail: "invitee@example.com",
 					inviterId: "user-789",
 					eventId: "event-123",
 				},
+				"Send event invite notification created",
 			);
 		});
 
@@ -759,19 +759,18 @@ describe("NotificationEventBus", () => {
 			await waitForSetImmediate();
 
 			expect(infoSpy).toHaveBeenCalledWith(
-				"Send event invite notification created",
 				{
 					inviteeEmail: "invitee@example.com",
 					inviterId: "user-789",
 					eventId: undefined,
 				},
+				"Send event invite notification created",
 			);
 		});
 
 		it("should log error when email notification creation fails", async () => {
 			const error = new Error("Email service unavailable");
 			createDirectEmailNotificationSpy.mockRejectedValueOnce(error);
-
 			const data = {
 				inviteeEmail: "invitee@example.com",
 				inviteeName: "Jane Smith",
@@ -787,15 +786,14 @@ describe("NotificationEventBus", () => {
 			await waitForSetImmediate();
 
 			expect(errorSpy).toHaveBeenCalledWith(
-				"Failed to send event invite notification:",
 				error,
+				"Failed to send event invite notification:",
 			);
 		});
 	});
 
 	describe("additional error handling coverage", () => {
 		it("should handle all event methods gracefully when notifications fail", async () => {
-			// Mock all notification calls to fail
 			const commonError = new Error("Notification service down");
 			createNotificationSpy.mockRejectedValue(commonError);
 
@@ -896,12 +894,12 @@ describe("NotificationEventBus", () => {
 
 			// Both should log errors appropriately
 			expect(errorSpy).toHaveBeenCalledWith(
-				"Failed to send membership request rejection notification:",
 				commonError,
+				"Failed to send membership request rejection notification:",
 			);
 			expect(errorSpy).toHaveBeenCalledWith(
-				"Failed to send event invite notification:",
 				commonError,
+				"Failed to send event invite notification:",
 			);
 
 			createDirectEmailNotificationSpy.mockRestore();
