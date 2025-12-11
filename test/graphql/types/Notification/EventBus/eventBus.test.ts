@@ -631,12 +631,11 @@ describe("NotificationEventBus", () => {
 			await waitForSetImmediate();
 
 			expect(errorSpy).toHaveBeenCalledWith(
-				"Failed to send membership request rejection notification:",
 				error,
+				"Failed to send membership request rejection notification:",
 			);
 		});
 	});
-
 	describe("emitSendEventInvite", () => {
 		let createDirectEmailNotificationSpy: MockInstance;
 
