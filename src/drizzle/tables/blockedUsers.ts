@@ -55,10 +55,4 @@ export const blockedUsersTableRelations = relations(
 	}),
 );
 
-export const blockedUsersTableInsertSchema = createInsertSchema(
-	blockedUsersTable,
-	{
-		organizationId: (schema) => schema.uuid(),
-		userId: (schema) => schema.uuid(),
-	},
-);
+export const blockedUsersTableInsertSchema = createInsertSchema(blockedUsersTable);
