@@ -37,17 +37,14 @@ export const emailNotificationsTable = pgTable(
 
 		/**
 		 * Foreign key reference to the user receiving the email.
+		 * Nullable to support sending emails to external (non-user) recipients.
 		 */
-		userId: uuid("user_id")
-			.notNull()
-			.references(() => usersTable.id, {
-				onDelete: "cascade",
-				onUpdate: "cascade",
-			}),
-
-		/**
+		userId: uuid("user_id").references(() => usersTable.id, {
+			onDelete: "cascade",
+			onUpdate: "cascade",
+		}) /**
 		 * Email address where the notification was sent.
-		 */
+		 */,
 		email: text("email").notNull(),
 
 		/**
