@@ -102,21 +102,18 @@ describe("AgendaFolder Resolver - Updater Field", () => {
 		// Mock implementation to capture and validate the where clause
 		let whereClauseValidated = false;
 		mocks.drizzleClient.query.eventsTable.findFirst.mockImplementation(
-			async ({
-				with: withClause,
-			}: {
-				with?: Record<string, unknown>;
-			}) => {
+			async (args: any = {}) => {
+				const withClause = args.with as any;
+
 				// Verify that membershipsWhereOrganization where clause exists
-				const membership =
-					(withClause?.organization as Record<string, unknown>)?.with
-						?.membershipsWhereOrganization as Record<string, unknown>;
+				const membership = withClause?.organization?.with
+					?.membershipsWhereOrganization as any;
 				expect(membership).toBeDefined();
 				expect(membership.where).toBeDefined();
 
 				// Mock the operators object that Drizzle provides
 				const mockOperators = {
-					eq: (field: unknown, value: unknown) => {
+					eq: (_field: unknown, value: unknown) => {
 						// Verify the where clause is filtering by memberId === currentUserId
 						expect(value).toBe("user-123");
 						whereClauseValidated = true;
@@ -126,7 +123,7 @@ describe("AgendaFolder Resolver - Updater Field", () => {
 
 				// Call the where clause with mock fields and operators
 				const mockFields = { memberId: "user-123" };
-				membership.where(mockFields, mockOperators);
+				(membership.where as any)(mockFields, mockOperators);
 
 				return {
 					startAt: new Date(),

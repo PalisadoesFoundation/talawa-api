@@ -124,4 +124,3 @@ AgendaFolder.implement({
 		}),
 	}),
 });
-
