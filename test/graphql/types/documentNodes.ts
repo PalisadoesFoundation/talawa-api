@@ -565,6 +565,19 @@ export const Mutation_createEvent =
     }
 }`);
 
+export const Mutation_sendEventInvitations =
+	gql(`mutation Mutation_sendEventInvitations($input: SendEventInvitationsInput!) {
+    sendEventInvitations(input: $input) {
+        id
+        inviteeEmail
+        inviteeName
+        invitationToken
+        status
+        expiresAt
+        createdAt
+    }
+}`);
+
 export const Query_tag = gql(`
     query tag($input:QueryTagInput!) {
   tag(input: $input) {
@@ -1463,6 +1476,41 @@ export const Mutation_deleteEntireRecurringEventSeries = gql(`
         mimeType
         url
       }
+    }
+  }
+`);
+
+export const Mutation_verifyEventInvitation = gql(`
+  mutation Mutation_verifyEventInvitation($input: VerifyEventInvitationInput!) {
+    verifyEventInvitation(input: $input) {
+      invitationToken
+      inviteeEmailMasked
+      inviteeName
+      status
+      expiresAt
+      eventId
+      recurringEventInstanceId
+      organizationId
+    }
+  }
+`);
+
+export const Mutation_acceptEventInvitation = gql(`
+  mutation Mutation_acceptEventInvitation($input: AcceptEventInvitationInput!) {
+    acceptEventInvitation(input: $input) {
+      id
+      eventId
+      recurringEventInstanceId
+      invitedBy
+      userId
+      inviteeEmail
+      inviteeName
+      invitationToken
+      status
+      expiresAt
+      respondedAt
+      createdAt
+      updatedAt
     }
   }
 `);
