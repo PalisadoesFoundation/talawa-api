@@ -292,7 +292,7 @@ suite("Mutation field createAgendaFolder", () => {
 							code: "unauthorized_action_on_arguments_associated_resources",
 							issues: expect.arrayContaining([
 								expect.objectContaining({
-									argumentPath: ["input", "id"],
+									argumentPath: ["input", "eventId"],
 								}),
 							]),
 						}),
@@ -345,7 +345,7 @@ suite("Mutation field createAgendaFolder", () => {
 							code: "unauthorized_action_on_arguments_associated_resources",
 							issues: expect.arrayContaining([
 								expect.objectContaining({
-									argumentPath: ["input", "id"],
+									argumentPath: ["input", "eventId"],
 								}),
 							]),
 						}),
@@ -354,6 +354,34 @@ suite("Mutation field createAgendaFolder", () => {
 					}),
 				]),
 			);
+		});
+
+		test("Allows super admin to create folder without organization membership", async () => {
+			const { token: adminAuthToken } = await getAdminAuth();
+
+			const { cleanup, eventId } = await createOrganizationAndEvent(
+				adminAuthToken,
+				await getAdminUserId(),
+			);
+
+			testCleanupFunctions.push(cleanup);
+
+			const result = await mercuriusClient.mutate(Mutation_createAgendaFolder, {
+				headers: {
+					authorization: `bearer ${adminAuthToken}`,
+				},
+				variables: {
+					input: {
+						name: "Super Admin Folder",
+						eventId,
+						isAgendaItemFolder: false,
+					},
+				},
+			});
+
+			assertToBeNonNullish(result.data?.createAgendaFolder);
+			expect(result.data.createAgendaFolder.name).toEqual("Super Admin Folder");
+			expect(result.errors).toBeUndefined();
 		});
 	});
 
@@ -408,7 +436,7 @@ suite("Mutation field createAgendaFolder", () => {
 							code: "arguments_associated_resources_not_found",
 							issues: expect.arrayContaining([
 								expect.objectContaining({
-									argumentPath: ["input", "id"],
+									argumentPath: ["input", "eventId"],
 								}),
 							]),
 						}),
