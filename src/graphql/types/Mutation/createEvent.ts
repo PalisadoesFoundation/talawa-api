@@ -12,7 +12,6 @@ import {
 	mutationCreateEventInputSchema,
 } from "~/src/graphql/inputs/MutationCreateEventInput";
 import { Event } from "~/src/graphql/types/Event/Event";
-import { notificationEventBus } from "~/src/graphql/types/Notification/EventBus/eventBus";
 import {
 	generateInstancesForRecurringEvent,
 	initializeGenerationWindow,
@@ -417,21 +416,30 @@ builder.mutationField("createEvent", (t) =>
 						isRegisterable: createdEvent.isRegisterable ?? false,
 					});
 
-					notificationEventBus.emitEventCreated(
-						{
+					try {
+						ctx.notification?.enqueueEventCreated({
 							eventId: finalEvent.id,
 							eventName: finalEvent.name,
 							organizationId: finalEvent.organizationId,
 							organizationName: existingOrganization.name,
 							startDate: finalEvent.startAt.toISOString(),
 							creatorName: currentUser.name,
-						},
-						ctx,
-					);
+						});
+					} catch (error) {
+						ctx.log.error({ error }, "Failed to enqueue event notification");
+					}
 
 					return finalEvent;
 				},
 			);
+			try {
+				await ctx.notification?.flush(ctx);
+			} catch (error) {
+				ctx.log.error(
+					{ error },
+					"Failed to flush notifications after event create",
+				);
+			}
 
 			return createdEventResult;
 		},
