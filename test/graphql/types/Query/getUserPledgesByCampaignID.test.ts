@@ -217,6 +217,10 @@ describe("Query Resolver - getMyPledgesForCampaign", () => {
 					issues: [{ argumentPath: ["campaignId"] }],
 				},
 			});
+
+			expect(
+				mocks.drizzleClient.query.fundCampaignPledgesTable.findMany,
+			).toHaveBeenCalledTimes(1);
 		});
 	});
 
