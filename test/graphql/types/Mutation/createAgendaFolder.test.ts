@@ -358,7 +358,7 @@ suite("Mutation field createAgendaFolder", () => {
 		test("Allows super admin to create folder WITHOUT organization membership", async () => {
 			const { token: adminAuthToken } = await getAdminAuth();
 
-			// Create org and event, but DON'T add admin as member
+			// Create a new Organization to isolate this test context
 			const createOrgResult = await mercuriusClient.mutate(
 				Mutation_createOrganization,
 				{
@@ -375,7 +375,8 @@ suite("Mutation field createAgendaFolder", () => {
 			assertToBeNonNullish(createOrgResult.data?.createOrganization);
 			const organizationId = createOrgResult.data.createOrganization.id;
 
-			// Create regular user as org admin to own the event
+			// Create a separate user to act as the Organization Administrator
+			// This user will own the event, ensuring the Super Admin has no direct ownership relation
 			const regularUser = await createRegularUserUsingAdmin();
 
 			await addOrganizationMembership({
@@ -385,7 +386,7 @@ suite("Mutation field createAgendaFolder", () => {
 				role: "administrator",
 			});
 
-			// Regular user creates event
+			// Create the target Event using the Organization Administrator's credentials
 			const createEventResult = await mercuriusClient.mutate(
 				Mutation_createEvent,
 				{
@@ -396,7 +397,7 @@ suite("Mutation field createAgendaFolder", () => {
 							organizationId,
 							startAt: new Date().toISOString(),
 							endAt: new Date(Date.now() + 60 * 60 * 1000).toISOString(),
-							description: "Test event",
+							description: "Test event for super admin bypass",
 						},
 					},
 				},
@@ -405,7 +406,21 @@ suite("Mutation field createAgendaFolder", () => {
 			assertToBeNonNullish(createEventResult.data?.createEvent);
 			const eventId = createEventResult.data.createEvent.id;
 
-			// Super admin creates folder WITHOUT being org member
+			// Register cleanup operations immediately to ensure database hygiene on failure
+			testCleanupFunctions.push(async () => {
+				await mercuriusClient.mutate(Mutation_deleteStandaloneEvent, {
+					headers: { authorization: `bearer ${adminAuthToken}` },
+					variables: { input: { id: eventId } },
+				});
+
+				await mercuriusClient.mutate(Mutation_deleteOrganization, {
+					headers: { authorization: `bearer ${adminAuthToken}` },
+					variables: { input: { id: organizationId } },
+				});
+			});
+
+			// Execute Mutation: Super Admin attempts to create a folder
+			// Note: The Admin is NOT a member of the organization, validating the global role bypass
 			const result = await mercuriusClient.mutate(Mutation_createAgendaFolder, {
 				headers: { authorization: `bearer ${adminAuthToken}` },
 				variables: {
@@ -417,22 +432,12 @@ suite("Mutation field createAgendaFolder", () => {
 				},
 			});
 
+			// Verify the folder was created successfully
 			assertToBeNonNullish(result.data?.createAgendaFolder);
 			expect(result.data.createAgendaFolder.name).toEqual(
 				"Super Admin Global Access Folder",
 			);
 			expect(result.errors).toBeUndefined();
-
-			// Cleanup
-			await mercuriusClient.mutate(Mutation_deleteStandaloneEvent, {
-				headers: { authorization: `bearer ${adminAuthToken}` },
-				variables: { input: { id: eventId } },
-			});
-
-			await mercuriusClient.mutate(Mutation_deleteOrganization, {
-				headers: { authorization: `bearer ${adminAuthToken}` },
-				variables: { input: { id: organizationId } },
-			});
 		});
 
 		test("Allows super admin to create folder as organization administrator", async () => {
