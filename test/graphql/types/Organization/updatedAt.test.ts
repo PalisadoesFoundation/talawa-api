@@ -8,19 +8,10 @@ import "~/src/graphql/types/Organization/updatedAt";
 import { createMockGraphQLContext } from "test/_Mocks_/mockContextCreator/mockContextCreator";
 
 // Get the updatedAt resolver from the schema
-const organizationType = schema.getType("Organization");
-if (!organizationType || !("getFields" in organizationType)) {
-	throw new Error("Organization type not found or is not an object type");
-}
-const updatedAtField = (organizationType as GraphQLObjectType).getFields()
-	.updatedAt;
-// Guard: ensure the resolver exists and is callable. This prevents confusing
-// runtime errors if schema wiring changes or the resolver is accidentally
-// removed/renamed. Other tests in the codebase use a direct assertion
-// (`as GraphQLObjectType`) rather than `instanceof`, so we keep that
-// pattern and add this runtime guard for clarity.
-if (typeof updatedAtField?.resolve !== "function") {
-	throw new Error("updatedAt field resolver is not a function");
+const organizationType = schema.getType("Organization") as GraphQLObjectType;
+const updatedAtField = organizationType.getFields().updatedAt;
+if (!updatedAtField) {
+	throw new Error("updatedAt field not found on Organization type");
 }
 const updatedAtResolver = updatedAtField.resolve as (
 	parent: Organization,
@@ -73,7 +64,6 @@ describe("Organization.updatedAt field resolver - Unit tests", () => {
 		});
 
 		it("should throw unauthenticated error when currentUser is undefined (user not found in database)", async () => {
-			const eqMock = vi.fn();
 			mocks.drizzleClient.query.usersTable.findFirst.mockImplementation(
 				(...funcArgs: unknown[]) => {
 					const args = funcArgs[0] as {
@@ -87,17 +77,17 @@ describe("Organization.updatedAt field resolver - Unit tests", () => {
 
 					// Execute the main where callback to ensure coverage
 					if (args?.where) {
-						const fields = { id: expect.anything() };
-						const operators = { eq: eqMock };
+						const fields = { id: "users.id" };
+						const operators = { eq: vi.fn() };
 						args.where(fields, operators);
 					}
 
 					// Execute nested where callback for organizationMembershipsWhereMember
 					if (args?.with?.organizationMembershipsWhereMember?.where) {
 						const fields = {
-							organizationId: expect.anything(),
+							organizationId: "organizationMemberships.organizationId",
 						};
-						const operators = { eq: eqMock };
+						const operators = { eq: vi.fn() };
 						args.with.organizationMembershipsWhereMember.where(
 							fields,
 							operators,
@@ -113,12 +103,6 @@ describe("Organization.updatedAt field resolver - Unit tests", () => {
 			).rejects.toMatchObject({
 				extensions: { code: "unauthenticated" },
 			});
-			expect(eqMock).toHaveBeenCalled();
-			// Verify the resolver passed the correct userId and organizationId
-			expect(eqMock.mock.calls.some(([, rhs]) => rhs === "user123")).toBe(true);
-			expect(
-				eqMock.mock.calls.some(([, rhs]) => rhs === mockOrganization.id),
-			).toBe(true);
 		});
 	});
 
@@ -192,8 +176,8 @@ describe("Organization.updatedAt field resolver - Unit tests", () => {
 
 	describe("Where clause coverage", () => {
 		it("should execute usersTable where clause with correct parameters", async () => {
-			const userEqMock = vi.fn();
-			const membershipEqMock = vi.fn();
+			const eqMock = vi.fn();
+
 			mocks.drizzleClient.query.usersTable.findFirst.mockImplementation(
 				(...funcArgs: unknown[]) => {
 					const args = funcArgs[0] as {
@@ -208,7 +192,7 @@ describe("Organization.updatedAt field resolver - Unit tests", () => {
 					// Execute the main where callback
 					if (args?.where) {
 						const fields = { id: "users.id" };
-						const operators = { eq: userEqMock };
+						const operators = { eq: eqMock };
 						args.where(fields, operators);
 					}
 
@@ -217,7 +201,7 @@ describe("Organization.updatedAt field resolver - Unit tests", () => {
 						const fields = {
 							organizationId: "organizationMemberships.organizationId",
 						};
-						const operators = { eq: membershipEqMock };
+						const operators = { eq: eqMock };
 						args.with.organizationMembershipsWhereMember.where(
 							fields,
 							operators,
@@ -234,17 +218,13 @@ describe("Organization.updatedAt field resolver - Unit tests", () => {
 
 			await updatedAtResolver(mockOrganization, {}, ctx);
 
-			// Make explicit that the query was invoked
-			expect(mocks.drizzleClient.query.usersTable.findFirst).toHaveBeenCalled();
-
-			expect(userEqMock.mock.calls.some(([, rhs]) => rhs === "user123")).toBe(
-				true,
+			// Verify eq was called for user id lookup
+			expect(eqMock).toHaveBeenCalledWith("users.id", "user123");
+			// Verify eq was called for organization membership lookup
+			expect(eqMock).toHaveBeenCalledWith(
+				"organizationMemberships.organizationId",
+				mockOrganization.id,
 			);
-			expect(
-				membershipEqMock.mock.calls.some(
-					([, rhs]) => rhs === mockOrganization.id,
-				),
-			).toBe(true);
 		});
 	});
 });
