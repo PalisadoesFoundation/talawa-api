@@ -5,10 +5,14 @@ import { schema } from "~/src/graphql/schema";
 import type { Organization } from "~/src/graphql/types/Organization/Organization";
 // Import the actual implementation to ensure it's loaded for coverage
 import "~/src/graphql/types/Organization/updatedAt";
+import { GraphQLObjectType as GraphQLObjectTypeValue } from "graphql";
 import { createMockGraphQLContext } from "test/_Mocks_/mockContextCreator/mockContextCreator";
-
+const organizationNamedType = schema.getType("Organization");
+if (!(organizationNamedType instanceof GraphQLObjectTypeValue)) {
+	throw new Error("Organization type is not a GraphQLObjectType in schema");
+}
+const organizationType = organizationNamedType as GraphQLObjectType;
 // Get the updatedAt resolver from the schema
-const organizationType = schema.getType("Organization") as GraphQLObjectType;
 const updatedAtField = organizationType.getFields().updatedAt;
 if (!updatedAtField) {
 	throw new Error("updatedAt field not found on Organization type");
@@ -64,6 +68,7 @@ describe("Organization.updatedAt field resolver - Unit tests", () => {
 		});
 
 		it("should throw unauthenticated error when currentUser is undefined (user not found in database)", async () => {
+			const eqMock = vi.fn();
 			mocks.drizzleClient.query.usersTable.findFirst.mockImplementation(
 				(...funcArgs: unknown[]) => {
 					const args = funcArgs[0] as {
@@ -78,7 +83,7 @@ describe("Organization.updatedAt field resolver - Unit tests", () => {
 					// Execute the main where callback to ensure coverage
 					if (args?.where) {
 						const fields = { id: "users.id" };
-						const operators = { eq: vi.fn() };
+						const operators = { eq: eqMock };
 						args.where(fields, operators);
 					}
 
@@ -87,7 +92,7 @@ describe("Organization.updatedAt field resolver - Unit tests", () => {
 						const fields = {
 							organizationId: "organizationMemberships.organizationId",
 						};
-						const operators = { eq: vi.fn() };
+						const operators = { eq: eqMock };
 						args.with.organizationMembershipsWhereMember.where(
 							fields,
 							operators,
@@ -103,6 +108,7 @@ describe("Organization.updatedAt field resolver - Unit tests", () => {
 			).rejects.toMatchObject({
 				extensions: { code: "unauthenticated" },
 			});
+			expect(eqMock).toHaveBeenCalled();
 		});
 	});
 
@@ -218,11 +224,11 @@ describe("Organization.updatedAt field resolver - Unit tests", () => {
 
 			await updatedAtResolver(mockOrganization, {}, ctx);
 
-			// Verify eq was called for user id lookup
-			expect(eqMock).toHaveBeenCalledWith("users.id", "user123");
+			// Verify eq was called for user id lookup (don’t couple to mocked field objects)
+			expect(eqMock).toHaveBeenCalledWith(expect.anything(), "user123");
 			// Verify eq was called for organization membership lookup
 			expect(eqMock).toHaveBeenCalledWith(
-				"organizationMemberships.organizationId",
+				expect.anything(),
 				mockOrganization.id,
 			);
 		});
