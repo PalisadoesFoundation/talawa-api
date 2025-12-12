@@ -1,5 +1,6 @@
 import { faker } from "@faker-js/faker";
 import { beforeAll, expect, suite, test } from "vitest";
+import { COMMENT_BODY_MAX_LENGTH } from "~/src/drizzle/tables/comments";
 import type { InvalidArgumentsExtensions } from "~/src/utilities/TalawaGraphQLError";
 import { assertToBeNonNullish } from "../../../helpers";
 import { server } from "../../../server";
@@ -104,14 +105,25 @@ suite("Mutation field createComment", () => {
 		const createdComment = commentResult.data?.createComment;
 		assertToBeNonNullish(createdComment);
 
-		expect(createdComment.body).toBe(
-			"&lt;script&gt;alert(&#39;xss&#39;)&lt;/script&gt;",
-		);
+		// The API returns the body via the resolver, which calls escapeHTML.
+		// Verify the content is properly escaped using flexible assertions.
+		const body = createdComment.body;
+
+		// Check that angle brackets are escaped
+		expect(body).toContain("&lt;script&gt;");
+		expect(body).toContain("&lt;/script&gt;");
+
+		// Check that raw HTML is not present
+		expect(body).not.toContain("<script>");
+		expect(body).not.toContain("</script>");
+
+		// Check that quotes are escaped (accepts both &#39; and &apos;)
+		expect(body).toMatch(/&#39;|&apos;/);
 	});
 
 	test("should return error if comment body exceeds length limit", async () => {
-		// Create comment with long body
-		const longBody = "a".repeat(2049);
+		// Create comment with body exceeding max length
+		const longBody = "a".repeat(COMMENT_BODY_MAX_LENGTH + 1);
 		const commentResult = await mercuriusClient.mutate(Mutation_createComment, {
 			variables: {
 				input: {
@@ -142,7 +154,7 @@ suite("Mutation field createComment", () => {
 
 		const issueMessages = issues?.map((i) => i.message).join(" ");
 		expect(issueMessages).toContain(
-			"String must contain at most 2048 character(s)",
+			`String must contain at most ${COMMENT_BODY_MAX_LENGTH} character(s)`,
 		);
 	});
 });

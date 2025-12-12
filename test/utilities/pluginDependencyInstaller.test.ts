@@ -575,4 +575,377 @@ describe("Plugin Dependency Installer", () => {
 			);
 		});
 	});
+
+	describe("Buffer truncation", () => {
+		it("should truncate stdout when exceeding MAX_BUFFER", async () => {
+			vi.mocked(fs.access).mockResolvedValue(undefined);
+
+			// Create a child that emits data in chunks exceeding the buffer
+			const child = new EventEmitter() as EventEmitter & {
+				stdout: EventEmitter;
+				stderr: EventEmitter;
+				pid: number;
+				kill: ReturnType<typeof vi.fn>;
+				exitCode: number | null;
+			};
+			child.stdout = new EventEmitter();
+			child.stderr = new EventEmitter();
+			child.pid = 12345;
+			child.kill = vi.fn();
+			child.exitCode = null;
+
+			mockSpawn.mockImplementation(() => {
+				setImmediate(() => {
+					// Emit multiple chunks to exceed 1MB buffer
+					const largeChunk = "x".repeat(600000);
+					child.stdout.emit("data", Buffer.from(largeChunk));
+					child.stdout.emit("data", Buffer.from(largeChunk)); // Should be truncated
+					child.exitCode = 0;
+					child.emit("close", 0);
+				});
+				return child;
+			});
+
+			const result = await installPluginDependencies("test-plugin", mockLogger);
+
+			expect(result.success).toBe(true);
+			// Output should be truncated and show truncation message
+			expect(result.output).toContain("[output truncated]");
+		});
+
+		it("should truncate stderr when exceeding MAX_BUFFER", async () => {
+			vi.mocked(fs.access).mockResolvedValue(undefined);
+
+			const child = new EventEmitter() as EventEmitter & {
+				stdout: EventEmitter;
+				stderr: EventEmitter;
+				pid: number;
+				kill: ReturnType<typeof vi.fn>;
+				exitCode: number | null;
+			};
+			child.stdout = new EventEmitter();
+			child.stderr = new EventEmitter();
+			child.pid = 12345;
+			child.kill = vi.fn();
+			child.exitCode = null;
+
+			mockSpawn.mockImplementation(() => {
+				setImmediate(() => {
+					// Emit warning in stderr with chunks exceeding buffer
+					const largeChunk = "warning: ".repeat(150000);
+					child.stderr.emit("data", Buffer.from(largeChunk));
+					child.stderr.emit("data", Buffer.from(largeChunk)); // Should be truncated
+					child.stdout.emit("data", Buffer.from("done"));
+					child.exitCode = 0;
+					child.emit("close", 0);
+				});
+				return child;
+			});
+
+			const result = await installPluginDependencies("test-plugin", mockLogger);
+
+			expect(result.success).toBe(true);
+			expect(mockLogger.error).toHaveBeenCalled(); // stderr with warning was logged
+		});
+	});
+
+	describe("Process handling", () => {
+		it("should handle child process without pid", async () => {
+			vi.mocked(fs.access).mockResolvedValue(undefined);
+
+			const child = new EventEmitter() as EventEmitter & {
+				stdout: EventEmitter;
+				stderr: EventEmitter;
+				pid: undefined;
+				kill: ReturnType<typeof vi.fn>;
+				exitCode: number | null;
+				unref?: ReturnType<typeof vi.fn>;
+			};
+			child.stdout = new EventEmitter();
+			child.stderr = new EventEmitter();
+			child.pid = undefined;
+			child.kill = vi.fn();
+			child.exitCode = null;
+			child.unref = vi.fn();
+
+			mockSpawn.mockImplementation(() => {
+				setImmediate(() => {
+					child.stdout.emit("data", Buffer.from("done"));
+					child.exitCode = 0;
+					child.emit("close", 0);
+				});
+				return child;
+			});
+
+			const result = await installPluginDependencies("test-plugin", mockLogger);
+
+			expect(result.success).toBe(true);
+		});
+
+		it("should call unref on detached processes on Unix", async () => {
+			// Temporarily mock platform to be Unix
+			const originalPlatform = process.platform;
+			Object.defineProperty(process, "platform", {
+				value: "linux",
+				writable: true,
+			});
+
+			vi.mocked(fs.access).mockResolvedValue(undefined);
+
+			const child = new EventEmitter() as EventEmitter & {
+				stdout: EventEmitter;
+				stderr: EventEmitter;
+				pid: number;
+				kill: ReturnType<typeof vi.fn>;
+				exitCode: number | null;
+				unref: ReturnType<typeof vi.fn>;
+			};
+			child.stdout = new EventEmitter();
+			child.stderr = new EventEmitter();
+			child.pid = 12345;
+			child.kill = vi.fn();
+			child.exitCode = null;
+			child.unref = vi.fn();
+
+			mockSpawn.mockImplementation(() => {
+				setImmediate(() => {
+					child.stdout.emit("data", Buffer.from("done"));
+					child.exitCode = 0;
+					child.emit("close", 0);
+				});
+				return child;
+			});
+
+			const result = await installPluginDependencies("test-plugin", mockLogger);
+
+			expect(result.success).toBe(true);
+			expect(child.unref).toHaveBeenCalled();
+
+			// Restore platform
+			Object.defineProperty(process, "platform", {
+				value: originalPlatform,
+				writable: true,
+			});
+		});
+
+		it("should not call unref on Windows", async () => {
+			// Temporarily mock platform to be Windows
+			const originalPlatform = process.platform;
+			Object.defineProperty(process, "platform", {
+				value: "win32",
+				writable: true,
+			});
+
+			vi.mocked(fs.access).mockResolvedValue(undefined);
+
+			const child = new EventEmitter() as EventEmitter & {
+				stdout: EventEmitter;
+				stderr: EventEmitter;
+				pid: number;
+				kill: ReturnType<typeof vi.fn>;
+				exitCode: number | null;
+				unref: ReturnType<typeof vi.fn>;
+			};
+			child.stdout = new EventEmitter();
+			child.stderr = new EventEmitter();
+			child.pid = 12345;
+			child.kill = vi.fn();
+			child.exitCode = null;
+			child.unref = vi.fn();
+
+			mockSpawn.mockImplementation(() => {
+				setImmediate(() => {
+					child.stdout.emit("data", Buffer.from("done"));
+					child.exitCode = 0;
+					child.emit("close", 0);
+				});
+				return child;
+			});
+
+			const result = await installPluginDependencies("test-plugin", mockLogger);
+
+			expect(result.success).toBe(true);
+			// unref should not be called on Windows (isUnix is false)
+			expect(child.unref).not.toHaveBeenCalled();
+
+			// Restore platform
+			Object.defineProperty(process, "platform", {
+				value: originalPlatform,
+				writable: true,
+			});
+		});
+	});
+
+	describe("Error handling edge cases", () => {
+		it("should handle non-Error exception types", async () => {
+			vi.mocked(fs.access).mockResolvedValue(undefined);
+
+			const child = new EventEmitter() as EventEmitter & {
+				stdout: EventEmitter;
+				stderr: EventEmitter;
+				pid: number;
+				kill: ReturnType<typeof vi.fn>;
+				exitCode: number | null;
+			};
+			child.stdout = new EventEmitter();
+			child.stderr = new EventEmitter();
+			child.pid = 12345;
+			child.kill = vi.fn();
+			child.exitCode = null;
+
+			mockSpawn.mockImplementation(() => {
+				setImmediate(() => {
+					// Emit a non-Error object as error
+					child.emit("error", "string error");
+				});
+				return child;
+			});
+
+			const result = await installPluginDependencies("test-plugin", mockLogger);
+
+			expect(result.success).toBe(false);
+			// Non-Error types should result in "Unknown error"
+			expect(result.error).toBe("Unknown error");
+		});
+
+		it("should handle close event after settle", async () => {
+			vi.mocked(fs.access).mockResolvedValue(undefined);
+
+			const child = new EventEmitter() as EventEmitter & {
+				stdout: EventEmitter;
+				stderr: EventEmitter;
+				pid: number;
+				kill: ReturnType<typeof vi.fn>;
+				exitCode: number | null;
+			};
+			child.stdout = new EventEmitter();
+			child.stderr = new EventEmitter();
+			child.pid = 12345;
+			child.kill = vi.fn();
+			child.exitCode = null;
+
+			mockSpawn.mockImplementation(() => {
+				setImmediate(() => {
+					// First emit error (settles the promise)
+					child.emit("error", new Error("First error"));
+					// Then emit close (should be ignored because already settled)
+					child.exitCode = 0;
+					child.emit("close", 0);
+				});
+				return child;
+			});
+
+			const result = await installPluginDependencies("test-plugin", mockLogger);
+
+			expect(result.success).toBe(false);
+			expect(result.error).toBe("First error");
+		});
+
+		it("should handle error event after settle", async () => {
+			vi.mocked(fs.access).mockResolvedValue(undefined);
+
+			const child = new EventEmitter() as EventEmitter & {
+				stdout: EventEmitter;
+				stderr: EventEmitter;
+				pid: number;
+				kill: ReturnType<typeof vi.fn>;
+				exitCode: number | null;
+			};
+			child.stdout = new EventEmitter();
+			child.stderr = new EventEmitter();
+			child.pid = 12345;
+			child.kill = vi.fn();
+			child.exitCode = null;
+
+			mockSpawn.mockImplementation(() => {
+				setImmediate(() => {
+					// First emit close (settles the promise)
+					child.exitCode = 0;
+					child.emit("close", 0);
+					// Then emit error (should be ignored because already settled)
+					child.emit("error", new Error("Late error"));
+				});
+				return child;
+			});
+
+			const result = await installPluginDependencies("test-plugin", mockLogger);
+
+			expect(result.success).toBe(true);
+		});
+	});
+
+	describe("Plugin ID validation", () => {
+		it("should reject plugin ID with path traversal attempts", async () => {
+			const result = await installPluginDependencies(
+				"../malicious",
+				mockLogger,
+			);
+
+			expect(result.success).toBe(false);
+			expect(result.error).toBe("Invalid plugin ID");
+		});
+
+		it("should reject plugin ID with shell metacharacters", async () => {
+			const result = await installPluginDependencies(
+				"plugin;rm -rf /",
+				mockLogger,
+			);
+
+			expect(result.success).toBe(false);
+			expect(result.error).toBe("Invalid plugin ID");
+		});
+
+		it("should reject plugin ID starting with number", async () => {
+			const result = await installPluginDependencies("123plugin", mockLogger);
+
+			expect(result.success).toBe(false);
+			expect(result.error).toBe("Invalid plugin ID");
+		});
+	});
+
+	describe("installPluginDependenciesWithErrorHandling edge cases", () => {
+		it("should include 'Unknown error' when result.error is undefined", async () => {
+			// This tests line 264 where result.error might be falsy
+			vi.mocked(fs.access).mockResolvedValue(undefined);
+
+			// Mock to return success: false without an error message
+			const child = new EventEmitter() as EventEmitter & {
+				stdout: EventEmitter;
+				stderr: EventEmitter;
+				pid: number;
+				kill: ReturnType<typeof vi.fn>;
+				exitCode: number | null;
+			};
+			child.stdout = new EventEmitter();
+			child.stderr = new EventEmitter();
+			child.pid = 12345;
+			child.kill = vi.fn();
+			child.exitCode = null;
+
+			mockSpawn.mockImplementation(() => {
+				setImmediate(() => {
+					// Emit a non-Error object to trigger "Unknown error"
+					child.emit("error", null);
+				});
+				return child;
+			});
+
+			try {
+				await installPluginDependenciesWithErrorHandling(
+					"test-plugin",
+					mockLogger,
+				);
+				expect.fail("Should have thrown");
+			} catch (error) {
+				expect(error).toBeInstanceOf(TalawaGraphQLError);
+				const graphqlError = error as TalawaGraphQLError;
+				const extensions = graphqlError.extensions as {
+					issues?: Array<{
+						message?: string;
+					}>;
+				};
+				expect(extensions?.issues?.[0]?.message).toContain("Unknown error");
+			}
+		});
+	});
 });

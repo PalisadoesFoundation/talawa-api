@@ -1,5 +1,5 @@
 import { faker } from "@faker-js/faker";
-import { beforeAll, expect, suite, test } from "vitest";
+import { afterAll, beforeAll, expect, suite, test } from "vitest";
 import type { InvalidArgumentsExtensions } from "~/src/utilities/TalawaGraphQLError";
 import { assertToBeNonNullish } from "../../../helpers";
 import { server } from "../../../server";
@@ -8,12 +8,15 @@ import {
 	Mutation_createComment,
 	Mutation_createOrganization,
 	Mutation_createPost,
+	Mutation_deleteOrganization,
 	Mutation_updateComment,
 	Query_signIn,
 } from "../documentNodes";
 
 suite("Mutation field updateComment", () => {
 	let adminToken: string;
+	let orgId: string;
+	let postId: string;
 	let commentId: string;
 
 	beforeAll(async () => {
@@ -26,6 +29,9 @@ suite("Mutation field updateComment", () => {
 				},
 			},
 		});
+		if (signInResult.errors) {
+			throw new Error(`signIn failed: ${JSON.stringify(signInResult.errors)}`);
+		}
 		const token = signInResult.data?.signIn?.authenticationToken ?? null;
 		assertToBeNonNullish(token);
 		adminToken = token;
@@ -53,8 +59,9 @@ suite("Mutation field updateComment", () => {
 				`createOrganization failed: ${JSON.stringify(createOrgResult.errors)}`,
 			);
 		}
-		const orgId = createOrgResult.data?.createOrganization?.id;
-		assertToBeNonNullish(orgId);
+		const createdOrgId = createOrgResult.data?.createOrganization?.id;
+		assertToBeNonNullish(createdOrgId);
+		orgId = createdOrgId;
 
 		// Create a shared post for tests
 		const postResult = await mercuriusClient.mutate(Mutation_createPost, {
@@ -73,8 +80,9 @@ suite("Mutation field updateComment", () => {
 				`createPost failed: ${JSON.stringify(postResult.errors)}`,
 			);
 		}
-		const postId = postResult.data?.createPost?.id;
-		assertToBeNonNullish(postId);
+		const createdPostId = postResult.data?.createPost?.id;
+		assertToBeNonNullish(createdPostId);
+		postId = createdPostId;
 
 		// Create a shared comment for tests
 		const commentResult = await mercuriusClient.mutate(Mutation_createComment, {
@@ -96,6 +104,27 @@ suite("Mutation field updateComment", () => {
 		const createdCommentId = commentResult.data?.createComment?.id;
 		assertToBeNonNullish(createdCommentId);
 		commentId = createdCommentId;
+	});
+
+	// Cleanup created resources in reverse order
+	afterAll(async () => {
+		// Deleting the organization cascades to delete posts and comments
+		if (orgId && adminToken) {
+			const deleteOrgResult = await mercuriusClient.mutate(
+				Mutation_deleteOrganization,
+				{
+					headers: { Authorization: `Bearer ${adminToken}` },
+					variables: {
+						input: { id: orgId },
+					},
+				},
+			);
+			if (deleteOrgResult.errors) {
+				throw new Error(
+					`deleteOrganization cleanup failed: ${JSON.stringify(deleteOrgResult.errors)}`,
+				);
+			}
+		}
 	});
 
 	test("should update comment and return escaped body", async () => {

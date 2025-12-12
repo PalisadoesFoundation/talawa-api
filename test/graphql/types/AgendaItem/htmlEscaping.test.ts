@@ -54,16 +54,15 @@ describe("AgendaItem output-level HTML escaping", () => {
 			.from(agendaItemsTable)
 			.limit(1);
 
-		if (existingItems.length === 0) {
-			// Skip test if no agenda items exist - this is an integration test
-			// that requires existing data
-			console.log("Skipping test: No existing agenda items found in database");
-			return;
-		}
+		// Fail explicitly if no agenda items exist - ensures CI alerts when preconditions aren't met
+		expect(
+			existingItems.length,
+			"Test requires at least one existing agenda item in the database. Ensure seed data is present.",
+		).toBeGreaterThan(0);
 
 		const testItem = existingItems[0];
 		if (!testItem) {
-			return;
+			throw new Error("Test requires at least one existing agenda item");
 		}
 
 		// Store the original values for cleanup
@@ -132,14 +131,15 @@ describe("AgendaItem output-level HTML escaping", () => {
 			.from(agendaItemsTable)
 			.limit(1);
 
-		if (existingItems.length === 0) {
-			console.log("Skipping test: No existing agenda items found in database");
-			return;
-		}
+		// Fail explicitly if no agenda items exist - ensures CI alerts when preconditions aren't met
+		expect(
+			existingItems.length,
+			"Test requires at least one existing agenda item in the database. Ensure seed data is present.",
+		).toBeGreaterThan(0);
 
 		const testItem = existingItems[0];
 		if (!testItem) {
-			return;
+			throw new Error("Test requires at least one existing agenda item");
 		}
 
 		const originalName = testItem.name;

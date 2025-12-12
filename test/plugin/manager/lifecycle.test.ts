@@ -1087,6 +1087,43 @@ describe("PluginLifecycle", () => {
 			consoleSpy.mockRestore();
 			getPluginModuleSpy.mockRestore();
 		});
+		it("should reject invalid plugin ID during installation", async () => {
+			const { isValidPluginId } = await import("../../../src/plugin/utils");
+			(isValidPluginId as ReturnType<typeof vi.fn>).mockReturnValueOnce(false);
+
+			const consoleSpy = vi
+				.spyOn(console, "error")
+				.mockImplementation(() => {});
+
+			const result = await lifecycle.installPlugin(
+				"../malicious-plugin",
+				mockPluginManager as unknown as Parameters<
+					typeof lifecycle.installPlugin
+				>[1],
+			);
+
+			expect(result).toBe(false);
+			consoleSpy.mockRestore();
+		});
+
+		it("should reject invalid plugin ID during uninstallation", async () => {
+			const { isValidPluginId } = await import("../../../src/plugin/utils");
+			(isValidPluginId as ReturnType<typeof vi.fn>).mockReturnValueOnce(false);
+
+			const consoleSpy = vi
+				.spyOn(console, "error")
+				.mockImplementation(() => {});
+
+			const result = await lifecycle.uninstallPlugin(
+				"../malicious-plugin",
+				mockPluginManager as unknown as Parameters<
+					typeof lifecycle.uninstallPlugin
+				>[1],
+			);
+
+			expect(result).toBe(false);
+			consoleSpy.mockRestore();
+		});
 	});
 
 	describe("manageDocker", () => {
