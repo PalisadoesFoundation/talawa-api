@@ -38,11 +38,11 @@ describe("Advertisement Updater Resolver Tests", () => {
 			ctx.currentClient.isAuthenticated = false;
 			await expect(
 				advertisementUpdaterResolver(mockAdvertisement, {}, ctx),
-			).rejects.toThrowError(
-				new TalawaGraphQLError({ extensions: { code: "unauthenticated" } }),
-			);
+			).rejects.toMatchObject({
+				extensions: { code: "unauthenticated" },
+			});
 			expect(
-				ctx.drizzleClient.query.usersTable.findFirst,
+				mocks.drizzleClient.query.usersTable.findFirst,
 			).not.toHaveBeenCalled();
 		});
 
@@ -53,9 +53,9 @@ describe("Advertisement Updater Resolver Tests", () => {
 
 			await expect(
 				advertisementUpdaterResolver(mockAdvertisement, {}, ctx),
-			).rejects.toThrowError(
-				new TalawaGraphQLError({ extensions: { code: "unauthenticated" } }),
-			);
+			).rejects.toMatchObject({
+				extensions: { code: "unauthenticated" },
+			});
 			expect(mocks.drizzleClient.query.usersTable.findFirst).toHaveBeenCalled();
 		});
 
@@ -72,9 +72,9 @@ describe("Advertisement Updater Resolver Tests", () => {
 
 			await expect(
 				advertisementUpdaterResolver(mockAdvertisement, {}, ctx),
-			).rejects.toThrowError(
-				new TalawaGraphQLError({ extensions: { code: "unauthorized_action" } }),
-			);
+			).rejects.toMatchObject({
+				extensions: { code: "unauthorized_action" },
+			});
 		});
 
 		it("should throw unauthorized_action for non-admin user with regular membership", async () => {
@@ -92,9 +92,9 @@ describe("Advertisement Updater Resolver Tests", () => {
 
 			await expect(
 				advertisementUpdaterResolver(mockAdvertisement, {}, ctx),
-			).rejects.toThrowError(
-				new TalawaGraphQLError({ extensions: { code: "unauthorized_action" } }),
-			);
+			).rejects.toMatchObject({
+				extensions: { code: "unauthorized_action" },
+			});
 		});
 	});
 
@@ -196,11 +196,9 @@ describe("Advertisement Updater Resolver Tests", () => {
 
 			await expect(
 				advertisementUpdaterResolver(mockAdvertisement, {}, ctx),
-			).rejects.toThrowError(
-				new TalawaGraphQLError({
-					extensions: { code: "unexpected" },
-				}),
-			);
+			).rejects.toMatchObject({
+				extensions: { code: "unexpected" },
+			});
 
 			expect(ctx.log.error).toHaveBeenCalledWith(
 				expect.stringContaining(
@@ -218,11 +216,9 @@ describe("Advertisement Updater Resolver Tests", () => {
 
 			await expect(
 				advertisementUpdaterResolver(mockAdvertisement, {}, ctx),
-			).rejects.toThrow(
-				new TalawaGraphQLError({
-					extensions: { code: "unauthorized_action" },
-				}),
-			);
+			).rejects.toMatchObject({
+				extensions: { code: "unauthorized_action" },
+			});
 		});
 
 		it("should throw unexpected error if database query returns null values", async () => {
@@ -263,12 +259,10 @@ describe("Advertisement Updater Resolver Tests", () => {
 
 		await advertisementUpdaterResolver(mockAdvertisement, {}, ctx);
 
-        //call[0] -> auth check 
 		const calls = (
 			mocks.drizzleClient.query.usersTable.findFirst as ReturnType<typeof vi.fn>
 		).mock.calls;
 
-	
 		const whereFn = calls[0]?.[0]?.where;
 		expect(whereFn).toBeDefined();
 

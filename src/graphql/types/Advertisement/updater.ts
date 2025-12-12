@@ -19,7 +19,10 @@ export const advertisementUpdaterResolver = async (
 			});
 		}
 
-		const currentUserId = ctx.currentClient.user.id;
+		const currentUserId = ctx.currentClient.user?.id;
+		if (!currentUserId){
+			throw new TalawaGraphQLError({ extensions: { code: "unauthenticated" } });
+		}
 
 		const currentUser = await ctx.drizzleClient.query.usersTable.findFirst({
 			with: {
