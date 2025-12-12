@@ -2409,3 +2409,12 @@ export const Query_getRecurringEvents = gql(`
     }
   }
 `);
+
+export const Mutation_updateComment = gql(`
+mutation Mutation_updateComment($input: MutationUpdateCommentInput!) {
+updateComment(input: $input) {
+id
+body
+}
+}
+`);

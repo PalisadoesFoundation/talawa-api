@@ -5,8 +5,16 @@ import { sanitizedStringSchema } from "~/src/utilities/sanitizer";
 
 export const mutationUpdateCommentInputSchema = z
 	.object({
+		/**
+		 * Body of the comment.
+		 * We persist the raw (trimmed) text and perform HTML escaping at output time
+		 * to avoid double-escaping and exceeding DB length limits with escaped entities.
+		 */
 		body: commentsTableInsertSchema.shape.body
 			.transform((val) => sanitizedStringSchema.parse(val))
+			.refine((val) => val.length <= 2000, {
+				message: "Comment body must not exceed 2000 characters.",
+			})
 			.optional(),
 		id: commentsTableInsertSchema.shape.id.unwrap(),
 	})

@@ -6,9 +6,21 @@ import {
 	fileMetadataSchema,
 } from "./MutationCreatePostInput";
 
+import { sanitizedStringSchema } from "~/src/utilities/sanitizer";
+
 export const mutationUpdatePostInputSchema = z
 	.object({
-		caption: postsTableInsertSchema.shape.caption.optional(),
+		/**
+		 * Caption of the post.
+		 * We persist the raw (trimmed) text and perform HTML escaping at output time
+		 * to avoid double-escaping and exceeding DB length limits with escaped entities.
+		 */
+		caption: postsTableInsertSchema.shape.caption
+			.transform((val) => sanitizedStringSchema.parse(val))
+			.refine((val) => val.length <= 2000, {
+				message: "Post caption must not exceed 2000 characters.",
+			})
+			.optional(),
 		id: z.string().uuid(),
 		isPinned: z.boolean().optional(),
 		attachments: z.array(fileMetadataSchema).min(1).max(20).optional(),

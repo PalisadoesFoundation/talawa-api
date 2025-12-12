@@ -9,6 +9,7 @@ export const mutationUpdateTagFolderInputSchema = tagFoldersTableInsertSchema
 	})
 	.extend({
 		id: tagFoldersTableInsertSchema.shape.id.unwrap(),
+		// Use sanitizedStringSchema to store raw name, escaping is done at output time.
 		name: sanitizedStringSchema.min(1).max(256).optional(),
 	})
 	.refine(

@@ -1,5 +1,6 @@
 import { faker } from "@faker-js/faker";
 import { expect, suite, test, vi } from "vitest";
+import type { InvalidArgumentsExtensions } from "~/src/utilities/TalawaGraphQLError";
 import { assertToBeNonNullish } from "../../../helpers";
 import { server } from "../../../server";
 import { mercuriusClient } from "../client";
@@ -679,4 +680,87 @@ suite("Mutation field createPost", () => {
 			});
 		},
 	);
+
+	suite("security checks", () => {
+		test("should escape HTML in caption", async () => {
+			const createOrgResult = await mercuriusClient.mutate(
+				Mutation_createOrganization,
+				{
+					headers: { authorization: `bearer ${authToken}` },
+					variables: {
+						input: {
+							name: faker.company.name(),
+							description: faker.lorem.sentence(),
+							countryCode: "jm",
+							state: "St. Andrew",
+							city: "Kingston",
+							postalCode: "12345",
+							addressLine1: faker.location.streetAddress(),
+						},
+					},
+				},
+			);
+			const orgId = createOrgResult.data?.createOrganization?.id;
+			assertToBeNonNullish(orgId);
+
+			const htmlCaption = "<script>alert('xss')</script>";
+			const result = await mercuriusClient.mutate(Mutation_createPost, {
+				headers: { authorization: `bearer ${authToken}` },
+				variables: {
+					input: {
+						caption: htmlCaption,
+						organizationId: orgId,
+					},
+				},
+			});
+
+			expect(result.errors).toBeUndefined();
+			expect(result.data?.createPost?.caption).toBe(
+				"&lt;script&gt;alert(&#39;xss&#39;)&lt;/script&gt;",
+			);
+		});
+
+		test("should reject caption exceeding length limit", async () => {
+			const createOrgResult = await mercuriusClient.mutate(
+				Mutation_createOrganization,
+				{
+					headers: { authorization: `bearer ${authToken}` },
+					variables: {
+						input: {
+							name: faker.company.name(),
+							description: faker.lorem.sentence(),
+							countryCode: "jm",
+							state: "St. Andrew",
+							city: "Kingston",
+							postalCode: "12345",
+							addressLine1: faker.location.streetAddress(),
+						},
+					},
+				},
+			);
+			const orgId = createOrgResult.data?.createOrganization?.id;
+			assertToBeNonNullish(orgId);
+
+			const longCaption = "a".repeat(2001);
+			const result = await mercuriusClient.mutate(Mutation_createPost, {
+				headers: { authorization: `bearer ${authToken}` },
+				variables: {
+					input: {
+						caption: longCaption,
+						organizationId: orgId,
+					},
+				},
+			});
+
+			expect(result.data?.createPost).toBeNull();
+			expect(result.errors).toBeDefined();
+			const issues = (
+				result.errors?.[0]?.extensions as unknown as InvalidArgumentsExtensions
+			)?.issues;
+			const issueMessages = issues?.map((i) => i.message).join(" ");
+			expect(issueMessages).toContain(
+				"Post caption must not exceed 2000 characters",
+			);
+		});
+	});
 });
