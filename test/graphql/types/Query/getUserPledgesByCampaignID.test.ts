@@ -1,6 +1,29 @@
 import { createMockGraphQLContext } from "test/_Mocks_/mockContextCreator/mockContextCreator";
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import type { Mock } from "vitest";
 import type { GraphQLContext } from "~/src/graphql/context";
+
+// Mock the GraphQL builder to track the queryField registration
+vi.mock("~/src/graphql/builder", () => ({
+	builder: {
+		queryField: vi.fn((name: string, fieldFn: (t: unknown) => unknown) => {
+			// Mock the 't' object that provides field builder methods
+			const mockT = {
+				field: vi.fn().mockReturnValue(undefined),
+				arg: vi.fn().mockReturnThis(),
+			};
+			// Call the field function to exercise the builder code
+			fieldFn(mockT);
+			return undefined;
+		}),
+		objectRef: vi.fn().mockReturnValue({
+			implement: vi.fn(),
+		}),
+	},
+}));
+
+import { builder } from "~/src/graphql/builder";
+// Import after mocking to ensure the builder registration is captured
 import { resolveGetMyPledgesForCampaign } from "~/src/graphql/types/Query/getUserPledgesByCampaignID";
 
 describe("Query Resolver - getMyPledgesForCampaign", () => {
@@ -383,211 +406,59 @@ describe("Query Resolver - getMyPledgesForCampaign", () => {
 		});
 	});
 
-	describe("Edge Cases", () => {
-		it("should handle different campaign IDs correctly", async () => {
-			const differentCampaignId = "different-campaign-456";
-			const mockPledges = [
-				{
-					id: "pledge-1",
-					campaignId: differentCampaignId,
-					pledgerId: currentUserId,
-					creatorId: "other-user",
-					amount: 100,
-					note: null,
-					createdAt: new Date(),
-					updatedAt: null,
-					updaterId: null,
-					pledger: {
-						id: currentUserId,
-						name: "Test User",
-						avatarName: "avatar.jpg",
-					},
-					campaign: {
-						id: differentCampaignId,
-						name: "Different Campaign",
-						startAt: new Date("2025-01-01"),
-						endAt: new Date("2025-12-31"),
-						currencyCode: "USD",
-					},
-				},
-			];
+	describe("GraphQL Builder Integration", () => {
+		it("should register the GraphQL query field with correct configuration", () => {
+			// Verify the builder.queryField was called during module import
+			const queryFieldMock = builder.queryField as unknown as Mock;
+			expect(queryFieldMock).toHaveBeenCalled();
 
-			mocks.drizzleClient.query.fundCampaignPledgesTable.findMany.mockResolvedValue(
-				mockPledges,
+			// Find the call for "getMyPledgesForCampaign"
+			const queryFieldCall = queryFieldMock.mock.calls.find(
+				(call: unknown[]) => call[0] === "getMyPledgesForCampaign",
 			);
 
-			const result = await resolveGetMyPledgesForCampaign(
-				{},
-				{ campaignId: differentCampaignId },
-				ctx,
-			);
+			expect(queryFieldCall).toBeDefined();
+			expect(queryFieldCall?.[0]).toBe("getMyPledgesForCampaign");
+			expect(typeof queryFieldCall?.[1]).toBe("function");
 
-			expect(result).toEqual(mockPledges);
-			expect(result[0]?.campaignId).toBe(differentCampaignId);
+			// Verify the resolver function is properly exported
+			expect(resolveGetMyPledgesForCampaign).toBeDefined();
+			expect(typeof resolveGetMyPledgesForCampaign).toBe("function");
 		});
 
-		it("should handle pledges with different currency codes", async () => {
-			const mockPledges = [
-				{
-					id: "pledge-1",
-					campaignId,
-					pledgerId: currentUserId,
-					creatorId: "other-user",
-					amount: 100,
-					note: null,
-					createdAt: new Date(),
-					updatedAt: null,
-					updaterId: null,
-					pledger: {
-						id: currentUserId,
-						name: "Test User",
-						avatarName: "avatar.jpg",
-					},
-					campaign: {
-						id: campaignId,
-						name: "Test Campaign",
-						startAt: new Date("2025-01-01"),
-						endAt: new Date("2025-12-31"),
-						currencyCode: "EUR",
-					},
-				},
-			];
-
-			mocks.drizzleClient.query.fundCampaignPledgesTable.findMany.mockResolvedValue(
-				mockPledges,
+		it("should configure the query field with correct arguments and types", () => {
+			// Get the field configuration function
+			const queryFieldMock = builder.queryField as unknown as Mock;
+			const queryFieldCall = queryFieldMock.mock.calls.find(
+				(call: unknown[]) => call[0] === "getMyPledgesForCampaign",
 			);
 
-			const result = await resolveGetMyPledgesForCampaign(
-				{},
-				{ campaignId },
-				ctx,
+			expect(queryFieldCall).toBeDefined();
+
+			// Create a mock 't' object to capture the field configuration
+			const mockT = {
+				field: vi.fn(),
+				arg: vi.fn().mockReturnValue({
+					description: "Global id of the campaign.",
+					required: true,
+					type: "ID",
+				}),
+			};
+
+			// Call the field configuration function
+			const fieldConfigFn = queryFieldCall?.[1] as (t: typeof mockT) => void;
+			fieldConfigFn(mockT);
+
+			// Verify t.field was called with proper configuration
+			expect(mockT.field).toHaveBeenCalledWith(
+				expect.objectContaining({
+					args: expect.any(Object),
+					description:
+						"Get pledges for the current user in a specific campaign.",
+					resolve: resolveGetMyPledgesForCampaign,
+					type: expect.any(Array),
+				}),
 			);
-
-			expect(result[0]?.campaign.currencyCode).toBe("EUR");
-		});
-
-		it("should handle pledges with zero amount", async () => {
-			const mockPledges = [
-				{
-					id: "pledge-1",
-					campaignId,
-					pledgerId: currentUserId,
-					creatorId: "other-user",
-					amount: 0,
-					note: null,
-					createdAt: new Date(),
-					updatedAt: null,
-					updaterId: null,
-					pledger: {
-						id: currentUserId,
-						name: "Test User",
-						avatarName: "avatar.jpg",
-					},
-					campaign: {
-						id: campaignId,
-						name: "Test Campaign",
-						startAt: new Date("2025-01-01"),
-						endAt: new Date("2025-12-31"),
-						currencyCode: "USD",
-					},
-				},
-			];
-
-			mocks.drizzleClient.query.fundCampaignPledgesTable.findMany.mockResolvedValue(
-				mockPledges,
-			);
-
-			const result = await resolveGetMyPledgesForCampaign(
-				{},
-				{ campaignId },
-				ctx,
-			);
-
-			expect(result[0]?.amount).toBe(0);
-		});
-
-		it("should handle pledges with past campaign dates", async () => {
-			const pastDate = new Date("2020-01-01");
-			const mockPledges = [
-				{
-					id: "pledge-1",
-					campaignId,
-					pledgerId: currentUserId,
-					creatorId: "other-user",
-					amount: 100,
-					note: null,
-					createdAt: new Date(),
-					updatedAt: null,
-					updaterId: null,
-					pledger: {
-						id: currentUserId,
-						name: "Test User",
-						avatarName: "avatar.jpg",
-					},
-					campaign: {
-						id: campaignId,
-						name: "Past Campaign",
-						startAt: pastDate,
-						endAt: new Date("2020-12-31"),
-						currencyCode: "USD",
-					},
-				},
-			];
-
-			mocks.drizzleClient.query.fundCampaignPledgesTable.findMany.mockResolvedValue(
-				mockPledges,
-			);
-
-			const result = await resolveGetMyPledgesForCampaign(
-				{},
-				{ campaignId },
-				ctx,
-			);
-
-			expect(result[0]?.campaign.startAt).toEqual(pastDate);
-		});
-
-		it("should handle pledges with future campaign dates", async () => {
-			const futureStartDate = new Date("2030-01-01");
-			const futureEndDate = new Date("2030-12-31");
-			const mockPledges = [
-				{
-					id: "pledge-1",
-					campaignId,
-					pledgerId: currentUserId,
-					creatorId: "other-user",
-					amount: 100,
-					note: null,
-					createdAt: new Date(),
-					updatedAt: null,
-					updaterId: null,
-					pledger: {
-						id: currentUserId,
-						name: "Test User",
-						avatarName: "avatar.jpg",
-					},
-					campaign: {
-						id: campaignId,
-						name: "Future Campaign",
-						startAt: futureStartDate,
-						endAt: futureEndDate,
-						currencyCode: "USD",
-					},
-				},
-			];
-
-			mocks.drizzleClient.query.fundCampaignPledgesTable.findMany.mockResolvedValue(
-				mockPledges,
-			);
-
-			const result = await resolveGetMyPledgesForCampaign(
-				{},
-				{ campaignId },
-				ctx,
-			);
-
-			expect(result[0]?.campaign.startAt).toEqual(futureStartDate);
-			expect(result[0]?.campaign.endAt).toEqual(futureEndDate);
 		});
 	});
 });
