@@ -570,11 +570,11 @@ suite("Organization pinnedPosts Field", () => {
 		const orgId = createOrgResult.data?.createOrganization?.id;
 		assertToBeNonNullish(orgId);
 
-		const { authToken: memberAuthToken, userId } = await import(
+		const { authToken: memberAuthToken } = await import(
 			"../createRegularUserUsingAdmin"
 		).then((m) => m.createRegularUserUsingAdmin());
 
-		await mercuriusClient.mutate(Mutation_joinPublicOrganization, {
+		const joinResult = await mercuriusClient.mutate(Mutation_joinPublicOrganization, {
 			headers: { authorization: `Bearer ${memberAuthToken}` },
 			variables: {
 				input: {
@@ -582,6 +582,7 @@ suite("Organization pinnedPosts Field", () => {
 				},
 			},
 		});
+		expect(joinResult.errors).toBeUndefined();
 
 		await mercuriusClient.mutate(Mutation_createPost, {
 			headers: { authorization: `Bearer ${authToken}` },
