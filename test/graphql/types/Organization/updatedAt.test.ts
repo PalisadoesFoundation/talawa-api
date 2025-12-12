@@ -8,17 +8,18 @@ import "~/src/graphql/types/Organization/updatedAt";
 import { createMockGraphQLContext } from "test/_Mocks_/mockContextCreator/mockContextCreator";
 
 // Get the updatedAt resolver from the schema
-const organizationType = schema.getType("Organization") as GraphQLObjectType;
-const updatedAtField = organizationType.getFields().updatedAt;
-if (!updatedAtField) {
-	throw new Error("updatedAt field not found on Organization type");
+const organizationType = schema.getType("Organization");
+if (!organizationType || !("getFields" in organizationType)) {
+	throw new Error("Organization type not found or is not an object type");
 }
+const updatedAtField = (organizationType as GraphQLObjectType).getFields()
+	.updatedAt;
 // Guard: ensure the resolver exists and is callable. This prevents confusing
 // runtime errors if schema wiring changes or the resolver is accidentally
 // removed/renamed. Other tests in the codebase use a direct assertion
 // (`as GraphQLObjectType`) rather than `instanceof`, so we keep that
 // pattern and add this runtime guard for clarity.
-if (typeof updatedAtField.resolve !== "function") {
+if (typeof updatedAtField?.resolve !== "function") {
 	throw new Error("updatedAt field resolver is not a function");
 }
 const updatedAtResolver = updatedAtField.resolve as (
