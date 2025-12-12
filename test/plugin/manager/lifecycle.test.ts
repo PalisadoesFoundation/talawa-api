@@ -405,6 +405,30 @@ describe("PluginLifecycle", () => {
 			// The onInstall hook failure is caught and logged, but doesn't fail the installation
 			expect(result).toBe(true);
 		});
+
+		it("should reject invalid plugin ID during installation", async () => {
+			const { isValidPluginId } = await import("../../../src/plugin/utils");
+			(isValidPluginId as ReturnType<typeof vi.fn>).mockReturnValueOnce(false);
+
+			const consoleSpy = vi
+				.spyOn(console, "error")
+				.mockImplementation(() => {});
+
+			const maliciousPluginId = "../malicious-plugin";
+			const result = await lifecycle.installPlugin(
+				maliciousPluginId,
+				mockPluginManager as unknown as Parameters<
+					typeof lifecycle.installPlugin
+				>[1],
+			);
+
+			expect(result).toBe(false);
+			// Verify isValidPluginId was called with the supplied plugin id
+			expect(isValidPluginId).toHaveBeenCalledWith(maliciousPluginId);
+			// Verify console.error was called exactly once for the error
+			expect(consoleSpy).toHaveBeenCalledTimes(1);
+			consoleSpy.mockRestore();
+		});
 	});
 
 	describe("uninstallPlugin", () => {
@@ -1086,24 +1110,6 @@ describe("PluginLifecycle", () => {
 
 			consoleSpy.mockRestore();
 			getPluginModuleSpy.mockRestore();
-		});
-		it("should reject invalid plugin ID during installation", async () => {
-			const { isValidPluginId } = await import("../../../src/plugin/utils");
-			(isValidPluginId as ReturnType<typeof vi.fn>).mockReturnValueOnce(false);
-
-			const consoleSpy = vi
-				.spyOn(console, "error")
-				.mockImplementation(() => {});
-
-			const result = await lifecycle.installPlugin(
-				"../malicious-plugin",
-				mockPluginManager as unknown as Parameters<
-					typeof lifecycle.installPlugin
-				>[1],
-			);
-
-			expect(result).toBe(false);
-			consoleSpy.mockRestore();
 		});
 
 		it("should reject invalid plugin ID during uninstallation", async () => {

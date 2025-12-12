@@ -117,8 +117,8 @@ suite("Mutation field createComment", () => {
 		expect(body).not.toContain("<script>");
 		expect(body).not.toContain("</script>");
 
-		// Check that quotes are escaped (accepts both &#39; and &apos;)
-		expect(body).toMatch(/&#39;|&apos;/);
+		// Check that quotes are escaped (accepts common HTML entity variants: &#39;, &apos;, &#x27;)
+		expect(body).toMatch(/&#39;|&apos;|&#x27;/);
 	});
 
 	test("should return error if comment body exceeds length limit", async () => {

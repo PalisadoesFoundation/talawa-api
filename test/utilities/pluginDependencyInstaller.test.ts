@@ -690,42 +690,47 @@ describe("Plugin Dependency Installer", () => {
 				writable: true,
 			});
 
-			vi.mocked(fs.access).mockResolvedValue(undefined);
+			try {
+				vi.mocked(fs.access).mockResolvedValue(undefined);
 
-			const child = new EventEmitter() as EventEmitter & {
-				stdout: EventEmitter;
-				stderr: EventEmitter;
-				pid: number;
-				kill: ReturnType<typeof vi.fn>;
-				exitCode: number | null;
-				unref: ReturnType<typeof vi.fn>;
-			};
-			child.stdout = new EventEmitter();
-			child.stderr = new EventEmitter();
-			child.pid = 12345;
-			child.kill = vi.fn();
-			child.exitCode = null;
-			child.unref = vi.fn();
+				const child = new EventEmitter() as EventEmitter & {
+					stdout: EventEmitter;
+					stderr: EventEmitter;
+					pid: number;
+					kill: ReturnType<typeof vi.fn>;
+					exitCode: number | null;
+					unref: ReturnType<typeof vi.fn>;
+				};
+				child.stdout = new EventEmitter();
+				child.stderr = new EventEmitter();
+				child.pid = 12345;
+				child.kill = vi.fn();
+				child.exitCode = null;
+				child.unref = vi.fn();
 
-			mockSpawn.mockImplementation(() => {
-				setImmediate(() => {
-					child.stdout.emit("data", Buffer.from("done"));
-					child.exitCode = 0;
-					child.emit("close", 0);
+				mockSpawn.mockImplementation(() => {
+					setImmediate(() => {
+						child.stdout.emit("data", Buffer.from("done"));
+						child.exitCode = 0;
+						child.emit("close", 0);
+					});
+					return child;
 				});
-				return child;
-			});
 
-			const result = await installPluginDependencies("test-plugin", mockLogger);
+				const result = await installPluginDependencies(
+					"test-plugin",
+					mockLogger,
+				);
 
-			expect(result.success).toBe(true);
-			expect(child.unref).toHaveBeenCalled();
-
-			// Restore platform
-			Object.defineProperty(process, "platform", {
-				value: originalPlatform,
-				writable: true,
-			});
+				expect(result.success).toBe(true);
+				expect(child.unref).toHaveBeenCalled();
+			} finally {
+				// Restore platform even if assertions throw
+				Object.defineProperty(process, "platform", {
+					value: originalPlatform,
+					writable: true,
+				});
+			}
 		});
 
 		it("should not call unref on Windows", async () => {
@@ -736,43 +741,48 @@ describe("Plugin Dependency Installer", () => {
 				writable: true,
 			});
 
-			vi.mocked(fs.access).mockResolvedValue(undefined);
+			try {
+				vi.mocked(fs.access).mockResolvedValue(undefined);
 
-			const child = new EventEmitter() as EventEmitter & {
-				stdout: EventEmitter;
-				stderr: EventEmitter;
-				pid: number;
-				kill: ReturnType<typeof vi.fn>;
-				exitCode: number | null;
-				unref: ReturnType<typeof vi.fn>;
-			};
-			child.stdout = new EventEmitter();
-			child.stderr = new EventEmitter();
-			child.pid = 12345;
-			child.kill = vi.fn();
-			child.exitCode = null;
-			child.unref = vi.fn();
+				const child = new EventEmitter() as EventEmitter & {
+					stdout: EventEmitter;
+					stderr: EventEmitter;
+					pid: number;
+					kill: ReturnType<typeof vi.fn>;
+					exitCode: number | null;
+					unref: ReturnType<typeof vi.fn>;
+				};
+				child.stdout = new EventEmitter();
+				child.stderr = new EventEmitter();
+				child.pid = 12345;
+				child.kill = vi.fn();
+				child.exitCode = null;
+				child.unref = vi.fn();
 
-			mockSpawn.mockImplementation(() => {
-				setImmediate(() => {
-					child.stdout.emit("data", Buffer.from("done"));
-					child.exitCode = 0;
-					child.emit("close", 0);
+				mockSpawn.mockImplementation(() => {
+					setImmediate(() => {
+						child.stdout.emit("data", Buffer.from("done"));
+						child.exitCode = 0;
+						child.emit("close", 0);
+					});
+					return child;
 				});
-				return child;
-			});
 
-			const result = await installPluginDependencies("test-plugin", mockLogger);
+				const result = await installPluginDependencies(
+					"test-plugin",
+					mockLogger,
+				);
 
-			expect(result.success).toBe(true);
-			// unref should not be called on Windows (isUnix is false)
-			expect(child.unref).not.toHaveBeenCalled();
-
-			// Restore platform
-			Object.defineProperty(process, "platform", {
-				value: originalPlatform,
-				writable: true,
-			});
+				expect(result.success).toBe(true);
+				// unref should not be called on Windows (isUnix is false)
+				expect(child.unref).not.toHaveBeenCalled();
+			} finally {
+				// Restore platform even if assertions throw
+				Object.defineProperty(process, "platform", {
+					value: originalPlatform,
+					writable: true,
+				});
+			}
 		});
 	});
 

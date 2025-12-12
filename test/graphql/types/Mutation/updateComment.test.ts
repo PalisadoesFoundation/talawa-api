@@ -1,4 +1,3 @@
-import { faker } from "@faker-js/faker";
 import { afterAll, beforeAll, expect, suite, test } from "vitest";
 import type { InvalidArgumentsExtensions } from "~/src/utilities/TalawaGraphQLError";
 import { assertToBeNonNullish } from "../../../helpers";
@@ -29,7 +28,7 @@ suite("Mutation field updateComment", () => {
 				},
 			},
 		});
-		if (signInResult.errors) {
+		if (signInResult.errors?.length) {
 			throw new Error(`signIn failed: ${JSON.stringify(signInResult.errors)}`);
 		}
 		const token = signInResult.data?.signIn?.authenticationToken ?? null;
@@ -43,18 +42,18 @@ suite("Mutation field updateComment", () => {
 				headers: { Authorization: `Bearer ${adminToken}` },
 				variables: {
 					input: {
-						name: faker.company.name(),
-						description: faker.lorem.sentence(),
+						name: "Test Organization Alpha",
+						description: "A test organization for update comment tests",
 						countryCode: "jm",
-						state: "St. Andrew",
+						state: "St Andrew",
 						city: "Kingston",
 						postalCode: "12345",
-						addressLine1: faker.location.streetAddress(),
+						addressLine1: "123 Test Street",
 					},
 				},
 			},
 		);
-		if (createOrgResult.errors) {
+		if (createOrgResult.errors?.length) {
 			throw new Error(
 				`createOrganization failed: ${JSON.stringify(createOrgResult.errors)}`,
 			);
@@ -67,7 +66,7 @@ suite("Mutation field updateComment", () => {
 		const postResult = await mercuriusClient.mutate(Mutation_createPost, {
 			variables: {
 				input: {
-					caption: faker.lorem.sentence(),
+					caption: "Test post for update comment tests",
 					organizationId: orgId,
 				},
 			},
@@ -75,7 +74,7 @@ suite("Mutation field updateComment", () => {
 				Authorization: `Bearer ${adminToken}`,
 			},
 		});
-		if (postResult.errors) {
+		if (postResult.errors?.length) {
 			throw new Error(
 				`createPost failed: ${JSON.stringify(postResult.errors)}`,
 			);
@@ -96,7 +95,7 @@ suite("Mutation field updateComment", () => {
 				Authorization: `Bearer ${adminToken}`,
 			},
 		});
-		if (commentResult.errors) {
+		if (commentResult.errors?.length) {
 			throw new Error(
 				`createComment failed: ${JSON.stringify(commentResult.errors)}`,
 			);
@@ -119,7 +118,7 @@ suite("Mutation field updateComment", () => {
 					},
 				},
 			);
-			if (deleteOrgResult.errors) {
+			if (deleteOrgResult.errors?.length) {
 				throw new Error(
 					`deleteOrganization cleanup failed: ${JSON.stringify(deleteOrgResult.errors)}`,
 				);
@@ -182,7 +181,10 @@ suite("Mutation field updateComment", () => {
 		});
 
 		expect(updateResult.data?.updateComment).toBeNull();
+		// Ensure errors is a non-empty array
 		expect(updateResult.errors).toBeDefined();
+		expect(Array.isArray(updateResult.errors)).toBe(true);
+		expect(updateResult.errors?.length).toBeGreaterThan(0);
 
 		// Find the error with the expected extension code (robust to error ordering)
 		const validationError = updateResult.errors?.find(
@@ -190,16 +192,18 @@ suite("Mutation field updateComment", () => {
 				(error.extensions as { code?: string } | undefined)?.code ===
 				"invalid_arguments",
 		);
-		expect(validationError).toBeDefined();
+		assertToBeNonNullish(validationError);
 
 		const issues = (
 			validationError?.extensions as unknown as InvalidArgumentsExtensions
 		)?.issues;
+		// Ensure issues is a non-empty array
 		expect(issues).toBeDefined();
+		expect(Array.isArray(issues)).toBe(true);
+		expect(issues?.length).toBeGreaterThan(0);
 
+		// Use regex for flexible message matching (handles wording variations)
 		const issueMessages = issues?.map((i) => i.message).join(" ");
-		expect(issueMessages).toContain(
-			"String must contain at most 2048 character(s)",
-		);
+		expect(issueMessages).toMatch(/at most 2048/i);
 	});
 });
