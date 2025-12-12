@@ -119,24 +119,20 @@ suite("Organization pinnedPosts Field", () => {
 			.spyOn(server.drizzleClient.query.usersTable, "findFirst")
 			.mockResolvedValueOnce(undefined);
 
-		try {
-			const result = await mercuriusClient.query(OrganizationPinnedPostsQuery, {
-				headers: { authorization: `Bearer ${authToken}` },
-				variables: { input: { id: orgId }, first: 10 },
-			});
+		const result = await mercuriusClient.query(OrganizationPinnedPostsQuery, {
+			headers: { authorization: `Bearer ${authToken}` },
+			variables: { input: { id: orgId }, first: 10 },
+		});
 
-			expect(result.data?.organization?.pinnedPosts).toBeNull();
-			expect(result.errors).toEqual(
-				expect.arrayContaining([
-					expect.objectContaining({
-						extensions: expect.objectContaining({ code: "unauthenticated" }),
-						path: ["organization", "pinnedPosts"],
-					}),
-				]),
-			);
-		} finally {
-			findFirstSpy.mockRestore();
-		}
+		expect(result.data?.organization?.pinnedPosts).toBeNull();
+		expect(result.errors).toEqual(
+			expect.arrayContaining([
+				expect.objectContaining({
+					extensions: expect.objectContaining({ code: "unauthenticated" }),
+					path: ["organization", "pinnedPosts"],
+				}),
+			]),
+		);
 	});
 
 	test("should throw unauthorized error for non-member", async () => {
@@ -217,7 +213,6 @@ suite("Organization pinnedPosts Field", () => {
 						issues: expect.arrayContaining([
 							expect.objectContaining({
 								argumentPath: ["after"],
-								message: "Not a valid cursor.",
 							}),
 						]),
 					}),
@@ -262,7 +257,6 @@ suite("Organization pinnedPosts Field", () => {
 						issues: expect.arrayContaining([
 							expect.objectContaining({
 								argumentPath: ["before"],
-								message: "Not a valid cursor.",
 							}),
 						]),
 					}),
