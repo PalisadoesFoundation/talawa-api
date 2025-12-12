@@ -275,77 +275,77 @@ describe("Query Resolver - getMyPledgesForCampaign", () => {
 
 			(
 				mocks.drizzleClient.query.fundCampaignPledgesTable
-					.findMany as unknown as ReturnType<typeof vi.fn>
-			).mockImplementation(
-				async (options: { where?: (...args: unknown[]) => unknown }) => {
-					const { where } = options ?? {};
-					// Validate the where clause is called with the correct structure
-					expect(where).toBeDefined();
-					expect(typeof where).toBe("function");
+					.findMany as ReturnType<typeof vi.fn>
+			).mockImplementation(async (options) => {
+				const { where } = (options ?? {}) as {
+					where?: (...args: unknown[]) => unknown;
+				};
+				// Validate the where clause is called with the correct structure
+				expect(where).toBeDefined();
+				expect(typeof where).toBe("function");
 
-					// Create sentinel objects to track the nesting structure
-					const eqCampaignSentinel = { type: "eq", field: "campaignId" };
-					const eqPledgerSentinel = { type: "eq", field: "pledgerId" };
-					const eqCreatorSentinel = { type: "eq", field: "creatorId" };
-					const orSentinel = { type: "or" };
+				// Create sentinel objects to track the nesting structure
+				const eqCampaignSentinel = { type: "eq", field: "campaignId" };
+				const eqPledgerSentinel = { type: "eq", field: "pledgerId" };
+				const eqCreatorSentinel = { type: "eq", field: "creatorId" };
+				const orSentinel = { type: "or" };
 
-					const mockOperators = {
-						and: vi.fn((...args: unknown[]) => ({ type: "and", args })),
-						or: vi.fn((...args: unknown[]) => orSentinel),
-						eq: vi.fn((field: unknown, value: unknown) => {
-							if (field === "campaignId") return eqCampaignSentinel;
-							if (field === "pledgerId") return eqPledgerSentinel;
-							if (field === "creatorId") return eqCreatorSentinel;
-							return { type: "eq", field, value };
-						}),
-					};
+				const mockOperators = {
+					and: vi.fn((...args: unknown[]) => ({ type: "and", args })),
+					or: vi.fn((...args: unknown[]) => orSentinel),
+					eq: vi.fn((field: unknown, value: unknown) => {
+						if (field === "campaignId") return eqCampaignSentinel;
+						if (field === "pledgerId") return eqPledgerSentinel;
+						if (field === "creatorId") return eqCreatorSentinel;
+						return { type: "eq", field, value };
+					}),
+				};
 
-					const mockPledgesTable = {
-						campaignId: "campaignId",
-						pledgerId: "pledgerId",
-						creatorId: "creatorId",
-					};
+				const mockPledgesTable = {
+					campaignId: "campaignId",
+					pledgerId: "pledgerId",
+					creatorId: "creatorId",
+				};
 
-					if (where) {
-						where(mockPledgesTable, mockOperators);
-					}
+				if (where) {
+					where(mockPledgesTable, mockOperators);
+				}
 
-					// Verify the structure: AND( eq(campaignId), OR(eq(pledgerId), eq(creatorId)) )
-					expect(mockOperators.and).toHaveBeenCalledTimes(1);
-					expect(mockOperators.or).toHaveBeenCalledTimes(1);
-					expect(mockOperators.eq).toHaveBeenCalledTimes(3);
+				// Verify the structure: AND( eq(campaignId), OR(eq(pledgerId), eq(creatorId)) )
+				expect(mockOperators.and).toHaveBeenCalledTimes(1);
+				expect(mockOperators.or).toHaveBeenCalledTimes(1);
+				expect(mockOperators.eq).toHaveBeenCalledTimes(3);
 
-					// Verify eq was called with correct arguments
-					expect(mockOperators.eq).toHaveBeenCalledWith(
-						mockPledgesTable.campaignId,
-						campaignId,
-					);
-					expect(mockOperators.eq).toHaveBeenCalledWith(
-						mockPledgesTable.pledgerId,
-						currentUserId,
-					);
-					expect(mockOperators.eq).toHaveBeenCalledWith(
-						mockPledgesTable.creatorId,
-						currentUserId,
-					);
+				// Verify eq was called with correct arguments
+				expect(mockOperators.eq).toHaveBeenCalledWith(
+					mockPledgesTable.campaignId,
+					campaignId,
+				);
+				expect(mockOperators.eq).toHaveBeenCalledWith(
+					mockPledgesTable.pledgerId,
+					currentUserId,
+				);
+				expect(mockOperators.eq).toHaveBeenCalledWith(
+					mockPledgesTable.creatorId,
+					currentUserId,
+				);
 
-					// Verify OR was called with the two eq sentinels for pledgerId and creatorId
-					expect(mockOperators.or).toHaveBeenCalledWith(
-						eqPledgerSentinel,
-						eqCreatorSentinel,
-					);
+				// Verify OR was called with the two eq sentinels for pledgerId and creatorId
+				expect(mockOperators.or).toHaveBeenCalledWith(
+					eqPledgerSentinel,
+					eqCreatorSentinel,
+				);
 
-					// Verify AND was called with eq(campaignId) and the OR result
-					const andCallArgs = mockOperators.and.mock.calls[0];
-					if (andCallArgs) {
-						expect(andCallArgs).toHaveLength(2);
-						expect(andCallArgs[0]).toBe(eqCampaignSentinel);
-						expect(andCallArgs[1]).toBe(orSentinel);
-					}
+				// Verify AND was called with eq(campaignId) and the OR result
+				const andCallArgs = mockOperators.and.mock.calls[0];
+				if (andCallArgs) {
+					expect(andCallArgs).toHaveLength(2);
+					expect(andCallArgs[0]).toBe(eqCampaignSentinel);
+					expect(andCallArgs[1]).toBe(orSentinel);
+				}
 
-					return mockPledges;
-				},
-			);
+				return mockPledges;
+			});
 
 			await resolveGetMyPledgesForCampaign({}, { campaignId }, ctx);
 		});
