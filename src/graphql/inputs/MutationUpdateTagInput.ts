@@ -1,7 +1,6 @@
 import type { z } from "zod";
 import { tagsTableInsertSchema } from "~/src/drizzle/tables/tags";
 import { builder } from "~/src/graphql/builder";
-import { sanitizedStringSchema } from "~/src/utilities/sanitizer";
 
 export const mutationUpdateTagInputSchema = tagsTableInsertSchema
 	.pick({
@@ -9,7 +8,7 @@ export const mutationUpdateTagInputSchema = tagsTableInsertSchema
 	})
 	.extend({
 		id: tagsTableInsertSchema.shape.id.unwrap(),
-		name: sanitizedStringSchema.optional(),
+		name: tagsTableInsertSchema.shape.name.optional(),
 	})
 	.refine(
 		({ id, ...remainingArg }) =>

@@ -1,11 +1,10 @@
 import { z } from "zod";
 import { commentsTableInsertSchema } from "~/src/drizzle/tables/comments";
 import { builder } from "~/src/graphql/builder";
-import { sanitizedStringSchema } from "~/src/utilities/sanitizer";
 
 export const mutationUpdateCommentInputSchema = z
 	.object({
-		body: sanitizedStringSchema.optional(),
+		body: commentsTableInsertSchema.shape.body.optional(),
 		id: commentsTableInsertSchema.shape.id.unwrap(),
 	})
 	.refine(

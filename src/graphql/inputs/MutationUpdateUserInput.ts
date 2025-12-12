@@ -9,7 +9,6 @@ import { UserEmploymentStatus } from "~/src/graphql/enums/UserEmploymentStatus";
 import { UserMaritalStatus } from "~/src/graphql/enums/UserMaritalStatus";
 import { UserNatalSex } from "~/src/graphql/enums/UserNatalSex";
 import { UserRole } from "~/src/graphql/enums/UserRole";
-import { sanitizedStringSchema } from "~/src/utilities/sanitizer";
 
 export const mutationUpdateUserInputSchema = usersTableInsertSchema
 	.omit({
@@ -25,20 +24,14 @@ export const mutationUpdateUserInputSchema = usersTableInsertSchema
 		updaterId: true,
 	})
 	.extend({
-		addressLine1: sanitizedStringSchema.optional(),
-		addressLine2: sanitizedStringSchema.optional(),
 		avatar: z.custom<Promise<FileUpload>>().nullish(),
-		city: sanitizedStringSchema.optional(),
-		description: sanitizedStringSchema.optional(),
 		emailAddress: usersTableInsertSchema.shape.emailAddress.optional(),
 		id: usersTableInsertSchema.shape.id.unwrap(),
 		isEmailAddressVerified:
 			usersTableInsertSchema.shape.isEmailAddressVerified.optional(),
-		name: sanitizedStringSchema.optional(),
+		name: usersTableInsertSchema.shape.name.optional(),
 		password: z.string().min(1).max(64).optional(),
 		role: usersTableInsertSchema.shape.role.optional(),
-		state: sanitizedStringSchema.optional(),
-		zipCode: sanitizedStringSchema.optional(),
 	})
 	.refine(
 		({ id, ...input }) =>

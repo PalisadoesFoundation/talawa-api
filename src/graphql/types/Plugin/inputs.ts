@@ -1,6 +1,5 @@
 import { z } from "zod";
 import { builder } from "~/src/graphql/builder";
-import { pluginIdSchema } from "~/src/utilities/validators";
 
 /**
  * Plugin Input Types and Schemas
@@ -33,16 +32,38 @@ export const queryPluginsInputSchema = z.object({
 });
 
 export const createPluginInputSchema = z.object({
-	pluginId: pluginIdSchema,
+	pluginId: z
+		.string()
+		.min(1, "Plugin ID cannot be empty")
+		.max(100, "Plugin ID is too long")
+		.regex(
+			/^[a-zA-Z][a-zA-Z0-9_]*$/,
+			"Plugin ID must start with a letter and contain only letters, numbers, and underscores",
+		),
 });
 
 export const installPluginInputSchema = z.object({
-	pluginId: pluginIdSchema,
+	pluginId: z
+		.string()
+		.min(1, "Plugin ID cannot be empty")
+		.max(100, "Plugin ID is too long")
+		.regex(
+			/^[a-zA-Z][a-zA-Z0-9_]*$/,
+			"Plugin ID must start with a letter and contain only letters, numbers, and underscores",
+		),
 });
 
 export const updatePluginInputSchema = z.object({
 	id: z.string().uuid({ message: "Invalid Plugin ID format" }),
-	pluginId: pluginIdSchema.optional(),
+	pluginId: z
+		.string()
+		.min(1, "Plugin ID cannot be empty")
+		.max(100, "Plugin ID is too long")
+		.regex(
+			/^[a-zA-Z][a-zA-Z0-9_]*$/,
+			"Plugin ID must start with a letter and contain only letters, numbers, and underscores",
+		)
+		.optional(),
 	isActivated: z.boolean().optional(),
 	isInstalled: z.boolean().optional(),
 	backup: z.boolean().optional(),

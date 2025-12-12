@@ -2,7 +2,6 @@ import type { FileUpload } from "graphql-upload-minimal";
 import { z } from "zod";
 import { communitiesTableInsertSchema } from "~/src/drizzle/tables/communities";
 import { builder } from "~/src/graphql/builder";
-import { sanitizedStringSchema } from "~/src/utilities/sanitizer";
 
 export const mutationUpdateCommunityInputSchema = communitiesTableInsertSchema
 	.omit({
@@ -15,17 +14,8 @@ export const mutationUpdateCommunityInputSchema = communitiesTableInsertSchema
 		updaterId: true,
 	})
 	.extend({
-		facebookURL: sanitizedStringSchema.optional(),
-		githubURL: sanitizedStringSchema.optional(),
-		instagramURL: sanitizedStringSchema.optional(),
-		linkedinURL: sanitizedStringSchema.optional(),
 		logo: z.custom<Promise<FileUpload>>().nullish(),
-		name: sanitizedStringSchema.optional(),
-		redditURL: sanitizedStringSchema.optional(),
-		slackURL: sanitizedStringSchema.optional(),
-		websiteURL: sanitizedStringSchema.optional(),
-		xURL: sanitizedStringSchema.optional(),
-		youtubeURL: sanitizedStringSchema.optional(),
+		name: communitiesTableInsertSchema.shape.name.optional(),
 	})
 	.refine((arg) => Object.values(arg).some((value) => value !== undefined), {
 		message: "At least one optional argument must be provided.",

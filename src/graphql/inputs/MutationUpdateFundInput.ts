@@ -1,13 +1,12 @@
 import { z } from "zod";
 import { fundsTableInsertSchema } from "~/src/drizzle/tables/funds";
 import { builder } from "~/src/graphql/builder";
-import { sanitizedStringSchema } from "~/src/utilities/sanitizer";
 
 export const mutationUpdateFundInputSchema = z
 	.object({
 		isTaxDeductible: fundsTableInsertSchema.shape.isTaxDeductible.optional(),
 		id: fundsTableInsertSchema.shape.id.unwrap(),
-		name: sanitizedStringSchema.optional(),
+		name: fundsTableInsertSchema.shape.name.optional(),
 	})
 	.refine(
 		({ id, ...arg }) => Object.values(arg).some((value) => value !== undefined),

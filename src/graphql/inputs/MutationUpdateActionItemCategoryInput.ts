@@ -1,11 +1,10 @@
 import { z } from "zod";
 import { builder } from "~/src/graphql/builder";
-import { escapeHTML } from "~/src/utilities/sanitizer";
 
 export const mutationUpdateActionItemCategoryInputSchema = z.object({
 	id: z.string().uuid(),
-	name: z.string().min(1).max(256).transform(escapeHTML).optional(),
-	description: z.string().min(1).max(2048).transform(escapeHTML).optional(),
+	name: z.string().min(1).max(256).optional(),
+	description: z.string().min(1).max(2048).optional(),
 	isDisabled: z.boolean().optional(),
 });
 

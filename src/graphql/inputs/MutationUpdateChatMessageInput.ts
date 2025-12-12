@@ -1,13 +1,15 @@
 import type { z } from "zod";
 import { chatMessagesTableInsertSchema } from "~/src/drizzle/tables/chatMessages";
 import { builder } from "~/src/graphql/builder";
-import { sanitizedStringSchema } from "~/src/utilities/sanitizer";
 
 export const mutationUpdateChatMessageInputSchema =
-	chatMessagesTableInsertSchema.pick({}).extend({
-		body: sanitizedStringSchema,
-		id: chatMessagesTableInsertSchema.shape.id.unwrap(),
-	});
+	chatMessagesTableInsertSchema
+		.pick({
+			body: true,
+		})
+		.extend({
+			id: chatMessagesTableInsertSchema.shape.id.unwrap(),
+		});
 
 export const MutationUpdateChatMessageInput = builder
 	.inputRef<z.infer<typeof mutationUpdateChatMessageInputSchema>>(

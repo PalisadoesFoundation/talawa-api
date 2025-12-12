@@ -5,7 +5,6 @@ import {
 } from "~/src/drizzle/enums/postAttachmentMimeType";
 import { postsTableInsertSchema } from "~/src/drizzle/tables/posts";
 import { builder } from "~/src/graphql/builder";
-import { escapeHTML, sanitizedStringSchema } from "~/src/utilities/sanitizer";
 
 export const PostAttachmentMimeType = builder.enumType(
 	"PostAttachmentMimeType",
@@ -42,17 +41,17 @@ export const FileMetadataInput = builder.inputType("FileMetadataInput", {
 
 export const fileMetadataSchema = z.object({
 	mimetype: postAttachmentMimeTypeEnum,
-	objectName: z.string().min(1).transform(escapeHTML),
+	objectName: z.string().min(1),
 	fileHash: z.string().min(1),
-	name: z.string().min(1).transform(escapeHTML),
+	name: z.string().min(1),
 });
 
 export const mutationCreatePostInputSchema = postsTableInsertSchema
 	.pick({
+		caption: true,
 		organizationId: true,
 	})
 	.extend({
-		caption: sanitizedStringSchema,
 		attachments: z.array(fileMetadataSchema).max(20).optional(),
 		isPinned: z.boolean().optional(),
 	});

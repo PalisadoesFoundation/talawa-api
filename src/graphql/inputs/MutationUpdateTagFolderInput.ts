@@ -1,7 +1,6 @@
 import type { z } from "zod";
 import { tagFoldersTableInsertSchema } from "~/src/drizzle/tables/tagFolders";
 import { builder } from "~/src/graphql/builder";
-import { sanitizedStringSchema } from "~/src/utilities/sanitizer";
 
 export const mutationUpdateTagFolderInputSchema = tagFoldersTableInsertSchema
 	.pick({
@@ -9,7 +8,7 @@ export const mutationUpdateTagFolderInputSchema = tagFoldersTableInsertSchema
 	})
 	.extend({
 		id: tagFoldersTableInsertSchema.shape.id.unwrap(),
-		name: sanitizedStringSchema.optional(),
+		name: tagFoldersTableInsertSchema.shape.name.optional(),
 	})
 	.refine(
 		({ id, ...remainingArg }) =>

@@ -5,13 +5,9 @@
  * This ensures that all required dependencies are available before database creation.
  */
 
-import { exec } from "node:child_process";
 import path from "node:path";
-import { promisify } from "node:util";
 import { TalawaGraphQLError } from "./TalawaGraphQLError";
 import { pluginIdSchema } from "./validators";
-
-const execAsync = promisify(exec);
 
 export interface DependencyInstallationResult {
 	success: boolean;
@@ -66,17 +62,52 @@ export async function installPluginDependencies(
 
 		logger?.info?.(`Installing dependencies for plugin ${pluginId}...`);
 
-		// Change to plugin directory and run pnpm install
-		const command = `cd "${pluginPath}" && pnpm install --frozen-lockfile`;
+		// Use spawn with args array to avoid shell injection
+		const { spawn } = await import("node:child_process");
 
-		const { stdout, stderr } = await execAsync(command, {
-			cwd: pluginPath,
-			timeout: 300000, // 5 minutes timeout
+		const installResult = await new Promise<{
+			stdout: string;
+			stderr: string;
+		}>((resolve, reject) => {
+			const child = spawn("pnpm", ["install", "--frozen-lockfile"], {
+				cwd: pluginPath,
+			});
+
+			let stdout = "";
+			let stderr = "";
+
+			child.stdout?.on("data", (data) => {
+				stdout += data.toString();
+			});
+
+			child.stderr?.on("data", (data) => {
+				stderr += data.toString();
+			});
+
+			// Set timeout
+			const timeout = setTimeout(() => {
+				child.kill();
+				reject(new Error("Installation timed out after 5 minutes"));
+			}, 300000); // 5 minutes
+
+			child.on("close", (code) => {
+				clearTimeout(timeout);
+				if (code === 0) {
+					resolve({ stdout, stderr });
+				} else {
+					reject(new Error(`pnpm install failed with exit code ${code}`));
+				}
+			});
+
+			child.on("error", (err) => {
+				clearTimeout(timeout);
+				reject(err);
+			});
 		});
 
-		if (stderr && !stderr.includes("warning")) {
+		if (installResult.stderr && !installResult.stderr.includes("warning")) {
 			logger?.error?.(
-				`Dependency installation warnings for ${pluginId}: ${stderr}`,
+				`Dependency installation warnings for ${pluginId}: ${installResult.stderr}`,
 			);
 		}
 
@@ -85,7 +116,7 @@ export async function installPluginDependencies(
 		);
 		return {
 			success: true,
-			output: stdout,
+			output: installResult.stdout,
 		};
 	} catch (error) {
 		const errorMessage =

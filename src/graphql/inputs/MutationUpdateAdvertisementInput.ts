@@ -3,16 +3,16 @@ import { advertisementsTableInsertSchema } from "~/src/drizzle/tables/advertisem
 import { builder } from "~/src/graphql/builder";
 import { AdvertisementType } from "~/src/graphql/enums/AdvertisementType";
 import { isNotNullish } from "~/src/utilities/isNotNullish";
-import { sanitizedStringSchema } from "~/src/utilities/sanitizer";
 
 export const mutationUpdateAdvertisementInputSchema =
 	advertisementsTableInsertSchema
-		.pick({})
+		.pick({
+			description: true,
+		})
 		.extend({
-			description: sanitizedStringSchema.optional(),
 			endAt: advertisementsTableInsertSchema.shape.endAt.optional(),
 			id: advertisementsTableInsertSchema.shape.id.unwrap(),
-			name: sanitizedStringSchema.optional(),
+			name: advertisementsTableInsertSchema.shape.name.optional(),
 			startAt: advertisementsTableInsertSchema.shape.startAt.optional(),
 			type: advertisementsTableInsertSchema.shape.type.optional(),
 		})
