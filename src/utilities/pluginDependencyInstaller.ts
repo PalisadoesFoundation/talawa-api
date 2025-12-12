@@ -9,6 +9,8 @@ import path from "node:path";
 import { TalawaGraphQLError } from "./TalawaGraphQLError";
 import { pluginIdSchema } from "./validators";
 
+const MAX_BUFFER = 1_000_000; // 1MB
+
 export interface DependencyInstallationResult {
 	success: boolean;
 	error?: string;
@@ -80,7 +82,6 @@ export async function installPluginDependencies(
 			let stdout = "";
 			let stderr = "";
 			let settled = false;
-			const MAX_BUFFER = 1_000_000; // 1MB
 
 			child.stdout?.on("data", (data) => {
 				if (stdout.length < MAX_BUFFER) stdout += data.toString();
@@ -96,7 +97,13 @@ export async function installPluginDependencies(
 				settled = true;
 				child.kill("SIGTERM");
 				const forceKill = setTimeout(() => {
-					child.kill("SIGKILL");
+					if (child.exitCode === null && typeof child.kill === "function") {
+						try {
+							child.kill("SIGKILL");
+						} catch {
+							// Ignore errors if process is already gone
+						}
+					}
 				}, 5000);
 				if (forceKill.unref) forceKill.unref();
 				reject(new Error("Installation timed out after 5 minutes"));
@@ -121,7 +128,11 @@ export async function installPluginDependencies(
 			});
 		});
 
-		if (installResult.stderr && !installResult.stderr.includes("warning")) {
+		const lowerStderr = installResult.stderr.toLowerCase();
+		if (
+			installResult.stderr &&
+			(lowerStderr.includes("warn") || lowerStderr.includes("warning"))
+		) {
 			logger?.error?.(
 				`Dependency installation warnings for ${pluginId}: ${installResult.stderr}`,
 			);
@@ -132,8 +143,9 @@ export async function installPluginDependencies(
 		return {
 			success: true,
 			output:
-				installResult.stdout.length >= 1_000_000
-					? `${installResult.stdout}\n[output truncated]`
+				installResult.stdout.length >= MAX_BUFFER
+					? `${installResult.stdout}
+[output truncated]`
 					: installResult.stdout,
 		};
 	} catch (error) {

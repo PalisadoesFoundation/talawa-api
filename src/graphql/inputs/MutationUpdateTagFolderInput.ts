@@ -9,8 +9,8 @@ export const mutationUpdateTagFolderInputSchema = tagFoldersTableInsertSchema
 	})
 	.extend({
 		id: tagFoldersTableInsertSchema.shape.id.unwrap(),
-		name: tagFoldersTableInsertSchema.shape.name
-			.pipe(sanitizedStringSchema)
+		name: sanitizedStringSchema
+			.pipe(tagFoldersTableInsertSchema.shape.name)
 			.optional(),
 	})
 	.refine(
@@ -34,9 +34,11 @@ export const MutationUpdateTagFolderInput = builder
 			}),
 			name: t.string({
 				description: "Name of the tag folder.",
+				required: false,
 			}),
 			parentFolderId: t.id({
 				description: "Global identifier of associated parent tag folder.",
+				required: false,
 			}),
 		}),
 	});

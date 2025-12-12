@@ -3,23 +3,15 @@ import { advertisementsTableInsertSchema } from "~/src/drizzle/tables/advertisem
 import { builder } from "~/src/graphql/builder";
 import { AdvertisementType } from "~/src/graphql/enums/AdvertisementType";
 import { isNotNullish } from "~/src/utilities/isNotNullish";
-import { sanitizedStringSchema } from "~/src/utilities/sanitizer";
 
 export const mutationUpdateAdvertisementInputSchema =
 	advertisementsTableInsertSchema
 		.pick({})
 		.extend({
-			// Description must be non-empty if provided, matching storage limits.
-			description: advertisementsTableInsertSchema.shape.description
-				.unwrap()
-				.pipe(sanitizedStringSchema)
-				.optional(),
+			description: advertisementsTableInsertSchema.shape.description.optional(),
 			endAt: advertisementsTableInsertSchema.shape.endAt.optional(),
 			id: advertisementsTableInsertSchema.shape.id.unwrap(),
-			// Name must be non-empty if provided, matching storage limits.
-			name: advertisementsTableInsertSchema.shape.name
-				.pipe(sanitizedStringSchema)
-				.optional(),
+			name: advertisementsTableInsertSchema.shape.name.optional(),
 			startAt: advertisementsTableInsertSchema.shape.startAt.optional(),
 			type: advertisementsTableInsertSchema.shape.type.optional(),
 		})
@@ -64,6 +56,7 @@ export const MutationUpdateAdvertisementInput = builder
 			}),
 			name: t.string({
 				description: "Name of the advertisement.",
+				required: false,
 			}),
 			startAt: t.field({
 				description: "Date time at which the advertised event starts.",

@@ -5,8 +5,8 @@ import { sanitizedStringSchema } from "~/src/utilities/sanitizer";
 
 export const mutationUpdateCommentInputSchema = z
 	.object({
-		body: commentsTableInsertSchema.shape.body
-			.pipe(sanitizedStringSchema)
+		body: sanitizedStringSchema
+			.pipe(commentsTableInsertSchema.shape.body)
 			.optional(),
 		id: commentsTableInsertSchema.shape.id.unwrap(),
 	})
@@ -27,6 +27,7 @@ export const MutationUpdateCommentInput = builder
 		fields: (t) => ({
 			body: t.string({
 				description: "Body of the comment.",
+				required: false,
 			}),
 			id: t.id({
 				description: "Global identifier of the comment.",

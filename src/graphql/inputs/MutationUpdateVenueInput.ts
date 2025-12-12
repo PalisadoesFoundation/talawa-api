@@ -9,13 +9,12 @@ export const mutationUpdateVenueInputSchema = venuesTableInsertSchema
 		capacity: true,
 	})
 	.extend({
-		description: venuesTableInsertSchema.shape.description
-			.unwrap()
-			.pipe(sanitizedStringSchema)
+		description: sanitizedStringSchema
+			.pipe(venuesTableInsertSchema.shape.description.unwrap())
 			.optional(),
 		id: venuesTableInsertSchema.shape.id.unwrap(),
-		name: venuesTableInsertSchema.shape.name
-			.pipe(sanitizedStringSchema)
+		name: sanitizedStringSchema
+			.pipe(venuesTableInsertSchema.shape.name)
 			.optional(),
 		attachments: z
 			.custom<Promise<FileUpload>>()
@@ -51,6 +50,7 @@ export const MutationUpdateVenueInput = builder
 			}),
 			description: t.string({
 				description: "Custom information about the venue.",
+				required: false,
 			}),
 			id: t.id({
 				description: "Global identifier of the venue.",
@@ -58,6 +58,7 @@ export const MutationUpdateVenueInput = builder
 			}),
 			name: t.string({
 				description: "Name of the venue.",
+				required: false,
 			}),
 		}),
 	});
