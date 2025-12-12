@@ -9,7 +9,6 @@ import {
 } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { uuidv7 } from "uuidv7";
-import { z } from "zod";
 import { agendaFoldersTable } from "./agendaFolders";
 import { eventAttachmentsTable } from "./eventAttachments";
 import { organizationsTable } from "./organizations";
@@ -200,6 +199,5 @@ export const eventsTableInsertSchema = createInsertSchema(eventsTable, {
 	isPublic: (schema) => schema.optional(),
 	isRegisterable: (schema) => schema.optional(),
 	location: (schema) => schema.min(1).max(EVENT_LOCATION_MAX_LENGTH).optional(),
-	// Recurring event fields validation
-	isRecurringEventTemplate: z.boolean().optional(),
+	isRecurringEventTemplate: (schema) => schema.optional(),
 });
