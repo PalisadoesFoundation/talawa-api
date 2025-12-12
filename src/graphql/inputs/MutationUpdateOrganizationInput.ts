@@ -3,23 +3,24 @@ import { z } from "zod";
 import { organizationsTableInsertSchema } from "~/src/drizzle/tables/organizations";
 import { builder } from "~/src/graphql/builder";
 import { Iso3166Alpha2CountryCode } from "~/src/graphql/enums/Iso3166Alpha2CountryCode";
+import { sanitizedStringSchema } from "~/src/utilities/sanitizer";
 
 export const mutationUpdateOrganizationInputSchema =
 	organizationsTableInsertSchema
 		.pick({
-			addressLine1: true,
-			addressLine2: true,
-			city: true,
 			countryCode: true,
-			description: true,
-			postalCode: true,
-			state: true,
 		})
 		.extend({
+			addressLine1: sanitizedStringSchema.optional(),
+			addressLine2: sanitizedStringSchema.optional(),
 			avatar: z.custom<Promise<FileUpload>>().nullish(),
+			city: sanitizedStringSchema.optional(),
+			description: sanitizedStringSchema.optional(),
 			id: organizationsTableInsertSchema.shape.id.unwrap(),
-			name: organizationsTableInsertSchema.shape.name.optional(),
 			isUserRegistrationRequired: z.boolean().optional(),
+			name: sanitizedStringSchema.optional(),
+			postalCode: sanitizedStringSchema.optional(),
+			state: sanitizedStringSchema.optional(),
 		})
 		.refine(
 			({ id, ...remainingArg }) =>

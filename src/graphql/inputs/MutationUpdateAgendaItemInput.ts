@@ -1,17 +1,18 @@
 import type { z } from "zod";
 import { agendaItemsTableInsertSchema } from "~/src/drizzle/tables/agendaItems";
 import { builder } from "~/src/graphql/builder";
+import { sanitizedStringSchema } from "~/src/utilities/sanitizer";
 
 export const MutationUpdateAgendaItemInputSchema = agendaItemsTableInsertSchema
 	.pick({
-		description: true,
 		duration: true,
 		key: true,
 	})
 	.extend({
+		description: sanitizedStringSchema.optional(),
 		folderId: agendaItemsTableInsertSchema.shape.folderId.optional(),
 		id: agendaItemsTableInsertSchema.shape.id.unwrap(),
-		name: agendaItemsTableInsertSchema.shape.name.optional(),
+		name: sanitizedStringSchema.optional(),
 	})
 	.refine(
 		({ id, ...remainingArg }) =>

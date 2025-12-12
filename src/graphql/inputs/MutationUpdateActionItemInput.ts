@@ -1,17 +1,18 @@
 import type { z } from "zod";
 import { actionItemsTableInsertSchema } from "~/src/drizzle/tables/actionItems";
 import { builder } from "~/src/graphql/builder";
+import { sanitizedStringSchema } from "~/src/utilities/sanitizer";
 
 export const MutationUpdateActionItemInputSchema = actionItemsTableInsertSchema
 	.pick({
-		postCompletionNotes: true,
-		preCompletionNotes: true,
 		categoryId: true,
 		volunteerId: true,
 		volunteerGroupId: true,
 		isCompleted: true,
 	})
 	.extend({
+		postCompletionNotes: sanitizedStringSchema.optional(),
+		preCompletionNotes: sanitizedStringSchema.optional(),
 		id: actionItemsTableInsertSchema.shape.id.unwrap(), // require the id for update
 	});
 

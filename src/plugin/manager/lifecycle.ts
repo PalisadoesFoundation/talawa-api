@@ -30,7 +30,12 @@ interface IPluginManager {
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import { installPluginDependenciesWithErrorHandling } from "~/src/utilities/pluginDependencyInstaller";
 import { PluginStatus } from "../types";
-import { createPluginTables, dropPluginTables, safeRequire } from "../utils";
+import {
+	createPluginTables,
+	dropPluginTables,
+	isValidPluginId,
+	safeRequire,
+} from "../utils";
 
 export class PluginLifecycle {
 	constructor(
@@ -47,6 +52,9 @@ export class PluginLifecycle {
 		pluginManager: IPluginManager,
 	): Promise<boolean> {
 		try {
+			if (!isValidPluginId(pluginId)) {
+				throw new Error(`Invalid plugin ID: ${pluginId}`);
+			}
 			pluginManager.emit("plugin:installing", pluginId);
 
 			// Load plugin manifest to get database definitions
@@ -84,6 +92,9 @@ export class PluginLifecycle {
 		pluginManager: IPluginManager,
 	): Promise<boolean> {
 		try {
+			if (!isValidPluginId(pluginId)) {
+				throw new Error(`Invalid plugin ID: ${pluginId}`);
+			}
 			pluginManager.emit("plugin:uninstalling", pluginId);
 
 			// Call plugin lifecycle hook first
@@ -227,6 +238,9 @@ export class PluginLifecycle {
 	 * Load plugin manifest
 	 */
 	private async loadPluginManifest(pluginId: string): Promise<IPluginManifest> {
+		if (!isValidPluginId(pluginId)) {
+			throw new Error(`Invalid plugin ID: ${pluginId}`);
+		}
 		const pluginPath = path.join(
 			process.cwd(),
 			"src",
@@ -581,17 +595,30 @@ export class PluginLifecycle {
 			);
 			const fullComposePath = path.join(pluginPath, composeFile);
 
-			const { exec } = await import("node:child_process");
-			const { promisify } = await import("node:util");
-			const execAsync = promisify(exec);
+			const { spawn } = await import("node:child_process");
 
 			const env = { ...process.env, ...(cfg.env || {}) } as Record<
 				string,
 				string
 			>;
 
+			const runCommand = (command: string, args: string[]) => {
+				return new Promise<void>((resolve, reject) => {
+					const child = spawn(command, args, {
+						cwd: pluginPath,
+						env,
+						stdio: "ignore",
+					});
+					child.on("close", (code) => {
+						if (code === 0) resolve();
+						else reject(new Error(`Command failed with code ${code}`));
+					});
+					child.on("error", reject);
+				});
+			};
+
 			try {
-				await execAsync("docker --version", { cwd: pluginPath, env });
+				await runCommand("docker", ["--version"]);
 			} catch {
 				console.warn(
 					`Docker not available for plugin ${pluginId}. Skipping docker step '${action}'.`,
@@ -600,7 +627,7 @@ export class PluginLifecycle {
 			}
 
 			try {
-				await execAsync("docker compose version", { cwd: pluginPath, env });
+				await runCommand("docker", ["compose", "version"]);
 			} catch {
 				console.warn(
 					`'docker compose' not available for plugin ${pluginId}. Skipping docker step '${action}'.`,
@@ -608,39 +635,28 @@ export class PluginLifecycle {
 				return;
 			}
 
-			const runCompose = async (subcommand: string) => {
-				await execAsync(`sudo docker compose ${subcommand}`, {
-					cwd: pluginPath,
-					env,
-				});
+			const runCompose = async (args: string[]) => {
+				await runCommand("sudo", ["docker", "compose", ...args]);
 			};
 
 			if (action === "install" && (cfg.buildOnInstall ?? true)) {
 				console.log(`Building docker container for plugin ${pluginId}...`);
-				await runCompose(
-					`-f "${fullComposePath}" build ${serviceArg.join(" ")}`,
-				);
+				await runCompose(["-f", fullComposePath, "build", ...serviceArg]);
 			}
 
 			if (action === "activate" && (cfg.upOnActivate ?? true)) {
 				console.log(`Starting docker container for plugin ${pluginId}...`);
-				await runCompose(
-					`-f "${fullComposePath}" up -d ${serviceArg.join(" ")}`,
-				);
+				await runCompose(["-f", fullComposePath, "up", "-d", ...serviceArg]);
 			}
 
 			if (action === "deactivate" && (cfg.downOnDeactivate ?? true)) {
 				console.log(`Stopping docker container for plugin ${pluginId}...`);
-				await runCompose(
-					`-f "${fullComposePath}" down ${serviceArg.join(" ")}`,
-				);
+				await runCompose(["-f", fullComposePath, "down", ...serviceArg]);
 			}
 
 			if (action === "uninstall" && (cfg.removeOnUninstall ?? true)) {
 				console.log(`Removing docker container for plugin ${pluginId}...`);
-				await runCompose(
-					`-f "${fullComposePath}" down -v ${serviceArg.join(" ")}`,
-				);
+				await runCompose(["-f", fullComposePath, "down", "-v", ...serviceArg]);
 			}
 		} catch (error) {
 			console.warn(

@@ -8,27 +8,40 @@ import { UserEducationGrade } from "~/src/graphql/enums/UserEducationGrade";
 import { UserEmploymentStatus } from "~/src/graphql/enums/UserEmploymentStatus";
 import { UserMaritalStatus } from "~/src/graphql/enums/UserMaritalStatus";
 import { UserNatalSex } from "~/src/graphql/enums/UserNatalSex";
+import { sanitizedStringSchema } from "~/src/utilities/sanitizer";
 
 export const mutationUpdateCurrentUserInputSchema = usersTableInsertSchema
 	.omit({
+		addressLine1: true,
+		addressLine2: true,
 		avatarMimeType: true,
 		avatarName: true,
+		city: true,
 		createdAt: true,
 		creatorId: true,
+		description: true,
 		emailAddress: true,
 		id: true,
 		isEmailAddressVerified: true,
 		name: true,
 		passwordHash: true,
+		postalCode: true,
 		role: true,
+		state: true,
 		updatedAt: true,
 		updaterId: true,
 	})
 	.extend({
+		addressLine1: sanitizedStringSchema.optional(),
+		addressLine2: sanitizedStringSchema.optional(),
 		avatar: z.custom<Promise<FileUpload>>().nullish(),
+		city: sanitizedStringSchema.optional(),
+		description: sanitizedStringSchema.optional(),
 		emailAddress: usersTableInsertSchema.shape.emailAddress.optional(),
-		name: usersTableInsertSchema.shape.name.optional(),
+		name: sanitizedStringSchema.optional(),
 		password: z.string().min(1).max(64).optional(),
+		postalCode: sanitizedStringSchema.optional(),
+		state: sanitizedStringSchema.optional(),
 	})
 	.refine((arg) => Object.values(arg).some((value) => value !== undefined), {
 		message: "At least one optional argument must be provided.",

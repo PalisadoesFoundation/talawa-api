@@ -1,11 +1,15 @@
 import type { z } from "zod";
 import { commentsTableInsertSchema } from "~/src/drizzle/tables/comments";
 import { builder } from "~/src/graphql/builder";
+import { sanitizedStringSchema } from "~/src/utilities/sanitizer";
 
-export const mutationCreateCommentInputSchema = commentsTableInsertSchema.pick({
-	body: true,
-	postId: true,
-});
+export const mutationCreateCommentInputSchema = commentsTableInsertSchema
+	.pick({
+		postId: true,
+	})
+	.extend({
+		body: sanitizedStringSchema,
+	});
 
 export const MutationCreateCommentInput = builder
 	.inputRef<z.infer<typeof mutationCreateCommentInputSchema>>(

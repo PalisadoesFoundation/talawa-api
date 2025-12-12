@@ -1,6 +1,6 @@
 import { z } from "zod";
-import { postsTableInsertSchema } from "~/src/drizzle/tables/posts";
 import { builder } from "~/src/graphql/builder";
+import { sanitizedStringSchema } from "~/src/utilities/sanitizer";
 import {
 	FileMetadataInput,
 	fileMetadataSchema,
@@ -8,7 +8,7 @@ import {
 
 export const mutationUpdatePostInputSchema = z
 	.object({
-		caption: postsTableInsertSchema.shape.caption.optional(),
+		caption: sanitizedStringSchema.optional(),
 		id: z.string().uuid(),
 		isPinned: z.boolean().optional(),
 		attachments: z.array(fileMetadataSchema).min(1).max(20).optional(),

@@ -2,18 +2,19 @@ import { z } from "zod";
 import { eventsTableInsertSchema } from "~/src/drizzle/tables/events";
 import { builder } from "~/src/graphql/builder";
 import { isNotNullish } from "~/src/utilities/isNotNullish";
+import { sanitizedStringSchema } from "~/src/utilities/sanitizer";
 
 export const mutationUpdateEventInputSchema = z
 	.object({
-		description: eventsTableInsertSchema.shape.description.optional(),
+		description: sanitizedStringSchema.optional(),
 		endAt: eventsTableInsertSchema.shape.endAt.optional(),
 		id: eventsTableInsertSchema.shape.id.unwrap(),
-		name: eventsTableInsertSchema.shape.name.optional(),
+		name: sanitizedStringSchema.optional(),
 		startAt: eventsTableInsertSchema.shape.startAt.optional(),
 		allDay: eventsTableInsertSchema.shape.allDay.optional(),
 		isPublic: eventsTableInsertSchema.shape.isPublic.optional(),
 		isRegisterable: eventsTableInsertSchema.shape.isRegisterable.optional(),
-		location: eventsTableInsertSchema.shape.location.optional(),
+		location: sanitizedStringSchema.optional(),
 	})
 	.superRefine(({ id, ...remainingArg }, ctx) => {
 		if (!Object.values(remainingArg).some((value) => value !== undefined)) {

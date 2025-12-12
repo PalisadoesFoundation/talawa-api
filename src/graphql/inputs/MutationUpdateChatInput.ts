@@ -2,15 +2,15 @@ import type { FileUpload } from "graphql-upload-minimal";
 import { z } from "zod";
 import { chatsTableInsertSchema } from "~/src/drizzle/tables/chats";
 import { builder } from "~/src/graphql/builder";
+import { sanitizedStringSchema } from "~/src/utilities/sanitizer";
 
 export const mutationUpdateChatInputSchema = chatsTableInsertSchema
-	.pick({
-		description: true,
-	})
+	.pick({})
 	.extend({
 		avatar: z.custom<Promise<FileUpload>>().nullish(),
+		description: sanitizedStringSchema.optional(),
 		id: chatsTableInsertSchema.shape.id.unwrap(),
-		name: chatsTableInsertSchema.shape.name.optional(),
+		name: sanitizedStringSchema.optional(),
 	})
 	.refine(
 		({ id, ...arg }) => Object.values(arg).some((value) => value !== undefined),

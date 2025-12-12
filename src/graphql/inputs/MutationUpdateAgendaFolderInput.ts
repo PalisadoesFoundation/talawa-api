@@ -1,6 +1,7 @@
 import type { z } from "zod";
 import { agendaFoldersTableInsertSchema } from "~/src/drizzle/tables/agendaFolders";
 import { builder } from "~/src/graphql/builder";
+import { sanitizedStringSchema } from "~/src/utilities/sanitizer";
 
 export const mutationUpdateAgendaFolderInputSchema =
 	agendaFoldersTableInsertSchema
@@ -9,7 +10,7 @@ export const mutationUpdateAgendaFolderInputSchema =
 		})
 		.extend({
 			id: agendaFoldersTableInsertSchema.shape.id.unwrap(),
-			name: agendaFoldersTableInsertSchema.shape.name.optional(),
+			name: sanitizedStringSchema.optional(),
 		})
 		.refine(
 			({ id, ...remainingArg }) =>

@@ -9,6 +9,7 @@ import { exec } from "node:child_process";
 import path from "node:path";
 import { promisify } from "node:util";
 import { TalawaGraphQLError } from "./TalawaGraphQLError";
+import { pluginIdSchema } from "./validators";
 
 const execAsync = promisify(exec);
 
@@ -31,6 +32,15 @@ export async function installPluginDependencies(
 		error?: (message: string) => void;
 	},
 ): Promise<DependencyInstallationResult> {
+	// Validate pluginId to prevent command injection
+	const validation = pluginIdSchema.safeParse(pluginId);
+	if (!validation.success) {
+		return {
+			success: false,
+			error: `Invalid plugin ID: ${validation.error.message}`,
+		};
+	}
+
 	const pluginPath = path.join(
 		process.cwd(),
 		"src",

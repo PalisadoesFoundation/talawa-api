@@ -1,6 +1,6 @@
 import { z } from "zod";
-import { eventsTableInsertSchema } from "~/src/drizzle/tables/events";
 import { builder } from "~/src/graphql/builder";
+import { sanitizedStringSchema } from "~/src/utilities/sanitizer";
 
 export const mutationUpdateEntireRecurringEventSeriesInputSchema = z
 	.object({
@@ -8,8 +8,8 @@ export const mutationUpdateEntireRecurringEventSeriesInputSchema = z
 			message: "Must be a valid UUID for the recurring event instance ID.",
 		}),
 		// Only fields that make sense to update for all events (past, present, future)
-		name: eventsTableInsertSchema.shape.name.optional(),
-		description: eventsTableInsertSchema.shape.description.optional(),
+		name: sanitizedStringSchema.optional(),
+		description: sanitizedStringSchema.optional(),
 	})
 	.superRefine(({ id, ...remainingArgs }, ctx) => {
 		// Ensure at least one field is being updated

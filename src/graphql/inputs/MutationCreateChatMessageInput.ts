@@ -1,6 +1,7 @@
 import type { z } from "zod";
 import { chatMessagesTableInsertSchema } from "~/src/drizzle/tables/chatMessages";
 import { builder } from "~/src/graphql/builder";
+import { sanitizedStringSchema } from "~/src/utilities/sanitizer";
 
 export const mutationCreateChatMessageInputSchema =
 	chatMessagesTableInsertSchema
@@ -9,6 +10,7 @@ export const mutationCreateChatMessageInputSchema =
 			chatId: true,
 		})
 		.extend({
+			body: sanitizedStringSchema,
 			parentMessageId: chatMessagesTableInsertSchema.shape.parentMessageId
 				.unwrap()
 				.unwrap()

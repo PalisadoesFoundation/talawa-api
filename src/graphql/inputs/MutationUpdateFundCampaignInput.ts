@@ -2,13 +2,14 @@ import { z } from "zod";
 import { fundCampaignsTableInsertSchema } from "~/src/drizzle/tables/fundCampaigns";
 import { builder } from "~/src/graphql/builder";
 import { isNotNullish } from "~/src/utilities/isNotNullish";
+import { sanitizedStringSchema } from "~/src/utilities/sanitizer";
 
 export const mutationUpdateFundCampaignInputSchema = z
 	.object({
 		endAt: fundCampaignsTableInsertSchema.shape.endAt.optional(),
 		goalAmount: fundCampaignsTableInsertSchema.shape.goalAmount.optional(),
 		id: fundCampaignsTableInsertSchema.shape.id.unwrap(),
-		name: fundCampaignsTableInsertSchema.shape.name.optional(),
+		name: sanitizedStringSchema.optional(),
 		startAt: fundCampaignsTableInsertSchema.shape.startAt.optional(),
 	})
 	.superRefine(({ id, ...remainingArg }, ctx) => {
