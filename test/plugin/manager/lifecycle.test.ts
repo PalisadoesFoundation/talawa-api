@@ -412,7 +412,7 @@ describe("PluginLifecycle", () => {
 
 			const consoleSpy = vi
 				.spyOn(console, "error")
-				.mockImplementation(() => {});
+				.mockImplementation(() => { });
 
 			const maliciousPluginId = "../malicious-plugin";
 			const result = await lifecycle.installPlugin(
@@ -540,6 +540,31 @@ describe("PluginLifecycle", () => {
 			);
 
 			expect(result).toBe(true); // Should still succeed despite table removal failure
+		});
+
+		it("should reject invalid plugin ID during uninstallation", async () => {
+			const { isValidPluginId } = await import("../../../src/plugin/utils");
+			(isValidPluginId as ReturnType<typeof vi.fn>).mockReturnValueOnce(false);
+
+			const consoleSpy = vi
+				.spyOn(console, "error")
+				.mockImplementation(() => { });
+
+			const maliciousPluginId = "../malicious-plugin";
+			const result = await lifecycle.uninstallPlugin(
+				maliciousPluginId,
+				mockPluginManager as unknown as Parameters<
+					typeof lifecycle.uninstallPlugin
+				>[1],
+			);
+
+			expect(result).toBe(false);
+			// Verify isValidPluginId was called with the supplied plugin id
+			expect(isValidPluginId).toHaveBeenCalledWith(maliciousPluginId);
+			// Verify console.error was called for the error
+			expect(consoleSpy).toHaveBeenCalled();
+			expect(consoleSpy).toHaveBeenCalledTimes(1);
+			consoleSpy.mockRestore();
 		});
 	});
 
@@ -952,7 +977,7 @@ describe("PluginLifecycle", () => {
 			// Mock console.error to capture error logging
 			const consoleSpy = vi
 				.spyOn(console, "error")
-				.mockImplementation(() => {});
+				.mockImplementation(() => { });
 
 			// Call the private method through reflection
 			await (
@@ -988,7 +1013,7 @@ describe("PluginLifecycle", () => {
 			// Mock console.error to capture error logging
 			const consoleSpy = vi
 				.spyOn(console, "error")
-				.mockImplementation(() => {});
+				.mockImplementation(() => { });
 
 			// Call the private method through reflection
 			await (
@@ -1024,7 +1049,7 @@ describe("PluginLifecycle", () => {
 			// Mock console.error to capture error logging
 			const consoleSpy = vi
 				.spyOn(console, "error")
-				.mockImplementation(() => {});
+				.mockImplementation(() => { });
 
 			// Call the private method through reflection
 			await (
@@ -1060,7 +1085,7 @@ describe("PluginLifecycle", () => {
 			// Mock console.error to capture error logging
 			const consoleSpy = vi
 				.spyOn(console, "error")
-				.mockImplementation(() => {});
+				.mockImplementation(() => { });
 
 			// Call the private method through reflection
 			await (
@@ -1094,7 +1119,7 @@ describe("PluginLifecycle", () => {
 			// Mock console.error to capture error logging
 			const consoleSpy = vi
 				.spyOn(console, "error")
-				.mockImplementation(() => {});
+				.mockImplementation(() => { });
 
 			// Call the private method through reflection
 			await (
@@ -1107,28 +1132,8 @@ describe("PluginLifecycle", () => {
 				"Error calling onUnload lifecycle hook for plugin test-plugin:",
 				expect.any(Error),
 			);
-
 			consoleSpy.mockRestore();
 			getPluginModuleSpy.mockRestore();
-		});
-
-		it("should reject invalid plugin ID during uninstallation", async () => {
-			const { isValidPluginId } = await import("../../../src/plugin/utils");
-			(isValidPluginId as ReturnType<typeof vi.fn>).mockReturnValueOnce(false);
-
-			const consoleSpy = vi
-				.spyOn(console, "error")
-				.mockImplementation(() => {});
-
-			const result = await lifecycle.uninstallPlugin(
-				"../malicious-plugin",
-				mockPluginManager as unknown as Parameters<
-					typeof lifecycle.uninstallPlugin
-				>[1],
-			);
-
-			expect(result).toBe(false);
-			consoleSpy.mockRestore();
 		});
 	});
 
@@ -1672,7 +1677,7 @@ describe("PluginLifecycle", () => {
 		it("should log plugin errors", () => {
 			const consoleSpy = vi
 				.spyOn(console, "error")
-				.mockImplementation(() => {});
+				.mockImplementation(() => { });
 			const error = new Error("Test error");
 
 			(
@@ -1717,7 +1722,7 @@ describe("PluginLifecycle", () => {
 			);
 			const consoleSpy = vi
 				.spyOn(console, "error")
-				.mockImplementation(() => {});
+				.mockImplementation(() => { });
 			(
 				schemaManager.rebuildSchema as ReturnType<typeof vi.fn>
 			).mockRejectedValue(new Error("Schema rebuild failed"));
@@ -1954,7 +1959,7 @@ describe("PluginLifecycle", () => {
 			const { safeRequire } = await import("../../../src/plugin/utils");
 			const consoleSpy = vi
 				.spyOn(console, "error")
-				.mockImplementation(() => {});
+				.mockImplementation(() => { });
 			const mockPluginModule: MockPluginModule = {
 				onInstall: vi.fn(() => Promise.reject(new Error("Install failed"))),
 			};
@@ -2014,7 +2019,7 @@ describe("PluginLifecycle", () => {
 			const { safeRequire } = await import("../../../src/plugin/utils");
 			const consoleSpy = vi
 				.spyOn(console, "error")
-				.mockImplementation(() => {});
+				.mockImplementation(() => { });
 			const mockPluginModule: MockPluginModule = {
 				onUninstall: vi.fn(() => Promise.reject(new Error("Uninstall failed"))),
 			};

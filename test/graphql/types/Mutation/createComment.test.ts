@@ -27,7 +27,7 @@ suite("Mutation field createComment", () => {
 				},
 			},
 		});
-		if (signInResult.errors) {
+		if (signInResult.errors?.length) {
 			throw new Error(`signIn failed: ${JSON.stringify(signInResult.errors)}`);
 		}
 		const token = signInResult.data?.signIn?.authenticationToken ?? null;
@@ -52,7 +52,7 @@ suite("Mutation field createComment", () => {
 				},
 			},
 		);
-		if (createOrgResult.errors) {
+		if (createOrgResult.errors?.length) {
 			throw new Error(
 				`createOrganization failed: ${JSON.stringify(createOrgResult.errors)}`,
 			);
@@ -73,7 +73,7 @@ suite("Mutation field createComment", () => {
 				authorization: `Bearer ${adminToken}`,
 			},
 		});
-		if (postResult.errors) {
+		if (postResult.errors?.length) {
 			throw new Error(
 				`createPost failed: ${JSON.stringify(postResult.errors)}`,
 			);

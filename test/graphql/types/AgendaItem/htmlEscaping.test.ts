@@ -1,18 +1,12 @@
-import { describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+import { escapeHTML } from "~/src/utilities/sanitizer";
 
 // Mock the escapeHTML function
 vi.mock("~/src/utilities/sanitizer", () => ({
-	escapeHTML: vi.fn((str: string) => {
-		// Simulate actual HTML escaping behavior
-		return str
-			.replace(/&/g, "&amp;")
-			.replace(/</g, "&lt;")
-			.replace(/>/g, "&gt;")
-			.replace(/"/g, "&quot;");
-	}),
+	escapeHTML: vi.fn((str: string) => `escaped_${str}`),
 }));
 
-// Mock the builder
+// Mock the builder - simplified approach without capturing resolvers
 vi.mock("~/src/graphql/builder", () => ({
 	builder: {
 		objectRef: vi.fn(() => ({
@@ -22,7 +16,7 @@ vi.mock("~/src/graphql/builder", () => ({
 }));
 
 // Mock AgendaItemType enum
-vi.mock("~/src/drizzle/enums/agendaItemType", () => ({
+vi.mock("~/src/graphql/enums/AgendaItemType", () => ({
 	AgendaItemType: {},
 }));
 
@@ -38,92 +32,101 @@ vi.mock("~/src/drizzle/enums/agendaItemType", () => ({
  */
 
 describe("AgendaItem output-level HTML escaping", () => {
+	// Clear mocks between tests to isolate mock state
+	beforeEach(() => {
+		vi.clearAllMocks();
+	});
+
 	describe("name field resolver", () => {
-		it("should escape HTML in name field", async () => {
-			const { escapeHTML } = await import("~/src/utilities/sanitizer");
+		it("should escape HTML in name field", () => {
+			const agendaItem = {
+				id: "test-id",
+				name: '<script>alert("XSS")</script>',
+				description: null,
+				type: "regular",
+			};
 
-			// Test data: raw HTML that would be dangerous if not escaped
-			const rawHtmlName = '<script>alert("XSS")</script>';
-			const expectedEscapedName =
-				"&lt;script&gt;alert(&quot;XSS&quot;)&lt;/script&gt;";
+			// Test the resolver logic directly - name is always escaped
+			const result = escapeHTML(agendaItem.name);
 
-			// Test the resolver logic directly
-			const result = (escapeHTML as ReturnType<typeof vi.fn>)(rawHtmlName);
-
-			expect(result).toBe(expectedEscapedName);
-			expect(escapeHTML).toHaveBeenCalledWith(rawHtmlName);
+			expect(result).toBe('escaped_<script>alert("XSS")</script>');
+			expect(escapeHTML).toHaveBeenCalledWith('<script>alert("XSS")</script>');
+			expect(escapeHTML).toHaveBeenCalledTimes(1);
 		});
 	});
 
 	describe("description field resolver", () => {
-		it("should return null when description is null", async () => {
-			const { escapeHTML } = await import("~/src/utilities/sanitizer");
-
+		it("should return null when description is null", () => {
 			const agendaItem = {
 				id: "test-id",
 				name: "Test Agenda Item",
 				description: null,
+				type: "regular",
 			};
 
 			// Test the resolver logic directly - mimics the ternary in AgendaItem.ts
 			const result = agendaItem.description
-				? (escapeHTML as ReturnType<typeof vi.fn>)(agendaItem.description)
+				? escapeHTML(agendaItem.description)
 				: null;
 
 			expect(result).toBe(null);
+			// escapeHTML should not be called for null description
+			expect(escapeHTML).not.toHaveBeenCalled();
 		});
 
-		it("should escape HTML in description when provided", async () => {
-			const { escapeHTML } = await import("~/src/utilities/sanitizer");
-
-			const rawHtmlDescription = '<img src="x" onerror="alert(1)">';
-			const expectedEscapedDescription =
-				"&lt;img src=&quot;x&quot; onerror=&quot;alert(1)&quot;&gt;";
-
+		it("should escape HTML in description when provided", () => {
 			const agendaItem = {
 				id: "test-id",
 				name: "Test Agenda Item",
-				description: rawHtmlDescription,
+				description: '<img src="x" onerror="alert(1)">',
+				type: "regular",
 			};
 
 			// Test the resolver logic directly
 			const result = agendaItem.description
-				? (escapeHTML as ReturnType<typeof vi.fn>)(agendaItem.description)
+				? escapeHTML(agendaItem.description)
 				: null;
 
-			expect(result).toBe(expectedEscapedDescription);
-			expect(escapeHTML).toHaveBeenCalledWith(rawHtmlDescription);
+			expect(result).toBe('escaped_<img src="x" onerror="alert(1)">');
+			expect(escapeHTML).toHaveBeenCalledWith(
+				'<img src="x" onerror="alert(1)">',
+			);
+			expect(escapeHTML).toHaveBeenCalledTimes(1);
 		});
 
-		it("should handle empty string description", async () => {
-			const { escapeHTML } = await import("~/src/utilities/sanitizer");
-
+		it("should handle empty string description", () => {
 			const agendaItem = {
 				id: "test-id",
 				name: "Test Agenda Item",
 				description: "",
+				type: "regular",
 			};
 
 			// Empty string is falsy, so should return null
 			const result = agendaItem.description
-				? (escapeHTML as ReturnType<typeof vi.fn>)(agendaItem.description)
+				? escapeHTML(agendaItem.description)
 				: null;
 
 			expect(result).toBe(null);
+			// escapeHTML should not be called for empty string
+			expect(escapeHTML).not.toHaveBeenCalled();
 		});
 	});
 
 	describe("ampersand escaping", () => {
-		it("should handle ampersand escaping correctly", async () => {
-			const { escapeHTML } = await import("~/src/utilities/sanitizer");
+		it("should handle ampersand escaping correctly", () => {
+			const agendaItem = {
+				id: "test-id",
+				name: "Tom & Jerry <3 Programming",
+				description: null,
+				type: "regular",
+			};
 
-			const rawContent = "Tom & Jerry <3 Programming";
-			const expectedEscaped = "Tom &amp; Jerry &lt;3 Programming";
+			const result = escapeHTML(agendaItem.name);
 
-			const result = (escapeHTML as ReturnType<typeof vi.fn>)(rawContent);
-
-			expect(result).toBe(expectedEscaped);
-			expect(escapeHTML).toHaveBeenCalledWith(rawContent);
+			expect(result).toBe("escaped_Tom & Jerry <3 Programming");
+			expect(escapeHTML).toHaveBeenCalledWith("Tom & Jerry <3 Programming");
+			expect(escapeHTML).toHaveBeenCalledTimes(1);
 		});
 	});
 });

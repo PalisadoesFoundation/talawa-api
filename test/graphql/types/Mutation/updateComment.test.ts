@@ -1,4 +1,5 @@
 import { afterAll, beforeAll, expect, suite, test } from "vitest";
+import { COMMENT_BODY_MAX_LENGTH } from "~/src/drizzle/tables/comments";
 import type { InvalidArgumentsExtensions } from "~/src/utilities/TalawaGraphQLError";
 import { assertToBeNonNullish } from "../../../helpers";
 import { server } from "../../../server";
@@ -166,8 +167,8 @@ suite("Mutation field updateComment", () => {
 	});
 
 	test("should return error if comment body exceeds length limit", async () => {
-		// Update comment with long body
-		const longBody = "a".repeat(2049);
+		// Update comment with long body (exceeds COMMENT_BODY_MAX_LENGTH)
+		const longBody = "a".repeat(COMMENT_BODY_MAX_LENGTH + 1);
 		const updateResult = await mercuriusClient.mutate(Mutation_updateComment, {
 			variables: {
 				input: {
@@ -202,8 +203,8 @@ suite("Mutation field updateComment", () => {
 		expect(Array.isArray(issues)).toBe(true);
 		expect(issues?.length).toBeGreaterThan(0);
 
-		// Use regex for flexible message matching (handles wording variations)
+		// Use regex for flexible message matching (uses constant dynamically)
 		const issueMessages = issues?.map((i) => i.message).join(" ");
-		expect(issueMessages).toMatch(/at most 2048/i);
+		expect(issueMessages).toMatch(new RegExp(`at most ${COMMENT_BODY_MAX_LENGTH}`, "i"));
 	});
 });
