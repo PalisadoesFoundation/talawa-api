@@ -19,6 +19,10 @@ describe("pluginIdSchema", () => {
 			expect(pluginIdSchema.parse("my_plugin")).toBe("my_plugin");
 		});
 
+		it("should accept plugin ID with hyphens", () => {
+			expect(pluginIdSchema.parse("my-plugin")).toBe("my-plugin");
+		});
+
 		it("should accept plugin ID with numbers", () => {
 			expect(pluginIdSchema.parse("plugin123")).toBe("plugin123");
 		});
@@ -38,8 +42,8 @@ describe("pluginIdSchema", () => {
 			expect(() => pluginIdSchema.parse("123plugin")).toThrow();
 		});
 
-		it("should reject plugin ID with hyphens", () => {
-			expect(() => pluginIdSchema.parse("my-plugin")).toThrow();
+		it("should reject plugin ID starting with hyphen", () => {
+			expect(() => pluginIdSchema.parse("-plugin")).toThrow();
 		});
 
 		it("should reject plugin ID with spaces", () => {
@@ -88,7 +92,7 @@ describe("pluginIdSchema", () => {
 		});
 
 		it("should return error for invalid plugin ID", () => {
-			const result = pluginIdSchema.safeParse("invalid-plugin");
+			const result = pluginIdSchema.safeParse("invalid plugin");
 			expect(result.success).toBe(false);
 		});
 	});

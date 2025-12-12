@@ -16,7 +16,7 @@ export const mutationUpdatePostInputSchema = z
 		 * to avoid double-escaping and exceeding DB length limits with escaped entities.
 		 */
 		caption: postsTableInsertSchema.shape.caption
-			.transform((val) => sanitizedStringSchema.parse(val))
+			.pipe(sanitizedStringSchema)
 			.refine((val) => val.length <= 2000, {
 				message: "Post caption must not exceed 2000 characters.",
 			})

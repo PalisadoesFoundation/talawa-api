@@ -48,10 +48,11 @@ suite("Mutation field updateComment", () => {
 				},
 			},
 		);
-		expect(
-			createOrgResult.errors,
-			`createOrganization failed: ${JSON.stringify(createOrgResult.errors)}`,
-		).toBeFalsy();
+		if (createOrgResult.errors) {
+			throw new Error(
+				`createOrganization failed: ${JSON.stringify(createOrgResult.errors)}`,
+			);
+		}
 		const orgId = createOrgResult.data?.createOrganization?.id;
 		assertToBeNonNullish(orgId);
 
@@ -67,10 +68,11 @@ suite("Mutation field updateComment", () => {
 				Authorization: `Bearer ${adminToken}`,
 			},
 		});
-		expect(
-			postResult.errors,
-			`createPost failed: ${JSON.stringify(postResult.errors)}`,
-		).toBeFalsy();
+		if (postResult.errors) {
+			throw new Error(
+				`createPost failed: ${JSON.stringify(postResult.errors)}`,
+			);
+		}
 		const postId = postResult.data?.createPost?.id;
 		assertToBeNonNullish(postId);
 
@@ -86,10 +88,11 @@ suite("Mutation field updateComment", () => {
 				Authorization: `Bearer ${adminToken}`,
 			},
 		});
-		expect(
-			commentResult.errors,
-			`createComment failed: ${JSON.stringify(commentResult.errors)}`,
-		).toBeFalsy();
+		if (commentResult.errors) {
+			throw new Error(
+				`createComment failed: ${JSON.stringify(commentResult.errors)}`,
+			);
+		}
 		const createdCommentId = commentResult.data?.createComment?.id;
 		assertToBeNonNullish(createdCommentId);
 		commentId = createdCommentId;
@@ -109,10 +112,11 @@ suite("Mutation field updateComment", () => {
 				Authorization: `Bearer ${adminToken}`,
 			},
 		});
-		expect(
-			updateResult.errors,
-			`updateComment failed: ${JSON.stringify(updateResult.errors)}`,
-		).toBeFalsy();
+		if (updateResult.errors) {
+			throw new Error(
+				`updateComment failed: ${JSON.stringify(updateResult.errors)}`,
+			);
+		}
 
 		const updatedComment = updateResult.data?.updateComment;
 		assertToBeNonNullish(updatedComment);

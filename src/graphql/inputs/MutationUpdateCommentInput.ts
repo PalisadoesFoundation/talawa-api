@@ -11,12 +11,14 @@ export const mutationUpdateCommentInputSchema = z
 		 * Body of the comment.
 		 * We persist the raw (trimmed) text and perform HTML escaping at output time
 		 * to avoid double-escaping and exceeding DB length limits with escaped entities.
+		 *
+		 * Transform is applied BEFORE length checks to ensure whitespace-only
+		 * inputs are rejected (they become empty string after trim, failing min(1)).
 		 */
-		body: commentsTableInsertSchema.shape.body
+		body: z
+			.string()
 			.transform((val) => val.trim())
-			.refine((val) => val.length <= COMMENT_BODY_MAX_LENGTH, {
-				message: `Comment body must not exceed ${COMMENT_BODY_MAX_LENGTH} characters.`,
-			})
+			.pipe(z.string().min(1).max(COMMENT_BODY_MAX_LENGTH))
 			.optional(),
 		id: commentsTableInsertSchema.shape.id.unwrap(),
 	})

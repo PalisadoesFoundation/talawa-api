@@ -19,6 +19,7 @@ vi.mock("../../../src/plugin/utils", () => ({
 	dropPluginTables: vi.fn(),
 	safeRequire: vi.fn(),
 	createPluginTables: vi.fn(),
+	isValidPluginId: vi.fn(() => true), // Default to returning true for valid plugin IDs
 }));
 
 vi.mock("../../../src/graphql/schemaManager", () => ({

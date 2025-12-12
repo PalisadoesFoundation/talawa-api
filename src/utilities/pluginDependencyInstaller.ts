@@ -75,9 +75,18 @@ export async function installPluginDependencies(
 			stdout: string;
 			stderr: string;
 		}>((resolve, reject) => {
+			// On Unix, use detached: true to create a new process group
+			// This allows killing all descendants with process.kill(-pid, signal)
+			const isUnix = process.platform !== "win32";
 			const child = spawn(pnpmBin, ["install", "--frozen-lockfile"], {
 				cwd: pluginPath,
+				detached: isUnix,
 			});
+
+			// Unref detached child so it doesn't block the parent from exiting
+			if (isUnix && child.unref) {
+				child.unref();
+			}
 
 			let stdout = "";
 			let stderr = "";
@@ -140,13 +149,20 @@ export async function installPluginDependencies(
 						}
 					});
 				} else {
-					// On Unix-like systems, use regular signals
-					// Note: This only kills the direct child, not descendants
-					// For full tree kill, consider using process groups (-pid)
+					// On Unix-like systems, kill the entire process group
+					// Using negative PID kills all processes in the group
 					try {
-						child.kill(signal);
+						if (pid !== undefined) {
+							// Kill the process group (negative PID)
+							process.kill(-pid, signal);
+						}
 					} catch {
-						// Ignore - process may already be gone
+						// Fall back to direct child kill if process group kill fails
+						try {
+							child.kill(signal);
+						} catch {
+							// Ignore - process may already be gone
+						}
 					}
 				}
 			};

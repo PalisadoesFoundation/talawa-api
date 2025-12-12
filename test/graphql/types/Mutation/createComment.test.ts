@@ -26,6 +26,9 @@ suite("Mutation field createComment", () => {
 				},
 			},
 		});
+		if (signInResult.errors) {
+			throw new Error(`signIn failed: ${JSON.stringify(signInResult.errors)}`);
+		}
 		const token = signInResult.data?.signIn?.authenticationToken ?? null;
 		assertToBeNonNullish(token);
 		adminToken = token;
@@ -48,6 +51,11 @@ suite("Mutation field createComment", () => {
 				},
 			},
 		);
+		if (createOrgResult.errors) {
+			throw new Error(
+				`createOrganization failed: ${JSON.stringify(createOrgResult.errors)}`,
+			);
+		}
 		const createdOrgId = createOrgResult.data?.createOrganization?.id;
 		assertToBeNonNullish(createdOrgId);
 		orgId = createdOrgId;
@@ -64,6 +72,11 @@ suite("Mutation field createComment", () => {
 				authorization: `Bearer ${adminToken}`,
 			},
 		});
+		if (postResult.errors) {
+			throw new Error(
+				`createPost failed: ${JSON.stringify(postResult.errors)}`,
+			);
+		}
 		const createdPostId = postResult.data?.createPost?.id;
 		assertToBeNonNullish(createdPostId);
 		postId = createdPostId;
@@ -83,6 +96,11 @@ suite("Mutation field createComment", () => {
 				authorization: `Bearer ${adminToken}`,
 			},
 		});
+		if (commentResult.errors) {
+			throw new Error(
+				`createComment failed: ${JSON.stringify(commentResult.errors)}`,
+			);
+		}
 		const createdComment = commentResult.data?.createComment;
 		assertToBeNonNullish(createdComment);
 
