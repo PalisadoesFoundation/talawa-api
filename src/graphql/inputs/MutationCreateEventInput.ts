@@ -2,17 +2,21 @@ import type { FileUpload } from "graphql-upload-minimal";
 import { z } from "zod";
 import { eventsTableInsertSchema } from "~/src/drizzle/tables/events";
 import { builder } from "~/src/graphql/builder";
+import { sanitizedStringSchema } from "~/src/utilities/sanitizer";
 import { RecurrenceInput, recurrenceInputSchema } from "./RecurrenceInput";
 
 export const mutationCreateEventInputSchema = eventsTableInsertSchema
 	.pick({
-		description: true,
 		endAt: true,
-		name: true,
 		organizationId: true,
 		startAt: true,
 	})
 	.extend({
+		description: eventsTableInsertSchema.shape.description
+			.unwrap()
+			.pipe(sanitizedStringSchema)
+			.optional(),
+		name: eventsTableInsertSchema.shape.name.pipe(sanitizedStringSchema),
 		attachments: z
 			.custom<Promise<FileUpload>>()
 			.array()

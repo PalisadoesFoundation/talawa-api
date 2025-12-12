@@ -31,9 +31,12 @@ export async function installPluginDependencies(
 	// Validate pluginId to prevent command injection
 	const validation = pluginIdSchema.safeParse(pluginId);
 	if (!validation.success) {
+		logger?.error?.(
+			`Plugin ID validation failed: ${JSON.stringify(validation.error.flatten())}`,
+		);
 		return {
 			success: false,
-			error: `Invalid plugin ID: ${validation.error.message}`,
+			error: "Invalid plugin ID",
 		};
 	}
 
@@ -64,33 +67,44 @@ export async function installPluginDependencies(
 
 		// Use spawn with args array to avoid shell injection
 		const { spawn } = await import("node:child_process");
+		const pnpmBin = process.platform === "win32" ? "pnpm.cmd" : "pnpm";
 
 		const installResult = await new Promise<{
 			stdout: string;
 			stderr: string;
 		}>((resolve, reject) => {
-			const child = spawn("pnpm", ["install", "--frozen-lockfile"], {
+			const child = spawn(pnpmBin, ["install", "--frozen-lockfile"], {
 				cwd: pluginPath,
 			});
 
 			let stdout = "";
 			let stderr = "";
+			let settled = false;
+			const MAX_BUFFER = 1_000_000; // 1MB
 
 			child.stdout?.on("data", (data) => {
-				stdout += data.toString();
+				if (stdout.length < MAX_BUFFER) stdout += data.toString();
 			});
 
 			child.stderr?.on("data", (data) => {
-				stderr += data.toString();
+				if (stderr.length < MAX_BUFFER) stderr += data.toString();
 			});
 
 			// Set timeout
 			const timeout = setTimeout(() => {
-				child.kill();
+				if (settled) return;
+				settled = true;
+				child.kill("SIGTERM");
+				const forceKill = setTimeout(() => {
+					child.kill("SIGKILL");
+				}, 5000);
+				if (forceKill.unref) forceKill.unref();
 				reject(new Error("Installation timed out after 5 minutes"));
 			}, 300000); // 5 minutes
 
-			child.on("close", (code) => {
+			child.once("close", (code) => {
+				if (settled) return;
+				settled = true;
 				clearTimeout(timeout);
 				if (code === 0) {
 					resolve({ stdout, stderr });
@@ -99,7 +113,9 @@ export async function installPluginDependencies(
 				}
 			});
 
-			child.on("error", (err) => {
+			child.once("error", (err) => {
+				if (settled) return;
+				settled = true;
 				clearTimeout(timeout);
 				reject(err);
 			});
@@ -110,13 +126,15 @@ export async function installPluginDependencies(
 				`Dependency installation warnings for ${pluginId}: ${installResult.stderr}`,
 			);
 		}
-
 		logger?.info?.(
 			`Successfully installed dependencies for plugin ${pluginId}`,
 		);
 		return {
 			success: true,
-			output: installResult.stdout,
+			output:
+				installResult.stdout.length >= 1_000_000
+					? `${installResult.stdout}\n[output truncated]`
+					: installResult.stdout,
 		};
 	} catch (error) {
 		const errorMessage =

@@ -6,9 +6,9 @@
 
 > **escapeHTML**(`str`): `string`
 
-Defined in: [src/utilities/sanitizer.ts:8](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/utilities/sanitizer.ts#L8)
+Defined in: src/utilities/sanitizer.ts:8
 
-Escapes HTML special characters to prevent XSS.
+Escapes HTML characters in a string to prevent XSS attacks.
 
 ## Parameters
 
