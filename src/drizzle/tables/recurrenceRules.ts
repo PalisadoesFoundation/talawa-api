@@ -242,15 +242,15 @@ export const recurrenceRulesTableInsertSchema = createInsertSchema(
 		recurrenceRuleString: (schema) => schema.min(1).max(512),
 		frequency: (schema) => schema,
 		interval: (schema) => schema.min(1).max(999),
- 		byDay: (schema) => 
+		byDay: (schema) =>
 			schema.refine(
 				(ele) => {
-					if(ele === null || ele === undefined) return true;
+					if (ele === null || ele === undefined) return true;
 					return ele.every((item) => item.length >= 2 && item.length <= 3);
 				},
 				{
-					 message: "Each byDay value must be 2-3 characters long"
-				}
+					message: "Each byDay value must be 2-3 characters long",
+				},
 			),
 		byMonth: (schema) =>
 			schema.refine(
@@ -261,16 +261,17 @@ export const recurrenceRulesTableInsertSchema = createInsertSchema(
 				{
 					message: "Each byMonth value must be between (1, 12)",
 				},
-    ),
-        byMonthDay: (schema) =>
-            schema.refine(
-                (ele) => {
-                    if (ele === null || ele === undefined) return true;
-                    return ele.every((item) => item !== 0 && item >= -31 && item <= 31);
-                },
-                {
-                    message: "Each byMonthDay value must be between (-31, 31), excluding 0",
-                },
-            ),
-    },
+			),
+		byMonthDay: (schema) =>
+			schema.refine(
+				(ele) => {
+					if (ele === null || ele === undefined) return true;
+					return ele.every((item) => item !== 0 && item >= -31 && item <= 31);
+				},
+				{
+					message:
+						"Each byMonthDay value must be between (-31, 31), excluding 0",
+				},
+			),
+	},
 );
