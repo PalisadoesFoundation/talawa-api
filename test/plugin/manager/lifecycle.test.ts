@@ -561,8 +561,7 @@ describe("PluginLifecycle", () => {
 			expect(result).toBe(false);
 			// Verify isValidPluginId was called with the supplied plugin id
 			expect(isValidPluginId).toHaveBeenCalledWith(maliciousPluginId);
-			// Verify console.error was called for the error
-			expect(consoleSpy).toHaveBeenCalled();
+			// Verify console.error was called exactly once for the error
 			expect(consoleSpy).toHaveBeenCalledTimes(1);
 			consoleSpy.mockRestore();
 		});

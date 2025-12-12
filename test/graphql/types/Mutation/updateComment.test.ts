@@ -34,6 +34,10 @@ suite("Mutation field updateComment", () => {
 		}
 		const token = signInResult.data?.signIn?.authenticationToken ?? null;
 		assertToBeNonNullish(token);
+		// Verify token is a non-empty string (not just non-nullish)
+		if (typeof token !== "string" || token.trim() === "") {
+			throw new Error("signIn returned empty or invalid authenticationToken");
+		}
 		adminToken = token;
 
 		// Create a shared organization for tests
@@ -195,18 +199,22 @@ suite("Mutation field updateComment", () => {
 		);
 		assertToBeNonNullish(validationError);
 
-		const issues = (
-			validationError?.extensions as unknown as InvalidArgumentsExtensions
-		)?.issues;
-		// Ensure issues is a non-empty array
-		expect(issues).toBeDefined();
-		expect(Array.isArray(issues)).toBe(true);
-		expect(issues?.length).toBeGreaterThan(0);
+		// Safely access extensions with proper type narrowing
+		assertToBeNonNullish(validationError.extensions);
+		const ext = validationError.extensions as InvalidArgumentsExtensions;
 
-		// Use regex for flexible message matching (uses constant dynamically)
-		const issueMessages = issues?.map((i) => i.message).join(" ");
+		// Ensure issues is a non-empty array
+		expect(ext.issues).toBeDefined();
+		expect(Array.isArray(ext.issues)).toBe(true);
+		expect(ext.issues.length).toBeGreaterThan(0);
+
+		// Use regex for flexible message matching (accepts "at most 2048" with optional "character(s)")
+		const issueMessages = ext.issues.map((i) => i.message).join(" ");
 		expect(issueMessages).toMatch(
-			new RegExp(`at most ${COMMENT_BODY_MAX_LENGTH}`, "i"),
+			new RegExp(
+				`at most\\s+${COMMENT_BODY_MAX_LENGTH}(?:\\s*characters?)?`,
+				"i",
+			),
 		);
 	});
 });

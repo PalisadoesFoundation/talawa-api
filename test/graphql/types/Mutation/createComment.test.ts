@@ -97,7 +97,10 @@ suite("Mutation field createComment", () => {
 				authorization: `Bearer ${adminToken}`,
 			},
 		});
-		if (commentResult.errors) {
+		if (
+			Array.isArray(commentResult.errors) &&
+			commentResult.errors.length > 0
+		) {
 			throw new Error(
 				`createComment failed: ${JSON.stringify(commentResult.errors)}`,
 			);
@@ -117,8 +120,8 @@ suite("Mutation field createComment", () => {
 		expect(body).not.toContain("<script>");
 		expect(body).not.toContain("</script>");
 
-		// Check that quotes are escaped (accepts common HTML entity variants: &#39;, &apos;, &#x27;)
-		expect(body).toMatch(/&#39;|&apos;|&#x27;/);
+		// Check that quotes are escaped (accepts common HTML entity variants: &#39;, &apos;, &#x27;, case-insensitive)
+		expect(body).toMatch(/&#39;|&apos;|&#x27;/i);
 	});
 
 	test("should return error if comment body exceeds length limit", async () => {
@@ -136,7 +139,10 @@ suite("Mutation field createComment", () => {
 			},
 		});
 
-		expect(commentResult.data?.createComment).toBeNull();
+		// Handle both { data: null, errors: [...] } and { data: { createComment: null }, errors: [...] }
+		expect(
+			commentResult.data === null || commentResult.data?.createComment === null,
+		).toBe(true);
 		expect(commentResult.errors).toBeDefined();
 
 		// Find the error with the expected extension code (robust to error ordering)
