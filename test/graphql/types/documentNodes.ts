@@ -695,7 +695,11 @@ export const Mutation_createAgendaFolder = gql(`
     createAgendaFolder(input: $input) {
       id
       name
+      isAgendaItemFolder
       event {
+        id
+      }
+      parentFolder {
         id
       }
     }
