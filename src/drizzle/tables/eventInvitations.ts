@@ -9,7 +9,6 @@ import {
 } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { uuidv7 } from "uuidv7";
-import { z } from "zod";
 import { eventsTable } from "./events";
 import { recurringEventInstancesTable } from "./recurringEventInstances";
 import { usersTable } from "./users";
@@ -136,15 +135,15 @@ export const eventInvitationsTableRelations = relations(
 export const eventInvitationsTableInsertSchema = createInsertSchema(
 	eventInvitationsTable,
 	{
-		inviteeEmail: z.string().email(),
-		inviteeName: z.string().optional(),
-		eventId: z.string().uuid().optional(),
-		recurringEventInstanceId: z.string().uuid().optional(),
-		userId: z.string().uuid().optional(),
-		invitationToken: z.string().optional(),
-		status: z.string().optional(),
-		expiresAt: z.date(),
-		metadata: z.any().optional(),
+		inviteeEmail: (schema) => schema.email(),
+		inviteeName: (schema) => schema.optional(),
+		eventId: (schema) => schema.optional(),
+		recurringEventInstanceId: (schema) => schema.optional(),
+		userId: (schema) => schema.optional(),
+		invitationToken: (schema) => schema.optional(),
+		status: (schema) => schema.optional(),
+		expiresAt: (schema) => schema,
+		metadata: (schema) => schema.optional(),
 	},
 );
 
