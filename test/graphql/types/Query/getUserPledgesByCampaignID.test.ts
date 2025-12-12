@@ -2,8 +2,6 @@ import { createMockGraphQLContext } from "test/_Mocks_/mockContextCreator/mockCo
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { GraphQLContext } from "~/src/graphql/context";
 import { resolveGetMyPledgesForCampaign } from "~/src/graphql/types/Query/getUserPledgesByCampaignID";
-// Import the module to ensure schema builder code is executed
-import "~/src/graphql/types/Query/getUserPledgesByCampaignID";
 
 describe("Query Resolver - getMyPledgesForCampaign", () => {
 	let ctx: GraphQLContext;
