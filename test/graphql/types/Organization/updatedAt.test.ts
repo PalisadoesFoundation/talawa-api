@@ -87,7 +87,7 @@ describe("Organization.updatedAt field resolver - Unit tests", () => {
 
 					// Execute the main where callback to ensure coverage
 					if (args?.where) {
-						const fields = { id: "users.id" };
+						const fields = { id: expect.anything() };
 						const operators = { eq: eqMock };
 						args.where(fields, operators);
 					}
@@ -95,7 +95,7 @@ describe("Organization.updatedAt field resolver - Unit tests", () => {
 					// Execute nested where callback for organizationMembershipsWhereMember
 					if (args?.with?.organizationMembershipsWhereMember?.where) {
 						const fields = {
-							organizationId: "organizationMemberships.organizationId",
+							organizationId: expect.anything(),
 						};
 						const operators = { eq: eqMock };
 						args.with.organizationMembershipsWhereMember.where(
@@ -114,6 +114,11 @@ describe("Organization.updatedAt field resolver - Unit tests", () => {
 				extensions: { code: "unauthenticated" },
 			});
 			expect(eqMock).toHaveBeenCalled();
+			// Verify the resolver passed the correct userId and organizationId
+			expect(eqMock.mock.calls.some(([, rhs]) => rhs === "user123")).toBe(true);
+			expect(
+				eqMock.mock.calls.some(([, rhs]) => rhs === mockOrganization.id),
+			).toBe(true);
 		});
 	});
 
