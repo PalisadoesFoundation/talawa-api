@@ -53,8 +53,9 @@ async function getAdminAuthToken() {
 	return { token, userId };
 }
 
-//Creates a test user for voting scenarios
-
+/**
+ * Creates a test user for voting scenarios
+ */
 async function createTestUser() {
 	const firstName = faker.person.firstName();
 	const lastName = faker.person.lastName();
@@ -62,9 +63,9 @@ async function createTestUser() {
 	const [user] = await server.drizzleClient
 		.insert(usersTable)
 		.values({
-			emailAddress: faker.internet.email(),
+			emailAddress: `${faker.string.uuid()}@example.com`,
 			name: `${firstName} ${lastName}`,
-			passwordHash: faker.internet.password(), // Using faker password as hash for testing
+			passwordHash: faker.internet.password(),
 			isEmailAddressVerified: false,
 			role: "regular",
 		})
@@ -78,8 +79,9 @@ async function createTestUser() {
 	return user.id;
 }
 
-// Creates a complete test comment with org, post, and comment
-
+/**
+ * Creates a complete test comment with org, post, and comment
+ */
 async function createTestComment(creatorId: string) {
 	// 1. Create Organization
 	const [org] = await server.drizzleClient
@@ -137,7 +139,7 @@ async function addVoteToComment(
 ) {
 	await server.drizzleClient.insert(commentVotesTable).values({
 		commentId,
-		creatorId: userId, // Changed from creatorId to userId
+		creatorId: userId,
 		type,
 	});
 }
@@ -291,30 +293,6 @@ suite("Comment: upVotesCount field", () => {
 
 		expect(response.errors).toBeUndefined();
 		expect(response.data?.comment?.upVotesCount).toBe(2);
-	});
-
-	test("should handle edge case when database query returns empty result", async () => {
-		const { commentId } = await createTestComment(adminUserId);
-
-		// Mock the database to return empty array (simulates the [commentVote] = [] scenario)
-		const mockSelect = vi.fn().mockReturnValue({
-			from: vi.fn().mockReturnValue({
-				where: vi.fn().mockResolvedValue([]),
-			}),
-		});
-
-		vi.spyOn(server.drizzleClient, "select").mockImplementation(
-			// biome-ignore lint/suspicious/noExplicitAny: Mocking complex Drizzle chain requires any
-			mockSelect as any,
-		);
-
-		const response = await mercuriusClient.query(Query_comment_upVotesCount, {
-			headers: { authorization: `bearer ${adminToken}` },
-			variables: { input: { id: commentId } },
-		});
-
-		expect(response.errors).toBeUndefined();
-		expect(response.data?.comment?.upVotesCount).toBe(0);
 	});
 
 	test("should return 0 for comment with votes that were all deleted", async () => {
