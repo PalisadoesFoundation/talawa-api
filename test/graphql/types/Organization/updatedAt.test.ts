@@ -5,17 +5,21 @@ import { schema } from "~/src/graphql/schema";
 import type { Organization } from "~/src/graphql/types/Organization/Organization";
 // Import the actual implementation to ensure it's loaded for coverage
 import "~/src/graphql/types/Organization/updatedAt";
-import { GraphQLObjectType as GraphQLObjectTypeValue } from "graphql";
 import { createMockGraphQLContext } from "test/_Mocks_/mockContextCreator/mockContextCreator";
-const organizationNamedType = schema.getType("Organization");
-if (!(organizationNamedType instanceof GraphQLObjectTypeValue)) {
-	throw new Error("Organization type is not a GraphQLObjectType in schema");
-}
-const organizationType = organizationNamedType as GraphQLObjectType;
+
 // Get the updatedAt resolver from the schema
+const organizationType = schema.getType("Organization") as GraphQLObjectType;
 const updatedAtField = organizationType.getFields().updatedAt;
 if (!updatedAtField) {
 	throw new Error("updatedAt field not found on Organization type");
+}
+// Guard: ensure the resolver exists and is callable. This prevents confusing
+// runtime errors if schema wiring changes or the resolver is accidentally
+// removed/renamed. Other tests in the codebase use a direct assertion
+// (`as GraphQLObjectType`) rather than `instanceof`, so we keep that
+// pattern and add this runtime guard for clarity.
+if (typeof updatedAtField.resolve !== "function") {
+	throw new Error("updatedAt field resolver is not a function");
 }
 const updatedAtResolver = updatedAtField.resolve as (
 	parent: Organization,
@@ -182,8 +186,8 @@ describe("Organization.updatedAt field resolver - Unit tests", () => {
 
 	describe("Where clause coverage", () => {
 		it("should execute usersTable where clause with correct parameters", async () => {
-			const eqMock = vi.fn();
-
+			const userEqMock = vi.fn();
+			const membershipEqMock = vi.fn();
 			mocks.drizzleClient.query.usersTable.findFirst.mockImplementation(
 				(...funcArgs: unknown[]) => {
 					const args = funcArgs[0] as {
@@ -198,7 +202,7 @@ describe("Organization.updatedAt field resolver - Unit tests", () => {
 					// Execute the main where callback
 					if (args?.where) {
 						const fields = { id: "users.id" };
-						const operators = { eq: eqMock };
+						const operators = { eq: userEqMock };
 						args.where(fields, operators);
 					}
 
@@ -207,7 +211,7 @@ describe("Organization.updatedAt field resolver - Unit tests", () => {
 						const fields = {
 							organizationId: "organizationMemberships.organizationId",
 						};
-						const operators = { eq: eqMock };
+						const operators = { eq: membershipEqMock };
 						args.with.organizationMembershipsWhereMember.where(
 							fields,
 							operators,
@@ -224,13 +228,14 @@ describe("Organization.updatedAt field resolver - Unit tests", () => {
 
 			await updatedAtResolver(mockOrganization, {}, ctx);
 
-			// Verify eq was called for user id lookup (don’t couple to mocked field objects)
-			expect(eqMock).toHaveBeenCalledWith(expect.anything(), "user123");
-			// Verify eq was called for organization membership lookup
-			expect(eqMock).toHaveBeenCalledWith(
-				expect.anything(),
-				mockOrganization.id,
+			expect(userEqMock.mock.calls.some(([, rhs]) => rhs === "user123")).toBe(
+				true,
 			);
+			expect(
+				membershipEqMock.mock.calls.some(
+					([, rhs]) => rhs === mockOrganization.id,
+				),
+			).toBe(true);
 		});
 	});
 });
