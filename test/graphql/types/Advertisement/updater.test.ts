@@ -45,6 +45,19 @@ describe("Advertisement Updater Resolver Tests", () => {
 				mocks.drizzleClient.query.usersTable.findFirst,
 			).not.toHaveBeenCalled();
 		});
+		
+		it("should throw unauthenticated error if authenticated but current user ID is missing", async () => {
+			ctx.currentClient.isAuthenticated = true;
+			ctx.currentClient.user = undefined;
+			await expect(
+				advertisementUpdaterResolver(mockAdvertisement, {}, ctx),
+			).rejects.toMatchObject({
+				extensions: { code: "unauthenticated" },
+			});
+			expect(
+				mocks.drizzleClient.query.usersTable.findFirst,
+			).not.toHaveBeenCalled();
+		});
 
 		it("should throw unauthenticated error if user exists but current user doesn't exist", async () => {
 			mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValue(
