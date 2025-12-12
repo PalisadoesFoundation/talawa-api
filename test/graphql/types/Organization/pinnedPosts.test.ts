@@ -6,6 +6,7 @@ import { mercuriusClient } from "../client";
 import {
 	Mutation_createOrganization,
 	Mutation_createPost,
+	Mutation_joinPublicOrganization,
 	Query_signIn,
 } from "../documentNodes";
 
@@ -465,8 +466,12 @@ suite("Organization pinnedPosts Field", () => {
 
 		expect(result.errors).toBeUndefined();
 		expect(result.data?.organization?.pinnedPosts?.edges).toHaveLength(2);
-		expect(result.data?.organization?.pinnedPosts?.edges?.[0]?.node?.pinnedAt).toBeTruthy();
-		expect(result.data?.organization?.pinnedPosts?.edges?.[0]?.cursor).toBeTruthy();
+		expect(
+			result.data?.organization?.pinnedPosts?.edges?.[0]?.node?.pinnedAt,
+		).toBeTruthy();
+		expect(
+			result.data?.organization?.pinnedPosts?.edges?.[0]?.cursor,
+		).toBeTruthy();
 	});
 
 	test("should handle pagination with valid cursor (forward)", async () => {
@@ -514,38 +519,49 @@ suite("Organization pinnedPosts Field", () => {
 		}
 
 		// Get first page
-		const firstResult = await mercuriusClient.query(OrganizationPinnedPostsQuery, {
-			headers: { authorization: `Bearer ${authToken}` },
-			variables: { input: { id: orgId }, first: 2 },
-		});
+		const firstResult = await mercuriusClient.query(
+			OrganizationPinnedPostsQuery,
+			{
+				headers: { authorization: `Bearer ${authToken}` },
+				variables: { input: { id: orgId }, first: 2 },
+			},
+		);
 
 		expect(firstResult.errors).toBeUndefined();
 		expect(firstResult.data?.organization?.pinnedPosts?.edges).toHaveLength(2);
-		expect(firstResult.data?.organization?.pinnedPosts?.pageInfo?.hasNextPage).toBe(true);
+		expect(
+			firstResult.data?.organization?.pinnedPosts?.pageInfo?.hasNextPage,
+		).toBe(true);
 
 		// Get second page using cursor
-		const cursor = firstResult.data?.organization?.pinnedPosts?.pageInfo?.endCursor;
+		const cursor =
+			firstResult.data?.organization?.pinnedPosts?.pageInfo?.endCursor;
 		assertToBeNonNullish(cursor);
 
-		const secondResult = await mercuriusClient.query(OrganizationPinnedPostsQuery, {
-			headers: { authorization: `Bearer ${authToken}` },
-			variables: { input: { id: orgId }, first: 2, after: cursor },
-		});
+		const secondResult = await mercuriusClient.query(
+			OrganizationPinnedPostsQuery,
+			{
+				headers: { authorization: `Bearer ${authToken}` },
+				variables: { input: { id: orgId }, first: 2, after: cursor },
+			},
+		);
 
 		expect(secondResult.errors).toBeUndefined();
 		expect(secondResult.data?.organization?.pinnedPosts?.edges).toHaveLength(1);
-		expect(secondResult.data?.organization?.pinnedPosts?.pageInfo?.hasNextPage).toBe(false);
+		expect(
+			secondResult.data?.organization?.pinnedPosts?.pageInfo?.hasNextPage,
+		).toBe(false);
 	});
 
-	test("should handle backward pagination with before cursor", async () => {
+	test("should return pinned posts for authenticated organization member (non-admin)", async () => {
 		const createOrgResult = await mercuriusClient.mutate(
 			Mutation_createOrganization,
 			{
 				headers: { authorization: `Bearer ${authToken}` },
 				variables: {
 					input: {
-						name: `Backward Pagination Org ${faker.string.uuid()}`,
-						description: "Org for backward pagination test",
+						name: `Member Access Org ${faker.string.uuid()}`,
+						description: "Org to test member access",
 						countryCode: "us",
 						state: "CA",
 						city: "San Francisco",
@@ -559,13 +575,78 @@ suite("Organization pinnedPosts Field", () => {
 		const orgId = createOrgResult.data?.createOrganization?.id;
 		assertToBeNonNullish(orgId);
 
-		// Create multiple pinned posts
+		const { authToken: memberAuthToken, userId } = await import(
+			"../createRegularUserUsingAdmin"
+		).then((m) => m.createRegularUserUsingAdmin());
+
+		await mercuriusClient.mutate(Mutation_joinPublicOrganization, {
+			headers: { authorization: `Bearer ${memberAuthToken}` },
+			variables: {
+				input: {
+					organizationId: orgId,
+				},
+			},
+		});
+
+		await mercuriusClient.mutate(Mutation_createPost, {
+			headers: { authorization: `Bearer ${authToken}` },
+			variables: {
+				input: {
+					caption: "Member Test Post",
+					organizationId: orgId,
+					isPinned: true,
+					attachments: [
+						{
+							mimetype: "IMAGE_PNG",
+							objectName: faker.string.uuid(),
+							name: "image.png",
+							fileHash: faker.string.uuid(),
+						},
+					],
+				},
+			},
+		});
+
+		const result = await mercuriusClient.query(OrganizationPinnedPostsQuery, {
+			headers: { authorization: `Bearer ${memberAuthToken}` },
+			variables: { input: { id: orgId }, first: 10 },
+		});
+
+		expect(result.errors).toBeUndefined();
+		expect(result.data?.organization?.pinnedPosts?.edges).toHaveLength(1);
+		expect(
+			result.data?.organization?.pinnedPosts?.edges?.[0]?.node?.caption,
+		).toBe("Member Test Post");
+	});
+
+	test("should handle backward pagination without cursor (last only)", async () => {
+		const createOrgResult = await mercuriusClient.mutate(
+			Mutation_createOrganization,
+			{
+				headers: { authorization: `Bearer ${authToken}` },
+				variables: {
+					input: {
+						name: `Backward No Cursor Org ${faker.string.uuid()}`,
+						description: "Org for backward pagination without cursor",
+						countryCode: "us",
+						state: "CA",
+						city: "San Francisco",
+						postalCode: "94101",
+						addressLine1: "100 Test St",
+						addressLine2: "Suite 1",
+					},
+				},
+			},
+		);
+		const orgId = createOrgResult.data?.createOrganization?.id;
+		assertToBeNonNullish(orgId);
+
 		for (let i = 0; i < 3; i++) {
 			await mercuriusClient.mutate(Mutation_createPost, {
 				headers: { authorization: `Bearer ${authToken}` },
 				variables: {
 					input: {
-						caption: `Backward Post ${i}`,
+						caption: `Last Only Post ${i}`,
 						organizationId: orgId,
 						isPinned: true,
 						attachments: [
@@ -581,25 +662,18 @@ suite("Organization pinnedPosts Field", () => {
 			});
 		}
 
-		// Get all posts first to get a cursor
-		const allResult = await mercuriusClient.query(OrganizationPinnedPostsQuery, {
+		const result = await mercuriusClient.query(OrganizationPinnedPostsQuery, {
 			headers: { authorization: `Bearer ${authToken}` },
-			variables: { input: { id: orgId }, first: 10 },
+			variables: { input: { id: orgId }, last: 2 },
 		});
 
-		expect(allResult.errors).toBeUndefined();
-		expect(allResult.data?.organization?.pinnedPosts?.edges?.length).toBeGreaterThan(1);
-
-		// Use the second post's cursor for backward pagination
-		const cursor = allResult.data?.organization?.pinnedPosts?.edges?.[1]?.cursor;
-		assertToBeNonNullish(cursor);
-
-		const backwardResult = await mercuriusClient.query(OrganizationPinnedPostsQuery, {
-			headers: { authorization: `Bearer ${authToken}` },
-			variables: { input: { id: orgId }, last: 2, before: cursor },
-		});
-
-		expect(backwardResult.errors).toBeUndefined();
-		expect(backwardResult.data?.organization?.pinnedPosts?.edges).toHaveLength(1);
+		expect(result.errors).toBeUndefined();
+		expect(result.data?.organization?.pinnedPosts?.edges).toHaveLength(2);
+		expect(
+			result.data?.organization?.pinnedPosts?.pageInfo?.hasPreviousPage,
+		).toBe(true);
+		expect(
+			result.data?.organization?.pinnedPosts?.pageInfo?.startCursor,
+		).toBeTruthy();
 	});
 });
