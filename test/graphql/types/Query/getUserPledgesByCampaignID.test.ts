@@ -2,7 +2,8 @@ import { createMockGraphQLContext } from "test/_Mocks_/mockContextCreator/mockCo
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { GraphQLContext } from "~/src/graphql/context";
 import { resolveGetMyPledgesForCampaign } from "~/src/graphql/types/Query/getUserPledgesByCampaignID";
-import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
+// Import the module to ensure schema builder code is executed
+import "~/src/graphql/types/Query/getUserPledgesByCampaignID";
 
 describe("Query Resolver - getMyPledgesForCampaign", () => {
 	let ctx: GraphQLContext;
@@ -27,9 +28,9 @@ describe("Query Resolver - getMyPledgesForCampaign", () => {
 
 			await expect(
 				resolveGetMyPledgesForCampaign({}, { campaignId }, unauthCtx),
-			).rejects.toThrow(
-				new TalawaGraphQLError({ extensions: { code: "unauthenticated" } }),
-			);
+			).rejects.toMatchObject({
+				extensions: { code: "unauthenticated" },
+			});
 
 			expect(
 				unauthMocks.drizzleClient.query.fundCampaignPledgesTable.findMany,
@@ -210,14 +211,12 @@ describe("Query Resolver - getMyPledgesForCampaign", () => {
 
 			await expect(
 				resolveGetMyPledgesForCampaign({}, { campaignId }, ctx),
-			).rejects.toThrow(
-				new TalawaGraphQLError({
-					extensions: {
-						code: "arguments_associated_resources_not_found",
-						issues: [{ argumentPath: ["campaignId"] }],
-					},
-				}),
-			);
+			).rejects.toMatchObject({
+				extensions: {
+					code: "arguments_associated_resources_not_found",
+					issues: [{ argumentPath: ["campaignId"] }],
+				},
+			});
 		});
 	});
 
