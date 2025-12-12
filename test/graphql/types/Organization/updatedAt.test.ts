@@ -229,6 +229,9 @@ describe("Organization.updatedAt field resolver - Unit tests", () => {
 
 			await updatedAtResolver(mockOrganization, {}, ctx);
 
+			// Make explicit that the query was invoked
+			expect(mocks.drizzleClient.query.usersTable.findFirst).toHaveBeenCalled();
+
 			expect(userEqMock.mock.calls.some(([, rhs]) => rhs === "user123")).toBe(
 				true,
 			);
