@@ -205,6 +205,8 @@ suite("Mutation field updateComment", () => {
 
 		// Use regex for flexible message matching (uses constant dynamically)
 		const issueMessages = issues?.map((i) => i.message).join(" ");
-		expect(issueMessages).toMatch(new RegExp(`at most ${COMMENT_BODY_MAX_LENGTH}`, "i"));
+		expect(issueMessages).toMatch(
+			new RegExp(`at most ${COMMENT_BODY_MAX_LENGTH}`, "i"),
+		);
 	});
 });

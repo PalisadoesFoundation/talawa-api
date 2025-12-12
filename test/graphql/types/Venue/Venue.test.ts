@@ -37,9 +37,7 @@ describe("Venue GraphQL Type", () => {
 			};
 
 			// Test the resolver logic directly - mimics the ternary in Venue.ts
-			const result = venue.description
-				? escapeHTML(venue.description)
-				: null;
+			const result = venue.description ? escapeHTML(venue.description) : null;
 
 			expect(result).toBe(null);
 			// escapeHTML should not be called for null description
@@ -56,9 +54,7 @@ describe("Venue GraphQL Type", () => {
 			};
 
 			// Test the resolver logic directly
-			const result = venue.description
-				? escapeHTML(venue.description)
-				: null;
+			const result = venue.description ? escapeHTML(venue.description) : null;
 
 			expect(result).toBe("escaped_A beautiful venue");
 			expect(escapeHTML).toHaveBeenCalledWith("A beautiful venue");
@@ -75,9 +71,7 @@ describe("Venue GraphQL Type", () => {
 			};
 
 			// Empty string is falsy, so should return null
-			const result = venue.description
-				? escapeHTML(venue.description)
-				: null;
+			const result = venue.description ? escapeHTML(venue.description) : null;
 
 			expect(result).toBe(null);
 			// escapeHTML should not be called for empty string
