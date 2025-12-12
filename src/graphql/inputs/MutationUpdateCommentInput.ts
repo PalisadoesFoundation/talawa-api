@@ -5,8 +5,8 @@ import { sanitizedStringSchema } from "~/src/utilities/sanitizer";
 
 export const mutationUpdateCommentInputSchema = z
 	.object({
-		body: sanitizedStringSchema
-			.pipe(commentsTableInsertSchema.shape.body)
+		body: commentsTableInsertSchema.shape.body
+			.transform((val) => sanitizedStringSchema.parse(val))
 			.optional(),
 		id: commentsTableInsertSchema.shape.id.unwrap(),
 	})

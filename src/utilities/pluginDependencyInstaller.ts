@@ -84,28 +84,75 @@ export async function installPluginDependencies(
 			let settled = false;
 
 			child.stdout?.on("data", (data) => {
-				if (stdout.length < MAX_BUFFER) stdout += data.toString();
+				if (stdout.length < MAX_BUFFER) {
+					const remaining = MAX_BUFFER - stdout.length;
+					stdout += data.toString().slice(0, remaining);
+				}
 			});
 
 			child.stderr?.on("data", (data) => {
-				if (stderr.length < MAX_BUFFER) stderr += data.toString();
+				if (stderr.length < MAX_BUFFER) {
+					const remaining = MAX_BUFFER - stderr.length;
+					stderr += data.toString().slice(0, remaining);
+				}
 			});
+
+			// Cross-platform process tree kill helper
+			const killProcessTree = (
+				pid: number | undefined,
+				signal: "SIGTERM" | "SIGKILL",
+			): void => {
+				if (pid === undefined || pid === null) return;
+
+				if (process.platform === "win32") {
+					// On Windows, use taskkill with /T flag to kill process tree
+					// /T = Terminates the specified process and any child processes
+					// /F = Forcefully terminate the process(es)
+					try {
+						const taskkill = spawn(
+							"taskkill",
+							["/PID", String(pid), "/T", "/F"],
+							{
+								stdio: "ignore",
+							},
+						);
+						if (taskkill.unref) taskkill.unref();
+					} catch {
+						// Fall back to regular kill if taskkill fails
+						try {
+							child.kill(signal);
+						} catch {
+							// Ignore - process may already be gone
+						}
+					}
+				} else {
+					// On Unix-like systems, use regular signals
+					// Note: This only kills the direct child, not descendants
+					// For full tree kill, consider using process groups (-pid)
+					try {
+						child.kill(signal);
+					} catch {
+						// Ignore - process may already be gone
+					}
+				}
+			};
 
 			// Set timeout
 			const timeout = setTimeout(() => {
 				if (settled) return;
 				settled = true;
-				child.kill("SIGTERM");
+
+				// First attempt: graceful termination
+				killProcessTree(child.pid, "SIGTERM");
+
+				// Force kill after 5 seconds if still running
 				const forceKill = setTimeout(() => {
-					if (child.exitCode === null && typeof child.kill === "function") {
-						try {
-							child.kill("SIGKILL");
-						} catch {
-							// Ignore errors if process is already gone
-						}
+					if (child.exitCode === null) {
+						killProcessTree(child.pid, "SIGKILL");
 					}
 				}, 5000);
 				if (forceKill.unref) forceKill.unref();
+
 				reject(new Error("Installation timed out after 5 minutes"));
 			}, 300000); // 5 minutes
 

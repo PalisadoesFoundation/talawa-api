@@ -9,13 +9,9 @@ export const mutationUpdateVenueInputSchema = venuesTableInsertSchema
 		capacity: true,
 	})
 	.extend({
-		description: sanitizedStringSchema
-			.pipe(venuesTableInsertSchema.shape.description.unwrap())
-			.optional(),
+		description: sanitizedStringSchema.min(1).max(2048).optional(),
 		id: venuesTableInsertSchema.shape.id.unwrap(),
-		name: sanitizedStringSchema
-			.pipe(venuesTableInsertSchema.shape.name)
-			.optional(),
+		name: sanitizedStringSchema.min(1).max(256).optional(),
 		attachments: z
 			.custom<Promise<FileUpload>>()
 			.array()

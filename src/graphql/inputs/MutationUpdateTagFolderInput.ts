@@ -9,9 +9,7 @@ export const mutationUpdateTagFolderInputSchema = tagFoldersTableInsertSchema
 	})
 	.extend({
 		id: tagFoldersTableInsertSchema.shape.id.unwrap(),
-		name: sanitizedStringSchema
-			.pipe(tagFoldersTableInsertSchema.shape.name)
-			.optional(),
+		name: sanitizedStringSchema.min(1).max(256).optional(),
 	})
 	.refine(
 		({ id, ...remainingArg }) =>

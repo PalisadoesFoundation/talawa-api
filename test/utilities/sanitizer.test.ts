@@ -1,5 +1,8 @@
 import { describe, expect, it } from "vitest";
-import { escapeHTML, sanitizedStringSchema } from "../../src/utilities/sanitizer";
+import {
+	escapeHTML,
+	sanitizedStringSchema,
+} from "../../src/utilities/sanitizer";
 
 describe("sanitizer", () => {
 	describe("escapeHTML", () => {

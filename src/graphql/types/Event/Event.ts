@@ -30,6 +30,7 @@ Event.implement({
 		description: t.string({
 			description:
 				"A detailed description of the event, providing custom information and context.",
+			nullable: true,
 			resolve: (event) =>
 				event.description ? escapeHTML(event.description) : null,
 		}),
