@@ -26,19 +26,25 @@ function createMockChildProcess(
 		stderr: EventEmitter;
 		pid: number;
 		kill: ReturnType<typeof vi.fn>;
+		exitCode: number | null;
 	};
 	child.stdout = new EventEmitter();
 	child.stderr = new EventEmitter();
 	child.pid = 12345;
 	child.kill = vi.fn();
+	// Initialize exitCode to null, matching ChildProcess behavior before exit
+	child.exitCode = null;
 
 	// Schedule events to emit after the spawn call
 	setImmediate(() => {
 		if (stdout) child.stdout.emit("data", Buffer.from(stdout));
 		if (stderr) child.stderr.emit("data", Buffer.from(stderr));
 		if (error) {
+			// On error, exitCode remains null (process didn't exit normally)
 			child.emit("error", error);
 		} else {
+			// Set exitCode before emitting close, matching ChildProcess behavior
+			child.exitCode = exitCode;
 			child.emit("close", exitCode);
 		}
 	});

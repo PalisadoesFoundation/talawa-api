@@ -40,6 +40,7 @@ export const MutationUpdatePostInput = builder
 		fields: (t) => ({
 			caption: t.string({
 				description: "Caption about the post.",
+				required: false,
 			}),
 			id: t.id({
 				description: "Global identifier of the post.",
@@ -47,10 +48,12 @@ export const MutationUpdatePostInput = builder
 			}),
 			isPinned: t.boolean({
 				description: "Boolean to tell if the post is pinned",
+				required: false,
 			}),
 			attachments: t.field({
 				type: [FileMetadataInput],
 				description: "Metadata for files already uploaded via presigned URL",
+				required: false,
 			}),
 		}),
 	});

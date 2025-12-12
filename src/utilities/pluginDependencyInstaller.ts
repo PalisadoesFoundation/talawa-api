@@ -108,23 +108,37 @@ export async function installPluginDependencies(
 					// On Windows, use taskkill with /T flag to kill process tree
 					// /T = Terminates the specified process and any child processes
 					// /F = Forcefully terminate the process(es)
-					try {
-						const taskkill = spawn(
-							"taskkill",
-							["/PID", String(pid), "/T", "/F"],
-							{
-								stdio: "ignore",
-							},
-						);
-						if (taskkill.unref) taskkill.unref();
-					} catch {
-						// Fall back to regular kill if taskkill fails
+					const taskkill = spawn(
+						"taskkill",
+						["/PID", String(pid), "/T", "/F"],
+						{
+							stdio: "ignore",
+						},
+					);
+
+					if (taskkill.unref) taskkill.unref();
+
+					// Handle async spawn failures (e.g., ENOENT if taskkill is not available)
+					taskkill.once("error", () => {
+						// Fall back to regular kill if taskkill fails to spawn
 						try {
 							child.kill(signal);
 						} catch {
 							// Ignore - process may already be gone
 						}
-					}
+					});
+
+					// Handle non-zero exit codes (taskkill ran but failed)
+					taskkill.once("exit", (code) => {
+						if (code !== 0) {
+							// Fall back to regular kill if taskkill exited with error
+							try {
+								child.kill(signal);
+							} catch {
+								// Ignore - process may already be gone
+							}
+						}
+					});
 				} else {
 					// On Unix-like systems, use regular signals
 					// Note: This only kills the direct child, not descendants

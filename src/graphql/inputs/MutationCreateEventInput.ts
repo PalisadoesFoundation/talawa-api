@@ -23,7 +23,7 @@ export const mutationCreateEventInputSchema = eventsTableInsertSchema
 		allDay: z.boolean().optional(),
 		isPublic: z.boolean().optional(),
 		isRegisterable: z.boolean().optional(),
-		location: z.string().min(1).max(1024).optional(),
+		location: sanitizedStringSchema.min(1).max(1024).optional(),
 		recurrence: recurrenceInputSchema.optional(),
 	})
 	.superRefine((arg, ctx) => {

@@ -1,7 +1,9 @@
 import { z } from "zod";
-import { commentsTableInsertSchema } from "~/src/drizzle/tables/comments";
+import {
+	COMMENT_BODY_MAX_LENGTH,
+	commentsTableInsertSchema,
+} from "~/src/drizzle/tables/comments";
 import { builder } from "~/src/graphql/builder";
-import { sanitizedStringSchema } from "~/src/utilities/sanitizer";
 
 export const mutationUpdateCommentInputSchema = z
 	.object({
@@ -11,9 +13,9 @@ export const mutationUpdateCommentInputSchema = z
 		 * to avoid double-escaping and exceeding DB length limits with escaped entities.
 		 */
 		body: commentsTableInsertSchema.shape.body
-			.transform((val) => sanitizedStringSchema.parse(val))
-			.refine((val) => val.length <= 2000, {
-				message: "Comment body must not exceed 2000 characters.",
+			.transform((val) => val.trim())
+			.refine((val) => val.length <= COMMENT_BODY_MAX_LENGTH, {
+				message: `Comment body must not exceed ${COMMENT_BODY_MAX_LENGTH} characters.`,
 			})
 			.optional(),
 		id: commentsTableInsertSchema.shape.id.unwrap(),
