@@ -124,6 +124,7 @@ suite("Organization pinnedPosts Field", () => {
 			variables: { input: { id: orgId }, first: 10 },
 		});
 
+		expect(findFirstSpy).toHaveBeenCalled();
 		expect(result.data?.organization?.pinnedPosts).toBeNull();
 		expect(result.errors).toEqual(
 			expect.arrayContaining([
