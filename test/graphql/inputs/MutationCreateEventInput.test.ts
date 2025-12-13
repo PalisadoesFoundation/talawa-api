@@ -185,10 +185,10 @@ describe("MutationCreateEventInput Schema", () => {
 			expect(result.success).toBe(false);
 		});
 
-		it("should accept location at exactly 1024 characters", () => {
+		it("should accept location at exactly max length", () => {
 			const result = mutationCreateEventInputSchema.safeParse({
 				...validInput,
-				location: "a".repeat(1024),
+				location: "a".repeat(EVENT_LOCATION_MAX_LENGTH),
 			});
 			expect(result.success).toBe(true);
 		});

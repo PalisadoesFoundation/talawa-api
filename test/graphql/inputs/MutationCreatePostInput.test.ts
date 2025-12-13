@@ -20,6 +20,11 @@ describe("MutationCreatePostInput Schema", () => {
 				caption: "",
 			});
 			expect(result.success).toBe(false);
+			if (!result.success) {
+				expect(
+					result.error.issues.some((i) => i.path.join(".") === "caption"),
+				).toBe(true);
+			}
 		});
 		it("should accept valid caption", () => {
 			const result = mutationCreatePostInputSchema.safeParse(validInput);
@@ -37,16 +42,12 @@ describe("MutationCreatePostInput Schema", () => {
 			}
 		});
 
-		it("should accept whitespace-only caption (trimmed to empty)", () => {
-			// Note: Post schema doesn't have min length, so empty caption after trim is valid
+		it("should reject whitespace-only caption", () => {
 			const result = mutationCreatePostInputSchema.safeParse({
 				...validInput,
 				caption: "   ",
 			});
-			expect(result.success).toBe(true);
-			if (result.success) {
-				expect(result.data.caption).toBe("");
-			}
+			expect(result.success).toBe(false);
 		});
 
 		it("should reject caption exceeding length limit", () => {
@@ -62,7 +63,7 @@ describe("MutationCreatePostInput Schema", () => {
 			}
 		});
 
-		it("should accept caption at exactly 2000 characters", () => {
+		it("should accept caption at exactly POST_CAPTION_MAX_LENGTH characters", () => {
 			const result = mutationCreatePostInputSchema.safeParse({
 				...validInput,
 				caption: "a".repeat(POST_CAPTION_MAX_LENGTH),

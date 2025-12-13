@@ -64,10 +64,10 @@ describe("MutationUpdatePostInput Schema", () => {
 			}
 		});
 
-		it("should accept caption at exactly 2000 characters", () => {
+		it("should accept caption at exactly POST_CAPTION_MAX_LENGTH characters", () => {
 			const result = mutationUpdatePostInputSchema.safeParse({
 				...validInput,
-				caption: "a".repeat(2000),
+				caption: "a".repeat(POST_CAPTION_MAX_LENGTH),
 			});
 			expect(result.success).toBe(true);
 		});

@@ -61,13 +61,11 @@ export const mutationCreatePostInputSchema = postsTableInsertSchema
 		 */
 		caption: z
 			.string()
+			.trim()
 			.min(1)
-			.transform((val) => val.trim())
-			.pipe(
-				z.string().max(POST_CAPTION_MAX_LENGTH, {
-					message: `Post caption must not exceed ${POST_CAPTION_MAX_LENGTH} characters.`,
-				}),
-			),
+			.max(POST_CAPTION_MAX_LENGTH, {
+				message: `Post caption must not exceed ${POST_CAPTION_MAX_LENGTH} characters.`,
+			}),
 		attachments: z.array(fileMetadataSchema).max(20).optional(),
 		isPinned: z.boolean().optional(),
 	});

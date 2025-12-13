@@ -93,6 +93,14 @@ describe("MutationUpdateVenueInput Schema", () => {
 			expect(result.success).toBe(false);
 		});
 
+		it("should reject empty string description", () => {
+			const result = mutationUpdateVenueInputSchema.safeParse({
+				...validInput,
+				description: "",
+			});
+			expect(result.success).toBe(false);
+		});
+
 		it("should reject description exceeding length limit", () => {
 			const result = mutationUpdateVenueInputSchema.safeParse({
 				...validInput,
