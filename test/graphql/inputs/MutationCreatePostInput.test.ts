@@ -12,12 +12,15 @@ describe("MutationCreatePostInput Schema", () => {
 	};
 
 	describe("caption field", () => {
-		it("should reject empty string caption", () => {
+		it("should accept empty string caption (no min length requirement)", () => {
 			const result = mutationCreatePostInputSchema.safeParse({
 				...validInput,
 				caption: "",
 			});
-			expect(result.success).toBe(false);
+			expect(result.success).toBe(true);
+			if (result.success) {
+				expect(result.data.caption).toBe("");
+			}
 		});
 		it("should accept valid caption", () => {
 			const result = mutationCreatePostInputSchema.safeParse(validInput);

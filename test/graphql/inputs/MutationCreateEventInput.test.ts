@@ -19,6 +19,26 @@ describe("MutationCreateEventInput Schema", () => {
 			expect(result.success).toBe(true);
 		});
 
+		it("should accept minimal input with only required fields", () => {
+			const minimalInput = {
+				organizationId: "550e8400-e29b-41d4-a716-446655440000",
+				name: "Minimal Event",
+				startAt: new Date("2024-01-01T10:00:00Z"),
+				endAt: new Date("2024-01-01T12:00:00Z"),
+			};
+			const result = mutationCreateEventInputSchema.safeParse(minimalInput);
+			expect(result.success).toBe(true);
+			if (result.success) {
+				expect(result.data.organizationId).toBe(minimalInput.organizationId);
+				expect(result.data.name).toBe(minimalInput.name);
+				expect(result.data.startAt).toEqual(minimalInput.startAt);
+				expect(result.data.endAt).toEqual(minimalInput.endAt);
+				// Optional fields should be undefined
+				expect(result.data.description).toBeUndefined();
+				expect(result.data.location).toBeUndefined();
+			}
+		});
+
 		it("should trim whitespace from name", () => {
 			const result = mutationCreateEventInputSchema.safeParse({
 				...validInput,
@@ -98,6 +118,22 @@ describe("MutationCreateEventInput Schema", () => {
 			});
 			expect(result.success).toBe(false);
 		});
+
+		it("should reject empty string description", () => {
+			const result = mutationCreateEventInputSchema.safeParse({
+				...validInput,
+				description: "",
+			});
+			expect(result.success).toBe(false);
+		});
+
+		it("should accept description at exactly 2048 characters", () => {
+			const result = mutationCreateEventInputSchema.safeParse({
+				...validInput,
+				description: "a".repeat(2048),
+			});
+			expect(result.success).toBe(true);
+		});
 	});
 
 	describe("location field", () => {
@@ -127,16 +163,58 @@ describe("MutationCreateEventInput Schema", () => {
 			});
 			expect(result.success).toBe(false);
 		});
+
+		it("should reject empty string location", () => {
+			const result = mutationCreateEventInputSchema.safeParse({
+				...validInput,
+				location: "",
+			});
+			expect(result.success).toBe(false);
+		});
+
+		it("should reject whitespace-only location", () => {
+			const result = mutationCreateEventInputSchema.safeParse({
+				...validInput,
+				location: "   ",
+			});
+			expect(result.success).toBe(false);
+		});
+
+		it("should accept location at exactly 1024 characters", () => {
+			const result = mutationCreateEventInputSchema.safeParse({
+				...validInput,
+				location: "a".repeat(1024),
+			});
+			expect(result.success).toBe(true);
+		});
 	});
 
 	describe("date validation", () => {
-		it("should reject endAt before or equal to startAt", () => {
+		it("should reject endAt before startAt", () => {
 			const result = mutationCreateEventInputSchema.safeParse({
 				...validInput,
 				startAt: new Date("2024-01-01T12:00:00Z"),
 				endAt: new Date("2024-01-01T10:00:00Z"),
 			});
 			expect(result.success).toBe(false);
+		});
+
+		it("should reject endAt equal to startAt", () => {
+			const result = mutationCreateEventInputSchema.safeParse({
+				...validInput,
+				startAt: new Date("2024-01-01T12:00:00Z"),
+				endAt: new Date("2024-01-01T12:00:00Z"),
+			});
+			expect(result.success).toBe(false);
+		});
+
+		it("should accept endAt after startAt", () => {
+			const result = mutationCreateEventInputSchema.safeParse({
+				...validInput,
+				startAt: new Date("2024-01-01T10:00:00Z"),
+				endAt: new Date("2024-01-01T12:00:00Z"),
+			});
+			expect(result.success).toBe(true);
 		});
 	});
 });

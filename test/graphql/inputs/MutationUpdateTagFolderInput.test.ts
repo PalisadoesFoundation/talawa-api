@@ -79,5 +79,58 @@ describe("MutationUpdateTagFolderInput Schema", () => {
 				expect(result.error.issues[0].message).toContain("optional argument");
 			}
 		});
+
+		it("should accept input with only name", () => {
+			const result = mutationUpdateTagFolderInputSchema.safeParse({
+				id: "550e8400-e29b-41d4-a716-446655440000",
+				name: "Updated Name",
+			});
+			expect(result.success).toBe(true);
+			if (result.success) {
+				expect(result.data.name).toBe("Updated Name");
+			}
+		});
+
+		it("should accept input with only parentFolderId", () => {
+			const result = mutationUpdateTagFolderInputSchema.safeParse({
+				id: "550e8400-e29b-41d4-a716-446655440000",
+				parentFolderId: "660e8400-e29b-41d4-a716-446655440001",
+			});
+			expect(result.success).toBe(true);
+			if (result.success) {
+				expect(result.data.parentFolderId).toBe(
+					"660e8400-e29b-41d4-a716-446655440001",
+				);
+			}
+		});
+
+		it("should accept input with both name and parentFolderId", () => {
+			const result = mutationUpdateTagFolderInputSchema.safeParse({
+				id: "550e8400-e29b-41d4-a716-446655440000",
+				name: "Updated Name",
+				parentFolderId: "660e8400-e29b-41d4-a716-446655440001",
+			});
+			expect(result.success).toBe(true);
+			if (result.success) {
+				expect(result.data.name).toBe("Updated Name");
+				expect(result.data.parentFolderId).toBe(
+					"660e8400-e29b-41d4-a716-446655440001",
+				);
+			}
+		});
+
+		it("should accept input with parentFolderId and explicit undefined name", () => {
+			const result = mutationUpdateTagFolderInputSchema.safeParse({
+				id: "550e8400-e29b-41d4-a716-446655440000",
+				name: undefined,
+				parentFolderId: "660e8400-e29b-41d4-a716-446655440001",
+			});
+			expect(result.success).toBe(true);
+			if (result.success) {
+				expect(result.data.parentFolderId).toBe(
+					"660e8400-e29b-41d4-a716-446655440001",
+				);
+			}
+		});
 	});
 });

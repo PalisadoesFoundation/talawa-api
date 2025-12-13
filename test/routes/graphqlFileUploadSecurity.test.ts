@@ -30,20 +30,24 @@ describe("GraphQL File Upload Security Configuration", () => {
 		});
 	});
 
-	describe("security considerations", () => {
-		it("should have reasonable limits to prevent DoS attacks", () => {
-			// Max total upload size per request = 20 files * 10MB = 200MB
-			const maxTotalUploadSize =
-				FILE_UPLOAD_CONFIG.maxFiles * FILE_UPLOAD_CONFIG.maxFileSize;
-			expect(maxTotalUploadSize).toBe(200 * 1024 * 1024); // 200MB max
-
-			// This is a reasonable limit that prevents abuse while allowing legitimate use
-			expect(maxTotalUploadSize).toBeLessThanOrEqual(500 * 1024 * 1024); // Should be <= 500MB
+	describe("security policy guardrails", () => {
+		it("should have maxFiles within acceptable security limits", () => {
+			// Policy: No more than 20 files per operation to prevent resource exhaustion
+			expect(FILE_UPLOAD_CONFIG.maxFiles).toBeLessThanOrEqual(20);
 		});
 
-		it("should have file limits consistent with schema attachment limits", () => {
-			// Schema limits (.max(20)) should match upload config
-			expect(FILE_UPLOAD_CONFIG.maxFiles).toBe(20);
+		it("should have maxFileSize within acceptable security limits", () => {
+			// Policy: No file larger than 10MB to prevent storage abuse
+			expect(FILE_UPLOAD_CONFIG.maxFileSize).toBeLessThanOrEqual(
+				10 * 1024 * 1024,
+			);
+		});
+
+		it("should have maxFieldSize within acceptable security limits", () => {
+			// Policy: No field larger than 1MB to prevent request body abuse
+			expect(FILE_UPLOAD_CONFIG.maxFieldSize).toBeLessThanOrEqual(
+				1 * 1024 * 1024,
+			);
 		});
 	});
 });

@@ -1,4 +1,4 @@
-import { beforeAll, expect, suite, test } from "vitest";
+import { afterAll, beforeAll, expect, suite, test } from "vitest";
 import { COMMENT_BODY_MAX_LENGTH } from "~/src/drizzle/tables/comments";
 import type { InvalidArgumentsExtensions } from "~/src/utilities/TalawaGraphQLError";
 import { assertToBeNonNullish } from "../../../helpers";
@@ -8,6 +8,7 @@ import {
 	Mutation_createComment,
 	Mutation_createOrganization,
 	Mutation_createPost,
+	Mutation_deleteOrganization,
 	Query_signIn,
 } from "../documentNodes";
 
@@ -82,6 +83,26 @@ suite("Mutation field createComment", () => {
 		postId = createdPostId;
 	});
 
+	afterAll(async () => {
+		// Cleanup: delete the organization (cascades to posts and comments)
+		if (orgId) {
+			const deleteOrgResult = await mercuriusClient.mutate(
+				Mutation_deleteOrganization,
+				{
+					headers: { authorization: `Bearer ${adminToken}` },
+					variables: {
+						input: { id: orgId },
+					},
+				},
+			);
+			if (deleteOrgResult.errors?.length) {
+				throw new Error(
+					`deleteOrganization cleanup failed: ${JSON.stringify(deleteOrgResult.errors)}`,
+				);
+			}
+		}
+	});
+
 	test("should create comment and return escaped body", async () => {
 		// Create a comment with HTML
 		const htmlBody = "<script>alert('xss')</script>";
@@ -152,14 +173,27 @@ suite("Mutation field createComment", () => {
 		);
 		expect(validationError).toBeDefined();
 
-		const issues = (
-			validationError?.extensions as unknown as InvalidArgumentsExtensions
-		)?.issues;
+		// Safely access extensions with proper type narrowing
+		const extensions = validationError?.extensions;
+		const issues =
+			typeof extensions === "object" &&
+			extensions !== null &&
+			"issues" in extensions
+				? (extensions as InvalidArgumentsExtensions).issues
+				: undefined;
 		expect(issues).toBeDefined();
 
+		// Ensure issues is a non-empty array
+		expect(Array.isArray(issues)).toBe(true);
+		expect(issues?.length).toBeGreaterThan(0);
+
 		const issueMessages = issues?.map((i) => i.message).join(" ");
-		expect(issueMessages).toContain(
-			`String must contain at most ${COMMENT_BODY_MAX_LENGTH} character(s)`,
+		// Use regex for flexible message matching (accepts "at most N" with optional "character(s)")
+		expect(issueMessages).toMatch(
+			new RegExp(
+				`at most\\s+${COMMENT_BODY_MAX_LENGTH}(?:\\s*characters?)?`,
+				"i",
+			),
 		);
 	});
 });

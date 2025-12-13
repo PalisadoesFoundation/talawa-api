@@ -28,9 +28,26 @@ describe("MutationCreateAdvertisementInput - Attachment Validation", () => {
 			const result = mutationCreateAdvertisementInputSchema.safeParse({
 				...validInput,
 			});
-			// Note: attachments may be required for advertisements
-			// This tests the schema behavior
-			expect(result.success).toBeDefined();
+			// Confirms validation passes when attachments are omitted
+			expect(result.success).toBe(true);
+		});
+
+		it("should reject when attachments exceed max(20) limit", () => {
+			// Create 21 mock attachment promises to exceed the max(20) limit
+			const tooManyAttachments = Array.from({ length: 21 }, () =>
+				Promise.resolve({
+					filename: "test.jpg",
+					mimetype: "image/jpeg",
+					encoding: "7bit",
+					createReadStream: () => null,
+				}),
+			);
+
+			const result = mutationCreateAdvertisementInputSchema.safeParse({
+				...validInput,
+				attachments: tooManyAttachments,
+			});
+			expect(result.success).toBe(false);
 		});
 	});
 });

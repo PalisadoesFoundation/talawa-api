@@ -34,5 +34,35 @@ describe("venueAttachmentMimeTypeEnum", () => {
 			const result = venueAttachmentMimeTypeEnum.safeParse(mimeType);
 			expect(result.success).toBe(false);
 		});
+
+		it("should reject empty string", () => {
+			const result = venueAttachmentMimeTypeEnum.safeParse("");
+			expect(result.success).toBe(false);
+		});
+
+		it("should reject null", () => {
+			const result = venueAttachmentMimeTypeEnum.safeParse(null);
+			expect(result.success).toBe(false);
+		});
+
+		it("should reject undefined", () => {
+			const result = venueAttachmentMimeTypeEnum.safeParse(undefined);
+			expect(result.success).toBe(false);
+		});
+
+		it("should reject MIME types with surrounding whitespace", () => {
+			const result = venueAttachmentMimeTypeEnum.safeParse(" image/jpeg ");
+			expect(result.success).toBe(false);
+		});
+
+		it("should reject uppercase MIME types", () => {
+			const result = venueAttachmentMimeTypeEnum.safeParse("IMAGE/JPEG");
+			expect(result.success).toBe(false);
+		});
+
+		it("should reject mixed-case MIME types", () => {
+			const result = venueAttachmentMimeTypeEnum.safeParse("Image/Jpeg");
+			expect(result.success).toBe(false);
+		});
 	});
 });

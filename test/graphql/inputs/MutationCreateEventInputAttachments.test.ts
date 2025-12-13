@@ -14,11 +14,11 @@ describe("MutationCreateEventInput - Attachment Validation", () => {
 	};
 
 	describe("attachments array limits", () => {
-		it("should accept up to 20 attachments", () => {
+		it("should validate base input structure without attachments", () => {
 			// Note: Schema allows .max(20) attachments
+			// Just testing schema structure accepts base input, actual FileUpload validation happens at mutation level
 			const result = mutationCreateEventInputSchema.safeParse({
 				...validInput,
-				// Just testing schema structure accepts array, actual FileUpload validation happens at mutation level
 			});
 			expect(result.success).toBe(true);
 		});
@@ -29,6 +29,24 @@ describe("MutationCreateEventInput - Attachment Validation", () => {
 				attachments: undefined,
 			});
 			expect(result.success).toBe(true);
+		});
+
+		it("should reject when attachments exceed max(20) limit", () => {
+			// Create 21 mock attachment promises to exceed the max(20) limit
+			const tooManyAttachments = Array.from({ length: 21 }, () =>
+				Promise.resolve({
+					filename: "test.jpg",
+					mimetype: "image/jpeg",
+					encoding: "7bit",
+					createReadStream: () => null,
+				}),
+			);
+
+			const result = mutationCreateEventInputSchema.safeParse({
+				...validInput,
+				attachments: tooManyAttachments,
+			});
+			expect(result.success).toBe(false);
 		});
 	});
 });

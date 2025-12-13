@@ -25,6 +25,13 @@ describe("MutationUpdateCommunityInput Schema", () => {
 				expect(result.data.name).toBe("trimmed name");
 			}
 		});
+
+		it("should reject whitespace-only name", () => {
+			const result = mutationUpdateCommunityInputSchema.safeParse({
+				name: "   ",
+			});
+			expect(result.success).toBe(false);
+		});
 	});
 
 	describe("URL fields", () => {

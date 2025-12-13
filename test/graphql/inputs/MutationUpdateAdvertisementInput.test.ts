@@ -38,13 +38,57 @@ describe("MutationUpdateAdvertisementInput Schema", () => {
 	});
 
 	describe("date validation", () => {
-		it("should reject endAt before or equal to startAt", () => {
+		it("should reject endAt before startAt", () => {
 			const result = mutationUpdateAdvertisementInputSchema.safeParse({
 				...validInput,
 				startAt: new Date("2024-01-01T12:00:00Z"),
 				endAt: new Date("2024-01-01T10:00:00Z"),
 			});
 			expect(result.success).toBe(false);
+		});
+
+		it("should reject endAt equal to startAt", () => {
+			const result = mutationUpdateAdvertisementInputSchema.safeParse({
+				...validInput,
+				startAt: new Date("2024-01-01T12:00:00Z"),
+				endAt: new Date("2024-01-01T12:00:00Z"),
+			});
+			expect(result.success).toBe(false);
+		});
+
+		it("should accept valid date range (endAt > startAt)", () => {
+			const result = mutationUpdateAdvertisementInputSchema.safeParse({
+				...validInput,
+				startAt: new Date("2024-01-01T10:00:00Z"),
+				endAt: new Date("2024-01-01T12:00:00Z"),
+			});
+			expect(result.success).toBe(true);
+		});
+	});
+
+	describe("optional fields", () => {
+		it("should accept update with only startAt", () => {
+			const result = mutationUpdateAdvertisementInputSchema.safeParse({
+				id: "550e8400-e29b-41d4-a716-446655440000",
+				startAt: new Date("2024-01-01T10:00:00Z"),
+			});
+			expect(result.success).toBe(true);
+		});
+
+		it("should accept update with only type", () => {
+			const result = mutationUpdateAdvertisementInputSchema.safeParse({
+				id: "550e8400-e29b-41d4-a716-446655440000",
+				type: "banner",
+			});
+			expect(result.success).toBe(true);
+		});
+
+		it("should accept update with only endAt", () => {
+			const result = mutationUpdateAdvertisementInputSchema.safeParse({
+				id: "550e8400-e29b-41d4-a716-446655440000",
+				endAt: new Date("2024-01-01T12:00:00Z"),
+			});
+			expect(result.success).toBe(true);
 		});
 	});
 

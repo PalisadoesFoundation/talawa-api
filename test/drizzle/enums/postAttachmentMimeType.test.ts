@@ -41,5 +41,15 @@ describe("postAttachmentMimeTypeEnum", () => {
 			const result = postAttachmentMimeTypeEnum.safeParse("");
 			expect(result.success).toBe(false);
 		});
+
+		it("should reject null", () => {
+			const result = postAttachmentMimeTypeEnum.safeParse(null);
+			expect(result.success).toBe(false);
+		});
+
+		it("should reject undefined", () => {
+			const result = postAttachmentMimeTypeEnum.safeParse(undefined);
+			expect(result.success).toBe(false);
+		});
 	});
 });

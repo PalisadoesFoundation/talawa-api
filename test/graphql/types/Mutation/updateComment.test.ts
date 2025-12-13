@@ -239,4 +239,34 @@ suite("Mutation field updateComment", () => {
 			),
 		);
 	});
+
+	test("should trim before length validation", async () => {
+		// Create a body that's valid after trimming but exceeds limit before trimming
+		const paddedBody = `   ${"a".repeat(COMMENT_BODY_MAX_LENGTH)}   `;
+		const updateResult = await mercuriusClient.mutate(Mutation_updateComment, {
+			variables: {
+				input: {
+					id: commentId,
+					body: paddedBody,
+				},
+			},
+			headers: {
+				Authorization: `Bearer ${adminToken}`,
+			},
+		});
+
+		// Should succeed because trimming happens first
+		if (updateResult.errors?.length) {
+			throw new Error(
+				`updateComment failed: ${JSON.stringify(updateResult.errors)}`,
+			);
+		}
+		const updatedComment = updateResult.data?.updateComment;
+		assertToBeNonNullish(updatedComment);
+		assertToBeNonNullish(updatedComment.body);
+		// Body should be exactly at max length after trimming
+		expect(updatedComment.body.length).toBeLessThanOrEqual(
+			COMMENT_BODY_MAX_LENGTH,
+		);
+	});
 });

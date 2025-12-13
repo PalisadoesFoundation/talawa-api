@@ -1,9 +1,10 @@
 import { describe, expect, it } from "vitest";
+import { COMMENT_BODY_MAX_LENGTH } from "~/src/drizzle/tables/comments";
 import { mutationCreateCommentInputSchema } from "~/src/graphql/inputs/MutationCreateCommentInput";
 
 /**
  * Tests for MutationCreateCommentInput schema validation.
- * Validates body field trimming and length constraints (min 1, max 2048).
+ * Validates body field trimming and length constraints (min 1, max COMMENT_BODY_MAX_LENGTH).
  */
 describe("MutationCreateCommentInput Schema", () => {
 	const validInput = {
@@ -44,18 +45,18 @@ describe("MutationCreateCommentInput Schema", () => {
 			expect(result.success).toBe(false);
 		});
 
-		it("should reject body exceeding 2048 characters", () => {
+		it("should reject body exceeding max length", () => {
 			const result = mutationCreateCommentInputSchema.safeParse({
 				...validInput,
-				body: "a".repeat(2049),
+				body: "a".repeat(COMMENT_BODY_MAX_LENGTH + 1),
 			});
 			expect(result.success).toBe(false);
 		});
 
-		it("should accept body at exactly 2048 characters", () => {
+		it("should accept body at exactly max length", () => {
 			const result = mutationCreateCommentInputSchema.safeParse({
 				...validInput,
-				body: "a".repeat(2048),
+				body: "a".repeat(COMMENT_BODY_MAX_LENGTH),
 			});
 			expect(result.success).toBe(true);
 		});
