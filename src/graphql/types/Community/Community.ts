@@ -1,5 +1,6 @@
 import type { communitiesTable } from "~/src/drizzle/tables/communities";
 import { builder } from "~/src/graphql/builder";
+import { escapeHTML } from "~/src/utilities/sanitizer";
 
 export type Community = typeof communitiesTable.$inferSelect;
 
@@ -36,8 +37,9 @@ Community.implement({
 		logoMimeType: t.exposeString("logoMimeType", {
 			description: "Mime type of the avatar of the community.",
 		}),
-		name: t.exposeString("name", {
+		name: t.string({
 			description: "Name of the community.",
+			resolve: (parent) => escapeHTML(parent.name),
 		}),
 		redditURL: t.exposeString("redditURL", {
 			description: "URL to the reddit account of the community.",

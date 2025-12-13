@@ -188,13 +188,18 @@ export const eventsTableRelations = relations(eventsTable, ({ many, one }) => ({
 	}),
 }));
 
+export const EVENT_DESCRIPTION_MAX_LENGTH = 2048;
+export const EVENT_NAME_MAX_LENGTH = 256;
+export const EVENT_LOCATION_MAX_LENGTH = 1024;
+
 export const eventsTableInsertSchema = createInsertSchema(eventsTable, {
-	description: (schema) => schema.min(1).max(2048).optional(),
-	name: (schema) => schema.min(1).max(256),
+	description: (schema) =>
+		schema.min(1).max(EVENT_DESCRIPTION_MAX_LENGTH).optional(),
+	name: (schema) => schema.min(1).max(EVENT_NAME_MAX_LENGTH),
 	allDay: (schema) => schema.optional(),
 	isPublic: (schema) => schema.optional(),
 	isRegisterable: (schema) => schema.optional(),
-	location: (schema) => schema.min(1).max(1024).optional(),
+	location: (schema) => schema.min(1).max(EVENT_LOCATION_MAX_LENGTH).optional(),
 	// Recurring event fields validation
 	isRecurringEventTemplate: z.boolean().optional(),
 });

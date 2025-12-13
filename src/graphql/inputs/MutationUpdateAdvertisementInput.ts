@@ -1,4 +1,4 @@
-import type { z } from "zod";
+import { z } from "zod";
 import { advertisementsTableInsertSchema } from "~/src/drizzle/tables/advertisements";
 import { builder } from "~/src/graphql/builder";
 import { AdvertisementType } from "~/src/graphql/enums/AdvertisementType";
@@ -6,13 +6,12 @@ import { isNotNullish } from "~/src/utilities/isNotNullish";
 
 export const mutationUpdateAdvertisementInputSchema =
 	advertisementsTableInsertSchema
-		.pick({
-			description: true,
-		})
+		.pick({})
 		.extend({
+			description: z.string().trim().min(1).max(2048).optional(),
 			endAt: advertisementsTableInsertSchema.shape.endAt.optional(),
 			id: advertisementsTableInsertSchema.shape.id.unwrap(),
-			name: advertisementsTableInsertSchema.shape.name.optional(),
+			name: z.string().trim().min(1).max(256).optional(),
 			startAt: advertisementsTableInsertSchema.shape.startAt.optional(),
 			type: advertisementsTableInsertSchema.shape.type.optional(),
 		})
@@ -57,6 +56,7 @@ export const MutationUpdateAdvertisementInput = builder
 			}),
 			name: t.string({
 				description: "Name of the advertisement.",
+				required: false,
 			}),
 			startAt: t.field({
 				description: "Date time at which the advertised event starts.",

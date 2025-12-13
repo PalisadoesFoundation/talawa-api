@@ -14,8 +14,17 @@ export const mutationUpdateCommunityInputSchema = communitiesTableInsertSchema
 		updaterId: true,
 	})
 	.extend({
+		facebookURL: z.string().url().nullable().optional(),
+		githubURL: z.string().url().nullable().optional(),
+		instagramURL: z.string().url().nullable().optional(),
+		linkedinURL: z.string().url().nullable().optional(),
 		logo: z.custom<Promise<FileUpload>>().nullish(),
-		name: communitiesTableInsertSchema.shape.name.optional(),
+		name: communitiesTableInsertSchema.shape.name.trim().optional(),
+		redditURL: z.string().url().nullable().optional(),
+		slackURL: z.string().url().nullable().optional(),
+		websiteURL: z.string().url().nullable().optional(),
+		xURL: z.string().url().nullable().optional(),
+		youtubeURL: z.string().url().nullable().optional(),
 	})
 	.refine((arg) => Object.values(arg).some((value) => value !== undefined), {
 		message: "At least one optional argument must be provided.",

@@ -19,6 +19,7 @@ vi.mock("../../../src/plugin/utils", () => ({
 	dropPluginTables: vi.fn(),
 	safeRequire: vi.fn(),
 	createPluginTables: vi.fn(),
+	isValidPluginId: vi.fn(() => true), // Default to returning true for valid plugin IDs
 }));
 
 vi.mock("../../../src/graphql/schemaManager", () => ({
@@ -404,6 +405,30 @@ describe("PluginLifecycle", () => {
 			// The onInstall hook failure is caught and logged, but doesn't fail the installation
 			expect(result).toBe(true);
 		});
+
+		it("should reject invalid plugin ID during installation", async () => {
+			const { isValidPluginId } = await import("../../../src/plugin/utils");
+			(isValidPluginId as ReturnType<typeof vi.fn>).mockReturnValueOnce(false);
+
+			const consoleSpy = vi
+				.spyOn(console, "error")
+				.mockImplementation(() => {});
+
+			const maliciousPluginId = "../malicious-plugin";
+			const result = await lifecycle.installPlugin(
+				maliciousPluginId,
+				mockPluginManager as unknown as Parameters<
+					typeof lifecycle.installPlugin
+				>[1],
+			);
+
+			expect(result).toBe(false);
+			// Verify isValidPluginId was called with the supplied plugin id
+			expect(isValidPluginId).toHaveBeenCalledWith(maliciousPluginId);
+			// Verify console.error was called exactly once for the error
+			expect(consoleSpy).toHaveBeenCalledTimes(1);
+			consoleSpy.mockRestore();
+		});
 	});
 
 	describe("uninstallPlugin", () => {
@@ -515,6 +540,30 @@ describe("PluginLifecycle", () => {
 			);
 
 			expect(result).toBe(true); // Should still succeed despite table removal failure
+		});
+
+		it("should reject invalid plugin ID during uninstallation", async () => {
+			const { isValidPluginId } = await import("../../../src/plugin/utils");
+			(isValidPluginId as ReturnType<typeof vi.fn>).mockReturnValueOnce(false);
+
+			const consoleSpy = vi
+				.spyOn(console, "error")
+				.mockImplementation(() => {});
+
+			const maliciousPluginId = "../malicious-plugin";
+			const result = await lifecycle.uninstallPlugin(
+				maliciousPluginId,
+				mockPluginManager as unknown as Parameters<
+					typeof lifecycle.uninstallPlugin
+				>[1],
+			);
+
+			expect(result).toBe(false);
+			// Verify isValidPluginId was called with the supplied plugin id
+			expect(isValidPluginId).toHaveBeenCalledWith(maliciousPluginId);
+			// Verify console.error was called exactly once for the error
+			expect(consoleSpy).toHaveBeenCalledTimes(1);
+			consoleSpy.mockRestore();
 		});
 	});
 
@@ -1082,7 +1131,6 @@ describe("PluginLifecycle", () => {
 				"Error calling onUnload lifecycle hook for plugin test-plugin:",
 				expect.any(Error),
 			);
-
 			consoleSpy.mockRestore();
 			getPluginModuleSpy.mockRestore();
 		});

@@ -92,6 +92,11 @@ export const commentsTableRelations = relations(
 	}),
 );
 
+/**
+ * Maximum length for comment body text.
+ */
+export const COMMENT_BODY_MAX_LENGTH = 2048;
+
 export const commentsTableInsertSchema = createInsertSchema(commentsTable, {
-	body: (schema) => schema.min(1).max(2048),
+	body: (schema) => schema.min(1).max(COMMENT_BODY_MAX_LENGTH),
 });
