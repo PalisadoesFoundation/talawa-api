@@ -20,7 +20,7 @@ export const advertisementUpdaterResolver = async (
 		}
 
 		const currentUserId = ctx.currentClient.user?.id;
-		if (!currentUserId){
+		if (!currentUserId) {
 			throw new TalawaGraphQLError({ extensions: { code: "unauthenticated" } });
 		}
 

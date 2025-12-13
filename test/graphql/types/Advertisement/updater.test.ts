@@ -45,7 +45,7 @@ describe("Advertisement Updater Resolver Tests", () => {
 				mocks.drizzleClient.query.usersTable.findFirst,
 			).not.toHaveBeenCalled();
 		});
-		
+
 		it("should throw unauthenticated error if authenticated but current user ID is missing", async () => {
 			ctx.currentClient.isAuthenticated = true;
 			ctx.currentClient.user = undefined;
