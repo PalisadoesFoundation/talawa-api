@@ -1,4 +1,4 @@
-import type { z } from "zod";
+import { z } from "zod";
 import { advertisementsTableInsertSchema } from "~/src/drizzle/tables/advertisements";
 import { builder } from "~/src/graphql/builder";
 import { AdvertisementType } from "~/src/graphql/enums/AdvertisementType";
@@ -8,10 +8,10 @@ export const mutationUpdateAdvertisementInputSchema =
 	advertisementsTableInsertSchema
 		.pick({})
 		.extend({
-			description: advertisementsTableInsertSchema.shape.description.optional(),
+			description: z.string().trim().min(1).max(2048).nullable().optional(),
 			endAt: advertisementsTableInsertSchema.shape.endAt.optional(),
 			id: advertisementsTableInsertSchema.shape.id.unwrap(),
-			name: advertisementsTableInsertSchema.shape.name.optional(),
+			name: z.string().trim().min(1).max(256).optional(),
 			startAt: advertisementsTableInsertSchema.shape.startAt.optional(),
 			type: advertisementsTableInsertSchema.shape.type.optional(),
 		})

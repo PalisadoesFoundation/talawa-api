@@ -78,9 +78,7 @@ describe("Event GraphQL Type", () => {
 			};
 
 			// Test the resolver logic directly - mimics the ternary in Event.ts
-			const result = event.description
-				? escapeHTML(event.description)
-				: null;
+			const result = event.description ? escapeHTML(event.description) : null;
 
 			expect(result).toBe(null);
 			// escapeHTML should not be called for null description
@@ -95,9 +93,7 @@ describe("Event GraphQL Type", () => {
 			};
 
 			// Test the resolver logic directly
-			const result = event.description
-				? escapeHTML(event.description)
-				: null;
+			const result = event.description ? escapeHTML(event.description) : null;
 
 			expect(result).toBe('escaped_<script>alert("XSS")</script>');
 			expect(escapeHTML).toHaveBeenCalledWith('<script>alert("XSS")</script>');
@@ -112,9 +108,7 @@ describe("Event GraphQL Type", () => {
 			};
 
 			// Empty string is falsy, so should return null
-			const result = event.description
-				? escapeHTML(event.description)
-				: null;
+			const result = event.description ? escapeHTML(event.description) : null;
 
 			expect(result).toBe(null);
 			// escapeHTML should not be called for empty string

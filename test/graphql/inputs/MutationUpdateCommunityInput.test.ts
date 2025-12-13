@@ -16,6 +16,18 @@ describe("MutationUpdateCommunityInput Schema", () => {
 			expect(result.success).toBe(true);
 		});
 
+		it("should allow name to be optional", () => {
+			const inputWithoutName = {
+				websiteURL: "https://example.com",
+			};
+			const result =
+				mutationUpdateCommunityInputSchema.safeParse(inputWithoutName);
+			expect(result.success).toBe(true);
+			if (result.success) {
+				expect(result.data.name).toBeUndefined();
+			}
+		});
+
 		it("should trim whitespace from name", () => {
 			const result = mutationUpdateCommunityInputSchema.safeParse({
 				name: "  trimmed name  ",

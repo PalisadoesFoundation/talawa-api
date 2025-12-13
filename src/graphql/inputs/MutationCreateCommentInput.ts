@@ -21,7 +21,14 @@ export const mutationCreateCommentInputSchema = commentsTableInsertSchema
 		body: z
 			.string()
 			.transform((val) => val.trim())
-			.pipe(z.string().min(1).max(COMMENT_BODY_MAX_LENGTH)),
+			.pipe(
+				z
+					.string()
+					.min(1)
+					.max(COMMENT_BODY_MAX_LENGTH, {
+						message: `Comment body must not exceed ${COMMENT_BODY_MAX_LENGTH} characters.`,
+					}),
+			),
 	});
 
 export const MutationCreateCommentInput = builder

@@ -3,10 +3,11 @@ import {
 	mimeTypeMapping,
 	postAttachmentMimeTypeEnum,
 } from "~/src/drizzle/enums/postAttachmentMimeType";
-import { postsTableInsertSchema } from "~/src/drizzle/tables/posts";
+import {
+	POST_CAPTION_MAX_LENGTH,
+	postsTableInsertSchema,
+} from "~/src/drizzle/tables/posts";
 import { builder } from "~/src/graphql/builder";
-
-import { sanitizedStringSchema } from "~/src/utilities/sanitizer";
 
 export const PostAttachmentMimeType = builder.enumType(
 	"PostAttachmentMimeType",
@@ -58,11 +59,15 @@ export const mutationCreatePostInputSchema = postsTableInsertSchema
 		 * We persist the raw (trimmed) text and perform HTML escaping at output time
 		 * to avoid double-escaping and exceeding DB length limits with escaped entities.
 		 */
-		caption: postsTableInsertSchema.shape.caption
-			.transform((val) => sanitizedStringSchema.parse(val))
-			.refine((val) => val.length <= 2000, {
-				message: "Post caption must not exceed 2000 characters.",
-			}),
+		caption: z
+			.string()
+			.min(1)
+			.transform((val) => val.trim())
+			.pipe(
+				z.string().max(POST_CAPTION_MAX_LENGTH, {
+					message: `Post caption must not exceed ${POST_CAPTION_MAX_LENGTH} characters.`,
+				}),
+			),
 		attachments: z.array(fileMetadataSchema).max(20).optional(),
 		isPinned: z.boolean().optional(),
 	});

@@ -1,19 +1,7 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
-import { escapeHTML } from "~/src/utilities/sanitizer";
-
-// Mock the escapeHTML function
-vi.mock("~/src/utilities/sanitizer", () => ({
-	escapeHTML: vi.fn((str: string) => `escaped_${str}`),
-}));
-
-// Mock the builder - simplified approach without capturing resolvers
-vi.mock("~/src/graphql/builder", () => ({
-	builder: {
-		objectRef: vi.fn(() => ({
-			implement: vi.fn(),
-		})),
-	},
-}));
+import type { GraphQLObjectType, GraphQLResolveInfo } from "graphql";
+import { describe, expect, it } from "vitest";
+import type { GraphQLContext } from "~/src/graphql/context";
+import { schema } from "~/src/graphql/schema";
 
 /**
  * Test for output-level HTML escaping in Post resolver.
@@ -25,58 +13,79 @@ vi.mock("~/src/graphql/builder", () => ({
  * The Post resolver in src/graphql/types/Post/Post.ts
  * applies escapeHTML() to the caption field when resolving.
  *
- * These tests mock escapeHTML to verify resolver integration:
- * - Catches regressions if escapeHTML calls are removed from resolvers
- * - Validates call arguments match expected field values
+ * These tests use the real schema to verify resolver integration:
+ * - Validates that the resolver actually calls the escaping logic
+ * - Ensures the schema is correctly configured to use the resolver
  */
 
 describe("Post GraphQL Type", () => {
-	// Clear mocks between tests to isolate mock state
-	beforeEach(() => {
-		vi.clearAllMocks();
-	});
-
 	describe("caption field resolver", () => {
-		it("should escape HTML in caption field", () => {
-			const post = {
+		it("should escape HTML in caption field", async () => {
+			const postType = schema.getType("Post") as GraphQLObjectType;
+			const captionField = postType.getFields().caption;
+			if (!captionField) throw new Error("Caption field not found");
+			if (!captionField.resolve) throw new Error("Resolver not defined");
+
+			const mockPost = {
 				id: "test-id",
 				caption: '<script>alert("XSS")</script>',
 			};
 
-			// Test the resolver logic directly - caption is always escaped
-			const result = escapeHTML(post.caption);
+			// Execute the resolver with the mock post
+			const result = await captionField.resolve(
+				mockPost,
+				{},
+				{} as unknown as GraphQLContext,
+				{} as unknown as GraphQLResolveInfo,
+			);
 
-			expect(result).toBe('escaped_<script>alert("XSS")</script>');
-			expect(escapeHTML).toHaveBeenCalledWith('<script>alert("XSS")</script>');
-			expect(escapeHTML).toHaveBeenCalledTimes(1);
+			expect(result).toBe(
+				"&lt;script&gt;alert(&quot;XSS&quot;)&lt;/script&gt;",
+			);
 		});
 
-		it("should escape image onerror XSS payload", () => {
-			const post = {
+		it("should escape image onerror XSS payload", async () => {
+			const postType = schema.getType("Post") as GraphQLObjectType;
+			const captionField = postType.getFields().caption;
+			if (!captionField) throw new Error("Caption field not found");
+			if (!captionField.resolve) throw new Error("Resolver not defined");
+
+			const mockPost = {
 				id: "test-id",
 				caption: '<img src="x" onerror="alert(1)">',
 			};
 
-			const result = escapeHTML(post.caption);
-
-			expect(result).toBe('escaped_<img src="x" onerror="alert(1)">');
-			expect(escapeHTML).toHaveBeenCalledWith(
-				'<img src="x" onerror="alert(1)">',
+			const result = await captionField.resolve(
+				mockPost,
+				{},
+				{} as unknown as GraphQLContext,
+				{} as unknown as GraphQLResolveInfo,
 			);
-			expect(escapeHTML).toHaveBeenCalledTimes(1);
+
+			expect(result).toBe(
+				"&lt;img src=&quot;x&quot; onerror=&quot;alert(1)&quot;&gt;",
+			);
 		});
 
-		it("should handle ampersand and special characters", () => {
-			const post = {
+		it("should handle ampersand and special characters", async () => {
+			const postType = schema.getType("Post") as GraphQLObjectType;
+			const captionField = postType.getFields().caption;
+			if (!captionField) throw new Error("Caption field not found");
+			if (!captionField.resolve) throw new Error("Resolver not defined");
+
+			const mockPost = {
 				id: "test-id",
 				caption: "Tom & Jerry <3 Programming",
 			};
 
-			const result = escapeHTML(post.caption);
+			const result = await captionField.resolve(
+				mockPost,
+				{},
+				{} as unknown as GraphQLContext,
+				{} as unknown as GraphQLResolveInfo,
+			);
 
-			expect(result).toBe("escaped_Tom & Jerry <3 Programming");
-			expect(escapeHTML).toHaveBeenCalledWith("Tom & Jerry <3 Programming");
-			expect(escapeHTML).toHaveBeenCalledTimes(1);
+			expect(result).toBe("Tom &amp; Jerry &lt;3 Programming");
 		});
 	});
 });

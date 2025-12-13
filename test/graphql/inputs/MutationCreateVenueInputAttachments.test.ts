@@ -20,6 +20,11 @@ describe("MutationCreateVenueInput - Attachment Validation", () => {
 			expect(result.success).toBe(true);
 		});
 
+		it("should accept venues where attachments key is omitted", () => {
+			const result = mutationCreateVenueInputSchema.safeParse(validInput);
+			expect(result.success).toBe(true);
+		});
+
 		it("should reject empty attachments array when provided", () => {
 			// Schema requires .min(1) when attachments is provided
 			const result = mutationCreateVenueInputSchema.safeParse({

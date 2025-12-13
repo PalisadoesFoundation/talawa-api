@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { POST_CAPTION_MAX_LENGTH } from "~/src/drizzle/tables/posts";
 import { mutationCreatePostInputSchema } from "~/src/graphql/inputs/MutationCreatePostInput";
 
 /**
@@ -51,18 +52,20 @@ describe("MutationCreatePostInput Schema", () => {
 		it("should reject caption exceeding 2000 characters", () => {
 			const result = mutationCreatePostInputSchema.safeParse({
 				...validInput,
-				caption: "a".repeat(2001),
+				caption: "a".repeat(POST_CAPTION_MAX_LENGTH + 1),
 			});
 			expect(result.success).toBe(false);
 			if (!result.success && result.error.issues[0]) {
-				expect(result.error.issues[0].message).toContain("2000");
+				expect(result.error.issues[0].message).toContain(
+					String(POST_CAPTION_MAX_LENGTH),
+				);
 			}
 		});
 
 		it("should accept caption at exactly 2000 characters", () => {
 			const result = mutationCreatePostInputSchema.safeParse({
 				...validInput,
-				caption: "a".repeat(2000),
+				caption: "a".repeat(POST_CAPTION_MAX_LENGTH),
 			});
 			expect(result.success).toBe(true);
 		});

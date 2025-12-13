@@ -20,7 +20,7 @@ type InitialContext = {
 	fastify: FastifyInstance;
 	request: FastifyRequest;
 } & (
-		| {
+	| {
 			/**
 			 * This field is `false` if the current graphql operation isn't a subscription.
 			 */
@@ -30,8 +30,8 @@ type InitialContext = {
 			 */
 			reply: FastifyReply;
 			socket?: never;
-		}
-		| {
+	  }
+	| {
 			/**
 			 * This field is `true` if the current graphql operation is a subscription.
 			 */
@@ -41,8 +41,8 @@ type InitialContext = {
 			 * This field is only present if the current graphql operation is a subscription.
 			 */
 			socket: WebSocket;
-		}
-	);
+	  }
+);
 
 export type CreateContext = (
 	initialContext: InitialContext,
@@ -179,7 +179,9 @@ export const graphql = fastifyPlugin(async (fastify) => {
 			// KeepAlive is fine as it is
 			keepAlive: 1000 * 30,
 			// A function which is called with the subscription context of the connection after the connection gets disconnected.
-			onDisconnect: (ctx) => { },
+			onDisconnect: (ctx) => {
+				// no cleanup needed on disconnect (intentional no-op)
+			},
 			// This function is used to validate incoming Websocket connections.
 			verifyClient: (info, next) => {
 				next(true);
@@ -213,10 +215,10 @@ export const graphql = fastifyPlugin(async (fastify) => {
 					error:
 						error instanceof Error
 							? {
-								message: error.message,
-								stack: error.stack,
-								name: error.name,
-							}
+									message: error.message,
+									stack: error.stack,
+									name: error.name,
+								}
 							: String(error),
 					timestamp: new Date().toISOString(),
 				},

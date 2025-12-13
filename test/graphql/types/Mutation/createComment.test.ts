@@ -181,8 +181,8 @@ suite("Mutation field createComment", () => {
 		const extensions = validationError?.extensions;
 		const issues =
 			typeof extensions === "object" &&
-				extensions !== null &&
-				"issues" in extensions
+			extensions !== null &&
+			"issues" in extensions
 				? (extensions as InvalidArgumentsExtensions).issues
 				: undefined;
 		expect(issues).toBeDefined();

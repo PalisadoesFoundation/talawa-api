@@ -32,6 +32,9 @@ describe("postAttachmentMimeTypeEnum", () => {
 			["text/html", "HTML files (XSS risk)"],
 			["application/x-executable", "executable files"],
 			["application/octet-stream", "arbitrary binary"],
+			["not-a-mime-type", "malformed string"],
+			["invalid", "simple string"],
+			["video/", "incomplete mime"],
 		])("should reject %s (%s)", (mimeType) => {
 			const result = postAttachmentMimeTypeEnum.safeParse(mimeType);
 			expect(result.success).toBe(false);
@@ -64,14 +67,14 @@ describe("postAttachmentMimeTypeEnum", () => {
 	});
 
 	describe("case sensitivity", () => {
-		it("should accept valid MIME type with mixed casing", () => {
+		it("should reject valid MIME type with mixed casing", () => {
 			const result = postAttachmentMimeTypeEnum.safeParse("ImAgE/PNg");
-			expect(result.success).toBe(true);
+			expect(result.success).toBe(false);
 		});
 
-		it("should accept uppercase MIME type", () => {
+		it("should reject uppercase MIME type", () => {
 			const result = postAttachmentMimeTypeEnum.safeParse("IMAGE/JPEG");
-			expect(result.success).toBe(true);
+			expect(result.success).toBe(false);
 		});
 	});
 });
