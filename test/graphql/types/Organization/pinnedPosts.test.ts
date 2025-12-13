@@ -574,14 +574,17 @@ suite("Organization pinnedPosts Field", () => {
 			"../createRegularUserUsingAdmin"
 		).then((m) => m.createRegularUserUsingAdmin());
 
-		const joinResult = await mercuriusClient.mutate(Mutation_joinPublicOrganization, {
-			headers: { authorization: `Bearer ${memberAuthToken}` },
-			variables: {
-				input: {
-					organizationId: orgId,
+		const joinResult = await mercuriusClient.mutate(
+			Mutation_joinPublicOrganization,
+			{
+				headers: { authorization: `Bearer ${memberAuthToken}` },
+				variables: {
+					input: {
+						organizationId: orgId,
+					},
 				},
 			},
-		});
+		);
 		expect(joinResult.errors).toBeUndefined();
 
 		await mercuriusClient.mutate(Mutation_createPost, {
@@ -671,5 +674,80 @@ suite("Organization pinnedPosts Field", () => {
 		expect(
 			result.data?.organization?.pinnedPosts?.pageInfo?.startCursor,
 		).toBeTruthy();
+	});
+
+	test("should handle backward pagination with valid cursor (last + before)", async () => {
+		const createOrgResult = await mercuriusClient.mutate(
+			Mutation_createOrganization,
+			{
+				headers: { authorization: `Bearer ${authToken}` },
+				variables: {
+					input: {
+						name: `Backward With Cursor Org ${faker.string.uuid()}`,
+						description: "Org for backward pagination with cursor",
+						countryCode: "us",
+						state: "CA",
+						city: "San Francisco",
+						postalCode: "94101",
+						addressLine1: "100 Test St",
+						addressLine2: "Suite 1",
+					},
+				},
+			},
+		);
+		const orgId = createOrgResult.data?.createOrganization?.id;
+		assertToBeNonNullish(orgId);
+
+		for (let i = 0; i < 3; i++) {
+			await mercuriusClient.mutate(Mutation_createPost, {
+				headers: { authorization: `Bearer ${authToken}` },
+				variables: {
+					input: {
+						caption: `Backward Cursor Post ${i}`,
+						organizationId: orgId,
+						isPinned: true,
+						attachments: [
+							{
+								mimetype: "IMAGE_PNG",
+								objectName: faker.string.uuid(),
+								name: "image.png",
+								fileHash: faker.string.uuid(),
+							},
+						],
+					},
+				},
+			});
+		}
+
+		const allResult = await mercuriusClient.query(
+			OrganizationPinnedPostsQuery,
+			{
+				headers: { authorization: `Bearer ${authToken}` },
+				variables: { input: { id: orgId }, first: 10 },
+			},
+		);
+
+		expect(allResult.errors).toBeUndefined();
+		expect(allResult.data?.organization?.pinnedPosts?.edges).toHaveLength(3);
+
+		const secondPostCursor =
+			allResult.data?.organization?.pinnedPosts?.edges?.[1]?.cursor;
+		assertToBeNonNullish(secondPostCursor);
+
+		const backwardResult = await mercuriusClient.query(
+			OrganizationPinnedPostsQuery,
+			{
+				headers: { authorization: `Bearer ${authToken}` },
+				variables: { input: { id: orgId }, last: 1, before: secondPostCursor },
+			},
+		);
+
+		expect(backwardResult.errors).toBeUndefined();
+		expect(backwardResult.data?.organization?.pinnedPosts?.edges).toHaveLength(
+			1,
+		);
+		expect(
+			backwardResult.data?.organization?.pinnedPosts?.pageInfo?.hasPreviousPage,
+		).toBe(false);
 	});
 });
