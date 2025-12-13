@@ -1,8 +1,5 @@
 import { z } from "zod";
-import {
-	POST_CAPTION_MAX_LENGTH,
-	postsTableInsertSchema,
-} from "~/src/drizzle/tables/posts";
+import { POST_CAPTION_MAX_LENGTH } from "~/src/drizzle/tables/posts";
 import { builder } from "~/src/graphql/builder";
 import {
 	FileMetadataInput,

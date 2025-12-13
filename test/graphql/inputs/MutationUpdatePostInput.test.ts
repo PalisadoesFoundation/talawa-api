@@ -51,10 +51,11 @@ describe("MutationUpdatePostInput Schema", () => {
 				caption: "a".repeat(POST_CAPTION_MAX_LENGTH + 1),
 			});
 			expect(result.success).toBe(false);
-			if (!result.success && result.error.issues[0]) {
-				expect(result.error.issues[0].message).toContain(
-					String(POST_CAPTION_MAX_LENGTH),
+			if (!result.success) {
+				const hasLengthIssue = result.error.issues.some((issue) =>
+					issue.message.includes(String(POST_CAPTION_MAX_LENGTH)),
 				);
+				expect(hasLengthIssue).toBe(true);
 			}
 		});
 
@@ -73,9 +74,35 @@ describe("MutationUpdatePostInput Schema", () => {
 				id: "550e8400-e29b-41d4-a716-446655440000",
 			});
 			expect(result.success).toBe(false);
-			if (!result.success && result.error.issues[0]) {
-				expect(result.error.issues[0].message).toContain("optional argument");
+			if (!result.success) {
+				const hasOptionalArgIssue = result.error.issues.some((issue) =>
+					issue.message.includes("optional argument"),
+				);
+				expect(hasOptionalArgIssue).toBe(true);
 			}
+		});
+
+		it("should accept update with only isPinned", () => {
+			const result = mutationUpdatePostInputSchema.safeParse({
+				id: "550e8400-e29b-41d4-a716-446655440000",
+				isPinned: true,
+			});
+			expect(result.success).toBe(true);
+		});
+
+		it("should accept update with only attachments", () => {
+			const result = mutationUpdatePostInputSchema.safeParse({
+				id: "550e8400-e29b-41d4-a716-446655440000",
+				attachments: [
+					{
+						mimetype: "image/jpeg",
+						objectName: "test.jpg",
+						fileHash: "hash",
+						name: "test.jpg",
+					},
+				],
+			});
+			expect(result.success).toBe(true);
 		});
 	});
 });
