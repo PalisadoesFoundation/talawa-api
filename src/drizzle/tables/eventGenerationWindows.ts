@@ -10,7 +10,6 @@ import {
 } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { uuidv7 } from "uuidv7";
-import { z } from "zod";
 import { organizationsTable } from "./organizations";
 import { usersTable } from "./users";
 
@@ -231,18 +230,18 @@ export const eventGenerationWindowsTableRelations = relations(
 export const eventGenerationWindowsTableInsertSchema = createInsertSchema(
 	eventGenerationWindowsTable,
 	{
-		organizationId: z.string().uuid(),
-		hotWindowMonthsAhead: z.number().min(1).max(60), // 1 month to 5 years
-		historyRetentionMonths: z.number().min(0).max(60),
-		currentWindowEndDate: z.date(),
-		retentionStartDate: z.date(),
-		lastProcessedInstanceCount: z.number().min(0),
-		isEnabled: z.boolean().optional(),
-		processingPriority: z.number().min(1).max(10),
-		maxInstancesPerRun: z.number().min(10).max(10000),
-		configurationNotes: z.string().max(1024).optional(),
-		createdById: z.string().uuid(),
-		lastUpdatedById: z.string().uuid().optional(),
+		organizationId: (schema) => schema,
+		hotWindowMonthsAhead: (schema) => schema.min(1).max(60), // 1 month to 5 years
+		historyRetentionMonths: (schema) => schema.min(0).max(60),
+		currentWindowEndDate: (schema) => schema,
+		retentionStartDate: (schema) => schema,
+		lastProcessedInstanceCount: (schema) => schema.min(0),
+		isEnabled: (schema) => schema.optional(),
+		processingPriority: (schema) => schema.min(1).max(10),
+		maxInstancesPerRun: (schema) => schema.min(10).max(10000),
+		configurationNotes: (schema) => schema.max(1024).optional(),
+		createdById: (schema) => schema,
+		lastUpdatedById: (schema) => schema.optional(),
 	},
 );
 

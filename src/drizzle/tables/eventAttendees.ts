@@ -2,7 +2,6 @@ import { relations, sql } from "drizzle-orm";
 import { boolean, index, pgTable, timestamp, uuid } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { uuidv7 } from "uuidv7";
-import { z } from "zod";
 import { eventsTable } from "./events";
 import { recurringEventInstancesTable } from "./recurringEventInstances";
 import { usersTable } from "./users";
@@ -206,16 +205,16 @@ export const eventAttendeesTableRelations = relations(
 export const eventAttendeesTableInsertSchema = createInsertSchema(
 	eventAttendeesTable,
 	{
-		userId: z.string().uuid(),
-		eventId: z.string().uuid().optional(),
-		recurringEventInstanceId: z.string().uuid().optional(),
-		checkinTime: z.date().optional(),
-		checkoutTime: z.date().optional(),
-		feedbackSubmitted: z.boolean().optional(),
-		isInvited: z.boolean().optional(),
-		isRegistered: z.boolean().optional(),
-		isCheckedIn: z.boolean().optional(),
-		isCheckedOut: z.boolean().optional(),
+		userId: (schema) => schema,
+		eventId: (schema) => schema.optional(),
+		recurringEventInstanceId: (schema) => schema.optional(),
+		checkinTime: (schema) => schema.optional(),
+		checkoutTime: (schema) => schema.optional(),
+		feedbackSubmitted: (schema) => schema.optional(),
+		isInvited: (schema) => schema.optional(),
+		isRegistered: (schema) => schema.optional(),
+		isCheckedIn: (schema) => schema.optional(),
+		isCheckedOut: (schema) => schema.optional(),
 	},
 );
 
