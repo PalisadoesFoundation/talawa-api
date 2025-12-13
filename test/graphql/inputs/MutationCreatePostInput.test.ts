@@ -49,7 +49,7 @@ describe("MutationCreatePostInput Schema", () => {
 			}
 		});
 
-		it("should reject caption exceeding 2000 characters", () => {
+		it("should reject caption exceeding length limit", () => {
 			const result = mutationCreatePostInputSchema.safeParse({
 				...validInput,
 				caption: "a".repeat(POST_CAPTION_MAX_LENGTH + 1),

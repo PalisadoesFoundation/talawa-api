@@ -1,5 +1,6 @@
 import { faker } from "@faker-js/faker";
 import { expect, suite, test, vi } from "vitest";
+import { POST_CAPTION_MAX_LENGTH } from "~/src/drizzle/tables/posts";
 import type { InvalidArgumentsExtensions } from "~/src/utilities/TalawaGraphQLError";
 import { assertToBeNonNullish } from "../../../helpers";
 import { server } from "../../../server";
@@ -741,7 +742,7 @@ suite("Mutation field createPost", () => {
 			const orgId = createOrgResult.data?.createOrganization?.id;
 			assertToBeNonNullish(orgId);
 
-			const longCaption = "a".repeat(2001);
+			const longCaption = "a".repeat(POST_CAPTION_MAX_LENGTH + 1);
 			const result = await mercuriusClient.mutate(Mutation_createPost, {
 				headers: { authorization: `bearer ${authToken}` },
 				variables: {
@@ -759,7 +760,7 @@ suite("Mutation field createPost", () => {
 			)?.issues;
 			const issueMessages = issues?.map((i) => i.message).join(" ");
 			expect(issueMessages).toContain(
-				"Post caption must not exceed 2000 characters",
+				`Post caption must not exceed ${POST_CAPTION_MAX_LENGTH} characters`,
 			);
 		});
 	});

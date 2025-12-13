@@ -52,6 +52,40 @@ describe("MutationCreateVenueInput - Attachment Validation", () => {
 			expect(result.success).toBe(true);
 		});
 
+		it("should accept exactly 1 attachment (lower boundary)", () => {
+			const oneAttachment = [
+				Promise.resolve({
+					filename: "venue-photo.jpg",
+					mimetype: "image/jpeg",
+					encoding: "7bit",
+					createReadStream: () => null,
+				}),
+			];
+
+			const result = mutationCreateVenueInputSchema.safeParse({
+				...validInput,
+				attachments: oneAttachment,
+			});
+			expect(result.success).toBe(true);
+		});
+
+		it("should accept exactly 20 attachments (upper boundary)", () => {
+			const maxAttachments = Array.from({ length: 20 }, () =>
+				Promise.resolve({
+					filename: "venue-photo.jpg",
+					mimetype: "image/jpeg",
+					encoding: "7bit",
+					createReadStream: () => null,
+				}),
+			);
+
+			const result = mutationCreateVenueInputSchema.safeParse({
+				...validInput,
+				attachments: maxAttachments,
+			});
+			expect(result.success).toBe(true);
+		});
+
 		it("should reject when attachments exceed max(20) limit", () => {
 			// Create 21 mock attachment promises to exceed the max(20) limit
 			const tooManyAttachments = Array.from({ length: 21 }, () =>

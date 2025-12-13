@@ -193,6 +193,120 @@ suite("Mutation field createComment", () => {
 
 		const issueMessages = issues?.map((i) => i.message).join(" ");
 		// Use simple assertion for message matching
-		expect(issueMessages).toContain(`at most ${COMMENT_BODY_MAX_LENGTH}`);
+		expect(issueMessages).toContain(
+			`Comment body must not exceed ${COMMENT_BODY_MAX_LENGTH} characters`,
+		);
+	});
+
+	test("should create comment with body length exactly COMMENT_BODY_MAX_LENGTH", async () => {
+		const body = "a".repeat(COMMENT_BODY_MAX_LENGTH);
+		const commentResult = await mercuriusClient.mutate(Mutation_createComment, {
+			variables: {
+				input: {
+					postId,
+					body,
+				},
+			},
+			headers: {
+				authorization: `Bearer ${adminToken}`,
+			},
+		});
+
+		expect(commentResult.errors).toBeUndefined();
+		expect(commentResult.data?.createComment).toBeDefined();
+	});
+
+	test("should create comment with body length exactly COMMENT_BODY_MAX_LENGTH - 1", async () => {
+		const body = "a".repeat(COMMENT_BODY_MAX_LENGTH - 1);
+		const commentResult = await mercuriusClient.mutate(Mutation_createComment, {
+			variables: {
+				input: {
+					postId,
+					body,
+				},
+			},
+			headers: {
+				authorization: `Bearer ${adminToken}`,
+			},
+		});
+
+		expect(commentResult.errors).toBeUndefined();
+		expect(commentResult.data?.createComment).toBeDefined();
+	});
+
+	test("should return error if comment body is empty string", async () => {
+		const commentResult = await mercuriusClient.mutate(Mutation_createComment, {
+			variables: {
+				input: {
+					postId,
+					body: "",
+				},
+			},
+			headers: {
+				authorization: `Bearer ${adminToken}`,
+			},
+		});
+
+		expect(commentResult.errors).toBeDefined();
+		const validationError = commentResult.errors?.find(
+			(error) =>
+				(error.extensions as { code?: string } | undefined)?.code ===
+				"invalid_arguments",
+		);
+		expect(validationError).toBeDefined();
+
+		const extensions = validationError?.extensions;
+		const issues =
+			typeof extensions === "object" &&
+			extensions !== null &&
+			"issues" in extensions
+				? (extensions as InvalidArgumentsExtensions).issues
+				: undefined;
+		expect(issues).toBeDefined();
+		expect(Array.isArray(issues)).toBe(true);
+		expect(issues?.length).toBeGreaterThan(0);
+
+		const issueMessages = issues?.map((i) => i.message).join(" ");
+		expect(issueMessages).toContain(
+			"String must contain at least 1 character(s)",
+		);
+	});
+
+	test("should return error if comment body is whitespace only", async () => {
+		const commentResult = await mercuriusClient.mutate(Mutation_createComment, {
+			variables: {
+				input: {
+					postId,
+					body: "   ",
+				},
+			},
+			headers: {
+				authorization: `Bearer ${adminToken}`,
+			},
+		});
+
+		expect(commentResult.errors).toBeDefined();
+		const validationError = commentResult.errors?.find(
+			(error) =>
+				(error.extensions as { code?: string } | undefined)?.code ===
+				"invalid_arguments",
+		);
+		expect(validationError).toBeDefined();
+
+		const extensions = validationError?.extensions;
+		const issues =
+			typeof extensions === "object" &&
+			extensions !== null &&
+			"issues" in extensions
+				? (extensions as InvalidArgumentsExtensions).issues
+				: undefined;
+		expect(issues).toBeDefined();
+		expect(Array.isArray(issues)).toBe(true);
+		expect(issues?.length).toBeGreaterThan(0);
+
+		const issueMessages = issues?.map((i) => i.message).join(" ");
+		expect(issueMessages).toContain(
+			"String must contain at least 1 character(s)",
+		);
 	});
 });

@@ -1,4 +1,9 @@
 import { describe, expect, it } from "vitest";
+import {
+	EVENT_DESCRIPTION_MAX_LENGTH,
+	EVENT_LOCATION_MAX_LENGTH,
+	EVENT_NAME_MAX_LENGTH,
+} from "~/src/drizzle/tables/events";
 import { mutationCreateEventInputSchema } from "~/src/graphql/inputs/MutationCreateEventInput";
 
 /**
@@ -66,18 +71,18 @@ describe("MutationCreateEventInput Schema", () => {
 			expect(result.success).toBe(false);
 		});
 
-		it("should reject name exceeding 256 characters", () => {
+		it("should reject name exceeding length limit", () => {
 			const result = mutationCreateEventInputSchema.safeParse({
 				...validInput,
-				name: "a".repeat(257),
+				name: "a".repeat(EVENT_NAME_MAX_LENGTH + 1),
 			});
 			expect(result.success).toBe(false);
 		});
 
-		it("should accept name at exactly 256 characters", () => {
+		it("should accept name at exactly max length", () => {
 			const result = mutationCreateEventInputSchema.safeParse({
 				...validInput,
-				name: "a".repeat(256),
+				name: "a".repeat(EVENT_NAME_MAX_LENGTH),
 			});
 			expect(result.success).toBe(true);
 		});
@@ -111,10 +116,10 @@ describe("MutationCreateEventInput Schema", () => {
 			expect(result.success).toBe(false);
 		});
 
-		it("should reject description exceeding 2048 characters", () => {
+		it("should reject description exceeding length limit", () => {
 			const result = mutationCreateEventInputSchema.safeParse({
 				...validInput,
-				description: "a".repeat(2049),
+				description: "a".repeat(EVENT_DESCRIPTION_MAX_LENGTH + 1),
 			});
 			expect(result.success).toBe(false);
 		});
@@ -127,10 +132,10 @@ describe("MutationCreateEventInput Schema", () => {
 			expect(result.success).toBe(false);
 		});
 
-		it("should accept description at exactly 2048 characters", () => {
+		it("should accept description at exactly max length", () => {
 			const result = mutationCreateEventInputSchema.safeParse({
 				...validInput,
-				description: "a".repeat(2048),
+				description: "a".repeat(EVENT_DESCRIPTION_MAX_LENGTH),
 			});
 			expect(result.success).toBe(true);
 		});
@@ -156,10 +161,10 @@ describe("MutationCreateEventInput Schema", () => {
 			}
 		});
 
-		it("should reject location exceeding 1024 characters", () => {
+		it("should reject location exceeding length limit", () => {
 			const result = mutationCreateEventInputSchema.safeParse({
 				...validInput,
-				location: "a".repeat(1025),
+				location: "a".repeat(EVENT_LOCATION_MAX_LENGTH + 1),
 			});
 			expect(result.success).toBe(false);
 		});

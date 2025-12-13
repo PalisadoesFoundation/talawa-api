@@ -1,4 +1,8 @@
 import { describe, expect, it } from "vitest";
+import {
+	AGENDA_ITEM_DESCRIPTION_MAX_LENGTH,
+	AGENDA_ITEM_NAME_MAX_LENGTH,
+} from "~/src/drizzle/tables/agendaItems";
 import { MutationUpdateAgendaItemInputSchema } from "~/src/graphql/inputs/MutationUpdateAgendaItemInput";
 
 /**
@@ -44,18 +48,18 @@ describe("MutationUpdateAgendaItemInput Schema", () => {
 			expect(result.success).toBe(false);
 		});
 
-		it("should reject name exceeding 256 characters", () => {
+		it("should reject name exceeding length limit", () => {
 			const result = MutationUpdateAgendaItemInputSchema.safeParse({
 				...validInput,
-				name: "a".repeat(257),
+				name: "a".repeat(AGENDA_ITEM_NAME_MAX_LENGTH + 1),
 			});
 			expect(result.success).toBe(false);
 		});
 
-		it("should accept name at exactly 256 characters", () => {
+		it("should accept name at exactly max length", () => {
 			const result = MutationUpdateAgendaItemInputSchema.safeParse({
 				...validInput,
-				name: "a".repeat(256),
+				name: "a".repeat(AGENDA_ITEM_NAME_MAX_LENGTH),
 			});
 			expect(result.success).toBe(true);
 		});
@@ -89,18 +93,18 @@ describe("MutationUpdateAgendaItemInput Schema", () => {
 			expect(result.success).toBe(false);
 		});
 
-		it("should reject description exceeding 2048 characters", () => {
+		it("should reject description exceeding length limit", () => {
 			const result = MutationUpdateAgendaItemInputSchema.safeParse({
 				...validInput,
-				description: "a".repeat(2049),
+				description: "a".repeat(AGENDA_ITEM_DESCRIPTION_MAX_LENGTH + 1),
 			});
 			expect(result.success).toBe(false);
 		});
 
-		it("should accept description at exactly 2048 characters", () => {
+		it("should accept description at exactly max length", () => {
 			const result = MutationUpdateAgendaItemInputSchema.safeParse({
 				...validInput,
-				description: "a".repeat(2048),
+				description: "a".repeat(AGENDA_ITEM_DESCRIPTION_MAX_LENGTH),
 			});
 			expect(result.success).toBe(true);
 		});

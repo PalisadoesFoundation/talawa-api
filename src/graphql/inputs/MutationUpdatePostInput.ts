@@ -1,5 +1,8 @@
 import { z } from "zod";
-import { postsTableInsertSchema } from "~/src/drizzle/tables/posts";
+import {
+	POST_CAPTION_MAX_LENGTH,
+	postsTableInsertSchema,
+} from "~/src/drizzle/tables/posts";
 import { builder } from "~/src/graphql/builder";
 import {
 	FileMetadataInput,
@@ -17,8 +20,8 @@ export const mutationUpdatePostInputSchema = z
 		 */
 		caption: postsTableInsertSchema.shape.caption
 			.pipe(sanitizedStringSchema)
-			.refine((val) => val.length <= 2000, {
-				message: "Post caption must not exceed 2000 characters.",
+			.refine((val) => val.length <= POST_CAPTION_MAX_LENGTH, {
+				message: `Post caption must not exceed ${POST_CAPTION_MAX_LENGTH} characters.`,
 			})
 			.optional(),
 		id: z.string().uuid(),

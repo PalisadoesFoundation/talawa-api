@@ -1,4 +1,8 @@
 import { describe, expect, it } from "vitest";
+import {
+	VENUE_DESCRIPTION_MAX_LENGTH,
+	VENUE_NAME_MAX_LENGTH,
+} from "~/src/drizzle/tables/venues";
 import { mutationUpdateVenueInputSchema } from "~/src/graphql/inputs/MutationUpdateVenueInput";
 
 /**
@@ -44,18 +48,18 @@ describe("MutationUpdateVenueInput Schema", () => {
 			expect(result.success).toBe(false);
 		});
 
-		it("should reject name exceeding 256 characters", () => {
+		it("should reject name exceeding length limit", () => {
 			const result = mutationUpdateVenueInputSchema.safeParse({
 				...validInput,
-				name: "a".repeat(257),
+				name: "a".repeat(VENUE_NAME_MAX_LENGTH + 1),
 			});
 			expect(result.success).toBe(false);
 		});
 
-		it("should accept name at exactly 256 characters", () => {
+		it("should accept name at exactly max length", () => {
 			const result = mutationUpdateVenueInputSchema.safeParse({
 				...validInput,
-				name: "a".repeat(256),
+				name: "a".repeat(VENUE_NAME_MAX_LENGTH),
 			});
 			expect(result.success).toBe(true);
 		});
@@ -89,18 +93,18 @@ describe("MutationUpdateVenueInput Schema", () => {
 			expect(result.success).toBe(false);
 		});
 
-		it("should reject description exceeding 2048 characters", () => {
+		it("should reject description exceeding length limit", () => {
 			const result = mutationUpdateVenueInputSchema.safeParse({
 				...validInput,
-				description: "a".repeat(2049),
+				description: "a".repeat(VENUE_DESCRIPTION_MAX_LENGTH + 1),
 			});
 			expect(result.success).toBe(false);
 		});
 
-		it("should accept description at exactly 2048 characters", () => {
+		it("should accept description at exactly max length", () => {
 			const result = mutationUpdateVenueInputSchema.safeParse({
 				...validInput,
-				description: "a".repeat(2048),
+				description: "a".repeat(VENUE_DESCRIPTION_MAX_LENGTH),
 			});
 			expect(result.success).toBe(true);
 		});

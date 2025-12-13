@@ -8,7 +8,7 @@ export const mutationUpdateAdvertisementInputSchema =
 	advertisementsTableInsertSchema
 		.pick({})
 		.extend({
-			description: z.string().trim().min(1).max(2048).nullable().optional(),
+			description: z.string().trim().min(1).max(2048).optional(),
 			endAt: advertisementsTableInsertSchema.shape.endAt.optional(),
 			id: advertisementsTableInsertSchema.shape.id.unwrap(),
 			name: z.string().trim().min(1).max(256).optional(),
