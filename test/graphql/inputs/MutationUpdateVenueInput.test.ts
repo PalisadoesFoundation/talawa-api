@@ -118,14 +118,91 @@ describe("MutationUpdateVenueInput Schema", () => {
 		});
 	});
 
+	describe("capacity field", () => {
+		it("should accept capacity: 0 (falsy but provided)", () => {
+			const result = mutationUpdateVenueInputSchema.safeParse({
+				...validInput,
+				capacity: 0,
+			});
+			expect(result.success).toBe(true);
+			if (result.success) {
+				expect(result.data.capacity).toBe(0);
+			}
+		});
+
+		it("should accept positive capacity", () => {
+			const result = mutationUpdateVenueInputSchema.safeParse({
+				...validInput,
+				capacity: 100,
+			});
+			expect(result.success).toBe(true);
+		});
+
+		it("should accept negative capacity (if schema allows integers)", () => {
+			// Note: DB schema is just integer, so negative might be allowed by Zod unless refined.
+			// Assuming basic integer validation for now.
+			const result = mutationUpdateVenueInputSchema.safeParse({
+				...validInput,
+				capacity: -1,
+			});
+			expect(result.success).toBe(true);
+		});
+	});
+
+	describe("attachments field", () => {
+		it("should reject empty attachments array", () => {
+			const result = mutationUpdateVenueInputSchema.safeParse({
+				...validInput,
+				attachments: [],
+			});
+			expect(result.success).toBe(false);
+		});
+
+		it("should reject attachments array exceeding max length (20)", () => {
+			const tooManyAttachments = Array.from({ length: 21 }, () =>
+				Promise.resolve({
+					filename: "test.jpg",
+					mimetype: "image/jpeg",
+					encoding: "7bit",
+					createReadStream: () => null,
+				}),
+			);
+			const result = mutationUpdateVenueInputSchema.safeParse({
+				...validInput,
+				attachments: tooManyAttachments,
+			});
+			expect(result.success).toBe(false);
+		});
+
+		it("should accept valid attachments array (single item)", () => {
+			const validAttachments = [
+				Promise.resolve({
+					filename: "test.jpg",
+					mimetype: "image/jpeg",
+					encoding: "7bit",
+					createReadStream: () => null,
+				}),
+			];
+			const result = mutationUpdateVenueInputSchema.safeParse({
+				...validInput,
+				attachments: validAttachments,
+			});
+			expect(result.success).toBe(true);
+		});
+	});
+
 	describe("refine validation", () => {
 		it("should require at least one optional argument", () => {
 			const result = mutationUpdateVenueInputSchema.safeParse({
 				id: "550e8400-e29b-41d4-a716-446655440000",
 			});
 			expect(result.success).toBe(false);
-			if (!result.success && result.error.issues[0]) {
-				expect(result.error.issues[0].message).toContain("optional argument");
+			if (!result.success) {
+				expect(
+					result.error.issues.some((i) =>
+						i.message.includes("optional argument"),
+					),
+				).toBe(true);
 			}
 		});
 	});

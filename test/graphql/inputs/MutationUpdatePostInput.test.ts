@@ -29,18 +29,12 @@ describe("MutationUpdatePostInput Schema", () => {
 			}
 		});
 
-		it("should accept whitespace-only caption (trimmed to empty)", () => {
-			// Note: postsTableInsertSchema requires a raw min length of 1 but sanitizedStringSchema
-			// trims whitespace afterward, so whitespace-only input passes the raw min check then
-			// becomes an empty string after sanitization (which is why "   " succeeds while "" fails).
+		it("should reject whitespace-only caption", () => {
 			const result = mutationUpdatePostInputSchema.safeParse({
 				...validInput,
 				caption: "   ",
 			});
-			expect(result.success).toBe(true);
-			if (result.success) {
-				expect(result.data.caption).toBe("");
-			}
+			expect(result.success).toBe(false);
 		});
 
 		it("should reject empty string caption", () => {

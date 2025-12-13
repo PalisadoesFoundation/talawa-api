@@ -9,8 +9,6 @@ import {
 	fileMetadataSchema,
 } from "./MutationCreatePostInput";
 
-import { sanitizedStringSchema } from "~/src/utilities/sanitizer";
-
 export const mutationUpdatePostInputSchema = z
 	.object({
 		/**
@@ -18,9 +16,11 @@ export const mutationUpdatePostInputSchema = z
 		 * We persist the raw (trimmed) text and perform HTML escaping at output time
 		 * to avoid double-escaping and exceeding DB length limits with escaped entities.
 		 */
-		caption: postsTableInsertSchema.shape.caption
-			.pipe(sanitizedStringSchema)
-			.refine((val) => val.length <= POST_CAPTION_MAX_LENGTH, {
+		caption: z
+			.string()
+			.trim()
+			.min(1)
+			.max(POST_CAPTION_MAX_LENGTH, {
 				message: `Post caption must not exceed ${POST_CAPTION_MAX_LENGTH} characters.`,
 			})
 			.optional(),
