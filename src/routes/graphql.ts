@@ -20,7 +20,7 @@ type InitialContext = {
 	fastify: FastifyInstance;
 	request: FastifyRequest;
 } & (
-	| {
+		| {
 			/**
 			 * This field is `false` if the current graphql operation isn't a subscription.
 			 */
@@ -30,8 +30,8 @@ type InitialContext = {
 			 */
 			reply: FastifyReply;
 			socket?: never;
-	  }
-	| {
+		}
+		| {
 			/**
 			 * This field is `true` if the current graphql operation is a subscription.
 			 */
@@ -41,8 +41,8 @@ type InitialContext = {
 			 * This field is only present if the current graphql operation is a subscription.
 			 */
 			socket: WebSocket;
-	  }
-);
+		}
+	);
 
 export type CreateContext = (
 	initialContext: InitialContext,
@@ -84,6 +84,28 @@ export const createContext: CreateContext = async (initialContext) => {
 };
 
 /**
+ * File upload configuration for GraphQL multipart requests.
+ * These limits are enforced by mercurius-upload and are exported for use in tests.
+ */
+export const FILE_UPLOAD_CONFIG = {
+	/**
+	 * Maximum allowed non-file multipart form field size in bytes.
+	 * This is the size of the actual graphql document excluding file uploads.
+	 * 1024 * 1024 = 1MB
+	 */
+	maxFieldSize: 1048576,
+	/**
+	 * Maximum allowed number of files in a single graphql operation.
+	 */
+	maxFiles: 20,
+	/**
+	 * Maximum allowed file size in bytes.
+	 * 1024 * 1024 * 10 = 10MB
+	 */
+	maxFileSize: 10485760,
+} as const;
+
+/**
  * This fastify route plugin function is initializes mercurius on the fastify instance and directs incoming requests on the `/graphql` route to it.
  */
 export const graphql = fastifyPlugin(async (fastify) => {
@@ -92,23 +114,7 @@ export const graphql = fastifyPlugin(async (fastify) => {
 	 * 1. {@link https://github.com/mercurius-js/mercurius-upload}
 	 * 2. {@link https://github.com/flash-oss/graphql-upload-minimal/blob/56e83775b114edc169f605041d983156d4131387/public/index.js#L61}
 	 */
-	await fastify.register(mercuriusUpload, {
-		/**
-		 * Maximum allowed non-file multipart form field size in bytes. This basically means the size of the actual graphql document excluding the size of the file uploads carried along with it.
-		 *
-		 * 1024 * 1024
-		 */
-		maxFieldSize: 1048576,
-		/**
-		 * Maximum allowed number of files in a single graphql operation.
-		 */
-		maxFiles: 20,
-		/**
-		 * Maximum allowed file size in bytes.
-		 * 1024 * 1024 * 10
-		 */
-		maxFileSize: 10485760,
-	});
+	await fastify.register(mercuriusUpload, FILE_UPLOAD_CONFIG);
 
 	// Build initial schema with active plugins
 	const initialSchema = await schemaManager.buildInitialSchema();
@@ -173,7 +179,7 @@ export const graphql = fastifyPlugin(async (fastify) => {
 			// KeepAlive is fine as it is
 			keepAlive: 1000 * 30,
 			// A function which is called with the subscription context of the connection after the connection gets disconnected.
-			onDisconnect: (ctx) => {},
+			onDisconnect: (ctx) => { },
 			// This function is used to validate incoming Websocket connections.
 			verifyClient: (info, next) => {
 				next(true);
@@ -207,10 +213,10 @@ export const graphql = fastifyPlugin(async (fastify) => {
 					error:
 						error instanceof Error
 							? {
-									message: error.message,
-									stack: error.stack,
-									name: error.name,
-								}
+								message: error.message,
+								stack: error.stack,
+								name: error.name,
+							}
 							: String(error),
 					timestamp: new Date().toISOString(),
 				},

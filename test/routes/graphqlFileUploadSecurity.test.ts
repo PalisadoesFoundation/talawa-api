@@ -1,27 +1,18 @@
 import { describe, expect, it } from "vitest";
+import { FILE_UPLOAD_CONFIG } from "~/src/routes/graphql";
 
 /**
  * Tests for GraphQL file upload configuration security.
  * Documents the security limits enforced by mercurius-upload.
+ * Uses the canonical config imported from src/routes/graphql.ts.
  */
 describe("GraphQL File Upload Security Configuration", () => {
-	// These values are from src/routes/graphql.ts
-	const FILE_UPLOAD_CONFIG = {
-		maxFieldSize: 1048576, // 1MB - max non-file multipart form field size
-		maxFiles: 20, // max files per operation
-		maxFileSize: 10485760, // 10MB - max individual file size
-	};
-
 	describe("file size limits", () => {
 		it("should enforce 10MB maximum file size", () => {
-			// 10MB = 1024 * 1024 * 10 = 10485760 bytes
-			expect(FILE_UPLOAD_CONFIG.maxFileSize).toBe(10485760);
 			expect(FILE_UPLOAD_CONFIG.maxFileSize).toBe(10 * 1024 * 1024);
 		});
 
 		it("should enforce 1MB maximum field size for non-file data", () => {
-			// 1MB = 1024 * 1024 = 1048576 bytes
-			expect(FILE_UPLOAD_CONFIG.maxFieldSize).toBe(1048576);
 			expect(FILE_UPLOAD_CONFIG.maxFieldSize).toBe(1 * 1024 * 1024);
 		});
 

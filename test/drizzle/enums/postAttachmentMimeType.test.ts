@@ -51,5 +51,27 @@ describe("postAttachmentMimeTypeEnum", () => {
 			const result = postAttachmentMimeTypeEnum.safeParse(undefined);
 			expect(result.success).toBe(false);
 		});
+
+		it("should reject whitespace-only string", () => {
+			const result = postAttachmentMimeTypeEnum.safeParse("   ");
+			expect(result.success).toBe(false);
+		});
+
+		it("should reject valid MIME type with leading/trailing whitespace", () => {
+			const result = postAttachmentMimeTypeEnum.safeParse(" image/png ");
+			expect(result.success).toBe(false);
+		});
+	});
+
+	describe("case sensitivity", () => {
+		it("should accept valid MIME type with mixed casing", () => {
+			const result = postAttachmentMimeTypeEnum.safeParse("ImAgE/PNg");
+			expect(result.success).toBe(true);
+		});
+
+		it("should accept uppercase MIME type", () => {
+			const result = postAttachmentMimeTypeEnum.safeParse("IMAGE/JPEG");
+			expect(result.success).toBe(true);
+		});
 	});
 });

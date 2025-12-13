@@ -32,6 +32,10 @@ suite("Mutation field createComment", () => {
 		}
 		const token = signInResult.data?.signIn?.authenticationToken ?? null;
 		assertToBeNonNullish(token);
+		// Verify token is a non-empty string (not just non-nullish)
+		if (typeof token !== "string" || token.trim() === "") {
+			throw new Error("signIn returned empty or invalid authenticationToken");
+		}
 		adminToken = token;
 
 		// Create a shared organization for tests
@@ -177,8 +181,8 @@ suite("Mutation field createComment", () => {
 		const extensions = validationError?.extensions;
 		const issues =
 			typeof extensions === "object" &&
-			extensions !== null &&
-			"issues" in extensions
+				extensions !== null &&
+				"issues" in extensions
 				? (extensions as InvalidArgumentsExtensions).issues
 				: undefined;
 		expect(issues).toBeDefined();
@@ -188,12 +192,7 @@ suite("Mutation field createComment", () => {
 		expect(issues?.length).toBeGreaterThan(0);
 
 		const issueMessages = issues?.map((i) => i.message).join(" ");
-		// Use regex for flexible message matching (accepts "at most N" with optional "character(s)")
-		expect(issueMessages).toMatch(
-			new RegExp(
-				`at most\\s+${COMMENT_BODY_MAX_LENGTH}(?:\\s*characters?)?`,
-				"i",
-			),
-		);
+		// Use simple assertion for message matching
+		expect(issueMessages).toContain(`at most ${COMMENT_BODY_MAX_LENGTH}`);
 	});
 });

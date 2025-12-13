@@ -45,6 +45,13 @@ describe("MutationUpdateAdvertisementInput Schema", () => {
 				endAt: new Date("2024-01-01T10:00:00Z"),
 			});
 			expect(result.success).toBe(false);
+			if (!result.success) {
+				// Assert that at least one issue has path equal to ["endAt"]
+				const hasEndAtIssue = result.error.issues.some(
+					(issue) => issue.path.join(",") === "endAt",
+				);
+				expect(hasEndAtIssue).toBe(true);
+			}
 		});
 
 		it("should reject endAt equal to startAt", () => {
@@ -54,6 +61,13 @@ describe("MutationUpdateAdvertisementInput Schema", () => {
 				endAt: new Date("2024-01-01T12:00:00Z"),
 			});
 			expect(result.success).toBe(false);
+			if (!result.success) {
+				// Assert that at least one issue has path equal to ["endAt"]
+				const hasEndAtIssue = result.error.issues.some(
+					(issue) => issue.path.join(",") === "endAt",
+				);
+				expect(hasEndAtIssue).toBe(true);
+			}
 		});
 
 		it("should accept valid date range (endAt > startAt)", () => {
@@ -98,8 +112,12 @@ describe("MutationUpdateAdvertisementInput Schema", () => {
 				id: "550e8400-e29b-41d4-a716-446655440000",
 			});
 			expect(result.success).toBe(false);
-			if (!result.success && result.error.issues[0]) {
-				expect(result.error.issues[0].message).toContain("optional argument");
+			if (!result.success) {
+				// Assert that at least one issue contains the expected message
+				const hasOptionalArgIssue = result.error.issues.some((issue) =>
+					issue.message.includes("optional argument"),
+				);
+				expect(hasOptionalArgIssue).toBe(true);
 			}
 		});
 	});

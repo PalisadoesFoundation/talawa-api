@@ -230,19 +230,16 @@ suite("Mutation field updateComment", () => {
 		expect(Array.isArray(ext.issues)).toBe(true);
 		expect(ext.issues.length).toBeGreaterThan(0);
 
-		// Use regex for flexible message matching (accepts "at most 2048" with optional "character(s)")
 		const issueMessages = ext.issues.map((i) => i.message).join(" ");
-		expect(issueMessages).toMatch(
-			new RegExp(
-				`at most\\s+${COMMENT_BODY_MAX_LENGTH}(?:\\s*characters?)?`,
-				"i",
-			),
-		);
+		// Use simple assertions for message matching (avoid dynamic RegExp)
+		expect(issueMessages).toContain("at most");
+		expect(issueMessages).toContain(String(COMMENT_BODY_MAX_LENGTH));
 	});
 
 	test("should trim before length validation", async () => {
 		// Create a body that's valid after trimming but exceeds limit before trimming
-		const paddedBody = `   ${"a".repeat(COMMENT_BODY_MAX_LENGTH)}   `;
+		const expectedTrimmed = "a".repeat(COMMENT_BODY_MAX_LENGTH);
+		const paddedBody = `   ${expectedTrimmed}   `;
 		const updateResult = await mercuriusClient.mutate(Mutation_updateComment, {
 			variables: {
 				input: {
@@ -264,9 +261,8 @@ suite("Mutation field updateComment", () => {
 		const updatedComment = updateResult.data?.updateComment;
 		assertToBeNonNullish(updatedComment);
 		assertToBeNonNullish(updatedComment.body);
-		// Body should be exactly at max length after trimming
-		expect(updatedComment.body.length).toBeLessThanOrEqual(
-			COMMENT_BODY_MAX_LENGTH,
-		);
+		// Verify exact trimmed content is preserved (not truncated or altered)
+		expect(updatedComment.body.length).toBe(COMMENT_BODY_MAX_LENGTH);
+		expect(updatedComment.body).toBe(expectedTrimmed);
 	});
 });
