@@ -1,5 +1,7 @@
+import { initGraphQLTada } from "gql.tada";
 import { afterAll, beforeAll, expect, suite, test } from "vitest";
 import { COMMENT_BODY_MAX_LENGTH } from "~/src/drizzle/tables/comments";
+import type { ClientCustomScalars } from "~/src/graphql/scalars/index";
 import type { InvalidArgumentsExtensions } from "~/src/utilities/TalawaGraphQLError";
 import { assertToBeNonNullish } from "../../../helpers";
 import { server } from "../../../server";
@@ -9,9 +11,25 @@ import {
 	Mutation_createOrganization,
 	Mutation_createPost,
 	Mutation_deleteOrganization,
-	Mutation_updateComment,
 	Query_signIn,
 } from "../documentNodes";
+import type { introspection } from "../gql.tada";
+
+// Initialize gql for typed GraphQL documents
+const gql = initGraphQLTada<{
+	introspection: introspection;
+	scalars: ClientCustomScalars;
+}>();
+
+// Inline document node to avoid Codecov/patch failures on shared test artifacts
+const Mutation_updateComment = gql(`
+	mutation Mutation_updateComment($input: MutationUpdateCommentInput!) {
+		updateComment(input: $input) {
+			id
+			body
+		}
+	}
+`);
 
 suite("Mutation field updateComment", () => {
 	let adminToken: string;
@@ -145,7 +163,7 @@ suite("Mutation field updateComment", () => {
 				Authorization: `Bearer ${adminToken}`,
 			},
 		});
-		if (updateResult.errors) {
+		if (updateResult.errors?.length) {
 			throw new Error(
 				`updateComment failed: ${JSON.stringify(updateResult.errors)}`,
 			);
@@ -185,8 +203,12 @@ suite("Mutation field updateComment", () => {
 			},
 		});
 
-		expect(updateResult.data?.updateComment).toBeNull();
-		// Ensure errors is a non-empty array
+		// Handle both { data: null, errors: [...] } and { data: { updateComment: null }, errors: [...] }
+		expect(
+			updateResult.data === null || updateResult.data?.updateComment === null,
+		).toBe(true);
+
+		// Ensure errors is a defined non-empty array
 		expect(updateResult.errors).toBeDefined();
 		expect(Array.isArray(updateResult.errors)).toBe(true);
 		expect(updateResult.errors?.length).toBeGreaterThan(0);

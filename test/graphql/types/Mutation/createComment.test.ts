@@ -1,4 +1,3 @@
-import { faker } from "@faker-js/faker";
 import { beforeAll, expect, suite, test } from "vitest";
 import { COMMENT_BODY_MAX_LENGTH } from "~/src/drizzle/tables/comments";
 import type { InvalidArgumentsExtensions } from "~/src/utilities/TalawaGraphQLError";
@@ -41,13 +40,13 @@ suite("Mutation field createComment", () => {
 				headers: { authorization: `Bearer ${adminToken}` },
 				variables: {
 					input: {
-						name: faker.company.name(),
-						description: faker.lorem.sentence(),
+						name: "Test Organization Beta",
+						description: "A test organization for create comment tests",
 						countryCode: "jm",
-						state: "St. Andrew",
+						state: "St Andrew",
 						city: "Kingston",
 						postalCode: "12345",
-						addressLine1: faker.location.streetAddress(),
+						addressLine1: "456 Test Avenue",
 					},
 				},
 			},
@@ -65,7 +64,7 @@ suite("Mutation field createComment", () => {
 		const postResult = await mercuriusClient.mutate(Mutation_createPost, {
 			variables: {
 				input: {
-					caption: faker.lorem.sentence(),
+					caption: "Test post for create comment tests",
 					organizationId: orgId,
 				},
 			},
