@@ -129,6 +129,11 @@ export const postsTableRelations = relations(postsTable, ({ many, one }) => ({
 	}),
 }));
 
+/**
+ * Maximum length for post caption.
+ */
+export const POST_CAPTION_MAX_LENGTH = 2048;
+
 export const postsTableInsertSchema = createInsertSchema(postsTable, {
-	caption: (schema) => schema.min(1).max(2048),
+	caption: (schema) => schema.min(1).max(POST_CAPTION_MAX_LENGTH),
 });

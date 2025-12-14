@@ -1,3 +1,4 @@
+import { type ChildProcess, spawn } from "node:child_process";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { PluginLifecycle } from "../../../src/plugin/manager/lifecycle";
 import { PluginStatus } from "../../../src/plugin/types";
@@ -19,12 +20,17 @@ vi.mock("../../../src/plugin/utils", () => ({
 	dropPluginTables: vi.fn(),
 	safeRequire: vi.fn(),
 	createPluginTables: vi.fn(),
+	isValidPluginId: vi.fn(() => true), // Default to returning true for valid plugin IDs
 }));
 
 vi.mock("../../../src/graphql/schemaManager", () => ({
 	schemaManager: {
 		rebuildSchema: vi.fn(),
 	},
+}));
+
+vi.mock("node:child_process", () => ({
+	spawn: vi.fn(),
 }));
 
 // Type definitions for mocks
@@ -92,6 +98,15 @@ describe("PluginLifecycle", () => {
 	beforeEach(() => {
 		// Reset mocks
 		vi.clearAllMocks();
+
+		// Default child_process.spawn mock: return an EventEmitter that emits close
+		// (individual tests can override as needed)
+		const { EventEmitter } = require("node:events");
+		vi.mocked(spawn).mockImplementation(() => {
+			const proc = new EventEmitter();
+			setImmediate(() => proc.emit("close", 0));
+			return proc as unknown as ChildProcess;
+		});
 
 		// Setup mock plugin context
 		mockPluginContext = {
@@ -404,6 +419,34 @@ describe("PluginLifecycle", () => {
 			// The onInstall hook failure is caught and logged, but doesn't fail the installation
 			expect(result).toBe(true);
 		});
+
+		it("should reject invalid plugin ID during installation", async () => {
+			const { isValidPluginId } = await import("../../../src/plugin/utils");
+			(isValidPluginId as ReturnType<typeof vi.fn>).mockReturnValueOnce(false);
+
+			const consoleSpy = vi
+				.spyOn(console, "error")
+				.mockImplementation(() => {});
+
+			const maliciousPluginId = "../malicious-plugin";
+			const result = await lifecycle.installPlugin(
+				maliciousPluginId,
+				mockPluginManager as unknown as Parameters<
+					typeof lifecycle.installPlugin
+				>[1],
+			);
+
+			expect(result).toBe(false);
+			// Verify isValidPluginId was called with the supplied plugin id
+			expect(isValidPluginId).toHaveBeenCalledWith(maliciousPluginId);
+			expect(mockPluginManager.emit).not.toHaveBeenCalledWith(
+				"plugin:installed",
+				maliciousPluginId,
+			);
+			// Verify console.error was called exactly once for the error
+			expect(consoleSpy).toHaveBeenCalledTimes(1);
+			consoleSpy.mockRestore();
+		});
 	});
 
 	describe("uninstallPlugin", () => {
@@ -515,6 +558,34 @@ describe("PluginLifecycle", () => {
 			);
 
 			expect(result).toBe(true); // Should still succeed despite table removal failure
+		});
+
+		it("should reject invalid plugin ID during uninstallation", async () => {
+			const { isValidPluginId } = await import("../../../src/plugin/utils");
+			(isValidPluginId as ReturnType<typeof vi.fn>).mockReturnValueOnce(false);
+
+			const consoleSpy = vi
+				.spyOn(console, "error")
+				.mockImplementation(() => {});
+
+			const maliciousPluginId = "../malicious-plugin";
+			const result = await lifecycle.uninstallPlugin(
+				maliciousPluginId,
+				mockPluginManager as unknown as Parameters<
+					typeof lifecycle.uninstallPlugin
+				>[1],
+			);
+
+			expect(result).toBe(false);
+			// Verify isValidPluginId was called with the supplied plugin id
+			expect(isValidPluginId).toHaveBeenCalledWith(maliciousPluginId);
+			expect(mockPluginManager.emit).not.toHaveBeenCalledWith(
+				"plugin:installed",
+				maliciousPluginId,
+			);
+			// Verify console.error was called exactly once for the error
+			expect(consoleSpy).toHaveBeenCalledTimes(1);
+			consoleSpy.mockRestore();
 		});
 	});
 
@@ -1082,7 +1153,6 @@ describe("PluginLifecycle", () => {
 				"Error calling onUnload lifecycle hook for plugin test-plugin:",
 				expect.any(Error),
 			);
-
 			consoleSpy.mockRestore();
 			getPluginModuleSpy.mockRestore();
 		});
@@ -1233,6 +1303,180 @@ describe("PluginLifecycle", () => {
 
 				// Test passes if no error is thrown (will fail on docker check but that's expected)
 			}
+		});
+
+		it("should execute docker build command when buildOnInstall is true", async () => {
+			const pluginId = "test-plugin";
+			const manifest = {
+				docker: {
+					enabled: true,
+					composeFile: "docker-compose.yml",
+					buildOnInstall: true,
+				},
+			};
+
+			const { spawn } = await import("node:child_process");
+			const EventEmitter = (await import("node:events")).EventEmitter;
+
+			(spawn as unknown as ReturnType<typeof vi.fn>).mockImplementation(() => {
+				const proc = new EventEmitter();
+				setImmediate(() => proc.emit("close", 0));
+				return proc;
+			});
+
+			await (
+				lifecycle as unknown as {
+					manageDocker: (
+						pluginId: string,
+						manifest: unknown,
+						action: string,
+					) => Promise<void>;
+				}
+			).manageDocker(pluginId, manifest, "install");
+
+			// Covers line 645
+			expect(spawn).toHaveBeenCalledWith(
+				"sudo",
+				expect.arrayContaining([
+					"docker",
+					"compose",
+					"-f",
+					expect.stringContaining("docker-compose.yml"),
+					"build",
+				]),
+				expect.any(Object),
+			);
+		});
+
+		it("should execute docker up command when upOnActivate is true", async () => {
+			const pluginId = "test-plugin";
+			const manifest = {
+				docker: {
+					enabled: true,
+					composeFile: "docker-compose.yml",
+					upOnActivate: true,
+				},
+			};
+
+			const { spawn } = await import("node:child_process");
+			const EventEmitter = (await import("node:events")).EventEmitter;
+
+			(spawn as unknown as ReturnType<typeof vi.fn>).mockImplementation(() => {
+				const proc = new EventEmitter();
+				setImmediate(() => proc.emit("close", 0));
+				return proc;
+			});
+
+			await (
+				lifecycle as unknown as {
+					manageDocker: (
+						pluginId: string,
+						manifest: unknown,
+						action: string,
+					) => Promise<void>;
+				}
+			).manageDocker(pluginId, manifest, "activate");
+
+			// Covers line 650
+			expect(spawn).toHaveBeenCalledWith(
+				"sudo",
+				expect.arrayContaining([
+					"docker",
+					"compose",
+					"-f",
+					expect.stringContaining("docker-compose.yml"),
+					"up",
+					"-d",
+				]),
+				expect.any(Object),
+			);
+		});
+
+		it("should execute docker down command when downOnDeactivate is true", async () => {
+			const pluginId = "test-plugin";
+			const manifest = {
+				docker: {
+					enabled: true,
+					composeFile: "docker-compose.yml",
+					downOnDeactivate: true,
+				},
+			};
+
+			const { spawn } = await import("node:child_process");
+			const EventEmitter = (await import("node:events")).EventEmitter;
+
+			(spawn as unknown as ReturnType<typeof vi.fn>).mockImplementation(() => {
+				const proc = new EventEmitter();
+				setImmediate(() => proc.emit("close", 0));
+				return proc;
+			});
+
+			await (
+				lifecycle as unknown as {
+					manageDocker: (
+						pluginId: string,
+						manifest: unknown,
+						action: string,
+					) => Promise<void>;
+				}
+			).manageDocker(pluginId, manifest, "deactivate");
+
+			// Covers line 655
+			expect(spawn).toHaveBeenCalledWith(
+				"sudo",
+				expect.arrayContaining([
+					"docker",
+					"compose",
+					"-f",
+					expect.stringContaining("docker-compose.yml"),
+					"down",
+				]),
+				expect.any(Object),
+			);
+		});
+
+		it("should execute docker down with volumes when removeOnUninstall is true", async () => {
+			const pluginId = "test-plugin";
+			const manifest = {
+				docker: {
+					enabled: true,
+					composeFile: "docker-compose.yml",
+					removeOnUninstall: true,
+				},
+			};
+
+			const { spawn } = await import("node:child_process");
+			const EventEmitter = (await import("node:events")).EventEmitter;
+
+			(spawn as unknown as ReturnType<typeof vi.fn>).mockImplementation(() => {
+				const proc = new EventEmitter();
+				setImmediate(() => proc.emit("close", 0));
+				return proc;
+			});
+
+			await (
+				lifecycle as unknown as {
+					manageDocker: (
+						pluginId: string,
+						manifest: unknown,
+						action: string,
+					) => Promise<void>;
+				}
+			).manageDocker(pluginId, manifest, "uninstall");
+
+			// Covers line 660
+			expect(spawn).toHaveBeenCalledWith(
+				"sudo",
+				expect.arrayContaining([
+					"docker",
+					"compose",
+					"-f",
+					expect.stringContaining("docker-compose.yml"),
+					"down",
+					"-v",
+				]),
+				expect.any(Object),
+			);
 		});
 	});
 
