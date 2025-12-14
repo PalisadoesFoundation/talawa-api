@@ -27,7 +27,7 @@ import argparse
 import sys
 
 
-def has_eslint_disable(file_path):
+def has_itskip_disable(file_path):
     """Check if a TypeScript file contains it.skip statements.
 
     Args:
@@ -37,7 +37,7 @@ def has_eslint_disable(file_path):
         bool: True if it.skip statement is found, False otherwise.
     """
     # Initialize key variables
-    eslint_disable_pattern = re.compile(
+    itskip_disable_pattern = re.compile(
         r"\bit\.skip\s*\(",
         re.IGNORECASE,
     )
@@ -45,7 +45,7 @@ def has_eslint_disable(file_path):
     try:
         with open(file_path, encoding="utf-8") as file:
             content = file.read()
-            return bool(eslint_disable_pattern.search(content))
+            return bool(itskip_disable_pattern.search(content))
     except FileNotFoundError:
         print(f"File not found: {file_path}")
     except PermissionError:
@@ -55,7 +55,7 @@ def has_eslint_disable(file_path):
     return False
 
 
-def check_eslint(files_or_directories):
+def check_itskip(files_or_directories):
     """Check TypeScript files for it.skip statements.
 
     Args:
@@ -64,14 +64,14 @@ def check_eslint(files_or_directories):
     Returns:
         bool: True if it.skip statement is found, False otherwise.
     """
-    eslint_found = False
+    itskip_found = False
 
     for item in files_or_directories:
         if os.path.isfile(item):
             # Check a single file
-            if item.endswith((".ts", ".tsx")) and has_eslint_disable(item):
+            if item.endswith((".ts", ".tsx")) and has_itskip_disable(item):
                 print(f"Error: File {item} contains it.skip statements.")
-                eslint_found = True
+                itskip_found = True
         elif os.path.isdir(item):
             # Recursively check files in a directory
             for root, _, files in os.walk(item):
@@ -80,14 +80,14 @@ def check_eslint(files_or_directories):
                 for file_name in files:
                     if file_name.endswith((".ts", ".tsx")):
                         file_path = os.path.join(root, file_name)
-                        if has_eslint_disable(file_path):
+                        if has_itskip_disable(file_path):
                             print(
                                 f"Error: File {file_path} contains "
                                 "'it.skip' statements."
                             )
 
-                            eslint_found = True
-    return eslint_found
+                            itskip_found = True
+    return itskip_found
 
 
 def arg_parser_resolver():
@@ -143,10 +143,10 @@ def main():
 
     # Determine whether to check files or directories based on the arguments
     files_or_directories = args.files if args.files else args.directory
-    # Check eslint in the specified files or directories
-    eslint_found = check_eslint(files_or_directories)
+    # Check itskip in the specified files or directories
+    itskip_found = check_itskip(files_or_directories)
 
-    if eslint_found:
+    if itskip_found:
         print("ESLint-disable check failed. Exiting with error.")
         sys.exit(1)
 
