@@ -279,6 +279,7 @@ suite("Mutation field createComment", () => {
 					},
 				},
 			);
+			expect(createUserResult.errors).toBeUndefined();
 			const memberUserId = createUserResult.data?.createUser?.user?.id;
 			assertToBeNonNullish(memberUserId);
 
