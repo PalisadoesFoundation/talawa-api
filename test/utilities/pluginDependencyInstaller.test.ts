@@ -1,5 +1,5 @@
 import { EventEmitter } from "node:events";
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { TalawaGraphQLError } from "../../src/utilities/TalawaGraphQLError";
 import {
 	installPluginDependencies,
@@ -8,6 +8,11 @@ import {
 
 // Create hoisted mock for spawn that returns a mock child process
 const mockSpawn = vi.hoisted(() => {
+	return vi.fn();
+});
+
+// Mock process.kill for Unix tests
+const mockProcessKill = vi.hoisted(() => {
 	return vi.fn();
 });
 
@@ -75,6 +80,9 @@ Object.defineProperty(process, "cwd", {
 	writable: true,
 });
 
+// Store original process.kill
+const originalProcessKill = process.kill.bind(process);
+
 import * as fs from "node:fs/promises";
 
 describe("Plugin Dependency Installer", () => {
@@ -85,6 +93,7 @@ describe("Plugin Dependency Installer", () => {
 
 	beforeEach(() => {
 		vi.clearAllMocks();
+		vi.useRealTimers();
 		// Reset the mock to return the test path
 		(process.cwd as ReturnType<typeof vi.fn>).mockReturnValue("/test/cwd");
 		// Reset mockSpawn to default successful state
@@ -92,6 +101,8 @@ describe("Plugin Dependency Installer", () => {
 		mockSpawn.mockImplementation(() =>
 			createMockChildProcess({ stdout: "Dependencies installed", stderr: "" }),
 		);
+		// Reset process.kill mock
+		mockProcessKill.mockReset();
 	});
 
 	describe("installPluginDependencies", () => {
@@ -265,22 +276,43 @@ describe("Plugin Dependency Installer", () => {
 		});
 
 		it("should handle timeout errors", async () => {
+			vi.useFakeTimers();
 			// Mock fs.access to succeed
 			vi.mocked(fs.access).mockResolvedValue(undefined);
 
-			// Mock spawn to emit timeout error
-			mockSpawn.mockImplementation(() =>
-				createMockChildProcess({
-					error: Object.assign(new Error("Command timed out"), {
-						name: "TimeoutError",
-					}),
-				}),
+			// Create a child that never completes
+			const child = new EventEmitter() as EventEmitter & {
+				stdout: EventEmitter;
+				stderr: EventEmitter;
+				pid: number;
+				kill: ReturnType<typeof vi.fn>;
+				exitCode: number | null;
+			};
+			child.stdout = new EventEmitter();
+			child.stderr = new EventEmitter();
+			child.pid = 12345;
+			child.kill = vi.fn();
+			child.exitCode = null;
+
+			mockSpawn.mockImplementation(() => {
+				// Don't emit any events, simulating a hanging process
+				return child;
+			});
+
+			const resultPromise = installPluginDependencies(
+				"test-plugin",
+				mockLogger,
 			);
 
-			const result = await installPluginDependencies("test-plugin", mockLogger);
+			// Fast-forward time to trigger timeout (5 minutes = 300000ms)
+			await vi.advanceTimersByTimeAsync(300000);
+
+			const result = await resultPromise;
 
 			expect(result.success).toBe(false);
-			expect(result.error).toBe("Command timed out");
+			expect(result.error).toBe("Installation timed out after 5 minutes");
+
+			vi.useRealTimers();
 		});
 
 		it("should handle stderr with warnings", async () => {
@@ -956,6 +988,668 @@ describe("Plugin Dependency Installer", () => {
 				};
 				expect(extensions?.issues?.[0]?.message).toContain("Unknown error");
 			}
+		});
+	});
+
+	// New tests for killProcessTree coverage
+	describe("Kill process tree - Windows", () => {
+		let originalPlatform: NodeJS.Platform;
+
+		beforeEach(() => {
+			originalPlatform = process.platform;
+			// Mock platform to be Windows
+			Object.defineProperty(process, "platform", {
+				value: "win32",
+				writable: true,
+				configurable: true,
+			});
+		});
+
+		afterEach(() => {
+			// Restore to original platform
+			Object.defineProperty(process, "platform", {
+				value: originalPlatform,
+				writable: true,
+				configurable: true,
+			});
+		});
+
+		it("should spawn taskkill on Windows when timeout occurs", async () => {
+			vi.useFakeTimers();
+			vi.mocked(fs.access).mockResolvedValue(undefined);
+
+			const child = new EventEmitter() as EventEmitter & {
+				stdout: EventEmitter;
+				stderr: EventEmitter;
+				pid: number;
+				kill: ReturnType<typeof vi.fn>;
+				exitCode: number | null;
+			};
+			child.stdout = new EventEmitter();
+			child.stderr = new EventEmitter();
+			child.pid = 12345;
+			child.kill = vi.fn();
+			child.exitCode = null;
+
+			// Track taskkill spawns
+			const taskkillChild = new EventEmitter() as EventEmitter & {
+				unref?: ReturnType<typeof vi.fn>;
+			};
+			taskkillChild.unref = vi.fn();
+
+			let firstCall = true;
+			mockSpawn.mockImplementation((cmd, args) => {
+				if (firstCall && cmd.includes("pnpm")) {
+					firstCall = false;
+					// Don't emit close - simulate hanging
+					return child;
+				}
+				if (cmd === "taskkill") {
+					// taskkill spawned successfully, emit success
+					setImmediate(() => {
+						taskkillChild.emit("exit", 0);
+					});
+					return taskkillChild;
+				}
+				return child;
+			});
+
+			const resultPromise = installPluginDependencies(
+				"test-plugin",
+				mockLogger,
+			);
+
+			// Trigger timeout
+			await vi.advanceTimersByTimeAsync(300000);
+
+			const result = await resultPromise;
+
+			expect(result.success).toBe(false);
+			expect(result.error).toBe("Installation timed out after 5 minutes");
+
+			// Verify taskkill was spawned
+			expect(mockSpawn).toHaveBeenCalledWith(
+				"taskkill",
+				["/PID", "12345", "/T", "/F"],
+				{ stdio: "ignore" },
+			);
+
+			vi.useRealTimers();
+		});
+
+		it("should fallback to child.kill when taskkill spawn fails", async () => {
+			vi.useFakeTimers();
+			vi.mocked(fs.access).mockResolvedValue(undefined);
+
+			const child = new EventEmitter() as EventEmitter & {
+				stdout: EventEmitter;
+				stderr: EventEmitter;
+				pid: number;
+				kill: ReturnType<typeof vi.fn>;
+				exitCode: number | null;
+			};
+			child.stdout = new EventEmitter();
+			child.stderr = new EventEmitter();
+			child.pid = 12345;
+			child.kill = vi.fn();
+			child.exitCode = null;
+
+			let taskkillSpawned = false;
+			const taskkillChild = new EventEmitter() as EventEmitter & {
+				unref?: ReturnType<typeof vi.fn>;
+			};
+			taskkillChild.unref = vi.fn();
+
+			let firstCall = true;
+			mockSpawn.mockImplementation((cmd) => {
+				if (firstCall && cmd.includes("pnpm")) {
+					firstCall = false;
+					return child;
+				}
+				if (cmd === "taskkill") {
+					taskkillSpawned = true;
+					return taskkillChild;
+				}
+				return child;
+			});
+
+			const resultPromise = installPluginDependencies(
+				"test-plugin",
+				mockLogger,
+			);
+
+			// Advance to trigger timeout and taskkill spawn
+			await vi.advanceTimersByTimeAsync(300000);
+
+			// Now emit the taskkill error synchronously
+			if (taskkillSpawned) {
+				taskkillChild.emit("error", new Error("ENOENT"));
+			}
+
+			// Allow promises to settle
+			await Promise.resolve();
+
+			const result = await resultPromise;
+
+			expect(result.success).toBe(false);
+			// Verify child.kill was called as fallback
+			expect(child.kill).toHaveBeenCalledWith("SIGTERM");
+
+			vi.useRealTimers();
+		});
+
+		it("should fallback to child.kill when taskkill exits with non-zero code", async () => {
+			vi.useFakeTimers();
+			vi.mocked(fs.access).mockResolvedValue(undefined);
+
+			const child = new EventEmitter() as EventEmitter & {
+				stdout: EventEmitter;
+				stderr: EventEmitter;
+				pid: number;
+				kill: ReturnType<typeof vi.fn>;
+				exitCode: number | null;
+			};
+			child.stdout = new EventEmitter();
+			child.stderr = new EventEmitter();
+			child.pid = 12345;
+			child.kill = vi.fn();
+			child.exitCode = null;
+
+			let taskkillSpawned = false;
+			const taskkillChild = new EventEmitter() as EventEmitter & {
+				unref?: ReturnType<typeof vi.fn>;
+			};
+			taskkillChild.unref = vi.fn();
+
+			let firstCall = true;
+			mockSpawn.mockImplementation((cmd) => {
+				if (firstCall && cmd.includes("pnpm")) {
+					firstCall = false;
+					return child;
+				}
+				if (cmd === "taskkill") {
+					taskkillSpawned = true;
+					return taskkillChild;
+				}
+				return child;
+			});
+
+			const resultPromise = installPluginDependencies(
+				"test-plugin",
+				mockLogger,
+			);
+
+			// Advance to trigger timeout and taskkill spawn
+			await vi.advanceTimersByTimeAsync(300000);
+
+			// Now emit the taskkill exit synchronously
+			if (taskkillSpawned) {
+				taskkillChild.emit("exit", 1);
+			}
+
+			// Allow promises to settle
+			await Promise.resolve();
+
+			const result = await resultPromise;
+
+			expect(result.success).toBe(false);
+			// Verify child.kill was called as fallback
+			expect(child.kill).toHaveBeenCalledWith("SIGTERM");
+
+			vi.useRealTimers();
+		});
+
+		it("should handle taskkill unref being undefined", async () => {
+			vi.useFakeTimers();
+			vi.mocked(fs.access).mockResolvedValue(undefined);
+
+			const child = new EventEmitter() as EventEmitter & {
+				stdout: EventEmitter;
+				stderr: EventEmitter;
+				pid: number;
+				kill: ReturnType<typeof vi.fn>;
+				exitCode: number | null;
+			};
+			child.stdout = new EventEmitter();
+			child.stderr = new EventEmitter();
+			child.pid = 12345;
+			child.kill = vi.fn();
+			child.exitCode = null;
+
+			const taskkillChild = new EventEmitter();
+
+			let firstCall = true;
+			mockSpawn.mockImplementation((cmd) => {
+				if (firstCall && cmd.includes("pnpm")) {
+					firstCall = false;
+					return child;
+				}
+				if (cmd === "taskkill") {
+					setImmediate(() => {
+						taskkillChild.emit("exit", 0);
+					});
+					return taskkillChild;
+				}
+				return child;
+			});
+
+			const resultPromise = installPluginDependencies(
+				"test-plugin",
+				mockLogger,
+			);
+
+			await vi.advanceTimersByTimeAsync(300000);
+
+			const result = await resultPromise;
+
+			expect(result.success).toBe(false);
+
+			vi.useRealTimers();
+		});
+
+		it("should handle child.kill throwing when taskkill error handler calls it", async () => {
+			vi.useFakeTimers();
+			vi.mocked(fs.access).mockResolvedValue(undefined);
+
+			const child = new EventEmitter() as EventEmitter & {
+				stdout: EventEmitter;
+				stderr: EventEmitter;
+				pid: number;
+				kill: ReturnType<typeof vi.fn>;
+				exitCode: number | null;
+			};
+			child.stdout = new EventEmitter();
+			child.stderr = new EventEmitter();
+			child.pid = 12345;
+			// Make child.kill throw an error
+			child.kill = vi.fn().mockImplementation(() => {
+				throw new Error("Process already terminated");
+			});
+			child.exitCode = null;
+
+			let taskkillSpawned = false;
+			const taskkillChild = new EventEmitter() as EventEmitter & {
+				unref?: ReturnType<typeof vi.fn>;
+			};
+			taskkillChild.unref = vi.fn();
+
+			let firstCall = true;
+			mockSpawn.mockImplementation((cmd) => {
+				if (firstCall && cmd.includes("pnpm")) {
+					firstCall = false;
+					return child;
+				}
+				if (cmd === "taskkill") {
+					taskkillSpawned = true;
+					return taskkillChild;
+				}
+				return child;
+			});
+
+			const resultPromise = installPluginDependencies(
+				"test-plugin",
+				mockLogger,
+			);
+
+			await vi.advanceTimersByTimeAsync(300000);
+
+			// Emit taskkill error to trigger the fallback that will throw
+			if (taskkillSpawned) {
+				taskkillChild.emit("error", new Error("ENOENT"));
+			}
+
+			await Promise.resolve();
+
+			const result = await resultPromise;
+
+			expect(result.success).toBe(false);
+			// Verify child.kill was called even though it threw
+			expect(child.kill).toHaveBeenCalledWith("SIGTERM");
+
+			vi.useRealTimers();
+		});
+
+		it("should handle child.kill throwing when taskkill exit handler calls it", async () => {
+			vi.useFakeTimers();
+			vi.mocked(fs.access).mockResolvedValue(undefined);
+
+			const child = new EventEmitter() as EventEmitter & {
+				stdout: EventEmitter;
+				stderr: EventEmitter;
+				pid: number;
+				kill: ReturnType<typeof vi.fn>;
+				exitCode: number | null;
+			};
+			child.stdout = new EventEmitter();
+			child.stderr = new EventEmitter();
+			child.pid = 12345;
+			// Make child.kill throw an error
+			child.kill = vi.fn().mockImplementation(() => {
+				throw new Error("Process already terminated");
+			});
+			child.exitCode = null;
+
+			let taskkillSpawned = false;
+			const taskkillChild = new EventEmitter() as EventEmitter & {
+				unref?: ReturnType<typeof vi.fn>;
+			};
+			taskkillChild.unref = vi.fn();
+
+			let firstCall = true;
+			mockSpawn.mockImplementation((cmd) => {
+				if (firstCall && cmd.includes("pnpm")) {
+					firstCall = false;
+					return child;
+				}
+				if (cmd === "taskkill") {
+					taskkillSpawned = true;
+					return taskkillChild;
+				}
+				return child;
+			});
+
+			const resultPromise = installPluginDependencies(
+				"test-plugin",
+				mockLogger,
+			);
+
+			await vi.advanceTimersByTimeAsync(300000);
+
+			// Emit taskkill exit with non-zero to trigger the fallback that will throw
+			if (taskkillSpawned) {
+				taskkillChild.emit("exit", 1);
+			}
+
+			await Promise.resolve();
+
+			const result = await resultPromise;
+
+			expect(result.success).toBe(false);
+			// Verify child.kill was called even though it threw
+			expect(child.kill).toHaveBeenCalledWith("SIGTERM");
+
+			vi.useRealTimers();
+		});
+	});
+
+	describe("Kill process tree - Unix", () => {
+		let originalPlatform: NodeJS.Platform;
+
+		beforeEach(() => {
+			originalPlatform = process.platform;
+			// Mock platform to be Unix
+			Object.defineProperty(process, "platform", {
+				value: "linux",
+				writable: true,
+				configurable: true,
+			});
+			// Mock process.kill
+			process.kill = mockProcessKill as typeof process.kill;
+		});
+
+		afterEach(() => {
+			// Restore original process.kill
+			process.kill = originalProcessKill as typeof process.kill;
+			// Restore platform
+			Object.defineProperty(process, "platform", {
+				value: originalPlatform,
+				writable: true,
+				configurable: true,
+			});
+		});
+
+		it("should kill process group on Unix when timeout occurs", async () => {
+			vi.useFakeTimers();
+			vi.mocked(fs.access).mockResolvedValue(undefined);
+
+			const child = new EventEmitter() as EventEmitter & {
+				stdout: EventEmitter;
+				stderr: EventEmitter;
+				pid: number;
+				kill: ReturnType<typeof vi.fn>;
+				exitCode: number | null;
+			};
+			child.stdout = new EventEmitter();
+			child.stderr = new EventEmitter();
+			child.pid = 12345;
+			child.kill = vi.fn();
+			child.exitCode = null;
+
+			mockSpawn.mockImplementation(() => {
+				// Don't emit close - simulate hanging
+				return child;
+			});
+
+			mockProcessKill.mockImplementation(() => {
+				// Simulate successful kill
+			});
+
+			const resultPromise = installPluginDependencies(
+				"test-plugin",
+				mockLogger,
+			);
+
+			// Trigger timeout
+			await vi.advanceTimersByTimeAsync(300000);
+
+			const result = await resultPromise;
+
+			expect(result.success).toBe(false);
+			expect(result.error).toBe("Installation timed out after 5 minutes");
+
+			// Verify process.kill was called with negative PID (process group)
+			expect(mockProcessKill).toHaveBeenCalledWith(-12345, "SIGTERM");
+
+			vi.useRealTimers();
+		});
+
+		it("should fallback to child.kill when process.kill fails on Unix", async () => {
+			vi.useFakeTimers();
+			vi.mocked(fs.access).mockResolvedValue(undefined);
+
+			const child = new EventEmitter() as EventEmitter & {
+				stdout: EventEmitter;
+				stderr: EventEmitter;
+				pid: number;
+				kill: ReturnType<typeof vi.fn>;
+				exitCode: number | null;
+			};
+			child.stdout = new EventEmitter();
+			child.stderr = new EventEmitter();
+			child.pid = 12345;
+			child.kill = vi.fn();
+			child.exitCode = null;
+
+			mockSpawn.mockImplementation(() => child);
+
+			// Mock process.kill to throw error
+			mockProcessKill.mockImplementation(() => {
+				throw new Error("ESRCH");
+			});
+
+			const resultPromise = installPluginDependencies(
+				"test-plugin",
+				mockLogger,
+			);
+
+			await vi.advanceTimersByTimeAsync(300000);
+
+			const result = await resultPromise;
+
+			expect(result.success).toBe(false);
+			// Verify child.kill was called as fallback
+			expect(child.kill).toHaveBeenCalledWith("SIGTERM");
+
+			vi.useRealTimers();
+		});
+
+		it("should handle SIGKILL after SIGTERM if process still running", async () => {
+			vi.useFakeTimers();
+			vi.mocked(fs.access).mockResolvedValue(undefined);
+
+			const child = new EventEmitter() as EventEmitter & {
+				stdout: EventEmitter;
+				stderr: EventEmitter;
+				pid: number;
+				kill: ReturnType<typeof vi.fn>;
+				exitCode: number | null;
+			};
+			child.stdout = new EventEmitter();
+			child.stderr = new EventEmitter();
+			child.pid = 12345;
+			child.kill = vi.fn();
+			child.exitCode = null;
+
+			mockSpawn.mockImplementation(() => child);
+			mockProcessKill.mockImplementation(() => {});
+
+			const resultPromise = installPluginDependencies(
+				"test-plugin",
+				mockLogger,
+			);
+
+			// Trigger initial timeout (5 minutes)
+			await vi.advanceTimersByTimeAsync(300000);
+
+			// Trigger force kill timeout (5 seconds after SIGTERM)
+			await vi.advanceTimersByTimeAsync(5000);
+
+			const result = await resultPromise;
+
+			expect(result.success).toBe(false);
+
+			// Verify both SIGTERM and SIGKILL were called
+			expect(mockProcessKill).toHaveBeenCalledWith(-12345, "SIGTERM");
+			expect(mockProcessKill).toHaveBeenCalledWith(-12345, "SIGKILL");
+
+			vi.useRealTimers();
+		});
+
+		it("should not call SIGKILL if process already exited", async () => {
+			vi.useFakeTimers();
+			vi.mocked(fs.access).mockResolvedValue(undefined);
+
+			const child = new EventEmitter() as EventEmitter & {
+				stdout: EventEmitter;
+				stderr: EventEmitter;
+				pid: number;
+				kill: ReturnType<typeof vi.fn>;
+				exitCode: number | null;
+			};
+			child.stdout = new EventEmitter();
+			child.stderr = new EventEmitter();
+			child.pid = 12345;
+			child.kill = vi.fn();
+			child.exitCode = null;
+
+			mockSpawn.mockImplementation(() => child);
+			mockProcessKill.mockImplementation(() => {
+				// Simulate process exiting after SIGTERM
+				child.exitCode = 143; // SIGTERM exit code
+			});
+
+			const resultPromise = installPluginDependencies(
+				"test-plugin",
+				mockLogger,
+			);
+
+			// Trigger initial timeout
+			await vi.advanceTimersByTimeAsync(300000);
+
+			// Trigger force kill timeout
+			await vi.advanceTimersByTimeAsync(5000);
+
+			const result = await resultPromise;
+
+			expect(result.success).toBe(false);
+
+			// Verify SIGTERM was called
+			expect(mockProcessKill).toHaveBeenCalledWith(-12345, "SIGTERM");
+
+			// Verify SIGKILL was NOT called (because exitCode is NOT null)
+			expect(mockProcessKill).not.toHaveBeenCalledWith(-12345, "SIGKILL");
+
+			vi.useRealTimers();
+		});
+
+		it("should skip killProcessTree when pid is null", async () => {
+			vi.useFakeTimers();
+			vi.mocked(fs.access).mockResolvedValue(undefined);
+
+			const child = new EventEmitter() as EventEmitter & {
+				stdout: EventEmitter;
+				stderr: EventEmitter;
+				pid: undefined;
+				kill: ReturnType<typeof vi.fn>;
+				exitCode: number | null;
+			};
+			child.stdout = new EventEmitter();
+			child.stderr = new EventEmitter();
+			child.pid = undefined;
+			child.kill = vi.fn();
+			child.exitCode = null;
+
+			mockSpawn.mockImplementation(() => child);
+
+			const resultPromise = installPluginDependencies(
+				"test-plugin",
+				mockLogger,
+			);
+
+			await vi.advanceTimersByTimeAsync(300000);
+
+			const result = await resultPromise;
+
+			expect(result.success).toBe(false);
+
+			// Verify process.kill was NOT called (pid was undefined)
+			expect(mockProcessKill).not.toHaveBeenCalled();
+
+			vi.useRealTimers();
+		});
+
+		it("should handle both process.kill and child.kill throwing errors", async () => {
+			vi.useFakeTimers();
+			vi.mocked(fs.access).mockResolvedValue(undefined);
+
+			const child = new EventEmitter() as EventEmitter & {
+				stdout: EventEmitter;
+				stderr: EventEmitter;
+				pid: number;
+				kill: ReturnType<typeof vi.fn>;
+				exitCode: number | null;
+			};
+			child.stdout = new EventEmitter();
+			child.stderr = new EventEmitter();
+			child.pid = 12345;
+			// Make child.kill also throw
+			child.kill = vi.fn().mockImplementation(() => {
+				throw new Error("Child process gone");
+			});
+			child.exitCode = null;
+
+			mockSpawn.mockImplementation(() => child);
+
+			// Mock process.kill to throw error (fallback scenario)
+			mockProcessKill.mockImplementation(() => {
+				throw new Error("ESRCH - No such process");
+			});
+
+			const resultPromise = installPluginDependencies(
+				"test-plugin",
+				mockLogger,
+			);
+
+			await vi.advanceTimersByTimeAsync(300000);
+
+			const result = await resultPromise;
+
+			expect(result.success).toBe(false);
+			// Verify both were called and both threw
+			expect(mockProcessKill).toHaveBeenCalledWith(-12345, "SIGTERM");
+			expect(child.kill).toHaveBeenCalledWith("SIGTERM");
+
+			vi.useRealTimers();
 		});
 	});
 });

@@ -247,7 +247,7 @@ describe("extractPluginZip", () => {
 				readEntry: vi.fn(),
 				on: vi.fn((event, handler) => {
 					if (event === "entry") {
-						// Malicious entry trying to write outside
+						// Malicious entry attempting path traversal via ".." (must not end with "/" for file entries)
 						handler({ fileName: "api/../../../etc/passwd" });
 					}
 					if (event === "end") {

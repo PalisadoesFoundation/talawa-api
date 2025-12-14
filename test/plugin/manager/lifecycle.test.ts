@@ -28,6 +28,10 @@ vi.mock("../../../src/graphql/schemaManager", () => ({
 	},
 }));
 
+vi.mock("node:child_process", () => ({
+	spawn: vi.fn(),
+}));
+
 // Type definitions for mocks
 interface MockPluginContext {
 	db: {
@@ -1281,6 +1285,180 @@ describe("PluginLifecycle", () => {
 
 				// Test passes if no error is thrown (will fail on docker check but that's expected)
 			}
+		});
+
+		it("should execute docker build command when buildOnInstall is true", async () => {
+			const pluginId = "test-plugin";
+			const manifest = {
+				docker: {
+					enabled: true,
+					composeFile: "docker-compose.yml",
+					buildOnInstall: true,
+				},
+			};
+
+			const { spawn } = await import("node:child_process");
+			const EventEmitter = (await import("node:events")).EventEmitter;
+
+			(spawn as unknown as ReturnType<typeof vi.fn>).mockImplementation(() => {
+				const proc = new EventEmitter();
+				setImmediate(() => proc.emit("close", 0));
+				return proc;
+			});
+
+			await (
+				lifecycle as unknown as {
+					manageDocker: (
+						pluginId: string,
+						manifest: unknown,
+						action: string,
+					) => Promise<void>;
+				}
+			).manageDocker(pluginId, manifest, "install");
+
+			// Covers line 645
+			expect(spawn).toHaveBeenCalledWith(
+				"sudo",
+				expect.arrayContaining([
+					"docker",
+					"compose",
+					"-f",
+					expect.stringContaining("docker-compose.yml"),
+					"build",
+				]),
+				expect.any(Object),
+			);
+		});
+
+		it("should execute docker up command when upOnActivate is true", async () => {
+			const pluginId = "test-plugin";
+			const manifest = {
+				docker: {
+					enabled: true,
+					composeFile: "docker-compose.yml",
+					upOnActivate: true,
+				},
+			};
+
+			const { spawn } = await import("node:child_process");
+			const EventEmitter = (await import("node:events")).EventEmitter;
+
+			(spawn as unknown as ReturnType<typeof vi.fn>).mockImplementation(() => {
+				const proc = new EventEmitter();
+				setImmediate(() => proc.emit("close", 0));
+				return proc;
+			});
+
+			await (
+				lifecycle as unknown as {
+					manageDocker: (
+						pluginId: string,
+						manifest: unknown,
+						action: string,
+					) => Promise<void>;
+				}
+			).manageDocker(pluginId, manifest, "activate");
+
+			// Covers line 650
+			expect(spawn).toHaveBeenCalledWith(
+				"sudo",
+				expect.arrayContaining([
+					"docker",
+					"compose",
+					"-f",
+					expect.stringContaining("docker-compose.yml"),
+					"up",
+					"-d",
+				]),
+				expect.any(Object),
+			);
+		});
+
+		it("should execute docker down command when downOnDeactivate is true", async () => {
+			const pluginId = "test-plugin";
+			const manifest = {
+				docker: {
+					enabled: true,
+					composeFile: "docker-compose.yml",
+					downOnDeactivate: true,
+				},
+			};
+
+			const { spawn } = await import("node:child_process");
+			const EventEmitter = (await import("node:events")).EventEmitter;
+
+			(spawn as unknown as ReturnType<typeof vi.fn>).mockImplementation(() => {
+				const proc = new EventEmitter();
+				setImmediate(() => proc.emit("close", 0));
+				return proc;
+			});
+
+			await (
+				lifecycle as unknown as {
+					manageDocker: (
+						pluginId: string,
+						manifest: unknown,
+						action: string,
+					) => Promise<void>;
+				}
+			).manageDocker(pluginId, manifest, "deactivate");
+
+			// Covers line 655
+			expect(spawn).toHaveBeenCalledWith(
+				"sudo",
+				expect.arrayContaining([
+					"docker",
+					"compose",
+					"-f",
+					expect.stringContaining("docker-compose.yml"),
+					"down",
+				]),
+				expect.any(Object),
+			);
+		});
+
+		it("should execute docker down with volumes when removeOnUninstall is true", async () => {
+			const pluginId = "test-plugin";
+			const manifest = {
+				docker: {
+					enabled: true,
+					composeFile: "docker-compose.yml",
+					removeOnUninstall: true,
+				},
+			};
+
+			const { spawn } = await import("node:child_process");
+			const EventEmitter = (await import("node:events")).EventEmitter;
+
+			(spawn as unknown as ReturnType<typeof vi.fn>).mockImplementation(() => {
+				const proc = new EventEmitter();
+				setImmediate(() => proc.emit("close", 0));
+				return proc;
+			});
+
+			await (
+				lifecycle as unknown as {
+					manageDocker: (
+						pluginId: string,
+						manifest: unknown,
+						action: string,
+					) => Promise<void>;
+				}
+			).manageDocker(pluginId, manifest, "uninstall");
+
+			// Covers line 660
+			expect(spawn).toHaveBeenCalledWith(
+				"sudo",
+				expect.arrayContaining([
+					"docker",
+					"compose",
+					"-f",
+					expect.stringContaining("docker-compose.yml"),
+					"down",
+					"-v",
+				]),
+				expect.any(Object),
+			);
 		});
 	});
 

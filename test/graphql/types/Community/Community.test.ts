@@ -30,7 +30,6 @@ vi.mock("~/src/utilities/sanitizer", async (importOriginal) => {
  */
 
 describe("Community GraphQL Type", () => {
-	// Clear mocks between tests to isolate mock state
 	beforeEach(() => {
 		vi.clearAllMocks();
 	});

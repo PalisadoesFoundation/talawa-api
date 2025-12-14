@@ -27,7 +27,7 @@ Venue.implement({
 			description: "Custom information about the venue.",
 			nullable: true,
 			resolve: (parent) =>
-				parent.description ? escapeHTML(parent.description) : null,
+				parent.description != null ? escapeHTML(parent.description) : null,
 		}),
 		id: t.exposeID("id", {
 			description: "Global identifier of the venue.",

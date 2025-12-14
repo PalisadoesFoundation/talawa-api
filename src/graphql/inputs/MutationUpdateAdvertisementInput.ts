@@ -8,12 +8,14 @@ export const mutationUpdateAdvertisementInputSchema =
 	advertisementsTableInsertSchema
 		.pick({})
 		.extend({
-			description: z.string().trim().min(1).max(2048).optional(),
-			endAt: advertisementsTableInsertSchema.shape.endAt.optional(),
+			description: z.string().trim().min(1).max(2048).nullable().optional(),
+			endAt: advertisementsTableInsertSchema.shape.endAt.nullable().optional(),
 			id: advertisementsTableInsertSchema.shape.id.unwrap(),
-			name: z.string().trim().min(1).max(256).optional(),
-			startAt: advertisementsTableInsertSchema.shape.startAt.optional(),
-			type: advertisementsTableInsertSchema.shape.type.optional(),
+			name: z.string().trim().min(1).max(256).nullable().optional(),
+			startAt: advertisementsTableInsertSchema.shape.startAt
+				.nullable()
+				.optional(),
+			type: advertisementsTableInsertSchema.shape.type.nullable().optional(),
 		})
 		.superRefine(({ id, ...remainingArg }, ctx) => {
 			if (!Object.values(remainingArg).some((value) => value !== undefined)) {

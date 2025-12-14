@@ -1,26 +1,26 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
-import { escapeHTML } from "~/src/utilities/sanitizer";
+import { beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 
-// Mock the escapeHTML function
+// 1. Setup mocks with vi.hoisted to ensure they are available to vi.mock
+const { implementSpy, objectRefSpy } = vi.hoisted(() => {
+	const implement = vi.fn();
+	const objectRef = vi.fn(() => ({ implement }));
+	return { implementSpy: implement, objectRefSpy: objectRef };
+});
+
+vi.mock("~/src/graphql/builder", () => ({
+	builder: {
+		objectRef: objectRefSpy,
+	},
+}));
+
 vi.mock("~/src/utilities/sanitizer", () => ({
 	escapeHTML: vi.fn((str: string) => `escaped_${str}`),
 }));
 
-// Mock the builder - simplified approach without capturing resolvers
-vi.mock("~/src/graphql/builder", () => ({
-	builder: {
-		objectRef: vi.fn(() => ({
-			implement: vi.fn(),
-		})),
-	},
-}));
-
-// Mock AdvertisementType enum
 vi.mock("~/src/graphql/enums/AdvertisementType", () => ({
 	AdvertisementType: {},
 }));
 
-// Mock AdvertisementAttachment
 vi.mock(
 	"~/src/graphql/types/AdvertisementAttachment/AdvertisementAttachment",
 	() => ({
@@ -28,14 +28,56 @@ vi.mock(
 	}),
 );
 
+// Import mocked module after vi.mock setup
+import { escapeHTML } from "~/src/utilities/sanitizer";
+
 describe("Advertisement GraphQL Type", () => {
-	// Clear mocks between tests to isolate mock state
+	// biome-ignore lint/suspicious/noExplicitAny: Mocking internal Pothos types for testing
+	let fieldResolvers: any;
+
+	beforeAll(async () => {
+		// Dynamically import the module to ensure mocks are active
+		// and to handle side-effects predictably.
+		await import("~/src/graphql/types/Advertisement/Advertisement");
+
+		// Extract the resolvers from the implement call
+		// The call is: Advertisement.implement({ fields: (t) => ... })
+		// We expect the module import to have triggered variables.
+
+		if (implementSpy.mock.calls.length === 0) {
+			throw new Error(
+				"Advertisement.implement was not called. Module mocking issue?",
+			);
+		}
+
+		const implementCall = implementSpy.mock.calls[0]?.[0]; // First argument of first call
+		const fieldsFactory = implementCall.fields;
+
+		// Create a mock 't' (schema builder) to capture field definitions
+		// We need to return the options object to access 'resolve' later.
+		const tStub = {
+			expose: vi.fn((name, opts) => opts),
+			exposeString: vi.fn((name, opts) => opts),
+			exposeID: vi.fn((name, opts) => opts),
+			string: vi.fn((opts) => opts),
+			field: vi.fn((opts) => opts),
+			listRef: vi.fn((ref, opts) => opts),
+		};
+
+		// Execute the fields factory to get the field definitions
+		fieldResolvers = fieldsFactory(tStub);
+	});
+
 	beforeEach(() => {
 		vi.clearAllMocks();
 	});
 
 	describe("description field resolver", () => {
-		it("should return null when description is null", () => {
+		it("should use the captured resolver to return null when description is null", () => {
+			const descriptionDef = fieldResolvers.description;
+			expect(descriptionDef).toBeDefined();
+			expect(descriptionDef.resolve).toBeDefined();
+
 			const advertisement = {
 				id: "test-id",
 				name: "Test Ad",
@@ -43,17 +85,14 @@ describe("Advertisement GraphQL Type", () => {
 				attachments: null,
 			};
 
-			// Test the resolver logic directly - mimics the ternary in Advertisement.ts
-			const result = advertisement.description
-				? escapeHTML(advertisement.description)
-				: null;
+			const result = descriptionDef.resolve(advertisement);
 
 			expect(result).toBe(null);
-			// escapeHTML should not be called for null description
 			expect(escapeHTML).not.toHaveBeenCalled();
 		});
 
-		it("should escape HTML when description is provided", () => {
+		it("should use the captured resolver to escape HTML when description is provided", () => {
+			const descriptionDef = fieldResolvers.description;
 			const advertisement = {
 				id: "test-id",
 				name: "Test Ad",
@@ -61,52 +100,61 @@ describe("Advertisement GraphQL Type", () => {
 				attachments: null,
 			};
 
-			// Test the resolver logic directly
-			const result = advertisement.description
-				? escapeHTML(advertisement.description)
-				: null;
+			const result = descriptionDef.resolve(advertisement);
 
 			expect(result).toBe("escaped_Test Description");
 			expect(escapeHTML).toHaveBeenCalledWith("Test Description");
-			expect(escapeHTML).toHaveBeenCalledTimes(1);
-		});
-
-		it("should handle empty string description", () => {
-			const advertisement = {
-				id: "test-id",
-				name: "Test Ad",
-				description: "",
-				attachments: null,
-			};
-
-			// Empty string is falsy, so should return null
-			const result = advertisement.description
-				? escapeHTML(advertisement.description)
-				: null;
-
-			expect(result).toBe(null);
-			// escapeHTML should not be called for empty string
-			expect(escapeHTML).not.toHaveBeenCalled();
 		});
 	});
 
 	describe("name field resolver", () => {
-		it("should escape HTML in name", () => {
+		it("should use the captured resolver to escape HTML in name", () => {
+			const nameDef = fieldResolvers.name;
+			expect(nameDef).toBeDefined();
+			expect(nameDef.resolve).toBeDefined();
+
 			const advertisement = {
 				id: "test-id",
-				name: "Test <script>alert('xss')</script>",
+				name: "Test Name",
 				description: null,
 				attachments: null,
 			};
 
-			// Test the resolver logic directly - name is always escaped
-			const result = escapeHTML(advertisement.name);
+			const result = nameDef.resolve(advertisement);
 
-			expect(result).toBe("escaped_Test <script>alert('xss')</script>");
-			expect(escapeHTML).toHaveBeenCalledWith(
-				"Test <script>alert('xss')</script>",
-			);
-			expect(escapeHTML).toHaveBeenCalledTimes(1);
+			expect(result).toBe("escaped_Test Name");
+			expect(escapeHTML).toHaveBeenCalledWith("Test Name");
+		});
+
+		it("should handle empty string name correctly", () => {
+			const nameDef = fieldResolvers.name;
+			const advertisement = {
+				id: "test-id",
+				name: "",
+				description: null,
+				attachments: null,
+			};
+
+			const result = nameDef.resolve(advertisement);
+
+			expect(result).toBe("escaped_");
+			expect(escapeHTML).toHaveBeenCalledWith("");
+		});
+
+		it("should escape HTML characters in name", () => {
+			const nameDef = fieldResolvers.name;
+			const rawName = "<script>alert(1)</script>";
+			const advertisement = {
+				id: "test-id",
+				name: rawName,
+				description: null,
+				attachments: null,
+			};
+
+			const result = nameDef.resolve(advertisement);
+
+			expect(result).toBe(`escaped_${rawName}`);
+			expect(escapeHTML).toHaveBeenCalledWith(rawName);
 		});
 	});
 });
