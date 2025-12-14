@@ -87,19 +87,18 @@ describe("Post Resolver - Organization Field", () => {
 			name: "Test Organization",
 		};
 
-		// Capture where clause using a spy approach
-		let capturedWhereFunction: ((fields: unknown, operators: unknown) => unknown) | undefined;
-		
 		mocks.drizzleClient.query.organizationsTable.findFirst.mockResolvedValue(
 			mockOrganization,
 		);
 
 		await resolveOrganization(mockPost, {}, ctx);
 
-		// Get the where function from the mock call
+		// Get the where function from the mock call with proper typing
 		const calls = mocks.drizzleClient.query.organizationsTable.findFirst.mock.calls;
 		expect(calls.length).toBeGreaterThan(0);
-		capturedWhereFunction = calls[0]?.[0]?.where;
+		
+		const firstCall = calls[0] as [{ where: (fields: unknown, operators: unknown) => unknown }];
+		const capturedWhereFunction = firstCall[0]?.where;
 		expect(capturedWhereFunction).toBeDefined();
 
 		// Test the where function
@@ -108,13 +107,14 @@ describe("Post Resolver - Organization Field", () => {
 			eq: vi.fn((field, value) => ({ field, value })),
 		};
 
-		capturedWhereFunction!(mockFields, mockOperators);
+		capturedWhereFunction(mockFields, mockOperators);
 
 		// Verify eq was called with correct field and parent's organizationId
 		expect(mockOperators.eq).toHaveBeenCalledWith(
 			mockFields.id,
 			mockPost.organizationId,
 		);
+	});
 	});
 
 	it("should handle different organizationId values correctly", async () => {
