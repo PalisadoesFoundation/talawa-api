@@ -43,15 +43,18 @@ def has_eslint_disable(file_path):
     )
 
     try:
-        with open(file_path, "r", encoding="utf-8") as file:
+        with open(file_path, encoding="utf-8") as file:
             content = file.read()
             return bool(eslint_disable_pattern.search(content))
     except FileNotFoundError:
         print(f"File not found: {file_path}")
+        raise
     except PermissionError:
         print(f"Permission denied: {file_path}")
-    except (IOError, OSError) as e:
+        raise
+    except OSError as e:
         print(f"Error reading file {file_path}: {e}")
+        raise
     return False
 
 
@@ -75,7 +78,7 @@ def check_eslint(files_or_directories):
         elif os.path.isdir(item):
             # Recursively check files in a directory
             for root, _, files in os.walk(item):
-                if "node_modules" in root:
+                if "node_modules" in root.split(os.sep):
                     continue
                 for file_name in files:
                     if file_name.endswith((".ts", ".tsx")):
