@@ -48,13 +48,10 @@ def has_eslint_disable(file_path):
             return bool(eslint_disable_pattern.search(content))
     except FileNotFoundError:
         print(f"File not found: {file_path}")
-        raise
     except PermissionError:
         print(f"Permission denied: {file_path}")
-        raise
     except OSError as e:
         print(f"Error reading file {file_path}: {e}")
-        raise
     return False
 
 
