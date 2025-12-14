@@ -89,7 +89,7 @@ describe("Post Resolver - Organization Field", () => {
 
 		// Mock implementation that validates the where clause
 		mocks.drizzleClient.query.organizationsTable.findFirst.mockImplementation(
-			({ where }) => {
+			({ where }: { where: (fields: unknown, operators: unknown) => unknown }) => {
 				const mockFields = { id: "mock-field-id" };
 				const mockOperators = {
 					eq: vi.fn((field, value) => ({ field, value })),
