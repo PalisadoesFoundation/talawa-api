@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: UTF-8 -*-
-"""ESLint Checker Script.
+"""it.skip Checker Script.
 
 Methodology:
 
@@ -38,8 +38,8 @@ def has_eslint_disable(file_path):
     """
     # Initialize key variables
     eslint_disable_pattern = re.compile(
-        r"\s+it\.skip\(",
-        re.IGNORECASE | re.DOTALL,
+        r"\bit\.skip\s*\(",
+        re.IGNORECASE,
     )
 
     try:
