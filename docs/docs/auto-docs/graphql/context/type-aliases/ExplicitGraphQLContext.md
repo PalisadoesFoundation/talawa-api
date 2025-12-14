@@ -30,7 +30,7 @@ Defined in: [src/graphql/context.ts:43](https://github.com/PalisadoesFoundation/
 
 ### envConfig
 
-> **envConfig**: `Pick`\<`FastifyInstance`\[`"envConfig"`\], `"API_BASE_URL"` \| `"FRONTEND_URL"`\>
+> **envConfig**: `Pick`\<`FastifyInstance`\[`"envConfig"`\], `"API_BASE_URL"` \| `"API_REFRESH_TOKEN_EXPIRES_IN"` \| `"FRONTEND_URL"`\>
 
 Defined in: [src/graphql/context.ts:44](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/graphql/context.ts#L44)
 
