@@ -23,7 +23,7 @@ vi.mock("yauzl", () => {
 							on: vi.fn((event, handler) => {
 								if (event === "data") {
 									handler(
-										'{"pluginId": "test-plugin", "name": "Test Plugin", "version": "1.0.0"}',
+										'{"pluginId": "test_plugin", "name": "Test Plugin", "version": "1.0.0"}',
 									);
 								}
 								if (event === "end") {
@@ -55,7 +55,7 @@ vi.mock("yauzl", () => {
 						on: vi.fn((event, handler) => {
 							if (event === "data") {
 								handler(
-									'{"pluginId": "test-plugin", "name": "Test Plugin", "version": "1.0.0"}',
+									'{"pluginId": "test_plugin", "name": "Test Plugin", "version": "1.0.0"}',
 								);
 							}
 							if (event === "end") {
@@ -114,7 +114,7 @@ vi.mock("../../src/plugin/utils", () => {
 	return {
 		validatePluginManifest: vi.fn(() => true),
 		loadPluginManifest: vi.fn(async () => ({
-			pluginId: "test-plugin",
+			pluginId: "test_plugin",
 			name: "Test Plugin",
 			version: "1.0.0",
 			extensionPoints: { database: [] },
@@ -196,7 +196,7 @@ describe("validatePluginZip", () => {
 		expect(result).toBeDefined();
 		expect(typeof result.hasApiFolder).toBe("boolean");
 		expect(result.hasApiFolder).toBe(true);
-		expect(result.pluginId).toBe("test-plugin");
+		expect(result.pluginId).toBe("test_plugin");
 		expect(result.apiManifest).toBeDefined();
 	});
 });
@@ -207,9 +207,9 @@ describe("extractPluginZip", () => {
 	});
 
 	it("should extract plugin files from zip", async () => {
-		const structure = { hasApiFolder: true, pluginId: "test-plugin" };
+		const structure = { hasApiFolder: true, pluginId: "test_plugin" };
 		await expect(
-			extractPluginZip("/path/to/test.zip", "test-plugin", structure),
+			extractPluginZip("/path/to/test.zip", "test_plugin", structure),
 		).resolves.toBeUndefined();
 	});
 
@@ -232,10 +232,40 @@ describe("extractPluginZip", () => {
 			callback(null, mockZipFile);
 		});
 
-		const structure = { hasApiFolder: false, pluginId: "test-plugin" };
+		const structure = { hasApiFolder: false, pluginId: "test_plugin" };
 		await expect(
-			extractPluginZip("/path/to/test.zip", "test-plugin", structure),
+			extractPluginZip("/path/to/test.zip", "test_plugin", structure),
 		).resolves.toBeUndefined();
+	});
+
+	it("should reject zip files with path traversal attempts (Zip Slip protection)", async () => {
+		const mockYauzl = yauzl as unknown as {
+			default: { open: ReturnType<typeof vi.fn> };
+		};
+		mockYauzl.default.open.mockImplementationOnce((path, options, callback) => {
+			const mockZipFile = {
+				readEntry: vi.fn(),
+				on: vi.fn((event, handler) => {
+					if (event === "entry") {
+						// Malicious entry attempting path traversal via ".." (must not end with "/" for file entries)
+						handler({ fileName: "api/../../../etc/passwd" });
+					}
+					if (event === "end") {
+						handler();
+					}
+					return mockZipFile;
+				}),
+				// openReadStream shouldn't be called for malicious entries to write
+				openReadStream: vi.fn(),
+			};
+			callback(null, mockZipFile);
+		});
+
+		const structure = { hasApiFolder: true, pluginId: "test_plugin" };
+
+		await expect(
+			extractPluginZip("/path/to/test.zip", "test_plugin", structure),
+		).rejects.toThrow(/Malicious zip entry detected/);
 	});
 });
 
@@ -316,7 +346,7 @@ describe("installPluginFromZip", () => {
 				pluginsTable: {
 					findFirst: vi.fn(async () => ({
 						id: "existing-id",
-						pluginId: "test-plugin",
+						pluginId: "test_plugin",
 					})),
 				},
 			},
@@ -719,7 +749,7 @@ describe("installPluginFromZip", () => {
 			loadPluginManifest: ReturnType<typeof vi.fn>;
 		};
 		mockPluginUtils.loadPluginManifest.mockResolvedValueOnce({
-			pluginId: "test-plugin",
+			pluginId: "test_plugin",
 			name: "Test Plugin",
 			version: "1.0.0",
 			extensionPoints: { database: [] },
@@ -782,7 +812,7 @@ describe("installPluginFromZip", () => {
 			loadPluginManifest: ReturnType<typeof vi.fn>;
 		};
 		mockPluginUtils.loadPluginManifest.mockResolvedValueOnce({
-			pluginId: "test-plugin",
+			pluginId: "test_plugin",
 			name: "Test Plugin",
 			version: "1.0.0",
 			extensionPoints: { database: [] },
@@ -844,7 +874,7 @@ describe("installPluginFromZip", () => {
 			loadPluginManifest: ReturnType<typeof vi.fn>;
 		};
 		mockPluginUtils.loadPluginManifest.mockResolvedValueOnce({
-			pluginId: "test-plugin",
+			pluginId: "test_plugin",
 			name: "Test Plugin",
 			version: "1.0.0",
 			extensionPoints: { database: [] },

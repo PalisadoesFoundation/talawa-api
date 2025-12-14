@@ -5,57 +5,8 @@
     {
       "idx": 0,
       "version": "7",
-      "when": 1757832957902,
-      "tag": "20250914065557_robust_tombstone",
-      "breakpoints": true
-    },
-    {
-      "idx": 1,
-      "version": "7",
-      "when": 1754547882351,
-      "tag": "20250807062442_curved_psylocke",
-      "breakpoints": true
-    },
-    {
-      "idx": 2,
-      "version": "7",
-      "when": 1754719182474,
-      "tag": "20250809055942_sour_thena",
-      "breakpoints": true
-    },
-    {
-      "idx": 3,
-      "version": "7",
-      "when": 1756360074111,
-      "tag": "20250828054754_pink_brother_voodoo",
-      "breakpoints": true
-    },
-    {
-      "idx": 4,
-      "version": "7",
-      "when": 1759768508415,
-      "tag": "20251006163508_condemned_lilith",
-      "breakpoints": true
-    },
-    {
-      "idx": 5,
-      "version": "7",
-      "when": 1760034993060,
-      "tag": "20251009183633_greedy_war_machine",
-      "breakpoints": true
-    },
-    {
-      "idx": 6,
-      "version": "7",
-      "when": 1760539571345,
-      "tag": "20251015144611_nostalgic_the_watchers",
-      "breakpoints": true
-    },
-    {
-      "idx": 7,
-      "version": "7",
-      "when": 1761309046406,
-      "tag": "20251024123046_silky_sister_grimm",
+      "when": 1761493796426,
+      "tag": "20251026154956_fair_the_anarchist",
       "breakpoints": true
     },
     {

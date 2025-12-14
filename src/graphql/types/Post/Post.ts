@@ -4,6 +4,7 @@ import {
 	PostAttachment,
 	type PostAttachment as PostAttachmentType,
 } from "~/src/graphql/types/PostAttachment/PostAttachment";
+import { escapeHTML } from "~/src/utilities/sanitizer";
 
 export type Post = typeof postsTable.$inferSelect & {
 	attachments: PostAttachmentType[] | null;
@@ -19,8 +20,9 @@ Post.implement({
 			description: "Array of attachments.",
 			type: t.listRef(PostAttachment),
 		}),
-		caption: t.exposeString("caption", {
+		caption: t.string({
 			description: "Caption for the post.",
+			resolve: (root) => escapeHTML(root.caption),
 		}),
 		createdAt: t.expose("createdAt", {
 			description: "Date time at the time the post was created.",

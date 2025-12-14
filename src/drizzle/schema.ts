@@ -171,3 +171,7 @@ export {
 	refreshTokensTable,
 	refreshTokensTableRelations,
 } from "./tables/refreshTokens";
+export {
+	eventInvitationsTable,
+	eventInvitationsTableRelations,
+} from "./tables/eventInvitations";

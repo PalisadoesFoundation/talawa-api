@@ -49,7 +49,35 @@ jobs:
           echo "Error: Source and Target Branches are the same. Please ensure they are different."
           echo "Error: Close this PR and try again."
           exit 1
-    
+
+  Check-ItSkip-Disable:
+    name: Check for it.skip commands
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # Fetch all history for all branches and tags
+
+      - name: Get changed files
+        id: changed-files
+        run: |
+          # Get the base branch ref
+          BASE_SHA=$(git merge-base ${{ github.event.pull_request.base.sha }} ${{ github.event.pull_request.head.sha }})
+
+          # Get all changed files
+          ALL_CHANGED_FILES=$(git diff --name-only --diff-filter=ACMRT $BASE_SHA ${{ github.event.pull_request.head.sha }} | tr '\n' ' ')
+          echo "all_changed_files=${ALL_CHANGED_FILES}" >> $GITHUB_OUTPUT
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: 3.9
+
+      - name: Run Python script
+        run: |
+          python .github/workflows/scripts/itskip_disable_check.py --files ${{ steps.changed-files.outputs.all_changed_files }}
+
   Check-AutoDocs:
     name: Generate and Validate Documentation
     runs-on: ubuntu-latest
@@ -68,8 +96,8 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '24.x'
-          cache: 'pnpm'
+          node-version: "24.x"
+          cache: "pnpm"
 
       - name: Prepare dependency store
         run: pnpm fetch
@@ -167,6 +195,7 @@ jobs:
         run: docker buildx build --file ./docker/api.Containerfile --tag talawa_api --target non_production ./
       - name: Check mock isolation
         run: docker container run talawa_api pnpm check_mock_isolation
+
   Generate-Schema-Docs:
     if: ${{ github.actor != 'dependabot[bot]' }}
     name: Generate GraphQL Schema Documentation
@@ -186,9 +215,8 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '24.x'
-          cache: 'pnpm'
-
+          node-version: "24.x"
+          cache: "pnpm"
 
       - name: Prepare dependency store
         run: pnpm fetch
@@ -212,20 +240,21 @@ jobs:
           else
             echo "Schema is up to date."
           fi
+
   Check_unused_code:
     name: Check for unused files, exports and dependencies
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4.2.2     
+        uses: actions/checkout@v4.2.2
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '22.x'
+          node-version: "22.x"
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
       - name: Install dependencies
-        run: pnpm install --frozen-lockfile 
+        run: pnpm install --frozen-lockfile
       - name: Run Knip for files and exports
         run: pnpm knip --include files,exports
         # Dummy environment variables required for Knip to load drizzle.config.ts during file parsing
@@ -233,9 +262,9 @@ jobs:
           API_POSTGRES_DATABASE: dummy_db
           API_POSTGRES_PASSWORD: dummy_password
           API_POSTGRES_HOST: localhost
-          API_POSTGRES_PORT: '5432'
+          API_POSTGRES_PORT: "5432"
           API_POSTGRES_USER: dummy_user
-          API_POSTGRES_SSL_MODE: 'false' 
+          API_POSTGRES_SSL_MODE: "false"
       - name: Run Knip for dependencies
         run: pnpm knip --config knip.deps.json --include dependencies
         # Dummy environment variables required for Knip to load drizzle.config.ts during file parsing
@@ -243,9 +272,9 @@ jobs:
           API_POSTGRES_DATABASE: dummy_db
           API_POSTGRES_PASSWORD: dummy_password
           API_POSTGRES_HOST: localhost
-          API_POSTGRES_PORT: '5432'
+          API_POSTGRES_PORT: "5432"
           API_POSTGRES_USER: dummy_user
-          API_POSTGRES_SSL_MODE: 'false' 
+          API_POSTGRES_SSL_MODE: "false"
 
   Check-Sensitive-Files:
     if: ${{ github.actor != 'dependabot[bot]' }}
@@ -365,7 +394,7 @@ jobs:
           if [ ! -z "$CHANGED_UNAUTH_FILES" ]; then
             CHANGED_UNAUTH_FILES=$(echo "$CHANGED_UNAUTH_FILES" | tr ' ' '\n' | sort -u | tr '\n' ' ' | xargs)
           fi
-          
+
           echo "all_changed_files=$CHANGED_UNAUTH_FILES" >> $GITHUB_OUTPUT
 
           # Check if any unauthorized files changed
@@ -393,7 +422,19 @@ jobs:
   Run-Tests:
     name: Run tests for talawa api (Shard ${{ matrix.shard }})
     runs-on: ubuntu-latest
-    needs: [Code-Quality-Checks, python_checks, check_type_errors, check_mock_isolation, check_drizzle_migrations, check_gql_tada, Check-AutoDocs, Check_unused_code, Generate-Schema-Docs]
+    needs:
+      [
+        Code-Quality-Checks,
+        python_checks,
+        check_type_errors,
+        check_mock_isolation,
+        check_drizzle_migrations,
+        check_gql_tada,
+        Check-AutoDocs,
+        Check_unused_code,
+        Generate-Schema-Docs,
+        Check-ItSkip-Disable,
+      ]
     env:
       TOTAL_SHARDS: 12
     strategy:
@@ -427,7 +468,7 @@ jobs:
             exit 1
           fi
           echo "Postgres is ready."
-          
+
           # Wait for minio-test health check
           echo "Waiting for Minio test service..."
           timeout=60
@@ -441,7 +482,7 @@ jobs:
           else
             echo "Minio is ready."
           fi
-          
+
           # Wait for redis-test health check
           echo "Waiting for Redis test service..."
           timeout=60
@@ -455,7 +496,7 @@ jobs:
           else
             echo "Redis is ready."
           fi
-          
+
           echo "All test services are ready."
       - name: Run tests (shard ${{ matrix.shard }}/${{ env.TOTAL_SHARDS }})
         env:
@@ -473,7 +514,7 @@ jobs:
         run: |
           # Copy coverage from the named container
           docker cp talawa-api-test-shard-${{ matrix.shard }}:/home/talawa/api/coverage ./coverage || echo "::warning::Failed to copy coverage from container talawa-api-test-shard-${{ matrix.shard }}"
-          
+
       - name: Cleanup test container
         if: always()
         run: |
@@ -516,8 +557,8 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '24.x'
-          cache: 'pnpm'
+          node-version: "24.x"
+          cache: "pnpm"
 
       - name: Prepare dependency store
         run: pnpm fetch
@@ -626,20 +667,20 @@ jobs:
         if: steps.check-artifacts.outputs.artifacts_found == 'true'
         run: |
           echo "Generating lcov report from merged coverage..."
-          
+
           echo "Rewriting coverage paths from Docker to runner paths..."
           DOCKER_PATH="/home/talawa/api"
           RUNNER_PATH="$GITHUB_WORKSPACE"
           sed -i "s|${DOCKER_PATH}|${RUNNER_PATH}|g" ./.nyc_output/coverage-final.json
           echo "Path rewriting complete"
-          
+
           pnpm exec nyc report --reporter=lcov --report-dir=./coverage/vitest
-          
+
           if [ ! -s ./coverage/vitest/lcov.info ]; then
             echo "ERROR: lcov.info file is empty or missing after generation!"
             exit 1
           fi
-          
+
           echo "lcov.info generated successfully"
           ls -lh ./coverage/vitest/lcov.info
 
@@ -701,12 +742,12 @@ jobs:
         if: steps.check-artifacts.outputs.artifacts_found == 'true'
         uses: codecov/codecov-action@v5
         with:
-          name: '${{env.CODECOV_UNIQUE_NAME}}-merged'
+          name: "${{env.CODECOV_UNIQUE_NAME}}-merged"
           token: ${{ secrets.CODECOV_TOKEN }}
           fail_ci_if_error: true
           verbose: true
-          exclude: 'docs/'
-          gcov_ignore: 'docs/'
+          exclude: "docs/"
+          gcov_ignore: "docs/"
           files: ./coverage/vitest/lcov.info
           flags: vitest
           commit_parent: ${{ steps.get-merge-base.outputs.merge_base }}
@@ -716,7 +757,7 @@ jobs:
         uses: VeryGoodOpenSource/very_good_coverage@v3
         with:
           path: "./coverage/vitest/lcov.info"
-          min_coverage: 68.0
+          min_coverage: 80.0
 
   Test-Docusaurus-Deployment:
     name: Test Deployment to https://docs-api.talawa.io
@@ -798,7 +839,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0  # Fetch all history for all branches and tags
+          fetch-depth: 0 # Fetch all history for all branches and tags
 
       - name: Get changed files
         id: changed-files

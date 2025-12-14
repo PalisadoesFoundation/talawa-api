@@ -9,6 +9,7 @@ import { pluginsTable } from "~/src/drizzle/tables/plugins";
 import { getPluginManagerInstance } from "~/src/plugin/registry";
 import type { IPluginManifest } from "~/src/plugin/types";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
+import { pluginIdSchema } from "./validators";
 
 import type { Readable } from "node:stream";
 
@@ -93,6 +94,20 @@ export async function validatePluginZip(
 											const manifest = JSON.parse(
 												manifestContent,
 											) as IPluginManifest;
+
+											// Validate pluginId from manifest
+											const validation = pluginIdSchema.safeParse(
+												manifest.pluginId,
+											);
+											if (!validation.success) {
+												reject(
+													new Error(
+														`Invalid plugin ID in manifest: ${validation.error.message}`,
+													),
+												);
+												return;
+											}
+
 											structure.apiManifest = manifest;
 											structure.pluginId = manifest.pluginId;
 										} catch (error) {
@@ -158,6 +173,18 @@ export async function extractPluginZip(
 						const relativePath = fileName.substring(4); // Remove "api/" prefix
 						if (relativePath && !fileName.endsWith("/")) {
 							const targetPath = join(apiPluginPath, relativePath);
+
+							// Prevent Zip Slip
+							if (!targetPath.startsWith(apiPluginPath)) {
+								extractPromises.push(
+									Promise.reject(
+										new Error(
+											`Malicious zip entry detected: ${fileName} tries to write outside plugin directory`,
+										),
+									),
+								);
+								return;
+							}
 
 							extractPromises.push(
 								new Promise<void>((resolveExtract, rejectExtract) => {

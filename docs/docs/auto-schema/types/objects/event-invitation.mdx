@@ -1,0 +1,155 @@
+---
+id: event-invitation
+title: EventInvitation
+---
+
+export const Bullet = () => (
+  <>
+    <span
+      style={{
+        fontWeight: "normal",
+        fontSize: ".5em",
+        color: "var(--ifm-color-secondary-darkest)",
+      }}
+    >
+      &nbsp;●&nbsp;
+    </span>
+  </>
+);
+
+export const SpecifiedBy = (props) => (
+  <>
+    Specification
+    <a
+      className="link"
+      style={{ fontSize: "1.5em", paddingLeft: "4px" }}
+      target="_blank"
+      href={props.url}
+      title={"Specified by " + props.url}
+    >
+      ⎘
+    </a>
+  </>
+);
+
+export const Badge = (props) => (
+  <>
+    <span className={props.class}>{props.text}</span>
+  </>
+);
+
+import { useState } from "react";
+
+export const Details = ({
+  dataOpen,
+  dataClose,
+  children,
+  startOpen = false,
+}) => {
+  const [open, setOpen] = useState(startOpen);
+  return (
+    <details
+      {...(open ? { open: true } : {})}
+      className="details"
+      style={{
+        border: "none",
+        boxShadow: "none",
+        background: "var(--ifm-background-color)",
+      }}
+    >
+      <summary
+        onClick={(e) => {
+          e.preventDefault();
+          setOpen((open) => !open);
+        }}
+        style={{ listStyle: "none" }}
+      >
+        {open ? dataOpen : dataClose}
+      </summary>
+      {open && children}
+    </details>
+  );
+};
+
+An invitation to an event sent to an email address.
+
+```graphql
+type EventInvitation {
+  createdAt: DateTime
+  eventId: String
+  expiresAt: DateTime
+  id: ID
+  invitationToken: String
+  invitedBy: String
+  inviteeEmail: String
+  inviteeName: String
+  metadata: String
+  recurringEventInstanceId: String
+  respondedAt: DateTime
+  status: String
+  updatedAt: DateTime
+  userId: String
+}
+```
+
+### Fields
+
+#### [<code style={{ fontWeight: 'normal' }}>EventInvitation.<b>createdAt</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>DateTime</b></code>](/auto-schema/types/scalars/date-time.mdx) <Badge class="badge badge--secondary " text="scalar"/>
+
+Date and time when the invitation was created.
+
+#### [<code style={{ fontWeight: 'normal' }}>EventInvitation.<b>eventId</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>String</b></code>](/auto-schema/types/scalars/string.mdx) <Badge class="badge badge--secondary " text="scalar"/>
+
+ID of the associated event (if applicable).
+
+#### [<code style={{ fontWeight: 'normal' }}>EventInvitation.<b>expiresAt</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>DateTime</b></code>](/auto-schema/types/scalars/date-time.mdx) <Badge class="badge badge--secondary " text="scalar"/>
+
+Date and time when the invitation expires.
+
+#### [<code style={{ fontWeight: 'normal' }}>EventInvitation.<b>id</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>ID</b></code>](/auto-schema/types/scalars/id.mdx) <Badge class="badge badge--secondary " text="scalar"/>
+
+Unique identifier of the invitation.
+
+#### [<code style={{ fontWeight: 'normal' }}>EventInvitation.<b>invitationToken</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>String</b></code>](/auto-schema/types/scalars/string.mdx) <Badge class="badge badge--secondary " text="scalar"/>
+
+Unique token used to accept the invitation.
+
+#### [<code style={{ fontWeight: 'normal' }}>EventInvitation.<b>invitedBy</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>String</b></code>](/auto-schema/types/scalars/string.mdx) <Badge class="badge badge--secondary " text="scalar"/>
+
+ID of the user who sent the invitation.
+
+#### [<code style={{ fontWeight: 'normal' }}>EventInvitation.<b>inviteeEmail</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>String</b></code>](/auto-schema/types/scalars/string.mdx) <Badge class="badge badge--secondary " text="scalar"/>
+
+Email address of the invitee.
+
+#### [<code style={{ fontWeight: 'normal' }}>EventInvitation.<b>inviteeName</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>String</b></code>](/auto-schema/types/scalars/string.mdx) <Badge class="badge badge--secondary " text="scalar"/>
+
+Name of the invitee.
+
+#### [<code style={{ fontWeight: 'normal' }}>EventInvitation.<b>metadata</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>String</b></code>](/auto-schema/types/scalars/string.mdx) <Badge class="badge badge--secondary " text="scalar"/>
+
+Additional metadata associated with the invitation (JSON string).
+
+#### [<code style={{ fontWeight: 'normal' }}>EventInvitation.<b>recurringEventInstanceId</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>String</b></code>](/auto-schema/types/scalars/string.mdx) <Badge class="badge badge--secondary " text="scalar"/>
+
+ID of the associated recurring event instance (if applicable).
+
+#### [<code style={{ fontWeight: 'normal' }}>EventInvitation.<b>respondedAt</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>DateTime</b></code>](/auto-schema/types/scalars/date-time.mdx) <Badge class="badge badge--secondary " text="scalar"/>
+
+Date and time when the invitation was responded to (accepted or declined).
+
+#### [<code style={{ fontWeight: 'normal' }}>EventInvitation.<b>status</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>String</b></code>](/auto-schema/types/scalars/string.mdx) <Badge class="badge badge--secondary " text="scalar"/>
+
+Current status of the invitation (pending, accepted, declined, expired, cancelled).
+
+#### [<code style={{ fontWeight: 'normal' }}>EventInvitation.<b>updatedAt</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>DateTime</b></code>](/auto-schema/types/scalars/date-time.mdx) <Badge class="badge badge--secondary " text="scalar"/>
+
+Date and time when the invitation was last updated.
+
+#### [<code style={{ fontWeight: 'normal' }}>EventInvitation.<b>userId</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>String</b></code>](/auto-schema/types/scalars/string.mdx) <Badge class="badge badge--secondary " text="scalar"/>
+
+ID of the user who was invited (if they are a registered user).
+
+### Returned By
+
+[`acceptEventInvitation`](/auto-schema/operations/mutations/accept-event-invitation.mdx) <Badge class="badge badge--secondary badge--relation" text="mutation"/><Bullet />[`sendEventInvitations`](/auto-schema/operations/mutations/send-event-invitations.mdx) <Badge class="badge badge--secondary badge--relation" text="mutation"/>
