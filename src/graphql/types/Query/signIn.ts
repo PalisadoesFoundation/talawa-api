@@ -9,6 +9,11 @@ import {
 import { AuthenticationPayload } from "~/src/graphql/types/AuthenticationPayload";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import envConfig from "~/src/utilities/graphqLimits";
+import {
+	generateRefreshToken,
+	hashRefreshToken,
+	storeRefreshToken,
+} from "~/src/utilities/refreshTokenUtils";
 import type { CurrentClient } from "../../context";
 const querySignInArgumentsSchema = z.object({
 	input: querySignInInputSchema,
@@ -112,12 +117,32 @@ builder.queryField("signIn", (t) =>
 				id: existingUser.id,
 			} as CurrentClient["user"];
 
+			// Generate refresh token
+			const rawRefreshToken = generateRefreshToken();
+			const refreshTokenHash = hashRefreshToken(rawRefreshToken);
+
+			// Calculate refresh token expiry (default 7 days if not configured)
+			const refreshTokenExpiresIn =
+				ctx.envConfig.API_REFRESH_TOKEN_EXPIRES_IN ?? 604800000;
+			const refreshTokenExpiresAt = new Date(
+				Date.now() + refreshTokenExpiresIn,
+			);
+
+			// Store refresh token in database
+			await storeRefreshToken(
+				ctx.drizzleClient,
+				existingUser.id,
+				refreshTokenHash,
+				refreshTokenExpiresAt,
+			);
+
 			return {
 				authenticationToken: ctx.jwt.sign({
 					user: {
 						id: existingUser.id,
 					},
 				}),
+				refreshToken: rawRefreshToken,
 				user: existingUser,
 			};
 		},
