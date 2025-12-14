@@ -69,7 +69,7 @@ describe("Mutation field refreshToken", () => {
 				},
 			});
 			assertToBeNonNullish(signInResult.data.signIn?.refreshToken);
-			const tokenToRefresh = signInResult.data.signIn!.refreshToken as string;
+			const tokenToRefresh = signInResult.data.signIn?.refreshToken as string;
 
 			const result = await mercuriusClient.mutate(Mutation_refreshToken, {
 				variables: {
@@ -78,7 +78,9 @@ describe("Mutation field refreshToken", () => {
 			});
 
 			expect(result.errors).toBeUndefined();
-			const refreshData = result.data?.refreshToken as { user?: { id: string; name: string } };
+			const refreshData = result.data?.refreshToken as {
+				user?: { id: string; name: string };
+			};
 			assertToBeNonNullish(refreshData?.user);
 			expect(refreshData.user.id).toBeDefined();
 			expect(refreshData.user.name).toBeDefined();
@@ -95,7 +97,7 @@ describe("Mutation field refreshToken", () => {
 				},
 			});
 			assertToBeNonNullish(signInResult.data.signIn?.refreshToken);
-			const originalToken = signInResult.data.signIn!.refreshToken as string;
+			const originalToken = signInResult.data.signIn?.refreshToken as string;
 
 			// Use the token to get new tokens
 			const firstRefresh = await mercuriusClient.mutate(Mutation_refreshToken, {
@@ -119,8 +121,8 @@ describe("Mutation field refreshToken", () => {
 			expect(secondRefresh.errors).toBeDefined();
 			expect(secondRefresh.errors?.length).toBeGreaterThan(0);
 			expect(
-				(secondRefresh.errors?.[0] as unknown as TalawaGraphQLFormattedError)?.extensions
-					?.code,
+				(secondRefresh.errors?.[0] as unknown as TalawaGraphQLFormattedError)
+					?.extensions?.code,
 			).toBe("unauthenticated");
 		});
 	});
@@ -137,7 +139,8 @@ describe("Mutation field refreshToken", () => {
 			expect(result.errors).toBeDefined();
 			expect(result.errors?.length).toBeGreaterThan(0);
 
-			const error = result.errors?.[0] as unknown as TalawaGraphQLFormattedError;
+			const error = result
+				.errors?.[0] as unknown as TalawaGraphQLFormattedError;
 			expect((error.extensions as UnauthenticatedExtensions).code).toBe(
 				"unauthenticated",
 			);
@@ -154,7 +157,8 @@ describe("Mutation field refreshToken", () => {
 
 			expect(result.data?.refreshToken).toBeNull();
 			expect(result.errors).toBeDefined();
-			const error = result.errors?.[0] as unknown as TalawaGraphQLFormattedError;
+			const error = result
+				.errors?.[0] as unknown as TalawaGraphQLFormattedError;
 			expect((error.extensions as UnauthenticatedExtensions).code).toBe(
 				"unauthenticated",
 			);
@@ -171,7 +175,8 @@ describe("Mutation field refreshToken", () => {
 			expect(result.errors).toBeDefined();
 			expect(result.errors?.length).toBeGreaterThan(0);
 
-			const error = result.errors?.[0] as unknown as TalawaGraphQLFormattedError;
+			const error = result
+				.errors?.[0] as unknown as TalawaGraphQLFormattedError;
 			expect((error.extensions as InvalidArgumentsExtensions).code).toBe(
 				"invalid_arguments",
 			);
@@ -190,7 +195,7 @@ describe("Mutation field refreshToken", () => {
 			});
 
 			assertToBeNonNullish(signInResult.data.signIn?.refreshToken);
-			const refreshToken = signInResult.data.signIn!.refreshToken as string;
+			const refreshToken = signInResult.data.signIn?.refreshToken as string;
 
 			expect(refreshToken).toHaveLength(64);
 			expect(/^[a-f0-9]+$/.test(refreshToken)).toBe(true);
@@ -206,7 +211,7 @@ describe("Mutation field refreshToken", () => {
 				},
 			});
 			assertToBeNonNullish(signInResult.data.signIn?.refreshToken);
-			const tokenForJwt = signInResult.data.signIn!.refreshToken as string;
+			const tokenForJwt = signInResult.data.signIn?.refreshToken as string;
 
 			const result = await mercuriusClient.mutate(Mutation_refreshToken, {
 				variables: {
@@ -214,7 +219,9 @@ describe("Mutation field refreshToken", () => {
 				},
 			});
 
-			const jwtResult = result.data?.refreshToken as { authenticationToken?: string };
+			const jwtResult = result.data?.refreshToken as {
+				authenticationToken?: string;
+			};
 			assertToBeNonNullish(jwtResult?.authenticationToken);
 			const accessToken = jwtResult.authenticationToken;
 

@@ -27,7 +27,7 @@ describe("Mutation field revokeRefreshToken", () => {
 			});
 
 			assertToBeNonNullish(signInResult.data.signIn?.refreshToken);
-			const refreshToken = signInResult.data.signIn!.refreshToken as string;
+			const refreshToken = signInResult.data.signIn?.refreshToken as string;
 
 			// Revoke the token
 			const result = await mercuriusClient.mutate(Mutation_revokeRefreshToken, {
@@ -52,7 +52,7 @@ describe("Mutation field revokeRefreshToken", () => {
 			});
 
 			assertToBeNonNullish(signInResult.data.signIn?.refreshToken);
-			const refreshToken = signInResult.data.signIn!.refreshToken as string;
+			const refreshToken = signInResult.data.signIn?.refreshToken as string;
 
 			// Revoke the token
 			const revokeResult = await mercuriusClient.mutate(
@@ -79,8 +79,8 @@ describe("Mutation field revokeRefreshToken", () => {
 			expect(refreshResult.errors).toBeDefined();
 			expect(refreshResult.errors?.length).toBeGreaterThan(0);
 			expect(
-				(refreshResult.errors?.[0] as unknown as TalawaGraphQLFormattedError)?.extensions
-					?.code,
+				(refreshResult.errors?.[0] as unknown as TalawaGraphQLFormattedError)
+					?.extensions?.code,
 			).toBe("unauthenticated");
 		});
 
@@ -109,7 +109,7 @@ describe("Mutation field revokeRefreshToken", () => {
 			});
 
 			assertToBeNonNullish(signInResult.data.signIn?.refreshToken);
-			const refreshToken = signInResult.data.signIn!.refreshToken as string;
+			const refreshToken = signInResult.data.signIn?.refreshToken as string;
 
 			// Revoke the token first time
 			const firstRevoke = await mercuriusClient.mutate(
@@ -150,7 +150,8 @@ describe("Mutation field revokeRefreshToken", () => {
 			expect(result.errors).toBeDefined();
 			expect(result.errors?.length).toBeGreaterThan(0);
 
-			const error = result.errors?.[0] as unknown as TalawaGraphQLFormattedError;
+			const error = result
+				.errors?.[0] as unknown as TalawaGraphQLFormattedError;
 			expect((error.extensions as InvalidArgumentsExtensions).code).toBe(
 				"invalid_arguments",
 			);
@@ -171,7 +172,7 @@ describe("Mutation field revokeRefreshToken", () => {
 
 			assertToBeNonNullish(signInResult.data.signIn?.refreshToken);
 			assertToBeNonNullish(signInResult.data.signIn?.authenticationToken);
-			const refreshToken = signInResult.data.signIn!.refreshToken as string;
+			const refreshToken = signInResult.data.signIn?.refreshToken as string;
 
 			// Logout by revoking refresh token
 			const logoutResult = await mercuriusClient.mutate(
