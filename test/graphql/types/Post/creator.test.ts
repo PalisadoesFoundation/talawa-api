@@ -7,9 +7,9 @@ import "~/src/graphql/types/PostAttachment/PostAttachment";
 import type { Post as PostType } from "~/src/graphql/types/Post/Post";
 import "~/src/graphql/types/Post/creator"; // Import to register the field
 import {
-	GraphQLFieldResolver,
+	type GraphQLFieldResolver,
 	GraphQLObjectType,
-	GraphQLResolveInfo,
+	type GraphQLResolveInfo,
 } from "graphql";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 
