@@ -655,6 +655,7 @@ suite("Venue events Field", () => {
 		});
 
 		// Create multiple events
+		const eventIds: string[] = [];
 		for (let i = 0; i < 3; i++) {
 			const createEventResult = await mercuriusClient.mutate(
 				Mutation_createEvent,
@@ -678,7 +679,10 @@ suite("Venue events Field", () => {
 
 			const eventId = createEventResult.data?.createEvent?.id;
 			assertToBeNonNullish(eventId);
+			eventIds.push(eventId);
+		}
 
+		for (const eventId of eventIds) {
 			await mercuriusClient.mutate(Mutation_createVenueBooking, {
 				headers: { authorization: `Bearer ${authToken}` },
 				variables: {
@@ -773,6 +777,7 @@ suite("Venue events Field", () => {
 		});
 
 		// Create multiple events
+		const eventIds: string[] = [];
 		for (let i = 0; i < 3; i++) {
 			const createEventResult = await mercuriusClient.mutate(
 				Mutation_createEvent,
@@ -796,7 +801,10 @@ suite("Venue events Field", () => {
 
 			const eventId = createEventResult.data?.createEvent?.id;
 			assertToBeNonNullish(eventId);
+			eventIds.push(eventId);
+		}
 
+		for (const eventId of eventIds) {
 			await mercuriusClient.mutate(Mutation_createVenueBooking, {
 				headers: { authorization: `Bearer ${authToken}` },
 				variables: {
@@ -875,6 +883,7 @@ suite("Venue events Field", () => {
 		});
 
 		// Create multiple events
+		const eventIds: string[] = [];
 		for (let i = 0; i < 3; i++) {
 			const createEventResult = await mercuriusClient.mutate(
 				Mutation_createEvent,
@@ -898,7 +907,10 @@ suite("Venue events Field", () => {
 
 			const eventId = createEventResult.data?.createEvent?.id;
 			assertToBeNonNullish(eventId);
+			eventIds.push(eventId);
+		}
 
+		for (const eventId of eventIds) {
 			await mercuriusClient.mutate(Mutation_createVenueBooking, {
 				headers: { authorization: `Bearer ${authToken}` },
 				variables: {
