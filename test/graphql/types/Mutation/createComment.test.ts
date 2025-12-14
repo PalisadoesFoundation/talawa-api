@@ -27,6 +27,10 @@ afterEach(() => {
 // Declare authToken at module scope
 let authToken!: string;
 
+/**
+ * Creates a new organization and returns its ID for testing purposes
+ * @returns Promise resolving to the organization ID
+ */
 async function createOrganizationAndGetId(): Promise<string> {
 	const uniqueName = `Test Org ${faker.string.uuid()}`;
 	const result = await mercuriusClient.mutate(Mutation_createOrganization, {
@@ -43,6 +47,11 @@ async function createOrganizationAndGetId(): Promise<string> {
 	return orgId;
 }
 
+/**
+ * Creates a new post in the specified organization
+ * @param organizationId - The organization ID where the post will be created
+ * @returns Promise resolving to the post ID
+ */
 async function createPost(organizationId: string): Promise<string> {
 	const result = await mercuriusClient.mutate(Mutation_createPost, {
 		headers: { authorization: `bearer ${authToken}` },
@@ -151,18 +160,22 @@ suite("Mutation field createComment", () => {
 
 			// Create new regular user
 			const newUserEmail = `testuser${faker.string.uuid()}@example.com`;
-			await mercuriusClient.mutate(Mutation_createUser, {
-				headers: { authorization: `bearer ${authToken}` },
-				variables: {
-					input: {
-						emailAddress: newUserEmail,
-						isEmailAddressVerified: true,
-						name: "Non Member User",
-						password: "password",
-						role: "regular",
+			const createUserResult = await mercuriusClient.mutate(
+				Mutation_createUser,
+				{
+					headers: { authorization: `bearer ${authToken}` },
+					variables: {
+						input: {
+							emailAddress: newUserEmail,
+							isEmailAddressVerified: true,
+							name: "Non Member User",
+							password: "password",
+							role: "regular",
+						},
 					},
 				},
-			});
+			);
+			expect(createUserResult.errors).toBeUndefined();
 
 			const nonMemberSignIn = await mercuriusClient.query(Query_signIn, {
 				variables: {
@@ -200,8 +213,17 @@ suite("Mutation field createComment", () => {
 
 	suite("when the database insert operation fails", () => {
 		let originalInsert: typeof server.drizzleClient.insert;
+		let orgId: string;
+		let postId: string;
+
+		// Create test data BEFORE any mocking happens
+		beforeAll(async () => {
+			orgId = await createOrganizationAndGetId();
+			postId = await createPost(orgId);
+		});
 
 		beforeEach(() => {
+			// Now mock ONLY for the actual comment creation
 			originalInsert = server.drizzleClient.insert;
 			server.drizzleClient.insert = vi.fn().mockReturnValue({
 				values: vi.fn().mockReturnValue({
@@ -215,9 +237,6 @@ suite("Mutation field createComment", () => {
 		});
 
 		test("should return an error with unexpected code", async () => {
-			const orgId = await createOrganizationAndGetId();
-			const postId = await createPost(orgId);
-
 			const result = await mercuriusClient.mutate(Mutation_createComment, {
 				headers: { authorization: `bearer ${authToken}` },
 				variables: {
@@ -263,16 +282,20 @@ suite("Mutation field createComment", () => {
 			const memberUserId = createUserResult.data?.createUser?.user?.id;
 			assertToBeNonNullish(memberUserId);
 
-			await mercuriusClient.mutate(Mutation_createOrganizationMembership, {
-				headers: { authorization: `bearer ${authToken}` },
-				variables: {
-					input: {
-						organizationId: orgId,
-						memberId: memberUserId,
-						role: "regular",
+			const membershipResult = await mercuriusClient.mutate(
+				Mutation_createOrganizationMembership,
+				{
+					headers: { authorization: `bearer ${authToken}` },
+					variables: {
+						input: {
+							organizationId: orgId,
+							memberId: memberUserId,
+							role: "regular",
+						},
 					},
 				},
-			});
+			);
+			expect(membershipResult.errors).toBeUndefined();
 
 			const memberSignIn = await mercuriusClient.query(Query_signIn, {
 				variables: {
