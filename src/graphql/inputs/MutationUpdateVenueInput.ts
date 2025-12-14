@@ -2,15 +2,16 @@ import type { FileUpload } from "graphql-upload-minimal";
 import { z } from "zod";
 import { venuesTableInsertSchema } from "~/src/drizzle/tables/venues";
 import { builder } from "~/src/graphql/builder";
+import { sanitizedStringSchema } from "~/src/utilities/sanitizer";
 
 export const mutationUpdateVenueInputSchema = venuesTableInsertSchema
 	.pick({
 		capacity: true,
-		description: true,
 	})
 	.extend({
+		description: sanitizedStringSchema.min(1).max(2048).optional(),
 		id: venuesTableInsertSchema.shape.id.unwrap(),
-		name: venuesTableInsertSchema.shape.name.optional(),
+		name: sanitizedStringSchema.min(1).max(256).optional(),
 		attachments: z
 			.custom<Promise<FileUpload>>()
 			.array()
@@ -45,6 +46,7 @@ export const MutationUpdateVenueInput = builder
 			}),
 			description: t.string({
 				description: "Custom information about the venue.",
+				required: false,
 			}),
 			id: t.id({
 				description: "Global identifier of the venue.",
@@ -52,6 +54,7 @@ export const MutationUpdateVenueInput = builder
 			}),
 			name: t.string({
 				description: "Name of the venue.",
+				required: false,
 			}),
 		}),
 	});

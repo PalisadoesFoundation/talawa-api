@@ -1,10 +1,25 @@
 import { z } from "zod";
-import { commentsTableInsertSchema } from "~/src/drizzle/tables/comments";
+import {
+	COMMENT_BODY_MAX_LENGTH,
+	commentsTableInsertSchema,
+} from "~/src/drizzle/tables/comments";
 import { builder } from "~/src/graphql/builder";
 
 export const mutationUpdateCommentInputSchema = z
 	.object({
-		body: commentsTableInsertSchema.shape.body.optional(),
+		/**
+		 * Body of the comment.
+		 * We persist the raw (trimmed) text and perform HTML escaping at output time
+		 * to avoid double-escaping and exceeding DB length limits with escaped entities.
+		 *
+		 * Transform is applied BEFORE length checks to ensure whitespace-only
+		 * inputs are rejected (they become empty string after trim, failing min(1)).
+		 */
+		body: z
+			.string()
+			.transform((val) => val.trim())
+			.pipe(z.string().min(1).max(COMMENT_BODY_MAX_LENGTH))
+			.optional(),
 		id: commentsTableInsertSchema.shape.id.unwrap(),
 	})
 	.refine(
@@ -24,6 +39,7 @@ export const MutationUpdateCommentInput = builder
 		fields: (t) => ({
 			body: t.string({
 				description: "Body of the comment.",
+				required: false,
 			}),
 			id: t.id({
 				description: "Global identifier of the comment.",
