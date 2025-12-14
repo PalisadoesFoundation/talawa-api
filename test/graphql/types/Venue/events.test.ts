@@ -3,6 +3,7 @@ import { afterEach, beforeAll, expect, suite, test, vi } from "vitest";
 import { assertToBeNonNullish } from "../../../helpers";
 import { server } from "../../../server";
 import { mercuriusClient } from "../client";
+import { createRegularUserUsingAdmin } from "../createRegularUserUsingAdmin";
 import {
 	Mutation_createEvent,
 	Mutation_createOrganization,
@@ -21,6 +22,7 @@ beforeAll(async () => {
 			},
 		},
 	});
+	expect(signInResult.errors).toBeUndefined();
 	assertToBeNonNullish(signInResult.data?.signIn);
 	assertToBeNonNullish(signInResult.data.signIn.authenticationToken);
 	authToken = signInResult.data.signIn.authenticationToken;
@@ -286,9 +288,7 @@ suite("Venue events Field", () => {
 		const venueId = createVenueResult.data?.createVenue?.id;
 		assertToBeNonNullish(venueId);
 
-		const { authToken: regularAuthToken } = await import(
-			"../createRegularUserUsingAdmin"
-		).then((m) => m.createRegularUserUsingAdmin());
+		const { authToken: regularAuthToken } = await createRegularUserUsingAdmin();
 
 		const result = await mercuriusClient.query(VenueEventsQuery, {
 			headers: { authorization: `Bearer ${regularAuthToken}` },
@@ -541,10 +541,8 @@ suite("Venue events Field", () => {
 		const venueId = createVenueResult.data?.createVenue?.id;
 		assertToBeNonNullish(venueId);
 
-		// Add admin as organization member
-		const { authToken: memberAuthToken } = await import(
-			"../createRegularUserUsingAdmin"
-		).then((m) => m.createRegularUserUsingAdmin());
+		// Add regular user as organization member
+		const { authToken: memberAuthToken } = await createRegularUserUsingAdmin();
 
 		const joinResult = await mercuriusClient.mutate(
 			Mutation_joinPublicOrganization,
@@ -641,9 +639,7 @@ suite("Venue events Field", () => {
 		assertToBeNonNullish(venueId);
 
 		// Create member and join organization
-		const { authToken: memberAuthToken } = await import(
-			"../createRegularUserUsingAdmin"
-		).then((m) => m.createRegularUserUsingAdmin());
+		const { authToken: memberAuthToken } = await createRegularUserUsingAdmin();
 
 		await mercuriusClient.mutate(Mutation_joinPublicOrganization, {
 			headers: { authorization: `Bearer ${memberAuthToken}` },
@@ -666,9 +662,7 @@ suite("Venue events Field", () => {
 						startAt: new Date(
 							Date.now() + 86400000 + i * 3600000,
 						).toISOString(),
-						endAt: new Date(
-							Date.now() + 90000000 + i * 3600000,
-						).toISOString(),
+						endAt: new Date(Date.now() + 90000000 + i * 3600000).toISOString(),
 					},
 				},
 			}),
@@ -762,9 +756,7 @@ suite("Venue events Field", () => {
 		assertToBeNonNullish(venueId);
 
 		// Create member and join organization
-		const { authToken: memberAuthToken } = await import(
-			"../createRegularUserUsingAdmin"
-		).then((m) => m.createRegularUserUsingAdmin());
+		const { authToken: memberAuthToken } = await createRegularUserUsingAdmin();
 
 		await mercuriusClient.mutate(Mutation_joinPublicOrganization, {
 			headers: { authorization: `Bearer ${memberAuthToken}` },
@@ -787,9 +779,7 @@ suite("Venue events Field", () => {
 						startAt: new Date(
 							Date.now() + 86400000 + i * 3600000,
 						).toISOString(),
-						endAt: new Date(
-							Date.now() + 90000000 + i * 3600000,
-						).toISOString(),
+						endAt: new Date(Date.now() + 90000000 + i * 3600000).toISOString(),
 					},
 				},
 			}),
@@ -867,9 +857,7 @@ suite("Venue events Field", () => {
 		assertToBeNonNullish(venueId);
 
 		// Create member and join organization
-		const { authToken: memberAuthToken } = await import(
-			"../createRegularUserUsingAdmin"
-		).then((m) => m.createRegularUserUsingAdmin());
+		const { authToken: memberAuthToken } = await createRegularUserUsingAdmin();
 
 		await mercuriusClient.mutate(Mutation_joinPublicOrganization, {
 			headers: { authorization: `Bearer ${memberAuthToken}` },
@@ -892,9 +880,7 @@ suite("Venue events Field", () => {
 						startAt: new Date(
 							Date.now() + 86400000 + i * 3600000,
 						).toISOString(),
-						endAt: new Date(
-							Date.now() + 90000000 + i * 3600000,
-						).toISOString(),
+						endAt: new Date(Date.now() + 90000000 + i * 3600000).toISOString(),
 					},
 				},
 			}),
