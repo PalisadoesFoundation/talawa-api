@@ -655,32 +655,31 @@ suite("Venue events Field", () => {
 		});
 
 		// Create multiple events
-		const eventIds: string[] = [];
-		for (let i = 0; i < 3; i++) {
-			const createEventResult = await mercuriusClient.mutate(
-				Mutation_createEvent,
-				{
-					headers: { authorization: `Bearer ${memberAuthToken}` },
-					variables: {
-						input: {
-							name: `Forward Event ${i} ${faker.string.uuid()}`,
-							description: `Test event ${i} for venue`,
-							organizationId: orgId,
-							startAt: new Date(
-								Date.now() + 86400000 + i * 3600000,
-							).toISOString(),
-							endAt: new Date(
-								Date.now() + 90000000 + i * 3600000,
-							).toISOString(),
-						},
+		const createEventPromises = Array.from({ length: 3 }, (_, i) =>
+			mercuriusClient.mutate(Mutation_createEvent, {
+				headers: { authorization: `Bearer ${memberAuthToken}` },
+				variables: {
+					input: {
+						name: `Forward Event ${i} ${faker.string.uuid()}`,
+						description: `Test event ${i} for venue`,
+						organizationId: orgId,
+						startAt: new Date(
+							Date.now() + 86400000 + i * 3600000,
+						).toISOString(),
+						endAt: new Date(
+							Date.now() + 90000000 + i * 3600000,
+						).toISOString(),
 					},
 				},
-			);
+			}),
+		);
 
-			const eventId = createEventResult.data?.createEvent?.id;
+		const eventResults = await Promise.all(createEventPromises);
+		const eventIds = eventResults.map((result) => {
+			const eventId = result.data?.createEvent?.id;
 			assertToBeNonNullish(eventId);
-			eventIds.push(eventId);
-		}
+			return eventId;
+		});
 
 		for (const eventId of eventIds) {
 			await mercuriusClient.mutate(Mutation_createVenueBooking, {
@@ -777,32 +776,31 @@ suite("Venue events Field", () => {
 		});
 
 		// Create multiple events
-		const eventIds: string[] = [];
-		for (let i = 0; i < 3; i++) {
-			const createEventResult = await mercuriusClient.mutate(
-				Mutation_createEvent,
-				{
-					headers: { authorization: `Bearer ${memberAuthToken}` },
-					variables: {
-						input: {
-							name: `Backward Event ${i} ${faker.string.uuid()}`,
-							description: `Test event ${i} for venue`,
-							organizationId: orgId,
-							startAt: new Date(
-								Date.now() + 86400000 + i * 3600000,
-							).toISOString(),
-							endAt: new Date(
-								Date.now() + 90000000 + i * 3600000,
-							).toISOString(),
-						},
+		const createEventPromises = Array.from({ length: 3 }, (_, i) =>
+			mercuriusClient.mutate(Mutation_createEvent, {
+				headers: { authorization: `Bearer ${memberAuthToken}` },
+				variables: {
+					input: {
+						name: `Backward Event ${i} ${faker.string.uuid()}`,
+						description: `Test event ${i} for venue`,
+						organizationId: orgId,
+						startAt: new Date(
+							Date.now() + 86400000 + i * 3600000,
+						).toISOString(),
+						endAt: new Date(
+							Date.now() + 90000000 + i * 3600000,
+						).toISOString(),
 					},
 				},
-			);
+			}),
+		);
 
-			const eventId = createEventResult.data?.createEvent?.id;
+		const eventResults = await Promise.all(createEventPromises);
+		const eventIds = eventResults.map((result) => {
+			const eventId = result.data?.createEvent?.id;
 			assertToBeNonNullish(eventId);
-			eventIds.push(eventId);
-		}
+			return eventId;
+		});
 
 		for (const eventId of eventIds) {
 			await mercuriusClient.mutate(Mutation_createVenueBooking, {
@@ -883,32 +881,31 @@ suite("Venue events Field", () => {
 		});
 
 		// Create multiple events
-		const eventIds: string[] = [];
-		for (let i = 0; i < 3; i++) {
-			const createEventResult = await mercuriusClient.mutate(
-				Mutation_createEvent,
-				{
-					headers: { authorization: `Bearer ${memberAuthToken}` },
-					variables: {
-						input: {
-							name: `Backward Cursor Event ${i} ${faker.string.uuid()}`,
-							description: `Test event ${i} for venue`,
-							organizationId: orgId,
-							startAt: new Date(
-								Date.now() + 86400000 + i * 3600000,
-							).toISOString(),
-							endAt: new Date(
-								Date.now() + 90000000 + i * 3600000,
-							).toISOString(),
-						},
+		const createEventPromises = Array.from({ length: 3 }, (_, i) =>
+			mercuriusClient.mutate(Mutation_createEvent, {
+				headers: { authorization: `Bearer ${memberAuthToken}` },
+				variables: {
+					input: {
+						name: `Backward Cursor Event ${i} ${faker.string.uuid()}`,
+						description: `Test event ${i} for venue`,
+						organizationId: orgId,
+						startAt: new Date(
+							Date.now() + 86400000 + i * 3600000,
+						).toISOString(),
+						endAt: new Date(
+							Date.now() + 90000000 + i * 3600000,
+						).toISOString(),
 					},
 				},
-			);
+			}),
+		);
 
-			const eventId = createEventResult.data?.createEvent?.id;
+		const eventResults = await Promise.all(createEventPromises);
+		const eventIds = eventResults.map((result) => {
+			const eventId = result.data?.createEvent?.id;
 			assertToBeNonNullish(eventId);
-			eventIds.push(eventId);
-		}
+			return eventId;
+		});
 
 		for (const eventId of eventIds) {
 			await mercuriusClient.mutate(Mutation_createVenueBooking, {
