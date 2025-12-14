@@ -1,5 +1,5 @@
 import { createMockGraphQLContext } from "test/_Mocks_/mockContextCreator/mockContextCreator";
-import { beforeEach, describe, expect, it } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { GraphQLContext } from "~/src/graphql/context";
 import "~/src/graphql/scalars";
 import "~/src/graphql/types/Post/Post";
@@ -104,27 +104,44 @@ describe("Post Resolver - upVoters", () => {
 		);
 	});
 
-	// TODO: Fix cursor validation - these tests need proper mocking of the exists() subquery
-	it.skip("should handle pagination with cursor", async () => {
+	it("should handle pagination with cursor (after/first)", async () => {
 		const mockDate = new Date();
+		// Use valid UUID v4 format for creatorId (required by postVotesTableInsertSchema)
+		const cursorCreatorId = "550e8400-e29b-41d4-a716-446655440001";
+		const resultCreatorId = "550e8400-e29b-41d4-a716-446655440002";
+
 		const mockCursor = Buffer.from(
 			JSON.stringify({
 				createdAt: mockDate.toISOString(),
-				creatorId: "user-1",
+				creatorId: cursorCreatorId,
 			}),
 		).toString("base64url");
 
+		// Mock user that comes after the cursor
+		// When using after/first, we expect users with creatorId < cursor.creatorId
+		// (because default order is DESC on both createdAt and creatorId)
 		const mockUsers = [
 			{
 				createdAt: mockDate,
-				creatorId: "user-2",
+				creatorId: resultCreatorId,
 				creator: {
-					id: "user-2",
+					id: resultCreatorId,
 					name: "User 2",
+					emailAddress: "user2@example.com",
 				},
 			},
 		];
 
+		// Mock the select() chain used by exists() subquery
+		const mockSelectChain = {
+			from: vi.fn().mockReturnThis(),
+			where: vi.fn().mockReturnThis(),
+		};
+		mocks.drizzleClient.select = vi.fn().mockReturnValue(mockSelectChain);
+
+		// The resolver makes ONE call to findMany which includes the exists() subquery
+		// in the WHERE clause. The exists() validates the cursor exists, and if it does,
+		// the query returns records that match the pagination criteria.
 		mocks.drizzleClient.query.postVotesTable.findMany.mockResolvedValueOnce(
 			mockUsers,
 		);
@@ -135,11 +152,12 @@ describe("Post Resolver - upVoters", () => {
 			ctx,
 			{} as GraphQLResolveInfo,
 		)) as Connection<User>;
+
 		expect(result.edges).toHaveLength(1);
 		if (!result.edges[0]) {
 			throw new Error("Expected edges not found in result");
 		}
-		expect(result.edges[0].node.id).toBe("user-2");
+		expect(result.edges[0].node.id).toBe(resultCreatorId);
 
 		expect(
 			mocks.drizzleClient.query.postVotesTable.findMany,
@@ -152,35 +170,53 @@ describe("Post Resolver - upVoters", () => {
 		);
 	});
 
-	it.skip("should handle inversed order (before cursor)", async () => {
+	it("should handle inversed order (before/last)", async () => {
 		const olderDate = new Date("2024-01-01T10:00:00Z");
 		const newerDate = new Date("2024-01-01T11:00:00Z");
+		// Use valid UUID v4 formats for creatorId (required by postVotesTableInsertSchema)
+		const cursorCreatorId = "550e8400-e29b-41d4-a716-446655440003";
+		const user1Id = "550e8400-e29b-41d4-a716-446655440001";
+		const user2Id = "550e8400-e29b-41d4-a716-446655440002";
+
 		const mockCursor = Buffer.from(
 			JSON.stringify({
 				createdAt: newerDate.toISOString(),
-				creatorId: "user-3",
+				creatorId: cursorCreatorId,
 			}),
 		).toString("base64url");
 
+		// When using before/last, order is inverted to ASC
+		// We want users that come BEFORE the cursor (with creatorId > cursor.creatorId in ASC order)
+		// The result should be ordered ASC by createdAt, then ASC by creatorId
 		const mockUsers = [
 			{
 				createdAt: olderDate,
-				creatorId: "user-1",
+				creatorId: user1Id,
 				creator: {
-					id: "user-1",
+					id: user1Id,
 					name: "User 1",
+					emailAddress: "user1@example.com",
 				},
 			},
 			{
 				createdAt: newerDate,
-				creatorId: "user-2",
+				creatorId: user2Id,
 				creator: {
-					id: "user-2",
+					id: user2Id,
 					name: "User 2",
+					emailAddress: "user2@example.com",
 				},
 			},
 		];
 
+		// Mock the select() chain used by exists() subquery
+		const mockSelectChain = {
+			from: vi.fn().mockReturnThis(),
+			where: vi.fn().mockReturnThis(),
+		};
+		mocks.drizzleClient.select = vi.fn().mockReturnValue(mockSelectChain);
+
+		// The resolver makes ONE call to findMany with exists() in the WHERE clause
 		mocks.drizzleClient.query.postVotesTable.findMany.mockResolvedValueOnce(
 			mockUsers,
 		);
@@ -197,8 +233,9 @@ describe("Post Resolver - upVoters", () => {
 		if (!result.edges[0] || !result.edges[1]) {
 			throw new Error("Expected edges not found in result");
 		}
-		expect(result.edges[0].node.id).toBe("user-2");
-		expect(result.edges[1].node.id).toBe("user-1");
+		// Results are reversed by transformToDefaultGraphQLConnection for isInversed=true
+		expect(result.edges[0].node.id).toBe(user2Id);
+		expect(result.edges[1].node.id).toBe(user1Id);
 	});
 
 	it("should throw error for invalid cursor", async () => {
