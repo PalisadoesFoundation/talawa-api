@@ -14,6 +14,7 @@ import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import envConfig from "~/src/utilities/graphqLimits";
 import { isNotNullish } from "~/src/utilities/isNotNullish";
 import {
+	DEFAULT_REFRESH_TOKEN_EXPIRES_MS,
 	generateRefreshToken,
 	hashRefreshToken,
 	storeRefreshToken,
@@ -209,7 +210,8 @@ builder.mutationField("createUser", (t) =>
 
 				// Calculate refresh token expiry (default 7 days if not configured)
 				const refreshTokenExpiresIn =
-					ctx.envConfig.API_REFRESH_TOKEN_EXPIRES_IN ?? 604800000;
+					ctx.envConfig.API_REFRESH_TOKEN_EXPIRES_IN ??
+					DEFAULT_REFRESH_TOKEN_EXPIRES_MS;
 				const refreshTokenExpiresAt = new Date(
 					Date.now() + refreshTokenExpiresIn,
 				);

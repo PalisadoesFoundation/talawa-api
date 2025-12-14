@@ -5,6 +5,12 @@ import type * as schema from "~/src/drizzle/schema";
 import { refreshTokensTable } from "~/src/drizzle/tables/refreshTokens";
 
 /**
+ * Default refresh token expiry: 7 days in milliseconds.
+ * Used as fallback when API_REFRESH_TOKEN_EXPIRES_IN is not configured.
+ */
+export const DEFAULT_REFRESH_TOKEN_EXPIRES_MS = 604_800_000;
+
+/**
  * Generates a cryptographically secure random refresh token.
  * @returns A 64-character hex string token
  */
