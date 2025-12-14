@@ -197,11 +197,14 @@ suite("Query.advertisement", () => {
 	});
 
 	test("should return advertisement for global administrator accessing any organization", async () => {
-		// Create organization with admin first
+		// Create regular user and make them org admin
+		const { authToken: regularToken } = await createRegularUserUsingAdmin();
+		
+		// Create organization with regular user (they become org admin)
 		const createOrgResult = await mercuriusClient.mutate(
 			Mutation_createOrganization,
 			{
-				headers: { authorization: `Bearer ${authToken}` },
+				headers: { authorization: `Bearer ${regularToken}` },
 				variables: {
 					input: {
 						name: `Test Org ${faker.string.uuid()}`,
@@ -217,7 +220,7 @@ suite("Query.advertisement", () => {
 		const createAdResult = await mercuriusClient.mutate(
 			Mutation_createAdvertisement,
 			{
-				headers: { authorization: `Bearer ${authToken}` }, // Admin creates the ad
+				headers: { authorization: `Bearer ${regularToken}` }, // Regular user creates ad
 				variables: {
 					input: {
 						organizationId: orgId,
@@ -233,7 +236,7 @@ suite("Query.advertisement", () => {
 		const adId = createAdResult.data?.createAdvertisement?.id;
 		assertToBeNonNullish(adId);
 
-		// Global admin should access advertisement from any organization
+		// Global admin should access advertisement from ANY organization (not their own)
 		const result = await mercuriusClient.query(Query_advertisement, {
 			headers: { authorization: `Bearer ${authToken}` }, // Global admin token
 			variables: { input: { id: adId } },
