@@ -1,5 +1,13 @@
 import { faker } from "@faker-js/faker";
-import { afterEach, beforeEach, expect, suite, test, vi } from "vitest";
+import {
+	afterEach,
+	beforeAll,
+	beforeEach,
+	expect,
+	suite,
+	test,
+	vi,
+} from "vitest";
 import { assertToBeNonNullish } from "../../../helpers";
 import { server } from "../../../server";
 import { mercuriusClient } from "../client";
@@ -16,17 +24,8 @@ afterEach(() => {
 	vi.clearAllMocks();
 });
 
-const signInResult = await mercuriusClient.query(Query_signIn, {
-	variables: {
-		input: {
-			emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-			password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-		},
-	},
-});
-assertToBeNonNullish(signInResult.data?.signIn);
-const authToken = signInResult.data.signIn.authenticationToken;
-assertToBeNonNullish(authToken);
+// Declare authToken at module scope
+let authToken!: string;
 
 async function createOrganizationAndGetId(): Promise<string> {
 	const uniqueName = `Test Org ${faker.string.uuid()}`;
@@ -60,6 +59,24 @@ async function createPost(organizationId: string): Promise<string> {
 }
 
 suite("Mutation field createComment", () => {
+	beforeAll(async () => {
+		// Sign in as admin to get authentication token
+		const signInResult = await mercuriusClient.query(Query_signIn, {
+			variables: {
+				input: {
+					emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
+					password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
+				},
+			},
+		});
+		assertToBeNonNullish(signInResult.data?.signIn);
+
+		// Add ! here to assert it's not null
+		const token = signInResult.data.signIn.authenticationToken;
+		assertToBeNonNullish(token);
+		authToken = token;
+	});
+
 	suite("when the client is not authenticated", () => {
 		test("should return an error with unauthenticated code", async () => {
 			const result = await mercuriusClient.mutate(Mutation_createComment, {
