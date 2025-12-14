@@ -237,6 +237,36 @@ describe("extractPluginZip", () => {
 			extractPluginZip("/path/to/test.zip", "test_plugin", structure),
 		).resolves.toBeUndefined();
 	});
+
+	it("should reject zip files with path traversal attempts (Zip Slip protection)", async () => {
+		const mockYauzl = yauzl as unknown as {
+			default: { open: ReturnType<typeof vi.fn> };
+		};
+		mockYauzl.default.open.mockImplementationOnce((path, options, callback) => {
+			const mockZipFile = {
+				readEntry: vi.fn(),
+				on: vi.fn((event, handler) => {
+					if (event === "entry") {
+						// Malicious entry trying to write outside
+						handler({ fileName: "api/../../../etc/passwd" });
+					}
+					if (event === "end") {
+						handler();
+					}
+					return mockZipFile;
+				}),
+				// openReadStream shouldn't be called for malicious entries to write
+				openReadStream: vi.fn(),
+			};
+			callback(null, mockZipFile);
+		});
+
+		const structure = { hasApiFolder: true, pluginId: "test_plugin" };
+
+		await expect(
+			extractPluginZip("/path/to/test.zip", "test_plugin", structure),
+		).rejects.toThrow(/Malicious zip entry detected/);
+	});
 });
 
 describe("installPluginFromZip", () => {

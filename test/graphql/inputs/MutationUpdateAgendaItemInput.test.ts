@@ -93,6 +93,14 @@ describe("MutationUpdateAgendaItemInput Schema", () => {
 			expect(result.success).toBe(false);
 		});
 
+		it("should reject empty description", () => {
+			const result = MutationUpdateAgendaItemInputSchema.safeParse({
+				...validInput,
+				description: "",
+			});
+			expect(result.success).toBe(false);
+		});
+
 		it("should reject description exceeding length limit", () => {
 			const result = MutationUpdateAgendaItemInputSchema.safeParse({
 				...validInput,
@@ -116,8 +124,11 @@ describe("MutationUpdateAgendaItemInput Schema", () => {
 				id: "550e8400-e29b-41d4-a716-446655440000",
 			});
 			expect(result.success).toBe(false);
-			if (!result.success && result.error.issues[0]) {
-				expect(result.error.issues[0].message).toContain("optional argument");
+			if (!result.success) {
+				const hasOptionalArgIssue = result.error.issues.some((i) =>
+					i.message.includes("optional argument"),
+				);
+				expect(hasOptionalArgIssue).toBe(true);
 			}
 		});
 	});

@@ -1,19 +1,18 @@
+import type { GraphQLObjectType, GraphQLResolveInfo } from "graphql";
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import type { GraphQLContext } from "~/src/graphql/context";
+import { schema } from "~/src/graphql/schema";
 import { escapeHTML } from "~/src/utilities/sanitizer";
 
 // Mock the escapeHTML function
-vi.mock("~/src/utilities/sanitizer", () => ({
-	escapeHTML: vi.fn((str: string) => `escaped_${str}`),
-}));
-
-// Mock the builder - simplified approach without capturing resolvers
-vi.mock("~/src/graphql/builder", () => ({
-	builder: {
-		objectRef: vi.fn(() => ({
-			implement: vi.fn(),
-		})),
-	},
-}));
+vi.mock("~/src/utilities/sanitizer", async (importOriginal) => {
+	const actual =
+		await importOriginal<typeof import("~/src/utilities/sanitizer")>();
+	return {
+		...actual,
+		escapeHTML: vi.fn((str: string) => `escaped_${str}`),
+	};
+});
 
 /**
  * Test for output-level HTML escaping in Comment resolver.
@@ -37,27 +36,49 @@ describe("Comment GraphQL Type", () => {
 	});
 
 	describe("body field resolver", () => {
-		it("should escape HTML in body field", () => {
+		it("should escape HTML in body field", async () => {
+			const commentType = schema.getType("Comment") as GraphQLObjectType;
+			const bodyField = commentType.getFields().body;
+
+			if (!bodyField) throw new Error("Body field not found");
+			if (!bodyField.resolve) throw new Error("Resolver not defined");
+
 			const comment = {
 				id: "test-id",
 				body: '<script>alert("XSS")</script>',
 			};
 
-			// Test the resolver logic directly - body is always escaped
-			const result = escapeHTML(comment.body);
+			// Execute the resolver with the mock comment
+			const result = await bodyField.resolve(
+				comment,
+				{},
+				{} as unknown as GraphQLContext,
+				{} as unknown as GraphQLResolveInfo,
+			);
 
 			expect(result).toBe('escaped_<script>alert("XSS")</script>');
 			expect(escapeHTML).toHaveBeenCalledWith('<script>alert("XSS")</script>');
 			expect(escapeHTML).toHaveBeenCalledTimes(1);
 		});
 
-		it("should escape image onerror XSS payload", () => {
+		it("should escape image onerror XSS payload", async () => {
+			const commentType = schema.getType("Comment") as GraphQLObjectType;
+			const bodyField = commentType.getFields().body;
+
+			if (!bodyField) throw new Error("Body field not found");
+			if (!bodyField.resolve) throw new Error("Resolver not defined");
+
 			const comment = {
 				id: "test-id",
 				body: '<img src="x" onerror="alert(1)">',
 			};
 
-			const result = escapeHTML(comment.body);
+			const result = await bodyField.resolve(
+				comment,
+				{},
+				{} as unknown as GraphQLContext,
+				{} as unknown as GraphQLResolveInfo,
+			);
 
 			expect(result).toBe('escaped_<img src="x" onerror="alert(1)">');
 			expect(escapeHTML).toHaveBeenCalledWith(
@@ -66,13 +87,24 @@ describe("Comment GraphQL Type", () => {
 			expect(escapeHTML).toHaveBeenCalledTimes(1);
 		});
 
-		it("should handle ampersand and special characters", () => {
+		it("should handle ampersand and special characters", async () => {
+			const commentType = schema.getType("Comment") as GraphQLObjectType;
+			const bodyField = commentType.getFields().body;
+
+			if (!bodyField) throw new Error("Body field not found");
+			if (!bodyField.resolve) throw new Error("Resolver not defined");
+
 			const comment = {
 				id: "test-id",
 				body: "Tom & Jerry <3 Programming",
 			};
 
-			const result = escapeHTML(comment.body);
+			const result = await bodyField.resolve(
+				comment,
+				{},
+				{} as unknown as GraphQLContext,
+				{} as unknown as GraphQLResolveInfo,
+			);
 
 			expect(result).toBe("escaped_Tom & Jerry <3 Programming");
 			expect(escapeHTML).toHaveBeenCalledWith("Tom & Jerry <3 Programming");

@@ -1,5 +1,9 @@
 import type { z } from "zod";
-import { agendaItemsTableInsertSchema } from "~/src/drizzle/tables/agendaItems";
+import {
+	AGENDA_ITEM_DESCRIPTION_MAX_LENGTH,
+	AGENDA_ITEM_NAME_MAX_LENGTH,
+	agendaItemsTableInsertSchema,
+} from "~/src/drizzle/tables/agendaItems";
 import { builder } from "~/src/graphql/builder";
 import { sanitizedStringSchema } from "~/src/utilities/sanitizer";
 
@@ -10,10 +14,16 @@ export const MutationUpdateAgendaItemInputSchema = agendaItemsTableInsertSchema
 	})
 	.partial()
 	.extend({
-		description: sanitizedStringSchema.min(1).max(2048).optional(),
+		description: sanitizedStringSchema
+			.min(1)
+			.max(AGENDA_ITEM_DESCRIPTION_MAX_LENGTH)
+			.optional(),
 		folderId: agendaItemsTableInsertSchema.shape.folderId.optional(),
 		id: agendaItemsTableInsertSchema.shape.id.unwrap(),
-		name: sanitizedStringSchema.min(1).max(256).optional(),
+		name: sanitizedStringSchema
+			.min(1)
+			.max(AGENDA_ITEM_NAME_MAX_LENGTH)
+			.optional(),
 	})
 	.refine(
 		({ id, ...remainingArg }) =>

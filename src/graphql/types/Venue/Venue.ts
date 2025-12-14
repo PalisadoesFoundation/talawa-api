@@ -25,6 +25,7 @@ Venue.implement({
 		}),
 		description: t.string({
 			description: "Custom information about the venue.",
+			nullable: true,
 			resolve: (parent) =>
 				parent.description ? escapeHTML(parent.description) : null,
 		}),

@@ -75,8 +75,11 @@ describe("MutationUpdateTagFolderInput Schema", () => {
 				id: "550e8400-e29b-41d4-a716-446655440000",
 			});
 			expect(result.success).toBe(false);
-			if (!result.success && result.error.issues[0]) {
-				expect(result.error.issues[0].message).toContain("optional argument");
+			if (!result.success) {
+				const hasOptionalArgIssue = result.error.issues.some((issue) =>
+					issue.message.includes("optional argument"),
+				);
+				expect(hasOptionalArgIssue).toBe(true);
 			}
 		});
 

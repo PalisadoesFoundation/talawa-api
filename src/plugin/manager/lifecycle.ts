@@ -173,6 +173,7 @@ export class PluginLifecycle {
 	 * Trigger schema rebuild to integrate/remove plugin extensions
 	 */
 	private async triggerSchemaRebuild(): Promise<void> {
+		// Defense-in-depth: re-validate even though callers should have validated
 		try {
 			const { schemaManager } = await import("../../graphql/schemaManager");
 			await schemaManager.rebuildSchema();

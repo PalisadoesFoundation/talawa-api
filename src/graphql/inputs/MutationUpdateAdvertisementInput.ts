@@ -45,13 +45,15 @@ export const MutationUpdateAdvertisementInput = builder
 		fields: (t) => ({
 			description: t.string({
 				description: "Custom information about the advertisement.",
+				required: false,
 			}),
 			endAt: t.field({
 				description: "Date time at which the advertised event ends.",
+				required: false,
 				type: "DateTime",
 			}),
 			id: t.id({
-				description: "Global identifier of the associated organization.",
+				description: "ID of the advertisement to update.",
 				required: true,
 			}),
 			name: t.string({
@@ -60,10 +62,12 @@ export const MutationUpdateAdvertisementInput = builder
 			}),
 			startAt: t.field({
 				description: "Date time at which the advertised event starts.",
+				required: false,
 				type: "DateTime",
 			}),
 			type: t.field({
 				description: "Type of the advertisement.",
+				required: false,
 				type: AdvertisementType,
 			}),
 		}),
