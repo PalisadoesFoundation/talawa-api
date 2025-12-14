@@ -87,22 +87,27 @@ describe("Post Resolver - Organization Field", () => {
 			name: "Test Organization",
 		};
 
-		mocks.drizzleClient.query.organizationsTable.findFirst.mockResolvedValue(
-			mockOrganization,
+		// Capture the where clause callback
+		let capturedWhereClause: any;
+		mocks.drizzleClient.query.organizationsTable.findFirst.mockImplementation(
+			async (options) => {
+				capturedWhereClause = options?.where;
+				return mockOrganization;
+			},
 		);
 
 		await resolveOrganization(mockPost, {}, ctx);
 
-		// Verify the where clause is called with correct parameters
-		expect(
-			mocks.drizzleClient.query.organizationsTable.findFirst,
-		).toHaveBeenCalledWith({
-			where: expect.any(Function),
-		});
+		// Verify the where clause callback was captured
+		expect(capturedWhereClause).toBeDefined();
 
-		// Verify the organizationId is used correctly by checking the mock was called
-		expect(
-			mocks.drizzleClient.query.organizationsTable.findFirst,
-		).toHaveBeenCalledTimes(1);
+		// Test the where clause function with mock fields and operators
+		const mockFields = { id: "mockFieldId" };
+		const mockOperators = { eq: vi.fn().mockReturnValue("mockWhereClause") };
+
+		capturedWhereClause(mockFields, mockOperators);
+
+		// Verify the where callback filters by the correct organizationId
+		expect(mockOperators.eq).toHaveBeenCalledWith("mockFieldId", "org-123");
 	});
 });
