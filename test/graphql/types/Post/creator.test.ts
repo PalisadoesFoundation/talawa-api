@@ -110,4 +110,19 @@ describe("Post Resolver - Creator Field", () => {
 			expect(err).toMatchObject({ extensions: { code: "unexpected" } });
 		}
 	});
+	it("should return null when creatorId is null", async () => {
+		mockPost.creatorId = null as unknown as string;
+
+		const result = await resolveCreator(
+			mockPost,
+			{},
+			ctx,
+			{} as GraphQLResolveInfo,
+		);
+
+		expect(result).toBeNull();
+		expect(
+			mocks.drizzleClient.query.usersTable.findFirst,
+		).not.toHaveBeenCalled();
+	});
 });
