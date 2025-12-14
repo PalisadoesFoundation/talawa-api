@@ -2,34 +2,8 @@ import { createMockGraphQLContext } from "test/_Mocks_/mockContextCreator/mockCo
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { GraphQLContext } from "~/src/graphql/context";
 import type { Post as PostType } from "~/src/graphql/types/Post/Post";
+import { resolveOrganization } from "~/src/graphql/types/Post/organization";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
-
-// Create a resolver function that matches the implementation
-const resolveOrganization = async (
-	parent: PostType,
-	_args: Record<string, never>,
-	ctx: GraphQLContext,
-) => {
-	const existingOrganization =
-		await ctx.drizzleClient.query.organizationsTable.findFirst({
-			where: (fields, operators) =>
-				operators.eq(fields.id, parent.organizationId),
-		});
-
-	if (existingOrganization === undefined) {
-		ctx.log.error(
-			"Postgres select operation returned an empty array for a post's organization id that isn't null.",
-		);
-
-		throw new TalawaGraphQLError({
-			extensions: {
-				code: "unexpected",
-			},
-		});
-	}
-
-	return existingOrganization;
-};
 
 describe("Post Resolver - Organization Field", () => {
 	let mockPost: PostType;
@@ -88,17 +62,11 @@ describe("Post Resolver - Organization Field", () => {
 
 		const logErrorSpy = vi.spyOn(ctx.log, "error");
 
-		await expect(resolveOrganization(mockPost, {}, ctx)).rejects.toThrow(
-			TalawaGraphQLError,
-		);
-
-		await expect(resolveOrganization(mockPost, {}, ctx)).rejects.toThrow(
-			expect.objectContaining({
-				extensions: expect.objectContaining({
-					code: "unexpected",
-				}),
-			}),
-		);
+		await expect(resolveOrganization(mockPost, {}, ctx)).rejects.toMatchObject({
+			extensions: {
+				code: "unexpected",
+			},
+		});
 
 		expect(logErrorSpy).toHaveBeenCalledWith(
 			"Postgres select operation returned an empty array for a post's organization id that isn't null.",
@@ -116,26 +84,24 @@ describe("Post Resolver - Organization Field", () => {
 			name: "Test Organization",
 		};
 
-		mocks.drizzleClient.query.organizationsTable.findFirst.mockResolvedValue(
-			mockOrganization,
+		// Capture the where clause callback
+		let capturedWhereClause: any;
+		mocks.drizzleClient.query.organizationsTable.findFirst.mockImplementation(
+			async (options) => {
+				capturedWhereClause = options.where;
+				return mockOrganization;
+			},
 		);
 
 		await resolveOrganization(mockPost, {}, ctx);
 
-		// Verify the where clause is called with correct parameters
-		expect(
-			mocks.drizzleClient.query.organizationsTable.findFirst,
-		).toHaveBeenCalledWith({
-			where: expect.any(Function),
-		});
+		expect(capturedWhereClause).toBeDefined();
 
-		// Test the where clause function directly
-		const whereCall =
-			mocks.drizzleClient.query.organizationsTable.findFirst.mock.calls[0][0];
+		// Test the where clause function
 		const mockFields = { id: "mockField" };
 		const mockOperators = { eq: vi.fn().mockReturnValue("mockWhereClause") };
 
-		whereCall.where(mockFields, mockOperators);
+		capturedWhereClause(mockFields, mockOperators);
 
 		expect(mockOperators.eq).toHaveBeenCalledWith("mockField", "org-123");
 	});
