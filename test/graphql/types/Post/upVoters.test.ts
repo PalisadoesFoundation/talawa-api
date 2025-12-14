@@ -1,5 +1,5 @@
 import { createMockGraphQLContext } from "test/_Mocks_/mockContextCreator/mockContextCreator";
-import { beforeEach, describe, expect, it } from "vitest";
+import { beforeAll, describe, expect, it } from "vitest";
 import { builder } from "~/src/graphql/builder";
 import type { GraphQLContext } from "~/src/graphql/context";
 import "~/src/graphql/scalars";
@@ -13,12 +13,22 @@ import type { Post as PostType } from "~/src/graphql/types/Post/Post";
 import type { User } from "~/src/graphql/types/User/User";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import type { DefaultGraphQLConnection as Connection } from "~/src/utilities/defaultGraphQLConnection";
+import { beforeEach } from "node:test";
 describe("Post Resolver - upVoters", () => {
 	let mockPost: PostType;
 	let ctx: GraphQLContext;
 	let mocks: ReturnType<typeof createMockGraphQLContext>["mocks"];
 	let resolveUpVoters: GraphQLFieldResolver<PostType, GraphQLContext>;
 
+	beforeAll(() => {
+		const schema = builder.toSchema();
+		const postType = schema.getType("Post") as GraphQLObjectType;
+		const upVotersField = postType.getFields().upVoters;
+		if (!upVotersField?.resolve) {
+			throw new Error("UpVoters field or resolver not found in schema");
+		}
+		resolveUpVoters = upVotersField.resolve;
+	});
 	beforeEach(() => {
 		const { context, mocks: newMocks } = createMockGraphQLContext(
 			true,
@@ -39,15 +49,7 @@ describe("Post Resolver - upVoters", () => {
 			pinnedAt: new Date(),
 			attachments: [],
 		} as PostType;
-
-		const schema = builder.toSchema();
-		const postType = schema.getType("Post") as GraphQLObjectType;
-		const upVotersField = postType.getFields().upVoters;
-		if (!upVotersField?.resolve) {
-			throw new Error("UpVoters field or resolver not found in schema");
-		}
-		resolveUpVoters = upVotersField.resolve;
-	});
+	})
 
 	it("should return upvoters successfully", async () => {
 		const mockDate = new Date();
@@ -123,9 +125,6 @@ describe("Post Resolver - upVoters", () => {
 			},
 		];
 
-		// Mock the exists subquery if necessary, or just the main query
-		// The implementation uses `exists` in the where clause, which builds a SQL object.
-		// We are mocking at the `findMany` level which receives the constructed SQL `where`.
 		mocks.drizzleClient.query.postVotesTable.findMany.mockResolvedValueOnce(
 			mockUsers,
 		);
@@ -141,20 +140,39 @@ describe("Post Resolver - upVoters", () => {
 			throw new Error("Expected edges not found in result");
 		}
 		expect(result.edges[0].node.id).toBe("user-2");
+
+		expect(
+			mocks.drizzleClient.query.postVotesTable.findMany,
+		).toHaveBeenCalledWith(
+			expect.objectContaining({
+				where: expect.any(Object),
+				limit: 6,
+				orderBy: expect.any(Array),
+			}),
+		);
 	});
 
 	it("should handle inversed order (before cursor)", async () => {
-		const mockDate = new Date();
+		const olderDate = new Date("2024-01-01T10:00:00Z");
+		const newerDate = new Date("2024-01-01T11:00:00Z");
 		const mockCursor = Buffer.from(
 			JSON.stringify({
-				createdAt: mockDate.toISOString(),
+				createdAt: newerDate.toISOString(),
 				creatorId: "user-3",
 			}),
 		).toString("base64url");
 
 		const mockUsers = [
 			{
-				createdAt: mockDate,
+				createdAt: olderDate,
+				creatorId: "user-1",
+				creator: {
+					id: "user-1",
+					name: "User 1",
+				},
+			},
+			{
+				createdAt: newerDate,
 				creatorId: "user-2",
 				creator: {
 					id: "user-2",
@@ -174,21 +192,25 @@ describe("Post Resolver - upVoters", () => {
 			{} as GraphQLResolveInfo,
 		)) as Connection<User>;
 
-		// transformToDefaultGraphQLConnection handles the reversing of edges for last/before
-		expect(result.edges).toHaveLength(1);
+		expect(result.edges).toHaveLength(2);
+
+		if (!result.edges[0] || !result.edges[1]) {
+			throw new Error("Expected edges not found in result");
+		}
+		expect(result.edges[0].node.id).toBe("user-2");
+		expect(result.edges[1].node.id).toBe("user-1");
 	});
 
 	it("should throw error for invalid cursor", async () => {
 		const invalidCursor = "invalid-base64";
-
-		await expect(async () => {
-			await resolveUpVoters(
+		await expect(
+			resolveUpVoters(
 				mockPost,
 				{ first: 5, after: invalidCursor },
 				ctx,
 				{} as GraphQLResolveInfo,
-			);
-		}).rejects.toThrow(TalawaGraphQLError);
+			),
+		).rejects.toThrow(TalawaGraphQLError);
 	});
 
 	it("should throw error if cursor provided but no results found (invalid cursor context)", async () => {
