@@ -425,6 +425,51 @@ export class NotificationEventBus extends EventEmitter {
 			}
 		});
 	}
+
+	async emitSendEventInvite(
+		data: {
+			inviteeEmail: string;
+			inviteeName?: string;
+			eventId?: string;
+			eventName?: string;
+			organizationId: string;
+			inviterId: string;
+			invitationToken: string;
+			invitationUrl: string;
+		},
+		ctx: GraphQLContext,
+	) {
+		this.emit("send_event_invite", data);
+
+		setImmediate(async () => {
+			try {
+				const notificationEngine = new NotificationEngine(ctx);
+
+				await notificationEngine.createDirectEmailNotification(
+					"send_event_invite",
+					{
+						inviteeName: data.inviteeName || "",
+						eventName: data.eventName || "an event",
+						invitationUrl: data.invitationUrl,
+						invitationToken: data.invitationToken,
+					},
+					data.inviteeEmail,
+					NotificationChannelType.EMAIL,
+				);
+
+				ctx.log.info(
+					{
+						inviteeEmail: data.inviteeEmail,
+						inviterId: data.inviterId,
+						eventId: data.eventId,
+					},
+					"Send event invite notification created",
+				);
+			} catch (error) {
+				ctx.log.error(error, "Failed to send event invite notification:");
+			}
+		});
+	}
 }
 
 export const notificationEventBus = new NotificationEventBus();

@@ -41,12 +41,51 @@ export type CurrentClient =
 export type ExplicitGraphQLContext = {
 	currentClient: CurrentClient;
 	drizzleClient: FastifyInstance["drizzleClient"];
-	envConfig: Pick<FastifyInstance["envConfig"], "API_BASE_URL">;
+	envConfig: Pick<
+		FastifyInstance["envConfig"],
+		"API_BASE_URL" | "FRONTEND_URL"
+	>;
 	jwt: {
 		sign: (payload: ExplicitAuthenticationTokenPayload) => string;
 	};
 	log: FastifyInstance["log"];
 	minio: FastifyInstance["minio"];
+	/**
+	 * Per-request notification helper. Implementations may enqueue notifications
+	 * for delivery and support flush() to perform delivery after transaction commit.
+	 */
+	notification?: {
+		flush: (ctx: GraphQLContext) => Promise<void>;
+		enqueueEventCreated: (payload: {
+			eventId: string;
+			eventName: string;
+			organizationId: string;
+			organizationName: string;
+			startDate: string;
+			creatorName: string;
+		}) => void;
+		enqueueSendEventInvite: (payload: {
+			inviteeEmail: string;
+			inviteeName?: string;
+			eventId?: string;
+			eventName?: string;
+			organizationId: string;
+			inviterId: string;
+			invitationToken: string;
+			invitationUrl: string;
+		}) => void;
+		emitEventCreatedImmediate?: (
+			payload: {
+				eventId: string;
+				eventName: string;
+				organizationId: string;
+				organizationName: string;
+				startDate: string;
+				creatorName: string;
+			},
+			ctx: GraphQLContext,
+		) => Promise<void>;
+	};
 };
 
 /**
