@@ -91,9 +91,7 @@ describe("refreshTokenUtils", () => {
 			mockDrizzleClient.insert.mockReturnValue({ values: mockValues });
 
 			const result = await storeRefreshToken(
-				mockDrizzleClient as unknown as Parameters<
-					typeof storeRefreshToken
-				>[0],
+				mockDrizzleClient as unknown as Parameters<typeof storeRefreshToken>[0],
 				"user-id-123",
 				"token-hash-abc",
 				new Date("2025-12-31"),

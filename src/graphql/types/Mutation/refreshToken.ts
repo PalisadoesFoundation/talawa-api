@@ -20,7 +20,8 @@ builder.mutationField("refreshToken", (t) =>
 		args: {
 			refreshToken: t.arg.string({
 				required: true,
-				description: "The refresh token to use for obtaining a new access token.",
+				description:
+					"The refresh token to use for obtaining a new access token.",
 			}),
 		},
 		complexity: envConfig.API_GRAPHQL_MUTATION_BASE_COST,
@@ -79,40 +80,43 @@ builder.mutationField("refreshToken", (t) =>
 				});
 			}
 
-			// Revoke the old refresh token (token rotation for security)
-			await revokeRefreshTokenByHash(ctx.drizzleClient, tokenHash);
+			// Use transaction to ensure atomic token rotation
+			return await ctx.drizzleClient.transaction(async (tx) => {
+				// Revoke the old refresh token (token rotation for security)
+				await revokeRefreshTokenByHash(tx, tokenHash);
 
-			// Generate new refresh token
-			const newRawRefreshToken = generateRefreshToken();
-			const newRefreshTokenHash = hashRefreshToken(newRawRefreshToken);
+				// Generate new refresh token
+				const newRawRefreshToken = generateRefreshToken();
+				const newRefreshTokenHash = hashRefreshToken(newRawRefreshToken);
 
-			// Calculate new refresh token expiry
-			const refreshTokenExpiresIn =
-				ctx.envConfig.API_REFRESH_TOKEN_EXPIRES_IN ?? 604800000;
-			const refreshTokenExpiresAt = new Date(
-				Date.now() + refreshTokenExpiresIn,
-			);
+				// Calculate new refresh token expiry
+				const refreshTokenExpiresIn =
+					ctx.envConfig.API_REFRESH_TOKEN_EXPIRES_IN ?? 604800000;
+				const refreshTokenExpiresAt = new Date(
+					Date.now() + refreshTokenExpiresIn,
+				);
 
-			// Store new refresh token
-			await storeRefreshToken(
-				ctx.drizzleClient,
-				existingUser.id,
-				newRefreshTokenHash,
-				refreshTokenExpiresAt,
-			);
+				// Store new refresh token
+				await storeRefreshToken(
+					tx,
+					existingUser.id,
+					newRefreshTokenHash,
+					refreshTokenExpiresAt,
+				);
 
-			// Generate new access token
-			const newAccessToken = ctx.jwt.sign({
-				user: {
-					id: existingUser.id,
-				},
+				// Generate new access token
+				const newAccessToken = ctx.jwt.sign({
+					user: {
+						id: existingUser.id,
+					},
+				});
+
+				return {
+					authenticationToken: newAccessToken,
+					refreshToken: newRawRefreshToken,
+					user: existingUser,
+				};
 			});
-
-			return {
-				authenticationToken: newAccessToken,
-				refreshToken: newRawRefreshToken,
-				user: existingUser,
-			};
 		},
 		type: AuthenticationPayload,
 	}),

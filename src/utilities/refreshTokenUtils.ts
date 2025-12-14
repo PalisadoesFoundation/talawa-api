@@ -1,4 +1,5 @@
 import { createHash, randomBytes } from "node:crypto";
+import { and, eq, isNull } from "drizzle-orm";
 import type { PostgresJsDatabase } from "drizzle-orm/postgres-js";
 import type * as schema from "~/src/drizzle/schema";
 import { refreshTokensTable } from "~/src/drizzle/tables/refreshTokens";
@@ -93,18 +94,21 @@ export async function findValidRefreshToken(
  * Revokes a refresh token by setting its revokedAt timestamp.
  * @param drizzleClient - The Drizzle database client
  * @param tokenHash - The hashed refresh token to revoke
- * @returns True if token was revoked, false if not found
+ * @returns True if token was revoked, false if not found or already revoked
  */
 export async function revokeRefreshTokenByHash(
 	drizzleClient: PostgresJsDatabase<typeof schema>,
 	tokenHash: string,
 ): Promise<boolean> {
-	const { eq } = await import("drizzle-orm");
-
 	const result = await drizzleClient
 		.update(refreshTokensTable)
 		.set({ revokedAt: new Date() })
-		.where(eq(refreshTokensTable.tokenHash, tokenHash))
+		.where(
+			and(
+				eq(refreshTokensTable.tokenHash, tokenHash),
+				isNull(refreshTokensTable.revokedAt),
+			),
+		)
 		.returning({ id: refreshTokensTable.id });
 
 	return result.length > 0;
@@ -120,8 +124,6 @@ export async function revokeAllUserRefreshTokens(
 	drizzleClient: PostgresJsDatabase<typeof schema>,
 	userId: string,
 ): Promise<number> {
-	const { and, eq, isNull } = await import("drizzle-orm");
-
 	const result = await drizzleClient
 		.update(refreshTokensTable)
 		.set({ revokedAt: new Date() })

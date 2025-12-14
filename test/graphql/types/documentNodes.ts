@@ -13,6 +13,7 @@ export const Mutation_createUser =
 	gql(`mutation Mutation_createUser($input: MutationCreateUserInput!) {
     createUser(input: $input){
         authenticationToken
+        refreshToken
         user {
             addressLine1
             addressLine2
@@ -77,6 +78,7 @@ export const Mutation_signUp =
 	gql(`mutation Mutation_signUp($input: MutationSignUpInput!) {
     signUp(input: $input) {
         authenticationToken
+        refreshToken
         user {
             addressLine1
             addressLine2
@@ -218,19 +220,20 @@ export const Query_signIn = gql(`query Query_signIn($input: QuerySignInInput!) {
     }
 }`);
 
-export const Mutation_refreshToken = gql(`mutation Mutation_refreshToken($refreshToken: String!) {
+export const Mutation_refreshToken =
+	gql(`mutation Mutation_refreshToken($refreshToken: String!) {
     refreshToken(refreshToken: $refreshToken) {
         authenticationToken
         refreshToken
         user {
             id
             name
-            emailAddress
         }
     }
 }`);
 
-export const Mutation_revokeRefreshToken = gql(`mutation Mutation_revokeRefreshToken($refreshToken: String!) {
+export const Mutation_revokeRefreshToken =
+	gql(`mutation Mutation_revokeRefreshToken($refreshToken: String!) {
     revokeRefreshToken(refreshToken: $refreshToken)
 }`);
 

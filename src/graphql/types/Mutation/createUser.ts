@@ -13,6 +13,11 @@ import { AuthenticationPayload } from "~/src/graphql/types/AuthenticationPayload
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import envConfig from "~/src/utilities/graphqLimits";
 import { isNotNullish } from "~/src/utilities/isNotNullish";
+import {
+	generateRefreshToken,
+	hashRefreshToken,
+	storeRefreshToken,
+} from "~/src/utilities/refreshTokenUtils";
 const mutationCreateUserArgumentsSchema = z.object({
 	input: mutationCreateUserInputSchema.transform(async (arg, ctx) => {
 		let avatar:
@@ -198,12 +203,32 @@ builder.mutationField("createUser", (t) =>
 					);
 				}
 
+				// Generate refresh token
+				const rawRefreshToken = generateRefreshToken();
+				const refreshTokenHash = hashRefreshToken(rawRefreshToken);
+
+				// Calculate refresh token expiry (default 7 days if not configured)
+				const refreshTokenExpiresIn =
+					ctx.envConfig.API_REFRESH_TOKEN_EXPIRES_IN ?? 604800000;
+				const refreshTokenExpiresAt = new Date(
+					Date.now() + refreshTokenExpiresIn,
+				);
+
+				// Store refresh token in database (use tx to stay in the transaction)
+				await storeRefreshToken(
+					tx,
+					createdUser.id,
+					refreshTokenHash,
+					refreshTokenExpiresAt,
+				);
+
 				return {
 					authenticationToken: ctx.jwt.sign({
 						user: {
 							id: createdUser.id,
 						},
 					}),
+					refreshToken: rawRefreshToken,
 					user: createdUser,
 				};
 			});

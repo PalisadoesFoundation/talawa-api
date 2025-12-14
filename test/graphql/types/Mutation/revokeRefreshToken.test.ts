@@ -1,10 +1,9 @@
 import { faker } from "@faker-js/faker";
 import { assertToBeNonNullish } from "test/helpers";
-import { afterAll, beforeAll, describe, expect, it } from "vitest";
+import { describe, expect, it } from "vitest";
 import type {
 	InvalidArgumentsExtensions,
 	TalawaGraphQLFormattedError,
-	UnauthenticatedExtensions,
 } from "~/src/utilities/TalawaGraphQLError";
 import { server } from "../../../server";
 import { mercuriusClient } from "../client";
@@ -28,7 +27,7 @@ describe("Mutation field revokeRefreshToken", () => {
 			});
 
 			assertToBeNonNullish(signInResult.data.signIn?.refreshToken);
-			const refreshToken = signInResult.data.signIn.refreshToken;
+			const refreshToken = signInResult.data.signIn!.refreshToken as string;
 
 			// Revoke the token
 			const result = await mercuriusClient.mutate(Mutation_revokeRefreshToken, {
@@ -53,7 +52,7 @@ describe("Mutation field revokeRefreshToken", () => {
 			});
 
 			assertToBeNonNullish(signInResult.data.signIn?.refreshToken);
-			const refreshToken = signInResult.data.signIn.refreshToken;
+			const refreshToken = signInResult.data.signIn!.refreshToken as string;
 
 			// Revoke the token
 			const revokeResult = await mercuriusClient.mutate(
@@ -67,17 +66,20 @@ describe("Mutation field revokeRefreshToken", () => {
 			expect(revokeResult.data?.revokeRefreshToken).toBe(true);
 
 			// Try to use the revoked token
-			const refreshResult = await mercuriusClient.mutate(Mutation_refreshToken, {
-				variables: {
-					refreshToken: refreshToken,
+			const refreshResult = await mercuriusClient.mutate(
+				Mutation_refreshToken,
+				{
+					variables: {
+						refreshToken: refreshToken,
+					},
 				},
-			});
+			);
 
 			expect(refreshResult.data?.refreshToken).toBeNull();
 			expect(refreshResult.errors).toBeDefined();
 			expect(refreshResult.errors?.length).toBeGreaterThan(0);
 			expect(
-				(refreshResult.errors?.[0] as TalawaGraphQLFormattedError)?.extensions
+				(refreshResult.errors?.[0] as unknown as TalawaGraphQLFormattedError)?.extensions
 					?.code,
 			).toBe("unauthenticated");
 		});
@@ -107,7 +109,7 @@ describe("Mutation field revokeRefreshToken", () => {
 			});
 
 			assertToBeNonNullish(signInResult.data.signIn?.refreshToken);
-			const refreshToken = signInResult.data.signIn.refreshToken;
+			const refreshToken = signInResult.data.signIn!.refreshToken as string;
 
 			// Revoke the token first time
 			const firstRevoke = await mercuriusClient.mutate(
@@ -148,10 +150,10 @@ describe("Mutation field revokeRefreshToken", () => {
 			expect(result.errors).toBeDefined();
 			expect(result.errors?.length).toBeGreaterThan(0);
 
-			const error = result.errors?.[0] as TalawaGraphQLFormattedError;
-			expect(
-				(error.extensions as InvalidArgumentsExtensions).code,
-			).toBe("invalid_arguments");
+			const error = result.errors?.[0] as unknown as TalawaGraphQLFormattedError;
+			expect((error.extensions as InvalidArgumentsExtensions).code).toBe(
+				"invalid_arguments",
+			);
 		});
 	});
 
@@ -169,7 +171,7 @@ describe("Mutation field revokeRefreshToken", () => {
 
 			assertToBeNonNullish(signInResult.data.signIn?.refreshToken);
 			assertToBeNonNullish(signInResult.data.signIn?.authenticationToken);
-			const refreshToken = signInResult.data.signIn.refreshToken;
+			const refreshToken = signInResult.data.signIn!.refreshToken as string;
 
 			// Logout by revoking refresh token
 			const logoutResult = await mercuriusClient.mutate(
@@ -185,11 +187,14 @@ describe("Mutation field revokeRefreshToken", () => {
 			expect(logoutResult.data?.revokeRefreshToken).toBe(true);
 
 			// User can't get new access tokens with the revoked refresh token
-			const refreshResult = await mercuriusClient.mutate(Mutation_refreshToken, {
-				variables: {
-					refreshToken: refreshToken,
+			const refreshResult = await mercuriusClient.mutate(
+				Mutation_refreshToken,
+				{
+					variables: {
+						refreshToken: refreshToken,
+					},
 				},
-			});
+			);
 
 			expect(refreshResult.data?.refreshToken).toBeNull();
 			expect(refreshResult.errors).toBeDefined();
@@ -202,18 +207,24 @@ describe("Mutation field revokeRefreshToken", () => {
 			// should return in similar time (no error thrown for non-existent)
 
 			// Non-existent token
-			const result1 = await mercuriusClient.mutate(Mutation_revokeRefreshToken, {
-				variables: {
-					refreshToken: "aaaa" + faker.string.hexadecimal({ length: 60, prefix: "" }),
+			const result1 = await mercuriusClient.mutate(
+				Mutation_revokeRefreshToken,
+				{
+					variables: {
+						refreshToken: `aaaa${faker.string.hexadecimal({ length: 60, prefix: "" })}`,
+					},
 				},
-			});
+			);
 
 			// Another non-existent token
-			const result2 = await mercuriusClient.mutate(Mutation_revokeRefreshToken, {
-				variables: {
-					refreshToken: "bbbb" + faker.string.hexadecimal({ length: 60, prefix: "" }),
+			const result2 = await mercuriusClient.mutate(
+				Mutation_revokeRefreshToken,
+				{
+					variables: {
+						refreshToken: `bbbb${faker.string.hexadecimal({ length: 60, prefix: "" })}`,
+					},
 				},
-			});
+			);
 
 			// Both should return false without errors (consistent response)
 			expect(result1.errors).toBeUndefined();

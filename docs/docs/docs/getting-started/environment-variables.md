@@ -133,6 +133,10 @@ This environment variable is used to configure the secret used for signing and v
 
 - More information can be found at [this](https://github.com/fastify/fastify-jwt?tab=readme-ov-file##secret-required) link.
 
+### API_REFRESH_TOKEN_EXPIRES_IN
+
+This environment variable is used to configure the time in milliseconds it takes for a refresh token issued by talawa api to expire. Refresh tokens are long-lived tokens used to obtain new short-lived access tokens without requiring users to re-authenticate. Recommended value is 7 days (604800000 milliseconds).
+
 ### API_LOG_LEVEL
 
 This environment variable is used to configure the [log level](https://github.com/pinojs/pino/blob/main/docs/api.md##logger-level) for talawa api's [pino.js](https://github.com/pinojs/pino) logger. Possible values are `debug`, `error`, `fatal`, `info`, `trace` and `warn`.
