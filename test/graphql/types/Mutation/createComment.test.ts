@@ -42,6 +42,7 @@ async function createOrganizationAndGetId(): Promise<string> {
 			},
 		},
 	});
+	expect(result.errors).toBeUndefined();
 	const orgId = result.data?.createOrganization?.id;
 	assertToBeNonNullish(orgId);
 	return orgId;
@@ -62,6 +63,7 @@ async function createPost(organizationId: string): Promise<string> {
 			},
 		},
 	});
+	expect(result.errors).toBeUndefined();
 	const postId = result.data?.createPost?.id;
 	assertToBeNonNullish(postId);
 	return postId;
@@ -326,6 +328,12 @@ suite("Mutation field createComment", () => {
 				expect.objectContaining({
 					id: expect.any(String),
 					body: "Great post!",
+					post: expect.objectContaining({
+						id: postId,
+					}),
+					creator: expect.objectContaining({
+						id: memberUserId,
+					}),
 				}),
 			);
 		});
@@ -351,6 +359,12 @@ suite("Mutation field createComment", () => {
 				expect.objectContaining({
 					id: expect.any(String),
 					body: "Admin comment",
+					post: expect.objectContaining({
+						id: postId,
+					}),
+					creator: expect.objectContaining({
+						id: expect.any(String),
+					}),
 				}),
 			);
 		});
