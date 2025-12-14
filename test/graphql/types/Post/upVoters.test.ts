@@ -4,6 +4,7 @@ import { builder } from "~/src/graphql/builder";
 import type { GraphQLContext } from "~/src/graphql/context";
 import "~/src/graphql/scalars";
 import "~/src/graphql/types/Post/upVoters";
+import { beforeEach } from "node:test";
 import type {
 	GraphQLFieldResolver,
 	GraphQLObjectType,
@@ -13,7 +14,6 @@ import type { Post as PostType } from "~/src/graphql/types/Post/Post";
 import type { User } from "~/src/graphql/types/User/User";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import type { DefaultGraphQLConnection as Connection } from "~/src/utilities/defaultGraphQLConnection";
-import { beforeEach } from "node:test";
 describe("Post Resolver - upVoters", () => {
 	let mockPost: PostType;
 	let ctx: GraphQLContext;
@@ -49,7 +49,7 @@ describe("Post Resolver - upVoters", () => {
 			pinnedAt: new Date(),
 			attachments: [],
 		} as PostType;
-	})
+	});
 
 	it("should return upvoters successfully", async () => {
 		const mockDate = new Date();
