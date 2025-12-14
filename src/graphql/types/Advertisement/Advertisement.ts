@@ -5,6 +5,7 @@ import {
 	AdvertisementAttachment,
 	type AdvertisementAttachment as AdvertisementAttachmentType,
 } from "~/src/graphql/types/AdvertisementAttachment/AdvertisementAttachment";
+import { escapeHTML } from "~/src/utilities/sanitizer";
 
 export type Advertisement = typeof advertisementsTable.$inferSelect & {
 	attachments: AdvertisementAttachmentType[] | null;
@@ -20,8 +21,12 @@ Advertisement.implement({
 			description: "Array of attachments.",
 			type: t.listRef(AdvertisementAttachment),
 		}),
-		description: t.exposeString("description", {
+		description: t.string({
 			description: "Custom information about the advertisement.",
+			resolve: (advertisement) =>
+				advertisement.description
+					? escapeHTML(advertisement.description)
+					: null,
 		}),
 		endAt: t.expose("endAt", {
 			description: "Date time at the time the advertised event ends at.",
@@ -31,8 +36,9 @@ Advertisement.implement({
 			description: "Global identifier of the advertisement.",
 			nullable: false,
 		}),
-		name: t.exposeString("name", {
+		name: t.string({
 			description: "Name of the advertisement.",
+			resolve: (advertisement) => escapeHTML(advertisement.name),
 		}),
 		startAt: t.expose("startAt", {
 			description: "Date time at the time the advertised event starts at.",
