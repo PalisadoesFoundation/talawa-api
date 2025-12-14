@@ -1,23 +1,34 @@
 import { createMockGraphQLContext } from "test/_Mocks_/mockContextCreator/mockContextCreator";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { builder } from "~/src/graphql/builder";
 import type { GraphQLContext } from "~/src/graphql/context";
 import "~/src/graphql/scalars";
 import "~/src/graphql/types/PostAttachment/PostAttachment";
+import "~/src/graphql/types/Post/Post";
 import type { Post as PostType } from "~/src/graphql/types/Post/Post";
-import "~/src/graphql/types/Post/creator"; // Import to register the field
-import {
-	type GraphQLFieldResolver,
+import "~/src/graphql/types/Post/creator";
+import type {
+	GraphQLFieldResolver,
 	GraphQLObjectType,
-	type GraphQLResolveInfo,
+	GraphQLResolveInfo,
 } from "graphql";
+import { schema } from "~/src/graphql/schema";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
+
+// Get the creator resolver from the schema
+const postType = schema.getType("Post") as GraphQLObjectType;
+const creatorField = postType.getFields().creator;
+if (!creatorField?.resolve) {
+	throw new Error("Creator field or resolver not found in schema");
+}
+const resolveCreator = creatorField.resolve as GraphQLFieldResolver<
+	PostType,
+	GraphQLContext
+>;
 
 describe("Post Resolver - Creator Field", () => {
 	let mockPost: PostType;
 	let ctx: GraphQLContext;
 	let mocks: ReturnType<typeof createMockGraphQLContext>["mocks"];
-	let resolveCreator: GraphQLFieldResolver<PostType, GraphQLContext>;
 
 	beforeEach(() => {
 		const { context, mocks: newMocks } = createMockGraphQLContext(
@@ -39,17 +50,6 @@ describe("Post Resolver - Creator Field", () => {
 			pinnedAt: new Date(),
 			attachments: [],
 		} as PostType;
-
-		const schema = builder.toSchema();
-		const postType = schema.getType("Post");
-		if (!postType || !(postType instanceof GraphQLObjectType)) {
-			throw new Error("Post type not found in schema");
-		}
-		const creatorField = postType.getFields().creator;
-		if (!creatorField?.resolve) {
-			throw new Error("Creator field or resolver not found in schema");
-		}
-		resolveCreator = creatorField.resolve;
 	});
 
 	it("should return the creator user if they exist", async () => {
