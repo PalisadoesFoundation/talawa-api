@@ -1,10 +1,9 @@
 import { createMockGraphQLContext } from "test/_Mocks_/mockContextCreator/mockContextCreator";
-import { beforeAll, describe, expect, it } from "vitest";
+import { beforeEach, beforeAll, describe, expect, it } from "vitest";
 import { builder } from "~/src/graphql/builder";
 import type { GraphQLContext } from "~/src/graphql/context";
 import "~/src/graphql/scalars";
 import "~/src/graphql/types/Post/upVoters";
-import { beforeEach } from "node:test";
 import type {
 	GraphQLFieldResolver,
 	GraphQLObjectType,
