@@ -3,7 +3,6 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { GraphQLContext } from "~/src/graphql/context";
 import type { Post as PostType } from "~/src/graphql/types/Post/Post";
 import { resolveOrganization } from "~/src/graphql/types/Post/organization";
-import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 
 describe("Post Resolver - Organization Field", () => {
 	let mockPost: PostType;
@@ -84,24 +83,29 @@ describe("Post Resolver - Organization Field", () => {
 			name: "Test Organization",
 		};
 
-		// Capture the where clause callback
-		let capturedWhereClause: any;
-		mocks.drizzleClient.query.organizationsTable.findFirst.mockImplementation(
-			async (options) => {
-				capturedWhereClause = options.where;
-				return mockOrganization;
-			},
+		mocks.drizzleClient.query.organizationsTable.findFirst.mockResolvedValue(
+			mockOrganization,
 		);
 
 		await resolveOrganization(mockPost, {}, ctx);
 
-		expect(capturedWhereClause).toBeDefined();
+		// Verify the where clause is called with correct parameters
+		expect(
+			mocks.drizzleClient.query.organizationsTable.findFirst,
+		).toHaveBeenCalledWith({
+			where: expect.any(Function),
+		});
 
-		// Test the where clause function
+		// Test the where clause function directly
+		const calls = mocks.drizzleClient.query.organizationsTable.findFirst.mock.calls;
+		expect(calls.length).toBeGreaterThan(0);
+		const whereCall = calls[0]?.[0]?.where;
+		expect(whereCall).toBeDefined();
+
 		const mockFields = { id: "mockField" };
 		const mockOperators = { eq: vi.fn().mockReturnValue("mockWhereClause") };
 
-		capturedWhereClause(mockFields, mockOperators);
+		whereCall!(mockFields, mockOperators);
 
 		expect(mockOperators.eq).toHaveBeenCalledWith("mockField", "org-123");
 	});
