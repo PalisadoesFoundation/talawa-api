@@ -1,3 +1,4 @@
+import { type ChildProcess, spawn } from "node:child_process";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { PluginLifecycle } from "../../../src/plugin/manager/lifecycle";
 import { PluginStatus } from "../../../src/plugin/types";
@@ -97,6 +98,15 @@ describe("PluginLifecycle", () => {
 	beforeEach(() => {
 		// Reset mocks
 		vi.clearAllMocks();
+
+		// Default child_process.spawn mock: return an EventEmitter that emits close
+		// (individual tests can override as needed)
+		const { EventEmitter } = require("node:events");
+		vi.mocked(spawn).mockImplementation(() => {
+			const proc = new EventEmitter();
+			setImmediate(() => proc.emit("close", 0));
+			return proc as unknown as ChildProcess;
+		});
 
 		// Setup mock plugin context
 		mockPluginContext = {
@@ -429,6 +439,10 @@ describe("PluginLifecycle", () => {
 			expect(result).toBe(false);
 			// Verify isValidPluginId was called with the supplied plugin id
 			expect(isValidPluginId).toHaveBeenCalledWith(maliciousPluginId);
+			expect(mockPluginManager.emit).not.toHaveBeenCalledWith(
+				"plugin:installed",
+				maliciousPluginId,
+			);
 			// Verify console.error was called exactly once for the error
 			expect(consoleSpy).toHaveBeenCalledTimes(1);
 			consoleSpy.mockRestore();
@@ -565,6 +579,10 @@ describe("PluginLifecycle", () => {
 			expect(result).toBe(false);
 			// Verify isValidPluginId was called with the supplied plugin id
 			expect(isValidPluginId).toHaveBeenCalledWith(maliciousPluginId);
+			expect(mockPluginManager.emit).not.toHaveBeenCalledWith(
+				"plugin:installed",
+				maliciousPluginId,
+			);
 			// Verify console.error was called exactly once for the error
 			expect(consoleSpy).toHaveBeenCalledTimes(1);
 			consoleSpy.mockRestore();

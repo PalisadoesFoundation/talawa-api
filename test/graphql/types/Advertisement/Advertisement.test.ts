@@ -1,4 +1,5 @@
 import { beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
+import type { Advertisement } from "~/src/graphql/types/Advertisement/Advertisement";
 
 // 1. Setup mocks with vi.hoisted to ensure they are available to vi.mock
 const { implementSpy, objectRefSpy } = vi.hoisted(() => {
@@ -32,8 +33,17 @@ vi.mock(
 import { escapeHTML } from "~/src/utilities/sanitizer";
 
 describe("Advertisement GraphQL Type", () => {
-	// biome-ignore lint/suspicious/noExplicitAny: Mocking internal Pothos types for testing
-	let fieldResolvers: any;
+	interface FieldResolvers {
+		description: {
+			resolve: (parent: Advertisement) => string | null;
+		};
+		name: {
+			resolve: (parent: Advertisement) => string;
+		};
+		[key: string]: unknown;
+	}
+
+	let fieldResolvers: FieldResolvers;
 
 	beforeAll(async () => {
 		// Dynamically import the module to ensure mocks are active
@@ -83,7 +93,7 @@ describe("Advertisement GraphQL Type", () => {
 				name: "Test Ad",
 				description: null,
 				attachments: null,
-			};
+			} as Advertisement;
 
 			const result = descriptionDef.resolve(advertisement);
 
@@ -98,7 +108,7 @@ describe("Advertisement GraphQL Type", () => {
 				name: "Test Ad",
 				description: "Test Description",
 				attachments: null,
-			};
+			} as Advertisement;
 
 			const result = descriptionDef.resolve(advertisement);
 
@@ -118,7 +128,7 @@ describe("Advertisement GraphQL Type", () => {
 				name: "Test Name",
 				description: null,
 				attachments: null,
-			};
+			} as Advertisement;
 
 			const result = nameDef.resolve(advertisement);
 
@@ -133,7 +143,7 @@ describe("Advertisement GraphQL Type", () => {
 				name: "",
 				description: null,
 				attachments: null,
-			};
+			} as Advertisement;
 
 			const result = nameDef.resolve(advertisement);
 
@@ -149,7 +159,7 @@ describe("Advertisement GraphQL Type", () => {
 				name: rawName,
 				description: null,
 				attachments: null,
-			};
+			} as Advertisement;
 
 			const result = nameDef.resolve(advertisement);
 

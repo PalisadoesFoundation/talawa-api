@@ -1121,11 +1121,9 @@ describe("Plugin Dependency Installer", () => {
 			// Advance to trigger timeout and taskkill spawn
 			await vi.advanceTimersByTimeAsync(300000);
 
-			// Now emit the taskkill error synchronously
-			if (taskkillSpawned) {
-				taskkillChild.emit("error", new Error("ENOENT"));
-			}
-
+			// Verify taskkill was spawned, then emit error
+			expect(taskkillSpawned).toBe(true);
+			taskkillChild.emit("error", new Error("ENOENT"));
 			// Allow promises to settle
 			await Promise.resolve();
 
