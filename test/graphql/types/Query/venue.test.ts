@@ -1,16 +1,18 @@
 import { faker } from "@faker-js/faker";
+import gql from "graphql-tag";
 import { afterEach, expect, suite, test, vi } from "vitest";
 import { venuesTable } from "~/src/drizzle/schema";
 import { assertToBeNonNullish } from "../../../helpers";
 import { server } from "../../../server";
 import { mercuriusClient } from "../client";
+
 import {
 	Mutation_createOrganization,
 	Mutation_joinPublicOrganization,
 	Query_signIn,
 } from "../documentNodes";
 
-const VenueQuery = `
+const VenueQuery = gql`
   query Venue($input: QueryVenueInput!) {
   venue(input: $input) {
     id
@@ -21,9 +23,8 @@ const VenueQuery = `
 }
 `;
 
-
 // Helper function to get admin auth token
- 
+
 async function getAdminAuthToken(): Promise<string> {
 	const signInResult = await mercuriusClient.query(Query_signIn, {
 		variables: {
@@ -39,7 +40,7 @@ async function getAdminAuthToken(): Promise<string> {
 }
 
 // Helper function to create organization
- 
+
 async function createOrganization(adminAuthToken: string): Promise<string> {
 	const orgResult = await mercuriusClient.mutate(Mutation_createOrganization, {
 		headers: { authorization: `Bearer ${adminAuthToken}` },
@@ -56,7 +57,7 @@ async function createOrganization(adminAuthToken: string): Promise<string> {
 }
 
 // Helper function to create venue
- 
+
 async function createVenue(organizationId: string): Promise<string> {
 	const venueInsertResult = await server.drizzleClient
 		.insert(venuesTable)
@@ -64,6 +65,7 @@ async function createVenue(organizationId: string): Promise<string> {
 			id: faker.string.uuid(),
 			name: `Test Venue ${faker.string.uuid()}`,
 			description: "Test venue description",
+			capacity: faker.number.int({ min: 1, max: 500 }),
 			organizationId,
 			createdAt: new Date(),
 			updatedAt: new Date(),
@@ -77,7 +79,6 @@ async function createVenue(organizationId: string): Promise<string> {
 afterEach(() => {
 	vi.restoreAllMocks();
 });
-
 
 suite("Query field venue", () => {
 	/**
@@ -121,7 +122,16 @@ suite("Query field venue", () => {
 
 		// Assert
 		expect(result.data?.venue).toBeNull();
-		expect(result.errors?.[0]?.extensions?.code).toBe("invalid_arguments");
+		expect(result.errors).toEqual(
+			expect.arrayContaining([
+				expect.objectContaining({
+					extensions: expect.objectContaining({
+						code: "invalid_arguments",
+					}),
+					path: ["venue"],
+				}),
+			]),
+		);
 	});
 
 	/**
@@ -147,7 +157,16 @@ suite("Query field venue", () => {
 
 		// Assert
 		expect(result.data?.venue).toBeNull();
-		expect(result.errors?.[0]?.extensions?.code).toBe("unauthenticated");
+		expect(result.errors).toEqual(
+			expect.arrayContaining([
+				expect.objectContaining({
+					extensions: expect.objectContaining({
+						code: "unauthenticated",
+					}),
+					path: ["venue"],
+				}),
+			]),
+		);
 	});
 
 	/**
@@ -165,8 +184,15 @@ suite("Query field venue", () => {
 
 		// Assert
 		expect(result.data?.venue).toBeNull();
-		expect(result.errors?.[0]?.extensions?.code).toBe(
-			"arguments_associated_resources_not_found",
+		expect(result.errors).toEqual(
+			expect.arrayContaining([
+				expect.objectContaining({
+					extensions: expect.objectContaining({
+						code: "arguments_associated_resources_not_found",
+					}),
+					path: ["venue"],
+				}),
+			]),
 		);
 	});
 
@@ -192,8 +218,15 @@ suite("Query field venue", () => {
 
 		// Assert
 		expect(result.data?.venue).toBeNull();
-		expect(result.errors?.[0]?.extensions?.code).toBe(
-			"unauthorized_action_on_arguments_associated_resources",
+		expect(result.errors).toEqual(
+			expect.arrayContaining([
+				expect.objectContaining({
+					extensions: expect.objectContaining({
+						code: "unauthorized_action_on_arguments_associated_resources",
+					}),
+					path: ["venue"],
+				}),
+			]),
 		);
 	});
 
@@ -211,10 +244,15 @@ suite("Query field venue", () => {
 			(m) => m.createRegularUserUsingAdmin(),
 		);
 
-		await mercuriusClient.mutate(Mutation_joinPublicOrganization, {
-			headers: { authorization: `Bearer ${authToken}` },
-			variables: { input: { organizationId } },
-		});
+		const joinResult = await mercuriusClient.mutate(
+			Mutation_joinPublicOrganization,
+			{
+				headers: { authorization: `Bearer ${authToken}` },
+				variables: { input: { organizationId } },
+			},
+		);
+
+		expect(joinResult.errors).toBeUndefined();
 
 		// Act: Organization member queries venue
 		const result = await mercuriusClient.query(VenueQuery, {
@@ -262,6 +300,15 @@ suite("Query field venue", () => {
 
 		// Assert
 		expect(result.data?.venue).toBeNull();
-		expect(result.errors?.[0]?.extensions?.code).toBe("invalid_arguments");
+		expect(result.errors).toEqual(
+			expect.arrayContaining([
+				expect.objectContaining({
+					extensions: expect.objectContaining({
+						code: "invalid_arguments",
+					}),
+					path: ["venue"],
+				}),
+			]),
+		);
 	});
 });
