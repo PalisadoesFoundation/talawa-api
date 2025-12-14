@@ -270,4 +270,93 @@ describe("Post Resolver - upVoters", () => {
 			);
 		}).rejects.toThrow(TalawaGraphQLError);
 	});
+
+	it("should handle backward pagination without cursor (last only)", async () => {
+		const mockDate = new Date();
+		const user1Id = "550e8400-e29b-41d4-a716-446655440001";
+		const user2Id = "550e8400-e29b-41d4-a716-446655440002";
+
+		const mockUsers = [
+			{
+				createdAt: mockDate,
+				creatorId: user1Id,
+				creator: {
+					id: user1Id,
+					name: "User 1",
+					emailAddress: "user1@example.com",
+				},
+			},
+			{
+				createdAt: mockDate,
+				creatorId: user2Id,
+				creator: {
+					id: user2Id,
+					name: "User 2",
+					emailAddress: "user2@example.com",
+				},
+			},
+		];
+
+		mocks.drizzleClient.query.postVotesTable.findMany.mockResolvedValueOnce(
+			mockUsers,
+		);
+
+		const result = (await resolveUpVoters(
+			mockPost,
+			{ last: 5 },
+			ctx,
+			{} as GraphQLResolveInfo,
+		)) as Connection<User>;
+
+		expect(result.edges).toHaveLength(2);
+		expect(
+			mocks.drizzleClient.query.postVotesTable.findMany,
+		).toHaveBeenCalledWith(
+			expect.objectContaining({
+				limit: 6,
+				orderBy: expect.any(Array),
+			}),
+		);
+	});
+
+	it("should filter out votes with null creator", async () => {
+		const mockDate = new Date();
+		const validUserId = "550e8400-e29b-41d4-a716-446655440001";
+
+		// Mock findMany to return one vote with a valid creator and one with null
+		const mockUsers = [
+			{
+				createdAt: mockDate,
+				creatorId: validUserId,
+				creator: {
+					id: validUserId,
+					name: "Valid User",
+					emailAddress: "valid@example.com",
+				},
+			},
+			{
+				createdAt: mockDate,
+				creatorId: null,
+				creator: null, // This should be filtered out
+			},
+		];
+
+		mocks.drizzleClient.query.postVotesTable.findMany.mockResolvedValueOnce(
+			mockUsers,
+		);
+
+		const result = (await resolveUpVoters(
+			mockPost,
+			{ first: 5 },
+			ctx,
+			{} as GraphQLResolveInfo,
+		)) as Connection<User>;
+
+		// Should only include the non-null creator
+		expect(result.edges).toHaveLength(1);
+		if (!result.edges[0]) {
+			throw new Error("Expected edge not found in result");
+		}
+		expect(result.edges[0].node.id).toBe(validUserId);
+	});
 });
