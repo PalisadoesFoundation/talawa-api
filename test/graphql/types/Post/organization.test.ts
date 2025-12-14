@@ -115,7 +115,6 @@ describe("Post Resolver - Organization Field", () => {
 			mockPost.organizationId,
 		);
 	});
-	});
 
 	it("should handle different organizationId values correctly", async () => {
 		const mockOrganization1 = {
