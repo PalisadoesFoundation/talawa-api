@@ -197,13 +197,11 @@ suite("Query.advertisement", () => {
 	});
 
 	test("should return advertisement for global administrator accessing any organization", async () => {
-		// Create regular user and make them create org/ad
-		const { authToken: regularToken } = await createRegularUserUsingAdmin();
-
+		// Create organization with admin first
 		const createOrgResult = await mercuriusClient.mutate(
 			Mutation_createOrganization,
 			{
-				headers: { authorization: `Bearer ${regularToken}` },
+				headers: { authorization: `Bearer ${authToken}` },
 				variables: {
 					input: {
 						name: `Test Org ${faker.string.uuid()}`,
@@ -219,7 +217,7 @@ suite("Query.advertisement", () => {
 		const createAdResult = await mercuriusClient.mutate(
 			Mutation_createAdvertisement,
 			{
-				headers: { authorization: `Bearer ${regularToken}` },
+				headers: { authorization: `Bearer ${authToken}` }, // Admin creates the ad
 				variables: {
 					input: {
 						organizationId: orgId,
