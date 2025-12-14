@@ -1,5 +1,7 @@
 import { faker } from "@faker-js/faker";
 import { expect, suite, test, vi } from "vitest";
+import { POST_CAPTION_MAX_LENGTH } from "~/src/drizzle/tables/posts";
+import type { InvalidArgumentsExtensions } from "~/src/utilities/TalawaGraphQLError";
 import { assertToBeNonNullish } from "../../../helpers";
 import { server } from "../../../server";
 import { mercuriusClient } from "../client";
@@ -1042,6 +1044,119 @@ suite("Mutation field updatePost", () => {
 			const userIdToUse = userId || newUserId;
 			assertToBeNonNullish(userToken);
 			assertToBeNonNullish(userIdToUse);
+		});
+	});
+
+	suite("security checks", () => {
+		test("should escape HTML in caption", async () => {
+			const createOrgResult = await mercuriusClient.mutate(
+				Mutation_createOrganization,
+				{
+					headers: { authorization: `bearer ${adminToken}` },
+					variables: {
+						input: {
+							name: faker.company.name(),
+							description: faker.lorem.sentence(),
+							countryCode: "jm",
+							state: "St. Andrew",
+							city: "Kingston",
+							postalCode: "12345",
+							addressLine1: faker.location.streetAddress(),
+						},
+					},
+				},
+			);
+			const orgId = createOrgResult.data?.createOrganization?.id;
+			assertToBeNonNullish(orgId);
+
+			const createPostResult = await mercuriusClient.mutate(
+				Mutation_createPost,
+				{
+					headers: { authorization: `bearer ${adminToken}` },
+					variables: {
+						input: {
+							caption: "Original Caption",
+							organizationId: orgId,
+						},
+					},
+				},
+			);
+			const postId = createPostResult.data?.createPost?.id;
+			assertToBeNonNullish(postId);
+
+			const htmlCaption = "<script>alert('xss')</script>";
+			const result = await mercuriusClient.mutate(Mutation_updatePost, {
+				headers: { authorization: `bearer ${adminToken}` },
+				variables: {
+					input: {
+						id: postId,
+						caption: htmlCaption,
+					},
+				},
+			});
+
+			expect(result.errors).toBeUndefined();
+			expect(result.data?.updatePost?.caption).toBe(
+				"&lt;script&gt;alert(&#39;xss&#39;)&lt;/script&gt;",
+			);
+		});
+
+		test("should reject caption exceeding length limit", async () => {
+			const createOrgResult = await mercuriusClient.mutate(
+				Mutation_createOrganization,
+				{
+					headers: { authorization: `bearer ${adminToken}` },
+					variables: {
+						input: {
+							name: faker.company.name(),
+							description: faker.lorem.sentence(),
+							countryCode: "jm",
+							state: "St. Andrew",
+							city: "Kingston",
+							postalCode: "12345",
+							addressLine1: faker.location.streetAddress(),
+						},
+					},
+				},
+			);
+			const orgId = createOrgResult.data?.createOrganization?.id;
+			assertToBeNonNullish(orgId);
+
+			const createPostResult = await mercuriusClient.mutate(
+				Mutation_createPost,
+				{
+					headers: { authorization: `bearer ${adminToken}` },
+					variables: {
+						input: {
+							caption: "Original Caption",
+							organizationId: orgId,
+						},
+					},
+				},
+			);
+			const postId = createPostResult.data?.createPost?.id;
+			assertToBeNonNullish(postId);
+
+			const longCaption = "a".repeat(POST_CAPTION_MAX_LENGTH + 1);
+			const result = await mercuriusClient.mutate(Mutation_updatePost, {
+				headers: { authorization: `bearer ${adminToken}` },
+				variables: {
+					input: {
+						id: postId,
+						caption: longCaption,
+					},
+				},
+			});
+
+			expect(result.data?.updatePost).toBeNull();
+			expect(result.errors).toBeDefined();
+			const issues = (
+				result.errors?.[0]?.extensions as unknown as InvalidArgumentsExtensions
+			)?.issues;
+			const issueMessages = issues?.map((i) => i.message).join(" ");
+			expect(issueMessages).toContain(
+				`Post caption must not exceed ${POST_CAPTION_MAX_LENGTH} characters`,
+			);
 		});
 	});
 });
