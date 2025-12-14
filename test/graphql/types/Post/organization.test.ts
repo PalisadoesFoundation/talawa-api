@@ -1,5 +1,5 @@
 import { createMockGraphQLContext } from "test/_Mocks_/mockContextCreator/mockContextCreator";
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { GraphQLContext } from "~/src/graphql/context";
 import type { Post as PostType } from "~/src/graphql/types/Post/Post";
 import { resolveOrganization } from "~/src/graphql/types/Post/organization";
@@ -29,6 +29,10 @@ describe("Post Resolver - Organization Field", () => {
 			pinnedAt: new Date(),
 			attachments: [],
 		} as PostType;
+	});
+
+	afterEach(() => {
+		vi.restoreAllMocks();
 	});
 
 	it("should successfully return the organization when it exists", async () => {
@@ -68,7 +72,7 @@ describe("Post Resolver - Organization Field", () => {
 		});
 
 		expect(logErrorSpy).toHaveBeenCalledWith(
-			"Postgres select operation returned an empty array for a post's organization id that isn't null.",
+			"Postgres select operation returned undefined for a post's organization id that isn't null.",
 		);
 		expect(
 			mocks.drizzleClient.query.organizationsTable.findFirst,
