@@ -314,7 +314,7 @@ suite("Venue events Field", () => {
 
 		const findFirstSpy = vi
 			.spyOn(server.drizzleClient.query.usersTable, "findFirst")
-			.mockResolvedValue(undefined);
+			.mockResolvedValueOnce(undefined);
 
 		const result = await mercuriusClient.query(VenueEventsQuery, {
 			headers: { authorization: `Bearer ${authToken}` },
