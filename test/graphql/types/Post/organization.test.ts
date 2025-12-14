@@ -81,28 +81,71 @@ describe("Post Resolver - Organization Field", () => {
 		});
 	});
 
-	it("should call findFirst with correct where clause for organizationId", async () => {
+	it("should call findFirst with correct where clause using parent.organizationId", async () => {
 		const mockOrganization = {
 			id: "org-123",
 			name: "Test Organization",
 		};
 
-		mocks.drizzleClient.query.organizationsTable.findFirst.mockResolvedValue(
-			mockOrganization,
+		// Mock implementation that validates the where clause
+		mocks.drizzleClient.query.organizationsTable.findFirst.mockImplementation(
+			({ where }) => {
+				const mockFields = { id: "mock-field-id" };
+				const mockOperators = {
+					eq: vi.fn((field, value) => ({ field, value })),
+				};
+
+				// Execute the where function
+				where(mockFields, mockOperators);
+
+				// Verify eq was called with correct field and parent's organizationId
+				expect(mockOperators.eq).toHaveBeenCalledWith(
+					mockFields.id,
+					mockPost.organizationId,
+				);
+
+				return Promise.resolve(mockOrganization);
+			},
 		);
 
 		await resolveOrganization(mockPost, {}, ctx);
 
-		// Verify the where clause is called with correct parameters
-		expect(
-			mocks.drizzleClient.query.organizationsTable.findFirst,
-		).toHaveBeenCalledWith({
-			where: expect.any(Function),
-		});
-
-		// Verify the organizationId is used correctly by checking the mock was called
 		expect(
 			mocks.drizzleClient.query.organizationsTable.findFirst,
 		).toHaveBeenCalledTimes(1);
+	});
+
+	it("should handle different organizationId values correctly", async () => {
+		const mockOrganization1 = {
+			id: "org-111",
+			name: "Organization 1",
+		};
+
+		const mockOrganization2 = {
+			id: "org-222",
+			name: "Organization 2",
+		};
+
+		// Test with first organization ID
+		mockPost.organizationId = "org-111";
+		mocks.drizzleClient.query.organizationsTable.findFirst.mockResolvedValueOnce(
+			mockOrganization1,
+		);
+
+		let result = await resolveOrganization(mockPost, {}, ctx);
+		expect(result).toEqual(mockOrganization1);
+
+		// Test with second organization ID
+		mockPost.organizationId = "org-222";
+		mocks.drizzleClient.query.organizationsTable.findFirst.mockResolvedValueOnce(
+			mockOrganization2,
+		);
+
+		result = await resolveOrganization(mockPost, {}, ctx);
+		expect(result).toEqual(mockOrganization2);
+
+		expect(
+			mocks.drizzleClient.query.organizationsTable.findFirst,
+		).toHaveBeenCalledTimes(2);
 	});
 });
