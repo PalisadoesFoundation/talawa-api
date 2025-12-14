@@ -250,6 +250,6 @@ suite("Query.advertisement", () => {
 		expect(result.data?.advertisement).toBeDefined();
 		expect(result.data?.advertisement?.id).toBe(adId);
 		expect(result.data?.advertisement?.name).toBe(adName);
-		expect(result.data?.advertisement?.attachments).toBeDefined();
+		expect(result.data?.advertisement?.attachments).toEqual(expect.any(Array));
 	});
 });
