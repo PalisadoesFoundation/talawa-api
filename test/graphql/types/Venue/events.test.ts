@@ -7,6 +7,7 @@ import { createRegularUserUsingAdmin } from "../createRegularUserUsingAdmin";
 import {
 	Mutation_createEvent,
 	Mutation_createOrganization,
+	Mutation_createOrganizationMembership,
 	Mutation_joinPublicOrganization,
 	Query_signIn,
 } from "../documentNodes";
@@ -76,6 +77,145 @@ const Mutation_createVenueBooking = `
 `;
 
 suite("Venue events Field", () => {
+	test("should allow access for organization administrator (non-global admin)", async () => {
+		// Create organization with global admin
+		const createOrgResult = await mercuriusClient.mutate(
+			Mutation_createOrganization,
+			{
+				headers: { authorization: `Bearer ${authToken}` },
+				variables: {
+					input: {
+						name: `Test Org ${faker.string.uuid()}`,
+						description: "Test organization for venue events",
+					},
+				},
+			},
+		);
+		const orgId = createOrgResult.data?.createOrganization?.id;
+		assertToBeNonNullish(orgId);
+
+		// Create venue
+		const createVenueResult = await mercuriusClient.mutate(
+			Mutation_createVenue,
+			{
+				headers: { authorization: `Bearer ${authToken}` },
+				variables: {
+					input: {
+						organizationId: orgId,
+						name: `Test Venue ${faker.string.uuid()}`,
+						description: "Test venue for events",
+						capacity: 100,
+					},
+				},
+			},
+		);
+		const venueId = createVenueResult.data?.createVenue?.id;
+		assertToBeNonNullish(venueId);
+
+		// Create regular user and make them org admin
+		const { authToken: orgAdminToken, userId: orgAdminUserId } =
+			await createRegularUserUsingAdmin();
+
+		// Add user as organization administrator
+		const addMemberResult = await mercuriusClient.mutate(
+			Mutation_createOrganizationMembership,
+			{
+				headers: { authorization: `Bearer ${authToken}` },
+				variables: {
+					input: {
+						organizationId: orgId,
+						memberId: orgAdminUserId,
+						role: "administrator",
+					},
+				},
+			},
+		);
+		expect(addMemberResult.errors).toBeUndefined();
+
+		// Test that org admin CAN access venue events
+		const result = await mercuriusClient.query(VenueEventsQuery, {
+			headers: { authorization: `Bearer ${orgAdminToken}` },
+			variables: { input: { id: venueId }, first: 10 },
+		});
+
+		expect(result.errors).toBeUndefined();
+		expect(result.data?.venue?.events).toBeDefined();
+		expect(result.data?.venue?.events?.edges).toEqual([]);
+	});
+
+	test("should deny access for organization member who is not an admin", async () => {
+		// Create organization with global admin
+		const createOrgResult = await mercuriusClient.mutate(
+			Mutation_createOrganization,
+			{
+				headers: { authorization: `Bearer ${authToken}` },
+				variables: {
+					input: {
+						name: `Test Org ${faker.string.uuid()}`,
+						description: "Test organization for venue events",
+					},
+				},
+			},
+		);
+		const orgId = createOrgResult.data?.createOrganization?.id;
+		assertToBeNonNullish(orgId);
+
+		// Create venue
+		const createVenueResult = await mercuriusClient.mutate(
+			Mutation_createVenue,
+			{
+				headers: { authorization: `Bearer ${authToken}` },
+				variables: {
+					input: {
+						organizationId: orgId,
+						name: `Test Venue ${faker.string.uuid()}`,
+						description: "Test venue for events",
+						capacity: 100,
+					},
+				},
+			},
+		);
+		const venueId = createVenueResult.data?.createVenue?.id;
+		assertToBeNonNullish(venueId);
+
+		// Create regular user and make them regular org member
+		const { authToken: memberToken, userId: memberUserId } =
+			await createRegularUserUsingAdmin();
+
+		// Add user as regular organization member (not admin)
+		const addMemberResult = await mercuriusClient.mutate(
+			Mutation_createOrganizationMembership,
+			{
+				headers: { authorization: `Bearer ${authToken}` },
+				variables: {
+					input: {
+						organizationId: orgId,
+						memberId: memberUserId,
+						role: "regular",
+					},
+				},
+			},
+		);
+		expect(addMemberResult.errors).toBeUndefined();
+
+		// Test that regular member is DENIED access
+		const result = await mercuriusClient.query(VenueEventsQuery, {
+			headers: { authorization: `Bearer ${memberToken}` },
+			variables: { input: { id: venueId }, first: 10 },
+		});
+
+		expect(result.data?.venue?.events).toBeNull();
+		expect(result.errors).toEqual(
+			expect.arrayContaining([
+				expect.objectContaining({
+					extensions: expect.objectContaining({
+						code: "unauthorized_action",
+					}),
+				}),
+			]),
+		);
+	});
+
 	test("should throw unauthenticated error if not logged in", async () => {
 		const createOrgResult = await mercuriusClient.mutate(
 			Mutation_createOrganization,
