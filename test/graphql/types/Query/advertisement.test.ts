@@ -74,7 +74,7 @@ suite("Query.advertisement", () => {
 	test("should throw unauthenticated error when current user not found in database", async () => {
 		const findFirstSpy = vi
 			.spyOn(server.drizzleClient.query.usersTable, "findFirst")
-			.mockResolvedValueOnce(undefined);
+			.mockResolvedValue(undefined);
 
 		const result = await mercuriusClient.query(Query_advertisement, {
 			headers: { authorization: `Bearer ${authToken}` },
@@ -149,9 +149,12 @@ suite("Query.advertisement", () => {
 				},
 			},
 		);
+		expect(createOrgResult.errors).toBeUndefined();
 		const orgId = createOrgResult.data?.createOrganization?.id;
 		assertToBeNonNullish(orgId);
 
+		const startAt = new Date(Date.now() + 60_000).toISOString();
+		const endAt = new Date(Date.now() + 86_400_000 + 60_000).toISOString();
 		const createAdResult = await mercuriusClient.mutate(
 			Mutation_createAdvertisement,
 			{
@@ -162,12 +165,13 @@ suite("Query.advertisement", () => {
 						name: `Test Ad ${faker.string.uuid()}`,
 						description: "Test advertisement",
 						type: "pop_up",
-						startAt: new Date().toISOString(),
-						endAt: new Date(Date.now() + 86400000).toISOString(),
+						startAt,
+						endAt,
 					},
 				},
 			},
 		);
+		expect(createAdResult.errors).toBeUndefined();
 		const adId = createAdResult.data?.createAdvertisement?.id;
 		assertToBeNonNullish(adId);
 
@@ -210,10 +214,13 @@ suite("Query.advertisement", () => {
 				},
 			},
 		);
+		expect(createOrgResult.errors).toBeUndefined();
 		const orgId = createOrgResult.data?.createOrganization?.id;
 		assertToBeNonNullish(orgId);
 
 		const adName = `Test Ad ${faker.string.uuid()}`;
+		const startAt = new Date(Date.now() + 60_000).toISOString();
+		const endAt = new Date(Date.now() + 86_400_000 + 60_000).toISOString();
 		const createAdResult = await mercuriusClient.mutate(
 			Mutation_createAdvertisement,
 			{
@@ -224,12 +231,13 @@ suite("Query.advertisement", () => {
 						name: adName,
 						description: "Test advertisement",
 						type: "pop_up",
-						startAt: new Date().toISOString(),
-						endAt: new Date(Date.now() + 86400000).toISOString(),
+						startAt,
+						endAt,
 					},
 				},
 			},
 		);
+		expect(createAdResult.errors).toBeUndefined();
 		const adId = createAdResult.data?.createAdvertisement?.id;
 		assertToBeNonNullish(adId);
 
