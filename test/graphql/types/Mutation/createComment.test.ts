@@ -181,43 +181,43 @@ suite("Mutation field createComment", () => {
         });
     });
 
-suite("when the database insert operation fails", () => {
-    let originalInsert: typeof server.drizzleClient.insert;
+    suite("when the database insert operation fails", () => {
+        let originalInsert: typeof server.drizzleClient.insert;
 
-    beforeEach(() => {
-        originalInsert = server.drizzleClient.insert;
-        server.drizzleClient.insert = vi.fn().mockReturnValue({
-            values: vi.fn().mockReturnValue({
-                returning: vi.fn().mockResolvedValue([]),
-            }),
-        });
-    });
-
-    afterEach(() => {
-        server.drizzleClient.insert = originalInsert;
-    });
-
-    test("should return an error with unexpected code", async () => {
-        const orgId = await createOrganizationAndGetId();
-        const postId = await createPost(orgId);
-
-        const result = await mercuriusClient.mutate(Mutation_createComment, {
-            headers: { authorization: `bearer ${authToken}` },
-            variables: {
-                input: {
-                    body: "Test comment",
-                    postId: postId,
-                },
-            },
-        });
-
-        expect(result.data?.createComment).toBeNull();
-        expect(result.errors).toEqual(
-            expect.arrayContaining([
-                expect.objectContaining({
-                    extensions: expect.objectContaining({ code: "unexpected" }),
+        beforeEach(() => {
+            originalInsert = server.drizzleClient.insert;
+            server.drizzleClient.insert = vi.fn().mockReturnValue({
+                values: vi.fn().mockReturnValue({
+                    returning: vi.fn().mockResolvedValue([]),
                 }),
-            ]),
+            });
+        });
+
+        afterEach(() => {
+            server.drizzleClient.insert = originalInsert;
+        });
+
+        test("should return an error with unexpected code", async () => {
+            const orgId = await createOrganizationAndGetId();
+            const postId = await createPost(orgId);
+
+            const result = await mercuriusClient.mutate(Mutation_createComment, {
+                headers: { authorization: `bearer ${authToken}` },
+                variables: {
+                    input: {
+                        body: "Test comment",
+                        postId: postId,
+                    },
+                },
+            });
+
+            expect(result.data?.createComment).toBeNull();
+            expect(result.errors).toEqual(
+                expect.arrayContaining([
+                    expect.objectContaining({
+                        extensions: expect.objectContaining({ code: "unexpected" }),
+                    }),
+                ]),
         );
     });
 });
