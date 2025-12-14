@@ -54,27 +54,6 @@ export const Mutation_createOrganizationMembership =
     }
   }`);
 
-export const Query_advertisement = gql(`
-  query Advertisement($input: QueryAdvertisementInput!) {
-    advertisement(input: $input) {
-      id
-      name
-      description
-      type
-      startAt
-      endAt
-      createdAt
-      organization {
-        id
-      }
-      attachments {
-        mimeType
-        url
-      }
-    }
-  }
-}`);
-
 export const Query_organization = gql(`
     query Query_organization($input: QueryOrganizationInput!, $first: Int, $after: String, $last: Int, $before: String) {
       organization(input: $input) {

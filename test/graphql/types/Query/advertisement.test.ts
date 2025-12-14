@@ -1,14 +1,36 @@
 import { faker } from "@faker-js/faker";
 import { afterEach, beforeAll, expect, suite, test, vi } from "vitest";
 import { assertToBeNonNullish } from "../../../helpers";
-import { server } from "../../../server";
-import { mercuriusClient } from "../client";
 import {
 	Mutation_createAdvertisement,
 	Mutation_createOrganization,
-	Query_advertisement,
 	Query_signIn,
 } from "../../../routes/graphql/documentNodes";
+import { server } from "../../../server";
+import { mercuriusClient } from "../client";
+import { createRegularUserUsingAdmin } from "../createRegularUserUsingAdmin";
+
+// Inline GraphQL query to avoid schema issues
+const Query_advertisement = /* GraphQL */ `
+  query Advertisement($input: QueryAdvertisementInput!) {
+    advertisement(input: $input) {
+      id
+      name
+      description
+      type
+      startAt
+      endAt
+      createdAt
+      organization {
+        id
+      }
+      attachments {
+        mimeType
+        url
+      }
+    }
+  }
+`;
 
 let authToken: string;
 
@@ -47,6 +69,8 @@ suite("Query.advertisement", () => {
 				}),
 			]),
 		);
+	});
+
 	test("should throw unauthenticated error when current user not found in database", async () => {
 		const findFirstSpy = vi
 			.spyOn(server.drizzleClient.query.usersTable, "findFirst")
@@ -86,6 +110,8 @@ suite("Query.advertisement", () => {
 				}),
 			]),
 		);
+	});
+
 	test("should throw arguments_associated_resources_not_found for non-existent advertisement", async () => {
 		const result = await mercuriusClient.query(Query_advertisement, {
 			headers: { authorization: `Bearer ${authToken}` },
@@ -135,7 +161,7 @@ suite("Query.advertisement", () => {
 						organizationId: orgId,
 						name: `Test Ad ${faker.string.uuid()}`,
 						description: "Test advertisement",
-						type: "POPUP",
+						type: "pop_up",
 						startAt: new Date().toISOString(),
 						endAt: new Date(Date.now() + 86400000).toISOString(),
 					},
@@ -146,7 +172,7 @@ suite("Query.advertisement", () => {
 		assertToBeNonNullish(adId);
 
 		// Create regular user and try to access
-		const { authToken: regularToken } = await import("../createRegularUserUsingAdmin").then(m => m.createRegularUserUsingAdmin());
+		const { authToken: regularToken } = await createRegularUserUsingAdmin();
 
 		const result = await mercuriusClient.query(Query_advertisement, {
 			headers: { authorization: `Bearer ${regularToken}` },
@@ -168,6 +194,57 @@ suite("Query.advertisement", () => {
 				}),
 			]),
 		);
+	});
+
+	test("should return advertisement for global administrator accessing any organization", async () => {
+		// Create regular user and make them create org/ad
+		const { authToken: regularToken } = await createRegularUserUsingAdmin();
+
+		const createOrgResult = await mercuriusClient.mutate(
+			Mutation_createOrganization,
+			{
+				headers: { authorization: `Bearer ${regularToken}` },
+				variables: {
+					input: {
+						name: `Test Org ${faker.string.uuid()}`,
+						description: "Test organization",
+					},
+				},
+			},
+		);
+		const orgId = createOrgResult.data?.createOrganization?.id;
+		assertToBeNonNullish(orgId);
+
+		const adName = `Test Ad ${faker.string.uuid()}`;
+		const createAdResult = await mercuriusClient.mutate(
+			Mutation_createAdvertisement,
+			{
+				headers: { authorization: `Bearer ${regularToken}` },
+				variables: {
+					input: {
+						organizationId: orgId,
+						name: adName,
+						description: "Test advertisement",
+						type: "pop_up",
+						startAt: new Date().toISOString(),
+						endAt: new Date(Date.now() + 86400000).toISOString(),
+					},
+				},
+			},
+		);
+		const adId = createAdResult.data?.createAdvertisement?.id;
+		assertToBeNonNullish(adId);
+
+		// Global admin should access advertisement from any organization
+		const result = await mercuriusClient.query(Query_advertisement, {
+			headers: { authorization: `Bearer ${authToken}` }, // Global admin token
+			variables: { input: { id: adId } },
+		});
+
+		expect(result.errors).toBeUndefined();
+		expect(result.data?.advertisement).toBeDefined();
+		expect(result.data?.advertisement?.id).toBe(adId);
+		expect(result.data?.advertisement?.name).toBe(adName);
 	});
 
 	test("should return advertisement for valid request", async () => {
@@ -197,7 +274,7 @@ suite("Query.advertisement", () => {
 						organizationId: orgId,
 						name: adName,
 						description: "Test advertisement",
-						type: "POPUP",
+						type: "pop_up",
 						startAt: new Date().toISOString(),
 						endAt: new Date(Date.now() + 86400000).toISOString(),
 					},
