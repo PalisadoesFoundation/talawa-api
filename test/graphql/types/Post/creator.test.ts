@@ -103,16 +103,11 @@ describe("Post Resolver - Creator Field", () => {
 			undefined,
 		);
 		try {
-			await expect(async () => {
-				await resolveCreator(mockPost, {}, ctx, {} as GraphQLResolveInfo);
-			}).rejects.toThrow(
-				new TalawaGraphQLError({
-					extensions: { code: "unexpected" },
-				}),
-			);
-		} catch (error) {
-			expect(error).toBeInstanceOf(TalawaGraphQLError);
-			expect(error).toMatchObject({ extensions: { code: "unexpected" } });
+			await resolveCreator(mockPost, {}, ctx, {} as GraphQLResolveInfo);
+			throw new Error("Expected resolver to throw");
+		} catch (err) {
+			expect(err).toBeInstanceOf(TalawaGraphQLError);
+			expect(err).toMatchObject({ extensions: { code: "unexpected" } });
 		}
 	});
 });
