@@ -88,9 +88,11 @@ describe("Post Resolver - Organization Field", () => {
 		};
 
 		// Capture the where clause callback
-		let capturedWhereClause: any;
+		let capturedWhereClause:
+			| ((fields: unknown, operators: unknown) => unknown)
+			| undefined;
 		mocks.drizzleClient.query.organizationsTable.findFirst.mockImplementation(
-			async (options) => {
+			async (options: { where?: (fields: unknown, operators: unknown) => unknown }) => {
 				capturedWhereClause = options?.where;
 				return mockOrganization;
 			},
@@ -105,7 +107,7 @@ describe("Post Resolver - Organization Field", () => {
 		const mockFields = { id: "mockFieldId" };
 		const mockOperators = { eq: vi.fn().mockReturnValue("mockWhereClause") };
 
-		capturedWhereClause(mockFields, mockOperators);
+		capturedWhereClause?.(mockFields, mockOperators);
 
 		// Verify the where callback filters by the correct organizationId
 		expect(mockOperators.eq).toHaveBeenCalledWith("mockFieldId", "org-123");
