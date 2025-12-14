@@ -546,14 +546,17 @@ suite("Venue events Field", () => {
 			"../createRegularUserUsingAdmin"
 		).then((m) => m.createRegularUserUsingAdmin());
 
-		const joinResult = await mercuriusClient.mutate(Mutation_joinPublicOrganization, {
-			headers: { authorization: `Bearer ${memberAuthToken}` },
-			variables: {
-				input: {
-					organizationId: orgId,
+		const joinResult = await mercuriusClient.mutate(
+			Mutation_joinPublicOrganization,
+			{
+				headers: { authorization: `Bearer ${memberAuthToken}` },
+				variables: {
+					input: {
+						organizationId: orgId,
+					},
 				},
 			},
-		});
+		);
 		expect(joinResult.errors).toBeUndefined();
 
 		// Create an event with the member token
