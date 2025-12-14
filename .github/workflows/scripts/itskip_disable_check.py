@@ -147,10 +147,10 @@ def main():
     itskip_found = check_itskip(files_or_directories)
 
     if itskip_found:
-        print("ESLint-disable check failed. Exiting with error.")
+        print("it.skip check failed. Exiting with error.")
         sys.exit(1)
 
-    print("ESLint-disable check completed successfully.")
+    print("it.skip check completed successfully.")
 
 
 if __name__ == "__main__":
