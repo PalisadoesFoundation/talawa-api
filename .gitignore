@@ -847,3 +847,6 @@ yarn.lock
 !/src/plugin/available/readme.md
 # Test and debug output files
 debug_test_output_*.txt
+
+# Ignore log files in the root directory
+/*.log
