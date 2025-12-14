@@ -94,10 +94,13 @@ describe("Post Resolver - Organization Field", () => {
 		await resolveOrganization(mockPost, {}, ctx);
 
 		// Get the where function from the mock call with proper typing
-		const calls = mocks.drizzleClient.query.organizationsTable.findFirst.mock.calls;
+		const calls =
+			mocks.drizzleClient.query.organizationsTable.findFirst.mock.calls;
 		expect(calls.length).toBeGreaterThan(0);
-		
-		const firstCall = calls[0] as [{ where: (fields: unknown, operators: unknown) => unknown }];
+
+		const firstCall = calls[0] as unknown as [
+			{ where: (fields: unknown, operators: unknown) => unknown },
+		];
 		const capturedWhereFunction = firstCall[0]?.where;
 		expect(capturedWhereFunction).toBeDefined();
 
