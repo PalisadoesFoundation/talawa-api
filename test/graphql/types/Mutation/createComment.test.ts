@@ -1,4 +1,5 @@
 import { faker } from "@faker-js/faker";
+import { eq } from "drizzle-orm";
 import {
 	afterEach,
 	beforeAll,
@@ -8,6 +9,7 @@ import {
 	test,
 	vi,
 } from "vitest";
+import { usersTable } from "../../../../src/drizzle/tables/users";
 import { assertToBeNonNullish } from "../../../helpers";
 import { server } from "../../../server";
 import { mercuriusClient } from "../client";
@@ -103,6 +105,74 @@ suite("Mutation field createComment", () => {
 				expect.arrayContaining([
 					expect.objectContaining({
 						extensions: expect.objectContaining({ code: "unauthenticated" }),
+					}),
+				]),
+			);
+		});
+	});
+
+	suite("when authenticated user record is deleted", () => {
+		test("should return an error with unauthenticated code", async () => {
+			// Create a user first
+			const testUserEmail = `deleteduser${faker.string.uuid()}@example.com`;
+			const createUserResult = await mercuriusClient.mutate(
+				Mutation_createUser,
+				{
+					headers: { authorization: `bearer ${authToken}` },
+					variables: {
+						input: {
+							emailAddress: testUserEmail,
+							isEmailAddressVerified: true,
+							name: "User To Delete",
+							password: "password",
+							role: "regular",
+						},
+					},
+				},
+			);
+			expect(createUserResult.errors).toBeUndefined();
+			const userId = createUserResult.data?.createUser?.user?.id;
+			assertToBeNonNullish(userId);
+
+			// Sign in as that user to get their token
+			const userSignIn = await mercuriusClient.query(Query_signIn, {
+				variables: {
+					input: {
+						emailAddress: testUserEmail,
+						password: "password",
+					},
+				},
+			});
+			const userToken = userSignIn.data?.signIn?.authenticationToken;
+			assertToBeNonNullish(userToken);
+
+			// Delete the user from database
+			await server.drizzleClient
+				.delete(usersTable)
+				.where(eq(usersTable.id, userId));
+
+			// Create org and post for the test
+			const orgId = await createOrganizationAndGetId();
+			const postId = await createPost(orgId);
+
+			// Try to create comment with deleted user's token
+			const result = await mercuriusClient.mutate(Mutation_createComment, {
+				headers: { authorization: `bearer ${userToken}` },
+				variables: {
+					input: {
+						body: "Test comment",
+						postId: postId,
+					},
+				},
+			});
+
+			expect(result.data?.createComment).toBeNull();
+			expect(result.errors).toEqual(
+				expect.arrayContaining([
+					expect.objectContaining({
+						extensions: expect.objectContaining({
+							code: "unauthenticated",
+						}),
 					}),
 				]),
 			);
