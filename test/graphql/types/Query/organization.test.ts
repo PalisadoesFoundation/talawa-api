@@ -174,7 +174,8 @@ suite("Query field organization", () => {
 							role: "administrator",
 						},
 					},
-				});
+				},
+			);
 			expect(membershipResult.errors).toBeUndefined();
 			// Query the organization with members
 			const result = await mercuriusClient.query(Query_organization, {
