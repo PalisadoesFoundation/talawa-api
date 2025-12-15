@@ -2,6 +2,7 @@ import { and, eq } from "drizzle-orm";
 import { eventVolunteerMembershipsTable } from "~/src/drizzle/tables/eventVolunteerMemberships";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import envConfig from "~/src/utilities/graphqLimits";
+import { escapeHTML } from "~/src/utilities/sanitizer";
 import type { GraphQLContext } from "../../context";
 import { EventVolunteer } from "./EventVolunteer";
 import type { EventVolunteer as EventVolunteerType } from "./EventVolunteer";
@@ -21,7 +22,7 @@ export const EventVolunteerStatusResolver = async (
 
 	// If hasAccepted is true, status is always "accepted"
 	if (parent.hasAccepted) {
-		return "accepted";
+		return escapeHTML("accepted") as VolunteerStatusType;
 	}
 
 	// Check if any VolunteerMembership for this volunteer has "rejected" status
@@ -41,7 +42,9 @@ export const EventVolunteerStatusResolver = async (
 		(m) => m.status === "rejected",
 	);
 
-	return hasRejectedMembership ? "rejected" : "pending";
+	return escapeHTML(
+		hasRejectedMembership ? "rejected" : "pending",
+	) as VolunteerStatusType;
 };
 
 EventVolunteer.implement({

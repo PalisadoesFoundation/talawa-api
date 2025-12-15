@@ -191,6 +191,46 @@ describe("check_sanitization", () => {
 				"The file has 1 of 2 string resolver(s) missing escapeHTML sanitization.",
 			);
 		});
+
+		it("should detect escapeHTML in separately defined resolver functions", () => {
+			const content = `
+        import { escapeHTML } from "~/src/utilities/sanitizer";
+        import { t } from "graphql";
+
+        const myResolver = async () => {
+          return escapeHTML("safe");
+        };
+
+        t.field({
+          type: "String",
+          resolve: myResolver
+        });
+      `;
+			const result = validateFileContent("test.ts", content);
+			expect(result.isValid).toBe(true);
+			expect(result.errors).toHaveLength(0);
+		});
+
+		it("should fail when separately defined resolver function doesn't use escapeHTML", () => {
+			const content = `
+        import { escapeHTML } from "~/src/utilities/sanitizer";
+        import { t } from "graphql";
+
+        const myResolver = async () => {
+          return "unsafe";
+        };
+
+        t.field({
+          type: "String",
+          resolve: myResolver
+        });
+      `;
+			const result = validateFileContent("test.ts", content);
+			expect(result.isValid).toBe(false);
+			expect(result.errors).toContain(
+				"The file has 1 of 1 string resolver(s) missing escapeHTML sanitization.",
+			);
+		});
 	});
 
 	describe("checkSanitization (main function)", () => {

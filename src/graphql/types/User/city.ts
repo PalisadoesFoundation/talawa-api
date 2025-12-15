@@ -1,5 +1,6 @@
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import envConfig from "~/src/utilities/graphqLimits";
+import { escapeHTML } from "~/src/utilities/sanitizer";
 import { User } from "./User";
 User.implement({
 	fields: (t) => ({
@@ -46,7 +47,7 @@ User.implement({
 					});
 				}
 
-				return parent.city;
+				return escapeHTML(parent.city);
 			},
 			type: "String",
 		}),

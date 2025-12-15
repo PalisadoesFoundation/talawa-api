@@ -67,6 +67,30 @@ export function validateFileContent(
 	const resolverBodies: ts.Node[] = [];
 	const namespaceIdentifiers: string[] = [];
 	const aliasedIdentifiers: string[] = [];
+	const functionDeclarations = new Map<string, ts.Node>();
+
+	// First pass: collect all function/const declarations
+	ts.forEachChild(sourceFile, (node) => {
+		// Collect function declarations: function myResolver() { ... }
+		if (ts.isFunctionDeclaration(node) && node.name) {
+			functionDeclarations.set(node.name.text, node.body || node);
+		}
+		// Collect arrow function const declarations: const myResolver = () => { ... }
+		if (ts.isVariableStatement(node)) {
+			for (const declaration of node.declarationList.declarations) {
+				if (
+					ts.isVariableDeclaration(declaration) &&
+					ts.isIdentifier(declaration.name) &&
+					declaration.initializer
+				) {
+					functionDeclarations.set(
+						declaration.name.text,
+						declaration.initializer,
+					);
+				}
+			}
+		}
+	});
 
 	// Check imports
 	ts.forEachChild(sourceFile, (node) => {
@@ -133,13 +157,28 @@ export function validateFileContent(
 		return false;
 	}
 
+	// Helper to resolve identifier references to their function declarations
+	function resolveNode(node: ts.Node): ts.Node {
+		// If the node is an identifier reference, try to resolve it
+		if (ts.isIdentifier(node)) {
+			const resolved = functionDeclarations.get(node.text);
+			if (resolved) {
+				return resolved;
+			}
+		}
+		return node;
+	}
+
 	// Helper to walk a node tree looking for escapeHTML calls
 	function hasEscapeHTMLCallInTree(node: ts.Node): boolean {
-		if (isEscapeHTMLCall(node)) {
+		// First resolve the node in case it's an identifier reference
+		const resolvedNode = resolveNode(node);
+
+		if (isEscapeHTMLCall(resolvedNode)) {
 			return true;
 		}
 		let found = false;
-		ts.forEachChild(node, (child) => {
+		ts.forEachChild(resolvedNode, (child) => {
 			if (hasEscapeHTMLCallInTree(child)) {
 				found = true;
 			}
