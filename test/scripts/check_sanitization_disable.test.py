@@ -65,7 +65,7 @@ class TestCheckSanitizationDisable(unittest.TestCase):
 
     # Valid cases tests
     def test_valid_comment_with_adequate_justification(self):
-        """Test valid disable comment with adequate justification."""  # noqa: E501
+        """Test valid disable comment with adequate justification."""
         content = """
 // check-sanitization-disable: system-generated URL field
 import { t } from "graphql";

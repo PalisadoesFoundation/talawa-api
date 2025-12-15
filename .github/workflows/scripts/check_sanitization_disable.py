@@ -132,9 +132,6 @@ def check_files(files_or_directories: list[str]) -> bool:
 def arg_parser_resolver() -> argparse.Namespace:
     """Resolve the CLI arguments provided by the user.
 
-    Args:
-        None
-
     Returns:
         result: Parsed argument object
 
@@ -169,12 +166,6 @@ def main():
     2. Recursively checks files for invalid sanitization disable comments.
     3. Provides informative messages based on the analysis.
     4. Exits with an error if invalid disable comments are found.
-
-    Args:
-        None
-
-    Returns:
-        None
 
     Raises:
         SystemExit: If an error occurs during execution.
