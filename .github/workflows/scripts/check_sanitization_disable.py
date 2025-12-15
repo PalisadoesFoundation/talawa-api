@@ -6,6 +6,10 @@ Methodology:
     Validates that check-sanitization-disable comments include proper
     justifications to prevent abuse of the security bypass mechanism.
 
+    IMPORTANT: Only the exact lowercase form "check-sanitization-disable"
+    is accepted. Mixed-case variants (e.g., "Check-Sanitization-Disable")
+    are rejected to enforce consistency across the codebase.
+
 Note:
     This script complies with our python3 coding and documentation standards.
     It complies with:
@@ -37,15 +41,17 @@ def check_sanitization_disable(file_path: str) -> tuple[bool, str]:
     """
     # Pattern matches: // check-sanitization-disable: <justification>
     # Group 1 captures the justification text after the colon
+    # Note: Case-sensitive to enforce canonical lowercase form
     disable_pattern = re.compile(
         r"//\s*check-sanitization-disable\s*:\s*(.+)$",
-        re.IGNORECASE | re.MULTILINE,
+        re.MULTILINE,
     )
 
     # Pattern to catch disable comments WITHOUT justification
+    # Note: Case-sensitive to enforce canonical lowercase form
     disable_no_justification_pattern = re.compile(
         r"//\s*check-sanitization-disable\s*$",
-        re.IGNORECASE | re.MULTILINE,
+        re.MULTILINE,
     )
 
     try:
@@ -60,7 +66,8 @@ def check_sanitization_disable(file_path: str) -> tuple[bool, str]:
                 return (
                     True,
                     "Disable comment missing justification. "
-                    "Format: // check-sanitization-disable: <reason>",
+                    "Format: // check-sanitization-disable: "
+                    "<reason>",
                 )
 
             # Check all disable comments with justifications
@@ -72,21 +79,19 @@ def check_sanitization_disable(file_path: str) -> tuple[bool, str]:
                     return (
                         True,
                         (
-                            f"Justification too short ({len(justification_text)} "
-                            f"chars): '{justification_text}'. Minimum 10 "
-                            f"characters required."
+                            f"Justification too short "
+                            f"({len(justification_text)} chars): "
+                            f"'{justification_text}'. "
+                            f"Minimum 10 characters required."
                         ),
                     )
 
     except FileNotFoundError:
-        print(f"File not found: {file_path}")
-        return False, ""
+        return True, f"File not found: {file_path}"
     except PermissionError:
-        print(f"Permission denied: {file_path}")
-        return False, ""
+        return True, f"Permission denied: {file_path}"
     except OSError as e:
-        print(f"Error reading file {file_path}: {e}")
-        return False, ""
+        return True, f"Error reading file {file_path}: {e}"
 
     return False, ""
 
