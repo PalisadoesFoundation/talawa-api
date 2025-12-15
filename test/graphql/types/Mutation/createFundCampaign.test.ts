@@ -390,12 +390,12 @@ suite("Mutation field createFundCampaign", () => {
 			},
 			variables: {
 				input: {
-					fundId: fundId,
+					fundId: fundId, // Use existing fundId from beforeAll
 					name: "", // Empty name
 					currencyCode: "USD",
-					goalAmount: 1000,
-					startAt: new Date("2025-01-01").toISOString(),
-					endAt: new Date("2025-12-31").toISOString(),
+					goalAmount: 10000, // Changed from fundingGoal
+					startAt: new Date().toISOString(),
+					endAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
 				},
 			},
 		});
@@ -406,6 +406,11 @@ suite("Mutation field createFundCampaign", () => {
 				expect.objectContaining<TalawaGraphQLFormattedError>({
 					extensions: expect.objectContaining({
 						code: "invalid_arguments",
+						issues: expect.arrayContaining([
+							expect.objectContaining({
+								argumentPath: ["input", "name"],
+							}),
+						]),
 					}),
 					message: expect.any(String),
 					path: ["createFundCampaign"],
