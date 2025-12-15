@@ -71,9 +71,11 @@ def check_sanitization_disable(file_path: str) -> tuple[bool, str]:
                 if len(justification_text) < 10:
                     return (
                         True,
-                        f"Justification too short ({len(justification_text)} "
-                        f"chars): '{justification_text}'. Minimum 10 characters "
-                        f"required.",
+                        (
+                            f"Justification too short ({len(justification_text)} "
+                            f"chars): '{justification_text}'. Minimum 10 "
+                            f"characters required."
+                        ),
                     )
 
     except FileNotFoundError:
@@ -82,7 +84,7 @@ def check_sanitization_disable(file_path: str) -> tuple[bool, str]:
     except PermissionError:
         print(f"Permission denied: {file_path}")
         return False, ""
-    except (IOError, OSError) as e:
+    except OSError as e:
         print(f"Error reading file {file_path}: {e}")
         return False, ""
 
@@ -186,12 +188,12 @@ def main():
 
     if has_errors:
         print(
-            "\n❌ Sanitization disable comment validation failed. "
+            "\n Sanitization disable comment validation failed. "
             "Please add proper justifications."
         )
         sys.exit(1)
 
-    print("✅ Sanitization disable comment validation passed.")
+    print("Sanitization disable comment validation passed.")
 
 
 if __name__ == "__main__":

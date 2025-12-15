@@ -67,7 +67,7 @@ describe("check_sanitization", () => {
 
 		it("should skip files with disable comment", () => {
 			const content = `
-        // check-sanitization-disable
+        // check-sanitization-disable: test fixture for disable comment validation
         import { t } from "graphql";
 
         t.string({
@@ -234,23 +234,20 @@ describe("check_sanitization", () => {
 	});
 
 	describe("checkSanitization (main function)", () => {
-		// Save original process methods
+		// Save original console methods
 		const originalConsoleLog = console.log;
 		const originalConsoleError = console.error;
-		const originalProcessExit = process.exit;
 
 		// Mock implementations
-		const mockExit = vi.fn() as unknown as (code?: number) => never;
 		const mockLog = vi.fn();
 		const mockError = vi.fn();
 
 		beforeEach(() => {
 			vi.resetAllMocks();
 
-			// Setup console and process mocks
+			// Setup console mocks
 			console.log = mockLog;
 			console.error = mockError;
-			process.exit = mockExit;
 
 			// Default glob mock to return empty list
 			(glob as unknown as Mock).mockResolvedValue([]);
@@ -260,24 +257,23 @@ describe("check_sanitization", () => {
 			// Restore original methods
 			console.log = originalConsoleLog;
 			console.error = originalConsoleError;
-			process.exit = originalProcessExit;
 		});
 
-		it("should pass if no files found", async () => {
+		it("should return true if no files found", async () => {
 			(glob as unknown as Mock).mockResolvedValue([]);
 
-			await checkSanitization();
+			const result = await checkSanitization();
 
+			expect(result).toBe(true);
 			expect(mockLog).toHaveBeenCalledWith(
 				expect.stringContaining("Scanning 0 files"),
 			);
 			expect(mockLog).toHaveBeenCalledWith(
 				expect.stringContaining("Sanitization check passed"),
 			);
-			expect(mockExit).not.toHaveBeenCalled();
 		});
 
-		it("should pass if valid file found", async () => {
+		it("should return true if valid file found", async () => {
 			(glob as unknown as Mock).mockResolvedValue(["src/valid.ts"]);
 			(fs.readFile as Mock).mockResolvedValue(`
         import { escapeHTML } from "~/src/utilities/sanitizer";
@@ -285,36 +281,36 @@ describe("check_sanitization", () => {
         t.string({ resolve: () => escapeHTML("foo") });
       `);
 
-			await checkSanitization();
+			const result = await checkSanitization();
 
+			expect(result).toBe(true);
 			expect(mockLog).toHaveBeenCalledWith(
 				expect.stringContaining("Scanning 1 files"),
 			);
 			expect(mockLog).toHaveBeenCalledWith(
 				expect.stringContaining("Sanitization check passed"),
 			);
-			expect(mockExit).not.toHaveBeenCalled();
 		});
 
-		it("should exit with 1 if invalid file found", async () => {
+		it("should return false if invalid file found", async () => {
 			(glob as unknown as Mock).mockResolvedValue(["src/invalid.ts"]);
 			(fs.readFile as Mock).mockResolvedValue(`
         import { t } from "graphql";
         t.string({ resolve: () => "foo" });
       `);
 
-			await checkSanitization();
+			const result = await checkSanitization();
 
+			expect(result).toBe(false);
 			expect(mockError).toHaveBeenCalledWith(
 				expect.stringContaining("[ERROR] Potential unsafe string resolver"),
 			);
 			expect(mockError).toHaveBeenCalledWith(
 				expect.stringContaining("Sanitization check failed"),
 			);
-			expect(mockExit).toHaveBeenCalledWith(1);
 		});
 
-		it("should handle mixed valid and invalid files", async () => {
+		it("should return false and report all invalid files", async () => {
 			(glob as unknown as Mock).mockResolvedValue([
 				"src/valid.ts",
 				"src/invalid.ts",
@@ -330,15 +326,37 @@ describe("check_sanitization", () => {
                 t.string({ resolve: () => "foo" });
             `);
 
-			await checkSanitization();
+			const result = await checkSanitization();
 
-			expect(mockError).toHaveBeenCalledWith(
-				expect.stringContaining("[ERROR] Potential unsafe string resolver"),
-			);
+			expect(result).toBe(false);
 			expect(mockError).toHaveBeenCalledWith(
 				expect.stringContaining("src/invalid.ts"),
 			);
-			expect(mockExit).toHaveBeenCalledWith(1);
+		});
+
+		it("should fail gracefully if fs.readFile rejects", async () => {
+			(glob as unknown as Mock).mockResolvedValue(["src/valid.ts"]);
+			(fs.readFile as Mock).mockRejectedValue(new Error("File read error"));
+
+			const result = await checkSanitization();
+
+			expect(result).toBe(false);
+			expect(mockError).toHaveBeenCalledWith(
+				"Error during sanitization check:",
+				expect.objectContaining({ message: "File read error" }),
+			);
+		});
+
+		it("should fail gracefully if glob rejects", async () => {
+			(glob as unknown as Mock).mockRejectedValue(new Error("Glob error"));
+
+			const result = await checkSanitization();
+
+			expect(result).toBe(false);
+			expect(mockError).toHaveBeenCalledWith(
+				"Error during sanitization check:",
+				expect.objectContaining({ message: "Glob error" }),
+			);
 		});
 	});
 });

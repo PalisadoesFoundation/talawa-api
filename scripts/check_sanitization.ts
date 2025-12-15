@@ -170,16 +170,33 @@ export function validateFileContent(
 	}
 
 	// Helper to walk a node tree looking for escapeHTML calls
-	function hasEscapeHTMLCallInTree(node: ts.Node): boolean {
+	function hasEscapeHTMLCallInTree(
+		node: ts.Node,
+		visited: Set<ts.Node> = new Set(),
+	): boolean {
+		// Prevent infinite recursion by checking if we've already visited this node
+		if (visited.has(node)) {
+			return false;
+		}
+		visited.add(node);
+
 		// First resolve the node in case it's an identifier reference
 		const resolvedNode = resolveNode(node);
+
+		// Mark the resolved node as visited too (if different from original)
+		if (resolvedNode !== node) {
+			if (visited.has(resolvedNode)) {
+				return false;
+			}
+			visited.add(resolvedNode);
+		}
 
 		if (isEscapeHTMLCall(resolvedNode)) {
 			return true;
 		}
 		let found = false;
 		ts.forEachChild(resolvedNode, (child) => {
-			if (hasEscapeHTMLCallInTree(child)) {
+			if (hasEscapeHTMLCallInTree(child, visited)) {
 				found = true;
 			}
 		});
@@ -284,48 +301,62 @@ export function validateFileContent(
 	};
 }
 
-export async function checkSanitization() {
-	const cwd = process.cwd();
-	const files = await glob("src/graphql/types/**/*.ts", { cwd });
+export async function checkSanitization(): Promise<boolean> {
+	try {
+		const cwd = process.cwd();
+		const files = await glob("src/graphql/types/**/*.ts", { cwd });
 
-	console.log(`Scanning ${files.length} files for sanitization compliance...`);
+		console.log(
+			`Scanning ${files.length} files for sanitization compliance...`,
+		);
 
-	let hasErrors = false;
+		let hasErrors = false;
 
-	for (const file of files) {
-		const filePath = path.join(cwd, file);
-		const content = await fs.readFile(filePath, "utf-8");
+		for (const file of files) {
+			const filePath = path.join(cwd, file);
+			const content = await fs.readFile(filePath, "utf-8");
 
-		const result = validateFileContent(file, content);
+			const result = validateFileContent(file, content);
 
-		if (!result.isValid) {
-			console.error(
-				`\n[ERROR] Potential unsafe string resolver found in: ${file}`,
-			);
-			for (const error of result.errors) {
-				console.error(`  Reason: ${error}`);
+			if (!result.isValid) {
+				console.error(
+					`\n[ERROR] Potential unsafe string resolver found in: ${file}`,
+				);
+				for (const error of result.errors) {
+					console.error(`  Reason: ${error}`);
+				}
+				console.error(
+					"  Fix: Import 'escapeHTML' from '~/src/utilities/sanitizer' and use it to sanitize user-generated content.",
+				);
+				console.error(
+					"  If this is trusted content (e.g. system tokens), add '// check-sanitization-disable' to the file.",
+				);
+				hasErrors = true;
 			}
-			console.error(
-				"  Fix: Import 'escapeHTML' from '~/src/utilities/sanitizer' and use it to sanitize user-generated content.",
-			);
-			console.error(
-				"  If this is trusted content (e.g. system tokens), add '// check-sanitization-disable' to the file.",
-			);
-			hasErrors = true;
 		}
-	}
 
-	if (hasErrors) {
-		console.error("\nSanitization check failed.");
-		process.exit(1);
-	} else {
+		if (hasErrors) {
+			console.error("\nSanitization check failed.");
+			return false;
+		}
+
 		console.log("\nSanitization check passed.");
+		return true;
+	} catch (error) {
+		console.error("Error during sanitization check:", error);
+		return false;
 	}
 }
 
 if (import.meta.url === `file://${process.argv[1]}`) {
-	checkSanitization().catch((err) => {
-		console.error(err);
-		process.exit(1);
-	});
+	checkSanitization()
+		.then((success) => {
+			if (!success) {
+				process.exit(1);
+			}
+		})
+		.catch((err) => {
+			console.error(err);
+			process.exit(1);
+		});
 }
