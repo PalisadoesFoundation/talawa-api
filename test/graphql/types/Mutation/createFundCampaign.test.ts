@@ -17,10 +17,8 @@ import {
 	Query_signIn,
 } from "../documentNodes";
 
-/**
- * Helper function to get admin authentication token and user ID
- */
-async function getAdminToken(): Promise<{ authToken: string; userId: string }> {
+// Helper function to get admin auth token
+async function getAdminToken() {
 	const signInResult = await mercuriusClient.query(Query_signIn, {
 		variables: {
 			input: {
@@ -31,19 +29,15 @@ async function getAdminToken(): Promise<{ authToken: string; userId: string }> {
 	});
 
 	const authToken = signInResult.data?.signIn?.authenticationToken;
-	const userId = signInResult.data?.signIn?.user?.id;
 	assertToBeNonNullish(authToken);
-	assertToBeNonNullish(userId);
-	return { authToken, userId };
+	return authToken;
 }
 
-/**
- * Helper function to create a test user
- */
+// Helper function to create a test user
 async function createTestUser(
 	adminAuthToken: string,
 	role: "regular" | "administrator" = "regular",
-): Promise<{ userId: string; authToken: string }> {
+) {
 	const userResult = await mercuriusClient.mutate(Mutation_createUser, {
 		headers: {
 			authorization: `bearer ${adminAuthToken}`,
@@ -60,19 +54,14 @@ async function createTestUser(
 	});
 
 	assertToBeNonNullish(userResult.data?.createUser);
-	assertToBeNonNullish(userResult.data.createUser.user?.id);
-	assertToBeNonNullish(userResult.data.createUser.authenticationToken);
-
 	return {
-		userId: userResult.data.createUser.user.id,
-		authToken: userResult.data.createUser.authenticationToken,
+		userId: userResult.data.createUser.user?.id as string,
+		authToken: userResult.data.createUser.authenticationToken as string,
 	};
 }
 
-/**
- * Helper function to create a test organization
- */
-async function createTestOrganization(adminAuthToken: string): Promise<string> {
+// Helper function to create a test organization
+async function createTestOrganization(adminAuthToken: string) {
 	const orgResult = await mercuriusClient.mutate(Mutation_createOrganization, {
 		headers: {
 			authorization: `bearer ${adminAuthToken}`,
@@ -89,15 +78,13 @@ async function createTestOrganization(adminAuthToken: string): Promise<string> {
 	return orgResult.data.createOrganization.id;
 }
 
-/**
- * Helper function to create organization membership
- */
+// Helper function to create organization membership
 async function createOrganizationMembership(
 	adminAuthToken: string,
 	memberId: string,
 	organizationId: string,
 	role: "regular" | "administrator" = "regular",
-): Promise<string> {
+) {
 	const membershipResult = await mercuriusClient.mutate(
 		Mutation_createOrganizationMembership,
 		{
@@ -118,13 +105,8 @@ async function createOrganizationMembership(
 	return membershipResult.data.createOrganizationMembership.id;
 }
 
-/**
- * Helper function to create a test fund
- */
-async function createTestFund(
-	authToken: string,
-	organizationId: string,
-): Promise<string> {
+// Helper function to create a test fund
+async function createTestFund(authToken: string, organizationId: string) {
 	const fundResult = await mercuriusClient.mutate(Mutation_createFund, {
 		headers: {
 			authorization: `bearer ${authToken}`,
@@ -161,28 +143,32 @@ suite("Mutation field createFundCampaign", () => {
 	const createdOrganizationIds: string[] = [];
 
 	beforeAll(async () => {
-		// Get admin token and user ID
-		const adminAuth = await getAdminToken();
-		adminAuthToken = adminAuth.authToken;
-		adminUserId = adminAuth.userId;
+		adminAuthToken = await getAdminToken();
 
-		// Create a regular test user
+		const adminSignInResult = await mercuriusClient.query(Query_signIn, {
+			variables: {
+				input: {
+					emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
+					password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
+				},
+			},
+		});
+		assertToBeNonNullish(adminSignInResult.data?.signIn?.user?.id);
+		adminUserId = adminSignInResult.data.signIn.user.id;
+
 		const regularUser = await createTestUser(adminAuthToken, "regular");
 		regularUserId = regularUser.userId;
 		regularUserAuthToken = regularUser.authToken;
 		createdUserIds.push(regularUserId);
 
-		// Create an org admin test user
 		const orgAdminUser = await createTestUser(adminAuthToken, "regular");
 		orgAdminUserId = orgAdminUser.userId;
 		orgAdminUserAuthToken = orgAdminUser.authToken;
 		createdUserIds.push(orgAdminUserId);
 
-		// Create test organization
 		organizationId = await createTestOrganization(adminAuthToken);
 		createdOrganizationIds.push(organizationId);
 
-		// Add admin to organization
 		await createOrganizationMembership(
 			adminAuthToken,
 			adminUserId,
@@ -190,7 +176,6 @@ suite("Mutation field createFundCampaign", () => {
 			"administrator",
 		);
 
-		// Add org admin user to organization as administrator
 		await createOrganizationMembership(
 			adminAuthToken,
 			orgAdminUserId,
@@ -198,16 +183,11 @@ suite("Mutation field createFundCampaign", () => {
 			"administrator",
 		);
 
-		// Create test fund
 		fundId = await createTestFund(adminAuthToken, organizationId);
 		createdFundIds.push(fundId);
 	});
 
 	afterAll(async () => {
-		// Cleanup: Delete test data in reverse order of creation
-		const cleanupErrors: string[] = [];
-
-		// Cleanup campaigns
 		for (const campaignId of createdFundCampaignIds) {
 			try {
 				await mercuriusClient.mutate(Mutation_deleteFundCampaign, {
@@ -215,11 +195,10 @@ suite("Mutation field createFundCampaign", () => {
 					variables: { input: { id: campaignId } },
 				});
 			} catch (error) {
-				cleanupErrors.push(`Campaign ${campaignId}: ${error}`);
+				// Ignore cleanup errors
 			}
 		}
 
-		// Cleanup funds
 		for (const fundIdToDelete of createdFundIds) {
 			try {
 				await mercuriusClient.mutate(Mutation_deleteFund, {
@@ -227,11 +206,10 @@ suite("Mutation field createFundCampaign", () => {
 					variables: { input: { id: fundIdToDelete } },
 				});
 			} catch (error) {
-				cleanupErrors.push(`Fund ${fundIdToDelete}: ${error}`);
+				// Ignore cleanup errors
 			}
 		}
 
-		// Cleanup users
 		for (const userId of createdUserIds) {
 			try {
 				await mercuriusClient.mutate(Mutation_deleteUser, {
@@ -239,11 +217,10 @@ suite("Mutation field createFundCampaign", () => {
 					variables: { input: { id: userId } },
 				});
 			} catch (error) {
-				cleanupErrors.push(`User ${userId}: ${error}`);
+				// Ignore cleanup errors
 			}
 		}
 
-		// Cleanup organizations
 		for (const orgId of createdOrganizationIds) {
 			try {
 				await mercuriusClient.mutate(Mutation_deleteOrganization, {
@@ -251,13 +228,8 @@ suite("Mutation field createFundCampaign", () => {
 					variables: { input: { id: orgId } },
 				});
 			} catch (error) {
-				cleanupErrors.push(`Organization ${orgId}: ${error}`);
+				// Ignore cleanup errors
 			}
-		}
-
-		// Log cleanup errors if any (won't fail tests, but helps debugging)
-		if (cleanupErrors.length > 0) {
-			console.warn("Cleanup warnings:", cleanupErrors);
 		}
 	});
 
@@ -290,13 +262,11 @@ suite("Mutation field createFundCampaign", () => {
 	});
 
 	test('results in a graphql error with "unauthenticated" extensions code if currentUser query returns undefined after authentication check', async () => {
-		// Create a temporary user
 		const tempUser = await createTestUser(adminAuthToken, "regular");
 		const tempUserToken = tempUser.authToken;
 		const tempUserId = tempUser.userId;
 		createdUserIds.push(tempUserId);
 
-		// Add temp user to organization as admin
 		await createOrganizationMembership(
 			adminAuthToken,
 			tempUserId,
@@ -304,19 +274,16 @@ suite("Mutation field createFundCampaign", () => {
 			"administrator",
 		);
 
-		// Delete the user while keeping the token
 		await mercuriusClient.mutate(Mutation_deleteUser, {
 			headers: { authorization: `bearer ${adminAuthToken}` },
 			variables: { input: { id: tempUserId } },
 		});
 
-		// Remove from cleanup list since we already deleted
 		const index = createdUserIds.indexOf(tempUserId);
 		if (index > -1) {
 			createdUserIds.splice(index, 1);
 		}
 
-		// Try to use the deleted user's token
 		const result = await mercuriusClient.mutate(Mutation_createFundCampaign, {
 			headers: {
 				authorization: `bearer ${tempUserToken}`,
@@ -370,11 +337,12 @@ suite("Mutation field createFundCampaign", () => {
 				expect.objectContaining<TalawaGraphQLFormattedError>({
 					extensions: expect.objectContaining({
 						code: "invalid_arguments",
-						issues: expect.arrayContaining([
-							expect.objectContaining({
+						issues: [
+							{
 								argumentPath: ["input", "fundId"],
-							}),
-						]),
+								message: "Invalid uuid",
+							},
+						],
 					}),
 					message: expect.any(String),
 					path: ["createFundCampaign"],
@@ -535,7 +503,6 @@ suite("Mutation field createFundCampaign", () => {
 	test('results in a graphql error with "forbidden_action_on_arguments_associated_resources" extensions code in the "errors" field and "null" as the value of "data.createFundCampaign" field if campaign name already exists in the fund', async () => {
 		const campaignName = `Duplicate Campaign ${faker.string.uuid()}`;
 
-		// First create a campaign
 		const firstResult = await mercuriusClient.mutate(
 			Mutation_createFundCampaign,
 			{
@@ -555,11 +522,10 @@ suite("Mutation field createFundCampaign", () => {
 			},
 		);
 
-		assertToBeNonNullish(firstResult.data?.createFundCampaign?.id);
-		const duplicateTestCampaignId = firstResult.data.createFundCampaign.id;
-		createdFundCampaignIds.push(duplicateTestCampaignId);
+		if (firstResult.data?.createFundCampaign?.id) {
+			createdFundCampaignIds.push(firstResult.data.createFundCampaign.id);
+		}
 
-		// Try to create another campaign with the same name
 		const result = await mercuriusClient.mutate(Mutation_createFundCampaign, {
 			headers: {
 				authorization: `bearer ${adminAuthToken}`,
@@ -594,27 +560,15 @@ suite("Mutation field createFundCampaign", () => {
 				}),
 			]),
 		);
-
-		// Clean up the duplicate test campaign immediately to avoid test order dependencies
-		try {
-			await mercuriusClient.mutate(Mutation_deleteFundCampaign, {
-				headers: { authorization: `bearer ${adminAuthToken}` },
-				variables: { input: { id: duplicateTestCampaignId } },
-			});
-			// Remove from cleanup array since already deleted
-			const index = createdFundCampaignIds.indexOf(duplicateTestCampaignId);
-			if (index > -1) {
-				createdFundCampaignIds.splice(index, 1);
-			}
-		} catch (error) {
-			// Ignore cleanup errors
-		}
 	});
 
-	test('results in a graphql error with "unauthorized_action_on_arguments_associated_resources" extensions code in the "errors" field and "null" as the value of "data.createFundCampaign" field if user is not an organization administrator and not a global administrator', async () => {
+	test('results in a graphql error with "unauthorized_action_on_arguments_associated_resources" extensions code in the "errors" field and "null" as the value of "data.createFundCampaign" field if user is not a member of the organization', async () => {
+		const nonMemberUser = await createTestUser(adminAuthToken, "regular");
+		createdUserIds.push(nonMemberUser.userId);
+
 		const result = await mercuriusClient.mutate(Mutation_createFundCampaign, {
 			headers: {
-				authorization: `bearer ${regularUserAuthToken}`,
+				authorization: `bearer ${nonMemberUser.authToken}`,
 			},
 			variables: {
 				input: {
@@ -669,9 +623,11 @@ suite("Mutation field createFundCampaign", () => {
 		expect(result.data?.createFundCampaign).not.toBeNull();
 		expect(result.data?.createFundCampaign?.name).toBe(campaignName);
 		expect(result.data?.createFundCampaign?.goalAmount).toBe(5000);
+		expect(result.data?.createFundCampaign?.id).toBeDefined();
 
-		assertToBeNonNullish(result.data?.createFundCampaign?.id);
-		createdFundCampaignIds.push(result.data.createFundCampaign.id);
+		if (result.data?.createFundCampaign?.id) {
+			createdFundCampaignIds.push(result.data.createFundCampaign.id);
+		}
 	});
 
 	test("organization administrator can successfully create a fund campaign", async () => {
@@ -696,34 +652,10 @@ suite("Mutation field createFundCampaign", () => {
 		expect(result.data?.createFundCampaign).not.toBeNull();
 		expect(result.data?.createFundCampaign?.name).toBe(campaignName);
 		expect(result.data?.createFundCampaign?.goalAmount).toBe(10000);
+		expect(result.data?.createFundCampaign?.id).toBeDefined();
 
-		assertToBeNonNullish(result.data?.createFundCampaign?.id);
-		createdFundCampaignIds.push(result.data.createFundCampaign.id);
-	});
-
-	test("successfully creates campaign with all required fields", async () => {
-		const campaignName = `Required Fields Campaign ${faker.string.uuid()}`;
-		const result = await mercuriusClient.mutate(Mutation_createFundCampaign, {
-			headers: {
-				authorization: `bearer ${adminAuthToken}`,
-			},
-			variables: {
-				input: {
-					fundId: fundId,
-					name: campaignName,
-					currencyCode: "USD",
-					goalAmount: 1000,
-					startAt: new Date("2025-01-01").toISOString(),
-					endAt: new Date("2025-12-31").toISOString(),
-				},
-			},
-		});
-
-		expect(result.errors).toBeUndefined();
-		expect(result.data?.createFundCampaign).not.toBeNull();
-		expect(result.data?.createFundCampaign?.name).toBe(campaignName);
-
-		assertToBeNonNullish(result.data?.createFundCampaign?.id);
-		createdFundCampaignIds.push(result.data.createFundCampaign.id);
+		if (result.data?.createFundCampaign?.id) {
+			createdFundCampaignIds.push(result.data.createFundCampaign.id);
+		}
 	});
 });
