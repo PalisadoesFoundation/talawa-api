@@ -4319,6 +4319,12 @@ type PostDownVotersConnectionEdge {
   node: User
 }
 
+"""Sorting criteria for Post, e.g., 'createdAt_ASC' or 'createdAt_DESC'"""
+enum PostOrderByInput {
+  createdAt_ASC
+  createdAt_DESC
+}
+
 """"""
 type PostUpVotersConnection {
   edges: [PostUpVotersConnectionEdge]
@@ -4541,25 +4547,20 @@ type Query {
   organization(input: QueryOrganizationInput!): Organization
 
   """
-  GraphQL connection query to retrieve all posts belonging to an organization with their attachments.
-  """
-  organizationPosts(
-    after: String
-    before: String
-    first: Int
-
-    """Input required to query posts of an organization."""
-    input: QueryOrganizationPostsInput!
-    last: Int
-  ): QueryOrganizationPostsConnection
-
-  """
   Query to fetch all organizations with optional filtering. If limit and offset are not provided, returns all organizations.
   """
   organizations(filter: String, limit: Int, offset: Int): [Organization!]
 
   """Query field to read a post."""
   post(input: QueryPostInput!): Post
+
+  """
+  Query to retrieve all posts belonging to an organization with their attachments.
+  """
+  postsByOrganization(
+    """Input required to query posts of an organization."""
+    input: QueryOrganizationPostsInput!
+  ): [Post!]
 
   """
   Query field to renew the authentication token of an authenticated client for signing in to talawa.
@@ -4733,22 +4734,13 @@ input QueryOrganizationInput {
   id: String!
 }
 
-"""Array of edges containing post nodes."""
-type QueryOrganizationPostsConnection {
-  edges: [QueryOrganizationPostsConnectionEdge]
-  pageInfo: PageInfo!
-}
-
-"""Post node."""
-type QueryOrganizationPostsConnectionEdge {
-  cursor: String!
-  node: Post
-}
-
 """Input for querying posts of an organization."""
 input QueryOrganizationPostsInput {
   """Global identifier of the organization."""
   organizationId: ID!
+
+  """Optional sort order: "ASC" or "DESC" (defaults to "DESC")"""
+  sortOrder: String
 }
 
 """

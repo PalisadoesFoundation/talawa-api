@@ -666,7 +666,7 @@ export const Query_organization = gql(`
   `);
 
 export const Query_postsByOrganization = gql(`
-  query Query_postsByOrganization($input: GetPostsByOrgInput!) {
+  query Query_postsByOrganization($input: QueryOrganizationPostsInput!) {
     postsByOrganization(input: $input) {
       id
       caption
@@ -681,6 +681,8 @@ export const Query_postsByOrganization = gql(`
         name
       }
     }
+  }
+`);
   }
 `);
 

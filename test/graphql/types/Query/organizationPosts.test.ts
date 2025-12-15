@@ -26,8 +26,9 @@ beforeAll(async () => {
 			},
 		},
 	});
-	assertToBeNonNullish(signUpResult.data?.signUp);
-	authToken = signUpResult.data.signUp.authenticationToken;
+		assertToBeNonNullish(signUpResult.data?.signUp);
+		assertToBeNonNullish(signUpResult.data?.signUp?.authenticationToken);
+		authToken = signUpResult.data!.signUp!.authenticationToken;
 });
 
 afterEach(async () => {
@@ -243,68 +244,6 @@ suite("Query field postsByOrganization", () => {
 					},
 				},
 			});
-
-			test("administrator can access posts from any organization", async () => {
-				// Create an org with the test user
-				const orgResult = await mercuriusClient.mutate(
-					Mutation_createOrganization,
-					{
-						headers: { authorization: `bearer ${authToken}` },
-						variables: {
-							input: {
-								name: `AdminAccess Org ${faker.string.uuid()}`,
-								countryCode: "US",
-							},
-						},
-					},
-				);
-				const orgId = orgResult.data?.createOrganization?.id;
-				assertToBeNonNullish(orgId);
-				cleanupFns.push(async () => {
-					await mercuriusClient.mutate(Mutation_deleteOrganization, {
-						headers: { authorization: `bearer ${authToken}` },
-						variables: { input: { id: orgId } },
-					});
-				});
-
-				// Create a post in that org
-				const createdPost = await mercuriusClient.mutate(Mutation_createPost, {
-					headers: { authorization: `bearer ${authToken}` },
-					variables: {
-						input: {
-							organizationId: orgId,
-							caption: "Admin Visible Post",
-							attachments: [],
-						},
-					},
-				});
-				const createdPostId = createdPost.data?.createPost?.id;
-				assertToBeNonNullish(createdPostId);
-
-				// Sign in as administrator using server admin credentials
-				const adminSignIn = await mercuriusClient.query(Query_signIn, {
-					variables: {
-						input: {
-							emailAddress:
-								server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-							password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-						},
-					},
-				});
-				assertToBeNonNullish(adminSignIn.data?.signIn?.authenticationToken);
-				const adminAuthToken = adminSignIn.data.signIn.authenticationToken;
-
-				// Admin queries posts for the org they are not a member of
-				const result = await mercuriusClient.query(Query_postsByOrganization, {
-					headers: { authorization: `bearer ${adminAuthToken}` },
-					variables: { input: { organizationId: orgId } },
-				});
-
-				expect(result.errors).toBeUndefined();
-				expect(result.data?.postsByOrganization).toBeDefined();
-				const posts = result.data?.postsByOrganization ?? [];
-				expect(posts.map((p: { id: string }) => p.id)).toContain(createdPostId);
-			});
 			assertToBeNonNullish(nonMemberSignUp.data?.signUp);
 			const nonMemberToken = nonMemberSignUp.data.signUp.authenticationToken;
 
@@ -345,6 +284,67 @@ suite("Query field postsByOrganization", () => {
 					}),
 				]),
 			);
+		});
+
+		test("administrator can access posts from any organization", async () => {
+			// Create an org with the test user
+			const orgResult = await mercuriusClient.mutate(
+				Mutation_createOrganization,
+				{
+					headers: { authorization: `bearer ${authToken}` },
+					variables: {
+						input: {
+							name: `AdminAccess Org ${faker.string.uuid()}`,
+							countryCode: "US",
+						},
+					},
+				},
+			);
+			const orgId = orgResult.data?.createOrganization?.id;
+			assertToBeNonNullish(orgId);
+			cleanupFns.push(async () => {
+				await mercuriusClient.mutate(Mutation_deleteOrganization, {
+					headers: { authorization: `bearer ${authToken}` },
+					variables: { input: { id: orgId } },
+				});
+			});
+
+			// Create a post in that org
+			const createdPost = await mercuriusClient.mutate(Mutation_createPost, {
+				headers: { authorization: `bearer ${authToken}` },
+				variables: {
+					input: {
+						organizationId: orgId,
+						caption: "Admin Visible Post",
+						attachments: [],
+					},
+				},
+			});
+			const createdPostId = createdPost.data?.createPost?.id;
+			assertToBeNonNullish(createdPostId);
+
+			// Sign in as administrator using server admin credentials
+			const adminSignIn = await mercuriusClient.query(Query_signIn, {
+				variables: {
+					input: {
+						emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
+						password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
+					},
+				},
+			});
+			assertToBeNonNullish(adminSignIn.data?.signIn?.authenticationToken);
+			const adminAuthToken = adminSignIn.data.signIn.authenticationToken;
+
+			// Admin queries posts for the org they are not a member of
+			const result = await mercuriusClient.query(Query_postsByOrganization, {
+				headers: { authorization: `bearer ${adminAuthToken}` },
+				variables: { input: { organizationId: orgId } },
+			});
+
+			expect(result.errors).toBeUndefined();
+			expect(result.data?.postsByOrganization).toBeDefined();
+			const posts = result.data?.postsByOrganization ?? [];
+			expect(posts.map((p: { id: string }) => p.id)).toContain(createdPostId);
 		});
 	});
 
@@ -443,13 +443,13 @@ suite("Query field postsByOrganization", () => {
 
 			const attachmentsPayload = [
 				{
-					mimeType: "image/png",
+					mimetype: "IMAGE_PNG",
 					objectName: "obj1",
 					fileHash: "hash1",
 					name: "file1.png",
 				},
 				{
-					mimeType: "image/jpeg",
+					mimetype: "IMAGE_JPEG",
 					objectName: "obj2",
 					fileHash: "hash2",
 					name: "file2.jpg",
