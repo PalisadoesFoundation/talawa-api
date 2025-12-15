@@ -19,6 +19,9 @@ import {
 	Query_signIn,
 } from "../documentNodes";
 
+const ONE_DAY_MS = 24 * 60 * 60 * 1000;
+const TWO_DAYS_MS = 2 * ONE_DAY_MS;
+
 async function getAdminToken() {
 	const signInResult = await mercuriusClient.query(Query_signIn, {
 		variables: {
@@ -54,9 +57,12 @@ async function createTestUser(
 	});
 
 	assertToBeNonNullish(userResult.data?.createUser);
+	assertToBeNonNullish(userResult.data.createUser.user?.id);
+	assertToBeNonNullish(userResult.data.createUser.authenticationToken);
+
 	return {
-		userId: userResult.data.createUser.user?.id as string,
-		authToken: userResult.data.createUser.authenticationToken as string,
+		userId: userResult.data.createUser.user.id,
+		authToken: userResult.data.createUser.authenticationToken,
 	};
 }
 
@@ -201,8 +207,9 @@ suite("Mutation field createFundCampaignPledge", () => {
 		fundId = await createFund(adminAuthToken, organizationId);
 		createdFundIds.push(fundId);
 
-		const startDate = new Date(Date.now() - 86400000);
-		const endDate = new Date(Date.now() + 86400000);
+		const startDate = new Date(Date.now() - ONE_DAY_MS);
+		const endDate = new Date(Date.now() + ONE_DAY_MS);
+
 		activeCampaignId = await createFundCampaign(
 			adminAuthToken,
 			fundId,
@@ -369,6 +376,37 @@ suite("Mutation field createFundCampaignPledge", () => {
 				variables: {
 					input: {
 						amount: -100,
+						campaignId: activeCampaignId,
+						pledgerId: pledgerUserId,
+					},
+				},
+			},
+		);
+
+		expect(result.data?.createFundCampaignPledge).toBeNull();
+		expect(result.errors).toEqual(
+			expect.arrayContaining<TalawaGraphQLFormattedError>([
+				expect.objectContaining<TalawaGraphQLFormattedError>({
+					extensions: expect.objectContaining({
+						code: "invalid_arguments",
+					}),
+					message: expect.any(String),
+					path: ["createFundCampaignPledge"],
+				}),
+			]),
+		);
+	});
+
+	test('results in a graphql error with "invalid_arguments" extensions code if amount is zero', async () => {
+		const result = await mercuriusClient.mutate(
+			Mutation_createFundCampaignPledge,
+			{
+				headers: {
+					authorization: `bearer ${adminAuthToken}`,
+				},
+				variables: {
+					input: {
+						amount: 0,
 						campaignId: activeCampaignId,
 						pledgerId: pledgerUserId,
 					},
@@ -563,8 +601,8 @@ suite("Mutation field createFundCampaignPledge", () => {
 	});
 
 	test('results in a graphql error with "forbidden_action_on_arguments_associated_resources" extensions code if campaign has ended', async () => {
-		const endedStartDate = new Date(Date.now() - 172800000);
-		const endedEndDate = new Date(Date.now() - 86400000);
+		const endedStartDate = new Date(Date.now() - TWO_DAYS_MS);
+		const endedEndDate = new Date(Date.now() - ONE_DAY_MS);
 		const endedCampaignId = await createFundCampaign(
 			adminAuthToken,
 			fundId,
@@ -619,8 +657,8 @@ suite("Mutation field createFundCampaignPledge", () => {
 	});
 
 	test('results in a graphql error with "forbidden_action_on_arguments_associated_resources" extensions code if campaign has not started yet', async () => {
-		const futureStartDate = new Date(Date.now() + 86400000);
-		const futureEndDate = new Date(Date.now() + 172800000);
+		const futureStartDate = new Date(Date.now() + ONE_DAY_MS);
+		const futureEndDate = new Date(Date.now() + TWO_DAYS_MS);
 		const futureCampaignId = await createFundCampaign(
 			adminAuthToken,
 			fundId,
