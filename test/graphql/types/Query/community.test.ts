@@ -17,18 +17,18 @@ const Query_community = gql(`
 `);
 
 suite("community query", () => {
-    test("returns community when it exists", async () => {
-        const communityId = faker.string.uuid();
-        await server.drizzleClient.insert(communitiesTable).values({
-            id: communityId,
-            name: "Test community",
-        });
+	test("returns community when it exists", async () => {
+		const communityId = faker.string.uuid();
+		await server.drizzleClient.insert(communitiesTable).values({
+			id: communityId,
+			name: "Test community",
+		});
 
-        const response = await mercuriusClient.query(Query_community);
+		const response = await mercuriusClient.query(Query_community);
 
-        expect(response.errors).toBeUndefined();
-        expect(response.data?.community).toBeDefined();
-        expect(response.data?.community.id).toBe(communityId);
-        expect(response.data?.community.name).toBe("Test community");
-    });
+		expect(response.errors).toBeUndefined();
+		expect(response.data?.community).toBeDefined();
+		expect(response.data?.community.id).toBe(communityId);
+		expect(response.data?.community.name).toBe("Test community");
+	});
 });
