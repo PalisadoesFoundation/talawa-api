@@ -114,8 +114,12 @@ describe("Fund Resolver - Organization Field", () => {
 				countryCode: "US",
 			};
 
-			mocks.drizzleClient.query.organizationsTable.findFirst.mockResolvedValue(
-				mockOrganization,
+			mocks.drizzleClient.query.organizationsTable.findFirst.mockImplementation(
+				((config: { where?: unknown }) => {
+					// Verify where clause is provided
+					expect(config.where).toBeDefined();
+					return Promise.resolve(mockOrganization);
+				}) as unknown as typeof mocks.drizzleClient.query.organizationsTable.findFirst,
 			);
 
 			await organizationResolver(mockFund, {}, ctx);
@@ -123,11 +127,6 @@ describe("Fund Resolver - Organization Field", () => {
 			expect(
 				mocks.drizzleClient.query.organizationsTable.findFirst,
 			).toHaveBeenCalledTimes(1);
-			expect(
-				mocks.drizzleClient.query.organizationsTable.findFirst,
-			).toHaveBeenCalledWith({
-				where: expect.any(Function),
-			});
 		});
 
 		it("should handle different organization IDs correctly", async () => {
@@ -194,9 +193,10 @@ describe("Fund Resolver - Organization Field", () => {
 			mocks.drizzleClient.query.organizationsTable.findFirst.mockResolvedValue(
 				undefined,
 			);
-
+			expect.assertions(4);
 			try {
 				await organizationResolver(mockFund, {}, ctx);
+				expect.fail("Expect organizationResolver to throw");
 			} catch (error) {
 				expect(ctx.log.error).toHaveBeenCalledWith(
 					"Postgres select operation returned an empty array for a fund's organization id that isn't null.",
@@ -583,7 +583,9 @@ describe("Fund Resolver - Organization Field", () => {
 			);
 
 			try {
+				expect.assertions(1);
 				await organizationResolver(mockFund, {}, ctx);
+				expect.fail("Expected error to be thrown");
 			} catch (error) {
 				expect(ctx.log.error).toHaveBeenCalledWith(
 					"Postgres select operation returned an empty array for a fund's organization id that isn't null.",
@@ -599,7 +601,9 @@ describe("Fund Resolver - Organization Field", () => {
 			mockFund.organizationId = "missing-org-123";
 
 			try {
+				expect.assertions(1);
 				await organizationResolver(mockFund, {}, ctx);
+				expect.fail("Expected error to be thrown");
 			} catch (error) {
 				expect(ctx.log.error).toHaveBeenCalledWith(
 					expect.stringContaining("fund's organization id"),
