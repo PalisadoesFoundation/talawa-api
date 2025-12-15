@@ -64,14 +64,14 @@ export function sanitizeInput(
 	str: string | null | undefined,
 ): SanitizedInputString | null | undefined {
 	if (str === null || str === undefined) {
-		return str as SanitizedInputString | null | undefined;
+		return str;
 	}
 	return str.trim() as SanitizedInputString;
 }
 
 /**
  * Type guard to check if a value is a SanitizedInputString.
- * Note: At runtime, this just checks if it's a non-empty trimmed string.
+ * At runtime, this just checks if it's a trimmed string (may be empty).
  * The branded type provides compile-time safety.
  * @param value The value to check.
  * @returns True if the value appears to be sanitized input.
