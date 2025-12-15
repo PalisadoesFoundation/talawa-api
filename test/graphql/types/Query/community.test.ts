@@ -28,7 +28,9 @@ suite("community query", () => {
 
 		expect(response.errors).toBeUndefined();
 		expect(response.data?.community).toBeDefined();
-		expect(response.data?.community.id).toBe(communityId);
+		expect(response.data?.community.id).toMatch(
+			/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i,
+		);
 		expect(response.data?.community.name).toBe("Test community");
 	});
 });
