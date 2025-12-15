@@ -1,8 +1,6 @@
 // DO NOT USE HARDCODE VALUES FOR VARIABLES IN THE GRAPHQL DOCUMENT NODES, PROVIDE THEM EXPLICITLY IN THE TESTS WHERE THE DOCUMENT NODES ARE USED IN.
 
 import { initGraphQLTada } from "gql.tada";
-import type { ClientCustomScalars } from "~/src/graphql/scalars/index";
-import type { introspection } from "./gql.tada";
 
 const gql = initGraphQLTada<{
 	introspection: introspection;
@@ -681,8 +679,6 @@ export const Query_postsByOrganization = gql(`
         name
       }
     }
-  }
-`);
   }
 `);
 

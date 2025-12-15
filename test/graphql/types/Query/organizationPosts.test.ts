@@ -26,9 +26,10 @@ beforeAll(async () => {
 			},
 		},
 	});
-		assertToBeNonNullish(signUpResult.data?.signUp);
-		assertToBeNonNullish(signUpResult.data?.signUp?.authenticationToken);
-		authToken = signUpResult.data!.signUp!.authenticationToken;
+	assertToBeNonNullish(signUpResult.data?.signUp);
+	const token = signUpResult.data?.signUp?.authenticationToken;
+	assertToBeNonNullish(token);
+	authToken = token;
 });
 
 afterEach(async () => {
