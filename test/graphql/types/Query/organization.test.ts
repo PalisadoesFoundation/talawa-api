@@ -28,6 +28,7 @@ suite("Query field organization", () => {
 	suite("when input validation fails", () => {
 		test("should return error for non-existent organization ID", async () => {
 			const result = await mercuriusClient.query(Query_organization, {
+				headers: { authorization: `bearer ${authToken}` },
 				variables: {
 					input: {
 						id: faker.string.uuid(),
@@ -74,19 +75,24 @@ suite("Query field organization", () => {
 			);
 
 			const orgId = createOrgResult.data?.createOrganization?.id;
+			expect(createOrgResult.errors).toBeUndefined();
 			assertToBeNonNullish(orgId);
 
 			// Add admin as organization member with administrator role
-			await mercuriusClient.mutate(Mutation_createOrganizationMembership, {
-				headers: { authorization: `bearer ${authToken}` },
-				variables: {
-					input: {
-						memberId: adminUserId,
-						organizationId: orgId,
-						role: "administrator",
+			const membershipResult = await mercuriusClient.mutate(
+				Mutation_createOrganizationMembership,
+				{
+					headers: { authorization: `bearer ${authToken}` },
+					variables: {
+						input: {
+							memberId: adminUserId,
+							organizationId: orgId,
+							role: "administrator",
+						},
 					},
 				},
-			});
+			);
+			expect(membershipResult.errors).toBeUndefined();
 
 			// Query the organization
 			const result = await mercuriusClient.query(Query_organization, {
@@ -130,6 +136,7 @@ suite("Query field organization", () => {
 			);
 
 			const orgId = createOrgResult.data?.createOrganization?.id;
+			expect(createOrgResult.errors).toBeUndefined();
 			assertToBeNonNullish(orgId);
 
 			// Add admin as organization member with administrator role
@@ -167,16 +174,7 @@ suite("Query field organization", () => {
 
 			// Verify admin is a member
 			const adminMember = result.data?.organization?.members?.edges?.find(
-				(
-					edge: {
-						cursor: string;
-						node: {
-							id: string;
-							name: string | null;
-							role: "administrator" | "regular" | null;
-						} | null;
-					} | null,
-				) => edge?.node?.id === adminUserId,
+				(edge) => edge?.node?.id === adminUserId,
 			);
 			expect(adminMember).toBeDefined();
 			expect(adminMember?.node?.role).toBe("administrator");
