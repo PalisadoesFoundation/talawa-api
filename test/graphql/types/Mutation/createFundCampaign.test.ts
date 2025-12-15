@@ -372,6 +372,45 @@ suite("Mutation field createFundCampaign", () => {
 		);
 	});
 
+	test('results in a graphql error with "invalid_arguments" extensions code when endAt is before or equal to startAt', async () => {
+		const startDate = new Date("2025-06-01");
+		const endDate = new Date("2025-05-01"); // Before startDate
+
+		const result = await mercuriusClient.mutate(Mutation_createFundCampaign, {
+			headers: {
+				authorization: `bearer ${adminAuthToken}`,
+			},
+			variables: {
+				input: {
+					fundId: fundId,
+					name: `Test Campaign ${faker.string.uuid()}`,
+					currencyCode: "USD",
+					goalAmount: 1000,
+					startAt: startDate.toISOString(),
+					endAt: endDate.toISOString(),
+				},
+			},
+		});
+
+		expect(result.data?.createFundCampaign).toBeNull();
+		expect(result.errors).toEqual(
+			expect.arrayContaining<TalawaGraphQLFormattedError>([
+				expect.objectContaining<TalawaGraphQLFormattedError>({
+					extensions: expect.objectContaining({
+						code: "invalid_arguments",
+						issues: expect.arrayContaining([
+							expect.objectContaining({
+								argumentPath: ["input", "endAt"],
+							}),
+						]),
+					}),
+					message: expect.any(String),
+					path: ["createFundCampaign"],
+				}),
+			]),
+		);
+	});
+
 	test('results in a graphql error with "arguments_associated_resources_not_found" extensions code in the "errors" field and "null" as the value of "data.createFundCampaign" field if no fund exists with the provided id', async () => {
 		const result = await mercuriusClient.mutate(Mutation_createFundCampaign, {
 			headers: {
