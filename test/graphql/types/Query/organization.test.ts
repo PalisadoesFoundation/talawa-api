@@ -26,6 +26,29 @@ assertToBeNonNullish(adminUserId);
 
 suite("Query field organization", () => {
 	suite("when input validation fails", () => {
+		test("should handle invalid input gracefully", async () => {
+			// Attempt to query with an invalid/malformed ID structure
+			// This tests the Zod validation layer
+			const result = await mercuriusClient.query(Query_organization, {
+				headers: { authorization: `bearer ${authToken}` },
+				variables: {
+					input: {
+						id: "", // empty string or other validation-failing input
+					},
+				},
+			});
+
+			assertToBeNonNullish(result.errors);
+			expect(result.errors).toHaveLength(1);
+			expect(result.errors).toContainEqual(
+				expect.objectContaining({
+					extensions: expect.objectContaining({
+						code: "invalid_arguments",
+						issues: expect.any(Array),
+					}),
+				}),
+			);
+		});
 		test("should return error for non-existent organization ID", async () => {
 			const result = await mercuriusClient.query(Query_organization, {
 				headers: { authorization: `bearer ${authToken}` },
@@ -140,17 +163,19 @@ suite("Query field organization", () => {
 			assertToBeNonNullish(orgId);
 
 			// Add admin as organization member with administrator role
-			await mercuriusClient.mutate(Mutation_createOrganizationMembership, {
-				headers: { authorization: `bearer ${authToken}` },
-				variables: {
-					input: {
-						memberId: adminUserId,
-						organizationId: orgId,
-						role: "administrator",
+			const membershipResult = await mercuriusClient.mutate(
+				Mutation_createOrganizationMembership,
+				{
+					headers: { authorization: `bearer ${authToken}` },
+					variables: {
+						input: {
+							memberId: adminUserId,
+							organizationId: orgId,
+							role: "administrator",
+						},
 					},
-				},
-			});
-
+				});
+			expect(membershipResult.errors).toBeUndefined();
 			// Query the organization with members
 			const result = await mercuriusClient.query(Query_organization, {
 				headers: { authorization: `bearer ${authToken}` },
