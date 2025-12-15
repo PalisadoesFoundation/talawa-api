@@ -130,9 +130,7 @@ suite("Mutation field createFundCampaign", () => {
 	// This branch cannot be reliably tested without DB layer mocking.
 
 	let adminAuthToken: string;
-	let regularUserAuthToken: string;
 	let orgAdminUserAuthToken: string;
-	let regularUserId: string;
 	let orgAdminUserId: string;
 	let adminUserId: string;
 	let organizationId: string;
@@ -155,11 +153,6 @@ suite("Mutation field createFundCampaign", () => {
 		});
 		assertToBeNonNullish(adminSignInResult.data?.signIn?.user?.id);
 		adminUserId = adminSignInResult.data.signIn.user.id;
-
-		const regularUser = await createTestUser(adminAuthToken, "regular");
-		regularUserId = regularUser.userId;
-		regularUserAuthToken = regularUser.authToken;
-		createdUserIds.push(regularUserId);
 
 		const orgAdminUser = await createTestUser(adminAuthToken, "regular");
 		orgAdminUserId = orgAdminUser.userId;
