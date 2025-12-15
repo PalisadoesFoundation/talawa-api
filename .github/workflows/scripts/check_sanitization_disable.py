@@ -27,11 +27,11 @@ import re
 import sys
 
 
-def check_sanitization_disable(file_path: str) -> tuple[bool, str]:
+def check_sanitization_disable(file_path):
     """Check if file has valid sanitization disable comment with justification.
 
     Args:
-        file_path: Path to the file to check.
+        file_path (str): Path to the file to check.
 
     Returns:
         tuple: (has_invalid_disable, error_message)
@@ -93,11 +93,11 @@ def check_sanitization_disable(file_path: str) -> tuple[bool, str]:
     return False, ""
 
 
-def check_files(files_or_directories: list[str]) -> bool:
+def check_files(files_or_directories):
     """Check files for invalid sanitization disable comments.
 
     Args:
-        files_or_directories: List of files or directories to check.
+        files_or_directories (list): List of files or directories to check.
 
     Returns:
         bool: True if invalid disable comments found, False otherwise.
@@ -129,8 +129,11 @@ def check_files(files_or_directories: list[str]) -> bool:
     return has_errors
 
 
-def arg_parser_resolver() -> argparse.Namespace:
+def arg_parser_resolver():
     """Resolve the CLI arguments provided by the user.
+
+    Args:
+        None
 
     Returns:
         result: Parsed argument object
@@ -166,6 +169,12 @@ def main():
     2. Recursively checks files for invalid sanitization disable comments.
     3. Provides informative messages based on the analysis.
     4. Exits with an error if invalid disable comments are found.
+
+    Args:
+        None
+
+    Returns:
+        None
 
     Raises:
         SystemExit: If an error occurs during execution.
