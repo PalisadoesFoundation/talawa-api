@@ -1,18 +1,9 @@
-import type { GraphQLObjectType } from "graphql";
 import { createMockGraphQLContext } from "test/_Mocks_/mockContextCreator/mockContextCreator";
 import { beforeEach, describe, expect, it } from "vitest";
 import type { GraphQLContext } from "~/src/graphql/context";
-import { schemaManager } from "~/src/graphql/schemaManager";
 import type { Fund as FundType } from "~/src/graphql/types/Fund/Fund";
+import { resolveOrganization } from "~/src/graphql/types/Fund/organization";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
-
-// Since the organization resolver is inline in the Fund.implement,
-// we need to extract it for testing
-let organizationResolver: (
-	parent: FundType,
-	args: Record<string, never>,
-	ctx: GraphQLContext,
-) => Promise<unknown>;
 
 describe("Fund Resolver - Organization Field", () => {
 	let ctx: GraphQLContext;
@@ -38,22 +29,6 @@ describe("Fund Resolver - Organization Field", () => {
 		);
 		ctx = context;
 		mocks = newMocks;
-
-		// Extract the organization resolver from the schema
-		const schema = await schemaManager.buildInitialSchema();
-		const fundType = schema.getType("Fund") as GraphQLObjectType;
-		const fields = fundType.getFields();
-		const organizationField = fields.organization;
-
-		if (!organizationField?.resolve) {
-			throw new Error("Fund.organization resolver not found");
-		}
-
-		organizationResolver = organizationField.resolve as (
-			parent: FundType,
-			args: Record<string, never>,
-			ctx: GraphQLContext,
-		) => Promise<unknown>;
 	});
 
 	describe("Organization Resolution", () => {
@@ -79,7 +54,7 @@ describe("Fund Resolver - Organization Field", () => {
 				mockOrganization,
 			);
 
-			const result = await organizationResolver(mockFund, {}, ctx);
+			const result = await resolveOrganization(mockFund, {}, ctx);
 
 			expect(result).toEqual(mockOrganization);
 			expect(
@@ -94,7 +69,7 @@ describe("Fund Resolver - Organization Field", () => {
 				undefined,
 			);
 
-			await expect(organizationResolver(mockFund, {}, ctx)).rejects.toThrow(
+			await expect(resolveOrganization(mockFund, {}, ctx)).rejects.toThrow(
 				new TalawaGraphQLError({
 					extensions: { code: "unexpected" },
 				}),
@@ -122,7 +97,7 @@ describe("Fund Resolver - Organization Field", () => {
 				}) as unknown as typeof mocks.drizzleClient.query.organizationsTable.findFirst,
 			);
 
-			await organizationResolver(mockFund, {}, ctx);
+			await resolveOrganization(mockFund, {}, ctx);
 
 			expect(
 				mocks.drizzleClient.query.organizationsTable.findFirst,
@@ -148,7 +123,7 @@ describe("Fund Resolver - Organization Field", () => {
 				mockOrganization1,
 			);
 
-			let result = await organizationResolver(mockFund, {}, ctx);
+			let result = await resolveOrganization(mockFund, {}, ctx);
 			expect(result).toEqual(mockOrganization1);
 
 			// Test with second organization ID
@@ -157,7 +132,7 @@ describe("Fund Resolver - Organization Field", () => {
 				mockOrganization2,
 			);
 
-			result = await organizationResolver(mockFund, {}, ctx);
+			result = await resolveOrganization(mockFund, {}, ctx);
 			expect(result).toEqual(mockOrganization2);
 
 			// Verify both calls were made
@@ -178,7 +153,7 @@ describe("Fund Resolver - Organization Field", () => {
 				mockOrganization,
 			);
 
-			await organizationResolver(mockFund, {}, ctx);
+			await resolveOrganization(mockFund, {}, ctx);
 
 			expect(
 				mocks.drizzleClient.query.organizationsTable.findFirst,
@@ -195,8 +170,8 @@ describe("Fund Resolver - Organization Field", () => {
 			);
 			expect.assertions(4);
 			try {
-				await organizationResolver(mockFund, {}, ctx);
-				expect.fail("Expect organizationResolver to throw");
+				await resolveOrganization(mockFund, {}, ctx);
+				expect.fail("Expect resolveOrganization to throw");
 			} catch (error) {
 				expect(ctx.log.error).toHaveBeenCalledWith(
 					"Postgres select operation returned an empty array for a fund's organization id that isn't null.",
@@ -217,7 +192,7 @@ describe("Fund Resolver - Organization Field", () => {
 				databaseError,
 			);
 
-			await expect(organizationResolver(mockFund, {}, ctx)).rejects.toThrow(
+			await expect(resolveOrganization(mockFund, {}, ctx)).rejects.toThrow(
 				databaseError,
 			);
 
@@ -238,7 +213,7 @@ describe("Fund Resolver - Organization Field", () => {
 				mockOrganization,
 			);
 
-			await organizationResolver(mockFund, {}, ctx);
+			await resolveOrganization(mockFund, {}, ctx);
 
 			expect(ctx.log.error).not.toHaveBeenCalled();
 		});
@@ -250,7 +225,7 @@ describe("Fund Resolver - Organization Field", () => {
 				timeoutError,
 			);
 
-			await expect(organizationResolver(mockFund, {}, ctx)).rejects.toThrow(
+			await expect(resolveOrganization(mockFund, {}, ctx)).rejects.toThrow(
 				timeoutError,
 			);
 		});
@@ -262,7 +237,7 @@ describe("Fund Resolver - Organization Field", () => {
 				constraintError,
 			);
 
-			await expect(organizationResolver(mockFund, {}, ctx)).rejects.toThrow(
+			await expect(resolveOrganization(mockFund, {}, ctx)).rejects.toThrow(
 				constraintError,
 			);
 		});
@@ -291,7 +266,7 @@ describe("Fund Resolver - Organization Field", () => {
 				mockOrganization,
 			);
 
-			const result = await organizationResolver(mockFund, {}, ctx);
+			const result = await resolveOrganization(mockFund, {}, ctx);
 
 			expect(result).toEqual(mockOrganization);
 			expect(result).toHaveProperty("id", "org-123");
@@ -327,7 +302,7 @@ describe("Fund Resolver - Organization Field", () => {
 				minimalOrganization,
 			);
 
-			const result = await organizationResolver(mockFund, {}, ctx);
+			const result = await resolveOrganization(mockFund, {}, ctx);
 
 			expect(result).toEqual(minimalOrganization);
 			expect(result).toHaveProperty("id", "org-123");
@@ -359,7 +334,7 @@ describe("Fund Resolver - Organization Field", () => {
 				complexOrganization,
 			);
 
-			const result = await organizationResolver(mockFund, {}, ctx);
+			const result = await resolveOrganization(mockFund, {}, ctx);
 
 			expect(result).toEqual(complexOrganization);
 			expect(result).toHaveProperty("customField", "custom value");
@@ -382,7 +357,7 @@ describe("Fund Resolver - Organization Field", () => {
 				uuidOrganization,
 			);
 
-			const result = await organizationResolver(mockFund, {}, ctx);
+			const result = await resolveOrganization(mockFund, {}, ctx);
 
 			expect(result).toEqual(uuidOrganization);
 			expect(result).toHaveProperty("id", uuidOrgId);
@@ -401,7 +376,7 @@ describe("Fund Resolver - Organization Field", () => {
 				specialOrganization,
 			);
 
-			const result = await organizationResolver(mockFund, {}, ctx);
+			const result = await resolveOrganization(mockFund, {}, ctx);
 
 			expect(result).toEqual(specialOrganization);
 			expect(result).toHaveProperty("id", "org-123");
@@ -426,7 +401,7 @@ describe("Fund Resolver - Organization Field", () => {
 					org,
 				);
 
-				const result = await organizationResolver(mockFund, {}, ctx);
+				const result = await resolveOrganization(mockFund, {}, ctx);
 				expect(result).toEqual(org);
 				expect(result).toHaveProperty("id", org.id);
 				expect(result).toHaveProperty("name", org.name);
@@ -456,7 +431,7 @@ describe("Fund Resolver - Organization Field", () => {
 				organizationWithNulls,
 			);
 
-			const result = await organizationResolver(mockFund, {}, ctx);
+			const result = await resolveOrganization(mockFund, {}, ctx);
 
 			expect(result).toEqual(organizationWithNulls);
 			expect(result).toHaveProperty("description", null);
@@ -476,7 +451,7 @@ describe("Fund Resolver - Organization Field", () => {
 				longNameOrganization,
 			);
 
-			const result = await organizationResolver(mockFund, {}, ctx);
+			const result = await resolveOrganization(mockFund, {}, ctx);
 
 			expect(result).toEqual(longNameOrganization);
 			expect(result).toHaveProperty("name", longName);
@@ -494,7 +469,7 @@ describe("Fund Resolver - Organization Field", () => {
 				mockOrganization,
 			);
 
-			await organizationResolver(mockFund, {}, ctx);
+			await resolveOrganization(mockFund, {}, ctx);
 
 			expect(
 				mocks.drizzleClient.query.organizationsTable.findFirst,
@@ -518,14 +493,14 @@ describe("Fund Resolver - Organization Field", () => {
 			mocks.drizzleClient.query.organizationsTable.findFirst.mockResolvedValueOnce(
 				mockOrganization1,
 			);
-			await organizationResolver(mockFund, {}, ctx);
+			await resolveOrganization(mockFund, {}, ctx);
 
 			// Second call with different org
 			mockFund.organizationId = "org-2";
 			mocks.drizzleClient.query.organizationsTable.findFirst.mockResolvedValueOnce(
 				mockOrganization2,
 			);
-			await organizationResolver(mockFund, {}, ctx);
+			await resolveOrganization(mockFund, {}, ctx);
 
 			expect(
 				mocks.drizzleClient.query.organizationsTable.findFirst,
@@ -547,7 +522,7 @@ describe("Fund Resolver - Organization Field", () => {
 				mockOrganization,
 			);
 
-			const result = await organizationResolver(mockFund, {}, ctx);
+			const result = await resolveOrganization(mockFund, {}, ctx);
 
 			expect(result).toEqual(mockOrganization);
 			// organizationId should always be used in the query
@@ -564,7 +539,7 @@ describe("Fund Resolver - Organization Field", () => {
 				undefined,
 			);
 
-			await expect(organizationResolver(mockFund, {}, ctx)).rejects.toThrow(
+			await expect(resolveOrganization(mockFund, {}, ctx)).rejects.toThrow(
 				new TalawaGraphQLError({
 					extensions: { code: "unexpected" },
 				}),
@@ -584,7 +559,7 @@ describe("Fund Resolver - Organization Field", () => {
 
 			try {
 				expect.assertions(1);
-				await organizationResolver(mockFund, {}, ctx);
+				await resolveOrganization(mockFund, {}, ctx);
 				expect.fail("Expected error to be thrown");
 			} catch (error) {
 				expect(ctx.log.error).toHaveBeenCalledWith(
@@ -602,7 +577,7 @@ describe("Fund Resolver - Organization Field", () => {
 
 			try {
 				expect.assertions(1);
-				await organizationResolver(mockFund, {}, ctx);
+				await resolveOrganization(mockFund, {}, ctx);
 				expect.fail("Expected error to be thrown");
 			} catch (error) {
 				expect(ctx.log.error).toHaveBeenCalledWith(
