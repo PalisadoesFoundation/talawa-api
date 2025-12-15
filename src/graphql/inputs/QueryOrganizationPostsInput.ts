@@ -4,6 +4,7 @@ import { builder } from "~/src/graphql/builder";
 
 export const queryOrganizationPostsInputSchema = z.object({
 	organizationId: organizationsTableInsertSchema.shape.id.unwrap(),
+	sortOrder: z.enum(["ASC", "DESC"]).optional(),
 });
 
 export const QueryOrganizationPostsInput = builder.inputType(
@@ -14,6 +15,11 @@ export const QueryOrganizationPostsInput = builder.inputType(
 			organizationId: t.id({
 				description: "Global identifier of the organization.",
 				required: true,
+			}),
+			sortOrder: t.string({
+				description:
+					'Optional sort order: "ASC" or "DESC" (defaults to "DESC")',
+				required: false,
 			}),
 		}),
 	},

@@ -665,6 +665,25 @@ export const Query_organization = gql(`
     }
   `);
 
+export const Query_postsByOrganization = gql(`
+  query Query_postsByOrganization($input: GetPostsByOrgInput!) {
+    postsByOrganization(input: $input) {
+      id
+      caption
+      pinnedAt
+      organization {
+        id
+      }
+      attachments {
+        mimeType
+        objectName
+        fileHash
+        name
+      }
+    }
+  }
+`);
+
 export const Query_agendaItem =
 	gql(`query Query_agendaItem($input: QueryAgendaItemInput!) {
   agendaItem(input: $input) {
