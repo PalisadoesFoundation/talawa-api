@@ -39,18 +39,13 @@ def check_sanitization_disable(file_path: str) -> tuple[bool, str]:
             - error_message: Description of the error if invalid
 
     """
-    # Pattern matches: // check-sanitization-disable: <justification>
-    # Group 1 captures the justification text after the colon
+    # Single pattern that matches all disable comment variations:
+    # - // check-sanitization-disable (no colon) -> captures None
+    # - // check-sanitization-disable: (colon, no text) -> captures ""
+    # - // check-sanitization-disable: text -> captures "text"
     # Note: Case-sensitive to enforce canonical lowercase form
     disable_pattern = re.compile(
-        r"//\s*check-sanitization-disable\s*:\s*(.+)$",
-        re.MULTILINE,
-    )
-
-    # Pattern to catch disable comments WITHOUT justification
-    # Note: Case-sensitive to enforce canonical lowercase form
-    disable_no_justification_pattern = re.compile(
-        r"//\s*check-sanitization-disable\s*$",
+        r"//\s*check-sanitization-disable(?:\s*:\s*(.*))?$",
         re.MULTILINE,
     )
 
@@ -58,22 +53,24 @@ def check_sanitization_disable(file_path: str) -> tuple[bool, str]:
         with open(file_path, encoding="utf-8") as file:
             content = file.read()
 
-            # First check if there's a disable comment without justification
-            no_justification_match = disable_no_justification_pattern.search(
-                content
-            )
-            if no_justification_match:
-                return (
-                    True,
-                    "Disable comment missing justification. "
-                    "Format: // check-sanitization-disable: "
-                    "<reason>",
-                )
-
-            # Check all disable comments with justifications
+            # Find all disable comments
             matches = disable_pattern.findall(content)
             for justification in matches:
+                # justification is empty string if colon present but no text
+                # justification is empty string from non-capturing group if
+                # no colon
                 justification_text = justification.strip()
+
+                # Check if justification is missing (no colon or colon w/ no
+                # text)
+                if not justification_text:
+                    return (
+                        True,
+                        "Disable comment missing justification. "
+                        "Format: // check-sanitization-disable: "
+                        "<reason>",
+                    )
+
                 # Require minimum 10 characters for meaningful justification
                 if len(justification_text) < 10:
                     return (
@@ -132,7 +129,7 @@ def check_files(files_or_directories: list[str]) -> bool:
     return has_errors
 
 
-def arg_parser_resolver():
+def arg_parser_resolver() -> argparse.Namespace:
     """Resolve the CLI arguments provided by the user.
 
     Args:

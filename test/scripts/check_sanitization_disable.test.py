@@ -1,9 +1,13 @@
 #!/usr/bin/env python3
+# ruff: noqa: PT009
 """Test suite for check_sanitization_disable.py validator.
 
 This module provides comprehensive test coverage for the sanitization disable
 comment validator, ensuring it correctly identifies invalid comments and
 handles edge cases.
+
+Note: PT009 (pytest-unittest-assertion) is suppressed because this file
+intentionally uses unittest.TestCase assertion methods.
 """
 import os
 import sys
@@ -42,7 +46,9 @@ class TestCheckSanitizationDisable(unittest.TestCase):
         """Clean up temporary directory."""
         self.temp_dir.cleanup()
 
-    def _create_test_file(self, content: str, filename: str = "test.ts") -> str:
+    def _create_test_file(
+        self, content: str, filename: str = "test.ts"
+    ) -> str:
         """Create a temporary test file with given content.
 
         Args:
@@ -59,7 +65,7 @@ class TestCheckSanitizationDisable(unittest.TestCase):
 
     # Valid cases tests
     def test_valid_comment_with_adequate_justification(self):
-        """Test that valid disable comment with adequate justification passes."""
+        """Test valid disable comment with adequate justification."""  # noqa: E501
         content = """
 // check-sanitization-disable: system-generated URL field
 import { t } from "graphql";
@@ -85,9 +91,9 @@ import { t } from "graphql";
         self.assertEqual(error_message, "")
 
     def test_valid_comment_with_long_justification(self):
-        """Test valid disable comment with long, descriptive justification."""
+        """Test valid disable comment with long justification."""
         content = """
-// check-sanitization-disable: This field contains OAuth tokens that are system-generated and don't require HTML escaping
+// check-sanitization-disable: OAuth tokens are system-generated
 import { t } from "graphql";
 """
         file_path = self._create_test_file(content)
@@ -122,7 +128,9 @@ import { t } from "graphql";
 
         self.assertTrue(is_invalid)
         self.assertIn("missing justification", error_message)
-        self.assertIn("Format: // check-sanitization-disable: <reason>", error_message)
+        self.assertIn(
+            "Format: // check-sanitization-disable: <reason>", error_message
+        )
 
     def test_short_justification_9_chars(self):
         """Test that justification with <10 characters fails."""
@@ -153,14 +161,23 @@ import { t } from "graphql";
 
     def test_empty_justification_after_colon(self):
         """Test that justification with only whitespace fails."""
-        # Single space after colon - matches (.+) pattern but strips to empty
+        # Whitespace after colon - strips to empty, treated as missing
         content = "// check-sanitization-disable:  "
         file_path = self._create_test_file(content)
         is_invalid, error_message = check_sanitization_disable(file_path)
 
         self.assertTrue(is_invalid)
-        self.assertIn("Justification too short", error_message)
-        self.assertIn("0 chars", error_message)
+        self.assertIn("missing justification", error_message)
+
+    def test_colon_with_no_text(self):
+        """Test that disable comment with colon but no text fails."""
+        # Edge case: colon present but nothing after it (not even space)
+        content = "// check-sanitization-disable:"
+        file_path = self._create_test_file(content)
+        is_invalid, error_message = check_sanitization_disable(file_path)
+
+        self.assertTrue(is_invalid)
+        self.assertIn("missing justification", error_message)
 
     def test_mixed_case_not_matched(self):
         """Test that mixed-case variants are not recognized (case-sensitive)."""
@@ -202,7 +219,9 @@ import { t } from "graphql";
         """Test PermissionError behavior."""
         file_path = self._create_test_file("content")
 
-        with patch("builtins.open", side_effect=PermissionError("Access denied")):
+        with patch(
+            "builtins.open", side_effect=PermissionError("Access denied")
+        ):
             is_invalid, error_message = check_sanitization_disable(file_path)
 
             # Should fail validation when permission is denied
@@ -236,7 +255,7 @@ class TestCheckFiles(unittest.TestCase):
         self.temp_dir.cleanup()
 
     def _create_test_file(
-        self, content: str, filename: str, subdir: str = None
+        self, content: str, filename: str, subdir: str | None = None
     ) -> str:
         """Create a temporary test file with given content.
 
@@ -353,7 +372,9 @@ class TestCheckFiles(unittest.TestCase):
         )
 
         with patch("builtins.print") as mock_print:
-            has_errors = check_files([valid_file, invalid_file1, invalid_file2])
+            has_errors = check_files(
+                [valid_file, invalid_file1, invalid_file2]
+            )
 
         self.assertTrue(has_errors)
         # Should report both invalid files
