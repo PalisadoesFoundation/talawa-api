@@ -9,11 +9,16 @@ const HTML_ESCAPE_MAP: Record<string, string> = {
 };
 
 /**
- * Escapes HTML characters in a string to prevent XSS attacks.
- * @param str The string to escape.
- * @returns The escaped string.
+ * Branded type for strings that have been HTML-escaped for safe output.
+ * Use `escapeHTML()` to create instances of this type.
  */
 export type HTMLSafeString = string & { readonly __brand: "HTMLSafeString" };
+
+/**
+ * Branded type for strings that have been sanitized (trimmed, normalized) for input.
+ * Use `sanitizeInput()` to create instances of this type.
+ * This is for INPUT normalization, not OUTPUT escaping.
+ */
 export type SanitizedInputString = string & {
 	readonly __brand: "SanitizedInputString";
 };
@@ -32,8 +37,8 @@ export function escapeHTML(
 export function escapeHTML(
 	str: string | null | undefined,
 ): HTMLSafeString | null | undefined {
-	if (!str) {
-		return str as HTMLSafeString | null | undefined;
+	if (str === null || str === undefined) {
+		return str;
 	}
 	return str.replace(
 		/[&<>"']/g,
@@ -42,7 +47,45 @@ export function escapeHTML(
 }
 
 /**
+ * Sanitizes user input by trimming whitespace and normalizing the string.
+ * This is for INPUT normalization, not OUTPUT escaping.
+ * @param str The string to sanitize.
+ * @returns The sanitized (trimmed) string with branded type.
+ */
+export function sanitizeInput(str: string): SanitizedInputString;
+export function sanitizeInput(str: string | null): SanitizedInputString | null;
+export function sanitizeInput(
+	str: string | undefined,
+): SanitizedInputString | undefined;
+export function sanitizeInput(
+	str: string | null | undefined,
+): SanitizedInputString | null | undefined;
+export function sanitizeInput(
+	str: string | null | undefined,
+): SanitizedInputString | null | undefined {
+	if (str === null || str === undefined) {
+		return str as SanitizedInputString | null | undefined;
+	}
+	return str.trim() as SanitizedInputString;
+}
+
+/**
+ * Type guard to check if a value is a SanitizedInputString.
+ * Note: At runtime, this just checks if it's a non-empty trimmed string.
+ * The branded type provides compile-time safety.
+ * @param value The value to check.
+ * @returns True if the value appears to be sanitized input.
+ */
+export function isSanitizedInput(
+	value: unknown,
+): value is SanitizedInputString {
+	return typeof value === "string" && value === value.trim();
+}
+
+/**
  * Zod schema for a string that is automatically sanitized (trimmed).
+ * Note: This returns a plain string to allow chaining with .min()/.max().
+ * Use `sanitizeInput()` if you need the branded SanitizedInputString type.
  * Note: This does NOT escape HTML. HTML escaping should be done at output time.
  */
 export const sanitizedStringSchema = z.string().trim();

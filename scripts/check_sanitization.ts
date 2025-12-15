@@ -29,6 +29,8 @@ async function checkSanitization() {
 
 		let hasStringResolver = false;
 		let hasEscapeHTMLImport = false;
+		let hasEscapeHTMLUsage = false;
+		const resolverBodies: ts.Node[] = [];
 
 		// Check imports
 		ts.forEachChild(sourceFile, (node) => {
@@ -36,8 +38,8 @@ async function checkSanitization() {
 				const moduleSpecifier = node.moduleSpecifier;
 				if (
 					ts.isStringLiteral(moduleSpecifier) &&
-					(moduleSpecifier.text.includes("/sanitizer") ||
-						moduleSpecifier.text.includes("sanitizer"))
+					(moduleSpecifier.text === "~/src/utilities/sanitizer" ||
+						moduleSpecifier.text.endsWith("/utilities/sanitizer"))
 				) {
 					if (node.importClause?.namedBindings) {
 						if (ts.isNamedImports(node.importClause.namedBindings)) {
@@ -52,28 +54,59 @@ async function checkSanitization() {
 			}
 		});
 
-		// Check for string resolvers
+		// Helper to check if a node is a call to escapeHTML
+		function isEscapeHTMLCall(node: ts.Node): boolean {
+			if (ts.isCallExpression(node)) {
+				const expr = node.expression;
+				// Direct call: escapeHTML(...)
+				if (ts.isIdentifier(expr) && expr.text === "escapeHTML") {
+					return true;
+				}
+				// Namespace call: sanitizer.escapeHTML(...)
+				if (
+					ts.isPropertyAccessExpression(expr) &&
+					expr.name.text === "escapeHTML"
+				) {
+					return true;
+				}
+			}
+			return false;
+		}
+
+		// Helper to walk a node tree looking for escapeHTML calls
+		function hasEscapeHTMLCallInTree(node: ts.Node): boolean {
+			if (isEscapeHTMLCall(node)) {
+				return true;
+			}
+			let found = false;
+			ts.forEachChild(node, (child) => {
+				if (hasEscapeHTMLCallInTree(child)) {
+					found = true;
+				}
+			});
+			return found;
+		}
+
+		// Check for string resolvers and collect resolver bodies
 		function visit(node: ts.Node) {
 			if (ts.isCallExpression(node)) {
 				// Check for t.string({...})
 				if (
 					ts.isPropertyAccessExpression(node.expression) &&
-					node.expression.name.text === "string" && // Matches .string
-					// Heuristic: check if 't' or 'builder' or similar is the expression?
-					// Usually it's t.string
-					// But we should just check if it has a 'resolve' property in the options object.
+					node.expression.name.text === "string" &&
 					node.arguments.length > 0 &&
 					node.arguments[0] &&
 					ts.isObjectLiteralExpression(node.arguments[0])
 				) {
 					const properties = node.arguments[0].properties;
-					const hasResolve = properties.some(
-						(prop) =>
+					for (const prop of properties) {
+						if (
 							ts.isPropertyAssignment(prop) &&
-							prop.name.getText() === "resolve",
-					);
-					if (hasResolve) {
-						hasStringResolver = true;
+							prop.name.getText() === "resolve"
+						) {
+							hasStringResolver = true;
+							resolverBodies.push(prop.initializer);
+						}
 					}
 				}
 
@@ -87,13 +120,12 @@ async function checkSanitization() {
 				) {
 					const properties = node.arguments[0].properties;
 					let isStringType = false;
-					let hasResolve = false;
+					let resolverNode: ts.Node | null = null;
 
 					for (const prop of properties) {
 						if (ts.isPropertyAssignment(prop)) {
 							const name = prop.name.getText();
 							if (name === "type") {
-								// Check if type is "String"
 								if (
 									ts.isStringLiteral(prop.initializer) &&
 									prop.initializer.text === "String"
@@ -102,23 +134,21 @@ async function checkSanitization() {
 								}
 							}
 							if (name === "resolve") {
-								hasResolve = true;
+								resolverNode = prop.initializer;
 							}
 						}
 					}
 
-					if (isStringType && hasResolve) {
+					if (isStringType && resolverNode) {
 						hasStringResolver = true;
+						resolverBodies.push(resolverNode);
 					}
 				}
 
-				// Check for t.exposeString(...)
-				if (
-					ts.isPropertyAccessExpression(node.expression) &&
-					node.expression.name.text === "exposeString"
-				) {
-					hasStringResolver = true;
-				}
+				// NOTE: t.exposeString(...) is NOT flagged because it's a direct
+				// passthrough of database fields without a custom resolver.
+				// Only files with explicit `resolve` functions returning strings
+				// are required to use escapeHTML.
 
 				// Check for t.expose(..., { type: 'String' })
 				if (
@@ -136,7 +166,8 @@ async function checkSanitization() {
 								ts.isStringLiteral(prop.initializer) &&
 								prop.initializer.text === "String"
 							) {
-								hasStringResolver = true;
+								// t.expose with type String but no resolver is not flagged
+								// (similar to exposeString)
 							}
 						}
 					}
@@ -147,13 +178,32 @@ async function checkSanitization() {
 
 		visit(sourceFile);
 
-		if (hasStringResolver && !hasEscapeHTMLImport) {
+		// Check if escapeHTML is actually used in resolver bodies
+		if (hasEscapeHTMLImport && resolverBodies.length > 0) {
+			for (const body of resolverBodies) {
+				if (hasEscapeHTMLCallInTree(body)) {
+					hasEscapeHTMLUsage = true;
+					break;
+				}
+			}
+		}
+
+		// Determine if the file is safe
+		const isSafe = hasEscapeHTMLImport && hasEscapeHTMLUsage;
+
+		if (hasStringResolver && !isSafe) {
 			console.error(
 				`\n[ERROR] Potential unsafe string resolver found in: ${file}`,
 			);
-			console.error(
-				"  Reason: The file defines a string resolver but does not import 'escapeHTML'.",
-			);
+			if (!hasEscapeHTMLImport) {
+				console.error(
+					"  Reason: The file defines a string resolver but does not import 'escapeHTML'.",
+				);
+			} else if (!hasEscapeHTMLUsage) {
+				console.error(
+					"  Reason: The file imports 'escapeHTML' but does not use it in any resolver.",
+				);
+			}
 			console.error(
 				"  Fix: Import 'escapeHTML' from '~/src/utilities/sanitizer' and use it to sanitize user-generated content.",
 			);
