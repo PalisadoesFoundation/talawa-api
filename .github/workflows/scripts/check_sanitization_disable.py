@@ -17,9 +17,9 @@ Note:
         5) Python Black
 
 """
+import argparse
 import os
 import re
-import argparse
 import sys
 
 
@@ -53,8 +53,8 @@ def check_sanitization_disable(file_path: str) -> tuple[bool, str]:
             content = file.read()
 
             # First check if there's a disable comment without justification
-            no_justification_match = disable_no_justification_pattern.search(
-                content
+            no_justification_match = (
+                disable_no_justification_pattern.search(content)
             )
             if no_justification_match:
                 return (
