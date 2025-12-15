@@ -28,6 +28,14 @@ describe("sanitizer", () => {
 			const input = "Hello World";
 			expect(escapeHTML(input)).toBe(input);
 		});
+
+		it("should handle null input", () => {
+			expect(escapeHTML(null)).toBeNull();
+		});
+
+		it("should handle undefined input", () => {
+			expect(escapeHTML(undefined)).toBeUndefined();
+		});
 	});
 
 	describe("sanitizedStringSchema", () => {
