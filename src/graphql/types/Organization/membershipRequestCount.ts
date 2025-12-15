@@ -1,0 +1,80 @@
+import { count, eq } from "drizzle-orm";
+import { membershipRequestsTable } from "~/src/drizzle/schema";
+import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
+import type { GraphQLContext } from "../../context";
+import {
+	Organization,
+	type Organization as OrganizationType,
+} from "./Organization";
+
+export const membershipRequestCountResolver = async (
+	parent: OrganizationType,
+	_args: Record<string, never>,
+	ctx: GraphQLContext,
+) => {
+	if (!ctx.currentClient.isAuthenticated) {
+		throw new TalawaGraphQLError({
+			extensions: {
+				code: "unauthenticated",
+			},
+		});
+	}
+	const currentUserId = ctx.currentClient.user.id;
+
+	const currentUser = await ctx.drizzleClient.query.usersTable.findFirst({
+		columns: {
+			role: true,
+		},
+		with: {
+			organizationMembershipsWhereMember: {
+				columns: {
+					role: true,
+				},
+				where: (fields, operators) =>
+					operators.eq(fields.organizationId, parent.id),
+			},
+		},
+		where: (fields, operators) => operators.eq(fields.id, currentUserId),
+	});
+
+	if (currentUser === undefined) {
+		throw new TalawaGraphQLError({
+			extensions: {
+				code: "unauthenticated",
+			},
+		});
+	}
+	const currentUserOrganizationMembership =
+		currentUser.organizationMembershipsWhereMember[0];
+
+	if (
+		currentUser.role !== "administrator" &&
+		(currentUserOrganizationMembership === undefined ||
+			currentUserOrganizationMembership.role !== "administrator")
+	) {
+		throw new TalawaGraphQLError({
+			extensions: {
+				code: "unauthorized_action",
+			},
+		});
+	}
+	const result = await ctx.drizzleClient
+		.select({
+			total: count(),
+		})
+		.from(membershipRequestsTable)
+		.where(eq(membershipRequestsTable.organizationId, parent.id))
+		.then((res) => res[0]?.total ?? 0);
+
+	return result;
+};
+
+// Extends Organization with membershipRequestsCount
+Organization.implement({
+	fields: (t) => ({
+		membershipRequestsCount: t.int({
+			description: "Total number of membership requests in the organization.",
+			resolve: membershipRequestCountResolver,
+		}),
+	}),
+});

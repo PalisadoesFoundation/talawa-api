@@ -24,10 +24,6 @@ Thanks for submitting a pull request! Please provide enough information so that 
 
 Fixes #<!--Add related issue number here.-->
 
-**Did you add tests for your changes?**
-
-<!--Yes or No. Note: Add unit tests or automation tests for your code.-->
-
 **Snapshots/Videos:**
 
 <!--Add snapshots or videos wherever possible.-->
@@ -44,6 +40,19 @@ Fixes #<!--Add related issue number here.-->
 **Does this PR introduce a breaking change?**
 
 <!-- If this PR introduces a breaking change, please describe the impact and a migration path for existing applications. -->
+
+## Checklist
+
+### CodeRabbit AI Review
+- [ ] I have reviewed and addressed all critical issues flagged by CodeRabbit AI
+- [ ] I have implemented or provided justification for each non-critical suggestion
+- [ ] I have documented my reasoning in the PR comments where CodeRabbit AI suggestions were not implemented
+
+### Test Coverage
+- [ ] I have written tests for all new changes/features
+- [ ] I have verified that test coverage meets or exceeds 95%
+- [ ] I have run the test suite locally and all tests pass
+
 
 **Other information**
 

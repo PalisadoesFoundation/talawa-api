@@ -1,0 +1,174 @@
+---
+id: action-item
+title: ActionItem
+---
+
+export const Bullet = () => (
+  <>
+    <span
+      style={{
+        fontWeight: "normal",
+        fontSize: ".5em",
+        color: "var(--ifm-color-secondary-darkest)",
+      }}
+    >
+      &nbsp;●&nbsp;
+    </span>
+  </>
+);
+
+export const SpecifiedBy = (props) => (
+  <>
+    Specification
+    <a
+      className="link"
+      style={{ fontSize: "1.5em", paddingLeft: "4px" }}
+      target="_blank"
+      href={props.url}
+      title={"Specified by " + props.url}
+    >
+      ⎘
+    </a>
+  </>
+);
+
+export const Badge = (props) => (
+  <>
+    <span className={props.class}>{props.text}</span>
+  </>
+);
+
+import { useState } from "react";
+
+export const Details = ({
+  dataOpen,
+  dataClose,
+  children,
+  startOpen = false,
+}) => {
+  const [open, setOpen] = useState(startOpen);
+  return (
+    <details
+      {...(open ? { open: true } : {})}
+      className="details"
+      style={{
+        border: "none",
+        boxShadow: "none",
+        background: "var(--ifm-background-color)",
+      }}
+    >
+      <summary
+        onClick={(e) => {
+          e.preventDefault();
+          setOpen((open) => !open);
+        }}
+        style={{ listStyle: "none" }}
+      >
+        {open ? dataOpen : dataClose}
+      </summary>
+      {open && children}
+    </details>
+  );
+};
+
+No description
+
+```graphql
+type ActionItem {
+  assignedAt: DateTime
+  category: ActionItemCategory
+  completionAt: DateTime
+  createdAt: DateTime
+  creator: User
+  event: Event
+  id: ID
+  isCompleted: Boolean
+  isInstanceException: Boolean
+  isTemplate: Boolean
+  organization: Organization
+  postCompletionNotes: String
+  preCompletionNotes: String
+  recurringEventInstance: Event
+  updater: User
+  volunteer: EventVolunteer
+  volunteerGroup: EventVolunteerGroup
+}
+```
+
+### Fields
+
+#### [<code style={{ fontWeight: 'normal' }}>ActionItem.<b>assignedAt</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>DateTime</b></code>](/auto-schema/types/scalars/date-time.mdx) <Badge class="badge badge--secondary " text="scalar"/>
+
+Timestamp when the action item was assigned.
+
+#### [<code style={{ fontWeight: 'normal' }}>ActionItem.<b>category</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>ActionItemCategory</b></code>](/auto-schema/types/objects/action-item-category.mdx) <Badge class="badge badge--secondary " text="object"/>
+
+The category this action item belongs to.
+
+#### [<code style={{ fontWeight: 'normal' }}>ActionItem.<b>completionAt</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>DateTime</b></code>](/auto-schema/types/scalars/date-time.mdx) <Badge class="badge badge--secondary " text="scalar"/>
+
+Timestamp when the action item was completed.
+
+#### [<code style={{ fontWeight: 'normal' }}>ActionItem.<b>createdAt</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>DateTime</b></code>](/auto-schema/types/scalars/date-time.mdx) <Badge class="badge badge--secondary " text="scalar"/>
+
+Date time at the time the action item was created.
+
+#### [<code style={{ fontWeight: 'normal' }}>ActionItem.<b>creator</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>User</b></code>](/auto-schema/types/objects/user.mdx) <Badge class="badge badge--secondary " text="object"/>
+
+User who created the action item.
+
+#### [<code style={{ fontWeight: 'normal' }}>ActionItem.<b>event</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>Event</b></code>](/auto-schema/types/objects/event.mdx) <Badge class="badge badge--secondary " text="object"/>
+
+Fetch the event associated with this action item, including attachments if available.
+
+#### [<code style={{ fontWeight: 'normal' }}>ActionItem.<b>id</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>ID</b></code>](/auto-schema/types/scalars/id.mdx) <Badge class="badge badge--secondary " text="scalar"/>
+
+Unique identifier for the action item.
+
+#### [<code style={{ fontWeight: 'normal' }}>ActionItem.<b>isCompleted</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>Boolean</b></code>](/auto-schema/types/scalars/boolean.mdx) <Badge class="badge badge--secondary " text="scalar"/>
+
+Indicates whether the action item is completed.
+
+#### [<code style={{ fontWeight: 'normal' }}>ActionItem.<b>isInstanceException</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>Boolean</b></code>](/auto-schema/types/scalars/boolean.mdx) <Badge class="badge badge--secondary " text="scalar"/>
+
+Indicates whether this action item is currently showing instance-specific exception data.
+
+#### [<code style={{ fontWeight: 'normal' }}>ActionItem.<b>isTemplate</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>Boolean</b></code>](/auto-schema/types/scalars/boolean.mdx) <Badge class="badge badge--secondary " text="scalar"/>
+
+Indicates whether the action item is a template for recurring events.
+
+#### [<code style={{ fontWeight: 'normal' }}>ActionItem.<b>organization</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>Organization</b></code>](/auto-schema/types/objects/organization.mdx) <Badge class="badge badge--secondary " text="object"/>
+
+The organization the action item belongs to.
+
+#### [<code style={{ fontWeight: 'normal' }}>ActionItem.<b>postCompletionNotes</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>String</b></code>](/auto-schema/types/scalars/string.mdx) <Badge class="badge badge--secondary " text="scalar"/>
+
+Notes added after completing the action item.
+
+#### [<code style={{ fontWeight: 'normal' }}>ActionItem.<b>preCompletionNotes</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>String</b></code>](/auto-schema/types/scalars/string.mdx) <Badge class="badge badge--secondary " text="scalar"/>
+
+Notes added before completing the action item.
+
+#### [<code style={{ fontWeight: 'normal' }}>ActionItem.<b>recurringEventInstance</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>Event</b></code>](/auto-schema/types/objects/event.mdx) <Badge class="badge badge--secondary " text="object"/>
+
+The recurring event instance associated with this action item.
+
+#### [<code style={{ fontWeight: 'normal' }}>ActionItem.<b>updater</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>User</b></code>](/auto-schema/types/objects/user.mdx) <Badge class="badge badge--secondary " text="object"/>
+
+User who last updated the action item.
+
+#### [<code style={{ fontWeight: 'normal' }}>ActionItem.<b>volunteer</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>EventVolunteer</b></code>](/auto-schema/types/objects/event-volunteer.mdx) <Badge class="badge badge--secondary " text="object"/>
+
+The volunteer assigned to this action item.
+
+#### [<code style={{ fontWeight: 'normal' }}>ActionItem.<b>volunteerGroup</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>EventVolunteerGroup</b></code>](/auto-schema/types/objects/event-volunteer-group.mdx) <Badge class="badge badge--secondary " text="object"/>
+
+The volunteer group assigned to this action item.
+
+### Returned By
+
+[`actionItemsByOrganization`](/auto-schema/operations/queries/action-items-by-organization.mdx) <Badge class="badge badge--secondary badge--relation" text="query"/><Bullet />[`actionItemsByVolunteer`](/auto-schema/operations/queries/action-items-by-volunteer.mdx) <Badge class="badge badge--secondary badge--relation" text="query"/><Bullet />[`actionItemsByVolunteerGroup`](/auto-schema/operations/queries/action-items-by-volunteer-group.mdx) <Badge class="badge badge--secondary badge--relation" text="query"/><Bullet />[`completeActionItemForInstance`](/auto-schema/operations/mutations/complete-action-item-for-instance.mdx) <Badge class="badge badge--secondary badge--relation" text="mutation"/><Bullet />[`createActionItem`](/auto-schema/operations/mutations/create-action-item.mdx) <Badge class="badge badge--secondary badge--relation" text="mutation"/><Bullet />[`deleteActionItem`](/auto-schema/operations/mutations/delete-action-item.mdx) <Badge class="badge badge--secondary badge--relation" text="mutation"/><Bullet />[`deleteActionItemForInstance`](/auto-schema/operations/mutations/delete-action-item-for-instance.mdx) <Badge class="badge badge--secondary badge--relation" text="mutation"/><Bullet />[`markActionItemAsPending`](/auto-schema/operations/mutations/mark-action-item-as-pending.mdx) <Badge class="badge badge--secondary badge--relation" text="mutation"/><Bullet />[`markActionItemAsPendingForInstance`](/auto-schema/operations/mutations/mark-action-item-as-pending-for-instance.mdx) <Badge class="badge badge--secondary badge--relation" text="mutation"/><Bullet />[`updateActionItem`](/auto-schema/operations/mutations/update-action-item.mdx) <Badge class="badge badge--secondary badge--relation" text="mutation"/><Bullet />[`updateActionItemForInstance`](/auto-schema/operations/mutations/update-action-item-for-instance.mdx) <Badge class="badge badge--secondary badge--relation" text="mutation"/>
+
+### Member Of
+
+[`ActionItemCategory`](/auto-schema/types/objects/action-item-category.mdx) <Badge class="badge badge--secondary badge--relation" text="object"/><Bullet />[`EventActionItemsConnectionEdge`](/auto-schema/types/objects/event-action-items-connection-edge.mdx) <Badge class="badge badge--secondary badge--relation" text="object"/>

@@ -1,275 +1,304 @@
-##############################################################################
-##############################################################################
-#
-# NOTE!
-#
-# Please read the README.md file in this directory that defines what should
-# be placed in this file
-#
-##############################################################################
-##############################################################################
-
-name: Push Workflow
+name: Push Workflow for develop
 
 on:
+  workflow_dispatch:
   push:
     branches:
-      - '**'
-      
+      - develop
+
 env:
-    CODECOV_UNIQUE_NAME: CODECOV_UNIQUE_NAME-${{ github.run_id }}-${{ github.run_number }}
+  CODECOV_UNIQUE_NAME: CODECOV_UNIQUE_NAME-${{ github.run_id }}-${{ github.run_number }}
+  TOTAL_SHARDS: 12
 
 jobs:
-  ##############################################################################
-  # This section is added so that the most recent and valid level of
-  # code coverage (post PR merge) is reported
-  ##############################################################################
-
-  Push-Workflow:
-    name: Testing Application
+  Merge-Conflict-Check:
     runs-on: ubuntu-latest
+    name: Find merge conflicts
+    steps:
+      - uses: actions/checkout@v4
+      - name: Merge conflict finder
+        uses: olivernybroe/action-conflict-finder@v4.1
+
+  test-and-upload-coverage:
+    name: Run tests (Shard ${{ matrix.shard }})
+    runs-on: ubuntu-latest
+    needs: [Merge-Conflict-Check]
     strategy:
+      fail-fast: false
       matrix:
-        node-version: [20.x]
-    services:
-      redis:
-        image: redis:6.0
-        options: >-
-          --health-cmd "redis-cli ping"
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 10
-        ports:
-          - 6379:6379
-      mongo:
-        image: mongo:4.4
-        options: >-
-          --health-cmd mongo
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 10
-        ports:
-          - 27017:27017
-    env:
-      MONGO_DB_URL: mongodb://localhost:27017/talawa-test-db
-      REDIS_HOST: localhost
-      REDIS_PORT: 6379
-#       ACCESS_TOKEN_SECRET: ${{ secrets.ACCESS_TOKEN_SECRET }}
-#       REFRESH_TOKEN_SECRET: ${{ secrets.REFRESH_TOKEN_SECRET }}
+        shard: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
 
-    # We checkout the content of the Talawa-API repository in a directory called `api`
-    # This is done as we will use the Talawa-Docs repository later too
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-        
-      - name: Generate Access Token Secret
-        run: echo "ACCESS_TOKEN_SECRET=$(openssl rand -hex 32)" >> $GITHUB_ENV
-        
-      - name: Generate Refresh Token Secret
-        run: echo "REFRESH_TOKEN_SECRET=$(openssl rand -hex 32)" >> $GITHUB_ENV
+      # Checkout the repository
+      - name: Checkout code
+        uses: actions/checkout@v4.2.2
 
-      - name: Set up Node.js ${{ matrix.node-version }}
+      # Create .env file for Talawa API testing environment
+      - name: Create .env file for Talawa API testing environment
+        run: cp ./envFiles/.env.ci ./.env
+
+      # Build Talawa API compose testing environment
+      - name: Build Talawa API compose testing environment
+        run: docker compose build
+
+      # Start test services (postgres-test, minio-test, redis-test)
+      - name: Start test services
+        run: docker compose up -d postgres-test minio-test redis-test
+
+      # Wait for test services to be healthy
+      - name: Wait for test services to be ready
+        run: |
+          set -euo pipefail
+          echo "Waiting for Postgres test service..."
+          timeout=90
+          until docker compose exec -T postgres-test pg_isready -h localhost -p 5432 -U postgres >/dev/null 2>&1 || [ $timeout -eq 0 ]; do
+            echo "Postgres not ready yet... ($timeout seconds remaining)"
+            sleep 1
+            ((timeout--))
+          done
+          if [ $timeout -eq 0 ]; then
+            echo "Error: Postgres failed to start"
+            docker compose ps
+            docker compose logs postgres-test
+            docker compose down -v
+            exit 1
+          fi
+          echo "Postgres is ready."
+
+          # Wait for minio-test health check
+          echo "Waiting for Minio test service..."
+          timeout=60
+          until docker compose exec -T minio-test mc ready local >/dev/null 2>&1 || [ $timeout -eq 0 ]; do
+            echo "Minio not ready yet... ($timeout seconds remaining)"
+            sleep 1
+            ((timeout--))
+          done
+          if [ $timeout -eq 0 ]; then
+            echo "::warning::Minio health check timed out, continuing anyway"
+          else
+            echo "Minio is ready."
+          fi
+
+          # Wait for redis-test health check
+          echo "Waiting for Redis test service..."
+          timeout=60
+          until docker compose exec -T redis-test redis-cli ping >/dev/null 2>&1 || [ $timeout -eq 0 ]; do
+            echo "Redis not ready yet... ($timeout seconds remaining)"
+            sleep 1
+            ((timeout--))
+          done
+          if [ $timeout -eq 0 ]; then
+            echo "::warning::Redis health check timed out, continuing anyway"
+          else
+            echo "Redis is ready."
+          fi
+
+          echo "All test services are ready."
+
+      # Run tests with sharding
+      - name: Run tests (shard ${{ matrix.shard }}/${{ env.TOTAL_SHARDS }})
+        env:
+          SHARD_INDEX: ${{ matrix.shard }}
+          SHARD_COUNT: ${{ env.TOTAL_SHARDS }}
+        run: |
+          # Run tests without --rm to allow coverage extraction
+          docker compose run --name talawa-api-test-shard-${{ matrix.shard }} \
+            -e SHARD_INDEX=$SHARD_INDEX \
+            -e SHARD_COUNT=$SHARD_COUNT \
+            api pnpm test:shard:coverage
+
+      - name: Copy coverage from container
+        if: always()
+        run: |
+          # Copy coverage from the named container
+          docker cp talawa-api-test-shard-${{ matrix.shard }}:/home/talawa/api/coverage ./coverage || echo "::warning::Failed to copy coverage from container talawa-api-test-shard-${{ matrix.shard }}"
+
+      - name: Cleanup test container
+        if: always()
+        run: |
+          # Remove the test container
+          docker rm -f talawa-api-test-shard-${{ matrix.shard }} || true
+
+      - name: Upload coverage artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-shard-${{ matrix.shard }}
+          path: ./coverage/
+          retention-days: 1
+
+  merge-coverage:
+    name: Merge Coverage Reports
+    runs-on: ubuntu-latest
+    needs: [test-and-upload-coverage]
+    if: success()
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4.2.2
+
+      - uses: pnpm/action-setup@v4
+        with:
+          run_install: false
+
+      - name: Set up Node.js
         uses: actions/setup-node@v4
-
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Sleep for 10s
-        uses: juliangruber/sleep-action@v2
         with:
-          time: 10s
+          node-version: "24.x"
+          cache: "pnpm"
 
-      # Testing the application 
-      - name: Run the tests
-        run: npm run test
-    
-      # Upload Coverage
+      - name: Download all coverage artifacts
+        id: download-artifacts
+        continue-on-error: true
+        uses: actions/download-artifact@v4
+        with:
+          pattern: coverage-shard-*
+          path: ./coverage-shards/
+          merge-multiple: false
+
+      - name: Prepare dependency store
+        run: pnpm fetch
+
+      - name: Install dependencies (offline)
+        run: pnpm install --frozen-lockfile --offline
+
+      - name: Check if artifacts were downloaded
+        id: check-artifacts
+        run: |
+          # Check if any coverage files exist
+          if find coverage-shards -name "lcov.info" -type f | grep -q .; then
+            echo "artifacts_found=true" >> $GITHUB_OUTPUT
+            echo "Coverage artifacts found"
+          else
+            echo "artifacts_found=false" >> $GITHUB_OUTPUT
+            echo "No coverage artifacts found - tests may have been skipped"
+          fi
+
+      - name: Merge coverage reports
+        if: steps.check-artifacts.outputs.artifacts_found == 'true'
+        run: |
+          mkdir -p ./coverage/vitest
+          mkdir -p .nyc_output
+
+          # Find all coverage directories from shards
+          echo "Finding coverage data from shards..."
+          SHARD_DIRS=$(find coverage-shards -type d -name "coverage-shard-*" 2>/dev/null || true)
+
+          if [ -z "$SHARD_DIRS" ]; then
+            echo "ERROR: No shard directories found!"
+            ls -la coverage-shards/ || true
+            exit 1
+          fi
+
+          echo "Found shard directories:"
+          echo "$SHARD_DIRS"
+
+          # Use JSON coverage files for proper nyc merging
+          echo "Looking for coverage-final.json files..."
+          find coverage-shards -name "coverage-final.json" -type f > json-files.txt
+
+          if [ ! -s json-files.txt ]; then
+            echo "ERROR: No coverage-final.json files found!"
+            echo "Available files in coverage-shards:"
+            find coverage-shards -type f -name "*.json" -o -name "*.info" | head -20
+            exit 1
+          fi
+
+          echo "Found JSON coverage files:"
+          cat json-files.txt
+
+          # Count files
+          JSON_COUNT=$(wc -l < json-files.txt)
+          echo "Total JSON files: $JSON_COUNT"
+
+          # Copy JSON files to .nyc_output with unique names for nyc merge
+          SHARD_NUM=0
+          while IFS= read -r file; do
+            if [ ! -f "$file" ]; then
+              echo "ERROR: Coverage file does not exist: $file"
+              exit 1
+            fi
+            if [ ! -s "$file" ]; then
+              echo "ERROR: Coverage file is empty: $file"
+              exit 1
+            fi
+            cp "$file" ".nyc_output/coverage-shard-${SHARD_NUM}.json"
+            echo "  Copied $file to .nyc_output/coverage-shard-${SHARD_NUM}.json"
+            SHARD_NUM=$((SHARD_NUM + 1))
+          done < json-files.txt
+
+          echo "Files in .nyc_output:"
+          ls -la .nyc_output/
+
+          # Use nyc merge to properly merge coverage data
+          echo "Merging coverage with nyc merge..."
+          pnpm exec nyc merge .nyc_output ./coverage/vitest/coverage-final.json
+
+          # Validate merged file exists and is not empty
+          if [ ! -s ./coverage/vitest/coverage-final.json ]; then
+            echo "ERROR: Merged coverage file is empty or missing!"
+            exit 1
+          fi
+
+          echo "Coverage merge successful"
+          echo "Merged JSON file size: $(wc -c < ./coverage/vitest/coverage-final.json) bytes"
+
+          # Rewrite paths in coverage JSON from Docker paths to runner paths
+          # Docker container uses: /home/talawa/api/src/...
+          # Runner has files at: $GITHUB_WORKSPACE/src/...
+          echo "Rewriting coverage paths from Docker to runner paths..."
+          DOCKER_PATH="/home/talawa/api"
+          RUNNER_PATH="$GITHUB_WORKSPACE"
+          sed -i "s|${DOCKER_PATH}|${RUNNER_PATH}|g" ./coverage/vitest/coverage-final.json
+          echo "Path rewriting complete"
+
+          # Generate lcov report from merged JSON using nyc report
+          echo "Generating lcov report..."
+          mkdir -p .nyc_output
+          cp ./coverage/vitest/coverage-final.json .nyc_output/
+          pnpm exec nyc report --reporter=lcov --report-dir=./coverage/vitest
+
+          # Validate lcov file exists
+          if [ ! -s ./coverage/vitest/lcov.info ]; then
+            echo "ERROR: lcov.info file is empty or missing!"
+            exit 1
+          fi
+
+          # Count number of source files in merged coverage
+          SF_COUNT=$(grep -c "^SF:" ./coverage/vitest/lcov.info || echo "0")
+          echo "Number of files in merged coverage: $SF_COUNT"
+
+          # Threshold of 100 source files is based on the project's historical baseline.
+          # The talawa-api codebase has 700+ source files, so a merged coverage report
+          # with fewer than 100 files likely indicates a failed or incomplete merge.
+          # This is a sanity check, not a hard failure - coverage may still be valid.
+          COVERAGE_FILE_THRESHOLD=${COVERAGE_FILE_THRESHOLD:-100}
+          if [ "$SF_COUNT" -lt "$COVERAGE_FILE_THRESHOLD" ]; then
+            echo "::warning::Only $SF_COUNT files in coverage (expected ${COVERAGE_FILE_THRESHOLD}+). This might indicate incomplete coverage merge."
+          fi
+
+          echo "First 30 lines of merged coverage:"
+          head -30 ./coverage/vitest/lcov.info
+
+      - name: Clean up individual shard coverage files
+        if: steps.check-artifacts.outputs.artifacts_found == 'true'
+        run: |
+          echo "Final coverage file to upload:"
+          ls -lh ./coverage/vitest/lcov.info
+
+      #######################################################################
+      # DO NOT DELETE ANY references to env.CODECOV_UNIQUE_NAME in this
+      # section. They are required for accurate calculations
+      #######################################################################
       - name: Present and upload coverage to Codecov as ${{env.CODECOV_UNIQUE_NAME}}
-        uses: codecov/codecov-action@v4
+        if: steps.check-artifacts.outputs.artifacts_found == 'true'
+        uses: codecov/codecov-action@v5
         with:
+          name: "${{env.CODECOV_UNIQUE_NAME}}"
           token: ${{ secrets.CODECOV_TOKEN }}
+          fail_ci_if_error: true
           verbose: true
-          fail_ci_if_error: false
-          name: '${{env.CODECOV_UNIQUE_NAME}}'  
-            
-            
-  Generate-Documentation:
-    name: Generate Documentation
-    runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/develop'
-    needs: Push-Workflow
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-        # with:
-        #   persist-credentials: false
-      - name: Generate Documentation of HTML pages
-        run: |
-          npm install --global typedoc
-          npm install typedoc-plugin-markdown
-          npm i --save-dev @types/node
-          npx typedoc --entryPoints src --out talawa-api-docs --plugin typedoc-plugin-markdown --theme markdown --entryPointStrategy expand
-      
-      - name: Make Markdown Files MDX Compatible
-        run: python3 .github/workflows/md_mdx_format_adjuster.py --directory talawa-api-docs 
-        
-      - name: Checking doc updated
-        id: DocUpdated
-        run: |
-          if [ -n "$(git status --porcelain)" ]; then
-            echo "updateDoc=true" >> $GITHUB_OUTPUT
-            echo -e "Documentation has been updated!!"
-          else
-            Green='0;32'
-            NoColor='\033[0m'
-            echo -e "${Green}No documentation updated${NoColor}"
-          fi
-          
-      - name: Set env variables
-        if: steps.DocUpdated.outputs.updateDoc
-        run: |
-          echo "commit_id=$(echo $(git rev-parse HEAD))" >> $GITHUB_ENV
-          echo "email=$(echo $(git log --pretty=format:"%ae" $commit_id))" >> $GITHUB_ENV
-        
-      - name: Update Doc
-        if: steps.DocUpdated.outputs.updateDoc
-        run: |
-          Green='0;32'
-          NoColor='\033[0m' 
-          git config --global user.name "${{github.actor}}"
-          git config --global user.email "${{env.email}}"
-          git add .
-          git commit -m "Update documentation"
-          git push -f https://$GH_TOKEN@github.com/PalisadoesFoundation/talawa-api.git HEAD:automated-docs
-          echo -e "🚀${Green} Hurrah! doc updated${NoColor}"
-        env:
-          ACCESS_TOKEN: ${{secrets.GH_TOKEN}}
-      
-      - name: Create Documentation Artifact
-        uses: actions/upload-artifact@v2
-        with:
-          name: documentation-api
-          path: talawa-api-docs
+          exclude: "docs/"
+          gcov_ignore: "docs/"
+          files: ./coverage/vitest/lcov.info
+          flags: vitest
 
-  Empty-Commit:
-    name: Create Empty Commit
-    runs-on: ubuntu-latest
-    needs: Generate-Documentation
-    if: github.ref == 'refs/heads/develop'
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-        with:
-          persist-credentials: false
-          token: ${{ secrets.TALAWA_DOCS_SYNC }}
-      - name: Empty Commit
-        run: |
-          git config --global user.name "${{github.actor}}"
-          git config --global user.email "${{env.email}}"
-          git config --global url.https://${{ secrets.TALAWA_DOCS_SYNC }}@github.com/.insteadOf https://github.com/
-          git commit --allow-empty -m "Trigger Documentation Workflow"
-          git push origin develop:automated-docs --force
-  
-  # Copy-docs-to-talawa-docs:
-  #   runs-on: ubuntu-latest
-  #   if: github.ref == 'refs/heads/automated-docs'
-  #   # needs: Generate-Documentation
-  #   steps:
-  #   - uses: actions/checkout@v3
-  #   - uses: dmnemec/copy_file_to_another_repo_action@v1.1.1
-  #     env:
-  #       API_TOKEN_GITHUB: ${{secrets.TALAWA_DOCS_SYNC}}    
-  #     with:
-  #       source_file: 'talawa-api-docs/'
-  #       destination_repo: 'PalisadoesFoundation/talawa-docs'
-  #       destination_branch: 'develop'
-  #       destination_folder: 'docs/'
-  #       user_email: '${{env.email}}'
-  #       user_name: '${{github.actor}}'
-  #       commit_message: 'Talawa API docs updated'
-      
-# You can find the deployment instructions in the scripts/cloud-api-demo/README.md file
-  Deploy-Workflow:
-    name: Deploying Application to Cloud VPS
-    needs: Push-Workflow
-    runs-on: ubuntu-latest
-    steps:
-      - name: Generate Access Token Secret
-        run: |
-          secret=$(openssl rand -hex 32)
-          echo "INPUT_ACCESS_TOKEN_SECRET=$secret" >> $GITHUB_ENV
-          echo "::add-mask::$secret"
-        
-      - name: Generate Refresh Token Secret
-        run: |
-          secret=$(openssl rand -hex 32)
-          echo "INPUT_REFRESH_TOKEN_SECRET=$secret" >> $GITHUB_ENV
-          echo "::add-mask::$secret"
-
-      - name: Execute remote ssh commands 
-        uses: appleboy/ssh-action@v1.0.3 
-        env:
-          INPUT_RECAPTCHA_SECRET_KEY: ${{ secrets.API_DEMO_RECAPTCHA_SECRET_KEY }}
-          INPUT_MAIL_USERNAME: ${{ secrets.API_DEMO_MAIL_USERNAME }}
-          INPUT_MAIL_PASSWORD: ${{ secrets.API_DEMO_MAIL_PASSWORD }}
-          INPUT_LAST_RESORT_SUPERADMIN_EMAIL: ${{ secrets.API_DEMO_LAST_RESORT_SUPERADMIN_EMAIL }}
-        with:
-          host: ${{secrets.API_DEMO_HOST}}
-          username: ${{ secrets.API_DEMO_USERNAME }}
-          key: ${{ secrets.API_DEMO_SSH_KEY }}
-          port: ${{ secrets.API_DEMO_SSH_PORT}}
-          allenvs: true
-          command_timeout: 30m
-          script: |
-            python3 /usr/local/bin/scripts/create_env.py --access_token_secret $INPUT_ACCESS_TOKEN_SECRET --refresh_token_secret $INPUT_REFRESH_TOKEN_SECRET --recaptcha_secret_key $INPUT_RECAPTCHA_SECRET_KEY --mail_username $INPUT_MAIL_USERNAME --mail_password $INPUT_MAIL_PASSWORD --last_resort_superadmin_email $INPUT_LAST_RESORT_SUPERADMIN_EMAIL
-            python3 /usr/local/bin/scripts/deploy.py --path ~/develop --branch develop
-
-  Check-Schema: 
-    name: Check Schema
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Restore node_modules from cache
-        id: cache-npm
-        uses: actions/cache@v4
-        env:
-          cache-name: cache-node-modules
-        with:
-          path: |
-            ~/.npm
-            node_modules
-          key: ${{ runner.os }}-node-${{ env.cache-name }}-${{ hashFiles('**/package-lock.json') }}
-          restore-keys: |
-            ${{ runner.os }}-node-${{ env.cache-name }}-
-            ${{ runner.os }}-node-
-            ${{ runner.os }}-    
-
-      - name: Install dependencies
-        run: npm ci
-        
-      - name: Generate schema.graphql
-        run: npm run gen:schema
-        
-    # A separate step for extracting branch name from $GITHUB_HEAD_REF/$GITHUB_REF
-    # $GITHUB_HEAD_REF on pull_request and $GITHUB_REF on push
-    # If GITHUB_HEAD_REF is not set, extract the branch name from GITHUB_REF using parameter expansion to remove "refs/heads/" prefix
-    # If GITHUB_HEAD_REF is set, directly assign its value to the branch variable
-    
-      - name: Extract branch name
-        shell: bash
-        run: | 
-          if [ -z "$GITHUB_HEAD_REF" ]; then
-            branch=${GITHUB_REF#refs/heads/}
-          else
-            branch=$GITHUB_HEAD_REF
-          fi
-          echo "branch=$branch" >> $GITHUB_OUTPUT
-        id: extract_branch  
-
-      - uses: kamilkisiela/graphql-inspector@master
-        with:
-          schema: ${{ steps.extract_branch.outputs.branch }}:schema.graphql    
