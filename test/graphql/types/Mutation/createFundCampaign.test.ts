@@ -310,7 +310,7 @@ suite("Mutation field createFundCampaign", () => {
 			variables: { input: { id: tempUserId } },
 		});
 
-		// Remove from cleanup list since we already deleted (by ID, not position)
+		// Remove from cleanup list since we already deleted
 		const index = createdUserIds.indexOf(tempUserId);
 		if (index > -1) {
 			createdUserIds.splice(index, 1);
@@ -390,10 +390,10 @@ suite("Mutation field createFundCampaign", () => {
 			},
 			variables: {
 				input: {
-					fundId: fundId, // Use existing fundId from beforeAll
-					name: "", // Empty name
+					fundId: fundId,
+					name: "",
 					currencyCode: "USD",
-					goalAmount: 10000, // Changed from fundingGoal
+					goalAmount: 10000,
 					startAt: new Date().toISOString(),
 					endAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
 				},
@@ -419,9 +419,9 @@ suite("Mutation field createFundCampaign", () => {
 		);
 	});
 
-	test('results in a graphql error with "invalid_arguments" extensions code when endAt is before or equal to startAt', async () => {
+	test('results in a graphql error with "invalid_arguments" extensions code when endAt is before startAt', async () => {
 		const startDate = new Date("2025-06-01");
-		const endDate = new Date("2025-05-01"); // Before startDate
+		const endDate = new Date("2025-05-01");
 
 		const result = await mercuriusClient.mutate(Mutation_createFundCampaign, {
 			headers: {
@@ -472,7 +472,7 @@ suite("Mutation field createFundCampaign", () => {
 					currencyCode: "USD",
 					goalAmount: 1000,
 					startAt: sameDate.toISOString(),
-					endAt: sameDate.toISOString(), // Same as startAt
+					endAt: sameDate.toISOString(),
 				},
 			},
 		});
