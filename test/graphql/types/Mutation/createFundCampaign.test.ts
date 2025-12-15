@@ -18,9 +18,9 @@ import {
 } from "../documentNodes";
 
 /**
- * Helper function to get admin authentication token
+ * Helper function to get admin authentication token and user ID
  */
-async function getAdminToken(): Promise<string> {
+async function getAdminToken(): Promise<{ authToken: string; userId: string }> {
 	const signInResult = await mercuriusClient.query(Query_signIn, {
 		variables: {
 			input: {
@@ -31,8 +31,10 @@ async function getAdminToken(): Promise<string> {
 	});
 
 	const authToken = signInResult.data?.signIn?.authenticationToken;
+	const userId = signInResult.data?.signIn?.user?.id;
 	assertToBeNonNullish(authToken);
-	return authToken;
+	assertToBeNonNullish(userId);
+	return { authToken, userId };
 }
 
 /**
@@ -141,6 +143,10 @@ async function createTestFund(
 }
 
 suite("Mutation field createFundCampaign", () => {
+	// NOTE: Lines 172-180 of src/graphql/types/Mutation/createFundCampaign.ts
+	// contain a defensive branch handling unexpected empty DB insert results.
+	// This branch cannot be reliably tested without DB layer mocking.
+
 	let adminAuthToken: string;
 	let regularUserAuthToken: string;
 	let orgAdminUserAuthToken: string;
@@ -155,20 +161,10 @@ suite("Mutation field createFundCampaign", () => {
 	const createdOrganizationIds: string[] = [];
 
 	beforeAll(async () => {
-		// Get admin token
-		adminAuthToken = await getAdminToken();
-
-		// Get admin user ID
-		const adminSignInResult = await mercuriusClient.query(Query_signIn, {
-			variables: {
-				input: {
-					emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-					password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-				},
-			},
-		});
-		assertToBeNonNullish(adminSignInResult.data?.signIn?.user?.id);
-		adminUserId = adminSignInResult.data.signIn.user.id;
+		// Get admin token and user ID
+		const adminAuth = await getAdminToken();
+		adminAuthToken = adminAuth.authToken;
+		adminUserId = adminAuth.userId;
 
 		// Create a regular test user
 		const regularUser = await createTestUser(adminAuthToken, "regular");
@@ -209,6 +205,9 @@ suite("Mutation field createFundCampaign", () => {
 
 	afterAll(async () => {
 		// Cleanup: Delete test data in reverse order of creation
+		const cleanupErrors: string[] = [];
+
+		// Cleanup campaigns
 		for (const campaignId of createdFundCampaignIds) {
 			try {
 				await mercuriusClient.mutate(Mutation_deleteFundCampaign, {
@@ -216,10 +215,11 @@ suite("Mutation field createFundCampaign", () => {
 					variables: { input: { id: campaignId } },
 				});
 			} catch (error) {
-				// Ignore cleanup errors as resources may have been deleted in tests
+				cleanupErrors.push(`Campaign ${campaignId}: ${error}`);
 			}
 		}
 
+		// Cleanup funds
 		for (const fundIdToDelete of createdFundIds) {
 			try {
 				await mercuriusClient.mutate(Mutation_deleteFund, {
@@ -227,10 +227,11 @@ suite("Mutation field createFundCampaign", () => {
 					variables: { input: { id: fundIdToDelete } },
 				});
 			} catch (error) {
-				// Ignore cleanup errors as resources may have been deleted in tests
+				cleanupErrors.push(`Fund ${fundIdToDelete}: ${error}`);
 			}
 		}
 
+		// Cleanup users
 		for (const userId of createdUserIds) {
 			try {
 				await mercuriusClient.mutate(Mutation_deleteUser, {
@@ -238,10 +239,11 @@ suite("Mutation field createFundCampaign", () => {
 					variables: { input: { id: userId } },
 				});
 			} catch (error) {
-				// Ignore cleanup errors as resources may have been deleted in tests
+				cleanupErrors.push(`User ${userId}: ${error}`);
 			}
 		}
 
+		// Cleanup organizations
 		for (const orgId of createdOrganizationIds) {
 			try {
 				await mercuriusClient.mutate(Mutation_deleteOrganization, {
@@ -249,8 +251,13 @@ suite("Mutation field createFundCampaign", () => {
 					variables: { input: { id: orgId } },
 				});
 			} catch (error) {
-				// Ignore cleanup errors as resources may have been deleted in tests
+				cleanupErrors.push(`Organization ${orgId}: ${error}`);
 			}
+		}
+
+		// Log cleanup errors if any (won't fail tests, but helps debugging)
+		if (cleanupErrors.length > 0) {
+			console.warn("Cleanup warnings:", cleanupErrors);
 		}
 	});
 
@@ -286,12 +293,13 @@ suite("Mutation field createFundCampaign", () => {
 		// Create a temporary user
 		const tempUser = await createTestUser(adminAuthToken, "regular");
 		const tempUserToken = tempUser.authToken;
-		createdUserIds.push(tempUser.userId);
+		const tempUserId = tempUser.userId;
+		createdUserIds.push(tempUserId);
 
 		// Add temp user to organization as admin
 		await createOrganizationMembership(
 			adminAuthToken,
-			tempUser.userId,
+			tempUserId,
 			organizationId,
 			"administrator",
 		);
@@ -299,11 +307,14 @@ suite("Mutation field createFundCampaign", () => {
 		// Delete the user while keeping the token
 		await mercuriusClient.mutate(Mutation_deleteUser, {
 			headers: { authorization: `bearer ${adminAuthToken}` },
-			variables: { input: { id: tempUser.userId } },
+			variables: { input: { id: tempUserId } },
 		});
 
-		// Remove from cleanup list since we already deleted
-		createdUserIds.pop();
+		// Remove from cleanup list since we already deleted (by ID, not position)
+		const index = createdUserIds.indexOf(tempUserId);
+		if (index > -1) {
+			createdUserIds.splice(index, 1);
+		}
 
 		// Try to use the deleted user's token
 		const result = await mercuriusClient.mutate(Mutation_createFundCampaign, {
@@ -372,6 +383,37 @@ suite("Mutation field createFundCampaign", () => {
 		);
 	});
 
+	test('results in a graphql error with "invalid_arguments" extensions code when campaign name is empty', async () => {
+		const result = await mercuriusClient.mutate(Mutation_createFundCampaign, {
+			headers: {
+				authorization: `bearer ${adminAuthToken}`,
+			},
+			variables: {
+				input: {
+					fundId: fundId,
+					name: "", // Empty name
+					currencyCode: "USD",
+					goalAmount: 1000,
+					startAt: new Date("2025-01-01").toISOString(),
+					endAt: new Date("2025-12-31").toISOString(),
+				},
+			},
+		});
+
+		expect(result.data?.createFundCampaign).toBeNull();
+		expect(result.errors).toEqual(
+			expect.arrayContaining<TalawaGraphQLFormattedError>([
+				expect.objectContaining<TalawaGraphQLFormattedError>({
+					extensions: expect.objectContaining({
+						code: "invalid_arguments",
+					}),
+					message: expect.any(String),
+					path: ["createFundCampaign"],
+				}),
+			]),
+		);
+	});
+
 	test('results in a graphql error with "invalid_arguments" extensions code when endAt is before or equal to startAt', async () => {
 		const startDate = new Date("2025-06-01");
 		const endDate = new Date("2025-05-01"); // Before startDate
@@ -388,6 +430,44 @@ suite("Mutation field createFundCampaign", () => {
 					goalAmount: 1000,
 					startAt: startDate.toISOString(),
 					endAt: endDate.toISOString(),
+				},
+			},
+		});
+
+		expect(result.data?.createFundCampaign).toBeNull();
+		expect(result.errors).toEqual(
+			expect.arrayContaining<TalawaGraphQLFormattedError>([
+				expect.objectContaining<TalawaGraphQLFormattedError>({
+					extensions: expect.objectContaining({
+						code: "invalid_arguments",
+						issues: expect.arrayContaining([
+							expect.objectContaining({
+								argumentPath: ["input", "endAt"],
+							}),
+						]),
+					}),
+					message: expect.any(String),
+					path: ["createFundCampaign"],
+				}),
+			]),
+		);
+	});
+
+	test('results in a graphql error with "invalid_arguments" extensions code when endAt equals startAt', async () => {
+		const sameDate = new Date("2025-06-01");
+
+		const result = await mercuriusClient.mutate(Mutation_createFundCampaign, {
+			headers: {
+				authorization: `bearer ${adminAuthToken}`,
+			},
+			variables: {
+				input: {
+					fundId: fundId,
+					name: `Test Campaign ${faker.string.uuid()}`,
+					currencyCode: "USD",
+					goalAmount: 1000,
+					startAt: sameDate.toISOString(),
+					endAt: sameDate.toISOString(), // Same as startAt
 				},
 			},
 		});
@@ -471,7 +551,8 @@ suite("Mutation field createFundCampaign", () => {
 		);
 
 		assertToBeNonNullish(firstResult.data?.createFundCampaign?.id);
-		createdFundCampaignIds.push(firstResult.data.createFundCampaign.id);
+		const duplicateTestCampaignId = firstResult.data.createFundCampaign.id;
+		createdFundCampaignIds.push(duplicateTestCampaignId);
 
 		// Try to create another campaign with the same name
 		const result = await mercuriusClient.mutate(Mutation_createFundCampaign, {
@@ -508,6 +589,21 @@ suite("Mutation field createFundCampaign", () => {
 				}),
 			]),
 		);
+
+		// Clean up the duplicate test campaign immediately to avoid test order dependencies
+		try {
+			await mercuriusClient.mutate(Mutation_deleteFundCampaign, {
+				headers: { authorization: `bearer ${adminAuthToken}` },
+				variables: { input: { id: duplicateTestCampaignId } },
+			});
+			// Remove from cleanup array since already deleted
+			const index = createdFundCampaignIds.indexOf(duplicateTestCampaignId);
+			if (index > -1) {
+				createdFundCampaignIds.splice(index, 1);
+			}
+		} catch (error) {
+			// Ignore cleanup errors
+		}
 	});
 
 	test('results in a graphql error with "unauthorized_action_on_arguments_associated_resources" extensions code in the "errors" field and "null" as the value of "data.createFundCampaign" field if user is not an organization administrator and not a global administrator', async () => {
@@ -568,11 +664,9 @@ suite("Mutation field createFundCampaign", () => {
 		expect(result.data?.createFundCampaign).not.toBeNull();
 		expect(result.data?.createFundCampaign?.name).toBe(campaignName);
 		expect(result.data?.createFundCampaign?.goalAmount).toBe(5000);
-		expect(result.data?.createFundCampaign?.id).toBeDefined();
 
-		if (result.data?.createFundCampaign?.id) {
-			createdFundCampaignIds.push(result.data.createFundCampaign.id);
-		}
+		assertToBeNonNullish(result.data?.createFundCampaign?.id);
+		createdFundCampaignIds.push(result.data.createFundCampaign.id);
 	});
 
 	test("organization administrator can successfully create a fund campaign", async () => {
@@ -597,15 +691,13 @@ suite("Mutation field createFundCampaign", () => {
 		expect(result.data?.createFundCampaign).not.toBeNull();
 		expect(result.data?.createFundCampaign?.name).toBe(campaignName);
 		expect(result.data?.createFundCampaign?.goalAmount).toBe(10000);
-		expect(result.data?.createFundCampaign?.id).toBeDefined();
 
-		if (result.data?.createFundCampaign?.id) {
-			createdFundCampaignIds.push(result.data.createFundCampaign.id);
-		}
+		assertToBeNonNullish(result.data?.createFundCampaign?.id);
+		createdFundCampaignIds.push(result.data.createFundCampaign.id);
 	});
 
-	test("can create a fund campaign with minimal required fields", async () => {
-		const campaignName = `Minimal Campaign ${faker.string.uuid()}`;
+	test("successfully creates campaign with all required fields", async () => {
+		const campaignName = `Required Fields Campaign ${faker.string.uuid()}`;
 		const result = await mercuriusClient.mutate(Mutation_createFundCampaign, {
 			headers: {
 				authorization: `bearer ${adminAuthToken}`,
@@ -625,10 +717,8 @@ suite("Mutation field createFundCampaign", () => {
 		expect(result.errors).toBeUndefined();
 		expect(result.data?.createFundCampaign).not.toBeNull();
 		expect(result.data?.createFundCampaign?.name).toBe(campaignName);
-		expect(result.data?.createFundCampaign?.id).toBeDefined();
 
-		if (result.data?.createFundCampaign?.id) {
-			createdFundCampaignIds.push(result.data.createFundCampaign.id);
-		}
+		assertToBeNonNullish(result.data?.createFundCampaign?.id);
+		createdFundCampaignIds.push(result.data.createFundCampaign.id);
 	});
 });
