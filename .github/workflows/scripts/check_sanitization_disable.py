@@ -53,8 +53,8 @@ def check_sanitization_disable(file_path: str) -> tuple[bool, str]:
             content = file.read()
 
             # First check if there's a disable comment without justification
-            no_justification_match = (
-                disable_no_justification_pattern.search(content)
+            no_justification_match = disable_no_justification_pattern.search(
+                content
             )
             if no_justification_match:
                 return (
@@ -117,8 +117,8 @@ def check_files(files_or_directories: list[str]) -> bool:
                 for file_name in files:
                     if file_name.endswith(".ts"):
                         file_path = os.path.join(root, file_name)
-                        is_invalid, error_message = (
-                            check_sanitization_disable(file_path)
+                        is_invalid, error_message = check_sanitization_disable(
+                            file_path
                         )
                         if is_invalid:
                             print(f"❌ {file_path}: {error_message}")
