@@ -1,6 +1,6 @@
 import { faker } from "@faker-js/faker";
 import { assertToBeNonNullish } from "test/helpers";
-import { describe, expect, it } from "vitest";
+import { expect, suite, test } from "vitest";
 import type {
 	InvalidArgumentsExtensions,
 	TalawaGraphQLFormattedError,
@@ -13,9 +13,9 @@ import {
 	Query_signIn,
 } from "../documentNodes";
 
-describe("Mutation field revokeRefreshToken", () => {
-	describe("successful scenarios", () => {
-		it("should return true when revoking a valid refresh token", async () => {
+suite("Mutation field revokeRefreshToken", () => {
+	suite("successful scenarios", () => {
+		test("should return true when revoking a valid refresh token", async () => {
 			// Sign in to get a valid refresh token
 			const signInResult = await mercuriusClient.query(Query_signIn, {
 				variables: {
@@ -40,7 +40,7 @@ describe("Mutation field revokeRefreshToken", () => {
 			expect(result.data?.revokeRefreshToken).toBe(true);
 		});
 
-		it("should prevent using a revoked token to get new access tokens", async () => {
+		test("should prevent using a revoked token to get new access tokens", async () => {
 			// Sign in to get a valid refresh token
 			const signInResult = await mercuriusClient.query(Query_signIn, {
 				variables: {
@@ -84,7 +84,7 @@ describe("Mutation field revokeRefreshToken", () => {
 			).toBe("unauthenticated");
 		});
 
-		it("should return false for non-existent token (prevents timing attacks)", async () => {
+		test("should return false for non-existent token (prevents timing attacks)", async () => {
 			// Using a random token that doesn't exist
 			const result = await mercuriusClient.mutate(Mutation_revokeRefreshToken, {
 				variables: {
@@ -97,7 +97,7 @@ describe("Mutation field revokeRefreshToken", () => {
 			expect(result.data?.revokeRefreshToken).toBe(false);
 		});
 
-		it("should return false when revoking an already revoked token", async () => {
+		test("should return false when revoking an already revoked token", async () => {
 			// Sign in to get a valid refresh token
 			const signInResult = await mercuriusClient.query(Query_signIn, {
 				variables: {
@@ -138,8 +138,8 @@ describe("Mutation field revokeRefreshToken", () => {
 		});
 	});
 
-	describe("error scenarios", () => {
-		it("should return invalid_arguments error for empty refresh token", async () => {
+	suite("error scenarios", () => {
+		test("should return invalid_arguments error for empty refresh token", async () => {
 			const result = await mercuriusClient.mutate(Mutation_revokeRefreshToken, {
 				variables: {
 					refreshToken: "",
@@ -158,8 +158,8 @@ describe("Mutation field revokeRefreshToken", () => {
 		});
 	});
 
-	describe("logout functionality", () => {
-		it("should effectively logout user by revoking their refresh token", async () => {
+	suite("logout functionality", () => {
+		test("should effectively logout user by revoking their refresh token", async () => {
 			// Sign in to get tokens
 			const signInResult = await mercuriusClient.query(Query_signIn, {
 				variables: {
@@ -202,8 +202,8 @@ describe("Mutation field revokeRefreshToken", () => {
 		});
 	});
 
-	describe("security considerations", () => {
-		it("should not leak information about token existence via response time", async () => {
+	suite("security considerations", () => {
+		test("should not leak information about token existence via response time", async () => {
 			// This is a conceptual test - both existing and non-existing tokens
 			// should return in similar time (no error thrown for non-existent)
 

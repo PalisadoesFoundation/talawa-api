@@ -273,11 +273,81 @@ suite("Query field signIn", () => {
 		expect(result.data.signIn).toEqual(
 			expect.objectContaining({
 				authenticationToken: expect.any(String),
+				refreshToken: expect.any(String),
 				user: expect.objectContaining({
 					emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
 				}),
 			}),
 		);
+	});
+
+	suite("refresh token functionality", () => {
+		test("should return a valid refresh token on successful sign in", async () => {
+			const result = await mercuriusClient.query(Query_signIn, {
+				variables: {
+					input: {
+						emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
+						password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
+					},
+				},
+			});
+
+			expect(result.errors).toBeUndefined();
+			assertToBeNonNullish(result.data.signIn?.refreshToken);
+
+			const refreshToken = result.data.signIn?.refreshToken as string;
+
+			// Refresh token should be a 64-character hex string (256-bit)
+			expect(refreshToken).toHaveLength(64);
+			expect(/^[a-f0-9]+$/.test(refreshToken)).toBe(true);
+		});
+
+		test("should return different refresh tokens for each sign in", async () => {
+			const result1 = await mercuriusClient.query(Query_signIn, {
+				variables: {
+					input: {
+						emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
+						password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
+					},
+				},
+			});
+
+			const result2 = await mercuriusClient.query(Query_signIn, {
+				variables: {
+					input: {
+						emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
+						password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
+					},
+				},
+			});
+
+			assertToBeNonNullish(result1.data.signIn?.refreshToken);
+			assertToBeNonNullish(result2.data.signIn?.refreshToken);
+
+			// Each sign in should generate a unique refresh token
+			expect(result1.data.signIn?.refreshToken).not.toBe(
+				result2.data.signIn?.refreshToken,
+			);
+		});
+
+		test("refresh token should be stored atomically with sign in response", async () => {
+			const result = await mercuriusClient.query(Query_signIn, {
+				variables: {
+					input: {
+						emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
+						password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
+					},
+				},
+			});
+
+			expect(result.errors).toBeUndefined();
+			assertToBeNonNullish(result.data.signIn?.authenticationToken);
+			assertToBeNonNullish(result.data.signIn?.refreshToken);
+
+			// Both tokens should be present together (atomic operation)
+			expect(result.data.signIn.authenticationToken).toBeDefined();
+			expect(result.data.signIn.refreshToken).toBeDefined();
+		});
 	});
 
 	test("sign in", async () => {
@@ -291,11 +361,13 @@ suite("Query field signIn", () => {
 		});
 
 		assertToBeNonNullish(result.data.signIn?.authenticationToken);
+		assertToBeNonNullish(result.data.signIn?.refreshToken);
 
 		expect(result.errors).toBeUndefined();
 		expect(result.data.signIn).toEqual(
 			expect.objectContaining({
 				authenticationToken: expect.any(String),
+				refreshToken: expect.any(String),
 				user: expect.objectContaining({
 					emailAddress: user1Email,
 				}),

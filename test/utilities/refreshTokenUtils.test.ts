@@ -1,6 +1,7 @@
 import { createHash } from "node:crypto";
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, expect, suite, test, vi } from "vitest";
 import {
+	DEFAULT_REFRESH_TOKEN_EXPIRES_MS,
 	findValidRefreshToken,
 	generateRefreshToken,
 	hashRefreshToken,
@@ -20,7 +21,7 @@ const mockDrizzleClient = {
 	},
 };
 
-describe("refreshTokenUtils", () => {
+suite("refreshTokenUtils", () => {
 	beforeEach(() => {
 		vi.clearAllMocks();
 	});
@@ -29,20 +30,28 @@ describe("refreshTokenUtils", () => {
 		vi.restoreAllMocks();
 	});
 
-	describe("generateRefreshToken", () => {
-		it("should generate a 64-character hex string", () => {
+	suite("DEFAULT_REFRESH_TOKEN_EXPIRES_MS", () => {
+		test("should be set to 7 days in milliseconds", () => {
+			const SEVEN_DAYS_MS = 7 * 24 * 60 * 60 * 1000; // 604800000
+			expect(DEFAULT_REFRESH_TOKEN_EXPIRES_MS).toBe(SEVEN_DAYS_MS);
+			expect(DEFAULT_REFRESH_TOKEN_EXPIRES_MS).toBe(604_800_000);
+		});
+	});
+
+	suite("generateRefreshToken", () => {
+		test("should generate a 64-character hex string", () => {
 			const token = generateRefreshToken();
 			expect(token).toHaveLength(64);
 			expect(/^[a-f0-9]+$/.test(token)).toBe(true);
 		});
 
-		it("should generate unique tokens on each call", () => {
+		test("should generate unique tokens on each call", () => {
 			const token1 = generateRefreshToken();
 			const token2 = generateRefreshToken();
 			expect(token1).not.toBe(token2);
 		});
 
-		it("should generate cryptographically random tokens", () => {
+		test("should generate cryptographically random tokens", () => {
 			// Generate multiple tokens and ensure they're all unique
 			const tokens = new Set<string>();
 			for (let i = 0; i < 100; i++) {
@@ -52,8 +61,8 @@ describe("refreshTokenUtils", () => {
 		});
 	});
 
-	describe("hashRefreshToken", () => {
-		it("should return a SHA-256 hash of the token", () => {
+	suite("hashRefreshToken", () => {
+		test("should return a SHA-256 hash of the token", () => {
 			const token = "test-token-123";
 			const hash = hashRefreshToken(token);
 
@@ -62,29 +71,29 @@ describe("refreshTokenUtils", () => {
 			expect(hash).toBe(expectedHash);
 		});
 
-		it("should return a 64-character hex string", () => {
+		test("should return a 64-character hex string", () => {
 			const token = "any-token";
 			const hash = hashRefreshToken(token);
 			expect(hash).toHaveLength(64);
 			expect(/^[a-f0-9]+$/.test(hash)).toBe(true);
 		});
 
-		it("should produce same hash for same input", () => {
+		test("should produce same hash for same input", () => {
 			const token = "consistent-token";
 			const hash1 = hashRefreshToken(token);
 			const hash2 = hashRefreshToken(token);
 			expect(hash1).toBe(hash2);
 		});
 
-		it("should produce different hashes for different inputs", () => {
+		test("should produce different hashes for different inputs", () => {
 			const hash1 = hashRefreshToken("token1");
 			const hash2 = hashRefreshToken("token2");
 			expect(hash1).not.toBe(hash2);
 		});
 	});
 
-	describe("storeRefreshToken", () => {
-		it("should insert a refresh token into the database", async () => {
+	suite("storeRefreshToken", () => {
+		test("should insert a refresh token into the database", async () => {
 			const mockResult = [{ id: "test-uuid" }];
 			const mockReturning = vi.fn().mockResolvedValue(mockResult);
 			const mockValues = vi.fn().mockReturnValue({ returning: mockReturning });
@@ -106,7 +115,7 @@ describe("refreshTokenUtils", () => {
 			expect(result).toEqual({ id: "test-uuid" });
 		});
 
-		it("should throw an error if insertion fails", async () => {
+		test("should throw an error if insertion fails", async () => {
 			const mockReturning = vi.fn().mockResolvedValue([]);
 			const mockValues = vi.fn().mockReturnValue({ returning: mockReturning });
 			mockDrizzleClient.insert.mockReturnValue({ values: mockValues });
@@ -124,8 +133,8 @@ describe("refreshTokenUtils", () => {
 		});
 	});
 
-	describe("findValidRefreshToken", () => {
-		it("should return the token if found and valid", async () => {
+	suite("findValidRefreshToken", () => {
+		test("should return the token if found and valid", async () => {
 			const mockToken = {
 				id: "token-id",
 				userId: "user-id",
@@ -146,7 +155,7 @@ describe("refreshTokenUtils", () => {
 			expect(result).toEqual(mockToken);
 		});
 
-		it("should return undefined if token is not found", async () => {
+		test("should return undefined if token is not found", async () => {
 			mockDrizzleClient.query.refreshTokensTable.findFirst.mockResolvedValue(
 				undefined,
 			);
@@ -161,7 +170,7 @@ describe("refreshTokenUtils", () => {
 			expect(result).toBeUndefined();
 		});
 
-		it("should return undefined if token is expired", async () => {
+		test("should return undefined if token is expired", async () => {
 			const mockToken = {
 				id: "token-id",
 				userId: "user-id",
@@ -182,7 +191,7 @@ describe("refreshTokenUtils", () => {
 			expect(result).toBeUndefined();
 		});
 
-		it("should return undefined if token is revoked", async () => {
+		test("should return undefined if token is revoked", async () => {
 			const mockToken = {
 				id: "token-id",
 				userId: "user-id",
@@ -204,8 +213,8 @@ describe("refreshTokenUtils", () => {
 		});
 	});
 
-	describe("revokeRefreshTokenByHash", () => {
-		it("should return true when token is revoked successfully", async () => {
+	suite("revokeRefreshTokenByHash", () => {
+		test("should return true when token is revoked successfully", async () => {
 			const mockResult = [{ id: "token-id" }];
 			const mockReturning = vi.fn().mockResolvedValue(mockResult);
 			const mockWhere = vi.fn().mockReturnValue({ returning: mockReturning });
@@ -222,7 +231,7 @@ describe("refreshTokenUtils", () => {
 			expect(result).toBe(true);
 		});
 
-		it("should return false when token is not found", async () => {
+		test("should return false when token is not found", async () => {
 			const mockReturning = vi.fn().mockResolvedValue([]);
 			const mockWhere = vi.fn().mockReturnValue({ returning: mockReturning });
 			const mockSet = vi.fn().mockReturnValue({ where: mockWhere });
@@ -239,8 +248,8 @@ describe("refreshTokenUtils", () => {
 		});
 	});
 
-	describe("revokeAllUserRefreshTokens", () => {
-		it("should return the number of tokens revoked", async () => {
+	suite("revokeAllUserRefreshTokens", () => {
+		test("should return the number of tokens revoked", async () => {
 			const mockResult = [{ id: "token-1" }, { id: "token-2" }];
 			const mockReturning = vi.fn().mockResolvedValue(mockResult);
 			const mockWhere = vi.fn().mockReturnValue({ returning: mockReturning });
@@ -257,7 +266,7 @@ describe("refreshTokenUtils", () => {
 			expect(result).toBe(2);
 		});
 
-		it("should return 0 when no tokens to revoke", async () => {
+		test("should return 0 when no tokens to revoke", async () => {
 			const mockReturning = vi.fn().mockResolvedValue([]);
 			const mockWhere = vi.fn().mockReturnValue({ returning: mockReturning });
 			const mockSet = vi.fn().mockReturnValue({ where: mockWhere });
