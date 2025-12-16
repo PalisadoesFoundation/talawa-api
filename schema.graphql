@@ -274,9 +274,14 @@ enum AgendaItemType {
 """"""
 type AuthenticationPayload {
   """
-  This is the authentication token using which a user can sign in to talawa.
+  This is the short-lived access token using which a user can authenticate API requests.
   """
   authenticationToken: String
+
+  """
+  This is the long-lived refresh token used to obtain new access tokens without re-authentication.
+  """
+  refreshToken: String
 
   """"""
   user: User
@@ -2284,6 +2289,14 @@ type Mutation {
   ): Boolean
   readNotification(input: MutationReadNotificationInput!): ReadNotificationResponse
 
+  """
+  Mutation to refresh an access token using a valid refresh token. Returns new access and refresh tokens.
+  """
+  refreshToken(
+    """The refresh token to use for obtaining a new access token."""
+    refreshToken: String!
+  ): AuthenticationPayload
+
   """Mutation field to register a user for an event."""
   registerEventAttendee(data: EventAttendeeInput!): EventAttendee
 
@@ -2301,6 +2314,14 @@ type Mutation {
 
   """Mutation field to remove an event attendee."""
   removeEventAttendee(data: EventAttendeeInput!): User
+
+  """
+  Mutation to revoke a refresh token. Use this for logout functionality to invalidate the refresh token.
+  """
+  revokeRefreshToken(
+    """The refresh token to revoke."""
+    refreshToken: String!
+  ): Boolean
 
   """Send email invitations to one or more addresses for an event."""
   sendEventInvitations(input: SendEventInvitationsInput!): [EventInvitation!]
