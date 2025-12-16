@@ -712,4 +712,3 @@ suite("Query field postsByOrganization - sorting", () => {
 		expect(postIds).toContain(post3.id);
 	});
 });
-
