@@ -1,8 +1,7 @@
 import { createMockGraphQLContext } from "test/_Mocks_/mockContextCreator/mockContextCreator";
-import { beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it } from "vitest";
 import type { GraphQLContext } from "~/src/graphql/context";
 import type { TagFolder as TagFolderType } from "~/src/graphql/types/TagFolder/TagFolder";
-import { TagFolder } from "~/src/graphql/types/TagFolder/TagFolder";
 import { tagFolderCreatorResolver } from "~/src/graphql/types/TagFolder/creator";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 
@@ -77,7 +76,7 @@ describe("TagFolder creator Resolver Tests", () => {
 	it("should re-throw TalawaGraphQLError without wrapping", async () => {
 		const customError = new TalawaGraphQLError({
 			message: "Custom error",
-			extensions: { code: "custom_code" },
+			extensions: { code: "unexpected" },
 		});
 
 		mocks.drizzleClient.query.usersTable.findFirst.mockRejectedValue(
