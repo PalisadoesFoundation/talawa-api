@@ -256,105 +256,100 @@ suite("Query field signIn", () => {
 		},
 	);
 
-	suite(
-		"handles malformed password hash gracefully",
-		() => {
-			let malformedHashUserEmail = "";
-			let malformedHashUserId = "";
-			let adminAuthToken = "";
+	suite("handles malformed password hash gracefully", () => {
+		let malformedHashUserEmail = "";
+		let malformedHashUserId = "";
+		let adminAuthToken = "";
 
-			beforeAll(async () => {
-				// Sign in as admin
-				const adminSignIn = await mercuriusClient.query(Query_signIn, {
-					variables: {
-						input: {
-							emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-							password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-						},
+		beforeAll(async () => {
+			// Sign in as admin
+			const adminSignIn = await mercuriusClient.query(Query_signIn, {
+				variables: {
+					input: {
+						emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
+						password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
 					},
-				});
-				assertToBeNonNullish(adminSignIn.data.signIn?.authenticationToken);
-				adminAuthToken = adminSignIn.data.signIn.authenticationToken;
-
-				// Create a user with a valid password first
-				malformedHashUserEmail = `malformed${faker.string.ulid()}@email.com`;
-				const createUserResult = await mercuriusClient.mutate(
-					Mutation_createUser,
-					{
-						headers: {
-							authorization: `bearer ${adminAuthToken}`,
-						},
-						variables: {
-							input: {
-								emailAddress: malformedHashUserEmail,
-								isEmailAddressVerified: false,
-								name: "Malformed Hash User",
-								password: "password",
-								role: "regular",
-							},
-						},
-					},
-				);
-
-				assertToBeNonNullish(createUserResult.data.createUser?.user?.id);
-				malformedHashUserId = createUserResult.data.createUser.user.id;
-
-				// Directly update the user's password hash to an invalid value
-				// This simulates a corrupted database entry
-				await server.drizzleClient.execute(
-					sql`UPDATE users SET password_hash = 'invalid_corrupted_hash' WHERE id = ${malformedHashUserId}`,
-				);
+				},
 			});
+			assertToBeNonNullish(adminSignIn.data.signIn?.authenticationToken);
+			adminAuthToken = adminSignIn.data.signIn.authenticationToken;
 
-			afterAll(async () => {
-				// Clean up the test user
-				await mercuriusClient.mutate(Mutation_deleteUser, {
+			// Create a user with a valid password first
+			malformedHashUserEmail = `malformed${faker.string.ulid()}@email.com`;
+			const createUserResult = await mercuriusClient.mutate(
+				Mutation_createUser,
+				{
 					headers: {
 						authorization: `bearer ${adminAuthToken}`,
 					},
 					variables: {
 						input: {
-							id: malformedHashUserId,
-						},
-					},
-				});
-			});
-
-			test("returns invalid_credentials when password hash is malformed/corrupted", async () => {
-				const result = await mercuriusClient.query(Query_signIn, {
-					variables: {
-						input: {
 							emailAddress: malformedHashUserEmail,
+							isEmailAddressVerified: false,
+							name: "Malformed Hash User",
 							password: "password",
+							role: "regular",
 						},
 					},
-				});
+				},
+			);
 
-				expect(result.data.signIn).toEqual(null);
-				expect(result.errors).toEqual(
-					expect.arrayContaining<TalawaGraphQLFormattedError>([
-						expect.objectContaining<TalawaGraphQLFormattedError>({
-							extensions: expect.objectContaining<InvalidCredentialsExtensions>(
-								{
-									code: "invalid_credentials",
-									issues: expect.arrayContaining<
-										InvalidCredentialsExtensions["issues"][number]
-									>([
-										{
-											argumentPath: ["input"],
-											message: "Invalid email address or password.",
-										},
-									]),
-								},
-							),
-							message: expect.any(String),
-							path: ["signIn"],
-						}),
-					]),
-				);
+			assertToBeNonNullish(createUserResult.data.createUser?.user?.id);
+			malformedHashUserId = createUserResult.data.createUser.user.id;
+
+			// Directly update the user's password hash to an invalid value
+			// This simulates a corrupted database entry
+			await server.drizzleClient.execute(
+				sql`UPDATE users SET password_hash = 'invalid_corrupted_hash' WHERE id = ${malformedHashUserId}`,
+			);
+		});
+
+		afterAll(async () => {
+			// Clean up the test user
+			await mercuriusClient.mutate(Mutation_deleteUser, {
+				headers: {
+					authorization: `bearer ${adminAuthToken}`,
+				},
+				variables: {
+					input: {
+						id: malformedHashUserId,
+					},
+				},
 			});
-		},
-	);
+		});
+
+		test("returns invalid_credentials when password hash is malformed/corrupted", async () => {
+			const result = await mercuriusClient.query(Query_signIn, {
+				variables: {
+					input: {
+						emailAddress: malformedHashUserEmail,
+						password: "password",
+					},
+				},
+			});
+
+			expect(result.data.signIn).toEqual(null);
+			expect(result.errors).toEqual(
+				expect.arrayContaining<TalawaGraphQLFormattedError>([
+					expect.objectContaining<TalawaGraphQLFormattedError>({
+						extensions: expect.objectContaining<InvalidCredentialsExtensions>({
+							code: "invalid_credentials",
+							issues: expect.arrayContaining<
+								InvalidCredentialsExtensions["issues"][number]
+							>([
+								{
+									argumentPath: ["input"],
+									message: "Invalid email address or password.",
+								},
+							]),
+						}),
+						message: expect.any(String),
+						path: ["signIn"],
+					}),
+				]),
+			);
+		});
+	});
 
 	test("results in an empty errors field and the expected value for the data.signIn field.", async () => {
 		const variables: VariablesOf<typeof Query_signIn> = {
