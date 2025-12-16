@@ -1095,4 +1095,65 @@ suite("Query field allUsers", () => {
 		expect(result.errors).toBeUndefined();
 		assertToBeNonNullish(result.data?.allUsers);
 	});
+
+    /**
+     * Test 27: Explicit Null Where Clause
+     * This targets the `arg.where || {}` logic (Line 40).
+     * By passing explicit null, we force the resolver to handle the falsy value
+     * and fallback to the empty object default.
+     */
+    test("handles explicit null where argument safely", async () => {
+        const token = await getAdminAuthToken();
+        const u1 = await createTestUser();
+
+        // Pass explicitly null where
+        const result = await mercuriusClient.query(AllUsersQuery, {
+            headers: { authorization: `Bearer ${token}` },
+            variables: {
+                first: 10,
+                where: null, // <--- Explicit null triggers the fallback check
+            },
+        });
+
+        expect(result.errors).toBeUndefined();
+
+        // Should function exactly like an empty where/omitted where (return all users)
+        const edges: AllUsersEdge[] = result.data?.allUsers?.edges ?? [];
+        const ids = edges.map((edge) => edge.node.id);
+        expect(ids).toContain(u1.id);
+    });
+
+    /**
+     * Test 28: Explicit Null Name in Where
+     * Verifies that passing null to a string field returns an invalid_arguments error.
+     */
+    test("returns invalid_arguments when where.name is explicit null", async () => {
+        const token = await getAdminAuthToken();
+
+        const result = await mercuriusClient.query(AllUsersQuery, {
+            headers: { authorization: `Bearer ${token}` },
+            variables: {
+                first: 10,
+                where: { name: null }, 
+            },
+        });
+
+        // Expect an error because name cannot be null
+        expect(result.data?.allUsers).toBeNull();
+        expect(result.errors).toEqual(
+            expect.arrayContaining([
+                expect.objectContaining({
+                    extensions: expect.objectContaining({
+                        code: "invalid_arguments",
+                        issues: expect.arrayContaining([
+                            expect.objectContaining({
+                                argumentPath: ["where", "name"],
+                                message: "Expected string, received null",
+                            }),
+                        ]),
+                    }),
+                }),
+            ]),
+        );
+    });
 });
