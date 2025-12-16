@@ -1,17 +1,16 @@
 import { faker } from "@faker-js/faker";
 import { initGraphQLTada } from "gql.tada";
 import { expect, suite, test } from "vitest";
+import type { ClientCustomScalars } from "~/src/graphql/scalars/index";
 import type {
 	ArgumentsAssociatedResourcesNotFoundExtensions,
 	TalawaGraphQLFormattedError,
 	UnauthenticatedExtensions,
 	UnauthorizedActionOnArgumentsAssociatedResourcesExtensions,
 } from "~/src/utilities/TalawaGraphQLError";
-import type { ClientCustomScalars } from "~/src/graphql/scalars/index";
 import { assertToBeNonNullish } from "../../../helpers";
 import { server } from "../../../server";
 import { mercuriusClient } from "../client";
-import type { introspection } from "../gql.tada";
 import {
 	Mutation_createOrganization,
 	Mutation_createOrganizationMembership,
@@ -19,6 +18,7 @@ import {
 	Mutation_deleteUser,
 	Query_signIn,
 } from "../documentNodes";
+import type { introspection } from "../gql.tada";
 
 const gql = initGraphQLTada<{
 	introspection: introspection;
