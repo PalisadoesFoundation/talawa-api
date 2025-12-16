@@ -63,29 +63,43 @@ builder.queryField("signIn", (t) =>
 					operators.eq(fields.emailAddress, parsedArgs.input.emailAddress),
 			});
 
-			if (existingUser === undefined) {
-				throw new TalawaGraphQLError({
-					extensions: {
-						code: "arguments_associated_resources_not_found",
-						issues: [
-							{
-								argumentPath: ["input", "emailAddress"],
-							},
-						],
-					},
-				});
+			// Dummy password hash for timing attack mitigation when user doesn't exist
+			// This ensures both code paths take approximately the same execution time
+			// Uses matching argon2id parameters (m=19456,t=2,p=1) as the default hash function
+			const dummyPasswordHash =
+				"$argon2id$v=19$m=19456,t=2,p=1$c29tZXNhbHRzb21lc2FsdA$CTFhFdXPJO1aFaMaO6Mm5c8y7cJHAph8ArZWb2GRPPc";
+
+			// Use the actual password hash if user exists, otherwise use dummy hash
+			const passwordHashToVerify =
+				existingUser?.passwordHash ?? dummyPasswordHash;
+
+			// Perform password verification regardless of whether user exists
+			let isPasswordValid = false;
+			try {
+				isPasswordValid = await verify(
+					passwordHashToVerify,
+					parsedArgs.input.password,
+				);
+			} catch (error) {
+				// Hash verification failed (e.g., malformed hash) - treat as invalid
+				// Log at debug level for system monitoring without exposing sensitive data
+				ctx.log.debug(
+					{ error: error instanceof Error ? error.message : "Unknown error" },
+					"Password hash verification failed unexpectedly",
+				);
+				isPasswordValid = false;
 			}
 
-			if (
-				!(await verify(existingUser.passwordHash, parsedArgs.input.password))
-			) {
+			// Return the same error for both invalid email and invalid password
+			// This prevents email enumeration attacks
+			if (existingUser === undefined || !isPasswordValid) {
 				throw new TalawaGraphQLError({
 					extensions: {
-						code: "invalid_arguments",
+						code: "invalid_credentials",
 						issues: [
 							{
-								argumentPath: ["input", "password"],
-								message: "This password is invalid.",
+								argumentPath: ["input"],
+								message: "Invalid email address or password.",
 							},
 						],
 					},
