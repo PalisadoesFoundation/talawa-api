@@ -8,6 +8,9 @@ import { server } from "../../../server";
 import { mercuriusClient } from "../client";
 import { Query_signIn } from "../documentNodes";
 
+import { inArray } from "drizzle-orm";
+import { createRegularUserUsingAdmin } from "../createRegularUserUsingAdmin";
+
 /* -------------------------------------------------- */
 /* GraphQL Query */
 /* -------------------------------------------------- */
@@ -59,6 +62,7 @@ type AllUsersEdge = {
 /* -------------------------------------------------- */
 /* Helpers */
 /* -------------------------------------------------- */
+const createdUserIds: string[] = [];
 async function getAdminAuthToken(): Promise<string> {
 	const result = await mercuriusClient.query(Query_signIn, {
 		variables: {
@@ -74,7 +78,11 @@ async function getAdminAuthToken(): Promise<string> {
 }
 
 async function createTestUser(
-	overrides: { name?: string; role?: "regular" | "administrator" } = {},
+	overrides: {
+		name?: string;
+		role?: "regular" | "administrator";
+		createdAt?: Date;
+	} = {},
 ) {
 	const uuid = faker.string.uuid();
 
@@ -86,15 +94,26 @@ async function createTestUser(
 			isEmailAddressVerified: true,
 			passwordHash: faker.string.alphanumeric(60),
 			role: overrides.role ?? "regular",
+			createdAt: overrides.createdAt ?? new Date(),
 		})
+
 		.returning();
 
 	assertToBeNonNullish(user);
+	createdUserIds.push(user.id);
 	return user;
 }
 
-afterEach(() => {
+afterEach(async () => {
 	vi.restoreAllMocks();
+
+	if (createdUserIds.length > 0) {
+		await server.drizzleClient
+			.delete(usersTable)
+			.where(inArray(usersTable.id, createdUserIds));
+
+		createdUserIds.length = 0;
+	}
 });
 
 /* -------------------------------------------------- */
@@ -159,9 +178,7 @@ suite("Query field allUsers", () => {
 	 */
 	test("returns unauthorized_action for non-administrator user", async () => {
 		await createTestUser();
-		const { authToken } = await import("../createRegularUserUsingAdmin").then(
-			(m) => m.createRegularUserUsingAdmin(),
-		);
+		const { authToken } = await createRegularUserUsingAdmin();
 
 		const result = await mercuriusClient.query(AllUsersQuery, {
 			headers: { authorization: `Bearer ${authToken}` },
@@ -554,9 +571,13 @@ suite("Query field allUsers", () => {
 		const token = await getAdminAuthToken();
 		const prefix = `ForwardCursor_${faker.string.uuid()}`;
 
+		const baseTime = new Date();
+
 		for (let i = 0; i < 4; i++) {
-			await createTestUser({ name: `${prefix}_${i}` });
-			await new Promise((r) => setTimeout(r, 10));
+			await createTestUser({
+				name: `${prefix}_${i}`,
+				createdAt: new Date(baseTime.getTime() + i * 1000),
+			});
 		}
 
 		const firstPage = await mercuriusClient.query(AllUsersQuery, {
@@ -592,14 +613,18 @@ suite("Query field allUsers", () => {
 	 * To find entries "after", we must pick a user that has older entries following it.
 	 * We pick the NEWEST user (userB), so "after" it, we should find the OLDER user (userA).
 	 */
-	test("executes cursor parsing and transformation logic explicitly (Line 40 & 67 coverage)", async () => {
+	test("forward pagination with manually constructed cursor returns subsequent users", async () => {
 		const token = await getAdminAuthToken();
 
-		// Create User A (older)
-		const userA = await createTestUser();
-		await new Promise((r) => setTimeout(r, 50));
-		// Create User B (newer)
-		const userB = await createTestUser();
+		const baseTime = new Date();
+
+		const userA = await createTestUser({
+			createdAt: new Date(baseTime.getTime()),
+		});
+
+		const userB = await createTestUser({
+			createdAt: new Date(baseTime.getTime() + 1000),
+		});
 
 		// List Order (DESC): [UserB, UserA]
 		// We cursor on UserB (Top). "After" UserB should be UserA.
@@ -630,9 +655,12 @@ suite("Query field allUsers", () => {
 	test("returns users with forward pagination using cursor without name filter", async () => {
 		const token = await getAdminAuthToken();
 
+		const baseTime = new Date();
+
 		for (let i = 0; i < 3; i++) {
-			await createTestUser();
-			await new Promise((r) => setTimeout(r, 10));
+			await createTestUser({
+				createdAt: new Date(baseTime.getTime() + i * 1000),
+			});
 		}
 
 		const firstPage = await mercuriusClient.query(AllUsersQuery, {
@@ -692,9 +720,13 @@ suite("Query field allUsers", () => {
 		const token = await getAdminAuthToken();
 		const prefix = `BackwardCursor_${faker.string.uuid()}`;
 
+		const baseTime = new Date();
+
 		for (let i = 0; i < 4; i++) {
-			await createTestUser({ name: `${prefix}_${i}` });
-			await new Promise((r) => setTimeout(r, 10));
+			await createTestUser({
+				name: `${prefix}_${i}`,
+				createdAt: new Date(baseTime.getTime() + i * 1000),
+			});
 		}
 
 		const firstPage = await mercuriusClient.query(AllUsersQuery, {
@@ -731,14 +763,18 @@ suite("Query field allUsers", () => {
 	 * To find "before", we must pick a user that has newer entries preceding it.
 	 * We pick the OLDEST user (userA). "Before" it, we should find the NEWER user (userB).
 	 */
-	test("executes backward cursor parsing logic explicitly", async () => {
+	test("backward pagination with manually constructed cursor returns preceding users", async () => {
 		const token = await getAdminAuthToken();
 
-		// Create User A (older)
-		const userA = await createTestUser();
-		await new Promise((r) => setTimeout(r, 50));
-		// Create User B (newer)
-		const userB = await createTestUser();
+		const baseTime = new Date();
+
+		const userA = await createTestUser({
+			createdAt: new Date(baseTime.getTime()),
+		});
+
+		const userB = await createTestUser({
+			createdAt: new Date(baseTime.getTime() + 1000),
+		});
 
 		// List Order (DESC): [UserB, UserA]
 		// We cursor on UserA (Bottom). "Before" UserA should be UserB.
@@ -769,9 +805,12 @@ suite("Query field allUsers", () => {
 	test("returns users with backward pagination using cursor without name filter", async () => {
 		const token = await getAdminAuthToken();
 
+		const baseTime = new Date();
+
 		for (let i = 0; i < 3; i++) {
-			await createTestUser();
-			await new Promise((r) => setTimeout(r, 10));
+			await createTestUser({
+				createdAt: new Date(baseTime.getTime() + i * 1000),
+			});
 		}
 
 		const firstPage = await mercuriusClient.query(AllUsersQuery, {
@@ -996,11 +1035,22 @@ suite("Query field allUsers", () => {
 		const token = await getAdminAuthToken();
 		const prefix = `Order_${faker.string.uuid()}`;
 
-		const user1 = await createTestUser({ name: `${prefix}_1` });
-		await new Promise((r) => setTimeout(r, 50));
-		const user2 = await createTestUser({ name: `${prefix}_2` });
-		await new Promise((r) => setTimeout(r, 50));
-		const user3 = await createTestUser({ name: `${prefix}_3` });
+		const baseTime = new Date();
+
+		const user1 = await createTestUser({
+			name: `${prefix}_1`,
+			createdAt: new Date(baseTime.getTime()),
+		});
+
+		const user2 = await createTestUser({
+			name: `${prefix}_2`,
+			createdAt: new Date(baseTime.getTime() + 1000),
+		});
+
+		const user3 = await createTestUser({
+			name: `${prefix}_3`,
+			createdAt: new Date(baseTime.getTime() + 2000),
+		});
 
 		const result = await mercuriusClient.query(AllUsersQuery, {
 			headers: { authorization: `Bearer ${token}` },
@@ -1035,11 +1085,22 @@ suite("Query field allUsers", () => {
 		const token = await getAdminAuthToken();
 		const prefix = `AscOrder_${faker.string.uuid()}`;
 
-		const user1 = await createTestUser({ name: `${prefix}_1` });
-		await new Promise((r) => setTimeout(r, 50));
-		const user2 = await createTestUser({ name: `${prefix}_2` });
-		await new Promise((r) => setTimeout(r, 50));
-		const user3 = await createTestUser({ name: `${prefix}_3` });
+		const baseTime = new Date();
+
+		const user1 = await createTestUser({
+			name: `${prefix}_1`,
+			createdAt: new Date(baseTime.getTime()),
+		});
+
+		const user2 = await createTestUser({
+			name: `${prefix}_2`,
+			createdAt: new Date(baseTime.getTime() + 1000),
+		});
+
+		const user3 = await createTestUser({
+			name: `${prefix}_3`,
+			createdAt: new Date(baseTime.getTime() + 2000),
+		});
 
 		const result = await mercuriusClient.query(AllUsersQuery, {
 			headers: { authorization: `Bearer ${token}` },
@@ -1063,7 +1124,7 @@ suite("Query field allUsers", () => {
 	/**
 	 * Test 25: Complexity Calculation with First Parameter
 	 */
-	test("handles complexity calculation with first parameter", async () => {
+	test("executes query successfully with first parameter at maximum limit", async () => {
 		const token = await getAdminAuthToken();
 
 		await createTestUser();
@@ -1081,7 +1142,7 @@ suite("Query field allUsers", () => {
 	/**
 	 * Test 26: Complexity Calculation with Last Parameter
 	 */
-	test("handles complexity calculation with last parameter", async () => {
+	test("executes query successfully with last parameter within limit", async () => {
 		const token = await getAdminAuthToken();
 
 		await createTestUser();
@@ -1098,10 +1159,10 @@ suite("Query field allUsers", () => {
 
 	/**
 	 * Test 27: Explicit Null Where Clause
-	 * This targets the `arg.where || {}` logic (Line 40).
-	 * By passing explicit null, we force the resolver to handle the falsy value
-	 * and fallback to the empty object default.
+	 * Verifies that passing explicit null for the where argument
+	 * is handled gracefully by falling back to return all users.
 	 */
+
 	test("handles explicit null where argument safely", async () => {
 		const token = await getAdminAuthToken();
 		const u1 = await createTestUser();
