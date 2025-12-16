@@ -149,6 +149,15 @@ export const envConfigSchema = Type.Object({
 		minimum: 0,
 	}),
 	/**
+	 * Used for providing the number of milli-seconds for setting the expiry time of refresh tokens created by talawa api.
+	 * Refresh tokens are long-lived tokens used to obtain new access tokens without re-authentication.
+	 * Default: 604800000 (7 days)
+	 */
+	API_REFRESH_TOKEN_EXPIRES_IN: Type.Number({
+		minimum: 0,
+		default: 604800000,
+	}),
+	/**
 	 * Used for providing the secret for signing and verifying authentication json web tokens created by talawa api.
 	 */
 	API_JWT_SECRET: Type.String({

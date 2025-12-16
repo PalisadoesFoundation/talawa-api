@@ -487,6 +487,7 @@ suite("Mutation field signUp", () => {
 				expect(signUpResult.data.signUp).toEqual(
 					expect.objectContaining<ResultOf<typeof Mutation_signUp>["signUp"]>({
 						authenticationToken: expect.any(String),
+						refreshToken: expect.any(String),
 						user: expect.objectContaining<
 							Partial<
 								NonNullable<ResultOf<typeof Mutation_signUp>["signUp"]>["user"]
@@ -540,6 +541,7 @@ suite("Mutation field signUp", () => {
 				expect(signUpResult.data.signUp).toEqual(
 					expect.objectContaining<ResultOf<typeof Mutation_signUp>["signUp"]>({
 						authenticationToken: expect.any(String),
+						refreshToken: expect.any(String),
 						user: expect.objectContaining<
 							Partial<
 								NonNullable<ResultOf<typeof Mutation_signUp>["signUp"]>["user"]
@@ -587,6 +589,7 @@ suite("Mutation field signUp", () => {
 				expect(signUpResult.data.signUp).toEqual(
 					expect.objectContaining<ResultOf<typeof Mutation_signUp>["signUp"]>({
 						authenticationToken: expect.any(String),
+						refreshToken: expect.any(String),
 						user: expect.objectContaining<
 							Partial<
 								NonNullable<ResultOf<typeof Mutation_signUp>["signUp"]>["user"]
