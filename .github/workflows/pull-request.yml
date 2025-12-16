@@ -419,8 +419,8 @@ jobs:
           echo "Add the 'ignore-sensitive-files-pr' label to this PR."
           exit 1
 
-  Run-Tests:
-    name: Run tests for talawa api (Shard ${{ matrix.shard }})
+  Pre-Test-Checks-Pass:
+    name: All Pre-Testing Checks Pass
     runs-on: ubuntu-latest
     needs:
       [
@@ -435,6 +435,14 @@ jobs:
         Generate-Schema-Docs,
         Check-ItSkip-Disable,
       ]
+    steps:
+      - name: This job intentionally does nothing
+        run: echo "This job intentionally does nothing"
+
+  Run-Tests:
+    name: Run tests for talawa api (Shard ${{ matrix.shard }})
+    runs-on: ubuntu-latest
+    needs: [Pre-Test-Checks-Pass]
     env:
       TOTAL_SHARDS: 12
     strategy:
