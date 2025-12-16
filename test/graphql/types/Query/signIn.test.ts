@@ -6,6 +6,7 @@ import type {
 	ArgumentsAssociatedResourcesNotFoundExtensions,
 	ForbiddenActionExtensions,
 	InvalidArgumentsExtensions,
+	InvalidCredentialsExtensions,
 	TalawaGraphQLFormattedError,
 } from "~/src/utilities/TalawaGraphQLError";
 import { server } from "../../../server";
@@ -181,7 +182,7 @@ suite("Query field signIn", () => {
 	);
 
 	suite(
-		"results in a graphql error with arguments_associated_resources_not_found extensions code in the errors field and null as the value of data.signIn field if",
+		"results in a graphql error with invalid_credentials extensions code in the errors field and null as the value of data.signIn field if",
 		() => {
 			test("value of the input.emailAddress does not correspond to an existing user.", async () => {
 				const result = await mercuriusClient.query(Query_signIn, {
@@ -198,14 +199,15 @@ suite("Query field signIn", () => {
 					expect.arrayContaining<TalawaGraphQLFormattedError>([
 						expect.objectContaining<TalawaGraphQLFormattedError>({
 							extensions:
-								expect.objectContaining<ArgumentsAssociatedResourcesNotFoundExtensions>(
+								expect.objectContaining<InvalidCredentialsExtensions>(
 									{
-										code: "arguments_associated_resources_not_found",
+										code: "invalid_credentials",
 										issues: expect.arrayContaining<
-											ArgumentsAssociatedResourcesNotFoundExtensions["issues"][number]
+											InvalidCredentialsExtensions["issues"][number]
 										>([
 											{
-												argumentPath: ["input", "emailAddress"],
+												argumentPath: ["input"],
+												message: "Invalid email address or password.",
 											},
 										]),
 									},
@@ -216,12 +218,7 @@ suite("Query field signIn", () => {
 					]),
 				);
 			});
-		},
-	);
 
-	suite(
-		"results in a graphql error with invalid_arguments extensions code in the errors field and null as the value of data.signIn field if",
-		() => {
 			test("value of the argument input.password is not equal to the password of the existing user corresponding to the value of the argument input.emailAddress", async () => {
 				const result = await mercuriusClient.query(Query_signIn, {
 					variables: {
@@ -237,14 +234,14 @@ suite("Query field signIn", () => {
 				expect(result.errors).toEqual(
 					expect.arrayContaining<TalawaGraphQLFormattedError>([
 						expect.objectContaining<TalawaGraphQLFormattedError>({
-							extensions: expect.objectContaining<InvalidArgumentsExtensions>({
-								code: "invalid_arguments",
+							extensions: expect.objectContaining<InvalidCredentialsExtensions>({
+								code: "invalid_credentials",
 								issues: expect.arrayContaining<
-									InvalidArgumentsExtensions["issues"][number]
+									InvalidCredentialsExtensions["issues"][number]
 								>([
 									{
-										argumentPath: ["input", "password"],
-										message: expect.any(String),
+										argumentPath: ["input"],
+										message: "Invalid email address or password.",
 									},
 								]),
 							}),

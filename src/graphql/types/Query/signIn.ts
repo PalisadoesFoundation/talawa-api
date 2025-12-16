@@ -57,29 +57,30 @@ builder.queryField("signIn", (t) =>
 					operators.eq(fields.emailAddress, parsedArgs.input.emailAddress),
 			});
 
-			if (existingUser === undefined) {
-				throw new TalawaGraphQLError({
-					extensions: {
-						code: "arguments_associated_resources_not_found",
-						issues: [
-							{
-								argumentPath: ["input", "emailAddress"],
-							},
-						],
-					},
-				});
-			}
+			// Dummy password hash for timing attack mitigation when user doesn't exist
+			// This ensures both code paths take approximately the same execution time
+			const dummyPasswordHash =
+				"$argon2id$v=19$m=65536,t=3,p=4$dummysalt1234567$dummyhash1234567890123456789012";
 
-			if (
-				!(await verify(existingUser.passwordHash, parsedArgs.input.password))
-			) {
+			// Use the actual password hash if user exists, otherwise use dummy hash
+			const passwordHashToVerify = existingUser?.passwordHash ?? dummyPasswordHash;
+
+			// Perform password verification regardless of whether user exists
+			const isPasswordValid = await verify(
+				passwordHashToVerify,
+				parsedArgs.input.password,
+			);
+
+			// Return the same error for both invalid email and invalid password
+			// This prevents email enumeration attacks
+			if (existingUser === undefined || !isPasswordValid) {
 				throw new TalawaGraphQLError({
 					extensions: {
-						code: "invalid_arguments",
+						code: "invalid_credentials",
 						issues: [
 							{
-								argumentPath: ["input", "password"],
-								message: "This password is invalid.",
+								argumentPath: ["input"],
+								message: "Invalid email address or password.",
 							},
 						],
 					},
