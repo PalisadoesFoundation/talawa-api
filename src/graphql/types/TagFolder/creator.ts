@@ -39,7 +39,7 @@ export const tagFolderCreatorResolver = async (
 		if (error instanceof TalawaGraphQLError) {
 			throw error;
 		}
-		ctx.log.error(error);         
+		ctx.log.error(error);
 		throw new TalawaGraphQLError({
 			message: "Internal server error",
 			extensions: {
