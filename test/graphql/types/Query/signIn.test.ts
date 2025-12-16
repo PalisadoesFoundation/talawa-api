@@ -397,6 +397,55 @@ suite("Query field signIn", () => {
 		);
 	});
 
+	test("sign in as regular user without organization admin membership", async () => {
+		// Create a regular user WITHOUT making them an org admin
+		const regularUserEmail = `regular${faker.string.ulid()}@email.com`;
+
+		const createResult = await mercuriusClient.mutate(Mutation_createUser, {
+			headers: {
+				authorization: `bearer ${adminAuth}`,
+			},
+			variables: {
+				input: {
+					emailAddress: regularUserEmail,
+					isEmailAddressVerified: false,
+					name: "Regular User",
+					password: "password",
+					role: "regular",
+				},
+			},
+		});
+
+		assertToBeNonNullish(createResult.data.createUser?.user?.id);
+
+		// Sign in without creating any org memberships
+		const result = await mercuriusClient.query(Query_signIn, {
+			variables: {
+				input: {
+					emailAddress: regularUserEmail,
+					password: "password",
+				},
+			},
+		});
+
+		expect(result.errors).toBeUndefined();
+		expect(result.data.signIn).toEqual(
+			expect.objectContaining({
+				authenticationToken: expect.any(String),
+				user: expect.objectContaining({
+					emailAddress: regularUserEmail,
+					role: "regular", // Should remain regular, not upgraded to administrator
+				}),
+			}),
+		);
+
+		// Cleanup
+		await mercuriusClient.mutate(Mutation_deleteUser, {
+			headers: { authorization: `bearer ${adminAuth}` },
+			variables: { input: { id: createResult.data.createUser?.user?.id } },
+		});
+	});
+
 	test("sign in with invalid arguments", async () => {
 		const result = await mercuriusClient.query(Query_signIn, {
 			variables: {
