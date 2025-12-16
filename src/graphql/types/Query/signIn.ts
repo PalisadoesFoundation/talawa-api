@@ -74,8 +74,13 @@ builder.queryField("signIn", (t) =>
 					passwordHashToVerify,
 					parsedArgs.input.password,
 				);
-			} catch {
+			} catch (error) {
 				// Hash verification failed (e.g., malformed hash) - treat as invalid
+				// Log at debug level for system monitoring without exposing sensitive data
+				ctx.log.debug(
+					{ error: error instanceof Error ? error.message : "Unknown error" },
+					"Password hash verification failed unexpectedly",
+				);
 				isPasswordValid = false;
 			}
 
