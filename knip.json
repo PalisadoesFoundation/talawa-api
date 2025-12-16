@@ -8,7 +8,6 @@
 	},
 	"ignore": [
 		"src/plugins/**",
-		"src/graphql/types/**/*.ts",
 		"src/graphql/inputs/**/*.ts",
 		"src/graphql/schemaImportWorker.ts"
 	],
