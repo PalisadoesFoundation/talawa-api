@@ -44,7 +44,7 @@ Defined in: [src/graphql/types/Fund/updater.ts:36](https://github.com/Palisadoes
 
 `string`
 
-#### refrenceNumber
+#### referenceNumber
 
 `string` \| `null`
 

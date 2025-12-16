@@ -44,7 +44,7 @@ Defined in: [src/graphql/types/Fund/creator.ts:8](https://github.com/PalisadoesF
 
 `string`
 
-#### refrenceNumber
+#### referenceNumber
 
 `string` \| `null`
 

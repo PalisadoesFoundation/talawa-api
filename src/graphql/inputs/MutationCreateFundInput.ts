@@ -8,7 +8,7 @@ export const mutationCreateFundInputSchema = fundsTableInsertSchema.pick({
 	organizationId: true,
 	isDefault: true,
 	isArchived: true,
-	refrenceNumber: true,
+	referenceNumber: true,
 });
 
 export const MutationCreateFundInput = builder
@@ -38,7 +38,7 @@ export const MutationCreateFundInput = builder
 				description: "Boolean to tell if the fund is archived.",
 				required: false,
 			}),
-			refrenceNumber: t.string({
+			referenceNumber: t.string({
 				description: "Reference number of the fund.",
 				required: false,
 			}),

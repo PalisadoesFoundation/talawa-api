@@ -9,7 +9,7 @@ export const mutationUpdateFundInputSchema = z
 		name: fundsTableInsertSchema.shape.name.optional(),
 		isDefault: fundsTableInsertSchema.shape.isDefault.optional(),
 		isArchived: fundsTableInsertSchema.shape.isArchived.optional(),
-		refrenceNumber: fundsTableInsertSchema.shape.refrenceNumber.optional(),
+		referenceNumber: fundsTableInsertSchema.shape.referenceNumber.optional(),
 	})
 	.refine(
 		({ id, ...arg }) => Object.values(arg).some((value) => value !== undefined),
@@ -41,7 +41,7 @@ export const MutationUpdateFundInput = builder
 			isArchived: t.boolean({
 				description: "Boolean to tell if the fund is archived.",
 			}),
-			refrenceNumber: t.string({
+			referenceNumber: t.string({
 				description: "Reference number of the fund.",
 			}),
 		}),

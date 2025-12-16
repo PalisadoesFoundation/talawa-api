@@ -167,7 +167,7 @@ builder.mutationField("updateFund", (t) =>
 					updaterId: currentUserId,
 					isDefault: parsedArgs.input.isDefault,
 					isArchived: parsedArgs.input.isArchived,
-					refrenceNumber: parsedArgs.input.refrenceNumber,
+					referenceNumber: parsedArgs.input.referenceNumber,
 				})
 				.where(eq(fundsTable.id, parsedArgs.input.id))
 				.returning();

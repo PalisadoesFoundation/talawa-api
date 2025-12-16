@@ -1204,7 +1204,7 @@ type Fund {
   organization: Organization
 
   """Reference number of the fund."""
-  refrenceNumber: String
+  referenceNumber: String
 
   """Date time at the time the fund was last updated."""
   updatedAt: DateTime
@@ -2772,7 +2772,7 @@ input MutationCreateFundInput {
   organizationId: ID!
 
   """Reference number of the fund."""
-  refrenceNumber: String
+  referenceNumber: String
 }
 
 """Input for getting a presigned URL for file download"""
@@ -3659,7 +3659,7 @@ input MutationUpdateFundInput {
   name: String
 
   """Reference number of the fund."""
-  refrenceNumber: String
+  referenceNumber: String
 }
 
 """"""

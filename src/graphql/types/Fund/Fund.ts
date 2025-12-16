@@ -25,7 +25,7 @@ Fund.implement({
 		isArchived: t.exposeBoolean("isArchived", {
 			description: "Boolean to tell if the fund is archived.",
 		}),
-		refrenceNumber: t.exposeString("refrenceNumber", {
+		referenceNumber: t.exposeString("referenceNumber", {
 			description: "Reference number of the fund.",
 			nullable: true,
 		}),

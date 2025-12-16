@@ -37,7 +37,7 @@ describe("Fund Creator Resolver Tests", () => {
 			updaterId: null,
 			isDefault: false,
 			isArchived: false,
-			refrenceNumber: null,
+			referenceNumber: null,
 		};
 	});
 	describe("Authentication and Authorization", () => {

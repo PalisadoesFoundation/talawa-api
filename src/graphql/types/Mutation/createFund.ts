@@ -154,7 +154,7 @@ builder.mutationField("createFund", (t) =>
 					organizationId: parsedArgs.input.organizationId,
 					isDefault: parsedArgs.input.isDefault ?? false,
 					isArchived: parsedArgs.input.isArchived ?? false,
-					refrenceNumber: parsedArgs.input.refrenceNumber,
+					referenceNumber: parsedArgs.input.referenceNumber,
 				})
 				.returning();
 

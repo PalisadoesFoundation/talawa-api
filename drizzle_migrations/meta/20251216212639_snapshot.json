@@ -1,5 +1,5 @@
 {
-  "id": "adb5ece7-72b1-4eb2-8250-9af020767b9b",
+  "id": "461d7036-0f2f-4503-a079-354bbde888ae",
   "prevId": "2c8adc5c-2b34-432b-8f94-84243d5d0e2b",
   "version": "7",
   "dialect": "postgresql",
@@ -6078,8 +6078,8 @@
           "notNull": true,
           "default": false
         },
-        "refrence_number": {
-          "name": "refrence_number",
+        "reference_number": {
+          "name": "reference_number",
           "type": "text",
           "primaryKey": false,
           "notNull": false

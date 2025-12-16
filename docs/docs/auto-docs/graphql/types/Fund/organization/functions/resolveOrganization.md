@@ -44,7 +44,7 @@ Defined in: [src/graphql/types/Fund/organization.ts:6](https://github.com/Palisa
 
 `string`
 
-#### refrenceNumber
+#### referenceNumber
 
 `string` \| `null`
 

@@ -56,7 +56,7 @@ export const fundsTable = pgTable(
 		/**
 		 * Reference number of the fund.
 		 */
-		refrenceNumber: text("refrence_number"),
+		referenceNumber: text("reference_number"),
 		/**
 		 * Name of the fund.
 		 */
