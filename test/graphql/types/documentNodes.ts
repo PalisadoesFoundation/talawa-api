@@ -2461,18 +2461,3 @@ export const Query_getRecurringEvents = gql(`
     }
   }
 `);
-
-export const Query_postsByOrganization = gql(`
-  query Query_postsByOrganization($input: GetPostsByOrgInput!) {
-    postsByOrganization(input: $input) {
-      id
-      caption
-      createdAt
-      attachments {
-        id
-        name
-        mimeType
-      }
-    }
-  }
-`);
