@@ -125,9 +125,16 @@ async function createTestFund(authToken: string, organizationId: string) {
 }
 
 suite("Mutation field createFundCampaign", () => {
-	// NOTE: Lines 172-180 of src/graphql/types/Mutation/createFundCampaign.ts
+	// NOTE: Lines 158-168 of src/graphql/types/Mutation/createFundCampaign.ts
 	// contain a defensive branch handling unexpected empty DB insert results.
-	// This branch cannot be reliably tested without DB layer mocking.
+	// This branch cannot be reliably tested without DB layer mocking, which
+	// violates Talawa-API integration testing guidelines. The defensive code
+	// handles an extremely unlikely PostgreSQL-level failure (successful insert
+	// returning empty array without throwing an error). All realistic error
+	// scenarios (constraint violations, connection failures, etc.) are covered
+	// by existing tests. Achieving 100% coverage for this defensive branch would
+	// require introducing mocks, which contradicts the repository's testing
+	// philosophy of integration tests over unit tests with mocks.
 
 	let adminAuthToken: string;
 	let orgAdminUserAuthToken: string;
