@@ -59,9 +59,9 @@ builder.queryField("signIn", (t) =>
 
 			// Dummy password hash for timing attack mitigation when user doesn't exist
 			// This ensures both code paths take approximately the same execution time
-			// This is a valid argon2id hash that will always fail verification
+			// Uses matching argon2id parameters (m=19456,t=2,p=1) as the default hash function
 			const dummyPasswordHash =
-				"$argon2id$v=19$m=65536,t=3,p=4$c29tZXNhbHQ$RdescudvJCsgt3ub+b+dWRWJTmaaJObG";
+				"$argon2id$v=19$m=19456,t=2,p=1$c29tZXNhbHRzb21lc2FsdA$CTFhFdXPJO1aFaMaO6Mm5c8y7cJHAph8ArZWb2GRPPc";
 
 			// Use the actual password hash if user exists, otherwise use dummy hash
 			const passwordHashToVerify =
