@@ -605,6 +605,28 @@ export const Mutation_createTag = gql(`
     }
   }`);
 
+export const Query_tagFolder = gql(`
+  query tagFolder($input:QueryTagFolderInput!) {
+    tagFolder(input: $input) {
+      id
+      name
+      createdAt
+      updatedAt
+    }
+  }
+`);
+
+export const Mutation_createTagFolder = gql(`
+  mutation CreateTagFolder($input:MutationCreateTagFolderInput!) {
+    createTagFolder(input: $input) {
+      id
+      name
+      createdAt
+      updatedAt
+    }
+  }
+`);
+
 export const Query_organizations = gql(`
 	query Query_organizations {
 		organizations {
