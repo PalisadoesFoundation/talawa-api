@@ -2481,3 +2481,23 @@ export const Query_getRecurringEvents = gql(`
     }
   }
 `);
+
+export const Mutation_cancelMembershipRequest = gql(`
+  mutation Mutation_cancelMembershipRequest(
+    $input: MutationCancelMembershipRequestInput!
+  ) {
+    cancelMembershipRequest(input: $input) {
+      success
+      message
+    }
+  }
+`);
+
+export const Query_community = gql(`
+	query Query_community {
+		community {
+			id
+			name
+		}
+	}
+`);

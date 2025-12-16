@@ -19,5 +19,15 @@ Fund.implement({
 		name: t.exposeString("name", {
 			description: "Name of the fund.",
 		}),
+		isDefault: t.exposeBoolean("isDefault", {
+			description: "Boolean to tell if the fund is the default fund.",
+		}),
+		isArchived: t.exposeBoolean("isArchived", {
+			description: "Boolean to tell if the fund is archived.",
+		}),
+		refrenceNumber: t.exposeString("refrenceNumber", {
+			description: "Reference number of the fund.",
+			nullable: true,
+		}),
 	}),
 });

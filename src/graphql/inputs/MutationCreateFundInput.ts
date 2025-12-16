@@ -6,6 +6,9 @@ export const mutationCreateFundInputSchema = fundsTableInsertSchema.pick({
 	isTaxDeductible: true,
 	name: true,
 	organizationId: true,
+	isDefault: true,
+	isArchived: true,
+	refrenceNumber: true,
 });
 
 export const MutationCreateFundInput = builder
@@ -26,6 +29,18 @@ export const MutationCreateFundInput = builder
 			organizationId: t.id({
 				description: "Global identifier of the associated organization.",
 				required: true,
+			}),
+			isDefault: t.boolean({
+				description: "Boolean to tell if the fund is the default fund.",
+				required: false,
+			}),
+			isArchived: t.boolean({
+				description: "Boolean to tell if the fund is archived.",
+				required: false,
+			}),
+			refrenceNumber: t.string({
+				description: "Reference number of the fund.",
+				required: false,
 			}),
 		}),
 	});

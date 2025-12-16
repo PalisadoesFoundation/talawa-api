@@ -271,6 +271,15 @@ enum AgendaItemType {
   song
 }
 
+"""Represents a tag assigned to a user."""
+type AssignUserTag {
+  """Unique identifier of the assigned user."""
+  assigneeId: ID
+
+  """Global identifier of the tag."""
+  tagId: ID
+}
+
 """"""
 type AuthenticationPayload {
   """
@@ -1179,6 +1188,12 @@ type Fund {
   """Global identifier of the fund."""
   id: ID!
 
+  """Boolean to tell if the fund is archived."""
+  isArchived: Boolean
+
+  """Boolean to tell if the fund is the default fund."""
+  isDefault: Boolean
+
   """Boolean to tell if the fund is tax deductible."""
   isTaxDeductible: Boolean
 
@@ -1187,6 +1202,9 @@ type Fund {
 
   """Organization which the fund belongs to."""
   organization: Organization
+
+  """Reference number of the fund."""
+  refrenceNumber: String
 
   """Date time at the time the fund was last updated."""
   updatedAt: DateTime
@@ -2738,6 +2756,12 @@ input MutationCreateFundCampaignPledgeInput {
 
 """"""
 input MutationCreateFundInput {
+  """Boolean to tell if the fund is archived."""
+  isArchived: Boolean
+
+  """Boolean to tell if the fund is the default fund."""
+  isDefault: Boolean
+
   """Boolean to tell if the fund is tax deductible."""
   isTaxDeductible: Boolean!
 
@@ -2746,6 +2770,9 @@ input MutationCreateFundInput {
 
   """Global identifier of the associated organization."""
   organizationId: ID!
+
+  """Reference number of the fund."""
+  refrenceNumber: String
 }
 
 """Input for getting a presigned URL for file download"""
@@ -3328,7 +3355,7 @@ input MutationUpdateAdvertisementInput {
   """Date time at which the advertised event ends."""
   endAt: DateTime
 
-  """Global identifier of the associated organization."""
+  """ID of the advertisement to update."""
   id: ID!
 
   """Name of the advertisement."""
@@ -3437,7 +3464,7 @@ input MutationUpdateCommunityInput {
   """URL to the facebook account of the community."""
   facebookURL: String
 
-  """URL to the gitGub account of the community."""
+  """URL to the GitHub account of the community."""
   githubURL: String
 
   """
@@ -3619,11 +3646,20 @@ input MutationUpdateFundInput {
   """Global identifier of the associated organization."""
   id: ID!
 
+  """Boolean to tell if the fund is archived."""
+  isArchived: Boolean
+
+  """Boolean to tell if the fund is the default fund."""
+  isDefault: Boolean
+
   """Boolean to tell if the fund is tax deductible."""
   isTaxDeductible: Boolean
 
   """Name of the fund."""
   name: String
+
+  """Reference number of the fund."""
+  refrenceNumber: String
 }
 
 """"""
@@ -5073,6 +5109,15 @@ type TagFolderTagsConnection {
 type TagFolderTagsConnectionEdge {
   cursor: String!
   node: Tag
+}
+
+"""Represents a tag unassigned from a user."""
+type UnassignUserTag {
+  """Unique identifier of the unassigned user."""
+  assigneeId: ID
+
+  """Global identifier of the tag."""
+  tagId: ID
 }
 
 """Input for updating an event volunteer group."""

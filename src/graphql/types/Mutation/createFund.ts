@@ -152,6 +152,9 @@ builder.mutationField("createFund", (t) =>
 					isTaxDeductible: parsedArgs.input.isTaxDeductible,
 					name: parsedArgs.input.name,
 					organizationId: parsedArgs.input.organizationId,
+					isDefault: parsedArgs.input.isDefault ?? false,
+					isArchived: parsedArgs.input.isArchived ?? false,
+					refrenceNumber: parsedArgs.input.refrenceNumber,
 				})
 				.returning();
 

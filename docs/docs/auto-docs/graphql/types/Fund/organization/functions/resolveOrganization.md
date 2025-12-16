@@ -24,6 +24,14 @@ Defined in: [src/graphql/types/Fund/organization.ts:6](https://github.com/Palisa
 
 `string`
 
+#### isArchived
+
+`boolean`
+
+#### isDefault
+
+`boolean`
+
 #### isTaxDeductible
 
 `boolean`
@@ -35,6 +43,10 @@ Defined in: [src/graphql/types/Fund/organization.ts:6](https://github.com/Palisa
 #### organizationId
 
 `string`
+
+#### refrenceNumber
+
+`string` \| `null`
 
 #### updatedAt
 
