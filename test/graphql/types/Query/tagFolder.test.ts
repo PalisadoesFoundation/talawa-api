@@ -1,4 +1,5 @@
 import { faker } from "@faker-js/faker";
+import { initGraphQLTada } from "gql.tada";
 import { expect, suite, test } from "vitest";
 import type {
 	ArgumentsAssociatedResourcesNotFoundExtensions,
@@ -6,18 +7,45 @@ import type {
 	UnauthenticatedExtensions,
 	UnauthorizedActionOnArgumentsAssociatedResourcesExtensions,
 } from "~/src/utilities/TalawaGraphQLError";
+import type { ClientCustomScalars } from "~/src/graphql/scalars/index";
 import { assertToBeNonNullish } from "../../../helpers";
 import { server } from "../../../server";
 import { mercuriusClient } from "../client";
+import type { introspection } from "../gql.tada";
 import {
 	Mutation_createOrganization,
 	Mutation_createOrganizationMembership,
-	Mutation_createTagFolder,
 	Mutation_createUser,
 	Mutation_deleteUser,
 	Query_signIn,
-	Query_tagFolder,
 } from "../documentNodes";
+
+const gql = initGraphQLTada<{
+	introspection: introspection;
+	scalars: ClientCustomScalars;
+}>();
+
+const Query_tagFolder = gql(`
+  query tagFolder($input:QueryTagFolderInput!) {
+    tagFolder(input: $input) {
+      id
+      name
+      createdAt
+      updatedAt
+    }
+  }
+`);
+
+const Mutation_createTagFolder = gql(`
+  mutation CreateTagFolder($input:MutationCreateTagFolderInput!) {
+    createTagFolder(input: $input) {
+      id
+      name
+      createdAt
+      updatedAt
+    }
+  }
+`);
 
 suite("Query field tagFolder", () => {
 	test("results in a graphql error with 'invalid_arguments' if an invalid id is provided", async () => {
@@ -503,10 +531,6 @@ suite("Query field tagFolder", () => {
 		);
 
 		if (organizationResult.errors) {
-			console.error(
-				"Organization Creation Errors:",
-				JSON.stringify(organizationResult.errors, null, 2),
-			);
 			throw new Error(
 				`Organization creation failed: ${JSON.stringify(organizationResult.errors)}`,
 			);
