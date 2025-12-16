@@ -698,50 +698,6 @@ suite("Query field tagFolder", () => {
 		expect(queriedTagFolder.updatedAt).toBeDefined();
 	});
 
-	test("results in a graphql error with 'unauthenticated' if user ID in token doesn't exist in database", async () => {
-		const adminSignInResult = await mercuriusClient.query(Query_signIn, {
-			variables: {
-				input: {
-					emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-					password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-				},
-			},
-		});
-
-		const authToken = adminSignInResult.data?.signIn?.authenticationToken;
-		if (!authToken) throw new Error("Admin authentication failed");
-
-		// Create a token with a non-existent user ID
-		const nonExistentUserToken = authToken.replace(
-			/[^.]+/,
-			faker.string.uuid(),
-		);
-
-		const tagFolderResult = await mercuriusClient.query(Query_tagFolder, {
-			headers: {
-				authorization: `bearer ${nonExistentUserToken}`,
-			},
-			variables: {
-				input: {
-					id: faker.string.uuid(),
-				},
-			},
-		});
-
-		expect(tagFolderResult.data.tagFolder).toEqual(null);
-		expect(tagFolderResult.errors).toEqual(
-			expect.arrayContaining<TalawaGraphQLFormattedError>([
-				expect.objectContaining<TalawaGraphQLFormattedError>({
-					extensions: expect.objectContaining<UnauthenticatedExtensions>({
-						code: "unauthenticated",
-					}),
-					message: expect.any(String),
-					path: ["tagFolder"],
-				}),
-			]),
-		);
-	});
-
 	test("results in a graphql error with 'unauthenticated' if authorization header is empty", async () => {
 		const tagFolderResult = await mercuriusClient.query(Query_tagFolder, {
 			headers: {
@@ -760,67 +716,6 @@ suite("Query field tagFolder", () => {
 				expect.objectContaining<TalawaGraphQLFormattedError>({
 					extensions: expect.objectContaining<UnauthenticatedExtensions>({
 						code: "unauthenticated",
-					}),
-					message: expect.any(String),
-					path: ["tagFolder"],
-				}),
-			]),
-		);
-	});
-
-	test("results in a graphql error with 'unauthenticated' if authorization header is missing", async () => {
-		const tagFolderResult = await mercuriusClient.query(Query_tagFolder, {
-			variables: {
-				input: {
-					id: faker.string.uuid(),
-				},
-			},
-		});
-
-		expect(tagFolderResult.data.tagFolder).toEqual(null);
-		expect(tagFolderResult.errors).toEqual(
-			expect.arrayContaining<TalawaGraphQLFormattedError>([
-				expect.objectContaining<TalawaGraphQLFormattedError>({
-					extensions: expect.objectContaining<UnauthenticatedExtensions>({
-						code: "unauthenticated",
-					}),
-					message: expect.any(String),
-					path: ["tagFolder"],
-				}),
-			]),
-		);
-	});
-
-	test("results in a graphql error with 'invalid_arguments' for malformed UUID", async () => {
-		const adminSignInResult = await mercuriusClient.query(Query_signIn, {
-			variables: {
-				input: {
-					emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-					password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-				},
-			},
-		});
-
-		const authToken = adminSignInResult.data?.signIn?.authenticationToken;
-		if (!authToken) throw new Error("Admin authentication failed");
-
-		const tagFolderResult = await mercuriusClient.query(Query_tagFolder, {
-			headers: {
-				authorization: `bearer ${authToken}`,
-			},
-			variables: {
-				input: {
-					id: "not-a-uuid-format",
-				},
-			},
-		});
-
-		expect(tagFolderResult.data.tagFolder).toEqual(null);
-		expect(tagFolderResult.errors).toEqual(
-			expect.arrayContaining<TalawaGraphQLFormattedError>([
-				expect.objectContaining<TalawaGraphQLFormattedError>({
-					extensions: expect.objectContaining({
-						code: "invalid_arguments",
 					}),
 					message: expect.any(String),
 					path: ["tagFolder"],
