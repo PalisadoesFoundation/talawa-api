@@ -586,7 +586,7 @@ suite("Query field tagFolder", () => {
 			name: "Test Tag Folder",
 			createdAt: expect.any(String),
 		});
-		// updatedAt can be null for newly created tag folders
+		// updatedAt is always present in the response (can be null or a date string)
 		expect(queriedTagFolderResult.data.tagFolder.updatedAt).toBeDefined();
 	});
 
@@ -694,7 +694,7 @@ suite("Query field tagFolder", () => {
 			name: "Test Tag Folder",
 			createdAt: expect.any(String),
 		});
-		// updatedAt can be null for newly created tag folders
+		// updatedAt is always present in the response (can be null or a date string)
 		expect(queriedTagFolder.updatedAt).toBeDefined();
 	});
 
