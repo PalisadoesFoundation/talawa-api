@@ -198,20 +198,19 @@ suite("Query field signIn", () => {
 				expect(result.errors).toEqual(
 					expect.arrayContaining<TalawaGraphQLFormattedError>([
 						expect.objectContaining<TalawaGraphQLFormattedError>({
-							extensions:
-								expect.objectContaining<InvalidCredentialsExtensions>(
-									{
-										code: "invalid_credentials",
-										issues: expect.arrayContaining<
-											InvalidCredentialsExtensions["issues"][number]
-										>([
-											{
-												argumentPath: ["input"],
-												message: "Invalid email address or password.",
-											},
-										]),
-									},
-								),
+							extensions: expect.objectContaining<InvalidCredentialsExtensions>(
+								{
+									code: "invalid_credentials",
+									issues: expect.arrayContaining<
+										InvalidCredentialsExtensions["issues"][number]
+									>([
+										{
+											argumentPath: ["input"],
+											message: "Invalid email address or password.",
+										},
+									]),
+								},
+							),
 							message: expect.any(String),
 							path: ["signIn"],
 						}),
@@ -234,17 +233,19 @@ suite("Query field signIn", () => {
 				expect(result.errors).toEqual(
 					expect.arrayContaining<TalawaGraphQLFormattedError>([
 						expect.objectContaining<TalawaGraphQLFormattedError>({
-							extensions: expect.objectContaining<InvalidCredentialsExtensions>({
-								code: "invalid_credentials",
-								issues: expect.arrayContaining<
-									InvalidCredentialsExtensions["issues"][number]
-								>([
-									{
-										argumentPath: ["input"],
-										message: "Invalid email address or password.",
-									},
-								]),
-							}),
+							extensions: expect.objectContaining<InvalidCredentialsExtensions>(
+								{
+									code: "invalid_credentials",
+									issues: expect.arrayContaining<
+										InvalidCredentialsExtensions["issues"][number]
+									>([
+										{
+											argumentPath: ["input"],
+											message: "Invalid email address or password.",
+										},
+									]),
+								},
+							),
 							message: expect.any(String),
 							path: ["signIn"],
 						}),

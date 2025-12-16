@@ -64,7 +64,8 @@ builder.queryField("signIn", (t) =>
 				"$argon2id$v=19$m=65536,t=3,p=4$c29tZXNhbHQ$RdescudvJCsgt3ub+b+dWRWJTmaaJObG";
 
 			// Use the actual password hash if user exists, otherwise use dummy hash
-			const passwordHashToVerify = existingUser?.passwordHash ?? dummyPasswordHash;
+			const passwordHashToVerify =
+				existingUser?.passwordHash ?? dummyPasswordHash;
 
 			// Perform password verification regardless of whether user exists
 			const isPasswordValid = await verify(
