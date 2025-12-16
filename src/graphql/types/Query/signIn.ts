@@ -68,10 +68,16 @@ builder.queryField("signIn", (t) =>
 				existingUser?.passwordHash ?? dummyPasswordHash;
 
 			// Perform password verification regardless of whether user exists
-			const isPasswordValid = await verify(
-				passwordHashToVerify,
-				parsedArgs.input.password,
-			);
+			let isPasswordValid = false;
+			try {
+				isPasswordValid = await verify(
+					passwordHashToVerify,
+					parsedArgs.input.password,
+				);
+			} catch {
+				// Hash verification failed (e.g., malformed hash) - treat as invalid
+				isPasswordValid = false;
+			}
 
 			// Return the same error for both invalid email and invalid password
 			// This prevents email enumeration attacks
