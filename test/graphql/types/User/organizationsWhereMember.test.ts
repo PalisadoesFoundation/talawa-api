@@ -216,7 +216,12 @@ describe("resolveOrganizationsWhereMember", () => {
 		};
 
 		try {
-			await resolveOrganizationsWhereMember(mockUserParent, invalidArgs, baseMockCtx);
+			await resolveOrganizationsWhereMember(
+				mockUserParent,
+				invalidArgs,
+				baseMockCtx,
+			);
+			expect.fail("Expected TalawaGraphQLError to be thrown");
 		} catch (error: unknown) {
 			expect(error).toBeInstanceOf(TalawaGraphQLError);
 			const err = error as TalawaGraphQLError;
@@ -229,7 +234,12 @@ describe("resolveOrganizationsWhereMember", () => {
 		mockDrizzleClient.query.usersTable.findFirst.mockResolvedValue(null);
 
 		try {
-			await resolveOrganizationsWhereMember(mockUserParent, globalArgs, baseMockCtx);
+			await resolveOrganizationsWhereMember(
+				mockUserParent,
+				globalArgs,
+				baseMockCtx,
+			);
+			expect.fail("Expected TalawaGraphQLError to be thrown");
 		} catch (error: unknown) {
 			expect(error).toBeInstanceOf(TalawaGraphQLError);
 			const err = error as TalawaGraphQLError;
@@ -258,7 +268,11 @@ describe("resolveOrganizationsWhereMember", () => {
 			role: "member",
 		} as unknown as User;
 
-		const result = await resolveOrganizationsWhereMember(anotherUserParent, globalArgs, adminCtx);
+		const result = await resolveOrganizationsWhereMember(
+			anotherUserParent,
+			globalArgs,
+			adminCtx,
+		);
 
 		expect(result).toBeDefined();
 		expect(result).toMatchObject({
@@ -301,6 +315,5 @@ describe("resolveOrganizationsWhereMember", () => {
 		expect(whereCondition).toBeDefined();
 
 		expect(whereCondition).toBeDefined();
-
 	});
 });
