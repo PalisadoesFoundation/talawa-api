@@ -271,6 +271,15 @@ enum AgendaItemType {
   song
 }
 
+"""Represents a tag assigned to a user."""
+type AssignUserTag {
+  """Unique identifier of the assigned user."""
+  assigneeId: ID
+
+  """Global identifier of the tag."""
+  tagId: ID
+}
+
 """"""
 type AuthenticationPayload {
   """
@@ -5073,6 +5082,15 @@ type TagFolderTagsConnection {
 type TagFolderTagsConnectionEdge {
   cursor: String!
   node: Tag
+}
+
+"""Represents a tag unassigned from a user."""
+type UnassignUserTag {
+  """Unique identifier of the unassigned user."""
+  assigneeId: ID
+
+  """Global identifier of the tag."""
+  tagId: ID
 }
 
 """Input for updating an event volunteer group."""
