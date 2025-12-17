@@ -313,8 +313,7 @@ suite("Query field fundCampaignPledge", () => {
 		test("allows pledge owner", async () => {
 			const user = await createRegularUser();
 
-			const { fundId, orgId } = await createFund();
-			await addUserToOrg(user.userId, orgId);
+			const { fundId } = await createFund();
 			const { campaignId } = await createFundCampaign(fundId);
 			const { pledgeId } = await createFundCampaignPledge(
 				campaignId,
@@ -384,49 +383,49 @@ suite("Query field fundCampaignPledge", () => {
 			expect(res.errors).toBeUndefined();
 			expect(res.data.fundCampaignPledge?.id).toBe(pledgeId);
 		});
-	});
-	test("denies access to organization member who is not admin and not pledge owner", async () => {
-		const viewer = await createRegularUser("regular");
-		const pledger = await createRegularUser("regular");
+		test("denies access to organization member who is not admin and not pledge owner", async () => {
+			const viewer = await createRegularUser("regular");
+			const pledger = await createRegularUser("regular");
 
-		const { fundId, orgId } = await createFund();
+			const { fundId, orgId } = await createFund();
 
-		// viewer is org member but NOT admin
-		const adminAuthToken = await getAdminAuthToken();
-		await mercuriusClient.mutate(Mutation_createOrganizationMembership, {
-			headers: { authorization: `bearer ${adminAuthToken}` },
-			variables: {
-				input: {
-					memberId: viewer.userId,
-					organizationId: orgId,
-					role: "regular",
-				},
-			},
-		});
-
-		testCleanupFunctions.push(async () => {
-			await mercuriusClient.mutate(Mutation_deleteOrganizationMembership, {
+			// viewer is org member but NOT admin
+			const adminAuthToken = await getAdminAuthToken();
+			await mercuriusClient.mutate(Mutation_createOrganizationMembership, {
 				headers: { authorization: `bearer ${adminAuthToken}` },
 				variables: {
-					input: { memberId: viewer.userId, organizationId: orgId },
+					input: {
+						memberId: viewer.userId,
+						organizationId: orgId,
+						role: "regular",
+					},
 				},
 			});
+
+			testCleanupFunctions.push(async () => {
+				await mercuriusClient.mutate(Mutation_deleteOrganizationMembership, {
+					headers: { authorization: `bearer ${adminAuthToken}` },
+					variables: {
+						input: { memberId: viewer.userId, organizationId: orgId },
+					},
+				});
+			});
+
+			const { campaignId } = await createFundCampaign(fundId);
+			const { pledgeId } = await createFundCampaignPledge(
+				campaignId,
+				pledger.userId,
+			);
+
+			const res = await mercuriusClient.query(Query_fundCampaignPledge, {
+				headers: { authorization: `bearer ${viewer.authToken}` },
+				variables: { input: { id: pledgeId } },
+			});
+
+			expect(res.data.fundCampaignPledge).toBeNull();
+			expect(res.errors?.[0]?.extensions?.code).toBe(
+				"unauthorized_action_on_arguments_associated_resources",
+			);
 		});
-
-		const { campaignId } = await createFundCampaign(fundId);
-		const { pledgeId } = await createFundCampaignPledge(
-			campaignId,
-			pledger.userId,
-		);
-
-		const res = await mercuriusClient.query(Query_fundCampaignPledge, {
-			headers: { authorization: `bearer ${viewer.authToken}` },
-			variables: { input: { id: pledgeId } },
-		});
-
-		expect(res.data.fundCampaignPledge).toBeNull();
-		expect(res.errors?.[0]?.extensions?.code).toBe(
-			"unauthorized_action_on_arguments_associated_resources",
-		);
 	});
 });
