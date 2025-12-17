@@ -72,6 +72,7 @@ describe("Fund Resolver - UpdatedAt Field", () => {
 	});
 
 	it("should return updatedAt if user is an organization member", async () => {
+		const eqSpy = vi.fn((field: string, value: string) => field === value);
 		(
 			mocks.drizzleClient.query.usersTable.findFirst as ReturnType<
 				typeof vi.fn
@@ -80,15 +81,16 @@ describe("Fund Resolver - UpdatedAt Field", () => {
 			async (options: any) => {
 				const whereClause =
 					options.with.organizationMembershipsWhereMember.where;
-				const mockFields = { organizationId: "test-org-id" };
+				const mockFields = { organizationId: mockFund.organizationId };
 				const mockOperators = {
-					eq: (field: string, value: string) => field === value,
+					eq: eqSpy,
 				};
 				const result = whereClause(mockFields, mockOperators);
-				expect(result).toBe(
-					mockFields.organizationId === mockFund.organizationId,
+				expect(eqSpy).toHaveBeenCalledWith(
+					mockFund.organizationId,
+					mockFund.organizationId,
 				);
-
+				expect(result).toBe(true);
 				return {
 					id: "user-123",
 					role: "member",
@@ -106,7 +108,7 @@ describe("Fund Resolver - UpdatedAt Field", () => {
 			new Error("ECONNREFUSED"),
 		);
 		await expect(
-			resolveUpdatedAt(mockFund, {}, ctx as GraphQLContext),
+			resolveUpdatedAt(mockFund, {}, ctx),
 		).rejects.toThrow(
 			new TalawaGraphQLError({ extensions: { code: "unexpected" } }),
 		);
@@ -118,7 +120,7 @@ describe("Fund Resolver - UpdatedAt Field", () => {
 			new Error("Query timeout"),
 		);
 		await expect(
-			resolveUpdatedAt(mockFund, {}, ctx as GraphQLContext),
+			resolveUpdatedAt(mockFund, {}, ctx),
 		).rejects.toThrow(
 			new TalawaGraphQLError({ extensions: { code: "unexpected" } }),
 		);
@@ -130,7 +132,7 @@ describe("Fund Resolver - UpdatedAt Field", () => {
 			new Error("violates foreign key constraint"),
 		);
 		await expect(
-			resolveUpdatedAt(mockFund, {}, ctx as GraphQLContext),
+			resolveUpdatedAt(mockFund, {}, ctx),
 		).rejects.toThrow(
 			new TalawaGraphQLError({ extensions: { code: "unexpected" } }),
 		);
@@ -142,7 +144,7 @@ describe("Fund Resolver - UpdatedAt Field", () => {
 			new Error("syntax error in SQL statement"),
 		);
 		await expect(
-			resolveUpdatedAt(mockFund, {}, ctx as GraphQLContext),
+			resolveUpdatedAt(mockFund, {}, ctx),
 		).rejects.toThrow(
 			new TalawaGraphQLError({ extensions: { code: "unexpected" } }),
 		);
@@ -155,7 +157,7 @@ describe("Fund Resolver - UpdatedAt Field", () => {
 		);
 
 		await expect(
-			resolveUpdatedAt(mockFund, {}, ctx as GraphQLContext),
+			resolveUpdatedAt(mockFund, {}, ctx),
 		).rejects.toThrow(
 			new TalawaGraphQLError({ extensions: { code: "unexpected" } }),
 		);
@@ -171,7 +173,7 @@ describe("Fund Resolver - UpdatedAt Field", () => {
 			originalError,
 		);
 		await expect(
-			resolveUpdatedAt(mockFund, {}, ctx as GraphQLContext),
+			resolveUpdatedAt(mockFund, {}, ctx),
 		).rejects.toThrow(originalError);
 		expect(ctx.log.error).not.toHaveBeenCalled();
 	});
