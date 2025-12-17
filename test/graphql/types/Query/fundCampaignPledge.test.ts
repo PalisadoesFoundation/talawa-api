@@ -427,5 +427,27 @@ suite("Query field fundCampaignPledge", () => {
 				"unauthorized_action_on_arguments_associated_resources",
 			);
 		});
+		test("allows organization admin to view another user's pledge", async () => {
+			const orgAdmin = await createRegularUser("regular"); // NOT super admin
+			const pledgeOwner = await createRegularUser("regular");
+
+			const { fundId, orgId } = await createFund();
+			await addUserToOrg(orgAdmin.userId, orgId); // orgAdmin is org admin
+
+			const { campaignId } = await createFundCampaign(fundId);
+			const { pledgeId } = await createFundCampaignPledge(
+				campaignId,
+				pledgeOwner.userId, // ⚠️ Pledge created for DIFFERENT user
+			);
+
+			// orgAdmin viewing pledgeOwner's pledge
+			const res = await mercuriusClient.query(Query_fundCampaignPledge, {
+				headers: { authorization: `bearer ${orgAdmin.authToken}` },
+				variables: { input: { id: pledgeId } },
+			});
+
+			expect(res.errors).toBeUndefined();
+			expect(res.data.fundCampaignPledge?.id).toBe(pledgeId);
+		});
 	});
 });
