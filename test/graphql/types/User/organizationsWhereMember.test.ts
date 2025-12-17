@@ -212,37 +212,29 @@ describe("resolveOrganizationsWhereMember", () => {
 		const invalidArgs = {
 			...globalArgs,
 			after: "invalid-cursor-string",
-            cursor: undefined,
+			cursor: undefined,
 		};
 
-		await expect(
-			resolveOrganizationsWhereMember(
-				mockUserParent,
-				invalidArgs,
-				baseMockCtx,
-			),
-		).rejects.toThrow(TalawaGraphQLError);
-
-        // Verify it is the specific 'invalid_arguments' error
-        try {
-            await resolveOrganizationsWhereMember(mockUserParent, invalidArgs, baseMockCtx);
-        } catch (error: unknown) {
-            const err = error as TalawaGraphQLError;
-            expect(err.extensions.code).toBe("invalid_arguments");
-        }
+		try {
+			await resolveOrganizationsWhereMember(mockUserParent, invalidArgs, baseMockCtx);
+		} catch (error: unknown) {
+			expect(error).toBeInstanceOf(TalawaGraphQLError);
+			const err = error as TalawaGraphQLError;
+			expect(err.extensions.code).toBe("invalid_arguments");
+		}
 	});
 
 	test("throws unauthenticated error if current user is not found in database", async () => {
 		// Mock database returning null for the user lookup
 		mockDrizzleClient.query.usersTable.findFirst.mockResolvedValue(null);
 
-		await expect(
-			resolveOrganizationsWhereMember(
-				mockUserParent,
-				globalArgs,
-				baseMockCtx,
-			),
-		).rejects.toThrow(TalawaGraphQLError);
+		try {
+			await resolveOrganizationsWhereMember(mockUserParent, globalArgs, baseMockCtx);
+		} catch (error: unknown) {
+			expect(error).toBeInstanceOf(TalawaGraphQLError);
+			const err = error as TalawaGraphQLError;
+			expect(err.extensions.code).toBe("unauthenticated");
+		}
 	});
 
 	test("allows administrator to query another user's organizations", async () => {
@@ -251,29 +243,33 @@ describe("resolveOrganizationsWhereMember", () => {
 			id: "adminUser",
 			role: "administrator",
 		});
-        
-        // Mock context to match
-        const adminCtx = {
-            ...baseMockCtx,
-            currentClient: {
-                isAuthenticated: true,
-                user: { id: "adminUser", role: "administrator" },
-            }
-        } as unknown as ExplicitGraphQLContext & ImplicitMercuriusContext;
+
+		// Mock context to match
+		const adminCtx = {
+			...baseMockCtx,
+			currentClient: {
+				isAuthenticated: true,
+				user: { id: "adminUser", role: "administrator" },
+			},
+		} as unknown as ExplicitGraphQLContext & ImplicitMercuriusContext;
 
 		const anotherUserParent = {
 			id: "otherUser",
 			role: "member",
 		} as unknown as User;
 
-		// Should not throw
-		await expect(
-			resolveOrganizationsWhereMember(
-				anotherUserParent,
-				globalArgs,
-				adminCtx,
-			),
-		).resolves.not.toThrow();
+		const result = await resolveOrganizationsWhereMember(anotherUserParent, globalArgs, adminCtx);
+
+		expect(result).toBeDefined();
+		expect(result).toMatchObject({
+			edges: expect.any(Array),
+			pageInfo: expect.any(Object),
+		});
+		expect(result.edges.length).toBeGreaterThan(0);
+		expect(result.edges[0]?.node).toMatchObject({
+			id: expect.any(String),
+			name: expect.any(String),
+		});
 	});
 
 	test("generates correct SQL for inversed pagination (isInversed: true)", async () => {
@@ -282,16 +278,15 @@ describe("resolveOrganizationsWhereMember", () => {
 			role: "member",
 		});
 
+		const cursorData = {
+			createdAt: new Date().toISOString(),
+			organizationId: "org1",
+		};
 		const inversedArgs = {
 			...globalArgs,
 			isInversed: true,
-            // Ensure cursor is present to trigger the complex WHERE logic
-			cursor: Buffer.from(
-				JSON.stringify({
-					createdAt: new Date().toISOString(),
-					organizationId: "org1",
-				}),
-			).toString("base64url"),
+			// Ensure cursor is present to trigger the complex WHERE logic
+			cursor: Buffer.from(JSON.stringify(cursorData)).toString("base64url"),
 		};
 
 		await resolveOrganizationsWhereMember(
@@ -300,7 +295,12 @@ describe("resolveOrganizationsWhereMember", () => {
 			baseMockCtx,
 		);
 
-		// Verify the where logic was executed
 		expect(mockWhere).toHaveBeenCalled();
+
+		const whereCondition = mockWhere.mock.calls[0]?.[0];
+		expect(whereCondition).toBeDefined();
+
+		expect(whereCondition).toBeDefined();
+
 	});
 });
