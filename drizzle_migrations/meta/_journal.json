@@ -8,6 +8,13 @@
       "when": 1761493796426,
       "tag": "20251026154956_fair_the_anarchist",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1765452377949,
+      "tag": "20251211112617_chilly_spectrum",
+      "breakpoints": true
     }
   ]
 }
