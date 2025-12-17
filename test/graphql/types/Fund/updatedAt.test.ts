@@ -1,5 +1,5 @@
 import { createMockGraphQLContext } from "test/_Mocks_/mockContextCreator/mockContextCreator";
-import { beforeEach, describe, expect, it } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { Fund } from "~/src/graphql/types/Fund/Fund";
 import { resolveUpdatedAt } from "~/src/graphql/types/Fund/updatedAt";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
@@ -45,30 +45,6 @@ describe("Fund Resolver - UpdatedAt Field", () => {
 		);
 	});
 
-	it("should throw unauthorized_action when user is not an administrator", async () => {
-		mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValue({
-			id: "user123",
-			role: "member",
-			organizationMembershipsWhereMember: [],
-		});
-
-		mocks.drizzleClient.query.fundsTable.findFirst.mockResolvedValue({
-			fund: {
-				organization: { membershipsWhereOrganization: [{ role: "member" }] },
-			},
-		});
-
-		await expect(
-			resolveUpdatedAt(mockFund, {}, ctx as GraphQLContext),
-		).rejects.toThrow(
-			new TalawaGraphQLError({
-				extensions: {
-					code: "unauthorized_action",
-				},
-			}),
-		);
-	});
-
 	it("should throw unauthorized_action when user has no organization memberships", async () => {
 		mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValue({
 			id: "user123",
@@ -76,15 +52,7 @@ describe("Fund Resolver - UpdatedAt Field", () => {
 			organizationMembershipsWhereMember: [],
 		});
 
-		mocks.drizzleClient.query.fundsTable.findFirst.mockResolvedValue({
-			fund: {
-				organization: { membershipsWhereOrganization: undefined },
-			},
-		});
-
-		await expect(
-			resolveUpdatedAt(mockFund, {}, ctx as GraphQLContext),
-		).rejects.toThrow(
+		await expect(resolveUpdatedAt(mockFund, {}, ctx)).rejects.toThrow(
 			new TalawaGraphQLError({
 				extensions: {
 					code: "unauthorized_action",
@@ -104,11 +72,31 @@ describe("Fund Resolver - UpdatedAt Field", () => {
 	});
 
 	it("should return updatedAt if user is an organization member", async () => {
-		mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValue({
-			id: "user-123",
-			role: "member",
-			organizationMembershipsWhereMember: [{ role: "member" }],
-		});
+		(
+			mocks.drizzleClient.query.usersTable.findFirst as ReturnType<
+				typeof vi.fn
+			>
+		).mockImplementation(
+			async (options: any) => {
+				const whereClause =
+					options.with.organizationMembershipsWhereMember.where;
+				const mockFields = { organizationId: "test-org-id" };
+				const mockOperators = {
+					eq: (field: string, value: string) => field === value,
+				};
+				const result = whereClause(mockFields, mockOperators);
+				expect(result).toBe(
+					mockFields.organizationId === mockFund.organizationId,
+				);
+
+				return {
+					id: "user-123",
+					role: "member",
+					organizationMembershipsWhereMember: [{ role: "member" }],
+				};
+			},
+		);
+
 		const result = await resolveUpdatedAt(mockFund, {}, ctx);
 		expect(result).toEqual(mockFund.updatedAt);
 	});
@@ -161,22 +149,9 @@ describe("Fund Resolver - UpdatedAt Field", () => {
 		expect(ctx.log.error).toHaveBeenCalled();
 	});
 
-	it("should handle concurrent updates to the same fund", async () => {
-		mocks.drizzleClient.query.usersTable.findFirst.mockRejectedValueOnce(
-			new Error("Database lock timeout"),
-		);
-
-		await expect(
-			resolveUpdatedAt(mockFund, {}, ctx as GraphQLContext),
-		).rejects.toThrow(
-			new TalawaGraphQLError({ extensions: { code: "unexpected" } }),
-		);
-		expect(ctx.log.error).toHaveBeenCalled();
-	});
-
 	it("should handle database error during concurrent access", async () => {
 		mocks.drizzleClient.query.usersTable.findFirst.mockRejectedValueOnce(
-			new Error("Database error during concurrent access"),
+			new Error("Database lock timeout"),
 		);
 
 		await expect(
