@@ -384,6 +384,10 @@ describe("resolveOrganizationsWhereMember", () => {
 		);
 
 		expect(mockOrderBy).toHaveBeenCalled();
+		expect(mockOrderBy).toHaveBeenCalledWith(
+			expect.anything(),
+			expect.anything(),
+		);
 	});
 
 	test("handles query with last parameter", async () => {
@@ -399,11 +403,5 @@ describe("resolveOrganizationsWhereMember", () => {
 		);
 
 		expect(result).toBeDefined();
-	});
-
-	test("User.implement is called with field definition", () => {
-		// This test ensures the User.implement block executes
-		// by importing the module as a side effect
-		expect(true).toBe(true);
 	});
 });
