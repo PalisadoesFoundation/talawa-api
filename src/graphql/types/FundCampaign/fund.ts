@@ -1,8 +1,8 @@
 import { Fund } from "~/src/graphql/types/Fund/Fund";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import envConfig from "~/src/utilities/graphqLimits";
-import { FundCampaign } from "./FundCampaign";
 import type { GraphQLContext } from "../../context";
+import { FundCampaign } from "./FundCampaign";
 
 export const fundCampaignFundResolver = async (
 	parent: FundCampaign,
