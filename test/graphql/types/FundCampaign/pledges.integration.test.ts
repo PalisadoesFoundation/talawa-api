@@ -811,6 +811,36 @@ suite("FundCampaign.pledges Integration Tests", () => {
 		);
 	});
 
+	test("should throw error for non-existent before cursor", async () => {
+		const organization = await createTestOrganization();
+		const fund = await createTestFund(organization.id);
+		const campaign = await createTestFundCampaign(fund.id);
+		const { user: pledger, authToken } = await createTestUser(organization.id);
+		assertToBeNonNullish(authToken);
+
+		// Create a pledge
+		await createTestPledge(campaign.id, pledger.id, authToken, 1000);
+
+		// Create a fake but valid-looking cursor
+		const fakeCursor = Buffer.from(
+			JSON.stringify({ id: "01952911-82da-793f-a5bf-98381d9aefc8" }),
+		).toString("base64url");
+
+		const result = await mercuriusClient.query(Query_FundCampaign_Pledges, {
+			headers: { authorization: `bearer ${adminAuthToken}` },
+			variables: {
+				input: { id: campaign.id },
+				last: 5,
+				before: fakeCursor,
+			},
+		});
+
+		expect(result.errors).toBeDefined();
+		expect(result.errors?.[0]?.extensions?.code).toBe(
+			"arguments_associated_resources_not_found",
+		);
+	});
+
 	test("should handle pledges at dataset boundaries", async () => {
 		const organization = await createTestOrganization();
 		const fund = await createTestFund(organization.id);
