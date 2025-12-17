@@ -74,13 +74,20 @@ describe("Fund Resolver - UpdatedAt Field", () => {
 	it("should return updatedAt if user is an organization member", async () => {
 		const eqSpy = vi.fn((field: string, value: string) => field === value);
 		(
-			mocks.drizzleClient.query.usersTable.findFirst as ReturnType<
-				typeof vi.fn
-			>
-		).mockImplementation(
-			async (options: any) => {
-				const whereClause =
-					options.with.organizationMembershipsWhereMember.where;
+			mocks.drizzleClient.query.usersTable.findFirst as ReturnType<typeof vi.fn>
+		).mockImplementation(async (...funcArgs: unknown[]) => {
+			const options = funcArgs[0] as {
+				with?: {
+					organizationMembershipsWhereMember?: {
+						where?: (fields: unknown, operators: unknown) => boolean;
+					};
+				};
+			};
+
+			const whereClause =
+				options.with?.organizationMembershipsWhereMember?.where;
+
+			if (whereClause) {
 				const mockFields = { organizationId: mockFund.organizationId };
 				const mockOperators = {
 					eq: eqSpy,
@@ -91,14 +98,14 @@ describe("Fund Resolver - UpdatedAt Field", () => {
 					mockFund.organizationId,
 				);
 				expect(result).toBe(true);
-				return {
-					id: "user-123",
-					role: "member",
-					organizationMembershipsWhereMember: [{ role: "member" }],
-				};
-			},
-		);
+			}
 
+			return {
+				id: "user-123",
+				role: "member",
+				organizationMembershipsWhereMember: [{ role: "member" }],
+			};
+		});
 		const result = await resolveUpdatedAt(mockFund, {}, ctx);
 		expect(result).toEqual(mockFund.updatedAt);
 	});
@@ -107,9 +114,7 @@ describe("Fund Resolver - UpdatedAt Field", () => {
 		mocks.drizzleClient.query.usersTable.findFirst.mockRejectedValue(
 			new Error("ECONNREFUSED"),
 		);
-		await expect(
-			resolveUpdatedAt(mockFund, {}, ctx),
-		).rejects.toThrow(
+		await expect(resolveUpdatedAt(mockFund, {}, ctx)).rejects.toThrow(
 			new TalawaGraphQLError({ extensions: { code: "unexpected" } }),
 		);
 		expect(ctx.log.error).toHaveBeenCalled();
@@ -119,9 +124,7 @@ describe("Fund Resolver - UpdatedAt Field", () => {
 		mocks.drizzleClient.query.usersTable.findFirst.mockRejectedValue(
 			new Error("Query timeout"),
 		);
-		await expect(
-			resolveUpdatedAt(mockFund, {}, ctx),
-		).rejects.toThrow(
+		await expect(resolveUpdatedAt(mockFund, {}, ctx)).rejects.toThrow(
 			new TalawaGraphQLError({ extensions: { code: "unexpected" } }),
 		);
 		expect(ctx.log.error).toHaveBeenCalled();
@@ -131,9 +134,7 @@ describe("Fund Resolver - UpdatedAt Field", () => {
 		mocks.drizzleClient.query.usersTable.findFirst.mockRejectedValue(
 			new Error("violates foreign key constraint"),
 		);
-		await expect(
-			resolveUpdatedAt(mockFund, {}, ctx),
-		).rejects.toThrow(
+		await expect(resolveUpdatedAt(mockFund, {}, ctx)).rejects.toThrow(
 			new TalawaGraphQLError({ extensions: { code: "unexpected" } }),
 		);
 		expect(ctx.log.error).toHaveBeenCalled();
@@ -143,9 +144,7 @@ describe("Fund Resolver - UpdatedAt Field", () => {
 		mocks.drizzleClient.query.usersTable.findFirst.mockRejectedValue(
 			new Error("syntax error in SQL statement"),
 		);
-		await expect(
-			resolveUpdatedAt(mockFund, {}, ctx),
-		).rejects.toThrow(
+		await expect(resolveUpdatedAt(mockFund, {}, ctx)).rejects.toThrow(
 			new TalawaGraphQLError({ extensions: { code: "unexpected" } }),
 		);
 		expect(ctx.log.error).toHaveBeenCalled();
@@ -156,9 +155,7 @@ describe("Fund Resolver - UpdatedAt Field", () => {
 			new Error("Database lock timeout"),
 		);
 
-		await expect(
-			resolveUpdatedAt(mockFund, {}, ctx),
-		).rejects.toThrow(
+		await expect(resolveUpdatedAt(mockFund, {}, ctx)).rejects.toThrow(
 			new TalawaGraphQLError({ extensions: { code: "unexpected" } }),
 		);
 		expect(ctx.log.error).toHaveBeenCalled();
@@ -172,9 +169,9 @@ describe("Fund Resolver - UpdatedAt Field", () => {
 		mocks.drizzleClient.query.usersTable.findFirst.mockRejectedValue(
 			originalError,
 		);
-		await expect(
-			resolveUpdatedAt(mockFund, {}, ctx),
-		).rejects.toThrow(originalError);
+		await expect(resolveUpdatedAt(mockFund, {}, ctx)).rejects.toThrow(
+			originalError,
+		);
 		expect(ctx.log.error).not.toHaveBeenCalled();
 	});
 });
