@@ -127,6 +127,31 @@ export type InvalidArgumentsExtensions = {
 };
 
 /**
+ * When the client provides invalid credentials (email/password) during authentication.
+ * This error is intentionally vague to prevent user enumeration attacks.
+ *
+ * @example
+ * throw new TalawaGraphQLError({
+ * 	extensions: {
+ * 		code: "invalid_credentials",
+ * 		issues: [
+ * 			{
+ * 				argumentPath: ["input"],
+ * 				message: "Invalid email address or password.",
+ * 			},
+ * 		],
+ * 	},
+ * });
+ */
+export type InvalidCredentialsExtensions = {
+	code: "invalid_credentials";
+	issues: {
+		argumentPath: (string | number)[];
+		message: string;
+	}[];
+};
+
+/**
  * When the client is not authorized to perform an action.
  *
  * @example
@@ -207,6 +232,7 @@ export type TalawaGraphQLErrorExtensions =
 	| ForbiddenActionOnArgumentsAssociatedResourcesExtensions
 	| UnauthenticatedExtensions
 	| InvalidArgumentsExtensions
+	| InvalidCredentialsExtensions
 	| UnauthorizedActionExtensions
 	| UnauthorizedActionOnArgumentsAssociatedResourcesExtensions
 	| UnauthorizedArgumentsExtensions
@@ -222,6 +248,7 @@ export const defaultTalawaGraphQLErrorMessages: {
 	forbidden_action_on_arguments_associated_resources:
 		"This action is forbidden on the resources associated to the provided arguments.",
 	invalid_arguments: "You have provided invalid arguments for this action.",
+	invalid_credentials: "Invalid email address or password.",
 	unauthenticated: "You must be authenticated to perform this action.",
 	unauthorized_action: "You are not authorized to perform this action.",
 	unauthorized_action_on_arguments_associated_resources:
