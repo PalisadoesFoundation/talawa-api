@@ -71,9 +71,6 @@ describe("FundCampaignPledge Resolver - campaign Field", () => {
 		vi.clearAllMocks();
 	});
 
-	afterEach(() => {
-	});
-
 	it("should return the fund campaign when it exists", async () => {
 		const mockCampaign = {
 			id: "campaign123",
