@@ -72,7 +72,6 @@ describe("FundCampaignPledge Resolver - campaign Field", () => {
 	});
 
 	afterEach(() => {
-		vi.clearAllMocks();
 	});
 
 	it("should return the fund campaign when it exists", async () => {
