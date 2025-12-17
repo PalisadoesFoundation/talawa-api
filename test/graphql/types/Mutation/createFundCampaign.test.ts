@@ -125,7 +125,7 @@ async function createTestFund(authToken: string, organizationId: string) {
 }
 
 suite("Mutation field createFundCampaign", () => {
-	// Lines 158-168 of src/graphql/types/Mutation/createFundCampaign.ts
+	// Lines 170-182 of src/graphql/types/Mutation/createFundCampaign.ts
 	// contain a defensive branch handling unexpected empty DB insert results.
 	// This branch cannot be reliably tested without DB layer mocking
 	let adminAuthToken: string;
