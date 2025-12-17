@@ -308,6 +308,9 @@ suite("Query field fund", () => {
 				id: fundId,
 				isTaxDeductible: expect.any(Boolean),
 				name: expect.any(String),
+				isDefault: expect.any(Boolean),
+				isArchived: expect.any(Boolean),
+				referenceNumber: expect.anything(),
 			}),
 		);
 	});
@@ -343,6 +346,9 @@ suite("Query field fund", () => {
 				id: fundId,
 				isTaxDeductible: expect.any(Boolean),
 				name: expect.any(String),
+				isDefault: expect.any(Boolean),
+				isArchived: expect.any(Boolean),
+				referenceNumber: expect.anything(),
 			}),
 		);
 	});
@@ -361,6 +367,9 @@ suite("Query field fund", () => {
 			id: fundId,
 			isTaxDeductible: false,
 			name: expect.any(String),
+			isDefault: false,
+			isArchived: false,
+			referenceNumber: null,
 		});
 	});
 
