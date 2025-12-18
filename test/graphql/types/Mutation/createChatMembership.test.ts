@@ -1,6 +1,8 @@
 import { faker } from "@faker-js/faker";
 import { beforeAll, expect, suite, test } from "vitest";
-import { mercuriusClient } from "../../../graphql/types/client";
+import { assertToBeNonNullish } from "../../../helpers";
+import { server } from "../../../server";
+import { mercuriusClient } from "../client";
 import {
 	Mutation_createChat,
 	Mutation_createChatMembership,
@@ -8,9 +10,7 @@ import {
 	Mutation_createOrganizationMembership,
 	Mutation_createUser,
 	Query_signIn,
-} from "../../../graphql/types/documentNodes";
-import { assertToBeNonNullish } from "../../../helpers";
-import { server } from "../../../server";
+} from "../documentNodes";
 
 // Sign in as admin to get an authentication token and admin user id.
 let authToken: string;
