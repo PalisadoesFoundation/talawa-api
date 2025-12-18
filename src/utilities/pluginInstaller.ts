@@ -1,23 +1,20 @@
 import { createWriteStream } from "node:fs";
 import { mkdir } from "node:fs/promises";
 import { dirname, join } from "node:path";
+import type { Readable } from "node:stream";
 import { pipeline } from "node:stream/promises";
 import { eq } from "drizzle-orm";
+// Use the actual Drizzle client type from the schema
+import type { PostgresJsDatabase } from "drizzle-orm/postgres-js";
 import type { FileUpload } from "graphql-upload-minimal";
 import { ulid } from "ulidx";
+import yauzl, { type Entry, type ZipFile } from "yauzl";
+import type * as drizzleSchema from "~/src/drizzle/schema";
 import { pluginsTable } from "~/src/drizzle/tables/plugins";
 import { getPluginManagerInstance } from "~/src/plugin/registry";
 import type { IPluginManifest } from "~/src/plugin/types";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import { pluginIdSchema } from "./validators";
-
-import type { Readable } from "node:stream";
-
-import yauzl, { type Entry, type ZipFile } from "yauzl";
-
-// Use the actual Drizzle client type from the schema
-import type { PostgresJsDatabase } from "drizzle-orm/postgres-js";
-import type * as drizzleSchema from "~/src/drizzle/schema";
 
 type DrizzleClientInterface = PostgresJsDatabase<typeof drizzleSchema>;
 
@@ -110,7 +107,7 @@ export async function validatePluginZip(
 
 											structure.apiManifest = manifest;
 											structure.pluginId = manifest.pluginId;
-										} catch (error) {
+										} catch (_error) {
 											reject(new Error("Invalid API manifest.json"));
 											return;
 										}

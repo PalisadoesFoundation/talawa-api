@@ -63,7 +63,7 @@ export const getKeyPathsWithNonUndefinedValues = <
 	const keyPathsWithNonUndefinedValues: Paths<T>[] = [];
 
 	for (const keyPath of keyPaths) {
-		// biome-ignore lint/suspicious/noExplicitAny: <explanation>
+		// biome-ignore lint/suspicious/noExplicitAny: Dynamic key path traversal requires any type for accumulator
 		const value = keyPath.reduce((accumulator: any, key) => {
 			return accumulator && accumulator[key] !== undefined
 				? accumulator[key]

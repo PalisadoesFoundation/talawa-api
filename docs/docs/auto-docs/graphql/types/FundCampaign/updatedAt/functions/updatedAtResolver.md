@@ -4,7 +4,7 @@
 
 # Function: updatedAtResolver()
 
-> **updatedAtResolver**(`parent`, `args`, `ctx`): `Promise`\<`Date` \| `null`\>
+> **updatedAtResolver**(`parent`, `_args`, `ctx`): `Promise`\<`Date` \| `null`\>
 
 Defined in: [src/graphql/types/FundCampaign/updatedAt.ts:23](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/graphql/types/FundCampaign/updatedAt.ts#L23)
 
@@ -62,11 +62,9 @@ The parent FundCampaign object containing the updatedAt field
 
 `string` \| `null`
 
-### args
+### \_args
 
 `Record`\<`string`, `never`\>
-
-GraphQL arguments (unused)
 
 ### ctx
 

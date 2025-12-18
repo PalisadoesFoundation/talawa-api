@@ -4,8 +4,8 @@ import { membershipRequestsTable } from "~/src/drizzle/tables/membershipRequests
 import { organizationMembershipsTable } from "~/src/drizzle/tables/organizationMemberships";
 import { builder } from "~/src/graphql/builder";
 import {
-	MutationAcceptMembershipRequestInput,
 	acceptMembershipRequestInputSchema,
+	MutationAcceptMembershipRequestInput,
 } from "~/src/graphql/inputs/MutationAcceptMembershipRequestInput";
 import { notificationEventBus } from "~/src/graphql/types/Notification/EventBus/eventBus";
 import { AcceptMembershipResponse } from "~/src/graphql/types/Organization/AcceptMembershipResponse";

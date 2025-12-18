@@ -12,8 +12,8 @@ import type {
 import { schema } from "~/src/graphql/schema";
 import type { Post as PostType } from "~/src/graphql/types/Post/Post";
 import type { User } from "~/src/graphql/types/User/User";
-import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import type { DefaultGraphQLConnection as Connection } from "~/src/utilities/defaultGraphQLConnection";
+import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 
 // Get the upVoters resolver from the schema
 const postType = schema.getType("Post") as GraphQLObjectType;

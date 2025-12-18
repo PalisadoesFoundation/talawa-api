@@ -6,8 +6,7 @@
  */
 
 // Main PluginManager class
-export { default as PluginManager } from "./core";
-export { default } from "./core";
+export { default as PluginManager, default } from "./core";
 
 // Individual components (for advanced usage)
 export { ExtensionLoader } from "./extensions";

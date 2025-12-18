@@ -1,4 +1,4 @@
-import { type PostgresJsDatabase, drizzle } from "drizzle-orm/postgres-js";
+import { drizzle, type PostgresJsDatabase } from "drizzle-orm/postgres-js";
 import { migrate } from "drizzle-orm/postgres-js/migrator";
 import fastifyPlugin from "fastify-plugin";
 import * as drizzleSchema from "~/src/drizzle/schema";

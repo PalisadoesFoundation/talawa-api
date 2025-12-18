@@ -1,4 +1,6 @@
+// check-sanitization-disable: metadata field returns JSON.stringify of system data
 import { builder } from "~/src/graphql/builder";
+import { escapeHTML } from "~/src/utilities/sanitizer";
 
 /**
  * GraphQL object type representing an event invitation.
@@ -74,7 +76,7 @@ EventInvitation.implement({
 				"Additional metadata associated with the invitation (JSON string).",
 			nullable: true,
 			resolve: (parent) =>
-				parent.metadata ? JSON.stringify(parent.metadata) : null,
+				parent.metadata ? escapeHTML(JSON.stringify(parent.metadata)) : null,
 		}),
 		createdAt: t.field({
 			description: "Date and time when the invitation was created.",

@@ -7,13 +7,15 @@ import { venueAttachmentMimeTypeEnum } from "~/src/drizzle/enums/venueAttachment
  */
 describe("venueAttachmentMimeTypeEnum", () => {
 	describe("allowed image MIME types", () => {
-		it.each([["image/avif"], ["image/jpeg"], ["image/png"], ["image/webp"]])(
-			"should accept %s",
-			(mimeType) => {
-				const result = venueAttachmentMimeTypeEnum.safeParse(mimeType);
-				expect(result.success).toBe(true);
-			},
-		);
+		it.each([
+			["image/avif"],
+			["image/jpeg"],
+			["image/png"],
+			["image/webp"],
+		])("should accept %s", (mimeType) => {
+			const result = venueAttachmentMimeTypeEnum.safeParse(mimeType);
+			expect(result.success).toBe(true);
+		});
 	});
 
 	describe("allowed video MIME types", () => {

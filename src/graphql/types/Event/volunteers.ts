@@ -5,13 +5,13 @@ import { eventVolunteersTable } from "~/src/drizzle/tables/eventVolunteers";
 import { recurringEventInstancesTable } from "~/src/drizzle/tables/recurringEventInstances";
 import { usersTable } from "~/src/drizzle/tables/users";
 import type { GraphQLContext } from "~/src/graphql/context";
-import { EventVolunteerWhereInput } from "~/src/graphql/inputs/EventVolunteerWhereInput";
 import { EventVolunteersOrderByInput } from "~/src/graphql/inputs/EventVolunteersOrderByInput";
+import { EventVolunteerWhereInput } from "~/src/graphql/inputs/EventVolunteerWhereInput";
 import { EventVolunteer } from "~/src/graphql/types/EventVolunteer/EventVolunteer";
-import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import envConfig from "~/src/utilities/graphqLimits";
-import { Event } from "./Event";
+import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import type { Event as EventType } from "./Event";
+import { Event } from "./Event";
 
 type EventVolunteersArgs = {
 	where?: {

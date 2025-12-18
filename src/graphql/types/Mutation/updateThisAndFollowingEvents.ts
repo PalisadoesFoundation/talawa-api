@@ -14,13 +14,13 @@ import {
 	generateInstancesForRecurringEvent,
 	initializeGenerationWindow,
 } from "~/src/services/eventGeneration";
-import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import envConfig from "~/src/utilities/graphqLimits";
 import {
 	applyRecurrenceOverrides,
 	buildRRuleString,
 	validateRecurrenceInput,
 } from "~/src/utilities/recurringEventHelpers";
+import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 
 const mutationUpdateThisAndFollowingEventsArgumentsSchema = z.object({
 	input: mutationUpdateThisAndFollowingEventsInputSchema,

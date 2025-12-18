@@ -1,11 +1,11 @@
 import { z } from "zod";
 import { builder } from "~/src/graphql/builder";
-import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import envConfig from "~/src/utilities/graphqLimits";
 import {
 	hashRefreshToken,
 	revokeRefreshTokenByHash,
 } from "~/src/utilities/refreshTokenUtils";
+import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 
 const mutationRevokeRefreshTokenArgumentsSchema = z.object({
 	refreshToken: z.string().min(1, "Refresh token is required."),

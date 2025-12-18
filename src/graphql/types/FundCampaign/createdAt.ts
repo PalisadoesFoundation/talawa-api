@@ -1,6 +1,7 @@
-import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import envConfig from "~/src/utilities/graphqLimits";
+import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import { FundCampaign } from "./FundCampaign";
+
 FundCampaign.implement({
 	fields: (t) => ({
 		createdAt: t.field({

@@ -2,8 +2,8 @@ import { faker } from "@faker-js/faker";
 import { eq } from "drizzle-orm";
 import { afterEach, beforeAll, expect, suite, test, vi } from "vitest";
 import {
-	commentVotesTable,
 	commentsTable,
+	commentVotesTable,
 	organizationMembershipsTable,
 	organizationsTable,
 	postsTable,

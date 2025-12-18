@@ -10,8 +10,9 @@ import {
 	mutationCreateVenueInputSchema,
 } from "~/src/graphql/inputs/MutationCreateVenueInput";
 import { Venue } from "~/src/graphql/types/Venue/Venue";
-import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import envConfig from "~/src/utilities/graphqLimits";
+import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
+
 const mutationCreateVenueArgumentsSchema = z.object({
 	input: mutationCreateVenueInputSchema.transform(async (arg, ctx) => {
 		let attachments:
@@ -236,6 +237,7 @@ builder.mutationField("createVenue", (t) =>
 									},
 								);
 							}
+							return undefined;
 						}),
 					);
 

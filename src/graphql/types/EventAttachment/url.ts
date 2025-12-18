@@ -1,5 +1,6 @@
 import envConfig from "~/src/utilities/graphqLimits";
 import { EventAttachment } from "./EventAttachment";
+
 EventAttachment.implement({
 	fields: (t) => ({
 		url: t.field({

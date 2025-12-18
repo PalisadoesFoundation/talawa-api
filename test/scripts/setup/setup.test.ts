@@ -1,11 +1,11 @@
 import {
-	type MockInstance,
 	afterEach,
 	beforeAll,
 	beforeEach,
 	describe,
 	expect,
 	it,
+	type MockInstance,
 	vi,
 } from "vitest";
 
@@ -26,6 +26,7 @@ vi.mock("env-schema", () => ({
 }));
 
 vi.mock("inquirer");
+
 import fs from "node:fs";
 import dotenv from "dotenv";
 import inquirer from "inquirer";
