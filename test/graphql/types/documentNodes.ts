@@ -2461,3 +2461,23 @@ export const Query_getRecurringEvents = gql(`
     }
   }
 `);
+export const Mutation_createAdvertisement = gql(`
+    mutation CreateAdvertisement($input: MutationCreateAdvertisementInput!) {
+        createAdvertisement(input: $input) {
+            id
+            name
+            description
+            type
+            startAt
+            endAt
+            attachments {
+                id
+                name
+                mimeType
+            }
+            organization {
+                id
+            }
+        }
+    }
+`);
