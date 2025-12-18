@@ -142,16 +142,15 @@ describe("MutationUnassignUserTagInput Schema", () => {
 			});
 			expect(result.success).toBe(false);
 			if (!result.success) {
-				// Error could be from base schema validation (Required) or refine validation
-				const hasValidationIssue = result.error.issues.some(
+				// Should have an error about tagId being required or undefined
+				expect(result.error.issues.length).toBeGreaterThan(0);
+				const hasTagIdIssue = result.error.issues.some(
 					(issue) =>
-						issue.message.includes("assigneeId") ||
+						issue.path.includes("tagId") ||
 						issue.message.includes("tagId") ||
-						issue.message.includes("Both") ||
-						issue.message.includes("Required") ||
-						issue.code === "invalid_type",
+						issue.message.includes("Both"),
 				);
-				expect(hasValidationIssue).toBe(true);
+				expect(hasTagIdIssue).toBe(true);
 			}
 		});
 	});
