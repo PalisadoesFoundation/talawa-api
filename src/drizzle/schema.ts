@@ -167,3 +167,11 @@ export {
 	emailNotificationsTableRelations,
 } from "./tables/EmailNotification";
 export { pluginsTable } from "./tables/plugins";
+export {
+	refreshTokensTable,
+	refreshTokensTableRelations,
+} from "./tables/refreshTokens";
+export {
+	eventInvitationsTable,
+	eventInvitationsTableRelations,
+} from "./tables/eventInvitations";

@@ -1,8 +1,8 @@
 ---
 id: environment-variables
-title: Environment Variables
+title: Configuration Variables
 slug: /installation/environment-variables
-sidebar_position: 2
+sidebar_position: 3
 ---
 
 Talawa api primarily makes use of environment variables to configure the application behavior for different scenarios and use cases. By default most workflows are configured to parse and read environment variables defined in the `.env` file located at the root directory of this project.
@@ -132,6 +132,10 @@ This environment variable is used to configure the time in milli-seconds it take
 This environment variable is used to configure the secret used for signing and verifying the authentication json web tokens issued by talawa api. This secret must be at least 64 characters in length.
 
 - More information can be found at [this](https://github.com/fastify/fastify-jwt?tab=readme-ov-file##secret-required) link.
+
+### API_REFRESH_TOKEN_EXPIRES_IN
+
+This environment variable is used to configure the time in milliseconds it takes for a refresh token issued by talawa api to expire. Refresh tokens are long-lived tokens used to obtain new short-lived access tokens without requiring users to re-authenticate. Recommended value is 7 days (604800000 milliseconds).
 
 ### API_LOG_LEVEL
 
@@ -562,7 +566,6 @@ More information could be found at [this](https://github.com/redis/redis) link.
 This environment variable is used to configure the host port to map with the container service port on which redis test listens to at runtime.
 
 - More information can be found at [this](https://docs.docker.com/engine/network/##published-ports) link.
-
 
 ## docker compose
 

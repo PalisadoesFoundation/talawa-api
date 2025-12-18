@@ -13,6 +13,7 @@ export const Mutation_createUser =
 	gql(`mutation Mutation_createUser($input: MutationCreateUserInput!) {
     createUser(input: $input){
         authenticationToken
+        refreshToken
         user {
             addressLine1
             addressLine2
@@ -77,6 +78,7 @@ export const Mutation_signUp =
 	gql(`mutation Mutation_signUp($input: MutationSignUpInput!) {
     signUp(input: $input) {
         authenticationToken
+        refreshToken
         user {
             addressLine1
             addressLine2
@@ -191,6 +193,7 @@ export const Query_renewAuthenticationToken =
 export const Query_signIn = gql(`query Query_signIn($input: QuerySignInInput!) {
     signIn(input: $input) {
         authenticationToken
+        refreshToken
         user {
             addressLine1
             addressLine2
@@ -215,6 +218,23 @@ export const Query_signIn = gql(`query Query_signIn($input: QuerySignInInput!) {
             workPhoneNumber
         }
     }
+}`);
+
+export const Mutation_refreshToken =
+	gql(`mutation Mutation_refreshToken($refreshToken: String!) {
+    refreshToken(refreshToken: $refreshToken) {
+        authenticationToken
+        refreshToken
+        user {
+            id
+            name
+        }
+    }
+}`);
+
+export const Mutation_revokeRefreshToken =
+	gql(`mutation Mutation_revokeRefreshToken($refreshToken: String!) {
+    revokeRefreshToken(refreshToken: $refreshToken)
 }`);
 
 export const Query_user = gql(`query Query_user($input: QueryUserInput!) {
@@ -565,6 +585,19 @@ export const Mutation_createEvent =
     }
 }`);
 
+export const Mutation_sendEventInvitations =
+	gql(`mutation Mutation_sendEventInvitations($input: SendEventInvitationsInput!) {
+    sendEventInvitations(input: $input) {
+        id
+        inviteeEmail
+        inviteeName
+        invitationToken
+        status
+        expiresAt
+        createdAt
+    }
+}`);
+
 export const Query_tag = gql(`
     query tag($input:QueryTagInput!) {
   tag(input: $input) {
@@ -682,7 +715,11 @@ export const Mutation_createAgendaFolder = gql(`
     createAgendaFolder(input: $input) {
       id
       name
+      isAgendaItemFolder
       event {
+        id
+      }
+      parentFolder {
         id
       }
     }
@@ -1463,6 +1500,41 @@ export const Mutation_deleteEntireRecurringEventSeries = gql(`
         mimeType
         url
       }
+    }
+  }
+`);
+
+export const Mutation_verifyEventInvitation = gql(`
+  mutation Mutation_verifyEventInvitation($input: VerifyEventInvitationInput!) {
+    verifyEventInvitation(input: $input) {
+      invitationToken
+      inviteeEmailMasked
+      inviteeName
+      status
+      expiresAt
+      eventId
+      recurringEventInstanceId
+      organizationId
+    }
+  }
+`);
+
+export const Mutation_acceptEventInvitation = gql(`
+  mutation Mutation_acceptEventInvitation($input: AcceptEventInvitationInput!) {
+    acceptEventInvitation(input: $input) {
+      id
+      eventId
+      recurringEventInstanceId
+      invitedBy
+      userId
+      inviteeEmail
+      inviteeName
+      invitationToken
+      status
+      expiresAt
+      respondedAt
+      createdAt
+      updatedAt
     }
   }
 `);

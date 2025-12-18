@@ -99,7 +99,7 @@ builder.mutationField("createAgendaFolder", (t) =>
 						code: "arguments_associated_resources_not_found",
 						issues: [
 							{
-								argumentPath: ["input", "id"],
+								argumentPath: ["input", "eventId"],
 							},
 						],
 					},
@@ -177,7 +177,7 @@ builder.mutationField("createAgendaFolder", (t) =>
 						code: "unauthorized_action_on_arguments_associated_resources",
 						issues: [
 							{
-								argumentPath: ["input", "id"],
+								argumentPath: ["input", "eventId"],
 							},
 						],
 					},

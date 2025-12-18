@@ -41,6 +41,7 @@ Core features include:
 1. **talawa**: [A mobile application with social media features](https://github.com/PalisadoesFoundation/talawa)
 1. **talawa-api**: [An API providing access to user data and features](https://github.com/PalisadoesFoundation/talawa-api)
 1. **talawa-admin**: [A web based administrative portal](https://github.com/PalisadoesFoundation/talawa-admin)
+1. **talawa-plugin**: [Microkernel-based drop-in plugins for Talawa-Admin](https://github.com/PalisadoesFoundation/talawa-plugin)
 1. **talawa-docs**: [The online documentation website](https://github.com/PalisadoesFoundation/talawa-docs)
 
 # Documentation
@@ -57,3 +58,4 @@ Core features include:
 
 1. Visit our [YouTube Channel playlists](https://www.youtube.com/@PalisadoesOrganization/playlists) for more insights
    1. The "[Getting Started - Developers](https://www.youtube.com/watch?v=YpBUoHxEeyg&list=PLv50qHwThlJUIzscg9a80a9-HmAlmUdCF&index=1)" videos are extremely helpful for new open source contributors.
+<- Update verification script guidance Trigger CI -->

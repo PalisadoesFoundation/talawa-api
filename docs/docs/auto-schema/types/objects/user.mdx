@@ -107,6 +107,12 @@ type User {
     first: Int
     last: Int
   ): UserOrganizationsWhereMemberConnection
+  orgsWhereUserIsBlocked(
+    after: String
+    before: String
+    first: Int
+    last: Int
+  ): UserOrgsWhereUserIsBlockedConnection
   postalCode: String
   role: UserRole
   state: String
@@ -237,6 +243,18 @@ GraphQL connection to traverse through the organizations the user is a member of
 ##### [<code style={{ fontWeight: 'normal' }}>User.organizationsWhereMember.<b>first</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>Int</b></code>](/auto-schema/types/scalars/int.mdx) <Badge class="badge badge--secondary " text="scalar"/>
 
 ##### [<code style={{ fontWeight: 'normal' }}>User.organizationsWhereMember.<b>last</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>Int</b></code>](/auto-schema/types/scalars/int.mdx) <Badge class="badge badge--secondary " text="scalar"/>
+
+#### [<code style={{ fontWeight: 'normal' }}>User.<b>orgsWhereUserIsBlocked</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>UserOrgsWhereUserIsBlockedConnection</b></code>](/auto-schema/types/objects/user-orgs-where-user-is-blocked-connection.mdx) <Badge class="badge badge--secondary " text="object"/>
+
+GraphQL connection to retrieve organizations where the user is blocked.
+
+##### [<code style={{ fontWeight: 'normal' }}>User.orgsWhereUserIsBlocked.<b>after</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>String</b></code>](/auto-schema/types/scalars/string.mdx) <Badge class="badge badge--secondary " text="scalar"/>
+
+##### [<code style={{ fontWeight: 'normal' }}>User.orgsWhereUserIsBlocked.<b>before</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>String</b></code>](/auto-schema/types/scalars/string.mdx) <Badge class="badge badge--secondary " text="scalar"/>
+
+##### [<code style={{ fontWeight: 'normal' }}>User.orgsWhereUserIsBlocked.<b>first</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>Int</b></code>](/auto-schema/types/scalars/int.mdx) <Badge class="badge badge--secondary " text="scalar"/>
+
+##### [<code style={{ fontWeight: 'normal' }}>User.orgsWhereUserIsBlocked.<b>last</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>Int</b></code>](/auto-schema/types/scalars/int.mdx) <Badge class="badge badge--secondary " text="scalar"/>
 
 #### [<code style={{ fontWeight: 'normal' }}>User.<b>postalCode</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>String</b></code>](/auto-schema/types/scalars/string.mdx) <Badge class="badge badge--secondary " text="scalar"/>
 

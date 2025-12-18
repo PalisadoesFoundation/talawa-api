@@ -4,6 +4,7 @@ import {
 	VenueAttachment,
 	type VenueAttachment as VenueAttachmentType,
 } from "~/src/graphql/types/VenueAttachment/VenueAttachment";
+import { escapeHTML } from "~/src/utilities/sanitizer";
 
 export type Venue = typeof venuesTable.$inferSelect & {
 	attachments: VenueAttachmentType[] | null;
@@ -22,15 +23,19 @@ Venue.implement({
 			description: "Array of attachments.",
 			type: t.listRef(VenueAttachment),
 		}),
-		description: t.exposeString("description", {
+		description: t.string({
 			description: "Custom information about the venue.",
+			nullable: true,
+			resolve: (parent) =>
+				parent.description != null ? escapeHTML(parent.description) : null,
 		}),
 		id: t.exposeID("id", {
 			description: "Global identifier of the venue.",
 			nullable: false,
 		}),
-		name: t.exposeString("name", {
+		name: t.string({
 			description: "Name of the venue.",
+			resolve: (parent) => escapeHTML(parent.name),
 		}),
 	}),
 });

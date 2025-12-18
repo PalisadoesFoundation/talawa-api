@@ -1,3 +1,8 @@
+input AcceptEventInvitationInput {
+  """Invitation token from the invite link"""
+  invitationToken: String!
+}
+
 type AcceptMembershipResponse {
   """Success or error message"""
   message: String
@@ -269,9 +274,14 @@ enum AgendaItemType {
 """"""
 type AuthenticationPayload {
   """
-  This is the authentication token using which a user can sign in to talawa.
+  This is the short-lived access token using which a user can authenticate API requests.
   """
   authenticationToken: String
+
+  """
+  This is the long-lived refresh token used to obtain new access tokens without re-authentication.
+  """
+  refreshToken: String
 
   """"""
   user: User
@@ -852,6 +862,55 @@ input EventAttendeeInput {
 
   """The ID of the user."""
   userId: ID!
+}
+
+"""An invitation to an event sent to an email address."""
+type EventInvitation {
+  """Date and time when the invitation was created."""
+  createdAt: DateTime
+
+  """ID of the associated event (if applicable)."""
+  eventId: String
+
+  """Date and time when the invitation expires."""
+  expiresAt: DateTime
+
+  """Unique identifier of the invitation."""
+  id: ID
+
+  """Unique token used to accept the invitation."""
+  invitationToken: String
+
+  """ID of the user who sent the invitation."""
+  invitedBy: String
+
+  """Email address of the invitee."""
+  inviteeEmail: String
+
+  """Name of the invitee."""
+  inviteeName: String
+
+  """Additional metadata associated with the invitation (JSON string)."""
+  metadata: String
+
+  """ID of the associated recurring event instance (if applicable)."""
+  recurringEventInstanceId: String
+
+  """
+  Date and time when the invitation was responded to (accepted or declined).
+  """
+  respondedAt: DateTime
+
+  """
+  Current status of the invitation (pending, accepted, declined, expired, cancelled).
+  """
+  status: String
+
+  """Date and time when the invitation was last updated."""
+  updatedAt: DateTime
+
+  """ID of the user who was invited (if they are a registered user)."""
+  userId: String
 }
 
 """"""
@@ -1946,6 +2005,11 @@ input MembershipRequestWhereInput {
 }
 
 type Mutation {
+  """
+  Accept an event invitation. Links the current user to the invitation, joins the organization if needed and registers the user as an attendee. This is performed atomically.
+  """
+  acceptEventInvitation(input: AcceptEventInvitationInput!): EventInvitation
+
   """Mutation field to accept a membership request by an admin."""
   acceptMembershipRequest(
     """Input to accept a membership request"""
@@ -2225,6 +2289,14 @@ type Mutation {
   ): Boolean
   readNotification(input: MutationReadNotificationInput!): ReadNotificationResponse
 
+  """
+  Mutation to refresh an access token using a valid refresh token. Returns new access and refresh tokens.
+  """
+  refreshToken(
+    """The refresh token to use for obtaining a new access token."""
+    refreshToken: String!
+  ): AuthenticationPayload
+
   """Mutation field to register a user for an event."""
   registerEventAttendee(data: EventAttendeeInput!): EventAttendee
 
@@ -2242,6 +2314,17 @@ type Mutation {
 
   """Mutation field to remove an event attendee."""
   removeEventAttendee(data: EventAttendeeInput!): User
+
+  """
+  Mutation to revoke a refresh token. Use this for logout functionality to invalidate the refresh token.
+  """
+  revokeRefreshToken(
+    """The refresh token to revoke."""
+    refreshToken: String!
+  ): Boolean
+
+  """Send email invitations to one or more addresses for an event."""
+  sendEventInvitations(input: SendEventInvitationsInput!): [EventInvitation!]
 
   """Mutation field to send a membership request to an organization."""
   sendMembershipRequest(
@@ -2406,6 +2489,11 @@ type Mutation {
 
   """Upload and install a plugin from a zip file"""
   uploadPluginZip(input: UploadPluginZipInput!): Plugin
+
+  """
+  Public preview of an event invitation. Returns masked email and minimal event/org info. Rate-limited.
+  """
+  verifyEventInvitation(input: VerifyEventInvitationInput!): VerifyEventInvitationPreview
 }
 
 input MutationAcceptMembershipRequestInput {
@@ -4799,6 +4887,11 @@ type ReadNotificationResponse {
   success: Boolean!
 }
 
+input RecipientInput {
+  email: String!
+  name: String
+}
+
 """
 Input type for defining recurrence rules for events. Must specify exactly one end condition: endDate, count, or never.
 """
@@ -4855,6 +4948,15 @@ type RejectMembershipResponse {
 
   """Whether the operation was successful"""
   success: Boolean
+}
+
+input SendEventInvitationsInput {
+  emails: [String!]
+  eventId: ID
+  expiresInDays: Int
+  message: String
+  recipients: [RecipientInput!]
+  recurringEventInstanceId: ID
 }
 
 type Subscription {
@@ -5113,6 +5215,11 @@ type User {
   """
   organizationsWhereMember(after: String, before: String, filter: String, first: Int, last: Int): UserOrganizationsWhereMemberConnection
 
+  """
+  GraphQL connection to retrieve organizations where the user is blocked.
+  """
+  orgsWhereUserIsBlocked(after: String, before: String, first: Int, last: Int): UserOrgsWhereUserIsBlockedConnection
+
   """Postal code of the user."""
   postalCode: String
 
@@ -5190,6 +5297,21 @@ type UserOrganizationsWhereMemberConnectionEdge {
   node: Organization
 }
 
+type UserOrgsWhereUserIsBlockedConnection {
+  """Edge containing a BlockedUser record and cursor."""
+  edges: [UserOrgsWhereUserIsBlockedConnectionEdge]
+  pageInfo: PageInfo!
+}
+
+type UserOrgsWhereUserIsBlockedConnectionEdge {
+  cursor: String!
+
+  """
+  BlockedUser record including the organization where the user is blocked.
+  """
+  node: BlockedUser
+}
+
 """Possible variants of the role assigned to a user."""
 enum UserRole {
   administrator
@@ -5260,6 +5382,21 @@ type VenueEventsConnection {
 type VenueEventsConnectionEdge {
   cursor: String!
   node: Event
+}
+
+input VerifyEventInvitationInput {
+  invitationToken: String!
+}
+
+type VerifyEventInvitationPreview {
+  eventId: String
+  expiresAt: String
+  invitationToken: String
+  inviteeEmailMasked: String
+  inviteeName: String
+  organizationId: String
+  recurringEventInstanceId: String
+  status: String
 }
 
 enum VolunteerGroupScope {

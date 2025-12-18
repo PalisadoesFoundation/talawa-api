@@ -7,6 +7,7 @@ import {
 } from "~/src/graphql/types/EventAttachment/EventAttachment";
 import { RecurrenceRule } from "~/src/graphql/types/RecurrenceRule/RecurrenceRule";
 import { formatRecurrenceDescription } from "~/src/utilities/recurrenceFormatter";
+import { escapeHTML } from "~/src/utilities/sanitizer";
 
 // Unified Event type supporting both standalone events and materialized instances
 export type Event =
@@ -26,9 +27,12 @@ Event.implement({
 				"A list of attachments associated with the event, such as images or documents.",
 			type: t.listRef(EventAttachment),
 		}),
-		description: t.exposeString("description", {
+		description: t.string({
 			description:
 				"A detailed description of the event, providing custom information and context.",
+			nullable: true,
+			resolve: (event) =>
+				event.description ? escapeHTML(event.description) : null,
 		}),
 		endAt: t.field({
 			description:
@@ -42,8 +46,9 @@ Event.implement({
 				"The unique global identifier for the event. For recurring instances, this ID refers to the specific materialized instance.",
 			nullable: false,
 		}),
-		name: t.exposeString("name", {
+		name: t.string({
 			description: "The name or title of the event.",
+			resolve: (event) => escapeHTML(event.name),
 		}),
 		startAt: t.field({
 			description:
@@ -118,9 +123,9 @@ Event.implement({
 					const sequence = event.sequenceNumber;
 					const total = event.totalCount;
 					if (total) {
-						return `${sequence} of ${total}`;
+						return escapeHTML(`${sequence} of ${total}`);
 					}
-					return `#${sequence}`;
+					return escapeHTML(`#${sequence}`);
 				}
 				return null;
 			},
@@ -206,7 +211,7 @@ Event.implement({
 					return null;
 				}
 
-				return formatRecurrenceDescription(recurrenceRule);
+				return escapeHTML(formatRecurrenceDescription(recurrenceRule));
 			},
 		}),
 	}),

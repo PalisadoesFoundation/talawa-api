@@ -74,6 +74,7 @@ export const Details = ({
 ```graphql
 type AuthenticationPayload {
   authenticationToken: String
+  refreshToken: String
   user: User
 }
 ```
@@ -82,10 +83,14 @@ type AuthenticationPayload {
 
 #### [<code style={{ fontWeight: 'normal' }}>AuthenticationPayload.<b>authenticationToken</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>String</b></code>](/auto-schema/types/scalars/string.mdx) <Badge class="badge badge--secondary " text="scalar"/>
 
-This is the authentication token using which a user can sign in to talawa.
+This is the short-lived access token using which a user can authenticate API requests.
+
+#### [<code style={{ fontWeight: 'normal' }}>AuthenticationPayload.<b>refreshToken</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>String</b></code>](/auto-schema/types/scalars/string.mdx) <Badge class="badge badge--secondary " text="scalar"/>
+
+This is the long-lived refresh token used to obtain new access tokens without re-authentication.
 
 #### [<code style={{ fontWeight: 'normal' }}>AuthenticationPayload.<b>user</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>User</b></code>](/auto-schema/types/objects/user.mdx) <Badge class="badge badge--secondary " text="object"/>
 
 ### Returned By
 
-[`createUser`](/auto-schema/operations/mutations/create-user.mdx) <Badge class="badge badge--secondary badge--relation" text="mutation"/><Bullet />[`signIn`](/auto-schema/operations/queries/sign-in.mdx) <Badge class="badge badge--secondary badge--relation" text="query"/><Bullet />[`signUp`](/auto-schema/operations/mutations/sign-up.mdx) <Badge class="badge badge--secondary badge--relation" text="mutation"/>
+[`createUser`](/auto-schema/operations/mutations/create-user.mdx) <Badge class="badge badge--secondary badge--relation" text="mutation"/><Bullet />[`refreshToken`](/auto-schema/operations/mutations/refresh-token.mdx) <Badge class="badge badge--secondary badge--relation" text="mutation"/><Bullet />[`signIn`](/auto-schema/operations/queries/sign-in.mdx) <Badge class="badge badge--secondary badge--relation" text="query"/><Bullet />[`signUp`](/auto-schema/operations/mutations/sign-up.mdx) <Badge class="badge badge--secondary badge--relation" text="mutation"/>

@@ -121,10 +121,14 @@ export const agendaItemsTableRelations = relations(
 	}),
 );
 
+export const AGENDA_ITEM_DESCRIPTION_MAX_LENGTH = 2048;
+export const AGENDA_ITEM_NAME_MAX_LENGTH = 256;
+
 export const agendaItemsTableInsertSchema = createInsertSchema(
 	agendaItemsTable,
 	{
-		description: (schema) => schema.min(1).max(2048).optional(),
-		name: (schema) => schema.min(1).max(256),
+		description: (schema) =>
+			schema.min(1).max(AGENDA_ITEM_DESCRIPTION_MAX_LENGTH).optional(),
+		name: (schema) => schema.min(1).max(AGENDA_ITEM_NAME_MAX_LENGTH),
 	},
 );

@@ -1,6 +1,7 @@
 import type { agendaItemsTable } from "~/src/drizzle/tables/agendaItems";
 import { builder } from "~/src/graphql/builder";
 import { AgendaItemType } from "~/src/graphql/enums/AgendaItemType";
+import { escapeHTML } from "~/src/utilities/sanitizer";
 
 export type AgendaItem = typeof agendaItemsTable.$inferSelect;
 
@@ -10,8 +11,10 @@ AgendaItem.implement({
 	description:
 		"Agenda items contain the important information about agenda for the associated event.",
 	fields: (t) => ({
-		description: t.exposeString("description", {
+		description: t.string({
 			description: "Custom information about the agenda item.",
+			resolve: (parent) =>
+				parent.description ? escapeHTML(parent.description) : null,
 		}),
 		duration: t.exposeString("duration", {
 			description: "Duration of the agenda item.",
@@ -23,8 +26,9 @@ AgendaItem.implement({
 		key: t.exposeString("key", {
 			description: `Key of the agenda item if it's of a "song" type. More information at [this](https://en.wikipedia.org/wiki/Key_(music)) link.`,
 		}),
-		name: t.exposeString("name", {
+		name: t.string({
 			description: "Name of the agenda item.",
+			resolve: (parent) => escapeHTML(parent.name),
 		}),
 		type: t.expose("type", {
 			description: "Type of the agenda item.",
