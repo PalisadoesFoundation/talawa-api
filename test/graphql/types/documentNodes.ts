@@ -384,6 +384,9 @@ export const Query_fund = gql(`query Query_fund($input: QueryFundInput!) {
       id
       isTaxDeductible
       name
+      isDefault
+      isArchived
+      referenceNumber
     }
   }`);
 
@@ -465,6 +468,21 @@ export const Mutation_createFund =
       id
       name
       isTaxDeductible
+      isDefault
+      isArchived
+      referenceNumber
+    }
+  }`);
+
+export const Mutation_updateFund =
+	gql(`mutation Mutation_updateFund($input: MutationUpdateFundInput!) {
+    updateFund(input: $input) {
+      id
+      name
+      isTaxDeductible
+      isDefault
+      isArchived
+      referenceNumber
     }
   }`);
 
@@ -2480,4 +2498,24 @@ export const Query_getRecurringEvents = gql(`
       }
     }
   }
+`);
+
+export const Mutation_cancelMembershipRequest = gql(`
+  mutation Mutation_cancelMembershipRequest(
+    $input: MutationCancelMembershipRequestInput!
+  ) {
+    cancelMembershipRequest(input: $input) {
+      success
+      message
+    }
+  }
+`);
+
+export const Query_community = gql(`
+	query Query_community {
+		community {
+			id
+			name
+		}
+	}
 `);
