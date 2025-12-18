@@ -108,7 +108,10 @@ async function cleanup(authToken: string, { orgId }: { orgId: string }) {
 			headers: { authorization: `bearer ${authToken}` },
 			variables: { input: { id: orgId } },
 		});
-	} catch {}
+	} catch (error) {
+		// Cleanup failures are non-fatal but logged for debugging
+		console.warn(`Cleanup failed for org ${orgId}:`, error);
+	}
 }
 
 describe("Tag.createdAt resolver - Integration", () => {
@@ -214,6 +217,9 @@ describe("Tag.createdAt resolver - Integration", () => {
 	it("org admin → createdAt returned", async () => {
 		const adminAuth = await getAdminAuth();
 
+		// Create a temporary org for user signup (required by signUp mutation).
+		// The test user will then be granted admin membership on a separate org
+		// to verify org-level admin access to tags.
 		const tempOrgResult = await mercuriusClient.mutate(
 			Mutation_createOrganization,
 			{
