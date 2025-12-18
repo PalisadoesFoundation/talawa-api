@@ -1,5 +1,5 @@
 import type { GraphQLContext } from "~/src/graphql/context";
-import { User } from "~/src/graphql/types/User/User";
+import { User, type User as UserType } from "~/src/graphql/types/User/User";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import envConfig from "~/src/utilities/graphqLimits";
 import { TagFolder } from "./TagFolder";
@@ -9,7 +9,7 @@ export const resolveUpdater = async (
 	parent: TagFolderType,
 	_args: Record<string, never>,
 	ctx: GraphQLContext,
-) => {
+): Promise<UserType | null> => {
 	if (parent.updaterId === null) {
 		return null;
 	}
