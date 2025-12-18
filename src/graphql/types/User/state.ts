@@ -1,4 +1,5 @@
 import envConfig from "~/src/utilities/graphqLimits";
+import { escapeHTML } from "~/src/utilities/sanitizer";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import { User } from "./User";
 
@@ -44,7 +45,7 @@ User.implement({
 					});
 				}
 
-				return parent.state;
+				return escapeHTML(parent.state);
 			},
 			type: "String",
 		}),

@@ -73,13 +73,24 @@ export const Details = ({
 
 ```graphql
 input MutationCreateFundInput {
+  isArchived: Boolean
+  isDefault: Boolean
   isTaxDeductible: Boolean!
   name: String!
   organizationId: ID!
+  referenceNumber: String
 }
 ```
 
 ### Fields
+
+#### [<code style={{ fontWeight: 'normal' }}>MutationCreateFundInput.<b>isArchived</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>Boolean</b></code>](/auto-schema/types/scalars/boolean.mdx) <Badge class="badge badge--secondary " text="scalar"/>
+
+Boolean to tell if the fund is archived.
+
+#### [<code style={{ fontWeight: 'normal' }}>MutationCreateFundInput.<b>isDefault</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>Boolean</b></code>](/auto-schema/types/scalars/boolean.mdx) <Badge class="badge badge--secondary " text="scalar"/>
+
+Boolean to tell if the fund is the default fund.
 
 #### [<code style={{ fontWeight: 'normal' }}>MutationCreateFundInput.<b>isTaxDeductible</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>Boolean!</b></code>](/auto-schema/types/scalars/boolean.mdx) <Badge class="badge badge--secondary badge--non_null" text="non-null"/> <Badge class="badge badge--secondary " text="scalar"/>
 
@@ -92,6 +103,10 @@ Name of the fund.
 #### [<code style={{ fontWeight: 'normal' }}>MutationCreateFundInput.<b>organizationId</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>ID!</b></code>](/auto-schema/types/scalars/id.mdx) <Badge class="badge badge--secondary badge--non_null" text="non-null"/> <Badge class="badge badge--secondary " text="scalar"/>
 
 Global identifier of the associated organization.
+
+#### [<code style={{ fontWeight: 'normal' }}>MutationCreateFundInput.<b>referenceNumber</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>String</b></code>](/auto-schema/types/scalars/string.mdx) <Badge class="badge badge--secondary " text="scalar"/>
+
+Reference number of the fund.
 
 ### Member Of
 

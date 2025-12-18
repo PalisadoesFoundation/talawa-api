@@ -119,9 +119,9 @@ builder.queryField("fundCampaignPledge", (t) =>
 
 			if (
 				currentUser.role !== "administrator" &&
+				currentUserId !== existingFundCampaignPledge.pledgerId &&
 				(currentUserOrganizationMembership === undefined ||
-					(currentUserOrganizationMembership.role !== "administrator" &&
-						currentUserId !== existingFundCampaignPledge.pledgerId))
+					currentUserOrganizationMembership.role !== "administrator")
 			) {
 				throw new TalawaGraphQLError({
 					extensions: {

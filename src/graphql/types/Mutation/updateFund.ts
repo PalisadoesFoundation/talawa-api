@@ -166,6 +166,9 @@ builder.mutationField("updateFund", (t) =>
 					isTaxDeductible: parsedArgs.input.isTaxDeductible,
 					name: parsedArgs.input.name,
 					updaterId: currentUserId,
+					isDefault: parsedArgs.input.isDefault,
+					isArchived: parsedArgs.input.isArchived,
+					referenceNumber: parsedArgs.input.referenceNumber,
 				})
 				.where(eq(fundsTable.id, parsedArgs.input.id))
 				.returning();

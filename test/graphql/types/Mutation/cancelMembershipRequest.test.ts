@@ -1,6 +1,5 @@
 import { faker } from "@faker-js/faker";
 import { eq } from "drizzle-orm";
-import { gql } from "graphql-tag";
 import { expect, suite, test } from "vitest";
 
 import { membershipRequestsTable } from "~/src/drizzle/tables/membershipRequests";
@@ -9,21 +8,11 @@ import { server } from "../../../server";
 import { mercuriusClient } from "../client";
 import { createRegularUserUsingAdmin } from "../createRegularUserUsingAdmin";
 import {
+	Mutation_cancelMembershipRequest,
 	Mutation_createOrganization,
 	Mutation_sendMembershipRequest,
 	Query_signIn,
 } from "../documentNodes";
-
-const Mutation_cancelMembershipRequest = gql(`
-  mutation Mutation_cancelMembershipRequest(
-    $input: MutationCancelMembershipRequestInput!
-  ) {
-    cancelMembershipRequest(input: $input) {
-      success
-      message
-    }
-  }
-`);
 
 /** Helper to create an organization */
 async function createTestOrganization() {

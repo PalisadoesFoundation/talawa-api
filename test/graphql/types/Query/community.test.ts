@@ -1,20 +1,11 @@
 import { faker } from "@faker-js/faker";
-import { gql } from "graphql-tag";
 import { expect, suite, test, vi } from "vitest";
 
 import { communitiesTable } from "~/src/drizzle/tables/communities";
 
 import { server } from "../../../server";
 import { mercuriusClient } from "../client";
-
-const Query_community = gql(`
-	query Query_community {
-		community {
-			id
-			name
-		}
-	}
-`);
+import { Query_community } from "../documentNodes";
 
 suite("community query", () => {
 	test("returns community when it exists", async () => {
@@ -28,10 +19,10 @@ suite("community query", () => {
 
 		expect(response.errors).toBeUndefined();
 		expect(response.data?.community).toBeDefined();
-		expect(response.data?.community.id).toMatch(
+		expect(response.data?.community?.id).toMatch(
 			/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i,
 		);
-		expect(response.data?.community.name).toBeDefined();
+		expect(response.data?.community?.name).toBeDefined();
 	});
 
 	test("throws unexpected error when community does not exist", async () => {

@@ -303,13 +303,17 @@ suite("Query field fund", () => {
 		});
 
 		expect(fundResult.errors).toBeUndefined();
-		expect(fundResult.data.fund).toEqual(
-			expect.objectContaining({
-				id: fundId,
-				isTaxDeductible: expect.any(Boolean),
-				name: expect.any(String),
-			}),
-		);
+		const fund = fundResult.data.fund;
+		expect(fund).toBeDefined();
+		expect(fund?.id).toBe(fundId);
+		expect(typeof fund?.isTaxDeductible).toBe("boolean");
+		expect(typeof fund?.name).toBe("string");
+		expect(typeof fund?.isDefault).toBe("boolean");
+		expect(typeof fund?.isArchived).toBe("boolean");
+		expect(
+			fund?.referenceNumber === null ||
+				typeof fund?.referenceNumber === "string",
+		).toBe(true);
 	});
 
 	test("returns fund data if user is an admin", async () => {
@@ -338,13 +342,17 @@ suite("Query field fund", () => {
 		});
 
 		expect(fundResult.errors).toBeUndefined();
-		expect(fundResult.data.fund).toEqual(
-			expect.objectContaining({
-				id: fundId,
-				isTaxDeductible: expect.any(Boolean),
-				name: expect.any(String),
-			}),
-		);
+		const fund = fundResult.data.fund;
+		expect(fund).toBeDefined();
+		expect(fund?.id).toBe(fundId);
+		expect(typeof fund?.isTaxDeductible).toBe("boolean");
+		expect(typeof fund?.name).toBe("string");
+		expect(typeof fund?.isDefault).toBe("boolean");
+		expect(typeof fund?.isArchived).toBe("boolean");
+		expect(
+			fund?.referenceNumber === null ||
+				typeof fund?.referenceNumber === "string",
+		).toBe(true);
 	});
 
 	test("returns fund with expected fields", async () => {
@@ -361,6 +369,9 @@ suite("Query field fund", () => {
 			id: fundId,
 			isTaxDeductible: false,
 			name: expect.any(String),
+			isDefault: false,
+			isArchived: false,
+			referenceNumber: null,
 		});
 	});
 

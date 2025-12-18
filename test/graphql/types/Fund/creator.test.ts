@@ -34,6 +34,9 @@ describe("Fund Creator Resolver Tests", () => {
 			organizationId: "64e9bb4b5",
 			isTaxDeductible: false,
 			updaterId: null,
+			isDefault: false,
+			isArchived: false,
+			referenceNumber: null,
 		};
 	});
 	describe("Authentication and Authorization", () => {
