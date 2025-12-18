@@ -14,6 +14,7 @@ import { server } from "../../../server";
 import { mercuriusClient } from "../client";
 import {
 	Mutation_createOrganization,
+	Mutation_createOrganizationMembership,
 	Mutation_createUser,
 	Mutation_createVenue,
 	Mutation_deleteCurrentUser,
@@ -753,6 +754,131 @@ suite("Mutation field createVenue", () => {
 	suite(
 		`results in a graphql error with "unauthorized_action_on_arguments_associated_resources" extensions code in the "errors" field and "null" as the value of "data.createVenue" field if`,
 		() => {
+			/**
+			 * NEW TEST: Tests authorization for non-admin organization member.
+			 *
+			 * @remarks
+			 * Only organization administrators (not regular members) should be
+			 * able to create venues. This covers line 172 in createVenue.ts.
+			 */
+			test("client is a non-admin organization member.", async () => {
+				const administratorUserSignInResult = await mercuriusClient.query(
+					Query_signIn,
+					{
+						variables: {
+							input: {
+								emailAddress:
+									server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
+								password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
+							},
+						},
+					},
+				);
+
+				assertToBeNonNullish(
+					administratorUserSignInResult.data.signIn?.authenticationToken,
+				);
+
+				// Create a regular user
+				const createUserResult = await mercuriusClient.mutate(
+					Mutation_createUser,
+					{
+						headers: {
+							authorization: `bearer ${administratorUserSignInResult.data.signIn.authenticationToken}`,
+						},
+						variables: {
+							input: {
+								emailAddress: `email${faker.string.ulid()}@email.com`,
+								isEmailAddressVerified: false,
+								name: "Regular User",
+								password: "TestPassword123!",
+								role: "regular",
+							},
+						},
+					},
+				);
+
+				assertToBeNonNullish(createUserResult.data.createUser?.user?.id);
+
+				const createOrganizationResult = await mercuriusClient.mutate(
+					Mutation_createOrganization,
+					{
+						headers: {
+							authorization: `bearer ${administratorUserSignInResult.data.signIn.authenticationToken}`,
+						},
+						variables: {
+							input: {
+								name: `TestOrg_${faker.string.ulid()}`,
+								description: faker.lorem.sentence(),
+							},
+						},
+					},
+				);
+
+				assertToBeNonNullish(
+					createOrganizationResult.data.createOrganization?.id,
+				);
+				createdResources.organizationIds.push(
+					createOrganizationResult.data.createOrganization.id,
+				);
+
+				// Add user as non-admin member
+				await mercuriusClient.mutate(Mutation_createOrganizationMembership, {
+					headers: {
+						authorization: `bearer ${administratorUserSignInResult.data.signIn.authenticationToken}`,
+					},
+					variables: {
+						input: {
+							organizationId:
+								createOrganizationResult.data.createOrganization.id,
+							memberId: createUserResult.data.createUser.user.id,
+							role: "regular", // NOT "administrator"
+						},
+					},
+				});
+
+				// Try to create venue as non-admin member
+				const createVenueResult = await mercuriusClient.mutate(
+					Mutation_createVenue,
+					{
+						headers: {
+							authorization: `bearer ${createUserResult.data.createUser.authenticationToken}`,
+						},
+						variables: {
+							input: {
+								organizationId:
+									createOrganizationResult.data.createOrganization.id,
+								name: `Venue_${faker.string.ulid()}`,
+								description: faker.lorem.sentence(),
+							},
+						},
+					},
+				);
+
+				expect(createVenueResult.data?.createVenue).toEqual(null);
+				expect(createVenueResult.errors).toEqual(
+					expect.arrayContaining<TalawaGraphQLFormattedError>([
+						expect.objectContaining<TalawaGraphQLFormattedError>({
+							extensions:
+								expect.objectContaining<UnauthorizedActionOnArgumentsAssociatedResourcesExtensions>(
+									{
+										code: "unauthorized_action_on_arguments_associated_resources",
+										issues: expect.arrayContaining<
+											UnauthorizedActionOnArgumentsAssociatedResourcesExtensions["issues"][number]
+										>([
+											{
+												argumentPath: ["input", "organizationId"],
+											},
+										]),
+									},
+								),
+							message: expect.any(String),
+							path: ["createVenue"],
+						}),
+					]),
+				);
+			});
+
 			/**
 			 * Tests authorization for non-admin, non-member users.
 			 *
