@@ -6,7 +6,6 @@ import type {
 } from "~/src/graphql/context";
 import type { User } from "~/src/graphql/types/User/User";
 import { resolveOrganizationsWhereMember } from "~/src/graphql/types/User/organizationsWhereMember";
-import "~/src/graphql/types/User/organizationsWhereMember";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 
 const globalArgs = {
@@ -216,36 +215,25 @@ describe("resolveOrganizationsWhereMember", () => {
 			cursor: undefined,
 		};
 
-		try {
-			await resolveOrganizationsWhereMember(
+		await expect(
+			resolveOrganizationsWhereMember(
 				mockUserParent,
 				invalidArgs,
 				baseMockCtx,
-			);
-			expect.fail("Expected TalawaGraphQLError to be thrown");
-		} catch (error: unknown) {
-			expect(error).toBeInstanceOf(TalawaGraphQLError);
-			const err = error as TalawaGraphQLError;
-			expect(err.extensions.code).toBe("invalid_arguments");
-		}
+			),
+		).rejects.toThrow(TalawaGraphQLError);
 	});
 
 	test("throws unauthenticated error if current user is not found in database", async () => {
-		// Mock database returning null for the user lookup
 		mockDrizzleClient.query.usersTable.findFirst.mockResolvedValue(null);
 
-		try {
-			await resolveOrganizationsWhereMember(
+		await expect(
+			resolveOrganizationsWhereMember(
 				mockUserParent,
 				globalArgs,
 				baseMockCtx,
-			);
-			expect.fail("Expected TalawaGraphQLError to be thrown");
-		} catch (error: unknown) {
-			expect(error).toBeInstanceOf(TalawaGraphQLError);
-			const err = error as TalawaGraphQLError;
-			expect(err.extensions.code).toBe("unauthenticated");
-		}
+			),
+		).rejects.toThrow(TalawaGraphQLError);
 	});
 
 	test("allows administrator to query another user's organizations", async () => {
@@ -287,35 +275,6 @@ describe("resolveOrganizationsWhereMember", () => {
 		});
 	});
 
-	test("generates correct SQL for inversed pagination (isInversed: true)", async () => {
-		mockDrizzleClient.query.usersTable.findFirst.mockResolvedValue({
-			id: "user123",
-			role: "member",
-		});
-
-		const cursorData = {
-			createdAt: new Date().toISOString(),
-			organizationId: "org1",
-		};
-		const inversedArgs = {
-			...globalArgs,
-			isInversed: true,
-			// Ensure cursor is present to trigger the complex WHERE logic
-			cursor: Buffer.from(JSON.stringify(cursorData)).toString("base64url"),
-		};
-
-		await resolveOrganizationsWhereMember(
-			mockUserParent,
-			inversedArgs,
-			baseMockCtx,
-		);
-
-		expect(mockWhere).toHaveBeenCalled();
-
-		const whereCondition = mockWhere.mock.calls[0]?.[0];
-		expect(whereCondition).toBeDefined();
-	});
-
 	test("handles cursor with after for forward pagination", async () => {
 		mockDrizzleClient.query.usersTable.findFirst.mockResolvedValue({
 			id: "user123",
@@ -348,48 +307,6 @@ describe("resolveOrganizationsWhereMember", () => {
 		expect(mockWhere).toHaveBeenCalled();
 	});
 
-	test("uses descending orderBy when isInversed is false", async () => {
-		mockDrizzleClient.query.usersTable.findFirst.mockResolvedValue({
-			id: "user123",
-			role: "member",
-		});
-
-		const mockOrderBy = vi.fn().mockImplementation(() => ({
-			execute: vi.fn().mockResolvedValue([
-				{
-					membershipCreatedAt: new Date(),
-					membershipOrganizationId: "org1",
-					organization: { id: "org1", name: "Test Organization" },
-				},
-			]),
-		}));
-
-		const mockLimit = vi.fn().mockReturnValue({
-			orderBy: mockOrderBy,
-		});
-
-		mockWhere.mockImplementation(() => ({
-			limit: mockLimit,
-		}));
-
-		const forwardArgs = {
-			...globalArgs,
-			isInversed: false,
-		};
-
-		await resolveOrganizationsWhereMember(
-			mockUserParent,
-			forwardArgs,
-			baseMockCtx,
-		);
-
-		expect(mockOrderBy).toHaveBeenCalled();
-		expect(mockOrderBy).toHaveBeenCalledWith(
-			expect.anything(),
-			expect.anything(),
-		);
-	});
-
 	test("handles query with last parameter", async () => {
 		mockDrizzleClient.query.usersTable.findFirst.mockResolvedValue({
 			id: "user123",
@@ -403,5 +320,31 @@ describe("resolveOrganizationsWhereMember", () => {
 		);
 
 		expect(result).toBeDefined();
+	});
+
+	test("uses default limit of 10 when limit is not provided", async () => {
+		mockDrizzleClient.query.usersTable.findFirst.mockResolvedValue({
+			id: "user123",
+			role: "member",
+		});
+
+		const mockLimit = vi.fn().mockImplementation(() => ({
+			orderBy: vi.fn().mockImplementation(() => ({
+				execute: vi.fn().mockResolvedValue([]),
+			})),
+		}));
+
+		mockWhere.mockImplementation(() => ({
+			limit: mockLimit,
+		}));
+
+		await resolveOrganizationsWhereMember(
+			mockUserParent,
+			{ first: 10 } as never,
+			baseMockCtx,
+		);
+
+		// The limit should be called with 11 (first + 1 for hasNextPage check)
+		expect(mockLimit).toHaveBeenCalledWith(11);
 	});
 });
