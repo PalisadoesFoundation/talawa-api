@@ -214,15 +214,18 @@ describe("Tag.createdAt resolver - Integration", () => {
 	it("org admin → createdAt returned", async () => {
 		const adminAuth = await getAdminAuth();
 
-		const tempOrgResult = await mercuriusClient.mutate(Mutation_createOrganization, {
-			headers: { authorization: `bearer ${adminAuth.token}` },
-			variables: {
-				input: {
-					name: `TempOrg-${Date.now()}`,
-					countryCode: "us",
+		const tempOrgResult = await mercuriusClient.mutate(
+			Mutation_createOrganization,
+			{
+				headers: { authorization: `bearer ${adminAuth.token}` },
+				variables: {
+					input: {
+						name: `TempOrg-${Date.now()}`,
+						countryCode: "us",
+					},
 				},
 			},
-		});
+		);
 
 		assertToBeNonNullish(tempOrgResult.data?.createOrganization?.id);
 		const tempOrgId = tempOrgResult.data.createOrganization.id as string;
