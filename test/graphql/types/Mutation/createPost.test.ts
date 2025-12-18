@@ -1,6 +1,6 @@
 import { faker } from "@faker-js/faker";
 import { expect, suite, test, vi } from "vitest";
-import { POST_CAPTION_MAX_LENGTH } from "~/src/drizzle/tables/posts";
+import { POST_CAPTION_MAX_LENGTH, POST_BODY_MAX_LENGTH } from "~/src/drizzle/tables/posts";
 import type { InvalidArgumentsExtensions } from "~/src/utilities/TalawaGraphQLError";
 import { assertToBeNonNullish } from "../../../helpers";
 import { server } from "../../../server";
@@ -762,6 +762,210 @@ suite("Mutation field createPost", () => {
 			expect(issueMessages).toContain(
 				`Post caption must not exceed ${POST_CAPTION_MAX_LENGTH} characters`,
 			);
+		});
+
+		test("should create post with valid body field and return body in response", async () => {
+			const createOrgResult = await mercuriusClient.mutate(
+				Mutation_createOrganization,
+				{
+					headers: { authorization: `bearer ${authToken}` },
+					variables: {
+						input: {
+							name: faker.company.name(),
+							description: faker.lorem.sentence(),
+							countryCode: "us",
+							state: "CA",
+							city: "Los Angeles",
+							postalCode: "90001",
+							addressLine1: "123 Main St",
+						},
+					},
+				},
+			);
+			const orgId = createOrgResult.data?.createOrganization?.id;
+			assertToBeNonNullish(orgId);
+
+			const validBody = "This is a test post body with valid content.";
+			const result = await mercuriusClient.mutate(Mutation_createPost, {
+				headers: { authorization: `bearer ${authToken}` },
+				variables: {
+					input: {
+						caption: "Test Caption",
+						body: validBody,
+						organizationId: orgId,
+					},
+				},
+			});
+
+			expect(result.errors).toBeUndefined();
+			expect(result.data?.createPost?.body).toBe(validBody);
+			expect(result.data?.createPost?.caption).toBe("Test Caption");
+		});
+
+		test("should create post with body at exactly POST_BODY_MAX_LENGTH", async () => {
+			const createOrgResult = await mercuriusClient.mutate(
+				Mutation_createOrganization,
+				{
+					headers: { authorization: `bearer ${authToken}` },
+					variables: {
+						input: {
+							name: faker.company.name(),
+							description: faker.lorem.sentence(),
+							countryCode: "us",
+							state: "NY",
+							city: "New York",
+							postalCode: "10001",
+							addressLine1: "456 Broadway",
+						},
+					},
+				},
+			);
+			const orgId = createOrgResult.data?.createOrganization?.id;
+			assertToBeNonNullish(orgId);
+
+			const maxLengthBody = "a".repeat(POST_BODY_MAX_LENGTH);
+			const result = await mercuriusClient.mutate(Mutation_createPost, {
+				headers: { authorization: `bearer ${authToken}` },
+				variables: {
+					input: {
+						caption: "Max Length Body Test",
+						body: maxLengthBody,
+						organizationId: orgId,
+					},
+				},
+			});
+
+			expect(result.errors).toBeUndefined();
+			expect(result.data?.createPost?.body).toBe(maxLengthBody);
+			expect(result.data?.createPost?.body?.length).toBe(POST_BODY_MAX_LENGTH);
+		});
+
+		test("should reject body exceeding POST_BODY_MAX_LENGTH", async () => {
+			const createOrgResult = await mercuriusClient.mutate(
+				Mutation_createOrganization,
+				{
+					headers: { authorization: `bearer ${authToken}` },
+					variables: {
+						input: {
+							name: faker.company.name(),
+							description: faker.lorem.sentence(),
+							countryCode: "us",
+							state: "TX",
+							city: "Houston",
+							postalCode: "77001",
+							addressLine1: "789 Main St",
+						},
+					},
+				},
+			);
+			const orgId = createOrgResult.data?.createOrganization?.id;
+			assertToBeNonNullish(orgId);
+
+			const exceedingLengthBody = "a".repeat(POST_BODY_MAX_LENGTH + 1);
+			const result = await mercuriusClient.mutate(Mutation_createPost, {
+				headers: { authorization: `bearer ${authToken}` },
+				variables: {
+					input: {
+						caption: "Exceeding Body Test",
+						body: exceedingLengthBody,
+						organizationId: orgId,
+					},
+				},
+			});
+
+			expect(result.data?.createPost).toBeNull();
+			expect(result.errors).toBeDefined();
+			const issues = (
+				result.errors?.[0]?.extensions as unknown as InvalidArgumentsExtensions
+			)?.issues;
+			const issueMessages = issues?.map((i) => i.message).join(" ");
+			expect(issueMessages).toContain(
+				`Post body must not exceed ${POST_BODY_MAX_LENGTH} characters`,
+			);
+		});
+
+		test("should reject whitespace-only body", async () => {
+			const createOrgResult = await mercuriusClient.mutate(
+				Mutation_createOrganization,
+				{
+					headers: { authorization: `bearer ${authToken}` },
+					variables: {
+						input: {
+							name: faker.company.name(),
+							description: faker.lorem.sentence(),
+							countryCode: "us",
+							state: "FL",
+							city: "Miami",
+							postalCode: "33101",
+							addressLine1: "100 Ocean Dr",
+						},
+					},
+				},
+			);
+			const orgId = createOrgResult.data?.createOrganization?.id;
+			assertToBeNonNullish(orgId);
+
+			const whitespaceBody = "   \n\t  ";
+			const result = await mercuriusClient.mutate(Mutation_createPost, {
+				headers: { authorization: `bearer ${authToken}` },
+				variables: {
+					input: {
+						caption: "Whitespace Body Test",
+						body: whitespaceBody,
+						organizationId: orgId,
+					},
+				},
+			});
+
+			expect(result.data?.createPost).toBeNull();
+			expect(result.errors).toBeDefined();
+			const issues = (
+				result.errors?.[0]?.extensions as unknown as InvalidArgumentsExtensions
+			)?.issues;
+			const issueMessages = issues?.map((i) => i.message).join(" ");
+			expect(issueMessages).toContain("String must contain at least 1 character(s)");
+		});
+
+		test("should properly escape HTML/XSS payloads in body", async () => {
+			const createOrgResult = await mercuriusClient.mutate(
+				Mutation_createOrganization,
+				{
+					headers: { authorization: `bearer ${authToken}` },
+					variables: {
+						input: {
+							name: faker.company.name(),
+							description: faker.lorem.sentence(),
+							countryCode: "us",
+							state: "WA",
+							city: "Seattle",
+							postalCode: "98101",
+							addressLine1: "200 Pine St",
+						},
+					},
+				},
+			);
+			const orgId = createOrgResult.data?.createOrganization?.id;
+			assertToBeNonNullish(orgId);
+
+			const htmlBody = "<script>alert('xss')</script><img src=x onerror=alert('xss')>";
+			const result = await mercuriusClient.mutate(Mutation_createPost, {
+				headers: { authorization: `bearer ${authToken}` },
+				variables: {
+					input: {
+						caption: "XSS Test Caption",
+						body: htmlBody,
+						organizationId: orgId,
+					},
+				},
+			});
+
+			expect(result.errors).toBeUndefined();
+			expect(result.data?.createPost?.body).toBe(
+				"&lt;script&gt;alert(&#39;xss&#39;)&lt;/script&gt;&lt;img src=x onerror=alert(&#39;xss&#39;)&gt;",
+			);
+			// Verify HTML tags are properly escaped
+			expect(result.data?.createPost?.body).not.toContain("<script>");
+			expect(result.data?.createPost?.body).not.toContain("<img");
 		});
 	});
 });

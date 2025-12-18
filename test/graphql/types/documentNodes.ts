@@ -796,6 +796,7 @@ export const Mutation_createPost = gql(`
     createPost(input: $input) {
       id
       caption
+      body
       pinnedAt
       organization {
         id
