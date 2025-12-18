@@ -4,7 +4,7 @@
 
 # Function: resolveVolunteer()
 
-> **resolveVolunteer**(`parent`, `_args`, `ctx`): `Promise`\<[`EventVolunteer`](../../../EventVolunteer/EventVolunteer/type-aliases/EventVolunteer.md) \| `null`\>
+> **resolveVolunteer**(`parent`, `_args`, `ctx`): `Promise`\<`null` \| [`EventVolunteer`](../../../EventVolunteer/EventVolunteer/type-aliases/EventVolunteer.md)\>
 
 Defined in: [src/graphql/types/ActionItem/eventVolunteersAndGroups.ts:7](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/graphql/types/ActionItem/eventVolunteersAndGroups.ts#L7)
 
@@ -14,7 +14,7 @@ Defined in: [src/graphql/types/ActionItem/eventVolunteersAndGroups.ts:7](https:/
 
 #### volunteerId
 
-`string` \| `null`
+`null` \| `string`
 
 ### \_args
 
@@ -26,4 +26,4 @@ Defined in: [src/graphql/types/ActionItem/eventVolunteersAndGroups.ts:7](https:/
 
 ## Returns
 
-`Promise`\<[`EventVolunteer`](../../../EventVolunteer/EventVolunteer/type-aliases/EventVolunteer.md) \| `null`\>
+`Promise`\<`null` \| [`EventVolunteer`](../../../EventVolunteer/EventVolunteer/type-aliases/EventVolunteer.md)\>

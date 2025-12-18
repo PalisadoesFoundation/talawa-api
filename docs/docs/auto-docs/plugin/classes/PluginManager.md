@@ -6,11 +6,6 @@
 
 Defined in: [src/plugin/manager/core.ts:32](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/plugin/manager/core.ts#L32)
 
-Plugin System Main Entry Point for Talawa API
-
-This file exports all the main plugin system components and utilities
-for use throughout the API application.
-
 ## Extends
 
 - `EventEmitter`
@@ -221,7 +216,7 @@ Get all loaded plugins
 
 ### getPlugin()
 
-> **getPlugin**(`pluginId`): [`ILoadedPlugin`](../types/interfaces/ILoadedPlugin.md) \| `undefined`
+> **getPlugin**(`pluginId`): `undefined` \| [`ILoadedPlugin`](../types/interfaces/ILoadedPlugin.md)
 
 Defined in: [src/plugin/manager/core.ts:413](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/plugin/manager/core.ts#L413)
 
@@ -235,7 +230,7 @@ Get a specific plugin
 
 #### Returns
 
-[`ILoadedPlugin`](../types/interfaces/ILoadedPlugin.md) \| `undefined`
+`undefined` \| [`ILoadedPlugin`](../types/interfaces/ILoadedPlugin.md)
 
 ***
 

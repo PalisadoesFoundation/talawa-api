@@ -4,7 +4,7 @@
 
 # Function: EventVolunteerUpdatedAtResolver()
 
-> **EventVolunteerUpdatedAtResolver**(`parent`, `_args`, `ctx`): `Promise`\<`Date` \| `null`\>
+> **EventVolunteerUpdatedAtResolver**(`parent`, `_args`, `ctx`): `Promise`\<`null` \| `Date`\>
 
 Defined in: [src/graphql/types/EventVolunteer/updatedAt.ts:7](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/graphql/types/EventVolunteer/updatedAt.ts#L7)
 
@@ -24,4 +24,4 @@ Defined in: [src/graphql/types/EventVolunteer/updatedAt.ts:7](https://github.com
 
 ## Returns
 
-`Promise`\<`Date` \| `null`\>
+`Promise`\<`null` \| `Date`\>

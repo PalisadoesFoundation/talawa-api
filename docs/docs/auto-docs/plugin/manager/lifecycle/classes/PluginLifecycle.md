@@ -88,7 +88,7 @@ Deactivate a plugin - trigger schema rebuild
 
 ### getPluginModule()
 
-> **getPluginModule**(`pluginId`): `Promise`\<[`IPluginLifecycle`](../../../types/interfaces/IPluginLifecycle.md) \| `null`\>
+> **getPluginModule**(`pluginId`): `Promise`\<`null` \| [`IPluginLifecycle`](../../../types/interfaces/IPluginLifecycle.md)\>
 
 Defined in: [src/plugin/manager/lifecycle.ts:360](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/plugin/manager/lifecycle.ts#L360)
 
@@ -102,7 +102,7 @@ Get plugin module for lifecycle hooks
 
 #### Returns
 
-`Promise`\<[`IPluginLifecycle`](../../../types/interfaces/IPluginLifecycle.md) \| `null`\>
+`Promise`\<`null` \| [`IPluginLifecycle`](../../../types/interfaces/IPluginLifecycle.md)\>
 
 ***
 

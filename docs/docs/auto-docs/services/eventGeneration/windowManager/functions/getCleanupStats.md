@@ -4,7 +4,7 @@
 
 # Function: getCleanupStats()
 
-> **getCleanupStats**(`organizationId`, `drizzleClient`): `Promise`\<\{ `instancesEligibleForCleanup`: `number`; `instancesInRetentionWindow`: `number`; `retentionStartDate`: `Date` \| `null`; `totalInstances`: `number`; \}\>
+> **getCleanupStats**(`organizationId`, `drizzleClient`): `Promise`\<\{ `instancesEligibleForCleanup`: `number`; `instancesInRetentionWindow`: `number`; `retentionStartDate`: `null` \| `Date`; `totalInstances`: `number`; \}\>
 
 Defined in: [src/services/eventGeneration/windowManager.ts:216](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/eventGeneration/windowManager.ts#L216)
 
@@ -27,6 +27,6 @@ The Drizzle ORM client for database access.
 
 ## Returns
 
-`Promise`\<\{ `instancesEligibleForCleanup`: `number`; `instancesInRetentionWindow`: `number`; `retentionStartDate`: `Date` \| `null`; `totalInstances`: `number`; \}\>
+`Promise`\<\{ `instancesEligibleForCleanup`: `number`; `instancesInRetentionWindow`: `number`; `retentionStartDate`: `null` \| `Date`; `totalInstances`: `number`; \}\>
 
 A promise that resolves to an object containing the cleanup statistics.

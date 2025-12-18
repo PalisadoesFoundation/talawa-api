@@ -14,11 +14,11 @@ Defined in: [src/graphql/types/EventAttendee/createdAt.ts:9](https://github.com/
 
 #### checkinTime
 
-`Date` \| `null`
+`null` \| `Date`
 
 #### checkoutTime
 
-`Date` \| `null`
+`null` \| `Date`
 
 #### createdAt
 
@@ -26,7 +26,7 @@ Defined in: [src/graphql/types/EventAttendee/createdAt.ts:9](https://github.com/
 
 #### eventId
 
-`string` \| `null`
+`null` \| `string`
 
 #### feedbackSubmitted
 
@@ -54,11 +54,11 @@ Defined in: [src/graphql/types/EventAttendee/createdAt.ts:9](https://github.com/
 
 #### recurringEventInstanceId
 
-`string` \| `null`
+`null` \| `string`
 
 #### updatedAt
 
-`Date` \| `null`
+`null` \| `Date`
 
 #### userId
 

@@ -8,7 +8,7 @@
 
 Defined in: [src/utilities/graphqLimits.ts:15](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/utilities/graphqLimits.ts#L15)
 
-## Type Declaration
+## Type declaration
 
 ### API\_GRAPHQL\_LIST\_FIELD\_COST
 

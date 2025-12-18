@@ -8,7 +8,7 @@
 
 Defined in: [src/graphql/types/Query/eventQueries/unifiedEventQueries.ts:20](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/graphql/types/Query/eventQueries/unifiedEventQueries.ts#L20)
 
-## Type Declaration
+## Type declaration
 
 ### attachments
 

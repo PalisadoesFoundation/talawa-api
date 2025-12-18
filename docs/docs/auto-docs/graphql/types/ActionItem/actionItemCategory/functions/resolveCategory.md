@@ -4,7 +4,7 @@
 
 # Function: resolveCategory()
 
-> **resolveCategory**(`parent`, `_args`, `ctx`): `Promise`\<\{ `createdAt`: `Date`; `creatorId`: `string` \| `null`; `description`: `string` \| `null`; `id`: `string`; `isDisabled`: `boolean`; `name`: `string`; `organizationId`: `string`; `updatedAt`: `Date` \| `null`; `updaterId`: `string` \| `null`; \} \| `null`\>
+> **resolveCategory**(`parent`, `_args`, `ctx`): `Promise`\<`null` \| \{ `createdAt`: `Date`; `creatorId`: `null` \| `string`; `description`: `null` \| `string`; `id`: `string`; `isDisabled`: `boolean`; `name`: `string`; `organizationId`: `string`; `updatedAt`: `null` \| `Date`; `updaterId`: `null` \| `string`; \}\>
 
 Defined in: [src/graphql/types/ActionItem/actionItemCategory.ts:9](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/graphql/types/ActionItem/actionItemCategory.ts#L9)
 
@@ -24,4 +24,4 @@ Defined in: [src/graphql/types/ActionItem/actionItemCategory.ts:9](https://githu
 
 ## Returns
 
-`Promise`\<\{ `createdAt`: `Date`; `creatorId`: `string` \| `null`; `description`: `string` \| `null`; `id`: `string`; `isDisabled`: `boolean`; `name`: `string`; `organizationId`: `string`; `updatedAt`: `Date` \| `null`; `updaterId`: `string` \| `null`; \} \| `null`\>
+`Promise`\<`null` \| \{ `createdAt`: `Date`; `creatorId`: `null` \| `string`; `description`: `null` \| `string`; `id`: `string`; `isDisabled`: `boolean`; `name`: `string`; `organizationId`: `string`; `updatedAt`: `null` \| `Date`; `updaterId`: `null` \| `string`; \}\>

@@ -11,7 +11,7 @@ Defined in: [src/utilities/defaultGraphQLConnection.ts:28](https://github.com/Pa
 Type of the object containing the parsed default arguments of a graphql connection with where filtering.
 Extends the base connection arguments with a generic where type.
 
-## Type Declaration
+## Type declaration
 
 ### where
 

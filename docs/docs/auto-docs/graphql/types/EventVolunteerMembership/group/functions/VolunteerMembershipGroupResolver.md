@@ -4,7 +4,7 @@
 
 # Function: VolunteerMembershipGroupResolver()
 
-> **VolunteerMembershipGroupResolver**(`parent`, `_args`, `ctx`): `Promise`\<\{ `createdAt`: `Date`; `creatorId`: `string` \| `null`; `description`: `string` \| `null`; `eventId`: `string`; `id`: `string`; `isTemplate`: `boolean`; `leaderId`: `string`; `name`: `string`; `recurringEventInstanceId`: `string` \| `null`; `updatedAt`: `Date` \| `null`; `updaterId`: `string` \| `null`; `volunteersRequired`: `number` \| `null`; \} \| `null`\>
+> **VolunteerMembershipGroupResolver**(`parent`, `_args`, `ctx`): `Promise`\<`null` \| \{ `createdAt`: `Date`; `creatorId`: `null` \| `string`; `description`: `null` \| `string`; `eventId`: `string`; `id`: `string`; `isTemplate`: `boolean`; `leaderId`: `string`; `name`: `string`; `recurringEventInstanceId`: `null` \| `string`; `updatedAt`: `null` \| `Date`; `updaterId`: `null` \| `string`; `volunteersRequired`: `null` \| `number`; \}\>
 
 Defined in: [src/graphql/types/EventVolunteerMembership/group.ts:10](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/graphql/types/EventVolunteerMembership/group.ts#L10)
 
@@ -18,7 +18,7 @@ Defined in: [src/graphql/types/EventVolunteerMembership/group.ts:10](https://git
 
 #### createdBy
 
-`string` \| `null`
+`null` \| `string`
 
 #### eventId
 
@@ -26,7 +26,7 @@ Defined in: [src/graphql/types/EventVolunteerMembership/group.ts:10](https://git
 
 #### groupId
 
-`string` \| `null`
+`null` \| `string`
 
 #### id
 
@@ -38,11 +38,11 @@ Defined in: [src/graphql/types/EventVolunteerMembership/group.ts:10](https://git
 
 #### updatedAt
 
-`Date` \| `null`
+`null` \| `Date`
 
 #### updatedBy
 
-`string` \| `null`
+`null` \| `string`
 
 #### volunteerId
 
@@ -58,4 +58,4 @@ Defined in: [src/graphql/types/EventVolunteerMembership/group.ts:10](https://git
 
 ## Returns
 
-`Promise`\<\{ `createdAt`: `Date`; `creatorId`: `string` \| `null`; `description`: `string` \| `null`; `eventId`: `string`; `id`: `string`; `isTemplate`: `boolean`; `leaderId`: `string`; `name`: `string`; `recurringEventInstanceId`: `string` \| `null`; `updatedAt`: `Date` \| `null`; `updaterId`: `string` \| `null`; `volunteersRequired`: `number` \| `null`; \} \| `null`\>
+`Promise`\<`null` \| \{ `createdAt`: `Date`; `creatorId`: `null` \| `string`; `description`: `null` \| `string`; `eventId`: `string`; `id`: `string`; `isTemplate`: `boolean`; `leaderId`: `string`; `name`: `string`; `recurringEventInstanceId`: `null` \| `string`; `updatedAt`: `null` \| `Date`; `updaterId`: `null` \| `string`; `volunteersRequired`: `null` \| `number`; \}\>
