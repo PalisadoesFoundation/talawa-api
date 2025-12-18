@@ -14,6 +14,9 @@ const mockFund: Fund = {
 	updaterId: "id-222",
 	organizationId: "org-01",
 	isTaxDeductible: false,
+	isDefault: false,
+	isArchived: false,
+	referenceNumber: null,
 };
 
 describe("Fund Resolver - UpdatedAt Field", () => {

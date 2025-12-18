@@ -19,9 +19,11 @@ describe("Fund Resolver - Organization Field", () => {
 			creatorId: "user-admin",
 			updaterId: "user-update",
 			isArchived: false,
+			isDefault: false,
+			referenceNumber: null,
 			createdAt: new Date("2024-01-01T09:00:00Z"),
 			updatedAt: new Date("2024-01-01T10:00:00Z"),
-		} as FundType;
+		};
 
 		const { context, mocks: newMocks } = createMockGraphQLContext(
 			true,

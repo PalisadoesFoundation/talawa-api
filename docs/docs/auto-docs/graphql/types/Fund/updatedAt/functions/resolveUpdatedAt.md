@@ -24,6 +24,14 @@ Defined in: [src/graphql/types/Fund/updatedAt.ts:6](https://github.com/Palisadoe
 
 `string`
 
+#### isArchived
+
+`boolean`
+
+#### isDefault
+
+`boolean`
+
 #### isTaxDeductible
 
 `boolean`
@@ -35,6 +43,10 @@ Defined in: [src/graphql/types/Fund/updatedAt.ts:6](https://github.com/Palisadoe
 #### organizationId
 
 `string`
+
+#### referenceNumber
+
+`string` \| `null`
 
 #### updatedAt
 
