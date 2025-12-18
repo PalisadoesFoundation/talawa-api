@@ -39,6 +39,12 @@ const cursorSchema = organizationMembershipsTableInsertSchema
 		organizationId: arg.organizationId,
 	}));
 
+export type OrganizationsWhereMemberArgs = z.input<
+	typeof defaultGraphQLConnectionArgumentsSchema
+> & {
+	filter?: string | null;
+};
+
 const organizationsWhereMemberArgumentsSchema =
 	defaultGraphQLConnectionArgumentsSchema
 		.extend({

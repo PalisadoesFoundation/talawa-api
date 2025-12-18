@@ -6,6 +6,7 @@ import type {
 } from "~/src/graphql/context";
 import type { User } from "~/src/graphql/types/User/User";
 import { resolveOrganizationsWhereMember } from "~/src/graphql/types/User/organizationsWhereMember";
+import type { OrganizationsWhereMemberArgs } from "~/src/graphql/types/User/organizationsWhereMember";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 
 const globalArgs = {
@@ -216,11 +217,7 @@ describe("resolveOrganizationsWhereMember", () => {
 		};
 
 		await expect(
-			resolveOrganizationsWhereMember(
-				mockUserParent,
-				invalidArgs,
-				baseMockCtx,
-			),
+			resolveOrganizationsWhereMember(mockUserParent, invalidArgs, baseMockCtx),
 		).rejects.toThrow(TalawaGraphQLError);
 	});
 
@@ -228,11 +225,7 @@ describe("resolveOrganizationsWhereMember", () => {
 		mockDrizzleClient.query.usersTable.findFirst.mockResolvedValue(null);
 
 		await expect(
-			resolveOrganizationsWhereMember(
-				mockUserParent,
-				globalArgs,
-				baseMockCtx,
-			),
+			resolveOrganizationsWhereMember(mockUserParent, globalArgs, baseMockCtx),
 		).rejects.toThrow(TalawaGraphQLError);
 	});
 
@@ -281,9 +274,14 @@ describe("resolveOrganizationsWhereMember", () => {
 			role: "member",
 		});
 
+		const args: OrganizationsWhereMemberArgs = {
+			after: globalArgs.cursor,
+			first: 10,
+		};
+
 		const result = await resolveOrganizationsWhereMember(
 			mockUserParent,
-			{ ...globalArgs, after: globalArgs.cursor } as never,
+			args,
 			baseMockCtx,
 		);
 
@@ -297,9 +295,15 @@ describe("resolveOrganizationsWhereMember", () => {
 			role: "member",
 		});
 
+		const args: OrganizationsWhereMemberArgs = {
+			filter: "test",
+			last: 10,
+			before: globalArgs.cursor,
+		};
+
 		const result = await resolveOrganizationsWhereMember(
 			mockUserParent,
-			{ filter: "test", last: 10, before: globalArgs.cursor } as never,
+			args,
 			baseMockCtx,
 		);
 
@@ -313,9 +317,13 @@ describe("resolveOrganizationsWhereMember", () => {
 			role: "member",
 		});
 
+		const args: OrganizationsWhereMemberArgs = {
+			last: 5,
+		};
+
 		const result = await resolveOrganizationsWhereMember(
 			mockUserParent,
-			{ last: 5 } as never,
+			args,
 			baseMockCtx,
 		);
 
@@ -338,11 +346,11 @@ describe("resolveOrganizationsWhereMember", () => {
 			limit: mockLimit,
 		}));
 
-		await resolveOrganizationsWhereMember(
-			mockUserParent,
-			{ first: 10 } as never,
-			baseMockCtx,
-		);
+		const args: OrganizationsWhereMemberArgs = {
+			first: 10,
+		};
+
+		await resolveOrganizationsWhereMember(mockUserParent, args, baseMockCtx);
 
 		// The limit should be called with 11 (first + 1 for hasNextPage check)
 		expect(mockLimit).toHaveBeenCalledWith(11);
