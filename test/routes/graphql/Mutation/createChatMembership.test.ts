@@ -1,8 +1,6 @@
 import { faker } from "@faker-js/faker";
-import { expect, suite, test } from "vitest";
-import { assertToBeNonNullish } from "../../../helpers";
-import { server } from "../../../server";
-import { mercuriusClient } from "../client";
+import { beforeAll, expect, suite, test } from "vitest";
+import { mercuriusClient } from "../../../graphql/types/client";
 import {
 	Mutation_createChat,
 	Mutation_createChatMembership,
@@ -10,20 +8,27 @@ import {
 	Mutation_createOrganizationMembership,
 	Mutation_createUser,
 	Query_signIn,
-} from "../documentNodes";
+} from "../../../graphql/types/documentNodes";
+import { assertToBeNonNullish } from "../../../helpers";
+import { server } from "../../../server";
 
 // Sign in as admin to get an authentication token and admin user id.
-const signInResult = await mercuriusClient.query(Query_signIn, {
-	variables: {
-		input: {
-			emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-			password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
+let authToken: string;
+
+beforeAll(async () => {
+	const signInResult = await mercuriusClient.query(Query_signIn, {
+		variables: {
+			input: {
+				emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
+				password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
+			},
 		},
-	},
+	});
+	assertToBeNonNullish(signInResult.data?.signIn);
+	const token = signInResult.data.signIn.authenticationToken;
+	assertToBeNonNullish(token);
+	authToken = token;
 });
-assertToBeNonNullish(signInResult.data?.signIn);
-const authToken = signInResult.data.signIn.authenticationToken;
-assertToBeNonNullish(authToken);
 
 // Helper function to create an organization
 async function createOrganization(): Promise<string> {
