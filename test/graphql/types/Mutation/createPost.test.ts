@@ -1,6 +1,9 @@
 import { faker } from "@faker-js/faker";
 import { expect, suite, test, vi } from "vitest";
-import { POST_CAPTION_MAX_LENGTH, POST_BODY_MAX_LENGTH } from "~/src/drizzle/tables/posts";
+import {
+	POST_BODY_MAX_LENGTH,
+	POST_CAPTION_MAX_LENGTH,
+} from "~/src/drizzle/tables/posts";
 import type { InvalidArgumentsExtensions } from "~/src/utilities/TalawaGraphQLError";
 import { assertToBeNonNullish } from "../../../helpers";
 import { server } from "../../../server";
@@ -923,7 +926,9 @@ suite("Mutation field createPost", () => {
 				result.errors?.[0]?.extensions as unknown as InvalidArgumentsExtensions
 			)?.issues;
 			const issueMessages = issues?.map((i) => i.message).join(" ");
-			expect(issueMessages).toContain("String must contain at least 1 character(s)");
+			expect(issueMessages).toContain(
+				"String must contain at least 1 character(s)",
+			);
 		});
 
 		test("should properly escape HTML/XSS payloads in body", async () => {
@@ -947,7 +952,8 @@ suite("Mutation field createPost", () => {
 			const orgId = createOrgResult.data?.createOrganization?.id;
 			assertToBeNonNullish(orgId);
 
-			const htmlBody = "<script>alert('xss')</script><img src=x onerror=alert('xss')>";
+			const htmlBody =
+				"<script>alert('xss')</script><img src=x onerror=alert('xss')>";
 			const result = await mercuriusClient.mutate(Mutation_createPost, {
 				headers: { authorization: `bearer ${authToken}` },
 				variables: {

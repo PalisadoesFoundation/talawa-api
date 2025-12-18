@@ -1,5 +1,8 @@
 import { describe, expect, it } from "vitest";
-import { POST_CAPTION_MAX_LENGTH, POST_BODY_MAX_LENGTH } from "~/src/drizzle/tables/posts";
+import {
+	POST_BODY_MAX_LENGTH,
+	POST_CAPTION_MAX_LENGTH,
+} from "~/src/drizzle/tables/posts";
 import { mutationCreatePostInputSchema } from "~/src/graphql/inputs/MutationCreatePostInput";
 
 /**
