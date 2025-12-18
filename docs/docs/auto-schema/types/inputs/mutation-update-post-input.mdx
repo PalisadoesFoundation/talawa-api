@@ -75,7 +75,6 @@ Input for updating a post.
 
 ```graphql
 input MutationUpdatePostInput {
-  attachments: [FileMetadataInput!]
   caption: String
   id: ID!
   isPinned: Boolean
@@ -83,10 +82,6 @@ input MutationUpdatePostInput {
 ```
 
 ### Fields
-
-#### [<code style={{ fontWeight: 'normal' }}>MutationUpdatePostInput.<b>attachments</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>[FileMetadataInput!]</b></code>](/auto-schema/types/inputs/file-metadata-input.mdx) <Badge class="badge badge--secondary " text="list"/> <Badge class="badge badge--secondary " text="input"/>
-
-Metadata for files already uploaded via presigned URL
 
 #### [<code style={{ fontWeight: 'normal' }}>MutationUpdatePostInput.<b>caption</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>String</b></code>](/auto-schema/types/scalars/string.mdx) <Badge class="badge badge--secondary " text="scalar"/>
 

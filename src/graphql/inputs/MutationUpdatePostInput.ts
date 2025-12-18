@@ -1,10 +1,6 @@
 import { z } from "zod";
 import { POST_CAPTION_MAX_LENGTH } from "~/src/drizzle/tables/posts";
 import { builder } from "~/src/graphql/builder";
-import {
-	FileMetadataInput,
-	fileMetadataSchema,
-} from "./MutationCreatePostInput";
 
 export const mutationUpdatePostInputSchema = z
 	.object({
@@ -23,7 +19,6 @@ export const mutationUpdatePostInputSchema = z
 			.optional(),
 		id: z.string().uuid(),
 		isPinned: z.boolean().optional(),
-		attachments: z.array(fileMetadataSchema).min(1).max(20).optional(),
 	})
 	.refine(
 		({ id, ...remainingArg }) =>
@@ -48,11 +43,6 @@ export const MutationUpdatePostInput = builder
 			}),
 			isPinned: t.boolean({
 				description: "Boolean to tell if the post is pinned",
-				required: false,
-			}),
-			attachments: t.field({
-				type: [FileMetadataInput],
-				description: "Metadata for files already uploaded via presigned URL",
 				required: false,
 			}),
 		}),

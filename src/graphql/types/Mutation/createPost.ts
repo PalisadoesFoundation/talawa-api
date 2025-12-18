@@ -1,3 +1,4 @@
+import { ulid } from "ulidx";
 import { uuidv7 } from "uuidv7";
 import { z } from "zod";
 import { postAttachmentsTable } from "~/src/drizzle/tables/postAttachments";
@@ -12,6 +13,7 @@ import { Post } from "~/src/graphql/types/Post/Post";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import { getKeyPathsWithNonUndefinedValues } from "~/src/utilities/getKeyPathsWithNonUndefinedValues";
 import envConfig from "~/src/utilities/graphqLimits";
+import { isNotNullish } from "~/src/utilities/isNotNullish";
 
 const mutationCreatePostArgumentsSchema = z.object({
 	input: mutationCreatePostInputSchema,
@@ -167,36 +169,48 @@ builder.mutationField("createPost", (t) =>
 					});
 				}
 
-				let finalPost: typeof createdPost & {
-					attachments: (typeof postAttachmentsTable.$inferSelect)[];
-				};
+				// Handle direct file upload
+				let createdAttachment: typeof postAttachmentsTable.$inferSelect | null =
+					null;
+				if (isNotNullish(parsedArgs.input.attachment)) {
+					const attachment = parsedArgs.input.attachment;
+					const objectName = ulid();
 
-				if (parsedArgs.input.attachments !== undefined) {
-					const attachments = parsedArgs.input.attachments;
+					// Upload image to MinIO
+					await ctx.minio.client.putObject(
+						ctx.minio.bucketName,
+						objectName,
+						attachment.createReadStream(),
+						undefined,
+						{
+							"content-type": attachment.mimetype,
+						},
+					);
 
-					const createdPostAttachments = await tx
+					// Create attachment record
+					const attachmentRecord = {
+						creatorId: currentUserId,
+						mimeType: attachment.mimetype,
+						id: uuidv7(),
+						name: attachment.filename || "uploaded-file",
+						postId: createdPost.id,
+						objectName: objectName,
+						fileHash: ulid(), // Generate a unique hash for direct uploads
+					};
+
+					const [attachmentResult] = await tx
 						.insert(postAttachmentsTable)
-						.values(
-							attachments.map((attachment) => ({
-								creatorId: currentUserId,
-								mimeType: attachment.mimetype,
-								id: uuidv7(),
-								name: attachment.name,
-								postId: createdPost.id,
-								objectName: attachment.objectName,
-								fileHash: attachment.fileHash,
-							})),
-						)
+						.values(attachmentRecord)
 						.returning();
 
-					finalPost = Object.assign(createdPost, {
-						attachments: createdPostAttachments,
-					});
-				} else {
-					finalPost = Object.assign(createdPost, {
-						attachments: [],
-					});
+					if (attachmentResult) {
+						createdAttachment = attachmentResult;
+					}
 				}
+
+				const finalPost = Object.assign(createdPost, {
+					attachments: createdAttachment ? [createdAttachment] : [],
+				});
 
 				notificationEventBus.emitPostCreated(
 					{
