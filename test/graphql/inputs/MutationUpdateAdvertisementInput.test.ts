@@ -291,6 +291,9 @@ describe("MutationUpdateAdvertisementInput Schema", () => {
 				startAt: null,
 			});
 			expect(result.success).toBe(true);
+			if (result.success) {
+				expect(result.data.startAt).toBeNull();
+			}
 		});
 
 		it("should accept null for endAt", () => {
@@ -299,6 +302,9 @@ describe("MutationUpdateAdvertisementInput Schema", () => {
 				endAt: null,
 			});
 			expect(result.success).toBe(true);
+			if (result.success) {
+				expect(result.data.endAt).toBeNull();
+			}
 		});
 
 		it("should accept null for type", () => {
@@ -307,6 +313,9 @@ describe("MutationUpdateAdvertisementInput Schema", () => {
 				type: null,
 			});
 			expect(result.success).toBe(true);
+			if (result.success) {
+				expect(result.data.type).toBeNull();
+			}
 		});
 	});
 
