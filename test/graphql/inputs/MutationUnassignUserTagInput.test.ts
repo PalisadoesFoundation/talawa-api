@@ -54,6 +54,22 @@ describe("MutationUnassignUserTagInput Schema", () => {
 			});
 			expect(result.success).toBe(false);
 		});
+
+		it("should reject invalid UUID format for assigneeId", () => {
+			const result = mutationUnassignUserTagInputSchema.safeParse({
+				assigneeId: "invalid-uuid",
+				tagId: validUuid2,
+			});
+			expect(result.success).toBe(false);
+		});
+
+		it("should reject empty string for assigneeId", () => {
+			const result = mutationUnassignUserTagInputSchema.safeParse({
+				assigneeId: "",
+				tagId: validUuid2,
+			});
+			expect(result.success).toBe(false);
+		});
 	});
 
 	describe("tagId field validation", () => {
@@ -76,6 +92,22 @@ describe("MutationUnassignUserTagInput Schema", () => {
 			const result = mutationUnassignUserTagInputSchema.safeParse({
 				assigneeId: validUuid1,
 				tagId: null,
+			});
+			expect(result.success).toBe(false);
+		});
+
+		it("should reject invalid UUID format for tagId", () => {
+			const result = mutationUnassignUserTagInputSchema.safeParse({
+				assigneeId: validUuid1,
+				tagId: "invalid-uuid",
+			});
+			expect(result.success).toBe(false);
+		});
+
+		it("should reject empty string for tagId", () => {
+			const result = mutationUnassignUserTagInputSchema.safeParse({
+				assigneeId: validUuid1,
+				tagId: "",
 			});
 			expect(result.success).toBe(false);
 		});
