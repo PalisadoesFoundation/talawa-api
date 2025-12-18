@@ -311,10 +311,10 @@ describe("MutationUpdateAdvertisementInput Schema", () => {
 	});
 
 	describe("type field validation", () => {
-		it("should accept valid type 'popup'", () => {
+		it("should accept valid type 'pop_up'", () => {
 			const result = mutationUpdateAdvertisementInputSchema.safeParse({
 				id: "550e8400-e29b-41d4-a716-446655440000",
-				type: "popup",
+				type: "pop_up",
 			});
 			expect(result.success).toBe(true);
 		});
