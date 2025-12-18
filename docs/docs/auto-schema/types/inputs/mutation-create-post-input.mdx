@@ -76,6 +76,7 @@ Input for creating a new post
 ```graphql
 input MutationCreatePostInput {
   attachments: [FileMetadataInput!]
+  body: String
   caption: String!
   isPinned: Boolean
   organizationId: ID!
@@ -87,6 +88,10 @@ input MutationCreatePostInput {
 #### [<code style={{ fontWeight: 'normal' }}>MutationCreatePostInput.<b>attachments</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>[FileMetadataInput!]</b></code>](/auto-schema/types/inputs/file-metadata-input.mdx) <Badge class="badge badge--secondary " text="list"/> <Badge class="badge badge--secondary " text="input"/>
 
 Metadata for files already uploaded via presigned URL
+
+#### [<code style={{ fontWeight: 'normal' }}>MutationCreatePostInput.<b>body</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>String</b></code>](/auto-schema/types/scalars/string.mdx) <Badge class="badge badge--secondary " text="scalar"/>
+
+Body content of the post.
 
 #### [<code style={{ fontWeight: 'normal' }}>MutationCreatePostInput.<b>caption</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>String!</b></code>](/auto-schema/types/scalars/string.mdx) <Badge class="badge badge--secondary badge--non_null" text="non-null"/> <Badge class="badge badge--secondary " text="scalar"/>
 

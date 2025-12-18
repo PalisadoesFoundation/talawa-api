@@ -1,5 +1,8 @@
 import { describe, expect, it } from "vitest";
-import { POST_CAPTION_MAX_LENGTH } from "~/src/drizzle/tables/posts";
+import {
+	POST_BODY_MAX_LENGTH,
+	POST_CAPTION_MAX_LENGTH,
+} from "~/src/drizzle/tables/posts";
 import { mutationCreatePostInputSchema } from "~/src/graphql/inputs/MutationCreatePostInput";
 
 /**
@@ -69,6 +72,87 @@ describe("MutationCreatePostInput Schema", () => {
 				caption: "a".repeat(POST_CAPTION_MAX_LENGTH),
 			});
 			expect(result.success).toBe(true);
+		});
+	});
+
+	describe("body field", () => {
+		it("should accept valid body", () => {
+			const result = mutationCreatePostInputSchema.safeParse({
+				...validInput,
+				body: "This is a valid body content.",
+			});
+			expect(result.success).toBe(true);
+			if (result.success) {
+				expect(result.data.body).toBe("This is a valid body content.");
+			}
+		});
+
+		it("should trim whitespace from body", () => {
+			const result = mutationCreatePostInputSchema.safeParse({
+				...validInput,
+				body: "  trimmed body content  ",
+			});
+			expect(result.success).toBe(true);
+			if (result.success) {
+				expect(result.data.body).toBe("trimmed body content");
+			}
+		});
+
+		it("should reject whitespace-only body", () => {
+			const result = mutationCreatePostInputSchema.safeParse({
+				...validInput,
+				body: "   \n\t  ",
+			});
+			expect(result.success).toBe(false);
+			if (!result.success) {
+				expect(
+					result.error.issues.some((i) => i.path.join(".") === "body"),
+				).toBe(true);
+			}
+		});
+
+		it("should reject empty string body", () => {
+			const result = mutationCreatePostInputSchema.safeParse({
+				...validInput,
+				body: "",
+			});
+			expect(result.success).toBe(false);
+			if (!result.success) {
+				expect(
+					result.error.issues.some((i) => i.path.join(".") === "body"),
+				).toBe(true);
+			}
+		});
+
+		it("should reject body exceeding max length", () => {
+			const result = mutationCreatePostInputSchema.safeParse({
+				...validInput,
+				body: "a".repeat(POST_BODY_MAX_LENGTH + 1),
+			});
+			expect(result.success).toBe(false);
+			if (!result.success && result.error.issues[0]) {
+				expect(result.error.issues[0].message).toContain(
+					String(POST_BODY_MAX_LENGTH),
+				);
+			}
+		});
+
+		it("should accept body at exactly POST_BODY_MAX_LENGTH characters", () => {
+			const result = mutationCreatePostInputSchema.safeParse({
+				...validInput,
+				body: "a".repeat(POST_BODY_MAX_LENGTH),
+			});
+			expect(result.success).toBe(true);
+		});
+
+		it("should accept missing body (optional field)", () => {
+			// Test that body field is optional
+			const result = mutationCreatePostInputSchema.safeParse(validInput);
+			expect(result.success).toBe(true);
+			if (result.success) {
+				// Body field should be undefined when not provided
+				expect(result.data.body).toBeUndefined();
+			}
 		});
 	});
 });

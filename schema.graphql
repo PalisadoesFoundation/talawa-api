@@ -2836,6 +2836,9 @@ input MutationCreatePostInput {
   """Metadata for files already uploaded via presigned URL"""
   attachments: [FileMetadataInput!]
 
+  """Body content of the post."""
+  body: String
+
   """Caption about the post."""
   caption: String!
 
@@ -4338,6 +4341,9 @@ type Plugin {
 type Post {
   """Array of attachments."""
   attachments: [PostAttachment!]
+
+  """Body for the post."""
+  body: String
 
   """Caption for the post."""
   caption: String
