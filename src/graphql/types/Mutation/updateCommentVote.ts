@@ -140,8 +140,8 @@ builder.mutationField("updateCommentVote", (t) =>
 						id: "",
 						creatorId: currentUserId,
 						commentId: parsedArgs.input.commentId,
-						type: null,
-					};
+						type: "down_vote", // Placeholder value; vote doesn't exist
+					} as typeof commentVotesTable.$inferSelect;
 				}
 			} else if (existingVote) {
 				// UPDATE the vote if type is not null

@@ -133,8 +133,8 @@ builder.mutationField("updatePostVote", (t) =>
 						id: "",
 						creatorId: currentUserId,
 						postId: parsedArgs.input.postId,
-						type: null,
-					};
+						type: "down_vote", // Placeholder value; vote doesn't exist
+					} as typeof postVotesTable.$inferSelect;
 				}
 			} else if (existingVote) {
 				// UPDATE the vote if type is not null
