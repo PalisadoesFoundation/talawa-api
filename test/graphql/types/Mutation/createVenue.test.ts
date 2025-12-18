@@ -1,0 +1,1465 @@
+import { faker } from "@faker-js/faker";
+import type { ResultOf, VariablesOf } from "gql.tada";
+import { afterEach, expect, suite, test } from "vitest";
+import type {
+	ArgumentsAssociatedResourcesNotFoundExtensions,
+	ForbiddenActionOnArgumentsAssociatedResourcesExtensions,
+	InvalidArgumentsExtensions,
+	TalawaGraphQLFormattedError,
+	UnauthenticatedExtensions,
+	UnauthorizedActionOnArgumentsAssociatedResourcesExtensions,
+} from "~/src/utilities/TalawaGraphQLError";
+import { assertToBeNonNullish } from "../../../helpers";
+import { server } from "../../../server";
+import { mercuriusClient } from "../client";
+import {
+	Mutation_createOrganization,
+	Mutation_createUser,
+	Mutation_createVenue,
+	Mutation_deleteCurrentUser,
+	Mutation_deleteOrganization,
+	Query_signIn,
+} from "../documentNodes";
+
+/**
+ * Test suite for the createVenue GraphQL mutation.
+ *
+ * This suite validates all aspects of venue creation including:
+ * - Authentication and authorization checks
+ * - Input validation and sanitization
+ * - Resource existence validation
+ * - Duplicate name detection
+ * - Edge cases and boundary conditions
+ *
+ * @remarks
+ * Tests follow talawa-api standards with proper cleanup and isolation.
+ * Each test creates its own test data and cleans up after execution.
+ */
+suite("Mutation field createVenue", () => {
+	// Track created resources for cleanup
+	const createdResources: {
+		organizationIds: string[];
+	} = {
+		organizationIds: [],
+	};
+
+	/**
+	 * Cleanup function to ensure test isolation.
+	 * Deletes all resources created during tests to prevent
+	 * database pollution and test interdependence.
+	 */
+	afterEach(async () => {
+		// Get admin token for cleanup operations
+		const adminSignInResult = await mercuriusClient.query(Query_signIn, {
+			variables: {
+				input: {
+					emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
+					password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
+				},
+			},
+		});
+
+		const adminToken = adminSignInResult.data.signIn?.authenticationToken;
+
+		if (adminToken) {
+			// Delete organizations (which will cascade delete venues)
+			for (const orgId of createdResources.organizationIds) {
+				try {
+					await mercuriusClient.mutate(Mutation_deleteOrganization, {
+						headers: { authorization: `bearer ${adminToken}` },
+						variables: { input: { id: orgId } },
+					});
+				} catch (error) {
+					// Organization might already be deleted, continue
+				}
+			}
+		}
+
+		// Clear tracking arrays
+		createdResources.organizationIds = [];
+	});
+
+	suite(
+		`results in a graphql error with "unauthenticated" extensions code in the "errors" field and "null" as the value of "data.createVenue" field if`,
+		() => {
+			/**
+			 * Tests that unauthenticated requests are properly rejected.
+			 *
+			 * @remarks
+			 * This ensures the mutation enforces authentication before
+			 * processing any business logic.
+			 */
+			test("client triggering the graphql operation is not authenticated.", async () => {
+				const administratorUserSignInResult = await mercuriusClient.query(
+					Query_signIn,
+					{
+						variables: {
+							input: {
+								emailAddress:
+									server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
+								password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
+							},
+						},
+					},
+				);
+
+				assertToBeNonNullish(
+					administratorUserSignInResult.data.signIn?.authenticationToken,
+				);
+
+				const createOrganizationResult = await mercuriusClient.mutate(
+					Mutation_createOrganization,
+					{
+						headers: {
+							authorization: `bearer ${administratorUserSignInResult.data.signIn.authenticationToken}`,
+						},
+						variables: {
+							input: {
+								name: `TestOrg_${faker.string.ulid()}`,
+								description: faker.lorem.sentence(),
+							},
+						},
+					},
+				);
+
+				assertToBeNonNullish(
+					createOrganizationResult.data.createOrganization?.id,
+				);
+				createdResources.organizationIds.push(
+					createOrganizationResult.data.createOrganization.id,
+				);
+
+				const createVenueResult = await mercuriusClient.mutate(
+					Mutation_createVenue,
+					{
+						variables: {
+							input: {
+								organizationId:
+									createOrganizationResult.data.createOrganization.id,
+								name: `Venue_${faker.string.ulid()}`,
+								description: faker.lorem.sentence(),
+							},
+						},
+					},
+				);
+
+				expect(createVenueResult.data?.createVenue).toEqual(null);
+				expect(createVenueResult.errors).toEqual(
+					expect.arrayContaining<TalawaGraphQLFormattedError>([
+						expect.objectContaining<TalawaGraphQLFormattedError>({
+							extensions: expect.objectContaining<UnauthenticatedExtensions>({
+								code: "unauthenticated",
+							}),
+							message: expect.any(String),
+							path: ["createVenue"],
+						}),
+					]),
+				);
+			});
+
+			/**
+			 * Tests that deleted user tokens are properly invalidated.
+			 *
+			 * @remarks
+			 * This ensures that authentication tokens become invalid
+			 * when the associated user is deleted from the system.
+			 */
+			test("client triggering the graphql operation has no existing user associated to their authentication context.", async () => {
+				const administratorUserSignInResult = await mercuriusClient.query(
+					Query_signIn,
+					{
+						variables: {
+							input: {
+								emailAddress:
+									server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
+								password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
+							},
+						},
+					},
+				);
+
+				assertToBeNonNullish(
+					administratorUserSignInResult.data.signIn?.authenticationToken,
+				);
+
+				const createUserResult = await mercuriusClient.mutate(
+					Mutation_createUser,
+					{
+						headers: {
+							authorization: `bearer ${administratorUserSignInResult.data.signIn.authenticationToken}`,
+						},
+						variables: {
+							input: {
+								emailAddress: `email${faker.string.ulid()}@email.com`,
+								isEmailAddressVerified: false,
+								name: "Test User",
+								password: "TestPassword123!",
+								role: "regular",
+							},
+						},
+					},
+				);
+
+				assertToBeNonNullish(createUserResult.data.createUser?.user?.id);
+
+				const userToken = createUserResult.data.createUser.authenticationToken;
+
+				await mercuriusClient.mutate(Mutation_deleteCurrentUser, {
+					headers: {
+						authorization: `bearer ${userToken}`,
+					},
+				});
+
+				const createOrganizationResult = await mercuriusClient.mutate(
+					Mutation_createOrganization,
+					{
+						headers: {
+							authorization: `bearer ${administratorUserSignInResult.data.signIn.authenticationToken}`,
+						},
+						variables: {
+							input: {
+								name: `TestOrg_${faker.string.ulid()}`,
+								description: faker.lorem.sentence(),
+							},
+						},
+					},
+				);
+
+				assertToBeNonNullish(
+					createOrganizationResult.data.createOrganization?.id,
+				);
+				createdResources.organizationIds.push(
+					createOrganizationResult.data.createOrganization.id,
+				);
+
+				const createVenueResult = await mercuriusClient.mutate(
+					Mutation_createVenue,
+					{
+						headers: {
+							authorization: `bearer ${userToken}`,
+						},
+						variables: {
+							input: {
+								organizationId:
+									createOrganizationResult.data.createOrganization.id,
+								name: `Venue_${faker.string.ulid()}`,
+								description: faker.lorem.sentence(),
+							},
+						},
+					},
+				);
+
+				expect(createVenueResult.data?.createVenue).toEqual(null);
+				expect(createVenueResult.errors).toEqual(
+					expect.arrayContaining<TalawaGraphQLFormattedError>([
+						expect.objectContaining<TalawaGraphQLFormattedError>({
+							extensions: expect.objectContaining<UnauthenticatedExtensions>({
+								code: "unauthenticated",
+							}),
+							message: expect.any(String),
+							path: ["createVenue"],
+						}),
+					]),
+				);
+			});
+		},
+	);
+
+	suite(
+		`results in a graphql error with "invalid_arguments" extensions code in the "errors" field and "null" as the value of "data.createVenue" field if`,
+		() => {
+			/**
+			 * Tests UUID/ULID format validation for organizationId.
+			 *
+			 * @remarks
+			 * Validates that the input validation layer properly rejects
+			 * malformed identifiers before reaching the resolver logic.
+			 */
+			test('value of the argument "input.organizationId" is not a valid UUID/ULID format.', async () => {
+				const administratorUserSignInResult = await mercuriusClient.query(
+					Query_signIn,
+					{
+						variables: {
+							input: {
+								emailAddress:
+									server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
+								password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
+							},
+						},
+					},
+				);
+
+				assertToBeNonNullish(
+					administratorUserSignInResult.data.signIn?.authenticationToken,
+				);
+
+				const createVenueResult = await mercuriusClient.mutate(
+					Mutation_createVenue,
+					{
+						headers: {
+							authorization: `bearer ${administratorUserSignInResult.data.signIn.authenticationToken}`,
+						},
+						variables: {
+							input: {
+								organizationId: "invalid-uuid-format",
+								name: `Venue_${faker.string.ulid()}`,
+								description: faker.lorem.sentence(),
+							},
+						},
+					},
+				);
+
+				expect(createVenueResult.data?.createVenue).toEqual(null);
+				expect(createVenueResult.errors).toEqual(
+					expect.arrayContaining<TalawaGraphQLFormattedError>([
+						expect.objectContaining<TalawaGraphQLFormattedError>({
+							extensions: expect.objectContaining<InvalidArgumentsExtensions>({
+								code: "invalid_arguments",
+								issues: expect.arrayContaining([
+									expect.objectContaining({
+										argumentPath: ["input", "organizationId"],
+										message: expect.stringContaining("uuid"),
+									}),
+								]),
+							}),
+							message: expect.any(String),
+							path: ["createVenue"],
+						}),
+					]),
+				);
+			});
+
+			/**
+			 * Tests validation of empty venue name.
+			 *
+			 * @remarks
+			 * Venue name is required and must not be empty.
+			 */
+			test('value of the argument "input.name" is an empty string.', async () => {
+				const administratorUserSignInResult = await mercuriusClient.query(
+					Query_signIn,
+					{
+						variables: {
+							input: {
+								emailAddress:
+									server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
+								password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
+							},
+						},
+					},
+				);
+
+				assertToBeNonNullish(
+					administratorUserSignInResult.data.signIn?.authenticationToken,
+				);
+
+				const createOrganizationResult = await mercuriusClient.mutate(
+					Mutation_createOrganization,
+					{
+						headers: {
+							authorization: `bearer ${administratorUserSignInResult.data.signIn.authenticationToken}`,
+						},
+						variables: {
+							input: {
+								name: `TestOrg_${faker.string.ulid()}`,
+								description: faker.lorem.sentence(),
+							},
+						},
+					},
+				);
+
+				assertToBeNonNullish(
+					createOrganizationResult.data.createOrganization?.id,
+				);
+				createdResources.organizationIds.push(
+					createOrganizationResult.data.createOrganization.id,
+				);
+
+				const createVenueResult = await mercuriusClient.mutate(
+					Mutation_createVenue,
+					{
+						headers: {
+							authorization: `bearer ${administratorUserSignInResult.data.signIn.authenticationToken}`,
+						},
+						variables: {
+							input: {
+								organizationId:
+									createOrganizationResult.data.createOrganization.id,
+								name: "",
+								description: faker.lorem.sentence(),
+							},
+						},
+					},
+				);
+
+				expect(createVenueResult.data?.createVenue).toEqual(null);
+				expect(createVenueResult.errors).toEqual(
+					expect.arrayContaining<TalawaGraphQLFormattedError>([
+						expect.objectContaining<TalawaGraphQLFormattedError>({
+							extensions: expect.objectContaining<InvalidArgumentsExtensions>({
+								code: "invalid_arguments",
+								issues: expect.arrayContaining([
+									expect.objectContaining({
+										argumentPath: ["input", "name"],
+									}),
+								]),
+							}),
+							message: expect.any(String),
+							path: ["createVenue"],
+						}),
+					]),
+				);
+			});
+		},
+	);
+
+	suite(
+		`results in a graphql error with "arguments_associated_resources_not_found" extensions code in the "errors" field and "null" as the value of "data.createVenue" field if`,
+		() => {
+			/**
+			 * Tests validation of non-existent organization reference.
+			 *
+			 * @remarks
+			 * Creates a valid UUID format but ensures it doesn't correspond
+			 * to any existing organization in the database.
+			 */
+			test('value of the argument "input.organizationId" does not correspond to an existing organization.', async () => {
+				const administratorUserSignInResult = await mercuriusClient.query(
+					Query_signIn,
+					{
+						variables: {
+							input: {
+								emailAddress:
+									server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
+								password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
+							},
+						},
+					},
+				);
+
+				assertToBeNonNullish(
+					administratorUserSignInResult.data.signIn?.authenticationToken,
+				);
+
+				const createOrganizationResult = await mercuriusClient.mutate(
+					Mutation_createOrganization,
+					{
+						headers: {
+							authorization: `bearer ${administratorUserSignInResult.data.signIn.authenticationToken}`,
+						},
+						variables: {
+							input: {
+								name: `TestOrg_${faker.string.ulid()}`,
+								description: faker.lorem.sentence(),
+							},
+						},
+					},
+				);
+
+				assertToBeNonNullish(
+					createOrganizationResult.data.createOrganization?.id,
+				);
+				createdResources.organizationIds.push(
+					createOrganizationResult.data.createOrganization.id,
+				);
+
+				// Create a non-existent but valid format ID
+				const nonExistentOrgId = `${createOrganizationResult.data.createOrganization.id.slice(0, -1)}0`;
+
+				const createVenueResult = await mercuriusClient.mutate(
+					Mutation_createVenue,
+					{
+						headers: {
+							authorization: `bearer ${administratorUserSignInResult.data.signIn.authenticationToken}`,
+						},
+						variables: {
+							input: {
+								organizationId: nonExistentOrgId,
+								name: `Venue_${faker.string.ulid()}`,
+								description: faker.lorem.sentence(),
+							},
+						},
+					},
+				);
+
+				expect(createVenueResult.data?.createVenue).toEqual(null);
+				expect(createVenueResult.errors).toEqual(
+					expect.arrayContaining<TalawaGraphQLFormattedError>([
+						expect.objectContaining<TalawaGraphQLFormattedError>({
+							extensions:
+								expect.objectContaining<ArgumentsAssociatedResourcesNotFoundExtensions>(
+									{
+										code: "arguments_associated_resources_not_found",
+										issues: expect.arrayContaining<
+											ArgumentsAssociatedResourcesNotFoundExtensions["issues"][number]
+										>([
+											{
+												argumentPath: ["input", "organizationId"],
+											},
+										]),
+									},
+								),
+							message: expect.any(String),
+							path: ["createVenue"],
+						}),
+					]),
+				);
+			});
+		},
+	);
+
+	suite(
+		`results in a graphql error with "forbidden_action_on_arguments_associated_resources" extensions code in the "errors" field and "null" as the value of "data.createVenue" field if`,
+		() => {
+			/**
+			 * Tests duplicate venue name detection within an organization.
+			 *
+			 * @remarks
+			 * Venue names must be unique within each organization to prevent
+			 * confusion and ensure proper venue identification.
+			 */
+			test('value of the argument "input.name" corresponds to an existing venue in the organization.', async () => {
+				const administratorUserSignInResult = await mercuriusClient.query(
+					Query_signIn,
+					{
+						variables: {
+							input: {
+								emailAddress:
+									server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
+								password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
+							},
+						},
+					},
+				);
+
+				assertToBeNonNullish(
+					administratorUserSignInResult.data.signIn?.authenticationToken,
+				);
+
+				const createOrganizationResult = await mercuriusClient.mutate(
+					Mutation_createOrganization,
+					{
+						headers: {
+							authorization: `bearer ${administratorUserSignInResult.data.signIn.authenticationToken}`,
+						},
+						variables: {
+							input: {
+								name: `TestOrg_${faker.string.ulid()}`,
+								description: faker.lorem.sentence(),
+							},
+						},
+					},
+				);
+
+				assertToBeNonNullish(
+					createOrganizationResult.data.createOrganization?.id,
+				);
+				createdResources.organizationIds.push(
+					createOrganizationResult.data.createOrganization.id,
+				);
+
+				const venueName = `DuplicateVenue_${faker.string.ulid()}`;
+
+				const createVenueResult1 = await mercuriusClient.mutate(
+					Mutation_createVenue,
+					{
+						headers: {
+							authorization: `bearer ${administratorUserSignInResult.data.signIn.authenticationToken}`,
+						},
+						variables: {
+							input: {
+								organizationId:
+									createOrganizationResult.data.createOrganization.id,
+								name: venueName,
+								description: faker.lorem.sentence(),
+							},
+						},
+					},
+				);
+
+				assertToBeNonNullish(createVenueResult1.data.createVenue?.id);
+
+				const createVenueResult2 = await mercuriusClient.mutate(
+					Mutation_createVenue,
+					{
+						headers: {
+							authorization: `bearer ${administratorUserSignInResult.data.signIn.authenticationToken}`,
+						},
+						variables: {
+							input: {
+								organizationId:
+									createOrganizationResult.data.createOrganization.id,
+								name: venueName,
+								description: faker.lorem.sentence(),
+							},
+						},
+					},
+				);
+
+				expect(createVenueResult2.data?.createVenue).toEqual(null);
+				expect(createVenueResult2.errors).toEqual(
+					expect.arrayContaining<TalawaGraphQLFormattedError>([
+						expect.objectContaining<TalawaGraphQLFormattedError>({
+							extensions:
+								expect.objectContaining<ForbiddenActionOnArgumentsAssociatedResourcesExtensions>(
+									{
+										code: "forbidden_action_on_arguments_associated_resources",
+										issues: expect.arrayContaining<
+											ForbiddenActionOnArgumentsAssociatedResourcesExtensions["issues"][number]
+										>([
+											{
+												argumentPath: ["input", "name"],
+												message: "This name is not available.",
+											},
+										]),
+									},
+								),
+							message: expect.any(String),
+							path: ["createVenue"],
+						}),
+					]),
+				);
+			});
+
+			/**
+			 * Tests that duplicate names are allowed across different organizations.
+			 *
+			 * @remarks
+			 * The same venue name can exist in different organizations as
+			 * uniqueness is scoped per organization.
+			 */
+			test('value of the argument "input.name" can be reused across different organizations.', async () => {
+				const administratorUserSignInResult = await mercuriusClient.query(
+					Query_signIn,
+					{
+						variables: {
+							input: {
+								emailAddress:
+									server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
+								password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
+							},
+						},
+					},
+				);
+
+				assertToBeNonNullish(
+					administratorUserSignInResult.data.signIn?.authenticationToken,
+				);
+
+				// Create first organization
+				const createOrganizationResult1 = await mercuriusClient.mutate(
+					Mutation_createOrganization,
+					{
+						headers: {
+							authorization: `bearer ${administratorUserSignInResult.data.signIn.authenticationToken}`,
+						},
+						variables: {
+							input: {
+								name: `TestOrg1_${faker.string.ulid()}`,
+								description: faker.lorem.sentence(),
+							},
+						},
+					},
+				);
+
+				assertToBeNonNullish(
+					createOrganizationResult1.data.createOrganization?.id,
+				);
+				createdResources.organizationIds.push(
+					createOrganizationResult1.data.createOrganization.id,
+				);
+
+				// Create second organization
+				const createOrganizationResult2 = await mercuriusClient.mutate(
+					Mutation_createOrganization,
+					{
+						headers: {
+							authorization: `bearer ${administratorUserSignInResult.data.signIn.authenticationToken}`,
+						},
+						variables: {
+							input: {
+								name: `TestOrg2_${faker.string.ulid()}`,
+								description: faker.lorem.sentence(),
+							},
+						},
+					},
+				);
+
+				assertToBeNonNullish(
+					createOrganizationResult2.data.createOrganization?.id,
+				);
+				createdResources.organizationIds.push(
+					createOrganizationResult2.data.createOrganization.id,
+				);
+
+				const sharedVenueName = `SharedVenueName_${faker.string.ulid()}`;
+
+				// Create venue in first organization
+				const createVenueResult1 = await mercuriusClient.mutate(
+					Mutation_createVenue,
+					{
+						headers: {
+							authorization: `bearer ${administratorUserSignInResult.data.signIn.authenticationToken}`,
+						},
+						variables: {
+							input: {
+								organizationId:
+									createOrganizationResult1.data.createOrganization.id,
+								name: sharedVenueName,
+								description: faker.lorem.sentence(),
+							},
+						},
+					},
+				);
+
+				assertToBeNonNullish(createVenueResult1.data.createVenue?.id);
+
+				// Create venue with same name in second organization (should succeed)
+				const createVenueResult2 = await mercuriusClient.mutate(
+					Mutation_createVenue,
+					{
+						headers: {
+							authorization: `bearer ${administratorUserSignInResult.data.signIn.authenticationToken}`,
+						},
+						variables: {
+							input: {
+								organizationId:
+									createOrganizationResult2.data.createOrganization.id,
+								name: sharedVenueName,
+								description: faker.lorem.sentence(),
+							},
+						},
+					},
+				);
+
+				expect(createVenueResult2.errors).toBeUndefined();
+				assertToBeNonNullish(createVenueResult2.data.createVenue?.id);
+
+				// Verify both venues exist with same name but different organizations
+				expect(createVenueResult1.data.createVenue?.name).toBe(sharedVenueName);
+				expect(createVenueResult2.data.createVenue?.name).toBe(sharedVenueName);
+
+				// Assert organizations are non-null before comparing
+				assertToBeNonNullish(createVenueResult1.data.createVenue?.organization);
+				assertToBeNonNullish(createVenueResult2.data.createVenue?.organization);
+
+				expect(createVenueResult1.data.createVenue.organization.id).not.toBe(
+					createVenueResult2.data.createVenue.organization.id,
+				);
+			});
+		},
+	);
+
+	suite(
+		`results in a graphql error with "unauthorized_action_on_arguments_associated_resources" extensions code in the "errors" field and "null" as the value of "data.createVenue" field if`,
+		() => {
+			/**
+			 * Tests authorization for non-admin, non-member users.
+			 *
+			 * @remarks
+			 * Only organization admins and platform administrators
+			 * should be able to create venues in an organization.
+			 */
+			test("client triggering the graphql operation is not an administrator user and is not an administrator member of the organization.", async () => {
+				const administratorUserSignInResult = await mercuriusClient.query(
+					Query_signIn,
+					{
+						variables: {
+							input: {
+								emailAddress:
+									server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
+								password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
+							},
+						},
+					},
+				);
+
+				assertToBeNonNullish(
+					administratorUserSignInResult.data.signIn?.authenticationToken,
+				);
+
+				const createUserResult = await mercuriusClient.mutate(
+					Mutation_createUser,
+					{
+						headers: {
+							authorization: `bearer ${administratorUserSignInResult.data.signIn.authenticationToken}`,
+						},
+						variables: {
+							input: {
+								emailAddress: `email${faker.string.ulid()}@email.com`,
+								isEmailAddressVerified: false,
+								name: "Regular User",
+								password: "TestPassword123!",
+								role: "regular",
+							},
+						},
+					},
+				);
+
+				assertToBeNonNullish(
+					createUserResult.data.createUser?.authenticationToken,
+				);
+
+				const createOrganizationResult = await mercuriusClient.mutate(
+					Mutation_createOrganization,
+					{
+						headers: {
+							authorization: `bearer ${administratorUserSignInResult.data.signIn.authenticationToken}`,
+						},
+						variables: {
+							input: {
+								name: `TestOrg_${faker.string.ulid()}`,
+								description: faker.lorem.sentence(),
+							},
+						},
+					},
+				);
+
+				assertToBeNonNullish(
+					createOrganizationResult.data.createOrganization?.id,
+				);
+				createdResources.organizationIds.push(
+					createOrganizationResult.data.createOrganization.id,
+				);
+
+				const createVenueResult = await mercuriusClient.mutate(
+					Mutation_createVenue,
+					{
+						headers: {
+							authorization: `bearer ${createUserResult.data.createUser.authenticationToken}`,
+						},
+						variables: {
+							input: {
+								organizationId:
+									createOrganizationResult.data.createOrganization.id,
+								name: `Venue_${faker.string.ulid()}`,
+								description: faker.lorem.sentence(),
+							},
+						},
+					},
+				);
+
+				expect(createVenueResult.data?.createVenue).toEqual(null);
+				expect(createVenueResult.errors).toEqual(
+					expect.arrayContaining<TalawaGraphQLFormattedError>([
+						expect.objectContaining<TalawaGraphQLFormattedError>({
+							extensions:
+								expect.objectContaining<UnauthorizedActionOnArgumentsAssociatedResourcesExtensions>(
+									{
+										code: "unauthorized_action_on_arguments_associated_resources",
+										issues: expect.arrayContaining<
+											UnauthorizedActionOnArgumentsAssociatedResourcesExtensions["issues"][number]
+										>([
+											{
+												argumentPath: ["input", "organizationId"],
+											},
+										]),
+									},
+								),
+							message: expect.any(String),
+							path: ["createVenue"],
+						}),
+					]),
+				);
+			});
+		},
+	);
+
+	suite(
+		`results in "undefined" as the value of "errors" field and the expected value for the "data.createVenue" field where`,
+		() => {
+			/**
+			 * Tests successful venue creation with all optional fields provided.
+			 *
+			 * @remarks
+			 * Validates that all venue fields are properly stored and returned
+			 * when complete data is provided.
+			 */
+			test("non-nullable venue fields have the non-null values of the corresponding non-nullable arguments.\n                nullable venue fields have the non-null values of the corresponding nullable arguments.", async () => {
+				const administratorUserSignInResult = await mercuriusClient.query(
+					Query_signIn,
+					{
+						variables: {
+							input: {
+								emailAddress:
+									server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
+								password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
+							},
+						},
+					},
+				);
+
+				assertToBeNonNullish(
+					administratorUserSignInResult.data.signIn?.authenticationToken,
+				);
+
+				const createOrganizationResult = await mercuriusClient.mutate(
+					Mutation_createOrganization,
+					{
+						headers: {
+							authorization: `bearer ${administratorUserSignInResult.data.signIn.authenticationToken}`,
+						},
+						variables: {
+							input: {
+								name: `TestOrg_${faker.string.ulid()}`,
+								description: faker.lorem.sentence(),
+							},
+						},
+					},
+				);
+
+				assertToBeNonNullish(
+					createOrganizationResult.data.createOrganization?.id,
+				);
+				createdResources.organizationIds.push(
+					createOrganizationResult.data.createOrganization.id,
+				);
+
+				const variables: VariablesOf<typeof Mutation_createVenue> = {
+					input: {
+						organizationId: createOrganizationResult.data.createOrganization.id,
+						name: `Venue_${faker.string.ulid()}`,
+						description: faker.lorem.sentence(),
+						capacity: 100,
+					},
+				};
+
+				const createVenueResult = await mercuriusClient.mutate(
+					Mutation_createVenue,
+					{
+						headers: {
+							authorization: `bearer ${administratorUserSignInResult.data.signIn.authenticationToken}`,
+						},
+						variables,
+					},
+				);
+
+				expect(createVenueResult.errors).toBeUndefined();
+				assertToBeNonNullish(createVenueResult.data.createVenue?.id);
+
+				expect(createVenueResult.data.createVenue).toEqual(
+					expect.objectContaining<
+						Partial<ResultOf<typeof Mutation_createVenue>["createVenue"]>
+					>({
+						id: expect.any(String),
+						name: variables.input.name,
+						description: variables.input.description,
+						capacity: variables.input.capacity,
+						organization: expect.objectContaining({
+							id: variables.input.organizationId,
+						}),
+						creator: expect.objectContaining({
+							id: expect.any(String),
+						}),
+						attachments: [],
+					}),
+				);
+			});
+
+			/**
+			 * Tests successful venue creation with only required fields.
+			 *
+			 * @remarks
+			 * Validates that nullable fields default to null when not provided.
+			 */
+			test('nullable venue fields have the "null" values if the corresponding nullable arguments are not provided in the graphql operation.', async () => {
+				const administratorUserSignInResult = await mercuriusClient.query(
+					Query_signIn,
+					{
+						variables: {
+							input: {
+								emailAddress:
+									server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
+								password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
+							},
+						},
+					},
+				);
+
+				assertToBeNonNullish(
+					administratorUserSignInResult.data.signIn?.authenticationToken,
+				);
+
+				const createOrganizationResult = await mercuriusClient.mutate(
+					Mutation_createOrganization,
+					{
+						headers: {
+							authorization: `bearer ${administratorUserSignInResult.data.signIn.authenticationToken}`,
+						},
+						variables: {
+							input: {
+								name: `TestOrg_${faker.string.ulid()}`,
+								description: faker.lorem.sentence(),
+							},
+						},
+					},
+				);
+
+				assertToBeNonNullish(
+					createOrganizationResult.data.createOrganization?.id,
+				);
+				createdResources.organizationIds.push(
+					createOrganizationResult.data.createOrganization.id,
+				);
+
+				const variables: VariablesOf<typeof Mutation_createVenue> = {
+					input: {
+						organizationId: createOrganizationResult.data.createOrganization.id,
+						name: `Venue_${faker.string.ulid()}`,
+						description: faker.lorem.sentence(),
+					},
+				};
+
+				const createVenueResult = await mercuriusClient.mutate(
+					Mutation_createVenue,
+					{
+						headers: {
+							authorization: `bearer ${administratorUserSignInResult.data.signIn.authenticationToken}`,
+						},
+						variables,
+					},
+				);
+
+				expect(createVenueResult.errors).toBeUndefined();
+				assertToBeNonNullish(createVenueResult.data.createVenue?.id);
+
+				expect(createVenueResult.data.createVenue).toEqual(
+					expect.objectContaining<
+						Partial<ResultOf<typeof Mutation_createVenue>["createVenue"]>
+					>({
+						capacity: null,
+						attachments: [],
+					}),
+				);
+			});
+
+			/**
+			 * Tests venue creation with special characters in name.
+			 *
+			 * @remarks
+			 * Validates that the system properly handles special characters
+			 * and Unicode in venue names.
+			 */
+			test('value of the argument "input.name" contains special characters and Unicode.', async () => {
+				const administratorUserSignInResult = await mercuriusClient.query(
+					Query_signIn,
+					{
+						variables: {
+							input: {
+								emailAddress:
+									server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
+								password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
+							},
+						},
+					},
+				);
+
+				assertToBeNonNullish(
+					administratorUserSignInResult.data.signIn?.authenticationToken,
+				);
+
+				const createOrganizationResult = await mercuriusClient.mutate(
+					Mutation_createOrganization,
+					{
+						headers: {
+							authorization: `bearer ${administratorUserSignInResult.data.signIn.authenticationToken}`,
+						},
+						variables: {
+							input: {
+								name: `TestOrg_${faker.string.ulid()}`,
+								description: faker.lorem.sentence(),
+							},
+						},
+					},
+				);
+
+				assertToBeNonNullish(
+					createOrganizationResult.data.createOrganization?.id,
+				);
+				createdResources.organizationIds.push(
+					createOrganizationResult.data.createOrganization.id,
+				);
+
+				const specialName = `Venue-${faker.string.ulid()}-Hall™ 会议室 🎭`;
+
+				const createVenueResult = await mercuriusClient.mutate(
+					Mutation_createVenue,
+					{
+						headers: {
+							authorization: `bearer ${administratorUserSignInResult.data.signIn.authenticationToken}`,
+						},
+						variables: {
+							input: {
+								organizationId:
+									createOrganizationResult.data.createOrganization.id,
+								name: specialName,
+								description: faker.lorem.sentence(),
+							},
+						},
+					},
+				);
+
+				expect(createVenueResult.errors).toBeUndefined();
+				assertToBeNonNullish(createVenueResult.data.createVenue?.id);
+
+				expect(createVenueResult.data.createVenue?.name).toBe(specialName);
+			});
+
+			/**
+			 * Tests venue creation with capacity at boundary values.
+			 *
+			 * @remarks
+			 * Validates that the system properly handles edge cases
+			 * for capacity values (zero and large numbers).
+			 */
+			test('value of the argument "input.capacity" can be zero.', async () => {
+				const administratorUserSignInResult = await mercuriusClient.query(
+					Query_signIn,
+					{
+						variables: {
+							input: {
+								emailAddress:
+									server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
+								password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
+							},
+						},
+					},
+				);
+
+				assertToBeNonNullish(
+					administratorUserSignInResult.data.signIn?.authenticationToken,
+				);
+
+				const createOrganizationResult = await mercuriusClient.mutate(
+					Mutation_createOrganization,
+					{
+						headers: {
+							authorization: `bearer ${administratorUserSignInResult.data.signIn.authenticationToken}`,
+						},
+						variables: {
+							input: {
+								name: `TestOrg_${faker.string.ulid()}`,
+								description: faker.lorem.sentence(),
+							},
+						},
+					},
+				);
+
+				assertToBeNonNullish(
+					createOrganizationResult.data.createOrganization?.id,
+				);
+				createdResources.organizationIds.push(
+					createOrganizationResult.data.createOrganization.id,
+				);
+
+				const createVenueResult = await mercuriusClient.mutate(
+					Mutation_createVenue,
+					{
+						headers: {
+							authorization: `bearer ${administratorUserSignInResult.data.signIn.authenticationToken}`,
+						},
+						variables: {
+							input: {
+								organizationId:
+									createOrganizationResult.data.createOrganization.id,
+								name: `Venue_${faker.string.ulid()}`,
+								description: faker.lorem.sentence(),
+								capacity: 0,
+							},
+						},
+					},
+				);
+
+				expect(createVenueResult.errors).toBeUndefined();
+				assertToBeNonNullish(createVenueResult.data.createVenue?.id);
+
+				expect(createVenueResult.data.createVenue?.capacity).toBe(0);
+			});
+
+			/**
+			 * Tests venue creation with very large capacity.
+			 *
+			 * @remarks
+			 * Validates that the system properly handles large capacity values.
+			 */
+			test('value of the argument "input.capacity" can be a very large number.', async () => {
+				const administratorUserSignInResult = await mercuriusClient.query(
+					Query_signIn,
+					{
+						variables: {
+							input: {
+								emailAddress:
+									server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
+								password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
+							},
+						},
+					},
+				);
+
+				assertToBeNonNullish(
+					administratorUserSignInResult.data.signIn?.authenticationToken,
+				);
+
+				const createOrganizationResult = await mercuriusClient.mutate(
+					Mutation_createOrganization,
+					{
+						headers: {
+							authorization: `bearer ${administratorUserSignInResult.data.signIn.authenticationToken}`,
+						},
+						variables: {
+							input: {
+								name: `TestOrg_${faker.string.ulid()}`,
+								description: faker.lorem.sentence(),
+							},
+						},
+					},
+				);
+
+				assertToBeNonNullish(
+					createOrganizationResult.data.createOrganization?.id,
+				);
+				createdResources.organizationIds.push(
+					createOrganizationResult.data.createOrganization.id,
+				);
+
+				const createVenueResult = await mercuriusClient.mutate(
+					Mutation_createVenue,
+					{
+						headers: {
+							authorization: `bearer ${administratorUserSignInResult.data.signIn.authenticationToken}`,
+						},
+						variables: {
+							input: {
+								organizationId:
+									createOrganizationResult.data.createOrganization.id,
+								name: `Venue_${faker.string.ulid()}`,
+								description: faker.lorem.sentence(),
+								capacity: 1000000,
+							},
+						},
+					},
+				);
+
+				expect(createVenueResult.errors).toBeUndefined();
+				assertToBeNonNullish(createVenueResult.data.createVenue?.id);
+
+				expect(createVenueResult.data.createVenue?.capacity).toBe(1000000);
+			});
+
+			/**
+			 * Tests that venue accepts negative capacity values.
+			 *
+			 * @remarks
+			 * The current implementation does not validate capacity to be non-negative.
+			 * This test documents the actual API behavior.
+			 */
+			test('value of the argument "input.capacity" can be negative.', async () => {
+				const administratorUserSignInResult = await mercuriusClient.query(
+					Query_signIn,
+					{
+						variables: {
+							input: {
+								emailAddress:
+									server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
+								password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
+							},
+						},
+					},
+				);
+
+				assertToBeNonNullish(
+					administratorUserSignInResult.data.signIn?.authenticationToken,
+				);
+
+				const createOrganizationResult = await mercuriusClient.mutate(
+					Mutation_createOrganization,
+					{
+						headers: {
+							authorization: `bearer ${administratorUserSignInResult.data.signIn.authenticationToken}`,
+						},
+						variables: {
+							input: {
+								name: `TestOrg_${faker.string.ulid()}`,
+								description: faker.lorem.sentence(),
+							},
+						},
+					},
+				);
+
+				assertToBeNonNullish(
+					createOrganizationResult.data.createOrganization?.id,
+				);
+				createdResources.organizationIds.push(
+					createOrganizationResult.data.createOrganization.id,
+				);
+
+				const createVenueResult = await mercuriusClient.mutate(
+					Mutation_createVenue,
+					{
+						headers: {
+							authorization: `bearer ${administratorUserSignInResult.data.signIn.authenticationToken}`,
+						},
+						variables: {
+							input: {
+								organizationId:
+									createOrganizationResult.data.createOrganization.id,
+								name: `Venue_${faker.string.ulid()}`,
+								description: faker.lorem.sentence(),
+								capacity: -10,
+							},
+						},
+					},
+				);
+
+				// Currently the API accepts negative capacity
+				expect(createVenueResult.errors).toBeUndefined();
+				assertToBeNonNullish(createVenueResult.data.createVenue?.id);
+				expect(createVenueResult.data.createVenue?.capacity).toBe(-10);
+			});
+
+			/**
+			 * Tests that venue accepts whitespace-only names.
+			 *
+			 * @remarks
+			 * The current implementation does not trim or validate whitespace-only names.
+			 * This test documents the actual API behavior.
+			 */
+			test('value of the argument "input.name" can be whitespace-only.', async () => {
+				const administratorUserSignInResult = await mercuriusClient.query(
+					Query_signIn,
+					{
+						variables: {
+							input: {
+								emailAddress:
+									server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
+								password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
+							},
+						},
+					},
+				);
+
+				assertToBeNonNullish(
+					administratorUserSignInResult.data.signIn?.authenticationToken,
+				);
+
+				const createOrganizationResult = await mercuriusClient.mutate(
+					Mutation_createOrganization,
+					{
+						headers: {
+							authorization: `bearer ${administratorUserSignInResult.data.signIn.authenticationToken}`,
+						},
+						variables: {
+							input: {
+								name: `TestOrg_${faker.string.ulid()}`,
+								description: faker.lorem.sentence(),
+							},
+						},
+					},
+				);
+
+				assertToBeNonNullish(
+					createOrganizationResult.data.createOrganization?.id,
+				);
+				createdResources.organizationIds.push(
+					createOrganizationResult.data.createOrganization.id,
+				);
+
+				const createVenueResult = await mercuriusClient.mutate(
+					Mutation_createVenue,
+					{
+						headers: {
+							authorization: `bearer ${administratorUserSignInResult.data.signIn.authenticationToken}`,
+						},
+						variables: {
+							input: {
+								organizationId:
+									createOrganizationResult.data.createOrganization.id,
+								name: "   ",
+								description: faker.lorem.sentence(),
+							},
+						},
+					},
+				);
+
+				// Currently the API accepts whitespace-only names
+				expect(createVenueResult.errors).toBeUndefined();
+				assertToBeNonNullish(createVenueResult.data.createVenue?.id);
+				expect(createVenueResult.data.createVenue?.name).toBe("   ");
+			});
+
+			/**
+			 * Tests that venue names preserve leading and trailing whitespace.
+			 *
+			 * @remarks
+			 * The current implementation does not trim whitespace from venue names.
+			 * This test documents the actual API behavior.
+			 */
+			test('value of the argument "input.name" preserves leading and trailing whitespace.', async () => {
+				const administratorUserSignInResult = await mercuriusClient.query(
+					Query_signIn,
+					{
+						variables: {
+							input: {
+								emailAddress:
+									server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
+								password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
+							},
+						},
+					},
+				);
+
+				assertToBeNonNullish(
+					administratorUserSignInResult.data.signIn?.authenticationToken,
+				);
+
+				const createOrganizationResult = await mercuriusClient.mutate(
+					Mutation_createOrganization,
+					{
+						headers: {
+							authorization: `bearer ${administratorUserSignInResult.data.signIn.authenticationToken}`,
+						},
+						variables: {
+							input: {
+								name: `TestOrg_${faker.string.ulid()}`,
+								description: faker.lorem.sentence(),
+							},
+						},
+					},
+				);
+
+				assertToBeNonNullish(
+					createOrganizationResult.data.createOrganization?.id,
+				);
+				createdResources.organizationIds.push(
+					createOrganizationResult.data.createOrganization.id,
+				);
+
+				const nameWithWhitespace = `  Venue ${faker.string.ulid()}  `;
+
+				const createVenueResult = await mercuriusClient.mutate(
+					Mutation_createVenue,
+					{
+						headers: {
+							authorization: `bearer ${administratorUserSignInResult.data.signIn.authenticationToken}`,
+						},
+						variables: {
+							input: {
+								organizationId:
+									createOrganizationResult.data.createOrganization.id,
+								name: nameWithWhitespace,
+								description: faker.lorem.sentence(),
+							},
+						},
+					},
+				);
+
+				// Currently the API preserves whitespace
+				expect(createVenueResult.errors).toBeUndefined();
+				assertToBeNonNullish(createVenueResult.data.createVenue?.id);
+				expect(createVenueResult.data.createVenue?.name).toBe(
+					nameWithWhitespace,
+				);
+			});
+		},
+	);
+});
