@@ -54,6 +54,7 @@ export function createMockGraphQLContext(
 			mockDrizzleClient as unknown as FastifyInstance["drizzleClient"],
 		envConfig: {
 			API_BASE_URL: "http://localhost:4000",
+			API_REFRESH_TOKEN_EXPIRES_IN: 604800000,
 			FRONTEND_URL: "http://localhost:3000",
 		},
 		jwt: {

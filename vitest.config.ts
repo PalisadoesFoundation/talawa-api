@@ -85,16 +85,10 @@ export default defineConfig({
 		hookTimeout: 30000, // 30 seconds for hooks
 		testTimeout: 60000, // 60 seconds per test
 		pool: "threads", // for faster test execution and to avoid postgres max-limit error
-		poolOptions: {
-			threads: {
-				singleThread: false,
-				minThreads: 1,
-				maxThreads: isCI ? ciThreads : localThreads,
-				isolate: true,
-			},
-		},
-		// Set maxConcurrency lower than maxThreads to prevent single heavy test files
-		// from consuming all threads and blocking other test files
+		isolate: true,
+		maxWorkers: isCI ? ciThreads : localThreads,
+		// Set maxConcurrency lower than maxWorkers to prevent single heavy test files
+		// from consuming all workers and blocking other test files
 		maxConcurrency: isCI
 			? Math.max(1, Math.floor(ciThreads / 2))
 			: Math.max(1, Math.floor(localThreads / 2)),

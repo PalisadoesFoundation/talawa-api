@@ -1,3 +1,4 @@
+// check-sanitization-disable: Enum-like status field; no user input involved
 import { and, eq } from "drizzle-orm";
 import { eventVolunteerMembershipsTable } from "~/src/drizzle/tables/eventVolunteerMemberships";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";

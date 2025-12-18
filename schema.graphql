@@ -283,9 +283,14 @@ type AssignUserTag {
 """"""
 type AuthenticationPayload {
   """
-  This is the authentication token using which a user can sign in to talawa.
+  This is the short-lived access token using which a user can authenticate API requests.
   """
   authenticationToken: String
+
+  """
+  This is the long-lived refresh token used to obtain new access tokens without re-authentication.
+  """
+  refreshToken: String
 
   """"""
   user: User
@@ -1183,6 +1188,12 @@ type Fund {
   """Global identifier of the fund."""
   id: ID!
 
+  """Boolean to tell if the fund is archived."""
+  isArchived: Boolean
+
+  """Boolean to tell if the fund is the default fund."""
+  isDefault: Boolean
+
   """Boolean to tell if the fund is tax deductible."""
   isTaxDeductible: Boolean
 
@@ -1191,6 +1202,9 @@ type Fund {
 
   """Organization which the fund belongs to."""
   organization: Organization
+
+  """Reference number of the fund."""
+  referenceNumber: String
 
   """Date time at the time the fund was last updated."""
   updatedAt: DateTime
@@ -2293,6 +2307,14 @@ type Mutation {
   ): Boolean
   readNotification(input: MutationReadNotificationInput!): ReadNotificationResponse
 
+  """
+  Mutation to refresh an access token using a valid refresh token. Returns new access and refresh tokens.
+  """
+  refreshToken(
+    """The refresh token to use for obtaining a new access token."""
+    refreshToken: String!
+  ): AuthenticationPayload
+
   """Mutation field to register a user for an event."""
   registerEventAttendee(data: EventAttendeeInput!): EventAttendee
 
@@ -2310,6 +2332,14 @@ type Mutation {
 
   """Mutation field to remove an event attendee."""
   removeEventAttendee(data: EventAttendeeInput!): User
+
+  """
+  Mutation to revoke a refresh token. Use this for logout functionality to invalidate the refresh token.
+  """
+  revokeRefreshToken(
+    """The refresh token to revoke."""
+    refreshToken: String!
+  ): Boolean
 
   """Send email invitations to one or more addresses for an event."""
   sendEventInvitations(input: SendEventInvitationsInput!): [EventInvitation!]
@@ -2726,6 +2756,12 @@ input MutationCreateFundCampaignPledgeInput {
 
 """"""
 input MutationCreateFundInput {
+  """Boolean to tell if the fund is archived."""
+  isArchived: Boolean
+
+  """Boolean to tell if the fund is the default fund."""
+  isDefault: Boolean
+
   """Boolean to tell if the fund is tax deductible."""
   isTaxDeductible: Boolean!
 
@@ -2734,6 +2770,9 @@ input MutationCreateFundInput {
 
   """Global identifier of the associated organization."""
   organizationId: ID!
+
+  """Reference number of the fund."""
+  referenceNumber: String
 }
 
 """Input for getting a presigned URL for file download"""
@@ -3607,11 +3646,20 @@ input MutationUpdateFundInput {
   """Global identifier of the associated organization."""
   id: ID!
 
+  """Boolean to tell if the fund is archived."""
+  isArchived: Boolean
+
+  """Boolean to tell if the fund is the default fund."""
+  isDefault: Boolean
+
   """Boolean to tell if the fund is tax deductible."""
   isTaxDeductible: Boolean
 
   """Name of the fund."""
   name: String
+
+  """Reference number of the fund."""
+  referenceNumber: String
 }
 
 """"""

@@ -13,6 +13,7 @@ export const Mutation_createUser =
 	gql(`mutation Mutation_createUser($input: MutationCreateUserInput!) {
     createUser(input: $input){
         authenticationToken
+        refreshToken
         user {
             addressLine1
             addressLine2
@@ -77,6 +78,7 @@ export const Mutation_signUp =
 	gql(`mutation Mutation_signUp($input: MutationSignUpInput!) {
     signUp(input: $input) {
         authenticationToken
+        refreshToken
         user {
             addressLine1
             addressLine2
@@ -191,6 +193,7 @@ export const Query_renewAuthenticationToken =
 export const Query_signIn = gql(`query Query_signIn($input: QuerySignInInput!) {
     signIn(input: $input) {
         authenticationToken
+        refreshToken
         user {
             addressLine1
             addressLine2
@@ -215,6 +218,23 @@ export const Query_signIn = gql(`query Query_signIn($input: QuerySignInInput!) {
             workPhoneNumber
         }
     }
+}`);
+
+export const Mutation_refreshToken =
+	gql(`mutation Mutation_refreshToken($refreshToken: String!) {
+    refreshToken(refreshToken: $refreshToken) {
+        authenticationToken
+        refreshToken
+        user {
+            id
+            name
+        }
+    }
+}`);
+
+export const Mutation_revokeRefreshToken =
+	gql(`mutation Mutation_revokeRefreshToken($refreshToken: String!) {
+    revokeRefreshToken(refreshToken: $refreshToken)
 }`);
 
 export const Query_user = gql(`query Query_user($input: QueryUserInput!) {
@@ -364,6 +384,9 @@ export const Query_fund = gql(`query Query_fund($input: QueryFundInput!) {
       id
       isTaxDeductible
       name
+      isDefault
+      isArchived
+      referenceNumber
     }
   }`);
 
@@ -445,6 +468,21 @@ export const Mutation_createFund =
       id
       name
       isTaxDeductible
+      isDefault
+      isArchived
+      referenceNumber
+    }
+  }`);
+
+export const Mutation_updateFund =
+	gql(`mutation Mutation_updateFund($input: MutationUpdateFundInput!) {
+    updateFund(input: $input) {
+      id
+      name
+      isTaxDeductible
+      isDefault
+      isArchived
+      referenceNumber
     }
   }`);
 
@@ -2460,4 +2498,24 @@ export const Query_getRecurringEvents = gql(`
       }
     }
   }
+`);
+
+export const Mutation_cancelMembershipRequest = gql(`
+  mutation Mutation_cancelMembershipRequest(
+    $input: MutationCancelMembershipRequestInput!
+  ) {
+    cancelMembershipRequest(input: $input) {
+      success
+      message
+    }
+  }
+`);
+
+export const Query_community = gql(`
+	query Query_community {
+		community {
+			id
+			name
+		}
+	}
 `);

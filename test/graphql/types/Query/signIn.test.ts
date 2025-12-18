@@ -1,4 +1,5 @@
 import { faker } from "@faker-js/faker";
+import { sql } from "drizzle-orm";
 import type { VariablesOf } from "gql.tada";
 import { assertToBeNonNullish } from "test/helpers";
 import { afterAll, beforeAll, expect, suite, test } from "vitest";
@@ -6,6 +7,7 @@ import type {
 	ArgumentsAssociatedResourcesNotFoundExtensions,
 	ForbiddenActionExtensions,
 	InvalidArgumentsExtensions,
+	InvalidCredentialsExtensions,
 	TalawaGraphQLFormattedError,
 } from "~/src/utilities/TalawaGraphQLError";
 import { server } from "../../../server";
@@ -181,7 +183,7 @@ suite("Query field signIn", () => {
 	);
 
 	suite(
-		"results in a graphql error with arguments_associated_resources_not_found extensions code in the errors field and null as the value of data.signIn field if",
+		"results in a graphql error with invalid_credentials extensions code in the errors field and null as the value of data.signIn field if",
 		() => {
 			test("value of the input.emailAddress does not correspond to an existing user.", async () => {
 				const result = await mercuriusClient.query(Query_signIn, {
@@ -197,31 +199,26 @@ suite("Query field signIn", () => {
 				expect(result.errors).toEqual(
 					expect.arrayContaining<TalawaGraphQLFormattedError>([
 						expect.objectContaining<TalawaGraphQLFormattedError>({
-							extensions:
-								expect.objectContaining<ArgumentsAssociatedResourcesNotFoundExtensions>(
-									{
-										code: "arguments_associated_resources_not_found",
-										issues: expect.arrayContaining<
-											ArgumentsAssociatedResourcesNotFoundExtensions["issues"][number]
-										>([
-											{
-												argumentPath: ["input", "emailAddress"],
-											},
-										]),
-									},
-								),
+							extensions: expect.objectContaining<InvalidCredentialsExtensions>(
+								{
+									code: "invalid_credentials",
+									issues: expect.arrayContaining<
+										InvalidCredentialsExtensions["issues"][number]
+									>([
+										{
+											argumentPath: ["input"],
+											message: "Invalid email address or password.",
+										},
+									]),
+								},
+							),
 							message: expect.any(String),
 							path: ["signIn"],
 						}),
 					]),
 				);
 			});
-		},
-	);
 
-	suite(
-		"results in a graphql error with invalid_arguments extensions code in the errors field and null as the value of data.signIn field if",
-		() => {
 			test("value of the argument input.password is not equal to the password of the existing user corresponding to the value of the argument input.emailAddress", async () => {
 				const result = await mercuriusClient.query(Query_signIn, {
 					variables: {
@@ -237,17 +234,19 @@ suite("Query field signIn", () => {
 				expect(result.errors).toEqual(
 					expect.arrayContaining<TalawaGraphQLFormattedError>([
 						expect.objectContaining<TalawaGraphQLFormattedError>({
-							extensions: expect.objectContaining<InvalidArgumentsExtensions>({
-								code: "invalid_arguments",
-								issues: expect.arrayContaining<
-									InvalidArgumentsExtensions["issues"][number]
-								>([
-									{
-										argumentPath: ["input", "password"],
-										message: expect.any(String),
-									},
-								]),
-							}),
+							extensions: expect.objectContaining<InvalidCredentialsExtensions>(
+								{
+									code: "invalid_credentials",
+									issues: expect.arrayContaining<
+										InvalidCredentialsExtensions["issues"][number]
+									>([
+										{
+											argumentPath: ["input"],
+											message: "Invalid email address or password.",
+										},
+									]),
+								},
+							),
 							message: expect.any(String),
 							path: ["signIn"],
 						}),
@@ -256,6 +255,101 @@ suite("Query field signIn", () => {
 			});
 		},
 	);
+
+	suite("handles malformed password hash gracefully", () => {
+		let malformedHashUserEmail = "";
+		let malformedHashUserId = "";
+		let adminAuthToken = "";
+
+		beforeAll(async () => {
+			// Sign in as admin
+			const adminSignIn = await mercuriusClient.query(Query_signIn, {
+				variables: {
+					input: {
+						emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
+						password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
+					},
+				},
+			});
+			assertToBeNonNullish(adminSignIn.data.signIn?.authenticationToken);
+			adminAuthToken = adminSignIn.data.signIn.authenticationToken;
+
+			// Create a user with a valid password first
+			malformedHashUserEmail = `malformed${faker.string.ulid()}@email.com`;
+			const createUserResult = await mercuriusClient.mutate(
+				Mutation_createUser,
+				{
+					headers: {
+						authorization: `bearer ${adminAuthToken}`,
+					},
+					variables: {
+						input: {
+							emailAddress: malformedHashUserEmail,
+							isEmailAddressVerified: false,
+							name: "Malformed Hash User",
+							password: "password",
+							role: "regular",
+						},
+					},
+				},
+			);
+
+			assertToBeNonNullish(createUserResult.data.createUser?.user?.id);
+			malformedHashUserId = createUserResult.data.createUser.user.id;
+
+			// Directly update the user's password hash to an invalid value
+			// This simulates a corrupted database entry
+			await server.drizzleClient.execute(
+				sql`UPDATE users SET password_hash = 'invalid_corrupted_hash' WHERE id = ${malformedHashUserId}`,
+			);
+		});
+
+		afterAll(async () => {
+			// Clean up the test user
+			await mercuriusClient.mutate(Mutation_deleteUser, {
+				headers: {
+					authorization: `bearer ${adminAuthToken}`,
+				},
+				variables: {
+					input: {
+						id: malformedHashUserId,
+					},
+				},
+			});
+		});
+
+		test("returns invalid_credentials when password hash is malformed/corrupted", async () => {
+			const result = await mercuriusClient.query(Query_signIn, {
+				variables: {
+					input: {
+						emailAddress: malformedHashUserEmail,
+						password: "password",
+					},
+				},
+			});
+
+			expect(result.data.signIn).toEqual(null);
+			expect(result.errors).toEqual(
+				expect.arrayContaining<TalawaGraphQLFormattedError>([
+					expect.objectContaining<TalawaGraphQLFormattedError>({
+						extensions: expect.objectContaining<InvalidCredentialsExtensions>({
+							code: "invalid_credentials",
+							issues: expect.arrayContaining<
+								InvalidCredentialsExtensions["issues"][number]
+							>([
+								{
+									argumentPath: ["input"],
+									message: "Invalid email address or password.",
+								},
+							]),
+						}),
+						message: expect.any(String),
+						path: ["signIn"],
+					}),
+				]),
+			);
+		});
+	});
 
 	test("results in an empty errors field and the expected value for the data.signIn field.", async () => {
 		const variables: VariablesOf<typeof Query_signIn> = {
@@ -273,11 +367,81 @@ suite("Query field signIn", () => {
 		expect(result.data.signIn).toEqual(
 			expect.objectContaining({
 				authenticationToken: expect.any(String),
+				refreshToken: expect.any(String),
 				user: expect.objectContaining({
 					emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
 				}),
 			}),
 		);
+	});
+
+	suite("refresh token functionality", () => {
+		test("should return a valid refresh token on successful sign in", async () => {
+			const result = await mercuriusClient.query(Query_signIn, {
+				variables: {
+					input: {
+						emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
+						password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
+					},
+				},
+			});
+
+			expect(result.errors).toBeUndefined();
+			assertToBeNonNullish(result.data.signIn?.refreshToken);
+
+			const refreshToken = result.data.signIn?.refreshToken as string;
+
+			// Refresh token should be a 64-character hex string (256-bit)
+			expect(refreshToken).toHaveLength(64);
+			expect(/^[a-f0-9]+$/.test(refreshToken)).toBe(true);
+		});
+
+		test("should return different refresh tokens for each sign in", async () => {
+			const result1 = await mercuriusClient.query(Query_signIn, {
+				variables: {
+					input: {
+						emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
+						password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
+					},
+				},
+			});
+
+			const result2 = await mercuriusClient.query(Query_signIn, {
+				variables: {
+					input: {
+						emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
+						password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
+					},
+				},
+			});
+
+			assertToBeNonNullish(result1.data.signIn?.refreshToken);
+			assertToBeNonNullish(result2.data.signIn?.refreshToken);
+
+			// Each sign in should generate a unique refresh token
+			expect(result1.data.signIn?.refreshToken).not.toBe(
+				result2.data.signIn?.refreshToken,
+			);
+		});
+
+		test("refresh token should be stored atomically with sign in response", async () => {
+			const result = await mercuriusClient.query(Query_signIn, {
+				variables: {
+					input: {
+						emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
+						password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
+					},
+				},
+			});
+
+			expect(result.errors).toBeUndefined();
+			assertToBeNonNullish(result.data.signIn?.authenticationToken);
+			assertToBeNonNullish(result.data.signIn?.refreshToken);
+
+			// Both tokens should be present together (atomic operation)
+			expect(result.data.signIn.authenticationToken).toBeDefined();
+			expect(result.data.signIn.refreshToken).toBeDefined();
+		});
 	});
 
 	test("sign in", async () => {
@@ -291,16 +455,67 @@ suite("Query field signIn", () => {
 		});
 
 		assertToBeNonNullish(result.data.signIn?.authenticationToken);
+		assertToBeNonNullish(result.data.signIn?.refreshToken);
+
+		expect(result.errors).toBeUndefined();
+		expect(result.data.signIn).toEqual(
+			expect.objectContaining({
+				authenticationToken: expect.any(String),
+				refreshToken: expect.any(String),
+				user: expect.objectContaining({
+					emailAddress: user1Email,
+				}),
+			}),
+		);
+	});
+
+	test("sign in as regular user without organization admin membership", async () => {
+		// Create a regular user WITHOUT making them an org admin
+		const regularUserEmail = `regular${faker.string.ulid()}@email.com`;
+
+		const createResult = await mercuriusClient.mutate(Mutation_createUser, {
+			headers: {
+				authorization: `bearer ${adminAuth}`,
+			},
+			variables: {
+				input: {
+					emailAddress: regularUserEmail,
+					isEmailAddressVerified: false,
+					name: "Regular User",
+					password: "password",
+					role: "regular",
+				},
+			},
+		});
+
+		assertToBeNonNullish(createResult.data.createUser?.user?.id);
+
+		// Sign in without creating any org memberships
+		const result = await mercuriusClient.query(Query_signIn, {
+			variables: {
+				input: {
+					emailAddress: regularUserEmail,
+					password: "password",
+				},
+			},
+		});
 
 		expect(result.errors).toBeUndefined();
 		expect(result.data.signIn).toEqual(
 			expect.objectContaining({
 				authenticationToken: expect.any(String),
 				user: expect.objectContaining({
-					emailAddress: user1Email,
+					emailAddress: regularUserEmail,
+					role: "regular", // Should remain regular, not upgraded to administrator
 				}),
 			}),
 		);
+
+		// Cleanup
+		await mercuriusClient.mutate(Mutation_deleteUser, {
+			headers: { authorization: `bearer ${adminAuth}` },
+			variables: { input: { id: createResult.data.createUser?.user?.id } },
+		});
 	});
 
 	test("sign in with invalid arguments", async () => {

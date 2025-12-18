@@ -41,6 +41,8 @@ jobs:
         run: docker buildx build --file ./docker/api.Containerfile --tag talawa_api --target non_production ./
       - name: Check code format
         run: docker container run talawa_api pnpm format:check
+      - name: Check sanitization
+        run: docker container run talawa_api pnpm lint:sanitization
       - name: Check if the source and target branches are different
         if: ${{ github.event.pull_request.base.ref == github.event.pull_request.head.ref }}
         run: |
@@ -48,6 +50,92 @@ jobs:
           echo "Target Branch ${{ github.event.pull_request.base.ref }}"
           echo "Error: Source and Target Branches are the same. Please ensure they are different."
           echo "Error: Close this PR and try again."
+          exit 1
+
+  Python-Compliance:
+    name: Check Python Code Style
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v4
+        with:
+          python-version: 3.11
+
+      - name: Cache pip packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
+
+      - name: Install dependencies
+        run: |
+          python3 -m venv venv
+          source venv/bin/activate
+          python -m pip install --upgrade pip
+          pip install -r .github/workflows/requirements.txt
+
+      - name: Run Black Formatter Check
+        run: |
+          source venv/bin/activate
+          black --check .
+
+      - name: Run Flake8 Linter
+        run: |
+          source venv/bin/activate
+          flake8 --docstring-convention google --ignore E402,E722,E203,F401,W503 .github
+
+      - name: Run pydocstyle
+        run: |
+          source venv/bin/activate
+          pydocstyle --convention=google --add-ignore=D415,D205 .github
+
+      - name: Run docstring compliance check
+        run: |
+          source venv/bin/activate
+          python .github/workflows/scripts/check_docstrings.py --directories .github
+
+  Count-Changed-Files:
+    if: ${{ github.actor != 'dependabot[bot]' }}
+    name: Checks if number of files changed is acceptable
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # Fetch all history for all branches and tags
+
+      - name: Get changed files
+        id: changed-files
+        run: |
+          # Get the base branch ref
+          BASE_SHA=$(git merge-base ${{ github.event.pull_request.base.sha }} ${{ github.event.pull_request.head.sha }})
+
+          # Count all changed files
+          ALL_CHANGED_FILES_COUNT=$(git diff --name-only --diff-filter=ACMRT $BASE_SHA ${{ github.event.pull_request.head.sha }} | wc -l | tr -d ' ')
+          echo "all_changed_files_count=$ALL_CHANGED_FILES_COUNT" >> $GITHUB_OUTPUT
+
+      - name: Echo number of changed files
+        env:
+          CHANGED_FILES_COUNT: ${{ steps.changed-files.outputs.all_changed_files_count }}
+        run: |
+          echo "Number of files changed: $CHANGED_FILES_COUNT"
+
+      - name: Check if the number of changed files is less than 100
+        if: steps.changed-files.outputs.all_changed_files_count > 100
+        env:
+          CHANGED_FILES_COUNT: ${{ steps.changed-files.outputs.all_changed_files_count }}
+        run: |
+          echo "Error: Too many files (greater than 100) changed in the pull request."
+          echo "Possible issues:"
+          echo "- Contributor may be merging into an incorrect branch."
+          echo "- Source branch may be incorrect please use develop as source branch."
           exit 1
 
   Check-ItSkip-Disable:
@@ -77,49 +165,6 @@ jobs:
       - name: Run Python script
         run: |
           python .github/workflows/scripts/itskip_disable_check.py --files ${{ steps.changed-files.outputs.all_changed_files }}
-
-  Check-AutoDocs:
-    name: Generate and Validate Documentation
-    runs-on: ubuntu-latest
-    needs: [Code-Quality-Checks]
-    steps:
-      - name: Checkout the Repository
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
-      - name: Install pnpm
-        uses: pnpm/action-setup@v4
-        with:
-          run_install: false
-
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: "24.x"
-          cache: "pnpm"
-
-      - name: Prepare dependency store
-        run: pnpm fetch
-
-      - name: Install Dependencies (frozen)
-        run: pnpm install --frozen-lockfile --prefer-offline
-
-      - name: Run documentation generation
-        run: pnpm run generate:docs
-
-      - name: Check for uncommitted doc changes
-        run: |
-          if [ -n "$(git status --porcelain)" ]; then
-            echo "::error::Documentation files are outdated or missing."
-            echo "Please run 'pnpm run generate:docs' locally and commit the updated files."
-            echo ""
-            echo "Changed files:"
-            git status --porcelain
-            exit 1
-          else
-            echo "Documentation is up to date."
-          fi
 
   python_checks:
     name: Run Python Checks
@@ -151,6 +196,10 @@ jobs:
       - name: Run TS Ignore Check
         run: |
           python .github/workflows/scripts/detect_ts_ignore.py --files ${{ steps.changed-files.outputs.all_changed_files }}
+
+      - name: Run Sanitization Disable Comment Check
+        run: |
+          python .github/workflows/scripts/check_sanitization_disable.py --files ${{ steps.changed-files.outputs.all_changed_files }}
 
   check_gql_tada:
     name: Check gql tada files and configuration
@@ -195,51 +244,6 @@ jobs:
         run: docker buildx build --file ./docker/api.Containerfile --tag talawa_api --target non_production ./
       - name: Check mock isolation
         run: docker container run talawa_api pnpm check_mock_isolation
-
-  Generate-Schema-Docs:
-    if: ${{ github.actor != 'dependabot[bot]' }}
-    name: Generate GraphQL Schema Documentation
-    runs-on: ubuntu-latest
-    needs: [Code-Quality-Checks]
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
-      - name: Install pnpm
-        uses: pnpm/action-setup@v4
-        with:
-          run_install: false
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: "24.x"
-          cache: "pnpm"
-
-      - name: Prepare dependency store
-        run: pnpm fetch
-
-      - name: Install Docs dependencies
-        working-directory: ./docs
-        run: pnpm install --frozen-lockfile --prefer-offline
-
-      - name: Generate GraphQL Schema Markdown
-        working-directory: ./docs
-        run: pnpm docusaurus graphql-to-doc
-      - name: Check for uncommitted schema changes
-        run: |
-          if [ -n "$(git status --porcelain)" ]; then
-            echo "::error::Schema files are outdated or missing."
-            echo "Please run 'pnpm docusaurus graphql-to-doc' inside '/docs' locally and commit the updated files."
-            echo ""
-            echo "Changed files:"
-            git status --porcelain
-            exit 1
-          else
-            echo "Schema is up to date."
-          fi
 
   Check_unused_code:
     name: Check for unused files, exports and dependencies
@@ -419,8 +423,96 @@ jobs:
           echo "Add the 'ignore-sensitive-files-pr' label to this PR."
           exit 1
 
-  Run-Tests:
-    name: Run tests for talawa api (Shard ${{ matrix.shard }})
+  Check-AutoDocs:
+    name: Generate and Validate Documentation
+    runs-on: ubuntu-latest
+    needs: [Code-Quality-Checks]
+    steps:
+      - name: Checkout the Repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          run_install: false
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "24.x"
+          cache: "pnpm"
+
+      - name: Prepare dependency store
+        run: pnpm fetch
+
+      - name: Install Dependencies (frozen)
+        run: pnpm install --frozen-lockfile --prefer-offline
+
+      - name: Run documentation generation
+        run: pnpm run generate:docs
+
+      - name: Check for uncommitted doc changes
+        run: |
+          if [ -n "$(git status --porcelain)" ]; then
+            echo "::error::Documentation files are outdated or missing."
+            echo "Please run 'pnpm run generate:docs' locally and commit the updated files."
+            echo ""
+            echo "Changed files:"
+            git status --porcelain
+            exit 1
+          else
+            echo "Documentation is up to date."
+          fi
+
+  Generate-Schema-Docs:
+    if: ${{ github.actor != 'dependabot[bot]' }}
+    name: Generate GraphQL Schema Documentation
+    runs-on: ubuntu-latest
+    needs: [Code-Quality-Checks]
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          run_install: false
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "24.x"
+          cache: "pnpm"
+
+      - name: Prepare dependency store
+        run: pnpm fetch
+
+      - name: Install Docs dependencies
+        working-directory: ./docs
+        run: pnpm install --frozen-lockfile --prefer-offline
+
+      - name: Generate GraphQL Schema Markdown
+        working-directory: ./docs
+        run: pnpm docusaurus graphql-to-doc
+      - name: Check for uncommitted schema changes
+        run: |
+          if [ -n "$(git status --porcelain)" ]; then
+            echo "::error::Schema files are outdated or missing."
+            echo "Please run 'pnpm docusaurus graphql-to-doc' inside '/docs' locally and commit the updated files."
+            echo ""
+            echo "Changed files:"
+            git status --porcelain
+            exit 1
+          else
+            echo "Schema is up to date."
+          fi
+
+  Pre-Test-Checks-Pass:
+    name: All Pre-Testing Checks Pass
     runs-on: ubuntu-latest
     needs:
       [
@@ -434,7 +526,16 @@ jobs:
         Check_unused_code,
         Generate-Schema-Docs,
         Check-ItSkip-Disable,
+        Python-Compliance,
       ]
+    steps:
+      - name: This job intentionally does nothing
+        run: echo "This job intentionally does nothing"
+
+  Run-Tests:
+    name: Run tests for talawa api (Shard ${{ matrix.shard }})
+    runs-on: ubuntu-latest
+    needs: [Pre-Test-Checks-Pass]
     env:
       TOTAL_SHARDS: 12
     strategy:
@@ -762,7 +863,7 @@ jobs:
   Test-Docusaurus-Deployment:
     name: Test Deployment to https://docs-api.talawa.io
     runs-on: ubuntu-latest
-    needs: [Merge-Coverage]
+    needs: [Run-Tests]
     # Run only if the develop branch and not dependabot
     if: ${{ github.actor != 'dependabot[bot]' && github.event.pull_request.base.ref == 'develop' }}
     steps:
@@ -780,93 +881,6 @@ jobs:
       - name: Test building the website
         working-directory: ./docs
         run: pnpm build
-
-  Python-Compliance:
-    name: Check Python Code Style
-    runs-on: ubuntu-latest
-    needs: [Code-Quality-Checks]
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
-      - name: Set up Python 3.11
-        uses: actions/setup-python@v4
-        with:
-          python-version: 3.11
-
-      - name: Cache pip packages
-        uses: actions/cache@v4
-        with:
-          path: ~/.cache/pip
-          key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
-          restore-keys: |
-            ${{ runner.os }}-pip-
-
-      - name: Install dependencies
-        run: |
-          python3 -m venv venv
-          source venv/bin/activate
-          python -m pip install --upgrade pip
-          pip install -r .github/workflows/requirements.txt
-
-      - name: Run Black Formatter Check
-        run: |
-          source venv/bin/activate
-          black --check .
-
-      - name: Run Flake8 Linter
-        run: |
-          source venv/bin/activate
-          flake8 --docstring-convention google --ignore E402,E722,E203,F401,W503 .github
-
-      - name: Run pydocstyle
-        run: |
-          source venv/bin/activate
-          pydocstyle --convention=google --add-ignore=D415,D205 .github
-
-      - name: Run docstring compliance check
-        run: |
-          source venv/bin/activate
-          python .github/workflows/scripts/check_docstrings.py --directories .github
-
-  Count-Changed-Files:
-    if: ${{ github.actor != 'dependabot[bot]' }}
-    name: Checks if number of files changed is acceptable
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0 # Fetch all history for all branches and tags
-
-      - name: Get changed files
-        id: changed-files
-        run: |
-          # Get the base branch ref
-          BASE_SHA=$(git merge-base ${{ github.event.pull_request.base.sha }} ${{ github.event.pull_request.head.sha }})
-
-          # Count all changed files
-          ALL_CHANGED_FILES_COUNT=$(git diff --name-only --diff-filter=ACMRT $BASE_SHA ${{ github.event.pull_request.head.sha }} | wc -l | tr -d ' ')
-          echo "all_changed_files_count=$ALL_CHANGED_FILES_COUNT" >> $GITHUB_OUTPUT
-
-      - name: Echo number of changed files
-        env:
-          CHANGED_FILES_COUNT: ${{ steps.changed-files.outputs.all_changed_files_count }}
-        run: |
-          echo "Number of files changed: $CHANGED_FILES_COUNT"
-
-      - name: Check if the number of changed files is less than 100
-        if: steps.changed-files.outputs.all_changed_files_count > 100
-        env:
-          CHANGED_FILES_COUNT: ${{ steps.changed-files.outputs.all_changed_files_count }}
-        run: |
-          echo "Error: Too many files (greater than 100) changed in the pull request."
-          echo "Possible issues:"
-          echo "- Contributor may be merging into an incorrect branch."
-          echo "- Source branch may be incorrect please use develop as source branch."
-          exit 1
 
   Check-App-Startup:
     name: Check App Startup and Health
