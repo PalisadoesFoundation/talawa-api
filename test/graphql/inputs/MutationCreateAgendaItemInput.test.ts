@@ -26,7 +26,7 @@ describe("MutationCreateAgendaItemInput Schema", () => {
 			expect(result.success).toBe(true);
 		});
 
-		it("should accept name with whitespace (no trimming)", () => {
+		it("should accept name with whitespace and trim it", () => {
 			const result = mutationCreateAgendaItemInputSchema.safeParse({
 				name: "  name with spaces  ",
 				folderId: validFolderId,
@@ -34,17 +34,17 @@ describe("MutationCreateAgendaItemInput Schema", () => {
 			});
 			expect(result.success).toBe(true);
 			if (result.success) {
-				expect(result.data.name).toBe("  name with spaces  ");
+				expect(result.data.name).toBe("name with spaces");
 			}
 		});
 
-		it("should accept whitespace-only name", () => {
+		it("should reject whitespace-only name", () => {
 			const result = mutationCreateAgendaItemInputSchema.safeParse({
 				name: "   ",
 				folderId: validFolderId,
 				type: "general",
 			});
-			expect(result.success).toBe(true);
+			expect(result.success).toBe(false);
 		});
 
 		it("should reject empty string name", () => {
@@ -94,7 +94,7 @@ describe("MutationCreateAgendaItemInput Schema", () => {
 			expect(result.success).toBe(true);
 		});
 
-		it("should accept description with whitespace (no trimming)", () => {
+		it("should accept description with whitespace and trim it", () => {
 			const result = mutationCreateAgendaItemInputSchema.safeParse({
 				name: "Valid Agenda Item",
 				folderId: validFolderId,
@@ -103,18 +103,18 @@ describe("MutationCreateAgendaItemInput Schema", () => {
 			});
 			expect(result.success).toBe(true);
 			if (result.success) {
-				expect(result.data.description).toBe("  description with spaces  ");
+				expect(result.data.description).toBe("description with spaces");
 			}
 		});
 
-		it("should accept whitespace-only description", () => {
+		it("should reject whitespace-only description", () => {
 			const result = mutationCreateAgendaItemInputSchema.safeParse({
 				name: "Valid Agenda Item",
 				folderId: validFolderId,
 				type: "general",
 				description: "   ",
 			});
-			expect(result.success).toBe(true);
+			expect(result.success).toBe(false);
 		});
 
 		it("should reject empty description", () => {
