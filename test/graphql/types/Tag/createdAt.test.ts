@@ -1,8 +1,9 @@
 import { initGraphQLTada } from "gql.tada";
 import { describe, expect, it } from "vitest";
 import type { ClientCustomScalars } from "~/src/graphql/scalars/index";
-
+// Import the actual implementation to ensure it's loaded for coverage
 import "~/src/graphql/types/Tag/createdAt";
+import { createMockGraphQLContext } from "../../../_Mocks_/mockContextCreator/mockContextCreator";
 import { assertToBeNonNullish } from "../../../helpers";
 import { server } from "../../../server";
 import { mercuriusClient } from "../client";
@@ -109,7 +110,6 @@ async function cleanup(authToken: string, { orgId }: { orgId: string }) {
 			variables: { input: { id: orgId } },
 		});
 	} catch (error) {
-		// Cleanup failures are non-fatal but logged for debugging
 		console.warn(`Cleanup failed for org ${orgId}:`, error);
 	}
 }
@@ -207,7 +207,9 @@ describe("Tag.createdAt resolver - Integration", () => {
 						},
 					},
 				});
-			} catch {}
+			} catch (error) {
+				console.warn(`Cleanup failed for user ${regularUserId}:`, error);
+			}
 			await cleanup(adminAuth.token, {
 				orgId,
 			});
@@ -290,16 +292,68 @@ describe("Tag.createdAt resolver - Integration", () => {
 						},
 					},
 				});
-			} catch {}
+			} catch (error) {
+				console.warn(`Cleanup failed for user ${orgAdminUserId}:`, error);
+			}
 			try {
 				await mercuriusClient.mutate(Mutation_deleteOrganization, {
 					headers: { authorization: `bearer ${adminAuth.token}` },
 					variables: { input: { id: tempOrgId } },
 				});
-			} catch {}
+			} catch (error) {
+				console.warn(`Cleanup failed for org ${tempOrgId}:`, error);
+			}
 			await cleanup(adminAuth.token, {
 				orgId,
 			});
 		}
+	});
+});
+
+describe("Tag.createdAt resolver - Unit test edge case", () => {
+	it("should throw unauthenticated error when user is authenticated but not found in database", async () => {
+		const graphqlInstance = (
+			server as unknown as {
+				graphql?: { schema?: import("graphql").GraphQLSchema };
+			}
+		).graphql;
+		expect(graphqlInstance).toBeDefined();
+		const schema = graphqlInstance?.schema;
+		expect(schema).toBeDefined();
+
+		const tagType = schema?.getType("Tag");
+		expect(tagType).toBeDefined();
+
+		const fields = (tagType as import("graphql").GraphQLObjectType).getFields();
+		expect(fields.createdAt).toBeDefined();
+
+		const resolver = fields.createdAt?.resolve as (
+			parent: unknown,
+			args: unknown,
+			ctx: unknown,
+			info: unknown,
+		) => Promise<unknown>;
+
+		const parent = {
+			id: "tag-123",
+			createdAt: new Date("2024-01-01T00:00:00.000Z"),
+			organizationId: "org-123",
+		};
+
+		const { context, mocks } = createMockGraphQLContext(true, "missing-user");
+		mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValueOnce(
+			undefined,
+		);
+
+		const ctx = {
+			...context,
+			drizzleClient: mocks.drizzleClient,
+		};
+
+		await expect(resolver(parent, {}, ctx, {})).rejects.toEqual(
+			expect.objectContaining({
+				extensions: expect.objectContaining({ code: "unauthenticated" }),
+			} as unknown),
+		);
 	});
 });
