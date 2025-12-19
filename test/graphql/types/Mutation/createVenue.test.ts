@@ -1927,7 +1927,7 @@ suite("Mutation field createVenue", () => {
 				"0": ["variables.input.attachments.0"],
 			});
 
-			const fileContent = Buffer.from("fake jpeg content").toString("base64");
+			const fileContent = "fake jpeg content";
 
 			const body = [
 				`--${boundary}`,
