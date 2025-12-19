@@ -2461,22 +2461,3 @@ export const Query_getRecurringEvents = gql(`
     }
   }
 `);
-export const Mutation_createVenue = gql(`
-    mutation Mutation_createVenue($input: MutationCreateVenueInput!) {
-        createVenue(input: $input) {
-            id
-            name
-            description
-            capacity
-            organization {
-                id
-            }
-            creator {
-                id
-            }
-            attachments {
-                mimeType
-            }
-        }
-    }
-`);

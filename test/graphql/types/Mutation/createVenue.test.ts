@@ -1,5 +1,6 @@
 import { faker } from "@faker-js/faker";
 import type { ResultOf, VariablesOf } from "gql.tada";
+import { graphql } from "gql.tada";
 import { afterEach, expect, suite, test } from "vitest";
 import type {
 	ArgumentsAssociatedResourcesNotFoundExtensions,
@@ -16,11 +17,24 @@ import {
 	Mutation_createOrganization,
 	Mutation_createOrganizationMembership,
 	Mutation_createUser,
-	Mutation_createVenue,
 	Mutation_deleteCurrentUser,
 	Mutation_deleteOrganization,
 	Query_signIn,
 } from "../documentNodes";
+
+const Mutation_createVenue = graphql(`
+    mutation Mutation_createVenue($input: MutationCreateVenueInput!) {
+        createVenue(input: $input) {
+            id
+            name
+            description
+            capacity
+            organization { id }
+            creator { id }
+            attachments { mimeType }
+        }
+    }
+`);
 
 /**
  * Test suite for the createVenue GraphQL mutation.
