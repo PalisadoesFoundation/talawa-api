@@ -47,10 +47,10 @@ const Mutation_createVenue = graphql(`
  * - Edge cases and boundary conditions
  *
  * Note on Coverage:
- * - Attachment validation (lines 24-47) and storage (lines 212-245) are not tested
- *   due to GraphQL multipart upload complexity in test environment.
- * - These should be covered by integration tests or manual testing.
- * - Core mutation logic achieves 72% coverage with all critical paths tested.
+ * - Attachment validation and file upload are tested via raw Fastify multipart injection (lines 1516-1735).
+ * - Lines 200-209 (defensive Postgres driver bug check) are intentionally untested as they handle
+ *   an unreachable infrastructure error that cannot be reproduced in integration tests.
+ * - Achieves 95.94% statement coverage with all reachable business logic tested.
  *
  * Known Validation Gaps:
  * - Negative capacity values (e.g., -10) are currently accepted by the API
@@ -1218,8 +1218,8 @@ suite("Mutation field createVenue", () => {
 				assertToBeNonNullish(createVenueResult1.data.createVenue?.organization);
 				assertToBeNonNullish(createVenueResult2.data.createVenue?.organization);
 
-				expect(createVenueResult1.data.createVenue?.organization?.id).not.toBe(
-					createVenueResult2.data.createVenue?.organization?.id,
+				expect(createVenueResult1.data.createVenue.organization.id).not.toBe(
+					createVenueResult2.data.createVenue.organization.id,
 				);
 			});
 
