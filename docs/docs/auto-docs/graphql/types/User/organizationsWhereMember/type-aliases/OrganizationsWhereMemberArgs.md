@@ -8,7 +8,7 @@
 
 Defined in: [src/graphql/types/User/organizationsWhereMember.ts:42](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/graphql/types/User/organizationsWhereMember.ts#L42)
 
-## Type declaration
+## Type Declaration
 
 ### filter?
 

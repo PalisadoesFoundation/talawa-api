@@ -44,6 +44,6 @@ Defined in: [src/services/ses/EmailService.ts:16](https://github.com/PalisadoesF
 
 ### userId
 
-> **userId**: `null` \| `string`
+> **userId**: `string` \| `null`
 
 Defined in: [src/services/ses/EmailService.ts:18](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/ses/EmailService.ts#L18)

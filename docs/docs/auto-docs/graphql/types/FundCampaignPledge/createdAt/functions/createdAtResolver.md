@@ -26,7 +26,7 @@ Defined in: [src/graphql/types/FundCampaignPledge/createdAt.ts:6](https://github
 
 #### creatorId
 
-`null` \| `string`
+`string` \| `null`
 
 #### id
 
@@ -34,7 +34,7 @@ Defined in: [src/graphql/types/FundCampaignPledge/createdAt.ts:6](https://github
 
 #### note
 
-`null` \| `string`
+`string` \| `null`
 
 #### pledgerId
 
@@ -42,11 +42,11 @@ Defined in: [src/graphql/types/FundCampaignPledge/createdAt.ts:6](https://github
 
 #### updatedAt
 
-`null` \| `Date`
+`Date` \| `null`
 
 #### updaterId
 
-`null` \| `string`
+`string` \| `null`
 
 ### \_args
 

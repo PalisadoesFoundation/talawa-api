@@ -8,7 +8,7 @@
 
 Defined in: [src/graphql/types/Venue/Venue.ts:8](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/graphql/types/Venue/Venue.ts#L8)
 
-## Type declaration
+## Type Declaration
 
 ### attachments
 

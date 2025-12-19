@@ -4,7 +4,7 @@
 
 # Function: updatedAtResolver()
 
-> **updatedAtResolver**(`parent`, `_args`, `ctx`): `Promise`\<`null` \| `Date`\>
+> **updatedAtResolver**(`parent`, `_args`, `ctx`): `Promise`\<`Date` \| `null`\>
 
 Defined in: [src/graphql/types/FundCampaignPledge/updatedAt.ts:9](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/graphql/types/FundCampaignPledge/updatedAt.ts#L9)
 
@@ -26,7 +26,7 @@ Defined in: [src/graphql/types/FundCampaignPledge/updatedAt.ts:9](https://github
 
 #### creatorId
 
-`null` \| `string`
+`string` \| `null`
 
 #### id
 
@@ -34,7 +34,7 @@ Defined in: [src/graphql/types/FundCampaignPledge/updatedAt.ts:9](https://github
 
 #### note
 
-`null` \| `string`
+`string` \| `null`
 
 #### pledgerId
 
@@ -42,11 +42,11 @@ Defined in: [src/graphql/types/FundCampaignPledge/updatedAt.ts:9](https://github
 
 #### updatedAt
 
-`null` \| `Date`
+`Date` \| `null`
 
 #### updaterId
 
-`null` \| `string`
+`string` \| `null`
 
 ### \_args
 
@@ -58,4 +58,4 @@ Defined in: [src/graphql/types/FundCampaignPledge/updatedAt.ts:9](https://github
 
 ## Returns
 
-`Promise`\<`null` \| `Date`\>
+`Promise`\<`Date` \| `null`\>

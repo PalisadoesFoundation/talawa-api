@@ -26,11 +26,11 @@ Defined in: [src/services/eventGeneration/types.ts:35](https://github.com/Palisa
 
 #### creatorId
 
-> **creatorId**: `null` \| `string`
+> **creatorId**: `string` \| `null`
 
 #### description
 
-> **description**: `null` \| `string`
+> **description**: `string` \| `null`
 
 #### endAt
 
@@ -54,7 +54,7 @@ Defined in: [src/services/eventGeneration/types.ts:35](https://github.com/Palisa
 
 #### location
 
-> **location**: `null` \| `string`
+> **location**: `string` \| `null`
 
 #### name
 
@@ -70,11 +70,11 @@ Defined in: [src/services/eventGeneration/types.ts:35](https://github.com/Palisa
 
 #### updatedAt
 
-> **updatedAt**: `null` \| `Date`
+> **updatedAt**: `Date` \| `null`
 
 #### updaterId
 
-> **updaterId**: `null` \| `string`
+> **updaterId**: `string` \| `null`
 
 ***
 
@@ -110,11 +110,11 @@ Defined in: [src/services/eventGeneration/types.ts:38](https://github.com/Palisa
 
 #### updatedAt
 
-> **updatedAt**: `null` \| `Date`
+> **updatedAt**: `Date` \| `null`
 
 #### updaterId
 
-> **updaterId**: `null` \| `string`
+> **updaterId**: `string` \| `null`
 
 ***
 
@@ -130,19 +130,19 @@ Defined in: [src/services/eventGeneration/types.ts:34](https://github.com/Palisa
 
 #### byDay
 
-> **byDay**: `null` \| `string`[]
+> **byDay**: `string`[] \| `null`
 
 #### byMonth
 
-> **byMonth**: `null` \| `number`[]
+> **byMonth**: `number`[] \| `null`
 
 #### byMonthDay
 
-> **byMonthDay**: `null` \| `number`[]
+> **byMonthDay**: `number`[] \| `null`
 
 #### count
 
-> **count**: `null` \| `number`
+> **count**: `number` \| `null`
 
 #### createdAt
 
@@ -174,11 +174,11 @@ Defined in: [src/services/eventGeneration/types.ts:34](https://github.com/Palisa
 
 #### originalSeriesId
 
-> **originalSeriesId**: `null` \| `string`
+> **originalSeriesId**: `string` \| `null`
 
 #### recurrenceEndDate
 
-> **recurrenceEndDate**: `null` \| `Date`
+> **recurrenceEndDate**: `Date` \| `null`
 
 #### recurrenceRuleString
 
@@ -190,11 +190,11 @@ Defined in: [src/services/eventGeneration/types.ts:34](https://github.com/Palisa
 
 #### updatedAt
 
-> **updatedAt**: `null` \| `Date`
+> **updatedAt**: `Date` \| `null`
 
 #### updaterId
 
-> **updaterId**: `null` \| `string`
+> **updaterId**: `string` \| `null`
 
 ***
 

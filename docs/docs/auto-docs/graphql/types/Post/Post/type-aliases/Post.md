@@ -8,7 +8,7 @@
 
 Defined in: [src/graphql/types/Post/Post.ts:8](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/graphql/types/Post/Post.ts#L8)
 
-## Type declaration
+## Type Declaration
 
 ### attachments
 

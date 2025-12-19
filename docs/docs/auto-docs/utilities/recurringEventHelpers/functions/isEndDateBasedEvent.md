@@ -24,19 +24,19 @@ The recurrence rule to check.
 
 #### byDay
 
-`null` \| `string`[]
+`string`[] \| `null`
 
 #### byMonth
 
-`null` \| `number`[]
+`number`[] \| `null`
 
 #### byMonthDay
 
-`null` \| `number`[]
+`number`[] \| `null`
 
 #### count
 
-`null` \| `number`
+`number` \| `null`
 
 #### createdAt
 
@@ -68,11 +68,11 @@ The recurrence rule to check.
 
 #### originalSeriesId
 
-`null` \| `string`
+`string` \| `null`
 
 #### recurrenceEndDate
 
-`null` \| `Date`
+`Date` \| `null`
 
 #### recurrenceRuleString
 
@@ -84,11 +84,11 @@ The recurrence rule to check.
 
 #### updatedAt
 
-`null` \| `Date`
+`Date` \| `null`
 
 #### updaterId
 
-`null` \| `string`
+`string` \| `null`
 
 ## Returns
 

@@ -10,7 +10,7 @@ Defined in: [src/utilities/TalawaGraphQLError.ts:282](https://github.com/Palisad
 
 Type of the error returned by talawa api's graphql implementation in the root "errors" field of the graphql responses.
 
-## Type declaration
+## Type Declaration
 
 ### extensions
 

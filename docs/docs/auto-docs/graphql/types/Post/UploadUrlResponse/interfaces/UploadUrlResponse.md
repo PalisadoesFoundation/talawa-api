@@ -10,7 +10,7 @@ Defined in: [src/graphql/types/Post/UploadUrlResponse.ts:3](https://github.com/P
 
 ### objectName
 
-> **objectName**: `null` \| `string`
+> **objectName**: `string` \| `null`
 
 Defined in: [src/graphql/types/Post/UploadUrlResponse.ts:5](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/graphql/types/Post/UploadUrlResponse.ts#L5)
 
@@ -18,7 +18,7 @@ Defined in: [src/graphql/types/Post/UploadUrlResponse.ts:5](https://github.com/P
 
 ### presignedUrl
 
-> **presignedUrl**: `null` \| `string`
+> **presignedUrl**: `string` \| `null`
 
 Defined in: [src/graphql/types/Post/UploadUrlResponse.ts:4](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/graphql/types/Post/UploadUrlResponse.ts#L4)
 

@@ -34,7 +34,7 @@ Build the initial schema
 
 ### getCurrentSchema()
 
-> **getCurrentSchema**(): `null` \| `GraphQLSchema`
+> **getCurrentSchema**(): `GraphQLSchema` \| `null`
 
 Defined in: [src/graphql/schemaManager.ts:255](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/graphql/schemaManager.ts#L255)
 
@@ -42,7 +42,7 @@ Get the current schema
 
 #### Returns
 
-`null` \| `GraphQLSchema`
+`GraphQLSchema` \| `null`
 
 ***
 
