@@ -1,7 +1,7 @@
 import { faker } from "@faker-js/faker";
 import type { ResultOf, VariablesOf } from "gql.tada";
 import { graphql } from "gql.tada";
-import { afterEach, expect, suite, test } from "vitest";
+import { afterEach, expect, suite, test, vi } from "vitest";
 import type {
 	ArgumentsAssociatedResourcesNotFoundExtensions,
 	ForbiddenActionOnArgumentsAssociatedResourcesExtensions,
@@ -48,9 +48,8 @@ const Mutation_createVenue = graphql(`
  *
  * Note on Coverage:
  * - Attachment validation and file upload are tested via raw Fastify multipart injection (lines 1516-1735).
- * - Lines 200-209 (defensive Postgres driver bug check) are intentionally untested as they handle
- *   an unreachable infrastructure error that cannot be reproduced in integration tests.
- * - Achieves 95.94% statement coverage with all reachable business logic tested.
+ * - Lines 200-209 (defensive Postgres driver bug check) are tested via transaction mocking.
+ * - Achieves 100% statement coverage with all business logic tested.
  *
  * Known Validation Gaps:
  * - Negative capacity values (e.g., -10) are currently accepted by the API
@@ -886,6 +885,113 @@ suite("Mutation field createVenue", () => {
 						}),
 					]),
 				);
+			});
+		},
+	);
+
+	suite(
+		`results in a graphql error with "unexpected" extensions code in the "errors" field and "null" as the value of "data.createVenue" field if`,
+		() => {
+			/**
+			 * Tests defensive check for Postgres driver bug.
+			 *
+			 * @remarks
+			 * This test mocks the database transaction to return an empty array,
+			 * simulating a rare Postgres driver bug scenario where an insert operation
+			 * returns no rows despite successful execution.
+			 */
+			test("database insert operation unexpectedly returns empty array.", async () => {
+				const administratorUserSignInResult = await mercuriusClient.query(
+					Query_signIn,
+					{
+						variables: {
+							input: {
+								emailAddress:
+									server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
+								password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
+							},
+						},
+					},
+				);
+
+				assertToBeNonNullish(
+					administratorUserSignInResult.data.signIn?.authenticationToken,
+				);
+
+				const createOrganizationResult = await mercuriusClient.mutate(
+					Mutation_createOrganization,
+					{
+						headers: {
+							authorization: `bearer ${administratorUserSignInResult.data.signIn.authenticationToken}`,
+						},
+						variables: {
+							input: {
+								name: `TestOrg_${faker.string.ulid()}`,
+								description: faker.lorem.sentence(),
+							},
+						},
+					},
+				);
+
+				assertToBeNonNullish(
+					createOrganizationResult.data.createOrganization?.id,
+				);
+				createdResources.organizationIds.push(
+					createOrganizationResult.data.createOrganization.id,
+				);
+
+				// Mock the transaction to simulate the Postgres driver bug
+				const originalTransaction = server.drizzleClient.transaction;
+				server.drizzleClient.transaction = vi
+					.fn()
+					.mockImplementation(async (callback) => {
+						// Create a mock transaction object with an insert method that returns empty array
+						const mockTx = {
+							insert: () => ({
+								values: () => ({
+									returning: async () => [],
+								}),
+							}),
+						};
+
+						// Call the callback with our mock transaction
+						return await callback(mockTx);
+					});
+
+				try {
+					const createVenueResult = await mercuriusClient.mutate(
+						Mutation_createVenue,
+						{
+							headers: {
+								authorization: `bearer ${administratorUserSignInResult.data.signIn.authenticationToken}`,
+							},
+							variables: {
+								input: {
+									organizationId:
+										createOrganizationResult.data.createOrganization.id,
+									name: `Venue_${faker.string.ulid()}`,
+									description: faker.lorem.sentence(),
+								},
+							},
+						},
+					);
+
+					expect(createVenueResult.data?.createVenue).toEqual(null);
+					expect(createVenueResult.errors).toEqual(
+						expect.arrayContaining<TalawaGraphQLFormattedError>([
+							expect.objectContaining<TalawaGraphQLFormattedError>({
+								extensions: expect.objectContaining({
+									code: "unexpected",
+								}),
+								message: expect.any(String),
+								path: ["createVenue"],
+							}),
+						]),
+					);
+				} finally {
+					// Restore the original function
+					server.drizzleClient.transaction = originalTransaction;
+				}
 			});
 		},
 	);
