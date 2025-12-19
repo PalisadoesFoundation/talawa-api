@@ -1513,4 +1513,224 @@ suite("Mutation field createVenue", () => {
 			});
 		},
 	);
+	suite("file upload validation and attachment processing", () => {
+		test("rejects file upload with invalid MIME type", async () => {
+			const administratorUserSignInResult = await mercuriusClient.query(
+				Query_signIn,
+				{
+					variables: {
+						input: {
+							emailAddress:
+								server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
+							password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
+						},
+					},
+				},
+			);
+
+			assertToBeNonNullish(
+				administratorUserSignInResult.data.signIn?.authenticationToken,
+			);
+
+			const createOrganizationResult = await mercuriusClient.mutate(
+				Mutation_createOrganization,
+				{
+					headers: {
+						authorization: `bearer ${administratorUserSignInResult.data.signIn.authenticationToken}`,
+					},
+					variables: {
+						input: {
+							name: `TestOrg_${faker.string.ulid()}`,
+							description: faker.lorem.sentence(),
+						},
+					},
+				},
+			);
+
+			assertToBeNonNullish(
+				createOrganizationResult.data.createOrganization?.id,
+			);
+			createdResources.organizationIds.push(
+				createOrganizationResult.data.createOrganization.id,
+			);
+
+			// Use Fastify's raw inject with manually constructed multipart data
+			const boundary = `----WebKitFormBoundary${Math.random().toString(36)}`;
+			const operations = JSON.stringify({
+				query: `
+							mutation Mutation_createVenue($input: MutationCreateVenueInput!) {
+								createVenue(input: $input) {
+									id
+									name
+									attachments { mimeType }
+								}
+							}
+						`,
+				variables: {
+					input: {
+						organizationId: createOrganizationResult.data.createOrganization.id,
+						name: `Venue_${faker.string.ulid()}`,
+						description: "Test venue",
+						attachments: [null],
+					},
+				},
+			});
+
+			const map = JSON.stringify({
+				"0": ["variables.input.attachments.0"],
+			});
+
+			const fileContent = "fake executable content";
+
+			const body = [
+				`--${boundary}`,
+				'Content-Disposition: form-data; name="operations"',
+				"",
+				operations,
+				`--${boundary}`,
+				'Content-Disposition: form-data; name="map"',
+				"",
+				map,
+				`--${boundary}`,
+				'Content-Disposition: form-data; name="0"; filename="test.exe"',
+				"Content-Type: application/x-msdownload",
+				"",
+				fileContent,
+				`--${boundary}--`,
+			].join("\r\n");
+
+			const response = await server.inject({
+				method: "POST",
+				url: "/graphql",
+				headers: {
+					"content-type": `multipart/form-data; boundary=${boundary}`,
+					authorization: `bearer ${administratorUserSignInResult.data.signIn.authenticationToken}`,
+				},
+				payload: body,
+			});
+
+			const result = JSON.parse(response.body);
+
+			expect(result.data?.createVenue).toEqual(null);
+			expect(result.errors).toEqual(
+				expect.arrayContaining([
+					expect.objectContaining({
+						extensions: expect.objectContaining({
+							code: "invalid_arguments",
+							issues: expect.arrayContaining([
+								expect.objectContaining({
+									argumentPath: expect.arrayContaining(["attachments"]),
+									message: expect.stringContaining("Mime type"),
+								}),
+							]),
+						}),
+					}),
+				]),
+			);
+		});
+
+		test("successfully creates venue with valid image attachment", async () => {
+			const administratorUserSignInResult = await mercuriusClient.query(
+				Query_signIn,
+				{
+					variables: {
+						input: {
+							emailAddress:
+								server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
+							password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
+						},
+					},
+				},
+			);
+
+			assertToBeNonNullish(
+				administratorUserSignInResult.data.signIn?.authenticationToken,
+			);
+
+			const createOrganizationResult = await mercuriusClient.mutate(
+				Mutation_createOrganization,
+				{
+					headers: {
+						authorization: `bearer ${administratorUserSignInResult.data.signIn.authenticationToken}`,
+					},
+					variables: {
+						input: {
+							name: `TestOrg_${faker.string.ulid()}`,
+							description: faker.lorem.sentence(),
+						},
+					},
+				},
+			);
+
+			assertToBeNonNullish(
+				createOrganizationResult.data.createOrganization?.id,
+			);
+			createdResources.organizationIds.push(
+				createOrganizationResult.data.createOrganization.id,
+			);
+
+			const boundary = `----WebKitFormBoundary${Math.random().toString(36)}`;
+			const operations = JSON.stringify({
+				query: `
+							mutation Mutation_createVenue($input: MutationCreateVenueInput!) {
+								createVenue(input: $input) {
+									id
+									name
+									attachments { mimeType }
+								}
+							}
+						`,
+				variables: {
+					input: {
+						organizationId: createOrganizationResult.data.createOrganization.id,
+						name: `Venue_${faker.string.ulid()}`,
+						description: "Test venue",
+						attachments: [null],
+					},
+				},
+			});
+
+			const map = JSON.stringify({
+				"0": ["variables.input.attachments.0"],
+			});
+
+			const fileContent = Buffer.from("fake jpeg content").toString("base64");
+
+			const body = [
+				`--${boundary}`,
+				'Content-Disposition: form-data; name="operations"',
+				"",
+				operations,
+				`--${boundary}`,
+				'Content-Disposition: form-data; name="map"',
+				"",
+				map,
+				`--${boundary}`,
+				'Content-Disposition: form-data; name="0"; filename="venue-photo.jpg"',
+				"Content-Type: image/jpeg",
+				"",
+				fileContent,
+				`--${boundary}--`,
+			].join("\r\n");
+
+			const response = await server.inject({
+				method: "POST",
+				url: "/graphql",
+				headers: {
+					"content-type": `multipart/form-data; boundary=${boundary}`,
+					authorization: `bearer ${administratorUserSignInResult.data.signIn.authenticationToken}`,
+				},
+				payload: body,
+			});
+
+			const result = JSON.parse(response.body);
+
+			expect(result.errors).toBeUndefined();
+			assertToBeNonNullish(result.data.createVenue?.id);
+			expect(result.data.createVenue.attachments).toHaveLength(1);
+			expect(result.data.createVenue.attachments[0].mimeType).toBe(
+				"image/jpeg",
+			);
+		});
+	});
 });
