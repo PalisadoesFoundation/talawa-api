@@ -4,6 +4,18 @@
 // To exclude files, use Biome's linter.rules configuration in biome.jsonc.
 //
 // This is a diagnostic-only rule. It warns but cannot auto-fix.
+//
+// Examples:
+//
+// Triggers warning:
+// t.string({
+//   resolve: (parent) => parent.bio // No escapeHTML
+// })
+//
+// Does NOT trigger warning:
+// t.string({
+//   resolve: (parent) => escapeHTML(parent.bio)
+// })
 
 // Match t.string with resolve function, flag if no escapeHTML call inside
 `t.string({ $props })` where {
