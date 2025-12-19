@@ -1617,6 +1617,133 @@ suite("Mutation field createVenue", () => {
 
 				expect(createVenueResult.data.createVenue?.capacity).toBe(1000000);
 			});
+
+			test("accepts negative capacity value (documents current API behavior)", async () => {
+				const administratorUserSignInResult = await mercuriusClient.query(
+					Query_signIn,
+					{
+						variables: {
+							input: {
+								emailAddress:
+									server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
+								password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
+							},
+						},
+					},
+				);
+
+				assertToBeNonNullish(
+					administratorUserSignInResult.data.signIn?.authenticationToken,
+				);
+
+				const createOrganizationResult = await mercuriusClient.mutate(
+					Mutation_createOrganization,
+					{
+						headers: {
+							authorization: `bearer ${administratorUserSignInResult.data.signIn.authenticationToken}`,
+						},
+						variables: {
+							input: {
+								name: `TestOrg_${faker.string.ulid()}`,
+								description: faker.lorem.sentence(),
+							},
+						},
+					},
+				);
+
+				assertToBeNonNullish(
+					createOrganizationResult.data.createOrganization?.id,
+				);
+				createdResources.organizationIds.push(
+					createOrganizationResult.data.createOrganization.id,
+				);
+
+				const createVenueResult = await mercuriusClient.mutate(
+					Mutation_createVenue,
+					{
+						headers: {
+							authorization: `bearer ${administratorUserSignInResult.data.signIn.authenticationToken}`,
+						},
+						variables: {
+							input: {
+								organizationId:
+									createOrganizationResult.data.createOrganization.id,
+								name: `Venue_${faker.string.ulid()}`,
+								description: faker.lorem.sentence(),
+								capacity: -10, // Negative capacity currently accepted
+							},
+						},
+					},
+				);
+
+				// Documents that API currently accepts negative capacity
+				expect(createVenueResult.errors).toBeUndefined();
+				assertToBeNonNullish(createVenueResult.data.createVenue?.id);
+				expect(createVenueResult.data.createVenue.capacity).toBe(-10);
+			});
+
+			test("accepts whitespace-only venue name (documents current API behavior)", async () => {
+				const administratorUserSignInResult = await mercuriusClient.query(
+					Query_signIn,
+					{
+						variables: {
+							input: {
+								emailAddress:
+									server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
+								password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
+							},
+						},
+					},
+				);
+
+				assertToBeNonNullish(
+					administratorUserSignInResult.data.signIn?.authenticationToken,
+				);
+
+				const createOrganizationResult = await mercuriusClient.mutate(
+					Mutation_createOrganization,
+					{
+						headers: {
+							authorization: `bearer ${administratorUserSignInResult.data.signIn.authenticationToken}`,
+						},
+						variables: {
+							input: {
+								name: `TestOrg_${faker.string.ulid()}`,
+								description: faker.lorem.sentence(),
+							},
+						},
+					},
+				);
+
+				assertToBeNonNullish(
+					createOrganizationResult.data.createOrganization?.id,
+				);
+				createdResources.organizationIds.push(
+					createOrganizationResult.data.createOrganization.id,
+				);
+
+				const createVenueResult = await mercuriusClient.mutate(
+					Mutation_createVenue,
+					{
+						headers: {
+							authorization: `bearer ${administratorUserSignInResult.data.signIn.authenticationToken}`,
+						},
+						variables: {
+							input: {
+								organizationId:
+									createOrganizationResult.data.createOrganization.id,
+								name: "   ", // Whitespace-only name currently accepted
+								description: faker.lorem.sentence(),
+							},
+						},
+					},
+				);
+
+				// Documents that API currently accepts whitespace-only names
+				expect(createVenueResult.errors).toBeUndefined();
+				assertToBeNonNullish(createVenueResult.data.createVenue?.id);
+				expect(createVenueResult.data.createVenue.name).toBe("   ");
+			});
 		},
 	);
 	suite("file upload validation and attachment processing", () => {
