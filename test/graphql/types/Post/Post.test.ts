@@ -88,4 +88,51 @@ describe("Post GraphQL Type", () => {
 			expect(result).toBe("Tom &amp; Jerry &lt;3 Programming");
 		});
 	});
+
+	describe("body field resolver", () => {
+		it("should escape HTML in body field", async () => {
+			const postType = schema.getType("Post") as GraphQLObjectType;
+			const bodyField = postType.getFields().body;
+			if (!bodyField) throw new Error("Body field not found");
+			if (!bodyField.resolve) throw new Error("Resolver not defined");
+
+			const mockPost = {
+				id: "test-id",
+				body: '<script>alert("XSS")</script><img src=x onerror=alert("xss")>',
+			};
+
+			// Execute the resolver with the mock post
+			const result = await bodyField.resolve(
+				mockPost,
+				{},
+				{} as unknown as GraphQLContext,
+				{} as unknown as GraphQLResolveInfo,
+			);
+
+			expect(result).toBe(
+				"&lt;script&gt;alert(&quot;XSS&quot;)&lt;/script&gt;&lt;img src=x onerror=alert(&quot;xss&quot;)&gt;",
+			);
+		});
+
+		it("should return null when body is null", async () => {
+			const postType = schema.getType("Post") as GraphQLObjectType;
+			const bodyField = postType.getFields().body;
+			if (!bodyField) throw new Error("Body field not found");
+			if (!bodyField.resolve) throw new Error("Resolver not defined");
+
+			const mockPost = {
+				id: "test-id",
+				body: null,
+			};
+
+			const result = await bodyField.resolve(
+				mockPost,
+				{},
+				{} as unknown as GraphQLContext,
+				{} as unknown as GraphQLResolveInfo,
+			);
+
+			expect(result).toBeNull();
+		});
+	});
 });

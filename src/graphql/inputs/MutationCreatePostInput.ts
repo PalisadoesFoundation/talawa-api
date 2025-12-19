@@ -4,6 +4,7 @@ import {
 	postAttachmentMimeTypeEnum,
 } from "~/src/drizzle/enums/postAttachmentMimeType";
 import {
+	POST_BODY_MAX_LENGTH,
 	POST_CAPTION_MAX_LENGTH,
 	postsTableInsertSchema,
 } from "~/src/drizzle/tables/posts";
@@ -66,6 +67,19 @@ export const mutationCreatePostInputSchema = postsTableInsertSchema
 			.max(POST_CAPTION_MAX_LENGTH, {
 				message: `Post caption must not exceed ${POST_CAPTION_MAX_LENGTH} characters.`,
 			}),
+		/**
+		 * Body of the post.
+		 * We persist the raw (trimmed) text and perform HTML escaping at output time
+		 * to avoid double-escaping and exceeding DB length limits with escaped entities.
+		 */
+		body: z
+			.string()
+			.trim()
+			.min(1)
+			.max(POST_BODY_MAX_LENGTH, {
+				message: `Post body must not exceed ${POST_BODY_MAX_LENGTH} characters.`,
+			})
+			.optional(),
 		attachments: z.array(fileMetadataSchema).max(20).optional(),
 		isPinned: z.boolean().optional(),
 	});
@@ -83,6 +97,10 @@ export const MutationCreatePostInput = builder.inputType(
 			caption: t.string({
 				description: "Caption about the post.",
 				required: true,
+			}),
+			body: t.string({
+				description: "Body content of the post.",
+				required: false,
 			}),
 			isPinned: t.boolean({
 				description: "Boolean to tell if the post is pinned",

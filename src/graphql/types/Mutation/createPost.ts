@@ -147,6 +147,7 @@ builder.mutationField("createPost", (t) =>
 					.values({
 						creatorId: currentUserId,
 						caption: parsedArgs.input.caption,
+						body: parsedArgs.input.body,
 						pinnedAt:
 							parsedArgs.input.isPinned === undefined ||
 							parsedArgs.input.isPinned === false
