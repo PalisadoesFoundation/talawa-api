@@ -121,6 +121,23 @@ The application uses `pnpm` to manage the various `node.js` packages that need t
 
 Proceed to the next section.
 
+### Install Docusaurus (For Developers Only)
+
+After successfully installing pnpm,
+From the `talawa-api` directory, run the following command.
+
+```console
+$ pnpm add docusaurus
+$ pnpm install
+```
+
+#### Other Methods
+
+1. ***In our `talawa-api` repository***: Our [Talawa-Api](https://github.com/PalisadoesFoundation/talawa-api) repository contains user edited markdown files that are automatically integrated into our Talawa documentation site [docs.talawa.io](https://docs.talawa.io/) using the [Docusaurus](https://docusaurus.io/) package.
+   1. The `talawa-api`  repository has an `DOCUMENTATION.md` file that explains how to configure and install it.
+
+Proceed to the next section.
+
 ### Install TypeScript
 
 TypeScript is a typed superset of JavaScript that compiles to plain JavaScript. It adds optional types, classes, and modules to JavaScript, and supports tools for large-scale JavaScript applications.
