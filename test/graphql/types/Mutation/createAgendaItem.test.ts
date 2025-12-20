@@ -87,16 +87,24 @@ async function addOrganizationMembership(params: {
 	organizationId: string;
 	role: "administrator" | "regular";
 }) {
-	await mercuriusClient.mutate(Mutation_createOrganizationMembership, {
-		headers: { authorization: `bearer ${params.adminAuthToken}` },
-		variables: {
-			input: {
-				memberId: params.memberId,
-				organizationId: params.organizationId,
-				role: params.role,
+	const result = await mercuriusClient.mutate(
+		Mutation_createOrganizationMembership,
+		{
+			headers: { authorization: `bearer ${params.adminAuthToken}` },
+			variables: {
+				input: {
+					memberId: params.memberId,
+					organizationId: params.organizationId,
+					role: params.role,
+				},
 			},
 		},
-	});
+	);
+	if (result.errors) {
+		throw new Error(
+			`Failed to create organization membership: ${result.errors[0]?.message || "Unknown error"}`,
+		);
+	}
 }
 
 // Helper function to create organization, event, and agenda folder for testing
@@ -487,7 +495,7 @@ suite("Mutation field createAgendaItem", () => {
 			expect(result.errors).toBeUndefined();
 		});
 
-		test("Creates song type agenda item with key", async () => {
+		test("Creates song type agenda item", async () => {
 			const { token: adminAuthToken } = await getAdminAuth();
 
 			const { cleanup, folderId } = await createTestEnvironment(
