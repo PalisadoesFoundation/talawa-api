@@ -53,7 +53,7 @@ export const postVotesTable = pgTable(
 		 * Type of the vote.
 		 */
 		type: text("type", {
-			enum: postVoteTypeEnum.options,
+			enum: postVoteTypeEnum.options as [string, ...string[]],
 		}).notNull(),
 		/**
 		 * Date time at the time the vote was last updated.
