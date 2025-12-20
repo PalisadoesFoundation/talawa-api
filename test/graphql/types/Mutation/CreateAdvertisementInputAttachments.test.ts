@@ -1,5 +1,4 @@
 import { Readable } from "node:stream";
-import type { FileUpload } from "graphql-upload-minimal";
 import { expect, suite, test } from "vitest";
 import { mutationCreateAdvertisementInputSchema } from "~/src/graphql/inputs/MutationCreateAdvertisementInput";
 
@@ -13,77 +12,84 @@ suite("MutationCreateAdvertisementInput - Attachment Validation", () => {
 		endAt: new Date("2024-01-02T10:00:00Z"),
 	};
 
-	const makeFileUpload = (
-		filename: string,
-		mimetype: string,
-		content: string,
-	): Promise<FileUpload> => {
-		return Promise.resolve({
-			filename,
-			mimetype,
+	test("should accept input without attachments (optional field)", async () => {
+		const result =
+			await mutationCreateAdvertisementInputSchema.safeParseAsync(validInput);
+
+		expect(result.success).toBe(true);
+		if (result.success) {
+			expect(result.data.attachments).toBeUndefined();
+		}
+	});
+
+	test("should accept valid attachments array with single item", async () => {
+		const validAttachment = Promise.resolve({
+			filename: "test.png",
+			mimetype: "image/png",
 			encoding: "7bit",
-			createReadStream: () => Readable.from(Buffer.from(content)),
-		} as FileUpload);
-	};
-
-	test("should accept single valid attachment", async () => {
-		const attachment = makeFileUpload("test.png", "image/png", "test");
+			createReadStream: () => Readable.from(Buffer.from("test")),
+		});
 
 		const result = await mutationCreateAdvertisementInputSchema.safeParseAsync({
 			...validInput,
-			attachments: [attachment],
+			attachments: [validAttachment],
 		});
 
 		expect(result.success).toBe(true);
-
-		if (result.success && result.data.attachments) {
-			const resolved = await Promise.all(result.data.attachments);
-			expect(resolved).toHaveLength(1);
-			expect(resolved[0]?.filename).toBe("test.png");
+		if (result.success) {
+			expect(result.data.attachments).toBeDefined();
+			expect(result.data.attachments?.length).toBe(1);
 		}
 	});
 
-	test("should accept multiple attachments up to max limit", async () => {
-		const attachments = Array.from({ length: 20 }, (_, i) =>
-			makeFileUpload(`file${i}.png`, "image/png", `content${i}`),
-		);
-
-		const result = await mutationCreateAdvertisementInputSchema.safeParseAsync({
-			...validInput,
-			attachments,
-		});
-
-		expect(result.success).toBe(true);
-
-		if (result.success && result.data.attachments) {
-			const resolved = await Promise.all(result.data.attachments);
-			expect(resolved).toHaveLength(20);
-		}
-	});
-
-	test("should reject empty attachments array", async () => {
+	test("should reject empty attachments array (minimum 1 required)", async () => {
 		const result = await mutationCreateAdvertisementInputSchema.safeParseAsync({
 			...validInput,
 			attachments: [],
 		});
 
 		expect(result.success).toBe(false);
-
 		if (!result.success) {
-			const issues = result.error.issues;
-			expect(
-				issues.some(
-					(issue) =>
-						issue.path.includes("attachments") &&
-						issue.message.includes("at least"),
-				),
-			).toBe(true);
+			expect(result.error.issues).toEqual(
+				expect.arrayContaining([
+					expect.objectContaining({
+						path: ["attachments"],
+						code: "too_small",
+					}),
+				]),
+			);
 		}
 	});
 
-	test("should reject more than 20 attachments", async () => {
+	test("should accept maximum allowed attachments (20 items)", async () => {
+		const attachments = Array.from({ length: 20 }, (_, i) =>
+			Promise.resolve({
+				filename: `test${i}.png`,
+				mimetype: "image/png",
+				encoding: "7bit",
+				createReadStream: () => Readable.from(Buffer.from(`test${i}`)),
+			}),
+		);
+
+		const result = await mutationCreateAdvertisementInputSchema.safeParseAsync({
+			...validInput,
+			attachments,
+		});
+
+		expect(result.success).toBe(true);
+		if (result.success) {
+			expect(result.data.attachments?.length).toBe(20);
+		}
+	});
+
+	test("should reject attachments exceeding maximum limit (>20 items)", async () => {
 		const attachments = Array.from({ length: 21 }, (_, i) =>
-			makeFileUpload(`file${i}.png`, "image/png", `content${i}`),
+			Promise.resolve({
+				filename: `test${i}.png`,
+				mimetype: "image/png",
+				encoding: "7bit",
+				createReadStream: () => Readable.from(Buffer.from(`test${i}`)),
+			}),
 		);
 
 		const result = await mutationCreateAdvertisementInputSchema.safeParseAsync({
@@ -92,39 +98,48 @@ suite("MutationCreateAdvertisementInput - Attachment Validation", () => {
 		});
 
 		expect(result.success).toBe(false);
-
 		if (!result.success) {
-			const issues = result.error.issues;
-			expect(
-				issues.some(
-					(issue) =>
-						issue.path.includes("attachments") &&
-						issue.message.includes("at most"),
-				),
-			).toBe(true);
+			expect(result.error.issues).toEqual(
+				expect.arrayContaining([
+					expect.objectContaining({
+						path: ["attachments"],
+						code: "too_big",
+					}),
+				]),
+			);
 		}
 	});
 
-	test("should accept input without attachments field", async () => {
-		const result =
-			await mutationCreateAdvertisementInputSchema.safeParseAsync(validInput);
-
-		expect(result.success).toBe(true);
-
-		if (result.success) {
-			expect(result.data.attachments).toBeUndefined();
-		}
-	});
-
-	test("should accept any mime type in schema validation", async () => {
-		// Schema does NOT validate mime types - that happens in resolver
-		const textFile = makeFileUpload("test.txt", "text/plain", "content");
+	test("should accept multiple attachments within allowed range", async () => {
+		const attachments = [
+			Promise.resolve({
+				filename: "image1.png",
+				mimetype: "image/png",
+				encoding: "7bit",
+				createReadStream: () => Readable.from(Buffer.from("image1")),
+			}),
+			Promise.resolve({
+				filename: "image2.jpg",
+				mimetype: "image/jpeg",
+				encoding: "7bit",
+				createReadStream: () => Readable.from(Buffer.from("image2")),
+			}),
+			Promise.resolve({
+				filename: "video.mp4",
+				mimetype: "video/mp4",
+				encoding: "7bit",
+				createReadStream: () => Readable.from(Buffer.from("video")),
+			}),
+		];
 
 		const result = await mutationCreateAdvertisementInputSchema.safeParseAsync({
 			...validInput,
-			attachments: [textFile],
+			attachments,
 		});
 
 		expect(result.success).toBe(true);
+		if (result.success) {
+			expect(result.data.attachments?.length).toBe(3);
+		}
 	});
 });

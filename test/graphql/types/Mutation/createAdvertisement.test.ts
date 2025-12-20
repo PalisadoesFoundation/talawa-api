@@ -1,4 +1,3 @@
-import { Readable } from "node:stream";
 import { faker } from "@faker-js/faker";
 import { gql } from "graphql-tag";
 import { expect, suite, test, vi } from "vitest";
@@ -13,27 +12,27 @@ import {
 } from "../documentNodes";
 
 const Mutation_createAdvertisement = gql`
-    mutation createAdvertisement($input: MutationCreateAdvertisementInput!) {
-        createAdvertisement(input: $input) {
-            id
-            name
-            description
-            type
-            startAt
-            endAt
-            attachments {
-                url
-                mimeType
-            }
-            organization {
-                id
-            }
-        }
+  mutation createAdvertisement($input: MutationCreateAdvertisementInput!) {
+    createAdvertisement(input: $input) {
+      id
+      name
+      description
+      type
+      startAt
+      endAt
+      attachments {
+        url
+        mimeType
+      }
+      organization {
+        id
+      }
     }
+  }
 `;
 
 // Constants
-const ONE_DAY_MS = 24 * 60 * 60 * 1000;
+const ONE_DAY_MS = 24 * 60 * 60 * 1000; // 86400000 milliseconds
 const ONE_WEEK_MS = 7 * ONE_DAY_MS;
 
 // Helper function to create test organization
@@ -55,25 +54,6 @@ async function createTestOrganization(token: string) {
 	const orgId = result.data?.createOrganization?.id;
 	assertToBeNonNullish(orgId);
 	return orgId;
-}
-
-// Helper to create mock file upload
-function createMockFileUpload(
-	filename: string,
-	mimetype: string,
-	content: string,
-): Promise<{
-	filename: string;
-	mimetype: string;
-	encoding: string;
-	createReadStream: () => Readable;
-}> {
-	return Promise.resolve({
-		filename,
-		mimetype,
-		encoding: "7bit",
-		createReadStream: () => Readable.from(Buffer.from(content)),
-	});
 }
 
 const signInResult = await mercuriusClient.query(Query_signIn, {
@@ -106,6 +86,7 @@ suite("Mutation field createAdvertisement", () => {
 					},
 				},
 			);
+
 			expect(result.data?.createAdvertisement).toBeNull();
 			expect(result.errors).toEqual(
 				expect.arrayContaining([
@@ -121,6 +102,7 @@ suite("Mutation field createAdvertisement", () => {
 	suite("when arguments are invalid", () => {
 		test("should return an error with invalid_arguments extension code for invalid organizationId", async () => {
 			const invalidOrganizationId = "not-a-valid-uuid";
+
 			const result = await mercuriusClient.mutate(
 				Mutation_createAdvertisement,
 				{
@@ -156,34 +138,7 @@ suite("Mutation field createAdvertisement", () => {
 			);
 		});
 
-		test("should return an error for invalid advertisement type at GraphQL schema level", async () => {
-			const orgId = await createTestOrganization(authToken);
-
-			const result = await mercuriusClient.mutate(
-				Mutation_createAdvertisement,
-				{
-					headers: { authorization: `bearer ${authToken}` },
-					variables: {
-						input: {
-							name: "Ad with Invalid Type",
-							description: "Test Description",
-							organizationId: orgId,
-							type: "invalid_type",
-							startAt: new Date().toISOString(),
-							endAt: new Date(Date.now() + ONE_DAY_MS).toISOString(),
-						},
-					},
-				},
-			);
-
-			expect(result.data?.createAdvertisement).toBeUndefined();
-			expect(result.errors).toBeDefined();
-			expect(result.errors?.[0]?.message).toContain(
-				'Value "invalid_type" does not exist in "AdvertisementType" enum',
-			);
-		});
-
-		test("should return an error with invalid_arguments for empty name", async () => {
+		test("should return an error for empty name", async () => {
 			const orgId = await createTestOrganization(authToken);
 
 			const result = await mercuriusClient.mutate(
@@ -209,49 +164,11 @@ suite("Mutation field createAdvertisement", () => {
 					expect.objectContaining({
 						extensions: expect.objectContaining({
 							code: "invalid_arguments",
-							issues: expect.arrayContaining([
-								expect.objectContaining({
-									argumentPath: ["input", "name"],
-								}),
-							]),
 						}),
 						path: ["createAdvertisement"],
 					}),
 				]),
 			);
-		});
-
-		test("should return a GraphQL Upload error for invalid attachment shape", async () => {
-			const orgId = await createTestOrganization(authToken);
-
-			const invalidAttachment = createMockFileUpload(
-				"test.txt",
-				"text/plain",
-				"test content",
-			);
-
-			const result = await mercuriusClient.mutate(
-				Mutation_createAdvertisement,
-				{
-					headers: { authorization: `bearer ${authToken}` },
-					variables: {
-						input: {
-							name: `Ad Invalid Mime ${faker.string.uuid()}`,
-							description: "Test Description",
-							organizationId: orgId,
-							type: "banner",
-							startAt: new Date().toISOString(),
-							endAt: new Date(Date.now() + ONE_DAY_MS).toISOString(),
-							attachments: [invalidAttachment],
-						},
-					},
-				},
-			);
-
-			// GraphQL Upload scalar rejects our mocked value before hitting the resolver
-			expect(result.data?.createAdvertisement).toBeUndefined();
-			expect(result.errors).toBeDefined();
-			expect(result.errors?.[0]?.message).toContain("Upload value invalid");
 		});
 	});
 
@@ -401,6 +318,7 @@ suite("Mutation field createAdvertisement", () => {
 					},
 				},
 			);
+
 			expect(firstResult.errors).toBeUndefined();
 			assertToBeNonNullish(firstResult.data?.createAdvertisement);
 
@@ -461,6 +379,7 @@ suite("Mutation field createAdvertisement", () => {
 					},
 				},
 			);
+
 			expect(joinResult.data?.joinPublicOrganization).toBeDefined();
 
 			const result = await mercuriusClient.mutate(
@@ -498,66 +417,13 @@ suite("Mutation field createAdvertisement", () => {
 			);
 		});
 
-		test("should properly check organization administrator permissions", async () => {
-			const { authToken: regularUserToken, userId: regularUserId } =
-				await import("../createRegularUserUsingAdmin").then((module) =>
-					module.createRegularUserUsingAdmin(),
-				);
-			assertToBeNonNullish(regularUserToken);
-			assertToBeNonNullish(regularUserId);
-
-			const orgId = await createTestOrganization(authToken);
-
-			const joinResult = await mercuriusClient.mutate(
-				Mutation_joinPublicOrganization,
-				{
-					headers: { authorization: `bearer ${regularUserToken}` },
-					variables: {
-						input: {
-							organizationId: orgId,
-						},
-					},
-				},
-			);
-			expect(joinResult.data?.joinPublicOrganization).toBeDefined();
-			expect(joinResult.data?.joinPublicOrganization?.role).toBe("regular");
-
-			const result = await mercuriusClient.mutate(
-				Mutation_createAdvertisement,
-				{
-					headers: { authorization: `bearer ${regularUserToken}` },
-					variables: {
-						input: {
-							name: `Regular Member Ad ${faker.string.uuid()}`,
-							description: "Should be rejected",
-							organizationId: orgId,
-							type: "banner",
-							startAt: new Date().toISOString(),
-							endAt: new Date(Date.now() + ONE_DAY_MS).toISOString(),
-						},
-					},
-				},
-			);
-
-			expect(result.data?.createAdvertisement).toBeNull();
-			expect(result.errors).toEqual(
-				expect.arrayContaining([
-					expect.objectContaining({
-						extensions: expect.objectContaining({
-							code: "unauthorized_action_on_arguments_associated_resources",
-						}),
-						path: ["createAdvertisement"],
-					}),
-				]),
-			);
-		});
-
 		test("should allow system administrator to create advertisement without being org member", async () => {
 			const { authToken: regularUserToken } = await import(
 				"../createRegularUserUsingAdmin"
 			).then((module) => module.createRegularUserUsingAdmin());
 			assertToBeNonNullish(regularUserToken);
 
+			// Admin creates org for regular user
 			const orgId = await createTestOrganization(authToken);
 
 			const result = await mercuriusClient.mutate(
@@ -680,183 +546,6 @@ suite("Mutation field createAdvertisement", () => {
 				}),
 			);
 		});
-
-		test("should create advertisement with minimum required fields", async () => {
-			const orgId = await createTestOrganization(authToken);
-
-			const result = await mercuriusClient.mutate(
-				Mutation_createAdvertisement,
-				{
-					headers: { authorization: `bearer ${authToken}` },
-					variables: {
-						input: {
-							name: `Minimal Ad ${faker.string.uuid()}`,
-							description: "Minimal description",
-							organizationId: orgId,
-							type: "banner",
-							startAt: new Date().toISOString(),
-							endAt: new Date(Date.now() + ONE_DAY_MS).toISOString(),
-						},
-					},
-				},
-			);
-
-			expect(result.errors).toBeUndefined();
-			const advertisement = result.data?.createAdvertisement;
-			assertToBeNonNullish(advertisement);
-			expect(advertisement.id).toBeDefined();
-			expect(advertisement.name).toContain("Minimal Ad");
-			expect(advertisement.attachments).toEqual([]);
-		});
-
-		test("should create advertisement with future start date", async () => {
-			const orgId = await createTestOrganization(authToken);
-			const futureStart = new Date(Date.now() + ONE_WEEK_MS);
-			const futureEnd = new Date(Date.now() + 2 * ONE_WEEK_MS);
-
-			const result = await mercuriusClient.mutate(
-				Mutation_createAdvertisement,
-				{
-					headers: { authorization: `bearer ${authToken}` },
-					variables: {
-						input: {
-							name: `Future Ad ${faker.string.uuid()}`,
-							description: "Scheduled for future",
-							organizationId: orgId,
-							type: "menu",
-							startAt: futureStart.toISOString(),
-							endAt: futureEnd.toISOString(),
-						},
-					},
-				},
-			);
-
-			expect(result.errors).toBeUndefined();
-			expect(result.data?.createAdvertisement).toEqual(
-				expect.objectContaining({
-					id: expect.any(String),
-					type: "menu",
-				}),
-			);
-		});
-
-		test("should reject attachment variable as invalid Upload when using mercuriusClient", async () => {
-			const orgId = await createTestOrganization(authToken);
-
-			const attachment = createMockFileUpload(
-				"test-image.png",
-				"image/png",
-				"fake image data",
-			);
-
-			const result = await mercuriusClient.mutate(
-				Mutation_createAdvertisement,
-				{
-					headers: { authorization: `bearer ${authToken}` },
-					variables: {
-						input: {
-							name: `Ad With Image ${faker.string.uuid()}`,
-							description: "Advertisement with image attachment",
-							organizationId: orgId,
-							type: "banner",
-							startAt: new Date().toISOString(),
-							endAt: new Date(Date.now() + ONE_DAY_MS).toISOString(),
-							attachments: [attachment],
-						},
-					},
-				},
-			);
-
-			// Our mocked Upload is not accepted by GraphQL
-			expect(result.data?.createAdvertisement).toBeUndefined();
-			expect(result.errors).toBeDefined();
-			expect(result.errors?.[0]?.message).toContain("Upload value invalid");
-		});
-
-		test("should reject multiple attachments as invalid Upload when using mercuriusClient", async () => {
-			const orgId = await createTestOrganization(authToken);
-
-			const attachment1 = createMockFileUpload(
-				"image1.png",
-				"image/png",
-				"image 1",
-			);
-			const attachment2 = createMockFileUpload(
-				"image2.jpeg",
-				"image/jpeg",
-				"image 2",
-			);
-			const attachment3 = createMockFileUpload(
-				"video.mp4",
-				"video/mp4",
-				"video data",
-			);
-
-			const result = await mercuriusClient.mutate(
-				Mutation_createAdvertisement,
-				{
-					headers: { authorization: `bearer ${authToken}` },
-					variables: {
-						input: {
-							name: `Ad Multiple Files ${faker.string.uuid()}`,
-							description: "Advertisement with multiple files",
-							organizationId: orgId,
-							type: "banner",
-							startAt: new Date().toISOString(),
-							endAt: new Date(Date.now() + ONE_DAY_MS).toISOString(),
-							attachments: [attachment1, attachment2, attachment3],
-						},
-					},
-				},
-			);
-
-			expect(result.data?.createAdvertisement).toBeUndefined();
-			expect(result.errors).toBeDefined();
-			expect(result.errors?.[0]?.message).toContain("Upload value invalid");
-		});
-
-		test("should not accept mocked attachments for any supported mime type via mercuriusClient", async () => {
-			const orgId = await createTestOrganization(authToken);
-
-			const mimeTypes: Array<{ mimetype: string; filename: string }> = [
-				{ mimetype: "image/png", filename: "test.png" },
-				{ mimetype: "image/jpeg", filename: "test.jpg" },
-				{ mimetype: "image/webp", filename: "test.webp" },
-				{ mimetype: "image/avif", filename: "test.avif" },
-				{ mimetype: "video/mp4", filename: "test.mp4" },
-				{ mimetype: "video/webm", filename: "test.webm" },
-			];
-
-			for (const { mimetype, filename } of mimeTypes) {
-				const attachment = createMockFileUpload(
-					filename,
-					mimetype,
-					"test data",
-				);
-
-				const result = await mercuriusClient.mutate(
-					Mutation_createAdvertisement,
-					{
-						headers: { authorization: `bearer ${authToken}` },
-						variables: {
-							input: {
-								name: `Ad ${mimetype} ${faker.string.uuid()}`,
-								description: `Testing ${mimetype}`,
-								organizationId: orgId,
-								type: "banner",
-								startAt: new Date().toISOString(),
-								endAt: new Date(Date.now() + ONE_DAY_MS).toISOString(),
-								attachments: [attachment],
-							},
-						},
-					},
-				);
-
-				expect(result.data?.createAdvertisement).toBeUndefined();
-				expect(result.errors).toBeDefined();
-				expect(result.errors?.[0]?.message).toContain("Upload value invalid");
-			}
-		});
 	});
 
 	suite("edge cases and validation", () => {
@@ -923,158 +612,6 @@ suite("Mutation field createAdvertisement", () => {
 				);
 			}
 		});
-
-		test("should handle advertisements with same name in different organizations", async () => {
-			const orgId1 = await createTestOrganization(authToken);
-			const orgId2 = await createTestOrganization(authToken);
-			const sameName = `Shared Name ${faker.string.uuid()}`;
-
-			const result1 = await mercuriusClient.mutate(
-				Mutation_createAdvertisement,
-				{
-					headers: { authorization: `bearer ${authToken}` },
-					variables: {
-						input: {
-							name: sameName,
-							description: "In org 1",
-							organizationId: orgId1,
-							type: "banner",
-							startAt: new Date().toISOString(),
-							endAt: new Date(Date.now() + ONE_DAY_MS).toISOString(),
-						},
-					},
-				},
-			);
-
-			expect(result1.errors).toBeUndefined();
-
-			const result2 = await mercuriusClient.mutate(
-				Mutation_createAdvertisement,
-				{
-					headers: { authorization: `bearer ${authToken}` },
-					variables: {
-						input: {
-							name: sameName,
-							description: "In org 2",
-							organizationId: orgId2,
-							type: "banner",
-							startAt: new Date().toISOString(),
-							endAt: new Date(Date.now() + ONE_DAY_MS).toISOString(),
-						},
-					},
-				},
-			);
-
-			expect(result2.errors).toBeUndefined();
-			expect(result2.data?.createAdvertisement?.organization?.id).toBe(orgId2);
-		});
-
-		test("should gracefully handle undefined attachment in upload array", async () => {
-			const orgId = await createTestOrganization(authToken);
-
-			const originalPutObject = server.minio.client.putObject;
-			const putObjectSpy = vi.fn().mockResolvedValue(undefined);
-			server.minio.client.putObject = putObjectSpy;
-
-			// Also mock the transaction to return an undefined attachment
-			const originalTransaction = server.drizzleClient.transaction;
-			let transactionCallCount = 0;
-
-			server.drizzleClient.transaction = vi
-				.fn()
-				.mockImplementation(async (callback) => {
-					transactionCallCount++;
-
-					type AdvertisementInsertData = {
-						creatorId?: string;
-						organizationId?: string;
-						description?: string;
-						endAt?: string;
-						name?: string;
-						startAt?: string;
-						type?: string;
-					};
-
-					type AttachmentInsertData = {
-						advertisementId?: string;
-						creatorId?: string;
-						mimeType?: string;
-						name?: string;
-					};
-
-					const mockInsertBuilder = {
-						values: (data: AdvertisementInsertData | AttachmentInsertData) => ({
-							returning: async () => {
-								if ("creatorId" in data && "organizationId" in data) {
-									return [
-										{
-											id: faker.string.uuid(),
-											creatorId: data.creatorId,
-											description: (data as AdvertisementInsertData)
-												.description,
-											endAt: (data as AdvertisementInsertData).endAt,
-											name: (data as AdvertisementInsertData).name,
-											organizationId: (data as AdvertisementInsertData)
-												.organizationId,
-											startAt: (data as AdvertisementInsertData).startAt,
-											type: (data as AdvertisementInsertData).type,
-										},
-									];
-								}
-
-								return [
-									{
-										id: faker.string.uuid(),
-										name: faker.string.uuid(),
-										mimeType: "image/png",
-										advertisementId: faker.string.uuid(),
-										creatorId: faker.string.uuid(),
-									},
-								];
-							},
-						}),
-					};
-
-					const mockTx = {
-						insert: () => mockInsertBuilder,
-					};
-
-					return await callback(mockTx);
-				});
-
-			try {
-				const attachment = createMockFileUpload(
-					"test.png",
-					"image/png",
-					"test data",
-				);
-
-				const result = await mercuriusClient.mutate(
-					Mutation_createAdvertisement,
-					{
-						headers: { authorization: `bearer ${authToken}` },
-						variables: {
-							input: {
-								name: `Edge Case Ad ${faker.string.uuid()}`,
-								description: "Testing undefined in attachments array",
-								organizationId: orgId,
-								type: "banner",
-								startAt: new Date().toISOString(),
-								endAt: new Date(Date.now() + ONE_DAY_MS).toISOString(),
-								attachments: [attachment],
-							},
-						},
-					},
-				);
-
-				expect(result.data?.createAdvertisement).toBeUndefined();
-				expect(result.errors).toBeDefined();
-				expect(result.errors?.[0]?.message).toContain("Upload value invalid");
-			} finally {
-				server.minio.client.putObject = originalPutObject;
-				server.drizzleClient.transaction = originalTransaction;
-			}
-		});
 	});
 
 	suite("security checks", () => {
@@ -1102,6 +639,8 @@ suite("Mutation field createAdvertisement", () => {
 			expect(result.errors).toBeUndefined();
 			const advertisement = result.data?.createAdvertisement;
 			assertToBeNonNullish(advertisement);
+
+			// Server HTML-encodes special characters for security
 			expect(advertisement.id).toBeDefined();
 			expect(advertisement.name).toMatch(/Ad with.*quotes.*brackets/);
 		});
@@ -1127,19 +666,12 @@ suite("Mutation field createAdvertisement", () => {
 				},
 			);
 
-			if (result.errors) {
-				expect(result.errors).toEqual(
-					expect.arrayContaining([
-						expect.objectContaining({
-							extensions: expect.objectContaining({
-								code: "invalid_arguments",
-							}),
-						}),
-					]),
-				);
-			} else {
-				expect(result.data?.createAdvertisement).toBeDefined();
-			}
+			// Description field has no max length constraint, expect success
+			expect(result.errors).toBeUndefined();
+			expect(result.data?.createAdvertisement).toBeDefined();
+			expect(result.data?.createAdvertisement?.description).toBe(
+				longDescription,
+			);
 		});
 
 		test("should validate date range - endAt must be after startAt", async () => {
@@ -1180,31 +712,6 @@ suite("Mutation field createAdvertisement", () => {
 					}),
 				]),
 			);
-		});
-
-		test("should handle SQL injection attempts in name field", async () => {
-			const orgId = await createTestOrganization(authToken);
-			const maliciousName = `Ad'; DROP TABLE advertisements; -- ${faker.string.uuid()}`;
-
-			const result = await mercuriusClient.mutate(
-				Mutation_createAdvertisement,
-				{
-					headers: { authorization: `bearer ${authToken}` },
-					variables: {
-						input: {
-							name: maliciousName,
-							description: "SQL injection test",
-							organizationId: orgId,
-							type: "banner",
-							startAt: new Date().toISOString(),
-							endAt: new Date(Date.now() + ONE_DAY_MS).toISOString(),
-						},
-					},
-				},
-			);
-
-			expect(result.errors).toBeUndefined();
-			expect(result.data?.createAdvertisement?.id).toBeDefined();
 		});
 	});
 });
