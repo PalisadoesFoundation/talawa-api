@@ -881,9 +881,94 @@ jobs:
       - name: Test building the website
         working-directory: ./docs
         run: pnpm build
+  Python-Compliance:
+    name: Check Python Code Style
+    runs-on: ubuntu-latest
+    needs: [Code-Quality-Checks]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v4
+        with:
+          python-version: 3.11
+
+      - name: Cache pip packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
+
+      - name: Install dependencies
+        run: |
+          python3 -m venv venv
+          source venv/bin/activate
+          python -m pip install --upgrade pip
+          pip install -r .github/workflows/requirements.txt
+
+      - name: Run Black Formatter Check
+        run: |
+          source venv/bin/activate
+          black --check .
+
+      - name: Run Flake8 Linter
+        run: |
+          source venv/bin/activate
+          flake8 --docstring-convention google --ignore E402,E722,E203,F401,W503 .github
+
+      - name: Run pydocstyle
+        run: |
+          source venv/bin/activate
+          pydocstyle --convention=google --add-ignore=D415,D205 .github
+
+      - name: Run docstring compliance check
+        run: |
+          source venv/bin/activate
+          python .github/workflows/scripts/check_docstrings.py --directories .github
+
+  Count-Changed-Files:
+    if: ${{ github.actor != 'dependabot[bot]' }}
+    name: Checks if number of files changed is acceptable
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Fetch all history for all branches and tags
+
+      - name: Get changed files
+        id: changed-files
+        run: |
+          # Get the base branch ref
+          BASE_SHA=$(git merge-base ${{ github.event.pull_request.base.sha }} ${{ github.event.pull_request.head.sha }})
+
+          # Count all changed files
+          ALL_CHANGED_FILES_COUNT=$(git diff --name-only --diff-filter=ACMRT $BASE_SHA ${{ github.event.pull_request.head.sha }} | wc -l | tr -d ' ')
+          echo "all_changed_files_count=$ALL_CHANGED_FILES_COUNT" >> $GITHUB_OUTPUT
+
+      - name: Echo number of changed files
+        env:
+          CHANGED_FILES_COUNT: ${{ steps.changed-files.outputs.all_changed_files_count }}
+        run: |
+          echo "Number of files changed: $CHANGED_FILES_COUNT"
+
+      - name: Check if the number of changed files is less than 100
+        if: steps.changed-files.outputs.all_changed_files_count > 100
+        env:
+          CHANGED_FILES_COUNT: ${{ steps.changed-files.outputs.all_changed_files_count }}
+        run: |
+          echo "Error: Too many files (greater than 100) changed in the pull request."
+          echo "Possible issues:"
+          echo "- Contributor may be merging into an incorrect branch."
+          echo "- Source branch may be incorrect please use develop as source branch."
+          exit 1
   Check-App-Startup:
-    name: Check App Startup and Health
+    name: Check App Startup and Health for the legacy devcontainer with root
     runs-on: ubuntu-latest
     needs: [Run-Tests]
     steps:
@@ -893,6 +978,78 @@ jobs:
         run: npm install -g @devcontainers/cli
       - name: Copy devcontainer environment file
         run: cp envFiles/.env.devcontainer .env
+      - name: Use the devcontainer config with root
+        run: mv .devcontainer/devcontainer.json.old .devcontainer/devcontainer.json
+      - name: Bring up devcontainer
+        run: devcontainer up --workspace-folder .
+      - name: Wait for Postgres in devcontainer
+        run: |
+          set -euo pipefail
+          POSTGRES_USER=postgres
+          echo "Waiting for Postgres service via compose..."
+          timeout=90
+          until docker compose exec -T postgres pg_isready -h localhost -p 5432 -U "$POSTGRES_USER" >/dev/null 2>&1 || [ "$timeout" -le 0 ]; do
+            echo "Postgres not ready ($timeout s left)"
+            sleep 1
+            ((timeout--))
+          done
+          if [ "$timeout" -eq 0 ]; then
+            echo "Error: Postgres failed to start"
+            docker compose ps
+            docker logs postgres
+            exit 1
+          fi
+      - name: Wait for Devcontainer to be ready
+        run: |
+          echo "Waiting for devcontainer services to be ready..."
+          sleep 10
+      - name: Verify Running Containers
+        run: docker ps
+      - name: Install dependencies inside the container
+        run: docker exec talawa-api-1 /bin/bash -c 'pnpm install'
+      - name: Start server and monitor logs
+        run: |
+          docker exec talawa-api-1 /bin/bash -c 'pnpm run start_development_server' &
+          sleep 10
+      - name: Wait for GraphQL endpoint to become available
+        if: always()
+        run: |
+          echo "Waiting for the GraphQL endpoint to become available..."
+          for i in {1..60}; do
+            # Check if container exists first
+            if ! docker ps | grep -q talawa-api-1; then
+              echo "Container talawa-api-1 not found. Waiting..."
+              sleep 2
+              continue
+            fi
+            docker exec talawa-api-1 which curl >/dev/null 2>&1 || {
+              docker exec talawa-api-1 apt-get update && docker exec talawa-api-1 apt-get install -y curl
+            }
+            RESPONSE=$(docker exec talawa-api-1 curl -s -X POST http://127.0.0.1:4000/graphql -H "Content-Type: application/json" -d '{"query":"{__typename}"}' 2>/dev/null || echo "Connection failed")
+            if echo "$RESPONSE" | grep -q '__typename'; then
+              echo "GraphQL endpoint is available!"
+              exit 0
+            fi
+            echo "GraphQL endpoint not ready. Retrying in 2 seconds..."
+            sleep 2
+          done
+          echo "GraphQL endpoint did not become available within the expected time."
+          exit 1
+      - name: Cleanup - Free ports by stopping containers
+        if: always()
+        run: docker compose down
+  Check-Rootless-App-Startup:
+    name: Check App Startup and Health
+    runs-on: ubuntu-latest
+    needs: [Run-Tests]
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4.2.2
+
+      - name: Copy devcontainer environment file
+        run: cp envFiles/.env.rootless.devcontainer ./.env
+      - name: Install Devcontainer CLI
+        run: npm install -g @devcontainers/cli
       - name: Bring up devcontainer
         run: devcontainer up --workspace-folder .
       - name: Wait for Postgres in devcontainer
