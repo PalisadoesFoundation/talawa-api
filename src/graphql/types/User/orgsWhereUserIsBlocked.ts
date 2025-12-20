@@ -104,9 +104,9 @@ export const resolveOrgsWhereUserIsBlocked = async (
 	const orderBy = isInversed
 		? [asc(blockedUsersTable.createdAt), asc(blockedUsersTable.organizationId)]
 		: [
-			desc(blockedUsersTable.createdAt),
-			desc(blockedUsersTable.organizationId),
-		];
+				desc(blockedUsersTable.createdAt),
+				desc(blockedUsersTable.organizationId),
+			];
 
 	let where: SQL | undefined;
 

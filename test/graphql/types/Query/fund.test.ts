@@ -132,17 +132,14 @@ suite("Query field fund", () => {
 			expect(fundResult.errors).toEqual(
 				expect.arrayContaining<TalawaGraphQLFormattedError>([
 					expect.objectContaining<TalawaGraphQLFormattedError>({
-						extensions:
-							expect.objectContaining<InvalidArgumentsExtensions>(
+						extensions: expect.objectContaining<InvalidArgumentsExtensions>({
+							code: "invalid_arguments",
+							issues: [
 								{
-									code: "invalid_arguments",
-									issues: [
-										{
-											argumentPath: ["input", "id"],
-										},
-									],
+									argumentPath: ["input", "id"],
 								},
-							),
+							],
+						}),
 						message: expect.any(String),
 						path: ["fund"],
 					}),
@@ -280,9 +277,7 @@ suite("Query field fund", () => {
 
 		const lastResult = results.at(-1);
 		expect(lastResult?.errors).toBeDefined();
-		expect(lastResult?.errors?.[0]?.extensions?.code).toBe(
-			"invalid_arguments",
-		);
+		expect(lastResult?.errors?.[0]?.extensions?.code).toBe("invalid_arguments");
 	});
 
 	test("returns fund data if user is organization member", async () => {
@@ -667,17 +662,14 @@ suite("Query field get fund Campaign Pledges by id", () => {
 			expect(fundCampaignPledgeResult.errors).toEqual(
 				expect.arrayContaining<TalawaGraphQLFormattedError>([
 					expect.objectContaining<TalawaGraphQLFormattedError>({
-						extensions:
-							expect.objectContaining<InvalidArgumentsExtensions>(
+						extensions: expect.objectContaining<InvalidArgumentsExtensions>({
+							code: "invalid_arguments",
+							issues: [
 								{
-									code: "invalid_arguments",
-									issues: [
-										{
-											argumentPath: ["input", "userId"],
-										},
-									],
+									argumentPath: ["input", "userId"],
 								},
-							),
+							],
+						}),
 						message: expect.any(String),
 						path: ["getPledgesByUserId"],
 					}),
@@ -1165,17 +1157,14 @@ suite("Query field get fund Campaign Pledges by id", () => {
 		expect(fundCampaignPledgeResult2.errors).toEqual(
 			expect.arrayContaining<TalawaGraphQLFormattedError>([
 				expect.objectContaining<TalawaGraphQLFormattedError>({
-					extensions:
-						expect.objectContaining<InvalidArgumentsExtensions>(
+					extensions: expect.objectContaining<InvalidArgumentsExtensions>({
+						code: "invalid_arguments",
+						issues: [
 							{
-								code: "invalid_arguments",
-								issues: [
-									{
-										argumentPath: ["input", "userId"],
-									},
-								],
+								argumentPath: ["input", "userId"],
 							},
-						),
+						],
+					}),
 					message: expect.any(String),
 					path: ["getPledgesByUserId"],
 				}),

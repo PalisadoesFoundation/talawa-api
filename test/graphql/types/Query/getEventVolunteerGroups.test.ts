@@ -356,17 +356,14 @@ suite("Query field getEventVolunteerGroups", () => {
 			expect(result.errors).toEqual(
 				expect.arrayContaining<TalawaGraphQLFormattedError>([
 					expect.objectContaining<TalawaGraphQLFormattedError>({
-						extensions:
-							expect.objectContaining<InvalidArgumentsExtensions>(
-								{
-									code: "invalid_arguments",
-									issues: expect.arrayContaining([
-										expect.objectContaining({
-											argumentPath: ["where", "eventId"],
-										}),
-									]),
-								},
-							),
+						extensions: expect.objectContaining<InvalidArgumentsExtensions>({
+							code: "invalid_arguments",
+							issues: expect.arrayContaining([
+								expect.objectContaining({
+									argumentPath: ["where", "eventId"],
+								}),
+							]),
+						}),
 						message: expect.any(String),
 						path: ["getEventVolunteerGroups"],
 					}),

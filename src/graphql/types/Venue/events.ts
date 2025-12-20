@@ -137,13 +137,13 @@ Venue.implement({
 
 					const orderBy = isInversed
 						? [
-							asc(venueBookingsTable.createdAt),
-							asc(venueBookingsTable.eventId),
-						]
+								asc(venueBookingsTable.createdAt),
+								asc(venueBookingsTable.eventId),
+							]
 						: [
-							desc(venueBookingsTable.createdAt),
-							desc(venueBookingsTable.eventId),
-						];
+								desc(venueBookingsTable.createdAt),
+								desc(venueBookingsTable.eventId),
+							];
 
 					let where: SQL | undefined;
 
