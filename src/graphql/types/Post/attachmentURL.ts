@@ -1,4 +1,5 @@
 import envConfig from "~/src/utilities/graphqLimits";
+import { escapeHTML } from "~/src/utilities/sanitizer";
 import { Post } from "./Post";
 
 Post.implement({
@@ -17,7 +18,7 @@ Post.implement({
 				const attachment = parent.attachments[0];
 
 				// Ensure it's an image attachment
-				if (!attachment || !attachment.mimeType.startsWith("image/")) {
+				if (!attachment || !attachment.mimeType?.startsWith("image/")) {
 					return null;
 				}
 
@@ -25,10 +26,12 @@ Post.implement({
 					return null;
 				}
 
-				return new URL(
-					`/objects/${attachment.objectName}`,
-					ctx.envConfig.API_BASE_URL,
-				).toString();
+				return escapeHTML(
+					new URL(
+						`/objects/${attachment.objectName}`,
+						ctx.envConfig.API_BASE_URL,
+					).toString(),
+				);
 			},
 			type: "String",
 		}),

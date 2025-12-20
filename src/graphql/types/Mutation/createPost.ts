@@ -175,17 +175,25 @@ builder.mutationField("createPost", (t) =>
 				if (isNotNullish(parsedArgs.input.attachment)) {
 					const attachment = parsedArgs.input.attachment;
 					const objectName = ulid();
-
-					// Upload image to MinIO
-					await ctx.minio.client.putObject(
-						ctx.minio.bucketName,
-						objectName,
-						attachment.createReadStream(),
-						undefined,
-						{
-							"content-type": attachment.mimetype,
-						},
-					);
+					try {
+						// Upload image to MinIO
+						await ctx.minio.client.putObject(
+							ctx.minio.bucketName,
+							objectName,
+							attachment.createReadStream(),
+							undefined,
+							{
+								"content-type": attachment.mimetype,
+							},
+						);
+					} catch (error) {
+						ctx.log.error(`Error uploading file to MinIO: ${error}`);
+						throw new TalawaGraphQLError({
+							extensions: {
+								code: "unexpected",
+							},
+						});
+					}
 
 					// Create attachment record
 					const attachmentRecord = {
@@ -195,7 +203,7 @@ builder.mutationField("createPost", (t) =>
 						name: attachment.filename || "uploaded-file",
 						postId: createdPost.id,
 						objectName: objectName,
-						fileHash: ulid(), // Generate a unique hash for direct uploads
+						fileHash: ulid(), // Placeholder - no deduplication for direct uploads
 					};
 
 					const [attachmentResult] = await tx

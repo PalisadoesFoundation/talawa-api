@@ -1,4 +1,5 @@
 import { eq } from "drizzle-orm";
+import { ulid } from "ulidx";
 import { uuidv7 } from "uuidv7";
 import { z } from "zod";
 import { postAttachmentsTable } from "~/src/drizzle/tables/postAttachments";
@@ -12,6 +13,7 @@ import { Post } from "~/src/graphql/types/Post/Post";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import { getKeyPathsWithNonUndefinedValues } from "~/src/utilities/getKeyPathsWithNonUndefinedValues";
 import envConfig from "~/src/utilities/graphqLimits";
+import { isNotNullish } from "~/src/utilities/isNotNullish";
 
 const mutationUpdatePostArgumentsSchema = z.object({
 	input: mutationUpdatePostInputSchema,
@@ -41,7 +43,7 @@ builder.mutationField("updatePost", (t) =>
 				data: parsedArgs,
 				error,
 				success,
-			} = mutationUpdatePostArgumentsSchema.safeParse(args);
+			} = await mutationUpdatePostArgumentsSchema.safeParseAsync(args);
 
 			if (!success) {
 				throw new TalawaGraphQLError({
@@ -199,14 +201,12 @@ builder.mutationField("updatePost", (t) =>
 				}
 			}
 
-			// ...existing code...
-
-			// Replace the simple update with a transaction
 			return await ctx.drizzleClient.transaction(async (tx) => {
 				const [updatedPost] = await tx
 					.update(postsTable)
 					.set({
 						caption: parsedArgs.input.caption,
+						body: parsedArgs.input.body,
 						pinnedAt:
 							parsedArgs.input.isPinned === undefined
 								? undefined
@@ -222,6 +222,9 @@ builder.mutationField("updatePost", (t) =>
 
 				// Updated post not being returned means that either it was deleted or its `id` column was changed
 				if (updatedPost === undefined) {
+					ctx.log.error(
+						"Postgres update operation unexpectedly returned an empty array instead of throwing an error.",
+					);
 					throw new TalawaGraphQLError({
 						extensions: {
 							code: "unexpected",
@@ -229,37 +232,70 @@ builder.mutationField("updatePost", (t) =>
 					});
 				}
 
-				// Handle attachments if they're provided in the input
-				if (parsedArgs.input.attachments !== undefined) {
+				// Handle direct file upload
+				let createdAttachment: typeof postAttachmentsTable.$inferSelect | null =
+					null;
+
+				if (isNotNullish(parsedArgs.input.attachment)) {
+					const attachment = parsedArgs.input.attachment;
+					const objectName = ulid();
+
 					// First delete existing attachments
 					await tx
 						.delete(postAttachmentsTable)
 						.where(eq(postAttachmentsTable.postId, updatedPost.id));
 
-					// Then insert new attachments
-					const attachments = parsedArgs.input.attachments;
-					if (attachments.length > 0) {
-						const createdPostAttachments = await tx
-							.insert(postAttachmentsTable)
-							.values(
-								attachments.map((attachment) => ({
-									updaterId: currentUserId,
-									mimeType: attachment.mimetype,
-									id: uuidv7(),
-									name: attachment.name,
-									postId: updatedPost.id,
-									objectName: attachment.objectName,
-									fileHash: attachment.fileHash,
-								})),
-							)
-							.returning();
-
-						return Object.assign(updatedPost, {
-							attachments: createdPostAttachments,
+					try {
+						// Upload image to MinIO
+						await ctx.minio.client.putObject(
+							ctx.minio.bucketName,
+							objectName,
+							attachment.createReadStream(),
+							undefined,
+							{
+								"content-type": attachment.mimetype,
+							},
+						);
+					} catch (error) {
+						ctx.log.error(`Error uploading file to MinIO: ${error}`);
+						throw new TalawaGraphQLError({
+							extensions: {
+								code: "unexpected",
+							},
 						});
 					}
 
-					// Return empty attachments array if no new attachments
+					// Create attachment record
+					const attachmentRecord = {
+						creatorId: currentUserId,
+						mimeType: attachment.mimetype,
+						id: uuidv7(),
+						name: attachment.filename || "uploaded-file",
+						postId: updatedPost.id,
+						objectName: objectName,
+						fileHash: ulid(), // Placeholder - no deduplication for direct uploads
+					};
+
+					const [attachmentResult] = await tx
+						.insert(postAttachmentsTable)
+						.values(attachmentRecord)
+						.returning();
+
+					if (attachmentResult) {
+						createdAttachment = attachmentResult;
+					}
+
+					return Object.assign(updatedPost, {
+						attachments: createdAttachment ? [createdAttachment] : [],
+					});
+				}
+
+				// Handle explicit null attachment (remove existing attachments)
+				if (parsedArgs.input.attachment === null) {
+					await tx
+						.delete(postAttachmentsTable)
+						.where(eq(postAttachmentsTable.postId, updatedPost.id));
+
 					return Object.assign(updatedPost, {
 						attachments: [],
 					});

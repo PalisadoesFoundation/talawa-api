@@ -75,6 +75,8 @@ Input for updating a post.
 
 ```graphql
 input MutationUpdatePostInput {
+  attachment: Upload
+  body: String
   caption: String
   id: ID!
   isPinned: Boolean
@@ -82,6 +84,14 @@ input MutationUpdatePostInput {
 ```
 
 ### Fields
+
+#### [<code style={{ fontWeight: 'normal' }}>MutationUpdatePostInput.<b>attachment</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>Upload</b></code>](/auto-schema/types/scalars/upload.mdx) <Badge class="badge badge--secondary " text="scalar"/>
+
+Direct file upload
+
+#### [<code style={{ fontWeight: 'normal' }}>MutationUpdatePostInput.<b>body</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>String</b></code>](/auto-schema/types/scalars/string.mdx) <Badge class="badge badge--secondary " text="scalar"/>
+
+Body content of the post.
 
 #### [<code style={{ fontWeight: 'normal' }}>MutationUpdatePostInput.<b>caption</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>String</b></code>](/auto-schema/types/scalars/string.mdx) <Badge class="badge badge--secondary " text="scalar"/>
 

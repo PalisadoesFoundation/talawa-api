@@ -3700,6 +3700,12 @@ input MutationUpdateOrganizationMembershipInput {
 
 """Input for updating a post."""
 input MutationUpdatePostInput {
+  """Direct file upload"""
+  attachment: Upload
+
+  """Body content of the post."""
+  body: String
+
   """Caption about the post."""
   caption: String
 
