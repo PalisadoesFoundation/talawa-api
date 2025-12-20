@@ -145,6 +145,24 @@ pnpm install
 
 The prerequisites are now installed. The next step will be to get the app up and running.
 
+### Install Docusaurus (Development only)
+
+> **Note:** This step is required **only for developers** working on documentation.  
+> End users running Talawa-API in production can skip this section.
+
+
+[Docusaurus](https://docusaurus.io/) is a modern static website generator that we use to build our documentation website. You will need to install it **only if you plan to work on or build the documentation locally**.
+
+
+1. Navigate to the `docs` directory:
+   ```bash
+   cd docs
+   ```
+2. Install the dependencies:
+   ```bash
+   pnpm install
+   ```
+
 ### Install Docker
 
 Follow these steps to install Docker on your system:
