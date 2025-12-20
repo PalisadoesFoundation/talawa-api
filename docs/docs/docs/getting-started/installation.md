@@ -123,6 +123,8 @@ Proceed to the next section.
 
 ### Install Docusaurus (For Developers Only)
 
+**Note:** if you are an end user installing our software in production environment , you can skip this section.This step is only required **for developers** working in development environment. 
+
 [Docusaurus](https://docusaurus.io/docs/) is a modern static website generator. It helps us build, deploy, and maintain open source project documentation websites easily.
 After successfully installing pnpm,
 From the `talawa-api` directory, run the following command.
