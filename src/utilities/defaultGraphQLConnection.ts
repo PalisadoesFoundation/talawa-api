@@ -148,7 +148,7 @@ export const createGraphQLConnectionWithWhereSchema = <T extends z.ZodType>(
 	whereSchema: T,
 ) => {
 	return defaultGraphQLConnectionArgumentsSchema.extend({
-		where: whereSchema.optional(),
+		where: whereSchema.nullish().transform((val) => val ?? {} as z.output<T>),
 	});
 };
 
