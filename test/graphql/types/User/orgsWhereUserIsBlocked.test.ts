@@ -247,7 +247,7 @@ describe("resolveOrgsWhereUserIsBlocked", () => {
 		await expect(
 			resolveOrgsWhereUserIsBlocked(mockUserParent, globalArgs, baseMockCtx),
 		).rejects.toMatchObject({
-			extensions: { code: "invalid_arguments" },
+			extensions: { code: "arguments_associated_resources_not_found" },
 		});
 	});
 
