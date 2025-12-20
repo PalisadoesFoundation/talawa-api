@@ -75,7 +75,7 @@ This pattern is a heuristic and may flag safe code:
 2.  **External Sanitization:** If you sanitize the string _before_ the resolver or in a separate function call that isn't named `escapeHTML`, the plugin will not detect it.
     ```typescript
     const safeBio = escapeHTML(user.bio);
-    t.string({ resolve: () => safeBio }); // Warning: Plugin only sees the resolver body
+    t.string({ resolve: () => safeBio });  // Warning: Plugin only sees the resolver body
     ```
 3.  **Pattern Scope:** It currently only matches `t.string(...)`. It does not catch `t.field({ type: 'String', ... })`.
 
