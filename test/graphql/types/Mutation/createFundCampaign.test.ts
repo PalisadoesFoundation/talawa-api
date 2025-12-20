@@ -186,7 +186,7 @@ suite("Mutation field createFundCampaign", () => {
 					headers: { authorization: `bearer ${adminAuthToken}` },
 					variables: { input: { id: campaignId } },
 				});
-			} catch (error) {
+			} catch (_error) {
 				// Ignore cleanup errors
 			}
 		}
@@ -197,7 +197,7 @@ suite("Mutation field createFundCampaign", () => {
 					headers: { authorization: `bearer ${adminAuthToken}` },
 					variables: { input: { id: fundIdToDelete } },
 				});
-			} catch (error) {
+			} catch (_error) {
 				// Ignore cleanup errors
 			}
 		}
@@ -208,7 +208,7 @@ suite("Mutation field createFundCampaign", () => {
 					headers: { authorization: `bearer ${adminAuthToken}` },
 					variables: { input: { id: userId } },
 				});
-			} catch (error) {
+			} catch (_error) {
 				// Ignore cleanup errors
 			}
 		}
@@ -219,7 +219,7 @@ suite("Mutation field createFundCampaign", () => {
 					headers: { authorization: `bearer ${adminAuthToken}` },
 					variables: { input: { id: orgId } },
 				});
-			} catch (error) {
+			} catch (_error) {
 				// Ignore cleanup errors
 			}
 		}

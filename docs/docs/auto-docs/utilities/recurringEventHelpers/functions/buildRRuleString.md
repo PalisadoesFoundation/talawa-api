@@ -4,7 +4,7 @@
 
 # Function: buildRRuleString()
 
-> **buildRRuleString**(`recurrence`, `startDate`): `string`
+> **buildRRuleString**(`recurrence`, `_startDate`): `string`
 
 Defined in: [src/utilities/recurringEventHelpers.ts:14](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/utilities/recurringEventHelpers.ts#L14)
 
@@ -50,11 +50,9 @@ The recurrence input object, conforming to the recurrenceInputSchema.
 
 `boolean` = `...`
 
-### startDate
+### \_startDate
 
 `Date`
-
-The start date of the event, used for validation and context.
 
 ## Returns
 

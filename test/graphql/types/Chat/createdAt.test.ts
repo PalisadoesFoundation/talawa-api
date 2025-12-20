@@ -238,7 +238,7 @@ suite("Chat field createdAt", () => {
 				headers: { authorization: `bearer ${adminAuthToken}` },
 				variables: { input: { id: testChatId } },
 			});
-		} catch (error) {
+		} catch (_error) {
 			// Ignore cleanup errors
 		}
 
@@ -248,7 +248,7 @@ suite("Chat field createdAt", () => {
 					headers: { authorization: `bearer ${adminAuthToken}` },
 					variables: { input: { id: userId } },
 				});
-			} catch (error) {
+			} catch (_error) {
 				// Ignore cleanup errors
 			}
 		}
@@ -259,7 +259,7 @@ suite("Chat field createdAt", () => {
 					headers: { authorization: `bearer ${adminAuthToken}` },
 					variables: { input: { id: orgId } },
 				});
-			} catch (error) {
+			} catch (_error) {
 				// Ignore cleanup errors
 			}
 		}
@@ -290,7 +290,7 @@ suite("Chat field createdAt", () => {
 				headers: { authorization: `bearer ${adminAuthToken}` },
 				variables: { input: { id: creatorChatId } },
 			});
-		} catch (error) {
+		} catch (_error) {
 			// ignore cleanup errors
 		}
 	});
@@ -365,7 +365,7 @@ suite("Chat field createdAt", () => {
 		let callCount = 0;
 		const spy = vi
 			.spyOn(usersTable, "findFirst")
-			.mockImplementation(async (args: unknown) => {
+			.mockImplementation(async (_args: unknown) => {
 				callCount++;
 				if (callCount === 1) {
 					// Return a minimal user object with role so Query.chat proceeds

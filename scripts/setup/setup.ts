@@ -109,7 +109,7 @@ export function validateURL(input: string): true | string {
 			return "Please enter a valid URL with http:// or https:// protocol.";
 		}
 		return true;
-	} catch (error) {
+	} catch (_error) {
 		return "Please enter a valid URL.";
 	}
 }
@@ -161,7 +161,7 @@ export function validateCloudBeaverURL(input: string): true | string {
 			return "URL must use HTTP or HTTPS protocol";
 		}
 		const port = url.port || (url.protocol === "https:" ? "443" : "80");
-		if (!/^\d+$/.test(port) || Number.parseInt(port) > 65535) {
+		if (!/^\d+$/.test(port) || Number.parseInt(port, 10) > 65535) {
 			return "Invalid port in URL";
 		}
 		return true;

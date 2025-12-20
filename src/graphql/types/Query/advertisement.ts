@@ -5,8 +5,9 @@ import {
 	queryAdvertisementInputSchema,
 } from "~/src/graphql/inputs/QueryAdvertisementInput";
 import { Advertisement } from "~/src/graphql/types/Advertisement/Advertisement";
-import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import envConfig from "~/src/utilities/graphqLimits";
+import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
+
 const queryAdvertisementArgumentsSchema = z.object({
 	input: queryAdvertisementInputSchema,
 });

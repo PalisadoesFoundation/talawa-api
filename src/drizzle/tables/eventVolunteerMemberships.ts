@@ -9,9 +9,9 @@ import {
 } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { uuidv7 } from "uuidv7";
+import { eventsTable } from "./events";
 import { eventVolunteerGroupsTable } from "./eventVolunteerGroups";
 import { eventVolunteersTable } from "./eventVolunteers";
-import { eventsTable } from "./events";
 import { usersTable } from "./users";
 
 /**

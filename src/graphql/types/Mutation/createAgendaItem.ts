@@ -6,8 +6,9 @@ import {
 	mutationCreateAgendaItemInputSchema,
 } from "~/src/graphql/inputs/MutationCreateAgendaItemInput";
 import { AgendaItem } from "~/src/graphql/types/AgendaItem/AgendaItem";
-import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import envConfig from "~/src/utilities/graphqLimits";
+import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
+
 const mutationCreateAgendaItemArgumentsSchema = z.object({
 	input: mutationCreateAgendaItemInputSchema,
 });

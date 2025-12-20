@@ -7,8 +7,9 @@ import {
 	mutationDeleteCommentInputSchema,
 } from "~/src/graphql/inputs/MutationDeleteCommentInput";
 import { Comment } from "~/src/graphql/types/Comment/Comment";
-import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import envConfig from "~/src/utilities/graphqLimits";
+import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
+
 const mutationDeleteCommentArgumentsSchema = z.object({
 	input: mutationDeleteCommentInputSchema,
 });

@@ -2,10 +2,10 @@ import { eq } from "drizzle-orm";
 import { actionItemsTable } from "~/src/drizzle/tables/actionItems";
 import type { GraphQLContext } from "~/src/graphql/context";
 import { ActionItem } from "~/src/graphql/types/ActionItem/ActionItem";
-import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import envConfig from "~/src/utilities/graphqLimits";
-import { ActionItemCategory } from "./ActionItemCategory";
+import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import type { ActionItemCategory as ActionItemCategoryType } from "./ActionItemCategory";
+import { ActionItemCategory } from "./ActionItemCategory";
 
 // Export the resolver function so it can be tested
 export const resolveActionItems = async (

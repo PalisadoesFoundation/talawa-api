@@ -5,8 +5,9 @@ import {
 	queryOrganizationInputSchema,
 } from "~/src/graphql/inputs/QueryOrganizationInput";
 import { Organization } from "~/src/graphql/types/Organization/Organization";
-import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import envConfig from "~/src/utilities/graphqLimits";
+import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
+
 const queryOrganizationArgumentsSchema = z.object({
 	input: queryOrganizationInputSchema,
 });

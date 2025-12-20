@@ -1,8 +1,8 @@
 import { createMockGraphQLContext } from "test/_Mocks_/mockContextCreator/mockContextCreator";
 import { beforeEach, describe, expect, it } from "vitest";
 import type { GraphQLContext } from "~/src/graphql/context";
-import type { TagFolder as TagFolderType } from "~/src/graphql/types/TagFolder/TagFolder";
 import { tagFolderCreatorResolver } from "~/src/graphql/types/TagFolder/creator";
+import type { TagFolder as TagFolderType } from "~/src/graphql/types/TagFolder/TagFolder";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 
 describe("TagFolder creator Resolver Tests", () => {

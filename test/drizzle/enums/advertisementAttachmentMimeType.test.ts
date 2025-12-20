@@ -7,13 +7,15 @@ import { advertisementAttachmentMimeTypeEnum } from "~/src/drizzle/enums/adverti
  */
 describe("advertisementAttachmentMimeTypeEnum", () => {
 	describe("allowed image MIME types", () => {
-		it.each([["image/avif"], ["image/jpeg"], ["image/png"], ["image/webp"]])(
-			"should accept %s",
-			(mimeType) => {
-				const result = advertisementAttachmentMimeTypeEnum.safeParse(mimeType);
-				expect(result.success).toBe(true);
-			},
-		);
+		it.each([
+			["image/avif"],
+			["image/jpeg"],
+			["image/png"],
+			["image/webp"],
+		])("should accept %s", (mimeType) => {
+			const result = advertisementAttachmentMimeTypeEnum.safeParse(mimeType);
+			expect(result.success).toBe(true);
+		});
 	});
 
 	describe("allowed video MIME types", () => {

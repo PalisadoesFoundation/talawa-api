@@ -4,9 +4,10 @@ import type {
 	ExplicitGraphQLContext,
 	ImplicitMercuriusContext,
 } from "~/src/graphql/context";
-import type { User } from "~/src/graphql/types/User/User";
-import { resolveOrganizationsWhereMember } from "~/src/graphql/types/User/organizationsWhereMember";
 import type { OrganizationsWhereMemberArgs } from "~/src/graphql/types/User/organizationsWhereMember";
+import { resolveOrganizationsWhereMember } from "~/src/graphql/types/User/organizationsWhereMember";
+import type { User } from "~/src/graphql/types/User/User";
+
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 
 const globalArgs = {

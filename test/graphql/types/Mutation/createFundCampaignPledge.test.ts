@@ -226,7 +226,7 @@ suite("Mutation field createFundCampaignPledge", () => {
 					headers: { authorization: `bearer ${adminAuthToken}` },
 					variables: { input: { id: pledgeId } },
 				});
-			} catch (error) {}
+			} catch (_error) {}
 		}
 
 		for (const campaignId of createdCampaignIds) {
@@ -235,7 +235,7 @@ suite("Mutation field createFundCampaignPledge", () => {
 					headers: { authorization: `bearer ${adminAuthToken}` },
 					variables: { input: { id: campaignId } },
 				});
-			} catch (error) {}
+			} catch (_error) {}
 		}
 
 		for (const fundIdToDelete of createdFundIds) {
@@ -244,7 +244,7 @@ suite("Mutation field createFundCampaignPledge", () => {
 					headers: { authorization: `bearer ${adminAuthToken}` },
 					variables: { input: { id: fundIdToDelete } },
 				});
-			} catch (error) {}
+			} catch (_error) {}
 		}
 
 		for (const userId of createdUserIds) {
@@ -253,7 +253,7 @@ suite("Mutation field createFundCampaignPledge", () => {
 					headers: { authorization: `bearer ${adminAuthToken}` },
 					variables: { input: { id: userId } },
 				});
-			} catch (error) {}
+			} catch (_error) {}
 		}
 
 		for (const orgId of createdOrganizationIds) {
@@ -262,7 +262,7 @@ suite("Mutation field createFundCampaignPledge", () => {
 					headers: { authorization: `bearer ${adminAuthToken}` },
 					variables: { input: { id: orgId } },
 				});
-			} catch (error) {}
+			} catch (_error) {}
 		}
 	});
 

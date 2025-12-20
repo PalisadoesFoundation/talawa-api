@@ -1,8 +1,8 @@
 import { createMockGraphQLContext } from "test/_Mocks_/mockContextCreator/mockContextCreator";
 import { beforeEach, describe, expect, it } from "vitest";
 import type { GraphQLContext } from "~/src/graphql/context";
-import type { EventAttendee as EventAttendeeType } from "~/src/graphql/types/EventAttendee/EventAttendee";
 import { eventAttendeeCreatedAtResolver } from "~/src/graphql/types/EventAttendee/createdAt";
+import type { EventAttendee as EventAttendeeType } from "~/src/graphql/types/EventAttendee/EventAttendee";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 
 type MockUser = {

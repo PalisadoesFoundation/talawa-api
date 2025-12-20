@@ -13,6 +13,7 @@ import {
 	Query_actionItemsByVolunteerGroup,
 	Query_signIn,
 } from "../documentNodes";
+
 const SUITE_TIMEOUT = 30_000;
 
 let globalAuth: { authToken: string; userId: string };
@@ -132,7 +133,7 @@ async function createActionItemCategory(
 async function createEventAndVolunteerGroup(
 	organizationId: string,
 	leaderId: string,
-	authToken: string,
+	_authToken: string,
 ): Promise<{ eventId: string; volunteerGroupId: string }> {
 	// Ensure admin user has organization membership for event creation (ignore errors if already exists)
 	try {
@@ -146,7 +147,7 @@ async function createEventAndVolunteerGroup(
 				},
 			},
 		});
-	} catch (error) {
+	} catch (_error) {
 		// Ignore errors - membership might already exist
 	}
 
@@ -162,7 +163,7 @@ async function createEventAndVolunteerGroup(
 				},
 			},
 		});
-	} catch (error) {
+	} catch (_error) {
 		// Ignore errors - membership might already exist
 	}
 
@@ -244,7 +245,7 @@ async function createActionItemForVolunteerGroup(
 	organizationId: string,
 	categoryId: string,
 	volunteerGroupId: string,
-	authToken: string,
+	_authToken: string,
 ): Promise<string> {
 	const result = await mercuriusClient.mutate(Mutation_createActionItem, {
 		headers: { authorization: `bearer ${globalAuth.authToken}` },
