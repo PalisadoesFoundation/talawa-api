@@ -62,7 +62,7 @@ export const agendaItemsTable = pgTable(
 		 * Type of the agenda item.
 		 */
 		type: text("type", {
-			enum: agendaItemTypeEnum.options as [string, ...string[]],
+			enum: agendaItemTypeEnum.options as const,
 		}).notNull(),
 		/**
 		 * Date time at the time the agenda item was last updated.

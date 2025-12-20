@@ -42,7 +42,7 @@ export const fundCampaignsTable = pgTable(
 		 * Currency code of the fund campaign.
 		 */
 		currencyCode: text("currency_code", {
-			enum: iso4217CurrencyCodeEnum.options as [string, ...string[]],
+			enum: iso4217CurrencyCodeEnum.options as const,
 		}).notNull(),
 		/**
 		 * Date time at the time the fund campaign ends at.

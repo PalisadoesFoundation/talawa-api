@@ -68,7 +68,7 @@ export const usersTable = pgTable(
 		 * Mime type of the avatar of the user.
 		 */
 		avatarMimeType: text("avatar_mime_type", {
-			enum: imageMimeTypeEnum.options as [string, ...string[]],
+			enum: imageMimeTypeEnum.options as const,
 		}),
 		/**
 		 * Primary unique identifier of the user's avatar.
@@ -88,7 +88,7 @@ export const usersTable = pgTable(
 		 * Country code of the country the user is a citizen of.
 		 */
 		countryCode: text("country_code", {
-			enum: iso3166Alpha2CountryCodeEnum.options as [string, ...string[]],
+			enum: iso3166Alpha2CountryCodeEnum.options as const,
 		}),
 		/**
 		 * Date time at the time the user was created.
@@ -115,7 +115,7 @@ export const usersTable = pgTable(
 		 * Primary education grade of the user.
 		 */
 		educationGrade: text("education_grade", {
-			enum: userEducationGradeEnum.options as [string, ...string[]],
+			enum: userEducationGradeEnum.options as const,
 		}),
 		/**
 		 * Email address of the user.
@@ -125,7 +125,7 @@ export const usersTable = pgTable(
 		 * Employment status of the user.
 		 */
 		employmentStatus: text("employment_status", {
-			enum: userEmploymentStatusEnum.options as [string, ...string[]],
+			enum: userEmploymentStatusEnum.options as const,
 		}),
 		/**
 		 * The phone number to use to communicate with the user at their home.
@@ -143,7 +143,7 @@ export const usersTable = pgTable(
 		 * Marital status of the user.
 		 */
 		maritalStatus: text("marital_status", {
-			enum: userMaritalStatusEnum.options as [string, ...string[]],
+			enum: userMaritalStatusEnum.options as const,
 		}),
 		/**
 		 * The phone number to use to communicate with the user on their mobile phone.
@@ -157,13 +157,13 @@ export const usersTable = pgTable(
 		 * The sex assigned to the user at their birth.
 		 */
 		natalSex: text("natal_sex", {
-			enum: userNatalSexEnum.options as [string, ...string[]],
+			enum: userNatalSexEnum.options as const,
 		}),
 		/**
 		 * Language code of the user's preferred natural language.
 		 */
 		naturalLanguageCode: text("natural_language_code", {
-			enum: iso639Set1LanguageCodeEnum.options as [string, ...string[]],
+			enum: iso639Set1LanguageCodeEnum.options as const,
 		}),
 		/**
 		 * Cryptographic hash of the password of the user to sign in to the application.
@@ -177,7 +177,7 @@ export const usersTable = pgTable(
 		 * Role assigned to the user.
 		 */
 		role: text("role", {
-			enum: userRoleEnum.options as [string, ...string[]],
+			enum: userRoleEnum.options as const,
 		}).notNull(),
 		/**
 		 * Name of the state the user resides in within their country.

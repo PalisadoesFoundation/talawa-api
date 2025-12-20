@@ -7,4 +7,4 @@ import { videoMimeTypeEnum } from "./videoMimeType";
 export const eventAttachmentMimeTypeEnum = z.enum([
 	...imageMimeTypeEnum.options,
 	...videoMimeTypeEnum.options,
-] as [string, ...string[]]);
+] as const);

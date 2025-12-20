@@ -18,7 +18,7 @@ export const chatsTable = pgTable(
 		 * Mime type of the avatar of the chat.
 		 */
 		avatarMimeType: text("avatar_mime_type", {
-			enum: imageMimeTypeEnum.options as [string, ...string[]],
+			enum: imageMimeTypeEnum.options as const,
 		}),
 		/**
 		 * Primary unique identifier of the chat's avatar.

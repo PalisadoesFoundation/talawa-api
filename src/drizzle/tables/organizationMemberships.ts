@@ -57,7 +57,7 @@ export const organizationMembershipsTable = pgTable(
 		 * Role assigned to the user within the organization.
 		 */
 		role: text("role", {
-			enum: organizationMembershipRoleEnum.options as [string, ...string[]],
+			enum: organizationMembershipRoleEnum.options as const,
 		}).notNull(),
 		/**
 		 * Date time at the time the organization membership was last updated.

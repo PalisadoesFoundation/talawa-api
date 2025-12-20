@@ -42,7 +42,7 @@ export const familyMembershipsTable = pgTable(
 			}),
 
 		role: text("role", {
-			enum: familyMembershipRoleEnum.options as [string, ...string[]],
+			enum: familyMembershipRoleEnum.options as const,
 		}).notNull(),
 
 		updatedAt: timestamp("updated_at", {

@@ -5,4 +5,4 @@ import { imageMimeTypeEnum } from "./imageMimeType";
  */
 export const venueAttachmentMimeTypeEnum = z.enum([
 	...imageMimeTypeEnum.options,
-] as [string, ...string[]]);
+] as const);

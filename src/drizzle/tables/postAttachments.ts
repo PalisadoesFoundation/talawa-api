@@ -46,7 +46,7 @@ export const postAttachmentsTable = pgTable(
 		 * Mime type of the attachment.
 		 */
 		mimeType: text("mime_type", {
-			enum: postAttachmentMimeTypeEnum.options as [string, ...string[]],
+			enum: postAttachmentMimeTypeEnum.options as const,
 		}).notNull(),
 		/**
 		 * Identifier name of the attachment.
