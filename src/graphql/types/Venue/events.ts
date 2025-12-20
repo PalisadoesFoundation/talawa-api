@@ -83,7 +83,7 @@ Venue.implement({
 							extensions: {
 								code: "invalid_arguments",
 								issues: error.issues.map((issue) => ({
-									argumentPath: issue.path,
+									argumentPath: issue.path as (string | number)[],
 									message: issue.message,
 								})),
 							},
@@ -137,13 +137,13 @@ Venue.implement({
 
 					const orderBy = isInversed
 						? [
-								asc(venueBookingsTable.createdAt),
-								asc(venueBookingsTable.eventId),
-							]
+							asc(venueBookingsTable.createdAt),
+							asc(venueBookingsTable.eventId),
+						]
 						: [
-								desc(venueBookingsTable.createdAt),
-								desc(venueBookingsTable.eventId),
-							];
+							desc(venueBookingsTable.createdAt),
+							desc(venueBookingsTable.eventId),
+						];
 
 					let where: SQL | undefined;
 

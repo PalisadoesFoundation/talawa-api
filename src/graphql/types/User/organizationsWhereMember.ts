@@ -69,11 +69,11 @@ const organizationsWhereMemberArgumentsSchema =
 			return {
 				cursor: cursorObj
 					? Buffer.from(
-							JSON.stringify({
-								createdAt: cursorObj.createdAt.toISOString(),
-								organizationId: cursorObj.organizationId,
-							}),
-						).toString("base64url")
+						JSON.stringify({
+							createdAt: cursorObj.createdAt.toISOString(),
+							organizationId: cursorObj.organizationId,
+						}),
+					).toString("base64url")
 					: undefined,
 				isInversed: arg.isInversed,
 				limit: arg.limit,
@@ -105,7 +105,7 @@ export const resolveOrganizationsWhereMember = async (
 			extensions: {
 				code: "invalid_arguments",
 				issues: parseResult.error.issues.map((issue) => ({
-					argumentPath: issue.path,
+					argumentPath: issue.path as (string | number)[],
 					message: issue.message,
 				})),
 			},
@@ -132,13 +132,13 @@ export const resolveOrganizationsWhereMember = async (
 
 	const orderBy = isInversed
 		? [
-				asc(organizationMembershipsTable.createdAt),
-				asc(organizationMembershipsTable.organizationId),
-			]
+			asc(organizationMembershipsTable.createdAt),
+			asc(organizationMembershipsTable.organizationId),
+		]
 		: [
-				desc(organizationMembershipsTable.createdAt),
-				desc(organizationMembershipsTable.organizationId),
-			];
+			desc(organizationMembershipsTable.createdAt),
+			desc(organizationMembershipsTable.organizationId),
+		];
 
 	const baseQuery = ctx.drizzleClient
 		.select({
@@ -158,52 +158,36 @@ export const resolveOrganizationsWhereMember = async (
 				cursor
 					? isInversed
 						? or(
-								and(
-									eq(
-										organizationMembershipsTable.createdAt,
+							and(
+								eq(
+									organizationMembershipsTable.createdAt,
 
-										new Date(
-											JSON.parse(
-												Buffer.from(cursor, "base64url").toString("utf-8"),
-											).createdAt,
-										),
-									),
-									gt(
-										organizationMembershipsTable.organizationId,
+									new Date(
 										JSON.parse(
 											Buffer.from(cursor, "base64url").toString("utf-8"),
-										).organizationId,
+										).createdAt,
 									),
 								),
-
 								gt(
-									organizationMembershipsTable.createdAt,
-									new Date(
-										JSON.parse(
-											Buffer.from(cursor, "base64url").toString("utf-8"),
-										).createdAt,
-									),
+									organizationMembershipsTable.organizationId,
+									JSON.parse(
+										Buffer.from(cursor, "base64url").toString("utf-8"),
+									).organizationId,
 								),
-							)
-						: or(
-								and(
-									eq(
-										organizationMembershipsTable.createdAt,
-										new Date(
-											JSON.parse(
-												Buffer.from(cursor, "base64url").toString("utf-8"),
-											).createdAt,
-										),
-									),
-									lt(
-										organizationMembershipsTable.organizationId,
-										JSON.parse(
-											Buffer.from(cursor, "base64url").toString("utf-8"),
-										).organizationId,
-									),
-								),
+							),
 
-								lt(
+							gt(
+								organizationMembershipsTable.createdAt,
+								new Date(
+									JSON.parse(
+										Buffer.from(cursor, "base64url").toString("utf-8"),
+									).createdAt,
+								),
+							),
+						)
+						: or(
+							and(
+								eq(
 									organizationMembershipsTable.createdAt,
 									new Date(
 										JSON.parse(
@@ -211,7 +195,23 @@ export const resolveOrganizationsWhereMember = async (
 										).createdAt,
 									),
 								),
-							)
+								lt(
+									organizationMembershipsTable.organizationId,
+									JSON.parse(
+										Buffer.from(cursor, "base64url").toString("utf-8"),
+									).organizationId,
+								),
+							),
+
+							lt(
+								organizationMembershipsTable.createdAt,
+								new Date(
+									JSON.parse(
+										Buffer.from(cursor, "base64url").toString("utf-8"),
+									).createdAt,
+								),
+							),
+						)
 					: sql`TRUE`,
 			),
 		)
