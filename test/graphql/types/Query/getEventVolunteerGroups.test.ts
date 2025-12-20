@@ -1,7 +1,7 @@
 import { faker } from "@faker-js/faker";
 import { afterAll, beforeAll, expect, suite, test } from "vitest";
 import type {
-	ArgumentsAssociatedResourcesNotFoundExtensions,
+	InvalidArgumentsExtensions,
 	InvalidArgumentsExtensions,
 	TalawaGraphQLFormattedError,
 	UnauthenticatedExtensions,
@@ -358,9 +358,9 @@ suite("Query field getEventVolunteerGroups", () => {
 				expect.arrayContaining<TalawaGraphQLFormattedError>([
 					expect.objectContaining<TalawaGraphQLFormattedError>({
 						extensions:
-							expect.objectContaining<ArgumentsAssociatedResourcesNotFoundExtensions>(
+							expect.objectContaining<InvalidArgumentsExtensions>(
 								{
-									code: "arguments_associated_resources_not_found",
+									code: "invalid_arguments",
 									issues: expect.arrayContaining([
 										expect.objectContaining({
 											argumentPath: ["where", "eventId"],
@@ -401,7 +401,7 @@ suite("Query field getEventVolunteerGroups", () => {
 							issues: expect.arrayContaining([
 								expect.objectContaining({
 									argumentPath: ["where", "eventId"],
-									message: "Invalid uuid",
+									message: "Invalid UUID",
 								}),
 							]),
 						}),
