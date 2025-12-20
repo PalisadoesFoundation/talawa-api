@@ -123,7 +123,7 @@ suite("Query eventsByIds", () => {
 							expect.objectContaining({
 								argumentPath: ["ids"],
 								// The actual message might differ in capitalization
-								message: expect.stringContaining("least 1 element"),
+								message: expect.stringContaining("at least 1"),
 							}),
 						]),
 					}),

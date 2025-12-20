@@ -323,7 +323,7 @@ suite("Query field signIn", () => {
 						>([
 							expect.objectContaining({
 								argumentPath: ["input", "password"],
-								message: "String must contain at least 1 character(s)",
+								message: "Too small: expected string to have >=1 characters",
 							}),
 						]),
 					}),

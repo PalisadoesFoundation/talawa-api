@@ -240,14 +240,14 @@ describe("resolveOrgsWhereUserIsBlocked", () => {
 		expect(mockFindMany).not.toHaveBeenCalled();
 	});
 
-	test("throws arguments_associated_resources_not_found error for stale cursor", async () => {
+	test("throws invalid_arguments error for stale cursor", async () => {
 		// Simulate a valid cursor but no rows found
 		mockFindMany.mockResolvedValueOnce([]);
 
 		await expect(
 			resolveOrgsWhereUserIsBlocked(mockUserParent, globalArgs, baseMockCtx),
 		).rejects.toMatchObject({
-			extensions: { code: "arguments_associated_resources_not_found" },
+			extensions: { code: "invalid_arguments" },
 		});
 	});
 

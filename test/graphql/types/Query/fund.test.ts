@@ -4,7 +4,7 @@ import { expect, suite, test } from "vitest";
 import { fundsTableInsertSchema } from "~/src/drizzle/tables/funds";
 import { usersTable } from "~/src/drizzle/tables/users";
 import type {
-	ArgumentsAssociatedResourcesNotFoundExtensions,
+	InvalidArgumentsExtensions,
 	TalawaGraphQLFormattedError,
 	UnauthenticatedExtensions,
 	UnauthorizedActionOnArgumentsAssociatedResourcesExtensions,
@@ -105,7 +105,7 @@ suite("Query field fund", () => {
 			);
 		});
 
-		test("with 'arguments_associated_resources_not_found' extensions code if fund not found", async () => {
+		test("with 'invalid_arguments' extensions code if fund not found", async () => {
 			const adminSignInResult = await mercuriusClient.query(Query_signIn, {
 				variables: {
 					input: {
@@ -133,9 +133,9 @@ suite("Query field fund", () => {
 				expect.arrayContaining<TalawaGraphQLFormattedError>([
 					expect.objectContaining<TalawaGraphQLFormattedError>({
 						extensions:
-							expect.objectContaining<ArgumentsAssociatedResourcesNotFoundExtensions>(
+							expect.objectContaining<InvalidArgumentsExtensions>(
 								{
-									code: "arguments_associated_resources_not_found",
+									code: "invalid_arguments",
 									issues: [
 										{
 											argumentPath: ["input", "id"],
@@ -259,7 +259,7 @@ suite("Query field fund", () => {
 		);
 	});
 
-	test("with 'arguments_associated_resources_not_found' extensions code when rate limit is exceeded", async () => {
+	test("with 'invalid_arguments' extensions code when rate limit is exceeded", async () => {
 		const fundId = faker.string.uuid();
 		const adminAuthToken = await getAdminAuthToken();
 
@@ -281,7 +281,7 @@ suite("Query field fund", () => {
 		const lastResult = results.at(-1);
 		expect(lastResult?.errors).toBeDefined();
 		expect(lastResult?.errors?.[0]?.extensions?.code).toBe(
-			"arguments_associated_resources_not_found",
+			"invalid_arguments",
 		);
 	});
 
@@ -626,7 +626,7 @@ suite("Query field get fund Campaign Pledges by id", () => {
 			);
 		});
 
-		test("with 'arguments_associated_resources_not_found' extensions code if fund Campaign pledge is not found", async () => {
+		test("with 'invalid_arguments' extensions code if fund Campaign pledge is not found", async () => {
 			const adminSignInResult = await mercuriusClient.query(Query_signIn, {
 				variables: {
 					input: {
@@ -657,9 +657,9 @@ suite("Query field get fund Campaign Pledges by id", () => {
 				expect.arrayContaining<TalawaGraphQLFormattedError>([
 					expect.objectContaining<TalawaGraphQLFormattedError>({
 						extensions:
-							expect.objectContaining<ArgumentsAssociatedResourcesNotFoundExtensions>(
+							expect.objectContaining<InvalidArgumentsExtensions>(
 								{
-									code: "arguments_associated_resources_not_found",
+									code: "invalid_arguments",
 									issues: [
 										{
 											argumentPath: ["input", "userId"],
@@ -1155,9 +1155,9 @@ suite("Query field get fund Campaign Pledges by id", () => {
 			expect.arrayContaining<TalawaGraphQLFormattedError>([
 				expect.objectContaining<TalawaGraphQLFormattedError>({
 					extensions:
-						expect.objectContaining<ArgumentsAssociatedResourcesNotFoundExtensions>(
+						expect.objectContaining<InvalidArgumentsExtensions>(
 							{
-								code: "arguments_associated_resources_not_found",
+								code: "invalid_arguments",
 								issues: [
 									{
 										argumentPath: ["input", "userId"],
@@ -1384,7 +1384,7 @@ suite("UUID Validation", () => {
 
 			expect(fundResult.errors).toBeDefined();
 			expect(fundResult.errors?.[0]?.extensions?.code).toBe(
-				"arguments_associated_resources_not_found",
+				"invalid_arguments",
 			);
 		}
 	});

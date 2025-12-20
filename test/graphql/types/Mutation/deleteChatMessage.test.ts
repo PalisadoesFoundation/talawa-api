@@ -128,7 +128,7 @@ describe("deleteChatMessageResolver", () => {
 		);
 	});
 
-	it("throws an arguments_associated_resources_not_found error if chat message is not found", async () => {
+	it("throws an invalid_arguments error if chat message is not found", async () => {
 		mockUsersTableFindFirst(ctx, { role: "user" });
 		ctx.drizzleClient.query.chatMessagesTable.findFirst = vi
 			.fn()
@@ -138,7 +138,7 @@ describe("deleteChatMessageResolver", () => {
 		).rejects.toThrowError(
 			expect.objectContaining({
 				extensions: expect.objectContaining({
-					code: "arguments_associated_resources_not_found",
+					code: "invalid_arguments",
 				}),
 			}),
 		);
