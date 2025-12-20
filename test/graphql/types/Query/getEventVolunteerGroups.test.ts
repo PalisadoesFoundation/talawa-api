@@ -2,7 +2,6 @@ import { faker } from "@faker-js/faker";
 import { afterAll, beforeAll, expect, suite, test } from "vitest";
 import type {
 	InvalidArgumentsExtensions,
-	InvalidArgumentsExtensions,
 	TalawaGraphQLFormattedError,
 	UnauthenticatedExtensions,
 	UnauthorizedActionExtensions,
