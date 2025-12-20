@@ -117,7 +117,7 @@ suite("defaultGraphQLConnection utilities", () => {
 
 	suite("transformDefaultGraphQLConnectionArguments", () => {
 		test("transforms first/after arguments correctly", () => {
-			const ctx = { addIssue: vi.fn(), path: [] };
+			const ctx = { addIssue: vi.fn(), path: [] as (string | number)[], value: undefined, issues: [] };
 			const result = transformDefaultGraphQLConnectionArguments(
 				{
 					first: 10,
@@ -137,7 +137,7 @@ suite("defaultGraphQLConnection utilities", () => {
 		});
 
 		test("transforms first without after arguments correctly", () => {
-			const ctx = { addIssue: vi.fn(), path: [] };
+			const ctx = { addIssue: vi.fn(), path: [] as (string | number)[], value: undefined, issues: [] };
 			const result = transformDefaultGraphQLConnectionArguments(
 				{
 					first: 10,
@@ -157,7 +157,7 @@ suite("defaultGraphQLConnection utilities", () => {
 		});
 
 		test("transforms last/before arguments correctly", () => {
-			const ctx = { addIssue: vi.fn(), path: [] };
+			const ctx = { addIssue: vi.fn(), path: [] as (string | number)[], value: undefined, issues: [] };
 			const result = transformDefaultGraphQLConnectionArguments(
 				{
 					last: 10,
@@ -177,7 +177,7 @@ suite("defaultGraphQLConnection utilities", () => {
 		});
 
 		test("transforms last without before arguments correctly", () => {
-			const ctx = { addIssue: vi.fn(), path: [] };
+			const ctx = { addIssue: vi.fn(), path: [] as (string | number)[], value: undefined, issues: [] };
 			const result = transformDefaultGraphQLConnectionArguments(
 				{
 					last: 10,
@@ -197,7 +197,7 @@ suite("defaultGraphQLConnection utilities", () => {
 		});
 
 		test("errors when both first and last are provided", () => {
-			const ctx = { addIssue: vi.fn(), path: [] };
+			const ctx = { addIssue: vi.fn(), path: [] as (string | number)[], value: undefined, issues: [] };
 			const result = transformDefaultGraphQLConnectionArguments(
 				{
 					first: 10,
@@ -217,7 +217,7 @@ suite("defaultGraphQLConnection utilities", () => {
 		});
 
 		test("errors when first is provided with before", () => {
-			const ctx = { addIssue: vi.fn(), path: [] };
+			const ctx = { addIssue: vi.fn(), path: [] as (string | number)[], value: undefined, issues: [] };
 			const result = transformDefaultGraphQLConnectionArguments(
 				{
 					first: 10,
@@ -237,7 +237,7 @@ suite("defaultGraphQLConnection utilities", () => {
 		});
 
 		test("errors when last is provided with after", () => {
-			const ctx = { addIssue: vi.fn(), path: [] };
+			const ctx = { addIssue: vi.fn(), path: [] as (string | number)[], value: undefined, issues: [] };
 			const result = transformDefaultGraphQLConnectionArguments(
 				{
 					last: 10,
@@ -257,7 +257,7 @@ suite("defaultGraphQLConnection utilities", () => {
 		});
 
 		test("errors when neither first nor last is provided", () => {
-			const ctx = { addIssue: vi.fn(), path: [] };
+			const ctx = { addIssue: vi.fn(), path: [] as (string | number)[], value: undefined, issues: [] };
 			const result = transformDefaultGraphQLConnectionArguments(
 				{
 					first: undefined,
@@ -283,7 +283,7 @@ suite("defaultGraphQLConnection utilities", () => {
 		});
 
 		test("preserves custom arguments", () => {
-			const ctx = { addIssue: vi.fn(), path: [] };
+			const ctx = { addIssue: vi.fn(), path: [] as (string | number)[], value: undefined, issues: [] };
 			const customArgs = {
 				first: 10,
 				after: undefined,

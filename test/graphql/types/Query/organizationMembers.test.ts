@@ -430,7 +430,7 @@ suite("Organization Members Query", () => {
 					first: 5,
 					where: {
 						role: {
-							equal: organizationMembershipRoleEnum.Values.administrator,
+							equal: organizationMembershipRoleEnum.enum.administrator,
 						},
 					},
 				},
@@ -456,7 +456,7 @@ suite("Organization Members Query", () => {
 					first: 5,
 					where: {
 						role: {
-							notEqual: organizationMembershipRoleEnum.Values.administrator,
+							notEqual: organizationMembershipRoleEnum.enum.administrator,
 						},
 					},
 				},
