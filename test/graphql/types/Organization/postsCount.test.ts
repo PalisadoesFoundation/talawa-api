@@ -143,14 +143,6 @@ suite("Organization postsCount Field", () => {
 						input: {
 							caption,
 							organizationId: orgId,
-							attachments: [
-								{
-									mimetype: "IMAGE_PNG",
-									objectName: faker.string.uuid(),
-									name: "image.png",
-									fileHash: faker.string.uuid(),
-								},
-							],
 						},
 					},
 				},

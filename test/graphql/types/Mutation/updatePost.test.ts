@@ -130,14 +130,6 @@ suite("Mutation field updatePost", () => {
 						input: {
 							caption: "Original Caption",
 							organizationId: orgId,
-							attachments: [
-								{
-									mimetype: "IMAGE_PNG",
-									objectName: "test-object-name-7",
-									name: "test-image.png-7",
-									fileHash: "test-file-hash-7",
-								},
-							],
 						},
 					},
 				},
@@ -228,14 +220,6 @@ suite("Mutation field updatePost", () => {
 							input: {
 								caption: "Original Caption",
 								organizationId: orgId,
-								attachments: [
-									{
-										mimetype: "IMAGE_PNG",
-										objectName: "test-object-name-3",
-										name: "test-image.png-3",
-										fileHash: "test-file-hash-3",
-									},
-								],
 							},
 						},
 					},
@@ -301,14 +285,6 @@ suite("Mutation field updatePost", () => {
 							caption: "Post to update pin",
 							organizationId: orgId,
 							isPinned: false,
-							attachments: [
-								{
-									mimetype: "IMAGE_PNG",
-									objectName: "test-object-name-4",
-									name: "test-image.png-4",
-									fileHash: "test-file-hash-4",
-								},
-							],
 						},
 					},
 				},
@@ -402,14 +378,6 @@ suite("Mutation field updatePost", () => {
 						input: {
 							caption: "Post for unexpected error test",
 							organizationId: orgId,
-							attachments: [
-								{
-									mimetype: "IMAGE_PNG",
-									objectName: "unexpected-test-object",
-									name: "unexpected-test.png",
-									fileHash: "unexpected-test-hash",
-								},
-							],
 						},
 					},
 				},
@@ -676,128 +644,6 @@ suite("Mutation field updatePost", () => {
 		},
 	);
 
-	suite("when updating post attachments", () => {
-		test("should replace existing attachments with new ones", async () => {
-			const createOrgResult = await mercuriusClient.mutate(
-				Mutation_createOrganization,
-				{
-					headers: { authorization: `bearer ${adminToken}` },
-					variables: {
-						input: {
-							name: "Attachment Update Test Org",
-							description: "Organization for testing attachment updates",
-							countryCode: "us",
-							state: "CA",
-							city: "San Francisco",
-							postalCode: "94101",
-							addressLine1: "789 Tech St",
-							addressLine2: "Suite 300",
-						},
-					},
-				},
-			);
-			const orgId = createOrgResult.data?.createOrganization?.id;
-			assertToBeNonNullish(orgId);
-
-			const initialAttachments = [
-				{
-					mimetype: "IMAGE_PNG" as const,
-					objectName: "initial-object-name-1",
-					name: "initial-image1.png",
-					fileHash: "initial-file-hash-1",
-				},
-				{
-					mimetype: "IMAGE_JPEG" as const,
-					objectName: "initial-object-name-2",
-					name: "initial-image2.jpg",
-					fileHash: "initial-file-hash-2",
-				},
-			];
-
-			const createPostResult = await mercuriusClient.mutate(
-				Mutation_createPost,
-				{
-					headers: { authorization: `bearer ${adminToken}` },
-					variables: {
-						input: {
-							caption: "Post with attachments to update",
-							organizationId: orgId,
-							attachments: initialAttachments,
-						},
-					},
-				},
-			);
-			const postId = createPostResult.data?.createPost?.id;
-			assertToBeNonNullish(postId);
-
-			const attachments = createPostResult.data?.createPost?.attachments;
-			assertToBeNonNullish(attachments);
-			expect(attachments).toHaveLength(2);
-			expect(attachments[0]?.name).toBe("initial-image1.png");
-			expect(attachments[1]?.name).toBe("initial-image2.jpg");
-
-			const newAttachments = [
-				{
-					mimetype: "IMAGE_PNG" as const,
-					objectName: "new-object-name-1",
-					name: "new-image1.png",
-					fileHash: "new-file-hash-1",
-				},
-				{
-					mimetype: "IMAGE_JPEG" as const,
-					objectName: "new-object-name-2",
-					name: "new-image2.jpg",
-					fileHash: "new-file-hash-2",
-				},
-				{
-					mimetype: "IMAGE_PNG" as const,
-					objectName: "new-object-name-3",
-					name: "new-document.png",
-					fileHash: "new-file-hash-3",
-				},
-			];
-
-			const updateResult = await mercuriusClient.mutate(Mutation_updatePost, {
-				headers: { authorization: `bearer ${adminToken}` },
-				variables: {
-					input: {
-						id: postId,
-						caption: "Updated post with new attachments",
-						attachments: newAttachments,
-					},
-				},
-			});
-
-			expect(updateResult.errors).toBeUndefined();
-			const updatedPost = updateResult.data?.updatePost;
-			assertToBeNonNullish(updatedPost);
-
-			expect(updatedPost.caption).toBe("Updated post with new attachments");
-			expect(updatedPost.attachments).toHaveLength(3);
-			expect(updatedPost.attachments).toEqual(
-				expect.arrayContaining([
-					expect.objectContaining({
-						name: "new-image1.png",
-						objectName: "new-object-name-1",
-						fileHash: "new-file-hash-1",
-						mimeType: "image/png",
-					}),
-					expect.objectContaining({
-						name: "new-image2.jpg",
-						objectName: "new-object-name-2",
-						fileHash: "new-file-hash-2",
-						mimeType: "image/jpeg",
-					}),
-					expect.objectContaining({
-						name: "new-document.png",
-						objectName: "new-object-name-3",
-						fileHash: "new-file-hash-3",
-						mimeType: "image/png",
-					}),
-				]),
-			);
-		});
-	});
 	suite(
 		"when current user is organization admin but not the creator and tries to update caption",
 		() => {
@@ -848,14 +694,6 @@ suite("Mutation field updatePost", () => {
 							input: {
 								caption: "Original Caption",
 								organizationId: orgId,
-								attachments: [
-									{
-										mimetype: "IMAGE_PNG",
-										objectName: "test-object-name",
-										name: "test-image.png",
-										fileHash: "test-file-hash",
-									},
-								],
 							},
 						},
 					},
@@ -889,14 +727,6 @@ suite("Mutation field updatePost", () => {
 								input: {
 									id: postId,
 									caption: "Updated Caption",
-									attachments: [
-										{
-											mimetype: "IMAGE_PNG",
-											objectName: "test-object-name-1",
-											name: "test-image.png",
-											fileHash: "test-file-hash-1",
-										},
-									],
 								},
 							},
 						},
@@ -956,14 +786,6 @@ suite("Mutation field updatePost", () => {
 							caption: "Post to unpin",
 							organizationId: orgId,
 							isPinned: true,
-							attachments: [
-								{
-									mimetype: "IMAGE_PNG",
-									objectName: "test-object-name",
-									name: "test-image.png",
-									fileHash: "test-file-hash",
-								},
-							],
 						},
 					},
 				},

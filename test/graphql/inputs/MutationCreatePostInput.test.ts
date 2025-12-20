@@ -29,13 +29,14 @@ describe("MutationCreatePostInput Schema", () => {
 				).toBe(true);
 			}
 		});
-		it("should accept valid caption", () => {
-			const result = mutationCreatePostInputSchema.safeParse(validInput);
+		it("should accept valid caption", async () => {
+			const result =
+				await mutationCreatePostInputSchema.safeParseAsync(validInput);
 			expect(result.success).toBe(true);
 		});
 
-		it("should trim whitespace from caption", () => {
-			const result = mutationCreatePostInputSchema.safeParse({
+		it("should trim whitespace from caption", async () => {
+			const result = await mutationCreatePostInputSchema.safeParseAsync({
 				...validInput,
 				caption: "  trimmed caption  ",
 			});
@@ -66,8 +67,8 @@ describe("MutationCreatePostInput Schema", () => {
 			}
 		});
 
-		it("should accept caption at exactly POST_CAPTION_MAX_LENGTH characters", () => {
-			const result = mutationCreatePostInputSchema.safeParse({
+		it("should accept caption at exactly POST_CAPTION_MAX_LENGTH characters", async () => {
+			const result = await mutationCreatePostInputSchema.safeParseAsync({
 				...validInput,
 				caption: "a".repeat(POST_CAPTION_MAX_LENGTH),
 			});
@@ -76,8 +77,8 @@ describe("MutationCreatePostInput Schema", () => {
 	});
 
 	describe("body field", () => {
-		it("should accept valid body", () => {
-			const result = mutationCreatePostInputSchema.safeParse({
+		it("should accept valid body", async () => {
+			const result = await mutationCreatePostInputSchema.safeParseAsync({
 				...validInput,
 				body: "This is a valid body content.",
 			});
@@ -87,8 +88,8 @@ describe("MutationCreatePostInput Schema", () => {
 			}
 		});
 
-		it("should trim whitespace from body", () => {
-			const result = mutationCreatePostInputSchema.safeParse({
+		it("should trim whitespace from body", async () => {
+			const result = await mutationCreatePostInputSchema.safeParseAsync({
 				...validInput,
 				body: "  trimmed body content  ",
 			});
@@ -137,17 +138,18 @@ describe("MutationCreatePostInput Schema", () => {
 			}
 		});
 
-		it("should accept body at exactly POST_BODY_MAX_LENGTH characters", () => {
-			const result = mutationCreatePostInputSchema.safeParse({
+		it("should accept body at exactly POST_BODY_MAX_LENGTH characters", async () => {
+			const result = await mutationCreatePostInputSchema.safeParseAsync({
 				...validInput,
 				body: "a".repeat(POST_BODY_MAX_LENGTH),
 			});
 			expect(result.success).toBe(true);
 		});
 
-		it("should accept missing body (optional field)", () => {
+		it("should accept missing body (optional field)", async () => {
 			// Test that body field is optional
-			const result = mutationCreatePostInputSchema.safeParse(validInput);
+			const result =
+				await mutationCreatePostInputSchema.safeParseAsync(validInput);
 			expect(result.success).toBe(true);
 			if (result.success) {
 				// Body field should be undefined when not provided
