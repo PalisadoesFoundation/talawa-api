@@ -123,6 +123,7 @@ Proceed to the next section.
 
 ### Install Docusaurus (For Developers Only)
 
+[Docusaurus](https://docusaurus.io/docs/) is a modern static website generator. It helps us build, deploy, and maintain open source project documentation websites easily.
 After successfully installing pnpm,
 From the `talawa-api` directory, run the following command.
 
@@ -134,7 +135,7 @@ $ pnpm install
 #### Other Methods
 
 1. ***In our `talawa-api` repository***: Our [Talawa-Api](https://github.com/PalisadoesFoundation/talawa-api) repository contains user edited markdown files that are automatically integrated into our Talawa documentation site [docs.talawa.io](https://docs.talawa.io/) using the [Docusaurus](https://docusaurus.io/) package.
-   1. The `talawa-api`  repository has an `DOCUMENTATION.md` file that explains how to configure and install it.
+   1. The `talawa-api`  repository has a `DOCUMENTATION.md` file that explains how to configure and install it.
 
 Proceed to the next section.
 
