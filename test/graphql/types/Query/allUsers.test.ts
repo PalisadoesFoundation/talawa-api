@@ -1,15 +1,13 @@
 import { faker } from "@faker-js/faker";
+import { inArray } from "drizzle-orm";
 import gql from "graphql-tag";
 import { afterEach, expect, suite, test, vi } from "vitest";
-
 import { usersTable } from "~/src/drizzle/tables/users";
 import { assertToBeNonNullish } from "../../../helpers";
 import { server } from "../../../server";
 import { mercuriusClient } from "../client";
-import { Query_signIn } from "../documentNodes";
-
-import { inArray } from "drizzle-orm";
 import { createRegularUserUsingAdmin } from "../createRegularUserUsingAdmin";
+import { Query_signIn } from "../documentNodes";
 
 /* -------------------------------------------------- */
 /* GraphQL Query */

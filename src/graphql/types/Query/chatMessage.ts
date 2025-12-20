@@ -5,8 +5,9 @@ import {
 	queryChatMessageInputSchema,
 } from "~/src/graphql/inputs/QueryChatMessageInput";
 import { ChatMessage } from "~/src/graphql/types/ChatMessage/ChatMessage";
-import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import envConfig from "~/src/utilities/graphqLimits";
+import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
+
 const queryChatArgumentsSchema = z.object({
 	input: queryChatMessageInputSchema,
 });

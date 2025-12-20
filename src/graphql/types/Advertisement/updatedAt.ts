@@ -1,8 +1,8 @@
-import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import envConfig from "~/src/utilities/graphqLimits";
+import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import type { GraphQLContext } from "../../context";
-import { Advertisement } from "./Advertisement";
 import type { Advertisement as AdvertisementType } from "./Advertisement";
+import { Advertisement } from "./Advertisement";
 export const advertisementUpdatedAtResolver = async (
 	parent: AdvertisementType,
 	_args: Record<string, never>,

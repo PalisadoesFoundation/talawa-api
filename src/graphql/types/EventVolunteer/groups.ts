@@ -2,11 +2,11 @@ import { and, eq } from "drizzle-orm";
 import { eventVolunteerGroupsTable } from "~/src/drizzle/tables/eventVolunteerGroups";
 import { eventVolunteerMembershipsTable } from "~/src/drizzle/tables/eventVolunteerMemberships";
 import { EventVolunteerGroup } from "~/src/graphql/types/EventVolunteerGroup/EventVolunteerGroup";
-import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import envConfig from "~/src/utilities/graphqLimits";
+import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import type { GraphQLContext } from "../../context";
-import { EventVolunteer } from "./EventVolunteer";
 import type { EventVolunteer as EventVolunteerType } from "./EventVolunteer";
+import { EventVolunteer } from "./EventVolunteer";
 
 export const EventVolunteerGroupsResolver = async (
 	parent: EventVolunteerType,

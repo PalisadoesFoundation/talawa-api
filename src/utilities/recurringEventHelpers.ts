@@ -13,7 +13,7 @@ import type { recurrenceInputSchema } from "~/src/graphql/inputs/RecurrenceInput
  */
 export const buildRRuleString = (
 	recurrence: z.infer<typeof recurrenceInputSchema>,
-	startDate: Date,
+	_startDate: Date,
 ): string => {
 	let rrule = `FREQ=${recurrence.frequency}`;
 

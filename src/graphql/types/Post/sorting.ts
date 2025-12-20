@@ -3,8 +3,8 @@ import { postAttachmentsTable } from "~/src/drizzle/tables/postAttachments";
 import { postsTable } from "~/src/drizzle/tables/posts";
 import { builder } from "~/src/graphql/builder";
 import { Post, type Post as PostType } from "~/src/graphql/types/Post/Post";
-import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import envConfig from "~/src/utilities/graphqLimits";
+import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 
 const GetPostsByOrgInput = builder.inputType("GetPostsByOrgInput", {
 	fields: (t) => ({

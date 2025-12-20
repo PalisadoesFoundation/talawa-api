@@ -8,8 +8,8 @@ import {
 	VerifyEventInvitationInput,
 	verifyEventInvitationInputSchema,
 } from "~/src/graphql/inputs/MutationVerifyEventInvitationInput";
-import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import envConfig from "~/src/utilities/graphqLimits";
+import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 
 export const VerifyEventInvitationPreview = builder.objectRef<{
 	invitationToken: string;
@@ -45,7 +45,7 @@ function maskEmail(email: string) {
 		const visible = local[0];
 		const last = local[local.length - 1];
 		return `${visible}***${last}@${domain}`;
-	} catch (err) {
+	} catch (_err) {
 		return "****@***";
 	}
 }

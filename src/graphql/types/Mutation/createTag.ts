@@ -6,9 +6,10 @@ import {
 	mutationCreateTagInputSchema,
 } from "~/src/graphql/inputs/MutationCreateTagInput";
 import { Tag } from "~/src/graphql/types/Tag/Tag";
-import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import envConfig from "~/src/utilities/graphqLimits";
 import { isNotNullish } from "~/src/utilities/isNotNullish";
+import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
+
 const mutationCreateTagArgumentsSchema = z.object({
 	input: mutationCreateTagInputSchema,
 });

@@ -11,9 +11,10 @@ import {
 	mutationUpdateCurrentUserInputSchema,
 } from "~/src/graphql/inputs/MutationUpdateCurrentUserInput";
 import { User } from "~/src/graphql/types/User/User";
-import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import envConfig from "~/src/utilities/graphqLimits";
 import { isNotNullish } from "~/src/utilities/isNotNullish";
+import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
+
 const mutationUpdateCurrentUserArgumentsSchema = z.object({
 	input: mutationUpdateCurrentUserInputSchema.transform(async (arg, ctx) => {
 		let avatar:

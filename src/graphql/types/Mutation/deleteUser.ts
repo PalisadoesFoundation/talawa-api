@@ -2,11 +2,14 @@ import { eq } from "drizzle-orm";
 import { z } from "zod";
 import { usersTable } from "~/src/drizzle/tables/users";
 import { builder } from "~/src/graphql/builder";
-import { MutationDeleteUserInput } from "~/src/graphql/inputs/MutationDeleteUserInput";
-import { mutationDeleteUserInputSchema } from "~/src/graphql/inputs/MutationDeleteUserInput";
+import {
+	MutationDeleteUserInput,
+	mutationDeleteUserInputSchema,
+} from "~/src/graphql/inputs/MutationDeleteUserInput";
 import { User } from "~/src/graphql/types/User/User";
-import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import envConfig from "~/src/utilities/graphqLimits";
+import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
+
 const mutationDeleteUserArgumentsSchema = z.object({
 	input: mutationDeleteUserInputSchema,
 });

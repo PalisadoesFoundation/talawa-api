@@ -3,8 +3,8 @@ import { z } from "zod";
 import { usersTable } from "~/src/drizzle/tables/users";
 import { builder } from "~/src/graphql/builder";
 import { EventAttendee } from "~/src/graphql/types/EventAttendee/EventAttendee";
-import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import envConfig from "~/src/utilities/graphqLimits";
+import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 
 const queryGetEventInvitesByUserIdArgumentsSchema = z.object({
 	userId: z.string().uuid(),

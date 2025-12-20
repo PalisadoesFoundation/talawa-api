@@ -10,8 +10,8 @@ import type {
 } from "~/src/graphql/context";
 import schemaManager from "~/src/graphql/schemaManager";
 import NotificationService from "~/src/services/notification/NotificationService";
-import { TalawaGraphQLError } from "../utilities/TalawaGraphQLError";
 import leakyBucket from "../utilities/leakyBucket";
+import { TalawaGraphQLError } from "../utilities/TalawaGraphQLError";
 
 /**
  * Type of the initial context argument provided to the createContext function by the graphql server.
@@ -62,7 +62,7 @@ export const createContext: CreateContext = async (initialContext) => {
 			isAuthenticated: true,
 			user: jwtPayload.user,
 		};
-	} catch (error) {
+	} catch (_error) {
 		currentClient = {
 			isAuthenticated: false,
 		};
@@ -179,11 +179,11 @@ export const graphql = fastifyPlugin(async (fastify) => {
 			// KeepAlive is fine as it is
 			keepAlive: 1000 * 30,
 			// A function which is called with the subscription context of the connection after the connection gets disconnected.
-			onDisconnect: (ctx) => {
+			onDisconnect: (_ctx) => {
 				// no cleanup needed on disconnect (intentional no-op)
 			},
 			// This function is used to validate incoming Websocket connections.
-			verifyClient: (info, next) => {
+			verifyClient: (_info, next) => {
 				next(true);
 			},
 		},
@@ -264,7 +264,7 @@ export const graphql = fastifyPlugin(async (fastify) => {
 					isAuthenticated: true,
 					user: jwtPayload.user,
 				};
-			} catch (error) {
+			} catch (_error) {
 				currentClient = {
 					isAuthenticated: false,
 				};

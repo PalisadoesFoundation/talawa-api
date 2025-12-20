@@ -41,16 +41,13 @@ describe("recurringEventHelpers", () => {
 				},
 				"RRULE:FREQ=MONTHLY;INTERVAL=3;COUNT=10;BYMONTH=1,2,3;BYMONTHDAY=1,15",
 			],
-		])(
-			"should build the correct RRULE string for various inputs",
-			(recurrence, expected) => {
-				const rrule = buildRRuleString(
-					recurrence as z.infer<typeof recurrenceInputSchema>,
-					startDate,
-				);
-				expect(rrule).toBe(expected);
-			},
-		);
+		])("should build the correct RRULE string for various inputs", (recurrence, expected) => {
+			const rrule = buildRRuleString(
+				recurrence as z.infer<typeof recurrenceInputSchema>,
+				startDate,
+			);
+			expect(rrule).toBe(expected);
+		});
 	});
 
 	describe("validateRecurrenceInput", () => {
@@ -86,17 +83,14 @@ describe("recurringEventHelpers", () => {
 				false,
 				["Invalid month day: 32"],
 			],
-		])(
-			"should validate various recurrence inputs",
-			(recurrence, isValid, errors) => {
-				const result = validateRecurrenceInput(
-					recurrence as z.infer<typeof recurrenceInputSchema>,
-					startDate,
-				);
-				expect(result.isValid).toBe(isValid);
-				expect(result.errors).toEqual(errors);
-			},
-		);
+		])("should validate various recurrence inputs", (recurrence, isValid, errors) => {
+			const result = validateRecurrenceInput(
+				recurrence as z.infer<typeof recurrenceInputSchema>,
+				startDate,
+			);
+			expect(result.isValid).toBe(isValid);
+			expect(result.errors).toEqual(errors);
+		});
 	});
 
 	describe("normalizeRecurrenceRule", () => {
@@ -157,18 +151,15 @@ describe("recurringEventHelpers", () => {
 			[5, "WEEKLY", 2, new Date("2025-02-26T00:00:00.000Z")],
 			[6, "MONTHLY", 1, new Date("2025-06-01T00:00:00.000Z")],
 			[3, "YEARLY", 1, new Date("2027-01-01T00:00:00.000Z")],
-		] as const)(
-			"should calculate the correct completion date",
-			(count, frequency, interval, expected) => {
-				const completionDate = calculateCompletionDateFromCount(
-					startDate,
-					count,
-					frequency,
-					interval,
-				);
-				expect(completionDate).toEqual(expected);
-			},
-		);
+		] as const)("should calculate the correct completion date", (count, frequency, interval, expected) => {
+			const completionDate = calculateCompletionDateFromCount(
+				startDate,
+				count,
+				frequency,
+				interval,
+			);
+			expect(completionDate).toEqual(expected);
+		});
 	});
 
 	describe("estimateInstanceCount", () => {
@@ -221,12 +212,9 @@ describe("recurringEventHelpers", () => {
 				12,
 				12,
 			],
-		] as const)(
-			"should estimate the instance count",
-			(rule, expected, estimationWindow) => {
-				expect(estimateInstanceCount(rule, estimationWindow)).toBe(expected);
-			},
-		);
+		] as const)("should estimate the instance count", (rule, expected, estimationWindow) => {
+			expect(estimateInstanceCount(rule, estimationWindow)).toBe(expected);
+		});
 	});
 
 	describe("Event Type Functions", () => {
@@ -268,15 +256,12 @@ describe("recurringEventHelpers", () => {
 				true,
 				"HYBRID",
 			],
-		] as const)(
-			"should correctly classify event types",
-			(rule, isNever, isCount, isEndDate, eventType) => {
-				expect(isNeverEndingEvent(rule)).toBe(isNever);
-				expect(isCountBasedEvent(rule)).toBe(isCount);
-				expect(isEndDateBasedEvent(rule)).toBe(isEndDate);
-				expect(getEventType(rule)).toBe(eventType);
-			},
-		);
+		] as const)("should correctly classify event types", (rule, isNever, isCount, isEndDate, eventType) => {
+			expect(isNeverEndingEvent(rule)).toBe(isNever);
+			expect(isCountBasedEvent(rule)).toBe(isCount);
+			expect(isEndDateBasedEvent(rule)).toBe(isEndDate);
+			expect(getEventType(rule)).toBe(eventType);
+		});
 	});
 
 	describe("calculateInstancesPerMonth", () => {
@@ -289,15 +274,12 @@ describe("recurringEventHelpers", () => {
 			["MONTHLY", 3, 0.33],
 			["YEARLY", 1, 0.083],
 			["YEARLY", 2, 0.041],
-		] as const)(
-			"should calculate instances per month for %s frequency with interval %i",
-			(frequency, interval, expected) => {
-				expect(calculateInstancesPerMonth(frequency, interval)).toBeCloseTo(
-					expected,
-					2,
-				);
-			},
-		);
+		] as const)("should calculate instances per month for %s frequency with interval %i", (frequency, interval, expected) => {
+			expect(calculateInstancesPerMonth(frequency, interval)).toBeCloseTo(
+				expected,
+				2,
+			);
+		});
 	});
 
 	describe("validateRecurrenceRule", () => {
