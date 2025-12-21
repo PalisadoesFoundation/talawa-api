@@ -1,6 +1,6 @@
 import type { FileUpload } from "graphql-upload-minimal";
 import { z } from "zod";
-import { imageMimeTypeEnum } from "~/src/drizzle/enums/imageMimeType";
+import { postAttachmentMimeTypeEnum } from "~/src/drizzle/enums/postAttachmentMimeType";
 import {
 	POST_BODY_MAX_LENGTH,
 	POST_CAPTION_MAX_LENGTH,
@@ -45,7 +45,7 @@ export const mutationCreatePostInputSchema = postsTableInsertSchema
 	.transform(async (arg, ctx) => {
 		let attachment:
 			| (FileUpload & {
-					mimetype: z.infer<typeof imageMimeTypeEnum>;
+					mimetype: z.infer<typeof postAttachmentMimeTypeEnum>;
 			  })
 			| null
 			| undefined;
@@ -54,7 +54,7 @@ export const mutationCreatePostInputSchema = postsTableInsertSchema
 			const rawAttachment = await arg.attachment;
 
 			if (rawAttachment) {
-				const { data, success } = imageMimeTypeEnum.safeParse(
+				const { data, success } = postAttachmentMimeTypeEnum.safeParse(
 					rawAttachment.mimetype,
 				);
 

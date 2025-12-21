@@ -240,6 +240,21 @@ builder.mutationField("updatePost", (t) =>
 					const attachment = parsedArgs.input.attachment;
 					const objectName = ulid();
 
+					// Delete old MinIO objects before uploading new one
+					for (const oldAttachment of existingPost.attachmentsWherePost) {
+						try {
+							await ctx.minio.client.removeObject(
+								ctx.minio.bucketName,
+								oldAttachment.objectName,
+							);
+						} catch (removeError) {
+							ctx.log.warn(
+								`Failed to remove old MinIO object ${oldAttachment.objectName}: ${removeError}`,
+							);
+							// Continue even if removal fails - don't block the update
+						}
+					}
+
 					// First delete existing attachments
 					await tx
 						.delete(postAttachmentsTable)

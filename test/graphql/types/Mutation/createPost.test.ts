@@ -818,3 +818,185 @@ suite("Mutation field createPost", () => {
 		});
 	});
 });
+
+test("successfully creates post with valid image attachment", async () => {
+	const adminSignIn = await mercuriusClient.query(Query_signIn, {
+		variables: {
+			input: {
+				emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
+				password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
+			},
+		},
+	});
+
+	const token = adminSignIn.data.signIn?.authenticationToken;
+	assertToBeNonNullish(token);
+
+	const createOrgResult = await mercuriusClient.mutate(
+		Mutation_createOrganization,
+		{
+			headers: { authorization: `bearer ${token}` },
+			variables: {
+				input: {
+					name: `TestOrg_${faker.string.ulid()}`,
+					description: faker.lorem.sentence(),
+				},
+			},
+		},
+	);
+
+	const orgId = createOrgResult.data.createOrganization?.id;
+	assertToBeNonNullish(orgId);
+
+	const boundary = `----WebKitFormBoundary${Math.random().toString(36)}`;
+
+	const operations = JSON.stringify({
+		query: `
+      mutation Mutation_createPost($input: MutationCreatePostInput!) {
+        createPost(input: $input) {
+          id
+          caption
+          attachments { mimeType name }
+        }
+      }
+    `,
+		variables: {
+			input: {
+				caption: "Hello world",
+				organizationId: orgId,
+				isPinned: false,
+				attachment: null,
+			},
+		},
+	});
+
+	const map = JSON.stringify({
+		"0": ["variables.input.attachment"],
+	});
+
+	const fileContent = "fake jpeg content";
+
+	const body = [
+		`--${boundary}`,
+		'Content-Disposition: form-data; name="operations"',
+		"",
+		operations,
+		`--${boundary}`,
+		'Content-Disposition: form-data; name="map"',
+		"",
+		map,
+		`--${boundary}`,
+		'Content-Disposition: form-data; name="0"; filename="post-photo.jpg"',
+		"Content-Type: image/jpeg",
+		"",
+		fileContent,
+		`--${boundary}--`,
+	].join("\r\n");
+
+	const response = await server.inject({
+		method: "POST",
+		url: "/graphql",
+		headers: {
+			"content-type": `multipart/form-data; boundary=${boundary}`,
+			authorization: `bearer ${token}`,
+		},
+		payload: body,
+	});
+
+	const result = JSON.parse(response.body);
+
+	expect(result.errors).toBeUndefined();
+	assertToBeNonNullish(result.data.createPost?.id);
+
+	expect(result.data.createPost.attachments).toHaveLength(1);
+	expect(result.data.createPost.attachments[0].mimeType).toBe("image/jpeg");
+});
+
+test("returns unexpected error when MinIO upload fails", async () => {
+	const adminSignIn = await mercuriusClient.query(Query_signIn, {
+		variables: {
+			input: {
+				emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
+				password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
+			},
+		},
+	});
+
+	const token = adminSignIn.data.signIn?.authenticationToken;
+	assertToBeNonNullish(token);
+
+	const createOrgResult = await mercuriusClient.mutate(
+		Mutation_createOrganization,
+		{
+			headers: { authorization: `bearer ${token}` },
+			variables: {
+				input: {
+					name: `TestOrg_${faker.string.ulid()}`,
+					description: faker.lorem.sentence(),
+				},
+			},
+		},
+	);
+
+	// mock MinIO failure
+	server.minio.client.putObject = vi
+		.fn()
+		.mockRejectedValue(new Error("simulated failure"));
+
+	const boundary = `----WebKitFormBoundary${Math.random().toString(36)}`;
+	const operations = JSON.stringify({
+		query: `
+      mutation Mutation_createPost($input: MutationCreatePostInput!) {
+        createPost(input: $input) {
+          id
+        }
+      }
+    `,
+		variables: {
+			input: {
+				caption: "Test",
+				organizationId: createOrgResult.data.createOrganization?.id,
+				isPinned: false,
+				attachment: null,
+			},
+		},
+	});
+
+	const map = JSON.stringify({
+		"0": ["variables.input.attachment"],
+	});
+
+	const body = [
+		`--${boundary}`,
+		'Content-Disposition: form-data; name="operations"',
+		"",
+		operations,
+		`--${boundary}`,
+		'Content-Disposition: form-data; name="map"',
+		"",
+		map,
+		`--${boundary}`,
+		'Content-Disposition: form-data; name="0"; filename="photo.jpg"',
+		"Content-Type: image/jpeg",
+		"",
+		"fakecontent",
+		`--${boundary}--`,
+	].join("\r\n");
+
+	const response = await server.inject({
+		method: "POST",
+		url: "/graphql",
+		headers: {
+			"content-type": `multipart/form-data; boundary=${boundary}`,
+			authorization: `bearer ${token}`,
+		},
+		payload: body,
+	});
+
+	const result = JSON.parse(response.body);
+
+	expect(result.data?.createPost).toEqual(null);
+
+	// the resolver's exact error code
+	expect(result.errors[0].extensions.code).toBe("unexpected");
+});

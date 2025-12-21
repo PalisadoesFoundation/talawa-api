@@ -7,4 +7,5 @@ export const postAttachmentMimeTypeEnum = z.enum([
 	"image/webp",
 	"video/mp4",
 	"video/webm",
+	"video/quicktime",
 ]);
