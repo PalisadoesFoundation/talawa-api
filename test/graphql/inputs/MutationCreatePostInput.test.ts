@@ -217,7 +217,7 @@ describe("MutationCreatePostInput Schema", () => {
 			}
 		});
 
-		it("should set attachment to null when explicitly undefined", async () => {
+		it("should set attachment to be undefined when explicitly undefined", async () => {
 			const result = await mutationCreatePostInputSchema.safeParseAsync({
 				...validInput,
 				attachment: undefined,
@@ -226,6 +226,18 @@ describe("MutationCreatePostInput Schema", () => {
 			expect(result.success).toBe(true);
 			if (result.success) {
 				expect(result.data.attachment).toBeUndefined();
+			}
+		});
+
+		it("should set attachment to null when explicitly null", async () => {
+			const result = await mutationCreatePostInputSchema.safeParseAsync({
+				...validInput,
+				attachment: null,
+			});
+
+			expect(result.success).toBe(true);
+			if (result.success) {
+				expect(result.data.attachment).toBeNull();
 			}
 		});
 

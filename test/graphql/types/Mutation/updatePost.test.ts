@@ -1088,7 +1088,7 @@ test("successfully updates post with valid image attachment", async () => {
 	expect(result.data.updatePost.attachments[0].mimeType).toBe("image/jpeg");
 });
 
-suite("updatePost - MinIO oprations", () => {
+suite("updatePost - MinIO operations", () => {
 	test("returns unexpected error when MinIO upload fails during post update", async () => {
 		// Save original method for restoration
 		const originalPutObject = server.minio.client.putObject;

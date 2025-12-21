@@ -135,7 +135,7 @@ describe("MutationUpdatePostInput Schema", () => {
 			}
 		});
 
-		it("should set attachment to null when explicitly undefined", async () => {
+		it("should set attachment to be undefined when explicitly undefined", async () => {
 			const result = await mutationUpdatePostInputSchema.safeParseAsync({
 				id: "550e8400-e29b-41d4-a716-446655440000",
 				attachment: undefined,
