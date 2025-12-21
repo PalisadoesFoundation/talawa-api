@@ -4,6 +4,7 @@ import type { VariablesOf } from "gql.tada";
 import { assertToBeNonNullish } from "test/helpers";
 import { afterAll, beforeAll, expect, suite, test } from "vitest";
 import type {
+	AccountLockedExtensions,
 	ArgumentsAssociatedResourcesNotFoundExtensions,
 	ForbiddenActionExtensions,
 	InvalidArgumentsExtensions,

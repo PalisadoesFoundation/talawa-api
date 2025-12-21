@@ -39,6 +39,26 @@ export const envConfigSchema = Type.Object({
 		minLength: 1,
 	}),
 	/**
+	 * Duration in milliseconds for which an account remains locked after exceeding failed login threshold.
+	 * Default: 900000 (15 minutes)
+	 */
+	API_ACCOUNT_LOCKOUT_DURATION_MS: Type.Optional(
+		Type.Integer({
+			minimum: 1000,
+			default: 900000,
+		}),
+	),
+	/**
+	 * Maximum number of failed login attempts before account lockout.
+	 * Default: 5
+	 */
+	API_ACCOUNT_LOCKOUT_THRESHOLD: Type.Optional(
+		Type.Integer({
+			minimum: 1,
+			default: 5,
+		}),
+	),
+	/**
 	 * URL to the facebook account of the community.
 	 */
 	API_COMMUNITY_FACEBOOK_URL: Type.Optional(
