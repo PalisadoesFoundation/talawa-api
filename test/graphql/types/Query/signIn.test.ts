@@ -716,9 +716,9 @@ suite("Query field signIn", () => {
 
 		test("should return account_locked error when account is locked", async () => {
 			// Lock the account with a future timestamp
-			const futureDate = new Date(Date.now() + 900000); // 15 minutes from now
+			const futureDate = new Date(Date.now() + 900000).toISOString(); // 15 minutes from now
 			await server.drizzleClient.execute(
-				sql`UPDATE users SET failed_login_attempts = 5, locked_until = ${futureDate} WHERE id = ${lockoutTestUserId}`,
+				sql`UPDATE users SET failed_login_attempts = 5, locked_until = ${futureDate}::timestamptz WHERE id = ${lockoutTestUserId}`,
 			);
 
 			const result = await mercuriusClient.query(Query_signIn, {
@@ -747,9 +747,9 @@ suite("Query field signIn", () => {
 
 		test("locked account returns account_locked even with wrong password", async () => {
 			// Lock the account with a future timestamp
-			const futureDate = new Date(Date.now() + 5 * 60 * 1000); // 5 minutes from now
+			const futureDate = new Date(Date.now() + 5 * 60 * 1000).toISOString(); // 5 minutes from now
 			await server.drizzleClient.execute(
-				sql`UPDATE users SET failed_login_attempts = 5, locked_until = ${futureDate} WHERE id = ${lockoutTestUserId}`,
+				sql`UPDATE users SET failed_login_attempts = 5, locked_until = ${futureDate}::timestamptz WHERE id = ${lockoutTestUserId}`,
 			);
 
 			// Try with wrong password - should still get account_locked, not invalid_credentials
@@ -779,9 +779,9 @@ suite("Query field signIn", () => {
 
 		test("should allow login after lockout period expires", async () => {
 			// Set lockout to a past timestamp (expired)
-			const pastDate = new Date(Date.now() - 1000); // 1 second ago
+			const pastDate = new Date(Date.now() - 1000).toISOString(); // 1 second ago
 			await server.drizzleClient.execute(
-				sql`UPDATE users SET failed_login_attempts = 5, locked_until = ${pastDate} WHERE id = ${lockoutTestUserId}`,
+				sql`UPDATE users SET failed_login_attempts = 5, locked_until = ${pastDate}::timestamptz WHERE id = ${lockoutTestUserId}`,
 			);
 
 			const result = await mercuriusClient.query(Query_signIn, {
