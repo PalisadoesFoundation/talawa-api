@@ -21,19 +21,19 @@ export type ExplicitAuthenticationTokenPayload = {
  */
 export type CurrentClient =
 	| ({
-			/**
-			 * Type union discriminator field when the current client is unauthenticated.
-			 */
-			isAuthenticated: false;
-	  } & {
-			[K in keyof ExplicitAuthenticationTokenPayload]?: never;
-	  })
+		/**
+		 * Type union discriminator field when the current client is unauthenticated.
+		 */
+		isAuthenticated: false;
+	} & {
+		[K in keyof ExplicitAuthenticationTokenPayload]?: never;
+	})
 	| ({
-			/**
-			 * Type union discriminator field when the current client is authenticated.
-			 */
-			isAuthenticated: true;
-	  } & ExplicitAuthenticationTokenPayload);
+		/**
+		 * Type union discriminator field when the current client is authenticated.
+		 */
+		isAuthenticated: true;
+	} & ExplicitAuthenticationTokenPayload);
 
 /**
  * Type of the transport protocol agnostic explicit context object that is merged with the implcit mercurius context object and passed to the graphql resolvers each time they resolve a graphql operation at runtime.
@@ -43,7 +43,11 @@ export type ExplicitGraphQLContext = {
 	drizzleClient: FastifyInstance["drizzleClient"];
 	envConfig: Pick<
 		FastifyInstance["envConfig"],
-		"API_BASE_URL" | "API_REFRESH_TOKEN_EXPIRES_IN" | "FRONTEND_URL"
+		| "API_ACCOUNT_LOCKOUT_DURATION_MS"
+		| "API_ACCOUNT_LOCKOUT_THRESHOLD"
+		| "API_BASE_URL"
+		| "API_REFRESH_TOKEN_EXPIRES_IN"
+		| "FRONTEND_URL"
 	>;
 	jwt: {
 		sign: (payload: ExplicitAuthenticationTokenPayload) => string;
