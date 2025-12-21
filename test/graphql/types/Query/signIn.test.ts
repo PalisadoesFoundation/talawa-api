@@ -4,6 +4,7 @@ import type { VariablesOf } from "gql.tada";
 import { assertToBeNonNullish } from "test/helpers";
 import { afterAll, beforeAll, expect, suite, test } from "vitest";
 import type {
+	AccountLockedExtensions,
 	ArgumentsAssociatedResourcesNotFoundExtensions,
 	ForbiddenActionExtensions,
 	InvalidArgumentsExtensions,
@@ -469,6 +470,21 @@ suite("Query field signIn", () => {
 		);
 	});
 
+	test("sign in upgrades role to administrator when user has admin org membership", async () => {
+		// user1Email was granted an organization administrator membership in beforeAll
+		const result = await mercuriusClient.query(Query_signIn, {
+			variables: {
+				input: {
+					emailAddress: user1Email,
+					password: "password",
+				},
+			},
+		});
+
+		expect(result.errors).toBeUndefined();
+		expect(result.data.signIn?.user?.role).toBe("administrator");
+	});
+
 	test("sign in as regular user without organization admin membership", async () => {
 		// Create a regular user WITHOUT making them an org admin
 		const regularUserEmail = `regular${faker.string.ulid()}@email.com`;
@@ -547,5 +563,305 @@ suite("Query field signIn", () => {
 				}),
 			]),
 		);
+	});
+
+	suite("account lockout functionality", () => {
+		let lockoutTestUserEmail = "";
+		let lockoutTestUserId = "";
+		let lockoutAdminAuth = "";
+
+		beforeAll(async () => {
+			// Sign in as admin
+			const adminSignIn = await mercuriusClient.query(Query_signIn, {
+				variables: {
+					input: {
+						emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
+						password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
+					},
+				},
+			});
+			assertToBeNonNullish(adminSignIn.data.signIn?.authenticationToken);
+			lockoutAdminAuth = adminSignIn.data.signIn.authenticationToken;
+
+			// Create a test user for lockout tests
+			lockoutTestUserEmail = `lockout${faker.string.ulid()}@email.com`;
+			const createUserResult = await mercuriusClient.mutate(
+				Mutation_createUser,
+				{
+					headers: {
+						authorization: `bearer ${lockoutAdminAuth}`,
+					},
+					variables: {
+						input: {
+							emailAddress: lockoutTestUserEmail,
+							isEmailAddressVerified: false,
+							name: "Lockout Test User",
+							password: "correctpassword",
+							role: "regular",
+						},
+					},
+				},
+			);
+
+			assertToBeNonNullish(createUserResult.data.createUser?.user?.id);
+			lockoutTestUserId = createUserResult.data.createUser.user.id;
+		});
+
+		afterAll(async () => {
+			// Reset lockout state and clean up the test user
+			await server.drizzleClient.execute(
+				sql`UPDATE users SET failed_login_attempts = 0, locked_until = NULL, last_failed_login_at = NULL WHERE id = ${lockoutTestUserId}`,
+			);
+
+			await mercuriusClient.mutate(Mutation_deleteUser, {
+				headers: {
+					authorization: `bearer ${lockoutAdminAuth}`,
+				},
+				variables: {
+					input: {
+						id: lockoutTestUserId,
+					},
+				},
+			});
+		});
+
+		test("should increment failed login attempts on wrong password", async () => {
+			// Reset state before test
+			await server.drizzleClient.execute(
+				sql`UPDATE users SET failed_login_attempts = 0, locked_until = NULL WHERE id = ${lockoutTestUserId}`,
+			);
+
+			// First failed attempt
+			await mercuriusClient.query(Query_signIn, {
+				variables: {
+					input: {
+						emailAddress: lockoutTestUserEmail,
+						password: "wrongpassword1",
+					},
+				},
+			});
+
+			// Check that failed attempts incremented
+			const userAfterAttempt = await server.drizzleClient.execute(
+				sql`SELECT failed_login_attempts FROM users WHERE id = ${lockoutTestUserId}`,
+			);
+			expect(
+				(userAfterAttempt[0] as Record<string, unknown>)?.failed_login_attempts,
+			).toBe(1);
+		});
+
+		test("failed login sets lastFailedLoginAt timestamp", async () => {
+			// Reset before test
+			await server.drizzleClient.execute(
+				sql`UPDATE users SET failed_login_attempts = 0, last_failed_login_at = NULL, locked_until = NULL WHERE id = ${lockoutTestUserId}`,
+			);
+
+			// Cause one failed attempt
+			await mercuriusClient.query(Query_signIn, {
+				variables: {
+					input: {
+						emailAddress: lockoutTestUserEmail,
+						password: "wrongpassword",
+					},
+				},
+			});
+
+			// Verify timestamp set
+			const row = await server.drizzleClient.execute(
+				sql`SELECT last_failed_login_at FROM users WHERE id = ${lockoutTestUserId}`,
+			);
+			const ts = (row[0] as Record<string, unknown>)?.last_failed_login_at;
+			expect(ts).not.toBeNull();
+		});
+
+		test("should lock account after exceeding threshold (default 5)", async () => {
+			// Reset state before test
+			await server.drizzleClient.execute(
+				sql`UPDATE users SET failed_login_attempts = 4, locked_until = NULL WHERE id = ${lockoutTestUserId}`,
+			);
+
+			// This should be the 5th failed attempt, triggering lockout
+			const result = await mercuriusClient.query(Query_signIn, {
+				variables: {
+					input: {
+						emailAddress: lockoutTestUserEmail,
+						password: "wrongpassword",
+					},
+				},
+			});
+
+			// Should get invalid_credentials (not account_locked yet, lock happens after error)
+			expect(result.data.signIn).toEqual(null);
+			expect(result.errors).toEqual(
+				expect.arrayContaining<TalawaGraphQLFormattedError>([
+					expect.objectContaining<TalawaGraphQLFormattedError>({
+						extensions: expect.objectContaining<InvalidCredentialsExtensions>({
+							code: "invalid_credentials",
+							issues: expect.any(Array),
+						}),
+						message: expect.any(String),
+						path: ["signIn"],
+					}),
+				]),
+			);
+
+			// Verify account is now locked
+			const userAfterLockout = await server.drizzleClient.execute(
+				sql`SELECT failed_login_attempts, locked_until FROM users WHERE id = ${lockoutTestUserId}`,
+			);
+			const lockoutRow = userAfterLockout[0] as Record<string, unknown>;
+			expect(lockoutRow?.failed_login_attempts).toBe(5);
+			expect(lockoutRow?.locked_until).not.toBeNull();
+		});
+
+		test("should return account_locked error when account is locked", async () => {
+			// Lock the account with a future timestamp
+			const futureDate = new Date(Date.now() + 900000).toISOString(); // 15 minutes from now
+			await server.drizzleClient.execute(
+				sql`UPDATE users SET failed_login_attempts = 5, locked_until = ${futureDate}::timestamptz WHERE id = ${lockoutTestUserId}`,
+			);
+
+			const result = await mercuriusClient.query(Query_signIn, {
+				variables: {
+					input: {
+						emailAddress: lockoutTestUserEmail,
+						password: "correctpassword", // Even correct password should fail
+					},
+				},
+			});
+
+			expect(result.data.signIn).toEqual(null);
+			expect(result.errors).toEqual(
+				expect.arrayContaining<TalawaGraphQLFormattedError>([
+					expect.objectContaining<TalawaGraphQLFormattedError>({
+						extensions: expect.objectContaining<AccountLockedExtensions>({
+							code: "account_locked",
+							retryAfter: expect.any(String),
+						}),
+						message: expect.any(String),
+						path: ["signIn"],
+					}),
+				]),
+			);
+		});
+
+		test("locked account returns account_locked even with wrong password", async () => {
+			// Lock the account with a future timestamp
+			const futureDate = new Date(Date.now() + 5 * 60 * 1000).toISOString(); // 5 minutes from now
+			await server.drizzleClient.execute(
+				sql`UPDATE users SET failed_login_attempts = 5, locked_until = ${futureDate}::timestamptz WHERE id = ${lockoutTestUserId}`,
+			);
+
+			// Try with wrong password - should still get account_locked, not invalid_credentials
+			const result = await mercuriusClient.query(Query_signIn, {
+				variables: {
+					input: {
+						emailAddress: lockoutTestUserEmail,
+						password: "nottherightpassword",
+					},
+				},
+			});
+
+			expect(result.data.signIn).toEqual(null);
+			expect(result.errors).toEqual(
+				expect.arrayContaining<TalawaGraphQLFormattedError>([
+					expect.objectContaining<TalawaGraphQLFormattedError>({
+						extensions: expect.objectContaining<AccountLockedExtensions>({
+							code: "account_locked",
+							retryAfter: expect.any(String),
+						}),
+						message: expect.any(String),
+						path: ["signIn"],
+					}),
+				]),
+			);
+		});
+
+		test("should allow login after lockout period expires", async () => {
+			// Set lockout to a past timestamp (expired)
+			const pastDate = new Date(Date.now() - 1000).toISOString(); // 1 second ago
+			await server.drizzleClient.execute(
+				sql`UPDATE users SET failed_login_attempts = 5, locked_until = ${pastDate}::timestamptz WHERE id = ${lockoutTestUserId}`,
+			);
+
+			const result = await mercuriusClient.query(Query_signIn, {
+				variables: {
+					input: {
+						emailAddress: lockoutTestUserEmail,
+						password: "correctpassword",
+					},
+				},
+			});
+
+			expect(result.errors).toBeUndefined();
+			expect(result.data.signIn).toEqual(
+				expect.objectContaining({
+					authenticationToken: expect.any(String),
+					user: expect.objectContaining({
+						emailAddress: lockoutTestUserEmail,
+					}),
+				}),
+			);
+		});
+
+		test("should reset failed login attempts on successful login", async () => {
+			// Set some failed attempts but no lockout
+			await server.drizzleClient.execute(
+				sql`UPDATE users SET failed_login_attempts = 3, locked_until = NULL, last_failed_login_at = NOW() WHERE id = ${lockoutTestUserId}`,
+			);
+
+			// Successful login
+			const result = await mercuriusClient.query(Query_signIn, {
+				variables: {
+					input: {
+						emailAddress: lockoutTestUserEmail,
+						password: "correctpassword",
+					},
+				},
+			});
+
+			expect(result.errors).toBeUndefined();
+			expect(result.data.signIn).not.toBeNull();
+
+			// Verify counter was reset
+			const userAfterSuccess = await server.drizzleClient.execute(
+				sql`SELECT failed_login_attempts, locked_until, last_failed_login_at FROM users WHERE id = ${lockoutTestUserId}`,
+			);
+			const successRow = userAfterSuccess[0] as Record<string, unknown>;
+			expect(successRow?.failed_login_attempts).toBe(0);
+			expect(successRow?.locked_until).toBeNull();
+			expect(successRow?.last_failed_login_at).toBeNull();
+		});
+
+		test("should not reveal account existence for non-existent accounts", async () => {
+			// Non-existent account should get invalid_credentials, not a different error
+			const result = await mercuriusClient.query(Query_signIn, {
+				variables: {
+					input: {
+						emailAddress: `nonexistent${faker.string.ulid()}@email.com`,
+						password: "anypassword",
+					},
+				},
+			});
+
+			expect(result.data.signIn).toEqual(null);
+			expect(result.errors).toEqual(
+				expect.arrayContaining<TalawaGraphQLFormattedError>([
+					expect.objectContaining<TalawaGraphQLFormattedError>({
+						extensions: expect.objectContaining<InvalidCredentialsExtensions>({
+							code: "invalid_credentials",
+							issues: expect.arrayContaining([
+								{
+									argumentPath: ["input"],
+									message: "Invalid email address or password.",
+								},
+							]),
+						}),
+						message: expect.any(String),
+						path: ["signIn"],
+					}),
+				]),
+			);
+		});
 	});
 });

@@ -6,7 +6,7 @@
 
 > **UnauthorizedArgumentsExtensions** = `object`
 
-Defined in: [src/utilities/TalawaGraphQLError.ts:206](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/utilities/TalawaGraphQLError.ts#L206)
+Defined in: [src/utilities/TalawaGraphQLError.ts:223](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/utilities/TalawaGraphQLError.ts#L223)
 
 When the client is not authorized to perform an action with certain arguments.
 
@@ -32,7 +32,7 @@ throw new TalawaGraphQLError({
 
 > **code**: `"unauthorized_arguments"`
 
-Defined in: [src/utilities/TalawaGraphQLError.ts:210](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/utilities/TalawaGraphQLError.ts#L210)
+Defined in: [src/utilities/TalawaGraphQLError.ts:227](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/utilities/TalawaGraphQLError.ts#L227)
 
 ***
 
@@ -40,7 +40,7 @@ Defined in: [src/utilities/TalawaGraphQLError.ts:210](https://github.com/Palisad
 
 > **issues**: `object`[]
 
-Defined in: [src/utilities/TalawaGraphQLError.ts:207](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/utilities/TalawaGraphQLError.ts#L207)
+Defined in: [src/utilities/TalawaGraphQLError.ts:224](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/utilities/TalawaGraphQLError.ts#L224)
 
 #### argumentPath
 
