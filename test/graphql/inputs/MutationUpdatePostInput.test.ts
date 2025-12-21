@@ -1,3 +1,4 @@
+import type { Readable } from "node:stream";
 import { describe, expect, it } from "vitest";
 import { POST_CAPTION_MAX_LENGTH } from "~/src/drizzle/tables/posts";
 import { mutationUpdatePostInputSchema } from "~/src/graphql/inputs/MutationUpdatePostInput";
@@ -89,6 +90,74 @@ describe("MutationUpdatePostInput Schema", () => {
 				isPinned: true,
 			});
 			expect(result.success).toBe(true);
+		});
+	});
+	describe("attachment field", () => {
+		it("should reject attachment with invalid mime type", async () => {
+			const invalidMimeTypeAttachment = Promise.resolve({
+				filename: "test.exe",
+				mimetype: "application/x-msdownload", // Invalid mime type
+				encoding: "7bit",
+				createReadStream: () => null as unknown as Readable,
+			});
+
+			const result = await mutationUpdatePostInputSchema.safeParseAsync({
+				id: "550e8400-e29b-41d4-a716-446655440000",
+				attachment: invalidMimeTypeAttachment,
+			});
+
+			expect(result.success).toBe(false);
+			if (!result.success) {
+				expect(
+					result.error.issues.some((i) => i.path.join(".") === "attachment"),
+				).toBe(true);
+				expect(result.error.issues[0]?.message).toContain("not allowed");
+			}
+		});
+
+		it("should accept attachment with valid mime type", async () => {
+			const validMimeTypeAttachment = Promise.resolve({
+				filename: "test.jpg",
+				mimetype: "image/jpeg", // Valid mime type
+				encoding: "7bit",
+				createReadStream: () => null as unknown as Readable,
+			});
+
+			const result = await mutationUpdatePostInputSchema.safeParseAsync({
+				id: "550e8400-e29b-41d4-a716-446655440000",
+				attachment: validMimeTypeAttachment,
+			});
+
+			expect(result.success).toBe(true);
+			if (result.success) {
+				expect(result.data.attachment).toBeDefined();
+				expect(result.data.attachment?.mimetype).toBe("image/jpeg");
+			}
+		});
+
+		it("should set attachment to null when explicitly undefined", async () => {
+			const result = await mutationUpdatePostInputSchema.safeParseAsync({
+				id: "550e8400-e29b-41d4-a716-446655440000",
+				attachment: undefined,
+				caption: "Update with undefined attachment",
+			});
+
+			expect(result.success).toBe(true);
+			if (result.success) {
+				expect(result.data.attachment).toBeUndefined();
+			}
+		});
+
+		it("should accept missing attachment field", async () => {
+			const result = await mutationUpdatePostInputSchema.safeParseAsync({
+				id: "550e8400-e29b-41d4-a716-446655440000",
+				caption: "Update without attachment",
+			});
+
+			expect(result.success).toBe(true);
+			if (result.success) {
+				expect(result.data.attachment).toBeUndefined();
+			}
 		});
 	});
 });
