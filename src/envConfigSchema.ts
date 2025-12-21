@@ -317,8 +317,8 @@ export const envConfigSchema = Type.Object({
 	}),
 
 	/**
-+ * Rate at which a user's request bucket refills per second for rate limiting.
-+ */
+	 * Rate at which a user's request bucket refills per second for rate limiting.
+	 */
 	API_RATE_LIMIT_REFILL_RATE: Type.Number({
 		minimum: 0,
 	}),
