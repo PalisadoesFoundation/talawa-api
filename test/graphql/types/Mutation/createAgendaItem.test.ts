@@ -437,6 +437,212 @@ suite("Mutation field createAgendaItem", () => {
 		});
 	});
 
+	suite("Input Validation", () => {
+		test("Returns error when note type has duration", async () => {
+			const { token: adminAuthToken } = await getAdminAuth();
+
+			const { cleanup, folderId } = await createTestEnvironment(
+				adminAuthToken,
+				await getAdminUserId(),
+			);
+			testCleanupFunctions.push(cleanup);
+
+			const result = await mercuriusClient.mutate(Mutation_createAgendaItem, {
+				headers: { authorization: `bearer ${adminAuthToken}` },
+				variables: {
+					input: {
+						folderId,
+						name: "Invalid Note",
+						type: "note",
+						duration: "00:30:00",
+					},
+				},
+			});
+
+			expect(result.data?.createAgendaItem).toEqual(null);
+			expect(result.errors).toEqual(
+				expect.arrayContaining([
+					expect.objectContaining({
+						extensions: expect.objectContaining({
+							code: "invalid_arguments",
+						}),
+						message: expect.any(String),
+						path: ["createAgendaItem"],
+					}),
+				]),
+			);
+		});
+
+		test("Returns error when note type has key", async () => {
+			const { token: adminAuthToken } = await getAdminAuth();
+
+			const { cleanup, folderId } = await createTestEnvironment(
+				adminAuthToken,
+				await getAdminUserId(),
+			);
+			testCleanupFunctions.push(cleanup);
+
+			const result = await mercuriusClient.mutate(Mutation_createAgendaItem, {
+				headers: { authorization: `bearer ${adminAuthToken}` },
+				variables: {
+					input: {
+						folderId,
+						name: "Invalid Note",
+						type: "note",
+						key: "C Major",
+					},
+				},
+			});
+
+			expect(result.data?.createAgendaItem).toEqual(null);
+			expect(result.errors).toEqual(
+				expect.arrayContaining([
+					expect.objectContaining({
+						extensions: expect.objectContaining({
+							code: "invalid_arguments",
+						}),
+						message: expect.any(String),
+						path: ["createAgendaItem"],
+					}),
+				]),
+			);
+		});
+
+		test("Returns error when note type has both duration and key", async () => {
+			const { token: adminAuthToken } = await getAdminAuth();
+
+			const { cleanup, folderId } = await createTestEnvironment(
+				adminAuthToken,
+				await getAdminUserId(),
+			);
+			testCleanupFunctions.push(cleanup);
+
+			const result = await mercuriusClient.mutate(Mutation_createAgendaItem, {
+				headers: { authorization: `bearer ${adminAuthToken}` },
+				variables: {
+					input: {
+						folderId,
+						name: "Invalid Note",
+						type: "note",
+						duration: "00:30:00",
+						key: "C Major",
+					},
+				},
+			});
+
+			expect(result.data?.createAgendaItem).toEqual(null);
+			expect(result.errors).toEqual(
+				expect.arrayContaining([
+					expect.objectContaining({
+						extensions: expect.objectContaining({
+							code: "invalid_arguments",
+						}),
+						message: expect.any(String),
+						path: ["createAgendaItem"],
+					}),
+				]),
+			);
+		});
+
+		test("Returns error when general type has key", async () => {
+			const { token: adminAuthToken } = await getAdminAuth();
+
+			const { cleanup, folderId } = await createTestEnvironment(
+				adminAuthToken,
+				await getAdminUserId(),
+			);
+			testCleanupFunctions.push(cleanup);
+
+			const result = await mercuriusClient.mutate(Mutation_createAgendaItem, {
+				headers: { authorization: `bearer ${adminAuthToken}` },
+				variables: {
+					input: {
+						folderId,
+						name: "Invalid General",
+						type: "general",
+						key: "C Major",
+					},
+				},
+			});
+
+			expect(result.data?.createAgendaItem).toEqual(null);
+			expect(result.errors).toEqual(
+				expect.arrayContaining([
+					expect.objectContaining({
+						extensions: expect.objectContaining({
+							code: "invalid_arguments",
+						}),
+						message: expect.any(String),
+						path: ["createAgendaItem"],
+					}),
+				]),
+			);
+		});
+
+		test("Returns error when scripture type has key", async () => {
+			const { token: adminAuthToken } = await getAdminAuth();
+
+			const { cleanup, folderId } = await createTestEnvironment(
+				adminAuthToken,
+				await getAdminUserId(),
+			);
+			testCleanupFunctions.push(cleanup);
+
+			const result = await mercuriusClient.mutate(Mutation_createAgendaItem, {
+				headers: { authorization: `bearer ${adminAuthToken}` },
+				variables: {
+					input: {
+						folderId,
+						name: "Invalid Scripture",
+						type: "scripture",
+						key: "C Major",
+					},
+				},
+			});
+
+			expect(result.data?.createAgendaItem).toEqual(null);
+			expect(result.errors).toEqual(
+				expect.arrayContaining([
+					expect.objectContaining({
+						extensions: expect.objectContaining({
+							code: "invalid_arguments",
+						}),
+						message: expect.any(String),
+						path: ["createAgendaItem"],
+					}),
+				]),
+			);
+		});
+
+		test("Creates song type agenda item with key successfully", async () => {
+			const { token: adminAuthToken } = await getAdminAuth();
+
+			const { cleanup, folderId } = await createTestEnvironment(
+				adminAuthToken,
+				await getAdminUserId(),
+			);
+			testCleanupFunctions.push(cleanup);
+
+			const result = await mercuriusClient.mutate(Mutation_createAgendaItem, {
+				headers: { authorization: `bearer ${adminAuthToken}` },
+				variables: {
+					input: {
+						folderId,
+						name: "Amazing Grace",
+						type: "song",
+						key: "G Major",
+						duration: "00:05:00",
+					},
+				},
+			});
+
+			assertToBeNonNullish(result.data?.createAgendaItem);
+			expect(result.data.createAgendaItem.name).toEqual("Amazing Grace");
+			expect(result.data.createAgendaItem.type).toEqual("song");
+			expect(result.errors).toBeUndefined();
+		});
+	});
+
 	suite("Successful Creation", () => {
 		test("Creates agenda item successfully with required fields", async () => {
 			const { token: adminAuthToken } = await getAdminAuth();
