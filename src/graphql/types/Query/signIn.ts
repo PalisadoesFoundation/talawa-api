@@ -112,8 +112,7 @@ builder.queryField("signIn", (t) =>
 						ctx.envConfig.API_ACCOUNT_LOCKOUT_THRESHOLD ?? 5;
 					const lockoutDuration =
 						ctx.envConfig.API_ACCOUNT_LOCKOUT_DURATION_MS ?? 900000;
-					const newFailedAttempts =
-						(existingUser.failedLoginAttempts ?? 0) + 1;
+					const newFailedAttempts = (existingUser.failedLoginAttempts ?? 0) + 1;
 
 					const updateData: {
 						failedLoginAttempts: number;

@@ -630,7 +630,9 @@ suite("Query field signIn", () => {
 			const userAfterAttempt = await server.drizzleClient.execute(
 				sql`SELECT failed_login_attempts FROM users WHERE id = ${lockoutTestUserId}`,
 			);
-			expect((userAfterAttempt[0] as Record<string, unknown>)?.failed_login_attempts).toBe(1);
+			expect(
+				(userAfterAttempt[0] as Record<string, unknown>)?.failed_login_attempts,
+			).toBe(1);
 		});
 
 		test("should lock account after exceeding threshold (default 5)", async () => {
