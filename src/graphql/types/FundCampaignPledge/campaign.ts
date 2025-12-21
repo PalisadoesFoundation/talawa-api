@@ -1,7 +1,8 @@
 import { FundCampaign } from "~/src/graphql/types/FundCampaign/FundCampaign";
-import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import envConfig from "~/src/utilities/graphqLimits";
+import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import { FundCampaignPledge } from "./FundCampaignPledge";
+
 FundCampaignPledge.implement({
 	fields: (t) => ({
 		campaign: t.field({

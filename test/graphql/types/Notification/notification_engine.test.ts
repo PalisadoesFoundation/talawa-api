@@ -62,7 +62,7 @@ describe("NotificationEngine (unit tests)", () => {
 			) as Record<string, { _col: string }>;
 
 			// Create the and function for complex queries
-			const and = (...args: unknown[]) => {
+			const and = (..._args: unknown[]) => {
 				return {
 					test: (row: InsertRecord) => {
 						return conditions.every(({ field, value, isInArray }) => {
@@ -167,29 +167,31 @@ describe("NotificationEngine (unit tests)", () => {
 							}),
 					},
 					usersTable: {
-						findMany: vi.fn().mockImplementation(
-							(args?: {
-								where?: WhereBuilder;
-								columns?: Record<string, boolean>;
-							}) => {
-								let data: InsertRecord[] = options.users ?? [];
-								if (args?.where) {
-									const pred = buildPredicate(args.where);
-									if (pred) data = data.filter((r) => pred(r));
-								}
-								if (args?.columns) {
-									const cols = args.columns;
-									data = data.map((r) => {
-										const o: InsertRecord = {};
-										for (const key of Object.keys(cols)) {
-											if (cols[key]) o[key] = r[key];
-										}
-										return o;
-									});
-								}
-								return Promise.resolve(data);
-							},
-						),
+						findMany: vi
+							.fn()
+							.mockImplementation(
+								(args?: {
+									where?: WhereBuilder;
+									columns?: Record<string, boolean>;
+								}) => {
+									let data: InsertRecord[] = options.users ?? [];
+									if (args?.where) {
+										const pred = buildPredicate(args.where);
+										if (pred) data = data.filter((r) => pred(r));
+									}
+									if (args?.columns) {
+										const cols = args.columns;
+										data = data.map((r) => {
+											const o: InsertRecord = {};
+											for (const key of Object.keys(cols)) {
+												if (cols[key]) o[key] = r[key];
+											}
+											return o;
+										});
+									}
+									return Promise.resolve(data);
+								},
+							),
 					},
 				},
 				insert: (table: unknown) => {

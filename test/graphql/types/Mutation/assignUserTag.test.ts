@@ -166,7 +166,7 @@ vi.mock("../../../../src/fastifyPlugins/drizzleClient", async () => {
 		},
 		transaction: vi.fn().mockImplementation(async (callback) => {
 			const mockTx = {
-				insert: (table: unknown) => ({
+				insert: (_table: unknown) => ({
 					values: (data: {
 						tagId: string;
 						assigneeId: string;
@@ -192,7 +192,7 @@ vi.mock("../../../../src/fastifyPlugins/drizzleClient", async () => {
 	(
 		drizzleClientMock.query as unknown as Record<string, unknown>
 	).communitiesTable = {
-		findFirst: vi.fn().mockImplementation(({ where }) => {
+		findFirst: vi.fn().mockImplementation(({ where: _where }) => {
 			// Mock finding community - return nothing so proper startup flow continues or specific community if needed
 			// For testing we can return undefined (not found) -> create
 			return undefined;

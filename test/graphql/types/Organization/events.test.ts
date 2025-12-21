@@ -17,8 +17,8 @@ import type { GraphQLContext } from "~/src/graphql/context";
 import { schema } from "~/src/graphql/schema";
 import type { Organization as OrganizationType } from "~/src/graphql/types/Organization/Organization";
 import { getUnifiedEventsInDateRange } from "~/src/graphql/types/Query/eventQueries";
-import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import envConfig from "~/src/utilities/graphqLimits";
+import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 
 afterEach(() => {
 	vi.clearAllMocks();
@@ -832,9 +832,9 @@ describe("Organization Events Resolver Tests", () => {
 			}
 
 			// Should use current time as start date
-			expect(
-				Math.abs(callArgs.startDate.getTime() - new Date().getTime()),
-			).toBeLessThan(1000);
+			expect(Math.abs(callArgs.startDate.getTime() - Date.now())).toBeLessThan(
+				1000,
+			);
 		});
 
 		it("should handle upcomingOnly=true with explicit endDate", async () => {
@@ -864,9 +864,9 @@ describe("Organization Events Resolver Tests", () => {
 			).toBeLessThan(1000);
 
 			// Start date should still be "now" (approx)
-			expect(
-				Math.abs(callArgs.startDate.getTime() - new Date().getTime()),
-			).toBeLessThan(1000);
+			expect(Math.abs(callArgs.startDate.getTime() - Date.now())).toBeLessThan(
+				1000,
+			);
 		});
 
 		it("should respect explicit includeRecurring=false", async () => {
@@ -1044,9 +1044,9 @@ describe("Organization Events Resolver Tests", () => {
 				throw new Error("Expected getUnifiedEventsInDateRange to be called");
 
 			// effectiveStartDate should be close to now
-			expect(
-				Math.abs(callArgs.startDate.getTime() - new Date().getTime()),
-			).toBeLessThan(1000);
+			expect(Math.abs(callArgs.startDate.getTime() - Date.now())).toBeLessThan(
+				1000,
+			);
 
 			// effectiveEndDate should be 1 year from now
 			const expectedEnd = new Date();
@@ -1187,9 +1187,9 @@ describe("Organization Events Resolver Tests", () => {
 				throw new Error("Expected getUnifiedEventsInDateRange to be called");
 
 			// effectiveStartDate should be close to now
-			expect(
-				Math.abs(callArgs.startDate.getTime() - new Date().getTime()),
-			).toBeLessThan(1000);
+			expect(Math.abs(callArgs.startDate.getTime() - Date.now())).toBeLessThan(
+				1000,
+			);
 
 			// effectiveEndDate should be 1 year from now
 			const expectedEnd = new Date();

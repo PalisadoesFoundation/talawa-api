@@ -1,7 +1,6 @@
 import { faker } from "@faker-js/faker";
 import { eq } from "drizzle-orm";
-import type { GraphQLObjectType } from "graphql";
-import type { GraphQLResolveInfo } from "graphql";
+import type { GraphQLObjectType, GraphQLResolveInfo } from "graphql";
 import { afterAll, beforeAll, expect, suite, test } from "vitest";
 import { chatsTable } from "~/src/drizzle/schema";
 import { schemaManager } from "~/src/graphql/schemaManager";
@@ -22,9 +21,9 @@ import {
 	Mutation_deleteChat,
 	Mutation_deleteOrganization,
 	Mutation_deleteUser,
+	Query_chat_with_creator,
 	Query_signIn,
 } from "../documentNodes";
-import { Query_chat_with_creator } from "../documentNodes";
 
 async function getAdminToken() {
 	const signInResult = await mercuriusClient.query(Query_signIn, {
@@ -126,28 +125,28 @@ suite("Chat field creator", () => {
 				headers: { authorization: `Bearer ${adminAuthToken}` },
 				variables: { input: { id: testChatId } },
 			});
-		} catch (e) {}
+		} catch (_e) {}
 
 		try {
 			await mercuriusClient.mutate(Mutation_deleteUser, {
 				headers: { authorization: `Bearer ${adminAuthToken}` },
 				variables: { input: { id: regularUserId } },
 			});
-		} catch (e) {}
+		} catch (_e) {}
 
 		try {
 			await mercuriusClient.mutate(Mutation_deleteUser, {
 				headers: { authorization: `Bearer ${adminAuthToken}` },
 				variables: { input: { id: outsiderUserId } },
 			});
-		} catch (e) {}
+		} catch (_e) {}
 
 		try {
 			await mercuriusClient.mutate(Mutation_deleteOrganization, {
 				headers: { authorization: `Bearer ${adminAuthToken}` },
 				variables: { input: { id: organizationId } },
 			});
-		} catch (e) {}
+		} catch (_e) {}
 	});
 
 	test("unauthenticated caller results in unauthenticated error for creator field", async () => {
@@ -221,7 +220,7 @@ suite("Chat field creator", () => {
 		expect(res.data.chat).toBeNull();
 		expect(res.errors).toBeDefined();
 		const maybeExt = res.errors?.[0] as unknown;
-		let code: string | undefined = undefined;
+		let code: string | undefined;
 		if (maybeExt && typeof maybeExt === "object") {
 			const obj = maybeExt as Record<string, unknown>;
 			const ext = obj.extensions as Record<string, unknown> | undefined;

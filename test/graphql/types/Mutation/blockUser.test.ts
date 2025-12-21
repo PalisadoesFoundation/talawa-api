@@ -82,7 +82,7 @@ vi.mock("~/src/drizzle/client", () => ({
 					where(
 						{ memberId: "memberId", organizationId: "organizationId" },
 						{
-							and: (...conditions: boolean[]) => true,
+							and: (..._conditions: boolean[]) => true,
 							eq: (field: string, value: string) => {
 								if (field === "memberId") memberId = value;
 								if (field === "organizationId") organizationId = value;
@@ -107,7 +107,7 @@ vi.mock("~/src/drizzle/client", () => ({
 					where(
 						{ userId: "userId", organizationId: "organizationId" },
 						{
-							and: (...conditions: boolean[]) => true,
+							and: (..._conditions: boolean[]) => true,
 							eq: (field: string, value: string) => {
 								if (field === "userId") userId = value;
 								if (field === "organizationId") organizationId = value;

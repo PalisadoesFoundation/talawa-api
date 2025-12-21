@@ -11,8 +11,8 @@ import {
 	subscriptionChatMessageCreateInputSchema,
 } from "~/src/graphql/inputs/SubscriptionChatMessageCreateInput";
 import { ChatMessage } from "~/src/graphql/types/ChatMessage/ChatMessage";
-import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import envConfig from "~/src/utilities/graphqLimits";
+import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 
 const subscriptionChatMessageCreateArgumentsSchema = z.object({
 	input: subscriptionChatMessageCreateInputSchema,

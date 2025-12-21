@@ -1,5 +1,10 @@
 import { faker } from "@faker-js/faker";
 import { expect, suite, test } from "vitest";
+import type {
+	InvalidArgumentsExtensions,
+	TalawaGraphQLFormattedError,
+	UnauthenticatedExtensions,
+} from "~/src/utilities/TalawaGraphQLError";
 import { assertToBeNonNullish } from "../../../helpers";
 import { server } from "../../../server";
 import { mercuriusClient } from "../client";
@@ -7,16 +12,10 @@ import {
 	Mutation_createEvent,
 	Mutation_createOrganization,
 	Mutation_createOrganizationMembership,
+	Query_eventsByIds,
 	Query_getRecurringEvents,
+	Query_signIn,
 } from "../documentNodes";
-
-import { Query_eventsByIds, Query_signIn } from "../documentNodes";
-
-import type {
-	InvalidArgumentsExtensions,
-	TalawaGraphQLFormattedError,
-	UnauthenticatedExtensions,
-} from "~/src/utilities/TalawaGraphQLError";
 
 /**
  * Updated test suite with partial matching for error messages

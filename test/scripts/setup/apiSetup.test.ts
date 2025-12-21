@@ -13,12 +13,12 @@ import {
 	validateURL,
 } from "scripts/setup/setup";
 import {
-	type MockInstance,
 	afterEach,
 	beforeAll,
 	describe,
 	expect,
 	it,
+	type MockInstance,
 	vi,
 } from "vitest";
 

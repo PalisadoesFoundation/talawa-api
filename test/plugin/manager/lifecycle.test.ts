@@ -1,8 +1,8 @@
 import { type ChildProcess, spawn } from "node:child_process";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { PluginLifecycle } from "../../../src/plugin/manager/lifecycle";
-import { PluginStatus } from "../../../src/plugin/types";
 import type { IPluginManifest } from "../../../src/plugin/types";
+import { PluginStatus } from "../../../src/plugin/types";
 
 // Type for accessing private methods in tests
 type PluginLifecycleWithPrivate = PluginLifecycle & {

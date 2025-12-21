@@ -7,8 +7,9 @@ import {
 	mutationUpdateAdvertisementInputSchema,
 } from "~/src/graphql/inputs/MutationUpdateAdvertisementInput";
 import { Advertisement } from "~/src/graphql/types/Advertisement/Advertisement";
-import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import envConfig from "~/src/utilities/graphqLimits";
+import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
+
 const mutationUpdateAdvertisementArgumentsSchema = z.object({
 	input: mutationUpdateAdvertisementInputSchema,
 });

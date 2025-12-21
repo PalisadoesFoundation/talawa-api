@@ -1,7 +1,6 @@
 import { z } from "zod";
 import { builder } from "~/src/graphql/builder";
 import { AuthenticationPayload } from "~/src/graphql/types/AuthenticationPayload";
-import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import envConfig from "~/src/utilities/graphqLimits";
 import {
 	DEFAULT_REFRESH_TOKEN_EXPIRES_MS,
@@ -11,6 +10,7 @@ import {
 	revokeRefreshTokenByHash,
 	storeRefreshToken,
 } from "~/src/utilities/refreshTokenUtils";
+import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 
 const mutationRefreshTokenArgumentsSchema = z.object({
 	refreshToken: z.string().min(1, "Refresh token is required."),

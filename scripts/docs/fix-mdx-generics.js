@@ -20,7 +20,7 @@ function processText(text) {
 
 			// Replace generics like Identifier<Inner,...> appearing in normal text.
 			inlineSplit[j] = part.replace(
-				/(?<![`&lt;])\b([A-Za-z0-9_.\]\)\-]+)\s*<([^<>`]+)>/g,
+				/(?<![`&lt;])\b([A-Za-z0-9_.\])-]+)\s*<([^<>`]+)>/g,
 				(m, pre, inner) => {
 					if (m.includes("&lt;") || m.includes("&gt;")) return m;
 					// Wrap the whole thing in backticks. Use a template literal to satisfy biome/linters.

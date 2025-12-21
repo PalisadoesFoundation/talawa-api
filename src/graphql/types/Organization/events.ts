@@ -4,12 +4,12 @@ import {
 	type EventWithAttachments,
 	getUnifiedEventsInDateRange,
 } from "~/src/graphql/types/Query/eventQueries";
-import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import {
 	type ParsedDefaultGraphQLConnectionArguments,
 	transformToDefaultGraphQLConnection,
 } from "~/src/utilities/defaultGraphQLConnection";
 import envConfig from "~/src/utilities/graphqLimits";
+import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import { Organization } from "./Organization";
 
 /**
@@ -168,7 +168,7 @@ const eventsArgumentsSchema = eventsConnectionArgumentsSchema
 	})
 	.transform((arg, ctx) => {
 		const transformed = transformEventsConnectionArguments(arg, ctx);
-		let cursor: z.infer<typeof cursorSchema> | undefined = undefined;
+		let cursor: z.infer<typeof cursorSchema> | undefined;
 
 		try {
 			if (transformed.cursor !== undefined) {
@@ -178,7 +178,7 @@ const eventsArgumentsSchema = eventsConnectionArgumentsSchema
 					),
 				);
 			}
-		} catch (error) {
+		} catch (_error) {
 			ctx.addIssue({
 				code: "custom",
 				message: "Not a valid cursor.",

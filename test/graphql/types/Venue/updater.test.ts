@@ -1,8 +1,8 @@
 import { createMockGraphQLContext } from "test/_Mocks_/mockContextCreator/mockContextCreator";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { GraphQLContext } from "~/src/graphql/context";
-import type { Venue as VenueType } from "~/src/graphql/types/Venue/Venue";
 import { resolveUpdater } from "~/src/graphql/types/Venue/updater";
+import type { Venue as VenueType } from "~/src/graphql/types/Venue/Venue";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 
 describe("Venue Resolver - Updater Field", () => {

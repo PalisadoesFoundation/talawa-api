@@ -1,10 +1,10 @@
 import { EventEmitter } from "node:events";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { TalawaGraphQLError } from "../../src/utilities/TalawaGraphQLError";
 import {
 	installPluginDependencies,
 	installPluginDependenciesWithErrorHandling,
 } from "../../src/utilities/pluginDependencyInstaller";
+import { TalawaGraphQLError } from "../../src/utilities/TalawaGraphQLError";
 
 // Create hoisted mock for spawn that returns a mock child process
 const mockSpawn = vi.hoisted(() => {
@@ -1038,7 +1038,7 @@ describe("Plugin Dependency Installer", () => {
 			taskkillChild.unref = vi.fn();
 
 			let firstCall = true;
-			mockSpawn.mockImplementation((cmd, args) => {
+			mockSpawn.mockImplementation((cmd, _args) => {
 				if (firstCall && cmd.includes("pnpm")) {
 					firstCall = false;
 					// Don't emit close - simulate hanging

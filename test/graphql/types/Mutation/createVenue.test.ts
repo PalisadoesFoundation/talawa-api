@@ -95,7 +95,7 @@ suite("Mutation field createVenue", () => {
 					await mercuriusClient.mutate(Mutation_deleteCurrentUser, {
 						headers: { authorization: `bearer ${userToken}` },
 					});
-				} catch (error) {
+				} catch (_error) {
 					// User might already be deleted, continue
 				}
 			}
@@ -107,7 +107,7 @@ suite("Mutation field createVenue", () => {
 						headers: { authorization: `bearer ${adminToken}` },
 						variables: { input: { id: orgId } },
 					});
-				} catch (error) {
+				} catch (_error) {
 					// Organization might already be deleted, continue
 				}
 			}

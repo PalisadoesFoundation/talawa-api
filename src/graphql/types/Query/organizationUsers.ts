@@ -1,5 +1,5 @@
-import { inArray } from "drizzle-orm";
 import type { InferSelectModel } from "drizzle-orm";
+import { inArray } from "drizzle-orm";
 import { z } from "zod";
 import type { usersTable } from "~/src/drizzle/schema";
 import { builder } from "~/src/graphql/builder";
@@ -87,7 +87,7 @@ builder.queryField("usersByIds", (t) =>
 			const userIds = parsedArgs.data.ids;
 
 			const users = await ctx.drizzleClient.query.usersTable.findMany({
-				where: (fields, operators) => inArray(fields.id, userIds),
+				where: (fields, _operators) => inArray(fields.id, userIds),
 			});
 
 			return users;
@@ -117,7 +117,7 @@ builder.queryField("usersByOrganizationId", (t) =>
 				if (userIds.length === 0) return [];
 
 				const users = await ctx.drizzleClient.query.usersTable.findMany({
-					where: (fields, operators) => inArray(fields.id, userIds),
+					where: (fields, _operators) => inArray(fields.id, userIds),
 				});
 
 				return users;
