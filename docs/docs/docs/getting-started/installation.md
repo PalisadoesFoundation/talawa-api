@@ -137,13 +137,31 @@ Proceed to the next section.
 
 ### Install The Required Packages
 
+This section covers how to install additional required packages.
+
+1. All users will need to run the `pnpm install` command
+2. If you are a developer, you will additionally need to install packages in the `docs/` directory.
+
+Both steps are outlined below.
+
+#### All Users
+
 Run the following command to install the packages and dependencies required by the app:
 
-```
+```bash
 pnpm install
 ```
 
-The prerequisites are now installed. The next step will be to get the app up and running.
+#### Additional Step for Developers
+
+:::note
+Developers will also need to install packages in the `docs/` directory.
+:::
+
+```bash
+cd docs/
+pnpm install
+```
 
 ### Install Docker
 
