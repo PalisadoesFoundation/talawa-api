@@ -6,7 +6,11 @@ import "~/src/graphql/types/PostAttachment/PostAttachment";
 import "~/src/graphql/types/Post/Post";
 import type { Post as PostType } from "~/src/graphql/types/Post/Post";
 import "~/src/graphql/types/Post/attachmentURL";
-import type { GraphQLFieldResolver, GraphQLObjectType } from "graphql";
+import type {
+	GraphQLFieldResolver,
+	GraphQLObjectType,
+	GraphQLResolveInfo,
+} from "graphql";
 import { schema } from "~/src/graphql/schema";
 
 // Get the attachmentURL resolver from the schema
@@ -47,7 +51,12 @@ describe("Post Resolver - attachmentURL Field", () => {
 	it("should return null when no attachments exist", async () => {
 		mockPost.attachments = [];
 
-		const result = await resolveAttachmentURL(mockPost, {}, ctx, {} as any);
+		const result = await resolveAttachmentURL(
+			mockPost,
+			{},
+			ctx,
+			{} as GraphQLResolveInfo,
+		);
 
 		expect(result).toBeNull();
 	});
@@ -68,7 +77,12 @@ describe("Post Resolver - attachmentURL Field", () => {
 			},
 		];
 
-		const result = await resolveAttachmentURL(mockPost, {}, ctx, {} as any);
+		const result = await resolveAttachmentURL(
+			mockPost,
+			{},
+			ctx,
+			{} as GraphQLResolveInfo,
+		);
 
 		expect(result).toBe(
 			"https://api.example.com/objects/uploads/test-image-123.jpg",

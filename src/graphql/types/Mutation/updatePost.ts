@@ -240,6 +240,26 @@ builder.mutationField("updatePost", (t) =>
 					const attachment = parsedArgs.input.attachment;
 					const objectName = ulid();
 
+					// Upload new file first before any cleanup
+					try {
+						await ctx.minio.client.putObject(
+							ctx.minio.bucketName,
+							objectName,
+							attachment.createReadStream(),
+							undefined,
+							{
+								"content-type": attachment.mimetype,
+							},
+						);
+					} catch (error) {
+						ctx.log.error(`Error uploading file to MinIO: ${error}`);
+						throw new TalawaGraphQLError({
+							extensions: {
+								code: "unexpected",
+							},
+						});
+					}
+
 					// Delete old MinIO objects before uploading new one
 					for (const oldAttachment of existingPost.attachmentsWherePost) {
 						try {
@@ -259,26 +279,6 @@ builder.mutationField("updatePost", (t) =>
 					await tx
 						.delete(postAttachmentsTable)
 						.where(eq(postAttachmentsTable.postId, updatedPost.id));
-
-					try {
-						// Upload image to MinIO
-						await ctx.minio.client.putObject(
-							ctx.minio.bucketName,
-							objectName,
-							attachment.createReadStream(),
-							undefined,
-							{
-								"content-type": attachment.mimetype,
-							},
-						);
-					} catch (error) {
-						ctx.log.error(`Error uploading file to MinIO: ${error}`);
-						throw new TalawaGraphQLError({
-							extensions: {
-								code: "unexpected",
-							},
-						});
-					}
 
 					// Create attachment record
 					const attachmentRecord = {

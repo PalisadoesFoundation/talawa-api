@@ -913,90 +913,98 @@ test("successfully creates post with valid image attachment", async () => {
 });
 
 test("returns unexpected error when MinIO upload fails", async () => {
-	const adminSignIn = await mercuriusClient.query(Query_signIn, {
-		variables: {
-			input: {
-				emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-				password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-			},
-		},
-	});
+	// Save original method for restoration
+	const originalPutObject = server.minio.client.putObject;
 
-	const token = adminSignIn.data.signIn?.authenticationToken;
-	assertToBeNonNullish(token);
-
-	const createOrgResult = await mercuriusClient.mutate(
-		Mutation_createOrganization,
-		{
-			headers: { authorization: `bearer ${token}` },
+	try {
+		const adminSignIn = await mercuriusClient.query(Query_signIn, {
 			variables: {
 				input: {
-					name: `TestOrg_${faker.string.ulid()}`,
-					description: faker.lorem.sentence(),
+					emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
+					password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
 				},
 			},
-		},
-	);
+		});
 
-	// mock MinIO failure
-	server.minio.client.putObject = vi
-		.fn()
-		.mockRejectedValue(new Error("simulated failure"));
+		const token = adminSignIn.data.signIn?.authenticationToken;
+		assertToBeNonNullish(token);
 
-	const boundary = `----WebKitFormBoundary${Math.random().toString(36)}`;
-	const operations = JSON.stringify({
-		query: `
+		const createOrgResult = await mercuriusClient.mutate(
+			Mutation_createOrganization,
+			{
+				headers: { authorization: `bearer ${token}` },
+				variables: {
+					input: {
+						name: `TestOrg_${faker.string.ulid()}`,
+						description: faker.lorem.sentence(),
+					},
+				},
+			},
+		);
+
+		// mock MinIO failure
+		server.minio.client.putObject = vi
+			.fn()
+			.mockRejectedValue(new Error("simulated failure"));
+
+		const boundary = `----WebKitFormBoundary${Math.random().toString(36)}`;
+		const operations = JSON.stringify({
+			query: `
       mutation Mutation_createPost($input: MutationCreatePostInput!) {
         createPost(input: $input) {
           id
         }
       }
     `,
-		variables: {
-			input: {
-				caption: "Test",
-				organizationId: createOrgResult.data.createOrganization?.id,
-				isPinned: false,
-				attachment: null,
+			variables: {
+				input: {
+					caption: "Test",
+					organizationId: createOrgResult.data.createOrganization?.id,
+					isPinned: false,
+					attachment: null,
+				},
 			},
-		},
-	});
+		});
 
-	const map = JSON.stringify({
-		"0": ["variables.input.attachment"],
-	});
+		const map = JSON.stringify({
+			"0": ["variables.input.attachment"],
+		});
 
-	const body = [
-		`--${boundary}`,
-		'Content-Disposition: form-data; name="operations"',
-		"",
-		operations,
-		`--${boundary}`,
-		'Content-Disposition: form-data; name="map"',
-		"",
-		map,
-		`--${boundary}`,
-		'Content-Disposition: form-data; name="0"; filename="photo.jpg"',
-		"Content-Type: image/jpeg",
-		"",
-		"fakecontent",
-		`--${boundary}--`,
-	].join("\r\n");
+		const body = [
+			`--${boundary}`,
+			'Content-Disposition: form-data; name="operations"',
+			"",
+			operations,
+			`--${boundary}`,
+			'Content-Disposition: form-data; name="map"',
+			"",
+			map,
+			`--${boundary}`,
+			'Content-Disposition: form-data; name="0"; filename="photo.jpg"',
+			"Content-Type: image/jpeg",
+			"",
+			"fakecontent",
+			`--${boundary}--`,
+		].join("\r\n");
 
-	const response = await server.inject({
-		method: "POST",
-		url: "/graphql",
-		headers: {
-			"content-type": `multipart/form-data; boundary=${boundary}`,
-			authorization: `bearer ${token}`,
-		},
-		payload: body,
-	});
+		const response = await server.inject({
+			method: "POST",
+			url: "/graphql",
+			headers: {
+				"content-type": `multipart/form-data; boundary=${boundary}`,
+				authorization: `bearer ${token}`,
+			},
+			payload: body,
+		});
 
-	const result = JSON.parse(response.body);
+		const result = JSON.parse(response.body);
 
-	expect(result.data?.createPost).toEqual(null);
+		expect(result.data?.createPost).toEqual(null);
 
-	// the resolver's exact error code
-	expect(result.errors[0].extensions.code).toBe("unexpected");
+		// the resolver's exact error code
+		expect(result.errors[0].extensions.code).toBe("unexpected");
+	} finally {
+		// Restore original method
+		server.minio.client.putObject = originalPutObject;
+	}
 });

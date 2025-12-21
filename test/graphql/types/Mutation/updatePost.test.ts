@@ -1088,106 +1088,114 @@ test("successfully updates post with valid image attachment", async () => {
 	expect(result.data.updatePost.attachments[0].mimeType).toBe("image/jpeg");
 });
 test("returns unexpected error when MinIO upload fails during post update", async () => {
-	// Admin login
-	const adminSignIn = await mercuriusClient.query(Query_signIn, {
-		variables: {
-			input: {
-				emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-				password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-			},
-		},
-	});
-	const token = adminSignIn.data.signIn?.authenticationToken;
-	assertToBeNonNullish(token);
+	// Save original method for restoration
+	const originalPutObject = server.minio.client.putObject;
 
-	// Create org
-	const createOrgResult = await mercuriusClient.mutate(
-		Mutation_createOrganization,
-		{
+	try {
+		// Admin login
+		const adminSignIn = await mercuriusClient.query(Query_signIn, {
+			variables: {
+				input: {
+					emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
+					password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
+				},
+			},
+		});
+		const token = adminSignIn.data.signIn?.authenticationToken;
+		assertToBeNonNullish(token);
+
+		// Create org
+		const createOrgResult = await mercuriusClient.mutate(
+			Mutation_createOrganization,
+			{
+				headers: { authorization: `bearer ${token}` },
+				variables: {
+					input: {
+						name: `UpdateFailOrg_${faker.string.ulid()}`,
+						description: faker.lorem.sentence(),
+					},
+				},
+			},
+		);
+		const orgId = createOrgResult.data.createOrganization?.id;
+		assertToBeNonNullish(orgId);
+
+		// Create initial post
+		const createPostResult = await mercuriusClient.mutate(Mutation_createPost, {
 			headers: { authorization: `bearer ${token}` },
 			variables: {
 				input: {
-					name: `UpdateFailOrg_${faker.string.ulid()}`,
-					description: faker.lorem.sentence(),
+					caption: "Before fail",
+					organizationId: orgId,
+					attachment: null,
 				},
 			},
-		},
-	);
-	const orgId = createOrgResult.data.createOrganization?.id;
-	assertToBeNonNullish(orgId);
+		});
+		const postId = createPostResult.data.createPost?.id;
+		assertToBeNonNullish(postId);
 
-	// Create initial post
-	const createPostResult = await mercuriusClient.mutate(Mutation_createPost, {
-		headers: { authorization: `bearer ${token}` },
-		variables: {
-			input: {
-				caption: "Before fail",
-				organizationId: orgId,
-				attachment: null,
-			},
-		},
-	});
-	const postId = createPostResult.data.createPost?.id;
-	assertToBeNonNullish(postId);
+		// Mock MinIO failure
+		server.minio.client.putObject = vi
+			.fn()
+			.mockRejectedValue(new Error("simulated MinIO failure"));
 
-	// Mock MinIO failure
-	server.minio.client.putObject = vi
-		.fn()
-		.mockRejectedValue(new Error("simulated MinIO failure"));
-
-	// multipart update
-	const boundary = `----WebKitFormBoundary${Math.random().toString(36)}`;
-	const operations = JSON.stringify({
-		query: `
+		// multipart update
+		const boundary = `----WebKitFormBoundary${Math.random().toString(36)}`;
+		const operations = JSON.stringify({
+			query: `
       mutation Mutation_updatePost($input: MutationUpdatePostInput!) {
         updatePost(input: $input) {
           id
         }
       }
     `,
-		variables: {
-			input: {
-				id: postId,
-				caption: "Should fail",
-				attachment: null,
+			variables: {
+				input: {
+					id: postId,
+					caption: "Should fail",
+					attachment: null,
+				},
 			},
-		},
-	});
+		});
 
-	const map = JSON.stringify({
-		"0": ["variables.input.attachment"],
-	});
+		const map = JSON.stringify({
+			"0": ["variables.input.attachment"],
+		});
 
-	const body = [
-		`--${boundary}`,
-		'Content-Disposition: form-data; name="operations"',
-		"",
-		operations,
-		`--${boundary}`,
-		'Content-Disposition: form-data; name="map"',
-		"",
-		map,
-		`--${boundary}`,
-		'Content-Disposition: form-data; name="0"; filename="image.jpg"',
-		"Content-Type: image/jpeg",
-		"",
-		"fakecontent",
-		`--${boundary}--`,
-	].join("\r\n");
+		const body = [
+			`--${boundary}`,
+			'Content-Disposition: form-data; name="operations"',
+			"",
+			operations,
+			`--${boundary}`,
+			'Content-Disposition: form-data; name="map"',
+			"",
+			map,
+			`--${boundary}`,
+			'Content-Disposition: form-data; name="0"; filename="image.jpg"',
+			"Content-Type: image/jpeg",
+			"",
+			"fakecontent",
+			`--${boundary}--`,
+		].join("\r\n");
 
-	const response = await server.inject({
-		method: "POST",
-		url: "/graphql",
-		headers: {
-			"content-type": `multipart/form-data; boundary=${boundary}`,
-			authorization: `bearer ${token}`,
-		},
-		payload: body,
-	});
+		const response = await server.inject({
+			method: "POST",
+			url: "/graphql",
+			headers: {
+				"content-type": `multipart/form-data; boundary=${boundary}`,
+				authorization: `bearer ${token}`,
+			},
+			payload: body,
+		});
 
-	const result = JSON.parse(response.body);
+		const result = JSON.parse(response.body);
 
-	// assert failure shape
-	expect(result.data?.updatePost).toEqual(null);
-	expect(result.errors?.[0].extensions.code).toBe("unexpected");
+		// assert failure shape
+		expect(result.data?.updatePost).toEqual(null);
+		expect(result.errors?.[0].extensions.code).toBe("unexpected");
+	} finally {
+		// Restore original method
+		server.minio.client.putObject = originalPutObject;
+	}
 });

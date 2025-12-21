@@ -64,6 +64,7 @@ export const mutationCreatePostInputSchema = postsTableInsertSchema
 						path: ["attachment"],
 						message: `Mime type ${rawAttachment.mimetype} not allowed for attachment upload.`,
 					});
+					return z.NEVER;
 				} else {
 					attachment = Object.assign(rawAttachment, {
 						mimetype: data,
