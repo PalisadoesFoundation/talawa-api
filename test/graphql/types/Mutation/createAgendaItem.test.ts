@@ -17,6 +17,26 @@ import {
 	Mutation_deleteStandaloneEvent,
 	Query_signIn,
 } from "../documentNodes";
+import { initGraphQLTada } from "gql.tada";
+import type { ClientCustomScalars } from "~/src/graphql/scalars/index";
+import type { introspection } from "../gql.tada";
+
+const gql = initGraphQLTada<{
+	introspection: introspection;
+	scalars: ClientCustomScalars;
+}>();
+
+// Test-specific mutation that includes key field in selection set
+const Mutation_createAgendaItemWithKey = gql(`
+  mutation Mutation_createAgendaItemWithKey($input: MutationCreateAgendaItemInput!) {
+    createAgendaItem(input: $input) {
+      id
+      name
+      key
+      type
+    }
+  }
+`);
 
 let cachedAdminAuth: {
 	token: string;
@@ -623,21 +643,25 @@ suite("Mutation field createAgendaItem", () => {
 			);
 			testCleanupFunctions.push(cleanup);
 
-			const result = await mercuriusClient.mutate(Mutation_createAgendaItem, {
-				headers: { authorization: `bearer ${adminAuthToken}` },
-				variables: {
-					input: {
-						folderId,
-						name: "Amazing Grace",
-						type: "song",
-						key: "G Major",
-						duration: "00:05:00",
+			const result = await mercuriusClient.mutate(
+				Mutation_createAgendaItemWithKey,
+				{
+					headers: { authorization: `bearer ${adminAuthToken}` },
+					variables: {
+						input: {
+							folderId,
+							name: "Amazing Grace",
+							type: "song",
+							key: "G Major",
+							duration: "00:05:00",
+						},
 					},
 				},
-			});
+			);
 
 			assertToBeNonNullish(result.data?.createAgendaItem);
 			expect(result.data.createAgendaItem.name).toEqual("Amazing Grace");
+			expect(result.data.createAgendaItem.key).toEqual("G Major");
 			expect(result.data.createAgendaItem.type).toEqual("song");
 			expect(result.errors).toBeUndefined();
 		});
