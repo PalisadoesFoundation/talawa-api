@@ -2,7 +2,9 @@ import { faker } from "@faker-js/faker";
 import { eq } from "drizzle-orm";
 import { afterEach, expect, suite, test } from "vitest";
 
+import { initGraphQLTada } from "gql.tada";
 import { usersTable } from "~/src/drizzle/schema";
+import type { ClientCustomScalars } from "~/src/graphql/scalars/index";
 import { assertToBeNonNullish } from "../../../helpers";
 import { server } from "../../../server";
 import { mercuriusClient } from "../client";
@@ -17,8 +19,6 @@ import {
 	Mutation_deleteStandaloneEvent,
 	Query_signIn,
 } from "../documentNodes";
-import { initGraphQLTada } from "gql.tada";
-import type { ClientCustomScalars } from "~/src/graphql/scalars/index";
 import type { introspection } from "../gql.tada";
 
 const gql = initGraphQLTada<{
