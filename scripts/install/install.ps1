@@ -36,6 +36,12 @@ param(
 # Set error action preference
 $ErrorActionPreference = "Stop"
 
+# Validate mutually exclusive parameters
+if ($Docker -and $Local) {
+    Write-Host "Error: -Docker and -Local cannot be used together. Choose one." -ForegroundColor Red
+    exit 1
+}
+
 # Determine install mode
 if ($Local) {
     $InstallMode = "local"
@@ -187,7 +193,10 @@ function Install-TalawaPrerequisites {
         } else {
             if (Test-CommandExists "choco") {
                 Write-Info "Installing git, jq, curl via Chocolatey..."
-                choco install git jq curl -y --no-progress 2>$null
+                choco install git jq curl -y --no-progress
+                if ($LASTEXITCODE -ne 0) {
+                    Write-Warn "Some packages may have failed to install via Chocolatey"
+                }
                 
                 # Refresh environment
                 $env:Path = [System.Environment]::GetEnvironmentVariable("Path", "Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path", "User")
@@ -212,12 +221,15 @@ function Install-TalawaPrerequisites {
                 Write-Warn "Skipping Docker installation (-SkipPrereqs)"
             } else {
                 Write-Info "Installing Docker Desktop..."
-                choco install docker-desktop -y --no-progress 2>$null
-                
-                Write-Warn "Docker Desktop installed. Please:"
-                Write-Warn "  1. Restart your computer"
-                Write-Warn "  2. Launch Docker Desktop and complete setup"
-                Write-Warn "  3. Re-run this script after Docker is running"
+                choco install docker-desktop -y --no-progress
+                if ($LASTEXITCODE -ne 0) {
+                    Write-Warn "Docker Desktop installation may have failed. Please install manually."
+                } else {
+                    Write-Warn "Docker Desktop installed. Please:"
+                    Write-Warn "  1. Restart your computer"
+                    Write-Warn "  2. Launch Docker Desktop and complete setup"
+                    Write-Warn "  3. Re-run this script after Docker is running"
+                }
             }
         } else {
             Write-Info "Local installation mode - skipping Docker setup"
@@ -236,9 +248,15 @@ function Install-TalawaPrerequisites {
             
             # Try winget first (Windows 11 / Windows 10 with winget)
             if (Test-CommandExists "winget") {
-                winget install Schniz.fnm --accept-source-agreements --accept-package-agreements 2>$null
+                winget install Schniz.fnm --accept-source-agreements --accept-package-agreements
+                if ($LASTEXITCODE -ne 0) {
+                    Write-Warn "winget install failed, trying Chocolatey..."
+                    if (Test-CommandExists "choco") {
+                        choco install fnm -y --no-progress
+                    }
+                }
             } elseif (Test-CommandExists "choco") {
-                choco install fnm -y --no-progress 2>$null
+                choco install fnm -y --no-progress
             } else {
                 Write-Err "Neither winget nor Chocolatey available to install fnm"
                 Write-Info "Please install fnm manually from: https://github.com/Schniz/fnm"
@@ -264,9 +282,8 @@ function Install-TalawaPrerequisites {
         
         $packageJson = Get-Content "package.json" | ConvertFrom-Json
         
-        # Extract Node.js version
-        $nodeVersion = $packageJson.engines.node
-        if (-not $nodeVersion) { $nodeVersion = "lts" }
+        # Extract Node.js version with null check
+        $nodeVersion = if ($packageJson.engines -and $packageJson.engines.node) { $packageJson.engines.node } else { "lts" }
         # Clean version string
         $cleanNodeVersion = $nodeVersion -replace '^[>=^~]+', ''
         if ($cleanNodeVersion -match '^(\d+)') {
@@ -330,6 +347,10 @@ function Install-TalawaPrerequisites {
         Write-Step $currentStep $totalSteps "Installing project dependencies..."
         
         pnpm install
+        if ($LASTEXITCODE -ne 0) {
+            Write-Err "Failed to install project dependencies"
+            exit 1
+        }
         
         Write-Success "Project dependencies installed"
         
