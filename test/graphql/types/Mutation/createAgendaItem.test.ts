@@ -1,8 +1,7 @@
 import { faker } from "@faker-js/faker";
 import { eq } from "drizzle-orm";
-import { afterEach, expect, suite, test } from "vitest";
-
 import { initGraphQLTada } from "gql.tada";
+import { afterEach, expect, suite, test } from "vitest";
 import { usersTable } from "~/src/drizzle/schema";
 import type { ClientCustomScalars } from "~/src/graphql/scalars/index";
 import { assertToBeNonNullish } from "../../../helpers";
