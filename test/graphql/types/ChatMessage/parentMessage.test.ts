@@ -66,9 +66,15 @@ describe("ChatMessage.parentMessage resolver", () => {
 		const parent = { parentMessageId: "parent-id" };
 		const fakeParentMessage = { id: "parent-id", body: "Parent message" };
 		const ctx = createMockContext(fakeParentMessage);
-
 		const result = await parentMessageResolver(parent, {}, ctx, {});
 		expect(result).toEqual(fakeParentMessage);
+		expect(
+			ctx.drizzleClient.query.chatMessagesTable.findFirst,
+		).toHaveBeenCalledWith(
+			expect.objectContaining({
+				where: expect.any(Function),
+			}),
+		);
 	});
 
 	test("throws TalawaGraphQLError when parent message is missing", async () => {
