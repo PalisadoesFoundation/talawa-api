@@ -414,7 +414,7 @@ suite("Mutation field blockUser", () => {
 	});
 
 	suite("when the admin user is not a member of the organization", () => {
-		test("should return an error with unauthorized_action extensions code", async () => {
+		test("should return an error with forbidden_action extensions code", async () => {
 			const nonMemberOrg = await createTestOrganization(adminAuthToken);
 			
 			const result = await mercuriusClient.mutate(Mutation_blockUser, {
@@ -430,7 +430,8 @@ suite("Mutation field blockUser", () => {
 				expect.arrayContaining<TalawaGraphQLFormattedError>([
 					expect.objectContaining<TalawaGraphQLFormattedError>({
 						extensions: expect.objectContaining({
-							code: "unauthorized_action",
+							code: "forbidden_action",
+							message: "User is not a member of the organization.",
 						}),
 						path: ["blockUser"],
 					}),
