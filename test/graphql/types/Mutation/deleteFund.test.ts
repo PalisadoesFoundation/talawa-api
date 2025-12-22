@@ -174,7 +174,7 @@ suite("deleteFund mutation", () => {
 		);
 	});
 
-	test("returns unexpected error when fund is deleted before delete operation", async () => {
+	test("returns resource not found error when fund is deleted before mutation runs", async () => {
 		const admin = await createRegularUserUsingAdmin();
 		const orgId = await createTestOrganization();
 		const fundId = faker.string.uuid();
@@ -211,7 +211,7 @@ suite("deleteFund mutation", () => {
 			expect.arrayContaining([
 				expect.objectContaining({
 					extensions: expect.objectContaining({
-						code: "unexpected",
+						code: "arguments_associated_resources_not_found",
 					}),
 				}),
 			]),
