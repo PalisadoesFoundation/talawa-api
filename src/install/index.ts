@@ -215,7 +215,9 @@ async function main(): Promise<void> {
 			process.exit(1);
 		}
 	} catch (err) {
-		logger.error(`Installation failed: ${err instanceof Error ? err.message : String(err)}`);
+		logger.error(
+			`Installation failed: ${err instanceof Error ? err.message : String(err)}`,
+		);
 		process.exit(1);
 	}
 }

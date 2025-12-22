@@ -118,7 +118,7 @@ export function keyValue(key: string, value: string): void {
 /**
  * Create a spinner-like progress indicator
  */
-export function startProgress(message: string): { stop: (success: boolean) => void } {
+function startProgress(message: string): { stop: (success: boolean) => void } {
 	const frames = ["⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏"];
 	let frameIndex = 0;
 	let stopped = false;

@@ -78,7 +78,9 @@ describe("logger", () => {
 		it("logs error message to console.error", () => {
 			error("test error");
 			expect(consoleErrorSpy).toHaveBeenCalledTimes(1);
-			expect(String(consoleErrorSpy.mock.calls[0]?.[0] ?? "")).toContain("test error");
+			expect(String(consoleErrorSpy.mock.calls[0]?.[0] ?? "")).toContain(
+				"test error",
+			);
 		});
 	});
 
