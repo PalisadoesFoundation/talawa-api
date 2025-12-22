@@ -514,14 +514,6 @@ suite("Query field user.notifications (API level, fully inline)", () => {
 				input: {
 					organizationId: orgId,
 					caption: `Post ${faker.lorem.words(3)}`,
-					attachments: [
-						{
-							mimetype: "IMAGE_PNG",
-							objectName: `test-object-${faker.string.uuid()}`,
-							name: `test-image-${faker.string.uuid()}.png`,
-							fileHash: `test-file-hash-${faker.string.uuid()}`,
-						},
-					],
 				},
 			},
 		});
