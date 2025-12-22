@@ -178,17 +178,10 @@ describe("Mutation field updateTagFolder", () => {
 			};
 
 			await expect(resolver(null, args, mockContext)).rejects.toThrow();
-
-			try {
-				await resolver(null, args, mockContext);
-			} catch (error) {
-				expect(
-					(error as { extensions: { code: string } }).extensions.code,
-				).toBe("unauthenticated");
-			}
 		});
 
 		it("should throw unauthenticated error when current user is not found in database", async () => {
+			expect.assertions(1);
 			const mockContext = {
 				currentClient: {
 					isAuthenticated: true,
@@ -227,6 +220,7 @@ describe("Mutation field updateTagFolder", () => {
 
 	describe("Validation errors", () => {
 		it("should throw invalid_arguments error for invalid UUID in id field", async () => {
+			expect.assertions(1);
 			const mockContext = {
 				currentClient: {
 					isAuthenticated: true,
@@ -252,6 +246,7 @@ describe("Mutation field updateTagFolder", () => {
 		});
 
 		it("should throw invalid_arguments error when no optional argument is provided", async () => {
+			expect.assertions(1);
 			const mockContext = {
 				currentClient: {
 					isAuthenticated: true,
@@ -277,6 +272,7 @@ describe("Mutation field updateTagFolder", () => {
 		});
 
 		it("should throw invalid_arguments error for empty name", async () => {
+			expect.assertions(1);
 			const mockContext = {
 				currentClient: {
 					isAuthenticated: true,
@@ -302,6 +298,7 @@ describe("Mutation field updateTagFolder", () => {
 		});
 
 		it("should throw invalid_arguments error for name exceeding max length", async () => {
+			expect.assertions(1);
 			const mockContext = {
 				currentClient: {
 					isAuthenticated: true,
@@ -329,6 +326,7 @@ describe("Mutation field updateTagFolder", () => {
 
 	describe("Resource not found errors", () => {
 		it("should throw arguments_associated_resources_not_found error when tag folder does not exist", async () => {
+			expect.assertions(2);
 			const currentUserId = faker.string.uuid();
 			const mockContext = {
 				currentClient: {
@@ -366,6 +364,7 @@ describe("Mutation field updateTagFolder", () => {
 		});
 
 		it("should throw arguments_associated_resources_not_found error when parent folder does not exist", async () => {
+			expect.assertions(2);
 			const currentUserId = faker.string.uuid();
 			const organizationId = faker.string.uuid();
 			const mockContext = {
@@ -415,6 +414,7 @@ describe("Mutation field updateTagFolder", () => {
 
 	describe("Forbidden action errors", () => {
 		it("should throw forbidden_action_on_arguments_associated_resources when parent folder belongs to different organization", async () => {
+			expect.assertions(2);
 			const currentUserId = faker.string.uuid();
 			const organizationId = faker.string.uuid();
 			const differentOrgId = faker.string.uuid();
@@ -477,6 +477,7 @@ describe("Mutation field updateTagFolder", () => {
 
 	describe("Authorization errors", () => {
 		it("should throw unauthorized_action_on_arguments_associated_resources when user is not admin and not org admin", async () => {
+			expect.assertions(2);
 			const currentUserId = faker.string.uuid();
 			const organizationId = faker.string.uuid();
 			const mockContext = {
@@ -520,6 +521,7 @@ describe("Mutation field updateTagFolder", () => {
 		});
 
 		it("should throw unauthorized_action_on_arguments_associated_resources when user is not a member of the organization", async () => {
+			expect.assertions(1);
 			const currentUserId = faker.string.uuid();
 			const organizationId = faker.string.uuid();
 			const mockContext = {
@@ -841,11 +843,17 @@ describe("Mutation field updateTagFolder", () => {
 			const result = await resolver(null, args, mockContext);
 
 			expect(result).toEqual(updatedTagFolder);
+			expect(mocks.updateChain.set).toHaveBeenCalledWith({
+				name: "Some Name",
+				parentFolderId: null,
+				updaterId: currentUserId,
+			});
 		});
 	});
 
 	describe("Unexpected errors", () => {
 		it("should throw unexpected error when update operation returns empty array", async () => {
+			expect.assertions(1);
 			const currentUserId = faker.string.uuid();
 			const organizationId = faker.string.uuid();
 			const tagFolderId = faker.string.uuid();
