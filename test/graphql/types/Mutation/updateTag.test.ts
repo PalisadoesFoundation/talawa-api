@@ -856,7 +856,7 @@ suite("Mutation field updateTag", () => {
 
 			expect(result.errors).toBeUndefined();
 			expect(result.data?.updateTag).toBeDefined();
-			expect(result.data?.updateTag?.name).toBeDefined();
+			expect(result.data?.updateTag?.name).toBe(specialName);
 		});
 
 		test("should successfully handle unicode characters in tag name", async () => {
@@ -904,7 +904,7 @@ suite("Mutation field updateTag", () => {
 			});
 
 			expect(result.errors).toBeUndefined();
-			expect(result.data?.updateTag).toBeDefined();
+			expect(result.data?.updateTag?.name).toBe(unicodeName);
 		});
 	});
 });
