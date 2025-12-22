@@ -124,6 +124,14 @@ suite("Mutation field blockUser", () => {
 	beforeEach(async () => {
 		organizationId = await createTestOrganization(adminAuthToken);
 
+		// Add admin as administrator member of the organization
+		await createOrganizationMembership(
+			adminAuthToken,
+			adminUserId,
+			organizationId,
+			"administrator",
+		);
+
 		const regularUser = await createTestUser(adminAuthToken);
 		regularUserId = regularUser.userId;
 		regularUserAuthToken = regularUser.authToken;
