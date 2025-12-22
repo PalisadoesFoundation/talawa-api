@@ -116,50 +116,6 @@ export function keyValue(key: string, value: string): void {
 }
 
 /**
- * Create a spinner-like progress indicator
- */
-function startProgress(message: string): { stop: (success: boolean) => void } {
-	const frames = ["⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏"];
-	let frameIndex = 0;
-	let stopped = false;
-
-	// Skip animation in non-TTY environments (CI, piped output)
-	if (!process.stdout.isTTY) {
-		console.log(`⏳ ${message}`);
-		return {
-			stop: (succeeded: boolean) => {
-				if (stopped) return;
-				stopped = true;
-				const icon = succeeded ? "✓" : "✗";
-				console.log(`${icon} ${message}`);
-			},
-		};
-	}
-
-	process.stdout.write(`${colorize(frames[frameIndex] ?? "⠋", "cyan")} ${message}`);
-
-	const interval = setInterval(() => {
-		frameIndex = (frameIndex + 1) % frames.length;
-		process.stdout.write(`\r${colorize(frames[frameIndex] ?? "⠋", "cyan")} ${message}`);
-	}, 100);
-
-	// Don't keep the process alive just for the spinner
-	interval.unref();
-
-	return {
-		stop: (succeeded: boolean) => {
-			if (stopped) return;
-			stopped = true;
-			clearInterval(interval);
-			const icon = succeeded
-				? colorize("✓", "green")
-				: colorize("✗", "red");
-			process.stdout.write(`\r${icon} ${message}\n`);
-		},
-	};
-}
-
-/**
  * Print a blank line
  */
 export function blank(): void {
