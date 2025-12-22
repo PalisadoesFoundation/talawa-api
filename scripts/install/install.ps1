@@ -55,7 +55,9 @@ function Write-ColorOutput {
         "Cyan" = "Cyan"
     }
     
-    Write-Host $Message -ForegroundColor $colors[$Color]
+    # Use fallback color if requested color not in hashtable
+    $resolvedColor = if ($colors.ContainsKey($Color)) { $colors[$Color] } else { "White" }
+    Write-Host $Message -ForegroundColor $resolvedColor
 }
 
 function Write-Info { Write-Host "i " -ForegroundColor Cyan -NoNewline; Write-Host $args[0] }
@@ -104,8 +106,16 @@ function Test-CommandExists {
 
 # Get repository root
 function Get-RepoRoot {
-    $scriptDir = Split-Path -Parent $MyInvocation.ScriptName
-    # Navigate up from scripts/install/windows or scripts/install to repo root
+    # Use $PSScriptRoot with fallbacks for different execution contexts
+    $scriptDir = if ($PSScriptRoot) { 
+        $PSScriptRoot 
+    } elseif ($MyInvocation.MyCommand.Path) { 
+        Split-Path -Parent $MyInvocation.MyCommand.Path 
+    } else { 
+        Split-Path -Parent $MyInvocation.ScriptName 
+    }
+    
+    # Navigate up from scripts/install to repo root
     $repoRoot = $scriptDir
     while ($repoRoot -and -not (Test-Path (Join-Path $repoRoot "package.json"))) {
         $parent = Split-Path -Parent $repoRoot
@@ -140,7 +150,7 @@ function Install-TalawaPrerequisites {
         Write-Info "Installation mode: $InstallMode"
         Write-Host ""
         
-        $totalSteps = 7
+        $totalSteps = 8
         $currentStep = 0
         
         #######################################################################

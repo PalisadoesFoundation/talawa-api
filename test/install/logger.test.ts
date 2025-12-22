@@ -3,21 +3,22 @@
  * @module test/install/logger.test
  */
 
-import { describe, expect, it, vi, beforeEach, afterEach } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+
 import {
-	setVerbose,
+	banner,
+	blank,
+	command,
+	debug,
+	error,
+	header,
 	info,
+	keyValue,
+	setVerbose,
+	step,
+	subHeader,
 	success,
 	warn,
-	error,
-	debug,
-	step,
-	header,
-	subHeader,
-	command,
-	keyValue,
-	blank,
-	banner,
 } from "~/src/install/utils/logger";
 
 describe("logger", () => {

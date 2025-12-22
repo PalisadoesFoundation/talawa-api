@@ -7,13 +7,25 @@
 export type OperatingSystem = "windows" | "linux" | "macos";
 
 /** Linux distribution types */
-export type LinuxDistro = "ubuntu" | "debian" | "fedora" | "centos" | "arch" | "unknown";
+export type LinuxDistro =
+	| "ubuntu"
+	| "debian"
+	| "fedora"
+	| "centos"
+	| "arch"
+	| "unknown";
 
 /** Installation mode */
 export type InstallMode = "docker" | "local";
 
 /** Package manager types */
-export type PackageManager = "apt" | "brew" | "choco" | "dnf" | "pacman" | "unknown";
+export type PackageManager =
+	| "apt"
+	| "brew"
+	| "choco"
+	| "dnf"
+	| "pacman"
+	| "unknown";
 
 /** Installation configuration */
 export interface InstallConfig {

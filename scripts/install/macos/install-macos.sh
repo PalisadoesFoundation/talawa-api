@@ -40,9 +40,12 @@ command_exists() {
 
 # Get the repository root directory
 get_repo_root() {
-    local script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+    local script_dir
+    local repo_root
+    script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
     # Navigate up from scripts/install/macos to repo root
-    echo "$(cd "$script_dir/../../.." && pwd)"
+    repo_root="$(cd "$script_dir/../../.." && pwd)"
+    printf '%s\n' "$repo_root"
 }
 
 REPO_ROOT=$(get_repo_root)
@@ -56,7 +59,7 @@ if [ ! -f "package.json" ]; then
 fi
 
 # Total steps for progress tracking
-TOTAL_STEPS=7
+TOTAL_STEPS=8
 CURRENT_STEP=0
 
 ##############################################################################
@@ -94,7 +97,9 @@ if [ "$SKIP_PREREQS" = "true" ]; then
     warn "Skipping prerequisite installation (--skip-prereqs)"
 else
     info "Installing git, jq, curl..."
-    brew install git jq curl 2>/dev/null || true
+    if ! brew install git jq curl; then
+        warn "Some packages may have failed to install. Continuing anyway..."
+    fi
 fi
 
 success "System dependencies installed"
@@ -203,7 +208,8 @@ success "pnpm installed: v$(pnpm --version)"
 ##############################################################################
 # Step 8: Install project dependencies
 ##############################################################################
-step 8 8 "Installing project dependencies..."
+((CURRENT_STEP++))
+step $CURRENT_STEP $TOTAL_STEPS "Installing project dependencies..."
 
 pnpm install
 

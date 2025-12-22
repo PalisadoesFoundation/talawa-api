@@ -3,8 +3,9 @@
  * @module test/install/osDetection.test
  */
 
-import { describe, expect, it, vi, beforeEach, afterEach } from "vitest";
 import * as childProcess from "node:child_process";
+
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 // We need to mock before importing the module
 vi.mock("node:child_process", () => ({

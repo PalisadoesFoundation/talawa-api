@@ -46,9 +46,7 @@ export function getVersion(command: string): string | null {
 				});
 
 				// Extract version number using regex
-				const versionMatch = output.match(
-					/(\d+\.\d+\.\d+|\d+\.\d+|\d+)/,
-				);
+				const versionMatch = output.match(/(\d+\.\d+\.\d+|\d+\.\d+|\d+)/);
 				if (versionMatch?.[1]) {
 					return versionMatch[1];
 				}
@@ -61,6 +59,48 @@ export function getVersion(command: string): string | null {
 	} catch {
 		return null;
 	}
+}
+
+/**
+ * Check if docker compose is installed (handles both standalone and plugin)
+ */
+function isDockerComposeInstalled(): boolean {
+	// Check standalone docker-compose
+	if (isInstalled("docker-compose")) {
+		return true;
+	}
+	// Check docker compose plugin (subcommand)
+	try {
+		execSync("docker compose version", { encoding: "utf-8", stdio: "pipe" });
+		return true;
+	} catch {
+		return false;
+	}
+}
+
+/**
+ * Get docker compose version (handles both standalone and plugin)
+ */
+function getDockerComposeVersion(): string | null {
+	// Try standalone first
+	const standaloneVersion = getVersion("docker-compose");
+	if (standaloneVersion) {
+		return standaloneVersion;
+	}
+	// Try docker compose plugin
+	try {
+		const output = execSync("docker compose version --short", {
+			encoding: "utf-8",
+			stdio: "pipe",
+		});
+		const versionMatch = output.match(/(\d+\.\d+\.\d+|\d+\.\d+|\d+)/);
+		if (versionMatch?.[1]) {
+			return versionMatch[1];
+		}
+	} catch {
+		// Plugin not available
+	}
+	return null;
 }
 
 /**
@@ -123,7 +163,7 @@ export function getPnpmVersionFromPackageJson(
 		const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, "utf-8"));
 		const packageManager = packageJson.packageManager;
 
-		if (packageManager && packageManager.startsWith("pnpm@")) {
+		if (packageManager?.startsWith("pnpm@")) {
 			return packageManager.replace("pnpm@", "").split("+")[0];
 		}
 
@@ -197,9 +237,8 @@ export function checkPrerequisites(packageJsonPath: string): PrereqCheck[] {
 		{
 			name: "docker-compose",
 			required: false,
-			installed:
-				isInstalled("docker-compose") || isInstalled("docker compose"),
-			version: getVersion("docker-compose") || getVersion("docker compose"),
+			installed: isDockerComposeInstalled(),
+			version: getDockerComposeVersion(),
 			requiredVersion: null,
 		},
 	];

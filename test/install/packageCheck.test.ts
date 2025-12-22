@@ -3,9 +3,10 @@
  * @module test/install/packageCheck.test
  */
 
-import { describe, expect, it, vi, beforeEach, afterEach } from "vitest";
 import * as childProcess from "node:child_process";
 import fs from "node:fs";
+
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 // Mock modules
 vi.mock("node:child_process", () => ({
@@ -274,6 +275,15 @@ describe("packageCheck", () => {
 	describe("checkPnpmVersion", () => {
 		it("returns true when no requirement specified", () => {
 			vi.mocked(fs.readFileSync).mockReturnValue(JSON.stringify({}));
+			expect(checkPnpmVersion("/path/to/package.json")).toBe(true);
+		});
+
+		it("returns true when installed version meets requirement", () => {
+			vi.mocked(fs.readFileSync).mockReturnValue(
+				JSON.stringify({ packageManager: "pnpm@9.0.0" }),
+			);
+			vi.mocked(childProcess.execSync).mockReturnValue("9.15.0");
+
 			expect(checkPnpmVersion("/path/to/package.json")).toBe(true);
 		});
 	});

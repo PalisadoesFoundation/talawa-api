@@ -39,9 +39,12 @@ command_exists() {
 
 # Get the repository root directory
 get_repo_root() {
-    local script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+    local script_dir
+    local repo_root
+    script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
     # Navigate up from scripts/install/linux to repo root
-    echo "$(cd "$script_dir/../../.." && pwd)"
+    repo_root="$(cd "$script_dir/../../.." && pwd)"
+    printf '%s\n' "$repo_root"
 }
 
 REPO_ROOT=$(get_repo_root)
@@ -245,6 +248,11 @@ if command_exists docker; then
     echo "  Docker:  $(docker --version | cut -d ' ' -f 3 | tr -d ',')"
 fi
 echo ""
+warn "NOTE: To make fnm available in new terminal sessions, add this to your ~/.bashrc or ~/.zshrc:"
+echo "  export PATH=\"\$HOME/.local/share/fnm:\$PATH\""
+echo "  eval \"\$(fnm env)\""
+echo ""
 info "To complete setup, run:"
 echo "  pnpm run setup"
 echo ""
+

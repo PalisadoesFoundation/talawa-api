@@ -3,8 +3,9 @@
  * @module src/install/utils/osDetection
  */
 
-import os from "node:os";
 import { execSync } from "node:child_process";
+import os from "node:os";
+
 import type { LinuxDistro, OperatingSystem, PackageManager } from "../types";
 
 /**
@@ -138,17 +139,25 @@ export function getPackageManager(): PackageManager {
 
 		case "linux": {
 			const distro = detectLinuxDistro();
-			switch (distro) {
-				case "ubuntu":
-				case "debian":
-					return "apt";
-				case "fedora":
-				case "centos":
-					return "dnf";
-				case "arch":
-					return "pacman";
-				default:
-					return "unknown";
+			// Verify the package manager exists, similar to Windows/macOS
+			try {
+				switch (distro) {
+					case "ubuntu":
+					case "debian":
+						execSync("apt --version", { encoding: "utf-8", stdio: "pipe" });
+						return "apt";
+					case "fedora":
+					case "centos":
+						execSync("dnf --version", { encoding: "utf-8", stdio: "pipe" });
+						return "dnf";
+					case "arch":
+						execSync("pacman --version", { encoding: "utf-8", stdio: "pipe" });
+						return "pacman";
+					default:
+						return "unknown";
+				}
+			} catch {
+				return "unknown";
 			}
 		}
 

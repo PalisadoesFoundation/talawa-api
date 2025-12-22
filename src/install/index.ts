@@ -9,18 +9,19 @@
 
 import path from "node:path";
 import process from "node:process";
+
 import type { InstallConfig, InstallResult } from "./types";
+import * as logger from "./utils/logger";
 import {
 	detectOS,
-	isWSL,
 	getPackageManager,
+	isWSL,
 } from "./utils/osDetection";
 import {
-	checkPrerequisites,
 	checkNodeVersion,
 	checkPnpmVersion,
+	checkPrerequisites,
 } from "./utils/packageCheck";
-import * as logger from "./utils/logger";
 
 /**
  * Parse command-line arguments
@@ -54,6 +55,11 @@ function parseArgs(): InstallConfig {
 			case "-h":
 				printHelp();
 				process.exit(0);
+				break;
+			default:
+				if (arg.startsWith("-")) {
+					logger.warn(`Unknown option: ${arg}`);
+				}
 		}
 	}
 
@@ -179,15 +185,10 @@ export async function install(
 	}
 
 	// Proceed with installation based on mode
-	logger.subHeader(`Starting ${fullConfig.mode === "docker" ? "Docker" : "Local"} Installation`);
-
-	if (fullConfig.mode === "docker") {
-		logger.info("Docker-based installation selected");
-		logger.info("Please run: pnpm run setup");
-	} else {
-		logger.info("Local installation selected");
-		logger.info("Please run: pnpm run setup");
-	}
+	const modeLabel = fullConfig.mode === "docker" ? "Docker" : "Local";
+	logger.subHeader(`Starting ${modeLabel} Installation`);
+	logger.info(`${modeLabel} installation mode selected`);
+	logger.info("Please run: pnpm run setup");
 
 	logger.blank();
 	logger.success("Installation check complete!");
@@ -219,7 +220,11 @@ async function main(): Promise<void> {
 	}
 }
 
-// Run if executed directly
-if (require.main === module) {
+// Run if executed directly (ESM-compatible)
+const isDirectExecution =
+	import.meta.url === `file://${process.argv[1]}` ||
+	import.meta.url === `file:///${process.argv[1]?.replace(/\\/g, "/")}`;
+
+if (isDirectExecution) {
 	main();
 }
