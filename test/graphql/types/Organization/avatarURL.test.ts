@@ -204,22 +204,23 @@ describe("Organization.avatarURL field resolver - Unit tests", () => {
 	});
 
 	describe("Different avatar file types", () => {
-        it.each([
+		it.each([
 			["PNG", "avatar.png", "image/png"],
 			["JPG", "avatar.jpg", "image/jpeg"],
 			["WEBP", "avatar.webp", "image/webp"],
 			["AVIF", "avatar.avif", "image/avif"],
 			["no extension", "avatar-no-extension", "image/png"],
-		] as const)(
-			"should handle %s avatars",
-			async (_fileType: string, avatarName: string, mimeType: "image/png" | "image/jpeg" | "image/webp" | "image/avif") => {
-				mockOrganization.avatarName = avatarName;
-				mockOrganization.avatarMimeType = mimeType;
+		] as const)("should handle %s avatars", async (_fileType: string, avatarName: string, mimeType:
+			| "image/png"
+			| "image/jpeg"
+			| "image/webp"
+			| "image/avif") => {
+			mockOrganization.avatarName = avatarName;
+			mockOrganization.avatarMimeType = mimeType;
 
-				const result = await avatarURLResolver(mockOrganization, {}, ctx);
+			const result = await avatarURLResolver(mockOrganization, {}, ctx);
 
-				expect(result).toBe(`http://localhost:4000/objects/${avatarName}`);
-			},
-		);
+			expect(result).toBe(`http://localhost:4000/objects/${avatarName}`);
+		});
 	});
 });
