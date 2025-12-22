@@ -1,9 +1,10 @@
 import { faker } from "@faker-js/faker";
 import { eq } from "drizzle-orm";
 import { gql } from "graphql-tag";
-import { expect, suite, test, vi } from "vitest";
+import { expect, suite, test } from "vitest";
 
 import { fundsTable } from "~/src/drizzle/tables/funds";
+import { organizationMembershipsTable } from "~/src/drizzle/tables/organizationMemberships";
 
 import { server } from "../../../server";
 import { mercuriusClient } from "../client";
@@ -137,7 +138,7 @@ suite("deleteFund mutation", () => {
 	});
 
 	test("returns unauthorized error when user is not an administrator", async () => {
-		const admin = await createRegularUserUsingAdmin();
+		const fundCreater = await createRegularUserUsingAdmin();
 		const user = await createRegularUserUsingAdmin();
 		const orgId = await createTestOrganization();
 		const fundId = faker.string.uuid();
@@ -147,7 +148,7 @@ suite("deleteFund mutation", () => {
 			name: "Test Fund",
 			isTaxDeductible: false,
 			organizationId: orgId,
-			creatorId: admin.userId,
+			creatorId: fundCreater.userId,
 		});
 
 		const result = await mercuriusClient.mutate(Mutation_deleteFund, {
@@ -173,27 +174,35 @@ suite("deleteFund mutation", () => {
 		);
 	});
 
-	test("returns unexpected error when delete operation returns undefined", async () => {
-		const { authToken } = await createRegularUserUsingAdmin();
+	test("returns unexpected error when fund is deleted before delete operation", async () => {
+		const admin = await createRegularUserUsingAdmin();
+		const orgId = await createTestOrganization();
+		const fundId = faker.string.uuid();
 
-		const deleteSpy = vi
-			.spyOn(server.drizzleClient, "delete")
-			.mockImplementationOnce(() => {
-				return {
-					where: () => ({
-						returning: async () => [],
-					}),
-				} as unknown as ReturnType<typeof server.drizzleClient.delete>;
-			});
+		await server.drizzleClient.insert(fundsTable).values({
+			id: fundId,
+			name: "Test Fund",
+			isTaxDeductible: false,
+			organizationId: orgId,
+			creatorId: admin.userId,
+		});
+
+		await server.drizzleClient.insert(organizationMembershipsTable).values({
+			memberId: admin.userId,
+			organizationId: orgId,
+			role: "administrator",
+		});
+
+		await server.drizzleClient
+			.delete(fundsTable)
+			.where(eq(fundsTable.id, fundId));
 
 		const result = await mercuriusClient.mutate(Mutation_deleteFund, {
 			headers: {
-				authorization: `bearer ${authToken}`,
+				authorization: `bearer ${admin.authToken}`,
 			},
 			variables: {
-				input: {
-					id: faker.string.uuid(),
-				},
+				input: { id: fundId },
 			},
 		});
 
@@ -207,26 +216,30 @@ suite("deleteFund mutation", () => {
 				}),
 			]),
 		);
-
-		deleteSpy.mockRestore();
 	});
 
-	test("successfully deletes fund when user is administrator", async () => {
-		const { authToken, userId } = await createRegularUserUsingAdmin();
-		const fundId = faker.string.uuid();
+	test("successfully deletes fund when user is organization administrator", async () => {
+		const user = await createRegularUserUsingAdmin();
 		const orgId = await createTestOrganization();
+		const fundId = faker.string.uuid();
 
 		await server.drizzleClient.insert(fundsTable).values({
 			id: fundId,
 			name: "Test Fund",
 			isTaxDeductible: false,
 			organizationId: orgId,
-			creatorId: userId,
+			creatorId: user.userId,
+		});
+
+		await server.drizzleClient.insert(organizationMembershipsTable).values({
+			memberId: user.userId,
+			organizationId: orgId,
+			role: "administrator",
 		});
 
 		const result = await mercuriusClient.mutate(Mutation_deleteFund, {
 			headers: {
-				authorization: `bearer ${authToken}`,
+				authorization: `bearer ${user.authToken}`,
 			},
 			variables: {
 				input: {
