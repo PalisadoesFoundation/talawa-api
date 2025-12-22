@@ -204,49 +204,22 @@ describe("Organization.avatarURL field resolver - Unit tests", () => {
 	});
 
 	describe("Different avatar file types", () => {
-		it("should handle PNG avatars", async () => {
-			mockOrganization.avatarName = "avatar.png";
-			mockOrganization.avatarMimeType = "image/png";
+        it.each([
+			["PNG", "avatar.png", "image/png"],
+			["JPG", "avatar.jpg", "image/jpeg"],
+			["WEBP", "avatar.webp", "image/webp"],
+			["AVIF", "avatar.avif", "image/avif"],
+			["no extension", "avatar-no-extension", "image/png"],
+		] as const)(
+			"should handle %s avatars",
+			async (_fileType: string, avatarName: string, mimeType: "image/png" | "image/jpeg" | "image/webp" | "image/avif") => {
+				mockOrganization.avatarName = avatarName;
+				mockOrganization.avatarMimeType = mimeType;
 
-			const result = await avatarURLResolver(mockOrganization, {}, ctx);
+				const result = await avatarURLResolver(mockOrganization, {}, ctx);
 
-			expect(result).toBe("http://localhost:4000/objects/avatar.png");
-		});
-
-		it("should handle JPG avatars", async () => {
-			mockOrganization.avatarName = "avatar.jpg";
-			mockOrganization.avatarMimeType = "image/jpeg";
-
-			const result = await avatarURLResolver(mockOrganization, {}, ctx);
-
-			expect(result).toBe("http://localhost:4000/objects/avatar.jpg");
-		});
-
-		it("should handle WEBP avatars", async () => {
-			mockOrganization.avatarName = "avatar.webp";
-			mockOrganization.avatarMimeType = "image/webp";
-
-			const result = await avatarURLResolver(mockOrganization, {}, ctx);
-
-			expect(result).toBe("http://localhost:4000/objects/avatar.webp");
-		});
-
-		it("should handle AVIF avatars", async () => {
-			mockOrganization.avatarName = "avatar.avif";
-			mockOrganization.avatarMimeType = "image/avif";
-
-			const result = await avatarURLResolver(mockOrganization, {}, ctx);
-
-			expect(result).toBe("http://localhost:4000/objects/avatar.avif");
-		});
-
-		it("should handle avatars without extension", async () => {
-			mockOrganization.avatarName = "avatar-no-extension";
-			mockOrganization.avatarMimeType = "image/png";
-
-			const result = await avatarURLResolver(mockOrganization, {}, ctx);
-
-			expect(result).toBe("http://localhost:4000/objects/avatar-no-extension");
-		});
+				expect(result).toBe(`http://localhost:4000/objects/${avatarName}`);
+			},
+		);
 	});
 });
