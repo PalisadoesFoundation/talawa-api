@@ -1,0 +1,225 @@
+/**
+ * One-Click Installation - Main Entry Point
+ * @module src/install/index
+ *
+ * Usage:
+ *   npx ts-node src/install/index.ts --docker    # Docker-based installation
+ *   npx ts-node src/install/index.ts --local     # Local installation
+ */
+
+import path from "node:path";
+import process from "node:process";
+import type { InstallConfig, InstallResult } from "./types";
+import {
+	detectOS,
+	isWSL,
+	getPackageManager,
+} from "./utils/osDetection";
+import {
+	checkPrerequisites,
+	checkNodeVersion,
+	checkPnpmVersion,
+} from "./utils/packageCheck";
+import * as logger from "./utils/logger";
+
+/**
+ * Parse command-line arguments
+ */
+function parseArgs(): InstallConfig {
+	const args = process.argv.slice(2);
+
+	const config: InstallConfig = {
+		os: detectOS(),
+		mode: "docker", // Default to docker
+		skipPrereqs: false,
+		verbose: false,
+	};
+
+	for (const arg of args) {
+		switch (arg) {
+			case "--docker":
+				config.mode = "docker";
+				break;
+			case "--local":
+				config.mode = "local";
+				break;
+			case "--skip-prereqs":
+				config.skipPrereqs = true;
+				break;
+			case "--verbose":
+			case "-v":
+				config.verbose = true;
+				break;
+			case "--help":
+			case "-h":
+				printHelp();
+				process.exit(0);
+		}
+	}
+
+	return config;
+}
+
+/**
+ * Print help message
+ */
+function printHelp(): void {
+	console.log(`
+Talawa API - One-Click Installation
+
+Usage:
+  npx ts-node src/install/index.ts [options]
+
+Options:
+  --docker        Install with Docker (default)
+  --local         Install for local development
+  --skip-prereqs  Skip prerequisite installation
+  --verbose, -v   Enable verbose logging
+  --help, -h      Show this help message
+
+Examples:
+  npx ts-node src/install/index.ts --docker
+  npx ts-node src/install/index.ts --local --verbose
+`);
+}
+
+/**
+ * Display system information
+ */
+function displaySystemInfo(config: InstallConfig): void {
+	logger.subHeader("System Information");
+	logger.keyValue("Operating System", config.os);
+	logger.keyValue("Package Manager", getPackageManager());
+	logger.keyValue("WSL Detected", isWSL() ? "Yes" : "No");
+	logger.keyValue("Installation Mode", config.mode);
+	logger.blank();
+}
+
+/**
+ * Check and display prerequisites status
+ */
+function displayPrerequisites(packageJsonPath: string): boolean {
+	logger.subHeader("Checking Prerequisites");
+
+	const checks = checkPrerequisites(packageJsonPath);
+	let allPassed = true;
+
+	for (const check of checks) {
+		const statusIcon = check.installed ? "✓" : "✗";
+		const statusColor = check.installed ? "\x1b[32m" : "\x1b[31m";
+		const versionInfo = check.version ? ` (v${check.version})` : "";
+		const requiredInfo = check.requiredVersion
+			? ` [required: ${check.requiredVersion}]`
+			: "";
+
+		console.log(
+			`  ${statusColor}${statusIcon}\x1b[0m ${check.name}${versionInfo}${requiredInfo}`,
+		);
+
+		if (check.required && !check.installed) {
+			allPassed = false;
+		}
+	}
+
+	logger.blank();
+	return allPassed;
+}
+
+/**
+ * Main installation function
+ */
+export async function install(
+	config?: Partial<InstallConfig>,
+): Promise<InstallResult> {
+	const startTime = Date.now();
+	const fullConfig: InstallConfig = {
+		os: detectOS(),
+		mode: "docker",
+		skipPrereqs: false,
+		verbose: false,
+		...config,
+	};
+
+	if (fullConfig.verbose) {
+		logger.setVerbose(true);
+	}
+
+	logger.banner();
+	displaySystemInfo(fullConfig);
+
+	const packageJsonPath = path.resolve(process.cwd(), "package.json");
+
+	// Check prerequisites
+	const prereqsPassed = displayPrerequisites(packageJsonPath);
+
+	if (!prereqsPassed && !fullConfig.skipPrereqs) {
+		logger.error(
+			"Required prerequisites are missing. Please install them first.",
+		);
+		logger.info("Run the appropriate install script for your OS:");
+		logger.info("  Linux/macOS: ./scripts/install/install.sh");
+		logger.info("  Windows: .\\scripts\\install\\install.ps1");
+
+		return {
+			success: false,
+			error: "Missing prerequisites",
+			packagesInstalled: [],
+			duration: Date.now() - startTime,
+		};
+	}
+
+	// Check Node.js version
+	if (!checkNodeVersion(packageJsonPath)) {
+		logger.warn("Node.js version does not match requirement in package.json");
+	}
+
+	// Check pnpm version
+	if (!checkPnpmVersion(packageJsonPath)) {
+		logger.warn("pnpm version does not match requirement in package.json");
+	}
+
+	// Proceed with installation based on mode
+	logger.subHeader(`Starting ${fullConfig.mode === "docker" ? "Docker" : "Local"} Installation`);
+
+	if (fullConfig.mode === "docker") {
+		logger.info("Docker-based installation selected");
+		logger.info("Please run: pnpm run setup");
+	} else {
+		logger.info("Local installation selected");
+		logger.info("Please run: pnpm run setup");
+	}
+
+	logger.blank();
+	logger.success("Installation check complete!");
+	logger.info("Next steps:");
+	logger.info("  1. Run 'pnpm run setup' to configure the application");
+	logger.info("  2. Follow the prompts to set up your environment");
+
+	return {
+		success: true,
+		packagesInstalled: [],
+		duration: Date.now() - startTime,
+	};
+}
+
+/**
+ * CLI entry point
+ */
+async function main(): Promise<void> {
+	try {
+		const config = parseArgs();
+		const result = await install(config);
+
+		if (!result.success) {
+			process.exit(1);
+		}
+	} catch (err) {
+		logger.error(`Installation failed: ${err instanceof Error ? err.message : String(err)}`);
+		process.exit(1);
+	}
+}
+
+// Run if executed directly
+if (require.main === module) {
+	main();
+}
