@@ -428,7 +428,7 @@ export async function insertCollections(
 								const fileExtension = attachment.mimeType.split("/").pop();
 								const filePath = path.resolve(
 									dirname,
-									`./sample_data/images/${attachment.objectName}.${fileExtension}`,
+									`./sample_data/images/${attachment.name}.${fileExtension}`,
 								);
 								const fileData = await fs.readFile(filePath);
 								await minioClient.putObject(
@@ -442,7 +442,7 @@ export async function insertCollections(
 								);
 							} catch (error) {
 								console.error(
-									`Failed to upload attachment ${attachment.objectName}:`,
+									`Failed to upload attachment ${attachment.name}:`,
 									error,
 								);
 								throw error;
