@@ -1152,6 +1152,21 @@ input EventsByOrganizationIdInput {
   organizationId: ID!
 }
 
+"""Metadata for files uploaded via presigned URL"""
+input FileMetadataInput {
+  """Hash of the file for deduplication"""
+  fileHash: String!
+
+  """MIME type of the file"""
+  mimetype: PostAttachmentMimeType!
+
+  """Name of the file"""
+  name: String!
+
+  """Object name used in storage"""
+  objectName: String!
+}
+
 """Possible variants of the frequency of a recurring event."""
 enum Frequency {
   DAILY
@@ -2818,8 +2833,8 @@ input MutationCreateOrganizationMembershipInput {
 
 """Input for creating a new post"""
 input MutationCreatePostInput {
-  """Direct file upload"""
-  attachment: Upload
+  """Metadata for files already uploaded via presigned URL"""
+  attachments: [FileMetadataInput!]
 
   """Body content of the post."""
   body: String
@@ -3700,11 +3715,8 @@ input MutationUpdateOrganizationMembershipInput {
 
 """Input for updating a post."""
 input MutationUpdatePostInput {
-  """Direct file upload"""
-  attachment: Upload
-
-  """Body content of the post."""
-  body: String
+  """Metadata for files already uploaded via presigned URL"""
+  attachments: [FileMetadataInput!]
 
   """Caption about the post."""
   caption: String
@@ -4327,9 +4339,6 @@ type Plugin {
 }
 
 type Post {
-  """URL to the image attachment of the post."""
-  attachmentURL: String
-
   """Array of attachments."""
   attachments: [PostAttachment!]
 
@@ -4409,6 +4418,16 @@ type PostAttachment {
 
   """Object name used when creating presigned URLs."""
   objectName: String
+}
+
+"""MIME types supported for post attachments"""
+enum PostAttachmentMimeType {
+  IMAGE_AVIF
+  IMAGE_JPEG
+  IMAGE_PNG
+  IMAGE_WEBP
+  VIDEO_MP4
+  VIDEO_WEBM
 }
 
 """"""

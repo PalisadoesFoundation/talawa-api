@@ -11,4 +11,3 @@ import "./upVotesCount";
 import "./sorting";
 import "./UploadUrlResponse";
 import "./hasUserVoted";
-import "./attachmentURL";
