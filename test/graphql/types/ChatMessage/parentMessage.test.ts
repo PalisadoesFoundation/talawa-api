@@ -60,6 +60,9 @@ describe("ChatMessage.parentMessage resolver", () => {
 
 		const result = await parentMessageResolver(parent, {}, ctx, {});
 		expect(result).toBeNull();
+		expect(
+			ctx.drizzleClient.query.chatMessagesTable.findFirst,
+		).not.toHaveBeenCalled();
 	});
 
 	test("returns parent message when parent exists", async () => {
