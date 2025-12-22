@@ -54,7 +54,9 @@ describe("logger", () => {
 		it("logs info message to console", () => {
 			info("test info");
 			expect(consoleSpy).toHaveBeenCalledTimes(1);
-			expect(String(consoleSpy.mock.calls[0]?.[0] ?? "")).toContain("test info");
+			expect(String(consoleSpy.mock.calls[0]?.[0] ?? "")).toContain(
+				"test info",
+			);
 		});
 	});
 
@@ -62,7 +64,9 @@ describe("logger", () => {
 		it("logs success message to console", () => {
 			success("test success");
 			expect(consoleSpy).toHaveBeenCalledTimes(1);
-			expect(String(consoleSpy.mock.calls[0]?.[0] ?? "")).toContain("test success");
+			expect(String(consoleSpy.mock.calls[0]?.[0] ?? "")).toContain(
+				"test success",
+			);
 		});
 	});
 
@@ -70,7 +74,9 @@ describe("logger", () => {
 		it("logs warning message to console", () => {
 			warn("test warning");
 			expect(consoleSpy).toHaveBeenCalledTimes(1);
-			expect(String(consoleSpy.mock.calls[0]?.[0] ?? "")).toContain("test warning");
+			expect(String(consoleSpy.mock.calls[0]?.[0] ?? "")).toContain(
+				"test warning",
+			);
 		});
 	});
 
@@ -95,7 +101,9 @@ describe("logger", () => {
 			setVerbose(true);
 			debug("debug message");
 			expect(consoleSpy).toHaveBeenCalledTimes(1);
-			expect(String(consoleSpy.mock.calls[0]?.[0] ?? "")).toContain("debug message");
+			expect(String(consoleSpy.mock.calls[0]?.[0] ?? "")).toContain(
+				"debug message",
+			);
 		});
 	});
 
@@ -124,7 +132,9 @@ describe("logger", () => {
 			subHeader("Test Sub Header");
 			expect(consoleSpy).toHaveBeenCalled();
 			const calls = consoleSpy.mock.calls.map((c) => String(c[0]));
-			expect(calls.some((c: string) => c.includes("Test Sub Header"))).toBe(true);
+			expect(calls.some((c: string) => c.includes("Test Sub Header"))).toBe(
+				true,
+			);
 		});
 	});
 
@@ -132,7 +142,9 @@ describe("logger", () => {
 		it("logs command with prefix", () => {
 			command("npm install");
 			expect(consoleSpy).toHaveBeenCalledTimes(1);
-			expect(String(consoleSpy.mock.calls[0]?.[0] ?? "")).toContain("npm install");
+			expect(String(consoleSpy.mock.calls[0]?.[0] ?? "")).toContain(
+				"npm install",
+			);
 		});
 	});
 

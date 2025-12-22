@@ -14,12 +14,12 @@ vi.mock("node:child_process", () => ({
 
 // Import after mocking
 import {
-	detectOS,
 	detectLinuxDistro,
-	isWSL,
-	getPackageManager,
+	detectOS,
 	getHomeDir,
+	getPackageManager,
 	isRoot,
+	isWSL,
 } from "~/src/install/utils/osDetection";
 
 describe("osDetection", () => {
@@ -64,17 +64,23 @@ describe("osDetection", () => {
 		});
 
 		it("detects Ubuntu from /etc/os-release", () => {
-			vi.mocked(childProcess.execSync).mockReturnValue('ID=ubuntu\nVERSION="22.04"');
+			vi.mocked(childProcess.execSync).mockReturnValue(
+				'ID=ubuntu\nVERSION="22.04"',
+			);
 			expect(detectLinuxDistro()).toBe("ubuntu");
 		});
 
 		it("detects Debian from /etc/os-release", () => {
-			vi.mocked(childProcess.execSync).mockReturnValue('ID=debian\nVERSION="11"');
+			vi.mocked(childProcess.execSync).mockReturnValue(
+				'ID=debian\nVERSION="11"',
+			);
 			expect(detectLinuxDistro()).toBe("debian");
 		});
 
 		it("detects Fedora from /etc/os-release", () => {
-			vi.mocked(childProcess.execSync).mockReturnValue('ID=fedora\nVERSION="38"');
+			vi.mocked(childProcess.execSync).mockReturnValue(
+				'ID=fedora\nVERSION="38"',
+			);
 			expect(detectLinuxDistro()).toBe("fedora");
 		});
 
@@ -84,7 +90,9 @@ describe("osDetection", () => {
 		});
 
 		it("detects CentOS from /etc/os-release", () => {
-			vi.mocked(childProcess.execSync).mockReturnValue('ID=centos\nVERSION="8"');
+			vi.mocked(childProcess.execSync).mockReturnValue(
+				'ID=centos\nVERSION="8"',
+			);
 			expect(detectLinuxDistro()).toBe("centos");
 		});
 
@@ -174,7 +182,7 @@ describe("osDetection", () => {
 
 		it("returns 'apt' for Ubuntu/Debian Linux", () => {
 			vi.stubGlobal("process", { ...process, platform: "linux" });
-			vi.mocked(childProcess.execSync).mockReturnValue('ID=ubuntu\n');
+			vi.mocked(childProcess.execSync).mockReturnValue("ID=ubuntu\n");
 			expect(getPackageManager()).toBe("apt");
 		});
 	});

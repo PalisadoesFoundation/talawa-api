@@ -12,11 +12,7 @@ import process from "node:process";
 
 import type { InstallConfig, InstallResult } from "./types";
 import * as logger from "./utils/logger";
-import {
-	detectOS,
-	getPackageManager,
-	isWSL,
-} from "./utils/osDetection";
+import { detectOS, getPackageManager, isWSL } from "./utils/osDetection";
 import {
 	checkNodeVersion,
 	checkPnpmVersion,

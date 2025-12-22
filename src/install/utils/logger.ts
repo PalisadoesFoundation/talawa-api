@@ -76,7 +76,11 @@ export function debug(message: string): void {
 /**
  * Log a step message (cyan, bold)
  */
-export function step(stepNumber: number, totalSteps: number, message: string): void {
+export function step(
+	stepNumber: number,
+	totalSteps: number,
+	message: string,
+): void {
 	const prefix = colorize(`[${stepNumber}/${totalSteps}]`, "cyan");
 	console.log(`${prefix} ${colorize(message, "bold")}`);
 }

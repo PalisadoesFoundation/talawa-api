@@ -28,19 +28,19 @@ vi.mock("~/src/install/utils/osDetection", () => ({
 	detectOS: vi.fn(() => "linux"),
 }));
 
+import { detectOS } from "~/src/install/utils/osDetection";
 import {
-	isInstalled,
-	getVersion,
+	checkNodeVersion,
+	checkPackage,
+	checkPnpmVersion,
+	checkPrerequisites,
 	compareVersions,
-	meetsVersionRequirement,
 	getNodeVersionFromPackageJson,
 	getPnpmVersionFromPackageJson,
-	checkPackage,
-	checkPrerequisites,
-	checkNodeVersion,
-	checkPnpmVersion,
+	getVersion,
+	isInstalled,
+	meetsVersionRequirement,
 } from "~/src/install/utils/packageCheck";
-import { detectOS } from "~/src/install/utils/osDetection";
 
 describe("packageCheck", () => {
 	beforeEach(() => {
@@ -68,8 +68,10 @@ describe("packageCheck", () => {
 
 		it("uses 'where' command on Windows", () => {
 			vi.mocked(detectOS).mockReturnValue("windows");
-			vi.mocked(childProcess.execSync).mockReturnValue("C:\\Program Files\\Git\\bin\\git.exe");
-			
+			vi.mocked(childProcess.execSync).mockReturnValue(
+				"C:\\Program Files\\Git\\bin\\git.exe",
+			);
+
 			expect(isInstalled("git")).toBe(true);
 			expect(childProcess.execSync).toHaveBeenCalledWith(
 				"where git",
@@ -80,7 +82,7 @@ describe("packageCheck", () => {
 		it("uses 'which' command on Linux", () => {
 			vi.mocked(detectOS).mockReturnValue("linux");
 			vi.mocked(childProcess.execSync).mockReturnValue("/usr/bin/git");
-			
+
 			expect(isInstalled("git")).toBe(true);
 			expect(childProcess.execSync).toHaveBeenCalledWith(
 				"which git",
@@ -93,7 +95,7 @@ describe("packageCheck", () => {
 		it("returns version string when command exists", () => {
 			// isInstalled also calls execSync, so we need multiple returns
 			vi.mocked(childProcess.execSync).mockReturnValue("v22.0.0");
-			
+
 			expect(getVersion("node")).toBe("22.0.0");
 		});
 
@@ -107,7 +109,7 @@ describe("packageCheck", () => {
 		it("extracts version from various output formats", () => {
 			// Mock always returns git version string
 			vi.mocked(childProcess.execSync).mockReturnValue("git version 2.40.1");
-			
+
 			expect(getVersion("git")).toBe("2.40.1");
 		});
 	});
@@ -167,7 +169,9 @@ describe("packageCheck", () => {
 			vi.mocked(fs.readFileSync).mockReturnValue(
 				JSON.stringify({ engines: { node: ">=22.0.0" } }),
 			);
-			expect(getNodeVersionFromPackageJson("/path/to/package.json")).toBe(">=22.0.0");
+			expect(getNodeVersionFromPackageJson("/path/to/package.json")).toBe(
+				">=22.0.0",
+			);
 		});
 
 		it("returns null when engines.node is not defined", () => {
@@ -188,7 +192,9 @@ describe("packageCheck", () => {
 			vi.mocked(fs.readFileSync).mockReturnValue(
 				JSON.stringify({ packageManager: "pnpm@9.15.0+sha512.abc123" }),
 			);
-			expect(getPnpmVersionFromPackageJson("/path/to/package.json")).toBe("9.15.0");
+			expect(getPnpmVersionFromPackageJson("/path/to/package.json")).toBe(
+				"9.15.0",
+			);
 		});
 
 		it("returns null when packageManager is not pnpm", () => {
@@ -249,7 +255,7 @@ describe("packageCheck", () => {
 			const checks = checkPrerequisites("/path/to/package.json");
 			expect(Array.isArray(checks)).toBe(true);
 			expect(checks.length).toBeGreaterThan(0);
-			
+
 			const gitCheck = checks.find((c) => c.name === "git");
 			expect(gitCheck).toBeDefined();
 			expect(gitCheck?.required).toBe(true);

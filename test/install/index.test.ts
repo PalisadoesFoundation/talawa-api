@@ -30,8 +30,20 @@ vi.mock("~/src/install/utils/osDetection", () => ({
 // Mock packageCheck
 vi.mock("~/src/install/utils/packageCheck", () => ({
 	checkPrerequisites: vi.fn(() => [
-		{ name: "git", required: true, installed: true, version: "2.40.0", requiredVersion: null },
-		{ name: "node", required: true, installed: true, version: "22.0.0", requiredVersion: ">=22.0.0" },
+		{
+			name: "git",
+			required: true,
+			installed: true,
+			version: "2.40.0",
+			requiredVersion: null,
+		},
+		{
+			name: "node",
+			required: true,
+			installed: true,
+			version: "22.0.0",
+			requiredVersion: ">=22.0.0",
+		},
 	]),
 	checkNodeVersion: vi.fn(() => true),
 	checkPnpmVersion: vi.fn(() => true),
