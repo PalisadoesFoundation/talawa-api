@@ -1,4 +1,3 @@
-import type { Readable } from "node:stream";
 import { describe, expect, it } from "vitest";
 import {
 	POST_BODY_MAX_LENGTH,
@@ -30,14 +29,13 @@ describe("MutationCreatePostInput Schema", () => {
 				).toBe(true);
 			}
 		});
-		it("should accept valid caption", async () => {
-			const result =
-				await mutationCreatePostInputSchema.safeParseAsync(validInput);
+		it("should accept valid caption", () => {
+			const result = mutationCreatePostInputSchema.safeParse(validInput);
 			expect(result.success).toBe(true);
 		});
 
-		it("should trim whitespace from caption", async () => {
-			const result = await mutationCreatePostInputSchema.safeParseAsync({
+		it("should trim whitespace from caption", () => {
+			const result = mutationCreatePostInputSchema.safeParse({
 				...validInput,
 				caption: "  trimmed caption  ",
 			});
@@ -68,8 +66,8 @@ describe("MutationCreatePostInput Schema", () => {
 			}
 		});
 
-		it("should accept caption at exactly POST_CAPTION_MAX_LENGTH characters", async () => {
-			const result = await mutationCreatePostInputSchema.safeParseAsync({
+		it("should accept caption at exactly POST_CAPTION_MAX_LENGTH characters", () => {
+			const result = mutationCreatePostInputSchema.safeParse({
 				...validInput,
 				caption: "a".repeat(POST_CAPTION_MAX_LENGTH),
 			});
@@ -78,8 +76,8 @@ describe("MutationCreatePostInput Schema", () => {
 	});
 
 	describe("body field", () => {
-		it("should accept valid body", async () => {
-			const result = await mutationCreatePostInputSchema.safeParseAsync({
+		it("should accept valid body", () => {
+			const result = mutationCreatePostInputSchema.safeParse({
 				...validInput,
 				body: "This is a valid body content.",
 			});
@@ -89,8 +87,8 @@ describe("MutationCreatePostInput Schema", () => {
 			}
 		});
 
-		it("should trim whitespace from body", async () => {
-			const result = await mutationCreatePostInputSchema.safeParseAsync({
+		it("should trim whitespace from body", () => {
+			const result = mutationCreatePostInputSchema.safeParse({
 				...validInput,
 				body: "  trimmed body content  ",
 			});
@@ -139,115 +137,21 @@ describe("MutationCreatePostInput Schema", () => {
 			}
 		});
 
-		it("should accept body at exactly POST_BODY_MAX_LENGTH characters", async () => {
-			const result = await mutationCreatePostInputSchema.safeParseAsync({
+		it("should accept body at exactly POST_BODY_MAX_LENGTH characters", () => {
+			const result = mutationCreatePostInputSchema.safeParse({
 				...validInput,
 				body: "a".repeat(POST_BODY_MAX_LENGTH),
 			});
 			expect(result.success).toBe(true);
 		});
 
-		it("should accept missing body (optional field)", async () => {
+		it("should accept missing body (optional field)", () => {
 			// Test that body field is optional
-			const result =
-				await mutationCreatePostInputSchema.safeParseAsync(validInput);
+			const result = mutationCreatePostInputSchema.safeParse(validInput);
 			expect(result.success).toBe(true);
 			if (result.success) {
 				// Body field should be undefined when not provided
 				expect(result.data.body).toBeUndefined();
-			}
-		});
-	});
-	describe("attachment field", () => {
-		it("should reject attachment with invalid mime type", async () => {
-			const invalidMimeTypeAttachment = Promise.resolve({
-				filename: "test.exe",
-				mimetype: "application/x-msdownload", // Invalid mime type
-				encoding: "7bit",
-				createReadStream: () => null as unknown as Readable,
-			});
-
-			const result = await mutationCreatePostInputSchema.safeParseAsync({
-				...validInput,
-				attachment: invalidMimeTypeAttachment,
-			});
-
-			expect(result.success).toBe(false);
-			if (!result.success) {
-				expect(
-					result.error.issues.some((i) => i.path.join(".") === "attachment"),
-				).toBe(true);
-				expect(result.error.issues[0]?.message).toContain("not allowed");
-			}
-		});
-
-		it("should accept attachment with valid mime type", async () => {
-			// Assuming image/jpeg is a valid mime type based on postAttachmentMimeTypeEnum
-			const validMimeTypeAttachment = Promise.resolve({
-				filename: "test.jpg",
-				mimetype: "image/jpeg", // Valid mime type
-				encoding: "7bit",
-				createReadStream: () => null as unknown as Readable,
-			});
-
-			const result = await mutationCreatePostInputSchema.safeParseAsync({
-				...validInput,
-				attachment: validMimeTypeAttachment,
-			});
-
-			expect(result.success).toBe(true);
-			if (result.success) {
-				expect(result.data.attachment).toBeDefined();
-				expect(result.data.attachment?.mimetype).toBe("image/jpeg");
-			}
-		});
-
-		it("should handle null attachment after promise resolution", async () => {
-			// Test case where attachment resolves to null
-			const nullAttachment = Promise.resolve(null);
-
-			const result = await mutationCreatePostInputSchema.safeParseAsync({
-				...validInput,
-				attachment: nullAttachment,
-			});
-
-			expect(result.success).toBe(true);
-			if (result.success) {
-				expect(result.data.attachment).toBeUndefined();
-			}
-		});
-
-		it("should set attachment to be undefined when explicitly undefined", async () => {
-			const result = await mutationCreatePostInputSchema.safeParseAsync({
-				...validInput,
-				attachment: undefined,
-			});
-
-			expect(result.success).toBe(true);
-			if (result.success) {
-				expect(result.data.attachment).toBeUndefined();
-			}
-		});
-
-		it("should set attachment to null when explicitly null", async () => {
-			const result = await mutationCreatePostInputSchema.safeParseAsync({
-				...validInput,
-				attachment: null,
-			});
-
-			expect(result.success).toBe(true);
-			if (result.success) {
-				expect(result.data.attachment).toBeNull();
-			}
-		});
-
-		it("should accept missing attachment field", async () => {
-			const result =
-				await mutationCreatePostInputSchema.safeParseAsync(validInput);
-
-			expect(result.success).toBe(true);
-			if (result.success) {
-				expect(result.data.attachment).toBeUndefined();
 			}
 		});
 	});

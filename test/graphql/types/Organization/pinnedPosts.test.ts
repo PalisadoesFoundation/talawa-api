@@ -439,6 +439,14 @@ suite("Organization pinnedPosts Field", () => {
 							caption,
 							organizationId: orgId,
 							isPinned: true,
+							attachments: [
+								{
+									mimetype: "IMAGE_PNG",
+									objectName: faker.string.uuid(),
+									name: "image.png",
+									fileHash: faker.string.uuid(),
+								},
+							],
 						},
 					},
 				},
@@ -492,6 +500,14 @@ suite("Organization pinnedPosts Field", () => {
 						caption: `Pinned Post ${i}`,
 						organizationId: orgId,
 						isPinned: true,
+						attachments: [
+							{
+								mimetype: "IMAGE_PNG",
+								objectName: faker.string.uuid(),
+								name: "image.png",
+								fileHash: faker.string.uuid(),
+							},
+						],
 					},
 				},
 			});
@@ -578,6 +594,14 @@ suite("Organization pinnedPosts Field", () => {
 					caption: "Member Test Post",
 					organizationId: orgId,
 					isPinned: true,
+					attachments: [
+						{
+							mimetype: "IMAGE_PNG",
+							objectName: faker.string.uuid(),
+							name: "image.png",
+							fileHash: faker.string.uuid(),
+						},
+					],
 				},
 			},
 		});
@@ -624,6 +648,14 @@ suite("Organization pinnedPosts Field", () => {
 						caption: `Last Only Post ${i}`,
 						organizationId: orgId,
 						isPinned: true,
+						attachments: [
+							{
+								mimetype: "IMAGE_PNG",
+								objectName: faker.string.uuid(),
+								name: "image.png",
+								fileHash: faker.string.uuid(),
+							},
+						],
 					},
 				},
 			});
@@ -674,6 +706,14 @@ suite("Organization pinnedPosts Field", () => {
 						caption: `Backward Cursor Post ${i}`,
 						organizationId: orgId,
 						isPinned: true,
+						attachments: [
+							{
+								mimetype: "IMAGE_PNG",
+								objectName: faker.string.uuid(),
+								name: "image.png",
+								fileHash: faker.string.uuid(),
+							},
+						],
 					},
 				},
 			});
