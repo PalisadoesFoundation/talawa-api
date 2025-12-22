@@ -416,7 +416,7 @@ suite("Mutation field blockUser", () => {
   suite("when the admin user is not a member of the organization", () => {
     test("should return an error with forbidden_action extensions code", async () => {
       const nonMemberOrg = await createTestOrganization(adminAuthToken);
-      
+
       const result = await mercuriusClient.mutate(Mutation_blockUser, {
         headers: { authorization: `bearer ${adminAuthToken}` },
         variables: {
