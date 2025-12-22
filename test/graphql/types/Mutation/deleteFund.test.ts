@@ -138,7 +138,7 @@ suite("deleteFund mutation", () => {
 	});
 
 	test("returns unauthorized error when user is not an administrator", async () => {
-		const fundCreater = await createRegularUserUsingAdmin();
+		const fundCreator = await createRegularUserUsingAdmin();
 		const user = await createRegularUserUsingAdmin();
 		const orgId = await createTestOrganization();
 		const fundId = faker.string.uuid();
@@ -148,7 +148,7 @@ suite("deleteFund mutation", () => {
 			name: "Test Fund",
 			isTaxDeductible: false,
 			organizationId: orgId,
-			creatorId: fundCreater.userId,
+			creatorId: fundCreator.userId,
 		});
 
 		const result = await mercuriusClient.mutate(Mutation_deleteFund, {
