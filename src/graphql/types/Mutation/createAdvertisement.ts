@@ -13,7 +13,7 @@ import { Advertisement } from "~/src/graphql/types/Advertisement/Advertisement";
 import envConfig from "~/src/utilities/graphqLimits";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 
-const mutationCreateAdvertisementArgumentsSchema = z.object({
+export const mutationCreateAdvertisementArgumentsSchema = z.object({
 	input: mutationCreateAdvertisementInputSchema.transform(async (arg, ctx) => {
 		let attachments:
 			| (FileUpload & {
