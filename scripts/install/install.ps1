@@ -326,7 +326,8 @@ function Install-TalawaPrerequisites {
         #######################################################################
         # Step 8: Install project dependencies
         #######################################################################
-        Write-Step 8 8 "Installing project dependencies..."
+        $currentStep++
+        Write-Step $currentStep $totalSteps "Installing project dependencies..."
         
         pnpm install
         
