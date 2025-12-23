@@ -10,6 +10,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import process from "node:process";
+import { pathToFileURL } from "node:url";
 
 import type { InstallConfig, InstallResult } from "./types";
 import * as logger from "./utils/logger";
@@ -243,9 +244,8 @@ async function main(): Promise<void> {
 }
 
 // Run if executed directly (ESM-compatible)
-const isDirectExecution =
-	import.meta.url === `file://${process.argv[1]}` ||
-	import.meta.url === `file:///${process.argv[1]?.replace(/\\/g, "/")}`;
+const scriptPath = path.resolve(process.argv[1] || "");
+const isDirectExecution = import.meta.url === pathToFileURL(scriptPath).href;
 
 if (isDirectExecution) {
 	main();
