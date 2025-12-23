@@ -328,16 +328,22 @@ suite("Mutation createPostVote", () => {
 			assertToBeNonNullish(org.data?.createOrganization);
 			const organizationId = org.data.createOrganization.id;
 
-			await mercuriusClient.mutate(Mutation_createOrganizationMembership, {
-				headers: { authorization: `bearer ${authToken}` },
-				variables: {
-					input: {
-						organizationId,
-						memberId: userId,
-						role: "regular",
+			const membership = await mercuriusClient.mutate(
+				Mutation_createOrganizationMembership,
+				{
+					headers: { authorization: `bearer ${authToken}` },
+					variables: {
+						input: {
+							organizationId,
+							memberId: userId,
+							role: "regular",
+						},
 					},
 				},
-			});
+			);
+
+			expect(membership.errors).toBeUndefined();
+			expect(membership.data?.createOrganizationMembership).toBeDefined();
 
 			const post = await mercuriusClient.mutate(Mutation_createPost, {
 				headers: { authorization: `bearer ${authToken}` },
