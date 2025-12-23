@@ -164,7 +164,7 @@ builder.mutationField("deleteChat", (t) =>
 	t.field({
 		args: {
 			input: t.arg({
-					description: "Input containing the UUID `id` of the chat to delete (required).",
+				description: "Input containing the UUID `id` of the chat to delete (required).",
 				required: true,
 				type: MutationDeleteChatInput,
 			}),
