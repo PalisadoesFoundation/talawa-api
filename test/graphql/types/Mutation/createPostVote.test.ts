@@ -120,8 +120,9 @@ suite("when the user has already voted on the post", () => {
         },
       },
     });
+    assertToBeNonNullish(org.data?.createOrganization);
 
-    const organizationId = org.data!.createOrganization!.id;
+    const organizationId = org.data.createOrganization.id;
 
     const post = await mercuriusClient.mutate(Mutation_createPost, {
       headers: { authorization: `bearer ${authToken}` },
@@ -132,8 +133,8 @@ suite("when the user has already voted on the post", () => {
         },
       },
     });
-
-    const postId = post.data!.createPost!.id;
+    assertToBeNonNullish(post.data?.createPost);
+    const postId = post.data.createPost.id;
     const firstVote = await mercuriusClient.mutate(
       Mutation_createPostVote,
       {
@@ -196,8 +197,9 @@ suite("when the user has already voted on the post", () => {
 
       expect(orgResult.errors).toBeUndefined();
       expect(orgResult.data?.createOrganization).toBeDefined();
+      assertToBeNonNullish(orgResult.data?.createOrganization);
 
-      const organizationId = orgResult.data!.createOrganization!.id;
+      const organizationId = orgResult.data.createOrganization.id;
 
       const postResult = await mercuriusClient.mutate(Mutation_createPost, {
         headers: { authorization: `bearer ${authToken}` },
@@ -212,7 +214,9 @@ suite("when the user has already voted on the post", () => {
       expect(postResult.errors).toBeUndefined();
       expect(postResult.data?.createPost).toBeDefined();
 
-      const postId = postResult.data!.createPost!.id;
+      assertToBeNonNullish(postResult.data?.createPost);
+
+      const postId = postResult.data.createPost.id;
 
       const voteResult = await mercuriusClient.mutate(
         Mutation_createPostVote,
@@ -228,8 +232,9 @@ suite("when the user has already voted on the post", () => {
       );
 
       expect(voteResult.errors).toBeUndefined();
-      expect(voteResult.data?.createPostVote).toBeDefined();
-      expect(voteResult.data!.createPostVote!.id).toBeDefined();
+      assertToBeNonNullish(voteResult.data?.createPostVote);
+      expect(voteResult.data.createPostVote.id).toBeDefined();
+
     });
   });
 
@@ -248,8 +253,9 @@ suite("when the user has already voted on the post", () => {
           },
         },
       });
-
-      const userToken = user.data!.createUser!.authenticationToken!;
+      assertToBeNonNullish(user.data?.createUser);
+      assertToBeNonNullish(user.data.createUser.authenticationToken);
+      const userToken = user.data.createUser.authenticationToken;
 
       const org = await mercuriusClient.mutate(Mutation_createOrganization, {
         headers: { authorization: `bearer ${authToken}` },
@@ -261,22 +267,24 @@ suite("when the user has already voted on the post", () => {
           },
         },
       });
-
+      assertToBeNonNullish(org.data?.createOrganization);
+      const organizationId = org.data.createOrganization.id;
       const post = await mercuriusClient.mutate(Mutation_createPost, {
         headers: { authorization: `bearer ${authToken}` },
         variables: {
           input: {
             caption: "Org post",
-            organizationId: org.data!.createOrganization!.id,
+            organizationId,
           },
         },
       });
-
+      assertToBeNonNullish(post.data?.createPost);
+      const postId = post.data.createPost.id;
       const vote = await mercuriusClient.mutate(Mutation_createPostVote, {
         headers: { authorization: `bearer ${userToken}` },
         variables: {
           input: {
-            postId: post.data!.createPost!.id,
+            postId,
             type: "up_vote",
           },
         },
@@ -311,9 +319,11 @@ suite("when the user has already voted on the post", () => {
           },
         },
       });
-
-      const userId = user.data!.createUser!.user!.id;
-      const userToken = user.data!.createUser!.authenticationToken!;
+      assertToBeNonNullish(user.data?.createUser);
+      assertToBeNonNullish(user.data.createUser.user);
+      assertToBeNonNullish(user.data.createUser.authenticationToken);
+      const userId = user.data.createUser.user.id;
+      const userToken = user.data.createUser.authenticationToken;
 
       const org = await mercuriusClient.mutate(Mutation_createOrganization, {
         headers: { authorization: `bearer ${authToken}` },
@@ -325,12 +335,14 @@ suite("when the user has already voted on the post", () => {
           },
         },
       });
+      assertToBeNonNullish(org.data?.createOrganization);
+      const organizationId = org.data.createOrganization.id;
 
       await mercuriusClient.mutate(Mutation_createOrganizationMembership, {
         headers: { authorization: `bearer ${authToken}` },
         variables: {
           input: {
-            organizationId: org.data!.createOrganization!.id,
+            organizationId,
             memberId: userId,
             role: "regular",
           },
@@ -342,24 +354,25 @@ suite("when the user has already voted on the post", () => {
         variables: {
           input: {
             caption: "Member post",
-            organizationId: org.data!.createOrganization!.id,
+            organizationId,
           },
         },
       });
-
+      assertToBeNonNullish(post.data?.createPost);
+      const postId = post.data.createPost.id;
       const vote = await mercuriusClient.mutate(Mutation_createPostVote, {
         headers: { authorization: `bearer ${userToken}` },
         variables: {
           input: {
-            postId: post.data!.createPost!.id,
+            postId,
             type: "up_vote",
           },
         },
       });
 
       expect(vote.errors).toBeUndefined();
-      expect(vote.data?.createPostVote).toBeDefined();
-      expect(vote.data!.createPostVote!.id).toBeDefined();
+      assertToBeNonNullish(vote.data?.createPostVote);
+      expect(vote.data.createPostVote.id).toBeDefined();
     });
   });
 });
