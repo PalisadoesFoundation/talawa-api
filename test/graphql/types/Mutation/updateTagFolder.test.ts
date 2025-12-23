@@ -726,16 +726,17 @@ suite("Mutation field updateTagFolder", () => {
 			const originalQuery = server.drizzleClient.query;
 
 			// Mock the query to return undefined for usersTable but still work for tagFoldersTable
+			const mockFindFirst = vi.fn().mockResolvedValue(undefined);
 			const mockQuery = {
 				...originalQuery,
 				usersTable: {
-					findFirst: vi.fn().mockResolvedValue(undefined),
+					findFirst: mockFindFirst,
 				},
 				tagFoldersTable: originalQuery.tagFoldersTable,
 			};
 
-			// biome-ignore lint/suspicious/noExplicitAny: Mocking requires bypassing type safety
-			server.drizzleClient.query = mockQuery as any;
+			server.drizzleClient.query =
+				mockQuery as unknown as typeof server.drizzleClient.query;
 
 			try {
 				const result = await mercuriusClient.mutate(Mutation_updateTagFolder, {
