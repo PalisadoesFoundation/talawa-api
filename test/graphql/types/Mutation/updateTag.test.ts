@@ -28,6 +28,20 @@ const Mutation_updateTag_Local = /* GraphQL */ `
   }
 `;
 
+export const Mutation_createTagFolder = /* GraphQL */ `
+  mutation CreateTagFolder($input: MutationCreateTagFolderInput!) {
+    createTagFolder(input: $input) {
+      id
+      name
+      organization {
+        id
+      }
+      createdAt
+      updatedAt
+    }
+  }
+`;
+
 // Sign in as admin for tests
 const signInResult = await mercuriusClient.query(Query_signIn, {
 	variables: {
@@ -239,23 +253,26 @@ suite("Mutation field updateTag", () => {
 			const orgId = createOrgResult.data?.createOrganization?.id;
 			assertToBeNonNullish(orgId);
 
-			const createTagResult = await mercuriusClient.mutate(Mutation_createTag, {
-				headers: { authorization: `bearer ${authToken}` },
-				variables: {
-					input: {
-						name: "Test Tag",
-						organizationId: orgId,
+			const createFolderResult = await mercuriusClient.mutate(
+				Mutation_createTag,
+				{
+					headers: { authorization: `bearer ${authToken}` },
+					variables: {
+						input: {
+							name: "Test Tag",
+							organizationId: orgId,
+						},
 					},
 				},
-			});
-			const tagId = createTagResult.data?.createTag?.id;
-			assertToBeNonNullish(tagId);
+			);
+			const folderId = createFolderResult.data?.createTag?.id;
+			assertToBeNonNullish(folderId);
 
 			const result = await mercuriusClient.mutate(Mutation_updateTag_Local, {
 				headers: { authorization: `bearer ${authToken}` },
 				variables: {
 					input: {
-						id: tagId,
+						id: folderId,
 						folderId: faker.string.uuid(),
 					},
 				},
@@ -281,10 +298,9 @@ suite("Mutation field updateTag", () => {
 	});
 
 	suite(
-		"when the folderId tag does not belong to the same organization",
+		"when the folderId folder does not belong to the same organization",
 		() => {
 			test("should return an error with forbidden_action_on_arguments_associated_resources extensions code", async () => {
-				// Create first organization with a tag (to use as folderId)
 				const createOrg1Result = await mercuriusClient.mutate(
 					Mutation_createOrganization,
 					{
@@ -305,21 +321,21 @@ suite("Mutation field updateTag", () => {
 				const org1Id = createOrg1Result.data?.createOrganization?.id;
 				assertToBeNonNullish(org1Id);
 
-				// Create a tag in org1 to use as folderId
-				const createFolderTagResult = await mercuriusClient.mutate(
-					Mutation_createTag,
+				// Create a tag/folder in org1
+				const createFolderResult = await mercuriusClient.mutate(
+					Mutation_createTagFolder,
 					{
 						headers: { authorization: `bearer ${authToken}` },
 						variables: {
 							input: {
-								name: "Folder Tag in Org 1",
+								name: "Folder in Org 1",
 								organizationId: org1Id,
 							},
 						},
 					},
 				);
-				const folderTagId = createFolderTagResult.data?.createTag?.id;
-				assertToBeNonNullish(folderTagId);
+				const folderId = createFolderResult.data?.createTagFolder?.id;
+				assertToBeNonNullish(folderId);
 
 				// Create second organization with tag to update
 				const createOrg2Result = await mercuriusClient.mutate(
@@ -363,7 +379,7 @@ suite("Mutation field updateTag", () => {
 					variables: {
 						input: {
 							id: tagId,
-							folderId: folderTagId,
+							folderId: folderId,
 						},
 					},
 				});
@@ -694,6 +710,78 @@ suite("Mutation field updateTag", () => {
 			} finally {
 				server.drizzleClient.update = originalUpdate;
 			}
+		});
+
+		test("should successfully update tag with valid folderId from same organization", async () => {
+			const createOrgResult = await mercuriusClient.mutate(
+				Mutation_createOrganization,
+				{
+					headers: { authorization: `bearer ${authToken}` },
+					variables: {
+						input: {
+							name: faker.company.name(),
+							description: faker.lorem.sentence(),
+							countryCode: "us",
+							state: "CA",
+							city: "Los Angeles",
+							postalCode: "90001",
+							addressLine1: faker.location.streetAddress(),
+						},
+					},
+				},
+			);
+			const orgId = createOrgResult.data?.createOrganization?.id;
+			assertToBeNonNullish(orgId);
+
+			// Create a tag folder
+			const createFolderResult = await mercuriusClient.mutate(
+				Mutation_createTagFolder,
+				{
+					headers: { authorization: `bearer ${authToken}` },
+					variables: {
+						input: {
+							name: "Test Folder",
+							organizationId: orgId,
+						},
+					},
+				},
+			);
+			const folderId = createFolderResult.data?.createTagFolder?.id;
+			assertToBeNonNullish(folderId);
+
+			// Create a tag
+			const createTagResult = await mercuriusClient.mutate(Mutation_createTag, {
+				headers: { authorization: `bearer ${authToken}` },
+				variables: {
+					input: {
+						name: "Test Tag",
+						organizationId: orgId,
+					},
+				},
+			});
+			const tagId = createTagResult.data?.createTag?.id;
+			assertToBeNonNullish(tagId);
+
+			// Update tag with folderId from same organization
+			const result = await mercuriusClient.mutate(Mutation_updateTag_Local, {
+				headers: { authorization: `bearer ${authToken}` },
+				variables: {
+					input: {
+						id: tagId,
+						folderId: folderId,
+					},
+				},
+			});
+
+			expect(result.errors).toBeUndefined();
+			expect(result.data?.updateTag).toEqual(
+				expect.objectContaining({
+					id: tagId,
+					folder: expect.objectContaining({
+						id: folderId,
+					}),
+				}),
+			);
 		});
 	});
 
