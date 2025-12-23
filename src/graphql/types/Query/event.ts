@@ -1,4 +1,6 @@
+import { and, eq } from "drizzle-orm";
 import { z } from "zod";
+import { eventAttendeesTable } from "~/src/drizzle/tables/eventAttendees";
 import { builder } from "~/src/graphql/builder";
 import {
 	QueryEventInput,
@@ -121,6 +123,38 @@ builder.queryField("event", (t) =>
 						],
 					},
 				});
+			}
+
+			// Check invite-only visibility
+			if (event.isInviteOnly) {
+				// Check if user is creator
+				const isCreator = event.creatorId === currentUserId;
+
+				// Check if user is admin
+				const isAdmin =
+					currentUser.role === "administrator" ||
+					membership?.role === "administrator";
+
+				// Check if user is invited
+				let isInvited = false;
+				if (!isCreator && !isAdmin) {
+					const attendee =
+						await ctx.drizzleClient.query.eventAttendeesTable.findFirst({
+							where: and(
+								eq(eventAttendeesTable.userId, currentUserId),
+								eq(eventAttendeesTable.isInvited, true),
+								event.eventType === "standalone"
+									? eq(eventAttendeesTable.eventId, event.id)
+									: eq(eventAttendeesTable.recurringEventInstanceId, event.id),
+							),
+						});
+					isInvited = attendee !== undefined;
+				}
+
+				// If user cannot view invite-only event, return null (not found)
+				if (!isCreator && !isAdmin && !isInvited) {
+					return null;
+				}
 			}
 
 			return event;

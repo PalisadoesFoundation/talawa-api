@@ -4,6 +4,10 @@ import { z } from "zod";
 import type { usersTable } from "~/src/drizzle/schema";
 import { builder } from "~/src/graphql/builder";
 import { Event } from "~/src/graphql/types/Event/Event";
+import {
+	type EventWithAttachments,
+	filterInviteOnlyEvents,
+} from "~/src/graphql/types/Query/eventQueries";
 import { User } from "~/src/graphql/types/User/User";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 
@@ -165,8 +169,37 @@ builder.queryField("eventsByOrganizationId", (t) =>
 					},
 				});
 			}
-			console.log("Drizzle Client:", !!ctx.drizzleClient);
-			console.log("Events Table Query:", !!ctx.drizzleClient.query.eventsTable);
+			const currentUserId = ctx.currentClient.user.id;
+
+			// Get current user and organization membership for filtering
+			const currentUser = await ctx.drizzleClient.query.usersTable.findFirst({
+				columns: {
+					role: true,
+				},
+				with: {
+					organizationMembershipsWhereMember: {
+						columns: {
+							role: true,
+						},
+						where: (fields, operators) =>
+							operators.eq(
+								fields.organizationId,
+								parsedArgs.data.organizationId,
+							),
+					},
+				},
+				where: (fields, operators) => operators.eq(fields.id, currentUserId),
+			});
+
+			if (currentUser === undefined) {
+				throw new TalawaGraphQLError({
+					extensions: { code: "unauthenticated" },
+				});
+			}
+
+			const currentUserOrganizationMembership =
+				currentUser.organizationMembershipsWhereMember[0];
+
 			try {
 				const events = await ctx.drizzleClient.query.eventsTable.findMany({
 					with: {
@@ -176,15 +209,28 @@ builder.queryField("eventsByOrganizationId", (t) =>
 						operators.eq(fields.organizationId, parsedArgs.data.organizationId),
 				});
 
-				console.log("Found events:", events);
+				// Transform to EventWithAttachments format
+				const eventsWithAttachments: EventWithAttachments[] = events.map(
+					(event) => ({
+						...event,
+						attachments:
+							event.attachmentsWhereEvent?.map((attachment) => ({
+								...attachment,
+							})) || [],
+						eventType: "standalone" as const,
+					}),
+				);
 
-				return events.map((event) => ({
-					...event,
-					attachments:
-						event.attachmentsWhereEvent?.map((attachment) => ({
-							...attachment,
-						})) || [],
-				})) as EventType[];
+				// Filter invite-only events based on visibility rules
+				const filteredEvents = await filterInviteOnlyEvents({
+					events: eventsWithAttachments,
+					currentUserId,
+					currentUserRole: currentUser.role,
+					currentUserOrgMembership: currentUserOrganizationMembership,
+					drizzleClient: ctx.drizzleClient,
+				});
+
+				return filteredEvents as EventType[];
 			} catch (error) {
 				console.error("Error fetching events for organization:", error);
 				throw new Error("An error occurred while fetching events.");

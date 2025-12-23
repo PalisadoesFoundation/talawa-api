@@ -235,6 +235,9 @@ builder.mutationField("updateSingleRecurringEventInstance", (t) =>
 				if (parsedArgs.input.isRegisterable !== undefined) {
 					exceptionData.isRegisterable = parsedArgs.input.isRegisterable;
 				}
+				if (parsedArgs.input.isInviteOnly !== undefined) {
+					exceptionData.isInviteOnly = parsedArgs.input.isInviteOnly;
+				}
 				if (parsedArgs.input.startAt !== undefined) {
 					exceptionData.startAt = parsedArgs.input.startAt.toISOString();
 				}

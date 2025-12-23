@@ -2,6 +2,7 @@ import { z } from "zod";
 import { Event } from "~/src/graphql/types/Event/Event";
 import {
 	type EventWithAttachments,
+	filterInviteOnlyEvents,
 	getUnifiedEventsInDateRange,
 } from "~/src/graphql/types/Query/eventQueries";
 import {
@@ -351,6 +352,15 @@ Organization.implement({
 							ctx.drizzleClient,
 							ctx.log,
 						);
+
+						// Filter invite-only events based on visibility rules
+						allEvents = await filterInviteOnlyEvents({
+							events: allEvents,
+							currentUserId,
+							currentUserRole: currentUser.role,
+							currentUserOrgMembership: currentUserOrganizationMembership,
+							drizzleClient: ctx.drizzleClient,
+						});
 
 						ctx.log.debug(
 							{

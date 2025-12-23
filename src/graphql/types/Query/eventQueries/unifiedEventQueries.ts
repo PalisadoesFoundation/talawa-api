@@ -1,5 +1,7 @@
 import type { InferSelectModel } from "drizzle-orm";
+import { and, eq, inArray, or } from "drizzle-orm";
 import type { eventAttachmentsTable } from "~/src/drizzle/tables/eventAttachments";
+import { eventAttendeesTable } from "~/src/drizzle/tables/eventAttendees";
 import type { eventsTable } from "~/src/drizzle/tables/events";
 import type { ServiceDependencies } from "~/src/services/eventGeneration/types";
 import {
@@ -37,6 +39,161 @@ export interface GetUnifiedEventsInput {
 	endDate: Date;
 	includeRecurring?: boolean;
 	limit?: number;
+}
+
+/**
+ * @description Parameters for filtering events based on invite-only visibility rules.
+ */
+export interface FilterInviteOnlyEventsInput {
+	events: EventWithAttachments[];
+	currentUserId: string;
+	currentUserRole: string;
+	currentUserOrgMembership: { role: string } | undefined;
+	drizzleClient: ServiceDependencies["drizzleClient"];
+}
+
+/**
+ * Filters invite-only events based on visibility rules.
+ * An invite-only event is only visible to:
+ * 1. The event creator
+ * 2. Organization admins
+ * 3. Users explicitly invited to the event
+ *
+ * @param input - The input object containing events and user context.
+ * @returns A filtered array of events that the user can view.
+ */
+export async function filterInviteOnlyEvents(
+	input: FilterInviteOnlyEventsInput,
+): Promise<EventWithAttachments[]> {
+	const {
+		events,
+		currentUserId,
+		currentUserRole,
+		currentUserOrgMembership,
+		drizzleClient,
+	} = input;
+
+	// Separate invite-only events from public events
+	const inviteOnlyEvents: EventWithAttachments[] = [];
+	const publicEvents: EventWithAttachments[] = [];
+
+	for (const event of events) {
+		if (event.isInviteOnly) {
+			inviteOnlyEvents.push(event);
+		} else {
+			publicEvents.push(event);
+		}
+	}
+
+	// If no invite-only events, return all events
+	if (inviteOnlyEvents.length === 0) {
+		return events;
+	}
+
+	// Check which invite-only events the user can view
+	const visibleInviteOnlyEvents: EventWithAttachments[] = [];
+
+	// Batch check invitations for all invite-only events
+	const standaloneEventIds: string[] = [];
+	const recurringInstanceIds: string[] = [];
+
+	for (const event of inviteOnlyEvents) {
+		// Check if user is creator
+		if (event.creatorId === currentUserId) {
+			visibleInviteOnlyEvents.push(event);
+			continue;
+		}
+
+		// Check if user is admin
+		if (
+			currentUserRole === "administrator" ||
+			currentUserOrgMembership?.role === "administrator"
+		) {
+			visibleInviteOnlyEvents.push(event);
+			continue;
+		}
+
+		// Collect event IDs for batch invitation check
+		if (event.eventType === "standalone") {
+			standaloneEventIds.push(event.id);
+		} else {
+			recurringInstanceIds.push(event.id);
+		}
+	}
+
+	// Batch check invitations and registrations for standalone events
+	if (standaloneEventIds.length > 0) {
+		const standaloneAttendees =
+			await drizzleClient.query.eventAttendeesTable.findMany({
+				columns: {
+					eventId: true,
+				},
+				where: and(
+					eq(eventAttendeesTable.userId, currentUserId),
+					or(
+						eq(eventAttendeesTable.isInvited, true),
+						eq(eventAttendeesTable.isRegistered, true),
+					),
+					inArray(eventAttendeesTable.eventId, standaloneEventIds),
+				),
+			});
+
+		const accessibleEventIds = new Set(
+			(standaloneAttendees ?? [])
+				.map((inv) => inv.eventId)
+				.filter(Boolean) as string[],
+		);
+
+		for (const event of inviteOnlyEvents) {
+			if (
+				event.eventType === "standalone" &&
+				accessibleEventIds.has(event.id) &&
+				!visibleInviteOnlyEvents.some((e) => e.id === event.id)
+			) {
+				visibleInviteOnlyEvents.push(event);
+			}
+		}
+	}
+
+	// Batch check invitations and registrations for recurring instances
+	if (recurringInstanceIds.length > 0) {
+		const recurringAttendees =
+			await drizzleClient.query.eventAttendeesTable.findMany({
+				columns: {
+					recurringEventInstanceId: true,
+				},
+				where: and(
+					eq(eventAttendeesTable.userId, currentUserId),
+					or(
+						eq(eventAttendeesTable.isInvited, true),
+						eq(eventAttendeesTable.isRegistered, true),
+					),
+					inArray(
+						eventAttendeesTable.recurringEventInstanceId,
+						recurringInstanceIds,
+					),
+				),
+			});
+
+		const accessibleInstanceIds = new Set(
+			(recurringAttendees ?? [])
+				.map((inv) => inv.recurringEventInstanceId)
+				.filter(Boolean) as string[],
+		);
+
+		for (const event of inviteOnlyEvents) {
+			if (
+				event.eventType === "generated" &&
+				accessibleInstanceIds.has(event.id) &&
+				!visibleInviteOnlyEvents.some((e) => e.id === event.id)
+			) {
+				visibleInviteOnlyEvents.push(event);
+			}
+		}
+	}
+
+	// Combine public events with visible invite-only events
+	return [...publicEvents, ...visibleInviteOnlyEvents];
 }
 
 /**
@@ -117,6 +274,7 @@ export async function getUnifiedEventsInDateRange(
 						allDay: instance.allDay,
 						isPublic: instance.isPublic,
 						isRegisterable: instance.isRegisterable,
+						isInviteOnly: instance.isInviteOnly,
 						organizationId: instance.organizationId,
 						creatorId: instance.creatorId,
 						updaterId: instance.updaterId,
@@ -229,6 +387,7 @@ export async function getEventsByIds(
 					allDay: resolvedInstance.allDay,
 					isPublic: resolvedInstance.isPublic,
 					isRegisterable: resolvedInstance.isRegisterable,
+					isInviteOnly: resolvedInstance.isInviteOnly,
 					organizationId: resolvedInstance.organizationId,
 					creatorId: resolvedInstance.creatorId,
 					updaterId: resolvedInstance.updaterId,

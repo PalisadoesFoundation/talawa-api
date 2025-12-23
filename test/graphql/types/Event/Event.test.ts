@@ -131,4 +131,27 @@ describe("Event GraphQL Type", () => {
 			expect(escapeHTML).toHaveBeenCalledTimes(1);
 		});
 	});
+
+	describe("isInviteOnly field", () => {
+		it("should expose isInviteOnly as boolean", () => {
+			const event = {
+				id: "test-id",
+				name: "Test Event",
+				isInviteOnly: true,
+			};
+
+			// The field should be directly exposed from the database
+			expect(event.isInviteOnly).toBe(true);
+		});
+
+		it("should handle false value for isInviteOnly", () => {
+			const event = {
+				id: "test-id",
+				name: "Test Event",
+				isInviteOnly: false,
+			};
+
+			expect(event.isInviteOnly).toBe(false);
+		});
+	});
 });

@@ -337,6 +337,8 @@ builder.mutationField("updateThisAndFollowingEvents", (t) =>
 						isPublic: parsedArgs.input.isPublic ?? originalEvent.isPublic,
 						isRegisterable:
 							parsedArgs.input.isRegisterable ?? originalEvent.isRegisterable,
+						isInviteOnly:
+							parsedArgs.input.isInviteOnly ?? originalEvent.isInviteOnly,
 						location: parsedArgs.input.location ?? originalEvent.location,
 						isRecurringEventTemplate: true,
 					})

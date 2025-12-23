@@ -6,6 +6,10 @@ import {
 } from "~/src/drizzle/tables/venueBookings";
 import { Event } from "~/src/graphql/types/Event/Event";
 import {
+	type EventWithAttachments,
+	filterInviteOnlyEvents,
+} from "~/src/graphql/types/Query/eventQueries";
+import {
 	defaultGraphQLConnectionArgumentsSchema,
 	transformDefaultGraphQLConnectionArguments,
 	transformToDefaultGraphQLConnection,
@@ -235,6 +239,35 @@ Venue.implement({
 						});
 					}
 
+					// Transform venue bookings to events with attachments
+					const eventsWithAttachments: EventWithAttachments[] = venueBookings
+						.filter((booking) => booking.event !== null)
+						.map((booking) => {
+							if (!booking.event) {
+								throw new Error("Event should not be null after filter");
+							}
+							const { attachmentsWhereEvent, ...event } = booking.event;
+							return {
+								...event,
+								attachments: attachmentsWhereEvent || [],
+								eventType: "standalone" as const,
+							} as EventWithAttachments;
+						});
+
+					// Filter invite-only events based on visibility rules
+					const filteredEvents = await filterInviteOnlyEvents({
+						events: eventsWithAttachments,
+						currentUserId,
+						currentUserRole: currentUser.role,
+						currentUserOrgMembership: currentUserOrganizationMembership,
+						drizzleClient: ctx.drizzleClient,
+					});
+
+					// Map back to venue bookings format for pagination
+					const filteredBookings = venueBookings.filter((booking) =>
+						filteredEvents.some((event) => event.id === booking.eventId),
+					);
+
 					return transformToDefaultGraphQLConnection({
 						createCursor: (booking) =>
 							Buffer.from(
@@ -248,7 +281,7 @@ Venue.implement({
 								attachments: attachmentsWhereEvent,
 							}),
 						parsedArgs,
-						rawNodes: venueBookings,
+						rawNodes: filteredBookings,
 					});
 				},
 				type: Event,

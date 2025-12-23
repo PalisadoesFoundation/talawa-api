@@ -1233,6 +1233,7 @@ export const Query_eventsByIds = gql(`
       description
       startAt
       endAt
+      isInviteOnly
     }
   }
 `);
@@ -1683,6 +1684,7 @@ export const Mutation_updateStandaloneEvent = gql(`
       allDay
       isPublic
       isRegisterable
+      isInviteOnly
       organization {
         id
         name

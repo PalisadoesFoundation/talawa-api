@@ -840,5 +840,149 @@ suite("Mutation field updateStandaloneEvent", () => {
 				server.drizzleClient.update = originalUpdate;
 			}
 		});
+
+		test("should successfully update isInviteOnly field", async () => {
+			const eventId = faker.string.uuid();
+			const orgId = await createTestOrganization(adminToken);
+
+			// Mock successful scenario
+			const originalUserFindFirst =
+				server.drizzleClient.query.usersTable.findFirst;
+			const originalEventFindFirst =
+				server.drizzleClient.query.eventsTable.findFirst;
+			const originalUpdate = server.drizzleClient.update;
+
+			server.drizzleClient.query.usersTable.findFirst = vi
+				.fn()
+				.mockResolvedValue({ role: "administrator" });
+			server.drizzleClient.query.eventsTable.findFirst = vi
+				.fn()
+				.mockResolvedValue(
+					mockStandaloneEvent(eventId, orgId, "admin-user-id"),
+				);
+
+			// Mock successful update with isInviteOnly
+			const updatedEvent = {
+				id: eventId,
+				name: "Test Standalone Event",
+				description: "A test standalone event",
+				location: "Original Location",
+				startAt: new Date("2024-12-01T10:00:00Z"),
+				endAt: new Date("2024-12-01T12:00:00Z"),
+				allDay: false,
+				isPublic: true,
+				isRegisterable: true,
+				isInviteOnly: true,
+				organizationId: orgId,
+			};
+
+			server.drizzleClient.update = vi.fn().mockReturnValue({
+				set: vi.fn().mockReturnValue({
+					where: vi.fn().mockReturnValue({
+						returning: vi.fn().mockResolvedValue([updatedEvent]),
+					}),
+				}),
+			});
+
+			try {
+				const result = await mercuriusClient.mutate(
+					Mutation_updateStandaloneEvent,
+					{
+						headers: { authorization: `bearer ${adminToken}` },
+						variables: {
+							input: {
+								id: eventId,
+								isInviteOnly: true,
+							},
+						},
+					},
+				);
+
+				expect(result.errors).toBeUndefined();
+				expect(result.data?.updateStandaloneEvent).toEqual(
+					expect.objectContaining({
+						id: eventId,
+						isInviteOnly: true,
+					}),
+				);
+			} finally {
+				server.drizzleClient.query.usersTable.findFirst = originalUserFindFirst;
+				server.drizzleClient.query.eventsTable.findFirst =
+					originalEventFindFirst;
+				server.drizzleClient.update = originalUpdate;
+			}
+		});
+
+		test("should successfully update isInviteOnly from true to false", async () => {
+			const eventId = faker.string.uuid();
+			const orgId = await createTestOrganization(adminToken);
+
+			// Mock successful scenario
+			const originalUserFindFirst =
+				server.drizzleClient.query.usersTable.findFirst;
+			const originalEventFindFirst =
+				server.drizzleClient.query.eventsTable.findFirst;
+			const originalUpdate = server.drizzleClient.update;
+
+			server.drizzleClient.query.usersTable.findFirst = vi
+				.fn()
+				.mockResolvedValue({ role: "administrator" });
+			server.drizzleClient.query.eventsTable.findFirst = vi
+				.fn()
+				.mockResolvedValue(
+					mockStandaloneEvent(eventId, orgId, "admin-user-id"),
+				);
+
+			// Mock successful update with isInviteOnly set to false
+			const updatedEvent = {
+				id: eventId,
+				name: "Test Standalone Event",
+				description: "A test standalone event",
+				location: "Original Location",
+				startAt: new Date("2024-12-01T10:00:00Z"),
+				endAt: new Date("2024-12-01T12:00:00Z"),
+				allDay: false,
+				isPublic: true,
+				isRegisterable: true,
+				isInviteOnly: false,
+				organizationId: orgId,
+			};
+
+			server.drizzleClient.update = vi.fn().mockReturnValue({
+				set: vi.fn().mockReturnValue({
+					where: vi.fn().mockReturnValue({
+						returning: vi.fn().mockResolvedValue([updatedEvent]),
+					}),
+				}),
+			});
+
+			try {
+				const result = await mercuriusClient.mutate(
+					Mutation_updateStandaloneEvent,
+					{
+						headers: { authorization: `bearer ${adminToken}` },
+						variables: {
+							input: {
+								id: eventId,
+								isInviteOnly: false,
+							},
+						},
+					},
+				);
+
+				expect(result.errors).toBeUndefined();
+				expect(result.data?.updateStandaloneEvent).toEqual(
+					expect.objectContaining({
+						id: eventId,
+						isInviteOnly: false,
+					}),
+				);
+			} finally {
+				server.drizzleClient.query.usersTable.findFirst = originalUserFindFirst;
+				server.drizzleClient.query.eventsTable.findFirst =
+					originalEventFindFirst;
+				server.drizzleClient.update = originalUpdate;
+			}
+		});
 	});
 });

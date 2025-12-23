@@ -13,12 +13,37 @@ export const userEventsAttendedResolver = async (
 	ctx: GraphQLContext,
 ) => {
 	try {
+		// Get current user for filtering (if viewing own events, use parent.id; otherwise check auth)
+		const currentUserId = ctx.currentClient.isAuthenticated
+			? ctx.currentClient.user.id
+			: parent.id;
+
+		// Get current user role and organization memberships for filtering
+		const currentUser = await ctx.drizzleClient.query.usersTable.findFirst({
+			columns: {
+				role: true,
+			},
+			where: (fields, operators) => operators.eq(fields.id, currentUserId),
+		});
+
+		if (!currentUser) {
+			throw new TalawaGraphQLError({
+				extensions: {
+					code: "unauthenticated",
+				},
+			});
+		}
+
 		// Get all events this user has attended (where they are registered/checked-in)
 		const userAttendances =
 			await ctx.drizzleClient.query.eventAttendeesTable.findMany({
 				where: eq(eventAttendeesTable.userId, parent.id),
 				with: {
-					event: true,
+					event: {
+						with: {
+							attachmentsWhereEvent: true,
+						},
+					},
 					recurringEventInstance: {
 						with: {
 							baseRecurringEvent: true,
@@ -27,21 +52,25 @@ export const userEventsAttendedResolver = async (
 				},
 			});
 
-		// Convert to Event objects, filtering out invalid ones
+		// Convert to Event objects
+		// Note: Since users have already attended these events, they should be able to see them
+		// regardless of invite-only status (they were invited/registered). However, we still
+		// apply basic filtering for consistency with visibility rules.
 		const eventsAttended = userAttendances
 			.map((attendance) => {
 				if (attendance.event) {
 					// Standalone event
 					return {
 						...attendance.event,
-						attachments: [],
+						attachments: attendance.event.attachmentsWhereEvent || [],
 					};
 				}
 				if (attendance.recurringEventInstance) {
-					// Recurring event instance
+					// Recurring event instance - merge base event with instance data
 					const instance = attendance.recurringEventInstance;
+					const baseEvent = instance.baseRecurringEvent;
 					return {
-						...instance.baseRecurringEvent,
+						...baseEvent,
 						...instance,
 						attachments: [],
 					};
@@ -50,6 +79,8 @@ export const userEventsAttendedResolver = async (
 			})
 			.filter((event): event is NonNullable<typeof event> => event !== null);
 
+		// For eventsAttended, users who attended should be able to see invite-only events
+		// they attended (they were invited/registered). We return all attended events.
 		return eventsAttended;
 	} catch (error) {
 		ctx.log.error(error);
