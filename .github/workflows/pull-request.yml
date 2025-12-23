@@ -882,6 +882,55 @@ jobs:
         working-directory: ./docs
         run: pnpm build
 
+  Check-Sample-Data:
+    name: Check Sample Data Script
+    timeout-minutes: 5
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Backend
+        uses: actions/checkout@v4.2.2
+
+      - name: Setup Devcontainer
+        run: |
+          npm install -g @devcontainers/cli
+          cp envFiles/.env.devcontainer .env
+          devcontainer up --workspace-folder .
+          echo "Waiting for devcontainer services to be ready..."
+          sleep 10
+
+      - name: Install Backend Dependencies
+        run: docker exec talawa-api-1 /bin/bash -c 'pnpm install'
+
+      - name: Apply Database Migrations
+        run: |
+          docker exec talawa-api-1 /bin/bash -c 'pnpm apply_drizzle_migrations'
+
+      - name: Start Backend Server
+        run: |
+          docker exec -d talawa-api-1 /bin/bash -c 'pnpm run start_development_server'
+          sleep 15
+
+      - name: Seed Sample Data
+        run: |
+          echo "=== Seeding Sample Data ==="
+          if docker exec talawa-api-1 /bin/bash -c 'set -a; source ./.env; set +a; pnpm run add:sample_data'; then
+            echo "Seeding completed successfully"
+          else
+            echo "Seeding failed - Debug Information:"
+            echo "Container status:"
+            docker ps | grep talawa
+            echo "Recent container logs:"
+            docker logs talawa-api-1 --tail 50
+            echo "=== Users table contents ==="
+            docker exec talawa-postgres-1 psql -U talawa -d talawa \
+            -c "SELECT id, email_address, name, role FROM users;" 2>/dev/null || echo "Could not query users"
+            exit 1
+          fi
+
+      - name: Cleanup - Free ports by stopping containers
+        if: always()
+        run: docker compose down
+
   Check-App-Startup:
     name: Check App Startup and Health
     runs-on: ubuntu-latest
