@@ -626,7 +626,7 @@ suite("Mutation field updateTagFolder", () => {
 				});
 			});
 
-			const specialName = "Folder with <special> & \"characters\"";
+			const specialName = 'Folder with <special> & "characters"';
 			const result = await mercuriusClient.mutate(Mutation_updateTagFolder, {
 				headers: { authorization: `bearer ${adminAuthToken}` },
 				variables: {
