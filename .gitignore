@@ -1076,3 +1076,4 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+test/drizzle/eventGenerationWindows.insertSchema.test.ts
