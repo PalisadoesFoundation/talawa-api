@@ -401,6 +401,37 @@ suite("Mutation.createChatMessage", () => {
 		);
 	});
 
+	test("organization administrator can create message without chat membership", async () => {
+		// Create a regular user who will be an organization administrator
+		const orgAdminUser = await createUser(adminToken);
+		createdUsers.push(orgAdminUser.id);
+
+		// Add user as organization administrator (but do NOT add to chat membership)
+		await mercuriusClient.mutate(Mutation_createOrganizationMembership, {
+			headers: { authorization: `bearer ${adminToken}` },
+			variables: {
+				input: {
+					memberId: orgAdminUser.id,
+					organizationId,
+					role: "administrator",
+				},
+			},
+		});
+
+		const result = await mercuriusClient.mutate(Mutation_createChatMessage, {
+			headers: { authorization: `bearer ${orgAdminUser.token}` },
+			variables: {
+				input: {
+					body: "Org admin message",
+					chatId,
+				},
+			},
+		});
+
+		expect(result.errors).toBeUndefined();
+		expect(result.data?.createChatMessage?.body).toBe("Org admin message");
+	});
+
 	test("system administrator can create message in any chat", async () => {
 		// Create another organization without adding admin as chat member
 		const org3 = await mercuriusClient.mutate(Mutation_createOrganization, {
