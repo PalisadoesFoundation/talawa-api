@@ -1,1055 +1,825 @@
 import { faker } from "@faker-js/faker";
-import { afterEach, beforeAll, describe, expect, it, vi } from "vitest";
+import { afterEach, expect, suite, test, vi } from "vitest";
+import { assertToBeNonNullish } from "../../../helpers";
+import { server } from "../../../server";
+import { mercuriusClient } from "../client";
+import { createRegularUserUsingAdmin } from "../createRegularUserUsingAdmin";
+import {
+	Mutation_createOrganization,
+	Mutation_createOrganizationMembership,
+	Mutation_createTagFolder,
+	Mutation_deleteOrganization,
+	Mutation_deleteTagFolder,
+	Mutation_updateTagFolder,
+	Query_signIn,
+} from "../documentNodes";
 
-// Mock postgres to prevent actual DB connections
-vi.mock("postgres", () => ({
-	default: vi.fn(() => ({
-		end: vi.fn(),
-	})),
-}));
+let cachedAdminAuth: {
+	token: string;
+	userId: string;
+} | null = null;
 
-// Mock server
-vi.mock("~/src/server", () => ({
-	server: {
-		envConfig: {},
-		minio: { client: { putObject: vi.fn() } },
-	},
-}));
+// Helper function to get admin authentication token and user id
+async function getAdminAuth() {
+	if (cachedAdminAuth !== null) {
+		return cachedAdminAuth;
+	}
 
-// Mock utilities
-vi.mock("~/src/utilities/TalawaGraphQLError", () => ({
-	TalawaGraphQLError: class TalawaGraphQLError extends Error {
-		extensions: Record<string, unknown>;
-		constructor({ extensions }: { extensions: Record<string, unknown> }) {
-			super(JSON.stringify(extensions));
-			this.extensions = extensions;
-		}
-	},
-}));
-
-vi.mock("~/src/utilities/isNotNullish", () => ({
-	isNotNullish: (val: unknown) => val !== null && val !== undefined,
-}));
-
-// Hoist mocks to be accessible inside vi.mock
-const mocks = vi.hoisted(() => {
-	return {
-		builder: {
-			mutationField: vi.fn(),
-			field: vi.fn((args) => args),
-			arg: vi.fn(),
-			type: vi.fn(),
-			required: vi.fn(),
-			resolve: vi.fn(),
-			objectRef: vi.fn(),
-			inputRef: vi.fn(),
-			enumType: vi.fn(),
-			scalarType: vi.fn(),
-			interfaceType: vi.fn(),
-			unionType: vi.fn(),
-			queryField: vi.fn(),
+	const adminSignInResult = await mercuriusClient.query(Query_signIn, {
+		variables: {
+			input: {
+				emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
+				password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
+			},
 		},
-		drizzle: {
-			transaction: vi.fn(),
-			query: {
-				usersTable: {
-					findFirst: vi.fn(),
-				},
-				tagFoldersTable: {
-					findFirst: vi.fn(),
+	});
+
+	assertToBeNonNullish(adminSignInResult.data.signIn?.authenticationToken);
+	assertToBeNonNullish(adminSignInResult.data.signIn?.user?.id);
+
+	cachedAdminAuth = {
+		token: adminSignInResult.data.signIn.authenticationToken,
+		userId: adminSignInResult.data.signIn.user.id,
+	};
+
+	return cachedAdminAuth;
+}
+
+// Helper function to create an organization
+async function createOrganization(adminAuthToken: string): Promise<string> {
+	const createOrgResult = await mercuriusClient.mutate(
+		Mutation_createOrganization,
+		{
+			headers: { authorization: `bearer ${adminAuthToken}` },
+			variables: {
+				input: {
+					name: `Org ${faker.string.uuid()}`,
+					countryCode: "us",
 				},
 			},
-			update: vi.fn(),
 		},
-		updateChain: {
-			set: vi.fn(),
-			where: vi.fn(),
-			returning: vi.fn(),
-		},
-	};
-});
+	);
 
-// Configure Drizzle Mock chain
-mocks.drizzle.update.mockReturnValue(mocks.updateChain);
-mocks.updateChain.set.mockReturnValue(mocks.updateChain);
-mocks.updateChain.where.mockReturnValue(mocks.updateChain);
-mocks.updateChain.returning.mockResolvedValue([]);
+	assertToBeNonNullish(createOrgResult.data?.createOrganization?.id);
+	return createOrgResult.data.createOrganization.id;
+}
 
-vi.mock("~/src/graphql/builder", () => ({
-	builder: mocks.builder,
-}));
-
-vi.mock("~/src/drizzle/client", () => ({
-	drizzleClient: mocks.drizzle,
-}));
-
-// Mock the TagFolder type to prevent import errors
-vi.mock("~/src/graphql/types/TagFolder/TagFolder", () => ({
-	TagFolder: "TagFolderType",
-}));
-
-// Mock the input type
-vi.mock("~/src/graphql/inputs/MutationUpdateTagFolderInput", async () => {
-	const { z } = await vi.importActual<typeof import("zod")>("zod");
-	return {
-		mutationUpdateTagFolderInputSchema: z
-			.object({
-				id: z.string().uuid(),
-				name: z.string().min(1).max(256).optional(),
-				parentFolderId: z.string().uuid().nullable().optional(),
-			})
-			.refine(
-				({ id, ...remainingArg }) =>
-					Object.values(remainingArg).some((value) => value !== undefined),
-				{
-					message: "At least one optional argument must be provided.",
+// Helper function to create a tag folder
+async function createTagFolder(
+	adminAuthToken: string,
+	organizationId: string,
+	name?: string,
+	parentFolderId?: string,
+): Promise<string> {
+	const createTagFolderResult = await mercuriusClient.mutate(
+		Mutation_createTagFolder,
+		{
+			headers: { authorization: `bearer ${adminAuthToken}` },
+			variables: {
+				input: {
+					name: name ?? `TagFolder ${faker.string.uuid()}`,
+					organizationId,
+					parentFolderId,
 				},
-			),
-		MutationUpdateTagFolderInput: "MutationUpdateTagFolderInput",
-	};
-});
+			},
+		},
+	);
 
-// Mock drizzle tables
-vi.mock("~/src/drizzle/tables/tagFolders", () => ({
-	tagFoldersTable: {
-		id: "id",
-	},
-}));
+	assertToBeNonNullish(createTagFolderResult.data?.createTagFolder?.id);
+	return createTagFolderResult.data.createTagFolder.id;
+}
 
-// Mock graphqLimits
-vi.mock("~/src/utilities/graphqLimits", () => ({
-	default: {
-		API_GRAPHQL_OBJECT_FIELD_COST: 1,
-	},
-}));
+// Helper function to add organization membership
+async function addOrganizationMembership(params: {
+	adminAuthToken: string;
+	memberId: string;
+	organizationId: string;
+	role: "administrator" | "regular";
+}) {
+	await mercuriusClient.mutate(Mutation_createOrganizationMembership, {
+		headers: { authorization: `bearer ${params.adminAuthToken}` },
+		variables: {
+			input: {
+				memberId: params.memberId,
+				organizationId: params.organizationId,
+				role: params.role,
+			},
+		},
+	});
+}
 
-// Import the module to register the mutation field
-import "~/src/graphql/types/Mutation/updateTagFolder";
+suite("Mutation field updateTagFolder", () => {
+	const testCleanupFunctions: Array<() => Promise<void>> = [];
 
-describe("Mutation field updateTagFolder", () => {
-	let resolver: (
-		parent: unknown,
-		args: unknown,
-		ctx: unknown,
-	) => Promise<unknown>;
-
-	beforeAll(() => {
-		// Capture the resolver from the builder mock
-		const calls = mocks.builder.mutationField.mock.calls;
-		const updateTagFolderCall = calls.find(
-			(c: unknown[]) => c[0] === "updateTagFolder",
-		);
-		if (updateTagFolderCall) {
-			const fieldDef = updateTagFolderCall[1]({
-				field: mocks.builder.field,
-				arg: mocks.builder.arg,
-			});
-			resolver = fieldDef.resolve;
+	afterEach(async () => {
+		for (const cleanup of testCleanupFunctions.reverse()) {
+			try {
+				await cleanup();
+			} catch {
+				// Cleanup errors are acceptable in tests
+			}
 		}
+		testCleanupFunctions.length = 0;
 	});
 
-	afterEach(() => {
-		vi.clearAllMocks();
-		// Reset the update chain
-		mocks.drizzle.update.mockReturnValue(mocks.updateChain);
-		mocks.updateChain.set.mockReturnValue(mocks.updateChain);
-		mocks.updateChain.where.mockReturnValue(mocks.updateChain);
-		mocks.updateChain.returning.mockResolvedValue([]);
-	});
+	suite("Authentication and Authorization", () => {
+		test("Returns unauthenticated error when client is not authenticated", async () => {
+			const { token: adminAuthToken } = await getAdminAuth();
+			const orgId = await createOrganization(adminAuthToken);
+			const tagFolderId = await createTagFolder(adminAuthToken, orgId);
 
-	it("should be defined", () => {
-		expect(resolver).toBeDefined();
-	});
-
-	describe("Authentication errors", () => {
-		it("should throw unauthenticated error when client is not authenticated", async () => {
-			const mockContext = {
-				currentClient: {
-					isAuthenticated: false,
-				},
-				drizzleClient: mocks.drizzle,
-			};
-
-			const args = {
-				input: {
-					id: faker.string.uuid(),
-					name: "Updated Folder Name",
-				},
-			};
-
-			await expect(resolver(null, args, mockContext)).rejects.toThrow();
-		});
-
-		it("should throw unauthenticated error when current user is not found in database", async () => {
-			expect.assertions(1);
-			const mockContext = {
-				currentClient: {
-					isAuthenticated: true,
-					user: { id: faker.string.uuid() },
-				},
-				drizzleClient: mocks.drizzle,
-			};
-
-			const tagFolderId = faker.string.uuid();
-
-			mocks.drizzle.query.usersTable.findFirst.mockResolvedValue(undefined);
-			mocks.drizzle.query.tagFoldersTable.findFirst.mockResolvedValue({
-				organizationId: faker.string.uuid(),
-				organization: {
-					countryCode: "us",
-					membershipsWhereOrganization: [],
-				},
-			});
-
-			const args = {
-				input: {
-					id: tagFolderId,
-					name: "Updated Folder Name",
-				},
-			};
-
-			try {
-				await resolver(null, args, mockContext);
-			} catch (error) {
-				expect(
-					(error as { extensions: { code: string } }).extensions.code,
-				).toBe("unauthenticated");
-			}
-		});
-	});
-
-	describe("Validation errors", () => {
-		it("should throw invalid_arguments error for invalid UUID in id field", async () => {
-			expect.assertions(1);
-			const mockContext = {
-				currentClient: {
-					isAuthenticated: true,
-					user: { id: faker.string.uuid() },
-				},
-				drizzleClient: mocks.drizzle,
-			};
-
-			const args = {
-				input: {
-					id: "invalid-uuid",
-					name: "Updated Folder Name",
-				},
-			};
-
-			try {
-				await resolver(null, args, mockContext);
-			} catch (error) {
-				expect(
-					(error as { extensions: { code: string } }).extensions.code,
-				).toBe("invalid_arguments");
-			}
-		});
-
-		it("should throw invalid_arguments error when no optional argument is provided", async () => {
-			expect.assertions(1);
-			const mockContext = {
-				currentClient: {
-					isAuthenticated: true,
-					user: { id: faker.string.uuid() },
-				},
-				drizzleClient: mocks.drizzle,
-			};
-
-			const args = {
-				input: {
-					id: faker.string.uuid(),
-					// No name or parentFolderId provided
-				},
-			};
-
-			try {
-				await resolver(null, args, mockContext);
-			} catch (error) {
-				expect(
-					(error as { extensions: { code: string } }).extensions.code,
-				).toBe("invalid_arguments");
-			}
-		});
-
-		it("should throw invalid_arguments error for empty name", async () => {
-			expect.assertions(1);
-			const mockContext = {
-				currentClient: {
-					isAuthenticated: true,
-					user: { id: faker.string.uuid() },
-				},
-				drizzleClient: mocks.drizzle,
-			};
-
-			const args = {
-				input: {
-					id: faker.string.uuid(),
-					name: "", // Empty name should fail validation
-				},
-			};
-
-			try {
-				await resolver(null, args, mockContext);
-			} catch (error) {
-				expect(
-					(error as { extensions: { code: string } }).extensions.code,
-				).toBe("invalid_arguments");
-			}
-		});
-
-		it("should throw invalid_arguments error for name exceeding max length", async () => {
-			expect.assertions(1);
-			const mockContext = {
-				currentClient: {
-					isAuthenticated: true,
-					user: { id: faker.string.uuid() },
-				},
-				drizzleClient: mocks.drizzle,
-			};
-
-			const args = {
-				input: {
-					id: faker.string.uuid(),
-					name: "a".repeat(257), // Exceeds 256 character limit
-				},
-			};
-
-			try {
-				await resolver(null, args, mockContext);
-			} catch (error) {
-				expect(
-					(error as { extensions: { code: string } }).extensions.code,
-				).toBe("invalid_arguments");
-			}
-		});
-	});
-
-	describe("Resource not found errors", () => {
-		it("should throw arguments_associated_resources_not_found error when tag folder does not exist", async () => {
-			expect.assertions(2);
-			const currentUserId = faker.string.uuid();
-			const mockContext = {
-				currentClient: {
-					isAuthenticated: true,
-					user: { id: currentUserId },
-				},
-				drizzleClient: mocks.drizzle,
-			};
-
-			mocks.drizzle.query.usersTable.findFirst.mockResolvedValue({
-				role: "administrator",
-			});
-			mocks.drizzle.query.tagFoldersTable.findFirst.mockResolvedValue(
-				undefined,
-			);
-
-			const args = {
-				input: {
-					id: faker.string.uuid(),
-					name: "Updated Folder Name",
-				},
-			};
-
-			try {
-				await resolver(null, args, mockContext);
-			} catch (error) {
-				expect(
-					(error as { extensions: { code: string } }).extensions.code,
-				).toBe("arguments_associated_resources_not_found");
-				expect(
-					(error as { extensions: { issues: { argumentPath: string[] }[] } })
-						.extensions.issues,
-				).toEqual([{ argumentPath: ["input", "id"] }]);
-			}
-		});
-
-		it("should throw arguments_associated_resources_not_found error when parent folder does not exist", async () => {
-			expect.assertions(2);
-			const currentUserId = faker.string.uuid();
-			const organizationId = faker.string.uuid();
-			const mockContext = {
-				currentClient: {
-					isAuthenticated: true,
-					user: { id: currentUserId },
-				},
-				drizzleClient: mocks.drizzle,
-			};
-
-			mocks.drizzle.query.usersTable.findFirst.mockResolvedValue({
-				role: "administrator",
-			});
-
-			// First call returns the existing tag folder
-			// Second call (for parent folder) returns undefined
-			mocks.drizzle.query.tagFoldersTable.findFirst
-				.mockResolvedValueOnce({
-					organizationId: organizationId,
-					organization: {
-						countryCode: "us",
-						membershipsWhereOrganization: [{ role: "administrator" }],
-					},
-				})
-				.mockResolvedValueOnce(undefined);
-
-			const args = {
-				input: {
-					id: faker.string.uuid(),
-					parentFolderId: faker.string.uuid(),
-				},
-			};
-
-			try {
-				await resolver(null, args, mockContext);
-			} catch (error) {
-				expect(
-					(error as { extensions: { code: string } }).extensions.code,
-				).toBe("arguments_associated_resources_not_found");
-				expect(
-					(error as { extensions: { issues: { argumentPath: string[] }[] } })
-						.extensions.issues,
-				).toEqual([{ argumentPath: ["input", "parentFolderId"] }]);
-			}
-		});
-	});
-
-	describe("Forbidden action errors", () => {
-		it("should throw forbidden_action_on_arguments_associated_resources when parent folder belongs to different organization", async () => {
-			expect.assertions(2);
-			const currentUserId = faker.string.uuid();
-			const organizationId = faker.string.uuid();
-			const differentOrgId = faker.string.uuid();
-			const mockContext = {
-				currentClient: {
-					isAuthenticated: true,
-					user: { id: currentUserId },
-				},
-				drizzleClient: mocks.drizzle,
-			};
-
-			mocks.drizzle.query.usersTable.findFirst.mockResolvedValue({
-				role: "administrator",
-			});
-
-			// First call returns the existing tag folder
-			// Second call returns parent folder with different organization
-			mocks.drizzle.query.tagFoldersTable.findFirst
-				.mockResolvedValueOnce({
-					organizationId: organizationId,
-					organization: {
-						countryCode: "us",
-						membershipsWhereOrganization: [{ role: "administrator" }],
-					},
-				})
-				.mockResolvedValueOnce({
-					organizationId: differentOrgId, // Different organization
+			testCleanupFunctions.push(async () => {
+				await mercuriusClient.mutate(Mutation_deleteTagFolder, {
+					headers: { authorization: `bearer ${adminAuthToken}` },
+					variables: { input: { id: tagFolderId } },
 				});
+				await mercuriusClient.mutate(Mutation_deleteOrganization, {
+					headers: { authorization: `bearer ${adminAuthToken}` },
+					variables: { input: { id: orgId } },
+				});
+			});
 
-			const args = {
-				input: {
-					id: faker.string.uuid(),
-					parentFolderId: faker.string.uuid(),
-				},
-			};
-
-			try {
-				await resolver(null, args, mockContext);
-			} catch (error) {
-				expect(
-					(error as { extensions: { code: string } }).extensions.code,
-				).toBe("forbidden_action_on_arguments_associated_resources");
-				expect(
-					(
-						error as {
-							extensions: {
-								issues: { argumentPath: string[]; message: string }[];
-							};
-						}
-					).extensions.issues,
-				).toEqual([
-					{
-						argumentPath: ["input", "parentFolderId"],
-						message: "This tag does not belong to the associated organization.",
+			const result = await mercuriusClient.mutate(Mutation_updateTagFolder, {
+				// No authorization header
+				variables: {
+					input: {
+						id: tagFolderId,
+						name: "Updated Name",
 					},
-				]);
-			}
-		});
-	});
-
-	describe("Authorization errors", () => {
-		it("should throw unauthorized_action_on_arguments_associated_resources when user is not admin and not org admin", async () => {
-			expect.assertions(2);
-			const currentUserId = faker.string.uuid();
-			const organizationId = faker.string.uuid();
-			const mockContext = {
-				currentClient: {
-					isAuthenticated: true,
-					user: { id: currentUserId },
-				},
-				drizzleClient: mocks.drizzle,
-			};
-
-			mocks.drizzle.query.usersTable.findFirst.mockResolvedValue({
-				role: "regular", // Not a system administrator
-			});
-
-			mocks.drizzle.query.tagFoldersTable.findFirst.mockResolvedValue({
-				organizationId: organizationId,
-				organization: {
-					countryCode: "us",
-					membershipsWhereOrganization: [{ role: "regular" }], // Not an org administrator
 				},
 			});
 
-			const args = {
-				input: {
-					id: faker.string.uuid(),
-					name: "Updated Folder Name",
-				},
-			};
-
-			try {
-				await resolver(null, args, mockContext);
-			} catch (error) {
-				expect(
-					(error as { extensions: { code: string } }).extensions.code,
-				).toBe("unauthorized_action_on_arguments_associated_resources");
-				expect(
-					(error as { extensions: { issues: { argumentPath: string[] }[] } })
-						.extensions.issues,
-				).toEqual([{ argumentPath: ["input", "id"] }]);
-			}
+			expect(result.errors).toBeDefined();
+			expect(result.errors?.[0]?.extensions?.code).toBe("unauthenticated");
 		});
 
-		it("should throw unauthorized_action_on_arguments_associated_resources when user is not a member of the organization", async () => {
-			expect.assertions(1);
-			const currentUserId = faker.string.uuid();
-			const organizationId = faker.string.uuid();
-			const mockContext = {
-				currentClient: {
-					isAuthenticated: true,
-					user: { id: currentUserId },
-				},
-				drizzleClient: mocks.drizzle,
-			};
+		test("Returns unauthorized error when regular user tries to update tag folder", async () => {
+			const { token: adminAuthToken } = await getAdminAuth();
+			const orgId = await createOrganization(adminAuthToken);
+			const tagFolderId = await createTagFolder(adminAuthToken, orgId);
 
-			mocks.drizzle.query.usersTable.findFirst.mockResolvedValue({
+			// Create a regular user and get their token
+			const regularUser = await createRegularUserUsingAdmin();
+			assertToBeNonNullish(regularUser.authToken);
+
+			// Add the regular user as a regular member of the organization
+			await addOrganizationMembership({
+				adminAuthToken,
+				memberId: regularUser.userId,
+				organizationId: orgId,
 				role: "regular",
 			});
 
-			mocks.drizzle.query.tagFoldersTable.findFirst.mockResolvedValue({
-				organizationId: organizationId,
-				organization: {
-					countryCode: "us",
-					membershipsWhereOrganization: [], // Not a member
-				},
-			});
-
-			const args = {
-				input: {
-					id: faker.string.uuid(),
-					name: "Updated Folder Name",
-				},
-			};
-
-			try {
-				await resolver(null, args, mockContext);
-			} catch (error) {
-				expect(
-					(error as { extensions: { code: string } }).extensions.code,
-				).toBe("unauthorized_action_on_arguments_associated_resources");
-			}
-		});
-	});
-
-	describe("Successful updates", () => {
-		it("should successfully update tag folder name as system administrator", async () => {
-			const currentUserId = faker.string.uuid();
-			const organizationId = faker.string.uuid();
-			const tagFolderId = faker.string.uuid();
-			const newName = "Updated Folder Name";
-
-			const mockContext = {
-				currentClient: {
-					isAuthenticated: true,
-					user: { id: currentUserId },
-				},
-				drizzleClient: mocks.drizzle,
-			};
-
-			mocks.drizzle.query.usersTable.findFirst.mockResolvedValue({
-				role: "administrator",
-			});
-
-			mocks.drizzle.query.tagFoldersTable.findFirst.mockResolvedValue({
-				organizationId: organizationId,
-				organization: {
-					countryCode: "us",
-					membershipsWhereOrganization: [], // No membership needed for system admin
-				},
-			});
-
-			const updatedTagFolder = {
-				id: tagFolderId,
-				name: newName,
-				organizationId: organizationId,
-				parentFolderId: null,
-				createdAt: new Date(),
-				updatedAt: new Date(),
-				creatorId: currentUserId,
-				updaterId: currentUserId,
-			};
-
-			mocks.updateChain.returning.mockResolvedValue([updatedTagFolder]);
-
-			const args = {
-				input: {
-					id: tagFolderId,
-					name: newName,
-				},
-			};
-
-			const result = await resolver(null, args, mockContext);
-
-			expect(result).toEqual(updatedTagFolder);
-			expect(mocks.drizzle.update).toHaveBeenCalled();
-			expect(mocks.updateChain.set).toHaveBeenCalledWith({
-				name: newName,
-				parentFolderId: undefined,
-				updaterId: currentUserId,
-			});
-		});
-
-		it("should successfully update tag folder name as organization administrator", async () => {
-			const currentUserId = faker.string.uuid();
-			const organizationId = faker.string.uuid();
-			const tagFolderId = faker.string.uuid();
-			const newName = "Updated Folder Name";
-
-			const mockContext = {
-				currentClient: {
-					isAuthenticated: true,
-					user: { id: currentUserId },
-				},
-				drizzleClient: mocks.drizzle,
-			};
-
-			mocks.drizzle.query.usersTable.findFirst.mockResolvedValue({
-				role: "regular", // Not a system administrator
-			});
-
-			mocks.drizzle.query.tagFoldersTable.findFirst.mockResolvedValue({
-				organizationId: organizationId,
-				organization: {
-					countryCode: "us",
-					membershipsWhereOrganization: [{ role: "administrator" }], // Is org admin
-				},
-			});
-
-			const updatedTagFolder = {
-				id: tagFolderId,
-				name: newName,
-				organizationId: organizationId,
-				parentFolderId: null,
-				createdAt: new Date(),
-				updatedAt: new Date(),
-				creatorId: faker.string.uuid(),
-				updaterId: currentUserId,
-			};
-
-			mocks.updateChain.returning.mockResolvedValue([updatedTagFolder]);
-
-			const args = {
-				input: {
-					id: tagFolderId,
-					name: newName,
-				},
-			};
-
-			const result = await resolver(null, args, mockContext);
-
-			expect(result).toEqual(updatedTagFolder);
-		});
-
-		it("should successfully update tag folder parentFolderId", async () => {
-			const currentUserId = faker.string.uuid();
-			const organizationId = faker.string.uuid();
-			const tagFolderId = faker.string.uuid();
-			const parentFolderId = faker.string.uuid();
-
-			const mockContext = {
-				currentClient: {
-					isAuthenticated: true,
-					user: { id: currentUserId },
-				},
-				drizzleClient: mocks.drizzle,
-			};
-
-			mocks.drizzle.query.usersTable.findFirst.mockResolvedValue({
-				role: "administrator",
-			});
-
-			// First call returns the existing tag folder
-			// Second call returns the parent folder with same organization
-			mocks.drizzle.query.tagFoldersTable.findFirst
-				.mockResolvedValueOnce({
-					organizationId: organizationId,
-					organization: {
-						countryCode: "us",
-						membershipsWhereOrganization: [{ role: "administrator" }],
-					},
-				})
-				.mockResolvedValueOnce({
-					organizationId: organizationId, // Same organization
+			testCleanupFunctions.push(async () => {
+				await mercuriusClient.mutate(Mutation_deleteTagFolder, {
+					headers: { authorization: `bearer ${adminAuthToken}` },
+					variables: { input: { id: tagFolderId } },
 				});
-
-			const updatedTagFolder = {
-				id: tagFolderId,
-				name: "Original Name",
-				organizationId: organizationId,
-				parentFolderId: parentFolderId,
-				createdAt: new Date(),
-				updatedAt: new Date(),
-				creatorId: faker.string.uuid(),
-				updaterId: currentUserId,
-			};
-
-			mocks.updateChain.returning.mockResolvedValue([updatedTagFolder]);
-
-			const args = {
-				input: {
-					id: tagFolderId,
-					parentFolderId: parentFolderId,
-				},
-			};
-
-			const result = await resolver(null, args, mockContext);
-
-			expect(result).toEqual(updatedTagFolder);
-			expect(mocks.updateChain.set).toHaveBeenCalledWith({
-				name: undefined,
-				parentFolderId: parentFolderId,
-				updaterId: currentUserId,
+				await mercuriusClient.mutate(Mutation_deleteOrganization, {
+					headers: { authorization: `bearer ${adminAuthToken}` },
+					variables: { input: { id: orgId } },
+				});
 			});
+
+			const result = await mercuriusClient.mutate(Mutation_updateTagFolder, {
+				headers: { authorization: `bearer ${regularUser.authToken}` },
+				variables: {
+					input: {
+						id: tagFolderId,
+						name: "Updated Name",
+					},
+				},
+			});
+
+			expect(result.errors).toBeDefined();
+			expect(result.errors?.[0]?.extensions?.code).toBe(
+				"unauthorized_action_on_arguments_associated_resources",
+			);
 		});
 
-		it("should successfully update both name and parentFolderId", async () => {
-			const currentUserId = faker.string.uuid();
-			const organizationId = faker.string.uuid();
-			const tagFolderId = faker.string.uuid();
-			const parentFolderId = faker.string.uuid();
-			const newName = "New Folder Name";
+		test("Allows organization administrator to update tag folder", async () => {
+			const { token: adminAuthToken } = await getAdminAuth();
+			const orgId = await createOrganization(adminAuthToken);
+			const tagFolderId = await createTagFolder(adminAuthToken, orgId);
 
-			const mockContext = {
-				currentClient: {
-					isAuthenticated: true,
-					user: { id: currentUserId },
-				},
-				drizzleClient: mocks.drizzle,
-			};
+			// Create a regular user and make them org admin
+			const orgAdmin = await createRegularUserUsingAdmin();
+			assertToBeNonNullish(orgAdmin.authToken);
 
-			mocks.drizzle.query.usersTable.findFirst.mockResolvedValue({
+			await addOrganizationMembership({
+				adminAuthToken,
+				memberId: orgAdmin.userId,
+				organizationId: orgId,
 				role: "administrator",
 			});
 
-			mocks.drizzle.query.tagFoldersTable.findFirst
-				.mockResolvedValueOnce({
-					organizationId: organizationId,
-					organization: {
-						countryCode: "us",
-						membershipsWhereOrganization: [{ role: "administrator" }],
-					},
-				})
-				.mockResolvedValueOnce({
-					organizationId: organizationId,
+			testCleanupFunctions.push(async () => {
+				await mercuriusClient.mutate(Mutation_deleteTagFolder, {
+					headers: { authorization: `bearer ${adminAuthToken}` },
+					variables: { input: { id: tagFolderId } },
 				});
+				await mercuriusClient.mutate(Mutation_deleteOrganization, {
+					headers: { authorization: `bearer ${adminAuthToken}` },
+					variables: { input: { id: orgId } },
+				});
+			});
 
-			const updatedTagFolder = {
-				id: tagFolderId,
-				name: newName,
-				organizationId: organizationId,
-				parentFolderId: parentFolderId,
-				createdAt: new Date(),
-				updatedAt: new Date(),
-				creatorId: faker.string.uuid(),
-				updaterId: currentUserId,
-			};
+			const newName = `Updated ${faker.string.uuid()}`;
+			const result = await mercuriusClient.mutate(Mutation_updateTagFolder, {
+				headers: { authorization: `bearer ${orgAdmin.authToken}` },
+				variables: {
+					input: {
+						id: tagFolderId,
+						name: newName,
+					},
+				},
+			});
 
-			mocks.updateChain.returning.mockResolvedValue([updatedTagFolder]);
+			expect(result.errors).toBeUndefined();
+			expect(result.data?.updateTagFolder?.name).toBe(newName);
+		});
+	});
 
-			const args = {
-				input: {
+	suite("Validation", () => {
+		test("Returns invalid_arguments error for invalid UUID in id field", async () => {
+			const { token: adminAuthToken } = await getAdminAuth();
+
+			const result = await mercuriusClient.mutate(Mutation_updateTagFolder, {
+				headers: { authorization: `bearer ${adminAuthToken}` },
+				variables: {
+					input: {
+						id: "invalid-uuid",
+						name: "Updated Name",
+					},
+				},
+			});
+
+			expect(result.errors).toBeDefined();
+			expect(result.errors?.[0]?.extensions?.code).toBe("invalid_arguments");
+		});
+
+		test("Returns invalid_arguments error for invalid UUID in parentFolderId field", async () => {
+			const { token: adminAuthToken } = await getAdminAuth();
+			const orgId = await createOrganization(adminAuthToken);
+			const tagFolderId = await createTagFolder(adminAuthToken, orgId);
+
+			testCleanupFunctions.push(async () => {
+				await mercuriusClient.mutate(Mutation_deleteTagFolder, {
+					headers: { authorization: `bearer ${adminAuthToken}` },
+					variables: { input: { id: tagFolderId } },
+				});
+				await mercuriusClient.mutate(Mutation_deleteOrganization, {
+					headers: { authorization: `bearer ${adminAuthToken}` },
+					variables: { input: { id: orgId } },
+				});
+			});
+
+			const result = await mercuriusClient.mutate(Mutation_updateTagFolder, {
+				headers: { authorization: `bearer ${adminAuthToken}` },
+				variables: {
+					input: {
+						id: tagFolderId,
+						parentFolderId: "invalid-uuid",
+					},
+				},
+			});
+
+			expect(result.errors).toBeDefined();
+			expect(result.errors?.[0]?.extensions?.code).toBe("invalid_arguments");
+		});
+
+		test("Returns invalid_arguments error when no optional argument is provided", async () => {
+			const { token: adminAuthToken } = await getAdminAuth();
+			const orgId = await createOrganization(adminAuthToken);
+			const tagFolderId = await createTagFolder(adminAuthToken, orgId);
+
+			testCleanupFunctions.push(async () => {
+				await mercuriusClient.mutate(Mutation_deleteTagFolder, {
+					headers: { authorization: `bearer ${adminAuthToken}` },
+					variables: { input: { id: tagFolderId } },
+				});
+				await mercuriusClient.mutate(Mutation_deleteOrganization, {
+					headers: { authorization: `bearer ${adminAuthToken}` },
+					variables: { input: { id: orgId } },
+				});
+			});
+
+			const result = await mercuriusClient.mutate(Mutation_updateTagFolder, {
+				headers: { authorization: `bearer ${adminAuthToken}` },
+				variables: {
+					input: {
+						id: tagFolderId,
+						// No name or parentFolderId provided
+					},
+				},
+			});
+
+			expect(result.errors).toBeDefined();
+			expect(result.errors?.[0]?.extensions?.code).toBe("invalid_arguments");
+		});
+	});
+
+	suite("Resource not found", () => {
+		test("Returns arguments_associated_resources_not_found error when tag folder does not exist", async () => {
+			const { token: adminAuthToken } = await getAdminAuth();
+			const nonExistentId = faker.string.uuid();
+
+			const result = await mercuriusClient.mutate(Mutation_updateTagFolder, {
+				headers: { authorization: `bearer ${adminAuthToken}` },
+				variables: {
+					input: {
+						id: nonExistentId,
+						name: "Updated Name",
+					},
+				},
+			});
+
+			expect(result.errors).toBeDefined();
+			expect(result.errors?.[0]?.extensions?.code).toBe(
+				"arguments_associated_resources_not_found",
+			);
+		});
+
+		test("Returns arguments_associated_resources_not_found error when parent folder does not exist", async () => {
+			const { token: adminAuthToken } = await getAdminAuth();
+			const orgId = await createOrganization(adminAuthToken);
+			const tagFolderId = await createTagFolder(adminAuthToken, orgId);
+			const nonExistentParentId = faker.string.uuid();
+
+			testCleanupFunctions.push(async () => {
+				await mercuriusClient.mutate(Mutation_deleteTagFolder, {
+					headers: { authorization: `bearer ${adminAuthToken}` },
+					variables: { input: { id: tagFolderId } },
+				});
+				await mercuriusClient.mutate(Mutation_deleteOrganization, {
+					headers: { authorization: `bearer ${adminAuthToken}` },
+					variables: { input: { id: orgId } },
+				});
+			});
+
+			const result = await mercuriusClient.mutate(Mutation_updateTagFolder, {
+				headers: { authorization: `bearer ${adminAuthToken}` },
+				variables: {
+					input: {
+						id: tagFolderId,
+						parentFolderId: nonExistentParentId,
+					},
+				},
+			});
+
+			expect(result.errors).toBeDefined();
+			expect(result.errors?.[0]?.extensions?.code).toBe(
+				"arguments_associated_resources_not_found",
+			);
+		});
+	});
+
+	suite("Forbidden action", () => {
+		test("Returns forbidden_action error when parent folder belongs to different organization", async () => {
+			const { token: adminAuthToken } = await getAdminAuth();
+
+			// Create two organizations
+			const orgId1 = await createOrganization(adminAuthToken);
+			const orgId2 = await createOrganization(adminAuthToken);
+
+			// Create tag folders in each organization
+			const tagFolderId1 = await createTagFolder(adminAuthToken, orgId1);
+			const tagFolderId2 = await createTagFolder(adminAuthToken, orgId2);
+
+			testCleanupFunctions.push(async () => {
+				await mercuriusClient.mutate(Mutation_deleteTagFolder, {
+					headers: { authorization: `bearer ${adminAuthToken}` },
+					variables: { input: { id: tagFolderId1 } },
+				});
+				await mercuriusClient.mutate(Mutation_deleteTagFolder, {
+					headers: { authorization: `bearer ${adminAuthToken}` },
+					variables: { input: { id: tagFolderId2 } },
+				});
+				await mercuriusClient.mutate(Mutation_deleteOrganization, {
+					headers: { authorization: `bearer ${adminAuthToken}` },
+					variables: { input: { id: orgId1 } },
+				});
+				await mercuriusClient.mutate(Mutation_deleteOrganization, {
+					headers: { authorization: `bearer ${adminAuthToken}` },
+					variables: { input: { id: orgId2 } },
+				});
+			});
+
+			// Try to set tagFolderId2 (from org2) as parent of tagFolderId1 (from org1)
+			const result = await mercuriusClient.mutate(Mutation_updateTagFolder, {
+				headers: { authorization: `bearer ${adminAuthToken}` },
+				variables: {
+					input: {
+						id: tagFolderId1,
+						parentFolderId: tagFolderId2,
+					},
+				},
+			});
+
+			expect(result.errors).toBeDefined();
+			expect(result.errors?.[0]?.extensions?.code).toBe(
+				"forbidden_action_on_arguments_associated_resources",
+			);
+		});
+	});
+
+	suite("Successful updates", () => {
+		test("Successfully updates tag folder name as system administrator", async () => {
+			const { token: adminAuthToken } = await getAdminAuth();
+			const orgId = await createOrganization(adminAuthToken);
+			const tagFolderId = await createTagFolder(
+				adminAuthToken,
+				orgId,
+				"Original Name",
+			);
+
+			testCleanupFunctions.push(async () => {
+				await mercuriusClient.mutate(Mutation_deleteTagFolder, {
+					headers: { authorization: `bearer ${adminAuthToken}` },
+					variables: { input: { id: tagFolderId } },
+				});
+				await mercuriusClient.mutate(Mutation_deleteOrganization, {
+					headers: { authorization: `bearer ${adminAuthToken}` },
+					variables: { input: { id: orgId } },
+				});
+			});
+
+			const newName = `Updated ${faker.string.uuid()}`;
+			const result = await mercuriusClient.mutate(Mutation_updateTagFolder, {
+				headers: { authorization: `bearer ${adminAuthToken}` },
+				variables: {
+					input: {
+						id: tagFolderId,
+						name: newName,
+					},
+				},
+			});
+
+			expect(result.errors).toBeUndefined();
+			expect(result.data?.updateTagFolder).toEqual(
+				expect.objectContaining({
 					id: tagFolderId,
 					name: newName,
-					parentFolderId: parentFolderId,
-				},
-			};
-
-			const result = await resolver(null, args, mockContext);
-
-			expect(result).toEqual(updatedTagFolder);
-			expect(mocks.updateChain.set).toHaveBeenCalledWith({
-				name: newName,
-				parentFolderId: parentFolderId,
-				updaterId: currentUserId,
-			});
+				}),
+			);
 		});
 
-		it("should successfully update tag folder with null parentFolderId (remove parent)", async () => {
-			const currentUserId = faker.string.uuid();
-			const organizationId = faker.string.uuid();
-			const tagFolderId = faker.string.uuid();
+		test("Successfully updates tag folder parentFolderId", async () => {
+			const { token: adminAuthToken } = await getAdminAuth();
+			const orgId = await createOrganization(adminAuthToken);
 
-			const mockContext = {
-				currentClient: {
-					isAuthenticated: true,
-					user: { id: currentUserId },
-				},
-				drizzleClient: mocks.drizzle,
-			};
+			// Create parent folder and child folder
+			const parentFolderId = await createTagFolder(
+				adminAuthToken,
+				orgId,
+				"Parent Folder",
+			);
+			const childFolderId = await createTagFolder(
+				adminAuthToken,
+				orgId,
+				"Child Folder",
+			);
 
-			mocks.drizzle.query.usersTable.findFirst.mockResolvedValue({
-				role: "administrator",
+			testCleanupFunctions.push(async () => {
+				await mercuriusClient.mutate(Mutation_deleteTagFolder, {
+					headers: { authorization: `bearer ${adminAuthToken}` },
+					variables: { input: { id: childFolderId } },
+				});
+				await mercuriusClient.mutate(Mutation_deleteTagFolder, {
+					headers: { authorization: `bearer ${adminAuthToken}` },
+					variables: { input: { id: parentFolderId } },
+				});
+				await mercuriusClient.mutate(Mutation_deleteOrganization, {
+					headers: { authorization: `bearer ${adminAuthToken}` },
+					variables: { input: { id: orgId } },
+				});
 			});
 
-			mocks.drizzle.query.tagFoldersTable.findFirst.mockResolvedValue({
-				organizationId: organizationId,
-				organization: {
-					countryCode: "us",
-					membershipsWhereOrganization: [{ role: "administrator" }],
+			const result = await mercuriusClient.mutate(Mutation_updateTagFolder, {
+				headers: { authorization: `bearer ${adminAuthToken}` },
+				variables: {
+					input: {
+						id: childFolderId,
+						parentFolderId: parentFolderId,
+					},
 				},
 			});
 
-			const updatedTagFolder = {
-				id: tagFolderId,
-				name: "Folder Name",
-				organizationId: organizationId,
-				parentFolderId: null, // Parent removed
-				createdAt: new Date(),
-				updatedAt: new Date(),
-				creatorId: faker.string.uuid(),
-				updaterId: currentUserId,
-			};
+			expect(result.errors).toBeUndefined();
+			expect(result.data?.updateTagFolder?.id).toBe(childFolderId);
+		});
 
-			mocks.updateChain.returning.mockResolvedValue([updatedTagFolder]);
+		test("Successfully updates both name and parentFolderId", async () => {
+			const { token: adminAuthToken } = await getAdminAuth();
+			const orgId = await createOrganization(adminAuthToken);
 
-			const args = {
-				input: {
-					id: tagFolderId,
-					parentFolderId: null, // Explicitly setting to null
-					name: "Some Name", // Need at least one optional field
-				},
-			};
+			const parentFolderId = await createTagFolder(
+				adminAuthToken,
+				orgId,
+				"Parent Folder",
+			);
+			const childFolderId = await createTagFolder(
+				adminAuthToken,
+				orgId,
+				"Original Child Name",
+			);
 
-			const result = await resolver(null, args, mockContext);
-
-			expect(result).toEqual(updatedTagFolder);
-			expect(mocks.updateChain.set).toHaveBeenCalledWith({
-				name: "Some Name",
-				parentFolderId: null,
-				updaterId: currentUserId,
+			testCleanupFunctions.push(async () => {
+				await mercuriusClient.mutate(Mutation_deleteTagFolder, {
+					headers: { authorization: `bearer ${adminAuthToken}` },
+					variables: { input: { id: childFolderId } },
+				});
+				await mercuriusClient.mutate(Mutation_deleteTagFolder, {
+					headers: { authorization: `bearer ${adminAuthToken}` },
+					variables: { input: { id: parentFolderId } },
+				});
+				await mercuriusClient.mutate(Mutation_deleteOrganization, {
+					headers: { authorization: `bearer ${adminAuthToken}` },
+					variables: { input: { id: orgId } },
+				});
 			});
+
+			const newName = `Updated Child ${faker.string.uuid()}`;
+			const result = await mercuriusClient.mutate(Mutation_updateTagFolder, {
+				headers: { authorization: `bearer ${adminAuthToken}` },
+				variables: {
+					input: {
+						id: childFolderId,
+						name: newName,
+						parentFolderId: parentFolderId,
+					},
+				},
+			});
+
+			expect(result.errors).toBeUndefined();
+			expect(result.data?.updateTagFolder).toEqual(
+				expect.objectContaining({
+					id: childFolderId,
+					name: newName,
+				}),
+			);
+		});
+
+		test("Successfully removes parent folder by setting parentFolderId to null", async () => {
+			const { token: adminAuthToken } = await getAdminAuth();
+			const orgId = await createOrganization(adminAuthToken);
+
+			const parentFolderId = await createTagFolder(
+				adminAuthToken,
+				orgId,
+				"Parent Folder",
+			);
+			// Create child folder with parent
+			const childFolderId = await createTagFolder(
+				adminAuthToken,
+				orgId,
+				"Child Folder",
+				parentFolderId,
+			);
+
+			testCleanupFunctions.push(async () => {
+				await mercuriusClient.mutate(Mutation_deleteTagFolder, {
+					headers: { authorization: `bearer ${adminAuthToken}` },
+					variables: { input: { id: childFolderId } },
+				});
+				await mercuriusClient.mutate(Mutation_deleteTagFolder, {
+					headers: { authorization: `bearer ${adminAuthToken}` },
+					variables: { input: { id: parentFolderId } },
+				});
+				await mercuriusClient.mutate(Mutation_deleteOrganization, {
+					headers: { authorization: `bearer ${adminAuthToken}` },
+					variables: { input: { id: orgId } },
+				});
+			});
+
+			// Update to remove parent by setting it to null
+			const result = await mercuriusClient.mutate(Mutation_updateTagFolder, {
+				headers: { authorization: `bearer ${adminAuthToken}` },
+				variables: {
+					input: {
+						id: childFolderId,
+						name: "Updated Name Without Parent",
+						parentFolderId: null,
+					},
+				},
+			});
+
+			expect(result.errors).toBeUndefined();
+			expect(result.data?.updateTagFolder?.id).toBe(childFolderId);
 		});
 	});
 
-	describe("Unexpected errors", () => {
-		it("should throw unexpected error when update operation returns empty array", async () => {
-			expect.assertions(1);
-			const currentUserId = faker.string.uuid();
-			const organizationId = faker.string.uuid();
-			const tagFolderId = faker.string.uuid();
+	suite("Edge cases", () => {
+		test("Handles special characters in folder name", async () => {
+			const { token: adminAuthToken } = await getAdminAuth();
+			const orgId = await createOrganization(adminAuthToken);
+			const tagFolderId = await createTagFolder(adminAuthToken, orgId);
 
-			const mockContext = {
-				currentClient: {
-					isAuthenticated: true,
-					user: { id: currentUserId },
-				},
-				drizzleClient: mocks.drizzle,
-			};
-
-			mocks.drizzle.query.usersTable.findFirst.mockResolvedValue({
-				role: "administrator",
+			testCleanupFunctions.push(async () => {
+				await mercuriusClient.mutate(Mutation_deleteTagFolder, {
+					headers: { authorization: `bearer ${adminAuthToken}` },
+					variables: { input: { id: tagFolderId } },
+				});
+				await mercuriusClient.mutate(Mutation_deleteOrganization, {
+					headers: { authorization: `bearer ${adminAuthToken}` },
+					variables: { input: { id: orgId } },
+				});
 			});
 
-			mocks.drizzle.query.tagFoldersTable.findFirst.mockResolvedValue({
-				organizationId: organizationId,
-				organization: {
-					countryCode: "us",
-					membershipsWhereOrganization: [{ role: "administrator" }],
-				},
-			});
-
-			// Simulate update returning empty array (tag folder was deleted externally)
-			mocks.updateChain.returning.mockResolvedValue([]);
-
-			const args = {
-				input: {
-					id: tagFolderId,
-					name: "Updated Folder Name",
-				},
-			};
-
-			try {
-				await resolver(null, args, mockContext);
-			} catch (error) {
-				expect(
-					(error as { extensions: { code: string } }).extensions.code,
-				).toBe("unexpected");
-			}
-		});
-	});
-
-	describe("Edge cases", () => {
-		it("should handle special characters in folder name", async () => {
-			const currentUserId = faker.string.uuid();
-			const organizationId = faker.string.uuid();
-			const tagFolderId = faker.string.uuid();
-			const specialName = "<script>alert('xss')</script>";
-
-			const mockContext = {
-				currentClient: {
-					isAuthenticated: true,
-					user: { id: currentUserId },
-				},
-				drizzleClient: mocks.drizzle,
-			};
-
-			mocks.drizzle.query.usersTable.findFirst.mockResolvedValue({
-				role: "administrator",
-			});
-
-			mocks.drizzle.query.tagFoldersTable.findFirst.mockResolvedValue({
-				organizationId: organizationId,
-				organization: {
-					countryCode: "us",
-					membershipsWhereOrganization: [{ role: "administrator" }],
+			const specialName = "Folder with <special> & \"characters\"";
+			const result = await mercuriusClient.mutate(Mutation_updateTagFolder, {
+				headers: { authorization: `bearer ${adminAuthToken}` },
+				variables: {
+					input: {
+						id: tagFolderId,
+						name: specialName,
+					},
 				},
 			});
 
-			const updatedTagFolder = {
-				id: tagFolderId,
-				name: specialName,
-				organizationId: organizationId,
-				parentFolderId: null,
-				createdAt: new Date(),
-				updatedAt: new Date(),
-				creatorId: faker.string.uuid(),
-				updaterId: currentUserId,
-			};
-
-			mocks.updateChain.returning.mockResolvedValue([updatedTagFolder]);
-
-			const args = {
-				input: {
-					id: tagFolderId,
-					name: specialName,
-				},
-			};
-
-			const result = await resolver(null, args, mockContext);
-
-			expect(result).toEqual(updatedTagFolder);
+			expect(result.errors).toBeUndefined();
+			// Note: The name may be HTML-escaped when returned
+			expect(result.data?.updateTagFolder?.id).toBe(tagFolderId);
 		});
 
-		it("should handle unicode characters in folder name", async () => {
-			const currentUserId = faker.string.uuid();
-			const organizationId = faker.string.uuid();
-			const tagFolderId = faker.string.uuid();
+		test("Handles unicode characters in folder name", async () => {
+			const { token: adminAuthToken } = await getAdminAuth();
+			const orgId = await createOrganization(adminAuthToken);
+			const tagFolderId = await createTagFolder(adminAuthToken, orgId);
+
+			testCleanupFunctions.push(async () => {
+				await mercuriusClient.mutate(Mutation_deleteTagFolder, {
+					headers: { authorization: `bearer ${adminAuthToken}` },
+					variables: { input: { id: tagFolderId } },
+				});
+				await mercuriusClient.mutate(Mutation_deleteOrganization, {
+					headers: { authorization: `bearer ${adminAuthToken}` },
+					variables: { input: { id: orgId } },
+				});
+			});
+
 			const unicodeName = "文件夹名称 📁 Папка";
-
-			const mockContext = {
-				currentClient: {
-					isAuthenticated: true,
-					user: { id: currentUserId },
-				},
-				drizzleClient: mocks.drizzle,
-			};
-
-			mocks.drizzle.query.usersTable.findFirst.mockResolvedValue({
-				role: "administrator",
-			});
-
-			mocks.drizzle.query.tagFoldersTable.findFirst.mockResolvedValue({
-				organizationId: organizationId,
-				organization: {
-					countryCode: "us",
-					membershipsWhereOrganization: [{ role: "administrator" }],
+			const result = await mercuriusClient.mutate(Mutation_updateTagFolder, {
+				headers: { authorization: `bearer ${adminAuthToken}` },
+				variables: {
+					input: {
+						id: tagFolderId,
+						name: unicodeName,
+					},
 				},
 			});
 
-			const updatedTagFolder = {
-				id: tagFolderId,
-				name: unicodeName,
-				organizationId: organizationId,
-				parentFolderId: null,
-				createdAt: new Date(),
-				updatedAt: new Date(),
-				creatorId: faker.string.uuid(),
-				updaterId: currentUserId,
-			};
-
-			mocks.updateChain.returning.mockResolvedValue([updatedTagFolder]);
-
-			const args = {
-				input: {
-					id: tagFolderId,
-					name: unicodeName,
-				},
-			};
-
-			const result = await resolver(null, args, mockContext);
-
-			expect(result).toEqual(updatedTagFolder);
+			expect(result.errors).toBeUndefined();
+			expect(result.data?.updateTagFolder?.name).toBe(unicodeName);
 		});
 
-		it("should handle maximum length folder name (256 characters)", async () => {
-			const currentUserId = faker.string.uuid();
-			const organizationId = faker.string.uuid();
-			const tagFolderId = faker.string.uuid();
+		test("Handles maximum length folder name (256 characters)", async () => {
+			const { token: adminAuthToken } = await getAdminAuth();
+			const orgId = await createOrganization(adminAuthToken);
+			const tagFolderId = await createTagFolder(adminAuthToken, orgId);
+
+			testCleanupFunctions.push(async () => {
+				await mercuriusClient.mutate(Mutation_deleteTagFolder, {
+					headers: { authorization: `bearer ${adminAuthToken}` },
+					variables: { input: { id: tagFolderId } },
+				});
+				await mercuriusClient.mutate(Mutation_deleteOrganization, {
+					headers: { authorization: `bearer ${adminAuthToken}` },
+					variables: { input: { id: orgId } },
+				});
+			});
+
 			const maxLengthName = "a".repeat(256);
-
-			const mockContext = {
-				currentClient: {
-					isAuthenticated: true,
-					user: { id: currentUserId },
-				},
-				drizzleClient: mocks.drizzle,
-			};
-
-			mocks.drizzle.query.usersTable.findFirst.mockResolvedValue({
-				role: "administrator",
-			});
-
-			mocks.drizzle.query.tagFoldersTable.findFirst.mockResolvedValue({
-				organizationId: organizationId,
-				organization: {
-					countryCode: "us",
-					membershipsWhereOrganization: [{ role: "administrator" }],
+			const result = await mercuriusClient.mutate(Mutation_updateTagFolder, {
+				headers: { authorization: `bearer ${adminAuthToken}` },
+				variables: {
+					input: {
+						id: tagFolderId,
+						name: maxLengthName,
+					},
 				},
 			});
 
-			const updatedTagFolder = {
-				id: tagFolderId,
-				name: maxLengthName,
-				organizationId: organizationId,
-				parentFolderId: null,
-				createdAt: new Date(),
-				updatedAt: new Date(),
-				creatorId: faker.string.uuid(),
-				updaterId: currentUserId,
-			};
+			expect(result.errors).toBeUndefined();
+			expect(result.data?.updateTagFolder?.name).toBe(maxLengthName);
+		});
+	});
 
-			mocks.updateChain.returning.mockResolvedValue([updatedTagFolder]);
+	suite("Race conditions and unexpected errors", () => {
+		test("Returns unauthenticated error when current user is not found in database (deleted after authentication)", async () => {
+			const { token: adminAuthToken } = await getAdminAuth();
+			const orgId = await createOrganization(adminAuthToken);
+			const tagFolderId = await createTagFolder(adminAuthToken, orgId);
 
-			const args = {
-				input: {
-					id: tagFolderId,
-					name: maxLengthName,
+			testCleanupFunctions.push(async () => {
+				await mercuriusClient.mutate(Mutation_deleteTagFolder, {
+					headers: { authorization: `bearer ${adminAuthToken}` },
+					variables: { input: { id: tagFolderId } },
+				});
+				await mercuriusClient.mutate(Mutation_deleteOrganization, {
+					headers: { authorization: `bearer ${adminAuthToken}` },
+					variables: { input: { id: orgId } },
+				});
+			});
+
+			// Store original query
+			const originalQuery = server.drizzleClient.query;
+
+			// Mock the query to return undefined for usersTable but still work for tagFoldersTable
+			const mockQuery = {
+				...originalQuery,
+				usersTable: {
+					findFirst: vi.fn().mockResolvedValue(undefined),
 				},
+				tagFoldersTable: originalQuery.tagFoldersTable,
 			};
 
-			const result = await resolver(null, args, mockContext);
+			// biome-ignore lint/suspicious/noExplicitAny: Mocking requires bypassing type safety
+			server.drizzleClient.query = mockQuery as any;
 
-			expect(result).toEqual(updatedTagFolder);
+			try {
+				const result = await mercuriusClient.mutate(Mutation_updateTagFolder, {
+					headers: { authorization: `bearer ${adminAuthToken}` },
+					variables: {
+						input: {
+							id: tagFolderId,
+							name: "Updated Name",
+						},
+					},
+				});
+
+				expect(result.data?.updateTagFolder ?? null).toBeNull();
+				expect(result.errors).toEqual(
+					expect.arrayContaining([
+						expect.objectContaining({
+							extensions: expect.objectContaining({
+								code: "unauthenticated",
+							}),
+						}),
+					]),
+				);
+			} finally {
+				server.drizzleClient.query = originalQuery;
+			}
+		});
+
+		test("Returns unexpected error when tag folder is deleted during update operation", async () => {
+			const { token: adminAuthToken } = await getAdminAuth();
+			const orgId = await createOrganization(adminAuthToken);
+			const tagFolderId = await createTagFolder(adminAuthToken, orgId);
+
+			testCleanupFunctions.push(async () => {
+				// Tag folder may have been deleted by the mock, so cleanup may fail
+				try {
+					await mercuriusClient.mutate(Mutation_deleteTagFolder, {
+						headers: { authorization: `bearer ${adminAuthToken}` },
+						variables: { input: { id: tagFolderId } },
+					});
+				} catch {
+					// Ignore cleanup error
+				}
+				await mercuriusClient.mutate(Mutation_deleteOrganization, {
+					headers: { authorization: `bearer ${adminAuthToken}` },
+					variables: { input: { id: orgId } },
+				});
+			});
+
+			// Store original update method
+			const originalUpdate = server.drizzleClient.update;
+
+			// Mock the update to return an empty array (simulating the tag folder being deleted)
+			server.drizzleClient.update = vi.fn().mockImplementation(() => ({
+				set: () => ({
+					where: () => ({
+						returning: async () => [],
+					}),
+				}),
+			})) as typeof server.drizzleClient.update;
+
+			try {
+				const result = await mercuriusClient.mutate(Mutation_updateTagFolder, {
+					headers: { authorization: `bearer ${adminAuthToken}` },
+					variables: {
+						input: {
+							id: tagFolderId,
+							name: "Updated Name",
+						},
+					},
+				});
+
+				expect(result.data?.updateTagFolder ?? null).toBeNull();
+				expect(result.errors).toEqual(
+					expect.arrayContaining([
+						expect.objectContaining({
+							extensions: expect.objectContaining({
+								code: "unexpected",
+							}),
+						}),
+					]),
+				);
+			} finally {
+				server.drizzleClient.update = originalUpdate;
+			}
 		});
 	});
 });
