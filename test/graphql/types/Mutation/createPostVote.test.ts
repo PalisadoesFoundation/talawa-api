@@ -108,66 +108,74 @@ suite("Mutation createPostVote", () => {
   });
 
   //// 4. Duplicate voting
-  suite("when the user has already voted on the post", () => {
-    test("should return forbidden_action_on_arguments_associated_resources error", async () => {
-      const org = await mercuriusClient.mutate(Mutation_createOrganization, {
-        headers: { authorization: `bearer ${authToken}` },
-        variables: {
-          input: {
-            name: `org-${faker.string.uuid()}`,
-            countryCode: "id",
-            isUserRegistrationRequired: false,
-          },
+suite("when the user has already voted on the post", () => {
+  test("should return forbidden_action_on_arguments_associated_resources error", async () => {
+    const org = await mercuriusClient.mutate(Mutation_createOrganization, {
+      headers: { authorization: `bearer ${authToken}` },
+      variables: {
+        input: {
+          name: `org-${faker.string.uuid()}`,
+          countryCode: "id",
+          isUserRegistrationRequired: false,
         },
-      });
-
-      const organizationId = org.data!.createOrganization!.id;
-
-      const post = await mercuriusClient.mutate(Mutation_createPost, {
-        headers: { authorization: `bearer ${authToken}` },
-        variables: {
-          input: {
-            caption: "Test post",
-            organizationId,
-          },
-        },
-      });
-
-      const postId = post.data!.createPost!.id;
-
-      await mercuriusClient.mutate(Mutation_createPostVote, {
-        headers: { authorization: `bearer ${authToken}` },
-        variables: {
-          input: {
-            postId,
-            type: "up_vote",
-          },
-        },
-      });
-
-      const secondVote = await mercuriusClient.mutate(Mutation_createPostVote, {
-        headers: { authorization: `bearer ${authToken}` },
-        variables: {
-          input: {
-            postId,
-            type: "up_vote",
-          },
-        },
-      });
-
-      expect(secondVote.data?.createPostVote).toBeNull();
-      expect(secondVote.errors).toEqual(
-        expect.arrayContaining([
-          expect.objectContaining({
-            extensions: expect.objectContaining({
-              code: "forbidden_action_on_arguments_associated_resources",
-            }),
-            path: ["createPostVote"],
-          }),
-        ]),
-      );
+      },
     });
+
+    const organizationId = org.data!.createOrganization!.id;
+
+    const post = await mercuriusClient.mutate(Mutation_createPost, {
+      headers: { authorization: `bearer ${authToken}` },
+      variables: {
+        input: {
+          caption: "Test post",
+          organizationId,
+        },
+      },
+    });
+
+    const postId = post.data!.createPost!.id;
+    const firstVote = await mercuriusClient.mutate(
+      Mutation_createPostVote,
+      {
+        headers: { authorization: `bearer ${authToken}` },
+        variables: {
+          input: {
+            postId,
+            type: "up_vote",
+          },
+        },
+      },
+    );
+
+    expect(firstVote.errors).toBeUndefined();
+    expect(firstVote.data?.createPostVote).toBeDefined();
+
+    const secondVote = await mercuriusClient.mutate(
+      Mutation_createPostVote,
+      {
+        headers: { authorization: `bearer ${authToken}` },
+        variables: {
+          input: {
+            postId,
+            type: "up_vote",
+          },
+        },
+      },
+    );
+
+    expect(secondVote.data?.createPostVote).toBeNull();
+    expect(secondVote.errors).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          extensions: expect.objectContaining({
+            code: "forbidden_action_on_arguments_associated_resources",
+          }),
+          path: ["createPostVote"],
+        }),
+      ]),
+    );
   });
+});
 
   //// 5. Administrator voting
   suite("when the user is an administrator", () => {
