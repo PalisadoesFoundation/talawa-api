@@ -193,7 +193,7 @@ suite("Mutation createPostVote", () => {
 
   //// 5. Administrator voting
   suite("when the user is an administrator", () => {
-    test("should allow voting without organization membership", async () => {
+    test("should successfully create a vote as administrator", async () => {
       const orgResult = await mercuriusClient.mutate(
         Mutation_createOrganization,
         {
@@ -225,7 +225,8 @@ suite("Mutation createPostVote", () => {
             organizationId,
           },
         },
-      });
+	  },  
+	);
 
       expect(postResult.errors).toBeUndefined();
       expect(postResult.data?.createPost).toBeDefined();
@@ -249,17 +250,14 @@ suite("Mutation createPostVote", () => {
         },
       );
 
-     
-     expect(voteResult.errors).toBeUndefined();
-expect(voteResult.data?.createPostVote).toBeDefined();
+      expect(voteResult.errors).toBeUndefined();
+      expect(voteResult.data?.createPostVote).toBeDefined();
 
-if (!voteResult.data?.createPostVote) {
-  throw new Error("Expected post vote to be created");
-}
+      if (!voteResult.data?.createPostVote) {
+        throw new Error("Expected post vote to be created");
+      }
 
-
-expect(voteResult.data.createPostVote.id).toBeDefined();
-
+      expect(voteResult.data.createPostVote.id).toBeDefined();
     });
   });
 });
