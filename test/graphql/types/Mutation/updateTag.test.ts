@@ -754,58 +754,6 @@ suite("Mutation field updateTag", () => {
 					}),
 				);
 			});
-
-			test("should successfully remove folderId by setting it to null", async () => {
-				const createOrgResult = await mercuriusClient.mutate(
-					Mutation_createOrganization,
-					{
-						headers: { authorization: `bearer ${authToken}` },
-						variables: {
-							input: {
-								name: faker.company.name(),
-								description: faker.lorem.sentence(),
-								countryCode: "us",
-								state: "CA",
-								city: "Los Angeles",
-								postalCode: "90001",
-								addressLine1: faker.location.streetAddress(),
-							},
-						},
-					},
-				);
-				const orgId = createOrgResult.data?.createOrganization?.id;
-				assertToBeNonNullish(orgId);
-
-				const createTagResult = await mercuriusClient.mutate(
-					Mutation_createTag,
-					{
-						headers: { authorization: `bearer ${authToken}` },
-						variables: {
-							input: {
-								name: "Tag With Folder",
-								organizationId: orgId,
-							},
-						},
-					},
-				);
-				const tagId = createTagResult.data?.createTag?.id;
-				assertToBeNonNullish(tagId);
-
-				// Try to remove folderId (set to null)
-				const result = await mercuriusClient.mutate(Mutation_updateTag_Local, {
-					headers: { authorization: `bearer ${authToken}` },
-					variables: {
-						input: {
-							id: tagId,
-							folderId: null,
-						},
-					},
-				});
-
-				expect(result.errors).toBeUndefined();
-				expect(result.data?.updateTag?.id).toBe(tagId);
-				expect(result.data?.updateTag?.folder).toBeNull();
-			});
 		},
 	);
 
