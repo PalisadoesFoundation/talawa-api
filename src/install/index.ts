@@ -7,6 +7,7 @@
  *   npx ts-node src/install/index.ts --local     # Local installation
  */
 
+import fs from "node:fs";
 import path from "node:path";
 import process from "node:process";
 
@@ -129,7 +130,16 @@ function displayPrerequisites(packageJsonPath: string): boolean {
 }
 
 /**
- * Main installation function
+ * Main installation function.
+ *
+ * This function checks prerequisites and provides setup guidance.
+ * Actual package installation is handled by the shell scripts
+ * (install.sh, install-linux.sh, install-macos.sh, install.ps1).
+ *
+ * @param config - Partial configuration options
+ * @returns Installation result with success status and duration.
+ *          Note: packagesInstalled will be empty as this module
+ *          only validates prerequisites, not installs packages.
  */
 export async function install(
 	config?: Partial<InstallConfig>,
@@ -151,6 +161,19 @@ export async function install(
 	displaySystemInfo(fullConfig);
 
 	const packageJsonPath = path.resolve(process.cwd(), "package.json");
+
+	// Verify package.json exists
+	if (!fs.existsSync(packageJsonPath)) {
+		logger.error(
+			`package.json not found at ${packageJsonPath}. Please run this script from the repository root.`,
+		);
+		return {
+			success: false,
+			error: "package.json not found",
+			packagesInstalled: [],
+			duration: Date.now() - startTime,
+		};
+	}
 
 	// Check prerequisites
 	const prereqsPassed = displayPrerequisites(packageJsonPath);
