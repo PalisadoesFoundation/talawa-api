@@ -759,6 +759,9 @@ suite("Mutation field updateTagFolder", () => {
 						}),
 					]),
 				);
+
+				// Verify that the mocked usersTable.findFirst was actually called
+				expect(mockFindFirst).toHaveBeenCalled();
 			} finally {
 				server.drizzleClient.query = originalQuery;
 			}
@@ -789,13 +792,15 @@ suite("Mutation field updateTagFolder", () => {
 			const originalUpdate = server.drizzleClient.update;
 
 			// Mock the update to return an empty array (simulating the tag folder being deleted)
-			server.drizzleClient.update = vi.fn().mockImplementation(() => ({
+			const mockUpdate = vi.fn().mockImplementation(() => ({
 				set: () => ({
 					where: () => ({
 						returning: async () => [],
 					}),
 				}),
-			})) as typeof server.drizzleClient.update;
+			}));
+			server.drizzleClient.update =
+				mockUpdate as typeof server.drizzleClient.update;
 
 			try {
 				const result = await mercuriusClient.mutate(Mutation_updateTagFolder, {
@@ -818,6 +823,9 @@ suite("Mutation field updateTagFolder", () => {
 						}),
 					]),
 				);
+
+				// Verify that the mocked drizzleClient.update was actually called
+				expect(mockUpdate).toHaveBeenCalled();
 			} finally {
 				server.drizzleClient.update = originalUpdate;
 			}
