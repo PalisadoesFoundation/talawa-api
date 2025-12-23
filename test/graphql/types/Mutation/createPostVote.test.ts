@@ -5,12 +5,14 @@ import { server } from "../../../server";
 import { mercuriusClient } from "../client";
 import {
   Mutation_createOrganization,
+  Mutation_createOrganizationMembership,
   Mutation_createPost,
   Mutation_createPostVote,
+  Mutation_createUser,
   Query_signIn,
 } from "../documentNodes";
 
-// ---- sign in once ----
+// ---- sign in once (administrator) ----
 const signInResult = await mercuriusClient.query(Query_signIn, {
   variables: {
     input: {
@@ -27,7 +29,7 @@ assertToBeNonNullish(authToken);
 suite("Mutation createPostVote", () => {
   //// 1. Unauthenticated
   suite("when the user is not authenticated", () => {
-    test("should return an error with unauthenticated extensions code", async () => {
+    test("should return unauthenticated error", async () => {
       const result = await mercuriusClient.mutate(Mutation_createPostVote, {
         variables: {
           input: {
@@ -105,33 +107,23 @@ suite("Mutation createPostVote", () => {
     });
   });
 
-  //// 4. User already voted
+  //// 4. Duplicate voting
   suite("when the user has already voted on the post", () => {
     test("should return forbidden_action_on_arguments_associated_resources error", async () => {
-      const orgResult = await mercuriusClient.mutate(
-        Mutation_createOrganization,
-        {
-          headers: { authorization: `bearer ${authToken}` },
-          variables: {
-            input: {
-              name: `org-${faker.string.uuid()}`,
-              countryCode: "id",
-              isUserRegistrationRequired: false,
-            },
+      const org = await mercuriusClient.mutate(Mutation_createOrganization, {
+        headers: { authorization: `bearer ${authToken}` },
+        variables: {
+          input: {
+            name: `org-${faker.string.uuid()}`,
+            countryCode: "id",
+            isUserRegistrationRequired: false,
           },
         },
-      );
+      });
 
-      expect(orgResult.errors).toBeUndefined();
-      expect(orgResult.data?.createOrganization).toBeDefined();
+      const organizationId = org.data!.createOrganization!.id;
 
-      if (!orgResult.data?.createOrganization) {
-        throw new Error("Expected organization to be created");
-      }
-
-      const organizationId = orgResult.data.createOrganization.id;
-
-      const postResult = await mercuriusClient.mutate(Mutation_createPost, {
+      const post = await mercuriusClient.mutate(Mutation_createPost, {
         headers: { authorization: `bearer ${authToken}` },
         variables: {
           input: {
@@ -141,41 +133,27 @@ suite("Mutation createPostVote", () => {
         },
       });
 
-      expect(postResult.data?.createPost).toBeDefined();
+      const postId = post.data!.createPost!.id;
 
-      if (!postResult.data?.createPost) {
-        throw new Error("Expected post to be created");
-      }
-
-      const postId = postResult.data.createPost.id;
-
-      const firstVote = await mercuriusClient.mutate(
-        Mutation_createPostVote,
-        {
-          headers: { authorization: `bearer ${authToken}` },
-          variables: {
-            input: {
-              postId,
-              type: "up_vote",
-            },
+      await mercuriusClient.mutate(Mutation_createPostVote, {
+        headers: { authorization: `bearer ${authToken}` },
+        variables: {
+          input: {
+            postId,
+            type: "up_vote",
           },
         },
-      );
+      });
 
-      expect(firstVote.data?.createPostVote).toBeDefined();
-
-      const secondVote = await mercuriusClient.mutate(
-        Mutation_createPostVote,
-        {
-          headers: { authorization: `bearer ${authToken}` },
-          variables: {
-            input: {
-              postId,
-              type: "up_vote",
-            },
+      const secondVote = await mercuriusClient.mutate(Mutation_createPostVote, {
+        headers: { authorization: `bearer ${authToken}` },
+        variables: {
+          input: {
+            postId,
+            type: "up_vote",
           },
         },
-      );
+      });
 
       expect(secondVote.data?.createPostVote).toBeNull();
       expect(secondVote.errors).toEqual(
@@ -191,7 +169,7 @@ suite("Mutation createPostVote", () => {
     });
   });
 
-  //// 5. Administrator voting
+     //// 5. Administrator voting
   suite("when the user is an administrator", () => {
     test("should successfully create a vote as administrator", async () => {
       const orgResult = await mercuriusClient.mutate(
@@ -260,4 +238,136 @@ suite("Mutation createPostVote", () => {
       expect(voteResult.data.createPostVote.id).toBeDefined();
     });
   });
+  //// 6. Non-member unauthorized
+  suite("when a regular user is not a member of the organization", () => {
+    test("should return unauthorized_action_on_arguments_associated_resources error", async () => {
+      const user = await mercuriusClient.mutate(Mutation_createUser, {
+        headers: { authorization: `bearer ${authToken}` },
+        variables: {
+          input: {
+            emailAddress: faker.internet.email(),
+            password: faker.internet.password(),
+            role: "regular",
+            name: faker.person.fullName(),         
+            isEmailAddressVerified: true, 
+          },
+        },
+      });
+
+      const userToken = user.data!.createUser!.authenticationToken!;
+
+      const org = await mercuriusClient.mutate(Mutation_createOrganization, {
+        headers: { authorization: `bearer ${authToken}` },
+        variables: {
+          input: {
+            name: `org-${faker.string.uuid()}`,
+            countryCode: "id",
+            isUserRegistrationRequired: false,
+          },
+        },
+      });
+
+      const post = await mercuriusClient.mutate(Mutation_createPost, {
+        headers: { authorization: `bearer ${authToken}` },
+        variables: {
+          input: {
+            caption: "Org post",
+            organizationId: org.data!.createOrganization!.id,
+          },
+        },
+      });
+
+      const vote = await mercuriusClient.mutate(Mutation_createPostVote, {
+        headers: { authorization: `bearer ${userToken}` },
+        variables: {
+          input: {
+            postId: post.data!.createPost!.id,
+            type: "up_vote",
+          },
+        },
+      });
+
+      expect(vote.data?.createPostVote).toBeNull();
+      expect(vote.errors).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({
+            extensions: expect.objectContaining({
+              code: "unauthorized_action_on_arguments_associated_resources",
+            }),
+            path: ["createPostVote"],
+          }),
+        ]),
+      );
+    });
+  });
+
+  //// 7. Regular member success
+  suite("when a regular organization member votes", () => {
+    test("should successfully create a vote", async () => {
+      const user = await mercuriusClient.mutate(Mutation_createUser, {
+        headers: { authorization: `bearer ${authToken}` },
+        variables: {
+          input: {
+            emailAddress: faker.internet.email(),
+            password: faker.internet.password(),
+            role: "regular",
+            name: faker.person.fullName(),         
+            isEmailAddressVerified: true, 
+          },
+        },
+      });
+
+      const userId = user.data!.createUser!.user!.id;
+      const userToken = user.data!.createUser!.authenticationToken!;
+
+      const org = await mercuriusClient.mutate(Mutation_createOrganization, {
+        headers: { authorization: `bearer ${authToken}` },
+        variables: {
+          input: {
+            name: `org-${faker.string.uuid()}`,
+            countryCode: "id",
+            isUserRegistrationRequired: false,
+          },
+        },
+      });
+
+      await mercuriusClient.mutate(Mutation_createOrganizationMembership, {
+        headers: { authorization: `bearer ${authToken}` },
+        variables: {
+          input: {
+            organizationId: org.data!.createOrganization!.id,
+            memberId: userId,
+            role: "regular",
+          },
+        },
+      });
+
+      const post = await mercuriusClient.mutate(Mutation_createPost, {
+        headers: { authorization: `bearer ${authToken}` },
+        variables: {
+          input: {
+            caption: "Member post",
+            organizationId: org.data!.createOrganization!.id,
+          },
+        },
+      });
+
+      const vote = await mercuriusClient.mutate(Mutation_createPostVote, {
+        headers: { authorization: `bearer ${userToken}` },
+        variables: {
+          input: {
+            postId: post.data!.createPost!.id,
+            type: "up_vote",
+          },
+        },
+      });
+
+      expect(vote.errors).toBeUndefined();
+      expect(vote.data?.createPostVote).toBeDefined();
+      expect(vote.data!.createPostVote!.id).toBeDefined();
+    });
+  });
+
+ 
+
 });
