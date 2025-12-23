@@ -88,7 +88,6 @@ builder.mutationField("createPostVote", (t) =>
 					where: (fields, operators) =>
 						operators.eq(fields.id, parsedArgs.input.postId),
 				}),
-				
 			]);
 
 			if (currentUser === undefined) {
