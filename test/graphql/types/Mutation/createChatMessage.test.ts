@@ -250,4 +250,233 @@ suite("Mutation.createChatMessage", () => {
 		expect(result.errors).toBeUndefined();
 		expect(result.data?.createChatMessage?.parentMessage?.id).toBe(parentId);
 	});
+
+	test("invalid arguments result in invalid_arguments error", async () => {
+		const result = await mercuriusClient.mutate(Mutation_createChatMessage, {
+			headers: { authorization: `bearer ${userToken}` },
+			variables: {
+				input: {
+					body: "", // Empty body should fail validation
+					chatId,
+				},
+			},
+		});
+
+		expect(result.data?.createChatMessage).toBeNull();
+		expect(result.errors).toEqual(
+			expect.arrayContaining<TalawaGraphQLFormattedError>([
+				expect.objectContaining({
+					extensions: expect.objectContaining({
+						code: "invalid_arguments",
+					}),
+					path: ["createChatMessage"],
+				}),
+			]),
+		);
+	});
+
+	test("non-existent chat results in arguments_associated_resources_not_found error", async () => {
+		const fakeChat = faker.string.uuid();
+		const result = await mercuriusClient.mutate(Mutation_createChatMessage, {
+			headers: { authorization: `bearer ${userToken}` },
+			variables: {
+				input: {
+					body: "Test message",
+					chatId: fakeChat,
+				},
+			},
+		});
+
+		expect(result.data?.createChatMessage).toBeNull();
+		expect(result.errors).toEqual(
+			expect.arrayContaining<TalawaGraphQLFormattedError>([
+				expect.objectContaining({
+					extensions: expect.objectContaining({
+						code: "arguments_associated_resources_not_found",
+					}),
+					path: ["createChatMessage"],
+				}),
+			]),
+		);
+	});
+
+	test("invalid parentMessageId results in arguments_associated_resources_not_found error", async () => {
+		const fakeParentId = faker.string.uuid();
+		const result = await mercuriusClient.mutate(Mutation_createChatMessage, {
+			headers: { authorization: `bearer ${userToken}` },
+			variables: {
+				input: {
+					body: "Reply to non-existent message",
+					chatId,
+					parentMessageId: fakeParentId,
+				},
+			},
+		});
+
+		expect(result.data?.createChatMessage).toBeNull();
+		expect(result.errors).toEqual(
+			expect.arrayContaining<TalawaGraphQLFormattedError>([
+				expect.objectContaining({
+					extensions: expect.objectContaining({
+						code: "arguments_associated_resources_not_found",
+					}),
+					path: ["createChatMessage"],
+				}),
+			]),
+		);
+	});
+
+	test("user without chat membership and no organization admin role cannot create message", async () => {
+		// Create another user
+		const otherUser = await createUser(adminToken);
+		createdUsers.push(otherUser.id);
+
+		// Create another organization without adding otherUser
+		const org2 = await mercuriusClient.mutate(Mutation_createOrganization, {
+			headers: { authorization: `bearer ${adminToken}` },
+			variables: {
+				input: {
+					name: `Test Org 2 ${faker.string.uuid()}`,
+					countryCode: "us",
+				},
+			},
+		});
+
+		assertToBeNonNullish(org2.data?.createOrganization?.id);
+		const org2Id = org2.data.createOrganization.id;
+		createdOrganizations.push(org2Id);
+
+		// Add admin to organization
+		await mercuriusClient.mutate(Mutation_createOrganizationMembership, {
+			headers: { authorization: `bearer ${adminToken}` },
+			variables: {
+				input: {
+					memberId: adminId,
+					organizationId: org2Id,
+					role: "administrator",
+				},
+			},
+		});
+
+		// Create chat in org2
+		const chat2 = await mercuriusClient.mutate(Mutation_createChat, {
+			headers: { authorization: `bearer ${adminToken}` },
+			variables: {
+				input: {
+					name: "Test Chat 2",
+					organizationId: org2Id,
+				},
+			},
+		});
+
+		if (chat2.errors) {
+			throw new Error(`Failed to create chat: ${JSON.stringify(chat2.errors)}`);
+		}
+
+		assertToBeNonNullish(chat2.data?.createChat?.id);
+		const chat2Id = chat2.data.createChat.id;
+		createdChats.push(chat2Id);
+
+		// Try to create message as otherUser who is not in organization or chat
+		const result = await mercuriusClient.mutate(Mutation_createChatMessage, {
+			headers: { authorization: `bearer ${otherUser.token}` },
+			variables: {
+				input: {
+					body: "Unauthorized message",
+					chatId: chat2Id,
+				},
+			},
+		});
+
+		expect(result.data?.createChatMessage).toBeNull();
+		expect(result.errors).toEqual(
+			expect.arrayContaining<TalawaGraphQLFormattedError>([
+				expect.objectContaining({
+					extensions: expect.objectContaining({
+						code: "unauthorized_action_on_arguments_associated_resources",
+					}),
+					path: ["createChatMessage"],
+				}),
+			]),
+		);
+	});
+
+	test("system administrator can create message in any chat", async () => {
+		// Create another organization without adding admin as chat member
+		const org3 = await mercuriusClient.mutate(Mutation_createOrganization, {
+			headers: { authorization: `bearer ${adminToken}` },
+			variables: {
+				input: {
+					name: `Test Org 3 ${faker.string.uuid()}`,
+					countryCode: "us",
+				},
+			},
+		});
+
+		assertToBeNonNullish(org3.data?.createOrganization?.id);
+		const org3Id = org3.data.createOrganization.id;
+		createdOrganizations.push(org3Id);
+
+		// Add admin to organization
+		await mercuriusClient.mutate(Mutation_createOrganizationMembership, {
+			headers: { authorization: `bearer ${adminToken}` },
+			variables: {
+				input: {
+					memberId: adminId,
+					organizationId: org3Id,
+					role: "administrator",
+				},
+			},
+		});
+
+		// Create chat
+		const chat3 = await mercuriusClient.mutate(Mutation_createChat, {
+			headers: { authorization: `bearer ${adminToken}` },
+			variables: {
+				input: {
+					name: "Test Chat 3",
+					organizationId: org3Id,
+				},
+			},
+		});
+
+		if (chat3.errors) {
+			throw new Error(`Failed to create chat: ${JSON.stringify(chat3.errors)}`);
+		}
+
+		assertToBeNonNullish(chat3.data?.createChat?.id);
+		const chat3Id = chat3.data.createChat.id;
+		createdChats.push(chat3Id);
+
+		// Admin can create message even without being a chat member
+		const result = await mercuriusClient.mutate(Mutation_createChatMessage, {
+			headers: { authorization: `bearer ${adminToken}` },
+			variables: {
+				input: {
+					body: "Admin message",
+					chatId: chat3Id,
+				},
+			},
+		});
+
+		expect(result.errors).toBeUndefined();
+		expect(result.data?.createChatMessage?.body).toBe("Admin message");
+	});
+
+	test("user who is chat member can create message", async () => {
+		// User is already a chat member from beforeAll setup
+		// This tests the condition where currentUserChatMembership is defined
+		const result = await mercuriusClient.mutate(Mutation_createChatMessage, {
+			headers: { authorization: `bearer ${userToken}` },
+			variables: {
+				input: {
+					body: "Another message from chat member",
+					chatId,
+				},
+			},
+		});
+
+		expect(result.errors).toBeUndefined();
+		expect(result.data?.createChatMessage?.body).toBe("Another message from chat member");
+	});
 });
