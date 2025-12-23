@@ -107,16 +107,17 @@ function displayPrerequisites(packageJsonPath: string): boolean {
 	let allPassed = true;
 
 	for (const check of checks) {
-		const statusIcon = check.installed ? "✓" : "✗";
-		const statusColor = check.installed ? "\x1b[32m" : "\x1b[31m";
 		const versionInfo = check.version ? ` (v${check.version})` : "";
 		const requiredInfo = check.requiredVersion
 			? ` [required: ${check.requiredVersion}]`
 			: "";
+		const message = `${check.name}${versionInfo}${requiredInfo}`;
 
-		console.log(
-			`  ${statusColor}${statusIcon}\x1b[0m ${check.name}${versionInfo}${requiredInfo}`,
-		);
+		if (check.installed) {
+			logger.success(message);
+		} else {
+			logger.error(message);
+		}
 
 		if (check.required && !check.installed) {
 			allPassed = false;
