@@ -68,7 +68,25 @@ describe("ChatMessage.parentMessage resolver", () => {
 	test("returns parent message when parent exists", async () => {
 		const parent = { parentMessageId: "parent-id" };
 		const fakeParentMessage = { id: "parent-id", body: "Parent message" };
-		const ctx = createMockContext(fakeParentMessage);
+		const mockEq = vi.fn();
+		const ctx = {
+			drizzleClient: {
+				query: {
+					chatMessagesTable: {
+						findFirst: vi.fn().mockImplementation((args) => {
+							// Execute the where callback to cover operators.eq logic
+							const mockFields = { id: "mock-field-id" };
+							const mockOperators = { eq: mockEq };
+							args.where(mockFields, mockOperators);
+							return Promise.resolve(fakeParentMessage);
+						}),
+					},
+				},
+			},
+			log: {
+				error: vi.fn(),
+			},
+		};
 		const result = await parentMessageResolver(parent, {}, ctx, {});
 		expect(result).toEqual(fakeParentMessage);
 		expect(
@@ -78,16 +96,39 @@ describe("ChatMessage.parentMessage resolver", () => {
 				where: expect.any(Function),
 			}),
 		);
+		// Verify the where callback invoked operators.eq with correct parameters
+		expect(mockEq).toHaveBeenCalledWith("mock-field-id", "parent-id");
 	});
 
 	test("throws TalawaGraphQLError when parent message is missing", async () => {
 		const parent = { parentMessageId: "missing-id" };
-		const ctx = createMockContext(undefined);
+		const mockEq = vi.fn();
+
+		const ctx = {
+			drizzleClient: {
+				query: {
+					chatMessagesTable: {
+						findFirst: vi.fn().mockImplementation((args) => {
+							// Execute the where callback to cover operators.eq logic
+							const mockFields = { id: "mock-field-id" };
+							const mockOperators = { eq: mockEq };
+							args.where(mockFields, mockOperators);
+							return Promise.resolve(undefined);
+						}),
+					},
+				},
+			},
+			log: {
+				error: vi.fn(),
+			},
+		};
 
 		await expect(
 			parentMessageResolver(parent, {}, ctx, {}),
 		).rejects.toBeInstanceOf(TalawaGraphQLError);
 
 		expect(ctx.log.error).toHaveBeenCalled();
+		// Verify the where callback invoked operators.eq with correct parameters
+		expect(mockEq).toHaveBeenCalledWith("mock-field-id", "missing-id");
 	});
 });
