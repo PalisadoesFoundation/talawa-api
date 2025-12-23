@@ -711,78 +711,6 @@ suite("Mutation field updateTag", () => {
 				server.drizzleClient.update = originalUpdate;
 			}
 		});
-
-		test("should successfully update tag with valid folderId from same organization", async () => {
-			const createOrgResult = await mercuriusClient.mutate(
-				Mutation_createOrganization,
-				{
-					headers: { authorization: `bearer ${authToken}` },
-					variables: {
-						input: {
-							name: faker.company.name(),
-							description: faker.lorem.sentence(),
-							countryCode: "us",
-							state: "CA",
-							city: "Los Angeles",
-							postalCode: "90001",
-							addressLine1: faker.location.streetAddress(),
-						},
-					},
-				},
-			);
-			const orgId = createOrgResult.data?.createOrganization?.id;
-			assertToBeNonNullish(orgId);
-
-			// Create a tag folder
-			const createFolderResult = await mercuriusClient.mutate(
-				Mutation_createTagFolder,
-				{
-					headers: { authorization: `bearer ${authToken}` },
-					variables: {
-						input: {
-							name: "Test Folder",
-							organizationId: orgId,
-						},
-					},
-				},
-			);
-			const folderId = createFolderResult.data?.createTagFolder?.id;
-			assertToBeNonNullish(folderId);
-
-			// Create a tag
-			const createTagResult = await mercuriusClient.mutate(Mutation_createTag, {
-				headers: { authorization: `bearer ${authToken}` },
-				variables: {
-					input: {
-						name: "Test Tag",
-						organizationId: orgId,
-					},
-				},
-			});
-			const tagId = createTagResult.data?.createTag?.id;
-			assertToBeNonNullish(tagId);
-
-			// Update tag with folderId from same organization
-			const result = await mercuriusClient.mutate(Mutation_updateTag_Local, {
-				headers: { authorization: `bearer ${authToken}` },
-				variables: {
-					input: {
-						id: tagId,
-						folderId: folderId,
-					},
-				},
-			});
-
-			expect(result.errors).toBeUndefined();
-			expect(result.data?.updateTag).toEqual(
-				expect.objectContaining({
-					id: tagId,
-					folder: expect.objectContaining({
-						id: folderId,
-					}),
-				}),
-			);
-		});
 	});
 
 	suite(
@@ -839,6 +767,81 @@ suite("Mutation field updateTag", () => {
 					expect.objectContaining({
 						id: tagId,
 						name: "Updated Tag Name",
+					}),
+				);
+			});
+
+			test("should successfully update tag with valid folderId from same organization", async () => {
+				const createOrgResult = await mercuriusClient.mutate(
+					Mutation_createOrganization,
+					{
+						headers: { authorization: `bearer ${authToken}` },
+						variables: {
+							input: {
+								name: faker.company.name(),
+								description: faker.lorem.sentence(),
+								countryCode: "us",
+								state: "CA",
+								city: "Los Angeles",
+								postalCode: "90001",
+								addressLine1: faker.location.streetAddress(),
+							},
+						},
+					},
+				);
+				const orgId = createOrgResult.data?.createOrganization?.id;
+				assertToBeNonNullish(orgId);
+
+				// Create a tag folder
+				const createFolderResult = await mercuriusClient.mutate(
+					Mutation_createTagFolder,
+					{
+						headers: { authorization: `bearer ${authToken}` },
+						variables: {
+							input: {
+								name: "Test Folder",
+								organizationId: orgId,
+							},
+						},
+					},
+				);
+				const folderId = createFolderResult.data?.createTagFolder?.id;
+				assertToBeNonNullish(folderId);
+
+				// Create a tag
+				const createTagResult = await mercuriusClient.mutate(
+					Mutation_createTag,
+					{
+						headers: { authorization: `bearer ${authToken}` },
+						variables: {
+							input: {
+								name: "Test Tag",
+								organizationId: orgId,
+							},
+						},
+					},
+				);
+				const tagId = createTagResult.data?.createTag?.id;
+				assertToBeNonNullish(tagId);
+
+				// Update tag with folderId from same organization
+				const result = await mercuriusClient.mutate(Mutation_updateTag_Local, {
+					headers: { authorization: `bearer ${authToken}` },
+					variables: {
+						input: {
+							id: tagId,
+							folderId: folderId,
+						},
+					},
+				});
+
+				expect(result.errors).toBeUndefined();
+				expect(result.data?.updateTag).toEqual(
+					expect.objectContaining({
+						id: tagId,
+						folder: expect.objectContaining({
+							id: folderId,
+						}),
 					}),
 				);
 			});
