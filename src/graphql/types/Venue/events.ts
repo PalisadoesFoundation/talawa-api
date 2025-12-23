@@ -84,7 +84,7 @@ Venue.implement({
 							extensions: {
 								code: "invalid_arguments",
 								issues: error.issues.map((issue) => ({
-									argumentPath: issue.path,
+									argumentPath: issue.path as (string | number)[],
 									message: issue.message,
 								})),
 							},

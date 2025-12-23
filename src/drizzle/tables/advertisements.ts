@@ -95,7 +95,7 @@ export const advertisementsTable = pgTable(
 		 * Mime type of the attachment.
 		 */
 		type: text("type", {
-			enum: advertisementTypeEnum.options,
+			enum: advertisementTypeEnum.options as const,
 		}).notNull(),
 	},
 	(self) => [

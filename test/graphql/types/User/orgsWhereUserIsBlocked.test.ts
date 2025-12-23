@@ -240,7 +240,7 @@ describe("resolveOrgsWhereUserIsBlocked", () => {
 		expect(mockFindMany).not.toHaveBeenCalled();
 	});
 
-	test("throws arguments_associated_resources_not_found error for stale cursor", async () => {
+	test("throws invalid_arguments error for stale cursor", async () => {
 		// Simulate a valid cursor but no rows found
 		mockFindMany.mockResolvedValueOnce([]);
 

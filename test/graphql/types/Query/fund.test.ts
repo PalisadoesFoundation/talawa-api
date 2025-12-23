@@ -4,7 +4,7 @@ import { expect, suite, test } from "vitest";
 import { fundsTableInsertSchema } from "~/src/drizzle/tables/funds";
 import { usersTable } from "~/src/drizzle/tables/users";
 import type {
-	ArgumentsAssociatedResourcesNotFoundExtensions,
+	InvalidArgumentsExtensions,
 	TalawaGraphQLFormattedError,
 	UnauthenticatedExtensions,
 	UnauthorizedActionOnArgumentsAssociatedResourcesExtensions,
@@ -105,7 +105,7 @@ suite("Query field fund", () => {
 			);
 		});
 
-		test("with 'arguments_associated_resources_not_found' extensions code if fund not found", async () => {
+		test("with 'invalid_arguments' extensions code if fund not found", async () => {
 			const adminSignInResult = await mercuriusClient.query(Query_signIn, {
 				variables: {
 					input: {
@@ -132,17 +132,14 @@ suite("Query field fund", () => {
 			expect(fundResult.errors).toEqual(
 				expect.arrayContaining<TalawaGraphQLFormattedError>([
 					expect.objectContaining<TalawaGraphQLFormattedError>({
-						extensions:
-							expect.objectContaining<ArgumentsAssociatedResourcesNotFoundExtensions>(
+						extensions: expect.objectContaining<InvalidArgumentsExtensions>({
+							code: "invalid_arguments",
+							issues: [
 								{
-									code: "arguments_associated_resources_not_found",
-									issues: [
-										{
-											argumentPath: ["input", "id"],
-										},
-									],
+									argumentPath: ["input", "id"],
 								},
-							),
+							],
+						}),
 						message: expect.any(String),
 						path: ["fund"],
 					}),
@@ -259,7 +256,7 @@ suite("Query field fund", () => {
 		);
 	});
 
-	test("with 'arguments_associated_resources_not_found' extensions code when rate limit is exceeded", async () => {
+	test("with 'invalid_arguments' extensions code when rate limit is exceeded", async () => {
 		const fundId = faker.string.uuid();
 		const adminAuthToken = await getAdminAuthToken();
 
@@ -280,9 +277,7 @@ suite("Query field fund", () => {
 
 		const lastResult = results.at(-1);
 		expect(lastResult?.errors).toBeDefined();
-		expect(lastResult?.errors?.[0]?.extensions?.code).toBe(
-			"arguments_associated_resources_not_found",
-		);
+		expect(lastResult?.errors?.[0]?.extensions?.code).toBe("invalid_arguments");
 	});
 
 	test("returns fund data if user is organization member", async () => {
@@ -637,7 +632,7 @@ suite("Query field get fund Campaign Pledges by id", () => {
 			);
 		});
 
-		test("with 'arguments_associated_resources_not_found' extensions code if fund Campaign pledge is not found", async () => {
+		test("with 'invalid_arguments' extensions code if fund Campaign pledge is not found", async () => {
 			const adminSignInResult = await mercuriusClient.query(Query_signIn, {
 				variables: {
 					input: {
@@ -667,17 +662,14 @@ suite("Query field get fund Campaign Pledges by id", () => {
 			expect(fundCampaignPledgeResult.errors).toEqual(
 				expect.arrayContaining<TalawaGraphQLFormattedError>([
 					expect.objectContaining<TalawaGraphQLFormattedError>({
-						extensions:
-							expect.objectContaining<ArgumentsAssociatedResourcesNotFoundExtensions>(
+						extensions: expect.objectContaining<InvalidArgumentsExtensions>({
+							code: "invalid_arguments",
+							issues: [
 								{
-									code: "arguments_associated_resources_not_found",
-									issues: [
-										{
-											argumentPath: ["input", "userId"],
-										},
-									],
+									argumentPath: ["input", "userId"],
 								},
-							),
+							],
+						}),
 						message: expect.any(String),
 						path: ["getPledgesByUserId"],
 					}),
@@ -1165,17 +1157,14 @@ suite("Query field get fund Campaign Pledges by id", () => {
 		expect(fundCampaignPledgeResult2.errors).toEqual(
 			expect.arrayContaining<TalawaGraphQLFormattedError>([
 				expect.objectContaining<TalawaGraphQLFormattedError>({
-					extensions:
-						expect.objectContaining<ArgumentsAssociatedResourcesNotFoundExtensions>(
+					extensions: expect.objectContaining<InvalidArgumentsExtensions>({
+						code: "invalid_arguments",
+						issues: [
 							{
-								code: "arguments_associated_resources_not_found",
-								issues: [
-									{
-										argumentPath: ["input", "userId"],
-									},
-								],
+								argumentPath: ["input", "userId"],
 							},
-						),
+						],
+					}),
 					message: expect.any(String),
 					path: ["getPledgesByUserId"],
 				}),
@@ -1395,7 +1384,7 @@ suite("UUID Validation", () => {
 
 			expect(fundResult.errors).toBeDefined();
 			expect(fundResult.errors?.[0]?.extensions?.code).toBe(
-				"arguments_associated_resources_not_found",
+				"invalid_arguments",
 			);
 		}
 	});

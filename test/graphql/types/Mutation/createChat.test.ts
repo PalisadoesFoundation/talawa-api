@@ -238,7 +238,7 @@ suite("Mutation field createChat", () => {
 						issues: [
 							{
 								argumentPath: ["input", "organizationId"],
-								message: "Invalid uuid",
+								message: "Invalid UUID",
 							},
 						],
 					}),

@@ -1318,7 +1318,7 @@ suite("Mutation updateEventVolunteer - Integration Tests", () => {
 						issues: expect.arrayContaining([
 							expect.objectContaining({
 								argumentPath: ["data"],
-								message: "Expected object, received null",
+								message: "Invalid input: expected object, received null",
 							}),
 						]),
 					}),
@@ -1382,7 +1382,7 @@ suite("Mutation updateEventVolunteer - Integration Tests", () => {
 						issues: expect.arrayContaining([
 							expect.objectContaining({
 								argumentPath: ["data"],
-								message: "Required",
+								message: "Invalid input: expected object, received undefined",
 							}),
 						]),
 					}),
