@@ -428,8 +428,17 @@ suite("Mutation.createChatMessage", () => {
 			},
 		});
 
-		expect(result.errors).toBeUndefined();
 		expect(result.data?.createChatMessage?.body).toBe("Org admin message");
+		expect(result.errors).toEqual(
+			expect.arrayContaining<TalawaGraphQLFormattedError>([
+				expect.objectContaining({
+					extensions: expect.objectContaining({
+						code: "unauthorized_action",
+					}),
+					path: ["createChatMessage", "chat", "createdAt"],
+				}),
+			]),
+		);
 	});
 
 	test("system administrator can create message in any chat", async () => {
