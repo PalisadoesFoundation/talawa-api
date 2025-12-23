@@ -6,9 +6,13 @@
 
 > **install**(`config?`): `Promise`\<[`InstallResult`](../../src/install/types/interfaces/InstallResult.md)\>
 
-Defined in: [src/install/index.ts:134](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/install/index.ts#L134)
+Defined in: [src/install/index.ts:144](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/install/index.ts#L144)
 
-Main installation function
+Main installation function.
+
+This function checks prerequisites and provides setup guidance.
+Actual package installation is handled by the shell scripts
+(install.sh, install-linux.sh, install-macos.sh, install.ps1).
 
 ## Parameters
 
@@ -16,6 +20,12 @@ Main installation function
 
 `Partial`\<[`InstallConfig`](../../src/install/types/interfaces/InstallConfig.md)\>
 
+Partial configuration options
+
 ## Returns
 
 `Promise`\<[`InstallResult`](../../src/install/types/interfaces/InstallResult.md)\>
+
+Installation result with success status and duration.
+         Note: packagesInstalled will be empty as this module
+         only validates prerequisites, not installs packages.
