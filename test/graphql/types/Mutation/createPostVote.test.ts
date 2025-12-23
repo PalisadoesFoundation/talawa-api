@@ -169,7 +169,7 @@ suite("Mutation createPostVote", () => {
     });
   });
 
-     //// 5. Administrator voting
+  //// 5. Administrator voting
   suite("when the user is an administrator", () => {
     test("should successfully create a vote as administrator", async () => {
       const orgResult = await mercuriusClient.mutate(
@@ -189,11 +189,7 @@ suite("Mutation createPostVote", () => {
       expect(orgResult.errors).toBeUndefined();
       expect(orgResult.data?.createOrganization).toBeDefined();
 
-      if (!orgResult.data?.createOrganization) {
-        throw new Error("Expected organization to be created");
-      }
-
-      const organizationId = orgResult.data.createOrganization.id;
+      const organizationId = orgResult.data!.createOrganization!.id;
 
       const postResult = await mercuriusClient.mutate(Mutation_createPost, {
         headers: { authorization: `bearer ${authToken}` },
@@ -203,17 +199,12 @@ suite("Mutation createPostVote", () => {
             organizationId,
           },
         },
-	  },  
-	);
+      });
 
       expect(postResult.errors).toBeUndefined();
       expect(postResult.data?.createPost).toBeDefined();
 
-      if (!postResult.data?.createPost) {
-        throw new Error("Expected post to be created");
-      }
-
-      const postId = postResult.data.createPost.id;
+      const postId = postResult.data!.createPost!.id;
 
       const voteResult = await mercuriusClient.mutate(
         Mutation_createPostVote,
@@ -230,14 +221,10 @@ suite("Mutation createPostVote", () => {
 
       expect(voteResult.errors).toBeUndefined();
       expect(voteResult.data?.createPostVote).toBeDefined();
-
-      if (!voteResult.data?.createPostVote) {
-        throw new Error("Expected post vote to be created");
-      }
-
-      expect(voteResult.data.createPostVote.id).toBeDefined();
+      expect(voteResult.data!.createPostVote!.id).toBeDefined();
     });
   });
+
   //// 6. Non-member unauthorized
   suite("when a regular user is not a member of the organization", () => {
     test("should return unauthorized_action_on_arguments_associated_resources error", async () => {
@@ -248,8 +235,8 @@ suite("Mutation createPostVote", () => {
             emailAddress: faker.internet.email(),
             password: faker.internet.password(),
             role: "regular",
-            name: faker.person.fullName(),         
-            isEmailAddressVerified: true, 
+            name: faker.person.fullName(),
+            isEmailAddressVerified: true,
           },
         },
       });
@@ -311,8 +298,8 @@ suite("Mutation createPostVote", () => {
             emailAddress: faker.internet.email(),
             password: faker.internet.password(),
             role: "regular",
-            name: faker.person.fullName(),         
-            isEmailAddressVerified: true, 
+            name: faker.person.fullName(),
+            isEmailAddressVerified: true,
           },
         },
       });
@@ -367,7 +354,4 @@ suite("Mutation createPostVote", () => {
       expect(vote.data!.createPostVote!.id).toBeDefined();
     });
   });
-
- 
-
 });
