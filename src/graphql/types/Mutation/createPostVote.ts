@@ -88,16 +88,7 @@ builder.mutationField("createPostVote", (t) =>
 					where: (fields, operators) =>
 						operators.eq(fields.id, parsedArgs.input.postId),
 				}),
-				ctx.drizzleClient.query.postVotesTable.findFirst({
-					columns: {
-						type: true,
-					},
-					where: (fields, operators) =>
-						operators.and(
-							operators.eq(fields.creatorId, currentUserId),
-							operators.eq(fields.postId, parsedArgs.input.postId),
-						),
-				}),
+				
 			]);
 
 			if (currentUser === undefined) {
