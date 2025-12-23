@@ -253,26 +253,23 @@ suite("Mutation field updateTag", () => {
 			const orgId = createOrgResult.data?.createOrganization?.id;
 			assertToBeNonNullish(orgId);
 
-			const createFolderResult = await mercuriusClient.mutate(
-				Mutation_createTag,
-				{
-					headers: { authorization: `bearer ${authToken}` },
-					variables: {
-						input: {
-							name: "Test Tag",
-							organizationId: orgId,
-						},
+			const createTagResult = await mercuriusClient.mutate(Mutation_createTag, {
+				headers: { authorization: `bearer ${authToken}` },
+				variables: {
+					input: {
+						name: "Test Tag",
+						organizationId: orgId,
 					},
 				},
-			);
-			const folderId = createFolderResult.data?.createTag?.id;
-			assertToBeNonNullish(folderId);
+			});
+			const tagId = createTagResult.data?.createTag?.id;
+			assertToBeNonNullish(tagId);
 
 			const result = await mercuriusClient.mutate(Mutation_updateTag_Local, {
 				headers: { authorization: `bearer ${authToken}` },
 				variables: {
 					input: {
-						id: folderId,
+						id: tagId,
 						folderId: faker.string.uuid(),
 					},
 				},
