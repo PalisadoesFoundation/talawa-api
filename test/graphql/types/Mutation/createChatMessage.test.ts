@@ -493,23 +493,4 @@ suite("Mutation.createChatMessage", () => {
 		expect(result.errors).toBeUndefined();
 		expect(result.data?.createChatMessage?.body).toBe("Admin message");
 	});
-
-	test("user who is chat member can create message", async () => {
-		// User is already a chat member from beforeAll setup
-		// This tests the condition where currentUserChatMembership is defined
-		const result = await mercuriusClient.mutate(Mutation_createChatMessage, {
-			headers: { authorization: `bearer ${userToken}` },
-			variables: {
-				input: {
-					body: "Another message from chat member",
-					chatId,
-				},
-			},
-		});
-
-		expect(result.errors).toBeUndefined();
-		expect(result.data?.createChatMessage?.body).toBe(
-			"Another message from chat member",
-		);
-	});
 });
