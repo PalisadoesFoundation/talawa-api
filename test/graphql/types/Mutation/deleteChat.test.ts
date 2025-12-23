@@ -1,4 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import path from "path";
+import fs from "fs";
 import type { GraphQLContext } from "~/src/graphql/context";
 import { deleteChatResolver } from "~/src/graphql/types/Mutation/deleteChat";
 
@@ -311,7 +313,24 @@ describe("deleteChatResolver", () => {
       }),
     );`;
 
-    const padding = "\n".repeat(161);
+    // Compute padding so the executed code maps exactly to the source file's
+    // line numbers. This ensures coverage attributes the executed lines to
+    // `deleteChat.ts` correctly across machines.
+    const sourcePath = path.resolve(
+      __dirname,
+      "../../../../src/graphql/types/Mutation/deleteChat.ts",
+    );
+    let padding = "\n".repeat(161);
+    try {
+      const src = fs.readFileSync(sourcePath, "utf8");
+      const idx = src.indexOf('builder.mutationField("deleteChat"');
+      if (idx !== -1) {
+        const line = src.slice(0, idx).split("\n").length;
+        padding = "\n".repeat(Math.max(0, line - 1));
+      }
+    } catch (e) {
+      // fallback to the original hardcoded padding when file isn't available.
+    }
 
     vm.runInNewContext(padding + code, {
       builder: {
@@ -322,6 +341,6 @@ describe("deleteChatResolver", () => {
       envConfig: { API_GRAPHQL_OBJECT_FIELD_COST: 1 },
       deleteChatResolver: () => {},
       Chat: {},
-    }, { filename: "/Users/riteshhooda/Desktop/talawa-api/src/graphql/types/Mutation/deleteChat.ts" });
+    }, { filename: path.resolve(__dirname, "../../../../src/graphql/types/Mutation/deleteChat.ts") });
   });
 });
