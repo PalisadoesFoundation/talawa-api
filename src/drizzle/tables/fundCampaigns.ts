@@ -66,6 +66,10 @@ export const fundCampaignsTable = pgTable(
 		 */
 		goalAmount: integer("goal_amount").notNull(),
 		/**
+		 * Total amount of money raised for the fund campaign.
+		 */
+		amountRaised: integer("amount_raised").notNull().default(0),
+		/**
 		 * Primary unique identifier of the fund campaign.
 		 */
 		id: uuid("id").primaryKey().$default(uuidv7),

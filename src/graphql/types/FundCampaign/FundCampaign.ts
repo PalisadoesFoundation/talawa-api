@@ -10,6 +10,9 @@ FundCampaign.implement({
 	description:
 		"Fund campaigns are specific events created for the purpose of raising organization funds.",
 	fields: (t) => ({
+		amountRaised: t.exposeInt("amountRaised", {
+			description: "Total amount raised for the fund campaign.",
+		}),
 		currencyCode: t.expose("currencyCode", {
 			description: "Currency code of the fund campaign.",
 			type: Iso4217CurrencyCode,
