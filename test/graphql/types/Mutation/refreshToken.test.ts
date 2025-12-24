@@ -1,4 +1,5 @@
 import { faker } from "@faker-js/faker";
+import { print } from "graphql";
 import { assertToBeNonNullish } from "test/helpers";
 import { beforeAll, expect, suite, test } from "vitest";
 import { DEFAULT_REFRESH_TOKEN_EXPIRES_MS } from "~/src/utilities/refreshTokenUtils";
@@ -130,6 +131,69 @@ suite("Mutation field refreshToken", () => {
 				(secondRefresh.errors?.[0] as unknown as TalawaGraphQLFormattedError)
 					?.extensions?.code,
 			).toBe("unauthenticated");
+		});
+
+		test("should rotate cookies when refreshing tokens", async () => {
+			// Get a fresh token via server.inject to get cookies
+			const signInResponse = await server.inject({
+				method: "POST",
+				url: "/graphql",
+				payload: {
+					query: print(Query_signIn),
+					variables: {
+						input: {
+							emailAddress:
+								server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
+							password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
+						},
+					},
+				},
+			});
+
+			const signInCookies = signInResponse.cookies;
+			const refreshTokenCookie = signInCookies.find(
+				(c) => c.name === "talawa_refresh_token",
+			);
+			expect(refreshTokenCookie).toBeDefined();
+
+			// Refresh token using the cookie value
+			const response = await server.inject({
+				method: "POST",
+				url: "/graphql",
+				payload: {
+					query: print(Mutation_refreshToken),
+					variables: {
+						refreshToken: refreshTokenCookie?.value,
+					},
+				},
+				cookies: {
+					talawa_refresh_token: refreshTokenCookie?.value || "",
+				},
+			});
+
+			expect(response.statusCode).toBe(200);
+
+			const cookies = response.cookies;
+			expect(cookies).toBeDefined();
+			expect(cookies.length).toBeGreaterThanOrEqual(2);
+
+			const newAccessTokenCookie = cookies.find(
+				(c) => c.name === "talawa_access_token",
+			);
+			const newRefreshTokenCookie = cookies.find(
+				(c) => c.name === "talawa_refresh_token",
+			);
+
+			expect(newAccessTokenCookie).toBeDefined();
+			expect(newAccessTokenCookie?.httpOnly).toBe(true);
+			expect(newAccessTokenCookie?.path).toBe("/");
+			expect(newAccessTokenCookie?.sameSite).toBe("Lax");
+
+			expect(newRefreshTokenCookie).toBeDefined();
+			expect(newRefreshTokenCookie?.httpOnly).toBe(true);
+			expect(newRefreshTokenCookie?.path).toBe("/");
+			expect(newRefreshTokenCookie?.sameSite).toBe("Strict");
+			expect(newRefreshTokenCookie?.value).not.toBe(refreshTokenCookie?.value);
 		});
 	});
 

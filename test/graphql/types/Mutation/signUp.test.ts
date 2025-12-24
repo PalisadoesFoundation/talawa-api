@@ -1,5 +1,6 @@
 import { faker } from "@faker-js/faker";
 import type { ResultOf, VariablesOf } from "gql.tada";
+import { print } from "graphql";
 import { assertToBeNonNullish } from "test/helpers";
 import { afterEach, expect, suite, test, vi } from "vitest";
 import type {
@@ -517,6 +518,53 @@ suite("Mutation field signUp", () => {
 						}),
 					}),
 				);
+			});
+
+			test("should set HTTP-Only cookies on successful sign-up", async () => {
+				// Create a test organization
+				const organization = await createTestOrganization();
+				testCleanupFunctions.push(organization.cleanup);
+
+				const variables: VariablesOf<typeof Mutation_signUp> = {
+					input: {
+						emailAddress: `email${faker.string.ulid()}@email.com`,
+						name: "name",
+						password: "password",
+						selectedOrganization: organization.orgId,
+					},
+				};
+
+				const response = await server.inject({
+					method: "POST",
+					url: "/graphql",
+					payload: {
+						query: print(Mutation_signUp),
+						variables,
+					},
+				});
+
+				expect(response.statusCode).toBe(200);
+
+				const cookies = response.cookies;
+				expect(cookies).toBeDefined();
+				expect(cookies.length).toBeGreaterThanOrEqual(2);
+
+				const accessTokenCookie = cookies.find(
+					(c) => c.name === "talawa_access_token",
+				);
+				const refreshTokenCookie = cookies.find(
+					(c) => c.name === "talawa_refresh_token",
+				);
+
+				expect(accessTokenCookie).toBeDefined();
+				expect(accessTokenCookie?.httpOnly).toBe(true);
+				expect(accessTokenCookie?.path).toBe("/");
+				expect(accessTokenCookie?.sameSite).toBe("Lax");
+
+				expect(refreshTokenCookie).toBeDefined();
+				expect(refreshTokenCookie?.httpOnly).toBe(true);
+				expect(refreshTokenCookie?.path).toBe("/");
+				expect(refreshTokenCookie?.sameSite).toBe("Strict");
 			});
 
 			test('nullable user fields have the "null" values if the corresponding nullable arguments are not provided in the graphql operation.', async () => {
