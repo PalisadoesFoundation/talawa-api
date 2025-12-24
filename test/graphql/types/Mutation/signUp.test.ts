@@ -3,6 +3,7 @@ import type { ResultOf, VariablesOf } from "gql.tada";
 import { print } from "graphql";
 import { assertToBeNonNullish } from "test/helpers";
 import { afterEach, expect, suite, test, vi } from "vitest";
+import { COOKIE_NAMES } from "~/src/utilities/cookieConfig";
 import type {
 	ForbiddenActionExtensions,
 	ForbiddenActionOnArgumentsAssociatedResourcesExtensions,
@@ -550,10 +551,10 @@ suite("Mutation field signUp", () => {
 				expect(cookies.length).toBeGreaterThanOrEqual(2);
 
 				const accessTokenCookie = cookies.find(
-					(c) => c.name === "talawa_access_token",
+					(c) => c.name === COOKIE_NAMES.ACCESS_TOKEN,
 				);
 				const refreshTokenCookie = cookies.find(
-					(c) => c.name === "talawa_refresh_token",
+					(c) => c.name === COOKIE_NAMES.REFRESH_TOKEN,
 				);
 
 				expect(accessTokenCookie).toBeDefined();

@@ -4,6 +4,7 @@ import type { VariablesOf } from "gql.tada";
 import { print } from "graphql";
 import { assertToBeNonNullish } from "test/helpers";
 import { afterAll, beforeAll, expect, suite, test } from "vitest";
+import { COOKIE_NAMES } from "~/src/utilities/cookieConfig";
 import type {
 	AccountLockedExtensions,
 	ArgumentsAssociatedResourcesNotFoundExtensions,
@@ -399,10 +400,10 @@ suite("Query field signIn", () => {
 		expect(cookies.length).toBeGreaterThanOrEqual(2);
 
 		const accessTokenCookie = cookies.find(
-			(c) => c.name === "talawa_access_token",
+			(c) => c.name === COOKIE_NAMES.ACCESS_TOKEN,
 		);
 		const refreshTokenCookie = cookies.find(
-			(c) => c.name === "talawa_refresh_token",
+			(c) => c.name === COOKIE_NAMES.REFRESH_TOKEN,
 		);
 
 		expect(accessTokenCookie).toBeDefined();

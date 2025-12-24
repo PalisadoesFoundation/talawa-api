@@ -2,6 +2,7 @@ import { faker } from "@faker-js/faker";
 import { print } from "graphql";
 import { assertToBeNonNullish } from "test/helpers";
 import { beforeAll, expect, suite, test } from "vitest";
+import { COOKIE_NAMES } from "~/src/utilities/cookieConfig";
 import { DEFAULT_REFRESH_TOKEN_EXPIRES_MS } from "~/src/utilities/refreshTokenUtils";
 import type {
 	InvalidArgumentsExtensions,
@@ -152,7 +153,7 @@ suite("Mutation field refreshToken", () => {
 
 			const signInCookies = signInResponse.cookies;
 			const refreshTokenCookie = signInCookies.find(
-				(c) => c.name === "talawa_refresh_token",
+				(c) => c.name === COOKIE_NAMES.REFRESH_TOKEN,
 			);
 			expect(refreshTokenCookie).toBeDefined();
 
@@ -167,7 +168,7 @@ suite("Mutation field refreshToken", () => {
 					},
 				},
 				cookies: {
-					talawa_refresh_token: refreshTokenCookie?.value || "",
+					[COOKIE_NAMES.REFRESH_TOKEN]: refreshTokenCookie?.value || "",
 				},
 			});
 
@@ -178,10 +179,10 @@ suite("Mutation field refreshToken", () => {
 			expect(cookies.length).toBeGreaterThanOrEqual(2);
 
 			const newAccessTokenCookie = cookies.find(
-				(c) => c.name === "talawa_access_token",
+				(c) => c.name === COOKIE_NAMES.ACCESS_TOKEN,
 			);
 			const newRefreshTokenCookie = cookies.find(
-				(c) => c.name === "talawa_refresh_token",
+				(c) => c.name === COOKIE_NAMES.REFRESH_TOKEN,
 			);
 
 			expect(newAccessTokenCookie).toBeDefined();
