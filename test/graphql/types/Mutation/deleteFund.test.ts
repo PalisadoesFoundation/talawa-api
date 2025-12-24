@@ -249,8 +249,9 @@ suite("deleteFund mutation", () => {
 		});
 
 		expect(result.errors).toBeUndefined();
-		// biome-ignore lint/style/noNonNullAssertion: result.errors is undefined, guaranteeing data and deleteFund are present
-		expect(result.data!.deleteFund!.id).toBe(fundId);
+		expect(result.data).toBeDefined();
+		expect(result.data?.deleteFund).toBeDefined();
+		expect(result.data?.deleteFund?.id).toBe(fundId);
 
 		const rows = await server.drizzleClient
 			.select()
