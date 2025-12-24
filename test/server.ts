@@ -36,7 +36,6 @@ export const server = await createServer({
 		/**
 		 * This makes the server test instance use the test cookie secret.
 		 */
-		API_COOKIE_SECRET:
-			testEnvConfig.API_COOKIE_SECRET || process.env.API_COOKIE_SECRET,
+		API_COOKIE_SECRET: testEnvConfig.API_COOKIE_SECRET,
 	},
 });
