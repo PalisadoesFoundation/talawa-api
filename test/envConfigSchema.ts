@@ -21,6 +21,9 @@ export const testEnvConfigSchema = Type.Object({
 		envConfigSchema.properties.API_ENABLE_EMAIL_QUEUE,
 	),
 	MINIO_ROOT_USER: envConfigSchema.properties.MINIO_ROOT_USER,
+	API_COOKIE_SECRET: Type.Optional(
+		envConfigSchema.properties.API_COOKIE_SECRET,
+	),
 });
 export const testEnvConfig = envSchema<TestEnvConfig>({
 	ajv: envSchemaAjv,

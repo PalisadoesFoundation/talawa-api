@@ -27,5 +27,10 @@ export const server = await createServer({
 		 * This makes the server test instance connect to the redis test database.
 		 */
 		API_REDIS_HOST: testEnvConfig.API_REDIS_TEST_HOST,
+		/**
+		 * This makes the server test instance use the test cookie secret.
+		 */
+		API_COOKIE_SECRET:
+			testEnvConfig.API_COOKIE_SECRET || process.env.API_COOKIE_SECRET,
 	},
 });
