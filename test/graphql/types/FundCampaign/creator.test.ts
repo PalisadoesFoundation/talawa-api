@@ -220,13 +220,13 @@ describe("FundCampaign Resolver - Creator Field", () => {
 		// Get the where function that was passed
 		const callArgs = mocks.drizzleClient.query.fundsTable.findFirst.mock
 			.calls[0] as unknown as [
-				{
-					where: (
-						fields: Record<string, unknown>,
-						operators: Record<string, (...args: unknown[]) => unknown>,
-					) => unknown;
-				},
-			];
+			{
+				where: (
+					fields: Record<string, unknown>,
+					operators: Record<string, (...args: unknown[]) => unknown>,
+				) => unknown;
+			},
+		];
 		expect(callArgs).toBeDefined();
 		expect(callArgs[0]).toBeDefined();
 		const whereFunction = callArgs[0].where;
@@ -263,13 +263,13 @@ describe("FundCampaign Resolver - Creator Field", () => {
 		// Get the where function that was passed
 		const callArgs = mocks.drizzleClient.query.usersTable.findFirst.mock
 			.calls[0] as unknown as [
-				{
-					where: (
-						fields: Record<string, unknown>,
-						operators: Record<string, (...args: unknown[]) => unknown>,
-					) => unknown;
-				},
-			];
+			{
+				where: (
+					fields: Record<string, unknown>,
+					operators: Record<string, (...args: unknown[]) => unknown>,
+				) => unknown;
+			},
+		];
 		expect(callArgs).toBeDefined();
 		expect(callArgs[0]).toBeDefined();
 		const whereFunction = callArgs[0].where;
@@ -300,21 +300,21 @@ describe("FundCampaign Resolver - Creator Field", () => {
 		// Get the call arguments
 		const callArgs = mocks.drizzleClient.query.fundsTable.findFirst.mock
 			.calls[0] as unknown as [
-				{
-					with: {
-						organization: {
-							with: {
-								membershipsWhereOrganization: {
-									where: (
-										fields: Record<string, unknown>,
-										operators: Record<string, (...args: unknown[]) => unknown>,
-									) => unknown;
-								};
+			{
+				with: {
+					organization: {
+						with: {
+							membershipsWhereOrganization: {
+								where: (
+									fields: Record<string, unknown>,
+									operators: Record<string, (...args: unknown[]) => unknown>,
+								) => unknown;
 							};
 						};
 					};
-				},
-			];
+				};
+			},
+		];
 		expect(callArgs).toBeDefined();
 		expect(callArgs[0]).toBeDefined();
 		expect(callArgs[0].with).toBeDefined();
@@ -352,20 +352,20 @@ describe("FundCampaign Resolver - Creator Field", () => {
 		// Get the call arguments and verify role column is selected
 		const callArgs = mocks.drizzleClient.query.fundsTable.findFirst.mock
 			.calls[0] as unknown as [
-				{
-					with: {
-						organization: {
-							with: {
-								membershipsWhereOrganization: {
-									columns: {
-										role: boolean;
-									};
+			{
+				with: {
+					organization: {
+						with: {
+							membershipsWhereOrganization: {
+								columns: {
+									role: boolean;
 								};
 							};
 						};
 					};
-				},
-			];
+				};
+			},
+		];
 
 		expect(callArgs).toBeDefined();
 		expect(callArgs[0]).toBeDefined();
@@ -451,13 +451,13 @@ describe("FundCampaign Resolver - Creator Field", () => {
 		// Get the second call (for the creator user)
 		const secondCallArgs = mocks.drizzleClient.query.usersTable.findFirst.mock
 			.calls[1] as unknown as [
-				{
-					where: (
-						fields: Record<string, unknown>,
-						operators: Record<string, (...args: unknown[]) => unknown>,
-					) => unknown;
-				},
-			];
+			{
+				where: (
+					fields: Record<string, unknown>,
+					operators: Record<string, (...args: unknown[]) => unknown>,
+				) => unknown;
+			},
+		];
 
 		expect(secondCallArgs).toBeDefined();
 		expect(secondCallArgs[0]).toBeDefined();

@@ -1214,6 +1214,9 @@ type Fund {
 }
 
 type FundCampaign {
+  """Total amount raised for the fund campaign."""
+  amountRaised: Int
+
   """Date time at the time the fund campaign was created."""
   createdAt: DateTime
 
