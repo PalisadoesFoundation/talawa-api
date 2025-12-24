@@ -826,21 +826,26 @@ suite("Venue events Field", () => {
 		});
 
 		// Mock the query to return event with null attachmentsWhereEvent
+		// The original query includes with: { event: { with: { attachmentsWhereEvent: true } } }
+		// so the result will have the event relation, but TypeScript needs a type assertion
 		const originalFindMany =
 			server.drizzleClient.query.venueBookingsTable.findMany;
 		server.drizzleClient.query.venueBookingsTable.findMany = vi
 			.fn()
 			.mockImplementation(async (options) => {
 				// Call original but modify the result to set attachmentsWhereEvent to null
+				// The options include the event relation, so the result will have it
 				const result = await originalFindMany.call(
 					server.drizzleClient.query.venueBookingsTable,
 					options,
 				);
+				// Type assertion: the query includes event relation, so booking will have event property
+				type BookingWithEvent = (typeof result)[number] & {
+					event: { attachmentsWhereEvent: unknown } | null;
+				};
 				// Modify the event to have null attachmentsWhereEvent
 				return result.map((booking) => {
-					const bookingWithEvent = booking as typeof booking & {
-						event: { attachmentsWhereEvent: unknown } | null;
-					};
+					const bookingWithEvent = booking as BookingWithEvent;
 					if (!bookingWithEvent.event) {
 						return booking;
 					}

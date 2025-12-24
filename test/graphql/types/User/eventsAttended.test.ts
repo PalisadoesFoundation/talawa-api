@@ -30,6 +30,26 @@ describe("User EventsAttended Resolver Tests", () => {
 		} as UserType;
 	});
 
+	describe("Authentication", () => {
+		it("should throw unauthenticated error when user is not authenticated", async () => {
+			const { context: unauthCtx } = createMockGraphQLContext(false);
+
+			await expect(
+				userEventsAttendedResolver(mockUser, {}, unauthCtx),
+			).rejects.toThrow(TalawaGraphQLError);
+
+			await expect(
+				userEventsAttendedResolver(mockUser, {}, unauthCtx),
+			).rejects.toThrow(
+				expect.objectContaining({
+					extensions: expect.objectContaining({
+						code: "unauthenticated",
+					}),
+				}),
+			);
+		});
+	});
+
 	describe("Empty Attendances", () => {
 		it("should return empty array when user has no event attendances", async () => {
 			mocks.drizzleClient.query.eventAttendeesTable.findMany.mockResolvedValue(

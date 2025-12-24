@@ -1,5 +1,5 @@
 import { faker } from "@faker-js/faker";
-import { beforeAll, beforeEach, expect, suite, test } from "vitest";
+import { beforeAll, beforeEach, expect, suite, test, vi } from "vitest";
 import { organizationMembershipsTable } from "~/src/drizzle/tables/organizationMemberships";
 import { assertToBeNonNullish } from "../../../helpers";
 import { server } from "../../../server";
@@ -217,13 +217,15 @@ suite("Query: usersByOrganizationId", () => {
 	});
 
 	test("should handle database errors gracefully", async () => {
-		// Mock a database error by spying on the query method
-		const originalFindMany =
-			server.drizzleClient.query.organizationMembershipsTable.findMany;
-		server.drizzleClient.query.organizationMembershipsTable.findMany =
-			async () => {
+		// Mock a database error using vi.spyOn for proper typing
+		const spy = vi
+			.spyOn(
+				server.drizzleClient.query.organizationMembershipsTable,
+				"findMany",
+			)
+			.mockImplementation(async () => {
 				throw new Error("Database connection error");
-			};
+			});
 
 		try {
 			const result = await mercuriusClient.query(Query_usersByOrganizationId, {
@@ -237,9 +239,8 @@ suite("Query: usersByOrganizationId", () => {
 				"An error occurred while fetching users",
 			);
 		} finally {
-			// Restore original method
-			server.drizzleClient.query.organizationMembershipsTable.findMany =
-				originalFindMany;
+			// Restore the spy
+			spy.mockRestore();
 		}
 	});
 });
@@ -305,9 +306,10 @@ suite("Query: eventsByOrganizationId", () => {
 	});
 
 	test("should return unauthenticated error when currentUser is undefined", async () => {
-		// Mock findFirst to return undefined
-		const originalFindFirst = server.drizzleClient.query.usersTable.findFirst;
-		server.drizzleClient.query.usersTable.findFirst = async () => undefined;
+		// Mock findFirst to return undefined using vi.spyOn for proper typing
+		const spy = vi
+			.spyOn(server.drizzleClient.query.usersTable, "findFirst")
+			.mockResolvedValue(undefined);
 
 		try {
 			const result = await mercuriusClient.query(Query_eventsByOrganizationId, {
@@ -325,16 +327,18 @@ suite("Query: eventsByOrganizationId", () => {
 				]),
 			);
 		} finally {
-			server.drizzleClient.query.usersTable.findFirst = originalFindFirst;
+			// Restore the spy
+			spy.mockRestore();
 		}
 	});
 
 	test("should handle database errors when fetching events", async () => {
-		// Mock eventsTable.findMany to throw an error
-		const originalFindMany = server.drizzleClient.query.eventsTable.findMany;
-		server.drizzleClient.query.eventsTable.findMany = async () => {
-			throw new Error("Database query failed");
-		};
+		// Mock eventsTable.findMany to throw an error using vi.spyOn for proper typing
+		const spy = vi
+			.spyOn(server.drizzleClient.query.eventsTable, "findMany")
+			.mockImplementation(async () => {
+				throw new Error("Database query failed");
+			});
 
 		try {
 			const result = await mercuriusClient.query(Query_eventsByOrganizationId, {
@@ -348,7 +352,8 @@ suite("Query: eventsByOrganizationId", () => {
 				"An error occurred while fetching events",
 			);
 		} finally {
-			server.drizzleClient.query.eventsTable.findMany = originalFindMany;
+			// Restore the spy
+			spy.mockRestore();
 		}
 	});
 });
