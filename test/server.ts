@@ -3,17 +3,17 @@ import { createServer } from "~/src/createServer";
 import { envSchemaAjv } from "~/src/envConfigSchema";
 import { type TestEnvConfig, testEnvConfigSchema } from "./envConfigSchema";
 
-// Ensure API_COOKIE_SECRET is set for tests as it is required by the server
-if (!process.env.API_COOKIE_SECRET) {
-	process.env.API_COOKIE_SECRET =
-		"test-cookie-secret-must-be-at-least-32-characters-long";
-}
-
 const testEnvConfig = envSchema<TestEnvConfig>({
 	ajv: envSchemaAjv,
 	dotenv: true,
 	schema: testEnvConfigSchema,
 });
+
+// Ensure API_COOKIE_SECRET is set in process.env for createServer's internal validation
+// This uses the default value from testEnvConfigSchema if not present in env
+if (!process.env.API_COOKIE_SECRET) {
+	process.env.API_COOKIE_SECRET = testEnvConfig.API_COOKIE_SECRET;
+}
 
 export const server = await createServer({
 	envConfig: {
