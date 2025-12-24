@@ -244,6 +244,23 @@ Venue.implement({
 						});
 					}
 
+					// Check which eventIds are recurring instances
+					const eventIds = venueBookings.map((booking) => booking.eventId);
+					const recurringInstances =
+						await ctx.drizzleClient.query.recurringEventInstancesTable.findMany(
+							{
+								columns: {
+									id: true,
+									baseRecurringEventId: true,
+								},
+								where: (fields, operators) =>
+									operators.inArray(fields.id, eventIds),
+							},
+						);
+					const recurringInstanceIds = new Set(
+						recurringInstances.map((instance) => instance.id),
+					);
+
 					// Transform venue bookings to events with attachments
 					const eventsWithAttachments: EventWithAttachments[] = venueBookings
 						.filter((booking) => booking.event !== null)
@@ -252,10 +269,13 @@ Venue.implement({
 								throw new Error("Event should not be null after filter");
 							}
 							const { attachmentsWhereEvent, ...event } = booking.event;
+							const isGenerated = recurringInstanceIds.has(booking.eventId);
 							return {
 								...event,
 								attachments: attachmentsWhereEvent || [],
-								eventType: "standalone" as const,
+								eventType: isGenerated
+									? ("generated" as const)
+									: ("standalone" as const),
 							} as EventWithAttachments;
 						});
 

@@ -204,6 +204,53 @@ describe("User EventsAttended Resolver Tests", () => {
 			expect(result[0]?.name).toBe("Event with null attachments");
 			expect(result[0]?.attachments).toEqual([]);
 		});
+
+		it("should return attachments when they exist for standalone events", async () => {
+			const mockAttendances = [
+				{
+					id: "attendance-1",
+					userId: "user-789",
+					eventId: "event-123",
+					event: {
+						id: "event-123",
+						name: "Event with Attachments",
+						description: "Test event with attachments",
+						startAt: new Date("2024-03-15T10:00:00Z"),
+						endAt: new Date("2024-03-15T12:00:00Z"),
+						organizationId: "org-123",
+						isPublic: true,
+						allDay: false,
+						attachmentsWhereEvent: [
+							{
+								id: "attach-1",
+								name: "document.pdf",
+								mimeType: "application/pdf",
+							},
+							{
+								id: "attach-2",
+								name: "image.png",
+								mimeType: "image/png",
+							},
+						],
+					},
+					recurringEventInstance: null,
+				},
+			];
+
+			mocks.drizzleClient.query.eventAttendeesTable.findMany.mockResolvedValue(
+				mockAttendances,
+			);
+
+			const result = await userEventsAttendedResolver(mockUser, {}, ctx);
+
+			expect(result).toHaveLength(1);
+			expect(result[0]?.name).toBe("Event with Attachments");
+			expect(result[0]?.attachments).toHaveLength(2);
+			expect(result[0]?.attachments[0]?.name).toBe("document.pdf");
+			expect(result[0]?.attachments[0]?.mimeType).toBe("application/pdf");
+			expect(result[0]?.attachments[1]?.name).toBe("image.png");
+			expect(result[0]?.attachments[1]?.mimeType).toBe("image/png");
+		});
 	});
 
 	describe("Recurring Event Instance Attendances", () => {

@@ -35,6 +35,9 @@ export const userEventsAttendedResolver = async (
 					recurringEventInstance: {
 						with: {
 							baseRecurringEvent: true,
+							// Note: Attachments are not fetched for recurring event instances
+							// as they inherit from the base template and instance-specific
+							// attachments are not currently supported in this resolver.
 						},
 					},
 				},
@@ -47,13 +50,17 @@ export const userEventsAttendedResolver = async (
 			.map((attendance) => {
 				if (attendance.event) {
 					// Standalone event
+					// Drizzle returns an array (possibly empty) when attachmentsWhereEvent: true
 					return {
 						...attendance.event,
-						attachments: attendance.event.attachmentsWhereEvent || [],
+						attachments: attendance.event.attachmentsWhereEvent ?? [],
 					};
 				}
 				if (attendance.recurringEventInstance) {
 					// Recurring event instance - merge base event with instance data
+					// Note: Attachments are intentionally omitted for recurring instances
+					// as they inherit from the base template and instance-specific attachments
+					// are not currently supported in this resolver.
 					const instance = attendance.recurringEventInstance;
 					const baseEvent = instance.baseRecurringEvent;
 					return {

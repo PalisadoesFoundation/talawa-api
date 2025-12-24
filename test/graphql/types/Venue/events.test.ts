@@ -838,13 +838,16 @@ suite("Venue events Field", () => {
 				);
 				// Modify the event to have null attachmentsWhereEvent
 				return result.map((booking) => {
-					if (!booking.event) {
+					const bookingWithEvent = booking as typeof booking & {
+						event: { attachmentsWhereEvent: unknown } | null;
+					};
+					if (!bookingWithEvent.event) {
 						return booking;
 					}
 					return {
-						...booking,
+						...bookingWithEvent,
 						event: {
-							...booking.event,
+							...bookingWithEvent.event,
 							attachmentsWhereEvent: null,
 						},
 					};
