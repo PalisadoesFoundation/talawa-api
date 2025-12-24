@@ -74,6 +74,7 @@ builder.mutationField("updateSingleRecurringEventInstance", (t) =>
 						actualEndTime: true,
 						baseRecurringEventId: true,
 						recurrenceRuleId: true,
+						originalSeriesId: true,
 						originalInstanceStartTime: true,
 						organizationId: true,
 						generatedAt: true,
@@ -106,6 +107,7 @@ builder.mutationField("updateSingleRecurringEventInstance", (t) =>
 								allDay: true,
 								isPublic: true,
 								isRegisterable: true,
+								isInviteOnly: true,
 								creatorId: true,
 								updaterId: true,
 								createdAt: true,
@@ -322,19 +324,46 @@ builder.mutationField("updateSingleRecurringEventInstance", (t) =>
 					),
 				};
 
+				// Construct a properly typed ResolvedRecurringEventInstance
 				return {
-					...existingInstance,
-					...resolvedEventData,
-					...updatedInstance,
+					// Core instance metadata
 					id: updatedInstance.id,
 					baseRecurringEventId: existingInstance.baseRecurringEventId,
-					startAt: updatedInstance.actualStartTime,
-					endAt: updatedInstance.actualEndTime,
-					// The following fields are required for the GraphQL Event type
+					recurrenceRuleId: existingInstance.recurrenceRuleId,
+					originalSeriesId: existingInstance.originalSeriesId,
+					originalInstanceStartTime: existingInstance.originalInstanceStartTime,
+					actualStartTime: updatedInstance.actualStartTime,
+					actualEndTime: updatedInstance.actualEndTime,
+					isCancelled: existingInstance.isCancelled,
+					organizationId: existingInstance.organizationId,
+					generatedAt: existingInstance.generatedAt,
+					lastUpdatedAt: updatedInstance.lastUpdatedAt,
+					version: existingInstance.version,
+					// Sequence metadata
+					sequenceNumber: existingInstance.sequenceNumber,
+					totalCount: existingInstance.totalCount,
+					// Resolved event properties (from base template + exception overrides)
+					name: resolvedEventData.name ?? baseEventData.name,
+					description:
+						resolvedEventData.description ?? baseEventData.description ?? null,
+					location:
+						resolvedEventData.location ?? baseEventData.location ?? null,
+					allDay: resolvedEventData.allDay ?? baseEventData.allDay,
+					isPublic: resolvedEventData.isPublic ?? baseEventData.isPublic,
+					isRegisterable:
+						resolvedEventData.isRegisterable ?? baseEventData.isRegisterable,
+					isInviteOnly:
+						resolvedEventData.isInviteOnly ?? baseEventData.isInviteOnly,
+					creatorId: baseEventData.creatorId,
+					updaterId: baseEventData.updaterId,
+					createdAt: baseEventData.createdAt,
+					updatedAt: baseEventData.updatedAt,
+					// Exception metadata
 					hasExceptions: true,
 					appliedExceptionData: exceptionData,
 					exceptionCreatedBy: currentUserId,
 					exceptionCreatedAt: new Date(),
+					// Attachments for Event type
 					attachments: [], // Recurring event instances don't have direct attachments
 				};
 			});

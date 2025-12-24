@@ -344,6 +344,7 @@ Organization.implement({
 						// Fetch more events than needed to account for invite-only filtering
 						// This ensures we have enough events after filtering to fill the requested page
 						// Use 2x the limit or limit + 50, whichever is larger, capped at 200
+						// Note: 'limit' already includes +1 for pagination detection (set in transformEventsConnectionArguments)
 						const fetchLimit = Math.min(Math.max(limit * 2, limit + 50), 200);
 
 						allEvents = await getUnifiedEventsInDateRange(
@@ -352,7 +353,7 @@ Organization.implement({
 								startDate: effectiveStartDate,
 								endDate: effectiveEndDate,
 								includeRecurring,
-								limit: fetchLimit + 1, // +1 for pagination detection
+								limit: fetchLimit, // limit already includes +1 for pagination detection
 							},
 							ctx.drizzleClient,
 							ctx.log,

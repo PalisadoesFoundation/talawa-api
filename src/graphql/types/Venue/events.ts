@@ -270,12 +270,13 @@ Venue.implement({
 					});
 
 					// Map back to venue bookings format for pagination
-					// Keep limit (which already includes +1 for pagination detection) for proper pagination
+					// Preserve limit + 1 items (limit already includes +1 for pagination detection from transformDefaultGraphQLConnectionArguments)
+					// The extra item is needed by transformToDefaultGraphQLConnection to determine hasNextPage/hasPreviousPage
 					const filteredBookings = venueBookings
 						.filter((booking) =>
 							filteredEvents.some((event) => event.id === booking.eventId),
 						)
-						.slice(0, limit);
+						.slice(0, limit + 1);
 
 					return transformToDefaultGraphQLConnection({
 						createCursor: (booking) =>

@@ -31,6 +31,7 @@ describe("Event Attendees Resolver Tests", () => {
 			allDay: false,
 			isPublic: true,
 			isRegisterable: true,
+			isInviteOnly: false,
 			location: null,
 			isRecurringEventTemplate: false,
 			attachments: [],

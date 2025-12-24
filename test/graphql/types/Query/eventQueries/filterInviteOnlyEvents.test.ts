@@ -242,6 +242,68 @@ describe("filterInviteOnlyEvents", () => {
 		});
 	});
 
+	describe("Invite-only events - Registered user visibility", () => {
+		it("should show invite-only event to registered-but-not-invited user (standalone)", async () => {
+			const events = [
+				createMockEvent("event-1", true, "creator-1", "standalone"),
+			];
+
+			vi.mocked(
+				mockDrizzleClient.query.eventAttendeesTable.findMany,
+			).mockResolvedValue([
+				{
+					eventId: "event-1",
+					userId: "user-1",
+					isInvited: false,
+					isRegistered: true,
+				},
+			] as unknown as Awaited<
+				ReturnType<typeof mockDrizzleClient.query.eventAttendeesTable.findMany>
+			>);
+
+			const result = await filterInviteOnlyEvents({
+				events,
+				currentUserId: "user-1",
+				currentUserRole: "regular",
+				currentUserOrgMembership: { role: "regular" },
+				drizzleClient: mockDrizzleClient,
+			});
+
+			expect(result).toHaveLength(1);
+			expect(result[0]?.id).toBe("event-1");
+		});
+
+		it("should show invite-only event to registered-but-not-invited user (recurring instance)", async () => {
+			const events = [
+				createMockEvent("event-1", true, "creator-1", "generated"),
+			];
+
+			vi.mocked(
+				mockDrizzleClient.query.eventAttendeesTable.findMany,
+			).mockResolvedValue([
+				{
+					recurringEventInstanceId: "event-1",
+					userId: "user-1",
+					isInvited: false,
+					isRegistered: true,
+				},
+			] as unknown as Awaited<
+				ReturnType<typeof mockDrizzleClient.query.eventAttendeesTable.findMany>
+			>);
+
+			const result = await filterInviteOnlyEvents({
+				events,
+				currentUserId: "user-1",
+				currentUserRole: "regular",
+				currentUserOrgMembership: { role: "regular" },
+				drizzleClient: mockDrizzleClient,
+			});
+
+			expect(result).toHaveLength(1);
+			expect(result[0]?.id).toBe("event-1");
+		});
+	});
+
 	describe("Mixed events", () => {
 		it("should filter correctly with mix of public and invite-only events", async () => {
 			const events = [

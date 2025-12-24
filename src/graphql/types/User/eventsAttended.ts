@@ -70,6 +70,13 @@ export const userEventsAttendedResolver = async (
 		return eventsAttended;
 	} catch (error) {
 		ctx.log.error(error);
+
+		// Preserve TalawaGraphQLError instances to maintain proper error codes
+		if (error instanceof TalawaGraphQLError) {
+			throw error;
+		}
+
+		// Only wrap unknown errors as unexpected
 		throw new TalawaGraphQLError({
 			message: "Internal server error",
 			extensions: {

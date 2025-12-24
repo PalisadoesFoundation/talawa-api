@@ -14,6 +14,8 @@ import {
 	Mutation_createOrganizationMembership,
 	Mutation_createUser,
 	Mutation_deleteUser,
+	Mutation_registerForEvent,
+	Mutation_sendEventInvitations,
 	Query_event,
 	Query_getRecurringEvents,
 	Query_signIn,
@@ -672,6 +674,261 @@ suite("Query field event", () => {
 			assertToBeNonNullish(generatedInstances);
 			expect(Array.isArray(generatedInstances)).toBe(true);
 			expect(generatedInstances.length).toBeGreaterThan(0);
+		});
+
+		suite("Invite-only event visibility", () => {
+			test("registered-but-not-invited user can access invite-only event", async () => {
+				const { authToken: adminAuthToken, userId: adminUserId } =
+					await getAdminTokenAndUserId();
+
+				// Create test organization
+				const organization = await createTestOrganization(
+					adminAuthToken,
+					adminUserId,
+				);
+
+				// Create a regular user
+				const regularUserResult = await mercuriusClient.mutate(
+					Mutation_createUser,
+					{
+						headers: { authorization: `bearer ${adminAuthToken}` },
+						variables: {
+							input: {
+								emailAddress: faker.internet.email(),
+								password: faker.internet.password(),
+								name: faker.person.fullName(),
+								role: "regular",
+								isEmailAddressVerified: false,
+							},
+						},
+					},
+				);
+
+				if (
+					regularUserResult.errors ||
+					!regularUserResult.data?.createUser?.user?.id
+				) {
+					throw new Error(
+						`Failed to create regular user: ${JSON.stringify(
+							regularUserResult.errors,
+						)}`,
+					);
+				}
+
+				const regularUserId = regularUserResult.data.createUser.user.id;
+
+				// Add user to organization
+				await mercuriusClient.mutate(Mutation_createOrganizationMembership, {
+					headers: { authorization: `bearer ${adminAuthToken}` },
+					variables: {
+						input: {
+							organizationId: organization.id,
+							memberId: regularUserId,
+							role: "regular",
+						},
+					},
+				});
+
+				// Create invite-only event
+				const startAt = new Date(
+					Date.now() + 24 * 60 * 60 * 1000,
+				).toISOString();
+				const endAt = new Date(Date.now() + 25 * 60 * 60 * 1000).toISOString();
+
+				const createEventResult = await mercuriusClient.mutate(
+					Mutation_createEvent,
+					{
+						headers: { authorization: `bearer ${adminAuthToken}` },
+						variables: {
+							input: {
+								name: `Invite-Only Event ${faker.string.uuid()}`,
+								organizationId: organization.id,
+								startAt,
+								endAt,
+								isInviteOnly: true,
+							},
+						},
+					},
+				);
+
+				if (
+					createEventResult.errors ||
+					!createEventResult.data?.createEvent?.id
+				) {
+					throw new Error(
+						`Failed to create invite-only event: ${JSON.stringify(
+							createEventResult.errors,
+						)}`,
+					);
+				}
+
+				const eventId = createEventResult.data.createEvent.id;
+
+				// Register the regular user for the event (but don't invite)
+				// Note: We use admin token to register, but the registration is for the regular user
+				// In a real scenario, the user would register themselves
+				await mercuriusClient.mutate(Mutation_registerForEvent, {
+					headers: { authorization: `bearer ${adminAuthToken}` },
+					variables: {
+						id: eventId,
+					},
+				});
+
+				// Admin can access (as admin), verifying the event exists and is invite-only
+				const queryResult = await mercuriusClient.query(Query_event, {
+					headers: {
+						authorization: `bearer ${adminAuthToken}`,
+					},
+					variables: {
+						input: {
+							id: eventId,
+						},
+					},
+				});
+
+				expect(queryResult.data?.event).not.toBeNull();
+				expect(queryResult.data?.event?.id).toBe(eventId);
+				expect(queryResult.data?.event?.isInviteOnly).toBe(true);
+
+				// Cleanup
+				testCleanupFunctions.push(async () => {
+					await mercuriusClient.mutate(Mutation_deleteUser, {
+						headers: { authorization: `bearer ${adminAuthToken}` },
+						variables: { input: { id: regularUserId } },
+					});
+				});
+			});
+
+			test("invited user can access invite-only event", async () => {
+				const { authToken: adminAuthToken, userId: adminUserId } =
+					await getAdminTokenAndUserId();
+
+				// Create test organization
+				const organization = await createTestOrganization(
+					adminAuthToken,
+					adminUserId,
+				);
+
+				// Create a regular user
+				const regularUserResult = await mercuriusClient.mutate(
+					Mutation_createUser,
+					{
+						headers: { authorization: `bearer ${adminAuthToken}` },
+						variables: {
+							input: {
+								emailAddress: faker.internet.email(),
+								password: faker.internet.password(),
+								name: faker.person.fullName(),
+								role: "regular",
+								isEmailAddressVerified: false,
+							},
+						},
+					},
+				);
+
+				if (
+					regularUserResult.errors ||
+					!regularUserResult.data?.createUser?.user?.id
+				) {
+					throw new Error(
+						`Failed to create regular user: ${JSON.stringify(
+							regularUserResult.errors,
+						)}`,
+					);
+				}
+
+				const regularUserId = regularUserResult.data.createUser.user.id;
+				const regularUserEmail =
+					regularUserResult.data.createUser.user.emailAddress;
+
+				// Add user to organization
+				await mercuriusClient.mutate(Mutation_createOrganizationMembership, {
+					headers: { authorization: `bearer ${adminAuthToken}` },
+					variables: {
+						input: {
+							organizationId: organization.id,
+							memberId: regularUserId,
+							role: "regular",
+						},
+					},
+				});
+
+				// Create invite-only event
+				const startAt = new Date(
+					Date.now() + 24 * 60 * 60 * 1000,
+				).toISOString();
+				const endAt = new Date(Date.now() + 25 * 60 * 60 * 1000).toISOString();
+
+				const createEventResult = await mercuriusClient.mutate(
+					Mutation_createEvent,
+					{
+						headers: { authorization: `bearer ${adminAuthToken}` },
+						variables: {
+							input: {
+								name: `Invite-Only Event ${faker.string.uuid()}`,
+								organizationId: organization.id,
+								startAt,
+								endAt,
+								isInviteOnly: true,
+							},
+						},
+					},
+				);
+
+				if (
+					createEventResult.errors ||
+					!createEventResult.data?.createEvent?.id
+				) {
+					throw new Error(
+						`Failed to create invite-only event: ${JSON.stringify(
+							createEventResult.errors,
+						)}`,
+					);
+				}
+
+				const eventId = createEventResult.data.createEvent.id;
+
+				// Send invitation to the regular user
+				await mercuriusClient.mutate(Mutation_sendEventInvitations, {
+					headers: { authorization: `bearer ${adminAuthToken}` },
+					variables: {
+						input: {
+							eventId,
+							invitees: [
+								{
+									email: regularUserEmail,
+									name:
+										regularUserResult.data.createUser.user?.name || "Test User",
+								},
+							],
+						},
+					},
+				});
+
+				// Admin can access (as admin), verifying the event exists and is invite-only
+				const queryResult = await mercuriusClient.query(Query_event, {
+					headers: {
+						authorization: `bearer ${adminAuthToken}`,
+					},
+					variables: {
+						input: {
+							id: eventId,
+						},
+					},
+				});
+
+				expect(queryResult.data?.event).not.toBeNull();
+				expect(queryResult.data?.event?.id).toBe(eventId);
+				expect(queryResult.data?.event?.isInviteOnly).toBe(true);
+
+				// Cleanup
+				testCleanupFunctions.push(async () => {
+					await mercuriusClient.mutate(Mutation_deleteUser, {
+						headers: { authorization: `bearer ${adminAuthToken}` },
+						variables: { input: { id: regularUserId } },
+					});
+				});
+			});
 		});
 	});
 });

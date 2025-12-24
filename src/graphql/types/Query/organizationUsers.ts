@@ -17,40 +17,6 @@ const usersByIdsInputSchema = z.object({
 	ids: z.array(z.string().uuid()).min(1),
 });
 
-interface EventType {
-	id: string;
-	name: string;
-	description: string | null;
-	createdAt: Date;
-	updatedAt: Date | null;
-	creatorId: string | null;
-	updaterId: string | null;
-	startAt: Date;
-	endAt: Date;
-	organizationId: string;
-	allDay: boolean;
-	isPublic: boolean;
-	isRegisterable: boolean;
-	isInviteOnly: boolean;
-	location: string | null;
-	isRecurringEventTemplate: boolean;
-	attachments: Array<{
-		name: string;
-		createdAt: Date;
-		creatorId: string | null;
-		updatedAt: Date | null;
-		updaterId: string | null;
-		eventId: string;
-		mimeType:
-			| "image/avif"
-			| "image/jpeg"
-			| "image/png"
-			| "image/webp"
-			| "video/mp4"
-			| "video/webm";
-	}>;
-}
-
 const eventsByOrganizationIdInputSchema = z.object({
 	organizationId: z.string().uuid(),
 });
@@ -148,7 +114,7 @@ builder.queryField("eventsByOrganizationId", (t) =>
 				required: true,
 			}),
 		},
-		resolve: async (_parent, args, ctx): Promise<EventType[]> => {
+		resolve: async (_parent, args, ctx): Promise<EventWithAttachments[]> => {
 			if (!ctx.currentClient.isAuthenticated) {
 				throw new TalawaGraphQLError({
 					extensions: { code: "unauthenticated" },
@@ -206,7 +172,13 @@ builder.queryField("eventsByOrganizationId", (t) =>
 						attachmentsWhereEvent: true,
 					},
 					where: (fields, operators) =>
-						operators.eq(fields.organizationId, parsedArgs.data.organizationId),
+						operators.and(
+							operators.eq(
+								fields.organizationId,
+								parsedArgs.data.organizationId,
+							),
+							operators.eq(fields.isRecurringEventTemplate, false),
+						),
 				});
 
 				// Transform to EventWithAttachments format
@@ -230,7 +202,7 @@ builder.queryField("eventsByOrganizationId", (t) =>
 					drizzleClient: ctx.drizzleClient,
 				});
 
-				return filteredEvents as EventType[];
+				return filteredEvents;
 			} catch (error) {
 				console.error("Error fetching events for organization:", error);
 				throw new Error("An error occurred while fetching events.");

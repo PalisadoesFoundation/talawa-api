@@ -1,4 +1,4 @@
-import { and, eq } from "drizzle-orm";
+import { and, eq, or } from "drizzle-orm";
 import { z } from "zod";
 import { eventAttendeesTable } from "~/src/drizzle/tables/eventAttendees";
 import { builder } from "~/src/graphql/builder";
@@ -135,24 +135,28 @@ builder.queryField("event", (t) =>
 					currentUser.role === "administrator" ||
 					membership?.role === "administrator";
 
-				// Check if user is invited
-				let isInvited = false;
+				// Check if user is invited or registered
+				// Registered users (even if not explicitly invited) can also view invite-only events
+				let canAccess = false;
 				if (!isCreator && !isAdmin) {
 					const attendee =
 						await ctx.drizzleClient.query.eventAttendeesTable.findFirst({
 							where: and(
 								eq(eventAttendeesTable.userId, currentUserId),
-								eq(eventAttendeesTable.isInvited, true),
+								or(
+									eq(eventAttendeesTable.isInvited, true),
+									eq(eventAttendeesTable.isRegistered, true),
+								),
 								event.eventType === "standalone"
 									? eq(eventAttendeesTable.eventId, event.id)
 									: eq(eventAttendeesTable.recurringEventInstanceId, event.id),
 							),
 						});
-					isInvited = attendee !== undefined;
+					canAccess = attendee !== undefined;
 				}
 
 				// If user cannot view invite-only event, return null (not found)
-				if (!isCreator && !isAdmin && !isInvited) {
+				if (!isCreator && !isAdmin && !canAccess) {
 					return null;
 				}
 			}
