@@ -9,7 +9,8 @@
 	"ignore": [
 		"src/plugins/**",
 		"src/graphql/inputs/**/*.ts",
-		"src/graphql/schemaImportWorker.ts"
+		"src/graphql/schemaImportWorker.ts",
+		"scripts/dbManagement/helpers.ts"
 	],
 	"project": ["src/**/*.ts", "scripts/**/*.ts"],
 	"ignoreDependencies": [],
