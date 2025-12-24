@@ -193,10 +193,13 @@ export const envConfigSchema = Type.Object({
 	/**
 	 * Optional domain for authentication cookies.
 	 * Set this for cross-subdomain authentication (e.g., ".talawa.io" for sharing cookies between admin.talawa.io and api.talawa.io).
+	 * Must be a valid domain starting with a dot for subdomain sharing, or a valid hostname.
 	 */
 	API_COOKIE_DOMAIN: Type.Optional(
 		Type.String({
 			minLength: 1,
+			pattern:
+				"^(\\.[a-zA-Z0-9]([a-zA-Z0-9-]*[a-zA-Z0-9])?(\\.[a-zA-Z]{2,})+|[a-zA-Z0-9]([a-zA-Z0-9-]*[a-zA-Z0-9])?(\\.[a-zA-Z0-9]([a-zA-Z0-9-]*[a-zA-Z0-9])?)*)$",
 		}),
 	),
 	/**

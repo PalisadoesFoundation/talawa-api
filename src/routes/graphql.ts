@@ -13,7 +13,8 @@ import NotificationService from "~/src/services/notification/NotificationService
 import {
 	COOKIE_NAMES,
 	getAccessTokenCookieOptions,
-	getClearCookieOptions,
+	getClearAccessTokenCookieOptions,
+	getClearRefreshTokenCookieOptions,
 	getRefreshTokenCookieOptions,
 } from "../utilities/cookieConfig";
 import leakyBucket from "../utilities/leakyBucket";
@@ -128,16 +129,15 @@ export const createContext: CreateContext = async (initialContext) => {
 						);
 					},
 					clearAuthCookies: () => {
-						const clearOptions = getClearCookieOptions(cookieConfig);
 						initialContext.reply.setCookie(
 							COOKIE_NAMES.ACCESS_TOKEN,
 							"",
-							clearOptions,
+							getClearAccessTokenCookieOptions(cookieConfig),
 						);
 						initialContext.reply.setCookie(
 							COOKIE_NAMES.REFRESH_TOKEN,
 							"",
-							clearOptions,
+							getClearRefreshTokenCookieOptions(cookieConfig),
 						);
 					},
 					getRefreshToken: () => {

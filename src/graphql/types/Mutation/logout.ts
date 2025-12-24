@@ -26,25 +26,26 @@ builder.mutationField("logout", (t) =>
 		description:
 			"Mutation to log out the current user. Clears authentication cookies and revokes refresh tokens.",
 		resolve: async (_parent, _args, ctx) => {
-			// Clear HTTP-Only cookies if available (web clients)
-			if (ctx.cookie) {
-				// Try to revoke the refresh token from cookies if present
-				const refreshTokenFromCookie = ctx.cookie.getRefreshToken();
-				if (refreshTokenFromCookie) {
-					const tokenHash = hashRefreshToken(refreshTokenFromCookie);
-					await revokeRefreshTokenByHash(ctx.drizzleClient, tokenHash);
-				}
-
-				// Clear the authentication cookies
-				ctx.cookie.clearAuthCookies();
-			}
-
 			// If user is authenticated, revoke all their refresh tokens for complete logout
+			// This includes any token from cookies, so no need to revoke individually
 			if (ctx.currentClient.isAuthenticated) {
 				await revokeAllUserRefreshTokens(
 					ctx.drizzleClient,
 					ctx.currentClient.user.id,
 				);
+			} else if (ctx.cookie) {
+				// User is not authenticated (e.g., expired access token)
+				// but may have a valid refresh token in cookies - revoke it specifically
+				const refreshTokenFromCookie = ctx.cookie.getRefreshToken();
+				if (refreshTokenFromCookie) {
+					const tokenHash = hashRefreshToken(refreshTokenFromCookie);
+					await revokeRefreshTokenByHash(ctx.drizzleClient, tokenHash);
+				}
+			}
+
+			// Clear HTTP-Only cookies if available (web clients)
+			if (ctx.cookie) {
+				ctx.cookie.clearAuthCookies();
 			}
 
 			return { success: true };

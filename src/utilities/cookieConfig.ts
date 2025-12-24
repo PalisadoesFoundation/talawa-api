@@ -82,19 +82,41 @@ export function getRefreshTokenCookieOptions(
 }
 
 /**
- * Generates cookie options for clearing/removing cookies.
- * Used during logout to invalidate authentication cookies.
+ * Generates cookie options for clearing/removing access token cookies.
+ * Used during logout to invalidate the access token cookie.
+ * Uses sameSite: "lax" to match getAccessTokenCookieOptions().
  *
  * @param options - Configuration options for the cookie
  * @returns Cookie serialization options that will clear the cookie
  */
-export function getClearCookieOptions(
+export function getClearAccessTokenCookieOptions(
 	options: CookieConfigOptions,
 ): CookieSerializeOptions {
 	return {
 		httpOnly: true,
 		secure: options.isSecure,
-		sameSite: "lax",
+		sameSite: "lax", // Must match getAccessTokenCookieOptions()
+		path: options.path ?? "/",
+		domain: options.domain,
+		maxAge: 0, // Immediately expires the cookie
+	};
+}
+
+/**
+ * Generates cookie options for clearing/removing refresh token cookies.
+ * Used during logout to invalidate the refresh token cookie.
+ * Uses sameSite: "strict" to match getRefreshTokenCookieOptions().
+ *
+ * @param options - Configuration options for the cookie
+ * @returns Cookie serialization options that will clear the cookie
+ */
+export function getClearRefreshTokenCookieOptions(
+	options: CookieConfigOptions,
+): CookieSerializeOptions {
+	return {
+		httpOnly: true,
+		secure: options.isSecure,
+		sameSite: "strict", // Must match getRefreshTokenCookieOptions()
 		path: options.path ?? "/",
 		domain: options.domain,
 		maxAge: 0, // Immediately expires the cookie
