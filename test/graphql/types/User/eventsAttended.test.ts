@@ -44,7 +44,11 @@ describe("User EventsAttended Resolver Tests", () => {
 			).toHaveBeenCalledWith({
 				where: expect.any(Object), // eq() function result
 				with: {
-					event: true,
+					event: {
+						with: {
+							attachmentsWhereEvent: true,
+						},
+					},
 					recurringEventInstance: {
 						with: {
 							baseRecurringEvent: true,

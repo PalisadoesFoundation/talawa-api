@@ -13,20 +13,8 @@ export const userEventsAttendedResolver = async (
 	ctx: GraphQLContext,
 ) => {
 	try {
-		// Get current user for filtering (if viewing own events, use parent.id; otherwise check auth)
-		const currentUserId = ctx.currentClient.isAuthenticated
-			? ctx.currentClient.user.id
-			: parent.id;
-
-		// Get current user role and organization memberships for filtering
-		const currentUser = await ctx.drizzleClient.query.usersTable.findFirst({
-			columns: {
-				role: true,
-			},
-			where: (fields, operators) => operators.eq(fields.id, currentUserId),
-		});
-
-		if (!currentUser) {
+		// Require authentication to view attended events
+		if (!ctx.currentClient.isAuthenticated) {
 			throw new TalawaGraphQLError({
 				extensions: {
 					code: "unauthenticated",
@@ -53,9 +41,8 @@ export const userEventsAttendedResolver = async (
 			});
 
 		// Convert to Event objects
-		// Note: Since users have already attended these events, they should be able to see them
-		// regardless of invite-only status (they were invited/registered). However, we still
-		// apply basic filtering for consistency with visibility rules.
+		// Note: Since users have already attended these events, they can see them
+		// regardless of invite-only status (attendance implies prior authorization).
 		const eventsAttended = userAttendances
 			.map((attendance) => {
 				if (attendance.event) {
@@ -79,8 +66,7 @@ export const userEventsAttendedResolver = async (
 			})
 			.filter((event): event is NonNullable<typeof event> => event !== null);
 
-		// For eventsAttended, users who attended should be able to see invite-only events
-		// they attended (they were invited/registered). We return all attended events.
+		// Return all attended events - attendance implies prior authorization.
 		return eventsAttended;
 	} catch (error) {
 		ctx.log.error(error);

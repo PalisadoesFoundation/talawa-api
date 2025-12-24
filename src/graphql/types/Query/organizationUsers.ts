@@ -31,6 +31,7 @@ interface EventType {
 	allDay: boolean;
 	isPublic: boolean;
 	isRegisterable: boolean;
+	isInviteOnly: boolean;
 	location: string | null;
 	isRecurringEventTemplate: boolean;
 	attachments: Array<{

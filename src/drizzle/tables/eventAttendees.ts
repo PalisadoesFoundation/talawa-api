@@ -163,6 +163,21 @@ export const eventAttendeesTable = pgTable(
 			"event_attendees_user_recurring_instance_idx",
 		).on(self.userId, self.recurringEventInstanceId),
 
+		// Composite indexes optimized for invite-only event visibility checks
+		// These indexes cover queries that filter by userId, isInvited=true, and event ID
+		// (e.g., checking if a user is invited to view an invite-only event).
+		// Including isInvited in the index allows PostgreSQL to use index-only scans
+		// without needing to filter rows after the index lookup, improving performance
+		// for both single-row lookups (event.ts) and batch queries (unifiedEventQueries.ts).
+		userInvitedEventIdx: index("event_attendees_user_invited_event_idx").on(
+			self.userId,
+			self.isInvited,
+			self.eventId,
+		),
+		userInvitedRecurringInstanceIdx: index(
+			"event_attendees_user_invited_recurring_instance_idx",
+		).on(self.userId, self.isInvited, self.recurringEventInstanceId),
+
 		// Timestamps
 		createdAtIdx: index("event_attendees_created_at_idx").on(self.createdAt),
 	}),

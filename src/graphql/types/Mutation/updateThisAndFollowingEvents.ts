@@ -90,6 +90,7 @@ builder.mutationField("updateThisAndFollowingEvents", (t) =>
 								allDay: true,
 								isPublic: true,
 								isRegisterable: true,
+								isInviteOnly: true,
 								organizationId: true,
 								startAt: true,
 								endAt: true,

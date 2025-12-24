@@ -23,11 +23,20 @@ describe("filterInviteOnlyEvents", () => {
 		} as unknown as ServiceDependencies["drizzleClient"];
 	});
 
+	/**
+	 * Creates a mock event for testing.
+	 * @param id - Event ID
+	 * @param isInviteOnly - Whether the event is invite-only
+	 * @param creatorId - ID of the event creator
+	 * @param eventType - Type of event (standalone or generated)
+	 * @param isPublic - Whether the event is public (defaults to !isInviteOnly for convenience)
+	 */
 	const createMockEvent = (
 		id: string,
 		isInviteOnly: boolean,
 		creatorId: string,
 		eventType: "standalone" | "generated" = "standalone",
+		isPublic?: boolean,
 	): EventWithAttachments => ({
 		id,
 		name: `Event ${id}`,
@@ -36,7 +45,7 @@ describe("filterInviteOnlyEvents", () => {
 		startAt: new Date("2024-01-01T10:00:00Z"),
 		endAt: new Date("2024-01-01T12:00:00Z"),
 		allDay: false,
-		isPublic: !isInviteOnly,
+		isPublic: isPublic ?? !isInviteOnly,
 		isRegisterable: true,
 		isInviteOnly,
 		organizationId: "org-123",

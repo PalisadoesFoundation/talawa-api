@@ -48,7 +48,15 @@ export interface FilterInviteOnlyEventsInput {
 	events: EventWithAttachments[];
 	currentUserId: string;
 	currentUserRole: string;
-	currentUserOrgMembership: { role: string } | undefined;
+	/**
+	 * Either a single organization membership (for single-org queries) or
+	 * a map of organization IDs to memberships (for cross-org queries).
+	 * If a map is provided, it will be used to look up membership per event.
+	 */
+	currentUserOrgMembership:
+		| { role: string }
+		| undefined
+		| Map<string, { role: string } | undefined>;
 	drizzleClient: ServiceDependencies["drizzleClient"];
 }
 
@@ -72,6 +80,16 @@ export async function filterInviteOnlyEvents(
 		currentUserOrgMembership,
 		drizzleClient,
 	} = input;
+
+	// Helper to get organization membership for an event
+	const getOrgMembership = (
+		organizationId: string,
+	): { role: string } | undefined => {
+		if (currentUserOrgMembership instanceof Map) {
+			return currentUserOrgMembership.get(organizationId);
+		}
+		return currentUserOrgMembership;
+	};
 
 	// Separate invite-only events from public events
 	const inviteOnlyEvents: EventWithAttachments[] = [];
@@ -104,10 +122,11 @@ export async function filterInviteOnlyEvents(
 			continue;
 		}
 
-		// Check if user is admin
+		// Check if user is admin (global or org admin for this event's org)
+		const eventOrgMembership = getOrgMembership(event.organizationId);
 		if (
 			currentUserRole === "administrator" ||
-			currentUserOrgMembership?.role === "administrator"
+			eventOrgMembership?.role === "administrator"
 		) {
 			visibleInviteOnlyEvents.push(event);
 			continue;
