@@ -4,14 +4,16 @@
 		"src/graphql/**/*.ts": ["exports"],
 		"src/services/ses/**/*.ts": ["exports"],
 		"src/drizzle/tables/**": ["exports"],
-		"src/workers/backgroundWorkerService.ts": ["exports"]
+		"src/workers/backgroundWorkerService.ts": ["exports"],
+		"scripts/dbManagement/helpers.ts": ["nsExports"],
+		"test/**/*.ts": ["exports", "files"]
 	},
 	"ignore": [
 		"src/plugins/**",
 		"src/graphql/inputs/**/*.ts",
 		"src/graphql/schemaImportWorker.ts"
 	],
-	"project": ["src/**/*.ts", "scripts/**/*.ts"],
+	"project": ["src/**/*.ts", "scripts/**/*.ts", "test/**/*.ts"],
 	"ignoreDependencies": [],
 	"ignoreExportsUsedInFile": true
 }
