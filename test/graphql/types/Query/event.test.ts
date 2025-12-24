@@ -14,8 +14,8 @@ import {
 	Mutation_createOrganizationMembership,
 	Mutation_createUser,
 	Mutation_deleteUser,
+	Mutation_inviteEventAttendee,
 	Mutation_registerForEvent,
-	Mutation_sendEventInvitations,
 	Query_event,
 	Query_getRecurringEvents,
 	Query_signIn,
@@ -704,18 +704,19 @@ suite("Query field event", () => {
 					},
 				);
 
-				if (
-					regularUserResult.errors ||
-					!regularUserResult.data?.createUser?.user?.id
-				) {
+				const regularUser = regularUserResult.data?.createUser;
+				if (!regularUser || regularUserResult.errors) {
 					throw new Error(
 						`Failed to create regular user: ${JSON.stringify(
 							regularUserResult.errors,
 						)}`,
 					);
 				}
+				assertToBeNonNullish(regularUser.authenticationToken);
+				assertToBeNonNullish(regularUser.user);
 
-				const regularUserId = regularUserResult.data.createUser.user.id;
+				const regularUserId = regularUser.user.id;
+				const regularUserToken = regularUser.authenticationToken;
 
 				// Add user to organization
 				await mercuriusClient.mutate(Mutation_createOrganizationMembership, {
@@ -746,6 +747,7 @@ suite("Query field event", () => {
 								startAt,
 								endAt,
 								isInviteOnly: true,
+								isRegisterable: true,
 							},
 						},
 					},
@@ -765,19 +767,18 @@ suite("Query field event", () => {
 				const eventId = createEventResult.data.createEvent.id;
 
 				// Register the regular user for the event (but don't invite)
-				// Note: We use admin token to register, but the registration is for the regular user
-				// In a real scenario, the user would register themselves
+				// Use the regular user's token so they are the registered attendee
 				await mercuriusClient.mutate(Mutation_registerForEvent, {
-					headers: { authorization: `bearer ${adminAuthToken}` },
+					headers: { authorization: `bearer ${regularUserToken}` },
 					variables: {
 						id: eventId,
 					},
 				});
 
-				// Admin can access (as admin), verifying the event exists and is invite-only
+				// Registered regular user can access the invite-only event
 				const queryResult = await mercuriusClient.query(Query_event, {
 					headers: {
-						authorization: `bearer ${adminAuthToken}`,
+						authorization: `bearer ${regularUserToken}`,
 					},
 					variables: {
 						input: {
@@ -826,20 +827,21 @@ suite("Query field event", () => {
 					},
 				);
 
-				if (
-					regularUserResult.errors ||
-					!regularUserResult.data?.createUser?.user?.id
-				) {
+				const regularUser = regularUserResult.data?.createUser;
+				if (!regularUser || regularUserResult.errors) {
 					throw new Error(
 						`Failed to create regular user: ${JSON.stringify(
 							regularUserResult.errors,
 						)}`,
 					);
 				}
+				assertToBeNonNullish(regularUser.authenticationToken);
+				assertToBeNonNullish(regularUser.user);
 
-				const regularUserId = regularUserResult.data.createUser.user.id;
-				const regularUserEmail =
-					regularUserResult.data.createUser.user.emailAddress;
+				const regularUserId = regularUser.user.id;
+				const regularUserEmail = regularUser.user.emailAddress;
+				assertToBeNonNullish(regularUserEmail);
+				const regularUserToken = regularUser.authenticationToken;
 
 				// Add user to organization
 				await mercuriusClient.mutate(Mutation_createOrganizationMembership, {
@@ -870,6 +872,7 @@ suite("Query field event", () => {
 								startAt,
 								endAt,
 								isInviteOnly: true,
+								isRegisterable: true,
 							},
 						},
 					},
@@ -886,29 +889,24 @@ suite("Query field event", () => {
 					);
 				}
 
-				const eventId = createEventResult.data.createEvent.id;
+			const eventId = createEventResult.data.createEvent.id;
 
-				// Send invitation to the regular user
-				await mercuriusClient.mutate(Mutation_sendEventInvitations, {
-					headers: { authorization: `bearer ${adminAuthToken}` },
-					variables: {
-						input: {
-							eventId,
-							invitees: [
-								{
-									email: regularUserEmail,
-									name:
-										regularUserResult.data.createUser.user?.name || "Test User",
-								},
-							],
-						},
+			// Invite the regular user to the event
+			// This creates an event_attendees record with isInvited: true
+			await mercuriusClient.mutate(Mutation_inviteEventAttendee, {
+				headers: { authorization: `bearer ${adminAuthToken}` },
+				variables: {
+					data: {
+						eventId,
+						userId: regularUserId,
 					},
-				});
+				},
+			});
 
-				// Admin can access (as admin), verifying the event exists and is invite-only
+				// Invited regular user can access the invite-only event
 				const queryResult = await mercuriusClient.query(Query_event, {
 					headers: {
-						authorization: `bearer ${adminAuthToken}`,
+						authorization: `bearer ${regularUserToken}`,
 					},
 					variables: {
 						input: {
