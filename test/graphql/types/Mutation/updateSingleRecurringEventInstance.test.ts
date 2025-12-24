@@ -1121,5 +1121,102 @@ suite("Mutation field updateSingleRecurringEventInstance", () => {
 				server.drizzleClient.transaction = originalTransaction;
 			}
 		});
+
+		test("should update only non-timing fields when timing is not changed", async () => {
+			const instanceId = faker.string.uuid();
+			const orgId = await createTestOrganization(adminToken);
+
+			// Mock successful scenario
+			const originalUserFindFirst =
+				server.drizzleClient.query.usersTable.findFirst;
+			const originalInstanceFindFirst =
+				server.drizzleClient.query.recurringEventInstancesTable.findFirst;
+			const originalTransaction = server.drizzleClient.transaction;
+
+			server.drizzleClient.query.usersTable.findFirst = vi
+				.fn()
+				.mockResolvedValue({ role: "administrator" });
+
+			const mockInstance = mockRecurringEventInstance(
+				instanceId,
+				orgId,
+				"admin-user-id",
+			);
+			// Set specific times that won't be changed
+			const originalStartTime = new Date("2024-12-02T10:00:00Z");
+			const originalEndTime = new Date("2024-12-02T12:00:00Z");
+			mockInstance.actualStartTime = originalStartTime;
+			mockInstance.actualEndTime = originalEndTime;
+
+			server.drizzleClient.query.recurringEventInstancesTable.findFirst = vi
+				.fn()
+				.mockResolvedValue(mockInstance);
+
+			// Mock successful transaction - timing fields should NOT be in updateData
+			server.drizzleClient.transaction = vi
+				.fn()
+				.mockImplementation(async (callback) => {
+					const mockTx = {
+						query: {
+							eventExceptionsTable: {
+								findFirst: vi.fn().mockResolvedValue(null),
+							},
+						},
+						insert: vi.fn().mockReturnValue({
+							values: vi.fn().mockResolvedValue(undefined),
+						}),
+						update: vi.fn().mockReturnValue({
+							set: vi.fn().mockImplementation((updateData) => {
+								// Verify that timing fields are NOT included when not changed
+								expect(updateData.actualStartTime).toBeUndefined();
+								expect(updateData.actualEndTime).toBeUndefined();
+								expect(updateData.lastUpdatedAt).toBeDefined();
+								return {
+									where: vi.fn().mockReturnValue({
+										returning: vi.fn().mockResolvedValue([
+											{
+												id: instanceId,
+												actualStartTime: originalStartTime, // Unchanged
+												actualEndTime: originalEndTime, // Unchanged
+												lastUpdatedAt: new Date(),
+											},
+										]),
+									}),
+								};
+							}),
+						}),
+					};
+					return await callback(mockTx);
+				});
+
+			try {
+				const result = await mercuriusClient.mutate(
+					Mutation_updateSingleRecurringEventInstance,
+					{
+						headers: { authorization: `bearer ${adminToken}` },
+						variables: {
+							input: {
+								id: instanceId,
+								name: "Updated Name Only",
+								// No startAt or endAt provided - timing should not change
+							},
+						},
+					},
+				);
+
+				expect(result.errors).toBeUndefined();
+				expect(result.data?.updateSingleRecurringEventInstance).toEqual(
+					expect.objectContaining({
+						id: instanceId,
+						name: "Updated Name Only",
+					}),
+				);
+			} finally {
+				server.drizzleClient.query.usersTable.findFirst = originalUserFindFirst;
+				server.drizzleClient.query.recurringEventInstancesTable.findFirst =
+					originalInstanceFindFirst;
+				server.drizzleClient.transaction = originalTransaction;
+			}
+		});
 	});
 });

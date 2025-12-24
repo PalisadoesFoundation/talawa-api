@@ -473,7 +473,7 @@ suite("Mutation field updateStandaloneEvent", () => {
 	});
 
 	suite("when update operation fails unexpectedly", () => {
-		test("should return an error with unexpected extensions code", async () => {
+		test("should return an error with unexpected extensions code when updatedEvent is undefined", async () => {
 			const eventId = faker.string.uuid();
 			const orgId = await createTestOrganization(adminToken);
 
@@ -493,11 +493,11 @@ suite("Mutation field updateStandaloneEvent", () => {
 					mockStandaloneEvent(eventId, orgId, "admin-user-id"),
 				);
 
-			// Mock update that returns empty array
+			// Mock update that returns empty array (which makes updatedEvent undefined)
 			server.drizzleClient.update = vi.fn().mockReturnValue({
 				set: vi.fn().mockReturnValue({
 					where: vi.fn().mockReturnValue({
-						returning: vi.fn().mockResolvedValue([]), // Empty array causes error
+						returning: vi.fn().mockResolvedValue([]), // Empty array causes updatedEvent to be undefined
 					}),
 				}),
 			});

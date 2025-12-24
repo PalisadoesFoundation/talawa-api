@@ -288,7 +288,7 @@ Venue.implement({
 							).toString("base64url"),
 						createNode: ({ event: { attachmentsWhereEvent, ...event } }) =>
 							Object.assign(event, {
-								attachments: attachmentsWhereEvent,
+								attachments: attachmentsWhereEvent || [],
 							}),
 						parsedArgs,
 						rawNodes: filteredBookings,

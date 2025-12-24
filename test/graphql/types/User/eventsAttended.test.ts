@@ -140,6 +140,70 @@ describe("User EventsAttended Resolver Tests", () => {
 				expect(event?.attachments).toEqual([]);
 			}
 		});
+
+		it("should handle standalone events with undefined attachmentsWhereEvent", async () => {
+			const mockAttendances = [
+				{
+					id: "attendance-1",
+					userId: "user-789",
+					eventId: "event-123",
+					event: {
+						id: "event-123",
+						name: "Event with undefined attachments",
+						description: "Test event",
+						startAt: new Date("2024-03-15T10:00:00Z"),
+						endAt: new Date("2024-03-15T12:00:00Z"),
+						organizationId: "org-123",
+						isPublic: true,
+						allDay: false,
+						attachmentsWhereEvent: undefined,
+					},
+					recurringEventInstance: null,
+				},
+			];
+
+			mocks.drizzleClient.query.eventAttendeesTable.findMany.mockResolvedValue(
+				mockAttendances,
+			);
+
+			const result = await userEventsAttendedResolver(mockUser, {}, ctx);
+
+			expect(result).toHaveLength(1);
+			expect(result[0]?.name).toBe("Event with undefined attachments");
+			expect(result[0]?.attachments).toEqual([]);
+		});
+
+		it("should handle standalone events with null attachmentsWhereEvent", async () => {
+			const mockAttendances = [
+				{
+					id: "attendance-1",
+					userId: "user-789",
+					eventId: "event-123",
+					event: {
+						id: "event-123",
+						name: "Event with null attachments",
+						description: "Test event",
+						startAt: new Date("2024-03-15T10:00:00Z"),
+						endAt: new Date("2024-03-15T12:00:00Z"),
+						organizationId: "org-123",
+						isPublic: true,
+						allDay: false,
+						attachmentsWhereEvent: null,
+					},
+					recurringEventInstance: null,
+				},
+			];
+
+			mocks.drizzleClient.query.eventAttendeesTable.findMany.mockResolvedValue(
+				mockAttendances,
+			);
+
+			const result = await userEventsAttendedResolver(mockUser, {}, ctx);
+
+			expect(result).toHaveLength(1);
+			expect(result[0]?.name).toBe("Event with null attachments");
+			expect(result[0]?.attachments).toEqual([]);
+		});
 	});
 
 	describe("Recurring Event Instance Attendances", () => {

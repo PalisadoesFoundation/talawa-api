@@ -19,8 +19,8 @@ async function globalSignInAndGetToken() {
 	const result = await mercuriusClient.query(Query_signIn, {
 		variables: {
 			input: {
-				emailAddress: process.env.API_ADMINISTRATOR_USER_EMAIL_ADDRESS ?? "",
-				password: process.env.API_ADMINISTRATOR_USER_PASSWORD ?? "",
+				emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
+				password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
 			},
 		},
 	});
@@ -161,6 +161,21 @@ suite("Query: usersByIds", () => {
 		const returnedIds = (users as Array<{ id: string }>).map((u) => u.id);
 		expect(returnedIds).toEqual(expect.arrayContaining([user1Id, user2Id]));
 	});
+
+	test("should return unauthenticated error if not signed in", async () => {
+		const result = await mercuriusClient.query(Query_usersByIds, {
+			variables: { input: { ids: [user1Id] } },
+		});
+		expect(result.data?.usersByIds).toBeNull();
+		expect(result.errors).toEqual(
+			expect.arrayContaining([
+				expect.objectContaining({
+					extensions: expect.objectContaining({ code: "unauthenticated" }),
+					path: ["usersByIds"],
+				}),
+			]),
+		);
+	});
 });
 
 //
@@ -200,6 +215,46 @@ suite("Query: usersByOrganizationId", () => {
 		const returnedIds = (users as Array<{ id: string }>).map((u) => u.id);
 		expect(returnedIds).toContain(memberUserId);
 	});
+
+	test("should handle database errors gracefully", async () => {
+		// Mock a database error by spying on the query method
+		const originalFindMany =
+			server.drizzleClient.query.organizationMembershipsTable.findMany;
+		server.drizzleClient.query.organizationMembershipsTable.findMany =
+			async () => {
+				throw new Error("Database connection error");
+			};
+
+		try {
+			const result = await mercuriusClient.query(Query_usersByOrganizationId, {
+				headers: { authorization: `bearer ${globalAuth.authToken}` },
+				variables: { organizationId: orgId },
+			});
+
+			expect(result.errors).toBeDefined();
+			expect(result.data?.usersByOrganizationId).toBeNull();
+			expect(result.errors?.[0]?.message).toContain(
+				"An error occurred while fetching users",
+			);
+		} finally {
+			// Restore original method
+			server.drizzleClient.query.organizationMembershipsTable.findMany =
+				originalFindMany;
+		}
+	});
+});
+
+//
+// TESTS FOR QUERY: eventsByOrganizationId
+//
+suite("Query: eventsByOrganizationId", () => {
+	let orgId: string;
+
+	beforeEach(async () => {
+		// Create an organization.
+		orgId = await safeCreateOrganizationAndGetId(globalAuth.authToken);
+	});
+
 	test("should return unauthenticated error if not signed in", async () => {
 		// Query without auth token
 		const result = await mercuriusClient.query(Query_eventsByOrganizationId, {
@@ -247,5 +302,53 @@ suite("Query: usersByOrganizationId", () => {
 		// Expect no errors and data to be an empty array.
 		expect(result.errors).toBeUndefined();
 		expect(result.data?.eventsByOrganizationId).toEqual([]);
+	});
+
+	test("should return unauthenticated error when currentUser is undefined", async () => {
+		// Mock findFirst to return undefined
+		const originalFindFirst = server.drizzleClient.query.usersTable.findFirst;
+		server.drizzleClient.query.usersTable.findFirst = async () => undefined;
+
+		try {
+			const result = await mercuriusClient.query(Query_eventsByOrganizationId, {
+				headers: { authorization: `bearer ${globalAuth.authToken}` },
+				variables: { input: { organizationId: orgId } },
+			});
+
+			expect(result.data?.eventsByOrganizationId).toBeNull();
+			expect(result.errors).toEqual(
+				expect.arrayContaining([
+					expect.objectContaining({
+						extensions: expect.objectContaining({ code: "unauthenticated" }),
+						path: ["eventsByOrganizationId"],
+					}),
+				]),
+			);
+		} finally {
+			server.drizzleClient.query.usersTable.findFirst = originalFindFirst;
+		}
+	});
+
+	test("should handle database errors when fetching events", async () => {
+		// Mock eventsTable.findMany to throw an error
+		const originalFindMany = server.drizzleClient.query.eventsTable.findMany;
+		server.drizzleClient.query.eventsTable.findMany = async () => {
+			throw new Error("Database query failed");
+		};
+
+		try {
+			const result = await mercuriusClient.query(Query_eventsByOrganizationId, {
+				headers: { authorization: `bearer ${globalAuth.authToken}` },
+				variables: { input: { organizationId: orgId } },
+			});
+
+			expect(result.errors).toBeDefined();
+			expect(result.data?.eventsByOrganizationId).toBeNull();
+			expect(result.errors?.[0]?.message).toContain(
+				"An error occurred while fetching events",
+			);
+		} finally {
+			server.drizzleClient.query.eventsTable.findMany = originalFindMany;
+		}
 	});
 });
