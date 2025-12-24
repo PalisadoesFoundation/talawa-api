@@ -4,6 +4,7 @@ import {
 	boolean,
 	date,
 	index,
+	integer,
 	pgTable,
 	text,
 	timestamp,
@@ -128,6 +129,11 @@ export const usersTable = pgTable(
 			enum: userEmploymentStatusEnum.options,
 		}),
 		/**
+		 * Number of consecutive failed login attempts.
+		 * Reset to 0 on successful login.
+		 */
+		failedLoginAttempts: integer("failed_login_attempts").notNull().default(0),
+		/**
 		 * The phone number to use to communicate with the user at their home.
 		 */
 		homePhoneNumber: text("home_phone_number"),
@@ -139,6 +145,22 @@ export const usersTable = pgTable(
 		 * Boolean to tell whether the user has verified their email or not.
 		 */
 		isEmailAddressVerified: boolean("is_email_address_verified").notNull(),
+		/**
+		 * Timestamp of the last failed login attempt.
+		 */
+		lastFailedLoginAt: timestamp("last_failed_login_at", {
+			mode: "date",
+			precision: 3,
+			withTimezone: true,
+		}),
+		/**
+		 * Timestamp until which the account is locked due to too many failed login attempts.
+		 */
+		lockedUntil: timestamp("locked_until", {
+			mode: "date",
+			precision: 3,
+			withTimezone: true,
+		}),
 		/**
 		 * Marital status of the user.
 		 */

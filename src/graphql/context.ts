@@ -43,7 +43,11 @@ export type ExplicitGraphQLContext = {
 	drizzleClient: FastifyInstance["drizzleClient"];
 	envConfig: Pick<
 		FastifyInstance["envConfig"],
-		"API_BASE_URL" | "API_REFRESH_TOKEN_EXPIRES_IN" | "FRONTEND_URL"
+		| "API_ACCOUNT_LOCKOUT_DURATION_MS"
+		| "API_ACCOUNT_LOCKOUT_THRESHOLD"
+		| "API_BASE_URL"
+		| "API_REFRESH_TOKEN_EXPIRES_IN"
+		| "FRONTEND_URL"
 	>;
 	jwt: {
 		sign: (payload: ExplicitAuthenticationTokenPayload) => string;

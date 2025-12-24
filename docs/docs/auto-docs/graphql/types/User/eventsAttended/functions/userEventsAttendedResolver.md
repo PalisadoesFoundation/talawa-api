@@ -64,6 +64,10 @@ Defined in: [src/graphql/types/User/eventsAttended.ts:10](https://github.com/Pal
 
 `"full_time"` \| `"part_time"` \| `"unemployed"` \| `null`
 
+#### failedLoginAttempts
+
+`number`
+
 #### homePhoneNumber
 
 `string` \| `null`
@@ -75,6 +79,14 @@ Defined in: [src/graphql/types/User/eventsAttended.ts:10](https://github.com/Pal
 #### isEmailAddressVerified
 
 `boolean`
+
+#### lastFailedLoginAt
+
+`Date` \| `null`
+
+#### lockedUntil
+
+`Date` \| `null`
 
 #### maritalStatus
 
