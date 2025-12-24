@@ -5,8 +5,12 @@ import { assertToBeNonNullish } from "../../../helpers";
 import { server } from "../../../server";
 import { mercuriusClient } from "../client";
 import {
+	Mutation_createEvent,
 	Mutation_createOrganization,
+	Mutation_createOrganizationMembership,
 	Mutation_createUser,
+	Mutation_inviteEventAttendee,
+	Mutation_registerForEvent,
 	Query_eventsByOrganizationId,
 	Query_signIn,
 	Query_usersByIds,
@@ -223,7 +227,7 @@ suite("Query: usersByOrganizationId", () => {
 				server.drizzleClient.query.organizationMembershipsTable,
 				"findMany",
 			)
-			.mockImplementation(async () => {
+			.mockImplementation(() => {
 				throw new Error("Database connection error");
 			});
 
@@ -254,6 +258,21 @@ suite("Query: eventsByOrganizationId", () => {
 	beforeEach(async () => {
 		// Create an organization.
 		orgId = await safeCreateOrganizationAndGetId(globalAuth.authToken);
+		// Ensure admin user is a member of the organization so they can create events
+		try {
+			await mercuriusClient.mutate(Mutation_createOrganizationMembership, {
+				headers: { authorization: `bearer ${globalAuth.authToken}` },
+				variables: {
+					input: {
+						organizationId: orgId,
+						memberId: globalAuth.userId,
+						role: "administrator",
+					},
+				},
+			});
+		} catch (_error) {
+			// Ignore errors - membership might already exist
+		}
 	});
 
 	test("should return unauthenticated error if not signed in", async () => {
@@ -336,7 +355,7 @@ suite("Query: eventsByOrganizationId", () => {
 		// Mock eventsTable.findMany to throw an error using vi.spyOn for proper typing
 		const spy = vi
 			.spyOn(server.drizzleClient.query.eventsTable, "findMany")
-			.mockImplementation(async () => {
+			.mockImplementation(() => {
 				throw new Error("Database query failed");
 			});
 
@@ -355,5 +374,380 @@ suite("Query: eventsByOrganizationId", () => {
 			// Restore the spy
 			spy.mockRestore();
 		}
+	});
+
+	test("should return public events to all organization members", async () => {
+		// Create a regular user and add to organization
+		const regularUser = await createUserAndGetToken();
+		await addMembership(orgId, regularUser.userId, "regular");
+
+		// Create a public event
+		const startAt = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString();
+		const endAt = new Date(Date.now() + 25 * 60 * 60 * 1000).toISOString();
+
+		const createEventResult = await mercuriusClient.mutate(
+			Mutation_createEvent,
+			{
+				headers: { authorization: `bearer ${globalAuth.authToken}` },
+				variables: {
+					input: {
+						name: "Public Event",
+						description: "A public event",
+						organizationId: orgId,
+						startAt,
+						endAt,
+						isPublic: true,
+						isInviteOnly: false,
+					},
+				},
+			},
+		);
+
+		assertToBeNonNullish(createEventResult.data?.createEvent);
+		const publicEventId = createEventResult.data.createEvent.id;
+
+		// Query as regular user - should see public event
+		const result = await mercuriusClient.query(Query_eventsByOrganizationId, {
+			headers: { authorization: `bearer ${regularUser.authToken}` },
+			variables: { input: { organizationId: orgId } },
+		});
+
+		expect(result.errors).toBeUndefined();
+		const events = result.data?.eventsByOrganizationId;
+		expect(events).toBeInstanceOf(Array);
+		expect(events?.length).toBeGreaterThan(0);
+		const eventIds = (events as Array<{ id: string }>).map((e) => e.id);
+		expect(eventIds).toContain(publicEventId);
+	});
+
+	test("should show invite-only events to event creator", async () => {
+		// Create an invite-only event as admin (creator)
+		const startAt = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString();
+		const endAt = new Date(Date.now() + 25 * 60 * 60 * 1000).toISOString();
+
+		const createEventResult = await mercuriusClient.mutate(
+			Mutation_createEvent,
+			{
+				headers: { authorization: `bearer ${globalAuth.authToken}` },
+				variables: {
+					input: {
+						name: "Invite-Only Event",
+						description: "An invite-only event",
+						organizationId: orgId,
+						startAt,
+						endAt,
+						isInviteOnly: true,
+					},
+				},
+			},
+		);
+
+		assertToBeNonNullish(createEventResult.data?.createEvent);
+		const inviteOnlyEventId = createEventResult.data.createEvent.id;
+
+		// Query as creator (admin) - should see invite-only event
+		const result = await mercuriusClient.query(Query_eventsByOrganizationId, {
+			headers: { authorization: `bearer ${globalAuth.authToken}` },
+			variables: { input: { organizationId: orgId } },
+		});
+
+		expect(result.errors).toBeUndefined();
+		const events = result.data?.eventsByOrganizationId;
+		expect(events).toBeInstanceOf(Array);
+		const eventIds = (events as Array<{ id: string }>).map((e) => e.id);
+		expect(eventIds).toContain(inviteOnlyEventId);
+	});
+
+	test("should show invite-only events to organization administrators", async () => {
+		// Create an admin user and add to organization
+		const adminUser = await createUserAndGetToken({ role: "administrator" });
+		await addMembership(orgId, adminUser.userId, "administrator");
+
+		// Create an invite-only event (not created by this admin)
+		const startAt = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString();
+		const endAt = new Date(Date.now() + 25 * 60 * 60 * 1000).toISOString();
+
+		const createEventResult = await mercuriusClient.mutate(
+			Mutation_createEvent,
+			{
+				headers: { authorization: `bearer ${globalAuth.authToken}` },
+				variables: {
+					input: {
+						name: "Invite-Only Event for Admin",
+						description: "An invite-only event",
+						organizationId: orgId,
+						startAt,
+						endAt,
+						isInviteOnly: true,
+					},
+				},
+			},
+		);
+
+		assertToBeNonNullish(createEventResult.data?.createEvent);
+		const inviteOnlyEventId = createEventResult.data.createEvent.id;
+
+		// Query as organization admin - should see invite-only event
+		const result = await mercuriusClient.query(Query_eventsByOrganizationId, {
+			headers: { authorization: `bearer ${adminUser.authToken}` },
+			variables: { input: { organizationId: orgId } },
+		});
+
+		expect(result.errors).toBeUndefined();
+		const events = result.data?.eventsByOrganizationId;
+		expect(events).toBeInstanceOf(Array);
+		const eventIds = (events as Array<{ id: string }>).map((e) => e.id);
+		expect(eventIds).toContain(inviteOnlyEventId);
+	});
+
+	test("should show invite-only events to invited users", async () => {
+		// Create a regular user and add to organization
+		const regularUser = await createUserAndGetToken();
+		await addMembership(orgId, regularUser.userId, "regular");
+
+		// Create an invite-only event
+		const startAt = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString();
+		const endAt = new Date(Date.now() + 25 * 60 * 60 * 1000).toISOString();
+
+		const createEventResult = await mercuriusClient.mutate(
+			Mutation_createEvent,
+			{
+				headers: { authorization: `bearer ${globalAuth.authToken}` },
+				variables: {
+					input: {
+						name: "Invite-Only Event",
+						description: "An invite-only event",
+						organizationId: orgId,
+						startAt,
+						endAt,
+						isInviteOnly: true,
+					},
+				},
+			},
+		);
+
+		assertToBeNonNullish(createEventResult.data?.createEvent);
+		const inviteOnlyEventId = createEventResult.data.createEvent.id;
+
+		// Invite the regular user to the event
+		await mercuriusClient.mutate(Mutation_inviteEventAttendee, {
+			headers: { authorization: `bearer ${globalAuth.authToken}` },
+			variables: {
+				data: {
+					eventId: inviteOnlyEventId,
+					userId: regularUser.userId,
+				},
+			},
+		});
+
+		// Query as invited user - should see invite-only event
+		const result = await mercuriusClient.query(Query_eventsByOrganizationId, {
+			headers: { authorization: `bearer ${regularUser.authToken}` },
+			variables: { input: { organizationId: orgId } },
+		});
+
+		expect(result.errors).toBeUndefined();
+		const events = result.data?.eventsByOrganizationId;
+		expect(events).toBeInstanceOf(Array);
+		const eventIds = (events as Array<{ id: string }>).map((e) => e.id);
+		expect(eventIds).toContain(inviteOnlyEventId);
+	});
+
+	test("should show invite-only events to registered-but-not-invited users", async () => {
+		// Create a regular user and add to organization
+		const regularUser = await createUserAndGetToken();
+		await addMembership(orgId, regularUser.userId, "regular");
+
+		// Create an invite-only, registerable event
+		const startAt = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString();
+		const endAt = new Date(Date.now() + 25 * 60 * 60 * 1000).toISOString();
+
+		const createEventResult = await mercuriusClient.mutate(
+			Mutation_createEvent,
+			{
+				headers: { authorization: `bearer ${globalAuth.authToken}` },
+				variables: {
+					input: {
+						name: "Invite-Only Registerable Event",
+						description: "An invite-only event that can be registered for",
+						organizationId: orgId,
+						startAt,
+						endAt,
+						isInviteOnly: true,
+						isRegisterable: true,
+					},
+				},
+			},
+		);
+
+		assertToBeNonNullish(createEventResult.data?.createEvent);
+		const inviteOnlyEventId = createEventResult.data.createEvent.id;
+
+		// Register the regular user for the event (without being invited)
+		await mercuriusClient.mutate(Mutation_registerForEvent, {
+			headers: { authorization: `bearer ${regularUser.authToken}` },
+			variables: {
+				id: inviteOnlyEventId,
+			},
+		});
+
+		// Query as registered user - should see invite-only event
+		const result = await mercuriusClient.query(Query_eventsByOrganizationId, {
+			headers: { authorization: `bearer ${regularUser.authToken}` },
+			variables: { input: { organizationId: orgId } },
+		});
+
+		expect(result.errors).toBeUndefined();
+		const events = result.data?.eventsByOrganizationId;
+		expect(events).toBeInstanceOf(Array);
+		const eventIds = (events as Array<{ id: string }>).map((e) => e.id);
+		expect(eventIds).toContain(inviteOnlyEventId);
+	});
+
+	test("should not show invite-only events to unauthorized users", async () => {
+		// Create a regular user and add to organization
+		const regularUser = await createUserAndGetToken();
+		await addMembership(orgId, regularUser.userId, "regular");
+
+		// Create an invite-only event
+		const startAt = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString();
+		const endAt = new Date(Date.now() + 25 * 60 * 60 * 1000).toISOString();
+
+		const createEventResult = await mercuriusClient.mutate(
+			Mutation_createEvent,
+			{
+				headers: { authorization: `bearer ${globalAuth.authToken}` },
+				variables: {
+					input: {
+						name: "Invite-Only Event",
+						description: "An invite-only event",
+						organizationId: orgId,
+						startAt,
+						endAt,
+						isInviteOnly: true,
+					},
+				},
+			},
+		);
+
+		assertToBeNonNullish(createEventResult.data?.createEvent);
+		const inviteOnlyEventId = createEventResult.data.createEvent.id;
+
+		// Query as regular user (not invited, not registered) - should NOT see invite-only event
+		const result = await mercuriusClient.query(Query_eventsByOrganizationId, {
+			headers: { authorization: `bearer ${regularUser.authToken}` },
+			variables: { input: { organizationId: orgId } },
+		});
+
+		expect(result.errors).toBeUndefined();
+		const events = result.data?.eventsByOrganizationId;
+		expect(events).toBeInstanceOf(Array);
+		const eventIds = (events as Array<{ id: string }>).map((e) => e.id);
+		expect(eventIds).not.toContain(inviteOnlyEventId);
+	});
+
+	test("should filter correctly with mix of public and invite-only events", async () => {
+		// Create a regular user and add to organization
+		const regularUser = await createUserAndGetToken();
+		await addMembership(orgId, regularUser.userId, "regular");
+
+		// Create a public event
+		const publicStartAt = new Date(
+			Date.now() + 24 * 60 * 60 * 1000,
+		).toISOString();
+		const publicEndAt = new Date(
+			Date.now() + 25 * 60 * 60 * 1000,
+		).toISOString();
+
+		const publicEventResult = await mercuriusClient.mutate(
+			Mutation_createEvent,
+			{
+				headers: { authorization: `bearer ${globalAuth.authToken}` },
+				variables: {
+					input: {
+						name: "Public Event",
+						description: "A public event",
+						organizationId: orgId,
+						startAt: publicStartAt,
+						endAt: publicEndAt,
+						isPublic: true,
+						isInviteOnly: false,
+					},
+				},
+			},
+		);
+
+		assertToBeNonNullish(publicEventResult.data?.createEvent);
+		const publicEventId = publicEventResult.data.createEvent.id;
+
+		// Create an invite-only event
+		const inviteOnlyStartAt = new Date(
+			Date.now() + 26 * 60 * 60 * 1000,
+		).toISOString();
+		const inviteOnlyEndAt = new Date(
+			Date.now() + 27 * 60 * 60 * 1000,
+		).toISOString();
+
+		const inviteOnlyEventResult = await mercuriusClient.mutate(
+			Mutation_createEvent,
+			{
+				headers: { authorization: `bearer ${globalAuth.authToken}` },
+				variables: {
+					input: {
+						name: "Invite-Only Event",
+						description: "An invite-only event",
+						organizationId: orgId,
+						startAt: inviteOnlyStartAt,
+						endAt: inviteOnlyEndAt,
+						isInviteOnly: true,
+					},
+				},
+			},
+		);
+
+		assertToBeNonNullish(inviteOnlyEventResult.data?.createEvent);
+		const inviteOnlyEventId = inviteOnlyEventResult.data.createEvent.id;
+
+		// Query as regular user (not invited to invite-only event) - should only see public event
+		const result = await mercuriusClient.query(Query_eventsByOrganizationId, {
+			headers: { authorization: `bearer ${regularUser.authToken}` },
+			variables: { input: { organizationId: orgId } },
+		});
+
+		expect(result.errors).toBeUndefined();
+		const events = result.data?.eventsByOrganizationId;
+		expect(events).toBeInstanceOf(Array);
+		const eventIds = (events as Array<{ id: string }>).map((e) => e.id);
+		expect(eventIds).toContain(publicEventId);
+		expect(eventIds).not.toContain(inviteOnlyEventId);
+
+		// Now invite the user to the invite-only event
+		await mercuriusClient.mutate(Mutation_inviteEventAttendee, {
+			headers: { authorization: `bearer ${globalAuth.authToken}` },
+			variables: {
+				data: {
+					eventId: inviteOnlyEventId,
+					userId: regularUser.userId,
+				},
+			},
+		});
+
+		// Query again - should now see both events
+		const resultAfterInvite = await mercuriusClient.query(
+			Query_eventsByOrganizationId,
+			{
+				headers: { authorization: `bearer ${regularUser.authToken}` },
+				variables: { input: { organizationId: orgId } },
+			},
+		);
+
+		expect(resultAfterInvite.errors).toBeUndefined();
+		const eventsAfterInvite = resultAfterInvite.data?.eventsByOrganizationId;
+		expect(eventsAfterInvite).toBeInstanceOf(Array);
+		const eventIdsAfterInvite = (
+			eventsAfterInvite as Array<{ id: string }>
+		).map((e) => e.id);
+		expect(eventIdsAfterInvite).toContain(publicEventId);
+		expect(eventIdsAfterInvite).toContain(inviteOnlyEventId);
 	});
 });
