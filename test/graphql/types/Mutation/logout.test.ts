@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 import {
 	hashRefreshToken,
 	revokeAllUserRefreshTokens,
@@ -46,12 +46,21 @@ describe("Logout Mutation", () => {
 	});
 
 	describe("resolve", () => {
+		let resolve: (...args: unknown[]) => Promise<unknown>;
+
+		beforeAll(() => {
+			if (!mockField.mock.calls[0]) {
+				throw new Error(
+					"Logout mutation was not registered. mockField.mock.calls[0] is undefined.",
+				);
+			}
+			// Extract the resolve function from the mock call
+			resolve = mockField.mock.calls[0][0].resolve;
+		});
+
 		beforeEach(() => {
 			vi.clearAllMocks();
 		});
-
-		// Extract the resolve function from the mock call
-		const resolve = mockField.mock.calls[0]?.[0].resolve;
 
 		it("should revoke all tokens for authenticated user", async () => {
 			const ctx = {

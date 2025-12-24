@@ -61,7 +61,7 @@ describe("Cookie Configuration", () => {
 	});
 
 	describe("getRefreshTokenCookieOptions", () => {
-		it("should return correct options with strict sameSite", () => {
+		it("should return correct options for secure environment", () => {
 			const options = getRefreshTokenCookieOptions(
 				{ isSecure: true, path: "/" },
 				3600000,
@@ -74,6 +74,34 @@ describe("Cookie Configuration", () => {
 				maxAge: 3600,
 				domain: undefined,
 			});
+		});
+
+		it("should return correct options for non-secure environment", () => {
+			const options = getRefreshTokenCookieOptions(
+				{ isSecure: false, path: "/" },
+				3600000,
+			);
+			expect(options).toEqual({
+				httpOnly: true,
+				secure: false,
+				sameSite: "strict",
+				path: "/",
+				maxAge: 3600,
+				domain: undefined,
+			});
+		});
+
+		it("should handle custom domain", () => {
+			const options = getRefreshTokenCookieOptions(
+				{ isSecure: true, domain: "example.com" },
+				3600000,
+			);
+			expect(options.domain).toBe("example.com");
+		});
+
+		it("should default path to /", () => {
+			const options = getRefreshTokenCookieOptions({ isSecure: true }, 3600000);
+			expect(options.path).toBe("/");
 		});
 	});
 
