@@ -103,6 +103,11 @@ describe("GraphQL Routes", () => {
 			});
 
 			expect(context).toEqual({
+				cookie: {
+					clearAuthCookies: expect.any(Function),
+					getRefreshToken: expect.any(Function),
+					setAuthCookies: expect.any(Function),
+				},
 				currentClient: {
 					isAuthenticated: true,
 					user: mockJwtPayload.user,
@@ -135,6 +140,11 @@ describe("GraphQL Routes", () => {
 			});
 
 			expect(context).toEqual({
+				cookie: {
+					clearAuthCookies: expect.any(Function),
+					getRefreshToken: expect.any(Function),
+					setAuthCookies: expect.any(Function),
+				},
 				currentClient: {
 					isAuthenticated: false,
 				},
