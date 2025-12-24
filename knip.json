@@ -4,8 +4,7 @@
 		"src/graphql/**/*.ts": ["exports"],
 		"src/services/ses/**/*.ts": ["exports"],
 		"src/drizzle/tables/**": ["exports"],
-		"src/workers/backgroundWorkerService.ts": ["exports"],
-		"scripts/dbManagement/**/*.ts": ["nsExports"]
+		"src/workers/backgroundWorkerService.ts": ["exports"]
 	},
 	"ignore": [
 		"src/plugins/**",
