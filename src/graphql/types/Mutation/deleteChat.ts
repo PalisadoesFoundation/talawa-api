@@ -111,8 +111,7 @@ export async function deleteChatResolver(
 
 	const currentUserOrganizationMembership =
 		existingChat.organization.membershipsWhereOrganization[0];
-	const currentUserChatMembership =
-		existingChat.chatMembershipsWhereChat[0];
+	const currentUserChatMembership = existingChat.chatMembershipsWhereChat[0];
 
 	if (
 		currentUser.role !== "administrator" &&
@@ -159,12 +158,12 @@ export async function deleteChatResolver(
 	});
 }
 
-/* istanbul ignore next */
 builder.mutationField("deleteChat", (t) =>
 	t.field({
 		args: {
 			input: t.arg({
-				description: "Input containing the UUID `id` of the chat to delete (required).",
+				description:
+					"Input containing the UUID `id` of the chat to delete (required).",
 				required: true,
 				type: MutationDeleteChatInput,
 			}),
