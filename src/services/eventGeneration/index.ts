@@ -8,50 +8,46 @@
  */
 
 // Main service functions (business logic only)
-export { generateInstancesForRecurringEvent } from "./eventGeneration";
-
+// Convenience re-exports for backward compatibility
+export {
+	calculateInstanceOccurrences as calculateOccurrences,
+	cleanupOldGeneratedInstances as cleanupOldInstances,
+	generateInstancesForRecurringEvent,
+	initializeGenerationWindow as initializeWindow,
+	resolveInstanceWithInheritance as resolveInstance,
+} from "./eventGeneration";
 // Instance resolution functions
 export {
-	resolveInstanceWithInheritance,
-	resolveMultipleInstances,
 	createExceptionLookupMap,
 	createTemplateLookupMap,
+	resolveInstanceWithInheritance,
+	resolveMultipleInstances,
 	validateResolvedInstance,
 } from "./instanceResolver";
-
 // Occurrence calculation functions
 export {
 	calculateInstanceOccurrences,
-	shouldGenerateInstanceAtDate,
 	getNextOccurrenceDate,
+	shouldGenerateInstanceAtDate,
 	validateRecurrenceRule,
 } from "./occurrenceCalculator";
 
-// Window management functions
-export {
-	initializeGenerationWindow,
-	extendGenerationWindow,
-	cleanupOldGeneratedInstances,
-	getCleanupStats,
-	validateWindowConfig,
-} from "./windowManager";
-
 // Types
 export type {
-	GetGeneratedInstancesInput,
-	GenerateInstancesInput,
-	OccurrenceCalculationConfig,
 	CalculatedOccurrence,
-	ResolveInstanceInput,
-	WindowManagerConfig,
-	ServiceDependencies,
+	GenerateInstancesInput,
+	GetGeneratedInstancesInput,
+	OccurrenceCalculationConfig,
 	RecurrenceContext,
+	ResolveInstanceInput,
+	ServiceDependencies,
+	WindowManagerConfig,
 } from "./types";
-
-// Convenience re-exports for backward compatibility
+// Window management functions
 export {
-	initializeGenerationWindow as initializeWindow,
-	cleanupOldGeneratedInstances as cleanupOldInstances,
-	calculateInstanceOccurrences as calculateOccurrences,
-	resolveInstanceWithInheritance as resolveInstance,
-} from "./eventGeneration";
+	cleanupOldGeneratedInstances,
+	extendGenerationWindow,
+	getCleanupStats,
+	initializeGenerationWindow,
+	validateWindowConfig,
+} from "./windowManager";

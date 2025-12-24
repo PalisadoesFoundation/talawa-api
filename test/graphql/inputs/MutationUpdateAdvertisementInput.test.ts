@@ -203,5 +203,199 @@ describe("MutationUpdateAdvertisementInput Schema", () => {
 			});
 			expect(result.success).toBe(false);
 		});
+
+		it("should reject description exceeding max length (2048)", () => {
+			const result = mutationUpdateAdvertisementInputSchema.safeParse({
+				...validInput,
+				description: "a".repeat(2049),
+			});
+			expect(result.success).toBe(false);
+		});
+
+		it("should accept description at exactly max length (2048)", () => {
+			const result = mutationUpdateAdvertisementInputSchema.safeParse({
+				...validInput,
+				description: "a".repeat(2048),
+			});
+			expect(result.success).toBe(true);
+		});
+	});
+
+	describe("id field validation", () => {
+		it("should reject invalid UUID format for id", () => {
+			const result = mutationUpdateAdvertisementInputSchema.safeParse({
+				id: "invalid-uuid",
+				name: "Test Ad",
+			});
+			expect(result.success).toBe(false);
+		});
+
+		it("should reject empty string for id", () => {
+			const result = mutationUpdateAdvertisementInputSchema.safeParse({
+				id: "",
+				name: "Test Ad",
+			});
+			expect(result.success).toBe(false);
+		});
+
+		it("should reject missing id", () => {
+			const result = mutationUpdateAdvertisementInputSchema.safeParse({
+				name: "Test Ad",
+			});
+			expect(result.success).toBe(false);
+		});
+
+		it("should reject null id", () => {
+			const result = mutationUpdateAdvertisementInputSchema.safeParse({
+				id: null,
+				name: "Test Ad",
+			});
+			expect(result.success).toBe(false);
+		});
+
+		it("should reject undefined id", () => {
+			const result = mutationUpdateAdvertisementInputSchema.safeParse({
+				id: undefined,
+				name: "Test Ad",
+			});
+			expect(result.success).toBe(false);
+		});
+	});
+
+	describe("nullable optional fields", () => {
+		it("should accept null for name (to clear the value)", () => {
+			const result = mutationUpdateAdvertisementInputSchema.safeParse({
+				id: "550e8400-e29b-41d4-a716-446655440000",
+				name: null,
+			});
+			expect(result.success).toBe(true);
+			if (result.success) {
+				expect(result.data.name).toBeNull();
+			}
+		});
+
+		it("should accept null for description", () => {
+			const result = mutationUpdateAdvertisementInputSchema.safeParse({
+				id: "550e8400-e29b-41d4-a716-446655440000",
+				description: null,
+			});
+			expect(result.success).toBe(true);
+			if (result.success) {
+				expect(result.data.description).toBeNull();
+			}
+		});
+
+		it("should accept null for startAt", () => {
+			const result = mutationUpdateAdvertisementInputSchema.safeParse({
+				id: "550e8400-e29b-41d4-a716-446655440000",
+				startAt: null,
+			});
+			expect(result.success).toBe(true);
+			if (result.success) {
+				expect(result.data.startAt).toBeNull();
+			}
+		});
+
+		it("should accept null for endAt", () => {
+			const result = mutationUpdateAdvertisementInputSchema.safeParse({
+				id: "550e8400-e29b-41d4-a716-446655440000",
+				endAt: null,
+			});
+			expect(result.success).toBe(true);
+			if (result.success) {
+				expect(result.data.endAt).toBeNull();
+			}
+		});
+
+		it("should accept null for type", () => {
+			const result = mutationUpdateAdvertisementInputSchema.safeParse({
+				id: "550e8400-e29b-41d4-a716-446655440000",
+				type: null,
+			});
+			expect(result.success).toBe(true);
+			if (result.success) {
+				expect(result.data.type).toBeNull();
+			}
+		});
+	});
+
+	describe("type field validation", () => {
+		it("should accept valid type 'pop_up'", () => {
+			const result = mutationUpdateAdvertisementInputSchema.safeParse({
+				id: "550e8400-e29b-41d4-a716-446655440000",
+				type: "pop_up",
+			});
+			expect(result.success).toBe(true);
+		});
+
+		it("should reject invalid type value", () => {
+			const result = mutationUpdateAdvertisementInputSchema.safeParse({
+				id: "550e8400-e29b-41d4-a716-446655440000",
+				type: "invalid_type",
+			});
+			expect(result.success).toBe(false);
+		});
+	});
+
+	describe("date validation edge cases", () => {
+		it("should skip date comparison when only startAt is provided", () => {
+			const result = mutationUpdateAdvertisementInputSchema.safeParse({
+				id: "550e8400-e29b-41d4-a716-446655440000",
+				startAt: new Date("2024-01-01T10:00:00Z"),
+			});
+			expect(result.success).toBe(true);
+		});
+
+		it("should skip date comparison when only endAt is provided", () => {
+			const result = mutationUpdateAdvertisementInputSchema.safeParse({
+				id: "550e8400-e29b-41d4-a716-446655440000",
+				endAt: new Date("2024-01-01T10:00:00Z"),
+			});
+			expect(result.success).toBe(true);
+		});
+
+		it("should skip date comparison when startAt is null and endAt is provided", () => {
+			const result = mutationUpdateAdvertisementInputSchema.safeParse({
+				id: "550e8400-e29b-41d4-a716-446655440000",
+				startAt: null,
+				endAt: new Date("2024-01-01T10:00:00Z"),
+			});
+			expect(result.success).toBe(true);
+		});
+
+		it("should skip date comparison when endAt is null and startAt is provided", () => {
+			const result = mutationUpdateAdvertisementInputSchema.safeParse({
+				id: "550e8400-e29b-41d4-a716-446655440000",
+				startAt: new Date("2024-01-01T10:00:00Z"),
+				endAt: null,
+			});
+			expect(result.success).toBe(true);
+		});
+	});
+
+	describe("name field boundary conditions", () => {
+		it("should accept name at exactly min length (1 character)", () => {
+			const result = mutationUpdateAdvertisementInputSchema.safeParse({
+				id: "550e8400-e29b-41d4-a716-446655440000",
+				name: "a",
+			});
+			expect(result.success).toBe(true);
+		});
+
+		it("should accept name at exactly max length (256 characters)", () => {
+			const result = mutationUpdateAdvertisementInputSchema.safeParse({
+				id: "550e8400-e29b-41d4-a716-446655440000",
+				name: "a".repeat(256),
+			});
+			expect(result.success).toBe(true);
+		});
+
+		it("should reject name exceeding max length (257 characters)", () => {
+			const result = mutationUpdateAdvertisementInputSchema.safeParse({
+				id: "550e8400-e29b-41d4-a716-446655440000",
+				name: "a".repeat(257),
+			});
+			expect(result.success).toBe(false);
+		});
 	});
 });

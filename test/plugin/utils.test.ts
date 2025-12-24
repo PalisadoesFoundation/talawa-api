@@ -417,7 +417,7 @@ describe("clearPluginModuleCache", () => {
 		const badCache = new Proxy(
 			{},
 			{
-				get(target, prop) {
+				get(_target, prop) {
 					if (prop === "constructor") return Object;
 					return undefined;
 				},

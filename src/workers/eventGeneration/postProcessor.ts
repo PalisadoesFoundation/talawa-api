@@ -29,7 +29,7 @@ export interface PostProcessingResult {
  */
 export async function executePostProcessing(
 	executionResults: EventGenerationExecutionResult[],
-	metrics: ProcessingMetrics,
+	_metrics: ProcessingMetrics,
 	config: PostProcessingConfig,
 	deps: WorkerDependencies,
 ): Promise<PostProcessingResult> {

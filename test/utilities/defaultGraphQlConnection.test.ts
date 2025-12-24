@@ -1,7 +1,7 @@
 import { afterEach, expect, suite, test, vi } from "vitest";
 import {
-	type ParsedDefaultGraphQLConnectionArguments,
 	defaultGraphQLConnectionArgumentsSchema,
+	type ParsedDefaultGraphQLConnectionArguments,
 	transformDefaultGraphQLConnectionArguments,
 	transformToDefaultGraphQLConnection,
 } from "../../src/utilities/defaultGraphQLConnection";

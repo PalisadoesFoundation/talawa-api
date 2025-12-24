@@ -1,3 +1,4 @@
+// check-sanitization-disable: metadata field returns JSON.stringify of system data
 import { builder } from "~/src/graphql/builder";
 import { escapeHTML } from "~/src/utilities/sanitizer";
 

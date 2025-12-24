@@ -4,7 +4,7 @@
 
 # Function: transformGraphQLConnectionArgumentsWithWhere()
 
-> **transformGraphQLConnectionArgumentsWithWhere**\<`Arg`, `Where`\>(`arg`, `ctx`): `object` & `Omit`\<`Arg`, `"first"` \| `"last"` \| `"before"` \| `"after"`\> & `object`
+> **transformGraphQLConnectionArgumentsWithWhere**\<`Arg`, `_Where`\>(`arg`, `ctx`): `object` & `Omit`\<`Arg`, `"first"` \| `"last"` \| `"before"` \| `"after"`\> & `object`
 
 Defined in: [src/utilities/defaultGraphQLConnection.ts:163](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/utilities/defaultGraphQLConnection.ts#L163)
 
@@ -17,9 +17,9 @@ Extends the base transformation with where handling.
 
 `Arg` *extends* `object` & `object`
 
-### Where
+### _Where
 
-`Where` = `Arg`\[`"where"`\]
+`_Where` = `Arg`\[`"where"`\]
 
 ## Parameters
 

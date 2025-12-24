@@ -384,6 +384,9 @@ export const Query_fund = gql(`query Query_fund($input: QueryFundInput!) {
       id
       isTaxDeductible
       name
+      isDefault
+      isArchived
+      referenceNumber
     }
   }`);
 
@@ -465,6 +468,21 @@ export const Mutation_createFund =
       id
       name
       isTaxDeductible
+      isDefault
+      isArchived
+      referenceNumber
+    }
+  }`);
+
+export const Mutation_updateFund =
+	gql(`mutation Mutation_updateFund($input: MutationUpdateFundInput!) {
+    updateFund(input: $input) {
+      id
+      name
+      isTaxDeductible
+      isDefault
+      isArchived
+      referenceNumber
     }
   }`);
 
@@ -625,6 +643,37 @@ export const Mutation_createTag = gql(`
     }
   }`);
 
+export const Mutation_createTagFolder = gql(`
+  mutation Mutation_createTagFolder($input: MutationCreateTagFolderInput!) {
+    createTagFolder(input: $input) {
+      id
+      name
+      createdAt
+      updatedAt
+    }
+  }
+`);
+
+export const Mutation_updateTagFolder = gql(`
+  mutation Mutation_updateTagFolder($input: MutationUpdateTagFolderInput!) {
+    updateTagFolder(input: $input) {
+      id
+      name
+      createdAt
+      updatedAt
+    }
+  }
+`);
+
+export const Mutation_deleteTagFolder = gql(`
+  mutation Mutation_deleteTagFolder($input: MutationDeleteTagFolderInput!) {
+    deleteTagFolder(input: $input) {
+      id
+      name
+    }
+  }
+`);
+
 export const Query_organizations = gql(`
 	query Query_organizations {
 		organizations {
@@ -778,6 +827,7 @@ export const Mutation_createPost = gql(`
     createPost(input: $input) {
       id
       caption
+      body
       pinnedAt
       organization {
         id
@@ -2480,4 +2530,24 @@ export const Query_getRecurringEvents = gql(`
       }
     }
   }
+`);
+
+export const Mutation_cancelMembershipRequest = gql(`
+  mutation Mutation_cancelMembershipRequest(
+    $input: MutationCancelMembershipRequestInput!
+  ) {
+    cancelMembershipRequest(input: $input) {
+      success
+      message
+    }
+  }
+`);
+
+export const Query_community = gql(`
+	query Query_community {
+		community {
+			id
+			name
+		}
+	}
 `);

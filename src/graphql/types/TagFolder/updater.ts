@@ -1,9 +1,9 @@
 import type { GraphQLContext } from "~/src/graphql/context";
 import { User, type User as UserType } from "~/src/graphql/types/User/User";
-import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import envConfig from "~/src/utilities/graphqLimits";
-import { TagFolder } from "./TagFolder";
+import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import type { TagFolder as TagFolderType } from "./TagFolder";
+import { TagFolder } from "./TagFolder";
 
 export const resolveUpdater = async (
 	parent: TagFolderType,

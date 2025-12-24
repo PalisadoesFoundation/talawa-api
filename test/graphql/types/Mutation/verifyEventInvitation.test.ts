@@ -76,7 +76,7 @@ async function createTestOrganization(): Promise<TestOrganization> {
 		cleanup: async () => {
 			try {
 				// Cleanup organization (cascade deletes related records)
-			} catch (error) {
+			} catch (_error) {
 				// Silently ignore cleanup errors
 			}
 		},
@@ -141,7 +141,7 @@ suite("Mutation verifyEventInvitation - Integration Tests", () => {
 		for (const cleanup of cleanupFunctionsToRun.reverse()) {
 			try {
 				await cleanup();
-			} catch (error) {
+			} catch (_error) {
 				// Silently ignore cleanup errors
 			}
 		}

@@ -2,8 +2,8 @@ import { describe, expect, it } from "vitest";
 import {
 	escapeHTML,
 	isSanitizedInput,
-	sanitizeInput,
 	sanitizedStringSchema,
+	sanitizeInput,
 } from "../../src/utilities/sanitizer";
 
 describe("sanitizer", () => {

@@ -19,9 +19,11 @@ describe("Fund Resolver - Organization Field", () => {
 			creatorId: "user-admin",
 			updaterId: "user-update",
 			isArchived: false,
+			isDefault: false,
+			referenceNumber: null,
 			createdAt: new Date("2024-01-01T09:00:00Z"),
 			updatedAt: new Date("2024-01-01T10:00:00Z"),
-		} as FundType;
+		};
 
 		const { context, mocks: newMocks } = createMockGraphQLContext(
 			true,
@@ -561,7 +563,7 @@ describe("Fund Resolver - Organization Field", () => {
 				expect.assertions(1);
 				await resolveOrganization(mockFund, {}, ctx);
 				expect.fail("Expected error to be thrown");
-			} catch (error) {
+			} catch (_error) {
 				expect(ctx.log.error).toHaveBeenCalledWith(
 					"Postgres select operation returned an empty array for a fund's organization id that isn't null.",
 				);
@@ -579,7 +581,7 @@ describe("Fund Resolver - Organization Field", () => {
 				expect.assertions(1);
 				await resolveOrganization(mockFund, {}, ctx);
 				expect.fail("Expected error to be thrown");
-			} catch (error) {
+			} catch (_error) {
 				expect(ctx.log.error).toHaveBeenCalledWith(
 					expect.stringContaining("fund's organization id"),
 				);

@@ -2,8 +2,8 @@ import { createMockGraphQLContext } from "test/_Mocks_/mockContextCreator/mockCo
 import { beforeEach, describe, expect, it } from "vitest";
 import type { ResolvedRecurringEventInstance } from "~/src/drizzle/tables/recurringEventInstances";
 import type { GraphQLContext } from "~/src/graphql/context";
-import type { User as UserType } from "~/src/graphql/types/User/User";
 import { userEventsAttendedResolver } from "~/src/graphql/types/User/eventsAttended";
+import type { User as UserType } from "~/src/graphql/types/User/User";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 
 describe("User EventsAttended Resolver Tests", () => {

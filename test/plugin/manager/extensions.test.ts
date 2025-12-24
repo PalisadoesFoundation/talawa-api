@@ -2,11 +2,11 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { ExtensionLoader } from "../../../src/plugin/manager/extensions";
 import type {
 	IExtensionRegistry,
+	IGraphQLExtension,
 	IHookExtension,
 	ILoadedPlugin,
 	IPluginManifest,
 } from "../../../src/plugin/types";
-import type { IGraphQLExtension } from "../../../src/plugin/types";
 import { PluginStatus } from "../../../src/plugin/types";
 
 vi.mock("../../../src/plugin/utils", () => ({

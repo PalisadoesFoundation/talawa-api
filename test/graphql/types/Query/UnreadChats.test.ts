@@ -40,7 +40,7 @@ suite("Query: unreadChats", () => {
 		for (const fn of cleanupFns.reverse()) {
 			try {
 				await fn();
-			} catch (err) {
+			} catch (_err) {
 				// ignore cleanup errors
 			}
 		}
