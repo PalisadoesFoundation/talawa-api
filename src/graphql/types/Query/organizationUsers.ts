@@ -154,7 +154,6 @@ builder.queryField("eventsByOrganizationId", (t) =>
 					extensions: { code: "unauthenticated" },
 				});
 			}
-			console.log("Input args:", args.input);
 
 			const parsedArgs = eventsByOrganizationIdInputSchema.safeParse(
 				args.input,

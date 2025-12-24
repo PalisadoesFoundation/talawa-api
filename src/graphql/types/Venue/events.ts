@@ -208,13 +208,18 @@ Venue.implement({
 						}
 					}
 
+					// Fetch more venue bookings than needed to account for invite-only filtering
+					// This ensures we have enough bookings after filtering to fill the requested page
+					// Use 2x the limit or limit + 50, whichever is larger, capped at 200
+					const fetchLimit = Math.min(Math.max(limit * 2, limit + 50), 200);
+
 					const venueBookings =
 						await ctx.drizzleClient.query.venueBookingsTable.findMany({
 							columns: {
 								createdAt: true,
 								eventId: true,
 							},
-							limit,
+							limit: fetchLimit + 1, // +1 for pagination detection
 							orderBy,
 							with: {
 								event: {
@@ -255,6 +260,7 @@ Venue.implement({
 						});
 
 					// Filter invite-only events based on visibility rules
+					// This happens before pagination to ensure we have enough events
 					const filteredEvents = await filterInviteOnlyEvents({
 						events: eventsWithAttachments,
 						currentUserId,
@@ -264,9 +270,12 @@ Venue.implement({
 					});
 
 					// Map back to venue bookings format for pagination
-					const filteredBookings = venueBookings.filter((booking) =>
-						filteredEvents.some((event) => event.id === booking.eventId),
-					);
+					// Keep limit (which already includes +1 for pagination detection) for proper pagination
+					const filteredBookings = venueBookings
+						.filter((booking) =>
+							filteredEvents.some((event) => event.id === booking.eventId),
+						)
+						.slice(0, limit);
 
 					return transformToDefaultGraphQLConnection({
 						createCursor: (booking) =>
