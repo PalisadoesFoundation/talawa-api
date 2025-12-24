@@ -10,7 +10,14 @@ import type {
 } from "~/src/graphql/context";
 import schemaManager from "~/src/graphql/schemaManager";
 import NotificationService from "~/src/services/notification/NotificationService";
+import {
+	COOKIE_NAMES,
+	getAccessTokenCookieOptions,
+	getClearCookieOptions,
+	getRefreshTokenCookieOptions,
+} from "../utilities/cookieConfig";
 import leakyBucket from "../utilities/leakyBucket";
+import { DEFAULT_REFRESH_TOKEN_EXPIRES_MS } from "../utilities/refreshTokenUtils";
 import { TalawaGraphQLError } from "../utilities/TalawaGraphQLError";
 
 /**
@@ -54,19 +61,90 @@ export type CreateContext = (
 export const createContext: CreateContext = async (initialContext) => {
 	const { fastify, request } = initialContext;
 
+	// Try to authenticate from Authorization header first, then fall back to cookie
 	let currentClient: CurrentClient;
+
 	try {
+		// First try Authorization header (existing behavior for mobile clients)
 		const jwtPayload =
 			await request.jwtVerify<ExplicitAuthenticationTokenPayload>();
 		currentClient = {
 			isAuthenticated: true,
 			user: jwtPayload.user,
 		};
-	} catch (_error) {
-		currentClient = {
-			isAuthenticated: false,
-		};
+	} catch (_headerError) {
+		// If no Authorization header, try to get token from cookie (web clients)
+		const accessTokenFromCookie = request.cookies?.[COOKIE_NAMES.ACCESS_TOKEN];
+		if (accessTokenFromCookie) {
+			try {
+				const jwtPayload =
+					await fastify.jwt.verify<ExplicitAuthenticationTokenPayload>(
+						accessTokenFromCookie,
+					);
+				currentClient = {
+					isAuthenticated: true,
+					user: jwtPayload.user,
+				};
+			} catch (_cookieError) {
+				currentClient = {
+					isAuthenticated: false,
+				};
+			}
+		} else {
+			currentClient = {
+				isAuthenticated: false,
+			};
+		}
 	}
+
+	// Cookie configuration options
+	const cookieConfig = {
+		isSecure:
+			fastify.envConfig.API_IS_SECURE_COOKIES ??
+			process.env.NODE_ENV === "production",
+		domain: fastify.envConfig.API_COOKIE_DOMAIN,
+		path: "/",
+	};
+
+	// Create cookie helper only for HTTP requests (not WebSocket subscriptions)
+	const cookieHelper =
+		!initialContext.isSubscription && initialContext.reply
+			? {
+					setAuthCookies: (accessToken: string, refreshToken: string) => {
+						const jwtExpiresIn = fastify.envConfig.API_JWT_EXPIRES_IN;
+						const refreshExpiresIn =
+							fastify.envConfig.API_REFRESH_TOKEN_EXPIRES_IN ??
+							DEFAULT_REFRESH_TOKEN_EXPIRES_MS;
+
+						initialContext.reply.setCookie(
+							COOKIE_NAMES.ACCESS_TOKEN,
+							accessToken,
+							getAccessTokenCookieOptions(cookieConfig, jwtExpiresIn),
+						);
+						initialContext.reply.setCookie(
+							COOKIE_NAMES.REFRESH_TOKEN,
+							refreshToken,
+							getRefreshTokenCookieOptions(cookieConfig, refreshExpiresIn),
+						);
+					},
+					clearAuthCookies: () => {
+						const clearOptions = getClearCookieOptions(cookieConfig);
+						initialContext.reply.setCookie(
+							COOKIE_NAMES.ACCESS_TOKEN,
+							"",
+							clearOptions,
+						);
+						initialContext.reply.setCookie(
+							COOKIE_NAMES.REFRESH_TOKEN,
+							"",
+							clearOptions,
+						);
+					},
+					getRefreshToken: () => {
+						return request.cookies?.[COOKIE_NAMES.REFRESH_TOKEN];
+					},
+				}
+			: undefined;
 
 	return {
 		currentClient,
@@ -76,6 +154,7 @@ export const createContext: CreateContext = async (initialContext) => {
 			sign: (payload: ExplicitAuthenticationTokenPayload) =>
 				fastify.jwt.sign(payload),
 		},
+		cookie: cookieHelper,
 		log: fastify.log,
 		minio: fastify.minio,
 		// attached a per-request notification service that queues notifications and can flush later

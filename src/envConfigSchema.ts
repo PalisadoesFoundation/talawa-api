@@ -184,6 +184,27 @@ export const envConfigSchema = Type.Object({
 		minLength: 64,
 	}),
 	/**
+	 * Secret used for signing cookies. Should be a random string of at least 32 characters.
+	 * Used by @fastify/cookie for cookie signing and verification.
+	 */
+	API_COOKIE_SECRET: Type.String({
+		minLength: 32,
+	}),
+	/**
+	 * Optional domain for authentication cookies.
+	 * Set this for cross-subdomain authentication (e.g., ".talawa.io" for sharing cookies between admin.talawa.io and api.talawa.io).
+	 */
+	API_COOKIE_DOMAIN: Type.Optional(
+		Type.String({
+			minLength: 1,
+		}),
+	),
+	/**
+	 * Whether to use secure cookies (HTTPS only).
+	 * Defaults to true in production environments. Set explicitly for testing.
+	 */
+	API_IS_SECURE_COOKIES: Type.Optional(Type.Boolean()),
+	/**
 	 * Used for providing the log level for the logger used in talawa api.
 	 *
 	 * @privateRemarks
