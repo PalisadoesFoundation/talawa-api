@@ -177,6 +177,15 @@ describe("MutationCreateAgendaItemInput Schema", () => {
 			});
 			expect(result.success).toBe(true);
 		});
+
+		it("should reject invalid UUID string for folderId", () => {
+			const result = mutationCreateAgendaItemInputSchema.safeParse({
+				name: "Valid Agenda Item",
+				folderId: "not-a-valid-uuid",
+				type: "general",
+			});
+			expect(result.success).toBe(false);
+		});
 	});
 
 	describe("type field", () => {
@@ -185,6 +194,15 @@ describe("MutationCreateAgendaItemInput Schema", () => {
 				name: "Valid Agenda Item",
 				folderId: validFolderId,
 			});
+			expect(result.success).toBe(false);
+		});
+
+		it("should reject invalid type value", () => {
+			const result = mutationCreateAgendaItemInputSchema.safeParse({
+				name: "Valid Agenda Item",
+				folderId: validFolderId,
+				type: "invalid",
+			} as unknown);
 			expect(result.success).toBe(false);
 		});
 
@@ -227,6 +245,10 @@ describe("MutationCreateAgendaItemInput Schema", () => {
 		});
 	});
 
+	// TODO: Remove failure expectations and assert success after the 'note' validation bug is fixed.
+	// The superRefine else clause (MutationCreateAgendaItemInput.ts:34-40) incorrectly adds a 'key'
+	// issue even when key is not provided for type 'note'.
+	// See: https://github.com/PalisadoesFoundation/talawa-api/issues - Create tracking issue for this bug.
 	describe("type-specific validation for 'note'", () => {
 		it("should reject type 'note' without duration or key (validation bug)", () => {
 			// Note: The source code has a bug in the validation logic
