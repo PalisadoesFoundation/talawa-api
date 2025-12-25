@@ -931,7 +931,7 @@ jobs:
           INTERVAL=3
           ELAPSED=0
 
-          until curl -sf http://localhost:4000/healthcheck > /dev/null; do
+          until docker exec talawa-api-1 curl -sf http://localhost:4000/healthcheck > /dev/null; do
             if [ "$ELAPSED" -ge "$TIMEOUT" ]; then
               echo "Backend failed to start within ${TIMEOUT}s"
               echo "=== Backend container logs ==="
