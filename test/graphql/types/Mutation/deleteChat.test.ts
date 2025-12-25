@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, type Mock, vi } from "vitest";
 import { builder } from "~/src/graphql/builder";
 import type { GraphQLContext } from "~/src/graphql/context";
 import { deleteChatResolver } from "~/src/graphql/types/Mutation/deleteChat";
@@ -48,15 +48,22 @@ function createMockContext(
  * Invoke where/with callbacks present on a drizzle-like query object so
  * function bodies defined in `deleteChat.ts` are executed during tests.
  */
+
+interface MockQuery {
+	where?: unknown;
+	with?: Record<string, MockQuery>;
+}
+
 function executeQueryBuilders(query: unknown) {
 	if (!query || typeof query !== "object") return;
-	const q = query as Record<string, any>;
+	const q = query as MockQuery;
 
 	if (typeof q.where === "function") {
 		// Provide minimal `fields` and `operators` objects expected by the lambdas.
+
 		q.where(
 			{ id: "user-id", memberId: "user-id" },
-			{ eq: (_a: any, _b: any) => true },
+			{ eq: (_a: unknown, _b: unknown) => true },
 		);
 	}
 
@@ -66,7 +73,7 @@ function executeQueryBuilders(query: unknown) {
 			if (item && typeof item.where === "function") {
 				item.where(
 					{ id: "user-id", memberId: "user-id" },
-					{ eq: (_a: any, _b: any) => true },
+					{ eq: (_a: unknown, _b: unknown) => true },
 				);
 			}
 
@@ -77,7 +84,7 @@ function executeQueryBuilders(query: unknown) {
 					if (nested && typeof nested.where === "function") {
 						nested.where(
 							{ id: "user-id", memberId: "user-id" },
-							{ eq: (_a: any, _b: any) => true },
+							{ eq: (_a: unknown, _b: unknown) => true },
 						);
 					}
 				}
@@ -109,7 +116,8 @@ describe("deleteChatResolver", () => {
 
 	it("throws invalid_arguments for invalid input", async () => {
 		await expect(
-			deleteChatResolver({}, { input: {} } as any, ctx),
+			// @ts-expect-error Testing invalid input
+			deleteChatResolver({}, { input: {} }, ctx),
 		).rejects.toMatchObject({
 			extensions: { code: "invalid_arguments" },
 		});
@@ -295,15 +303,15 @@ describe("deleteChatResolver", () => {
 	});
 
 	it("executes module-level builder field for coverage", () => {
-		const mockMutationField = builder.mutationField as any;
+		const mockMutationField = builder.mutationField as Mock;
 		expect(mockMutationField).toHaveBeenCalled();
 
 		// Find the call for "deleteChat"
 		const call = mockMutationField.mock.calls.find(
-			(c: any[]) => c[0] === "deleteChat",
+			(c: unknown[]) => c[0] === "deleteChat",
 		);
-		expect(call).toBeDefined();
 
+		if (!call) throw new Error("Call not found");
 		const callback = call[1];
 		const t = {
 			field: vi.fn(),
