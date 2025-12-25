@@ -1,6 +1,6 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
-import { Readable } from "node:stream";
 import type { ReadStream } from "node:fs";
+import { Readable } from "node:stream";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
 // helper function - create a mock ReadStream
 function createMockReadStream(): ReadStream {
