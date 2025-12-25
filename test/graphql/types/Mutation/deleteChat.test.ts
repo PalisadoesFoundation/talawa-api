@@ -125,6 +125,70 @@ suite("Mutation deleteChat", () => {
 		).rejects.toThrow();
 	});
 
+	test("successfully deletes chat without avatar", async () => {
+		const adminRes = await mercuriusClient.query(Query_signIn, {
+			variables: {
+				input: {
+					emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
+					password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
+				},
+			},
+		});
+		assertToBeNonNullish(adminRes.data?.signIn?.authenticationToken);
+		const adminToken = adminRes.data.signIn.authenticationToken as string;
+
+		// Create Org
+		const orgRes = await mercuriusClient.mutate(Mutation_createOrganization, {
+			headers: { authorization: `bearer ${adminToken}` },
+			variables: {
+				input: { name: `org-${faker.string.uuid()}`, countryCode: "us" },
+			},
+		});
+		assertToBeNonNullish(orgRes.data?.createOrganization?.id);
+		const orgId = orgRes.data.createOrganization.id;
+		cleanupFns.push(async () => {
+			await mercuriusClient.mutate(Mutation_deleteOrganization, {
+				headers: { authorization: `bearer ${adminToken}` },
+				variables: { input: { id: orgId } },
+			});
+		});
+
+		// Create Chat
+		const chatName = `chat-${faker.string.uuid()}`;
+		const chatRes = await mercuriusClient.mutate(Mutation_createChat, {
+			headers: { authorization: `bearer ${adminToken}` },
+			variables: {
+				input: { name: chatName, organizationId: orgId },
+			},
+		});
+		assertToBeNonNullish(chatRes.data?.createChat?.id);
+		const chatId = chatRes.data.createChat.id;
+		cleanupFns.push(async () => {
+			try {
+				await mercuriusClient.mutate(Mutation_deleteChat, {
+					headers: { authorization: `bearer ${adminToken}` },
+					variables: { input: { id: chatId } },
+				});
+			} catch {
+				// ignore if already deleted
+			}
+		});
+
+		// Delete Chat
+		const deleteRes = await mercuriusClient.mutate(Mutation_deleteChat, {
+			headers: { authorization: `bearer ${adminToken}` },
+			variables: { input: { id: chatId } },
+		});
+		assertToBeNonNullish(deleteRes.data?.deleteChat?.id);
+		expect(deleteRes.data.deleteChat.id).toBe(chatId);
+
+		// Verify Chat is gone from DB
+		const dbChat = await server.drizzleClient.query.chatsTable.findFirst({
+			where: eq(chatsTable.id, chatId),
+		});
+		expect(dbChat).toBeUndefined();
+	});
+
 	test("unauthenticated: requires auth", async () => {
 		const res = await mercuriusClient.mutate(Mutation_deleteChat, {
 			variables: {
