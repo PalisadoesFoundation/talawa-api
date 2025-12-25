@@ -81,6 +81,7 @@ describe("jobDiscovery", () => {
 		attendees: [],
 		isPublic: true,
 		isRegisterable: false,
+		isInviteOnly: false,
 		...overrides,
 	});
 

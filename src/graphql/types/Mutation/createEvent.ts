@@ -205,6 +205,7 @@ builder.mutationField("createEvent", (t) =>
 							allDay: parsedArgs.input.allDay ?? false,
 							isPublic: parsedArgs.input.isPublic ?? false,
 							isRegisterable: parsedArgs.input.isRegisterable ?? false,
+							isInviteOnly: parsedArgs.input.isInviteOnly ?? false,
 							location: parsedArgs.input.location,
 							// Set as recurring template if recurrence is provided
 							isRecurringEventTemplate: !!parsedArgs.input.recurrence,

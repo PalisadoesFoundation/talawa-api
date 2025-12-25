@@ -79,6 +79,7 @@ input MutationUpdateThisAndFollowingEventsInput {
   description: String
   endAt: DateTime
   id: ID!
+  isInviteOnly: Boolean
   isPublic: Boolean
   isRegisterable: Boolean
   location: String
@@ -105,6 +106,10 @@ Updated end time for this and following event instances.
 #### [<code style={{ fontWeight: 'normal' }}>MutationUpdateThisAndFollowingEventsInput.<b>id</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>ID!</b></code>](/auto-schema/types/scalars/id.mdx) <Badge class="badge badge--secondary badge--non_null" text="non-null"/> <Badge class="badge badge--secondary " text="scalar"/>
 
 Global identifier of the recurring event instance from which to update this and following instances.
+
+#### [<code style={{ fontWeight: 'normal' }}>MutationUpdateThisAndFollowingEventsInput.<b>isInviteOnly</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>Boolean</b></code>](/auto-schema/types/scalars/boolean.mdx) <Badge class="badge badge--secondary " text="scalar"/>
+
+Whether this and following event instances are invite-only.
 
 #### [<code style={{ fontWeight: 'normal' }}>MutationUpdateThisAndFollowingEventsInput.<b>isPublic</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>Boolean</b></code>](/auto-schema/types/scalars/boolean.mdx) <Badge class="badge badge--secondary " text="scalar"/>
 
