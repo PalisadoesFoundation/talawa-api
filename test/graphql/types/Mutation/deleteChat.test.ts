@@ -225,6 +225,7 @@ suite("Mutation deleteChat", () => {
 		});
 		assertToBeNonNullish(userRes.data?.createUser?.user?.id);
 		const memberToken = userRes.data.createUser.authenticationToken;
+		assertToBeNonNullish(memberToken);
 		const memberId = userRes.data.createUser.user.id;
 		cleanupFns.push(async () => {
 			await mercuriusClient.mutate(Mutation_deleteUser, {
