@@ -33,6 +33,7 @@ describe("Event AttendeesCheckInStatus Resolver Tests", () => {
 			allDay: false,
 			isPublic: true,
 			isRegisterable: true,
+			isInviteOnly: false,
 			isRecurringEventTemplate: false,
 		} as EventType;
 	});
