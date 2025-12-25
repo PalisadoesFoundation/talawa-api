@@ -112,7 +112,7 @@ builder.mutationField("updateTag", (t) =>
 				const folderId = parsedArgs.input.folderId;
 
 				const existingTagFolder =
-					await ctx.drizzleClient.query.tagsTable.findFirst({
+					await ctx.drizzleClient.query.tagFoldersTable.findFirst({
 						columns: {
 							organizationId: true,
 						},
