@@ -911,7 +911,7 @@ jobs:
           if [ "$timeout" -eq 0 ]; then
             echo "Error: Postgres failed to start"
             docker compose ps
-            docker logs postgres
+            docker compose logs postgres
             exit 1
           fi
 
