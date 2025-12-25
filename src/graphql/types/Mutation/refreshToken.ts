@@ -113,7 +113,15 @@ builder.mutationField("refreshToken", (t) =>
 					},
 				});
 
+				// Set HTTP-Only cookies for web clients if cookie helper is available
+				// This protects tokens from XSS attacks by making them inaccessible to JavaScript
+				if (ctx.cookie) {
+					ctx.cookie.setAuthCookies(newAccessToken, newRawRefreshToken);
+				}
+
 				return {
+					// Return tokens in response body for mobile clients (backward compatibility)
+					// Web clients using cookies can ignore these values
 					authenticationToken: newAccessToken,
 					refreshToken: newRawRefreshToken,
 					user: existingUser,
