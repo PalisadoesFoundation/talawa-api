@@ -40,6 +40,10 @@ Defined in: [src/services/eventGeneration/types.ts:35](https://github.com/Palisa
 
 > **id**: `string`
 
+#### isInviteOnly
+
+> **isInviteOnly**: `boolean`
+
 #### isPublic
 
 > **isPublic**: `boolean`
