@@ -1,12 +1,5 @@
 import { relations } from "drizzle-orm";
-import {
-	index,
-	pgTable,
-	text,
-	timestamp,
-	uniqueIndex,
-	uuid,
-} from "drizzle-orm/pg-core";
+import { index, pgTable, text, timestamp, uuid } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { uuidv7 } from "uuidv7";
 import { usersTable } from "./users";
@@ -61,7 +54,7 @@ export const passwordResetTokensTable = pgTable(
 	},
 	(self) => [
 		index("password_reset_tokens_user_id_idx").on(self.userId),
-		uniqueIndex("password_reset_tokens_token_hash_idx").on(self.tokenHash),
+		// Note: tokenHash already has .unique() constraint which creates an index automatically
 		index("password_reset_tokens_expires_at_idx").on(self.expiresAt),
 	],
 );

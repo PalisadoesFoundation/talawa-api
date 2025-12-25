@@ -1,0 +1,43 @@
+[API Docs](/)
+
+***
+
+# Function: storePasswordResetToken()
+
+> **storePasswordResetToken**(`drizzleClient`, `userId`, `tokenHash`, `expiresAt`): `Promise`\<\{ `id`: `string`; \}\>
+
+Defined in: [src/utilities/passwordResetTokenUtils.ts:44](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/utilities/passwordResetTokenUtils.ts#L44)
+
+Stores a password reset token in the database.
+
+## Parameters
+
+### drizzleClient
+
+`PostgresJsDatabase`\<[API Docs](/)\>
+
+The Drizzle database client
+
+### userId
+
+`string`
+
+The user ID to associate with the token
+
+### tokenHash
+
+`string`
+
+The hashed password reset token
+
+### expiresAt
+
+`Date`
+
+The expiration date of the token
+
+## Returns
+
+`Promise`\<\{ `id`: `string`; \}\>
+
+The created password reset token record
