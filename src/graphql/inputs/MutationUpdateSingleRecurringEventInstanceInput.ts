@@ -95,6 +95,7 @@ export const MutationUpdateSingleRecurringEventInstanceInput = builder
 			}),
 			isInviteOnly: t.boolean({
 				description: "Whether this specific event instance is invite-only.",
+				required: false,
 			}),
 		}),
 	});

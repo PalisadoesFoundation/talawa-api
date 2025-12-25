@@ -1662,6 +1662,7 @@ export const Mutation_updateSingleRecurringEventInstance = gql(`
       allDay
       isPublic
       isRegisterable
+      isInviteOnly
       hasExceptions
       sequenceNumber
       totalCount
@@ -1709,6 +1710,7 @@ export const Mutation_updateThisAndFollowingEvents = gql(`
       allDay
       isPublic
       isRegisterable
+      isInviteOnly
       hasExceptions
       sequenceNumber
       totalCount
