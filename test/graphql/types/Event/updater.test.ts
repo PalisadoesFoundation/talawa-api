@@ -26,6 +26,7 @@ const MockEvent = {
 	allDay: false,
 	isPublic: true,
 	isRegisterable: true,
+	isInviteOnly: false,
 	location: "Test Location",
 	isRecurringEventTemplate: false,
 	attachments: [],

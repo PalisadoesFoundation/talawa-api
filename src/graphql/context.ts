@@ -47,10 +47,33 @@ export type ExplicitGraphQLContext = {
 		| "API_ACCOUNT_LOCKOUT_THRESHOLD"
 		| "API_BASE_URL"
 		| "API_REFRESH_TOKEN_EXPIRES_IN"
+		| "API_COOKIE_DOMAIN"
+		| "API_IS_SECURE_COOKIES"
+		| "API_JWT_EXPIRES_IN"
 		| "FRONTEND_URL"
 	>;
 	jwt: {
 		sign: (payload: ExplicitAuthenticationTokenPayload) => string;
+	};
+	/**
+	 * Cookie helper for setting HTTP-Only authentication cookies.
+	 * Only available for HTTP requests (not WebSocket subscriptions).
+	 */
+	cookie?: {
+		/**
+		 * Sets both access token and refresh token as HTTP-Only cookies.
+		 * @param accessToken - The JWT access token
+		 * @param refreshToken - The refresh token
+		 */
+		setAuthCookies: (accessToken: string, refreshToken: string) => void;
+		/**
+		 * Clears both authentication cookies (for logout).
+		 */
+		clearAuthCookies: () => void;
+		/**
+		 * Gets the refresh token from cookies if present.
+		 */
+		getRefreshToken: () => string | undefined;
 	};
 	log: FastifyInstance["log"];
 	minio: FastifyInstance["minio"];

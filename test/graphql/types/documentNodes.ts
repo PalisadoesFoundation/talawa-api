@@ -572,6 +572,7 @@ export const Query_event = gql(`query Query_event($input: QueryEventInput!) {
         description
         startAt
         endAt
+        isInviteOnly
         creator {
             id
             name
@@ -642,6 +643,37 @@ export const Mutation_createTag = gql(`
         }
     }
   }`);
+
+export const Mutation_createTagFolder = gql(`
+  mutation Mutation_createTagFolder($input: MutationCreateTagFolderInput!) {
+    createTagFolder(input: $input) {
+      id
+      name
+      createdAt
+      updatedAt
+    }
+  }
+`);
+
+export const Mutation_updateTagFolder = gql(`
+  mutation Mutation_updateTagFolder($input: MutationUpdateTagFolderInput!) {
+    updateTagFolder(input: $input) {
+      id
+      name
+      createdAt
+      updatedAt
+    }
+  }
+`);
+
+export const Mutation_deleteTagFolder = gql(`
+  mutation Mutation_deleteTagFolder($input: MutationDeleteTagFolderInput!) {
+    deleteTagFolder(input: $input) {
+      id
+      name
+    }
+  }
+`);
 
 export const Query_organizations = gql(`
 	query Query_organizations {
@@ -1202,6 +1234,7 @@ export const Query_eventsByIds = gql(`
       description
       startAt
       endAt
+      isInviteOnly
     }
   }
 `);
@@ -1629,6 +1662,7 @@ export const Mutation_updateSingleRecurringEventInstance = gql(`
       allDay
       isPublic
       isRegisterable
+      isInviteOnly
       hasExceptions
       sequenceNumber
       totalCount
@@ -1652,6 +1686,7 @@ export const Mutation_updateStandaloneEvent = gql(`
       allDay
       isPublic
       isRegisterable
+      isInviteOnly
       organization {
         id
         name
@@ -1675,6 +1710,7 @@ export const Mutation_updateThisAndFollowingEvents = gql(`
       allDay
       isPublic
       isRegisterable
+      isInviteOnly
       hasExceptions
       sequenceNumber
       totalCount

@@ -172,19 +172,42 @@ builder.mutationField("updateStandaloneEvent", (t) =>
 				});
 			}
 
+			// Build update object with only explicitly provided fields
+			const updateData: Partial<typeof eventsTable.$inferInsert> = {
+				updaterId: currentUserId,
+			};
+
+			if (parsedArgs.input.description !== undefined) {
+				updateData.description = parsedArgs.input.description;
+			}
+			if (parsedArgs.input.endAt !== undefined) {
+				updateData.endAt = parsedArgs.input.endAt;
+			}
+			if (parsedArgs.input.name !== undefined) {
+				updateData.name = parsedArgs.input.name;
+			}
+			if (parsedArgs.input.startAt !== undefined) {
+				updateData.startAt = parsedArgs.input.startAt;
+			}
+			if (parsedArgs.input.allDay !== undefined) {
+				updateData.allDay = parsedArgs.input.allDay;
+			}
+			if (parsedArgs.input.isPublic !== undefined) {
+				updateData.isPublic = parsedArgs.input.isPublic;
+			}
+			if (parsedArgs.input.isRegisterable !== undefined) {
+				updateData.isRegisterable = parsedArgs.input.isRegisterable;
+			}
+			if (parsedArgs.input.isInviteOnly !== undefined) {
+				updateData.isInviteOnly = parsedArgs.input.isInviteOnly;
+			}
+			if (parsedArgs.input.location !== undefined) {
+				updateData.location = parsedArgs.input.location;
+			}
+
 			const [updatedEvent] = await ctx.drizzleClient
 				.update(eventsTable)
-				.set({
-					description: parsedArgs.input.description,
-					endAt: parsedArgs.input.endAt,
-					name: parsedArgs.input.name,
-					startAt: parsedArgs.input.startAt,
-					allDay: parsedArgs.input.allDay,
-					isPublic: parsedArgs.input.isPublic,
-					isRegisterable: parsedArgs.input.isRegisterable,
-					location: parsedArgs.input.location,
-					updaterId: currentUserId,
-				})
+				.set(updateData)
 				.where(eq(eventsTable.id, parsedArgs.input.id))
 				.returning();
 

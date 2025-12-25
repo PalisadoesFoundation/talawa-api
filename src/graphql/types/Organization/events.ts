@@ -2,6 +2,7 @@ import { z } from "zod";
 import { Event } from "~/src/graphql/types/Event/Event";
 import {
 	type EventWithAttachments,
+	filterInviteOnlyEvents,
 	getUnifiedEventsInDateRange,
 } from "~/src/graphql/types/Query/eventQueries";
 import {
@@ -14,7 +15,8 @@ import { Organization } from "./Organization";
 
 /**
  * @description Zod schema for validating and parsing connection arguments for events,
- * with increased limits to accommodate recurring event instances.
+ * with bounded limits (up to 100) chosen to balance pagination needs and performance,
+ * including recurring event instances.
  */
 const eventsConnectionArgumentsSchema = z.object({
 	after: z
@@ -28,13 +30,13 @@ const eventsConnectionArgumentsSchema = z.object({
 	first: z
 		.number()
 		.min(1)
-		.max(1000)
+		.max(100)
 		.nullish()
 		.transform((arg) => (arg === null ? undefined : arg)),
 	last: z
 		.number()
 		.min(1)
-		.max(1000)
+		.max(100)
 		.nullish()
 		.transform((arg) => (arg === null ? undefined : arg)),
 });
@@ -340,17 +342,33 @@ Organization.implement({
 							}
 						}
 
+						// Fetch more events than needed to account for invite-only filtering
+						// This ensures we have enough events after filtering to fill the requested page
+						// Use 2x the limit or limit + 50, whichever is larger, capped at 200
+						// Note: 'limit' already includes +1 for pagination detection (set in transformEventsConnectionArguments)
+						const fetchLimit = Math.min(Math.max(limit * 2, limit + 50), 200);
+
 						allEvents = await getUnifiedEventsInDateRange(
 							{
 								organizationId: parent.id,
 								startDate: effectiveStartDate,
 								endDate: effectiveEndDate,
 								includeRecurring,
-								limit: limit, // Use full limit including the +1 for pagination detection
+								limit: fetchLimit, // limit already includes +1 for pagination detection
 							},
 							ctx.drizzleClient,
 							ctx.log,
 						);
+
+						// Filter invite-only events based on visibility rules
+						// This happens before pagination to ensure we have enough events
+						allEvents = await filterInviteOnlyEvents({
+							events: allEvents,
+							currentUserId,
+							currentUserRole: currentUser.role,
+							currentUserOrgMembership: currentUserOrganizationMembership,
+							drizzleClient: ctx.drizzleClient,
+						});
 
 						ctx.log.debug(
 							{
@@ -420,7 +438,8 @@ Organization.implement({
 						allEvents = allEvents.reverse();
 					}
 
-					// Apply final limit
+					// Apply final limit - limit already includes +1 for pagination detection
+					// The transform function will trim to (limit - 1) for actual results
 					if (allEvents.length > limit) {
 						allEvents = allEvents.slice(0, limit);
 					}

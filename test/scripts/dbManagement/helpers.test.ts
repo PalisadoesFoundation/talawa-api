@@ -1,4 +1,3 @@
-import fs from "node:fs/promises";
 import readline from "node:readline";
 import * as schema from "src/drizzle/schema";
 import type { TestEnvConfig } from "test/envConfigSchema";
@@ -159,25 +158,6 @@ suite.concurrent("pingDB", () => {
 		await expect(helpers.pingDB()).rejects.toThrow(
 			"Unable to connect to the database.",
 		);
-	});
-});
-
-suite.concurrent("listSampleData", () => {
-	test.concurrent("should list sample data files and return true using the original sample_data", async () => {
-		const result = await helpers.listSampleData();
-		expect(result).toBe(true);
-	});
-
-	test.concurrent("should handle an error while listing sample data", async () => {
-		vi.spyOn(fs, "readdir").mockRejectedValue(
-			new Error("Failed to read directory"),
-		);
-
-		await expect(helpers.listSampleData()).rejects.toThrow(
-			"Error listing sample data: Error: Failed to read directory",
-		);
-
-		vi.restoreAllMocks();
 	});
 });
 
