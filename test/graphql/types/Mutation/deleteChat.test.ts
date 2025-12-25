@@ -83,7 +83,7 @@ suite("Mutation deleteChat", () => {
 					headers: { authorization: `bearer ${adminToken}` },
 					variables: { input: { id: chatId } },
 				});
-			} catch {
+			} catch (_) {
 				// ignore if already deleted
 			}
 		});
@@ -169,7 +169,7 @@ suite("Mutation deleteChat", () => {
 					headers: { authorization: `bearer ${adminToken}` },
 					variables: { input: { id: chatId } },
 				});
-			} catch {
+			} catch (_) {
 				// ignore if already deleted
 			}
 		});
@@ -312,7 +312,21 @@ suite("Mutation deleteChat", () => {
 				},
 			},
 		);
+		expect(membershipRes.errors).toBeUndefined();
 		assertToBeNonNullish(membershipRes.data?.createOrganizationMembership?.id);
+
+		// Verify membership role in DB to ensure test validity
+		// We import organizationMembershipsTable here or just use the query API
+		const dbMembership =
+			await server.drizzleClient.query.organizationMembershipsTable.findFirst({
+				where: (memberships, { eq, and }) =>
+					and(
+						eq(memberships.memberId, memberId),
+						eq(memberships.organizationId, orgId),
+					),
+			});
+		assertToBeNonNullish(dbMembership);
+		expect(dbMembership.role).toBe("regular");
 
 		// Create Chat (by Admin)
 		const chatRes = await mercuriusClient.mutate(Mutation_createChat, {
@@ -329,7 +343,9 @@ suite("Mutation deleteChat", () => {
 					headers: { authorization: `bearer ${adminToken}` },
 					variables: { input: { id: chatId } },
 				});
-			} catch {}
+			} catch (_) {
+				// ignore if already deleted
+			}
 		});
 
 		// Attempt to delete by Member
