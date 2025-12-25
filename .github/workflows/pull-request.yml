@@ -883,7 +883,7 @@ jobs:
         run: pnpm build
 
   Check-Sample-Data:
-    name: Check If Sample Data Script executes Successfully
+    name: Check If Sample Data Script Executes Successfully
     timeout-minutes: 5
     runs-on: ubuntu-latest
     needs: [Run-Tests]
