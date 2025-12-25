@@ -159,6 +159,10 @@ export {
 	refreshTokensTableRelations,
 } from "./tables/refreshTokens";
 export {
+	passwordResetTokensTable,
+	passwordResetTokensTableRelations,
+} from "./tables/passwordResetTokens";
+export {
 	tagAssignmentsTable,
 	tagAssignmentsTableRelations,
 } from "./tables/tagAssignments";

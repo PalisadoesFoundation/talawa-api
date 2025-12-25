@@ -178,6 +178,17 @@ export const envConfigSchema = Type.Object({
 		default: 604800000,
 	}),
 	/**
+	 * Used for providing the number of milliseconds for setting the expiry time of password reset tokens.
+	 * Password reset tokens are short-lived tokens used for secure password recovery.
+	 * Default: 3600000 (1 hour)
+	 */
+	API_PASSWORD_RESET_TOKEN_EXPIRES_IN: Type.Optional(
+		Type.Integer({
+			minimum: 60000,
+			default: 3600000,
+		}),
+	),
+	/**
 	 * Used for providing the secret for signing and verifying authentication json web tokens created by talawa api.
 	 */
 	API_JWT_SECRET: Type.String({
