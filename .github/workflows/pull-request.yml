@@ -947,6 +947,7 @@ jobs:
 
       - name: Seed Sample Data
         run: |
+          set -euo pipefail
           echo "=== Seeding Sample Data ==="
           if docker exec talawa-api-1 /bin/bash -c 'set -a; source ./.env; set +a; pnpm run add:sample_data'; then
             echo "Seeding completed successfully"
