@@ -1,324 +1,279 @@
-import { beforeEach, describe, expect, it, type Mock, vi } from "vitest";
-import { builder } from "~/src/graphql/builder";
-import type { GraphQLContext } from "~/src/graphql/context";
-import { deleteChatResolver } from "~/src/graphql/types/Mutation/deleteChat";
+import { faker } from "@faker-js/faker";
+import { eq } from "drizzle-orm";
+import { afterEach, beforeAll, expect, suite, test } from "vitest";
+import { chatsTable } from "~/src/drizzle/tables/chats";
+import { assertToBeNonNullish } from "../../../helpers";
+import { server } from "../../../server";
+import { mercuriusClient } from "../client";
+import {
+	Mutation_createChat,
+	Mutation_createOrganization,
+	Mutation_createOrganizationMembership,
+	Mutation_createUser,
+	Mutation_deleteChat,
+	Mutation_deleteOrganization,
+	Mutation_deleteUser,
+	Query_signIn,
+} from "../documentNodes";
 
-vi.mock("~/src/graphql/builder", () => ({
-	builder: {
-		mutationField: vi.fn(),
-		inputRef: vi.fn(() => ({
-			implement: vi.fn(),
-		})),
-		objectRef: vi.fn(() => ({
-			implement: vi.fn(),
-		})),
-	},
-}));
+suite("Mutation deleteChat", () => {
+	const cleanupFns: Array<() => Promise<void>> = [];
 
-function createMockContext(
-	overrides: Partial<GraphQLContext> = {},
-): GraphQLContext {
-	return {
-		currentClient: {
-			isAuthenticated: true,
-			user: { id: "user-id" },
-		},
-		drizzleClient: {
-			query: {
-				usersTable: { findFirst: vi.fn() },
-				chatsTable: { findFirst: vi.fn() },
-			},
-			transaction: vi.fn(),
-		},
-		minio: {
-			bucketName: "talawa",
-			client: { removeObject: vi.fn() },
-		},
-		log: {
-			info: vi.fn(),
-			error: vi.fn(),
-			warn: vi.fn(),
-			debug: vi.fn(),
-		},
-		...overrides,
-	} as GraphQLContext;
-}
-
-/**
- * Invoke where/with callbacks present on a drizzle-like query object so
- * function bodies defined in `deleteChat.ts` are executed during tests.
- */
-
-interface MockQuery {
-	where?: unknown;
-	with?: Record<string, MockQuery>;
-}
-
-function executeQueryBuilders(query: unknown) {
-	if (!query || typeof query !== "object") return;
-	const q = query as MockQuery;
-
-	if (typeof q.where === "function") {
-		// Provide minimal `fields` and `operators` objects expected by the lambdas.
-
-		q.where(
-			{ id: "user-id", memberId: "user-id" },
-			{ eq: (_a: unknown, _b: unknown) => true },
-		);
-	}
-
-	if (q.with && typeof q.with === "object") {
-		for (const key of Object.keys(q.with)) {
-			const item = q.with[key];
-			if (item && typeof item.where === "function") {
-				item.where(
-					{ id: "user-id", memberId: "user-id" },
-					{ eq: (_a: unknown, _b: unknown) => true },
-				);
-			}
-
-			// Support nested `with` blocks
-			if (item?.with && typeof item.with === "object") {
-				for (const nestedKey of Object.keys(item.with)) {
-					const nested = item.with[nestedKey];
-					if (nested && typeof nested.where === "function") {
-						nested.where(
-							{ id: "user-id", memberId: "user-id" },
-							{ eq: (_a: unknown, _b: unknown) => true },
-						);
-					}
-				}
+	afterEach(async () => {
+		for (const fn of cleanupFns.reverse()) {
+			try {
+				await fn();
+			} catch (err) {
+				console.error("cleanup failed:", err);
 			}
 		}
-	}
-}
-
-const validArgs = {
-	// Use a syntactically valid UUID so zod's UUID checks pass when using the
-	// production zod schema in `deleteChat.ts`.
-	input: { id: "00000000-0000-4000-8000-000000000000" },
-};
-
-describe("deleteChatResolver", () => {
-	let ctx: GraphQLContext;
-
-	beforeEach(() => {
-		ctx = createMockContext();
+		cleanupFns.length = 0;
 	});
 
-	it("throws unauthenticated if client is not authenticated", async () => {
-		ctx.currentClient.isAuthenticated = false;
+	beforeAll(async () => {
+		// ensure admin exists by signing in
+		if (!server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS) {
+			throw new Error("admin env not set");
+		}
+	});
 
-		await expect(deleteChatResolver({}, validArgs, ctx)).rejects.toMatchObject({
-			extensions: { code: "unauthenticated" },
+	test("successfully deletes chat and avatar", async () => {
+		const adminRes = await mercuriusClient.query(Query_signIn, {
+			variables: {
+				input: {
+					emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
+					password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
+				},
+			},
 		});
-	});
+		assertToBeNonNullish(adminRes.data?.signIn?.authenticationToken);
+		const adminToken = adminRes.data.signIn.authenticationToken as string;
 
-	it("throws invalid_arguments for invalid input", async () => {
+		// Create Org
+		const orgRes = await mercuriusClient.mutate(Mutation_createOrganization, {
+			headers: { authorization: `bearer ${adminToken}` },
+			variables: {
+				input: { name: `org-${faker.string.uuid()}`, countryCode: "us" },
+			},
+		});
+		assertToBeNonNullish(orgRes.data?.createOrganization?.id);
+		const orgId = orgRes.data.createOrganization.id;
+		cleanupFns.push(async () => {
+			await mercuriusClient.mutate(Mutation_deleteOrganization, {
+				headers: { authorization: `bearer ${adminToken}` },
+				variables: { input: { id: orgId } },
+			});
+		});
+
+		// Create Chat
+		const chatName = `chat-${faker.string.uuid()}`;
+		const chatRes = await mercuriusClient.mutate(Mutation_createChat, {
+			headers: { authorization: `bearer ${adminToken}` },
+			variables: {
+				input: { name: chatName, organizationId: orgId },
+			},
+		});
+		assertToBeNonNullish(chatRes.data?.createChat?.id);
+		const chatId = chatRes.data.createChat.id;
+		// Normally we'd add cleanup for chat, but we expect to delete it in the test.
+		// We add a fallback cleanup just in case test fails before deletion.
+		cleanupFns.push(async () => {
+			try {
+				await mercuriusClient.mutate(Mutation_deleteChat, {
+					headers: { authorization: `bearer ${adminToken}` },
+					variables: { input: { id: chatId } },
+				});
+			} catch {
+				// ignore if already deleted
+			}
+		});
+
+		// Seed avatar in MinIO and DB
+		const avatarName = `${chatId}-avatar.png`;
+		await server.minio.client.putObject(
+			server.minio.bucketName,
+			avatarName,
+			Buffer.from("fake-image"),
+		);
+		await server.drizzleClient
+			.update(chatsTable)
+			.set({ avatarName })
+			.where(eq(chatsTable.id, chatId));
+
+		// Verify avatar exists in MinIO
 		await expect(
-			// @ts-expect-error Testing invalid input
-			deleteChatResolver({}, { input: {} }, ctx),
-		).rejects.toMatchObject({
-			extensions: { code: "invalid_arguments" },
+			server.minio.client.statObject(server.minio.bucketName, avatarName),
+		).resolves.toBeDefined();
+
+		// Delete Chat
+		const deleteRes = await mercuriusClient.mutate(Mutation_deleteChat, {
+			headers: { authorization: `bearer ${adminToken}` },
+			variables: { input: { id: chatId } },
 		});
+		assertToBeNonNullish(deleteRes.data?.deleteChat?.id);
+		expect(deleteRes.data.deleteChat.id).toBe(chatId);
+
+		// Verify Chat is gone from DB
+		const dbChat = await server.drizzleClient.query.chatsTable.findFirst({
+			where: eq(chatsTable.id, chatId),
+		});
+		expect(dbChat).toBeUndefined();
+
+		// Verify Avatar is gone from MinIO
+		await expect(
+			server.minio.client.statObject(server.minio.bucketName, avatarName),
+		).rejects.toThrow();
 	});
 
-	it("throws unauthenticated if current user not found", async () => {
-		ctx.drizzleClient.query.usersTable.findFirst = vi
-			.fn()
-			.mockImplementation(async (query) => {
-				executeQueryBuilders(query);
-				return undefined;
-			});
-
-		ctx.drizzleClient.query.chatsTable.findFirst = vi
-			.fn()
-			.mockImplementation(async (query) => {
-				executeQueryBuilders(query);
-				return {
-					avatarName: null,
-					chatMembershipsWhereChat: [],
-					organization: { membershipsWhereOrganization: [] },
-				};
-			});
-
-		await expect(deleteChatResolver({}, validArgs, ctx)).rejects.toMatchObject({
-			extensions: { code: "unauthenticated" },
-		});
-	});
-
-	it("throws arguments_associated_resources_not_found if chat does not exist", async () => {
-		ctx.drizzleClient.query.usersTable.findFirst = vi
-			.fn()
-			.mockImplementation(async (query) => {
-				executeQueryBuilders(query);
-				return { role: "administrator" };
-			});
-
-		ctx.drizzleClient.query.chatsTable.findFirst = vi
-			.fn()
-			.mockImplementation(async (query) => {
-				executeQueryBuilders(query);
-				return undefined;
-			});
-
-		await expect(deleteChatResolver({}, validArgs, ctx)).rejects.toMatchObject({
-			extensions: {
-				code: "arguments_associated_resources_not_found",
+	test("unauthenticated: requires auth", async () => {
+		const res = await mercuriusClient.mutate(Mutation_deleteChat, {
+			variables: {
+				input: { id: faker.string.uuid() },
 			},
 		});
+		expect(res.errors).toBeDefined();
+		expect(res.errors?.[0]?.extensions?.code).toBe("unauthenticated");
 	});
 
-	it("throws unauthorized when user is not admin at any level", async () => {
-		ctx.drizzleClient.query.usersTable.findFirst = vi
-			.fn()
-			.mockImplementation(async (query) => {
-				executeQueryBuilders(query);
-				return { role: "member" };
-			});
-
-		ctx.drizzleClient.query.chatsTable.findFirst = vi
-			.fn()
-			.mockImplementation(async (query) => {
-				executeQueryBuilders(query);
-				return {
-					avatarName: null,
-					chatMembershipsWhereChat: [{ role: "member" }],
-					organization: {
-						membershipsWhereOrganization: [{ role: "member" }],
-					},
-				};
-			});
-
-		await expect(deleteChatResolver({}, validArgs, ctx)).rejects.toMatchObject({
-			extensions: {
-				code: "unauthorized_action_on_arguments_associated_resources",
+	test("invalid arguments: invalid UUID", async () => {
+		// need token to pass auth check first
+		const adminRes = await mercuriusClient.query(Query_signIn, {
+			variables: {
+				input: {
+					emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
+					password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
+				},
 			},
 		});
-	});
+		assertToBeNonNullish(adminRes.data?.signIn?.authenticationToken);
+		const adminToken = adminRes.data.signIn.authenticationToken as string;
 
-	it("throws unexpected when delete returns undefined", async () => {
-		ctx.drizzleClient.query.usersTable.findFirst = vi
-			.fn()
-			.mockImplementation(async (query) => {
-				executeQueryBuilders(query);
-				return { role: "administrator" };
-			});
-
-		ctx.drizzleClient.query.chatsTable.findFirst = vi
-			.fn()
-			.mockImplementation(async (query) => {
-				executeQueryBuilders(query);
-				return {
-					avatarName: null,
-					chatMembershipsWhereChat: [],
-					organization: { membershipsWhereOrganization: [] },
-				};
-			});
-
-		ctx.drizzleClient.transaction = vi.fn(async (cb) =>
-			cb({
-				delete: vi.fn().mockReturnValue({
-					where: vi.fn().mockReturnValue({
-						returning: vi.fn().mockResolvedValue([undefined]),
-					}),
-				}),
-			}),
-		);
-
-		await expect(deleteChatResolver({}, validArgs, ctx)).rejects.toMatchObject({
-			extensions: { code: "unexpected" },
+		const res = await mercuriusClient.mutate(Mutation_deleteChat, {
+			headers: { authorization: `bearer ${adminToken}` },
+			variables: {
+				input: { id: "not-a-uuid" },
+			},
 		});
+		expect(res.errors).toBeDefined();
+		expect(res.errors?.[0]?.extensions?.code).toBe("invalid_arguments");
 	});
 
-	it("successfully deletes chat without avatar", async () => {
-		ctx.drizzleClient.query.usersTable.findFirst = vi
-			.fn()
-			.mockImplementation(async (query) => {
-				executeQueryBuilders(query);
-				return { role: "administrator" };
-			});
+	test("arguments_associated_resources_not_found: chat does not exist", async () => {
+		const adminRes = await mercuriusClient.query(Query_signIn, {
+			variables: {
+				input: {
+					emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
+					password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
+				},
+			},
+		});
+		assertToBeNonNullish(adminRes.data?.signIn?.authenticationToken);
+		const adminToken = adminRes.data.signIn.authenticationToken as string;
 
-		ctx.drizzleClient.query.chatsTable.findFirst = vi
-			.fn()
-			.mockImplementation(async (query) => {
-				executeQueryBuilders(query);
-				return {
-					avatarName: null,
-					chatMembershipsWhereChat: [],
-					organization: { membershipsWhereOrganization: [] },
-				};
-			});
-
-		ctx.drizzleClient.transaction = vi.fn(async (cb) =>
-			cb({
-				delete: vi.fn().mockReturnValue({
-					where: vi.fn().mockReturnValue({
-						returning: vi.fn().mockResolvedValue([{ id: "chat-id" }]),
-					}),
-				}),
-			}),
+		const res = await mercuriusClient.mutate(Mutation_deleteChat, {
+			headers: { authorization: `bearer ${adminToken}` },
+			variables: {
+				input: { id: faker.string.uuid() },
+			},
+		});
+		expect(res.errors).toBeDefined();
+		expect(res.errors?.[0]?.extensions?.code).toBe(
+			"arguments_associated_resources_not_found",
 		);
-
-		const result = await deleteChatResolver({}, validArgs, ctx);
-		expect(result).toEqual({ id: "chat-id" });
 	});
 
-	it("removes avatar from MinIO when avatar exists", async () => {
-		ctx.drizzleClient.query.usersTable.findFirst = vi
-			.fn()
-			.mockImplementation(async (query) => {
-				executeQueryBuilders(query);
-				return { role: "administrator" };
+	test("unauthorized: non-admin cannot delete chat", async () => {
+		const adminRes = await mercuriusClient.query(Query_signIn, {
+			variables: {
+				input: {
+					emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
+					password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
+				},
+			},
+		});
+		assertToBeNonNullish(adminRes.data?.signIn?.authenticationToken);
+		const adminToken = adminRes.data.signIn.authenticationToken as string;
+
+		// Create Org
+		const orgRes = await mercuriusClient.mutate(Mutation_createOrganization, {
+			headers: { authorization: `bearer ${adminToken}` },
+			variables: {
+				input: { name: `org-${faker.string.uuid()}`, countryCode: "us" },
+			},
+		});
+		assertToBeNonNullish(orgRes.data?.createOrganization?.id);
+		const orgId = orgRes.data.createOrganization.id;
+		cleanupFns.push(async () => {
+			await mercuriusClient.mutate(Mutation_deleteOrganization, {
+				headers: { authorization: `bearer ${adminToken}` },
+				variables: { input: { id: orgId } },
 			});
+		});
 
-		ctx.drizzleClient.query.chatsTable.findFirst = vi
-			.fn()
-			.mockImplementation(async (query) => {
-				executeQueryBuilders(query);
-				return {
-					avatarName: "avatar.png",
-					chatMembershipsWhereChat: [],
-					organization: { membershipsWhereOrganization: [] },
-				};
+		// Create User (Member)
+		const userRes = await mercuriusClient.mutate(Mutation_createUser, {
+			headers: { authorization: `bearer ${adminToken}` },
+			variables: {
+				input: {
+					emailAddress: `${faker.string.uuid()}@test.com`,
+					name: faker.person.fullName(),
+					password: "password123",
+					role: "regular",
+					isEmailAddressVerified: false,
+				},
+			},
+		});
+		assertToBeNonNullish(userRes.data?.createUser?.user?.id);
+		const memberToken = userRes.data.createUser.authenticationToken;
+		const memberId = userRes.data.createUser.user.id;
+		cleanupFns.push(async () => {
+			await mercuriusClient.mutate(Mutation_deleteUser, {
+				headers: { authorization: `bearer ${adminToken}` },
+				variables: { input: { id: memberId } },
 			});
+		});
 
-		ctx.drizzleClient.transaction = vi.fn(async (cb) =>
-			cb({
-				delete: vi.fn().mockReturnValue({
-					where: vi.fn().mockReturnValue({
-						returning: vi.fn().mockResolvedValue([{ id: "chat-id" }]),
-					}),
-				}),
-			}),
+		// Add User to Org (Regular)
+		await mercuriusClient.mutate(Mutation_createOrganizationMembership, {
+			headers: { authorization: `bearer ${adminToken}` },
+			variables: {
+				input: {
+					memberId,
+					organizationId: orgId,
+					role: "regular",
+				},
+			},
+		});
+
+		// Create Chat (by Admin)
+		const chatRes = await mercuriusClient.mutate(Mutation_createChat, {
+			headers: { authorization: `bearer ${adminToken}` },
+			variables: {
+				input: { name: `chat-${faker.string.uuid()}`, organizationId: orgId },
+			},
+		});
+		assertToBeNonNullish(chatRes.data?.createChat?.id);
+		const chatId = chatRes.data.createChat.id;
+		cleanupFns.push(async () => {
+			try {
+				await mercuriusClient.mutate(Mutation_deleteChat, {
+					headers: { authorization: `bearer ${adminToken}` },
+					variables: { input: { id: chatId } },
+				});
+			} catch {}
+		});
+
+		// Attempt to delete by Member
+		const res = await mercuriusClient.mutate(Mutation_deleteChat, {
+			headers: { authorization: `bearer ${memberToken}` },
+			variables: {
+				input: { id: chatId },
+			},
+		});
+
+		expect(res.errors).toBeDefined();
+		expect(res.errors?.[0]?.extensions?.code).toBe(
+			"unauthorized_action_on_arguments_associated_resources",
 		);
-
-		const result = await deleteChatResolver({}, validArgs, ctx);
-
-		expect(ctx.minio.client.removeObject).toHaveBeenCalledWith(
-			"talawa",
-			"avatar.png",
-		);
-		expect(result.id).toBe("chat-id");
-	});
-
-	it("executes module-level builder field for coverage", () => {
-		const mockMutationField = builder.mutationField as Mock;
-		expect(mockMutationField).toHaveBeenCalled();
-
-		// Find the call for "deleteChat"
-		const call = mockMutationField.mock.calls.find(
-			(c: unknown[]) => c[0] === "deleteChat",
-		);
-
-		if (!call) throw new Error("Call not found");
-		const callback = call[1];
-		const t = {
-			field: vi.fn(),
-			arg: vi.fn(),
-		};
-
-		callback(t);
-		expect(t.field).toHaveBeenCalled();
 	});
 });
