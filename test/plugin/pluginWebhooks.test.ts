@@ -50,20 +50,17 @@ describe("Plugin Webhooks", () => {
 	let mockReply: MockFastifyReply;
 	let mockPluginManager: Partial<PluginManager>;
 	let mockExtensionRegistry: IExtensionRegistry;
-	let mockWebhookHandler: (
-		request: unknown,
-		reply: unknown,
-	) => Promise<unknown>;
+	let mockWebhookHandler: ReturnType<typeof vi.fn> &
+		((request: unknown, reply: unknown) => Promise<unknown>);
 
 	beforeEach(() => {
 		// Reset all mocks
 		vi.clearAllMocks();
 
 		// Create mock webhook handler
-		mockWebhookHandler = vi.fn().mockResolvedValue(undefined) as (
-			request: unknown,
-			reply: unknown,
-		) => Promise<unknown>;
+		mockWebhookHandler = vi
+			.fn()
+			.mockResolvedValue(undefined) as typeof mockWebhookHandler;
 
 		// Create mock extension registry
 		mockExtensionRegistry = {
