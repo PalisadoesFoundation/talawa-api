@@ -29,6 +29,7 @@ export const mutationCreateEventInputSchema = eventsTableInsertSchema
 			.max(20)
 			.optional(),
 		allDay: z.boolean().optional(),
+		isInviteOnly: z.boolean().optional(),
 		isPublic: z.boolean().optional(),
 		isRegisterable: z.boolean().optional(),
 		location: sanitizedStringSchema
@@ -83,6 +84,10 @@ export const MutationCreateEventInput = builder
 			}),
 			allDay: t.boolean({
 				description: "Indicates if the event spans the entire day",
+				required: false,
+			}),
+			isInviteOnly: t.boolean({
+				description: "Indicates if the event is invite-only",
 				required: false,
 			}),
 			isPublic: t.boolean({

@@ -90,6 +90,7 @@ builder.mutationField("updateThisAndFollowingEvents", (t) =>
 								allDay: true,
 								isPublic: true,
 								isRegisterable: true,
+								isInviteOnly: true,
 								organizationId: true,
 								startAt: true,
 								endAt: true,
@@ -337,6 +338,8 @@ builder.mutationField("updateThisAndFollowingEvents", (t) =>
 						isPublic: parsedArgs.input.isPublic ?? originalEvent.isPublic,
 						isRegisterable:
 							parsedArgs.input.isRegisterable ?? originalEvent.isRegisterable,
+						isInviteOnly:
+							parsedArgs.input.isInviteOnly ?? originalEvent.isInviteOnly,
 						location: parsedArgs.input.location ?? originalEvent.location,
 						isRecurringEventTemplate: true,
 					})

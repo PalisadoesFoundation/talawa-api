@@ -118,6 +118,7 @@ import "./ReadNotification";
 import "./MarkChatAsRead";
 import "./refreshToken";
 import "./revokeRefreshToken";
+import "./logout";
 import "./sendEventInvitations";
 import "./acceptEventInvitation";
 import "./verifyEventInvitation";

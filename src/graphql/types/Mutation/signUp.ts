@@ -271,12 +271,22 @@ builder.mutationField("signUp", (t) =>
 					refreshTokenExpiresAt,
 				);
 
+				const accessToken = ctx.jwt.sign({
+					user: {
+						id: createdUser.id,
+					},
+				});
+
+				// Set HTTP-Only cookies for web clients if cookie helper is available
+				// This protects tokens from XSS attacks by making them inaccessible to JavaScript
+				if (ctx.cookie) {
+					ctx.cookie.setAuthCookies(accessToken, rawRefreshToken);
+				}
+
 				return {
-					authenticationToken: ctx.jwt.sign({
-						user: {
-							id: createdUser.id,
-						},
-					}),
+					// Return tokens in response body for mobile clients (backward compatibility)
+					// Web clients using cookies can ignore these values
+					authenticationToken: accessToken,
 					refreshToken: rawRefreshToken,
 					user: createdUser,
 				};

@@ -218,4 +218,51 @@ describe("MutationCreateEventInput Schema", () => {
 		});
 		expect(result.success).toBe(true);
 	});
+
+	// isInviteOnly field tests
+	it("isInviteOnly - should accept true", () => {
+		const result = mutationCreateEventInputSchema.safeParse({
+			...validInput,
+			isInviteOnly: true,
+		});
+		expect(result.success).toBe(true);
+		if (result.success) {
+			expect(result.data.isInviteOnly).toBe(true);
+		}
+	});
+
+	it("isInviteOnly - should accept false", () => {
+		const result = mutationCreateEventInputSchema.safeParse({
+			...validInput,
+			isInviteOnly: false,
+		});
+		expect(result.success).toBe(true);
+		if (result.success) {
+			expect(result.data.isInviteOnly).toBe(false);
+		}
+	});
+
+	it("isInviteOnly - should be undefined when not provided", () => {
+		const result = mutationCreateEventInputSchema.safeParse(validInput);
+		expect(result.success).toBe(true);
+		if (result.success) {
+			expect(result.data.isInviteOnly).toBeUndefined();
+		}
+	});
+
+	it("isInviteOnly - should reject non-boolean values", () => {
+		const result = mutationCreateEventInputSchema.safeParse({
+			...validInput,
+			isInviteOnly: "true" as unknown as boolean,
+		});
+		expect(result.success).toBe(false);
+	});
+
+	it("isInviteOnly - should reject null", () => {
+		const result = mutationCreateEventInputSchema.safeParse({
+			...validInput,
+			isInviteOnly: null as unknown as boolean,
+		});
+		expect(result.success).toBe(false);
+	});
 });
