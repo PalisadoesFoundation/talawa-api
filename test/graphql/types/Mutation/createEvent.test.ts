@@ -11,6 +11,7 @@ import type {
 	UnexpectedExtensions,
 } from "~/src/utilities/TalawaGraphQLError";
 import { mutationCreateEventArgumentsSchema } from "~/src/graphql/types/Mutation/createEvent";
+import { recurrenceRulesTable } from "~/src/drizzle/tables/recurrenceRules";
 import { assertToBeNonNullish } from "../../../helpers";
 import { server } from "../../../server";
 import { mercuriusClient } from "../client";
@@ -707,6 +708,66 @@ suite("Mutation field createEvent", () => {
 				path: ["createEvent"],
 			});
 
+			vi.restoreAllMocks();
+		});
+
+		test("gracefully handles recurrence rule creation failures", async () => {
+			const organizationId = await createTestOrganization();
+
+			// Mock the transaction to simulate recurrence rule insertion failure
+			vi.spyOn(server.drizzleClient, "transaction").mockImplementation(async (callback) => {
+				// Mocking transaction object that simulates successful event creation
+				// but fails on recurrence rule creation
+				const mockTx = {
+					...server.drizzleClient,
+					insert: vi.fn().mockImplementation((table) => {
+						const mockInsert = {
+							values: vi.fn().mockReturnThis(),
+							returning: vi.fn(),
+						};
+
+						// Check if this is the recurrence rules table insertion
+						// We simulate failure by returning empty array for recurrence rule insertion
+						if (table === recurrenceRulesTable) {
+							mockInsert.returning.mockResolvedValue([]); // This simulates the failure
+						} else {
+							// For events table and other tables, return successful mock data
+							mockInsert.returning.mockResolvedValue([{
+								id: "test-event-id",
+								name: "Test Recurring Event",
+								organizationId,
+								creatorId: "test-creator-id",
+								description: "Test Description",
+								startAt: new Date("2025-01-01T10:00:00Z"),
+								endAt: new Date("2025-01-01T12:00:00Z"),
+								isRecurringEventTemplate: true,
+							}]);
+						}
+						return mockInsert;
+					}),
+				};
+				return callback(mockTx as any);
+			});
+
+			const result = await createEvent({
+				input: {
+					...baseEventInput(organizationId),
+					name: "Test Recurring Event",
+					recurrence: {
+						frequency: "WEEKLY",
+						interval: 1,
+						count: 5,
+					},
+				},
+			});
+
+			expectSpecificError(result, {
+				extensions: expect.objectContaining<UnexpectedExtensions>({
+					code: "unexpected",
+				}),
+				message: expect.any(String),
+				path: ["createEvent"],
+			});
 			vi.restoreAllMocks();
 		});
 	});
