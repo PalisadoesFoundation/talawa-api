@@ -93,7 +93,10 @@ builder.queryField("usersByOrganizationId", (t) =>
 
 				return users;
 			} catch (error) {
-				console.error("Error fetching users for organization:", error);
+				ctx.log.error(
+					{ error, organizationId: args.organizationId },
+					"Error fetching users for organization",
+				);
 				throw new Error("An error occurred while fetching users.");
 			}
 		},
@@ -204,7 +207,10 @@ builder.queryField("eventsByOrganizationId", (t) =>
 
 				return filteredEvents;
 			} catch (error) {
-				console.error("Error fetching events for organization:", error);
+				ctx.log.error(
+					{ error, organizationId: parsedArgs.data.organizationId },
+					"Error fetching events for organization",
+				);
 				throw new Error("An error occurred while fetching events.");
 			}
 		},
