@@ -256,7 +256,6 @@ suite("Organization field chats", () => {
 		});
 
 		test("should support cursor-based pagination", async () => {
-			// ✅ REQUIRED safety guard
 			assertToBeNonNullish(orgId);
 
 			const initialResult = await mercuriusClient.query(
@@ -294,6 +293,123 @@ suite("Organization field chats", () => {
 			expect(
 				paginatedResult.data.organization.chats.edges.length,
 			).toBeGreaterThan(0);
+		});
+		test("should support backward pagination with last/before", async () => {
+			assertToBeNonNullish(orgId);
+
+			// First fetch all chats to get a valid cursor
+			const initialResult = await mercuriusClient.query(
+				OrganizationChatsQuery,
+				{
+					headers: { authorization: `bearer ${authToken}` },
+					variables: {
+						input: { id: orgId },
+						first: 10,
+					},
+				},
+			);
+
+			expect(initialResult.errors).toBeUndefined();
+
+			const edges = initialResult.data.organization.chats.edges;
+			expect(edges.length).toBeGreaterThan(2);
+
+			// Use the LAST cursor to paginate backwards
+			const lastCursor = edges[edges.length - 1].cursor;
+			expect(lastCursor).toBeDefined();
+
+			const backwardResult = await mercuriusClient.query(
+				OrganizationChatsQuery,
+				{
+					headers: { authorization: `bearer ${authToken}` },
+					variables: {
+						input: { id: orgId },
+						last: 2,
+						before: lastCursor,
+					},
+				},
+			);
+
+			expect(backwardResult.errors).toBeUndefined();
+
+			const backwardEdges = backwardResult.data.organization.chats.edges;
+
+			expect(backwardEdges.length).toBe(2);
+			expect(backwardResult.data.organization.chats.pageInfo.hasNextPage).toBe(
+				true,
+			);
+		});
+	});
+
+	suite("when a non-admin non-member accesses chats", () => {
+		test("should return unauthorized_action error", async () => {
+			// Create a second regular user
+			const { authToken: secondUserToken } = await import(
+				"../createRegularUserUsingAdmin"
+			).then((m) => m.createRegularUserUsingAdmin());
+
+			assertToBeNonNullish(secondUserToken);
+			assertToBeNonNullish(orgId);
+
+			const result = await mercuriusClient.query(OrganizationChatsQuery, {
+				headers: { authorization: `bearer ${secondUserToken}` },
+				variables: {
+					input: { id: orgId },
+					first: 2,
+				},
+			});
+
+			expect(result.data?.organization?.chats ?? null).toBeNull();
+			expect(result.errors).toEqual(
+				expect.arrayContaining([
+					expect.objectContaining({
+						extensions: expect.objectContaining({
+							code: "unauthorized_action",
+						}),
+						path: ["organization", "chats"],
+					}),
+				]),
+			);
+		});
+	});
+	suite("when the authenticated user no longer exists", () => {
+		test("should return unauthenticated error", async () => {
+			// Create a regular user
+			const { authToken: userToken } = await import(
+				"../createRegularUserUsingAdmin"
+			).then((m) => m.createRegularUserUsingAdmin());
+
+			assertToBeNonNullish(userToken);
+
+			// Delete the user
+			await mercuriusClient.mutate(
+				(await import("../documentNodes")).Mutation_deleteCurrentUser,
+				{
+					headers: { authorization: `bearer ${userToken}` },
+				},
+			);
+
+			assertToBeNonNullish(orgId);
+
+			const result = await mercuriusClient.query(OrganizationChatsQuery, {
+				headers: { authorization: `bearer ${userToken}` },
+				variables: {
+					input: { id: orgId },
+					first: 2,
+				},
+			});
+
+			expect(result.data?.organization?.chats ?? null).toBeNull();
+			expect(result.errors).toEqual(
+				expect.arrayContaining([
+					expect.objectContaining({
+						extensions: expect.objectContaining({
+							code: "unauthenticated",
+						}),
+						path: ["organization", "chats"],
+					}),
+				]),
+			);
 		});
 	});
 });
