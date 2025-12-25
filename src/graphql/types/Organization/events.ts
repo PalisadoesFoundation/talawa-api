@@ -15,7 +15,8 @@ import { Organization } from "./Organization";
 
 /**
  * @description Zod schema for validating and parsing connection arguments for events,
- * with increased limits to accommodate recurring event instances.
+ * with bounded limits (up to 100) chosen to balance pagination needs and performance,
+ * including recurring event instances.
  */
 const eventsConnectionArgumentsSchema = z.object({
 	after: z
