@@ -77,6 +77,7 @@ input MutationCreateEventInput {
   attachments: [Upload!]
   description: String
   endAt: DateTime!
+  isInviteOnly: Boolean
   isPublic: Boolean
   isRegisterable: Boolean
   location: String
@@ -104,6 +105,10 @@ Custom information about the event.
 #### [<code style={{ fontWeight: 'normal' }}>MutationCreateEventInput.<b>endAt</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>DateTime!</b></code>](/auto-schema/types/scalars/date-time.mdx) <Badge class="badge badge--secondary badge--non_null" text="non-null"/> <Badge class="badge badge--secondary " text="scalar"/>
 
 Date time at the time the event ends at.
+
+#### [<code style={{ fontWeight: 'normal' }}>MutationCreateEventInput.<b>isInviteOnly</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>Boolean</b></code>](/auto-schema/types/scalars/boolean.mdx) <Badge class="badge badge--secondary " text="scalar"/>
+
+Indicates if the event is invite-only
 
 #### [<code style={{ fontWeight: 'normal' }}>MutationCreateEventInput.<b>isPublic</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>Boolean</b></code>](/auto-schema/types/scalars/boolean.mdx) <Badge class="badge badge--secondary " text="scalar"/>
 

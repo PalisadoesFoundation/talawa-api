@@ -104,6 +104,7 @@ builder.mutationField("deleteSingleEventInstance", (t) =>
 								allDay: true,
 								isPublic: true,
 								isRegisterable: true,
+								isInviteOnly: true,
 								creatorId: true,
 								updaterId: true,
 								createdAt: true,
