@@ -299,16 +299,20 @@ suite("Mutation deleteChat", () => {
 		});
 
 		// Add User to Org (Regular)
-		await mercuriusClient.mutate(Mutation_createOrganizationMembership, {
-			headers: { authorization: `bearer ${adminToken}` },
-			variables: {
-				input: {
-					memberId,
-					organizationId: orgId,
-					role: "regular",
+		const membershipRes = await mercuriusClient.mutate(
+			Mutation_createOrganizationMembership,
+			{
+				headers: { authorization: `bearer ${adminToken}` },
+				variables: {
+					input: {
+						memberId,
+						organizationId: orgId,
+						role: "regular",
+					},
 				},
 			},
-		});
+		);
+		assertToBeNonNullish(membershipRes.data?.createOrganizationMembership?.id);
 
 		// Create Chat (by Admin)
 		const chatRes = await mercuriusClient.mutate(Mutation_createChat, {
