@@ -12,7 +12,7 @@ import {
 
 let orgId: string | undefined;
 
-// ---- sign in once ----
+//sign in once
 const signInResult = await mercuriusClient.query(Query_signIn, {
 	variables: {
 		input: {
@@ -222,7 +222,7 @@ suite("Organization field chats", () => {
 
 			orgId = createOrg.data?.createOrganization?.id;
 			assertToBeNonNullish(orgId);
-			// join org
+
 			await mercuriusClient.mutate(Mutation_joinPublicOrganization, {
 				headers: { authorization: `bearer ${authToken}` },
 				variables: {
@@ -230,27 +230,14 @@ suite("Organization field chats", () => {
 				},
 			});
 
-			// now create chats
+			//create chats ONCE (no duplicates)
 			for (let i = 0; i < 3; i++) {
 				await mercuriusClient.mutate(Mutation_createChat, {
 					headers: { authorization: `bearer ${authToken}` },
 					variables: {
 						input: {
 							organizationId: orgId,
-							name: `chat-${i}`,
-						},
-					},
-				});
-			}
-
-			// create chats
-			for (let i = 0; i < 3; i++) {
-				await mercuriusClient.mutate(Mutation_createChat, {
-					headers: { authorization: `bearer ${authToken}` },
-					variables: {
-						input: {
-							organizationId: orgId,
-							name: `chat-${i}`,
+							name: `chat-${String(i).padStart(2, "0")}`,
 						},
 					},
 				});
@@ -265,11 +252,13 @@ suite("Organization field chats", () => {
 			});
 
 			expect(result.errors).toBeUndefined();
-			expect(result.data?.organization?.chats.edges.length).toBe(2);
-			expect(result.data?.organization?.chats.edges[0].cursor).toBeDefined();
+			expect(result.data.organization.chats.edges.length).toBe(2);
 		});
 
 		test("should support cursor-based pagination", async () => {
+			// ✅ REQUIRED safety guard
+			assertToBeNonNullish(orgId);
+
 			const initialResult = await mercuriusClient.query(
 				OrganizationChatsQuery,
 				{
@@ -283,12 +272,10 @@ suite("Organization field chats", () => {
 
 			expect(initialResult.errors).toBeUndefined();
 
-			const initialEdges = initialResult.data.organization.chats.edges;
+			const edges = initialResult.data.organization.chats.edges;
+			expect(edges.length).toBeGreaterThan(1);
 
-			// ensure chats exist
-			expect(initialEdges.length).toBeGreaterThan(1);
-
-			const cursor = initialEdges[0].cursor;
+			const cursor = edges[0].cursor;
 			expect(cursor).toBeDefined();
 
 			const paginatedResult = await mercuriusClient.query(
