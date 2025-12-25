@@ -50,14 +50,20 @@ describe("Plugin Webhooks", () => {
 	let mockReply: MockFastifyReply;
 	let mockPluginManager: Partial<PluginManager>;
 	let mockExtensionRegistry: IExtensionRegistry;
-	let mockWebhookHandler: ReturnType<typeof vi.fn>;
+	let mockWebhookHandler: (
+		request: unknown,
+		reply: unknown,
+	) => Promise<unknown>;
 
 	beforeEach(() => {
 		// Reset all mocks
 		vi.clearAllMocks();
 
 		// Create mock webhook handler
-		mockWebhookHandler = vi.fn().mockResolvedValue(undefined);
+		mockWebhookHandler = vi.fn().mockResolvedValue(undefined) as (
+			request: unknown,
+			reply: unknown,
+		) => Promise<unknown>;
 
 		// Create mock extension registry
 		mockExtensionRegistry = {
@@ -286,7 +292,10 @@ describe("Plugin Webhooks", () => {
 
 		it("should successfully handle webhook request with custom path", async () => {
 			// Create a separate webhook handler for the custom path
-			const customWebhookHandler = vi.fn().mockResolvedValue(undefined);
+			const customWebhookHandler = vi.fn().mockResolvedValue(undefined) as (
+				request: unknown,
+				reply: unknown,
+			) => Promise<unknown>;
 			const registryWithCustomHandler = {
 				...mockExtensionRegistry,
 				webhooks: {
@@ -403,7 +412,10 @@ describe("Plugin Webhooks", () => {
 
 		it("should inject plugin context into request", async () => {
 			// Create a separate webhook handler for the custom path
-			const customWebhookHandler = vi.fn().mockResolvedValue(undefined);
+			const customWebhookHandler = vi.fn().mockResolvedValue(undefined) as (
+				request: unknown,
+				reply: unknown,
+			) => Promise<unknown>;
 			const registryWithCustomHandler = {
 				...mockExtensionRegistry,
 				webhooks: {
@@ -432,7 +444,10 @@ describe("Plugin Webhooks", () => {
 
 		it("should handle webhook handler execution errors", async () => {
 			const webhookError = new Error("Webhook execution failed");
-			const customWebhookHandler = vi.fn().mockRejectedValue(webhookError);
+			const customWebhookHandler = vi.fn().mockRejectedValue(webhookError) as (
+				request: unknown,
+				reply: unknown,
+			) => Promise<unknown>;
 			const registryWithCustomHandler = {
 				...mockExtensionRegistry,
 				webhooks: {
@@ -469,7 +484,10 @@ describe("Plugin Webhooks", () => {
 
 		it("should use correct webhook key format with custom path", async () => {
 			// Create a separate webhook handler for the custom path
-			const customWebhookHandler = vi.fn().mockResolvedValue(undefined);
+			const customWebhookHandler = vi.fn().mockResolvedValue(undefined) as (
+				request: unknown,
+				reply: unknown,
+			) => Promise<unknown>;
 			const registryWithCustomHandler = {
 				...mockExtensionRegistry,
 				webhooks: {
