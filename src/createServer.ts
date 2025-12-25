@@ -1,3 +1,4 @@
+import fastifyCookie from "@fastify/cookie";
 import fastifyCors from "@fastify/cors";
 import fastifyHelmet from "@fastify/helmet";
 import { fastifyJwt } from "@fastify/jwt";
@@ -96,6 +97,13 @@ export const createServer = async (options?: {
 	// 	url: fastify.envConfig.API_REDIS_URI,
 	// 	closeClient: true,
 	// });
+
+	// More information at this link: https://github.com/fastify/fastify-cookie
+	// Used for HTTP-Only cookie authentication to protect session tokens from XSS attacks
+	fastify.register(fastifyCookie, {
+		secret: fastify.envConfig.API_COOKIE_SECRET,
+		parseOptions: {},
+	});
 
 	// More information at this link: https://github.com/fastify/fastify-jwt
 	fastify.register(fastifyJwt, {

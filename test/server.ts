@@ -9,6 +9,12 @@ const testEnvConfig = envSchema<TestEnvConfig>({
 	schema: testEnvConfigSchema,
 });
 
+// Ensure API_COOKIE_SECRET is set in process.env for createServer's internal validation
+// This uses the default value from testEnvConfigSchema if not present in env
+if (!process.env.API_COOKIE_SECRET) {
+	process.env.API_COOKIE_SECRET = testEnvConfig.API_COOKIE_SECRET;
+}
+
 export const server = await createServer({
 	envConfig: {
 		/**
@@ -27,5 +33,9 @@ export const server = await createServer({
 		 * This makes the server test instance connect to the redis test database.
 		 */
 		API_REDIS_HOST: testEnvConfig.API_REDIS_TEST_HOST,
+		/**
+		 * This makes the server test instance use the test cookie secret.
+		 */
+		API_COOKIE_SECRET: testEnvConfig.API_COOKIE_SECRET,
 	},
 });
