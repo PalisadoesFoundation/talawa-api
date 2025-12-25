@@ -58,6 +58,9 @@ export async function createRegularUserUsingAdmin(): Promise<{
 	assertToBeNonNullish(createUserResult.data.createUser.authenticationToken);
 	assertToBeNonNullish(createUserResult.data.createUser.user?.id);
 
+	// Clear headers after use to prevent authentication state leakage
+	mercuriusClient.setHeaders({});
+
 	return {
 		userId: createUserResult.data.createUser.user.id,
 		authToken: createUserResult.data.createUser.authenticationToken,

@@ -1,6 +1,6 @@
 import { faker } from "@faker-js/faker";
 import { eq } from "drizzle-orm";
-import { expect, suite, test } from "vitest";
+import { afterEach, expect, suite, test, vi } from "vitest";
 import { eventGenerationWindowsTable } from "~/src/drizzle/tables/eventGenerationWindows";
 import { eventsTable } from "~/src/drizzle/tables/events";
 import { organizationMembershipsTable } from "~/src/drizzle/tables/organizationMemberships";
@@ -15,6 +15,12 @@ import {
 	Mutation_updateThisAndFollowingEvents,
 	Query_signIn,
 } from "../documentNodes";
+
+// Clean up after each test to prevent state leakage
+afterEach(() => {
+	vi.clearAllMocks();
+	mercuriusClient.setHeaders({});
+});
 
 async function addMembership(
 	organizationId: string,
