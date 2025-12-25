@@ -146,7 +146,6 @@ main() {
             ;;
     esac
     
-    success "Installation completed successfully!"
     echo ""
     info "Next steps:"
     info "  1. Run 'pnpm run setup' to configure the application"

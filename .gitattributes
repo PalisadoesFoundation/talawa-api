@@ -5,9 +5,11 @@
 *.ts text
 *.js text
 *.json text
+*.json5 text
 *.md text
-*.yml text
-*.yaml text
+
+# Exclude workflow files from normalization to prevent CI issues
+.github/workflows/*.yml -text
 
 # Declare files that will always have LF line endings on checkout
 *.sh text eol=lf
