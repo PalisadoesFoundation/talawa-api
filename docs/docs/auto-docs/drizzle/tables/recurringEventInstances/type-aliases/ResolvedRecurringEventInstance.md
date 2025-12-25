@@ -41,7 +41,7 @@ Defined in: [src/drizzle/tables/recurringEventInstances.ts:321](https://github.c
 
 > **appliedExceptionData**: `Record`\<`string`, `unknown`\> \| `null`
 
-Defined in: [src/drizzle/tables/recurringEventInstances.ts:331](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/drizzle/tables/recurringEventInstances.ts#L331)
+Defined in: [src/drizzle/tables/recurringEventInstances.ts:332](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/drizzle/tables/recurringEventInstances.ts#L332)
 
 ***
 
@@ -57,7 +57,7 @@ Defined in: [src/drizzle/tables/recurringEventInstances.ts:301](https://github.c
 
 > **createdAt**: `Date`
 
-Defined in: [src/drizzle/tables/recurringEventInstances.ts:326](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/drizzle/tables/recurringEventInstances.ts#L326)
+Defined in: [src/drizzle/tables/recurringEventInstances.ts:327](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/drizzle/tables/recurringEventInstances.ts#L327)
 
 ***
 
@@ -65,7 +65,7 @@ Defined in: [src/drizzle/tables/recurringEventInstances.ts:326](https://github.c
 
 > **creatorId**: `string` \| `null`
 
-Defined in: [src/drizzle/tables/recurringEventInstances.ts:324](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/drizzle/tables/recurringEventInstances.ts#L324)
+Defined in: [src/drizzle/tables/recurringEventInstances.ts:325](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/drizzle/tables/recurringEventInstances.ts#L325)
 
 ***
 
@@ -81,7 +81,7 @@ Defined in: [src/drizzle/tables/recurringEventInstances.ts:319](https://github.c
 
 > **exceptionCreatedAt**: `Date` \| `null`
 
-Defined in: [src/drizzle/tables/recurringEventInstances.ts:333](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/drizzle/tables/recurringEventInstances.ts#L333)
+Defined in: [src/drizzle/tables/recurringEventInstances.ts:334](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/drizzle/tables/recurringEventInstances.ts#L334)
 
 ***
 
@@ -89,7 +89,7 @@ Defined in: [src/drizzle/tables/recurringEventInstances.ts:333](https://github.c
 
 > **exceptionCreatedBy**: `string` \| `null`
 
-Defined in: [src/drizzle/tables/recurringEventInstances.ts:332](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/drizzle/tables/recurringEventInstances.ts#L332)
+Defined in: [src/drizzle/tables/recurringEventInstances.ts:333](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/drizzle/tables/recurringEventInstances.ts#L333)
 
 ***
 
@@ -105,7 +105,7 @@ Defined in: [src/drizzle/tables/recurringEventInstances.ts:309](https://github.c
 
 > **hasExceptions**: `boolean`
 
-Defined in: [src/drizzle/tables/recurringEventInstances.ts:330](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/drizzle/tables/recurringEventInstances.ts#L330)
+Defined in: [src/drizzle/tables/recurringEventInstances.ts:331](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/drizzle/tables/recurringEventInstances.ts#L331)
 
 ***
 
@@ -122,6 +122,14 @@ Defined in: [src/drizzle/tables/recurringEventInstances.ts:300](https://github.c
 > **isCancelled**: `boolean`
 
 Defined in: [src/drizzle/tables/recurringEventInstances.ts:307](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/drizzle/tables/recurringEventInstances.ts#L307)
+
+***
+
+### isInviteOnly
+
+> **isInviteOnly**: `boolean`
+
+Defined in: [src/drizzle/tables/recurringEventInstances.ts:324](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/drizzle/tables/recurringEventInstances.ts#L324)
 
 ***
 
@@ -217,7 +225,7 @@ Defined in: [src/drizzle/tables/recurringEventInstances.ts:315](https://github.c
 
 > **updatedAt**: `Date` \| `null`
 
-Defined in: [src/drizzle/tables/recurringEventInstances.ts:327](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/drizzle/tables/recurringEventInstances.ts#L327)
+Defined in: [src/drizzle/tables/recurringEventInstances.ts:328](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/drizzle/tables/recurringEventInstances.ts#L328)
 
 ***
 
@@ -225,7 +233,7 @@ Defined in: [src/drizzle/tables/recurringEventInstances.ts:327](https://github.c
 
 > **updaterId**: `string` \| `null`
 
-Defined in: [src/drizzle/tables/recurringEventInstances.ts:325](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/drizzle/tables/recurringEventInstances.ts#L325)
+Defined in: [src/drizzle/tables/recurringEventInstances.ts:326](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/drizzle/tables/recurringEventInstances.ts#L326)
 
 ***
 
