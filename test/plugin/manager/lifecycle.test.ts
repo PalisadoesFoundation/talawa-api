@@ -991,7 +991,7 @@ describe("PluginLifecycle", () => {
 			};
 
 			// Mock the getPluginModule method
-			const spy = vi
+			const getPluginModuleSpy = vi
 				.spyOn(lifecycle, "getPluginModule")
 				.mockResolvedValue(mockPluginModule);
 
@@ -1013,7 +1013,7 @@ describe("PluginLifecycle", () => {
 			);
 
 			consoleSpy.mockRestore();
-			spy.mockRestore();
+			getPluginModuleSpy.mockRestore();
 		});
 
 		it("should handle onActivate hook errors gracefully", async () => {
@@ -1027,7 +1027,7 @@ describe("PluginLifecycle", () => {
 			};
 
 			// Mock the getPluginModule method
-			const spy = vi
+			const getPluginModuleSpy = vi
 				.spyOn(lifecycle, "getPluginModule")
 				.mockResolvedValue(mockPluginModule);
 
@@ -1049,7 +1049,7 @@ describe("PluginLifecycle", () => {
 			);
 
 			consoleSpy.mockRestore();
-			spy.mockRestore();
+			getPluginModuleSpy.mockRestore();
 		});
 
 		it("should handle onDeactivate hook errors gracefully", async () => {
@@ -1063,7 +1063,7 @@ describe("PluginLifecycle", () => {
 			};
 
 			// Mock the getPluginModule method
-			const spy = vi
+			const getPluginModuleSpy = vi
 				.spyOn(lifecycle, "getPluginModule")
 				.mockResolvedValue(mockPluginModule);
 
@@ -1085,7 +1085,7 @@ describe("PluginLifecycle", () => {
 			);
 
 			consoleSpy.mockRestore();
-			spy.mockRestore();
+			getPluginModuleSpy.mockRestore();
 		});
 
 		it("should handle onUninstall hook errors gracefully", async () => {
@@ -1099,7 +1099,7 @@ describe("PluginLifecycle", () => {
 			};
 
 			// Mock the getPluginModule method
-			const spy = vi
+			const getPluginModuleSpy = vi
 				.spyOn(lifecycle, "getPluginModule")
 				.mockResolvedValue(mockPluginModule);
 
@@ -1121,7 +1121,7 @@ describe("PluginLifecycle", () => {
 			);
 
 			consoleSpy.mockRestore();
-			spy.mockRestore();
+			getPluginModuleSpy.mockRestore();
 		});
 
 		it("should handle onUnload hook errors gracefully", async () => {
@@ -1133,7 +1133,7 @@ describe("PluginLifecycle", () => {
 			};
 
 			// Mock the getPluginModule method
-			const spy = vi
+			const getPluginModuleSpy = vi
 				.spyOn(lifecycle, "getPluginModule")
 				.mockResolvedValue(mockPluginModule);
 
@@ -1154,7 +1154,7 @@ describe("PluginLifecycle", () => {
 				expect.any(Error),
 			);
 			consoleSpy.mockRestore();
-			spy.mockRestore();
+			getPluginModuleSpy.mockRestore();
 		});
 	});
 
