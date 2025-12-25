@@ -1,0 +1,14 @@
+# Normalize line endings to LF on checkin, native on checkout
+* text=auto
+
+# Explicitly declare text files
+*.ts text
+*.js text
+*.json text
+*.md text
+*.yml text
+*.yaml text
+
+# Declare files that will always have LF line endings on checkout
+*.sh text eol=lf
+*.ps1 text
