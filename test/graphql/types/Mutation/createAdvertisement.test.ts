@@ -61,7 +61,6 @@ async function createTestOrganization(token: string) {
 	return orgId;
 }
 
-
 const signInResult = await mercuriusClient.query(Query_signIn, {
 	variables: {
 		input: {
