@@ -25,6 +25,14 @@ import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 
 const mutationCreateEventArgumentsSchema = z.object({
 	input: mutationCreateEventInputSchema.transform(async (arg, ctx) => {
+		if (arg.startAt < new Date()) {
+			ctx.addIssue({
+				code: "custom",
+				path: ["startAt"],
+				message: "Start date must be in the future",
+			});
+		}
+
 		let attachments:
 			| (FileUpload & {
 					mimetype: z.infer<typeof eventAttachmentMimeTypeEnum>;
