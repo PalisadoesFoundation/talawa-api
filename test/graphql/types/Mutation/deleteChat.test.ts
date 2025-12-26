@@ -361,4 +361,122 @@ suite("Mutation deleteChat", () => {
 			"unauthorized_action_on_arguments_associated_resources",
 		);
 	});
+
+	test("authorized: org-admin can delete chat", async () => {
+		const adminRes = await mercuriusClient.query(Query_signIn, {
+			variables: {
+				input: {
+					emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
+					password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
+				},
+			},
+		});
+		assertToBeNonNullish(adminRes.data?.signIn?.authenticationToken);
+		const adminToken = adminRes.data.signIn.authenticationToken as string;
+
+		// Create Org
+		const orgRes = await mercuriusClient.mutate(Mutation_createOrganization, {
+			headers: { authorization: `bearer ${adminToken}` },
+			variables: {
+				input: { name: `org-${faker.string.uuid()}`, countryCode: "us" },
+			},
+		});
+		assertToBeNonNullish(orgRes.data?.createOrganization?.id);
+		const orgId = orgRes.data.createOrganization.id;
+		cleanupFns.push(async () => {
+			await mercuriusClient.mutate(Mutation_deleteOrganization, {
+				headers: { authorization: `bearer ${adminToken}` },
+				variables: { input: { id: orgId } },
+			});
+		});
+
+		// Create User (Org Admin)
+		const userRes = await mercuriusClient.mutate(Mutation_createUser, {
+			headers: { authorization: `bearer ${adminToken}` },
+			variables: {
+				input: {
+					emailAddress: `${faker.string.uuid()}@test.com`,
+					name: faker.person.fullName(),
+					password: "password123",
+					role: "regular",
+					isEmailAddressVerified: false,
+				},
+			},
+		});
+		assertToBeNonNullish(userRes.data?.createUser?.user?.id);
+		const memberToken = userRes.data.createUser.authenticationToken;
+		assertToBeNonNullish(memberToken);
+		const memberId = userRes.data.createUser.user.id;
+		cleanupFns.push(async () => {
+			await mercuriusClient.mutate(Mutation_deleteUser, {
+				headers: { authorization: `bearer ${adminToken}` },
+				variables: { input: { id: memberId } },
+			});
+		});
+
+		// Add User to Org (Admin)
+		const membershipRes = await mercuriusClient.mutate(
+			Mutation_createOrganizationMembership,
+			{
+				headers: { authorization: `bearer ${adminToken}` },
+				variables: {
+					input: {
+						memberId,
+						organizationId: orgId,
+						role: "administrator",
+					},
+				},
+			},
+		);
+		expect(membershipRes.errors).toBeUndefined();
+		assertToBeNonNullish(membershipRes.data?.createOrganizationMembership?.id);
+
+		// Verify membership role in DB
+		const dbMembership =
+			await server.drizzleClient.query.organizationMembershipsTable.findFirst({
+				where: (memberships, { eq, and }) =>
+					and(
+						eq(memberships.memberId, memberId),
+						eq(memberships.organizationId, orgId),
+					),
+			});
+		assertToBeNonNullish(dbMembership);
+		expect(dbMembership.role).toBe("administrator");
+
+		// Create Chat (by Super Admin)
+		const chatRes = await mercuriusClient.mutate(Mutation_createChat, {
+			headers: { authorization: `bearer ${adminToken}` },
+			variables: {
+				input: { name: `chat-${faker.string.uuid()}`, organizationId: orgId },
+			},
+		});
+		assertToBeNonNullish(chatRes.data?.createChat?.id);
+		const chatId = chatRes.data.createChat.id;
+		cleanupFns.push(async () => {
+			try {
+				await mercuriusClient.mutate(Mutation_deleteChat, {
+					headers: { authorization: `bearer ${adminToken}` },
+					variables: { input: { id: chatId } },
+				});
+			} catch (_) {
+				// ignore if already deleted
+			}
+		});
+
+		// Delete Chat as Org Admin
+		const deleteRes = await mercuriusClient.mutate(Mutation_deleteChat, {
+			headers: { authorization: `bearer ${memberToken}` },
+			variables: { input: { id: chatId } },
+		});
+
+		expect(deleteRes.errors).toBeUndefined();
+		assertToBeNonNullish(deleteRes.data?.deleteChat?.id);
+		expect(deleteRes.data.deleteChat.id).toBe(chatId);
+
+		// Verify Chat is gone from DB
+		const dbChat = await server.drizzleClient.query.chatsTable.findFirst({
+			where: eq(chatsTable.id, chatId),
+		});
+		expect(dbChat).toBeUndefined();
+	});
 });
