@@ -1,7 +1,7 @@
 import { createHash } from "node:crypto";
 import { afterEach, beforeEach, expect, suite, test, vi } from "vitest";
 import {
-	DEFAULT_PASSWORD_RESET_TOKEN_EXPIRES_MS,
+	DEFAULT_USER_PASSWORD_RESET_TOKEN_EXPIRES_SECONDS,
 	findValidPasswordResetToken,
 	generatePasswordResetToken,
 	hashPasswordResetToken,
@@ -26,11 +26,13 @@ suite("passwordResetTokenUtils", () => {
 		vi.restoreAllMocks();
 	});
 
-	suite("DEFAULT_PASSWORD_RESET_TOKEN_EXPIRES_MS", () => {
-		test("should be set to 1 hour in milliseconds", () => {
-			const ONE_HOUR_MS = 60 * 60 * 1000; // 3600000
-			expect(DEFAULT_PASSWORD_RESET_TOKEN_EXPIRES_MS).toBe(ONE_HOUR_MS);
-			expect(DEFAULT_PASSWORD_RESET_TOKEN_EXPIRES_MS).toBe(3_600_000);
+	suite("DEFAULT_USER_PASSWORD_RESET_TOKEN_EXPIRES_SECONDS", () => {
+		test("should be set to 14 days in seconds", () => {
+			const FOURTEEN_DAYS_SECONDS = 14 * 24 * 60 * 60; // 1209600
+			expect(DEFAULT_USER_PASSWORD_RESET_TOKEN_EXPIRES_SECONDS).toBe(
+				FOURTEEN_DAYS_SECONDS,
+			);
+			expect(DEFAULT_USER_PASSWORD_RESET_TOKEN_EXPIRES_SECONDS).toBe(1_209_600);
 		});
 	});
 

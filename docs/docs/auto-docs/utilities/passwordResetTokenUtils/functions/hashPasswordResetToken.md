@@ -6,7 +6,7 @@
 
 > **hashPasswordResetToken**(`token`): `string`
 
-Defined in: [src/utilities/passwordResetTokenUtils.ts:32](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/utilities/passwordResetTokenUtils.ts#L32)
+Defined in: [src/utilities/passwordResetTokenUtils.ts:38](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/utilities/passwordResetTokenUtils.ts#L38)
 
 Creates a SHA-256 hash of a password reset token for secure storage.
 

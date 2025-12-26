@@ -5,10 +5,16 @@ import type * as schema from "~/src/drizzle/schema";
 import { passwordResetTokensTable } from "~/src/drizzle/tables/passwordResetTokens";
 
 /**
- * Default password reset token expiry: 1 hour in milliseconds.
- * Used as fallback when API_PASSWORD_RESET_TOKEN_EXPIRES_IN is not configured.
+ * Default password reset token expiry for User Portal: 14 days in seconds.
+ * Similar to Gmail's password reset expiry.
  */
-export const DEFAULT_PASSWORD_RESET_TOKEN_EXPIRES_MS = 3_600_000;
+export const DEFAULT_USER_PASSWORD_RESET_TOKEN_EXPIRES_SECONDS = 1_209_600;
+
+/**
+ * Default password reset token expiry for Admin Portal: 1 hour in seconds.
+ * Similar to Google Admin Console's password reset expiry.
+ */
+export const DEFAULT_ADMIN_PASSWORD_RESET_TOKEN_EXPIRES_SECONDS = 3_600;
 
 /**
  * Generates a cryptographically secure random password reset token.
@@ -38,14 +44,14 @@ export function hashPasswordResetToken(token: string): string {
  * @param drizzleClient - The Drizzle database client
  * @param userId - The user ID to associate with the token
  * @param tokenHash - The hashed password reset token
- * @param expiresAt - The expiration date of the token
+ * @param expiresAt - The expiration date of the token, or null for tokens that never expire
  * @returns The created password reset token record
  */
 export async function storePasswordResetToken(
 	drizzleClient: PostgresJsDatabase<typeof schema>,
 	userId: string,
 	tokenHash: string,
-	expiresAt: Date,
+	expiresAt: Date | null,
 ): Promise<{ id: string }> {
 	const [result] = await drizzleClient
 		.insert(passwordResetTokensTable)
@@ -82,7 +88,7 @@ export async function findValidPasswordResetToken(
 	| {
 			id: string;
 			userId: string;
-			expiresAt: Date;
+			expiresAt: Date | null;
 			usedAt: Date | null;
 	  }
 	| undefined
@@ -107,7 +113,8 @@ export async function findValidPasswordResetToken(
 
 	// Check expiry in application code since SQL timestamp comparison
 	// can have edge cases with timezone handling
-	if (token.expiresAt < new Date()) {
+	// null expiresAt means token never expires (0 = no timeout)
+	if (token.expiresAt !== null && token.expiresAt < new Date()) {
 		return undefined;
 	}
 

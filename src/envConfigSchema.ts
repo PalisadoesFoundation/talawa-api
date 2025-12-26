@@ -178,14 +178,25 @@ export const envConfigSchema = Type.Object({
 		default: 604800000,
 	}),
 	/**
-	 * Used for providing the number of milliseconds for setting the expiry time of password reset tokens.
-	 * Password reset tokens are short-lived tokens used for secure password recovery.
-	 * Default: 3600000 (1 hour)
+	 * Password reset token expiry for User Portal in seconds.
+	 * Set to 0 for no timeout (tokens never expire).
+	 * Default: 1209600 (14 days, similar to Gmail)
 	 */
-	API_PASSWORD_RESET_TOKEN_EXPIRES_IN: Type.Optional(
+	API_PASSWORD_RESET_USER_TOKEN_EXPIRES_SECONDS: Type.Optional(
 		Type.Integer({
-			minimum: 60000,
-			default: 3600000,
+			minimum: 0,
+			default: 1209600,
+		}),
+	),
+	/**
+	 * Password reset token expiry for Admin Portal in seconds.
+	 * Set to 0 for no timeout (tokens never expire).
+	 * Default: 3600 (1 hour, similar to Google Admin Console)
+	 */
+	API_PASSWORD_RESET_ADMIN_TOKEN_EXPIRES_SECONDS: Type.Optional(
+		Type.Integer({
+			minimum: 0,
+			default: 3600,
 		}),
 	),
 	/**

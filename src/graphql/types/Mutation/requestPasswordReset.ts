@@ -7,9 +7,13 @@ import {
 } from "~/src/graphql/inputs/MutationRequestPasswordResetInput";
 import { PasswordResetRequestPayload } from "~/src/graphql/types/PasswordResetRequestPayload";
 import { emailService } from "~/src/services/ses/emailServiceInstance";
+import {
+	formatExpiryTime,
+	getPasswordResetEmailHtml,
+} from "~/src/utilities/emailTemplates";
 import envConfig from "~/src/utilities/graphqLimits";
 import {
-	DEFAULT_PASSWORD_RESET_TOKEN_EXPIRES_MS,
+	DEFAULT_USER_PASSWORD_RESET_TOKEN_EXPIRES_SECONDS,
 	generatePasswordResetToken,
 	hashPasswordResetToken,
 	revokeAllUserPasswordResetTokens,
@@ -79,10 +83,17 @@ builder.mutationField("requestPasswordReset", (t) =>
 				const rawToken = generatePasswordResetToken();
 				const tokenHash = hashPasswordResetToken(rawToken);
 
-				const tokenExpiresIn =
-					ctx.envConfig.API_PASSWORD_RESET_TOKEN_EXPIRES_IN ??
-					DEFAULT_PASSWORD_RESET_TOKEN_EXPIRES_MS;
-				const expiresAt = new Date(Date.now() + tokenExpiresIn);
+				// Use user portal expiry for regular users (seconds)
+				// Admin portal expiry would be used for admin users (to be determined by user role)
+				const tokenExpiresInSeconds =
+					ctx.envConfig.API_PASSWORD_RESET_USER_TOKEN_EXPIRES_SECONDS ??
+					DEFAULT_USER_PASSWORD_RESET_TOKEN_EXPIRES_SECONDS;
+
+				// 0 = no timeout (token never expires)
+				const expiresAt =
+					tokenExpiresInSeconds === 0
+						? null
+						: new Date(Date.now() + tokenExpiresInSeconds * 1000);
 
 				await storePasswordResetToken(
 					ctx.drizzleClient,
@@ -91,42 +102,30 @@ builder.mutationField("requestPasswordReset", (t) =>
 					expiresAt,
 				);
 
-				// Build reset link
+				// Build reset link using configured frontend URL
 				const frontendUrl = ctx.envConfig.FRONTEND_URL;
 				const resetLink = `${frontendUrl}/reset-password?token=${rawToken}`;
 
-				// Calculate human-readable expiry time
-				const expiryMinutes = Math.round(tokenExpiresIn / 60000);
-				const expiryText =
-					expiryMinutes >= 60
-						? `${Math.round(expiryMinutes / 60)} hour${Math.round(expiryMinutes / 60) > 1 ? "s" : ""}`
-						: `${expiryMinutes} minute${expiryMinutes > 1 ? "s" : ""}`;
+				// Get community name for email branding
+				const communityName = ctx.envConfig.API_COMMUNITY_NAME;
+
+				// Format expiry time for display (empty string if no timeout)
+				const expiryText = formatExpiryTime(tokenExpiresInSeconds);
 
 				// Send email (fire and forget - don't block response)
 				try {
+					const emailContext = {
+						userName: existingUser.name,
+						communityName,
+						resetLink,
+						expiryText,
+					};
+
 					await emailService.sendEmail({
 						id: ulid(),
 						email: existingUser.emailAddress,
-						subject: "Reset Your Password",
-						htmlBody: `
-							<div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-								<h1 style="color: #333;">Password Reset Request</h1>
-								<p>Hello ${existingUser.name},</p>
-								<p>We received a request to reset your password. Click the button below to create a new password:</p>
-								<div style="text-align: center; margin: 30px 0;">
-									<a href="${resetLink}" 
-									   style="background-color: #4CAF50; color: white; padding: 14px 28px; text-decoration: none; border-radius: 5px; display: inline-block;">
-										Reset Password
-									</a>
-								</div>
-								<p>Or copy and paste this link into your browser:</p>
-								<p style="word-break: break-all; color: #666;">${resetLink}</p>
-								<p><strong>This link will expire in ${expiryText}.</strong></p>
-								<p>If you didn't request this password reset, you can safely ignore this email.</p>
-								<hr style="border: none; border-top: 1px solid #eee; margin: 20px 0;" />
-								<p style="color: #999; font-size: 12px;">This is an automated message. Please do not reply to this email.</p>
-							</div>
-						`,
+						subject: `Reset Your Password - ${communityName}`,
+						htmlBody: getPasswordResetEmailHtml(emailContext),
 						userId: existingUser.id,
 					});
 				} catch (emailError) {
