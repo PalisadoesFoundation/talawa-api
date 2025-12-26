@@ -52,7 +52,6 @@ describe("GraphQL Routes", () => {
 				API_RATE_LIMIT_REFILL_RATE: 1,
 				API_JWT_EXPIRES_IN: 900000,
 				API_REFRESH_TOKEN_EXPIRES_IN: 604800000,
-				AWS_SES_FROM_EMAIL: "noreply@test.com",
 			} as FastifyInstance["envConfig"],
 			jwt: {
 				sign: vi.fn().mockReturnValue("signed-jwt-token"),
@@ -425,7 +424,6 @@ describe("GraphQL Routes", () => {
 				API_GRAPHQL_MUTATION_BASE_COST: number;
 				API_RATE_LIMIT_BUCKET_CAPACITY: number;
 				API_RATE_LIMIT_REFILL_RATE: number;
-				AWS_SES_FROM_EMAIL: string;
 			};
 			log: {
 				info: ReturnType<typeof vi.fn>;
@@ -446,7 +444,6 @@ describe("GraphQL Routes", () => {
 					API_GRAPHQL_MUTATION_BASE_COST: 10,
 					API_RATE_LIMIT_BUCKET_CAPACITY: 100,
 					API_RATE_LIMIT_REFILL_RATE: 1,
-					AWS_SES_FROM_EMAIL: "noreply@test.com",
 				},
 				log: {
 					info: vi.fn(),
@@ -685,7 +682,6 @@ describe("GraphQL Routes", () => {
 				API_GRAPHQL_MUTATION_BASE_COST: number;
 				API_RATE_LIMIT_BUCKET_CAPACITY: number;
 				API_RATE_LIMIT_REFILL_RATE: number;
-				AWS_SES_FROM_EMAIL: string;
 			};
 			log: {
 				info: ReturnType<typeof vi.fn>;
@@ -729,7 +725,6 @@ describe("GraphQL Routes", () => {
 					API_GRAPHQL_MUTATION_BASE_COST: 10,
 					API_RATE_LIMIT_BUCKET_CAPACITY: 100,
 					API_RATE_LIMIT_REFILL_RATE: 1,
-					AWS_SES_FROM_EMAIL: "noreply@test.com",
 				},
 				log: {
 					info: vi.fn(),

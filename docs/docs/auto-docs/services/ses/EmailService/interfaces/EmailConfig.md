@@ -18,9 +18,9 @@ Defined in: [src/services/ses/EmailService.ts:8](https://github.com/PalisadoesFo
 
 ***
 
-### fromEmail
+### fromEmail?
 
-> **fromEmail**: `string`
+> `optional` **fromEmail**: `string`
 
 Defined in: [src/services/ses/EmailService.ts:6](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/ses/EmailService.ts#L6)
 

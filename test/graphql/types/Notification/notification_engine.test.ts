@@ -211,10 +211,7 @@ describe("NotificationEngine (unit tests)", () => {
 				info: vi.fn(),
 				warn: vi.fn(),
 			},
-			envConfig: {
-				API_BASE_URL: "http://localhost",
-				AWS_SES_FROM_EMAIL: "noreply@test.com",
-			},
+			envConfig: { API_BASE_URL: "http://localhost" },
 			jwt: { sign: () => "test_token" },
 			minio: {},
 			pubsub: {},

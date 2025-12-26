@@ -3,7 +3,7 @@
  */
 export interface EmailConfig {
 	region: string;
-	fromEmail: string;
+	fromEmail?: string;
 	fromName?: string;
 	accessKeyId?: string;
 	secretAccessKey?: string;

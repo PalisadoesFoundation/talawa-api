@@ -18,7 +18,7 @@ Email configuration from environment variables
 
 ### fromEmail
 
-> **fromEmail**: `string` = `envConfig.AWS_SES_FROM_EMAIL`
+> **fromEmail**: `string` \| `undefined` = `envConfig.AWS_SES_FROM_EMAIL`
 
 ### fromName
 

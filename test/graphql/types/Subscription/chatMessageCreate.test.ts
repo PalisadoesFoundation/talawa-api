@@ -17,10 +17,7 @@ function createMockContext(
 		},
 		pubsub: { subscribe: vi.fn() },
 		log: { error: vi.fn(), info: vi.fn(), warn: vi.fn(), debug: vi.fn() },
-		envConfig: {
-			API_BASE_URL: "http://localhost",
-			AWS_SES_FROM_EMAIL: "noreply@test.com",
-		},
+		envConfig: { API_BASE_URL: "http://localhost" },
 		jwt: { sign: vi.fn() },
 		minio: { client: { removeObjects: vi.fn() }, bucketName: "talawa" },
 		...overrides,
