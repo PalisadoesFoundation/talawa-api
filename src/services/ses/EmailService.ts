@@ -42,9 +42,6 @@ export class EmailService {
 	private SendEmailCommandCtor: ((input: unknown) => unknown) | null = null;
 
 	constructor(config: EmailConfig) {
-		if (!config.fromEmail) {
-			throw new Error("fromEmail is required in EmailConfig");
-		}
 		this.config = config;
 	}
 
@@ -69,9 +66,9 @@ export class EmailService {
 				credentials:
 					this.config.accessKeyId && this.config.secretAccessKey
 						? {
-								accessKeyId: this.config.accessKeyId,
-								secretAccessKey: this.config.secretAccessKey,
-							}
+							accessKeyId: this.config.accessKeyId,
+							secretAccessKey: this.config.secretAccessKey,
+						}
 						: undefined,
 			}) as {
 				send: (command: unknown) => Promise<{ MessageId?: string }>;
