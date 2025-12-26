@@ -260,7 +260,7 @@ builder.mutationField("updatePost", (t) =>
 						});
 					}
 
-					// Delete old MinIO objects before uploading new one
+					// After successfully uploading the new file, delete old MinIO objects
 					for (const oldAttachment of existingPost.attachmentsWherePost) {
 						try {
 							await ctx.minio.client.removeObject(
@@ -271,7 +271,11 @@ builder.mutationField("updatePost", (t) =>
 							ctx.log.warn(
 								`Failed to remove old MinIO object ${oldAttachment.objectName}: ${removeError}`,
 							);
-							// Continue even if removal fails - don't block the update
+							throw new TalawaGraphQLError({
+								extensions: {
+									code: "unexpected",
+								},
+							});
 						}
 					}
 
@@ -310,6 +314,24 @@ builder.mutationField("updatePost", (t) =>
 					await tx
 						.delete(postAttachmentsTable)
 						.where(eq(postAttachmentsTable.postId, updatedPost.id));
+					// Delete existing MinIO objects
+					for (const oldAttachment of existingPost.attachmentsWherePost) {
+						try {
+							await ctx.minio.client.removeObject(
+								ctx.minio.bucketName,
+								oldAttachment.objectName,
+							);
+						} catch (removeError) {
+							ctx.log.warn(
+								`Failed to remove old MinIO object ${oldAttachment.objectName}: ${removeError}`,
+							);
+							throw new TalawaGraphQLError({
+								extensions: {
+									code: "unexpected",
+								},
+							});
+						}
+					}
 
 					return Object.assign(updatedPost, {
 						attachments: [],

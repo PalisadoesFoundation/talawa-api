@@ -5,10 +5,10 @@ import { Post } from "./Post";
 Post.implement({
 	fields: (t) => ({
 		attachmentURL: t.field({
-			description: "URL to the image attachment of the post.",
+			description: "URL to the media attachment (image or video) of the post.",
 			// Using API_GRAPHQL_SCALAR_RESOLVER_FIELD_COST despite having a resolver because resolver only does simple logic
 			complexity: envConfig.API_GRAPHQL_SCALAR_RESOLVER_FIELD_COST,
-			resolve: async (parent, _args, ctx) => {
+			resolve: (parent, _args, ctx) => {
 				// Check if there's an attachment available
 				if (!parent.attachments || !parent.attachments[0]) {
 					return null;

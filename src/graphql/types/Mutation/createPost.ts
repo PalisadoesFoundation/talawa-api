@@ -176,7 +176,7 @@ builder.mutationField("createPost", (t) =>
 					const attachment = parsedArgs.input.attachment;
 					const objectName = ulid();
 					try {
-						// Upload image to MinIO
+						// Upload media file to MinIO
 						await ctx.minio.client.putObject(
 							ctx.minio.bucketName,
 							objectName,
@@ -200,7 +200,7 @@ builder.mutationField("createPost", (t) =>
 						creatorId: currentUserId,
 						mimeType: attachment.mimetype,
 						id: uuidv7(),
-						name: attachment.filename || "uploaded-file",
+						name: attachment.filename,
 						postId: createdPost.id,
 						objectName: objectName,
 						fileHash: ulid(), // Placeholder - no deduplication for direct uploads
@@ -213,6 +213,21 @@ builder.mutationField("createPost", (t) =>
 
 					if (attachmentResult) {
 						createdAttachment = attachmentResult;
+					} else {
+						//remove MinIO object if DB insert fails
+						await ctx.minio.client.removeObject(
+							ctx.minio.bucketName,
+							objectName,
+						);
+						// Log and throw error
+						ctx.log.error(
+							"Postgres insert operation for post attachment unexpectedly returned an empty array instead of throwing an error.",
+						);
+						throw new TalawaGraphQLError({
+							extensions: {
+								code: "unexpected",
+							},
+						});
 					}
 				}
 

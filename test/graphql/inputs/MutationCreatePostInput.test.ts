@@ -202,7 +202,7 @@ describe("MutationCreatePostInput Schema", () => {
 			}
 		});
 
-		it("should handle null attachment after promise resolution", async () => {
+		it("should leave attachment undefined when promise resolves to falsy value", async () => {
 			// Test case where attachment resolves to null
 			const nullAttachment = Promise.resolve(null);
 

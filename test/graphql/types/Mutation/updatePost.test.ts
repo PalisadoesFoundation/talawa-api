@@ -1431,7 +1431,7 @@ suite("updatePost - MinIO operations", () => {
 			server.minio.client.putObject = originalPutObject;
 		}
 	});
-	test("should log warning but continue when MinIO object removal fails", async () => {
+	test("should return unexpected error when MinIO object removal fails", async () => {
 		// Admin login
 		const adminSignIn = await mercuriusClient.query(Query_signIn, {
 			variables: {
@@ -1525,7 +1525,6 @@ suite("updatePost - MinIO operations", () => {
 
 		// Mock removeObject to fail
 		const originalRemoveObject = server.minio.client.removeObject;
-		const logWarnSpy = vi.spyOn(server.log, "warn");
 
 		server.minio.client.removeObject = vi
 			.fn()
@@ -1547,7 +1546,7 @@ suite("updatePost - MinIO operations", () => {
 				variables: {
 					input: {
 						id: postId,
-						caption: "Updated despite removal failure",
+						caption: "Update should fail",
 						attachment: null,
 					},
 				},
@@ -1586,24 +1585,125 @@ suite("updatePost - MinIO operations", () => {
 
 			const updateResult = JSON.parse(updateResponse.body);
 
-			// Verify update succeeded despite removal failure
-			expect(updateResult.errors).toBeUndefined();
-			expect(updateResult.data.updatePost?.id).toBe(postId);
-			expect(updateResult.data.updatePost?.caption).toBe(
-				"Updated despite removal failure",
-			);
-			expect(updateResult.data.updatePost?.attachments).toHaveLength(1);
-
-			// Verify warning was logged
-			expect(logWarnSpy).toHaveBeenCalledWith(
-				expect.stringContaining(
-					`Failed to remove old MinIO object ${oldObjectName}`,
-				),
-			);
+			// Verify update failed with unexpected error
+			expect(updateResult.data?.updatePost).toBeNull();
+			expect(updateResult.errors?.[0].extensions.code).toBe("unexpected");
 		} finally {
-			// Restore original methods
+			// Restore original method
 			server.minio.client.removeObject = originalRemoveObject;
-			logWarnSpy.mockRestore();
+		}
+	});
+
+	test("should return unexpected error when MinIO removal fails while explicitly removing attachment", async () => {
+		// Admin login
+		const adminSignIn = await mercuriusClient.query(Query_signIn, {
+			variables: {
+				input: {
+					emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
+					password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
+				},
+			},
+		});
+		const token = adminSignIn.data.signIn?.authenticationToken;
+		assertToBeNonNullish(token);
+
+		// Create organization
+		const createOrgResult = await mercuriusClient.mutate(
+			Mutation_createOrganization,
+			{
+				headers: { authorization: `bearer ${token}` },
+				variables: {
+					input: {
+						name: `RemoveAttachOrg_${faker.string.ulid()}`,
+						description: faker.lorem.sentence(),
+					},
+				},
+			},
+		);
+		const orgId = createOrgResult.data.createOrganization?.id;
+		assertToBeNonNullish(orgId);
+
+		// Create post with attachment
+		const boundary = `----WebKitFormBoundary${Math.random().toString(36)}`;
+		const operations = JSON.stringify({
+			query: `
+				mutation Mutation_createPost($input: MutationCreatePostInput!) {
+					createPost(input: $input) {
+						id
+						attachments { objectName }
+					}
+				}
+			`,
+			variables: {
+				input: {
+					caption: "Post with attachment",
+					organizationId: orgId,
+					attachment: null,
+				},
+			},
+		});
+
+		const map = JSON.stringify({
+			"0": ["variables.input.attachment"],
+		});
+
+		const body = [
+			`--${boundary}`,
+			'Content-Disposition: form-data; name="operations"',
+			"",
+			operations,
+			`--${boundary}`,
+			'Content-Disposition: form-data; name="map"',
+			"",
+			map,
+			`--${boundary}`,
+			'Content-Disposition: form-data; name="0"; filename="photo.jpg"',
+			"Content-Type: image/jpeg",
+			"",
+			"photo content",
+			`--${boundary}--`,
+		].join("\r\n");
+
+		const createResponse = await server.inject({
+			method: "POST",
+			url: "/graphql",
+			headers: {
+				"content-type": `multipart/form-data; boundary=${boundary}`,
+				authorization: `bearer ${token}`,
+			},
+			payload: body,
+		});
+
+		const createResult = JSON.parse(createResponse.body);
+		const postId = createResult.data.createPost?.id;
+		assertToBeNonNullish(postId);
+		expect(createResult.data.createPost.attachments).toHaveLength(1);
+
+		// Mock removeObject to fail
+		const originalRemoveObject = server.minio.client.removeObject;
+		server.minio.client.removeObject = vi
+			.fn()
+			.mockRejectedValue(new Error("MinIO removal failed"));
+
+		try {
+			// Try to remove attachment by setting it to null
+			const updateResult = await mercuriusClient.mutate(Mutation_updatePost, {
+				headers: { authorization: `bearer ${token}` },
+				variables: {
+					input: {
+						id: postId,
+						caption: "Removing attachment should fail",
+						attachment: null,
+					},
+				},
+			});
+
+			// Verify update failed with unexpected error
+			expect(updateResult.data?.updatePost).toBeNull();
+			expect(updateResult.errors?.[0]?.extensions.code).toBe("unexpected");
+		} finally {
+			// Restore original method
+			server.minio.client.removeObject = originalRemoveObject;
 		}
 	});
 });

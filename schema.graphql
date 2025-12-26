@@ -4342,7 +4342,7 @@ type Plugin {
 }
 
 type Post {
-  """URL to the image attachment of the post."""
+  """URL to the media attachment (image or video) of the post."""
   attachmentURL: String
 
   """Array of attachments."""

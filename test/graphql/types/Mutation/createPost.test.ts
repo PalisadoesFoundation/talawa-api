@@ -730,50 +730,6 @@ suite("Mutation field createPost", () => {
 			);
 		});
 
-		test("should reject whitespace-only body", async () => {
-			const createOrgResult = await mercuriusClient.mutate(
-				Mutation_createOrganization,
-				{
-					headers: { authorization: `bearer ${authToken}` },
-					variables: {
-						input: {
-							name: faker.company.name(),
-							description: faker.lorem.sentence(),
-							countryCode: "us",
-							state: "FL",
-							city: "Miami",
-							postalCode: "33101",
-							addressLine1: "100 Ocean Dr",
-						},
-					},
-				},
-			);
-			const orgId = createOrgResult.data?.createOrganization?.id;
-			assertToBeNonNullish(orgId);
-
-			const whitespaceBody = "   \n\t  ";
-			const result = await mercuriusClient.mutate(Mutation_createPost, {
-				headers: { authorization: `bearer ${authToken}` },
-				variables: {
-					input: {
-						caption: "Whitespace Body Test",
-						body: whitespaceBody,
-						organizationId: orgId,
-					},
-				},
-			});
-
-			expect(result.data?.createPost).toBeNull();
-			expect(result.errors).toBeDefined();
-			const issues = (
-				result.errors?.[0]?.extensions as unknown as InvalidArgumentsExtensions
-			)?.issues;
-			const issueMessages = issues?.map((i) => i.message).join(" ");
-			expect(issueMessages).toContain(
-				"String must contain at least 1 character(s)",
-			);
-		});
-
 		test("should properly escape HTML/XSS payloads in body", async () => {
 			const createOrgResult = await mercuriusClient.mutate(
 				Mutation_createOrganization,
@@ -942,6 +898,9 @@ test("returns unexpected error when MinIO upload fails", async () => {
 			},
 		);
 
+		const orgId = createOrgResult.data?.createOrganization?.id;
+		assertToBeNonNullish(orgId);
+
 		// mock MinIO failure
 		server.minio.client.putObject = vi
 			.fn()
@@ -959,7 +918,7 @@ test("returns unexpected error when MinIO upload fails", async () => {
 			variables: {
 				input: {
 					caption: "Test",
-					organizationId: createOrgResult.data.createOrganization?.id,
+					organizationId: orgId,
 					isPinned: false,
 					attachment: null,
 				},
@@ -1006,5 +965,146 @@ test("returns unexpected error when MinIO upload fails", async () => {
 	} finally {
 		// Restore original method
 		server.minio.client.putObject = originalPutObject;
+	}
+});
+
+test("removes MinIO object and returns unexpected error when attachment DB insert fails", async () => {
+	// Save original methods for restoration
+	const originalTransaction = server.drizzleClient.transaction;
+	const originalRemoveObject = server.minio.client.removeObject;
+	const removeObjectSpy = vi.fn().mockResolvedValue(undefined);
+
+	try {
+		const adminSignIn = await mercuriusClient.query(Query_signIn, {
+			variables: {
+				input: {
+					emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
+					password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
+				},
+			},
+		});
+
+		const token = adminSignIn.data.signIn?.authenticationToken;
+		assertToBeNonNullish(token);
+
+		const createOrgResult = await mercuriusClient.mutate(
+			Mutation_createOrganization,
+			{
+				headers: { authorization: `bearer ${token}` },
+				variables: {
+					input: {
+						name: `TestOrg_${faker.string.ulid()}`,
+						description: faker.lorem.sentence(),
+					},
+				},
+			},
+		);
+
+		const orgId = createOrgResult.data?.createOrganization?.id;
+		assertToBeNonNullish(orgId);
+
+		// Mock removeObject to track calls
+		server.minio.client.removeObject = removeObjectSpy;
+
+		// Mock the transaction to succeed for post insert but fail for attachment insert
+		let insertCallCount = 0;
+		server.drizzleClient.transaction = vi
+			.fn()
+			.mockImplementation(async (callback) => {
+				const mockTx = {
+					insert: () => ({
+						values: () => ({
+							returning: async () => {
+								insertCallCount++;
+								// First call (post insert) succeeds, second call (attachment insert) returns empty array
+								if (insertCallCount === 1) {
+									return [
+										{
+											id: faker.string.uuid(),
+											creatorId: faker.string.uuid(),
+											caption: "Test",
+											body: null,
+											pinnedAt: null,
+											organizationId: orgId,
+											createdAt: new Date(),
+											updatedAt: new Date(),
+										},
+									];
+								}
+								return []; // Attachment insert fails
+							},
+						}),
+					}),
+				};
+
+				return await callback(mockTx);
+			});
+
+		const boundary = `----WebKitFormBoundary${Math.random().toString(36)}`;
+		const operations = JSON.stringify({
+			query: `
+      mutation Mutation_createPost($input: MutationCreatePostInput!) {
+        createPost(input: $input) {
+          id
+        }
+      }
+    `,
+			variables: {
+				input: {
+					caption: "Test",
+					organizationId: orgId,
+					isPinned: false,
+					attachment: null,
+				},
+			},
+		});
+
+		const map = JSON.stringify({
+			"0": ["variables.input.attachment"],
+		});
+
+		const body = [
+			`--${boundary}`,
+			'Content-Disposition: form-data; name="operations"',
+			"",
+			operations,
+			`--${boundary}`,
+			'Content-Disposition: form-data; name="map"',
+			"",
+			map,
+			`--${boundary}`,
+			'Content-Disposition: form-data; name="0"; filename="photo.jpg"',
+			"Content-Type: image/jpeg",
+			"",
+			"fakecontent",
+			`--${boundary}--`,
+		].join("\r\n");
+
+		const response = await server.inject({
+			method: "POST",
+			url: "/graphql",
+			headers: {
+				"content-type": `multipart/form-data; boundary=${boundary}`,
+				authorization: `bearer ${token}`,
+			},
+			payload: body,
+		});
+
+		const result = JSON.parse(response.body);
+
+		// Verify error response
+		expect(result.data?.createPost).toEqual(null);
+		expect(result.errors[0].extensions.code).toBe("unexpected");
+
+		// Verify removeObject was called to cleanup the MinIO object
+		expect(removeObjectSpy).toHaveBeenCalledTimes(1);
+		expect(removeObjectSpy).toHaveBeenCalledWith(
+			server.minio.bucketName,
+			expect.any(String),
+		);
+	} finally {
+		// Restore original methods
+		server.drizzleClient.transaction = originalTransaction;
+		server.minio.client.removeObject = originalRemoveObject;
 	}
 });

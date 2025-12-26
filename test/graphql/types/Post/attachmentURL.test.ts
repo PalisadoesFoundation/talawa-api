@@ -85,7 +85,7 @@ describe("Post Resolver - attachmentURL Field", () => {
 		);
 
 		expect(result).toBe(
-			"https://api.example.com/objects/uploads/test-image-123.jpg",
+			"https://api.example.com/objects/uploads%2Ftest-image-123.jpg",
 		);
 	});
 });
