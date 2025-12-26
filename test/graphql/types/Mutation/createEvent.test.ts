@@ -1,7 +1,9 @@
 import { faker } from "@faker-js/faker";
+import type { ResultOf, VariablesOf } from "gql.tada";
 import type { ExecutionResult } from "graphql";
-import type { VariablesOf, ResultOf } from "gql.tada";
 import { expect, suite, test, vi } from "vitest";
+import { recurrenceRulesTable } from "~/src/drizzle/tables/recurrenceRules";
+import { mutationCreateEventArgumentsSchema } from "~/src/graphql/types/Mutation/createEvent";
 import type {
 	ArgumentsAssociatedResourcesNotFoundExtensions,
 	InvalidArgumentsExtensions,
@@ -10,8 +12,6 @@ import type {
 	UnauthorizedActionOnArgumentsAssociatedResourcesExtensions,
 	UnexpectedExtensions,
 } from "~/src/utilities/TalawaGraphQLError";
-import { mutationCreateEventArgumentsSchema } from "~/src/graphql/types/Mutation/createEvent";
-import { recurrenceRulesTable } from "~/src/drizzle/tables/recurrenceRules";
 import { assertToBeNonNullish } from "../../../helpers";
 import { server } from "../../../server";
 import { mercuriusClient } from "../client";
@@ -25,7 +25,7 @@ import {
 
 // Specific type for createEvent mutation response using ExecutionResult
 type CreateEventMutationResponse = ExecutionResult<{
-	createEvent: ResultOf<typeof Mutation_createEvent>['createEvent'] | null;
+	createEvent: ResultOf<typeof Mutation_createEvent>["createEvent"] | null;
 }>;
 
 // Setup admin authentication for tests
@@ -80,15 +80,18 @@ const expectSpecificError = (
 
 // Create organization and return ID
 const createTestOrganization = async () => {
-	const createOrgResult = await mercuriusClient.mutate(Mutation_createOrganization, {
-		headers: { authorization: `bearer ${adminAuthToken}` },
-		variables: {
-			input: {
-				name: `Test Org ${faker.string.ulid()}`,
-				countryCode: "us",
+	const createOrgResult = await mercuriusClient.mutate(
+		Mutation_createOrganization,
+		{
+			headers: { authorization: `bearer ${adminAuthToken}` },
+			variables: {
+				input: {
+					name: `Test Org ${faker.string.ulid()}`,
+					countryCode: "us",
+				},
 			},
 		},
-	});
+	);
 	assertToBeNonNullish(createOrgResult.data?.createOrganization?.id);
 	return createOrgResult.data.createOrganization.id;
 };
@@ -104,7 +107,10 @@ const createOrganizationMember = async (organizationId: string) => {
 };
 
 // Successful event creation tests
-const expectSuccessfulEvent = (result: CreateEventMutationResponse, expectedName: string) => {
+const expectSuccessfulEvent = (
+	result: CreateEventMutationResponse,
+	expectedName: string,
+) => {
 	expect(result.errors).toBeUndefined();
 	expect(result.data?.createEvent).toEqual(
 		expect.objectContaining({
@@ -117,9 +123,12 @@ const expectSuccessfulEvent = (result: CreateEventMutationResponse, expectedName
 suite("Mutation field createEvent", () => {
 	suite("Authentication and Authorization", () => {
 		test("should reject unauthenticated requests", async () => {
-			const result = await createEvent({
-				input: { ...baseEventInput(faker.string.uuid()) },
-			}, "");
+			const result = await createEvent(
+				{
+					input: { ...baseEventInput(faker.string.uuid()) },
+				},
+				"",
+			);
 
 			expectSpecificError(result, {
 				extensions: expect.objectContaining<UnauthenticatedExtensions>({
@@ -136,12 +145,15 @@ suite("Mutation field createEvent", () => {
 			});
 
 			expectSpecificError(result, {
-				extensions: expect.objectContaining<ArgumentsAssociatedResourcesNotFoundExtensions>({
-					code: "arguments_associated_resources_not_found",
-					issues: expect.arrayContaining([
-						{ argumentPath: ["input", "organizationId"] },
-					]),
-				}),
+				extensions:
+					expect.objectContaining<ArgumentsAssociatedResourcesNotFoundExtensions>(
+						{
+							code: "arguments_associated_resources_not_found",
+							issues: expect.arrayContaining([
+								{ argumentPath: ["input", "organizationId"] },
+							]),
+						},
+					),
 				message: expect.any(String),
 				path: ["createEvent"],
 			});
@@ -149,19 +161,26 @@ suite("Mutation field createEvent", () => {
 
 		test("prevents non-members from creating organization events", async () => {
 			const organizationId = await createTestOrganization();
-			const { authToken: regularUserAuthToken } = await createRegularUserUsingAdmin();
+			const { authToken: regularUserAuthToken } =
+				await createRegularUserUsingAdmin();
 
-			const result = await createEvent({
-				input: { ...baseEventInput(organizationId) },
-			}, regularUserAuthToken);
+			const result = await createEvent(
+				{
+					input: { ...baseEventInput(organizationId) },
+				},
+				regularUserAuthToken,
+			);
 
 			expectSpecificError(result, {
-				extensions: expect.objectContaining<UnauthorizedActionOnArgumentsAssociatedResourcesExtensions>({
-					code: "unauthorized_action_on_arguments_associated_resources",
-					issues: expect.arrayContaining([
-						{ argumentPath: ["input", "organizationId"] },
-					]),
-				}),
+				extensions:
+					expect.objectContaining<UnauthorizedActionOnArgumentsAssociatedResourcesExtensions>(
+						{
+							code: "unauthorized_action_on_arguments_associated_resources",
+							issues: expect.arrayContaining([
+								{ argumentPath: ["input", "organizationId"] },
+							]),
+						},
+					),
 				message: expect.any(String),
 				path: ["createEvent"],
 			});
@@ -228,7 +247,10 @@ suite("Mutation field createEvent", () => {
 		test("rejects locations exceeding character limit", async () => {
 			const organizationId = await createTestOrganization();
 			const result = await createEvent({
-				input: { ...baseEventInput(organizationId), location: "a".repeat(1025) },
+				input: {
+					...baseEventInput(organizationId),
+					location: "a".repeat(1025),
+				},
 			});
 			expect(result.data?.createEvent).toEqual(null);
 			expectErrorCode(result, "invalid_arguments");
@@ -351,23 +373,24 @@ suite("Mutation field createEvent", () => {
 		});
 
 		test("validates attachment mime types using schema validation", async () => {
-			// This test validates attachment handling at the schema level rather than 
-			// attempting to mock FileUpload objects, which would be rejected by the Upload 
-			// scalar before the resolver runs. This approach properly tests the validation 
+			// This test validates attachment handling at the schema level rather than
+			// attempting to mock FileUpload objects, which would be rejected by the Upload
+			// scalar before the resolver runs. This approach properly tests the validation
 			// logic without the complexity of multipart HTTP upload mocking.
-			
+
 			// Test valid attachment mime type
 			const validAttachment = {
 				filename: "agenda.pdf",
 				mimetype: "image/png", // Valid mime type
 				encoding: "7bit",
-				createReadStream: () => ({}) as any,
+				createReadStream: (): NodeJS.ReadableStream =>
+					({}) as NodeJS.ReadableStream,
 			};
 
 			const validInput = {
 				input: {
 					name: "Test Event",
-					description: "Test Description", 
+					description: "Test Description",
 					startAt: "2025-01-01T10:00:00Z",
 					endAt: "2025-01-01T12:00:00Z",
 					organizationId: "test-org-id",
@@ -375,29 +398,32 @@ suite("Mutation field createEvent", () => {
 				},
 			};
 
-			const validResult = await mutationCreateEventArgumentsSchema.safeParseAsync(validInput);
+			const validResult =
+				await mutationCreateEventArgumentsSchema.safeParseAsync(validInput);
 			expect(validResult.success).toBe(true);
 
 			// Test invalid attachment mime type
 			const invalidAttachment = {
 				filename: "malicious.exe",
 				mimetype: "application/x-executable", // Invalid mime type
-				encoding: "7bit", 
-				createReadStream: () => ({}) as any,
+				encoding: "7bit",
+				createReadStream: (): NodeJS.ReadableStream =>
+					({}) as NodeJS.ReadableStream,
 			};
 
 			const invalidInput = {
 				input: {
 					name: "Test Event",
 					description: "Test Description",
-					startAt: "2025-01-01T10:00:00Z", 
+					startAt: "2025-01-01T10:00:00Z",
 					endAt: "2025-01-01T12:00:00Z",
 					organizationId: "test-org-id",
 					attachments: [Promise.resolve(invalidAttachment)],
 				},
 			};
 
-			const invalidResult = await mutationCreateEventArgumentsSchema.safeParseAsync(invalidInput);
+			const invalidResult =
+				await mutationCreateEventArgumentsSchema.safeParseAsync(invalidInput);
 			expect(invalidResult.success).toBe(false);
 			if (!invalidResult.success) {
 				expect(invalidResult.error.issues).toEqual(
@@ -437,13 +463,13 @@ suite("Mutation field createEvent", () => {
 			});
 
 			// Testing with too many files - should also fail with GraphQL validation error
-			const tooManyFiles = Array.from({ length: 21 }, (_, i) => 
+			const tooManyFiles = Array.from({ length: 21 }, (_, i) =>
 				Promise.resolve({
 					filename: `test${i}.png`,
 					mimetype: "image/png",
 					encoding: "7bit",
 					createReadStream: vi.fn(),
-				})
+				}),
 			);
 
 			const tooManyResult = await createEvent({
@@ -578,9 +604,12 @@ suite("Mutation field createEvent", () => {
 			const { userId: regularUserId, authToken: regularUserAuthToken } =
 				await createOrganizationMember(organizationId);
 
-			const result = await createEvent({
-				input: { ...baseEventInput(organizationId), name: "Event by Member" },
-			}, regularUserAuthToken);
+			const result = await createEvent(
+				{
+					input: { ...baseEventInput(organizationId), name: "Event by Member" },
+				},
+				regularUserAuthToken,
+			);
 
 			expect(result.errors).toBeUndefined();
 			expect(result.data?.createEvent).toEqual(
@@ -632,7 +661,10 @@ suite("Mutation field createEvent", () => {
 
 			expect(result.errors).toBeUndefined();
 			expect(result.data?.createEvent).toEqual(
-				expect.objectContaining({ id: expect.any(String), name: "Daily Standup" }),
+				expect.objectContaining({
+					id: expect.any(String),
+					name: "Daily Standup",
+				}),
 			);
 		});
 
@@ -653,7 +685,10 @@ suite("Mutation field createEvent", () => {
 
 			expect(result.errors).toBeUndefined();
 			expect(result.data?.createEvent).toEqual(
-				expect.objectContaining({ id: expect.any(String), name: "Weekly Meeting" }),
+				expect.objectContaining({
+					id: expect.any(String),
+					name: "Weekly Meeting",
+				}),
 			);
 		});
 
@@ -675,11 +710,12 @@ suite("Mutation field createEvent", () => {
 
 			expect(result.errors).toBeUndefined();
 			expect(result.data?.createEvent).toEqual(
-				expect.objectContaining({ id: expect.any(String), name: "Weekday Training" }),
+				expect.objectContaining({
+					id: expect.any(String),
+					name: "Weekday Training",
+				}),
 			);
 		});
-
-
 	});
 
 	suite("Error Handling", () => {
@@ -693,7 +729,7 @@ suite("Mutation field createEvent", () => {
 				return {
 					...result,
 					returning: vi.fn().mockResolvedValue([]),
-				} as any;
+				} as unknown as typeof result;
 			});
 
 			const result = await createEvent({
@@ -715,39 +751,43 @@ suite("Mutation field createEvent", () => {
 			const organizationId = await createTestOrganization();
 
 			// Mock the transaction to simulate recurrence rule insertion failure
-			vi.spyOn(server.drizzleClient, "transaction").mockImplementation(async (callback) => {
-				// Mocking transaction object that simulates successful event creation
-				// but fails on recurrence rule creation
-				const mockTx = {
-					...server.drizzleClient,
-					insert: vi.fn().mockImplementation((table) => {
-						const mockInsert = {
-							values: vi.fn().mockReturnThis(),
-							returning: vi.fn(),
-						};
+			vi.spyOn(server.drizzleClient, "transaction").mockImplementation(
+				async (callback) => {
+					// Mocking transaction object that simulates successful event creation
+					// but fails on recurrence rule creation
+					const mockTx = {
+						...server.drizzleClient,
+						insert: vi.fn().mockImplementation((table) => {
+							const mockInsert = {
+								values: vi.fn().mockReturnThis(),
+								returning: vi.fn(),
+							};
 
-						// Check if this is the recurrence rules table insertion
-						// We simulate failure by returning empty array for recurrence rule insertion
-						if (table === recurrenceRulesTable) {
-							mockInsert.returning.mockResolvedValue([]); // This simulates the failure
-						} else {
-							// For events table and other tables, return successful mock data
-							mockInsert.returning.mockResolvedValue([{
-								id: "test-event-id",
-								name: "Test Recurring Event",
-								organizationId,
-								creatorId: "test-creator-id",
-								description: "Test Description",
-								startAt: new Date("2025-01-01T10:00:00Z"),
-								endAt: new Date("2025-01-01T12:00:00Z"),
-								isRecurringEventTemplate: true,
-							}]);
-						}
-						return mockInsert;
-					}),
-				};
-				return callback(mockTx as any);
-			});
+							// Check if this is the recurrence rules table insertion
+							// We simulate failure by returning empty array for recurrence rule insertion
+							if (table === recurrenceRulesTable) {
+								mockInsert.returning.mockResolvedValue([]); // This simulates the failure
+							} else {
+								// For events table and other tables, return successful mock data
+								mockInsert.returning.mockResolvedValue([
+									{
+										id: "test-event-id",
+										name: "Test Recurring Event",
+										organizationId,
+										creatorId: "test-creator-id",
+										description: "Test Description",
+										startAt: new Date("2025-01-01T10:00:00Z"),
+										endAt: new Date("2025-01-01T12:00:00Z"),
+										isRecurringEventTemplate: true,
+									},
+								]);
+							}
+							return mockInsert;
+						}),
+					};
+					return callback(mockTx as unknown as Parameters<typeof callback>[0]);
+				},
+			);
 
 			const result = await createEvent({
 				input: {
@@ -850,15 +890,22 @@ suite("Mutation field createEvent", () => {
 
 		test("allows the same member to create multiple events", async () => {
 			const organizationId = await createTestOrganization();
-			const { authToken: memberAuthToken } = await createOrganizationMember(organizationId);
+			const { authToken: memberAuthToken } =
+				await createOrganizationMember(organizationId);
 
-			const event1Result = await createEvent({
-				input: { ...baseEventInput(organizationId), name: "First Event" },
-			}, memberAuthToken);
+			const event1Result = await createEvent(
+				{
+					input: { ...baseEventInput(organizationId), name: "First Event" },
+				},
+				memberAuthToken,
+			);
 
-			const event2Result = await createEvent({
-				input: { ...baseEventInput(organizationId), name: "Second Event" },
-			}, memberAuthToken);
+			const event2Result = await createEvent(
+				{
+					input: { ...baseEventInput(organizationId), name: "Second Event" },
+				},
+				memberAuthToken,
+			);
 
 			expectSuccessfulEvent(event1Result, "First Event");
 			expectSuccessfulEvent(event2Result, "Second Event");
