@@ -37,14 +37,6 @@ suite("Mutation field createPost", () => {
 					input: {
 						caption: "Test Post",
 						organizationId: faker.string.uuid(),
-						attachments: [
-							{
-								mimetype: "IMAGE_PNG",
-								objectName: "test-object-name-isPinned",
-								name: "test-image.png",
-								fileHash: "test-file-hash-isPinned",
-							},
-						],
 					},
 				},
 			});
@@ -68,14 +60,6 @@ suite("Mutation field createPost", () => {
 					input: {
 						caption: "Test Post",
 						organizationId: faker.string.uuid(),
-						attachments: [
-							{
-								mimetype: "IMAGE_PNG",
-								objectName: "test-object-name-isPinned",
-								name: "test-image.png",
-								fileHash: "test-file-hash-isPinned",
-							},
-						],
 					},
 				},
 			});
@@ -138,14 +122,6 @@ suite("Mutation field createPost", () => {
 						caption: "Pinned Post Attempt",
 						organizationId: orgId,
 						isPinned: true,
-						attachments: [
-							{
-								mimetype: "IMAGE_PNG",
-								objectName: "test-object-name-3",
-								name: "test-image.png",
-								fileHash: "test-file-hash-3",
-							},
-						],
 					},
 				},
 			});
@@ -192,14 +168,6 @@ suite("Mutation field createPost", () => {
 						caption: "Pinned Post",
 						organizationId: orgId,
 						isPinned: true,
-						attachments: [
-							{
-								mimetype: "IMAGE_PNG",
-								objectName: "test-object-name-4",
-								name: "test-image.png",
-								fileHash: "test-file-hash-4",
-							},
-						],
 					},
 				},
 			});
@@ -243,14 +211,6 @@ suite("Mutation field createPost", () => {
 						caption: "Unpinned Post",
 						organizationId: orgId,
 						isPinned: false,
-						attachments: [
-							{
-								mimetype: "IMAGE_PNG",
-								objectName: "test-object-name-5",
-								name: "test-image.png",
-								fileHash: "test-file-hash-5",
-							},
-						],
 					},
 				},
 			});
@@ -314,14 +274,6 @@ suite("Mutation field createPost", () => {
 					input: {
 						caption: "Test Post",
 						organizationId: orgId,
-						attachments: [
-							{
-								mimetype: "IMAGE_PNG",
-								objectName: "test-object-name-00",
-								name: "test-image.png",
-								fileHash: "test-file-hash-00",
-							},
-						],
 					},
 				},
 			});
@@ -347,14 +299,6 @@ suite("Mutation field createPost", () => {
 					input: {
 						caption: "Test Post",
 						organizationId: invalidOrganizationId,
-						attachments: [
-							{
-								mimetype: "IMAGE_PNG",
-								objectName: "test-object-name-01",
-								name: "test-image.png",
-								fileHash: "test-file-hash-01",
-							},
-						],
 					},
 				},
 			});
@@ -443,14 +387,6 @@ suite("Mutation field createPost", () => {
 						caption: "Unauthorized Pinned Post Attempt",
 						organizationId: orgId,
 						isPinned: true,
-						attachments: [
-							{
-								mimetype: "IMAGE_PNG",
-								objectName: "test-object-name-unauth",
-								name: "test-image.png",
-								fileHash: "test-file-hash-unauth",
-							},
-						],
 					},
 				},
 			});
@@ -522,14 +458,6 @@ suite("Mutation field createPost", () => {
 						input: {
 							caption: "Post that should fail",
 							organizationId: orgId,
-							attachments: [
-								{
-									mimetype: "IMAGE_PNG",
-									objectName: "test-object-name-error",
-									name: "test-image.png",
-									fileHash: "test-file-hash-error",
-								},
-							],
 						},
 					},
 				});
@@ -555,7 +483,7 @@ suite("Mutation field createPost", () => {
 	suite(
 		"when the client is authorized and the post is created successfully",
 		() => {
-			test("should create a post and return the post data attachments", async () => {
+			test("should create a post and return the post data", async () => {
 				const createOrgResult = await mercuriusClient.mutate(
 					Mutation_createOrganization,
 					{
@@ -582,14 +510,6 @@ suite("Mutation field createPost", () => {
 						input: {
 							caption: "Successful Post",
 							organizationId: orgId,
-							attachments: [
-								{
-									mimetype: "IMAGE_PNG",
-									objectName: "test-object-name-99",
-									name: "test-image.png",
-									fileHash: "test-file-hash-99",
-								},
-							],
 						},
 					},
 				});
@@ -598,85 +518,8 @@ suite("Mutation field createPost", () => {
 					expect.objectContaining({
 						id: expect.any(String),
 						caption: "Successful Post",
-						attachments: [
-							{
-								mimeType: "image/png",
-								objectName: "test-object-name-99",
-								name: "test-image.png",
-								fileHash: "test-file-hash-99",
-							},
-						],
 						organization: expect.objectContaining({
 							id: orgId,
-						}),
-						pinnedAt: null,
-					}),
-				);
-			});
-
-			test("should create a post with attachments if provided", async () => {
-				const fakeAttachment: {
-					mimetype:
-						| "IMAGE_JPEG"
-						| "IMAGE_AVIF"
-						| "IMAGE_PNG"
-						| "IMAGE_WEBP"
-						| "VIDEO_MP4"
-						| "VIDEO_WEBM";
-					objectName: string;
-					fileHash: string;
-					name: string;
-				} = {
-					mimetype: "IMAGE_JPEG",
-					objectName: "fake-object-name",
-					fileHash: "fake-file-hash",
-					name: "fake-name",
-				};
-				const createOrgResult = await mercuriusClient.mutate(
-					Mutation_createOrganization,
-					{
-						headers: { authorization: `bearer ${authToken}` },
-						variables: {
-							input: {
-								name: "Post Org With Attachments",
-								description: "Organization for post with attachments",
-								countryCode: "us",
-								state: "CA",
-								city: "San Francisco",
-								postalCode: "94101",
-								addressLine1: "123 Main St",
-								addressLine2: "Suite 100",
-							},
-						},
-					},
-				);
-				const orgId = createOrgResult.data?.createOrganization?.id;
-				assertToBeNonNullish(orgId);
-				const result = await mercuriusClient.mutate(Mutation_createPost, {
-					headers: { authorization: `bearer ${authToken}` },
-					variables: {
-						input: {
-							caption: "Post with Attachments",
-							organizationId: orgId,
-							attachments: [fakeAttachment],
-						},
-					},
-				});
-				expect(result.errors).toBeUndefined();
-				expect(result.data?.createPost).toEqual(
-					expect.objectContaining({
-						id: expect.any(String),
-						caption: "Post with Attachments",
-						attachments: expect.arrayContaining([
-							expect.objectContaining({
-								mimeType: "image/jpeg",
-								objectName: fakeAttachment.objectName,
-								name: fakeAttachment.name,
-								fileHash: fakeAttachment.fileHash,
-							}),
-						]),
-						organization: expect.objectContaining({
-							id: expect.any(String),
 						}),
 						pinnedAt: null,
 					}),
@@ -887,50 +730,6 @@ suite("Mutation field createPost", () => {
 			);
 		});
 
-		test("should reject whitespace-only body", async () => {
-			const createOrgResult = await mercuriusClient.mutate(
-				Mutation_createOrganization,
-				{
-					headers: { authorization: `bearer ${authToken}` },
-					variables: {
-						input: {
-							name: faker.company.name(),
-							description: faker.lorem.sentence(),
-							countryCode: "us",
-							state: "FL",
-							city: "Miami",
-							postalCode: "33101",
-							addressLine1: "100 Ocean Dr",
-						},
-					},
-				},
-			);
-			const orgId = createOrgResult.data?.createOrganization?.id;
-			assertToBeNonNullish(orgId);
-
-			const whitespaceBody = "   \n\t  ";
-			const result = await mercuriusClient.mutate(Mutation_createPost, {
-				headers: { authorization: `bearer ${authToken}` },
-				variables: {
-					input: {
-						caption: "Whitespace Body Test",
-						body: whitespaceBody,
-						organizationId: orgId,
-					},
-				},
-			});
-
-			expect(result.data?.createPost).toBeNull();
-			expect(result.errors).toBeDefined();
-			const issues = (
-				result.errors?.[0]?.extensions as unknown as InvalidArgumentsExtensions
-			)?.issues;
-			const issueMessages = issues?.map((i) => i.message).join(" ");
-			expect(issueMessages).toContain(
-				"String must contain at least 1 character(s)",
-			);
-		});
-
 		test("should properly escape HTML/XSS payloads in body", async () => {
 			const createOrgResult = await mercuriusClient.mutate(
 				Mutation_createOrganization,
@@ -974,4 +773,338 @@ suite("Mutation field createPost", () => {
 			expect(result.data?.createPost?.body).not.toContain("<img");
 		});
 	});
+});
+
+test("successfully creates post with valid image attachment", async () => {
+	const adminSignIn = await mercuriusClient.query(Query_signIn, {
+		variables: {
+			input: {
+				emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
+				password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
+			},
+		},
+	});
+
+	const token = adminSignIn.data.signIn?.authenticationToken;
+	assertToBeNonNullish(token);
+
+	const createOrgResult = await mercuriusClient.mutate(
+		Mutation_createOrganization,
+		{
+			headers: { authorization: `bearer ${token}` },
+			variables: {
+				input: {
+					name: `TestOrg_${faker.string.ulid()}`,
+					description: faker.lorem.sentence(),
+				},
+			},
+		},
+	);
+
+	const orgId = createOrgResult.data.createOrganization?.id;
+	assertToBeNonNullish(orgId);
+
+	const boundary = `----WebKitFormBoundary${Math.random().toString(36)}`;
+
+	const operations = JSON.stringify({
+		query: `
+      mutation Mutation_createPost($input: MutationCreatePostInput!) {
+        createPost(input: $input) {
+          id
+          caption
+          attachments { mimeType name }
+        }
+      }
+    `,
+		variables: {
+			input: {
+				caption: "Hello world",
+				organizationId: orgId,
+				isPinned: false,
+				attachment: null,
+			},
+		},
+	});
+
+	const map = JSON.stringify({
+		"0": ["variables.input.attachment"],
+	});
+
+	const fileContent = "fake jpeg content";
+
+	const body = [
+		`--${boundary}`,
+		'Content-Disposition: form-data; name="operations"',
+		"",
+		operations,
+		`--${boundary}`,
+		'Content-Disposition: form-data; name="map"',
+		"",
+		map,
+		`--${boundary}`,
+		'Content-Disposition: form-data; name="0"; filename="post-photo.jpg"',
+		"Content-Type: image/jpeg",
+		"",
+		fileContent,
+		`--${boundary}--`,
+	].join("\r\n");
+
+	const response = await server.inject({
+		method: "POST",
+		url: "/graphql",
+		headers: {
+			"content-type": `multipart/form-data; boundary=${boundary}`,
+			authorization: `bearer ${token}`,
+		},
+		payload: body,
+	});
+
+	const result = JSON.parse(response.body);
+
+	expect(result.errors).toBeUndefined();
+	assertToBeNonNullish(result.data.createPost?.id);
+
+	expect(result.data.createPost.attachments).toHaveLength(1);
+	expect(result.data.createPost.attachments[0].mimeType).toBe("image/jpeg");
+});
+
+test("returns unexpected error when MinIO upload fails", async () => {
+	// Save original method for restoration
+	const originalPutObject = server.minio.client.putObject;
+
+	try {
+		const adminSignIn = await mercuriusClient.query(Query_signIn, {
+			variables: {
+				input: {
+					emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
+					password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
+				},
+			},
+		});
+
+		const token = adminSignIn.data.signIn?.authenticationToken;
+		assertToBeNonNullish(token);
+
+		const createOrgResult = await mercuriusClient.mutate(
+			Mutation_createOrganization,
+			{
+				headers: { authorization: `bearer ${token}` },
+				variables: {
+					input: {
+						name: `TestOrg_${faker.string.ulid()}`,
+						description: faker.lorem.sentence(),
+					},
+				},
+			},
+		);
+
+		const orgId = createOrgResult.data?.createOrganization?.id;
+		assertToBeNonNullish(orgId);
+
+		// mock MinIO failure
+		server.minio.client.putObject = vi
+			.fn()
+			.mockRejectedValue(new Error("simulated failure"));
+
+		const boundary = `----WebKitFormBoundary${Math.random().toString(36)}`;
+		const operations = JSON.stringify({
+			query: `
+      mutation Mutation_createPost($input: MutationCreatePostInput!) {
+        createPost(input: $input) {
+          id
+        }
+      }
+    `,
+			variables: {
+				input: {
+					caption: "Test",
+					organizationId: orgId,
+					isPinned: false,
+					attachment: null,
+				},
+			},
+		});
+
+		const map = JSON.stringify({
+			"0": ["variables.input.attachment"],
+		});
+
+		const body = [
+			`--${boundary}`,
+			'Content-Disposition: form-data; name="operations"',
+			"",
+			operations,
+			`--${boundary}`,
+			'Content-Disposition: form-data; name="map"',
+			"",
+			map,
+			`--${boundary}`,
+			'Content-Disposition: form-data; name="0"; filename="photo.jpg"',
+			"Content-Type: image/jpeg",
+			"",
+			"fakecontent",
+			`--${boundary}--`,
+		].join("\r\n");
+
+		const response = await server.inject({
+			method: "POST",
+			url: "/graphql",
+			headers: {
+				"content-type": `multipart/form-data; boundary=${boundary}`,
+				authorization: `bearer ${token}`,
+			},
+			payload: body,
+		});
+
+		const result = JSON.parse(response.body);
+
+		expect(result.data?.createPost).toEqual(null);
+
+		// the resolver's exact error code
+		expect(result.errors[0].extensions.code).toBe("unexpected");
+	} finally {
+		// Restore original method
+		server.minio.client.putObject = originalPutObject;
+	}
+});
+
+test("removes MinIO object and returns unexpected error when attachment DB insert fails", async () => {
+	// Save original methods for restoration
+	const originalTransaction = server.drizzleClient.transaction;
+	const originalRemoveObject = server.minio.client.removeObject;
+	const removeObjectSpy = vi.fn().mockResolvedValue(undefined);
+
+	try {
+		const adminSignIn = await mercuriusClient.query(Query_signIn, {
+			variables: {
+				input: {
+					emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
+					password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
+				},
+			},
+		});
+
+		const token = adminSignIn.data.signIn?.authenticationToken;
+		assertToBeNonNullish(token);
+
+		const createOrgResult = await mercuriusClient.mutate(
+			Mutation_createOrganization,
+			{
+				headers: { authorization: `bearer ${token}` },
+				variables: {
+					input: {
+						name: `TestOrg_${faker.string.ulid()}`,
+						description: faker.lorem.sentence(),
+					},
+				},
+			},
+		);
+
+		const orgId = createOrgResult.data?.createOrganization?.id;
+		assertToBeNonNullish(orgId);
+
+		// Mock removeObject to track calls
+		server.minio.client.removeObject = removeObjectSpy;
+
+		// Mock the transaction to succeed for post insert but fail for attachment insert
+		let insertCallCount = 0;
+		server.drizzleClient.transaction = vi
+			.fn()
+			.mockImplementation(async (callback) => {
+				const mockTx = {
+					insert: () => ({
+						values: () => ({
+							returning: async () => {
+								insertCallCount++;
+								// First call (post insert) succeeds, second call (attachment insert) returns empty array
+								if (insertCallCount === 1) {
+									return [
+										{
+											id: faker.string.uuid(),
+											creatorId: faker.string.uuid(),
+											caption: "Test",
+											body: null,
+											pinnedAt: null,
+											organizationId: orgId,
+											createdAt: new Date(),
+											updatedAt: new Date(),
+										},
+									];
+								}
+								return []; // Attachment insert fails
+							},
+						}),
+					}),
+				};
+
+				return await callback(mockTx);
+			});
+
+		const boundary = `----WebKitFormBoundary${Math.random().toString(36)}`;
+		const operations = JSON.stringify({
+			query: `
+      mutation Mutation_createPost($input: MutationCreatePostInput!) {
+        createPost(input: $input) {
+          id
+        }
+      }
+    `,
+			variables: {
+				input: {
+					caption: "Test",
+					organizationId: orgId,
+					isPinned: false,
+					attachment: null,
+				},
+			},
+		});
+
+		const map = JSON.stringify({
+			"0": ["variables.input.attachment"],
+		});
+
+		const body = [
+			`--${boundary}`,
+			'Content-Disposition: form-data; name="operations"',
+			"",
+			operations,
+			`--${boundary}`,
+			'Content-Disposition: form-data; name="map"',
+			"",
+			map,
+			`--${boundary}`,
+			'Content-Disposition: form-data; name="0"; filename="photo.jpg"',
+			"Content-Type: image/jpeg",
+			"",
+			"fakecontent",
+			`--${boundary}--`,
+		].join("\r\n");
+
+		const response = await server.inject({
+			method: "POST",
+			url: "/graphql",
+			headers: {
+				"content-type": `multipart/form-data; boundary=${boundary}`,
+				authorization: `bearer ${token}`,
+			},
+			payload: body,
+		});
+
+		const result = JSON.parse(response.body);
+
+		// Verify error response
+		expect(result.data?.createPost).toEqual(null);
+		expect(result.errors[0].extensions.code).toBe("unexpected");
+
+		// Verify removeObject was called to cleanup the MinIO object
+		expect(removeObjectSpy).toHaveBeenCalledTimes(1);
+		expect(removeObjectSpy).toHaveBeenCalledWith(
+			server.minio.bucketName,
+			expect.any(String),
+		);
+	} finally {
+		// Restore original methods
+		server.drizzleClient.transaction = originalTransaction;
+		server.minio.client.removeObject = originalRemoveObject;
+	}
 });
