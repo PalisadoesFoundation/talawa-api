@@ -42,6 +42,9 @@ export class EmailService {
 	private SendEmailCommandCtor: ((input: unknown) => unknown) | null = null;
 
 	constructor(config: EmailConfig) {
+		if (!config.fromEmail) {
+			throw new Error("fromEmail is required in EmailConfig");
+		}
 		this.config = config;
 	}
 
@@ -51,6 +54,15 @@ export class EmailService {
 	}> {
 		if (!this.sesClient || !this.SendEmailCommandCtor) {
 			const mod = await import("@aws-sdk/client-ses");
+
+			// Validate that either both credentials are provided or neither
+			const hasAccessKey = Boolean(this.config.accessKeyId);
+			const hasSecretKey = Boolean(this.config.secretAccessKey);
+			if (hasAccessKey !== hasSecretKey) {
+				throw new Error(
+					"Both accessKeyId and secretAccessKey must be provided together, or neither should be set",
+				);
+			}
 
 			this.sesClient = new mod.SESClient({
 				region: this.config.region,
