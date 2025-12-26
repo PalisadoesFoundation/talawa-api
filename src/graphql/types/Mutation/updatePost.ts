@@ -268,7 +268,7 @@ builder.mutationField("updatePost", (t) =>
 								oldAttachment.objectName,
 							);
 						} catch (removeError) {
-							ctx.log.warn(
+							ctx.log.error(
 								`Failed to remove old MinIO object ${oldAttachment.objectName}: ${removeError}`,
 							);
 							throw new TalawaGraphQLError({
@@ -322,7 +322,7 @@ builder.mutationField("updatePost", (t) =>
 								oldAttachment.objectName,
 							);
 						} catch (removeError) {
-							ctx.log.warn(
+							ctx.log.error(
 								`Failed to remove old MinIO object ${oldAttachment.objectName}: ${removeError}`,
 							);
 							throw new TalawaGraphQLError({
