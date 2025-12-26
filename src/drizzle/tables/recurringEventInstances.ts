@@ -10,7 +10,6 @@ import {
 } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { uuidv7 } from "uuidv7";
-import { z } from "zod";
 import { eventAttachmentsTable } from "./eventAttachments";
 import { eventsTable } from "./events";
 import { organizationsTable } from "./organizations";
@@ -277,17 +276,17 @@ export const recurringEventInstancesTableRelations = relations(
 export const recurringEventInstancesTableInsertSchema = createInsertSchema(
 	recurringEventInstancesTable,
 	{
-		baseRecurringEventId: z.string().uuid(),
-		recurrenceRuleId: z.string().uuid(),
-		originalSeriesId: z.string().uuid(),
-		originalInstanceStartTime: z.date(),
-		actualStartTime: z.date(),
-		actualEndTime: z.date(),
-		isCancelled: z.boolean().optional(),
-		organizationId: z.string().uuid(),
-		version: z.string().optional(),
-		sequenceNumber: z.number().int().min(1),
-		totalCount: z.number().int().min(1).nullable().optional(),
+		baseRecurringEventId: (schema) => schema,
+		recurrenceRuleId: (schema) => schema,
+		originalSeriesId: (schema) => schema,
+		originalInstanceStartTime: (schema) => schema,
+		actualStartTime: (schema) => schema,
+		actualEndTime: (schema) => schema,
+		isCancelled: (schema) => schema.optional(),
+		organizationId: (schema) => schema,
+		version: (schema) => schema.optional(),
+		sequenceNumber: (schema) => schema.min(1),
+		totalCount: (schema) => schema.min(1).nullable().optional(),
 	},
 );
 
