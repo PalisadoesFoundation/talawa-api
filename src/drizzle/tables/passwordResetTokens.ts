@@ -27,7 +27,7 @@ export const passwordResetTokensTable = pgTable(
 			.references(() => usersTable.id, { onDelete: "cascade" }),
 		/**
 		 * Date and time when the password reset token expires.
-		 * NULL means the token never expires (0 = no timeout was configured).
+		 * NULL means the token never expires (set when expiry is configured to 0).
 		 */
 		expiresAt: timestamp("expires_at", {
 			withTimezone: true,

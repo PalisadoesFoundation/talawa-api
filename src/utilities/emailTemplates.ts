@@ -104,5 +104,8 @@ export function formatExpiryTime(expirySeconds: number): string {
 	if (hours >= 1) {
 		return hours === 1 ? "1 hour" : `${hours} hours`;
 	}
-	return minutes === 1 ? "1 minute" : `${minutes} minutes`;
+
+	// Clamp sub-minute values to 1 minute to avoid "0 minutes"
+	const displayMinutes = Math.max(1, minutes);
+	return displayMinutes === 1 ? "1 minute" : `${displayMinutes} minutes`;
 }

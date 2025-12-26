@@ -14,6 +14,7 @@ import {
 } from "~/src/utilities/emailTemplates";
 import envConfig from "~/src/utilities/graphqLimits";
 import {
+	DEFAULT_ADMIN_PASSWORD_RESET_TOKEN_EXPIRES_SECONDS,
 	DEFAULT_USER_PASSWORD_RESET_TOKEN_EXPIRES_SECONDS,
 	generatePasswordResetToken,
 	hashPasswordResetToken,
@@ -84,11 +85,13 @@ builder.mutationField("requestPasswordReset", (t) =>
 				const rawToken = generatePasswordResetToken();
 				const tokenHash = hashPasswordResetToken(rawToken);
 
-				// Use user portal expiry for regular users (seconds)
-				// Admin portal expiry would be used for admin users (to be determined by user role)
-				const tokenExpiresInSeconds =
-					ctx.envConfig.API_PASSWORD_RESET_USER_TOKEN_EXPIRES_SECONDS ??
-					DEFAULT_USER_PASSWORD_RESET_TOKEN_EXPIRES_SECONDS;
+				// Determine expiry based on user role
+				const isAdmin = existingUser.role === "administrator";
+				const tokenExpiresInSeconds = isAdmin
+					? (ctx.envConfig.API_PASSWORD_RESET_ADMIN_TOKEN_EXPIRES_SECONDS ??
+						DEFAULT_ADMIN_PASSWORD_RESET_TOKEN_EXPIRES_SECONDS)
+					: (ctx.envConfig.API_PASSWORD_RESET_USER_TOKEN_EXPIRES_SECONDS ??
+						DEFAULT_USER_PASSWORD_RESET_TOKEN_EXPIRES_SECONDS);
 
 				// 0 = no timeout (token never expires)
 				const expiresAt =
