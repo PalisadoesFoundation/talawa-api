@@ -140,41 +140,6 @@ export async function emptyMinioBucket(): Promise<boolean> {
 }
 
 /**
- * Lists sample data files and their document counts in the sample_data directory.
- */
-export async function listSampleData(): Promise<boolean> {
-	try {
-		const sampleDataPath = path.resolve(dirname, "./sample_data");
-		const files = await fs.readdir(sampleDataPath);
-		console.log(files);
-		console.log("Sample Data Files:\n");
-
-		console.log(
-			`${"| File Name".padEnd(30)}| Document Count |
-${"|".padEnd(30, "-")}|----------------|
-`,
-		);
-
-		for (const file of files) {
-			const filePath = path.resolve(sampleDataPath, file);
-			const stats = await fs.stat(filePath);
-			if (stats.isFile()) {
-				const data = await fs.readFile(filePath, "utf8");
-				const docs = JSON.parse(data);
-				console.log(
-					`| ${file.padEnd(28)}| ${docs.length.toString().padEnd(15)}|`,
-				);
-			}
-		}
-		console.log();
-	} catch (err) {
-		throw new Error(`\x1b[31mError listing sample data: ${err}\x1b[0m`);
-	}
-
-	return true;
-}
-
-/**
  * Check database connection
  */
 

@@ -51,6 +51,11 @@ async function createTestOrganization(token: string) {
 			},
 		},
 	});
+	if (result.errors) {
+		throw new Error(
+			`Failed to create test organization: ${JSON.stringify(result.errors)}`,
+		);
+	}
 	const orgId = result.data?.createOrganization?.id;
 	assertToBeNonNullish(orgId);
 	return orgId;

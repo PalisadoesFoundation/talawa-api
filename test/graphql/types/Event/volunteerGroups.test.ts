@@ -20,6 +20,7 @@ const mockEvent = {
 	allDay: false,
 	isPublic: true,
 	isRegisterable: true,
+	isInviteOnly: false,
 	updaterId: null,
 	isRecurringEventTemplate: false,
 	attachments: [],
