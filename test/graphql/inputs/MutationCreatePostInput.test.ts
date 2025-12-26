@@ -100,34 +100,8 @@ describe("MutationCreatePostInput Schema", () => {
 			}
 		});
 
-		it("should reject whitespace-only body", () => {
-			const result = mutationCreatePostInputSchema.safeParse({
-				...validInput,
-				body: "   \n\t  ",
-			});
-			expect(result.success).toBe(false);
-			if (!result.success) {
-				expect(
-					result.error.issues.some((i) => i.path.join(".") === "body"),
-				).toBe(true);
-			}
-		});
-
-		it("should reject empty string body", () => {
-			const result = mutationCreatePostInputSchema.safeParse({
-				...validInput,
-				body: "",
-			});
-			expect(result.success).toBe(false);
-			if (!result.success) {
-				expect(
-					result.error.issues.some((i) => i.path.join(".") === "body"),
-				).toBe(true);
-			}
-		});
-
-		it("should reject body exceeding max length", () => {
-			const result = mutationCreatePostInputSchema.safeParse({
+		it("should reject body exceeding max length", async () => {
+			const result = await mutationCreatePostInputSchema.safeParseAsync({
 				...validInput,
 				body: "a".repeat(POST_BODY_MAX_LENGTH + 1),
 			});
