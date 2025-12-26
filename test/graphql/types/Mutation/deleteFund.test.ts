@@ -256,7 +256,7 @@ suite("deleteFund mutation", () => {
 		});
 
 		expect(result.errors).toBeUndefined();
-		expect(result.data?.deleteFund.id).toBe(fundId);
+		expect(result.data?.deleteFund?.id).toBe(fundId);
 
 		const rows = await server.drizzleClient
 			.select()
