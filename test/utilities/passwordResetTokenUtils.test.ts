@@ -1,4 +1,4 @@
-import { createHash } from "node:crypto";
+import { createHmac } from "node:crypto";
 import { afterEach, beforeEach, expect, suite, test, vi } from "vitest";
 import {
 	DEFAULT_USER_PASSWORD_RESET_TOKEN_EXPIRES_SECONDS,
@@ -60,12 +60,14 @@ suite("passwordResetTokenUtils", () => {
 	});
 
 	suite("hashPasswordResetToken", () => {
-		test("should return a SHA-256 hash of the token", () => {
+		test("should return a HMAC-SHA-256 hash of the token", () => {
 			const token = "test-token-123";
 			const hash = hashPasswordResetToken(token);
 
-			// Verify it matches Node's crypto SHA-256 hash
-			const expectedHash = createHash("sha256").update(token).digest("hex");
+			// Verify it matches Node's crypto HMAC-SHA-256 hash with the same key
+			const expectedHash = createHmac("sha256", "password-reset-token-key")
+				.update(token)
+				.digest("hex");
 			expect(hash).toBe(expectedHash);
 		});
 

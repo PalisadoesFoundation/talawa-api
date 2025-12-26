@@ -1,4 +1,4 @@
-import { createHash, randomBytes } from "node:crypto";
+import { createHmac, randomBytes } from "node:crypto";
 import { and, eq, isNull } from "drizzle-orm";
 import type { PostgresJsDatabase } from "drizzle-orm/postgres-js";
 import type * as schema from "~/src/drizzle/schema";
@@ -25,9 +25,9 @@ export function generatePasswordResetToken(): string {
 }
 
 /**
- * Creates a SHA-256 hash of a password reset token for secure storage.
+ * Creates a HMAC-SHA-256 hash of a password reset token for secure storage.
  *
- * Note: SHA-256 is appropriate here (not argon2/bcrypt) because:
+ * Note: HMAC-SHA-256 is appropriate here (not argon2/bcrypt) because:
  * - The token is cryptographically random (256 bits of entropy)
  * - Brute-force attacks are computationally infeasible
  * - This matches the pattern used for refresh tokens in this codebase
@@ -36,7 +36,10 @@ export function generatePasswordResetToken(): string {
  * @returns The hashed token
  */
 export function hashPasswordResetToken(token: string): string {
-	return createHash("sha256").update(token).digest("hex");
+	// Using HMAC with a static key since token itself has 256 bits of entropy
+	return createHmac("sha256", "password-reset-token-key")
+		.update(token)
+		.digest("hex");
 }
 
 /**
