@@ -1,6 +1,14 @@
 import { faker } from "@faker-js/faker";
 import { assertToBeNonNullish } from "test/helpers";
-import { afterAll, beforeAll, expect, suite, test, vi } from "vitest";
+import {
+	afterAll,
+	afterEach,
+	beforeAll,
+	expect,
+	suite,
+	test,
+	vi,
+} from "vitest";
 import type {
 	ForbiddenActionExtensions,
 	TalawaGraphQLFormattedError,
@@ -71,6 +79,10 @@ suite("Mutation field requestPasswordReset", () => {
 				},
 			},
 		});
+	});
+
+	afterEach(() => {
+		vi.restoreAllMocks();
 	});
 
 	suite(
@@ -306,9 +318,9 @@ suite("Mutation field requestPasswordReset", () => {
 				server.envConfig.API_PASSWORD_RESET_ADMIN_TOKEN_EXPIRES_SECONDS;
 
 			// Temporarily set to undefined to trigger fallback (line 92)
-			// biome-ignore lint/suspicious/noExplicitAny: Testing fallback behavior
-			(server.envConfig as any).API_PASSWORD_RESET_ADMIN_TOKEN_EXPIRES_SECONDS =
-				undefined;
+			(
+				server.envConfig as Record<string, unknown>
+			).API_PASSWORD_RESET_ADMIN_TOKEN_EXPIRES_SECONDS = undefined;
 
 			try {
 				const result = await mercuriusClient.mutate(
@@ -327,9 +339,8 @@ suite("Mutation field requestPasswordReset", () => {
 				expect(result.data.requestPasswordReset?.success).toBe(true);
 			} finally {
 				// Restore original value
-				// biome-ignore lint/suspicious/noExplicitAny: Restoring test config
 				(
-					server.envConfig as any
+					server.envConfig as Record<string, unknown>
 				).API_PASSWORD_RESET_ADMIN_TOKEN_EXPIRES_SECONDS = originalValue;
 			}
 		});
@@ -344,9 +355,9 @@ suite("Mutation field requestPasswordReset", () => {
 				server.envConfig.API_PASSWORD_RESET_USER_TOKEN_EXPIRES_SECONDS;
 
 			// Temporarily set to undefined to trigger fallback (line 94)
-			// biome-ignore lint/suspicious/noExplicitAny: Testing fallback behavior
-			(server.envConfig as any).API_PASSWORD_RESET_USER_TOKEN_EXPIRES_SECONDS =
-				undefined;
+			(
+				server.envConfig as Record<string, unknown>
+			).API_PASSWORD_RESET_USER_TOKEN_EXPIRES_SECONDS = undefined;
 
 			try {
 				const result = await mercuriusClient.mutate(
@@ -364,9 +375,8 @@ suite("Mutation field requestPasswordReset", () => {
 				expect(result.data.requestPasswordReset?.success).toBe(true);
 			} finally {
 				// Restore original value
-				// biome-ignore lint/suspicious/noExplicitAny: Restoring test config
 				(
-					server.envConfig as any
+					server.envConfig as Record<string, unknown>
 				).API_PASSWORD_RESET_USER_TOKEN_EXPIRES_SECONDS = originalValue;
 			}
 		});
@@ -381,9 +391,9 @@ suite("Mutation field requestPasswordReset", () => {
 				server.envConfig.API_PASSWORD_RESET_USER_TOKEN_EXPIRES_SECONDS;
 
 			// Set to 0 to trigger the "never expires" branch (line 99)
-			// biome-ignore lint/suspicious/noExplicitAny: Testing zero expiry behavior
-			(server.envConfig as any).API_PASSWORD_RESET_USER_TOKEN_EXPIRES_SECONDS =
-				0;
+			(
+				server.envConfig as Record<string, unknown>
+			).API_PASSWORD_RESET_USER_TOKEN_EXPIRES_SECONDS = 0;
 
 			try {
 				const result = await mercuriusClient.mutate(
@@ -401,9 +411,8 @@ suite("Mutation field requestPasswordReset", () => {
 				expect(result.data.requestPasswordReset?.success).toBe(true);
 			} finally {
 				// Restore original value
-				// biome-ignore lint/suspicious/noExplicitAny: Restoring test config
 				(
-					server.envConfig as any
+					server.envConfig as Record<string, unknown>
 				).API_PASSWORD_RESET_USER_TOKEN_EXPIRES_SECONDS = originalValue;
 			}
 		});

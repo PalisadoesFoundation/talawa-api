@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { type EmailJob, EmailService } from "~/src/services/ses/EmailService";
 
 // Minimal config for tests
@@ -16,6 +16,7 @@ function buildJob(overrides: Partial<EmailJob> = {}): EmailJob {
 		subject: overrides.subject || "Subject",
 		htmlBody: overrides.htmlBody || "<p>Body</p>",
 		userId: overrides.userId || "user-1",
+		...(overrides.textBody ? { textBody: overrides.textBody } : {}),
 	};
 }
 
@@ -24,6 +25,10 @@ describe("EmailService", () => {
 
 	beforeEach(() => {
 		service = new EmailService(config);
+	});
+
+	afterEach(() => {
+		vi.restoreAllMocks();
 	});
 
 	it("sends a single email successfully", async () => {
@@ -172,5 +177,143 @@ describe("EmailService", () => {
 		expect(results).toHaveLength(1);
 		expect(results[0]?.success).toBe(true);
 		expect(sendMock).toHaveBeenCalledTimes(1);
+	});
+
+	/**
+	 * Test: Credential validation (lines 56-61)
+	 * Verifies that both accessKeyId and secretAccessKey must be provided together
+	 */
+	it("throws error when only accessKeyId is provided without secretAccessKey", async () => {
+		const servicePartialCreds = new EmailService({
+			region: "us-east-1",
+			fromEmail: "test@example.com",
+			accessKeyId: "AKIATEST123",
+			// secretAccessKey intentionally omitted
+		});
+
+		// We need to call getSesArtifacts directly to trigger the credential validation
+		// Since getSesArtifacts is private, we trigger it via sendEmail
+		const result = await servicePartialCreds.sendEmail(buildJob());
+
+		expect(result.success).toBe(false);
+		expect(result.error).toContain(
+			"Both accessKeyId and secretAccessKey must be provided together",
+		);
+	});
+
+	it("throws error when only secretAccessKey is provided without accessKeyId", async () => {
+		const servicePartialCreds = new EmailService({
+			region: "us-east-1",
+			fromEmail: "test@example.com",
+			// accessKeyId intentionally omitted
+			secretAccessKey: "testSecretKey123",
+		});
+
+		const result = await servicePartialCreds.sendEmail(buildJob());
+
+		expect(result.success).toBe(false);
+		expect(result.error).toContain(
+			"Both accessKeyId and secretAccessKey must be provided together",
+		);
+	});
+
+	/**
+	 * Test: Optional textBody handling (lines 118-120)
+	 * Verifies that textBody is included in the email when provided
+	 */
+	it("includes textBody in email message when provided", async () => {
+		const sendMock = vi.fn().mockResolvedValue({ MessageId: "text-body-test" });
+		vi.spyOn(
+			service as unknown as { getSesArtifacts: () => Promise<unknown> },
+			"getSesArtifacts",
+		).mockResolvedValue({
+			client: { send: sendMock },
+			SendEmailCommand: (input: unknown) => ({ __cmd: true, input }),
+		});
+
+		await service.sendEmail(
+			buildJob({
+				id: "with-text",
+				textBody: "Plain text version of the email",
+			}),
+		);
+
+		const callArg = sendMock.mock.calls[0]?.[0] as {
+			input?: {
+				Message?: {
+					Body?: {
+						Html?: { Data: string };
+						Text?: { Data: string };
+					};
+				};
+			};
+		};
+
+		// Verify Html body is present
+		expect(callArg?.input?.Message?.Body?.Html?.Data).toBe("<p>Body</p>");
+		// Verify Text body is present when textBody is provided
+		expect(callArg?.input?.Message?.Body?.Text?.Data).toBe(
+			"Plain text version of the email",
+		);
+	});
+
+	it("omits Text body when textBody is not provided", async () => {
+		const sendMock = vi.fn().mockResolvedValue({ MessageId: "no-text-body" });
+		vi.spyOn(
+			service as unknown as { getSesArtifacts: () => Promise<unknown> },
+			"getSesArtifacts",
+		).mockResolvedValue({
+			client: { send: sendMock },
+			SendEmailCommand: (input: unknown) => ({ __cmd: true, input }),
+		});
+
+		// buildJob() doesn't include textBody by default
+		await service.sendEmail(buildJob({ id: "without-text" }));
+
+		const callArg = sendMock.mock.calls[0]?.[0] as {
+			input?: {
+				Message?: {
+					Body?: {
+						Html?: { Data: string };
+						Text?: { Data: string };
+					};
+				};
+			};
+		};
+
+		// Verify Html body is present
+		expect(callArg?.input?.Message?.Body?.Html?.Data).toBe("<p>Body</p>");
+		// Verify Text body is NOT present
+		expect(callArg?.input?.Message?.Body?.Text).toBeUndefined();
+	});
+
+	/**
+	 * Test: Undefined/null job handling (line 143)
+	 * Verifies that sendBulkEmails skips undefined or null jobs
+	 */
+	it("sendBulkEmails skips undefined jobs in array", async () => {
+		const sendMock = vi.fn().mockResolvedValue({ MessageId: "valid-job" });
+		vi.spyOn(
+			service as unknown as { getSesArtifacts: () => Promise<unknown> },
+			"getSesArtifacts",
+		).mockResolvedValue({
+			client: { send: sendMock },
+			SendEmailCommand: (input: unknown) => ({ __cmd: true, input }),
+		});
+
+		// Create array with undefined values mixed with valid jobs
+		const jobs = [
+			buildJob({ id: "first" }),
+			undefined as unknown as EmailJob,
+			buildJob({ id: "third" }),
+		];
+
+		const results = await service.sendBulkEmails(jobs);
+
+		// Should only have 2 results (skipping undefined)
+		expect(results).toHaveLength(2);
+		expect(results[0]?.id).toBe("first");
+		expect(results[1]?.id).toBe("third");
+		expect(sendMock).toHaveBeenCalledTimes(2);
 	});
 });
