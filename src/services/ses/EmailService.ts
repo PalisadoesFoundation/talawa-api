@@ -89,6 +89,10 @@ export class EmailService {
 	 */
 	async sendEmail(job: EmailJob): Promise<EmailResult> {
 		try {
+			if (!this.config.fromEmail) {
+				throw new Error("AWS_SES_FROM_EMAIL is required for email service");
+			}
+
 			const { client, SendEmailCommand } = await this.getSesArtifacts();
 
 			const fromAddress = this.config.fromName

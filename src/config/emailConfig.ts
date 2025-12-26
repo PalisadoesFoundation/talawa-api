@@ -21,7 +21,7 @@ const envConfig = envSchema<Static<typeof schema>>({
  */
 export const emailConfig = {
 	region: envConfig.AWS_SES_REGION || "ap-south-1",
-	fromEmail: envConfig.AWS_SES_FROM_EMAIL as string,
+	fromEmail: envConfig.AWS_SES_FROM_EMAIL,
 	fromName: envConfig.AWS_SES_FROM_NAME || "Talawa",
 	accessKeyId: envConfig.AWS_ACCESS_KEY_ID,
 	secretAccessKey: envConfig.AWS_SECRET_ACCESS_KEY,

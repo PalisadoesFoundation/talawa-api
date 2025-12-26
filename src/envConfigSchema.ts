@@ -164,11 +164,9 @@ export const envConfigSchema = Type.Object({
 	/**
 	 * Verified email address to send emails from in AWS SES.
 	 */
-	AWS_SES_FROM_EMAIL: Type.Optional(
-		Type.String({
-			format: "email",
-		}),
-	),
+	AWS_SES_FROM_EMAIL: Type.String({
+		format: "email",
+	}),
 	/**
 	 * Display name for the sender in emails.
 	 */
