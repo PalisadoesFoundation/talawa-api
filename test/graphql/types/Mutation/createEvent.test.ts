@@ -194,7 +194,7 @@ suite("Mutation field createEvent", () => {
 	suite("Input Validation", () => {
 		test("should not allow events ending before they start", async () => {
 			const organizationId = await createTestOrganization();
-			// Test fails when recurrence validation ran first
+			// Ensure endAt < startAt validation runs before recurrence validation so this test targets endAt validation error
 			const result = await createEvent({
 				input: {
 					...baseEventInput(organizationId),
@@ -235,7 +235,7 @@ suite("Mutation field createEvent", () => {
 
 		test("should not allow scheduling events in the past", async () => {
 			const organizationId = await createTestOrganization();
-			// If someone creates an event for yesterday by mistake
+
 			const result = await createEvent({
 				input: {
 					...baseEventInput(organizationId),
@@ -270,7 +270,7 @@ suite("Mutation field createEvent", () => {
 
 		test("should require end condition for recurring events", async () => {
 			const organizationId = await createTestOrganization();
-			// Without count or endDate, this would create infinite events
+			// Recurrence requires either count or endDate to prevent infinite event generation
 			const result = await createEvent({
 				input: {
 					...baseEventInput(organizationId),
@@ -465,7 +465,7 @@ suite("Mutation field createEvent", () => {
 				path: ["createEvent"],
 			});
 
-			// Testing with too many files - should also fail with GraphQL validation error
+			// Verify rejection when attachment count exceeds the maximum limit
 			const tooManyFiles = Array.from({ length: 21 }, (_, i) =>
 				Promise.resolve({
 					filename: `test${i}.png`,
