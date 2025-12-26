@@ -396,6 +396,7 @@ export const Query_fundCampaign =
       id
       name
       goalAmount
+      amountRaised
     }
   }`);
 

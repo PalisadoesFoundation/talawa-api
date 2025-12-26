@@ -1,6 +1,8 @@
+import { eq, sql } from "drizzle-orm";
 import { uuidv7 } from "uuidv7";
 import { z } from "zod";
 import { fundCampaignPledgesTable } from "~/src/drizzle/tables/fundCampaignPledges";
+import { fundCampaignsTable } from "~/src/drizzle/tables/fundCampaigns";
 import { builder } from "~/src/graphql/builder";
 import {
 	MutationCreateFundCampaignPledgeInput,
@@ -254,6 +256,13 @@ builder.mutationField("createFundCampaignPledge", (t) =>
 				},
 				ctx,
 			);
+
+			await ctx.drizzleClient
+				.update(fundCampaignsTable)
+				.set({
+					amountRaised: sql`${fundCampaignsTable.amountRaised} + ${parsedArgs.input.amount}`,
+				})
+				.where(eq(fundCampaignsTable.id, parsedArgs.input.campaignId));
 
 			return createdFundCampaignPledge;
 		},

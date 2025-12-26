@@ -1,6 +1,7 @@
-import { eq } from "drizzle-orm";
+import { eq, sql } from "drizzle-orm";
 import { z } from "zod";
 import { fundCampaignPledgesTable } from "~/src/drizzle/tables/fundCampaignPledges";
+import { fundCampaignsTable } from "~/src/drizzle/tables/fundCampaigns";
 import { builder } from "~/src/graphql/builder";
 import {
 	MutationUpdateFundCampaignPledgeInput,
@@ -64,6 +65,8 @@ builder.mutationField("updateFundCampaignPledge", (t) =>
 				ctx.drizzleClient.query.fundCampaignPledgesTable.findFirst({
 					columns: {
 						pledgerId: true,
+						amount: true,
+						campaignId: true,
 					},
 					with: {
 						campaign: {
@@ -152,6 +155,22 @@ builder.mutationField("updateFundCampaignPledge", (t) =>
 				})
 				.where(eq(fundCampaignPledgesTable.id, parsedArgs.input.id))
 				.returning();
+
+			if (
+				parsedArgs.input.amount !== undefined &&
+				parsedArgs.input.amount !== existingFundCampaignPledge.amount
+			) {
+				const amountDiff =
+					parsedArgs.input.amount - existingFundCampaignPledge.amount;
+				await ctx.drizzleClient
+					.update(fundCampaignsTable)
+					.set({
+						amountRaised: sql`${fundCampaignsTable.amountRaised} + ${amountDiff}`,
+					})
+					.where(
+						eq(fundCampaignsTable.id, existingFundCampaignPledge.campaignId),
+					);
+			}
 
 			// Updated fund campaign pledge not being returned means that either it was deleted or its `id` column was changed by external entities before this update operation could take place.
 			if (updatedFundCampaignPledge === undefined) {
