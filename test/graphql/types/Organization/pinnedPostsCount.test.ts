@@ -150,14 +150,6 @@ suite("Organization pinnedPostsCount Field", () => {
 							caption,
 							organizationId: orgId,
 							isPinned: true,
-							attachments: [
-								{
-									mimetype: "IMAGE_PNG",
-									objectName: faker.string.uuid(),
-									name: "image.png",
-									fileHash: faker.string.uuid(),
-								},
-							],
 						},
 					},
 				},
