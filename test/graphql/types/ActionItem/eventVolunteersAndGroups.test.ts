@@ -39,7 +39,9 @@ describe("resolveVolunteer", () => {
 			},
 			// Add the missing properties from ExplicitGraphQLContext
 			currentClient: {},
-			envConfig: {},
+			envConfig: {
+				AWS_SES_FROM_EMAIL: "noreply@test.com",
+			},
 			jwt: {},
 			miniots: {},
 		} as unknown as GraphQLContext;
@@ -181,7 +183,9 @@ describe("resolveVolunteerGroup", () => {
 			},
 			// Add the missing properties from ExplicitGraphQLContext
 			currentClient: {},
-			envConfig: {},
+			envConfig: {
+				AWS_SES_FROM_EMAIL: "noreply@test.com",
+			},
 			jwt: {},
 			miniots: {},
 		} as unknown as GraphQLContext;

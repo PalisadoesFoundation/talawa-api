@@ -62,6 +62,7 @@ export function createMockGraphQLContext(
 			API_COOKIE_DOMAIN: undefined,
 			API_IS_SECURE_COOKIES: false,
 			FRONTEND_URL: "http://localhost:3000",
+			AWS_SES_FROM_EMAIL: "noreply@test.com",
 		},
 		jwt: {
 			sign: mockJwtSign,

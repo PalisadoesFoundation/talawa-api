@@ -8,7 +8,9 @@ vi.mock("postgres", () => ({
 
 vi.mock("~/src/server", () => ({
 	server: {
-		envConfig: {},
+		envConfig: {
+			AWS_SES_FROM_EMAIL: "noreply@test.com",
+		},
 		minio: { client: { putObject: vi.fn() } },
 	},
 }));
