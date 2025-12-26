@@ -85,6 +85,12 @@ async function createOrganization(adminAuthToken: string): Promise<string> {
 		},
 	);
 
+	if (createOrgResult.errors) {
+		throw new Error(
+			`Organization creation failed: ${JSON.stringify(createOrgResult.errors)}`,
+		);
+	}
+
 	assertToBeNonNullish(createOrgResult.data?.createOrganization?.id);
 	return createOrgResult.data.createOrganization.id;
 }
@@ -96,16 +102,25 @@ async function addOrganizationMembership(params: {
 	organizationId: string;
 	role: "administrator" | "regular";
 }) {
-	await mercuriusClient.mutate(Mutation_createOrganizationMembership, {
-		headers: { authorization: `bearer ${params.adminAuthToken}` },
-		variables: {
-			input: {
-				memberId: params.memberId,
-				organizationId: params.organizationId,
-				role: params.role,
+	const result = await mercuriusClient.mutate(
+		Mutation_createOrganizationMembership,
+		{
+			headers: { authorization: `bearer ${params.adminAuthToken}` },
+			variables: {
+				input: {
+					memberId: params.memberId,
+					organizationId: params.organizationId,
+					role: params.role,
+				},
 			},
 		},
-	});
+	);
+
+	if (result.errors) {
+		throw new Error(
+			`Organization membership creation failed: ${JSON.stringify(result.errors)}`,
+		);
+	}
 }
 
 suite("Mutation field createTagFolder", () => {
