@@ -1655,9 +1655,6 @@ suite("Mutation field updateCurrentUser", () => {
 			expect(
 				updateCurrentUserResult.data.updateCurrentUser?.naturalLanguageCode,
 			).toBe(comprehensiveTestData.naturalLanguageCode);
-			expect(
-				updateCurrentUserResult.data.updateCurrentUser?.naturalLanguageCode,
-			).toBe("fr");
 
 			// Verify avatar fields are properly set and valid
 			expect(
@@ -1669,9 +1666,6 @@ suite("Mutation field updateCurrentUser", () => {
 			expect(updateCurrentUserResult.data.updateCurrentUser?.avatarURL).toMatch(
 				/\/objects\/[a-zA-Z0-9]+$/,
 			);
-			expect(
-				updateCurrentUserResult.data.updateCurrentUser?.avatarURL,
-			).toContain("/objects/");
 
 			// Verify minio putObject was called for avatar upload
 			expect(server.minio.client.putObject).toHaveBeenCalled();
