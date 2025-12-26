@@ -351,6 +351,27 @@ suite("Mutation field refreshToken", () => {
 			);
 		});
 
+		test("should return unauthenticated error when no refresh token is provided (neither arg nor cookie)", async () => {
+			// Ensure no cookies are sent by using a fresh request without variables
+			// Note: mercuriusClient might persist cookies if not careful, but usually it doesn't across tests unless explicitly set
+			const result = await mercuriusClient.mutate(Mutation_refreshToken, {
+				variables: {},
+			});
+
+			expect(result.data?.refreshToken).toBeNull();
+			expect(result.errors).toBeDefined();
+			expect(result.errors?.length).toBeGreaterThan(0);
+
+			const error = result
+				.errors?.[0] as unknown as TalawaGraphQLFormattedError;
+			expect((error.extensions as UnauthenticatedExtensions).code).toBe(
+				"unauthenticated",
+			);
+			expect(error.message).toBe(
+				"Refresh token is required. Provide it as an argument or via HTTP-Only cookie.",
+			);
+		});
+
 		test("should return unauthenticated error when user has been deleted (cascades to delete tokens)", async () => {
 			// Get admin auth token first
 			const adminSignIn = await mercuriusClient.query(Query_signIn, {
