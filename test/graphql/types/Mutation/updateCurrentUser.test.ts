@@ -3,8 +3,6 @@ import type { ResultOf, VariablesOf } from "gql.tada";
 import type { Client } from "minio";
 import { afterEach, expect, suite, test, vi } from "vitest";
 
-type UploadedObjectInfo = Awaited<ReturnType<Client["putObject"]>>;
-
 import type {
 	ForbiddenActionOnArgumentsAssociatedResourcesExtensions,
 	InvalidArgumentsExtensions,
@@ -21,10 +19,14 @@ import {
 	Query_signIn,
 } from "../documentNodes";
 
+// Extract the return type of putObject from the minio Client
+type UploadedObjectInfo = Awaited<ReturnType<Client["putObject"]>>;
+
 suite("Mutation field updateCurrentUser", () => {
 	afterEach(() => {
 		vi.restoreAllMocks();
 	});
+
 	suite(
 		`results in a graphql error with "unauthenticated" extensions code in the "errors" field and "null" as the value of "data.updateCurrentUser" field if`,
 		() => {
@@ -913,9 +915,28 @@ suite("Mutation field updateCurrentUser", () => {
 			expect(updateCurrentUserResult.data.updateCurrentUser).toEqual(
 				expect.objectContaining({
 					name: updatedName,
+					avatarMimeType: "image/jpeg",
+					avatarURL: expect.stringContaining("/objects/"),
 				}),
 			);
 			expect(putObjectSpy).toHaveBeenCalled();
+
+			// Verify avatar fields are properly set and valid
+			expect(
+				updateCurrentUserResult.data.updateCurrentUser?.avatarMimeType,
+			).toBe("image/jpeg");
+			expect(
+				updateCurrentUserResult.data.updateCurrentUser?.avatarURL,
+			).toBeDefined();
+			expect(
+				updateCurrentUserResult.data.updateCurrentUser?.avatarURL,
+			).toBeTypeOf("string");
+			expect(
+				updateCurrentUserResult.data.updateCurrentUser?.avatarURL,
+			).not.toBe("");
+			expect(updateCurrentUserResult.data.updateCurrentUser?.avatarURL).toMatch(
+				/\/objects\/[a-zA-Z0-9]+$/,
+			);
 		});
 
 		test("should remove existing avatar when avatar is set to null", async () => {
@@ -971,16 +992,39 @@ suite("Mutation field updateCurrentUser", () => {
 				etag: "mock-etag",
 			} as UploadedObjectInfo);
 
-			await mercuriusClient.mutate(Mutation_updateCurrentUser, {
-				headers: {
-					authorization: `bearer ${createUserResult.data.createUser.authenticationToken}`,
-				},
-				variables: {
-					input: {
-						avatar: validAvatar,
+			const initialAvatarUploadResult = await mercuriusClient.mutate(
+				Mutation_updateCurrentUser,
+				{
+					headers: {
+						authorization: `bearer ${createUserResult.data.createUser.authenticationToken}`,
+					},
+					variables: {
+						input: {
+							avatar: validAvatar,
+						},
 					},
 				},
-			});
+			);
+
+			// Verify the avatar upload succeeded before testing removal
+			expect(initialAvatarUploadResult.errors).toBeUndefined();
+			expect(initialAvatarUploadResult.data.updateCurrentUser).toEqual(
+				expect.objectContaining({
+					avatarMimeType: "image/jpeg",
+					avatarURL: expect.stringContaining("/objects/"),
+				}),
+			);
+			expect(
+				initialAvatarUploadResult.data.updateCurrentUser?.avatarURL,
+			).toBeDefined();
+			expect(
+				initialAvatarUploadResult.data.updateCurrentUser?.avatarURL,
+			).toBeTypeOf("string");
+			expect(
+				initialAvatarUploadResult.data.updateCurrentUser?.avatarURL,
+			).not.toBe("");
+			// Verify putObject was called for the upload
+			expect(server.minio.client.putObject).toHaveBeenCalled();
 
 			// Mock removeObject
 			const removeObjectSpy = vi
@@ -1008,6 +1052,8 @@ suite("Mutation field updateCurrentUser", () => {
 			expect(updateCurrentUserResult.data.updateCurrentUser).toEqual(
 				expect.objectContaining({
 					name: updatedNameWithoutAvatar,
+					avatarMimeType: null,
+					avatarURL: null,
 				}),
 			);
 			expect(removeObjectSpy).toHaveBeenCalled();
@@ -1065,18 +1111,33 @@ suite("Mutation field updateCurrentUser", () => {
 				etag: "mock-etag",
 			} as UploadedObjectInfo);
 
-			await mercuriusClient.mutate(Mutation_updateCurrentUser, {
-				headers: {
-					authorization: `bearer ${createUserResult.data.createUser.authenticationToken}`,
-				},
-				variables: {
-					input: {
-						avatar: firstAvatar,
+			const firstAvatarUploadResult = await mercuriusClient.mutate(
+				Mutation_updateCurrentUser,
+				{
+					headers: {
+						authorization: `bearer ${createUserResult.data.createUser.authenticationToken}`,
+					},
+					variables: {
+						input: {
+							avatar: firstAvatar,
+						},
 					},
 				},
-			});
+			);
 
-			// Second upload (should reuse existing avatar name)
+			// Verify the first avatar upload succeeded before testing replacement
+			expect(firstAvatarUploadResult.errors).toBeUndefined();
+			expect(firstAvatarUploadResult.data.updateCurrentUser).toEqual(
+				expect.objectContaining({
+					avatarMimeType: "image/jpeg",
+					avatarURL: expect.stringContaining("/objects/"),
+				}),
+			);
+			expect(
+				firstAvatarUploadResult.data.updateCurrentUser?.avatarURL,
+			).toBeDefined();
+
+			// Second upload replaces existing avatar using same storage key
 			const secondAvatar = Promise.resolve({
 				filename: `${faker.system.fileName()}.jpg`,
 				mimetype: "image/png",
@@ -1105,9 +1166,12 @@ suite("Mutation field updateCurrentUser", () => {
 			);
 
 			expect(updateCurrentUserResult.errors).toBeUndefined();
+			expect(updateCurrentUserResult.errors).toBeUndefined();
 			expect(updateCurrentUserResult.data.updateCurrentUser).toEqual(
 				expect.objectContaining({
 					name: secondUpdatedName,
+					avatarMimeType: "image/png",
+					avatarURL: expect.stringContaining("/objects/"),
 				}),
 			);
 			expect(putObjectSpy).toHaveBeenCalled();
@@ -1155,7 +1219,7 @@ suite("Mutation field updateCurrentUser", () => {
 				createUserResult.data.createUser?.authenticationToken,
 			);
 
-			// Mock the transaction to simulate update returning undefined
+			// Mock the transaction to simulate database update failure
 			vi.spyOn(server.drizzleClient, "transaction").mockImplementation(
 				async (callback) => {
 					const mockTx = {
@@ -1163,7 +1227,7 @@ suite("Mutation field updateCurrentUser", () => {
 						update: vi.fn().mockReturnValue({
 							set: vi.fn().mockReturnValue({
 								where: vi.fn().mockReturnValue({
-									returning: vi.fn().mockResolvedValue([]), // Empty array simulates undefined user
+									returning: vi.fn().mockResolvedValue([]), // Empty array indicates no user was found/updated
 								}),
 							}),
 						}),
@@ -1221,6 +1285,8 @@ suite("Mutation field updateCurrentUser", () => {
 				administratorUserSignInResult.data.signIn?.authenticationToken,
 			);
 
+			const originalPassword = faker.internet.password();
+			const userEmail = `emailAddress${faker.string.ulid()}@email.com`;
 			const createUserResult = await mercuriusClient.mutate(
 				Mutation_createUser,
 				{
@@ -1229,10 +1295,10 @@ suite("Mutation field updateCurrentUser", () => {
 					},
 					variables: {
 						input: {
-							emailAddress: `emailAddress${faker.string.ulid()}@email.com`,
+							emailAddress: userEmail,
 							isEmailAddressVerified: false,
-							name: "name",
-							password: "password",
+							name: faker.person.fullName(),
+							password: originalPassword,
 							role: "regular",
 						},
 					},
@@ -1266,6 +1332,50 @@ suite("Mutation field updateCurrentUser", () => {
 					name: passwordTestName,
 				}),
 			);
+
+			// Verify password hashing: new password should work for sign in
+			const signInWithNewPasswordResult = await mercuriusClient.query(
+				Query_signIn,
+				{
+					variables: {
+						input: {
+							emailAddress: userEmail,
+							password: newPassword,
+						},
+					},
+				},
+			);
+
+			expect(signInWithNewPasswordResult.errors).toBeUndefined();
+			expect(
+				signInWithNewPasswordResult.data.signIn?.authenticationToken,
+			).toBeDefined();
+
+			// Verify old password no longer works
+			const signInWithOldPasswordResult = await mercuriusClient.query(
+				Query_signIn,
+				{
+					variables: {
+						input: {
+							emailAddress: userEmail,
+							password: originalPassword,
+						},
+					},
+				},
+			);
+
+			expect(signInWithOldPasswordResult.data.signIn).toEqual(null);
+			expect(signInWithOldPasswordResult.errors).toEqual(
+				expect.arrayContaining<TalawaGraphQLFormattedError>([
+					expect.objectContaining<TalawaGraphQLFormattedError>({
+						extensions: expect.objectContaining<UnauthenticatedExtensions>({
+							code: "unauthenticated",
+						}),
+						message: expect.any(String),
+						path: ["signIn"],
+					}),
+				]),
+			);
 		});
 
 		test("should not hash password when not provided", async () => {
@@ -1286,6 +1396,8 @@ suite("Mutation field updateCurrentUser", () => {
 				administratorUserSignInResult.data.signIn?.authenticationToken,
 			);
 
+			const originalPassword = faker.internet.password();
+			const userEmail = `emailAddress${faker.string.ulid()}@email.com`;
 			const createUserResult = await mercuriusClient.mutate(
 				Mutation_createUser,
 				{
@@ -1294,10 +1406,10 @@ suite("Mutation field updateCurrentUser", () => {
 					},
 					variables: {
 						input: {
-							emailAddress: `emailAddress${faker.string.ulid()}@email.com`,
+							emailAddress: userEmail,
 							isEmailAddressVerified: false,
-							name: "name",
-							password: "password",
+							name: faker.person.fullName(),
+							password: originalPassword,
 							role: "regular",
 						},
 					},
@@ -1329,6 +1441,24 @@ suite("Mutation field updateCurrentUser", () => {
 					name: nameOnlyTestName,
 				}),
 			);
+
+			// Verify password was not changed: original password should still work
+			const signInWithOriginalPasswordResult = await mercuriusClient.query(
+				Query_signIn,
+				{
+					variables: {
+						input: {
+							emailAddress: userEmail,
+							password: originalPassword,
+						},
+					},
+				},
+			);
+
+			expect(signInWithOriginalPasswordResult.errors).toBeUndefined();
+			expect(
+				signInWithOriginalPasswordResult.data.signIn?.authenticationToken,
+			).toBeDefined();
 		});
 	});
 
@@ -1393,8 +1523,17 @@ suite("Mutation field updateCurrentUser", () => {
 			expect(updateCurrentUserResult.data.updateCurrentUser).toEqual(
 				expect.objectContaining({
 					name: languageTestName,
+					naturalLanguageCode: "es",
 				}),
 			);
+
+			// Verify naturalLanguageCode field was actually updated and returned
+			expect(
+				updateCurrentUserResult.data.updateCurrentUser?.naturalLanguageCode,
+			).toBeDefined();
+			expect(
+				updateCurrentUserResult.data.updateCurrentUser?.naturalLanguageCode,
+			).toBe("es");
 		});
 	});
 
@@ -1453,7 +1592,7 @@ suite("Mutation field updateCurrentUser", () => {
 			const comprehensiveTestData = {
 				addressLine1: faker.location.streetAddress(),
 				addressLine2: faker.location.secondaryAddress(),
-				birthDate: faker.date.birthdate().toISOString().split('T')[0],
+				birthDate: faker.date.birthdate().toISOString().split("T")[0],
 				city: faker.location.city(),
 				countryCode: "ca" as const,
 				description: faker.lorem.paragraph(),
@@ -1492,6 +1631,8 @@ suite("Mutation field updateCurrentUser", () => {
 				expect.objectContaining({
 					addressLine1: comprehensiveTestData.addressLine1,
 					addressLine2: comprehensiveTestData.addressLine2,
+					avatarMimeType: "image/jpeg",
+					avatarURL: expect.stringContaining("/objects/"),
 					birthDate: comprehensiveTestData.birthDate,
 					city: comprehensiveTestData.city,
 					countryCode: comprehensiveTestData.countryCode,
@@ -1504,11 +1645,37 @@ suite("Mutation field updateCurrentUser", () => {
 					mobilePhoneNumber: comprehensiveTestData.mobilePhoneNumber,
 					name: comprehensiveTestData.name,
 					natalSex: comprehensiveTestData.natalSex,
+					naturalLanguageCode: comprehensiveTestData.naturalLanguageCode,
 					postalCode: comprehensiveTestData.postalCode,
 					state: comprehensiveTestData.state,
 					workPhoneNumber: comprehensiveTestData.workPhoneNumber,
 				}),
 			);
+
+			// Additional explicit assertions for naturalLanguageCode and avatar persistence
+			expect(
+				updateCurrentUserResult.data.updateCurrentUser?.naturalLanguageCode,
+			).toBe(comprehensiveTestData.naturalLanguageCode);
+			expect(
+				updateCurrentUserResult.data.updateCurrentUser?.naturalLanguageCode,
+			).toBe("fr");
+
+			// Verify avatar fields are properly set and valid
+			expect(
+				updateCurrentUserResult.data.updateCurrentUser?.avatarMimeType,
+			).toBe("image/jpeg");
+			expect(
+				updateCurrentUserResult.data.updateCurrentUser?.avatarURL,
+			).toBeDefined();
+			expect(updateCurrentUserResult.data.updateCurrentUser?.avatarURL).toMatch(
+				/\/objects\/[a-zA-Z0-9]+$/,
+			);
+			expect(
+				updateCurrentUserResult.data.updateCurrentUser?.avatarURL,
+			).toContain("/objects/");
+
+			// Verify minio putObject was called for avatar upload
+			expect(server.minio.client.putObject).toHaveBeenCalled();
 		});
 	});
 });
