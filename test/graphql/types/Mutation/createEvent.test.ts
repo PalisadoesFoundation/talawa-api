@@ -1,7 +1,7 @@
 import { faker } from "@faker-js/faker";
 import type { ResultOf, VariablesOf } from "gql.tada";
 import type { ExecutionResult } from "graphql";
-import { expect, suite, test, vi } from "vitest";
+import { afterEach, expect, suite, test, vi } from "vitest";
 import { recurrenceRulesTable } from "~/src/drizzle/tables/recurrenceRules";
 import { mutationCreateEventArgumentsSchema } from "~/src/graphql/types/Mutation/createEvent";
 import type {
@@ -121,6 +121,10 @@ const expectSuccessfulEvent = (
 };
 
 suite("Mutation field createEvent", () => {
+	afterEach(() => {
+		vi.restoreAllMocks();
+	});
+
 	suite("Authentication and Authorization", () => {
 		test("should reject unauthenticated requests", async () => {
 			const result = await createEvent(
@@ -190,7 +194,6 @@ suite("Mutation field createEvent", () => {
 	suite("Input Validation", () => {
 		test("should not allow events ending before they start", async () => {
 			const organizationId = await createTestOrganization();
-
 			// Test fails when recurrence validation ran first
 			const result = await createEvent({
 				input: {
@@ -743,8 +746,6 @@ suite("Mutation field createEvent", () => {
 				message: expect.any(String),
 				path: ["createEvent"],
 			});
-
-			vi.restoreAllMocks();
 		});
 
 		test("gracefully handles recurrence rule creation failures", async () => {
@@ -808,7 +809,6 @@ suite("Mutation field createEvent", () => {
 				message: expect.any(String),
 				path: ["createEvent"],
 			});
-			vi.restoreAllMocks();
 		});
 	});
 
