@@ -53,6 +53,11 @@ export type ExplicitGraphQLContext = {
 		| "API_COOKIE_DOMAIN"
 		| "API_IS_SECURE_COOKIES"
 		| "API_JWT_EXPIRES_IN"
+		| "AWS_ACCESS_KEY_ID"
+		| "AWS_SECRET_ACCESS_KEY"
+		| "AWS_SES_REGION"
+		| "AWS_SES_FROM_EMAIL"
+		| "AWS_SES_FROM_NAME"
 		| "FRONTEND_URL"
 	>;
 	jwt: {

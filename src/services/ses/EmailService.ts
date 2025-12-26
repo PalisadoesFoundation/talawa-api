@@ -5,6 +5,8 @@ export interface EmailConfig {
 	region: string;
 	fromEmail: string;
 	fromName?: string;
+	accessKeyId?: string;
+	secretAccessKey?: string;
 }
 
 /**
@@ -15,6 +17,7 @@ export interface EmailJob {
 	email: string;
 	subject: string;
 	htmlBody: string;
+	textBody?: string;
 	userId: string | null;
 }
 
@@ -48,7 +51,16 @@ export class EmailService {
 	}> {
 		if (!this.sesClient || !this.SendEmailCommandCtor) {
 			const mod = await import("@aws-sdk/client-ses");
-			this.sesClient = new mod.SESClient({ region: this.config.region }) as {
+			this.sesClient = new mod.SESClient({
+				region: this.config.region,
+				credentials:
+					this.config.accessKeyId && this.config.secretAccessKey
+						? {
+								accessKeyId: this.config.accessKeyId,
+								secretAccessKey: this.config.secretAccessKey,
+							}
+						: undefined,
+			}) as {
 				send: (command: unknown) => Promise<{ MessageId?: string }>;
 			};
 			type MinimalSendEmailCommandInput = {
@@ -56,7 +68,10 @@ export class EmailService {
 				Destination: { ToAddresses: string[] };
 				Message: {
 					Subject: { Data: string; Charset?: string };
-					Body: { Html: { Data: string; Charset?: string } };
+					Body: {
+						Html: { Data: string; Charset?: string };
+						Text?: { Data: string; Charset?: string };
+					};
 				};
 			};
 			this.SendEmailCommandCtor = ((input: MinimalSendEmailCommandInput) =>
@@ -86,6 +101,9 @@ export class EmailService {
 					Subject: { Data: job.subject, Charset: "UTF-8" },
 					Body: {
 						Html: { Data: job.htmlBody, Charset: "UTF-8" },
+						...(job.textBody
+							? { Text: { Data: job.textBody, Charset: "UTF-8" } }
+							: {}),
 					},
 				},
 			});

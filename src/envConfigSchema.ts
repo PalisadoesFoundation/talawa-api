@@ -137,6 +137,48 @@ export const envConfigSchema = Type.Object({
 		}),
 	),
 	/**
+	 * AWS access key ID for SES email service.
+	 */
+	AWS_ACCESS_KEY_ID: Type.Optional(
+		Type.String({
+			minLength: 1,
+		}),
+	),
+	/**
+	 * AWS secret access key for SES email service.
+	 */
+	AWS_SECRET_ACCESS_KEY: Type.Optional(
+		Type.String({
+			minLength: 1,
+		}),
+	),
+	/**
+	 * AWS region for SES email service.
+	 */
+	AWS_SES_REGION: Type.Optional(
+		Type.String({
+			minLength: 1,
+			default: "ap-south-1",
+		}),
+	),
+	/**
+	 * Verified email address to send emails from in AWS SES.
+	 */
+	AWS_SES_FROM_EMAIL: Type.Optional(
+		Type.String({
+			format: "email",
+		}),
+	),
+	/**
+	 * Display name for the sender in emails.
+	 */
+	AWS_SES_FROM_NAME: Type.Optional(
+		Type.String({
+			minLength: 1,
+			default: "Talawa",
+		}),
+	),
+	/**
 	 * URL to the youtube account of the community.
 	 */
 	API_COMMUNITY_YOUTUBE_URL: Type.Optional(

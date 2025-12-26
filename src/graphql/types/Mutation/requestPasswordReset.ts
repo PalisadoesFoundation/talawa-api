@@ -10,6 +10,7 @@ import { emailService } from "~/src/services/ses/emailServiceInstance";
 import {
 	formatExpiryTime,
 	getPasswordResetEmailHtml,
+	getPasswordResetEmailText,
 } from "~/src/utilities/emailTemplates";
 import envConfig from "~/src/utilities/graphqLimits";
 import {
@@ -121,13 +122,24 @@ builder.mutationField("requestPasswordReset", (t) =>
 						expiryText,
 					};
 
-					await emailService.sendEmail({
+					const emailResult = await emailService.sendEmail({
 						id: ulid(),
 						email: existingUser.emailAddress,
 						subject: `Reset Your Password - ${communityName}`,
 						htmlBody: getPasswordResetEmailHtml(emailContext),
+						textBody: getPasswordResetEmailText(emailContext),
 						userId: existingUser.id,
 					});
+
+					if (!emailResult.success) {
+						ctx.log.error(
+							{
+								error: emailResult.error,
+								toEmail: existingUser.emailAddress,
+							},
+							"Failed to send password reset email",
+						);
+					}
 				} catch (emailError) {
 					// Log error but don't fail the request
 					ctx.log.error(
@@ -137,7 +149,7 @@ builder.mutationField("requestPasswordReset", (t) =>
 									? emailError.message
 									: "Unknown error",
 						},
-						"Failed to send password reset email",
+						"Failed to send password reset email (exception)",
 					);
 				}
 			}

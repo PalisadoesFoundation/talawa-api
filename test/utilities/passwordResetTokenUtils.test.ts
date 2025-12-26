@@ -196,6 +196,28 @@ suite("passwordResetTokenUtils", () => {
 
 			expect(result).toBeUndefined();
 		});
+
+		test("should return the token if expiresAt is null (never expires)", async () => {
+			const mockToken = {
+				id: "token-id",
+				userId: "user-id",
+				expiresAt: null,
+				usedAt: null,
+			};
+			const mockLimit = vi.fn().mockReturnValue(Promise.resolve([mockToken]));
+			const mockWhere = vi.fn().mockReturnValue({ limit: mockLimit });
+			const mockFrom = vi.fn().mockReturnValue({ where: mockWhere });
+			mockDrizzleClient.select.mockReturnValue({ from: mockFrom });
+
+			const result = await findValidPasswordResetToken(
+				mockDrizzleClient as unknown as Parameters<
+					typeof findValidPasswordResetToken
+				>[0],
+				"never-expires-hash",
+			);
+
+			expect(result).toEqual(mockToken);
+		});
 	});
 
 	suite("markPasswordResetTokenAsUsed", () => {
