@@ -1166,7 +1166,6 @@ suite("Mutation field updateCurrentUser", () => {
 			);
 
 			expect(updateCurrentUserResult.errors).toBeUndefined();
-			expect(updateCurrentUserResult.errors).toBeUndefined();
 			expect(updateCurrentUserResult.data.updateCurrentUser).toEqual(
 				expect.objectContaining({
 					name: secondUpdatedName,
