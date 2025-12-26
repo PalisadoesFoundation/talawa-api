@@ -110,6 +110,11 @@ const signInResult = await mercuriusClient.query(Query_signIn, {
 		},
 	},
 });
+if (signInResult.errors) {
+	throw new Error(
+		`Admin sign-in failed: ${JSON.stringify(signInResult.errors)}`,
+	);
+}
 assertToBeNonNullish(signInResult.data?.signIn);
 const authToken = signInResult.data.signIn.authenticationToken;
 assertToBeNonNullish(authToken);
