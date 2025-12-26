@@ -1,7 +1,9 @@
 import { faker } from "@faker-js/faker";
+import { initGraphQLTada } from "gql.tada";
 import { print } from "graphql";
 import { assertToBeNonNullish } from "test/helpers";
 import { beforeAll, expect, suite, test } from "vitest";
+import type { ClientCustomScalars } from "~/src/graphql/scalars/index";
 import { COOKIE_NAMES } from "~/src/utilities/cookieConfig";
 import { DEFAULT_REFRESH_TOKEN_EXPIRES_MS } from "~/src/utilities/refreshTokenUtils";
 import type {
@@ -14,9 +16,26 @@ import { mercuriusClient } from "../client";
 import {
 	Mutation_createUser,
 	Mutation_deleteUser,
-	Mutation_refreshToken,
 	Query_signIn,
 } from "../documentNodes";
+import type { introspection } from "../gql.tada";
+
+const gql = initGraphQLTada<{
+	introspection: introspection;
+	scalars: ClientCustomScalars;
+}>();
+
+const Mutation_refreshToken =
+	gql(`mutation Mutation_refreshToken($refreshToken: String) {
+    refreshToken(refreshToken: $refreshToken) {
+        authenticationToken
+        refreshToken
+        user {
+            id
+            name
+        }
+    }
+}`);
 
 suite("Mutation field refreshToken", () => {
 	let validRefreshToken: string;
@@ -193,7 +212,7 @@ suite("Mutation field refreshToken", () => {
 			expect(newRefreshTokenCookie).toBeDefined();
 			expect(newRefreshTokenCookie?.httpOnly).toBe(true);
 			expect(newRefreshTokenCookie?.path).toBe("/");
-			expect(newRefreshTokenCookie?.sameSite).toBe("Strict");
+			expect(newRefreshTokenCookie?.sameSite).toBe("Lax");
 			expect(newRefreshTokenCookie?.value).not.toBe(refreshTokenCookie?.value);
 		});
 

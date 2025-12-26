@@ -98,14 +98,13 @@ export const createContext: CreateContext = async (initialContext) => {
 		}
 	}
 
-	// Cookie configuration options
+	// Cookie configuration options (sameSite is set per-cookie in helpers)
 	const cookieConfig = {
 		isSecure:
 			fastify.envConfig.API_IS_SECURE_COOKIES ??
 			process.env.NODE_ENV === "production",
 		domain: fastify.envConfig.API_COOKIE_DOMAIN,
 		path: "/",
-		sameSite: "lax" as const,
 	};
 
 	// Create cookie helper only for HTTP requests (not WebSocket subscriptions)
