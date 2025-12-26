@@ -1970,6 +1970,12 @@ enum Iso4217CurrencyCode {
   ZWG
 }
 
+"""Result of a logout operation"""
+type LogoutResult {
+  """Whether the logout was successful"""
+  success: Boolean
+}
+
 input MarkActionItemAsPendingInput {
   id: ID!
 }
@@ -2293,6 +2299,11 @@ type Mutation {
     """Input to join a public organization"""
     input: MutationJoinPublicOrganizationInput!
   ): OrganizationMembershipObject
+
+  """
+  Mutation to log out the current user. Clears authentication cookies and revokes refresh tokens.
+  """
+  logout: LogoutResult
 
   """Mutation to mark a completed action item as pending"""
   markActionItemAsPending(input: MarkActionItemAsPendingInput!): ActionItem

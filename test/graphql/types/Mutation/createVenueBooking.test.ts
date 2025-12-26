@@ -777,7 +777,7 @@ suite("Mutation field createVenueBooking", () => {
 
 				// Mock the drizzleClient.insert().returning() to return an empty array
 				const mockReturning = vi.fn().mockResolvedValue([]);
-				vi.spyOn(server.drizzleClient, "insert").mockReturnValue({
+				vi.spyOn(server.drizzleClient, "insert").mockReturnValueOnce({
 					values: vi.fn().mockReturnValue({
 						returning: mockReturning,
 					}),
