@@ -196,6 +196,67 @@ suite("Mutation field refreshToken", () => {
 			expect(newRefreshTokenCookie?.sameSite).toBe("Strict");
 			expect(newRefreshTokenCookie?.value).not.toBe(refreshTokenCookie?.value);
 		});
+
+		test("should refresh tokens using only HTTP-Only cookie (no variable) for web clients", async () => {
+			// This test verifies cookie-based auth for web clients that don't pass the token as a variable
+			// Get a fresh token via server.inject to get cookies
+			const signInResponse = await server.inject({
+				method: "POST",
+				url: "/graphql",
+				payload: {
+					query: print(Query_signIn),
+					variables: {
+						input: {
+							emailAddress:
+								server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
+							password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
+						},
+					},
+				},
+			});
+
+			const signInCookies = signInResponse.cookies;
+			const refreshTokenCookie = signInCookies.find(
+				(c) => c.name === COOKIE_NAMES.REFRESH_TOKEN,
+			);
+			expect(refreshTokenCookie).toBeDefined();
+
+			// Refresh token WITHOUT passing the variable - should read from cookie
+			const response = await server.inject({
+				method: "POST",
+				url: "/graphql",
+				payload: {
+					query: `mutation { refreshToken { authenticationToken refreshToken user { id name } } }`,
+					// Note: No variables passed - refreshToken should be read from cookie
+				},
+				cookies: {
+					[COOKIE_NAMES.REFRESH_TOKEN]: refreshTokenCookie?.value || "",
+				},
+			});
+
+			expect(response.statusCode).toBe(200);
+			const body = JSON.parse(response.body);
+			expect(body.errors).toBeUndefined();
+			expect(body.data?.refreshToken).toBeDefined();
+			expect(body.data.refreshToken.authenticationToken).toBeDefined();
+			expect(body.data.refreshToken.refreshToken).toBeDefined();
+			expect(body.data.refreshToken.user?.id).toBeDefined();
+
+			// Verify token rotation - old cookie should be replaced
+			expect(body.data.refreshToken.refreshToken).not.toBe(
+				refreshTokenCookie?.value,
+			);
+
+			// Verify new cookies are set
+			const cookies = response.cookies;
+			expect(cookies.length).toBeGreaterThanOrEqual(2);
+			const newRefreshTokenCookie = cookies.find(
+				(c) => c.name === COOKIE_NAMES.REFRESH_TOKEN,
+			);
+			expect(newRefreshTokenCookie?.value).toBe(
+				body.data.refreshToken.refreshToken,
+			);
+		});
 	});
 
 	suite("error scenarios", () => {

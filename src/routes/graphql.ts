@@ -105,6 +105,7 @@ export const createContext: CreateContext = async (initialContext) => {
 			process.env.NODE_ENV === "production",
 		domain: fastify.envConfig.API_COOKIE_DOMAIN,
 		path: "/",
+		sameSite: "lax" as const,
 	};
 
 	// Create cookie helper only for HTTP requests (not WebSocket subscriptions)
