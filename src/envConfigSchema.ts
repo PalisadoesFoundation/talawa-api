@@ -242,6 +242,18 @@ export const envConfigSchema = Type.Object({
 		}),
 	),
 	/**
+	 * HMAC secret key for hashing password reset tokens.
+	 * Used for defense-in-depth; tokens already have 256 bits of entropy.
+	 * Should be at least 32 characters for security best practices.
+	 * Defaults to a static value if not provided (upgrade to custom secret is recommended).
+	 */
+	API_PASSWORD_RESET_TOKEN_HMAC_SECRET: Type.Optional(
+		Type.String({
+			minLength: 32,
+			default: "talawa-password-reset-token-hmac-default-secret-key",
+		}),
+	),
+	/**
 	 * Used for providing the secret for signing and verifying authentication json web tokens created by talawa api.
 	 */
 	API_JWT_SECRET: Type.String({

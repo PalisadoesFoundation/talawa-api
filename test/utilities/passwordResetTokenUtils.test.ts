@@ -1,5 +1,8 @@
 import { createHmac } from "node:crypto";
+import { type Static, Type } from "@sinclair/typebox";
+import { envSchema } from "env-schema";
 import { afterEach, beforeEach, expect, suite, test, vi } from "vitest";
+import { envConfigSchema, envSchemaAjv } from "~/src/envConfigSchema";
 import {
 	DEFAULT_USER_PASSWORD_RESET_TOKEN_EXPIRES_SECONDS,
 	findValidPasswordResetToken,
@@ -10,6 +13,16 @@ import {
 	storePasswordResetToken,
 } from "~/src/utilities/passwordResetTokenUtils";
 
+// Load HMAC secret from environment (same logic as implementation)
+const hmacEnvSchema = Type.Pick(envConfigSchema, [
+	"API_PASSWORD_RESET_TOKEN_HMAC_SECRET",
+]);
+
+const hmacEnvConfig = envSchema<Static<typeof hmacEnvSchema>>({
+	ajv: envSchemaAjv,
+	dotenv: true,
+	schema: hmacEnvSchema,
+});
 // Mock the drizzle client
 const mockDrizzleClient = {
 	insert: vi.fn(),
@@ -64,8 +77,11 @@ suite("passwordResetTokenUtils", () => {
 			const token = "test-token-123";
 			const hash = hashPasswordResetToken(token);
 
-			// Verify it matches Node's crypto HMAC-SHA-256 hash with the same key
-			const expectedHash = createHmac("sha256", "password-reset-token-key")
+			// Verify it matches Node's crypto HMAC-SHA-256 hash with the resolved key
+			const expectedHash = createHmac(
+				"sha256",
+				hmacEnvConfig.API_PASSWORD_RESET_TOKEN_HMAC_SECRET as string,
+			)
 				.update(token)
 				.digest("hex");
 			expect(hash).toBe(expectedHash);
@@ -89,6 +105,63 @@ suite("passwordResetTokenUtils", () => {
 			const hash1 = hashPasswordResetToken("token1");
 			const hash2 = hashPasswordResetToken("token2");
 			expect(hash1).not.toBe(hash2);
+		});
+
+		test("should handle empty string input", () => {
+			const hash = hashPasswordResetToken("");
+			expect(hash).toHaveLength(64);
+			expect(/^[a-f0-9]+$/.test(hash)).toBe(true);
+		});
+
+		test("should handle special characters in token", () => {
+			const specialToken = "token!@#$%^&*()_+-=[]{}|;':\",./<>?";
+			const hash = hashPasswordResetToken(specialToken);
+			expect(hash).toHaveLength(64);
+			expect(/^[a-f0-9]+$/.test(hash)).toBe(true);
+		});
+
+		test("should handle unicode characters in token", () => {
+			const unicodeToken = "token-日本語-emoji-😀";
+			const hash = hashPasswordResetToken(unicodeToken);
+			expect(hash).toHaveLength(64);
+			expect(/^[a-f0-9]+$/.test(hash)).toBe(true);
+		});
+
+		test("should handle very long tokens", () => {
+			const longToken = "a".repeat(10000);
+			const hash = hashPasswordResetToken(longToken);
+			expect(hash).toHaveLength(64);
+			expect(/^[a-f0-9]+$/.test(hash)).toBe(true);
+		});
+
+		test("should be collision-resistant for slightly different inputs", () => {
+			// Test that even small changes produce completely different hashes
+			const hash1 = hashPasswordResetToken("token123");
+			const hash2 = hashPasswordResetToken("token124");
+			expect(hash1).not.toBe(hash2);
+			// Verify hashes don't share any common prefix (avalanche effect)
+			expect(hash1.substring(0, 8)).not.toBe(hash2.substring(0, 8));
+		});
+
+		test("should work correctly with generated tokens", () => {
+			// Verify integration with generatePasswordResetToken
+			const token = generatePasswordResetToken();
+			const hash = hashPasswordResetToken(token);
+			expect(hash).toHaveLength(64);
+			expect(/^[a-f0-9]+$/.test(hash)).toBe(true);
+			// Hash should be deterministic
+			expect(hashPasswordResetToken(token)).toBe(hash);
+		});
+
+		test("should produce different hashes for multiple generated tokens", () => {
+			const hashes = new Set<string>();
+			for (let i = 0; i < 100; i++) {
+				const token = generatePasswordResetToken();
+				const hash = hashPasswordResetToken(token);
+				hashes.add(hash);
+			}
+			// All 100 hashes should be unique
+			expect(hashes.size).toBe(100);
 		});
 	});
 

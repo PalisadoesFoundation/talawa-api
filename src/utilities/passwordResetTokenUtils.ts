@@ -1,8 +1,22 @@
 import { createHmac, randomBytes } from "node:crypto";
+import { type Static, Type } from "@sinclair/typebox";
 import { and, eq, isNull } from "drizzle-orm";
 import type { PostgresJsDatabase } from "drizzle-orm/postgres-js";
+import { envSchema } from "env-schema";
 import type * as schema from "~/src/drizzle/schema";
 import { passwordResetTokensTable } from "~/src/drizzle/tables/passwordResetTokens";
+import { envConfigSchema, envSchemaAjv } from "../envConfigSchema";
+
+// Load HMAC secret from environment
+const hmacEnvSchema = Type.Pick(envConfigSchema, [
+	"API_PASSWORD_RESET_TOKEN_HMAC_SECRET",
+]);
+
+const hmacEnvConfig = envSchema<Static<typeof hmacEnvSchema>>({
+	ajv: envSchemaAjv,
+	dotenv: true,
+	schema: hmacEnvSchema,
+});
 
 /**
  * Default password reset token expiry for User Portal: 14 days in seconds.
@@ -36,9 +50,12 @@ export function generatePasswordResetToken(): string {
  * @returns The hashed token
  */
 export function hashPasswordResetToken(token: string): string {
-	// Using HMAC with a static key since token itself has 256 bits of entropy
+	// Using HMAC with configurable key from environment for defense-in-depth
 	// lgtm[js/insufficient-password-hash] - Token has 256 bits of entropy, bcrypt is unnecessary
-	return createHmac("sha256", "password-reset-token-key")
+	return createHmac(
+		"sha256",
+		hmacEnvConfig.API_PASSWORD_RESET_TOKEN_HMAC_SECRET as string,
+	)
 		.update(token)
 		.digest("hex");
 }
@@ -90,11 +107,11 @@ export async function findValidPasswordResetToken(
 	tokenHash: string,
 ): Promise<
 	| {
-		id: string;
-		userId: string;
-		expiresAt: Date | null;
-		usedAt: Date | null;
-	}
+			id: string;
+			userId: string;
+			expiresAt: Date | null;
+			usedAt: Date | null;
+	  }
 	| undefined
 > {
 	// Combine all conditions in a single query to prevent timing attacks
