@@ -327,7 +327,7 @@ suite("Mutation field requestPasswordReset", () => {
 				expect(result.data.requestPasswordReset?.success).toBe(true);
 			} finally {
 				// Restore original value
-				// biome-ignore lint/suspicious/noExplicitAny: Restoring config
+				// biome-ignore lint/suspicious/noExplicitAny: Restoring test config
 				(
 					server.envConfig as any
 				).API_PASSWORD_RESET_ADMIN_TOKEN_EXPIRES_SECONDS = originalValue;
@@ -364,7 +364,7 @@ suite("Mutation field requestPasswordReset", () => {
 				expect(result.data.requestPasswordReset?.success).toBe(true);
 			} finally {
 				// Restore original value
-				// biome-ignore lint/suspicious/noExplicitAny: Restoring config
+				// biome-ignore lint/suspicious/noExplicitAny: Restoring test config
 				(
 					server.envConfig as any
 				).API_PASSWORD_RESET_USER_TOKEN_EXPIRES_SECONDS = originalValue;
@@ -401,7 +401,7 @@ suite("Mutation field requestPasswordReset", () => {
 				expect(result.data.requestPasswordReset?.success).toBe(true);
 			} finally {
 				// Restore original value
-				// biome-ignore lint/suspicious/noExplicitAny: Restoring config
+				// biome-ignore lint/suspicious/noExplicitAny: Restoring test config
 				(
 					server.envConfig as any
 				).API_PASSWORD_RESET_USER_TOKEN_EXPIRES_SECONDS = originalValue;
