@@ -107,11 +107,11 @@ export async function findValidPasswordResetToken(
 	tokenHash: string,
 ): Promise<
 	| {
-		id: string;
-		userId: string;
-		expiresAt: Date | null;
-		usedAt: Date | null;
-	}
+			id: string;
+			userId: string;
+			expiresAt: Date | null;
+			usedAt: Date | null;
+	  }
 	| undefined
 > {
 	// Combine all conditions in a single query to prevent timing attacks

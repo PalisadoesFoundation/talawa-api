@@ -100,4 +100,77 @@ describe("EmailService", () => {
 		});
 		expect(sendMock).toHaveBeenCalledTimes(2);
 	});
+
+	it("returns error when fromEmail is not configured", async () => {
+		const serviceNoFrom = new EmailService({ region: "us-east-1" });
+		const result = await serviceNoFrom.sendEmail(buildJob());
+
+		expect(result.success).toBe(false);
+		expect(result.error).toContain("fromEmail is required");
+	});
+
+	it("uses fromEmail directly when fromName is not provided", async () => {
+		const serviceNoName = new EmailService({
+			region: "us-east-1",
+			fromEmail: "direct@example.com",
+		});
+
+		const sendMock = vi.fn().mockResolvedValue({ MessageId: "mid-direct" });
+		vi.spyOn(
+			serviceNoName as unknown as { getSesArtifacts: () => Promise<unknown> },
+			"getSesArtifacts",
+		).mockResolvedValue({
+			client: { send: sendMock },
+			SendEmailCommand: (input: unknown) => ({ __cmd: true, input }),
+		});
+
+		const result = await serviceNoName.sendEmail(buildJob());
+
+		expect(result.success).toBe(true);
+		// Verify the Source is just the email without a name prefix
+		const callArg = sendMock.mock.calls[0]?.[0] as {
+			input?: { Source?: string };
+		};
+		expect(callArg?.input?.Source).toBe("direct@example.com");
+	});
+
+	it("formats fromAddress with name when fromName is provided", async () => {
+		const sendMock = vi.fn().mockResolvedValue({ MessageId: "mid-name" });
+		vi.spyOn(
+			service as unknown as { getSesArtifacts: () => Promise<unknown> },
+			"getSesArtifacts",
+		).mockResolvedValue({
+			client: { send: sendMock },
+			SendEmailCommand: (input: unknown) => ({ __cmd: true, input }),
+		});
+
+		await service.sendEmail(buildJob());
+
+		const callArg = sendMock.mock.calls[0]?.[0] as {
+			input?: { Source?: string };
+		};
+		expect(callArg?.input?.Source).toBe("Test Sender <noreply@example.com>");
+	});
+
+	it("sendBulkEmails handles empty jobs array", async () => {
+		const results = await service.sendBulkEmails([]);
+		expect(results).toEqual([]);
+	});
+
+	it("sendBulkEmails handles single job without waiting", async () => {
+		const sendMock = vi.fn().mockResolvedValue({ MessageId: "single" });
+		vi.spyOn(
+			service as unknown as { getSesArtifacts: () => Promise<unknown> },
+			"getSesArtifacts",
+		).mockResolvedValue({
+			client: { send: sendMock },
+			SendEmailCommand: (input: unknown) => ({ __cmd: true, input }),
+		});
+
+		const results = await service.sendBulkEmails([buildJob({ id: "only" })]);
+
+		expect(results).toHaveLength(1);
+		expect(results[0]?.success).toBe(true);
+		expect(sendMock).toHaveBeenCalledTimes(1);
+	});
 });
