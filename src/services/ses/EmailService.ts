@@ -51,6 +51,7 @@ export class EmailService {
 	}> {
 		if (!this.sesClient || !this.SendEmailCommandCtor) {
 			const mod = await import("@aws-sdk/client-ses");
+
 			this.sesClient = new mod.SESClient({
 				region: this.config.region,
 				credentials:
