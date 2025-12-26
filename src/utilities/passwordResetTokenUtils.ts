@@ -51,7 +51,7 @@ export function generatePasswordResetToken(): string {
  */
 export function hashPasswordResetToken(token: string): string {
 	// Using HMAC with configurable key from environment for defense-in-depth
-	// lgtm[js/insufficient-password-hash] - Token has 256 bits of entropy, bcrypt is unnecessary
+	// codeql[js/insufficient-password-hash] Token has 256 bits of entropy, bcrypt is unnecessary
 	return createHmac(
 		"sha256",
 		hmacEnvConfig.API_PASSWORD_RESET_TOKEN_HMAC_SECRET as string,
@@ -107,11 +107,11 @@ export async function findValidPasswordResetToken(
 	tokenHash: string,
 ): Promise<
 	| {
-			id: string;
-			userId: string;
-			expiresAt: Date | null;
-			usedAt: Date | null;
-	  }
+		id: string;
+		userId: string;
+		expiresAt: Date | null;
+		usedAt: Date | null;
+	}
 	| undefined
 > {
 	// Combine all conditions in a single query to prevent timing attacks
