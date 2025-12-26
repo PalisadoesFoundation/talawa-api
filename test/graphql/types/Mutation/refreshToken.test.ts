@@ -333,6 +333,24 @@ suite("Mutation field refreshToken", () => {
 			);
 		});
 
+		test("should return invalid_arguments error when refreshToken is null", async () => {
+			const result = await mercuriusClient.mutate(Mutation_refreshToken, {
+				variables: {
+					refreshToken: null,
+				},
+			});
+
+			expect(result.data?.refreshToken).toBeNull();
+			expect(result.errors).toBeDefined();
+			expect(result.errors?.length).toBeGreaterThan(0);
+
+			const error = result
+				.errors?.[0] as unknown as TalawaGraphQLFormattedError;
+			expect((error.extensions as InvalidArgumentsExtensions).code).toBe(
+				"invalid_arguments",
+			);
+		});
+
 		test("should return unauthenticated error when user has been deleted (cascades to delete tokens)", async () => {
 			// Get admin auth token first
 			const adminSignIn = await mercuriusClient.query(Query_signIn, {

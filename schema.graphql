@@ -1973,7 +1973,7 @@ enum Iso4217CurrencyCode {
 """Result of a logout operation"""
 type LogoutResult {
   """Whether the logout was successful"""
-  success: Boolean
+  success: Boolean!
 }
 
 input MarkActionItemAsPendingInput {

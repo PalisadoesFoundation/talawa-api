@@ -14,7 +14,7 @@ import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 
 // Schema allows optional refreshToken - will be read from cookie if not provided
 const mutationRefreshTokenArgumentsSchema = z.object({
-	refreshToken: z.string().min(1).nullish(),
+	refreshToken: z.string().min(1).optional(),
 });
 
 builder.mutationField("refreshToken", (t) =>

@@ -1,6 +1,6 @@
 ---
-id: refresh-token
-title: refreshToken
+id: logout
+title: logout
 ---
 
 export const Bullet = () => (
@@ -71,20 +71,14 @@ export const Details = ({
   );
 };
 
-Mutation to refresh an access token using a valid refresh token. Returns new access and refresh tokens. Web clients can omit the refreshToken argument as it will be read from HTTP-Only cookies.
+Mutation to log out the current user. Clears authentication cookies and revokes refresh tokens.
 
 ```graphql
-refreshToken(
-  refreshToken: String
-): AuthenticationPayload
+logout: LogoutResult
 ```
-
-### Arguments
-
-#### [<code style={{ fontWeight: 'normal' }}>refreshToken.<b>refreshToken</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>String</b></code>](/auto-schema/types/scalars/string.mdx) <Badge class="badge badge--secondary " text="scalar"/>
-
-The refresh token to use for obtaining a new access token. Optional for web clients using HTTP-Only cookies.
 
 ### Type
 
-#### [<code style={{ fontWeight: 'normal' }}><b>AuthenticationPayload</b></code>](/auto-schema/types/objects/authentication-payload.mdx) <Badge class="badge badge--secondary " text="object"/>
+#### [<code style={{ fontWeight: 'normal' }}><b>LogoutResult</b></code>](/auto-schema/types/objects/logout-result.mdx) <Badge class="badge badge--secondary " text="object"/>
+
+Result of a logout operation
