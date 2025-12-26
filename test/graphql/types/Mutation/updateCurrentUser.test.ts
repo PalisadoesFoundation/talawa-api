@@ -804,8 +804,7 @@ suite("Mutation field updateCurrentUser", () => {
 				filename: `${faker.system.fileName()}.txt`,
 				mimetype: "text/plain", // Invalid mime type
 				encoding: "7bit",
-				createReadStream: (): NodeJS.ReadableStream =>
-					({}) as NodeJS.ReadableStream,
+				createReadStream: vi.fn().mockReturnValue({} as NodeJS.ReadableStream),
 			});
 
 			const updateCurrentUserResult = await mercuriusClient.mutate(
@@ -925,15 +924,6 @@ suite("Mutation field updateCurrentUser", () => {
 			expect(
 				updateCurrentUserResult.data.updateCurrentUser?.avatarMimeType,
 			).toBe("image/jpeg");
-			expect(
-				updateCurrentUserResult.data.updateCurrentUser?.avatarURL,
-			).toBeDefined();
-			expect(
-				updateCurrentUserResult.data.updateCurrentUser?.avatarURL,
-			).toBeTypeOf("string");
-			expect(
-				updateCurrentUserResult.data.updateCurrentUser?.avatarURL,
-			).not.toBe("");
 			expect(updateCurrentUserResult.data.updateCurrentUser?.avatarURL).toMatch(
 				/\/objects\/[a-zA-Z0-9]+$/,
 			);
