@@ -1,6 +1,10 @@
 import { faker } from "@faker-js/faker";
 import type { ResultOf, VariablesOf } from "gql.tada";
-import { expect, suite, test } from "vitest";
+import type { Client } from "minio";
+import { afterEach, expect, suite, test, vi } from "vitest";
+
+type UploadedObjectInfo = Awaited<ReturnType<Client["putObject"]>>;
+
 import type {
 	ForbiddenActionOnArgumentsAssociatedResourcesExtensions,
 	InvalidArgumentsExtensions,
@@ -18,6 +22,9 @@ import {
 } from "../documentNodes";
 
 suite("Mutation field updateCurrentUser", () => {
+	afterEach(() => {
+		vi.restoreAllMocks();
+	});
 	suite(
 		`results in a graphql error with "unauthenticated" extensions code in the "errors" field and "null" as the value of "data.updateCurrentUser" field if`,
 		() => {
@@ -748,4 +755,760 @@ suite("Mutation field updateCurrentUser", () => {
 			});
 		},
 	);
+
+	suite("Avatar handling", () => {
+		test("should handle invalid avatar mime type", async () => {
+			const administratorUserSignInResult = await mercuriusClient.query(
+				Query_signIn,
+				{
+					variables: {
+						input: {
+							emailAddress:
+								server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
+							password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
+						},
+					},
+				},
+			);
+
+			assertToBeNonNullish(
+				administratorUserSignInResult.data.signIn?.authenticationToken,
+			);
+
+			const createUserResult = await mercuriusClient.mutate(
+				Mutation_createUser,
+				{
+					headers: {
+						authorization: `bearer ${administratorUserSignInResult.data.signIn.authenticationToken}`,
+					},
+					variables: {
+						input: {
+							emailAddress: `emailAddress${faker.string.ulid()}@email.com`,
+							isEmailAddressVerified: false,
+							name: "name",
+							password: "password",
+							role: "regular",
+						},
+					},
+				},
+			);
+
+			assertToBeNonNullish(
+				createUserResult.data.createUser?.authenticationToken,
+			);
+
+			// Mock invalid avatar file
+			const invalidAvatar = Promise.resolve({
+				filename: `${faker.system.fileName()}.txt`,
+				mimetype: "text/plain", // Invalid mime type
+				encoding: "7bit",
+				createReadStream: (): NodeJS.ReadableStream =>
+					({}) as NodeJS.ReadableStream,
+			});
+
+			const updateCurrentUserResult = await mercuriusClient.mutate(
+				Mutation_updateCurrentUser,
+				{
+					headers: {
+						authorization: `bearer ${createUserResult.data.createUser.authenticationToken}`,
+					},
+					variables: {
+						input: {
+							avatar: invalidAvatar,
+						},
+					},
+				},
+			);
+
+			expect(updateCurrentUserResult.data.updateCurrentUser).toEqual(null);
+			expect(updateCurrentUserResult.errors).toEqual(
+				expect.arrayContaining<TalawaGraphQLFormattedError>([
+					expect.objectContaining<TalawaGraphQLFormattedError>({
+						extensions: expect.objectContaining<InvalidArgumentsExtensions>({
+							code: "invalid_arguments",
+							issues: expect.arrayContaining([
+								expect.objectContaining({
+									argumentPath: ["avatar"],
+									message: expect.stringContaining("not allowed"),
+								}),
+							]),
+						}),
+						message: expect.any(String),
+						path: ["updateCurrentUser"],
+					}),
+				]),
+			);
+		});
+
+		test("should successfully upload new avatar", async () => {
+			const administratorUserSignInResult = await mercuriusClient.query(
+				Query_signIn,
+				{
+					variables: {
+						input: {
+							emailAddress:
+								server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
+							password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
+						},
+					},
+				},
+			);
+
+			assertToBeNonNullish(
+				administratorUserSignInResult.data.signIn?.authenticationToken,
+			);
+
+			const createUserResult = await mercuriusClient.mutate(
+				Mutation_createUser,
+				{
+					headers: {
+						authorization: `bearer ${administratorUserSignInResult.data.signIn.authenticationToken}`,
+					},
+					variables: {
+						input: {
+							emailAddress: `emailAddress${faker.string.ulid()}@email.com`,
+							isEmailAddressVerified: false,
+							name: "name",
+							password: "password",
+							role: "regular",
+						},
+					},
+				},
+			);
+
+			assertToBeNonNullish(
+				createUserResult.data.createUser?.authenticationToken,
+			);
+
+			// Mock valid avatar file
+			const validAvatar = Promise.resolve({
+				filename: `${faker.system.fileName()}.jpg`,
+				mimetype: "image/jpeg",
+				encoding: "7bit",
+				createReadStream: vi.fn().mockReturnValue({} as NodeJS.ReadableStream),
+			});
+
+			// Mock minio putObject
+			const putObjectSpy = vi
+				.spyOn(server.minio.client, "putObject")
+				.mockResolvedValue({ etag: "mock-etag" } as UploadedObjectInfo);
+
+			const updatedName = faker.person.fullName();
+			const updateCurrentUserResult = await mercuriusClient.mutate(
+				Mutation_updateCurrentUser,
+				{
+					headers: {
+						authorization: `bearer ${createUserResult.data.createUser.authenticationToken}`,
+					},
+					variables: {
+						input: {
+							avatar: validAvatar,
+							name: updatedName,
+						},
+					},
+				},
+			);
+
+			expect(updateCurrentUserResult.errors).toBeUndefined();
+			expect(updateCurrentUserResult.data.updateCurrentUser).toEqual(
+				expect.objectContaining({
+					name: updatedName,
+				}),
+			);
+			expect(putObjectSpy).toHaveBeenCalled();
+		});
+
+		test("should remove existing avatar when avatar is set to null", async () => {
+			const administratorUserSignInResult = await mercuriusClient.query(
+				Query_signIn,
+				{
+					variables: {
+						input: {
+							emailAddress:
+								server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
+							password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
+						},
+					},
+				},
+			);
+
+			assertToBeNonNullish(
+				administratorUserSignInResult.data.signIn?.authenticationToken,
+			);
+
+			// Create user with avatar
+			const createUserResult = await mercuriusClient.mutate(
+				Mutation_createUser,
+				{
+					headers: {
+						authorization: `bearer ${administratorUserSignInResult.data.signIn.authenticationToken}`,
+					},
+					variables: {
+						input: {
+							emailAddress: `emailAddress${faker.string.ulid()}@email.com`,
+							isEmailAddressVerified: false,
+							name: "name",
+							password: "password",
+							role: "regular",
+						},
+					},
+				},
+			);
+
+			assertToBeNonNullish(
+				createUserResult.data.createUser?.authenticationToken,
+			);
+
+			// First, add an avatar
+			const validAvatar = Promise.resolve({
+				filename: "test.jpg",
+				mimetype: "image/jpeg",
+				encoding: "7bit",
+				createReadStream: vi.fn().mockReturnValue({} as NodeJS.ReadableStream),
+			});
+
+			vi.spyOn(server.minio.client, "putObject").mockResolvedValue({
+				etag: "mock-etag",
+			} as UploadedObjectInfo);
+
+			await mercuriusClient.mutate(Mutation_updateCurrentUser, {
+				headers: {
+					authorization: `bearer ${createUserResult.data.createUser.authenticationToken}`,
+				},
+				variables: {
+					input: {
+						avatar: validAvatar,
+					},
+				},
+			});
+
+			// Mock removeObject
+			const removeObjectSpy = vi
+				.spyOn(server.minio.client, "removeObject")
+				.mockResolvedValue();
+
+			// Now remove the avatar by setting it to null
+			const updatedNameWithoutAvatar = faker.person.fullName();
+			const updateCurrentUserResult = await mercuriusClient.mutate(
+				Mutation_updateCurrentUser,
+				{
+					headers: {
+						authorization: `bearer ${createUserResult.data.createUser.authenticationToken}`,
+					},
+					variables: {
+						input: {
+							avatar: null,
+							name: updatedNameWithoutAvatar,
+						},
+					},
+				},
+			);
+
+			expect(updateCurrentUserResult.errors).toBeUndefined();
+			expect(updateCurrentUserResult.data.updateCurrentUser).toEqual(
+				expect.objectContaining({
+					name: updatedNameWithoutAvatar,
+				}),
+			);
+			expect(removeObjectSpy).toHaveBeenCalled();
+		});
+
+		test("should handle avatar upload with existing avatar name", async () => {
+			const administratorUserSignInResult = await mercuriusClient.query(
+				Query_signIn,
+				{
+					variables: {
+						input: {
+							emailAddress:
+								server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
+							password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
+						},
+					},
+				},
+			);
+
+			assertToBeNonNullish(
+				administratorUserSignInResult.data.signIn?.authenticationToken,
+			);
+
+			const createUserResult = await mercuriusClient.mutate(
+				Mutation_createUser,
+				{
+					headers: {
+						authorization: `bearer ${administratorUserSignInResult.data.signIn.authenticationToken}`,
+					},
+					variables: {
+						input: {
+							emailAddress: `emailAddress${faker.string.ulid()}@email.com`,
+							isEmailAddressVerified: false,
+							name: "name",
+							password: "password",
+							role: "regular",
+						},
+					},
+				},
+			);
+
+			assertToBeNonNullish(
+				createUserResult.data.createUser?.authenticationToken,
+			);
+
+			// First upload
+			const firstAvatar = Promise.resolve({
+				filename: `${faker.system.fileName()}.jpg`,
+				mimetype: "image/jpeg",
+				encoding: "7bit",
+				createReadStream: vi.fn().mockReturnValue({} as NodeJS.ReadableStream),
+			});
+
+			vi.spyOn(server.minio.client, "putObject").mockResolvedValue({
+				etag: "mock-etag",
+			} as UploadedObjectInfo);
+
+			await mercuriusClient.mutate(Mutation_updateCurrentUser, {
+				headers: {
+					authorization: `bearer ${createUserResult.data.createUser.authenticationToken}`,
+				},
+				variables: {
+					input: {
+						avatar: firstAvatar,
+					},
+				},
+			});
+
+			// Second upload (should reuse existing avatar name)
+			const secondAvatar = Promise.resolve({
+				filename: `${faker.system.fileName()}.jpg`,
+				mimetype: "image/png",
+				encoding: "7bit",
+				createReadStream: vi.fn().mockReturnValue({} as NodeJS.ReadableStream),
+			});
+
+			const putObjectSpy = vi
+				.spyOn(server.minio.client, "putObject")
+				.mockResolvedValue({ etag: "mock-etag" } as UploadedObjectInfo);
+
+			const secondUpdatedName = faker.person.fullName();
+			const updateCurrentUserResult = await mercuriusClient.mutate(
+				Mutation_updateCurrentUser,
+				{
+					headers: {
+						authorization: `bearer ${createUserResult.data.createUser.authenticationToken}`,
+					},
+					variables: {
+						input: {
+							avatar: secondAvatar,
+							name: secondUpdatedName,
+						},
+					},
+				},
+			);
+
+			expect(updateCurrentUserResult.errors).toBeUndefined();
+			expect(updateCurrentUserResult.data.updateCurrentUser).toEqual(
+				expect.objectContaining({
+					name: secondUpdatedName,
+				}),
+			);
+			expect(putObjectSpy).toHaveBeenCalled();
+		});
+	});
+
+	suite("Transaction and database error handling", () => {
+		test("should handle transaction failure when user update returns undefined", async () => {
+			const administratorUserSignInResult = await mercuriusClient.query(
+				Query_signIn,
+				{
+					variables: {
+						input: {
+							emailAddress:
+								server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
+							password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
+						},
+					},
+				},
+			);
+
+			assertToBeNonNullish(
+				administratorUserSignInResult.data.signIn?.authenticationToken,
+			);
+
+			const createUserResult = await mercuriusClient.mutate(
+				Mutation_createUser,
+				{
+					headers: {
+						authorization: `bearer ${administratorUserSignInResult.data.signIn.authenticationToken}`,
+					},
+					variables: {
+						input: {
+							emailAddress: `emailAddress${faker.string.ulid()}@email.com`,
+							isEmailAddressVerified: false,
+							name: "name",
+							password: "password",
+							role: "regular",
+						},
+					},
+				},
+			);
+
+			assertToBeNonNullish(
+				createUserResult.data.createUser?.authenticationToken,
+			);
+
+			// Mock the transaction to simulate update returning undefined
+			vi.spyOn(server.drizzleClient, "transaction").mockImplementation(
+				async (callback) => {
+					const mockTx = {
+						...server.drizzleClient,
+						update: vi.fn().mockReturnValue({
+							set: vi.fn().mockReturnValue({
+								where: vi.fn().mockReturnValue({
+									returning: vi.fn().mockResolvedValue([]), // Empty array simulates undefined user
+								}),
+							}),
+						}),
+					};
+
+					return callback(mockTx as unknown as Parameters<typeof callback>[0]);
+				},
+			);
+
+			const updateCurrentUserResult = await mercuriusClient.mutate(
+				Mutation_updateCurrentUser,
+				{
+					headers: {
+						authorization: `bearer ${createUserResult.data.createUser.authenticationToken}`,
+					},
+					variables: {
+						input: {
+							name: faker.person.fullName(),
+						},
+					},
+				},
+			);
+
+			expect(updateCurrentUserResult.data.updateCurrentUser).toEqual(null);
+			expect(updateCurrentUserResult.errors).toEqual(
+				expect.arrayContaining<TalawaGraphQLFormattedError>([
+					expect.objectContaining<TalawaGraphQLFormattedError>({
+						extensions: expect.objectContaining<UnauthenticatedExtensions>({
+							code: "unauthenticated",
+						}),
+						message: expect.any(String),
+						path: ["updateCurrentUser"],
+					}),
+				]),
+			);
+		});
+	});
+
+	suite("Password hashing", () => {
+		test("should hash password when provided", async () => {
+			const administratorUserSignInResult = await mercuriusClient.query(
+				Query_signIn,
+				{
+					variables: {
+						input: {
+							emailAddress:
+								server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
+							password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
+						},
+					},
+				},
+			);
+
+			assertToBeNonNullish(
+				administratorUserSignInResult.data.signIn?.authenticationToken,
+			);
+
+			const createUserResult = await mercuriusClient.mutate(
+				Mutation_createUser,
+				{
+					headers: {
+						authorization: `bearer ${administratorUserSignInResult.data.signIn.authenticationToken}`,
+					},
+					variables: {
+						input: {
+							emailAddress: `emailAddress${faker.string.ulid()}@email.com`,
+							isEmailAddressVerified: false,
+							name: "name",
+							password: "password",
+							role: "regular",
+						},
+					},
+				},
+			);
+
+			assertToBeNonNullish(
+				createUserResult.data.createUser?.authenticationToken,
+			);
+
+			const newPassword = faker.internet.password();
+			const passwordTestName = faker.person.fullName();
+			const updateCurrentUserResult = await mercuriusClient.mutate(
+				Mutation_updateCurrentUser,
+				{
+					headers: {
+						authorization: `bearer ${createUserResult.data.createUser.authenticationToken}`,
+					},
+					variables: {
+						input: {
+							password: newPassword,
+							name: passwordTestName,
+						},
+					},
+				},
+			);
+
+			expect(updateCurrentUserResult.errors).toBeUndefined();
+			expect(updateCurrentUserResult.data.updateCurrentUser).toEqual(
+				expect.objectContaining({
+					name: passwordTestName,
+				}),
+			);
+		});
+
+		test("should not hash password when not provided", async () => {
+			const administratorUserSignInResult = await mercuriusClient.query(
+				Query_signIn,
+				{
+					variables: {
+						input: {
+							emailAddress:
+								server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
+							password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
+						},
+					},
+				},
+			);
+
+			assertToBeNonNullish(
+				administratorUserSignInResult.data.signIn?.authenticationToken,
+			);
+
+			const createUserResult = await mercuriusClient.mutate(
+				Mutation_createUser,
+				{
+					headers: {
+						authorization: `bearer ${administratorUserSignInResult.data.signIn.authenticationToken}`,
+					},
+					variables: {
+						input: {
+							emailAddress: `emailAddress${faker.string.ulid()}@email.com`,
+							isEmailAddressVerified: false,
+							name: "name",
+							password: "password",
+							role: "regular",
+						},
+					},
+				},
+			);
+
+			assertToBeNonNullish(
+				createUserResult.data.createUser?.authenticationToken,
+			);
+
+			const nameOnlyTestName = faker.person.fullName();
+			const updateCurrentUserResult = await mercuriusClient.mutate(
+				Mutation_updateCurrentUser,
+				{
+					headers: {
+						authorization: `bearer ${createUserResult.data.createUser.authenticationToken}`,
+					},
+					variables: {
+						input: {
+							name: nameOnlyTestName,
+						},
+					},
+				},
+			);
+
+			expect(updateCurrentUserResult.errors).toBeUndefined();
+			expect(updateCurrentUserResult.data.updateCurrentUser).toEqual(
+				expect.objectContaining({
+					name: nameOnlyTestName,
+				}),
+			);
+		});
+	});
+
+	suite("Natural language code handling", () => {
+		test("should update natural language code", async () => {
+			const administratorUserSignInResult = await mercuriusClient.query(
+				Query_signIn,
+				{
+					variables: {
+						input: {
+							emailAddress:
+								server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
+							password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
+						},
+					},
+				},
+			);
+
+			assertToBeNonNullish(
+				administratorUserSignInResult.data.signIn?.authenticationToken,
+			);
+
+			const createUserResult = await mercuriusClient.mutate(
+				Mutation_createUser,
+				{
+					headers: {
+						authorization: `bearer ${administratorUserSignInResult.data.signIn.authenticationToken}`,
+					},
+					variables: {
+						input: {
+							emailAddress: `emailAddress${faker.string.ulid()}@email.com`,
+							isEmailAddressVerified: false,
+							name: "name",
+							password: "password",
+							role: "regular",
+						},
+					},
+				},
+			);
+
+			assertToBeNonNullish(
+				createUserResult.data.createUser?.authenticationToken,
+			);
+
+			const languageTestName = faker.person.fullName();
+			const updateCurrentUserResult = await mercuriusClient.mutate(
+				Mutation_updateCurrentUser,
+				{
+					headers: {
+						authorization: `bearer ${createUserResult.data.createUser.authenticationToken}`,
+					},
+					variables: {
+						input: {
+							naturalLanguageCode: "es",
+							name: languageTestName,
+						},
+					},
+				},
+			);
+
+			expect(updateCurrentUserResult.errors).toBeUndefined();
+			expect(updateCurrentUserResult.data.updateCurrentUser).toEqual(
+				expect.objectContaining({
+					name: languageTestName,
+				}),
+			);
+		});
+	});
+
+	suite("Edge cases and comprehensive field updates", () => {
+		test("should handle all possible field updates simultaneously", async () => {
+			const administratorUserSignInResult = await mercuriusClient.query(
+				Query_signIn,
+				{
+					variables: {
+						input: {
+							emailAddress:
+								server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
+							password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
+						},
+					},
+				},
+			);
+
+			assertToBeNonNullish(
+				administratorUserSignInResult.data.signIn?.authenticationToken,
+			);
+
+			const createUserResult = await mercuriusClient.mutate(
+				Mutation_createUser,
+				{
+					headers: {
+						authorization: `bearer ${administratorUserSignInResult.data.signIn.authenticationToken}`,
+					},
+					variables: {
+						input: {
+							emailAddress: `emailAddress${faker.string.ulid()}@email.com`,
+							isEmailAddressVerified: false,
+							name: "name",
+							password: "password",
+							role: "regular",
+						},
+					},
+				},
+			);
+
+			assertToBeNonNullish(
+				createUserResult.data.createUser?.authenticationToken,
+			);
+
+			const validAvatar = Promise.resolve({
+				filename: `${faker.system.fileName()}.jpg`,
+				mimetype: "image/jpeg",
+				encoding: "7bit",
+				createReadStream: vi.fn().mockReturnValue({} as NodeJS.ReadableStream),
+			});
+
+			vi.spyOn(server.minio.client, "putObject").mockResolvedValue({
+				etag: "mock-etag",
+			} as UploadedObjectInfo);
+
+			const comprehensiveTestData = {
+				addressLine1: faker.location.streetAddress(),
+				addressLine2: faker.location.secondaryAddress(),
+				birthDate: faker.date.birthdate().toISOString().split('T')[0],
+				city: faker.location.city(),
+				countryCode: "ca" as const,
+				description: faker.lorem.paragraph(),
+				educationGrade: "graduate" as const,
+				emailAddress: `${faker.internet.userName()}${faker.string.ulid()}@email.com`,
+				employmentStatus: "part_time" as const,
+				homePhoneNumber: faker.phone.number(),
+				maritalStatus: "married" as const,
+				mobilePhoneNumber: faker.phone.number(),
+				name: faker.person.fullName(),
+				natalSex: "female" as const,
+				naturalLanguageCode: "fr" as const,
+				password: faker.internet.password(),
+				postalCode: faker.location.zipCode(),
+				state: faker.location.state(),
+				workPhoneNumber: faker.phone.number(),
+			};
+
+			const updateCurrentUserResult = await mercuriusClient.mutate(
+				Mutation_updateCurrentUser,
+				{
+					headers: {
+						authorization: `bearer ${createUserResult.data.createUser.authenticationToken}`,
+					},
+					variables: {
+						input: {
+							...comprehensiveTestData,
+							avatar: validAvatar,
+						},
+					},
+				},
+			);
+
+			expect(updateCurrentUserResult.errors).toBeUndefined();
+			expect(updateCurrentUserResult.data.updateCurrentUser).toEqual(
+				expect.objectContaining({
+					addressLine1: comprehensiveTestData.addressLine1,
+					addressLine2: comprehensiveTestData.addressLine2,
+					birthDate: comprehensiveTestData.birthDate,
+					city: comprehensiveTestData.city,
+					countryCode: comprehensiveTestData.countryCode,
+					description: comprehensiveTestData.description,
+					educationGrade: comprehensiveTestData.educationGrade,
+					emailAddress: comprehensiveTestData.emailAddress,
+					employmentStatus: comprehensiveTestData.employmentStatus,
+					homePhoneNumber: comprehensiveTestData.homePhoneNumber,
+					maritalStatus: comprehensiveTestData.maritalStatus,
+					mobilePhoneNumber: comprehensiveTestData.mobilePhoneNumber,
+					name: comprehensiveTestData.name,
+					natalSex: comprehensiveTestData.natalSex,
+					postalCode: comprehensiveTestData.postalCode,
+					state: comprehensiveTestData.state,
+					workPhoneNumber: comprehensiveTestData.workPhoneNumber,
+				}),
+			);
+		});
+	});
 });
