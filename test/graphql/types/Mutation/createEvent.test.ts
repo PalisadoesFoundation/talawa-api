@@ -50,12 +50,38 @@ const createEvent = async (
 		variables,
 	});
 
+// Helper to generate a future date
+const getFutureDate = (daysFromNow: number, hours = 10) => {
+	const date = new Date();
+	date.setDate(date.getDate() + daysFromNow);
+	date.setUTCHours(hours, 0, 0, 0);
+	return date.toISOString();
+};
+
+// Helper to generate a past date
+const getPastDate = (daysAgo: number, hours = 10) => {
+	const date = new Date();
+	date.setDate(date.getDate() - daysAgo);
+	date.setUTCHours(hours, 0, 0, 0);
+	return date.toISOString();
+};
+
+// Helper to generate next New Year's date
+const getNextNewYearISO = (hours = 0, minutes = 0) => {
+	const now = new Date();
+	const currentYear = now.getFullYear();
+	const nextNewYear = new Date(
+		Date.UTC(currentYear + 1, 0, 1, hours, minutes, 0, 0),
+	); // January 1st of next year in UTC
+	return nextNewYear.toISOString();
+};
+
 // Standard event input for consistent testing
 const baseEventInput = (organizationId: string) => ({
 	name: "Test Event",
 	description: "Test Description",
-	startAt: "2025-01-01T10:00:00Z",
-	endAt: "2025-01-01T12:00:00Z",
+	startAt: getFutureDate(30, 10), // 30 days from now at 10:00
+	endAt: getFutureDate(30, 12), // 30 days from now at 12:00
 	organizationId,
 });
 
@@ -198,8 +224,8 @@ suite("Mutation field createEvent", () => {
 			const result = await createEvent({
 				input: {
 					...baseEventInput(organizationId),
-					startAt: "2025-01-01T12:00:00Z",
-					endAt: "2025-01-01T10:00:00Z",
+					startAt: getFutureDate(1, 12), // 1 day from now at 12:00
+					endAt: getFutureDate(1, 10), // 1 day from now at 10:00 (invalid - ends before start)
 				},
 			});
 
@@ -239,8 +265,8 @@ suite("Mutation field createEvent", () => {
 			const result = await createEvent({
 				input: {
 					...baseEventInput(organizationId),
-					startAt: "2020-01-01T10:00:00Z",
-					endAt: "2020-01-01T12:00:00Z",
+					startAt: getPastDate(1, 10), // 1 day ago at 10:00
+					endAt: getPastDate(1, 12), // 1 day ago at 12:00
 				},
 			});
 			expect(result.data?.createEvent).toEqual(null);
@@ -331,7 +357,7 @@ suite("Mutation field createEvent", () => {
 						frequency: "WEEKLY",
 						interval: 1,
 						count: 5,
-						endDate: "2025-03-01T00:00:00Z",
+						endDate: getFutureDate(60, 0), // 60 days from now at midnight
 					},
 				},
 			});
@@ -394,8 +420,8 @@ suite("Mutation field createEvent", () => {
 				input: {
 					name: "Test Event",
 					description: "Test Description",
-					startAt: "2025-01-01T10:00:00Z",
-					endAt: "2025-01-01T12:00:00Z",
+					startAt: getFutureDate(1, 10), // 1 day from now at 10:00
+					endAt: getFutureDate(1, 12), // 1 day from now at 12:00
 					organizationId: "test-org-id",
 					attachments: [Promise.resolve(validAttachment)],
 				},
@@ -418,8 +444,8 @@ suite("Mutation field createEvent", () => {
 				input: {
 					name: "Test Event",
 					description: "Test Description",
-					startAt: "2025-01-01T10:00:00Z",
-					endAt: "2025-01-01T12:00:00Z",
+					startAt: getFutureDate(1, 10), // 1 day from now at 10:00
+					endAt: getFutureDate(1, 12), // 1 day from now at 12:00
 					organizationId: "test-org-id",
 					attachments: [Promise.resolve(invalidAttachment)],
 				},
@@ -567,8 +593,8 @@ suite("Mutation field createEvent", () => {
 				input: {
 					...baseEventInput(organizationId),
 					name: "Multi-day Event",
-					startAt: "2025-01-01T10:00:00Z",
-					endAt: "2025-01-03T18:00:00Z",
+					startAt: getFutureDate(1, 10), // 1 day from now at 10:00
+					endAt: getFutureDate(3, 18), // 3 days from now at 18:00
 				},
 			});
 
@@ -681,7 +707,7 @@ suite("Mutation field createEvent", () => {
 					recurrence: {
 						frequency: "WEEKLY",
 						interval: 1,
-						endDate: "2025-03-01T00:00:00Z",
+						endDate: getFutureDate(60, 0), // 60 days from now at midnight
 					},
 				},
 			});
@@ -777,8 +803,8 @@ suite("Mutation field createEvent", () => {
 										organizationId,
 										creatorId: "test-creator-id",
 										description: "Test Description",
-										startAt: new Date("2025-01-01T10:00:00Z"),
-										endAt: new Date("2025-01-01T12:00:00Z"),
+										startAt: new Date(getFutureDate(1, 10)),
+										endAt: new Date(getFutureDate(1, 12)),
 										isRecurringEventTemplate: true,
 									},
 								]);
@@ -839,8 +865,8 @@ suite("Mutation field createEvent", () => {
 				input: {
 					...baseEventInput(organizationId),
 					name: "New Year Celebration",
-					startAt: "2025-01-01T00:00:00Z",
-					endAt: "2025-01-01T01:00:00Z",
+					startAt: getNextNewYearISO(0, 0), // Next January 1st at 00:00:00Z
+					endAt: getNextNewYearISO(1, 0), // Next January 1st at 01:00:00Z
 				},
 			});
 
@@ -918,8 +944,8 @@ suite("Mutation field createEvent", () => {
 				input: {
 					...baseEventInput(organizationId),
 					name: "Midnight Launch Event",
-					startAt: "2025-01-01T00:00:00Z",
-					endAt: "2025-01-01T00:30:00Z",
+					startAt: getNextNewYearISO(0, 0), // Next January 1st at 00:00:00Z
+					endAt: getNextNewYearISO(0, 30), // Next January 1st at 00:30:00Z
 				},
 			});
 
