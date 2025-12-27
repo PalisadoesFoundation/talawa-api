@@ -135,14 +135,12 @@ builder.mutationField("updateCurrentUser", (t) =>
 				}
 			}
 
-			let avatarMimeType: z.infer<typeof imageMimeTypeEnum>;
-			let avatarName: string;
-
-			if (isNotNullish(parsedArgs.input.avatar)) {
-				avatarName =
-					currentUser.avatarName === null ? ulid() : currentUser.avatarName;
-				avatarMimeType = parsedArgs.input.avatar.mimetype;
-			}
+			const avatarUpdate = isNotNullish(parsedArgs.input.avatar)
+				? {
+						avatarName: currentUser.avatarName === null ? ulid() : currentUser.avatarName,
+						avatarMimeType: parsedArgs.input.avatar.mimetype,
+				  }
+				: null;
 
 			return await ctx.drizzleClient.transaction(async (tx) => {
 				const updateResult = await tx
@@ -153,14 +151,14 @@ builder.mutationField("updateCurrentUser", (t) =>
 						avatarMimeType:
 							parsedArgs.input.avatar === undefined
 								? undefined // Do not update if undefined
-								: isNotNullish(parsedArgs.input.avatar)
-									? avatarMimeType
+								: avatarUpdate !== null
+									? avatarUpdate.avatarMimeType
 									: null, // Set to null if null
 						avatarName:
 							parsedArgs.input.avatar === undefined
 								? undefined // Do not update if undefined
-								: isNotNullish(parsedArgs.input.avatar)
-									? avatarName
+								: avatarUpdate !== null
+									? avatarUpdate.avatarName
 									: null, // Set to null if null
 						birthDate: parsedArgs.input.birthDate,
 						city: parsedArgs.input.city,
@@ -201,7 +199,7 @@ builder.mutationField("updateCurrentUser", (t) =>
 				if (isNotNullish(parsedArgs.input.avatar)) {
 					await ctx.minio.client.putObject(
 						ctx.minio.bucketName,
-						avatarName,
+						avatarUpdate!.avatarName,
 						parsedArgs.input.avatar.createReadStream(),
 						undefined,
 						{
