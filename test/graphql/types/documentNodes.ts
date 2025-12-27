@@ -220,18 +220,6 @@ export const Query_signIn = gql(`query Query_signIn($input: QuerySignInInput!) {
     }
 }`);
 
-export const Mutation_refreshToken =
-	gql(`mutation Mutation_refreshToken($refreshToken: String!) {
-    refreshToken(refreshToken: $refreshToken) {
-        authenticationToken
-        refreshToken
-        user {
-            id
-            name
-        }
-    }
-}`);
-
 export const Mutation_revokeRefreshToken =
 	gql(`mutation Mutation_revokeRefreshToken($refreshToken: String!) {
     revokeRefreshToken(refreshToken: $refreshToken)
