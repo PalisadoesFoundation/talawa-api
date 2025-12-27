@@ -76,28 +76,26 @@ suite("Mutation field unblockUser", () => {
 		const adminToken = adminSignInResult.data.signIn?.authenticationToken;
 		assertToBeNonNullish(adminToken);
 
-		if (adminToken) {
-			// Delete created users
-			for (const userToken of createdResources.userTokens) {
-				try {
-					await mercuriusClient.mutate(Mutation_deleteCurrentUser, {
-						headers: { authorization: `bearer ${userToken}` },
-					});
-				} catch (_error) {
-					// User might already be deleted, continue
-				}
+		// Delete created users
+		for (const userToken of createdResources.userTokens) {
+			try {
+				await mercuriusClient.mutate(Mutation_deleteCurrentUser, {
+					headers: { authorization: `bearer ${userToken}` },
+				});
+			} catch (_error) {
+				// User might already be deleted, continue
 			}
+		}
 
-			// Delete organizations
-			for (const orgId of createdResources.organizationIds) {
-				try {
-					await mercuriusClient.mutate(Mutation_deleteOrganization, {
-						headers: { authorization: `bearer ${adminToken}` },
-						variables: { input: { id: orgId } },
-					});
-				} catch (_error) {
-					// Organization might already be deleted, continue
-				}
+		// Delete organizations
+		for (const orgId of createdResources.organizationIds) {
+			try {
+				await mercuriusClient.mutate(Mutation_deleteOrganization, {
+					headers: { authorization: `bearer ${adminToken}` },
+					variables: { input: { id: orgId } },
+				});
+			} catch (_error) {
+				// Organization might already be deleted, continue
 			}
 		}
 
