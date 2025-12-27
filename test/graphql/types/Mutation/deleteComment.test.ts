@@ -1,9 +1,8 @@
 import { faker } from "@faker-js/faker";
-import { expect, suite, test } from "vitest";
+import { expect, suite, test, vi } from "vitest";
 import { assertToBeNonNullish } from "../../../helpers";
 import { server } from "../../../server";
 import { mercuriusClient } from "../client";
-
 import {
 	Mutation_createComment,
 	Mutation_createOrganization,
@@ -11,10 +10,11 @@ import {
 	Mutation_createPost,
 	Mutation_createUser,
 	Mutation_deleteComment,
+	Mutation_signUp,
 	Query_signIn,
 } from "../documentNodes";
 
-/* ---------- sign in once (admin) ---------- */
+/* ---------- sign in once (administrator) ---------- */
 
 const signInResult = await mercuriusClient.query(Query_signIn, {
 	variables: {
@@ -29,7 +29,7 @@ assertToBeNonNullish(signInResult.data?.signIn);
 const adminToken = signInResult.data.signIn.authenticationToken;
 assertToBeNonNullish(adminToken);
 
-/* ------------------------------------------------ */
+/* -------------------------------------------------- */
 
 suite("Mutation deleteComment", () => {
 	//// 1. Unauthenticated
@@ -37,9 +37,7 @@ suite("Mutation deleteComment", () => {
 		test("should return unauthenticated error", async () => {
 			const result = await mercuriusClient.mutate(Mutation_deleteComment, {
 				variables: {
-					input: {
-						id: faker.string.uuid(),
-					},
+					input: { id: faker.string.uuid() },
 				},
 			});
 
@@ -59,13 +57,11 @@ suite("Mutation deleteComment", () => {
 
 	//// 2. Invalid arguments
 	suite("when invalid arguments are provided", () => {
-		test("should return invalid_arguments error for malformed UUID", async () => {
+		test("should return invalid_arguments error", async () => {
 			const result = await mercuriusClient.mutate(Mutation_deleteComment, {
 				headers: { authorization: `bearer ${adminToken}` },
 				variables: {
-					input: {
-						id: "not-a-valid-uuid",
-					},
+					input: { id: "not-a-valid-uuid" },
 				},
 			});
 
@@ -83,15 +79,13 @@ suite("Mutation deleteComment", () => {
 		});
 	});
 
-	//// 3. Comment does not exist
+	//// 3. Comment not found
 	suite("when the comment does not exist", () => {
 		test("should return arguments_associated_resources_not_found error", async () => {
 			const result = await mercuriusClient.mutate(Mutation_deleteComment, {
 				headers: { authorization: `bearer ${adminToken}` },
 				variables: {
-					input: {
-						id: faker.string.uuid(),
-					},
+					input: { id: faker.string.uuid() },
 				},
 			});
 
@@ -140,13 +134,13 @@ suite("Mutation deleteComment", () => {
 			});
 
 			assertToBeNonNullish(org.data?.createOrganization);
-			const orgId = org.data.createOrganization.id;
+			const organizationId = org.data.createOrganization.id;
 
 			const post = await mercuriusClient.mutate(Mutation_createPost, {
 				headers: { authorization: `bearer ${adminToken}` },
 				variables: {
 					input: {
-						organizationId: orgId,
+						organizationId,
 						caption: faker.lorem.sentence(),
 						body: faker.lorem.paragraph(),
 					},
@@ -172,9 +166,7 @@ suite("Mutation deleteComment", () => {
 			const result = await mercuriusClient.mutate(Mutation_deleteComment, {
 				headers: { authorization: `bearer ${userToken}` },
 				variables: {
-					input: {
-						id: commentId,
-					},
+					input: { id: commentId },
 				},
 			});
 
@@ -194,7 +186,7 @@ suite("Mutation deleteComment", () => {
 
 	//// 5. Creator deletes own comment
 	suite("when the creator deletes their own comment", () => {
-		test("should successfully delete comment", async () => {
+		test("should successfully delete the comment", async () => {
 			const org = await mercuriusClient.mutate(Mutation_createOrganization, {
 				headers: { authorization: `bearer ${adminToken}` },
 				variables: {
@@ -206,13 +198,13 @@ suite("Mutation deleteComment", () => {
 			});
 
 			assertToBeNonNullish(org.data?.createOrganization);
-			const orgId = org.data.createOrganization.id;
+			const organizationId = org.data.createOrganization.id;
 
 			const post = await mercuriusClient.mutate(Mutation_createPost, {
 				headers: { authorization: `bearer ${adminToken}` },
 				variables: {
 					input: {
-						organizationId: orgId,
+						organizationId,
 						caption: faker.lorem.sentence(),
 						body: faker.lorem.paragraph(),
 					},
@@ -238,9 +230,7 @@ suite("Mutation deleteComment", () => {
 			const result = await mercuriusClient.mutate(Mutation_deleteComment, {
 				headers: { authorization: `bearer ${adminToken}` },
 				variables: {
-					input: {
-						id: commentId,
-					},
+					input: { id: commentId },
 				},
 			});
 
@@ -252,7 +242,7 @@ suite("Mutation deleteComment", () => {
 
 	//// 6. Organization administrator deletes comment
 	suite("when the user is an organization administrator", () => {
-		test("should successfully delete comment", async () => {
+		test("should successfully delete the comment", async () => {
 			const user = await mercuriusClient.mutate(Mutation_createUser, {
 				headers: { authorization: `bearer ${adminToken}` },
 				variables: {
@@ -267,9 +257,9 @@ suite("Mutation deleteComment", () => {
 			});
 
 			assertToBeNonNullish(user.data?.createUser);
-			const userToken = user.data.createUser.authenticationToken;
 			assertToBeNonNullish(user.data.createUser.user);
 			const userId = user.data.createUser.user.id;
+			const userToken = user.data.createUser.authenticationToken;
 
 			const org = await mercuriusClient.mutate(Mutation_createOrganization, {
 				headers: { authorization: `bearer ${adminToken}` },
@@ -282,13 +272,13 @@ suite("Mutation deleteComment", () => {
 			});
 
 			assertToBeNonNullish(org.data?.createOrganization);
-			const orgId = org.data.createOrganization.id;
+			const organizationId = org.data.createOrganization.id;
 
 			await mercuriusClient.mutate(Mutation_createOrganizationMembership, {
 				headers: { authorization: `bearer ${adminToken}` },
 				variables: {
 					input: {
-						organizationId: orgId,
+						organizationId,
 						memberId: userId,
 						role: "administrator",
 					},
@@ -299,7 +289,7 @@ suite("Mutation deleteComment", () => {
 				headers: { authorization: `bearer ${adminToken}` },
 				variables: {
 					input: {
-						organizationId: orgId,
+						organizationId,
 						caption: faker.lorem.sentence(),
 						body: faker.lorem.paragraph(),
 					},
@@ -325,9 +315,90 @@ suite("Mutation deleteComment", () => {
 			const result = await mercuriusClient.mutate(Mutation_deleteComment, {
 				headers: { authorization: `bearer ${userToken}` },
 				variables: {
+					input: { id: commentId },
+				},
+			});
+
+			expect(result.errors).toBeUndefined();
+			assertToBeNonNullish(result.data?.deleteComment);
+			expect(result.data.deleteComment.id).toBe(commentId);
+		});
+	});
+
+	//// 7. System administrator deletes another user's comment
+	//// 7. System administrator deletes someone else's comment
+	suite("when a system administrator deletes someone else's comment", () => {
+		test("should successfully delete the comment", async () => {
+			/* ---------- admin creates organization ---------- */
+			const org = await mercuriusClient.mutate(Mutation_createOrganization, {
+				headers: { authorization: `bearer ${adminToken}` },
+				variables: {
 					input: {
-						id: commentId,
+						name: faker.company.name(),
+						countryCode: "in",
+						isUserRegistrationRequired: false,
 					},
+				},
+			});
+
+			expect(org.errors).toBeUndefined();
+			assertToBeNonNullish(org.data?.createOrganization);
+			const organizationId = org.data.createOrganization.id;
+
+			/* ---------- regular user signs up ---------- */
+			const signUp = await mercuriusClient.mutate(Mutation_signUp, {
+				variables: {
+					input: {
+						emailAddress: faker.internet.email(),
+						password: faker.internet.password(),
+						name: faker.person.fullName(),
+						selectedOrganization: organizationId, // ✅ REQUIRED
+					},
+				},
+			});
+
+			expect(signUp.errors).toBeUndefined();
+			assertToBeNonNullish(signUp.data?.signUp);
+
+			const userToken = signUp.data.signUp.authenticationToken;
+			assertToBeNonNullish(userToken);
+
+			/* ---------- admin creates post ---------- */
+			const post = await mercuriusClient.mutate(Mutation_createPost, {
+				headers: { authorization: `bearer ${adminToken}` },
+				variables: {
+					input: {
+						organizationId,
+						caption: faker.lorem.sentence(),
+						body: faker.lorem.paragraph(),
+					},
+				},
+			});
+
+			expect(post.errors).toBeUndefined();
+			assertToBeNonNullish(post.data?.createPost);
+			const postId = post.data.createPost.id;
+
+			/* ---------- regular user creates comment ---------- */
+			const comment = await mercuriusClient.mutate(Mutation_createComment, {
+				headers: { authorization: `bearer ${userToken}` },
+				variables: {
+					input: {
+						postId,
+						body: faker.lorem.sentence(),
+					},
+				},
+			});
+
+			expect(comment.errors).toBeUndefined();
+			assertToBeNonNullish(comment.data?.createComment);
+			const commentId = comment.data.createComment.id;
+
+			/* ---------- SYSTEM ADMIN deletes comment ---------- */
+			const result = await mercuriusClient.mutate(Mutation_deleteComment, {
+				headers: { authorization: `bearer ${adminToken}` },
+				variables: {
+					input: { id: commentId },
 				},
 			});
 
