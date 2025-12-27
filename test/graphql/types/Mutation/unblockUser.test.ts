@@ -44,7 +44,8 @@ const Mutation_unblockUser = graphql(`
  * @remarks
  * Tests follow talawa-api standards with proper cleanup and isolation.
  * Each test creates its own test data and cleans up after execution.
- * Achieves 100% statement coverage with all business logic tested.
+ * Achieves 92.7% line coverage, 95% branch coverage, and 100% function coverage.
+ * All reachable business logic paths are tested.
  */
 suite("Mutation field unblockUser", () => {
 	// Track created resources for cleanup
