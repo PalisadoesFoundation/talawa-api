@@ -76,9 +76,10 @@ async function createRegularUser(): Promise<{ token: string; userId: string }> {
 	assertToBeNonNullish(orgResult.data?.createOrganization?.id);
 	const tempOrgId = orgResult.data.createOrganization.id as string;
 
-	// Register user
-	const registerResult = await mercuriusClient.mutate(
-		gql(`
+	try {
+		// Register user
+		const registerResult = await mercuriusClient.mutate(
+			gql(`
       mutation SignUp($input: MutationSignUpInput!) {
         signUp(input: $input) {
           authenticationToken
@@ -88,31 +89,32 @@ async function createRegularUser(): Promise<{ token: string; userId: string }> {
         }
       }
     `),
-		{
-			variables: {
-				input: {
-					emailAddress,
-					password,
-					name: "Regular User",
-					selectedOrganization: tempOrgId,
+			{
+				variables: {
+					input: {
+						emailAddress,
+						password,
+						name: "Regular User",
+						selectedOrganization: tempOrgId,
+					},
 				},
 			},
-		},
-	);
+		);
 
-	assertToBeNonNullish(registerResult.data?.signUp?.authenticationToken);
-	assertToBeNonNullish(registerResult.data?.signUp?.user);
+		assertToBeNonNullish(registerResult.data?.signUp?.authenticationToken);
+		assertToBeNonNullish(registerResult.data?.signUp?.user);
 
-	// Delete temp org
-	await mercuriusClient.mutate(Mutation_deleteOrganization, {
-		headers: { authorization: `bearer ${adminAuth.token}` },
-		variables: { input: { id: tempOrgId } },
-	});
-
-	return {
-		token: registerResult.data.signUp.authenticationToken,
-		userId: registerResult.data.signUp.user.id,
-	};
+		return {
+			token: registerResult.data.signUp.authenticationToken,
+			userId: registerResult.data.signUp.user.id,
+		};
+	} finally {
+		// Always delete temp org, even if signUp fails
+		await mercuriusClient.mutate(Mutation_deleteOrganization, {
+			headers: { authorization: `bearer ${adminAuth.token}` },
+			variables: { input: { id: tempOrgId } },
+		});
+	}
 }
 
 /**
