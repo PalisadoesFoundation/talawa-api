@@ -517,7 +517,7 @@ suite("Mutation field createAdvertisement", () => {
 	suite("when creating advertisement successfully", () => {
 		test("should create advertisement without attachments", async () => {
 			const orgId = await createTestOrganization(authToken);
-			const startDate = new Date();
+			const startDate = new Date(Date.now() + 5 * 60 * 1000);
 			const endDate = new Date(Date.now() + ONE_WEEK_MS);
 
 			const result = await mercuriusClient.mutate(
@@ -681,7 +681,7 @@ suite("Mutation field createAdvertisement", () => {
 
 		test("should validate date range - endAt must be after startAt", async () => {
 			const orgId = await createTestOrganization(authToken);
-			const startDate = new Date();
+			const startDate = new Date(Date.now() + 5 * 60 * 1000);
 			const endDate = new Date(Date.now() - ONE_DAY_MS);
 
 			const result = await mercuriusClient.mutate(
