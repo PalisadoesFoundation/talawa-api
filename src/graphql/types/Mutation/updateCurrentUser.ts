@@ -111,13 +111,16 @@ builder.mutationField("updateCurrentUser", (t) =>
 				const existingUserWithEmailAddress =
 					await ctx.drizzleClient.query.usersTable.findFirst({
 						columns: {
-							role: true,
+							id: true,
 						},
 						where: (fields, operators) =>
 							operators.eq(fields.emailAddress, emailAddress),
 					});
 
-				if (existingUserWithEmailAddress !== undefined) {
+				if (
+					existingUserWithEmailAddress !== undefined &&
+					existingUserWithEmailAddress.id !== currentUserId
+				) {
 					throw new TalawaGraphQLError({
 						extensions: {
 							code: "forbidden_action_on_arguments_associated_resources",
@@ -142,17 +145,23 @@ builder.mutationField("updateCurrentUser", (t) =>
 			}
 
 			return await ctx.drizzleClient.transaction(async (tx) => {
-				const [updatedCurrentUser] = await tx
+				const updateResult = await tx
 					.update(usersTable)
 					.set({
 						addressLine1: parsedArgs.input.addressLine1,
 						addressLine2: parsedArgs.input.addressLine2,
-						avatarMimeType: isNotNullish(parsedArgs.input.avatar)
-							? avatarMimeType
-							: null,
-						avatarName: isNotNullish(parsedArgs.input.avatar)
-							? avatarName
-							: null,
+						avatarMimeType:
+							parsedArgs.input.avatar === undefined
+								? undefined // Do not update if undefined
+								: isNotNullish(parsedArgs.input.avatar)
+									? avatarMimeType
+									: null, // Set to null if null
+						avatarName:
+							parsedArgs.input.avatar === undefined
+								? undefined // Do not update if undefined
+								: isNotNullish(parsedArgs.input.avatar)
+									? avatarName
+									: null, // Set to null if null
 						birthDate: parsedArgs.input.birthDate,
 						city: parsedArgs.input.city,
 						countryCode: parsedArgs.input.countryCode,
@@ -179,13 +188,15 @@ builder.mutationField("updateCurrentUser", (t) =>
 					.returning();
 
 				// Updated user not being returned means that either it was deleted or its `id` column was changed by an external entity before this update operation which correspondingly means that the current client is using an invalid authentication token which hasn't expired yet.
-				if (updatedCurrentUser === undefined) {
+				if (!updateResult || updateResult.length === 0) {
 					throw new TalawaGraphQLError({
 						extensions: {
 							code: "unauthenticated",
 						},
 					});
 				}
+
+				const updatedCurrentUser = updateResult[0];
 
 				if (isNotNullish(parsedArgs.input.avatar)) {
 					await ctx.minio.client.putObject(
