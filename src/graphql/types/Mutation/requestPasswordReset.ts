@@ -40,6 +40,9 @@ builder.mutationField("requestPasswordReset", (t) =>
 		description:
 			"Request a password reset. If the email exists, a reset link will be sent. Returns the same response whether the email exists or not to prevent user enumeration.",
 		resolve: async (_parent, args, ctx) => {
+			// Track start time for timing attack mitigation
+			const startTime = Date.now();
+
 			// Authenticated users should not request password reset
 			if (ctx.currentClient.isAuthenticated) {
 				throw new TalawaGraphQLError({
@@ -155,6 +158,16 @@ builder.mutationField("requestPasswordReset", (t) =>
 						"Failed to send password reset email (exception)",
 					);
 				}
+			}
+
+			// Timing attack mitigation: ensure minimum response time of 200ms
+			// to prevent attackers from detecting email existence via timing
+			const MIN_RESPONSE_TIME_MS = 200;
+			const elapsed = Date.now() - startTime;
+			if (elapsed < MIN_RESPONSE_TIME_MS) {
+				await new Promise((resolve) =>
+					setTimeout(resolve, MIN_RESPONSE_TIME_MS - elapsed),
+				);
 			}
 
 			// Always return the same response to prevent email enumeration

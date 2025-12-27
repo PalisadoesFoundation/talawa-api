@@ -173,6 +173,64 @@ suite("Mutation field resetPassword", () => {
 				);
 			});
 
+			test("token is empty string", async () => {
+				const result = await mercuriusClient.mutate(Mutation_resetPassword, {
+					variables: {
+						input: {
+							token: "",
+							newPassword: "validPassword123",
+						},
+					},
+				});
+
+				expect(result.data.resetPassword).toEqual(null);
+				expect(result.errors).toEqual(
+					expect.arrayContaining<TalawaGraphQLFormattedError>([
+						expect.objectContaining<TalawaGraphQLFormattedError>({
+							extensions: expect.objectContaining<InvalidArgumentsExtensions>({
+								code: "invalid_arguments",
+								issues: expect.arrayContaining([
+									expect.objectContaining({
+										argumentPath: ["input", "token"],
+									}),
+								]),
+							}),
+							message: expect.any(String),
+							path: ["resetPassword"],
+						}),
+					]),
+				);
+			});
+
+			test("token exceeds maximum length", async () => {
+				const result = await mercuriusClient.mutate(Mutation_resetPassword, {
+					variables: {
+						input: {
+							token: "a".repeat(129), // Max is 128
+							newPassword: "validPassword123",
+						},
+					},
+				});
+
+				expect(result.data.resetPassword).toEqual(null);
+				expect(result.errors).toEqual(
+					expect.arrayContaining<TalawaGraphQLFormattedError>([
+						expect.objectContaining<TalawaGraphQLFormattedError>({
+							extensions: expect.objectContaining<InvalidArgumentsExtensions>({
+								code: "invalid_arguments",
+								issues: expect.arrayContaining([
+									expect.objectContaining({
+										argumentPath: ["input", "token"],
+									}),
+								]),
+							}),
+							message: expect.any(String),
+							path: ["resetPassword"],
+						}),
+					]),
+				);
+			});
+
 			test("password is too short", async () => {
 				// Create a new token for this test
 				const shortPwToken = faker.string.hexadecimal({ length: 64 }).slice(2);
@@ -203,6 +261,46 @@ suite("Mutation field resetPassword", () => {
 									expect.objectContaining({
 										argumentPath: ["input", "newPassword"],
 										message: expect.stringContaining("8"),
+									}),
+								]),
+							}),
+							message: expect.any(String),
+							path: ["resetPassword"],
+						}),
+					]),
+				);
+			});
+
+			test("password exceeds maximum length", async () => {
+				// Create a new token for this test
+				const longPwToken = faker.string.hexadecimal({ length: 64 }).slice(2);
+				const longPwTokenHash = hashPasswordResetToken(longPwToken);
+				const expiresAt = new Date(Date.now() + 3600000);
+
+				await server.drizzleClient.execute(
+					sql`INSERT INTO password_reset_tokens (id, token_hash, user_id, expires_at, created_at)
+					VALUES (gen_random_uuid(), ${longPwTokenHash}, ${testUserId}, ${expiresAt.toISOString()}::timestamptz, NOW())`,
+				);
+
+				const result = await mercuriusClient.mutate(Mutation_resetPassword, {
+					variables: {
+						input: {
+							token: longPwToken,
+							newPassword: "a".repeat(65), // Max is 64
+						},
+					},
+				});
+
+				expect(result.data.resetPassword).toEqual(null);
+				expect(result.errors).toEqual(
+					expect.arrayContaining<TalawaGraphQLFormattedError>([
+						expect.objectContaining<TalawaGraphQLFormattedError>({
+							extensions: expect.objectContaining<InvalidArgumentsExtensions>({
+								code: "invalid_arguments",
+								issues: expect.arrayContaining([
+									expect.objectContaining({
+										argumentPath: ["input", "newPassword"],
+										message: expect.stringContaining("64"),
 									}),
 								]),
 							}),

@@ -2,7 +2,7 @@ CREATE TABLE "password_reset_tokens" (
 	"id" uuid PRIMARY KEY NOT NULL,
 	"token_hash" text NOT NULL,
 	"user_id" uuid NOT NULL,
-	"expires_at" timestamp (3) with time zone NOT NULL,
+	"expires_at" timestamp (3) with time zone,
 	"used_at" timestamp (3) with time zone,
 	"created_at" timestamp (3) with time zone DEFAULT now() NOT NULL
 );

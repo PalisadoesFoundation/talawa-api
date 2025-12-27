@@ -5,6 +5,7 @@ import { afterAll, beforeAll, expect, suite, test } from "vitest";
 import { hashPasswordResetToken } from "~/src/utilities/passwordResetTokenUtils";
 import type {
 	ForbiddenActionExtensions,
+	InvalidArgumentsExtensions,
 	TalawaGraphQLFormattedError,
 } from "~/src/utilities/TalawaGraphQLError";
 import { server } from "../../../server";
@@ -90,11 +91,72 @@ suite("Query field verifyPasswordResetToken", () => {
 		});
 	});
 
-	/*
-	 * NOTE: Lines 48-57 (Zod invalid_arguments block) are intentionally uncovered.
-	 * GraphQL schema validates the token input format before Zod validation can run,
-	 * making this defensive check unreachable via normal GraphQL requests.
-	 */
+	suite(
+		"results in a graphql error with invalid_arguments extensions code if",
+		() => {
+			test("token is empty string", async () => {
+				const result = await mercuriusClient.query(
+					Query_verifyPasswordResetToken,
+					{
+						variables: {
+							input: {
+								token: "",
+							},
+						},
+					},
+				);
+
+				expect(result.data.verifyPasswordResetToken).toEqual(null);
+				expect(result.errors).toEqual(
+					expect.arrayContaining<TalawaGraphQLFormattedError>([
+						expect.objectContaining<TalawaGraphQLFormattedError>({
+							extensions: expect.objectContaining<InvalidArgumentsExtensions>({
+								code: "invalid_arguments",
+								issues: expect.arrayContaining([
+									expect.objectContaining({
+										argumentPath: ["input", "token"],
+									}),
+								]),
+							}),
+							message: expect.any(String),
+							path: ["verifyPasswordResetToken"],
+						}),
+					]),
+				);
+			});
+
+			test("token exceeds maximum length", async () => {
+				const result = await mercuriusClient.query(
+					Query_verifyPasswordResetToken,
+					{
+						variables: {
+							input: {
+								token: "a".repeat(129), // Max is 128
+							},
+						},
+					},
+				);
+
+				expect(result.data.verifyPasswordResetToken).toEqual(null);
+				expect(result.errors).toEqual(
+					expect.arrayContaining<TalawaGraphQLFormattedError>([
+						expect.objectContaining<TalawaGraphQLFormattedError>({
+							extensions: expect.objectContaining<InvalidArgumentsExtensions>({
+								code: "invalid_arguments",
+								issues: expect.arrayContaining([
+									expect.objectContaining({
+										argumentPath: ["input", "token"],
+									}),
+								]),
+							}),
+							message: expect.any(String),
+							path: ["verifyPasswordResetToken"],
+						}),
+					]),
+				);
+			});
+		},
+	);
 
 	suite(
 		"results in a graphql error with forbidden_action extensions code if",
