@@ -43,9 +43,10 @@ export const MutationUpdateFundCampaignInput = builder
 				description: "Date time at the time the fund campaign ends at.",
 				type: "DateTime",
 			}),
-			goalAmount: t.int({
+			goalAmount: t.field({
 				description:
 					"Minimum amount of money that is set as the goal for the fund campaign.",
+				type: "Int",
 			}),
 			id: t.id({
 				description: "Global identifier of the associated fund campaign.",

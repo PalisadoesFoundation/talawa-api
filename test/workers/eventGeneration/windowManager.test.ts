@@ -92,6 +92,7 @@ describe("windowManager", () => {
 		longitude: null,
 		isPublic: true,
 		isRegisterable: false,
+		isInviteOnly: false,
 		...overrides,
 	});
 

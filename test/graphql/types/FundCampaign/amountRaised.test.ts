@@ -292,14 +292,13 @@ describe("FundCampaign.amountRaised field resolver - Integration tests", () => {
 
 		try {
 			// Create Pledge
-			const pledgeAmount = 500;
 			const pledgeResult = await mercuriusClient.mutate(
 				Mutation_createFundCampaignPledge,
 				{
 					headers: { authorization: `bearer ${regularUser.token}` },
 					variables: {
 						input: {
-							amount: pledgeAmount,
+							amount: 500,
 							campaignId: fundCampaignId,
 							pledgerId: regularUser.userId,
 						},
@@ -318,7 +317,69 @@ describe("FundCampaign.amountRaised field resolver - Integration tests", () => {
 
 			expect(result.errors).toBeUndefined();
 			expect(result.data?.fundCampaign).toBeDefined();
-			expect(result.data?.fundCampaign?.amountRaised).toBe(pledgeAmount);
+			expect(result.data?.fundCampaign?.amountRaised).toBe("500");
+		} finally {
+			await cleanup();
+		}
+	});
+
+	it("correctly accumulates multiple pledges", async () => {
+		const adminAuth = await getAdminAuth();
+		const regularUser = await createRegularUser();
+		const { fundCampaignId, cleanup } = await createOrgFundCampaign(
+			adminAuth,
+			true,
+			regularUser.userId,
+		);
+
+		try {
+			// Pledge 1
+			await mercuriusClient.mutate(Mutation_createFundCampaignPledge, {
+				headers: { authorization: `bearer ${regularUser.token}` },
+				variables: {
+					input: {
+						amount: 500,
+						campaignId: fundCampaignId,
+						pledgerId: regularUser.userId,
+					},
+				},
+			});
+
+			// Pledge 2
+			await mercuriusClient.mutate(Mutation_createFundCampaignPledge, {
+				headers: { authorization: `bearer ${regularUser.token}` },
+				variables: {
+					input: {
+						amount: 750,
+						campaignId: fundCampaignId,
+						pledgerId: regularUser.userId,
+					},
+				},
+			});
+
+			// Pledge 3
+			await mercuriusClient.mutate(Mutation_createFundCampaignPledge, {
+				headers: { authorization: `bearer ${regularUser.token}` },
+				variables: {
+					input: {
+						amount: 250,
+						campaignId: fundCampaignId,
+						pledgerId: regularUser.userId,
+					},
+				},
+			});
+
+			const result = await mercuriusClient.query(
+				Query_fundCampaign_amountRaised,
+				{
+					headers: { authorization: `bearer ${adminAuth.token}` },
+					variables: { id: fundCampaignId },
+				},
+			);
+
+			// Total = 500 + 750 + 250 = 1500
+			expect(result.errors).toBeUndefined();
+			expect(result.data?.fundCampaign?.amountRaised).toBe("1500");
 		} finally {
 			await cleanup();
 		}

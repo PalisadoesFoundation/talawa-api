@@ -10,8 +10,9 @@ FundCampaignPledge.implement({
 	description:
 		"Fund campaign pledges are records of monetary pledges that users make to funds of organizations under a fund campaign.",
 	fields: (t) => ({
-		amount: t.exposeInt("amount", {
+		amount: t.expose("amount", {
 			description: "The amount of pledged money.",
+			type: "Int",
 		}),
 		id: t.exposeID("id", {
 			description: "Global identifier of the fund campaign pledge.",

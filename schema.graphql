@@ -296,9 +296,7 @@ type AuthenticationPayload {
   user: User
 }
 
-"""
-The `BigInt` scalar type represents non-fractional signed whole numeric values.
-"""
+"""BigInt custom scalar type"""
 scalar BigInt
 
 """Represents a user blocked by an organization."""
@@ -718,6 +716,9 @@ type Event {
   The unique global identifier for the event. For recurring instances, this ID refers to the specific materialized instance.
   """
   id: ID!
+
+  """A boolean flag indicating if the event is invite-only."""
+  isInviteOnly: Boolean
 
   """A boolean flag indicating if the event is visible to the public."""
   isPublic: Boolean
@@ -1150,21 +1151,6 @@ enum EventVolunteersOrderByInput {
 
 input EventsByOrganizationIdInput {
   organizationId: ID!
-}
-
-"""Metadata for files uploaded via presigned URL"""
-input FileMetadataInput {
-  """Hash of the file for deduplication"""
-  fileHash: String!
-
-  """MIME type of the file"""
-  mimetype: PostAttachmentMimeType!
-
-  """Name of the file"""
-  name: String!
-
-  """Object name used in storage"""
-  objectName: String!
 }
 
 """Possible variants of the frequency of a recurring event."""
@@ -1970,6 +1956,12 @@ enum Iso4217CurrencyCode {
   ZWG
 }
 
+"""Result of a logout operation"""
+type LogoutResult {
+  """Whether the logout was successful"""
+  success: Boolean
+}
+
 input MarkActionItemAsPendingInput {
   id: ID!
 }
@@ -2293,6 +2285,11 @@ type Mutation {
     """Input to join a public organization"""
     input: MutationJoinPublicOrganizationInput!
   ): OrganizationMembershipObject
+
+  """
+  Mutation to log out the current user. Clears authentication cookies and revokes refresh tokens.
+  """
+  logout: LogoutResult
 
   """Mutation to mark a completed action item as pending"""
   markActionItemAsPending(input: MarkActionItemAsPendingInput!): ActionItem
@@ -2697,6 +2694,9 @@ input MutationCreateEventInput {
   """Date time at the time the event ends at."""
   endAt: DateTime!
 
+  """Indicates if the event is invite-only"""
+  isInviteOnly: Boolean
+
   """Indicates if the event is publicly visible"""
   isPublic: Boolean
 
@@ -2836,8 +2836,8 @@ input MutationCreateOrganizationMembershipInput {
 
 """Input for creating a new post"""
 input MutationCreatePostInput {
-  """Metadata for files already uploaded via presigned URL"""
-  attachments: [FileMetadataInput!]
+  """Direct file upload"""
+  attachment: Upload
 
   """Body content of the post."""
   body: String
@@ -3601,6 +3601,9 @@ input MutationUpdateEventInput {
   """Global identifier of the event."""
   id: ID!
 
+  """Indicates if the event is invite-only"""
+  isInviteOnly: Boolean
+
   """Indicates if the event is publicly visible."""
   isPublic: Boolean
 
@@ -3718,8 +3721,11 @@ input MutationUpdateOrganizationMembershipInput {
 
 """Input for updating a post."""
 input MutationUpdatePostInput {
-  """Metadata for files already uploaded via presigned URL"""
-  attachments: [FileMetadataInput!]
+  """Direct file upload"""
+  attachment: Upload
+
+  """Body content of the post."""
+  body: String
 
   """Caption about the post."""
   caption: String
@@ -3753,6 +3759,9 @@ input MutationUpdateSingleRecurringEventInstanceInput {
 
   """Global identifier of the recurring event instance to update."""
   id: ID!
+
+  """Whether this specific event instance is invite-only."""
+  isInviteOnly: Boolean
 
   """Whether this specific event instance is publicly visible."""
   isPublic: Boolean
@@ -3809,6 +3818,9 @@ input MutationUpdateThisAndFollowingEventsInput {
   Global identifier of the recurring event instance from which to update this and following instances.
   """
   id: ID!
+
+  """Whether this and following event instances are invite-only."""
+  isInviteOnly: Boolean
 
   """Whether this and following event instances are publicly visible."""
   isPublic: Boolean
@@ -4342,6 +4354,9 @@ type Plugin {
 }
 
 type Post {
+  """URL to the media attachment (image or video) of the post."""
+  attachmentURL: String
+
   """Array of attachments."""
   attachments: [PostAttachment!]
 
@@ -4421,16 +4436,6 @@ type PostAttachment {
 
   """Object name used when creating presigned URLs."""
   objectName: String
-}
-
-"""MIME types supported for post attachments"""
-enum PostAttachmentMimeType {
-  IMAGE_AVIF
-  IMAGE_JPEG
-  IMAGE_PNG
-  IMAGE_WEBP
-  VIDEO_MP4
-  VIDEO_WEBM
 }
 
 """"""

@@ -93,7 +93,7 @@ export const fundCampaignsTable = pgTable(
 			precision: 3,
 			withTimezone: true,
 		})
-			.$defaultFn(() => sql`${null}`)
+			.$defaultFn(() => sql`${null} `)
 			.$onUpdate(() => new Date()),
 		/**
 		 * Foreign key reference to the id of the user who last updated the fund campaign.

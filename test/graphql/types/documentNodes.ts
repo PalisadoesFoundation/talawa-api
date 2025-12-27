@@ -573,6 +573,7 @@ export const Query_event = gql(`query Query_event($input: QueryEventInput!) {
         description
         startAt
         endAt
+        isInviteOnly
         creator {
             id
             name
@@ -1234,6 +1235,7 @@ export const Query_eventsByIds = gql(`
       description
       startAt
       endAt
+      isInviteOnly
     }
   }
 `);
@@ -1661,6 +1663,7 @@ export const Mutation_updateSingleRecurringEventInstance = gql(`
       allDay
       isPublic
       isRegisterable
+      isInviteOnly
       hasExceptions
       sequenceNumber
       totalCount
@@ -1684,6 +1687,7 @@ export const Mutation_updateStandaloneEvent = gql(`
       allDay
       isPublic
       isRegisterable
+      isInviteOnly
       organization {
         id
         name
@@ -1707,6 +1711,7 @@ export const Mutation_updateThisAndFollowingEvents = gql(`
       allDay
       isPublic
       isRegisterable
+      isInviteOnly
       hasExceptions
       sequenceNumber
       totalCount
@@ -2552,3 +2557,15 @@ export const Query_community = gql(`
 		}
 	}
 `);
+
+export const Mutation_updateFundCampaignPledge =
+	gql(`mutation Mutation_updateFundCampaignPledge($input: MutationUpdateFundCampaignPledgeInput!) {
+    updateFundCampaignPledge(input: $input) {
+      id
+      note
+      amount
+      campaign {
+        amountRaised
+      }
+    }
+  }`);

@@ -665,7 +665,7 @@ suite("FundCampaign.pledges Integration Tests", () => {
 		assertToBeNonNullish(firstEdge);
 		assertToBeNonNullish(firstEdge.node);
 		expect(firstEdge.node.id).toBe(pledge.id);
-		expect(firstEdge.node.amount).toBe(5000);
+		expect(firstEdge.node.amount).toBe("5000");
 		expect(pageInfo.hasNextPage).toBe(false);
 		expect(pageInfo.hasPreviousPage).toBe(false);
 	});
@@ -1020,9 +1020,9 @@ suite("FundCampaign.pledges Integration Tests", () => {
 			assertToBeNonNullish(e.node);
 			return e.node.amount;
 		});
-		expect(amounts).toContain(1000);
-		expect(amounts).toContain(1500);
-		expect(amounts).toContain(3000);
+		expect(amounts).toContain("1000");
+		expect(amounts).toContain("1500");
+		expect(amounts).toContain("3000");
 	});
 
 	test("should traverse entire dataset using pagination", async () => {

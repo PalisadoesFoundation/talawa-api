@@ -44,10 +44,11 @@ export const MutationCreateFundCampaignInput = builder
 				description: "Global identifier of the associated fund.",
 				required: true,
 			}),
-			goalAmount: t.int({
+			goalAmount: t.field({
 				description:
 					"Minimum amount of money that is set as the goal for the fund campaign.",
 				required: true,
+				type: "Int",
 			}),
 			name: t.string({
 				description: "Name of the fund campaign.",

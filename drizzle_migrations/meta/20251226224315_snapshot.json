@@ -1,6 +1,6 @@
 {
-  "id": "70bdb96e-dcbf-480e-a145-48909acdaee6",
-  "prevId": "21dcdecd-b1b0-43cb-a0c0-77e89c511a35",
+  "id": "57f0bfcb-1f26-4ab1-820d-95af2a0084a4",
+  "prevId": "9a92d6bd-b7e6-4310-bfc1-2a1522bfe6ea",
   "version": "7",
   "dialect": "postgresql",
   "tables": {
@@ -3250,6 +3250,114 @@
           "method": "btree",
           "with": {}
         },
+        "event_attendees_user_invited_event_idx": {
+          "name": "event_attendees_user_invited_event_idx",
+          "columns": [
+            {
+              "expression": "user_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "is_invited",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "event_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "event_attendees_user_invited_recurring_instance_idx": {
+          "name": "event_attendees_user_invited_recurring_instance_idx",
+          "columns": [
+            {
+              "expression": "user_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "is_invited",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "recurring_event_instance_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "event_attendees_user_registered_event_idx": {
+          "name": "event_attendees_user_registered_event_idx",
+          "columns": [
+            {
+              "expression": "user_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "is_registered",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "event_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "event_attendees_user_registered_recurring_instance_idx": {
+          "name": "event_attendees_user_registered_recurring_instance_idx",
+          "columns": [
+            {
+              "expression": "user_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "is_registered",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "recurring_event_instance_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
         "event_attendees_created_at_idx": {
           "name": "event_attendees_created_at_idx",
           "columns": [
@@ -5005,6 +5113,13 @@
           "notNull": true,
           "default": false
         },
+        "is_invite_only": {
+          "name": "is_invite_only",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": false
+        },
         "is_public": {
           "name": "is_public",
           "type": "boolean",
@@ -5141,6 +5256,21 @@
           "columns": [
             {
               "expression": "all_day",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "events_is_invite_only_idx": {
+          "name": "events_is_invite_only_idx",
+          "columns": [
+            {
+              "expression": "is_invite_only",
               "isExpression": false,
               "asc": true,
               "nulls": "last"
