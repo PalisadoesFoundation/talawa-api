@@ -35,6 +35,7 @@ export const DEFAULT_ADMIN_PASSWORD_RESET_TOKEN_EXPIRES_SECONDS = 3_600;
  * @returns A 64-character hex string token
  */
 export function generatePasswordResetToken(): string {
+	// codeql[js/insufficient-password-hash] Generates cryptographically random token (256 bits entropy), not a user password
 	return randomBytes(32).toString("hex");
 }
 
@@ -107,11 +108,11 @@ export async function findValidPasswordResetToken(
 	tokenHash: string,
 ): Promise<
 	| {
-			id: string;
-			userId: string;
-			expiresAt: Date | null;
-			usedAt: Date | null;
-	  }
+		id: string;
+		userId: string;
+		expiresAt: Date | null;
+		usedAt: Date | null;
+	}
 	| undefined
 > {
 	// Combine all conditions in a single query to prevent timing attacks
