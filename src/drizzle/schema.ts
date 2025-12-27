@@ -134,6 +134,10 @@ export {
 	organizationsTable,
 	organizationsTableRelations,
 } from "./tables/organizations";
+export {
+	passwordResetTokensTable,
+	passwordResetTokensTableRelations,
+} from "./tables/passwordResetTokens";
 export { pluginsTable } from "./tables/plugins";
 export {
 	postAttachmentsTable,
