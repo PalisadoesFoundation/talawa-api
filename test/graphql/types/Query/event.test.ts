@@ -161,6 +161,7 @@ suite("Query field event", () => {
 	) {
 		const {
 			durationInHours = 24,
+			// Default to 24 hours in future because createEvent rejects past startAt
 			startOffset = 24 * 60 * 60 * 1000,
 			description = "Test Event",
 			name = "Test Event",
