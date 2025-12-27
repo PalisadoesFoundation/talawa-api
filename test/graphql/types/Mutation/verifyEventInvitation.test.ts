@@ -88,7 +88,7 @@ async function createTestEvent(organizationId: string): Promise<TestEvent> {
 
 	const { token: adminAuthToken, userId: adminId } = await ensureAdminAuth();
 	const startAt = new Date();
-	startAt.setHours(startAt.getHours() + 1);
+	startAt.setDate(startAt.getDate() + 1);
 	const endAt = new Date(startAt);
 	endAt.setHours(endAt.getHours() + 2);
 	await mercuriusClient.mutate(Mutation_createOrganizationMembership, {
@@ -423,7 +423,7 @@ suite("Mutation verifyEventInvitation - Integration Tests", () => {
 
 		const { token: adminAuth, userId: adminId } = await ensureAdminAuth();
 		const startAt = new Date();
-		startAt.setHours(startAt.getHours() + 1);
+		startAt.setDate(startAt.getDate() + 1);
 		const endAt = new Date(startAt);
 		endAt.setHours(endAt.getHours() + 2);
 

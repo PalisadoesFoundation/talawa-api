@@ -90,7 +90,7 @@ async function createEventAndVolunteer(organizationId: string, userId: string) {
 				organizationId,
 				name: "Test Event",
 				description: "Test event for action items",
-				startAt: new Date().toISOString(),
+				startAt: new Date(Date.now() + 5 * 60 * 1000).toISOString(),
 				endAt: new Date(Date.now() + 3600000).toISOString(),
 				location: "Test Location",
 			},

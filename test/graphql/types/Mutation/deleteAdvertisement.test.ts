@@ -87,7 +87,7 @@ async function createTestAdvertisement(token: string, organizationId: string) {
 				description: "Test advertisement for deletion",
 				organizationId,
 				type: "banner",
-				startAt: new Date().toISOString(),
+				startAt: new Date(Date.now() + 5 * 60 * 1000).toISOString(),
 				endAt: new Date(Date.now() + ONE_DAY_MS).toISOString(),
 			},
 		},

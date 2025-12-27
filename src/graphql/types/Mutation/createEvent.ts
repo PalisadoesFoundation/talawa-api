@@ -23,8 +23,19 @@ import {
 } from "~/src/utilities/recurringEventHelpers";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 
-const mutationCreateEventArgumentsSchema = z.object({
+export const mutationCreateEventArgumentsSchema = z.object({
 	input: mutationCreateEventInputSchema.transform(async (arg, ctx) => {
+		const now = new Date();
+		const gracePeriod = 2000; // 2 seconds for clock skew
+		if (arg.startAt.getTime() < now.getTime() - gracePeriod) {
+			ctx.addIssue({
+				code: "custom",
+				path: ["startAt"],
+				message:
+					"Start date must be in the future or within the next few seconds",
+			});
+		}
+
 		let attachments:
 			| (FileUpload & {
 					mimetype: z.infer<typeof eventAttachmentMimeTypeEnum>;

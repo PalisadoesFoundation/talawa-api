@@ -162,7 +162,7 @@ suite("Mutation deleteFundCampaign", () => {
 							fundId,
 							goalAmount: 5000,
 							currencyCode: "USD",
-							startAt: new Date().toISOString(),
+							startAt: new Date(Date.now() + 5 * 60 * 1000).toISOString(),
 							endAt: new Date(
 								Date.now() + 10 * 24 * 60 * 60 * 1000,
 							).toISOString(),
@@ -238,7 +238,7 @@ suite("Mutation deleteFundCampaign", () => {
 							fundId,
 							goalAmount: 5000,
 							currencyCode: "USD",
-							startAt: new Date().toISOString(),
+							startAt: new Date(Date.now() + 5 * 60 * 1000).toISOString(),
 							endAt: new Date(
 								Date.now() + 10 * 24 * 60 * 60 * 1000,
 							).toISOString(),
@@ -340,7 +340,7 @@ suite("Mutation deleteFundCampaign", () => {
 							fundId,
 							goalAmount: 5000,
 							currencyCode: "USD",
-							startAt: new Date().toISOString(),
+							startAt: new Date(Date.now() + 5 * 60 * 1000).toISOString(),
 							endAt: new Date(
 								Date.now() + 10 * 24 * 60 * 60 * 1000,
 							).toISOString(),

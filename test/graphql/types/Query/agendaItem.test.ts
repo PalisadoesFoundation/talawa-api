@@ -448,8 +448,8 @@ async function createTestAgendaItem(): Promise<TestAgendaItem> {
 			input: {
 				name: `Event ${faker.string.uuid()}`,
 				organizationId: orgId,
-				startAt: new Date().toISOString(),
-				endAt: new Date(Date.now() + 86400000).toISOString(),
+				startAt: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
+				endAt: new Date(Date.now() + 25 * 60 * 60 * 1000).toISOString(),
 				description: "Test event",
 			},
 		},

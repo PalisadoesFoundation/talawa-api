@@ -354,7 +354,7 @@ suite("Mutation field createFundCampaign", () => {
 					name: "",
 					currencyCode: "USD",
 					goalAmount: 10000,
-					startAt: new Date().toISOString(),
+					startAt: new Date(Date.now() + 5 * 60 * 1000).toISOString(),
 					endAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
 				},
 			},

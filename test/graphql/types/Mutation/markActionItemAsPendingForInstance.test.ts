@@ -99,8 +99,8 @@ async function createActionItem(
 				name: "Test Event",
 				description: "Test event for action items",
 				organizationId: organizationId,
-				startAt: new Date().toISOString(),
-				endAt: new Date(Date.now() + 3600000).toISOString(),
+				startAt: new Date(Date.now() + 86400000).toISOString(), // 1 day from now
+				endAt: new Date(Date.now() + 90000000).toISOString(), // 1 day + 1 hour from now
 				isPublic: true,
 				isRegisterable: true,
 				location: "Test Location",
@@ -289,12 +289,12 @@ suite("Mutation field markActionItemAsPendingForInstance", () => {
 						organizationId: orgId,
 						name: "Test Event",
 						description: "Test Event Description",
-						startAt: "2025-01-01T00:00:00Z",
-						endAt: "2025-01-01T01:00:00Z",
+						startAt: new Date(Date.now() + 86400000).toISOString(), // 1 day from now
+						endAt: new Date(Date.now() + 90000000).toISOString(), // 1 day + 1 hour from now
 						recurrence: {
 							frequency: "DAILY",
 							interval: 1,
-							endDate: "2025-01-02T00:00:00Z",
+							endDate: new Date(Date.now() + 172800000).toISOString(), // 2 days from now
 						},
 					},
 				},
@@ -405,12 +405,12 @@ suite("Mutation field markActionItemAsPendingForInstance", () => {
 							organizationId: orgId,
 							name: "Test Event",
 							description: "Test Event Description",
-							startAt: "2025-01-01T00:00:00Z",
-							endAt: "2025-01-01T01:00:00Z",
+							startAt: new Date(Date.now() + 86400000).toISOString(), // 1 day from now
+							endAt: new Date(Date.now() + 90000000).toISOString(), // 1 day + 1 hour from now
 							recurrence: {
 								frequency: "DAILY",
 								interval: 1,
-								endDate: "2025-01-02T00:00:00Z",
+								endDate: new Date(Date.now() + 172800000).toISOString(), // 2 days from now
 							},
 						},
 					},

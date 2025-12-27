@@ -249,9 +249,27 @@ suite("User field updatedAt", () => {
 				assertToBeNonNullish(
 					administratorUserSignInResult.data.signIn?.authenticationToken,
 				);
-				assertToBeNonNullish(
-					administratorUserSignInResult.data.signIn.user?.id,
+
+				const createUserResult = await mercuriusClient.mutate(
+					Mutation_createUser,
+					{
+						headers: {
+							authorization: `bearer ${administratorUserSignInResult.data.signIn.authenticationToken}`,
+						},
+						variables: {
+							input: {
+								emailAddress: `email${faker.string.ulid()}@email.com`,
+								isEmailAddressVerified: false,
+								name: "name",
+								password: "password",
+								role: "regular",
+							},
+						},
+					},
 				);
+
+				assertToBeNonNullish(createUserResult.data.createUser?.user?.id);
+				const userId = createUserResult.data.createUser.user.id;
 
 				const userUpdatedAtResult = await mercuriusClient.mutate(
 					Query_user_updatedAt,
@@ -261,7 +279,7 @@ suite("User field updatedAt", () => {
 						},
 						variables: {
 							input: {
-								id: administratorUserSignInResult.data.signIn.user.id,
+								id: userId,
 							},
 						},
 					},

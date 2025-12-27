@@ -103,8 +103,8 @@ async function createOrgEventFolder(authToken: string, adminUserId: string) {
 			input: {
 				name: `Event ${faker.string.uuid()}`,
 				organizationId: orgId,
-				startAt: new Date().toISOString(),
-				endAt: new Date(Date.now() + 60 * 60 * 1000).toISOString(),
+				startAt: new Date(Date.now() + 5 * 60 * 1000).toISOString(),
+				endAt: new Date(Date.now() + 65 * 60 * 1000).toISOString(),
 				description: "Test event",
 			},
 		},
