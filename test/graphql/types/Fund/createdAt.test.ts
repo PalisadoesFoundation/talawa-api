@@ -290,7 +290,7 @@ describe("Fund.createdAt field resolver - Unit tests", () => {
 	it("should throw unauthorized_action when user is not admin and has no organization membership", async () => {
 		mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValue({
 			id: "user123",
-			role: "member",
+			role: "regular",
 			organizationMembershipsWhereMember: [],
 		});
 
@@ -314,8 +314,8 @@ describe("Fund.createdAt field resolver - Unit tests", () => {
 	it("should return createdAt when user is an organization member", async () => {
 		mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValue({
 			id: "user123",
-			role: "member",
-			organizationMembershipsWhereMember: [{ role: "member" }],
+			role: "regular",
+			organizationMembershipsWhereMember: [{ role: "regular" }],
 		});
 
 		const result = await createdAtResolver(mockFund, {}, ctx);
