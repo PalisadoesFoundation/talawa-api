@@ -1,0 +1,13 @@
+name: "CodeQL Config for Talawa API"
+
+# Disable specific queries
+disable-default-queries: false
+
+query-filters:
+  - exclude:
+      id: js/insufficient-password-hash
+
+# Additional documentation
+# This suppresses a false positive where CodeQL flags HMAC-SHA256 hashing
+# of cryptographically random tokens (256 bits entropy) in passwordResetTokenUtils.ts.
+# HMAC-SHA256 is the correct algorithm for random token hashing, not user password hashing.
