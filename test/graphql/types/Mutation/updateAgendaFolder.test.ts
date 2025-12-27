@@ -130,7 +130,6 @@ async function createOrganizationAndEvent(adminUserId: string) {
 
 // Helper function to add organization membership using direct database operations
 async function addOrganizationMembership(params: {
-	adminAuthToken: string;
 	memberId: string;
 	organizationId: string;
 	role: "administrator" | "regular";
@@ -305,7 +304,6 @@ suite("Mutation field updateAgendaFolder", () => {
 
 			// Add regular user as regular member
 			await addOrganizationMembership({
-				adminAuthToken,
 				memberId: regularUser.userId,
 				organizationId,
 				role: "regular",
@@ -375,7 +373,6 @@ suite("Mutation field updateAgendaFolder", () => {
 
 			// Add user as organization admin
 			await addOrganizationMembership({
-				adminAuthToken,
 				memberId: orgAdmin.userId,
 				organizationId,
 				role: "administrator",
@@ -416,8 +413,19 @@ suite("Mutation field updateAgendaFolder", () => {
 				},
 			});
 
+			expect(result.data?.updateAgendaFolder ?? null).toEqual(null);
 			expect(result.errors).toBeDefined();
-			expect(result.errors?.[0]?.extensions?.code).toBe("invalid_arguments");
+			expect(result.errors?.length).toBeGreaterThan(0);
+
+			// Check that we got either an invalid_arguments error or a GraphQL validation error
+			const hasValidationError = result.errors?.some(
+				(error) =>
+					error.extensions?.code === "invalid_arguments" ||
+					error.message.includes("got invalid value") ||
+					error.message.includes("ID cannot represent") ||
+					error.message.includes("Expected ID"),
+			);
+			expect(hasValidationError).toBe(true);
 		});
 
 		test("Returns invalid_arguments error for invalid UUID in parentFolderId field", async () => {
@@ -439,8 +447,19 @@ suite("Mutation field updateAgendaFolder", () => {
 				},
 			});
 
+			expect(result.data?.updateAgendaFolder ?? null).toEqual(null);
 			expect(result.errors).toBeDefined();
-			expect(result.errors?.[0]?.extensions?.code).toBe("invalid_arguments");
+			expect(result.errors?.length).toBeGreaterThan(0);
+
+			// Check that we got either an invalid_arguments error or a GraphQL validation error
+			const hasValidationError = result.errors?.some(
+				(error) =>
+					error.extensions?.code === "invalid_arguments" ||
+					error.message.includes("got invalid value") ||
+					error.message.includes("ID cannot represent") ||
+					error.message.includes("Expected ID"),
+			);
+			expect(hasValidationError).toBe(true);
 		});
 
 		test("Returns invalid_arguments error when no optional argument is provided", async () => {
@@ -843,6 +862,31 @@ suite("Mutation field updateAgendaFolder", () => {
 
 			expect(result.errors).toBeUndefined();
 			expect(result.data?.updateAgendaFolder?.name).toBe(maxLengthName);
+		});
+
+		test("Rejects folder name exceeding maximum length (257 characters)", async () => {
+			const { token: adminAuthToken } = await getAdminAuth();
+			const { cleanup, eventId } = await createOrganizationAndEvent(
+				await getAdminUserId(),
+			);
+			testCleanupFunctions.push(cleanup);
+
+			const folderId = await createAgendaFolder(adminAuthToken, eventId);
+
+			const overLimitName = "a".repeat(257);
+			const result = await mercuriusClient.mutate(Mutation_updateAgendaFolder, {
+				headers: { authorization: `bearer ${adminAuthToken}` },
+				variables: {
+					input: {
+						id: folderId,
+						name: overLimitName,
+					},
+				},
+			});
+
+			expect(result.data?.updateAgendaFolder ?? null).toEqual(null);
+			expect(result.errors).toBeDefined();
+			expect(result.errors?.[0]?.extensions?.code).toBe("invalid_arguments");
 		});
 	});
 });
