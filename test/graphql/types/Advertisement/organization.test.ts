@@ -293,7 +293,7 @@ describe("Advertisement Resolver - Organization Field", () => {
 		it("should handle organizations with special characters in name", async () => {
 			const specialOrganization = {
 				id: "org-123",
-				name: 'Organization with Special Chars: & < > " \' %',
+				name: "Organization with Special Chars: & < > \" ' %",
 				countryCode: "US",
 			};
 
@@ -307,7 +307,7 @@ describe("Advertisement Resolver - Organization Field", () => {
 			expect(result).toHaveProperty("id", "org-123");
 			expect(result).toHaveProperty(
 				"name",
-				'Organization with Special Chars: & < > " \' %',
+				"Organization with Special Chars: & < > \" ' %",
 			);
 		});
 	});
