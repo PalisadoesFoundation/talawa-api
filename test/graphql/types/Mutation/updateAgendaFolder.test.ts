@@ -300,9 +300,7 @@ suite("Mutation field updateAgendaFolder", () => {
 			]);
 
 			const { cleanup, eventId, organizationId } =
-				await createOrganizationAndEvent(
-					await getAdminUserId(),
-				);
+				await createOrganizationAndEvent(await getAdminUserId());
 			testCleanupFunctions.push(cleanup);
 
 			// Add regular user as regular member
@@ -372,9 +370,7 @@ suite("Mutation field updateAgendaFolder", () => {
 			const orgAdmin = await createRegularUserUsingAdmin();
 
 			const { cleanup, eventId, organizationId } =
-				await createOrganizationAndEvent(
-					await getAdminUserId(),
-				);
+				await createOrganizationAndEvent(await getAdminUserId());
 			testCleanupFunctions.push(cleanup);
 
 			// Add user as organization admin
