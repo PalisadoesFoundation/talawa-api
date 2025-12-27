@@ -414,7 +414,7 @@ suite("Query field signIn", () => {
 		expect(refreshTokenCookie).toBeDefined();
 		expect(refreshTokenCookie?.httpOnly).toBe(true);
 		expect(refreshTokenCookie?.path).toBe("/");
-		expect(refreshTokenCookie?.sameSite).toBe("Strict");
+		expect(refreshTokenCookie?.sameSite).toBe("Lax");
 	});
 
 	suite("refresh token functionality", () => {

@@ -317,7 +317,7 @@ describe("GraphQL Routes", () => {
 					expect.objectContaining({
 						httpOnly: true,
 						path: "/",
-						sameSite: "strict",
+						sameSite: "lax",
 						maxAge: 604800,
 					}),
 				);
@@ -347,7 +347,7 @@ describe("GraphQL Routes", () => {
 					"",
 					expect.objectContaining({
 						maxAge: 0,
-						sameSite: "strict",
+						sameSite: "lax",
 					}),
 				);
 			});

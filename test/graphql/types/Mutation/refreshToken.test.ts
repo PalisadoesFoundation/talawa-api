@@ -1,7 +1,9 @@
 import { faker } from "@faker-js/faker";
+import { initGraphQLTada } from "gql.tada";
 import { print } from "graphql";
 import { assertToBeNonNullish } from "test/helpers";
 import { beforeAll, expect, suite, test } from "vitest";
+import type { ClientCustomScalars } from "~/src/graphql/scalars/index";
 import { COOKIE_NAMES } from "~/src/utilities/cookieConfig";
 import { DEFAULT_REFRESH_TOKEN_EXPIRES_MS } from "~/src/utilities/refreshTokenUtils";
 import type {
@@ -14,9 +16,26 @@ import { mercuriusClient } from "../client";
 import {
 	Mutation_createUser,
 	Mutation_deleteUser,
-	Mutation_refreshToken,
 	Query_signIn,
 } from "../documentNodes";
+import type { introspection } from "../gql.tada";
+
+const gql = initGraphQLTada<{
+	introspection: introspection;
+	scalars: ClientCustomScalars;
+}>();
+
+const Mutation_refreshToken =
+	gql(`mutation Mutation_refreshToken($refreshToken: String) {
+    refreshToken(refreshToken: $refreshToken) {
+        authenticationToken
+        refreshToken
+        user {
+            id
+            name
+        }
+    }
+}`);
 
 suite("Mutation field refreshToken", () => {
 	let validRefreshToken: string;
@@ -193,8 +212,69 @@ suite("Mutation field refreshToken", () => {
 			expect(newRefreshTokenCookie).toBeDefined();
 			expect(newRefreshTokenCookie?.httpOnly).toBe(true);
 			expect(newRefreshTokenCookie?.path).toBe("/");
-			expect(newRefreshTokenCookie?.sameSite).toBe("Strict");
+			expect(newRefreshTokenCookie?.sameSite).toBe("Lax");
 			expect(newRefreshTokenCookie?.value).not.toBe(refreshTokenCookie?.value);
+		});
+
+		test("should refresh tokens using only HTTP-Only cookie (no variable) for web clients", async () => {
+			// This test verifies cookie-based auth for web clients that don't pass the token as a variable
+			// Get a fresh token via server.inject to get cookies
+			const signInResponse = await server.inject({
+				method: "POST",
+				url: "/graphql",
+				payload: {
+					query: print(Query_signIn),
+					variables: {
+						input: {
+							emailAddress:
+								server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
+							password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
+						},
+					},
+				},
+			});
+
+			const signInCookies = signInResponse.cookies;
+			const refreshTokenCookie = signInCookies.find(
+				(c) => c.name === COOKIE_NAMES.REFRESH_TOKEN,
+			);
+			expect(refreshTokenCookie).toBeDefined();
+
+			// Refresh token WITHOUT passing the variable - should read from cookie
+			const response = await server.inject({
+				method: "POST",
+				url: "/graphql",
+				payload: {
+					query: `mutation { refreshToken { authenticationToken refreshToken user { id name } } }`,
+					// Note: No variables passed - refreshToken should be read from cookie
+				},
+				cookies: {
+					[COOKIE_NAMES.REFRESH_TOKEN]: refreshTokenCookie?.value || "",
+				},
+			});
+
+			expect(response.statusCode).toBe(200);
+			const body = JSON.parse(response.body);
+			expect(body.errors).toBeUndefined();
+			expect(body.data?.refreshToken).toBeDefined();
+			expect(body.data.refreshToken.authenticationToken).toBeDefined();
+			expect(body.data.refreshToken.refreshToken).toBeDefined();
+			expect(body.data.refreshToken.user?.id).toBeDefined();
+
+			// Verify token rotation - old cookie should be replaced
+			expect(body.data.refreshToken.refreshToken).not.toBe(
+				refreshTokenCookie?.value,
+			);
+
+			// Verify new cookies are set
+			const cookies = response.cookies;
+			expect(cookies.length).toBeGreaterThanOrEqual(2);
+			const newRefreshTokenCookie = cookies.find(
+				(c) => c.name === COOKIE_NAMES.REFRESH_TOKEN,
+			);
+			expect(newRefreshTokenCookie?.value).toBe(
+				body.data.refreshToken.refreshToken,
+			);
 		});
 	});
 
@@ -250,6 +330,45 @@ suite("Mutation field refreshToken", () => {
 				.errors?.[0] as unknown as TalawaGraphQLFormattedError;
 			expect((error.extensions as InvalidArgumentsExtensions).code).toBe(
 				"invalid_arguments",
+			);
+		});
+
+		test("should return invalid_arguments error when refreshToken is null", async () => {
+			const result = await mercuriusClient.mutate(Mutation_refreshToken, {
+				variables: {
+					refreshToken: null,
+				},
+			});
+
+			expect(result.data?.refreshToken).toBeNull();
+			expect(result.errors).toBeDefined();
+			expect(result.errors?.length).toBeGreaterThan(0);
+
+			const error = result
+				.errors?.[0] as unknown as TalawaGraphQLFormattedError;
+			expect((error.extensions as InvalidArgumentsExtensions).code).toBe(
+				"invalid_arguments",
+			);
+		});
+
+		test("should return unauthenticated error when no refresh token is provided (neither arg nor cookie)", async () => {
+			// Ensure no cookies are sent by using a fresh request without variables
+			// Note: mercuriusClient might persist cookies if not careful, but usually it doesn't across tests unless explicitly set
+			const result = await mercuriusClient.mutate(Mutation_refreshToken, {
+				variables: {},
+			});
+
+			expect(result.data?.refreshToken).toBeNull();
+			expect(result.errors).toBeDefined();
+			expect(result.errors?.length).toBeGreaterThan(0);
+
+			const error = result
+				.errors?.[0] as unknown as TalawaGraphQLFormattedError;
+			expect((error.extensions as UnauthenticatedExtensions).code).toBe(
+				"unauthenticated",
+			);
+			expect(error.message).toBe(
+				"Refresh token is required. Provide it as an argument or via HTTP-Only cookie.",
 			);
 		});
 

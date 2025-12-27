@@ -565,7 +565,7 @@ suite("Mutation field signUp", () => {
 				expect(refreshTokenCookie).toBeDefined();
 				expect(refreshTokenCookie?.httpOnly).toBe(true);
 				expect(refreshTokenCookie?.path).toBe("/");
-				expect(refreshTokenCookie?.sameSite).toBe("Strict");
+				expect(refreshTokenCookie?.sameSite).toBe("Lax");
 			});
 
 			test('nullable user fields have the "null" values if the corresponding nullable arguments are not provided in the graphql operation.', async () => {

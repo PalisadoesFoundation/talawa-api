@@ -69,7 +69,7 @@ describe("Cookie Configuration", () => {
 			expect(options).toEqual({
 				httpOnly: true,
 				secure: true,
-				sameSite: "strict",
+				sameSite: "lax",
 				path: "/",
 				maxAge: 3600,
 				domain: undefined,
@@ -84,7 +84,7 @@ describe("Cookie Configuration", () => {
 			expect(options).toEqual({
 				httpOnly: true,
 				secure: false,
-				sameSite: "strict",
+				sameSite: "lax",
 				path: "/",
 				maxAge: 3600,
 				domain: undefined,
@@ -131,7 +131,7 @@ describe("Cookie Configuration", () => {
 			expect(options).toEqual({
 				httpOnly: true,
 				secure: true,
-				sameSite: "strict",
+				sameSite: "lax",
 				path: "/",
 				maxAge: 0,
 				domain: undefined,

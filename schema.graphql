@@ -1955,6 +1955,12 @@ enum Iso4217CurrencyCode {
   ZWG
 }
 
+"""Result of a logout operation"""
+type LogoutResult {
+  """Whether the logout was successful"""
+  success: Boolean!
+}
+
 input MarkActionItemAsPendingInput {
   id: ID!
 }
@@ -2279,6 +2285,11 @@ type Mutation {
     input: MutationJoinPublicOrganizationInput!
   ): OrganizationMembershipObject
 
+  """
+  Mutation to log out the current user. Clears authentication cookies and revokes refresh tokens.
+  """
+  logout: LogoutResult
+
   """Mutation to mark a completed action item as pending"""
   markActionItemAsPending(input: MarkActionItemAsPendingInput!): ActionItem
 
@@ -2296,11 +2307,13 @@ type Mutation {
   readNotification(input: MutationReadNotificationInput!): ReadNotificationResponse
 
   """
-  Mutation to refresh an access token using a valid refresh token. Returns new access and refresh tokens.
+  Mutation to refresh an access token using a valid refresh token. Returns new access and refresh tokens. Web clients can omit the refreshToken argument as it will be read from HTTP-Only cookies.
   """
   refreshToken(
-    """The refresh token to use for obtaining a new access token."""
-    refreshToken: String!
+    """
+    The refresh token to use for obtaining a new access token. Optional for web clients using HTTP-Only cookies.
+    """
+    refreshToken: String
   ): AuthenticationPayload
 
   """Mutation field to register a user for an event."""

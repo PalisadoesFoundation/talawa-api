@@ -10,7 +10,7 @@ Defined in: [src/utilities/cookieConfig.ts:113](https://github.com/PalisadoesFou
 
 Generates cookie options for clearing/removing refresh token cookies.
 Used during logout to invalidate the refresh token cookie.
-Uses sameSite: "strict" to match getRefreshTokenCookieOptions().
+Uses sameSite: "lax" to match getRefreshTokenCookieOptions().
 
 ## Parameters
 

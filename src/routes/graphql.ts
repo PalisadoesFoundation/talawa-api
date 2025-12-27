@@ -98,7 +98,7 @@ export const createContext: CreateContext = async (initialContext) => {
 		}
 	}
 
-	// Cookie configuration options
+	// Cookie configuration options (sameSite is set per-cookie in helpers)
 	const cookieConfig = {
 		isSecure:
 			fastify.envConfig.API_IS_SECURE_COOKIES ??
