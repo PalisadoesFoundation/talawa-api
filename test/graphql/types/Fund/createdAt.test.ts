@@ -149,46 +149,61 @@ async function createOrgFund(
 	assertToBeNonNullish(orgResult.data?.createOrganization?.id);
 	const organizationId = orgResult.data.createOrganization.id;
 
-	// Create fund
-	const fundResult = await mercuriusClient.mutate(Mutation_createFund, {
-		headers: { authorization: `bearer ${adminAuth.token}` },
-		variables: {
-			input: {
-				name: `Test Fund ${faker.string.uuid()}`,
-				organizationId,
-				isTaxDeductible: false,
-			},
-		},
-	});
+	let fundId: string;
 
-	if (fundResult.errors && fundResult.errors.length > 0) {
-		throw new Error(`createFund failed: ${JSON.stringify(fundResult.errors)}`);
-	}
-
-	assertToBeNonNullish(fundResult.data?.createFund?.id);
-	const fundId = fundResult.data.createFund.id;
-
-	// If requested, make the regular user an org member
-	if (makeUserOrgMember && regularUserId) {
-		const membershipResult = await mercuriusClient.mutate(
-			Mutation_createOrganizationMembership,
-			{
-				headers: { authorization: `bearer ${adminAuth.token}` },
-				variables: {
-					input: {
-						organizationId,
-						memberId: regularUserId,
-						role: "regular",
-					},
+	try {
+		// Create fund
+		const fundResult = await mercuriusClient.mutate(Mutation_createFund, {
+			headers: { authorization: `bearer ${adminAuth.token}` },
+			variables: {
+				input: {
+					name: `Test Fund ${faker.string.uuid()}`,
+					organizationId,
+					isTaxDeductible: false,
 				},
 			},
-		);
+		});
 
-		if (membershipResult.errors && membershipResult.errors.length > 0) {
-			throw new Error(
-				`createOrganizationMembership failed: ${JSON.stringify(membershipResult.errors)}`,
-			);
+		if (fundResult.errors && fundResult.errors.length > 0) {
+			throw new Error(`createFund failed: ${JSON.stringify(fundResult.errors)}`);
 		}
+
+		assertToBeNonNullish(fundResult.data?.createFund?.id);
+		fundId = fundResult.data.createFund.id;
+
+		// If requested, make the regular user an org member
+		if (makeUserOrgMember && regularUserId) {
+			const membershipResult = await mercuriusClient.mutate(
+				Mutation_createOrganizationMembership,
+				{
+					headers: { authorization: `bearer ${adminAuth.token}` },
+					variables: {
+						input: {
+							organizationId,
+							memberId: regularUserId,
+							role: "regular",
+						},
+					},
+				},
+			);
+
+			if (membershipResult.errors && membershipResult.errors.length > 0) {
+				throw new Error(
+					`createOrganizationMembership failed: ${JSON.stringify(membershipResult.errors)}`,
+				);
+			}
+		}
+	} catch (error) {
+		// Clean up organization if fund creation or membership creation fails
+		try {
+			await mercuriusClient.mutate(Mutation_deleteOrganization, {
+				headers: { authorization: `bearer ${adminAuth.token}` },
+				variables: { input: { id: organizationId } },
+			});
+		} catch (cleanupError) {
+			console.error("Failed to cleanup organization after error:", cleanupError);
+		}
+		throw error;
 	}
 
 	const cleanup = async () => {
