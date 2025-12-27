@@ -296,7 +296,9 @@ type AuthenticationPayload {
   user: User
 }
 
-"""BigInt custom scalar type"""
+"""
+The `BigInt` scalar type represents non-fractional signed whole numeric values.
+"""
 scalar BigInt
 
 """Represents a user blocked by an organization."""

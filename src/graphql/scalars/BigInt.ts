@@ -1,23 +1,9 @@
-import { GraphQLScalarType, Kind } from "graphql";
+import { BigIntResolver } from "graphql-scalars";
 import { builder } from "~/src/graphql/builder";
 
-export const BigIntResolver = new GraphQLScalarType({
-	name: "BigInt",
-	description: "BigInt custom scalar type",
-	serialize(value) {
-		return BigInt(value as string | number | bigint).toString();
-	},
-	parseValue(value) {
-		return BigInt(value as string | number | bigint);
-	},
-	parseLiteral(ast) {
-		if (ast.kind === Kind.INT || ast.kind === Kind.STRING) {
-			return BigInt(ast.value);
-		}
-		throw new Error(`BigInt cannot represent non-integer value: ${ast}`);
-	},
-});
-
+/**
+ * More information at this link: {@link https://the-guild.dev/graphql/scalars/docs/scalars/date}
+ */
 builder.addScalarType("BigInt", BigIntResolver);
 
 /**

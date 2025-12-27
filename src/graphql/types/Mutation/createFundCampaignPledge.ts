@@ -1,8 +1,6 @@
-import { eq, sql } from "drizzle-orm";
 import { uuidv7 } from "uuidv7";
 import { z } from "zod";
 import { fundCampaignPledgesTable } from "~/src/drizzle/tables/fundCampaignPledges";
-import { fundCampaignsTable } from "~/src/drizzle/tables/fundCampaigns";
 import { builder } from "~/src/graphql/builder";
 import {
 	MutationCreateFundCampaignPledgeInput,
@@ -219,41 +217,29 @@ builder.mutationField("createFundCampaignPledge", (t) =>
 				});
 			}
 
-			const createdFundCampaignPledge = await ctx.drizzleClient.transaction(
-				async (tx) => {
-					const [createdPledge] = await tx
-						.insert(fundCampaignPledgesTable)
-						.values({
-							amount: parsedArgs.input.amount,
-							campaignId: parsedArgs.input.campaignId,
-							creatorId: currentUserId,
-							id: uuidv7(),
-							note: parsedArgs.input.note,
-							pledgerId: parsedArgs.input.pledgerId,
-						})
-						.returning();
+			const [createdFundCampaignPledge] = await ctx.drizzleClient
+				.insert(fundCampaignPledgesTable)
+				.values({
+					amount: parsedArgs.input.amount,
+					campaignId: parsedArgs.input.campaignId,
+					creatorId: currentUserId,
+					id: uuidv7(),
+					note: parsedArgs.input.note,
+					pledgerId: parsedArgs.input.pledgerId,
+				})
+				.returning();
 
-					if (createdPledge === undefined) {
-						ctx.log.error(
-							"Postgres insert operation unexpectedly returned an empty array instead of throwing an error.",
-						);
-						throw new TalawaGraphQLError({
-							extensions: {
-								code: "unexpected",
-							},
-						});
-					}
-
-					await tx
-						.update(fundCampaignsTable)
-						.set({
-							amountRaised: sql`${fundCampaignsTable.amountRaised} + ${parsedArgs.input.amount}`,
-						})
-						.where(eq(fundCampaignsTable.id, parsedArgs.input.campaignId));
-
-					return createdPledge;
-				},
-			);
+			// Inserted fund campaign pledge not being returned is an external defect unrelated to this code. It is very unlikely for this error to occur.
+			if (createdFundCampaignPledge === undefined) {
+				ctx.log.error(
+					"Postgres insert operation unexpectedly returned an empty array instead of throwing an error.",
+				);
+				throw new TalawaGraphQLError({
+					extensions: {
+						code: "unexpected",
+					},
+				});
+			}
 
 			// Send notification to organization admins
 			notificationEventBus.emitFundCampaignPledgeCreated(
