@@ -114,7 +114,7 @@ describe("FundCampaign Pledge Delete & amountRaised Verification", () => {
 			variables: { input: { id: campaignId } },
 			headers: { authorization: `bearer ${adminAuth.token}` },
 		});
-		expect(checkResult.data?.fundCampaign?.amountRaised).toBe("200");
+		expect(checkResult.data?.fundCampaign?.amountRaised).toBe(200);
 
 		// Delete Pledge
 		const deleteResult = await mercuriusClient.mutate(
@@ -137,7 +137,7 @@ describe("FundCampaign Pledge Delete & amountRaised Verification", () => {
 			headers: { authorization: `bearer ${adminAuth.token}` },
 		});
 
-		expect(checkResult.data?.fundCampaign?.amountRaised).toBe("0");
+		expect(checkResult.data?.fundCampaign?.amountRaised).toBe(0);
 
 		// Cleanup
 		await mercuriusClient.mutate(Mutation_deleteOrganization, {

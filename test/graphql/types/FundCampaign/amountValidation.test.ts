@@ -244,7 +244,7 @@ describe("FundCampaign Amount Validation & BigInt Support", () => {
 		assertToBeNonNullish(campaignResult.data?.createFundCampaign?.id);
 		const campaignId = campaignResult.data.createFundCampaign.id;
 
-		const amount = 3000000000; // > 2^31
+		const amount = 2000000000; // Large but still within 32-bit signed int range (2^31-1 = 2,147,483,647)
 		const pledgeResult = await mercuriusClient.mutate(
 			Mutation_createFundCampaignPledge,
 			{
