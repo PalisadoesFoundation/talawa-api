@@ -776,6 +776,22 @@ export const Mutation_createAgendaFolder = gql(`
   }
 `);
 
+export const Mutation_updateAgendaFolder = gql(`
+  mutation Mutation_updateAgendaFolder($input: MutationUpdateAgendaFolderInput!) {
+    updateAgendaFolder(input: $input) {
+      id
+      name
+      isAgendaItemFolder
+      event {
+        id
+      }
+      parentFolder {
+        id
+      }
+    }
+  }
+`);
+
 export const Mutation_createAgendaItem = gql(`
   mutation Mutation_createAgendaItem($input: MutationCreateAgendaItemInput!) {
     createAgendaItem(input: $input) {
