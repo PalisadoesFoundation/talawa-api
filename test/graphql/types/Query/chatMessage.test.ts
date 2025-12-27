@@ -258,6 +258,12 @@ suite("chatMessage query", () => {
 			creatorId: creator.userId,
 		});
 
+		await server.drizzleClient.insert(organizationMembershipsTable).values({
+			memberId: chatAdmin.userId,
+			organizationId: orgId,
+			role: "regular",
+		});
+
 		await server.drizzleClient.insert(chatMembershipsTable).values({
 			chatId,
 			memberId: chatAdmin.userId,
