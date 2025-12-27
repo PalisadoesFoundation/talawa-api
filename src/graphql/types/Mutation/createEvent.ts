@@ -31,7 +31,8 @@ const mutationCreateEventArgumentsSchema = z.object({
 			ctx.addIssue({
 				code: "custom",
 				path: ["startAt"],
-				message: "Start date must be in the future or within the next few seconds",
+				message:
+					"Start date must be in the future or within the next few seconds",
 			});
 		}
 
