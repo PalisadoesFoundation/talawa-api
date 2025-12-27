@@ -1,0 +1,11 @@
+name: "CodeQL Config for Talawa API"
+
+query-filters:
+  - exclude:
+      id: js/insufficient-password-hash
+      # False positive: This query flags HMAC-SHA256 hashing of cryptographically
+      # random tokens (256 bits entropy from crypto.randomBytes) in passwordResetTokenUtils.ts.
+      # HMAC-SHA256 is the correct algorithm for hashing random tokens (not user passwords).
+      # Industry standard pattern used by Django, Rails, and other frameworks.
+      paths:
+        - src/utilities/passwordResetTokenUtils.ts
