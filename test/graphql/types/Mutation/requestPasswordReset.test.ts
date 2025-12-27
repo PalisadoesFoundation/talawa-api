@@ -85,6 +85,12 @@ suite("Mutation field requestPasswordReset", () => {
 		vi.restoreAllMocks();
 	});
 
+	/*
+	 * NOTE: Lines 59-68 (Zod invalid_arguments block) are intentionally uncovered.
+	 * GraphQL schema validates email format before Zod validation can run,
+	 * making this defensive check unreachable via normal GraphQL requests.
+	 */
+
 	suite(
 		"results in a graphql error with forbidden_action extensions code if",
 		() => {

@@ -317,3 +317,125 @@ describe("EmailService", () => {
 		expect(sendMock).toHaveBeenCalledTimes(2);
 	});
 });
+
+/**
+ * Tests for getSesArtifacts method internals
+ * These tests mock the AWS SDK module directly to cover the initialization code
+ */
+describe("EmailService getSesArtifacts", () => {
+	afterEach(() => {
+		vi.restoreAllMocks();
+		vi.resetModules();
+	});
+
+	it("initializes SES client with credentials when both accessKeyId and secretAccessKey are provided", async () => {
+		// Mock the AWS SDK module
+		const mockSend = vi.fn().mockResolvedValue({ MessageId: "test-msg-id" });
+		const MockSESClient = vi.fn().mockImplementation(() => ({
+			send: mockSend,
+		}));
+		const MockSendEmailCommand = vi.fn().mockImplementation((input) => ({
+			__mock: true,
+			input,
+		}));
+
+		vi.doMock("@aws-sdk/client-ses", () => ({
+			SESClient: MockSESClient,
+			SendEmailCommand: MockSendEmailCommand,
+		}));
+
+		// Import EmailService fresh to get the mocked module
+		const { EmailService: FreshEmailService } = await import(
+			"~/src/services/ses/EmailService"
+		);
+
+		const serviceWithCreds = new FreshEmailService({
+			region: "us-west-2",
+			fromEmail: "test@example.com",
+			accessKeyId: "AKIAIOSFODNN7EXAMPLE",
+			secretAccessKey: "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY",
+		});
+
+		const result = await serviceWithCreds.sendEmail(buildJob());
+
+		expect(result.success).toBe(true);
+		// Verify SESClient was called with credentials
+		expect(MockSESClient).toHaveBeenCalledWith({
+			region: "us-west-2",
+			credentials: {
+				accessKeyId: "AKIAIOSFODNN7EXAMPLE",
+				secretAccessKey: "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY",
+			},
+		});
+	});
+
+	it("initializes SES client without credentials when neither are provided (uses IAM role)", async () => {
+		const mockSend = vi.fn().mockResolvedValue({ MessageId: "iam-msg-id" });
+		const MockSESClient = vi.fn().mockImplementation(() => ({
+			send: mockSend,
+		}));
+		const MockSendEmailCommand = vi.fn().mockImplementation((input) => ({
+			__mock: true,
+			input,
+		}));
+
+		vi.doMock("@aws-sdk/client-ses", () => ({
+			SESClient: MockSESClient,
+			SendEmailCommand: MockSendEmailCommand,
+		}));
+
+		const { EmailService: FreshEmailService } = await import(
+			"~/src/services/ses/EmailService"
+		);
+
+		const serviceNoCreds = new FreshEmailService({
+			region: "eu-west-1",
+			fromEmail: "no-creds@example.com",
+			// No accessKeyId or secretAccessKey - uses IAM role
+		});
+
+		const result = await serviceNoCreds.sendEmail(buildJob());
+
+		expect(result.success).toBe(true);
+		// Verify SESClient was called with undefined credentials
+		expect(MockSESClient).toHaveBeenCalledWith({
+			region: "eu-west-1",
+			credentials: undefined,
+		});
+	});
+
+	it("caches SES client and command constructor on subsequent calls", async () => {
+		const mockSend = vi.fn().mockResolvedValue({ MessageId: "cached-id" });
+		const MockSESClient = vi.fn().mockImplementation(() => ({
+			send: mockSend,
+		}));
+		const MockSendEmailCommand = vi.fn().mockImplementation((input) => ({
+			__mock: true,
+			input,
+		}));
+
+		vi.doMock("@aws-sdk/client-ses", () => ({
+			SESClient: MockSESClient,
+			SendEmailCommand: MockSendEmailCommand,
+		}));
+
+		const { EmailService: FreshEmailService } = await import(
+			"~/src/services/ses/EmailService"
+		);
+
+		const cachedService = new FreshEmailService({
+			region: "us-east-1",
+			fromEmail: "cache@example.com",
+		});
+
+		// First call - initializes client
+		await cachedService.sendEmail(buildJob({ id: "first" }));
+		// Second call - should use cached client
+		await cachedService.sendEmail(buildJob({ id: "second" }));
+
+		// SESClient constructor should only be called once (cached)
+		expect(MockSESClient).toHaveBeenCalledTimes(1);
+		// But send should be called twice
+		expect(mockSend).toHaveBeenCalledTimes(2);
+	});
+});

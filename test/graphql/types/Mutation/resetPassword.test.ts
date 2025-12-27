@@ -1,7 +1,15 @@
 import { faker } from "@faker-js/faker";
 import { sql } from "drizzle-orm";
 import { assertToBeNonNullish } from "test/helpers";
-import { afterAll, beforeAll, expect, suite, test } from "vitest";
+import {
+	afterAll,
+	afterEach,
+	beforeAll,
+	expect,
+	suite,
+	test,
+	vi,
+} from "vitest";
 import { hashPasswordResetToken } from "~/src/utilities/passwordResetTokenUtils";
 import type {
 	ForbiddenActionExtensions,
@@ -124,6 +132,12 @@ suite("Mutation field resetPassword", () => {
 		},
 	);
 
+	/*
+	 * NOTE: Lines 98-103 (unexpected error when user not found) are intentionally uncovered.
+	 * The database has a foreign key constraint on password_reset_tokens.user_id -> users.id,
+	 * which prevents creating orphan tokens. This defensive check is unreachable in practice.
+	 */
+
 	suite(
 		"results in a graphql error with invalid_arguments extensions code if",
 		() => {
@@ -243,6 +257,59 @@ suite("Mutation field resetPassword", () => {
 
 			expect(signInResult.errors).toBeUndefined();
 			expect(signInResult.data.signIn?.authenticationToken).toBeDefined();
+		});
+	});
+
+	/**
+	 * Tests for edge cases that require environment manipulation
+	 */
+	suite("uses correct refresh token expiry", () => {
+		afterEach(() => {
+			vi.restoreAllMocks();
+		});
+
+		/**
+		 * Test: Uses default refresh token expiry when env config is undefined (line 134)
+		 */
+		test("uses default refresh token expiry when env config is undefined", async () => {
+			// Save original value
+			const originalValue = server.envConfig.API_REFRESH_TOKEN_EXPIRES_IN;
+
+			// Temporarily set to undefined to trigger fallback
+			(
+				server.envConfig as Record<string, unknown>
+			).API_REFRESH_TOKEN_EXPIRES_IN = undefined;
+
+			try {
+				// Create a fresh token for this test
+				const tokenForExpiry = faker.string
+					.hexadecimal({ length: 64 })
+					.slice(2);
+				const tokenHashForExpiry = hashPasswordResetToken(tokenForExpiry);
+				const expiresAt = new Date(Date.now() + 3600000);
+
+				await server.drizzleClient.execute(
+					sql`INSERT INTO password_reset_tokens (id, token_hash, user_id, expires_at, created_at)
+					VALUES (gen_random_uuid(), ${tokenHashForExpiry}, ${testUserId}, ${expiresAt.toISOString()}::timestamptz, NOW())`,
+				);
+
+				const result = await mercuriusClient.mutate(Mutation_resetPassword, {
+					variables: {
+						input: {
+							token: tokenForExpiry,
+							newPassword: "defaultexpirypassword123",
+						},
+					},
+				});
+
+				expect(result.errors).toBeUndefined();
+				expect(result.data.resetPassword?.success).toBe(true);
+			} finally {
+				// Restore original value
+				(
+					server.envConfig as Record<string, unknown>
+				).API_REFRESH_TOKEN_EXPIRES_IN = originalValue;
+			}
 		});
 	});
 });
