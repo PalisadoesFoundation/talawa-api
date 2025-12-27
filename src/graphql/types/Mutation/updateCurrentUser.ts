@@ -188,7 +188,7 @@ builder.mutationField("updateCurrentUser", (t) =>
 					.returning();
 
 				// Updated user not being returned means that either it was deleted or its `id` column was changed by an external entity before this update operation which correspondingly means that the current client is using an invalid authentication token which hasn't expired yet.
-				if (!updateResult || updateResult.length === 0) {
+				if (updateResult.length === 0) {
 					throw new TalawaGraphQLError({
 						extensions: {
 							code: "unauthenticated",
