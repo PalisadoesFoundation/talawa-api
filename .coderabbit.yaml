@@ -20,7 +20,139 @@ reviews:
       - develop
       - main
   path_filters:
-    - '!**/docs/docs/**'
+    - "!**/docs/docs/**"
     - "!*.html"
     - "!*.md"
     - "!*.svg"
+  path_instructions:
+    - path: "**/*"
+      instructions: |
+        Full review
+
+        Perform a comprehensive analysis and reevaluate all resolved items with the following criteria:
+
+        1. **Test Coverage Analysis:**
+            1. For each modified or new test file, verify:
+                1. Tests follow the mercuriusClient integration test pattern (preferred over vi.mock unit tests) with proper GraphQL document nodes
+                2. All edge cases and use cases are covered (success paths, error paths, boundary conditions, authentication/authorization checks)
+                3. Test assertions are correct and meaningful
+                4. 100% code coverage is achieved for the associated implementation files
+                5. No redundant or duplicate test cases exist
+                6. Test files are in the correct location (e.g., test/graphql/types/Mutation/ not test/routes/graphql/Mutation/)
+          
+            2. For each modified or new source file, identify:
+              - Specific lines of code lacking test coverage (list exact line numbers)
+              - Functions, branches, or conditions that need additional test cases
+              - Mock/stub requirements that may be missing
+              - Error scenarios that are not covered (invalid arguments, resource not found, permission denied, etc.)
+
+        2. **Documentation & Code Comments:**
+            1. Verify auto-generated documentation is updated (as enforced by Check-AutoDocs job)
+            2. Check for adequate JSDoc comments on public functions and complex logic
+            3. Ensure README.md or related docs are updated if new features are added
+            4. Validate that Table of Contents is updated (as required by pre-commit hooks)
+
+        3. **Identify Issues:**
+            1. Lines of code that are missing tests (list specific line numbers)
+            2. Any unnecessary files that have been submitted (build artifacts, node_modules, .env files, IDE configs)
+            3. Unused imports or dead code (as checked by knip)
+            4. Console.log statements or debug code left in production files
+            5. Files that should be excluded from the PR scope
+
+        4. **PR Requirements Validation:**
+            1. Verify the PR meets the requirements of the linked issue:
+                  1. All acceptance criteria are addressed
+                  2. No out-of-scope changes are included
+            2. Validate compliance with all previously suggested improvements and comments:
+                  1. All review comments have been addressed
+                  2. Requested changes have been implemented correctly
+            3. Check PR metadata:
+                  1. Proper title and description
+                  2. Linked to appropriate issue(s)
+                  3. Target branch is correct (typically `develop`)
+            4. Verify no sensitive information is exposed (as checked by Check-Sensitive-Files job)
+
+        5. **CI/CD Pipeline Compatibility:**
+            1. Validate that code changes won't break any of the 17+ CI jobs
+            2. Ensure pre-commit hook requirements are met:
+                  1. Code formatting (Prettier)
+                  2. Linting (ESLint)
+                  3. Type checking (TypeScript)
+            3. Check that changes don't introduce performance regressions for the 12-shard test execution
+            4. Note: codecov/project may fail when adding comprehensive tests due to meta-coverage (test code branches not covered by meta-tests) - this is expected if codecov/patch passes
+
+        6. **Security & Best Practices:**
+            1. No security vulnerabilities introduced
+            2. No exposed API keys, tokens, or credentials
+            3. Proper input validation and sanitization
+            4. No SQL injection or XSS vulnerabilities in any data handling
+            5. Proper error handling without leaking sensitive information
+
+        7. **Code Quality Assessment:**
+            1. Identify any files that should be excluded:
+                1. Accidentally committed files (IDE configs, env files, temporary files)
+                1. Files unrelated to the PR scope
+                1. Generated files that should be in .gitignore
+
+        8. **Implementation Correctness:** 
+            1. For the specific implementation file(s) being tested:
+                1. Verify the implementation logic is correct and free of bugs
+                1. Validate that queries target the correct database tables/entities (e.g., ensure tagsTable vs tagFoldersTable is correct)
+                1. Check that foreign key relationships are correctly enforced
+                1. Confirm business logic constraints are properly implemented
+                1. Verify proper error handling and status codes
+                1. **CRITICAL:** Any bugs, logic errors, or incorrect implementations discovered in the file(s) under test MUST be fixed in this PR before approval
+
+        9. **Requirement Validation:**
+            1. Verify the PR fully addresses the linked issue:
+                1. All acceptance criteria from the issue are met
+                1. Implementation matches the described solution approach
+                1. No scope creep or unrelated changes are included
+
+        10. **Compliance:**
+            1. Confirm compliance with all previous review feedback:
+                1. All resolved comments have been properly addressed
+                1. No regressions of previously suggested improvements
+                1. Coding standards and conventions are followed consistently
+
+        11. **Review Decision Criteria:**
+            1. **Request Changes** when ANY of the following apply:
+                - Missing test coverage or invalid/insufficient tests
+                - Code quality issues, security concerns, or bugs
+                - Incomplete implementation of issue requirements
+                - Bugs or logic errors in the implementation file(s) under test
+                - Non-compliance with previous feedback
+                - Presence of unnecessary files
+                - Failing CI checks that need code changes
+                  
+            2. **Approve** ONLY when ALL of these are satisfied:
+                - Complete test coverage (≥95% for new/modified code, ≥80% overall)
+                - All tests follow proper patterns (mercuriusClient integration tests with proper structure)
+                - No code quality issues, security concerns, or bugs
+                - Full implementation of issue requirements
+                - Implementation file(s) under test are correct and bug-free
+                - Compliance with all previous feedback
+                - No unnecessary files
+                - All CI checks passing or failures are unrelated to this PR
+
+        12. **Approval Process:**
+            1. Only append the [approve] tag when you are approving, specifically when:
+                1. All criteria in section 11.2 above are fully satisfied
+                1. The implementation file(s) under test are correct and bug-free
+                1. Zero changes are required (not even trivial ones)
+                1. You are confident the PR is ready to merge
+          
+        13. **Focus Areas:**
+            1. Prioritize substantive issues over minor stylistic suggestions
+            1. Focus on issues that would cause CI pipeline failures or production bugs
+            1. Highlight any deviations from established codebase patterns (e.g., incorrect test file locations, wrong testing patterns)
+            1. Consider the scope: test-focused PRs should maintain clear boundaries, but implementation bugs in files being tested must be fixed
+
+        **Important Notes:**
+        1. Test-focused PRs should maintain clear scope boundaries. However, this does NOT exempt bugs in the specific file(s) being tested - those must be fixed in the same PR to ensure testing achieves its goal: validate AND fix implementation correctness. Only bugs in unrelated files may be deferred to separate issues.
+        1. If codecov/project fails but codecov/patch passes, note that this is often due to meta-coverage issues (test code branches not covered by meta-tests) and may be acceptable.
+        1. When suggesting test improvements, prefer mercuriusClient integration tests with proper GraphQL document nodes over vi.mock unit tests, following the repository's testing philosophy.
+
+issue_enrichment:
+  auto_enrich:
+    enabled: false
