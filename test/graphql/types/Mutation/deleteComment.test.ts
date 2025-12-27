@@ -1,5 +1,5 @@
 import { faker } from "@faker-js/faker";
-import { expect, suite, test, vi } from "vitest";
+import { expect, suite, test } from "vitest";
 import { assertToBeNonNullish } from "../../../helpers";
 import { server } from "../../../server";
 import { mercuriusClient } from "../client";
