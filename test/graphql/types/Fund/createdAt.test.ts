@@ -165,7 +165,9 @@ async function createOrgFund(
 		});
 
 		if (fundResult.errors && fundResult.errors.length > 0) {
-			throw new Error(`createFund failed: ${JSON.stringify(fundResult.errors)}`);
+			throw new Error(
+				`createFund failed: ${JSON.stringify(fundResult.errors)}`,
+			);
 		}
 
 		assertToBeNonNullish(fundResult.data?.createFund?.id);
@@ -201,7 +203,10 @@ async function createOrgFund(
 				variables: { input: { id: organizationId } },
 			});
 		} catch (cleanupError) {
-			console.error("Failed to cleanup organization after error:", cleanupError);
+			console.error(
+				"Failed to cleanup organization after error:",
+				cleanupError,
+			);
 		}
 		throw error;
 	}
