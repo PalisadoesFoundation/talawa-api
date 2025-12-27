@@ -767,6 +767,13 @@ suite("Mutation field createTag", () => {
 				});
 			});
 
+			// NOTE: Test Isolation Consideration
+			// This test mocks server.drizzleClient.insert which is a shared resource.
+			// The finally block ensures the original method is restored even if the test fails.
+			// Vitest runs tests within the same file sequentially by default (sequence.concurrent: false
+			// in vitest.config.ts), so this mock won't interfere with other tests in this file.
+			// For cross-file isolation, Vitest's test isolation (isolate: true) ensures each test file
+			// runs in a separate worker thread with its own module context.
 			// Store original insert method
 			const originalInsert = server.drizzleClient.insert;
 
