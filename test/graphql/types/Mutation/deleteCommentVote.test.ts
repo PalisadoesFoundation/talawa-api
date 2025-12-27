@@ -1,6 +1,6 @@
 import { faker } from "@faker-js/faker";
 import { eq } from "drizzle-orm";
-import { expect, suite, test } from "vitest";
+import { expect, suite, test, vi } from "vitest";
 import { usersTable } from "~/src/drizzle/tables/users";
 import { assertToBeNonNullish } from "../../../helpers";
 import { server } from "../../../server";
@@ -308,66 +308,6 @@ suite("Mutation field deleteCommentVote", () => {
 							input: {
 								commentId: randomCommentId,
 								creatorId: adminUserId,
-							},
-						},
-					},
-				);
-
-				expect(result.data?.deleteCommentVote).toBeNull();
-				expect(result.errors).toEqual(
-					expect.arrayContaining([
-						expect.objectContaining({
-							extensions: expect.objectContaining({
-								code: "arguments_associated_resources_not_found",
-								issues: expect.arrayContaining([
-									expect.objectContaining({
-										argumentPath: ["input", "commentId"],
-									}),
-								]),
-							}),
-							path: ["deleteCommentVote"],
-						}),
-					]),
-				);
-			},
-			SUITE_TIMEOUT,
-		);
-	});
-
-	suite("when the specified comment does not exist", () => {
-		test(
-			"should return an error with arguments_associated_resources_not_found extensions code",
-			async () => {
-				const randomCommentId = faker.string.uuid();
-
-				// Create a regular user to use as creatorId
-				const testUserEmail = `testuser${faker.string.uuid()}@example.com`;
-				const createUserResult = await mercuriusClient.mutate(
-					Mutation_createUser,
-					{
-						headers: { authorization: `bearer ${adminAuthToken}` },
-						variables: {
-							input: {
-								emailAddress: testUserEmail,
-								isEmailAddressVerified: true,
-								name: "Test User",
-								password: "password",
-								role: "regular",
-							},
-						},
-					},
-				);
-				const userId = createUserResult.data?.createUser?.user?.id;
-				assertToBeNonNullish(userId);
-
-				const result = await mercuriusClient.mutate(
-					Mutation_deleteCommentVote,
-					{
-						headers: { authorization: `bearer ${adminAuthToken}` },
-						variables: {
-							input: {
-								commentId: randomCommentId,
-								creatorId: userId,
 							},
 						},
 					},
@@ -715,14 +655,15 @@ suite("Mutation field deleteCommentVote", () => {
 				assertToBeNonNullish(adminUserId);
 
 				// Mock the delete operation to return empty array
-				const originalDelete = server.drizzleClient.delete;
-				try {
-					server.drizzleClient.delete = (() => ({
+				const deleteSpy = vi
+					.spyOn(server.drizzleClient, "delete")
+					.mockReturnValue({
 						where: () => ({
 							returning: async () => [],
 						}),
-					})) as unknown as typeof server.drizzleClient.delete;
+					} as unknown as ReturnType<typeof server.drizzleClient.delete>);
 
+				try {
 					const result = await mercuriusClient.mutate(
 						Mutation_deleteCommentVote,
 						{
@@ -748,7 +689,7 @@ suite("Mutation field deleteCommentVote", () => {
 						]),
 					);
 				} finally {
-					server.drizzleClient.delete = originalDelete;
+					deleteSpy.mockRestore();
 				}
 			},
 			SUITE_TIMEOUT,
