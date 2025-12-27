@@ -18,7 +18,7 @@ import {
 
 const SUITE_TIMEOUT = 40_000;
 
-// Sign in as admin
+// Sign in as admin and cache credentials
 const signInResult = await mercuriusClient.query(Query_signIn, {
 	variables: {
 		input: {
@@ -28,7 +28,9 @@ const signInResult = await mercuriusClient.query(Query_signIn, {
 	},
 });
 assertToBeNonNullish(signInResult.data.signIn?.authenticationToken);
+assertToBeNonNullish(signInResult.data.signIn?.user?.id);
 const adminAuthToken = signInResult.data.signIn.authenticationToken;
+const adminUserId = signInResult.data.signIn.user.id;
 
 /**
  * Creates a test organization
@@ -286,19 +288,6 @@ suite("Mutation field deleteCommentVote", () => {
 			"should return an error with arguments_associated_resources_not_found extensions code",
 			async () => {
 				const randomCommentId = faker.string.uuid();
-
-				// Get admin user ID
-				const adminSignIn = await mercuriusClient.query(Query_signIn, {
-					variables: {
-						input: {
-							emailAddress:
-								server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-							password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-						},
-					},
-				});
-				const adminUserId = adminSignIn.data?.signIn?.user?.id;
-				assertToBeNonNullish(adminUserId);
 
 				const result = await mercuriusClient.mutate(
 					Mutation_deleteCommentVote,
@@ -772,6 +761,12 @@ suite("Mutation field deleteCommentVote", () => {
 		);
 	});
 
+	// Note: Tests for admins deleting other users' votes are not included because
+	// the current implementation filters votes by currentUserId (line 94 of deleteCommentVote.ts),
+	// preventing admins from deleting votes they didn't create. The authorization logic exists
+	// (lines 178-197) but is unreachable due to this query filter. This appears to be a bug
+	// in the implementation that should be addressed separately.
+
 	suite("when organization admin deletes their own vote", () => {
 		test(
 			"should successfully delete the vote and return the comment",
@@ -856,19 +851,6 @@ suite("Mutation field deleteCommentVote", () => {
 				const orgId = await createTestOrganization();
 				const postId = await createTestPost(orgId);
 				const commentId = await createTestComment(postId, adminAuthToken);
-
-				// Get admin user ID
-				const adminSignIn = await mercuriusClient.query(Query_signIn, {
-					variables: {
-						input: {
-							emailAddress:
-								server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-							password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-						},
-					},
-				});
-				const adminUserId = adminSignIn.data?.signIn?.user?.id;
-				assertToBeNonNullish(adminUserId);
 
 				// Admin creates a vote
 				await createTestCommentVote(commentId, adminAuthToken);
