@@ -1,5 +1,15 @@
 import { faker } from "@faker-js/faker";
-import { expect, suite, test } from "vitest";
+import { eq } from "drizzle-orm";
+import {
+	afterEach,
+	beforeAll,
+	beforeEach,
+	expect,
+	suite,
+	test,
+	vi,
+} from "vitest";
+import { usersTable } from "../../../../src/drizzle/tables/users";
 import { assertToBeNonNullish } from "../../../helpers";
 import { server } from "../../../server";
 import { mercuriusClient } from "../client";
@@ -411,6 +421,169 @@ suite("Mutation deleteComment", () => {
 			expect(result.errors).toBeUndefined();
 			assertToBeNonNullish(result.data?.deleteComment);
 			expect(result.data.deleteComment.id).toBe(commentId);
+		});
+	});
+	suite("when authenticated user record is deleted", () => {
+		test("should return unauthenticated error", async () => {
+			// Create a test user
+			const testUserEmail = `deleteduser${faker.string.uuid()}@example.com`;
+			const createUserResult = await mercuriusClient.mutate(
+				Mutation_createUser,
+				{
+					headers: { authorization: `bearer ${adminToken}` },
+					variables: {
+						input: {
+							emailAddress: testUserEmail,
+							password: "password",
+							role: "regular",
+							name: "User To Delete",
+							isEmailAddressVerified: true,
+						},
+					},
+				},
+			);
+
+			assertToBeNonNullish(createUserResult.data?.createUser);
+			const userId = createUserResult.data.createUser.user?.id;
+			assertToBeNonNullish(userId);
+
+			// Sign in to get their token
+			const userSignIn = await mercuriusClient.query(Query_signIn, {
+				variables: {
+					input: {
+						emailAddress: testUserEmail,
+						password: "password",
+					},
+				},
+			});
+			const userToken = userSignIn.data?.signIn?.authenticationToken;
+			assertToBeNonNullish(userToken);
+
+			// Create comment before deleting user
+			const org = await mercuriusClient.mutate(Mutation_createOrganization, {
+				headers: { authorization: `bearer ${adminToken}` },
+				variables: {
+					input: { name: faker.company.name(), countryCode: "in" },
+				},
+			});
+			assertToBeNonNullish(org.data?.createOrganization);
+			const organizationId = org.data.createOrganization.id;
+
+			const post = await mercuriusClient.mutate(Mutation_createPost, {
+				headers: { authorization: `bearer ${adminToken}` },
+				variables: {
+					input: {
+						organizationId,
+						caption: faker.lorem.sentence(),
+						body: faker.lorem.paragraph(),
+					},
+				},
+			});
+			assertToBeNonNullish(post.data?.createPost);
+			const postId = post.data.createPost.id;
+
+			const comment = await mercuriusClient.mutate(Mutation_createComment, {
+				headers: { authorization: `bearer ${adminToken}` },
+				variables: {
+					input: { postId, body: faker.lorem.sentence() },
+				},
+			});
+			assertToBeNonNullish(comment.data?.createComment);
+			const commentId = comment.data.createComment.id;
+
+			// Delete the user from database
+			await server.drizzleClient
+				.delete(usersTable)
+				.where(eq(usersTable.id, userId));
+
+			// Try to delete comment with deleted user's token
+			const result = await mercuriusClient.mutate(DeleteCommentMutation, {
+				headers: { authorization: `bearer ${userToken}` },
+				variables: { input: { id: commentId } },
+			});
+
+			expect(result.data?.deleteComment).toBeNull();
+			expect(result.errors).toEqual(
+				expect.arrayContaining([
+					expect.objectContaining({
+						extensions: expect.objectContaining({
+							code: "unauthenticated",
+						}),
+						path: ["deleteComment"],
+					}),
+				]),
+			);
+		});
+	});
+	suite("when the database delete operation fails", () => {
+		let originalDelete: typeof server.drizzleClient.delete;
+		let commentId: string;
+
+		beforeAll(async () => {
+			// Create test data BEFORE mocking
+			const org = await mercuriusClient.mutate(Mutation_createOrganization, {
+				headers: { authorization: `bearer ${adminToken}` },
+				variables: {
+					input: { name: faker.company.name(), countryCode: "in" },
+				},
+			});
+			assertToBeNonNullish(org.data?.createOrganization);
+			const organizationId = org.data.createOrganization.id;
+
+			const post = await mercuriusClient.mutate(Mutation_createPost, {
+				headers: { authorization: `bearer ${adminToken}` },
+				variables: {
+					input: {
+						organizationId,
+						caption: faker.lorem.sentence(),
+						body: faker.lorem.paragraph(),
+					},
+				},
+			});
+			assertToBeNonNullish(post.data?.createPost);
+			const postId = post.data.createPost.id;
+
+			const comment = await mercuriusClient.mutate(Mutation_createComment, {
+				headers: { authorization: `bearer ${adminToken}` },
+				variables: {
+					input: { postId, body: faker.lorem.sentence() },
+				},
+			});
+			assertToBeNonNullish(comment.data?.createComment);
+			commentId = comment.data.createComment.id;
+		});
+
+		beforeEach(() => {
+			// Mock delete to return empty array
+			originalDelete = server.drizzleClient.delete;
+			server.drizzleClient.delete = vi.fn().mockReturnValue({
+				where: vi.fn().mockReturnValue({
+					returning: vi.fn().mockResolvedValue([]),
+				}),
+			});
+		});
+
+		afterEach(() => {
+			server.drizzleClient.delete = originalDelete;
+		});
+
+		test("should return unexpected error", async () => {
+			const result = await mercuriusClient.mutate(DeleteCommentMutation, {
+				headers: { authorization: `bearer ${adminToken}` },
+				variables: { input: { id: commentId } },
+			});
+
+			expect(result.data?.deleteComment).toBeNull();
+			expect(result.errors).toEqual(
+				expect.arrayContaining([
+					expect.objectContaining({
+						extensions: expect.objectContaining({
+							code: "unexpected",
+						}),
+						path: ["deleteComment"],
+					}),
+				]),
+			);
 		});
 	});
 });
