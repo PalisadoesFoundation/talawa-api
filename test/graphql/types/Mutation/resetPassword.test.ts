@@ -173,6 +173,45 @@ suite("Mutation field resetPassword", () => {
 				);
 			});
 
+			test("token is expired", async () => {
+				const expiredToken = faker.string.hexadecimal({ length: 64 }).slice(2);
+				const expiredTokenHash = hashPasswordResetToken(expiredToken);
+				const expiredAt = new Date(Date.now() - 3600000); // 1 hour ago
+
+				await server.drizzleClient.execute(
+					sql`INSERT INTO password_reset_tokens (id, token_hash, user_id, expires_at, created_at)
+					VALUES (gen_random_uuid(), ${expiredTokenHash}, ${testUserId}, ${expiredAt.toISOString()}::timestamptz, NOW())`,
+				);
+
+				const result = await mercuriusClient.mutate(Mutation_resetPassword, {
+					variables: {
+						input: {
+							token: expiredToken,
+							newPassword: "newpassword456",
+						},
+					},
+				});
+
+				expect(result.data.resetPassword).toEqual(null);
+				expect(result.errors).toEqual(
+					expect.arrayContaining<TalawaGraphQLFormattedError>([
+						expect.objectContaining<TalawaGraphQLFormattedError>({
+							extensions: expect.objectContaining<InvalidArgumentsExtensions>({
+								code: "invalid_arguments",
+								issues: expect.arrayContaining([
+									expect.objectContaining({
+										argumentPath: ["input", "token"],
+										message: "Invalid or expired password reset token.",
+									}),
+								]),
+							}),
+							message: expect.any(String),
+							path: ["resetPassword"],
+						}),
+					]),
+				);
+			});
+
 			test("token is empty string", async () => {
 				const result = await mercuriusClient.mutate(Mutation_resetPassword, {
 					variables: {

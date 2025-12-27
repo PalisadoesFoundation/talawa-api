@@ -119,7 +119,7 @@ builder.mutationField("requestPasswordReset", (t) =>
 				// Format expiry time for display (empty string if no timeout)
 				const expiryText = formatExpiryTime(tokenExpiresInSeconds);
 
-				// Send email (fire and forget - don't block response)
+				// Send email - we await it, but failures don't block the GraphQL response
 				try {
 					const emailContext = {
 						userName: existingUser.name,
