@@ -1,0 +1,1 @@
+ALTER TABLE "fund_campaigns" ADD COLUMN "amount_raised" integer DEFAULT 0 NOT NULL;

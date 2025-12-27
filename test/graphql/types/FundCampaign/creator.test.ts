@@ -44,6 +44,7 @@ describe("FundCampaign Resolver - Creator Field", () => {
 			updaterId: "id-222",
 			currencyCode: "USD",
 			goalAmount: 50000,
+			amountRaised: 0,
 			startAt: new Date("2025-11-11T00:00:00Z"),
 			endAt: new Date("2025-11-12T23:59:59Z"),
 		};

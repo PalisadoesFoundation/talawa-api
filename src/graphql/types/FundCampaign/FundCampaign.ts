@@ -10,6 +10,10 @@ FundCampaign.implement({
 	description:
 		"Fund campaigns are specific events created for the purpose of raising organization funds.",
 	fields: (t) => ({
+		amountRaised: t.expose("amountRaised", {
+			description: "Total amount raised for the fund campaign.",
+			type: "Int",
+		}),
 		currencyCode: t.expose("currencyCode", {
 			description: "Currency code of the fund campaign.",
 			type: Iso4217CurrencyCode,
@@ -18,9 +22,10 @@ FundCampaign.implement({
 			description: "Date time at the time the fund campaign ends at.",
 			type: "DateTime",
 		}),
-		goalAmount: t.exposeInt("goalAmount", {
+		goalAmount: t.expose("goalAmount", {
 			description:
 				"Minimum amount of money that is set as the goal for the fund campaign.",
+			type: "Int",
 		}),
 		id: t.exposeID("id", {
 			description: "Global identifier of the fund campaign.",

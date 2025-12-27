@@ -16,6 +16,7 @@ const mockFundCampaign: FundCampaign = {
 	endAt: new Date("2024-12-31T23:59:59Z"),
 	fundId: "fund-456",
 	goalAmount: 10000,
+	amountRaised: 0,
 	startAt: new Date("2024-02-01T00:00:00Z"),
 };
 

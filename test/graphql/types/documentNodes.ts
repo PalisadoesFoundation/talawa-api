@@ -396,6 +396,7 @@ export const Query_fundCampaign =
       id
       name
       goalAmount
+      amountRaised
     }
   }`);
 
@@ -2556,3 +2557,15 @@ export const Query_community = gql(`
 		}
 	}
 `);
+
+export const Mutation_updateFundCampaignPledge =
+	gql(`mutation Mutation_updateFundCampaignPledge($input: MutationUpdateFundCampaignPledgeInput!) {
+    updateFundCampaignPledge(input: $input) {
+      id
+      note
+      amount
+      campaign {
+        amountRaised
+      }
+    }
+  }`);

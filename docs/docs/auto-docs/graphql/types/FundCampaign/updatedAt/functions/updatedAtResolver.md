@@ -18,6 +18,10 @@ Only administrators and organization admins have access to this field.
 
 The parent FundCampaign object containing the updatedAt field
 
+#### amountRaised
+
+`number`
+
 #### createdAt
 
 `Date`

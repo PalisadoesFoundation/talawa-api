@@ -1,6 +1,7 @@
-import { eq } from "drizzle-orm";
+import { eq, sql } from "drizzle-orm";
 import { z } from "zod";
 import { fundCampaignPledgesTable } from "~/src/drizzle/tables/fundCampaignPledges";
+import { fundCampaignsTable } from "~/src/drizzle/tables/fundCampaigns";
 import { builder } from "~/src/graphql/builder";
 import {
 	MutationDeleteFundCampaignPledgeInput,
@@ -147,6 +148,17 @@ builder.mutationField("deleteFundCampaignPledge", (t) =>
 				.delete(fundCampaignPledgesTable)
 				.where(eq(fundCampaignPledgesTable.id, parsedArgs.input.id))
 				.returning();
+
+			if (deletedFundCampaignPledge) {
+				await ctx.drizzleClient
+					.update(fundCampaignsTable)
+					.set({
+						amountRaised: sql`${fundCampaignsTable.amountRaised} - ${deletedFundCampaignPledge.amount}`,
+					})
+					.where(
+						eq(fundCampaignsTable.id, deletedFundCampaignPledge.campaignId),
+					);
+			}
 
 			// Deleted fund campaign pledge not being returned means that either it was deleted or its `id` column was changed by external entities before this delete operation could take place.
 			if (deletedFundCampaignPledge === undefined) {

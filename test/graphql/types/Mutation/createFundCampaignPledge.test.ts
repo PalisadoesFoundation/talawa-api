@@ -16,6 +16,7 @@ import {
 	Mutation_deleteFundCampaignPledge,
 	Mutation_deleteOrganization,
 	Mutation_deleteUser,
+	Query_fundCampaign,
 	Query_signIn,
 } from "../documentNodes";
 
@@ -722,6 +723,15 @@ suite("Mutation field createFundCampaignPledge", () => {
 			"regular",
 		);
 
+		// Create a fresh campaign for this test to ensure amountRaised starts at 0
+		const testCampaignId = await createFundCampaign(
+			adminAuthToken,
+			fundId,
+			new Date(Date.now() - ONE_DAY_MS),
+			new Date(Date.now() + ONE_DAY_MS),
+		);
+		createdCampaignIds.push(testCampaignId);
+
 		const result = await mercuriusClient.mutate(
 			Mutation_createFundCampaignPledge,
 			{
@@ -731,7 +741,7 @@ suite("Mutation field createFundCampaignPledge", () => {
 				variables: {
 					input: {
 						amount: 500,
-						campaignId: activeCampaignId,
+						campaignId: testCampaignId,
 						pledgerId: newPledger.userId,
 						note: "Test pledge from admin with detailed note",
 					},
@@ -749,6 +759,13 @@ suite("Mutation field createFundCampaignPledge", () => {
 
 		if (result.data?.createFundCampaignPledge?.id) {
 			createdPledgeIds.push(result.data.createFundCampaignPledge.id);
+
+			// Verify amountRaised updated
+			const campaignResult = await mercuriusClient.query(Query_fundCampaign, {
+				headers: { authorization: `bearer ${adminAuthToken}` },
+				variables: { input: { id: testCampaignId } },
+			});
+			expect(campaignResult.data?.fundCampaign?.amountRaised).toBe(500);
 		}
 	});
 

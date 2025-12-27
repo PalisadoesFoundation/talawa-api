@@ -1,6 +1,5 @@
 import { faker } from "@faker-js/faker";
 import { eq } from "drizzle-orm";
-import { gql } from "graphql-tag";
 import { expect, suite, test } from "vitest";
 
 import { fundsTable } from "~/src/drizzle/tables/funds";
@@ -9,15 +8,11 @@ import { organizationMembershipsTable } from "~/src/drizzle/tables/organizationM
 import { server } from "../../../server";
 import { mercuriusClient } from "../client";
 import { createRegularUserUsingAdmin } from "../createRegularUserUsingAdmin";
-import { Mutation_createOrganization, Query_signIn } from "../documentNodes";
-
-const Mutation_deleteFund = gql(`
-	mutation Mutation_deleteFund($input: MutationDeleteFundInput!) {
-		deleteFund(input: $input) {
-			id
-		}
-	}
-`);
+import {
+	Mutation_createOrganization,
+	Mutation_deleteFund,
+	Query_signIn,
+} from "../documentNodes";
 
 /**
  * Local test helper.
@@ -249,7 +244,7 @@ suite("deleteFund mutation", () => {
 		});
 
 		expect(result.errors).toBeUndefined();
-		expect(result.data?.deleteFund.id).toBe(fundId);
+		expect(result.data?.deleteFund?.id).toBe(fundId);
 
 		const rows = await server.drizzleClient
 			.select()

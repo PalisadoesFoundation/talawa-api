@@ -17,7 +17,11 @@ export const mutationUpdateFundCampaignPledgeInputSchema =
 			{
 				message: "At least one optional argument must be provided.",
 			},
-		);
+		)
+		.refine((data) => data.amount === undefined || data.amount > 0, {
+			message: "Amount must be positive",
+			path: ["amount"],
+		});
 
 export const MutationUpdateFundCampaignPledgeInput = builder
 	.inputRef<z.infer<typeof mutationUpdateFundCampaignPledgeInputSchema>>(
@@ -26,7 +30,8 @@ export const MutationUpdateFundCampaignPledgeInput = builder
 	.implement({
 		description: "",
 		fields: (t) => ({
-			amount: t.int({
+			amount: t.field({
+				type: "Int",
 				description: "The amount of pledged money.",
 			}),
 			id: t.id({
