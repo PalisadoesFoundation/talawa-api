@@ -1,3 +1,4 @@
+import { Readable } from "node:stream";
 import { faker } from "@faker-js/faker";
 import type { ResultOf, VariablesOf } from "gql.tada";
 import type { Client } from "minio";
@@ -804,7 +805,9 @@ suite("Mutation field updateCurrentUser", () => {
 				filename: `${faker.system.fileName()}.txt`,
 				mimetype: "text/plain", // Invalid mime type
 				encoding: "7bit",
-				createReadStream: vi.fn().mockReturnValue({} as NodeJS.ReadableStream),
+				createReadStream: vi
+					.fn()
+					.mockReturnValue(Readable.from("test content")),
 			});
 
 			const updateCurrentUserResult = await mercuriusClient.mutate(
@@ -886,7 +889,9 @@ suite("Mutation field updateCurrentUser", () => {
 				filename: `${faker.system.fileName()}.jpg`,
 				mimetype: "image/jpeg",
 				encoding: "7bit",
-				createReadStream: vi.fn().mockReturnValue({} as NodeJS.ReadableStream),
+				createReadStream: vi
+					.fn()
+					.mockReturnValue(Readable.from("test content")),
 			});
 
 			// Mock minio putObject
@@ -975,7 +980,9 @@ suite("Mutation field updateCurrentUser", () => {
 				filename: "test.jpg",
 				mimetype: "image/jpeg",
 				encoding: "7bit",
-				createReadStream: vi.fn().mockReturnValue({} as NodeJS.ReadableStream),
+				createReadStream: vi
+					.fn()
+					.mockReturnValue(Readable.from("test content")),
 			});
 
 			vi.spyOn(server.minio.client, "putObject").mockResolvedValue({
@@ -1094,7 +1101,9 @@ suite("Mutation field updateCurrentUser", () => {
 				filename: `${faker.system.fileName()}.jpg`,
 				mimetype: "image/jpeg",
 				encoding: "7bit",
-				createReadStream: vi.fn().mockReturnValue({} as NodeJS.ReadableStream),
+				createReadStream: vi
+					.fn()
+					.mockReturnValue(Readable.from("test content")),
 			});
 
 			vi.spyOn(server.minio.client, "putObject").mockResolvedValue({
@@ -1132,7 +1141,9 @@ suite("Mutation field updateCurrentUser", () => {
 				filename: `${faker.system.fileName()}.jpg`,
 				mimetype: "image/png",
 				encoding: "7bit",
-				createReadStream: vi.fn().mockReturnValue({} as NodeJS.ReadableStream),
+				createReadStream: vi
+					.fn()
+					.mockReturnValue(Readable.from("test content")),
 			});
 
 			const putObjectSpy = vi
@@ -1571,7 +1582,9 @@ suite("Mutation field updateCurrentUser", () => {
 				filename: `${faker.system.fileName()}.jpg`,
 				mimetype: "image/jpeg",
 				encoding: "7bit",
-				createReadStream: vi.fn().mockReturnValue({} as NodeJS.ReadableStream),
+				createReadStream: vi
+					.fn()
+					.mockReturnValue(Readable.from("test content")),
 			});
 
 			vi.spyOn(server.minio.client, "putObject").mockResolvedValue({
