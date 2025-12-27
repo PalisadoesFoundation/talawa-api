@@ -510,7 +510,7 @@ suite("Query field event", () => {
 			const organization = await createTestOrganization(authToken, userId);
 
 			// Create an event in the past directly in DB to bypass mutation validation
-			const pastEventId = faker.string.ulid();
+			const pastEventId = faker.string.uuid();
 			await server.drizzleClient.insert(eventsTable).values({
 				id: pastEventId,
 				name: "Past Event",
