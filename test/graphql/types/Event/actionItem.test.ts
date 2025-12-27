@@ -114,7 +114,7 @@ async function createEvent(organizationId: string) {
 				name: "Test Event for Action Items",
 				description: "An event for testing action items",
 				organizationId,
-				startAt: new Date().toISOString(),
+				startAt: new Date(Date.now() + 5 * 60 * 1000).toISOString(),
 				endAt: new Date(Date.now() + 3600 * 1000).toISOString(),
 			},
 		},

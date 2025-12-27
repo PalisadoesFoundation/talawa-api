@@ -101,7 +101,7 @@ async function createOrgEventFolderAndAgendaItem(
 			input: {
 				name: `Event-${Date.now()}`,
 				organizationId: orgId,
-				startAt: new Date().toISOString(),
+				startAt: new Date(Date.now() + 5 * 60 * 1000).toISOString(),
 				endAt: new Date(Date.now() + 60 * 60 * 1000).toISOString(),
 				description: "Test event",
 			},

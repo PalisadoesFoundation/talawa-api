@@ -1,5 +1,6 @@
 import { faker } from "@faker-js/faker";
 import { afterEach, beforeAll, expect, suite, test } from "vitest";
+import { eventsTable } from "~/src/drizzle/tables/events";
 import type {
 	TalawaGraphQLFormattedError,
 	UnauthenticatedExtensions,
@@ -160,7 +161,7 @@ suite("Query field event", () => {
 	) {
 		const {
 			durationInHours = 24,
-			startOffset = 0,
+			startOffset = 24 * 60 * 60 * 1000,
 			description = "Test Event",
 			name = "Test Event",
 		} = options;
@@ -508,32 +509,27 @@ suite("Query field event", () => {
 			const { authToken, userId } = await getAdminTokenAndUserId();
 			const organization = await createTestOrganization(authToken, userId);
 
-			// Create an event in the past
-			const pastEventResult = await mercuriusClient.mutate(
-				Mutation_createEvent,
-				{
-					headers: {
-						authorization: `bearer ${authToken}`,
-					},
-					variables: {
-						input: {
-							description: "Past Event",
-							// Set dates to last week
-							startAt: new Date(
-								Date.now() - 7 * 24 * 60 * 60 * 1000,
-							).toISOString(),
-							endAt: new Date(
-								Date.now() - 6 * 24 * 60 * 60 * 1000,
-							).toISOString(),
-							name: "Past Event",
-							organizationId: organization.id,
-						},
-					},
-				},
-			);
+			// Create an event in the past directly in DB to bypass mutation validation
+			const pastEventId = faker.string.uuid();
+			await server.drizzleClient.insert(eventsTable).values({
+				id: pastEventId,
+				name: "Past Event",
+				description: "Past Event",
+				startAt: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000),
+				endAt: new Date(Date.now() - 6 * 24 * 60 * 60 * 1000),
+				organizationId: organization.id,
+				creatorId: userId,
+				allDay: false,
+				isInviteOnly: false,
+				isPublic: true,
+				isRegisterable: true,
+				isRecurringEventTemplate: false,
+			});
 
-			const pastEvent = pastEventResult.data?.createEvent;
-			assertToBeNonNullish(pastEvent);
+			const pastEvent = await server.drizzleClient.query.eventsTable.findFirst({
+				where: (fields, operators) => operators.eq(fields.id, pastEventId),
+			});
+			assertToBeNonNullish(pastEvent); // Assert exists since we just created it
 
 			// Query the past event
 			const queryResult = await mercuriusClient.query(Query_event, {

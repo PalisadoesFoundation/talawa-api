@@ -74,8 +74,6 @@ const mutationCreateEventArgumentsSchema = z.object({
 	}),
 });
 
-export { mutationCreateEventArgumentsSchema };
-
 builder.mutationField("createEvent", (t) =>
 	t.field({
 		args: {
