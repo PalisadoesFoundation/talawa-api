@@ -23,7 +23,7 @@ import {
 } from "~/src/utilities/recurringEventHelpers";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 
-const mutationCreateEventArgumentsSchema = z.object({
+export const mutationCreateEventArgumentsSchema = z.object({
 	input: mutationCreateEventInputSchema.transform(async (arg, ctx) => {
 		const now = new Date();
 		const gracePeriod = 2000; // 2 seconds for clock skew
