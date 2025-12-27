@@ -398,7 +398,7 @@ export async function insertCollections(
 								const fileData = await fs.readFile(filePath);
 								await minioClient.putObject(
 									bucketName,
-									attachment.name,
+									attachment.objectName,
 									fileData,
 									undefined,
 									{

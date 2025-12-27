@@ -225,6 +225,31 @@ export const Mutation_revokeRefreshToken =
     revokeRefreshToken(refreshToken: $refreshToken)
 }`);
 
+export const Mutation_requestPasswordReset =
+	gql(`mutation Mutation_requestPasswordReset($input: MutationRequestPasswordResetInput!) {
+    requestPasswordReset(input: $input) {
+        success
+        message
+    }
+}`);
+
+export const Mutation_resetPassword =
+	gql(`mutation Mutation_resetPassword($input: MutationResetPasswordInput!) {
+    resetPassword(input: $input) {
+        success
+        authenticationToken
+        refreshToken
+    }
+}`);
+
+export const Query_verifyPasswordResetToken =
+	gql(`query Query_verifyPasswordResetToken($input: QueryVerifyPasswordResetTokenInput!) {
+    verifyPasswordResetToken(input: $input) {
+        valid
+        expiresAt
+    }
+}`);
+
 export const Query_user = gql(`query Query_user($input: QueryUserInput!) {
     user(input: $input) {
         addressLine1
@@ -751,6 +776,22 @@ export const Query_agendaItem =
 export const Mutation_createAgendaFolder = gql(`
   mutation Mutation_createAgendaFolder($input: MutationCreateAgendaFolderInput!) {
     createAgendaFolder(input: $input) {
+      id
+      name
+      isAgendaItemFolder
+      event {
+        id
+      }
+      parentFolder {
+        id
+      }
+    }
+  }
+`);
+
+export const Mutation_updateAgendaFolder = gql(`
+  mutation Mutation_updateAgendaFolder($input: MutationUpdateAgendaFolderInput!) {
+    updateAgendaFolder(input: $input) {
       id
       name
       isAgendaItemFolder

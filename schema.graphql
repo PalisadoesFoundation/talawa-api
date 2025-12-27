@@ -1155,21 +1155,6 @@ input EventsByOrganizationIdInput {
   organizationId: ID!
 }
 
-"""Metadata for files uploaded via presigned URL"""
-input FileMetadataInput {
-  """Hash of the file for deduplication"""
-  fileHash: String!
-
-  """MIME type of the file"""
-  mimetype: PostAttachmentMimeType!
-
-  """Name of the file"""
-  name: String!
-
-  """Object name used in storage"""
-  objectName: String!
-}
-
 """Possible variants of the frequency of a recurring event."""
 enum Frequency {
   DAILY
@@ -2350,6 +2335,22 @@ type Mutation {
   removeEventAttendee(data: EventAttendeeInput!): User
 
   """
+  Request a password reset. If the email exists, a reset link will be sent. Returns the same response whether the email exists or not to prevent user enumeration.
+  """
+  requestPasswordReset(
+    """Input for requesting a password reset."""
+    input: MutationRequestPasswordResetInput!
+  ): PasswordResetRequestPayload
+
+  """
+  Reset password using a valid password reset token. Returns authentication tokens for auto-login.
+  """
+  resetPassword(
+    """Input for resetting password with a valid token."""
+    input: MutationResetPasswordInput!
+  ): PasswordResetPayload
+
+  """
   Mutation to revoke a refresh token. Use this for logout functionality to invalidate the refresh token.
   """
   revokeRefreshToken(
@@ -2852,8 +2853,8 @@ input MutationCreateOrganizationMembershipInput {
 
 """Input for creating a new post"""
 input MutationCreatePostInput {
-  """Metadata for files already uploaded via presigned URL"""
-  attachments: [FileMetadataInput!]
+  """Direct file upload"""
+  attachment: Upload
 
   """Body content of the post."""
   body: String
@@ -3237,6 +3238,21 @@ input MutationReadNotificationInput {
 input MutationRejectMembershipRequestInput {
   """ID of the membership request to reject"""
   membershipRequestId: ID!
+}
+
+"""Input type for requesting a password reset."""
+input MutationRequestPasswordResetInput {
+  """Email address of the user requesting password reset."""
+  emailAddress: EmailAddress!
+}
+
+"""Input type for resetting password with a valid token."""
+input MutationResetPasswordInput {
+  """The new password to set. Must be 8-64 characters."""
+  newPassword: String!
+
+  """The password reset token."""
+  token: String!
 }
 
 """Input type for sending a membership request."""
@@ -3737,8 +3753,11 @@ input MutationUpdateOrganizationMembershipInput {
 
 """Input for updating a post."""
 input MutationUpdatePostInput {
-  """Metadata for files already uploaded via presigned URL"""
-  attachments: [FileMetadataInput!]
+  """Direct file upload"""
+  attachment: Upload
+
+  """Body content of the post."""
+  body: String
 
   """Caption about the post."""
   caption: String
@@ -4335,6 +4354,36 @@ type PageInfo {
   startCursor: String
 }
 
+"""Payload returned after successfully resetting a password."""
+type PasswordResetPayload {
+  """The new authentication token for auto-login after password reset."""
+  authenticationToken: String
+
+  """The new refresh token for auto-login after password reset."""
+  refreshToken: String
+
+  """Whether the password was successfully reset."""
+  success: Boolean
+}
+
+"""Payload returned from a password reset request."""
+type PasswordResetRequestPayload {
+  """A message describing the result of the request."""
+  message: String
+
+  """Whether the request was processed successfully."""
+  success: Boolean
+}
+
+"""Payload returned from verifying a password reset token."""
+type PasswordResetTokenVerification {
+  """The expiration time of the token (null if token is invalid)."""
+  expiresAt: DateTime
+
+  """Whether the token is valid and can be used for password reset."""
+  valid: Boolean
+}
+
 """
 A field whose value conforms to the standard E.164 format as specified in: https://en.wikipedia.org/wiki/E.164. Basically this is +17895551234.
 """
@@ -4367,6 +4416,9 @@ type Plugin {
 }
 
 type Post {
+  """URL to the media attachment (image or video) of the post."""
+  attachmentURL: String
+
   """Array of attachments."""
   attachments: [PostAttachment!]
 
@@ -4446,16 +4498,6 @@ type PostAttachment {
 
   """Object name used when creating presigned URLs."""
   objectName: String
-}
-
-"""MIME types supported for post attachments"""
-enum PostAttachmentMimeType {
-  IMAGE_AVIF
-  IMAGE_JPEG
-  IMAGE_PNG
-  IMAGE_WEBP
-  VIDEO_MP4
-  VIDEO_WEBM
 }
 
 """"""
@@ -4740,6 +4782,14 @@ type Query {
 
   """Query field to read a venue."""
   venue(input: QueryVenueInput!): Venue
+
+  """
+  Verify if a password reset token is valid and not expired. Use this before showing the password reset form.
+  """
+  verifyPasswordResetToken(
+    """Input for verifying a password reset token."""
+    input: QueryVerifyPasswordResetTokenInput!
+  ): PasswordResetTokenVerification
 }
 
 input QueryActionCategoriesByOrganizationInput {
@@ -4950,6 +5000,12 @@ input QueryUserInput {
 input QueryVenueInput {
   """Global id of the venue."""
   id: String!
+}
+
+"""Input type for verifying a password reset token."""
+input QueryVerifyPasswordResetTokenInput {
+  """The password reset token to verify."""
+  token: String!
 }
 
 type ReadNotificationResponse {
