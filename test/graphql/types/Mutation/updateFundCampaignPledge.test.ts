@@ -468,4 +468,47 @@ suite("Mutation updateFundCampaignPledge", () => {
 			);
 		});
 	});
+
+	//// Test 9: Update pledge note only (without amount)
+	suite("when updating only the note without amount", () => {
+		test("should successfully update the note and keep the same amount", async () => {
+			await new Promise((resolve) => setTimeout(resolve, 500));
+
+			// First, update to a known amount
+			await mercuriusClient.mutate(UpdateFundCampaignPledgeMutation, {
+				headers: { authorization: `bearer ${adminToken}` },
+				variables: {
+					input: {
+						id: pledgeId,
+						amount: 500,
+						note: "before note-only update",
+					},
+				},
+			});
+
+			await new Promise((resolve) => setTimeout(resolve, 500));
+
+			// Now update only the note (no amount provided)
+			const result = await mercuriusClient.mutate(
+				UpdateFundCampaignPledgeMutation,
+				{
+					headers: { authorization: `bearer ${adminToken}` },
+					variables: {
+						input: {
+							id: pledgeId,
+							note: "updated note only",
+							// amount is intentionally omitted
+						},
+					},
+				},
+			);
+
+			expect(result.errors).toBeUndefined();
+			assertToBeNonNullish(result.data?.updateFundCampaignPledge);
+			expect(result.data.updateFundCampaignPledge.amount).toBe(500); // Amount should remain unchanged
+			expect(result.data.updateFundCampaignPledge.note).toBe(
+				"updated note only",
+			);
+		});
+	});
 });

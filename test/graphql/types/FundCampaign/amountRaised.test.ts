@@ -1,5 +1,5 @@
 import { faker } from "@faker-js/faker";
-import { afterAll, beforeAll, expect, suite, test } from "vitest";
+import { afterAll, beforeAll, expect, suite, test, vi } from "vitest";
 import { assertToBeNonNullish } from "../../../helpers";
 import { server } from "../../../server";
 import { mercuriusClient } from "../client";
@@ -403,5 +403,79 @@ suite("FundCampaign amountRaised logic", () => {
 
 		assertToBeNonNullish(campaignResult.data?.fundCampaign);
 		expect(campaignResult.data.fundCampaign.amountRaised).toBe(0);
+	});
+
+	test('deleteFundCampaignPledge results in "unexpected" error when database delete operation fails', async () => {
+		await sleep(500);
+
+		// Create a new pledge for this test
+		const pledgeAmount = 300;
+		const pledgeResult = await mercuriusClient.mutate(
+			Mutation_createFundCampaignPledge,
+			{
+				headers: {
+					authorization: `bearer ${adminAuthToken}`,
+				},
+				variables: {
+					input: {
+						amount: pledgeAmount,
+						campaignId: activeCampaignId,
+						pledgerId: pledgerUserId,
+					},
+				},
+			},
+		);
+		assertToBeNonNullish(pledgeResult.data?.createFundCampaignPledge?.id);
+		const pledgeId = pledgeResult.data.createFundCampaignPledge.id;
+		createdPledgeIds.push(pledgeId);
+
+		await sleep(500);
+
+		// Mock the transaction to simulate delete returning empty array
+		const transactionSpy = vi
+			.spyOn(server.drizzleClient, "transaction")
+			.mockImplementation(async (callback) => {
+				const mockTx = {
+					delete: () => ({
+						where: () => ({
+							returning: async () => [],
+						}),
+					}),
+					rollback: vi.fn(),
+				} as unknown as Parameters<typeof callback>[0];
+
+				return await callback(mockTx);
+			});
+
+		try {
+			const result = await mercuriusClient.mutate(
+				Mutation_deleteFundCampaignPledge,
+				{
+					headers: {
+						authorization: `bearer ${adminAuthToken}`,
+					},
+					variables: {
+						input: {
+							id: pledgeId,
+						},
+					},
+				},
+			);
+
+			expect(result.data?.deleteFundCampaignPledge ?? null).toBeNull();
+			expect(result.errors).toBeDefined();
+			expect(result.errors).toEqual(
+				expect.arrayContaining([
+					expect.objectContaining({
+						extensions: expect.objectContaining({
+							code: "unexpected",
+						}),
+						path: ["deleteFundCampaignPledge"],
+					}),
+				]),
+			);
+		} finally {
+			transactionSpy.mockRestore();
+		}
 	});
 });
