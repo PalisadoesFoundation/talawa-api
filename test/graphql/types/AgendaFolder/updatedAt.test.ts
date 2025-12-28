@@ -3,8 +3,8 @@ import { initGraphQLTada } from "gql.tada";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import type { ClientCustomScalars } from "~/src/graphql/scalars/index";
 import type { AgendaFolder } from "~/src/graphql/types/AgendaFolder/AgendaFolder";
-// Import the actual implementation to ensure it's loaded for coverage
-import "~/src/graphql/types/AgendaFolder/updatedAt";
+// Import the actual resolver function for testing
+import { resolveUpdatedAt } from "~/src/graphql/types/AgendaFolder/updatedAt";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import { createMockGraphQLContext } from "../../../_Mocks_/mockContextCreator/mockContextCreator";
 import { assertToBeNonNullish } from "../../../helpers";
@@ -161,12 +161,23 @@ async function createOrgEventFolder(
 	return { orgId, eventId, folderId };
 }
 
+// Retry configuration for membership creation to handle race conditions
+// Higher retry count (5) is chosen because membership creation can be flaky due to:
+// - Database transaction timing issues
+// - Concurrent test execution
+// - Transient network/connection issues
+// Exponential backoff helps reduce database load on retries
+const MEMBERSHIP_RETRY_COUNT = 5;
+const MEMBERSHIP_INITIAL_BACKOFF_MS = 500;
+
 async function retryMembershipCreation(
 	authToken: string,
 	orgId: string,
 	adminUserId: string,
 ) {
-	let retries = 2;
+	let retries = MEMBERSHIP_RETRY_COUNT;
+	let backoffMs = MEMBERSHIP_INITIAL_BACKOFF_MS;
+
 	while (retries > 0) {
 		try {
 			const membership = await mercuriusClient.mutate(
@@ -188,8 +199,13 @@ async function retryMembershipCreation(
 			return;
 		} catch (error) {
 			retries--;
-			if (retries === 0) throw error;
-			await new Promise((resolve) => setTimeout(resolve, 500));
+			if (retries === 0) {
+				// All retries exhausted, throw the error
+				throw error;
+			}
+			// Exponential backoff: double the wait time on each retry
+			await new Promise((resolve) => setTimeout(resolve, backoffMs));
+			backoffMs *= 2;
 		}
 	}
 }
@@ -425,98 +441,13 @@ describe("AgendaFolder.updatedAt resolver - Unit tests for branch coverage", () 
 		isAgendaItemFolder: true,
 	};
 
-	// Helper to create the resolver function that matches the actual implementation
-	const createResolver = () => {
-		return async (
-			parent: AgendaFolder,
-			_args: unknown,
-			ctx: ReturnType<typeof createMockGraphQLContext>["context"],
-		) => {
-			if (!ctx.currentClient.isAuthenticated) {
-				throw new TalawaGraphQLError({
-					extensions: {
-						code: "unauthenticated",
-					},
-				});
-			}
-
-			const currentUserId = ctx.currentClient.user.id;
-
-			const [currentUser, existingEvent] = await Promise.all([
-				ctx.drizzleClient.query.usersTable.findFirst({
-					columns: {
-						role: true,
-					},
-					where: (fields, operators) => operators.eq(fields.id, currentUserId),
-				}),
-				ctx.drizzleClient.query.eventsTable.findFirst({
-					columns: {
-						startAt: true,
-					},
-					where: (fields, operators) => operators.eq(fields.id, parent.eventId),
-					with: {
-						organization: {
-							columns: {
-								countryCode: true,
-							},
-							with: {
-								membershipsWhereOrganization: {
-									columns: {
-										role: true,
-									},
-									where: (fields, operators) =>
-										operators.eq(fields.memberId, currentUserId),
-								},
-							},
-						},
-					},
-				}),
-			]);
-
-			if (currentUser === undefined) {
-				throw new TalawaGraphQLError({
-					extensions: {
-						code: "unauthenticated",
-					},
-				});
-			}
-
-			if (existingEvent === undefined) {
-				ctx.log.error(
-					"Postgres select operation returned an empty array for an agenda folder's event id that isn't null.",
-				);
-
-				throw new TalawaGraphQLError({
-					extensions: {
-						code: "unexpected",
-					},
-				});
-			}
-
-			const currentUserOrganizationMembership =
-				existingEvent.organization.membershipsWhereOrganization[0];
-
-			if (
-				currentUser.role !== "administrator" &&
-				(currentUserOrganizationMembership === undefined ||
-					currentUserOrganizationMembership.role !== "administrator")
-			) {
-				throw new TalawaGraphQLError({
-					extensions: {
-						code: "unauthorized_action",
-					},
-				});
-			}
-
-			return parent.updatedAt;
-		};
-	};
+	// Note: We test the actual resolver function imported from the source file
+	// rather than duplicating the implementation, ensuring we test production code
 
 	it("should throw unauthenticated error when client is not authenticated", async () => {
 		const { context: mockContext } = createMockGraphQLContext(false);
-		const resolver = createResolver();
 
-		await expect(resolver(mockParent, {}, mockContext)).rejects.toThrow(
+		await expect(resolveUpdatedAt(mockParent, {}, mockContext)).rejects.toThrow(
 			new TalawaGraphQLError({
 				extensions: {
 					code: "unauthenticated",
@@ -546,9 +477,7 @@ describe("AgendaFolder.updatedAt resolver - Unit tests for branch coverage", () 
 			},
 		} as never);
 
-		const resolver = createResolver();
-
-		await expect(resolver(mockParent, {}, mockContext)).rejects.toThrow(
+		await expect(resolveUpdatedAt(mockParent, {}, mockContext)).rejects.toThrow(
 			new TalawaGraphQLError({
 				extensions: {
 					code: "unauthenticated",
@@ -583,9 +512,7 @@ describe("AgendaFolder.updatedAt resolver - Unit tests for branch coverage", () 
 			error: mockLogError,
 		};
 
-		const resolver = createResolver();
-
-		await expect(resolver(mockParent, {}, mockContext)).rejects.toThrow(
+		await expect(resolveUpdatedAt(mockParent, {}, mockContext)).rejects.toThrow(
 			new TalawaGraphQLError({
 				extensions: {
 					code: "unexpected",
@@ -620,9 +547,7 @@ describe("AgendaFolder.updatedAt resolver - Unit tests for branch coverage", () 
 			},
 		} as never);
 
-		const resolver = createResolver();
-
-		await expect(resolver(mockParent, {}, mockContext)).rejects.toThrow(
+		await expect(resolveUpdatedAt(mockParent, {}, mockContext)).rejects.toThrow(
 			new TalawaGraphQLError({
 				extensions: {
 					code: "unauthorized_action",
@@ -657,9 +582,7 @@ describe("AgendaFolder.updatedAt resolver - Unit tests for branch coverage", () 
 			},
 		} as never);
 
-		const resolver = createResolver();
-
-		await expect(resolver(mockParent, {}, mockContext)).rejects.toThrow(
+		await expect(resolveUpdatedAt(mockParent, {}, mockContext)).rejects.toThrow(
 			new TalawaGraphQLError({
 				extensions: {
 					code: "unauthorized_action",
@@ -696,8 +619,7 @@ describe("AgendaFolder.updatedAt resolver - Unit tests for branch coverage", () 
 			},
 		} as never);
 
-		const resolver = createResolver();
-		const result = await resolver(parentWithUpdatedAt, {}, mockContext);
+		const result = await resolveUpdatedAt(parentWithUpdatedAt, {}, mockContext);
 
 		expect(result).toEqual(expectedUpdatedAt);
 		expect(mocks.drizzleClient.query.usersTable.findFirst).toHaveBeenCalled();
@@ -736,8 +658,7 @@ describe("AgendaFolder.updatedAt resolver - Unit tests for branch coverage", () 
 			},
 		} as never);
 
-		const resolver = createResolver();
-		const result = await resolver(parentWithUpdatedAt, {}, mockContext);
+		const result = await resolveUpdatedAt(parentWithUpdatedAt, {}, mockContext);
 
 		expect(result).toEqual(expectedUpdatedAt);
 		expect(mocks.drizzleClient.query.usersTable.findFirst).toHaveBeenCalled();
