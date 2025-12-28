@@ -75,6 +75,7 @@ No description
 
 ```graphql
 type FundCampaign {
+  amountRaised: Int
   createdAt: DateTime
   creator: User
   currencyCode: Iso4217CurrencyCode
@@ -97,6 +98,10 @@ type FundCampaign {
 ```
 
 ### Fields
+
+#### [<code style={{ fontWeight: 'normal' }}>FundCampaign.<b>amountRaised</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>Int</b></code>](/auto-schema/types/scalars/int.mdx) <Badge class="badge badge--secondary " text="scalar"/>
+
+The amount of money raised so far for the fund campaign.
 
 #### [<code style={{ fontWeight: 'normal' }}>FundCampaign.<b>createdAt</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>DateTime</b></code>](/auto-schema/types/scalars/date-time.mdx) <Badge class="badge badge--secondary " text="scalar"/>
 
