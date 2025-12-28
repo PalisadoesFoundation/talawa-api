@@ -1,17 +1,33 @@
 import { faker } from "@faker-js/faker";
+import { initGraphQLTada } from "gql.tada";
 import { assertToBeNonNullish } from "test/helpers";
 import { expect, suite, test } from "vitest";
+import type { ClientCustomScalars } from "~/src/graphql/scalars/index";
 import type {
 	InvalidArgumentsExtensions,
 	TalawaGraphQLFormattedError,
 } from "~/src/utilities/TalawaGraphQLError";
 import { server } from "../../../server";
 import { mercuriusClient } from "../client";
-import {
-	Mutation_refreshToken,
-	Mutation_revokeRefreshToken,
-	Query_signIn,
-} from "../documentNodes";
+import { Mutation_revokeRefreshToken, Query_signIn } from "../documentNodes";
+import type { introspection } from "../gql.tada";
+
+const gql = initGraphQLTada<{
+	introspection: introspection;
+	scalars: ClientCustomScalars;
+}>();
+
+const Mutation_refreshToken =
+	gql(`mutation Mutation_refreshToken($refreshToken: String) {
+    refreshToken(refreshToken: $refreshToken) {
+        authenticationToken
+        refreshToken
+        user {
+            id
+            name
+        }
+    }
+}`);
 
 suite("Mutation field revokeRefreshToken", () => {
 	suite("successful scenarios", () => {
