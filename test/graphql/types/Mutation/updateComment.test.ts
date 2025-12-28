@@ -190,6 +190,62 @@ suite("Mutation field updateComment", () => {
 		expect(body).toMatch(/&#39;|&apos;/);
 	});
 
+	test("should allow regular organization member to update their own comment", async () => {
+		const { faker } = await import("@faker-js/faker");
+
+		// Create a regular user and add them to the organization via signUp
+		const signUpResult = await mercuriusClient.mutate(Mutation_signUp, {
+			variables: {
+				input: {
+					emailAddress: faker.internet.email(),
+					password: faker.internet.password(),
+					name: faker.person.fullName(),
+					selectedOrganization: orgId,
+				},
+			},
+		});
+
+		assertToBeNonNullish(signUpResult.data?.signUp);
+		const memberToken = signUpResult.data.signUp.authenticationToken;
+		assertToBeNonNullish(memberToken);
+
+		// Create a comment as this member
+		const commentResult = await mercuriusClient.mutate(Mutation_createComment, {
+			headers: { Authorization: `Bearer ${memberToken}` },
+			variables: {
+				input: {
+					postId: postId,
+					body: "Member's original comment",
+				},
+			},
+		});
+
+		assertToBeNonNullish(commentResult.data?.createComment);
+		const memberCommentId = commentResult.data.createComment.id;
+
+		// Update their own comment (should succeed)
+		const updateResult = await mercuriusClient.mutate(Mutation_updateComment, {
+			headers: { Authorization: `Bearer ${memberToken}` },
+			variables: {
+				input: {
+					id: memberCommentId,
+					body: "Member's updated comment",
+				},
+			},
+		});
+
+		if (updateResult.errors?.length) {
+			throw new Error(
+				`updateComment failed: ${JSON.stringify(updateResult.errors)}`,
+			);
+		}
+
+		const updatedComment = updateResult.data?.updateComment;
+		assertToBeNonNullish(updatedComment);
+		expect(updatedComment.id).toBe(memberCommentId);
+		expect(updatedComment.body).toContain("updated comment");
+	});
+
 	test("should return error if comment body exceeds length limit", async () => {
 		// Update comment with long body (exceeds COMMENT_BODY_MAX_LENGTH)
 		const longBody = "a".repeat(COMMENT_BODY_MAX_LENGTH + 1);
