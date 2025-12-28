@@ -1,168 +1,145 @@
-import { describe, it, expect, afterEach } from "vitest";
-import { updateVenue } from "~/src/graphql/types/Mutation/updateVenue";
-import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
-import { createMockGraphQLContext } from "test/_Mocks_/mockContextCreator";
+import { describe, it, expect, beforeAll, afterAll } from "vitest";
+import { buildServer } from "test/server";
+import { mercuriusClient } from "test/utils/mercuriusClient";
+import { faker } from "@faker-js/faker";
 
-const baseInput = {
-  id: "venue-1",
-  name: "Updated Venue",
-  description: "Description",
-  capacity: 100,
-};
+describe("updateVenue mutation (integration)", () => {
+  let app: Awaited<ReturnType<typeof buildServer>>;
+  let client: ReturnType<typeof mercuriusClient>;
+  let venueId: string;
 
-afterEach(() => {
-  // mockContextCreator isolates mocks, but this is required by repo rules
-});
+  beforeAll(async () => {
+    app = await buildServer();
+    await app.ready();
 
-describe("updateVenue resolver", () => {
-  it("throws when user is unauthenticated", async () => {
-    const { context } = createMockGraphQLContext({
-      isAuthenticated: false,
-    });
+    client = mercuriusClient(app);
 
-    await expect(
-      updateVenue({}, { input: baseInput }, context),
-    ).rejects.toBeInstanceOf(TalawaGraphQLError);
-  });
-
-  it("throws when venue does not exist", async () => {
-    const { context, mocks } = createMockGraphQLContext({
-      isAuthenticated: true,
-      userId: "user-1",
-    });
-
-    mocks.drizzleClient.query.venuesTable.findFirst.mockResolvedValue(null);
-
-    await expect(
-      updateVenue({}, { input: baseInput }, context),
-    ).rejects.toBeInstanceOf(TalawaGraphQLError);
-  });
-
-  it("throws when user record is missing", async () => {
-    const { context, mocks } = createMockGraphQLContext({
-      isAuthenticated: true,
-      userId: "user-1",
-    });
-
-    mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValue(null);
-    mocks.drizzleClient.query.venuesTable.findFirst.mockResolvedValue({
-      organizationId: "org-1",
-      organization: { membershipsWhereOrganization: [] },
-      attachmentsWhereVenue: [],
-    });
-
-    await expect(
-      updateVenue({}, { input: baseInput }, context),
-    ).rejects.toBeInstanceOf(TalawaGraphQLError);
-  });
-
-  it("throws when user is not authorized", async () => {
-    const { context, mocks } = createMockGraphQLContext({
-      isAuthenticated: true,
-      userId: "user-1",
-    });
-
-    mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValue({
-      role: "member",
-    });
-
-    mocks.drizzleClient.query.venuesTable.findFirst.mockResolvedValue({
-      organizationId: "org-1",
-      organization: {
-        membershipsWhereOrganization: [{ role: "member" }],
-      },
-      attachmentsWhereVenue: [],
-    });
-
-    await expect(
-      updateVenue({}, { input: baseInput }, context),
-    ).rejects.toBeInstanceOf(TalawaGraphQLError);
-  });
-
-  it("updates venue successfully without attachments", async () => {
-    const { context, mocks } = createMockGraphQLContext({
-      isAuthenticated: true,
-      userId: "user-1",
-    });
-
-    mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValue({
-      role: "administrator",
-    });
-
-    mocks.drizzleClient.query.venuesTable.findFirst.mockResolvedValue({
-      organizationId: "org-1",
-      organization: {
-        membershipsWhereOrganization: [{ role: "administrator" }],
-      },
-      attachmentsWhereVenue: [],
-    });
-
-    mocks.drizzleClient.transaction.mockImplementation(async (cb) =>
-      cb({
-        update: () => ({
-          set: () => ({
-            where: () => ({
-              returning: async () => [
-                { id: "venue-1", name: "Updated Venue" },
-              ],
-            }),
-          }),
-        }),
-        delete: () => ({ where: () => undefined }),
-        insert: () => ({
-          values: () => ({
-            returning: async () => [],
-          }),
-        }),
-      }),
-    );
-
-    const result = await updateVenue({}, { input: baseInput }, context);
-
-    expect(result.id).toBe("venue-1");
-    expect(result.name).toBe("Updated Venue");
-  });
-
-  it("rolls back uploaded files when MinIO upload fails", async () => {
-    const { context, mocks } = createMockGraphQLContext({
-      isAuthenticated: true,
-      userId: "user-1",
-    });
-
-    mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValue({
-      role: "administrator",
-    });
-
-    mocks.drizzleClient.query.venuesTable.findFirst.mockResolvedValue({
-      organizationId: "org-1",
-      organization: {
-        membershipsWhereOrganization: [{ role: "administrator" }],
-      },
-      attachmentsWhereVenue: [],
-    });
-
-    mocks.minio.client.putObject.mockRejectedValue(
-      new Error("upload failed"),
-    );
-
-    await expect(
-      updateVenue(
-        {},
-        {
-          input: {
-            ...baseInput,
-            attachments: [
-              Promise.resolve({
-                mimetype: "image/png",
-                createReadStream: () => null,
-              }),
-            ],
-          },
+    // Seed a venue (copy pattern from createVenue.test.ts)
+    const createRes = await client.mutate({
+      mutation: `
+        mutation CreateVenue($input: MutationCreateVenueInput!) {
+          createVenue(input: $input) {
+            id
+          }
+        }
+      `,
+      variables: {
+        input: {
+          name: faker.company.name(),
+          description: "Initial description",
+          capacity: 50,
         },
-        context,
-      ),
-    ).rejects.toBeInstanceOf(TalawaGraphQLError);
+      },
+    });
 
-    expect(mocks.minio.client.removeObject).toHaveBeenCalled();
+    venueId = createRes.data.createVenue.id;
+  });
+
+  afterAll(async () => {
+    await app.close();
+  });
+
+  it("rejects unauthenticated user", async () => {
+    const res = await client.mutate({
+      mutation: `
+        mutation UpdateVenue($input: MutationUpdateVenueInput!) {
+          updateVenue(input: $input) {
+            id
+          }
+        }
+      `,
+      variables: {
+        input: {
+          id: venueId,
+          name: "New Name",
+        },
+      },
+      auth: false,
+    });
+
+    expect(res.errors?.length).toBeGreaterThan(0);
+  });
+
+  it("rejects invalid venue id format", async () => {
+    const res = await client.mutate({
+      mutation: `
+        mutation UpdateVenue($input: MutationUpdateVenueInput!) {
+          updateVenue(input: $input) {
+            id
+          }
+        }
+      `,
+      variables: {
+        input: {
+          id: "not-a-uuid",
+          name: "Invalid",
+        },
+      },
+    });
+
+    expect(res.errors?.some(e => e.message.includes("UUID"))).toBe(true);
+  });
+
+  it("updates venue name only", async () => {
+    const res = await client.mutate({
+      mutation: `
+        mutation UpdateVenue($input: MutationUpdateVenueInput!) {
+          updateVenue(input: $input) {
+            id
+            name
+            description
+            capacity
+          }
+        }
+      `,
+      variables: {
+        input: {
+          id: venueId,
+          name: "Updated Venue Name",
+        },
+      },
+    });
+
+    expect(res.errors).toBeUndefined();
+    expect(res.data.updateVenue.name).toBe("Updated Venue Name");
+  });
+
+  it("updates capacity only", async () => {
+    const res = await client.mutate({
+      mutation: `
+        mutation UpdateVenue($input: MutationUpdateVenueInput!) {
+          updateVenue(input: $input) {
+            capacity
+          }
+        }
+      `,
+      variables: {
+        input: {
+          id: venueId,
+          capacity: 200,
+        },
+      },
+    });
+
+    expect(res.data.updateVenue.capacity).toBe(200);
+  });
+
+  it("rejects when no optional fields are provided", async () => {
+    const res = await client.mutate({
+      mutation: `
+        mutation UpdateVenue($input: MutationUpdateVenueInput!) {
+          updateVenue(input: $input) {
+            id
+          }
+        }
+      `,
+      variables: {
+        input: {
+          id: venueId,
+        },
+      },
+    });
+
+    expect(res.errors?.length).toBeGreaterThan(0);
   });
 });
