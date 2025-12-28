@@ -15,7 +15,7 @@ import envConfig from "~/src/utilities/graphqLimits";
 import { isNotNullish } from "~/src/utilities/isNotNullish";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 
-const mutationUpdateCurrentUserArgumentsSchema = z.object({
+export const mutationUpdateCurrentUserArgumentsSchema = z.object({
 	input: mutationUpdateCurrentUserInputSchema.transform(async (arg, ctx) => {
 		let avatar:
 			| (FileUpload & {
@@ -137,9 +137,10 @@ builder.mutationField("updateCurrentUser", (t) =>
 
 			const avatarUpdate = isNotNullish(parsedArgs.input.avatar)
 				? {
-						avatarName: currentUser.avatarName === null ? ulid() : currentUser.avatarName,
+						avatarName:
+							currentUser.avatarName === null ? ulid() : currentUser.avatarName,
 						avatarMimeType: parsedArgs.input.avatar.mimetype,
-				  }
+					}
 				: null;
 
 			return await ctx.drizzleClient.transaction(async (tx) => {
@@ -196,10 +197,10 @@ builder.mutationField("updateCurrentUser", (t) =>
 
 				const updatedCurrentUser = updateResult[0];
 
-				if (isNotNullish(parsedArgs.input.avatar)) {
+				if (isNotNullish(parsedArgs.input.avatar) && avatarUpdate) {
 					await ctx.minio.client.putObject(
 						ctx.minio.bucketName,
-						avatarUpdate!.avatarName,
+						avatarUpdate.avatarName,
 						parsedArgs.input.avatar.createReadStream(),
 						undefined,
 						{
