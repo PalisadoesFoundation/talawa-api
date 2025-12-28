@@ -1,3 +1,4 @@
+import { faker } from "@faker-js/faker";
 import { initGraphQLTada } from "gql.tada";
 import { describe, expect, it } from "vitest";
 import type { ClientCustomScalars } from "~/src/graphql/scalars/index";
@@ -65,7 +66,7 @@ async function createOrgAndTag(
 		headers: { authorization: `bearer ${authToken}` },
 		variables: {
 			input: {
-				name: `Org-${Date.now()}`,
+				name: `Org-${faker.string.ulid()}`,
 				countryCode: "us",
 			},
 		},
@@ -94,7 +95,7 @@ async function createOrgAndTag(
 		headers: { authorization: `bearer ${authToken}` },
 		variables: {
 			input: {
-				name: `Tag-${Date.now()}`,
+				name: `Tag-${faker.string.ulid()}`,
 				organizationId: orgId,
 			},
 		},
@@ -177,7 +178,7 @@ describe("Tag.organization resolver - Integration", () => {
 		const regularUserResult = await mercuriusClient.mutate(Mutation_signUp, {
 			variables: {
 				input: {
-					emailAddress: `regular-user-${Date.now()}@test.com`,
+					emailAddress: `regular-user-${faker.string.ulid()}@test.com`,
 					password: "Password123!",
 					name: "Regular User",
 					selectedOrganization: orgId,
@@ -237,7 +238,7 @@ describe("Tag.organization resolver - Integration", () => {
 				headers: { authorization: `bearer ${adminAuth.token}` },
 				variables: {
 					input: {
-						name: `DiffOrg-${Date.now()}`,
+						name: `DiffOrg-${faker.string.ulid()}`,
 						countryCode: "us",
 					},
 				},
@@ -251,7 +252,7 @@ describe("Tag.organization resolver - Integration", () => {
 		const nonMemberResult = await mercuriusClient.mutate(Mutation_signUp, {
 			variables: {
 				input: {
-					emailAddress: `non-member-${Date.now()}@test.com`,
+					emailAddress: `non-member-${faker.string.ulid()}@test.com`,
 					password: "Password123!",
 					name: "Non Member User",
 					selectedOrganization: diffOrgId,
@@ -317,7 +318,7 @@ describe("Tag.organization resolver - Integration", () => {
 				headers: { authorization: `bearer ${adminAuth.token}` },
 				variables: {
 					input: {
-						name: `TempOrg-${Date.now()}`,
+						name: `TempOrg-${faker.string.ulid()}`,
 						countryCode: "us",
 					},
 				},
@@ -335,7 +336,7 @@ describe("Tag.organization resolver - Integration", () => {
 		const orgAdminResult = await mercuriusClient.mutate(Mutation_signUp, {
 			variables: {
 				input: {
-					emailAddress: `org-admin-${Date.now()}@test.com`,
+					emailAddress: `org-admin-${faker.string.ulid()}@test.com`,
 					password: "Password123!",
 					name: "Org Admin",
 					selectedOrganization: tempOrgId,
