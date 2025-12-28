@@ -46,6 +46,7 @@ describe("FundCampaign Resolver - Creator Field", () => {
 			goalAmount: 50000,
 			startAt: new Date("2025-11-11T00:00:00Z"),
 			endAt: new Date("2025-11-12T23:59:59Z"),
+			amountRaised: 0,
 		};
 
 		vi.clearAllMocks();
