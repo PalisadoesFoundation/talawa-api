@@ -347,6 +347,8 @@ suite("Mutation field deleteCommentVote", () => {
 					},
 				);
 
+				// When creatorId doesn't exist, no vote is found for that user,
+				// so the error is "vote not found" (both commentId and creatorId in issues)
 				expect(result.data?.deleteCommentVote).toBeNull();
 				expect(result.errors).toEqual(
 					expect.arrayContaining([
@@ -354,6 +356,9 @@ suite("Mutation field deleteCommentVote", () => {
 							extensions: expect.objectContaining({
 								code: "arguments_associated_resources_not_found",
 								issues: expect.arrayContaining([
+									expect.objectContaining({
+										argumentPath: ["input", "commentId"],
+									}),
 									expect.objectContaining({
 										argumentPath: ["input", "creatorId"],
 									}),
