@@ -409,6 +409,7 @@ export const Query_fundCampaign =
       id
       name
       goalAmount
+      amountRaised
     }
   }`);
 
@@ -435,6 +436,14 @@ export const Query_getPledgesByUserId =
     }
   }
 }`);
+
+export const Query_chatMessage = gql(`
+  query Query_chatMessage($input: QueryChatMessageInput!) {
+    chatMessage(input: $input) {
+      id
+    }
+  }
+`);
 
 export const Query_chat_members = gql(`
 query ChatMembers($input: QueryChatInput!, $first: Int, $last: Int, $after: String, $before: String) {
@@ -511,6 +520,15 @@ export const Mutation_createFundCampaign =
 export const Mutation_createFundCampaignPledge =
 	gql(`mutation Mutation_createFundCampaignPledge($input: MutationCreateFundCampaignPledgeInput!) {
     createFundCampaignPledge(input: $input) {
+      id
+      note
+      amount
+    }
+  }`);
+
+export const Mutation_updateFundCampaignPledge =
+	gql(`mutation Mutation_updateFundCampaignPledge($input: MutationUpdateFundCampaignPledgeInput!) {
+    updateFundCampaignPledge(input: $input) {
       id
       note
       amount
