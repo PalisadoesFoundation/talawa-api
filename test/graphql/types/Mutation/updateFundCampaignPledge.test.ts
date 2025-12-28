@@ -12,6 +12,7 @@ import {
 	Mutation_createOrganization,
 	Mutation_createOrganizationMembership,
 	Mutation_createUser,
+	Query_fundCampaign,
 	Query_signIn,
 } from "../documentNodes";
 
@@ -472,8 +473,6 @@ suite("Mutation updateFundCampaignPledge", () => {
 	//// Test 9: Update pledge note only (without amount)
 	suite("when updating only the note without amount", () => {
 		test("should successfully update the note and keep the same amount", async () => {
-			await new Promise((resolve) => setTimeout(resolve, 500));
-
 			// First, update to a known amount
 			await mercuriusClient.mutate(UpdateFundCampaignPledgeMutation, {
 				headers: { authorization: `bearer ${adminToken}` },
@@ -486,7 +485,13 @@ suite("Mutation updateFundCampaignPledge", () => {
 				},
 			});
 
-			await new Promise((resolve) => setTimeout(resolve, 500));
+			// Fetch amountRaised before update
+			const campaignBefore = await mercuriusClient.query(Query_fundCampaign, {
+				headers: { authorization: `bearer ${adminToken}` },
+				variables: { input: { id: campaignId } },
+			});
+			assertToBeNonNullish(campaignBefore.data?.fundCampaign);
+			const amountRaisedBefore = campaignBefore.data.fundCampaign.amountRaised;
 
 			// Now update only the note (no amount provided)
 			const result = await mercuriusClient.mutate(
@@ -503,12 +508,21 @@ suite("Mutation updateFundCampaignPledge", () => {
 				},
 			);
 
+			// Fetch amountRaised after update
+			const campaignAfter = await mercuriusClient.query(Query_fundCampaign, {
+				headers: { authorization: `bearer ${adminToken}` },
+				variables: { input: { id: campaignId } },
+			});
+			assertToBeNonNullish(campaignAfter.data?.fundCampaign);
+			const amountRaisedAfter = campaignAfter.data.fundCampaign.amountRaised;
+
 			expect(result.errors).toBeUndefined();
 			assertToBeNonNullish(result.data?.updateFundCampaignPledge);
 			expect(result.data.updateFundCampaignPledge.amount).toBe(500); // Amount should remain unchanged
 			expect(result.data.updateFundCampaignPledge.note).toBe(
 				"updated note only",
 			);
+			expect(amountRaisedAfter).toBe(amountRaisedBefore);
 		});
 	});
 });
