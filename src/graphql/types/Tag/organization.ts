@@ -6,7 +6,7 @@ import { Tag } from "./Tag";
 Tag.implement({
 	fields: (t) => ({
 		organization: t.field({
-			description: "Organization the tag belong to.",
+			description: "Organization the tag belongs to.",
 			complexity: envConfig.API_GRAPHQL_OBJECT_FIELD_COST,
 			resolve: async (parent, _args, ctx) => {
 				// 1. Check authentication
