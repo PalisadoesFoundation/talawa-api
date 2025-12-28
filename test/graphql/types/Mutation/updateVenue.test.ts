@@ -40,6 +40,27 @@ const Query_signIn = graphql(`
   }
 `);
 
+const Mutation_signUp = graphql(`
+  mutation SignUp($input: MutationSignUpInput!) {
+    signUp(input: $input) {
+      authenticationToken
+      user {
+        id
+      }
+    }
+  }
+`);
+
+const Mutation_createOrganizationMembership = graphql(`
+  mutation CreateOrganizationMembership(
+    $input: MutationCreateOrganizationMembershipInput!
+  ) {
+    createOrganizationMembership(input: $input) {
+      id
+    }
+  }
+`);
+
 suite("Mutation field updateVenue", () => {
   const createdResources: {
     venueIds: string[];
@@ -203,6 +224,113 @@ suite("Mutation field updateVenue", () => {
           e.message.includes("got invalid value") ||
           e.message.includes("ID cannot represent") ||
           e.message.includes("Expected ID")
+      )
+    ).toBe(true);
+  });
+
+  test("rejects non-admin organization member", async () => {
+    // Sign in as admin
+    const adminSignInResult = await mercuriusClient.query(Query_signIn, {
+      variables: {
+        input: {
+          emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
+          password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
+        },
+      },
+    });
+
+    assertToBeNonNullish(adminSignInResult.data?.signIn?.authenticationToken);
+    const adminToken = adminSignInResult.data.signIn.authenticationToken;
+
+    // Create organization as admin
+    const createOrgResult = await mercuriusClient.mutate(
+      graphql(`
+        mutation CreateOrganization($input: MutationCreateOrganizationInput!) {
+          createOrganization(input: $input) {
+            id
+          }
+        }
+      `),
+      {
+        headers: { authorization: `bearer ${adminToken}` },
+        variables: {
+          input: {
+            name: `TestOrg_${faker.string.ulid()}`,
+            description: faker.lorem.sentence(),
+          },
+        },
+      }
+    );
+
+    assertToBeNonNullish(createOrgResult.data?.createOrganization?.id);
+    const orgId = createOrgResult.data.createOrganization.id;
+
+    // Create venue as admin
+    const createVenueResult = await mercuriusClient.mutate(
+      Mutation_createVenue,
+      {
+        headers: { authorization: `bearer ${adminToken}` },
+        variables: {
+          input: {
+            organizationId: orgId,
+            name: `Venue_${faker.string.ulid()}`,
+            description: faker.lorem.sentence(),
+            capacity: 50,
+          },
+        },
+      }
+    );
+
+    assertToBeNonNullish(createVenueResult.data?.createVenue?.id);
+    createdResources.venueIds.push(createVenueResult.data.createVenue.id);
+    const venueId = createVenueResult.data.createVenue.id;
+
+    // Create a non-admin user
+    const nonAdminUserEmail = `user_${faker.string.ulid()}@test.com`;
+    const nonAdminUserPassword = faker.internet.password({ length: 16 });
+    const signUpResult = await mercuriusClient.mutate(Mutation_signUp, {
+      variables: {
+        input: {
+          emailAddress: nonAdminUserEmail,
+          firstName: faker.person.firstName(),
+          lastName: faker.person.lastName(),
+          password: nonAdminUserPassword,
+        },
+      },
+    });
+
+    assertToBeNonNullish(signUpResult.data?.signUp?.authenticationToken);
+    const nonAdminToken = signUpResult.data.signUp.authenticationToken;
+    const nonAdminUserId = signUpResult.data.signUp.user.id;
+
+    // Add non-admin user to organization as regular (non-admin) member
+    await mercuriusClient.mutate(Mutation_createOrganizationMembership, {
+      headers: { authorization: `bearer ${adminToken}` },
+      variables: {
+        input: {
+          organizationId: orgId,
+          userId: nonAdminUserId,
+          role: "member",
+        },
+      },
+    });
+
+    // Attempt to update venue with non-admin token
+    const res = await mercuriusClient.mutate(Mutation_updateVenue, {
+      headers: { authorization: `bearer ${nonAdminToken}` },
+      variables: {
+        input: {
+          id: venueId,
+          name: "Should Fail",
+        },
+      },
+    });
+
+    expect(res.errors?.length).toBeGreaterThan(0);
+    expect(
+      res.errors?.some(
+        (e: GraphQLError) =>
+          e.extensions?.code === "unauthorized_action_on_arguments_associated_resources"
       )
     ).toBe(true);
   });
