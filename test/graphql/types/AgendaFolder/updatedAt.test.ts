@@ -219,13 +219,20 @@ async function cleanup(
 			headers: { authorization: `bearer ${authToken}` },
 			variables: { input: { id: eventId } },
 		});
-	} catch {}
+	} catch (err) {
+		console.error("Teardown failed deleting standalone event", {
+			id: eventId,
+			err,
+		});
+	}
 	try {
 		await mercuriusClient.mutate(Mutation_deleteOrganization, {
 			headers: { authorization: `bearer ${authToken}` },
 			variables: { input: { id: orgId } },
 		});
-	} catch {}
+	} catch (err) {
+		console.error("Teardown failed deleting organization", { id: orgId, err });
+	}
 }
 
 describe("AgendaFolder.updatedAt resolver", () => {
