@@ -292,14 +292,15 @@ suite("Mutation field updateVenue", () => {
       variables: {
         input: {
           emailAddress: nonAdminUserEmail,
-          firstName: faker.person.firstName(),
-          lastName: faker.person.lastName(),
+          name: `${faker.person.firstName()} ${faker.person.lastName()}`,
           password: nonAdminUserPassword,
+          selectedOrganization: orgId,
         },
       },
     });
 
     assertToBeNonNullish(signUpResult.data?.signUp?.authenticationToken);
+    assertToBeNonNullish(signUpResult.data?.signUp?.user?.id);
     const nonAdminToken = signUpResult.data.signUp.authenticationToken;
     const nonAdminUserId = signUpResult.data.signUp.user.id;
 
@@ -309,8 +310,8 @@ suite("Mutation field updateVenue", () => {
       variables: {
         input: {
           organizationId: orgId,
-          userId: nonAdminUserId,
-          role: "member",
+          memberId: nonAdminUserId,
+          role: "regular",
         },
       },
     });
@@ -723,7 +724,7 @@ suite("Mutation field updateVenue", () => {
         (e: GraphQLError) =>
           e.extensions?.code ===
             "forbidden_action_on_arguments_associated_resources" &&
-          (e.extensions?.issues as any)?.[0]?.message === "This name is not available."
+          (e.extensions?.issues as Array<{ message: string }>)?.[0]?.message === "This name is not available."
       )
     ).toBe(true);
   });
