@@ -45,11 +45,11 @@ USER talawa
 # Installs fnm.
 RUN curl -fsSL --proto '=https' --tlsv1.2 https://fnm.vercel.app/install | bash -s -- --skip-shell 
 ENV PATH=/home/talawa/.local/share/fnm:${PATH}
-# Install Node.js 22.21.1 LTS using fnm
-RUN /home/talawa/.local/share/fnm/fnm install 22.21.1 && /home/talawa/.local/share/fnm/fnm default 22.21.1
+# Install Node.js 24.12.0 LTS using fnm
+RUN /home/talawa/.local/share/fnm/fnm install 24.12.0 && /home/talawa/.local/share/fnm/fnm default 24.12.0
 WORKDIR /home/talawa/api
 
-FROM node:22.21.1-bookworm-slim AS base
+FROM node:24.12.0-bookworm-slim AS base
 # Used to configure the group id for the group assigned to the non-root "talawa" user within the image.
 ARG API_GID
 # Used to configure the user id for the non-root "talawa" user within the image.
