@@ -10,7 +10,9 @@ import {
 	Mutation_createComment,
 	Mutation_createOrganization,
 	Mutation_createPost,
+	Mutation_createUser,
 	Mutation_deleteOrganization,
+	Mutation_signUp,
 	Query_signIn,
 } from "../documentNodes";
 import type { introspection } from "../gql.tada";
@@ -188,6 +190,62 @@ suite("Mutation field updateComment", () => {
 		expect(body).toMatch(/&#39;|&apos;/);
 	});
 
+	test("should allow regular organization member to update their own comment", async () => {
+		const { faker } = await import("@faker-js/faker");
+
+		// Create a regular user and add them to the organization via signUp
+		const signUpResult = await mercuriusClient.mutate(Mutation_signUp, {
+			variables: {
+				input: {
+					emailAddress: faker.internet.email(),
+					password: faker.internet.password(),
+					name: faker.person.fullName(),
+					selectedOrganization: orgId,
+				},
+			},
+		});
+
+		assertToBeNonNullish(signUpResult.data?.signUp);
+		const memberToken = signUpResult.data.signUp.authenticationToken;
+		assertToBeNonNullish(memberToken);
+
+		// Create a comment as this member
+		const commentResult = await mercuriusClient.mutate(Mutation_createComment, {
+			headers: { Authorization: `Bearer ${memberToken}` },
+			variables: {
+				input: {
+					postId: postId,
+					body: "Member's original comment",
+				},
+			},
+		});
+
+		assertToBeNonNullish(commentResult.data?.createComment);
+		const memberCommentId = commentResult.data.createComment.id;
+
+		// Update their own comment (should succeed)
+		const updateResult = await mercuriusClient.mutate(Mutation_updateComment, {
+			headers: { Authorization: `Bearer ${memberToken}` },
+			variables: {
+				input: {
+					id: memberCommentId,
+					body: "Member's updated comment",
+				},
+			},
+		});
+
+		if (updateResult.errors?.length) {
+			throw new Error(
+				`updateComment failed: ${JSON.stringify(updateResult.errors)}`,
+			);
+		}
+
+		const updatedComment = updateResult.data?.updateComment;
+		assertToBeNonNullish(updatedComment);
+		expect(updatedComment.id).toBe(memberCommentId);
+		expect(updatedComment.body).toContain("updated comment");
+	});
+
 	test("should return error if comment body exceeds length limit", async () => {
 		// Update comment with long body (exceeds COMMENT_BODY_MAX_LENGTH)
 		const longBody = "a".repeat(COMMENT_BODY_MAX_LENGTH + 1);
@@ -264,5 +322,354 @@ suite("Mutation field updateComment", () => {
 		// Verify exact trimmed content is preserved (not truncated or altered)
 		expect(updatedComment.body.length).toBe(COMMENT_BODY_MAX_LENGTH);
 		expect(updatedComment.body).toBe(expectedTrimmed);
+	});
+
+	test("should return unauthenticated error when no auth token is provided", async () => {
+		const updateResult = await mercuriusClient.mutate(Mutation_updateComment, {
+			variables: {
+				input: {
+					id: commentId,
+					body: "Updated body without auth",
+				},
+			},
+		});
+
+		expect(
+			updateResult.data === null || updateResult.data?.updateComment === null,
+		).toBe(true);
+		expect(updateResult.errors).toBeDefined();
+		expect(Array.isArray(updateResult.errors)).toBe(true);
+		expect(updateResult.errors?.length).toBeGreaterThan(0);
+
+		const authError = updateResult.errors?.find(
+			(error) =>
+				(error.extensions as { code?: string } | undefined)?.code ===
+				"unauthenticated",
+		);
+		assertToBeNonNullish(authError);
+		expect(authError.path).toEqual(["updateComment"]);
+	});
+
+	test("should return invalid_arguments error when comment ID is not a valid UUID", async () => {
+		const updateResult = await mercuriusClient.mutate(Mutation_updateComment, {
+			variables: {
+				input: {
+					id: "not-a-valid-uuid",
+					body: "Updated body",
+				},
+			},
+			headers: {
+				Authorization: `Bearer ${adminToken}`,
+			},
+		});
+
+		expect(
+			updateResult.data === null || updateResult.data?.updateComment === null,
+		).toBe(true);
+		expect(updateResult.errors).toBeDefined();
+		expect(Array.isArray(updateResult.errors)).toBe(true);
+		expect(updateResult.errors?.length).toBeGreaterThan(0);
+
+		// GraphQL can reject invalid IDs at either the type validation layer or resolver layer
+		const hasValidationError = updateResult.errors?.some((error) => {
+			const code = (error.extensions as { code?: string } | undefined)?.code;
+			const message = error.message || "";
+			return (
+				code === "invalid_arguments" ||
+				message.includes("got invalid value") ||
+				message.includes("ID cannot represent") ||
+				message.includes("Expected ID")
+			);
+		});
+		expect(hasValidationError).toBe(true);
+	});
+
+	test("should return error when comment does not exist", async () => {
+		const { faker } = await import("@faker-js/faker");
+		const nonExistentCommentId = faker.string.uuid();
+
+		const updateResult = await mercuriusClient.mutate(Mutation_updateComment, {
+			variables: {
+				input: {
+					id: nonExistentCommentId,
+					body: "Updated body",
+				},
+			},
+			headers: {
+				Authorization: `Bearer ${adminToken}`,
+			},
+		});
+
+		expect(
+			updateResult.data === null || updateResult.data?.updateComment === null,
+		).toBe(true);
+		expect(updateResult.errors).toBeDefined();
+		expect(Array.isArray(updateResult.errors)).toBe(true);
+		expect(updateResult.errors?.length).toBeGreaterThan(0);
+
+		const notFoundError = updateResult.errors?.find(
+			(error) =>
+				(error.extensions as { code?: string } | undefined)?.code ===
+				"arguments_associated_resources_not_found",
+		);
+		assertToBeNonNullish(notFoundError);
+		expect(notFoundError.path).toEqual(["updateComment"]);
+	});
+
+	test("should return unauthorized error when regular user without org membership tries to update comment", async () => {
+		const { faker } = await import("@faker-js/faker");
+
+		// Create a regular user
+		const createUserResult = await mercuriusClient.mutate(Mutation_createUser, {
+			headers: { Authorization: `Bearer ${adminToken}` },
+			variables: {
+				input: {
+					emailAddress: faker.internet.email(),
+					password: faker.internet.password(),
+					role: "regular",
+					name: faker.person.fullName(),
+					isEmailAddressVerified: true,
+				},
+			},
+		});
+
+		assertToBeNonNullish(createUserResult.data?.createUser);
+		const userToken = createUserResult.data.createUser.authenticationToken;
+		assertToBeNonNullish(userToken);
+
+		// Try to update the comment with this user (who is not a member of the org)
+		const updateResult = await mercuriusClient.mutate(Mutation_updateComment, {
+			variables: {
+				input: {
+					id: commentId,
+					body: "Unauthorized update attempt",
+				},
+			},
+			headers: {
+				Authorization: `Bearer ${userToken}`,
+			},
+		});
+
+		expect(
+			updateResult.data === null || updateResult.data?.updateComment === null,
+		).toBe(true);
+		expect(updateResult.errors).toBeDefined();
+		expect(Array.isArray(updateResult.errors)).toBe(true);
+		expect(updateResult.errors?.length).toBeGreaterThan(0);
+
+		const unauthorizedError = updateResult.errors?.find(
+			(error) =>
+				(error.extensions as { code?: string } | undefined)?.code ===
+				"unauthorized_action_on_arguments_associated_resources",
+		);
+		assertToBeNonNullish(unauthorizedError);
+		expect(unauthorizedError.path).toEqual(["updateComment"]);
+	});
+
+	test("should return unauthorized error when org member tries to update another user's comment", async () => {
+		const { faker } = await import("@faker-js/faker");
+
+		// Create a regular user via signUp (automatically joins the org)
+		const signUpResult = await mercuriusClient.mutate(Mutation_signUp, {
+			variables: {
+				input: {
+					emailAddress: faker.internet.email(),
+					password: faker.internet.password(),
+					name: faker.person.fullName(),
+					selectedOrganization: orgId,
+				},
+			},
+		});
+
+		assertToBeNonNullish(signUpResult.data?.signUp);
+		const userToken = signUpResult.data.signUp.authenticationToken;
+		assertToBeNonNullish(userToken);
+
+		// Try to update admin's comment with this user's token (org member but not creator)
+		const updateResult = await mercuriusClient.mutate(Mutation_updateComment, {
+			variables: {
+				input: {
+					id: commentId,
+					body: "Unauthorized update by org member",
+				},
+			},
+			headers: {
+				Authorization: `Bearer ${userToken}`,
+			},
+		});
+
+		expect(
+			updateResult.data === null || updateResult.data?.updateComment === null,
+		).toBe(true);
+		expect(updateResult.errors).toBeDefined();
+		expect(Array.isArray(updateResult.errors)).toBe(true);
+		expect(updateResult.errors?.length).toBeGreaterThan(0);
+
+		const unauthorizedError = updateResult.errors?.find(
+			(error) =>
+				(error.extensions as { code?: string } | undefined)?.code ===
+				"unauthorized_action_on_arguments_associated_resources",
+		);
+		assertToBeNonNullish(unauthorizedError);
+		expect(unauthorizedError.path).toEqual(["updateComment"]);
+	});
+
+	test("should return unauthenticated error when authenticated user record is deleted", async () => {
+		const { faker } = await import("@faker-js/faker");
+		const { eq } = await import("drizzle-orm");
+		const { usersTable } = await import("../../../../src/drizzle/tables/users");
+
+		// Create a test user
+		const testUserEmail = `deleteduser${faker.string.uuid()}@example.com`;
+		const createUserResult = await mercuriusClient.mutate(Mutation_createUser, {
+			headers: { Authorization: `Bearer ${adminToken}` },
+			variables: {
+				input: {
+					emailAddress: testUserEmail,
+					password: "password123",
+					role: "regular",
+					name: "User To Delete",
+					isEmailAddressVerified: true,
+				},
+			},
+		});
+
+		assertToBeNonNullish(createUserResult.data?.createUser);
+		const userId = createUserResult.data.createUser.user?.id;
+		assertToBeNonNullish(userId);
+
+		// Sign in to get their token
+		const userSignIn = await mercuriusClient.query(Query_signIn, {
+			variables: {
+				input: {
+					emailAddress: testUserEmail,
+					password: "password123",
+				},
+			},
+		});
+		const userToken = userSignIn.data?.signIn?.authenticationToken;
+		assertToBeNonNullish(userToken);
+
+		// Delete the user from database using server's drizzle client
+		await server.drizzleClient
+			.delete(usersTable)
+			.where(eq(usersTable.id, userId));
+
+		// Try to update comment with deleted user's token
+		const updateResult = await mercuriusClient.mutate(Mutation_updateComment, {
+			headers: { Authorization: `Bearer ${userToken}` },
+			variables: {
+				input: {
+					id: commentId,
+					body: "Update with deleted user",
+				},
+			},
+		});
+
+		expect(
+			updateResult.data === null || updateResult.data?.updateComment === null,
+		).toBe(true);
+		expect(updateResult.errors).toBeDefined();
+		expect(Array.isArray(updateResult.errors)).toBe(true);
+		expect(updateResult.errors?.length).toBeGreaterThan(0);
+
+		const authError = updateResult.errors?.find(
+			(error) =>
+				(error.extensions as { code?: string } | undefined)?.code ===
+				"unauthenticated",
+		);
+		assertToBeNonNullish(authError);
+		expect(authError.path).toEqual(["updateComment"]);
+	});
+
+	test("should return unexpected error when database update operation fails", async () => {
+		const { vi } = await import("vitest");
+
+		// Create separate test data for this test
+		const { faker } = await import("@faker-js/faker");
+		const testOrgResult = await mercuriusClient.mutate(
+			Mutation_createOrganization,
+			{
+				headers: { Authorization: `Bearer ${adminToken}` },
+				variables: {
+					input: {
+						name: faker.company.name(),
+						countryCode: "in",
+					},
+				},
+			},
+		);
+		assertToBeNonNullish(testOrgResult.data?.createOrganization);
+		const testOrgId = testOrgResult.data.createOrganization.id;
+
+		const testPostResult = await mercuriusClient.mutate(Mutation_createPost, {
+			headers: { Authorization: `Bearer ${adminToken}` },
+			variables: {
+				input: {
+					organizationId: testOrgId,
+					caption: faker.lorem.sentence(),
+				},
+			},
+		});
+		assertToBeNonNullish(testPostResult.data?.createPost);
+		const testPostId = testPostResult.data.createPost.id;
+
+		const testCommentResult = await mercuriusClient.mutate(
+			Mutation_createComment,
+			{
+				headers: { Authorization: `Bearer ${adminToken}` },
+				variables: {
+					input: {
+						postId: testPostId,
+						body: faker.lorem.sentence(),
+					},
+				},
+			},
+		);
+		assertToBeNonNullish(testCommentResult.data?.createComment);
+		const testCommentId = testCommentResult.data.createComment.id;
+
+		// Mock the update method to return empty array
+		const originalUpdate = server.drizzleClient.update;
+		server.drizzleClient.update = vi.fn().mockReturnValue({
+			set: vi.fn().mockReturnValue({
+				where: vi.fn().mockReturnValue({
+					returning: vi.fn().mockResolvedValue([]),
+				}),
+			}),
+		});
+
+		try {
+			const updateResult = await mercuriusClient.mutate(
+				Mutation_updateComment,
+				{
+					headers: { Authorization: `Bearer ${adminToken}` },
+					variables: {
+						input: {
+							id: testCommentId,
+							body: "This should fail",
+						},
+					},
+				},
+			);
+
+			expect(
+				updateResult.data === null || updateResult.data?.updateComment === null,
+			).toBe(true);
+			expect(updateResult.errors).toBeDefined();
+			expect(Array.isArray(updateResult.errors)).toBe(true);
+			expect(updateResult.errors?.length).toBeGreaterThan(0);
+
+			const unexpectedError = updateResult.errors?.find(
+				(error) =>
+					(error.extensions as { code?: string } | undefined)?.code ===
+					"unexpected",
+			);
+			assertToBeNonNullish(unexpectedError);
+			expect(unexpectedError.path).toEqual(["updateComment"]);
+		} finally {
+			// Restore original update method
+			server.drizzleClient.update = originalUpdate;
+		}
 	});
 });
