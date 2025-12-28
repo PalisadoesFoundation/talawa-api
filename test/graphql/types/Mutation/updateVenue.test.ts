@@ -348,6 +348,7 @@ suite("Mutation field updateVenue", () => {
     assertToBeNonNullish(createVenueResult.data?.createVenue?.id);
     createdResources.venueIds.push(createVenueResult.data.createVenue.id);
     const venueId = createVenueResult.data.createVenue.id;
+    const originalName = createVenueResult.data.createVenue.name;
 
     const res = await mercuriusClient.mutate(Mutation_updateVenue, {
       headers: {
@@ -365,6 +366,7 @@ suite("Mutation field updateVenue", () => {
     expect(res.data?.updateVenue?.id).toBe(venueId);
     expect(res.data?.updateVenue?.capacity).toBe(200);
     expect(res.data?.updateVenue?.description).toBe("Initial description");
+    expect(res.data?.updateVenue?.name).toBe(originalName);
   });
 
   test("rejects when no optional fields are provided", async () => {
@@ -440,6 +442,13 @@ suite("Mutation field updateVenue", () => {
     });
 
     expect(res.errors?.length).toBeGreaterThan(0);
+    expect(
+      res.errors?.some(
+        (e: any) =>
+          e.extensions?.code === "invalid_arguments" ||
+          e.message.includes("At least one optional argument")
+      )
+    ).toBe(true);
   });
 
   test("rejects with non-existent but valid UUID venue id", async () => {
