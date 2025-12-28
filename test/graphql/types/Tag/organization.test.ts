@@ -318,6 +318,28 @@ describe("Tag.organization resolver - Integration", () => {
 	});
 });
 
+// NOTE: This edge case test uses a unit test approach with mocked context instead of the
+// repository's preferred mercuriusClient integration test pattern (as recommended in PRs #4049
+// and #4136). This deviation is necessary because:
+//
+// 1. The edge case being tested (organization undefined despite tag having organizationId) can
+//    only occur due to database corruption or a race condition where an organization is deleted
+//    after a tag is queried but before its organization field is resolved.
+//
+// 2. Attempting to test this via integration test by directly corrupting the database (e.g.,
+//    updating a tag's organizationId to a non-existent UUID) fails because the foreign key
+//    constraint `tags_organization_id_organizations_id_fk` prevents such updates, correctly
+//    enforcing referential integrity.
+//
+// 3. Temporarily disabling foreign key constraints for the test would require significant test
+//    infrastructure changes and compromise database integrity guarantees during testing.
+//
+// 4. The edge case is unreachable through normal GraphQL operations, making it similar to
+//    testing zod schema validation edge cases (as discussed in PR #4030), where unit testing
+//    with mocks is the pragmatic approach.
+//
+// Therefore, this unit test with mocked context is justified as the only feasible way to ensure
+// 100% code coverage while maintaining the codebase's integrity constraints.
 describe("Tag.organization resolver - Unit test edge case", () => {
 	it("should throw unexpected error when organization is not found", async () => {
 		const graphqlInstance = (
