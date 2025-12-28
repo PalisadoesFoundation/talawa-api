@@ -1,4 +1,5 @@
 import { faker } from "@faker-js/faker";
+import { GraphQLError } from "graphql";
 import { graphql } from "gql.tada";
 import { afterEach, expect, suite, test } from "vitest";
 import type { TalawaGraphQLFormattedError, UnauthenticatedExtensions } from "~/src/utilities/TalawaGraphQLError";
@@ -197,7 +198,7 @@ suite("Mutation field updateVenue", () => {
 
     expect(
       res.errors?.some(
-        (e: any) =>
+        (e: GraphQLError) =>
           e.extensions?.code === "invalid_arguments" ||
           e.message.includes("got invalid value") ||
           e.message.includes("ID cannot represent") ||
@@ -444,7 +445,7 @@ suite("Mutation field updateVenue", () => {
     expect(res.errors?.length).toBeGreaterThan(0);
     expect(
       res.errors?.some(
-        (e: any) =>
+        (e: GraphQLError) =>
           e.extensions?.code === "invalid_arguments" ||
           e.message.includes("At least one optional argument")
       )
@@ -483,7 +484,7 @@ suite("Mutation field updateVenue", () => {
     expect(res.errors?.length).toBeGreaterThan(0);
     expect(
       res.errors?.some(
-        (e: any) =>
+        (e: GraphQLError) =>
           e.extensions?.code === "arguments_associated_resources_not_found"
       )
     ).toBe(true);
@@ -591,10 +592,10 @@ suite("Mutation field updateVenue", () => {
     expect(res.errors?.length).toBeGreaterThan(0);
     expect(
       res.errors?.some(
-        (e: any) =>
+        (e: GraphQLError) =>
           e.extensions?.code ===
             "forbidden_action_on_arguments_associated_resources" &&
-          e.extensions?.issues?.[0]?.message === "This name is not available."
+          (e.extensions?.issues as any)?.[0]?.message === "This name is not available."
       )
     ).toBe(true);
   });
