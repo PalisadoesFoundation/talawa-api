@@ -1,4 +1,5 @@
 import { faker } from "@faker-js/faker";
+import { uuidv7 } from "uuidv7";
 import { afterEach, beforeAll, expect, suite, test } from "vitest";
 import { eventsTable } from "~/src/drizzle/tables/events";
 import type {
@@ -511,7 +512,7 @@ suite("Query field event", () => {
 			const organization = await createTestOrganization(authToken, userId);
 
 			// Create an event in the past directly in DB to bypass mutation validation
-			const pastEventId = faker.string.uuid();
+			const pastEventId = uuidv7();
 			await server.drizzleClient.insert(eventsTable).values({
 				id: pastEventId,
 				name: "Past Event",
