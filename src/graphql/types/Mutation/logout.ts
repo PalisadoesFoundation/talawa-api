@@ -16,6 +16,7 @@ LogoutResult.implement({
 	fields: (t) => ({
 		success: t.exposeBoolean("success", {
 			description: "Whether the logout was successful",
+			nullable: false,
 		}),
 	}),
 });
