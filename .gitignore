@@ -841,6 +841,8 @@ yarn.lock
 
 # FNM
 .node-version
+.nvmrc
+
 
 # Plugin related
 /src/plugin/available/*
