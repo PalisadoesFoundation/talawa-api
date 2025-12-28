@@ -223,6 +223,88 @@ describe("Tag.organization resolver - Integration", () => {
 		}
 	});
 
+	it("authenticated non-member → unauthorized error", async () => {
+		const adminAuth = await getAdminAuth();
+		const { orgId, tagId } = await createOrgAndTag(
+			adminAuth.token,
+			adminAuth.userId,
+		);
+
+		// Create a different organization for the non-member user
+		const diffOrgResult = await mercuriusClient.mutate(
+			Mutation_createOrganization,
+			{
+				headers: { authorization: `bearer ${adminAuth.token}` },
+				variables: {
+					input: {
+						name: `DiffOrg-${Date.now()}`,
+						countryCode: "us",
+					},
+				},
+			},
+		);
+
+		assertToBeNonNullish(diffOrgResult.data?.createOrganization?.id);
+		const diffOrgId = diffOrgResult.data.createOrganization.id as string;
+
+		// Create a user in the different organization (authenticated but not a member of the target org)
+		const nonMemberResult = await mercuriusClient.mutate(Mutation_signUp, {
+			variables: {
+				input: {
+					emailAddress: `non-member-${Date.now()}@test.com`,
+					password: "Password123!",
+					name: "Non Member User",
+					selectedOrganization: diffOrgId,
+				},
+			},
+		});
+
+		assertToBeNonNullish(nonMemberResult.data?.signUp?.authenticationToken);
+		assertToBeNonNullish(nonMemberResult.data?.signUp?.user?.id);
+
+		const nonMemberToken = nonMemberResult.data.signUp.authenticationToken;
+		const nonMemberId = nonMemberResult.data.signUp.user.id;
+
+		try {
+			const result = await mercuriusClient.query(Query_tag_organization, {
+				headers: { authorization: `bearer ${nonMemberToken}` },
+				variables: {
+					id: tagId,
+				},
+			});
+
+			// Non-member should be denied access
+			expect(result.errors).toBeDefined();
+			expect(result.errors?.[0]?.extensions?.code).toBe(
+				"unauthorized_action_on_arguments_associated_resources",
+			);
+		} finally {
+			try {
+				await mercuriusClient.mutate(Mutation_deleteUser, {
+					headers: { authorization: `bearer ${adminAuth.token}` },
+					variables: {
+						input: {
+							id: nonMemberId,
+						},
+					},
+				});
+			} catch (error) {
+				console.warn(`Cleanup failed for user ${nonMemberId}:`, error);
+			}
+			try {
+				await mercuriusClient.mutate(Mutation_deleteOrganization, {
+					headers: { authorization: `bearer ${adminAuth.token}` },
+					variables: { input: { id: diffOrgId } },
+				});
+			} catch (error) {
+				console.warn(`Cleanup failed for org ${diffOrgId}:`, error);
+			}
+			await cleanup(adminAuth.token, {
+				orgId,
+			});
+		}
+	});
+
 	it("org admin → organization returned", async () => {
 		const adminAuth = await getAdminAuth();
 
