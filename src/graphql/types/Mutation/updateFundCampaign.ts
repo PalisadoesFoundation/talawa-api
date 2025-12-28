@@ -165,7 +165,7 @@ builder.mutationField("updateFundCampaign", (t) =>
 							operators.and(
 								operators.eq(fields.fundId, existingFundCampaign.fundId),
 								operators.eq(fields.name, name),
-								operators.ne(fields.id, parsedArgs.input.id)
+								operators.ne(fields.id, parsedArgs.input.id),
 							),
 					});
 

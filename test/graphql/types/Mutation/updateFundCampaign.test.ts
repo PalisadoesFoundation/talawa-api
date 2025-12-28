@@ -218,20 +218,19 @@ suite("Mutation updateFundCampaign", () => {
 	});
 
 	test("self-name update succeeds", async () => {
-  const res = await mercuriusClient.mutate(UpdateFundCampaignMutation, {
-    headers: { authorization: `bearer ${adminToken}` },
-    variables: {
-      input: {
-        id: campaignId,
-        name: campaignName,
-      },
-    },
-  });
+		const res = await mercuriusClient.mutate(UpdateFundCampaignMutation, {
+			headers: { authorization: `bearer ${adminToken}` },
+			variables: {
+				input: {
+					id: campaignId,
+					name: campaignName,
+				},
+			},
+		});
 
-  expect(res.errors).toBeUndefined();
-  expect(res.data?.updateFundCampaign?.name).toBe(campaignName);
-});
-
+		expect(res.errors).toBeUndefined();
+		expect(res.data?.updateFundCampaign?.name).toBe(campaignName);
+	});
 
 	test("successful update of startAt and endAt", async () => {
 		const newStartAt = new Date(
