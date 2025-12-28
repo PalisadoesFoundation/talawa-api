@@ -1,5 +1,4 @@
 import { faker } from "@faker-js/faker";
-import gql from "graphql-tag";
 import { expect, suite, test } from "vitest";
 import {
 	chatMembershipsTable,
@@ -10,15 +9,11 @@ import { organizationMembershipsTable } from "~/src/drizzle/tables/organizationM
 import { server } from "../../../server";
 import { mercuriusClient } from "../client";
 import { createRegularUserUsingAdmin } from "../createRegularUserUsingAdmin";
-import { Mutation_createOrganization, Query_signIn } from "../documentNodes";
-
-const Query_chatMessage = gql(`
-  query Query_chatMessage($input: QueryChatMessageInput!) {
-    chatMessage(input: $input) {
-      id
-    }
-  }
-`);
+import {
+	Mutation_createOrganization,
+	Query_chatMessage,
+	Query_signIn,
+} from "../documentNodes";
 
 async function createTestOrganization(): Promise<string> {
 	const signInResult = await mercuriusClient.query(Query_signIn, {
@@ -228,7 +223,7 @@ suite("chatMessage query", () => {
 		});
 
 		expect(result.errors).toBeUndefined();
-		expect(result.data?.chatMessage.id).toBe(messageId);
+		expect(result.data?.chatMessage?.id).toBe(messageId);
 	});
 	test("returns chat message when user is a chat administrator", async () => {
 		const creator = await createRegularUserUsingAdmin();
@@ -282,6 +277,6 @@ suite("chatMessage query", () => {
 		});
 
 		expect(result.errors).toBeUndefined();
-		expect(result.data?.chatMessage.id).toBe(messageId);
+		expect(result.data?.chatMessage?.id).toBe(messageId);
 	});
 });
