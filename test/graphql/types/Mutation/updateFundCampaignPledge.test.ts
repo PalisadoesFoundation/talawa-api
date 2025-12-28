@@ -1,13 +1,5 @@
 import { faker } from "@faker-js/faker";
-import {
-	afterEach,
-	beforeAll,
-	beforeEach,
-	expect,
-	suite,
-	test,
-	vi,
-} from "vitest";
+import { beforeAll, beforeEach, expect, suite, test, vi } from "vitest";
 
 import { assertToBeNonNullish } from "../../../helpers";
 import { server } from "../../../server";
@@ -58,6 +50,13 @@ suite("Mutation updateFundCampaignPledge", () => {
 	let pledgeId: string;
 
 	/* ---------- base setup ---------- */
+	beforeEach(async () => {
+		const keys = await server.redis.keys("rate-limit:*");
+		if (keys.length > 0) {
+			await server.redis.del(...keys);
+		}
+	});
+
 	beforeAll(async () => {
 		/* organization */
 		const org = await mercuriusClient.mutate(Mutation_createOrganization, {
@@ -286,49 +285,53 @@ suite("Mutation updateFundCampaignPledge", () => {
 
 	//// 6. Database update failure
 	suite("when the database update operation fails", () => {
-		let originalUpdate: typeof server.drizzleClient.update;
-
-		beforeEach(() => {
-			originalUpdate = server.drizzleClient.update;
-			server.drizzleClient.update = vi.fn().mockReturnValue({
-				set: vi.fn().mockReturnValue({
-					where: vi.fn().mockReturnValue({
-						returning: vi.fn().mockResolvedValue([]),
-					}),
-				}),
-			});
-		});
-
-		afterEach(() => {
-			server.drizzleClient.update = originalUpdate;
-		});
-
 		test("should return unexpected error", async () => {
-			const result = await mercuriusClient.mutate(
-				UpdateFundCampaignPledgeMutation,
-				{
-					headers: { authorization: `bearer ${adminToken}` },
-					variables: {
-						input: {
-							id: pledgeId,
-							amount: 999,
-							note: "fail",
+			const transactionSpy = vi
+				.spyOn(server.drizzleClient, "transaction")
+				.mockImplementation(async (callback) => {
+					const mockTx = {
+						update: () => ({
+							set: () => ({
+								where: () => ({
+									returning: async () => [],
+								}),
+							}),
+						}),
+						rollback: vi.fn(),
+					} as unknown as Parameters<typeof callback>[0];
+
+					return await callback(mockTx);
+				});
+
+			try {
+				const result = await mercuriusClient.mutate(
+					UpdateFundCampaignPledgeMutation,
+					{
+						headers: { authorization: `bearer ${adminToken}` },
+						variables: {
+							input: {
+								id: pledgeId,
+								amount: 999,
+								note: "fail",
+							},
 						},
 					},
-				},
-			);
+				);
 
-			expect(result.data?.updateFundCampaignPledge).toBeNull();
-			expect(result.errors).toEqual(
-				expect.arrayContaining([
-					expect.objectContaining({
-						extensions: expect.objectContaining({
-							code: "unexpected",
+				expect(result.data?.updateFundCampaignPledge ?? null).toBeNull();
+				expect(result.errors).toEqual(
+					expect.arrayContaining([
+						expect.objectContaining({
+							extensions: expect.objectContaining({
+								code: "unexpected",
+							}),
+							path: ["updateFundCampaignPledge"],
 						}),
-						path: ["updateFundCampaignPledge"],
-					}),
-				]),
-			);
+					]),
+				);
+			} finally {
+				transactionSpy.mockRestore();
+			}
 		});
 	});
 
