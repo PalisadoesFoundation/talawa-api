@@ -91,7 +91,7 @@ builder.mutationField("deleteCommentVote", (t) =>
 									type: true,
 								},
 								where: (fields, operators) =>
-									operators.eq(fields.creatorId, currentUserId),
+									operators.eq(fields.creatorId, parsedArgs.input.creatorId),
 							},
 						},
 						where: (fields, operators) =>

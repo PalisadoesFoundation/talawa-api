@@ -436,7 +436,7 @@ suite("Mutation field deleteCommentVote", () => {
 	});
 
 	suite(
-		"when a non-admin member attempts to delete their vote with mismatching creatorId",
+		"when a non-admin member attempts to delete another user's vote",
 		() => {
 			test(
 				"should return an error with unauthorized_action_on_arguments_associated_resources extensions code",
@@ -446,7 +446,7 @@ suite("Mutation field deleteCommentVote", () => {
 					const postId = await createTestPost(orgId);
 					const commentId = await createTestComment(postId, adminAuthToken);
 
-					// Create user and make them a member
+					// Create first user and make them a member
 					const userEmail = `user${faker.string.uuid()}@example.com`;
 					const createUserResult = await mercuriusClient.mutate(
 						Mutation_createUser,
@@ -488,10 +488,7 @@ suite("Mutation field deleteCommentVote", () => {
 					const userToken = userSignIn.data?.signIn?.authenticationToken;
 					assertToBeNonNullish(userToken);
 
-					// User creates a vote
-					await createTestCommentVote(commentId, userToken);
-
-					// Create another user for mismatched creatorId
+					// Create another user and make them a member
 					const otherUserEmail = `other${faker.string.uuid()}@example.com`;
 					const createOtherResult = await mercuriusClient.mutate(
 						Mutation_createUser,
@@ -511,7 +508,33 @@ suite("Mutation field deleteCommentVote", () => {
 					const otherUserId = createOtherResult.data?.createUser?.user?.id;
 					assertToBeNonNullish(otherUserId);
 
-					// User tries to delete vote with wrong creatorId (should fail because creatorId doesn't match current user)
+					await mercuriusClient.mutate(Mutation_createOrganizationMembership, {
+						headers: { authorization: `bearer ${adminAuthToken}` },
+						variables: {
+							input: {
+								organizationId: orgId,
+								memberId: otherUserId,
+								role: "regular",
+							},
+						},
+					});
+
+					const otherUserSignIn = await mercuriusClient.query(Query_signIn, {
+						variables: {
+							input: {
+								emailAddress: otherUserEmail,
+								password: "password",
+							},
+						},
+					});
+					const otherUserToken =
+						otherUserSignIn.data?.signIn?.authenticationToken;
+					assertToBeNonNullish(otherUserToken);
+
+					// Other user creates a vote
+					await createTestCommentVote(commentId, otherUserToken);
+
+					// First user tries to delete other user's vote (should fail - not an admin)
 					const result = await mercuriusClient.mutate(
 						Mutation_deleteCommentVote,
 						{
@@ -761,11 +784,199 @@ suite("Mutation field deleteCommentVote", () => {
 		);
 	});
 
-	// Note: Tests for admins deleting other users' votes are not included because
-	// the current implementation filters votes by currentUserId (line 94 of deleteCommentVote.ts),
-	// preventing admins from deleting votes they didn't create. The authorization logic exists
-	// (lines 178-197) but is unreachable due to this query filter. This appears to be a bug
-	// in the implementation that should be addressed separately.
+	suite("when system administrator deletes another user's vote", () => {
+		test(
+			"should successfully delete the vote and return the comment",
+			async () => {
+				// Create organization, post, and comment
+				const orgId = await createTestOrganization();
+				const postId = await createTestPost(orgId);
+				const commentId = await createTestComment(postId, adminAuthToken);
+
+				// Create a regular user and make them a member
+				const userEmail = `user${faker.string.uuid()}@example.com`;
+				const createUserResult = await mercuriusClient.mutate(
+					Mutation_createUser,
+					{
+						headers: { authorization: `bearer ${adminAuthToken}` },
+						variables: {
+							input: {
+								emailAddress: userEmail,
+								isEmailAddressVerified: true,
+								name: "Test User",
+								password: "password",
+								role: "regular",
+							},
+						},
+					},
+				);
+				const userId = createUserResult.data?.createUser?.user?.id;
+				assertToBeNonNullish(userId);
+
+				await mercuriusClient.mutate(Mutation_createOrganizationMembership, {
+					headers: { authorization: `bearer ${adminAuthToken}` },
+					variables: {
+						input: {
+							organizationId: orgId,
+							memberId: userId,
+							role: "regular",
+						},
+					},
+				});
+
+				const userSignIn = await mercuriusClient.query(Query_signIn, {
+					variables: {
+						input: {
+							emailAddress: userEmail,
+							password: "password",
+						},
+					},
+				});
+				const userToken = userSignIn.data?.signIn?.authenticationToken;
+				assertToBeNonNullish(userToken);
+
+				// User creates a vote
+				await createTestCommentVote(commentId, userToken);
+
+				// System admin deletes the user's vote
+				const result = await mercuriusClient.mutate(
+					Mutation_deleteCommentVote,
+					{
+						headers: { authorization: `bearer ${adminAuthToken}` },
+						variables: {
+							input: {
+								commentId,
+								creatorId: userId,
+							},
+						},
+					},
+				);
+
+				expect(result.errors).toBeUndefined();
+				assertToBeNonNullish(result.data?.deleteCommentVote);
+				expect(result.data.deleteCommentVote.id).toEqual(commentId);
+			},
+			SUITE_TIMEOUT,
+		);
+	});
+
+	suite("when organization admin deletes another user's vote", () => {
+		test(
+			"should successfully delete the vote and return the comment",
+			async () => {
+				// Create organization, post, and comment
+				const orgId = await createTestOrganization();
+				const postId = await createTestPost(orgId);
+				const commentId = await createTestComment(postId, adminAuthToken);
+
+				// Create org admin user
+				const orgAdminEmail = `orgadmin${faker.string.uuid()}@example.com`;
+				const createOrgAdminResult = await mercuriusClient.mutate(
+					Mutation_createUser,
+					{
+						headers: { authorization: `bearer ${adminAuthToken}` },
+						variables: {
+							input: {
+								emailAddress: orgAdminEmail,
+								isEmailAddressVerified: true,
+								name: "Org Admin",
+								password: "password",
+								role: "regular",
+							},
+						},
+					},
+				);
+				const orgAdminId = createOrgAdminResult.data?.createUser?.user?.id;
+				assertToBeNonNullish(orgAdminId);
+
+				await mercuriusClient.mutate(Mutation_createOrganizationMembership, {
+					headers: { authorization: `bearer ${adminAuthToken}` },
+					variables: {
+						input: {
+							organizationId: orgId,
+							memberId: orgAdminId,
+							role: "administrator",
+						},
+					},
+				});
+
+				const orgAdminSignIn = await mercuriusClient.query(Query_signIn, {
+					variables: {
+						input: {
+							emailAddress: orgAdminEmail,
+							password: "password",
+						},
+					},
+				});
+				const orgAdminToken = orgAdminSignIn.data?.signIn?.authenticationToken;
+				assertToBeNonNullish(orgAdminToken);
+
+				// Create regular user and make them a member
+				const userEmail = `user${faker.string.uuid()}@example.com`;
+				const createUserResult = await mercuriusClient.mutate(
+					Mutation_createUser,
+					{
+						headers: { authorization: `bearer ${adminAuthToken}` },
+						variables: {
+							input: {
+								emailAddress: userEmail,
+								isEmailAddressVerified: true,
+								name: "Test User",
+								password: "password",
+								role: "regular",
+							},
+						},
+					},
+				);
+				const userId = createUserResult.data?.createUser?.user?.id;
+				assertToBeNonNullish(userId);
+
+				await mercuriusClient.mutate(Mutation_createOrganizationMembership, {
+					headers: { authorization: `bearer ${adminAuthToken}` },
+					variables: {
+						input: {
+							organizationId: orgId,
+							memberId: userId,
+							role: "regular",
+						},
+					},
+				});
+
+				const userSignIn = await mercuriusClient.query(Query_signIn, {
+					variables: {
+						input: {
+							emailAddress: userEmail,
+							password: "password",
+						},
+					},
+				});
+				const userToken = userSignIn.data?.signIn?.authenticationToken;
+				assertToBeNonNullish(userToken);
+
+				// User creates a vote
+				await createTestCommentVote(commentId, userToken);
+
+				// Org admin deletes the user's vote
+				const result = await mercuriusClient.mutate(
+					Mutation_deleteCommentVote,
+					{
+						headers: { authorization: `bearer ${orgAdminToken}` },
+						variables: {
+							input: {
+								commentId,
+								creatorId: userId,
+							},
+						},
+					},
+				);
+
+				expect(result.errors).toBeUndefined();
+				assertToBeNonNullish(result.data?.deleteCommentVote);
+				expect(result.data.deleteCommentVote.id).toEqual(commentId);
+			},
+			SUITE_TIMEOUT,
+		);
+	});
 
 	suite("when organization admin deletes their own vote", () => {
 		test(
