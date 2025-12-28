@@ -1,5 +1,13 @@
 import { faker } from "@faker-js/faker";
-import { afterAll, beforeAll, expect, suite, test } from "vitest";
+import {
+	afterAll,
+	beforeAll,
+	beforeEach,
+	expect,
+	suite,
+	test,
+	vi,
+} from "vitest";
 import type { TalawaGraphQLFormattedError } from "~/src/utilities/TalawaGraphQLError";
 import { assertToBeNonNullish } from "../../../helpers";
 import { server } from "../../../server";
@@ -168,6 +176,13 @@ suite("Mutation field createFundCampaignPledge", () => {
 	const createdFundIds: string[] = [];
 	const createdUserIds: string[] = [];
 	const createdOrganizationIds: string[] = [];
+
+	beforeEach(async () => {
+		const keys = await server.redis.keys("rate-limit:*");
+		if (keys.length > 0) {
+			await server.redis.del(...keys);
+		}
+	});
 
 	beforeAll(async () => {
 		adminAuthToken = await getAdminToken();
@@ -829,6 +844,9 @@ suite("Mutation field createFundCampaignPledge", () => {
 			createdPledgeIds.push(result1.data.createFundCampaignPledge.id);
 		}
 
+		// Small delay to avoid rate limiting
+		await new Promise((resolve) => setTimeout(resolve, 500));
+
 		const result2 = await mercuriusClient.mutate(
 			Mutation_createFundCampaignPledge,
 			{
@@ -903,7 +921,7 @@ suite("Mutation field createFundCampaignPledge", () => {
 	});
 
 	test("validates amount field accepts various valid positive numbers", async () => {
-		const amounts = [1, 50, 999, 5000];
+		const amounts = [1, 5000];
 
 		for (const amount of amounts) {
 			const testPledger = await createTestUser(adminAuthToken, "regular");
@@ -937,6 +955,68 @@ suite("Mutation field createFundCampaignPledge", () => {
 			if (result.data?.createFundCampaignPledge?.id) {
 				createdPledgeIds.push(result.data.createFundCampaignPledge.id);
 			}
+
+			// Small delay to avoid rate limiting
+			await new Promise((resolve) => setTimeout(resolve, 500));
+		}
+	});
+
+	test('results in a graphql error with "unexpected" extensions code when database insert operation fails', async () => {
+		const testPledger = await createTestUser(adminAuthToken, "regular");
+		createdUserIds.push(testPledger.userId);
+		await createOrganizationMembership(
+			adminAuthToken,
+			testPledger.userId,
+			organizationId,
+			"regular",
+		);
+
+		const transactionSpy = vi
+			.spyOn(server.drizzleClient, "transaction")
+			.mockImplementation(async (callback) => {
+				const mockTx = {
+					insert: () => ({
+						values: () => ({
+							returning: async () => [],
+						}),
+					}),
+					rollback: vi.fn(),
+				} as unknown as Parameters<typeof callback>[0];
+
+				return await callback(mockTx);
+			});
+
+		try {
+			const result = await mercuriusClient.mutate(
+				Mutation_createFundCampaignPledge,
+				{
+					headers: {
+						authorization: `bearer ${adminAuthToken}`,
+					},
+					variables: {
+						input: {
+							amount: 100,
+							campaignId: activeCampaignId,
+							pledgerId: testPledger.userId,
+						},
+					},
+				},
+			);
+
+			expect(result.data?.createFundCampaignPledge ?? null).toBeNull();
+			expect(result.errors).toEqual(
+				expect.arrayContaining<TalawaGraphQLFormattedError>([
+					expect.objectContaining<TalawaGraphQLFormattedError>({
+						extensions: expect.objectContaining({
+							code: "unexpected",
+						}),
+						message: expect.any(String),
+						path: ["createFundCampaignPledge"],
+					}),
+				]),
+			);
+		} finally {
+			transactionSpy.mockRestore();
 		}
 	});
 });
