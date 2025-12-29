@@ -175,7 +175,6 @@ describe("Server-Timing header", () => {
 
 		// Extract total duration from header
 		const totalMatch = st.match(/total;dur=(\d+)/);
-		expect(totalMatch).toBeDefined();
 		expect(totalMatch).not.toBeNull();
 
 		if (totalMatch?.[1]) {
