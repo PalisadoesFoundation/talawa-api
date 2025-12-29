@@ -4,37 +4,64 @@
 
 # Class: TalawaGraphQLError
 
-Defined in: [src/utilities/TalawaGraphQLError.ts:311](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/utilities/TalawaGraphQLError.ts#L311)
+Defined in: [src/utilities/TalawaGraphQLError.ts:345](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/utilities/TalawaGraphQLError.ts#L345)
 
-This class extends the `GraphQLError` class and is used to create graphql error instances with strict typescript assertion on providing the error metadata within the `extensions` field. This assertion prevents talawa api contributers from returning arbitrary, undocumented errors to the talawa api graphql clients.
+Custom GraphQL error class that provides structured error handling with typed extensions.
 
-This also standardizes the errors that the client developers using talawa api can expect in the graphql responses, helping them design better UI experiences for end users. If necessary, the localization of the error messages(i18n) can be done within the graphql resolvers where this function is used.
+This class extends the standard GraphQLError and enforces strict TypeScript typing
+on error metadata within the `extensions` field. It prevents arbitrary, undocumented
+errors from being returned to GraphQL clients and standardizes error responses.
 
-The following example shows the usage of `createTalawaGraphQLError` function within a graphql resolver for resolving the user record of the best friend of a user:
+The class integrates with the unified error handling system by supporting ErrorCode
+enum values and providing consistent error shapes across REST and GraphQL endpoints.
 
 ## Example
 
 ```ts
+// Basic authentication error
+throw new TalawaGraphQLError({
+  extensions: {
+    code: ErrorCode.UNAUTHENTICATED
+  }
+});
+
+// Error with details and custom message
+throw new TalawaGraphQLError({
+  message: "Organization not found",
+  extensions: {
+    code: ErrorCode.NOT_FOUND,
+    details: { organizationId: "123" }
+  }
+});
+
+// Legacy typed extension (for backward compatibility)
+throw new TalawaGraphQLError({
+  extensions: {
+    code: "arguments_associated_resources_not_found",
+    issues: [
+      { argumentPath: ["input", "id"] }
+    ]
+  }
+});
+```
+
+The following example shows usage within a GraphQL resolver:
+```ts
 export const user = async (parent, args, ctx) => {
- const existingUser = await ctx.drizzleClient.query.user.findFirst({
-     where: (fields, operators) => operators.eq(fields.id, args.input.id),
- });
+  const existingUser = await ctx.drizzleClient.query.user.findFirst({
+    where: (fields, operators) => operators.eq(fields.id, args.input.id),
+  });
 
-	if (user === undefined) {
-		throw new TalawaGraphQLError({
-			extensions: {
-				code: "arguments_associated_resources_not_found",
-				issues: [
-					{
-						argumentPath: ["input", "id"],
-					},
-				],
-			},
+  if (user === undefined) {
+    throw new TalawaGraphQLError({
+      extensions: {
+        code: ErrorCode.NOT_FOUND,
+        details: { userId: args.input.id }
+      }
+    });
+  }
 
-     })
-	}
-
- return user;
+  return user;
 }
 ```
 
@@ -46,15 +73,19 @@ export const user = async (parent, args, ctx) => {
 
 ### Constructor
 
-> **new TalawaGraphQLError**(`__namedParameters`): `TalawaGraphQLError`
+> **new TalawaGraphQLError**(`options`): `TalawaGraphQLError`
 
-Defined in: [src/utilities/TalawaGraphQLError.ts:312](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/utilities/TalawaGraphQLError.ts#L312)
+Defined in: [src/utilities/TalawaGraphQLError.ts:356](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/utilities/TalawaGraphQLError.ts#L356)
+
+Creates a new TalawaGraphQLError instance.
 
 #### Parameters
 
-##### \_\_namedParameters
+##### options
 
 `GraphQLErrorOptions` & `object`
+
+Error configuration object
 
 #### Returns
 

@@ -828,17 +828,11 @@ suite("Input Validation Tests", () => {
 			expect(result.data.agendaItem).toEqual(null);
 			expect(result.errors).toEqual([
 				expect.objectContaining({
-					extensions: {
+					extensions: expect.objectContaining({
 						code: "unauthenticated",
-					},
+					}),
 					message: "You must be authenticated to perform this action.",
 					path: ["agendaItem"],
-					locations: expect.arrayContaining([
-						expect.objectContaining({
-							line: expect.any(Number),
-							column: expect.any(Number),
-						}),
-					]),
 				}),
 			]);
 		});

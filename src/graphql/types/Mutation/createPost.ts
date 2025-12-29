@@ -10,6 +10,7 @@ import {
 } from "~/src/graphql/inputs/MutationCreatePostInput";
 import { notificationEventBus } from "~/src/graphql/types/Notification/EventBus/eventBus";
 import { Post } from "~/src/graphql/types/Post/Post";
+import { ErrorCode } from "~/src/utilities/errors/errorCodes";
 import { getKeyPathsWithNonUndefinedValues } from "~/src/utilities/getKeyPathsWithNonUndefinedValues";
 import envConfig from "~/src/utilities/graphqLimits";
 import { isNotNullish } from "~/src/utilities/isNotNullish";
@@ -34,7 +35,7 @@ builder.mutationField("createPost", (t) =>
 			if (!ctx.currentClient.isAuthenticated) {
 				throw new TalawaGraphQLError({
 					extensions: {
-						code: "unauthenticated",
+						code: ErrorCode.UNAUTHENTICATED,
 					},
 				});
 			}
@@ -48,7 +49,7 @@ builder.mutationField("createPost", (t) =>
 			if (!success) {
 				throw new TalawaGraphQLError({
 					extensions: {
-						code: "invalid_arguments",
+						code: ErrorCode.INVALID_ARGUMENTS,
 						issues: error.issues.map((issue) => ({
 							argumentPath: issue.path,
 							message: issue.message,
@@ -89,7 +90,7 @@ builder.mutationField("createPost", (t) =>
 			if (currentUser === undefined) {
 				throw new TalawaGraphQLError({
 					extensions: {
-						code: "unauthenticated",
+						code: ErrorCode.UNAUTHENTICATED,
 					},
 				});
 			}
@@ -97,7 +98,7 @@ builder.mutationField("createPost", (t) =>
 			if (existingOrganization === undefined) {
 				throw new TalawaGraphQLError({
 					extensions: {
-						code: "arguments_associated_resources_not_found",
+						code: ErrorCode.NOT_FOUND,
 						issues: [
 							{
 								argumentPath: ["input", "organizationId"],
@@ -114,7 +115,7 @@ builder.mutationField("createPost", (t) =>
 				if (currentUserOrganizationMembership === undefined) {
 					throw new TalawaGraphQLError({
 						extensions: {
-							code: "unauthorized_action_on_arguments_associated_resources",
+							code: ErrorCode.UNAUTHORIZED,
 							issues: [
 								{
 									argumentPath: ["input", "organizationId"],
@@ -133,7 +134,7 @@ builder.mutationField("createPost", (t) =>
 					if (unauthorizedArgumentPaths.length !== 0) {
 						throw new TalawaGraphQLError({
 							extensions: {
-								code: "unauthorized_arguments",
+								code: ErrorCode.INSUFFICIENT_PERMISSIONS,
 								issues: unauthorizedArgumentPaths.map((argumentPath) => ({
 									argumentPath,
 								})),
@@ -164,7 +165,7 @@ builder.mutationField("createPost", (t) =>
 					);
 					throw new TalawaGraphQLError({
 						extensions: {
-							code: "unexpected",
+							code: ErrorCode.INTERNAL_SERVER_ERROR,
 						},
 					});
 				}
@@ -190,7 +191,7 @@ builder.mutationField("createPost", (t) =>
 						ctx.log.error(`Error uploading file to MinIO: ${error}`);
 						throw new TalawaGraphQLError({
 							extensions: {
-								code: "unexpected",
+								code: ErrorCode.EXTERNAL_SERVICE_ERROR,
 							},
 						});
 					}
@@ -225,7 +226,7 @@ builder.mutationField("createPost", (t) =>
 						);
 						throw new TalawaGraphQLError({
 							extensions: {
-								code: "unexpected",
+								code: ErrorCode.INTERNAL_SERVER_ERROR,
 							},
 						});
 					}

@@ -2,6 +2,7 @@ import fastifyPlugin from "fastify-plugin";
 import backgroundWorkers from "./backgroundWorkers";
 import drizzleClient from "./drizzleClient";
 import emailQueue from "./emailQueue";
+import { errorHandlerPlugin } from "./errorHandler";
 import minioClient from "./minioClient";
 import pluginSystem from "./pluginSystem";
 import seedInitialData from "./seedInitialData";
@@ -28,6 +29,7 @@ export const plugins = fastifyPlugin(async (fastify) => {
 	}
 	// Register background workers after drizzle client is available
 	await fastify.register(backgroundWorkers);
+	await fastify.register(errorHandlerPlugin);
 });
 
 export default plugins;

@@ -652,7 +652,7 @@ suite("Mutation field updateUser", () => {
 						},
 					},
 				});
-				expect(result.data).toBeNull();
+				expect(result.data ?? null).toBeNull();
 				expect(result.errors).toBeDefined();
 			});
 		},

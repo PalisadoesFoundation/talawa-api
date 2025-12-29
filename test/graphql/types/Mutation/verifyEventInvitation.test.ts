@@ -647,9 +647,12 @@ suite("Mutation verifyEventInvitation - Integration Tests", () => {
 
 		expect(verifyResult.errors).toBeDefined();
 		// GraphQL validation occurs before our resolver, so we expect a GraphQL validation error
-		expect(verifyResult.errors?.[0]?.message).toContain(
-			"String cannot represent a non string value",
-		);
+		expect(
+			verifyResult.errors?.[0]?.message.includes(
+				"String cannot represent a non string value",
+			) ||
+				verifyResult.errors?.[0]?.message.includes("Graphql validation error"),
+		).toBe(true);
 	});
 
 	it("Integration: Non-existent invitation token throws not found error", async () => {

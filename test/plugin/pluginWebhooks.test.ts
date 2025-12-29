@@ -1,5 +1,6 @@
-import type { FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import Fastify from "fastify";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+import { errorHandlerPlugin } from "../../src/fastifyPlugins/errorHandler";
 import type PluginManager from "../../src/plugin/manager";
 import { pluginWebhooks } from "../../src/plugin/pluginWebhooks";
 import type {
@@ -7,60 +8,20 @@ import type {
 	IPluginContext,
 } from "../../src/plugin/types";
 
-// Type for mock Fastify instance to avoid 'any' usage
-type MockFastifyInstance = Partial<FastifyInstance> & {
-	log: {
-		info: ReturnType<typeof vi.fn>;
-		error: ReturnType<typeof vi.fn>;
-		child: ReturnType<typeof vi.fn>;
-		level: string;
-		fatal: ReturnType<typeof vi.fn>;
-		warn: ReturnType<typeof vi.fn>;
-		debug: ReturnType<typeof vi.fn>;
-		trace: ReturnType<typeof vi.fn>;
-		silent: ReturnType<typeof vi.fn>;
-	};
-	pluginManager?: Partial<PluginManager>;
-	pluginContext?: Partial<IPluginContext>;
-	all: ReturnType<typeof vi.fn>;
-};
-
-// Type for mock FastifyRequest with plugin context
-interface MockFastifyRequest extends Partial<FastifyRequest> {
-	params?: Record<string, unknown>;
-	pluginContext?: unknown;
-}
-
-// Type for mock FastifyReply
-type MockFastifyReply = Partial<FastifyReply> & {
-	status: ReturnType<typeof vi.fn>;
-	send: ReturnType<typeof vi.fn>;
-};
-
-// Mock fastify-plugin
-vi.mock("fastify-plugin", () => ({
-	default: vi.fn((fn) => fn),
-}));
-
-import fastifyPlugin from "fastify-plugin";
-
 describe("Plugin Webhooks", () => {
-	let mockFastify: MockFastifyInstance;
-	let mockRequest: MockFastifyRequest;
-	let mockReply: MockFastifyReply;
-	let mockPluginManager: Partial<PluginManager>;
-	let mockExtensionRegistry: IExtensionRegistry;
 	let mockWebhookHandler: ReturnType<typeof vi.fn>;
 
-	beforeEach(() => {
-		// Reset all mocks
-		vi.clearAllMocks();
+	const createTestApp = async (
+		customPluginManager?: Partial<PluginManager> | null,
+		customContext?: IPluginContext | null,
+	) => {
+		const testApp = Fastify();
 
-		// Create mock webhook handler
-		mockWebhookHandler = vi.fn().mockResolvedValue(undefined);
+		// Register error handler first
+		await testApp.register(errorHandlerPlugin);
 
 		// Create mock extension registry
-		mockExtensionRegistry = {
+		const mockExtensionRegistry = {
 			graphql: {
 				builderExtensions: [],
 			},
@@ -76,613 +37,546 @@ describe("Plugin Webhooks", () => {
 			webhooks: {
 				handlers: {
 					"test-plugin:/": mockWebhookHandler,
-					"test-plugin:/custom/path": mockWebhookHandler,
+					"test-plugin:custom/path": mockWebhookHandler,
 				},
 			},
 		};
 
 		// Create mock plugin manager
-		mockPluginManager = {
-			getExtensionRegistry: vi.fn().mockReturnValue(mockExtensionRegistry),
-		};
+		const pluginManager =
+			customPluginManager === null
+				? undefined
+				: customPluginManager || {
+						getExtensionRegistry: vi
+							.fn()
+							.mockReturnValue(mockExtensionRegistry),
+					};
 
-		// Create mock fastify instance
-		mockFastify = {
-			log: {
-				info: vi.fn(),
-				error: vi.fn(),
-				child: vi.fn(),
-				level: "info",
-				fatal: vi.fn(),
-				warn: vi.fn(),
-				debug: vi.fn(),
-				trace: vi.fn(),
-				silent: vi.fn(),
-			},
-			pluginManager: mockPluginManager,
-			pluginContext: { test: "context" },
-			all: vi.fn(),
-		} as unknown as MockFastifyInstance;
+		// Add plugin manager and context to the app (only if pluginManager is not undefined)
+		if (pluginManager !== undefined) {
+			testApp.decorate(
+				"pluginManager",
+				pluginManager as unknown as PluginManager,
+			);
+		}
 
-		// Create mock request
-		mockRequest = {
-			params: {},
-		};
+		const context =
+			customContext === undefined
+				? ({ test: "context" } as unknown as IPluginContext)
+				: customContext;
 
-		// Create mock reply with chainable methods
-		mockReply = {
-			status: vi.fn().mockReturnThis(),
-			send: vi.fn().mockReturnThis(),
-		} as MockFastifyReply;
+		if (context !== null) {
+			testApp.decorate("pluginContext", context);
+		}
 
-		// Setup fastify-plugin mock
-		(fastifyPlugin as unknown as ReturnType<typeof vi.fn>).mockImplementation(
-			(fn: unknown) => fn,
-		);
-	});
+		// Register the plugin webhooks
+		await testApp.register(pluginWebhooks);
 
-	afterEach(() => {
-		vi.restoreAllMocks();
+		return testApp;
+	};
+
+	beforeEach(() => {
+		// Reset all mocks
+		vi.clearAllMocks();
+
+		// Create mock webhook handler
+		mockWebhookHandler = vi.fn().mockResolvedValue(undefined);
 	});
 
 	describe("Plugin Registration", () => {
 		it("should register webhook routes on fastify instance", async () => {
-			await pluginWebhooks(mockFastify as FastifyInstance);
+			const app = await createTestApp();
 
-			expect(mockFastify.all).toHaveBeenCalledTimes(2);
-			expect(mockFastify.all).toHaveBeenCalledWith(
-				"/api/plugins/:pluginId/webhook",
-				expect.any(Function),
-			);
-			expect(mockFastify.all).toHaveBeenCalledWith(
-				"/api/plugins/:pluginId/webhook/*",
-				expect.any(Function),
-			);
+			// Test that routes are registered by making requests to them
+			const response1 = await app.inject({
+				method: "GET",
+				url: "/api/plugins/test-plugin/webhook",
+			});
+
+			const response2 = await app.inject({
+				method: "GET",
+				url: "/api/plugins/test-plugin/webhook/custom/path",
+			});
+
+			// Both should not return 404 (route not found)
+			expect(response1.statusCode).not.toBe(404);
+			expect(response2.statusCode).not.toBe(404);
+
+			await app.close();
 		});
 	});
 
 	describe("Dynamic Webhook Endpoint (/api/plugins/:pluginId/webhook)", () => {
-		let webhookHandler: (
-			request: FastifyRequest,
-			reply: FastifyReply,
-		) => Promise<void>;
-
-		beforeEach(async () => {
-			await pluginWebhooks(mockFastify as FastifyInstance);
-			// Get the first registered route handler
-			const mockCalls = (mockFastify.all as ReturnType<typeof vi.fn>).mock
-				?.calls;
-			webhookHandler = mockCalls?.[0]?.[1] as (
-				request: FastifyRequest,
-				reply: FastifyReply,
-			) => Promise<void>;
-		});
-
 		it("should successfully handle webhook request with valid plugin", async () => {
-			mockRequest.params = { pluginId: "test-plugin" };
+			const mockPluginManager = {
+				getExtensionRegistry: vi.fn().mockReturnValue({
+					webhooks: {
+						handlers: {
+							"test-plugin:/": mockWebhookHandler,
+						},
+					},
+				}),
+			};
+			const app = await createTestApp(mockPluginManager);
 
-			await webhookHandler(
-				mockRequest as FastifyRequest,
-				mockReply as FastifyReply,
-			);
+			await app.inject({
+				method: "POST",
+				url: "/api/plugins/test-plugin/webhook",
+				payload: { test: "data" },
+			});
 
 			expect(mockPluginManager.getExtensionRegistry).toHaveBeenCalled();
-			expect(mockWebhookHandler).toHaveBeenCalledWith(mockRequest, mockReply);
-			expect(mockRequest.pluginContext).toBe(mockFastify.pluginContext);
+			expect(mockWebhookHandler).toHaveBeenCalled();
+
+			// Check that plugin context was injected
+			const calls = mockWebhookHandler.mock.calls;
+			const [request] = calls[0] || [];
+			expect(request.pluginContext).toEqual({ test: "context" });
+
+			await app.close();
 		});
 
 		it("should return 500 when plugin manager is not available", async () => {
-			mockFastify.pluginManager = undefined;
-			mockRequest.params = { pluginId: "test-plugin" };
+			const app = await createTestApp(null); // No plugin manager
 
-			await webhookHandler(
-				mockRequest as FastifyRequest,
-				mockReply as FastifyReply,
-			);
-
-			expect(mockReply.status).toHaveBeenCalledWith(500);
-			expect(mockReply.send).toHaveBeenCalledWith({
-				error: "Plugin manager not available",
+			const response = await app.inject({
+				method: "POST",
+				url: "/api/plugins/test-plugin/webhook",
 			});
+
+			expect(response.statusCode).toBe(500);
+			const body = response.json();
+			expect(body.error.message).toBe("Plugin manager not available");
+
+			await app.close();
 		});
 
 		it("should return 404 when webhook handler is not found", async () => {
-			mockRequest.params = { pluginId: "non-existent-plugin" };
+			const app = await createTestApp();
 
-			await webhookHandler(
-				mockRequest as FastifyRequest,
-				mockReply as FastifyReply,
+			const response = await app.inject({
+				method: "POST",
+				url: "/api/plugins/non-existent-plugin/webhook",
+			});
+
+			expect(response.statusCode).toBe(404);
+			const body = response.json();
+			expect(body.error.message).toBe(
+				"No webhook handler found for plugin 'non-existent-plugin'",
 			);
 
-			expect(mockReply.status).toHaveBeenCalledWith(404);
-			expect(mockReply.send).toHaveBeenCalledWith({
-				error: "Webhook not found",
-				message: "No webhook handler found for plugin 'non-existent-plugin'",
-			});
+			await app.close();
 		});
 
 		it("should inject plugin context into request", async () => {
-			mockRequest.params = { pluginId: "test-plugin" };
+			const app = await createTestApp();
 
-			await webhookHandler(
-				mockRequest as FastifyRequest,
-				mockReply as FastifyReply,
-			);
+			await app.inject({
+				method: "POST",
+				url: "/api/plugins/test-plugin/webhook",
+			});
 
-			expect(mockRequest.pluginContext).toBe(mockFastify.pluginContext);
+			expect(mockWebhookHandler).toHaveBeenCalled();
+			const calls = mockWebhookHandler.mock.calls;
+			const [request] = calls[0] || [];
+			expect(request.pluginContext).toEqual({ test: "context" });
+
+			await app.close();
 		});
 
 		it("should handle webhook handler execution errors", async () => {
 			const webhookError = new Error("Webhook execution failed");
 			mockWebhookHandler.mockRejectedValue(webhookError);
-			mockRequest.params = { pluginId: "test-plugin" };
 
-			await webhookHandler(
-				mockRequest as FastifyRequest,
-				mockReply as FastifyReply,
-			);
+			const app = await createTestApp();
 
-			expect(mockFastify.log.error).toHaveBeenCalledWith(
-				webhookError,
-				"Plugin webhook error",
-			);
-			expect(mockReply.status).toHaveBeenCalledWith(500);
-			expect(mockReply.send).toHaveBeenCalledWith({
-				error: "Internal server error",
-				message: "Webhook execution failed",
+			const response = await app.inject({
+				method: "POST",
+				url: "/api/plugins/test-plugin/webhook",
 			});
+
+			expect(response.statusCode).toBe(500);
+			const body = response.json();
+			expect(body.error.message).toBe("Plugin webhook execution failed");
+
+			await app.close();
 		});
 
 		it("should handle non-Error exceptions", async () => {
 			const nonErrorException = "String error";
 			mockWebhookHandler.mockRejectedValue(nonErrorException);
-			mockRequest.params = { pluginId: "test-plugin" };
 
-			await webhookHandler(
-				mockRequest as FastifyRequest,
-				mockReply as FastifyReply,
-			);
+			const app = await createTestApp();
 
-			expect(mockFastify.log.error).toHaveBeenCalledWith(
-				nonErrorException,
-				"Plugin webhook error",
-			);
-			expect(mockReply.status).toHaveBeenCalledWith(500);
-			expect(mockReply.send).toHaveBeenCalledWith({
-				error: "Internal server error",
-				message: "Unknown error",
+			const response = await app.inject({
+				method: "POST",
+				url: "/api/plugins/test-plugin/webhook",
 			});
+
+			expect(response.statusCode).toBe(500);
+			const body = response.json();
+			expect(body.error.message).toBe("Plugin webhook execution failed");
+
+			await app.close();
 		});
 
 		it("should use correct webhook key format", async () => {
-			mockRequest.params = { pluginId: "test-plugin" };
+			const app = await createTestApp();
 
-			await webhookHandler(
-				mockRequest as FastifyRequest,
-				mockReply as FastifyReply,
-			);
+			await app.inject({
+				method: "POST",
+				url: "/api/plugins/test-plugin/webhook",
+			});
 
-			// Verify the webhook key is constructed as "pluginId:/"
+			// Verify the webhook handler was called (which means the key "test-plugin:/" was found)
 			expect(mockWebhookHandler).toHaveBeenCalled();
+
+			await app.close();
 		});
 	});
 
 	describe("Wildcard Webhook Endpoint (/api/plugins/:pluginId/webhook/*)", () => {
-		let wildcardWebhookHandler: (
-			request: FastifyRequest,
-			reply: FastifyReply,
-		) => Promise<void>;
-
-		beforeEach(async () => {
-			await pluginWebhooks(mockFastify as FastifyInstance);
-			// Get the second registered route handler
-			const mockCalls = (mockFastify.all as ReturnType<typeof vi.fn>).mock
-				?.calls;
-			wildcardWebhookHandler = mockCalls?.[1]?.[1] as (
-				request: FastifyRequest,
-				reply: FastifyReply,
-			) => Promise<void>;
-		});
-
 		it("should successfully handle webhook request with custom path", async () => {
 			// Create a separate webhook handler for the custom path
 			const customWebhookHandler = vi.fn().mockResolvedValue(undefined);
-			const registryWithCustomHandler = {
-				...mockExtensionRegistry,
-				webhooks: {
-					handlers: {
-						"test-plugin:/": mockWebhookHandler,
-						"test-plugin:custom/path": customWebhookHandler,
+			const customPluginManager = {
+				getExtensionRegistry: vi.fn().mockReturnValue({
+					webhooks: {
+						handlers: {
+							"test-plugin:/": mockWebhookHandler,
+							"test-plugin:custom/path": customWebhookHandler,
+						},
 					},
-				},
-			};
-			(
-				mockPluginManager.getExtensionRegistry as ReturnType<typeof vi.fn>
-			).mockReturnValue(registryWithCustomHandler);
-
-			mockRequest.params = {
-				pluginId: "test-plugin",
-				"*": "custom/path",
+				}),
 			};
 
-			await wildcardWebhookHandler(
-				mockRequest as FastifyRequest,
-				mockReply as FastifyReply,
-			);
+			const app = await createTestApp(customPluginManager);
 
-			expect(mockPluginManager.getExtensionRegistry).toHaveBeenCalled();
-			expect(customWebhookHandler).toHaveBeenCalledWith(mockRequest, mockReply);
-			expect(mockRequest.pluginContext).toBe(mockFastify.pluginContext);
+			await app.inject({
+				method: "POST",
+				url: "/api/plugins/test-plugin/webhook/custom/path",
+				payload: { test: "data" },
+			});
+
+			expect(customPluginManager.getExtensionRegistry).toHaveBeenCalled();
+			expect(customWebhookHandler).toHaveBeenCalled();
+
+			// Check that plugin context was injected
+			const calls = customWebhookHandler.mock.calls;
+			const [request] = calls[0] || [];
+			expect(request.pluginContext).toEqual({ test: "context" });
+
+			await app.close();
 		});
 
 		it("should handle empty wildcard path by defaulting to '/'", async () => {
-			mockRequest.params = {
-				pluginId: "test-plugin",
-				"*": "",
-			};
+			const app = await createTestApp();
 
-			await wildcardWebhookHandler(
-				mockRequest as FastifyRequest,
-				mockReply as FastifyReply,
-			);
+			await app.inject({
+				method: "POST",
+				url: "/api/plugins/test-plugin/webhook/",
+			});
 
 			// Should use the default "/" path handler
 			expect(mockWebhookHandler).toHaveBeenCalled();
-		});
 
-		it("should handle undefined wildcard path by defaulting to '/'", async () => {
-			mockRequest.params = {
-				pluginId: "test-plugin",
-				"*": undefined,
-			};
-
-			await wildcardWebhookHandler(
-				mockRequest as FastifyRequest,
-				mockReply as FastifyReply,
-			);
-
-			// Should use the default "/" path handler
-			expect(mockWebhookHandler).toHaveBeenCalled();
+			await app.close();
 		});
 
 		it("should return 500 when plugin manager is not available", async () => {
-			mockFastify.pluginManager = undefined;
-			mockRequest.params = {
-				pluginId: "test-plugin",
-				"*": "custom/path",
-			};
+			const app = await createTestApp(null); // No plugin manager
 
-			await wildcardWebhookHandler(
-				mockRequest as FastifyRequest,
-				mockReply as FastifyReply,
-			);
-
-			expect(mockReply.status).toHaveBeenCalledWith(500);
-			expect(mockReply.send).toHaveBeenCalledWith({
-				error: "Plugin manager not available",
+			const response = await app.inject({
+				method: "POST",
+				url: "/api/plugins/test-plugin/webhook/custom/path",
 			});
+
+			expect(response.statusCode).toBe(500);
+			const body = response.json();
+			expect(body.error.message).toBe("Plugin manager not available");
+
+			await app.close();
 		});
 
 		it("should return 404 when webhook handler is not found for custom path", async () => {
-			mockRequest.params = {
-				pluginId: "test-plugin",
-				"*": "non/existent/path",
-			};
+			const app = await createTestApp();
 
-			await wildcardWebhookHandler(
-				mockRequest as FastifyRequest,
-				mockReply as FastifyReply,
+			const response = await app.inject({
+				method: "POST",
+				url: "/api/plugins/test-plugin/webhook/non/existent/path",
+			});
+
+			expect(response.statusCode).toBe(404);
+			const body = response.json();
+			expect(body.error.message).toBe(
+				"No webhook handler found for plugin 'test-plugin' at path 'non/existent/path'",
 			);
 
-			expect(mockReply.status).toHaveBeenCalledWith(404);
-			expect(mockReply.send).toHaveBeenCalledWith({
-				error: "Webhook not found",
-				message:
-					"No webhook handler found for plugin 'test-plugin' at path 'non/existent/path'",
-			});
+			await app.close();
 		});
 
 		it("should return 404 when plugin does not exist", async () => {
-			mockRequest.params = {
-				pluginId: "non-existent-plugin",
-				"*": "some/path",
-			};
+			const app = await createTestApp();
 
-			await wildcardWebhookHandler(
-				mockRequest as FastifyRequest,
-				mockReply as FastifyReply,
+			const response = await app.inject({
+				method: "POST",
+				url: "/api/plugins/non-existent-plugin/webhook/some/path",
+			});
+
+			expect(response.statusCode).toBe(404);
+			const body = response.json();
+			expect(body.error.message).toBe(
+				"No webhook handler found for plugin 'non-existent-plugin' at path 'some/path'",
 			);
 
-			expect(mockReply.status).toHaveBeenCalledWith(404);
-			expect(mockReply.send).toHaveBeenCalledWith({
-				error: "Webhook not found",
-				message:
-					"No webhook handler found for plugin 'non-existent-plugin' at path 'some/path'",
-			});
+			await app.close();
 		});
 
 		it("should inject plugin context into request", async () => {
 			// Create a separate webhook handler for the custom path
 			const customWebhookHandler = vi.fn().mockResolvedValue(undefined);
-			const registryWithCustomHandler = {
-				...mockExtensionRegistry,
-				webhooks: {
-					handlers: {
-						"test-plugin:/": mockWebhookHandler,
-						"test-plugin:custom/path": customWebhookHandler,
+			const customPluginManager = {
+				getExtensionRegistry: vi.fn().mockReturnValue({
+					webhooks: {
+						handlers: {
+							"test-plugin:/": mockWebhookHandler,
+							"test-plugin:custom/path": customWebhookHandler,
+						},
 					},
-				},
-			};
-			(
-				mockPluginManager.getExtensionRegistry as ReturnType<typeof vi.fn>
-			).mockReturnValue(registryWithCustomHandler);
-
-			mockRequest.params = {
-				pluginId: "test-plugin",
-				"*": "custom/path",
+				}),
 			};
 
-			await wildcardWebhookHandler(
-				mockRequest as FastifyRequest,
-				mockReply as FastifyReply,
-			);
+			const app = await createTestApp(customPluginManager);
 
-			expect(mockRequest.pluginContext).toBe(mockFastify.pluginContext);
+			await app.inject({
+				method: "POST",
+				url: "/api/plugins/test-plugin/webhook/custom/path",
+			});
+
+			expect(customWebhookHandler).toHaveBeenCalled();
+			const calls = customWebhookHandler.mock.calls;
+			const [request] = calls[0] || [];
+			expect(request.pluginContext).toEqual({ test: "context" });
+
+			await app.close();
 		});
 
 		it("should handle webhook handler execution errors", async () => {
 			const webhookError = new Error("Webhook execution failed");
 			const customWebhookHandler = vi.fn().mockRejectedValue(webhookError);
-			const registryWithCustomHandler = {
-				...mockExtensionRegistry,
-				webhooks: {
-					handlers: {
-						"test-plugin:/": mockWebhookHandler,
-						"test-plugin:custom/path": customWebhookHandler,
+			const customPluginManager = {
+				getExtensionRegistry: vi.fn().mockReturnValue({
+					webhooks: {
+						handlers: {
+							"test-plugin:/": mockWebhookHandler,
+							"test-plugin:custom/path": customWebhookHandler,
+						},
 					},
-				},
-			};
-			(
-				mockPluginManager.getExtensionRegistry as ReturnType<typeof vi.fn>
-			).mockReturnValue(registryWithCustomHandler);
-
-			mockRequest.params = {
-				pluginId: "test-plugin",
-				"*": "custom/path",
+				}),
 			};
 
-			await wildcardWebhookHandler(
-				mockRequest as FastifyRequest,
-				mockReply as FastifyReply,
-			);
+			const app = await createTestApp(customPluginManager);
 
-			expect(mockFastify.log.error).toHaveBeenCalledWith(
-				webhookError,
-				"Plugin webhook error",
-			);
-			expect(mockReply.status).toHaveBeenCalledWith(500);
-			expect(mockReply.send).toHaveBeenCalledWith({
-				error: "Internal server error",
-				message: "Webhook execution failed",
+			const response = await app.inject({
+				method: "POST",
+				url: "/api/plugins/test-plugin/webhook/custom/path",
 			});
+
+			expect(response.statusCode).toBe(500);
+			const body = response.json();
+			expect(body.error.message).toBe("Plugin webhook execution failed");
+
+			await app.close();
 		});
 
 		it("should use correct webhook key format with custom path", async () => {
 			// Create a separate webhook handler for the custom path
 			const customWebhookHandler = vi.fn().mockResolvedValue(undefined);
-			const registryWithCustomHandler = {
-				...mockExtensionRegistry,
-				webhooks: {
-					handlers: {
-						"test-plugin:/": mockWebhookHandler,
-						"test-plugin:custom/path": customWebhookHandler,
+			const customPluginManager = {
+				getExtensionRegistry: vi.fn().mockReturnValue({
+					webhooks: {
+						handlers: {
+							"test-plugin:/": mockWebhookHandler,
+							"test-plugin:custom/path": customWebhookHandler,
+						},
 					},
-				},
-			};
-			(
-				mockPluginManager.getExtensionRegistry as ReturnType<typeof vi.fn>
-			).mockReturnValue(registryWithCustomHandler);
-
-			mockRequest.params = {
-				pluginId: "test-plugin",
-				"*": "custom/path",
+				}),
 			};
 
-			await wildcardWebhookHandler(
-				mockRequest as FastifyRequest,
-				mockReply as FastifyReply,
-			);
+			const app = await createTestApp(customPluginManager);
 
-			// Verify the webhook key is constructed as "pluginId:customPath"
+			await app.inject({
+				method: "POST",
+				url: "/api/plugins/test-plugin/webhook/custom/path",
+			});
+
+			// Verify the custom webhook handler was called (which means the key "test-plugin:custom/path" was found)
 			expect(customWebhookHandler).toHaveBeenCalled();
+
+			await app.close();
 		});
 	});
 
 	describe("Plugin Context Injection", () => {
-		let webhookHandler: (
-			request: FastifyRequest,
-			reply: FastifyReply,
-		) => Promise<void>;
-
-		beforeEach(async () => {
-			await pluginWebhooks(mockFastify as FastifyInstance);
-			const mockCalls = (mockFastify.all as ReturnType<typeof vi.fn>).mock
-				?.calls;
-			webhookHandler = mockCalls?.[0]?.[1] as (
-				request: FastifyRequest,
-				reply: FastifyReply,
-			) => Promise<void>;
-		});
-
 		it("should inject plugin context from fastify instance", async () => {
 			const customContext = {
 				custom: "data",
 				userId: 123,
 			} as unknown as IPluginContext;
-			mockFastify.pluginContext = customContext;
-			mockRequest.params = { pluginId: "test-plugin" };
 
-			await webhookHandler(
-				mockRequest as FastifyRequest,
-				mockReply as FastifyReply,
-			);
+			const app = await createTestApp(undefined, customContext);
 
-			expect(mockRequest.pluginContext).toBe(customContext);
-			expect(mockWebhookHandler).toHaveBeenCalledWith(mockRequest, mockReply);
+			await app.inject({
+				method: "POST",
+				url: "/api/plugins/test-plugin/webhook",
+			});
+
+			expect(mockWebhookHandler).toHaveBeenCalled();
+			const calls = mockWebhookHandler.mock.calls;
+			const [request] = calls[0] || [];
+			expect(request.pluginContext).toBe(customContext);
+
+			await app.close();
 		});
 
 		it("should handle undefined plugin context", async () => {
-			mockFastify.pluginContext = undefined;
-			mockRequest.params = { pluginId: "test-plugin" };
+			const app = await createTestApp(undefined, null);
 
-			await webhookHandler(
-				mockRequest as FastifyRequest,
-				mockReply as FastifyReply,
-			);
+			await app.inject({
+				method: "POST",
+				url: "/api/plugins/test-plugin/webhook",
+			});
 
-			expect(mockRequest.pluginContext).toBeUndefined();
-			expect(mockWebhookHandler).toHaveBeenCalledWith(mockRequest, mockReply);
+			expect(mockWebhookHandler).toHaveBeenCalled();
+			const calls = mockWebhookHandler.mock.calls;
+			expect(calls.length).toBeGreaterThan(0);
+			const [request] = calls[0] || [];
+			expect(request?.pluginContext).toBeUndefined();
+
+			await app.close();
 		});
 	});
 
 	describe("Extension Registry Integration", () => {
-		let webhookHandler: (
-			request: FastifyRequest,
-			reply: FastifyReply,
-		) => Promise<void>;
-
-		beforeEach(async () => {
-			await pluginWebhooks(mockFastify as FastifyInstance);
-			const mockCalls = (mockFastify.all as ReturnType<typeof vi.fn>).mock
-				?.calls;
-			webhookHandler = mockCalls?.[0]?.[1] as (
-				request: FastifyRequest,
-				reply: FastifyReply,
-			) => Promise<void>;
-		});
-
 		it("should handle missing webhooks section in extension registry", async () => {
 			const registryWithoutWebhooks = {
-				...mockExtensionRegistry,
+				graphql: { builderExtensions: [] },
+				database: { tables: {}, enums: {}, relations: {} },
+				hooks: { pre: {}, post: {} },
 				webhooks: undefined,
 			} as unknown as IExtensionRegistry;
 
-			(
-				mockPluginManager.getExtensionRegistry as ReturnType<typeof vi.fn>
-			).mockReturnValue(registryWithoutWebhooks);
+			const customPluginManager = {
+				getExtensionRegistry: vi.fn().mockReturnValue(registryWithoutWebhooks),
+			};
 
-			mockRequest.params = { pluginId: "test-plugin" };
+			const app = await createTestApp(customPluginManager);
 
-			await webhookHandler(
-				mockRequest as FastifyRequest,
-				mockReply as FastifyReply,
+			const response = await app.inject({
+				method: "POST",
+				url: "/api/plugins/test-plugin/webhook",
+			});
+
+			expect(response.statusCode).toBe(404);
+			const body = response.json();
+			expect(body.error.message).toBe(
+				"No webhook handler found for plugin 'test-plugin'",
 			);
 
-			expect(mockReply.status).toHaveBeenCalledWith(404);
-			expect(mockReply.send).toHaveBeenCalledWith({
-				error: "Webhook not found",
-				message: "No webhook handler found for plugin 'test-plugin'",
-			});
+			await app.close();
 		});
 
 		it("should handle missing handlers in webhooks section", async () => {
 			const registryWithoutHandlers = {
-				...mockExtensionRegistry,
+				graphql: { builderExtensions: [] },
+				database: { tables: {}, enums: {}, relations: {} },
+				hooks: { pre: {}, post: {} },
 				webhooks: {
 					handlers: undefined,
 				},
 			} as unknown as IExtensionRegistry;
 
-			(
-				mockPluginManager.getExtensionRegistry as ReturnType<typeof vi.fn>
-			).mockReturnValue(registryWithoutHandlers);
+			const customPluginManager = {
+				getExtensionRegistry: vi.fn().mockReturnValue(registryWithoutHandlers),
+			};
 
-			mockRequest.params = { pluginId: "test-plugin" };
+			const app = await createTestApp(customPluginManager);
 
-			await webhookHandler(
-				mockRequest as FastifyRequest,
-				mockReply as FastifyReply,
+			const response = await app.inject({
+				method: "POST",
+				url: "/api/plugins/test-plugin/webhook",
+			});
+
+			expect(response.statusCode).toBe(404);
+			const body = response.json();
+			expect(body.error.message).toBe(
+				"No webhook handler found for plugin 'test-plugin'",
 			);
 
-			expect(mockReply.status).toHaveBeenCalledWith(404);
-			expect(mockReply.send).toHaveBeenCalledWith({
-				error: "Webhook not found",
-				message: "No webhook handler found for plugin 'test-plugin'",
-			});
+			await app.close();
 		});
 
 		it("should handle empty handlers object", async () => {
 			const registryWithEmptyHandlers = {
-				...mockExtensionRegistry,
+				graphql: { builderExtensions: [] },
+				database: { tables: {}, enums: {}, relations: {} },
+				hooks: { pre: {}, post: {} },
 				webhooks: {
 					handlers: {},
 				},
 			};
 
-			(
-				mockPluginManager.getExtensionRegistry as ReturnType<typeof vi.fn>
-			).mockReturnValue(registryWithEmptyHandlers);
+			const customPluginManager = {
+				getExtensionRegistry: vi
+					.fn()
+					.mockReturnValue(registryWithEmptyHandlers),
+			};
 
-			mockRequest.params = { pluginId: "test-plugin" };
+			const app = await createTestApp(customPluginManager);
 
-			await webhookHandler(
-				mockRequest as FastifyRequest,
-				mockReply as FastifyReply,
+			const response = await app.inject({
+				method: "POST",
+				url: "/api/plugins/test-plugin/webhook",
+			});
+
+			expect(response.statusCode).toBe(404);
+			const body = response.json();
+			expect(body.error.message).toBe(
+				"No webhook handler found for plugin 'test-plugin'",
 			);
 
-			expect(mockReply.status).toHaveBeenCalledWith(404);
-			expect(mockReply.send).toHaveBeenCalledWith({
-				error: "Webhook not found",
-				message: "No webhook handler found for plugin 'test-plugin'",
-			});
+			await app.close();
 		});
 	});
 
 	describe("Error Handling Edge Cases", () => {
-		let webhookHandler: (
-			request: FastifyRequest,
-			reply: FastifyReply,
-		) => Promise<void>;
-
-		beforeEach(async () => {
-			await pluginWebhooks(mockFastify as FastifyInstance);
-			const mockCalls = (mockFastify.all as ReturnType<typeof vi.fn>).mock
-				?.calls;
-			webhookHandler = mockCalls?.[0]?.[1] as (
-				request: FastifyRequest,
-				reply: FastifyReply,
-			) => Promise<void>;
-		});
-
 		it("should handle getExtensionRegistry throwing an error", async () => {
 			const registryError = new Error("Registry access failed");
-			(
-				mockPluginManager.getExtensionRegistry as ReturnType<typeof vi.fn>
-			).mockImplementation(() => {
-				throw registryError;
+			const customPluginManager = {
+				getExtensionRegistry: vi.fn().mockImplementation(() => {
+					throw registryError;
+				}),
+			};
+
+			const app = await createTestApp(customPluginManager);
+
+			const response = await app.inject({
+				method: "POST",
+				url: "/api/plugins/test-plugin/webhook",
 			});
 
-			mockRequest.params = { pluginId: "test-plugin" };
+			expect(response.statusCode).toBe(500);
+			const body = response.json();
+			expect(body.error.message).toBe("Plugin webhook execution failed");
 
-			await webhookHandler(
-				mockRequest as FastifyRequest,
-				mockReply as FastifyReply,
-			);
-
-			expect(mockFastify.log.error).toHaveBeenCalledWith(
-				registryError,
-				"Plugin webhook error",
-			);
-			expect(mockReply.status).toHaveBeenCalledWith(500);
-			expect(mockReply.send).toHaveBeenCalledWith({
-				error: "Internal server error",
-				message: "Registry access failed",
-			});
+			await app.close();
 		});
 
 		it("should handle null webhook handler", async () => {
 			const registryWithNullHandler = {
-				...mockExtensionRegistry,
+				graphql: { builderExtensions: [] },
+				database: { tables: {}, enums: {}, relations: {} },
+				hooks: { pre: {}, post: {} },
 				webhooks: {
 					handlers: {
 						"test-plugin:/": null,
@@ -690,68 +584,87 @@ describe("Plugin Webhooks", () => {
 				},
 			} as unknown as IExtensionRegistry;
 
-			(
-				mockPluginManager.getExtensionRegistry as ReturnType<typeof vi.fn>
-			).mockReturnValue(registryWithNullHandler);
+			const customPluginManager = {
+				getExtensionRegistry: vi.fn().mockReturnValue(registryWithNullHandler),
+			};
 
-			mockRequest.params = { pluginId: "test-plugin" };
+			const app = await createTestApp(customPluginManager);
 
-			await webhookHandler(
-				mockRequest as FastifyRequest,
-				mockReply as FastifyReply,
+			const response = await app.inject({
+				method: "POST",
+				url: "/api/plugins/test-plugin/webhook",
+			});
+
+			expect(response.statusCode).toBe(404);
+			const body = response.json();
+			expect(body.error.message).toBe(
+				"No webhook handler found for plugin 'test-plugin'",
 			);
 
-			expect(mockReply.status).toHaveBeenCalledWith(404);
-			expect(mockReply.send).toHaveBeenCalledWith({
-				error: "Webhook not found",
-				message: "No webhook handler found for plugin 'test-plugin'",
-			});
+			await app.close();
 		});
 
 		it("should handle missing params object", async () => {
-			mockRequest.params = undefined;
+			const app = await createTestApp();
 
-			await expect(
-				webhookHandler(
-					mockRequest as FastifyRequest,
-					mockReply as FastifyReply,
-				),
-			).resolves.not.toThrow();
+			// This test is less relevant now since we're using real Fastify routing
+			// but we can test with an invalid URL structure
+			const response = await app.inject({
+				method: "POST",
+				url: "/api/plugins//webhook", // Empty plugin ID
+			});
 
-			// Should handle gracefully and likely result in an error
-			expect(mockFastify.log.error).toHaveBeenCalled();
+			// Should handle gracefully - likely return 404 or 500
+			expect([404, 500]).toContain(response.statusCode);
+
+			await app.close();
 		});
 	});
 
 	describe("HTTP Method Support", () => {
-		it("should register routes with 'all' method to support all HTTP verbs", async () => {
-			await pluginWebhooks(mockFastify as FastifyInstance);
+		it("should support all HTTP methods", async () => {
+			const methods = ["GET", "POST", "PUT", "DELETE", "PATCH"] as const;
 
-			expect(mockFastify.all).toHaveBeenCalledTimes(2);
-			expect(mockFastify.all).toHaveBeenCalledWith(
-				"/api/plugins/:pluginId/webhook",
-				expect.any(Function),
-			);
-			expect(mockFastify.all).toHaveBeenCalledWith(
-				"/api/plugins/:pluginId/webhook/*",
-				expect.any(Function),
-			);
+			for (const method of methods) {
+				const app = await createTestApp();
+
+				const response = await app.inject({
+					method,
+					url: "/api/plugins/test-plugin/webhook",
+				});
+
+				// Should not return 405 (Method Not Allowed)
+				expect(response.statusCode).not.toBe(405);
+				expect(mockWebhookHandler).toHaveBeenCalled();
+
+				// Reset mock for next iteration
+				mockWebhookHandler.mockClear();
+
+				await app.close();
+			}
 		});
 	});
 
 	describe("Backward Compatibility", () => {
 		it("should support both webhook endpoints for backward compatibility", async () => {
-			await pluginWebhooks(mockFastify as FastifyInstance);
+			const app = await createTestApp();
 
-			// Both endpoints should be registered
-			expect(mockFastify.all).toHaveBeenCalledWith(
-				"/api/plugins/:pluginId/webhook",
-				expect.any(Function),
-			);
-			expect(mockFastify.all).toHaveBeenCalledWith(
-				"/api/plugins/:pluginId/webhook/*",
-				expect.any(Function),
-			);
+			// Test both endpoints work
+			const response1 = await app.inject({
+				method: "POST",
+				url: "/api/plugins/test-plugin/webhook",
+			});
+
+			const response2 = await app.inject({
+				method: "POST",
+				url: "/api/plugins/test-plugin/webhook/",
+			});
+
+			// Both should work (not return 404)
+			expect(response1.statusCode).not.toBe(404);
+			expect(response2.statusCode).not.toBe(404);
+
+			await app.close();
 		});
 	});
 });

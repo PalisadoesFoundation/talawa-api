@@ -3,6 +3,8 @@ import { inArray } from "drizzle-orm";
 import { z } from "zod";
 import type { actionItemCategoriesTable } from "~/src/drizzle/tables/actionItemCategories";
 import { builder } from "~/src/graphql/builder";
+import { ErrorCode } from "~/src/utilities/errors/errorCodes";
+import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 
 export type ActionItemCategory = InferSelectModel<
 	typeof actionItemCategoriesTable
@@ -54,12 +56,21 @@ builder.queryField("categoriesByIds", (t) =>
 		description: "Fetch multiple action item categories by their IDs.",
 		resolve: async (_parent, args, ctx) => {
 			if (!ctx.currentClient.isAuthenticated) {
-				throw new Error("Unauthenticated");
+				throw new TalawaGraphQLError({
+					extensions: {
+						code: ErrorCode.UNAUTHENTICATED,
+					},
+				});
 			}
 
 			const parsedArgs = categoriesByIdsInputSchema.safeParse(args.input);
 			if (!parsedArgs.success) {
-				throw new Error("Invalid arguments");
+				throw new TalawaGraphQLError({
+					extensions: {
+						code: ErrorCode.INVALID_ARGUMENTS,
+						details: parsedArgs.error.flatten(),
+					},
+				});
 			}
 
 			const categoryIds = parsedArgs.data.ids;
