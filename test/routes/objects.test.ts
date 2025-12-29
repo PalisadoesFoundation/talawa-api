@@ -255,4 +255,28 @@ describe("Objects route with MinIO integration", () => {
 			},
 		});
 	});
+
+	it("should return 500 for S3Error with unhandled code", async () => {
+		const s3Error = new S3Error("Access Denied");
+		s3Error.code = "AccessDenied";
+
+		app.minio.client.getObject.mockRejectedValue(s3Error);
+		app.minio.client.statObject.mockRejectedValue(s3Error);
+
+		const response = await app.inject({
+			method: "GET",
+			url: "/objects/auth-error.txt",
+		});
+
+		expect(response.statusCode).toBe(500);
+		const body = response.json();
+		expect(body).toEqual({
+			error: {
+				code: "internal_server_error",
+				message: "Something went wrong. Please try again later.",
+				details: { message: "Access Denied" },
+				correlationId: expect.any(String),
+			},
+		});
+	});
 });
