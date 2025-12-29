@@ -25,8 +25,8 @@ export type SanitizedInputString = string & {
 
 /**
  * Escapes HTML characters in a string to prevent XSS attacks.
- * @param str The string to escape.
- * @returns The escaped string, or the input if it was null/undefined.
+ * @param str - The string to escape.
+ * @returns - The escaped string, or the input if it was null/undefined.
  */
 export function escapeHTML(str: string): HTMLSafeString;
 export function escapeHTML(str: string | null): HTMLSafeString | null;
@@ -49,8 +49,8 @@ export function escapeHTML(
 /**
  * Sanitizes user input by trimming whitespace and normalizing the string.
  * This is for INPUT normalization, not OUTPUT escaping.
- * @param str The string to sanitize.
- * @returns The sanitized (trimmed) string with branded type.
+ * @param str - The string to sanitize.
+ * @returns - The sanitized (trimmed) string with branded type.
  */
 export function sanitizeInput(str: string): SanitizedInputString;
 export function sanitizeInput(str: string | null): SanitizedInputString | null;
@@ -73,8 +73,8 @@ export function sanitizeInput(
  * Type guard to check if a value is a SanitizedInputString.
  * At runtime, this just checks if it's a trimmed string (may be empty).
  * The branded type provides compile-time safety.
- * @param value The value to check.
- * @returns True if the value appears to be sanitized input.
+ * @param value - The value to check.
+ * @returns - True if the value appears to be sanitized input.
  */
 export function isSanitizedInput(
 	value: unknown,
