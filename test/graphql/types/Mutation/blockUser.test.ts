@@ -224,10 +224,13 @@ suite("Mutation field blockUser", () => {
 			});
 
 			expect(result.data?.blockUser).toBeNull();
-			expect(result.errors?.some(error => 
-				error.extensions?.code === "invalid_arguments" || 
-				error.message?.includes("Invalid")
-			)).toBe(true);
+			expect(
+				result.errors?.some(
+					(error) =>
+						error.extensions?.code === "invalid_arguments" ||
+						error.message?.includes("Invalid"),
+				),
+			).toBe(true);
 		});
 
 		test("should return an error for invalid UUID format userId", async () => {
@@ -240,10 +243,13 @@ suite("Mutation field blockUser", () => {
 			});
 
 			expect(result.data?.blockUser).toBeNull();
-			expect(result.errors?.some(error => 
-				error.extensions?.code === "invalid_arguments" || 
-				error.message?.includes("Invalid")
-			)).toBe(true);
+			expect(
+				result.errors?.some(
+					(error) =>
+						error.extensions?.code === "invalid_arguments" ||
+						error.message?.includes("Invalid"),
+				),
+			).toBe(true);
 		});
 	});
 
