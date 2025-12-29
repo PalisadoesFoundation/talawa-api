@@ -54,7 +54,13 @@ export function createMockGraphQLContext(
 			mockDrizzleClient as unknown as FastifyInstance["drizzleClient"],
 		envConfig: {
 			API_BASE_URL: "http://localhost:4000",
+			API_COMMUNITY_NAME: "Test Community",
 			API_REFRESH_TOKEN_EXPIRES_IN: 604800000,
+			API_PASSWORD_RESET_USER_TOKEN_EXPIRES_SECONDS: 1209600,
+			API_PASSWORD_RESET_ADMIN_TOKEN_EXPIRES_SECONDS: 3600,
+			API_JWT_EXPIRES_IN: 900000,
+			API_COOKIE_DOMAIN: undefined,
+			API_IS_SECURE_COOKIES: false,
 			FRONTEND_URL: "http://localhost:3000",
 		},
 		jwt: {

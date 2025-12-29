@@ -23,8 +23,19 @@ import {
 } from "~/src/utilities/recurringEventHelpers";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 
-const mutationCreateEventArgumentsSchema = z.object({
+export const mutationCreateEventArgumentsSchema = z.object({
 	input: mutationCreateEventInputSchema.transform(async (arg, ctx) => {
+		const now = new Date();
+		const gracePeriod = 2000; // 2 seconds for clock skew
+		if (arg.startAt.getTime() < now.getTime() - gracePeriod) {
+			ctx.addIssue({
+				code: "custom",
+				path: ["startAt"],
+				message:
+					"Start date must be in the future or within the next few seconds",
+			});
+		}
+
 		let attachments:
 			| (FileUpload & {
 					mimetype: z.infer<typeof eventAttachmentMimeTypeEnum>;
@@ -205,6 +216,7 @@ builder.mutationField("createEvent", (t) =>
 							allDay: parsedArgs.input.allDay ?? false,
 							isPublic: parsedArgs.input.isPublic ?? false,
 							isRegisterable: parsedArgs.input.isRegisterable ?? false,
+							isInviteOnly: parsedArgs.input.isInviteOnly ?? false,
 							location: parsedArgs.input.location,
 							// Set as recurring template if recurrence is provided
 							isRecurringEventTemplate: !!parsedArgs.input.recurrence,

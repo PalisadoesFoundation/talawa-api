@@ -220,21 +220,34 @@ export const Query_signIn = gql(`query Query_signIn($input: QuerySignInInput!) {
     }
 }`);
 
-export const Mutation_refreshToken =
-	gql(`mutation Mutation_refreshToken($refreshToken: String!) {
-    refreshToken(refreshToken: $refreshToken) {
-        authenticationToken
-        refreshToken
-        user {
-            id
-            name
-        }
-    }
-}`);
-
 export const Mutation_revokeRefreshToken =
 	gql(`mutation Mutation_revokeRefreshToken($refreshToken: String!) {
     revokeRefreshToken(refreshToken: $refreshToken)
+}`);
+
+export const Mutation_requestPasswordReset =
+	gql(`mutation Mutation_requestPasswordReset($input: MutationRequestPasswordResetInput!) {
+    requestPasswordReset(input: $input) {
+        success
+        message
+    }
+}`);
+
+export const Mutation_resetPassword =
+	gql(`mutation Mutation_resetPassword($input: MutationResetPasswordInput!) {
+    resetPassword(input: $input) {
+        success
+        authenticationToken
+        refreshToken
+    }
+}`);
+
+export const Query_verifyPasswordResetToken =
+	gql(`query Query_verifyPasswordResetToken($input: QueryVerifyPasswordResetTokenInput!) {
+    verifyPasswordResetToken(input: $input) {
+        valid
+        expiresAt
+    }
 }`);
 
 export const Query_user = gql(`query Query_user($input: QueryUserInput!) {
@@ -572,6 +585,7 @@ export const Query_event = gql(`query Query_event($input: QueryEventInput!) {
         description
         startAt
         endAt
+        isInviteOnly
         creator {
             id
             name
@@ -762,6 +776,22 @@ export const Query_agendaItem =
 export const Mutation_createAgendaFolder = gql(`
   mutation Mutation_createAgendaFolder($input: MutationCreateAgendaFolderInput!) {
     createAgendaFolder(input: $input) {
+      id
+      name
+      isAgendaItemFolder
+      event {
+        id
+      }
+      parentFolder {
+        id
+      }
+    }
+  }
+`);
+
+export const Mutation_updateAgendaFolder = gql(`
+  mutation Mutation_updateAgendaFolder($input: MutationUpdateAgendaFolderInput!) {
+    updateAgendaFolder(input: $input) {
       id
       name
       isAgendaItemFolder
@@ -1233,6 +1263,7 @@ export const Query_eventsByIds = gql(`
       description
       startAt
       endAt
+      isInviteOnly
     }
   }
 `);
@@ -1660,6 +1691,7 @@ export const Mutation_updateSingleRecurringEventInstance = gql(`
       allDay
       isPublic
       isRegisterable
+      isInviteOnly
       hasExceptions
       sequenceNumber
       totalCount
@@ -1683,6 +1715,7 @@ export const Mutation_updateStandaloneEvent = gql(`
       allDay
       isPublic
       isRegisterable
+      isInviteOnly
       organization {
         id
         name
@@ -1706,6 +1739,7 @@ export const Mutation_updateThisAndFollowingEvents = gql(`
       allDay
       isPublic
       isRegisterable
+      isInviteOnly
       hasExceptions
       sequenceNumber
       totalCount

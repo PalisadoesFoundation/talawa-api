@@ -6,7 +6,7 @@
 
 > **EventWithAttachments** = `InferSelectModel`\<*typeof* [`eventsTable`](../../../../../../drizzle/tables/events/variables/eventsTable.md)\> & `object`
 
-Defined in: [src/graphql/types/Query/eventQueries/unifiedEventQueries.ts:20](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/graphql/types/Query/eventQueries/unifiedEventQueries.ts#L20)
+Defined in: [src/graphql/types/Query/eventQueries/unifiedEventQueries.ts:22](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/graphql/types/Query/eventQueries/unifiedEventQueries.ts#L22)
 
 ## Type Declaration
 

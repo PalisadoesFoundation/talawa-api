@@ -12,6 +12,61 @@ Type of the transport protocol agnostic explicit context object that is merged w
 
 ## Properties
 
+### cookie?
+
+> `optional` **cookie**: `object`
+
+Defined in: [src/graphql/context.ts:70](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/graphql/context.ts#L70)
+
+Cookie helper for setting HTTP-Only authentication cookies.
+Only available for HTTP requests (not WebSocket subscriptions).
+
+#### clearAuthCookies()
+
+> **clearAuthCookies**: () => `void`
+
+Clears both authentication cookies (for logout).
+
+##### Returns
+
+`void`
+
+#### getRefreshToken()
+
+> **getRefreshToken**: () => `string` \| `undefined`
+
+Gets the refresh token from cookies if present.
+
+##### Returns
+
+`string` \| `undefined`
+
+#### setAuthCookies()
+
+> **setAuthCookies**: (`accessToken`, `refreshToken`) => `void`
+
+Sets both access token and refresh token as HTTP-Only cookies.
+
+##### Parameters
+
+###### accessToken
+
+`string`
+
+The JWT access token
+
+###### refreshToken
+
+`string`
+
+The refresh token
+
+##### Returns
+
+`void`
+
+***
+
 ### currentClient
 
 > **currentClient**: [`CurrentClient`](CurrentClient.md)
@@ -30,7 +85,7 @@ Defined in: [src/graphql/context.ts:43](https://github.com/PalisadoesFoundation/
 
 ### envConfig
 
-> **envConfig**: `Pick`\<`FastifyInstance`\[`"envConfig"`\], `"API_ACCOUNT_LOCKOUT_DURATION_MS"` \| `"API_ACCOUNT_LOCKOUT_THRESHOLD"` \| `"API_BASE_URL"` \| `"API_REFRESH_TOKEN_EXPIRES_IN"` \| `"FRONTEND_URL"`\>
+> **envConfig**: `Pick`\<`FastifyInstance`\[`"envConfig"`\], `"API_ACCOUNT_LOCKOUT_DURATION_MS"` \| `"API_ACCOUNT_LOCKOUT_THRESHOLD"` \| `"API_BASE_URL"` \| `"API_COMMUNITY_NAME"` \| `"API_REFRESH_TOKEN_EXPIRES_IN"` \| `"API_PASSWORD_RESET_USER_TOKEN_EXPIRES_SECONDS"` \| `"API_PASSWORD_RESET_ADMIN_TOKEN_EXPIRES_SECONDS"` \| `"API_COOKIE_DOMAIN"` \| `"API_IS_SECURE_COOKIES"` \| `"API_JWT_EXPIRES_IN"` \| `"AWS_ACCESS_KEY_ID"` \| `"AWS_SECRET_ACCESS_KEY"` \| `"AWS_SES_REGION"` \| `"AWS_SES_FROM_EMAIL"` \| `"AWS_SES_FROM_NAME"` \| `"FRONTEND_URL"`\>
 
 Defined in: [src/graphql/context.ts:44](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/graphql/context.ts#L44)
 
@@ -40,7 +95,7 @@ Defined in: [src/graphql/context.ts:44](https://github.com/PalisadoesFoundation/
 
 > **jwt**: `object`
 
-Defined in: [src/graphql/context.ts:52](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/graphql/context.ts#L52)
+Defined in: [src/graphql/context.ts:63](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/graphql/context.ts#L63)
 
 #### sign()
 
@@ -62,7 +117,7 @@ Defined in: [src/graphql/context.ts:52](https://github.com/PalisadoesFoundation/
 
 > **log**: `FastifyInstance`\[`"log"`\]
 
-Defined in: [src/graphql/context.ts:55](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/graphql/context.ts#L55)
+Defined in: [src/graphql/context.ts:86](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/graphql/context.ts#L86)
 
 ***
 
@@ -70,7 +125,7 @@ Defined in: [src/graphql/context.ts:55](https://github.com/PalisadoesFoundation/
 
 > **minio**: `FastifyInstance`\[`"minio"`\]
 
-Defined in: [src/graphql/context.ts:56](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/graphql/context.ts#L56)
+Defined in: [src/graphql/context.ts:87](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/graphql/context.ts#L87)
 
 ***
 
@@ -78,7 +133,7 @@ Defined in: [src/graphql/context.ts:56](https://github.com/PalisadoesFoundation/
 
 > `optional` **notification**: `object`
 
-Defined in: [src/graphql/context.ts:61](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/graphql/context.ts#L61)
+Defined in: [src/graphql/context.ts:92](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/graphql/context.ts#L92)
 
 Per-request notification helper. Implementations may enqueue notifications
 for delivery and support flush() to perform delivery after transaction commit.

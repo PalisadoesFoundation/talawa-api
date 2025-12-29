@@ -1,8 +1,10 @@
 import { faker } from "@faker-js/faker";
 import { sql } from "drizzle-orm";
 import type { VariablesOf } from "gql.tada";
+import { print } from "graphql";
 import { assertToBeNonNullish } from "test/helpers";
 import { afterAll, beforeAll, expect, suite, test } from "vitest";
+import { COOKIE_NAMES } from "~/src/utilities/cookieConfig";
 import type {
 	AccountLockedExtensions,
 	ArgumentsAssociatedResourcesNotFoundExtensions,
@@ -374,6 +376,45 @@ suite("Query field signIn", () => {
 				}),
 			}),
 		);
+	});
+
+	test("should set HTTP-Only cookies on successful sign-in", async () => {
+		const response = await server.inject({
+			method: "POST",
+			url: "/graphql",
+			payload: {
+				query: print(Query_signIn),
+				variables: {
+					input: {
+						emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
+						password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
+					},
+				},
+			},
+		});
+
+		expect(response.statusCode).toBe(200);
+
+		const cookies = response.cookies;
+		expect(cookies).toBeDefined();
+		expect(cookies.length).toBeGreaterThanOrEqual(2);
+
+		const accessTokenCookie = cookies.find(
+			(c) => c.name === COOKIE_NAMES.ACCESS_TOKEN,
+		);
+		const refreshTokenCookie = cookies.find(
+			(c) => c.name === COOKIE_NAMES.REFRESH_TOKEN,
+		);
+
+		expect(accessTokenCookie).toBeDefined();
+		expect(accessTokenCookie?.httpOnly).toBe(true);
+		expect(accessTokenCookie?.path).toBe("/");
+		expect(accessTokenCookie?.sameSite).toBe("Lax");
+
+		expect(refreshTokenCookie).toBeDefined();
+		expect(refreshTokenCookie?.httpOnly).toBe(true);
+		expect(refreshTokenCookie?.path).toBe("/");
+		expect(refreshTokenCookie?.sameSite).toBe("Lax");
 	});
 
 	suite("refresh token functionality", () => {

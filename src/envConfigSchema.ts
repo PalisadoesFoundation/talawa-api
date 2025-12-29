@@ -137,6 +137,48 @@ export const envConfigSchema = Type.Object({
 		}),
 	),
 	/**
+	 * AWS access key ID for SES email service.
+	 */
+	AWS_ACCESS_KEY_ID: Type.Optional(
+		Type.String({
+			minLength: 1,
+		}),
+	),
+	/**
+	 * AWS secret access key for SES email service.
+	 */
+	AWS_SECRET_ACCESS_KEY: Type.Optional(
+		Type.String({
+			minLength: 1,
+		}),
+	),
+	/**
+	 * AWS region for SES email service.
+	 */
+	AWS_SES_REGION: Type.Optional(
+		Type.String({
+			minLength: 1,
+			default: "ap-south-1",
+		}),
+	),
+	/**
+	 * Verified email address to send emails from in AWS SES.
+	 */
+	AWS_SES_FROM_EMAIL: Type.Optional(
+		Type.String({
+			format: "email",
+		}),
+	),
+	/**
+	 * Display name for the sender in emails.
+	 */
+	AWS_SES_FROM_NAME: Type.Optional(
+		Type.String({
+			minLength: 1,
+			default: "Talawa",
+		}),
+	),
+	/**
 	 * URL to the youtube account of the community.
 	 */
 	API_COMMUNITY_YOUTUBE_URL: Type.Optional(
@@ -178,11 +220,69 @@ export const envConfigSchema = Type.Object({
 		default: 604800000,
 	}),
 	/**
+	 * Password reset token expiry for User Portal in seconds.
+	 * Set to 0 for no timeout (tokens never expire).
+	 * Default: 1209600 (14 days, similar to Gmail)
+	 */
+	API_PASSWORD_RESET_USER_TOKEN_EXPIRES_SECONDS: Type.Optional(
+		Type.Integer({
+			minimum: 0,
+			default: 1209600,
+		}),
+	),
+	/**
+	 * Password reset token expiry for Admin Portal in seconds.
+	 * Set to 0 for no timeout (tokens never expire).
+	 * Default: 3600 (1 hour, similar to Google Admin Console)
+	 */
+	API_PASSWORD_RESET_ADMIN_TOKEN_EXPIRES_SECONDS: Type.Optional(
+		Type.Integer({
+			minimum: 0,
+			default: 3600,
+		}),
+	),
+	/**
+	 * HMAC secret key for hashing password reset tokens.
+	 * Used for defense-in-depth; tokens already have 256 bits of entropy.
+	 * Should be at least 32 characters for security best practices.
+	 * Defaults to a static value if not provided (upgrade to custom secret is recommended).
+	 */
+	API_PASSWORD_RESET_TOKEN_HMAC_SECRET: Type.Optional(
+		Type.String({
+			minLength: 32,
+			default: "talawa-password-reset-token-hmac-default-secret-key",
+		}),
+	),
+	/**
 	 * Used for providing the secret for signing and verifying authentication json web tokens created by talawa api.
 	 */
 	API_JWT_SECRET: Type.String({
 		minLength: 64,
 	}),
+	/**
+	 * Secret used for signing cookies. Should be a random string of at least 32 characters.
+	 * Used by @fastify/cookie for cookie signing and verification.
+	 */
+	API_COOKIE_SECRET: Type.String({
+		minLength: 32,
+	}),
+	/**
+	 * Optional domain for authentication cookies.
+	 * Set this for cross-subdomain authentication (e.g., ".talawa.io" for sharing cookies between admin.talawa.io and api.talawa.io).
+	 * Must be a valid domain starting with a dot for subdomain sharing, or a valid hostname.
+	 */
+	API_COOKIE_DOMAIN: Type.Optional(
+		Type.String({
+			minLength: 1,
+			pattern:
+				"^(\\.[a-zA-Z0-9]([a-zA-Z0-9-]*[a-zA-Z0-9])?(\\.[a-zA-Z]{2,})+|[a-zA-Z0-9]([a-zA-Z0-9-]*[a-zA-Z0-9])?(\\.[a-zA-Z0-9]([a-zA-Z0-9-]*[a-zA-Z0-9])?)*)$",
+		}),
+	),
+	/**
+	 * Whether to use secure cookies (HTTPS only).
+	 * Defaults to true in production environments. Set explicitly for testing.
+	 */
+	API_IS_SECURE_COOKIES: Type.Optional(Type.Boolean()),
 	/**
 	 * Used for providing the log level for the logger used in talawa api.
 	 *
