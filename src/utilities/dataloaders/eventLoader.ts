@@ -26,7 +26,7 @@ export function createEventLoader(db: DrizzleClient) {
 			const rows = await db
 				.select()
 				.from(eventsTable)
-				.where(inArray(eventsTable.id, [...ids]));
+				.where(inArray(eventsTable.id, ids as string[]));
 
 			const map = new Map<string, EventRow>(
 				rows.map((r: EventRow) => [r.id, r]),

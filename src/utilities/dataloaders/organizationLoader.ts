@@ -26,7 +26,7 @@ export function createOrganizationLoader(db: DrizzleClient) {
 			const rows = await db
 				.select()
 				.from(organizationsTable)
-				.where(inArray(organizationsTable.id, [...ids]));
+				.where(inArray(organizationsTable.id, ids as string[]));
 
 			const map = new Map<string, OrganizationRow>(
 				rows.map((r: OrganizationRow) => [r.id, r]),

@@ -26,7 +26,7 @@ export function createActionItemLoader(db: DrizzleClient) {
 			const rows = await db
 				.select()
 				.from(actionItemsTable)
-				.where(inArray(actionItemsTable.id, [...ids]));
+				.where(inArray(actionItemsTable.id, ids as string[]));
 
 			const map = new Map<string, ActionItemRow>(
 				rows.map((r: ActionItemRow) => [r.id, r]),

@@ -26,7 +26,7 @@ export function createUserLoader(db: DrizzleClient) {
 			const rows = await db
 				.select()
 				.from(usersTable)
-				.where(inArray(usersTable.id, [...ids]));
+				.where(inArray(usersTable.id, ids as string[]));
 
 			const map = new Map<string, UserRow>(rows.map((r: UserRow) => [r.id, r]));
 

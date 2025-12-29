@@ -107,6 +107,23 @@ describe("DataLoader infrastructure", () => {
 			const result = await loader.load("nonexistent");
 			expect(result).toBeNull();
 		});
+
+		it("caches results within the same loader instance", async () => {
+			const { db, whereSpy } = createMockDb([{ id: "org1", name: "Org A" }]);
+
+			const loader = createOrganizationLoader(db);
+
+			// Load the same key twice
+			const result1 = await loader.load("org1");
+			const result2 = await loader.load("org1");
+
+			// Both should return the same cached result
+			expect(result1).toEqual({ id: "org1", name: "Org A" });
+			expect(result2).toEqual({ id: "org1", name: "Org A" });
+
+			// Should only hit the database once due to caching
+			expect(whereSpy).toHaveBeenCalledTimes(1);
+		});
 	});
 
 	describe("createEventLoader", () => {
@@ -141,6 +158,23 @@ describe("DataLoader infrastructure", () => {
 			const result = await loader.load("nonexistent");
 			expect(result).toBeNull();
 		});
+
+		it("caches results within the same loader instance", async () => {
+			const { db, whereSpy } = createMockDb([{ id: "evt1", name: "Event A" }]);
+
+			const loader = createEventLoader(db);
+
+			// Load the same key twice
+			const result1 = await loader.load("evt1");
+			const result2 = await loader.load("evt1");
+
+			// Both should return the same cached result
+			expect(result1).toEqual({ id: "evt1", name: "Event A" });
+			expect(result2).toEqual({ id: "evt1", name: "Event A" });
+
+			// Should only hit the database once due to caching
+			expect(whereSpy).toHaveBeenCalledTimes(1);
+		});
 	});
 
 	describe("createActionItemLoader", () => {
@@ -174,6 +208,25 @@ describe("DataLoader infrastructure", () => {
 
 			const result = await loader.load("nonexistent");
 			expect(result).toBeNull();
+		});
+
+		it("caches results within the same loader instance", async () => {
+			const { db, whereSpy } = createMockDb([
+				{ id: "ai1", organizationId: "org1" },
+			]);
+
+			const loader = createActionItemLoader(db);
+
+			// Load the same key twice
+			const result1 = await loader.load("ai1");
+			const result2 = await loader.load("ai1");
+
+			// Both should return the same cached result
+			expect(result1).toEqual({ id: "ai1", organizationId: "org1" });
+			expect(result2).toEqual({ id: "ai1", organizationId: "org1" });
+
+			// Should only hit the database once due to caching
+			expect(whereSpy).toHaveBeenCalledTimes(1);
 		});
 	});
 
