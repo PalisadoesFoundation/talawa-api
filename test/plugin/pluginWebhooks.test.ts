@@ -7,6 +7,8 @@ import type {
 	IExtensionRegistry,
 	IPluginContext,
 } from "../../src/plugin/types";
+import { ErrorCode } from "../../src/utilities/errors/errorCodes";
+import { TalawaRestError } from "../../src/utilities/errors/TalawaRestError";
 
 describe("Plugin Webhooks", () => {
 	let mockWebhookHandler: ReturnType<typeof vi.fn>;
@@ -216,6 +218,40 @@ describe("Plugin Webhooks", () => {
 			expect(response.statusCode).toBe(500);
 			const body = response.json();
 			expect(body.error.message).toBe("Plugin webhook execution failed");
+
+			await app.close();
+		});
+
+		it("should handle TalawaRestError and re-throw with correct status and payload", async () => {
+			const talawaError = new TalawaRestError({
+				code: ErrorCode.UNAUTHORIZED,
+				message: "Plugin access denied",
+				details: {
+					pluginId: "test-plugin",
+					reason: "insufficient_permissions",
+				},
+			});
+			mockWebhookHandler.mockRejectedValue(talawaError);
+
+			const app = await createTestApp();
+
+			const response = await app.inject({
+				method: "POST",
+				url: "/api/plugins/test-plugin/webhook",
+			});
+
+			// Assert response status matches TalawaRestError status code
+			expect(response.statusCode).toBe(403);
+
+			const body = response.json();
+			// Assert error payload matches TalawaRestError values
+			expect(body.error.code).toBe("unauthorized");
+			expect(body.error.message).toBe("Plugin access denied");
+			expect(body.error.details).toEqual({
+				pluginId: "test-plugin",
+				reason: "insufficient_permissions",
+			});
+			expect(body.error.correlationId).toBeDefined();
 
 			await app.close();
 		});
