@@ -52,14 +52,29 @@ function fixDescriptionTag(content: string): string {
  * - For complex types, manual escaping may be needed
  *
  * Note: Skips @throws and @returns lines to avoid breaking doc generation.
+ * Note: Skips content inside triple-backtick code fences.
  */
 function fixUnescapedBraces(content: string): string {
 	// Find doc comments and fix braces inside them
 	return content.replace(/\/\*\*[\s\S]*?\*\//g, (docComment) => {
-		// Process line by line to skip @throws and @returns tags
+		// Track whether we're inside a code fence
+		let inCodeFence = false;
+
+		// Process line by line to skip @throws, @returns tags, and code fences
 		return docComment
 			.split("\n")
 			.map((line) => {
+				// Check for code fence toggle (``` with optional language identifier)
+				if (/^\s*\*\s*```/.test(line)) {
+					inCodeFence = !inCodeFence;
+					return line;
+				}
+
+				// Skip processing if inside a code fence
+				if (inCodeFence) {
+					return line;
+				}
+
 				// Skip lines with @throws or @returns - these use {Type} syntax legitimately
 				if (/@throws\s/.test(line) || /@returns\s/.test(line)) {
 					return line;

@@ -22,7 +22,7 @@ declare module "fastify" {
  * ```typescript
  * import minioClientPlugin from "~src/plugins/minioClient";
  *
- * fastify.register(minioClientPlugin, \\{\\});
+ * fastify.register(minioClientPlugin, {});
  * const buckets = await fastify.minio.client.listBuckets();
  * ```
  */

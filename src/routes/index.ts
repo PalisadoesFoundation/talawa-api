@@ -10,7 +10,7 @@ import objects from "./objects";
  * @example
  * ```typescript
  * import routes from "./routes/index";
- * fastify.register(routes, \\{\\});
+ * fastify.register(routes, {});
  * ```
  */
 export const routes = fastifyPlugin(async (fastify) => {

@@ -25,6 +25,6 @@ Integrates the talawa minio bucket name and a minio client instance on the names
 ```typescript
 import minioClientPlugin from "~src/plugins/minioClient";
 
-fastify.register(minioClientPlugin, \\{\\});
+fastify.register(minioClientPlugin, {});
 const buckets = await fastify.minio.client.listBuckets();
 ```

@@ -25,6 +25,6 @@ Integrates a drizzle client instance on a namespace `drizzleClient` on the globa
 ```typescript
 import drizzleClientPlugin from "~/src/plugins/drizzleClient";
 
-fastify.register(drizzleClientPlugin, \\{\\});
+fastify.register(drizzleClientPlugin, {});
 const user = await fastify.drizzleClient.query.usersTable.findFirst();
 ```

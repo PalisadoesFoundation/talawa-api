@@ -24,5 +24,5 @@ This fastify plugin function contains all talawa api routes within it.
 
 ```typescript
 import routes from "./routes/index";
-fastify.register(routes, \\{\\});
+fastify.register(routes, {});
 ```

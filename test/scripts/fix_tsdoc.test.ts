@@ -38,12 +38,27 @@ function fixDescriptionTag(content: string): string {
 /**
  * Escapes curly braces that are not part of inline tags.
  * Skips @throws and @returns lines.
+ * Skips content inside triple-backtick code fences.
  */
 function fixUnescapedBraces(content: string): string {
 	return content.replace(/\/\*\*[\s\S]*?\*\//g, (docComment) => {
+		// Track whether we're inside a code fence
+		let inCodeFence = false;
+
 		return docComment
 			.split("\n")
 			.map((line) => {
+				// Check for code fence toggle (``` with optional language identifier)
+				if (/^\s*\*\s*```/.test(line)) {
+					inCodeFence = !inCodeFence;
+					return line;
+				}
+
+				// Skip processing if inside a code fence
+				if (inCodeFence) {
+					return line;
+				}
+
 				if (/@throws\s/.test(line) || /@returns\s/.test(line)) {
 					return line;
 				}
@@ -263,6 +278,61 @@ describe("TSDoc Auto-Fix Script", () => {
 			const result = fixUnescapedBraces(input);
 			expect(result).toContain("\\{Option1\\}");
 			expect(result).toContain("\\{Option2\\}");
+		});
+
+		it("should not escape braces inside code fences", () => {
+			const input = `/**
+ * Example:
+ * \`\`\`typescript
+ * const obj = {key: "value"};
+ * fastify.register(plugin, {});
+ * \`\`\`
+ */`;
+			const result = fixUnescapedBraces(input);
+			expect(result).toBe(input);
+		});
+
+		it("should escape braces outside code fences but not inside", () => {
+			const input = `/**
+ * Returns {Result} type.
+ * \`\`\`typescript
+ * const obj = {key: "value"};
+ * \`\`\`
+ * After fence: use {Option}.
+ */`;
+			const result = fixUnescapedBraces(input);
+			// Braces inside code fence should NOT be escaped
+			expect(result).toContain('const obj = {key: "value"};');
+			// Braces outside code fence should be escaped
+			expect(result).toContain("\\{Result\\}");
+			expect(result).toContain("\\{Option\\}");
+		});
+
+		it("should handle code fence with language identifier", () => {
+			const input = `/**
+ * Example:
+ * \`\`\`javascript
+ * const data = {foo: "bar"};
+ * \`\`\`
+ */`;
+			const result = fixUnescapedBraces(input);
+			expect(result).toContain('const data = {foo: "bar"};');
+		});
+
+		it("should handle multiple code fences in same comment", () => {
+			const input = `/**
+ * First example:
+ * \`\`\`typescript
+ * const a = {x: 1};
+ * \`\`\`
+ * Second example:
+ * \`\`\`typescript
+ * const b = {y: 2};
+ * \`\`\`
+ */`;
+			const result = fixUnescapedBraces(input);
+			expect(result).toContain("const a = {x: 1};");
+			expect(result).toContain("const b = {y: 2};");
 		});
 	});
 
