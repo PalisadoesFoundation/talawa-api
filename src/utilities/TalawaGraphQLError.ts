@@ -264,6 +264,7 @@ export type TalawaGraphQLErrorExtensions =
 	  };
 
 export const defaultTalawaGraphQLErrorMessages: Record<string, string> = {
+	// Legacy error codes (for backward compatibility)
 	account_locked:
 		"Account temporarily locked due to too many failed login attempts. Please try again later.",
 	arguments_associated_resources_not_found:
@@ -281,6 +282,22 @@ export const defaultTalawaGraphQLErrorMessages: Record<string, string> = {
 		"You are not authorized to perform this action with the provided arguments.",
 	unexpected: "Something went wrong. Please try again later.",
 	too_many_requests: "Too many requests. Please try again later.",
+
+	// ErrorCode enum values (unified error handling)
+	token_expired: "Authentication token has expired.",
+	token_invalid: "Authentication token is invalid.",
+	unauthorized: "Unauthorized access.",
+	insufficient_permissions: "Insufficient permissions.",
+	invalid_input: "Invalid input provided.",
+	not_found: "Requested resource not found.",
+	already_exists: "Resource already exists.",
+	conflict: "Conflict with existing resource.",
+	rate_limit_exceeded: "Rate limit exceeded.",
+	deprecated: "Requested resource or operation is deprecated.",
+	internal_server_error: "Something went wrong. Please try again later.",
+	database_error: "Database operation failed. Please try again later.",
+	external_service_error:
+		"External service unavailable. Please try again later.",
 };
 
 /**

@@ -1,6 +1,7 @@
 import { builder } from "~/src/graphql/builder";
 import type { GraphQLContext } from "~/src/graphql/context";
 import { FundCampaignPledge } from "~/src/graphql/types/FundCampaignPledge/FundCampaignPledge";
+import { ErrorCode } from "~/src/utilities/errors/errorCodes";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 
 /**
@@ -53,8 +54,7 @@ export const resolveGetMyPledgesForCampaign = async (
 	if (!pledges.length) {
 		throw new TalawaGraphQLError({
 			extensions: {
-				code: "arguments_associated_resources_not_found",
-				issues: [{ argumentPath: ["campaignId"] }],
+				code: ErrorCode.NOT_FOUND,
 			},
 		});
 	}

@@ -607,15 +607,18 @@ describe("Plugin Webhooks", () => {
 		it("should handle missing params object", async () => {
 			const app = await createTestApp();
 
-			// This test is less relevant now since we're using real Fastify routing
-			// but we can test with an invalid URL structure
+			// Test with empty plugin ID - should return 404 for missing/invalid route
 			const response = await app.inject({
 				method: "POST",
 				url: "/api/plugins//webhook", // Empty plugin ID
 			});
 
-			// Should handle gracefully - likely return 404 or 500
-			expect([404, 500]).toContain(response.statusCode);
+			// Should return 404 for invalid route structure
+			expect(response.statusCode).toBe(404);
+
+			const body = JSON.parse(response.payload);
+			// The server returns a specific error about the webhook handler not being found
+			expect(body.error.message).toContain("No webhook handler found");
 
 			await app.close();
 		});

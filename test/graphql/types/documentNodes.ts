@@ -2606,3 +2606,13 @@ export const Query_community = gql(`
 		}
 	}
 `);
+export const Query_categoriesByIds = gql(`
+  query Query_categoriesByIds($input: CategoriesByIdsInput!) {
+    categoriesByIds(input: $input) {
+      id
+      name
+      description
+      isDisabled
+    }
+  }
+`);
