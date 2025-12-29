@@ -62,8 +62,16 @@ export const createServer = async (options?: {
 					}
 				: undefined,
 		},
-		genReqId: (req) =>
-			(req.headers["x-correlation-id"] as string) ?? randomUUID(),
+		genReqId: (req) => {
+			const headerValue = req.headers["x-correlation-id"];
+			if (
+				typeof headerValue === "string" &&
+				/^[a-f0-9-]{36}$/i.test(headerValue)
+			) {
+				return headerValue;
+			}
+			return randomUUID();
+		},
 	}).withTypeProvider<TypeBoxTypeProvider>();
 
 	fastify.addHook("onRequest", async (request, reply) => {
