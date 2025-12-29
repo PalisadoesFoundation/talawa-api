@@ -86,10 +86,11 @@ describe("Performance Tracker", () => {
 
 		const snapshot = tracker.snapshot();
 
-		expect(snapshot.ops["test-op"]).toBeDefined();
-		expect(snapshot.ops["test-op"]!.count).toBe(1);
-		expect(snapshot.ops["test-op"]!.ms).toBeGreaterThanOrEqual(10);
-		expect(snapshot.ops["test-op"]!.max).toBeGreaterThanOrEqual(10);
+		const testOp = snapshot.ops["test-op"];
+		expect(testOp).toBeDefined();
+		expect(testOp?.count).toBe(1);
+		expect(testOp?.ms).toBeGreaterThanOrEqual(10);
+		expect(testOp?.max).toBeGreaterThanOrEqual(10);
 	});
 
 	it("should handle async operation errors and still track time", async () => {
@@ -106,9 +107,10 @@ describe("Performance Tracker", () => {
 
 		const snapshot = tracker.snapshot();
 
-		expect(snapshot.ops["error-op"]).toBeDefined();
-		expect(snapshot.ops["error-op"]!.count).toBe(1);
-		expect(snapshot.ops["error-op"]!.ms).toBeGreaterThanOrEqual(4);
+		const errorOp = snapshot.ops["error-op"];
+		expect(errorOp).toBeDefined();
+		expect(errorOp?.count).toBe(1);
+		expect(errorOp?.ms).toBeGreaterThanOrEqual(4);
 	});
 
 	it("should track multiple async operations with same name", async () => {
@@ -124,8 +126,10 @@ describe("Performance Tracker", () => {
 
 		const snapshot = tracker.snapshot();
 
-		expect(snapshot.ops.query!.count).toBe(2);
-		expect(snapshot.ops.query!.ms).toBeGreaterThanOrEqual(15);
+		const queryOp = snapshot.ops.query;
+		expect(queryOp).toBeDefined();
+		expect(queryOp?.count).toBe(2);
+		expect(queryOp?.ms).toBeGreaterThanOrEqual(15);
 	});
 
 	it("should use manual start/stop timing", async () => {
@@ -140,9 +144,10 @@ describe("Performance Tracker", () => {
 
 		const snapshot = tracker.snapshot();
 
-		expect(snapshot.ops["manual-op"]).toBeDefined();
-		expect(snapshot.ops["manual-op"]!.count).toBe(1);
-		expect(snapshot.ops["manual-op"]!.ms).toBeGreaterThanOrEqual(10);
+		const manualOp = snapshot.ops["manual-op"];
+		expect(manualOp).toBeDefined();
+		expect(manualOp?.count).toBe(1);
+		expect(manualOp?.ms).toBeGreaterThanOrEqual(10);
 	});
 
 	it("should track max duration for operations", async () => {
@@ -162,9 +167,12 @@ describe("Performance Tracker", () => {
 
 		const snapshot = tracker.snapshot();
 
-		expect(snapshot.ops.op!.count).toBe(3);
-		expect(snapshot.ops.op!.ms).toBeGreaterThanOrEqual(30);
-		expect(snapshot.ops.op!.max).toBeGreaterThanOrEqual(18);
+		const op = snapshot.ops.op;
+		expect(op).toBeDefined();
+		expect(op?.count).toBe(3);
+		expect(op?.ms).toBeGreaterThanOrEqual(30);
+		expect(op?.max).toBeDefined();
+		expect(op?.max).toBeGreaterThanOrEqual(18);
 	});
 
 	it("should accumulate totalMs from all operations", async () => {
@@ -216,11 +224,15 @@ describe("Performance Tracker", () => {
 		const snapshot2 = tracker.snapshot();
 
 		// First snapshot should be unchanged
-		expect(snapshot1.ops.db!.ms).toBe(50);
+		const db1 = snapshot1.ops.db;
+		expect(db1).toBeDefined();
+		expect(db1?.ms).toBe(50);
 		expect(snapshot1.totalMs).toBe(50);
 
 		// Second snapshot should include both operations
-		expect(snapshot2.ops.db!.ms).toBe(80);
+		const db2 = snapshot2.ops.db;
+		expect(db2).toBeDefined();
+		expect(db2?.ms).toBe(80);
 		expect(snapshot2.totalMs).toBe(80);
 	});
 });

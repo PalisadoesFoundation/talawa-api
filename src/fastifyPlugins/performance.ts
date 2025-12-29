@@ -2,8 +2,25 @@ import type { FastifyInstance } from "fastify";
 import fp from "fastify-plugin";
 import {
 	createPerformanceTracker,
+	type PerformanceTracker,
 	type PerfSnapshot,
 } from "../utilities/metrics/performanceTracker";
+
+declare module "fastify" {
+	interface FastifyRequest {
+		/**
+		 * Performance tracker instance for this request.
+		 * Attached by the performance plugin during the onRequest hook.
+		 */
+		perf?: PerformanceTracker;
+
+		/**
+		 * Request start timestamp (milliseconds since epoch).
+		 * Used to calculate total request duration.
+		 */
+		_t0?: number;
+	}
+}
 
 /**
  * Fastify plugin that adds performance tracking to all requests.
@@ -17,17 +34,13 @@ export default fp(async function perfPlugin(app: FastifyInstance) {
 
 	// Attach performance tracker to each request
 	app.addHook("onRequest", async (req) => {
-		// @ts-expect-error - Dynamically attach perf tracker to request
 		req.perf = createPerformanceTracker();
-		// @ts-expect-error - Track request start time
 		req._t0 = Date.now();
 	});
 
 	// Add Server-Timing header to each response
 	app.addHook("onSend", async (req, reply) => {
-		// @ts-expect-error - Access dynamic perf field
 		const snap = req.perf?.snapshot?.();
-		// @ts-expect-error - Access dynamic _t0 field
 		const total = Date.now() - (req._t0 ?? Date.now());
 
 		// Extract metrics from snapshot
