@@ -5122,7 +5122,7 @@ type Tag {
   """Name of the tag."""
   name: String
 
-  """Organization the tag belong to."""
+  """Organization the tag belongs to."""
   organization: Organization
 
   """Date time at the time the tag was last updated."""
