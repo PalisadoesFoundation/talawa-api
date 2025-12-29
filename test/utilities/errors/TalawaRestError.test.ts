@@ -73,7 +73,6 @@ describe("TalawaRestError", () => {
 					code: ErrorCode.UNAUTHORIZED,
 					message: "Access denied",
 					details: { permission: "admin" },
-					correlationId: undefined,
 				},
 			});
 		});
@@ -91,7 +90,6 @@ describe("TalawaRestError", () => {
 				error: {
 					code: ErrorCode.INTERNAL_SERVER_ERROR,
 					message: "Server error",
-					details: undefined,
 					correlationId,
 				},
 			});
