@@ -51,4 +51,46 @@ pre-commit:
         pnpm docusaurus graphql-to-doc
         git add docs/auto-schema
 
+    13_check_biome_disable:
+      run: |
+        STAGED_FILES=$(git diff --cached --name-only --diff-filter=ACMRT | tr '\n' ' ')
+        if [ -n "$STAGED_FILES" ]; then
+          python .github/workflows/scripts/biome_disable_check.py --files $STAGED_FILES
+        fi
+    
+    14_check_docstrings:
+      run: |
+        STAGED_FILES=$(git diff --cached --name-only --diff-filter=ACMRT | tr '\n' ' ')
+        if [ -n "$STAGED_FILES" ]; then
+          python .github/workflows/scripts/check_docstrings.py --files $STAGED_FILES
+        fi
+    
+    15_check_sanitization_disable:
+      run: |
+        STAGED_FILES=$(git diff --cached --name-only --diff-filter=ACMRT | tr '\n' ' ')
+        if [ -n "$STAGED_FILES" ]; then
+          python .github/workflows/scripts/check_sanitization_disable.py --files $STAGED_FILES
+        fi
+    
+    16_check_code_coverage_disable:
+      run: |
+        STAGED_FILES=$(git diff --cached --name-only --diff-filter=ACMRT | tr '\n' ' ')
+        if [ -n "$STAGED_FILES" ]; then
+          python .github/workflows/scripts/code_coverage_disable_check.py --files $STAGED_FILES
+        fi
+    
+    17_detect_ts_ignore:
+      run: |
+        STAGED_FILES=$(git diff --cached --name-only --diff-filter=ACMRT | tr '\n' ' ')
+        if [ -n "$STAGED_FILES" ]; then
+          python .github/workflows/scripts/detect_ts_ignore.py --files $STAGED_FILES
+        fi
+    
+    18_check_itskip_disable:
+      run: |
+        STAGED_FILES=$(git diff --cached --name-only --diff-filter=ACMRT | tr '\n' ' ')
+        if [ -n "$STAGED_FILES" ]; then
+          python .github/workflows/scripts/itskip_disable_check.py --files $STAGED_FILES
+        fi
+    
   piped: true
