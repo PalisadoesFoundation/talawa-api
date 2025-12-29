@@ -4,6 +4,7 @@ import type { organizationsTable } from "~/src/drizzle/schema";
 import { builder } from "~/src/graphql/builder";
 import type { GraphQLContext } from "~/src/graphql/context";
 import { Organization } from "~/src/graphql/types/Organization/Organization";
+import { ErrorCode } from "~/src/utilities/errors/errorCodes";
 import envConfig from "~/src/utilities/graphqLimits";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 
@@ -41,7 +42,7 @@ export const resolveOrganizations = async (
 			if (!currentUser) {
 				throw new TalawaGraphQLError({
 					extensions: {
-						code: "unauthenticated",
+						code: ErrorCode.UNAUTHENTICATED,
 					},
 				});
 			}
@@ -102,8 +103,19 @@ export const resolveOrganizations = async (
 			offset: offset ?? undefined, // No offset if not provided
 		});
 	} catch (error) {
+		// Re-throw TalawaGraphQLError to preserve error details
+		if (error instanceof TalawaGraphQLError) {
+			throw error;
+		}
+
 		ctx.log.error(error, "Error in organizations query");
-		throw new Error("An error occurred while fetching organizations.");
+		throw new TalawaGraphQLError({
+			extensions: {
+				code: ErrorCode.INTERNAL_SERVER_ERROR,
+				details:
+					error instanceof Error ? { message: error.message } : { error },
+			},
+		});
 	}
 };
 

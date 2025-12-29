@@ -1,6 +1,8 @@
 import { complexityFromQuery } from "@pothos/plugin-complexity";
 import type { FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
 import fastifyPlugin from "fastify-plugin";
+import type { ExecutionResult } from "graphql";
+import type { MercuriusContext } from "mercurius";
 import { mercurius } from "mercurius";
 import { mercuriusUpload } from "mercurius-upload";
 import type {
@@ -10,6 +12,10 @@ import type {
 } from "~/src/graphql/context";
 import schemaManager from "~/src/graphql/schemaManager";
 import NotificationService from "~/src/services/notification/NotificationService";
+import {
+	ERROR_CODE_TO_HTTP_STATUS,
+	ErrorCode,
+} from "~/src/utilities/errors/errorCodes";
 import {
 	COOKIE_NAMES,
 	getAccessTokenCookieOptions,
@@ -201,6 +207,98 @@ export const graphql = fastifyPlugin(async (fastify) => {
 	// Build initial schema with active plugins
 	const initialSchema = await schemaManager.buildInitialSchema();
 
+	/**
+	 * Unified GraphQL error formatter that provides consistent error responses.
+	 *
+	 * This formatter ensures that all GraphQL errors follow the same structure as REST errors
+	 * by adding standardized extensions with error codes, correlation IDs, and HTTP status codes.
+	 * It integrates with the unified error handling system to provide consistent error shapes
+	 * across both REST and GraphQL endpoints.
+	 *
+	 * Features:
+	 * - Maps ErrorCode enum values to HTTP status codes
+	 * - Adds correlation IDs for request tracing
+	 * - Preserves error paths and original error details
+	 * - Provides structured logging with error context
+	 * - Sets appropriate HTTP response status codes
+	 *
+	 * @param execution - GraphQL execution result containing errors and data
+	 * @param context - Mercurius context with request/reply objects
+	 * @returns Formatted error response with standardized structure
+	 *
+	 * @example
+	 * ```json
+	 * // Error response format:
+	 * {
+	 *   "errors": [{
+	 *     "message": "User not found",
+	 *     "path": ["user"],
+	 *     "extensions": {
+	 *       "code": "not_found",
+	 *       "details": { "userId": "123" },
+	 *       "correlationId": "req-abc123",
+	 *       "httpStatus": 404
+	 *     }
+	 *   }],
+	 *   "data": null
+	 * }
+	 * ```
+	 */
+	const errorFormatter = (
+		execution: ExecutionResult,
+		context: MercuriusContext,
+	) => {
+		const { errors, data } = execution;
+
+		if (!errors) {
+			return { statusCode: 200, response: execution };
+		}
+
+		const formatted = errors.map((e) => {
+			const code: ErrorCode =
+				(e.extensions?.code as ErrorCode) ?? ErrorCode.INTERNAL_SERVER_ERROR;
+
+			const httpStatus =
+				(e.extensions?.httpStatus as number) ??
+				ERROR_CODE_TO_HTTP_STATUS[code] ??
+				500;
+
+			// Attach correlationId
+			const correlationId = context.reply?.request?.id as string | undefined;
+
+			return {
+				message: e.message,
+				path: e.path,
+				extensions: {
+					code,
+					details: e.extensions?.details,
+					correlationId,
+					httpStatus,
+					// Preserve other extensions if needed, but be careful of leakage
+					...e.extensions,
+				},
+			};
+		});
+
+		const statusCode = formatted[0]?.extensions?.httpStatus ?? 500;
+
+		// Log error
+		context.reply?.request?.log?.error({
+			msg: "GraphQL error",
+			correlationId: context.reply?.request?.id,
+			errors: formatted.map((fe) => ({
+				message: fe.message,
+				code: fe.extensions?.code,
+				details: fe.extensions?.details,
+			})),
+		});
+
+		return {
+			statusCode,
+			response: { data, errors: formatted },
+		};
+	};
+
 	// More information at this link: https://mercurius.dev/#/docs/api/options?id=mercurius
 	await fastify.register(mercurius, {
 		context: (request, reply) =>
@@ -216,25 +314,7 @@ export const graphql = fastifyPlugin(async (fastify) => {
 		cache: false,
 		path: "/graphql",
 		schema: initialSchema,
-		errorFormatter: (execution, context) => {
-			const correlationId = context.reply.request.id;
-
-			return {
-				statusCode: 200,
-				response: {
-					data: execution.data ?? null,
-					errors: execution.errors.map((err) => ({
-						message: err.message,
-						locations: err.locations,
-						path: err.path,
-						extensions: {
-							...err.extensions,
-							correlationId,
-						},
-					})),
-				},
-			};
-		},
+		errorFormatter,
 		subscription: {
 			onConnect: async (data) => {
 				const { payload } = data;

@@ -4,6 +4,7 @@ import {
 	venueBookingsTable,
 	venueBookingsTableInsertSchema,
 } from "~/src/drizzle/tables/venueBookings";
+import type { ExplicitGraphQLContext } from "~/src/graphql/context";
 import { Event } from "~/src/graphql/types/Event/Event";
 import {
 	type EventWithAttachments,
@@ -12,6 +13,7 @@ import {
 import envConfig from "~/src/utilities/graphqLimits";
 import {
 	defaultGraphQLConnectionArgumentsSchema,
+	type ParsedDefaultGraphQLConnectionArguments,
 	transformDefaultGraphQLConnectionArguments,
 	transformToDefaultGraphQLConnection,
 } from "~/src/utilities/graphqlConnection";
@@ -20,29 +22,31 @@ import { Venue } from "./Venue";
 
 const eventsArgumentsSchema = defaultGraphQLConnectionArgumentsSchema
 	.transform(transformDefaultGraphQLConnectionArguments)
-	.transform((arg, ctx) => {
-		let cursor: z.infer<typeof cursorSchema> | undefined;
+	.transform(
+		(arg: ParsedDefaultGraphQLConnectionArguments, ctx: z.RefinementCtx) => {
+			let cursor: z.infer<typeof cursorSchema> | undefined;
 
-		try {
-			if (arg.cursor !== undefined) {
-				cursor = cursorSchema.parse(
-					JSON.parse(Buffer.from(arg.cursor, "base64url").toString("utf-8")),
-				);
+			try {
+				if (arg.cursor !== undefined) {
+					cursor = cursorSchema.parse(
+						JSON.parse(Buffer.from(arg.cursor, "base64url").toString("utf-8")),
+					);
+				}
+			} catch (_error) {
+				ctx.addIssue({
+					code: "custom",
+					message: "Not a valid cursor.",
+					path: [arg.isInversed ? "before" : "after"],
+				});
 			}
-		} catch (_error) {
-			ctx.addIssue({
-				code: "custom",
-				message: "Not a valid cursor.",
-				path: [arg.isInversed ? "before" : "after"],
-			});
-		}
 
-		return {
-			cursor,
-			isInversed: arg.isInversed,
-			limit: arg.limit,
-		};
-	});
+			return {
+				cursor,
+				isInversed: arg.isInversed,
+				limit: arg.limit,
+			};
+		},
+	);
 
 const cursorSchema = venueBookingsTableInsertSchema
 	.pick({
@@ -68,7 +72,7 @@ Venue.implement({
 						multiplier: args.first || args.last || 1,
 					};
 				},
-				resolve: async (parent, args, ctx) => {
+				resolve: async (parent, args, ctx: ExplicitGraphQLContext) => {
 					if (!ctx.currentClient.isAuthenticated) {
 						throw new TalawaGraphQLError({
 							extensions: {
@@ -87,7 +91,7 @@ Venue.implement({
 						throw new TalawaGraphQLError({
 							extensions: {
 								code: "invalid_arguments",
-								issues: error.issues.map((issue) => ({
+								issues: error.issues.map((issue: z.ZodIssue) => ({
 									argumentPath: issue.path,
 									message: issue.message,
 								})),

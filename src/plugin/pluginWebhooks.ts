@@ -1,5 +1,7 @@
 import type { FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
 import fastifyPlugin from "fastify-plugin";
+import { ErrorCode } from "~/src/utilities/errors/errorCodes";
+import { TalawaRestError } from "~/src/utilities/errors/TalawaRestError";
 
 /**
  * Extended FastifyRequest with plugin context
@@ -24,9 +26,10 @@ export const pluginWebhooks = fastifyPlugin(
 					// Get webhook handler from extension registry
 					const pluginManager = fastify.pluginManager;
 					if (!pluginManager) {
-						return reply
-							.status(500)
-							.send({ error: "Plugin manager not available" });
+						throw new TalawaRestError({
+							code: ErrorCode.INTERNAL_SERVER_ERROR,
+							message: "Plugin manager not available",
+						});
 					}
 
 					const extensionRegistry = pluginManager.getExtensionRegistry();
@@ -35,9 +38,10 @@ export const pluginWebhooks = fastifyPlugin(
 					const webhookHandler =
 						extensionRegistry.webhooks?.handlers?.[webhookKey];
 					if (!webhookHandler) {
-						return reply.status(404).send({
-							error: "Webhook not found",
+						throw new TalawaRestError({
+							code: ErrorCode.NOT_FOUND,
 							message: `No webhook handler found for plugin '${pluginId}'`,
+							details: { pluginId },
 						});
 					}
 
@@ -46,10 +50,17 @@ export const pluginWebhooks = fastifyPlugin(
 					requestWithContext.pluginContext = fastify.pluginContext;
 					await webhookHandler(request, reply);
 				} catch (error) {
+					// Re-throw TalawaRestError to be handled by global error handler
+					if (error instanceof TalawaRestError) {
+						throw error;
+					}
+
 					fastify.log.error(error, "Plugin webhook error");
-					reply.status(500).send({
-						error: "Internal server error",
-						message: error instanceof Error ? error.message : "Unknown error",
+					throw new TalawaRestError({
+						code: ErrorCode.INTERNAL_SERVER_ERROR,
+						message: "Plugin webhook execution failed",
+						details:
+							error instanceof Error ? { message: error.message } : { error },
 					});
 				}
 			},
@@ -71,9 +82,10 @@ export const pluginWebhooks = fastifyPlugin(
 					// Get webhook handler from extension registry
 					const pluginManager = fastify.pluginManager;
 					if (!pluginManager) {
-						return reply
-							.status(500)
-							.send({ error: "Plugin manager not available" });
+						throw new TalawaRestError({
+							code: ErrorCode.INTERNAL_SERVER_ERROR,
+							message: "Plugin manager not available",
+						});
 					}
 
 					const extensionRegistry = pluginManager.getExtensionRegistry();
@@ -82,9 +94,10 @@ export const pluginWebhooks = fastifyPlugin(
 						extensionRegistry.webhooks?.handlers?.[webhookKey];
 
 					if (!webhookHandler) {
-						return reply.status(404).send({
-							error: "Webhook not found",
+						throw new TalawaRestError({
+							code: ErrorCode.NOT_FOUND,
 							message: `No webhook handler found for plugin '${pluginId}' at path '${normalizedPath}'`,
+							details: { pluginId, path: normalizedPath },
 						});
 					}
 
@@ -95,10 +108,17 @@ export const pluginWebhooks = fastifyPlugin(
 					// Execute webhook handler
 					await webhookHandler(request, reply);
 				} catch (error) {
+					// Re-throw TalawaRestError to be handled by global error handler
+					if (error instanceof TalawaRestError) {
+						throw error;
+					}
+
 					fastify.log.error(error, "Plugin webhook error");
-					reply.status(500).send({
-						error: "Internal server error",
-						message: error instanceof Error ? error.message : "Unknown error",
+					throw new TalawaRestError({
+						code: ErrorCode.INTERNAL_SERVER_ERROR,
+						message: "Plugin webhook execution failed",
+						details:
+							error instanceof Error ? { message: error.message } : { error },
 					});
 				}
 			},
