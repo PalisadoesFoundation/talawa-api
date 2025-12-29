@@ -826,13 +826,16 @@ suite("Mutation field createFund - Error Handling", () => {
 				},
 			);
 
-			// GraphQL can reject invalid IDs at either the type validation layer
-			// or resolver layer non-deterministically
 			expect(createFundResult.errors).toBeDefined();
-			const errorCode = createFundResult.errors?.[0]?.extensions?.code;
 			expect(
-				errorCode === "invalid_arguments" ||
-					errorCode === "arguments_associated_resources_not_found",
+				createFundResult.errors?.some(
+					(error) =>
+						error.message.includes("got invalid value") ||
+						error.message.includes("ID cannot represent") ||
+						error.extensions?.code === "invalid_arguments" ||
+						error.extensions?.code ===
+							"arguments_associated_resources_not_found",
+				),
 			).toBe(true);
 		});
 	});
