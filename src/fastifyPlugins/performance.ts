@@ -57,8 +57,8 @@ export default fp(async function perfPlugin(app: FastifyInstance) {
 		if (snap) {
 			recent.unshift({ ...snap });
 			// Keep only last 200 snapshots
-			while (recent.length > 200) {
-				recent.pop();
+			if (recent.length > 200) {
+				recent.splice(200);
 			}
 		}
 	});
