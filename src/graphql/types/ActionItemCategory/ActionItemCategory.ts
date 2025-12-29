@@ -55,7 +55,7 @@ builder.queryField("categoriesByIds", (t) =>
 		},
 		description: "Fetch multiple action item categories by their IDs.",
 		resolve: async (_parent, args, ctx) => {
-			if (!ctx.currentClient.isAuthenticated) {
+			if (!ctx.currentClient.isAuthenticated || !ctx.currentClient.user) {
 				throw new TalawaGraphQLError({
 					extensions: {
 						code: ErrorCode.UNAUTHENTICATED,
@@ -82,6 +82,52 @@ builder.queryField("categoriesByIds", (t) =>
 				await ctx.drizzleClient.query.actionItemCategoriesTable.findMany({
 					where: (fields, _operators) => inArray(fields.id, categoryIds),
 				});
+
+			// Check categories based on user's organization membership
+			const distinctOrgIds = [
+				...new Set(categories.map((c) => c.organizationId)),
+			];
+
+			if (distinctOrgIds.length > 0) {
+				const userMemberships =
+					await ctx.drizzleClient.query.organizationMembershipsTable.findMany({
+						columns: { organizationId: true },
+						where: (fields, operators) =>
+							operators.and(
+								operators.eq(fields.memberId, ctx.currentClient.user?.id ?? ""),
+								inArray(fields.organizationId, distinctOrgIds),
+							),
+					});
+
+				const memberOrgIds = new Set(
+					userMemberships.map((m) => m.organizationId),
+				);
+
+				const issues: { argumentPath: string[]; message: string }[] = [];
+
+				for (const category of categories) {
+					if (!memberOrgIds.has(category.organizationId)) {
+						parsedArgs.data.ids.forEach((id, index) => {
+							if (id === category.id) {
+								issues.push({
+									argumentPath: ["input", "ids", String(index)],
+									message:
+										"User does not have access to this action item category",
+								});
+							}
+						});
+					}
+				}
+
+				if (issues.length > 0) {
+					throw new TalawaGraphQLError({
+						extensions: {
+							code: "forbidden_action_on_arguments_associated_resources",
+							issues,
+						},
+					});
+				}
+			}
 
 			return categories;
 		},

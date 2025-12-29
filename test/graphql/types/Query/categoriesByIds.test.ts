@@ -4,6 +4,7 @@ import { beforeAll, describe, expect, test } from "vitest";
 import type { ClientCustomScalars } from "~/src/graphql/scalars/index";
 import { server } from "../../../server";
 import { mercuriusClient } from "../client";
+import { createRegularUserUsingAdmin } from "../createRegularUserUsingAdmin";
 import {
 	Mutation_createActionItemCategory,
 	Mutation_createOrganization,
@@ -379,7 +380,7 @@ describe("Query field categoriesByIds", () => {
 		);
 
 		test(
-			"returns partial results for mixed valid/invalid IDs",
+			"returns partial results for mixed existing/non-existing IDs",
 			async () => {
 				// Sign in as admin
 				const signInRes = await mercuriusClient.query(Query_signIn, {
@@ -463,6 +464,241 @@ describe("Query field categoriesByIds", () => {
 						isDisabled: false,
 					}),
 				);
+			},
+			SUITE_TIMEOUT,
+		);
+	});
+
+	describe("Authorization tests", () => {
+		let adminToken: string;
+		let adminId: string;
+		let orgId: string;
+		let categoryId: string;
+
+		// Setup shared resources (Org + Category) using Admin
+		beforeAll(async () => {
+			const signInRes = await mercuriusClient.query(Query_signIn, {
+				variables: {
+					input: {
+						emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
+						password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
+					},
+				},
+			});
+			adminToken = signInRes.data?.signIn?.authenticationToken ?? "";
+			adminId = signInRes.data?.signIn?.user?.id ?? "";
+
+			if (!adminToken || !adminId) {
+				throw new Error("Admin authentication failed");
+			}
+
+			// Create Org
+			const orgRes = await mercuriusClient.mutate(Mutation_createOrganization, {
+				headers: { authorization: `bearer ${adminToken}` },
+				variables: { input: { name: `Auth Test Org ${faker.string.ulid()}` } },
+			});
+			orgId = orgRes.data?.createOrganization?.id ?? "";
+
+			// Join Admin to Org
+			await mercuriusClient.mutate(Mutation_createOrganizationMembership, {
+				headers: { authorization: `bearer ${adminToken}` },
+				variables: {
+					input: {
+						memberId: adminId,
+						organizationId: orgId,
+						role: "administrator",
+					},
+				},
+			});
+
+			// Create Category
+			const catRes = await mercuriusClient.mutate(
+				Mutation_createActionItemCategory,
+				{
+					headers: { authorization: `bearer ${adminToken}` },
+					variables: {
+						input: {
+							name: "Auth Category",
+							organizationId: orgId,
+							isDisabled: false,
+						},
+					},
+				},
+			);
+			categoryId = catRes.data?.createActionItemCategory?.id ?? "";
+		});
+
+		test(
+			"throws forbidden error for authenticated non-member",
+			async () => {
+				const { authToken } = await createRegularUserUsingAdmin();
+				const result = await mercuriusClient.query(Query_categoriesByIds, {
+					headers: { authorization: `bearer ${authToken}` },
+					variables: { input: { ids: [categoryId] } },
+				});
+
+				expect(result.data?.categoriesByIds).toBeNull();
+				expect(result.errors).toEqual(
+					expect.arrayContaining([
+						expect.objectContaining({
+							extensions: expect.objectContaining({
+								code: "forbidden_action_on_arguments_associated_resources",
+								issues: expect.arrayContaining([
+									expect.objectContaining({
+										argumentPath: ["input", "ids", "0"],
+										message:
+											"User does not have access to this action item category",
+									}),
+								]),
+							}),
+						}),
+					]),
+				);
+			},
+			SUITE_TIMEOUT,
+		);
+
+		test(
+			"throws forbidden error for member of another organization",
+			async () => {
+				const { authToken, userId } = await createRegularUserUsingAdmin();
+
+				// Create another org and join user to it
+				const org2Res = await mercuriusClient.mutate(
+					Mutation_createOrganization,
+					{
+						headers: { authorization: `bearer ${adminToken}` },
+						variables: { input: { name: `Other Org ${faker.string.ulid()}` } },
+					},
+				);
+				const org2Id = org2Res.data?.createOrganization?.id ?? "";
+
+				await mercuriusClient.mutate(Mutation_createOrganizationMembership, {
+					headers: { authorization: `bearer ${adminToken}` },
+					variables: {
+						input: {
+							memberId: userId,
+							organizationId: org2Id,
+							role: "regular",
+						},
+					},
+				});
+
+				const result = await mercuriusClient.query(Query_categoriesByIds, {
+					headers: { authorization: `bearer ${authToken}` },
+					variables: { input: { ids: [categoryId] } }, // categoryId is in Org 1
+				});
+
+				expect(result.data?.categoriesByIds).toBeNull();
+				expect(result.errors).toEqual(
+					expect.arrayContaining([
+						expect.objectContaining({
+							extensions: expect.objectContaining({
+								code: "forbidden_action_on_arguments_associated_resources",
+							}),
+						}),
+					]),
+				);
+			},
+			SUITE_TIMEOUT,
+		);
+
+		test(
+			"throws forbidden error for mixed authorized and unauthorized categories",
+			async () => {
+				const { authToken, userId } = await createRegularUserUsingAdmin();
+
+				// Add user to Org 1 (Authorized for categoryId)
+				await mercuriusClient.mutate(Mutation_createOrganizationMembership, {
+					headers: { authorization: `bearer ${adminToken}` },
+					variables: {
+						input: {
+							memberId: userId,
+							organizationId: orgId,
+							role: "regular",
+						},
+					},
+				});
+
+				// Create Org 2 and Category 2 (Unauthorized)
+				const org2Res = await mercuriusClient.mutate(
+					Mutation_createOrganization,
+					{
+						headers: { authorization: `bearer ${adminToken}` },
+						variables: { input: { name: `Org 2 ${faker.string.ulid()}` } },
+					},
+				);
+				const org2Id = org2Res.data?.createOrganization?.id ?? "";
+
+				// Admin joins Org 2 to create Category
+				await mercuriusClient.mutate(Mutation_createOrganizationMembership, {
+					headers: { authorization: `bearer ${adminToken}` },
+					variables: {
+						input: {
+							memberId: adminId,
+							organizationId: org2Id,
+							role: "administrator",
+						},
+					},
+				});
+
+				const cat2Res = await mercuriusClient.mutate(
+					Mutation_createActionItemCategory,
+					{
+						headers: { authorization: `bearer ${adminToken}` },
+						variables: {
+							input: {
+								name: "Cat 2",
+								organizationId: org2Id,
+								isDisabled: false,
+							},
+						},
+					},
+				);
+				const category2Id = cat2Res.data?.createActionItemCategory?.id ?? "";
+
+				// Query [Cat1, Cat2] -> Should fail because Cat2 is unauthorized
+				const result = await mercuriusClient.query(Query_categoriesByIds, {
+					headers: { authorization: `bearer ${authToken}` },
+					variables: { input: { ids: [categoryId, category2Id] } },
+				});
+
+				expect(result.data?.categoriesByIds).toBeNull();
+				expect(result.errors).toBeDefined();
+				expect(result.errors?.[0]?.extensions?.code).toBe(
+					"forbidden_action_on_arguments_associated_resources",
+				);
+				// The error issues should point to the unauthorized category (index 1)
+				// We won't check exact array containment for issues to be flexible, but presence is key.
+			},
+			SUITE_TIMEOUT,
+		);
+
+		test(
+			"returns categories for authorized user",
+			async () => {
+				const { authToken, userId } = await createRegularUserUsingAdmin();
+
+				// Add user to Org 1
+				await mercuriusClient.mutate(Mutation_createOrganizationMembership, {
+					headers: { authorization: `bearer ${adminToken}` },
+					variables: {
+						input: {
+							memberId: userId,
+							organizationId: orgId,
+							role: "regular",
+						},
+					},
+				});
+
+				const result = await mercuriusClient.query(Query_categoriesByIds, {
+					headers: { authorization: `bearer ${authToken}` },
+					variables: { input: { ids: [categoryId] } },
+				});
+
+				expect(result.errors).toBeUndefined();
+				expect(result.data?.categoriesByIds).toHaveLength(1);
+				expect(result.data?.categoriesByIds?.[0]?.id).toBe(categoryId);
 			},
 			SUITE_TIMEOUT,
 		);
