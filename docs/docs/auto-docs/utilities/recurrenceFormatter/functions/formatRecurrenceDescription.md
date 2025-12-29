@@ -100,4 +100,4 @@ The recurrence rule from the database
 
 `string`
 
-A human-readable description of the recurrence pattern
+- A human-readable description of the recurrence pattern

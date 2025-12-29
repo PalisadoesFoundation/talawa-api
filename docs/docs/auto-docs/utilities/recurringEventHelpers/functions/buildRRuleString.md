@@ -58,4 +58,4 @@ The recurrence input object, conforming to the recurrenceInputSchema.
 
 `string`
 
-A full RRULE string, e.g., "RRULE:FREQ=WEEKLY;INTERVAL=2;BYDAY=MO,FR".
+- A full RRULE string, e.g., "RRULE:FREQ=WEEKLY;INTERVAL=2;BYDAY=MO,FR".
