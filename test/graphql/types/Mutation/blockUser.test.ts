@@ -213,44 +213,6 @@ suite("Mutation field blockUser", () => {
 				]),
 			);
 		});
-
-		test("should return an error for invalid UUID format organizationId", async () => {
-			const result = await mercuriusClient.mutate(Mutation_blockUser, {
-				headers: { authorization: `bearer ${adminAuthToken}` },
-				variables: {
-					organizationId: "not-a-uuid",
-					userId: regularUserId,
-				},
-			});
-
-			expect(result.data?.blockUser).toBeNull();
-			expect(
-				result.errors?.some(
-					(error) =>
-						error.extensions?.code === "invalid_arguments" ||
-						error.message?.includes("Invalid"),
-				),
-			).toBe(true);
-		});
-
-		test("should return an error for invalid UUID format userId", async () => {
-			const result = await mercuriusClient.mutate(Mutation_blockUser, {
-				headers: { authorization: `bearer ${adminAuthToken}` },
-				variables: {
-					organizationId,
-					userId: "not-a-uuid",
-				},
-			});
-
-			expect(result.data?.blockUser).toBeNull();
-			expect(
-				result.errors?.some(
-					(error) =>
-						error.extensions?.code === "invalid_arguments" ||
-						error.message?.includes("Invalid"),
-				),
-			).toBe(true);
-		});
 	});
 
 	suite("when the organization does not exist", () => {

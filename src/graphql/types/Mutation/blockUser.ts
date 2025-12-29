@@ -6,8 +6,8 @@ import { assertOrganizationAdmin } from "~/src/utilities/authorization";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 
 const mutationBlockUserArgumentsSchema = z.object({
-	organizationId: z.string().min(1, "Organization ID is required.").uuid("Invalid UUID format for organizationId"),
-	userId: z.string().min(1, "User ID is required.").uuid("Invalid UUID format for userId"),
+	organizationId: z.string().min(1, "Organization ID is required."),
+	userId: z.string().min(1, "User ID is required."),
 });
 
 builder.mutationField("blockUser", (t) =>
