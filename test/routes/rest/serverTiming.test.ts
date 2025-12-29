@@ -1,9 +1,16 @@
+import { testEnvConfig } from "test/envConfigSchema";
 import { describe, expect, it } from "vitest";
 import { createServer } from "~/src/createServer";
 
 describe("Server-Timing header", () => {
 	it("includes db, cache, total", async () => {
-		const app = await createServer();
+		const app = await createServer({
+			envConfig: {
+				API_POSTGRES_HOST: testEnvConfig.API_POSTGRES_TEST_HOST,
+				API_REDIS_HOST: testEnvConfig.API_REDIS_TEST_HOST,
+				API_MINIO_END_POINT: testEnvConfig.API_MINIO_TEST_END_POINT,
+			},
+		});
 
 		// Create a simple test route
 		app.get("/test-timing", async () => ({ ok: true }));
@@ -20,7 +27,13 @@ describe("Server-Timing header", () => {
 	});
 
 	it("includes metrics on GraphQL requests", async () => {
-		const app = await createServer();
+		const app = await createServer({
+			envConfig: {
+				API_POSTGRES_HOST: testEnvConfig.API_POSTGRES_TEST_HOST,
+				API_REDIS_HOST: testEnvConfig.API_REDIS_TEST_HOST,
+				API_MINIO_END_POINT: testEnvConfig.API_MINIO_TEST_END_POINT,
+			},
+		});
 
 		const res = await app.inject({
 			method: "POST",
@@ -40,7 +53,13 @@ describe("Server-Timing header", () => {
 	});
 
 	it("includes metrics on /metrics/perf endpoint", async () => {
-		const app = await createServer();
+		const app = await createServer({
+			envConfig: {
+				API_POSTGRES_HOST: testEnvConfig.API_POSTGRES_TEST_HOST,
+				API_REDIS_HOST: testEnvConfig.API_REDIS_TEST_HOST,
+				API_MINIO_END_POINT: testEnvConfig.API_MINIO_TEST_END_POINT,
+			},
+		});
 
 		const res = await app.inject({
 			method: "GET",
@@ -63,7 +82,13 @@ describe("Server-Timing header", () => {
 	});
 
 	it("/metrics/perf returns performance snapshots", async () => {
-		const app = await createServer();
+		const app = await createServer({
+			envConfig: {
+				API_POSTGRES_HOST: testEnvConfig.API_POSTGRES_TEST_HOST,
+				API_REDIS_HOST: testEnvConfig.API_REDIS_TEST_HOST,
+				API_MINIO_END_POINT: testEnvConfig.API_MINIO_TEST_END_POINT,
+			},
+		});
 
 		// Make a few requests to populate snapshots
 		app.get("/test-perf-1", async () => ({ ok: true }));
@@ -101,7 +126,13 @@ describe("Server-Timing header", () => {
 	});
 
 	it("/metrics/perf limits returned snapshots to 50", async () => {
-		const app = await createServer();
+		const app = await createServer({
+			envConfig: {
+				API_POSTGRES_HOST: testEnvConfig.API_POSTGRES_TEST_HOST,
+				API_REDIS_HOST: testEnvConfig.API_REDIS_TEST_HOST,
+				API_MINIO_END_POINT: testEnvConfig.API_MINIO_TEST_END_POINT,
+			},
+		});
 
 		// Create a test route
 		app.get("/test-many", async () => ({ ok: true }));
@@ -124,7 +155,13 @@ describe("Server-Timing header", () => {
 	});
 
 	it("Server-Timing header has reasonable total duration", async () => {
-		const app = await createServer();
+		const app = await createServer({
+			envConfig: {
+				API_POSTGRES_HOST: testEnvConfig.API_POSTGRES_TEST_HOST,
+				API_REDIS_HOST: testEnvConfig.API_REDIS_TEST_HOST,
+				API_MINIO_END_POINT: testEnvConfig.API_MINIO_TEST_END_POINT,
+			},
+		});
 
 		app.get("/test-duration", async () => {
 			// Simulate some work
