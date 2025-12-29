@@ -1,5 +1,6 @@
+import { Readable } from "node:stream";
 import Fastify from "fastify";
-import { S3Error } from "minio";
+import { type Client, S3Error } from "minio";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { errorHandlerPlugin } from "~/src/fastifyPlugins/errorHandler";
 import { objects } from "~/src/routes/objects";
@@ -158,26 +159,42 @@ describe("Objects route error handling", () => {
 	});
 });
 
+interface MockMinioClient {
+	getObject: ReturnType<typeof vi.fn>;
+	statObject: ReturnType<typeof vi.fn>;
+}
+
+interface MockMinio {
+	client: MockMinioClient;
+	bucketName: string;
+}
+
 describe("Objects route with MinIO integration", () => {
-	let app: Awaited<ReturnType<typeof Fastify>>;
+	let app: Awaited<ReturnType<typeof Fastify>> & { minio: MockMinio };
 
 	beforeEach(async () => {
-		app = Fastify();
+		const fastifyApp = Fastify();
 
 		// Register error handler
-		await app.register(errorHandlerPlugin);
+		await fastifyApp.register(errorHandlerPlugin);
 
 		// Mock MinIO client
-		app.decorate("minio", {
+		fastifyApp.decorate("minio", {
 			client: {
 				getObject: vi.fn(),
 				statObject: vi.fn(),
+			} as unknown as Client,
+			bucketName: "talawa",
+			config: {
+				endPoint: process.env.API_MINIO_TEST_HOST as string,
+				port: Number(process.env.API_MINIO_TEST_PORT),
 			},
-			bucketName: "test-bucket",
 		});
 
 		// Register the actual objects route
-		await app.register(objects);
+		await fastifyApp.register(objects);
+
+		app = fastifyApp as typeof app;
 	});
 
 	afterEach(async () => {
@@ -278,5 +295,39 @@ describe("Objects route with MinIO integration", () => {
 				correlationId: expect.any(String),
 			},
 		});
+	});
+	it("should return 200 and file stream for valid object", async () => {
+		const mockStream = Readable.from(["file content"]);
+		const mockStat = {
+			size: 12,
+			metaData: { "content-type": "text/plain" },
+		};
+
+		app.minio.client.getObject.mockResolvedValue(mockStream);
+		app.minio.client.statObject.mockResolvedValue(mockStat);
+
+		const response = await app.inject({
+			method: "GET",
+			url: "/objects/valid-file.txt",
+		});
+
+		expect(response.statusCode).toBe(200);
+		expect(response.body).toBe("file content");
+		// The implementation sets "inline", checking implementation details
+		expect(response.headers["content-disposition"]).toBe(
+			"inline; filename=valid-file.txt",
+		);
+		expect(response.headers["content-type"]).toBe("text/plain");
+		expect(response.headers["content-length"]).toBe("12");
+	});
+
+	it("should return 400 for object name > 36 chars", async () => {
+		const longName = "a".repeat(37);
+		const response = await app.inject({
+			method: "GET",
+			url: `/objects/${longName}`,
+		});
+
+		expect(response.statusCode).toBe(400);
 	});
 });

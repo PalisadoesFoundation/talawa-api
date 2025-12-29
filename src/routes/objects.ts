@@ -107,6 +107,7 @@ export const objects: FastifyPluginAsyncTypebox = async (fastify) => {
 					typeof objectStat.metaData["content-type"] === "string"
 						? objectStat.metaData["content-type"]
 						: "application/octet-stream",
+				"content-length": objectStat.size,
 			});
 
 			return reply.send(readableStream);
