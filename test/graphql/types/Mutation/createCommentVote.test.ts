@@ -1,5 +1,7 @@
 import { faker } from "@faker-js/faker";
+import { and, eq } from "drizzle-orm";
 import { expect, suite, test, vi } from "vitest";
+import { organizationMembershipsTable } from "~/src/drizzle/schema";
 import { assertToBeNonNullish } from "../../../helpers";
 import { server } from "../../../server";
 import { mercuriusClient } from "../client";
@@ -166,33 +168,26 @@ suite("Mutation field createCommentVote", () => {
 			);
 		});
 
-		test("should return invalid_arguments error for invalid vote type", async () => {
-			await mercuriusClient.query(
-				// Use a raw GraphQL query to send invalid vote type
-				`query {
-					__typename
+		test("should return GraphQL validation error for invalid vote type", async () => {
+			const result = await mercuriusClient.mutate(
+				`mutation CreateCommentVote($input: MutationCreateCommentVoteInput!) {
+					createCommentVote(input: $input) {
+						id
+					}
 				}`,
-			);
-			// This would normally be caught by GraphQL validation, but we test the resolver's schema validation
-			// by sending valid UUID but malformed input through direct resolver call
-
-			// For now, test with valid inputs but verify the schema parser works
-			const validResult = await mercuriusClient.mutate(
-				Mutation_createCommentVote,
 				{
 					headers: { authorization: `bearer ${adminToken}` },
 					variables: {
 						input: {
 							commentId: faker.string.uuid(),
-							type: "up_vote",
+							type: "invalid_vote_type",
 						},
 					},
 				},
 			);
-			// Should fail with comment not found, not invalid_arguments
-			expect(validResult.errors?.[0]?.extensions?.code).toBe(
-				"arguments_associated_resources_not_found",
-			);
+
+			expect(result.errors).toBeDefined();
+			expect(result.errors?.length).toBeGreaterThan(0);
 		});
 	});
 
@@ -434,11 +429,6 @@ suite("Mutation field createCommentVote", () => {
 			});
 
 			// Then make them administrator of the organization
-			const { organizationMembershipsTable } = await import(
-				"~/src/drizzle/schema"
-			);
-			const { and, eq } = await import("drizzle-orm");
-
 			await server.drizzleClient
 				.update(organizationMembershipsTable)
 				.set({ role: "administrator" })
