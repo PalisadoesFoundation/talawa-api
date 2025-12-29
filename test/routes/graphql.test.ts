@@ -118,6 +118,12 @@ describe("GraphQL Routes", () => {
 					isAuthenticated: true,
 					user: mockJwtPayload.user,
 				},
+				dataloaders: expect.objectContaining({
+					user: expect.any(Object),
+					organization: expect.any(Object),
+					event: expect.any(Object),
+					actionItem: expect.any(Object),
+				}),
 				drizzleClient: mockFastify.drizzleClient,
 				envConfig: mockFastify.envConfig,
 				jwt: {
@@ -154,6 +160,12 @@ describe("GraphQL Routes", () => {
 				currentClient: {
 					isAuthenticated: false,
 				},
+				dataloaders: expect.objectContaining({
+					user: expect.any(Object),
+					organization: expect.any(Object),
+					event: expect.any(Object),
+					actionItem: expect.any(Object),
+				}),
 				drizzleClient: mockFastify.drizzleClient,
 				envConfig: mockFastify.envConfig,
 				jwt: {

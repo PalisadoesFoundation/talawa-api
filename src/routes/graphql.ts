@@ -17,6 +17,7 @@ import {
 	getClearRefreshTokenCookieOptions,
 	getRefreshTokenCookieOptions,
 } from "../utilities/cookieConfig";
+import { createDataloaders } from "../utilities/dataloaders";
 import leakyBucket from "../utilities/leakyBucket";
 import { DEFAULT_REFRESH_TOKEN_EXPIRES_MS } from "../utilities/refreshTokenUtils";
 import { TalawaGraphQLError } from "../utilities/TalawaGraphQLError";
@@ -148,6 +149,7 @@ export const createContext: CreateContext = async (initialContext) => {
 
 	return {
 		currentClient,
+		dataloaders: createDataloaders(fastify.drizzleClient),
 		drizzleClient: fastify.drizzleClient,
 		envConfig: fastify.envConfig,
 		jwt: {
@@ -234,6 +236,7 @@ export const graphql = fastifyPlugin(async (fastify) => {
 							isAuthenticated: true,
 							user: decoded.user,
 						},
+						dataloaders: createDataloaders(fastify.drizzleClient),
 						drizzleClient: fastify.drizzleClient,
 						envConfig: fastify.envConfig,
 						jwt: {
