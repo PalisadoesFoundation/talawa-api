@@ -68,7 +68,10 @@ builder.queryField("categoriesByIds", (t) =>
 				throw new TalawaGraphQLError({
 					extensions: {
 						code: ErrorCode.INVALID_ARGUMENTS,
-						details: parsedArgs.error.flatten(),
+						issues: parsedArgs.error.issues.map((issue) => ({
+							argumentPath: issue.path.map(String),
+							message: issue.message,
+						})),
 					},
 				});
 			}

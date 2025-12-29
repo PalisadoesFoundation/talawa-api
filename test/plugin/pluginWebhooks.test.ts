@@ -624,10 +624,9 @@ describe("Plugin Webhooks", () => {
 	describe("HTTP Method Support", () => {
 		it("should support all HTTP methods", async () => {
 			const methods = ["GET", "POST", "PUT", "DELETE", "PATCH"] as const;
+			const app = await createTestApp();
 
 			for (const method of methods) {
-				const app = await createTestApp();
-
 				const response = await app.inject({
 					method,
 					url: "/api/plugins/test-plugin/webhook",
@@ -639,9 +638,9 @@ describe("Plugin Webhooks", () => {
 
 				// Reset mock for next iteration
 				mockWebhookHandler.mockClear();
-
-				await app.close();
 			}
+
+			await app.close();
 		});
 	});
 

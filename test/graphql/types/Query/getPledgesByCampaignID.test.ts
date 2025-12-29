@@ -170,7 +170,7 @@ suite("Query: getMyPledgesForCampaign", () => {
 					message: "No pledges found for this campaign.",
 					locations: [{ line: 2, column: 3 }],
 					path: ["getMyPledgesForCampaign"],
-					extensions: { code: "arguments_associated_resources_not_found" },
+					extensions: { code: "not_found" },
 					nodes: undefined,
 					source: undefined,
 					positions: undefined,
@@ -194,7 +194,7 @@ suite("Query: getMyPledgesForCampaign", () => {
 			expect.arrayContaining([
 				expect.objectContaining({
 					extensions: expect.objectContaining({
-						code: "arguments_associated_resources_not_found",
+						code: "not_found",
 					}),
 				}),
 			]),

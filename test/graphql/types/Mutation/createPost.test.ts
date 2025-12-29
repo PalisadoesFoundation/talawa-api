@@ -68,7 +68,7 @@ suite("Mutation field createPost", () => {
 				expect.arrayContaining([
 					expect.objectContaining({
 						extensions: expect.objectContaining({
-							code: "arguments_associated_resources_not_found",
+							code: "not_found",
 						}),
 						path: ["createPost"],
 					}),
@@ -130,7 +130,7 @@ suite("Mutation field createPost", () => {
 				expect.arrayContaining([
 					expect.objectContaining({
 						extensions: expect.objectContaining({
-							code: "unauthorized_action_on_arguments_associated_resources",
+							code: "unauthorized",
 						}),
 						path: ["createPost"],
 					}),
@@ -396,7 +396,7 @@ suite("Mutation field createPost", () => {
 				expect.arrayContaining([
 					expect.objectContaining({
 						extensions: expect.objectContaining({
-							code: "unauthorized_arguments",
+							code: "insufficient_permissions",
 							issues: expect.arrayContaining([
 								expect.objectContaining({
 									argumentPath: ["input", "isPinned"],
@@ -467,7 +467,7 @@ suite("Mutation field createPost", () => {
 					expect.arrayContaining([
 						expect.objectContaining({
 							extensions: expect.objectContaining({
-								code: "unexpected",
+								code: "internal_server_error",
 							}),
 							path: ["createPost"],
 						}),
@@ -961,7 +961,7 @@ test("returns unexpected error when MinIO upload fails", async () => {
 		expect(result.data?.createPost).toEqual(null);
 
 		// the resolver's exact error code
-		expect(result.errors[0].extensions.code).toBe("unexpected");
+		expect(result.errors[0].extensions.code).toBe("external_service_error");
 	} finally {
 		// Restore original method
 		server.minio.client.putObject = originalPutObject;
@@ -1094,7 +1094,7 @@ test("removes MinIO object and returns unexpected error when attachment DB inser
 
 		// Verify error response
 		expect(result.data?.createPost).toEqual(null);
-		expect(result.errors[0].extensions.code).toBe("unexpected");
+		expect(result.errors[0].extensions.code).toBe("internal_server_error");
 
 		// Verify removeObject was called to cleanup the MinIO object
 		expect(removeObjectSpy).toHaveBeenCalledTimes(1);

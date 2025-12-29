@@ -60,6 +60,7 @@ export const errorHandlerPlugin = fastifyPlugin(
 						message: normalized.message,
 						code: normalized.code,
 						details: normalized.details,
+						stack: error?.stack || null,
 					},
 				});
 

@@ -84,20 +84,22 @@ describe("normalizeError", () => {
 			},
 		]);
 
-		// Mock flatten to return undefined to test fallback
-		const originalFlatten = zodError.flatten;
-		// biome-ignore lint/suspicious/noExplicitAny: mocking for test
-		(zodError as any).flatten = undefined;
+		// Create a proxy that simulates a ZodError without flatten method
+		const zodErrorWithoutFlatten = new Proxy(zodError, {
+			get(target, prop) {
+				if (prop === "flatten") {
+					return undefined;
+				}
+				return Reflect.get(target, prop);
+			},
+		});
 
-		const normalized = normalizeError(zodError);
+		const normalized = normalizeError(zodErrorWithoutFlatten);
 
 		expect(normalized.code).toBe(ErrorCode.INVALID_ARGUMENTS);
 		expect(normalized.message).toBe("Invalid input");
 		expect(normalized.statusCode).toBe(400);
 		expect(normalized.details).toEqual(zodError.issues);
-
-		// Restore original flatten method
-		zodError.flatten = originalFlatten;
 	});
 
 	it("should normalize generic Error objects", () => {
