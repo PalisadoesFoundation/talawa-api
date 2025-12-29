@@ -6,7 +6,7 @@
 
 > **TalawaGraphQLFormattedError** = `GraphQLFormattedError` & `object`
 
-Defined in: [src/utilities/TalawaGraphQLError.ts:392](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/utilities/TalawaGraphQLError.ts#L392)
+Defined in: [src/utilities/TalawaGraphQLError.ts:409](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/utilities/TalawaGraphQLError.ts#L409)
 
 Formatted error type returned by Talawa API's GraphQL implementation.
 
