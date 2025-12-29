@@ -129,7 +129,7 @@ function validateFile(
 					column:
 						lineOffset === 0
 							? startColumn + msg.textRange.pos
-							: (commentLines[commentLines.length - 1]?.length ?? 0 + 1),
+							: (commentLines[commentLines.length - 1]?.length ?? 0) + 1,
 					messageId: msg.messageId,
 					message: msg.unformattedText,
 				});

@@ -1,22 +1,11 @@
 {
 	"$schema": "https://unpkg.com/knip@5/schema.json",
 	"ignoreIssues": {
-		"src/graphql/**/*.ts": [
-			"exports"
-		],
-		"src/services/ses/**/*.ts": [
-			"exports"
-		],
-		"src/drizzle/tables/**": [
-			"exports"
-		],
-		"src/workers/backgroundWorkerService.ts": [
-			"exports"
-		],
-		"scripts/dbManagement/helpers.ts": [
-			"nsExports",
-			"nsTypes"
-		]
+		"src/graphql/**/*.ts": ["exports"],
+		"src/services/ses/**/*.ts": ["exports"],
+		"src/drizzle/tables/**": ["exports"],
+		"src/workers/backgroundWorkerService.ts": ["exports"],
+		"scripts/dbManagement/helpers.ts": ["nsExports", "nsTypes"]
 	},
 	"ignore": [
 		"src/plugins/**",
@@ -24,10 +13,7 @@
 		"src/graphql/schemaImportWorker.ts",
 		"scripts/fix_tsdoc.ts"
 	],
-	"project": [
-		"src/**/*.ts",
-		"scripts/**/*.ts"
-	],
+	"project": ["src/**/*.ts", "scripts/**/*.ts"],
 	"ignoreDependencies": [],
 	"ignoreExportsUsedInFile": true
 }

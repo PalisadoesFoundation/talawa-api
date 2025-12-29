@@ -20,7 +20,7 @@ export interface GetRecurringEventInstancesInput {
 	endDate: Date;
 	includeCancelled?: boolean;
 	/**
-	 * An optional limit on the number of instances to return.
+	 * Optional maximum number of instances to return (defaults to 1000).
 	 */
 	limit?: number;
 }

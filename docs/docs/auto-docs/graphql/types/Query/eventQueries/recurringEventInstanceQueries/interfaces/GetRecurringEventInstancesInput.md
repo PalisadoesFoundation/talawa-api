@@ -32,7 +32,7 @@ Defined in: [src/graphql/types/Query/eventQueries/recurringEventInstanceQueries.
 
 Defined in: [src/graphql/types/Query/eventQueries/recurringEventInstanceQueries.ts:25](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/graphql/types/Query/eventQueries/recurringEventInstanceQueries.ts#L25)
 
-An optional limit on the number of instances to return.
+Optional maximum number of instances to return (defaults to 1000).
 
 ***
 

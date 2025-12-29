@@ -43,14 +43,21 @@ function fixDescriptionTag(content: string): string {
 
 /**
  * Escapes curly braces that are not part of inline tags.
- * Only escapes braces that look like type annotations {type}
+ * Only escapes braces that look like type annotations or simple object literals.
+ * Note: This handles simple patterns only; nested braces require manual review.
  */
 function fixUnescapedBraces(content: string): string {
 	// Find doc comments and fix braces inside them
 	return content.replace(/\/\*\*[\s\S]*?\*\//g, (docComment) => {
 		// Don't escape if it's already a proper inline tag like {@link} or {@inheritDoc}
-		// Escape {word} patterns that are NOT inline tags
-		return docComment.replace(/\{(?!@)([\w|<>[\],\s.]+)\}/g, "\\{$1\\}");
+		// More comprehensive character class for TypeScript types including:
+		// - word characters, pipes, angle brackets, square brackets
+		// - colons, parentheses, arrows (=>), question marks, exclamation marks
+		// - dots, commas, spaces
+		return docComment.replace(
+			/\{(?!@)([\w|<>[\],\s.:()=>?!-]+)\}/g,
+			"\\{$1\\}",
+		);
 	});
 }
 
