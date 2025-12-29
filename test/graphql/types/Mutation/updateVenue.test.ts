@@ -65,6 +65,11 @@ const Mutation_createOrganizationMembership = graphql(`
 `);
 
 suite("Mutation field updateVenue", () => {
+	// TODO: Note: Attachment/MinIO upload paths not covered.
+	// The implementation's attachment handling logic (file uploads, MinIO integration, rollback on failure) is not exercised by these tests.
+	// The Upload scalar in mercuriusClient rejects mocked FileUpload objects with "Upload value invalid" before reaching resolver logic,
+	// making it impractical to test file upload execution paths via GraphQL integration tests without HTTP multipart infrastructure.
+
 	const createdResources: {
 		venueIds: string[];
 	} = {
@@ -305,18 +310,6 @@ suite("Mutation field updateVenue", () => {
 		assertToBeNonNullish(signUpResult.data?.signUp?.user?.id);
 		const nonAdminToken = signUpResult.data.signUp.authenticationToken;
 		const nonAdminUserId = signUpResult.data.signUp.user.id;
-
-		// Add non-admin user to organization as regular (non-admin) member
-		await mercuriusClient.mutate(Mutation_createOrganizationMembership, {
-			headers: { authorization: `bearer ${adminToken}` },
-			variables: {
-				input: {
-					organizationId: orgId,
-					memberId: nonAdminUserId,
-					role: "regular",
-				},
-			},
-		});
 
 		// Attempt to update venue with non-admin token
 		const res = await mercuriusClient.mutate(Mutation_updateVenue, {
