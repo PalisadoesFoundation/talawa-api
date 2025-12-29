@@ -888,4 +888,91 @@ suite("Mutation field updateVenue", () => {
 		expect(res.data?.updateVenue?.description).toBe(newDescription);
 		expect(res.data?.updateVenue?.capacity).toBe(newCapacity);
 	});
+
+	test("successfully updates venue keeping the same name", async () => {
+		const administratorUserSignInResult = await mercuriusClient.query(
+			Query_signIn,
+			{
+				variables: {
+					input: {
+						emailAddress:
+							server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
+						password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
+					},
+				},
+			},
+		);
+
+		assertToBeNonNullish(
+			administratorUserSignInResult.data?.signIn?.authenticationToken,
+		);
+
+		const createOrganizationResult = await mercuriusClient.mutate(
+			graphql(`
+          mutation CreateOrganization($input: MutationCreateOrganizationInput!) {
+            createOrganization(input: $input) {
+              id
+            }
+          }
+        `),
+			{
+				headers: {
+					authorization: `bearer ${administratorUserSignInResult.data.signIn.authenticationToken}`,
+				},
+				variables: {
+					input: {
+						name: `TestOrg_${faker.string.ulid()}`,
+						description: faker.lorem.sentence(),
+					},
+				},
+			},
+		);
+
+		assertToBeNonNullish(createOrganizationResult.data?.createOrganization?.id);
+		const orgId = createOrganizationResult.data.createOrganization.id;
+
+		const venueName = `Conference Hall ${faker.string.ulid()}`;
+		const initialCapacity = 100;
+
+		const createVenueResult = await mercuriusClient.mutate(
+			Mutation_createVenue,
+			{
+				headers: {
+					authorization: `bearer ${administratorUserSignInResult.data.signIn.authenticationToken}`,
+				},
+				variables: {
+					input: {
+						organizationId: orgId,
+						name: venueName,
+						description: faker.lorem.sentence(),
+						capacity: initialCapacity,
+					},
+				},
+			},
+		);
+
+		assertToBeNonNullish(createVenueResult.data?.createVenue?.id);
+		createdResources.venueIds.push(createVenueResult.data.createVenue.id);
+		const venueId = createVenueResult.data.createVenue.id;
+
+		// Update the venue, keeping the same name but changing capacity
+		const newCapacity = 200;
+		const res = await mercuriusClient.mutate(Mutation_updateVenue, {
+			headers: {
+				authorization: `bearer ${administratorUserSignInResult.data.signIn.authenticationToken}`,
+			},
+			variables: {
+				input: {
+					id: venueId,
+					name: venueName, // Keep same name
+					capacity: newCapacity, // Change capacity
+				},
+			},
+		});
+
+		expect(res.errors).toBeUndefined();
+		expect(res.data?.updateVenue?.id).toBe(venueId);
+		expect(res.data?.updateVenue?.name).toBe(venueName);
+		expect(res.data?.updateVenue?.capacity).toBe(newCapacity);
+	});
 });
