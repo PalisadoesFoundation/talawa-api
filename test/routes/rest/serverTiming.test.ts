@@ -141,7 +141,7 @@ describe("Server-Timing header", () => {
 		expect(totalMatch).toBeDefined();
 
 		if (totalMatch) {
-			const totalDur = Number.parseInt(totalMatch[1], 10);
+			const totalDur = Number.parseInt(totalMatch[1]!, 10);
 			// Should be at least 10ms due to our delay
 			expect(totalDur).toBeGreaterThanOrEqual(10);
 		}
