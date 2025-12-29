@@ -113,12 +113,19 @@ describe("TalawaRestError", () => {
 	describe("HTTP status code mapping", () => {
 		const testCases = [
 			{ code: ErrorCode.UNAUTHENTICATED, expectedStatus: 401 },
+			{ code: ErrorCode.TOKEN_EXPIRED, expectedStatus: 401 },
+			{ code: ErrorCode.TOKEN_INVALID, expectedStatus: 401 },
 			{ code: ErrorCode.UNAUTHORIZED, expectedStatus: 403 },
+			{ code: ErrorCode.INSUFFICIENT_PERMISSIONS, expectedStatus: 403 },
 			{ code: ErrorCode.INVALID_ARGUMENTS, expectedStatus: 400 },
+			{ code: ErrorCode.INVALID_INPUT, expectedStatus: 400 },
 			{ code: ErrorCode.NOT_FOUND, expectedStatus: 404 },
+			{ code: ErrorCode.ALREADY_EXISTS, expectedStatus: 409 },
 			{ code: ErrorCode.CONFLICT, expectedStatus: 409 },
 			{ code: ErrorCode.RATE_LIMIT_EXCEEDED, expectedStatus: 429 },
+			{ code: ErrorCode.DEPRECATED, expectedStatus: 400 },
 			{ code: ErrorCode.INTERNAL_SERVER_ERROR, expectedStatus: 500 },
+			{ code: ErrorCode.DATABASE_ERROR, expectedStatus: 500 },
 			{ code: ErrorCode.EXTERNAL_SERVICE_ERROR, expectedStatus: 502 },
 		];
 

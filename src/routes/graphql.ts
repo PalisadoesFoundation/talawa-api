@@ -266,16 +266,41 @@ export const graphql = fastifyPlugin(async (fastify) => {
 			// Attach correlationId
 			const correlationId = context.reply?.request?.id as string | undefined;
 
+			// Sanitize extensions by removing sensitive keys and whitelisting safe ones
+			const sensitiveKeys = new Set([
+				"stack",
+				"internal",
+				"debug",
+				"raw",
+				"error",
+				"secrets",
+				"exception",
+			]);
+			const sanitizedExtensions: Record<string, unknown> = {};
+
+			if (e.extensions && typeof e.extensions === "object") {
+				for (const [key, value] of Object.entries(e.extensions)) {
+					// Only include safe keys that aren't sensitive
+					if (
+						!sensitiveKeys.has(key) &&
+						typeof key === "string" &&
+						key.length > 0
+					) {
+						sanitizedExtensions[key] = value;
+					}
+				}
+			}
+
 			return {
 				message: e.message,
 				path: e.path,
 				extensions: {
+					// Spread sanitized extensions first so they can't override our standardized keys
+					...sanitizedExtensions,
 					code,
 					details: e.extensions?.details,
 					correlationId,
 					httpStatus,
-					// Preserve other extensions if needed, but be careful of leakage
-					...e.extensions,
 				},
 			};
 		});

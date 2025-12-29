@@ -1,4 +1,4 @@
-import Fastify, { type FastifyRequest } from "fastify";
+import Fastify, { type FastifyInstance, type FastifyRequest } from "fastify";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { errorHandlerPlugin } from "~/src/fastifyPlugins/errorHandler";
 import { ErrorCode } from "~/src/utilities/errors/errorCodes";

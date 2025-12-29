@@ -93,13 +93,16 @@ export class TalawaRestError extends Error {
 	 * ```
 	 */
 	toJSON(correlationId?: string): StandardErrorPayload {
-		return {
-			error: {
-				code: this.code,
-				message: this.message,
-				details: this.details,
-				correlationId,
-			},
+		const error: StandardErrorPayload["error"] = {
+			code: this.code,
+			message: this.message,
+			correlationId,
 		};
+
+		if (this.details !== undefined) {
+			error.details = this.details;
+		}
+
+		return { error };
 	}
 }

@@ -365,7 +365,7 @@ export class TalawaGraphQLError extends GraphQLError {
 				defaultTalawaGraphQLErrorMessages[options.extensions.code] ??
 				"An error occurred";
 		}
-		super(message ?? "An error occurred", options);
+		super(message, options);
 	}
 }
 
