@@ -63,6 +63,9 @@ builder.queryField("categoriesByIds", (t) =>
 				});
 			}
 
+			// Extract user ID directly since authentication guard guarantees user exists
+			const userId = ctx.currentClient.user.id;
+
 			const parsedArgs = categoriesByIdsInputSchema.safeParse(args.input);
 			if (!parsedArgs.success) {
 				throw new TalawaGraphQLError({
@@ -78,54 +81,66 @@ builder.queryField("categoriesByIds", (t) =>
 
 			const categoryIds = parsedArgs.data.ids;
 
+			// Fetch all requested categories from the database
 			const categories =
 				await ctx.drizzleClient.query.actionItemCategoriesTable.findMany({
 					where: (fields, _operators) => inArray(fields.id, categoryIds),
 				});
 
-			// Check categories based on user's organization membership
+			// Get unique organization IDs from the found categories for membership check
 			const distinctOrgIds = [
 				...new Set(categories.map((c) => c.organizationId)),
 			];
 
 			if (distinctOrgIds.length > 0) {
+				// Check which organizations the current user is a member of
 				const userMemberships =
 					await ctx.drizzleClient.query.organizationMembershipsTable.findMany({
 						columns: { organizationId: true },
 						where: (fields, operators) =>
 							operators.and(
-								operators.eq(fields.memberId, ctx.currentClient.user?.id ?? ""),
+								operators.eq(fields.memberId, userId),
 								inArray(fields.organizationId, distinctOrgIds),
 							),
 					});
 
+				// Create a set of organization IDs the user is a member of for O(1) lookup
 				const memberOrgIds = new Set(
 					userMemberships.map((m) => m.organizationId),
 				);
 
-				const issues: { argumentPath: string[]; message: string }[] = [];
+				const unauthorizedCategoryIds = new Set<string>();
 
+				// Identify unauthorized categories (O(C))
 				for (const category of categories) {
 					if (!memberOrgIds.has(category.organizationId)) {
-						parsedArgs.data.ids.forEach((id, index) => {
-							if (id === category.id) {
-								issues.push({
-									argumentPath: ["input", "ids", String(index)],
-									message:
-										"User does not have access to this action item category",
-								});
-							}
-						});
+						unauthorizedCategoryIds.add(category.id);
 					}
 				}
 
-				if (issues.length > 0) {
-					throw new TalawaGraphQLError({
-						extensions: {
-							code: "forbidden_action_on_arguments_associated_resources",
-							issues,
-						},
+				// Only iterate inputs if we actually have failures (Happy Path bypasses O(N) scan)
+				if (unauthorizedCategoryIds.size > 0) {
+					const issues: { argumentPath: string[]; message: string }[] = [];
+
+					// Map errors back to specific input indices
+					parsedArgs.data.ids.forEach((id, index) => {
+						if (unauthorizedCategoryIds.has(id)) {
+							issues.push({
+								argumentPath: ["input", "ids", String(index)],
+								message:
+									"User does not have access to this action item category",
+							});
+						}
 					});
+
+					if (issues.length > 0) {
+						throw new TalawaGraphQLError({
+							extensions: {
+								code: "forbidden_action_on_arguments_associated_resources",
+								issues,
+							},
+						});
+					}
 				}
 			}
 
