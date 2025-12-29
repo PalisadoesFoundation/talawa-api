@@ -47,9 +47,8 @@ function extractDocComments(
 
 	// Match JSDoc/TSDoc style comments: /** ... */
 	const docCommentRegex = /\/\*\*[\s\S]*?\*\//g;
-	let match = docCommentRegex.exec(content);
 
-	while (match !== null) {
+	for (const match of content.matchAll(docCommentRegex)) {
 		const beforeMatch = content.substring(0, match.index);
 		const lines = beforeMatch.split("\n");
 		const startLine = lines.length;
@@ -61,8 +60,6 @@ function extractDocComments(
 			startLine,
 			startColumn,
 		});
-
-		match = docCommentRegex.exec(content);
 	}
 
 	return comments;
@@ -136,7 +133,9 @@ function validateFile(
 			}
 		}
 	} catch (error) {
-		console.error(`Error reading file ${filePath}:`, error);
+		const errorMessage = error instanceof Error ? error.message : String(error);
+		console.error(`Error reading file ${filePath}: ${errorMessage}`);
+		throw new Error(`Failed to validate file ${filePath}: ${errorMessage}`);
 	}
 
 	return errors;

@@ -80,16 +80,16 @@ GraphQL context containing authentication and database clients
 
 `Promise`\<`Date` \| `null`\>
 
-{`Promise<Date>`} The timestamp when the fund campaign was last updated
+`Promise<Date>` The timestamp when the fund campaign was last updated
 
 ## Throws
 
-{TalawaGraphQLError} With code 'unauthenticated' if user is not logged in
+TalawaGraphQLError With code 'unauthenticated' if user is not logged in
 
 ## Throws
 
-{TalawaGraphQLError} With code 'unauthorized_action' if user lacks required permissions
+TalawaGraphQLError With code 'unauthorized_action' if user lacks required permissions
 
 ## Throws
 
-{TalawaGraphQLError} With code 'unexpected' for database or other runtime errors
+TalawaGraphQLError With code 'unexpected' for database or other runtime errors

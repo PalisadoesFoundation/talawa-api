@@ -73,4 +73,4 @@ GraphQL context with authentication and database access
 
 ## Throws
 
-{TalawaGraphQLError} When user is not authenticated or unauthorized
+TalawaGraphQLError When user is not authenticated or unauthorized

@@ -19,16 +19,18 @@ import { glob } from "glob";
 function fixParamMissingHyphen(content: string): string {
 	// Match @param followed by name and description without hyphen
 	// Pattern: @param name Description (where name doesn't have hyphen after it)
-	return content.replace(/(@param\s+)(\w+)(\s+)(?!-\s)([A-Z])/g, "$1$2 - $4");
+	// Uses \S to match any non-whitespace character for description start
+	return content.replace(/(@param\s+)(\w+)(\s+)(?!-\s)(\S)/g, "$1$2 - $4");
 }
 
 /**
  * Fixes @returns tags missing hyphens.
  * Transforms: @returns Description
  * To: @returns - Description (if followed by non-hyphen)
+ * Uses \S to match any non-whitespace character for description start
  */
 function fixReturnsMissingHyphen(content: string): string {
-	return content.replace(/(@returns\s+)(?!-\s)([A-Z])/g, "$1- $2");
+	return content.replace(/(@returns\s+)(?!-\s)(\S)/g, "$1- $2");
 }
 
 /**
@@ -44,20 +46,35 @@ function fixDescriptionTag(content: string): string {
 /**
  * Escapes curly braces that are not part of inline tags.
  * Only escapes braces that look like type annotations or simple object literals.
- * Note: This handles simple patterns only; nested braces require manual review.
+ *
+ * Limitations:
+ * - Nested braces (e.g., {Promise<{id: string}>}) won't be handled correctly
+ * - For complex types, manual escaping may be needed
+ *
+ * Note: Skips @throws and @returns lines to avoid breaking doc generation.
  */
 function fixUnescapedBraces(content: string): string {
 	// Find doc comments and fix braces inside them
 	return content.replace(/\/\*\*[\s\S]*?\*\//g, (docComment) => {
-		// Don't escape if it's already a proper inline tag like {@link} or {@inheritDoc}
-		// More comprehensive character class for TypeScript types including:
-		// - word characters, pipes, angle brackets, square brackets
-		// - colons, parentheses, arrows (=>), question marks, exclamation marks
-		// - dots, commas, spaces
-		return docComment.replace(
-			/\{(?!@)([\w|<>[\],\s.:()=>?!-]+)\}/g,
-			"\\{$1\\}",
-		);
+		// Process line by line to skip @throws and @returns tags
+		return docComment
+			.split("\n")
+			.map((line) => {
+				// Skip lines with @throws or @returns - these use {Type} syntax legitimately
+				if (/@throws\s/.test(line) || /@returns\s/.test(line)) {
+					return line;
+				}
+				// Don't escape if it's already a proper inline tag like {@link} or {@inheritDoc}
+				// More comprehensive character class for TypeScript types:
+				// - \w: word characters
+				// - \|: pipe for union types
+				// - <>: angle brackets for generics
+				// - []: square brackets for arrays
+				// - \s: whitespace
+				// - .:()=>?!-: punctuation commonly found in type annotations
+				return line.replace(/\{(?!@)([\w|<>[\],\s.:()=>?!-]+)\}/g, "\\{$1\\}");
+			})
+			.join("\n");
 	});
 }
 

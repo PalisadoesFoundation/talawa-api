@@ -12,7 +12,7 @@ import { AgendaFolder } from "./AgendaFolder";
  * @param _args - GraphQL arguments (unused)
  * @param ctx - GraphQL context with authentication and database access
  * @returns - The updatedAt timestamp of the agenda folder
- * @throws \{TalawaGraphQLError\} When user is not authenticated or unauthorized
+ * @throws TalawaGraphQLError When user is not authenticated or unauthorized
  */
 export const resolveUpdatedAt = async (
 	parent: AgendaFolderType,

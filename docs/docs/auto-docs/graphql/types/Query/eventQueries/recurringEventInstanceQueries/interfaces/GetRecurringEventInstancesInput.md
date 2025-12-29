@@ -6,7 +6,7 @@
 
 Defined in: [src/graphql/types/Query/eventQueries/recurringEventInstanceQueries.ts:17](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/graphql/types/Query/eventQueries/recurringEventInstanceQueries.ts#L17)
 
-Defines the input parameters for querying recurring event event instances.
+Defines the input parameters for querying recurring event instances.
 
 ## Properties
 

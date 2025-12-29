@@ -12,7 +12,7 @@ import {
 import type { ServiceDependencies } from "~/src/services/eventGeneration/types";
 
 /**
- * Defines the input parameters for querying recurring event event instances.
+ * Defines the input parameters for querying recurring event instances.
  */
 export interface GetRecurringEventInstancesInput {
 	organizationId: string;
@@ -26,14 +26,14 @@ export interface GetRecurringEventInstancesInput {
 }
 
 /**
- * Retrieves recurring event event instances for a given organization within a specified date range.
+ * Retrieves recurring event instances for a given organization within a specified date range.
  * This function resolves each instance by combining data from the base event template
  * with any applicable exceptions, providing a complete and accurate representation of each event instance.
  *
  * @param input - The input object containing organizationId, date range, and optional filters.
  * @param drizzleClient - The Drizzle ORM client for database access.
  * @param logger - The logger for logging debug and error messages.
- * @returns - A promise that resolves to an array of fully resolved recurring event event instances.
+ * @returns - A promise that resolves to an array of fully resolved recurring event instances.
  */
 export async function getRecurringEventInstancesInDateRange(
 	input: GetRecurringEventInstancesInput,
@@ -91,7 +91,7 @@ export async function getRecurringEventInstancesInDateRange(
  * @param instanceIds - An array of recurring event instance IDs to retrieve.
  * @param drizzleClient - The Drizzle ORM client for database access.
  * @param logger - The logger for logging debug and error messages.
- * @returns - A promise that resolves to an array of the requested resolved recurring event event instances.
+ * @returns - A promise that resolves to an array of the requested resolved recurring event instances.
  */
 export async function getRecurringEventInstancesByIds(
 	instanceIds: string[],
@@ -144,7 +144,7 @@ export async function getRecurringEventInstancesByIds(
  * @param organizationId - The ID of the organization to which the instance belongs.
  * @param drizzleClient - The Drizzle ORM client for database access.
  * @param logger - The logger for logging debug and error messages.
- * @returns - A promise that resolves to the resolved recurring event event instance, or null if not found.
+ * @returns - A promise that resolves to the resolved recurring event instance, or null if not found.
  */
 export async function getRecurringEventInstanceById(
 	instanceId: string,
@@ -199,7 +199,7 @@ export async function getRecurringEventInstanceById(
  *
  * @param input - The input object containing filtering criteria.
  * @param drizzleClient - The Drizzle ORM client for database access.
- * @returns - A promise that resolves to an array of raw recurring event event instances.
+ * @returns - A promise that resolves to an array of raw recurring event instances.
  */
 async function fetchRecurringEventInstances(
 	input: GetRecurringEventInstancesInput,

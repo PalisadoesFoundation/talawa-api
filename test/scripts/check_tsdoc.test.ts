@@ -317,8 +317,10 @@ export function test(name: string) {}`;
 		});
 
 		it("should handle column calculation correctly with operator precedence fix", () => {
+			// This test validates the fix for: (length ?? 0) + 1 instead of (length ?? 0 + 1)
+			// The @param tag is on line 2 of the comment, so lineOffset > 0
 			const content = `/**
- * @param name Missing hyphen on a longer line with more content
+ * @param name Missing hyphen
  */
 export function test(name: string) {}`;
 
@@ -327,9 +329,16 @@ export function test(name: string) {}`;
 				(e) => e.messageId === "tsdoc-param-tag-missing-hyphen",
 			);
 
-			// Column should be >= 1 and reasonable
+			// Assert error is defined
 			expect(paramError).toBeDefined();
-			expect(paramError?.column).toBeGreaterThanOrEqual(1);
+			// The error is on line 2 (second line of comment)
+			expect(paramError?.line).toBe(2);
+			// Column is calculated as: (lastLineLength ?? 0) + 1
+			// The " * " prefix before @param has length 3, so column = 3 + 1 = 4
+			// This specifically tests the operator precedence fix
+			// Bug would give: (3 ?? 0 + 1) = (3 ?? 1) = 3 (wrong)
+			// Fix gives: (3 ?? 0) + 1 = 3 + 1 = 4 (correct)
+			expect(paramError?.column).toBe(4);
 		});
 	});
 
