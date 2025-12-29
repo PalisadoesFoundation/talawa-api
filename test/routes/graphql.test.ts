@@ -1,5 +1,10 @@
 import type { FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
-import { GraphQLObjectType, GraphQLSchema, GraphQLString } from "graphql";
+import {
+	type ExecutionResult,
+	GraphQLObjectType,
+	GraphQLSchema,
+	GraphQLString,
+} from "graphql";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { ExplicitAuthenticationTokenPayload } from "~/src/graphql/context";
 import { createContext } from "~/src/routes/graphql";
@@ -1493,61 +1498,52 @@ describe("GraphQL Routes", () => {
 					(call?.[1] as { errorFormatter?: unknown })?.errorFormatter,
 			);
 
-			const errorFormatterConfig = mercuriusCall?.[1] as {
+			const errorFormatter = mercuriusCall?.[1] as {
 				errorFormatter: (
-					execution: {
-						data?: unknown;
-						errors: Array<{
-							message: string;
-							locations?: Array<{ line: number; column: number }>;
-							path?: Array<string | number>;
-							extensions?: Record<string, unknown>;
-						}>;
-					},
-					context: {
-						reply: {
-							request: {
-								id: string;
-							};
-						};
-					},
-				) => {
-					statusCode: number;
-					response: {
-						data: unknown;
-						errors: Array<{
-							message: string;
-							locations?: Array<{ line: number; column: number }>;
-							path?: Array<string | number>;
-							extensions: Record<string, unknown>;
-						}>;
-					};
-				};
+					execution: ExecutionResult,
+					context: Record<string, unknown>,
+				) => { response: ExecutionResult };
 			};
 
 			const mockExecution = {
 				errors: [
 					{
-						message: "Parse error",
+						message: "Database error",
+						path: ["user"],
+						extensions: {
+							code: "internal_server_error",
+							details: { message: "Connection failed" },
+						},
 					},
 				],
-			};
+				data: null,
+			} as unknown as ExecutionResult;
 
+			const mockLogger = vi.fn();
 			const mockContext = {
 				reply: {
 					request: {
-						id: "no-data-req",
+						id: "req-12345",
+						log: {
+							error: mockLogger,
+						},
 					},
 				},
 			};
 
-			const result = errorFormatterConfig.errorFormatter(
-				mockExecution,
-				mockContext,
-			);
+			errorFormatter.errorFormatter(mockExecution, mockContext);
 
-			expect(result.response.data).toBeNull();
-			expect(result.statusCode).toBe(200);
+			expect(mockLogger).toHaveBeenCalledWith({
+				msg: "GraphQL error",
+				correlationId: "req-12345",
+				errors: [
+					{
+						message: "Database error",
+						code: "internal_server_error",
+						details: { message: "Connection failed" },
+					},
+				],
+			});
 		});
 	});
 });

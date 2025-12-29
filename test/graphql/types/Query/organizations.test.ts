@@ -1,6 +1,8 @@
 import { faker } from "@faker-js/faker";
 import { assertToBeNonNullish } from "test/helpers";
-import { afterAll, beforeAll, expect, suite, test } from "vitest";
+import { afterAll, beforeAll, expect, suite, test, vi } from "vitest";
+import { ErrorCode } from "~/src/utilities/errors/errorCodes";
+import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import { server } from "../../../server";
 import { mercuriusClient } from "../client";
 import {
@@ -349,5 +351,64 @@ suite("Query field organizations", () => {
 
 		expect(result.errors).toBeUndefined();
 		expect(result.data.organizations?.length).toBeGreaterThan(1);
+	});
+
+	test("should re-throw TalawaGraphQLError unchanged", async () => {
+		// Mock the drizzleClient to throw a TalawaGraphQLError
+		const mockTalawaError = new TalawaGraphQLError({
+			extensions: {
+				code: ErrorCode.UNAUTHORIZED,
+			},
+		});
+
+		// Spy on the findFirst method directly
+		const findFirstSpy = vi
+			.spyOn(server.drizzleClient.query.usersTable, "findFirst")
+			.mockRejectedValue(mockTalawaError);
+
+		try {
+			const result = await mercuriusClient.query(Query_organizations, {
+				headers: {
+					authorization: `bearer ${regularUser1Auth}`,
+				},
+				variables: {},
+			});
+
+			expect(result.errors).toBeDefined();
+			expect(result.errors?.[0]?.extensions?.code).toBe("unauthorized");
+		} finally {
+			// Restore the original method
+			findFirstSpy.mockRestore();
+		}
+	});
+
+	test("should wrap database errors with INTERNAL_SERVER_ERROR", async () => {
+		// Mock the drizzleClient to throw a generic database error
+		const mockDatabaseError = new Error("Database connection failed");
+
+		// Spy on the findFirst method directly
+		const findFirstSpy = vi
+			.spyOn(server.drizzleClient.query.usersTable, "findFirst")
+			.mockRejectedValue(mockDatabaseError);
+
+		try {
+			const result = await mercuriusClient.query(Query_organizations, {
+				headers: {
+					authorization: `bearer ${regularUser1Auth}`,
+				},
+				variables: {},
+			});
+
+			expect(result.errors).toBeDefined();
+			expect(result.errors?.[0]?.extensions?.code).toBe(
+				"internal_server_error",
+			);
+			expect(result.errors?.[0]?.extensions?.details).toEqual({
+				message: "Database connection failed",
+			});
+		} finally {
+			// Restore the original method
+			findFirstSpy.mockRestore();
+		}
 	});
 });
