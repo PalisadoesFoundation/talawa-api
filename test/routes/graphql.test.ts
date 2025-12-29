@@ -999,29 +999,6 @@ describe("GraphQL Routes", () => {
 				2,
 			);
 		});
-
-		it("should log complexity for debugging", async () => {
-			const mockComplexity = { complexity: 42, breadth: 1, depth: 1 };
-			vi.mocked(complexityFromQuery).mockReturnValue(mockComplexity);
-
-			mockDocument.reply.request.jwtVerify.mockRejectedValue(
-				new Error("No token"),
-			);
-			vi.mocked(leakyBucket).mockResolvedValue(true);
-
-			const consoleSpy = vi.spyOn(console, "log").mockImplementation(() => {});
-
-			await preExecutionHook(
-				mockSchema,
-				mockContext,
-				mockDocument,
-				mockVariables,
-			);
-
-			expect(consoleSpy).toHaveBeenCalledWith("Complexity: ", 42);
-
-			consoleSpy.mockRestore();
-		});
 	});
 
 	describe("Subscription Configuration", () => {

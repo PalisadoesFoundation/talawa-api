@@ -378,7 +378,6 @@ export const graphql = fastifyPlugin(async (fastify) => {
 				fastify.envConfig.API_RATE_LIMIT_REFILL_RATE,
 				complexity.complexity,
 			);
-			console.log("Complexity: ", complexity.complexity);
 
 			// If the request exceeds rate limits, reject it
 			if (!isRequestAllowed) {
