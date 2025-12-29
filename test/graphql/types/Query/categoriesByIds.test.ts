@@ -161,7 +161,9 @@ describe("Query field categoriesByIds", () => {
 								issues: expect.arrayContaining([
 									expect.objectContaining({
 										argumentPath: ["ids"],
-										message: expect.stringContaining("Expected array, received null"),
+										message: expect.stringContaining(
+											"Expected array, received null",
+										),
 									}),
 								]),
 							}),
