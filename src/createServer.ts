@@ -1,3 +1,4 @@
+import { randomUUID } from "node:crypto";
 import fastifyCookie from "@fastify/cookie";
 import fastifyCors from "@fastify/cors";
 import fastifyHelmet from "@fastify/helmet";
@@ -61,7 +62,15 @@ export const createServer = async (options?: {
 					}
 				: undefined,
 		},
+		genReqId: (req) =>
+			(req.headers["x-correlation-id"] as string) ?? randomUUID(),
 	}).withTypeProvider<TypeBoxTypeProvider>();
+
+	fastify.addHook("onRequest", async (request, reply) => {
+		const correlationId = request.id as string;
+		reply.header("x-correlation-id", correlationId);
+		request.log = request.log.child({ correlationId });
+	});
 
 	// THE FASTIFY PLUGIN LOAD ORDER MATTERS, PLUGINS MIGHT BE DEPENDENT ON OTHER PLUGINS ALREADY BEING REGISTERED. THEREFORE THE ORDER OF REGISTRATION MUST BE MAINTAINED UNLESS THE DEVELOPER KNOWS WHAT THEY'RE DOING.
 
