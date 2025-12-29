@@ -807,6 +807,34 @@ suite("Mutation field createFund - Error Handling", () => {
 				"arguments_associated_resources_not_found",
 			);
 		});
+
+		test("returns error when organizationId has invalid UUID format", async () => {
+			const adminAuthToken = await getAdminAuthToken();
+			const invalidOrgId = "not-a-valid-uuid";
+
+			const createFundResult = await mercuriusClient.mutate(
+				Mutation_createFund,
+				{
+					headers: { authorization: `bearer ${adminAuthToken}` },
+					variables: {
+						input: {
+							name: `Fund ${faker.string.uuid()}`,
+							organizationId: invalidOrgId,
+							isTaxDeductible: false,
+						},
+					},
+				},
+			);
+
+			// GraphQL can reject invalid IDs at either the type validation layer
+			// or resolver layer non-deterministically
+			expect(createFundResult.errors).toBeDefined();
+			const errorCode = createFundResult.errors?.[0]?.extensions?.code;
+			expect(
+				errorCode === "invalid_arguments" ||
+					errorCode === "arguments_associated_resources_not_found",
+			).toBe(true);
+		});
 	});
 
 	suite("Duplicate fund name errors", () => {
@@ -859,6 +887,72 @@ suite("Mutation field createFund - Error Handling", () => {
 					adminAuthToken,
 					createFundResult1.data.createFund.id,
 					orgId,
+				);
+			}
+		});
+
+		test("allows same fund name in different organizations", async () => {
+			const adminAuthToken = await getAdminAuthToken();
+			const orgId1 = await createOrganization(adminAuthToken);
+			const orgId2 = await createOrganization(adminAuthToken);
+			const fundName = `Fund ${faker.string.uuid()}`;
+
+			// Create fund with the name in first organization
+			const createFundResult1 = await mercuriusClient.mutate(
+				Mutation_createFund,
+				{
+					headers: { authorization: `bearer ${adminAuthToken}` },
+					variables: {
+						input: {
+							name: fundName,
+							organizationId: orgId1,
+							isTaxDeductible: false,
+						},
+					},
+				},
+			);
+
+			expect(createFundResult1.errors).toBeUndefined();
+			expect(createFundResult1.data?.createFund?.id).toBeDefined();
+
+			// Create fund with the same name in second organization (should succeed)
+			const createFundResult2 = await mercuriusClient.mutate(
+				Mutation_createFund,
+				{
+					headers: { authorization: `bearer ${adminAuthToken}` },
+					variables: {
+						input: {
+							name: fundName,
+							organizationId: orgId2,
+							isTaxDeductible: true,
+						},
+					},
+				},
+			);
+
+			// This should succeed - same name is allowed in different organizations
+			expect(createFundResult2.errors).toBeUndefined();
+			expect(createFundResult2.data?.createFund?.id).toBeDefined();
+			expect(createFundResult2.data?.createFund?.name).toBe(fundName);
+
+			// Verify both funds have the same name but different IDs
+			expect(createFundResult1.data?.createFund?.id).not.toBe(
+				createFundResult2.data?.createFund?.id,
+			);
+
+			// Cleanup
+			if (createFundResult1.data?.createFund?.id) {
+				await cleanupFundAndOrg(
+					adminAuthToken,
+					createFundResult1.data.createFund.id,
+					orgId1,
+				);
+			}
+			if (createFundResult2.data?.createFund?.id) {
+				await cleanupFundAndOrg(
+					adminAuthToken,
+					createFundResult2.data.createFund.id,
+					orgId2,
 				);
 			}
 		});
@@ -1000,7 +1094,9 @@ suite("Mutation field createFund - Error Handling", () => {
 				/* ignore */
 			}
 		});
+	});
 
+	suite("Authorization success cases", () => {
 		test("allows org admin (non-system admin) to create fund successfully", async () => {
 			const adminAuthToken = await getAdminAuthToken();
 			const orgId = await createOrganization(adminAuthToken);
