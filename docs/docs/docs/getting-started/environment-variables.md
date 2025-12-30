@@ -245,6 +245,23 @@ This environment variable is used to configure the host ip of the redis server f
 
 - More information can be found at [this](https://github.com/redis/redis) link.
 
+### CACHE_ENTITY_TTLS
+
+This environment variable is used to configure custom TTL (time-to-live) values in seconds for cached entities. It accepts a JSON object where keys are entity names and values are TTL durations in seconds.
+
+**Default values** (used when not specified):
+- `user`: 600 (10 minutes)
+- `organization`: 600 (10 minutes)
+- `event`: 240 (4 minutes)
+- `post`: 120 (2 minutes)
+
+**Example:**
+```json
+{"user": 300, "organization": 900, "event": 180, "post": 60}
+```
+
+This allows operators to tune cache behavior based on their specific read/write patterns and data freshness requirements.
+
 ### API_GRAPHQL_SCALAR_FIELD_COST
 
 This environment variable defines the cost assigned to scalar fields in GraphQL queries. Scalars are basic data types like String, Int, Boolean, etc.

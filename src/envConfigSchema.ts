@@ -377,6 +377,17 @@ export const envConfigSchema = Type.Object({
 		maximum: 65535,
 		minimum: 0,
 	}),
+	/**
+	 * Optional JSON object to override default cache TTL values per entity type.
+	 * Format: JSON object with entity keys and TTL values in seconds.
+	 * Example: '{"user": 600, "organization": 600, "event": 240, "post": 120}'
+	 * Valid keys: user, organization, event, post
+	 */
+	CACHE_ENTITY_TTLS: Type.Optional(
+		Type.String({
+			minLength: 2, // Minimum valid JSON: "{}"
+		}),
+	),
 	// API_REDIS_URI: Type.String({
 	// 	format: "uri",
 	// 	pattern: "^redis://.*",
