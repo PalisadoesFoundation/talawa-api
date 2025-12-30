@@ -33,13 +33,13 @@ Resolves when the error handler is registered
 
 ## Example
 
-```typescript
+```ts
 await app.register(errorHandlerPlugin);
 ```
 
 ## Remarks
 
-- The correlation ID is extracted from the request object (fastify assigns a unique ID to each request)
+- The correlation ID is extracted from the request object (Fastify assigns a unique ID to each request)
 - Server errors (5xx) return a generic message to prevent information leakage
 - Client errors (4xx) return the original error message
 - All errors are logged with full error details for debugging purposes
