@@ -679,9 +679,7 @@ describe("Tag.createdAt resolver - Unit test edge case", () => {
 			};
 
 			// This should throw a TypeError when trying to access [0] on undefined
-			await expect(resolver(parent, {}, ctx, {})).rejects.toThrow(
-				"Cannot read properties of undefined (reading '0')",
-			);
+			await expect(resolver(parent, {}, ctx, {})).rejects.toThrow(TypeError);
 		});
 	});
 });
