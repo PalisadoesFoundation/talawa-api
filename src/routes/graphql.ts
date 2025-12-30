@@ -254,6 +254,8 @@ export const graphql = fastifyPlugin(async (fastify) => {
 			return { statusCode: 200, response: execution };
 		}
 
+		// For subscriptions, context.reply is undefined. We check context.correlationId (set in onConnect)
+		// or generate a fallback if both are missing.
 		const correlationId =
 			(context.reply?.request?.id as string | undefined) ??
 			(context as { correlationId?: string }).correlationId ??

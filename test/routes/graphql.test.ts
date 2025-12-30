@@ -1757,7 +1757,7 @@ describe("GraphQL Routes", () => {
 			expect(result.response.errors?.[0]?.extensions?.httpStatus).toBe(500);
 		});
 
-		it("should handle subscription error formatting where context.reply is undefined", async () => {
+		it("should handle subscriptions with undefined reply", async () => {
 			await graphql(mockFastifyInstance as unknown as FastifyInstance);
 
 			const mercuriusCall = mockFastifyInstance.register.mock.calls.find(
