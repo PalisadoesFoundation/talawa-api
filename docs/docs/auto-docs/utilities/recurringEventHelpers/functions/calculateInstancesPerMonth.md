@@ -30,4 +30,4 @@ The interval between occurrences (default is 1).
 
 `number`
 
-The average number of instances expected in a month.
+- The average number of instances expected in a month.

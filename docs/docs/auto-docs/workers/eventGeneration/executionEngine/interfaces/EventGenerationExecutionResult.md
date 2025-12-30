@@ -6,8 +6,6 @@
 
 Defined in: [src/workers/eventGeneration/executionEngine.ts:22](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/workers/eventGeneration/executionEngine.ts#L22)
 
-## Description
-
 Represents the result of a single Generation job execution,
 including the number of instances created and the time taken.
 

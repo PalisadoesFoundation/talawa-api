@@ -12,7 +12,7 @@ export const DEFAULT_REFRESH_TOKEN_EXPIRES_MS = 604_800_000;
 
 /**
  * Generates a cryptographically secure random refresh token.
- * @returns A 64-character hex string token
+ * @returns - A 64-character hex string token
  */
 export function generateRefreshToken(): string {
 	return randomBytes(32).toString("hex");
@@ -21,7 +21,7 @@ export function generateRefreshToken(): string {
 /**
  * Creates a SHA-256 hash of a refresh token for secure storage.
  * @param token - The raw refresh token
- * @returns The hashed token
+ * @returns - The hashed token
  */
 export function hashRefreshToken(token: string): string {
 	return createHash("sha256").update(token).digest("hex");
@@ -33,7 +33,7 @@ export function hashRefreshToken(token: string): string {
  * @param userId - The user ID to associate with the token
  * @param tokenHash - The hashed refresh token
  * @param expiresAt - The expiration date of the token
- * @returns The created refresh token record
+ * @returns - The created refresh token record
  */
 export async function storeRefreshToken(
 	drizzleClient: PostgresJsDatabase<typeof schema>,
@@ -61,7 +61,7 @@ export async function storeRefreshToken(
  * Finds a valid (non-expired, non-revoked) refresh token by its hash.
  * @param drizzleClient - The Drizzle database client
  * @param tokenHash - The hashed refresh token to look up
- * @returns The refresh token record if found and valid, undefined otherwise
+ * @returns - The refresh token record if found and valid, undefined otherwise
  */
 export async function findValidRefreshToken(
 	drizzleClient: PostgresJsDatabase<typeof schema>,
@@ -100,7 +100,7 @@ export async function findValidRefreshToken(
  * Revokes a refresh token by setting its revokedAt timestamp.
  * @param drizzleClient - The Drizzle database client
  * @param tokenHash - The hashed refresh token to revoke
- * @returns True if token was revoked, false if not found or already revoked
+ * @returns - True if token was revoked, false if not found or already revoked
  */
 export async function revokeRefreshTokenByHash(
 	drizzleClient: PostgresJsDatabase<typeof schema>,
@@ -124,7 +124,7 @@ export async function revokeRefreshTokenByHash(
  * Revokes all refresh tokens for a user (useful for logout from all devices).
  * @param drizzleClient - The Drizzle database client
  * @param userId - The user ID whose tokens should be revoked
- * @returns The number of tokens revoked
+ * @returns - The number of tokens revoked
  */
 export async function revokeAllUserRefreshTokens(
 	drizzleClient: PostgresJsDatabase<typeof schema>,

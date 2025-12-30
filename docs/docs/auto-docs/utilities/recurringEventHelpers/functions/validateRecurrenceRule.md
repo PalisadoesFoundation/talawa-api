@@ -95,7 +95,7 @@ The recurrence rule to validate.
 
 `object`
 
-An object with a boolean `isValid` and an array of error strings.
+- An object with a boolean `isValid` and an array of error strings.
 
 ### errors
 

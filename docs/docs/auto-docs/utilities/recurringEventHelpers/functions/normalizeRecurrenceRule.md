@@ -95,7 +95,7 @@ The recurrence rule from the database.
 
 `object`
 
-A normalized recurrence rule, where `count` has been converted to `recurrenceEndDate`.
+- A normalized recurrence rule, where `count` has been converted to `recurrenceEndDate`.
 
 ### baseRecurringEventId
 

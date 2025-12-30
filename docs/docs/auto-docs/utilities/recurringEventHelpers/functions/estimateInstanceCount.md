@@ -101,4 +101,4 @@ The number of months to use for estimation if the event is never-ending.
 
 `number`
 
-The estimated total number of instances.
+- The estimated total number of instances.

@@ -40,4 +40,4 @@ The expiration date of the token
 
 `Promise`\<\{ `id`: `string`; \}\>
 
-The created refresh token record
+- The created refresh token record

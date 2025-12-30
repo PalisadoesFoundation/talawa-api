@@ -60,7 +60,7 @@ The start date of the event, used for validation against the end date.
 
 `object`
 
-An object containing a boolean `isValid` and an array of error strings.
+- An object containing a boolean `isValid` and an array of error strings.
          If `isValid` is true, the `errors` array will be empty.
 
 ### errors

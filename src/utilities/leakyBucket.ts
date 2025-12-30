@@ -8,7 +8,7 @@ import type { FastifyInstance } from "fastify";
  * @param capacity - The maximum capacity of the bucket.
  * @param refillRate - The rate at which tokens are added to the bucket.
  * @param cost - The cost in tokens for each request.
- * @returns A promise that resolves to a boolean indicating if the request is allowed.
+ * @returns - A promise that resolves to a boolean indicating if the request is allowed.
  */
 async function leakyBucket(
 	fastify: FastifyInstance,
