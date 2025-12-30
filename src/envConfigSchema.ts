@@ -379,13 +379,31 @@ export const envConfigSchema = Type.Object({
 	}),
 	/**
 	 * Optional JSON object to override default cache TTL values per entity type.
-	 * Format: JSON object with entity keys and TTL values in seconds.
-	 * Example: '{"user": 600, "organization": 600, "event": 240, "post": 120}'
-	 * Valid keys: user, organization, event, post
+	 *
+	 * **Format**: JSON object with entity keys and TTL values in seconds.
+	 *
+	 * **Valid keys**: `user`, `organization`, `event`, `post`
+	 *
+	 * **Example**: `'{"user": 600, "organization": 600, "event": 240, "post": 120}'`
+	 *
+	 * **Error Handling**:
+	 * - If the JSON is malformed, the entire value is ignored and default TTLs are used.
+	 *   A warning is logged via `console.warn` in `src/services/caching/cacheConfig.ts`.
+	 * - Unknown keys are silently ignored (no warning).
+	 * - Non-numeric or non-positive values for valid keys are ignored with a warning log.
+	 *
+	 * **Defaults** (defined in `src/services/caching/cacheConfig.ts`):
+	 * - `user`: 300 seconds (5 minutes)
+	 * - `organization`: 300 seconds (5 minutes)
+	 * - `event`: 120 seconds (2 minutes)
+	 * - `post`: 60 seconds (1 minute)
+	 *
+	 * @see {@link file://src/services/caching/cacheConfig.ts} for TTL parsing logic and defaults.
 	 */
 	CACHE_ENTITY_TTLS: Type.Optional(
 		Type.String({
 			minLength: 2, // Minimum valid JSON: "{}"
+			format: "json", // Validates JSON syntax at schema-time
 		}),
 	),
 	// API_REDIS_URI: Type.String({
@@ -473,6 +491,20 @@ export const envSchemaAjv: EnvSchemaOpt["ajv"] = {
 		ajvFormats.default(ajvInstance, {
 			formats: ["email", "uri"],
 		});
+
+		// Custom "json" format validator for fail-fast JSON validation
+		ajvInstance.addFormat("json", {
+			type: "string",
+			validate: (value: string): boolean => {
+				try {
+					JSON.parse(value);
+					return true;
+				} catch {
+					return false;
+				}
+			},
+		});
+
 		return ajvInstance;
 	},
 };
