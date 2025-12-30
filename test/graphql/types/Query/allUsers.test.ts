@@ -136,7 +136,10 @@ suite("Query field allUsers", () => {
 		expect(result.errors).toEqual(
 			expect.arrayContaining([
 				expect.objectContaining({
-					extensions: { code: "unauthenticated" },
+					extensions: {
+						code: "unauthenticated",
+						correlationId: expect.any(String),
+					},
 					path: ["allUsers"],
 				}),
 			]),
@@ -164,7 +167,10 @@ suite("Query field allUsers", () => {
 		expect(result.errors).toEqual(
 			expect.arrayContaining([
 				expect.objectContaining({
-					extensions: { code: "unauthenticated" },
+					extensions: {
+						code: "unauthenticated",
+						correlationId: expect.any(String),
+					},
 					path: ["allUsers"],
 				}),
 			]),
@@ -187,7 +193,10 @@ suite("Query field allUsers", () => {
 		expect(result.errors).toEqual(
 			expect.arrayContaining([
 				expect.objectContaining({
-					extensions: { code: "unauthorized_action" },
+					extensions: {
+						code: "unauthorized_action",
+						correlationId: expect.any(String),
+					},
 					path: ["allUsers"],
 				}),
 			]),
