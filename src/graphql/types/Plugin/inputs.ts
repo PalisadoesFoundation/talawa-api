@@ -10,11 +10,11 @@ import { builder } from "~/src/graphql/builder";
  * Usage examples:
  *
  * // Option 1: Import both schema and type separately
- * import { createPluginInputSchema, CreatePluginInput } from "./inputs";
+ * import \{ createPluginInputSchema, CreatePluginInput \} from "./inputs";
  *
  * // Option 2: Use helper function to get both together
- * import { getCreatePluginInput } from "./inputs";
- * const { schema, type } = getCreatePluginInput();
+ * import \{ getCreatePluginInput \} from "./inputs";
+ * const \{ schema, type \} = getCreatePluginInput();
  *
  * // Option 3: Import all schemas and types
  * import * as PluginInputs from "./inputs";

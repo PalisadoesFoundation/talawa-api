@@ -21,7 +21,7 @@ export interface DependencyInstallationResult {
  * Install dependencies for a plugin using pnpm
  * @param pluginId - The ID of the plugin
  * @param logger - Optional logger for output
- * @returns Promise<DependencyInstallationResult>
+ * @returns - Promise<DependencyInstallationResult>
  */
 export async function installPluginDependencies(
 	pluginId: string,

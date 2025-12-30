@@ -141,8 +141,8 @@ export const transformDefaultGraphQLConnectionArguments = <
  * Helper function to create a schema for connection arguments with a where clause.
  * Extends the default connection arguments schema with a custom where schema.
  *
- * @param whereSchema The Zod schema for the where clause
- * @returns A Zod schema for connection arguments with the where clause
+ * @param whereSchema - The Zod schema for the where clause
+ * @returns - A Zod schema for connection arguments with the where clause
  */
 export const createGraphQLConnectionWithWhereSchema = <T extends z.ZodType>(
 	whereSchema: T,
@@ -156,9 +156,9 @@ export const createGraphQLConnectionWithWhereSchema = <T extends z.ZodType>(
  * Transform function for connection arguments with a where clause.
  * Extends the base transformation with where handling.
  *
- * @param arg The arguments to transform
- * @param ctx The Zod refinement context
- * @returns The transformed arguments with where clause
+ * @param arg - The arguments to transform
+ * @param ctx - The Zod refinement context
+ * @returns - The transformed arguments with where clause
  */
 export const transformGraphQLConnectionArgumentsWithWhere = <
 	Arg extends z.infer<typeof defaultGraphQLConnectionArgumentsSchema> & {

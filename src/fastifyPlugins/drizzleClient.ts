@@ -10,14 +10,20 @@ declare module "fastify" {
 }
 
 /**
+ * Type alias for the Drizzle client with the full schema.
+ */
+export type DrizzleClient = PostgresJsDatabase<typeof drizzleSchema>;
+
+/**
  * Integrates a drizzle client instance on a namespace `drizzleClient` on the global fastify instance.
  *
  * @example
- *
+ * ```typescript
  * import drizzleClientPlugin from "~/src/plugins/drizzleClient";
  *
  * fastify.register(drizzleClientPlugin, {});
  * const user = await fastify.drizzleClient.query.usersTable.findFirst();
+ * ```
  */
 export const drizzleClient = fastifyPlugin(
 	async (fastify) => {

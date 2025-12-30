@@ -9,7 +9,7 @@ const queryGetRecurringEventsSchema = z.object({
 });
 
 /**
- * @description Defines the 'getRecurringEvents' query field for fetching all recurring event instances
+ * Defines the 'getRecurringEvents' query field for fetching all recurring event instances
  * that belong to a specific base recurring event template.
  * This query is similar to the old talawa-api getRecurringEvents but adapted for the new architecture
  * where event templates are in the events table and instances are in the recurring_event_instances table.

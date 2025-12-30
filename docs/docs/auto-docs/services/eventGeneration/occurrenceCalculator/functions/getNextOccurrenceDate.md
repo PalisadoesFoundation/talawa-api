@@ -99,4 +99,4 @@ The recurrence rule for the event.
 
 `Date`
 
-The date of the next potential occurrence.
+- The date of the next potential occurrence.

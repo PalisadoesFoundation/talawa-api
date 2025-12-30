@@ -4,18 +4,18 @@ import { eventsTable } from "~/src/drizzle/tables/events";
 import type { ServiceDependencies } from "~/src/services/eventGeneration/types";
 
 /**
- * @description Defines the input parameters for querying standalone events.
+ * Defines the input parameters for querying standalone events.
  */
 export interface GetStandaloneEventsInput {
 	organizationId: string;
 	startDate: Date;
 	endDate: Date;
 	/**
-	 * @description An optional array of event IDs to filter by.
+	 * An optional array of event IDs to filter by.
 	 */
 	eventIds?: string[];
 	/**
-	 * @description An optional limit on the number of events to return.
+	 * An optional limit on the number of events to return.
 	 */
 	limit?: number;
 }
@@ -28,7 +28,7 @@ export interface GetStandaloneEventsInput {
  * @param input - The input object containing organizationId, date range, and optional filters.
  * @param drizzleClient - The Drizzle ORM client for database access.
  * @param logger - The logger for logging debug and error messages.
- * @returns A promise that resolves to an array of standalone event objects, including their attachments.
+ * @returns - A promise that resolves to an array of standalone event objects, including their attachments.
  */
 export async function getStandaloneEventsInDateRange(
 	input: GetStandaloneEventsInput,
@@ -120,7 +120,7 @@ export async function getStandaloneEventsInDateRange(
  * @param eventIds - An array of event IDs to retrieve.
  * @param drizzleClient - The Drizzle ORM client for database access.
  * @param logger - The logger for logging debug and error messages.
- * @returns A promise that resolves to an array of the requested standalone event objects,
+ * @returns - A promise that resolves to an array of the requested standalone event objects,
  *          including their attachments.
  */
 export async function getStandaloneEventsByIds(

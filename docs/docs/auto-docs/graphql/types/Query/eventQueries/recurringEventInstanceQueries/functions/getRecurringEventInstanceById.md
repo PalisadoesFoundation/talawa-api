@@ -40,4 +40,4 @@ The logger for logging debug and error messages.
 
 `Promise`\<[`ResolvedRecurringEventInstance`](../../../../../../drizzle/tables/recurringEventInstances/type-aliases/ResolvedRecurringEventInstance.md) \| `null`\>
 
-A promise that resolves to the resolved recurring event event instance, or null if not found.
+- A promise that resolves to the resolved recurring event instance, or null if not found.

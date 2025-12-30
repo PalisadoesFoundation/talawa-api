@@ -6,8 +6,6 @@
 
 Defined in: [src/workers/eventGeneration/executionEngine.ts:11](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/workers/eventGeneration/executionEngine.ts#L11)
 
-## Description
-
 Defines the structure of a Generation job, containing all necessary
 information to process a single recurring event.
 

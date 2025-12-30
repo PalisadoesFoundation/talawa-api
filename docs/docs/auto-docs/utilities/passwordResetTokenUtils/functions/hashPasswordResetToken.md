@@ -27,4 +27,4 @@ The raw password reset token
 
 `string`
 
-The hashed token
+- The hashed token

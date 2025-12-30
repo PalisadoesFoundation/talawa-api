@@ -10,7 +10,7 @@ const queryEventsByIdsSchema = z.object({
 });
 
 /**
- * @description Defines the 'eventsByIds' query field for fetching multiple events by their IDs.
+ * Defines the 'eventsByIds' query field for fetching multiple events by their IDs.
  * This query supports a mix of standalone events and materialized instances, providing a unified
  * way to retrieve various event types in a single request.
  */

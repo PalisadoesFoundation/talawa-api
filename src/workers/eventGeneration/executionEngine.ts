@@ -5,7 +5,7 @@ import {
 import type { ProcessingResult, WorkerDependencies } from "./types";
 
 /**
- * @description Defines the structure of a Generation job, containing all necessary
+ * Defines the structure of a Generation job, containing all necessary
  * information to process a single recurring event.
  */
 export interface EventGenerationJob {
@@ -16,7 +16,7 @@ export interface EventGenerationJob {
 }
 
 /**
- * @description Represents the result of a single Generation job execution,
+ * Represents the result of a single Generation job execution,
  * including the number of instances created and the time taken.
  */
 export interface EventGenerationExecutionResult {
@@ -32,7 +32,7 @@ export interface EventGenerationExecutionResult {
  *
  * @param job - The Generation job to execute.
  * @param deps - The dependencies required for the worker, such as the database client and logger.
- * @returns A promise that resolves to a processing result, including metrics and resource usage.
+ * @returns - A promise that resolves to a processing result, including metrics and resource usage.
  */
 export async function executeEventGeneration(
 	job: EventGenerationJob,
@@ -117,7 +117,7 @@ export async function executeEventGeneration(
  * @param jobs - An array of Generation jobs to execute.
  * @param maxConcurrency - The maximum number of jobs to run in parallel.
  * @param deps - The dependencies required for the worker.
- * @returns A promise that resolves to a consolidated processing result for the entire batch.
+ * @returns - A promise that resolves to a consolidated processing result for the entire batch.
  */
 export async function executeBatchEventGeneration(
 	jobs: EventGenerationJob[],
