@@ -2,14 +2,36 @@
  * TSDoc Validation Script
  *
  * This script validates TSDoc comments in TypeScript files using the
- * @microsoft/tsdoc library. It can check all files in src/ or specific
- * files passed as arguments.
+ * `@microsoft/tsdoc` library (the same parser used by `eslint-plugin-tsdoc`).
  *
- * Usage:
+ * ## Why a Custom Script Instead of eslint-plugin-tsdoc?
+ *
+ * We use a custom script rather than directly using `eslint-plugin-tsdoc` to
+ * filter out certain overly pedantic TSDoc rules that would significantly
+ * hurt documentation readability without providing meaningful value.
+ *
+ * Specifically, eslint-plugin-tsdoc reports errors for:
+ * - `tsdoc-malformed-inline-tag`: Triggers on `{` in documentation text
+ * - `tsdoc-escape-right-brace`: Triggers on `}` in documentation text
+ *
+ * These rules require escaping all curly braces in documentation. For example,
+ * type descriptions like `{id: string}` would need to become `\{id: string\}`.
+ * This escaping:
+ * 1. Significantly reduces readability of documentation
+ * 2. Makes documentation harder to write and maintain
+ * 3. Would require changes across all existing documentation
+ * 4. Could cause issues in CI during deployment
+ *
+ * By using a custom script, we get the same TSDoc validation quality while
+ * intentionally filtering out these noisy rules that don't improve docs.
+ *
+ * ## Usage
+ *
  *   pnpm lint:tsdoc              # Check all src/**\/*.ts files
  *   pnpm lint:tsdoc file1.ts     # Check specific files
  *
- * Exit codes:
+ * ## Exit Codes
+ *
  *   0 - All TSDoc comments are valid
  *   1 - TSDoc validation errors found
  */
@@ -100,14 +122,28 @@ function validateFile(
 			const messages = validateComment(comment, config);
 
 			for (const msg of messages) {
-				// Skip overly pedantic rules that occur in code examples
-				// These don't affect documentation quality and are common in example code
+				/**
+				 * Ignored TSDoc Rules
+				 *
+				 * We intentionally filter out these rules because they are overly
+				 * pedantic and don't improve documentation quality. See the file
+				 * header comment for the full rationale.
+				 *
+				 * - tsdoc-malformed-inline-tag: Triggers on `{` in type examples like `{id: string}`
+				 * - tsdoc-escape-right-brace: Triggers on `}` in type examples
+				 * - tsdoc-escape-greater-than: Triggers on `>` in arrow function examples
+				 * - tsdoc-at-sign-in-word: Triggers on `@` in email examples
+				 * - tsdoc-characters-after-block-tag: Triggers on `@example.` patterns
+				 *
+				 * Fixing these would require escaping characters like `\{`, `\}`, `\>`
+				 * throughout all documentation, which hurts readability significantly.
+				 */
 				const ignoredMessageIds = [
-					"tsdoc-malformed-inline-tag", // { in code examples
-					"tsdoc-escape-right-brace", // } in code examples
-					"tsdoc-escape-greater-than", // > in code examples (arrow functions)
-					"tsdoc-at-sign-in-word", // @ in email examples
-					"tsdoc-characters-after-block-tag", // @example. patterns
+					"tsdoc-malformed-inline-tag",
+					"tsdoc-escape-right-brace",
+					"tsdoc-escape-greater-than",
+					"tsdoc-at-sign-in-word",
+					"tsdoc-characters-after-block-tag",
 				];
 
 				if (ignoredMessageIds.includes(msg.messageId)) {
