@@ -71,11 +71,10 @@ export interface PerformanceTracker {
 }
 
 /**
- * Create a new performance tracker for a request.
- * @param _slowMs - Threshold in milliseconds to consider an operation slow (unused in current implementation, reserved for future use)
- * @returns Performance tracker instance
+ * Creates a performance tracker for request-level metrics.
+ * Tracks operations, cache hits/misses, and provides snapshots.
  */
-export function createPerformanceTracker(_slowMs = 200): PerformanceTracker {
+export function createPerformanceTracker(): PerformanceTracker {
 	const ops: Record<string, OpStats> = {};
 	let cacheHits = 0;
 	let cacheMiss = 0;
