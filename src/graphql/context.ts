@@ -1,5 +1,6 @@
 import type { FastifyInstance } from "fastify";
 import type { usersTable } from "~/src/drizzle/tables/users";
+import type { Dataloaders } from "~/src/utilities/dataloaders";
 import type { PubSub } from "./pubsub";
 
 /**
@@ -40,6 +41,10 @@ export type CurrentClient =
  */
 export type ExplicitGraphQLContext = {
 	currentClient: CurrentClient;
+	/**
+	 * Request-scoped DataLoaders for batching database queries.
+	 */
+	dataloaders: Dataloaders;
 	drizzleClient: FastifyInstance["drizzleClient"];
 	envConfig: Pick<
 		FastifyInstance["envConfig"],

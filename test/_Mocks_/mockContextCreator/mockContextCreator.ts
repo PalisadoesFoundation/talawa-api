@@ -6,6 +6,7 @@ import type {
 	ExplicitGraphQLContext,
 	GraphQLContext,
 } from "~/src/graphql/context";
+import { createDataloaders } from "~/src/utilities/dataloaders";
 import { createMockDrizzleClient } from "../drizzleClientMock";
 import { createMockMinioClient } from "../mockMinioClient";
 import { createMockPubSub } from "../pubsubMock";
@@ -50,6 +51,9 @@ export function createMockGraphQLContext(
 		currentClient: isAuthenticated
 			? authenticatedClient(userId)
 			: unauthenticatedClient,
+		dataloaders: createDataloaders(
+			mockDrizzleClient as unknown as FastifyInstance["drizzleClient"],
+		),
 		drizzleClient:
 			mockDrizzleClient as unknown as FastifyInstance["drizzleClient"],
 		envConfig: {
