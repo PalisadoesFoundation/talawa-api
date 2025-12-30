@@ -7,9 +7,10 @@ import {
 	MutationUpdateAgendaItemInputSchema,
 } from "~/src/graphql/inputs/MutationUpdateAgendaItemInput";
 import { AgendaItem } from "~/src/graphql/types/AgendaItem/AgendaItem";
-import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import envConfig from "~/src/utilities/graphqLimits";
 import { isNotNullish } from "~/src/utilities/isNotNullish";
+import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
+
 const mutationUpdateAgendaItemArgumentsSchema = z.object({
 	input: MutationUpdateAgendaItemInputSchema,
 });

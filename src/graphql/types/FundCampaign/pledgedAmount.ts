@@ -1,10 +1,10 @@
 import { eq, sum } from "drizzle-orm";
 import { fundCampaignPledgesTable } from "~/src/drizzle/tables/fundCampaignPledges";
 import type { GraphQLContext } from "~/src/graphql/context";
-import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import envConfig from "~/src/utilities/graphqLimits";
-import { FundCampaign } from "./FundCampaign";
+import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import type { FundCampaign as FundCampaignType } from "./FundCampaign";
+import { FundCampaign } from "./FundCampaign";
 
 /**
  * Resolves the total pledged amount for a fund campaign.

@@ -563,7 +563,7 @@ describe("Fund Resolver - Organization Field", () => {
 				expect.assertions(1);
 				await resolveOrganization(mockFund, {}, ctx);
 				expect.fail("Expected error to be thrown");
-			} catch (error) {
+			} catch (_error) {
 				expect(ctx.log.error).toHaveBeenCalledWith(
 					"Postgres select operation returned an empty array for a fund's organization id that isn't null.",
 				);
@@ -581,7 +581,7 @@ describe("Fund Resolver - Organization Field", () => {
 				expect.assertions(1);
 				await resolveOrganization(mockFund, {}, ctx);
 				expect.fail("Expected error to be thrown");
-			} catch (error) {
+			} catch (_error) {
 				expect(ctx.log.error).toHaveBeenCalledWith(
 					expect.stringContaining("fund's organization id"),
 				);

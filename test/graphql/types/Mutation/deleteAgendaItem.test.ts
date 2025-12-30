@@ -1,8 +1,6 @@
 import { faker } from "@faker-js/faker";
-
-import { afterEach, expect, suite, test } from "vitest";
-
 import { eq } from "drizzle-orm";
+import { afterEach, expect, suite, test } from "vitest";
 import { usersTable } from "~/src/drizzle/schema";
 import { organizationMembershipsTable } from "~/src/drizzle/tables/organizationMemberships";
 import type {
@@ -153,8 +151,8 @@ async function createTestAgendaItem(): Promise<TestAgendaItem> {
 			input: {
 				name: `Event ${faker.string.uuid()}`,
 				organizationId: orgId,
-				startAt: new Date().toISOString(),
-				endAt: new Date(Date.now() + 86400000).toISOString(),
+				startAt: new Date(Date.now() + 86400000).toISOString(),
+				endAt: new Date(Date.now() + 90000000).toISOString(),
 				description: "Test event",
 			},
 		},

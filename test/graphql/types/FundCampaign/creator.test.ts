@@ -1,8 +1,8 @@
 import { createMockGraphQLContext } from "test/_Mocks_/mockContextCreator/mockContextCreator";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { GraphQLContext } from "~/src/graphql/context";
-import type { FundCampaign } from "~/src/graphql/types/FundCampaign/FundCampaign";
 import { creatorResolver } from "~/src/graphql/types/FundCampaign/creator";
+import type { FundCampaign } from "~/src/graphql/types/FundCampaign/FundCampaign";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 
 describe("FundCampaign Resolver - Creator Field", () => {
@@ -46,6 +46,7 @@ describe("FundCampaign Resolver - Creator Field", () => {
 			goalAmount: 50000,
 			startAt: new Date("2025-11-11T00:00:00Z"),
 			endAt: new Date("2025-11-12T23:59:59Z"),
+			amountRaised: 0,
 		};
 
 		vi.clearAllMocks();

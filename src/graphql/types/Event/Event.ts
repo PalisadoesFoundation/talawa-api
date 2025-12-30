@@ -62,6 +62,9 @@ Event.implement({
 			description:
 				"A boolean flag indicating if the event lasts for the entire day.",
 		}),
+		isInviteOnly: t.exposeBoolean("isInviteOnly", {
+			description: "A boolean flag indicating if the event is invite-only.",
+		}),
 		isPublic: t.exposeBoolean("isPublic", {
 			description:
 				"A boolean flag indicating if the event is visible to the public.",

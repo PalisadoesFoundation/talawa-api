@@ -1,6 +1,8 @@
+import { eq, sql } from "drizzle-orm";
 import { uuidv7 } from "uuidv7";
 import { z } from "zod";
 import { fundCampaignPledgesTable } from "~/src/drizzle/tables/fundCampaignPledges";
+import { fundCampaignsTable } from "~/src/drizzle/tables/fundCampaigns";
 import { builder } from "~/src/graphql/builder";
 import {
 	MutationCreateFundCampaignPledgeInput,
@@ -8,8 +10,9 @@ import {
 } from "~/src/graphql/inputs/MutationCreateFundCampaignPledgeInput";
 import { FundCampaignPledge } from "~/src/graphql/types/FundCampaignPledge/FundCampaignPledge";
 import { notificationEventBus } from "~/src/graphql/types/Notification/EventBus/eventBus";
-import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import envConfig from "~/src/utilities/graphqLimits";
+import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
+
 const mutationCreateFundCampaignPledgeArgumentsSchema = z.object({
 	input: mutationCreateFundCampaignPledgeInputSchema,
 });
@@ -216,17 +219,35 @@ builder.mutationField("createFundCampaignPledge", (t) =>
 				});
 			}
 
-			const [createdFundCampaignPledge] = await ctx.drizzleClient
-				.insert(fundCampaignPledgesTable)
-				.values({
-					amount: parsedArgs.input.amount,
-					campaignId: parsedArgs.input.campaignId,
-					creatorId: currentUserId,
-					id: uuidv7(),
-					note: parsedArgs.input.note,
-					pledgerId: parsedArgs.input.pledgerId,
-				})
-				.returning();
+			const createdFundCampaignPledge = await ctx.drizzleClient.transaction(
+				async (tx) => {
+					const [createdPledge] = await tx
+						.insert(fundCampaignPledgesTable)
+						.values({
+							amount: parsedArgs.input.amount,
+							campaignId: parsedArgs.input.campaignId,
+							creatorId: currentUserId,
+							id: uuidv7(),
+							note: parsedArgs.input.note,
+							pledgerId: parsedArgs.input.pledgerId,
+						})
+						.returning();
+
+					if (createdPledge === undefined) {
+						tx.rollback();
+						return; // logic to satisfy typescript
+					}
+
+					await tx
+						.update(fundCampaignsTable)
+						.set({
+							amountRaised: sql`${fundCampaignsTable.amountRaised} + ${parsedArgs.input.amount}`,
+						})
+						.where(eq(fundCampaignsTable.id, parsedArgs.input.campaignId));
+
+					return createdPledge;
+				},
+			);
 
 			// Inserted fund campaign pledge not being returned is an external defect unrelated to this code. It is very unlikely for this error to occur.
 			if (createdFundCampaignPledge === undefined) {

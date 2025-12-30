@@ -3,15 +3,15 @@ import type { FastifyBaseLogger } from "fastify";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import type * as schema from "~/src/drizzle/schema";
 import {
-	type WindowProcessingConfig,
-	type WindowProcessingResult,
-	type WorkerDependencies,
 	getFixedProcessingConfig,
 	getOrganizationMaterializationStatus,
 	getOrganizationsNeedingMaterialization,
 	getProcessingStatistics,
 	updateWindowAfterProcessing,
 	validateWindowConfiguration,
+	type WindowProcessingConfig,
+	type WindowProcessingResult,
+	type WorkerDependencies,
 } from "~/src/workers/eventGeneration/windowManager";
 
 // Mock dependencies
@@ -92,6 +92,7 @@ describe("windowManager", () => {
 		longitude: null,
 		isPublic: true,
 		isRegisterable: false,
+		isInviteOnly: false,
 		...overrides,
 	});
 

@@ -28,6 +28,7 @@ vi.mock("~/src/utilities/TalawaGraphQLError", () => ({
 // Import mocked functions
 import { complexityFromQuery } from "@pothos/plugin-complexity";
 import schemaManager from "~/src/graphql/schemaManager";
+import { COOKIE_NAMES } from "~/src/utilities/cookieConfig";
 import leakyBucket from "~/src/utilities/leakyBucket";
 
 const iso8601 = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?Z$/;
@@ -49,6 +50,8 @@ describe("GraphQL Routes", () => {
 				API_GRAPHQL_MUTATION_BASE_COST: 10,
 				API_RATE_LIMIT_BUCKET_CAPACITY: 100,
 				API_RATE_LIMIT_REFILL_RATE: 1,
+				API_JWT_EXPIRES_IN: 900000,
+				API_REFRESH_TOKEN_EXPIRES_IN: 604800000,
 			} as FastifyInstance["envConfig"],
 			jwt: {
 				sign: vi.fn().mockReturnValue("signed-jwt-token"),
@@ -71,10 +74,13 @@ describe("GraphQL Routes", () => {
 		mockRequest = {
 			jwtVerify: vi.fn(),
 			ip: "127.0.0.1",
+			cookies: {},
 		};
 
 		// Setup mock reply
-		mockReply = {};
+		mockReply = {
+			setCookie: vi.fn(),
+		};
 
 		// Setup mock socket
 		mockSocket = {};
@@ -103,10 +109,21 @@ describe("GraphQL Routes", () => {
 			});
 
 			expect(context).toEqual({
+				cookie: {
+					clearAuthCookies: expect.any(Function),
+					getRefreshToken: expect.any(Function),
+					setAuthCookies: expect.any(Function),
+				},
 				currentClient: {
 					isAuthenticated: true,
 					user: mockJwtPayload.user,
 				},
+				dataloaders: expect.objectContaining({
+					user: expect.any(Object),
+					organization: expect.any(Object),
+					event: expect.any(Object),
+					actionItem: expect.any(Object),
+				}),
 				drizzleClient: mockFastify.drizzleClient,
 				envConfig: mockFastify.envConfig,
 				jwt: {
@@ -135,9 +152,20 @@ describe("GraphQL Routes", () => {
 			});
 
 			expect(context).toEqual({
+				cookie: {
+					clearAuthCookies: expect.any(Function),
+					getRefreshToken: expect.any(Function),
+					setAuthCookies: expect.any(Function),
+				},
 				currentClient: {
 					isAuthenticated: false,
 				},
+				dataloaders: expect.objectContaining({
+					user: expect.any(Object),
+					organization: expect.any(Object),
+					event: expect.any(Object),
+					actionItem: expect.any(Object),
+				}),
 				drizzleClient: mockFastify.drizzleClient,
 				envConfig: mockFastify.envConfig,
 				jwt: {
@@ -216,6 +244,187 @@ describe("GraphQL Routes", () => {
 
 			expect(signedToken).toBe("signed-jwt-token");
 			expect(mockFastify.jwt?.sign).toHaveBeenCalledWith(testPayload);
+		});
+
+		it("should authenticate via cookie when header fails", async () => {
+			mockRequest.jwtVerify = vi.fn().mockRejectedValue(new Error("No header"));
+
+			// Mock fastify.jwt.verify for cookie token
+			const mockCookieUser = { id: "cookie-user" };
+			mockFastify.jwt = {
+				...mockFastify.jwt,
+				verify: vi.fn().mockResolvedValue({ user: mockCookieUser }),
+			} as unknown as FastifyInstance["jwt"];
+
+			mockRequest.cookies = {
+				[COOKIE_NAMES.ACCESS_TOKEN]: "valid-cookie-token",
+			};
+
+			const context = await createContext({
+				fastify: mockFastify as FastifyInstance,
+				request: mockRequest as FastifyRequest,
+				isSubscription: false,
+				reply: mockReply as FastifyReply,
+			});
+
+			expect(context.currentClient).toEqual({
+				isAuthenticated: true,
+				user: mockCookieUser,
+			});
+			expect(mockFastify.jwt?.verify).toHaveBeenCalledWith(
+				"valid-cookie-token",
+			);
+		});
+
+		it("should fail authentication when both header and cookie fail", async () => {
+			mockRequest.jwtVerify = vi.fn().mockRejectedValue(new Error("No header"));
+
+			// Mock fastify.jwt.verify failure
+			mockFastify.jwt = {
+				...mockFastify.jwt,
+				verify: vi.fn().mockRejectedValue(new Error("Invalid cookie")),
+			} as unknown as FastifyInstance["jwt"];
+
+			mockRequest.cookies = {
+				[COOKIE_NAMES.ACCESS_TOKEN]: "invalid-cookie-token",
+			};
+
+			const context = await createContext({
+				fastify: mockFastify as FastifyInstance,
+				request: mockRequest as FastifyRequest,
+				isSubscription: false,
+				reply: mockReply as FastifyReply,
+			});
+
+			expect(context.currentClient).toEqual({
+				isAuthenticated: false,
+			});
+		});
+
+		describe("Cookie Helpers", () => {
+			it("should set auth cookies with correct options", async () => {
+				const context = await createContext({
+					fastify: mockFastify as FastifyInstance,
+					request: mockRequest as FastifyRequest,
+					isSubscription: false,
+					reply: mockReply as FastifyReply,
+				});
+
+				context.cookie?.setAuthCookies("access-token", "refresh-token");
+
+				expect(mockReply.setCookie).toHaveBeenCalledWith(
+					COOKIE_NAMES.ACCESS_TOKEN,
+					"access-token",
+					expect.objectContaining({
+						httpOnly: true,
+						path: "/",
+						sameSite: "lax",
+						maxAge: 900,
+					}),
+				);
+
+				expect(mockReply.setCookie).toHaveBeenCalledWith(
+					COOKIE_NAMES.REFRESH_TOKEN,
+					"refresh-token",
+					expect.objectContaining({
+						httpOnly: true,
+						path: "/",
+						sameSite: "lax",
+						maxAge: 604800,
+					}),
+				);
+			});
+
+			it("should clear auth cookies", async () => {
+				const context = await createContext({
+					fastify: mockFastify as FastifyInstance,
+					request: mockRequest as FastifyRequest,
+					isSubscription: false,
+					reply: mockReply as FastifyReply,
+				});
+
+				context.cookie?.clearAuthCookies();
+
+				expect(mockReply.setCookie).toHaveBeenCalledWith(
+					COOKIE_NAMES.ACCESS_TOKEN,
+					"",
+					expect.objectContaining({
+						maxAge: 0,
+						sameSite: "lax",
+					}),
+				);
+
+				expect(mockReply.setCookie).toHaveBeenCalledWith(
+					COOKIE_NAMES.REFRESH_TOKEN,
+					"",
+					expect.objectContaining({
+						maxAge: 0,
+						sameSite: "lax",
+					}),
+				);
+			});
+
+			it("should get refresh token from cookies", async () => {
+				mockRequest.cookies = {
+					[COOKIE_NAMES.REFRESH_TOKEN]: "stored-refresh-token",
+				};
+
+				const context = await createContext({
+					fastify: mockFastify as FastifyInstance,
+					request: mockRequest as FastifyRequest,
+					isSubscription: false,
+					reply: mockReply as FastifyReply,
+				});
+
+				const refreshToken = context.cookie?.getRefreshToken();
+				expect(refreshToken).toBe("stored-refresh-token");
+			});
+
+			it("should respect secure cookie configuration", async () => {
+				if (mockFastify.envConfig) {
+					mockFastify.envConfig.API_IS_SECURE_COOKIES = true;
+				}
+
+				const context = await createContext({
+					fastify: mockFastify as FastifyInstance,
+					request: mockRequest as FastifyRequest,
+					isSubscription: false,
+					reply: mockReply as FastifyReply,
+				});
+
+				context.cookie?.setAuthCookies("access", "refresh");
+
+				expect(mockReply.setCookie).toHaveBeenCalledWith(
+					expect.any(String),
+					expect.any(String),
+					expect.objectContaining({
+						secure: true,
+					}),
+				);
+			});
+
+			it("should respect cookie domain configuration", async () => {
+				if (mockFastify.envConfig) {
+					mockFastify.envConfig.API_COOKIE_DOMAIN = ".example.com";
+				}
+
+				const context = await createContext({
+					fastify: mockFastify as FastifyInstance,
+					request: mockRequest as FastifyRequest,
+					isSubscription: false,
+					reply: mockReply as FastifyReply,
+				});
+
+				context.cookie?.setAuthCookies("access", "refresh");
+
+				expect(mockReply.setCookie).toHaveBeenCalledWith(
+					expect.any(String),
+					expect.any(String),
+					expect.objectContaining({
+						domain: ".example.com",
+					}),
+				);
+			});
 		});
 	});
 
@@ -789,29 +998,6 @@ describe("GraphQL Routes", () => {
 				1,
 				2,
 			);
-		});
-
-		it("should log complexity for debugging", async () => {
-			const mockComplexity = { complexity: 42, breadth: 1, depth: 1 };
-			vi.mocked(complexityFromQuery).mockReturnValue(mockComplexity);
-
-			mockDocument.reply.request.jwtVerify.mockRejectedValue(
-				new Error("No token"),
-			);
-			vi.mocked(leakyBucket).mockResolvedValue(true);
-
-			const consoleSpy = vi.spyOn(console, "log").mockImplementation(() => {});
-
-			await preExecutionHook(
-				mockSchema,
-				mockContext,
-				mockDocument,
-				mockVariables,
-			);
-
-			expect(consoleSpy).toHaveBeenCalledWith("Complexity: ", 42);
-
-			consoleSpy.mockRestore();
 		});
 	});
 

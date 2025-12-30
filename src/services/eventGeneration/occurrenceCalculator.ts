@@ -300,8 +300,8 @@ export function shouldGenerateInstanceAtDate(
  * @returns `true` if an instance should be generated, otherwise `false`.
  */
 function shouldGenerateForDaily(
-	date: Date,
-	recurrenceRule: typeof recurrenceRulesTable.$inferSelect,
+	_date: Date,
+	_recurrenceRule: typeof recurrenceRulesTable.$inferSelect,
 ): boolean {
 	// For daily events, no additional day filters needed
 	return true;

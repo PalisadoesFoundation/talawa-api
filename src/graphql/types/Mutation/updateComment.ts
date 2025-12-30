@@ -7,8 +7,9 @@ import {
 	mutationUpdateCommentInputSchema,
 } from "~/src/graphql/inputs/MutationUpdateCommentInput";
 import { Comment } from "~/src/graphql/types/Comment/Comment";
-import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import envConfig from "~/src/utilities/graphqLimits";
+import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
+
 const mutationUpdateCommentArgumentsSchema = z.object({
 	input: mutationUpdateCommentInputSchema,
 });

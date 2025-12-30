@@ -1,9 +1,9 @@
 import type { GraphQLContext } from "~/src/graphql/context";
 import { User } from "~/src/graphql/types/User/User";
-import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import envConfig from "~/src/utilities/graphqLimits";
-import { AgendaFolder } from "./AgendaFolder";
+import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import type { AgendaFolder as AgendaFolderType } from "./AgendaFolder";
+import { AgendaFolder } from "./AgendaFolder";
 
 export const resolveUpdater = async (
 	parent: AgendaFolderType,

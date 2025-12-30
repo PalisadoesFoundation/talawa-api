@@ -1,12 +1,12 @@
 import * as fs from "node:fs/promises";
 import { glob } from "glob";
 import {
-	type Mock,
 	afterEach,
 	beforeEach,
 	describe,
 	expect,
 	it,
+	type Mock,
 	vi,
 } from "vitest";
 import {

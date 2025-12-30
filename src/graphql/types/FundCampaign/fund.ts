@@ -1,6 +1,6 @@
 import { Fund } from "~/src/graphql/types/Fund/Fund";
-import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import envConfig from "~/src/utilities/graphqLimits";
+import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import type { GraphQLContext } from "../../context";
 import { FundCampaign } from "./FundCampaign";
 

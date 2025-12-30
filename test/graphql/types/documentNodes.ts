@@ -110,6 +110,8 @@ export const Mutation_updateCurrentUser =
     updateCurrentUser(input: $input) {
         addressLine1
         addressLine2
+        avatarMimeType
+        avatarURL
         birthDate
         city
         countryCode
@@ -125,6 +127,7 @@ export const Mutation_updateCurrentUser =
         mobilePhoneNumber
         name
         natalSex
+        naturalLanguageCode
         postalCode
         role
         state
@@ -220,21 +223,34 @@ export const Query_signIn = gql(`query Query_signIn($input: QuerySignInInput!) {
     }
 }`);
 
-export const Mutation_refreshToken =
-	gql(`mutation Mutation_refreshToken($refreshToken: String!) {
-    refreshToken(refreshToken: $refreshToken) {
-        authenticationToken
-        refreshToken
-        user {
-            id
-            name
-        }
-    }
-}`);
-
 export const Mutation_revokeRefreshToken =
 	gql(`mutation Mutation_revokeRefreshToken($refreshToken: String!) {
     revokeRefreshToken(refreshToken: $refreshToken)
+}`);
+
+export const Mutation_requestPasswordReset =
+	gql(`mutation Mutation_requestPasswordReset($input: MutationRequestPasswordResetInput!) {
+    requestPasswordReset(input: $input) {
+        success
+        message
+    }
+}`);
+
+export const Mutation_resetPassword =
+	gql(`mutation Mutation_resetPassword($input: MutationResetPasswordInput!) {
+    resetPassword(input: $input) {
+        success
+        authenticationToken
+        refreshToken
+    }
+}`);
+
+export const Query_verifyPasswordResetToken =
+	gql(`query Query_verifyPasswordResetToken($input: QueryVerifyPasswordResetTokenInput!) {
+    verifyPasswordResetToken(input: $input) {
+        valid
+        expiresAt
+    }
 }`);
 
 export const Query_user = gql(`query Query_user($input: QueryUserInput!) {
@@ -396,6 +412,7 @@ export const Query_fundCampaign =
       id
       name
       goalAmount
+      amountRaised
     }
   }`);
 
@@ -422,6 +439,14 @@ export const Query_getPledgesByUserId =
     }
   }
 }`);
+
+export const Query_chatMessage = gql(`
+  query Query_chatMessage($input: QueryChatMessageInput!) {
+    chatMessage(input: $input) {
+      id
+    }
+  }
+`);
 
 export const Query_chat_members = gql(`
 query ChatMembers($input: QueryChatInput!, $first: Int, $last: Int, $after: String, $before: String) {
@@ -504,6 +529,15 @@ export const Mutation_createFundCampaignPledge =
     }
   }`);
 
+export const Mutation_updateFundCampaignPledge =
+	gql(`mutation Mutation_updateFundCampaignPledge($input: MutationUpdateFundCampaignPledgeInput!) {
+    updateFundCampaignPledge(input: $input) {
+      id
+      note
+      amount
+    }
+  }`);
+
 export const Mutation_createOrganizationMembership =
 	gql(`mutation Mutation_createOrganizationMembership($input: MutationCreateOrganizationMembershipInput!) {
     createOrganizationMembership(input: $input) {
@@ -572,6 +606,7 @@ export const Query_event = gql(`query Query_event($input: QueryEventInput!) {
         description
         startAt
         endAt
+        isInviteOnly
         creator {
             id
             name
@@ -642,6 +677,37 @@ export const Mutation_createTag = gql(`
         }
     }
   }`);
+
+export const Mutation_createTagFolder = gql(`
+  mutation Mutation_createTagFolder($input: MutationCreateTagFolderInput!) {
+    createTagFolder(input: $input) {
+      id
+      name
+      createdAt
+      updatedAt
+    }
+  }
+`);
+
+export const Mutation_updateTagFolder = gql(`
+  mutation Mutation_updateTagFolder($input: MutationUpdateTagFolderInput!) {
+    updateTagFolder(input: $input) {
+      id
+      name
+      createdAt
+      updatedAt
+    }
+  }
+`);
+
+export const Mutation_deleteTagFolder = gql(`
+  mutation Mutation_deleteTagFolder($input: MutationDeleteTagFolderInput!) {
+    deleteTagFolder(input: $input) {
+      id
+      name
+    }
+  }
+`);
 
 export const Query_organizations = gql(`
 	query Query_organizations {
@@ -731,6 +797,22 @@ export const Query_agendaItem =
 export const Mutation_createAgendaFolder = gql(`
   mutation Mutation_createAgendaFolder($input: MutationCreateAgendaFolderInput!) {
     createAgendaFolder(input: $input) {
+      id
+      name
+      isAgendaItemFolder
+      event {
+        id
+      }
+      parentFolder {
+        id
+      }
+    }
+  }
+`);
+
+export const Mutation_updateAgendaFolder = gql(`
+  mutation Mutation_updateAgendaFolder($input: MutationUpdateAgendaFolderInput!) {
+    updateAgendaFolder(input: $input) {
       id
       name
       isAgendaItemFolder
@@ -1202,6 +1284,7 @@ export const Query_eventsByIds = gql(`
       description
       startAt
       endAt
+      isInviteOnly
     }
   }
 `);
@@ -1629,6 +1712,7 @@ export const Mutation_updateSingleRecurringEventInstance = gql(`
       allDay
       isPublic
       isRegisterable
+      isInviteOnly
       hasExceptions
       sequenceNumber
       totalCount
@@ -1652,6 +1736,7 @@ export const Mutation_updateStandaloneEvent = gql(`
       allDay
       isPublic
       isRegisterable
+      isInviteOnly
       organization {
         id
         name
@@ -1675,6 +1760,7 @@ export const Mutation_updateThisAndFollowingEvents = gql(`
       allDay
       isPublic
       isRegisterable
+      isInviteOnly
       hasExceptions
       sequenceNumber
       totalCount

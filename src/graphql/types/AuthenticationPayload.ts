@@ -1,6 +1,6 @@
 import { builder } from "~/src/graphql/builder";
-import { User } from "./User/User";
 import type { User as UserType } from "./User/User";
+import { User } from "./User/User";
 
 export type AuthenticationPayload = {
 	authenticationToken: string;

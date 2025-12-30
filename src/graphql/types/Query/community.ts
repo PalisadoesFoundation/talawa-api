@@ -1,7 +1,8 @@
 import { builder } from "~/src/graphql/builder";
 import { Community } from "~/src/graphql/types/Community/Community";
-import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import envConfig from "~/src/utilities/graphqLimits";
+import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
+
 builder.queryField("community", (t) =>
 	t.field({
 		description: "Query field to read the community.",

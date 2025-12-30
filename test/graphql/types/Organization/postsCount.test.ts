@@ -143,14 +143,6 @@ suite("Organization postsCount Field", () => {
 						input: {
 							caption,
 							organizationId: orgId,
-							attachments: [
-								{
-									mimetype: "IMAGE_PNG",
-									objectName: faker.string.uuid(),
-									name: "image.png",
-									fileHash: faker.string.uuid(),
-								},
-							],
 						},
 					},
 				},
@@ -260,51 +252,45 @@ suite("Organization postsCount Field", () => {
 		}
 	});
 
-	test.sequential(
-		"returns 0 when posts select returns an empty array (postsCount undefined branch)",
-		async () => {
-			const createOrgResult = await mercuriusClient.mutate(
-				Mutation_createOrganization,
-				{
-					headers: { authorization: `Bearer ${authToken}` },
-					variables: {
-						input: {
-							name: `Empty Select Org ${faker.string.uuid()}`,
-							description: "Org to test postsCount undefined",
-							countryCode: "us",
-							state: "CA",
-							city: "San Francisco",
-							postalCode: "94101",
-							addressLine1: "100 Test St",
-							addressLine2: "Suite 1",
-						},
+	test.sequential("returns 0 when posts select returns an empty array (postsCount undefined branch)", async () => {
+		const createOrgResult = await mercuriusClient.mutate(
+			Mutation_createOrganization,
+			{
+				headers: { authorization: `Bearer ${authToken}` },
+				variables: {
+					input: {
+						name: `Empty Select Org ${faker.string.uuid()}`,
+						description: "Org to test postsCount undefined",
+						countryCode: "us",
+						state: "CA",
+						city: "San Francisco",
+						postalCode: "94101",
+						addressLine1: "100 Test St",
+						addressLine2: "Suite 1",
 					},
 				},
-			);
+			},
+		);
 
-			const orgId = createOrgResult.data?.createOrganization?.id;
-			assertToBeNonNullish(orgId);
+		const orgId = createOrgResult.data?.createOrganization?.id;
+		assertToBeNonNullish(orgId);
 
-			const originalSelect = server.drizzleClient.select;
-			// Assign a minimal mock implementation that matches the runtime shape used by the resolver.
-			server.drizzleClient.select = ((): unknown => ({
-				from: () => ({ where: async () => [] }),
-			})) as unknown as typeof originalSelect;
+		const originalSelect = server.drizzleClient.select;
+		// Assign a minimal mock implementation that matches the runtime shape used by the resolver.
+		server.drizzleClient.select = ((): unknown => ({
+			from: () => ({ where: async () => [] }),
+		})) as unknown as typeof originalSelect;
 
-			try {
-				const result = await mercuriusClient.query(
-					OrganizationPostsCountQuery,
-					{
-						headers: { authorization: `Bearer ${authToken}` },
-						variables: { input: { id: orgId } },
-					},
-				);
+		try {
+			const result = await mercuriusClient.query(OrganizationPostsCountQuery, {
+				headers: { authorization: `Bearer ${authToken}` },
+				variables: { input: { id: orgId } },
+			});
 
-				expect(result.errors).toBeUndefined();
-				expect(result.data?.organization?.postsCount).toBe(0);
-			} finally {
-				server.drizzleClient.select = originalSelect;
-			}
-		},
-	);
+			expect(result.errors).toBeUndefined();
+			expect(result.data?.organization?.postsCount).toBe(0);
+		} finally {
+			server.drizzleClient.select = originalSelect;
+		}
+	});
 });

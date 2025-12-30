@@ -41,3 +41,4 @@ import "./getVolunteerMembership";
 import "./getEventVolunteerGroups";
 import "./UnreadChat";
 import "./hasSubmittedFeedback";
+import "./verifyPasswordResetToken";

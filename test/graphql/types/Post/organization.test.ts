@@ -1,8 +1,8 @@
 import { createMockGraphQLContext } from "test/_Mocks_/mockContextCreator/mockContextCreator";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { GraphQLContext } from "~/src/graphql/context";
-import type { Post as PostType } from "~/src/graphql/types/Post/Post";
 import { resolveOrganization } from "~/src/graphql/types/Post/organization";
+import type { Post as PostType } from "~/src/graphql/types/Post/Post";
 
 describe("Post Resolver - Organization Field", () => {
 	let mockPost: PostType;

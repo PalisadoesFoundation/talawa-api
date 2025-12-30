@@ -14,13 +14,13 @@ import {
 	generateInstancesForRecurringEvent,
 	initializeGenerationWindow,
 } from "~/src/services/eventGeneration";
-import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import envConfig from "~/src/utilities/graphqLimits";
 import {
 	applyRecurrenceOverrides,
 	buildRRuleString,
 	validateRecurrenceInput,
 } from "~/src/utilities/recurringEventHelpers";
+import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 
 const mutationUpdateThisAndFollowingEventsArgumentsSchema = z.object({
 	input: mutationUpdateThisAndFollowingEventsInputSchema,
@@ -90,6 +90,7 @@ builder.mutationField("updateThisAndFollowingEvents", (t) =>
 								allDay: true,
 								isPublic: true,
 								isRegisterable: true,
+								isInviteOnly: true,
 								organizationId: true,
 								startAt: true,
 								endAt: true,
@@ -337,6 +338,8 @@ builder.mutationField("updateThisAndFollowingEvents", (t) =>
 						isPublic: parsedArgs.input.isPublic ?? originalEvent.isPublic,
 						isRegisterable:
 							parsedArgs.input.isRegisterable ?? originalEvent.isRegisterable,
+						isInviteOnly:
+							parsedArgs.input.isInviteOnly ?? originalEvent.isInviteOnly,
 						location: parsedArgs.input.location ?? originalEvent.location,
 						isRecurringEventTemplate: true,
 					})

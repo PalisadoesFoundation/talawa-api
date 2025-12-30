@@ -78,6 +78,10 @@ Proceed to the next section.
 
 The best way to install and manage `node.js` is making use of node version managers. We recommend using `fnm`, which will be described in more detail later.
 
+:::info
+Talawa API requires **Node.js 24.12.0 (LTS)**. Using the correct Node.js version is essential for the application to work properly. The version managers (`fnm` or `nvm`) will automatically use the correct version when you navigate to the project directory.
+:::
+
 Follow these steps to install the `node.js` packages in Windows, Linux and MacOS.
 
 #### For Windows Users
@@ -137,13 +141,31 @@ Proceed to the next section.
 
 ### Install The Required Packages
 
+This section covers how to install additional required packages.
+
+1. All users will need to run the `pnpm install` command
+2. If you are a developer, you will additionally need to install packages in the `docs/` directory.
+
+Both steps are outlined below.
+
+#### All Users
+
 Run the following command to install the packages and dependencies required by the app:
 
-```
+```bash
 pnpm install
 ```
 
-The prerequisites are now installed. The next step will be to get the app up and running.
+#### Additional Step for Developers
+
+:::note
+Developers will also need to install packages in the `docs/` directory.
+:::
+
+```bash
+cd docs/
+pnpm install
+```
 
 ### Install Docker
 

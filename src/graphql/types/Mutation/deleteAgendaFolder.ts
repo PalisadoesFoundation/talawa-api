@@ -7,8 +7,9 @@ import {
 	mutationDeleteAgendaFolderInputSchema,
 } from "~/src/graphql/inputs/MutationDeleteAgendaFolderInput";
 import { AgendaFolder } from "~/src/graphql/types/AgendaFolder/AgendaFolder";
-import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import envConfig from "~/src/utilities/graphqLimits";
+import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
+
 const mutationDeleteAgendaFolderArgumentsSchema = z.object({
 	input: mutationDeleteAgendaFolderInputSchema,
 });

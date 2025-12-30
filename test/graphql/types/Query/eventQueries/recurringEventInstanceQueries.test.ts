@@ -1,8 +1,10 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { eventsTable } from "~/src/drizzle/tables/events";
 import type { eventExceptionsTable } from "~/src/drizzle/tables/recurringEventExceptions";
-import type { ResolvedRecurringEventInstance } from "~/src/drizzle/tables/recurringEventInstances";
-import type { recurringEventInstancesTable } from "~/src/drizzle/tables/recurringEventInstances";
+import type {
+	ResolvedRecurringEventInstance,
+	recurringEventInstancesTable,
+} from "~/src/drizzle/tables/recurringEventInstances";
 import {
 	type GetRecurringEventInstancesInput,
 	getRecurringEventInstanceById,
@@ -62,6 +64,7 @@ const mockBaseTemplate: typeof eventsTable.$inferSelect = {
 	allDay: false,
 	isPublic: true,
 	isRegisterable: true,
+	isInviteOnly: false,
 	organizationId: "org-1",
 	creatorId: "user-1",
 	updaterId: null,
@@ -102,6 +105,7 @@ const mockResolvedInstance: ResolvedRecurringEventInstance = {
 	allDay: false,
 	isPublic: false,
 	isRegisterable: false,
+	isInviteOnly: false,
 	creatorId: "user-1",
 	updaterId: "user-3",
 	createdAt: new Date("2025-01-01T00:00:00.000Z"),

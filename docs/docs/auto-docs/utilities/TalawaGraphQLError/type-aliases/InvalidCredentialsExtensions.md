@@ -6,7 +6,7 @@
 
 > **InvalidCredentialsExtensions** = `object`
 
-Defined in: [src/utilities/TalawaGraphQLError.ts:146](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/utilities/TalawaGraphQLError.ts#L146)
+Defined in: [src/utilities/TalawaGraphQLError.ts:163](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/utilities/TalawaGraphQLError.ts#L163)
 
 When the client provides invalid credentials (email/password) during authentication.
 This error is intentionally vague to prevent user enumeration attacks.
@@ -33,7 +33,7 @@ throw new TalawaGraphQLError({
 
 > **code**: `"invalid_credentials"`
 
-Defined in: [src/utilities/TalawaGraphQLError.ts:147](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/utilities/TalawaGraphQLError.ts#L147)
+Defined in: [src/utilities/TalawaGraphQLError.ts:164](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/utilities/TalawaGraphQLError.ts#L164)
 
 ***
 
@@ -41,7 +41,7 @@ Defined in: [src/utilities/TalawaGraphQLError.ts:147](https://github.com/Palisad
 
 > **issues**: `object`[]
 
-Defined in: [src/utilities/TalawaGraphQLError.ts:148](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/utilities/TalawaGraphQLError.ts#L148)
+Defined in: [src/utilities/TalawaGraphQLError.ts:165](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/utilities/TalawaGraphQLError.ts#L165)
 
 #### argumentPath
 

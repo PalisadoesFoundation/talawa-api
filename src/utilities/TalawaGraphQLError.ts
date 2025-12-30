@@ -37,6 +37,23 @@ export type ArgumentsAssociatedResourcesNotFoundExtensions = {
 };
 
 /**
+ * When the user's account is temporarily locked due to too many failed login attempts.
+ * The retryAfter field indicates when the account will be unlocked (ISO 8601 timestamp).
+ *
+ * @example
+ * throw new TalawaGraphQLError({
+ * 	extensions: {
+ * 		code: "account_locked",
+ * 		retryAfter: new Date(Date.now() + 900000).toISOString(),
+ * 	},
+ * });
+ */
+export type AccountLockedExtensions = {
+	code: "account_locked";
+	retryAfter: string;
+};
+
+/**
  * When the client tries to perform an action that conflicts with real world expectations of the application.
  *
  * @example
@@ -227,6 +244,7 @@ export type TooManyRequestsExtensions = {
 	code: "too_many_requests";
 };
 export type TalawaGraphQLErrorExtensions =
+	| AccountLockedExtensions
 	| ArgumentsAssociatedResourcesNotFoundExtensions
 	| ForbiddenActionExtensions
 	| ForbiddenActionOnArgumentsAssociatedResourcesExtensions
@@ -242,6 +260,8 @@ export type TalawaGraphQLErrorExtensions =
 export const defaultTalawaGraphQLErrorMessages: {
 	[Key in TalawaGraphQLErrorExtensions["code"]]: string;
 } = {
+	account_locked:
+		"Account temporarily locked due to too many failed login attempts. Please try again later.",
 	arguments_associated_resources_not_found:
 		"No associated resources found for the provided arguments.",
 	forbidden_action: "This action is forbidden.",

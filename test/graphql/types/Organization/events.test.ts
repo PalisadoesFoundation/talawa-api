@@ -16,9 +16,12 @@ import {
 import type { GraphQLContext } from "~/src/graphql/context";
 import { schema } from "~/src/graphql/schema";
 import type { Organization as OrganizationType } from "~/src/graphql/types/Organization/Organization";
-import { getUnifiedEventsInDateRange } from "~/src/graphql/types/Query/eventQueries";
-import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
+import {
+	filterInviteOnlyEvents,
+	getUnifiedEventsInDateRange,
+} from "~/src/graphql/types/Query/eventQueries";
 import envConfig from "~/src/utilities/graphqLimits";
+import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 
 afterEach(() => {
 	vi.clearAllMocks();
@@ -27,9 +30,11 @@ afterEach(() => {
 // Mock the external dependency
 vi.mock("~/src/graphql/types/Query/eventQueries", () => ({
 	getUnifiedEventsInDateRange: vi.fn(),
+	filterInviteOnlyEvents: vi.fn(),
 }));
 
 const mockGetUnifiedEventsInDateRange = vi.mocked(getUnifiedEventsInDateRange);
+const mockFilterInviteOnlyEvents = vi.mocked(filterInviteOnlyEvents);
 
 type MockUser = {
 	id: string;
@@ -70,6 +75,7 @@ describe("Organization Events Resolver Tests", () => {
 			allDay: false,
 			isPublic: true,
 			isRegisterable: true,
+			isInviteOnly: false,
 			location: "Test Location",
 			registrationClosesAt: new Date(),
 			attachments: [],
@@ -91,6 +97,7 @@ describe("Organization Events Resolver Tests", () => {
 			allDay: false,
 			isPublic: true,
 			isRegisterable: true,
+			isInviteOnly: false,
 			location: "Test Location",
 			registrationClosesAt: new Date(),
 			attachments: [],
@@ -139,6 +146,11 @@ describe("Organization Events Resolver Tests", () => {
 			postalCode: null,
 			userRegistrationRequired: false,
 		};
+		// Mock filterInviteOnlyEvents to return events as-is (identity function)
+		// This allows unit tests to focus on resolver logic without filtering complexity
+		mockFilterInviteOnlyEvents.mockImplementation(
+			async (input) => input.events,
+		);
 	});
 
 	describe("Authentication and Authorization", () => {
@@ -447,6 +459,16 @@ describe("Organization Events Resolver Tests", () => {
 		});
 
 		it("should handle backward pagination with 'last' argument", async () => {
+			const mockUserData: MockUser = {
+				id: "user-123",
+				role: "administrator",
+				organizationMembershipsWhereMember: [
+					{ role: "administrator", organizationId: mockOrganization.id },
+				],
+			};
+			mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValue(
+				mockUserData,
+			);
 			mockGetUnifiedEventsInDateRange.mockResolvedValue(mockEvents);
 			const result = await eventsResolver(
 				mockOrganization,
@@ -455,13 +477,14 @@ describe("Organization Events Resolver Tests", () => {
 				mockResolveInfo,
 			);
 			expect(result).toBeDefined();
+			// With over-fetching: limit=6, fetchLimit = min(max(6*2, 6+50), 200) = min(max(12, 56), 200) = 56
 			expect(mockGetUnifiedEventsInDateRange).toHaveBeenCalledWith(
 				expect.objectContaining({
 					organizationId: mockOrganization.id,
 					startDate: expect.any(Date),
 					endDate: expect.any(Date),
 					includeRecurring: true,
-					limit: 6,
+					limit: 56,
 				}),
 				ctx.drizzleClient,
 				ctx.log,
@@ -487,6 +510,7 @@ describe("Organization Events Resolver Tests", () => {
 				allDay: false,
 				isPublic: true,
 				isRegisterable: true,
+				isInviteOnly: false,
 				location: "Test Location",
 				registrationClosesAt: new Date(),
 				attachments: [],
@@ -548,6 +572,7 @@ describe("Organization Events Resolver Tests", () => {
 					allDay: false,
 					isPublic: true,
 					isRegisterable: true,
+					isInviteOnly: false,
 					location: "Test Location",
 					registrationClosesAt: new Date(),
 					attachments: [],
@@ -751,9 +776,10 @@ describe("Organization Events Resolver Tests", () => {
 				mockResolveInfo,
 			);
 
+			// With over-fetching: limit=11 (first:10 + 1), fetchLimit = min(max(11*2, 11+50), 200) = min(max(22, 61), 200) = 61
 			expect(mockGetUnifiedEventsInDateRange).toHaveBeenCalledWith(
 				expect.objectContaining({
-					limit: 11,
+					limit: 61,
 				}),
 				expect.anything(),
 				expect.anything(),
@@ -832,9 +858,9 @@ describe("Organization Events Resolver Tests", () => {
 			}
 
 			// Should use current time as start date
-			expect(
-				Math.abs(callArgs.startDate.getTime() - new Date().getTime()),
-			).toBeLessThan(1000);
+			expect(Math.abs(callArgs.startDate.getTime() - Date.now())).toBeLessThan(
+				1000,
+			);
 		});
 
 		it("should handle upcomingOnly=true with explicit endDate", async () => {
@@ -864,9 +890,9 @@ describe("Organization Events Resolver Tests", () => {
 			).toBeLessThan(1000);
 
 			// Start date should still be "now" (approx)
-			expect(
-				Math.abs(callArgs.startDate.getTime() - new Date().getTime()),
-			).toBeLessThan(1000);
+			expect(Math.abs(callArgs.startDate.getTime() - Date.now())).toBeLessThan(
+				1000,
+			);
 		});
 
 		it("should respect explicit includeRecurring=false", async () => {
@@ -1044,9 +1070,9 @@ describe("Organization Events Resolver Tests", () => {
 				throw new Error("Expected getUnifiedEventsInDateRange to be called");
 
 			// effectiveStartDate should be close to now
-			expect(
-				Math.abs(callArgs.startDate.getTime() - new Date().getTime()),
-			).toBeLessThan(1000);
+			expect(Math.abs(callArgs.startDate.getTime() - Date.now())).toBeLessThan(
+				1000,
+			);
 
 			// effectiveEndDate should be 1 year from now
 			const expectedEnd = new Date();
@@ -1187,9 +1213,9 @@ describe("Organization Events Resolver Tests", () => {
 				throw new Error("Expected getUnifiedEventsInDateRange to be called");
 
 			// effectiveStartDate should be close to now
-			expect(
-				Math.abs(callArgs.startDate.getTime() - new Date().getTime()),
-			).toBeLessThan(1000);
+			expect(Math.abs(callArgs.startDate.getTime() - Date.now())).toBeLessThan(
+				1000,
+			);
 
 			// effectiveEndDate should be 1 year from now
 			const expectedEnd = new Date();

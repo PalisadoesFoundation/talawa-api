@@ -2,6 +2,7 @@ import { and, count, eq } from "drizzle-orm";
 import { postVotesTable } from "~/src/drizzle/tables/postVotes";
 import envConfig from "~/src/utilities/graphqLimits";
 import { Post } from "./Post";
+
 Post.implement({
 	fields: (t) => ({
 		downVotesCount: t.field({

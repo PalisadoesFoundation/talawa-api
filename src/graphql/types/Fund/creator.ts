@@ -1,9 +1,9 @@
 import { User } from "~/src/graphql/types/User/User";
-import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import envConfig from "~/src/utilities/graphqLimits";
+import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import type { GraphQLContext } from "../../context";
-import { Fund } from "./Fund";
 import type { Fund as Fundtype } from "./Fund";
+import { Fund } from "./Fund";
 
 export const FundCreatorResolver = async (
 	parent: Fundtype,
