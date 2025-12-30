@@ -157,7 +157,7 @@ export const createContext: CreateContext = async (initialContext) => {
 				fastify.jwt.sign(payload),
 		},
 		cookie: cookieHelper,
-		log: request.log,
+		log: request.log ?? fastify.log,
 		minio: fastify.minio,
 		// attached a per-request notification service that queues notifications and can flush later
 		notification: new NotificationService(),
