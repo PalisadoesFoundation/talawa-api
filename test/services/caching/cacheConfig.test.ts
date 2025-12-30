@@ -88,6 +88,80 @@ describe("cacheConfig", () => {
 			);
 			warnSpy.mockRestore();
 		});
+
+		it("should fall back to default for negative TTL", async () => {
+			const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
+			process.env.CACHE_ENTITY_TTLS = JSON.stringify({ user: -50 });
+			vi.resetModules();
+			const { getTTL, defaultEntityTTL } = await import(
+				"~/src/services/caching/cacheConfig"
+			);
+
+			expect(getTTL("user")).toBe(defaultEntityTTL.user);
+			expect(warnSpy).toHaveBeenCalledWith(
+				expect.stringContaining('Invalid TTL for "user"'),
+			);
+			warnSpy.mockRestore();
+		});
+
+		it("should fall back to default for zero TTL", async () => {
+			const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
+			process.env.CACHE_ENTITY_TTLS = JSON.stringify({ event: 0 });
+			vi.resetModules();
+			const { getTTL, defaultEntityTTL } = await import(
+				"~/src/services/caching/cacheConfig"
+			);
+
+			expect(getTTL("event")).toBe(defaultEntityTTL.event);
+			expect(warnSpy).toHaveBeenCalledWith(
+				expect.stringContaining('Invalid TTL for "event"'),
+			);
+			warnSpy.mockRestore();
+		});
+
+		it("should fall back to default for string TTL", async () => {
+			const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
+			process.env.CACHE_ENTITY_TTLS = JSON.stringify({
+				organization: "not-a-number",
+			});
+			vi.resetModules();
+			const { getTTL, defaultEntityTTL } = await import(
+				"~/src/services/caching/cacheConfig"
+			);
+
+			expect(getTTL("organization")).toBe(defaultEntityTTL.organization);
+			expect(warnSpy).toHaveBeenCalledWith(
+				expect.stringContaining('Invalid TTL for "organization"'),
+			);
+			warnSpy.mockRestore();
+		});
+
+		it("should fall back to default for null TTL", async () => {
+			const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
+			process.env.CACHE_ENTITY_TTLS = JSON.stringify({ post: null });
+			vi.resetModules();
+			const { getTTL, defaultEntityTTL } = await import(
+				"~/src/services/caching/cacheConfig"
+			);
+
+			expect(getTTL("post")).toBe(defaultEntityTTL.post);
+			expect(warnSpy).toHaveBeenCalledWith(
+				expect.stringContaining('Invalid TTL for "post"'),
+			);
+			warnSpy.mockRestore();
+		});
+
+		it("should fall back to default for missing key in override", async () => {
+			process.env.CACHE_ENTITY_TTLS = JSON.stringify({ user: 600 });
+			vi.resetModules();
+			const { getTTL, defaultEntityTTL } = await import(
+				"~/src/services/caching/cacheConfig"
+			);
+
+			// user is overridden, but organization is not in env
+			expect(getTTL("user")).toBe(600);
+			expect(getTTL("organization")).toBe(defaultEntityTTL.organization);
+		});
 	});
 
 	describe("CacheNamespace", () => {

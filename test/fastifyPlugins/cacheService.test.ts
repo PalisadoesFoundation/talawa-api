@@ -1,5 +1,6 @@
 import type { FastifyRedis } from "@fastify/redis";
 import Fastify, { type FastifyInstance } from "fastify";
+import fastifyPlugin from "fastify-plugin";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { cacheService } from "~/src/fastifyPlugins/cacheService";
 import { RedisCacheService } from "~/src/services/caching";
@@ -18,6 +19,22 @@ function createMockRedis(): FastifyRedis {
 	} as unknown as FastifyRedis;
 }
 
+async function registerRedisPlugin(
+	fastify: FastifyInstance,
+	redis?: FastifyRedis,
+): Promise<void> {
+	await fastify.register(
+		fastifyPlugin(
+			async (instance) => {
+				if (redis) {
+					instance.decorate("redis", redis);
+				}
+			},
+			{ name: "@fastify/redis" },
+		),
+	);
+}
+
 describe("cacheService plugin", () => {
 	let fastify: FastifyInstance;
 
@@ -25,12 +42,17 @@ describe("cacheService plugin", () => {
 		fastify = Fastify();
 	});
 
+	it("should fail to register when redis dependency is missing", async () => {
+		await expect(fastify.register(cacheService)).rejects.toThrowError(
+			/@fastify\/redis/,
+		);
+	});
+
 	describe("when Redis is available", () => {
 		it("should register RedisCacheService when redis client exists", async () => {
 			const mockRedis = createMockRedis();
 
-			// Decorate fastify with mock redis before registering plugin
-			fastify.decorate("redis", mockRedis);
+			await registerRedisPlugin(fastify, mockRedis);
 
 			await fastify.register(cacheService);
 
@@ -42,7 +64,7 @@ describe("cacheService plugin", () => {
 			const mockRedis = createMockRedis();
 
 			const logInfoSpy = vi.spyOn(fastify.log, "info");
-			fastify.decorate("redis", mockRedis);
+			await registerRedisPlugin(fastify, mockRedis);
 
 			await fastify.register(cacheService);
 
@@ -57,6 +79,8 @@ describe("cacheService plugin", () => {
 			// Don't decorate with redis - simulates redis not being available
 			const logWarnSpy = vi.spyOn(fastify.log, "warn");
 
+			await registerRedisPlugin(fastify);
+
 			await fastify.register(cacheService);
 
 			expect(fastify.cache).toBeDefined();
@@ -66,6 +90,7 @@ describe("cacheService plugin", () => {
 		});
 
 		it("should provide noop get that returns null", async () => {
+			await registerRedisPlugin(fastify);
 			await fastify.register(cacheService);
 
 			const result = await fastify.cache.get("any-key");
@@ -73,6 +98,7 @@ describe("cacheService plugin", () => {
 		});
 
 		it("should provide noop set that does nothing", async () => {
+			await registerRedisPlugin(fastify);
 			await fastify.register(cacheService);
 
 			await expect(
@@ -81,12 +107,14 @@ describe("cacheService plugin", () => {
 		});
 
 		it("should provide noop del that does nothing", async () => {
+			await registerRedisPlugin(fastify);
 			await fastify.register(cacheService);
 
 			await expect(fastify.cache.del("key")).resolves.toBeUndefined();
 		});
 
 		it("should provide noop clearByPattern that does nothing", async () => {
+			await registerRedisPlugin(fastify);
 			await fastify.register(cacheService);
 
 			await expect(
@@ -95,6 +123,7 @@ describe("cacheService plugin", () => {
 		});
 
 		it("should provide noop mget that returns nulls", async () => {
+			await registerRedisPlugin(fastify);
 			await fastify.register(cacheService);
 
 			const result = await fastify.cache.mget(["k1", "k2", "k3"]);
@@ -102,6 +131,7 @@ describe("cacheService plugin", () => {
 		});
 
 		it("should provide noop mset that does nothing", async () => {
+			await registerRedisPlugin(fastify);
 			await fastify.register(cacheService);
 
 			await expect(

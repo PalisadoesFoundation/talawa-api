@@ -40,7 +40,7 @@ export interface CacheService {
 
 	/**
 	 * Batch set multiple key-value pairs with TTLs.
-	 * @param entries - Array of {key, value, ttlSeconds} objects.
+	 * @param entries - Array of `{ key, value, ttlSeconds }` objects.
 	 */
 	mset<T>(
 		entries: Array<{ key: string; value: T; ttlSeconds: number }>,

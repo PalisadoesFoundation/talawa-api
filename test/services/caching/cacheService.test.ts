@@ -289,5 +289,35 @@ describe("RedisCacheService", () => {
 			// Invalid JSON should return null, valid should parse
 			expect(result).toEqual([null, { valid: true }]);
 		});
+		it("should log warning or return null when get receives invalid JSON", async () => {
+			const invalidJsonRedis = {
+				get: vi.fn().mockResolvedValue("invalid-json{"),
+			};
+			const invalidJsonCache = new RedisCacheService(
+				invalidJsonRedis as never,
+				mockLogger,
+			);
+
+			const result = await invalidJsonCache.get("key");
+
+			expect(result).toBeNull();
+			// JSON.parse error is caught
+			expect(mockLogger.warn).toHaveBeenCalledWith(
+				expect.objectContaining({ msg: "cache get failed" }),
+			);
+		});
+
+		it("should log warning on mset unexpected error (e.g. serialization)", async () => {
+			const circular: { self?: unknown } = {};
+			circular.self = circular;
+
+			await expect(
+				cache.mset([{ key: "k1", value: circular, ttlSeconds: 300 }]),
+			).resolves.not.toThrow();
+
+			expect(mockLogger.warn).toHaveBeenCalledWith(
+				expect.objectContaining({ msg: "cache mset failed" }),
+			);
+		});
 	});
 });

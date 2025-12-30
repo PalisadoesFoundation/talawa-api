@@ -178,7 +178,7 @@ Batch set multiple key-value pairs with TTLs.
 
 `object`[]
 
-Array of {key, value, ttlSeconds} objects.
+Array of `{ key, value, ttlSeconds }` objects.
 
 #### Returns
 
