@@ -163,7 +163,9 @@ builder.mutationField("updateVenue", (t) =>
 								operators.eq(
 									fields.organizationId,
 									existingVenue.organizationId,
-								),							operators.ne(fields.id, parsedArgs.input.id),							),
+								),
+								operators.ne(fields.id, parsedArgs.input.id),
+							),
 					});
 
 				if (existingVenueWithName !== undefined) {
