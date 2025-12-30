@@ -75,7 +75,7 @@ function extractDocComments(
 		const lines = beforeMatch.split("\n");
 		const startLine = lines.length;
 		const lastLine = lines[lines.length - 1];
-		const startColumn = lastLine !== undefined ? lastLine.length + 1 : 1;
+		const startColumn = (lastLine?.length ?? 0) + 1;
 
 		comments.push({
 			comment: match[0],
