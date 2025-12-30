@@ -28,4 +28,4 @@ The hashed refresh token to look up
 
 `Promise`\<\{ `expiresAt`: `Date`; `id`: `string`; `revokedAt`: `Date` \| `null`; `userId`: `string`; \} \| `undefined`\>
 
-The refresh token record if found and valid, undefined otherwise
+- The refresh token record if found and valid, undefined otherwise

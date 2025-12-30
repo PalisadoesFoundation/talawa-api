@@ -28,4 +28,4 @@ The hashed password reset token to mark as used
 
 `Promise`\<`boolean`\>
 
-True if token was marked as used, false if not found or already used
+- True if token was marked as used, false if not found or already used

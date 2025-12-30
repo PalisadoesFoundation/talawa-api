@@ -29,4 +29,4 @@ The Drizzle ORM client for database access.
 
 `Promise`\<\{ `instancesEligibleForCleanup`: `number`; `instancesInRetentionWindow`: `number`; `retentionStartDate`: `Date` \| `null`; `totalInstances`: `number`; \}\>
 
-A promise that resolves to an object containing the cleanup statistics.
+- A promise that resolves to an object containing the cleanup statistics.

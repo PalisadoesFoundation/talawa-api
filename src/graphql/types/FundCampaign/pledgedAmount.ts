@@ -11,7 +11,7 @@ import { FundCampaign } from "./FundCampaign";
  * @param parent - The parent FundCampaign object.
  * @param _args - Arguments (unused).
  * @param ctx - The GraphQL context.
- * @returns The total pledged amount as a BigInt.
+ * @returns - The total pledged amount as a BigInt.
  */
 export const resolvePledgedAmount = async (
 	parent: FundCampaignType,

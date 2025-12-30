@@ -94,4 +94,4 @@ The recurrence rule to classify.
 
 `"NEVER_ENDING"` \| `"COUNT_BASED"` \| `"END_DATE_BASED"` \| `"HYBRID"`
 
-The classification of the event type as a string literal.
+- The classification of the event type as a string literal.

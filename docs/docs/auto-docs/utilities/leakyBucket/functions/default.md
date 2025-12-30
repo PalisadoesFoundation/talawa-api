@@ -46,4 +46,4 @@ The cost in tokens for each request.
 
 `Promise`\<`boolean`\>
 
-A promise that resolves to a boolean indicating if the request is allowed.
+- A promise that resolves to a boolean indicating if the request is allowed.
