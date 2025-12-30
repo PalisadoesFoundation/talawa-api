@@ -221,6 +221,7 @@ export const graphql = fastifyPlugin(async (fastify) => {
 			return {
 				statusCode: 200,
 				response: {
+					data: execution.data ?? null,
 					errors: execution.errors.map((err) => ({
 						message: err.message,
 						locations: err.locations,
