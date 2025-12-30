@@ -6,6 +6,7 @@ import type {
 	TalawaGraphQLFormattedError,
 	UnauthenticatedExtensions,
 } from "~/src/utilities/TalawaGraphQLError";
+import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import { assertToBeNonNullish } from "../../../helpers";
 import { server } from "../../../server";
 import { mercuriusClient } from "../client";
@@ -1365,5 +1366,294 @@ suite("Mutation field updateVenue", () => {
 			server.minio.client.putObject = originalPutObject;
 			server.minio.client.removeObject = originalRemoveObject;
 		}
+	});
+
+	test("propagates TalawaGraphQLError when MinIO throws TalawaGraphQLError during upload", async () => {
+		const originalPutObject = server.minio.client.putObject;
+		try {
+			const administratorUserSignInResult = await mercuriusClient.query(
+				Query_signIn,
+				{
+					variables: {
+						input: {
+							emailAddress:
+								server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
+							password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
+						},
+					},
+				},
+			);
+
+			assertToBeNonNullish(
+				administratorUserSignInResult.data?.signIn?.authenticationToken,
+			);
+
+			const createOrganizationResult = await mercuriusClient.mutate(
+				graphql(`
+				  mutation CreateOrganization($input: MutationCreateOrganizationInput!) {
+					createOrganization(input: $input) {
+					  id
+					}
+				  }
+				`),
+				{
+					headers: {
+						authorization: `bearer ${administratorUserSignInResult.data.signIn.authenticationToken}`,
+					},
+					variables: {
+						input: {
+							name: `TestOrg_${faker.string.ulid()}`,
+							description: faker.lorem.sentence(),
+						},
+					},
+				},
+			);
+
+			assertToBeNonNullish(
+				createOrganizationResult.data?.createOrganization?.id,
+			);
+			const orgId = createOrganizationResult.data.createOrganization.id;
+
+			const createVenueResult = await mercuriusClient.mutate(
+				Mutation_createVenue,
+				{
+					headers: {
+						authorization: `bearer ${administratorUserSignInResult.data.signIn.authenticationToken}`,
+					},
+					variables: {
+						input: {
+							organizationId: orgId,
+							name: `Venue_${faker.string.ulid()}`,
+							description: faker.lorem.sentence(),
+							capacity: 50,
+						},
+					},
+				},
+			);
+
+			assertToBeNonNullish(createVenueResult.data?.createVenue?.id);
+			createdResources.venueIds.push(createVenueResult.data.createVenue.id);
+			const venueId = createVenueResult.data.createVenue.id;
+
+			// mock MinIO to throw TalawaGraphQLError
+			server.minio.client.putObject = vi.fn().mockImplementation(async () => {
+				throw new TalawaGraphQLError({
+					message: "minio failure",
+					extensions: { code: "unexpected" },
+				});
+			});
+
+			const boundary = `----WebKitFormBoundary${Math.random().toString(36)}`;
+			const operations = JSON.stringify({
+				query: `
+					mutation Mutation_updateVenue($input: MutationUpdateVenueInput!) {
+						updateVenue(input: $input) {
+							id
+						}
+					}
+				`,
+				variables: {
+					input: {
+						id: venueId,
+						attachments: [null],
+					},
+				},
+			});
+
+			const map = JSON.stringify({
+				"0": ["variables.input.attachments.0"],
+			});
+
+			const body = [
+				`--${boundary}`,
+				'Content-Disposition: form-data; name="operations"',
+				"",
+				operations,
+				`--${boundary}`,
+				'Content-Disposition: form-data; name="map"',
+				"",
+				map,
+				`--${boundary}`,
+				'Content-Disposition: form-data; name="0"; filename="photo1.jpg"',
+				"Content-Type: image/jpeg",
+				"",
+				"img1",
+				`--${boundary}--`,
+			].join("\r\n");
+
+			const response = await server.inject({
+				method: "POST",
+				url: "/graphql",
+				headers: {
+					"content-type": `multipart/form-data; boundary=${boundary}`,
+					authorization: `bearer ${administratorUserSignInResult.data.signIn.authenticationToken}`,
+				},
+				payload: body,
+			});
+
+			const result = JSON.parse(response.body);
+
+			expect(result.data?.updateVenue).toEqual(null);
+			expect(result.errors[0].extensions.code).toBe("unexpected");
+		} finally {
+			server.minio.client.putObject = originalPutObject;
+		}
+	});
+
+	test("replaces existing attachments when updating with attachments", async () => {
+		// Create venue with initial attachment
+		const administratorUserSignInResult = await mercuriusClient.query(
+			Query_signIn,
+			{
+				variables: {
+					input: {
+						emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
+						password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
+					},
+				},
+			},
+		);
+
+		assertToBeNonNullish(
+			administratorUserSignInResult.data?.signIn?.authenticationToken,
+		);
+
+		// create organization for venue
+		const createOrganizationResult = await mercuriusClient.mutate(
+			graphql(`
+			  mutation CreateOrganization($input: MutationCreateOrganizationInput!) {
+				createOrganization(input: $input) {
+				  id
+				}
+			  }
+			`),
+			{
+				headers: {
+					authorization: `bearer ${administratorUserSignInResult.data.signIn.authenticationToken}`,
+				},
+				variables: {
+					input: {
+						name: `TestOrg_${faker.string.ulid()}`,
+						description: faker.lorem.sentence(),
+					},
+				},
+			},
+		);
+
+		assertToBeNonNullish(createOrganizationResult.data?.createOrganization?.id);
+		const orgId = createOrganizationResult.data.createOrganization.id;
+
+		const boundaryCreate = `----WebKitFormBoundary${Math.random().toString(36)}`;
+		const operationsCreate = JSON.stringify({
+			query: `
+				mutation CreateVenue($input: MutationCreateVenueInput!) {
+					createVenue(input: $input) {
+						id
+						attachments { mimeType }
+					}
+				}
+			`,
+			variables: {
+				input: {
+					organizationId: orgId,
+					name: `Venue_${faker.string.ulid()}`,
+					description: faker.lorem.sentence(),
+					capacity: 10,
+					attachments: [null],
+				},
+			},
+		});
+
+		const mapCreate = JSON.stringify({
+			"0": ["variables.input.attachments.0"],
+		});
+		const bodyCreate = [
+			`--${boundaryCreate}`,
+			'Content-Disposition: form-data; name="operations"',
+			"",
+			operationsCreate,
+			`--${boundaryCreate}`,
+			'Content-Disposition: form-data; name="map"',
+			"",
+			mapCreate,
+			`--${boundaryCreate}`,
+			'Content-Disposition: form-data; name="0"; filename="photo1.jpg"',
+			"Content-Type: image/jpeg",
+			"",
+			"img1",
+			`--${boundaryCreate}--`,
+		].join("\r\n");
+
+		const responseCreate = await server.inject({
+			method: "POST",
+			url: "/graphql",
+			headers: {
+				"content-type": `multipart/form-data; boundary=${boundaryCreate}`,
+				authorization: `bearer ${administratorUserSignInResult.data.signIn.authenticationToken}`,
+			},
+			payload: bodyCreate,
+		});
+
+		const createResult = JSON.parse(responseCreate.body);
+		assertToBeNonNullish(createResult.data?.createVenue?.id);
+		createdResources.venueIds.push(createResult.data.createVenue.id);
+		const venueId = createResult.data.createVenue.id;
+		expect(createResult.data.createVenue.attachments).toHaveLength(1);
+
+		// Update with a new attachment and assert only the new one remains
+		const boundaryUpdate = `----WebKitFormBoundary${Math.random().toString(36)}`;
+		const operationsUpdate = JSON.stringify({
+			query: `
+				mutation Mutation_updateVenue($input: MutationUpdateVenueInput!) {
+					updateVenue(input: $input) {
+						id
+						attachments { mimeType }
+					}
+				}
+			`,
+			variables: {
+				input: {
+					id: venueId,
+					attachments: [null],
+				},
+			},
+		});
+
+		const mapUpdate = JSON.stringify({
+			"0": ["variables.input.attachments.0"],
+		});
+		const bodyUpdate = [
+			`--${boundaryUpdate}`,
+			'Content-Disposition: form-data; name="operations"',
+			"",
+			operationsUpdate,
+			`--${boundaryUpdate}`,
+			'Content-Disposition: form-data; name="map"',
+			"",
+			mapUpdate,
+			`--${boundaryUpdate}`,
+			'Content-Disposition: form-data; name="0"; filename="photo2.jpg"',
+			"Content-Type: image/png",
+			"",
+			"img2",
+			`--${boundaryUpdate}--`,
+		].join("\r\n");
+
+		const responseUpdate = await server.inject({
+			method: "POST",
+			url: "/graphql",
+			headers: {
+				"content-type": `multipart/form-data; boundary=${boundaryUpdate}`,
+				authorization: `bearer ${administratorUserSignInResult.data.signIn.authenticationToken}`,
+			},
+			payload: bodyUpdate,
+		});
+
+		const updateResult = JSON.parse(responseUpdate.body);
+		expect(updateResult.errors).toBeUndefined();
+		expect(updateResult.data?.updateVenue?.attachments).toHaveLength(1);
+		expect(updateResult.data?.updateVenue?.attachments[0].mimeType).toBe(
+			"image/png",
+		);
 	});
 });

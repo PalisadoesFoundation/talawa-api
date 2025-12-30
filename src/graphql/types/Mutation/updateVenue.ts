@@ -275,7 +275,14 @@ builder.mutationField("updateVenue", (t) =>
 								ctx.minio.client.removeObject(ctx.minio.bucketName, name),
 							),
 						);
-						throw e;
+						if (e instanceof TalawaGraphQLError) {
+							throw e;
+						}
+						throw new TalawaGraphQLError({
+							extensions: {
+								code: "unexpected",
+							},
+						});
 					}
 
 					return Object.assign(updatedVenue, {
