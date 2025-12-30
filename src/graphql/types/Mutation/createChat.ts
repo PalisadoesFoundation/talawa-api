@@ -151,8 +151,8 @@ builder.mutationField("createChat", (t) =>
 				});
 			}
 
-			let avatarMimeType: z.infer<typeof imageMimeTypeEnum>;
-			let avatarName: string;
+			let avatarMimeType: z.infer<typeof imageMimeTypeEnum> | null = null;
+			let avatarName: string | null = null;
 
 			if (isNotNullish(parsedArgs.input.avatar)) {
 				avatarName = ulid();
@@ -187,7 +187,7 @@ builder.mutationField("createChat", (t) =>
 				if (isNotNullish(parsedArgs.input.avatar)) {
 					await ctx.minio.client.putObject(
 						ctx.minio.bucketName,
-						avatarName,
+						avatarName!,
 						parsedArgs.input.avatar.createReadStream(),
 						undefined,
 						{
