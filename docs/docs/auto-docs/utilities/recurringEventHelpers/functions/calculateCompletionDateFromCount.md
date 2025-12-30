@@ -43,4 +43,4 @@ The interval between occurrences (default is 1).
 
 `Date`
 
-The calculated date of the final occurrence.
+- The calculated date of the final occurrence.

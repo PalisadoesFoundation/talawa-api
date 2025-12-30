@@ -24,4 +24,4 @@ The value to check.
 
 `value is SanitizedInputString`
 
-True if the value appears to be sanitized input.
+- True if the value appears to be sanitized input.

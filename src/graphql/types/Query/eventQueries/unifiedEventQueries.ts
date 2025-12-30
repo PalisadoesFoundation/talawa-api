@@ -16,7 +16,7 @@ import {
 } from "./standaloneEventQueries";
 
 /**
- * @description Represents a unified event object that includes attachments and metadata
+ * Represents a unified event object that includes attachments and metadata
  * to distinguish between standalone and generated events.
  */
 export type EventWithAttachments = InferSelectModel<typeof eventsTable> & {
@@ -30,7 +30,7 @@ export type EventWithAttachments = InferSelectModel<typeof eventsTable> & {
 };
 
 /**
- * @description Defines the input parameters for querying a unified list of events,
+ * Defines the input parameters for querying a unified list of events,
  * including both standalone and recurring instances.
  */
 export interface GetUnifiedEventsInput {
@@ -42,7 +42,7 @@ export interface GetUnifiedEventsInput {
 }
 
 /**
- * @description Parameters for filtering events based on invite-only visibility rules.
+ * Parameters for filtering events based on invite-only visibility rules.
  */
 export interface FilterInviteOnlyEventsInput {
 	events: EventWithAttachments[];
@@ -68,7 +68,7 @@ export interface FilterInviteOnlyEventsInput {
  * 3. Users explicitly invited to the event
  *
  * @param input - The input object containing events and user context.
- * @returns A filtered array of events that the user can view.
+ * @returns - A filtered array of events that the user can view.
  */
 export async function filterInviteOnlyEvents(
 	input: FilterInviteOnlyEventsInput,
@@ -223,7 +223,7 @@ export async function filterInviteOnlyEvents(
  * @param input - The input object containing organizationId, date range, and optional filters.
  * @param drizzleClient - The Drizzle ORM client for database access.
  * @param logger - The logger for logging debug and error messages.
- * @returns A promise that resolves to a sorted array of unified event objects.
+ * @returns - A promise that resolves to a sorted array of unified event objects.
  */
 export async function getUnifiedEventsInDateRange(
 	input: GetUnifiedEventsInput,
@@ -356,7 +356,7 @@ export async function getUnifiedEventsInDateRange(
  * @param eventIds - An array of event IDs to retrieve.
  * @param drizzleClient - The Drizzle ORM client for database access.
  * @param logger - The logger for logging debug and error messages.
- * @returns A promise that resolves to an array of the requested event objects,
+ * @returns - A promise that resolves to an array of the requested event objects,
  *          unified into a common format.
  */
 export async function getEventsByIds(

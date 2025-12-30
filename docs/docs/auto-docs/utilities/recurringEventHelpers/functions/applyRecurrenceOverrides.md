@@ -69,7 +69,7 @@ The recurrence input from the user (if provided)
 
 `object`
 
-The updated recurrence configuration with proper overrides applied
+- The updated recurrence configuration with proper overrides applied
 
 ### byDay?
 

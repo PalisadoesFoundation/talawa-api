@@ -14,10 +14,10 @@ import {
  * @param parent - The parent FundCampaign object containing the updatedAt field
  * @param args - GraphQL arguments (unused)
  * @param ctx - GraphQL context containing authentication and database clients
- * @returns {Promise<Date>} The timestamp when the fund campaign was last updated
- * @throws {TalawaGraphQLError} With code 'unauthenticated' if user is not logged in
- * @throws {TalawaGraphQLError} With code 'unauthorized_action' if user lacks required permissions
- * @throws {TalawaGraphQLError} With code 'unexpected' for database or other runtime errors
+ * @returns Promise<Date> The timestamp when the fund campaign was last updated
+ * @throws TalawaGraphQLError With code 'unauthenticated' if user is not logged in
+ * @throws TalawaGraphQLError With code 'unauthorized_action' if user lacks required permissions
+ * @throws TalawaGraphQLError With code 'unexpected' for database or other runtime errors
  */
 
 export const updatedAtResolver = async (

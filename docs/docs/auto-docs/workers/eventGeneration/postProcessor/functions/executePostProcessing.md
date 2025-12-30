@@ -39,4 +39,4 @@ The dependencies required for the worker.
 
 `Promise`\<[`PostProcessingResult`](../interfaces/PostProcessingResult.md)\>
 
-A promise that resolves to the result of the post-processing operations.
+- A promise that resolves to the result of the post-processing operations.

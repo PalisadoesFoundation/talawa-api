@@ -40,4 +40,4 @@ The expiration date of the token, or null for tokens that never expire
 
 `Promise`\<\{ `id`: `string`; \}\>
 
-The created password reset token record
+- The created password reset token record

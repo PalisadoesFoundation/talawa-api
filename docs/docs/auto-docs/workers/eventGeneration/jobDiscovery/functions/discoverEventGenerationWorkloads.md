@@ -29,4 +29,4 @@ The dependencies required for the worker, such as the database client and logger
 
 `Promise`\<[`DiscoveredWorkload`](../interfaces/DiscoveredWorkload.md)[]\>
 
-A promise that resolves to an array of discovered workloads, sorted by priority.
+- A promise that resolves to an array of discovered workloads, sorted by priority.

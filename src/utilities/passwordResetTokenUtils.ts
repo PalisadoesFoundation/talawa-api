@@ -32,7 +32,7 @@ export const DEFAULT_ADMIN_PASSWORD_RESET_TOKEN_EXPIRES_SECONDS = 3_600;
 
 /**
  * Generates a cryptographically secure random password reset token.
- * @returns A 64-character hex string token
+ * @returns - A 64-character hex string token
  */
 export function generatePasswordResetToken(): string {
 	// codeql[js/insufficient-password-hash] Generates cryptographically random token (256 bits entropy), not a user password
@@ -48,7 +48,7 @@ export function generatePasswordResetToken(): string {
  * - This matches the pattern used for refresh tokens in this codebase
  *
  * @param token - The raw password reset token
- * @returns The hashed token
+ * @returns - The hashed token
  */
 export function hashPasswordResetToken(token: string): string {
 	// Using HMAC with configurable key from environment for defense-in-depth
@@ -67,7 +67,7 @@ export function hashPasswordResetToken(token: string): string {
  * @param userId - The user ID to associate with the token
  * @param tokenHash - The hashed password reset token
  * @param expiresAt - The expiration date of the token, or null for tokens that never expire
- * @returns The created password reset token record
+ * @returns - The created password reset token record
  */
 export async function storePasswordResetToken(
 	drizzleClient: PostgresJsDatabase<typeof schema>,
@@ -101,7 +101,7 @@ export async function storePasswordResetToken(
  *
  * @param drizzleClient - The Drizzle database client
  * @param tokenHash - The hashed password reset token to look up
- * @returns The password reset token record if found and valid, undefined otherwise
+ * @returns - The password reset token record if found and valid, undefined otherwise
  */
 export async function findValidPasswordResetToken(
 	drizzleClient: PostgresJsDatabase<typeof schema>,
@@ -147,7 +147,7 @@ export async function findValidPasswordResetToken(
  * Marks a password reset token as used by setting its usedAt timestamp.
  * @param drizzleClient - The Drizzle database client
  * @param tokenHash - The hashed password reset token to mark as used
- * @returns True if token was marked as used, false if not found or already used
+ * @returns - True if token was marked as used, false if not found or already used
  */
 export async function markPasswordResetTokenAsUsed(
 	drizzleClient: PostgresJsDatabase<typeof schema>,
@@ -172,7 +172,7 @@ export async function markPasswordResetTokenAsUsed(
  * Useful when user successfully resets password or requests a new token.
  * @param drizzleClient - The Drizzle database client
  * @param userId - The user ID whose tokens should be revoked
- * @returns The number of tokens revoked
+ * @returns - The number of tokens revoked
  */
 export async function revokeAllUserPasswordResetTokens(
 	drizzleClient: PostgresJsDatabase<typeof schema>,

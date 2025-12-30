@@ -41,6 +41,8 @@ jobs:
         run: docker buildx build --file ./docker/api.Containerfile --tag talawa_api --target non_production ./
       - name: Check code format
         run: docker container run talawa_api pnpm format:check
+      - name: Check TSDoc comments
+        run: docker container run talawa_api pnpm lint:tsdoc
       - name: Check sanitization
         run: docker container run talawa_api pnpm lint:sanitization
       - name: Check if the source and target branches are different

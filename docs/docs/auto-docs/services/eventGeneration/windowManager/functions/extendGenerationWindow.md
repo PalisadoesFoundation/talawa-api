@@ -41,4 +41,4 @@ The logger for logging debug and error messages.
 
 `Promise`\<`Date`\>
 
-A promise that resolves to the new end date of the Generation window.
+- A promise that resolves to the new end date of the Generation window.
