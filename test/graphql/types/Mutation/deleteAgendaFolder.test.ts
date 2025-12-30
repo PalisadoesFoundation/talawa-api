@@ -1,655 +1,883 @@
-import type { GraphQLFieldMap, GraphQLObjectType } from "graphql";
-import { beforeEach, describe, expect, it, vi } from "vitest";
-import type { GraphQLContext } from "~/src/graphql/context";
-import { schema } from "~/src/graphql/schema";
-// Import the actual implementation to ensure it's loaded for coverage
-import "~/src/graphql/types/Mutation/deleteAgendaFolder";
-import { createMockGraphQLContext } from "test/_Mocks_/mockContextCreator/mockContextCreator";
-import { uuidv7 } from "uuidv7";
+import { faker } from "@faker-js/faker";
+import { eq } from "drizzle-orm";
+import { afterEach, expect, suite, test } from "vitest";
+import type {
+	ArgumentsAssociatedResourcesNotFoundExtensions,
+	InvalidArgumentsExtensions,
+	TalawaGraphQLFormattedError,
+	UnauthenticatedExtensions,
+	UnauthorizedActionOnArgumentsAssociatedResourcesExtensions,
+} from "~/src/utilities/TalawaGraphQLError";
+import { usersTable } from "~/src/drizzle/schema";
+import { assertToBeNonNullish } from "../../../helpers";
+import { server } from "../../../server";
+import { mercuriusClient } from "../client";
+import { createRegularUserUsingAdmin } from "../createRegularUserUsingAdmin";
+import {
+	Mutation_createAgendaFolder,
+	Mutation_createEvent,
+	Mutation_createOrganization,
+	Mutation_createOrganizationMembership,
+	Mutation_deleteOrganization,
+	Mutation_deleteStandaloneEvent,
+	Query_signIn,
+} from "../documentNodes";
 
-// Get the deleteAgendaFolder resolver from the schema
-const mutationType = schema.getType("Mutation") as GraphQLObjectType;
-const deleteAgendaFolderField = (
-	mutationType.getFields() as GraphQLFieldMap<unknown, GraphQLContext>
-).deleteAgendaFolder;
+// Import gql to define the mutation inline since it's not in documentNodes yet
+import { initGraphQLTada } from "gql.tada";
+import type { ClientCustomScalars } from "~/src/graphql/scalars/index";
+import type { introspection } from "../gql.tada";
 
-if (!deleteAgendaFolderField) {
-	throw new Error("deleteAgendaFolder field not found on Mutation type");
+const gql = initGraphQLTada<{
+	introspection: introspection;
+	scalars: ClientCustomScalars;
+}>();
+
+const Mutation_deleteAgendaFolder = gql(`
+  mutation Mutation_deleteAgendaFolder($input: MutationDeleteAgendaFolderInput!) {
+    deleteAgendaFolder(input: $input) {
+      id
+      name
+      isAgendaItemFolder
+    }
+  }
+`);
+
+let cachedAdminAuth: {
+	token: string;
+	userId: string;
+} | null = null;
+
+// Helper function to get admin authentication token and user id
+async function getAdminAuth() {
+	if (cachedAdminAuth !== null) {
+		return cachedAdminAuth;
+	}
+	try {
+		if (
+			!server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS ||
+			!server.envConfig.API_ADMINISTRATOR_USER_PASSWORD
+		) {
+			throw new Error(
+				"Admin credentials are missing in environment configuration",
+			);
+		}
+
+		// Fetching admin authentication token and user id from the database
+		const adminSignInResult = await mercuriusClient.query(Query_signIn, {
+			variables: {
+				input: {
+					emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
+					password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
+				},
+			},
+		});
+		// Check for GraphQL errors
+		if (adminSignInResult.errors) {
+			throw new Error(
+				`Admin authentication failed: ${
+					adminSignInResult.errors[0]?.message || "Unknown error"
+				}`,
+			);
+		}
+		assertToBeNonNullish(adminSignInResult.data.signIn?.authenticationToken);
+		assertToBeNonNullish(adminSignInResult.data.signIn?.user?.id);
+
+		cachedAdminAuth = {
+			token: adminSignInResult.data.signIn.authenticationToken,
+			userId: adminSignInResult.data.signIn.user.id,
+		};
+
+		return cachedAdminAuth;
+	} catch (error) {
+		throw new Error(
+			`Failed to get admin authentication token: ${
+				error instanceof Error ? error.message : "Unknown error"
+			}`,
+		);
+	}
 }
 
-const deleteAgendaFolderResolver = deleteAgendaFolderField.resolve as (
-	parent: unknown,
-	args: { input: { id: string } },
-	ctx: GraphQLContext,
-) => Promise<unknown>;
+// This Helper function creates an environment consisting of an organization and an event
+async function createOrganizationAndEvent(
+	adminAuthToken: string,
+	adminUserId: string,
+) {
+	const createOrganizationResult = await mercuriusClient.mutate(
+		Mutation_createOrganization,
+		{
+			headers: {
+				authorization: `bearer ${adminAuthToken}`,
+			},
+			variables: {
+				input: {
+					name: `Org ${faker.string.uuid()}`,
+					countryCode: "us",
+				},
+			},
+		},
+	);
 
-describe("Mutation.deleteAgendaFolder field resolver - Unit tests", () => {
-	let ctx: GraphQLContext;
-	let mocks: ReturnType<typeof createMockGraphQLContext>["mocks"];
-	let testFolderId: string;
+	assertToBeNonNullish(createOrganizationResult.data?.createOrganization);
 
-	beforeEach(() => {
-		vi.clearAllMocks();
-		testFolderId = uuidv7();
-		const { context, mocks: newMocks } = createMockGraphQLContext(
-			true,
-			"user123",
-		);
-		ctx = context;
-		mocks = newMocks;
+	const organizationId = createOrganizationResult.data.createOrganization.id;
+
+	// Ensure the admin user is a member of the organization to create events
+	await addOrganizationMembership({
+		adminAuthToken,
+		memberId: adminUserId,
+		organizationId,
+		role: "administrator",
 	});
 
-	describe("Authentication checks", () => {
-		it("should throw unauthenticated error when client is not authenticated", async () => {
-			const { context: unauthCtx } = createMockGraphQLContext(false, undefined);
+	// Helper function to check if the event was created successfully
+	const createEventResult = await mercuriusClient.mutate(Mutation_createEvent, {
+		headers: {
+			authorization: `bearer ${adminAuthToken}`,
+		},
+		variables: {
+			input: {
+				name: `Event ${faker.string.uuid()}`,
+				organizationId,
+				startAt: new Date().toISOString(),
+				endAt: new Date(Date.now() + 60 * 60 * 1000).toISOString(),
+				description: "Agenda folder test event",
+			},
+		},
+	});
 
-			await expect(
-				deleteAgendaFolderResolver(
-					{},
-					{ input: { id: testFolderId } },
-					unauthCtx,
-				),
-			).rejects.toMatchObject({
-				extensions: { code: "unauthenticated" },
-			});
-		});
+	assertToBeNonNullish(createEventResult.data?.createEvent);
 
-		it("should throw unauthenticated error when user is not found in database", async () => {
-			// Mock Promise.all with two queries
-			mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValue(
-				undefined,
-			);
-			mocks.drizzleClient.query.agendaFoldersTable.findFirst.mockResolvedValue({
-				id: testFolderId,
-				isAgendaItemFolder: true,
-				event: {
-					startAt: new Date(),
-					organization: {
-						countryCode: "US",
-						membershipsWhereOrganization: [],
+	const eventId = createEventResult.data.createEvent.id;
+
+	return {
+		organizationId,
+		eventId,
+		cleanup: async () => {
+			await mercuriusClient.mutate(Mutation_deleteStandaloneEvent, {
+				headers: {
+					authorization: `bearer ${adminAuthToken}`,
+				},
+				variables: {
+					input: {
+						id: eventId,
 					},
 				},
 			});
 
-			await expect(
-				deleteAgendaFolderResolver(
-					{},
-					{ input: { id: testFolderId } },
-					ctx,
-				),
-			).rejects.toMatchObject({
-				extensions: { code: "unauthenticated" },
+			await mercuriusClient.mutate(Mutation_deleteOrganization, {
+				headers: {
+					authorization: `bearer ${adminAuthToken}`,
+				},
+				variables: {
+					input: {
+						id: organizationId,
+					},
+				},
 			});
+		},
+	};
+}
 
-			expect(
-				mocks.drizzleClient.query.usersTable.findFirst,
-			).toHaveBeenCalledTimes(1);
-		});
+// This helper function is to make administrator member of an organization
+async function addOrganizationMembership(params: {
+	adminAuthToken: string;
+	memberId: string;
+	organizationId: string;
+	role: "administrator" | "regular";
+}) {
+	await mercuriusClient.mutate(Mutation_createOrganizationMembership, {
+		headers: { authorization: `bearer ${params.adminAuthToken}` },
+		variables: {
+			input: {
+				memberId: params.memberId,
+				organizationId: params.organizationId,
+				role: params.role,
+			},
+		},
+	});
+}
+
+// This helper function is to get the admin user id from the cached admin authentication
+async function getAdminUserId(): Promise<string> {
+	if (cachedAdminAuth?.userId) {
+		return cachedAdminAuth.userId;
+	}
+	const auth = await getAdminAuth();
+	return auth.userId;
+}
+
+suite("Mutation field deleteAgendaFolder", () => {
+	const testCleanupFunctions: Array<() => Promise<void>> = [];
+
+	afterEach(async () => {
+		for (const cleanup of testCleanupFunctions.reverse()) {
+			try {
+				await cleanup();
+			} catch (error) {
+				console.error("Cleanup failed:", error);
+			}
+		}
+
+		testCleanupFunctions.length = 0;
 	});
 
-	describe("Input validation", () => {
-		it("should throw invalid_arguments error for invalid input id format", async () => {
-			await expect(
-				deleteAgendaFolderResolver(
-					{},
-					{ input: { id: "invalid-id" } },
-					ctx,
-				),
-			).rejects.toMatchObject({
-				extensions: {
-					code: "invalid_arguments",
-					issues: expect.arrayContaining([
-						expect.objectContaining({
-							argumentPath: ["input", "id"],
-							message: expect.any(String),
+	suite("Authorization and Authentication", () => {
+		test("Returns an error if the client is not authenticated", async () => {
+			const result = await mercuriusClient.mutate(Mutation_deleteAgendaFolder, {
+				variables: {
+					input: {
+						id: faker.string.uuid(),
+					},
+				},
+			});
+
+			expect(result.data?.deleteAgendaFolder).toEqual(null);
+
+			expect(result.errors).toEqual(
+				expect.arrayContaining<TalawaGraphQLFormattedError>([
+					expect.objectContaining<TalawaGraphQLFormattedError>({
+						extensions: expect.objectContaining<UnauthenticatedExtensions>({
+							code: "unauthenticated",
 						}),
-					]),
+						message: expect.any(String),
+						path: ["deleteAgendaFolder"],
+					}),
+				]),
+			);
+		});
+
+		test("Returns an error if the user is present in the token but not in the database", async () => {
+			const regularUser = await createRegularUserUsingAdmin();
+
+			await server.drizzleClient
+				.delete(usersTable)
+				.where(eq(usersTable.id, regularUser.userId));
+
+			const result = await mercuriusClient.mutate(Mutation_deleteAgendaFolder, {
+				headers: {
+					authorization: `bearer ${regularUser.authToken}`,
+				},
+				variables: {
+					input: {
+						id: faker.string.uuid(),
+					},
 				},
 			});
-		});
-	});
 
-	describe("Resource existence checks", () => {
-		it("should throw arguments_associated_resources_not_found error when agenda folder does not exist", async () => {
-			// Mock user exists
-			mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValue({
-				role: "regular",
-			});
+			expect(result.data.deleteAgendaFolder).toEqual(null);
 
-			// Mock agenda folder not found
-			mocks.drizzleClient.query.agendaFoldersTable.findFirst.mockResolvedValue(
-				undefined,
-			);
-
-			await expect(
-				deleteAgendaFolderResolver(
-					{},
-					{ input: { id: testFolderId } },
-					ctx,
-				),
-			).rejects.toMatchObject({
-				extensions: {
-					code: "arguments_associated_resources_not_found",
-					issues: expect.arrayContaining([
-						expect.objectContaining({
-							argumentPath: ["input", "id"],
+			expect(result.errors).toEqual(
+				expect.arrayContaining<TalawaGraphQLFormattedError>([
+					expect.objectContaining<TalawaGraphQLFormattedError>({
+						extensions: expect.objectContaining<UnauthenticatedExtensions>({
+							code: "unauthenticated",
 						}),
-					]),
-				},
-			});
-		});
-	});
-
-	describe("Authorization checks", () => {
-		it("should throw unauthorized_action_on_arguments_associated_resources error when user is regular and not an organization admin", async () => {
-			// Mock user as regular
-			mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValue({
-				role: "regular",
-			});
-
-			// Mock existing agenda folder with no admin membership
-			mocks.drizzleClient.query.agendaFoldersTable.findFirst.mockResolvedValue({
-				id: testFolderId,
-				isAgendaItemFolder: true,
-				event: {
-					startAt: new Date(),
-					organization: {
-						countryCode: "US",
-						membershipsWhereOrganization: [], // No membership or non-admin membership
-					},
-				},
-			});
-
-			await expect(
-				deleteAgendaFolderResolver(
-					{},
-					{ input: { id: testFolderId } },
-					ctx,
-				),
-			).rejects.toMatchObject({
-				extensions: {
-					code: "unauthorized_action_on_arguments_associated_resources",
-					issues: expect.arrayContaining([
-						expect.objectContaining({
-							argumentPath: ["input", "id"],
-						}),
-					]),
-				},
-			});
+						message: expect.any(String),
+						path: ["deleteAgendaFolder"],
+					}),
+				]),
+			);
 		});
 
-		it("should throw unauthorized_action_on_arguments_associated_resources error when user is regular member but not admin", async () => {
-			// Mock user as regular
-			mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValue({
-				role: "regular",
-			});
+		test("Returns an error when a non-member regular user tries to delete a folder", async () => {
+			const [{ token: adminAuthToken }, regularUser] = await Promise.all([
+				getAdminAuth(),
+				createRegularUserUsingAdmin(),
+			]);
 
-			// Mock existing agenda folder with regular membership
-			mocks.drizzleClient.query.agendaFoldersTable.findFirst.mockResolvedValue({
-				id: testFolderId,
-				isAgendaItemFolder: true,
-				event: {
-					startAt: new Date(),
-					organization: {
-						countryCode: "US",
-						membershipsWhereOrganization: [
-							{
-								role: "regular", // Regular role, not administrator
-							},
-						],
-					},
-				},
-			});
-
-			await expect(
-				deleteAgendaFolderResolver(
-					{},
-					{ input: { id: testFolderId } },
-					ctx,
-				),
-			).rejects.toMatchObject({
-				extensions: {
-					code: "unauthorized_action_on_arguments_associated_resources",
-					issues: expect.arrayContaining([
-						expect.objectContaining({
-							argumentPath: ["input", "id"],
-						}),
-					]),
-				},
-			});
-		});
-
-		it("should allow super admin to delete folder without organization membership", async () => {
-			// Mock user as super admin
-			mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValue({
-				role: "administrator",
-			});
-
-			// Mock existing agenda folder without admin membership
-			mocks.drizzleClient.query.agendaFoldersTable.findFirst.mockResolvedValue({
-				id: testFolderId,
-				isAgendaItemFolder: true,
-				event: {
-					startAt: new Date(),
-					organization: {
-						countryCode: "US",
-						membershipsWhereOrganization: [], // No membership
-					},
-				},
-			});
-
-			const deletedFolder = {
-				id: testFolderId,
-				name: "Test Folder",
-				isAgendaItemFolder: true,
-				eventId: "event-123",
-				parentFolderId: null,
-				createdAt: new Date(),
-				updatedAt: new Date(),
-			};
-
-			// Mock delete operation
-			mocks.drizzleClient.delete.mockReturnValue({
-				where: vi.fn().mockReturnValue({
-					returning: vi.fn().mockResolvedValue([deletedFolder]),
-				}),
-			} as never);
-
-			const result = await deleteAgendaFolderResolver(
-				{},
-				{ input: { id: testFolderId } },
-				ctx,
+			const { cleanup, eventId } = await createOrganizationAndEvent(
+				adminAuthToken,
+				await getAdminUserId(),
 			);
 
-			expect(result).toEqual(deletedFolder);
-			expect(mocks.drizzleClient.delete).toHaveBeenCalledTimes(1);
-		});
+			testCleanupFunctions.push(cleanup);
 
-		it("should allow organization admin to delete folder", async () => {
-			// Mock user as regular
-			mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValue({
-				role: "regular",
-			});
-
-			// Mock existing agenda folder with admin membership
-			mocks.drizzleClient.query.agendaFoldersTable.findFirst.mockResolvedValue({
-				id: testFolderId,
-				isAgendaItemFolder: true,
-				event: {
-					startAt: new Date(),
-					organization: {
-						countryCode: "US",
-						membershipsWhereOrganization: [
-							{
-								role: "administrator", // Organization administrator
-							},
-						],
+			// Create an agenda folder
+			const createFolderResult = await mercuriusClient.mutate(
+				Mutation_createAgendaFolder,
+				{
+					headers: {
+						authorization: `bearer ${adminAuthToken}`,
 					},
-				},
-			});
-
-			const deletedFolder = {
-				id: testFolderId,
-				name: "Test Folder",
-				isAgendaItemFolder: true,
-				eventId: "event-123",
-				parentFolderId: null,
-				createdAt: new Date(),
-				updatedAt: new Date(),
-			};
-
-			// Mock delete operation
-			mocks.drizzleClient.delete.mockReturnValue({
-				where: vi.fn().mockReturnValue({
-					returning: vi.fn().mockResolvedValue([deletedFolder]),
-				}),
-			} as never);
-
-			const result = await deleteAgendaFolderResolver(
-				{},
-				{ input: { id: testFolderId } },
-				ctx,
-			);
-
-			expect(result).toEqual(deletedFolder);
-			expect(mocks.drizzleClient.delete).toHaveBeenCalledTimes(1);
-		});
-	});
-
-	describe("Successful deletion", () => {
-		it("should successfully delete agenda folder and return the deleted folder", async () => {
-			// Mock user as super admin
-			mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValue({
-				role: "administrator",
-			});
-
-			// Mock existing agenda folder
-			mocks.drizzleClient.query.agendaFoldersTable.findFirst.mockResolvedValue({
-				id: testFolderId,
-				isAgendaItemFolder: true,
-				event: {
-					startAt: new Date(),
-					organization: {
-						countryCode: "US",
-						membershipsWhereOrganization: [],
-					},
-				},
-			});
-
-			const deletedFolder = {
-				id: testFolderId,
-				name: "Test Folder",
-				isAgendaItemFolder: true,
-				eventId: "event-123",
-				parentFolderId: null,
-				createdAt: new Date(),
-				updatedAt: new Date(),
-			};
-
-			// Mock delete operation
-			mocks.drizzleClient.delete.mockReturnValue({
-				where: vi.fn().mockReturnValue({
-					returning: vi.fn().mockResolvedValue([deletedFolder]),
-				}),
-			} as never);
-
-			const result = await deleteAgendaFolderResolver(
-				{},
-				{ input: { id: testFolderId } },
-				ctx,
-			);
-
-			expect(result).toEqual(deletedFolder);
-			expect(mocks.drizzleClient.delete).toHaveBeenCalledTimes(1);
-		});
-
-		it("should successfully delete agenda folder with parentFolderId", async () => {
-			// Mock user as super admin
-			mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValue({
-				role: "administrator",
-			});
-
-			// Mock existing agenda folder
-			mocks.drizzleClient.query.agendaFoldersTable.findFirst.mockResolvedValue({
-				id: testFolderId,
-				isAgendaItemFolder: false,
-				event: {
-					startAt: new Date(),
-					organization: {
-						countryCode: "US",
-						membershipsWhereOrganization: [],
-					},
-				},
-			});
-
-			const deletedFolder = {
-				id: testFolderId,
-				name: "Child Folder",
-				isAgendaItemFolder: false,
-				eventId: "event-123",
-				parentFolderId: "parent-folder-123",
-				createdAt: new Date(),
-				updatedAt: new Date(),
-			};
-
-			// Mock delete operation
-			mocks.drizzleClient.delete.mockReturnValue({
-				where: vi.fn().mockReturnValue({
-					returning: vi.fn().mockResolvedValue([deletedFolder]),
-				}),
-			} as never);
-
-			const result = await deleteAgendaFolderResolver(
-				{},
-				{ input: { id: testFolderId } },
-				ctx,
-			);
-
-			expect(result).toEqual(deletedFolder);
-			expect(mocks.drizzleClient.delete).toHaveBeenCalledTimes(1);
-		});
-	});
-
-	describe("Edge cases", () => {
-		it("should throw unexpected error when delete operation returns undefined", async () => {
-			// Mock user as super admin
-			mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValue({
-				role: "administrator",
-			});
-
-			// Mock existing agenda folder
-			mocks.drizzleClient.query.agendaFoldersTable.findFirst.mockResolvedValue({
-				id: testFolderId,
-				isAgendaItemFolder: true,
-				event: {
-					startAt: new Date(),
-					organization: {
-						countryCode: "US",
-						membershipsWhereOrganization: [],
-					},
-				},
-			});
-
-			// Mock delete operation returning empty array (deleted by external entity)
-			mocks.drizzleClient.delete.mockReturnValue({
-				where: vi.fn().mockReturnValue({
-					returning: vi.fn().mockResolvedValue([]),
-				}),
-			} as never);
-
-			await expect(
-				deleteAgendaFolderResolver(
-					{},
-					{ input: { id: testFolderId } },
-					ctx,
-				),
-			).rejects.toMatchObject({
-				extensions: { code: "unexpected" },
-			});
-		});
-	});
-
-	describe("Where clause coverage", () => {
-		it("should execute usersTable where clause with correct userId", async () => {
-			const eqMock = vi.fn();
-
-			mocks.drizzleClient.query.usersTable.findFirst.mockImplementation(
-				(...funcArgs: unknown[]) => {
-					const args = funcArgs[0] as {
-						where?: (fields: unknown, operators: unknown) => void;
-					};
-
-					if (args?.where) {
-						const fields = { id: "users.id" };
-						const operators = { eq: eqMock };
-						args.where(fields, operators);
-					}
-
-					return Promise.resolve({
-						role: "administrator",
-					});
-				},
-			);
-
-			mocks.drizzleClient.query.agendaFoldersTable.findFirst.mockResolvedValue({
-				id: testFolderId,
-				isAgendaItemFolder: true,
-				event: {
-					startAt: new Date(),
-					organization: {
-						countryCode: "US",
-						membershipsWhereOrganization: [],
-					},
-				},
-			});
-
-			const deletedFolder = {
-				id: testFolderId,
-				name: "Test Folder",
-				isAgendaItemFolder: true,
-				eventId: "event-123",
-				parentFolderId: null,
-				createdAt: new Date(),
-				updatedAt: new Date(),
-			};
-
-			mocks.drizzleClient.delete.mockReturnValue({
-				where: vi.fn().mockReturnValue({
-					returning: vi.fn().mockResolvedValue([deletedFolder]),
-				}),
-			} as never);
-
-			await deleteAgendaFolderResolver(
-				{},
-				{ input: { id: testFolderId } },
-				ctx,
-			);
-
-			expect(eqMock).toHaveBeenCalledWith("users.id", "user123");
-		});
-
-		it("should execute agendaFoldersTable where clause with correct folderId", async () => {
-			const eqMock = vi.fn();
-
-			mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValue({
-				role: "administrator",
-			});
-
-			mocks.drizzleClient.query.agendaFoldersTable.findFirst.mockImplementation(
-				(...funcArgs: unknown[]) => {
-					const args = funcArgs[0] as {
-						where?: (fields: unknown, operators: unknown) => void;
-					};
-
-					if (args?.where) {
-						const fields = { id: "agendaFolders.id" };
-						const operators = { eq: eqMock };
-						args.where(fields, operators);
-					}
-
-					return Promise.resolve({
-						id: testFolderId,
-						isAgendaItemFolder: true,
-						event: {
-							startAt: new Date(),
-							organization: {
-								countryCode: "US",
-								membershipsWhereOrganization: [],
-							},
+					variables: {
+						input: {
+							name: "Test Folder",
+							eventId,
+							isAgendaItemFolder: true,
 						},
-					});
+					},
 				},
 			);
 
-			const deletedFolder = {
-				id: testFolderId,
-				name: "Test Folder",
-				isAgendaItemFolder: true,
-				eventId: "event-123",
-				parentFolderId: null,
-				createdAt: new Date(),
-				updatedAt: new Date(),
-			};
+			assertToBeNonNullish(createFolderResult.data?.createAgendaFolder);
+			const folderId = createFolderResult.data.createAgendaFolder.id;
 
-			mocks.drizzleClient.delete.mockReturnValue({
-				where: vi.fn().mockReturnValue({
-					returning: vi.fn().mockResolvedValue([deletedFolder]),
-				}),
-			} as never);
+			const result = await mercuriusClient.mutate(Mutation_deleteAgendaFolder, {
+				headers: {
+					authorization: `bearer ${regularUser.authToken}`,
+				},
+				variables: {
+					input: {
+						id: folderId,
+					},
+				},
+			});
 
-			await deleteAgendaFolderResolver(
-				{},
-				{ input: { id: testFolderId } },
-				ctx,
-			);
-
-			expect(eqMock).toHaveBeenCalledWith(
-				"agendaFolders.id",
-				testFolderId,
+			expect(result.data.deleteAgendaFolder).toEqual(null);
+			expect(result.errors).toEqual(
+				expect.arrayContaining<TalawaGraphQLFormattedError>([
+					expect.objectContaining<TalawaGraphQLFormattedError>({
+						extensions:
+							expect.objectContaining<UnauthorizedActionOnArgumentsAssociatedResourcesExtensions>(
+								{
+									code: "unauthorized_action_on_arguments_associated_resources",
+									issues: expect.arrayContaining<
+										UnauthorizedActionOnArgumentsAssociatedResourcesExtensions["issues"][number]
+									>([
+										expect.objectContaining({
+											argumentPath: ["input", "id"],
+										}),
+									]),
+								},
+							),
+						message: expect.any(String),
+						path: ["deleteAgendaFolder"],
+					}),
+				]),
 			);
 		});
 
-		it("should execute membershipsWhereOrganization where clause with correct memberId", async () => {
-			const memberEqMock = vi.fn();
+		test("Returns an error when an organization member without admin rights tries to delete a folder", async () => {
+			const [{ token: adminAuthToken }, regularUser] = await Promise.all([
+				getAdminAuth(),
+				createRegularUserUsingAdmin(),
+			]);
 
-			mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValue({
+			const { cleanup, eventId, organizationId } =
+				await createOrganizationAndEvent(
+					adminAuthToken,
+					await getAdminUserId(),
+				);
+
+			testCleanupFunctions.push(cleanup);
+
+			await addOrganizationMembership({
+				adminAuthToken,
+				memberId: regularUser.userId,
+				organizationId,
 				role: "regular",
 			});
 
-			mocks.drizzleClient.query.agendaFoldersTable.findFirst.mockImplementation(
-				(...funcArgs: unknown[]) => {
-					const args = funcArgs[0] as {
-						with?: {
-							event?: {
-								with?: {
-									organization?: {
-										with?: {
-											membershipsWhereOrganization?: {
-												where?: (fields: unknown, operators: unknown) => void;
-											};
-										};
-									};
-								};
-							};
-						};
-					};
-
-					// Execute the where callback for memberships
-					if (
-						args?.with?.event?.with?.organization?.with
-							?.membershipsWhereOrganization?.where
-					) {
-						const fields = { memberId: "memberships.memberId" };
-						const operators = { eq: memberEqMock };
-						args.with.event.with.organization.with.membershipsWhereOrganization.where(
-							fields,
-							operators,
-						);
-					}
-
-					return Promise.resolve({
-						id: testFolderId,
-						isAgendaItemFolder: true,
-						event: {
-							startAt: new Date(),
-							organization: {
-								countryCode: "US",
-								membershipsWhereOrganization: [
-									{
-										role: "administrator",
-									},
-								],
-							},
+			// Create an agenda folder
+			const createFolderResult = await mercuriusClient.mutate(
+				Mutation_createAgendaFolder,
+				{
+					headers: {
+						authorization: `bearer ${adminAuthToken}`,
+					},
+					variables: {
+						input: {
+							name: "Test Folder",
+							eventId,
+							isAgendaItemFolder: true,
 						},
-					});
+					},
 				},
 			);
 
-			const deletedFolder = {
-				id: testFolderId,
-				name: "Test Folder",
-				isAgendaItemFolder: true,
-				eventId: "event-123",
-				parentFolderId: null,
-				createdAt: new Date(),
-				updatedAt: new Date(),
-			};
+			assertToBeNonNullish(createFolderResult.data?.createAgendaFolder);
+			const folderId = createFolderResult.data.createAgendaFolder.id;
 
-			mocks.drizzleClient.delete.mockReturnValue({
-				where: vi.fn().mockReturnValue({
-					returning: vi.fn().mockResolvedValue([deletedFolder]),
-				}),
-			} as never);
+			const result = await mercuriusClient.mutate(Mutation_deleteAgendaFolder, {
+				headers: {
+					authorization: `bearer ${regularUser.authToken}`,
+				},
+				variables: {
+					input: {
+						id: folderId,
+					},
+				},
+			});
 
-			await deleteAgendaFolderResolver(
-				{},
-				{ input: { id: testFolderId } },
-				ctx,
+			expect(result.data.deleteAgendaFolder).toEqual(null);
+			expect(result.errors).toEqual(
+				expect.arrayContaining<TalawaGraphQLFormattedError>([
+					expect.objectContaining<TalawaGraphQLFormattedError>({
+						extensions:
+							expect.objectContaining<UnauthorizedActionOnArgumentsAssociatedResourcesExtensions>(
+								{
+									code: "unauthorized_action_on_arguments_associated_resources",
+									issues: expect.arrayContaining<
+										UnauthorizedActionOnArgumentsAssociatedResourcesExtensions["issues"][number]
+									>([
+										expect.objectContaining({
+											argumentPath: ["input", "id"],
+										}),
+									]),
+								},
+							),
+						message: expect.any(String),
+						path: ["deleteAgendaFolder"],
+					}),
+				]),
+			);
+		});
+
+		test("Allows super admin to delete folder WITHOUT organization membership", async () => {
+			const { token: adminAuthToken } = await getAdminAuth();
+
+			// Create a new Organization to isolate this test context
+			const createOrgResult = await mercuriusClient.mutate(
+				Mutation_createOrganization,
+				{
+					headers: { authorization: `bearer ${adminAuthToken}` },
+					variables: {
+						input: {
+							name: `Org ${faker.string.uuid()}`,
+							countryCode: "us",
+						},
+					},
+				},
 			);
 
-			expect(memberEqMock).toHaveBeenCalledWith(
-				"memberships.memberId",
-				"user123",
+			assertToBeNonNullish(createOrgResult.data?.createOrganization);
+			const organizationId = createOrgResult.data.createOrganization.id;
+
+			// Create a separate user to act as the Organization Administrator
+			const regularUser = await createRegularUserUsingAdmin();
+
+			await addOrganizationMembership({
+				adminAuthToken,
+				memberId: regularUser.userId,
+				organizationId,
+				role: "administrator",
+			});
+
+			// Create the target Event using the Organization Administrator's credentials
+			const createEventResult = await mercuriusClient.mutate(
+				Mutation_createEvent,
+				{
+					headers: { authorization: `bearer ${regularUser.authToken}` },
+					variables: {
+						input: {
+							name: `Event ${faker.string.uuid()}`,
+							organizationId,
+							startAt: new Date().toISOString(),
+							endAt: new Date(Date.now() + 60 * 60 * 1000).toISOString(),
+							description: "Test event for super admin bypass",
+						},
+					},
+				},
+			);
+
+			assertToBeNonNullish(createEventResult.data?.createEvent);
+			const eventId = createEventResult.data.createEvent.id;
+
+			// Create an agenda folder
+			const createFolderResult = await mercuriusClient.mutate(
+				Mutation_createAgendaFolder,
+				{
+					headers: { authorization: `bearer ${regularUser.authToken}` },
+					variables: {
+						input: {
+							name: "Super Admin Global Access Folder",
+							eventId,
+							isAgendaItemFolder: false,
+						},
+					},
+				},
+			);
+
+			assertToBeNonNullish(createFolderResult.data?.createAgendaFolder);
+			const folderId = createFolderResult.data.createAgendaFolder.id;
+
+			// Register cleanup operations immediately to ensure database hygiene on failure
+			testCleanupFunctions.push(async () => {
+				await mercuriusClient.mutate(Mutation_deleteStandaloneEvent, {
+					headers: { authorization: `bearer ${adminAuthToken}` },
+					variables: { input: { id: eventId } },
+				});
+
+				await mercuriusClient.mutate(Mutation_deleteOrganization, {
+					headers: { authorization: `bearer ${adminAuthToken}` },
+					variables: { input: { id: organizationId } },
+				});
+			});
+
+			// Execute Mutation: Super Admin attempts to delete the folder
+			// Note: The Admin is NOT a member of the organization, validating the global role bypass
+			const result = await mercuriusClient.mutate(Mutation_deleteAgendaFolder, {
+				headers: { authorization: `bearer ${adminAuthToken}` },
+				variables: {
+					input: {
+						id: folderId,
+					},
+				},
+			});
+
+			// Verify the folder was deleted successfully
+			assertToBeNonNullish(result.data?.deleteAgendaFolder);
+			expect(result.data.deleteAgendaFolder.id).toEqual(folderId);
+			expect(result.data.deleteAgendaFolder.name).toEqual(
+				"Super Admin Global Access Folder",
+			);
+			expect(result.errors).toBeUndefined();
+		});
+
+		test("Allows organization admin to delete folder", async () => {
+			const [{ token: adminAuthToken }, regularUser] = await Promise.all([
+				getAdminAuth(),
+				createRegularUserUsingAdmin(),
+			]);
+
+			const { cleanup, eventId, organizationId } =
+				await createOrganizationAndEvent(
+					adminAuthToken,
+					await getAdminUserId(),
+				);
+
+			testCleanupFunctions.push(cleanup);
+
+			await addOrganizationMembership({
+				adminAuthToken,
+				memberId: regularUser.userId,
+				organizationId,
+				role: "administrator",
+			});
+
+			// Create an agenda folder
+			const createFolderResult = await mercuriusClient.mutate(
+				Mutation_createAgendaFolder,
+				{
+					headers: {
+						authorization: `bearer ${adminAuthToken}`,
+					},
+					variables: {
+						input: {
+							name: "Org Admin Folder",
+							eventId,
+							isAgendaItemFolder: false,
+						},
+					},
+				},
+			);
+
+			assertToBeNonNullish(createFolderResult.data?.createAgendaFolder);
+			const folderId = createFolderResult.data.createAgendaFolder.id;
+
+			const result = await mercuriusClient.mutate(Mutation_deleteAgendaFolder, {
+				headers: {
+					authorization: `bearer ${regularUser.authToken}`,
+				},
+				variables: {
+					input: {
+						id: folderId,
+					},
+				},
+			});
+
+			assertToBeNonNullish(result.data?.deleteAgendaFolder);
+			expect(result.data.deleteAgendaFolder.id).toEqual(folderId);
+			expect(result.data.deleteAgendaFolder.name).toEqual("Org Admin Folder");
+			expect(result.errors).toBeUndefined();
+		});
+	});
+
+	suite("Input Validation", () => {
+		test("Returns an error when invalid arguments are provided", async () => {
+			const { token: adminAuthToken } = await getAdminAuth();
+
+			const result = await mercuriusClient.mutate(Mutation_deleteAgendaFolder, {
+				headers: {
+					authorization: `bearer ${adminAuthToken}`,
+				},
+				variables: {
+					input: {
+						id: "not-a-valid-uuid",
+					},
+				},
+			});
+
+			expect(result.data?.deleteAgendaFolder ?? null).toEqual(null);
+
+			expect(result.errors).toEqual(
+				expect.arrayContaining<TalawaGraphQLFormattedError>([
+					expect.objectContaining<TalawaGraphQLFormattedError>({
+						extensions: expect.objectContaining<InvalidArgumentsExtensions>({
+							code: "invalid_arguments",
+							issues: expect.arrayContaining<
+								InvalidArgumentsExtensions["issues"][number]
+							>([
+								expect.objectContaining({
+									argumentPath: ["input", "id"],
+									message: expect.any(String),
+								}),
+							]),
+						}),
+						message: expect.any(String),
+						path: ["deleteAgendaFolder"],
+					}),
+				]),
+			);
+		});
+	});
+
+	suite("Resource Existence", () => {
+		test("Returns an error when agenda folder does not exist", async () => {
+			const { token: adminAuthToken } = await getAdminAuth();
+
+			const result = await mercuriusClient.mutate(Mutation_deleteAgendaFolder, {
+				headers: {
+					authorization: `bearer ${adminAuthToken}`,
+				},
+				variables: {
+					input: {
+						id: faker.string.uuid(),
+					},
+				},
+			});
+
+			expect(result.data.deleteAgendaFolder).toEqual(null);
+			expect(result.errors).toEqual(
+				expect.arrayContaining<TalawaGraphQLFormattedError>([
+					expect.objectContaining<TalawaGraphQLFormattedError>({
+						extensions:
+							expect.objectContaining<ArgumentsAssociatedResourcesNotFoundExtensions>(
+								{
+									code: "arguments_associated_resources_not_found",
+									issues: expect.arrayContaining<
+										ArgumentsAssociatedResourcesNotFoundExtensions["issues"][number]
+									>([
+										expect.objectContaining({
+											argumentPath: ["input", "id"],
+										}),
+									]),
+								},
+							),
+						message: expect.any(String),
+						path: ["deleteAgendaFolder"],
+					}),
+				]),
+			);
+		});
+	});
+
+	suite("Successful Deletion", () => {
+		test("Deletes agenda folder successfully when admin user deletes it", async () => {
+			const { token: adminAuthToken } = await getAdminAuth();
+
+			const { cleanup, eventId } = await createOrganizationAndEvent(
+				adminAuthToken,
+				await getAdminUserId(),
+			);
+
+			testCleanupFunctions.push(cleanup);
+
+			// Create an agenda folder
+			const createFolderResult = await mercuriusClient.mutate(
+				Mutation_createAgendaFolder,
+				{
+					headers: {
+						authorization: `bearer ${adminAuthToken}`,
+					},
+					variables: {
+						input: {
+							name: "Test Folder",
+							eventId,
+							isAgendaItemFolder: true,
+						},
+					},
+				},
+			);
+
+			assertToBeNonNullish(createFolderResult.data?.createAgendaFolder);
+			const folderId = createFolderResult.data.createAgendaFolder.id;
+
+			const result = await mercuriusClient.mutate(Mutation_deleteAgendaFolder, {
+				headers: {
+					authorization: `bearer ${adminAuthToken}`,
+				},
+				variables: {
+					input: {
+						id: folderId,
+					},
+				},
+			});
+
+			expect(result.errors).toBeUndefined();
+			assertToBeNonNullish(result.data?.deleteAgendaFolder);
+			const deletedFolder = result.data.deleteAgendaFolder as {
+				id: string;
+				name: string | null;
+				isAgendaItemFolder: boolean;
+			};
+			expect(deletedFolder.id).toEqual(folderId);
+			expect(deletedFolder.name).toEqual("Test Folder");
+			expect(deletedFolder.isAgendaItemFolder).toEqual(true);
+		});
+
+		test("Deletes agenda folder with parent folder successfully", async () => {
+			const { token: adminAuthToken } = await getAdminAuth();
+
+			const { cleanup, eventId } = await createOrganizationAndEvent(
+				adminAuthToken,
+				await getAdminUserId(),
+			);
+
+			testCleanupFunctions.push(cleanup);
+
+			// Create parent folder
+			const createParentFolderResult = await mercuriusClient.mutate(
+				Mutation_createAgendaFolder,
+				{
+					headers: {
+						authorization: `bearer ${adminAuthToken}`,
+					},
+					variables: {
+						input: {
+							name: "Parent Folder",
+							eventId,
+							isAgendaItemFolder: false,
+						},
+					},
+				},
+			);
+
+			assertToBeNonNullish(createParentFolderResult.data?.createAgendaFolder);
+			const parentFolderId =
+				createParentFolderResult.data.createAgendaFolder.id;
+
+			// Create child folder
+			const createChildFolderResult = await mercuriusClient.mutate(
+				Mutation_createAgendaFolder,
+				{
+					headers: {
+						authorization: `bearer ${adminAuthToken}`,
+					},
+					variables: {
+						input: {
+							name: "Child Folder",
+							eventId,
+							parentFolderId,
+							isAgendaItemFolder: false,
+						},
+					},
+				},
+			);
+
+			assertToBeNonNullish(createChildFolderResult.data?.createAgendaFolder);
+			const childFolderId = createChildFolderResult.data.createAgendaFolder.id;
+
+			const result = await mercuriusClient.mutate(Mutation_deleteAgendaFolder, {
+				headers: {
+					authorization: `bearer ${adminAuthToken}`,
+				},
+				variables: {
+					input: {
+						id: childFolderId,
+					},
+				},
+			});
+
+			expect(result.errors).toBeUndefined();
+			assertToBeNonNullish(result.data?.deleteAgendaFolder);
+			const deletedFolder = result.data.deleteAgendaFolder as {
+				id: string;
+				name: string | null;
+				isAgendaItemFolder: boolean;
+			};
+			expect(deletedFolder.id).toEqual(childFolderId);
+			expect(deletedFolder.name).toEqual("Child Folder");
+			expect(deletedFolder.isAgendaItemFolder).toEqual(false);
+		});
+	});
+
+	suite("Edge Cases", () => {
+		test("Returns an error when trying to delete the same folder twice", async () => {
+			const { token: adminAuthToken } = await getAdminAuth();
+
+			const { cleanup, eventId } = await createOrganizationAndEvent(
+				adminAuthToken,
+				await getAdminUserId(),
+			);
+
+			testCleanupFunctions.push(cleanup);
+
+			// Create an agenda folder
+			const createFolderResult = await mercuriusClient.mutate(
+				Mutation_createAgendaFolder,
+				{
+					headers: {
+						authorization: `bearer ${adminAuthToken}`,
+					},
+					variables: {
+						input: {
+							name: "Test Folder",
+							eventId,
+							isAgendaItemFolder: true,
+						},
+					},
+				},
+			);
+
+			assertToBeNonNullish(createFolderResult.data?.createAgendaFolder);
+			const folderId = createFolderResult.data.createAgendaFolder.id;
+
+			// First deletion
+			const firstDeleteResult = await mercuriusClient.mutate(
+				Mutation_deleteAgendaFolder,
+				{
+					headers: {
+						authorization: `bearer ${adminAuthToken}`,
+					},
+					variables: {
+						input: {
+							id: folderId,
+						},
+					},
+				},
+			);
+
+			expect(firstDeleteResult.errors).toBeUndefined();
+			assertToBeNonNullish(firstDeleteResult.data?.deleteAgendaFolder);
+
+			// Second deletion attempt
+			const secondDeleteResult = await mercuriusClient.mutate(
+				Mutation_deleteAgendaFolder,
+				{
+					headers: {
+						authorization: `bearer ${adminAuthToken}`,
+					},
+					variables: {
+						input: {
+							id: folderId,
+						},
+					},
+				},
+			);
+
+			expect(secondDeleteResult.data.deleteAgendaFolder).toEqual(null);
+			expect(secondDeleteResult.errors).toEqual(
+				expect.arrayContaining<TalawaGraphQLFormattedError>([
+					expect.objectContaining<TalawaGraphQLFormattedError>({
+						extensions:
+							expect.objectContaining<ArgumentsAssociatedResourcesNotFoundExtensions>(
+								{
+									code: "arguments_associated_resources_not_found",
+									issues: expect.arrayContaining<
+										ArgumentsAssociatedResourcesNotFoundExtensions["issues"][number]
+									>([
+										expect.objectContaining({
+											argumentPath: ["input", "id"],
+										}),
+									]),
+								},
+							),
+						message: expect.any(String),
+						path: ["deleteAgendaFolder"],
+					}),
+				]),
 			);
 		});
 	});
