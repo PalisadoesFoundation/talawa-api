@@ -75,6 +75,7 @@ export const Details = ({
 input QuerySignInInput {
   emailAddress: EmailAddress!
   password: String!
+  recaptchaToken: String
 }
 ```
 
@@ -87,6 +88,10 @@ Email address of the user.
 #### [<code style={{ fontWeight: 'normal' }}>QuerySignInInput.<b>password</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>String!</b></code>](/auto-schema/types/scalars/string.mdx) <Badge class="badge badge--secondary badge--non_null" text="non-null"/> <Badge class="badge badge--secondary " text="scalar"/>
 
 Password of the user to sign in to talawa.
+
+#### [<code style={{ fontWeight: 'normal' }}>QuerySignInInput.<b>recaptchaToken</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>String</b></code>](/auto-schema/types/scalars/string.mdx) <Badge class="badge badge--secondary " text="scalar"/>
+
+Optional reCAPTCHA token for verification.
 
 ### Member Of
 
