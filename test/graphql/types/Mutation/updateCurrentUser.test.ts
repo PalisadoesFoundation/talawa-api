@@ -1697,7 +1697,7 @@ suite("Mutation field updateCurrentUser", () => {
 				addressLine1: faker.location.streetAddress(),
 				addressLine2: faker.location.secondaryAddress(),
 				birthDate: faker.date.birthdate().toISOString().split("T")[0],
-				city: faker.location.city(),
+				city: faker.location.city().replace(/'/g, ""), // Remove apostrophes to avoid HTML encoding
 				countryCode: "ca" as const,
 				description: faker.lorem.paragraph(),
 				educationGrade: "graduate" as const,
