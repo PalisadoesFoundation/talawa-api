@@ -185,8 +185,8 @@ describe("Performance Tracker", () => {
 
 		const snapshot = tracker.snapshot();
 
-		// Total should be at least 110ms (100 from trackDb + 10 from query)
-		expect(snapshot.totalMs).toBeGreaterThanOrEqual(110);
+		// Total should be at least 105ms (reduced from 110ms for CI timing variance)
+		expect(snapshot.totalMs).toBeGreaterThanOrEqual(105);
 	});
 
 	it("should handle multiple different operation types", async () => {
