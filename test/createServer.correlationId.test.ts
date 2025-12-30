@@ -1,3 +1,15 @@
+vi.mock("@fastify/redis", () => ({
+  default: async () => {},
+}));
+
+vi.mock("../src/fastifyPlugins/index", () => ({
+  default: async () => {},
+}));
+
+vi.mock("../src/routes/index", () => ({
+  default: async () => {},
+}));
+
 import type { FastifyInstance } from "fastify";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { createServer } from "../src/createServer";
