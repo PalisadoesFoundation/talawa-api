@@ -116,11 +116,11 @@ describe("Server-Timing header", () => {
 			const snapshot = body.recent[0];
 			expect(snapshot).toHaveProperty("totalMs");
 			expect(snapshot).toHaveProperty("cacheHits");
-			expect(snapshot).toHaveProperty("cacheMiss");
+			expect(snapshot).toHaveProperty("cacheMisses");
 			expect(snapshot).toHaveProperty("ops");
 			expect(typeof snapshot.totalMs).toBe("number");
 			expect(typeof snapshot.cacheHits).toBe("number");
-			expect(typeof snapshot.cacheMiss).toBe("number");
+			expect(typeof snapshot.cacheMisses).toBe("number");
 			expect(typeof snapshot.ops).toBe("object");
 		}
 	});

@@ -22,9 +22,9 @@ Number of cache hits
 
 ***
 
-### cacheMiss
+### cacheMisses
 
-> **cacheMiss**: `number`
+> **cacheMisses**: `number`
 
 Defined in: [src/utilities/metrics/performanceTracker.ts:26](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/utilities/metrics/performanceTracker.ts#L26)
 

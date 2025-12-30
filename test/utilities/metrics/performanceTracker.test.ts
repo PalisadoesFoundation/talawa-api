@@ -9,7 +9,7 @@ describe("Performance Tracker", () => {
 		expect(snapshot).toEqual({
 			totalMs: 0,
 			cacheHits: 0,
-			cacheMiss: 0,
+			cacheMisses: 0,
 			ops: {},
 		});
 	});
@@ -40,7 +40,7 @@ describe("Performance Tracker", () => {
 		const snapshot = tracker.snapshot();
 
 		expect(snapshot.cacheHits).toBe(3);
-		expect(snapshot.cacheMiss).toBe(0);
+		expect(snapshot.cacheMisses).toBe(0);
 	});
 
 	it("should track cache misses", () => {
@@ -52,7 +52,7 @@ describe("Performance Tracker", () => {
 		const snapshot = tracker.snapshot();
 
 		expect(snapshot.cacheHits).toBe(0);
-		expect(snapshot.cacheMiss).toBe(2);
+		expect(snapshot.cacheMisses).toBe(2);
 	});
 
 	it("should track cache hits and misses together", () => {
@@ -67,7 +67,7 @@ describe("Performance Tracker", () => {
 		const snapshot = tracker.snapshot();
 
 		expect(snapshot.cacheHits).toBe(3);
-		expect(snapshot.cacheMiss).toBe(2);
+		expect(snapshot.cacheMisses).toBe(2);
 	});
 
 	it("should time async operations", async () => {
@@ -207,7 +207,7 @@ describe("Performance Tracker", () => {
 		const snapshot = tracker.snapshot();
 
 		expect(snapshot.cacheHits).toBe(1);
-		expect(snapshot.cacheMiss).toBe(1);
+		expect(snapshot.cacheMisses).toBe(1);
 		expect(snapshot.ops.db).toBeDefined();
 		expect(snapshot.ops.query).toBeDefined();
 		expect(snapshot.ops.render).toBeDefined();

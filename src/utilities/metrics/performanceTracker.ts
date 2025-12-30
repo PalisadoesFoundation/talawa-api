@@ -23,7 +23,7 @@ export type PerfSnapshot = {
 	/** Number of cache hits */
 	cacheHits: number;
 	/** Number of cache misses */
-	cacheMiss: number;
+	cacheMisses: number;
 	/** Statistics for each operation type */
 	ops: Record<string, OpStats>;
 };
@@ -77,17 +77,26 @@ export interface PerformanceTracker {
 export function createPerformanceTracker(): PerformanceTracker {
 	const ops: Record<string, OpStats> = {};
 	let cacheHits = 0;
-	let cacheMiss = 0;
+	let cacheMisses = 0;
 	let totalMs = 0;
 
 	/**
 	 * Ensure an operation entry exists in the ops record.
 	 */
-	const ensure = (k: string): OpStats => {
-		if (!ops[k]) {
-			ops[k] = { count: 0, ms: 0, max: 0 };
+	const ensure = (key: string): OpStats => {
+		if (!ops[key]) {
+			ops[key] = { count: 0, ms: 0, max: 0 };
 		}
-		return ops[k];
+		return ops[key];
+	};
+
+	/**
+	 * Validates an operation name.
+	 */
+	const validateOp = (op: string): void => {
+		if (!op || !op.trim()) {
+			throw new Error("Operation name cannot be empty or whitespace");
+		}
 	};
 
 	/**
@@ -103,6 +112,7 @@ export function createPerformanceTracker(): PerformanceTracker {
 
 	return {
 		async time<T>(op: string, fn: () => Promise<T>): Promise<T> {
+			validateOp(op);
 			const t0 = performance.now();
 			try {
 				return await fn();
@@ -112,11 +122,15 @@ export function createPerformanceTracker(): PerformanceTracker {
 		},
 
 		start(op: string): () => void {
+			validateOp(op);
 			const t0 = performance.now();
 			return () => record(op, performance.now() - t0);
 		},
 
 		trackDb(ms: number): void {
+			if (!Number.isFinite(ms) || ms < 0) {
+				return; // Ignore invalid values
+			}
 			record("db", ms);
 		},
 
@@ -125,21 +139,15 @@ export function createPerformanceTracker(): PerformanceTracker {
 		},
 
 		trackCacheMiss(): void {
-			cacheMiss++;
+			cacheMisses++;
 		},
 
 		snapshot(): PerfSnapshot {
-			// Deep copy ops to ensure snapshot independence
-			const opsCopy: Record<string, OpStats> = {};
-			for (const [key, value] of Object.entries(ops)) {
-				opsCopy[key] = { ...value };
-			}
-
 			return {
 				totalMs,
 				cacheHits,
-				cacheMiss,
-				ops: opsCopy,
+				cacheMisses,
+				ops: structuredClone(ops),
 			};
 		},
 	};

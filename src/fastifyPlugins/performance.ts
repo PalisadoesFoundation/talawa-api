@@ -45,7 +45,7 @@ export default fp(async function perfPlugin(app: FastifyInstance) {
 
 		// Extract metrics from snapshot
 		const dbMs = Math.round(snap?.ops?.db?.ms ?? 0);
-		const cacheDesc = `hit:${snap?.cacheHits ?? 0}|miss:${snap?.cacheMiss ?? 0}`;
+		const cacheDesc = `hit:${snap?.cacheHits ?? 0}|miss:${snap?.cacheMisses ?? 0}`;
 
 		// Add Server-Timing header with db, cache, and total metrics
 		reply.header(
