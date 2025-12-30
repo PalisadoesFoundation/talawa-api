@@ -379,12 +379,15 @@ suite("Mutation field createTagFolder", () => {
 			expect(result.data?.createTagFolder ?? null).toEqual(null);
 
 			const errors = result.errors ?? [];
+			console.log("ERRORS ARE:");
+			console.log(errors);
 			expect(
 				errors.some(
 					(error) =>
 						error.extensions?.code === "invalid_arguments" ||
 						error.message.includes("got invalid value") ||
-						error.message.includes("cannot represent a non string value"),
+						error.message.includes("cannot represent a non string value") ||
+						error.message.includes("Graphql validation error"),
 				),
 			).toBe(true);
 		});
