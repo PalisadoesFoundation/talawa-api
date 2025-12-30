@@ -87,7 +87,21 @@ describe("Plugin Webhooks", () => {
 
 	describe("Plugin Registration", () => {
 		it("should register webhook routes on fastify instance", async () => {
-			const app = await createTestApp();
+			// Setup mock with specific behavior for registration check
+			mockWebhookHandler.mockResolvedValue({ success: true });
+
+			const mockPluginManager = {
+				getExtensionRegistry: vi.fn().mockReturnValue({
+					webhooks: {
+						handlers: {
+							"test-plugin:/": mockWebhookHandler,
+							"test-plugin:custom/path": mockWebhookHandler, // Same mock for simplicity
+						},
+					},
+				}),
+			};
+
+			const app = await createTestApp(mockPluginManager);
 
 			// Test that routes are registered by making requests to them
 			const response1 = await app.inject({
@@ -103,6 +117,9 @@ describe("Plugin Webhooks", () => {
 			// Both should not return 404 (route not found)
 			expect(response1.statusCode).not.toBe(404);
 			expect(response2.statusCode).not.toBe(404);
+
+			// Assert that the handler was actually invoked
+			expect(mockWebhookHandler).toHaveBeenCalledTimes(2);
 
 			await app.close();
 		});
@@ -675,8 +692,9 @@ describe("Plugin Webhooks", () => {
 				expect(response.statusCode).not.toBe(405);
 				expect(mockWebhookHandler).toHaveBeenCalled();
 
-				// Reset mock for next iteration
-				mockWebhookHandler.mockClear();
+				// Reset mock implementation and history for next iteration
+				mockWebhookHandler.mockReset();
+				mockWebhookHandler.mockResolvedValue(undefined); // Re-apply default behavior
 			}
 
 			await app.close();

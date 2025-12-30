@@ -262,12 +262,31 @@ export const graphql = fastifyPlugin(async (fastify) => {
 			`sub-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
 
 		const formatted = errors.map((e) => {
-			const code: ErrorCode =
-				(e.extensions?.code as ErrorCode) ?? ErrorCode.INTERNAL_SERVER_ERROR;
+			const rawCode = e.extensions?.code as string | undefined;
 
+			// Normalize error code for internal logic (status lookup)
+			let normalizedCode: ErrorCode;
+
+			if (rawCode && Object.values(ErrorCode).includes(rawCode as ErrorCode)) {
+				normalizedCode = rawCode as ErrorCode;
+			} else {
+				// Map legacy codes to standard ErrorCodes
+				switch (rawCode) {
+					case "too_many_requests":
+						normalizedCode = ErrorCode.RATE_LIMIT_EXCEEDED;
+						break;
+					case "forbidden_action_on_arguments_associated_resources":
+						normalizedCode = ErrorCode.UNAUTHORIZED;
+						break;
+					default:
+						normalizedCode = ErrorCode.INTERNAL_SERVER_ERROR;
+				}
+			}
+
+			// Determine HTTP status: specific override > mapped from code > default 500
 			const httpStatus =
 				(e.extensions?.httpStatus as number) ??
-				ERROR_CODE_TO_HTTP_STATUS[code] ??
+				ERROR_CODE_TO_HTTP_STATUS[normalizedCode] ??
 				500;
 
 			// Sanitize extensions by removing sensitive keys and whitelisting safe ones
@@ -301,7 +320,8 @@ export const graphql = fastifyPlugin(async (fastify) => {
 				extensions: {
 					// Spread sanitized extensions first so they can't override our standardized keys
 					...sanitizedExtensions,
-					code,
+					// Use original rawCode if present to preserve external behavior, else normalized
+					code: rawCode ?? normalizedCode,
 					details: e.extensions?.details,
 					correlationId,
 					httpStatus,

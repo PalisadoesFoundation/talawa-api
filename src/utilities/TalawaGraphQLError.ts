@@ -346,7 +346,7 @@ export const defaultTalawaGraphQLErrorMessages: Record<string, string> = {
  *     where: (fields, operators) => operators.eq(fields.id, args.input.id),
  *   });
  *
- *   if (user === undefined) {
+ *   if (existingUser === undefined) {
  *     throw new TalawaGraphQLError({
  *       extensions: {
  *         code: ErrorCode.NOT_FOUND,

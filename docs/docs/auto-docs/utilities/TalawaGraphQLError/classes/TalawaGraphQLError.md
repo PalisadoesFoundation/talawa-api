@@ -52,7 +52,7 @@ export const user = async (parent, args, ctx) => {
     where: (fields, operators) => operators.eq(fields.id, args.input.id),
   });
 
-  if (user === undefined) {
+  if (existingUser === undefined) {
     throw new TalawaGraphQLError({
       extensions: {
         code: ErrorCode.NOT_FOUND,
