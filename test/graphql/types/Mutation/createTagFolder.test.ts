@@ -379,8 +379,6 @@ suite("Mutation field createTagFolder", () => {
 			expect(result.data?.createTagFolder ?? null).toEqual(null);
 
 			const errors = result.errors ?? [];
-			console.log("ERRORS ARE:");
-			console.log(errors);
 			expect(
 				errors.some(
 					(error) =>
