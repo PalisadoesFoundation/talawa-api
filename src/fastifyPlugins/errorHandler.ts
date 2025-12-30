@@ -16,16 +16,16 @@ import fp from "fastify-plugin";
  * - Masks sensitive error details for 5xx errors
  * - Includes correlation ID in error responses for client reference
  *
- * @param {FastifyInstance} app - The Fastify application instance
- * @returns {Promise<void>} Resolves when the error handler is registered
+ * @param app - The Fastify application instance
+ * @returns Resolves when the error handler is registered
  *
  * @example
- * ```typescript
+ * ```ts
  * await app.register(errorHandlerPlugin);
  * ```
  *
  * @remarks
- * - The correlation ID is extracted from the request object (fastify assigns a unique ID to each request)
+ * - The correlation ID is extracted from the request object (Fastify assigns a unique ID to each request)
  * - Server errors (5xx) return a generic message to prevent information leakage
  * - Client errors (4xx) return the original error message
  * - All errors are logged with full error details for debugging purposes
