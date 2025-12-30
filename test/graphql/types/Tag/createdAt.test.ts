@@ -588,6 +588,7 @@ describe("Tag.createdAt resolver - Unit test edge case", () => {
 	});
 
 	describe("Error Handling", () => {
+		// This test expects the resolver to handle database query errors gracefully
 		it("should handle database query errors gracefully", async () => {
 			const graphqlInstance = (
 				server as unknown as {
