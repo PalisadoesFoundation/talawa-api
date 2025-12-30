@@ -184,10 +184,10 @@ builder.mutationField("createChat", (t) =>
 					});
 				}
 
-				if (isNotNullish(parsedArgs.input.avatar)) {
+				if (isNotNullish(parsedArgs.input.avatar) && avatarName !== null) {
 					await ctx.minio.client.putObject(
 						ctx.minio.bucketName,
-						avatarName!,
+						avatarName,
 						parsedArgs.input.avatar.createReadStream(),
 						undefined,
 						{
