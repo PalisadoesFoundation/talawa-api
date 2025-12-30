@@ -1565,5 +1565,73 @@ describe("GraphQL Routes", () => {
 				],
 			});
 		});
+
+		it("should use context.correlationId when request ID is missing", async () => {
+			await graphql(mockFastifyInstance as unknown as FastifyInstance);
+
+			const mercuriusCall = mockFastifyInstance.register.mock.calls.find(
+				(call) => call?.[1]?.errorFormatter,
+			);
+			const errorFormatter = mercuriusCall?.[1] as {
+				errorFormatter: (
+					execution: ExecutionResult,
+					context: Record<string, unknown>,
+				) => { response: ExecutionResult };
+			};
+
+			const mockExecution = {
+				errors: [{ message: "Sub error" }],
+			} as unknown as ExecutionResult;
+
+			const mockContext = {
+				correlationId: "sub-123",
+				log: { error: vi.fn() },
+			};
+
+			const result = errorFormatter.errorFormatter(mockExecution, mockContext);
+
+			expect(result.response.errors?.[0]?.extensions?.correlationId).toBe(
+				"sub-123",
+			);
+			expect(mockContext.log.error).toHaveBeenCalledWith(
+				expect.objectContaining({
+					correlationId: "sub-123",
+				}),
+			);
+		});
+
+		it("should generate fallback correlationId when both request ID and context correlationId are missing", async () => {
+			await graphql(mockFastifyInstance as unknown as FastifyInstance);
+
+			const mercuriusCall = mockFastifyInstance.register.mock.calls.find(
+				(call) => call?.[1]?.errorFormatter,
+			);
+			const errorFormatter = mercuriusCall?.[1] as {
+				errorFormatter: (
+					execution: ExecutionResult,
+					context: Record<string, unknown>,
+				) => { response: ExecutionResult };
+			};
+
+			const mockExecution = {
+				errors: [{ message: "Fallback error" }],
+			} as unknown as ExecutionResult;
+
+			const mockContext = {
+				log: { error: vi.fn() },
+			};
+
+			const result = errorFormatter.errorFormatter(mockExecution, mockContext);
+
+			const correlationId = result.response.errors?.[0]?.extensions
+				?.correlationId as string;
+			expect(correlationId).toMatch(/^sub-\d+-[a-z0-9]+$/);
+
+			expect(mockContext.log.error).toHaveBeenCalledWith(
+				expect.objectContaining({
+					correlationId: correlationId,
+				}),
+			);
+		});
 	});
 });

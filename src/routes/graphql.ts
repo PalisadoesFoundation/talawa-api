@@ -254,6 +254,11 @@ export const graphql = fastifyPlugin(async (fastify) => {
 			return { statusCode: 200, response: execution };
 		}
 
+		const correlationId =
+			(context.reply?.request?.id as string | undefined) ??
+			(context as { correlationId?: string }).correlationId ??
+			`sub-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
+
 		const formatted = errors.map((e) => {
 			const code: ErrorCode =
 				(e.extensions?.code as ErrorCode) ?? ErrorCode.INTERNAL_SERVER_ERROR;
@@ -262,9 +267,6 @@ export const graphql = fastifyPlugin(async (fastify) => {
 				(e.extensions?.httpStatus as number) ??
 				ERROR_CODE_TO_HTTP_STATUS[code] ??
 				500;
-
-			// Attach correlationId
-			const correlationId = context.reply?.request?.id as string | undefined;
 
 			// Sanitize extensions by removing sensitive keys and whitelisting safe ones
 			const sensitiveKeys = new Set([
@@ -313,7 +315,7 @@ export const graphql = fastifyPlugin(async (fastify) => {
 			context.reply?.request?.log;
 		logger?.error({
 			msg: "GraphQL error",
-			correlationId: context.reply?.request?.id,
+			correlationId,
 			statusCode,
 			errors: formatted.map((fe) => ({
 				message: fe.message,
@@ -366,7 +368,6 @@ export const graphql = fastifyPlugin(async (fastify) => {
 							isAuthenticated: true,
 							user: decoded.user,
 						},
-						dataloaders: createDataloaders(fastify.drizzleClient),
 						drizzleClient: fastify.drizzleClient,
 						envConfig: fastify.envConfig,
 						jwt: {
