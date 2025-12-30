@@ -6,8 +6,6 @@
 
 Defined in: [src/graphql/types/Query/eventQueries/unifiedEventQueries.ts:36](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/graphql/types/Query/eventQueries/unifiedEventQueries.ts#L36)
 
-## Description
-
 Defines the input parameters for querying a unified list of events,
 including both standalone and recurring instances.
 

@@ -14,8 +14,8 @@ The underscore prefix indicates this is an internal type definition.
 ## Example
 
 ```ts
-Valid: user@example.com
-Invalid: user@, user@.com, @example.com
+Valid: user\@example.com
+Invalid: user\@, user\@.com, \@example.com
 ```
 
 ## Properties

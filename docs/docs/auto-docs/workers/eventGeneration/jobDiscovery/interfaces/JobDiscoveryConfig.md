@@ -6,8 +6,6 @@
 
 Defined in: [src/workers/eventGeneration/jobDiscovery.ts:15](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/workers/eventGeneration/jobDiscovery.ts#L15)
 
-## Description
-
 Configuration for the job discovery process, defining limits and thresholds.
 
 ## Properties

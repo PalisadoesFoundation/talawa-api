@@ -42,7 +42,7 @@ export const eventExceptionsTable = pgTable(
 		/**
 		 * JSON object storing the field differences from the template.
 		 * Only stores fields that are different from the base event.
-		 * Example: { "name": "Special Meeting", "startAt": "2024-01-15T15:00:00Z" }
+		 * Example: \\{ "name": "Special Meeting", "startAt": "2024-01-15T15:00:00Z" \\}
 		 */
 		exceptionData: jsonb("exception_data").notNull(),
 
