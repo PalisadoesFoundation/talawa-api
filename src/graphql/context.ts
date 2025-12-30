@@ -1,5 +1,6 @@
 import type { FastifyInstance } from "fastify";
 import type { usersTable } from "~/src/drizzle/tables/users";
+import type { CacheService } from "~/src/services/caching";
 import type { Dataloaders } from "~/src/utilities/dataloaders";
 import type { PubSub } from "./pubsub";
 
@@ -40,6 +41,10 @@ export type CurrentClient =
  * Type of the transport protocol agnostic explicit context object that is merged with the implcit mercurius context object and passed to the graphql resolvers each time they resolve a graphql operation at runtime.
  */
 export type ExplicitGraphQLContext = {
+	/**
+	 * Redis-backed cache service for caching entities and query results.
+	 */
+	cache: CacheService;
 	currentClient: CurrentClient;
 	/**
 	 * Request-scoped DataLoaders for batching database queries.

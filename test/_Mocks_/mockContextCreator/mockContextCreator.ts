@@ -48,6 +48,16 @@ export function createMockGraphQLContext(
 
 	// Create the explicit context
 	const explicitContext: ExplicitGraphQLContext = {
+		cache: {
+			get: vi.fn().mockResolvedValue(null),
+			set: vi.fn().mockResolvedValue(undefined),
+			del: vi.fn().mockResolvedValue(undefined),
+			clearByPattern: vi.fn().mockResolvedValue(undefined),
+			mget: vi
+				.fn()
+				.mockImplementation(async (keys: string[]) => keys.map(() => null)),
+			mset: vi.fn().mockResolvedValue(undefined),
+		},
 		currentClient: isAuthenticated
 			? authenticatedClient(userId)
 			: unauthenticatedClient,
