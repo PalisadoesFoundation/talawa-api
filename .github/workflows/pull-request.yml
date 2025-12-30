@@ -393,6 +393,8 @@ jobs:
   Check-AutoDocs:
     needs: [Code-Quality-Checks]
     uses: PalisadoesFoundation/.github/.github/workflows/typescript-autodocs.yml@main
+    with:
+      pnpm-version: "10.26.1"
   Generate-Schema-Docs:
     if: ${{ github.actor != 'dependabot[bot]' }}
     name: Generate GraphQL Schema Documentation
