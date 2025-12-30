@@ -492,13 +492,18 @@ export const envSchemaAjv: EnvSchemaOpt["ajv"] = {
 			formats: ["email", "uri"],
 		});
 
-		// Custom "json" format validator for fail-fast JSON validation
+		// Custom "json" format validator for fail-fast JSON object validation
+		// Only accepts non-null objects (not arrays or primitives)
 		ajvInstance.addFormat("json", {
 			type: "string",
 			validate: (value: string): boolean => {
 				try {
-					JSON.parse(value);
-					return true;
+					const parsed = JSON.parse(value);
+					return (
+						parsed !== null &&
+						typeof parsed === "object" &&
+						!Array.isArray(parsed)
+					);
 				} catch {
 					return false;
 				}
