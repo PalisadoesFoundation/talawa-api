@@ -10,6 +10,11 @@ declare module "fastify" {
 }
 
 /**
+ * Type alias for the Drizzle client with the full schema.
+ */
+export type DrizzleClient = PostgresJsDatabase<typeof drizzleSchema>;
+
+/**
  * Integrates a drizzle client instance on a namespace `drizzleClient` on the global fastify instance.
  *
  * @example
