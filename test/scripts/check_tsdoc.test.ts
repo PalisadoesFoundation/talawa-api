@@ -444,4 +444,464 @@ export function greet(name: string) {}`;
 			expect(errors).toHaveLength(0);
 		});
 	});
+
+	describe("main() entrypoint integration tests", () => {
+		// Integration tests use child processes to test the actual script behavior
+
+		describe("CLI-args mode", () => {
+			it("should filter out .d.ts files from CLI arguments", async () => {
+				// Create test files
+				const validTsFile = path.join(tempDir, "valid.ts");
+				const dtsFile = path.join(tempDir, "types.d.ts");
+
+				fs.writeFileSync(
+					validTsFile,
+					`/**
+ * Valid function.
+ * @param name - The name
+ */
+export function test(name: string) {}`,
+				);
+				fs.writeFileSync(dtsFile, `export declare const x: string;`);
+
+				// Set up argv with both .ts and .d.ts files
+				process.argv = ["node", "check_tsdoc.ts", validTsFile, dtsFile];
+
+				// Import and run main dynamically
+				const { spawn } = await import("node:child_process");
+				const result = await new Promise<{ stdout: string; code: number }>(
+					(resolve) => {
+						const child = spawn(
+							"npx",
+							["tsx", "scripts/check_tsdoc.ts", validTsFile, dtsFile],
+							{
+								cwd: path.join(process.cwd()),
+								stdio: ["pipe", "pipe", "pipe"],
+							},
+						);
+						let stdout = "";
+						child.stdout?.on("data", (data) => {
+							stdout += data.toString();
+						});
+						child.stderr?.on("data", (data) => {
+							stdout += data.toString();
+						});
+						child.on("close", (code) => {
+							resolve({ stdout, code: code ?? 0 });
+						});
+					},
+				);
+
+				// Should pass because .d.ts is filtered out
+				expect(result.code).toBe(0);
+				expect(result.stdout).toContain("TSDoc validation passed for 1 file");
+			});
+
+			it("should process only .ts files passed as arguments", async () => {
+				const tsFile = path.join(tempDir, "test.ts");
+				fs.writeFileSync(
+					tsFile,
+					`/**
+ * @param name - Valid param
+ */
+export function test(name: string) {}`,
+				);
+
+				const { spawn } = await import("node:child_process");
+				const result = await new Promise<{ stdout: string; code: number }>(
+					(resolve) => {
+						const child = spawn(
+							"npx",
+							["tsx", "scripts/check_tsdoc.ts", tsFile],
+							{
+								cwd: process.cwd(),
+								stdio: ["pipe", "pipe", "pipe"],
+							},
+						);
+						let stdout = "";
+						child.stdout?.on("data", (data) => {
+							stdout += data.toString();
+						});
+						child.stderr?.on("data", (data) => {
+							stdout += data.toString();
+						});
+						child.on("close", (code) => {
+							resolve({ stdout, code: code ?? 0 });
+						});
+					},
+				);
+
+				expect(result.code).toBe(0);
+				expect(result.stdout).toContain("TSDoc validation passed");
+			});
+		});
+
+		describe("glob mode (no args)", () => {
+			it("should glob files from src/ directory when no args provided", async () => {
+				// This test validates the glob mode by running from the repo root
+				// The script will glob src/**/*.ts from process.cwd()
+				// Since we can't easily mock the cwd, we verify the script runs
+				// successfully when executed from the project root
+				const { spawn } = await import("node:child_process");
+				const repoRoot = process.cwd();
+
+				const result = await new Promise<{ stdout: string; code: number }>(
+					(resolve) => {
+						const child = spawn("npx", ["tsx", "scripts/check_tsdoc.ts"], {
+							cwd: repoRoot,
+							stdio: ["pipe", "pipe", "pipe"],
+							env: { ...process.env },
+						});
+						let stdout = "";
+						child.stdout?.on("data", (data) => {
+							stdout += data.toString();
+						});
+						child.stderr?.on("data", (data) => {
+							stdout += data.toString();
+						});
+						child.on("close", (code) => {
+							resolve({ stdout, code: code ?? 0 });
+						});
+					},
+				);
+
+				// Should successfully find and validate files in src/
+				// Exit code 0 = all valid, 1 = found errors (both are valid outcomes)
+				// The key is that glob mode executes without crashing
+				expect([0, 1]).toContain(result.code);
+				// Should output file count (either passed or found errors)
+				expect(result.stdout).toMatch(/file\(s\)/);
+			});
+		});
+
+		describe("no files path", () => {
+			it("should output 'No TypeScript files to check' and exit 0 when no files found", async () => {
+				// This test validates the "no files" path by passing only non-.ts arguments
+				// When filtering removes all files, it should report "No TypeScript files"
+				const nonTsFile = path.join(tempDir, "readme.md");
+				fs.writeFileSync(nonTsFile, "# Readme");
+
+				const { spawn } = await import("node:child_process");
+				const result = await new Promise<{ stdout: string; code: number }>(
+					(resolve) => {
+						// Pass a non-.ts file as argument - it should be filtered out
+						const child = spawn(
+							"npx",
+							["tsx", "scripts/check_tsdoc.ts", nonTsFile],
+							{
+								cwd: process.cwd(),
+								stdio: ["pipe", "pipe", "pipe"],
+							},
+						);
+						let stdout = "";
+						child.stdout?.on("data", (data) => {
+							stdout += data.toString();
+						});
+						child.stderr?.on("data", (data) => {
+							stdout += data.toString();
+						});
+						child.on("close", (code) => {
+							resolve({ stdout, code: code ?? 0 });
+						});
+					},
+				);
+
+				expect(result.code).toBe(0);
+				expect(result.stdout).toContain("No TypeScript files to check");
+			});
+
+			it("should exit 0 when only .d.ts files are provided as args", async () => {
+				const dtsFile = path.join(tempDir, "types.d.ts");
+				fs.writeFileSync(dtsFile, `export declare const x: string;`);
+
+				const { spawn } = await import("node:child_process");
+				const result = await new Promise<{ stdout: string; code: number }>(
+					(resolve) => {
+						const child = spawn(
+							"npx",
+							["tsx", "scripts/check_tsdoc.ts", dtsFile],
+							{
+								cwd: process.cwd(),
+								stdio: ["pipe", "pipe", "pipe"],
+							},
+						);
+						let stdout = "";
+						child.stdout?.on("data", (data) => {
+							stdout += data.toString();
+						});
+						child.stderr?.on("data", (data) => {
+							stdout += data.toString();
+						});
+						child.on("close", (code) => {
+							resolve({ stdout, code: code ?? 0 });
+						});
+					},
+				);
+
+				expect(result.code).toBe(0);
+				expect(result.stdout).toContain("No TypeScript files to check");
+			});
+		});
+
+		describe("error aggregation from multiple files", () => {
+			it("should aggregate errors from multiple files and exit 1", async () => {
+				const file1 = path.join(tempDir, "file1.ts");
+				const file2 = path.join(tempDir, "file2.ts");
+
+				// Files with TSDoc errors (missing hyphen after @param)
+				fs.writeFileSync(
+					file1,
+					`/**
+ * @param a Missing hyphen
+ */
+export function first(a: string) {}`,
+				);
+				fs.writeFileSync(
+					file2,
+					`/**
+ * @param b Missing hyphen
+ */
+export function second(b: string) {}`,
+				);
+
+				const { spawn } = await import("node:child_process");
+				const result = await new Promise<{
+					stdout: string;
+					stderr: string;
+					code: number;
+				}>((resolve) => {
+					const child = spawn(
+						"npx",
+						["tsx", "scripts/check_tsdoc.ts", file1, file2],
+						{
+							cwd: process.cwd(),
+							stdio: ["pipe", "pipe", "pipe"],
+						},
+					);
+					let stdout = "";
+					let stderr = "";
+					child.stdout?.on("data", (data) => {
+						stdout += data.toString();
+					});
+					child.stderr?.on("data", (data) => {
+						stderr += data.toString();
+					});
+					child.on("close", (code) => {
+						resolve({ stdout, stderr, code: code ?? 0 });
+					});
+				});
+
+				expect(result.code).toBe(1);
+				// Check that both files are mentioned in output
+				const output = result.stdout + result.stderr;
+				expect(output).toContain("file1.ts");
+				expect(output).toContain("file2.ts");
+				expect(output).toContain("tsdoc-param-tag-missing-hyphen");
+				expect(output).toContain("TSDoc error(s)");
+			});
+
+			it("should report correct error count for multiple errors", async () => {
+				const file = path.join(tempDir, "multi-error.ts");
+				fs.writeFileSync(
+					file,
+					`/**
+ * @param a Missing hyphen
+ */
+export function first(a: string) {}
+
+/**
+ * @param b Missing hyphen
+ */
+export function second(b: string) {}`,
+				);
+
+				const { spawn } = await import("node:child_process");
+				const result = await new Promise<{ output: string; code: number }>(
+					(resolve) => {
+						const child = spawn(
+							"npx",
+							["tsx", "scripts/check_tsdoc.ts", file],
+							{
+								cwd: process.cwd(),
+								stdio: ["pipe", "pipe", "pipe"],
+							},
+						);
+						let output = "";
+						child.stdout?.on("data", (data) => {
+							output += data.toString();
+						});
+						child.stderr?.on("data", (data) => {
+							output += data.toString();
+						});
+						child.on("close", (code) => {
+							resolve({ output, code: code ?? 0 });
+						});
+					},
+				);
+
+				expect(result.code).toBe(1);
+				// Should indicate multiple errors were found
+				expect(result.output).toMatch(/Found \d+ TSDoc error/);
+			});
+		});
+
+		describe("success path", () => {
+			it("should exit 0 and show success message for valid files", async () => {
+				const validFile = path.join(tempDir, "valid.ts");
+				fs.writeFileSync(
+					validFile,
+					`/**
+ * A valid function.
+ * @param name - The name parameter
+ * @returns The greeting
+ */
+export function greet(name: string): string {
+    return \`Hello, \${name}\`;
+}`,
+				);
+
+				const { spawn } = await import("node:child_process");
+				const result = await new Promise<{ stdout: string; code: number }>(
+					(resolve) => {
+						const child = spawn(
+							"npx",
+							["tsx", "scripts/check_tsdoc.ts", validFile],
+							{
+								cwd: process.cwd(),
+								stdio: ["pipe", "pipe", "pipe"],
+							},
+						);
+						let stdout = "";
+						child.stdout?.on("data", (data) => {
+							stdout += data.toString();
+						});
+						child.stderr?.on("data", (data) => {
+							stdout += data.toString();
+						});
+						child.on("close", (code) => {
+							resolve({ stdout, code: code ?? 0 });
+						});
+					},
+				);
+
+				expect(result.code).toBe(0);
+				expect(result.stdout).toContain("TSDoc validation passed");
+				expect(result.stdout).toContain("1 file(s)");
+			});
+
+			it("should handle multiple valid files", async () => {
+				const file1 = path.join(tempDir, "valid1.ts");
+				const file2 = path.join(tempDir, "valid2.ts");
+
+				fs.writeFileSync(
+					file1,
+					`/**
+ * @param x - Valid param
+ */
+export function test1(x: string) {}`,
+				);
+				fs.writeFileSync(
+					file2,
+					`/**
+ * @param y - Valid param
+ */
+export function test2(y: string) {}`,
+				);
+
+				const { spawn } = await import("node:child_process");
+				const result = await new Promise<{ stdout: string; code: number }>(
+					(resolve) => {
+						const child = spawn(
+							"npx",
+							["tsx", "scripts/check_tsdoc.ts", file1, file2],
+							{
+								cwd: process.cwd(),
+								stdio: ["pipe", "pipe", "pipe"],
+							},
+						);
+						let stdout = "";
+						child.stdout?.on("data", (data) => {
+							stdout += data.toString();
+						});
+						child.stderr?.on("data", (data) => {
+							stdout += data.toString();
+						});
+						child.on("close", (code) => {
+							resolve({ stdout, code: code ?? 0 });
+						});
+					},
+				);
+
+				expect(result.code).toBe(0);
+				expect(result.stdout).toContain("TSDoc validation passed");
+				expect(result.stdout).toContain("2 file(s)");
+			});
+		});
+
+		describe("top-level catch handler", () => {
+			it("should catch and log errors from main() and exit 1", async () => {
+				// Pass a non-existent file to trigger a file read error
+				const nonExistentFile = path.join(tempDir, "does-not-exist.ts");
+
+				const { spawn } = await import("node:child_process");
+				const result = await new Promise<{ output: string; code: number }>(
+					(resolve) => {
+						const child = spawn(
+							"npx",
+							["tsx", "scripts/check_tsdoc.ts", nonExistentFile],
+							{
+								cwd: process.cwd(),
+								stdio: ["pipe", "pipe", "pipe"],
+							},
+						);
+						let output = "";
+						child.stdout?.on("data", (data) => {
+							output += data.toString();
+						});
+						child.stderr?.on("data", (data) => {
+							output += data.toString();
+						});
+						child.on("close", (code) => {
+							resolve({ output, code: code ?? 0 });
+						});
+					},
+				);
+
+				expect(result.code).toBe(1);
+				expect(result.output).toContain("TSDoc validation failed");
+				expect(result.output).toContain("ENOENT");
+			});
+
+			it("should report file path in error message when file read fails", async () => {
+				const nonExistentFile = path.join(tempDir, "missing-file.ts");
+
+				const { spawn } = await import("node:child_process");
+				const result = await new Promise<{ output: string; code: number }>(
+					(resolve) => {
+						const child = spawn(
+							"npx",
+							["tsx", "scripts/check_tsdoc.ts", nonExistentFile],
+							{
+								cwd: process.cwd(),
+								stdio: ["pipe", "pipe", "pipe"],
+							},
+						);
+						let output = "";
+						child.stdout?.on("data", (data) => {
+							output += data.toString();
+						});
+						child.stderr?.on("data", (data) => {
+							output += data.toString();
+						});
+						child.on("close", (code) => {
+							resolve({ output, code: code ?? 0 });
+						});
+					},
+				);
+
+				expect(result.code).toBe(1);
+				expect(result.output).toContain("missing-file.ts");
+			});
+		});
+	});
 });
