@@ -253,19 +253,18 @@ builder.mutationField("updateVenue", (t) =>
 					const uploaded: string[] = [];
 					try {
 						await Promise.all(
-							createdVenueAttachments.map((attachment, index) => {
-								if (attachments[index] !== undefined) {
-									return ctx.minio.client
-										.putObject(
-											ctx.minio.bucketName,
-											attachment.name,
-											attachments[index].createReadStream(),
-											undefined,
-											{ "content-type": attachment.mimeType },
-										)
-										.then(() => uploaded.push(attachment.name));
+							createdVenueAttachments.map(async (attachment, index) => {
+								const file = attachments[index];
+								if (file) {
+									await ctx.minio.client.putObject(
+										ctx.minio.bucketName,
+										attachment.name,
+										file.createReadStream(),
+										undefined,
+										{ "content-type": attachment.mimeType },
+									);
+									uploaded.push(attachment.name);
 								}
-								return undefined;
 							}),
 						);
 					} catch (e) {
