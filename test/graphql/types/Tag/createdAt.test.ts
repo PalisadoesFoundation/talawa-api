@@ -586,94 +586,101 @@ describe("Tag.createdAt resolver - Unit test edge case", () => {
 		const result = await resolver(parent, {}, ctx, {});
 		expect(result).toEqual(parent.createdAt);
 	});
-});
-it("should handle database query errors gracefully", async () => {
-	const graphqlInstance = (
-		server as unknown as {
-			graphql?: { schema?: import("graphql").GraphQLSchema };
-		}
-	).graphql;
-	expect(graphqlInstance).toBeDefined();
-	const schema = graphqlInstance?.schema;
-	expect(schema).toBeDefined();
 
-	const tagType = schema?.getType("Tag");
-	expect(tagType).toBeDefined();
+	describe("Error Handling", () => {
+		it("should handle database query errors gracefully", async () => {
+			const graphqlInstance = (
+				server as unknown as {
+					graphql?: { schema?: import("graphql").GraphQLSchema };
+				}
+			).graphql;
+			expect(graphqlInstance).toBeDefined();
+			const schema = graphqlInstance?.schema;
+			expect(schema).toBeDefined();
 
-	const fields = (tagType as import("graphql").GraphQLObjectType).getFields();
-	expect(fields.createdAt).toBeDefined();
+			const tagType = schema?.getType("Tag");
+			expect(tagType).toBeDefined();
 
-	const resolver = fields.createdAt?.resolve as (
-		parent: unknown,
-		args: unknown,
-		ctx: unknown,
-		info: unknown,
-	) => Promise<unknown>;
+			const fields = (
+				tagType as import("graphql").GraphQLObjectType
+			).getFields();
+			expect(fields.createdAt).toBeDefined();
 
-	const parent = {
-		id: uuidv7(),
-		createdAt: faker.date.past(),
-		organizationId: uuidv7(),
-	};
+			const resolver = fields.createdAt?.resolve as (
+				parent: unknown,
+				args: unknown,
+				ctx: unknown,
+				info: unknown,
+			) => Promise<unknown>;
 
-	const { context, mocks } = createMockGraphQLContext(true, "admin-user");
-	// Simulate database error
-	mocks.drizzleClient.query.usersTable.findFirst.mockRejectedValueOnce(
-		new Error("Database connection failed"),
-	);
+			const parent = {
+				id: uuidv7(),
+				createdAt: faker.date.past(),
+				organizationId: uuidv7(),
+			};
 
-	const ctx = {
-		...context,
-		drizzleClient: mocks.drizzleClient,
-	};
+			const { context, mocks } = createMockGraphQLContext(true, "admin-user");
+			// Simulate database error
+			mocks.drizzleClient.query.usersTable.findFirst.mockRejectedValueOnce(
+				new Error("Database connection failed"),
+			);
 
-	await expect(resolver(parent, {}, ctx, {})).rejects.toThrow(
-		"Database connection failed",
-	);
-});
+			const ctx = {
+				...context,
+				drizzleClient: mocks.drizzleClient,
+			};
 
-it("should handle edge case where organizationMembershipsWhereMember is undefined", async () => {
-	const graphqlInstance = (
-		server as unknown as {
-			graphql?: { schema?: import("graphql").GraphQLSchema };
-		}
-	).graphql;
-	expect(graphqlInstance).toBeDefined();
-	const schema = graphqlInstance?.schema;
-	expect(schema).toBeDefined();
+			await expect(resolver(parent, {}, ctx, {})).rejects.toThrow(
+				"Database connection failed",
+			);
+		});
 
-	const tagType = schema?.getType("Tag");
-	expect(tagType).toBeDefined();
+		it("should handle edge case where organizationMembershipsWhereMember is undefined", async () => {
+			const graphqlInstance = (
+				server as unknown as {
+					graphql?: { schema?: import("graphql").GraphQLSchema };
+				}
+			).graphql;
+			expect(graphqlInstance).toBeDefined();
+			const schema = graphqlInstance?.schema;
+			expect(schema).toBeDefined();
 
-	const fields = (tagType as import("graphql").GraphQLObjectType).getFields();
-	expect(fields.createdAt).toBeDefined();
+			const tagType = schema?.getType("Tag");
+			expect(tagType).toBeDefined();
 
-	const resolver = fields.createdAt?.resolve as (
-		parent: unknown,
-		args: unknown,
-		ctx: unknown,
-		info: unknown,
-	) => Promise<unknown>;
+			const fields = (
+				tagType as import("graphql").GraphQLObjectType
+			).getFields();
+			expect(fields.createdAt).toBeDefined();
 
-	const parent = {
-		id: uuidv7(),
-		createdAt: faker.date.past(),
-		organizationId: uuidv7(),
-	};
+			const resolver = fields.createdAt?.resolve as (
+				parent: unknown,
+				args: unknown,
+				ctx: unknown,
+				info: unknown,
+			) => Promise<unknown>;
 
-	const { context, mocks } = createMockGraphQLContext(true, "regular-user");
-	mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValueOnce({
-		role: "user", // Not a global admin
-		organizationMembershipsWhereMember: undefined as unknown as [], // undefined memberships
+			const parent = {
+				id: uuidv7(),
+				createdAt: faker.date.past(),
+				organizationId: uuidv7(),
+			};
+
+			const { context, mocks } = createMockGraphQLContext(true, "regular-user");
+			mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValueOnce({
+				role: "user", // Not a global admin
+				organizationMembershipsWhereMember: undefined as unknown as [], // undefined memberships
+			});
+
+			const ctx = {
+				...context,
+				drizzleClient: mocks.drizzleClient,
+			};
+
+			// This should throw a TypeError when trying to access [0] on undefined
+			await expect(resolver(parent, {}, ctx, {})).rejects.toThrow(
+				"Cannot read properties of undefined (reading '0')",
+			);
+		});
 	});
-
-	const ctx = {
-		...context,
-		drizzleClient: mocks.drizzleClient,
-	};
-
-	// This should throw a TypeError when trying to access [0] on undefined
-	await expect(resolver(parent, {}, ctx, {})).rejects.toThrow(
-		"Cannot read properties of undefined (reading '0')",
-	);
 });
