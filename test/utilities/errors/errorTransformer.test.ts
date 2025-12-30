@@ -24,6 +24,7 @@ describe("normalizeError", () => {
 
 	it("should normalize Fastify validation errors", () => {
 		const fastifyError = {
+			statusCode: 400,
 			validation: [
 				{
 					instancePath: "/body/email",

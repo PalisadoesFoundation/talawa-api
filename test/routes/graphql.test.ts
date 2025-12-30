@@ -7,7 +7,7 @@ import {
 } from "graphql";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { ExplicitAuthenticationTokenPayload } from "~/src/graphql/context";
-import { createContext } from "~/src/routes/graphql";
+import { createContext, graphql } from "~/src/routes/graphql";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 
 // Mock dependencies
@@ -504,8 +504,6 @@ describe("GraphQL Routes", () => {
 		});
 
 		it("should register mercurius upload with correct configuration", async () => {
-			const { graphql } = await import("~/src/routes/graphql");
-
 			await graphql(mockFastifyInstance as unknown as FastifyInstance);
 
 			// Check that the first register call is for mercurius upload
@@ -519,8 +517,6 @@ describe("GraphQL Routes", () => {
 		});
 
 		it("should register mercurius with correct configuration", async () => {
-			const { graphql } = await import("~/src/routes/graphql");
-
 			await graphql(mockFastifyInstance as unknown as FastifyInstance);
 
 			// Check that the second register call is for mercurius
@@ -546,8 +542,6 @@ describe("GraphQL Routes", () => {
 		});
 
 		it("should handle schema updates successfully", async () => {
-			const { graphql } = await import("~/src/routes/graphql");
-
 			await graphql(mockFastifyInstance as unknown as FastifyInstance);
 
 			const newSchema = new GraphQLSchema({
@@ -581,9 +575,46 @@ describe("GraphQL Routes", () => {
 			);
 		});
 
-		it("should handle non-Error objects in schema update", async () => {
+		it("should handle schema update errors", async () => {
 			const { graphql } = await import("~/src/routes/graphql");
 
+			await graphql(mockFastifyInstance as unknown as FastifyInstance);
+
+			// Make replaceSchema throw an error
+			const testError = new Error("Schema replacement failed");
+			mockFastifyInstance.graphql.replaceSchema.mockImplementation(() => {
+				throw testError;
+			});
+
+			const newSchema = new GraphQLSchema({
+				query: new GraphQLObjectType({
+					name: "Query",
+					fields: {
+						test: {
+							type: GraphQLString,
+							resolve: () => "test",
+						},
+					},
+				}),
+			});
+
+			// Trigger schema update
+			mockFastifyInstance.schemaUpdateCallback?.(newSchema);
+
+			expect(mockFastifyInstance.log.error).toHaveBeenCalledWith(
+				expect.objectContaining({
+					error: {
+						message: testError.message,
+						stack: testError.stack,
+						name: testError.name,
+					},
+					timestamp: expect.any(String),
+				}),
+				"❌ Failed to Update GraphQL Schema",
+			);
+		});
+
+		it("should handle non-Error objects in schema update", async () => {
 			await graphql(mockFastifyInstance as unknown as FastifyInstance);
 
 			mockFastifyInstance.graphql.replaceSchema.mockImplementation(() => {
@@ -615,8 +646,6 @@ describe("GraphQL Routes", () => {
 		});
 
 		it("should log fields for schema with mutations/subscriptions but no query", async () => {
-			const { graphql } = await import("~/src/routes/graphql");
-
 			await graphql(mockFastifyInstance as unknown as FastifyInstance);
 
 			const newSchema = new GraphQLSchema({
@@ -752,7 +781,7 @@ describe("GraphQL Routes", () => {
 			vi.mocked(schemaManager.onSchemaUpdate).mockImplementation(() => {});
 
 			// Import and register the plugin to capture the hook
-			const { graphql } = await import("~/src/routes/graphql");
+
 			await graphql(mockFastifyInstance as unknown as FastifyInstance);
 
 			// Extract the preExecution hook
@@ -1023,8 +1052,6 @@ describe("GraphQL Routes", () => {
 		});
 
 		it("should configure subscription onConnect to reject connections without authorization", async () => {
-			const { graphql } = await import("~/src/routes/graphql");
-
 			await graphql(mockFastifyInstance as unknown as FastifyInstance);
 
 			const mercuriusCall = mockFastifyInstance.register.mock.calls.find(
@@ -1045,8 +1072,6 @@ describe("GraphQL Routes", () => {
 		});
 
 		it("should authorize subscription connections with valid Bearer token", async () => {
-			const { graphql } = await import("~/src/routes/graphql");
-
 			// Prepare a fake token and decoded payload
 			const fakeToken = "signed-jwt-token";
 			const decoded = {
@@ -1093,8 +1118,6 @@ describe("GraphQL Routes", () => {
 		});
 
 		it("should reject subscription connections with invalid Bearer token and log error", async () => {
-			const { graphql } = await import("~/src/routes/graphql");
-
 			// Make fastify.jwt.verify throw to simulate invalid token
 			mockFastifyInstance.jwt = {
 				verify: vi.fn().mockRejectedValue(new Error("Invalid token")),
@@ -1122,8 +1145,6 @@ describe("GraphQL Routes", () => {
 		});
 
 		it("should configure subscription onDisconnect as no-op", async () => {
-			const { graphql } = await import("~/src/routes/graphql");
-
 			await graphql(mockFastifyInstance as unknown as FastifyInstance);
 
 			const mercuriusCall = mockFastifyInstance.register.mock.calls.find(
@@ -1145,8 +1166,6 @@ describe("GraphQL Routes", () => {
 		});
 
 		it("should configure subscription verifyClient to accept all connections", async () => {
-			const { graphql } = await import("~/src/routes/graphql");
-
 			await graphql(mockFastifyInstance as unknown as FastifyInstance);
 
 			const mercuriusCall = mockFastifyInstance.register.mock.calls.find(
@@ -1217,7 +1236,7 @@ describe("GraphQL Routes", () => {
 			);
 		});
 
-		it("should format errors with correlation ID from request", async () => {
+		it("should sanitize sensitive extension keys", async () => {
 			const { graphql } = await import("~/src/routes/graphql");
 
 			await graphql(mockFastifyInstance as unknown as FastifyInstance);
@@ -1488,7 +1507,7 @@ describe("GraphQL Routes", () => {
 			});
 		});
 
-		it("should return null data when execution data is undefined", async () => {
+		it("should log errors with correlationId", async () => {
 			const { graphql } = await import("~/src/routes/graphql");
 
 			await graphql(mockFastifyInstance as unknown as FastifyInstance);
@@ -1536,6 +1555,7 @@ describe("GraphQL Routes", () => {
 			expect(mockLogger).toHaveBeenCalledWith({
 				msg: "GraphQL error",
 				correlationId: "req-12345",
+				statusCode: 500,
 				errors: [
 					{
 						message: "Database error",

@@ -66,12 +66,15 @@ export function normalizeError(err: unknown): NormalizedError {
 	}
 
 	// Fastify validation error - occurs when request doesn't match schema
-	const fe = err as FastifyError & { validation?: unknown };
-	if (fe?.validation) {
+	const fe = err as FastifyError & {
+		validation?: unknown;
+		statusCode?: number;
+	};
+	if (fe?.validation && typeof fe.statusCode === "number") {
 		return {
 			code: ErrorCode.INVALID_ARGUMENTS,
 			message: "Validation failed",
-			statusCode: 400,
+			statusCode: fe.statusCode,
 			details: fe.validation,
 		};
 	}

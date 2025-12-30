@@ -308,9 +308,13 @@ export const graphql = fastifyPlugin(async (fastify) => {
 		const statusCode = formatted[0]?.extensions?.httpStatus ?? 500;
 
 		// Log error
-		context.reply?.request?.log?.error({
+		const logger =
+			(context as unknown as ExplicitGraphQLContext).log ??
+			context.reply?.request?.log;
+		logger?.error({
 			msg: "GraphQL error",
 			correlationId: context.reply?.request?.id,
+			statusCode,
 			errors: formatted.map((fe) => ({
 				message: fe.message,
 				code: fe.extensions?.code,
