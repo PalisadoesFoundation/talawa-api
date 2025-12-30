@@ -6,8 +6,6 @@
 
 Defined in: [src/graphql/types/Query/eventQueries/unifiedEventQueries.ts:47](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/graphql/types/Query/eventQueries/unifiedEventQueries.ts#L47)
 
-## Description
-
 Parameters for filtering events based on invite-only visibility rules.
 
 ## Properties

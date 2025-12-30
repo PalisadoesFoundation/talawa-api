@@ -8,7 +8,7 @@ import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
  * @param _parent - Parent object (unused)
  * @param args - Arguments containing campaignId
  * @param ctx - GraphQL context
- * @returns Array of fund campaign pledges
+ * @returns - Array of fund campaign pledges
  */
 export const resolveGetMyPledgesForCampaign = async (
 	_parent: Record<string, unknown>,

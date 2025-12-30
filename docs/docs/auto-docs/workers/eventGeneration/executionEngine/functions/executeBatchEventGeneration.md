@@ -35,4 +35,4 @@ The dependencies required for the worker.
 
 `Promise`\<[`ProcessingResult`](../../types/interfaces/ProcessingResult.md)\<[`EventGenerationExecutionResult`](../interfaces/EventGenerationExecutionResult.md)[]\>\>
 
-A promise that resolves to a consolidated processing result for the entire batch.
+- A promise that resolves to a consolidated processing result for the entire batch.

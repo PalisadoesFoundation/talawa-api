@@ -14,4 +14,4 @@ Creates a default configuration object for the materialization worker.
 
 [`WorkerConfig`](../interfaces/WorkerConfig.md)
 
-A default worker configuration.
+- A default worker configuration.

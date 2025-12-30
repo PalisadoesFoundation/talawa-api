@@ -9,7 +9,7 @@ import type { recurrenceInputSchema } from "~/src/graphql/inputs/RecurrenceInput
  *
  * @param recurrence - The recurrence input object, conforming to the recurrenceInputSchema.
  * @param startDate - The start date of the event, used for validation and context.
- * @returns A full RRULE string, e.g., "RRULE:FREQ=WEEKLY;INTERVAL=2;BYDAY=MO,FR".
+ * @returns - A full RRULE string, e.g., "RRULE:FREQ=WEEKLY;INTERVAL=2;BYDAY=MO,FR".
  */
 export const buildRRuleString = (
 	recurrence: z.infer<typeof recurrenceInputSchema>,
@@ -59,7 +59,7 @@ export const buildRRuleString = (
  *
  * @param recurrence - The recurrence input object to validate.
  * @param startDate - The start date of the event, used for validation against the end date.
- * @returns An object containing a boolean `isValid` and an array of error strings.
+ * @returns - An object containing a boolean `isValid` and an array of error strings.
  *          If `isValid` is true, the `errors` array will be empty.
  */
 export const validateRecurrenceInput = (
@@ -133,7 +133,7 @@ export const validateRecurrenceInput = (
  * or is infinite (never-ending), it is returned unchanged.
  *
  * @param rule - The recurrence rule from the database.
- * @returns A normalized recurrence rule, where `count` has been converted to `recurrenceEndDate`.
+ * @returns - A normalized recurrence rule, where `count` has been converted to `recurrenceEndDate`.
  */
 export function normalizeRecurrenceRule(
 	rule: typeof recurrenceRulesTable.$inferSelect,
@@ -167,7 +167,7 @@ export function normalizeRecurrenceRule(
  * @param count - The total number of occurrences.
  * @param frequency - The frequency of the recurrence (e.g., "DAILY", "WEEKLY").
  * @param interval - The interval between occurrences (default is 1).
- * @returns The calculated date of the final occurrence.
+ * @returns - The calculated date of the final occurrence.
  */
 export function calculateCompletionDateFromCount(
 	startDate: Date,
@@ -212,7 +212,7 @@ export function calculateCompletionDateFromCount(
  *
  * @param rule - The recurrence rule to estimate.
  * @param estimationWindowMonths - The number of months to use for estimation if the event is never-ending.
- * @returns The estimated total number of instances.
+ * @returns - The estimated total number of instances.
  */
 export function estimateInstanceCount(
 	rule: typeof recurrenceRulesTable.$inferSelect,
@@ -307,7 +307,7 @@ export function isEndDateBasedEvent(
  * is defined and constrained.
  *
  * @param rule - The recurrence rule to classify.
- * @returns The classification of the event type as a string literal.
+ * @returns - The classification of the event type as a string literal.
  */
 export function getEventType(
 	rule: typeof recurrenceRulesTable.$inferSelect,
@@ -335,7 +335,7 @@ export function getEventType(
  * @param newStartAt - The new start time for the event (if provided)
  * @param originalRecurrence - The original recurrence rule from the database
  * @param inputRecurrence - The recurrence input from the user (if provided)
- * @returns The updated recurrence configuration with proper overrides applied
+ * @returns - The updated recurrence configuration with proper overrides applied
  */
 export function applyRecurrenceOverrides(
 	newStartAt: Date | undefined,
@@ -445,7 +445,7 @@ export function applyRecurrenceOverrides(
  *
  * @param frequency - The frequency of the recurrence (e.g., "DAILY", "WEEKLY").
  * @param interval - The interval between occurrences (default is 1).
- * @returns The average number of instances expected in a month.
+ * @returns - The average number of instances expected in a month.
  */
 export function calculateInstancesPerMonth(
 	frequency: string,
@@ -472,7 +472,7 @@ export function calculateInstancesPerMonth(
  * after the start date.
  *
  * @param rule - The recurrence rule to validate.
- * @returns An object with a boolean `isValid` and an array of error strings.
+ * @returns - An object with a boolean `isValid` and an array of error strings.
  */
 export function validateRecurrenceRule(
 	rule: typeof recurrenceRulesTable.$inferSelect,

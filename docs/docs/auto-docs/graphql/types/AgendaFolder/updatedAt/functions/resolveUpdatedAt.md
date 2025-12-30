@@ -69,8 +69,8 @@ GraphQL context with authentication and database access
 
 `Promise`\<`Date` \| `null`\>
 
-The updatedAt timestamp of the agenda folder
+- The updatedAt timestamp of the agenda folder
 
 ## Throws
 
-When user is not authenticated or unauthorized
+TalawaGraphQLError When user is not authenticated or unauthorized
