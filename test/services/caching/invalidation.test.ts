@@ -50,6 +50,15 @@ describe("invalidation helpers", () => {
 			expect(cache.del).toHaveBeenNthCalledWith(1, "talawa:v1:event:e1");
 			expect(cache.del).toHaveBeenNthCalledWith(2, "talawa:v1:post:p1");
 		});
+		it("should propagate errors from cache.del", async () => {
+			const cache = createMockCache();
+			const error = new Error("Redis connection failed");
+			cache.del.mockRejectedValue(error);
+
+			await expect(invalidateEntity(cache, "user", "123")).rejects.toThrow(
+				"Redis connection failed",
+			);
+		});
 	});
 
 	describe("invalidateEntityLists", () => {
@@ -77,6 +86,16 @@ describe("invalidation helpers", () => {
 			expect(cache.clearByPattern).toHaveBeenNthCalledWith(
 				2,
 				"talawa:v1:event:list:*",
+			);
+		});
+
+		it("should propagate errors from cache.clearByPattern", async () => {
+			const cache = createMockCache();
+			const error = new Error("Redis connection failed");
+			cache.clearByPattern.mockRejectedValue(error);
+
+			await expect(invalidateEntityLists(cache, "user")).rejects.toThrow(
+				"Redis connection failed",
 			);
 		});
 	});

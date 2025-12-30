@@ -57,7 +57,35 @@ describe("cacheConfig", () => {
 			const { getTTL } = await import("~/src/services/caching/cacheConfig");
 			// Should fall back to defaults
 			expect(getTTL("user")).toBe(300);
-			expect(warnSpy).toHaveBeenCalled();
+			expect(warnSpy).toHaveBeenCalledWith(
+				expect.stringContaining("Failed to parse CACHE_ENTITY_TTLS as JSON"),
+			);
+			warnSpy.mockRestore();
+		});
+
+		it("should ignore invalid TTL values in env overrides", async () => {
+			const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
+			process.env.CACHE_ENTITY_TTLS = JSON.stringify({
+				user: -100, // Invalid: negative
+				organization: "invalid", // Invalid: string
+				event: 0, // Invalid: zero
+				post: null, // Invalid: null
+			});
+			vi.resetModules();
+			const { getTTL, defaultEntityTTL } = await import(
+				"~/src/services/caching/cacheConfig"
+			);
+
+			// Should use defaults for invalid values
+			expect(getTTL("user")).toBe(defaultEntityTTL.user);
+			expect(getTTL("organization")).toBe(defaultEntityTTL.organization);
+			expect(getTTL("event")).toBe(defaultEntityTTL.event);
+			expect(getTTL("post")).toBe(defaultEntityTTL.post);
+
+			expect(warnSpy).toHaveBeenCalledTimes(4);
+			expect(warnSpy).toHaveBeenCalledWith(
+				expect.stringContaining('Invalid TTL for "user"'),
+			);
 			warnSpy.mockRestore();
 		});
 	});

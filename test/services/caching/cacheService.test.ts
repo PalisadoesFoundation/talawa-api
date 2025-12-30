@@ -81,12 +81,15 @@ describe("RedisCacheService", () => {
 		});
 
 		it("should respect TTL expiration", async () => {
+			vi.useFakeTimers();
 			await cache.set("expiring", { value: 1 }, 1); // 1 second TTL
 			expect(await cache.get("expiring")).toEqual({ value: 1 });
 
-			// Wait for TTL to expire
-			await new Promise((r) => setTimeout(r, 1100));
+			// Advance time to expire TTL
+			vi.advanceTimersByTime(1100);
+
 			expect(await cache.get("expiring")).toBeNull();
+			vi.useRealTimers();
 		});
 
 		it("should handle complex objects", async () => {

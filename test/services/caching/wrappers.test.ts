@@ -194,4 +194,70 @@ describe("wrapWithCache", () => {
 			expect(results[2]).toEqual({ id: "2", name: "Bob" });
 		});
 	});
+
+	describe("cache failure scenarios", () => {
+		it("should fall back to producer if cache.mget fails", async () => {
+			const cache = createMockCache();
+			const error = new Error("Redis connection failed");
+			cache.mget.mockRejectedValue(error);
+
+			const producer = vi.fn().mockResolvedValue([{ id: "1", name: "Alice" }]);
+
+			const wrappedFn = wrapWithCache(producer, {
+				cache,
+				entity: "user",
+				keyFn: (id: string) => id,
+				ttlSeconds: 300,
+			});
+
+			await expect(wrappedFn(["1"])).rejects.toThrow("Redis connection failed");
+		});
+
+		it("should propagate error if cache.mset fails (since wrapper awaits it)", async () => {
+			const cache = createMockCache();
+			const error = new Error("Redis connection failed");
+			cache.mset.mockRejectedValue(error);
+
+			const producer = vi.fn().mockResolvedValue([{ id: "1", name: "Alice" }]);
+
+			const wrappedFn = wrapWithCache(producer, {
+				cache,
+				entity: "user",
+				keyFn: (id: string) => id,
+				ttlSeconds: 300,
+			});
+
+			// If mset fails, the wrapper awaits it, so it should throw
+			await expect(wrappedFn(["1"])).rejects.toThrow("Redis connection failed");
+		});
+
+		it("should handle cache unavailable (Redis down) gracefully if service catches errors", async () => {
+			const cache = createMockCache();
+			// degraded mode: mget returns nulls (misses) but doesn't throw
+			cache.mget.mockResolvedValue([null, null]);
+			// degraded mode: mset swallows errors
+			cache.mset.mockResolvedValue(undefined);
+
+			const producer = vi.fn().mockResolvedValue([
+				{ id: "1", name: "Alice" },
+				{ id: "2", name: "Bob" },
+			]);
+
+			const wrappedFn = wrapWithCache(producer, {
+				cache,
+				entity: "user",
+				keyFn: (id: string) => id,
+				ttlSeconds: 300,
+			});
+
+			const results = await wrappedFn(["1", "2"]);
+
+			// Should act like a full cache miss
+			expect(results).toEqual([
+				{ id: "1", name: "Alice" },
+				{ id: "2", name: "Bob" },
+			]);
+			expect(producer).toHaveBeenCalledWith(["1", "2"]);
+		});
+	});
 });

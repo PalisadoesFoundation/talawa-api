@@ -1,4 +1,5 @@
 import type { CacheService } from "./CacheService";
+import { CacheNamespace } from "./cacheConfig";
 
 /**
  * Options for wrapping a batch function with caching.
@@ -52,7 +53,7 @@ export function wrapWithCache<K, V>(
 	return async (keys: readonly K[]): Promise<(V | null)[]> => {
 		// Generate cache keys for all input keys
 		const cacheKeys = keys.map(
-			(k) => `talawa:v1:${entity}:${String(keyFn(k))}`,
+			(k) => `${CacheNamespace}:${entity}:${String(keyFn(k))}`,
 		);
 
 		// Try to get all values from cache

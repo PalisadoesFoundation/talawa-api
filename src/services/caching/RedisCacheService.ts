@@ -122,14 +122,27 @@ export class RedisCacheService implements CacheService {
 			return;
 		}
 		try {
-			// Use individual setex calls (simple and reliable)
-			// For high-volume scenarios, consider using pipeline
-			await Promise.all(
+			// Use Promise.allSettled to persist successful entries even if some fail.
+			// This is more resilient than Promise.all which aborts on first failure.
+			const results = await Promise.allSettled(
 				entries.map((e) =>
-					this.redis.setex(e.key, e.ttlSeconds, JSON.stringify(e.value)),
+					this.redis
+						.setex(e.key, e.ttlSeconds, JSON.stringify(e.value))
+						.then(() => e.key),
 				),
 			);
+
+			// Log any individual failures
+			for (const result of results) {
+				if (result.status === "rejected") {
+					this.logger.warn({
+						msg: "cache mset partial failure",
+						err: result.reason,
+					});
+				}
+			}
 		} catch (err) {
+			// Fallback for unexpected errors (e.g., before Promise.allSettled runs)
 			this.logger.warn({ msg: "cache mset failed", err });
 		}
 	}

@@ -50,7 +50,10 @@ export const cacheService = fastifyPlugin(
 	},
 	{
 		name: "cacheService",
-		dependencies: [], // Redis is registered in createServer before plugins
+		// Intentionally empty: Redis is registered in createServer before plugins.
+		// We use graceful degradation (noop cache) if Redis is unavailable,
+		// so we don't require Redis as a hard dependency.
+		dependencies: [],
 	},
 );
 

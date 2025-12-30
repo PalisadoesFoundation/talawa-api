@@ -51,6 +51,24 @@ describe("cacheKeyGenerator", () => {
 			expect(stableStringify(null)).toBe("null");
 			expect(stableStringify(true)).toBe("true");
 		});
+		it("should handle undefined properties by omitting them", () => {
+			const obj1 = { a: 1, b: undefined };
+			const obj2 = { a: 1 };
+			expect(stableStringify(obj1)).toBe(stableStringify(obj2));
+			expect(stableStringify(obj1)).toBe('{"a":1}');
+		});
+
+		it("should serialize Date objects to ISO string", () => {
+			const date = new Date("2024-01-01T00:00:00.000Z");
+			expect(stableStringify({ d: date })).toBe(
+				'{"d":"2024-01-01T00:00:00.000Z"}',
+			);
+		});
+
+		it("should throw TypeError for BigInt inputs", () => {
+			// standard JSON.stringify behavior
+			expect(() => stableStringify({ b: 1n })).toThrow(TypeError);
+		});
 	});
 
 	describe("listKey", () => {

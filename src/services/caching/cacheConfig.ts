@@ -28,6 +28,9 @@ export const defaultEntityTTL: EntityTTL = {
  * Parse TTL overrides from environment variable if present.
  * Expected format: JSON object with entity keys and TTL values.
  * Example: '{"user": 600, "organization": 600}'
+ *
+ * Validates that each TTL is a finite positive number.
+ * Invalid entries are logged and ignored.
  */
 function parseEnvTTLOverrides(): Partial<EntityTTL> {
 	const envValue = process.env.CACHE_ENTITY_TTLS;
@@ -35,10 +38,24 @@ function parseEnvTTLOverrides(): Partial<EntityTTL> {
 		return {};
 	}
 	try {
-		return JSON.parse(envValue) as Partial<EntityTTL>;
+		const parsed = JSON.parse(envValue) as Record<string, unknown>;
+		const validated: Partial<EntityTTL> = {};
+
+		for (const [key, value] of Object.entries(parsed)) {
+			const numValue = Number(value);
+			if (Number.isFinite(numValue) && numValue > 0) {
+				validated[key as keyof EntityTTL] = numValue;
+			} else {
+				console.warn(
+					`[CacheConfig] Invalid TTL for "${key}": ${JSON.stringify(value)} (must be a positive finite number)`,
+				);
+			}
+		}
+
+		return validated;
 	} catch {
 		console.warn(
-			`[CacheConfig] Failed to parse CACHE_ENTITY_TTLS: ${envValue}`,
+			`[CacheConfig] Failed to parse CACHE_ENTITY_TTLS as JSON: ${envValue}`,
 		);
 		return {};
 	}
