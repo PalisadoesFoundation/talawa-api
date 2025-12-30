@@ -24,7 +24,6 @@ describe("Correlation ID behavior", () => {
 			},
 		});
 
-		// Minimal route for testing
 		server.get("/test", async () => {
 			return { ok: true };
 		});
@@ -94,5 +93,163 @@ describe("Correlation ID behavior", () => {
 
 		expect(correlationId).toBeDefined();
 		expect(correlationId).toMatch(UUID_REGEX);
+	});
+
+	it("sets x-correlation-id response header in all cases", async () => {
+		const testCases = [
+			{
+				name: "with valid header",
+				headers: { "x-correlation-id": "550e8400-e29b-41d4-a716-446655440000" },
+				expectedId: "550e8400-e29b-41d4-a716-446655440000",
+			},
+			{
+				name: "without header",
+				headers: {},
+				expectedId: null,
+			},
+			{
+				name: "with malformed header",
+				headers: { "x-correlation-id": "not-a-uuid" },
+				expectedId: null,
+			},
+		];
+
+		for (const testCase of testCases) {
+			const response = await server.inject({
+				method: "GET",
+				url: "/test",
+				headers: testCase.headers,
+			});
+
+			const correlationId = response.headers["x-correlation-id"];
+			expect(correlationId).toBeDefined();
+
+			if (testCase.expectedId) {
+				expect(correlationId).toBe(testCase.expectedId);
+			} else {
+				expect(correlationId).toMatch(UUID_REGEX);
+			}
+		}
+	});
+});
+
+describe("Correlation ID logger integration", () => {
+	it("attaches correlationId to request logger via child() with valid header", async () => {
+		const validUuid = "550e8400-e29b-41d4-a716-446655440000";
+		let loggerBindings: Record<string, unknown> | undefined;
+
+		const testServer = await createServer({
+			envConfig: {
+				API_IS_PINO_PRETTY: false,
+				API_IS_GRAPHIQL: false,
+				API_COOKIE_SECRET: "test",
+				API_JWT_SECRET: "test",
+				API_REDIS_HOST: "redis-test",
+				API_REDIS_PORT: 6379,
+				FRONTEND_URL: "http://localhost:4321",
+			},
+		});
+
+		testServer.get("/test", async (request) => {
+			loggerBindings = (
+				request.log as unknown as { bindings: () => Record<string, unknown> }
+			).bindings();
+			return { ok: true };
+		});
+
+		await testServer.ready();
+
+		await testServer.inject({
+			method: "GET",
+			url: "/test",
+			headers: { "x-correlation-id": validUuid },
+		});
+
+		expect(loggerBindings).toBeDefined();
+		expect(loggerBindings?.correlationId).toBe(validUuid);
+
+		await testServer.close();
+	});
+
+	it("attaches generated correlationId to request logger when header is missing", async () => {
+		let loggerBindings: Record<string, unknown> | undefined;
+
+		const testServer = await createServer({
+			envConfig: {
+				API_IS_PINO_PRETTY: false,
+				API_IS_GRAPHIQL: false,
+				API_COOKIE_SECRET: "test",
+				API_JWT_SECRET: "test",
+				API_REDIS_HOST: "redis-test",
+				API_REDIS_PORT: 6379,
+				FRONTEND_URL: "http://localhost:4321",
+			},
+		});
+
+		testServer.get("/test", async (request) => {
+			loggerBindings = (
+				request.log as unknown as { bindings: () => Record<string, unknown> }
+			).bindings();
+			return { ok: true };
+		});
+
+		await testServer.ready();
+
+		const response = await testServer.inject({
+			method: "GET",
+			url: "/test",
+		});
+
+		const responseCorrelationId = response.headers[
+			"x-correlation-id"
+		] as string;
+
+		expect(loggerBindings).toBeDefined();
+		expect(loggerBindings?.correlationId).toBe(responseCorrelationId);
+		expect(loggerBindings?.correlationId).toMatch(UUID_REGEX);
+
+		await testServer.close();
+	});
+
+	it("attaches generated correlationId to request logger when header is malformed", async () => {
+		let loggerBindings: Record<string, unknown> | undefined;
+
+		const testServer = await createServer({
+			envConfig: {
+				API_IS_PINO_PRETTY: false,
+				API_IS_GRAPHIQL: false,
+				API_COOKIE_SECRET: "test",
+				API_JWT_SECRET: "test",
+				API_REDIS_HOST: "redis-test",
+				API_REDIS_PORT: 6379,
+				FRONTEND_URL: "http://localhost:4321",
+			},
+		});
+
+		testServer.get("/test", async (request) => {
+			loggerBindings = (
+				request.log as unknown as { bindings: () => Record<string, unknown> }
+			).bindings();
+			return { ok: true };
+		});
+
+		await testServer.ready();
+
+		const response = await testServer.inject({
+			method: "GET",
+			url: "/test",
+			headers: { "x-correlation-id": "invalid-uuid-format" },
+		});
+
+		const responseCorrelationId = response.headers[
+			"x-correlation-id"
+		] as string;
+
+		expect(loggerBindings).toBeDefined();
+		expect(loggerBindings?.correlationId).toBe(responseCorrelationId);
+		expect(loggerBindings?.correlationId).toMatch(UUID_REGEX);
+		expect(loggerBindings?.correlationId).not.toBe("invalid-uuid-format");
+
+		await testServer.close();
 	});
 });
