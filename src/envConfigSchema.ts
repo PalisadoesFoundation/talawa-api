@@ -398,7 +398,7 @@ export const envConfigSchema = Type.Object({
 	 * - `event`: 120 seconds (2 minutes)
 	 * - `post`: 60 seconds (1 minute)
 	 *
-	 * @see {@link file://src/services/caching/cacheConfig.ts} for TTL parsing logic and defaults.
+	 * @see src/services/caching/cacheConfig.ts for TTL parsing logic and defaults.
 	 */
 	CACHE_ENTITY_TTLS: Type.Optional(
 		Type.String({
