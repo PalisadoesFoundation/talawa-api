@@ -8,6 +8,7 @@ import {
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { ExplicitAuthenticationTokenPayload } from "~/src/graphql/context";
 import { createContext, graphql } from "~/src/routes/graphql";
+import { ErrorCode } from "~/src/utilities/errors/errorCodes";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 
 // Mock dependencies
@@ -1632,6 +1633,128 @@ describe("GraphQL Routes", () => {
 					correlationId: correlationId,
 				}),
 			);
+		});
+
+		it("should map ErrorCodes to correct HTTP status codes", async () => {
+			await graphql(mockFastifyInstance as unknown as FastifyInstance);
+
+			const mercuriusCall = mockFastifyInstance.register.mock.calls.find(
+				(call) => call?.[1]?.errorFormatter,
+			);
+			const errorFormatter = mercuriusCall?.[1] as {
+				errorFormatter: (
+					execution: ExecutionResult,
+					context: Record<string, unknown>,
+				) => { statusCode: number; response: ExecutionResult };
+			};
+
+			const testCases = [
+				{ code: ErrorCode.NOT_FOUND, expectedStatus: 404 },
+				{ code: ErrorCode.UNAUTHENTICATED, expectedStatus: 401 },
+				{ code: ErrorCode.UNAUTHORIZED, expectedStatus: 403 },
+				{ code: ErrorCode.INVALID_ARGUMENTS, expectedStatus: 400 },
+				{ code: ErrorCode.INTERNAL_SERVER_ERROR, expectedStatus: 500 },
+			];
+
+			for (const { code, expectedStatus } of testCases) {
+				const mockExecution = {
+					errors: [
+						{
+							message: "Test error",
+							extensions: { code },
+						},
+					],
+				} as unknown as ExecutionResult;
+
+				const mockContext = {
+					log: { error: vi.fn() },
+				};
+
+				const result = errorFormatter.errorFormatter(
+					mockExecution,
+					mockContext,
+				);
+
+				expect(result.statusCode).toBe(expectedStatus);
+				expect(result.response.errors?.[0]?.extensions?.httpStatus).toBe(
+					expectedStatus,
+				);
+			}
+		});
+
+		it("should handle multiple errors and use status from the first error", async () => {
+			await graphql(mockFastifyInstance as unknown as FastifyInstance);
+
+			const mercuriusCall = mockFastifyInstance.register.mock.calls.find(
+				(call) => call?.[1]?.errorFormatter,
+			);
+			const errorFormatter = mercuriusCall?.[1] as {
+				errorFormatter: (
+					execution: ExecutionResult,
+					context: Record<string, unknown>,
+				) => { statusCode: number; response: ExecutionResult };
+			};
+
+			const mockExecution = {
+				errors: [
+					{
+						message: "First error",
+						extensions: { code: ErrorCode.NOT_FOUND }, // 404
+					},
+					{
+						message: "Second error",
+						extensions: { code: ErrorCode.UNAUTHENTICATED }, // 401
+					},
+				],
+			} as unknown as ExecutionResult;
+
+			const mockContext = {
+				log: { error: vi.fn() },
+			};
+
+			const result = errorFormatter.errorFormatter(mockExecution, mockContext);
+
+			// Should use status from first error
+			expect(result.statusCode).toBe(404);
+			expect(result.response.errors).toHaveLength(2);
+			expect(result.response.errors?.[0]?.extensions?.httpStatus).toBe(404);
+			expect(result.response.errors?.[1]?.extensions?.httpStatus).toBe(401);
+		});
+
+		it("should handle errors without extensions", async () => {
+			await graphql(mockFastifyInstance as unknown as FastifyInstance);
+
+			const mercuriusCall = mockFastifyInstance.register.mock.calls.find(
+				(call) => call?.[1]?.errorFormatter,
+			);
+			const errorFormatter = mercuriusCall?.[1] as {
+				errorFormatter: (
+					execution: ExecutionResult,
+					context: Record<string, unknown>,
+				) => { statusCode: number; response: ExecutionResult };
+			};
+
+			const mockExecution = {
+				errors: [
+					{
+						message: "Error without extensions",
+						// extensions is undefined
+					},
+				],
+			} as unknown as ExecutionResult;
+
+			const mockContext = {
+				log: { error: vi.fn() },
+			};
+
+			const result = errorFormatter.errorFormatter(mockExecution, mockContext);
+
+			// Should default to 500
+			expect(result.statusCode).toBe(500);
+			expect(result.response.errors?.[0]?.extensions?.code).toBe(
+				ErrorCode.INTERNAL_SERVER_ERROR,
+			);
+			expect(result.response.errors?.[0]?.extensions?.httpStatus).toBe(500);
 		});
 	});
 });
