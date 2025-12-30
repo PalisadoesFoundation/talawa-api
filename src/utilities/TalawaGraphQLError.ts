@@ -363,12 +363,12 @@ export class TalawaGraphQLError extends GraphQLError {
 	/**
 	 * Creates a new TalawaGraphQLError instance.
 	 *
-	 * @param options - Error configuration object
-	 * @param options.message - Optional custom error message (uses default if not provided)
-	 * @param options.extensions - Typed error extensions containing error code and details
-	 * @param options.extensions.code - Error code (ErrorCode enum or legacy string codes)
-	 * @param options.extensions.details - Optional additional error context
-	 * @param options.extensions.httpStatus - Optional HTTP status code override
+	 * @param options Error configuration object.
+	 *   - message: Optional custom error message (uses default if not provided)
+	 *   - extensions: Typed error extensions containing error code and details
+	 *   - extensions.code: Error code (ErrorCode enum or legacy string codes)
+	 *   - extensions.details: Optional additional error context
+	 *   - extensions.httpStatus: Optional HTTP status code override
 	 */
 	constructor({
 		message,

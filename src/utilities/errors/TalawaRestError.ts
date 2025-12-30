@@ -44,11 +44,11 @@ export class TalawaRestError extends Error {
 	/**
 	 * Creates a new TalawaRestError instance.
 	 *
-	 * @param args - Error configuration object
-	 * @param args.code - Standardized error code from ErrorCode enum
-	 * @param args.message - Human-readable error message
-	 * @param args.details - Optional additional error context and details
-	 * @param args.statusCodeOverride - Optional HTTP status code override
+	 * @param args Error configuration object.
+	 *   - args.code: Standardized error code from ErrorCode enum
+	 *   - args.message: Human-readable error message
+	 *   - args.details: Optional additional error context and details
+	 *   - args.statusCodeOverride: Optional HTTP status code override
 	 */
 	constructor(args: {
 		code: ErrorCode;

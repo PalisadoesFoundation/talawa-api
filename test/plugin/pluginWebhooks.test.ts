@@ -669,7 +669,7 @@ describe("Plugin Webhooks", () => {
 			// Should return 404 for invalid route structure
 			expect(response.statusCode).toBe(404);
 
-			const body = JSON.parse(response.payload);
+			const body = response.json();
 			// The server returns a specific error about the webhook handler not being found
 			expect(body.error.message).toContain("No webhook handler found");
 

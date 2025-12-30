@@ -85,7 +85,12 @@ Creates a new TalawaGraphQLError instance.
 
 `GraphQLErrorOptions` & `object`
 
-Error configuration object
+Error configuration object.
+  - message: Optional custom error message (uses default if not provided)
+  - extensions: Typed error extensions containing error code and details
+  - extensions.code: Error code (ErrorCode enum or legacy string codes)
+  - extensions.details: Optional additional error context
+  - extensions.httpStatus: Optional HTTP status code override
 
 #### Returns
 
