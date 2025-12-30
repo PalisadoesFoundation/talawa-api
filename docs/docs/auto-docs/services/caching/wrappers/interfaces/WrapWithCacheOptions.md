@@ -4,7 +4,7 @@
 
 # Interface: WrapWithCacheOptions\<K, _V\>
 
-Defined in: [src/services/caching/wrappers.ts:6](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/caching/wrappers.ts#L6)
+Defined in: [src/services/caching/wrappers.ts:7](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/caching/wrappers.ts#L7)
 
 Options for wrapping a batch function with caching.
 
@@ -24,7 +24,7 @@ Options for wrapping a batch function with caching.
 
 > **cache**: [`CacheService`](../../CacheService/interfaces/CacheService.md)
 
-Defined in: [src/services/caching/wrappers.ts:10](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/caching/wrappers.ts#L10)
+Defined in: [src/services/caching/wrappers.ts:11](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/caching/wrappers.ts#L11)
 
 The cache service instance.
 
@@ -34,7 +34,7 @@ The cache service instance.
 
 > **entity**: `string`
 
-Defined in: [src/services/caching/wrappers.ts:14](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/caching/wrappers.ts#L14)
+Defined in: [src/services/caching/wrappers.ts:15](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/caching/wrappers.ts#L15)
 
 Entity type for cache key generation.
 
@@ -44,7 +44,7 @@ Entity type for cache key generation.
 
 > **keyFn**: (`key`) => `string` \| `number`
 
-Defined in: [src/services/caching/wrappers.ts:20](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/caching/wrappers.ts#L20)
+Defined in: [src/services/caching/wrappers.ts:21](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/caching/wrappers.ts#L21)
 
 Function to convert a key to its cache key suffix.
 
@@ -68,6 +68,6 @@ String representation for the cache key.
 
 > **ttlSeconds**: `number`
 
-Defined in: [src/services/caching/wrappers.ts:24](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/caching/wrappers.ts#L24)
+Defined in: [src/services/caching/wrappers.ts:25](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/caching/wrappers.ts#L25)
 
 TTL in seconds for cached values.

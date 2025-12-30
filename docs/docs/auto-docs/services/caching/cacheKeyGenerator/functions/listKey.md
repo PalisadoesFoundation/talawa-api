@@ -6,10 +6,15 @@
 
 > **listKey**(`entity`, `args`): `string`
 
-Defined in: [src/services/caching/cacheKeyGenerator.ts:57](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/caching/cacheKeyGenerator.ts#L57)
+Defined in: [src/services/caching/cacheKeyGenerator.ts:88](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/caching/cacheKeyGenerator.ts#L88)
 
 Generate a cache key for a list query with arguments.
-Uses SHA1 hash of arguments for a compact, deterministic key.
+
+Uses SHA-1 hash for compact, deterministic keys. SHA-1 is chosen for
+performance and compactness (40-char hex digest), not for cryptographic
+security. The hash is derived from stableStringify output, which ensures
+deterministic ordering of object properties. If stronger hashing is needed
+for future security concerns, SHA-256 can be substituted.
 
 ## Parameters
 
