@@ -1756,5 +1756,51 @@ describe("GraphQL Routes", () => {
 			);
 			expect(result.response.errors?.[0]?.extensions?.httpStatus).toBe(500);
 		});
+
+		it("should handle subscription error formatting where context.reply is undefined", async () => {
+			await graphql(mockFastifyInstance as unknown as FastifyInstance);
+
+			const mercuriusCall = mockFastifyInstance.register.mock.calls.find(
+				(call) => call?.[1]?.errorFormatter,
+			);
+			const errorFormatter = mercuriusCall?.[1] as {
+				errorFormatter: (
+					execution: ExecutionResult,
+					context: Record<string, unknown>,
+				) => { statusCode: number; response: ExecutionResult };
+			};
+
+			const mockExecution = {
+				errors: [
+					{
+						message: "Subscription error",
+						extensions: { code: ErrorCode.INTERNAL_SERVER_ERROR },
+					},
+				],
+			} as unknown as ExecutionResult;
+
+			// Simulate subscription context: no reply object, but has log
+			const mockContext = {
+				log: { error: vi.fn() },
+				// Subscription contexts properly created by onConnect might have correlationId
+				correlationId: "sub-test-id",
+			};
+
+			const result = errorFormatter.errorFormatter(mockExecution, mockContext);
+
+			expect(result.statusCode).toBe(500);
+			expect(result.response.errors?.[0]?.extensions?.correlationId).toBe(
+				"sub-test-id",
+			);
+
+			// Verify logger usage
+			expect(mockContext.log.error).toHaveBeenCalledWith(
+				expect.objectContaining({
+					msg: "GraphQL error",
+					correlationId: "sub-test-id",
+					statusCode: 500,
+				}),
+			);
+		});
 	});
 });
