@@ -204,14 +204,13 @@ test("unexpected delete failure returns unexpected error", async () => {
 	const user = await createUser();
 	const pledgeId = await createPledgeAsUser(user.token, user.id);
 
-const spy = vi
-  .spyOn(server.drizzleClient, "transaction")
-  .mockResolvedValueOnce(
-    undefined as unknown as Awaited<
-      ReturnType<typeof server.drizzleClient.transaction>
-    >,
-  );
-
+	const spy = vi
+		.spyOn(server.drizzleClient, "transaction")
+		.mockResolvedValueOnce(
+			undefined as unknown as Awaited<
+				ReturnType<typeof server.drizzleClient.transaction>
+			>,
+		);
 
 	const res = await mercuriusClient.mutate(Mutation_deleteFundCampaignPledge, {
 		headers: { authorization: `bearer ${adminToken}` },
