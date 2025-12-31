@@ -55,7 +55,6 @@ describe("validateRecaptchaIfRequired", () => {
 		mockFetch.mockResolvedValueOnce({
 			ok: false,
 			status: 500,
-			json: async () => ({ success: false }),
 		} as Response);
 		const result = validateRecaptchaIfRequired("valid-token", "secret-key", [
 			"input",

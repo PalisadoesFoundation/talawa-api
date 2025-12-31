@@ -1070,6 +1070,13 @@ suite("Mutation field signUp", () => {
 					body: expect.any(URLSearchParams),
 				}),
 			);
+
+			// Verify the body contains the correct parameters
+			const fetchCall = (global.fetch as ReturnType<typeof vi.fn>).mock
+				.calls[0];
+			const body = fetchCall?.[1]?.body as URLSearchParams;
+			expect(body.get("secret")).toBe("test-secret-key");
+			expect(body.get("response")).toBe("valid-token");
 		});
 
 		test("should handle reCAPTCHA API network error gracefully", async () => {

@@ -94,7 +94,6 @@ export async function validateRecaptchaIfRequired(
 				],
 			},
 		});
-	} else {
-		return true;
 	}
+	return true;
 }
