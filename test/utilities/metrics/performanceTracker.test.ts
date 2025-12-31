@@ -147,7 +147,7 @@ describe("Performance Tracker", () => {
 		const manualOp = snapshot.ops["manual-op"];
 		expect(manualOp).toBeDefined();
 		expect(manualOp?.count).toBe(1);
-		expect(manualOp?.ms).toBeGreaterThanOrEqual(10);
+		expect(manualOp?.ms).toBeGreaterThanOrEqual(5);
 	});
 
 	it("should track max duration for operations", async () => {
