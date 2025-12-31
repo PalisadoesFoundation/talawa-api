@@ -1,5 +1,5 @@
 import { faker } from "@faker-js/faker";
-import { expect, suite, test } from "vitest";
+import { expect, suite, test,vi } from "vitest";
 import { assertToBeNonNullish } from "../../../helpers";
 import { server } from "../../../server";
 import { mercuriusClient } from "../client";
@@ -198,6 +198,30 @@ suite("Mutation deleteFundCampaignPledge", () => {
 		assertToBeNonNullish(res.data.deleteFundCampaignPledge);
 		expect(res.data.deleteFundCampaignPledge.id).toBe(pledgeId);
 	});
+});
+/* ---------- 8. UNEXPECTED DELETE FAILURE ---------- */
+test("unexpected delete failure returns unexpected error", async () => {
+  const user = await createUser();
+  const pledgeId = await createPledgeAsUser(user.token, user.id);
+
+  const spy = vi
+    .spyOn(server.drizzleClient, "transaction")
+    .mockResolvedValueOnce(undefined as any);
+
+  const res = await mercuriusClient.mutate(
+    Mutation_deleteFundCampaignPledge,
+    {
+      headers: { authorization: `bearer ${adminToken}` },
+      variables: { input: { id: pledgeId } },
+    },
+  );
+
+  expect(res.data?.deleteFundCampaignPledge).toBeNull();
+  assertToBeNonNullish(res.errors);
+  assertToBeNonNullish(res.errors[0]?.extensions);
+  expect(res.errors[0].extensions?.code).toBe("unexpected");
+
+  spy.mockRestore();
 });
 
 /* ---------------- HELPERS ---------------- */
