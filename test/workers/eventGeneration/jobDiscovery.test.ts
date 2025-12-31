@@ -22,7 +22,7 @@ vi.mock("drizzle-orm", async () => {
 	};
 });
 
-vi.mock("~/src/utilities/recurringEventHelpers", () => ({
+vi.mock("~/src/utilities/recurringEvent", () => ({
 	estimateInstanceCount: vi.fn(),
 	normalizeRecurrenceRule: vi.fn(),
 }));
@@ -30,7 +30,7 @@ vi.mock("~/src/utilities/recurringEventHelpers", () => ({
 import {
 	estimateInstanceCount,
 	normalizeRecurrenceRule,
-} from "~/src/utilities/recurringEventHelpers";
+} from "~/src/utilities/recurringEvent";
 
 describe("jobDiscovery", () => {
 	let mockDrizzleClient: NodePgDatabase<typeof schema>;

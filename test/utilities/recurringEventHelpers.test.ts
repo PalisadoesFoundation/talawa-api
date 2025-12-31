@@ -15,7 +15,7 @@ import {
 	normalizeRecurrenceRule,
 	validateRecurrenceInput,
 	validateRecurrenceRule,
-} from "~/src/utilities/recurringEventHelpers";
+} from "~/src/utilities/recurringEvent";
 
 describe("recurringEventHelpers", () => {
 	describe("buildRRuleString", () => {

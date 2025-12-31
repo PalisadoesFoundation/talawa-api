@@ -8,7 +8,7 @@ import {
 	recurringEventInstancesTableInsertSchema,
 } from "~/src/drizzle/tables/recurringEventInstances";
 
-import { normalizeRecurrenceRule } from "~/src/utilities/recurringEventHelpers";
+import { normalizeRecurrenceRule } from "~/src/utilities/recurringEvent";
 import { calculateInstanceOccurrences } from "./occurrenceCalculator";
 import type { GenerateInstancesInput, ServiceDependencies } from "./types";
 

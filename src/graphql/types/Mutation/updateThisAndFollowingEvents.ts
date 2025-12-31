@@ -19,7 +19,7 @@ import {
 	applyRecurrenceOverrides,
 	buildRRuleString,
 	validateRecurrenceInput,
-} from "~/src/utilities/recurringEventHelpers";
+} from "~/src/utilities/recurringEvent";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 
 const mutationUpdateThisAndFollowingEventsArgumentsSchema = z.object({
