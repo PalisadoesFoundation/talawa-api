@@ -273,6 +273,48 @@ describe("recurringEventHelpers", () => {
 				360,
 				undefined,
 			],
+			// MONTHLY with end date - covers line 83
+			[
+				{
+					...baseRule,
+					frequency: "MONTHLY",
+					recurrenceEndDate: new Date("2026-01-01T00:00:00.000Z"),
+					recurrenceRuleString: "RRULE:FREQ=MONTHLY;UNTIL=20260101T000000Z",
+				},
+				13,
+				undefined,
+			],
+			// YEARLY with end date - covers line 85
+			[
+				{
+					...baseRule,
+					frequency: "YEARLY",
+					recurrenceEndDate: new Date("2027-01-01T00:00:00.000Z"),
+					recurrenceRuleString: "RRULE:FREQ=YEARLY;UNTIL=20270101T000000Z",
+				},
+				2,
+				undefined,
+			],
+			// DAILY never-ending - covers line 97
+			[
+				{
+					...baseRule,
+					frequency: "DAILY",
+					recurrenceRuleString: "RRULE:FREQ=DAILY",
+				},
+				360,
+				undefined,
+			],
+			// WEEKLY never-ending - covers line 99
+			[
+				{
+					...baseRule,
+					frequency: "WEEKLY",
+					recurrenceRuleString: "RRULE:FREQ=WEEKLY",
+				},
+				52,
+				undefined,
+			],
 		] as const)("should estimate the instance count", (rule, expected, estimationWindow) => {
 			expect(
 				estimateInstanceCount(
