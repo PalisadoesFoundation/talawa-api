@@ -192,6 +192,8 @@ describe("recurringEventHelpers", () => {
 			[5, "WEEKLY", 2, new Date("2025-02-26T00:00:00.000Z")],
 			[6, "MONTHLY", 1, new Date("2025-06-01T00:00:00.000Z")],
 			[3, "YEARLY", 1, new Date("2027-01-01T00:00:00.000Z")],
+			// Unknown frequency - defaults to daily calculation (covers line 46)
+			[10, "UNKNOWN", 1, new Date("2025-01-10T00:00:00.000Z")],
 		] as const)("should calculate the correct completion date", (count, frequency, interval, expected) => {
 			const completionDate = calculateCompletionDateFromCount(
 				startDate,
@@ -313,6 +315,28 @@ describe("recurringEventHelpers", () => {
 					recurrenceRuleString: "RRULE:FREQ=WEEKLY",
 				},
 				52,
+				undefined,
+			],
+			// WEEKLY with end date - covers line 81
+			[
+				{
+					...baseRule,
+					frequency: "WEEKLY",
+					recurrenceEndDate: new Date("2025-03-01T00:00:00.000Z"),
+					recurrenceRuleString: "RRULE:FREQ=WEEKLY;UNTIL=20250301T000000Z",
+				},
+				9,
+				undefined,
+			],
+			// Unknown frequency with end date - covers line 87
+			[
+				{
+					...baseRule,
+					frequency: "UNKNOWN",
+					recurrenceEndDate: new Date("2025-01-31T00:00:00.000Z"),
+					recurrenceRuleString: "RRULE:FREQ=UNKNOWN;UNTIL=20250131T000000Z",
+				},
+				30,
 				undefined,
 			],
 		] as const)("should estimate the instance count", (rule, expected, estimationWindow) => {
