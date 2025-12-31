@@ -45,7 +45,7 @@ pre-commit:
     11_generate_docs:
       run: |
         set -e
-        pnpm generate:docs
+        pnpm generate-docs
         git add ./docs/docs/auto-docs/
 
     12_api_schema_docs:
