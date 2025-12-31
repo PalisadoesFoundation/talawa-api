@@ -54,6 +54,8 @@ The recurrence input object, conforming to the recurrenceInputSchema.
 
 `Date`
 
+Reserved for future use; currently unused but maintained for API compatibility.
+
 ## Returns
 
 `string`
