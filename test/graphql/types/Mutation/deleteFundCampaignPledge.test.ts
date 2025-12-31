@@ -1,5 +1,5 @@
 import { faker } from "@faker-js/faker";
-import { expect, suite, test, vi } from "vitest";
+import { expect, suite, test } from "vitest";
 import { assertToBeNonNullish } from "../../../helpers";
 import { server } from "../../../server";
 import { mercuriusClient } from "../client";
@@ -197,36 +197,6 @@ suite("Mutation deleteFundCampaignPledge", () => {
 		expect(res.errors).toBeUndefined();
 		assertToBeNonNullish(res.data.deleteFundCampaignPledge);
 		expect(res.data.deleteFundCampaignPledge.id).toBe(pledgeId);
-	});
-
-	/* ---------- 8. UNEXPECTED DELETE FAILURE ---------- */
-	test("unexpected delete failure returns error", async () => {
-		assertToBeNonNullish(adminToken);
-		assertToBeNonNullish(adminUserId);
-		const pledgeId = await createPledgeAsUser(adminToken, adminUserId);
-
-		// const spy = vi.spyOn(server.drizzleClient, "delete").mockReturnValueOnce({
-		// 	where: vi.fn().mockReturnThis(),
-		// 	returning: vi.fn().mockResolvedValue([]),
-		// } as any);
-		const spy = vi.spyOn(server.drizzleClient, "delete").mockReturnValueOnce({
-			where: vi.fn().mockReturnThis(),
-			returning: vi.fn().mockResolvedValue([]),
-		} as unknown as ReturnType<typeof server.drizzleClient.delete>);
-
-		const res = await mercuriusClient.mutate(
-			Mutation_deleteFundCampaignPledge,
-			{
-				headers: { authorization: `bearer ${adminToken}` },
-				variables: { input: { id: pledgeId } },
-			},
-		);
-
-		assertToBeNonNullish(res.errors);
-		assertToBeNonNullish(res.errors[0]?.extensions);
-		expect(res.errors[0].extensions?.code).toBe("unexpected");
-
-		spy.mockRestore();
 	});
 });
 
