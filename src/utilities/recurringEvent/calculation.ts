@@ -119,6 +119,11 @@ export function calculateInstancesPerMonth(
 	frequency: string,
 	interval = 1,
 ): number {
+	// Validate interval parameter
+	if (!Number.isFinite(interval) || interval <= 0) {
+		throw new RangeError("interval must be a positive number");
+	}
+
 	switch (frequency) {
 		case "DAILY":
 			return 30 / interval; // ~30 days per month

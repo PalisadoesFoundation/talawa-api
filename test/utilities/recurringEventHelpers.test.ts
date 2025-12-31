@@ -256,6 +256,8 @@ describe("recurringEventHelpers", () => {
 				true,
 				"HYBRID",
 			],
+			// Edge case: count = 0 should be treated as no count (falsy)
+			[{ ...baseRule, count: 0 }, true, false, false, "NEVER_ENDING"],
 		] as const)("should correctly classify event types", (rule, isNever, isCount, isEndDate, eventType) => {
 			expect(isNeverEndingEvent(rule)).toBe(isNever);
 			expect(isCountBasedEvent(rule)).toBe(isCount);
