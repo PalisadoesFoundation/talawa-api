@@ -83,6 +83,47 @@ describe("recurringEventHelpers", () => {
 				false,
 				["Invalid month day: 32"],
 			],
+			// Test valid ordinal prefixes in byDay (for MONTHLY/YEARLY)
+			[
+				{
+					frequency: "MONTHLY",
+					byDay: ["1MO", "-1SU", "2WE"],
+					never: true,
+				},
+				true,
+				[],
+			],
+			// Test invalid ordinal prefix - bad day code
+			[
+				{
+					frequency: "MONTHLY",
+					byDay: ["1XX"],
+					never: true,
+				},
+				false,
+				["Invalid day code: 1XX"],
+			],
+			// Test YEARLY never-ending validation
+			[
+				{
+					frequency: "YEARLY",
+					never: true,
+				},
+				false,
+				[
+					"Yearly events cannot be never-ending. Please specify an end date or count.",
+				],
+			],
+			// Test invalid interval (< 1)
+			[
+				{
+					frequency: "DAILY",
+					interval: 0,
+					never: true,
+				},
+				false,
+				["Recurrence interval must be at least 1"],
+			],
 		])("should validate various recurrence inputs", (recurrence, isValid, errors) => {
 			const result = validateRecurrenceInput(
 				recurrence as z.infer<typeof recurrenceInputSchema>,
@@ -210,10 +251,35 @@ describe("recurringEventHelpers", () => {
 					recurrenceRuleString: "RRULE:FREQ=MONTHLY",
 				},
 				12,
-				12,
+				undefined,
+			],
+			// YEARLY never-ending - covers line 103
+			[
+				{
+					...baseRule,
+					frequency: "YEARLY",
+					recurrenceRuleString: "RRULE:FREQ=YEARLY",
+				},
+				1,
+				undefined,
+			],
+			// Unknown frequency default case - covers line 105
+			[
+				{
+					...baseRule,
+					frequency: "UNKNOWN",
+					recurrenceRuleString: "RRULE:FREQ=UNKNOWN",
+				},
+				360,
+				undefined,
 			],
 		] as const)("should estimate the instance count", (rule, expected, estimationWindow) => {
-			expect(estimateInstanceCount(rule, estimationWindow)).toBe(expected);
+			expect(
+				estimateInstanceCount(
+					rule as typeof recurrenceRulesTable.$inferSelect,
+					estimationWindow,
+				),
+			).toBe(expected);
 		});
 	});
 
@@ -282,6 +348,24 @@ describe("recurringEventHelpers", () => {
 				2,
 			);
 		});
+
+		// Test invalid interval error - covers lines 124-125
+		it("should throw RangeError for invalid interval", () => {
+			expect(() => calculateInstancesPerMonth("DAILY", 0)).toThrow(
+				"interval must be a positive number",
+			);
+			expect(() => calculateInstancesPerMonth("DAILY", -1)).toThrow(
+				"interval must be a positive number",
+			);
+			expect(() => calculateInstancesPerMonth("DAILY", NaN)).toThrow(
+				"interval must be a positive number",
+			);
+		});
+
+		// Test unknown frequency default case - covers line 137
+		it("should default to daily calculation for unknown frequency", () => {
+			expect(calculateInstancesPerMonth("UNKNOWN", 1)).toBe(30);
+		});
 	});
 
 	describe("validateRecurrenceRule", () => {
@@ -319,6 +403,31 @@ describe("recurringEventHelpers", () => {
 				false,
 				["End date must be after start date"],
 			],
+			// Invalid frequency value
+			[
+				{ ...baseRule, frequency: "INVALID" },
+				false,
+				["Invalid frequency: INVALID"],
+			],
+			// Negative interval
+			[{ ...baseRule, interval: -1 }, false, ["Interval must be at least 1"]],
+			// Null/undefined interval (should pass)
+			[{ ...baseRule, interval: null }, true, []],
+			// Negative count
+			[{ ...baseRule, count: -1 }, false, ["Count must be at least 1"]],
+			// Null count (should pass)
+			[{ ...baseRule, count: null }, true, []],
+			// End date equal to start date (should fail with <=)
+			[
+				{
+					...baseRule,
+					recurrenceEndDate: new Date("2025-01-01T00:00:00.000Z"),
+				},
+				false,
+				["End date must be after start date"],
+			],
+			// Null/undefined recurrenceEndDate (should pass)
+			[{ ...baseRule, recurrenceEndDate: null }, true, []],
 		])("should validate various recurrence rules", (rule, isValid, errors) => {
 			const result = validateRecurrenceRule(
 				rule as typeof recurrenceRulesTable.$inferSelect,
