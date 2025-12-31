@@ -239,7 +239,7 @@ async function createUser() {
 				emailAddress: faker.internet.email(),
 				password: faker.internet.password(),
 				role: "regular",
-				name: faker.person.fullName(),
+				name: `org-${faker.string.uuid()}`,
 				isEmailAddressVerified: true,
 			},
 		},
