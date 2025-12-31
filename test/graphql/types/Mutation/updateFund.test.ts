@@ -366,6 +366,73 @@ suite("Mutation field updateFund", () => {
 				]),
 			);
 		});
+
+		test("should allow organization administrator to update fund", async () => {
+			const { authToken: orgAdminToken, userId: orgAdminId } = await import(
+				"../createRegularUserUsingAdmin"
+			).then((module) => module.createRegularUserUsingAdmin());
+			assertToBeNonNullish(orgAdminToken);
+			assertToBeNonNullish(orgAdminId);
+
+			// Create organization and fund as global admin
+			const createOrgResult = await mercuriusClient.mutate(
+				Mutation_createOrganization,
+				{
+					headers: { authorization: `bearer ${authToken}` },
+					variables: {
+						input: {
+							name: `Org ${faker.string.uuid()}`,
+							countryCode: "us",
+						},
+					},
+				},
+			);
+			const orgId = createOrgResult.data?.createOrganization?.id;
+			assertToBeNonNullish(orgId);
+
+			// Grant organization admin role to regular user
+			await mercuriusClient.mutate(Mutation_createOrganizationMembership, {
+				headers: { authorization: `bearer ${authToken}` },
+				variables: {
+					input: {
+						organizationId: orgId,
+						memberId: orgAdminId,
+						role: "administrator",
+					},
+				},
+			});
+
+			const createFundResult = await mercuriusClient.mutate(
+				Mutation_createFund,
+				{
+					headers: { authorization: `bearer ${authToken}` },
+					variables: {
+						input: {
+							name: `Fund ${faker.string.uuid()}`,
+							organizationId: orgId,
+							isTaxDeductible: false,
+						},
+					},
+				},
+			);
+			const fundId = createFundResult.data?.createFund?.id;
+			assertToBeNonNullish(fundId);
+
+			// Update as organization admin (should succeed)
+			const newName = `Updated by Org Admin ${faker.string.uuid()}`;
+			const result = await mercuriusClient.mutate(Mutation_updateFund, {
+				headers: { authorization: `bearer ${orgAdminToken}` },
+				variables: {
+					input: {
+						id: fundId,
+						name: newName,
+					},
+				},
+			});
+
+			expect(result.errors).toBeUndefined();
+			expect(result.data?.updateFund?.name).toBe(newName);
+		});
 	});
 
 	suite(
@@ -441,88 +508,6 @@ suite("Mutation field updateFund", () => {
 					]),
 				);
 			});
-
-			test.skip("should allow the same fund name in different organizations", async () => {
-				const sharedFundName = `Shared Fund ${faker.string.uuid()}`;
-
-				// Create first organization and fund
-				const createOrg1Result = await mercuriusClient.mutate(
-					Mutation_createOrganization,
-					{
-						headers: { authorization: `bearer ${authToken}` },
-						variables: {
-							input: {
-								name: `Org1 ${faker.string.uuid()}`,
-								countryCode: "us",
-							},
-						},
-					},
-				);
-				const org1Id = createOrg1Result.data?.createOrganization?.id;
-				assertToBeNonNullish(org1Id);
-
-				const createFund1Result = await mercuriusClient.mutate(
-					Mutation_createFund,
-					{
-						headers: { authorization: `bearer ${authToken}` },
-						variables: {
-							input: {
-								name: sharedFundName,
-								organizationId: org1Id,
-								isTaxDeductible: false,
-							},
-						},
-					},
-				);
-				assertToBeNonNullish(createFund1Result.data?.createFund?.id);
-
-				// Create second organization and fund with SAME name
-				const createOrg2Result = await mercuriusClient.mutate(
-					Mutation_createOrganization,
-					{
-						headers: { authorization: `bearer ${authToken}` },
-						variables: {
-							input: {
-								name: `Org2 ${faker.string.uuid()}`,
-								countryCode: "us",
-							},
-						},
-					},
-				);
-				const org2Id = createOrg2Result.data?.createOrganization?.id;
-				assertToBeNonNullish(org2Id);
-
-				const createFund2Result = await mercuriusClient.mutate(
-					Mutation_createFund,
-					{
-						headers: { authorization: `bearer ${authToken}` },
-						variables: {
-							input: {
-								name: sharedFundName,
-								organizationId: org2Id,
-								isTaxDeductible: false,
-							},
-						},
-					},
-				);
-				const fund2Id = createFund2Result.data?.createFund?.id;
-				assertToBeNonNullish(fund2Id);
-
-				// Update the second fund's name to the same shared name
-				const result = await mercuriusClient.mutate(Mutation_updateFund, {
-					headers: { authorization: `bearer ${authToken}` },
-					variables: {
-						input: {
-							id: fund2Id,
-							name: sharedFundName,
-						},
-					},
-				});
-
-				// Should succeed because funds are in different organizations
-				expect(result.errors).toBeUndefined();
-				expect(result.data?.updateFund?.name).toBe(sharedFundName);
-			});
 		},
 	);
 
@@ -597,9 +582,7 @@ suite("Mutation field updateFund", () => {
 	});
 
 	suite("when updating fund fields successfully", () => {
-		// NOTE: This test will FAIL until the resolver bug is fixed
-		// The resolver needs to exclude the current fund ID in duplicate name check
-		test.skip("should successfully update a fund while keeping its current name", async () => {
+		test("should successfully update a fund while keeping its current name", async () => {
 			const createOrgResult = await mercuriusClient.mutate(
 				Mutation_createOrganization,
 				{

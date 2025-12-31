@@ -122,6 +122,7 @@ builder.mutationField("updateFund", (t) =>
 									fields.organizationId,
 									existingFund.organizationId,
 								),
+								operators.ne(fields.id, parsedArgs.input.id),
 							),
 					});
 
