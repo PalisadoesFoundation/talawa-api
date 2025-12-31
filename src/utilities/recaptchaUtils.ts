@@ -31,7 +31,9 @@ export async function verifyRecaptchaToken(
 
 		const data = (await response.json()) as RecaptchaVerificationResponse;
 		return data.success === true;
-	} catch (_error) {
+	} catch (error) {
+		// Log the original error for debugging
+		console.error("reCAPTCHA verification error:", error);
 		throw new TalawaGraphQLError({
 			extensions: {
 				code: "unexpected",

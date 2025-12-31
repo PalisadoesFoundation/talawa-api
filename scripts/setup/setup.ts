@@ -244,7 +244,7 @@ export async function administratorEmail(
 	return answers;
 }
 
-export async function reCptchaSetup(
+export async function reCaptchaSetup(
 	answers: SetupAnswers,
 ): Promise<SetupAnswers> {
 	try {
@@ -767,12 +767,12 @@ export async function setup(): Promise<SetupAnswers> {
 
 	const setupReCaptcha = await promptConfirm(
 		"setupReCaptcha",
-		"Do you want to set up Google reCAPTCHA v2 now? (Y)/N",
+		"Do you want to set up Google reCAPTCHA v2 now?",
 		false,
 	);
 
 	if (setupReCaptcha) {
-		answers = await reCptchaSetup(answers);
+		answers = await reCaptchaSetup(answers);
 	}
 
 	updateEnvVariable(answers);

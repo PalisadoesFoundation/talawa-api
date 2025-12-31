@@ -20,6 +20,13 @@ describe("validateRecaptchaIfRequired", () => {
 			["input", "recaptchaToken"],
 		);
 		expect(result).toBe(true);
+		expect(mockFetch).toHaveBeenCalledWith(
+			"https://www.google.com/recaptcha/api/siteverify",
+			expect.objectContaining({
+				method: "POST",
+				headers: { "Content-Type": "application/x-www-form-urlencoded" },
+			}),
+		);
 	});
 
 	test("throws TalawaGraphQLError when Google reCaptcha verification fails", async () => {
@@ -44,10 +51,11 @@ describe("validateRecaptchaIfRequired", () => {
 		});
 	});
 
-	test("test for HTTP error from fetch", async () => {
+	test("throws error when HTTP request fails", async () => {
 		mockFetch.mockResolvedValueOnce({
 			ok: false,
 			status: 500,
+			json: async () => ({ success: false }),
 		} as Response);
 		const result = validateRecaptchaIfRequired("valid-token", "secret-key", [
 			"input",
