@@ -1,22 +1,31 @@
 import { createMockGraphQLContext } from "test/_Mocks_/mockContextCreator/mockContextCreator";
-import { afterEach, beforeEach, describe, expect, it, type Mock, vi } from "vitest";
+import {
+	afterEach,
+	beforeEach,
+	describe,
+	expect,
+	it,
+	type Mock,
+	vi,
+} from "vitest";
 import type { GraphQLContext } from "~/src/graphql/context";
 import "~/src/graphql/scalars";
 import "~/src/graphql/types/Post/Post";
 import "~/src/graphql/types/Post/commentsCount";
+import { and, count, eq } from "drizzle-orm";
 import type {
 	GraphQLFieldResolver,
 	GraphQLObjectType,
 	GraphQLResolveInfo,
 } from "graphql";
+import { commentsTable } from "~/src/drizzle/schema";
 import { schema } from "~/src/graphql/schema";
 import type { Post as PostType } from "~/src/graphql/types/Post/Post";
-import { and, count, eq } from "drizzle-orm";
-import { commentsTable } from "~/src/drizzle/schema";
 
 // Mock dependencies
 vi.mock("drizzle-orm", async () => {
-	const actual = await vi.importActual<typeof import("drizzle-orm")>("drizzle-orm");
+	const actual =
+		await vi.importActual<typeof import("drizzle-orm")>("drizzle-orm");
 	return {
 		...actual,
 		and: vi.fn(),
@@ -40,7 +49,7 @@ describe("Post Resolver - commentsCount", () => {
 	let mockPost: PostType;
 	let ctx: GraphQLContext;
 	let mocks: ReturnType<typeof createMockGraphQLContext>["mocks"];
-    let mockSelectChain: { from: Mock; where: Mock };
+	let mockSelectChain: { from: Mock; where: Mock };
 
 	beforeEach(() => {
 		const { context, mocks: newMocks } = createMockGraphQLContext(
@@ -63,7 +72,7 @@ describe("Post Resolver - commentsCount", () => {
 			attachments: [],
 		} as PostType;
 
-        mockSelectChain = {
+		mockSelectChain = {
 			from: vi.fn().mockReturnThis(),
 			where: vi.fn(),
 		};
@@ -89,7 +98,7 @@ describe("Post Resolver - commentsCount", () => {
 		);
 
 		expect(result).toBe(0);
-        expect(mocks.drizzleClient.select).toHaveBeenCalled();
+		expect(mocks.drizzleClient.select).toHaveBeenCalled();
 	});
 
 	it("should return the correct count of comments for a post", async () => {
@@ -109,7 +118,7 @@ describe("Post Resolver - commentsCount", () => {
 		expect(eq).toHaveBeenCalledWith(commentsTable.postId, mockPost.id);
 	});
 
-    it("should return 0 when the count result is 0", async () => {
+	it("should return 0 when the count result is 0", async () => {
 		mockSelectChain.where.mockResolvedValue([{ count: 0 }]);
 
 		const result = await resolveCommentsCount(
@@ -124,23 +133,18 @@ describe("Post Resolver - commentsCount", () => {
 		expect(mockSelectChain.where).toHaveBeenCalled();
 	});
 
-    it("should throw error when database query fails", async () => {
+	it("should throw error when database query fails", async () => {
 		const dbError = new Error("Database connection failed");
 		mockSelectChain.where.mockRejectedValue(dbError);
 
 		await expect(
-			resolveCommentsCount(
-				mockPost,
-				{},
-				ctx,
-				{} as GraphQLResolveInfo,
-			),
+			resolveCommentsCount(mockPost, {}, ctx, {} as GraphQLResolveInfo),
 		).rejects.toThrow("Database connection failed");
 
 		expect(mocks.drizzleClient.select).toHaveBeenCalled();
 	});
 
-    it("should handle edge case where post ID is invalid/null", async () => {
+	it("should handle edge case where post ID is invalid/null", async () => {
 		const invalidPost = { ...mockPost, id: null };
 		mockSelectChain.where.mockResolvedValue([{ count: 0 }]);
 
