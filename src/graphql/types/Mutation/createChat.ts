@@ -137,8 +137,11 @@ builder.mutationField("createChat", (t) =>
 			const currentUserOrganizationMembership =
 				existingOrganization.membershipsWhereOrganization[0];
 
-			// Allow all users who are members of the organization to create chats
-			if (currentUserOrganizationMembership === undefined) {
+			// Allow system administrators or organization members to create chats
+			if (
+				currentUser.role !== "administrator" &&
+				currentUserOrganizationMembership === undefined
+			) {
 				throw new TalawaGraphQLError({
 					extensions: {
 						code: "unauthorized_action_on_arguments_associated_resources",
