@@ -79,7 +79,7 @@ describe("Post Resolver - commentsCount", () => {
 		mocks.drizzleClient.select = vi.fn().mockReturnValue(mockSelectChain);
 
 		(eq as Mock).mockReturnValue("mocked-eq");
-		(and as Mock).mockReturnValue("mocked-and");
+		(and as Mock).mockImplementation((..._args) => "mocked-and");
 		(count as Mock).mockReturnValue("mocked-count");
 	});
 
@@ -116,6 +116,7 @@ describe("Post Resolver - commentsCount", () => {
 		expect(mockSelectChain.from).toHaveBeenCalledWith(commentsTable);
 		expect(mockSelectChain.where).toHaveBeenCalledWith("mocked-and");
 		expect(eq).toHaveBeenCalledWith(commentsTable.postId, mockPost.id);
+		expect(and).toHaveBeenCalledWith("mocked-eq");
 	});
 
 	it("should return 0 when the count result is 0", async () => {
