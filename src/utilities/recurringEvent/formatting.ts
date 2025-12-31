@@ -7,7 +7,7 @@ import type { recurrenceInputSchema } from "~/src/graphql/inputs/RecurrenceInput
  * interval, end date, count, and other recurrence properties.
  *
  * @param recurrence - The recurrence input object, conforming to the recurrenceInputSchema.
- * @param startDate - The start date of the event, used for validation and context.
+ * @param _startDate - Reserved for future use; currently unused but maintained for API compatibility.
  * @returns - A full RRULE string, e.g., "RRULE:FREQ=WEEKLY;INTERVAL=2;BYDAY=MO,FR".
  */
 export const buildRRuleString = (

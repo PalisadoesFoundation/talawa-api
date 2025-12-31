@@ -31,8 +31,15 @@ export function isCountBasedEvent(
  * An end-date-based event is defined by an `endDate`. It may or may not also have a `count`,
  * in which case it would be considered a hybrid event.
  *
+ * **Note**: This returns `true` for any event with a `recurrenceEndDate`, including hybrid events
+ * that also have a `count`. For exclusive classification, use `getEventType()` instead.
+ *
+ * @example
+ * // To check for end-date-only events (excluding hybrids):
+ * const isEndDateOnly = rule.recurrenceEndDate && !rule.count;
+ *
  * @param rule - The recurrence rule to check.
- * @returns `true` if the event has an end date, otherwise `false`.
+ * @returns `true` if the event has an end date (including hybrid events), otherwise `false`.
  */
 export function isEndDateBasedEvent(
 	rule: typeof recurrenceRulesTable.$inferSelect,

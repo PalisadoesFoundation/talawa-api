@@ -32,17 +32,30 @@ export const validateRecurrenceInput = (
 		errors.push("Recurrence count must be at least 1");
 	}
 
+	// Validate interval (only if interval is provided)
+	if (
+		recurrence.interval !== null &&
+		recurrence.interval !== undefined &&
+		recurrence.interval < 1
+	) {
+		errors.push("Recurrence interval must be at least 1");
+	}
+
 	// Validate that yearly events cannot be never-ending
 	if (recurrence.frequency === "YEARLY" && recurrence.never) {
 		errors.push(
 			"Yearly events cannot be never-ending. Please specify an end date or count.",
 		);
 	}
-	// Validate byDay format for weekly events
-	if (recurrence.frequency === "WEEKLY" && recurrence.byDay) {
+
+	// Validate byDay format (for any frequency that uses it)
+	if (recurrence.byDay) {
 		const validDays = ["SU", "MO", "TU", "WE", "TH", "FR", "SA"];
 		for (const day of recurrence.byDay) {
-			if (!validDays.includes(day)) {
+			// Extract day code - handle ordinal prefixes like "1MO", "-1SU"
+			// The day code is always the last 2 characters
+			const dayCode = day.slice(-2);
+			if (!validDays.includes(dayCode)) {
 				errors.push(`Invalid day code: ${day}`);
 			}
 		}
