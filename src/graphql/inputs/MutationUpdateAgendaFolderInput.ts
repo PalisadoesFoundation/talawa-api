@@ -6,6 +6,9 @@ export const mutationUpdateAgendaFolderInputSchema =
 	agendaFoldersTableInsertSchema
 		.pick({
 			parentFolderId: true,
+			description: true,
+			name: true,
+			sequence: true
 		})
 		.extend({
 			id: agendaFoldersTableInsertSchema.shape.id.unwrap(),
@@ -26,6 +29,9 @@ export const MutationUpdateAgendaFolderInput = builder
 	.implement({
 		description: "",
 		fields: (t) => ({
+			description: t.string({
+				description: "Description of the agenda category."
+			}),
 			id: t.id({
 				description: "Global identifier of the agenda folder.",
 				required: true,
@@ -37,5 +43,8 @@ export const MutationUpdateAgendaFolderInput = builder
 				description:
 					"Global identifier of the agenda folder the agenda folder is contained within.",
 			}),
+			sequence: t.int({
+				description: "Sequence number of folder"
+			})
 		}),
 	});

@@ -1,5 +1,6 @@
 import { eq } from "drizzle-orm";
 import { z } from "zod";
+import { agendaItemUrlTable } from "~/src/drizzle/tables/agendaItemUrls";
 import { agendaItemsTable } from "~/src/drizzle/tables/agendaItems";
 import { builder } from "~/src/graphql/builder";
 import {
@@ -245,29 +246,76 @@ builder.mutationField("updateAgendaItem", (t) =>
 				});
 			}
 
-			const [updatedAgendaItem] = await ctx.drizzleClient
-				.update(agendaItemsTable)
-				.set({
-					description: parsedArgs.input.description,
-					duration: parsedArgs.input.duration,
-					folderId: parsedArgs.input.folderId,
-					key: parsedArgs.input.key,
-					name: parsedArgs.input.name,
+			return await ctx.drizzleClient.transaction(async (tx) => {
+				const updateData: Partial<typeof agendaItemsTable.$inferInsert> = {
 					updaterId: currentUserId,
-				})
+				};
+
+				if (parsedArgs.input.name !== undefined) {
+				updateData.name = parsedArgs.input.name;
+				}
+
+				if (parsedArgs.input.description !== undefined) {
+				updateData.description = parsedArgs.input.description;
+				}
+
+				if (parsedArgs.input.duration !== undefined) {
+				updateData.duration = parsedArgs.input.duration;
+				}
+
+				if (parsedArgs.input.folderId !== undefined) {
+				updateData.folderId = parsedArgs.input.folderId;
+				}
+
+				if (parsedArgs.input.key !== undefined) {
+				updateData.key = parsedArgs.input.key;
+				}
+
+				if (Object.keys(updateData).length === 1) {
+				throw new TalawaGraphQLError({
+					extensions: {
+					code: "invalid_arguments",
+					issues: [
+						{
+						argumentPath: ["input"],
+						message: "At least one field must be provided to update.",
+						},
+					],
+					},
+				});
+				}
+
+				const [updatedAgendaItem] = await tx
+				.update(agendaItemsTable)
+				.set(updateData)
 				.where(eq(agendaItemsTable.id, parsedArgs.input.id))
 				.returning();
 
-			// Updated agenda item not being returned means that either it was deleted or its `id` column was changed by external entities before this update operation could take place.
-			if (updatedAgendaItem === undefined) {
-				throw new TalawaGraphQLError({
-					extensions: {
-						code: "unexpected",
-					},
-				});
-			}
+				if (!updatedAgendaItem) {
+					throw new TalawaGraphQLError({
+					extensions: { code: "unexpected" },
+					});
+				}
 
-			return updatedAgendaItem;
+				if (parsedArgs.input.url !== undefined) {
+					await tx
+					.delete(agendaItemUrlTable)
+					.where(eq(agendaItemUrlTable.agendaItemId, parsedArgs.input.id));
+
+					if (parsedArgs.input.url.length > 0) {
+					await tx.insert(agendaItemUrlTable).values(
+						parsedArgs.input.url.map((u) => ({
+							agendaItemId: parsedArgs.input.id,
+							agendaItemURL: u.agendaItemURL,
+							updaterId: currentUserId,
+						})),
+					);
+					}
+				}
+
+				return updatedAgendaItem;
+				});
+
 		},
 		type: AgendaItem,
 	}),

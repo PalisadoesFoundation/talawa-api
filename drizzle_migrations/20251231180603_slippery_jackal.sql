@@ -73,14 +73,54 @@ CREATE TABLE "advertisements" (
 	"type" text NOT NULL
 );
 --> statement-breakpoint
+CREATE TABLE "agenda_categories" (
+	"created_at" timestamp (3) with time zone DEFAULT now() NOT NULL,
+	"creator_id" uuid,
+	"description" text,
+	"event_id" uuid NOT NULL,
+	"id" uuid PRIMARY KEY NOT NULL,
+	"is_default_folder" boolean DEFAULT false NOT NULL,
+	"name" text NOT NULL,
+	"organization_id" uuid,
+	"updated_at" timestamp (3) with time zone,
+	"updater_id" uuid
+);
+--> statement-breakpoint
 CREATE TABLE "agenda_folders" (
 	"created_at" timestamp (3) with time zone DEFAULT now() NOT NULL,
 	"creator_id" uuid,
+	"description" text,
 	"event_id" uuid NOT NULL,
 	"id" uuid PRIMARY KEY NOT NULL,
 	"is_agenda_item_folder" boolean NOT NULL,
+	"is_default_folder" boolean DEFAULT false NOT NULL,
 	"name" text NOT NULL,
 	"parent_folder_id" uuid,
+	"organization_id" uuid,
+	"sequence" integer,
+	"updated_at" timestamp (3) with time zone,
+	"updater_id" uuid
+);
+--> statement-breakpoint
+CREATE TABLE "agenda_item_attachments" (
+	"created_at" timestamp (3) with time zone DEFAULT now() NOT NULL,
+	"id" uuid PRIMARY KEY NOT NULL,
+	"creator_id" uuid,
+	"agenda_item_id" uuid NOT NULL,
+	"mime_type" text NOT NULL,
+	"name" text,
+	"object_name" text NOT NULL,
+	"file_hash" text NOT NULL,
+	"updated_at" timestamp (3) with time zone,
+	"updater_id" uuid
+);
+--> statement-breakpoint
+CREATE TABLE "agenda_item_url" (
+	"agenda_item_id" uuid NOT NULL,
+	"agenda_item_url" text,
+	"created_at" timestamp (3) with time zone DEFAULT now() NOT NULL,
+	"creator_id" uuid,
+	"id" uuid PRIMARY KEY NOT NULL,
 	"updated_at" timestamp (3) with time zone,
 	"updater_id" uuid
 );
@@ -88,12 +128,16 @@ CREATE TABLE "agenda_folders" (
 CREATE TABLE "agenda_items" (
 	"created_at" timestamp (3) with time zone DEFAULT now() NOT NULL,
 	"creator_id" uuid,
+	"category_id" uuid NOT NULL,
 	"description" text,
 	"duration" text,
+	"event_id" uuid NOT NULL,
 	"folder_id" uuid NOT NULL,
 	"id" uuid PRIMARY KEY NOT NULL,
 	"key" text,
 	"name" text NOT NULL,
+	"notes" text,
+	"sequence" integer NOT NULL,
 	"type" text NOT NULL,
 	"updated_at" timestamp (3) with time zone,
 	"updater_id" uuid
@@ -691,11 +735,24 @@ ALTER TABLE "advertisement_attachments" ADD CONSTRAINT "advertisement_attachment
 ALTER TABLE "advertisements" ADD CONSTRAINT "advertisements_creator_id_users_id_fk" FOREIGN KEY ("creator_id") REFERENCES "public"."users"("id") ON DELETE set null ON UPDATE cascade;--> statement-breakpoint
 ALTER TABLE "advertisements" ADD CONSTRAINT "advertisements_organization_id_organizations_id_fk" FOREIGN KEY ("organization_id") REFERENCES "public"."organizations"("id") ON DELETE cascade ON UPDATE cascade;--> statement-breakpoint
 ALTER TABLE "advertisements" ADD CONSTRAINT "advertisements_updater_id_users_id_fk" FOREIGN KEY ("updater_id") REFERENCES "public"."users"("id") ON DELETE set null ON UPDATE cascade;--> statement-breakpoint
+ALTER TABLE "agenda_categories" ADD CONSTRAINT "agenda_categories_creator_id_users_id_fk" FOREIGN KEY ("creator_id") REFERENCES "public"."users"("id") ON DELETE set null ON UPDATE cascade;--> statement-breakpoint
+ALTER TABLE "agenda_categories" ADD CONSTRAINT "agenda_categories_event_id_events_id_fk" FOREIGN KEY ("event_id") REFERENCES "public"."events"("id") ON DELETE cascade ON UPDATE cascade;--> statement-breakpoint
+ALTER TABLE "agenda_categories" ADD CONSTRAINT "agenda_categories_organization_id_organizations_id_fk" FOREIGN KEY ("organization_id") REFERENCES "public"."organizations"("id") ON DELETE cascade ON UPDATE cascade;--> statement-breakpoint
+ALTER TABLE "agenda_categories" ADD CONSTRAINT "agenda_categories_updater_id_users_id_fk" FOREIGN KEY ("updater_id") REFERENCES "public"."users"("id") ON DELETE set null ON UPDATE cascade;--> statement-breakpoint
 ALTER TABLE "agenda_folders" ADD CONSTRAINT "agenda_folders_creator_id_users_id_fk" FOREIGN KEY ("creator_id") REFERENCES "public"."users"("id") ON DELETE set null ON UPDATE cascade;--> statement-breakpoint
 ALTER TABLE "agenda_folders" ADD CONSTRAINT "agenda_folders_event_id_events_id_fk" FOREIGN KEY ("event_id") REFERENCES "public"."events"("id") ON DELETE cascade ON UPDATE cascade;--> statement-breakpoint
 ALTER TABLE "agenda_folders" ADD CONSTRAINT "agenda_folders_parent_folder_id_agenda_folders_id_fk" FOREIGN KEY ("parent_folder_id") REFERENCES "public"."agenda_folders"("id") ON DELETE cascade ON UPDATE cascade;--> statement-breakpoint
+ALTER TABLE "agenda_folders" ADD CONSTRAINT "agenda_folders_organization_id_organizations_id_fk" FOREIGN KEY ("organization_id") REFERENCES "public"."organizations"("id") ON DELETE cascade ON UPDATE cascade;--> statement-breakpoint
 ALTER TABLE "agenda_folders" ADD CONSTRAINT "agenda_folders_updater_id_users_id_fk" FOREIGN KEY ("updater_id") REFERENCES "public"."users"("id") ON DELETE set null ON UPDATE cascade;--> statement-breakpoint
+ALTER TABLE "agenda_item_attachments" ADD CONSTRAINT "agenda_item_attachments_creator_id_users_id_fk" FOREIGN KEY ("creator_id") REFERENCES "public"."users"("id") ON DELETE set null ON UPDATE cascade;--> statement-breakpoint
+ALTER TABLE "agenda_item_attachments" ADD CONSTRAINT "agenda_item_attachments_agenda_item_id_agenda_items_id_fk" FOREIGN KEY ("agenda_item_id") REFERENCES "public"."agenda_items"("id") ON DELETE cascade ON UPDATE cascade;--> statement-breakpoint
+ALTER TABLE "agenda_item_attachments" ADD CONSTRAINT "agenda_item_attachments_updater_id_users_id_fk" FOREIGN KEY ("updater_id") REFERENCES "public"."users"("id") ON DELETE set null ON UPDATE cascade;--> statement-breakpoint
+ALTER TABLE "agenda_item_url" ADD CONSTRAINT "agenda_item_url_agenda_item_id_agenda_items_id_fk" FOREIGN KEY ("agenda_item_id") REFERENCES "public"."agenda_items"("id") ON DELETE cascade ON UPDATE cascade;--> statement-breakpoint
+ALTER TABLE "agenda_item_url" ADD CONSTRAINT "agenda_item_url_creator_id_users_id_fk" FOREIGN KEY ("creator_id") REFERENCES "public"."users"("id") ON DELETE set null ON UPDATE cascade;--> statement-breakpoint
+ALTER TABLE "agenda_item_url" ADD CONSTRAINT "agenda_item_url_updater_id_users_id_fk" FOREIGN KEY ("updater_id") REFERENCES "public"."users"("id") ON DELETE set null ON UPDATE cascade;--> statement-breakpoint
 ALTER TABLE "agenda_items" ADD CONSTRAINT "agenda_items_creator_id_users_id_fk" FOREIGN KEY ("creator_id") REFERENCES "public"."users"("id") ON DELETE set null ON UPDATE cascade;--> statement-breakpoint
+ALTER TABLE "agenda_items" ADD CONSTRAINT "agenda_items_category_id_agenda_categories_id_fk" FOREIGN KEY ("category_id") REFERENCES "public"."agenda_categories"("id") ON DELETE cascade ON UPDATE cascade;--> statement-breakpoint
+ALTER TABLE "agenda_items" ADD CONSTRAINT "agenda_items_event_id_events_id_fk" FOREIGN KEY ("event_id") REFERENCES "public"."events"("id") ON DELETE cascade ON UPDATE cascade;--> statement-breakpoint
 ALTER TABLE "agenda_items" ADD CONSTRAINT "agenda_items_folder_id_agenda_folders_id_fk" FOREIGN KEY ("folder_id") REFERENCES "public"."agenda_folders"("id") ON DELETE cascade ON UPDATE cascade;--> statement-breakpoint
 ALTER TABLE "agenda_items" ADD CONSTRAINT "agenda_items_updater_id_users_id_fk" FOREIGN KEY ("updater_id") REFERENCES "public"."users"("id") ON DELETE set null ON UPDATE cascade;--> statement-breakpoint
 ALTER TABLE "blocked_users" ADD CONSTRAINT "blocked_users_organization_id_organizations_id_fk" FOREIGN KEY ("organization_id") REFERENCES "public"."organizations"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
@@ -851,12 +908,26 @@ CREATE INDEX "advertisements_name_index" ON "advertisements" USING btree ("name"
 CREATE INDEX "advertisements_organization_id_index" ON "advertisements" USING btree ("organization_id");--> statement-breakpoint
 CREATE INDEX "advertisements_start_at_index" ON "advertisements" USING btree ("start_at");--> statement-breakpoint
 CREATE UNIQUE INDEX "advertisements_name_organization_id_index" ON "advertisements" USING btree ("name","organization_id");--> statement-breakpoint
+CREATE INDEX "agenda_categories_created_at_index" ON "agenda_categories" USING btree ("created_at");--> statement-breakpoint
+CREATE INDEX "agenda_categories_creator_id_index" ON "agenda_categories" USING btree ("creator_id");--> statement-breakpoint
+CREATE INDEX "agenda_categories_event_id_index" ON "agenda_categories" USING btree ("event_id");--> statement-breakpoint
+CREATE INDEX "agenda_categories_name_index" ON "agenda_categories" USING btree ("name");--> statement-breakpoint
 CREATE INDEX "agenda_folders_created_at_index" ON "agenda_folders" USING btree ("created_at");--> statement-breakpoint
 CREATE INDEX "agenda_folders_creator_id_index" ON "agenda_folders" USING btree ("creator_id");--> statement-breakpoint
 CREATE INDEX "agenda_folders_event_id_index" ON "agenda_folders" USING btree ("event_id");--> statement-breakpoint
 CREATE INDEX "agenda_folders_is_agenda_item_folder_index" ON "agenda_folders" USING btree ("is_agenda_item_folder");--> statement-breakpoint
 CREATE INDEX "agenda_folders_name_index" ON "agenda_folders" USING btree ("name");--> statement-breakpoint
 CREATE INDEX "agenda_folders_parent_folder_id_index" ON "agenda_folders" USING btree ("parent_folder_id");--> statement-breakpoint
+CREATE INDEX "agenda_item_attachments_created_at_index" ON "agenda_item_attachments" USING btree ("created_at");--> statement-breakpoint
+CREATE INDEX "agenda_item_attachments_creator_id_index" ON "agenda_item_attachments" USING btree ("creator_id");--> statement-breakpoint
+CREATE INDEX "agenda_item_attachments_agenda_item_id_index" ON "agenda_item_attachments" USING btree ("agenda_item_id");--> statement-breakpoint
+CREATE INDEX "agenda_item_attachments_file_hash_index" ON "agenda_item_attachments" USING btree ("file_hash");--> statement-breakpoint
+CREATE INDEX "agenda_item_attachments_object_name_index" ON "agenda_item_attachments" USING btree ("object_name");--> statement-breakpoint
+CREATE INDEX "agenda_item_url_created_at_index" ON "agenda_item_url" USING btree ("created_at");--> statement-breakpoint
+CREATE INDEX "agenda_item_url_creator_id_index" ON "agenda_item_url" USING btree ("creator_id");--> statement-breakpoint
+CREATE INDEX "agenda_item_url_id_index" ON "agenda_item_url" USING btree ("id");--> statement-breakpoint
+CREATE INDEX "agenda_item_url_agenda_item_url_index" ON "agenda_item_url" USING btree ("agenda_item_url");--> statement-breakpoint
+CREATE INDEX "agenda_item_url_agenda_item_id_index" ON "agenda_item_url" USING btree ("agenda_item_id");--> statement-breakpoint
 CREATE INDEX "agenda_items_created_at_index" ON "agenda_items" USING btree ("created_at");--> statement-breakpoint
 CREATE INDEX "agenda_items_creator_id_index" ON "agenda_items" USING btree ("creator_id");--> statement-breakpoint
 CREATE INDEX "agenda_items_folder_id_index" ON "agenda_items" USING btree ("folder_id");--> statement-breakpoint

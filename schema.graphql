@@ -159,6 +159,38 @@ input AdvertisementWhereInput {
   isCompleted: Boolean
 }
 
+type AgendaCategory {
+  """Date time at the time the agenda folder was created."""
+  createdAt: DateTime
+
+  """User who created the agenda folder."""
+  creator: User
+
+  """Custom information about the agenda folder."""
+  description: String
+
+  """Event for which the agenda item constituting a part of the agenda."""
+  event: Event
+
+  """Global identifier of the agenda folder."""
+  id: ID!
+
+  """Boolean to tell if agenda category is default or not"""
+  isDefaultCategory: Boolean
+
+  """Name of the agenda folder."""
+  name: String
+
+  """Organization which the agenda item category belongs to."""
+  organization: Organization
+
+  """Date time at the time the agenda folder was last updated."""
+  updatedAt: DateTime
+
+  """User who last updated the agenda folder."""
+  updater: User
+}
+
 type AgendaFolder {
   """
   GraphQL connection to traverse through the agenda folders that have the agenda folder as a parent folder.
@@ -170,6 +202,9 @@ type AgendaFolder {
 
   """User who created the agenda folder."""
   creator: User
+
+  """Custom information about the agenda folder."""
+  description: String
 
   """
   Event for which the agenda folder contains agenda items constituting a part of the agenda.
@@ -184,6 +219,9 @@ type AgendaFolder {
   """
   isAgendaItemFolder: Boolean
 
+  """Boolean to tell if agenda folder is default or not"""
+  isDefaultFolder: Boolean
+
   """
   GraphQL connection to traverse through the agenda items contained within the agenda folder.
   """
@@ -192,8 +230,14 @@ type AgendaFolder {
   """Name of the agenda folder."""
   name: String
 
+  """Organization which the agenda item category belongs to."""
+  organization: Organization
+
   """Agenda folder that is a parent folder to the agenda folder."""
   parentFolder: AgendaFolder
+
+  """Sequence of agenda folder."""
+  sequence: Int
 
   """Date time at the time the agenda folder was last updated."""
   updatedAt: DateTime
@@ -227,6 +271,12 @@ type AgendaFolderItemsConnectionEdge {
 }
 
 type AgendaItem {
+  """Attachments for the agenda item"""
+  attachment: [AgendaItemAttachment!]
+
+  """Agenda category"""
+  category: AgendaCategory
+
   """Date time at the time the agenda item was last created."""
   createdAt: DateTime
 
@@ -239,8 +289,11 @@ type AgendaItem {
   """Duration of the agenda item."""
   duration: String
 
+  """Event for which the agenda item constituting a part of the agenda."""
+  event: Event
+
   """Agenda folder within which the agenda item in contained."""
-  event: AgendaFolder
+  folder: AgendaFolder
 
   """Global identifier of the agenda item."""
   id: ID!
@@ -253,6 +306,12 @@ type AgendaItem {
   """Name of the agenda item."""
   name: String
 
+  """Notes for the Items"""
+  notes: String
+
+  """Sequence of agenda item."""
+  sequence: Int
+
   """Type of the agenda item."""
   type: AgendaItemType
 
@@ -261,6 +320,35 @@ type AgendaItem {
 
   """User who last updated the agenda item."""
   updater: User
+
+  """Url for the agenda item"""
+  url: [AgendaItemUrl!]
+}
+
+"""Attachment of the agenda items."""
+type AgendaItemAttachment {
+  """File hash for deduplication purposes."""
+  fileHash: String
+
+  """Global identifier of the attachment."""
+  id: ID!
+
+  """Mime type of the attachment."""
+  mimeType: String
+
+  """Identifier name of the attachment."""
+  name: String
+
+  """Object name used when creating presigned URLs."""
+  objectName: String
+}
+
+"""Attachment data for an agenda item"""
+input AgendaItemAttachmentInput {
+  fileHash: String!
+  mimeType: String!
+  name: String
+  objectName: String!
 }
 
 """Possible variants of the type of an agenda item."""
@@ -278,6 +366,27 @@ type AssignUserTag {
 
   """Global identifier of the tag."""
   tagId: ID
+}
+
+"""URLs associated with an agenda item."""
+type AgendaItemUrl {
+  """Date time at which the URL was created."""
+  createdAt: DateTime
+
+  """Global identifier of the agenda item URL."""
+  id: ID!
+
+  """Date time at which the URL was last updated."""
+  updatedAt: DateTime
+
+  """URL associated with the agenda item."""
+  url: String
+}
+
+"""URL associated with an agenda item"""
+input AgendaItemUrlInput {
+  """URL of the agenda item"""
+  agendaItemURL: String!
 }
 
 """"""
@@ -2067,6 +2176,9 @@ type Mutation {
   """Mutation field to create an advertisement."""
   createAdvertisement(input: MutationCreateAdvertisementInput!): Advertisement
 
+  """Mutation field to create an agenda category."""
+  createAgendaCategory(input: MutationCreateAgendaCategoryInput!): AgendaCategory
+
   """Mutation field to create an agenda folder."""
   createAgendaFolder(input: MutationCreateAgendaFolderInput!): AgendaFolder
 
@@ -2160,6 +2272,9 @@ type Mutation {
 
   """Mutation field to delete an advertisement."""
   deleteAdvertisement(input: MutationDeleteAdvertisementInput!): Advertisement
+
+  """Mutation field to delete an agenda category."""
+  deleteAgendaCategory(input: MutationDeleteAgendaCategoryInput!): AgendaCategory
 
   """Mutation field to delete an agenda folder."""
   deleteAgendaFolder(input: MutationDeleteAgendaFolderInput!): AgendaFolder
@@ -2403,11 +2518,20 @@ type Mutation {
   """Mutation field to update an advertisement."""
   updateAdvertisement(input: MutationUpdateAdvertisementInput!): Advertisement
 
+  """Mutation field to update an agenda category."""
+  updateAgendaCategory(input: MutationUpdateAgendaCategoryInput!): AgendaCategory
+
   """Mutation field to update an agenda folder."""
   updateAgendaFolder(input: MutationUpdateAgendaFolderInput!): AgendaFolder
 
   """Mutation field to update an agenda item."""
+  updateAgendaFolderSequence(input: MutationUpdateAgendaFolderSequenceInput!): AgendaFolder
+
+  """Mutation field to update an agenda item."""
   updateAgendaItem(input: MutationUpdateAgendaItemInput!): AgendaItem
+
+  """Mutation field to update an agenda item."""
+  updateAgendaItemSequence(input: MutationUpdateAgendaItemSequenceInput!): AgendaItem
 
   """Mutation field to update a chat."""
   updateChat(input: MutationUpdateChatInput!): Chat
@@ -2600,7 +2724,25 @@ input MutationCreateAdvertisementInput {
 }
 
 """"""
+input MutationCreateAgendaCategoryInput {
+  """Description of Agenda Folder"""
+  description: String!
+
+  """Global identifier of the event the agenda folder is associated to."""
+  eventId: ID!
+
+  """Name of the agenda folder."""
+  name: String!
+
+  """ID of the organization this category belongs to."""
+  organizationId: ID
+}
+
+""""""
 input MutationCreateAgendaFolderInput {
+  """Description of Agenda Folder"""
+  description: String!
+
   """Global identifier of the event the agenda folder is associated to."""
   eventId: ID!
 
@@ -2612,19 +2754,34 @@ input MutationCreateAgendaFolderInput {
   """Name of the agenda folder."""
   name: String!
 
+  """ID of the organization this category belongs to."""
+  organizationId: ID!
+
   """
   Global identifier of the agenda folder the agenda folder is contained within.
   """
   parentFolderId: ID
+
+  """Sequence of the Agenda Folder."""
+  sequence: Int!
 }
 
 """"""
 input MutationCreateAgendaItemInput {
+  """Attachments for the agenda items."""
+  attachment: [AgendaItemAttachmentInput!]
+
+  """Category id"""
+  categoryId: String!
+
   """Custom information about the agenda item."""
   description: String
 
   """Duration of the agenda item."""
   duration: String
+
+  """Global identifier of the event the agenda item is associated to."""
+  eventId: ID!
 
   """
   Global identifier of the agenda folder the agenda item is associated to.
@@ -2639,8 +2796,12 @@ input MutationCreateAgendaItemInput {
   """Name of the agenda item."""
   name: String!
 
+  """Sequence of the AgendaItem."""
+  sequence: Int!
+
   """Type of the agenda item."""
   type: AgendaItemType!
+  url: [AgendaItemUrlInput!]
 }
 
 """"""
@@ -3046,6 +3207,12 @@ input MutationDeleteAdvertisementInput {
 }
 
 """"""
+input MutationDeleteAgendaCategoryInput {
+  """Global identifier of the agenda category."""
+  id: ID!
+}
+
+""""""
 input MutationDeleteAgendaFolderInput {
   """Global identifier of the agenda folder."""
   id: ID!
@@ -3410,7 +3577,22 @@ input MutationUpdateAdvertisementInput {
 }
 
 """"""
+input MutationUpdateAgendaCategoryInput {
+  """Description of the agenda category."""
+  description: String
+
+  """Global identifier of the agenda category."""
+  id: ID!
+
+  """Name of the agenda category."""
+  name: String
+}
+
+""""""
 input MutationUpdateAgendaFolderInput {
+  """Description of the agenda category."""
+  description: String
+
   """Global identifier of the agenda folder."""
   id: ID!
 
@@ -3421,6 +3603,18 @@ input MutationUpdateAgendaFolderInput {
   Global identifier of the agenda folder the agenda folder is contained within.
   """
   parentFolderId: ID
+
+  """Sequence number of folder"""
+  sequence: Int
+}
+
+""""""
+input MutationUpdateAgendaFolderSequenceInput {
+  """Global identifier of the agenda folder."""
+  id: ID!
+
+  """Sequence of agenda folder."""
+  sequence: Int!
 }
 
 """"""
@@ -3444,6 +3638,16 @@ input MutationUpdateAgendaItemInput {
 
   """Name of the agenda item."""
   name: String
+  url: [UpdateAgendaItemUrlInput!]
+}
+
+""""""
+input MutationUpdateAgendaItemSequenceInput {
+  """Global identifier of the agenda item."""
+  id: ID!
+
+  """Sequence of agenda item."""
+  sequence: Int!
 }
 
 """"""
@@ -4584,11 +4788,37 @@ type Query {
   """Query field to read an advertisement."""
   advertisement(input: QueryAdvertisementInput!): Advertisement
 
+  """Query field to get all Agenda Categories for a specific event."""
+  agendaCategoryByEventId(
+    """ID of the standalone event"""
+    eventId: ID!
+  ): [AgendaCategory!]
+
   """Query field to read an agenda folder."""
   agendaFolder(input: QueryAgendaFolderInput!): AgendaFolder
 
+  """Query field to get all Agenda Categories for a specific event."""
+  agendaFolderByEventId(
+    """ID of the standalone event"""
+    eventId: ID!
+  ): [AgendaFolder!]
+
+  """
+  Query field to fetch all agenda folders linked to a specific organization.
+  """
+  agendaFolderByOrganization(
+    """Input parameters to fetch action item categories by organizationId."""
+    input: QueryAgendaFolderByOrganizationInput!
+  ): [AgendaFolder!]
+
   """Query field to read an agenda item."""
   agendaItem(input: QueryAgendaItemInput!): AgendaItem
+
+  """Query field to get all Agenda Items for a specific event."""
+  agendaItemByEventId(
+    """ID of the standalone event"""
+    eventId: ID!
+  ): [AgendaItem!]
 
   """Query field to read all Users."""
   allUsers(after: String, before: String, first: Int, last: Int, where: QueryAllUsersWhereInput): QueryAllUsersConnection
@@ -4831,6 +5061,10 @@ input QueryActionItemsByVolunteerInput {
 input QueryAdvertisementInput {
   """Global id of the advertisement."""
   id: String!
+}
+
+input QueryAgendaFolderByOrganizationInput {
+  organizationId: String!
 }
 
 """"""
@@ -5211,6 +5445,12 @@ type UnassignUserTag {
 
   """Global identifier of the tag."""
   tagId: ID
+}
+
+"""URL associated with an agenda item"""
+input UpdateAgendaItemUrlInput {
+  """URL of the agenda item"""
+  agendaItemURL: String!
 }
 
 """Input for updating an event volunteer group."""

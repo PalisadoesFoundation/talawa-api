@@ -5,7 +5,7 @@ import { AgendaItem } from "./AgendaItem";
 
 AgendaItem.implement({
 	fields: (t) => ({
-		event: t.field({
+		folder: t.field({
 			description: "Agenda folder within which the agenda item in contained.",
 			complexity: envConfig.API_GRAPHQL_OBJECT_FIELD_COST,
 			resolve: async (parent, _args, ctx) => {

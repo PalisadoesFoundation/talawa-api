@@ -1,6 +1,7 @@
 import "./MutationBlockUserInput";
 import "./MutationUnblockUserInput";
 import "./MutationCreateAdvertisementInput";
+import "./MutationCreateAgendaCategory"
 import "./MutationCreateAgendaFolderInput";
 import "./MutationCreateAgendaItemInput";
 import "./MutationCreateChatInput";
@@ -39,6 +40,7 @@ import "./MutationCreateVenueBookingInput";
 import "./MutationCreateVenueInput";
 import "./RecurrenceInput";
 import "./MutationDeleteAdvertisementInput";
+import "./MutationDeleteAgendaCategoryInput"
 import "./MutationDeleteAgendaFolderInput";
 import "./MutationDeleteAgendaItemInput";
 import "./MutationDeleteChatInput";
@@ -65,8 +67,11 @@ import "./MutationDeleteVenueBookingInput";
 import "./MutationDeleteVenueInput";
 import "./MutationSignUpInput";
 import "./MutationUpdateAdvertisementInput";
+import "./MutationUpdateAgendaCategoryInput"
 import "./MutationUpdateAgendaFolderInput";
 import "./MutationUpdateAgendaItemInput";
+import "./MutationUpdateAgendaFolderSequence"
+import "./MutationUpdateAgendaItemSequenceinput"
 import "./MutationUpdateChatInput";
 import "./MutationUpdateChatMembershipInput";
 import "./MutationUpdateChatMessageInput";

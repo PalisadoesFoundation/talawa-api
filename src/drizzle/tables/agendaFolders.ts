@@ -3,6 +3,7 @@ import {
 	type AnyPgColumn,
 	boolean,
 	index,
+	integer,
 	pgTable,
 	text,
 	timestamp,
@@ -13,6 +14,7 @@ import { uuidv7 } from "uuidv7";
 import { agendaItemsTable } from "./agendaItems";
 import { eventsTable } from "./events";
 import { usersTable } from "./users";
+import { organizationsTable } from "./organizations";
 
 /**
  * Drizzle orm postgres table definition for agenda folders.
@@ -38,6 +40,10 @@ export const agendaFoldersTable = pgTable(
 			onUpdate: "cascade",
 		}),
 		/**
+		 * Description about the agenda category.
+		 */
+		description: text("description"),
+		/**
 		 * Foreign key reference to the id of the event the agenda folder is associated to.
 		 */
 		eventId: uuid("event_id")
@@ -55,6 +61,10 @@ export const agendaFoldersTable = pgTable(
 		 */
 		isAgendaItemFolder: boolean("is_agenda_item_folder").notNull(),
 		/**
+		 * Boolean to tell if the agenda folder is default or not.
+		 */
+		isDefaultFolder: boolean("is_default_folder").notNull().default(false),
+		/**
 		 * Name of the agenda folder.
 		 */
 		name: text("name", {}).notNull(),
@@ -68,6 +78,15 @@ export const agendaFoldersTable = pgTable(
 				onUpdate: "cascade",
 			},
 		),
+		organizationId: uuid("organization_id")
+					.references(() => organizationsTable.id, {
+						onDelete: "cascade",
+						onUpdate: "cascade",
+					}),
+		/**
+		 * Sequence of the agenda folder.
+		 */
+		sequence: integer("sequence"),
 		/**
 		 * Date time at the time the agenda folder was last updated.
 		 */
@@ -127,6 +146,11 @@ export const agendaFoldersTableRelations = relations(
 			references: [eventsTable.id],
 			relationName: "agenda_folders.event_id:events.id",
 		}),
+		organization: one(organizationsTable, {
+					fields: [agendaFoldersTable.organizationId],
+					references: [organizationsTable.id],
+					relationName: "agenda_folder.organization_id:organizations.id",
+				}),
 		/**
 		 * Many to one relationship from `agenda_folders` table to `agenda_folders` table.
 		 */
@@ -149,6 +173,7 @@ export const agendaFoldersTableRelations = relations(
 export const agendaFoldersTableInsertSchema = createInsertSchema(
 	agendaFoldersTable,
 	{
+		description: (schema) => schema.min(1).max(2048).optional(),
 		name: (schema) => schema.min(1).max(256),
 	},
 );

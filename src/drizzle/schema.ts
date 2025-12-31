@@ -30,6 +30,18 @@ export {
 	agendaItemsTableRelations,
 } from "./tables/agendaItems";
 export {
+	agendaItemAttachmentsTable,
+	agendaItemAttachmentsTableRelations
+} from "./tables/agendaItemAttachment"
+export {
+	agendaItemUrlTable,
+	agendaItemUrlTableRelations
+} from "./tables/agendaItemUrls"
+export {
+	agendaCategoriesTable,
+	agendaCategoriesTableRelations
+} from "./tables/agendaCategories"
+export {
 	blockedUsersTable,
 	blockedUsersTableRelations,
 } from "./tables/blockedUsers";

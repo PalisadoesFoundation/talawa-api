@@ -5,6 +5,7 @@ import "./unblockUser";
 import "./assignUserTag";
 import "./unassignUserTag";
 import "./createAdvertisement";
+import "./createAgendaCategory";
 import "./createAgendaFolder";
 import "./createAgendaItem";
 import "./createChat";
@@ -36,6 +37,7 @@ import "./createUser";
 import "./createVenue";
 import "./createVenueBooking";
 import "./deleteAdvertisement";
+import "./deleteAgendaCategory";
 import "./deleteAgendaFolder";
 import "./deleteAgendaItem";
 import "./deleteChat";
@@ -62,8 +64,11 @@ import "./deleteVenue";
 import "./deleteVenueBooking";
 import "./signUp";
 import "./updateAdvertisement";
+import "./updateAgendaCategory";
 import "./updateAgendaFolder";
 import "./updateAgendaItem";
+import "./updateAgendaFolderSequence"
+import "./updateAgendaItemSequence"
 import "./updateChat";
 import "./updateChatMembership";
 import "./updateChatMessage";

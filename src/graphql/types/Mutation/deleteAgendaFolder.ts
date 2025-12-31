@@ -1,5 +1,6 @@
 import { eq } from "drizzle-orm";
 import { z } from "zod";
+import { agendaItemsTable } from "~/src/drizzle/tables/agendaItems";
 import { agendaFoldersTable } from "~/src/drizzle/tables/agendaFolders";
 import { builder } from "~/src/graphql/builder";
 import {
@@ -64,6 +65,8 @@ builder.mutationField("deleteAgendaFolder", (t) =>
 				ctx.drizzleClient.query.agendaFoldersTable.findFirst({
 					columns: {
 						isAgendaItemFolder: true,
+						isDefaultFolder: true,
+						eventId: true,
 					},
 					with: {
 						event: {
@@ -84,10 +87,10 @@ builder.mutationField("deleteAgendaFolder", (t) =>
 												operators.eq(fields.memberId, currentUserId),
 										},
 									},
+										},
+									},
 								},
 							},
-						},
-					},
 					where: (fields, operators) =>
 						operators.eq(fields.id, parsedArgs.input.id),
 				}),
@@ -102,6 +105,19 @@ builder.mutationField("deleteAgendaFolder", (t) =>
 			}
 
 			if (existingAgendaFolder === undefined) {
+				throw new TalawaGraphQLError({
+					extensions: {
+						code: "arguments_associated_resources_not_found",
+						issues: [
+							{
+								argumentPath: ["input", "id"],
+							},
+						],
+					},
+				});
+			}
+
+			if (existingAgendaFolder.isDefaultFolder) {
 				throw new TalawaGraphQLError({
 					extensions: {
 						code: "arguments_associated_resources_not_found",
@@ -134,21 +150,48 @@ builder.mutationField("deleteAgendaFolder", (t) =>
 				});
 			}
 
-			const [deletedAgendaFolder] = await ctx.drizzleClient
-				.delete(agendaFoldersTable)
-				.where(eq(agendaFoldersTable.id, parsedArgs.input.id))
-				.returning();
+			return await ctx.drizzleClient.transaction(async (tx) => {
+				const defaultFolder = await tx.query.agendaFoldersTable.findFirst({
+					columns: { id: true },
+					where: (fields, operators) =>
+					operators.and(
+						operators.eq(fields.eventId, existingAgendaFolder.eventId),
+						operators.eq(fields.isDefaultFolder, true),
+					),
+				});
 
-			// Deleted agenda folder not being returned means that either it was deleted or its `id` column was changed by external entities before this delete operation could take place.
-			if (deletedAgendaFolder === undefined) {
-				throw new TalawaGraphQLError({
+				if (!defaultFolder) {
+					throw new TalawaGraphQLError({
 					extensions: {
 						code: "unexpected",
+						message: "Default agenda folder not found.",
 					},
-				});
-			}
+					});
+				}
 
-			return deletedAgendaFolder;
+				// Move all agenda items to default folder
+				await tx
+					.update(agendaItemsTable)
+					.set({
+					folderId: defaultFolder.id,
+					updaterId: currentUserId,
+					})
+					.where(eq(agendaItemsTable.folderId, parsedArgs.input.id));
+
+				// Delete the folder
+				const [deletedAgendaFolder] = await tx
+					.delete(agendaFoldersTable)
+					.where(eq(agendaFoldersTable.id, parsedArgs.input.id))
+					.returning();
+
+				if (!deletedAgendaFolder) {
+					throw new TalawaGraphQLError({
+					extensions: { code: "unexpected" },
+					});
+				}
+
+				return deletedAgendaFolder;
+				});
 		},
 		type: AgendaFolder,
 	}),

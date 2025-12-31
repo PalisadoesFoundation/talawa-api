@@ -3,6 +3,7 @@ import "./ActionItemCategory/index";
 import "./Advertisement/index";
 import "./AdvertisementAttachment/index";
 import "./RecurrenceRule/index";
+import "./AgendaCategories/index"
 import "./AgendaFolder/index";
 import "./AgendaItem/index";
 import "./AssignUserTag/index";
@@ -37,3 +38,5 @@ import "./VenueAttachment/index";
 import "./Notification/index";
 import "./EventVolunteerMembership/index";
 import "./EventInvitation/index";
+import "./AgendaItemAttachment.ts"
+import "./AgendaItemUrl.ts"

@@ -1,4 +1,6 @@
 import { z } from "zod";
+import { agendaItemAttachmentsTable } from "~/src/drizzle/tables/agendaItemAttachment";
+import { agendaItemUrlTable } from "~/src/drizzle/tables/agendaItemUrls";
 import { agendaItemsTable } from "~/src/drizzle/tables/agendaItems";
 import { builder } from "~/src/graphql/builder";
 import {
@@ -52,6 +54,58 @@ builder.mutationField("createAgendaItem", (t) =>
 			}
 
 			const currentUserId = ctx.currentClient.user.id;
+			const { folderId, categoryId, eventId } = parsedArgs.input;
+
+			let resolvedFolderId = folderId;
+			let resolvedCategoryId = categoryId;
+
+			// Resolve default folder if not provided
+			if (!resolvedFolderId) {
+			const defaultFolder =
+				await ctx.drizzleClient.query.agendaFoldersTable.findFirst({
+				columns: { id: true },
+				where: (fields, operators) =>
+					operators.and(
+					operators.eq(fields.eventId, eventId),
+					operators.eq(fields.isDefaultFolder, true),
+					),
+				});
+
+			if (!defaultFolder) {
+				throw new TalawaGraphQLError({
+				extensions: {
+					code: "unexpected",
+					message: "Default agenda folder not found for event",
+				},
+				});
+			}
+
+			resolvedFolderId = defaultFolder.id;
+			}
+
+			// Resolve default category if not provided
+			if (!resolvedCategoryId) {
+			const defaultCategory =
+				await ctx.drizzleClient.query.agendaCategoriesTable.findFirst({
+				columns: { id: true },
+				where: (fields, operators) =>
+					operators.and(
+					operators.eq(fields.eventId, eventId),
+					operators.eq(fields.isDefaultCategory, true),
+					),
+				});
+
+			if (!defaultCategory) {
+				throw new TalawaGraphQLError({
+				extensions: {
+					code: "unexpected",
+					message: "Default agenda category not found for event",
+				},
+				});
+			}
+
+			resolvedCategoryId = defaultCategory.id;
+			}
 
 			const [currentUser, existingAgendaFolder] = await Promise.all([
 				ctx.drizzleClient.query.usersTable.findFirst({
@@ -88,7 +142,7 @@ builder.mutationField("createAgendaItem", (t) =>
 						},
 					},
 					where: (fields, operators) =>
-						operators.eq(fields.id, parsedArgs.input.folderId),
+						operators.eq(fields.id, resolvedFolderId),
 				}),
 			]);
 
@@ -148,33 +202,66 @@ builder.mutationField("createAgendaItem", (t) =>
 				});
 			}
 
-			const [createdAgendaItem] = await ctx.drizzleClient
-				.insert(agendaItemsTable)
-				.values({
+			return await ctx.drizzleClient.transaction(async (tx) => {
+				const [createdAgendaItem] = await tx
+					.insert(agendaItemsTable)
+					.values({
 					creatorId: currentUserId,
+					categoryId: resolvedCategoryId,
 					description: parsedArgs.input.description,
 					duration: parsedArgs.input.duration,
-					folderId: parsedArgs.input.folderId,
+					eventId: parsedArgs.input.eventId,
+					folderId: resolvedFolderId,
 					key: parsedArgs.input.key,
 					name: parsedArgs.input.name,
+					sequence: parsedArgs.input.sequence,
 					type: parsedArgs.input.type,
-				})
-				.returning();
+					})
+					.returning();
 
-			// Inserted agenda item not being returned is an external defect unrelated to this code. It is very unlikely for this error to occur.
-			if (createdAgendaItem === undefined) {
-				ctx.log.error(
-					"Postgres insert operation unexpectedly returned an empty array instead of throwing an error.",
-				);
+				if (!createdAgendaItem) {
+					throw new TalawaGraphQLError({
+					extensions: { code: "unexpected" },
+					});
+				}
 
-				throw new TalawaGraphQLError({
-					extensions: {
-						code: "unexpected",
-					},
-				});
-			}
+				const createdAttachments =
+					parsedArgs.input.attachments &&
+					parsedArgs.input.attachments.length > 0
+						? await tx
+							.insert(agendaItemAttachmentsTable)
+							.values(
+							parsedArgs.input.attachments.map((att) => ({
+								agendaItemId: createdAgendaItem.id,
+								creatorId: currentUserId,
+								mimeType: att.mimeType,
+								objectName: att.objectName,
+								fileHash: att.fileHash,
+								name: att.name
+							})),
+							)
+							.returning()
+						: [];
 
-			return createdAgendaItem;
+				const createdUrls =
+					parsedArgs.input.url && parsedArgs.input.url.length > 0
+					? await tx
+						.insert(agendaItemUrlTable)
+						.values(
+							parsedArgs.input.url.map((url) => ({
+							agendaItemId: createdAgendaItem.id,
+							creatorId: createdAgendaItem.creatorId,
+							agendaItemURL: url.agendaItemURL,
+							})),
+						)
+						.returning()
+					: [];
+					return {
+						...createdAgendaItem,
+						url: createdUrls,
+						attachment: createdAttachments
+					};
+			})
 		},
 		type: AgendaItem,
 	}),

@@ -65,6 +65,7 @@ builder.mutationField("updateAgendaFolder", (t) =>
 				ctx.drizzleClient.query.agendaFoldersTable.findFirst({
 					columns: {
 						eventId: true,
+						isDefaultFolder: true
 					},
 					with: {
 						event: {
@@ -109,6 +110,27 @@ builder.mutationField("updateAgendaFolder", (t) =>
 						issues: [
 							{
 								argumentPath: ["input", "id"],
+							},
+						],
+					},
+				});
+			}
+
+			const isOnlySequenceUpdate =
+				parsedArgs.input.sequence !== undefined &&
+				parsedArgs.input.name === undefined &&
+				parsedArgs.input.description === undefined &&
+				parsedArgs.input.parentFolderId === undefined;
+
+			// Block update for Default agenda folder
+			if (existingAgendaFolder.isDefaultFolder && !isOnlySequenceUpdate) {
+				throw new TalawaGraphQLError({
+					extensions: {
+						code: "forbidden_action_on_arguments_associated_resources",
+						issues: [
+							{
+								argumentPath: ["input", "id"],
+								message: "Default agenda folder cannot be updated.",
 							},
 						],
 					},
@@ -188,13 +210,43 @@ builder.mutationField("updateAgendaFolder", (t) =>
 				});
 			}
 
+			const updateData: Partial<typeof agendaFoldersTable.$inferInsert> = {
+				updaterId: currentUserId,
+			};
+
+			if (parsedArgs.input.name !== undefined) {
+			updateData.name = parsedArgs.input.name;
+			}
+
+			if (parsedArgs.input.description !== undefined) {
+			updateData.description = parsedArgs.input.description;
+			}
+
+			if (parsedArgs.input.parentFolderId !== undefined) {
+			updateData.parentFolderId = parsedArgs.input.parentFolderId;
+			}
+
+			if (parsedArgs.input.sequence !== undefined) {
+			updateData.sequence = parsedArgs.input.sequence;
+			}
+
+			if (Object.keys(updateData).length === 1) {
+				throw new TalawaGraphQLError({
+					extensions: {
+					code: "invalid_arguments",
+					issues: [
+						{
+						argumentPath: ["input"],
+						message: "At least one field must be provided to update.",
+						},
+					],
+					},
+				});
+			}
+
 			const [updatedAgendaFolder] = await ctx.drizzleClient
 				.update(agendaFoldersTable)
-				.set({
-					name: parsedArgs.input.name,
-					parentFolderId: parsedArgs.input.parentFolderId,
-					updaterId: currentUserId,
-				})
+				.set(updateData)
 				.where(eq(agendaFoldersTable.id, parsedArgs.input.id))
 				.returning();
 

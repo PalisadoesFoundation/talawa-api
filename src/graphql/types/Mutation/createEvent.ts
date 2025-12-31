@@ -3,6 +3,8 @@ import { ulid } from "ulidx";
 import { uuidv7 } from "uuidv7";
 import { z } from "zod";
 import { eventAttachmentMimeTypeEnum } from "~/src/drizzle/enums/eventAttachmentMimeType";
+import { agendaCategoriesTable } from "~/src/drizzle/tables/agendaCategories";
+import { agendaFoldersTable } from "~/src/drizzle/tables/agendaFolders";
 import { eventAttachmentsTable } from "~/src/drizzle/tables/eventAttachments";
 import { eventsTable } from "~/src/drizzle/tables/events";
 import { recurrenceRulesTable } from "~/src/drizzle/tables/recurrenceRules";
@@ -235,6 +237,29 @@ builder.mutationField("createEvent", (t) =>
 							},
 						});
 					}
+
+					// Creates default agenda folder
+						await tx.insert(agendaFoldersTable).values({
+							name: "Default",
+							description: "Default agenda folder",
+							eventId: createdEvent.id,
+							organizationId: parsedArgs.input.organizationId,
+							isAgendaItemFolder: true,
+							isDefaultFolder: true,
+							parentFolderId: null,
+							sequence: 1,
+							creatorId: currentUserId,
+						});
+
+						// Creates default agenda category
+						await tx.insert(agendaCategoriesTable).values({
+							name: "Default",
+							description: "Default agenda category",
+							eventId: createdEvent.id,
+							organizationId: parsedArgs.input.organizationId,
+							isDefaultCategory: true,
+							creatorId: currentUserId,
+						});
 
 					// Handle recurring event: Create recurrence rule AND immediately generate instances
 					if (parsedArgs.input.recurrence) {

@@ -1,9 +1,5 @@
-import type { z } from "zod";
-import {
-	AGENDA_ITEM_DESCRIPTION_MAX_LENGTH,
-	AGENDA_ITEM_NAME_MAX_LENGTH,
-	agendaItemsTableInsertSchema,
-} from "~/src/drizzle/tables/agendaItems";
+import { z } from "zod";
+import { agendaItemsTableInsertSchema } from "~/src/drizzle/tables/agendaItems";
 import { builder } from "~/src/graphql/builder";
 import { sanitizedStringSchema } from "~/src/utilities/sanitizer";
 
@@ -20,10 +16,12 @@ export const MutationUpdateAgendaItemInputSchema = agendaItemsTableInsertSchema
 			.optional(),
 		folderId: agendaItemsTableInsertSchema.shape.folderId.optional(),
 		id: agendaItemsTableInsertSchema.shape.id.unwrap(),
-		name: sanitizedStringSchema
-			.min(1)
-			.max(AGENDA_ITEM_NAME_MAX_LENGTH)
-			.optional(),
+		name: agendaItemsTableInsertSchema.shape.name.optional(),
+		url: z.array(z.object({agendaItemURL: z.string().url(),
+
+		}),
+			)
+			.optional(),		
 	})
 	.refine(
 		({ id, ...remainingArg }) =>
@@ -32,6 +30,19 @@ export const MutationUpdateAgendaItemInputSchema = agendaItemsTableInsertSchema
 			message: "At least one optional argument must be provided.",
 		},
 	);
+
+const UpdateAgendaItemUrlInput = builder.inputType(
+  "UpdateAgendaItemUrlInput",
+  {
+    description: "URL associated with an agenda item",
+    fields: (t) => ({
+      agendaItemURL: t.string({
+        description: "URL of the agenda item",
+        required: true,
+      }),
+    }),
+  },
+);
 
 export const MutationUpdateAgendaItemInput = builder
 	.inputRef<z.infer<typeof MutationUpdateAgendaItemInputSchema>>(
@@ -62,6 +73,10 @@ export const MutationUpdateAgendaItemInput = builder
 			}),
 			name: t.string({
 				description: "Name of the agenda item.",
+				required: false,
+			}),
+			url: t.field({
+				type: [UpdateAgendaItemUrlInput],
 				required: false,
 			}),
 		}),

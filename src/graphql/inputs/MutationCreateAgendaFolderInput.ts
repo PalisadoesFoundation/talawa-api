@@ -8,6 +8,9 @@ export const mutationCreateAgendaFolderInputSchema =
 		isAgendaItemFolder: true,
 		name: true,
 		parentFolderId: true,
+		organizationId: true,
+		description: true,
+		sequence: true
 	});
 
 export const MutationCreateAgendaFolderInput = builder
@@ -17,6 +20,10 @@ export const MutationCreateAgendaFolderInput = builder
 	.implement({
 		description: "",
 		fields: (t) => ({
+			description: t.string({
+				description: "Description of Agenda Folder",
+				required: true
+			}),
 			eventId: t.id({
 				description:
 					"Global identifier of the event the agenda folder is associated to.",
@@ -31,9 +38,17 @@ export const MutationCreateAgendaFolderInput = builder
 				description: "Name of the agenda folder.",
 				required: true,
 			}),
+			organizationId: t.id({
+				description: "ID of the organization this category belongs to.",
+				required: true,
+			}),
 			parentFolderId: t.id({
 				description:
 					"Global identifier of the agenda folder the agenda folder is contained within.",
+			}),
+			sequence: t.int({
+				description: "Sequence of the Agenda Folder.",
+				required: true,
 			}),
 		}),
 	});

@@ -193,6 +193,9 @@ builder.mutationField("createAgendaFolder", (t) =>
 					isAgendaItemFolder: parsedArgs.input.isAgendaItemFolder,
 					name: parsedArgs.input.name,
 					parentFolderId: parsedArgs.input.parentFolderId,
+					organizationId: parsedArgs.input.organizationId,
+					description: parsedArgs.input.description,
+					sequence: parsedArgs.input.sequence
 				})
 				.returning();
 
