@@ -89,8 +89,8 @@ describe("Performance Tracker", () => {
 		const testOp = snapshot.ops["test-op"];
 		expect(testOp).toBeDefined();
 		expect(testOp?.count).toBe(1);
-		expect(testOp?.ms).toBeGreaterThanOrEqual(9);
-		expect(testOp?.max).toBeGreaterThanOrEqual(9);
+		expect(testOp?.ms).toBeGreaterThanOrEqual(10);
+		expect(testOp?.max).toBeGreaterThanOrEqual(10);
 	});
 
 	it("should handle async operation errors and still track time", async () => {
@@ -147,7 +147,7 @@ describe("Performance Tracker", () => {
 		const manualOp = snapshot.ops["manual-op"];
 		expect(manualOp).toBeDefined();
 		expect(manualOp?.count).toBe(1);
-		expect(manualOp?.ms).toBeGreaterThanOrEqual(9);
+		expect(manualOp?.ms).toBeGreaterThanOrEqual(10);
 	});
 
 	it("should track max duration for operations", async () => {
