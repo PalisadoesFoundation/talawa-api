@@ -9,6 +9,7 @@ import {
 	Mutation_createFundCampaign,
 	Mutation_createFundCampaignPledge,
 	Mutation_createOrganization,
+	Mutation_createOrganizationMembership,
 	Mutation_createUser,
 	Mutation_deleteFundCampaignPledge,
 	Query_signIn,
@@ -27,194 +28,238 @@ const signInResult = await mercuriusClient.query(Query_signIn, {
 
 assertToBeNonNullish(signInResult.data?.signIn);
 const adminToken = signInResult.data.signIn.authenticationToken;
-assertToBeNonNullish(adminToken);
 assertToBeNonNullish(signInResult.data.signIn.user);
 const adminUserId = signInResult.data.signIn.user.id;
-assertToBeNonNullish(adminUserId);
 
-/* ---------------------------------------------------------- */
+/* --------------------------------------------------------- */
 
 suite("Mutation deleteFundCampaignPledge", () => {
 	/* ---------- 1. UNAUTHENTICATED ---------- */
-	suite("when user is not authenticated", () => {
-		test("should return unauthenticated error", async () => {
-			const res = await mercuriusClient.mutate(
-				Mutation_deleteFundCampaignPledge,
-				{
-					variables: {
-						input: { id: faker.string.uuid() },
-					},
-				},
-			);
+	test("unauthenticated user cannot delete pledge", async () => {
+		const res = await mercuriusClient.mutate(
+			Mutation_deleteFundCampaignPledge,
+			{
+				variables: { input: { id: faker.string.uuid() } },
+			},
+		);
 
-			expect(res.data?.deleteFundCampaignPledge).toBeNull();
-			assertToBeNonNullish(res.errors);
-			expect(res.errors.length).toBeGreaterThan(0);
-
-			const error = res.errors[0];
-			assertToBeNonNullish(error);
-			assertToBeNonNullish(error.extensions);
-			expect(error.extensions?.code).toBe("unauthenticated");
-		});
+		expect(res.data?.deleteFundCampaignPledge).toBeNull();
+		assertToBeNonNullish(res.errors);
+		assertToBeNonNullish(res.errors[0]?.extensions);
+		expect(res.errors[0].extensions?.code).toBe("unauthenticated");
 	});
 
 	/* ---------- 2. INVALID ARGUMENTS ---------- */
-	suite("when invalid arguments are provided", () => {
-		test("should return invalid_arguments error", async () => {
-			const res = await mercuriusClient.mutate(
-				Mutation_deleteFundCampaignPledge,
-				{
-					headers: { authorization: `bearer ${adminToken}` },
-					variables: {
-						input: { id: "not-a-uuid" },
-					},
-				},
-			);
+	test("invalid arguments return invalid_arguments", async () => {
+		const res = await mercuriusClient.mutate(
+			Mutation_deleteFundCampaignPledge,
+			{
+				headers: { authorization: `bearer ${adminToken}` },
+				variables: { input: { id: "not-a-uuid" } },
+			},
+		);
 
-			expect(res.data?.deleteFundCampaignPledge).toBeNull();
-			assertToBeNonNullish(res.errors);
-			const error = res.errors[0];
-			assertToBeNonNullish(error);
-			assertToBeNonNullish(error.extensions);
-			expect(error.extensions?.code).toBe(
-				"unauthorized_action_on_arguments_associated_resources",
-			);
-		});
+		expect(res.data?.deleteFundCampaignPledge).toBeNull();
+		assertToBeNonNullish(res.errors);
+		assertToBeNonNullish(res.errors[0]?.extensions);
+		expect(res.errors[0].extensions?.code).toBe("invalid_arguments");
 	});
 
 	/* ---------- 3. PLEDGE NOT FOUND ---------- */
-	suite("when fund campaign pledge does not exist", () => {
-		test("should return arguments_associated_resources_not_found", async () => {
-			const res = await mercuriusClient.mutate(
-				Mutation_deleteFundCampaignPledge,
-				{
-					headers: { authorization: `bearer ${adminToken}` },
-					variables: {
-						input: { id: faker.string.uuid() },
-					},
-				},
-			);
+	test("non-existent pledge returns not_found", async () => {
+		const res = await mercuriusClient.mutate(
+			Mutation_deleteFundCampaignPledge,
+			{
+				headers: { authorization: `bearer ${adminToken}` },
+				variables: { input: { id: faker.string.uuid() } },
+			},
+		);
 
-			expect(res.data?.deleteFundCampaignPledge).toBeNull();
-			assertToBeNonNullish(res.errors);
-			const error = res.errors[0];
-			assertToBeNonNullish(error);
-			assertToBeNonNullish(error.extensions);
-			expect(error.extensions?.code).toBe(
-				"arguments_associated_resources_not_found",
-			);
-		});
+		expect(res.data?.deleteFundCampaignPledge).toBeNull();
+		assertToBeNonNullish(res.errors);
+		assertToBeNonNullish(res.errors[0]?.extensions);
+		expect(res.errors[0].extensions?.code).toBe(
+			"arguments_associated_resources_not_found",
+		);
 	});
 
 	/* ---------- 4. UNAUTHORIZED USER ---------- */
-	suite("when user is neither admin nor pledger", () => {
-		test("should return unauthorized_action_on_arguments_associated_resources", async () => {
-			const user = await mercuriusClient.mutate(Mutation_createUser, {
+	test("non-admin non-pledger cannot delete pledge", async () => {
+		const pledger = await createUser();
+		const attacker = await createUser();
+
+		const pledgeId = await createPledgeAsUser(pledger.token, pledger.id);
+
+		const res = await mercuriusClient.mutate(
+			Mutation_deleteFundCampaignPledge,
+			{
+				headers: { authorization: `bearer ${attacker.token}` },
+				variables: { input: { id: pledgeId } },
+			},
+		);
+
+		expect(res.data?.deleteFundCampaignPledge).toBeNull();
+		assertToBeNonNullish(res.errors);
+		assertToBeNonNullish(res.errors[0]?.extensions);
+		expect(res.errors[0].extensions?.code).toBe(
+			"unauthorized_action_on_arguments_associated_resources",
+		);
+	});
+
+	/* ---------- 5. PLEDGER SUCCESS ---------- */
+	test("pledger with organization membership can delete own pledge", async () => {
+		const user = await createUser();
+
+		const { orgId, campaignId } = await createOrgAndCampaign();
+
+		// 👇 ADD ORG MEMBERSHIP
+		await mercuriusClient.mutate(Mutation_createOrganizationMembership, {
+			headers: { authorization: `bearer ${adminToken}` },
+			variables: {
+				input: {
+					organizationId: orgId,
+					memberId: user.id,
+					role: "regular",
+				},
+			},
+		});
+
+		const pledgeId = await createPledgeWithCampaign(
+			user.token,
+			user.id,
+			campaignId,
+		);
+
+		const res = await mercuriusClient.mutate(
+			Mutation_deleteFundCampaignPledge,
+			{
+				headers: { authorization: `bearer ${user.token}` },
+				variables: { input: { id: pledgeId } },
+			},
+		);
+
+		expect(res.errors).toBeUndefined();
+		assertToBeNonNullish(res.data.deleteFundCampaignPledge);
+		expect(res.data.deleteFundCampaignPledge.id).toBe(pledgeId);
+	});
+
+	/* ---------- 6. ADMIN SUCCESS ---------- */
+	test("administrator can delete any pledge", async () => {
+		assertToBeNonNullish(adminToken);
+		assertToBeNonNullish(adminUserId);
+		const pledgeId = await createPledgeAsUser(adminToken, adminUserId);
+
+		const res = await mercuriusClient.mutate(
+			Mutation_deleteFundCampaignPledge,
+			{
 				headers: { authorization: `bearer ${adminToken}` },
-				variables: {
-					input: {
-						emailAddress: faker.internet.email(),
-						password: faker.internet.password(),
-						role: "regular",
-						name: faker.person.fullName(),
-						isEmailAddressVerified: true,
-					},
-				},
-			});
+				variables: { input: { id: pledgeId } },
+			},
+		);
 
-			assertToBeNonNullish(user.data?.createUser);
-			const userToken = user.data.createUser.authenticationToken;
-			assertToBeNonNullish(userToken);
-
-			const pledgeId = await createPledgeAsAdmin(adminToken, adminUserId);
-
-			const res = await mercuriusClient.mutate(
-				Mutation_deleteFundCampaignPledge,
-				{
-					headers: { authorization: `bearer ${userToken}` },
-					variables: {
-						input: { id: pledgeId },
-					},
-				},
-			);
-
-			expect(res.data?.deleteFundCampaignPledge).toBeNull();
-			assertToBeNonNullish(res.errors);
-			const error = res.errors[0];
-			assertToBeNonNullish(error);
-			assertToBeNonNullish(error.extensions);
-			expect(error.extensions?.code).toBe(
-				"unauthorized_action_on_arguments_associated_resources",
-			);
-		});
+		expect(res.errors).toBeUndefined();
+		assertToBeNonNullish(res.data.deleteFundCampaignPledge);
+		expect(res.data.deleteFundCampaignPledge.id).toBe(pledgeId);
 	});
 
-	/* ---------- 5. ADMIN SUCCESS ---------- */
-	suite("when admin deletes pledge", () => {
-		test("should delete successfully", async () => {
-			const pledgeId = await createPledgeAsAdmin(adminToken, adminUserId);
+	/* ---------- 7. ORG ADMIN SUCCESS ---------- */
+	test("organization administrator can delete pledge", async () => {
+		const orgAdmin = await createUser();
+		const pledger = await createUser();
 
-			const res = await mercuriusClient.mutate(
-				Mutation_deleteFundCampaignPledge,
-				{
-					headers: { authorization: `bearer ${adminToken}` },
-					variables: {
-						input: { id: pledgeId },
-					},
+		const { orgId, campaignId } = await createOrgAndCampaign();
+
+		await mercuriusClient.mutate(Mutation_createOrganizationMembership, {
+			headers: { authorization: `bearer ${adminToken}` },
+			variables: {
+				input: {
+					organizationId: orgId,
+					memberId: orgAdmin.id,
+					role: "administrator",
 				},
-			);
-
-			expect(res.errors).toBeUndefined();
-			assertToBeNonNullish(res.data?.deleteFundCampaignPledge);
-			expect(res.data.deleteFundCampaignPledge.id).toBe(pledgeId);
+			},
 		});
+
+		const pledgeId = await createPledgeWithCampaign(
+			pledger.token,
+			pledger.id,
+			campaignId,
+		);
+
+		const res = await mercuriusClient.mutate(
+			Mutation_deleteFundCampaignPledge,
+			{
+				headers: { authorization: `bearer ${orgAdmin.token}` },
+				variables: { input: { id: pledgeId } },
+			},
+		);
+
+		expect(res.errors).toBeUndefined();
+		assertToBeNonNullish(res.data.deleteFundCampaignPledge);
+		expect(res.data.deleteFundCampaignPledge.id).toBe(pledgeId);
 	});
 
-	/* ---------- 6. UNEXPECTED DELETE FAILURE ---------- */
-	suite("when delete returns empty result", () => {
-		test("should return unexpected error", async () => {
-			const pledgeId = await createPledgeAsAdmin(adminToken, adminUserId);
+	/* ---------- 8. UNEXPECTED DELETE FAILURE ---------- */
+	test("unexpected delete failure returns error", async () => {
+		assertToBeNonNullish(adminToken);
+		assertToBeNonNullish(adminUserId);
+		const pledgeId = await createPledgeAsUser(adminToken, adminUserId);
 
-			type DeleteReturn = ReturnType<typeof server.drizzleClient.delete>;
+		// const spy = vi.spyOn(server.drizzleClient, "delete").mockReturnValueOnce({
+		// 	where: vi.fn().mockReturnThis(),
+		// 	returning: vi.fn().mockResolvedValue([]),
+		// } as any);
+		const spy = vi.spyOn(server.drizzleClient, "delete").mockReturnValueOnce({
+			where: vi.fn().mockReturnThis(),
+			returning: vi.fn().mockResolvedValue([]),
+		} as unknown as ReturnType<typeof server.drizzleClient.delete>);
 
-			const spy = vi.spyOn(server.drizzleClient, "delete").mockReturnValueOnce({
-				where: () => ({
-					returning: async () => [],
-				}),
-			} as unknown as DeleteReturn);
+		const res = await mercuriusClient.mutate(
+			Mutation_deleteFundCampaignPledge,
+			{
+				headers: { authorization: `bearer ${adminToken}` },
+				variables: { input: { id: pledgeId } },
+			},
+		);
 
-			try {
-				const res = await mercuriusClient.mutate(
-					Mutation_deleteFundCampaignPledge,
-					{
-						headers: { authorization: `bearer ${adminToken}` },
-						variables: {
-							input: { id: pledgeId },
-						},
-					},
-				);
+		assertToBeNonNullish(res.errors);
+		assertToBeNonNullish(res.errors[0]?.extensions);
+		expect(res.errors[0].extensions?.code).toBe("unexpected");
 
-				expect(res.data?.deleteFundCampaignPledge).toBeNull();
-				assertToBeNonNullish(res.errors);
-				const error = res.errors[0];
-				assertToBeNonNullish(error);
-				assertToBeNonNullish(error.extensions);
-				expect(error.extensions?.code).toBe("unexpected");
-			} finally {
-				spy.mockRestore();
-			}
-		});
+		spy.mockRestore();
 	});
 });
 
-/* ---------------- HELPER ---------------- */
+/* ---------------- HELPERS ---------------- */
 
-async function createPledgeAsAdmin(
-	token: string,
-	userId: string,
-): Promise<string> {
+async function createUser() {
+	const res = await mercuriusClient.mutate(Mutation_createUser, {
+		headers: { authorization: `bearer ${adminToken}` },
+		variables: {
+			input: {
+				emailAddress: faker.internet.email(),
+				password: faker.internet.password(),
+				role: "regular",
+				name: faker.person.fullName(),
+				isEmailAddressVerified: true,
+			},
+		},
+	});
+
+	assertToBeNonNullish(res.data);
+	const user = res.data.createUser;
+	assertToBeNonNullish(user);
+	assertToBeNonNullish(user.authenticationToken);
+	assertToBeNonNullish(user.user);
+	return {
+		id: user.user.id,
+		token: user.authenticationToken,
+	};
+}
+
+async function createOrgAndCampaign() {
 	const org = await mercuriusClient.mutate(Mutation_createOrganization, {
-		headers: { authorization: `bearer ${token}` },
+		headers: { authorization: `bearer ${adminToken}` },
 		variables: {
 			input: {
 				name: faker.company.name(),
@@ -223,10 +268,10 @@ async function createPledgeAsAdmin(
 			},
 		},
 	});
-	assertToBeNonNullish(org.data?.createOrganization);
-
+	assertToBeNonNullish(org.data);
+	assertToBeNonNullish(org.data.createOrganization);
 	const fund = await mercuriusClient.mutate(Mutation_createFund, {
-		headers: { authorization: `bearer ${token}` },
+		headers: { authorization: `bearer ${adminToken}` },
 		variables: {
 			input: {
 				name: "Fund",
@@ -235,10 +280,10 @@ async function createPledgeAsAdmin(
 			},
 		},
 	});
-	assertToBeNonNullish(fund.data?.createFund);
-
+	assertToBeNonNullish(fund.data);
+	assertToBeNonNullish(fund.data.createFund);
 	const campaign = await mercuriusClient.mutate(Mutation_createFundCampaign, {
-		headers: { authorization: `bearer ${token}` },
+		headers: { authorization: `bearer ${adminToken}` },
 		variables: {
 			input: {
 				name: "Campaign",
@@ -250,8 +295,24 @@ async function createPledgeAsAdmin(
 			},
 		},
 	});
-	assertToBeNonNullish(campaign.data?.createFundCampaign);
+	assertToBeNonNullish(campaign.data);
+	assertToBeNonNullish(campaign.data.createFundCampaign);
+	return {
+		orgId: org.data.createOrganization.id,
+		campaignId: campaign.data.createFundCampaign.id,
+	};
+}
 
+async function createPledgeAsUser(token: string, userId: string) {
+	const { campaignId } = await createOrgAndCampaign();
+	return createPledgeWithCampaign(token, userId, campaignId);
+}
+
+async function createPledgeWithCampaign(
+	token: string,
+	userId: string,
+	campaignId: string,
+) {
 	const pledge = await mercuriusClient.mutate(
 		Mutation_createFundCampaignPledge,
 		{
@@ -259,13 +320,13 @@ async function createPledgeAsAdmin(
 			variables: {
 				input: {
 					pledgerId: userId,
-					campaignId: campaign.data.createFundCampaign.id,
+					campaignId,
 					amount: 100,
 				},
 			},
 		},
 	);
-	assertToBeNonNullish(pledge.data?.createFundCampaignPledge);
-
+	assertToBeNonNullish(pledge.data);
+	assertToBeNonNullish(pledge.data.createFundCampaignPledge);
 	return pledge.data.createFundCampaignPledge.id;
 }
