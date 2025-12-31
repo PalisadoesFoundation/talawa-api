@@ -42,6 +42,31 @@ pre-commit:
       glob: "test/**/*.{test,spec}.{ts,tsx}"
       run: pnpm run check_mock_isolation {staged_files}
 
+    10.1_check_biome_disable:
+      glob: "**/*.{ts,tsx}"
+      run: source .venv/bin/activate && python3 .github/workflows/scripts/biome_disable_check.py --files {staged_files}
+
+    10.2_check_code_coverage_disable:
+      glob: "**/*.{ts,tsx}"
+      run: source .venv/bin/activate && python3 .github/workflows/scripts/code_coverage_disable_check.py --files {staged_files}
+
+    10.3_check_ts_ignore:
+      glob: "**/*.{ts,tsx}"
+      run: source .venv/bin/activate && python3 .github/workflows/scripts/detect_ts_ignore.py --files {staged_files}
+
+    10.4_check_sanitization_disable:
+      glob: "**/*.ts"
+      run: source .venv/bin/activate && python3 .github/workflows/scripts/check_sanitization_disable.py --files {staged_files}
+
+    10.5_check_itskip:
+      glob: "test/**/*.{test,spec}.{ts,tsx}"
+      run: source .venv/bin/activate && python3 .github/workflows/scripts/itskip_disable_check.py --files {staged_files}
+
+    10.6_check_python_docstrings:
+      glob: ".github/**/*.py"
+      run: source .venv/bin/activate && python3 .github/workflows/scripts/check_docstrings.py --directories .github
+
+
     11_generate_docs:
       run: |
         set -e
