@@ -20,6 +20,7 @@ vi.mock("~/src/graphql/schemaManager", () => ({
 	default: {
 		buildInitialSchema: vi.fn(),
 		onSchemaUpdate: vi.fn(),
+		setLogger: vi.fn(),
 	},
 }));
 

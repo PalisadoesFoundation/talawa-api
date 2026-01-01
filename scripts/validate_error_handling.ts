@@ -17,9 +17,9 @@
  * 1 - Violations found
  */
 
-import { execSync } from "node:child_process";
+import { execFileSync, execSync } from "node:child_process";
 import { existsSync, readFileSync } from "node:fs";
-import { dirname, join } from "node:path";
+import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { glob } from "glob";
 
@@ -28,21 +28,21 @@ const __dirname = dirname(__filename);
 const rootDir = join(__dirname, "..");
 
 // Paths to ENFORCE structured logging (reject console.*)
-const ENFORCE_STRUCTURED_LOGGING = [
+export const ENFORCE_STRUCTURED_LOGGING = [
 	"src/routes/**",
 	"src/graphql/types/**",
 	"src/workers/**",
 ];
 
 // Paths to EXEMPT (allow console.*)
-const ALLOW_CONSOLE_USAGE = [
+export const ALLOW_CONSOLE_USAGE = [
 	"src/plugin/**", // Plugin system
 	"scripts/**", // Validation tools
 	"test/**", // Test files
 ];
 
 // Configuration
-const SCAN_PATTERNS = [
+export const SCAN_PATTERNS = [
 	"src/routes/**/*.ts",
 	"src/graphql/types/**/*.ts",
 	"src/graphql/resolvers/**/*.ts",
@@ -53,7 +53,7 @@ const SCAN_PATTERNS = [
 	"scripts/**/*.ts",
 ];
 
-const EXCLUDE_PATTERNS = [
+export const EXCLUDE_PATTERNS = [
 	"**/node_modules/**",
 	"**/dist/**",
 	"**/*.test.ts",
@@ -63,7 +63,7 @@ const EXCLUDE_PATTERNS = [
 ];
 
 // Allowed patterns (exceptions to the rules)
-const ALLOWED_PATTERNS = [
+export const ALLOWED_PATTERNS = [
 	// Allow Error in error transformation/handling utilities
 	/src\/utilities\/errors\//,
 	// Allow Error in error handler plugins
@@ -90,7 +90,7 @@ interface ValidationResult {
 	suppressedFiles: string[];
 }
 
-class ErrorHandlingValidator {
+export class ErrorHandlingValidator {
 	public result: ValidationResult = {
 		violations: [],
 		fileCount: 0,
@@ -134,7 +134,7 @@ class ErrorHandlingValidator {
 		}
 	}
 
-	private async getFilesToScan(): Promise<string[]> {
+	public async getFilesToScan(): Promise<string[]> {
 		// Try to get modified files first (Infinite incremental mode)
 		try {
 			const modifiedFiles = this.getModifiedFiles();
@@ -174,12 +174,14 @@ class ErrorHandlingValidator {
 		return uniqueFiles.filter((file) => !this.isAllowedFile(file));
 	}
 
-	private getModifiedFiles(): string[] {
+	public getModifiedFiles(): string[] {
 		const isCI = process.env.CI || process.env.GITHUB_BASE_REF;
 
 		if (isCI) {
 			try {
-				const baseRef = process.env.GITHUB_BASE_REF || "develop";
+				const baseRef = this.sanitizeGitRef(
+					process.env.GITHUB_BASE_REF || "develop",
+				);
 				// Fetch is necessary in some CI environments (like shallow clones)
 				try {
 					execSync(`git fetch origin ${baseRef}`, {
@@ -233,28 +235,119 @@ class ErrorHandlingValidator {
 		}
 	}
 
-	private shouldScanFile(filePath: string): boolean {
-		// Quick check if file matches any scan pattern root
-		// This is a simplified check. For strict correctness ideally use minimatch against SCAN_PATTERNS
-		// But checking prefix is roughly enough for the given patterns.
-		if (EXCLUDE_PATTERNS.some((p) => filePath.includes(p.replace(/\*\*/g, ""))))
+	public branchExists(branch: string): boolean {
+		try {
+			const sanitizedBranch = this.sanitizeGitRef(branch);
+			execSync(`git rev-parse --verify ${sanitizedBranch}`, {
+				cwd: rootDir,
+				stdio: "ignore",
+			});
+			return true;
+		} catch {
 			return false;
-
-		// Check if allowed (generic error exemptions) - we still scan them for console usage though?
-		// logic below uses isAllowedFile to filter out generally ignored files.
-		if (this.isAllowedFile(filePath)) return false;
-
-		return SCAN_PATTERNS.some((pattern) => {
-			const cleanPattern = pattern.replace(/\*\*.*$/, "").replace("**", "");
-			return filePath.startsWith(cleanPattern);
-		});
+		}
 	}
 
-	private isAllowedFile(filePath: string): boolean {
+	public sanitizeGitRef(ref: string): string {
+		// Allow only safe characters for git references
+		// Git refs can contain: alphanumeric, -, _, /, .
+		if (!/^[a-zA-Z0-9_\-/.]+$/.test(ref)) {
+			throw new Error(`Invalid git reference: ${ref}`);
+		}
+
+		// Prevent command injection patterns
+		if (
+			ref.includes(";") ||
+			ref.includes("|") ||
+			ref.includes("&") ||
+			ref.includes("$") ||
+			ref.includes("`") ||
+			ref.includes("(") ||
+			ref.includes(")") ||
+			ref.includes("<") ||
+			ref.includes(">")
+		) {
+			throw new Error(`Invalid git reference: ${ref}`);
+		}
+
+		return ref;
+	}
+
+	public matchesGlobPattern(filePath: string, pattern: string): boolean {
+		// Normalize path to posix style
+		const normalizedPath = filePath.replace(/\\/g, "/");
+		const normalizedPattern = pattern.replace(/\\/g, "/");
+
+		// Handle simple cases first
+		if (normalizedPattern === normalizedPath) return true;
+		if (!normalizedPattern.includes("*") && !normalizedPattern.includes("?")) {
+			return normalizedPath === normalizedPattern;
+		}
+
+		// Special case: pattern like "src/routes/**/*.ts" should match "src/routes/user.ts"
+		// This means ** can match zero directories
+		if (normalizedPattern.includes("**/")) {
+			// Try matching with ** as zero directories
+			const zeroMatch = normalizedPattern.replace(/\*\*\//, "");
+			if (this.matchesSimpleGlob(normalizedPath, zeroMatch)) {
+				return true;
+			}
+		}
+
+		return this.matchesSimpleGlob(normalizedPath, normalizedPattern);
+	}
+
+	private matchesSimpleGlob(filePath: string, pattern: string): boolean {
+		// Convert glob pattern to regex
+		let regexPattern = pattern
+			.replace(/[.+^${}()|[\]\\]/g, "\\$&") // Escape regex special chars except * and ?
+			.replace(/\*\*/g, "___DOUBLESTAR___") // Temporarily replace **
+			.replace(/\*/g, "[^/]*") // * matches anything except directory separator
+			.replace(/\?/g, "[^/]") // ? matches single character except directory separator
+			.replace(/___DOUBLESTAR___/g, ".*"); // ** matches any number of directories
+
+		// Anchor the pattern
+		regexPattern = `^${regexPattern}$`;
+
+		try {
+			const regex = new RegExp(regexPattern);
+			return regex.test(filePath);
+		} catch {
+			// Fallback to simple string matching if regex fails
+			const simplePattern = pattern.replace(/\*+/g, "");
+			return filePath.includes(simplePattern);
+		}
+	}
+
+	public shouldScanFile(filePath: string): boolean {
+		// Normalize path to posix style for consistent matching
+		const normalizedPath = filePath.replace(/\\/g, "/");
+
+		// Check exclusion patterns first - return false if any match
+		for (const pattern of EXCLUDE_PATTERNS) {
+			if (this.matchesGlobPattern(normalizedPath, pattern)) {
+				return false;
+			}
+		}
+
+		// Check if allowed (generic error exemptions)
+		if (this.isAllowedFile(normalizedPath)) return false;
+
+		// Check scan patterns - return true if any match
+		for (const pattern of SCAN_PATTERNS) {
+			if (this.matchesGlobPattern(normalizedPath, pattern)) {
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	public isAllowedFile(filePath: string): boolean {
 		return ALLOWED_PATTERNS.some((pattern) => pattern.test(filePath));
 	}
 
-	private async validateFile(filePath: string): Promise<void> {
+	public async validateFile(filePath: string): Promise<void> {
 		const fullPath = join(rootDir, filePath);
 
 		if (!existsSync(fullPath)) {
@@ -284,7 +377,7 @@ class ErrorHandlingValidator {
 		}
 	}
 
-	private checkMultilineCatchBlocks(
+	public checkMultilineCatchBlocks(
 		filePath: string,
 		content: string,
 		lines: string[],
@@ -327,7 +420,7 @@ class ErrorHandlingValidator {
 		}
 	}
 
-	private removeCommentsAndStrings(content: string): string {
+	public removeCommentsAndStrings(content: string): string {
 		// Replace single-line comments with spaces
 		let cleaned = content.replace(/\/\/.*$/gm, (match) =>
 			" ".repeat(match.length),
@@ -352,7 +445,7 @@ class ErrorHandlingValidator {
 		return cleaned;
 	}
 
-	private findCatchBlocks(content: string): Array<{
+	public findCatchBlocks(content: string): Array<{
 		start: number;
 		end: number;
 		body: string;
@@ -379,10 +472,13 @@ class ErrorHandlingValidator {
 
 			if (closeBraceIndex !== -1) {
 				const body = content.slice(openBraceIndex + 1, closeBraceIndex);
-				const trimmedBody = body.trim();
 
-				// Check if empty
-				const isEmpty = trimmedBody.length === 0;
+				// Check if empty (including comment-only blocks)
+				const bodyWithoutComments = body
+					.replace(/\/\/.*$/gm, "") // Remove single-line comments
+					.replace(/\/\*[\s\S]*?\*\//g, "") // Remove multi-line comments
+					.trim();
+				const isEmpty = bodyWithoutComments.length === 0;
 
 				// Check for improper handling (has content but no proper error handling)
 				const hasImproperHandling =
@@ -403,7 +499,7 @@ class ErrorHandlingValidator {
 		return catchBlocks;
 	}
 
-	private findMatchingBrace(content: string, openBraceIndex: number): number {
+	public findMatchingBrace(content: string, openBraceIndex: number): number {
 		let braceCount = 1;
 		let index = openBraceIndex + 1;
 
@@ -420,7 +516,7 @@ class ErrorHandlingValidator {
 		return braceCount === 0 ? index - 1 : -1;
 	}
 
-	private hasProperErrorHandling(catchBody: string): boolean {
+	public hasProperErrorHandling(catchBody: string): boolean {
 		// Check for proper error handling patterns
 		const properHandlingPatterns = [
 			/throw\s+/, // Re-throwing errors
@@ -438,8 +534,12 @@ class ErrorHandlingValidator {
 			/process\s*\.\s*exit/, // Process exit (sometimes valid)
 			/TalawaGraphQLError/, // Custom error types
 			/TalawaRestError/, // Custom error types
-			/=\s*\{/, // Assignment operations (like setting fallback values)
-			/\w+\s*=/, // Variable assignments
+			/=\s*\{[^}]*error/, // Assignment operations that include error handling
+			/\w+\s*=\s*[^;]*error/, // Variable assignments that involve error
+			/currentClient\s*=/, // Specific pattern for authentication fallback
+			/result\s*=/, // Result assignment pattern
+			/addIssue\s*\(/, // Zod error handling
+			/reject\w*\s*\(/, // Promise rejection handling
 		];
 
 		// Also check if the catch body has meaningful code (not just comments)
@@ -456,12 +556,12 @@ class ErrorHandlingValidator {
 		return false;
 	}
 
-	private getLineNumberFromPosition(content: string, position: number): number {
+	public getLineNumberFromPosition(content: string, position: number): number {
 		const beforePosition = content.slice(0, position);
 		return beforePosition.split("\n").length;
 	}
 
-	private getLineContent(
+	public getLineContent(
 		lines: string[],
 		lineNumber: number,
 		_catchBlock: { start: number; end: number; body: string },
@@ -494,12 +594,12 @@ class ErrorHandlingValidator {
 		return line;
 	}
 
-	private isFileSuppressed(content: string): boolean {
+	public isFileSuppressed(content: string): boolean {
 		const firstLines = content.split("\n").slice(0, 10).join("\n");
 		return firstLines.includes("// validate-error-handling-disable");
 	}
 
-	private checkLineForViolations(
+	public checkLineForViolations(
 		filePath: string,
 		lineNumber: number,
 		line: string,
@@ -520,7 +620,7 @@ class ErrorHandlingValidator {
 		this.checkConsoleUsage(filePath, lineNumber, line);
 	}
 
-	private checkGenericError(
+	public checkGenericError(
 		filePath: string,
 		lineNumber: number,
 		line: string,
@@ -541,7 +641,7 @@ class ErrorHandlingValidator {
 		}
 	}
 
-	private checkConsoleUsage(
+	public checkConsoleUsage(
 		filePath: string,
 		lineNumber: number,
 		line: string,
@@ -576,14 +676,14 @@ class ErrorHandlingValidator {
 		}
 	}
 
-	private matchesPattern(filePath: string, patterns: string[]): boolean {
+	public matchesPattern(filePath: string, patterns: string[]): boolean {
 		return patterns.some((p) => {
 			const prefix = p.replace("/**", "");
 			return filePath.startsWith(prefix);
 		});
 	}
 
-	private isRouteOrResolverFile(filePath: string): boolean {
+	public isRouteOrResolverFile(filePath: string): boolean {
 		return (
 			filePath.includes("src/routes/") ||
 			filePath.includes("src/graphql/types/") ||
@@ -592,7 +692,7 @@ class ErrorHandlingValidator {
 		);
 	}
 
-	private getGenericErrorSuggestion(filePath: string): string {
+	public getGenericErrorSuggestion(filePath: string): string {
 		if (filePath.includes("graphql") || filePath.includes("resolver")) {
 			return "Use TalawaGraphQLError with appropriate ErrorCode instead of generic Error";
 		}
@@ -606,7 +706,7 @@ class ErrorHandlingValidator {
 		return "Use TalawaRestError or TalawaGraphQLError with appropriate ErrorCode instead of generic Error";
 	}
 
-	private addViolation(
+	public addViolation(
 		filePath: string,
 		lineNumber: number,
 		violationType: string,
@@ -623,7 +723,7 @@ class ErrorHandlingValidator {
 		this.result.violationCount++;
 	}
 
-	private printResults(): void {
+	public printResults(): void {
 		if (this.result.suppressedFiles.length > 0) {
 			console.log(`Suppressed files: ${this.result.suppressedFiles.length}`);
 			this.result.suppressedFiles.forEach((file) => {
@@ -671,7 +771,7 @@ class ErrorHandlingValidator {
 		);
 	}
 
-	private getViolationTitle(type: string): string {
+	public getViolationTitle(type: string): string {
 		const titles: Record<string, string> = {
 			generic_error_in_route_resolver:
 				"Generic Error Usage in Routes/Resolvers",
@@ -681,6 +781,59 @@ class ErrorHandlingValidator {
 			improper_catch_handling: "Improper Catch Block Handling",
 		};
 		return titles[type] || type;
+	}
+
+	public applyFixes(): void {
+		const filesWithViolations = [
+			...new Set(this.result.violations.map((v) => v.filePath)),
+		];
+
+		if (filesWithViolations.length > 0) {
+			console.log(
+				`\n🔧 Applying Biome formatting to ${filesWithViolations.length} files with violations...\n`,
+			);
+
+			try {
+				// Validate and normalize file paths to prevent command injection
+				const safePaths = filesWithViolations.map((filePath) => {
+					// Resolve to absolute path and then make relative to rootDir
+					const absolutePath = resolve(rootDir, filePath);
+					const relativePath = absolutePath.replace(`${rootDir}/`, "");
+
+					// Validate path doesn't contain suspicious characters
+					if (!/^[a-zA-Z0-9_\-./]+$/.test(relativePath)) {
+						throw new Error(`Suspicious file path: ${filePath}`);
+					}
+
+					return relativePath;
+				});
+
+				// Use execFileSync with args array to prevent shell injection
+				execFileSync("npx", ["biome", "check", "--write", ...safePaths], {
+					stdio: "inherit",
+					cwd: rootDir,
+					shell: false, // Explicitly disable shell
+				});
+
+				console.log("\nBiome formatting applied to files with violations.");
+				console.log(
+					"\n💡 Note: Some error handling issues require manual fixes.",
+				);
+				console.log(
+					"   Run 'pnpm run validate:error-handling' to see remaining issues.",
+				);
+			} catch (error) {
+				// Re-throw validation errors, but handle execution errors differently
+				if (
+					error instanceof Error &&
+					error.message.includes("Suspicious file path")
+				) {
+					throw error;
+				}
+				console.error("Error applying Biome formatting:", error);
+				process.exit(1);
+			}
+		}
 	}
 }
 
@@ -700,36 +853,7 @@ async function main(): Promise<void> {
 			return;
 		}
 
-		// Get files with violations
-		const filesWithViolations = [
-			...new Set(validator.result.violations.map((v) => v.filePath)),
-		];
-
-		if (filesWithViolations.length > 0) {
-			console.log(
-				`\n🔧 Applying Biome formatting to ${filesWithViolations.length} files with violations...\n`,
-			);
-
-			try {
-				// Apply biome formatting only to files with violations
-				const fileList = filesWithViolations.join(" ");
-				execSync(`npx biome check --write ${fileList}`, {
-					stdio: "inherit",
-					cwd: rootDir,
-				});
-
-				console.log("\nBiome formatting applied to files with violations.");
-				console.log(
-					"\n💡 Note: Some error handling issues require manual fixes.",
-				);
-				console.log(
-					"   Run 'pnpm run validate:error-handling' to see remaining issues.",
-				);
-			} catch (error) {
-				console.error("Error applying Biome formatting:", error);
-				process.exit(1);
-			}
-		}
+		validator.applyFixes();
 	} else {
 		const validator = new ErrorHandlingValidator();
 		const exitCode = await validator.validate();

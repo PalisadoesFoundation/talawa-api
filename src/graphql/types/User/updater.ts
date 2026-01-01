@@ -34,9 +34,12 @@ User.implement({
 					currentUser.role !== "administrator" &&
 					currentUserId !== parent.id
 				) {
-					ctx.log.info(
-						{ role: currentUser.role },
-						"Checking user role for updater access",
+					ctx.log.warn(
+						{
+							role: currentUser.role,
+							targetUserId: parent.id,
+						},
+						"Authorization failed: non-admin attempted to update another user's data",
 					);
 
 					throw new TalawaGraphQLError({

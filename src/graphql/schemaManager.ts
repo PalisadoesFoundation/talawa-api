@@ -169,7 +169,8 @@ class GraphQLSchemaManager {
 					} catch (_error) {
 						// Plugin types file doesn't exist, continue without it
 						this.logger?.info(
-							`No types file found for plugin ${extension.pluginId}`,
+							{ pluginId: extension.pluginId },
+							"No types file found for plugin",
 						);
 					}
 
@@ -182,7 +183,11 @@ class GraphQLSchemaManager {
 					// Execute the builder function with the namespaced builder
 					extension.builderFunction(namespacedBuilder);
 					this.logger?.info(
-						`Registered builder extension: ${extension.pluginId}.${extension.fieldName}`,
+						{
+							pluginId: extension.pluginId,
+							fieldName: extension.fieldName,
+						},
+						"Registered builder extension",
 					);
 				} catch (error) {
 					this.logger?.error(

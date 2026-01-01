@@ -38,7 +38,14 @@ User.implement({
 					currentUser.role !== "administrator" &&
 					parent.id !== currentUserId
 				) {
-					ctx.log.info({ role: currentUser.role }, "Checking user role");
+					ctx.log.warn(
+						{
+							role: currentUser.role,
+							requesterId: currentUserId,
+							targetUserId: parent.id,
+						},
+						"Unauthorized city access attempt",
+					);
 					throw new TalawaGraphQLError({
 						extensions: {
 							code: "unauthorized_action",
