@@ -1,9 +1,9 @@
 import type { GraphQLContext } from "~/src/graphql/context";
 import { Organization } from "~/src/graphql/types/Organization/Organization";
-import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import envConfig from "~/src/utilities/graphqLimits";
-import { AgendaCategory } from "./AgendaCategories";
+import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import type { AgendaCategory as AgendaCategoryType } from "./AgendaCategories";
+import { AgendaCategory } from "./AgendaCategories";
 
 // Export the resolver function so it can be tested
 export const resolveOrganization = async (
@@ -14,7 +14,7 @@ export const resolveOrganization = async (
 	const existingOrganization =
 		await ctx.drizzleClient.query.organizationsTable.findFirst({
 			where: (fields, operators) =>
-				operators.eq(fields.id, parent.organizationId!),
+				operators.eq(fields.id, parent.organizationId),
 		});
 
 	if (existingOrganization === undefined) {

@@ -22,25 +22,25 @@ export {
 	advertisementsTableRelations,
 } from "./tables/advertisements";
 export {
+	agendaCategoriesTable,
+	agendaCategoriesTableRelations,
+} from "./tables/agendaCategories";
+export {
 	agendaFoldersTable,
 	agendaFoldersTableRelations,
 } from "./tables/agendaFolders";
-export {
-	agendaItemsTable,
-	agendaItemsTableRelations,
-} from "./tables/agendaItems";
 export {
 	agendaItemAttachmentsTable,
 	agendaItemAttachmentsTableRelations,
 } from "./tables/agendaItemAttachment";
 export {
+	agendaItemsTable,
+	agendaItemsTableRelations,
+} from "./tables/agendaItems";
+export {
 	agendaItemUrlTable,
 	agendaItemUrlTableRelations,
 } from "./tables/agendaItemUrls";
-export {
-	agendaCategoriesTable,
-	agendaCategoriesTableRelations,
-} from "./tables/agendaCategories";
 export {
 	blockedUsersTable,
 	blockedUsersTableRelations,

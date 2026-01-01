@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { agendaItemAttachmentsTable } from "~/src/drizzle/tables/agendaItemAttachment";
-import { agendaItemUrlTable } from "~/src/drizzle/tables/agendaItemUrls";
 import { agendaItemsTable } from "~/src/drizzle/tables/agendaItems";
+import { agendaItemUrlTable } from "~/src/drizzle/tables/agendaItemUrls";
 import { builder } from "~/src/graphql/builder";
 import {
 	MutationCreateAgendaItemInput,

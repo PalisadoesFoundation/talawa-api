@@ -4,8 +4,8 @@ import { agendaCategoriesTable } from "~/src/drizzle/tables/agendaCategories";
 import { eventsTable } from "~/src/drizzle/tables/events";
 import { builder } from "~/src/graphql/builder";
 import { AgendaCategory } from "~/src/graphql/types/AgendaCategories/AgendaCategories";
-import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import envConfig from "~/src/utilities/graphqLimits";
+import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 
 const queryGetAgendaItemByEventIdArgumentsSchema = z.object({
 	eventId: z.string().uuid(),
@@ -70,7 +70,7 @@ builder.queryField("agendaCategoryByEventId", (t) =>
 			// Get all AgendaItems for the event
 			const eventAgendas =
 				await ctx.drizzleClient.query.agendaCategoriesTable.findMany({
-					where: eq(agendaCategoriesTable.eventId, parsedArgs.eventId!),
+					where: eq(agendaCategoriesTable.eventId, parsedArgs.eventId),
 				});
 
 			return eventAgendas;

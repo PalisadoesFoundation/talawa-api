@@ -1,5 +1,8 @@
 import { z } from "zod";
-import { AGENDA_ITEM_DESCRIPTION_MAX_LENGTH, agendaItemsTableInsertSchema } from "~/src/drizzle/tables/agendaItems";
+import {
+	AGENDA_ITEM_DESCRIPTION_MAX_LENGTH,
+	agendaItemsTableInsertSchema,
+} from "~/src/drizzle/tables/agendaItems";
 import { builder } from "~/src/graphql/builder";
 import { sanitizedStringSchema } from "~/src/utilities/sanitizer";
 

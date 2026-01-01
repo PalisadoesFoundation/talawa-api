@@ -1,6 +1,7 @@
-import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import envConfig from "~/src/utilities/graphqLimits";
+import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import { AgendaCategory } from "./AgendaCategories";
+
 AgendaCategory.implement({
 	fields: (t) => ({
 		updatedAt: t.field({

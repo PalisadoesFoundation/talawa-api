@@ -8,8 +8,9 @@ import {
 	MutationUpdateAgendaFolderSequenceInputSchema,
 } from "~/src/graphql/inputs/MutationUpdateAgendaFolderSequence";
 import { AgendaFolder } from "~/src/graphql/types/AgendaFolder/AgendaFolder";
-import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import envConfig from "~/src/utilities/graphqLimits";
+import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
+
 const mutationUpdateAgendaFolderArgumentsSchema = z.object({
 	input: MutationUpdateAgendaFolderSequenceInputSchema,
 });

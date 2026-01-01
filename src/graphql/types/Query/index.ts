@@ -46,7 +46,7 @@ import "./agendaItemByEvent";
 import "./agendaFolderByOrg";
 import "./agendaFolderByEvent";
 import "./verifyPasswordResetToken";
-import "./agendaCategoryByEvent"
-import "./agendaItemByEvent"
-import "./agendaFolderByOrg"
-import "./agendaFolderByEvent"
+import "./agendaCategoryByEvent";
+import "./agendaItemByEvent";
+import "./agendaFolderByOrg";
+import "./agendaFolderByEvent";
