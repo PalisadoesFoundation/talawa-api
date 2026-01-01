@@ -6,11 +6,14 @@
 
 > **isEndDateBasedEvent**(`rule`): `boolean`
 
-Defined in: [src/utilities/recurringEventHelpers.ts:298](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/utilities/recurringEventHelpers.ts#L298)
+Defined in: [src/utilities/recurringEvent/types.ts:44](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/utilities/recurringEvent/types.ts#L44)
 
 Determines if a recurrence rule is end-date-based.
 An end-date-based event is defined by an `endDate`. It may or may not also have a `count`,
 in which case it would be considered a hybrid event.
+
+**Note**: This returns `true` for any event with a `recurrenceEndDate`, including hybrid events
+that also have a `count`. For exclusive classification, use `getEventType()` instead.
 
 ## Parameters
 
@@ -94,4 +97,11 @@ The recurrence rule to check.
 
 `boolean`
 
-`true` if the event has an end date, otherwise `false`.
+`true` if the event has an end date (including hybrid events), otherwise `false`.
+
+## Example
+
+```ts
+// To check for end-date-only events (excluding hybrids):
+const isEndDateOnly = rule.recurrenceEndDate && !rule.count;
+```
