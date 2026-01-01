@@ -9,6 +9,6 @@ env:
 
 jobs:
   handle-comment:
-    uses: yashgoyal0110/.github/.github/workflows/auto-assign.yml@feat/adding-more-centralised-jobs
+    uses: PalisadoesFoundation/.github/.github/workflows/auto-assign.yml@feat/main
     secrets:
       ORG_ACCESS_TOKEN: ${{ secrets.ORG_ACCESS_TOKEN }}

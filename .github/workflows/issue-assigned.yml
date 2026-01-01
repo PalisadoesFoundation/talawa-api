@@ -16,4 +16,4 @@ on:
 
 jobs:
   cleanup-label:
-    uses: yashgoyal0110/.github/.github/workflows/issue-assigned.yml@feat/adding-more-centralised-jobs
+    uses: PalisadoesFoundation/.github/.github/workflows/issue-assigned.yml@feat/main

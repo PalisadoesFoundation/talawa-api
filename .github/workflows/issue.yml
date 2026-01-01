@@ -4,6 +4,6 @@ on:
     types: ['opened']
 jobs:
  issue-auto-label:
-    uses: yashgoyal0110/.github/.github/workflows/issue.yml@feat/adding-more-centralised-jobs
+    uses: PalisadoesFoundation/.github/.github/workflows/issue.yml@feat/main
     secrets:
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
