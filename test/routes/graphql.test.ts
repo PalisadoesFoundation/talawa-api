@@ -1193,4 +1193,386 @@ describe("GraphQL Routes", () => {
 			expect(mockNext).toHaveBeenCalledWith(true);
 		});
 	});
+
+	describe("Error Formatter", () => {
+		let mockFastifyInstance: {
+			register: ReturnType<typeof vi.fn>;
+			envConfig: {
+				API_IS_GRAPHIQL: boolean;
+			};
+			log: {
+				info: ReturnType<typeof vi.fn>;
+				error: ReturnType<typeof vi.fn>;
+			};
+			graphql: {
+				replaceSchema: ReturnType<typeof vi.fn>;
+				addHook: ReturnType<typeof vi.fn>;
+			};
+		};
+
+		beforeEach(() => {
+			mockFastifyInstance = {
+				register: vi.fn(),
+				envConfig: {
+					API_IS_GRAPHIQL: false,
+				},
+				log: {
+					info: vi.fn(),
+					error: vi.fn(),
+				},
+				graphql: {
+					replaceSchema: vi.fn(),
+					addHook: vi.fn(),
+				},
+			};
+
+			vi.mocked(schemaManager.buildInitialSchema).mockResolvedValue(
+				new GraphQLSchema({
+					query: new GraphQLObjectType({
+						name: "Query",
+						fields: {
+							hello: {
+								type: GraphQLString,
+								resolve: () => "Hello",
+							},
+						},
+					}),
+				}),
+			);
+		});
+
+		it("should format errors with correlation ID from request", async () => {
+			const { graphql } = await import("~/src/routes/graphql");
+
+			await graphql(mockFastifyInstance as unknown as FastifyInstance);
+
+			const mercuriusCall = mockFastifyInstance.register.mock.calls.find(
+				(call) => call?.[1]?.errorFormatter,
+			);
+
+			const errorFormatterConfig = mercuriusCall?.[1] as {
+				errorFormatter: (
+					execution: {
+						data?: unknown;
+						errors: Array<{
+							message: string;
+							locations?: Array<{ line: number; column: number }>;
+							path?: Array<string | number>;
+							extensions?: Record<string, unknown>;
+						}>;
+					},
+					context: {
+						reply: {
+							request: {
+								id: string;
+							};
+						};
+					},
+				) => {
+					statusCode: number;
+					response: {
+						data: unknown;
+						errors: Array<{
+							message: string;
+							locations?: Array<{ line: number; column: number }>;
+							path?: Array<string | number>;
+							extensions: Record<string, unknown>;
+						}>;
+					};
+				};
+			};
+
+			const mockExecution = {
+				data: { user: { id: "123" } },
+				errors: [
+					{
+						message: "Test error",
+						locations: [{ line: 1, column: 5 }],
+						path: ["user", "email"],
+						extensions: { code: "VALIDATION_ERROR" },
+					},
+				],
+			};
+
+			const mockContext = {
+				reply: {
+					request: {
+						id: "correlation-123",
+					},
+				},
+			};
+
+			const result = errorFormatterConfig.errorFormatter(
+				mockExecution,
+				mockContext,
+			);
+
+			expect(result).toEqual({
+				statusCode: 200,
+				response: {
+					data: { user: { id: "123" } },
+					errors: [
+						{
+							message: "Test error",
+							locations: [{ line: 1, column: 5 }],
+							path: ["user", "email"],
+							extensions: {
+								code: "VALIDATION_ERROR",
+								correlationId: "correlation-123",
+							},
+						},
+					],
+				},
+			});
+		});
+
+		it("should handle errors without extensions", async () => {
+			const { graphql } = await import("~/src/routes/graphql");
+
+			await graphql(mockFastifyInstance as unknown as FastifyInstance);
+
+			const mercuriusCall = mockFastifyInstance.register.mock.calls.find(
+				(call) => call?.[1]?.errorFormatter,
+			);
+
+			const errorFormatterConfig = mercuriusCall?.[1] as {
+				errorFormatter: (
+					execution: {
+						data?: unknown;
+						errors: Array<{
+							message: string;
+							locations?: Array<{ line: number; column: number }>;
+							path?: Array<string | number>;
+							extensions?: Record<string, unknown>;
+						}>;
+					},
+					context: {
+						reply: {
+							request: {
+								id: string;
+							};
+						};
+					},
+				) => {
+					statusCode: number;
+					response: {
+						data: unknown;
+						errors: Array<{
+							message: string;
+							locations?: Array<{ line: number; column: number }>;
+							path?: Array<string | number>;
+							extensions: Record<string, unknown>;
+						}>;
+					};
+				};
+			};
+
+			const mockExecution = {
+				data: null,
+				errors: [
+					{
+						message: "Syntax error",
+						locations: [{ line: 2, column: 10 }],
+					},
+				],
+			};
+
+			const mockContext = {
+				reply: {
+					request: {
+						id: "req-456",
+					},
+				},
+			};
+
+			const result = errorFormatterConfig.errorFormatter(
+				mockExecution,
+				mockContext,
+			);
+
+			expect(result).toEqual({
+				statusCode: 200,
+				response: {
+					data: null,
+					errors: [
+						{
+							message: "Syntax error",
+							locations: [{ line: 2, column: 10 }],
+							path: undefined,
+							extensions: {
+								correlationId: "req-456",
+							},
+						},
+					],
+				},
+			});
+		});
+
+		it("should handle multiple errors with different extensions", async () => {
+			const { graphql } = await import("~/src/routes/graphql");
+
+			await graphql(mockFastifyInstance as unknown as FastifyInstance);
+
+			const mercuriusCall = mockFastifyInstance.register.mock.calls.find(
+				(call) => call?.[1]?.errorFormatter,
+			);
+
+			const errorFormatterConfig = mercuriusCall?.[1] as {
+				errorFormatter: (
+					execution: {
+						data?: unknown;
+						errors: Array<{
+							message: string;
+							locations?: Array<{ line: number; column: number }>;
+							path?: Array<string | number>;
+							extensions?: Record<string, unknown>;
+						}>;
+					},
+					context: {
+						reply: {
+							request: {
+								id: string;
+							};
+						};
+					},
+				) => {
+					statusCode: number;
+					response: {
+						data: unknown;
+						errors: Array<{
+							message: string;
+							locations?: Array<{ line: number; column: number }>;
+							path?: Array<string | number>;
+							extensions: Record<string, unknown>;
+						}>;
+					};
+				};
+			};
+
+			const mockExecution = {
+				data: null,
+				errors: [
+					{
+						message: "Unauthorized",
+						extensions: { code: "UNAUTHENTICATED" },
+					},
+					{
+						message: "Field not found",
+						path: ["query", "nonExistent"],
+						extensions: {
+							code: "GRAPHQL_VALIDATION_FAILED",
+							timestamp: 123456,
+						},
+					},
+				],
+			};
+
+			const mockContext = {
+				reply: {
+					request: {
+						id: "multi-error-789",
+					},
+				},
+			};
+
+			const result = errorFormatterConfig.errorFormatter(
+				mockExecution,
+				mockContext,
+			);
+
+			expect(result).toEqual({
+				statusCode: 200,
+				response: {
+					data: null,
+					errors: [
+						{
+							message: "Unauthorized",
+							locations: undefined,
+							path: undefined,
+							extensions: {
+								code: "UNAUTHENTICATED",
+								correlationId: "multi-error-789",
+							},
+						},
+						{
+							message: "Field not found",
+							locations: undefined,
+							path: ["query", "nonExistent"],
+							extensions: {
+								code: "GRAPHQL_VALIDATION_FAILED",
+								timestamp: 123456,
+								correlationId: "multi-error-789",
+							},
+						},
+					],
+				},
+			});
+		});
+
+		it("should return null data when execution data is undefined", async () => {
+			const { graphql } = await import("~/src/routes/graphql");
+
+			await graphql(mockFastifyInstance as unknown as FastifyInstance);
+
+			const mercuriusCall = mockFastifyInstance.register.mock.calls.find(
+				(call) => call?.[1]?.errorFormatter,
+			);
+
+			const errorFormatterConfig = mercuriusCall?.[1] as {
+				errorFormatter: (
+					execution: {
+						data?: unknown;
+						errors: Array<{
+							message: string;
+							locations?: Array<{ line: number; column: number }>;
+							path?: Array<string | number>;
+							extensions?: Record<string, unknown>;
+						}>;
+					},
+					context: {
+						reply: {
+							request: {
+								id: string;
+							};
+						};
+					},
+				) => {
+					statusCode: number;
+					response: {
+						data: unknown;
+						errors: Array<{
+							message: string;
+							locations?: Array<{ line: number; column: number }>;
+							path?: Array<string | number>;
+							extensions: Record<string, unknown>;
+						}>;
+					};
+				};
+			};
+
+			const mockExecution = {
+				errors: [
+					{
+						message: "Parse error",
+					},
+				],
+			};
+
+			const mockContext = {
+				reply: {
+					request: {
+						id: "no-data-req",
+					},
+				},
+			};
+
+			const result = errorFormatterConfig.errorFormatter(
+				mockExecution,
+				mockContext,
+			);
+
+			expect(result.response.data).toBeNull();
+			expect(result.statusCode).toBe(200);
+		});
+	});
 });
