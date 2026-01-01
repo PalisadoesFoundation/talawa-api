@@ -5,71 +5,8 @@
     {
       "idx": 0,
       "version": "7",
-      "when": 1767204363517,
-      "tag": "20251231180603_slippery_jackal",
-      "breakpoints": true
-    },
-    {
-      "idx": 8,
-      "version": "7",
-      "when": 1765452377949,
-      "tag": "20251211112617_chilly_spectrum",
-      "breakpoints": true
-    },
-    {
-      "idx": 9,
-      "version": "7",
-      "when": 1765920399896,
-      "tag": "20251216212639_fixed_dark_beast",
-      "breakpoints": true
-    },
-    {
-      "idx": 10,
-      "version": "7",
-      "when": 1766075652257,
-      "tag": "20251218163412_groovy_klaw",
-      "breakpoints": true
-    },
-    {
-      "idx": 11,
-      "version": "7",
-      "when": 1766306028197,
-      "tag": "20251221083348_hesitant_rafael_vega",
-      "breakpoints": true
-    },
-    {
-      "idx": 12,
-      "version": "7",
-      "when": 1766458491426,
-      "tag": "20251223025451_slimy_franklin_richards",
-      "breakpoints": true
-    },
-    {
-      "idx": 13,
-      "version": "7",
-      "when": 1766653730858,
-      "tag": "20251225090850_grey_hellfire_club",
-      "breakpoints": true
-    },
-    {
-      "idx": 14,
-      "version": "7",
-      "when": 1766670369128,
-      "tag": "20251225134609_slimy_trish_tilby",
-      "breakpoints": true
-    },
-    {
-      "idx": 15,
-      "version": "7",
-      "when": 1766736302722,
-      "tag": "20251226080502_exotic_klaw",
-      "breakpoints": true
-    },
-    {
-      "idx": 16,
-      "version": "7",
-      "when": 1766912475911,
-      "tag": "20251228090115_faulty_lizard",
+      "when": 1767287585962,
+      "tag": "20260101171305_magenta_inertia",
       "breakpoints": true
     }
   ]

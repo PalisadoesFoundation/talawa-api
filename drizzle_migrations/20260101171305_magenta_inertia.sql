@@ -96,7 +96,7 @@ CREATE TABLE "agenda_folders" (
 	"is_default_folder" boolean DEFAULT false NOT NULL,
 	"name" text NOT NULL,
 	"parent_folder_id" uuid,
-	"organization_id" uuid,
+	"organization_id" uuid NOT NULL,
 	"sequence" integer,
 	"updated_at" timestamp (3) with time zone,
 	"updater_id" uuid
@@ -396,6 +396,7 @@ CREATE TABLE "events" (
 	"organization_id" uuid NOT NULL,
 	"start_at" timestamp (3) with time zone NOT NULL,
 	"all_day" boolean DEFAULT false NOT NULL,
+	"is_invite_only" boolean DEFAULT false NOT NULL,
 	"is_public" boolean DEFAULT false NOT NULL,
 	"is_registerable" boolean DEFAULT false NOT NULL,
 	"location" text,
@@ -444,6 +445,7 @@ CREATE TABLE "fund_campaigns" (
 	"end_at" timestamp (3) with time zone NOT NULL,
 	"fund_id" uuid NOT NULL,
 	"goal_amount" integer NOT NULL,
+	"amount_raised" integer DEFAULT 0 NOT NULL,
 	"id" uuid PRIMARY KEY NOT NULL,
 	"name" text NOT NULL,
 	"start_at" timestamp (3) with time zone NOT NULL,
@@ -456,6 +458,9 @@ CREATE TABLE "funds" (
 	"creator_id" uuid,
 	"id" uuid PRIMARY KEY NOT NULL,
 	"is_tax_deductible" boolean NOT NULL,
+	"is_default" boolean DEFAULT false NOT NULL,
+	"is_archived" boolean DEFAULT false NOT NULL,
+	"reference_number" text,
 	"name" text NOT NULL,
 	"organization_id" uuid NOT NULL,
 	"updated_at" timestamp (3) with time zone,
@@ -538,6 +543,16 @@ CREATE TABLE "organizations" (
 	CONSTRAINT "organizations_name_unique" UNIQUE("name")
 );
 --> statement-breakpoint
+CREATE TABLE "password_reset_tokens" (
+	"id" uuid PRIMARY KEY NOT NULL,
+	"token_hash" text NOT NULL,
+	"user_id" uuid NOT NULL,
+	"expires_at" timestamp (3) with time zone,
+	"used_at" timestamp (3) with time zone,
+	"created_at" timestamp (3) with time zone DEFAULT now() NOT NULL,
+	CONSTRAINT "password_reset_tokens_token_hash_unique" UNIQUE("token_hash")
+);
+--> statement-breakpoint
 CREATE TABLE "plugins" (
 	"id" uuid PRIMARY KEY NOT NULL,
 	"plugin_id" text NOT NULL,
@@ -573,6 +588,7 @@ CREATE TABLE "post_votes" (
 --> statement-breakpoint
 CREATE TABLE "posts" (
 	"caption" text NOT NULL,
+	"body" text,
 	"created_at" timestamp (3) with time zone DEFAULT now() NOT NULL,
 	"creator_id" uuid NOT NULL,
 	"id" uuid PRIMARY KEY NOT NULL,
@@ -620,6 +636,15 @@ CREATE TABLE "recurring_event_instances" (
 	"total_count" integer
 );
 --> statement-breakpoint
+CREATE TABLE "refresh_tokens" (
+	"id" uuid PRIMARY KEY NOT NULL,
+	"token_hash" text NOT NULL,
+	"user_id" uuid NOT NULL,
+	"expires_at" timestamp (3) with time zone NOT NULL,
+	"revoked_at" timestamp (3) with time zone,
+	"created_at" timestamp (3) with time zone DEFAULT now() NOT NULL
+);
+--> statement-breakpoint
 CREATE TABLE "tag_assignments" (
 	"assignee_id" uuid NOT NULL,
 	"created_at" timestamp (3) with time zone DEFAULT now() NOT NULL,
@@ -664,9 +689,12 @@ CREATE TABLE "users" (
 	"education_grade" text,
 	"email_address" text NOT NULL,
 	"employment_status" text,
+	"failed_login_attempts" integer DEFAULT 0 NOT NULL,
 	"home_phone_number" text,
 	"id" uuid PRIMARY KEY NOT NULL,
 	"is_email_address_verified" boolean NOT NULL,
+	"last_failed_login_at" timestamp (3) with time zone,
+	"locked_until" timestamp (3) with time zone,
 	"marital_status" text,
 	"mobile_phone_number" text,
 	"name" text NOT NULL,
@@ -850,6 +878,7 @@ ALTER TABLE "organization_memberships" ADD CONSTRAINT "organization_memberships_
 ALTER TABLE "organization_memberships" ADD CONSTRAINT "organization_memberships_updater_id_users_id_fk" FOREIGN KEY ("updater_id") REFERENCES "public"."users"("id") ON DELETE set null ON UPDATE cascade;--> statement-breakpoint
 ALTER TABLE "organizations" ADD CONSTRAINT "organizations_creator_id_users_id_fk" FOREIGN KEY ("creator_id") REFERENCES "public"."users"("id") ON DELETE set null ON UPDATE cascade;--> statement-breakpoint
 ALTER TABLE "organizations" ADD CONSTRAINT "organizations_updater_id_users_id_fk" FOREIGN KEY ("updater_id") REFERENCES "public"."users"("id") ON DELETE set null ON UPDATE cascade;--> statement-breakpoint
+ALTER TABLE "password_reset_tokens" ADD CONSTRAINT "password_reset_tokens_user_id_users_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."users"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "post_attachments" ADD CONSTRAINT "post_attachments_creator_id_users_id_fk" FOREIGN KEY ("creator_id") REFERENCES "public"."users"("id") ON DELETE set null ON UPDATE cascade;--> statement-breakpoint
 ALTER TABLE "post_attachments" ADD CONSTRAINT "post_attachments_post_id_posts_id_fk" FOREIGN KEY ("post_id") REFERENCES "public"."posts"("id") ON DELETE cascade ON UPDATE cascade;--> statement-breakpoint
 ALTER TABLE "post_attachments" ADD CONSTRAINT "post_attachments_updater_id_users_id_fk" FOREIGN KEY ("updater_id") REFERENCES "public"."users"("id") ON DELETE set null ON UPDATE cascade;--> statement-breakpoint
@@ -865,6 +894,7 @@ ALTER TABLE "recurrence_rules" ADD CONSTRAINT "recurrence_rules_updater_id_users
 ALTER TABLE "recurring_event_instances" ADD CONSTRAINT "recurring_event_instances_base_recurring_event_id_events_id_fk" FOREIGN KEY ("base_recurring_event_id") REFERENCES "public"."events"("id") ON DELETE cascade ON UPDATE cascade;--> statement-breakpoint
 ALTER TABLE "recurring_event_instances" ADD CONSTRAINT "recurring_event_instances_recurrence_rule_id_recurrence_rules_id_fk" FOREIGN KEY ("recurrence_rule_id") REFERENCES "public"."recurrence_rules"("id") ON DELETE cascade ON UPDATE cascade;--> statement-breakpoint
 ALTER TABLE "recurring_event_instances" ADD CONSTRAINT "recurring_event_instances_organization_id_organizations_id_fk" FOREIGN KEY ("organization_id") REFERENCES "public"."organizations"("id") ON DELETE cascade ON UPDATE cascade;--> statement-breakpoint
+ALTER TABLE "refresh_tokens" ADD CONSTRAINT "refresh_tokens_user_id_users_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."users"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "tag_assignments" ADD CONSTRAINT "tag_assignments_assignee_id_users_id_fk" FOREIGN KEY ("assignee_id") REFERENCES "public"."users"("id") ON DELETE cascade ON UPDATE cascade;--> statement-breakpoint
 ALTER TABLE "tag_assignments" ADD CONSTRAINT "tag_assignments_creator_id_users_id_fk" FOREIGN KEY ("creator_id") REFERENCES "public"."users"("id") ON DELETE set null ON UPDATE cascade;--> statement-breakpoint
 ALTER TABLE "tag_assignments" ADD CONSTRAINT "tag_assignments_tag_id_tags_id_fk" FOREIGN KEY ("tag_id") REFERENCES "public"."tags"("id") ON DELETE cascade ON UPDATE cascade;--> statement-breakpoint
@@ -977,6 +1007,10 @@ CREATE INDEX "event_attendees_checkout_time_idx" ON "event_attendees" USING btre
 CREATE INDEX "event_attendees_feedback_submitted_idx" ON "event_attendees" USING btree ("feedback_submitted");--> statement-breakpoint
 CREATE INDEX "event_attendees_user_event_idx" ON "event_attendees" USING btree ("user_id","event_id");--> statement-breakpoint
 CREATE INDEX "event_attendees_user_recurring_instance_idx" ON "event_attendees" USING btree ("user_id","recurring_event_instance_id");--> statement-breakpoint
+CREATE INDEX "event_attendees_user_invited_event_idx" ON "event_attendees" USING btree ("user_id","is_invited","event_id");--> statement-breakpoint
+CREATE INDEX "event_attendees_user_invited_recurring_instance_idx" ON "event_attendees" USING btree ("user_id","is_invited","recurring_event_instance_id");--> statement-breakpoint
+CREATE INDEX "event_attendees_user_registered_event_idx" ON "event_attendees" USING btree ("user_id","is_registered","event_id");--> statement-breakpoint
+CREATE INDEX "event_attendees_user_registered_recurring_instance_idx" ON "event_attendees" USING btree ("user_id","is_registered","recurring_event_instance_id");--> statement-breakpoint
 CREATE INDEX "event_attendees_created_at_idx" ON "event_attendees" USING btree ("created_at");--> statement-breakpoint
 CREATE INDEX "ee_recurring_event_instance_id_idx" ON "event_exceptions" USING btree ("recurring_event_instance_id");--> statement-breakpoint
 CREATE INDEX "ee_organization_id_idx" ON "event_exceptions" USING btree ("organization_id");--> statement-breakpoint
@@ -1016,6 +1050,7 @@ CREATE INDEX "events_name_idx" ON "events" USING btree ("name");--> statement-br
 CREATE INDEX "events_organization_id_idx" ON "events" USING btree ("organization_id");--> statement-breakpoint
 CREATE INDEX "events_start_at_idx" ON "events" USING btree ("start_at");--> statement-breakpoint
 CREATE INDEX "events_all_day_idx" ON "events" USING btree ("all_day");--> statement-breakpoint
+CREATE INDEX "events_is_invite_only_idx" ON "events" USING btree ("is_invite_only");--> statement-breakpoint
 CREATE INDEX "events_is_public_idx" ON "events" USING btree ("is_public");--> statement-breakpoint
 CREATE INDEX "events_is_registerable_idx" ON "events" USING btree ("is_registerable");--> statement-breakpoint
 CREATE INDEX "events_is_recurring_template_idx" ON "events" USING btree ("is_recurring_template");--> statement-breakpoint
@@ -1065,6 +1100,8 @@ CREATE INDEX "organization_memberships_role_index" ON "organization_memberships"
 CREATE INDEX "organizations_creator_id_index" ON "organizations" USING btree ("creator_id");--> statement-breakpoint
 CREATE INDEX "organizations_name_index" ON "organizations" USING btree ("name");--> statement-breakpoint
 CREATE INDEX "organizations_updater_id_index" ON "organizations" USING btree ("updater_id");--> statement-breakpoint
+CREATE INDEX "password_reset_tokens_user_id_idx" ON "password_reset_tokens" USING btree ("user_id");--> statement-breakpoint
+CREATE INDEX "password_reset_tokens_expires_at_idx" ON "password_reset_tokens" USING btree ("expires_at");--> statement-breakpoint
 CREATE INDEX "plugins_is_activated_index" ON "plugins" USING btree ("is_activated");--> statement-breakpoint
 CREATE INDEX "plugins_is_installed_index" ON "plugins" USING btree ("is_installed");--> statement-breakpoint
 CREATE INDEX "post_attachments_created_at_index" ON "post_attachments" USING btree ("created_at");--> statement-breakpoint
@@ -1100,6 +1137,9 @@ CREATE INDEX "reei_org_active_instances_idx" ON "recurring_event_instances" USIN
 CREATE INDEX "reei_base_event_instance_time_idx" ON "recurring_event_instances" USING btree ("base_recurring_event_id","original_instance_start_time");--> statement-breakpoint
 CREATE INDEX "reei_cleanup_candidates_idx" ON "recurring_event_instances" USING btree ("actual_end_time","recurringEventd_at");--> statement-breakpoint
 CREATE INDEX "reei_sequence_number_idx" ON "recurring_event_instances" USING btree ("base_recurring_event_id","sequence_number");--> statement-breakpoint
+CREATE INDEX "refresh_tokens_user_id_idx" ON "refresh_tokens" USING btree ("user_id");--> statement-breakpoint
+CREATE INDEX "refresh_tokens_token_hash_idx" ON "refresh_tokens" USING btree ("token_hash");--> statement-breakpoint
+CREATE INDEX "refresh_tokens_expires_at_idx" ON "refresh_tokens" USING btree ("expires_at");--> statement-breakpoint
 CREATE INDEX "tag_assignments_assignee_id_index" ON "tag_assignments" USING btree ("assignee_id");--> statement-breakpoint
 CREATE INDEX "tag_assignments_created_at_index" ON "tag_assignments" USING btree ("created_at");--> statement-breakpoint
 CREATE INDEX "tag_assignments_creator_id_index" ON "tag_assignments" USING btree ("creator_id");--> statement-breakpoint

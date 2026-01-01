@@ -78,7 +78,9 @@ export const agendaFoldersTable = pgTable(
 				onUpdate: "cascade",
 			},
 		),
-		organizationId: uuid("organization_id").references(
+		organizationId: uuid("organization_id")
+		.notNull()
+		.references(
 			() => organizationsTable.id,
 			{
 				onDelete: "cascade",
