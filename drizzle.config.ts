@@ -1,7 +1,7 @@
 /**
  * More information at this link: {@link https://orm.drizzle.team/kit-docs/config-reference}
  */
-import { type Static, Type } from "@sinclair/typebox";
+import { type Static, Type } from "typebox";
 import { defineConfig } from "drizzle-kit";
 import { envSchema } from "env-schema";
 import { envConfigSchema, envSchemaAjv } from "./src/envConfigSchema";

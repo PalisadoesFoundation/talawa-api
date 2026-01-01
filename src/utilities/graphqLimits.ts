@@ -1,4 +1,4 @@
-import { type Static, Type } from "@sinclair/typebox";
+import { type Static, Type } from "typebox";
 import { envSchema } from "env-schema";
 import { envConfigSchema, envSchemaAjv } from "../envConfigSchema";
 

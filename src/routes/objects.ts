@@ -1,6 +1,6 @@
 import type { Readable } from "node:stream";
 import type { FastifyPluginAsyncTypebox } from "@fastify/type-provider-typebox";
-import { Type } from "@sinclair/typebox";
+import { Type } from "typebox";
 import { type BucketItemStat, S3Error } from "minio";
 
 /**
