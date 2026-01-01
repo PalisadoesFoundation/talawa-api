@@ -2,7 +2,16 @@ import { faker } from "@faker-js/faker";
 import type { ResultOf, VariablesOf } from "gql.tada";
 import { print } from "graphql";
 import { assertToBeNonNullish } from "test/helpers";
-import { afterEach, beforeEach, expect, suite, test, vi } from "vitest";
+import {
+	afterAll,
+	afterEach,
+	beforeAll,
+	beforeEach,
+	expect,
+	suite,
+	test,
+	vi,
+} from "vitest";
 import { COOKIE_NAMES } from "~/src/utilities/cookieConfig";
 import type {
 	ForbiddenActionExtensions,
@@ -148,6 +157,18 @@ async function createTestOrganization(
 }
 
 suite("Mutation field signUp", () => {
+	let originalRecaptchaSecretKey: string | undefined;
+	beforeAll(() => {
+		// Save original value for restoration
+		originalRecaptchaSecretKey = server.envConfig.RECAPTCHA_SECRET_KEY;
+
+		// make reCaptcha key undefined as they are tested in different test suite
+		server.envConfig.RECAPTCHA_SECRET_KEY = undefined;
+	});
+	afterAll(() => {
+		// Restore original env config
+		server.envConfig.RECAPTCHA_SECRET_KEY = originalRecaptchaSecretKey;
+	});
 	suite(
 		`results in a graphql error with "forbidden_action" extensions code in the "errors" field and "null" as the value of "data.signUp" field if`,
 		() => {
@@ -921,7 +942,12 @@ suite("Mutation field signUp", () => {
 			expect(result.data.signUp?.user?.emailAddress).toContain("@example.com");
 		});
 
-		test("should require reCAPTCHA token when RECAPTCHA_SECRET_KEY is configured but token is not provided", async () => {
+		test.each([
+			{ scenario: "token not provided", token: undefined },
+			{ scenario: "token is empty string", token: "" },
+		])("should require reCAPTCHA token when RECAPTCHA_SECRET_KEY is configured but $scenario", async ({
+			token,
+		}) => {
 			// Set a mock reCAPTCHA secret key
 			server.envConfig.RECAPTCHA_SECRET_KEY = "test-secret-key";
 
@@ -932,45 +958,7 @@ suite("Mutation field signUp", () => {
 						name: "Test User",
 						password: "password123",
 						selectedOrganization: testOrg.orgId,
-						// No recaptchaToken provided
-					},
-				},
-			});
-
-			expect(result.data.signUp).toEqual(null);
-			expect(result.errors).toEqual(
-				expect.arrayContaining<TalawaGraphQLFormattedError>([
-					expect.objectContaining<TalawaGraphQLFormattedError>({
-						extensions: expect.objectContaining<InvalidArgumentsExtensions>({
-							code: "invalid_arguments",
-							issues: expect.arrayContaining<
-								InvalidArgumentsExtensions["issues"][number]
-							>([
-								{
-									argumentPath: ["input", "recaptchaToken"],
-									message: "reCAPTCHA token is required.",
-								},
-							]),
-						}),
-						message: expect.any(String),
-						path: ["signUp"],
-					}),
-				]),
-			);
-		});
-
-		test("should require reCAPTCHA token when RECAPTCHA_SECRET_KEY is configured but token is empty string", async () => {
-			// Set a mock reCAPTCHA secret key
-			server.envConfig.RECAPTCHA_SECRET_KEY = "test-secret-key";
-
-			const result = await mercuriusClient.mutate(Mutation_signUp, {
-				variables: {
-					input: {
-						emailAddress: `test${faker.string.uuid()}@example.com`,
-						name: "Test User",
-						password: "password123",
-						selectedOrganization: testOrg.orgId,
-						recaptchaToken: "",
+						...(token !== undefined && { recaptchaToken: token }),
 					},
 				},
 			});

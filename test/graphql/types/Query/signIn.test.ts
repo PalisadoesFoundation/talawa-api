@@ -38,8 +38,13 @@ suite("Query field signIn", () => {
 	let user1Email = "";
 	let adminAuth = "";
 	let orgId = "";
-
+	let originalRecaptchaSecret: string | undefined;
 	beforeAll(async () => {
+		// Save original value for restoration
+		originalRecaptchaSecret = server.envConfig.RECAPTCHA_SECRET_KEY;
+
+		// make reCaptcha key undefined as they are tested in different test suite
+		server.envConfig.RECAPTCHA_SECRET_KEY = undefined;
 		const administratorUserSignInResult = await mercuriusClient.query(
 			Query_signIn,
 			{
@@ -114,6 +119,9 @@ suite("Query field signIn", () => {
 	});
 
 	afterAll(async () => {
+		// Restore original env config
+		server.envConfig.RECAPTCHA_SECRET_KEY = originalRecaptchaSecret;
+
 		await mercuriusClient.mutate(Mutation_deleteUser, {
 			headers: {
 				authorization: `bearer ${adminAuth}`,
@@ -949,7 +957,12 @@ suite("Query field signIn", () => {
 			expect(result.data.signIn?.user?.emailAddress).toBe(user1Email);
 		});
 
-		test("should require reCAPTCHA token when RECAPTCHA_SECRET_KEY is configured but token is not provided", async () => {
+		test.each([
+			{ scenario: "token not provided", token: undefined },
+			{ scenario: "token is empty string", token: "" },
+		])("should require reCAPTCHA token when RECAPTCHA_SECRET_KEY is configured but $scenario", async ({
+			token,
+		}) => {
 			// Set a mock reCAPTCHA secret key
 			server.envConfig.RECAPTCHA_SECRET_KEY = "test-secret-key";
 
@@ -958,7 +971,7 @@ suite("Query field signIn", () => {
 					input: {
 						emailAddress: user1Email,
 						password: "password",
-						// No recaptchaToken provided
+						...(token !== undefined && { recaptchaToken: token }),
 					},
 				},
 			});
@@ -1011,42 +1024,6 @@ suite("Query field signIn", () => {
 								{
 									argumentPath: ["input", "recaptchaToken"],
 									message: "Expected string, received null",
-								},
-							]),
-						}),
-						message: expect.any(String),
-						path: ["signIn"],
-					}),
-				]),
-			);
-		});
-
-		test("should require reCAPTCHA token when RECAPTCHA_SECRET_KEY is configured but token is empty string", async () => {
-			// Set a mock reCAPTCHA secret key
-			server.envConfig.RECAPTCHA_SECRET_KEY = "test-secret-key";
-
-			const result = await mercuriusClient.query(Query_signIn, {
-				variables: {
-					input: {
-						emailAddress: user1Email,
-						password: "password",
-						recaptchaToken: "",
-					},
-				},
-			});
-
-			expect(result.data.signIn).toEqual(null);
-			expect(result.errors).toEqual(
-				expect.arrayContaining<TalawaGraphQLFormattedError>([
-					expect.objectContaining<TalawaGraphQLFormattedError>({
-						extensions: expect.objectContaining<InvalidArgumentsExtensions>({
-							code: "invalid_arguments",
-							issues: expect.arrayContaining<
-								InvalidArgumentsExtensions["issues"][number]
-							>([
-								{
-									argumentPath: ["input", "recaptchaToken"],
-									message: "reCAPTCHA token is required.",
 								},
 							]),
 						}),
