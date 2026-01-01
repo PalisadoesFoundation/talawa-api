@@ -26,7 +26,7 @@ Redis-backed cache service for caching entities and query results.
 
 > `optional` **cookie**: `object`
 
-Defined in: [src/graphql/context.ts:76](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/graphql/context.ts#L76)
+Defined in: [src/graphql/context.ts:81](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/graphql/context.ts#L81)
 
 Cookie helper for setting HTTP-Only authentication cookies.
 Only available for HTTP requests (not WebSocket subscriptions).
@@ -115,7 +115,7 @@ Defined in: [src/graphql/context.ts:54](https://github.com/PalisadoesFoundation/
 
 > **jwt**: `object`
 
-Defined in: [src/graphql/context.ts:69](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/graphql/context.ts#L69)
+Defined in: [src/graphql/context.ts:74](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/graphql/context.ts#L74)
 
 #### sign()
 
@@ -137,7 +137,7 @@ Defined in: [src/graphql/context.ts:69](https://github.com/PalisadoesFoundation/
 
 > **log**: `FastifyInstance`\[`"log"`\]
 
-Defined in: [src/graphql/context.ts:92](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/graphql/context.ts#L92)
+Defined in: [src/graphql/context.ts:97](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/graphql/context.ts#L97)
 
 ***
 
@@ -145,7 +145,7 @@ Defined in: [src/graphql/context.ts:92](https://github.com/PalisadoesFoundation/
 
 > **minio**: `FastifyInstance`\[`"minio"`\]
 
-Defined in: [src/graphql/context.ts:93](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/graphql/context.ts#L93)
+Defined in: [src/graphql/context.ts:98](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/graphql/context.ts#L98)
 
 ***
 
@@ -153,7 +153,7 @@ Defined in: [src/graphql/context.ts:93](https://github.com/PalisadoesFoundation/
 
 > `optional` **notification**: `object`
 
-Defined in: [src/graphql/context.ts:98](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/graphql/context.ts#L98)
+Defined in: [src/graphql/context.ts:103](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/graphql/context.ts#L103)
 
 Per-request notification helper. Implementations may enqueue notifications
 for delivery and support flush() to perform delivery after transaction commit.

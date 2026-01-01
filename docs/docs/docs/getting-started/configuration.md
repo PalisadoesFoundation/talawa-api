@@ -49,6 +49,7 @@ This table defines the most important parameters in the file that will be requir
 | `CADDY_TALAWA_API_EMAIL`               | Email address for the Talawa API, used for SSL certificate registration and notifications.                                    |
 | `MINIO_ROOT_PASSWORD`                  | Root password for MinIO, used for securing administrative access to MinIO object storage.                                     |
 | `POSTGRES_PASSWORD`                    | Password for the PostgreSQL database (Docker Compose), used for database authentication and security.                         |
+| `RECAPTCHA_SECRET_KEY` | Secret key for Google reCAPTCHA, used for server-side verification of reCAPTCHA responses to prevent automated abuse and bots. |
 
 ## Production Environment Setup
 
@@ -142,6 +143,34 @@ You will need to update the `.env` file with the following information.
 
 ```
 API_COMMUNITY_NAME
+```
+
+#### Update the reCAPTCHA Configuration
+
+You will need to update the `.env` file with the following information.
+
+```
+RECAPTCHA_SECRET_KEY
+```
+
+For development, testing, and CI environments, you may use Google’s **official reCAPTCHA test keys**, which always pass verification and are safe for automated testing tools like Cypress.
+
+**Test Keys (Recommended for Development & CI):**
+
+- **Site key**
+```
+6LeIxAcTAAAAAJcZVRqyHh71UMIEGNQ_MXjiZKhI
+```
+
+- **Secret key**
+```
+6LeIxAcTAAAAAGG-vFI1TnRWxMZNFuojJ4WifJWe
+```
+
+Add the **secret key** to your `.env` file:
+
+```env
+RECAPTCHA_SECRET_KEY=6LeIxAcTAAAAAGG-vFI1TnRWxMZNFuojJ4WifJWe
 ```
 
 ### Operating the Production Server
