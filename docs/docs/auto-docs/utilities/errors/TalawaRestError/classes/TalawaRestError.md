@@ -53,31 +53,27 @@ Creates a new TalawaRestError instance.
 
 ##### args
 
-Error configuration object.
+Error configuration object containing:
+  - code: Standardized error code from ErrorCode enum
+  - message: Human-readable error message
+  - details: Optional additional error context and details
+  - statusCodeOverride: Optional HTTP status code override
 
 ###### code
 
 [`ErrorCode`](../../errorCodes/enumerations/ErrorCode.md)
 
-Standardized error code from ErrorCode enum
-
 ###### details?
 
 `unknown`
-
-Optional additional error context and details
 
 ###### message
 
 `string`
 
-Human-readable error message
-
 ###### statusCodeOverride?
 
 `number`
-
-Optional HTTP status code override
 
 #### Returns
 

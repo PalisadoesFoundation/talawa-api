@@ -36,7 +36,7 @@ GraphQL context containing database connections and user info
 
 > **createDirectEmailNotification**(`eventType`, `variables`, `receiverMail`, `channelType`): `Promise`\<`string`\>
 
-Defined in: [src/graphql/types/Notification/Notification\_engine.ts:397](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/graphql/types/Notification/Notification_engine.ts#L397)
+Defined in: [src/graphql/types/Notification/Notification\_engine.ts:399](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/graphql/types/Notification/Notification_engine.ts#L399)
 
 Creates a direct email notification for external recipients (non-users).
 Uses the template system with provided variables for rendering.

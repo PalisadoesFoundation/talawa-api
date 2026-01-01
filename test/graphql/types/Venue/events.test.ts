@@ -1278,4 +1278,70 @@ suite("Venue events Field", () => {
 			]),
 		);
 	});
+	test("should throw internal server error when event data is missing/malformed", async () => {
+		const createOrgResult = await mercuriusClient.mutate(
+			Mutation_createOrganization,
+			{
+				headers: { authorization: `Bearer ${authToken}` },
+				variables: {
+					input: {
+						name: `Malformed Event Venue Org ${faker.string.uuid()}`,
+						description: "Org with venue with malformed event data",
+					},
+				},
+			},
+		);
+		const orgId = createOrgResult.data?.createOrganization?.id;
+		assertToBeNonNullish(orgId);
+
+		const createVenueResult = await mercuriusClient.mutate(
+			Mutation_createVenue,
+			{
+				headers: { authorization: `Bearer ${authToken}` },
+				variables: {
+					input: {
+						name: `Test Venue ${faker.string.uuid()}`,
+						description: "Test venue with malformed event",
+						organizationId: orgId,
+						capacity: 100,
+					},
+				},
+			},
+		);
+
+		const venueId = createVenueResult.data?.createVenue?.id;
+		assertToBeNonNullish(venueId);
+
+		const findManySpy = vi
+			.spyOn(server.drizzleClient.query.venueBookingsTable, "findMany")
+			.mockResolvedValueOnce([
+				{
+					createdAt: new Date(),
+					eventId: "test-event-id",
+					venueId: venueId,
+					event: undefined,
+				} as unknown as Awaited<
+					ReturnType<
+						typeof server.drizzleClient.query.venueBookingsTable.findMany
+					>
+				>[0],
+			]);
+
+		const result = await mercuriusClient.query(VenueEventsQuery, {
+			headers: { authorization: `Bearer ${authToken}` },
+			variables: { input: { id: venueId }, first: 10 },
+		});
+
+		expect(findManySpy).toHaveBeenCalled();
+		expect(result.data?.venue?.events).toBeNull();
+		expect(result.errors).toEqual(
+			expect.arrayContaining([
+				expect.objectContaining({
+					extensions: expect.objectContaining({
+						code: "internal_server_error",
+					}),
+				}),
+			]),
+		);
+	});
 });

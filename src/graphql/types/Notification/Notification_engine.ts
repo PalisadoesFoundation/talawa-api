@@ -88,8 +88,10 @@ export class NotificationEngine {
 
 		if (!template) {
 			throw new TalawaGraphQLError({
+				message:
+					"Notification template not found for the specified event type and channel type",
 				extensions: {
-					code: "arguments_associated_resources_not_found",
+					code: ErrorCode.ARGUMENTS_ASSOCIATED_RESOURCES_NOT_FOUND,
 					issues: [
 						{
 							argumentPath: ["eventType", "channelType"],
@@ -413,8 +415,10 @@ export class NotificationEngine {
 			});
 		if (!template) {
 			throw new TalawaGraphQLError({
+				message:
+					"Notification template not found for the specified event type and channel type",
 				extensions: {
-					code: "arguments_associated_resources_not_found",
+					code: ErrorCode.ARGUMENTS_ASSOCIATED_RESOURCES_NOT_FOUND,
 					issues: [
 						{
 							argumentPath: ["eventType", "channelType"],

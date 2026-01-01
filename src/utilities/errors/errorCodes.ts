@@ -46,6 +46,9 @@ export enum ErrorCode {
 	/** Request conflicts with current resource state (HTTP 409) */
 	CONFLICT = "conflict",
 
+	/** Required associated resources were not found (HTTP 404) */
+	ARGUMENTS_ASSOCIATED_RESOURCES_NOT_FOUND = "arguments_associated_resources_not_found",
+
 	/** Too many requests from client (HTTP 429) */
 	RATE_LIMIT_EXCEEDED = "rate_limit_exceeded",
 	/** Using deprecated API features (HTTP 400) */
@@ -86,6 +89,8 @@ export const ERROR_CODE_TO_HTTP_STATUS: Record<ErrorCode, number> = {
 
 	[ErrorCode.ALREADY_EXISTS]: 409,
 	[ErrorCode.CONFLICT]: 409,
+
+	[ErrorCode.ARGUMENTS_ASSOCIATED_RESOURCES_NOT_FOUND]: 404,
 
 	[ErrorCode.RATE_LIMIT_EXCEEDED]: 429,
 

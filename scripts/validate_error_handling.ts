@@ -91,7 +91,7 @@ interface ValidationResult {
 }
 
 class ErrorHandlingValidator {
-	private result: ValidationResult = {
+	public result: ValidationResult = {
 		violations: [],
 		fileCount: 0,
 		violationCount: 0,
@@ -142,8 +142,15 @@ class ErrorHandlingValidator {
 				// Filter modified files to only those that match our scan scope
 				return modifiedFiles.filter((file) => this.shouldScanFile(file));
 			}
-			console.log("No modified files detected. Skipping validation.");
-			return [];
+
+			if (process.env.CI || process.env.GITHUB_BASE_REF) {
+				console.log(
+					"No modified files detected in CI context. Falling back to full scan pattern check.",
+				);
+			} else {
+				console.log("No modified files detected. Skipping validation.");
+				return [];
+			}
 		} catch (_error) {
 			console.warn(
 				"Could not determine modified files, falling back to full scan pattern check.",
@@ -168,6 +175,38 @@ class ErrorHandlingValidator {
 	}
 
 	private getModifiedFiles(): string[] {
+		const isCI = process.env.CI || process.env.GITHUB_BASE_REF;
+
+		if (isCI) {
+			try {
+				const baseRef = process.env.GITHUB_BASE_REF || "develop";
+				// Fetch is necessary in some CI environments (like shallow clones)
+				try {
+					execSync(`git fetch origin ${baseRef}`, {
+						cwd: rootDir,
+						stdio: "ignore",
+					});
+				} catch {
+					// Ignore fetch errors, might already have refs
+				}
+
+				const diffCommand = `git diff --name-only origin/${baseRef}...HEAD`;
+				return execSync(diffCommand, {
+					cwd: rootDir,
+					encoding: "utf8",
+					stdio: ["pipe", "pipe", "ignore"],
+				})
+					.split("\n")
+					.filter(Boolean)
+					.map((f) => f.trim());
+			} catch (error) {
+				console.warn(
+					`CI git diff failed: ${(error as Error).message}. Returning empty list to trigger fallback.`,
+				);
+				return [];
+			}
+		}
+
 		try {
 			// Unstaged changes
 			const unstaged = execSync("git diff --name-only", {
@@ -265,6 +304,7 @@ class ErrorHandlingValidator {
 		this.checkGenericError(filePath, lineNumber, line);
 
 		// Checks for empty catch blocks
+		// Known limitation: multiline empty catch blocks won't be detected by this regex.
 		if (/catch\s*\([^)]*\)\s*\{\s*\}/g.test(line)) {
 			this.addViolation(
 				filePath,
@@ -472,9 +512,56 @@ class ErrorHandlingValidator {
 }
 
 async function main(): Promise<void> {
-	const validator = new ErrorHandlingValidator();
-	const exitCode = await validator.validate();
-	process.exit(exitCode);
+	const args = process.argv.slice(2);
+	const fixMode = args.includes("--fix");
+
+	if (fixMode) {
+		console.log("Running error handling validation with auto-fix...\n");
+
+		// First, run validation to identify files with violations
+		const validator = new ErrorHandlingValidator();
+		const exitCode = await validator.validate();
+
+		if (exitCode === 0) {
+			console.log("No violations found. Nothing to fix.");
+			return;
+		}
+
+		// Get files with violations
+		const filesWithViolations = [
+			...new Set(validator.result.violations.map((v) => v.filePath)),
+		];
+
+		if (filesWithViolations.length > 0) {
+			console.log(
+				`\n🔧 Applying Biome formatting to ${filesWithViolations.length} files with violations...\n`,
+			);
+
+			try {
+				// Apply biome formatting only to files with violations
+				const fileList = filesWithViolations.join(" ");
+				execSync(`npx biome check --write ${fileList}`, {
+					stdio: "inherit",
+					cwd: rootDir,
+				});
+
+				console.log("\nBiome formatting applied to files with violations.");
+				console.log(
+					"\n💡 Note: Some error handling issues require manual fixes.",
+				);
+				console.log(
+					"   Run 'pnpm run validate:error-handling' to see remaining issues.",
+				);
+			} catch (error) {
+				console.error("Error applying Biome formatting:", error);
+				process.exit(1);
+			}
+		}
+	} else {
+		const validator = new ErrorHandlingValidator();
+		const exitCode = await validator.validate();
+		process.exit(exitCode);
+	}
 }
 
 if (import.meta.url === `file://${process.argv[1]}`) {

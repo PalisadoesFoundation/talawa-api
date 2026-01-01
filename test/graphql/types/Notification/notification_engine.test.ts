@@ -240,8 +240,46 @@ describe("NotificationEngine (unit tests)", () => {
 				{ targetType: NotificationTargetType.USER, targetIds: ["user_001"] },
 			),
 		).rejects.toThrow(
-			"No associated resources found for the provided arguments.",
+			"Notification template not found for the specified event type and channel type",
 		);
+	});
+
+	test("throws error when notification log creation fails", async () => {
+		const template = createMockTemplate({
+			eventType: "test_event",
+			channelType: "in_app",
+			title: "Test Event",
+			body: "Test body",
+		});
+
+		const { ctx } = createMockContext({ template });
+
+		const mockInsert = vi.fn().mockImplementation((table: unknown) => {
+			if (table === notificationLogsTable) {
+				return {
+					values: vi.fn().mockReturnValue({
+						returning: () => Promise.resolve([]), // Empty array simulates failure
+					}),
+				};
+			}
+			return {
+				values: vi.fn().mockReturnValue({
+					returning: () => Promise.resolve([{ id: "mock_id" }]),
+				}),
+			};
+		});
+
+		ctx.drizzleClient.insert = mockInsert;
+
+		const engine = new NotificationEngine(ctx);
+
+		await expect(
+			engine.createNotification(
+				"test_event",
+				{ name: "Alice" },
+				{ targetType: NotificationTargetType.USER, targetIds: ["user_001"] },
+			),
+		).rejects.toThrow("Something went wrong. Please try again later.");
 	});
 
 	test("creates in-app notification for USER target, excluding sender", async () => {
@@ -967,7 +1005,7 @@ describe("NotificationEngine (unit tests)", () => {
 					"test@example.com",
 				),
 			).rejects.toThrow(
-				"No associated resources found for the provided arguments.",
+				"Notification template not found for the specified event type and channel type",
 			);
 		});
 

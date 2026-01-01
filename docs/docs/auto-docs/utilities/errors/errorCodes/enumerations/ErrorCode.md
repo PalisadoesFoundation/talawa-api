@@ -41,6 +41,16 @@ Resource already exists and cannot be created again (HTTP 409)
 
 ***
 
+### ARGUMENTS\_ASSOCIATED\_RESOURCES\_NOT\_FOUND
+
+> **ARGUMENTS\_ASSOCIATED\_RESOURCES\_NOT\_FOUND**: `"arguments_associated_resources_not_found"`
+
+Defined in: [src/utilities/errors/errorCodes.ts:50](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/utilities/errors/errorCodes.ts#L50)
+
+Required associated resources were not found (HTTP 404)
+
+***
+
 ### CONFLICT
 
 > **CONFLICT**: `"conflict"`
@@ -55,7 +65,7 @@ Request conflicts with current resource state (HTTP 409)
 
 > **DATABASE\_ERROR**: `"database_error"`
 
-Defined in: [src/utilities/errors/errorCodes.ts:57](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/utilities/errors/errorCodes.ts#L57)
+Defined in: [src/utilities/errors/errorCodes.ts:60](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/utilities/errors/errorCodes.ts#L60)
 
 Database operation failed (HTTP 500)
 
@@ -65,7 +75,7 @@ Database operation failed (HTTP 500)
 
 > **DEPRECATED**: `"deprecated"`
 
-Defined in: [src/utilities/errors/errorCodes.ts:52](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/utilities/errors/errorCodes.ts#L52)
+Defined in: [src/utilities/errors/errorCodes.ts:55](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/utilities/errors/errorCodes.ts#L55)
 
 Using deprecated API features (HTTP 400)
 
@@ -75,7 +85,7 @@ Using deprecated API features (HTTP 400)
 
 > **EXTERNAL\_SERVICE\_ERROR**: `"external_service_error"`
 
-Defined in: [src/utilities/errors/errorCodes.ts:59](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/utilities/errors/errorCodes.ts#L59)
+Defined in: [src/utilities/errors/errorCodes.ts:62](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/utilities/errors/errorCodes.ts#L62)
 
 External service is unavailable (HTTP 502)
 
@@ -95,7 +105,7 @@ User role is insufficient for the requested action (HTTP 403)
 
 > **INTERNAL\_SERVER\_ERROR**: `"internal_server_error"`
 
-Defined in: [src/utilities/errors/errorCodes.ts:55](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/utilities/errors/errorCodes.ts#L55)
+Defined in: [src/utilities/errors/errorCodes.ts:58](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/utilities/errors/errorCodes.ts#L58)
 
 Unexpected server error occurred (HTTP 500)
 
@@ -135,7 +145,7 @@ Requested resource does not exist (HTTP 404)
 
 > **RATE\_LIMIT\_EXCEEDED**: `"rate_limit_exceeded"`
 
-Defined in: [src/utilities/errors/errorCodes.ts:50](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/utilities/errors/errorCodes.ts#L50)
+Defined in: [src/utilities/errors/errorCodes.ts:53](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/utilities/errors/errorCodes.ts#L53)
 
 Too many requests from client (HTTP 429)
 

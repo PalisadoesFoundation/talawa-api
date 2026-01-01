@@ -13,6 +13,7 @@ import {
 	getRecurringEventInstancesInDateRange,
 } from "~/src/graphql/types/Query/eventQueries/recurringEventInstanceQueries";
 import type { ServiceDependencies } from "~/src/services/eventGeneration/types";
+import { ErrorCode } from "~/src/utilities/errors/errorCodes";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 
 // Mock the service dependencies
@@ -455,14 +456,32 @@ describe("getRecurringEventInstanceById", () => {
 			undefined,
 		);
 
-		await expect(
-			getRecurringEventInstanceById(
+		let thrownError: TalawaGraphQLError | undefined;
+		try {
+			await getRecurringEventInstanceById(
 				"instance-1",
 				"org-1",
 				mockDrizzleClient,
 				mockLogger,
-			),
-		).rejects.toThrow(TalawaGraphQLError);
+			);
+		} catch (error) {
+			thrownError = error as TalawaGraphQLError;
+		}
+
+		expect(thrownError).toBeInstanceOf(TalawaGraphQLError);
+		expect(thrownError?.extensions?.code).toBe(
+			ErrorCode.ARGUMENTS_ASSOCIATED_RESOURCES_NOT_FOUND,
+		);
+
+		// Ensure issues array exists and has the expected structure
+		const issues = thrownError?.extensions?.issues;
+		expect(issues).toBeDefined();
+		expect(Array.isArray(issues)).toBe(true);
+		expect(issues).toHaveLength(1);
+
+		if (Array.isArray(issues) && issues.length > 0) {
+			expect(issues[0]?.argumentPath).toEqual(["baseRecurringEventId"]);
+		}
 
 		expect(mockLogger.error).toHaveBeenCalledWith(
 			expect.any(TalawaGraphQLError),

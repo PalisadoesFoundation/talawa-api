@@ -10,6 +10,7 @@ import {
 	resolveMultipleInstances,
 } from "~/src/services/eventGeneration/instanceResolver";
 import type { ServiceDependencies } from "~/src/services/eventGeneration/types";
+import { ErrorCode } from "~/src/utilities/errors/errorCodes";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 
 /**
@@ -174,8 +175,9 @@ export async function getRecurringEventInstanceById(
 
 		if (!baseTemplate) {
 			throw new TalawaGraphQLError({
+				message: "Base recurring event template not found",
 				extensions: {
-					code: "arguments_associated_resources_not_found",
+					code: ErrorCode.ARGUMENTS_ASSOCIATED_RESOURCES_NOT_FOUND,
 					issues: [
 						{
 							argumentPath: ["baseRecurringEventId"],

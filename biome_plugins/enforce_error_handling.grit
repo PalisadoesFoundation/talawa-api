@@ -5,7 +5,11 @@ engine marzano(0.1)
 language js
 
 // Pattern: Detect generic Error usage in routes and GraphQL resolvers
-`throw new Error($msg)` where {
+// Pattern: Detect generic Error usage in routes and GraphQL resolvers
+or {
+    `throw new Error($msg)`,
+    `throw Error($msg)`
+} where {
     register_diagnostic(
         span=$msg,
         message="Use TalawaRestError (REST) or TalawaGraphQLError (GraphQL) instead of generic Error",

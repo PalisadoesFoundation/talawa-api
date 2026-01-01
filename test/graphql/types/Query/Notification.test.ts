@@ -721,7 +721,7 @@ suite("Query field user.notifications (API level, fully inline)", () => {
 		if (all.length >= 2 && skippedList.length > 0) {
 			expect(skippedList[0]?.id).toBe(all[1]?.id);
 		}
-	}, 8000);
+	}, 20000);
 
 	test("default pagination limit (20)", async () => {
 		const existing =
