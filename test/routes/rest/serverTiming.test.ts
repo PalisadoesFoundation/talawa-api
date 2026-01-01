@@ -165,6 +165,7 @@ describe("Server-Timing header", () => {
 
 		app.get("/test-duration", async () => {
 			// Simulate some work
+			// Increased to 50ms to avoid race conditions with timer accuracy in CI
 			await new Promise((resolve) => setTimeout(resolve, 50));
 			return { ok: true };
 		});

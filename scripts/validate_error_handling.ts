@@ -452,28 +452,154 @@ export class ErrorHandlingValidator {
 	}
 
 	public removeCommentsAndStrings(content: string): string {
-		// Replace single-line comments with spaces
-		let cleaned = content.replace(/\/\/.*$/gm, (match) =>
-			" ".repeat(match.length),
-		);
+		const result = content.split("");
+		const len = result.length;
+		let i = 0;
 
-		// Replace multi-line comments with spaces (preserving newlines)
-		cleaned = cleaned.replace(/\/\*[\s\S]*?\*\//g, (match) =>
-			match.replace(/[^\n]/g, " "),
-		);
+		// States
+		const ROOT = 0;
+		const STRING_SINGLE = 1;
+		const STRING_DOUBLE = 2;
+		const TEMPLATE = 3;
+		const COMMENT_SINGLE = 4;
+		const COMMENT_MULTI = 5;
 
-		// Replace string literals with spaces (preserving newlines)
-		cleaned = cleaned.replace(/"(?:[^"\\]|\\.)*"/g, (match) =>
-			match.replace(/[^\n]/g, " "),
-		);
-		cleaned = cleaned.replace(/'(?:[^'\\]|\\.)*'/g, (match) =>
-			match.replace(/[^\n]/g, " "),
-		);
-		cleaned = cleaned.replace(/`(?:[^`\\]|\\.)*`/g, (match) =>
-			match.replace(/[^\n]/g, " "),
-		);
+		// Stack for nested contexts (mainly for template interpolations)
+		// Each item is { state: number, braceDepth: number }
+		const stack: Array<{ state: number; braceDepth: number }> = [
+			{ state: ROOT, braceDepth: 0 },
+		];
 
-		return cleaned;
+		while (i < len) {
+			const char = result[i];
+			const nextChar = i + 1 < len ? result[i + 1] : "";
+			const currentContext = stack[stack.length - 1];
+			if (!currentContext) break;
+			const state = currentContext.state;
+
+			// Handle escapes in strings and templates
+			if (
+				(state === STRING_SINGLE ||
+					state === STRING_DOUBLE ||
+					state === TEMPLATE) &&
+				char === "\\"
+			) {
+				// Don't replace newline characters to preserve line counts
+				if (result[i] !== "\n") result[i] = " ";
+				i++; // Skip backslash
+				if (i < len) {
+					if (result[i] !== "\n") result[i] = " ";
+					i++; // Skip escaped char
+				}
+				continue;
+			}
+
+			switch (state) {
+				case ROOT:
+					if (char === "/" && nextChar === "/") {
+						stack.push({ state: COMMENT_SINGLE, braceDepth: 0 });
+						result[i] = " ";
+						result[i + 1] = " ";
+						i += 2;
+					} else if (char === "/" && nextChar === "*") {
+						stack.push({ state: COMMENT_MULTI, braceDepth: 0 });
+						result[i] = " ";
+						result[i + 1] = " ";
+						i += 2;
+					} else if (char === "'") {
+						stack.push({ state: STRING_SINGLE, braceDepth: 0 });
+						result[i] = " "; // Mask delimiter
+						i++;
+					} else if (char === '"') {
+						stack.push({ state: STRING_DOUBLE, braceDepth: 0 });
+						result[i] = " "; // Mask delimiter
+						i++;
+					} else if (char === "`") {
+						stack.push({ state: TEMPLATE, braceDepth: 0 });
+						result[i] = " "; // Mask delimiter
+						i++;
+					} else if (char === "{") {
+						currentContext.braceDepth++;
+						i++;
+					} else if (char === "}") {
+						if (currentContext.braceDepth > 0) {
+							currentContext.braceDepth--;
+						} else if (stack.length > 1) {
+							// Closing brace of an interpolation?
+							// If we are in ROOT state but stack > 1, it means we are inside ${ ... }
+							// Example: `foo ${ bar }` -> TEMPLATE -> ROOT(via ${) -> } closes ROOT -> TEMPLATE
+							stack.pop();
+						}
+						i++;
+					} else {
+						i++;
+					}
+					break;
+
+				case COMMENT_SINGLE:
+					if (char === "\n") {
+						stack.pop();
+						i++;
+					} else {
+						result[i] = " ";
+						i++;
+					}
+					break;
+
+				case COMMENT_MULTI:
+					if (char === "*" && nextChar === "/") {
+						stack.pop();
+						result[i] = " ";
+						result[i + 1] = " ";
+						i += 2;
+					} else {
+						if (char !== "\n") result[i] = " ";
+						i++;
+					}
+					break;
+
+				case STRING_SINGLE:
+					if (char === "'") {
+						stack.pop();
+						result[i] = " ";
+						i++;
+					} else {
+						if (char !== "\n") result[i] = " ";
+						i++;
+					}
+					break;
+
+				case STRING_DOUBLE:
+					if (char === '"') {
+						stack.pop();
+						result[i] = " ";
+						i++;
+					} else {
+						if (char !== "\n") result[i] = " ";
+						i++;
+					}
+					break;
+
+				case TEMPLATE:
+					if (char === "`") {
+						stack.pop();
+						result[i] = " ";
+						i++;
+					} else if (char === "$" && nextChar === "{") {
+						// Enter interpolation: push ROOT state to handle code inside ${ ... }
+						stack.push({ state: ROOT, braceDepth: 0 });
+						// Keep ${ visible? Use logic: we want to process code inside.
+						// So we don't mask ${
+						i += 2;
+					} else {
+						if (char !== "\n") result[i] = " ";
+						i++;
+					}
+					break;
+			}
+		}
+
+		return result.join("");
 	}
 
 	public findCatchBlocks(content: string): Array<{
@@ -896,7 +1022,7 @@ async function main(): Promise<void> {
 	}
 }
 
-if (import.meta.url === `file://${process.argv[1]}`) {
+if (fileURLToPath(import.meta.url) === process.argv[1]) {
 	main().catch((error) => {
 		console.error("Unexpected error:", error);
 		process.exit(1);
