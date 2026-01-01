@@ -1,5 +1,5 @@
 {
-  "id": "b9732845-45ed-4a9f-ae7f-af33fb98f75e",
+  "id": "7fc16767-5852-4ce4-aaeb-430691231b90",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -1123,7 +1123,7 @@
           "name": "organization_id",
           "type": "uuid",
           "primaryKey": false,
-          "notNull": false
+          "notNull": true
         },
         "updated_at": {
           "name": "updated_at",
