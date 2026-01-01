@@ -15,24 +15,26 @@ export const mutationCreateAgendaItemInputSchema = agendaItemsTableInsertSchema
 		name: true,
 		sequence: true,
 		type: true,
-	}).extend({
+	})
+	.extend({
 		url: z
 			.array(
-			z.object({
-				agendaItemURL: z.string().url(),
-			}),
+				z.object({
+					agendaItemURL: z.string().url(),
+				}),
 			)
 			.optional(),
-		attachments: z.array(
-          z.object({
-            name: z.string().min(1),
-            mimeType: z.enum(agendaAttachmentMimeTypeEnum.options),
-            objectName: z.string().min(1),
-            fileHash: z.string().min(1),
-          }),
-        )
-        .optional(),
-		})
+		attachments: z
+			.array(
+				z.object({
+					name: z.string().min(1),
+					mimeType: z.enum(agendaAttachmentMimeTypeEnum.options),
+					objectName: z.string().min(1),
+					fileHash: z.string().min(1),
+				}),
+			)
+			.optional(),
+	})
 	.superRefine((arg, ctx) => {
 		if (arg.type === "note") {
 			if (arg.duration !== undefined && arg.key !== undefined) {
@@ -73,32 +75,28 @@ export const mutationCreateAgendaItemInputSchema = agendaItemsTableInsertSchema
 		}
 	});
 
-const AgendaItemUrlInput = builder.inputType(
-  "AgendaItemUrlInput",
-  {
-    description: "URL associated with an agenda item",
-    fields: (t) => ({
-      agendaItemURL: t.string({
-        description: "URL of the agenda item",
-        required: true,
-      }),
-    }),
-  },
-);
+const AgendaItemUrlInput = builder.inputType("AgendaItemUrlInput", {
+	description: "URL associated with an agenda item",
+	fields: (t) => ({
+		agendaItemURL: t.string({
+			description: "URL of the agenda item",
+			required: true,
+		}),
+	}),
+});
 
 const AgendaItemAttachmentInput = builder.inputType(
-  "AgendaItemAttachmentInput",
-  {
-    description: "Attachment data for an agenda item",
-    fields: (t) => ({
-      name: t.string({ required: false }),
-      mimeType: t.string({ required: true }),
-      objectName: t.string({ required: true }),
-      fileHash: t.string({ required: true }),
-    }),
-  },
+	"AgendaItemAttachmentInput",
+	{
+		description: "Attachment data for an agenda item",
+		fields: (t) => ({
+			name: t.string({ required: false }),
+			mimeType: t.string({ required: true }),
+			objectName: t.string({ required: true }),
+			fileHash: t.string({ required: true }),
+		}),
+	},
 );
-
 
 export const MutationCreateAgendaItemInput = builder
 	.inputRef<z.infer<typeof mutationCreateAgendaItemInputSchema>>(
@@ -117,7 +115,7 @@ export const MutationCreateAgendaItemInput = builder
 			}),
 			categoryId: t.string({
 				description: "Category id",
-				required: true
+				required: true,
 			}),
 			duration: t.string({
 				description: "Duration of the agenda item.",

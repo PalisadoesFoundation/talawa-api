@@ -1,7 +1,7 @@
 import { eq } from "drizzle-orm";
 import { z } from "zod";
-import { agendaItemsTable } from "~/src/drizzle/tables/agendaItems";
 import { agendaFoldersTable } from "~/src/drizzle/tables/agendaFolders";
+import { agendaItemsTable } from "~/src/drizzle/tables/agendaItems";
 import { builder } from "~/src/graphql/builder";
 import {
 	MutationDeleteAgendaFolderInput,
@@ -87,10 +87,10 @@ builder.mutationField("deleteAgendaFolder", (t) =>
 												operators.eq(fields.memberId, currentUserId),
 										},
 									},
-										},
-									},
 								},
 							},
+						},
+					},
 					where: (fields, operators) =>
 						operators.eq(fields.id, parsedArgs.input.id),
 				}),
@@ -154,18 +154,18 @@ builder.mutationField("deleteAgendaFolder", (t) =>
 				const defaultFolder = await tx.query.agendaFoldersTable.findFirst({
 					columns: { id: true },
 					where: (fields, operators) =>
-					operators.and(
-						operators.eq(fields.eventId, existingAgendaFolder.eventId),
-						operators.eq(fields.isDefaultFolder, true),
-					),
+						operators.and(
+							operators.eq(fields.eventId, existingAgendaFolder.eventId),
+							operators.eq(fields.isDefaultFolder, true),
+						),
 				});
 
 				if (!defaultFolder) {
 					throw new TalawaGraphQLError({
-					extensions: {
-						code: "unexpected",
-						message: "Default agenda folder not found.",
-					},
+						extensions: {
+							code: "unexpected",
+							message: "Default agenda folder not found.",
+						},
 					});
 				}
 
@@ -173,8 +173,8 @@ builder.mutationField("deleteAgendaFolder", (t) =>
 				await tx
 					.update(agendaItemsTable)
 					.set({
-					folderId: defaultFolder.id,
-					updaterId: currentUserId,
+						folderId: defaultFolder.id,
+						updaterId: currentUserId,
 					})
 					.where(eq(agendaItemsTable.folderId, parsedArgs.input.id));
 
@@ -186,12 +186,12 @@ builder.mutationField("deleteAgendaFolder", (t) =>
 
 				if (!deletedAgendaFolder) {
 					throw new TalawaGraphQLError({
-					extensions: { code: "unexpected" },
+						extensions: { code: "unexpected" },
 					});
 				}
 
 				return deletedAgendaFolder;
-				});
+			});
 		},
 		type: AgendaFolder,
 	}),

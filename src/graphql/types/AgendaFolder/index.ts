@@ -7,4 +7,4 @@ import "./items";
 import "./parentFolder";
 import "./updatedAt";
 import "./updater";
-import "./organization"
+import "./organization";

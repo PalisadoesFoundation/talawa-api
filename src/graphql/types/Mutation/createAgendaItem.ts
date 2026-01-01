@@ -61,50 +61,50 @@ builder.mutationField("createAgendaItem", (t) =>
 
 			// Resolve default folder if not provided
 			if (!resolvedFolderId) {
-			const defaultFolder =
-				await ctx.drizzleClient.query.agendaFoldersTable.findFirst({
-				columns: { id: true },
-				where: (fields, operators) =>
-					operators.and(
-					operators.eq(fields.eventId, eventId),
-					operators.eq(fields.isDefaultFolder, true),
-					),
-				});
+				const defaultFolder =
+					await ctx.drizzleClient.query.agendaFoldersTable.findFirst({
+						columns: { id: true },
+						where: (fields, operators) =>
+							operators.and(
+								operators.eq(fields.eventId, eventId),
+								operators.eq(fields.isDefaultFolder, true),
+							),
+					});
 
-			if (!defaultFolder) {
-				throw new TalawaGraphQLError({
-				extensions: {
-					code: "unexpected",
-					message: "Default agenda folder not found for event",
-				},
-				});
-			}
+				if (!defaultFolder) {
+					throw new TalawaGraphQLError({
+						extensions: {
+							code: "unexpected",
+							message: "Default agenda folder not found for event",
+						},
+					});
+				}
 
-			resolvedFolderId = defaultFolder.id;
+				resolvedFolderId = defaultFolder.id;
 			}
 
 			// Resolve default category if not provided
 			if (!resolvedCategoryId) {
-			const defaultCategory =
-				await ctx.drizzleClient.query.agendaCategoriesTable.findFirst({
-				columns: { id: true },
-				where: (fields, operators) =>
-					operators.and(
-					operators.eq(fields.eventId, eventId),
-					operators.eq(fields.isDefaultCategory, true),
-					),
-				});
+				const defaultCategory =
+					await ctx.drizzleClient.query.agendaCategoriesTable.findFirst({
+						columns: { id: true },
+						where: (fields, operators) =>
+							operators.and(
+								operators.eq(fields.eventId, eventId),
+								operators.eq(fields.isDefaultCategory, true),
+							),
+					});
 
-			if (!defaultCategory) {
-				throw new TalawaGraphQLError({
-				extensions: {
-					code: "unexpected",
-					message: "Default agenda category not found for event",
-				},
-				});
-			}
+				if (!defaultCategory) {
+					throw new TalawaGraphQLError({
+						extensions: {
+							code: "unexpected",
+							message: "Default agenda category not found for event",
+						},
+					});
+				}
 
-			resolvedCategoryId = defaultCategory.id;
+				resolvedCategoryId = defaultCategory.id;
 			}
 
 			const [currentUser, existingAgendaFolder] = await Promise.all([
@@ -206,22 +206,22 @@ builder.mutationField("createAgendaItem", (t) =>
 				const [createdAgendaItem] = await tx
 					.insert(agendaItemsTable)
 					.values({
-					creatorId: currentUserId,
-					categoryId: resolvedCategoryId,
-					description: parsedArgs.input.description,
-					duration: parsedArgs.input.duration,
-					eventId: parsedArgs.input.eventId,
-					folderId: resolvedFolderId,
-					key: parsedArgs.input.key,
-					name: parsedArgs.input.name,
-					sequence: parsedArgs.input.sequence,
-					type: parsedArgs.input.type,
+						creatorId: currentUserId,
+						categoryId: resolvedCategoryId,
+						description: parsedArgs.input.description,
+						duration: parsedArgs.input.duration,
+						eventId: parsedArgs.input.eventId,
+						folderId: resolvedFolderId,
+						key: parsedArgs.input.key,
+						name: parsedArgs.input.name,
+						sequence: parsedArgs.input.sequence,
+						type: parsedArgs.input.type,
 					})
 					.returning();
 
 				if (!createdAgendaItem) {
 					throw new TalawaGraphQLError({
-					extensions: { code: "unexpected" },
+						extensions: { code: "unexpected" },
 					});
 				}
 
@@ -229,39 +229,39 @@ builder.mutationField("createAgendaItem", (t) =>
 					parsedArgs.input.attachments &&
 					parsedArgs.input.attachments.length > 0
 						? await tx
-							.insert(agendaItemAttachmentsTable)
-							.values(
-							parsedArgs.input.attachments.map((att) => ({
-								agendaItemId: createdAgendaItem.id,
-								creatorId: currentUserId,
-								mimeType: att.mimeType,
-								objectName: att.objectName,
-								fileHash: att.fileHash,
-								name: att.name
-							})),
-							)
-							.returning()
+								.insert(agendaItemAttachmentsTable)
+								.values(
+									parsedArgs.input.attachments.map((att) => ({
+										agendaItemId: createdAgendaItem.id,
+										creatorId: currentUserId,
+										mimeType: att.mimeType,
+										objectName: att.objectName,
+										fileHash: att.fileHash,
+										name: att.name,
+									})),
+								)
+								.returning()
 						: [];
 
 				const createdUrls =
 					parsedArgs.input.url && parsedArgs.input.url.length > 0
-					? await tx
-						.insert(agendaItemUrlTable)
-						.values(
-							parsedArgs.input.url.map((url) => ({
-							agendaItemId: createdAgendaItem.id,
-							creatorId: createdAgendaItem.creatorId,
-							agendaItemURL: url.agendaItemURL,
-							})),
-						)
-						.returning()
-					: [];
-					return {
-						...createdAgendaItem,
-						url: createdUrls,
-						attachment: createdAttachments
-					};
-			})
+						? await tx
+								.insert(agendaItemUrlTable)
+								.values(
+									parsedArgs.input.url.map((url) => ({
+										agendaItemId: createdAgendaItem.id,
+										creatorId: createdAgendaItem.creatorId,
+										agendaItemURL: url.agendaItemURL,
+									})),
+								)
+								.returning()
+						: [];
+				return {
+					...createdAgendaItem,
+					url: createdUrls,
+					attachment: createdAttachments,
+				};
+			});
 		},
 		type: AgendaItem,
 	}),

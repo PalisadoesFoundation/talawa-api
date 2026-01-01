@@ -31,16 +31,16 @@ export {
 } from "./tables/agendaItems";
 export {
 	agendaItemAttachmentsTable,
-	agendaItemAttachmentsTableRelations
-} from "./tables/agendaItemAttachment"
+	agendaItemAttachmentsTableRelations,
+} from "./tables/agendaItemAttachment";
 export {
 	agendaItemUrlTable,
-	agendaItemUrlTableRelations
-} from "./tables/agendaItemUrls"
+	agendaItemUrlTableRelations,
+} from "./tables/agendaItemUrls";
 export {
 	agendaCategoriesTable,
-	agendaCategoriesTableRelations
-} from "./tables/agendaCategories"
+	agendaCategoriesTableRelations,
+} from "./tables/agendaCategories";
 export {
 	blockedUsersTable,
 	blockedUsersTableRelations,

@@ -10,7 +10,7 @@ export const mutationCreateAgendaFolderInputSchema =
 		parentFolderId: true,
 		organizationId: true,
 		description: true,
-		sequence: true
+		sequence: true,
 	});
 
 export const MutationCreateAgendaFolderInput = builder
@@ -22,7 +22,7 @@ export const MutationCreateAgendaFolderInput = builder
 		fields: (t) => ({
 			description: t.string({
 				description: "Description of Agenda Folder",
-				required: true
+				required: true,
 			}),
 			eventId: t.id({
 				description:

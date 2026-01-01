@@ -65,7 +65,7 @@ builder.mutationField("updateAgendaFolder", (t) =>
 				ctx.drizzleClient.query.agendaFoldersTable.findFirst({
 					columns: {
 						eventId: true,
-						isDefaultFolder: true
+						isDefaultFolder: true,
 					},
 					with: {
 						event: {
@@ -215,31 +215,31 @@ builder.mutationField("updateAgendaFolder", (t) =>
 			};
 
 			if (parsedArgs.input.name !== undefined) {
-			updateData.name = parsedArgs.input.name;
+				updateData.name = parsedArgs.input.name;
 			}
 
 			if (parsedArgs.input.description !== undefined) {
-			updateData.description = parsedArgs.input.description;
+				updateData.description = parsedArgs.input.description;
 			}
 
 			if (parsedArgs.input.parentFolderId !== undefined) {
-			updateData.parentFolderId = parsedArgs.input.parentFolderId;
+				updateData.parentFolderId = parsedArgs.input.parentFolderId;
 			}
 
 			if (parsedArgs.input.sequence !== undefined) {
-			updateData.sequence = parsedArgs.input.sequence;
+				updateData.sequence = parsedArgs.input.sequence;
 			}
 
 			if (Object.keys(updateData).length === 1) {
 				throw new TalawaGraphQLError({
 					extensions: {
-					code: "invalid_arguments",
-					issues: [
-						{
-						argumentPath: ["input"],
-						message: "At least one field must be provided to update.",
-						},
-					],
+						code: "invalid_arguments",
+						issues: [
+							{
+								argumentPath: ["input"],
+								message: "At least one field must be provided to update.",
+							},
+						],
 					},
 				});
 			}

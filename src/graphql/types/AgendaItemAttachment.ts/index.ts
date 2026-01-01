@@ -1,1 +1,1 @@
-import "./AgendaItemAttachment"
+import "./AgendaItemAttachment";

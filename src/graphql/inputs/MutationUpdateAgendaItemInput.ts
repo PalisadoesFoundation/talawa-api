@@ -17,11 +17,7 @@ export const MutationUpdateAgendaItemInputSchema = agendaItemsTableInsertSchema
 		folderId: agendaItemsTableInsertSchema.shape.folderId.optional(),
 		id: agendaItemsTableInsertSchema.shape.id.unwrap(),
 		name: agendaItemsTableInsertSchema.shape.name.optional(),
-		url: z.array(z.object({agendaItemURL: z.string().url(),
-
-		}),
-			)
-			.optional(),		
+		url: z.array(z.object({ agendaItemURL: z.string().url() })).optional(),
 	})
 	.refine(
 		({ id, ...remainingArg }) =>
@@ -31,18 +27,15 @@ export const MutationUpdateAgendaItemInputSchema = agendaItemsTableInsertSchema
 		},
 	);
 
-const UpdateAgendaItemUrlInput = builder.inputType(
-  "UpdateAgendaItemUrlInput",
-  {
-    description: "URL associated with an agenda item",
-    fields: (t) => ({
-      agendaItemURL: t.string({
-        description: "URL of the agenda item",
-        required: true,
-      }),
-    }),
-  },
-);
+const UpdateAgendaItemUrlInput = builder.inputType("UpdateAgendaItemUrlInput", {
+	description: "URL associated with an agenda item",
+	fields: (t) => ({
+		agendaItemURL: t.string({
+			description: "URL of the agenda item",
+			required: true,
+		}),
+	}),
+});
 
 export const MutationUpdateAgendaItemInput = builder
 	.inputRef<z.infer<typeof MutationUpdateAgendaItemInputSchema>>(

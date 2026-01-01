@@ -239,27 +239,27 @@ builder.mutationField("createEvent", (t) =>
 					}
 
 					// Creates default agenda folder
-						await tx.insert(agendaFoldersTable).values({
-							name: "Default",
-							description: "Default agenda folder",
-							eventId: createdEvent.id,
-							organizationId: parsedArgs.input.organizationId,
-							isAgendaItemFolder: true,
-							isDefaultFolder: true,
-							parentFolderId: null,
-							sequence: 1,
-							creatorId: currentUserId,
-						});
+					await tx.insert(agendaFoldersTable).values({
+						name: "Default",
+						description: "Default agenda folder",
+						eventId: createdEvent.id,
+						organizationId: parsedArgs.input.organizationId,
+						isAgendaItemFolder: true,
+						isDefaultFolder: true,
+						parentFolderId: null,
+						sequence: 1,
+						creatorId: currentUserId,
+					});
 
-						// Creates default agenda category
-						await tx.insert(agendaCategoriesTable).values({
-							name: "Default",
-							description: "Default agenda category",
-							eventId: createdEvent.id,
-							organizationId: parsedArgs.input.organizationId,
-							isDefaultCategory: true,
-							creatorId: currentUserId,
-						});
+					// Creates default agenda category
+					await tx.insert(agendaCategoriesTable).values({
+						name: "Default",
+						description: "Default agenda category",
+						eventId: createdEvent.id,
+						organizationId: parsedArgs.input.organizationId,
+						isDefaultCategory: true,
+						creatorId: currentUserId,
+					});
 
 					// Handle recurring event: Create recurrence rule AND immediately generate instances
 					if (parsedArgs.input.recurrence) {

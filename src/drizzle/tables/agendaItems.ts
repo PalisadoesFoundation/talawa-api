@@ -1,12 +1,19 @@
 import { relations, sql } from "drizzle-orm";
-import { index, integer, pgTable, text, timestamp, uuid } from "drizzle-orm/pg-core";
+import {
+	index,
+	integer,
+	pgTable,
+	text,
+	timestamp,
+	uuid,
+} from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { uuidv7 } from "uuidv7";
 import { agendaItemTypeEnum } from "~/src/drizzle/enums/agendaItemType";
-import { agendaFoldersTable } from "./agendaFolders";
-import { usersTable } from "./users";
-import { eventsTable } from "./events";
 import { agendaCategoriesTable } from "./agendaCategories";
+import { agendaFoldersTable } from "./agendaFolders";
+import { eventsTable } from "./events";
+import { usersTable } from "./users";
 
 /**
  * Drizzle orm postgres table definition for agenda items.
@@ -34,10 +41,12 @@ export const agendaItemsTable = pgTable(
 		/**
 		 * Custom information about the agenda item.
 		 */
-		categoryId: uuid("category_id").notNull().references(() => agendaCategoriesTable.id, {
-			onDelete: "cascade",
-			onUpdate: "cascade"
-		}),
+		categoryId: uuid("category_id")
+			.notNull()
+			.references(() => agendaCategoriesTable.id, {
+				onDelete: "cascade",
+				onUpdate: "cascade",
+			}),
 		/**
 		 * Custom information about the agenda item.
 		 */
@@ -134,7 +143,7 @@ export const agendaItemsTableRelations = relations(
 			relationName: "agenda_items.category_id:agenda_category.id",
 		}),
 		/**
-		* Many to one relationship from `agenda_items` table to `events` table.
+		 * Many to one relationship from `agenda_items` table to `events` table.
 		 */
 		event: one(eventsTable, {
 			fields: [agendaItemsTable.eventId],

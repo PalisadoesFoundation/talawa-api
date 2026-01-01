@@ -252,70 +252,69 @@ builder.mutationField("updateAgendaItem", (t) =>
 				};
 
 				if (parsedArgs.input.name !== undefined) {
-				updateData.name = parsedArgs.input.name;
+					updateData.name = parsedArgs.input.name;
 				}
 
 				if (parsedArgs.input.description !== undefined) {
-				updateData.description = parsedArgs.input.description;
+					updateData.description = parsedArgs.input.description;
 				}
 
 				if (parsedArgs.input.duration !== undefined) {
-				updateData.duration = parsedArgs.input.duration;
+					updateData.duration = parsedArgs.input.duration;
 				}
 
 				if (parsedArgs.input.folderId !== undefined) {
-				updateData.folderId = parsedArgs.input.folderId;
+					updateData.folderId = parsedArgs.input.folderId;
 				}
 
 				if (parsedArgs.input.key !== undefined) {
-				updateData.key = parsedArgs.input.key;
+					updateData.key = parsedArgs.input.key;
 				}
 
 				if (Object.keys(updateData).length === 1) {
-				throw new TalawaGraphQLError({
-					extensions: {
-					code: "invalid_arguments",
-					issues: [
-						{
-						argumentPath: ["input"],
-						message: "At least one field must be provided to update.",
+					throw new TalawaGraphQLError({
+						extensions: {
+							code: "invalid_arguments",
+							issues: [
+								{
+									argumentPath: ["input"],
+									message: "At least one field must be provided to update.",
+								},
+							],
 						},
-					],
-					},
-				});
+					});
 				}
 
 				const [updatedAgendaItem] = await tx
-				.update(agendaItemsTable)
-				.set(updateData)
-				.where(eq(agendaItemsTable.id, parsedArgs.input.id))
-				.returning();
+					.update(agendaItemsTable)
+					.set(updateData)
+					.where(eq(agendaItemsTable.id, parsedArgs.input.id))
+					.returning();
 
 				if (!updatedAgendaItem) {
 					throw new TalawaGraphQLError({
-					extensions: { code: "unexpected" },
+						extensions: { code: "unexpected" },
 					});
 				}
 
 				if (parsedArgs.input.url !== undefined) {
 					await tx
-					.delete(agendaItemUrlTable)
-					.where(eq(agendaItemUrlTable.agendaItemId, parsedArgs.input.id));
+						.delete(agendaItemUrlTable)
+						.where(eq(agendaItemUrlTable.agendaItemId, parsedArgs.input.id));
 
 					if (parsedArgs.input.url.length > 0) {
-					await tx.insert(agendaItemUrlTable).values(
-						parsedArgs.input.url.map((u) => ({
-							agendaItemId: parsedArgs.input.id,
-							agendaItemURL: u.agendaItemURL,
-							updaterId: currentUserId,
-						})),
-					);
+						await tx.insert(agendaItemUrlTable).values(
+							parsedArgs.input.url.map((u) => ({
+								agendaItemId: parsedArgs.input.id,
+								agendaItemURL: u.agendaItemURL,
+								updaterId: currentUserId,
+							})),
+						);
 					}
 				}
 
 				return updatedAgendaItem;
-				});
-
+			});
 		},
 		type: AgendaItem,
 	}),

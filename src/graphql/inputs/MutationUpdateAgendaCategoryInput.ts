@@ -5,9 +5,9 @@ import { builder } from "~/src/graphql/builder";
 export const mutationUpdateAgendaCategoryInputSchema =
 	agendaCategoriesTableInsertSchema
 		.pick({
-            id: true,
+			id: true,
 			description: true,
-			name: true
+			name: true,
 		})
 		.extend({
 			id: agendaCategoriesTableInsertSchema.shape.id.unwrap(),
@@ -29,7 +29,7 @@ export const MutationUpdateAgendaCategoryInput = builder
 		description: "",
 		fields: (t) => ({
 			description: t.string({
-				description: "Description of the agenda category."
+				description: "Description of the agenda category.",
 			}),
 			id: t.id({
 				description: "Global identifier of the agenda category.",

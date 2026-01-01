@@ -67,8 +67,8 @@ import "./updateAdvertisement";
 import "./updateAgendaCategory";
 import "./updateAgendaFolder";
 import "./updateAgendaItem";
-import "./updateAgendaFolderSequence"
-import "./updateAgendaItemSequence"
+import "./updateAgendaFolderSequence";
+import "./updateAgendaItemSequence";
 import "./updateChat";
 import "./updateChatMembership";
 import "./updateChatMessage";

@@ -13,8 +13,8 @@ import { createInsertSchema } from "drizzle-zod";
 import { uuidv7 } from "uuidv7";
 import { agendaItemsTable } from "./agendaItems";
 import { eventsTable } from "./events";
-import { usersTable } from "./users";
 import { organizationsTable } from "./organizations";
+import { usersTable } from "./users";
 
 /**
  * Drizzle orm postgres table definition for agenda folders.
@@ -78,11 +78,13 @@ export const agendaFoldersTable = pgTable(
 				onUpdate: "cascade",
 			},
 		),
-		organizationId: uuid("organization_id")
-					.references(() => organizationsTable.id, {
-						onDelete: "cascade",
-						onUpdate: "cascade",
-					}),
+		organizationId: uuid("organization_id").references(
+			() => organizationsTable.id,
+			{
+				onDelete: "cascade",
+				onUpdate: "cascade",
+			},
+		),
 		/**
 		 * Sequence of the agenda folder.
 		 */
@@ -147,10 +149,10 @@ export const agendaFoldersTableRelations = relations(
 			relationName: "agenda_folders.event_id:events.id",
 		}),
 		organization: one(organizationsTable, {
-					fields: [agendaFoldersTable.organizationId],
-					references: [organizationsTable.id],
-					relationName: "agenda_folder.organization_id:organizations.id",
-				}),
+			fields: [agendaFoldersTable.organizationId],
+			references: [organizationsTable.id],
+			relationName: "agenda_folder.organization_id:organizations.id",
+		}),
 		/**
 		 * Many to one relationship from `agenda_folders` table to `agenda_folders` table.
 		 */

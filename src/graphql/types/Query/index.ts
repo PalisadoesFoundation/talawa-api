@@ -41,6 +41,10 @@ import "./getVolunteerMembership";
 import "./getEventVolunteerGroups";
 import "./UnreadChat";
 import "./hasSubmittedFeedback";
+import "./agendaCategoryByEvent";
+import "./agendaItemByEvent";
+import "./agendaFolderByOrg";
+import "./agendaFolderByEvent";
 import "./verifyPasswordResetToken";
 import "./agendaCategoryByEvent"
 import "./agendaItemByEvent"
