@@ -349,6 +349,73 @@ describe("createPluginTables & dropPluginTables", () => {
 			expect.stringContaining("Error dropping table mytable"),
 		);
 	});
+
+	it("falls back to console.error when logger is undefined", async () => {
+		const db = { execute: vi.fn().mockRejectedValue(new Error("fail")) };
+		const consoleSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+		const drizzleName = Symbol.for("drizzle:Name");
+		const tableDef = {
+			[drizzleName]: "mytable",
+			id: { name: "id", columnType: "PgUUID", notNull: true, primary: true },
+		};
+
+		await utils.dropPluginTables(db, "pluginid", { mytable: tableDef });
+
+		expect(consoleSpy).toHaveBeenCalledWith(
+			expect.stringContaining("Error dropping table mytable: fail"),
+		);
+		consoleSpy.mockRestore();
+	});
+
+	it("handles non-Error objects thrown during drop", async () => {
+		const db = { execute: vi.fn().mockRejectedValue("string error") };
+		const consoleSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+		const drizzleName = Symbol.for("drizzle:Name");
+		const tableDef = {
+			[drizzleName]: "mytable",
+			id: { name: "id", columnType: "PgUUID", notNull: true, primary: true },
+		};
+
+		await utils.dropPluginTables(db, "pluginid", { mytable: tableDef });
+
+		expect(consoleSpy).toHaveBeenCalledWith(
+			expect.stringContaining("Error dropping table mytable: string error"),
+		);
+		consoleSpy.mockRestore();
+	});
+
+	it("continues processing subsequent tables if one fails", async () => {
+		const db = {
+			execute: vi.fn().mockImplementation((sql: string) => {
+				if (sql.includes("table1")) {
+					throw new Error("fail table1");
+				}
+				return Promise.resolve();
+			}),
+		};
+		const logger = { info: vi.fn(), error: vi.fn() };
+		const drizzleName = Symbol.for("drizzle:Name");
+		const tableDefinitions = {
+			table1: {
+				[drizzleName]: "table1",
+				id: { name: "id", columnType: "PgUUID" },
+			},
+			table2: {
+				[drizzleName]: "table2",
+				id: { name: "id", columnType: "PgUUID" },
+			},
+		};
+
+		await utils.dropPluginTables(db, "pluginid", tableDefinitions, logger);
+
+		expect(logger.error).toHaveBeenCalledWith(
+			expect.stringContaining("Error dropping table table1: fail table1"),
+		);
+		// Check that table2 was attempted (SUCCESS message for table2)
+		expect(logger.info).toHaveBeenCalledWith(
+			expect.stringContaining("Successfully dropped table: pluginid_table2"),
+		);
+	});
 });
 
 // --- removePluginDirectory & clearPluginModuleCache ---

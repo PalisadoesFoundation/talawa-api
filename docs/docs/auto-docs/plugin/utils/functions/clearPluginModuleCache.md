@@ -6,7 +6,7 @@
 
 > **clearPluginModuleCache**(`pluginPath`, `_cacheObj?`): `void`
 
-Defined in: [src/plugin/utils.ts:600](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/plugin/utils.ts#L600)
+Defined in: [src/plugin/utils.ts:605](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/plugin/utils.ts#L605)
 
 Clear module cache entries for a plugin to prevent memory leaks
 Note: In ES modules, we cannot directly access the module cache like in CommonJS

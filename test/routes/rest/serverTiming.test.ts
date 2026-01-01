@@ -165,7 +165,7 @@ describe("Server-Timing header", () => {
 
 		app.get("/test-duration", async () => {
 			// Simulate some work
-			await new Promise((resolve) => setTimeout(resolve, 10));
+			await new Promise((resolve) => setTimeout(resolve, 50));
 			return { ok: true };
 		});
 

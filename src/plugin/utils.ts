@@ -510,7 +510,10 @@ export async function dropPluginTables(
 	db: { execute: (sql: string) => Promise<unknown> },
 	pluginId: string,
 	tableDefinitions: Record<string, Record<string, unknown>>,
-	logger?: { info?: (message: string) => void },
+	logger?: {
+		info?: (message: string) => void;
+		error?: (message: string) => void;
+	},
 ): Promise<void> {
 	try {
 		logger?.info?.(`Dropping database tables for plugin: ${pluginId}`);
@@ -541,7 +544,9 @@ export async function dropPluginTables(
 					error instanceof Error ? error.message : String(error)
 				}`;
 
-				if (logger?.info) {
+				if (logger?.error) {
+					logger.error(errorMessage);
+				} else if (logger?.info) {
 					logger.info(errorMessage);
 				} else {
 					console.error(errorMessage);

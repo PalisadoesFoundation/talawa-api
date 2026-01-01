@@ -19,7 +19,7 @@
 
 import { execFileSync, execSync } from "node:child_process";
 import { existsSync, readFileSync } from "node:fs";
-import { dirname, join, resolve } from "node:path";
+import { dirname, join, relative, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { glob } from "glob";
 
@@ -132,7 +132,13 @@ export class ErrorHandlingValidator {
 
 			return this.result.violations.length > 0 ? 1 : 0;
 		} catch (error) {
-			console.error("Error during validation:", (error as Error).message);
+			const errorMessage =
+				error instanceof Error
+					? error.message
+					: typeof error === "string"
+						? error
+						: JSON.stringify(error) || String(error);
+			console.error("Error during validation:", errorMessage);
 			return 1;
 		}
 	}
@@ -205,8 +211,14 @@ export class ErrorHandlingValidator {
 					.filter(Boolean)
 					.map((f) => f.trim());
 			} catch (error) {
+				const errorMessage =
+					error instanceof Error
+						? error.message
+						: typeof error === "string"
+							? error
+							: JSON.stringify(error) || String(error);
 				console.warn(
-					`CI git diff failed: ${(error as Error).message}. Returning empty list to trigger fallback.`,
+					`CI git diff failed: ${errorMessage}. Returning empty list to trigger fallback.`,
 				);
 				return [];
 			}
@@ -312,7 +324,9 @@ export class ErrorHandlingValidator {
 		// Anchor the pattern
 		regexPattern = `^${regexPattern}$`;
 
-		// Basic complexity check: limit pattern length and nesting
+		// Limit glob pattern complexity to prevent backtracking
+		// Prevent ReDoS attacks on dynamically constructed regex patterns
+		// Patterns are hardcoded, but this safeguard protects against future changes
 		if (
 			regexPattern.length > 500 ||
 			(regexPattern.match(/\*/g) || []).length > 10
@@ -384,9 +398,13 @@ export class ErrorHandlingValidator {
 				this.checkLineForViolations(filePath, lineNumber, line);
 			});
 		} catch (error) {
-			console.warn(
-				`Could not read file ${filePath}: ${(error as Error).message}`,
-			);
+			const errorMessage =
+				error instanceof Error
+					? error.message
+					: typeof error === "string"
+						? error
+						: JSON.stringify(error) || String(error);
+			console.warn(`Could not read file ${filePath}: ${errorMessage}`);
 		}
 	}
 
@@ -691,7 +709,8 @@ export class ErrorHandlingValidator {
 	public matchesPattern(filePath: string, patterns: string[]): boolean {
 		return patterns.some((p) => {
 			const prefix = p.replace("/**", "");
-			return filePath.startsWith(prefix);
+			const prefixWithSlash = prefix.endsWith("/") ? prefix : `${prefix}/`;
+			return filePath.startsWith(prefixWithSlash);
 		});
 	}
 
@@ -810,7 +829,11 @@ export class ErrorHandlingValidator {
 				const safePaths = filesWithViolations.map((filePath) => {
 					// Resolve to absolute path and then make relative to rootDir
 					const absolutePath = resolve(rootDir, filePath);
-					const relativePath = absolutePath.replace(`${rootDir}/`, "");
+					// Use path.relative for cross-platform compatibility
+					const relativePath = relative(rootDir, absolutePath).replace(
+						/\\/g,
+						"/",
+					);
 
 					// Validate path doesn't contain suspicious characters
 					if (!/^[a-zA-Z0-9_\-./]+$/.test(relativePath)) {

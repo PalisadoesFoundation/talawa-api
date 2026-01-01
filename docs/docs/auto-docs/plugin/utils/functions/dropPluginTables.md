@@ -28,6 +28,10 @@ Dynamically drops database tables for a plugin
 
 ### logger?
 
+#### error?
+
+(`message`) => `void`
+
 #### info?
 
 (`message`) => `void`
