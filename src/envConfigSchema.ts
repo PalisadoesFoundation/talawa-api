@@ -1,6 +1,6 @@
-import { type Static, Type } from "typebox";
 import ajvFormats from "ajv-formats";
 import type { EnvSchemaOpt } from "env-schema";
+import { type Static, Type } from "typebox";
 
 /**
  * JSON schema of a record of environment variables accessible to the talawa api at runtime.

@@ -1,9 +1,9 @@
 /**
  * This file is required for `package.json` scripts specific to the postgres test database to work. More information at this link: {@link https://orm.drizzle.team/kit-docs/config-reference}
  */
-import { type Static, Type } from "typebox";
 import { defineConfig } from "drizzle-kit";
 import { envSchema } from "env-schema";
+import { type Static, Type } from "typebox";
 import { envConfigSchema, envSchemaAjv } from "~/src/envConfigSchema";
 import { testEnvConfigSchema } from "./envConfigSchema";
 
@@ -33,7 +33,12 @@ export default defineConfig({
 		host: envConfig.API_POSTGRES_TEST_HOST,
 		port: envConfig.API_POSTGRES_PORT,
 		user: envConfig.API_POSTGRES_USER,
-		ssl: envConfig.API_POSTGRES_SSL_MODE as boolean | "allow" | "prefer" | "require" | "verify-full",
+		ssl: envConfig.API_POSTGRES_SSL_MODE as
+			| boolean
+			| "allow"
+			| "prefer"
+			| "require"
+			| "verify-full",
 	},
 	// https://orm.drizzle.team/docs/drizzle-config-file#dialect
 	dialect: "postgresql",
