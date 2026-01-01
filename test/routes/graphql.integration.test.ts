@@ -3,7 +3,7 @@ vi.mock("~/src/fastifyPlugins/backgroundWorkers", () => ({
 }));
 
 vi.mock("~/src/fastifyPlugins/drizzleClient", () => ({
-    default: async () => {},
+	default: async () => {},
 }));
 
 import type { FastifyInstance } from "fastify";
