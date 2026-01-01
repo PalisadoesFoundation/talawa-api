@@ -10,6 +10,18 @@ vi.mock("~/src/fastifyPlugins/minioClient", () => ({
 	default: async () => {},
 }));
 
+vi.mock("~/src/fastifyPlugins/seedInitialData", () => ({
+	default: async () => {},
+}));
+
+vi.mock("~/src/fastifyPlugins/pluginSystem", () => ({
+	default: async () => {},
+}));
+
+vi.mock("~/src/fastifyPlugins/performance", () => ({
+	default: async () => {},
+}));
+
 import type { FastifyInstance } from "fastify";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { createServer } from "~/src/createServer";
