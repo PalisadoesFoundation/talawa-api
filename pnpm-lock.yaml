@@ -64,7 +64,7 @@ importers:
         version: 0.44.7(postgres@3.4.7)
       drizzle-zod:
         specifier: 0.7.1
-        version: 0.7.1(drizzle-orm@0.44.7(postgres@3.4.7))(zod@3.25.76)
+        version: 0.7.1(drizzle-orm@0.44.7(postgres@3.4.7))(zod@4.3.4)
       env-schema:
         specifier: ^7.0.0
         version: 7.0.0
@@ -114,8 +114,8 @@ importers:
         specifier: ^3.2.0
         version: 3.2.0
       zod:
-        specifier: ^3.24.2
-        version: 3.25.76
+        specifier: ^4.3.4
+        version: 4.3.4
     devDependencies:
       '@biomejs/biome':
         specifier: ^2.3.10
@@ -4322,11 +4322,8 @@ packages:
     resolution: {integrity: sha512-CzhO+pFNo8ajLM2d2IW/R93ipy99LWjtwblvC1RsoSUMZgyLbYFr221TnSNT7GjGdYui6P459mw9JH/g/zW2ug==}
     engines: {node: '>=18'}
 
-  zod@3.25.76:
-    resolution: {integrity: sha512-gzUt/qt81nXsFGKIFcC3YnfEAx5NkunCfnDlvuBSSFS02bcXu4Lmea0AFIUwbLWxWPx3d9p8S5QoaujKcNQxcQ==}
-
-  zod@4.2.1:
-    resolution: {integrity: sha512-0wZ1IRqGGhMP76gLqz8EyfBXKk0J2qo2+H3fi4mcUP/KtTocoX08nmIAHl1Z2kJIZbZee8KOpBCSNPRgauucjw==}
+  zod@4.3.4:
+    resolution: {integrity: sha512-Zw/uYiiyF6pUT1qmKbZziChgNPRu+ZRneAsMUDU6IwmXdWt5JwcUfy2bvLOCUtz5UniaN/Zx5aFttZYbYc7O/A==}
 
 snapshots:
 
@@ -6648,10 +6645,10 @@ snapshots:
     optionalDependencies:
       drizzle-orm: 0.44.7(postgres@3.4.7)
 
-  drizzle-zod@0.7.1(drizzle-orm@0.44.7(postgres@3.4.7))(zod@3.25.76):
+  drizzle-zod@0.7.1(drizzle-orm@0.44.7(postgres@3.4.7))(zod@4.3.4):
     dependencies:
       drizzle-orm: 0.44.7(postgres@3.4.7)
-      zod: 3.25.76
+      zod: 4.3.4
 
   dunder-proto@1.0.1:
     dependencies:
@@ -7448,7 +7445,7 @@ snapshots:
       smol-toml: 1.5.2
       strip-json-comments: 5.0.3
       typescript: 5.9.3
-      zod: 4.2.1
+      zod: 4.3.4
 
   layerr@3.0.0: {}
 
@@ -8608,6 +8605,4 @@ snapshots:
 
   yoctocolors@2.1.2: {}
 
-  zod@3.25.76: {}
-
-  zod@4.2.1: {}
+  zod@4.3.4: {}
