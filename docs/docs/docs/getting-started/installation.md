@@ -153,7 +153,11 @@ The pre-commit hooks use Python scripts to validate code quality and enforce bes
 - **MacOS**: Use Homebrew: `brew install python@3.11` or download from [python.org](https://www.python.org/downloads/)
 - **Linux**: Use your package manager:
   - Ubuntu/Debian: `sudo apt install python3 python3-pip python3-venv`
-  - Fedora: `sudo dnf install python3 python3-pip`
+  - Fedora: `sudo dnf install python3 python3-pip python3-venv`
+
+:::tip
+On some Linux distributions, the `venv` module is distributed separately. If you get an error like `No module named 'venv'`, you need to install the `python3-venv` package as shown above.
+:::
 
 #### 2. Verify Python Installation
 
