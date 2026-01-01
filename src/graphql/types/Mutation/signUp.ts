@@ -16,6 +16,7 @@ import {
 import { AuthenticationPayload } from "~/src/graphql/types/AuthenticationPayload";
 import envConfig from "~/src/utilities/graphqLimits";
 import { isNotNullish } from "~/src/utilities/isNotNullish";
+import { validateRecaptchaIfRequired } from "~/src/utilities/recaptchaUtils";
 import {
 	DEFAULT_REFRESH_TOKEN_EXPIRES_MS,
 	generateRefreshToken,
@@ -97,6 +98,13 @@ builder.mutationField("signUp", (t) =>
 					},
 				});
 			}
+
+			// Verify reCAPTCHA if required
+			await validateRecaptchaIfRequired(
+				parsedArgs.input.recaptchaToken,
+				ctx.envConfig.RECAPTCHA_SECRET_KEY,
+				["input", "recaptchaToken"],
+			);
 
 			const [[existingUserWithEmailAddress], existingOrganization] =
 				await Promise.all([

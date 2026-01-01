@@ -26,7 +26,7 @@ Redis-backed cache service for caching entities and query results.
 
 > `optional` **cookie**: `object`
 
-Defined in: [src/graphql/context.ts:80](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/graphql/context.ts#L80)
+Defined in: [src/graphql/context.ts:81](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/graphql/context.ts#L81)
 
 Cookie helper for setting HTTP-Only authentication cookies.
 Only available for HTTP requests (not WebSocket subscriptions).
@@ -105,7 +105,7 @@ Defined in: [src/graphql/context.ts:53](https://github.com/PalisadoesFoundation/
 
 ### envConfig
 
-> **envConfig**: `Pick`\<`FastifyInstance`\[`"envConfig"`\], `"API_ACCOUNT_LOCKOUT_DURATION_MS"` \| `"API_ACCOUNT_LOCKOUT_THRESHOLD"` \| `"API_BASE_URL"` \| `"API_COMMUNITY_NAME"` \| `"API_REFRESH_TOKEN_EXPIRES_IN"` \| `"API_PASSWORD_RESET_USER_TOKEN_EXPIRES_SECONDS"` \| `"API_PASSWORD_RESET_ADMIN_TOKEN_EXPIRES_SECONDS"` \| `"API_COOKIE_DOMAIN"` \| `"API_IS_SECURE_COOKIES"` \| `"API_JWT_EXPIRES_IN"` \| `"AWS_ACCESS_KEY_ID"` \| `"AWS_SECRET_ACCESS_KEY"` \| `"AWS_SES_REGION"` \| `"AWS_SES_FROM_EMAIL"` \| `"AWS_SES_FROM_NAME"` \| `"FRONTEND_URL"`\>
+> **envConfig**: `Pick`\<`FastifyInstance`\[`"envConfig"`\], `"API_ACCOUNT_LOCKOUT_DURATION_MS"` \| `"API_ACCOUNT_LOCKOUT_THRESHOLD"` \| `"API_BASE_URL"` \| `"API_COMMUNITY_NAME"` \| `"API_REFRESH_TOKEN_EXPIRES_IN"` \| `"API_PASSWORD_RESET_USER_TOKEN_EXPIRES_SECONDS"` \| `"API_PASSWORD_RESET_ADMIN_TOKEN_EXPIRES_SECONDS"` \| `"API_COOKIE_DOMAIN"` \| `"API_IS_SECURE_COOKIES"` \| `"API_JWT_EXPIRES_IN"` \| `"AWS_ACCESS_KEY_ID"` \| `"AWS_SECRET_ACCESS_KEY"` \| `"AWS_SES_REGION"` \| `"AWS_SES_FROM_EMAIL"` \| `"AWS_SES_FROM_NAME"` \| `"FRONTEND_URL"` \| `"RECAPTCHA_SECRET_KEY"`\>
 
 Defined in: [src/graphql/context.ts:54](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/graphql/context.ts#L54)
 
@@ -115,7 +115,7 @@ Defined in: [src/graphql/context.ts:54](https://github.com/PalisadoesFoundation/
 
 > **jwt**: `object`
 
-Defined in: [src/graphql/context.ts:73](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/graphql/context.ts#L73)
+Defined in: [src/graphql/context.ts:74](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/graphql/context.ts#L74)
 
 #### sign()
 
@@ -137,7 +137,7 @@ Defined in: [src/graphql/context.ts:73](https://github.com/PalisadoesFoundation/
 
 > **log**: `FastifyInstance`\[`"log"`\]
 
-Defined in: [src/graphql/context.ts:96](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/graphql/context.ts#L96)
+Defined in: [src/graphql/context.ts:97](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/graphql/context.ts#L97)
 
 ***
 
@@ -145,7 +145,7 @@ Defined in: [src/graphql/context.ts:96](https://github.com/PalisadoesFoundation/
 
 > **minio**: `FastifyInstance`\[`"minio"`\]
 
-Defined in: [src/graphql/context.ts:97](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/graphql/context.ts#L97)
+Defined in: [src/graphql/context.ts:98](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/graphql/context.ts#L98)
 
 ***
 
@@ -153,7 +153,7 @@ Defined in: [src/graphql/context.ts:97](https://github.com/PalisadoesFoundation/
 
 > `optional` **notification**: `object`
 
-Defined in: [src/graphql/context.ts:102](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/graphql/context.ts#L102)
+Defined in: [src/graphql/context.ts:103](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/graphql/context.ts#L103)
 
 Per-request notification helper. Implementations may enqueue notifications
 for delivery and support flush() to perform delivery after transaction commit.
