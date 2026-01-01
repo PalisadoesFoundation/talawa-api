@@ -203,6 +203,7 @@ export const graphql = fastifyPlugin(async (fastify) => {
 	 * 2. {@link https://github.com/flash-oss/graphql-upload-minimal/blob/56e83775b114edc169f605041d983156d4131387/public/index.js#L61}
 	 */
 	await fastify.register(mercuriusUpload, FILE_UPLOAD_CONFIG);
+	schemaManager.setLogger(fastify.log);
 
 	// Build initial schema with active plugins
 	const initialSchema = await schemaManager.buildInitialSchema();

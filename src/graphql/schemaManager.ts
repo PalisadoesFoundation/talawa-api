@@ -6,6 +6,7 @@
  */
 
 import path from "node:path";
+import type { FastifyBaseLogger } from "fastify";
 import type { GraphQLSchema } from "graphql";
 
 import { builder } from "~/src/graphql/builder";
@@ -16,6 +17,14 @@ class GraphQLSchemaManager {
 	private currentSchema: GraphQLSchema | null = null;
 	private isRebuilding = false;
 	private schemaUpdateCallbacks: Array<(schema: GraphQLSchema) => void> = [];
+	private logger: FastifyBaseLogger | null = null;
+
+	/**
+	 * Set the logger instance
+	 */
+	setLogger(logger: FastifyBaseLogger): void {
+		this.logger = logger;
+	}
 
 	/**
 	 * Setup listeners for plugin events that require schema rebuilds
@@ -84,7 +93,7 @@ class GraphQLSchemaManager {
 
 			return newSchema;
 		} catch (error) {
-			console.error("Schema rebuild failed:", error);
+			this.logger?.error({ error }, "Schema rebuild failed");
 			throw error;
 		} finally {
 			this.isRebuilding = false;
@@ -106,7 +115,7 @@ class GraphQLSchemaManager {
 			await import("./types/index");
 			// Note: interfaces and unions directories have empty index files, so skipping them
 		} catch (error) {
-			console.error("Core schema import failed:", error);
+			this.logger?.error({ error }, "Core schema import failed");
 			throw error;
 		}
 	}
@@ -117,7 +126,7 @@ class GraphQLSchemaManager {
 	private async registerActivePluginExtensions(): Promise<void> {
 		const pluginManager = getPluginManagerInstance();
 		if (!pluginManager || !pluginManager.isSystemInitialized()) {
-			console.log("Plugin Manager Not Available or Not Initialized");
+			this.logger?.info("Plugin Manager Not Available or Not Initialized");
 			return;
 		}
 
@@ -126,7 +135,9 @@ class GraphQLSchemaManager {
 		// Check if there are any plugins loaded
 		const loadedPlugins = pluginManager.getLoadedPlugins();
 		if (loadedPlugins.length === 0) {
-			console.log("No plugins loaded, skipping plugin extension registration");
+			this.logger?.info(
+				"No plugins loaded, skipping plugin extension registration",
+			);
 			return;
 		}
 
@@ -157,7 +168,9 @@ class GraphQLSchemaManager {
 						await import(`${pluginPath}/graphql/types`);
 					} catch (_error) {
 						// Plugin types file doesn't exist, continue without it
-						console.log(`No types file found for plugin ${extension.pluginId}`);
+						this.logger?.info(
+							`No types file found for plugin ${extension.pluginId}`,
+						);
 					}
 
 					// Create a namespaced builder wrapper that automatically prefixes field names
@@ -168,13 +181,17 @@ class GraphQLSchemaManager {
 
 					// Execute the builder function with the namespaced builder
 					extension.builderFunction(namespacedBuilder);
-					console.log(
+					this.logger?.info(
 						`Registered builder extension: ${extension.pluginId}.${extension.fieldName}`,
 					);
 				} catch (error) {
-					console.error(
-						`Failed to register builder extension ${extension.pluginId}.${extension.fieldName}:`,
-						error,
+					this.logger?.error(
+						{
+							error,
+							pluginId: extension.pluginId,
+							fieldName: extension.fieldName,
+						},
+						"Failed to register builder extension",
 					);
 				}
 			}
@@ -244,7 +261,7 @@ class GraphQLSchemaManager {
 			try {
 				callback(schema);
 			} catch (error) {
-				console.error("Schema update callback failed:", error);
+				this.logger?.error({ error }, "Schema update callback failed");
 			}
 		}
 	}

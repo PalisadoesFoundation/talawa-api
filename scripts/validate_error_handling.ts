@@ -270,6 +270,9 @@ class ErrorHandlingValidator {
 				return;
 			}
 
+			// Process multiline catch blocks first
+			this.checkMultilineCatchBlocks(filePath, content, lines);
+
 			lines.forEach((line, index) => {
 				const lineNumber = index + 1;
 				this.checkLineForViolations(filePath, lineNumber, line);
@@ -279,6 +282,216 @@ class ErrorHandlingValidator {
 				`Could not read file ${filePath}: ${(error as Error).message}`,
 			);
 		}
+	}
+
+	private checkMultilineCatchBlocks(
+		filePath: string,
+		content: string,
+		lines: string[],
+	): void {
+		// Remove comments and strings to avoid false positives
+		const cleanContent = this.removeCommentsAndStrings(content);
+
+		// Find all catch blocks using a state machine approach
+		const catchBlocks = this.findCatchBlocks(cleanContent);
+
+		for (const catchBlock of catchBlocks) {
+			const lineNumber = this.getLineNumberFromPosition(
+				content,
+				catchBlock.start,
+			);
+
+			// Check for empty catch blocks
+			if (catchBlock.isEmpty) {
+				// Get the actual line content for reporting
+				const reportLine = this.getLineContent(lines, lineNumber, catchBlock);
+				this.addViolation(
+					filePath,
+					lineNumber,
+					"empty_catch_block",
+					reportLine,
+					"Add proper error handling or logging in catch block",
+				);
+			}
+			// Check for improper catch handling
+			else if (catchBlock.hasImproperHandling) {
+				const reportLine = this.getLineContent(lines, lineNumber, catchBlock);
+				this.addViolation(
+					filePath,
+					lineNumber,
+					"improper_catch_handling",
+					reportLine,
+					"Catch blocks should re-throw errors or use proper error logging",
+				);
+			}
+		}
+	}
+
+	private removeCommentsAndStrings(content: string): string {
+		// Replace single-line comments with spaces
+		let cleaned = content.replace(/\/\/.*$/gm, (match) =>
+			" ".repeat(match.length),
+		);
+
+		// Replace multi-line comments with spaces (preserving newlines)
+		cleaned = cleaned.replace(/\/\*[\s\S]*?\*\//g, (match) =>
+			match.replace(/[^\n]/g, " "),
+		);
+
+		// Replace string literals with spaces (preserving newlines)
+		cleaned = cleaned.replace(/"(?:[^"\\]|\\.)*"/g, (match) =>
+			match.replace(/[^\n]/g, " "),
+		);
+		cleaned = cleaned.replace(/'(?:[^'\\]|\\.)*'/g, (match) =>
+			match.replace(/[^\n]/g, " "),
+		);
+		cleaned = cleaned.replace(/`(?:[^`\\]|\\.)*`/g, (match) =>
+			match.replace(/[^\n]/g, " "),
+		);
+
+		return cleaned;
+	}
+
+	private findCatchBlocks(content: string): Array<{
+		start: number;
+		end: number;
+		body: string;
+		isEmpty: boolean;
+		hasImproperHandling: boolean;
+	}> {
+		const catchBlocks: Array<{
+			start: number;
+			end: number;
+			body: string;
+			isEmpty: boolean;
+			hasImproperHandling: boolean;
+		}> = [];
+
+		// Find catch statements using regex
+		const catchRegex = /catch\s*\([^)]*\)\s*\{/g;
+		let match = catchRegex.exec(content);
+		while (match !== null) {
+			const catchStart = match.index;
+			const openBraceIndex = catchStart + match[0].length - 1;
+
+			// Find the matching closing brace
+			const closeBraceIndex = this.findMatchingBrace(content, openBraceIndex);
+
+			if (closeBraceIndex !== -1) {
+				const body = content.slice(openBraceIndex + 1, closeBraceIndex);
+				const trimmedBody = body.trim();
+
+				// Check if empty
+				const isEmpty = trimmedBody.length === 0;
+
+				// Check for improper handling (has content but no proper error handling)
+				const hasImproperHandling =
+					!isEmpty && !this.hasProperErrorHandling(body);
+
+				catchBlocks.push({
+					start: catchStart,
+					end: closeBraceIndex + 1,
+					body,
+					isEmpty,
+					hasImproperHandling,
+				});
+			}
+
+			match = catchRegex.exec(content);
+		}
+
+		return catchBlocks;
+	}
+
+	private findMatchingBrace(content: string, openBraceIndex: number): number {
+		let braceCount = 1;
+		let index = openBraceIndex + 1;
+
+		while (index < content.length && braceCount > 0) {
+			const char = content[index];
+			if (char === "{") {
+				braceCount++;
+			} else if (char === "}") {
+				braceCount--;
+			}
+			index++;
+		}
+
+		return braceCount === 0 ? index - 1 : -1;
+	}
+
+	private hasProperErrorHandling(catchBody: string): boolean {
+		// Check for proper error handling patterns
+		const properHandlingPatterns = [
+			/throw\s+/, // Re-throwing errors
+			/\.log\s*\(/, // Logging methods
+			/\.error\s*\(/, // Error logging
+			/\.warn\s*\(/, // Warning logging
+			/\.info\s*\(/, // Info logging
+			/\.debug\s*\(/, // Debug logging
+			/console\s*\.\s*log/, // Console logging (though not preferred)
+			/console\s*\.\s*error/, // Console error
+			/console\s*\.\s*warn/, // Console warn
+			/logger\s*\./, // Logger usage
+			/log\s*\(/, // Generic log function calls
+			/return\s+/, // Early returns (sometimes valid)
+			/process\s*\.\s*exit/, // Process exit (sometimes valid)
+			/TalawaGraphQLError/, // Custom error types
+			/TalawaRestError/, // Custom error types
+			/=\s*\{/, // Assignment operations (like setting fallback values)
+			/\w+\s*=/, // Variable assignments
+		];
+
+		// Also check if the catch body has meaningful code (not just comments)
+		const meaningfulCode = catchBody
+			.replace(/\/\/.*$/gm, "") // Remove single-line comments
+			.replace(/\/\*[\s\S]*?\*\//g, "") // Remove multi-line comments
+			.trim();
+
+		// If there's meaningful code, check if it matches proper handling patterns
+		if (meaningfulCode.length > 0) {
+			return properHandlingPatterns.some((pattern) => pattern.test(catchBody));
+		}
+
+		return false;
+	}
+
+	private getLineNumberFromPosition(content: string, position: number): number {
+		const beforePosition = content.slice(0, position);
+		return beforePosition.split("\n").length;
+	}
+
+	private getLineContent(
+		lines: string[],
+		lineNumber: number,
+		_catchBlock: { start: number; end: number; body: string },
+	): string {
+		// For reporting, show the catch statement line
+		const line = lines[lineNumber - 1] || "";
+
+		// If it's a single line catch block, return the line
+		if (line.includes("catch") && line.includes("{") && line.includes("}")) {
+			return line;
+		}
+
+		// For multiline blocks, return the catch declaration line
+		if (line.includes("catch")) {
+			return line;
+		}
+
+		// Fallback: find the line with 'catch'
+		for (
+			let i = Math.max(0, lineNumber - 3);
+			i < Math.min(lines.length, lineNumber + 3);
+			i++
+		) {
+			const currentLine = lines[i];
+			if (currentLine?.includes("catch")) {
+				return currentLine;
+			}
+		}
+
+		return line;
 	}
 
 	private isFileSuppressed(content: string): boolean {
@@ -303,23 +516,8 @@ class ErrorHandlingValidator {
 		// Checks for generic Error usage in routes and resolvers
 		this.checkGenericError(filePath, lineNumber, line);
 
-		// Checks for empty catch blocks
-		// Known limitation: multiline empty catch blocks won't be detected by this regex.
-		if (/catch\s*\([^)]*\)\s*\{\s*\}/g.test(line)) {
-			this.addViolation(
-				filePath,
-				lineNumber,
-				"empty_catch_block",
-				line,
-				"Add proper error handling or logging in catch block",
-			);
-		}
-
 		// Checks for console usage enforcement
 		this.checkConsoleUsage(filePath, lineNumber, line);
-
-		// Checks for catch blocks without proper error handling
-		this.checkCatchHandling(filePath, lineNumber, line);
 	}
 
 	private checkGenericError(
@@ -373,31 +571,6 @@ class ErrorHandlingValidator {
 					"console_error_usage",
 					line,
 					"Use structured logging (request.log.error) instead of console.error",
-				);
-			}
-		}
-	}
-
-	private checkCatchHandling(
-		filePath: string,
-		lineNumber: number,
-		line: string,
-	): void {
-		if (/catch\s*\([^)]*\)\s*\{[^}]*\}/g.test(line)) {
-			const catchContent = line.match(/catch\s*\([^)]*\)\s*\{([^}]*)\}/)?.[1];
-			if (
-				catchContent &&
-				!catchContent.includes("throw") &&
-				!catchContent.includes("log") &&
-				!catchContent.includes("error") &&
-				catchContent.trim().length > 0
-			) {
-				this.addViolation(
-					filePath,
-					lineNumber,
-					"improper_catch_handling",
-					line,
-					"Catch blocks should re-throw errors or use proper error logging",
 				);
 			}
 		}

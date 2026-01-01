@@ -38,9 +38,7 @@ User.implement({
 					currentUser.role !== "administrator" &&
 					parent.id !== currentUserId
 				) {
-					console.log("=============================");
-					console.log(currentUser.role);
-					console.log("=============================");
+					ctx.log.info({ role: currentUser.role }, "Checking user role");
 					throw new TalawaGraphQLError({
 						extensions: {
 							code: "unauthorized_action",
