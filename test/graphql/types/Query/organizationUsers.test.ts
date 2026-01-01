@@ -239,8 +239,8 @@ suite("Query: usersByOrganizationId", () => {
 
 			expect(result.errors).toBeDefined();
 			expect(result.data?.usersByOrganizationId).toBeNull();
-			expect(result.errors?.[0]?.message).toContain(
-				"An error occurred while fetching users",
+			expect(result.errors?.[0]?.extensions?.code).toBe(
+				"internal_server_error",
 			);
 		} finally {
 			// Restore the spy
@@ -367,8 +367,8 @@ suite("Query: eventsByOrganizationId", () => {
 
 			expect(result.errors).toBeDefined();
 			expect(result.data?.eventsByOrganizationId).toBeNull();
-			expect(result.errors?.[0]?.message).toContain(
-				"An error occurred while fetching events",
+			expect(result.errors?.[0]?.extensions?.code).toBe(
+				"internal_server_error",
 			);
 		} finally {
 			// Restore the spy

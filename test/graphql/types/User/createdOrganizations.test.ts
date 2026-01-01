@@ -107,7 +107,7 @@ describe("resolveCreatedOrganizations", () => {
 				{ filter: null },
 				baseMockCtx,
 			),
-		).rejects.toThrow("Failed to retrieve organizations created by the user");
+		).rejects.toThrow(TalawaGraphQLError);
 
 		expect(baseMockCtx.log.error).toHaveBeenCalledWith(
 			errorMsg,

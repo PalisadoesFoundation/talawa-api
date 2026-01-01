@@ -95,6 +95,11 @@ function makeCtx(isAdmin = true, userId = "1"): TestCtx {
 			},
 		},
 		currentClient: { user: userId ? { id: userId } : undefined },
+		log: {
+			error: vi.fn(),
+			info: vi.fn(),
+			warn: vi.fn(),
+		},
 	};
 }
 
@@ -217,6 +222,7 @@ describe("uploadPluginZip mutation", () => {
 				drizzleClient: ctx.drizzleClient,
 				activate: false,
 				userId: "1",
+				logger: ctx.log,
 			});
 		});
 
@@ -233,6 +239,7 @@ describe("uploadPluginZip mutation", () => {
 				drizzleClient: ctx.drizzleClient,
 				activate: true,
 				userId: "1",
+				logger: ctx.log,
 			});
 		});
 

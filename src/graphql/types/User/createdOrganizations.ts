@@ -5,6 +5,7 @@ import type {
 } from "~/src/graphql/context";
 import { Organization } from "~/src/graphql/types/Organization/Organization";
 import { User } from "~/src/graphql/types/User/User";
+import { ErrorCode } from "~/src/utilities/errors/errorCodes";
 import envConfig from "~/src/utilities/graphqLimits";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 
@@ -41,7 +42,11 @@ export const resolveCreatedOrganizations = async (
 		});
 	} catch (error) {
 		ctx.log.error(error, "Error fetching created organizations");
-		throw new Error("Failed to retrieve organizations created by the user");
+		throw new TalawaGraphQLError({
+			extensions: {
+				code: ErrorCode.INTERNAL_SERVER_ERROR,
+			},
+		});
 	}
 };
 

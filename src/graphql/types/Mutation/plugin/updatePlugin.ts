@@ -3,6 +3,7 @@ import { pluginsTable } from "~/src/drizzle/tables/plugins";
 import { builder } from "~/src/graphql/builder";
 import { Plugin } from "~/src/graphql/types/Plugin/Plugin";
 import { getPluginManagerInstance } from "~/src/plugin/registry";
+import { ErrorCode } from "~/src/utilities/errors/errorCodes";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import {
 	UpdatePluginInput,
@@ -118,7 +119,7 @@ builder.mutationField("updatePlugin", (t) =>
 						try {
 							if (willBeActivated) {
 								// Plugin is being activated
-								console.log(`Activating plugin: ${targetPluginId}`);
+								ctx.log.info({ pluginId: targetPluginId }, "Activating plugin");
 
 								// Load plugin if not already loaded
 								if (!pluginManager.isPluginLoaded(targetPluginId)) {
@@ -128,21 +129,31 @@ builder.mutationField("updatePlugin", (t) =>
 								// Activate the plugin (registers GraphQL, etc.)
 								await pluginManager.activatePlugin(targetPluginId);
 
-								console.log(`Plugin activated successfully: ${targetPluginId}`);
+								ctx.log.info(
+									{ pluginId: targetPluginId },
+									"Plugin activated successfully",
+								);
 							} else {
 								// Plugin is being deactivated
-								console.log(`Deactivating plugin: ${targetPluginId}`);
+								ctx.log.info(
+									{ pluginId: targetPluginId },
+									"Deactivating plugin",
+								);
 								await pluginManager.deactivatePlugin(targetPluginId);
-								console.log(
-									`Plugin deactivated successfully: ${targetPluginId}`,
+								ctx.log.info(
+									{ pluginId: targetPluginId },
+									"Plugin deactivated successfully",
 								);
 							}
 						} catch (error) {
-							console.error(
+							ctx.log.error(
+								{
+									error,
+									action: willBeActivated ? "activation" : "deactivation",
+								},
 								`Error during plugin ${
 									willBeActivated ? "activation" : "deactivation"
-								}:`,
-								error,
+								}`,
 							);
 							// Note: We don't throw here to avoid breaking the DB update,
 							// but in production you might want to rollback the DB change
@@ -157,7 +168,11 @@ builder.mutationField("updatePlugin", (t) =>
 					error instanceof Error &&
 					error.message.includes("Database connection failed")
 				) {
-					throw new Error("Database connection failed");
+					throw new TalawaGraphQLError({
+						extensions: {
+							code: ErrorCode.INTERNAL_SERVER_ERROR,
+						},
+					});
 				}
 
 				// Re-throw other errors

@@ -10,6 +10,7 @@ import {
 	resolveMultipleInstances,
 } from "~/src/services/eventGeneration/instanceResolver";
 import type { ServiceDependencies } from "~/src/services/eventGeneration/types";
+import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 
 /**
  * Defines the input parameters for querying recurring event instances.
@@ -172,9 +173,16 @@ export async function getRecurringEventInstanceById(
 		});
 
 		if (!baseTemplate) {
-			throw new Error(
-				`Base template not found: ${instance.baseRecurringEventId}`,
-			);
+			throw new TalawaGraphQLError({
+				extensions: {
+					code: "arguments_associated_resources_not_found",
+					issues: [
+						{
+							argumentPath: ["baseRecurringEventId"],
+						},
+					],
+				},
+			});
 		}
 
 		// Get exception if exists - now using direct instance ID lookup

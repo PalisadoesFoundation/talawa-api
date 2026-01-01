@@ -86,11 +86,12 @@ builder.mutationField("uploadPluginZip", (t) =>
 					drizzleClient: ctx.drizzleClient,
 					activate: parsedArgs.activate,
 					userId: ctx.currentClient.user.id,
+					logger: ctx.log,
 				});
 
 				return result.plugin as typeof Plugin.$inferType;
 			} catch (error) {
-				console.error("Plugin installation failed:", error);
+				ctx.log.error({ error }, "Plugin installation failed");
 
 				if (error instanceof TalawaGraphQLError) {
 					throw error;

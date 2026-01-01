@@ -66,6 +66,11 @@ function makeCtx(overrides: Partial<TestCtx> = {}): TestCtx {
 			where: whereMock,
 			returning: returningMock,
 		},
+		log: {
+			error: vi.fn(),
+			info: vi.fn(),
+			warn: vi.fn(),
+		},
 		...overrides,
 	};
 }

@@ -123,7 +123,11 @@ export async function installPluginFromZip(
 					// Activate plugin
 					await pluginManager.activatePlugin(pluginId);
 				} catch (error) {
-					console.error(`Failed to activate plugin ${pluginId}:`, error);
+					options.logger?.error(
+						{ error, pluginId },
+						`Failed to activate plugin ${pluginId}`,
+					) ||
+						console.log(`ERROR: Failed to activate plugin ${pluginId}:`, error);
 					// Don't throw error, just log it - plugin is installed but not activated
 				}
 			}
@@ -153,7 +157,8 @@ export async function installPluginFromZip(
 		try {
 			await import("node:fs/promises").then((fs) => fs.unlink(tempPath));
 		} catch (error) {
-			console.error("Failed to clean up temporary file:", error);
+			options.logger?.error(error, "Failed to clean up temporary file") ||
+				console.log("ERROR: Failed to clean up temporary file:", error);
 		}
 	}
 }

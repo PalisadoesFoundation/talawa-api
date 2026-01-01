@@ -9,6 +9,7 @@ import {
 	filterInviteOnlyEvents,
 } from "~/src/graphql/types/Query/eventQueries";
 import { User } from "~/src/graphql/types/User/User";
+import { ErrorCode } from "~/src/utilities/errors/errorCodes";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 
 type UserType = InferSelectModel<typeof usersTable>;
@@ -97,7 +98,11 @@ builder.queryField("usersByOrganizationId", (t) =>
 					{ error, organizationId: args.organizationId },
 					"Error fetching users for organization",
 				);
-				throw new Error("An error occurred while fetching users.");
+				throw new TalawaGraphQLError({
+					extensions: {
+						code: ErrorCode.INTERNAL_SERVER_ERROR,
+					},
+				});
 			}
 		},
 	}),
@@ -211,7 +216,11 @@ builder.queryField("eventsByOrganizationId", (t) =>
 					{ error, organizationId: parsedArgs.data.organizationId },
 					"Error fetching events for organization",
 				);
-				throw new Error("An error occurred while fetching events.");
+				throw new TalawaGraphQLError({
+					extensions: {
+						code: ErrorCode.INTERNAL_SERVER_ERROR,
+					},
+				});
 			}
 		},
 	}),

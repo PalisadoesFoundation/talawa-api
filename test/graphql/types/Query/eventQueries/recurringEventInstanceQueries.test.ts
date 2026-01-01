@@ -13,6 +13,7 @@ import {
 	getRecurringEventInstancesInDateRange,
 } from "~/src/graphql/types/Query/eventQueries/recurringEventInstanceQueries";
 import type { ServiceDependencies } from "~/src/services/eventGeneration/types";
+import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 
 // Mock the service dependencies
 vi.mock("~/src/services/eventGeneration/instanceResolver", () => ({
@@ -461,10 +462,10 @@ describe("getRecurringEventInstanceById", () => {
 				mockDrizzleClient,
 				mockLogger,
 			),
-		).rejects.toThrow("Base template not found: base-event-1");
+		).rejects.toThrow(TalawaGraphQLError);
 
 		expect(mockLogger.error).toHaveBeenCalledWith(
-			expect.any(Error),
+			expect.any(TalawaGraphQLError),
 			"Failed to get recurring event instance instance-1",
 		);
 	});

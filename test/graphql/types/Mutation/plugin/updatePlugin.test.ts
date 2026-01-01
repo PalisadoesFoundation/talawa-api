@@ -72,6 +72,11 @@ function makeCtx(overrides: Partial<TestCtx> = {}): TestCtx {
 			where: whereMock,
 			returning: returningMock,
 		},
+		log: {
+			error: vi.fn(),
+			info: vi.fn(),
+			warn: vi.fn(),
+		},
 		...overrides,
 	};
 }
@@ -236,7 +241,7 @@ describe("updatePlugin mutation", () => {
 		// Should not throw, just log error
 	});
 
-	it("throws on database connection error", async () => {
+	it("throws TalawaGraphQLError on database connection error", async () => {
 		const ctx = makeCtx();
 		ctx.drizzleClient.returning = vi
 			.fn()
@@ -245,9 +250,7 @@ describe("updatePlugin mutation", () => {
 		ctx.drizzleClient.set = vi.fn().mockReturnThis();
 		ctx.drizzleClient.where = vi.fn().mockReturnThis();
 		const args = { input: validInput };
-		await expect(resolver({}, args, ctx)).rejects.toThrow(
-			"Database connection failed",
-		);
+		await expect(resolver({}, args, ctx)).rejects.toThrow(TalawaGraphQLError);
 	});
 
 	it("throws if plugin not found on no-op update", async () => {

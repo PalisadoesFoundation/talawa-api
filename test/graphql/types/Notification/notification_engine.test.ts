@@ -239,7 +239,9 @@ describe("NotificationEngine (unit tests)", () => {
 				{ name: "Alice" },
 				{ targetType: NotificationTargetType.USER, targetIds: ["user_001"] },
 			),
-		).rejects.toThrow(/No notification template/);
+		).rejects.toThrow(
+			"No associated resources found for the provided arguments.",
+		);
 	});
 
 	test("creates in-app notification for USER target, excluding sender", async () => {
@@ -965,7 +967,7 @@ describe("NotificationEngine (unit tests)", () => {
 					"test@example.com",
 				),
 			).rejects.toThrow(
-				/No notification template found for event type "non_existent_event" and channel "email"/,
+				"No associated resources found for the provided arguments.",
 			);
 		});
 
@@ -1103,7 +1105,7 @@ describe("NotificationEngine (unit tests)", () => {
 					{ eventName: "Test Event" },
 					"test@example.com",
 				),
-			).rejects.toThrow("Failed to create notification log for direct email");
+			).rejects.toThrow("Something went wrong. Please try again later.");
 		});
 	});
 });

@@ -45,6 +45,8 @@ jobs:
         run: docker container run talawa_api pnpm lint:tsdoc
       - name: Check sanitization
         run: docker container run talawa_api pnpm lint:sanitization
+      - name: Run Error Handling Validation
+        run: docker container run talawa_api pnpm validate:error-handling
       - name: Check if the source and target branches are different
         if: ${{ github.event.pull_request.base.ref == github.event.pull_request.head.ref }}
         run: |

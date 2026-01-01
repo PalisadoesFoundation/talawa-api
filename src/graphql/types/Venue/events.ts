@@ -10,6 +10,7 @@ import {
 	type EventWithAttachments,
 	filterInviteOnlyEvents,
 } from "~/src/graphql/types/Query/eventQueries";
+import { ErrorCode } from "~/src/utilities/errors/errorCodes";
 import envConfig from "~/src/utilities/graphqLimits";
 import {
 	defaultGraphQLConnectionArgumentsSchema,
@@ -270,7 +271,11 @@ Venue.implement({
 						.filter((booking) => booking.event !== null)
 						.map((booking) => {
 							if (!booking.event) {
-								throw new Error("Event should not be null after filter");
+								throw new TalawaGraphQLError({
+									extensions: {
+										code: ErrorCode.INTERNAL_SERVER_ERROR,
+									},
+								});
 							}
 							const { attachmentsWhereEvent, ...event } = booking.event;
 							const isGenerated = recurringInstanceIds.has(booking.eventId);
