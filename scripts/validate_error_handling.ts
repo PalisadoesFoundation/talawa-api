@@ -75,6 +75,9 @@ export const ALLOWED_PATTERNS = [
 
 const WARN_ONLY_MODE = false;
 
+// Number of lines to check for suppression comment at the start of a file
+export const SUPPRESSION_CHECK_LINES = 10;
+
 interface Violation {
 	filePath: string;
 	lineNumber: number;
@@ -309,6 +312,16 @@ export class ErrorHandlingValidator {
 		// Anchor the pattern
 		regexPattern = `^${regexPattern}$`;
 
+		// Basic complexity check: limit pattern length and nesting
+		if (
+			regexPattern.length > 500 ||
+			(regexPattern.match(/\*/g) || []).length > 10
+		) {
+			console.warn(`Pattern too complex, using string fallback: ${pattern}`);
+			const simplePattern = pattern.replace(/\*+/g, "");
+			return filePath.includes(simplePattern);
+		}
+
 		try {
 			const regex = new RegExp(regexPattern);
 			return regex.test(filePath);
@@ -397,7 +410,7 @@ export class ErrorHandlingValidator {
 			// Check for empty catch blocks
 			if (catchBlock.isEmpty) {
 				// Get the actual line content for reporting
-				const reportLine = this.getLineContent(lines, lineNumber, catchBlock);
+				const reportLine = this.getLineContent(lines, lineNumber);
 				this.addViolation(
 					filePath,
 					lineNumber,
@@ -408,7 +421,7 @@ export class ErrorHandlingValidator {
 			}
 			// Check for improper catch handling
 			else if (catchBlock.hasImproperHandling) {
-				const reportLine = this.getLineContent(lines, lineNumber, catchBlock);
+				const reportLine = this.getLineContent(lines, lineNumber);
 				this.addViolation(
 					filePath,
 					lineNumber,
@@ -561,11 +574,7 @@ export class ErrorHandlingValidator {
 		return beforePosition.split("\n").length;
 	}
 
-	public getLineContent(
-		lines: string[],
-		lineNumber: number,
-		_catchBlock: { start: number; end: number; body: string },
-	): string {
+	public getLineContent(lines: string[], lineNumber: number): string {
 		// For reporting, show the catch statement line
 		const line = lines[lineNumber - 1] || "";
 
@@ -595,7 +604,10 @@ export class ErrorHandlingValidator {
 	}
 
 	public isFileSuppressed(content: string): boolean {
-		const firstLines = content.split("\n").slice(0, 10).join("\n");
+		const firstLines = content
+			.split("\n")
+			.slice(0, SUPPRESSION_CHECK_LINES)
+			.join("\n");
 		return firstLines.includes("// validate-error-handling-disable");
 	}
 

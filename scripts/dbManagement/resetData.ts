@@ -58,7 +58,8 @@ if (isMain) {
 	(async () => {
 		try {
 			await main();
-		} catch (_error: unknown) {
+		} catch (error: unknown) {
+			console.error(error);
 			exitCode = 1;
 		}
 		try {

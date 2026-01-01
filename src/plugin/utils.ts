@@ -537,11 +537,15 @@ export async function dropPluginTables(
 				await db.execute(dropSQL);
 				logger?.info?.(`Successfully dropped table: ${prefixedTableName}`);
 			} catch (error) {
-				logger?.info?.(
-					`Error dropping table ${tableName}: ${
-						error instanceof Error ? error.message : String(error)
-					}`,
-				);
+				const errorMessage = `Error dropping table ${tableName}: ${
+					error instanceof Error ? error.message : String(error)
+				}`;
+
+				if (logger?.info) {
+					logger.info(errorMessage);
+				} else {
+					console.error(errorMessage);
+				}
 				// Continue with other tables even if one fails
 			}
 		}
