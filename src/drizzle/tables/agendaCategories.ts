@@ -64,7 +64,9 @@ export const agendaCategoriesTable = pgTable(
 		/**
 		 * Foreign key reference to the id of the organization in which the advertisement is made.
 		 */
-		organizationId: uuid("organization_id").references(
+		organizationId: uuid("organization_id")
+		.notNull()
+		.references(
 			() => organizationsTable.id,
 			{
 				onDelete: "cascade",
