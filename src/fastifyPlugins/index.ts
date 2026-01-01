@@ -3,12 +3,14 @@ import backgroundWorkers from "./backgroundWorkers";
 import cacheService from "./cacheService";
 import drizzleClient from "./drizzleClient";
 import emailQueue from "./emailQueue";
+import errorHandlerPlugin from "./errorHandler";
 import minioClient from "./minioClient";
 import performance from "./performance";
 import pluginSystem from "./pluginSystem";
 import seedInitialData from "./seedInitialData";
 
 export const plugins = fastifyPlugin(async (fastify) => {
+	await fastify.register(errorHandlerPlugin);
 	await fastify.register(drizzleClient);
 	await fastify.register(cacheService); // Register cache service (uses Redis from createServer)
 	await fastify.register(minioClient);
