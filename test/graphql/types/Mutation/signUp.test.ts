@@ -875,10 +875,14 @@ suite("Mutation field signUp", () => {
 
 	suite("reCAPTCHA validation", () => {
 		let testOrg: TestOrganization;
+		let originalRecaptchaSecretKey: string | undefined;
 
 		beforeEach(async () => {
 			// Stub fetch safely (auto-restored)
 			vi.stubGlobal("fetch", vi.fn());
+
+			// Save original value for restoration
+			originalRecaptchaSecretKey = server.envConfig.RECAPTCHA_SECRET_KEY;
 
 			// Explicitly control env
 			server.envConfig.RECAPTCHA_SECRET_KEY = undefined;
@@ -889,6 +893,9 @@ suite("Mutation field signUp", () => {
 		afterEach(async () => {
 			vi.unstubAllGlobals(); // restores fetch safely
 			vi.restoreAllMocks(); // restores spies/mocks
+
+			// Restore original env config
+			server.envConfig.RECAPTCHA_SECRET_KEY = originalRecaptchaSecretKey;
 
 			await testOrg.cleanup();
 		});

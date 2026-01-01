@@ -49,7 +49,7 @@ This table defines the most important parameters in the file that will be requir
 | `CADDY_TALAWA_API_EMAIL`               | Email address for the Talawa API, used for SSL certificate registration and notifications.                                    |
 | `MINIO_ROOT_PASSWORD`                  | Root password for MinIO, used for securing administrative access to MinIO object storage.                                     |
 | `POSTGRES_PASSWORD`                    | Password for the PostgreSQL database (Docker Compose), used for database authentication and security.                         |
-| `RECAPTCHA_SECRET_KEY` | Secret key for Google reCAPTCHA, used for server-side verification of reCAPTCHA responses to prevent automated abuse and bots. |
+| `RECAPTCHA_SECRET_KEY` | Optional secret key for Google reCAPTCHA, used for server-side verification of reCAPTCHA responses to prevent automated abuse and bots. |
 
 ## Production Environment Setup
 

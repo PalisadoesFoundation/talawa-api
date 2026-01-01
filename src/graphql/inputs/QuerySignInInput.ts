@@ -26,7 +26,8 @@ export const QuerySignInInput = builder
 				required: true,
 			}),
 			recaptchaToken: t.string({
-				description: "Optional reCAPTCHA token for verification.",
+				description:
+					"Optional reCAPTCHA token for verification (required when server-side reCAPTCHA is enabled)",
 				required: false,
 			}),
 		}),

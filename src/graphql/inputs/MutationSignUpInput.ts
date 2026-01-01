@@ -114,7 +114,8 @@ export const MutationSignUpInput = builder
 				type: "ID",
 			}),
 			recaptchaToken: t.string({
-				description: "Optional reCAPTCHA token for verification.",
+				description:
+					"Optional reCAPTCHA token for verification (required when server-side reCAPTCHA is enabled)",
 				required: false,
 			}),
 		}),

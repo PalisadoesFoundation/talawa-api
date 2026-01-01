@@ -3319,7 +3319,9 @@ input MutationSignUpInput {
   """Postal code of the user."""
   postalCode: String
 
-  """Optional reCAPTCHA token for verification."""
+  """
+  Optional reCAPTCHA token for verification (required when server-side reCAPTCHA is enabled)
+  """
   recaptchaToken: String
 
   """The organization the user is signing up for"""
@@ -4983,7 +4985,9 @@ input QuerySignInInput {
   """Password of the user to sign in to talawa."""
   password: String!
 
-  """Optional reCAPTCHA token for verification."""
+  """
+  Optional reCAPTCHA token for verification (required when server-side reCAPTCHA is enabled)
+  """
   recaptchaToken: String
 }
 
