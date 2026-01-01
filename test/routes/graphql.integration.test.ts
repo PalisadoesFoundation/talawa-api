@@ -6,6 +6,10 @@ vi.mock("~/src/fastifyPlugins/drizzleClient", () => ({
 	default: async () => {},
 }));
 
+vi.mock("~/src/fastifyPlugins/minioClient", () => ({
+	default: async () => {},
+}));
+
 import type { FastifyInstance } from "fastify";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { createServer } from "~/src/createServer";
@@ -19,7 +23,9 @@ describe("GraphQL Correlation ID Integration", () => {
 	});
 
 	afterEach(async () => {
-		await server.close();
+		if (server) {
+			await server.close();
+		}
 	});
 
 	it("should include x-correlation-id header in successful GraphQL response", async () => {
