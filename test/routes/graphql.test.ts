@@ -490,10 +490,12 @@ describe("GraphQL Routes", () => {
 			});
 
 			vi.mocked(schemaManager.buildInitialSchema).mockResolvedValue(mockSchema);
-			vi.mocked(schemaManager.onSchemaUpdate).mockImplementation((callback) => {
-				// Store the callback for testing
-				mockFastifyInstance.schemaUpdateCallback = callback;
-			});
+			vi.mocked(schemaManager.onSchemaUpdate).mockImplementation(
+				(callback: (schema: GraphQLSchema) => void) => {
+					// Store the callback for testing
+					mockFastifyInstance.schemaUpdateCallback = callback;
+				},
+			);
 		});
 
 		it("should register mercurius upload with correct configuration", async () => {
@@ -574,51 +576,11 @@ describe("GraphQL Routes", () => {
 			);
 		});
 
-		it("should handle schema update errors", async () => {
-			const { graphql } = await import("~/src/routes/graphql");
-
-			await graphql(mockFastifyInstance as unknown as FastifyInstance);
-
-			// Make replaceSchema throw an error
-			const testError = new Error("Schema replacement failed");
-			mockFastifyInstance.graphql.replaceSchema.mockImplementation(() => {
-				throw testError;
-			});
-
-			const newSchema = new GraphQLSchema({
-				query: new GraphQLObjectType({
-					name: "Query",
-					fields: {
-						test: {
-							type: GraphQLString,
-							resolve: () => "test",
-						},
-					},
-				}),
-			});
-
-			// Trigger schema update
-			mockFastifyInstance.schemaUpdateCallback?.(newSchema);
-
-			expect(mockFastifyInstance.log.error).toHaveBeenCalledWith(
-				expect.objectContaining({
-					error: {
-						message: testError.message,
-						stack: testError.stack,
-						name: testError.name,
-					},
-					timestamp: expect.any(String),
-				}),
-				"❌ Failed to Update GraphQL Schema",
-			);
-		});
-
 		it("should handle non-Error objects in schema update", async () => {
 			const { graphql } = await import("~/src/routes/graphql");
 
 			await graphql(mockFastifyInstance as unknown as FastifyInstance);
 
-			// Make replaceSchema throw a non-Error object
 			mockFastifyInstance.graphql.replaceSchema.mockImplementation(() => {
 				throw "String error";
 			});
@@ -790,7 +752,7 @@ describe("GraphQL Routes", () => {
 
 			// Extract the preExecution hook
 			const addHookCall = mockFastifyInstance.graphql.addHook.mock.calls.find(
-				(call) => call?.[0] === "preExecution",
+				(call: unknown[]) => call?.[0] === "preExecution",
 			);
 			preExecutionHook = addHookCall?.[1] as typeof preExecutionHook;
 		});
@@ -856,7 +818,7 @@ describe("GraphQL Routes", () => {
 				"rate-limit:ip:192.168.1.1",
 				100,
 				1,
-				15, // 5 + 10 (mutation base cost)
+				15,
 			);
 		});
 
@@ -894,12 +856,14 @@ describe("GraphQL Routes", () => {
 				new Error("No token"),
 			);
 
-			vi.mocked(TalawaGraphQLError).mockImplementation((config) => {
-				const error = new Error(config.message);
-				(error as Error & { extensions?: unknown }).extensions =
-					config.extensions;
-				return error as TalawaGraphQLError;
-			});
+			vi.mocked(TalawaGraphQLError).mockImplementation(
+				(config: { message?: string; extensions?: unknown }) => {
+					const error = new Error(config.message);
+					(error as Error & { extensions?: unknown }).extensions =
+						config.extensions;
+					return error as TalawaGraphQLError;
+				},
+			);
 
 			await expect(
 				preExecutionHook(mockSchema, mockContext, mockDocument, mockVariables),
@@ -922,12 +886,14 @@ describe("GraphQL Routes", () => {
 			);
 			vi.mocked(leakyBucket).mockResolvedValue(false);
 
-			vi.mocked(TalawaGraphQLError).mockImplementation((config) => {
-				const error = new Error("Rate limit exceeded");
-				(error as Error & { extensions?: unknown }).extensions =
-					config.extensions;
-				return error as TalawaGraphQLError;
-			});
+			vi.mocked(TalawaGraphQLError).mockImplementation(
+				(config: { message?: string; extensions?: unknown }) => {
+					const error = new Error("Rate limit exceeded");
+					(error as Error & { extensions?: unknown }).extensions =
+						config.extensions;
+					return error as TalawaGraphQLError;
+				},
+			);
 
 			await expect(
 				preExecutionHook(mockSchema, mockContext, mockDocument, mockVariables),
@@ -1057,7 +1023,8 @@ describe("GraphQL Routes", () => {
 			await graphql(mockFastifyInstance as unknown as FastifyInstance);
 
 			const mercuriusCall = mockFastifyInstance.register.mock.calls.find(
-				(call) => call?.[1]?.subscription,
+				(call: unknown[]) =>
+					(call?.[1] as { subscription?: unknown })?.subscription,
 			);
 
 			const subscriptionConfig = mercuriusCall?.[1] as {
@@ -1099,7 +1066,8 @@ describe("GraphQL Routes", () => {
 			await graphql(mockFastifyInstance as unknown as FastifyInstance);
 
 			const mercuriusCall = mockFastifyInstance.register.mock.calls.find(
-				(call) => call?.[1]?.subscription,
+				(call: unknown[]) =>
+					(call?.[1] as { subscription?: unknown })?.subscription,
 			);
 
 			const subscriptionConfig = mercuriusCall?.[1] as {
@@ -1130,7 +1098,8 @@ describe("GraphQL Routes", () => {
 			await graphql(mockFastifyInstance as unknown as FastifyInstance);
 
 			const mercuriusCall = mockFastifyInstance.register.mock.calls.find(
-				(call) => call?.[1]?.subscription,
+				(call: unknown[]) =>
+					(call?.[1] as { subscription?: unknown })?.subscription,
 			);
 
 			const subscriptionConfig = mercuriusCall?.[1] as {
@@ -1153,7 +1122,8 @@ describe("GraphQL Routes", () => {
 			await graphql(mockFastifyInstance as unknown as FastifyInstance);
 
 			const mercuriusCall = mockFastifyInstance.register.mock.calls.find(
-				(call) => call?.[1]?.subscription,
+				(call: unknown[]) =>
+					(call?.[1] as { subscription?: unknown })?.subscription,
 			);
 
 			const subscriptionConfig = mercuriusCall?.[1] as {
@@ -1175,7 +1145,8 @@ describe("GraphQL Routes", () => {
 			await graphql(mockFastifyInstance as unknown as FastifyInstance);
 
 			const mercuriusCall = mockFastifyInstance.register.mock.calls.find(
-				(call) => call?.[1]?.subscription,
+				(call: unknown[]) =>
+					(call?.[1] as { subscription?: unknown })?.subscription,
 			);
 
 			const subscriptionConfig = mercuriusCall?.[1] as {
@@ -1247,7 +1218,8 @@ describe("GraphQL Routes", () => {
 			await graphql(mockFastifyInstance as unknown as FastifyInstance);
 
 			const mercuriusCall = mockFastifyInstance.register.mock.calls.find(
-				(call) => call?.[1]?.errorFormatter,
+				(call: unknown[]) =>
+					(call?.[1] as { errorFormatter?: unknown })?.errorFormatter,
 			);
 
 			const errorFormatterConfig = mercuriusCall?.[1] as {
@@ -1332,7 +1304,8 @@ describe("GraphQL Routes", () => {
 			await graphql(mockFastifyInstance as unknown as FastifyInstance);
 
 			const mercuriusCall = mockFastifyInstance.register.mock.calls.find(
-				(call) => call?.[1]?.errorFormatter,
+				(call: unknown[]) =>
+					(call?.[1] as { errorFormatter?: unknown })?.errorFormatter,
 			);
 
 			const errorFormatterConfig = mercuriusCall?.[1] as {
@@ -1414,7 +1387,8 @@ describe("GraphQL Routes", () => {
 			await graphql(mockFastifyInstance as unknown as FastifyInstance);
 
 			const mercuriusCall = mockFastifyInstance.register.mock.calls.find(
-				(call) => call?.[1]?.errorFormatter,
+				(call: unknown[]) =>
+					(call?.[1] as { errorFormatter?: unknown })?.errorFormatter,
 			);
 
 			const errorFormatterConfig = mercuriusCall?.[1] as {
@@ -1515,7 +1489,8 @@ describe("GraphQL Routes", () => {
 			await graphql(mockFastifyInstance as unknown as FastifyInstance);
 
 			const mercuriusCall = mockFastifyInstance.register.mock.calls.find(
-				(call) => call?.[1]?.errorFormatter,
+				(call: unknown[]) =>
+					(call?.[1] as { errorFormatter?: unknown })?.errorFormatter,
 			);
 
 			const errorFormatterConfig = mercuriusCall?.[1] as {

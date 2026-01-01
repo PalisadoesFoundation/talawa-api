@@ -1,5 +1,9 @@
+vi.mock("~/src/fastifyPlugins/backgroundWorkers", () => ({
+	default: async () => {},
+}));
+
 import type { FastifyInstance } from "fastify";
-import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { createServer } from "~/src/createServer";
 
 describe("GraphQL Correlation ID Integration", () => {
@@ -280,9 +284,14 @@ describe("GraphQL Correlation ID Integration", () => {
 
 		const responses = await Promise.all(requests);
 
-		const correlationIds = responses.map((r) => r.headers["x-correlation-id"]);
+		const correlationIds = responses.map(
+			(r: unknown) =>
+				(r as { headers: { [key: string]: string } }).headers[
+					"x-correlation-id"
+				],
+		);
 
-		correlationIds.forEach((id) => {
+		correlationIds.forEach((id: string | undefined) => {
 			expect(id).toBeDefined();
 			expect(id).toMatch(
 				/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i,
