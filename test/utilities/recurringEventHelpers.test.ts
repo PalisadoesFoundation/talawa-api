@@ -183,6 +183,49 @@ describe("recurringEventHelpers", () => {
 				expect(normalizedRule).toEqual(rule);
 			}
 		});
+
+		// Test input validation
+		it("should throw error for invalid count (negative)", () => {
+			const invalidRule = {
+				...baseRule,
+				count: -5,
+			};
+			expect(() => normalizeRecurrenceRule(invalidRule)).toThrow(
+				"Invalid recurrence count",
+			);
+		});
+
+		it("should throw error for invalid count (non-integer)", () => {
+			const invalidRule = {
+				...baseRule,
+				count: 5.5,
+			};
+			expect(() => normalizeRecurrenceRule(invalidRule)).toThrow(
+				"Invalid recurrence count",
+			);
+		});
+
+		it("should throw error for invalid interval (zero)", () => {
+			const invalidRule = {
+				...baseRule,
+				count: 5,
+				interval: 0,
+			};
+			expect(() => normalizeRecurrenceRule(invalidRule)).toThrow(
+				"Invalid recurrence interval",
+			);
+		});
+
+		it("should throw error for invalid start date", () => {
+			const invalidRule = {
+				...baseRule,
+				count: 5,
+				recurrenceStartDate: new Date("invalid"),
+			};
+			expect(() => normalizeRecurrenceRule(invalidRule)).toThrow(
+				"Invalid recurrence start date",
+			);
+		});
 	});
 
 	describe("calculateCompletionDateFromCount", () => {

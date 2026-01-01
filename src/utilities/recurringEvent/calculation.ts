@@ -152,11 +152,37 @@ export function normalizeRecurrenceRule(
 ): typeof recurrenceRulesTable.$inferSelect {
 	// If rule has count but no end date, convert count to end date
 	if (rule.count && !rule.recurrenceEndDate) {
+		// Validate inputs before calculation
+		// 1. Validate count is a positive integer
+		if (!Number.isInteger(rule.count) || rule.count <= 0) {
+			throw new Error(
+				`Invalid recurrence count: ${rule.count}. Count must be a positive integer.`,
+			);
+		}
+
+		// 2. Validate and compute interval
+		const interval = rule.interval ?? 1;
+		if (!Number.isInteger(interval) || interval <= 0) {
+			throw new Error(
+				`Invalid recurrence interval: ${interval}. Interval must be a positive integer.`,
+			);
+		}
+
+		// 3. Validate recurrenceStartDate is a valid Date object
+		if (
+			!(rule.recurrenceStartDate instanceof Date) ||
+			Number.isNaN(rule.recurrenceStartDate.getTime())
+		) {
+			throw new Error(
+				`Invalid recurrence start date: ${rule.recurrenceStartDate}. Must be a valid Date object.`,
+			);
+		}
+
 		const calculatedEndDate = calculateCompletionDateFromCount(
 			rule.recurrenceStartDate,
 			rule.count,
 			rule.frequency,
-			rule.interval || 1,
+			interval,
 		);
 
 		return {
