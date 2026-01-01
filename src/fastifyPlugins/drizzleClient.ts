@@ -1,6 +1,7 @@
 import { drizzle, type PostgresJsDatabase } from "drizzle-orm/postgres-js";
 import { migrate } from "drizzle-orm/postgres-js/migrator";
 import fastifyPlugin from "fastify-plugin";
+import postgres from "postgres";
 import * as drizzleSchema from "~/src/drizzle/schema";
 
 declare module "fastify" {
@@ -27,15 +28,21 @@ export type DrizzleClient = PostgresJsDatabase<typeof drizzleSchema>;
  */
 export const drizzleClient = fastifyPlugin(
 	async (fastify) => {
-		const drizzleClient = drizzle({
-			connection: {
-				database: fastify.envConfig.API_POSTGRES_DATABASE,
-				host: fastify.envConfig.API_POSTGRES_HOST,
-				password: fastify.envConfig.API_POSTGRES_PASSWORD,
-				port: fastify.envConfig.API_POSTGRES_PORT,
-				ssl: fastify.envConfig.API_POSTGRES_SSL_MODE,
-				user: fastify.envConfig.API_POSTGRES_USER,
-			},
+		const client = postgres({
+			database: fastify.envConfig.API_POSTGRES_DATABASE,
+			host: fastify.envConfig.API_POSTGRES_HOST,
+			password: fastify.envConfig.API_POSTGRES_PASSWORD,
+			port: fastify.envConfig.API_POSTGRES_PORT,
+			ssl: fastify.envConfig.API_POSTGRES_SSL_MODE as
+				| boolean
+				| "allow"
+				| "prefer"
+				| "require"
+				| "verify-full",
+			user: fastify.envConfig.API_POSTGRES_USER,
+		});
+
+		const drizzleClient = drizzle(client, {
 			// logger: new DrizzlePinoLogger(),
 			schema: drizzleSchema,
 		});
