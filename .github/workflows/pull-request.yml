@@ -392,7 +392,7 @@ jobs:
 
   Check-AutoDocs:
     needs: [Code-Quality-Checks]
-    uses: PalisadoesFoundation/.github/.github/workflows/typescript-autodocs.yml@main
+    uses: yashgoyal0110/.github/.github/workflows/typescript-autodocs.yml@feat/adding-more-centralised-jobs
     with:
       pnpm-version: "10.26.1"
   Generate-Schema-Docs:

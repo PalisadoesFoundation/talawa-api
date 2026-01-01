@@ -5,6 +5,6 @@ on:
 
 jobs:
   pr-policy:
-    uses: PalisadoesFoundation/.github/.github/workflows/pr-target-policy.yml@main
+    uses: yashgoyal0110/.github/.github/workflows/pr-target-policy.yml@feat/adding-more-centralised-jobs
     secrets:
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
