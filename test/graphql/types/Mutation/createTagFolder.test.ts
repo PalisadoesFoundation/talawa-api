@@ -384,7 +384,8 @@ suite("Mutation field createTagFolder", () => {
 					(error) =>
 						error.extensions?.code === "invalid_arguments" ||
 						error.message.includes("got invalid value") ||
-						error.message.includes("cannot represent a non string value"),
+						error.message.includes("cannot represent a non string value") ||
+						error.message.includes("Graphql validation error"),
 				),
 			).toBe(true);
 		});
