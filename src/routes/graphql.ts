@@ -443,7 +443,7 @@ export const graphql = fastifyPlugin(async (fastify) => {
 						),
 					},
 				},
-				"✅ GraphQL Schema Updated Successfully",
+				"GraphQL Schema Updated Successfully",
 			);
 		} catch (error) {
 			fastify.log.error(
@@ -458,7 +458,7 @@ export const graphql = fastifyPlugin(async (fastify) => {
 							: String(error),
 					timestamp: new Date().toISOString(),
 				},
-				"❌ Failed to Update GraphQL Schema",
+				"Failed to Update GraphQL Schema",
 			);
 		}
 	});

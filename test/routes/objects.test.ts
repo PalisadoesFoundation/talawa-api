@@ -106,7 +106,7 @@ describe("Objects route error handling", () => {
 		expect(body).toEqual({
 			error: {
 				code: "internal_server_error",
-				message: "Generic error message",
+				message: "Internal Server Error",
 				details: undefined,
 				correlationId: expect.any(String),
 			},

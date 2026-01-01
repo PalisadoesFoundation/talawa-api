@@ -573,7 +573,7 @@ describe("GraphQL Routes", () => {
 						subscriptions: expect.any(Array),
 					}),
 				}),
-				"✅ GraphQL Schema Updated Successfully",
+				"GraphQL Schema Updated Successfully",
 			);
 		});
 
@@ -643,7 +643,7 @@ describe("GraphQL Routes", () => {
 					error: "String error",
 					timestamp: expect.any(String),
 				}),
-				"❌ Failed to Update GraphQL Schema",
+				"Failed to Update GraphQL Schema",
 			);
 		});
 
@@ -679,7 +679,7 @@ describe("GraphQL Routes", () => {
 						subscriptions: ["onThing"],
 					},
 				}),
-				"✅ GraphQL Schema Updated Successfully",
+				"GraphQL Schema Updated Successfully",
 			);
 		});
 	});
@@ -1239,6 +1239,63 @@ describe("GraphQL Routes", () => {
 		});
 
 		it("should sanitize sensitive extension keys", async () => {
+			await graphql(mockFastifyInstance as unknown as FastifyInstance);
+
+			// Get the errorFormatter from the mercurius registration
+			const mercuriusCall = mockFastifyInstance.register.mock.calls.find(
+				(call) => call?.[1]?.errorFormatter,
+			);
+
+			const errorFormatter = mercuriusCall?.[1] as {
+				errorFormatter: (
+					execution: ExecutionResult,
+					context: Record<string, unknown>,
+				) => { response: ExecutionResult };
+			};
+
+			const mockExecution = {
+				errors: [
+					{
+						message: "Test error",
+						path: ["testField"],
+						extensions: {
+							code: "test_error",
+							stack: "Error stack trace",
+							internal: "Internal data",
+							secrets: "Secret information",
+							debug: "Debug info",
+							safeKey: "Safe value",
+						},
+					},
+				],
+				data: null,
+			} as unknown as ExecutionResult;
+
+			const mockContext = {
+				reply: {
+					request: {
+						id: "test-correlation-id",
+						log: { error: vi.fn() },
+					},
+				},
+			};
+
+			const result = errorFormatter.errorFormatter(
+				mockExecution,
+				mockContext as unknown as Record<string, unknown>,
+			);
+
+			const extensions = result.response.errors?.[0]?.extensions;
+			expect(extensions).toBeDefined();
+			expect(extensions).not.toHaveProperty("stack");
+			expect(extensions).not.toHaveProperty("internal");
+			expect(extensions).not.toHaveProperty("secrets");
+			expect(extensions).not.toHaveProperty("debug");
+			expect(extensions).toHaveProperty("safeKey", "Safe value");
+			expect(extensions).toHaveProperty("code", "test_error");
+		});
+
+		it("should format errors with correlation ID from request", async () => {
 			const { graphql } = await import("~/src/routes/graphql");
 
 			await graphql(mockFastifyInstance as unknown as FastifyInstance);
@@ -1287,7 +1344,10 @@ describe("GraphQL Routes", () => {
 						message: "Test error",
 						locations: [{ line: 1, column: 5 }],
 						path: ["user", "email"],
-						extensions: { code: "VALIDATION_ERROR" },
+						extensions: {
+							code: "test_error",
+							safeKey: "Safe value",
+						},
 					},
 				],
 			};
@@ -1302,7 +1362,22 @@ describe("GraphQL Routes", () => {
 
 			const result = errorFormatterConfig.errorFormatter(
 				mockExecution,
-				mockContext,
+				mockContext as unknown as {
+					reply: { request: { id: string } };
+				},
+			);
+
+			expect(result.response.errors?.[0]?.extensions).toEqual({
+				code: "test_error",
+				safeKey: "Safe value",
+				details: undefined,
+				correlationId: "correlation-123", // Corrected to match the mockContext: "correlation-123" not "test-correlation-id"
+				httpStatus: 500,
+			});
+
+			// Verify sensitive keys are not included
+			expect(result.response.errors?.[0]?.extensions).not.toHaveProperty(
+				"stack",
 			);
 
 			expect(result).toEqual({

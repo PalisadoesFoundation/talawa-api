@@ -92,8 +92,7 @@ export function normalizeError(err: unknown): NormalizedError {
 	// Fallback for all other error types (generic Error, unknown objects, etc.)
 	return {
 		code: ErrorCode.INTERNAL_SERVER_ERROR,
-		message:
-			err instanceof Error ? err.message : "An unexpected error occurred",
+		message: "Internal Server Error",
 		statusCode: 500,
 	};
 }

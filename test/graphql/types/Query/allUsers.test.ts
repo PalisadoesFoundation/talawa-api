@@ -139,6 +139,7 @@ suite("Query field allUsers", () => {
 					extensions: {
 						code: "unauthenticated",
 						correlationId: expect.any(String),
+						httpStatus: expect.any(Number),
 					},
 					path: ["allUsers"],
 				}),
@@ -170,6 +171,7 @@ suite("Query field allUsers", () => {
 					extensions: {
 						code: "unauthenticated",
 						correlationId: expect.any(String),
+						httpStatus: expect.any(Number),
 					},
 					path: ["allUsers"],
 				}),
@@ -196,6 +198,7 @@ suite("Query field allUsers", () => {
 					extensions: {
 						code: "unauthorized_action",
 						correlationId: expect.any(String),
+						httpStatus: expect.any(Number),
 					},
 					path: ["allUsers"],
 				}),

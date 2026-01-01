@@ -110,7 +110,7 @@ describe("normalizeError", () => {
 
 		expect(normalized).toEqual({
 			code: ErrorCode.INTERNAL_SERVER_ERROR,
-			message: "Something went wrong",
+			message: "Internal Server Error",
 			statusCode: 500,
 		});
 	});
@@ -122,7 +122,7 @@ describe("normalizeError", () => {
 
 		expect(normalized).toEqual({
 			code: ErrorCode.INTERNAL_SERVER_ERROR,
-			message: "An unexpected error occurred",
+			message: "Internal Server Error",
 			statusCode: 500,
 		});
 	});
@@ -133,13 +133,13 @@ describe("normalizeError", () => {
 
 		expect(normalizedNull).toEqual({
 			code: ErrorCode.INTERNAL_SERVER_ERROR,
-			message: "An unexpected error occurred",
+			message: "Internal Server Error",
 			statusCode: 500,
 		});
 
 		expect(normalizedUndefined).toEqual({
 			code: ErrorCode.INTERNAL_SERVER_ERROR,
-			message: "An unexpected error occurred",
+			message: "Internal Server Error",
 			statusCode: 500,
 		});
 	});
@@ -151,7 +151,7 @@ describe("normalizeError", () => {
 
 		expect(normalized).toEqual({
 			code: ErrorCode.INTERNAL_SERVER_ERROR,
-			message: "An unexpected error occurred",
+			message: "Internal Server Error",
 			statusCode: 500,
 		});
 	});
