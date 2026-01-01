@@ -9,6 +9,6 @@ env:
 
 jobs:
   handle-comment:
-    uses: PalisadoesFoundation/.github/.github/workflows/auto-assign.yml@feat/main
+    uses: PalisadoesFoundation/.github/.github/workflows/auto-assign.yml@main
     secrets:
       ORG_ACCESS_TOKEN: ${{ secrets.ORG_ACCESS_TOKEN }}

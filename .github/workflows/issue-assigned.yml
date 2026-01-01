@@ -16,4 +16,4 @@ on:
 
 jobs:
   cleanup-label:
-    uses: PalisadoesFoundation/.github/.github/workflows/issue-assigned.yml@feat/main
+    uses: PalisadoesFoundation/.github/.github/workflows/issue-assigned.yml@main

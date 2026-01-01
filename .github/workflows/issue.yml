@@ -4,6 +4,6 @@ on:
     types: ['opened']
 jobs:
  issue-auto-label:
-    uses: PalisadoesFoundation/.github/.github/workflows/issue.yml@feat/main
+    uses: PalisadoesFoundation/.github/.github/workflows/issue.yml@main
     secrets:
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

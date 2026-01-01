@@ -6,6 +6,6 @@ on:
 
 jobs:
   coderabbit-review-check:
-    uses: PalisadoesFoundation/.github/.github/workflows/pr-review-coderabbit.yml@feat/main
+    uses: PalisadoesFoundation/.github/.github/workflows/pr-review-coderabbit.yml@main
     secrets:
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

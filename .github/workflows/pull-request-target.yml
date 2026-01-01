@@ -5,6 +5,6 @@ on:
 
 jobs:
   pr-policy:
-    uses: PalisadoesFoundation/.github/.github/workflows/pr-target-policy.yml@feat/main
+    uses: PalisadoesFoundation/.github/.github/workflows/pr-target-policy.yml@main
     secrets:
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

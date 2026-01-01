@@ -6,6 +6,6 @@ on:
 
 jobs:
   add-unapproved-label:
-    uses: PalisadoesFoundation/.github/.github/workflows/issue-unassigned.yml@feat/main
+    uses: PalisadoesFoundation/.github/.github/workflows/issue-unassigned.yml@main
     secrets:
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
