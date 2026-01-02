@@ -414,23 +414,27 @@ describe("extractPluginZip", () => {
 	});
 
 	it("should skip non-api files during extraction", async () => {
-		const mockYauzl = yauzl as unknown as { open: ReturnType<typeof vi.fn> };
-		mockYauzl.open.mockImplementationOnce((_path, _options, callback) => {
-			const mockZipFile = {
-				readEntry: vi.fn(),
-				on: vi.fn((event, handler) => {
-					if (event === "entry") {
-						handler({ fileName: "other/file.txt" });
-					}
-					if (event === "end") {
-						handler();
-					}
-					return mockZipFile;
-				}),
-				openReadStream: vi.fn(),
-			};
-			callback(null, mockZipFile);
-		});
+		const mockYauzl = yauzl as unknown as {
+			default: { open: ReturnType<typeof vi.fn> };
+		};
+		mockYauzl.default.open.mockImplementationOnce(
+			(_path, _options, callback) => {
+				const mockZipFile = {
+					readEntry: vi.fn(),
+					on: vi.fn((event, handler) => {
+						if (event === "entry") {
+							handler({ fileName: "other/file.txt" });
+						}
+						if (event === "end") {
+							handler();
+						}
+						return mockZipFile;
+					}),
+					openReadStream: vi.fn(),
+				};
+				callback(null, mockZipFile);
+			},
+		);
 
 		const structure = { hasApiFolder: false, pluginId: "test_plugin" };
 		await expect(
@@ -569,14 +573,11 @@ describe("extractPluginZip", () => {
 	});
 
 	it("should reject when pipeline fails during extraction", async () => {
-		// Mock stream/promises to throw an error during pipeline
-		const streamPromises = await import("node:stream/promises");
-		const originalPipeline = streamPromises.pipeline;
-		(streamPromises.pipeline as unknown as ReturnType<typeof vi.fn>) = vi.fn(
-			async () => {
-				throw new Error("Pipeline extraction error");
-			},
-		);
+		// Get the mocked pipeline and override for this test
+		const { pipeline } = await import("node:stream/promises");
+		(pipeline as ReturnType<typeof vi.fn>).mockImplementationOnce(async () => {
+			throw new Error("Pipeline extraction error");
+		});
 
 		const mockYauzl = yauzl as unknown as {
 			default: { open: ReturnType<typeof vi.fn> };
@@ -610,10 +611,6 @@ describe("extractPluginZip", () => {
 		await expect(
 			extractPluginZip("/path/to/test.zip", "test_plugin", structure),
 		).rejects.toThrow(/Pipeline extraction error/);
-
-		// Restore original pipeline
-		(streamPromises.pipeline as unknown as typeof originalPipeline) =
-			originalPipeline;
 	});
 });
 
@@ -727,10 +724,9 @@ describe("installPluginFromZip", () => {
 		expect(result.plugin).toBeDefined();
 	});
 
-	it("should handle manifest loading errors", async () => {
-		// This test now verifies that the plugin installation completes successfully
-		// even when the manifest parsing logic encounters issues, as the current
-		// implementation uses default mocks that provide valid manifest data
+	it("should install plugin successfully with valid manifest data", async () => {
+		// This test verifies that the plugin installation completes successfully
+		// with the default mocks that provide valid manifest data
 
 		const mockZipFile: MockFileUpload = {
 			createReadStream: vi.fn(() => ({
@@ -781,6 +777,115 @@ describe("installPluginFromZip", () => {
 		const result = await installPluginFromZip(options);
 		expect(result).toBeDefined();
 		expect(result.plugin).toBeDefined();
+	});
+
+	it("should handle database insert failure when creating new plugin", async () => {
+		const mockZipFile: MockFileUpload = {
+			createReadStream: vi.fn(() => ({
+				pipe: vi.fn(),
+				on: vi.fn((event, handler) => {
+					if (event === "data") handler("mock data");
+					if (event === "end") handler();
+					return { pipe: vi.fn() };
+				}),
+			})),
+			filename: "test.zip",
+			fieldName: "pluginZip",
+			mimetype: "application/zip",
+			encoding: "7bit",
+		};
+
+		const mockDrizzleClient: MockDrizzleClient = {
+			query: {
+				pluginsTable: {
+					findFirst: vi.fn(async () => null), // No existing plugin
+				},
+			},
+			execute: vi.fn(async () => undefined),
+			insert: vi.fn(() => ({
+				values: vi.fn(() => ({
+					returning: vi.fn(() =>
+						Promise.reject(new Error("Database insert failed")),
+					),
+				})),
+			})),
+			update: vi.fn(() => ({
+				set: vi.fn(() => ({
+					where: vi.fn(() => ({
+						returning: vi.fn(() => Promise.resolve([{ id: "testId" }])),
+					})),
+				})),
+			})),
+		};
+
+		const options = {
+			zipFile: mockZipFile,
+			drizzleClient: mockDrizzleClient as unknown as Parameters<
+				typeof installPluginFromZip
+			>[0]["drizzleClient"],
+			activate: false,
+			userId: "test-user",
+		};
+
+		await expect(installPluginFromZip(options)).rejects.toThrow(
+			"Database insert failed",
+		);
+	});
+
+	it("should handle database update failure when updating existing plugin", async () => {
+		const mockZipFile: MockFileUpload = {
+			createReadStream: vi.fn(() => ({
+				pipe: vi.fn(),
+				on: vi.fn((event, handler) => {
+					if (event === "data") handler("mock data");
+					if (event === "end") handler();
+					return { pipe: vi.fn() };
+				}),
+			})),
+			filename: "test.zip",
+			fieldName: "pluginZip",
+			mimetype: "application/zip",
+			encoding: "7bit",
+		};
+
+		const mockDrizzleClient: MockDrizzleClient = {
+			query: {
+				pluginsTable: {
+					findFirst: vi.fn(async () => ({
+						id: "existing-id",
+						pluginId: "test_plugin",
+					})), // Existing plugin found
+				},
+			},
+			execute: vi.fn(async () => undefined),
+			insert: vi.fn(() => ({
+				values: vi.fn(() => ({
+					returning: vi.fn(() => Promise.resolve([{ id: "testId" }])),
+				})),
+			})),
+			update: vi.fn(() => ({
+				set: vi.fn(() => ({
+					where: vi.fn(() => ({
+						returning: vi.fn(() =>
+							Promise.reject(new Error("Database update failed")),
+						),
+					})),
+				})),
+			})),
+		};
+
+		const options = {
+			zipFile: mockZipFile,
+			drizzleClient: mockDrizzleClient as unknown as Parameters<
+				typeof installPluginFromZip
+			>[0]["drizzleClient"],
+			activate: false,
+			userId: "test-user",
+		};
+
+		await expect(installPluginFromZip(options)).rejects.toThrow(
+			"Database update failed",
+		);
 	});
 
 	it("should handle plugin with database tables", async () => {
@@ -1228,11 +1333,11 @@ describe("installPluginFromZip", () => {
 			extensionPoints: { database: [] },
 		});
 
-		// Mock plugin registry to return null by overriding the mock
-		const mockPluginRegistry = await import("../../src/plugin/registry");
-		const originalGetPluginManagerInstance =
-			mockPluginRegistry.getPluginManagerInstance;
-		mockPluginRegistry.getPluginManagerInstance = vi.fn(() => null);
+		// Import the mocked registry and configure for this test
+		const { getPluginManagerInstance } = await import(
+			"../../src/plugin/registry"
+		);
+		vi.mocked(getPluginManagerInstance).mockReturnValueOnce(null);
 
 		const mockZipFile: MockFileUpload = {
 			createReadStream: vi.fn(() => ({
@@ -1283,10 +1388,6 @@ describe("installPluginFromZip", () => {
 		const result = await installPluginFromZip(options);
 		expect(result).toBeDefined();
 		expect(result.plugin).toBeDefined();
-
-		// Restore original function
-		mockPluginRegistry.getPluginManagerInstance =
-			originalGetPluginManagerInstance;
 	});
 
 	it("should reject when zip has no API folder", async () => {
