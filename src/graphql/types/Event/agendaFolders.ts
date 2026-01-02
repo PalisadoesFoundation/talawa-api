@@ -16,12 +16,12 @@ import {
 	agendaFoldersTableInsertSchema,
 } from "~/src/drizzle/tables/agendaFolders";
 import { AgendaFolder } from "~/src/graphql/types/AgendaFolder/AgendaFolder";
+import envConfig from "~/src/utilities/graphqLimits";
 import {
 	defaultGraphQLConnectionArgumentsSchema,
 	transformDefaultGraphQLConnectionArguments,
 	transformToDefaultGraphQLConnection,
-} from "~/src/utilities/defaultGraphQLConnection";
-import envConfig from "~/src/utilities/graphqLimits";
+} from "~/src/utilities/graphqlConnection";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import { Event } from "./Event";
 
@@ -179,13 +179,10 @@ Event.implement({
 					}
 
 					return transformToDefaultGraphQLConnection({
-						createCursor: (agendaFolder) =>
-							Buffer.from(
-								JSON.stringify({
-									id: agendaFolder.id,
-									name: agendaFolder.name,
-								}),
-							).toString("base64url"),
+						createCursor: (agendaFolder) => ({
+							id: agendaFolder.id,
+							name: agendaFolder.name,
+						}),
 						createNode: (agendaFolder) => agendaFolder,
 						parsedArgs,
 						rawNodes: agendaFolders,
