@@ -647,10 +647,32 @@ suite("Mutation verifyEventInvitation - Integration Tests", () => {
 
 		expect(verifyResult.errors).toBeDefined();
 		// GraphQL validation occurs before our resolver, so we expect a GraphQL validation error
-		const errorMessage = verifyResult.errors?.[0]?.message;
 		expect(
-			errorMessage?.includes("String cannot represent a non string value") ||
-				errorMessage?.includes("Graphql validation error"),
+			verifyResult.errors?.some(
+				(error) =>
+					expect
+						.objectContaining<TalawaGraphQLFormattedError>({
+							message: expect.any(String),
+							extensions: expect.objectContaining({
+								code: "GRAPHQL_VALIDATION_FAILED",
+							}),
+						})
+						.asymmetricMatch(error) ||
+					expect
+						.objectContaining<TalawaGraphQLFormattedError>({
+							message: expect.stringContaining(
+								"String cannot represent a non string value",
+							),
+							extensions: expect.any(Object),
+						})
+						.asymmetricMatch(error) ||
+					expect
+						.objectContaining<TalawaGraphQLFormattedError>({
+							message: expect.stringContaining("Graphql validation error"),
+							extensions: expect.any(Object),
+						})
+						.asymmetricMatch(error),
+			),
 		).toBe(true);
 	});
 

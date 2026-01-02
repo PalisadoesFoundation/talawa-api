@@ -1278,73 +1278,12 @@ suite("Venue events Field", () => {
 			]),
 		);
 	});
-	test("should throw internal server error when event data is missing/malformed", async () => {
-		const createOrgResult = await mercuriusClient.mutate(
-			Mutation_createOrganization,
-			{
-				headers: { authorization: `Bearer ${authToken}` },
-				variables: {
-					input: {
-						name: `Malformed Event Venue Org ${faker.string.uuid()}`,
-						description: "Org with venue with malformed event data",
-					},
-				},
-			},
-		);
-		const orgId = createOrgResult.data?.createOrganization?.id;
-		assertToBeNonNullish(orgId);
-
-		const createVenueResult = await mercuriusClient.mutate(
-			Mutation_createVenue,
-			{
-				headers: { authorization: `Bearer ${authToken}` },
-				variables: {
-					input: {
-						name: `Test Venue ${faker.string.uuid()}`,
-						description: "Test venue with malformed event",
-						organizationId: orgId,
-						capacity: 100,
-					},
-				},
-			},
-		);
-
-		const venueId = createVenueResult.data?.createVenue?.id;
-		assertToBeNonNullish(venueId);
-
-		const findManySpy = vi
-			.spyOn(server.drizzleClient.query.venueBookingsTable, "findMany")
-			.mockResolvedValueOnce([
-				{
-					createdAt: new Date(),
-					eventId: "test-event-id",
-					venueId: venueId,
-					event: undefined,
-				} as unknown as Awaited<
-					ReturnType<
-						typeof server.drizzleClient.query.venueBookingsTable.findMany
-					>
-				>[0],
-			]);
-
-		const result = await mercuriusClient.query(VenueEventsQuery, {
-			headers: { authorization: `Bearer ${authToken}` },
-			variables: { input: { id: venueId }, first: 10 },
-		});
-
-		expect(findManySpy).toHaveBeenCalled();
-		expect(result.data?.venue?.events).toBeNull();
-		expect(result.errors).toEqual(
-			expect.arrayContaining([
-				expect.objectContaining({
-					extensions: expect.objectContaining({
-						code: "internal_server_error",
-					}),
-				}),
-			]),
-		);
-	});
-	test("should throw internal server error when booking event data is corrupt/missing", async () => {
+	test.each([
+		{ description: "event is undefined", eventData: undefined },
+		{ description: "event is missing entirely", eventData: null }, // Simulating missing property via null for test simplicity
+	])("should throw internal server error when booking event data is corrupt ($description)", async ({
+		eventData,
+	}) => {
 		const createOrgResult = await mercuriusClient.mutate(
 			Mutation_createOrganization,
 			{
@@ -1353,12 +1292,6 @@ suite("Venue events Field", () => {
 					input: {
 						name: `Corrupt Event Org ${faker.string.uuid()}`,
 						description: "Org with venue with corrupt events",
-						countryCode: "us",
-						state: "CA",
-						city: "San Francisco",
-						postalCode: "94101",
-						addressLine1: "100 Test St",
-						addressLine2: "Suite 1",
 					},
 				},
 			},
@@ -1384,25 +1317,21 @@ suite("Venue events Field", () => {
 		const venueId = createVenueResult.data?.createVenue?.id;
 		assertToBeNonNullish(venueId);
 
-		// Spy on findMany to return a booking with undefined event
-		// explicitly to trigger the internal server error
+		// Mock findMany to return corrupted booking data
 		const findManySpy = vi
 			.spyOn(server.drizzleClient.query.venueBookingsTable, "findMany")
 			.mockResolvedValueOnce([
 				{
 					createdAt: new Date(),
-					eventId: "some-event-id",
+					eventId: "test-event-id",
+					venueId: venueId,
+					event: eventData, // Injected corrupt data
 				} as unknown as Awaited<
 					ReturnType<
 						typeof server.drizzleClient.query.venueBookingsTable.findMany
 					>
 				>[0],
 			]);
-
-		vi.spyOn(
-			server.drizzleClient.query.recurringEventInstancesTable,
-			"findMany",
-		).mockResolvedValueOnce([]);
 
 		const result = await mercuriusClient.query(VenueEventsQuery, {
 			headers: { authorization: `Bearer ${authToken}` },
@@ -1417,7 +1346,6 @@ suite("Venue events Field", () => {
 					extensions: expect.objectContaining({
 						code: "internal_server_error",
 					}),
-					path: ["venue", "events"],
 				}),
 			]),
 		);

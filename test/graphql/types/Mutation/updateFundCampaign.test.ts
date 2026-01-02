@@ -208,7 +208,7 @@ suite("Mutation updateFundCampaign", () => {
 			variables: {
 				input: {
 					id: campaignId,
-					endAt: new Date(Date.now() - 1000).toISOString(),
+					endAt: new Date(new Date(startAt).getTime() - 1000).toISOString(),
 				},
 			},
 		});

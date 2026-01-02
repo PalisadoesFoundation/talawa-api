@@ -112,8 +112,12 @@ export const resolveOrganizations = async (
 		throw new TalawaGraphQLError({
 			extensions: {
 				code: ErrorCode.INTERNAL_SERVER_ERROR,
-				details:
-					error instanceof Error ? { message: error.message } : { error },
+				...(process.env.NODE_ENV !== "production"
+					? {
+							details:
+								error instanceof Error ? { message: error.message } : { error },
+						}
+					: {}),
 			},
 		});
 	}

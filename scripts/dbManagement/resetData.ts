@@ -59,7 +59,7 @@ if (isMain) {
 		try {
 			await main();
 		} catch (error: unknown) {
-			console.error(error);
+			console.error("Error: Failed to reset data", error);
 			exitCode = 1;
 		}
 		try {

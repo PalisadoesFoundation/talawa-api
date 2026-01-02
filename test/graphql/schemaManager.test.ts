@@ -807,12 +807,13 @@ describe("GraphQLSchemaManager", () => {
 				error: vi.fn(),
 				warn: vi.fn(),
 				debug: vi.fn(),
-				child: vi.fn().mockReturnValue({}), // child() should return a logger like object
+				child: vi.fn(), // Will be initialized to return mockLogger before use
 				fatal: vi.fn(),
 				trace: vi.fn(),
 				level: "info",
 				silent: vi.fn(),
 			};
+			mockLogger.child.mockReturnValue(mockLogger);
 			schemaManager.setLogger(mockLogger);
 		});
 

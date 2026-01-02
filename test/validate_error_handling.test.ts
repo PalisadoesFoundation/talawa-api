@@ -1,6 +1,13 @@
 import * as child_process from "node:child_process";
 import * as fs from "node:fs";
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import {
+	beforeEach,
+	describe,
+	expect,
+	it,
+	type MockInstance,
+	vi,
+} from "vitest";
 import { ErrorHandlingValidator } from "../scripts/validate_error_handling";
 
 // Mock dependencies
@@ -321,26 +328,32 @@ describe("ErrorHandlingValidator", () => {
 
 		it("should use CI logic when GITHUB_BASE_REF is set", async () => {
 			const originalEnv = process.env;
-			process.env = { ...originalEnv, CI: "true", GITHUB_BASE_REF: "main" };
+			let shouldScanFileSpy: MockInstance | undefined;
 
-			vi.mocked(child_process.execSync).mockReturnValue(
-				"src/routes/changed.ts\n",
-			);
+			try {
+				process.env = { ...originalEnv, CI: "true", GITHUB_BASE_REF: "main" };
 
-			// Mock shouldScanFile to return true for our test file
-			const shouldScanFileSpy = vi
-				.spyOn(validator, "shouldScanFile")
-				.mockReturnValue(true);
+				vi.mocked(child_process.execSync).mockReturnValue(
+					"src/routes/changed.ts\n",
+				);
 
-			const files = await validator.getFilesToScan();
-			expect(files).toContain("src/routes/changed.ts");
-			expect(child_process.execSync).toHaveBeenCalledWith(
-				expect.stringContaining("git diff --name-only origin/main...HEAD"),
-				expect.anything(),
-			);
+				// Mock shouldScanFile to return true for our test file
+				shouldScanFileSpy = vi
+					.spyOn(validator, "shouldScanFile")
+					.mockReturnValue(true);
 
-			shouldScanFileSpy.mockRestore();
-			process.env = originalEnv;
+				const files = await validator.getFilesToScan();
+				expect(files).toContain("src/routes/changed.ts");
+				expect(child_process.execSync).toHaveBeenCalledWith(
+					expect.stringContaining("git diff --name-only origin/main...HEAD"),
+					expect.anything(),
+				);
+			} finally {
+				if (shouldScanFileSpy) {
+					shouldScanFileSpy.mockRestore();
+				}
+				process.env = originalEnv;
+			}
 		});
 
 		it("should sanitize git refs to prevent command injection", () => {
@@ -365,25 +378,31 @@ describe("ErrorHandlingValidator", () => {
 
 		it("should handle fetch failures gracefully", async () => {
 			const originalEnv = process.env;
-			process.env = { ...originalEnv, CI: "true", GITHUB_BASE_REF: "main" };
+			let shouldScanFileSpy: MockInstance | undefined;
 
-			// Mock fetch to fail but diff to succeed
-			vi.mocked(child_process.execSync)
-				.mockImplementationOnce(() => {
-					throw new Error("Fetch failed");
-				})
-				.mockReturnValueOnce("src/routes/changed.ts\n");
+			try {
+				process.env = { ...originalEnv, CI: "true", GITHUB_BASE_REF: "main" };
 
-			// Mock shouldScanFile to return true for our test file
-			const shouldScanFileSpy = vi
-				.spyOn(validator, "shouldScanFile")
-				.mockReturnValue(true);
+				// Mock fetch to fail but diff to succeed
+				vi.mocked(child_process.execSync)
+					.mockImplementationOnce(() => {
+						throw new Error("Fetch failed");
+					})
+					.mockReturnValueOnce("src/routes/changed.ts\n");
 
-			const files = await validator.getFilesToScan();
-			expect(files).toContain("src/routes/changed.ts");
+				// Mock shouldScanFile to return true for our test file
+				shouldScanFileSpy = vi
+					.spyOn(validator, "shouldScanFile")
+					.mockReturnValue(true);
 
-			shouldScanFileSpy.mockRestore();
-			process.env = originalEnv;
+				const files = await validator.getFilesToScan();
+				expect(files).toContain("src/routes/changed.ts");
+			} finally {
+				if (shouldScanFileSpy) {
+					shouldScanFileSpy.mockRestore();
+				}
+				process.env = originalEnv;
+			}
 		});
 	});
 

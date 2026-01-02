@@ -1126,21 +1126,20 @@ suite("Query field get fund Campaign Pledges by id", () => {
 
 		// should return two pledges that contain pledger name
 		expect(fundCampaignPledgeResult1.errors).toBeUndefined();
-		expect(fundCampaignPledgeResult1?.data?.getPledgesByUserId?.[0]).toEqual(
-			expect.objectContaining({
-				id: fundCampaignPledgeId1,
-				amount: expect.any(Number),
-				note: expect.any(String),
-			}),
-		);
-
-		expect(fundCampaignPledgeResult1.errors).toBeUndefined();
-		expect(fundCampaignPledgeResult1?.data?.getPledgesByUserId?.[1]).toEqual(
-			expect.objectContaining({
-				id: fundCampaignPledgeId2,
-				amount: expect.any(Number),
-				note: expect.any(String),
-			}),
+		expect(fundCampaignPledgeResult1?.data?.getPledgesByUserId).toHaveLength(2);
+		expect(fundCampaignPledgeResult1?.data?.getPledgesByUserId).toEqual(
+			expect.arrayContaining([
+				expect.objectContaining({
+					id: fundCampaignPledgeId1,
+					amount: expect.any(Number),
+					note: expect.any(String),
+				}),
+				expect.objectContaining({
+					id: fundCampaignPledgeId2,
+					amount: expect.any(Number),
+					note: expect.any(String),
+				}),
+			]),
 		);
 
 		const fundCampaignPledgeResult2 = await mercuriusClient.query(

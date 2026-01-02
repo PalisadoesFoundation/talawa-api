@@ -23,6 +23,7 @@ describe("ErrorCode enum", () => {
 			"internal_server_error",
 			"database_error",
 			"external_service_error",
+			"arguments_associated_resources_not_found",
 		];
 
 		expectedCodes.forEach((code) => {

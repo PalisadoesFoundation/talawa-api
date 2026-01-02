@@ -272,8 +272,13 @@ Venue.implement({
 						.map((booking) => {
 							if (!booking.event) {
 								throw new TalawaGraphQLError({
+									message: `Invariant: booking.event is null for booking ${booking.eventId}`,
 									extensions: {
 										code: ErrorCode.INTERNAL_SERVER_ERROR,
+										details: {
+											venueId: parent.id,
+											eventId: booking.eventId,
+										},
 									},
 								});
 							}

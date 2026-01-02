@@ -279,6 +279,16 @@ export const graphql = fastifyPlugin(async (fastify) => {
 					case "forbidden_action_on_arguments_associated_resources":
 						normalizedCode = ErrorCode.UNAUTHORIZED;
 						break;
+					case "invalid_credentials":
+						normalizedCode = ErrorCode.UNAUTHENTICATED;
+						break;
+					case "account_locked":
+						normalizedCode = ErrorCode.UNAUTHORIZED;
+						break;
+					case "unauthorized_action":
+					case "unauthorized_arguments":
+						normalizedCode = ErrorCode.INSUFFICIENT_PERMISSIONS;
+						break;
 					default:
 						normalizedCode = ErrorCode.INTERNAL_SERVER_ERROR;
 				}

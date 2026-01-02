@@ -95,8 +95,8 @@ export const errorHandlerPlugin = fastifyPlugin(
 					error: {
 						code: normalized.code,
 						message: normalized.message,
-						details: normalized.details,
 						correlationId,
+						...(normalized.details ? { details: normalized.details } : {}),
 					},
 				});
 			},
