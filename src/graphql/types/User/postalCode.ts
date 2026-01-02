@@ -45,7 +45,7 @@ User.implement({
 					});
 				}
 
-				return escapeHTML(parent.postalCode);
+				return parent.postalCode;
 			},
 			type: "String",
 		}),

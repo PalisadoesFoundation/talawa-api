@@ -48,7 +48,7 @@ User.implement({
 					});
 				}
 
-				return escapeHTML(parent.city);
+				return parent.city;
 			},
 			type: "String",
 		}),

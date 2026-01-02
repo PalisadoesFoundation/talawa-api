@@ -45,7 +45,7 @@ User.implement({
 					});
 				}
 
-				return escapeHTML(parent.addressLine1);
+				return parent.addressLine1;
 			},
 			type: "String",
 		}),

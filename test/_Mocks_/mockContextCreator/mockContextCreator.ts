@@ -59,7 +59,7 @@ export function createMockGraphQLContext(
 			totalMs: 0,
 			totalOps: 0,
 			cacheHits: 0,
-			cacheMiss: 0,
+			cacheMisses: 0,
 			ops: {},
 			slow: [],
 			hitRate: 0,

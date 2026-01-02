@@ -288,6 +288,43 @@ describe("metricsCacheProxy", () => {
 		expect(endFn).toHaveBeenCalled();
 	});
 
+	it("should handle mget operation errors gracefully", async () => {
+		const mockCache: CacheService = {
+			get: vi.fn(),
+			set: vi.fn(),
+			del: vi.fn(),
+			clearByPattern: vi.fn(),
+			mget: vi.fn(async () => {
+				throw new Error("Redis connection failed");
+			}),
+			mset: vi.fn(),
+		};
+
+		const endFn = vi.fn();
+		const mockPerf: PerformanceTracker = {
+			time: vi.fn(async (_op, fn) => fn()),
+			start: vi.fn(() => endFn),
+			trackDb: vi.fn(),
+			trackCacheHit: vi.fn(),
+			trackCacheMiss: vi.fn(),
+			snapshot: vi.fn(() => ({
+				totalMs: 0,
+				cacheHits: 0,
+				cacheMisses: 0,
+				ops: {},
+			})),
+		};
+
+		const proxy = metricsCacheProxy(mockCache, mockPerf);
+
+		await expect(proxy.mget(["key1", "key2"])).rejects.toThrow(
+			"Redis connection failed",
+		);
+
+		// Should still call end function to track timing
+		expect(endFn).toHaveBeenCalled();
+	});
+
 	it("should handle all nulls in mget", async () => {
 		const mockCache: CacheService = {
 			get: vi.fn(),

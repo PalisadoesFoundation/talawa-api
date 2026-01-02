@@ -28,12 +28,14 @@ function createMockPerf(): PerformanceTracker {
 	return {
 		time: vi.fn((_label, fn) => fn()),
 		start: vi.fn(() => vi.fn()),
-		trackDbQuery: vi.fn(),
+		trackDb: vi.fn(),
 		trackCacheHit: vi.fn(),
 		trackCacheMiss: vi.fn(),
 		snapshot: vi.fn(() => ({
-			timers: {},
-			counters: {},
+			totalMs: 0,
+			cacheHits: 0,
+			cacheMisses: 0,
+			ops: {},
 		})),
 	} as unknown as PerformanceTracker;
 }

@@ -71,6 +71,18 @@ describe("Performance Plugin", () => {
 		expect(body).toHaveProperty("recent");
 		expect(Array.isArray(body.recent)).toBe(true);
 		expect(body.recent.length).toBeGreaterThan(0);
+
+		// Verify snapshots have the expected structure
+		const firstSnapshot = body.recent[0] as {
+			totalMs: number;
+			cacheHits: number;
+			cacheMisses: number;
+			ops: Record<string, unknown>;
+		};
+		expect(firstSnapshot).toHaveProperty("totalMs");
+		expect(firstSnapshot).toHaveProperty("cacheHits");
+		expect(firstSnapshot).toHaveProperty("cacheMisses");
+		expect(firstSnapshot).toHaveProperty("ops");
 	});
 
 	it("should track performance metrics in snapshot", async () => {
@@ -124,6 +136,8 @@ describe("Performance Plugin", () => {
 		expect(response.statusCode).toBe(200);
 		// Verify Server-Timing header includes performance data
 		expect(response.headers["server-timing"]).toContain("total");
+		// Note: Logging verification not included as req.log is a per-request child logger
+		// The actual logging functionality is tested via integration tests
 	});
 
 	it("should not log fast GraphQL operations", async () => {
@@ -153,8 +167,8 @@ describe("Performance Plugin", () => {
 		expect(slowOpWarning).toBeUndefined();
 	});
 
-	it("should keep only last 200 snapshots", async () => {
-		// Make 250 requests
+	it("should expose at most last 50 snapshots via /metrics/perf endpoint", async () => {
+		// Make 250 requests to exceed both the in-memory buffer (200) and endpoint limit (50)
 		for (let i = 0; i < 250; i++) {
 			await server.inject({ method: "GET", url: "/" });
 		}
@@ -165,7 +179,7 @@ describe("Performance Plugin", () => {
 		});
 
 		const body = JSON.parse(response.body);
-		// Should return at most 50 (as per the endpoint limit)
+		// The endpoint should return at most 50 snapshots (even though 200 are kept in memory)
 		expect(body.recent.length).toBeLessThanOrEqual(50);
 	});
 
@@ -221,5 +235,7 @@ describe("Performance Plugin", () => {
 		// Verify Server-Timing header includes cache metrics
 		expect(response.headers["server-timing"]).toContain("cache");
 		expect(response.headers["server-timing"]).toContain("hit:7|miss:3");
+		// Note: Logging verification not included as req.log is a per-request child logger
+		// The actual logging functionality is tested via integration tests
 	});
 });

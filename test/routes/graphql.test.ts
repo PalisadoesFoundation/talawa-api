@@ -75,6 +75,19 @@ describe("GraphQL Routes", () => {
 			jwtVerify: vi.fn(),
 			ip: "127.0.0.1",
 			cookies: {},
+			perf: {
+				time: vi.fn(),
+				start: vi.fn(),
+				trackCacheHit: vi.fn(),
+				trackCacheMiss: vi.fn(),
+				trackDb: vi.fn(),
+				snapshot: vi.fn().mockReturnValue({
+					cacheHits: 0,
+					cacheMisses: 0,
+					dataLoaderCalls: [],
+					dbTimings: [],
+				}),
+			},
 		};
 
 		// Setup mock reply
@@ -109,6 +122,11 @@ describe("GraphQL Routes", () => {
 			});
 
 			expect(context).toEqual({
+				cache: expect.objectContaining({
+					get: expect.any(Function),
+					set: expect.any(Function),
+					del: expect.any(Function),
+				}),
 				cookie: {
 					clearAuthCookies: expect.any(Function),
 					getRefreshToken: expect.any(Function),
@@ -134,6 +152,13 @@ describe("GraphQL Routes", () => {
 				notification: expect.objectContaining({
 					queue: [],
 				}),
+				perf: expect.objectContaining({
+					time: expect.any(Function),
+					start: expect.any(Function),
+					trackCacheHit: expect.any(Function),
+					trackCacheMiss: expect.any(Function),
+					snapshot: expect.any(Function),
+				}),
 			});
 
 			expect(mockRequest.jwtVerify).toHaveBeenCalled();
@@ -152,6 +177,11 @@ describe("GraphQL Routes", () => {
 			});
 
 			expect(context).toEqual({
+				cache: expect.objectContaining({
+					get: expect.any(Function),
+					set: expect.any(Function),
+					del: expect.any(Function),
+				}),
 				cookie: {
 					clearAuthCookies: expect.any(Function),
 					getRefreshToken: expect.any(Function),
@@ -175,6 +205,13 @@ describe("GraphQL Routes", () => {
 				minio: mockFastify.minio,
 				notification: expect.objectContaining({
 					queue: [],
+				}),
+				perf: expect.objectContaining({
+					time: expect.any(Function),
+					start: expect.any(Function),
+					trackCacheHit: expect.any(Function),
+					trackCacheMiss: expect.any(Function),
+					snapshot: expect.any(Function),
 				}),
 			});
 
@@ -1548,6 +1585,115 @@ describe("GraphQL Routes", () => {
 
 			expect(result.response.data).toBeNull();
 			expect(result.statusCode).toBe(200);
+		});
+	});
+
+	describe("WebSocket Subscription Context", () => {
+		it("should provide working performance tracker in subscription context", async () => {
+			const { createPerformanceTracker } = await import(
+				"~/src/utilities/metrics/performanceTracker"
+			);
+
+			// Verify that createPerformanceTracker creates a valid tracker
+			// as used in subscription onConnect
+			const perf = createPerformanceTracker();
+
+			// Test that perf has the expected methods
+			expect(typeof perf.time).toBe("function");
+			expect(typeof perf.start).toBe("function");
+			expect(typeof perf.trackCacheHit).toBe("function");
+			expect(typeof perf.trackCacheMiss).toBe("function");
+			expect(typeof perf.snapshot).toBe("function");
+
+			// Test that methods work as expected
+			const snapshot = perf.snapshot();
+			expect(snapshot).toHaveProperty("cacheHits");
+			expect(snapshot).toHaveProperty("cacheMisses");
+			expect(snapshot.cacheHits).toBe(0);
+			expect(snapshot.cacheMisses).toBe(0);
+
+			// Test tracking
+			perf.trackCacheHit();
+			perf.trackCacheMiss();
+			const snapshot2 = perf.snapshot();
+			expect(snapshot2.cacheHits).toBe(1);
+			expect(snapshot2.cacheMisses).toBe(1);
+		});
+
+		it("should provide working dataloaders with perf tracker in subscription context", async () => {
+			const { createDataloaders } = await import("~/src/utilities/dataloaders");
+			const { createPerformanceTracker } = await import(
+				"~/src/utilities/metrics/performanceTracker"
+			);
+
+			// Create dataloaders as they would be in subscription context
+			const perf = createPerformanceTracker();
+			const mockDb = {} as Parameters<typeof createDataloaders>[0];
+			const dataloaders = createDataloaders(mockDb, perf);
+
+			// Verify dataloaders have expected structure
+			expect(dataloaders).toHaveProperty("user");
+			expect(dataloaders).toHaveProperty("organization");
+			expect(dataloaders).toHaveProperty("event");
+			expect(dataloaders).toHaveProperty("actionItem");
+
+			// Verify each dataloader has the load method
+			expect(typeof dataloaders.user.load).toBe("function");
+			expect(typeof dataloaders.organization.load).toBe("function");
+			expect(typeof dataloaders.event.load).toBe("function");
+			expect(typeof dataloaders.actionItem.load).toBe("function");
+		});
+
+		it("should provide working cache proxy with perf tracker in subscription context", async () => {
+			const { metricsCacheProxy } = await import(
+				"~/src/services/caching/metricsCacheProxy"
+			);
+			const { createPerformanceTracker } = await import(
+				"~/src/utilities/metrics/performanceTracker"
+			);
+
+			// Create cache proxy as it would be in subscription context
+			const perf = createPerformanceTracker();
+
+			// Create a mock cache service
+			const mockCache = {
+				get: vi.fn().mockResolvedValue({ data: "test" }),
+				set: vi.fn().mockResolvedValue(undefined),
+				del: vi.fn().mockResolvedValue(undefined),
+				mget: vi.fn().mockResolvedValue([]),
+				mset: vi.fn().mockResolvedValue(undefined),
+				clearByPattern: vi.fn().mockResolvedValue(undefined),
+			};
+
+			const cache = metricsCacheProxy(
+				mockCache as Parameters<typeof metricsCacheProxy>[0],
+				perf,
+			);
+
+			// Verify cache proxy has expected methods
+			expect(typeof cache.get).toBe("function");
+			expect(typeof cache.set).toBe("function");
+			expect(typeof cache.del).toBe("function");
+			expect(typeof cache.mget).toBe("function");
+			expect(typeof cache.mset).toBe("function");
+
+			// Test that cache operations track metrics
+			await cache.set("test-key", { data: "test" }, 60);
+			const value = await cache.get("test-key");
+			expect(value).toEqual({ data: "test" });
+
+			// Verify performance tracking occurred
+			const snapshot = perf.snapshot();
+			// Should have at least one cache operation tracked
+			expect(snapshot.cacheHits + snapshot.cacheMisses).toBeGreaterThan(0);
+
+			// Verify underlying cache was called
+			expect(mockCache.set).toHaveBeenCalledWith(
+				"test-key",
+				{ data: "test" },
+				60,
+			);
+			expect(mockCache.get).toHaveBeenCalledWith("test-key");
 		});
 	});
 });

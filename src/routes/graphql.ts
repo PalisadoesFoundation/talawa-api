@@ -352,16 +352,16 @@ export const graphql = fastifyPlugin(async (fastify) => {
 	});
 	fastify.graphql.addHook(
 		"preExecution",
-		async (schema, context, document, variables) => {
+		async (schema, document, context, variables) => {
 			// Calculate the complexity of the incoming GraphQL query
-			const complexity = complexityFromQuery(document.__currentQuery, {
+			const complexity = complexityFromQuery(context.__currentQuery, {
 				schema: schema,
 				variables: variables,
 			});
-			const request = document.reply.request;
+			const request = context.reply.request;
 
 			// Find the operation definition node to determine if this is a query, mutation, or subscription
-			const operationDefinition = context.definitions.find(
+			const operationDefinition = document.definitions.find(
 				(definition) => definition.kind === "OperationDefinition",
 			);
 			const operationType = operationDefinition

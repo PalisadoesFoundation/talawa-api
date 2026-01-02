@@ -63,9 +63,11 @@ export default fp(async function perfPlugin(app: FastifyInstance) {
 				dbMs,
 				cacheHits: snap?.cacheHits ?? 0,
 				cacheMisses: snap?.cacheMisses ?? 0,
-				hitRate: snap?.cacheHits
-					? snap.cacheHits / (snap.cacheHits + (snap?.cacheMisses ?? 0))
-					: 0,
+				hitRate:
+					(snap?.cacheHits ?? 0) + (snap?.cacheMisses ?? 0) > 0
+						? (snap?.cacheHits ?? 0) /
+							((snap?.cacheHits ?? 0) + (snap?.cacheMisses ?? 0))
+						: 0,
 			});
 		}
 

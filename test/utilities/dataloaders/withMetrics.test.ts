@@ -1,10 +1,12 @@
-import { describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { wrapBatchWithMetrics } from "~/src/utilities/dataloaders/withMetrics";
 import type { PerformanceTracker } from "~/src/utilities/metrics/performanceTracker";
 
 describe("withMetrics - DataLoader wrapper", () => {
-	it("should wrap batch function and track performance", async () => {
-		const mockPerf: PerformanceTracker = {
+	let mockPerf: PerformanceTracker;
+
+	beforeEach(() => {
+		mockPerf = {
 			time: vi.fn(async (_op, fn) => fn()),
 			start: vi.fn(() => vi.fn()),
 			trackDb: vi.fn(),
@@ -17,7 +19,9 @@ describe("withMetrics - DataLoader wrapper", () => {
 				ops: {},
 			})),
 		};
+	});
 
+	it("should wrap batch function and track performance", async () => {
 		const mockBatchFn = vi.fn(async (keys: readonly string[]) =>
 			keys.map((key) => ({ id: key, name: `User ${key}` })),
 		);
@@ -51,20 +55,6 @@ describe("withMetrics - DataLoader wrapper", () => {
 	});
 
 	it("should propagate errors from batch function", async () => {
-		const mockPerf: PerformanceTracker = {
-			time: vi.fn(async (_op, fn) => fn()),
-			start: vi.fn(() => vi.fn()),
-			trackDb: vi.fn(),
-			trackCacheHit: vi.fn(),
-			trackCacheMiss: vi.fn(),
-			snapshot: vi.fn(() => ({
-				totalMs: 0,
-				cacheHits: 0,
-				cacheMisses: 0,
-				ops: {},
-			})),
-		};
-
 		const mockBatchFn = vi.fn(async () => {
 			throw new Error("Database connection failed");
 		});
@@ -84,20 +74,6 @@ describe("withMetrics - DataLoader wrapper", () => {
 	});
 
 	it("should handle empty keys array", async () => {
-		const mockPerf: PerformanceTracker = {
-			time: vi.fn(async (_op, fn) => fn()),
-			start: vi.fn(() => vi.fn()),
-			trackDb: vi.fn(),
-			trackCacheHit: vi.fn(),
-			trackCacheMiss: vi.fn(),
-			snapshot: vi.fn(() => ({
-				totalMs: 0,
-				cacheHits: 0,
-				cacheMisses: 0,
-				ops: {},
-			})),
-		};
-
 		const mockBatchFn = vi.fn(async (keys: readonly string[]) =>
 			keys.map(() => null),
 		);
@@ -116,20 +92,6 @@ describe("withMetrics - DataLoader wrapper", () => {
 	});
 
 	it("should work with batch functions returning nulls", async () => {
-		const mockPerf: PerformanceTracker = {
-			time: vi.fn(async (_op, fn) => fn()),
-			start: vi.fn(() => vi.fn()),
-			trackDb: vi.fn(),
-			trackCacheHit: vi.fn(),
-			trackCacheMiss: vi.fn(),
-			snapshot: vi.fn(() => ({
-				totalMs: 0,
-				cacheHits: 0,
-				cacheMisses: 0,
-				ops: {},
-			})),
-		};
-
 		const mockBatchFn = vi.fn(async (keys: readonly string[]) =>
 			keys.map((key) => (key === "missing" ? null : { id: key })),
 		);
@@ -148,20 +110,6 @@ describe("withMetrics - DataLoader wrapper", () => {
 	});
 
 	it("should preserve batch function return type", async () => {
-		const mockPerf: PerformanceTracker = {
-			time: vi.fn(async (_op, fn) => fn()),
-			start: vi.fn(() => vi.fn()),
-			trackDb: vi.fn(),
-			trackCacheHit: vi.fn(),
-			trackCacheMiss: vi.fn(),
-			snapshot: vi.fn(() => ({
-				totalMs: 0,
-				cacheHits: 0,
-				cacheMisses: 0,
-				ops: {},
-			})),
-		};
-
 		type CustomType = { id: string; data: number[] };
 
 		const mockBatchFn = vi.fn(

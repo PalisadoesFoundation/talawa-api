@@ -45,7 +45,7 @@ User.implement({
 					});
 				}
 
-				return escapeHTML(parent.state);
+				return parent.state;
 			},
 			type: "String",
 		}),
