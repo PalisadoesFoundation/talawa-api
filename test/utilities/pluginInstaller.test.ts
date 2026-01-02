@@ -199,6 +199,206 @@ describe("validatePluginZip", () => {
 		expect(result.pluginId).toBe("test_plugin");
 		expect(result.apiManifest).toBeDefined();
 	});
+
+	it("should reject when yauzl fails to open zip for validation", async () => {
+		const mockYauzl = yauzl as unknown as {
+			default: { open: ReturnType<typeof vi.fn> };
+		};
+		mockYauzl.default.open.mockImplementationOnce(
+			(_path, _options, callback) => {
+				callback(new Error("File not found"), null as unknown as never);
+			},
+		);
+
+		await expect(validatePluginZip("/path/to/invalid.zip")).rejects.toThrow(
+			/Failed to open zip file/,
+		);
+	});
+
+	it("should reject when zipfile is null during validation", async () => {
+		const mockYauzl = yauzl as unknown as {
+			default: { open: ReturnType<typeof vi.fn> };
+		};
+		mockYauzl.default.open.mockImplementationOnce(
+			(_path, _options, callback) => {
+				callback(null, null as unknown as never);
+			},
+		);
+
+		await expect(validatePluginZip("/path/to/invalid.zip")).rejects.toThrow(
+			/Invalid zip file/,
+		);
+	});
+
+	it("should reject when openReadStream fails during validation", async () => {
+		const mockYauzl = yauzl as unknown as {
+			default: { open: ReturnType<typeof vi.fn> };
+		};
+		mockYauzl.default.open.mockImplementationOnce(
+			(_path, _options, callback) => {
+				const mockZipFile = {
+					readEntry: vi.fn(),
+					on: vi.fn((event, handler) => {
+						if (event === "entry") {
+							handler({ fileName: "api/manifest.json" });
+						}
+						if (event === "end") {
+							handler();
+						}
+						return mockZipFile;
+					}),
+					openReadStream: vi.fn((_entry, callback) => {
+						callback(new Error("Read error"), undefined);
+					}),
+				};
+				callback(null, mockZipFile);
+			},
+		);
+
+		await expect(validatePluginZip("/path/to/invalid.zip")).rejects.toThrow(
+			/Read error/,
+		);
+	});
+
+	it("should reject when readStream is undefined during validation", async () => {
+		const mockYauzl = yauzl as unknown as {
+			default: { open: ReturnType<typeof vi.fn> };
+		};
+		mockYauzl.default.open.mockImplementationOnce(
+			(_path, _options, callback) => {
+				const mockZipFile = {
+					readEntry: vi.fn(),
+					on: vi.fn((event, handler) => {
+						if (event === "entry") {
+							handler({ fileName: "api/manifest.json" });
+						}
+						if (event === "end") {
+							handler();
+						}
+						return mockZipFile;
+					}),
+					openReadStream: vi.fn((_entry, callback) => {
+						callback(null, undefined);
+					}),
+				};
+				callback(null, mockZipFile);
+			},
+		);
+
+		await expect(validatePluginZip("/path/to/invalid.zip")).rejects.toThrow(
+			/Failed to read manifest/,
+		);
+	});
+
+	it("should handle zipfile error event during validation", async () => {
+		const mockYauzl = yauzl as unknown as {
+			default: { open: ReturnType<typeof vi.fn> };
+		};
+		mockYauzl.default.open.mockImplementationOnce(
+			(_path, _options, callback) => {
+				const mockZipFile = {
+					readEntry: vi.fn(),
+					on: vi.fn((event, handler) => {
+						if (event === "error") {
+							handler(new Error("Zipfile corrupted"));
+						}
+						return mockZipFile;
+					}),
+				};
+				callback(null, mockZipFile);
+			},
+		);
+
+		await expect(validatePluginZip("/path/to/invalid.zip")).rejects.toThrow(
+			/Zipfile corrupted/,
+		);
+	});
+
+	it("should reject when pluginId has invalid format", async () => {
+		const mockYauzl = yauzl as unknown as {
+			default: { open: ReturnType<typeof vi.fn> };
+		};
+		mockYauzl.default.open.mockImplementationOnce(
+			(_path, _options, callback) => {
+				const mockZipFile = {
+					readEntry: vi.fn(),
+					on: vi.fn((event, handler) => {
+						if (event === "entry") {
+							handler({ fileName: "api/manifest.json" });
+						}
+						if (event === "end") {
+							handler();
+						}
+						return mockZipFile;
+					}),
+					openReadStream: vi.fn((_entry, callback) => {
+						const mockStream = {
+							on: vi.fn((event, handler) => {
+								if (event === "data") {
+									// Invalid pluginId with special characters
+									handler(
+										'{"pluginId": "invalid@plugin!", "name": "Test", "version": "1.0.0"}',
+									);
+								}
+								if (event === "end") {
+									handler();
+								}
+								return mockStream;
+							}),
+						};
+						callback(null, mockStream);
+					}),
+				};
+				callback(null, mockZipFile);
+			},
+		);
+
+		await expect(validatePluginZip("/path/to/invalid.zip")).rejects.toThrow(
+			/Invalid plugin ID in manifest/,
+		);
+	});
+
+	it("should reject when manifest contains invalid JSON", async () => {
+		const mockYauzl = yauzl as unknown as {
+			default: { open: ReturnType<typeof vi.fn> };
+		};
+		mockYauzl.default.open.mockImplementationOnce(
+			(_path, _options, callback) => {
+				const mockZipFile = {
+					readEntry: vi.fn(),
+					on: vi.fn((event, handler) => {
+						if (event === "entry") {
+							handler({ fileName: "api/manifest.json" });
+						}
+						if (event === "end") {
+							handler();
+						}
+						return mockZipFile;
+					}),
+					openReadStream: vi.fn((_entry, callback) => {
+						const mockStream = {
+							on: vi.fn((event, handler) => {
+								if (event === "data") {
+									// Malformed JSON
+									handler("{ invalid json syntax }");
+								}
+								if (event === "end") {
+									handler();
+								}
+								return mockStream;
+							}),
+						};
+						callback(null, mockStream);
+					}),
+				};
+				callback(null, mockZipFile);
+			},
+		);
+
+		await expect(validatePluginZip("/path/to/invalid.zip")).rejects.toThrow(
+			/Invalid API manifest.json/,
+		);
+	});
 });
 
 describe("extractPluginZip", () => {
@@ -268,6 +468,152 @@ describe("extractPluginZip", () => {
 		await expect(
 			extractPluginZip("/path/to/test.zip", "test_plugin", structure),
 		).rejects.toThrow(/Malicious zip entry detected/);
+	});
+
+	it("should reject when yauzl fails to open zip file", async () => {
+		const mockYauzl = yauzl as unknown as {
+			default: { open: ReturnType<typeof vi.fn> };
+		};
+		mockYauzl.default.open.mockImplementationOnce(
+			(_path, _options, callback) => {
+				callback(new Error("File not found"), null as unknown as never);
+			},
+		);
+
+		const structure = { hasApiFolder: true, pluginId: "test_plugin" };
+
+		await expect(
+			extractPluginZip("/path/to/invalid.zip", "test_plugin", structure),
+		).rejects.toThrow(/Failed to open zip file/);
+	});
+
+	it("should reject when zipfile is null", async () => {
+		const mockYauzl = yauzl as unknown as {
+			default: { open: ReturnType<typeof vi.fn> };
+		};
+		mockYauzl.default.open.mockImplementationOnce(
+			(_path, _options, callback) => {
+				callback(null, null as unknown as never);
+			},
+		);
+
+		const structure = { hasApiFolder: true, pluginId: "test_plugin" };
+
+		await expect(
+			extractPluginZip("/path/to/invalid.zip", "test_plugin", structure),
+		).rejects.toThrow(/Invalid zip file/);
+	});
+
+	it("should reject when openReadStream fails", async () => {
+		const mockYauzl = yauzl as unknown as {
+			default: { open: ReturnType<typeof vi.fn> };
+		};
+		mockYauzl.default.open.mockImplementationOnce(
+			(_path, _options, callback) => {
+				const mockZipFile = {
+					readEntry: vi.fn(),
+					on: vi.fn((event, handler) => {
+						if (event === "entry") {
+							handler({ fileName: "api/test.js" });
+						}
+						if (event === "end") {
+							handler();
+						}
+						return mockZipFile;
+					}),
+					openReadStream: vi.fn((_entry, callback) => {
+						callback(new Error("Stream error"), undefined);
+					}),
+				};
+				callback(null, mockZipFile);
+			},
+		);
+
+		const structure = { hasApiFolder: true, pluginId: "test_plugin" };
+
+		await expect(
+			extractPluginZip("/path/to/invalid.zip", "test_plugin", structure),
+		).rejects.toThrow(/Stream error/);
+	});
+
+	it("should reject when readStream is undefined", async () => {
+		const mockYauzl = yauzl as unknown as {
+			default: { open: ReturnType<typeof vi.fn> };
+		};
+		mockYauzl.default.open.mockImplementationOnce(
+			(_path, _options, callback) => {
+				const mockZipFile = {
+					readEntry: vi.fn(),
+					on: vi.fn((event, handler) => {
+						if (event === "entry") {
+							handler({ fileName: "api/test.js" });
+						}
+						if (event === "end") {
+							handler();
+						}
+						return mockZipFile;
+					}),
+					openReadStream: vi.fn((_entry, callback) => {
+						callback(null, undefined);
+					}),
+				};
+				callback(null, mockZipFile);
+			},
+		);
+
+		const structure = { hasApiFolder: true, pluginId: "test_plugin" };
+
+		await expect(
+			extractPluginZip("/path/to/invalid.zip", "test_plugin", structure),
+		).rejects.toThrow(/Failed to read entry/);
+	});
+
+	it("should reject when pipeline fails during extraction", async () => {
+		// Mock stream/promises to throw an error during pipeline
+		const streamPromises = await import("node:stream/promises");
+		const originalPipeline = streamPromises.pipeline;
+		(streamPromises.pipeline as unknown as ReturnType<typeof vi.fn>) = vi.fn(
+			async () => {
+				throw new Error("Pipeline extraction error");
+			},
+		);
+
+		const mockYauzl = yauzl as unknown as {
+			default: { open: ReturnType<typeof vi.fn> };
+		};
+		mockYauzl.default.open.mockImplementationOnce(
+			(_path, _options, callback) => {
+				const mockZipFile = {
+					readEntry: vi.fn(),
+					on: vi.fn((event, handler) => {
+						if (event === "entry") {
+							handler({ fileName: "api/test.js" });
+						}
+						if (event === "end") {
+							handler();
+						}
+						return mockZipFile;
+					}),
+					openReadStream: vi.fn((_entry, callback) => {
+						const mockStream = {
+							pipe: vi.fn(),
+						};
+						callback(null, mockStream);
+					}),
+				};
+				callback(null, mockZipFile);
+			},
+		);
+
+		const structure = { hasApiFolder: true, pluginId: "test_plugin" };
+
+		await expect(
+			extractPluginZip("/path/to/test.zip", "test_plugin", structure),
+		).rejects.toThrow(/Pipeline extraction error/);
+
+		// Restore original pipeline
+		(streamPromises.pipeline as unknown as typeof originalPipeline) =
+			originalPipeline;
 	});
 });
 
@@ -941,5 +1287,372 @@ describe("installPluginFromZip", () => {
 		// Restore original function
 		mockPluginRegistry.getPluginManagerInstance =
 			originalGetPluginManagerInstance;
+	});
+
+	it("should reject when zip has no API folder", async () => {
+		// Mock yauzl to return structure without API folder
+		const mockYauzl = yauzl as unknown as {
+			default: { open: ReturnType<typeof vi.fn> };
+		};
+		mockYauzl.default.open.mockImplementationOnce(
+			(_path, _options, callback) => {
+				const mockZipFile = {
+					readEntry: vi.fn(),
+					on: vi.fn((event, handler) => {
+						if (event === "entry") {
+							handler({ fileName: "other/file.txt" });
+						}
+						if (event === "end") {
+							handler();
+						}
+						return mockZipFile;
+					}),
+				};
+				callback(null, mockZipFile);
+			},
+		);
+
+		const mockZipFile: MockFileUpload = {
+			createReadStream: vi.fn(() => ({
+				pipe: vi.fn(),
+				on: vi.fn((event, handler) => {
+					if (event === "data") handler("mock data");
+					if (event === "end") handler();
+					return { pipe: vi.fn() };
+				}),
+			})),
+			filename: "test.zip",
+			fieldName: "pluginZip",
+			mimetype: "application/zip",
+			encoding: "7bit",
+		};
+
+		const mockDrizzleClient: MockDrizzleClient = {
+			query: {
+				pluginsTable: {
+					findFirst: vi.fn(async () => null),
+				},
+			},
+			execute: vi.fn(async () => undefined),
+			insert: vi.fn(() => ({
+				values: vi.fn(() => ({
+					returning: vi.fn(() => Promise.resolve([{ id: "testId" }])),
+				})),
+			})),
+			update: vi.fn(() => ({
+				set: vi.fn(() => ({
+					where: vi.fn(() => ({
+						returning: vi.fn(() => Promise.resolve([{ id: "testId" }])),
+					})),
+				})),
+			})),
+		};
+
+		const options = {
+			zipFile: mockZipFile,
+			drizzleClient: mockDrizzleClient as unknown as Parameters<
+				typeof installPluginFromZip
+			>[0]["drizzleClient"],
+			activate: false,
+			userId: "test-user",
+		};
+
+		await expect(installPluginFromZip(options)).rejects.toThrow(/api.*folder/i);
+	});
+
+	it("should reject when pluginId is missing in manifest", async () => {
+		// Mock yauzl to return structure with API folder but no pluginId
+		const mockYauzl = yauzl as unknown as {
+			default: { open: ReturnType<typeof vi.fn> };
+		};
+		mockYauzl.default.open.mockImplementationOnce(
+			(_path, _options, callback) => {
+				const mockZipFile = {
+					readEntry: vi.fn(),
+					on: vi.fn((event, handler) => {
+						if (event === "entry") {
+							handler({ fileName: "api/manifest.json" });
+						}
+						if (event === "end") {
+							handler();
+						}
+						return mockZipFile;
+					}),
+					openReadStream: vi.fn((_entry, callback) => {
+						const mockStream = {
+							on: vi.fn((event, handler) => {
+								if (event === "data") {
+									// Manifest without pluginId
+									handler('{"name": "Test Plugin", "version": "1.0.0"}');
+								}
+								if (event === "end") {
+									handler();
+								}
+								return mockStream;
+							}),
+						};
+						callback(null, mockStream);
+					}),
+				};
+				callback(null, mockZipFile);
+			},
+		);
+
+		const mockZipFile: MockFileUpload = {
+			createReadStream: vi.fn(() => ({
+				pipe: vi.fn(),
+				on: vi.fn((event, handler) => {
+					if (event === "data") handler("mock data");
+					if (event === "end") handler();
+					return { pipe: vi.fn() };
+				}),
+			})),
+			filename: "test.zip",
+			fieldName: "pluginZip",
+			mimetype: "application/zip",
+			encoding: "7bit",
+		};
+
+		const mockDrizzleClient: MockDrizzleClient = {
+			query: {
+				pluginsTable: {
+					findFirst: vi.fn(async () => null),
+				},
+			},
+			execute: vi.fn(async () => undefined),
+			insert: vi.fn(() => ({
+				values: vi.fn(() => ({
+					returning: vi.fn(() => Promise.resolve([{ id: "testId" }])),
+				})),
+			})),
+			update: vi.fn(() => ({
+				set: vi.fn(() => ({
+					where: vi.fn(() => ({
+						returning: vi.fn(() => Promise.resolve([{ id: "testId" }])),
+					})),
+				})),
+			})),
+		};
+
+		const options = {
+			zipFile: mockZipFile,
+			drizzleClient: mockDrizzleClient as unknown as Parameters<
+				typeof installPluginFromZip
+			>[0]["drizzleClient"],
+			activate: false,
+			userId: "test-user",
+		};
+
+		// The validation rejects with invalid format first before checking if it's missing
+		await expect(installPluginFromZip(options)).rejects.toThrow(
+			/Invalid plugin ID in manifest/,
+		);
+	});
+
+	it("should deactivate existing active plugin before reinstalling", async () => {
+		// Mock plugin registry to return an active plugin manager
+		const { getPluginManagerInstance } = await import(
+			"../../src/plugin/registry"
+		);
+		const mockPluginManager = {
+			isPluginActive: vi.fn(() => true), // Plugin is active
+			deactivatePlugin: vi.fn(async () => undefined),
+			loadPlugin: vi.fn(async () => undefined),
+			activatePlugin: vi.fn(async () => undefined),
+		};
+		(getPluginManagerInstance as ReturnType<typeof vi.fn>).mockReturnValueOnce(
+			mockPluginManager,
+		);
+
+		const mockZipFile: MockFileUpload = {
+			createReadStream: vi.fn(() => ({
+				pipe: vi.fn(),
+				on: vi.fn((event, handler) => {
+					if (event === "data") handler("mock data");
+					if (event === "end") handler();
+					return { pipe: vi.fn() };
+				}),
+			})),
+			filename: "test.zip",
+			fieldName: "pluginZip",
+			mimetype: "application/zip",
+			encoding: "7bit",
+		};
+
+		const mockDrizzleClient: MockDrizzleClient = {
+			query: {
+				pluginsTable: {
+					findFirst: vi.fn(async () => ({
+						id: "existing-id",
+						pluginId: "test_plugin",
+					})),
+				},
+			},
+			execute: vi.fn(async () => undefined),
+			insert: vi.fn(() => ({
+				values: vi.fn(() => ({
+					returning: vi.fn(() => Promise.resolve([{ id: "testId" }])),
+				})),
+			})),
+			update: vi.fn(() => ({
+				set: vi.fn(() => ({
+					where: vi.fn(() => ({
+						returning: vi.fn(() => Promise.resolve([{ id: "existing-id" }])),
+					})),
+				})),
+			})),
+		};
+
+		const options = {
+			zipFile: mockZipFile,
+			drizzleClient: mockDrizzleClient as unknown as Parameters<
+				typeof installPluginFromZip
+			>[0]["drizzleClient"],
+			activate: false,
+			userId: "test-user",
+		};
+
+		const result = await installPluginFromZip(options);
+		expect(result).toBeDefined();
+		expect(mockPluginManager.deactivatePlugin).toHaveBeenCalledWith(
+			"test_plugin",
+		);
+	});
+
+	it("should handle plugin activation errors by catching them", async () => {
+		// Mock plugin registry to throw error during activation
+		const { getPluginManagerInstance } = await import(
+			"../../src/plugin/registry"
+		);
+		const mockPluginManager = {
+			isPluginActive: vi.fn(() => false),
+			deactivatePlugin: vi.fn(async () => undefined),
+			loadPlugin: vi.fn(async () => undefined),
+			activatePlugin: vi.fn(async () => {
+				throw new Error("Activation failed");
+			}),
+		};
+		(getPluginManagerInstance as ReturnType<typeof vi.fn>).mockReturnValueOnce(
+			mockPluginManager,
+		);
+
+		const mockZipFile: MockFileUpload = {
+			createReadStream: vi.fn(() => ({
+				pipe: vi.fn(),
+				on: vi.fn((event, handler) => {
+					if (event === "data") handler("mock data");
+					if (event === "end") handler();
+					return { pipe: vi.fn() };
+				}),
+			})),
+			filename: "test.zip",
+			fieldName: "pluginZip",
+			mimetype: "application/zip",
+			encoding: "7bit",
+		};
+
+		const mockDrizzleClient: MockDrizzleClient = {
+			query: {
+				pluginsTable: {
+					findFirst: vi.fn(async () => null),
+				},
+			},
+			execute: vi.fn(async () => undefined),
+			insert: vi.fn(() => ({
+				values: vi.fn(() => ({
+					returning: vi.fn(() => Promise.resolve([{ id: "testId" }])),
+				})),
+			})),
+			update: vi.fn(() => ({
+				set: vi.fn(() => ({
+					where: vi.fn(() => ({
+						returning: vi.fn(() => Promise.resolve([{ id: "testId" }])),
+					})),
+				})),
+			})),
+		};
+
+		const options = {
+			zipFile: mockZipFile,
+			drizzleClient: mockDrizzleClient as unknown as Parameters<
+				typeof installPluginFromZip
+			>[0]["drizzleClient"],
+			activate: true,
+			userId: "test-user",
+		};
+
+		// Should not throw error even if activation fails
+		const result = await installPluginFromZip(options);
+		expect(result).toBeDefined();
+		expect(result.plugin).toBeDefined();
+		expect(mockPluginManager.activatePlugin).toHaveBeenCalled();
+	});
+
+	it("should reject when API manifest is missing from structure", async () => {
+		// Import the module to spy on
+		const validationModule = await import(
+			"../../src/utilities/pluginInstaller/validation"
+		);
+
+		// Spy on validatePluginZip and mock it to return structure without apiManifest
+		const validateSpy = vi
+			.spyOn(validationModule, "validatePluginZip")
+			.mockResolvedValueOnce({
+				hasApiFolder: true,
+				pluginId: "test_plugin",
+				apiManifest: undefined, // This will trigger the manifest check
+			});
+
+		const mockZipFile: MockFileUpload = {
+			createReadStream: vi.fn(() => ({
+				pipe: vi.fn(),
+				on: vi.fn((event, handler) => {
+					if (event === "data") handler("mock data");
+					if (event === "end") handler();
+					return { pipe: vi.fn() };
+				}),
+			})),
+			filename: "test.zip",
+			fieldName: "pluginZip",
+			mimetype: "application/zip",
+			encoding: "7bit",
+		};
+
+		const mockDrizzleClient: MockDrizzleClient = {
+			query: {
+				pluginsTable: {
+					findFirst: vi.fn(async () => null),
+				},
+			},
+			execute: vi.fn(async () => undefined),
+			insert: vi.fn(() => ({
+				values: vi.fn(() => ({
+					returning: vi.fn(() => Promise.resolve([{ id: "testId" }])),
+				})),
+			})),
+			update: vi.fn(() => ({
+				set: vi.fn(() => ({
+					where: vi.fn(() => ({
+						returning: vi.fn(() => Promise.resolve([{ id: "testId" }])),
+					})),
+				})),
+			})),
+		};
+
+		const options = {
+			zipFile: mockZipFile,
+			drizzleClient: mockDrizzleClient as unknown as Parameters<
+				typeof installPluginFromZip
+			>[0]["drizzleClient"],
+			activate: false,
+			userId: "test-user",
+		};
+
+		await expect(installPluginFromZip(options)).rejects.toThrow(
+			/Plugin manifest is required/,
+		);
+
+		// Restore the spy
+		validateSpy.mockRestore();
 	});
 });
