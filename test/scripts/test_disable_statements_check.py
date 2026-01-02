@@ -12,7 +12,9 @@ import unittest
 from pathlib import Path
 
 # Add the scripts directory to the path
-SCRIPTS_DIR = Path(__file__).parent.parent.parent / ".github" / "workflows" / "scripts"
+SCRIPTS_DIR = (
+    Path(__file__).parent.parent.parent / ".github" / "workflows" / "scripts"
+)
 sys.path.insert(0, str(SCRIPTS_DIR))
 
 from disable_statements_check import DisableStatementsChecker  # noqa: E402
@@ -30,6 +32,7 @@ class TestDisableStatementsChecker(unittest.TestCase):
         """Clean up test fixtures."""
         # Clean up temp files
         import shutil
+
         if os.path.exists(self.temp_dir):
             shutil.rmtree(self.temp_dir)
 
@@ -115,21 +118,26 @@ const y = 2;
     def test_check_sanitization_disable_valid(self):
         """Test valid sanitization disable with proper justification."""
         content = "// check-sanitization-disable: legacy code needs refactoring first\nconst x = 1;"
-        violations = self.checker.check_sanitization_disable(content, "test.ts")
+        violations = self.checker.check_sanitization_disable(
+            content, "test.ts"
+        )
         self.assertEqual(len(violations), 0)
 
     def test_check_sanitization_disable_missing_justification(self):
         """Test sanitization disable without justification."""
         content = "// check-sanitization-disable\nconst x = 1;"
-        violations = self.checker.check_sanitization_disable(content, "test.ts")
+        violations = self.checker.check_sanitization_disable(
+            content, "test.ts"
+        )
         self.assertEqual(len(violations), 1)
         self.assertIn("missing justification", violations[0])
-
 
     def test_check_sanitization_disable_short_justification(self):
         """Test sanitization disable with too short justification."""
         content = "// check-sanitization-disable: short\nconst x = 1;"
-        violations = self.checker.check_sanitization_disable(content, "test.ts")
+        violations = self.checker.check_sanitization_disable(
+            content, "test.ts"
+        )
         self.assertEqual(len(violations), 1)
         self.assertIn("too short", violations[0])
         self.assertIn("5 chars", violations[0])
@@ -137,8 +145,12 @@ const y = 2;
     def test_check_sanitization_disable_case_sensitive(self):
         """Test that sanitization disable is case-sensitive."""
         # This should NOT match because it's uppercase
-        content = "// CHECK-SANITIZATION-DISABLE: uppercase version\nconst x = 1;"
-        violations = self.checker.check_sanitization_disable(content, "test.ts")
+        content = (
+            "// CHECK-SANITIZATION-DISABLE: uppercase version\nconst x = 1;"
+        )
+        violations = self.checker.check_sanitization_disable(
+            content, "test.ts"
+        )
         self.assertEqual(len(violations), 0)
 
     # ========== check_istanbul_ignore Tests ==========
@@ -200,8 +212,7 @@ const y = 2;
     def test_check_file_skips_self(self):
         """Test that the script skips checking itself."""
         filepath = self._create_temp_file(
-            "disable_statements_check.py",
-            "// biome-ignore\nconst x = 1;"
+            "disable_statements_check.py", "// biome-ignore\nconst x = 1;"
         )
         violations = self.checker.check_file(filepath, repo="api")
         self.assertEqual(len(violations), 0)
@@ -209,8 +220,7 @@ const y = 2;
     def test_check_file_api_repo_checks(self):
         """Test API-specific checks are run."""
         filepath = self._create_temp_file(
-            "test.ts",
-            "// biome-ignore lint: temp\nconst x = 1;"
+            "test.ts", "// biome-ignore lint: temp\nconst x = 1;"
         )
         violations = self.checker.check_file(filepath, repo="api")
         # Should find biome-ignore
@@ -219,8 +229,7 @@ const y = 2;
     def test_check_file_admin_repo_skips_api_checks(self):
         """Test that Admin repo skips API-specific checks."""
         filepath = self._create_temp_file(
-            "test.ts",
-            "// biome-ignore lint: temp\nconst x = 1;"
+            "test.ts", "// biome-ignore lint: temp\nconst x = 1;"
         )
         violations = self.checker.check_file(filepath, repo="admin")
         # Should NOT find biome-ignore (API-specific check)
@@ -230,8 +239,7 @@ const y = 2;
     def test_check_file_api_repo_skips_eslint(self):
         """Test that API repo skips eslint checks."""
         filepath = self._create_temp_file(
-            "test.js",
-            "// eslint-disable no-console\nconst x = 1;"
+            "test.js", "// eslint-disable no-console\nconst x = 1;"
         )
         violations = self.checker.check_file(filepath, repo="api")
         # Should NOT find eslint-disable (Admin-specific check)
@@ -241,29 +249,33 @@ const y = 2;
     def test_check_file_test_file_skips_istanbul(self):
         """Test that test files skip istanbul ignore check."""
         filepath = self._create_temp_file(
-            "myfile.test.ts",
-            "/* istanbul ignore next */\nfunction test() {}"
+            "myfile.test.ts", "/* istanbul ignore next */\nfunction test() {}"
         )
         violations = self.checker.check_file(filepath, repo="api")
         # Should NOT find istanbul ignore in test files
-        istanbul_violations = [v for v in violations if "istanbul" in v.lower()]
+        istanbul_violations = [
+            v for v in violations if "istanbul" in v.lower()
+        ]
         self.assertEqual(len(istanbul_violations), 0)
 
     def test_check_file_non_test_file_finds_istanbul(self):
         """Test that non-test files check for istanbul ignore."""
         filepath = self._create_temp_file(
-            "myfile.ts",
-            "/* istanbul ignore next */\nfunction test() {}"
+            "myfile.ts", "/* istanbul ignore next */\nfunction test() {}"
         )
         violations = self.checker.check_file(filepath, repo="api")
         # Should find istanbul ignore in non-test files
-        istanbul_violations = [v for v in violations if "istanbul" in v.lower()]
+        istanbul_violations = [
+            v for v in violations if "istanbul" in v.lower()
+        ]
         self.assertEqual(len(istanbul_violations), 1)
 
     def test_check_file_read_error(self):
         """Test error handling for unreadable files."""
         # Try to read a non-existent file
-        violations = self.checker.check_file("/nonexistent/file.ts", repo="api")
+        violations = self.checker.check_file(
+            "/nonexistent/file.ts", repo="api"
+        )
         self.assertEqual(len(violations), 1)
         self.assertIn("Error reading file", violations[0])
 
@@ -272,12 +284,10 @@ const y = 2;
     def test_check_files_multiple(self):
         """Test checking multiple files."""
         file1 = self._create_temp_file(
-            "file1.ts",
-            "// biome-ignore lint: temp\nconst x = 1;"
+            "file1.ts", "// biome-ignore lint: temp\nconst x = 1;"
         )
         file2 = self._create_temp_file(
-            "file2.ts",
-            "// @ts-ignore\nconst y = 2;"
+            "file2.ts", "// @ts-ignore\nconst y = 2;"
         )
         violations = self.checker.check_files([file1, file2], repo="api")
         # Should find violations in both files
@@ -293,13 +303,9 @@ const y = 2;
     def test_check_directory_finds_files(self):
         """Test directory checking finds TypeScript files."""
         self._create_temp_file(
-            "file1.ts",
-            "// biome-ignore lint: temp\nconst x = 1;"
+            "file1.ts", "// biome-ignore lint: temp\nconst x = 1;"
         )
-        self._create_temp_file(
-            "file2.tsx",
-            "// @ts-ignore\nconst y = 2;"
-        )
+        self._create_temp_file("file2.tsx", "// @ts-ignore\nconst y = 2;")
         violations = self.checker.check_directory(self.temp_dir, repo="api")
         # Should find violations in directory
         self.assertGreater(len(violations), 0)
@@ -307,10 +313,7 @@ const y = 2;
     def test_check_directory_skips_non_js_files(self):
         """Test directory checking skips non-JS/TS files."""
         # Create a Python file
-        self._create_temp_file(
-            "file.py",
-            "# biome-ignore\nprint('hello')"
-        )
+        self._create_temp_file("file.py", "# biome-ignore\nprint('hello')")
         violations = self.checker.check_directory(self.temp_dir, repo="api")
         # Should not check Python files
         self.assertEqual(len(violations), 0)

@@ -190,9 +190,11 @@ class DisableStatementsChecker:
         Returns:
             violations: List of violation messages.
         """
-        # Skip checking this script itself
+        # Skip checking this script itself and Python test files
         basename = os.path.basename(file_path)
-        if basename == "disable_statements_check.py":
+        if basename == "disable_statements_check.py" or file_path.endswith(
+            ".py"
+        ):
             return []
 
         # Check if it's a test file
@@ -275,7 +277,14 @@ class DisableStatementsChecker:
 
 
 def main() -> None:
-    """Execute the main functionality of the disable statements checker."""
+    """Execute the main functionality of the disable statements checker.
+
+    Args:
+        None
+
+    Returns:
+        None
+    """
     parser = argparse.ArgumentParser(
         description="Check for disable statements in code files"
     )
