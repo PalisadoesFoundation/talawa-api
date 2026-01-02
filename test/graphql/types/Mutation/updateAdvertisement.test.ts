@@ -14,11 +14,6 @@ const Mutation_createAdvertisement = gql`
   mutation createAdvertisement($input: MutationCreateAdvertisementInput!) {
     createAdvertisement(input: $input) {
       id
-      name
-      description
-      type
-      startAt
-      endAt
     }
   }
 `;
@@ -32,7 +27,7 @@ const signInResult = await mercuriusClient.query(Query_signIn, {
 	},
 });
 
-export const Mutation_updateAdvertisement = gql`
+const Mutation_updateAdvertisement = gql`
   mutation Mutation_updateAdvertisement($input: MutationUpdateAdvertisementInput!) {
     updateAdvertisement(input: $input) {
       id
@@ -603,15 +598,16 @@ suite("Mutation field updateAdvertisement", () => {
 			const adId = createAdResult.data?.createAdvertisement?.id;
 			assertToBeNonNullish(adId);
 
-			// Mock the update to return empty array
-			const originalUpdate = server.drizzleClient.update;
-			server.drizzleClient.update = vi.fn().mockImplementation(() => ({
-				set: () => ({
-					where: () => ({
-						returning: async () => [],
+			// Use vi.spyOn for safer mocking
+			const updateSpy = vi
+				.spyOn(server.drizzleClient, "update")
+				.mockReturnValueOnce({
+					set: () => ({
+						where: () => ({
+							returning: async () => [],
+						}),
 					}),
-				}),
-			}));
+				} as unknown as ReturnType<typeof server.drizzleClient.update>);
 
 			try {
 				const result = await mercuriusClient.mutate(
@@ -639,8 +635,7 @@ suite("Mutation field updateAdvertisement", () => {
 					]),
 				);
 			} finally {
-				// Restore the original function
-				server.drizzleClient.update = originalUpdate;
+				updateSpy.mockRestore();
 			}
 		});
 	});
