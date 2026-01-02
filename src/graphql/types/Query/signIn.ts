@@ -9,6 +9,7 @@ import {
 } from "~/src/graphql/inputs/QuerySignInInput";
 import { AuthenticationPayload } from "~/src/graphql/types/AuthenticationPayload";
 import envConfig from "~/src/utilities/graphqLimits";
+import { validateRecaptchaIfRequired } from "~/src/utilities/recaptchaUtils";
 import {
 	DEFAULT_REFRESH_TOKEN_EXPIRES_MS,
 	generateRefreshToken,
@@ -59,6 +60,13 @@ builder.queryField("signIn", (t) =>
 					},
 				});
 			}
+
+			// Verify reCAPTCHA if required
+			await validateRecaptchaIfRequired(
+				parsedArgs.input.recaptchaToken,
+				ctx.envConfig.RECAPTCHA_SECRET_KEY,
+				["input", "recaptchaToken"],
+			);
 
 			const existingUser = await ctx.drizzleClient.query.usersTable.findFirst({
 				where: (fields, operators) =>
