@@ -4,9 +4,9 @@
 
 # Function: healthCheck()
 
-> **healthCheck**(`logger?`): `Promise`\<\{ `details`: `Record`\<`string`, `unknown`\>; `status`: `"healthy"` \| `"unhealthy"`; \}\>
+> **healthCheck**(`logger?`, `getStatusVal?`): `Promise`\<\{ `details`: `Record`\<`string`, `unknown`\>; `status`: `"healthy"` \| `"unhealthy"`; \}\>
 
-Defined in: [src/workers/backgroundWorkerService.ts:239](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/workers/backgroundWorkerService.ts#L239)
+Defined in: [src/workers/backgroundWorkerService.ts:240](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/workers/backgroundWorkerService.ts#L240)
 
 Performs a health check of the background worker service, suitable for use by monitoring systems.
 
@@ -15,6 +15,16 @@ Performs a health check of the background worker service, suitable for use by mo
 ### logger?
 
 `FastifyBaseLogger`
+
+Optional Fastify logger for error logging. If not provided, errors will not be logged.
+
+### getStatusVal?
+
+() => `object`
+
+**`Internal`**
+
+For testing purposes only
 
 ## Returns
 

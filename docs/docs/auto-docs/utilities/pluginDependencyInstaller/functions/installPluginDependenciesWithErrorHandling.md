@@ -6,7 +6,7 @@
 
 > **installPluginDependenciesWithErrorHandling**(`pluginId`, `logger?`): `Promise`\<`void`\>
 
-Defined in: [src/utilities/pluginDependencyInstaller.ts:249](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/utilities/pluginDependencyInstaller.ts#L249)
+Defined in: [src/utilities/pluginDependencyInstaller.ts:248](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/utilities/pluginDependencyInstaller.ts#L248)
 
 Install dependencies for a plugin with error handling that throws TalawaGraphQLError
 
