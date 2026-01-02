@@ -6,8 +6,8 @@ import type {
 	ExplicitGraphQLContext,
 	GraphQLContext,
 } from "~/src/graphql/context";
-import type { PerformanceTracker } from "~/src/utilities/metrics/performanceTracker";
 import { createDataloaders } from "~/src/utilities/dataloaders";
+import type { PerformanceTracker } from "~/src/utilities/metrics/performanceTracker";
 import { createMockDrizzleClient } from "../drizzleClientMock";
 import { createMockMinioClient } from "../mockMinioClient";
 import { createMockPubSub } from "../pubsubMock";

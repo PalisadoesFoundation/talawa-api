@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
-import type { PerformanceTracker } from "~/src/utilities/metrics/performanceTracker";
 import { wrapBatchWithMetrics } from "~/src/utilities/dataloaders/withMetrics";
+import type { PerformanceTracker } from "~/src/utilities/metrics/performanceTracker";
 
 describe("withMetrics - DataLoader wrapper", () => {
 	it("should wrap batch function and track performance", async () => {
@@ -18,12 +18,15 @@ describe("withMetrics - DataLoader wrapper", () => {
 			})),
 		};
 
-		const mockBatchFn = vi.fn(
-			async (keys: readonly string[]) =>
-				keys.map((key) => ({ id: key, name: `User ${key}` })),
+		const mockBatchFn = vi.fn(async (keys: readonly string[]) =>
+			keys.map((key) => ({ id: key, name: `User ${key}` })),
 		);
 
-		const wrappedBatch = wrapBatchWithMetrics("users.byId", mockPerf, mockBatchFn);
+		const wrappedBatch = wrapBatchWithMetrics(
+			"users.byId",
+			mockPerf,
+			mockBatchFn,
+		);
 
 		const keys = ["1", "2", "3"];
 		const results = await wrappedBatch(keys);
@@ -127,12 +130,15 @@ describe("withMetrics - DataLoader wrapper", () => {
 			})),
 		};
 
-		const mockBatchFn = vi.fn(
-			async (keys: readonly string[]) =>
-				keys.map((key) => (key === "missing" ? null : { id: key })),
+		const mockBatchFn = vi.fn(async (keys: readonly string[]) =>
+			keys.map((key) => (key === "missing" ? null : { id: key })),
 		);
 
-		const wrappedBatch = wrapBatchWithMetrics("events.byId", mockPerf, mockBatchFn);
+		const wrappedBatch = wrapBatchWithMetrics(
+			"events.byId",
+			mockPerf,
+			mockBatchFn,
+		);
 
 		const keys = ["1", "missing", "3"];
 		const results = await wrappedBatch(keys);
@@ -159,7 +165,9 @@ describe("withMetrics - DataLoader wrapper", () => {
 		type CustomType = { id: string; data: number[] };
 
 		const mockBatchFn = vi.fn(
-			async (keys: readonly string[]): Promise<readonly (CustomType | null)[]> =>
+			async (
+				keys: readonly string[],
+			): Promise<readonly (CustomType | null)[]> =>
 				keys.map((key) => ({ id: key, data: [1, 2, 3] })),
 		);
 

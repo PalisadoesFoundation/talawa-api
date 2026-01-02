@@ -1,6 +1,6 @@
+import type { FastifyInstance } from "fastify";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { createServer } from "~/src/createServer";
-import type { FastifyInstance } from "fastify";
 
 describe("GraphQL Performance Integration", () => {
 	let server: FastifyInstance;
@@ -34,7 +34,7 @@ describe("GraphQL Performance Integration", () => {
 		});
 
 		expect(response.statusCode).toBe(200);
-		
+
 		// Check Server-Timing header is present
 		expect(response.headers["server-timing"]).toBeDefined();
 		expect(response.headers["server-timing"]).toMatch(/total;dur=\d+/);
@@ -66,7 +66,8 @@ describe("GraphQL Performance Integration", () => {
 		// Find the GraphQL request in recent snapshots
 		const gqlSnapshot = body.recent.find(
 			(snap: { ops?: Record<string, unknown> }) =>
-				snap.ops && Object.keys(snap.ops).some((key) => key.startsWith("graphql:")),
+				snap.ops &&
+				Object.keys(snap.ops).some((key) => key.startsWith("graphql:")),
 		);
 
 		// Should have GraphQL operation tracked

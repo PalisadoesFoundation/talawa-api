@@ -1,6 +1,6 @@
+import type { FastifyInstance } from "fastify";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { createServer } from "~/src/createServer";
-import type { FastifyInstance } from "fastify";
 
 describe("Performance Plugin", () => {
 	let server: FastifyInstance;
@@ -21,7 +21,8 @@ describe("Performance Plugin", () => {
 		// Create a test route to inspect the request
 		server.get("/test-perf", async (request, reply) => {
 			const hasPerf = request.perf !== undefined;
-			const hasT0 = (request as any)._t0 !== undefined;
+			const hasT0 =
+				(request as unknown as Record<string, unknown>)._t0 !== undefined;
 			return reply.send({ hasPerf, hasT0 });
 		});
 
@@ -49,7 +50,9 @@ describe("Performance Plugin", () => {
 		expect(response.statusCode).toBe(200);
 		expect(response.headers["server-timing"]).toBeDefined();
 		expect(response.headers["server-timing"]).toMatch(/db;dur=\d+/);
-		expect(response.headers["server-timing"]).toMatch(/cache;desc="hit:\d+\|miss:\d+"/);
+		expect(response.headers["server-timing"]).toMatch(
+			/cache;desc="hit:\d+\|miss:\d+"/,
+		);
 		expect(response.headers["server-timing"]).toMatch(/total;dur=\d+/);
 	});
 
@@ -98,12 +101,12 @@ describe("Performance Plugin", () => {
 	it("should log slow GraphQL operations", async () => {
 		server.get("/slow-graphql", async (request, reply) => {
 			// Simulate a slow GraphQL operation
-			(request as any)._gqlOperation = {
+			(request as unknown as Record<string, unknown>)._gqlOperation = {
 				name: "MyQuery",
 				type: "query",
 				complexity: 15,
 			};
-			(request as any)._t0 = Date.now() - 600; // Simulate 600ms ago
+			(request as unknown as Record<string, unknown>)._t0 = Date.now() - 600; // Simulate 600ms ago
 
 			// Simulate some cache activity
 			request.perf?.trackCacheHit();
@@ -128,12 +131,12 @@ describe("Performance Plugin", () => {
 
 		server.get("/fast-graphql", async (request, reply) => {
 			// Simulate a fast GraphQL operation
-			(request as any)._gqlOperation = {
+			(request as unknown as Record<string, unknown>)._gqlOperation = {
 				name: "FastQuery",
 				type: "query",
 				complexity: 5,
 			};
-			(request as any)._t0 = Date.now() - 100; // Simulate 100ms ago
+			(request as unknown as Record<string, unknown>)._t0 = Date.now() - 100; // Simulate 100ms ago
 
 			return reply.send({ data: "test" });
 		});
@@ -144,7 +147,8 @@ describe("Performance Plugin", () => {
 		});
 
 		const slowOpWarning = warnSpy.mock.calls.find(
-			(call) => (call[0] as any)?.msg === "Slow GraphQL operation",
+			(call) =>
+				(call[0] as Record<string, unknown>)?.msg === "Slow GraphQL operation",
 		);
 		expect(slowOpWarning).toBeUndefined();
 	});
@@ -180,20 +184,21 @@ describe("Performance Plugin", () => {
 		// Should not log anything about GraphQL for regular requests
 		const gqlWarning = warnSpy.mock.calls.find(
 			(call) =>
-				(call[0] as any)?.msg === "Slow GraphQL operation" ||
-				(call[0] as any)?.operation !== undefined,
+				(call[0] as Record<string, unknown>)?.msg ===
+					"Slow GraphQL operation" ||
+				(call[0] as Record<string, unknown>)?.operation !== undefined,
 		);
 		expect(gqlWarning).toBeUndefined();
 	});
 
 	it("should calculate hit rate correctly in slow operation logs", async () => {
 		server.get("/slow-with-cache", async (request, reply) => {
-			(request as any)._gqlOperation = {
+			(request as unknown as Record<string, unknown>)._gqlOperation = {
 				name: "testQuery",
 				type: "query",
 				complexity: 100,
 			};
-			(request as any)._t0 = Date.now() - 550;
+			(request as unknown as Record<string, unknown>)._t0 = Date.now() - 550;
 
 			// Simulate cache activity: 7 hits, 3 misses = 0.7 hit rate
 			for (let i = 0; i < 7; i++) {

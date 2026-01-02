@@ -8,10 +8,10 @@ export { CacheNamespace, defaultEntityTTL, getTTL } from "./cacheConfig";
 export { entityKey, listKey, stableStringify } from "./cacheKeyGenerator";
 // Invalidation helpers
 export { invalidateEntity, invalidateEntityLists } from "./invalidation";
+// Performance tracking
+export { metricsCacheProxy } from "./metricsCacheProxy";
 // Implementation
 export { RedisCacheService } from "./RedisCacheService";
 export type { WrapWithCacheOptions } from "./wrappers";
 // Cache wrappers
 export { wrapWithCache } from "./wrappers";
-// Performance tracking
-export { metricsCacheProxy } from "./metricsCacheProxy";

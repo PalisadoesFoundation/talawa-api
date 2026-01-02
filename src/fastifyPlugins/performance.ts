@@ -48,8 +48,7 @@ export default fp(async function perfPlugin(app: FastifyInstance) {
 		const cacheDesc = `hit:${snap?.cacheHits ?? 0}|miss:${snap?.cacheMisses ?? 0}`;
 
 		// Check if this is a GraphQL request with operation metadata
-		const gqlOp = (req as unknown as Record<string, unknown>)
-			._gqlOperation as
+		const gqlOp = (req as unknown as Record<string, unknown>)._gqlOperation as
 			| { name: string; type: string; complexity: number }
 			| undefined;
 

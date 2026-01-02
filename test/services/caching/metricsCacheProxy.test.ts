@@ -12,7 +12,7 @@ describe("metricsCacheProxy", () => {
 			clearByPattern: vi.fn(),
 			mget: vi.fn(),
 			mset: vi.fn(),
-		} as any as CacheService;
+		} as unknown as CacheService;
 
 		const mockPerf: PerformanceTracker = {
 			time: vi.fn(async (_op, fn) => fn()),
@@ -98,8 +98,15 @@ describe("metricsCacheProxy", () => {
 		const proxy = metricsCacheProxy(mockCache, mockPerf);
 		await proxy.set("test-key", { data: "value" }, 300);
 
-		expect(mockCache.set).toHaveBeenCalledWith("test-key", { data: "value" }, 300);
-		expect(mockPerf.time).toHaveBeenCalledWith("cache:set", expect.any(Function));
+		expect(mockCache.set).toHaveBeenCalledWith(
+			"test-key",
+			{ data: "value" },
+			300,
+		);
+		expect(mockPerf.time).toHaveBeenCalledWith(
+			"cache:set",
+			expect.any(Function),
+		);
 	});
 
 	it("should track timing for del operation", async () => {
@@ -130,7 +137,10 @@ describe("metricsCacheProxy", () => {
 		await proxy.del(["key1", "key2"]);
 
 		expect(mockCache.del).toHaveBeenCalledWith(["key1", "key2"]);
-		expect(mockPerf.time).toHaveBeenCalledWith("cache:del", expect.any(Function));
+		expect(mockPerf.time).toHaveBeenCalledWith(
+			"cache:del",
+			expect.any(Function),
+		);
 	});
 
 	it("should track timing for clearByPattern operation", async () => {
@@ -175,7 +185,7 @@ describe("metricsCacheProxy", () => {
 			clearByPattern: vi.fn(),
 			mget: vi.fn(async () => [{ id: "1" }, null, { id: "3" }]),
 			mset: vi.fn(),
-		} as any as CacheService;
+		} as unknown as CacheService;
 
 		const mockPerf: PerformanceTracker = {
 			time: vi.fn(async (_op, fn) => fn()),
@@ -235,7 +245,10 @@ describe("metricsCacheProxy", () => {
 		await proxy.mset(entries);
 
 		expect(mockCache.mset).toHaveBeenCalledWith(entries);
-		expect(mockPerf.time).toHaveBeenCalledWith("cache:mset", expect.any(Function));
+		expect(mockPerf.time).toHaveBeenCalledWith(
+			"cache:mset",
+			expect.any(Function),
+		);
 	});
 
 	it("should handle get operation errors gracefully", async () => {
@@ -315,7 +328,7 @@ describe("metricsCacheProxy", () => {
 			clearByPattern: vi.fn(),
 			mget: vi.fn(async () => [{ id: "1" }, { id: "2" }, { id: "3" }]),
 			mset: vi.fn(),
-		} as any as CacheService;
+		} as unknown as CacheService;
 
 		const mockPerf: PerformanceTracker = {
 			time: vi.fn(async (_op, fn) => fn()),
