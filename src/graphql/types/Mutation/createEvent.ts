@@ -20,7 +20,7 @@ import envConfig from "~/src/utilities/graphqLimits";
 import {
 	buildRRuleString,
 	validateRecurrenceInput,
-} from "~/src/utilities/recurringEventHelpers";
+} from "~/src/utilities/recurringEvent";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 
 export const mutationCreateEventArgumentsSchema = z.object({

@@ -830,6 +830,7 @@ suite("Input Validation Tests", () => {
 				expect.objectContaining({
 					extensions: {
 						code: "unauthenticated",
+						correlationId: expect.any(String),
 					},
 					message: "You must be authenticated to perform this action.",
 					path: ["agendaItem"],

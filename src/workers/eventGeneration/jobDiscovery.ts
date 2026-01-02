@@ -5,7 +5,7 @@ import { recurrenceRulesTable } from "~/src/drizzle/tables/recurrenceRules";
 import {
 	estimateInstanceCount,
 	normalizeRecurrenceRule,
-} from "~/src/utilities/recurringEventHelpers";
+} from "~/src/utilities/recurringEvent";
 import type { EventGenerationJob } from "./executionEngine";
 import type { WorkerDependencies } from "./types";
 

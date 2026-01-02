@@ -89,8 +89,9 @@ describe("Performance Tracker", () => {
 		const testOp = snapshot.ops["test-op"];
 		expect(testOp).toBeDefined();
 		expect(testOp?.count).toBe(1);
-		expect(testOp?.ms).toBeGreaterThanOrEqual(10);
-		expect(testOp?.max).toBeGreaterThanOrEqual(10);
+		if (!testOp) throw new Error("testOp is undefined");
+		expect(Math.ceil(testOp.ms)).toBeGreaterThanOrEqual(10);
+		expect(Math.ceil(testOp.max)).toBeGreaterThanOrEqual(10);
 	});
 
 	it("should handle async operation errors and still track time", async () => {
@@ -129,7 +130,8 @@ describe("Performance Tracker", () => {
 		const queryOp = snapshot.ops.query;
 		expect(queryOp).toBeDefined();
 		expect(queryOp?.count).toBe(2);
-		expect(queryOp?.ms).toBeGreaterThanOrEqual(12); // Reduced from 15ms to account for CI timing variance
+		if (!queryOp) throw new Error("queryOp is undefined");
+		expect(Math.ceil(queryOp.ms)).toBeGreaterThanOrEqual(15);
 	});
 
 	it("should use manual start/stop timing", async () => {
@@ -147,7 +149,8 @@ describe("Performance Tracker", () => {
 		const manualOp = snapshot.ops["manual-op"];
 		expect(manualOp).toBeDefined();
 		expect(manualOp?.count).toBe(1);
-		expect(manualOp?.ms).toBeGreaterThanOrEqual(10);
+		if (!manualOp) throw new Error("manualOp is undefined");
+		expect(Math.ceil(manualOp.ms)).toBeGreaterThanOrEqual(10);
 	});
 
 	it("should track max duration for operations", async () => {
@@ -170,9 +173,10 @@ describe("Performance Tracker", () => {
 		const op = snapshot.ops.op;
 		expect(op).toBeDefined();
 		expect(op?.count).toBe(3);
-		expect(op?.ms).toBeGreaterThanOrEqual(30);
+		if (!op) throw new Error("op is undefined");
+		expect(Math.ceil(op.ms)).toBeGreaterThanOrEqual(35);
 		expect(op?.max).toBeDefined();
-		expect(op?.max).toBeGreaterThanOrEqual(18);
+		expect(Math.ceil(op.max)).toBeGreaterThanOrEqual(20);
 	});
 
 	it("should accumulate totalMs from all operations", async () => {
@@ -185,8 +189,8 @@ describe("Performance Tracker", () => {
 
 		const snapshot = tracker.snapshot();
 
-		// Total should be at least 105ms (reduced from 110ms for CI timing variance)
-		expect(snapshot.totalMs).toBeGreaterThanOrEqual(105);
+		// Total should be at least 110ms
+		expect(Math.ceil(snapshot.totalMs)).toBeGreaterThanOrEqual(110);
 	});
 
 	it("should handle multiple different operation types", async () => {
@@ -211,7 +215,7 @@ describe("Performance Tracker", () => {
 		expect(snapshot.ops.db).toBeDefined();
 		expect(snapshot.ops.query).toBeDefined();
 		expect(snapshot.ops.render).toBeDefined();
-		expect(snapshot.totalMs).toBeGreaterThanOrEqual(37); // Reduced from 40ms for CI timing variance
+		expect(Math.ceil(snapshot.totalMs)).toBeGreaterThanOrEqual(40);
 	});
 
 	it("should return independent snapshots", () => {

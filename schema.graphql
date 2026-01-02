@@ -3319,6 +3319,11 @@ input MutationSignUpInput {
   """Postal code of the user."""
   postalCode: String
 
+  """
+  Optional reCAPTCHA token for verification (required when server-side reCAPTCHA is enabled)
+  """
+  recaptchaToken: String
+
   """The organization the user is signing up for"""
   selectedOrganization: ID!
 
@@ -4979,6 +4984,11 @@ input QuerySignInInput {
 
   """Password of the user to sign in to talawa."""
   password: String!
+
+  """
+  Optional reCAPTCHA token for verification (required when server-side reCAPTCHA is enabled)
+  """
+  recaptchaToken: String
 }
 
 """"""
@@ -5122,7 +5132,7 @@ type Tag {
   """Name of the tag."""
   name: String
 
-  """Organization the tag belong to."""
+  """Organization the tag belongs to."""
   organization: Organization
 
   """Date time at the time the tag was last updated."""
