@@ -44,18 +44,6 @@ Core features include:
 1. **talawa-plugin**: [Microkernel-based drop-in plugins for Talawa-Admin](https://github.com/PalisadoesFoundation/talawa-plugin)
 1. **talawa-docs**: [The online documentation website](https://github.com/PalisadoesFoundation/talawa-docs)
 
-## Features
-
-- **GraphQL API** with full support for queries, mutations, and subscriptions
-- **Built-in Performance Monitoring** with Server-Timing headers and metrics endpoint
-- **DataLoader Integration** for efficient batch loading and N+1 query prevention
-- **Redis Caching** with automatic performance tracking and hit/miss ratios
-- **Plugin System** for extending functionality with custom modules
-- **Role-Based Access Control** for secure multi-tenant operations
-- **Event Management** with recurring events and materialized views
-- **Real-time Chat** with WebSocket support
-- **File Upload** with MinIO integration
-
 # Documentation
 
 1. You can install the software for this repository using the steps in our [INSTALLATION.md](INSTALLATION.md) file.
@@ -70,4 +58,4 @@ Core features include:
 
 1. Visit our [YouTube Channel playlists](https://www.youtube.com/@PalisadoesOrganization/playlists) for more insights
    1. The "[Getting Started - Developers](https://www.youtube.com/watch?v=YpBUoHxEeyg&list=PLv50qHwThlJUIzscg9a80a9-HmAlmUdCF&index=1)" videos are extremely helpful for new open source contributors.
-      <- Update verification script guidance Trigger CI -->
+<- Update verification script guidance Trigger CI -->
