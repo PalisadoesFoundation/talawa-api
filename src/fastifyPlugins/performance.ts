@@ -47,6 +47,29 @@ export default fp(async function perfPlugin(app: FastifyInstance) {
 		const dbMs = Math.round(snap?.ops?.db?.ms ?? 0);
 		const cacheDesc = `hit:${snap?.cacheHits ?? 0}|miss:${snap?.cacheMisses ?? 0}`;
 
+		// Check if this is a GraphQL request with operation metadata
+		const gqlOp = (req as unknown as Record<string, unknown>)
+			._gqlOperation as
+			| { name: string; type: string; complexity: number }
+			| undefined;
+
+		// Log slow GraphQL operations
+		if (gqlOp && total >= 500) {
+			req.log.warn({
+				msg: "Slow GraphQL operation",
+				operation: gqlOp.name,
+				type: gqlOp.type,
+				complexity: gqlOp.complexity,
+				totalMs: Math.round(total),
+				dbMs,
+				cacheHits: snap?.cacheHits ?? 0,
+				cacheMisses: snap?.cacheMisses ?? 0,
+				hitRate: snap?.cacheHits
+					? snap.cacheHits / (snap.cacheHits + (snap?.cacheMisses ?? 0))
+					: 0,
+			});
+		}
+
 		// Add Server-Timing header with db, cache, and total metrics
 		reply.header(
 			"Server-Timing",

@@ -386,11 +386,36 @@ export const graphql = fastifyPlugin(async (fastify) => {
 				? operationDefinition.operation
 				: undefined;
 
+			// Extract operation name for logging and performance tracking
+			const operationName =
+				(operationDefinition &&
+					"name" in operationDefinition &&
+					operationDefinition.name?.value) ||
+				"anonymous";
+
 			// Mutations typically have a higher base cost than queries
 			// Add the configured base cost for mutations to increase their complexity score
 			if (operationType === "mutation") {
 				complexity.complexity +=
 					fastify.envConfig.API_GRAPHQL_MUTATION_BASE_COST;
+			}
+
+			// Track GraphQL operation start time and complexity
+			const perf = request.perf;
+			if (perf) {
+				// Store operation metadata for later logging
+				(request as unknown as Record<string, unknown>)._gqlOperation = {
+					name: operationName,
+					type: operationType,
+					complexity: complexity.complexity,
+				};
+
+				// Start timing the GraphQL execution
+				const gqlEnd = perf.start(
+					`graphql:${operationType}:${operationName}`,
+				);
+				// Store the end function so we can call it after execution
+				(request as unknown as Record<string, unknown>)._gqlEnd = gqlEnd;
 			}
 
 			// Get the IP address of the client making the request
@@ -447,6 +472,42 @@ export const graphql = fastifyPlugin(async (fastify) => {
 			}
 		},
 	);
+
+	// Hook to track GraphQL execution completion
+	fastify.graphql.addHook("onResolution", async (_execution, context) => {
+		const request = context.reply.request;
+		
+		// Stop timing the GraphQL execution
+		const gqlEnd = (request as unknown as Record<string, unknown>)
+			._gqlEnd as (() => void) | undefined;
+		gqlEnd?.();
+
+		// Log GraphQL operation performance for debugging
+		const gqlOp = (request as unknown as Record<string, unknown>)
+			._gqlOperation as
+			| { name: string; type: string; complexity: number }
+			| undefined;
+		
+		if (gqlOp && request.perf) {
+			const snap = request.perf.snapshot();
+			const gqlOpKey = `graphql:${gqlOp.type}:${gqlOp.name}`;
+			const gqlMs = snap.ops?.[gqlOpKey]?.ms ?? 0;
+
+			// Log detailed info for complex or slow operations
+			if (gqlOp.complexity > 100 || gqlMs > 200) {
+				request.log.info({
+					msg: "GraphQL operation completed",
+					operation: gqlOp.name,
+					type: gqlOp.type,
+					complexity: gqlOp.complexity,
+					executionMs: Math.round(gqlMs),
+					cacheHitRate: snap.cacheHits
+						? snap.cacheHits / (snap.cacheHits + snap.cacheMisses)
+						: 0,
+				});
+			}
+		}
+	});
 });
 
 export default graphql;
