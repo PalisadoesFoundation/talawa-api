@@ -1,3 +1,4 @@
+import { escapeHTML } from "~/src/utilities/sanitizer";
 import envConfig from "~/src/utilities/graphqLimits";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import { User } from "./User";
@@ -44,7 +45,7 @@ User.implement({
 					});
 				}
 
-				return parent.postalCode;
+				return escapeHTML(parent.postalCode);
 			},
 			type: "String",
 		}),
