@@ -18,48 +18,57 @@ async function leakyBucket(
 	cost: number,
 ): Promise<boolean> {
 	const redis = fastify.redis;
-	const bucket = await redis.hgetall(key);
-	let tokens: number;
-	let lastUpdate: number;
+	try {
+		const bucket = await redis.hgetall(key);
+		let tokens: number;
+		let lastUpdate: number;
 
-	if (!bucket || Object.keys(bucket).length === 0) {
-		// If bucket doesn't exist, initialize it
-		tokens = capacity;
-		lastUpdate = Date.now();
+		if (!bucket || Object.keys(bucket).length === 0) {
+			// If bucket doesn't exist, initialize it
+			tokens = capacity;
+			lastUpdate = Date.now();
 
-		// Store the initialized bucket in Redis
+			// Store the initialized bucket in Redis
+			await redis.hset(key, {
+				tokens: tokens.toString(),
+				lastUpdate: lastUpdate.toString(),
+			});
+		} else {
+			// Parse existing bucket data
+			tokens = bucket.tokens ? Number.parseInt(bucket.tokens, 10) : capacity;
+			lastUpdate = bucket.lastUpdate
+				? Number.parseInt(bucket.lastUpdate, 10)
+				: Date.now();
+		}
+		// Log leaky bucket state for debugging
+		fastify.log.debug({ tokens, lastUpdate }, "Leaky bucket state");
+		const now = Date.now();
+		const elapsed = (now - lastUpdate) / 1000;
+		// Refill tokens based on elapsed time and refill rate
+		tokens = Math.min(capacity, tokens + elapsed * refillRate);
+
+		// Check if user has enough tokens for this request
+		if (tokens < cost) {
+			return false; // Not enough tokens → reject request
+		}
+
+		tokens -= cost; // Deduct query cost
+
+		// Update Redis with new token count and timestamp
 		await redis.hset(key, {
 			tokens: tokens.toString(),
-			lastUpdate: lastUpdate.toString(),
+			lastUpdate: now.toString(),
 		});
-	} else {
-		// Parse existing bucket data
-		tokens = bucket.tokens ? Number.parseInt(bucket.tokens, 10) : capacity;
-		lastUpdate = bucket.lastUpdate
-			? Number.parseInt(bucket.lastUpdate, 10)
-			: Date.now();
+
+		return true; // Request allowed
+	} catch (error) {
+		fastify.log.error(
+			{ key, error },
+			"Leaky bucket rate limiter encountered an error",
+		);
+		// Fail open strategy: Allow request on redis error to prevent blocking legitimate traffic
+		return true;
 	}
-	// Log leaky bucket state for debugging
-	fastify.log.debug({ tokens, lastUpdate }, "Leaky bucket state");
-	const now = Date.now();
-	const elapsed = (now - lastUpdate) / 1000;
-	// Refill tokens based on elapsed time and refill rate
-	tokens = Math.min(capacity, tokens + elapsed * refillRate);
-
-	// Check if user has enough tokens for this request
-	if (tokens < cost) {
-		return false; // Not enough tokens → reject request
-	}
-
-	tokens -= cost; // Deduct query cost
-
-	// Update Redis with new token count and timestamp
-	await redis.hset(key, {
-		tokens: tokens.toString(),
-		lastUpdate: now.toString(),
-	});
-
-	return true; // Request allowed
 }
 
 export default leakyBucket;

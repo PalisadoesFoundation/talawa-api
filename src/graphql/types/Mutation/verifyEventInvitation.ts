@@ -1,4 +1,5 @@
 import { eq } from "drizzle-orm";
+import type { FastifyBaseLogger } from "fastify";
 import { z } from "zod";
 import { eventInvitationsTable } from "~/src/drizzle/tables/eventInvitations";
 import { eventsTable } from "~/src/drizzle/tables/events";
@@ -37,7 +38,7 @@ VerifyEventInvitationPreview.implement({
 	}),
 });
 
-function maskEmail(email: string) {
+function maskEmail(email: string, logger?: FastifyBaseLogger) {
 	try {
 		const [local, domain] = email.split("@");
 		if (!local || !domain) return "****@***";
@@ -46,6 +47,7 @@ function maskEmail(email: string) {
 		const last = local[local.length - 1];
 		return `${visible}***${last}@${domain}`;
 	} catch (_err) {
+		logger?.error({ err: _err }, "Error in maskEmail");
 		return "****@***";
 	}
 }
@@ -112,7 +114,7 @@ builder.mutationField("verifyEventInvitation", (t) =>
 
 			return {
 				invitationToken: invitation.invitationToken,
-				inviteeEmailMasked: maskEmail(invitation.inviteeEmail),
+				inviteeEmailMasked: maskEmail(invitation.inviteeEmail, ctx.log),
 				inviteeName: invitation.inviteeName ?? null,
 				status: invitation.status,
 				expiresAt: invitation.expiresAt

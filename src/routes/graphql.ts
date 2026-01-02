@@ -172,6 +172,7 @@ export const createContext: CreateContext = async (initialContext) => {
 				fastify.jwt.sign(payload),
 		},
 		cookie: cookieHelper,
+		id: request.id,
 		log: request.log ?? fastify.log,
 		minio: fastify.minio,
 		// attached a per-request notification service that queues notifications and can flush later
@@ -414,6 +415,7 @@ export const graphql = fastifyPlugin(async (fastify) => {
 							isAuthenticated: true,
 							user: decoded.user,
 						},
+						id: `sub-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`,
 						drizzleClient: fastify.drizzleClient,
 						envConfig: fastify.envConfig,
 						jwt: {

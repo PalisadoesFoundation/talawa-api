@@ -236,7 +236,7 @@ export function getBackgroundWorkerStatus(): {
  *
  * @returns - A promise that resolves to an object indicating the health status and any relevant details.
  */
-export async function healthCheck(): Promise<{
+export async function healthCheck(logger?: FastifyBaseLogger): Promise<{
 	status: "healthy" | "unhealthy";
 	details: Record<string, unknown>;
 }> {
@@ -258,6 +258,7 @@ export async function healthCheck(): Promise<{
 			details: status,
 		};
 	} catch (error) {
+		logger?.error(error, "backgroundWorkerService error:");
 		return {
 			status: "unhealthy",
 			details: {

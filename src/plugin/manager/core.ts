@@ -285,6 +285,7 @@ class PluginManager extends EventEmitter {
 			this.emit("plugin:loaded", pluginId);
 			return true;
 		} catch (error) {
+			console.error("core manager error:", error);
 			this.handlePluginError(pluginId, error as Error, "load");
 			return false;
 		}

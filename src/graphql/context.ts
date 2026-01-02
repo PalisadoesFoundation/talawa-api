@@ -74,6 +74,9 @@ export type ExplicitGraphQLContext = {
 	jwt: {
 		sign: (payload: ExplicitAuthenticationTokenPayload) => string;
 	};
+	/**
+	 * Transport-specific request ID (e.g. from Fastify request), used for structured logging and correlation.
+	 */
 	id?: string;
 	/**
 	 * Cookie helper for setting HTTP-Only authentication cookies.

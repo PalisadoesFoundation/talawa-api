@@ -13,7 +13,7 @@ import leakyBucket from "../../src/utilities/leakyBucket";
 describe("leakyBucket", () => {
 	let fastify: FastifyInstance;
 	let redisMock: { hgetall: Mock; hset: Mock };
-	let logMock: { debug: Mock };
+	let logMock: { debug: Mock; error: Mock };
 
 	beforeEach(() => {
 		// Mock Redis
@@ -25,6 +25,7 @@ describe("leakyBucket", () => {
 		// Mock Logger
 		logMock = {
 			debug: vi.fn(),
+			error: vi.fn(),
 		};
 
 		fastify = {
@@ -58,7 +59,13 @@ describe("leakyBucket", () => {
 				lastUpdate: expect.any(String),
 			}),
 		);
-		expect(logMock.debug).toHaveBeenCalled();
+		expect(logMock.debug).toHaveBeenCalledWith(
+			expect.objectContaining({
+				tokens: expect.any(Number),
+				lastUpdate: expect.any(Number),
+			}),
+			"Leaky bucket state",
+		);
 	});
 
 	it("should refill tokens based on elapsed time", async () => {
@@ -174,5 +181,133 @@ describe("leakyBucket", () => {
 				lastUpdate: now.toString(),
 			}),
 		);
+	});
+
+	describe("Boundary Values", () => {
+		it("should reject all requests when capacity is 0", async () => {
+			redisMock.hgetall.mockResolvedValue(null);
+			const result = await leakyBucket(fastify, "key", 0, 1, 1);
+			expect(result).toBe(false);
+		});
+
+		it("should never refill tokens when refillRate is 0", async () => {
+			const capacity = 10;
+			const key = "test-key";
+			const now = 1000000;
+
+			vi.setSystemTime(now);
+
+			// Start with 1 token, long time elapsed
+			redisMock.hgetall.mockResolvedValue({
+				tokens: "1",
+				lastUpdate: (now - 100000).toString(),
+			});
+
+			const result = await leakyBucket(fastify, key, capacity, 0, 1);
+
+			// 1 token in bucket. Refill 0. Cost 1.
+			// Should succeed once, leaving 0.
+			expect(result).toBe(true);
+
+			expect(redisMock.hset).toHaveBeenCalledWith(
+				key,
+				expect.objectContaining({
+					tokens: "0",
+					lastUpdate: now.toString(),
+				}),
+			);
+		});
+
+		it("should always succeed (token count unchanged) when cost is 0", async () => {
+			const capacity = 10;
+			const key = "test-key";
+			const now = 1000000;
+			vi.setSystemTime(now);
+
+			redisMock.hgetall.mockResolvedValue({
+				tokens: "5",
+				lastUpdate: now.toString(),
+			});
+
+			const result = await leakyBucket(fastify, key, capacity, 1, 0);
+
+			expect(result).toBe(true);
+			expect(redisMock.hset).toHaveBeenCalledWith(
+				key,
+				expect.objectContaining({
+					tokens: "5", // 5 - 0 = 5
+					lastUpdate: now.toString(),
+				}),
+			);
+		});
+
+		it("should handle negative capacity (treat as 0/small max)", async () => {
+			// If capacity is negative, logic `Math.min(capacity, ...)` forces tokens to be negative or low.
+			// Math.min(-5, ...) -> -5.
+			// -5 < cost(1) -> reject.
+			redisMock.hgetall.mockResolvedValue(null);
+			const result = await leakyBucket(fastify, "key", -5, 1, 1);
+			expect(result).toBe(false);
+		});
+
+		it("should handle negative refillRate (deplete tokens over time)", async () => {
+			const now = 1000000;
+			vi.setSystemTime(now);
+			redisMock.hgetall.mockResolvedValue({
+				tokens: "10",
+				lastUpdate: (now - 1000).toString(), // 1s ago
+			});
+			// Refill -1 per sec. 1s elapsed. 10 + (-1) = 9.
+			const result = await leakyBucket(fastify, "key", 10, -1, 1);
+			expect(result).toBe(true);
+			expect(redisMock.hset).toHaveBeenCalledWith(
+				"key",
+				expect.objectContaining({
+					tokens: "8", // 9 - 1 = 8
+				}),
+			);
+		});
+
+		it("should handle extremely large values correctly", async () => {
+			const huge = Number.MAX_SAFE_INTEGER;
+			const now = 1000000;
+			vi.setSystemTime(now);
+			redisMock.hgetall.mockResolvedValue({
+				tokens: huge.toString(),
+				lastUpdate: now.toString(),
+			});
+
+			const result = await leakyBucket(fastify, "key", huge, 1, 1);
+			expect(result).toBe(true);
+			// huge - 1
+			expect(redisMock.hset).toHaveBeenCalledWith(
+				"key",
+				expect.objectContaining({
+					tokens: (huge - 1).toString(),
+				}),
+			);
+		});
+	});
+
+	describe("Error Handling", () => {
+		it("should handle Redis hgetall failure gracefully (allow request)", async () => {
+			const error = new Error("Redis connection failed");
+			redisMock.hgetall.mockRejectedValue(error);
+
+			const result = await leakyBucket(fastify, "key", 10, 1, 1);
+
+			expect(result).toBe(true); // Fail open
+			expect(logMock.debug).not.toHaveBeenCalled(); // Should not reach debug log
+			// We might expect an error log if implemented
+		});
+
+		it("should handle Redis hset failure gracefully (allow request)", async () => {
+			redisMock.hgetall.mockResolvedValue(null);
+			redisMock.hset.mockRejectedValue(new Error("Write failed"));
+
+			const result = await leakyBucket(fastify, "key", 10, 1, 1);
+
+			expect(result).toBe(true); // Fail open
+		});
 	});
 });

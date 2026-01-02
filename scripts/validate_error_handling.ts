@@ -674,22 +674,46 @@ export class ErrorHandlingValidator {
 	}
 
 	public hasProperErrorHandling(catchBody: string): boolean {
+		// Use meaningfulCode (comments removed) for strict matching to avoid false positives from commented-out code
+		const meaningfulCode = catchBody
+			.replace(/\/\/.*$/gm, "") // Remove single-line comments
+			.replace(/\/\*[\s\S]*?\*\//g, "") // Remove multi-line comments
+			.trim();
+
+		// If the block is effectively empty (only whitespace/comments), it's already caught by "isEmpty" check elsewhere.
+		if (meaningfulCode.length === 0) {
+			return false;
+		}
+
+		// Negative detection: Explicitly reject silent returns which swallow errors
+		// Anchored to ensure this is the ONLY code in the catch block
+		const improperHandlingPatterns = [
+			/^return\s*(?:null|undefined)?\s*(?:;|$|})$/, // return; return null; return undefined;
+		];
+
+		if (
+			improperHandlingPatterns.some((pattern) => pattern.test(meaningfulCode))
+		) {
+			return false;
+		}
+
 		// Check for proper error handling patterns
 		// We prioritize "definitive" actions that ensure the error is not swallowed silently.
+		// Absence of any match here is treated as improper handling.
 		const properHandlingPatterns = [
 			// 1. Re-throwing
 			/throw\s+/,
 
 			// 2. Logging (Explicit logger calls)
-			/\.log\s*\(/,
-			/\.error\s*\(/,
-			/\.warn\s*\(/,
-			/\.info\s*\(/,
-			/\.debug\s*\(/,
+			/(?:\?\.|\.)log\s*\(/,
+			/(?:\?\.|\.)error\s*\(/,
+			/(?:\?\.|\.)warn\s*\(/,
+			/(?:\?\.|\.)info\s*\(/,
+			/(?:\?\.|\.)debug\s*\(/,
 			/console\s*\.\s*log/,
 			/console\s*\.\s*error/,
 			/console\s*\.\s*warn/,
-			/logger\s*\./,
+			/logger\s*(?:\?\.|\.)/,
 			/log\s*\(/, // Generic log function calls
 
 			// 3. Process control
@@ -708,6 +732,7 @@ export class ErrorHandlingValidator {
 			// 6. Library specific handling
 			/addIssue\s*\(/, // Zod
 			/reject\w*\s*\(/, // Promises
+			/handlePluginError\s*\(/, // Plugin Lifecycle
 
 			// 7. Returns
 			// Must return a new Error or a process result, not just generic return
@@ -716,18 +741,10 @@ export class ErrorHandlingValidator {
 			/return\s+reject\w*/, // return reject(...)
 		];
 
-		// Also check if the catch body has meaningful code (not just comments)
-		const meaningfulCode = catchBody
-			.replace(/\/\/.*$/gm, "") // Remove single-line comments
-			.replace(/\/\*[\s\S]*?\*\//g, "") // Remove multi-line comments
-			.trim();
-
-		// If there's meaningful code, check if it matches proper handling patterns
-		if (meaningfulCode.length > 0) {
-			return properHandlingPatterns.some((pattern) => pattern.test(catchBody));
-		}
-
-		return false;
+		// Check meaningfulCode against proper patterns
+		return properHandlingPatterns.some((pattern) =>
+			pattern.test(meaningfulCode),
+		);
 	}
 
 	public getLineNumberFromPosition(content: string, position: number): number {

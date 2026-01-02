@@ -105,6 +105,7 @@ export async function formatDatabase(): Promise<boolean> {
 
 		return true;
 	} catch (_error) {
+		console.error("dbManagement/helpers error:", _error);
 		return false;
 	}
 }

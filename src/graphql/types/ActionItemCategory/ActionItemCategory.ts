@@ -136,7 +136,7 @@ builder.queryField("categoriesByIds", (t) =>
 					if (issues.length > 0) {
 						throw new TalawaGraphQLError({
 							extensions: {
-								code: "forbidden_action_on_arguments_associated_resources",
+								code: ErrorCode.FORBIDDEN_ACTION_ON_ARGUMENTS_ASSOCIATED_RESOURCES,
 								issues,
 							},
 						});

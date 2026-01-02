@@ -226,6 +226,7 @@ export async function installPluginDependencies(
 					: installResult.stdout,
 		};
 	} catch (error) {
+		console.warn("pluginDependencyInstaller error:", error);
 		const errorMessage =
 			error instanceof Error ? error.message : "Unknown error";
 		logger?.error?.(
