@@ -5,7 +5,7 @@ on:
     types: [submitted, edited, dismissed]
 
 jobs:
-  coderabbit-review-check:
+  Check-CodeRabbit-Approval:
     uses: PalisadoesFoundation/.github/.github/workflows/pr-review-coderabbit.yml@main
     secrets:
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

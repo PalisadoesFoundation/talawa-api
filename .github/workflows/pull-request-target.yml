@@ -4,7 +4,7 @@ on:
   pull_request_target:
 
 jobs:
-  pr-policy:
+  PR-Greeting:
     uses: PalisadoesFoundation/.github/.github/workflows/pr-target-policy.yml@main
     secrets:
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

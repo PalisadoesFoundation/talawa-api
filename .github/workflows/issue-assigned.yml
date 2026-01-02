@@ -15,5 +15,5 @@ on:
     types: ['assigned']
 
 jobs:
-  cleanup-label:
+  Remove-Unapproved-Label:
     uses: PalisadoesFoundation/.github/.github/workflows/issue-assigned.yml@main
