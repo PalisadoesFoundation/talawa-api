@@ -1,5 +1,5 @@
-import { escapeHTML } from "~/src/utilities/sanitizer";
 import envConfig from "~/src/utilities/graphqLimits";
+import { escapeHTML } from "~/src/utilities/sanitizer";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import { User } from "./User";
 
