@@ -6,7 +6,7 @@ import {
 	defaultGraphQLConnectionArgumentsSchema,
 	transformDefaultGraphQLConnectionArguments,
 	transformToDefaultGraphQLConnection,
-} from "~/src/utilities/defaultGraphQLConnection";
+} from "~/src/utilities/graphqlConnection";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import { Organization } from "./Organization";
 

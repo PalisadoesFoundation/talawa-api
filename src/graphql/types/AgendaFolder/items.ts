@@ -5,12 +5,12 @@ import {
 	agendaItemsTableInsertSchema,
 } from "~/src/drizzle/tables/agendaItems";
 import { AgendaItem } from "~/src/graphql/types/AgendaItem/AgendaItem";
+import envConfig from "~/src/utilities/graphqLimits";
 import {
 	defaultGraphQLConnectionArgumentsSchema,
 	transformDefaultGraphQLConnectionArguments,
 	transformToDefaultGraphQLConnection,
-} from "~/src/utilities/defaultGraphQLConnection";
-import envConfig from "~/src/utilities/graphqLimits";
+} from "~/src/utilities/graphqlConnection";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import { AgendaFolder } from "./AgendaFolder";
 export const itemsArgumentsSchema = defaultGraphQLConnectionArgumentsSchema

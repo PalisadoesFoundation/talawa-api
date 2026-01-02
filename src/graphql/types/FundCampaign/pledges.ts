@@ -5,12 +5,12 @@ import {
 	fundCampaignPledgesTableInsertSchema,
 } from "~/src/drizzle/tables/fundCampaignPledges";
 import { FundCampaignPledge } from "~/src/graphql/types/FundCampaignPledge/FundCampaignPledge";
+import envConfig from "~/src/utilities/graphqLimits";
 import {
 	defaultGraphQLConnectionArgumentsSchema,
 	transformDefaultGraphQLConnectionArguments,
 	transformToDefaultGraphQLConnection,
-} from "~/src/utilities/defaultGraphQLConnection";
-import envConfig from "~/src/utilities/graphqLimits";
+} from "~/src/utilities/graphqlConnection";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import { FundCampaign } from "./FundCampaign";
 

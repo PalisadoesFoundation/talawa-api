@@ -7,12 +7,12 @@ import {
 } from "~/src/drizzle/tables/actionItemCategories";
 import type { GraphQLContext } from "~/src/graphql/context";
 import { ActionItemCategory } from "~/src/graphql/types/ActionItemCategory/ActionItemCategory";
+import envConfig from "~/src/utilities/graphqLimits";
 import {
 	defaultGraphQLConnectionArgumentsSchema,
 	transformDefaultGraphQLConnectionArguments,
 	transformToDefaultGraphQLConnection,
-} from "~/src/utilities/defaultGraphQLConnection";
-import envConfig from "~/src/utilities/graphqLimits";
+} from "~/src/utilities/graphqlConnection";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import type { Organization as OrganizationType } from "./Organization";
 import { Organization } from "./Organization";

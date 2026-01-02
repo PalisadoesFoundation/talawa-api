@@ -8,12 +8,12 @@ import {
 } from "~/src/drizzle/tables/actionItems";
 import type { GraphQLContext } from "~/src/graphql/context";
 import { ActionItem } from "~/src/graphql/types/ActionItem/ActionItem";
+import envConfig from "~/src/utilities/graphqLimits";
 import {
 	defaultGraphQLConnectionArgumentsSchema,
 	transformDefaultGraphQLConnectionArguments,
 	transformToDefaultGraphQLConnection,
-} from "~/src/utilities/defaultGraphQLConnection";
-import envConfig from "~/src/utilities/graphqLimits";
+} from "~/src/utilities/graphqlConnection";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import type { Event as EventType } from "./Event";
 import { Event } from "./Event";
@@ -193,7 +193,6 @@ export const resolveActionItemsPaginated = async (
 				if (exception.assignedAt !== null) {
 					actionItem.assignedAt = exception.assignedAt;
 				}
-
 				// Mark this action item as showing instance-specific exception data
 				(actionItem as { isInstanceException?: boolean }).isInstanceException =
 					true;

@@ -4,7 +4,7 @@ import {
 	type ParsedDefaultGraphQLConnectionArguments,
 	transformDefaultGraphQLConnectionArguments,
 	transformToDefaultGraphQLConnection,
-} from "../../src/utilities/defaultGraphQLConnection";
+} from "../../src/utilities/graphqlConnection";
 
 afterEach(() => {
 	vi.clearAllMocks();

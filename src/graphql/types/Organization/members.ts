@@ -20,14 +20,14 @@ import {
 } from "~/src/drizzle/tables/organizationMemberships";
 import { usersTable } from "~/src/drizzle/tables/users";
 import { User } from "~/src/graphql/types/User/User";
+import envConfig from "~/src/utilities/graphqLimits";
 import {
 	createGraphQLConnectionWithWhereSchema,
 	type defaultGraphQLConnectionArgumentsSchema,
 	type ParsedDefaultGraphQLConnectionArgumentsWithWhere,
 	transformGraphQLConnectionArgumentsWithWhere,
 	transformToDefaultGraphQLConnection,
-} from "~/src/utilities/defaultGraphQLConnection";
-import envConfig from "~/src/utilities/graphqLimits";
+} from "~/src/utilities/graphqlConnection";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import { MembersWhereInput } from "../../inputs/QueryOrganizationInput";
 import { Organization } from "./Organization";
