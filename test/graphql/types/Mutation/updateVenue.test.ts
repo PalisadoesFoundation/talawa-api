@@ -1,7 +1,9 @@
 import { faker } from "@faker-js/faker";
+import { eq } from "drizzle-orm";
 import { graphql } from "gql.tada";
 import type { GraphQLError } from "graphql";
 import { afterEach, expect, suite, test, vi } from "vitest";
+import { usersTable } from "~/src/drizzle/tables/users";
 import type {
 	TalawaGraphQLFormattedError,
 	UnauthenticatedExtensions,
@@ -10,8 +12,6 @@ import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import { assertToBeNonNullish } from "../../../helpers";
 import { server } from "../../../server";
 import { mercuriusClient } from "../client";
-import { usersTable } from "~/src/drizzle/tables/users";
-import { eq } from "drizzle-orm";
 
 const Mutation_updateVenue = graphql(`
   mutation UpdateVenue($input: MutationUpdateVenueInput!) {
@@ -1661,16 +1661,21 @@ suite("Mutation field updateVenue", () => {
 
 	test("throws unauthenticated when current user no longer exists", async () => {
 		// Create organization and venue as admin
-		const administratorUserSignInResult = await mercuriusClient.query(Query_signIn, {
-			variables: {
-				input: {
-					emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-					password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
+		const administratorUserSignInResult = await mercuriusClient.query(
+			Query_signIn,
+			{
+				variables: {
+					input: {
+						emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
+						password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
+					},
 				},
 			},
-		});
+		);
 
-		assertToBeNonNullish(administratorUserSignInResult.data?.signIn?.authenticationToken);
+		assertToBeNonNullish(
+			administratorUserSignInResult.data?.signIn?.authenticationToken,
+		);
 
 		const createOrganizationResult = await mercuriusClient.mutate(
 			graphql(`
@@ -1732,12 +1737,16 @@ suite("Mutation field updateVenue", () => {
 
 		assertToBeNonNullish(signUpResult.data?.signUp?.authenticationToken);
 		const tempSignIn = await mercuriusClient.query(Query_signIn, {
-			variables: { input: { emailAddress: tempEmail, password: "Passw0rd!23" } },
+			variables: {
+				input: { emailAddress: tempEmail, password: "Passw0rd!23" },
+			},
 		});
 		assertToBeNonNullish(tempSignIn.data?.signIn?.authenticationToken);
 
 		// Remove user record from DB so lookup returns undefined
-		await server.drizzleClient.delete(usersTable).where(eq(usersTable.emailAddress, tempEmail));
+		await server.drizzleClient
+			.delete(usersTable)
+			.where(eq(usersTable.emailAddress, tempEmail));
 
 		const res = await mercuriusClient.mutate(Mutation_updateVenue, {
 			headers: {
@@ -1753,22 +1762,30 @@ suite("Mutation field updateVenue", () => {
 
 		expect(res.data?.updateVenue).toEqual(null);
 		expect(res.errors).toBeDefined();
-		expect(res.errors!.length).toBeGreaterThan(0);
+		if (!res.errors) {
+			throw new Error("Errors not found");
+		}
+		expect(res.errors.length).toBeGreaterThan(0);
 		expect(res.errors?.[0]?.extensions.code).toBe("unauthenticated");
 	});
 
 	test("throws unexpected when update affects no rows", async () => {
 		// create org + venue
-		const administratorUserSignInResult = await mercuriusClient.query(Query_signIn, {
-			variables: {
-				input: {
-					emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-					password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
+		const administratorUserSignInResult = await mercuriusClient.query(
+			Query_signIn,
+			{
+				variables: {
+					input: {
+						emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
+						password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
+					},
 				},
 			},
-		});
+		);
 
-		assertToBeNonNullish(administratorUserSignInResult.data?.signIn?.authenticationToken);
+		assertToBeNonNullish(
+			administratorUserSignInResult.data?.signIn?.authenticationToken,
+		);
 
 		const createOrganizationResult = await mercuriusClient.mutate(
 			graphql(`
@@ -1792,19 +1809,22 @@ suite("Mutation field updateVenue", () => {
 		assertToBeNonNullish(createOrganizationResult.data?.createOrganization?.id);
 		const orgId = createOrganizationResult.data.createOrganization.id;
 
-		const createVenueResult = await mercuriusClient.mutate(Mutation_createVenue, {
-			headers: {
-				authorization: `bearer ${administratorUserSignInResult.data.signIn.authenticationToken}`,
-			},
-			variables: {
-				input: {
-					organizationId: orgId,
-					name: `Venue_${faker.string.ulid()}`,
-					description: faker.lorem.sentence(),
-					capacity: 10,
+		const createVenueResult = await mercuriusClient.mutate(
+			Mutation_createVenue,
+			{
+				headers: {
+					authorization: `bearer ${administratorUserSignInResult.data.signIn.authenticationToken}`,
+				},
+				variables: {
+					input: {
+						organizationId: orgId,
+						name: `Venue_${faker.string.ulid()}`,
+						description: faker.lorem.sentence(),
+						capacity: 10,
+					},
 				},
 			},
-		});
+		);
 
 		assertToBeNonNullish(createVenueResult.data?.createVenue?.id);
 		createdResources.venueIds.push(createVenueResult.data.createVenue.id);
@@ -1812,18 +1832,20 @@ suite("Mutation field updateVenue", () => {
 
 		// Mock transaction to simulate update returning no rows
 		const originalTransaction = server.drizzleClient.transaction;
-		server.drizzleClient.transaction = vi.fn().mockImplementation(async (handler) => {
-			const fakeTx = {
-				update: () => ({
-					set: () => ({
-						where: () => ({
-							returning: async () => [undefined],
+		server.drizzleClient.transaction = vi
+			.fn()
+			.mockImplementation(async (handler) => {
+				const fakeTx = {
+					update: () => ({
+						set: () => ({
+							where: () => ({
+								returning: async () => [undefined],
+							}),
 						}),
 					}),
-				}),
-			};
-			return handler(fakeTx as any);
-		});
+				};
+				return handler(fakeTx as unknown as Parameters<typeof handler>[0]);
+			});
 
 		try {
 			const res = await mercuriusClient.mutate(Mutation_updateVenue, {
@@ -1835,7 +1857,7 @@ suite("Mutation field updateVenue", () => {
 
 			expect(res.data?.updateVenue).toEqual(null);
 			expect(res.errors).toBeDefined();
-			expect(res.errors!.length).toBeGreaterThan(0);
+			expect(res.errors?.length).toBeGreaterThan(0);
 			expect(res.errors?.[0]?.extensions.code).toBe("unexpected");
 		} finally {
 			server.drizzleClient.transaction = originalTransaction;
