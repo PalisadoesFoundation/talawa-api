@@ -7,10 +7,10 @@ AgendaItem.implement({
 	fields: (t) => ({
 		attachment: t.field({
 			description: "Attachments for the agenda item",
-			resolve: async (parents, _args, ctx) => {
+			resolve: async (parent, _args, ctx) => {
 				const existingAttachments =
 					await ctx.drizzleClient.query.agendaItemAttachmentsTable.findMany({
-						where: eq(agendaItemAttachmentsTable.agendaItemId, parents.id),
+						where: eq(agendaItemAttachmentsTable.agendaItemId, parent.id),
 					});
 				return existingAttachments;
 			},

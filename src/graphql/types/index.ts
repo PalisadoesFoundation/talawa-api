@@ -38,5 +38,5 @@ import "./VenueAttachment/index";
 import "./Notification/index";
 import "./EventVolunteerMembership/index";
 import "./EventInvitation/index";
-import "./AgendaItemAttachment.ts";
-import "./AgendaItemUrl.ts";
+import "./AgendaItemAttachment";
+import "./AgendaItemUrl";

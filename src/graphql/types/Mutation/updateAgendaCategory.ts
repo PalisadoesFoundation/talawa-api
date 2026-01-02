@@ -54,7 +54,7 @@ builder.mutationField("updateAgendaCategory", (t) =>
 
 			const currentUserId = ctx.currentClient.user.id;
 
-			const [currentUser, existingAgendaFolder] = await Promise.all([
+			const [currentUser, existingAgendaCategory] = await Promise.all([
 				ctx.drizzleClient.query.usersTable.findFirst({
 					columns: {
 						role: true,
@@ -101,7 +101,7 @@ builder.mutationField("updateAgendaCategory", (t) =>
 				});
 			}
 
-			if (existingAgendaFolder === undefined) {
+			if (existingAgendaCategory === undefined) {
 				throw new TalawaGraphQLError({
 					extensions: {
 						code: "arguments_associated_resources_not_found",
@@ -115,7 +115,7 @@ builder.mutationField("updateAgendaCategory", (t) =>
 			}
 
 			const currentUserOrganizationMembership =
-				existingAgendaFolder.event.organization.membershipsWhereOrganization[0];
+				existingAgendaCategory.event.organization.membershipsWhereOrganization[0];
 
 			if (
 				currentUser.role !== "administrator" &&
@@ -134,7 +134,7 @@ builder.mutationField("updateAgendaCategory", (t) =>
 				});
 			}
 
-			const [updatedAgendaFolder] = await ctx.drizzleClient
+			const [updatedAgendaCategory] = await ctx.drizzleClient
 				.update(agendaCategoriesTable)
 				.set({
 					name: parsedArgs.input.name,
@@ -144,8 +144,8 @@ builder.mutationField("updateAgendaCategory", (t) =>
 				.where(eq(agendaCategoriesTable.id, parsedArgs.input.id))
 				.returning();
 
-			// Updated agenda folder not being returned means that either it was deleted or its `id` column was changed by external entities before this update operation could take place.
-			if (updatedAgendaFolder === undefined) {
+			// Updated agenda category not being returned means that either it was deleted or its `id` column was changed by external entities before this update operation could take place.
+			if (updatedAgendaCategory === undefined) {
 				throw new TalawaGraphQLError({
 					extensions: {
 						code: "unexpected",
@@ -153,7 +153,7 @@ builder.mutationField("updateAgendaCategory", (t) =>
 				});
 			}
 
-			return updatedAgendaFolder;
+			return updatedAgendaCategory;
 		},
 		type: AgendaCategory,
 	}),

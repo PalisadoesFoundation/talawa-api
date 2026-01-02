@@ -8,17 +8,17 @@ export const AgendaCategory =
 
 AgendaCategory.implement({
 	description:
-		"Agenda folders are used to contain either collections of agenda items or collections of agenda folders but not both at the same time. Together with agenda items they constitute the agenda for an event.",
+		"Agenda Categories for the agenda items",
 	fields: (t) => ({
 		description: t.exposeString("description", {
-			description: "Custom information about the agenda folder.",
+			description: "Custom information about the agenda categories.",
 		}),
 		id: t.exposeID("id", {
-			description: "Global identifier of the agenda folder.",
+			description: "Global identifier of the agenda categories.",
 			nullable: false,
 		}),
 		name: t.exposeString("name", {
-			description: "Name of the agenda folder.",
+			description: "Name of the agenda categories.",
 		}),
 		isDefaultCategory: t.exposeBoolean("isDefaultCategory", {
 			description: "Boolean to tell if agenda category is default or not",

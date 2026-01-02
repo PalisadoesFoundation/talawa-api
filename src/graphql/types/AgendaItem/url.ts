@@ -2,15 +2,17 @@ import { eq } from "drizzle-orm";
 import { agendaItemUrlTable } from "~/src/drizzle/tables/agendaItemUrls";
 import { AgendaItemUrl } from "../AgendaItemUrl.ts/AgendaItemUrl";
 import { AgendaItem } from "./AgendaItem";
+import envConfig from "~/src/utilities/graphqLimits";
 
 AgendaItem.implement({
 	fields: (t) => ({
 		url: t.field({
 			description: "Url for the agenda item",
-			resolve: async (parents, _args, ctx) => {
+			complexity: envConfig.API_GRAPHQL_OBJECT_FIELD_COST,
+			resolve: async (parent, _args, ctx) => {
 				const existingUrl =
 					await ctx.drizzleClient.query.agendaItemUrlTable.findMany({
-						where: eq(agendaItemUrlTable.agendaItemId, parents.id),
+						where: eq(agendaItemUrlTable.agendaItemId, parent.id),
 					});
 				return existingUrl;
 			},

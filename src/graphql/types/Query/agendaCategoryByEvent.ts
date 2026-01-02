@@ -7,15 +7,10 @@ import { AgendaCategory } from "~/src/graphql/types/AgendaCategories/AgendaCateg
 import envConfig from "~/src/utilities/graphqLimits";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 
-const queryGetAgendaItemByEventIdArgumentsSchema = z.object({
+const queryGetAgendaCategoryByEventIdArgumentsSchema = z.object({
 	eventId: z.string().uuid(),
 });
 
-/**
- * GraphQL query to get all event registrants for a specific event.
- * Handles both standalone events and recurring event instances.
- * Only returns attendees who have registered for the event.
- */
 builder.queryField("agendaCategoryByEventId", (t) =>
 	t.field({
 		args: {
@@ -33,7 +28,7 @@ builder.queryField("agendaCategoryByEventId", (t) =>
 				data: parsedArgs,
 				error,
 				success,
-			} = queryGetAgendaItemByEventIdArgumentsSchema.safeParse(args);
+			} = queryGetAgendaCategoryByEventIdArgumentsSchema.safeParse(args);
 
 			if (!success) {
 				throw new TalawaGraphQLError({
@@ -67,7 +62,7 @@ builder.queryField("agendaCategoryByEventId", (t) =>
 				}
 			}
 
-			// Get all AgendaItems for the event
+			// Get all AgendaCategory for the event
 			const eventAgendas =
 				await ctx.drizzleClient.query.agendaCategoriesTable.findMany({
 					where: eq(agendaCategoriesTable.eventId, parsedArgs.eventId),

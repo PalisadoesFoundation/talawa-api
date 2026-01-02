@@ -120,10 +120,11 @@ builder.mutationField("deleteAgendaFolder", (t) =>
 			if (existingAgendaFolder.isDefaultFolder) {
 				throw new TalawaGraphQLError({
 					extensions: {
-						code: "arguments_associated_resources_not_found",
+						code: "forbidden_action_on_arguments_associated_resources",
 						issues: [
 							{
 								argumentPath: ["input", "id"],
+								message: "This agenda folder cannot be delete.",
 							},
 						],
 					},
@@ -162,9 +163,9 @@ builder.mutationField("deleteAgendaFolder", (t) =>
 
 				if (!defaultFolder) {
 					throw new TalawaGraphQLError({
+						message: "Default agenda folder not found.",
 						extensions: {
 							code: "unexpected",
-							message: "Default agenda folder not found.",
 						},
 					});
 				}
