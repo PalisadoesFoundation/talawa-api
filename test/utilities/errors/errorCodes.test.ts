@@ -24,6 +24,7 @@ describe("ErrorCode enum", () => {
 			"database_error",
 			"external_service_error",
 			"arguments_associated_resources_not_found",
+			"forbidden_action_on_arguments_associated_resources",
 		];
 
 		expectedCodes.forEach((code) => {
@@ -50,6 +51,11 @@ describe("ERROR_CODE_TO_HTTP_STATUS mapping", () => {
 		expect(ERROR_CODE_TO_HTTP_STATUS[ErrorCode.INSUFFICIENT_PERMISSIONS]).toBe(
 			403,
 		);
+		expect(
+			ERROR_CODE_TO_HTTP_STATUS[
+				ErrorCode.FORBIDDEN_ACTION_ON_ARGUMENTS_ASSOCIATED_RESOURCES
+			],
+		).toBe(403);
 	});
 
 	it("should map validation errors to 400", () => {
@@ -62,6 +68,11 @@ describe("ERROR_CODE_TO_HTTP_STATUS mapping", () => {
 		expect(ERROR_CODE_TO_HTTP_STATUS[ErrorCode.NOT_FOUND]).toBe(404);
 		expect(ERROR_CODE_TO_HTTP_STATUS[ErrorCode.ALREADY_EXISTS]).toBe(409);
 		expect(ERROR_CODE_TO_HTTP_STATUS[ErrorCode.CONFLICT]).toBe(409);
+		expect(
+			ERROR_CODE_TO_HTTP_STATUS[
+				ErrorCode.ARGUMENTS_ASSOCIATED_RESOURCES_NOT_FOUND
+			],
+		).toBe(404);
 	});
 
 	it("should map rate limiting to 429", () => {

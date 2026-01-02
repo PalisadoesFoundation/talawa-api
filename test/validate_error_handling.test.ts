@@ -145,16 +145,32 @@ describe("ErrorHandlingValidator", () => {
 			expect(blocks[0]?.hasImproperHandling).toBe(true);
 		});
 
+		it("should detect weak error handling as improper", () => {
+			const weakCases = [
+				`catch (e) { return null; }`,
+				`catch (e) { x = e; }`,
+				`catch (e) { result = { error: e }; }`,
+				`catch (e) { return someVar; }`,
+				`catch (e) { x = new Object(); }`,
+				`catch (e) { return; }`,
+			];
+
+			weakCases.forEach((code) => {
+				const blocks = validator.findCatchBlocks(code);
+				expect(blocks[0]?.hasImproperHandling).toBe(true);
+			});
+		});
+
 		it("should recognize proper handling patterns", () => {
 			const properCases = [
 				`catch (e) { throw e; }`,
 				`catch (e) { console.error(e); }`,
 				`catch (e) { logger.error(e); }`,
-				`catch (e) { return null; }`,
 				`catch (e) { process.exit(1); }`,
 				`catch (e) { throw new TalawaGraphQLError(e); }`,
-				`catch (e) { result = { error: e }; }`,
-				`catch (e) { currentClient = { isAuthenticated: false }; }`,
+				`catch (e) { return new Error(e); }`,
+				`catch (e) { error = new Error(e); }`,
+				`catch (e) { error.message = "failed"; }`,
 			];
 
 			properCases.forEach((code) => {

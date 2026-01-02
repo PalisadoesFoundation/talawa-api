@@ -54,7 +54,7 @@ export const resolveGetMyPledgesForCampaign = async (
 	if (!pledges.length) {
 		throw new TalawaGraphQLError({
 			extensions: {
-				code: ErrorCode.NOT_FOUND,
+				code: ErrorCode.ARGUMENTS_ASSOCIATED_RESOURCES_NOT_FOUND,
 			},
 		});
 	}

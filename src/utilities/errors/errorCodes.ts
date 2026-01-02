@@ -60,6 +60,9 @@ export enum ErrorCode {
 	DATABASE_ERROR = "database_error",
 	/** External service is unavailable (HTTP 502) */
 	EXTERNAL_SERVICE_ERROR = "external_service_error",
+
+	/** Action is failing because the user is not allowed to perform it on the resources associated to the provided arguments (HTTP 403) */
+	FORBIDDEN_ACTION_ON_ARGUMENTS_ASSOCIATED_RESOURCES = "forbidden_action_on_arguments_associated_resources",
 }
 
 /**
@@ -81,6 +84,7 @@ export const ERROR_CODE_TO_HTTP_STATUS: Record<ErrorCode, number> = {
 
 	[ErrorCode.UNAUTHORIZED]: 403,
 	[ErrorCode.INSUFFICIENT_PERMISSIONS]: 403,
+	[ErrorCode.FORBIDDEN_ACTION_ON_ARGUMENTS_ASSOCIATED_RESOURCES]: 403,
 
 	[ErrorCode.INVALID_ARGUMENTS]: 400,
 	[ErrorCode.INVALID_INPUT]: 400,

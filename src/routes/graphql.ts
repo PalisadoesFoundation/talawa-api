@@ -80,7 +80,11 @@ export const createContext: CreateContext = async (initialContext) => {
 			isAuthenticated: true,
 			user: jwtPayload.user,
 		};
-	} catch (_headerError) {
+	} catch (headerError) {
+		(request.log ?? fastify.log).debug(
+			{ error: headerError },
+			"Authorization header verification failed",
+		);
 		// If no Authorization header, try to get token from cookie (web clients)
 		const accessTokenFromCookie = request.cookies?.[COOKIE_NAMES.ACCESS_TOKEN];
 		if (accessTokenFromCookie) {
@@ -93,7 +97,11 @@ export const createContext: CreateContext = async (initialContext) => {
 					isAuthenticated: true,
 					user: jwtPayload.user,
 				};
-			} catch (_cookieError) {
+			} catch (cookieError) {
+				(request.log ?? fastify.log).debug(
+					{ error: cookieError },
+					"Cookie token verification failed",
+				);
 				currentClient = {
 					isAuthenticated: false,
 				};
@@ -515,7 +523,11 @@ export const graphql = fastifyPlugin(async (fastify) => {
 					isAuthenticated: true,
 					user: jwtPayload.user,
 				};
-			} catch (_error) {
+			} catch (error) {
+				(request.log ?? fastify.log).debug(
+					{ error },
+					"JWT verification failed in preExecution hook",
+				);
 				currentClient = {
 					isAuthenticated: false,
 				};

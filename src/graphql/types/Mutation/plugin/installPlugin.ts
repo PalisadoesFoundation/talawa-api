@@ -87,7 +87,7 @@ builder.mutationField("installPlugin", (t) =>
 				if (pluginManager) {
 					try {
 						ctx.log.info(
-							{ pluginId },
+							{ pluginId, correlationId: ctx.id },
 							"Installing plugin via lifecycle manager",
 						);
 
@@ -96,14 +96,14 @@ builder.mutationField("installPlugin", (t) =>
 
 						if (!success) {
 							ctx.log.error(
-								{ pluginId },
+								{ pluginId, correlationId: ctx.id },
 								"Plugin installation failed in lifecycle manager",
 							);
 							// Don't throw error here - plugin is marked as installed but lifecycle failed
 							// User can retry activation later
 						} else {
 							ctx.log.info(
-								{ pluginId },
+								{ pluginId, correlationId: ctx.id },
 								"Plugin installed successfully via lifecycle manager",
 							);
 						}
@@ -122,7 +122,7 @@ builder.mutationField("installPlugin", (t) =>
 				}
 				// Handle other errors
 				ctx.log.error(
-					{ error, pluginId },
+					{ error, pluginId, correlationId: ctx.id },
 					`Error during plugin installation for ${pluginId}`,
 				);
 				throw new TalawaGraphQLError({

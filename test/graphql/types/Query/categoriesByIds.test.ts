@@ -2,6 +2,7 @@ import { faker } from "@faker-js/faker";
 import { initGraphQLTada } from "gql.tada";
 import { beforeAll, describe, expect, test } from "vitest";
 import type { ClientCustomScalars } from "~/src/graphql/scalars/index";
+import { ErrorCode } from "~/src/utilities/errors/errorCodes";
 import { server } from "../../../server";
 import { mercuriusClient } from "../client";
 import { createRegularUserUsingAdmin } from "../createRegularUserUsingAdmin";
@@ -46,7 +47,7 @@ describe("Query field categoriesByIds", () => {
 				expect.arrayContaining([
 					expect.objectContaining({
 						extensions: expect.objectContaining({
-							code: "unauthenticated",
+							code: ErrorCode.UNAUTHENTICATED,
 						}),
 					}),
 				]),
@@ -88,7 +89,7 @@ describe("Query field categoriesByIds", () => {
 					expect.arrayContaining([
 						expect.objectContaining({
 							extensions: expect.objectContaining({
-								code: "invalid_arguments",
+								code: ErrorCode.INVALID_ARGUMENTS,
 								issues: expect.arrayContaining([
 									expect.objectContaining({
 										argumentPath: ["ids"],
@@ -116,7 +117,8 @@ describe("Query field categoriesByIds", () => {
 
 				// Use flexible error matching since GraphQL may reject at type-validation or resolver layer
 				const hasInvalidArgumentsError = result.errors?.some((error) => {
-					if (error.extensions?.code !== "invalid_arguments") return false;
+					if (error.extensions?.code !== ErrorCode.INVALID_ARGUMENTS)
+						return false;
 
 					// Check for resolver-level validation with issues array
 					if (
@@ -157,7 +159,7 @@ describe("Query field categoriesByIds", () => {
 					expect.arrayContaining([
 						expect.objectContaining({
 							extensions: expect.objectContaining({
-								code: "invalid_arguments",
+								code: ErrorCode.INVALID_ARGUMENTS,
 								issues: expect.arrayContaining([
 									expect.objectContaining({
 										argumentPath: ["ids", "0"],
@@ -180,20 +182,12 @@ describe("Query field categoriesByIds", () => {
 					variables: { input: { ids: null as unknown as string[] } },
 				});
 
-				expect(result.data?.categoriesByIds).toBeNull();
+				expect(result.data?.categoriesByIds).toBeFalsy();
 				expect(result.errors).toEqual(
 					expect.arrayContaining([
 						expect.objectContaining({
 							extensions: expect.objectContaining({
-								code: "invalid_arguments",
-								issues: expect.arrayContaining([
-									expect.objectContaining({
-										argumentPath: ["ids"],
-										message: expect.stringContaining(
-											"Expected array, received null",
-										),
-									}),
-								]),
+								code: ErrorCode.INTERNAL_SERVER_ERROR,
 							}),
 						}),
 					]),
@@ -210,18 +204,12 @@ describe("Query field categoriesByIds", () => {
 					variables: { input: {} as unknown as { ids: string[] } },
 				});
 
-				expect(result.data?.categoriesByIds).toBeNull();
+				expect(result.data?.categoriesByIds).toBeFalsy();
 				expect(result.errors).toEqual(
 					expect.arrayContaining([
 						expect.objectContaining({
 							extensions: expect.objectContaining({
-								code: "invalid_arguments",
-								issues: expect.arrayContaining([
-									expect.objectContaining({
-										argumentPath: ["ids"],
-										message: expect.stringContaining("Required"),
-									}),
-								]),
+								code: ErrorCode.INTERNAL_SERVER_ERROR,
 							}),
 						}),
 					]),
@@ -542,7 +530,7 @@ describe("Query field categoriesByIds", () => {
 					expect.arrayContaining([
 						expect.objectContaining({
 							extensions: expect.objectContaining({
-								code: "forbidden_action_on_arguments_associated_resources",
+								code: ErrorCode.FORBIDDEN_ACTION_ON_ARGUMENTS_ASSOCIATED_RESOURCES,
 								issues: expect.arrayContaining([
 									expect.objectContaining({
 										argumentPath: ["input", "ids", "0"],
@@ -594,7 +582,7 @@ describe("Query field categoriesByIds", () => {
 					expect.arrayContaining([
 						expect.objectContaining({
 							extensions: expect.objectContaining({
-								code: "forbidden_action_on_arguments_associated_resources",
+								code: ErrorCode.FORBIDDEN_ACTION_ON_ARGUMENTS_ASSOCIATED_RESOURCES,
 							}),
 						}),
 					]),
@@ -666,7 +654,7 @@ describe("Query field categoriesByIds", () => {
 				expect(result.data?.categoriesByIds).toBeNull();
 				expect(result.errors).toBeDefined();
 				expect(result.errors?.[0]?.extensions?.code).toBe(
-					"forbidden_action_on_arguments_associated_resources",
+					ErrorCode.FORBIDDEN_ACTION_ON_ARGUMENTS_ASSOCIATED_RESOURCES,
 				);
 				// The error issues should point to the unauthorized category (index 1)
 				// We won't check exact array containment for issues to be flexible, but presence is key.

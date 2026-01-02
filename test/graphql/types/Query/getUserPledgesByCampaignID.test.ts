@@ -234,7 +234,7 @@ describe("Query Resolver - getMyPledgesForCampaign", () => {
 				resolveGetMyPledgesForCampaign({}, { campaignId }, ctx),
 			).rejects.toMatchObject({
 				extensions: {
-					code: "not_found",
+					code: "arguments_associated_resources_not_found",
 				},
 			});
 

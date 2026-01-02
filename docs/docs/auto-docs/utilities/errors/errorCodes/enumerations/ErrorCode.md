@@ -91,6 +91,16 @@ External service is unavailable (HTTP 502)
 
 ***
 
+### FORBIDDEN\_ACTION\_ON\_ARGUMENTS\_ASSOCIATED\_RESOURCES
+
+> **FORBIDDEN\_ACTION\_ON\_ARGUMENTS\_ASSOCIATED\_RESOURCES**: `"forbidden_action_on_arguments_associated_resources"`
+
+Defined in: [src/utilities/errors/errorCodes.ts:65](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/utilities/errors/errorCodes.ts#L65)
+
+Action is failing because the user is not allowed to perform it on the resources associated to the provided arguments (HTTP 403)
+
+***
+
 ### INSUFFICIENT\_PERMISSIONS
 
 > **INSUFFICIENT\_PERMISSIONS**: `"insufficient_permissions"`

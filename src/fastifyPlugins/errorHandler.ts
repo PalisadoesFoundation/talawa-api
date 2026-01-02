@@ -75,7 +75,9 @@ export const errorHandlerPlugin = fastifyPlugin(
 									code: normalized.code,
 									correlationId,
 									httpStatus: normalized.statusCode,
-									details: normalized.details,
+									...(normalized.details
+										? { details: normalized.details }
+										: {}),
 								},
 							},
 						],

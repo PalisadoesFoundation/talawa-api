@@ -74,6 +74,7 @@ export type ExplicitGraphQLContext = {
 	jwt: {
 		sign: (payload: ExplicitAuthenticationTokenPayload) => string;
 	};
+	id?: string;
 	/**
 	 * Cookie helper for setting HTTP-Only authentication cookies.
 	 * Only available for HTTP requests (not WebSocket subscriptions).

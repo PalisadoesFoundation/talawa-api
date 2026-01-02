@@ -82,6 +82,7 @@ describe("GraphQL Routes", () => {
 			jwtVerify: vi.fn(),
 			ip: "127.0.0.1",
 			cookies: {},
+			log: mockFastify.log,
 		};
 
 		// Setup mock reply
@@ -696,6 +697,7 @@ describe("GraphQL Routes", () => {
 			log: {
 				info: ReturnType<typeof vi.fn>;
 				error: ReturnType<typeof vi.fn>;
+				debug: ReturnType<typeof vi.fn>;
 			};
 			graphql: {
 				replaceSchema: ReturnType<typeof vi.fn>;
@@ -716,6 +718,11 @@ describe("GraphQL Routes", () => {
 				request: {
 					ip?: string;
 					jwtVerify: ReturnType<typeof vi.fn>;
+					log?: {
+						info: ReturnType<typeof vi.fn>;
+						error: ReturnType<typeof vi.fn>;
+						debug: ReturnType<typeof vi.fn>;
+					};
 				};
 			};
 		};
@@ -739,6 +746,7 @@ describe("GraphQL Routes", () => {
 				log: {
 					info: vi.fn(),
 					error: vi.fn(),
+					debug: vi.fn(),
 				},
 				graphql: {
 					replaceSchema: vi.fn(),
@@ -773,6 +781,7 @@ describe("GraphQL Routes", () => {
 					request: {
 						ip: "192.168.1.1",
 						jwtVerify: vi.fn(),
+						log: mockFastifyInstance.log,
 					},
 				},
 			};

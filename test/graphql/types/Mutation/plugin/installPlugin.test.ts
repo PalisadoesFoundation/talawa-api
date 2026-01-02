@@ -46,6 +46,12 @@ type TestCtx = {
 		where: ReturnType<typeof vi.fn>;
 		returning: ReturnType<typeof vi.fn>;
 	};
+	id?: string;
+	log: {
+		error: Mock;
+		info: Mock;
+		warn: Mock;
+	};
 	[key: string]: unknown;
 };
 
@@ -332,6 +338,57 @@ describe("installPlugin mutation", () => {
 		const args = { input: validInput };
 		await expect(resolver({}, args, ctx)).rejects.toBeInstanceOf(
 			TalawaGraphQLError,
+		);
+	});
+	it("logs success messages with structured logging", async () => {
+		const fakeManager = {
+			installPlugin: vi.fn().mockResolvedValue(true),
+		};
+		(getPluginManagerInstance as ReturnType<typeof vi.fn>).mockReturnValue(
+			fakeManager,
+		);
+		const ctx = makeCtx();
+		ctx.id = "req-123"; // Mock correlation ID
+
+		const args = { input: validInput };
+		await resolver({}, args, ctx);
+
+		expect(ctx.log.info).toHaveBeenCalledWith(
+			expect.objectContaining({
+				pluginId: validInput.pluginId,
+				correlationId: "req-123",
+			}),
+			"Installing plugin via lifecycle manager",
+		);
+
+		expect(ctx.log.info).toHaveBeenCalledWith(
+			expect.objectContaining({
+				pluginId: validInput.pluginId,
+				correlationId: "req-123",
+			}),
+			"Plugin installed successfully via lifecycle manager",
+		);
+	});
+
+	it("logs error message with structured logging on failure", async () => {
+		const fakeManager = {
+			installPlugin: vi.fn().mockResolvedValue(false),
+		};
+		(getPluginManagerInstance as ReturnType<typeof vi.fn>).mockReturnValue(
+			fakeManager,
+		);
+		const ctx = makeCtx();
+		ctx.id = "req-456"; // Mock correlation ID
+
+		const args = { input: validInput };
+		await resolver({}, args, ctx);
+
+		expect(ctx.log.error).toHaveBeenCalledWith(
+			expect.objectContaining({
+				pluginId: validInput.pluginId,
+				correlationId: "req-456",
+			}),
+			"Plugin installation failed in lifecycle manager",
 		);
 	});
 });

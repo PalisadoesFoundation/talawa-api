@@ -65,7 +65,7 @@ if (isMain) {
 		try {
 			await main();
 		} catch (error: unknown) {
-			console.error(error);
+			console.error("Error: Adding sample data", error);
 			exitCode = 1;
 		}
 		try {

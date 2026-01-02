@@ -46,7 +46,7 @@ builder.queryField("categoriesByIds", (t) =>
 					fields: (t) => ({
 						ids: t.field({
 							type: ["ID"],
-							required: false,
+							required: true,
 						}),
 					}),
 				}),

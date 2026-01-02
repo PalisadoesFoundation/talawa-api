@@ -675,28 +675,45 @@ export class ErrorHandlingValidator {
 
 	public hasProperErrorHandling(catchBody: string): boolean {
 		// Check for proper error handling patterns
+		// We prioritize "definitive" actions that ensure the error is not swallowed silently.
 		const properHandlingPatterns = [
-			/throw\s+/, // Re-throwing errors
-			/\.log\s*\(/, // Logging methods
-			/\.error\s*\(/, // Error logging
-			/\.warn\s*\(/, // Warning logging
-			/\.info\s*\(/, // Info logging
-			/\.debug\s*\(/, // Debug logging
-			/console\s*\.\s*log/, // Console logging (though not preferred)
-			/console\s*\.\s*error/, // Console error
-			/console\s*\.\s*warn/, // Console warn
-			/logger\s*\./, // Logger usage
+			// 1. Re-throwing
+			/throw\s+/,
+
+			// 2. Logging (Explicit logger calls)
+			/\.log\s*\(/,
+			/\.error\s*\(/,
+			/\.warn\s*\(/,
+			/\.info\s*\(/,
+			/\.debug\s*\(/,
+			/console\s*\.\s*log/,
+			/console\s*\.\s*error/,
+			/console\s*\.\s*warn/,
+			/logger\s*\./,
 			/log\s*\(/, // Generic log function calls
-			/return\s+/, // Early returns (sometimes valid)
-			/process\s*\.\s*exit/, // Process exit (sometimes valid)
-			/TalawaGraphQLError/, // Custom error types
-			/TalawaRestError/, // Custom error types
-			/=\s*\{[^}]*error/, // Assignment operations that include error handling
-			/\w+\s*=\s*[^;]*error/, // Variable assignments that involve error
-			/currentClient\s*=/, // Specific pattern for authentication fallback
-			/result\s*=/, // Result assignment pattern
-			/addIssue\s*\(/, // Zod error handling
-			/reject\w*\s*\(/, // Promise rejection handling
+
+			// 3. Process control
+			/process\s*\.\s*exit/,
+
+			// 4. Custom Error Instantiation/Usage
+			/TalawaGraphQLError/,
+			/TalawaRestError/,
+			/new\s+\w*Error/, // Explicitly instantiating an Error (e.g. throw new UserError...)
+
+			// 5. Assignments
+			// Must assign to an Error-like variable or property, or assign an Error instance
+			/\w+\s*=\s*new\s+\w*Error/, // x = new Error(...)
+			/\w*[Ee]rror\.message\s*=/, // error.message = ... (modifying the error object)
+
+			// 6. Library specific handling
+			/addIssue\s*\(/, // Zod
+			/reject\w*\s*\(/, // Promises
+
+			// 7. Returns
+			// Must return a new Error or a process result, not just generic return
+			/return\s+new\s+\w*Error/, // return new Error(...)
+			/return\s+process\w+/, // return process...
+			/return\s+reject\w*/, // return reject(...)
 		];
 
 		// Also check if the catch body has meaningful code (not just comments)
