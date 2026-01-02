@@ -15,6 +15,9 @@ The Performance Metrics Foundation provides:
 - **Server-Timing headers** on all HTTP responses for browser-based performance analysis
 - **`/metrics/perf` endpoint** returning recent performance snapshots for monitoring dashboards
 - **Request-scoped tracking** of database operations, cache hits/misses, and total request duration
+- **GraphQL operation tracking** with operation name, type, and complexity scores
+- **DataLoader instrumentation** for batch loading performance analysis
+- **Cache performance metrics** with hit/miss ratios per request
 
 ## Server-Timing Headers
 
@@ -86,6 +89,104 @@ GET http://localhost:4000/metrics/perf
 - **In-Memory Storage**: Last 200 snapshots are kept in memory
 - **Endpoint Returns**: Maximum 50 most recent snapshots
 - **No Persistence**: Metrics reset on server restart
+
+## GraphQL Performance Tracking
+
+### Automatic Operation Tracking
+
+All GraphQL queries and mutations are automatically tracked with:
+- **Operation name**: The name of the GraphQL operation being executed
+- **Operation type**: `query`, `mutation`, or `subscription`
+- **Complexity score**: Calculated complexity based on query depth and field count
+- **Execution time**: Total time to resolve the GraphQL operation
+
+### Slow Operation Logging
+
+Operations taking longer than **500ms** are automatically logged with detailed metrics:
+
+```json
+{
+  "msg": "Slow GraphQL operation",
+  "operation": "getUsersByOrganization",
+  "type": "query",
+  "complexity": 125,
+  "totalMs": 687,
+  "dbMs": 453,
+  "cacheHits": 15,
+  "cacheMisses": 8,
+  "hitRate": 0.65
+}
+```
+
+This helps identify performance bottlenecks in your GraphQL resolvers.
+
+### Cache Hit Rate Analysis
+
+The `hitRate` metric (0.0 to 1.0) indicates cache effectiveness:
+- **≥ 0.8**: Excellent cache performance
+- **0.5-0.8**: Good cache performance
+- **< 0.5**: Consider cache warming or TTL adjustments
+
+## DataLoader Performance
+
+### Automatic Batch Tracking
+
+DataLoader batch operations are instrumented automatically:
+- **User lookups**: `dataloader:users` timing
+- **Organization lookups**: `dataloader:organizations` timing
+- **Event lookups**: `dataloader:events` timing
+- **Action item lookups**: `dataloader:actionItems` timing
+
+These metrics appear in the `ops` object of performance snapshots:
+
+```json
+{
+  "ops": {
+    "dataloader:users": {
+      "count": 3,
+      "ms": 24.5,
+      "max": 12.3
+    }
+  }
+}
+```
+
+### Optimizing DataLoader Performance
+
+If DataLoader operations are slow:
+1. **Check batch sizes**: Large batches may cause memory pressure
+2. **Review database indexes**: Ensure proper indexes on lookup keys
+3. **Consider caching**: Add Redis caching layer for frequently accessed data
+
+## Cache Performance Tracking
+
+### Request-Scoped Cache Metrics
+
+Every GraphQL request tracks cache operations:
+- **Cache hits**: Successful cache retrievals
+- **Cache misses**: Cache lookups that required database queries
+- **Hit rate**: Ratio of hits to total operations
+
+### Cache Operation Timing
+
+All cache operations are timed:
+- `cache:get` - Individual cache retrieval
+- `cache:mget` - Batch cache retrieval
+- `cache:set` - Cache write operations
+- `cache:mset` - Batch cache write operations
+
+Example performance snapshot:
+
+```json
+{
+  "cacheHits": 12,
+  "cacheMisses": 3,
+  "ops": {
+    "cache:get": { "count": 8, "ms": 15.2, "max": 3.4 },
+    "cache:mget": { "count": 2, "ms": 8.7, "max": 5.1 }
+  }
+}
+```
 
 ## Integration Examples
 
@@ -174,7 +275,7 @@ Track custom operations in your code:
 // In a GraphQL resolver
 export const myResolver = async (parent, args, ctx) => {
   // Track external API call
-  const result = await ctx.request.perf?.time('external-api', async () => {
+  const result = await ctx.perf?.time('external-api', async () => {
     return await fetch('https://api.example.com/data');
   });
   
@@ -187,9 +288,48 @@ export const myResolver = async (parent, args, ctx) => {
 For non-async operations:
 
 ```typescript
-const stopTimer = ctx.request.perf?.start('computation');
+const stopTimer = ctx.perf?.start('computation');
 // ... expensive computation ...
 stopTimer?.();
+```
+
+### Tracking Cache Operations
+
+Manual cache tracking (automatically handled by `metricsCacheProxy`):
+
+```typescript
+// Cache hit
+ctx.perf?.trackCacheHit();
+
+// Cache miss
+ctx.perf?.trackCacheMiss();
+```
+
+### DataLoader Instrumentation
+
+When creating custom DataLoaders, use the `wrapBatchWithMetrics` wrapper:
+
+```typescript
+import { wrapBatchWithMetrics } from "~/src/utilities/dataloaders/withMetrics";
+
+4. Look for slow DataLoader operations in the `ops` object
+5. Check GraphQL complexity scores for overly complex queries
+
+### Low Cache Hit Rate
+
+If cache hit rate is consistently below 50%:
+1. Verify cache service is properly configured
+2. Check cache TTL settings in `src/services/caching/cacheConfig.ts`
+3. Review cache invalidation patterns
+4. Consider implementing cache warming for frequently accessed data
+export const createMyLoader = (db: DatabaseConnection, perf?: PerformanceTracker) => {
+  return new DataLoader(
+    wrapBatchWithMetrics("dataloader:myEntity", perf, async (ids: readonly string[]) => {
+      // Your batch loading logic
+      return await db.select().from(myTable).where(inArray(myTable.id, ids));
+    })
+  );
+};
 ```
 
 ## Troubleshooting
@@ -202,12 +342,30 @@ stopTimer?.();
 
 ### Endpoint Returns Empty Array
 
-- Normal on server restart (metrics are in-memory)
-- Make some API requests to populate snapshots
+- NImplementation Details
 
-### High `totalMs` Values
+### Key Files
 
-If `totalMs` is unexpectedly high:
+- **Performance Plugin**: `src/fastifyPlugins/performance.ts` - Fastify plugin with GraphQL operation tracking
+- **Performance Tracker**: `src/utilities/metrics/performanceTracker.ts` - Core tracking utility
+- **DataLoader Wrapper**: `src/utilities/dataloaders/withMetrics.ts` - DataLoader instrumentation
+- **Cache Proxy**: `src/services/caching/metricsCacheProxy.ts` - Request-scoped cache tracking
+- **GraphQL Route**: `src/routes/graphql.ts` - GraphQL operation hooks and context integration
+
+### Test Coverage
+
+Comprehensive test coverage available:
+- `test/utilities/dataloaders/withMetrics.test.ts` - DataLoader wrapper tests
+- `test/services/caching/metricsCacheProxy.test.ts` - Cache proxy tests
+- `test/fastifyPlugins/performance.test.ts` - Performance plugin tests
+- `test/routes/graphql.performance.test.ts` - GraphQL integration tests
+
+## Further Reading
+
+- [MDN: Server-Timing](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Server-Timing)
+- [W3C Server Timing Specification](https://w3c.github.io/server-timing/)
+- [DataLoader Documentation](https://github.com/graphql/dataloader)
+- [GraphQL Complexity Analysis](https://www.npmjs.com/package/@pothos/plugin-complexity)
 1. Check `ops.db.ms` for slow database queries
 2. Review `cacheMiss` count (high misses = more DB hits)
 3. Inspect individual operation max times for bottlenecks

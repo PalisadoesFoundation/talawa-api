@@ -5,6 +5,7 @@ import { createActionItemLoader } from "~/src/utilities/dataloaders/actionItemLo
 import { createEventLoader } from "~/src/utilities/dataloaders/eventLoader";
 import { createOrganizationLoader } from "~/src/utilities/dataloaders/organizationLoader";
 import { createUserLoader } from "~/src/utilities/dataloaders/userLoader";
+import type { PerformanceTracker } from "~/src/utilities/metrics/performanceTracker";
 
 /**
  * Creates a mock DrizzleClient for testing DataLoaders.
@@ -20,6 +21,23 @@ function createMockDb<T>(mockResults: T[]) {
 	return { db, whereSpy };
 }
 
+/**
+ * Creates a mock PerformanceTracker for testing.
+ */
+function createMockPerf(): PerformanceTracker {
+	return {
+		time: vi.fn((label, fn) => fn()),
+		start: vi.fn(() => vi.fn()),
+		trackDbQuery: vi.fn(),
+		trackCacheHit: vi.fn(),
+		trackCacheMiss: vi.fn(),
+		snapshot: vi.fn(() => ({
+			timers: {},
+			counters: {},
+		})),
+	} as unknown as PerformanceTracker;
+}
+
 describe("DataLoader infrastructure", () => {
 	describe("createUserLoader", () => {
 		it("returns results in the same order as keys and batches calls", async () => {
@@ -27,8 +45,9 @@ describe("DataLoader infrastructure", () => {
 				{ id: "u2", name: "B" },
 				{ id: "u1", name: "A" },
 			]);
+			const perf = createMockPerf();
 
-			const loader = createUserLoader(db);
+			const loader = createUserLoader(db, perf);
 
 			// Trigger multiple loads in the same tick to ensure batching
 			const p1 = loader.load("u1");
@@ -50,8 +69,9 @@ describe("DataLoader infrastructure", () => {
 
 		it("returns null for non-existent IDs", async () => {
 			const { db } = createMockDb([]);
+			const perf = createMockPerf();
 
-			const loader = createUserLoader(db);
+			const loader = createUserLoader(db, perf);
 
 			const result = await loader.load("nonexistent");
 			expect(result).toBeNull();
@@ -59,8 +79,9 @@ describe("DataLoader infrastructure", () => {
 
 		it("caches results within the same loader instance", async () => {
 			const { db, whereSpy } = createMockDb([{ id: "u1", name: "A" }]);
+			const perf = createMockPerf();
 
-			const loader = createUserLoader(db);
+			const loader = createUserLoader(db, perf);
 
 			// Load the same key twice
 			const result1 = await loader.load("u1");
@@ -81,8 +102,9 @@ describe("DataLoader infrastructure", () => {
 				{ id: "org2", name: "Org B" },
 				{ id: "org1", name: "Org A" },
 			]);
+			const perf = createMockPerf();
 
-			const loader = createOrganizationLoader(db);
+			const loader = createOrganizationLoader(db, perf);
 
 			const p1 = loader.load("org1");
 			const p2 = loader.load("org2");
@@ -101,8 +123,9 @@ describe("DataLoader infrastructure", () => {
 
 		it("returns null for non-existent IDs", async () => {
 			const { db } = createMockDb([]);
+			const perf = createMockPerf();
 
-			const loader = createOrganizationLoader(db);
+			const loader = createOrganizationLoader(db, perf);
 
 			const result = await loader.load("nonexistent");
 			expect(result).toBeNull();
@@ -110,8 +133,9 @@ describe("DataLoader infrastructure", () => {
 
 		it("caches results within the same loader instance", async () => {
 			const { db, whereSpy } = createMockDb([{ id: "org1", name: "Org A" }]);
+			const perf = createMockPerf();
 
-			const loader = createOrganizationLoader(db);
+			const loader = createOrganizationLoader(db, perf);
 
 			// Load the same key twice
 			const result1 = await loader.load("org1");
@@ -132,8 +156,9 @@ describe("DataLoader infrastructure", () => {
 				{ id: "evt2", name: "Event B" },
 				{ id: "evt1", name: "Event A" },
 			]);
+			const perf = createMockPerf();
 
-			const loader = createEventLoader(db);
+			const loader = createEventLoader(db, perf);
 
 			const p1 = loader.load("evt1");
 			const p2 = loader.load("evt2");
@@ -152,8 +177,9 @@ describe("DataLoader infrastructure", () => {
 
 		it("returns null for non-existent IDs", async () => {
 			const { db } = createMockDb([]);
+			const perf = createMockPerf();
 
-			const loader = createEventLoader(db);
+			const loader = createEventLoader(db, perf);
 
 			const result = await loader.load("nonexistent");
 			expect(result).toBeNull();
@@ -161,8 +187,9 @@ describe("DataLoader infrastructure", () => {
 
 		it("caches results within the same loader instance", async () => {
 			const { db, whereSpy } = createMockDb([{ id: "evt1", name: "Event A" }]);
+			const perf = createMockPerf();
 
-			const loader = createEventLoader(db);
+			const loader = createEventLoader(db, perf);
 
 			// Load the same key twice
 			const result1 = await loader.load("evt1");
@@ -183,8 +210,9 @@ describe("DataLoader infrastructure", () => {
 				{ id: "ai2", organizationId: "org1" },
 				{ id: "ai1", organizationId: "org1" },
 			]);
+			const perf = createMockPerf();
 
-			const loader = createActionItemLoader(db);
+			const loader = createActionItemLoader(db, perf);
 
 			const p1 = loader.load("ai1");
 			const p2 = loader.load("ai2");
@@ -203,8 +231,9 @@ describe("DataLoader infrastructure", () => {
 
 		it("returns null for non-existent IDs", async () => {
 			const { db } = createMockDb([]);
+			const perf = createMockPerf();
 
-			const loader = createActionItemLoader(db);
+			const loader = createActionItemLoader(db, perf);
 
 			const result = await loader.load("nonexistent");
 			expect(result).toBeNull();
@@ -214,8 +243,9 @@ describe("DataLoader infrastructure", () => {
 			const { db, whereSpy } = createMockDb([
 				{ id: "ai1", organizationId: "org1" },
 			]);
+			const perf = createMockPerf();
 
-			const loader = createActionItemLoader(db);
+			const loader = createActionItemLoader(db, perf);
 
 			// Load the same key twice
 			const result1 = await loader.load("ai1");
@@ -233,8 +263,9 @@ describe("DataLoader infrastructure", () => {
 	describe("createDataloaders", () => {
 		it("creates all loaders from a single db instance", () => {
 			const { db } = createMockDb([]);
+			const perf = createMockPerf();
 
-			const loaders = createDataloaders(db);
+			const loaders = createDataloaders(db, perf);
 
 			expect(loaders).toHaveProperty("user");
 			expect(loaders).toHaveProperty("organization");
@@ -244,9 +275,10 @@ describe("DataLoader infrastructure", () => {
 
 		it("creates independent loader instances on each call", () => {
 			const { db } = createMockDb([]);
+			const perf = createMockPerf();
 
-			const loaders1 = createDataloaders(db);
-			const loaders2 = createDataloaders(db);
+			const loaders1 = createDataloaders(db, perf);
+			const loaders2 = createDataloaders(db, perf);
 
 			// Each call should create new loader instances (request-scoped)
 			expect(loaders1.user).not.toBe(loaders2.user);

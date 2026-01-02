@@ -24,28 +24,6 @@ import { createPerformanceTracker } from "../utilities/metrics/performanceTracke
 import { DEFAULT_REFRESH_TOKEN_EXPIRES_MS } from "../utilities/refreshTokenUtils";
 import { TalawaGraphQLError } from "../utilities/TalawaGraphQLError";
 
-// Type augmentation for @fastify/cookie plugin
-declare module "fastify" {
-	interface FastifyRequest {
-		cookies: { [cookieName: string]: string | undefined };
-	}
-	interface FastifyReply {
-		setCookie(
-			name: string,
-			value: string,
-			options?: {
-				domain?: string;
-				expires?: Date;
-				httpOnly?: boolean;
-				maxAge?: number;
-				path?: string;
-				sameSite?: boolean | "lax" | "strict" | "none";
-				secure?: boolean;
-			},
-		): this;
-	}
-}
-
 /**
  * Type of the initial context argument provided to the createContext function by the graphql server.
  */
