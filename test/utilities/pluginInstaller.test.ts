@@ -612,6 +612,37 @@ describe("extractPluginZip", () => {
 			extractPluginZip("/path/to/test.zip", "test_plugin", structure),
 		).rejects.toThrow(/Pipeline extraction error/);
 	});
+
+	it("should handle undefined entry gracefully", async () => {
+		const mockYauzl = yauzl as unknown as {
+			default: { open: ReturnType<typeof vi.fn> };
+		};
+		mockYauzl.default.open.mockImplementationOnce(
+			(_path, _options, callback) => {
+				const mockZipFile = {
+					readEntry: vi.fn(),
+					on: vi.fn((event, handler) => {
+						if (event === "entry") {
+							// Call handler with undefined to test the !entry check
+							handler(undefined);
+						}
+						if (event === "end") {
+							handler();
+						}
+						return mockZipFile;
+					}),
+				};
+				callback(null, mockZipFile);
+			},
+		);
+
+		const structure = { hasApiFolder: true, pluginId: "test_plugin" };
+
+		// Should resolve without errors as undefined entry is simply skipped
+		await expect(
+			extractPluginZip("/path/to/test.zip", "test_plugin", structure),
+		).resolves.toBeUndefined();
+	});
 });
 
 describe("installPluginFromZip", () => {
@@ -1548,6 +1579,87 @@ describe("installPluginFromZip", () => {
 		await expect(installPluginFromZip(options)).rejects.toThrow(
 			/Invalid plugin ID in manifest/,
 		);
+	});
+
+	it("should reject when pluginId is empty string after validation", async () => {
+		// This test specifically targets lines 55-66 in installation.ts
+		// We need to bypass the validation and provide a structure with empty pluginId
+
+		// Import validatePluginZip to mock it
+		const validationModule = await import(
+			"../../src/utilities/pluginInstaller/validation"
+		);
+		const validatePluginZipSpy = vi.spyOn(
+			validationModule,
+			"validatePluginZip",
+		);
+
+		// Mock validatePluginZip to return a structure with empty pluginId but valid structure
+		validatePluginZipSpy.mockResolvedValueOnce({
+			hasApiFolder: true,
+			pluginId: "", // Empty pluginId to trigger lines 55-66
+			apiManifest: {
+				pluginId: "",
+				name: "Test Plugin",
+				version: "1.0.0",
+				description: "Test description",
+				author: "Test Author",
+				main: "index.js",
+			},
+		});
+
+		const mockZipFile: MockFileUpload = {
+			createReadStream: vi.fn(() => ({
+				pipe: vi.fn(),
+				on: vi.fn((event, handler) => {
+					if (event === "data") handler("mock data");
+					if (event === "end") handler();
+					return { pipe: vi.fn() };
+				}),
+			})),
+			filename: "test.zip",
+			fieldName: "pluginZip",
+			mimetype: "application/zip",
+			encoding: "7bit",
+		};
+
+		const mockDrizzleClient: MockDrizzleClient = {
+			query: {
+				pluginsTable: {
+					findFirst: vi.fn(async () => null),
+				},
+			},
+			execute: vi.fn(async () => undefined),
+			insert: vi.fn(() => ({
+				values: vi.fn(() => ({
+					returning: vi.fn(() => Promise.resolve([{ id: "testId" }])),
+				})),
+			})),
+			update: vi.fn(() => ({
+				set: vi.fn(() => ({
+					where: vi.fn(() => ({
+						returning: vi.fn(() => Promise.resolve([{ id: "testId" }])),
+					})),
+				})),
+			})),
+		};
+
+		const options = {
+			zipFile: mockZipFile,
+			drizzleClient: mockDrizzleClient as unknown as Parameters<
+				typeof installPluginFromZip
+			>[0]["drizzleClient"],
+			activate: false,
+			userId: "test-user",
+		};
+
+		// Should throw "Plugin ID is required" from lines 55-66
+		await expect(installPluginFromZip(options)).rejects.toThrow(
+			/Plugin ID is required/,
+		);
+
+		// Restore the spy
+		validatePluginZipSpy.mockRestore();
 	});
 
 	it("should deactivate existing active plugin before reinstalling", async () => {
