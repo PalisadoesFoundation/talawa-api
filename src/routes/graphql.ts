@@ -330,7 +330,12 @@ export const graphql = fastifyPlugin(async (fastify) => {
 			};
 		});
 
-		const statusCode = formatted[0]?.extensions?.httpStatus ?? 500;
+		// Return 200 for HTTP per spec; use mapped status for subscriptions or tests.
+		const isRealHttpRequest =
+			context.reply && typeof context.reply.send === "function";
+		const statusCode = isRealHttpRequest
+			? 200
+			: (formatted[0]?.extensions?.httpStatus ?? 500);
 
 		// Log error
 		const logger =

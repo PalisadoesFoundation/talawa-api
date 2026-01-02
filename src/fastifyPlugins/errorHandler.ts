@@ -64,6 +64,25 @@ export const errorHandlerPlugin = fastifyPlugin(
 					},
 				});
 
+				// Check if it's a GraphQL request (POST /graphql)
+				// If so, we should return 200 OK because GraphQL handles errors in the body
+				if (request.url === "/graphql" && request.method === "POST") {
+					return reply.status(200).send({
+						errors: [
+							{
+								message: normalized.message,
+								extensions: {
+									code: normalized.code,
+									correlationId,
+									httpStatus: normalized.statusCode,
+									details: normalized.details,
+								},
+							},
+						],
+						data: null,
+					});
+				}
+
 				// Prefer original TalawaRestError JSON format for consistency
 				if (error instanceof TalawaRestError) {
 					return reply

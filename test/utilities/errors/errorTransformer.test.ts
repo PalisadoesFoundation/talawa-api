@@ -85,7 +85,11 @@ describe("normalizeError", () => {
 			},
 		]);
 
-		// Create a proxy that simulates a ZodError without flatten method
+		// Create a proxy that simulates a ZodError without flatten method.
+		// This is a defensive test to ensure robustness in case:
+		// 1. We receive a mocked ZodError that omits helper methods
+		// 2. A future Zod version changes the API
+		// 3. We're dealing with a structurally similar error object that isn't a true ZodError but passes instanceof check in some unique environment
 		const zodErrorWithoutFlatten = new Proxy(zodError, {
 			get(target, prop) {
 				if (prop === "flatten") {

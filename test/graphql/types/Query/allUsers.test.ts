@@ -228,6 +228,7 @@ suite("Query field allUsers", () => {
 					path: ["allUsers"],
 					extensions: expect.objectContaining({
 						code: "invalid_arguments",
+						httpStatus: expect.any(Number),
 						issues: expect.arrayContaining([
 							expect.objectContaining({
 								argumentPath: ["after"],
@@ -260,6 +261,7 @@ suite("Query field allUsers", () => {
 					path: ["allUsers"],
 					extensions: expect.objectContaining({
 						code: "invalid_arguments",
+						httpStatus: expect.any(Number),
 						issues: expect.arrayContaining([
 							expect.objectContaining({
 								argumentPath: ["after"],
@@ -297,6 +299,7 @@ suite("Query field allUsers", () => {
 					path: ["allUsers"],
 					extensions: expect.objectContaining({
 						code: "invalid_arguments",
+						httpStatus: expect.any(Number),
 						issues: expect.arrayContaining([
 							expect.objectContaining({
 								argumentPath: ["after"],
@@ -334,6 +337,7 @@ suite("Query field allUsers", () => {
 					path: ["allUsers"],
 					extensions: expect.objectContaining({
 						code: "invalid_arguments",
+						httpStatus: expect.any(Number),
 						issues: expect.arrayContaining([
 							expect.objectContaining({
 								argumentPath: ["before"],
@@ -371,6 +375,7 @@ suite("Query field allUsers", () => {
 					path: ["allUsers"],
 					extensions: expect.objectContaining({
 						code: "arguments_associated_resources_not_found",
+						httpStatus: expect.any(Number),
 						issues: expect.arrayContaining([
 							expect.objectContaining({
 								argumentPath: ["after"],
@@ -407,6 +412,7 @@ suite("Query field allUsers", () => {
 					path: ["allUsers"],
 					extensions: expect.objectContaining({
 						code: "arguments_associated_resources_not_found",
+						httpStatus: expect.any(Number),
 						issues: expect.arrayContaining([
 							expect.objectContaining({
 								argumentPath: ["before"],
@@ -436,6 +442,7 @@ suite("Query field allUsers", () => {
 					path: ["allUsers"],
 					extensions: expect.objectContaining({
 						code: "invalid_arguments",
+						httpStatus: expect.any(Number),
 					}),
 				}),
 			]),
@@ -466,6 +473,7 @@ suite("Query field allUsers", () => {
 					path: ["allUsers"],
 					extensions: expect.objectContaining({
 						code: "invalid_arguments",
+						httpStatus: expect.any(Number),
 						issues: expect.arrayContaining([
 							expect.objectContaining({
 								argumentPath: ["after"],
@@ -498,6 +506,7 @@ suite("Query field allUsers", () => {
 					path: ["allUsers"],
 					extensions: expect.objectContaining({
 						code: "invalid_arguments",
+						httpStatus: expect.any(Number),
 						issues: expect.arrayContaining([
 							expect.objectContaining({
 								argumentPath: ["after"],
@@ -535,6 +544,7 @@ suite("Query field allUsers", () => {
 					path: ["allUsers"],
 					extensions: expect.objectContaining({
 						code: "invalid_arguments",
+						httpStatus: expect.any(Number),
 						issues: expect.arrayContaining([
 							expect.objectContaining({
 								argumentPath: ["after"],
@@ -1216,6 +1226,7 @@ suite("Query field allUsers", () => {
 				expect.objectContaining({
 					extensions: expect.objectContaining({
 						code: "invalid_arguments",
+						httpStatus: expect.any(Number),
 						issues: expect.arrayContaining([
 							expect.objectContaining({
 								argumentPath: ["where", "name"],
