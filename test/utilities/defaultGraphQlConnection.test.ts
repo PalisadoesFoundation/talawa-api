@@ -4,11 +4,19 @@ import {
 	type ParsedDefaultGraphQLConnectionArguments,
 	transformDefaultGraphQLConnectionArguments,
 	transformToDefaultGraphQLConnection,
-} from "../../src/utilities/defaultGraphQLConnection";
+} from "../../src/utilities/graphqlConnection";
 
 afterEach(() => {
 	vi.clearAllMocks();
 });
+
+/**
+ * Helper function to decode base64url-encoded cursors for test assertions.
+ * The implementation encodes cursors as base64url(JSON.stringify(cursor)).
+ */
+const decodeCursor = (encodedCursor: string): string => {
+	return JSON.parse(Buffer.from(encodedCursor, "base64url").toString("utf-8"));
+};
 
 suite("defaultGraphQLConnection utilities", () => {
 	suite("defaultGraphQLConnectionArgumentsSchema", () => {
@@ -337,8 +345,8 @@ suite("defaultGraphQLConnection utilities", () => {
 			expect(result.edges[3]?.node.id).toBe("4");
 			expect(result.pageInfo.hasNextPage).toBe(true);
 			expect(result.pageInfo.hasPreviousPage).toBe(false);
-			expect(result.pageInfo.startCursor).toBe("1");
-			expect(result.pageInfo.endCursor).toBe("4");
+			expect(decodeCursor(result.pageInfo.startCursor ?? "")).toBe("1");
+			expect(decodeCursor(result.pageInfo.endCursor ?? "")).toBe("4");
 		});
 
 		test("transforms forward pagination with hasNextPage=false", () => {
@@ -358,8 +366,8 @@ suite("defaultGraphQLConnection utilities", () => {
 			expect(result.edges).toHaveLength(5);
 			expect(result.pageInfo.hasNextPage).toBe(false);
 			expect(result.pageInfo.hasPreviousPage).toBe(false);
-			expect(result.pageInfo.startCursor).toBe("1");
-			expect(result.pageInfo.endCursor).toBe("5");
+			expect(decodeCursor(result.pageInfo.startCursor ?? "")).toBe("1");
+			expect(decodeCursor(result.pageInfo.endCursor ?? "")).toBe("5");
 		});
 
 		test("transforms forward pagination with cursor (hasPreviousPage=true)", () => {
@@ -382,8 +390,8 @@ suite("defaultGraphQLConnection utilities", () => {
 			expect(result.edges).toHaveLength(3);
 			expect(result.pageInfo.hasNextPage).toBe(false);
 			expect(result.pageInfo.hasPreviousPage).toBe(true);
-			expect(result.pageInfo.startCursor).toBe("3");
-			expect(result.pageInfo.endCursor).toBe("5");
+			expect(decodeCursor(result.pageInfo.startCursor ?? "")).toBe("3");
+			expect(decodeCursor(result.pageInfo.endCursor ?? "")).toBe("5");
 		});
 
 		test("transforms backward pagination with hasPreviousPage=true", () => {
@@ -405,8 +413,8 @@ suite("defaultGraphQLConnection utilities", () => {
 			expect(result.edges[3]?.node.id).toBe("1");
 			expect(result.pageInfo.hasNextPage).toBe(false);
 			expect(result.pageInfo.hasPreviousPage).toBe(true);
-			expect(result.pageInfo.startCursor).toBe("4");
-			expect(result.pageInfo.endCursor).toBe("1");
+			expect(decodeCursor(result.pageInfo.startCursor ?? "")).toBe("4");
+			expect(decodeCursor(result.pageInfo.endCursor ?? "")).toBe("1");
 		});
 
 		test("transforms backward pagination with hasPreviousPage=false", () => {
@@ -426,8 +434,8 @@ suite("defaultGraphQLConnection utilities", () => {
 			expect(result.edges).toHaveLength(5);
 			expect(result.pageInfo.hasNextPage).toBe(false);
 			expect(result.pageInfo.hasPreviousPage).toBe(false);
-			expect(result.pageInfo.startCursor).toBe("5");
-			expect(result.pageInfo.endCursor).toBe("1");
+			expect(decodeCursor(result.pageInfo.startCursor ?? "")).toBe("5");
+			expect(decodeCursor(result.pageInfo.endCursor ?? "")).toBe("1");
 		});
 
 		test("transforms backward pagination with cursor (hasNextPage=true)", () => {
@@ -452,8 +460,8 @@ suite("defaultGraphQLConnection utilities", () => {
 			expect(result.edges[1]?.node.id).toBe("1");
 			expect(result.pageInfo.hasNextPage).toBe(true);
 			expect(result.pageInfo.hasPreviousPage).toBe(true);
-			expect(result.pageInfo.startCursor).toBe("2");
-			expect(result.pageInfo.endCursor).toBe("1");
+			expect(decodeCursor(result.pageInfo.startCursor ?? "")).toBe("2");
+			expect(decodeCursor(result.pageInfo.endCursor ?? "")).toBe("1");
 		});
 
 		test("handles empty results", () => {
@@ -543,14 +551,15 @@ suite("defaultGraphQLConnection utilities", () => {
 			// Verify cursor is base64 encoded
 			expect(result.edges[0]?.cursor).toMatch(/^[A-Za-z0-9_-]+$/);
 
-			// Verify we can decode the cursor back
-			const decodedCursor = JSON.parse(
-				Buffer.from(result.edges[0]?.cursor || "", "base64url").toString(
-					"utf-8",
-				),
+			// Double-decode: implementation wraps createCursor output in JSON.stringify + base64
+			const innerCursor = JSON.parse(
+				Buffer.from(
+					decodeCursor(result.edges[0]?.cursor ?? ""),
+					"base64url",
+				).toString("utf-8"),
 			);
-			expect(decodedCursor).toHaveProperty("id", "1");
-			expect(decodedCursor).toHaveProperty("createdAt");
+			expect(innerCursor).toHaveProperty("id", "1");
+			expect(innerCursor).toHaveProperty("createdAt");
 		});
 	});
 });
