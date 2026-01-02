@@ -13,3 +13,5 @@ export { RedisCacheService } from "./RedisCacheService";
 export type { WrapWithCacheOptions } from "./wrappers";
 // Cache wrappers
 export { wrapWithCache } from "./wrappers";
+// Performance tracking
+export { metricsCacheProxy } from "./metricsCacheProxy";

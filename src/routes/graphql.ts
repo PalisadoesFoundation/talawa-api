@@ -9,6 +9,7 @@ import type {
 	ExplicitGraphQLContext,
 } from "~/src/graphql/context";
 import schemaManager from "~/src/graphql/schemaManager";
+import { metricsCacheProxy } from "~/src/services/caching/metricsCacheProxy";
 import NotificationService from "~/src/services/notification/NotificationService";
 import {
 	COOKIE_NAMES,
@@ -176,8 +177,11 @@ export const createContext: CreateContext = async (initialContext) => {
 		throw new Error("Performance tracker not attached to request. Ensure performance plugin is registered before GraphQL route.");
 	})();
 
+	// Wrap cache service with performance tracking proxy
+	const cache = metricsCacheProxy(fastify.cache, perf);
+
 	return {
-		cache: fastify.cache,
+		cache,
 		currentClient,
 		dataloaders: createDataloaders(fastify.drizzleClient, perf),
 		drizzleClient: fastify.drizzleClient,
@@ -283,9 +287,10 @@ export const graphql = fastifyPlugin(async (fastify) => {
 
 					// Create a standalone performance tracker for WebSocket subscription
 					const perf = createPerformanceTracker();
+				const cache = metricsCacheProxy(fastify.cache, perf);
 
-					return {
-						cache: fastify.cache,
+				return {
+					cache,
 						currentClient: {
 							isAuthenticated: true,
 							user: decoded.user,

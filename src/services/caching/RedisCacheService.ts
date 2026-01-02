@@ -1,3 +1,4 @@
+import type { PerformanceTracker } from "~/src/utilities/metrics/performanceTracker";
 import type { CacheService } from "./CacheService";
 
 /**
@@ -36,27 +37,41 @@ type Logger = {
 /**
  * Redis-backed implementation of CacheService.
  * All operations are wrapped with try/catch for graceful degradation.
+ * Optionally tracks cache performance metrics when a performance tracker is provided.
  */
 export class RedisCacheService implements CacheService {
 	constructor(
 		private readonly redis: RedisLike,
 		private readonly logger: Logger,
+		private readonly perf?: PerformanceTracker,
 	) {}
 
 	async get<T>(key: string): Promise<T | null> {
 		try {
+			const end = this.perf?.start("cache:get");
 			const raw = await this.redis.get(key);
-			return raw ? (JSON.parse(raw) as T) : null;
+			end?.();
+
+			if (raw) {
+				this.perf?.trackCacheHit();
+				return JSON.parse(raw) as T;
+			}
+
+			this.perf?.trackCacheMiss();
+			return null;
 		} catch (err) {
 			this.logger.warn({ msg: "cache get failed", key, err });
+			this.perf?.trackCacheMiss();
 			return null;
 		}
 	}
 
 	async set<T>(key: string, value: T, ttlSeconds: number): Promise<void> {
 		try {
+			const end = this.perf?.start("cache:set");
 			const str = JSON.stringify(value);
 			await this.redis.setex(key, ttlSeconds, str);
+			end?.();
 		} catch (err) {
 			this.logger.warn({ msg: "cache set failed", key, ttlSeconds, err });
 		}
@@ -66,7 +81,9 @@ export class RedisCacheService implements CacheService {
 		try {
 			const arr = Array.isArray(keys) ? keys : [keys];
 			if (arr.length) {
+				const end = this.perf?.start("cache:del");
 				await this.redis.del(...arr);
+				end?.();
 			}
 		} catch (err) {
 			this.logger.warn({ msg: "cache del failed", keys, err });
@@ -76,6 +93,7 @@ export class RedisCacheService implements CacheService {
 	async clearByPattern(pattern: string): Promise<void> {
 		// Use SCAN to avoid blocking Redis with KEYS command
 		try {
+			const end = this.perf?.start("cache:clearByPattern");
 			let cursor = "0";
 			do {
 				const [next, keys] = await this.redis.scan(
@@ -90,6 +108,7 @@ export class RedisCacheService implements CacheService {
 					await this.redis.del(...keys);
 				}
 			} while (cursor !== "0");
+			end?.();
 		} catch (err) {
 			this.logger.warn({ msg: "cache clearByPattern failed", pattern, err });
 		}
@@ -100,17 +119,31 @@ export class RedisCacheService implements CacheService {
 			return [];
 		}
 		try {
+			const end = this.perf?.start("cache:mget");
 			const results = await this.redis.mget(...keys);
-			return results.map((r) => {
-				if (r === null) return null;
+			end?.();
+
+			const parsed = results.map((r) => {
+				if (r === null) {
+					this.perf?.trackCacheMiss();
+					return null;
+				}
 				try {
+					this.perf?.trackCacheHit();
 					return JSON.parse(r) as T;
 				} catch {
+					this.perf?.trackCacheMiss();
 					return null;
 				}
 			});
+
+			return parsed;
 		} catch (err) {
 			this.logger.warn({ msg: "cache mget failed", keys, err });
+			// Track all as misses on error
+			for (let i = 0; i < keys.length; i++) {
+				this.perf?.trackCacheMiss();
+			}
 			return keys.map(() => null);
 		}
 	}
@@ -122,6 +155,7 @@ export class RedisCacheService implements CacheService {
 			return;
 		}
 		try {
+			const end = this.perf?.start("cache:mset");
 			// Use Promise.allSettled to persist successful entries even if some fail.
 			// This is more resilient than Promise.all which aborts on first failure.
 			const results = await Promise.allSettled(
@@ -131,6 +165,7 @@ export class RedisCacheService implements CacheService {
 						.then(() => e.key),
 				),
 			);
+			end?.();
 
 			// Log any individual failures
 			for (const result of results) {
