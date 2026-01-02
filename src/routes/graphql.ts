@@ -22,6 +22,28 @@ import leakyBucket from "../utilities/leakyBucket";
 import { DEFAULT_REFRESH_TOKEN_EXPIRES_MS } from "../utilities/refreshTokenUtils";
 import { TalawaGraphQLError } from "../utilities/TalawaGraphQLError";
 
+// Type augmentation for @fastify/cookie plugin
+declare module "fastify" {
+	interface FastifyRequest {
+		cookies: { [cookieName: string]: string | undefined };
+	}
+	interface FastifyReply {
+		setCookie(
+			name: string,
+			value: string,
+			options?: {
+				domain?: string;
+				expires?: Date;
+				httpOnly?: boolean;
+				maxAge?: number;
+				path?: string;
+				sameSite?: boolean | "lax" | "strict" | "none";
+				secure?: boolean;
+			},
+		): this;
+	}
+}
+
 /**
  * Type of the initial context argument provided to the createContext function by the graphql server.
  */
@@ -160,6 +182,11 @@ export const createContext: CreateContext = async (initialContext) => {
 		cookie: cookieHelper,
 		log: request.log ?? fastify.log,
 		minio: fastify.minio,
+		// Performance tracker should always be attached by performance plugin
+		// If not present, throw error to indicate misconfiguration
+		perf: request.perf ?? (() => {
+			throw new Error("Performance tracker not attached to request. Ensure performance plugin is registered before GraphQL route.");
+		})(),
 		// attached a per-request notification service that queues notifications and can flush later
 		notification: new NotificationService(),
 	};

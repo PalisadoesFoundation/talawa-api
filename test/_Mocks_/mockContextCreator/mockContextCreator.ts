@@ -6,6 +6,7 @@ import type {
 	ExplicitGraphQLContext,
 	GraphQLContext,
 } from "~/src/graphql/context";
+import type { PerformanceTracker } from "~/src/utilities/metrics/performanceTracker";
 import { createDataloaders } from "~/src/utilities/dataloaders";
 import { createMockDrizzleClient } from "../drizzleClientMock";
 import { createMockMinioClient } from "../mockMinioClient";
@@ -108,6 +109,22 @@ export function createMockGraphQLContext(
 		},
 		log: createMockLogger(),
 		minio: mockMinioClient,
+		perf: {
+			time: vi.fn().mockImplementation(async (_op, fn) => fn()),
+			start: vi.fn().mockReturnValue(() => {}),
+			trackDb: vi.fn(),
+			trackCacheHit: vi.fn(),
+			trackCacheMiss: vi.fn(),
+			snapshot: vi.fn().mockReturnValue({
+				totalMs: 0,
+				totalOps: 0,
+				cacheHits: 0,
+				cacheMiss: 0,
+				ops: {},
+				slow: [],
+				hitRate: 0,
+			}),
+		} as PerformanceTracker,
 	};
 
 	// Create the implicit context
