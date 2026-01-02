@@ -191,12 +191,9 @@ Organization.implement({
 					}
 
 					return transformToDefaultGraphQLConnection({
-						createCursor: (fund) =>
-							Buffer.from(
-								JSON.stringify({
-									name: fund.name,
-								}),
-							).toString("base64url"),
+						createCursor: (fund) => ({
+							name: fund.name,
+						}),
 						createNode: (fund) => fund,
 						parsedArgs,
 						rawNodes: funds,

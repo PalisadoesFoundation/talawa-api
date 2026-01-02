@@ -146,12 +146,9 @@ FundCampaign.implement({
 					}
 
 					return transformToDefaultGraphQLConnection({
-						createCursor: (pledge) =>
-							Buffer.from(
-								JSON.stringify({
-									id: pledge.id,
-								}),
-							).toString("base64url"),
+						createCursor: (pledge) => ({
+							id: pledge.id,
+						}),
 						createNode: (pledge) => pledge,
 						parsedArgs,
 						rawNodes: fundCampaignPledges,

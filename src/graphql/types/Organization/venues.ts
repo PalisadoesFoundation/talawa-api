@@ -199,12 +199,9 @@ Organization.implement({
 					}
 
 					return transformToDefaultGraphQLConnection({
-						createCursor: (venue) =>
-							Buffer.from(
-								JSON.stringify({
-									name: venue.name,
-								}),
-							).toString("base64url"),
+						createCursor: (venue) => ({
+							name: venue.name,
+						}),
 						createNode: ({ attachmentsWhereVenue, ...venue }) =>
 							Object.assign(venue, {
 								attachments: attachmentsWhereVenue,

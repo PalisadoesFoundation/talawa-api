@@ -237,13 +237,10 @@ builder.queryField("allUsers", (t) =>
 				}
 
 				return transformToDefaultGraphQLConnection({
-					createCursor: (user) =>
-						Buffer.from(
-							JSON.stringify({
-								createdAt: user.createdAt.toISOString(),
-								id: user.id,
-							}),
-						).toString("base64url"),
+					createCursor: (user) => ({
+						createdAt: user.createdAt,
+						id: user.id,
+					}),
 					createNode: (user) => user,
 					parsedArgs,
 					rawNodes: users,

@@ -159,13 +159,10 @@ export const resolveOrgsWhereUserIsBlocked = async (
 	}
 
 	return transformToDefaultGraphQLConnection({
-		createCursor: (blockedUser) =>
-			Buffer.from(
-				JSON.stringify({
-					createdAt: blockedUser.createdAt.toISOString(),
-					organizationId: blockedUser.organizationId,
-				}),
-			).toString("base64url"),
+		createCursor: (blockedUser) => ({
+			createdAt: blockedUser.createdAt.toISOString(),
+			organizationId: blockedUser.organizationId,
+		}),
 		createNode: (blockedUser) => ({
 			id: blockedUser.organizationId,
 			organization: blockedUser.organization,

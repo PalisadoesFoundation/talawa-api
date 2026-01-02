@@ -4,7 +4,7 @@
 
 # Interface: PluginZipStructure
 
-Defined in: [src/utilities/pluginInstaller/types.ts:15](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/utilities/pluginInstaller/types.ts#L15)
+Defined in: [src/utilities/pluginInstaller/types.ts:17](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/utilities/pluginInstaller/types.ts#L17)
 
 ## Properties
 
@@ -12,7 +12,7 @@ Defined in: [src/utilities/pluginInstaller/types.ts:15](https://github.com/Palis
 
 > `optional` **apiManifest**: [`IPluginManifest`](../../../../plugin/types/interfaces/IPluginManifest.md)
 
-Defined in: [src/utilities/pluginInstaller/types.ts:17](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/utilities/pluginInstaller/types.ts#L17)
+Defined in: [src/utilities/pluginInstaller/types.ts:19](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/utilities/pluginInstaller/types.ts#L19)
 
 ***
 
@@ -20,7 +20,7 @@ Defined in: [src/utilities/pluginInstaller/types.ts:17](https://github.com/Palis
 
 > **hasApiFolder**: `boolean`
 
-Defined in: [src/utilities/pluginInstaller/types.ts:16](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/utilities/pluginInstaller/types.ts#L16)
+Defined in: [src/utilities/pluginInstaller/types.ts:18](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/utilities/pluginInstaller/types.ts#L18)
 
 ***
 
@@ -28,4 +28,4 @@ Defined in: [src/utilities/pluginInstaller/types.ts:16](https://github.com/Palis
 
 > `optional` **pluginId**: `string`
 
-Defined in: [src/utilities/pluginInstaller/types.ts:18](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/utilities/pluginInstaller/types.ts#L18)
+Defined in: [src/utilities/pluginInstaller/types.ts:20](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/utilities/pluginInstaller/types.ts#L20)

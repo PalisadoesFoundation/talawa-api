@@ -30,7 +30,7 @@ This function is used to transform an array of objects to a standard graphql con
 
 #### createCursor
 
-(`rawNode`) => `string`
+(`rawNode`) => `Cursor`
 
 #### createNode
 

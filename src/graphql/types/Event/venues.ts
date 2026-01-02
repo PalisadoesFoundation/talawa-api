@@ -179,13 +179,10 @@ Event.implement({
 					}
 
 					return transformToDefaultGraphQLConnection({
-						createCursor: (booking) =>
-							Buffer.from(
-								JSON.stringify({
-									createdAt: booking.createdAt,
-									venueId: booking.venueId,
-								}),
-							).toString("base64url"),
+						createCursor: (booking) => ({
+							createdAt: booking.createdAt,
+							venueId: booking.venueId,
+						}),
 						createNode: ({ venue: { attachmentsWhereVenue, ...venue } }) =>
 							Object.assign(venue, {
 								attachments: attachmentsWhereVenue,

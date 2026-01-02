@@ -47,7 +47,7 @@ export const transformToDefaultGraphQLConnection = <
 	parsedArgs: { cursor, isInversed, limit },
 	rawNodes,
 }: {
-	createCursor: (rawNode: RawNode) => string;
+	createCursor: (rawNode: RawNode) => Cursor;
 	createNode: (rawNode: RawNode) => Node;
 	parsedArgs: ParsedDefaultGraphQLConnectionArguments<Cursor>;
 	rawNodes: RawNode[];
@@ -76,8 +76,13 @@ export const transformToDefaultGraphQLConnection = <
 		connection.pageInfo.hasNextPage = cursor !== undefined;
 
 		for (const rawNode of rawNodes.reverse()) {
+			const decodedCursor = createCursor(rawNode);
+			const encodedCursor = Buffer.from(JSON.stringify(decodedCursor)).toString(
+				"base64url",
+			);
+
 			connection.edges.push({
-				cursor: createCursor(rawNode),
+				cursor: encodedCursor,
 				node: createNode(rawNode),
 			});
 		}
@@ -96,8 +101,13 @@ export const transformToDefaultGraphQLConnection = <
 		connection.pageInfo.hasPreviousPage = cursor !== undefined;
 
 		for (const rawNode of rawNodes) {
+			const decodedCursor = createCursor(rawNode);
+			const encodedCursor = Buffer.from(JSON.stringify(decodedCursor)).toString(
+				"base64url",
+			);
+
 			connection.edges.push({
-				cursor: createCursor(rawNode),
+				cursor: encodedCursor,
 				node: createNode(rawNode),
 			});
 		}

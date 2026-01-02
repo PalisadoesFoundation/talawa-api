@@ -365,13 +365,10 @@ Organization.implement({
 					}
 
 					return transformToDefaultGraphQLConnection({
-						createCursor: (organizationMembership) =>
-							Buffer.from(
-								JSON.stringify({
-									createdAt: organizationMembership.createdAt.toISOString(),
-									memberId: organizationMembership.memberId,
-								}),
-							).toString("base64url"),
+						createCursor: (organizationMembership) => ({
+							createdAt: organizationMembership.createdAt,
+							memberId: organizationMembership.memberId,
+						}),
 						createNode: (organizationMembership) =>
 							organizationMembership.member,
 						parsedArgs,

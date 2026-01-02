@@ -181,13 +181,10 @@ Tag.implement({
 					}
 
 					return transformToDefaultGraphQLConnection({
-						createCursor: (assignment) =>
-							Buffer.from(
-								JSON.stringify({
-									assigneeId: assignment.assigneeId,
-									createdAt: assignment.createdAt.toISOString(),
-								}),
-							).toString("base64url"),
+						createCursor: (assignment) => ({
+							assigneeId: assignment.assigneeId,
+							createdAt: assignment.createdAt,
+						}),
 						createNode: (assignment) => assignment.assignee,
 						parsedArgs,
 						rawNodes: tagAssignments,

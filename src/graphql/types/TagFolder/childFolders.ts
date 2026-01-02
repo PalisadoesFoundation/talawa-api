@@ -145,12 +145,9 @@ TagFolder.implement({
 					}
 
 					return transformToDefaultGraphQLConnection({
-						createCursor: (tag) =>
-							Buffer.from(
-								JSON.stringify({
-									name: tag.name,
-								}),
-							).toString("base64url"),
+						createCursor: (tag) => ({
+							name: tag.name,
+						}),
 						createNode: (tag) => tag,
 						parsedArgs,
 						rawNodes: tagFolders,

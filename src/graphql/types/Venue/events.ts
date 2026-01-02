@@ -299,13 +299,10 @@ Venue.implement({
 						.slice(0, limit + 1);
 
 					return transformToDefaultGraphQLConnection({
-						createCursor: (booking) =>
-							Buffer.from(
-								JSON.stringify({
-									createdAt: booking.createdAt.toISOString(),
-									eventId: booking.eventId,
-								}),
-							).toString("base64url"),
+						createCursor: (booking) => ({
+							createdAt: booking.createdAt,
+							eventId: booking.eventId,
+						}),
 						createNode: ({ event: { attachmentsWhereEvent, ...event } }) =>
 							Object.assign(event, {
 								attachments: attachmentsWhereEvent || [],

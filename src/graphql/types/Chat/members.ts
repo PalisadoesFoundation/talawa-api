@@ -180,13 +180,10 @@ Chat.implement({
 					}
 
 					return transformToDefaultGraphQLConnection({
-						createCursor: (chatMembership) =>
-							Buffer.from(
-								JSON.stringify({
-									createdAt: chatMembership.createdAt.toISOString(),
-									memberId: chatMembership.memberId,
-								}),
-							).toString("base64url"),
+						createCursor: (chatMembership) => ({
+							createdAt: chatMembership.createdAt,
+							memberId: chatMembership.memberId,
+						}),
 						createNode: (chatMembership) => chatMembership,
 						parsedArgs,
 						rawNodes: chatMemberships,

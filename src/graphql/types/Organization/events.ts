@@ -446,13 +446,10 @@ Organization.implement({
 
 					// Transform to GraphQL connection format
 					return transformToDefaultGraphQLConnection({
-						createCursor: (event) =>
-							Buffer.from(
-								JSON.stringify({
-									id: event.id,
-									startAt: new Date(event.startAt).toISOString(),
-								}),
-							).toString("base64url"),
+						createCursor: (event) => ({
+							id: event.id,
+							startAt: new Date(event.startAt),
+						}),
 						createNode: (event) => event,
 						parsedArgs: { cursor, isInversed, limit },
 						rawNodes: allEvents,

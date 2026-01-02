@@ -141,12 +141,9 @@ Fund.implement({
 					}
 
 					return transformToDefaultGraphQLConnection({
-						createCursor: (campaign) =>
-							Buffer.from(
-								JSON.stringify({
-									name: campaign.name,
-								}),
-							).toString("base64url"),
+						createCursor: (campaign) => ({
+							name: campaign.name,
+						}),
 						createNode: (campaign) => campaign,
 						parsedArgs,
 						rawNodes: fundCampaigns,

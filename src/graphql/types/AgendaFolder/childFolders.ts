@@ -158,13 +158,10 @@ AgendaFolder.implement({
 					}
 
 					return transformToDefaultGraphQLConnection({
-						createCursor: (agendaFolder) =>
-							Buffer.from(
-								JSON.stringify({
-									id: agendaFolder.id,
-									name: agendaFolder.name,
-								}),
-							).toString("base64url"),
+						createCursor: (agendaFolder) => ({
+							id: agendaFolder.id,
+							name: agendaFolder.name,
+						}),
 						createNode: (agendaFolder) => agendaFolder,
 						parsedArgs,
 						rawNodes: agendaFolders,

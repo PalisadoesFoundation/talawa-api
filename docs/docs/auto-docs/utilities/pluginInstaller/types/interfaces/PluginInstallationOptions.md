@@ -4,7 +4,7 @@
 
 # Interface: PluginInstallationOptions
 
-Defined in: [src/utilities/pluginInstaller/types.ts:8](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/utilities/pluginInstaller/types.ts#L8)
+Defined in: [src/utilities/pluginInstaller/types.ts:9](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/utilities/pluginInstaller/types.ts#L9)
 
 ## Properties
 
@@ -12,7 +12,7 @@ Defined in: [src/utilities/pluginInstaller/types.ts:8](https://github.com/Palisa
 
 > `optional` **activate**: `boolean`
 
-Defined in: [src/utilities/pluginInstaller/types.ts:11](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/utilities/pluginInstaller/types.ts#L11)
+Defined in: [src/utilities/pluginInstaller/types.ts:12](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/utilities/pluginInstaller/types.ts#L12)
 
 ***
 
@@ -20,7 +20,15 @@ Defined in: [src/utilities/pluginInstaller/types.ts:11](https://github.com/Palis
 
 > **drizzleClient**: `DrizzleClientInterface`
 
-Defined in: [src/utilities/pluginInstaller/types.ts:10](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/utilities/pluginInstaller/types.ts#L10)
+Defined in: [src/utilities/pluginInstaller/types.ts:11](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/utilities/pluginInstaller/types.ts#L11)
+
+***
+
+### logger
+
+> **logger**: `FastifyBaseLogger`
+
+Defined in: [src/utilities/pluginInstaller/types.ts:14](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/utilities/pluginInstaller/types.ts#L14)
 
 ***
 
@@ -28,7 +36,7 @@ Defined in: [src/utilities/pluginInstaller/types.ts:10](https://github.com/Palis
 
 > **userId**: `string`
 
-Defined in: [src/utilities/pluginInstaller/types.ts:12](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/utilities/pluginInstaller/types.ts#L12)
+Defined in: [src/utilities/pluginInstaller/types.ts:13](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/utilities/pluginInstaller/types.ts#L13)
 
 ***
 
@@ -36,4 +44,4 @@ Defined in: [src/utilities/pluginInstaller/types.ts:12](https://github.com/Palis
 
 > **zipFile**: `FileUpload`
 
-Defined in: [src/utilities/pluginInstaller/types.ts:9](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/utilities/pluginInstaller/types.ts#L9)
+Defined in: [src/utilities/pluginInstaller/types.ts:10](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/utilities/pluginInstaller/types.ts#L10)

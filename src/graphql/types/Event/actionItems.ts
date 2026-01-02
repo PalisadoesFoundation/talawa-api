@@ -226,13 +226,10 @@ export const resolveActionItemsPaginated = async (
 	}
 
 	return transformToDefaultGraphQLConnection({
-		createCursor: (actionItem) =>
-			Buffer.from(
-				JSON.stringify({
-					id: actionItem.id,
-					assignedAt: actionItem.assignedAt,
-				}),
-			).toString("base64url"),
+		createCursor: (actionItem) => ({
+			id: actionItem.id,
+			assignedAt: actionItem.assignedAt,
+		}),
 		createNode: (actionItem) => actionItem,
 		parsedArgs,
 		rawNodes: paginatedActionItems,

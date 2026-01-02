@@ -195,12 +195,9 @@ Organization.implement({
 					}
 
 					return transformToDefaultGraphQLConnection({
-						createCursor: (post) =>
-							Buffer.from(
-								JSON.stringify({
-									id: post.id,
-								}),
-							).toString("base64url"),
+						createCursor: (post) => ({
+							id: post.id,
+						}),
 						createNode: ({ attachmentsWherePost, ...post }) =>
 							Object.assign(post, {
 								attachments: attachmentsWherePost,

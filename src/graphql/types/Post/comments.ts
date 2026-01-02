@@ -155,12 +155,9 @@ Post.implement({
 					}
 
 					return transformToDefaultGraphQLConnection({
-						createCursor: (comment) =>
-							Buffer.from(
-								JSON.stringify({
-									id: comment.id,
-								}),
-							).toString("base64url"),
+						createCursor: (comment) => ({
+							id: comment.id,
+						}),
 						createNode: (comment) => comment,
 						parsedArgs,
 						rawNodes: comments,

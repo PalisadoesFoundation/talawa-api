@@ -196,12 +196,9 @@ export const resolveActionItemCategories = async (
 	}
 
 	return transformToDefaultGraphQLConnection({
-		createCursor: (actionItemCategory) =>
-			Buffer.from(
-				JSON.stringify({
-					name: actionItemCategory.name,
-				}),
-			).toString("base64url"),
+		createCursor: (actionItemCategory) => ({
+			name: actionItemCategory.name,
+		}),
 		createNode: (actionItemCategory) => actionItemCategory,
 		parsedArgs,
 		rawNodes: actionItemCategories,

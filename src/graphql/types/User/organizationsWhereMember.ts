@@ -67,14 +67,7 @@ const organizationsWhereMemberArgumentsSchema =
 				});
 			}
 			return {
-				cursor: cursorObj
-					? Buffer.from(
-							JSON.stringify({
-								createdAt: cursorObj.createdAt.toISOString(),
-								organizationId: cursorObj.organizationId,
-							}),
-						).toString("base64url")
-					: undefined,
+				cursor: cursorObj,
 				isInversed: arg.isInversed,
 				limit: arg.limit,
 				filter: arg.filter,
@@ -159,58 +152,25 @@ export const resolveOrganizationsWhereMember = async (
 					? isInversed
 						? or(
 								and(
-									eq(
-										organizationMembershipsTable.createdAt,
-
-										new Date(
-											JSON.parse(
-												Buffer.from(cursor, "base64url").toString("utf-8"),
-											).createdAt,
-										),
-									),
+									eq(organizationMembershipsTable.createdAt, cursor.createdAt),
 									gt(
 										organizationMembershipsTable.organizationId,
-										JSON.parse(
-											Buffer.from(cursor, "base64url").toString("utf-8"),
-										).organizationId,
+										cursor.organizationId,
 									),
 								),
 
-								gt(
-									organizationMembershipsTable.createdAt,
-									new Date(
-										JSON.parse(
-											Buffer.from(cursor, "base64url").toString("utf-8"),
-										).createdAt,
-									),
-								),
+								gt(organizationMembershipsTable.createdAt, cursor.createdAt),
 							)
 						: or(
 								and(
-									eq(
-										organizationMembershipsTable.createdAt,
-										new Date(
-											JSON.parse(
-												Buffer.from(cursor, "base64url").toString("utf-8"),
-											).createdAt,
-										),
-									),
+									eq(organizationMembershipsTable.createdAt, cursor.createdAt),
 									lt(
 										organizationMembershipsTable.organizationId,
-										JSON.parse(
-											Buffer.from(cursor, "base64url").toString("utf-8"),
-										).organizationId,
+										cursor.organizationId,
 									),
 								),
 
-								lt(
-									organizationMembershipsTable.createdAt,
-									new Date(
-										JSON.parse(
-											Buffer.from(cursor, "base64url").toString("utf-8"),
-										).createdAt,
-									),
-								),
+								lt(organizationMembershipsTable.createdAt, cursor.createdAt),
 							)
 					: sql`TRUE`,
 			),
@@ -223,15 +183,13 @@ export const resolveOrganizationsWhereMember = async (
 	// Transform the raw nodes into a connection.
 	return transformToDefaultGraphQLConnection<
 		OrganizationMembershipRawNode,
-		Organization
+		Organization,
+		{ createdAt: Date; organizationId: string }
 	>({
-		createCursor: (row) =>
-			Buffer.from(
-				JSON.stringify({
-					createdAt: row.membershipCreatedAt.toISOString(),
-					organizationId: row.membershipOrganizationId,
-				}),
-			).toString("base64url"),
+		createCursor: (row) => ({
+			createdAt: row.membershipCreatedAt,
+			organizationId: row.membershipOrganizationId,
+		}),
 
 		createNode: (row) => row.organization,
 		parsedArgs,

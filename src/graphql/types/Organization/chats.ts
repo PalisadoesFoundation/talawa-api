@@ -210,13 +210,10 @@ Organization.implement({
 					}
 
 					return transformToDefaultGraphQLConnection({
-						createCursor: (chat) =>
-							Buffer.from(
-								JSON.stringify({
-									id: chat.id,
-									name: chat.name,
-								}),
-							).toString("base64url"),
+						createCursor: (chat) => ({
+							id: chat.id,
+							name: chat.name,
+						}),
 						createNode: (chat) => chat,
 						parsedArgs,
 						rawNodes: chats,
