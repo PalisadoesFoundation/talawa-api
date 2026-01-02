@@ -1,8 +1,8 @@
 import { eq } from "drizzle-orm";
 import { agendaItemUrlTable } from "~/src/drizzle/tables/agendaItemUrls";
+import envConfig from "~/src/utilities/graphqLimits";
 import { AgendaItemUrl } from "../AgendaItemUrl.ts/AgendaItemUrl";
 import { AgendaItem } from "./AgendaItem";
-import envConfig from "~/src/utilities/graphqLimits";
 
 AgendaItem.implement({
 	fields: (t) => ({

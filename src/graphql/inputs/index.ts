@@ -70,7 +70,6 @@ import "./MutationUpdateAdvertisementInput";
 import "./MutationUpdateAgendaCategoryInput";
 import "./MutationUpdateAgendaFolderInput";
 import "./MutationUpdateAgendaItemInput";
-import "./MutationUpdateAgendaFolderSequence";
 import "./MutationUpdateAgendaItemSequenceInput";
 import "./MutationUpdateChatInput";
 import "./MutationUpdateChatMembershipInput";

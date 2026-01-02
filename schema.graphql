@@ -160,31 +160,31 @@ input AdvertisementWhereInput {
 }
 
 type AgendaCategory {
-  """Date time at the time the agenda folder was created."""
+  """Date time at the time the agenda category was created."""
   createdAt: DateTime
 
   """User who created the agenda folder."""
   creator: User
 
-  """Custom information about the agenda folder."""
+  """Custom information about the agenda categories."""
   description: String
 
   """Event for which the agenda item constituting a part of the agenda."""
   event: Event
 
-  """Global identifier of the agenda folder."""
+  """Global identifier of the agenda categories."""
   id: ID!
 
   """Boolean to tell if agenda category is default or not"""
   isDefaultCategory: Boolean
 
-  """Name of the agenda folder."""
+  """Name of the agenda categories."""
   name: String
 
   """Organization which the agenda item category belongs to."""
   organization: Organization
 
-  """Date time at the time the agenda folder was last updated."""
+  """Date time at the time the agenda category was last updated."""
   updatedAt: DateTime
 
   """User who last updated the agenda folder."""
@@ -359,15 +359,6 @@ enum AgendaItemType {
   song
 }
 
-"""Represents a tag assigned to a user."""
-type AssignUserTag {
-  """Unique identifier of the assigned user."""
-  assigneeId: ID
-
-  """Global identifier of the tag."""
-  tagId: ID
-}
-
 """URLs associated with an agenda item."""
 type AgendaItemUrl {
   """Date time at which the URL was created."""
@@ -387,6 +378,15 @@ type AgendaItemUrl {
 input AgendaItemUrlInput {
   """URL of the agenda item"""
   agendaItemURL: String!
+}
+
+"""Represents a tag assigned to a user."""
+type AssignUserTag {
+  """Unique identifier of the assigned user."""
+  assigneeId: ID
+
+  """Global identifier of the tag."""
+  tagId: ID
 }
 
 """"""
@@ -2525,9 +2525,6 @@ type Mutation {
   updateAgendaFolder(input: MutationUpdateAgendaFolderInput!): AgendaFolder
 
   """Mutation field to update an agenda item."""
-  updateAgendaFolderSequence(input: MutationUpdateAgendaFolderSequenceInput!): AgendaFolder
-
-  """Mutation field to update an agenda item."""
   updateAgendaItem(input: MutationUpdateAgendaItemInput!): AgendaItem
 
   """Mutation field to update an agenda item."""
@@ -2735,7 +2732,7 @@ input MutationCreateAgendaCategoryInput {
   name: String!
 
   """ID of the organization this category belongs to."""
-  organizationId: ID
+  organizationId: ID!
 }
 
 """"""
@@ -3606,15 +3603,6 @@ input MutationUpdateAgendaFolderInput {
 
   """Sequence number of folder"""
   sequence: Int
-}
-
-""""""
-input MutationUpdateAgendaFolderSequenceInput {
-  """Global identifier of the agenda folder."""
-  id: ID!
-
-  """Sequence of agenda folder."""
-  sequence: Int!
 }
 
 """"""
@@ -5356,7 +5344,7 @@ type Tag {
   """Name of the tag."""
   name: String
 
-  """Organization the tag belong to."""
+  """Organization the tag belongs to."""
   organization: Organization
 
   """Date time at the time the tag was last updated."""

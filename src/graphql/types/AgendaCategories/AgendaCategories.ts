@@ -7,8 +7,7 @@ export const AgendaCategory =
 	builder.objectRef<AgendaCategory>("AgendaCategory");
 
 AgendaCategory.implement({
-	description:
-		"Agenda Categories for the agenda items",
+	description: "Agenda Categories for the agenda items",
 	fields: (t) => ({
 		description: t.exposeString("description", {
 			description: "Custom information about the agenda categories.",

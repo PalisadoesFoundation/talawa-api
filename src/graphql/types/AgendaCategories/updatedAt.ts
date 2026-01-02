@@ -5,7 +5,8 @@ import { AgendaCategory } from "./AgendaCategories";
 AgendaCategory.implement({
 	fields: (t) => ({
 		updatedAt: t.field({
-			description: "Date time at the time the agenda category was last updated.",
+			description:
+				"Date time at the time the agenda category was last updated.",
 			complexity: envConfig.API_GRAPHQL_SCALAR_RESOLVER_FIELD_COST,
 			resolve: async (parent, _args, ctx) => {
 				if (!ctx.currentClient.isAuthenticated) {
