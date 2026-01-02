@@ -829,21 +829,20 @@ suite("Query field get fund Campaign Pledges by id", () => {
 		);
 
 		expect(fundCampaignPledgeResult.errors).toBeUndefined();
-		expect(fundCampaignPledgeResult?.data?.getPledgesByUserId?.[0]).toEqual(
-			expect.objectContaining({
-				id: fundCampaignPledgeId1,
-				amount: expect.any(Number),
-				note: expect.any(String),
-			}),
-		);
-
-		expect(fundCampaignPledgeResult.errors).toBeUndefined();
-		expect(fundCampaignPledgeResult?.data?.getPledgesByUserId?.[1]).toEqual(
-			expect.objectContaining({
-				id: fundCampaignPledgeId2,
-				amount: expect.any(Number),
-				note: expect.any(String),
-			}),
+		expect(fundCampaignPledgeResult?.data?.getPledgesByUserId).toHaveLength(2);
+		expect(fundCampaignPledgeResult?.data?.getPledgesByUserId).toEqual(
+			expect.arrayContaining([
+				expect.objectContaining({
+					id: fundCampaignPledgeId1,
+					amount: expect.any(Number),
+					note: expect.any(String),
+				}),
+				expect.objectContaining({
+					id: fundCampaignPledgeId2,
+					amount: expect.any(Number),
+					note: expect.any(String),
+				}),
+			]),
 		);
 	});
 

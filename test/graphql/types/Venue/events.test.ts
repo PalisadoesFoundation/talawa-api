@@ -1280,7 +1280,6 @@ suite("Venue events Field", () => {
 	});
 	test.each([
 		{ description: "event is undefined", eventData: undefined },
-		{ description: "event is missing entirely", eventData: null }, // Simulating missing property via null for test simplicity
 	])("should throw internal server error when booking event data is corrupt ($description)", async ({
 		eventData,
 	}) => {

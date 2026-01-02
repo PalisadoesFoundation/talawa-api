@@ -112,6 +112,28 @@ describe("recaptchaUtils", () => {
 			);
 		});
 
+		test("returns true when Google reCaptcha verification is successful with logger provided", async () => {
+			mockFetch.mockResolvedValueOnce({
+				ok: true,
+				json: async () => ({ success: true }),
+			} as Response);
+			const result = await validateRecaptchaIfRequired(
+				"valid-token",
+				"secret-key",
+				["input", "recaptchaToken"],
+				mockLogger,
+			);
+			expect(result).toBe(true);
+			expect(mockFetch).toHaveBeenCalledWith(
+				"https://www.google.com/recaptcha/api/siteverify",
+				expect.objectContaining({
+					method: "POST",
+					headers: { "Content-Type": "application/x-www-form-urlencoded" },
+				}),
+			);
+			expect(mockLogger.error).not.toHaveBeenCalled();
+		});
+
 		test("throws TalawaGraphQLError when Google reCaptcha verification fails", async () => {
 			mockFetch.mockResolvedValueOnce({
 				ok: true,
@@ -134,7 +156,8 @@ describe("recaptchaUtils", () => {
 			});
 		});
 
-		test("throws error when HTTP request fails", async () => {
+		test("throws error when HTTP request fails (malformed response)", async () => {
+			// Simulates a response where json() fails (e.g. malformed or partial response)
 			mockFetch.mockResolvedValueOnce({
 				ok: false,
 				status: 500,

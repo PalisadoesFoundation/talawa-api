@@ -403,9 +403,15 @@ suite("Query field organizations", () => {
 			expect(result.errors?.[0]?.extensions?.code).toBe(
 				"internal_server_error",
 			);
-			expect(result.errors?.[0]?.extensions?.details).toEqual({
-				message: "Database connection failed",
-			});
+
+			// Details should only be present in non-production environments
+			if (process.env.NODE_ENV !== "production") {
+				expect(result.errors?.[0]?.extensions?.details).toEqual({
+					message: "Database connection failed",
+				});
+			} else {
+				expect(result.errors?.[0]?.extensions?.details).toBeUndefined();
+			}
 		} finally {
 			// Restore the original method
 			findFirstSpy.mockRestore();

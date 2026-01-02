@@ -33,6 +33,29 @@ For detailed information about testing, linting, formatting, and code coverage, 
 - Run with coverage: `pnpm run test:coverage`
 - Run with sharding: `pnpm run test:shard`
 
+**Error Handling Validation:**
+- Run validation: `pnpm run validate:error-handling`
+- Run with auto-fix: `pnpm run validate:error-handling:fix`
+- Implementation: `scripts/validate_error_handling.ts`
+- Tests: `test/validate_error_handling.test.ts`
+- Biome Plugin: `./biome_plugins/enforce_error_handling.grit`
+
+The error handling validation ensures consistent error handling patterns across the codebase. It validates that:
+- GraphQL resolvers properly wrap errors with appropriate error codes
+- Fastify REST routes use standardized error responses
+- Error messages follow standardized formats
+- Sensitive information is not leaked in error responses
+- Error handling follows security best practices
+
+*Current Phased Enforcement:*
+The error handling validation is currently in a transitional phase with non-blocking enforcement in git hooks (lefthook step 7.5). The validation runs with a `|| echo` fallback to allow developers time to adapt to the new standards.
+
+- **Local Development:** Run `pnpm run validate:error-handling` to check your changes
+- **Git Hooks:** Validation runs automatically on commit but won't block commits (warnings only)
+- **CI Behavior:** Validation runs on modified files in `src/**/*.{ts,js}`. Failures are currently warnings but will become blocking errors after migration
+- **Developer Workflow:** Please address any warnings output by the script to prepare for future enforcement
+- **Migration Timeline:** The `|| echo` fallback will be removed and full enforcement will begin in **Q2 2026**
+
 **Linting and Formatting:**
 - Fix linting issues: `pnpm run lint:fix`
 - Fix formatting issues: `pnpm run format:fix`

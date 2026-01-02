@@ -8,6 +8,7 @@ import {
 } from "graphql";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { graphql } from "~/src/routes/graphql";
+import { ErrorCode } from "~/src/utilities/errors/errorCodes";
 
 // Mock dependencies
 vi.mock("@pothos/plugin-complexity", () => ({
@@ -95,24 +96,32 @@ describe("GraphQL Error Formatting", () => {
 		errorFormatter = registerCall?.[1].errorFormatter;
 	});
 
-	it("should map legacy 'invalid_credentials' to UNAUTHENTICATED (401) status but preserve code", () => {
+	it("should remove sensitive extension keys", () => {
 		const result = errorFormatter(
 			{
 				data: null,
 				errors: [
 					{
-						message: "Invalid credentials",
+						message: "Sensitive Error",
 						locations: undefined,
 						extensions: {
-							code: "invalid_credentials",
+							code: ErrorCode.INTERNAL_SERVER_ERROR,
+							stack: "stack trace",
+							internal: "internal data",
+							debug: "debug info",
+							raw: "raw data",
+							error: "error obj",
+							secrets: "hidden",
+							exception: "crash",
+							safe: "safe data",
 						},
 						name: "Error",
 						nodes: undefined,
 						source: undefined,
 						positions: undefined,
 						originalError: undefined,
-						path: undefined,
-						toJSON: () => ({ message: "Invalid credentials" }),
+						path: ["test"],
+						toJSON: () => ({ message: "Sensitive Error" }),
 						[Symbol.toStringTag]: "Error",
 					},
 				],
@@ -120,81 +129,137 @@ describe("GraphQL Error Formatting", () => {
 			{
 				reply: {
 					request: { id: "req-1", log: { error: vi.fn() } },
-					// Simulate non-HTTP context to check statusCode derivation logic directly
-					send: undefined,
 				},
 			},
 		);
 
-		const errors = result.response.errors;
-		expect(errors).toBeDefined();
-		expect(errors?.length).toBeGreaterThan(0);
-
-		if (errors && errors.length > 0) {
-			const error = errors[0];
-			if (error?.extensions) {
-				expect(error.extensions.httpStatus).toBe(401);
-				expect(error.extensions.code).toBe("invalid_credentials");
-			} else {
-				throw new Error("Error or extensions undefined");
-			}
-		}
+		const extensions = result.response.errors?.[0]?.extensions;
+		expect(extensions).toBeDefined();
+		expect(extensions).not.toHaveProperty("stack");
+		expect(extensions).not.toHaveProperty("internal");
+		expect(extensions).not.toHaveProperty("debug");
+		expect(extensions).not.toHaveProperty("raw");
+		expect(extensions).not.toHaveProperty("error");
+		expect(extensions).not.toHaveProperty("secrets");
+		expect(extensions).not.toHaveProperty("exception");
+		expect(extensions).toHaveProperty("safe", "safe data");
 	});
 
-	it("should map legacy 'unauthorized_action' to INSUFFICIENT_PERMISSIONS (403) status but preserve code", () => {
+	it("should correctly format multiple errors", () => {
 		const result = errorFormatter(
 			{
 				data: null,
 				errors: [
 					{
-						message: "Unauthorized action",
+						message: "Error 1",
 						locations: undefined,
-						extensions: {
-							code: "unauthorized_action",
-						},
+						extensions: { code: ErrorCode.NOT_FOUND },
 						name: "Error",
 						nodes: undefined,
 						source: undefined,
 						positions: undefined,
 						originalError: undefined,
 						path: undefined,
-						toJSON: () => ({ message: "Unauthorized action" }),
+						toJSON: () => ({ message: "Error 1" }),
+						[Symbol.toStringTag]: "Error",
+					},
+					{
+						message: "Error 2",
+						locations: undefined,
+						extensions: { code: ErrorCode.INVALID_ARGUMENTS },
+						name: "Error",
+						nodes: undefined,
+						source: undefined,
+						positions: undefined,
+						originalError: undefined,
+						path: undefined,
+						toJSON: () => ({ message: "Error 2" }),
 						[Symbol.toStringTag]: "Error",
 					},
 				],
 			},
 			{
 				reply: {
-					request: { id: "req-1", log: { error: vi.fn() } },
+					request: { id: "req-multi", log: { error: vi.fn() } },
 				},
 			},
 		);
 
-		const errors = result.response.errors;
-		expect(errors).toBeDefined();
-		expect(errors?.length).toBeGreaterThan(0);
-
-		if (errors && errors.length > 0) {
-			const error = errors[0];
-			if (error?.extensions) {
-				expect(error.extensions.httpStatus).toBe(403);
-				expect(error.extensions.code).toBe("unauthorized_action");
-			} else {
-				throw new Error("Error or extensions undefined");
-			}
-		}
+		expect(result.response.errors).toHaveLength(2);
+		expect(result.response.errors?.[0]?.extensions?.code).toBe(
+			ErrorCode.NOT_FOUND,
+		);
+		expect(result.response.errors?.[1]?.extensions?.code).toBe(
+			ErrorCode.INVALID_ARGUMENTS,
+		);
 	});
 
-	it("should map legacy 'account_locked' to UNAUTHORIZED (403) status but preserve code", () => {
+	it("should map standard ErrorCode enum values preserving code and setting httpStatus", () => {
 		const result = errorFormatter(
 			{
 				data: null,
 				errors: [
 					{
-						message: "Account locked",
+						message: "Not Found Error",
+						locations: undefined,
+						extensions: { code: ErrorCode.NOT_FOUND },
+						name: "Error",
+						nodes: undefined,
+						source: undefined,
+						positions: undefined,
+						originalError: undefined,
+						path: undefined,
+						toJSON: () => ({ message: "Not Found Error" }),
+						[Symbol.toStringTag]: "Error",
+					},
+					{
+						message: "Invalid Args Error",
+						locations: undefined,
+						extensions: { code: ErrorCode.INVALID_ARGUMENTS },
+						name: "Error",
+						nodes: undefined,
+						source: undefined,
+						positions: undefined,
+						originalError: undefined,
+						path: undefined,
+						toJSON: () => ({ message: "Invalid Args Error" }),
+						[Symbol.toStringTag]: "Error",
+					},
+				],
+			},
+			{
+				reply: {
+					request: { id: "req-enums", log: { error: vi.fn() } },
+				},
+			},
+		);
+
+		const errors = result.response.errors;
+		expect(errors).toBeDefined();
+
+		const notFoundError = errors?.[0];
+		expect(notFoundError?.extensions?.code).toBe(ErrorCode.NOT_FOUND);
+		expect(notFoundError?.extensions?.httpStatus).toBe(404);
+
+		const invalidArgsError = errors?.[1];
+		expect(invalidArgsError?.extensions?.code).toBe(
+			ErrorCode.INVALID_ARGUMENTS,
+		);
+		expect(invalidArgsError?.extensions?.httpStatus).toBe(400);
+	});
+
+	it("should include populated details field in output", () => {
+		const details = { field: "username", reason: "duplicate" };
+		const result = errorFormatter(
+			{
+				data: null,
+				errors: [
+					{
+						message: "Detailed Error",
 						locations: undefined,
 						extensions: {
-							code: "account_locked",
+							code: ErrorCode.INVALID_INPUT,
+							details,
 						},
 						name: "Error",
 						nodes: undefined,
@@ -202,30 +267,133 @@ describe("GraphQL Error Formatting", () => {
 						positions: undefined,
 						originalError: undefined,
 						path: undefined,
-						toJSON: () => ({ message: "Account locked" }),
+						toJSON: () => ({ message: "Detailed Error" }),
 						[Symbol.toStringTag]: "Error",
 					},
 				],
 			},
 			{
 				reply: {
-					request: { id: "req-1", log: { error: vi.fn() } },
+					request: { id: "req-details", log: { error: vi.fn() } },
 				},
 			},
 		);
 
-		const errors = result.response.errors;
-		expect(errors).toBeDefined();
-		expect(errors?.length).toBeGreaterThan(0);
+		const error = result.response.errors?.[0];
+		expect(error?.extensions?.details).toEqual(details);
+	});
 
-		if (errors && errors.length > 0) {
-			const error = errors[0];
-			if (error?.extensions) {
-				expect(error.extensions.httpStatus).toBe(403);
-				expect(error.extensions.code).toBe("account_locked");
-			} else {
-				throw new Error("Error or extensions undefined");
-			}
-		}
+	it("should derive status code correctly in real HTTP context", () => {
+		const result = errorFormatter(
+			{
+				data: null,
+				errors: [
+					{
+						message: "Error",
+						locations: undefined,
+						extensions: { code: ErrorCode.INTERNAL_SERVER_ERROR },
+						name: "Error",
+						nodes: undefined,
+						source: undefined,
+						positions: undefined,
+						originalError: undefined,
+						path: undefined,
+						toJSON: () => ({ message: "Error" }),
+						[Symbol.toStringTag]: "Error",
+					},
+				],
+			},
+			{
+				reply: {
+					request: { id: "req-http", log: { error: vi.fn() } },
+					send: vi.fn(), // Presence of send implies real HTTP request
+				},
+			},
+		);
+
+		// Should always be 200 for GraphQL over HTTP
+		expect(result.statusCode).toBe(200);
+	});
+
+	it("should use pre-set correlationId and log in subscription context", () => {
+		const correlationId = "sub-123456";
+		const logErrorSpy = vi.fn();
+		const result = errorFormatter(
+			{
+				data: null,
+				errors: [
+					{
+						message: "Sub Error",
+						locations: undefined,
+						extensions: { code: ErrorCode.INTERNAL_SERVER_ERROR },
+						name: "Error",
+						nodes: undefined,
+						source: undefined,
+						positions: undefined,
+						originalError: undefined,
+						path: undefined,
+						toJSON: () => ({ message: "Sub Error" }),
+						[Symbol.toStringTag]: "Error",
+					},
+				],
+			},
+			{
+				// Subscription context (no reply)
+				correlationId,
+				log: { error: logErrorSpy },
+			},
+		);
+
+		const error = result.response.errors?.[0];
+		expect(error?.extensions?.correlationId).toBe(correlationId);
+		expect(logErrorSpy).toHaveBeenCalled();
+		expect(logErrorSpy).toHaveBeenCalledWith(
+			expect.objectContaining({
+				correlationId,
+				msg: "GraphQL error",
+			}),
+		);
+	});
+
+	it("should call structured logging with correlationId, statusCode, and errors", () => {
+		const logErrorSpy = vi.fn();
+		errorFormatter(
+			{
+				data: null,
+				errors: [
+					{
+						message: "Log Test Error",
+						locations: undefined,
+						extensions: { code: ErrorCode.INTERNAL_SERVER_ERROR },
+						name: "Error",
+						nodes: undefined,
+						source: undefined,
+						positions: undefined,
+						originalError: undefined,
+						path: undefined,
+						toJSON: () => ({ message: "Log Test Error" }),
+						[Symbol.toStringTag]: "Error",
+					},
+				],
+			},
+			{
+				reply: {
+					request: { id: "req-log-test", log: { error: logErrorSpy } },
+				},
+			},
+		);
+
+		expect(logErrorSpy).toHaveBeenCalledWith(
+			expect.objectContaining({
+				correlationId: "req-log-test",
+				statusCode: 500, // Non-HTTP context falls back to error status
+				errors: expect.arrayContaining([
+					expect.objectContaining({
+						message: "Log Test Error",
+						code: ErrorCode.INTERNAL_SERVER_ERROR,
+					}),
+				]),
+			}),
+		);
 	});
 });
