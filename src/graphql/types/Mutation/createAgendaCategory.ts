@@ -133,6 +133,7 @@ builder.mutationField("createAgendaCategory", (t) =>
 					eventId: parsedArgs.input.eventId,
 					name: parsedArgs.input.name,
 					description: parsedArgs.input.description,
+					organizationId: parsedArgs.input.organizationId
 				})
 				.returning();
 

@@ -71,7 +71,7 @@ import "./MutationUpdateAgendaCategoryInput";
 import "./MutationUpdateAgendaFolderInput";
 import "./MutationUpdateAgendaItemInput";
 import "./MutationUpdateAgendaFolderSequence";
-import "./MutationUpdateAgendaItemSequenceinput";
+import "./MutationUpdateAgendaItemSequenceInput";
 import "./MutationUpdateChatInput";
 import "./MutationUpdateChatMembershipInput";
 import "./MutationUpdateChatMessageInput";

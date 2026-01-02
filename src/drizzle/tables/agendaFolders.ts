@@ -79,14 +79,11 @@ export const agendaFoldersTable = pgTable(
 			},
 		),
 		organizationId: uuid("organization_id")
-		.notNull()
-		.references(
-			() => organizationsTable.id,
-			{
+			.notNull()
+			.references(() => organizationsTable.id, {
 				onDelete: "cascade",
 				onUpdate: "cascade",
-			},
-		),
+			}),
 		/**
 		 * Sequence of the agenda folder.
 		 */

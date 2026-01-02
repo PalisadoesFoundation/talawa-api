@@ -65,14 +65,11 @@ export const agendaCategoriesTable = pgTable(
 		 * Foreign key reference to the id of the organization in which the advertisement is made.
 		 */
 		organizationId: uuid("organization_id")
-		.notNull()
-		.references(
-			() => organizationsTable.id,
-			{
+			.notNull()
+			.references(() => organizationsTable.id, {
 				onDelete: "cascade",
 				onUpdate: "cascade",
-			},
-		),
+			}),
 		/**
 		 * Date time at the time the agenda categories was last updated.
 		 */

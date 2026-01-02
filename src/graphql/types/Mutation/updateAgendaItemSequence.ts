@@ -5,7 +5,7 @@ import { builder } from "~/src/graphql/builder";
 import {
 	MutationUpdateAgendaItemSequenceInput,
 	MutationUpdateAgendaItemSequenceInputSchema,
-} from "~/src/graphql/inputs/MutationUpdateAgendaItemSequenceinput";
+} from "~/src/graphql/inputs/MutationUpdateAgendaItemSequenceInput";
 import { AgendaItem } from "~/src/graphql/types/AgendaItem/AgendaItem";
 import envConfig from "~/src/utilities/graphqLimits";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";

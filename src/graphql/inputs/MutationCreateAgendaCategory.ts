@@ -7,6 +7,7 @@ export const mutationCreateAgendaCategoriesInputSchema =
 		eventId: true,
 		name: true,
 		description: true,
+		organizationId: true,
 	});
 
 export const MutationCreateAgendaCategoriesInput = builder
@@ -31,7 +32,7 @@ export const MutationCreateAgendaCategoriesInput = builder
 			}),
 			organizationId: t.id({
 				description: "ID of the organization this category belongs to.",
-				required: false,
+				required: true,
 			}),
 		}),
 	});
