@@ -40,11 +40,7 @@ export function createActionItemLoader(
 		return ids.map((id) => map.get(id) ?? null);
 	};
 
-	const wrappedBatch = wrapBatchWithMetrics(
-		"actionItems.byId",
-		perf,
-		batchFn,
-	);
+	const wrappedBatch = wrapBatchWithMetrics("actionItems.byId", perf, batchFn);
 
 	return new DataLoader<string, ActionItemRow | null>(wrappedBatch, {
 		// Coalesce loads triggered within the same event loop tick

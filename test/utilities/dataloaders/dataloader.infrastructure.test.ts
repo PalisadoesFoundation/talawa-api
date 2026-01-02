@@ -26,7 +26,7 @@ function createMockDb<T>(mockResults: T[]) {
  */
 function createMockPerf(): PerformanceTracker {
 	return {
-		time: vi.fn((label, fn) => fn()),
+		time: vi.fn((_label, fn) => fn()),
 		start: vi.fn(() => vi.fn()),
 		trackDbQuery: vi.fn(),
 		trackCacheHit: vi.fn(),

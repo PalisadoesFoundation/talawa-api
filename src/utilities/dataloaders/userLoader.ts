@@ -23,10 +23,7 @@ export type UserRow = typeof usersTable.$inferSelect;
  * const user = await userLoader.load(userId);
  * ```
  */
-export function createUserLoader(
-	db: DrizzleClient,
-	perf: PerformanceTracker,
-) {
+export function createUserLoader(db: DrizzleClient, perf: PerformanceTracker) {
 	const batchFn = async (ids: readonly string[]) => {
 		const rows = await db
 			.select()

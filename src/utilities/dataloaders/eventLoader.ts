@@ -23,19 +23,14 @@ export type EventRow = typeof eventsTable.$inferSelect;
  * const event = await eventLoader.load(eventId);
  * ```
  */
-export function createEventLoader(
-	db: DrizzleClient,
-	perf: PerformanceTracker,
-) {
+export function createEventLoader(db: DrizzleClient, perf: PerformanceTracker) {
 	const batchFn = async (ids: readonly string[]) => {
 		const rows = await db
 			.select()
 			.from(eventsTable)
 			.where(inArray(eventsTable.id, ids as string[]));
 
-		const map = new Map<string, EventRow>(
-			rows.map((r: EventRow) => [r.id, r]),
-		);
+		const map = new Map<string, EventRow>(rows.map((r: EventRow) => [r.id, r]));
 
 		return ids.map((id) => map.get(id) ?? null);
 	};

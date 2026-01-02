@@ -151,9 +151,13 @@ export const createContext: CreateContext = async (initialContext) => {
 
 	// Performance tracker should always be attached by performance plugin
 	// If not present, throw error to indicate misconfiguration
-	const perf = request.perf ?? (() => {
-		throw new Error("Performance tracker not attached to request. Ensure performance plugin is registered before GraphQL route.");
-	})();
+	const perf =
+		request.perf ??
+		(() => {
+			throw new Error(
+				"Performance tracker not attached to request. Ensure performance plugin is registered before GraphQL route.",
+			);
+		})();
 
 	// Wrap cache service with performance tracking proxy
 	const cache = metricsCacheProxy(fastify.cache, perf);
@@ -265,10 +269,10 @@ export const graphql = fastifyPlugin(async (fastify) => {
 
 					// Create a standalone performance tracker for WebSocket subscription
 					const perf = createPerformanceTracker();
-				const cache = metricsCacheProxy(fastify.cache, perf);
+					const cache = metricsCacheProxy(fastify.cache, perf);
 
-				return {
-					cache,
+					return {
+						cache,
 						currentClient: {
 							isAuthenticated: true,
 							user: decoded.user,
@@ -389,9 +393,7 @@ export const graphql = fastifyPlugin(async (fastify) => {
 				};
 
 				// Start timing the GraphQL execution
-				const gqlEnd = perf.start(
-					`graphql:${operationType}:${operationName}`,
-				);
+				const gqlEnd = perf.start(`graphql:${operationType}:${operationName}`);
 				// Store the end function so we can call it after execution
 				(request as unknown as Record<string, unknown>)._gqlEnd = gqlEnd;
 			}
@@ -454,10 +456,11 @@ export const graphql = fastifyPlugin(async (fastify) => {
 	// Hook to track GraphQL execution completion
 	fastify.graphql.addHook("onResolution", async (_execution, context) => {
 		const request = context.reply.request;
-		
+
 		// Stop timing the GraphQL execution
-		const gqlEnd = (request as unknown as Record<string, unknown>)
-			._gqlEnd as (() => void) | undefined;
+		const gqlEnd = (request as unknown as Record<string, unknown>)._gqlEnd as
+			| (() => void)
+			| undefined;
 		gqlEnd?.();
 
 		// Log GraphQL operation performance for debugging
@@ -465,7 +468,7 @@ export const graphql = fastifyPlugin(async (fastify) => {
 			._gqlOperation as
 			| { name: string; type: string; complexity: number }
 			| undefined;
-		
+
 		if (gqlOp && request.perf) {
 			const snap = request.perf.snapshot();
 			const gqlOpKey = `graphql:${gqlOp.type}:${gqlOp.name}`;
