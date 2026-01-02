@@ -6,6 +6,7 @@ import { server } from "../../../server";
 import { mercuriusClient } from "../client";
 import {
 	Mutation_createOrganization,
+	Mutation_createOrganizationMembership,
 	Mutation_deleteCurrentUser,
 	Query_signIn,
 } from "../documentNodes";
@@ -476,11 +477,12 @@ suite("Mutation field updateAdvertisement", () => {
 	});
 
 	suite("when the user is not authorized", () => {
-		test("should return an error when regular user tries to update advertisement", async () => {
-			const { authToken: regularAuthToken } = await import(
+		test("should return an error when non-admin organization member tries to update advertisement", async () => {
+			const { authToken: regularUserToken, userId } = await import(
 				"../createRegularUserUsingAdmin"
 			).then((module) => module.createRegularUserUsingAdmin());
-			assertToBeNonNullish(regularAuthToken);
+			assertToBeNonNullish(regularUserToken);
+			assertToBeNonNullish(userId);
 
 			// Create organization and advertisement as admin
 			const createOrgResult = await mercuriusClient.mutate(
@@ -495,6 +497,101 @@ suite("Mutation field updateAdvertisement", () => {
 							state: "CA",
 							city: "Sacramento",
 							postalCode: "95814",
+							addressLine1: faker.location.streetAddress(),
+						},
+					},
+				},
+			);
+
+			const orgId = createOrgResult.data?.createOrganization?.id;
+			assertToBeNonNullish(orgId);
+
+			const createMembershipResult = await mercuriusClient.mutate(
+				Mutation_createOrganizationMembership,
+				{
+					headers: { authorization: `bearer ${authToken}` },
+					variables: {
+						input: {
+							memberId: userId,
+							organizationId: orgId,
+							role: "regular",
+						},
+					},
+				},
+			);
+
+			assertToBeNonNullish(
+				createMembershipResult.data?.createOrganizationMembership,
+			);
+
+			const createAdResult = await mercuriusClient.mutate(
+				Mutation_createAdvertisement,
+				{
+					headers: { authorization: `bearer ${authToken}` },
+					variables: {
+						input: {
+							name: faker.company.name(),
+							organizationId: orgId,
+							type: "banner",
+							startAt: new Date().toISOString(),
+							endAt: new Date(Date.now() + 86400000).toISOString(),
+						},
+					},
+				},
+			);
+
+			const adId = createAdResult.data?.createAdvertisement?.id;
+			assertToBeNonNullish(adId);
+
+			const result = await mercuriusClient.mutate(
+				Mutation_updateAdvertisement,
+				{
+					headers: { authorization: `bearer ${regularUserToken}` },
+					variables: {
+						input: {
+							id: adId,
+							name: "Unauthorized Update Attempt",
+						},
+					},
+				},
+			);
+
+			expect(result.data?.updateAdvertisement).toBeNull();
+			expect(result.errors).toEqual(
+				expect.arrayContaining([
+					expect.objectContaining({
+						extensions: expect.objectContaining({
+							code: "unauthorized_action_on_arguments_associated_resources",
+							issues: expect.arrayContaining([
+								expect.objectContaining({
+									argumentPath: ["input", "id"],
+								}),
+							]),
+						}),
+						path: ["updateAdvertisement"],
+					}),
+				]),
+			);
+		});
+
+		test("should return an error when regular user with no organization membership tries to update advertisement", async () => {
+			const { authToken: regularAuthToken } = await import(
+				"../createRegularUserUsingAdmin"
+			).then((module) => module.createRegularUserUsingAdmin());
+			assertToBeNonNullish(regularAuthToken);
+
+			const createOrgResult = await mercuriusClient.mutate(
+				Mutation_createOrganization,
+				{
+					headers: { authorization: `bearer ${authToken}` },
+					variables: {
+						input: {
+							name: faker.company.name(),
+							description: faker.lorem.sentence(),
+							countryCode: "us",
+							state: "CA",
+							city: "Fresno",
+							postalCode: "93650",
 							addressLine1: faker.location.streetAddress(),
 						},
 					},
@@ -523,7 +620,6 @@ suite("Mutation field updateAdvertisement", () => {
 			const adId = createAdResult.data?.createAdvertisement?.id;
 			assertToBeNonNullish(adId);
 
-			// Try to update as regular user (non-administrator)
 			const result = await mercuriusClient.mutate(
 				Mutation_updateAdvertisement,
 				{
