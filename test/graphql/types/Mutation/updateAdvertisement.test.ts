@@ -2,6 +2,7 @@ import { faker } from "@faker-js/faker";
 import { gql } from "graphql-tag";
 import { expect, suite, test, vi } from "vitest";
 import { assertToBeNonNullish } from "../../../helpers";
+import { Mutation_createAdvertisement } from "../../../routes/graphql/documentNodes";
 import { server } from "../../../server";
 import { mercuriusClient } from "../client";
 import {
@@ -10,14 +11,6 @@ import {
 	Mutation_deleteCurrentUser,
 	Query_signIn,
 } from "../documentNodes";
-
-const Mutation_createAdvertisement = gql`
-  mutation createAdvertisement($input: MutationCreateAdvertisementInput!) {
-    createAdvertisement(input: $input) {
-      id
-    }
-  }
-`;
 
 const signInResult = await mercuriusClient.query(Query_signIn, {
 	variables: {
@@ -474,17 +467,84 @@ suite("Mutation field updateAdvertisement", () => {
 				]),
 			);
 		});
+
+		test("should allow updating advertisement with its current name", async () => {
+			const createOrgResult = await mercuriusClient.mutate(
+				Mutation_createOrganization,
+				{
+					headers: { authorization: `bearer ${authToken}` },
+					variables: {
+						input: {
+							name: faker.company.name(),
+							description: faker.lorem.sentence(),
+							countryCode: "us",
+							state: "MA",
+							city: "Boston",
+							postalCode: "02101",
+							addressLine1: faker.location.streetAddress(),
+						},
+					},
+				},
+			);
+
+			const orgId = createOrgResult.data?.createOrganization?.id;
+			assertToBeNonNullish(orgId);
+
+			const originalName = `Original-${faker.string.uuid()}`;
+			const createAdResult = await mercuriusClient.mutate(
+				Mutation_createAdvertisement,
+				{
+					headers: { authorization: `bearer ${authToken}` },
+					variables: {
+						input: {
+							name: originalName,
+							organizationId: orgId,
+							type: "banner",
+							startAt: new Date().toISOString(),
+							endAt: new Date(Date.now() + 86400000).toISOString(),
+						},
+					},
+				},
+			);
+
+			const adId = createAdResult.data?.createAdvertisement?.id;
+			assertToBeNonNullish(adId);
+
+			// Update with same name but different description
+			const result = await mercuriusClient.mutate(
+				Mutation_updateAdvertisement,
+				{
+					headers: { authorization: `bearer ${authToken}` },
+					variables: {
+						input: {
+							id: adId,
+							name: originalName, // Same name
+							description: "Updated description",
+						},
+					},
+				},
+			);
+
+			expect(result.errors).toBeUndefined();
+			expect(result.data?.updateAdvertisement).toEqual(
+				expect.objectContaining({
+					id: adId,
+					name: originalName,
+					description: "Updated description",
+				}),
+			);
+		});
 	});
 
 	suite("when the user is not authorized", () => {
 		test("should return an error when non-admin organization member tries to update advertisement", async () => {
-			const { authToken: regularUserToken, userId } = await import(
+			const { authToken: memberToken, userId } = await import(
 				"../createRegularUserUsingAdmin"
 			).then((module) => module.createRegularUserUsingAdmin());
-			assertToBeNonNullish(regularUserToken);
+			assertToBeNonNullish(memberToken);
 			assertToBeNonNullish(userId);
 
-			// Create organization and advertisement as admin
+			// Create organization as admin
 			const createOrgResult = await mercuriusClient.mutate(
 				Mutation_createOrganization,
 				{
@@ -495,8 +555,8 @@ suite("Mutation field updateAdvertisement", () => {
 							description: faker.lorem.sentence(),
 							countryCode: "us",
 							state: "CA",
-							city: "Sacramento",
-							postalCode: "95814",
+							city: "Fresno",
+							postalCode: "93701",
 							addressLine1: faker.location.streetAddress(),
 						},
 					},
@@ -506,24 +566,19 @@ suite("Mutation field updateAdvertisement", () => {
 			const orgId = createOrgResult.data?.createOrganization?.id;
 			assertToBeNonNullish(orgId);
 
-			const createMembershipResult = await mercuriusClient.mutate(
-				Mutation_createOrganizationMembership,
-				{
-					headers: { authorization: `bearer ${authToken}` },
-					variables: {
-						input: {
-							memberId: userId,
-							organizationId: orgId,
-							role: "regular",
-						},
+			// Add regular user as NON-ADMIN member to the organization
+			await mercuriusClient.mutate(Mutation_createOrganizationMembership, {
+				headers: { authorization: `bearer ${authToken}` },
+				variables: {
+					input: {
+						organizationId: orgId,
+						memberId: userId,
+						role: "regular",
 					},
 				},
-			);
+			});
 
-			assertToBeNonNullish(
-				createMembershipResult.data?.createOrganizationMembership,
-			);
-
+			// Create advertisement as admin
 			const createAdResult = await mercuriusClient.mutate(
 				Mutation_createAdvertisement,
 				{
@@ -543,14 +598,15 @@ suite("Mutation field updateAdvertisement", () => {
 			const adId = createAdResult.data?.createAdvertisement?.id;
 			assertToBeNonNullish(adId);
 
+			// Try to update as non-admin organization member
 			const result = await mercuriusClient.mutate(
 				Mutation_updateAdvertisement,
 				{
-					headers: { authorization: `bearer ${regularUserToken}` },
+					headers: { authorization: `bearer ${memberToken}` },
 					variables: {
 						input: {
 							id: adId,
-							name: "Unauthorized Update Attempt",
+							name: "Unauthorized Member Update",
 						},
 					},
 				},
@@ -580,6 +636,7 @@ suite("Mutation field updateAdvertisement", () => {
 			).then((module) => module.createRegularUserUsingAdmin());
 			assertToBeNonNullish(regularAuthToken);
 
+			// Create organization and advertisement as admin
 			const createOrgResult = await mercuriusClient.mutate(
 				Mutation_createOrganization,
 				{
@@ -590,8 +647,8 @@ suite("Mutation field updateAdvertisement", () => {
 							description: faker.lorem.sentence(),
 							countryCode: "us",
 							state: "CA",
-							city: "Fresno",
-							postalCode: "93650",
+							city: "Sacramento",
+							postalCode: "95814",
 							addressLine1: faker.location.streetAddress(),
 						},
 					},
@@ -620,6 +677,7 @@ suite("Mutation field updateAdvertisement", () => {
 			const adId = createAdResult.data?.createAdvertisement?.id;
 			assertToBeNonNullish(adId);
 
+			// Try to update as regular user (non-administrator)
 			const result = await mercuriusClient.mutate(
 				Mutation_updateAdvertisement,
 				{
@@ -991,6 +1049,8 @@ suite("Mutation field updateAdvertisement", () => {
 			expect(result.data?.updateAdvertisement).toEqual(
 				expect.objectContaining({
 					id: adId,
+					startAt: newStartAt.toISOString(),
+					endAt: newEndAt.toISOString(),
 				}),
 			);
 		});
