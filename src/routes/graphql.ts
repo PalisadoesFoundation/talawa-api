@@ -19,6 +19,7 @@ import {
 } from "../utilities/cookieConfig";
 import { createDataloaders } from "../utilities/dataloaders";
 import leakyBucket from "../utilities/leakyBucket";
+import { createPerformanceTracker } from "../utilities/metrics/performanceTracker";
 import { DEFAULT_REFRESH_TOKEN_EXPIRES_MS } from "../utilities/refreshTokenUtils";
 import { TalawaGraphQLError } from "../utilities/TalawaGraphQLError";
 
@@ -169,10 +170,16 @@ export const createContext: CreateContext = async (initialContext) => {
 				}
 			: undefined;
 
+	// Performance tracker should always be attached by performance plugin
+	// If not present, throw error to indicate misconfiguration
+	const perf = request.perf ?? (() => {
+		throw new Error("Performance tracker not attached to request. Ensure performance plugin is registered before GraphQL route.");
+	})();
+
 	return {
 		cache: fastify.cache,
 		currentClient,
-		dataloaders: createDataloaders(fastify.drizzleClient),
+		dataloaders: createDataloaders(fastify.drizzleClient, perf),
 		drizzleClient: fastify.drizzleClient,
 		envConfig: fastify.envConfig,
 		jwt: {
@@ -182,11 +189,7 @@ export const createContext: CreateContext = async (initialContext) => {
 		cookie: cookieHelper,
 		log: request.log ?? fastify.log,
 		minio: fastify.minio,
-		// Performance tracker should always be attached by performance plugin
-		// If not present, throw error to indicate misconfiguration
-		perf: request.perf ?? (() => {
-			throw new Error("Performance tracker not attached to request. Ensure performance plugin is registered before GraphQL route.");
-		})(),
+		perf,
 		// attached a per-request notification service that queues notifications and can flush later
 		notification: new NotificationService(),
 	};
@@ -278,13 +281,16 @@ export const graphql = fastifyPlugin(async (fastify) => {
 						"Subscription connection authorized.",
 					);
 
+					// Create a standalone performance tracker for WebSocket subscription
+					const perf = createPerformanceTracker();
+
 					return {
 						cache: fastify.cache,
 						currentClient: {
 							isAuthenticated: true,
 							user: decoded.user,
 						},
-						dataloaders: createDataloaders(fastify.drizzleClient),
+						dataloaders: createDataloaders(fastify.drizzleClient, perf),
 						drizzleClient: fastify.drizzleClient,
 						envConfig: fastify.envConfig,
 						jwt: {
@@ -293,6 +299,7 @@ export const graphql = fastifyPlugin(async (fastify) => {
 						},
 						log: fastify.log,
 						minio: fastify.minio,
+						perf,
 						notification: new NotificationService(),
 					};
 				} catch (error) {

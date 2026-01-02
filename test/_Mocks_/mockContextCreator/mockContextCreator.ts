@@ -48,6 +48,24 @@ export function createMockGraphQLContext(
 			(payload) => `mocked.jwt.${JSON.stringify(payload)}.token`,
 		);
 
+	// Create mock performance tracker
+	const mockPerf: PerformanceTracker = {
+		time: vi.fn().mockImplementation(async (_op, fn) => fn()),
+		start: vi.fn().mockReturnValue(() => {}),
+		trackDb: vi.fn(),
+		trackCacheHit: vi.fn(),
+		trackCacheMiss: vi.fn(),
+		snapshot: vi.fn().mockReturnValue({
+			totalMs: 0,
+			totalOps: 0,
+			cacheHits: 0,
+			cacheMiss: 0,
+			ops: {},
+			slow: [],
+			hitRate: 0,
+		}),
+	};
+
 	// Create the explicit context
 	const explicitContext: ExplicitGraphQLContext = {
 		cache: {
@@ -90,6 +108,7 @@ export function createMockGraphQLContext(
 			: unauthenticatedClient,
 		dataloaders: createDataloaders(
 			mockDrizzleClient as unknown as FastifyInstance["drizzleClient"],
+			mockPerf,
 		),
 		drizzleClient:
 			mockDrizzleClient as unknown as FastifyInstance["drizzleClient"],
@@ -109,22 +128,7 @@ export function createMockGraphQLContext(
 		},
 		log: createMockLogger(),
 		minio: mockMinioClient,
-		perf: {
-			time: vi.fn().mockImplementation(async (_op, fn) => fn()),
-			start: vi.fn().mockReturnValue(() => {}),
-			trackDb: vi.fn(),
-			trackCacheHit: vi.fn(),
-			trackCacheMiss: vi.fn(),
-			snapshot: vi.fn().mockReturnValue({
-				totalMs: 0,
-				totalOps: 0,
-				cacheHits: 0,
-				cacheMiss: 0,
-				ops: {},
-				slow: [],
-				hitRate: 0,
-			}),
-		} as PerformanceTracker,
+		perf: mockPerf,
 	};
 
 	// Create the implicit context
