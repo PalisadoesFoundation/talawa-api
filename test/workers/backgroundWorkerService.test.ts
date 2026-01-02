@@ -5,6 +5,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import type * as schema from "~/src/drizzle/schema";
 
 import {
+	healthCheck,
 	runCleanupWorkerSafely,
 	runMaterializationWorkerSafely,
 	startBackgroundWorkers,
@@ -393,6 +394,97 @@ describe("backgroundServiceWorker", () => {
 				startupError,
 				"Failed to start background worker service",
 			);
+		});
+	});
+
+	describe("healthCheck", () => {
+		it("returns healthy status when running", async () => {
+			// Ensure running
+			await startBackgroundWorkers(mockDrizzleClient, mockLogger);
+
+			const result = await healthCheck(mockLogger);
+
+			expect(result).toMatchObject({
+				status: "healthy",
+				details: expect.objectContaining({
+					isRunning: true,
+				}),
+			});
+
+			await stopBackgroundWorkers(mockLogger);
+		});
+
+		it("returns unhealthy status when not running", async () => {
+			// Ensure stopped
+			await stopBackgroundWorkers(mockLogger).catch(() => {});
+
+			const result = await healthCheck(mockLogger);
+
+			expect(result).toMatchObject({
+				status: "unhealthy",
+				details: expect.objectContaining({
+					reason: "Background workers not running",
+					isRunning: false,
+				}),
+			});
+		});
+
+		it("handles errors with logger provided", async () => {
+			const error = new Error("Health check boom");
+			const throwMock = () => {
+				throw error;
+			};
+
+			const result = await healthCheck(mockLogger, throwMock);
+
+			expect(mockLogger.error).toHaveBeenCalledWith(
+				error,
+				"backgroundWorkerService error:",
+			);
+			expect(result).toEqual({
+				status: "unhealthy",
+				details: {
+					reason: "Health check failed",
+					error: "Health check boom",
+				},
+			});
+		});
+
+		it("handles errors without logger", async () => {
+			const error = new Error("Health check boom");
+			const throwMock = () => {
+				throw error;
+			};
+
+			const result = await healthCheck(undefined, throwMock);
+
+			expect(result).toEqual({
+				status: "unhealthy",
+				details: {
+					reason: "Health check failed",
+					error: "Health check boom",
+				},
+			});
+		});
+
+		it("handles non-Error objects", async () => {
+			const throwMock = () => {
+				throw "String error";
+			};
+
+			const result = await healthCheck(mockLogger, throwMock);
+
+			expect(mockLogger.error).toHaveBeenCalledWith(
+				"String error",
+				"backgroundWorkerService error:",
+			);
+			expect(result).toEqual({
+				status: "unhealthy",
+				details: {
+					reason: "Health check failed",
+					error: "Unknown error",
+				},
+			});
 		});
 	});
 });

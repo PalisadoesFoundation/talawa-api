@@ -399,3 +399,34 @@ suite("disconnect integration test", () => {
 		queryClient.end = originalEnd;
 	});
 });
+
+suite.concurrent("formatDatabase", () => {
+	test.concurrent("should return false and log error on transaction failure", async () => {
+		const db = Reflect.get(helpers, "db");
+		const originalTransaction = db.transaction;
+		const consoleSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+
+		// Mock transaction to throw
+		db.transaction = async () => {
+			throw new Error("Transaction mock failure");
+		};
+
+		const result = await helpers.formatDatabase();
+
+		expect(result).toBe(false);
+		expect(consoleSpy).toHaveBeenCalledWith(
+			"dbManagement/helpers error:",
+			// Let's check source code again. Line 108: console.error("dbManagement/helpers error:", _error);
+			// So expectation should match.
+			expect.any(Error),
+		);
+		// Wait, the spy captures arguments.
+		expect(consoleSpy).toHaveBeenCalledWith(
+			"dbManagement/helpers error:",
+			expect.objectContaining({ message: "Transaction mock failure" }),
+		);
+
+		consoleSpy.mockRestore();
+		db.transaction = originalTransaction;
+	});
+});

@@ -159,10 +159,12 @@ vi.mock("../../src/utilities/TalawaGraphQLError", () => {
 
 // Import after mocks
 import * as yauzl from "yauzl";
+import type PluginManager from "../../src/plugin/manager/core";
 import * as pluginUtils from "../../src/plugin/utils";
 import {
 	extractPluginZip,
 	installPluginFromZip,
+	type PluginInstallationOptions,
 	validatePluginZip,
 } from "../../src/utilities/pluginInstaller";
 
@@ -1867,5 +1869,172 @@ describe("installPluginFromZip", () => {
 
 		// Restore the spy
 		validateSpy.mockRestore();
+	});
+
+	describe("installPluginFromZip with logger", () => {
+		it("should log info on successful extraction", async () => {
+			const logger = { info: vi.fn(), error: vi.fn() };
+			const options: Parameters<typeof installPluginFromZip>[0] = {
+				zipFile: {
+					createReadStream: vi.fn(() => ({
+						pipe: vi.fn(),
+						on: vi.fn((event, handler) => {
+							if (event === "data") handler("mock data");
+							if (event === "end") handler();
+							return { pipe: vi.fn() };
+						}),
+					})),
+					filename: "test.zip",
+					fieldName: "pluginZip",
+					mimetype: "application/zip",
+					encoding: "7bit",
+				} as unknown as PluginInstallationOptions["zipFile"],
+				drizzleClient: {
+					query: {
+						pluginsTable: {
+							findFirst: vi.fn(async () => null),
+						},
+					},
+					execute: vi.fn(async () => undefined),
+					insert: vi.fn(() => ({
+						values: vi.fn(() => ({
+							returning: vi.fn(() => Promise.resolve([{ id: "testId" }])),
+						})),
+					})),
+				} as unknown as PluginInstallationOptions["drizzleClient"],
+				activate: false,
+				userId: "test-user",
+				logger: logger as unknown as PluginInstallationOptions["logger"],
+			};
+
+			await installPluginFromZip(options);
+			expect(logger.info).toHaveBeenCalledWith(
+				{ pluginId: "test_plugin" },
+				"Plugin files extracted successfully",
+			);
+		});
+
+		it("should log error when activation fails", async () => {
+			const logger = { info: vi.fn(), error: vi.fn() };
+			const mockPluginRegistry = await import("../../src/plugin/registry");
+
+			// Mock activation failure
+			const originalGetPluginManagerInstance =
+				mockPluginRegistry.getPluginManagerInstance;
+			mockPluginRegistry.getPluginManagerInstance = vi.fn(() => ({
+				isPluginActive: vi.fn(() => false),
+				deactivatePlugin: vi.fn(async () => undefined),
+				loadPlugin: vi.fn(async () => undefined),
+				activatePlugin: vi.fn(async () => {
+					throw new Error("Activation error");
+				}),
+			})) as unknown as () => PluginManager;
+
+			const options: Parameters<typeof installPluginFromZip>[0] = {
+				zipFile: {
+					createReadStream: vi.fn(() => ({
+						pipe: vi.fn(),
+						on: vi.fn((event, handler) => {
+							if (event === "data") handler("mock data");
+							if (event === "end") handler();
+							return { pipe: vi.fn() };
+						}),
+					})),
+					filename: "test.zip",
+					fieldName: "pluginZip",
+					mimetype: "application/zip",
+					encoding: "7bit",
+				} as unknown as PluginInstallationOptions["zipFile"],
+				drizzleClient: {
+					query: {
+						pluginsTable: {
+							findFirst: vi.fn(async () => null),
+						},
+					},
+					execute: vi.fn(async () => undefined),
+					insert: vi.fn(() => ({
+						values: vi.fn(() => ({
+							returning: vi.fn(() => Promise.resolve([{ id: "testId" }])),
+						})),
+					})),
+				} as unknown as PluginInstallationOptions["drizzleClient"],
+				activate: true,
+				userId: "test-user",
+				logger: logger as unknown as PluginInstallationOptions["logger"],
+			};
+
+			await installPluginFromZip(options);
+			expect(logger.error).toHaveBeenCalledWith(
+				expect.objectContaining({
+					pluginId: "test_plugin",
+					error: expect.any(Error),
+				}),
+				"Failed to activate plugin",
+			);
+
+			// Restore
+			mockPluginRegistry.getPluginManagerInstance =
+				originalGetPluginManagerInstance;
+		});
+
+		it("should log error when cleanup fails", async () => {
+			const logger = { info: vi.fn(), error: vi.fn() };
+			const fs = await import("node:fs");
+
+			// Mock unlink failure
+			// Note: fs.promises.unlink is mocked globally, we need to override the implementation
+			const originalUnlink = fs.promises.unlink;
+			fs.promises.unlink = vi.fn(async () => {
+				throw new Error("Cleanup error");
+			});
+
+			const options: Parameters<typeof installPluginFromZip>[0] = {
+				zipFile: {
+					createReadStream: vi.fn(() => ({
+						pipe: vi.fn(),
+						on: vi.fn((event, handler) => {
+							if (event === "data") handler("mock data");
+							if (event === "end") handler();
+							return { pipe: vi.fn() };
+						}),
+					})),
+					filename: "test.zip",
+					fieldName: "pluginZip",
+					mimetype: "application/zip",
+					encoding: "7bit",
+				} as unknown as PluginInstallationOptions["zipFile"],
+				drizzleClient: {
+					query: {
+						pluginsTable: {
+							findFirst: vi.fn(async () => null),
+						},
+					},
+					execute: vi.fn(async () => undefined),
+					insert: vi.fn(() => ({
+						values: vi.fn(() => ({
+							returning: vi.fn(() => Promise.resolve([{ id: "testId" }])),
+						})),
+					})),
+				} as unknown as PluginInstallationOptions["drizzleClient"],
+				activate: false,
+				userId: "test-user",
+				logger: logger as unknown as PluginInstallationOptions["logger"],
+			};
+
+			try {
+				await installPluginFromZip(options);
+			} catch {
+				// We expect error or not? Logic says it catches and logs.
+			}
+			expect(logger.error).toHaveBeenCalledWith(
+				expect.objectContaining({
+					error: expect.any(Error),
+				}),
+				"Failed to clean up temporary file",
+			);
+
+			// Restore
+			fs.promises.unlink = originalUnlink;
+		});
 	});
 });

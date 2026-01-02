@@ -234,14 +234,21 @@ export function getBackgroundWorkerStatus(): {
 /**
  * Performs a health check of the background worker service, suitable for use by monitoring systems.
  *
+ * @param logger - Optional Fastify logger for error logging. If not provided, errors will not be logged.
  * @returns - A promise that resolves to an object indicating the health status and any relevant details.
  */
-export async function healthCheck(logger?: FastifyBaseLogger): Promise<{
+export async function healthCheck(
+	logger?: FastifyBaseLogger,
+	/**
+	 * @internal For testing purposes only
+	 */
+	getStatusVal = getBackgroundWorkerStatus,
+): Promise<{
 	status: "healthy" | "unhealthy";
 	details: Record<string, unknown>;
 }> {
 	try {
-		const status = getBackgroundWorkerStatus();
+		const status = getStatusVal();
 
 		if (!status.isRunning) {
 			return {

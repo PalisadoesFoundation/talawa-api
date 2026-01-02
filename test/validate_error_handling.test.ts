@@ -581,4 +581,281 @@ describe("ErrorHandlingValidator", () => {
 			).toBe(false);
 		});
 	});
+
+	describe("Utility Methods Coverage", () => {
+		describe("removeCommentsAndStrings", () => {
+			it("should handle mixed content correctly", () => {
+				const input = `
+            const x = "string"; // comment
+            const y = 'string'; /* multi
+            line comment */
+            const z = \`template\`;
+        `;
+				const expected = `
+            const x =         ;           
+            const y =         ;         
+                           
+            const z =           ;
+        `;
+				expect(validator.removeCommentsAndStrings(input).trim()).toBe(
+					expected.trim(),
+				);
+			});
+
+			it("should handle escaped quotes in strings", () => {
+				const input = `const x = "str\\"ing";`;
+				const expected = `const x =           ;`;
+				expect(validator.removeCommentsAndStrings(input)).toBe(expected);
+			});
+
+			it("should handle template literal interpolation", () => {
+				// biome-ignore lint/suspicious/noTemplateCurlyInString: Testing template literals
+				const input = "const x = `val ${a + b} end`;";
+				// Inside ${} code is preserved (ROOT state)
+				// The bounding backticks form the template
+				// "const x = " -> ROOT
+				// "`" -> TEMPLATE
+				// "val " -> masked
+				// "${" -> ROOT, braceDepth 0->0? No, stack push.
+				// "a + b" -> preserved
+				// "}" -> pop, back to TEMPLATE
+				// " end" -> masked
+				// "`" -> end TEMPLATE
+				const result = validator.removeCommentsAndStrings(input);
+				expect(result).toContain("a + b");
+				expect(result).not.toContain("val");
+				expect(result).not.toContain("end");
+			});
+
+			it("should handle nested template literals", () => {
+				// biome-ignore lint/suspicious/noTemplateCurlyInString: Testing template literals
+				const input = "const x = `level1 ${ `level2 ${level3}` } end1`;";
+				const result = validator.removeCommentsAndStrings(input);
+				expect(result).toContain("level3");
+				expect(result).not.toContain("level1");
+				expect(result).not.toContain("level2");
+			});
+
+			it("should handle complex nesting of strings and comments", () => {
+				const input = `
+            /* start */
+            const a = "a // not a comment";
+            // const b = "b";
+            const c = \`c \${ /* inside interpolation */ d } e\`;
+        `;
+				const result = validator.removeCommentsAndStrings(input);
+				expect(result).toContain("const a");
+				expect(result).not.toContain("const b");
+				expect(result).toContain("const c");
+				expect(result).toContain("d");
+				expect(result).not.toContain("inside interpolation");
+			});
+		});
+
+		describe("getLineContent", () => {
+			it("should return the line itself if it matches criteria", () => {
+				const lines = ["try {", "  doSomething();", "} catch (e) { }"];
+				expect(validator.getLineContent(lines, 3)).toBe("} catch (e) { }");
+			});
+
+			it("should search nearby lines for catch declaration", () => {
+				const lines = [
+					"try {",
+					"  doSomething();",
+					"} catch (e) {", // Line 3
+					"  console.log(e);", // Line 4
+					"}",
+				];
+				// If we report on line 4 (inside catch), it might look for 'catch' around it
+				expect(validator.getLineContent(lines, 4)).toBe("} catch (e) {");
+			});
+		});
+
+		describe("isFileSuppressed", () => {
+			it("should not detect suppression after line 10", () => {
+				const lines = Array(15).fill("");
+				lines[12] = "// validate-error-handling-disable";
+				const content = lines.join("\n");
+				expect(validator.isFileSuppressed(content)).toBe(false);
+			});
+
+			it("should detect suppression in first 10 lines", () => {
+				const lines = Array(15).fill("");
+				lines[5] = "// validate-error-handling-disable";
+				const content = lines.join("\n");
+				expect(validator.isFileSuppressed(content)).toBe(true);
+			});
+		});
+
+		describe("branchExists", () => {
+			it("should return true if git command succeeds", () => {
+				vi.mocked(child_process.execSync).mockReturnValue("");
+				expect(validator.branchExists("main")).toBe(true);
+			});
+
+			it("should return false if git command fails", () => {
+				vi.mocked(child_process.execSync).mockImplementation(() => {
+					throw new Error("fatal: not a valid object name");
+				});
+				expect(validator.branchExists("non-existent")).toBe(false);
+			});
+		});
+	});
+
+	describe("Incremental Scan & CI Logic", () => {
+		it("should use local git diff when not in CI", () => {
+			const originalEnv = process.env;
+			process.env = {
+				...originalEnv,
+				CI: undefined,
+				GITHUB_BASE_REF: undefined,
+			};
+
+			vi.mocked(child_process.execSync)
+				// First call for unstaged
+				.mockReturnValueOnce("src/file1.ts\n")
+				// Second call for staged
+				.mockReturnValueOnce("src/file2.ts\n");
+
+			const modified = validator.getModifiedFiles();
+			expect(modified).toContain("src/file1.ts");
+			expect(modified).toContain("src/file2.ts");
+			expect(child_process.execSync).toHaveBeenCalledWith(
+				expect.stringContaining("diff --name-only"),
+				expect.anything(),
+			);
+
+			process.env = originalEnv;
+		});
+
+		it("should handle error in local git diff", () => {
+			const originalEnv = process.env;
+			process.env = {
+				...originalEnv,
+				CI: undefined,
+				GITHUB_BASE_REF: undefined,
+			};
+
+			vi.mocked(child_process.execSync).mockImplementation(() => {
+				throw new Error("Git failed");
+			});
+
+			expect(() => validator.getModifiedFiles()).toThrow("Git command failed");
+
+			process.env = originalEnv;
+		});
+
+		it("checkLineForViolations should delegate correctly", () => {
+			const spyGeneric = vi.spyOn(validator, "checkGenericError");
+			const spyConsole = vi.spyOn(validator, "checkConsoleUsage");
+
+			validator.checkLineForViolations("file.ts", 1, "code");
+
+			expect(spyGeneric).toHaveBeenCalled();
+			expect(spyConsole).toHaveBeenCalled();
+		});
+
+		it("validate should handle errors gracefully", async () => {
+			vi.spyOn(validator, "getFilesToScan").mockRejectedValue(
+				new Error("Scan failed"),
+			);
+			const exitCode = await validator.validate();
+			expect(exitCode).toBe(1);
+		});
+
+		it("validate should return 0 if no files to scan", async () => {
+			vi.spyOn(validator, "getFilesToScan").mockResolvedValue([]);
+			const exitCode = await validator.validate();
+			expect(exitCode).toBe(0);
+		});
+	});
+
+	describe("checkMultilineCatchBlocks Integration", () => {
+		it("should identify violations via main method", () => {
+			const content = `
+                try {
+                    fail();
+                } catch (e) {
+                    // empty
+                }
+            `;
+			const lines = content.split("\n");
+			validator.checkMultilineCatchBlocks("test.ts", content, lines);
+			expect(validator.result.violations).toHaveLength(1);
+			expect(validator.result.violations[0]?.violationType).toBe(
+				"empty_catch_block",
+			);
+		});
+	});
+
+	describe("printResults", () => {
+		it("should print no violations message when no violations found", () => {
+			const consoleSpy = vi.spyOn(console, "log").mockImplementation(() => {});
+
+			validator.result.violations = [];
+			validator.result.fileCount = 5;
+
+			validator.printResults();
+
+			expect(consoleSpy).toHaveBeenCalledWith(
+				"No error handling violations found!",
+			);
+			expect(consoleSpy).toHaveBeenCalledWith("Scanned 5 files");
+
+			consoleSpy.mockRestore();
+		});
+
+		it("should print violations grouped by type", () => {
+			const consoleSpy = vi.spyOn(console, "log").mockImplementation(() => {});
+
+			validator.result.violations = [
+				{
+					filePath: "test1.ts",
+					lineNumber: 10,
+					violationType: "generic_error_in_route_resolver",
+					line: 'throw new Error("test");',
+					suggestion: "Use TalawaGraphQLError instead",
+				},
+				{
+					filePath: "test2.ts",
+					lineNumber: 20,
+					violationType: "console_error_usage",
+					line: 'console.error("error");',
+					suggestion: "Use structured logging",
+				},
+			];
+			validator.result.violationCount = 2;
+			validator.result.fileCount = 2;
+
+			validator.printResults();
+
+			expect(consoleSpy).toHaveBeenCalledWith(
+				"VIOLATIONS Error handling issues found:\n",
+			);
+			expect(consoleSpy).toHaveBeenCalledWith(
+				"Generic Error Usage in Routes/Resolvers (1 issues):",
+			);
+			expect(consoleSpy).toHaveBeenCalledWith(
+				"Console Error Usage (1 issues):",
+			);
+			expect(consoleSpy).toHaveBeenCalledWith("Summary: 2 issues in 2 files");
+
+			consoleSpy.mockRestore();
+		});
+
+		it("should print suppressed files when present", () => {
+			const consoleSpy = vi.spyOn(console, "log").mockImplementation(() => {});
+
+			validator.result.suppressedFiles = ["suppressed1.ts", "suppressed2.ts"];
+			validator.result.violations = [];
+
+			validator.printResults();
+
+			expect(consoleSpy).toHaveBeenCalledWith("Suppressed files: 2");
+			expect(consoleSpy).toHaveBeenCalledWith("   suppressed1.ts (suppressed)");
+			expect(consoleSpy).toHaveBeenCalledWith("   suppressed2.ts (suppressed)");
+
+			consoleSpy.mockRestore();
+		});
+	});
 });
