@@ -2,13 +2,16 @@
 """Consolidated script to check for disable statements in code files.
 
 This script checks for:
-- eslint-disable comments
-- istanbul ignore comments
-- it.skip statements in test files
+- eslint-disable comments (Admin-only)
+- biome-ignore comments (API-only)
+- @ts-ignore comments (API-only)
+- check-sanitization-disable comments (API-only)
+- istanbul ignore comments (shared)
+- it.skip statements in test files (shared)
 
 Usage:
-    python disable_statements_check.py --files file1.js file2.ts
-    python disable_statements_check.py --directory src/
+    python disable_statements_check.py --repo=api --files file1.js file2.ts
+    python disable_statements_check.py --repo=admin --directory src/
 """
 
 import argparse
@@ -141,7 +144,7 @@ class DisableStatementsChecker:
         violations = []
         # Match both // and /* */ variants to support API patterns
         pattern = re.compile(
-            r"//?\s*istanbul\s+ignore(?:\s+(?:next|-line))?[^\n]*|"
+            r"//\s*istanbul\s+ignore(?:\s+(?:next|-line))?[^\n]*|"
             r"/\*\s*istanbul\s+ignore\s+(?:next|-line)\s*\*/",
             re.IGNORECASE,
         )
@@ -166,7 +169,7 @@ class DisableStatementsChecker:
             violations: List of violation messages.
         """
         violations = []
-        pattern = re.compile(r"\bit\.skip\s*\(", re.IGNORECASE)
+        pattern = re.compile(r"\bit\.skip\s*\(")
 
         for match in pattern.finditer(content):
             line_num = content[: match.start()].count("\n") + 1
@@ -187,12 +190,9 @@ class DisableStatementsChecker:
         Returns:
             violations: List of violation messages.
         """
-        # Skip checking test file and this script itself
+        # Skip checking this script itself
         basename = os.path.basename(file_path)
-        if basename in (
-            "test_disable_statements_check.py",
-            "disable_statements_check.py",
-        ):
+        if basename == "disable_statements_check.py":
             return []
 
         # Check if it's a test file
@@ -275,14 +275,7 @@ class DisableStatementsChecker:
 
 
 def main() -> None:
-    """Execute the main functionality of the disable statements checker.
-
-    Args:
-        None
-
-    Returns:
-        None
-    """
+    """Execute the main functionality of the disable statements checker."""
     parser = argparse.ArgumentParser(
         description="Check for disable statements in code files"
     )
