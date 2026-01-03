@@ -193,6 +193,29 @@ builder.mutationField("updateThisAndFollowingEvents", (t) =>
 				});
 			}
 
+			// Validate visibility consistency (cannot be both public and invite-only)
+			const finalIsPublic =
+				parsedArgs.input.isPublic ??
+				existingInstance.baseRecurringEvent.isPublic;
+			const finalIsInviteOnly =
+				parsedArgs.input.isInviteOnly ??
+				existingInstance.baseRecurringEvent.isInviteOnly;
+
+			if (finalIsPublic && finalIsInviteOnly) {
+				throw new TalawaGraphQLError({
+					extensions: {
+						code: "invalid_arguments",
+						issues: [
+							{
+								argumentPath: ["input"],
+								message:
+									"Event cannot be both Public and Invite-Only simultaneously.",
+							},
+						],
+					},
+				});
+			}
+
 			return await ctx.drizzleClient.transaction(async (tx) => {
 				// Always split for "this and following" updates
 				// Step 1: Delete all instances from this one forward (including this instance)

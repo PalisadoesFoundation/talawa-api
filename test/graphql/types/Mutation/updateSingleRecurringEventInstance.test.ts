@@ -77,7 +77,7 @@ function mockRecurringEventInstance(
 			description: "Original description",
 			location: "Original Location",
 			allDay: false,
-			isPublic: true,
+			isPublic: !isInviteOnly,
 			isRegisterable: true,
 			isInviteOnly,
 			creatorId: userId,
@@ -473,6 +473,66 @@ suite("Mutation field updateSingleRecurringEventInstance", () => {
 					}),
 				]),
 			);
+		});
+
+		test("should return an error when both isPublic and isInviteOnly are set to true", async () => {
+			const instanceId = faker.string.uuid();
+			const orgId = await createTestOrganization(adminToken);
+
+			const originalUserFindFirst =
+				server.drizzleClient.query.usersTable.findFirst;
+			const originalInstanceFindFirst =
+				server.drizzleClient.query.recurringEventInstancesTable.findFirst;
+
+			server.drizzleClient.query.usersTable.findFirst = vi
+				.fn()
+				.mockResolvedValue({ role: "administrator" });
+			server.drizzleClient.query.recurringEventInstancesTable.findFirst = vi
+				.fn()
+				.mockResolvedValue(
+					mockRecurringEventInstance(instanceId, orgId, "admin-user-id"),
+				);
+
+			try {
+				const result = await mercuriusClient.mutate(
+					Mutation_updateSingleRecurringEventInstance,
+					{
+						headers: { authorization: `bearer ${adminToken}` },
+						variables: {
+							input: {
+								id: instanceId,
+								isInviteOnly: true,
+							},
+						},
+					},
+				);
+
+				expect(
+					result.data?.updateSingleRecurringEventInstance ?? null,
+				).toBeNull();
+				expect(result.errors).toEqual(
+					expect.arrayContaining([
+						expect.objectContaining({
+							extensions: expect.objectContaining({
+								code: "invalid_arguments",
+								issues: expect.arrayContaining([
+									expect.objectContaining({
+										argumentPath: ["input"],
+										message: expect.stringContaining(
+											"cannot be both Public and Invite-Only",
+										),
+									}),
+								]),
+							}),
+							path: ["updateSingleRecurringEventInstance"],
+						}),
+					]),
+				);
+			} finally {
+				server.drizzleClient.query.usersTable.findFirst = originalUserFindFirst;
+				server.drizzleClient.query.recurringEventInstancesTable.findFirst =
+					originalInstanceFindFirst;
+			}
 		});
 	});
 
@@ -1376,6 +1436,7 @@ suite("Mutation field updateSingleRecurringEventInstance", () => {
 							input: {
 								id: instanceId,
 								isInviteOnly: true, // Override to true
+								isPublic: false,
 							},
 						},
 					},
@@ -1465,6 +1526,7 @@ suite("Mutation field updateSingleRecurringEventInstance", () => {
 							input: {
 								id: instanceId,
 								isInviteOnly: true, // Override to true
+								isPublic: false,
 							},
 						},
 					},

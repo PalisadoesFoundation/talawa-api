@@ -260,6 +260,51 @@ suite(
 			expect(result.errors?.[0]?.extensions?.code).toBe("invalid_arguments");
 		});
 
+		test("should throw invalid_arguments error when both isPublic and isInviteOnly are set to true", async () => {
+			// Create organization
+			const orgId = await createOrganizationAndGetId(authToken);
+
+			// Get current admin user
+			const currentUser = signInResult.data?.signIn?.user;
+			assertToBeNonNullish(currentUser);
+			await addMembership(orgId, currentUser.id, "administrator");
+
+			// Create recurring event with instances
+			const { instanceIds } = await createRecurringEventWithInstances(
+				orgId,
+				currentUser.id,
+			);
+
+			const targetInstanceId = instanceIds[0];
+			assertToBeNonNullish(targetInstanceId);
+
+			const result = await mercuriusClient.mutate(
+				Mutation_updateThisAndFollowingEvents,
+				{
+					headers: { authorization: `bearer ${authToken}` },
+					variables: {
+						input: {
+							id: targetInstanceId,
+							isPublic: true,
+							isInviteOnly: true,
+						},
+					},
+				},
+			);
+
+			expect(result.errors).toBeDefined();
+			expect(result.errors?.[0]?.extensions?.code).toBe("invalid_arguments");
+			expect(result.errors?.[0]?.extensions).toMatchObject({
+				issues: [
+					{
+						message: expect.stringContaining(
+							"cannot be both Public and Invite-Only",
+						),
+					},
+				],
+			});
+		});
+
 		test("should throw arguments_associated_resources_not_found error for non-existent instance", async () => {
 			const result = await mercuriusClient.mutate(
 				Mutation_updateThisAndFollowingEvents,
@@ -1185,6 +1230,7 @@ test("should override isInviteOnly when explicitly provided", async () => {
 				input: {
 					id: targetInstanceId,
 					isInviteOnly: true, // Explicit override
+					isPublic: false, // Must be false if isInviteOnly is true
 				},
 			},
 		},
@@ -1231,7 +1277,7 @@ test("should inherit isInviteOnly from original event when omitted", async () =>
 			endAt: new Date("2024-01-01T11:00:00Z"),
 			allDay: false,
 			location: "Conference Room",
-			isPublic: true,
+			isPublic: false, // Must be false if isInviteOnly is true
 			isRegisterable: false,
 			isInviteOnly: true, // Original isInviteOnly = true
 		})
@@ -1349,6 +1395,7 @@ test("should propagate isInviteOnly to generated instances", async () => {
 				input: {
 					id: targetInstanceId,
 					isInviteOnly: true,
+					isPublic: false,
 					recurrence: {
 						frequency: "WEEKLY",
 						interval: 1,
