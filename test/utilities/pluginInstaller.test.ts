@@ -1,4 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import { ErrorCode } from "~/src/utilities/errors/errorCodes";
+import { TalawaRestError } from "~/src/utilities/errors/TalawaRestError";
 
 // Mock yauzl with simpler approach
 vi.mock("yauzl", () => {
@@ -576,7 +578,10 @@ describe("extractPluginZip", () => {
 		// Get the mocked pipeline and override for this test
 		const { pipeline } = await import("node:stream/promises");
 		(pipeline as ReturnType<typeof vi.fn>).mockImplementationOnce(async () => {
-			throw new Error("Pipeline extraction error");
+			throw new TalawaRestError({
+				code: ErrorCode.INTERNAL_SERVER_ERROR,
+				message: "Pipeline extraction error",
+			});
 		});
 
 		const mockYauzl = yauzl as unknown as {
@@ -1492,6 +1497,77 @@ describe("installPluginFromZip", () => {
 		await expect(installPluginFromZip(options)).rejects.toThrow(/api.*folder/i);
 	});
 
+	it("should use console.log fallback when logger is undefined and cleanup fails", async () => {
+		// Mock fs.unlink to throw an error
+		const mockUnlink = vi.fn().mockRejectedValue(new Error("Cleanup failed"));
+		vi.doMock("node:fs/promises", () => ({
+			unlink: mockUnlink,
+		}));
+
+		// Spy on console.log and console.error
+		const consoleLogSpy = vi.spyOn(console, "log").mockImplementation(() => {});
+		const consoleErrorSpy = vi
+			.spyOn(console, "error")
+			.mockImplementation(() => {});
+
+		const mockZipFile: MockFileUpload = {
+			filename: "test.zip",
+			fieldName: "pluginZip",
+			mimetype: "application/zip",
+			encoding: "7bit",
+			createReadStream: vi.fn(() => ({
+				pipe: vi.fn(),
+			})),
+		};
+
+		const mockDrizzleClient: MockDrizzleClient = {
+			query: {
+				pluginsTable: {
+					findFirst: vi.fn().mockResolvedValue(null),
+				},
+			},
+			execute: vi.fn(async () => undefined),
+			insert: vi.fn(() => ({
+				values: vi.fn(() => ({
+					returning: vi.fn(() => Promise.resolve([{ id: "testId" }])),
+				})),
+			})),
+			update: vi.fn(() => ({
+				set: vi.fn(() => ({
+					where: vi.fn(() => ({
+						returning: vi.fn(() => Promise.resolve([{ id: "testId" }])),
+					})),
+				})),
+			})),
+		};
+
+		const options = {
+			zipFile: mockZipFile,
+			drizzleClient: mockDrizzleClient as unknown as Parameters<
+				typeof installPluginFromZip
+			>[0]["drizzleClient"],
+			activate: false,
+			userId: "test-user",
+			// Note: no logger provided, so it should be undefined
+		};
+
+		try {
+			// This should succeed and log success message
+			const result = await installPluginFromZip(options);
+			expect(result).toBeDefined();
+			expect(result.plugin).toBeDefined();
+
+			// Verify console.log was called with success message
+			expect(consoleLogSpy).toHaveBeenCalledWith(
+				"Plugin files extracted successfully for: test_plugin",
+			);
+		} finally {
+			// Restore the spies to avoid side effects
+			consoleLogSpy.mockRestore();
+			consoleErrorSpy.mockRestore();
+		}
+	});
+
 	it("should reject when pluginId is missing in manifest", async () => {
 		// Mock yauzl to return structure with API folder but no pluginId
 		const mockYauzl = yauzl as unknown as {
@@ -1742,7 +1818,10 @@ describe("installPluginFromZip", () => {
 			deactivatePlugin: vi.fn(async () => undefined),
 			loadPlugin: vi.fn(async () => undefined),
 			activatePlugin: vi.fn(async () => {
-				throw new Error("Activation failed");
+				throw new TalawaRestError({
+					code: ErrorCode.INTERNAL_SERVER_ERROR,
+					message: "Activation failed",
+				});
 			}),
 		};
 		(getPluginManagerInstance as ReturnType<typeof vi.fn>).mockReturnValueOnce(

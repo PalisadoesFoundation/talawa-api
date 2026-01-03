@@ -35,19 +35,24 @@ pre-commit:
       glob: "src/**/*.ts"
       run: pnpm lint:tsdoc {staged_files}
 
-    8_check_type_errors:
+    # TODO: Remove || echo fallback after legacy code migration (target: Q2 2026)
+    8_validate_error_handling:
+      run: pnpm run validate:error-handling || echo "Error handling validation warnings"
+      glob: "src/**/*.{ts,js}"
+
+    9_check_type_errors:
       run: pnpm typecheck
 
-    9_check_mock_isolation:
+    10_check_mock_isolation:
       glob: "test/**/*.{test,spec}.{ts,tsx}"
       run: pnpm run check_mock_isolation {staged_files}
 
-    10.1_check_biome_disable:
+    11.1_check_disable_statements:
       glob: "**/*.{ts,tsx}"
       run: |
         set -e
         if [ -f .venv/bin/python3 ]; then
-          .venv/bin/python3 .github/workflows/scripts/biome_disable_check.py --files {staged_files}
+          .venv/bin/python3 .github/workflows/scripts/disable_statements_check.py --repo=api --files {staged_files}
         elif [ -f .venv/Scripts/python.exe ]; then
           .venv/Scripts/python.exe .github/workflows/scripts/biome_disable_check.py --files {staged_files}
         else
@@ -61,7 +66,7 @@ pre-commit:
           exit 1
         fi
 
-    10.2_check_code_coverage_disable:
+    11.2_check_code_coverage_disable:
       glob: "**/*.{ts,tsx}"
       run: |
         set -e
@@ -80,7 +85,7 @@ pre-commit:
           exit 1
         fi
 
-    10.3_check_ts_ignore:
+    11.3_check_ts_ignore:
       glob: "**/*.{ts,tsx}"
       run: |
         set -e
@@ -99,7 +104,7 @@ pre-commit:
           exit 1
         fi
 
-    10.4_check_sanitization_disable:
+    11.4_check_sanitization_disable:
       glob: "**/*.ts"
       run: |
         set -e
@@ -118,7 +123,7 @@ pre-commit:
           exit 1
         fi
 
-    10.5_check_itskip:
+    11.5_check_itskip:
       glob: "test/**/*.{test,spec}.{ts,tsx}"
       run: |
         set -e
@@ -126,6 +131,7 @@ pre-commit:
           .venv/bin/python3 .github/workflows/scripts/itskip_disable_check.py --files {staged_files}
         elif [ -f .venv/Scripts/python.exe ]; then
           .venv/Scripts/python.exe .github/workflows/scripts/itskip_disable_check.py --files {staged_files}
+          .venv/Scripts/python.exe .github/workflows/scripts/disable_statements_check.py --repo=api --files {staged_files}
         else
           echo "Error: Python virtual environment not found."
           echo "Please ensure Python 3.9+ is installed. If 'python3 -m venv' fails, you may need to install:"
@@ -137,7 +143,7 @@ pre-commit:
           exit 1
         fi
 
-    10.6_check_python_docstrings:
+    12_check_python_docstrings:
       glob: ".github/**/*.py"
       run: |
         set -e
@@ -157,13 +163,13 @@ pre-commit:
         fi
 
 
-    11_generate_docs:
+    13_generate_docs:
       run: |
         set -e
         pnpm generate-docs
         git add ./docs/docs/auto-docs/
 
-    12_api_schema_docs:
+    14_api_schema_docs:
       run: |
         set -e
         cd docs

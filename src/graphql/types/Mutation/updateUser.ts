@@ -11,6 +11,7 @@ import {
 	mutationUpdateUserInputSchema,
 } from "~/src/graphql/inputs/MutationUpdateUserInput";
 import { User } from "~/src/graphql/types/User/User";
+import { ErrorCode } from "~/src/utilities/errors/errorCodes";
 import envConfig from "~/src/utilities/graphqLimits";
 import { isNotNullish } from "~/src/utilities/isNotNullish";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
@@ -25,18 +26,28 @@ const mutationUpdateUserArgumentsSchema = z.object({
 			| undefined;
 
 		if (isNotNullish(arg.avatar)) {
-			const rawAvatar = await arg.avatar;
-			const { data, success } = imageMimeTypeEnum.safeParse(rawAvatar.mimetype);
+			try {
+				const rawAvatar = await arg.avatar;
+				const { data, success } = imageMimeTypeEnum.safeParse(
+					rawAvatar.mimetype,
+				);
 
-			if (!success) {
+				if (!success) {
+					ctx.addIssue({
+						code: "custom",
+						path: ["avatar"],
+						message: `Mime type "${rawAvatar.mimetype}" is not allowed.`,
+					});
+				} else {
+					avatar = Object.assign(rawAvatar, {
+						mimetype: data,
+					});
+				}
+			} catch (_error) {
 				ctx.addIssue({
 					code: "custom",
 					path: ["avatar"],
-					message: `Mime type "${rawAvatar.mimetype}" is not allowed.`,
-				});
-			} else {
-				avatar = Object.assign(rawAvatar, {
-					mimetype: data,
+					message: "Invalid avatar file.",
 				});
 			}
 		} else if (arg.avatar !== undefined) {
@@ -65,7 +76,7 @@ builder.mutationField("updateUser", (t) =>
 			if (!ctx.currentClient.isAuthenticated) {
 				throw new TalawaGraphQLError({
 					extensions: {
-						code: "unauthenticated",
+						code: ErrorCode.UNAUTHENTICATED,
 					},
 				});
 			}
@@ -79,7 +90,7 @@ builder.mutationField("updateUser", (t) =>
 			if (!success) {
 				throw new TalawaGraphQLError({
 					extensions: {
-						code: "invalid_arguments",
+						code: ErrorCode.INVALID_ARGUMENTS,
 						issues: error.issues.map((issue) => ({
 							argumentPath: issue.path,
 							message: issue.message,
@@ -110,7 +121,7 @@ builder.mutationField("updateUser", (t) =>
 			if (currentUser === undefined) {
 				throw new TalawaGraphQLError({
 					extensions: {
-						code: "unauthenticated",
+						code: ErrorCode.UNAUTHENTICATED,
 					},
 				});
 			}
@@ -118,7 +129,7 @@ builder.mutationField("updateUser", (t) =>
 			if (currentUser.role !== "administrator") {
 				throw new TalawaGraphQLError({
 					extensions: {
-						code: "unauthorized_action",
+						code: ErrorCode.INSUFFICIENT_PERMISSIONS,
 					},
 				});
 			}
@@ -126,7 +137,7 @@ builder.mutationField("updateUser", (t) =>
 			if (parsedArgs.input.id === currentUserId) {
 				throw new TalawaGraphQLError({
 					extensions: {
-						code: "forbidden_action_on_arguments_associated_resources",
+						code: ErrorCode.FORBIDDEN_ACTION_ON_ARGUMENTS_ASSOCIATED_RESOURCES,
 						issues: [
 							{
 								argumentPath: ["input", "id"],
@@ -141,7 +152,7 @@ builder.mutationField("updateUser", (t) =>
 			if (existingUser === undefined) {
 				throw new TalawaGraphQLError({
 					extensions: {
-						code: "arguments_associated_resources_not_found",
+						code: ErrorCode.ARGUMENTS_ASSOCIATED_RESOURCES_NOT_FOUND,
 						issues: [
 							{
 								argumentPath: ["input", "id"],
@@ -203,7 +214,7 @@ builder.mutationField("updateUser", (t) =>
 				if (updatedUser === undefined) {
 					throw new TalawaGraphQLError({
 						extensions: {
-							code: "arguments_associated_resources_not_found",
+							code: ErrorCode.ARGUMENTS_ASSOCIATED_RESOURCES_NOT_FOUND,
 							issues: [
 								{
 									argumentPath: ["input", "id"],

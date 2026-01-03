@@ -45,6 +45,10 @@ export type ExplicitGraphQLContext = {
 	 * Redis-backed cache service for caching entities and query results.
 	 */
 	cache: CacheService;
+	/**
+	 * Request correlation ID for tracing and logging.
+	 */
+	id: string;
 	currentClient: CurrentClient;
 	/**
 	 * Request-scoped DataLoaders for batching database queries.

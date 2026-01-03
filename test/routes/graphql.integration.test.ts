@@ -22,6 +22,26 @@ vi.mock("~/src/fastifyPlugins/performance", () => ({
 	default: async () => {},
 }));
 
+vi.mock("~/src/utilities/leakyBucket", () => ({
+	default: async () => true,
+}));
+
+vi.mock("~/src/fastifyPlugins/redisClient", () => ({
+	default: async () => {},
+}));
+
+vi.mock("~/src/fastifyPlugins/cacheService", () => ({
+	default: async () => {},
+}));
+
+vi.mock("@fastify/redis", () => ({
+	default: async () => {},
+}));
+
+vi.mock("@fastify/rate-limit", () => ({
+	default: async () => {},
+}));
+
 import type { FastifyInstance } from "fastify";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { createServer } from "~/src/createServer";

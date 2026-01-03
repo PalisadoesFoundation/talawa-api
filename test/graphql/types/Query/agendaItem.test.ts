@@ -3,9 +3,11 @@ import { eq } from "drizzle-orm";
 import { afterEach, expect, suite, test } from "vitest";
 import { usersTable } from "~/src/drizzle/schema";
 import { agendaItemsTableInsertSchema } from "~/src/drizzle/tables/agendaItems";
-import type {
-	TalawaGraphQLFormattedError,
-	UnauthenticatedExtensions,
+import { ErrorCode } from "~/src/utilities/errors/errorCodes";
+import {
+	TalawaGraphQLError,
+	type TalawaGraphQLFormattedError,
+	type UnauthenticatedExtensions,
 } from "~/src/utilities/TalawaGraphQLError";
 import { assertToBeNonNullish } from "../../../helpers";
 import { server } from "../../../server";
@@ -47,9 +49,12 @@ async function getAdminAuthTokenAndId(): Promise<{
 			!server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS ||
 			!server.envConfig.API_ADMINISTRATOR_USER_PASSWORD
 		) {
-			throw new Error(
-				"Admin credentials are missing in environment configuration",
-			);
+			throw new TalawaGraphQLError({
+				extensions: {
+					code: ErrorCode.INTERNAL_SERVER_ERROR,
+				},
+				message: "Admin credentials are missing in environment configuration",
+			});
 		}
 		const adminSignInResult = await mercuriusClient.query(Query_signIn, {
 			variables: {
@@ -61,20 +66,27 @@ async function getAdminAuthTokenAndId(): Promise<{
 		});
 		// Check for GraphQL errors
 		if (adminSignInResult.errors) {
-			throw new Error(
-				`Admin authentication failed: ${
+			throw new TalawaGraphQLError({
+				extensions: {
+					code: ErrorCode.UNAUTHENTICATED,
+				},
+				message: `Admin authentication failed: ${
 					adminSignInResult.errors[0]?.message || "Unknown error"
 				}`,
-			);
+			});
 		}
 		// Check for missing data
 		if (
 			!adminSignInResult.data?.signIn?.authenticationToken ||
 			!adminSignInResult.data?.signIn?.user?.id
 		) {
-			throw new Error(
-				"Admin authentication succeeded but no token or user ID was returned",
-			);
+			throw new TalawaGraphQLError({
+				extensions: {
+					code: ErrorCode.UNAUTHENTICATED,
+				},
+				message:
+					"Admin authentication succeeded but no token or user ID was returned",
+			});
 		}
 		const token = adminSignInResult.data.signIn.authenticationToken;
 		const id = adminSignInResult.data.signIn.user.id;
@@ -83,11 +95,14 @@ async function getAdminAuthTokenAndId(): Promise<{
 		return { authToken: token, userId: id };
 	} catch (error) {
 		// Wrap and rethrow with more context
-		throw new Error(
-			`Failed to get admin authentication token and user ID: ${
+		throw new TalawaGraphQLError({
+			extensions: {
+				code: ErrorCode.INTERNAL_SERVER_ERROR,
+			},
+			message: `Failed to get admin authentication token and user ID: ${
 				error instanceof Error ? error.message : "Unknown error"
 			}`,
-		);
+		});
 	}
 }
 
@@ -432,11 +447,14 @@ async function createTestAgendaItem(): Promise<TestAgendaItem> {
 	);
 
 	if (membershipResult.errors) {
-		throw new Error(
-			`Failed to create organization membership. Errors: ${JSON.stringify(
+		throw new TalawaGraphQLError({
+			extensions: {
+				code: ErrorCode.INTERNAL_SERVER_ERROR,
+			},
+			message: `Failed to create organization membership. Errors: ${JSON.stringify(
 				membershipResult.errors,
 			)}`,
-		);
+		});
 	}
 
 	// Create event
@@ -828,10 +846,10 @@ suite("Input Validation Tests", () => {
 			expect(result.data.agendaItem).toEqual(null);
 			expect(result.errors).toEqual([
 				expect.objectContaining({
-					extensions: {
+					extensions: expect.objectContaining({
 						code: "unauthenticated",
 						correlationId: expect.any(String),
-					},
+					}),
 					message: "You must be authenticated to perform this action.",
 					path: ["agendaItem"],
 					locations: expect.arrayContaining([

@@ -1,6 +1,8 @@
 import { complexityFromQuery } from "@pothos/plugin-complexity";
 import type { FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
 import fastifyPlugin from "fastify-plugin";
+import type { ExecutionResult } from "graphql";
+import type { MercuriusContext } from "mercurius";
 import { mercurius } from "mercurius";
 import { mercuriusUpload } from "mercurius-upload";
 import type {
@@ -10,6 +12,10 @@ import type {
 } from "~/src/graphql/context";
 import schemaManager from "~/src/graphql/schemaManager";
 import NotificationService from "~/src/services/notification/NotificationService";
+import {
+	ERROR_CODE_TO_HTTP_STATUS,
+	ErrorCode,
+} from "~/src/utilities/errors/errorCodes";
 import {
 	COOKIE_NAMES,
 	getAccessTokenCookieOptions,
@@ -74,7 +80,11 @@ export const createContext: CreateContext = async (initialContext) => {
 			isAuthenticated: true,
 			user: jwtPayload.user,
 		};
-	} catch (_headerError) {
+	} catch (headerError) {
+		(request.log ?? fastify.log).debug(
+			{ error: headerError },
+			"Authorization header verification failed",
+		);
 		// If no Authorization header, try to get token from cookie (web clients)
 		const accessTokenFromCookie = request.cookies?.[COOKIE_NAMES.ACCESS_TOKEN];
 		if (accessTokenFromCookie) {
@@ -87,7 +97,11 @@ export const createContext: CreateContext = async (initialContext) => {
 					isAuthenticated: true,
 					user: jwtPayload.user,
 				};
-			} catch (_cookieError) {
+			} catch (cookieError) {
+				(request.log ?? fastify.log).debug(
+					{ error: cookieError },
+					"Cookie token verification failed",
+				);
 				currentClient = {
 					isAuthenticated: false,
 				};
@@ -158,6 +172,7 @@ export const createContext: CreateContext = async (initialContext) => {
 				fastify.jwt.sign(payload),
 		},
 		cookie: cookieHelper,
+		id: request.id,
 		log: request.log ?? fastify.log,
 		minio: fastify.minio,
 		// attached a per-request notification service that queues notifications and can flush later
@@ -197,9 +212,174 @@ export const graphql = fastifyPlugin(async (fastify) => {
 	 * 2. {@link https://github.com/flash-oss/graphql-upload-minimal/blob/56e83775b114edc169f605041d983156d4131387/public/index.js#L61}
 	 */
 	await fastify.register(mercuriusUpload, FILE_UPLOAD_CONFIG);
+	schemaManager.setLogger({
+		info: (msg: string) => fastify.log.info(msg),
+		error: (msg: string, error?: unknown) => fastify.log.error({ error }, msg),
+	});
 
 	// Build initial schema with active plugins
 	const initialSchema = await schemaManager.buildInitialSchema();
+
+	/**
+	 * Unified GraphQL error formatter that provides consistent error responses.
+	 *
+	 * This formatter ensures that all GraphQL errors follow the same structure as REST errors
+	 * by adding standardized extensions with error codes, correlation IDs, and HTTP status codes.
+	 * It integrates with the unified error handling system to provide consistent error shapes
+	 * across both REST and GraphQL endpoints.
+	 *
+	 * Features:
+	 * - Maps ErrorCode enum values to HTTP status codes
+	 * - Adds correlation IDs for request tracing
+	 * - Preserves error paths and original error details
+	 * - Provides structured logging with error context
+	 * - Sets appropriate HTTP response status codes
+	 *
+	 * @param execution - GraphQL execution result containing errors and data
+	 * @param context - Mercurius context with request/reply objects
+	 * @returns Formatted error response with standardized structure
+	 *
+	 * @example
+	 * ```json
+	 * // Error response format:
+	 * {
+	 *   "errors": [{
+	 *     "message": "User not found",
+	 *     "path": ["user"],
+	 *     "extensions": {
+	 *       "code": "not_found",
+	 *       "details": { "userId": "123" },
+	 *       "correlationId": "req-abc123",
+	 *       "httpStatus": 404
+	 *     }
+	 *   }],
+	 *   "data": null
+	 * }
+	 * ```
+	 */
+	const errorFormatter = (
+		execution: ExecutionResult,
+		context: MercuriusContext,
+	) => {
+		const { errors, data } = execution;
+
+		if (!errors) {
+			return { statusCode: 200, response: execution };
+		}
+
+		// For subscriptions, context.reply is undefined. We check context.correlationId (set in onConnect)
+		// or generate a fallback if both are missing.
+		const correlationId =
+			(context.reply?.request?.id as string | undefined) ??
+			(context as { correlationId?: string }).correlationId ??
+			`sub-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
+
+		const formatted = errors.map((e) => {
+			const rawCode = e.extensions?.code as string | undefined;
+
+			// Normalize error code for internal logic (status lookup)
+			let normalizedCode: ErrorCode;
+
+			if (rawCode && Object.values(ErrorCode).includes(rawCode as ErrorCode)) {
+				normalizedCode = rawCode as ErrorCode;
+			} else {
+				// Map legacy codes to standard ErrorCodes
+				switch (rawCode) {
+					case "too_many_requests":
+						normalizedCode = ErrorCode.RATE_LIMIT_EXCEEDED;
+						break;
+					case "forbidden_action_on_arguments_associated_resources":
+						normalizedCode = ErrorCode.UNAUTHORIZED;
+						break;
+					case "invalid_credentials":
+						normalizedCode = ErrorCode.UNAUTHENTICATED;
+						break;
+					case "account_locked":
+						normalizedCode = ErrorCode.UNAUTHORIZED;
+						break;
+					case "unauthorized_action":
+					case "unauthorized_arguments":
+						normalizedCode = ErrorCode.INSUFFICIENT_PERMISSIONS;
+						break;
+					default:
+						normalizedCode = ErrorCode.INTERNAL_SERVER_ERROR;
+				}
+			}
+
+			// Determine HTTP status: specific override > mapped from code > default 500
+			const httpStatus =
+				(e.extensions?.httpStatus as number) ??
+				ERROR_CODE_TO_HTTP_STATUS[normalizedCode] ??
+				500;
+
+			// Sanitize extensions by removing sensitive keys and whitelisting safe ones
+			const sensitiveKeys = new Set([
+				"stack",
+				"internal",
+				"debug",
+				"raw",
+				"error",
+				"secrets",
+				"exception",
+			]);
+			const sanitizedExtensions: Record<string, unknown> = {};
+
+			if (e.extensions && typeof e.extensions === "object") {
+				for (const [key, value] of Object.entries(e.extensions)) {
+					// Only include safe keys that aren't sensitive
+					if (
+						!sensitiveKeys.has(key) &&
+						typeof key === "string" &&
+						key.length > 0
+					) {
+						sanitizedExtensions[key] = value;
+					}
+				}
+			}
+
+			return {
+				message: e.message,
+				locations: e.locations,
+				path: e.path,
+				extensions: {
+					// Spread sanitized extensions first so they can't override our standardized keys
+					...sanitizedExtensions,
+					// Use original rawCode if present to preserve external behavior, else normalized
+					code: rawCode ?? normalizedCode,
+					details: e.extensions?.details,
+					correlationId,
+					httpStatus,
+				},
+			};
+		});
+
+		// Return 200 for HTTP per spec; use mapped status for subscriptions or tests.
+		const isRealHttpRequest =
+			context.reply && typeof context.reply.send === "function";
+		const statusCode = isRealHttpRequest
+			? 200
+			: (formatted[0]?.extensions?.httpStatus ?? 500);
+
+		// Log error
+		const logger =
+			(context as unknown as ExplicitGraphQLContext).log ??
+			context.reply?.request?.log;
+		logger?.error({
+			msg: "GraphQL error",
+			correlationId,
+			statusCode,
+			errors: formatted.map((fe) => ({
+				message: fe.message,
+				code: fe.extensions?.code,
+				details: fe.extensions?.details,
+			})),
+		});
+
+		return {
+			statusCode,
+			response: { data, errors: formatted },
+		};
+	};
 
 	// More information at this link: https://mercurius.dev/#/docs/api/options?id=mercurius
 	await fastify.register(mercurius, {
@@ -216,25 +396,7 @@ export const graphql = fastifyPlugin(async (fastify) => {
 		cache: false,
 		path: "/graphql",
 		schema: initialSchema,
-		errorFormatter: (execution, context) => {
-			const correlationId = context.reply.request.id;
-
-			return {
-				statusCode: 200,
-				response: {
-					data: execution.data ?? null,
-					errors: execution.errors.map((err) => ({
-						message: err.message,
-						locations: err.locations,
-						path: err.path,
-						extensions: {
-							...err.extensions,
-							correlationId,
-						},
-					})),
-				},
-			};
-		},
+		errorFormatter,
 		subscription: {
 			onConnect: async (data) => {
 				const { payload } = data;
@@ -257,7 +419,7 @@ export const graphql = fastifyPlugin(async (fastify) => {
 							isAuthenticated: true,
 							user: decoded.user,
 						},
-						dataloaders: createDataloaders(fastify.drizzleClient),
+						id: `sub-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`,
 						drizzleClient: fastify.drizzleClient,
 						envConfig: fastify.envConfig,
 						jwt: {
@@ -310,7 +472,7 @@ export const graphql = fastifyPlugin(async (fastify) => {
 						),
 					},
 				},
-				"✅ GraphQL Schema Updated Successfully",
+				"GraphQL Schema Updated Successfully",
 			);
 		} catch (error) {
 			fastify.log.error(
@@ -325,7 +487,7 @@ export const graphql = fastifyPlugin(async (fastify) => {
 							: String(error),
 					timestamp: new Date().toISOString(),
 				},
-				"❌ Failed to Update GraphQL Schema",
+				"Failed to Update GraphQL Schema",
 			);
 		}
 	});
@@ -367,7 +529,11 @@ export const graphql = fastifyPlugin(async (fastify) => {
 					isAuthenticated: true,
 					user: jwtPayload.user,
 				};
-			} catch (_error) {
+			} catch (error) {
+				(request.log ?? fastify.log).debug(
+					{ error },
+					"JWT verification failed in preExecution hook",
+				);
 				currentClient = {
 					isAuthenticated: false,
 				};
@@ -376,7 +542,7 @@ export const graphql = fastifyPlugin(async (fastify) => {
 			if (!ip) {
 				throw new TalawaGraphQLError({
 					extensions: {
-						code: "unexpected",
+						code: ErrorCode.INTERNAL_SERVER_ERROR,
 					},
 					message: "IP address is not available for rate limiting",
 				});
@@ -403,7 +569,7 @@ export const graphql = fastifyPlugin(async (fastify) => {
 			// If the request exceeds rate limits, reject it
 			if (!isRequestAllowed) {
 				throw new TalawaGraphQLError({
-					extensions: { code: "too_many_requests" },
+					extensions: { code: ErrorCode.RATE_LIMIT_EXCEEDED },
 				});
 			}
 		},

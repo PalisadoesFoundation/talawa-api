@@ -38,6 +38,7 @@ const existingPlugin = {
 };
 
 type TestCtx = {
+	id: string;
 	drizzleClient: {
 		query: {
 			pluginsTable: {
@@ -56,6 +57,13 @@ function makeCtx(overrides: Partial<TestCtx> = {}): TestCtx {
 	const whereMock = vi.fn().mockReturnThis();
 	const returningMock = vi.fn().mockResolvedValue([existingPlugin]);
 	return {
+		id: "test-correlation-id",
+		log: {
+			error: vi.fn(),
+			info: vi.fn(),
+			warn: vi.fn(),
+			debug: vi.fn(),
+		},
 		drizzleClient: {
 			query: {
 				pluginsTable: {
@@ -102,9 +110,18 @@ beforeEach(() => {
 	vi.clearAllMocks();
 	vi.spyOn(console, "log").mockImplementation(() => {});
 	vi.spyOn(console, "error").mockImplementation(() => {});
+	// Reset the mocks but don't restore them completely
+	(getPluginManagerInstance as ReturnType<typeof vi.fn>).mockReturnValue(
+		undefined,
+	);
+	(removePluginDirectory as ReturnType<typeof vi.fn>).mockResolvedValue(
+		undefined,
+	);
 });
 afterEach(() => {
-	vi.restoreAllMocks();
+	// Only restore console spies
+	(console.log as unknown as { mockRestore?: () => void }).mockRestore?.();
+	(console.error as unknown as { mockRestore?: () => void }).mockRestore?.();
 });
 
 describe("deletePlugin mutation", () => {
@@ -140,15 +157,20 @@ describe("deletePlugin mutation", () => {
 		const fakeManager = {
 			uninstallPlugin: vi.fn().mockResolvedValue(true),
 		};
-		(getPluginManagerInstance as ReturnType<typeof vi.fn>).mockReturnValue(
-			fakeManager,
-		);
+		const mockGetPluginManager = getPluginManagerInstance as ReturnType<
+			typeof vi.fn
+		>;
+		mockGetPluginManager.mockReturnValue(fakeManager);
+
 		(removePluginDirectory as ReturnType<typeof vi.fn>).mockResolvedValue(
 			undefined,
 		);
 		const ctx = makeCtx();
 		const args = { input: validInput };
 		await resolver({}, args, ctx);
+
+		// Verify the mock was called
+		expect(mockGetPluginManager).toHaveBeenCalled();
 		expect(fakeManager.uninstallPlugin).toHaveBeenCalledWith(
 			existingPlugin.pluginId,
 		);
@@ -170,6 +192,19 @@ describe("deletePlugin mutation", () => {
 		const result = (await resolver({}, args, ctx)) as typeof existingPlugin;
 		expect(result.pluginId).toBe(existingPlugin.pluginId);
 		expect(fakeManager.uninstallPlugin).toHaveBeenCalled();
+
+		expect(ctx.log.info).toHaveBeenCalledWith(
+			{ pluginId: existingPlugin.pluginId, correlationId: ctx.id },
+			"Uninstalling plugin via lifecycle manager",
+		);
+		expect(ctx.log.error).toHaveBeenCalledWith(
+			{
+				error: expect.any(Error),
+				pluginId: existingPlugin.pluginId,
+				correlationId: ctx.id,
+			},
+			"Error during plugin lifecycle uninstallation",
+		);
 	});
 
 	it("handles plugin manager uninstall failure gracefully", async () => {

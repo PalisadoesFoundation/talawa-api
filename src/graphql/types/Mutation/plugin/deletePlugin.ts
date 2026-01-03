@@ -4,6 +4,7 @@ import { builder } from "~/src/graphql/builder";
 import { Plugin } from "~/src/graphql/types/Plugin/Plugin";
 import { getPluginManagerInstance } from "~/src/plugin/registry";
 import { removePluginDirectory } from "~/src/plugin/utils";
+import { ErrorCode } from "~/src/utilities/errors/errorCodes";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import {
 	DeletePluginInput,
@@ -31,7 +32,7 @@ builder.mutationField("deletePlugin", (t) =>
 			if (!existingPlugin) {
 				throw new TalawaGraphQLError({
 					extensions: {
-						code: "arguments_associated_resources_not_found",
+						code: ErrorCode.ARGUMENTS_ASSOCIATED_RESOURCES_NOT_FOUND,
 						issues: [
 							{
 								argumentPath: ["input", "id"],
@@ -45,9 +46,9 @@ builder.mutationField("deletePlugin", (t) =>
 			const pluginManager = getPluginManagerInstance();
 			if (pluginManager) {
 				try {
-					console.log(
-						"Uninstalling plugin via lifecycle manager:",
-						existingPlugin.pluginId,
+					ctx.log.info(
+						{ pluginId: existingPlugin.pluginId, correlationId: ctx.id },
+						"Uninstalling plugin via lifecycle manager",
 					);
 
 					// Use the plugin manager to handle uninstallation
@@ -56,19 +57,22 @@ builder.mutationField("deletePlugin", (t) =>
 					);
 
 					if (!success) {
-						console.error(
-							"Plugin uninstallation failed in lifecycle manager:",
-							existingPlugin.pluginId,
+						ctx.log.error(
+							{ pluginId: existingPlugin.pluginId, correlationId: ctx.id },
+							"Plugin uninstallation failed in lifecycle manager",
 						);
 						// Continue with deletion even if lifecycle fails
 					} else {
-						console.log(
-							"Plugin uninstalled successfully via lifecycle manager:",
-							existingPlugin.pluginId,
+						ctx.log.info(
+							{ pluginId: existingPlugin.pluginId, correlationId: ctx.id },
+							"Plugin uninstalled successfully via lifecycle manager",
 						);
 					}
 				} catch (error) {
-					console.error("Error during plugin lifecycle uninstallation:", error);
+					ctx.log.error(
+						{ error, pluginId: existingPlugin.pluginId, correlationId: ctx.id },
+						"Error during plugin lifecycle uninstallation",
+					);
 					// Continue with deletion even if lifecycle fails
 				}
 			}
@@ -77,15 +81,15 @@ builder.mutationField("deletePlugin", (t) =>
 			try {
 				await removePluginDirectory(existingPlugin.pluginId);
 			} catch (error) {
-				console.error(
-					`Failed to remove plugin directory for ${existingPlugin.pluginId}:`,
-					error,
+				ctx.log.error(
+					{ error, pluginId: existingPlugin.pluginId, correlationId: ctx.id },
+					`Failed to remove plugin directory for ${existingPlugin.pluginId}`,
 				);
 				// If file removal fails, don't proceed with database deletion
 				// This allows user to retry the deletion
 				throw new TalawaGraphQLError({
 					extensions: {
-						code: "unexpected",
+						code: ErrorCode.INTERNAL_SERVER_ERROR,
 						issues: [
 							{
 								argumentPath: ["input", "id"],
@@ -105,7 +109,7 @@ builder.mutationField("deletePlugin", (t) =>
 			if (!plugin) {
 				throw new TalawaGraphQLError({
 					extensions: {
-						code: "arguments_associated_resources_not_found",
+						code: ErrorCode.ARGUMENTS_ASSOCIATED_RESOURCES_NOT_FOUND,
 						issues: [
 							{
 								argumentPath: ["input", "id"],

@@ -1,13 +1,7 @@
-import envSchema from "env-schema";
 import { createServer } from "~/src/createServer";
-import { envSchemaAjv } from "~/src/envConfigSchema";
-import { type TestEnvConfig, testEnvConfigSchema } from "./envConfigSchema";
+import { getTestEnvConfig } from "./envConfigSchema";
 
-const testEnvConfig = envSchema<TestEnvConfig>({
-	ajv: envSchemaAjv,
-	dotenv: true,
-	schema: testEnvConfigSchema,
-});
+export const testEnvConfig = getTestEnvConfig();
 
 // Ensure API_COOKIE_SECRET is set in process.env for createServer's internal validation
 // This uses the default value from testEnvConfigSchema if not present in env

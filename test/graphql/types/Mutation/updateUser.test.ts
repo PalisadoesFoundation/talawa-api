@@ -20,13 +20,13 @@ import { Readable } from "node:stream";
 import { faker } from "@faker-js/faker";
 import type { ResultOf, VariablesOf } from "gql.tada";
 import { expect, suite, test } from "vitest";
+import { ErrorCode } from "~/src/utilities/errors/errorCodes";
 import type {
 	ArgumentsAssociatedResourcesNotFoundExtensions,
 	ForbiddenActionOnArgumentsAssociatedResourcesExtensions,
 	InvalidArgumentsExtensions,
 	TalawaGraphQLFormattedError,
 	UnauthenticatedExtensions,
-	UnauthorizedActionExtensions,
 } from "~/src/utilities/TalawaGraphQLError";
 import { assertToBeNonNullish } from "../../../helpers";
 import { server } from "../../../server";
@@ -96,7 +96,7 @@ suite("Mutation field updateUser", () => {
 					expect.arrayContaining<TalawaGraphQLFormattedError>([
 						expect.objectContaining<TalawaGraphQLFormattedError>({
 							extensions: expect.objectContaining<UnauthenticatedExtensions>({
-								code: "unauthenticated",
+								code: ErrorCode.UNAUTHENTICATED,
 							}),
 							message: expect.any(String),
 							path: ["updateUser"],
@@ -178,7 +178,7 @@ suite("Mutation field updateUser", () => {
 					expect.arrayContaining<TalawaGraphQLFormattedError>([
 						expect.objectContaining<TalawaGraphQLFormattedError>({
 							extensions: expect.objectContaining<UnauthenticatedExtensions>({
-								code: "unauthenticated",
+								code: ErrorCode.UNAUTHENTICATED,
 							}),
 							message: expect.any(String),
 							path: ["updateUser"],
@@ -190,7 +190,7 @@ suite("Mutation field updateUser", () => {
 	);
 
 	suite(
-		`results in a graphql error with "invalid_arguments" extensions code in the "errors" field and "null" as the value of "data.updateUser" field if`,
+		`results in a graphql error with ErrorCode.INVALID_ARGUMENTS extensions code in the "errors" field and "null" as the value of "data.updateUser" field if`,
 		() => {
 			test(`at least one optional argument within the "input" argument is not provided.`, async () => {
 				const administratorUserSignInResult = await mercuriusClient.query(
@@ -249,7 +249,7 @@ suite("Mutation field updateUser", () => {
 					expect.arrayContaining<TalawaGraphQLFormattedError>([
 						expect.objectContaining<TalawaGraphQLFormattedError>({
 							extensions: expect.objectContaining<InvalidArgumentsExtensions>({
-								code: "invalid_arguments",
+								code: ErrorCode.INVALID_ARGUMENTS,
 								issues: expect.arrayContaining<
 									InvalidArgumentsExtensions["issues"]
 								>([
@@ -340,7 +340,7 @@ suite("Mutation field updateUser", () => {
 					expect.arrayContaining<TalawaGraphQLFormattedError>([
 						expect.objectContaining<TalawaGraphQLFormattedError>({
 							extensions: expect.objectContaining<InvalidArgumentsExtensions>({
-								code: "invalid_arguments",
+								code: ErrorCode.INVALID_ARGUMENTS,
 								issues: expect.arrayContaining<
 									InvalidArgumentsExtensions["issues"][number]
 								>([
@@ -457,7 +457,7 @@ suite("Mutation field updateUser", () => {
 					expect.arrayContaining<TalawaGraphQLFormattedError>([
 						expect.objectContaining<TalawaGraphQLFormattedError>({
 							extensions: expect.objectContaining<InvalidArgumentsExtensions>({
-								code: "invalid_arguments",
+								code: ErrorCode.INVALID_ARGUMENTS,
 								issues: expect.arrayContaining<
 									InvalidArgumentsExtensions["issues"][number]
 								>([
@@ -568,7 +568,7 @@ suite("Mutation field updateUser", () => {
 					expect.arrayContaining<TalawaGraphQLFormattedError>([
 						expect.objectContaining<TalawaGraphQLFormattedError>({
 							extensions: expect.objectContaining<InvalidArgumentsExtensions>({
-								code: "invalid_arguments",
+								code: ErrorCode.INVALID_ARGUMENTS,
 								issues: expect.arrayContaining<
 									InvalidArgumentsExtensions["issues"][number]
 								>([
@@ -652,14 +652,14 @@ suite("Mutation field updateUser", () => {
 						},
 					},
 				});
-				expect(result.data).toBeNull();
+				expect(result.data?.updateUser).toBeUndefined();
 				expect(result.errors).toBeDefined();
 			});
 		},
 	);
 
 	suite(
-		`results in a graphql error with "unauthorized_action" extensions code in the "errors" field and "null" as the value of "data.deleteUser" field if`,
+		`results in a graphql error with ErrorCode.INSUFFICIENT_PERMISSIONS extensions code in the "errors" field and "null" as the value of "data.deleteUser" field if`,
 		() => {
 			test("client triggering the graphql operation is not associated to an administrator user.", async () => {
 				const administratorUserSignInResult = await mercuriusClient.query(
@@ -721,11 +721,9 @@ suite("Mutation field updateUser", () => {
 				expect(updateUserResult.errors).toEqual(
 					expect.arrayContaining<TalawaGraphQLFormattedError>([
 						expect.objectContaining<TalawaGraphQLFormattedError>({
-							extensions: expect.objectContaining<UnauthorizedActionExtensions>(
-								{
-									code: "unauthorized_action",
-								},
-							),
+							extensions: expect.objectContaining({
+								code: ErrorCode.INSUFFICIENT_PERMISSIONS,
+							}),
 							message: expect.any(String),
 							path: ["updateUser"],
 						}),
@@ -736,7 +734,7 @@ suite("Mutation field updateUser", () => {
 	);
 
 	suite(
-		`results in a graphql error with "forbidden_action_on_arguments_associated_resources" extensions code in the "errors" field and "null" as the value of "data.updateUser" field if`,
+		`results in a graphql error with ErrorCode.FORBIDDEN_ACTION_ON_ARGUMENTS_ASSOCIATED_RESOURCES extensions code in the "errors" field and "null" as the value of "data.updateUser" field if`,
 		() => {
 			test(`value of the argument "input.id" is equal to the id of the user associated to the client triggering the graphql operation.`, async () => {
 				const administratorUserSignInResult = await mercuriusClient.query(
@@ -782,7 +780,7 @@ suite("Mutation field updateUser", () => {
 							extensions:
 								expect.objectContaining<ForbiddenActionOnArgumentsAssociatedResourcesExtensions>(
 									{
-										code: "forbidden_action_on_arguments_associated_resources",
+										code: ErrorCode.FORBIDDEN_ACTION_ON_ARGUMENTS_ASSOCIATED_RESOURCES,
 										issues: expect.arrayContaining<
 											ForbiddenActionOnArgumentsAssociatedResourcesExtensions["issues"][number]
 										>([
@@ -803,7 +801,7 @@ suite("Mutation field updateUser", () => {
 	);
 
 	suite(
-		`results in a graphql error with "arguments_associated_resources_not_found" extensions code in the "errors" field and "null" as the value of "data.deleteUser" field if`,
+		`results in a graphql error with ErrorCode.ARGUMENTS_ASSOCIATED_RESOURCES_NOT_FOUND extensions code in the "errors" field and "null" as the value of "data.deleteUser" field if`,
 		() => {
 			test(`value of the argument "input.id" doesn't correspond to an existing user.`, async () => {
 				const administratorUserSignInResult = await mercuriusClient.query(
@@ -876,7 +874,7 @@ suite("Mutation field updateUser", () => {
 							extensions:
 								expect.objectContaining<ArgumentsAssociatedResourcesNotFoundExtensions>(
 									{
-										code: "arguments_associated_resources_not_found",
+										code: ErrorCode.ARGUMENTS_ASSOCIATED_RESOURCES_NOT_FOUND,
 										issues: expect.arrayContaining<
 											ArgumentsAssociatedResourcesNotFoundExtensions["issues"][number]
 										>([
