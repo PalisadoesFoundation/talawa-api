@@ -1,3 +1,4 @@
+import { NodeSDK } from "@opentelemetry/sdk-node";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 vi.mock("@opentelemetry/sdk-node", () => {
@@ -136,5 +137,44 @@ describe("OTEL bootstrap smoke tests", () => {
 		);
 
 		await expect(initTracing()).resolves.toBeUndefined();
+	});
+
+	it("should handle SDK start failure gracefully", async () => {
+		const mockStart = vi
+			.fn()
+			.mockRejectedValueOnce(new Error("OTLP endpoint unreachable"));
+
+		vi.mocked(NodeSDK).mockImplementationOnce(
+			() =>
+				({
+					start: mockStart,
+					shutdown: vi.fn().mockResolvedValue(undefined),
+				}) as unknown as NodeSDK,
+		);
+
+		process.env = {
+			...originalEnv,
+			OTEL_ENABLED: "true",
+			OTEL_ENVIRONMENT: "production",
+			OTEL_SERVICE_NAME: "test-service",
+			OTEL_EXPORTER_OTLP_ENDPOINT: "http://localhost:4318/v1/traces",
+		};
+
+		const { initTracing } = await import(
+			"../../src/observability/tracing/bootstrap"
+		);
+
+		const consoleErrorSpy = vi
+			.spyOn(console, "error")
+			.mockImplementation(() => {});
+
+		await expect(initTracing()).resolves.toBeUndefined();
+
+		expect(consoleErrorSpy).toHaveBeenCalledWith(
+			expect.stringContaining("Failed to initialize OpenTelemetry"),
+			expect.any(Error),
+		);
+
+		consoleErrorSpy.mockRestore();
 	});
 });
