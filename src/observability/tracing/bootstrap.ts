@@ -12,42 +12,73 @@ import {
 } from "@opentelemetry/sdk-trace-base";
 import { observabilityConfig } from "../../config/observability";
 
+let sdk: NodeSDK | undefined;
+
 export async function initTracing() {
 	if (!observabilityConfig.enabled) {
 		return;
 	}
 
 	const isLocal = observabilityConfig.environment === "local";
-	console.log("isLocal", isLocal);
 
 	diag.setLogger(
 		new DiagConsoleLogger(),
 		isLocal ? DiagLogLevel.INFO : DiagLogLevel.ERROR,
 	);
 
-	const exporter = isLocal
-		? new ConsoleSpanExporter()
-		: new OTLPTraceExporter({ url: observabilityConfig.otlpEndpoint });
+	try {
+		// Validate sampling ratio early
+		const ratio = observabilityConfig.samplingRatio;
+		if (typeof ratio !== "number" || ratio < 0 || ratio > 1) {
+			throw new Error(
+				`Invalid samplingRatio: ${ratio}. Expected number between 0 and 1.`,
+			);
+		}
 
-	const sampler = new ParentBasedSampler({
-		root: new TraceIdRatioBasedSampler(observabilityConfig.samplingRatio),
-	});
+		const exporter = isLocal
+			? new ConsoleSpanExporter()
+			: new OTLPTraceExporter({
+					url: observabilityConfig.otlpEndpoint,
+				});
 
-	const sdk = new NodeSDK({
-		sampler,
-		textMapPropagator: new W3CTraceContextPropagator(),
-		traceExporter: exporter,
-		resource: resourceFromAttributes({
-			"service.name": observabilityConfig.serviceName,
-			"deployment.environment": observabilityConfig.environment,
-		}),
-		instrumentations: [new HttpInstrumentation(), new FastifyInstrumentation()],
-	});
+		const sampler = new ParentBasedSampler({
+			root: new TraceIdRatioBasedSampler(ratio),
+		});
 
-	await sdk.start();
+		sdk = new NodeSDK({
+			sampler,
+			textMapPropagator: new W3CTraceContextPropagator(),
+			traceExporter: exporter,
+			resource: resourceFromAttributes({
+				"service.name": observabilityConfig.serviceName,
+				"deployment.environment": observabilityConfig.environment,
+			}),
+			instrumentations: [
+				new HttpInstrumentation(),
+				new FastifyInstrumentation(),
+			],
+		});
+
+		await sdk.start();
+
+		diag.info("OpenTelemetry tracing initialized successfully");
+	} catch (err) {
+		console.error(
+			"[observability] Failed to initialize OpenTelemetry. Tracing is disabled.",
+			err,
+		);
+		sdk = undefined;
+		return;
+	}
 
 	const shutdown = async () => {
-		await sdk.shutdown();
+		if (!sdk) return;
+		try {
+			await sdk.shutdown();
+			diag.info("OpenTelemetry tracing shut down cleanly");
+		} catch (err) {
+			console.error("[observability] Error during OpenTelemetry shutdown", err);
+		}
 	};
 
 	process.on("SIGTERM", shutdown);

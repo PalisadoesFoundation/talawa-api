@@ -6,7 +6,7 @@
 
 > **initTracing**(): `Promise`\<`void`\>
 
-Defined in: [src/observability/tracing/bootstrap.ts:15](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/observability/tracing/bootstrap.ts#L15)
+Defined in: [src/observability/tracing/bootstrap.ts:17](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/observability/tracing/bootstrap.ts#L17)
 
 ## Returns
 

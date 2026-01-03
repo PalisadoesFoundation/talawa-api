@@ -1,3 +1,10 @@
 import { initTracing } from "./observability/tracing/bootstrap";
 
-await initTracing();
+try {
+	await initTracing();
+} catch (error) {
+	console.error(
+		"Failed to initialize tracing, continuing without observability:",
+		error,
+	);
+}
