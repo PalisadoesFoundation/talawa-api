@@ -6,7 +6,7 @@
 
 > **normalizeError**(`err`): [`NormalizedError`](../type-aliases/NormalizedError.md)
 
-Defined in: [src/utilities/errors/errorTransformer.ts:57](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/utilities/errors/errorTransformer.ts#L57)
+Defined in: [src/utilities/errors/errorTransformer.ts:56](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/utilities/errors/errorTransformer.ts#L56)
 
 Transforms various error types into a standardized NormalizedError format.
 
@@ -42,10 +42,9 @@ const talawaError = new TalawaRestError({
 });
 const normalized1 = normalizeError(talawaError);
 
-// Generic Error
 const genericError = new Error("Something went wrong");
 const normalized2 = normalizeError(genericError);
-// Returns: { code: "internal_server_error", message: "Something went wrong", statusCode: 500 }
+// Returns: { code: "internal_server_error", message: "Internal Server Error", statusCode: 500 }
 
 // Zod validation error
 const zodError = new ZodError([...]);

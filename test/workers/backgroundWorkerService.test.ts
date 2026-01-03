@@ -416,7 +416,7 @@ describe("backgroundServiceWorker", () => {
 
 		it("returns unhealthy status when not running", async () => {
 			// Ensure stopped
-			await stopBackgroundWorkers(mockLogger).catch(() => {});
+			await stopBackgroundWorkers(mockLogger);
 
 			const result = await healthCheck(mockLogger);
 

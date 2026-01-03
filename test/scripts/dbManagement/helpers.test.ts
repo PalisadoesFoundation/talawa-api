@@ -401,6 +401,72 @@ suite("disconnect integration test", () => {
 });
 
 suite.concurrent("formatDatabase", () => {
+	test.concurrent("should return true on successful database format", async () => {
+		const db = Reflect.get(helpers, "db");
+		const originalTransaction = db.transaction;
+		const mockTransaction = vi.fn().mockResolvedValue(undefined);
+
+		db.transaction = mockTransaction;
+
+		const result = await helpers.formatDatabase();
+
+		expect(result).toBe(true);
+		expect(mockTransaction).toHaveBeenCalledTimes(1);
+
+		db.transaction = originalTransaction;
+	});
+
+	test.concurrent("should handle zero tables case correctly", async () => {
+		const db = Reflect.get(helpers, "db");
+		const originalTransaction = db.transaction;
+		const mockExecute = vi.fn();
+
+		// Mock transaction that returns empty tables array
+		db.transaction = vi.fn().mockImplementation(async (callback) => {
+			const mockTx = {
+				execute: mockExecute
+					.mockResolvedValueOnce([]) // Empty tables result
+					.mockResolvedValueOnce(undefined), // DELETE users result
+			};
+			return callback(mockTx);
+		});
+
+		const result = await helpers.formatDatabase();
+
+		expect(result).toBe(true);
+		expect(mockExecute).toHaveBeenCalledTimes(2); // Only SELECT and DELETE, no TRUNCATE
+
+		db.transaction = originalTransaction;
+	});
+
+	test.concurrent("should execute TRUNCATE when tables exist", async () => {
+		const db = Reflect.get(helpers, "db");
+		const originalTransaction = db.transaction;
+		const mockExecute = vi.fn();
+
+		// Mock transaction that returns some tables
+		db.transaction = vi.fn().mockImplementation(async (callback) => {
+			const mockTx = {
+				execute: mockExecute
+					.mockResolvedValueOnce([
+						{ tablename: "posts" },
+						{ tablename: "comments" },
+						{ tablename: "users" }, // This should be filtered out
+					])
+					.mockResolvedValueOnce(undefined) // TRUNCATE result
+					.mockResolvedValueOnce(undefined), // DELETE users result
+			};
+			return callback(mockTx);
+		});
+
+		const result = await helpers.formatDatabase();
+
+		expect(result).toBe(true);
+		expect(mockExecute).toHaveBeenCalledTimes(3); // SELECT, TRUNCATE, DELETE
+
+		db.transaction = originalTransaction;
+	});
+
 	test.concurrent("should return false and log error on transaction failure", async () => {
 		const db = Reflect.get(helpers, "db");
 		const originalTransaction = db.transaction;
@@ -414,13 +480,6 @@ suite.concurrent("formatDatabase", () => {
 		const result = await helpers.formatDatabase();
 
 		expect(result).toBe(false);
-		expect(consoleSpy).toHaveBeenCalledWith(
-			"dbManagement/helpers error:",
-			// Let's check source code again. Line 108: console.error("dbManagement/helpers error:", _error);
-			// So expectation should match.
-			expect.any(Error),
-		);
-		// Wait, the spy captures arguments.
 		expect(consoleSpy).toHaveBeenCalledWith(
 			"dbManagement/helpers error:",
 			expect.objectContaining({ message: "Transaction mock failure" }),

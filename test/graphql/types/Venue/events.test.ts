@@ -1,5 +1,6 @@
 import { faker } from "@faker-js/faker";
 import { afterEach, beforeAll, expect, suite, test, vi } from "vitest";
+import { ErrorCode } from "~/src/utilities/errors/errorCodes";
 import { assertToBeNonNullish } from "../../../helpers";
 import { server } from "../../../server";
 import { mercuriusClient } from "../client";
@@ -269,7 +270,9 @@ suite("Venue events Field", () => {
 		expect(result.errors).toEqual(
 			expect.arrayContaining([
 				expect.objectContaining({
-					extensions: expect.objectContaining({ code: "unauthenticated" }),
+					extensions: expect.objectContaining({
+						code: ErrorCode.UNAUTHENTICATED,
+					}),
 					path: ["venue"],
 				}),
 			]),
@@ -330,7 +333,9 @@ suite("Venue events Field", () => {
 		expect(result.errors).toEqual(
 			expect.arrayContaining([
 				expect.objectContaining({
-					extensions: expect.objectContaining({ code: "unauthenticated" }),
+					extensions: expect.objectContaining({
+						code: ErrorCode.UNAUTHENTICATED,
+					}),
 					path: ["venue"],
 				}),
 			]),
@@ -502,7 +507,7 @@ suite("Venue events Field", () => {
 			expect.arrayContaining([
 				expect.objectContaining({
 					extensions: expect.objectContaining({
-						code: "invalid_arguments",
+						code: ErrorCode.INVALID_ARGUMENTS,
 						issues: expect.arrayContaining([
 							expect.objectContaining({
 								argumentPath: ["after"],
@@ -571,7 +576,7 @@ suite("Venue events Field", () => {
 			expect.arrayContaining([
 				expect.objectContaining({
 					extensions: expect.objectContaining({
-						code: "arguments_associated_resources_not_found",
+						code: ErrorCode.ARGUMENTS_ASSOCIATED_RESOURCES_NOT_FOUND,
 						issues: expect.arrayContaining([
 							expect.objectContaining({
 								argumentPath: ["after"],
@@ -633,7 +638,7 @@ suite("Venue events Field", () => {
 			expect.arrayContaining([
 				expect.objectContaining({
 					extensions: expect.objectContaining({
-						code: "invalid_arguments",
+						code: ErrorCode.INVALID_ARGUMENTS,
 						issues: expect.arrayContaining([
 							expect.objectContaining({
 								argumentPath: ["before"],
@@ -1267,7 +1272,7 @@ suite("Venue events Field", () => {
 			expect.arrayContaining([
 				expect.objectContaining({
 					extensions: expect.objectContaining({
-						code: "arguments_associated_resources_not_found",
+						code: ErrorCode.ARGUMENTS_ASSOCIATED_RESOURCES_NOT_FOUND,
 						issues: expect.arrayContaining([
 							expect.objectContaining({
 								argumentPath: ["before"],
@@ -1278,11 +1283,8 @@ suite("Venue events Field", () => {
 			]),
 		);
 	});
-	test.each([
-		{ description: "event is undefined", eventData: undefined },
-	])("should throw internal server error when booking event data is corrupt ($description)", async ({
-		eventData,
-	}) => {
+	test("should throw internal server error when booking event data is corrupt (event is undefined)", async () => {
+		const eventData = undefined;
 		const createOrgResult = await mercuriusClient.mutate(
 			Mutation_createOrganization,
 			{
@@ -1343,7 +1345,7 @@ suite("Venue events Field", () => {
 			expect.arrayContaining([
 				expect.objectContaining({
 					extensions: expect.objectContaining({
-						code: "internal_server_error",
+						code: ErrorCode.INTERNAL_SERVER_ERROR,
 					}),
 				}),
 			]),

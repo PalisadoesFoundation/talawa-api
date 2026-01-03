@@ -4,9 +4,9 @@
 
 # Function: validateRecaptchaIfRequired()
 
-> **validateRecaptchaIfRequired**(`recaptchaToken`, `recaptchaSecretKey`, `argumentPath`): `Promise`\<`boolean` \| `undefined`\>
+> **validateRecaptchaIfRequired**(`recaptchaToken`, `recaptchaSecretKey`, `argumentPath`, `logger`): `Promise`\<`boolean` \| `undefined`\>
 
-Defined in: [src/utilities/recaptchaUtils.ts:54](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/utilities/recaptchaUtils.ts#L54)
+Defined in: [src/utilities/recaptchaUtils.ts:56](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/utilities/recaptchaUtils.ts#L56)
 
 Validates reCAPTCHA token if required based on environment configuration.
 
@@ -29,6 +29,12 @@ The secret key from environment config
 `string`[]
 
 The GraphQL argument path for error reporting
+
+### logger
+
+`FastifyBaseLogger`
+
+Logger for error reporting
 
 ## Returns
 

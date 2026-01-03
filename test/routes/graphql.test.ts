@@ -613,7 +613,7 @@ describe("GraphQL Routes", () => {
 					},
 					timestamp: expect.any(String),
 				}),
-				"❌ Failed to Update GraphQL Schema",
+				"Failed to Update GraphQL Schema",
 			);
 		});
 
@@ -1366,6 +1366,7 @@ describe("GraphQL Routes", () => {
 					request: {
 						id: "correlation-123",
 					},
+					send: vi.fn(), // Add send function to make it a "real HTTP request"
 				},
 			};
 
@@ -1399,8 +1400,11 @@ describe("GraphQL Routes", () => {
 							locations: [{ line: 1, column: 5 }],
 							path: ["user", "email"],
 							extensions: {
-								code: "VALIDATION_ERROR",
+								code: "test_error",
+								safeKey: "Safe value",
+								details: undefined,
 								correlationId: "correlation-123",
+								httpStatus: 500,
 							},
 						},
 					],
@@ -1465,6 +1469,7 @@ describe("GraphQL Routes", () => {
 					request: {
 						id: "req-456",
 					},
+					send: vi.fn(), // Add send function to make it a "real HTTP request"
 				},
 			};
 
@@ -1483,7 +1488,10 @@ describe("GraphQL Routes", () => {
 							locations: [{ line: 2, column: 10 }],
 							path: undefined,
 							extensions: {
+								code: "internal_server_error",
+								details: undefined,
 								correlationId: "req-456",
+								httpStatus: 500,
 							},
 						},
 					],
@@ -1556,6 +1564,7 @@ describe("GraphQL Routes", () => {
 					request: {
 						id: "multi-error-789",
 					},
+					send: vi.fn(), // Add send function to make it a "real HTTP request"
 				},
 			};
 
@@ -1571,21 +1580,23 @@ describe("GraphQL Routes", () => {
 					errors: [
 						{
 							message: "Unauthorized",
-							locations: undefined,
 							path: undefined,
 							extensions: {
 								code: "UNAUTHENTICATED",
+								details: undefined,
 								correlationId: "multi-error-789",
+								httpStatus: 500,
 							},
 						},
 						{
 							message: "Field not found",
-							locations: undefined,
 							path: ["query", "nonExistent"],
 							extensions: {
 								code: "GRAPHQL_VALIDATION_FAILED",
+								details: undefined,
 								timestamp: 123456,
 								correlationId: "multi-error-789",
+								httpStatus: 500,
 							},
 						},
 					],

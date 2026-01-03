@@ -30,7 +30,11 @@ describe("recaptchaUtils", () => {
 				json: async () => ({ success: true }),
 			} as Response);
 
-			const result = await verifyRecaptchaToken("valid-token", "secret-key");
+			const result = await verifyRecaptchaToken(
+				"valid-token",
+				"secret-key",
+				mockLogger,
+			);
 			expect(result).toBe(true);
 		});
 
@@ -54,7 +58,11 @@ describe("recaptchaUtils", () => {
 				json: async () => ({ success: false }),
 			} as Response);
 
-			const result = await verifyRecaptchaToken("invalid-token", "secret-key");
+			const result = await verifyRecaptchaToken(
+				"invalid-token",
+				"secret-key",
+				mockLogger,
+			);
 			expect(result).toBe(false);
 		});
 
@@ -75,20 +83,6 @@ describe("recaptchaUtils", () => {
 				"reCAPTCHA verification error",
 			);
 		});
-
-		test("handles error gracefully when logger is undefined (backward compatibility)", async () => {
-			const networkError = new Error("Network error");
-			mockFetch.mockRejectedValueOnce(networkError);
-
-			// Should throw the TalawaGraphQLError but not crash due to missing logger
-			await expect(
-				verifyRecaptchaToken("token", "secret", undefined),
-			).rejects.toMatchObject({
-				extensions: {
-					code: "unexpected",
-				},
-			});
-		});
 	});
 
 	describe("validateRecaptchaIfRequired", () => {
@@ -101,6 +95,7 @@ describe("recaptchaUtils", () => {
 				"valid-token",
 				"secret-key",
 				["input", "recaptchaToken"],
+				mockLogger,
 			);
 			expect(result).toBe(true);
 			expect(mockFetch).toHaveBeenCalledWith(
@@ -139,10 +134,12 @@ describe("recaptchaUtils", () => {
 				ok: true,
 				json: async () => ({ success: false }),
 			} as Response);
-			const result = validateRecaptchaIfRequired("valid-token", "secret-key", [
-				"input",
-				"recaptchaToken",
-			]);
+			const result = validateRecaptchaIfRequired(
+				"valid-token",
+				"secret-key",
+				["input", "recaptchaToken"],
+				mockLogger,
+			);
 			await expect(result).rejects.toMatchObject({
 				extensions: {
 					code: "invalid_arguments",
@@ -163,20 +160,24 @@ describe("recaptchaUtils", () => {
 				status: 500,
 				// Missing json method simulates partial failure or just mock object limitation triggering catch
 			} as Response);
-			const result = validateRecaptchaIfRequired("valid-token", "secret-key", [
-				"input",
-				"recaptchaToken",
-			]);
+			const result = validateRecaptchaIfRequired(
+				"valid-token",
+				"secret-key",
+				["input", "recaptchaToken"],
+				mockLogger,
+			);
 			await expect(result).rejects.toMatchObject({
 				message: "Something went wrong. Please try again later.",
 			});
 		});
 
 		test("throws TalawaGraphQLError when recaptchaToken is missing but secret key is configured", async () => {
-			const result = validateRecaptchaIfRequired(undefined, "secret-key", [
-				"input",
-				"recaptchaToken",
-			]);
+			const result = validateRecaptchaIfRequired(
+				undefined,
+				"secret-key",
+				["input", "recaptchaToken"],
+				mockLogger,
+			);
 			await expect(result).rejects.toMatchObject({
 				extensions: {
 					code: "invalid_arguments",
@@ -195,6 +196,7 @@ describe("recaptchaUtils", () => {
 				"some-token",
 				undefined,
 				["input", "recaptchaToken"],
+				mockLogger,
 			);
 			expect(result).toBeUndefined();
 		});

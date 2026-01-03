@@ -1,6 +1,7 @@
 import { faker } from "@faker-js/faker";
 import type { GraphQLFormattedError } from "graphql";
 import { beforeAll, expect, suite, test, vi } from "vitest";
+import { ErrorCode } from "~/src/utilities/errors/errorCodes";
 import { assertToBeNonNullish } from "../../../helpers";
 import { mercuriusClient } from "../client";
 import {
@@ -135,7 +136,7 @@ suite("Query: getMyPledgesForCampaign", () => {
 					message: "You must be authenticated to perform this action.",
 					locations: [{ line: 2, column: 3 }],
 					path: ["getMyPledgesForCampaign"],
-					extensions: { code: "unauthenticated" },
+					extensions: { code: ErrorCode.UNAUTHENTICATED },
 					nodes: undefined,
 					source: undefined,
 					positions: undefined,
@@ -156,7 +157,9 @@ suite("Query: getMyPledgesForCampaign", () => {
 		expect(result.errors).toEqual(
 			expect.arrayContaining([
 				expect.objectContaining({
-					extensions: expect.objectContaining({ code: "unauthenticated" }),
+					extensions: expect.objectContaining({
+						code: ErrorCode.UNAUTHENTICATED,
+					}),
 				}),
 			]),
 		);
@@ -170,7 +173,9 @@ suite("Query: getMyPledgesForCampaign", () => {
 					message: "No pledges found for this campaign.",
 					locations: [{ line: 2, column: 3 }],
 					path: ["getMyPledgesForCampaign"],
-					extensions: { code: "not_found" },
+					extensions: {
+						code: ErrorCode.ARGUMENTS_ASSOCIATED_RESOURCES_NOT_FOUND,
+					},
 					nodes: undefined,
 					source: undefined,
 					positions: undefined,
@@ -194,7 +199,7 @@ suite("Query: getMyPledgesForCampaign", () => {
 			expect.arrayContaining([
 				expect.objectContaining({
 					extensions: expect.objectContaining({
-						code: "not_found",
+						code: ErrorCode.ARGUMENTS_ASSOCIATED_RESOURCES_NOT_FOUND,
 					}),
 				}),
 			]),

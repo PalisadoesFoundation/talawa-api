@@ -3,10 +3,7 @@
 	// https://biomejs.dev/reference/configuration/#schema
 	"$schema": "./node_modules/@biomejs/biome/configuration_schema.json",
 	// GritQL plugins for code quality enforcement
-	"plugins": [
-		"./biome_plugins/require_escapeHTML.grit"
-		// "./biome_plugins/enforce_error_handling.grit" // Disabled - using validation script instead
-	],
+	"plugins": ["./biome_plugins/require_escapeHTML.grit"],
 	// https://biomejs.dev/reference/configuration/#files
 	"files": {
 		// https://biomejs.dev/reference/configuration/#filesignore

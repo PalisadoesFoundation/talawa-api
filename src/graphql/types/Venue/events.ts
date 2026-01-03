@@ -39,6 +39,7 @@ const eventsArgumentsSchema = defaultGraphQLConnectionArgumentsSchema
 					message: "Not a valid cursor.",
 					path: [arg.isInversed ? "before" : "after"],
 				});
+				return z.NEVER;
 			}
 
 			return {

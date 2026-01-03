@@ -85,8 +85,8 @@ describe("errorHandlerPlugin", () => {
 		expect(res.statusCode).toBe(500);
 		const body = res.json();
 		expect(body.error.code).toBe("internal_server_error");
-		// normalizeError passes the message through
-		expect(body.error.message).toBe("Whoops");
+		// normalizeError converts generic errors to Internal Server Error
+		expect(body.error.message).toBe("Internal Server Error");
 		expect(body.error.correlationId).toBe("generated-correlation-id");
 	});
 
@@ -116,7 +116,9 @@ describe("errorHandlerPlugin", () => {
 			expect.objectContaining({
 				msg: "Request error",
 				correlationId: "log-cid",
-				error: expect.any(Error),
+				error: expect.objectContaining({
+					message: "Internal Server Error",
+				}),
 			}),
 		);
 	});
@@ -137,7 +139,7 @@ describe("errorHandlerPlugin", () => {
 		});
 
 		const body = res.json();
-		expect(res.statusCode).toBe(500);
-		expect(body.error.code).toBe("internal_server_error");
+		expect(res.statusCode).toBe(400);
+		expect(body.error.code).toBe("invalid_arguments");
 	});
 });

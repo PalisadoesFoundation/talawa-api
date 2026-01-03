@@ -104,6 +104,7 @@ builder.mutationField("signUp", (t) =>
 				parsedArgs.input.recaptchaToken,
 				ctx.envConfig.RECAPTCHA_SECRET_KEY,
 				["input", "recaptchaToken"],
+				ctx.log,
 			);
 
 			const [[existingUserWithEmailAddress], existingOrganization] =

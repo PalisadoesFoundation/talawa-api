@@ -609,8 +609,7 @@ describe("ErrorHandlingValidator", () => {
 			});
 
 			it("should handle template literal interpolation", () => {
-				// biome-ignore lint/suspicious/noTemplateCurlyInString: Testing template literals
-				const input = "const x = `val ${a + b} end`;";
+				const input = "const x = `val " + "$" + "{a + b} end`;";
 				// Inside ${} code is preserved (ROOT state)
 				// The bounding backticks form the template
 				// "const x = " -> ROOT
@@ -628,8 +627,12 @@ describe("ErrorHandlingValidator", () => {
 			});
 
 			it("should handle nested template literals", () => {
-				// biome-ignore lint/suspicious/noTemplateCurlyInString: Testing template literals
-				const input = "const x = `level1 ${ `level2 ${level3}` } end1`;";
+				const input =
+					"const x = `level1 " +
+					"$" +
+					"{ `level2 " +
+					"$" +
+					"{level3}` } end1`;";
 				const result = validator.removeCommentsAndStrings(input);
 				expect(result).toContain("level3");
 				expect(result).not.toContain("level1");

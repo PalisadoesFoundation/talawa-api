@@ -20,6 +20,7 @@ import { Readable } from "node:stream";
 import { faker } from "@faker-js/faker";
 import type { ResultOf, VariablesOf } from "gql.tada";
 import { expect, suite, test } from "vitest";
+import { ErrorCode } from "~/src/utilities/errors/errorCodes";
 import type {
 	ArgumentsAssociatedResourcesNotFoundExtensions,
 	ForbiddenActionOnArgumentsAssociatedResourcesExtensions,
@@ -96,7 +97,7 @@ suite("Mutation field updateUser", () => {
 					expect.arrayContaining<TalawaGraphQLFormattedError>([
 						expect.objectContaining<TalawaGraphQLFormattedError>({
 							extensions: expect.objectContaining<UnauthenticatedExtensions>({
-								code: "unauthenticated",
+								code: ErrorCode.UNAUTHENTICATED,
 							}),
 							message: expect.any(String),
 							path: ["updateUser"],
@@ -178,7 +179,7 @@ suite("Mutation field updateUser", () => {
 					expect.arrayContaining<TalawaGraphQLFormattedError>([
 						expect.objectContaining<TalawaGraphQLFormattedError>({
 							extensions: expect.objectContaining<UnauthenticatedExtensions>({
-								code: "unauthenticated",
+								code: ErrorCode.UNAUTHENTICATED,
 							}),
 							message: expect.any(String),
 							path: ["updateUser"],
@@ -249,7 +250,7 @@ suite("Mutation field updateUser", () => {
 					expect.arrayContaining<TalawaGraphQLFormattedError>([
 						expect.objectContaining<TalawaGraphQLFormattedError>({
 							extensions: expect.objectContaining<InvalidArgumentsExtensions>({
-								code: "invalid_arguments",
+								code: ErrorCode.INVALID_ARGUMENTS,
 								issues: expect.arrayContaining<
 									InvalidArgumentsExtensions["issues"]
 								>([
@@ -340,7 +341,7 @@ suite("Mutation field updateUser", () => {
 					expect.arrayContaining<TalawaGraphQLFormattedError>([
 						expect.objectContaining<TalawaGraphQLFormattedError>({
 							extensions: expect.objectContaining<InvalidArgumentsExtensions>({
-								code: "invalid_arguments",
+								code: ErrorCode.INVALID_ARGUMENTS,
 								issues: expect.arrayContaining<
 									InvalidArgumentsExtensions["issues"][number]
 								>([
@@ -457,7 +458,7 @@ suite("Mutation field updateUser", () => {
 					expect.arrayContaining<TalawaGraphQLFormattedError>([
 						expect.objectContaining<TalawaGraphQLFormattedError>({
 							extensions: expect.objectContaining<InvalidArgumentsExtensions>({
-								code: "invalid_arguments",
+								code: ErrorCode.INVALID_ARGUMENTS,
 								issues: expect.arrayContaining<
 									InvalidArgumentsExtensions["issues"][number]
 								>([
@@ -568,7 +569,7 @@ suite("Mutation field updateUser", () => {
 					expect.arrayContaining<TalawaGraphQLFormattedError>([
 						expect.objectContaining<TalawaGraphQLFormattedError>({
 							extensions: expect.objectContaining<InvalidArgumentsExtensions>({
-								code: "invalid_arguments",
+								code: ErrorCode.INVALID_ARGUMENTS,
 								issues: expect.arrayContaining<
 									InvalidArgumentsExtensions["issues"][number]
 								>([
@@ -652,8 +653,17 @@ suite("Mutation field updateUser", () => {
 						},
 					},
 				});
-				expect(result.data ?? null).toBeNull();
-				expect(result.errors).toBeDefined();
+				expect(result.data?.updateUser ?? null).toEqual(null);
+				expect(result.errors).toEqual(
+					expect.arrayContaining([
+						expect.objectContaining({
+							extensions: expect.objectContaining({
+								code: ErrorCode.INTERNAL_SERVER_ERROR,
+							}),
+							message: "Graphql validation error",
+						}),
+					]),
+				);
 			});
 		},
 	);
@@ -782,7 +792,7 @@ suite("Mutation field updateUser", () => {
 							extensions:
 								expect.objectContaining<ForbiddenActionOnArgumentsAssociatedResourcesExtensions>(
 									{
-										code: "forbidden_action_on_arguments_associated_resources",
+										code: ErrorCode.FORBIDDEN_ACTION_ON_ARGUMENTS_ASSOCIATED_RESOURCES,
 										issues: expect.arrayContaining<
 											ForbiddenActionOnArgumentsAssociatedResourcesExtensions["issues"][number]
 										>([
@@ -876,7 +886,7 @@ suite("Mutation field updateUser", () => {
 							extensions:
 								expect.objectContaining<ArgumentsAssociatedResourcesNotFoundExtensions>(
 									{
-										code: "arguments_associated_resources_not_found",
+										code: ErrorCode.ARGUMENTS_ASSOCIATED_RESOURCES_NOT_FOUND,
 										issues: expect.arrayContaining<
 											ArgumentsAssociatedResourcesNotFoundExtensions["issues"][number]
 										>([

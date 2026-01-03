@@ -43,10 +43,9 @@ export type NormalizedError = {
  * });
  * const normalized1 = normalizeError(talawaError);
  *
- * // Generic Error
  * const genericError = new Error("Something went wrong");
  * const normalized2 = normalizeError(genericError);
- * // Returns: { code: "internal_server_error", message: "Something went wrong", statusCode: 500 }
+ * // Returns: { code: "internal_server_error", message: "Internal Server Error", statusCode: 500 }
  *
  * // Zod validation error
  * const zodError = new ZodError([...]);

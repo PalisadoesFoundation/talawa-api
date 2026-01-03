@@ -103,6 +103,7 @@ suite("Query field venue", () => {
 					extensions: {
 						code: "unauthenticated",
 						correlationId: expect.any(String),
+						httpStatus: 401,
 					},
 					path: ["venue"],
 				}),

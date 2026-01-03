@@ -48,6 +48,11 @@ type TestCtx = {
 		where: ReturnType<typeof vi.fn>;
 		returning: ReturnType<typeof vi.fn>;
 	};
+	log: {
+		error: ReturnType<typeof vi.fn>;
+		info: ReturnType<typeof vi.fn>;
+		warn: ReturnType<typeof vi.fn>;
+	};
 	[key: string]: unknown;
 };
 
@@ -158,6 +163,15 @@ describe("deletePlugin mutation", () => {
 			existingPlugin.pluginId,
 		);
 		expect(removePluginDirectory).toHaveBeenCalledWith(existingPlugin.pluginId);
+
+		expect(ctx.log.info).toHaveBeenCalledWith(
+			{ pluginId: existingPlugin.pluginId },
+			"Uninstalling plugin via lifecycle manager",
+		);
+		expect(ctx.log.info).toHaveBeenCalledWith(
+			{ pluginId: existingPlugin.pluginId },
+			"Plugin uninstalled successfully via lifecycle manager",
+		);
 	});
 
 	it("handles plugin manager errors gracefully", async () => {
@@ -175,6 +189,15 @@ describe("deletePlugin mutation", () => {
 		const result = (await resolver({}, args, ctx)) as typeof existingPlugin;
 		expect(result.pluginId).toBe(existingPlugin.pluginId);
 		expect(fakeManager.uninstallPlugin).toHaveBeenCalled();
+
+		expect(ctx.log.info).toHaveBeenCalledWith(
+			{ pluginId: existingPlugin.pluginId },
+			"Uninstalling plugin via lifecycle manager",
+		);
+		expect(ctx.log.error).toHaveBeenCalledWith(
+			expect.any(Error),
+			"Error during plugin lifecycle uninstallation",
+		);
 	});
 
 	it("handles plugin manager uninstall failure gracefully", async () => {
@@ -192,6 +215,15 @@ describe("deletePlugin mutation", () => {
 		const result = (await resolver({}, args, ctx)) as typeof existingPlugin;
 		expect(result.pluginId).toBe(existingPlugin.pluginId);
 		expect(fakeManager.uninstallPlugin).toHaveBeenCalled();
+
+		expect(ctx.log.info).toHaveBeenCalledWith(
+			{ pluginId: existingPlugin.pluginId },
+			"Uninstalling plugin via lifecycle manager",
+		);
+		expect(ctx.log.error).toHaveBeenCalledWith(
+			{ pluginId: existingPlugin.pluginId },
+			"Plugin uninstallation failed in lifecycle manager",
+		);
 	});
 
 	it("handles plugin directory removal error", async () => {
@@ -202,6 +234,14 @@ describe("deletePlugin mutation", () => {
 		const args = { input: validInput };
 		await expect(resolver({}, args, ctx)).rejects.toBeInstanceOf(
 			TalawaGraphQLError,
+		);
+
+		expect(ctx.log.error).toHaveBeenCalledWith(
+			expect.objectContaining({
+				error: expect.any(Error),
+				pluginId: existingPlugin.pluginId,
+			}),
+			`Failed to remove plugin directory for ${existingPlugin.pluginId}`,
 		);
 	});
 

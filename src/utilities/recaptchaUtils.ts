@@ -1,3 +1,4 @@
+import type { FastifyBaseLogger } from "fastify";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 
 interface RecaptchaVerificationResponse {
@@ -13,6 +14,7 @@ interface RecaptchaVerificationResponse {
 export async function verifyRecaptchaToken(
 	token: string,
 	secretKey: string,
+	logger: FastifyBaseLogger,
 ): Promise<boolean> {
 	try {
 		const verificationUrl = "https://www.google.com/recaptcha/api/siteverify";
@@ -32,8 +34,7 @@ export async function verifyRecaptchaToken(
 		const data = (await response.json()) as RecaptchaVerificationResponse;
 		return data.success === true;
 	} catch (error) {
-		// Log the original error for debugging
-		console.error("reCAPTCHA verification error:", error);
+		logger.error({ err: error }, "reCAPTCHA verification error");
 		throw new TalawaGraphQLError({
 			extensions: {
 				code: "unexpected",
@@ -48,6 +49,7 @@ export async function verifyRecaptchaToken(
  * @param recaptchaToken - The reCAPTCHA token to verify (optional)
  * @param recaptchaSecretKey - The secret key from environment config
  * @param argumentPath - The GraphQL argument path for error reporting
+ * @param logger - Logger for error reporting
  * @returns Promise that resolves if verification passes or is not required
  * @throws TalawaGraphQLError if verification fails or is required but missing
  */
@@ -55,6 +57,7 @@ export async function validateRecaptchaIfRequired(
 	recaptchaToken: string | undefined,
 	recaptchaSecretKey: string | undefined,
 	argumentPath: string[],
+	logger: FastifyBaseLogger,
 ): Promise<boolean | undefined> {
 	// If no secret key is configured, skip reCAPTCHA verification
 	if (!recaptchaSecretKey) {
@@ -80,6 +83,7 @@ export async function validateRecaptchaIfRequired(
 	const isValid = await verifyRecaptchaToken(
 		recaptchaToken,
 		recaptchaSecretKey,
+		logger,
 	);
 
 	if (!isValid) {

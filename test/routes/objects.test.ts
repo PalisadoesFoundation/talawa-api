@@ -330,4 +330,24 @@ describe("Objects route with MinIO integration", () => {
 
 		expect(response.statusCode).toBe(400);
 	});
+
+	it("should use fallback content-type when metadata lacks content-type", async () => {
+		const mockStream = Readable.from(["binary content"]);
+		const mockStat = {
+			size: 14,
+			metaData: {}, // Empty metadata without content-type
+		};
+
+		app.minio.client.getObject.mockResolvedValue(mockStream);
+		app.minio.client.statObject.mockResolvedValue(mockStat);
+
+		const response = await app.inject({
+			method: "GET",
+			url: "/objects/binary-file.bin",
+		});
+
+		expect(response.statusCode).toBe(200);
+		expect(response.headers["content-type"]).toBe("application/octet-stream");
+		expect(response.headers["content-length"]).toBe("14");
+	});
 });

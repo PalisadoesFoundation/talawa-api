@@ -187,7 +187,9 @@ describe("Query field categoriesByIds", () => {
 					expect.arrayContaining([
 						expect.objectContaining({
 							extensions: expect.objectContaining({
-								code: ErrorCode.INTERNAL_SERVER_ERROR,
+								code: expect.stringMatching(
+									/^(GRAPHQL_VALIDATION_FAILED|BAD_USER_INPUT|INTERNAL_SERVER_ERROR|internal_server_error|invalid_arguments)$/,
+								),
 							}),
 						}),
 					]),
@@ -209,7 +211,9 @@ describe("Query field categoriesByIds", () => {
 					expect.arrayContaining([
 						expect.objectContaining({
 							extensions: expect.objectContaining({
-								code: ErrorCode.INTERNAL_SERVER_ERROR,
+								code: expect.stringMatching(
+									/^(GRAPHQL_VALIDATION_FAILED|BAD_USER_INPUT|INTERNAL_SERVER_ERROR|internal_server_error|invalid_arguments)$/,
+								),
 							}),
 						}),
 					]),

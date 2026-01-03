@@ -336,6 +336,7 @@ export const graphql = fastifyPlugin(async (fastify) => {
 
 			return {
 				message: e.message,
+				locations: e.locations,
 				path: e.path,
 				extensions: {
 					// Spread sanitized extensions first so they can't override our standardized keys
