@@ -406,4 +406,69 @@ describe("resolveUpdater", () => {
 			}
 		}
 	});
+
+	test("returns existing updater when pledger views own pledge with different updater", async () => {
+		const pledgerId = "user123";
+		const updaterId = "updater456";
+
+		mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValue({
+			id: updaterId,
+			role: "regular",
+		});
+
+		const result = await resolveUpdater(
+			{ ...mockFundCampaignPledge, pledgerId, updaterId },
+			{},
+			ctx,
+		);
+
+		expect(result).toEqual({ id: updaterId, role: "regular" });
+	});
+
+	test("throws unexpected error when pledger's pledge has non-existent updater", async () => {
+		const pledgerId = "user123";
+		const updaterId = "updater456";
+
+		mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValue(undefined);
+
+		await expect(
+			resolveUpdater(
+				{ ...mockFundCampaignPledge, pledgerId, updaterId },
+				{},
+				ctx,
+			),
+		).rejects.toThrow(TalawaGraphQLError);
+
+		expect(ctx.log.error).toHaveBeenCalledWith(
+			"Postgres select operation returned an empty array for a fund campaign pledge's updater id that isn't null.",
+		);
+	});
+
+	test("allows system administrator without org membership to view updater", async () => {
+		const currentUserId = "user123";
+		const updaterId = "updater456";
+
+		mocks.drizzleClient.query.usersTable.findFirst
+			.mockResolvedValueOnce({ id: currentUserId, role: "administrator" })
+			.mockResolvedValueOnce({ id: updaterId, role: "regular" });
+
+		mocks.drizzleClient.query.fundCampaignsTable.findFirst.mockResolvedValue({
+			currencyCode: "USD",
+			fund: {
+				isTaxDeductible: true,
+				organization: {
+					countryCode: "US",
+					membershipsWhereOrganization: [],
+				},
+			},
+		});
+
+		const result = await resolveUpdater(
+			{ ...mockFundCampaignPledge, updaterId },
+			{},
+			ctx,
+		);
+
+		expect(result).toEqual({ id: updaterId, role: "regular" });
+	});
 });
