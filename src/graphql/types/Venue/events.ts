@@ -10,7 +10,6 @@ import {
 	type EventWithAttachments,
 	filterInviteOnlyEvents,
 } from "~/src/graphql/types/Query/eventQueries";
-import { ErrorCode } from "~/src/utilities/errors/errorCodes";
 import envConfig from "~/src/utilities/graphqLimits";
 import {
 	defaultGraphQLConnectionArgumentsSchema,
@@ -269,20 +268,14 @@ Venue.implement({
 
 					// Transform venue bookings to events with attachments
 					const eventsWithAttachments: EventWithAttachments[] = venueBookings
-						.filter((booking) => booking.event !== null)
+						.filter(
+							(
+								booking,
+							): booking is typeof booking & {
+								event: NonNullable<typeof booking.event>;
+							} => booking.event !== null,
+						)
 						.map((booking) => {
-							if (!booking.event) {
-								throw new TalawaGraphQLError({
-									message: `Invariant: booking.event is null for booking ${booking.eventId}`,
-									extensions: {
-										code: ErrorCode.INTERNAL_SERVER_ERROR,
-										details: {
-											venueId: parent.id,
-											eventId: booking.eventId,
-										},
-									},
-								});
-							}
 							const { attachmentsWhereEvent, ...event } = booking.event;
 							const isGenerated = recurringInstanceIds.has(booking.eventId);
 							return {

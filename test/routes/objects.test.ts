@@ -35,7 +35,10 @@ const createTestApp = async () => {
 		}
 
 		if (name === "generic-error") {
-			throw new Error("Generic error message");
+			throw new TalawaRestError({
+				code: ErrorCode.INTERNAL_SERVER_ERROR,
+				message: "Generic error message",
+			});
 		}
 
 		// Success case
@@ -106,7 +109,7 @@ describe("Objects route error handling", () => {
 		expect(body).toEqual({
 			error: {
 				code: "internal_server_error",
-				message: "Internal Server Error",
+				message: "Generic error message",
 				details: undefined,
 				correlationId: expect.any(String),
 			},
@@ -336,6 +339,26 @@ describe("Objects route with MinIO integration", () => {
 		const mockStat = {
 			size: 14,
 			metaData: {}, // Empty metadata without content-type
+		};
+
+		app.minio.client.getObject.mockResolvedValue(mockStream);
+		app.minio.client.statObject.mockResolvedValue(mockStat);
+
+		const response = await app.inject({
+			method: "GET",
+			url: "/objects/binary-file.bin",
+		});
+
+		expect(response.statusCode).toBe(200);
+		expect(response.headers["content-type"]).toBe("application/octet-stream");
+		expect(response.headers["content-length"]).toBe("14");
+	});
+
+	it("should use fallback content-type when metadata content-type is not a string", async () => {
+		const mockStream = Readable.from(["binary content"]);
+		const mockStat = {
+			size: 14,
+			metaData: { "content-type": 123 }, // Non-string content-type
 		};
 
 		app.minio.client.getObject.mockResolvedValue(mockStream);

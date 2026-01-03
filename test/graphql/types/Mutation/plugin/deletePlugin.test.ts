@@ -165,11 +165,11 @@ describe("deletePlugin mutation", () => {
 		expect(removePluginDirectory).toHaveBeenCalledWith(existingPlugin.pluginId);
 
 		expect(ctx.log.info).toHaveBeenCalledWith(
-			{ pluginId: existingPlugin.pluginId },
+			{ pluginId: existingPlugin.pluginId, correlationId: ctx.id },
 			"Uninstalling plugin via lifecycle manager",
 		);
 		expect(ctx.log.info).toHaveBeenCalledWith(
-			{ pluginId: existingPlugin.pluginId },
+			{ pluginId: existingPlugin.pluginId, correlationId: ctx.id },
 			"Plugin uninstalled successfully via lifecycle manager",
 		);
 	});
@@ -191,7 +191,7 @@ describe("deletePlugin mutation", () => {
 		expect(fakeManager.uninstallPlugin).toHaveBeenCalled();
 
 		expect(ctx.log.info).toHaveBeenCalledWith(
-			{ pluginId: existingPlugin.pluginId },
+			{ pluginId: existingPlugin.pluginId, correlationId: ctx.id },
 			"Uninstalling plugin via lifecycle manager",
 		);
 		expect(ctx.log.error).toHaveBeenCalledWith(
@@ -217,11 +217,11 @@ describe("deletePlugin mutation", () => {
 		expect(fakeManager.uninstallPlugin).toHaveBeenCalled();
 
 		expect(ctx.log.info).toHaveBeenCalledWith(
-			{ pluginId: existingPlugin.pluginId },
+			{ pluginId: existingPlugin.pluginId, correlationId: ctx.id },
 			"Uninstalling plugin via lifecycle manager",
 		);
 		expect(ctx.log.error).toHaveBeenCalledWith(
-			{ pluginId: existingPlugin.pluginId },
+			{ pluginId: existingPlugin.pluginId, correlationId: ctx.id },
 			"Plugin uninstallation failed in lifecycle manager",
 		);
 	});
@@ -240,6 +240,7 @@ describe("deletePlugin mutation", () => {
 			expect.objectContaining({
 				error: expect.any(Error),
 				pluginId: existingPlugin.pluginId,
+				correlationId: ctx.id,
 			}),
 			`Failed to remove plugin directory for ${existingPlugin.pluginId}`,
 		);

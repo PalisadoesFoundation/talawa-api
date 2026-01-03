@@ -7,6 +7,8 @@ import type {
 	IPluginManifest,
 } from "../../../src/plugin/types";
 import { PluginStatus } from "../../../src/plugin/types";
+import { ErrorCode } from "../../../src/utilities/errors/errorCodes";
+import { TalawaRestError } from "../../../src/utilities/errors/TalawaRestError";
 
 // Mocks
 vi.mock("../../../src/plugin/utils", () => ({
@@ -138,7 +140,10 @@ describe("PluginManager", () => {
 
 	it("should not load plugin if manifest file is missing", async () => {
 		(safeRequire as ReturnType<typeof vi.fn>).mockImplementationOnce(() => {
-			throw new Error("File missing");
+			throw new TalawaRestError({
+				code: ErrorCode.NOT_FOUND,
+				message: "File missing",
+			});
 		});
 		const context = createPluginContext();
 		const manager = new PluginManager(context, "/plugins");
@@ -174,7 +179,10 @@ describe("PluginManager", () => {
 			manager.getTestExtensionLoader(),
 			"loadExtensionPoints",
 		).mockImplementation(() => {
-			throw new Error("Extension error");
+			throw new TalawaRestError({
+				code: ErrorCode.INTERNAL_SERVER_ERROR,
+				message: "Extension error",
+			});
 		});
 		await expect(manager.loadPlugin("test-plugin")).resolves.toBe(false);
 	});
@@ -268,7 +276,10 @@ describe("PluginManager", () => {
 		const manager = new TestablePluginManager(context, "/plugins");
 		await new Promise((resolve) => setTimeout(resolve, 10));
 		const errorHook = vi.fn(() => {
-			throw new Error("pre hook fail");
+			throw new TalawaRestError({
+				code: ErrorCode.INTERNAL_SERVER_ERROR,
+				message: "pre hook fail",
+			});
 		});
 		const goodHook = vi.fn((x) => (x as number) + 1);
 		manager.getExtensionRegistry().hooks.pre.event = [errorHook, goodHook];
@@ -285,7 +296,10 @@ describe("PluginManager", () => {
 		const manager = new TestablePluginManager(context, "/plugins");
 		await new Promise((resolve) => setTimeout(resolve, 10));
 		const errorHook = vi.fn(async () => {
-			throw new Error("post hook fail");
+			throw new TalawaRestError({
+				code: ErrorCode.INTERNAL_SERVER_ERROR,
+				message: "post hook fail",
+			});
 		});
 		const goodHook = vi.fn(async () => undefined);
 		manager.getExtensionRegistry().hooks.post.event = [errorHook, goodHook];
@@ -382,19 +396,36 @@ describe("PluginManager", () => {
 			manager as TestablePluginManager,
 			"handlePluginError" as keyof TestablePluginManager,
 		) as unknown as { mockRestore: () => void };
+
+		// Spy on console.error to verify logging
+		const consoleErrorSpy = vi
+			.spyOn(console, "error")
+			.mockImplementation(() => {});
+
 		let callCount = 0;
 		const origEmit = manager.emit;
 		const emitSpy = vi.spyOn(manager, "emit").mockImplementation((...args) => {
 			if (callCount === 0) {
 				callCount++;
-				throw new Error("fail");
+				throw new TalawaRestError({
+					code: ErrorCode.INTERNAL_SERVER_ERROR,
+					message: "fail",
+				});
 			}
 			return origEmit.apply(manager, args);
 		});
 		const result = await manager.loadPlugin("test-plugin");
 		expect(result).toBe(false);
+
+		// Assert that console.error was called with expected message and error
+		expect(consoleErrorSpy).toHaveBeenCalledWith(
+			"❌ Failed to load plugin test-plugin:",
+			expect.any(Error),
+		);
+
 		emitSpy.mockRestore();
 		spy.mockRestore();
+		consoleErrorSpy.mockRestore();
 	});
 
 	it("should handle handlePluginError when plugin is not found", () => {
@@ -895,7 +926,10 @@ describe("PluginManager", () => {
 			// Mock lifecycle to throw error
 			const lifecycle = manager.getTestLifecycle();
 			vi.spyOn(lifecycle, "getPluginModule").mockImplementation(() => {
-				throw new Error("Lifecycle error");
+				throw new TalawaRestError({
+					code: ErrorCode.INTERNAL_SERVER_ERROR,
+					message: "Lifecycle error",
+				});
 			});
 			const consoleSpy = vi
 				.spyOn(console, "error")

@@ -46,7 +46,7 @@ builder.mutationField("deletePlugin", (t) =>
 			if (pluginManager) {
 				try {
 					ctx.log.info(
-						{ pluginId: existingPlugin.pluginId },
+						{ pluginId: existingPlugin.pluginId, correlationId: ctx.id },
 						"Uninstalling plugin via lifecycle manager",
 					);
 
@@ -57,13 +57,13 @@ builder.mutationField("deletePlugin", (t) =>
 
 					if (!success) {
 						ctx.log.error(
-							{ pluginId: existingPlugin.pluginId },
+							{ pluginId: existingPlugin.pluginId, correlationId: ctx.id },
 							"Plugin uninstallation failed in lifecycle manager",
 						);
 						// Continue with deletion even if lifecycle fails
 					} else {
 						ctx.log.info(
-							{ pluginId: existingPlugin.pluginId },
+							{ pluginId: existingPlugin.pluginId, correlationId: ctx.id },
 							"Plugin uninstalled successfully via lifecycle manager",
 						);
 					}
@@ -78,7 +78,7 @@ builder.mutationField("deletePlugin", (t) =>
 				await removePluginDirectory(existingPlugin.pluginId);
 			} catch (error) {
 				ctx.log.error(
-					{ error, pluginId: existingPlugin.pluginId },
+					{ error, pluginId: existingPlugin.pluginId, correlationId: ctx.id },
 					`Failed to remove plugin directory for ${existingPlugin.pluginId}`,
 				);
 				// If file removal fails, don't proceed with database deletion

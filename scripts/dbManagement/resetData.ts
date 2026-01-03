@@ -1,5 +1,7 @@
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { ErrorCode } from "~/src/utilities/errors/errorCodes";
+import { TalawaRestError } from "~/src/utilities/errors/TalawaRestError";
 import {
 	askUserToContinue,
 	disconnect,
@@ -20,7 +22,10 @@ export async function main(): Promise<void> {
 				"\n\x1b[32mSuccess:\x1b[0m Database connected successfully\n",
 			);
 		} catch (error: unknown) {
-			throw new Error(`Database connection failed: ${error}`);
+			throw new TalawaRestError({
+				code: ErrorCode.DATABASE_ERROR,
+				message: `Database connection failed: ${error}`,
+			});
 		}
 		try {
 			await formatDatabase();

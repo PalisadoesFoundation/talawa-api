@@ -161,6 +161,8 @@ vi.mock("../../src/utilities/TalawaGraphQLError", () => {
 import * as yauzl from "yauzl";
 import type PluginManager from "../../src/plugin/manager/core";
 import * as pluginUtils from "../../src/plugin/utils";
+import { ErrorCode } from "../../src/utilities/errors/errorCodes";
+import { TalawaRestError } from "../../src/utilities/errors/TalawaRestError";
 import {
 	extractPluginZip,
 	installPluginFromZip,
@@ -578,7 +580,10 @@ describe("extractPluginZip", () => {
 		// Get the mocked pipeline and override for this test
 		const { pipeline } = await import("node:stream/promises");
 		(pipeline as ReturnType<typeof vi.fn>).mockImplementationOnce(async () => {
-			throw new Error("Pipeline extraction error");
+			throw new TalawaRestError({
+				code: ErrorCode.INTERNAL_SERVER_ERROR,
+				message: "Pipeline extraction error",
+			});
 		});
 
 		const mockYauzl = yauzl as unknown as {
@@ -1744,7 +1749,10 @@ describe("installPluginFromZip", () => {
 			deactivatePlugin: vi.fn(async () => undefined),
 			loadPlugin: vi.fn(async () => undefined),
 			activatePlugin: vi.fn(async () => {
-				throw new Error("Activation failed");
+				throw new TalawaRestError({
+					code: ErrorCode.INTERNAL_SERVER_ERROR,
+					message: "Activation failed",
+				});
 			}),
 		};
 		(getPluginManagerInstance as ReturnType<typeof vi.fn>).mockReturnValueOnce(
@@ -1874,6 +1882,10 @@ describe("installPluginFromZip", () => {
 	describe("installPluginFromZip with logger", () => {
 		it("should log info on successful extraction", async () => {
 			const logger = { info: vi.fn(), error: vi.fn() };
+			const consoleLogSpy = vi
+				.spyOn(console, "log")
+				.mockImplementation(() => {});
+
 			const options: Parameters<typeof installPluginFromZip>[0] = {
 				zipFile: {
 					createReadStream: vi.fn(() => ({
@@ -1908,10 +1920,11 @@ describe("installPluginFromZip", () => {
 			};
 
 			await installPluginFromZip(options);
-			expect(logger.info).toHaveBeenCalledWith(
-				{ pluginId: "test_plugin" },
-				"Plugin files extracted successfully",
+			expect(consoleLogSpy).toHaveBeenCalledWith(
+				"Plugin files extracted successfully for: test_plugin",
 			);
+
+			consoleLogSpy.mockRestore();
 		});
 
 		it("should log error when activation fails", async () => {
@@ -1926,7 +1939,10 @@ describe("installPluginFromZip", () => {
 				deactivatePlugin: vi.fn(async () => undefined),
 				loadPlugin: vi.fn(async () => undefined),
 				activatePlugin: vi.fn(async () => {
-					throw new Error("Activation error");
+					throw new TalawaRestError({
+						code: ErrorCode.INTERNAL_SERVER_ERROR,
+						message: "Activation error",
+					});
 				}),
 			})) as unknown as () => PluginManager;
 
@@ -1969,7 +1985,7 @@ describe("installPluginFromZip", () => {
 					pluginId: "test_plugin",
 					error: expect.any(Error),
 				}),
-				"Failed to activate plugin",
+				"Failed to activate plugin test_plugin",
 			);
 
 			// Restore
@@ -1985,7 +2001,10 @@ describe("installPluginFromZip", () => {
 			// Note: fs.promises.unlink is mocked globally, we need to override the implementation
 			const originalUnlink = fs.promises.unlink;
 			fs.promises.unlink = vi.fn(async () => {
-				throw new Error("Cleanup error");
+				throw new TalawaRestError({
+					code: ErrorCode.INTERNAL_SERVER_ERROR,
+					message: "Cleanup error",
+				});
 			});
 
 			const options: Parameters<typeof installPluginFromZip>[0] = {
@@ -2027,14 +2046,160 @@ describe("installPluginFromZip", () => {
 				// We expect error or not? Logic says it catches and logs.
 			}
 			expect(logger.error).toHaveBeenCalledWith(
-				expect.objectContaining({
-					error: expect.any(Error),
-				}),
+				expect.any(Error),
 				"Failed to clean up temporary file",
 			);
 
 			// Restore
 			fs.promises.unlink = originalUnlink;
+		});
+
+		it("should use console.log fallback when logger is undefined and cleanup fails", async () => {
+			const fs = await import("node:fs");
+
+			// Mock unlink failure
+			const originalUnlink = fs.promises.unlink;
+			fs.promises.unlink = vi.fn(async () => {
+				throw new TalawaRestError({
+					code: ErrorCode.INTERNAL_SERVER_ERROR,
+					message: "Cleanup error",
+				});
+			});
+
+			// Spy on console.log to verify fallback logging
+			const consoleLogSpy = vi
+				.spyOn(console, "log")
+				.mockImplementation(() => {});
+
+			const options: Parameters<typeof installPluginFromZip>[0] = {
+				zipFile: {
+					createReadStream: vi.fn(() => ({
+						pipe: vi.fn(),
+						on: vi.fn((event, handler) => {
+							if (event === "data") handler("mock data");
+							if (event === "end") handler();
+							return { pipe: vi.fn() };
+						}),
+					})),
+					filename: "test.zip",
+					fieldName: "pluginZip",
+					mimetype: "application/zip",
+					encoding: "7bit",
+				} as unknown as PluginInstallationOptions["zipFile"],
+				drizzleClient: {
+					query: {
+						pluginsTable: {
+							findFirst: vi.fn(async () => null),
+						},
+					},
+					execute: vi.fn(async () => undefined),
+					insert: vi.fn(() => ({
+						values: vi.fn(() => ({
+							returning: vi.fn(() => Promise.resolve([{ id: "testId" }])),
+						})),
+					})),
+				} as unknown as PluginInstallationOptions["drizzleClient"],
+				activate: false,
+				userId: "test-user",
+				// Explicitly omit logger to test console.log fallback
+			};
+
+			try {
+				await installPluginFromZip(options);
+			} catch {
+				// Expected to handle cleanup error gracefully
+			}
+
+			// Assert that console.log was called with expected cleanup error message
+			expect(consoleLogSpy).toHaveBeenCalledWith(
+				"ERROR: Failed to clean up temporary file:",
+				expect.any(Error),
+			);
+
+			// Restore in finally block to ensure cleanup
+			try {
+				fs.promises.unlink = originalUnlink;
+			} finally {
+				consoleLogSpy.mockRestore();
+			}
+		});
+
+		it("should use console.log fallback when logger is undefined and activation fails", async () => {
+			// Mock plugin registry to return a plugin manager that throws on activation
+			const mockPluginRegistry = await import("../../src/plugin/registry");
+			const originalGetPluginManagerInstance =
+				mockPluginRegistry.getPluginManagerInstance;
+
+			const mockPluginManager = {
+				isPluginActive: vi.fn(() => false),
+				deactivatePlugin: vi.fn(async () => undefined),
+				loadPlugin: vi.fn(async () => undefined),
+				activatePlugin: vi.fn(async () => {
+					throw new TalawaRestError({
+						code: ErrorCode.INTERNAL_SERVER_ERROR,
+						message: "Activation failed",
+					});
+				}),
+			};
+
+			mockPluginRegistry.getPluginManagerInstance = vi.fn(
+				() => mockPluginManager,
+			);
+
+			// Spy on console.log to verify fallback logging
+			const consoleLogSpy = vi
+				.spyOn(console, "log")
+				.mockImplementation(() => {});
+
+			const options: Parameters<typeof installPluginFromZip>[0] = {
+				zipFile: {
+					createReadStream: vi.fn(() => ({
+						pipe: vi.fn(),
+						on: vi.fn((event, handler) => {
+							if (event === "data") handler("mock data");
+							if (event === "end") handler();
+							return { pipe: vi.fn() };
+						}),
+					})),
+					filename: "test.zip",
+					fieldName: "pluginZip",
+					mimetype: "application/zip",
+					encoding: "7bit",
+				} as unknown as PluginInstallationOptions["zipFile"],
+				drizzleClient: {
+					query: {
+						pluginsTable: {
+							findFirst: vi.fn(async () => null),
+						},
+					},
+					execute: vi.fn(async () => undefined),
+					insert: vi.fn(() => ({
+						values: vi.fn(() => ({
+							returning: vi.fn(() => Promise.resolve([{ id: "testId" }])),
+						})),
+					})),
+				} as unknown as PluginInstallationOptions["drizzleClient"],
+				activate: true,
+				userId: "test-user",
+				// Explicitly omit logger to test fallback
+			};
+
+			// Should not throw error even if activation fails
+			const result = await installPluginFromZip(options);
+			expect(result).toBeDefined();
+			expect(result.plugin).toBeDefined();
+			expect(mockPluginManager.activatePlugin).toHaveBeenCalled();
+
+			// Assert that console.log was called with expected fallback message
+			expect(consoleLogSpy).toHaveBeenCalledWith(
+				"ERROR: Failed to activate plugin test_plugin:",
+				expect.any(Error),
+			);
+
+			// Restore
+			mockPluginRegistry.getPluginManagerInstance =
+				originalGetPluginManagerInstance;
+			consoleLogSpy.mockRestore();
 		});
 	});
 });

@@ -22,6 +22,8 @@ import { existsSync, readFileSync } from "node:fs";
 import { dirname, join, relative, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { glob } from "glob";
+import { ErrorCode } from "~/src/utilities/errors/errorCodes";
+import { TalawaRestError } from "~/src/utilities/errors/TalawaRestError";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -246,7 +248,10 @@ export class ErrorHandlingValidator {
 			// Clean and unique
 			return [...new Set([...unstaged, ...staged])].map((f) => f.trim());
 		} catch (_e) {
-			throw new Error("Git command failed");
+			throw new TalawaRestError({
+				code: ErrorCode.EXTERNAL_SERVICE_ERROR,
+				message: "Git command failed",
+			});
 		}
 	}
 
@@ -267,7 +272,10 @@ export class ErrorHandlingValidator {
 		// Allow only safe characters for git references
 		// Git refs can contain: alphanumeric, -, _, /, .
 		if (!/^[a-zA-Z0-9_\-/.]+$/.test(ref)) {
-			throw new Error(`Invalid git reference: ${ref}`);
+			throw new TalawaRestError({
+				code: ErrorCode.INVALID_INPUT,
+				message: `Invalid git reference: ${ref}`,
+			});
 		}
 
 		// Prevent command injection patterns
@@ -282,7 +290,10 @@ export class ErrorHandlingValidator {
 			ref.includes("<") ||
 			ref.includes(">")
 		) {
-			throw new Error(`Invalid git reference: ${ref}`);
+			throw new TalawaRestError({
+				code: ErrorCode.INVALID_INPUT,
+				message: `Invalid git reference: ${ref}`,
+			});
 		}
 
 		return ref;
@@ -997,7 +1008,10 @@ export class ErrorHandlingValidator {
 
 					// Validate path doesn't contain suspicious characters
 					if (!/^[a-zA-Z0-9_\-./]+$/.test(relativePath)) {
-						throw new Error(`Suspicious file path: ${filePath}`);
+						throw new TalawaRestError({
+							code: ErrorCode.INVALID_INPUT,
+							message: `Suspicious file path: ${filePath}`,
+						});
 					}
 
 					return relativePath;

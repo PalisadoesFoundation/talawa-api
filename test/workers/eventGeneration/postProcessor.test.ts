@@ -2,6 +2,8 @@ import type { NodePgDatabase } from "drizzle-orm/node-postgres";
 import type { FastifyBaseLogger } from "fastify";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import type * as schema from "~/src/drizzle/schema";
+import { ErrorCode } from "~/src/utilities/errors/errorCodes";
+import { TalawaRestError } from "~/src/utilities/errors/TalawaRestError";
 import type { EventGenerationExecutionResult } from "~/src/workers/eventGeneration/executionEngine";
 import {
 	createDefaultPostProcessingConfig,
@@ -243,7 +245,10 @@ describe("postProcessor", () => {
 
 			// Mock logger.info to throw an error to simulate cleanup failure
 			vi.mocked(mockLogger.info).mockImplementation(() => {
-				throw new Error("Cleanup failed");
+				throw new TalawaRestError({
+					code: ErrorCode.INTERNAL_SERVER_ERROR,
+					message: "Cleanup failed",
+				});
 			});
 
 			const result = await executePostProcessing(

@@ -1,5 +1,7 @@
 import readline from "node:readline";
 import * as schema from "src/drizzle/schema";
+import { ErrorCode } from "src/utilities/errors/errorCodes";
+import { TalawaRestError } from "src/utilities/errors/TalawaRestError";
 import type { TestEnvConfig } from "test/envConfigSchema";
 import { uuidv7 } from "uuidv7";
 import { beforeAll, expect, suite, test, vi } from "vitest";
@@ -202,7 +204,10 @@ suite.concurrent("checkAndInsertData", () => {
 		const db = Reflect.get(helpers, "db");
 		const originalTransaction = db.transaction;
 		db.transaction = async () => {
-			throw new Error("Transaction failed");
+			throw new TalawaRestError({
+				code: ErrorCode.INTERNAL_SERVER_ERROR,
+				message: "Transaction failed",
+			});
 		};
 
 		await expect(
@@ -345,7 +350,10 @@ suite.concurrent("insertCollections", () => {
 		expect(capturedData.length).toBeGreaterThan(0);
 		const firstItem = capturedData[0];
 		if (!firstItem || !firstItem.id) {
-			throw new Error("Expected action item with ID");
+			throw new TalawaRestError({
+				code: ErrorCode.INTERNAL_SERVER_ERROR,
+				message: "Expected action item with ID",
+			});
 		}
 		expect(firstItem.id).not.toBe("short-id");
 		expect(firstItem.id.length).toBe(36);
@@ -363,7 +371,10 @@ suite.concurrent("checkDataSize integration test", () => {
 		const db = Reflect.get(helpers, "db");
 		const originalSelect = db.select;
 		db.select = () => {
-			throw new Error("Query failed");
+			throw new TalawaRestError({
+				code: ErrorCode.INTERNAL_SERVER_ERROR,
+				message: "Query failed",
+			});
 		};
 
 		const result = await helpers.checkDataSize("Test Stage");
@@ -404,7 +415,12 @@ suite.concurrent("formatDatabase", () => {
 	test.concurrent("should return true on successful database format", async () => {
 		const db = Reflect.get(helpers, "db");
 		const originalTransaction = db.transaction;
-		const mockTransaction = vi.fn().mockResolvedValue(undefined);
+		const mockTx = {
+			execute: vi.fn().mockResolvedValue([]),
+		};
+		const mockTransaction = vi
+			.fn()
+			.mockImplementation((cb) => Promise.resolve(cb(mockTx)));
 
 		db.transaction = mockTransaction;
 
@@ -474,7 +490,10 @@ suite.concurrent("formatDatabase", () => {
 
 		// Mock transaction to throw
 		db.transaction = async () => {
-			throw new Error("Transaction mock failure");
+			throw new TalawaRestError({
+				code: ErrorCode.INTERNAL_SERVER_ERROR,
+				message: "Transaction mock failure",
+			});
 		};
 
 		const result = await helpers.formatDatabase();

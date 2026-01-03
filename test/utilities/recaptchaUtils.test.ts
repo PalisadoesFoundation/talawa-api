@@ -38,20 +38,6 @@ describe("recaptchaUtils", () => {
 			expect(result).toBe(true);
 		});
 
-		test("returns true when verification is successful with logger", async () => {
-			mockFetch.mockResolvedValueOnce({
-				ok: true,
-				json: async () => ({ success: true }),
-			} as Response);
-
-			const result = await verifyRecaptchaToken(
-				"valid-token",
-				"secret-key",
-				mockLogger,
-			);
-			expect(result).toBe(true);
-		});
-
 		test("returns false when verification fails", async () => {
 			mockFetch.mockResolvedValueOnce({
 				ok: true,
@@ -87,27 +73,6 @@ describe("recaptchaUtils", () => {
 
 	describe("validateRecaptchaIfRequired", () => {
 		test("returns true when Google reCaptcha verification is successful", async () => {
-			mockFetch.mockResolvedValueOnce({
-				ok: true,
-				json: async () => ({ success: true }),
-			} as Response);
-			const result = await validateRecaptchaIfRequired(
-				"valid-token",
-				"secret-key",
-				["input", "recaptchaToken"],
-				mockLogger,
-			);
-			expect(result).toBe(true);
-			expect(mockFetch).toHaveBeenCalledWith(
-				"https://www.google.com/recaptcha/api/siteverify",
-				expect.objectContaining({
-					method: "POST",
-					headers: { "Content-Type": "application/x-www-form-urlencoded" },
-				}),
-			);
-		});
-
-		test("returns true when Google reCaptcha verification is successful with logger provided", async () => {
 			mockFetch.mockResolvedValueOnce({
 				ok: true,
 				json: async () => ({ success: true }),

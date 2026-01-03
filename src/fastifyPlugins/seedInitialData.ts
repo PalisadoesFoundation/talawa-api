@@ -9,6 +9,8 @@ import {
 	communitiesTableInsertSchema,
 } from "~/src/drizzle/tables/communities";
 import { usersTable, usersTableInsertSchema } from "~/src/drizzle/tables/users";
+import { ErrorCode } from "~/src/utilities/errors/errorCodes";
+import { TalawaRestError } from "~/src/utilities/errors/TalawaRestError";
 
 /**
  * This plugin handles seeding the initial data into appropriate service at the startup time of the talawa api. The data must strictly only comprise of things that are required in the production environment of talawa api. This plugin shouldn't be used for seeding dummy data.
@@ -39,12 +41,12 @@ const plugin: FastifyPluginAsync = async (fastify) => {
 				),
 		});
 	} catch (error) {
-		throw new Error(
-			"Failed to check if the administrator user already exists in the database.",
-			{
-				cause: error,
-			},
-		);
+		throw new TalawaRestError({
+			code: ErrorCode.DATABASE_ERROR,
+			message:
+				"Failed to check if the administrator user already exists in the database.",
+			details: { cause: error },
+		});
 	}
 
 	if (existingUser !== undefined) {
@@ -66,12 +68,12 @@ const plugin: FastifyPluginAsync = async (fastify) => {
 						),
 					);
 			} catch (error) {
-				throw new Error(
-					"Failed to assign the correct role to the existing administrator user.",
-					{
-						cause: error,
-					},
-				);
+				throw new TalawaRestError({
+					code: ErrorCode.DATABASE_ERROR,
+					message:
+						"Failed to assign the correct role to the existing administrator user.",
+					details: { cause: error },
+				});
 			}
 
 			fastify.log.info(
@@ -112,8 +114,10 @@ const plugin: FastifyPluginAsync = async (fastify) => {
 				.insert(usersTable)
 				.values(usersTableInsertSchema.parse(input));
 		} catch (error) {
-			throw new Error("Failed to create the administrator in the database.", {
-				cause: error,
+			throw new TalawaRestError({
+				code: ErrorCode.DATABASE_ERROR,
+				message: "Failed to create the administrator in the database.",
+				details: { cause: error },
 			});
 		}
 
@@ -134,12 +138,12 @@ const plugin: FastifyPluginAsync = async (fastify) => {
 				},
 			});
 	} catch (error) {
-		throw new Error(
-			"Failed to check if the community already exists in the database.",
-			{
-				cause: error,
-			},
-		);
+		throw new TalawaRestError({
+			code: ErrorCode.DATABASE_ERROR,
+			message:
+				"Failed to check if the community already exists in the database.",
+			details: { cause: error },
+		});
 	}
 
 	if (existingCommunity !== undefined) {
@@ -169,8 +173,10 @@ const plugin: FastifyPluginAsync = async (fastify) => {
 				}),
 			);
 		} catch (error) {
-			throw new Error("Failed to create the community in the database.", {
-				cause: error,
+			throw new TalawaRestError({
+				code: ErrorCode.DATABASE_ERROR,
+				message: "Failed to create the community in the database.",
+				details: { cause: error },
 			});
 		}
 

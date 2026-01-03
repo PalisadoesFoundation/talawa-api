@@ -2,6 +2,8 @@ import { drizzle, type PostgresJsDatabase } from "drizzle-orm/postgres-js";
 import { migrate } from "drizzle-orm/postgres-js/migrator";
 import fastifyPlugin from "fastify-plugin";
 import * as drizzleSchema from "~/src/drizzle/schema";
+import { ErrorCode } from "~/src/utilities/errors/errorCodes";
+import { TalawaRestError } from "~/src/utilities/errors/TalawaRestError";
 
 declare module "fastify" {
 	interface FastifyInstance {
@@ -46,9 +48,15 @@ export const drizzleClient = fastifyPlugin(
 			await drizzleClient.execute("select 1");
 			fastify.log.info("Successfully connected to the postgres database.");
 		} catch (error) {
-			throw new Error("Failed to connect to the postgres database.", {
-				cause: error,
-			});
+			throw new TalawaRestError(
+				{
+					code: ErrorCode.DATABASE_ERROR,
+					message: "Failed to connect to the postgres database.",
+				},
+				{
+					cause: error,
+				},
+			);
 		}
 
 		// Gracefully close the postgres connection when the fastify server is shutting down.
@@ -81,12 +89,12 @@ export const drizzleClient = fastifyPlugin(
 					"Successfully applied the drizzle migrations to the postgres database.",
 				);
 			} catch (error) {
-				throw new Error(
-					"Failed to apply the drizzle migrations to the postgres database.",
-					{
-						cause: error,
-					},
-				);
+				throw new TalawaRestError({
+					code: ErrorCode.DATABASE_ERROR,
+					message:
+						"Failed to apply the drizzle migrations to the postgres database.",
+					details: { cause: error },
+				});
 			}
 		}
 

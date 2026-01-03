@@ -1,5 +1,7 @@
 import fastifyPlugin from "fastify-plugin";
 import { Client as MinioClient } from "minio";
+import { ErrorCode } from "~/src/utilities/errors/errorCodes";
+import { TalawaRestError } from "~/src/utilities/errors/TalawaRestError";
 
 declare module "fastify" {
 	interface FastifyInstance {
@@ -77,8 +79,10 @@ export const minioClient = fastifyPlugin(async (fastify) => {
 		isBucketExists = await client.bucketExists("talawa");
 		fastify.log.info("Successfully connected to the minio server.");
 	} catch (error) {
-		throw new Error("Failed to connect to the minio server.", {
-			cause: error,
+		throw new TalawaRestError({
+			code: ErrorCode.EXTERNAL_SERVICE_ERROR,
+			message: "Failed to connect to the minio server.",
+			details: { cause: error },
 		});
 	}
 
@@ -98,12 +102,11 @@ export const minioClient = fastifyPlugin(async (fastify) => {
 				`Successfully created the "talawa" bucket in the minio server.`,
 			);
 		} catch (error) {
-			throw new Error(
-				`Failed to create the "talawa" bucket in the minio server.`,
-				{
-					cause: error,
-				},
-			);
+			throw new TalawaRestError({
+				code: ErrorCode.EXTERNAL_SERVICE_ERROR,
+				message: `Failed to create the "talawa" bucket in the minio server.`,
+				details: { cause: error },
+			});
 		}
 	}
 

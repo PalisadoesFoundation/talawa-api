@@ -2,6 +2,8 @@ import fastifyPlugin from "fastify-plugin";
 import { createPluginContext, initializePluginSystem } from "~/src/plugin";
 import type PluginManager from "~/src/plugin/manager";
 import type { IPluginContext } from "~/src/plugin/types";
+import { ErrorCode } from "~/src/utilities/errors/errorCodes";
+import { TalawaRestError } from "~/src/utilities/errors/TalawaRestError";
 
 declare module "fastify" {
 	interface FastifyInstance {
@@ -72,7 +74,11 @@ export const pluginSystem = fastifyPlugin(async (fastify) => {
 		});
 	} catch (error) {
 		fastify.log.error({ error }, "Failed to initialize plugin system");
-		throw new Error("Plugin system initialization failed", { cause: error });
+		throw new TalawaRestError({
+			code: ErrorCode.INTERNAL_SERVER_ERROR,
+			message: "Plugin system initialization failed",
+			details: { cause: error },
+		});
 	}
 });
 

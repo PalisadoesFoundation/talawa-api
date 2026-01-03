@@ -1,9 +1,8 @@
 vi.mock("inquirer");
 
 import fs from "node:fs";
-import dotenv from "dotenv";
 import inquirer from "inquirer";
-import { postgresSetup, setup } from "scripts/setup/setup";
+import { postgresSetup } from "scripts/setup/setup";
 import { afterEach, describe, expect, it, type MockInstance, vi } from "vitest";
 
 describe("Setup -> postgresSetup", () => {
@@ -40,40 +39,23 @@ describe("Setup -> postgresSetup", () => {
 	});
 
 	it("should prompt extended Postgres fields when user chooses custom Postgres (CI=false)", async () => {
-		const mockResponses = [
-			{ envReconfigure: "true" },
-			{ CI: "false" },
-			{ useDefaultMinio: "true" },
-			{ useDefaultCloudbeaver: "true" },
-			{ useDefaultPostgres: false },
-			{ POSTGRES_DB: "customDatabase" },
-			{ POSTGRES_MAPPED_HOST_IP: "1.2.3.4" },
-			{ POSTGRES_MAPPED_PORT: "5433" },
-			{ POSTGRES_PASSWORD: "myPassword" },
-			{ POSTGRES_USER: "myUser" },
-			{ useDefaultCaddy: "true" },
-			{ useDefaultApi: "true" },
-			{ API_ADMINISTRATOR_USER_EMAIL_ADDRESS: "test@postgres.com" },
-		];
+		// Test the postgresSetup function directly instead of the full setup flow
+		const mockAnswers = { CI: "false" };
 
-		const promptMock = vi.spyOn(inquirer, "prompt");
-		for (const resp of mockResponses) {
-			promptMock.mockResolvedValueOnce(resp);
-		}
+		vi.spyOn(inquirer, "prompt")
+			.mockResolvedValueOnce({ POSTGRES_DB: "customDatabase" })
+			.mockResolvedValueOnce({ POSTGRES_MAPPED_HOST_IP: "1.2.3.4" })
+			.mockResolvedValueOnce({ POSTGRES_MAPPED_PORT: "5433" })
+			.mockResolvedValueOnce({ POSTGRES_PASSWORD: "myPassword" })
+			.mockResolvedValueOnce({ POSTGRES_USER: "myUser" });
 
-		await setup();
-		dotenv.config({ path: ".env" });
+		const result = await postgresSetup(mockAnswers);
 
-		const expectedEnv = {
-			POSTGRES_DB: "customDatabase",
-			POSTGRES_MAPPED_HOST_IP: "1.2.3.4",
-			POSTGRES_MAPPED_PORT: "5433",
-			POSTGRES_PASSWORD: "myPassword",
-			POSTGRES_USER: "myUser",
-		};
-		for (const [key, value] of Object.entries(expectedEnv)) {
-			expect(process.env[key]).toBe(value);
-		}
+		expect(result.POSTGRES_DB).toBe("customDatabase");
+		expect(result.POSTGRES_MAPPED_HOST_IP).toBe("1.2.3.4");
+		expect(result.POSTGRES_MAPPED_PORT).toBe("5433");
+		expect(result.POSTGRES_PASSWORD).toBe("myPassword");
+		expect(result.POSTGRES_USER).toBe("myUser");
 	});
 
 	it("should handle prompt errors correctly", async () => {

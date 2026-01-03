@@ -44,6 +44,8 @@ import {
 	TSDocParser,
 } from "@microsoft/tsdoc";
 import { glob } from "glob";
+import { ErrorCode } from "~/src/utilities/errors/errorCodes";
+import { TalawaRestError } from "~/src/utilities/errors/TalawaRestError";
 
 interface ValidationError {
 	filePath: string;
@@ -171,7 +173,10 @@ function validateFile(
 	} catch (error) {
 		const errorMessage = error instanceof Error ? error.message : String(error);
 		console.error(`Error reading file ${filePath}: ${errorMessage}`);
-		throw new Error(`Failed to validate file ${filePath}: ${errorMessage}`);
+		throw new TalawaRestError({
+			code: ErrorCode.INTERNAL_SERVER_ERROR,
+			message: `Failed to validate file ${filePath}: ${errorMessage}`,
+		});
 	}
 
 	return errors;

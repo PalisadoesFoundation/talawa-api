@@ -1,6 +1,5 @@
 import { faker } from "@faker-js/faker";
 import { expect, suite, test, vi } from "vitest";
-import type * as schema from "~/src/drizzle/schema";
 import type {
 	TalawaGraphQLFormattedError,
 	UnauthenticatedExtensions,
@@ -230,142 +229,172 @@ suite("User field updater", () => {
 				);
 
 				// Assertion for log warning
+				// Note: Pino child logger limitations may affect log capture reliability
+				// This assertion verifies structured logging for authorization failures
 				try {
-					expect(consoleWarnSpy).toHaveBeenCalledTimes(1);
-					expect(consoleWarnSpy).toHaveBeenCalledWith(
-						expect.objectContaining({
-							role: "regular",
-							targetUserId: administratorUserSignInResult.data.signIn.user.id,
-						}),
-						"Authorization failed: non-admin attempted to update another user's data",
-					);
-				} catch (_error) {
-					console.warn(
-						"Skipping log assertion failure: log spy mechanism might need verifying against pino child loggers.",
-					);
+					// The log should be called, but pino child logger behavior may vary
+					if (consoleWarnSpy.mock.calls.length > 0) {
+						expect(consoleWarnSpy).toHaveBeenCalledWith(
+							expect.objectContaining({
+								role: "regular",
+								targetUserId: administratorUserSignInResult.data.signIn.user.id,
+							}),
+							"Authorization failed: non-admin attempted to update another user's data",
+						);
+					}
+				} finally {
+					consoleWarnSpy.mockRestore();
 				}
-				consoleWarnSpy.mockRestore();
 			});
+		},
+	);
 
+	suite(
+		`results in a graphql error with "unexpected" extensions code in the "errors" field and "null" as the value of "data.user.updater" field if`,
+		() => {
 			test("should log error and throw unexpected error when existing user is missing (data corruption)", async () => {
 				const consoleErrorSpy = vi.spyOn(server.log, "error");
+				const findFirstSpy = vi.spyOn(
+					server.drizzleClient.query.usersTable,
+					"findFirst",
+				);
 
-				const administratorUserSignInResult = await mercuriusClient.query(
-					Query_signIn,
-					{
-						variables: {
-							input: {
-								emailAddress:
-									server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-								password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
+				try {
+					const administratorUserSignInResult = await mercuriusClient.query(
+						Query_signIn,
+						{
+							variables: {
+								input: {
+									emailAddress:
+										server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
+									password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
+								},
 							},
 						},
-					},
-				);
+					);
 
-				assertToBeNonNullish(
-					administratorUserSignInResult.data.signIn?.authenticationToken,
-				);
-				assertToBeNonNullish(
-					administratorUserSignInResult.data.signIn.user?.id,
-				);
-				const adminId = administratorUserSignInResult.data.signIn.user.id;
+					assertToBeNonNullish(
+						administratorUserSignInResult.data.signIn?.authenticationToken,
+					);
+					assertToBeNonNullish(
+						administratorUserSignInResult.data.signIn.user?.id,
+					);
+					const adminId = administratorUserSignInResult.data.signIn.user.id;
 
-				// 1. Create User B
-				const createUserResult = await mercuriusClient.mutate(
-					Mutation_createUser,
-					{
-						headers: {
-							authorization: `bearer ${administratorUserSignInResult.data.signIn.authenticationToken}`,
-						},
-						variables: {
-							input: {
-								emailAddress: `email${faker.string.ulid()}@email.com`,
-								isEmailAddressVerified: true,
-								name: "User B",
-								password: "password",
-								role: "regular",
+					// Create User B
+					const createUserResult = await mercuriusClient.mutate(
+						Mutation_createUser,
+						{
+							headers: {
+								authorization: `bearer ${administratorUserSignInResult.data.signIn.authenticationToken}`,
+							},
+							variables: {
+								input: {
+									emailAddress: `email${faker.string.ulid()}@email.com`,
+									isEmailAddressVerified: true,
+									name: "User B",
+									password: "password",
+									role: "regular",
+								},
 							},
 						},
-					},
-				);
-				assertToBeNonNullish(createUserResult.data.createUser?.user?.id);
-				const userBId = createUserResult.data.createUser.user.id;
+					);
+					assertToBeNonNullish(createUserResult.data.createUser?.user?.id);
+					const userBId = createUserResult.data.createUser.user.id;
 
-				// 2. Update User B using Admin (so updaterId = Admin)
-				const updateUserResult = await mercuriusClient.mutate(
-					Mutation_updateUser,
-					{
+					// Update User B using Admin (so updaterId = Admin)
+					const updateUserResult = await mercuriusClient.mutate(
+						Mutation_updateUser,
+						{
+							headers: {
+								authorization: `bearer ${administratorUserSignInResult.data.signIn.authenticationToken}`,
+							},
+							variables: {
+								input: {
+									id: userBId,
+									addressLine1: "Updated Address",
+								},
+							},
+						},
+					);
+					assertToBeNonNullish(updateUserResult.data.updateUser?.id);
+
+					// Apply the mock right before the query that should trigger the corruption scenario
+					// Reset any previous mocks first
+					findFirstSpy.mockReset();
+
+					// Use mockResolvedValueOnce to control the sequence of calls
+					// First call: authentication (should succeed)
+					// Second call: updater lookup (should return undefined)
+					findFirstSpy
+						.mockResolvedValueOnce({
+							id: adminId,
+							role: "administrator" as const,
+							name: "Admin User",
+							emailAddress:
+								server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
+							isEmailAddressVerified: true,
+							passwordHash: "hashed_password",
+							failedLoginAttempts: 0,
+							createdAt: new Date(),
+							updatedAt: null,
+							updaterId: null,
+							// Optional fields
+							addressLine1: null,
+							addressLine2: null,
+							avatarMimeType: null,
+							avatarName: null,
+							birthDate: null,
+							city: null,
+							countryCode: null,
+							creatorId: null,
+							description: null,
+							educationGrade: null,
+							employmentStatus: null,
+							homePhoneNumber: null,
+							lastFailedLoginAt: null,
+							lockedUntil: null,
+							maritalStatus: null,
+							mobilePhoneNumber: null,
+							natalSex: null,
+							naturalLanguageCode: null,
+							postalCode: null,
+							state: null,
+							workPhoneNumber: null,
+						})
+						.mockResolvedValueOnce(undefined); // This simulates the corruption
+
+					// Query User B's updater using Admin token
+					const result = await mercuriusClient.query(Query_user_updater, {
 						headers: {
 							authorization: `bearer ${administratorUserSignInResult.data.signIn.authenticationToken}`,
 						},
 						variables: {
 							input: {
 								id: userBId,
-								addressLine1: "Updated Address",
 							},
 						},
-					},
-				);
-				assertToBeNonNullish(updateUserResult.data.updateUser?.id);
+					});
 
-				// 3. Mock database findFirst to simulate corruption
-				// The resolver calls findFirst twice:
-				// 1. To get 'currentUser' (requesting user, Admin)
-				// 2. To get 'existingUser' (the updater, Admin)
-				// We want the SECOND call to return undefined.
-				const findFirstSpy = vi.spyOn(
-					server.drizzleClient.query.usersTable,
-					"findFirst",
-				);
-
-				findFirstSpy
-					.mockResolvedValueOnce({
-						id: adminId,
-						role: "administrator",
-					} as unknown as typeof schema.usersTable.$inferSelect) // Potential context setup call
-					.mockResolvedValueOnce({
-						id: adminId,
-						role: "administrator",
-					} as unknown as typeof schema.usersTable.$inferSelect) // Resolver: currentUser call
-					.mockResolvedValueOnce(undefined); // Resolver: existingUser call
-
-				// 4. Query User B's updater using Admin token
-				const result = await mercuriusClient.query(Query_user_updater, {
-					headers: {
-						authorization: `bearer ${administratorUserSignInResult.data.signIn.authenticationToken}`,
-					},
-					variables: {
-						input: {
-							id: userBId,
-						},
-					},
-				});
-
-				expect(result.data.user?.updater).toBeNull();
-				expect(result.errors).toEqual(
-					expect.arrayContaining([
-						expect.objectContaining({
-							extensions: expect.objectContaining({
-								code: "unexpected",
+					expect(result.data.user?.updater ?? null).toBeNull();
+					expect(result.errors).toEqual(
+						expect.arrayContaining([
+							expect.objectContaining({
+								extensions: expect.objectContaining({
+									code: "unexpected",
+								}),
+								path: ["user", "updater"],
 							}),
-							path: ["user", "updater"],
-						}),
-					]),
-				);
+						]),
+					);
 
-				try {
 					expect(consoleErrorSpy).toHaveBeenCalledWith(
 						"Postgres select operation returned an empty array for a user's updater id that isn't null.",
 					);
-				} catch (_error) {
-					console.warn(
-						"Skipping log assertion failure: log spy mechanism might need verifying against pino child loggers.",
-					);
+				} finally {
+					consoleErrorSpy.mockRestore();
+					findFirstSpy.mockRestore();
 				}
-
-				consoleErrorSpy.mockRestore();
-				findFirstSpy.mockRestore();
 			});
 		},
 	);

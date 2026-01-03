@@ -655,12 +655,23 @@ suite("Mutation field updateUser", () => {
 				});
 				expect(result.data?.updateUser ?? null).toEqual(null);
 				expect(result.errors).toEqual(
-					expect.arrayContaining([
-						expect.objectContaining({
-							extensions: expect.objectContaining({
-								code: ErrorCode.INTERNAL_SERVER_ERROR,
+					expect.arrayContaining<TalawaGraphQLFormattedError>([
+						expect.objectContaining<TalawaGraphQLFormattedError>({
+							extensions: expect.objectContaining<InvalidArgumentsExtensions>({
+								code: ErrorCode.INVALID_ARGUMENTS,
+								issues: expect.arrayContaining<
+									InvalidArgumentsExtensions["issues"][number]
+								>([
+									expect.objectContaining<
+										InvalidArgumentsExtensions["issues"][number]
+									>({
+										argumentPath: ["input", "avatar"],
+										message: expect.any(String),
+									}),
+								]),
 							}),
-							message: "Graphql validation error",
+							message: expect.any(String),
+							path: ["updateUser"],
 						}),
 					]),
 				);

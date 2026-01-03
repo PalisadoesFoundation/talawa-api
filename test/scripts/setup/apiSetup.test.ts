@@ -21,6 +21,8 @@ import {
 	type MockInstance,
 	vi,
 } from "vitest";
+import { ErrorCode } from "~/src/utilities/errors/errorCodes";
+import { TalawaRestError } from "~/src/utilities/errors/TalawaRestError";
 
 describe("Setup -> apiSetup", () => {
 	const originalEnv = { ...process.env };
@@ -39,7 +41,9 @@ describe("Setup -> apiSetup", () => {
 		process.env.MINIO_ROOT_PASSWORD = "password";
 		process.env.POSTGRES_PASSWORD = "password";
 		const mockResponses = [
-			...(isEnvConfigured ? [{ envReconfigure: true }] : []),
+			...(isEnvConfigured
+				? [{ envReconfigure: true }, { shouldBackup: false }]
+				: []),
 			{ CI: "true" },
 			{ useDefaultMinio: true },
 			{ useDefaultPostgres: true },
@@ -291,7 +295,10 @@ describe("generateJwtSecret", () => {
 		const randomBytesSpy = vi
 			.spyOn(crypto, "randomBytes")
 			.mockImplementation(() => {
-				throw new Error("Permission denied");
+				throw new TalawaRestError({
+					code: ErrorCode.INTERNAL_SERVER_ERROR,
+					message: "Permission denied",
+				});
 			});
 		const consoleErrorSpy = vi
 			.spyOn(console, "error")

@@ -6,7 +6,6 @@ import fs from "node:fs";
 import inquirer from "inquirer";
 import {
 	cloudbeaverSetup,
-	setup,
 	validateCloudBeaverAdmin,
 	validateCloudBeaverPassword,
 	validateCloudBeaverURL,
@@ -21,43 +20,27 @@ describe("Setup -> cloudbeaverSetup", () => {
 	});
 
 	it("should prompt the user for CloudBeaver configuration and update process.env", async () => {
-		const mockResponses = [
-			{ envReconfigure: true },
-			{ CI: "false" },
-			{ useDefaultMinio: true },
-			{ useDefaultCloudbeaver: false },
-			{ CLOUDBEAVER_ADMIN_NAME: "mocked-admin" },
-			{ CLOUDBEAVER_ADMIN_PASSWORD: "mocked-password" },
-			{ CLOUDBEAVER_MAPPED_HOST_IP: "127.0.0.1" },
-			{ CLOUDBEAVER_MAPPED_PORT: "8080" },
-			{ CLOUDBEAVER_SERVER_NAME: "Mocked Server" },
-			{ CLOUDBEAVER_SERVER_URL: "https://127.0.0.1:8080" },
-			{ useDefaultPostgres: true },
-			{ useDefaultCaddy: true },
-			{ useDefaultApi: true },
-			{ API_ADMINISTRATOR_USER_EMAIL_ADDRESS: "test@email.com" },
-		];
+		// Test the cloudbeaverSetup function directly instead of the full setup flow
+		const mockAnswers = { CI: "false" };
 
-		const promptMock = vi.spyOn(inquirer, "prompt");
+		vi.spyOn(inquirer, "prompt")
+			.mockResolvedValueOnce({ CLOUDBEAVER_ADMIN_NAME: "mocked-admin" })
+			.mockResolvedValueOnce({ CLOUDBEAVER_ADMIN_PASSWORD: "mocked-password" })
+			.mockResolvedValueOnce({ CLOUDBEAVER_MAPPED_HOST_IP: "127.0.0.1" })
+			.mockResolvedValueOnce({ CLOUDBEAVER_MAPPED_PORT: "8080" })
+			.mockResolvedValueOnce({ CLOUDBEAVER_SERVER_NAME: "Mocked Server" })
+			.mockResolvedValueOnce({
+				CLOUDBEAVER_SERVER_URL: "https://127.0.0.1:8080",
+			});
 
-		for (const response of mockResponses) {
-			promptMock.mockResolvedValueOnce(response);
-		}
+		const result = await cloudbeaverSetup(mockAnswers);
 
-		const answers = await setup();
-
-		const expectedEnv = {
-			CLOUDBEAVER_ADMIN_NAME: "mocked-admin",
-			CLOUDBEAVER_ADMIN_PASSWORD: "mocked-password",
-			CLOUDBEAVER_MAPPED_HOST_IP: "127.0.0.1",
-			CLOUDBEAVER_MAPPED_PORT: "8080",
-			CLOUDBEAVER_SERVER_NAME: "Mocked Server",
-			CLOUDBEAVER_SERVER_URL: "https://127.0.0.1:8080",
-		};
-
-		for (const [key, value] of Object.entries(expectedEnv)) {
-			expect(answers[key]).toBe(value);
-		}
+		expect(result.CLOUDBEAVER_ADMIN_NAME).toBe("mocked-admin");
+		expect(result.CLOUDBEAVER_ADMIN_PASSWORD).toBe("mocked-password");
+		expect(result.CLOUDBEAVER_MAPPED_HOST_IP).toBe("127.0.0.1");
+		expect(result.CLOUDBEAVER_MAPPED_PORT).toBe("8080");
+		expect(result.CLOUDBEAVER_SERVER_NAME).toBe("Mocked Server");
+		expect(result.CLOUDBEAVER_SERVER_URL).toBe("https://127.0.0.1:8080");
 	});
 
 	it("should handle prompt errors correctly", async () => {

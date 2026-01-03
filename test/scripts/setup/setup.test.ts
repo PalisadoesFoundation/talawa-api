@@ -8,6 +8,8 @@ import {
 	type MockInstance,
 	vi,
 } from "vitest";
+import { ErrorCode } from "~/src/utilities/errors/errorCodes";
+import { TalawaRestError } from "~/src/utilities/errors/TalawaRestError";
 
 vi.mock("scripts/setup/envFileBackup/envFileBackup", () => ({
 	envFileBackup: vi.fn().mockResolvedValue(undefined),
@@ -87,20 +89,17 @@ describe("Setup", () => {
 	});
 
 	it("should set up environment variables with default configuration when CI=false", async () => {
-		const mockResponses = [
-			{ CI: "false" },
-			{ useDefaultMinio: "true" },
-			{ useDefaultCloudbeaver: "true" },
-			{ useDefaultPostgres: "true" },
-			{ useDefaultCaddy: "true" },
-			{ useDefaultApi: "true" },
-			{ API_ADMINISTRATOR_USER_EMAIL_ADDRESS: "test@email.com" },
-		];
-
-		const promptMock = vi.spyOn(inquirer, "prompt");
-		for (const response of mockResponses) {
-			promptMock.mockResolvedValueOnce(response);
-		}
+		vi.spyOn(inquirer, "prompt")
+			.mockResolvedValueOnce({ CI: "false" })
+			.mockResolvedValueOnce({ useDefaultMinio: "true" })
+			.mockResolvedValueOnce({ useDefaultCloudbeaver: "true" })
+			.mockResolvedValueOnce({ useDefaultPostgres: "true" })
+			.mockResolvedValueOnce({ useDefaultCaddy: "true" })
+			.mockResolvedValueOnce({ useDefaultApi: "true" })
+			.mockResolvedValueOnce({
+				API_ADMINISTRATOR_USER_EMAIL_ADDRESS: "test@email.com",
+			})
+			.mockResolvedValueOnce({ setupReCaptcha: false });
 
 		if (fs.existsSync(".env")) {
 			fs.unlinkSync(".env");
@@ -151,20 +150,18 @@ describe("Setup", () => {
 
 	it("should correctly set up environment variables when CI=true (skips CloudBeaver)", async () => {
 		process.env.CI = "true";
-		const mockResponses = [
-			{ envReconfigure: true },
-			{ CI: "true" },
-			{ useDefaultMinio: "true" },
-			{ useDefaultPostgres: "true" },
-			{ useDefaultCaddy: "true" },
-			{ useDefaultApi: "true" },
-			{ API_ADMINISTRATOR_USER_EMAIL_ADDRESS: "test@email.com" },
-		];
 
-		const promptMock = vi.spyOn(inquirer, "prompt");
-		for (const response of mockResponses) {
-			promptMock.mockResolvedValueOnce(response);
-		}
+		vi.spyOn(inquirer, "prompt")
+			.mockResolvedValueOnce({ envReconfigure: true })
+			.mockResolvedValueOnce({ CI: "true" })
+			.mockResolvedValueOnce({ useDefaultMinio: "true" })
+			.mockResolvedValueOnce({ useDefaultPostgres: "true" })
+			.mockResolvedValueOnce({ useDefaultCaddy: "true" })
+			.mockResolvedValueOnce({ useDefaultApi: "true" })
+			.mockResolvedValueOnce({
+				API_ADMINISTRATOR_USER_EMAIL_ADDRESS: "test@email.com",
+			})
+			.mockResolvedValueOnce({ setupReCaptcha: false });
 
 		const fsExistsSyncSpy = vi.spyOn(fs, "existsSync").mockReturnValue(true);
 		const fsReadFileSyncSpy = vi
@@ -252,7 +249,10 @@ describe("Setup", () => {
 	});
 	it("should restore .env from backup and exit when envReconfigure is false", async () => {
 		const processExitSpy = vi.spyOn(process, "exit").mockImplementation(() => {
-			throw new Error("process.exit called");
+			throw new TalawaRestError({
+				code: ErrorCode.INTERNAL_SERVER_ERROR,
+				message: "process.exit called",
+			});
 		});
 
 		vi.spyOn(inquirer, "prompt").mockResolvedValueOnce({
@@ -304,7 +304,10 @@ describe("Setup", () => {
 		]);
 
 		const processExitSpy = vi.spyOn(process, "exit").mockImplementation(() => {
-			throw new Error("process.exit called");
+			throw new TalawaRestError({
+				code: ErrorCode.INTERNAL_SERVER_ERROR,
+				message: "process.exit called",
+			});
 		});
 
 		await expect(async () => process.emit("SIGINT")).rejects.toThrow(

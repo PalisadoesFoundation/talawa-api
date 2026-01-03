@@ -1,5 +1,7 @@
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { ErrorCode } from "~/src/utilities/errors/errorCodes";
+import { TalawaRestError } from "~/src/utilities/errors/TalawaRestError";
 import { disconnect, insertCollections, pingDB } from "./helpers";
 
 type Collection =
@@ -42,14 +44,20 @@ export async function main(): Promise<void> {
 		await pingDB();
 		console.log("\n\x1b[32mSuccess:\x1b[0m Database connected successfully\n");
 	} catch (error: unknown) {
-		throw new Error(`Database connection failed: ${error}`);
+		throw new TalawaRestError({
+			code: ErrorCode.DATABASE_ERROR,
+			message: `Database connection failed: ${error}`,
+		});
 	}
 	try {
 		await insertCollections(collections);
 		console.log("\n\x1b[32mSuccess:\x1b[0m Sample Data added to the database");
 	} catch (error: unknown) {
 		console.error("Error: ", error);
-		throw new Error("Error adding sample data");
+		throw new TalawaRestError({
+			code: ErrorCode.DATABASE_ERROR,
+			message: "Error adding sample data",
+		});
 	}
 
 	return;

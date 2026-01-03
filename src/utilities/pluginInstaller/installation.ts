@@ -160,7 +160,7 @@ export async function installPluginFromZip(
 		try {
 			await import("node:fs/promises").then((fs) => fs.unlink(tempPath));
 		} catch (error) {
-			if (options.logger?.error) {
+			if (options.logger) {
 				options.logger.error(error, "Failed to clean up temporary file");
 			} else {
 				console.log("ERROR: Failed to clean up temporary file:", error);
