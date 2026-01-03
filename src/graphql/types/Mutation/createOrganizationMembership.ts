@@ -216,7 +216,7 @@ builder.mutationField("createOrganizationMembership", (t) =>
 				});
 			}
 
-			return createdOrganizationMembership;
+			return existingOrganization;
 		},
 		type: Organization,
 	}),
