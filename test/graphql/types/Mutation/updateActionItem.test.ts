@@ -130,46 +130,69 @@ async function createEventAndVolunteer(
 	return volunteerResult.data.createEventVolunteer.id;
 }
 
-suite("Mutation field updateActionItem", () => {
-	test("should update an action item for a specific instance", async () => {
-		const orgId = await createOrganizationAndGetId();
-		const categoryId = await createActionItemCategory(orgId);
-		const createUserResult = await mercuriusClient.mutate(Mutation_createUser, {
+// Helper to create organization, category, user, volunteer, and action item
+async function createOrgCategoryVolunteerActionItem(): Promise<{
+	orgId: string;
+	categoryId: string;
+	userId: string;
+	userToken?: string;
+	volunteerId: string;
+	actionItemId: string;
+}> {
+	const orgId = await createOrganizationAndGetId();
+	const categoryId = await createActionItemCategory(orgId);
+	const createUserResult = await mercuriusClient.mutate(Mutation_createUser, {
+		headers: { authorization: `bearer ${authToken}` },
+		variables: {
+			input: {
+				emailAddress: `assignee${faker.string.ulid()}@example.com`,
+				isEmailAddressVerified: true,
+				name: "Assignee User",
+				password: "password",
+				role: "regular",
+			},
+		},
+	});
+	assertToBeNonNullish(createUserResult.data?.createUser);
+	assertToBeNonNullish(createUserResult.data.createUser.user);
+	const userId = createUserResult.data.createUser.user.id;
+	assertToBeNonNullish(userId);
+	const userToken =
+		createUserResult.data.createUser.authenticationToken ?? undefined;
+
+	const volunteerId = await createEventAndVolunteer(orgId, userId);
+
+	const createActionItemResult = await mercuriusClient.mutate(
+		Mutation_createActionItem,
+		{
 			headers: { authorization: `bearer ${authToken}` },
 			variables: {
 				input: {
-					emailAddress: `assignee${faker.string.ulid()}@example.com`,
-					isEmailAddressVerified: true,
-					name: "Assignee User",
-					password: "password",
-					role: "regular",
+					categoryId: categoryId,
+					volunteerId: volunteerId,
+					organizationId: orgId,
+					assignedAt: "2025-04-01T00:00:00Z",
 				},
 			},
-		});
-		assertToBeNonNullish(createUserResult.data?.createUser);
-		assertToBeNonNullish(createUserResult.data.createUser.user);
-		const userId = createUserResult.data.createUser.user.id;
-		assertToBeNonNullish(userId);
+		},
+	);
+	assertToBeNonNullish(createActionItemResult.data?.createActionItem);
+	const actionItemId = createActionItemResult.data.createActionItem.id;
+	assertToBeNonNullish(actionItemId);
 
-		const volunteerId = await createEventAndVolunteer(orgId, userId);
+	return {
+		orgId,
+		categoryId,
+		userId,
+		userToken,
+		volunteerId,
+		actionItemId,
+	};
+}
 
-		const createActionItemResult = await mercuriusClient.mutate(
-			Mutation_createActionItem,
-			{
-				headers: { authorization: `bearer ${authToken}` },
-				variables: {
-					input: {
-						categoryId: categoryId,
-						volunteerId: volunteerId,
-						organizationId: orgId,
-						assignedAt: "2025-04-01T00:00:00Z",
-					},
-				},
-			},
-		);
-		assertToBeNonNullish(createActionItemResult.data?.createActionItem);
-		const actionItemId = createActionItemResult.data.createActionItem.id;
-		assertToBeNonNullish(actionItemId);
+suite("Mutation field updateActionItem", () => {
+	test("should update an action item for a specific instance", async () => {
+		const { actionItemId } = await createOrgCategoryVolunteerActionItem();
 
 		const result = await mercuriusClient.mutate(UPDATE_ACTION_ITEM_MUTATION, {
 			headers: { authorization: `bearer ${authToken}` },
@@ -287,44 +310,7 @@ suite("Mutation field updateActionItem", () => {
 	});
 
 	test("should throw forbidden_action error when completing without postCompletionNotes", async () => {
-		const orgId = await createOrganizationAndGetId();
-		const categoryId = await createActionItemCategory(orgId);
-		const createUserResult = await mercuriusClient.mutate(Mutation_createUser, {
-			headers: { authorization: `bearer ${authToken}` },
-			variables: {
-				input: {
-					emailAddress: `assignee${faker.string.ulid()}@example.com`,
-					isEmailAddressVerified: true,
-					name: "Assignee User",
-					password: "password",
-					role: "regular",
-				},
-			},
-		});
-		assertToBeNonNullish(createUserResult.data?.createUser);
-		assertToBeNonNullish(createUserResult.data.createUser.user);
-		const userId = createUserResult.data.createUser.user.id;
-		assertToBeNonNullish(userId);
-
-		const volunteerId = await createEventAndVolunteer(orgId, userId);
-
-		const createActionItemResult = await mercuriusClient.mutate(
-			Mutation_createActionItem,
-			{
-				headers: { authorization: `bearer ${authToken}` },
-				variables: {
-					input: {
-						categoryId: categoryId,
-						volunteerId: volunteerId,
-						organizationId: orgId,
-						assignedAt: "2025-04-01T00:00:00Z",
-					},
-				},
-			},
-		);
-		assertToBeNonNullish(createActionItemResult.data?.createActionItem);
-		const actionItemId = createActionItemResult.data.createActionItem.id;
-		assertToBeNonNullish(actionItemId);
+		const { actionItemId } = await createOrgCategoryVolunteerActionItem();
 
 		const result = await mercuriusClient.mutate(UPDATE_ACTION_ITEM_MUTATION, {
 			headers: { authorization: `bearer ${authToken}` },
@@ -352,44 +338,7 @@ suite("Mutation field updateActionItem", () => {
 	});
 
 	test("should throw arguments_associated_resources_not_found error when category does not exist", async () => {
-		const orgId = await createOrganizationAndGetId();
-		const categoryId = await createActionItemCategory(orgId);
-		const createUserResult = await mercuriusClient.mutate(Mutation_createUser, {
-			headers: { authorization: `bearer ${authToken}` },
-			variables: {
-				input: {
-					emailAddress: `assignee${faker.string.ulid()}@example.com`,
-					isEmailAddressVerified: true,
-					name: "Assignee User",
-					password: "password",
-					role: "regular",
-				},
-			},
-		});
-		assertToBeNonNullish(createUserResult.data?.createUser);
-		assertToBeNonNullish(createUserResult.data.createUser.user);
-		const userId = createUserResult.data.createUser.user.id;
-		assertToBeNonNullish(userId);
-
-		const volunteerId = await createEventAndVolunteer(orgId, userId);
-
-		const createActionItemResult = await mercuriusClient.mutate(
-			Mutation_createActionItem,
-			{
-				headers: { authorization: `bearer ${authToken}` },
-				variables: {
-					input: {
-						categoryId: categoryId,
-						volunteerId: volunteerId,
-						organizationId: orgId,
-						assignedAt: "2025-04-01T00:00:00Z",
-					},
-				},
-			},
-		);
-		assertToBeNonNullish(createActionItemResult.data?.createActionItem);
-		const actionItemId = createActionItemResult.data.createActionItem.id;
-		assertToBeNonNullish(actionItemId);
+		const { actionItemId } = await createOrgCategoryVolunteerActionItem();
 
 		const result = await mercuriusClient.mutate(UPDATE_ACTION_ITEM_MUTATION, {
 			headers: { authorization: `bearer ${authToken}` },
@@ -416,44 +365,7 @@ suite("Mutation field updateActionItem", () => {
 	});
 
 	test("should throw unauthorized error if a non-admin tries to update", async () => {
-		const orgId = await createOrganizationAndGetId();
-		const categoryId = await createActionItemCategory(orgId);
-		const createUserResult = await mercuriusClient.mutate(Mutation_createUser, {
-			headers: { authorization: `bearer ${authToken}` },
-			variables: {
-				input: {
-					emailAddress: `assignee${faker.string.ulid()}@example.com`,
-					isEmailAddressVerified: true,
-					name: "Assignee User",
-					password: "password",
-					role: "regular",
-				},
-			},
-		});
-		assertToBeNonNullish(createUserResult.data?.createUser);
-		assertToBeNonNullish(createUserResult.data.createUser.user);
-		const userId = createUserResult.data.createUser.user.id;
-		assertToBeNonNullish(userId);
-
-		const volunteerId = await createEventAndVolunteer(orgId, userId);
-
-		const createActionItemResult = await mercuriusClient.mutate(
-			Mutation_createActionItem,
-			{
-				headers: { authorization: `bearer ${authToken}` },
-				variables: {
-					input: {
-						categoryId: categoryId,
-						volunteerId: volunteerId,
-						organizationId: orgId,
-						assignedAt: "2025-04-01T00:00:00Z",
-					},
-				},
-			},
-		);
-		assertToBeNonNullish(createActionItemResult.data?.createActionItem);
-		const actionItemId = createActionItemResult.data.createActionItem.id;
-		assertToBeNonNullish(actionItemId);
+		const { actionItemId } = await createOrgCategoryVolunteerActionItem();
 
 		// Create a regular user
 		const regularUserResult = await mercuriusClient.mutate(
@@ -495,44 +407,7 @@ suite("Mutation field updateActionItem", () => {
 	});
 
 	test("should throw unexpected error when update operation fails to return updated item", async () => {
-		const orgId = await createOrganizationAndGetId();
-		const categoryId = await createActionItemCategory(orgId);
-		const createUserResult = await mercuriusClient.mutate(Mutation_createUser, {
-			headers: { authorization: `bearer ${authToken}` },
-			variables: {
-				input: {
-					emailAddress: `assignee${faker.string.ulid()}@example.com`,
-					isEmailAddressVerified: true,
-					name: "Assignee User",
-					password: "password",
-					role: "regular",
-				},
-			},
-		});
-		assertToBeNonNullish(createUserResult.data?.createUser);
-		assertToBeNonNullish(createUserResult.data.createUser.user);
-		const userId = createUserResult.data.createUser.user.id;
-		assertToBeNonNullish(userId);
-
-		const volunteerId = await createEventAndVolunteer(orgId, userId);
-
-		const createActionItemResult = await mercuriusClient.mutate(
-			Mutation_createActionItem,
-			{
-				headers: { authorization: `bearer ${authToken}` },
-				variables: {
-					input: {
-						categoryId: categoryId,
-						volunteerId: volunteerId,
-						organizationId: orgId,
-						assignedAt: "2025-04-01T00:00:00Z",
-					},
-				},
-			},
-		);
-		assertToBeNonNullish(createActionItemResult.data?.createActionItem);
-		const actionItemId = createActionItemResult.data.createActionItem.id;
-		assertToBeNonNullish(actionItemId);
+		const { actionItemId } = await createOrgCategoryVolunteerActionItem();
 
 		const originalUpdate = server.drizzleClient.update;
 		const fakeUpdate = () => ({
@@ -566,44 +441,7 @@ suite("Mutation field updateActionItem", () => {
 	});
 
 	test("should successfully update action item without categoryId", async () => {
-		const orgId = await createOrganizationAndGetId();
-		const categoryId = await createActionItemCategory(orgId);
-		const createUserResult = await mercuriusClient.mutate(Mutation_createUser, {
-			headers: { authorization: `bearer ${authToken}` },
-			variables: {
-				input: {
-					emailAddress: `assignee${faker.string.ulid()}@example.com`,
-					isEmailAddressVerified: true,
-					name: "Assignee User",
-					password: "password",
-					role: "regular",
-				},
-			},
-		});
-		assertToBeNonNullish(createUserResult.data?.createUser);
-		assertToBeNonNullish(createUserResult.data.createUser.user);
-		const userId = createUserResult.data.createUser.user.id;
-		assertToBeNonNullish(userId);
-
-		const volunteerId = await createEventAndVolunteer(orgId, userId);
-
-		const createActionItemResult = await mercuriusClient.mutate(
-			Mutation_createActionItem,
-			{
-				headers: { authorization: `bearer ${authToken}` },
-				variables: {
-					input: {
-						categoryId: categoryId,
-						volunteerId: volunteerId,
-						organizationId: orgId,
-						assignedAt: "2025-04-01T00:00:00Z",
-					},
-				},
-			},
-		);
-		assertToBeNonNullish(createActionItemResult.data?.createActionItem);
-		const actionItemId = createActionItemResult.data.createActionItem.id;
-		assertToBeNonNullish(actionItemId);
+		const { actionItemId } = await createOrgCategoryVolunteerActionItem();
 
 		const result = await mercuriusClient.mutate(UPDATE_ACTION_ITEM_MUTATION, {
 			headers: { authorization: `bearer ${authToken}` },
@@ -626,45 +464,9 @@ suite("Mutation field updateActionItem", () => {
 	});
 
 	test("should successfully update action item with valid categoryId", async () => {
-		const orgId = await createOrganizationAndGetId();
-		const categoryId = await createActionItemCategory(orgId);
+		const { orgId, actionItemId } =
+			await createOrgCategoryVolunteerActionItem();
 		const newCategoryId = await createActionItemCategory(orgId);
-		const createUserResult = await mercuriusClient.mutate(Mutation_createUser, {
-			headers: { authorization: `bearer ${authToken}` },
-			variables: {
-				input: {
-					emailAddress: `assignee${faker.string.ulid()}@example.com`,
-					isEmailAddressVerified: true,
-					name: "Assignee User",
-					password: "password",
-					role: "regular",
-				},
-			},
-		});
-		assertToBeNonNullish(createUserResult.data?.createUser);
-		assertToBeNonNullish(createUserResult.data.createUser.user);
-		const userId = createUserResult.data.createUser.user.id;
-		assertToBeNonNullish(userId);
-
-		const volunteerId = await createEventAndVolunteer(orgId, userId);
-
-		const createActionItemResult = await mercuriusClient.mutate(
-			Mutation_createActionItem,
-			{
-				headers: { authorization: `bearer ${authToken}` },
-				variables: {
-					input: {
-						categoryId: categoryId,
-						volunteerId: volunteerId,
-						organizationId: orgId,
-						assignedAt: "2025-04-01T00:00:00Z",
-					},
-				},
-			},
-		);
-		assertToBeNonNullish(createActionItemResult.data?.createActionItem);
-		const actionItemId = createActionItemResult.data.createActionItem.id;
-		assertToBeNonNullish(actionItemId);
 
 		const result = await mercuriusClient.mutate(UPDATE_ACTION_ITEM_MUTATION, {
 			headers: { authorization: `bearer ${authToken}` },
@@ -687,44 +489,7 @@ suite("Mutation field updateActionItem", () => {
 	});
 
 	test("should successfully update action item marking as not completed", async () => {
-		const orgId = await createOrganizationAndGetId();
-		const categoryId = await createActionItemCategory(orgId);
-		const createUserResult = await mercuriusClient.mutate(Mutation_createUser, {
-			headers: { authorization: `bearer ${authToken}` },
-			variables: {
-				input: {
-					emailAddress: `assignee${faker.string.ulid()}@example.com`,
-					isEmailAddressVerified: true,
-					name: "Assignee User",
-					password: "password",
-					role: "regular",
-				},
-			},
-		});
-		assertToBeNonNullish(createUserResult.data?.createUser);
-		assertToBeNonNullish(createUserResult.data.createUser.user);
-		const userId = createUserResult.data.createUser.user.id;
-		assertToBeNonNullish(userId);
-
-		const volunteerId = await createEventAndVolunteer(orgId, userId);
-
-		const createActionItemResult = await mercuriusClient.mutate(
-			Mutation_createActionItem,
-			{
-				headers: { authorization: `bearer ${authToken}` },
-				variables: {
-					input: {
-						categoryId: categoryId,
-						volunteerId: volunteerId,
-						organizationId: orgId,
-						assignedAt: "2025-04-01T00:00:00Z",
-					},
-				},
-			},
-		);
-		assertToBeNonNullish(createActionItemResult.data?.createActionItem);
-		const actionItemId = createActionItemResult.data.createActionItem.id;
-		assertToBeNonNullish(actionItemId);
+		const { actionItemId } = await createOrgCategoryVolunteerActionItem();
 
 		// First mark as completed
 		await mercuriusClient.mutate(UPDATE_ACTION_ITEM_MUTATION, {
@@ -759,8 +524,8 @@ suite("Mutation field updateActionItem", () => {
 	});
 
 	test("should allow organization administrator to update action item", async () => {
-		const orgId = await createOrganizationAndGetId();
-		const categoryId = await createActionItemCategory(orgId);
+		const { orgId, actionItemId } =
+			await createOrgCategoryVolunteerActionItem();
 
 		// Create a regular user who will be made org admin
 		const orgAdminUserResult = await mercuriusClient.mutate(
@@ -799,43 +564,6 @@ suite("Mutation field updateActionItem", () => {
 			},
 		});
 
-		const createUserResult = await mercuriusClient.mutate(Mutation_createUser, {
-			headers: { authorization: `bearer ${authToken}` },
-			variables: {
-				input: {
-					emailAddress: `assignee${faker.string.ulid()}@example.com`,
-					isEmailAddressVerified: true,
-					name: "Assignee User",
-					password: "password",
-					role: "regular",
-				},
-			},
-		});
-		assertToBeNonNullish(createUserResult.data?.createUser);
-		assertToBeNonNullish(createUserResult.data.createUser.user);
-		const userId = createUserResult.data.createUser.user.id;
-		assertToBeNonNullish(userId);
-
-		const volunteerId = await createEventAndVolunteer(orgId, userId);
-
-		const createActionItemResult = await mercuriusClient.mutate(
-			Mutation_createActionItem,
-			{
-				headers: { authorization: `bearer ${authToken}` },
-				variables: {
-					input: {
-						categoryId: categoryId,
-						volunteerId: volunteerId,
-						organizationId: orgId,
-						assignedAt: "2025-04-01T00:00:00Z",
-					},
-				},
-			},
-		);
-		assertToBeNonNullish(createActionItemResult.data?.createActionItem);
-		const actionItemId = createActionItemResult.data.createActionItem.id;
-		assertToBeNonNullish(actionItemId);
-
 		// Update as organization administrator (not global admin)
 		const result = await mercuriusClient.mutate(UPDATE_ACTION_ITEM_MUTATION, {
 			headers: { authorization: `bearer ${orgAdminToken}` },
@@ -860,44 +588,7 @@ suite("Mutation field updateActionItem", () => {
 
 suite("Mutation field markActionItemAsPending", () => {
 	test("should mark a completed action item as pending", async () => {
-		const orgId = await createOrganizationAndGetId();
-		const categoryId = await createActionItemCategory(orgId);
-		const createUserResult = await mercuriusClient.mutate(Mutation_createUser, {
-			headers: { authorization: `bearer ${authToken}` },
-			variables: {
-				input: {
-					emailAddress: `assignee${faker.string.ulid()}@example.com`,
-					isEmailAddressVerified: true,
-					name: "Assignee User",
-					password: "password",
-					role: "regular",
-				},
-			},
-		});
-		assertToBeNonNullish(createUserResult.data?.createUser);
-		assertToBeNonNullish(createUserResult.data.createUser.user);
-		const userId = createUserResult.data.createUser.user.id;
-		assertToBeNonNullish(userId);
-
-		const volunteerId = await createEventAndVolunteer(orgId, userId);
-
-		const createActionItemResult = await mercuriusClient.mutate(
-			Mutation_createActionItem,
-			{
-				headers: { authorization: `bearer ${authToken}` },
-				variables: {
-					input: {
-						categoryId: categoryId,
-						volunteerId: volunteerId,
-						organizationId: orgId,
-						assignedAt: "2025-04-01T00:00:00Z",
-					},
-				},
-			},
-		);
-		assertToBeNonNullish(createActionItemResult.data?.createActionItem);
-		const actionItemId = createActionItemResult.data.createActionItem.id;
-		assertToBeNonNullish(actionItemId);
+		const { actionItemId } = await createOrgCategoryVolunteerActionItem();
 
 		await mercuriusClient.mutate(UPDATE_ACTION_ITEM_MUTATION, {
 			headers: { authorization: `bearer ${authToken}` },
@@ -962,44 +653,7 @@ suite("Mutation field markActionItemAsPending", () => {
 	});
 
 	test("should throw forbidden_action error if action item is already pending", async () => {
-		const orgId = await createOrganizationAndGetId();
-		const categoryId = await createActionItemCategory(orgId);
-		const createUserResult = await mercuriusClient.mutate(Mutation_createUser, {
-			headers: { authorization: `bearer ${authToken}` },
-			variables: {
-				input: {
-					emailAddress: `assignee${faker.string.ulid()}@example.com`,
-					isEmailAddressVerified: true,
-					name: "Assignee User",
-					password: "password",
-					role: "regular",
-				},
-			},
-		});
-		assertToBeNonNullish(createUserResult.data?.createUser);
-		assertToBeNonNullish(createUserResult.data.createUser.user);
-		const userId = createUserResult.data.createUser.user.id;
-		assertToBeNonNullish(userId);
-
-		const volunteerId = await createEventAndVolunteer(orgId, userId);
-
-		const createActionItemResult = await mercuriusClient.mutate(
-			Mutation_createActionItem,
-			{
-				headers: { authorization: `bearer ${authToken}` },
-				variables: {
-					input: {
-						categoryId: categoryId,
-						volunteerId: volunteerId,
-						organizationId: orgId,
-						assignedAt: "2025-04-01T00:00:00Z",
-					},
-				},
-			},
-		);
-		assertToBeNonNullish(createActionItemResult.data?.createActionItem);
-		const actionItemId = createActionItemResult.data.createActionItem.id;
-		assertToBeNonNullish(actionItemId);
+		const { actionItemId } = await createOrgCategoryVolunteerActionItem();
 
 		const result = await mercuriusClient.mutate(
 			MARK_ACTION_ITEM_AS_PENDING_MUTATION,
@@ -1020,44 +674,7 @@ suite("Mutation field markActionItemAsPending", () => {
 	});
 
 	test("should throw unexpected error when update operation fails to return updated item", async () => {
-		const orgId = await createOrganizationAndGetId();
-		const categoryId = await createActionItemCategory(orgId);
-		const createUserResult = await mercuriusClient.mutate(Mutation_createUser, {
-			headers: { authorization: `bearer ${authToken}` },
-			variables: {
-				input: {
-					emailAddress: `assignee${faker.string.ulid()}@example.com`,
-					isEmailAddressVerified: true,
-					name: "Assignee User",
-					password: "password",
-					role: "regular",
-				},
-			},
-		});
-		assertToBeNonNullish(createUserResult.data?.createUser);
-		assertToBeNonNullish(createUserResult.data.createUser.user);
-		const userId = createUserResult.data.createUser.user.id;
-		assertToBeNonNullish(userId);
-
-		const volunteerId = await createEventAndVolunteer(orgId, userId);
-
-		const createActionItemResult = await mercuriusClient.mutate(
-			Mutation_createActionItem,
-			{
-				headers: { authorization: `bearer ${authToken}` },
-				variables: {
-					input: {
-						categoryId: categoryId,
-						volunteerId: volunteerId,
-						organizationId: orgId,
-						assignedAt: "2025-04-01T00:00:00Z",
-					},
-				},
-			},
-		);
-		assertToBeNonNullish(createActionItemResult.data?.createActionItem);
-		const actionItemId = createActionItemResult.data.createActionItem.id;
-		assertToBeNonNullish(actionItemId);
+		const { actionItemId } = await createOrgCategoryVolunteerActionItem();
 
 		await mercuriusClient.mutate(UPDATE_ACTION_ITEM_MUTATION, {
 			headers: { authorization: `bearer ${authToken}` },
