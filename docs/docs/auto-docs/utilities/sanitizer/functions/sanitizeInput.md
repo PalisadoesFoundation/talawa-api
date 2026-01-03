@@ -25,7 +25,7 @@ The string to sanitize.
 
 [`SanitizedInputString`](../type-aliases/SanitizedInputString.md)
 
-The sanitized (trimmed) string with branded type.
+- The sanitized (trimmed) string with branded type.
 
 ## Call Signature
 
@@ -48,7 +48,7 @@ The string to sanitize.
 
 [`SanitizedInputString`](../type-aliases/SanitizedInputString.md) \| `null`
 
-The sanitized (trimmed) string with branded type.
+- The sanitized (trimmed) string with branded type.
 
 ## Call Signature
 
@@ -71,7 +71,7 @@ The string to sanitize.
 
 [`SanitizedInputString`](../type-aliases/SanitizedInputString.md) \| `undefined`
 
-The sanitized (trimmed) string with branded type.
+- The sanitized (trimmed) string with branded type.
 
 ## Call Signature
 
@@ -94,4 +94,4 @@ The string to sanitize.
 
 [`SanitizedInputString`](../type-aliases/SanitizedInputString.md) \| `null` \| `undefined`
 
-The sanitized (trimmed) string with branded type.
+- The sanitized (trimmed) string with branded type.

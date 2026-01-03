@@ -41,7 +41,7 @@ async function createTestOrganization(token: string) {
 		headers: { authorization: `bearer ${token}` },
 		variables: {
 			input: {
-				name: faker.company.name(),
+				name: `${faker.company.name()}-${faker.string.ulid()}`,
 				description: faker.lorem.sentence(),
 				countryCode: "us",
 				state: "CA",
@@ -85,7 +85,7 @@ suite("Mutation field createAdvertisement", () => {
 							description: "Test Description",
 							organizationId: faker.string.uuid(),
 							type: "banner",
-							startAt: new Date().toISOString(),
+							startAt: new Date(Date.now() + 5 * 60 * 1000).toISOString(), // 5 minutes in the future
 							endAt: new Date(Date.now() + ONE_DAY_MS).toISOString(),
 						},
 					},
@@ -118,7 +118,7 @@ suite("Mutation field createAdvertisement", () => {
 							description: "Test Description",
 							organizationId: invalidOrganizationId,
 							type: "banner",
-							startAt: new Date().toISOString(),
+							startAt: new Date(Date.now() + 5 * 60 * 1000).toISOString(), // 5 minutes in the future
 							endAt: new Date(Date.now() + ONE_DAY_MS).toISOString(),
 						},
 					},
@@ -156,7 +156,7 @@ suite("Mutation field createAdvertisement", () => {
 							description: "Test Description",
 							organizationId: orgId,
 							type: "banner",
-							startAt: new Date().toISOString(),
+							startAt: new Date(Date.now() + 5 * 60 * 1000).toISOString(), // 5 minutes in the future
 							endAt: new Date(Date.now() + ONE_DAY_MS).toISOString(),
 						},
 					},
@@ -200,7 +200,7 @@ suite("Mutation field createAdvertisement", () => {
 							description: "Test Description",
 							organizationId: orgId,
 							type: "banner",
-							startAt: new Date().toISOString(),
+							startAt: new Date(Date.now() + 5 * 60 * 1000).toISOString(), // 5 minutes in the future
 							endAt: new Date(Date.now() + ONE_DAY_MS).toISOString(),
 						},
 					},
@@ -231,7 +231,7 @@ suite("Mutation field createAdvertisement", () => {
 							description: "Test Description",
 							organizationId: faker.string.uuid(),
 							type: "banner",
-							startAt: new Date().toISOString(),
+							startAt: new Date(Date.now() + 5 * 60 * 1000).toISOString(), // 5 minutes in the future
 							endAt: new Date(Date.now() + ONE_DAY_MS).toISOString(),
 						},
 					},
@@ -276,7 +276,7 @@ suite("Mutation field createAdvertisement", () => {
 							description: "Test Description",
 							organizationId: orgId,
 							type: "banner",
-							startAt: new Date().toISOString(),
+							startAt: new Date(Date.now() + 5 * 60 * 1000).toISOString(), // 5 minutes in the future
 							endAt: new Date(Date.now() + ONE_DAY_MS).toISOString(),
 						},
 					},
@@ -317,7 +317,7 @@ suite("Mutation field createAdvertisement", () => {
 							description: "First Ad",
 							organizationId: orgId,
 							type: "banner",
-							startAt: new Date().toISOString(),
+							startAt: new Date(Date.now() + 5 * 60 * 1000).toISOString(), // 5 minutes in the future
 							endAt: new Date(Date.now() + ONE_DAY_MS).toISOString(),
 						},
 					},
@@ -337,7 +337,7 @@ suite("Mutation field createAdvertisement", () => {
 							description: "Duplicate Ad",
 							organizationId: orgId,
 							type: "banner",
-							startAt: new Date().toISOString(),
+							startAt: new Date(Date.now() + 5 * 60 * 1000).toISOString(), // 5 minutes in the future
 							endAt: new Date(Date.now() + ONE_DAY_MS).toISOString(),
 						},
 					},
@@ -397,7 +397,7 @@ suite("Mutation field createAdvertisement", () => {
 							description: "Test Description",
 							organizationId: orgId,
 							type: "banner",
-							startAt: new Date().toISOString(),
+							startAt: new Date(Date.now() + 5 * 60 * 1000).toISOString(), // 5 minutes in the future
 							endAt: new Date(Date.now() + ONE_DAY_MS).toISOString(),
 						},
 					},
@@ -441,7 +441,7 @@ suite("Mutation field createAdvertisement", () => {
 							description: "Created by system administrator",
 							organizationId: orgId,
 							type: "banner",
-							startAt: new Date().toISOString(),
+							startAt: new Date(Date.now() + 5 * 60 * 1000).toISOString(), // 5 minutes in the future
 							endAt: new Date(Date.now() + ONE_DAY_MS).toISOString(),
 						},
 					},
@@ -490,7 +490,7 @@ suite("Mutation field createAdvertisement", () => {
 								description: "Should fail",
 								organizationId: orgId,
 								type: "banner",
-								startAt: new Date().toISOString(),
+								startAt: new Date(Date.now() + 5 * 60 * 1000).toISOString(), // 5 minutes in the future
 								endAt: new Date(Date.now() + ONE_DAY_MS).toISOString(),
 							},
 						},
@@ -517,7 +517,7 @@ suite("Mutation field createAdvertisement", () => {
 	suite("when creating advertisement successfully", () => {
 		test("should create advertisement without attachments", async () => {
 			const orgId = await createTestOrganization(authToken);
-			const startDate = new Date();
+			const startDate = new Date(Date.now() + 5 * 60 * 1000);
 			const endDate = new Date(Date.now() + ONE_WEEK_MS);
 
 			const result = await mercuriusClient.mutate(
@@ -568,7 +568,7 @@ suite("Mutation field createAdvertisement", () => {
 							description: longDescription,
 							organizationId: orgId,
 							type: "banner",
-							startAt: new Date().toISOString(),
+							startAt: new Date(Date.now() + 5 * 60 * 1000).toISOString(), // 5 minutes in the future
 							endAt: new Date(Date.now() + ONE_DAY_MS).toISOString(),
 						},
 					},
@@ -602,7 +602,7 @@ suite("Mutation field createAdvertisement", () => {
 								description: `Testing type ${adType}`,
 								organizationId: orgId,
 								type: adType,
-								startAt: new Date().toISOString(),
+								startAt: new Date(Date.now() + 5 * 60 * 1000).toISOString(), // 5 minutes in the future
 								endAt: new Date(Date.now() + ONE_DAY_MS).toISOString(),
 							},
 						},
@@ -634,7 +634,7 @@ suite("Mutation field createAdvertisement", () => {
 							description: "Testing special characters",
 							organizationId: orgId,
 							type: "banner",
-							startAt: new Date().toISOString(),
+							startAt: new Date(Date.now() + 5 * 60 * 1000).toISOString(), // 5 minutes in the future
 							endAt: new Date(Date.now() + ONE_DAY_MS).toISOString(),
 						},
 					},
@@ -664,7 +664,7 @@ suite("Mutation field createAdvertisement", () => {
 							description: longDescription,
 							organizationId: orgId,
 							type: "menu",
-							startAt: new Date().toISOString(),
+							startAt: new Date(Date.now() + 5 * 60 * 1000).toISOString(), // 5 minutes in the future
 							endAt: new Date(Date.now() + ONE_DAY_MS).toISOString(),
 						},
 					},
@@ -681,7 +681,7 @@ suite("Mutation field createAdvertisement", () => {
 
 		test("should validate date range - endAt must be after startAt", async () => {
 			const orgId = await createTestOrganization(authToken);
-			const startDate = new Date();
+			const startDate = new Date(Date.now() + 5 * 60 * 1000);
 			const endDate = new Date(Date.now() - ONE_DAY_MS);
 
 			const result = await mercuriusClient.mutate(

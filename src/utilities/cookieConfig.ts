@@ -43,7 +43,7 @@ export interface CookieConfigOptions {
  *
  * @param options - Configuration options for the cookie
  * @param maxAgeMs - Maximum age of the cookie in milliseconds (should match JWT expiry)
- * @returns Cookie serialization options
+ * @returns - Cookie serialization options
  */
 export function getAccessTokenCookieOptions(
 	options: CookieConfigOptions,
@@ -65,7 +65,7 @@ export function getAccessTokenCookieOptions(
  *
  * @param options - Configuration options for the cookie
  * @param maxAgeMs - Maximum age of the cookie in milliseconds (should match refresh token expiry)
- * @returns Cookie serialization options
+ * @returns - Cookie serialization options
  */
 export function getRefreshTokenCookieOptions(
 	options: CookieConfigOptions,
@@ -74,7 +74,7 @@ export function getRefreshTokenCookieOptions(
 	return {
 		httpOnly: true, // Prevents JavaScript access - XSS protection
 		secure: options.isSecure, // HTTPS only in production
-		sameSite: "strict", // Stricter CSRF protection for refresh tokens
+		sameSite: "lax", // Lax allows refresh on navigation (e.g. from email links)
 		path: options.path ?? "/",
 		domain: options.domain,
 		maxAge: Math.floor(maxAgeMs / 1000), // Convert ms to seconds
@@ -87,7 +87,7 @@ export function getRefreshTokenCookieOptions(
  * Uses sameSite: "lax" to match getAccessTokenCookieOptions().
  *
  * @param options - Configuration options for the cookie
- * @returns Cookie serialization options that will clear the cookie
+ * @returns - Cookie serialization options that will clear the cookie
  */
 export function getClearAccessTokenCookieOptions(
 	options: CookieConfigOptions,
@@ -105,10 +105,10 @@ export function getClearAccessTokenCookieOptions(
 /**
  * Generates cookie options for clearing/removing refresh token cookies.
  * Used during logout to invalidate the refresh token cookie.
- * Uses sameSite: "strict" to match getRefreshTokenCookieOptions().
+ * Uses sameSite: "lax" to match getRefreshTokenCookieOptions().
  *
  * @param options - Configuration options for the cookie
- * @returns Cookie serialization options that will clear the cookie
+ * @returns - Cookie serialization options that will clear the cookie
  */
 export function getClearRefreshTokenCookieOptions(
 	options: CookieConfigOptions,
@@ -116,7 +116,7 @@ export function getClearRefreshTokenCookieOptions(
 	return {
 		httpOnly: true,
 		secure: options.isSecure,
-		sameSite: "strict", // Must match getRefreshTokenCookieOptions()
+		sameSite: "lax", // Must match getRefreshTokenCookieOptions()
 		path: options.path ?? "/",
 		domain: options.domain,
 		maxAge: 0, // Immediately expires the cookie

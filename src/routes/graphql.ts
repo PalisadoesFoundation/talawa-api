@@ -17,6 +17,7 @@ import {
 	getClearRefreshTokenCookieOptions,
 	getRefreshTokenCookieOptions,
 } from "../utilities/cookieConfig";
+import { createDataloaders } from "../utilities/dataloaders";
 import leakyBucket from "../utilities/leakyBucket";
 import { DEFAULT_REFRESH_TOKEN_EXPIRES_MS } from "../utilities/refreshTokenUtils";
 import { TalawaGraphQLError } from "../utilities/TalawaGraphQLError";
@@ -98,7 +99,7 @@ export const createContext: CreateContext = async (initialContext) => {
 		}
 	}
 
-	// Cookie configuration options
+	// Cookie configuration options (sameSite is set per-cookie in helpers)
 	const cookieConfig = {
 		isSecure:
 			fastify.envConfig.API_IS_SECURE_COOKIES ??
@@ -147,7 +148,9 @@ export const createContext: CreateContext = async (initialContext) => {
 			: undefined;
 
 	return {
+		cache: fastify.cache,
 		currentClient,
+		dataloaders: createDataloaders(fastify.drizzleClient),
 		drizzleClient: fastify.drizzleClient,
 		envConfig: fastify.envConfig,
 		jwt: {
@@ -155,7 +158,7 @@ export const createContext: CreateContext = async (initialContext) => {
 				fastify.jwt.sign(payload),
 		},
 		cookie: cookieHelper,
-		log: fastify.log,
+		log: request.log ?? fastify.log,
 		minio: fastify.minio,
 		// attached a per-request notification service that queues notifications and can flush later
 		notification: new NotificationService(),
@@ -213,6 +216,25 @@ export const graphql = fastifyPlugin(async (fastify) => {
 		cache: false,
 		path: "/graphql",
 		schema: initialSchema,
+		errorFormatter: (execution, context) => {
+			const correlationId = context.reply.request.id;
+
+			return {
+				statusCode: 200,
+				response: {
+					data: execution.data ?? null,
+					errors: execution.errors.map((err) => ({
+						message: err.message,
+						locations: err.locations,
+						path: err.path,
+						extensions: {
+							...err.extensions,
+							correlationId,
+						},
+					})),
+				},
+			};
+		},
 		subscription: {
 			onConnect: async (data) => {
 				const { payload } = data;
@@ -230,10 +252,12 @@ export const graphql = fastifyPlugin(async (fastify) => {
 					);
 
 					return {
+						cache: fastify.cache,
 						currentClient: {
 							isAuthenticated: true,
 							user: decoded.user,
 						},
+						dataloaders: createDataloaders(fastify.drizzleClient),
 						drizzleClient: fastify.drizzleClient,
 						envConfig: fastify.envConfig,
 						jwt: {
@@ -375,7 +399,6 @@ export const graphql = fastifyPlugin(async (fastify) => {
 				fastify.envConfig.API_RATE_LIMIT_REFILL_RATE,
 				complexity.complexity,
 			);
-			console.log("Complexity: ", complexity.complexity);
 
 			// If the request exceeds rate limits, reject it
 			if (!isRequestAllowed) {

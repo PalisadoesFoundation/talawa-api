@@ -16,7 +16,7 @@ const queryEventArgumentsSchema = z.object({
 });
 
 /**
- * @description Defines the 'event' query field for fetching a single event by its ID.
+ * Defines the 'event' query field for fetching a single event by its ID.
  * This query supports both standalone events and materialized instances of recurring events,
  * ensuring a unified way to retrieve any event type.
  */

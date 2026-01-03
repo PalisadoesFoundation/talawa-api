@@ -19,10 +19,12 @@ declare module "fastify" {
  * Integrates the talawa minio bucket name and a minio client instance on the namespaces `minio.bucketName` and `minio.client` respectively on the global fastify instance.
  *
  * @example
+ * ```typescript
  * import minioClientPlugin from "~src/plugins/minioClient";
  *
  * fastify.register(minioClientPlugin, {});
  * const buckets = await fastify.minio.client.listBuckets();
+ * ```
  */
 export const minioClient = fastifyPlugin(async (fastify) => {
 	let ClientClass = MinioClient;

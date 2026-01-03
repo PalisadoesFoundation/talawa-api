@@ -22,4 +22,4 @@ The raw refresh token
 
 `string`
 
-The hashed token
+- The hashed token

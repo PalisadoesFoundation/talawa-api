@@ -137,6 +137,48 @@ export const envConfigSchema = Type.Object({
 		}),
 	),
 	/**
+	 * AWS access key ID for SES email service.
+	 */
+	AWS_ACCESS_KEY_ID: Type.Optional(
+		Type.String({
+			minLength: 1,
+		}),
+	),
+	/**
+	 * AWS secret access key for SES email service.
+	 */
+	AWS_SECRET_ACCESS_KEY: Type.Optional(
+		Type.String({
+			minLength: 1,
+		}),
+	),
+	/**
+	 * AWS region for SES email service.
+	 */
+	AWS_SES_REGION: Type.Optional(
+		Type.String({
+			minLength: 1,
+			default: "ap-south-1",
+		}),
+	),
+	/**
+	 * Verified email address to send emails from in AWS SES.
+	 */
+	AWS_SES_FROM_EMAIL: Type.Optional(
+		Type.String({
+			format: "email",
+		}),
+	),
+	/**
+	 * Display name for the sender in emails.
+	 */
+	AWS_SES_FROM_NAME: Type.Optional(
+		Type.String({
+			minLength: 1,
+			default: "Talawa",
+		}),
+	),
+	/**
 	 * URL to the youtube account of the community.
 	 */
 	API_COMMUNITY_YOUTUBE_URL: Type.Optional(
@@ -177,6 +219,40 @@ export const envConfigSchema = Type.Object({
 		minimum: 0,
 		default: 604800000,
 	}),
+	/**
+	 * Password reset token expiry for User Portal in seconds.
+	 * Set to 0 for no timeout (tokens never expire).
+	 * Default: 1209600 (14 days, similar to Gmail)
+	 */
+	API_PASSWORD_RESET_USER_TOKEN_EXPIRES_SECONDS: Type.Optional(
+		Type.Integer({
+			minimum: 0,
+			default: 1209600,
+		}),
+	),
+	/**
+	 * Password reset token expiry for Admin Portal in seconds.
+	 * Set to 0 for no timeout (tokens never expire).
+	 * Default: 3600 (1 hour, similar to Google Admin Console)
+	 */
+	API_PASSWORD_RESET_ADMIN_TOKEN_EXPIRES_SECONDS: Type.Optional(
+		Type.Integer({
+			minimum: 0,
+			default: 3600,
+		}),
+	),
+	/**
+	 * HMAC secret key for hashing password reset tokens.
+	 * Used for defense-in-depth; tokens already have 256 bits of entropy.
+	 * Should be at least 32 characters for security best practices.
+	 * Defaults to a static value if not provided (upgrade to custom secret is recommended).
+	 */
+	API_PASSWORD_RESET_TOKEN_HMAC_SECRET: Type.Optional(
+		Type.String({
+			minLength: 32,
+			default: "talawa-password-reset-token-hmac-default-secret-key",
+		}),
+	),
 	/**
 	 * Used for providing the secret for signing and verifying authentication json web tokens created by talawa api.
 	 */
@@ -301,6 +377,35 @@ export const envConfigSchema = Type.Object({
 		maximum: 65535,
 		minimum: 0,
 	}),
+	/**
+	 * Optional JSON object to override default cache TTL values per entity type.
+	 *
+	 * **Format**: JSON object with entity keys and TTL values in seconds.
+	 *
+	 * **Valid keys**: `user`, `organization`, `event`, `post`
+	 *
+	 * **Example**: `'{"user": 600, "organization": 600, "event": 240, "post": 120}'`
+	 *
+	 * **Error Handling**:
+	 * - If the JSON is malformed, the entire value is ignored and default TTLs are used.
+	 *   A warning is logged via `console.warn` in `src/services/caching/cacheConfig.ts`.
+	 * - Unknown keys are silently ignored (no warning).
+	 * - Non-numeric or non-positive values for valid keys are ignored with a warning log.
+	 *
+	 * **Defaults** (defined in `src/services/caching/cacheConfig.ts`):
+	 * - `user`: 300 seconds (5 minutes)
+	 * - `organization`: 300 seconds (5 minutes)
+	 * - `event`: 120 seconds (2 minutes)
+	 * - `post`: 60 seconds (1 minute)
+	 *
+	 * @see src/services/caching/cacheConfig.ts for TTL parsing logic and defaults.
+	 */
+	CACHE_ENTITY_TTLS: Type.Optional(
+		Type.String({
+			minLength: 2, // Minimum valid JSON: "{}"
+			format: "json", // Validates JSON syntax at schema-time
+		}),
+	),
 	// API_REDIS_URI: Type.String({
 	// 	format: "uri",
 	// 	pattern: "^redis://.*",
@@ -371,6 +476,16 @@ export const envConfigSchema = Type.Object({
 			minLength: 9, // Minimum valid cron: "* * * * *"
 		}),
 	),
+
+	/**
+	 * Secret key for Google reCAPTCHA v2 verification.
+	 * Used to verify reCAPTCHA tokens on the server side.
+	 */
+	RECAPTCHA_SECRET_KEY: Type.Optional(
+		Type.String({
+			minLength: 1,
+		}),
+	),
 });
 
 /**
@@ -386,6 +501,25 @@ export const envSchemaAjv: EnvSchemaOpt["ajv"] = {
 		ajvFormats.default(ajvInstance, {
 			formats: ["email", "uri"],
 		});
+
+		// Custom "json" format validator for fail-fast JSON object validation
+		// Only accepts non-null objects (not arrays or primitives)
+		ajvInstance.addFormat("json", {
+			type: "string",
+			validate: (value: string): boolean => {
+				try {
+					const parsed = JSON.parse(value);
+					return (
+						parsed !== null &&
+						typeof parsed === "object" &&
+						!Array.isArray(parsed)
+					);
+				} catch {
+					return false;
+				}
+			},
+		});
+
 		return ajvInstance;
 	},
 };

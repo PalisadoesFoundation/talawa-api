@@ -36,4 +36,4 @@ The logger for logging debug and error messages.
 
 `Promise`\<[`ResolvedRecurringEventInstance`](../../../../../../drizzle/tables/recurringEventInstances/type-aliases/ResolvedRecurringEventInstance.md)[]\>
 
-A promise that resolves to an array of the requested resolved recurring event event instances.
+- A promise that resolves to an array of the requested resolved recurring event instances.

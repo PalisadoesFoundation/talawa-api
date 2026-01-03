@@ -13,12 +13,12 @@ import {
 import { z } from "zod";
 import { postsTable, postsTableInsertSchema } from "~/src/drizzle/tables/posts";
 import { Post } from "~/src/graphql/types/Post/Post";
+import envConfig from "~/src/utilities/graphqLimits";
 import {
 	defaultGraphQLConnectionArgumentsSchema,
 	transformDefaultGraphQLConnectionArguments,
 	transformToDefaultGraphQLConnection,
-} from "~/src/utilities/defaultGraphQLConnection";
-import envConfig from "~/src/utilities/graphqLimits";
+} from "~/src/utilities/graphqlConnection";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import { Organization } from "./Organization";
 
@@ -235,14 +235,11 @@ Organization.implement({
 					}
 
 					return transformToDefaultGraphQLConnection({
-						createCursor: (post) =>
-							Buffer.from(
-								JSON.stringify({
-									id: post.id,
-									// `pinnedAt` field below cannot have `null` as the value because of the sql query logic. The optional chaining operator is just to prevent type errors.
-									pinnedAt: post.pinnedAt?.toISOString(),
-								}),
-							).toString("base64url"),
+						createCursor: (post) => ({
+							id: post.id,
+							// `pinnedAt` field below cannot have `null` as the value because of the sql query logic. The optional chaining operator is just to prevent type errors.
+							pinnedAt: post.pinnedAt ?? new Date(0),
+						}),
 						createNode: ({ attachmentsWherePost, ...post }) =>
 							Object.assign(post, {
 								attachments: attachmentsWherePost,

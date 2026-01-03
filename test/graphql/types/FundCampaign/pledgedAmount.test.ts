@@ -30,6 +30,7 @@ describe("FundCampaign Resolver - PledgedAmount Field", () => {
 			goalAmount: 10000,
 			startAt: new Date("2024-01-01"),
 			endAt: new Date("2024-12-31"),
+			amountRaised: 0,
 		};
 
 		vi.clearAllMocks();

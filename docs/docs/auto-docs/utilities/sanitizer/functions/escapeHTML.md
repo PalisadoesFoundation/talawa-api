@@ -24,7 +24,7 @@ The string to escape.
 
 [`HTMLSafeString`](../type-aliases/HTMLSafeString.md)
 
-The escaped string, or the input if it was null/undefined.
+- The escaped string, or the input if it was null/undefined.
 
 ## Call Signature
 
@@ -46,7 +46,7 @@ The string to escape.
 
 [`HTMLSafeString`](../type-aliases/HTMLSafeString.md) \| `null`
 
-The escaped string, or the input if it was null/undefined.
+- The escaped string, or the input if it was null/undefined.
 
 ## Call Signature
 
@@ -68,7 +68,7 @@ The string to escape.
 
 [`HTMLSafeString`](../type-aliases/HTMLSafeString.md) \| `undefined`
 
-The escaped string, or the input if it was null/undefined.
+- The escaped string, or the input if it was null/undefined.
 
 ## Call Signature
 
@@ -90,4 +90,4 @@ The string to escape.
 
 [`HTMLSafeString`](../type-aliases/HTMLSafeString.md) \| `null` \| `undefined`
 
-The escaped string, or the input if it was null/undefined.
+- The escaped string, or the input if it was null/undefined.

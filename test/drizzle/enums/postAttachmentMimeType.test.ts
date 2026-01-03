@@ -19,7 +19,11 @@ describe("postAttachmentMimeTypeEnum", () => {
 	});
 
 	describe("allowed video MIME types", () => {
-		it.each([["video/mp4"], ["video/webm"]])("should accept %s", (mimeType) => {
+		it.each([
+			["video/mp4"],
+			["video/webm"],
+			["video/quicktime"],
+		])("should accept %s", (mimeType) => {
 			const result = postAttachmentMimeTypeEnum.safeParse(mimeType);
 			expect(result.success).toBe(true);
 		});

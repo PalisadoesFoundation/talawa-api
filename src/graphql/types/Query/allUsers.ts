@@ -14,14 +14,14 @@ import { z } from "zod";
 import { usersTable } from "~/src/drizzle/tables/users";
 import { builder } from "~/src/graphql/builder";
 import { User } from "~/src/graphql/types/User/User";
+import envConfig from "~/src/utilities/graphqLimits";
 import {
 	createGraphQLConnectionWithWhereSchema,
 	type defaultGraphQLConnectionArgumentsSchema,
 	type ParsedDefaultGraphQLConnectionArgumentsWithWhere,
 	transformGraphQLConnectionArgumentsWithWhere,
 	transformToDefaultGraphQLConnection,
-} from "~/src/utilities/defaultGraphQLConnection";
-import envConfig from "~/src/utilities/graphqLimits";
+} from "~/src/utilities/graphqlConnection";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 
 // Define the where schema for user filtering
@@ -237,13 +237,10 @@ builder.queryField("allUsers", (t) =>
 				}
 
 				return transformToDefaultGraphQLConnection({
-					createCursor: (user) =>
-						Buffer.from(
-							JSON.stringify({
-								createdAt: user.createdAt.toISOString(),
-								id: user.id,
-							}),
-						).toString("base64url"),
+					createCursor: (user) => ({
+						createdAt: user.createdAt,
+						id: user.id,
+					}),
 					createNode: (user) => user,
 					parsedArgs,
 					rawNodes: users,

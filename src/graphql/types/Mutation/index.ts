@@ -122,3 +122,5 @@ import "./logout";
 import "./sendEventInvitations";
 import "./acceptEventInvitation";
 import "./verifyEventInvitation";
+import "./requestPasswordReset";
+import "./resetPassword";

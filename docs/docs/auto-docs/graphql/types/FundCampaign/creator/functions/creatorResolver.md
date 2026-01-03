@@ -12,6 +12,10 @@ Defined in: [src/graphql/types/FundCampaign/creator.ts:7](https://github.com/Pal
 
 ### parent
 
+#### amountRaised
+
+`number`
+
 #### createdAt
 
 `Date`

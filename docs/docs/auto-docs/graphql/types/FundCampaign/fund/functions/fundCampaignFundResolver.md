@@ -12,6 +12,10 @@ Defined in: [src/graphql/types/FundCampaign/fund.ts:7](https://github.com/Palisa
 
 ### parent
 
+#### amountRaised
+
+`number`
+
 #### createdAt
 
 `Date`

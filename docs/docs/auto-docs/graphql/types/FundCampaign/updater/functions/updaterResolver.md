@@ -12,6 +12,10 @@ Defined in: [src/graphql/types/FundCampaign/updater.ts:10](https://github.com/Pa
 
 ### parent
 
+#### amountRaised
+
+`number`
+
 #### createdAt
 
 `Date`

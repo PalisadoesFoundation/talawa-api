@@ -200,7 +200,7 @@ describe("VolunteerMembershipCreatedAtResolver", () => {
 		it("should handle future dates", async () => {
 			const { context } = createMockGraphQLContext(true, "user-123");
 
-			const futureDate = new Date("2030-12-31T23:59:59Z");
+			const futureDate = new Date("2030-06-15T12:00:00Z"); // Use a mid-year date to avoid timezone issues
 			const membershipWithFutureDate = {
 				...mockVolunteerMembership,
 				createdAt: futureDate,

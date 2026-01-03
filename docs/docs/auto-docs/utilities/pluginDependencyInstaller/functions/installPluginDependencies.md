@@ -34,4 +34,4 @@ Optional logger for output
 
 `Promise`\<[`DependencyInstallationResult`](../interfaces/DependencyInstallationResult.md)\>
 
-`Promise<DependencyInstallationResult>`
+- `Promise<DependencyInstallationResult>`

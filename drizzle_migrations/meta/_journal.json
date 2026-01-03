@@ -50,6 +50,27 @@
       "when": 1766653730858,
       "tag": "20251225090850_grey_hellfire_club",
       "breakpoints": true
+    },
+    {
+      "idx": 14,
+      "version": "7",
+      "when": 1766670369128,
+      "tag": "20251225134609_slimy_trish_tilby",
+      "breakpoints": true
+    },
+    {
+      "idx": 15,
+      "version": "7",
+      "when": 1766736302722,
+      "tag": "20251226080502_exotic_klaw",
+      "breakpoints": true
+    },
+    {
+      "idx": 16,
+      "version": "7",
+      "when": 1766912475911,
+      "tag": "20251228090115_faulty_lizard",
+      "breakpoints": true
     }
   ]
 }

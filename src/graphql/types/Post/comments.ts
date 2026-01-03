@@ -5,12 +5,12 @@ import {
 	commentsTableInsertSchema,
 } from "~/src/drizzle/tables/comments";
 import { Comment } from "~/src/graphql/types/Comment/Comment";
+import envConfig from "~/src/utilities/graphqLimits";
 import {
 	defaultGraphQLConnectionArgumentsSchema,
 	transformDefaultGraphQLConnectionArguments,
 	transformToDefaultGraphQLConnection,
-} from "~/src/utilities/defaultGraphQLConnection";
-import envConfig from "~/src/utilities/graphqLimits";
+} from "~/src/utilities/graphqlConnection";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import { Post } from "./Post";
 
@@ -155,12 +155,9 @@ Post.implement({
 					}
 
 					return transformToDefaultGraphQLConnection({
-						createCursor: (comment) =>
-							Buffer.from(
-								JSON.stringify({
-									id: comment.id,
-								}),
-							).toString("base64url"),
+						createCursor: (comment) => ({
+							id: comment.id,
+						}),
 						createNode: (comment) => comment,
 						parsedArgs,
 						rawNodes: comments,

@@ -8,7 +8,7 @@ import {
 	recurringEventInstancesTableInsertSchema,
 } from "~/src/drizzle/tables/recurringEventInstances";
 
-import { normalizeRecurrenceRule } from "~/src/utilities/recurringEventHelpers";
+import { normalizeRecurrenceRule } from "~/src/utilities/recurringEvent";
 import { calculateInstanceOccurrences } from "./occurrenceCalculator";
 import type { GenerateInstancesInput, ServiceDependencies } from "./types";
 
@@ -20,7 +20,7 @@ import type { GenerateInstancesInput, ServiceDependencies } from "./types";
  * @param input - The input object containing the event ID, time window, and organization ID.
  * @param drizzleClient - The Drizzle ORM client for database access.
  * @param logger - The logger for logging debug and error messages.
- * @returns A promise that resolves to the number of newly created generated instances.
+ * @returns - A promise that resolves to the number of newly created generated instances.
  */
 export async function generateInstancesForRecurringEvent(
 	input: GenerateInstancesInput,
@@ -181,7 +181,7 @@ export async function generateInstancesForRecurringEvent(
  * @param windowEndDate - The end of the event generation window.
  * @param drizzleClient - The Drizzle ORM client for database access.
  * @param logger - The logger for logging debug and error messages.
- * @returns A promise that resolves to the number of newly created instances.
+ * @returns - A promise that resolves to the number of newly created instances.
  */
 async function createNewGeneratedInstances(
 	occurrences: Array<{

@@ -30,4 +30,4 @@ The original start time of the instance.
 
 `string`
 
-A string representing the composite key.
+- A string representing the composite key.

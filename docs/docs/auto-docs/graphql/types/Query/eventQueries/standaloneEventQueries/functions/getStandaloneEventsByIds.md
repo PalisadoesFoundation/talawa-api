@@ -36,5 +36,5 @@ The logger for logging debug and error messages.
 
 `Promise`\<`object` & `object`[]\>
 
-A promise that resolves to an array of the requested standalone event objects,
+- A promise that resolves to an array of the requested standalone event objects,
          including their attachments.

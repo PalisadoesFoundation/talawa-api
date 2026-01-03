@@ -54,76 +54,53 @@ builder.mutationField("deleteCommentVote", (t) =>
 
 			const currentUserId = ctx.currentClient.user.id;
 
-			const [currentUser, existingComment, existingCreator] = await Promise.all(
-				[
-					ctx.drizzleClient.query.usersTable.findFirst({
-						columns: {
-							role: true,
-						},
-						where: (fields, operators) =>
-							operators.eq(fields.id, currentUserId),
-					}),
-					ctx.drizzleClient.query.commentsTable.findFirst({
-						with: {
-							post: {
-								columns: {
-									pinnedAt: true,
-								},
-								with: {
-									organization: {
-										columns: {
-											countryCode: true,
-										},
-										with: {
-											membershipsWhereOrganization: {
-												columns: {
-													role: true,
-												},
-												where: (fields, operators) =>
-													operators.eq(fields.memberId, currentUserId),
+			const [currentUser, existingComment] = await Promise.all([
+				ctx.drizzleClient.query.usersTable.findFirst({
+					columns: {
+						role: true,
+					},
+					where: (fields, operators) => operators.eq(fields.id, currentUserId),
+				}),
+				ctx.drizzleClient.query.commentsTable.findFirst({
+					with: {
+						post: {
+							columns: {
+								pinnedAt: true,
+							},
+							with: {
+								organization: {
+									columns: {
+										countryCode: true,
+									},
+									with: {
+										membershipsWhereOrganization: {
+											columns: {
+												role: true,
 											},
+											where: (fields, operators) =>
+												operators.eq(fields.memberId, currentUserId),
 										},
 									},
 								},
 							},
-							votesWhereComment: {
-								columns: {
-									type: true,
-								},
-								where: (fields, operators) =>
-									operators.eq(fields.creatorId, currentUserId),
-							},
 						},
-						where: (fields, operators) =>
-							operators.eq(fields.id, parsedArgs.input.commentId),
-					}),
-					ctx.drizzleClient.query.usersTable.findFirst({
-						where: (fields, operators) =>
-							operators.eq(fields.id, currentUserId),
-					}),
-				],
-			);
+						votesWhereComment: {
+							columns: {
+								type: true,
+							},
+							where: (fields, operators) =>
+								operators.eq(fields.creatorId, parsedArgs.input.creatorId),
+						},
+					},
+					where: (fields, operators) =>
+						operators.eq(fields.id, parsedArgs.input.commentId),
+				}),
+			]);
 
 			if (currentUser === undefined) {
 				throw new TalawaGraphQLError({
 					extensions: {
 						code: "unauthenticated",
-					},
-				});
-			}
-
-			if (existingComment === undefined && existingCreator === undefined) {
-				throw new TalawaGraphQLError({
-					extensions: {
-						code: "arguments_associated_resources_not_found",
-						issues: [
-							{
-								argumentPath: ["input", "commentId"],
-							},
-							{
-								argumentPath: ["input", "creatorId"],
-							},
-						],
 					},
 				});
 			}
@@ -135,19 +112,6 @@ builder.mutationField("deleteCommentVote", (t) =>
 						issues: [
 							{
 								argumentPath: ["input", "commentId"],
-							},
-						],
-					},
-				});
-			}
-
-			if (existingCreator === undefined) {
-				throw new TalawaGraphQLError({
-					extensions: {
-						code: "arguments_associated_resources_not_found",
-						issues: [
-							{
-								argumentPath: ["input", "creatorId"],
 							},
 						],
 					},

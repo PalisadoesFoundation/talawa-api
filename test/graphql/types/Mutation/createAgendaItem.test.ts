@@ -162,7 +162,7 @@ async function createTestEnvironment(
 			input: {
 				name: `Event ${faker.string.uuid()}`,
 				organizationId,
-				startAt: new Date().toISOString(),
+				startAt: new Date(Date.now() + 5 * 60 * 1000).toISOString(),
 				endAt: new Date(Date.now() + 60 * 60 * 1000).toISOString(),
 				description: "Agenda item test event",
 			},
@@ -788,7 +788,7 @@ suite("Mutation field createAgendaItem", () => {
 						input: {
 							name: `Event ${faker.string.uuid()}`,
 							organizationId,
-							startAt: new Date().toISOString(),
+							startAt: new Date(Date.now() + 5 * 60 * 1000).toISOString(),
 							endAt: new Date(Date.now() + 60 * 60 * 1000).toISOString(),
 							description: "Test event",
 						},

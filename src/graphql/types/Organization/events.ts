@@ -5,16 +5,16 @@ import {
 	filterInviteOnlyEvents,
 	getUnifiedEventsInDateRange,
 } from "~/src/graphql/types/Query/eventQueries";
+import envConfig from "~/src/utilities/graphqLimits";
 import {
 	type ParsedDefaultGraphQLConnectionArguments,
 	transformToDefaultGraphQLConnection,
-} from "~/src/utilities/defaultGraphQLConnection";
-import envConfig from "~/src/utilities/graphqLimits";
+} from "~/src/utilities/graphqlConnection";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import { Organization } from "./Organization";
 
 /**
- * @description Zod schema for validating and parsing connection arguments for events,
+ * Zod schema for validating and parsing connection arguments for events,
  * with bounded limits (up to 100) chosen to balance pagination needs and performance,
  * including recurring event instances.
  */
@@ -42,11 +42,11 @@ const eventsConnectionArgumentsSchema = z.object({
 });
 
 /**
- * @description Transforms and validates the connection arguments for event queries,
+ * Transforms and validates the connection arguments for event queries,
  * handling pagination logic and setting default date ranges.
  * @param arg - The raw connection arguments.
  * @param ctx - The Zod refinement context for adding issues.
- * @returns The parsed and validated connection arguments.
+ * @returns - The parsed and validated connection arguments.
  */
 const transformEventsConnectionArguments = (
 	arg: z.infer<typeof eventsConnectionArgumentsSchema> & {
@@ -158,7 +158,7 @@ const transformEventsConnectionArguments = (
 };
 
 /**
- * @description Zod schema for validating and parsing the complete set of arguments
+ * Zod schema for validating and parsing the complete set of arguments
  * for the `events` field, including pagination, date range, and recurring event filters.
  */
 const eventsArgumentsSchema = eventsConnectionArgumentsSchema
@@ -195,7 +195,7 @@ const eventsArgumentsSchema = eventsConnectionArgumentsSchema
 	});
 
 /**
- * @description Zod schema for validating and parsing the event cursor,
+ * Zod schema for validating and parsing the event cursor,
  * which is used for pagination.
  */
 const cursorSchema = z
@@ -446,13 +446,10 @@ Organization.implement({
 
 					// Transform to GraphQL connection format
 					return transformToDefaultGraphQLConnection({
-						createCursor: (event) =>
-							Buffer.from(
-								JSON.stringify({
-									id: event.id,
-									startAt: new Date(event.startAt).toISOString(),
-								}),
-							).toString("base64url"),
+						createCursor: (event) => ({
+							id: event.id,
+							startAt: new Date(event.startAt),
+						}),
 						createNode: (event) => event,
 						parsedArgs: { cursor, isInversed, limit },
 						rawNodes: allEvents,

@@ -16,6 +16,10 @@ Resolves the total pledged amount for a fund campaign.
 
 The parent FundCampaign object.
 
+#### amountRaised
+
+`number`
+
 #### createdAt
 
 `Date`
@@ -76,4 +80,4 @@ The GraphQL context.
 
 `Promise`\<`bigint`\>
 
-The total pledged amount as a BigInt.
+- The total pledged amount as a BigInt.

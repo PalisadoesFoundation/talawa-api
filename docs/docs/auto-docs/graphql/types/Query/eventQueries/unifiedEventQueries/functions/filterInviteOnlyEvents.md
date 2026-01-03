@@ -26,4 +26,4 @@ The input object containing events and user context.
 
 `Promise`\<[`EventWithAttachments`](../type-aliases/EventWithAttachments.md)[]\>
 
-A filtered array of events that the user can view.
+- A filtered array of events that the user can view.

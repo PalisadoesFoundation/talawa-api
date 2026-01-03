@@ -6,7 +6,7 @@
 
 > `const` **drizzleClient**: (`fastify`) => `Promise`\<`void`\>
 
-Defined in: [src/fastifyPlugins/drizzleClient.ts:22](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/fastifyPlugins/drizzleClient.ts#L22)
+Defined in: [src/fastifyPlugins/drizzleClient.ts:28](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/fastifyPlugins/drizzleClient.ts#L28)
 
 Integrates a drizzle client instance on a namespace `drizzleClient` on the global fastify instance.
 
@@ -22,7 +22,7 @@ Integrates a drizzle client instance on a namespace `drizzleClient` on the globa
 
 ## Example
 
-```ts
+```typescript
 import drizzleClientPlugin from "~/src/plugins/drizzleClient";
 
 fastify.register(drizzleClientPlugin, {});
