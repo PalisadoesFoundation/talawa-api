@@ -71,16 +71,28 @@ export async function initTracing() {
 		return;
 	}
 
-	const shutdown = async () => {
-		if (!sdk) return;
+	const shutdown = async (signal: NodeJS.Signals) => {
+		const timeoutMs = 5000;
+
+		console.log(`Received ${signal}, shutting down OpenTelemetry...`);
+
+		const timer = setTimeout(() => {
+			console.error("Shutdown timed out, forcing exit");
+			process.exit(1);
+		}, timeoutMs).unref();
+
 		try {
-			await sdk.shutdown();
-			diag.info("OpenTelemetry tracing shut down cleanly");
+			if (sdk) {
+				await sdk.shutdown();
+			}
 		} catch (err) {
-			console.error("[observability] Error during OpenTelemetry shutdown", err);
+			console.error("Error shutting down SDK", err);
+			process.exit(1);
+		} finally {
+			clearTimeout(timer);
+			process.exit(0);
 		}
 	};
-
-	process.on("SIGTERM", shutdown);
-	process.on("SIGINT", shutdown);
+	process.on("SIGTERM", () => shutdown("SIGTERM"));
+	process.on("SIGINT", () => shutdown("SIGINT"));
 }
