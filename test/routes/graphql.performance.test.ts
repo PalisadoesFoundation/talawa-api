@@ -564,8 +564,8 @@ describe("GraphQL Performance Integration", () => {
 		expect(serverTiming).toMatch(/total;dur=\d+/);
 	});
 
-	it("should log 'GraphQL operation completed' info when execution exceeds 200ms threshold", async () => {
-		// This test uses a slow introspection query to verify the operation executes
+	it("should record performance metrics and include Server-Timing header for complex introspection query", async () => {
+		// This test uses an introspection query to verify the operation executes
 		// and performance metrics are tracked correctly
 		const query = `
 			query SlowOperationTest {
