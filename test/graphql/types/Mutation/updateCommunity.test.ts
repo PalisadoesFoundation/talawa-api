@@ -720,8 +720,6 @@ suite("Mutation field updateCommunity", () => {
 		test("should handle 'unexpected' error when community does not exist in database", async () => {
 			// This test simulates a corrupted database state where the community table is empty
 			// We mock the drizzleClient query to return undefined for the community
-			const originalFindFirst =
-				server.drizzleClient.query.communitiesTable.findFirst;
 			vi.spyOn(
 				server.drizzleClient.query.communitiesTable,
 				"findFirst",
@@ -750,17 +748,9 @@ suite("Mutation field updateCommunity", () => {
 					}),
 				]),
 			);
-
-			// Restore original implementation
-			vi.spyOn(
-				server.drizzleClient.query.communitiesTable,
-				"findFirst",
-			).mockImplementation(originalFindFirst);
 		});
 
 		test("should handle 'unexpected' error when update returns undefined", async () => {
-			// Mock the transaction to return undefined for the update
-			const originalTransaction = server.drizzleClient.transaction;
 			vi.spyOn(server.drizzleClient, "transaction").mockImplementation(
 				async (callback) => {
 					const mockTx = {
@@ -796,11 +786,6 @@ suite("Mutation field updateCommunity", () => {
 						path: ["updateCommunity"],
 					}),
 				]),
-			);
-
-			// Restore original implementation
-			vi.spyOn(server.drizzleClient, "transaction").mockImplementation(
-				originalTransaction,
 			);
 		});
 	});
