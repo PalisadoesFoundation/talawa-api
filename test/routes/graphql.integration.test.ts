@@ -1,36 +1,19 @@
-vi.mock("~/src/fastifyPlugins/backgroundWorkers", () => ({
-	default: async () => {},
-}));
-
-vi.mock("~/src/fastifyPlugins/drizzleClient", () => ({
-	default: async () => {},
-}));
-
-vi.mock("~/src/fastifyPlugins/minioClient", () => ({
-	default: async () => {},
-}));
-
-vi.mock("~/src/fastifyPlugins/seedInitialData", () => ({
-	default: async () => {},
-}));
-
-vi.mock("~/src/fastifyPlugins/pluginSystem", () => ({
-	default: async () => {},
-}));
-
-vi.mock("~/src/fastifyPlugins/performance", () => ({
-	default: async () => {},
-}));
-
 import type { FastifyInstance } from "fastify";
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { testEnvConfig } from "test/envConfigSchema";
+import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { createServer } from "~/src/createServer";
 
 describe("GraphQL Correlation ID Integration", () => {
 	let server: FastifyInstance;
 
 	beforeEach(async () => {
-		server = await createServer();
+		server = await createServer({
+			envConfig: {
+				API_POSTGRES_HOST: testEnvConfig.API_POSTGRES_TEST_HOST,
+				API_REDIS_HOST: testEnvConfig.API_REDIS_TEST_HOST,
+				API_MINIO_END_POINT: testEnvConfig.API_MINIO_TEST_END_POINT,
+			},
+		});
 		await server.ready();
 	});
 

@@ -1,3 +1,23 @@
+vi.mock("~/src/fastifyPlugins/backgroundWorkers", () => ({
+	default: async () => {},
+}));
+
+vi.mock("~/src/fastifyPlugins/drizzleClient", () => ({
+	default: async () => {},
+}));
+
+vi.mock("~/src/fastifyPlugins/minioClient", () => ({
+	default: async () => {},
+}));
+
+vi.mock("~/src/fastifyPlugins/seedInitialData", () => ({
+	default: async () => {},
+}));
+
+vi.mock("~/src/fastifyPlugins/pluginSystem", () => ({
+	default: async () => {},
+}));
+
 import type { FastifyInstance } from "fastify";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { createServer } from "~/src/createServer";
@@ -14,7 +34,10 @@ describe("Performance Plugin", () => {
 	});
 
 	afterEach(async () => {
-		await server.close();
+		vi.clearAllMocks();
+		if (server) {
+			await server.close();
+		}
 	});
 
 	it("should attach performance tracker to each request", async () => {
