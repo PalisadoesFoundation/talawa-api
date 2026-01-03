@@ -405,8 +405,9 @@ describe("drizzleClient Plugin - Migration Error Handling", () => {
 			);
 
 			// Verify the decorated client has the expected structure
-			const decorateCall = (mockFastify.decorate as ReturnType<typeof vi.fn>).mock
-				.calls.find((call) => call[0] === "drizzleClient");
+			const decorateCall = (
+				mockFastify.decorate as ReturnType<typeof vi.fn>
+			).mock.calls.find((call) => call[0] === "drizzleClient");
 			expect(decorateCall).toBeDefined();
 			expect(decorateCall?.[1]).toBeDefined();
 			expect(decorateCall?.[1]).toHaveProperty("execute");
