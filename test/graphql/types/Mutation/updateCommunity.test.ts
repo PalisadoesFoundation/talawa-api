@@ -496,7 +496,7 @@ suite("Mutation field updateCommunity", () => {
 				});
 
 				expect(initialPutObjectSpy).toHaveBeenCalled();
-				vi.restoreAllMocks();
+				initialPutObjectSpy.mockRestore();
 
 				// Now upload a new logo (should reuse existing logoName)
 				const putObjectSpy = vi
