@@ -100,6 +100,8 @@
     "enable_git_hooks": "lefthook install",
     "format:fix": "biome check --error-on-warnings --write",
     "lint:sanitization": "tsx scripts/check_sanitization.ts",
+    "validate:error-handling": "tsx scripts/validate_error_handling.ts",
+    "validate:error-handling:fix": "tsx scripts/validate_error_handling.ts --fix",
     "lint:tsdoc": "tsx scripts/check_tsdoc.ts",
     "postgenerate-docs": "find docs/docs/auto-docs -name 'README.md' -delete && node scripts/docs/fix-repo-url.js && node scripts/docs/fix-readme-links.js && node scripts/docs/fix-mdx-generics.js",
     "generate-docs": "typedoc && pnpm run postgenerate-docs",
