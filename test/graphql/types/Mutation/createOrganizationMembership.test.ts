@@ -135,8 +135,8 @@ suite("Mutation field createOrganizationMembership", () => {
                     headers: { authorization: `bearer ${adminToken}` },
                     variables: {
                         input: {
-                            memberId: faker.string.uuid(), 
-                            organizationId: orgId, 
+                            memberId: faker.string.uuid(),
+                            organizationId: orgId,
                         },
                     },
                 },
@@ -334,8 +334,9 @@ suite("Mutation field createOrganizationMembership", () => {
                 },
             );
 
-            expect(result.data.createOrganizationMembership.membershipsWhereOrganization?.[0]
-                ?.role,).toBe("administrator")
+            expect(result.errors).toBeUndefined();
+            assertToBeNonNullish(result.data?.createOrganizationMembership);
+            expect(result.data.createOrganizationMembership.role).toBe("administrator");
         });
 
         test("prevents duplicate membership", async () => {
