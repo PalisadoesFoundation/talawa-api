@@ -131,9 +131,9 @@ jobs:
         with:
           python-version: 3.9
 
-      - name: Run Python script
+      - name: Run it.skip Check
         run: |
-          python .github/workflows/scripts/itskip_disable_check.py --files ${{ steps.changed-files.outputs.all_changed_files }}
+          python .github/workflows/scripts/disable_statements_check.py --repo=api --files ${{ steps.changed-files.outputs.all_changed_files }}
 
   python_checks:
     name: Run Python Checks
@@ -154,21 +154,9 @@ jobs:
         with:
           python-version: 3.9
 
-      - name: Run Biome Ignore Check
+      - name: Run Disable Statements Check
         run: |
-          python .github/workflows/scripts/biome_disable_check.py --files ${{ steps.changed-files.outputs.all_changed_files }}
-
-      - name: Run Code Coverage Disable Check
-        run: |
-          python .github/workflows/scripts/code_coverage_disable_check.py --files ${{ steps.changed-files.outputs.all_changed_files }}
-
-      - name: Run TS Ignore Check
-        run: |
-          python .github/workflows/scripts/detect_ts_ignore.py --files ${{ steps.changed-files.outputs.all_changed_files }}
-
-      - name: Run Sanitization Disable Comment Check
-        run: |
-          python .github/workflows/scripts/check_sanitization_disable.py --files ${{ steps.changed-files.outputs.all_changed_files }}
+          python .github/workflows/scripts/disable_statements_check.py --repo=api --files ${{ steps.changed-files.outputs.all_changed_files }}
 
   check_gql_tada:
     name: Check gql tada files and configuration
