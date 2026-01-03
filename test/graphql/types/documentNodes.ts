@@ -5,12 +5,12 @@ import type { ClientCustomScalars } from "~/src/graphql/scalars/index";
 import type { introspection } from "./gql.tada";
 
 const gql = initGraphQLTada<{
-  introspection: introspection;
-  scalars: ClientCustomScalars;
+	introspection: introspection;
+	scalars: ClientCustomScalars;
 }>();
 
 export const Mutation_createUser =
-  gql(`mutation Mutation_createUser($input: MutationCreateUserInput!) {
+	gql(`mutation Mutation_createUser($input: MutationCreateUserInput!) {
     createUser(input: $input){
         authenticationToken
         refreshToken
@@ -41,14 +41,14 @@ export const Mutation_createUser =
 }`);
 
 export const Mutation_deleteCurrentUser =
-  gql(`mutation Mutation_deleteCurrentUser {
+	gql(`mutation Mutation_deleteCurrentUser {
     deleteCurrentUser {
         id
     }
 }`);
 
 export const Mutation_deleteUser =
-  gql(`mutation Mutation_deleteUser($input: MutationDeleteUserInput!) {
+	gql(`mutation Mutation_deleteUser($input: MutationDeleteUserInput!) {
     deleteUser(input: $input) {
         addressLine1
         addressLine2
@@ -75,7 +75,7 @@ export const Mutation_deleteUser =
 }`);
 
 export const Mutation_signUp =
-  gql(`mutation Mutation_signUp($input: MutationSignUpInput!) {
+	gql(`mutation Mutation_signUp($input: MutationSignUpInput!) {
     signUp(input: $input) {
         authenticationToken
         refreshToken
@@ -106,7 +106,7 @@ export const Mutation_signUp =
 }`);
 
 export const Mutation_updateCurrentUser =
-  gql(`mutation Mutation_updateCurrentUser($input: MutationUpdateCurrentUserInput!) {
+	gql(`mutation Mutation_updateCurrentUser($input: MutationUpdateCurrentUserInput!) {
     updateCurrentUser(input: $input) {
         addressLine1
         addressLine2
@@ -136,7 +136,7 @@ export const Mutation_updateCurrentUser =
 }`);
 
 export const Mutation_updateUser =
-  gql(`mutation Mutation_updateUser($input: MutationUpdateUserInput!) {
+	gql(`mutation Mutation_updateUser($input: MutationUpdateUserInput!) {
     updateUser(input: $input) {
         addressLine1
         addressLine2
@@ -189,7 +189,7 @@ export const Query_currentUser = gql(`query Query_currentUser {
 }`);
 
 export const Query_renewAuthenticationToken =
-  gql(`query Query_renewAuthenticationToken {
+	gql(`query Query_renewAuthenticationToken {
     renewAuthenticationToken
 }`);
 
@@ -224,12 +224,12 @@ export const Query_signIn = gql(`query Query_signIn($input: QuerySignInInput!) {
 }`);
 
 export const Mutation_revokeRefreshToken =
-  gql(`mutation Mutation_revokeRefreshToken($refreshToken: String!) {
+	gql(`mutation Mutation_revokeRefreshToken($refreshToken: String!) {
     revokeRefreshToken(refreshToken: $refreshToken)
 }`);
 
 export const Mutation_requestPasswordReset =
-  gql(`mutation Mutation_requestPasswordReset($input: MutationRequestPasswordResetInput!) {
+	gql(`mutation Mutation_requestPasswordReset($input: MutationRequestPasswordResetInput!) {
     requestPasswordReset(input: $input) {
         success
         message
@@ -237,7 +237,7 @@ export const Mutation_requestPasswordReset =
 }`);
 
 export const Mutation_resetPassword =
-  gql(`mutation Mutation_resetPassword($input: MutationResetPasswordInput!) {
+	gql(`mutation Mutation_resetPassword($input: MutationResetPasswordInput!) {
     resetPassword(input: $input) {
         success
         authenticationToken
@@ -246,7 +246,7 @@ export const Mutation_resetPassword =
 }`);
 
 export const Query_verifyPasswordResetToken =
-  gql(`query Query_verifyPasswordResetToken($input: QueryVerifyPasswordResetTokenInput!) {
+	gql(`query Query_verifyPasswordResetToken($input: QueryVerifyPasswordResetTokenInput!) {
     verifyPasswordResetToken(input: $input) {
         valid
         expiresAt
@@ -331,7 +331,7 @@ export const Query_allUsers = gql(`
 `);
 
 export const Query_user_creator =
-  gql(`query Query_user_creator($input: QueryUserInput!) {
+	gql(`query Query_user_creator($input: QueryUserInput!) {
     user(input: $input) {
         creator {
             addressLine1
@@ -360,14 +360,14 @@ export const Query_user_creator =
 }`);
 
 export const Query_user_updatedAt =
-  gql(`query Query_user_updatedAt($input: QueryUserInput!) {
+	gql(`query Query_user_updatedAt($input: QueryUserInput!) {
     user(input: $input) {
         updatedAt
     }
 }`);
 
 export const Query_user_updater =
-  gql(`query Query_user_updater($input: QueryUserInput!) {
+	gql(`query Query_user_updater($input: QueryUserInput!) {
     user(input: $input) {
         updater {
             addressLine1
@@ -407,7 +407,7 @@ export const Query_fund = gql(`query Query_fund($input: QueryFundInput!) {
   }`);
 
 export const Query_fundCampaign =
-  gql(`query Query_fundCampaign($input: QueryFundCampaignInput!) {
+	gql(`query Query_fundCampaign($input: QueryFundCampaignInput!) {
     fundCampaign(input: $input) {
       id
       name
@@ -417,7 +417,7 @@ export const Query_fundCampaign =
   }`);
 
 export const Query_fundCampaignPledge =
-  gql(`query Query_fundCampaignPledge($input: QueryFundCampaignPledgeInput!) {
+	gql(`query Query_fundCampaignPledge($input: QueryFundCampaignPledgeInput!) {
   fundCampaignPledge(input: $input) {
     id
     note
@@ -426,7 +426,7 @@ export const Query_fundCampaignPledge =
 }`);
 
 export const Query_getPledgesByUserId =
-  gql(`query Query_getPledgesByUserId($input: QueryFundCampaignPledgesByUserInput! , $where: QueryPledgeWhereInput, $orderBy: QueryPledgeOrderByInput) {
+	gql(`query Query_getPledgesByUserId($input: QueryFundCampaignPledgesByUserInput! , $where: QueryPledgeWhereInput, $orderBy: QueryPledgeOrderByInput) {
   getPledgesByUserId(input: $input , where: $where , orderBy: $orderBy) {
     id
     note
@@ -461,7 +461,7 @@ query ChatMembers($input: QueryChatInput!, $first: Int, $last: Int, $after: Stri
 `);
 
 export const Mutation_createOrganization =
-  gql(`mutation Mutation_createOrganization($input: MutationCreateOrganizationInput!) {
+	gql(`mutation Mutation_createOrganization($input: MutationCreateOrganizationInput!) {
     createOrganization(input: $input) {
       id
       name
@@ -471,7 +471,7 @@ export const Mutation_createOrganization =
   }`);
 
 export const Mutation_updateOrganization =
-  gql(`mutation Mutation_updateOrganization($input: MutationUpdateOrganizationInput!) {
+	gql(`mutation Mutation_updateOrganization($input: MutationUpdateOrganizationInput!) {
 		updateOrganization(input: $input) {
 			id
 			name
@@ -488,7 +488,7 @@ export const Mutation_updateOrganization =
   }`);
 
 export const Mutation_createFund =
-  gql(`mutation Mutation_createFund($input: MutationCreateFundInput!) {
+	gql(`mutation Mutation_createFund($input: MutationCreateFundInput!) {
     createFund(input: $input) {
       id
       name
@@ -500,7 +500,7 @@ export const Mutation_createFund =
   }`);
 
 export const Mutation_updateFund =
-  gql(`mutation Mutation_updateFund($input: MutationUpdateFundInput!) {
+	gql(`mutation Mutation_updateFund($input: MutationUpdateFundInput!) {
     updateFund(input: $input) {
       id
       name
@@ -512,7 +512,7 @@ export const Mutation_updateFund =
   }`);
 
 export const Mutation_createFundCampaign =
-  gql(`mutation Mutation_createFundCampaign($input: MutationCreateFundCampaignInput!) {
+	gql(`mutation Mutation_createFundCampaign($input: MutationCreateFundCampaignInput!) {
     createFundCampaign(input: $input) {
       id
       name
@@ -521,7 +521,7 @@ export const Mutation_createFundCampaign =
   }`);
 
 export const Mutation_createFundCampaignPledge =
-  gql(`mutation Mutation_createFundCampaignPledge($input: MutationCreateFundCampaignPledgeInput!) {
+	gql(`mutation Mutation_createFundCampaignPledge($input: MutationCreateFundCampaignPledgeInput!) {
     createFundCampaignPledge(input: $input) {
       id
       note
@@ -530,7 +530,7 @@ export const Mutation_createFundCampaignPledge =
   }`);
 
 export const Mutation_updateFundCampaignPledge =
-  gql(`mutation Mutation_updateFundCampaignPledge($input: MutationUpdateFundCampaignPledgeInput!) {
+	gql(`mutation Mutation_updateFundCampaignPledge($input: MutationUpdateFundCampaignPledgeInput!) {
     updateFundCampaignPledge(input: $input) {
       id
       note
@@ -539,14 +539,14 @@ export const Mutation_updateFundCampaignPledge =
   }`);
 
 export const Mutation_createOrganizationMembership =
-  gql(`mutation Mutation_createOrganizationMembership($input: MutationCreateOrganizationMembershipInput!) {
+	gql(`mutation Mutation_createOrganizationMembership($input: MutationCreateOrganizationMembershipInput!) {
     createOrganizationMembership(input: $input) {
       id
     }
   }`);
 
 export const Mutation_deleteFund =
-  gql(`mutation Mutation_deleteFund($input: MutationDeleteFundInput!) {
+	gql(`mutation Mutation_deleteFund($input: MutationDeleteFundInput!) {
     deleteFund(input: $input) {
       id
       name
@@ -555,7 +555,7 @@ export const Mutation_deleteFund =
 }`);
 
 export const Mutation_deleteFundCampaign =
-  gql(`mutation Mutation_deleteFundCampaign($input: MutationDeleteFundCampaignInput!) {
+	gql(`mutation Mutation_deleteFundCampaign($input: MutationDeleteFundCampaignInput!) {
   deleteFundCampaign(input: $input) {
     id
     name
@@ -564,7 +564,7 @@ export const Mutation_deleteFundCampaign =
   }`);
 
 export const Mutation_deleteFundCampaignPledge =
-  gql(`mutation Mutation_deleteFundCampaignPledge($input: MutationDeleteFundCampaignPledgeInput!) {
+	gql(`mutation Mutation_deleteFundCampaignPledge($input: MutationDeleteFundCampaignPledgeInput!) {
   deleteFundCampaignPledge(input: $input) {
     id
     note
@@ -573,7 +573,7 @@ export const Mutation_deleteFundCampaignPledge =
   }`);
 
 export const Mutation_deleteOrganization =
-  gql(`mutation Mutation_deleteOrganization($input: MutationDeleteOrganizationInput!) {
+	gql(`mutation Mutation_deleteOrganization($input: MutationDeleteOrganizationInput!) {
     deleteOrganization(input: $input) {
       id
       name
@@ -582,7 +582,7 @@ export const Mutation_deleteOrganization =
 }`);
 
 export const Mutation_deleteOrganizationMembership =
-  gql(`mutation Mutation_deleteOrganizationMembership($input: MutationDeleteOrganizationMembershipInput!) {
+	gql(`mutation Mutation_deleteOrganizationMembership($input: MutationDeleteOrganizationMembershipInput!) {
     deleteOrganizationMembership(input: $input) {
       id
       name
@@ -619,7 +619,7 @@ export const Query_event = gql(`query Query_event($input: QueryEventInput!) {
 }`);
 
 export const Mutation_createEvent =
-  gql(`mutation Mutation_createEvent($input: MutationCreateEventInput!) {
+	gql(`mutation Mutation_createEvent($input: MutationCreateEventInput!) {
     createEvent(input: $input) {
         id
         name
@@ -639,7 +639,7 @@ export const Mutation_createEvent =
 }`);
 
 export const Mutation_sendEventInvitations =
-  gql(`mutation Mutation_sendEventInvitations($input: SendEventInvitationsInput!) {
+	gql(`mutation Mutation_sendEventInvitations($input: SendEventInvitationsInput!) {
     sendEventInvitations(input: $input) {
         id
         inviteeEmail
@@ -783,7 +783,7 @@ export const Query_organization = gql(`
   `);
 
 export const Query_agendaItem =
-  gql(`query Query_agendaItem($input: QueryAgendaItemInput!) {
+	gql(`query Query_agendaItem($input: QueryAgendaItemInput!) {
   agendaItem(input: $input) {
     id
     name
@@ -912,12 +912,12 @@ export const Mutation_createGetfileUrl = gql(`
 `);
 
 export const Mutation_blockUser =
-  gql(`mutation Mutation_blockUser($organizationId: ID!, $userId: ID!) {
+	gql(`mutation Mutation_blockUser($organizationId: ID!, $userId: ID!) {
     blockUser(organizationId: $organizationId, userId: $userId)
 }`);
 
 export const Mutation_unblockUser =
-  gql(`mutation Mutation_unblockUser($organizationId: ID!, $userId: ID!) {
+	gql(`mutation Mutation_unblockUser($organizationId: ID!, $userId: ID!) {
     unblockUser(organizationId: $organizationId, userId: $userId)
 }`);
 
@@ -2053,7 +2053,7 @@ export const Mutation_createEventVolunteer = gql(`
 `);
 
 export const Query_eventWithVolunteers =
-  gql(`query Query_eventWithVolunteers($input: QueryEventInput!) {
+	gql(`query Query_eventWithVolunteers($input: QueryEventInput!) {
     event(input: $input) {
         id
         name
