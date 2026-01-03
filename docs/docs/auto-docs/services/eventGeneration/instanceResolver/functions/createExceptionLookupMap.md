@@ -23,4 +23,4 @@ An array of event exceptions.
 
 `Map`\<`string`, \{ `createdAt`: `Date`; `creatorId`: `string`; `exceptionData`: `unknown`; `id`: `string`; `organizationId`: `string`; `recurringEventInstanceId`: `string`; `updatedAt`: `Date` \| `null`; `updaterId`: `string` \| `null`; \}\>
 
-A map of exceptions, keyed for quick lookup.
+- A map of exceptions, keyed for quick lookup.

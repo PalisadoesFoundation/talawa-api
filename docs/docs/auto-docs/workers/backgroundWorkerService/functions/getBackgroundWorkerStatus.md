@@ -14,7 +14,7 @@ Retrieves the current status of the background worker service, including schedul
 
 `object`
 
-An object containing the current status of the service.
+- An object containing the current status of the service.
 
 ### cleanupSchedule
 

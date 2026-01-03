@@ -36,5 +36,5 @@ The logger for logging debug and error messages.
 
 `Promise`\<[`EventWithAttachments`](../type-aliases/EventWithAttachments.md)[]\>
 
-A promise that resolves to an array of the requested event objects,
+- A promise that resolves to an array of the requested event objects,
          unified into a common format.

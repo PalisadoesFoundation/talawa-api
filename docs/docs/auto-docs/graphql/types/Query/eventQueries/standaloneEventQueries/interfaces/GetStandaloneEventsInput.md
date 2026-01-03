@@ -6,8 +6,6 @@
 
 Defined in: [src/graphql/types/Query/eventQueries/standaloneEventQueries.ts:9](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/graphql/types/Query/eventQueries/standaloneEventQueries.ts#L9)
 
-## Description
-
 Defines the input parameters for querying standalone events.
 
 ## Properties
@@ -26,8 +24,6 @@ Defined in: [src/graphql/types/Query/eventQueries/standaloneEventQueries.ts:12](
 
 Defined in: [src/graphql/types/Query/eventQueries/standaloneEventQueries.ts:16](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/graphql/types/Query/eventQueries/standaloneEventQueries.ts#L16)
 
-#### Description
-
 An optional array of event IDs to filter by.
 
 ***
@@ -37,8 +33,6 @@ An optional array of event IDs to filter by.
 > `optional` **limit**: `number`
 
 Defined in: [src/graphql/types/Query/eventQueries/standaloneEventQueries.ts:20](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/graphql/types/Query/eventQueries/standaloneEventQueries.ts#L20)
-
-#### Description
 
 An optional limit on the number of events to return.
 

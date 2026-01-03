@@ -43,7 +43,7 @@ export interface CookieConfigOptions {
  *
  * @param options - Configuration options for the cookie
  * @param maxAgeMs - Maximum age of the cookie in milliseconds (should match JWT expiry)
- * @returns Cookie serialization options
+ * @returns - Cookie serialization options
  */
 export function getAccessTokenCookieOptions(
 	options: CookieConfigOptions,
@@ -65,7 +65,7 @@ export function getAccessTokenCookieOptions(
  *
  * @param options - Configuration options for the cookie
  * @param maxAgeMs - Maximum age of the cookie in milliseconds (should match refresh token expiry)
- * @returns Cookie serialization options
+ * @returns - Cookie serialization options
  */
 export function getRefreshTokenCookieOptions(
 	options: CookieConfigOptions,
@@ -87,7 +87,7 @@ export function getRefreshTokenCookieOptions(
  * Uses sameSite: "lax" to match getAccessTokenCookieOptions().
  *
  * @param options - Configuration options for the cookie
- * @returns Cookie serialization options that will clear the cookie
+ * @returns - Cookie serialization options that will clear the cookie
  */
 export function getClearAccessTokenCookieOptions(
 	options: CookieConfigOptions,
@@ -108,7 +108,7 @@ export function getClearAccessTokenCookieOptions(
  * Uses sameSite: "lax" to match getRefreshTokenCookieOptions().
  *
  * @param options - Configuration options for the cookie
- * @returns Cookie serialization options that will clear the cookie
+ * @returns - Cookie serialization options that will clear the cookie
  */
 export function getClearRefreshTokenCookieOptions(
 	options: CookieConfigOptions,

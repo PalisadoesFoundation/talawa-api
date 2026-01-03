@@ -110,6 +110,8 @@ export const Mutation_updateCurrentUser =
     updateCurrentUser(input: $input) {
         addressLine1
         addressLine2
+        avatarMimeType
+        avatarURL
         birthDate
         city
         countryCode
@@ -125,6 +127,7 @@ export const Mutation_updateCurrentUser =
         mobilePhoneNumber
         name
         natalSex
+        naturalLanguageCode
         postalCode
         role
         state

@@ -80,4 +80,4 @@ The GraphQL context.
 
 `Promise`\<`bigint`\>
 
-The total pledged amount as a BigInt.
+- The total pledged amount as a BigInt.

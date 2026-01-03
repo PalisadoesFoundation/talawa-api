@@ -14,4 +14,4 @@ Performs a health check of the background worker service, suitable for use by mo
 
 `Promise`\<\{ `details`: `Record`\<`string`, `unknown`\>; `status`: `"healthy"` \| `"unhealthy"`; \}\>
 
-A promise that resolves to an object indicating the health status and any relevant details.
+- A promise that resolves to an object indicating the health status and any relevant details.

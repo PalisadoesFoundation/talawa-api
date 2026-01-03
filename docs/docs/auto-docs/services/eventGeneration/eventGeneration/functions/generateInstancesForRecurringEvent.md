@@ -36,4 +36,4 @@ The logger for logging debug and error messages.
 
 `Promise`\<`number`\>
 
-A promise that resolves to the number of newly created generated instances.
+- A promise that resolves to the number of newly created generated instances.

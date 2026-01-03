@@ -41,6 +41,8 @@ jobs:
         run: docker buildx build --file ./docker/api.Containerfile --tag talawa_api --target non_production ./
       - name: Check code format
         run: docker container run talawa_api pnpm format:check
+      - name: Check TSDoc comments
+        run: docker container run talawa_api pnpm lint:tsdoc
       - name: Check sanitization
         run: docker container run talawa_api pnpm lint:sanitization
       - name: Check if the source and target branches are different
@@ -102,42 +104,7 @@ jobs:
           python .github/workflows/scripts/check_docstrings.py --directories .github
 
   Count-Changed-Files:
-    if: ${{ github.actor != 'dependabot[bot]' }}
-    name: Checks if number of files changed is acceptable
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0 # Fetch all history for all branches and tags
-
-      - name: Get changed files
-        id: changed-files
-        run: |
-          # Get the base branch ref
-          BASE_SHA=$(git merge-base ${{ github.event.pull_request.base.sha }} ${{ github.event.pull_request.head.sha }})
-
-          # Count all changed files
-          ALL_CHANGED_FILES_COUNT=$(git diff --name-only --diff-filter=ACMRT $BASE_SHA ${{ github.event.pull_request.head.sha }} | wc -l | tr -d ' ')
-          echo "all_changed_files_count=$ALL_CHANGED_FILES_COUNT" >> $GITHUB_OUTPUT
-
-      - name: Echo number of changed files
-        env:
-          CHANGED_FILES_COUNT: ${{ steps.changed-files.outputs.all_changed_files_count }}
-        run: |
-          echo "Number of files changed: $CHANGED_FILES_COUNT"
-
-      - name: Check if the number of changed files is less than 100
-        if: steps.changed-files.outputs.all_changed_files_count > 100
-        env:
-          CHANGED_FILES_COUNT: ${{ steps.changed-files.outputs.all_changed_files_count }}
-        run: |
-          echo "Error: Too many files (greater than 100) changed in the pull request."
-          echo "Possible issues:"
-          echo "- Contributor may be merging into an incorrect branch."
-          echo "- Source branch may be incorrect please use develop as source branch."
-          exit 1
-
+    uses: PalisadoesFoundation/.github/.github/workflows/count-changed-files.yml@main
   Check-ItSkip-Disable:
     name: Check for it.skip commands
     runs-on: ubuntu-latest
@@ -162,9 +129,9 @@ jobs:
         with:
           python-version: 3.9
 
-      - name: Run Python script
+      - name: Run it.skip Check
         run: |
-          python .github/workflows/scripts/itskip_disable_check.py --files ${{ steps.changed-files.outputs.all_changed_files }}
+          python .github/workflows/scripts/disable_statements_check.py --repo=api --files ${{ steps.changed-files.outputs.all_changed_files }}
 
   python_checks:
     name: Run Python Checks
@@ -185,21 +152,9 @@ jobs:
         with:
           python-version: 3.9
 
-      - name: Run Biome Ignore Check
+      - name: Run Disable Statements Check
         run: |
-          python .github/workflows/scripts/biome_disable_check.py --files ${{ steps.changed-files.outputs.all_changed_files }}
-
-      - name: Run Code Coverage Disable Check
-        run: |
-          python .github/workflows/scripts/code_coverage_disable_check.py --files ${{ steps.changed-files.outputs.all_changed_files }}
-
-      - name: Run TS Ignore Check
-        run: |
-          python .github/workflows/scripts/detect_ts_ignore.py --files ${{ steps.changed-files.outputs.all_changed_files }}
-
-      - name: Run Sanitization Disable Comment Check
-        run: |
-          python .github/workflows/scripts/check_sanitization_disable.py --files ${{ steps.changed-files.outputs.all_changed_files }}
+          python .github/workflows/scripts/disable_statements_check.py --repo=api --files ${{ steps.changed-files.outputs.all_changed_files }}
 
   check_gql_tada:
     name: Check gql tada files and configuration
@@ -424,48 +379,10 @@ jobs:
           exit 1
 
   Check-AutoDocs:
-    name: Generate and Validate Documentation
-    runs-on: ubuntu-latest
     needs: [Code-Quality-Checks]
-    steps:
-      - name: Checkout the Repository
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
-      - name: Install pnpm
-        uses: pnpm/action-setup@v4
-        with:
-          run_install: false
-
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: "24.x"
-          cache: "pnpm"
-
-      - name: Prepare dependency store
-        run: pnpm fetch
-
-      - name: Install Dependencies (frozen)
-        run: pnpm install --frozen-lockfile --prefer-offline
-
-      - name: Run documentation generation
-        run: pnpm run generate:docs
-
-      - name: Check for uncommitted doc changes
-        run: |
-          if [ -n "$(git status --porcelain)" ]; then
-            echo "::error::Documentation files are outdated or missing."
-            echo "Please run 'pnpm run generate:docs' locally and commit the updated files."
-            echo ""
-            echo "Changed files:"
-            git status --porcelain
-            exit 1
-          else
-            echo "Documentation is up to date."
-          fi
-
+    uses: PalisadoesFoundation/.github/.github/workflows/typescript-autodocs.yml@main
+    with:
+      pnpm-version: "10.26.1"
   Generate-Schema-Docs:
     if: ${{ github.actor != 'dependabot[bot]' }}
     name: Generate GraphQL Schema Documentation

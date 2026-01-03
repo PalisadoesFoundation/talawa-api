@@ -24,4 +24,4 @@ Configuration options for the cookie
 
 `CookieSerializeOptions`
 
-Cookie serialization options that will clear the cookie
+- Cookie serialization options that will clear the cookie

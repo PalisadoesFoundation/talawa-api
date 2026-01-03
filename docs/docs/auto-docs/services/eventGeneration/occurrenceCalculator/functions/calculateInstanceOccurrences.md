@@ -29,4 +29,4 @@ The logger for logging debug and informational messages.
 
 [`CalculatedOccurrence`](../../types/interfaces/CalculatedOccurrence.md)[]
 
-An array of calculated occurrences, each with its start and end times and metadata.
+- An array of calculated occurrences, each with its start and end times and metadata.

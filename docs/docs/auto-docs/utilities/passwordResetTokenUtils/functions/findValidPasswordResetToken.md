@@ -33,4 +33,4 @@ The hashed password reset token to look up
 
 `Promise`\<\{ `expiresAt`: `Date` \| `null`; `id`: `string`; `usedAt`: `Date` \| `null`; `userId`: `string`; \} \| `undefined`\>
 
-The password reset token record if found and valid, undefined otherwise
+- The password reset token record if found and valid, undefined otherwise

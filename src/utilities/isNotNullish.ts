@@ -3,7 +3,7 @@
  * @example
  * function print(str: string | null) {
  * 	if (isNotNullish(str)) {
- * 		console.log(`the string is ${str}`);
+ * 		console.log(`the string is $\{str\}`);
  * 	} else {
  * 		console.log(`the string is null`);
  * 	}

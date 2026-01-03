@@ -29,4 +29,4 @@ Maximum age of the cookie in milliseconds (should match JWT expiry)
 
 `CookieSerializeOptions`
 
-Cookie serialization options
+- Cookie serialization options

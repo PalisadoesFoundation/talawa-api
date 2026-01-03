@@ -28,4 +28,4 @@ The hashed refresh token to revoke
 
 `Promise`\<`boolean`\>
 
-True if token was revoked, false if not found or already revoked
+- True if token was revoked, false if not found or already revoked

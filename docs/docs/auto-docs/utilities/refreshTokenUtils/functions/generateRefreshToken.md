@@ -14,4 +14,4 @@ Generates a cryptographically secure random refresh token.
 
 `string`
 
-A 64-character hex string token
+- A 64-character hex string token

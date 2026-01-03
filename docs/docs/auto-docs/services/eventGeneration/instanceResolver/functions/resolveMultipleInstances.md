@@ -42,4 +42,4 @@ The logger for logging warnings or errors.
 
 [`ResolvedRecurringEventInstance`](../../../../drizzle/tables/recurringEventInstances/type-aliases/ResolvedRecurringEventInstance.md)[]
 
-An array of fully resolved generated event instances.
+- An array of fully resolved generated event instances.

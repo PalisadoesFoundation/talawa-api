@@ -1,4 +1,6 @@
+import { faker } from "@faker-js/faker";
 import { initGraphQLTada } from "gql.tada";
+import { uuidv7 } from "uuidv7";
 import { describe, expect, it } from "vitest";
 import type { ClientCustomScalars } from "~/src/graphql/scalars/index";
 // Import the actual implementation to ensure it's loaded for coverage
@@ -335,9 +337,9 @@ describe("Tag.createdAt resolver - Unit test edge case", () => {
 		) => Promise<unknown>;
 
 		const parent = {
-			id: "tag-123",
-			createdAt: new Date("2024-01-01T00:00:00.000Z"),
-			organizationId: "org-123",
+			id: uuidv7(),
+			createdAt: faker.date.past(),
+			organizationId: uuidv7(),
 		};
 
 		const { context, mocks } = createMockGraphQLContext(true, "missing-user");
@@ -355,5 +357,329 @@ describe("Tag.createdAt resolver - Unit test edge case", () => {
 				extensions: expect.objectContaining({ code: "unauthenticated" }),
 			} as unknown),
 		);
+	});
+
+	it("should throw unauthenticated error when user is NOT authenticated", async () => {
+		const graphqlInstance = (
+			server as unknown as {
+				graphql?: { schema?: import("graphql").GraphQLSchema };
+			}
+		).graphql;
+		expect(graphqlInstance).toBeDefined();
+		const schema = graphqlInstance?.schema;
+		expect(schema).toBeDefined();
+
+		const tagType = schema?.getType("Tag");
+		expect(tagType).toBeDefined();
+
+		const fields = (tagType as import("graphql").GraphQLObjectType).getFields();
+		expect(fields.createdAt).toBeDefined();
+
+		const resolver = fields.createdAt?.resolve as (
+			parent: unknown,
+			args: unknown,
+			ctx: unknown,
+			info: unknown,
+		) => Promise<unknown>;
+
+		const parent = {
+			id: uuidv7(),
+			createdAt: faker.date.past(),
+			organizationId: uuidv7(),
+		};
+
+		const { context } = createMockGraphQLContext(false);
+
+		await expect(resolver(parent, {}, context, {})).rejects.toEqual(
+			expect.objectContaining({
+				extensions: expect.objectContaining({ code: "unauthenticated" }),
+			} as unknown),
+		);
+	});
+
+	it("should throw unauthorized_action when user is not a member of the organization", async () => {
+		const graphqlInstance = (
+			server as unknown as {
+				graphql?: { schema?: import("graphql").GraphQLSchema };
+			}
+		).graphql;
+		expect(graphqlInstance).toBeDefined();
+		const schema = graphqlInstance?.schema;
+		expect(schema).toBeDefined();
+
+		const tagType = schema?.getType("Tag");
+		expect(tagType).toBeDefined();
+
+		const fields = (tagType as import("graphql").GraphQLObjectType).getFields();
+		expect(fields.createdAt).toBeDefined();
+
+		const resolver = fields.createdAt?.resolve as (
+			parent: unknown,
+			args: unknown,
+			ctx: unknown,
+			info: unknown,
+		) => Promise<unknown>;
+
+		const parent = {
+			id: uuidv7(),
+			createdAt: faker.date.past(),
+			organizationId: uuidv7(),
+		};
+
+		const { context, mocks } = createMockGraphQLContext(true, "regular-user");
+		mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValueOnce({
+			role: "user", // Not an admin
+			organizationMembershipsWhereMember: [], // Not a member of the org (as filtered by query)
+		});
+
+		const ctx = {
+			...context,
+			drizzleClient: mocks.drizzleClient,
+		};
+
+		await expect(resolver(parent, {}, ctx, {})).rejects.toEqual(
+			expect.objectContaining({
+				extensions: expect.objectContaining({ code: "unauthorized_action" }),
+			} as unknown),
+		);
+	});
+
+	it("should throw unauthorized_action when user is a regular member but not an admin", async () => {
+		const graphqlInstance = (
+			server as unknown as {
+				graphql?: { schema?: import("graphql").GraphQLSchema };
+			}
+		).graphql;
+		expect(graphqlInstance).toBeDefined();
+		const schema = graphqlInstance?.schema;
+		expect(schema).toBeDefined();
+
+		const tagType = schema?.getType("Tag");
+		expect(tagType).toBeDefined();
+
+		const fields = (tagType as import("graphql").GraphQLObjectType).getFields();
+		expect(fields.createdAt).toBeDefined();
+
+		const resolver = fields.createdAt?.resolve as (
+			parent: unknown,
+			args: unknown,
+			ctx: unknown,
+			info: unknown,
+		) => Promise<unknown>;
+
+		const parent = {
+			id: uuidv7(),
+			createdAt: faker.date.past(),
+			organizationId: uuidv7(),
+		};
+
+		const { context, mocks } = createMockGraphQLContext(true, "regular-user");
+		mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValueOnce({
+			role: "user", // Not a global admin
+			organizationMembershipsWhereMember: [
+				{
+					role: "member", // Regular member, not org admin
+				},
+			],
+		});
+
+		const ctx = {
+			...context,
+			drizzleClient: mocks.drizzleClient,
+		};
+
+		await expect(resolver(parent, {}, ctx, {})).rejects.toEqual(
+			expect.objectContaining({
+				extensions: expect.objectContaining({ code: "unauthorized_action" }),
+			} as unknown),
+		);
+	});
+
+	it("should return createdAt when user is a global administrator", async () => {
+		const graphqlInstance = (
+			server as unknown as {
+				graphql?: { schema?: import("graphql").GraphQLSchema };
+			}
+		).graphql;
+		expect(graphqlInstance).toBeDefined();
+		const schema = graphqlInstance?.schema;
+		expect(schema).toBeDefined();
+
+		const tagType = schema?.getType("Tag");
+		expect(tagType).toBeDefined();
+
+		const fields = (tagType as import("graphql").GraphQLObjectType).getFields();
+		expect(fields.createdAt).toBeDefined();
+
+		const resolver = fields.createdAt?.resolve as (
+			parent: unknown,
+			args: unknown,
+			ctx: unknown,
+			info: unknown,
+		) => Promise<unknown>;
+
+		const parent = {
+			id: uuidv7(),
+			createdAt: faker.date.past(),
+			organizationId: uuidv7(),
+		};
+
+		const { context, mocks } = createMockGraphQLContext(true, "admin-user");
+		mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValueOnce({
+			role: "administrator", // Global admin
+			organizationMembershipsWhereMember: [],
+		});
+
+		const ctx = {
+			...context,
+			drizzleClient: mocks.drizzleClient,
+		};
+
+		const result = await resolver(parent, {}, ctx, {});
+		expect(result).toEqual(parent.createdAt);
+	});
+
+	it("should return createdAt when user is an organization administrator", async () => {
+		const graphqlInstance = (
+			server as unknown as {
+				graphql?: { schema?: import("graphql").GraphQLSchema };
+			}
+		).graphql;
+		expect(graphqlInstance).toBeDefined();
+		const schema = graphqlInstance?.schema;
+		expect(schema).toBeDefined();
+
+		const tagType = schema?.getType("Tag");
+		expect(tagType).toBeDefined();
+
+		const fields = (tagType as import("graphql").GraphQLObjectType).getFields();
+		expect(fields.createdAt).toBeDefined();
+
+		const resolver = fields.createdAt?.resolve as (
+			parent: unknown,
+			args: unknown,
+			ctx: unknown,
+			info: unknown,
+		) => Promise<unknown>;
+
+		const parent = {
+			id: uuidv7(),
+			createdAt: faker.date.past(),
+			organizationId: uuidv7(),
+		};
+
+		const { context, mocks } = createMockGraphQLContext(true, "org-admin-user");
+		mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValueOnce({
+			role: "user", // Not a global admin
+			organizationMembershipsWhereMember: [
+				{
+					role: "administrator", // Organization admin
+				},
+			],
+		});
+
+		const ctx = {
+			...context,
+			drizzleClient: mocks.drizzleClient,
+		};
+
+		const result = await resolver(parent, {}, ctx, {});
+		expect(result).toEqual(parent.createdAt);
+	});
+
+	describe("Error Handling", () => {
+		// This test expects the resolver to handle database query errors gracefully
+		it("should handle database query errors gracefully", async () => {
+			const graphqlInstance = (
+				server as unknown as {
+					graphql?: { schema?: import("graphql").GraphQLSchema };
+				}
+			).graphql;
+			expect(graphqlInstance).toBeDefined();
+			const schema = graphqlInstance?.schema;
+			expect(schema).toBeDefined();
+
+			const tagType = schema?.getType("Tag");
+			expect(tagType).toBeDefined();
+
+			const fields = (
+				tagType as import("graphql").GraphQLObjectType
+			).getFields();
+			expect(fields.createdAt).toBeDefined();
+
+			const resolver = fields.createdAt?.resolve as (
+				parent: unknown,
+				args: unknown,
+				ctx: unknown,
+				info: unknown,
+			) => Promise<unknown>;
+
+			const parent = {
+				id: uuidv7(),
+				createdAt: faker.date.past(),
+				organizationId: uuidv7(),
+			};
+
+			const { context, mocks } = createMockGraphQLContext(true, "admin-user");
+			// Simulate database error
+			mocks.drizzleClient.query.usersTable.findFirst.mockRejectedValueOnce(
+				new Error("Database connection failed"),
+			);
+
+			const ctx = {
+				...context,
+				drizzleClient: mocks.drizzleClient,
+			};
+
+			await expect(resolver(parent, {}, ctx, {})).rejects.toThrow(
+				"Database connection failed",
+			);
+		});
+
+		it("should handle edge case where organizationMembershipsWhereMember is undefined", async () => {
+			const graphqlInstance = (
+				server as unknown as {
+					graphql?: { schema?: import("graphql").GraphQLSchema };
+				}
+			).graphql;
+			expect(graphqlInstance).toBeDefined();
+			const schema = graphqlInstance?.schema;
+			expect(schema).toBeDefined();
+
+			const tagType = schema?.getType("Tag");
+			expect(tagType).toBeDefined();
+
+			const fields = (
+				tagType as import("graphql").GraphQLObjectType
+			).getFields();
+			expect(fields.createdAt).toBeDefined();
+
+			const resolver = fields.createdAt?.resolve as (
+				parent: unknown,
+				args: unknown,
+				ctx: unknown,
+				info: unknown,
+			) => Promise<unknown>;
+
+			const parent = {
+				id: uuidv7(),
+				createdAt: faker.date.past(),
+				organizationId: uuidv7(),
+			};
+
+			const { context, mocks } = createMockGraphQLContext(true, "regular-user");
+			mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValueOnce({
+				role: "user", // Not a global admin
+				organizationMembershipsWhereMember: undefined as unknown as [], // undefined memberships
+			});
+
+			const ctx = {
+				...context,
+				drizzleClient: mocks.drizzleClient,
+			};
+
+			// This should throw a TypeError when trying to access [0] on undefined
+			await expect(resolver(parent, {}, ctx, {})).rejects.toThrow(TypeError);
+		});
 	});
 });

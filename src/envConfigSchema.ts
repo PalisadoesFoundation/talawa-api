@@ -377,6 +377,35 @@ export const envConfigSchema = Type.Object({
 		maximum: 65535,
 		minimum: 0,
 	}),
+	/**
+	 * Optional JSON object to override default cache TTL values per entity type.
+	 *
+	 * **Format**: JSON object with entity keys and TTL values in seconds.
+	 *
+	 * **Valid keys**: `user`, `organization`, `event`, `post`
+	 *
+	 * **Example**: `'{"user": 600, "organization": 600, "event": 240, "post": 120}'`
+	 *
+	 * **Error Handling**:
+	 * - If the JSON is malformed, the entire value is ignored and default TTLs are used.
+	 *   A warning is logged via `console.warn` in `src/services/caching/cacheConfig.ts`.
+	 * - Unknown keys are silently ignored (no warning).
+	 * - Non-numeric or non-positive values for valid keys are ignored with a warning log.
+	 *
+	 * **Defaults** (defined in `src/services/caching/cacheConfig.ts`):
+	 * - `user`: 300 seconds (5 minutes)
+	 * - `organization`: 300 seconds (5 minutes)
+	 * - `event`: 120 seconds (2 minutes)
+	 * - `post`: 60 seconds (1 minute)
+	 *
+	 * @see src/services/caching/cacheConfig.ts for TTL parsing logic and defaults.
+	 */
+	CACHE_ENTITY_TTLS: Type.Optional(
+		Type.String({
+			minLength: 2, // Minimum valid JSON: "{}"
+			format: "json", // Validates JSON syntax at schema-time
+		}),
+	),
 	// API_REDIS_URI: Type.String({
 	// 	format: "uri",
 	// 	pattern: "^redis://.*",
@@ -447,6 +476,16 @@ export const envConfigSchema = Type.Object({
 			minLength: 9, // Minimum valid cron: "* * * * *"
 		}),
 	),
+
+	/**
+	 * Secret key for Google reCAPTCHA v2 verification.
+	 * Used to verify reCAPTCHA tokens on the server side.
+	 */
+	RECAPTCHA_SECRET_KEY: Type.Optional(
+		Type.String({
+			minLength: 1,
+		}),
+	),
 });
 
 /**
@@ -462,6 +501,25 @@ export const envSchemaAjv: EnvSchemaOpt["ajv"] = {
 		ajvFormats.default(ajvInstance, {
 			formats: ["email", "uri"],
 		});
+
+		// Custom "json" format validator for fail-fast JSON object validation
+		// Only accepts non-null objects (not arrays or primitives)
+		ajvInstance.addFormat("json", {
+			type: "string",
+			validate: (value: string): boolean => {
+				try {
+					const parsed = JSON.parse(value);
+					return (
+						parsed !== null &&
+						typeof parsed === "object" &&
+						!Array.isArray(parsed)
+					);
+				} catch {
+					return false;
+				}
+			},
+		});
+
 		return ajvInstance;
 	},
 };

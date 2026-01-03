@@ -29,4 +29,4 @@ The user ID whose tokens should be revoked
 
 `Promise`\<`number`\>
 
-The number of tokens revoked
+- The number of tokens revoked
