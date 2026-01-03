@@ -1,3 +1,4 @@
+import "./tracing";
 import closeWithGrace from "close-with-grace";
 import { createServer } from "./createServer";
 
