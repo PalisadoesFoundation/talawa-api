@@ -128,13 +128,11 @@ builder.mutationField("createEvent", (t) =>
 						issues: [
 							{
 								argumentPath: ["input", "isPublic"],
-								message:
-									"Event cannot be both Public and Invite-Only simultaneously.",
+								message: "cannot be both Public and Invite-Only",
 							},
 							{
 								argumentPath: ["input", "isInviteOnly"],
-								message:
-									"Event cannot be both Public and Invite-Only simultaneously.",
+								message: "cannot be both Public and Invite-Only",
 							},
 						],
 					},

@@ -295,13 +295,71 @@ suite(
 			expect(result.errors).toBeDefined();
 			expect(result.errors?.[0]?.extensions?.code).toBe("invalid_arguments");
 			expect(result.errors?.[0]?.extensions).toMatchObject({
-				issues: [
-					{
+				issues: expect.arrayContaining([
+					expect.objectContaining({
+						argumentPath: ["input", "isPublic"],
 						message: expect.stringContaining(
 							"cannot be both Public and Invite-Only",
 						),
+					}),
+					expect.objectContaining({
+						argumentPath: ["input", "isInviteOnly"],
+						message: expect.stringContaining(
+							"cannot be both Public and Invite-Only",
+						),
+					}),
+				]),
+			});
+		});
+
+		test("should throw invalid_arguments error when isInviteOnly conflicts with inherited isPublic", async () => {
+			// Create organization
+			const orgId = await createOrganizationAndGetId(authToken);
+
+			// Get current admin user
+			const currentUser = signInResult.data?.signIn?.user;
+			assertToBeNonNullish(currentUser);
+			await addMembership(orgId, currentUser.id, "administrator");
+
+			// Create recurring event with instances (creates event with isPublic: true)
+			const { instanceIds } = await createRecurringEventWithInstances(
+				orgId,
+				currentUser.id,
+			);
+
+			const targetInstanceId = instanceIds[0];
+			assertToBeNonNullish(targetInstanceId);
+
+			const result = await mercuriusClient.mutate(
+				Mutation_updateThisAndFollowingEvents,
+				{
+					headers: { authorization: `bearer ${authToken}` },
+					variables: {
+						input: {
+							id: targetInstanceId,
+							isInviteOnly: true, // Only provide this, isPublic inherited as true
+						},
 					},
-				],
+				},
+			);
+
+			expect(result.errors).toBeDefined();
+			expect(result.errors?.[0]?.extensions?.code).toBe("invalid_arguments");
+			expect(result.errors?.[0]?.extensions).toMatchObject({
+				issues: expect.arrayContaining([
+					expect.objectContaining({
+						argumentPath: ["input", "isPublic"],
+						message: expect.stringContaining(
+							"cannot be both Public and Invite-Only",
+						),
+					}),
+					expect.objectContaining({
+						argumentPath: ["input", "isInviteOnly"],
+						message: expect.stringContaining(
+							"cannot be both Public and Invite-Only",
+						),
+					}),
+				]),
 			});
 		});
 

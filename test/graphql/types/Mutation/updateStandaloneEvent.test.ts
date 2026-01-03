@@ -389,7 +389,13 @@ suite("Mutation field updateStandaloneEvent", () => {
 								code: "invalid_arguments",
 								issues: expect.arrayContaining([
 									expect.objectContaining({
-										argumentPath: ["input"],
+										argumentPath: ["input", "isPublic"],
+										message: expect.stringContaining(
+											"cannot be both Public and Invite-Only",
+										),
+									}),
+									expect.objectContaining({
+										argumentPath: ["input", "isInviteOnly"],
 										message: expect.stringContaining(
 											"cannot be both Public and Invite-Only",
 										),

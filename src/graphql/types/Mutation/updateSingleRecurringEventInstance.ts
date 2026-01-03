@@ -280,9 +280,12 @@ builder.mutationField("updateSingleRecurringEventInstance", (t) =>
 							code: "invalid_arguments",
 							issues: [
 								{
-									argumentPath: ["input"],
-									message:
-										"Event cannot be both Public and Invite-Only simultaneously.",
+									argumentPath: ["input", "isPublic"],
+									message: "cannot be both Public and Invite-Only",
+								},
+								{
+									argumentPath: ["input", "isInviteOnly"],
+									message: "cannot be both Public and Invite-Only",
 								},
 							],
 						},
