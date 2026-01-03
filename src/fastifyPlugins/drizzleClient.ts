@@ -81,12 +81,49 @@ export const drizzleClient = fastifyPlugin(
 					"Successfully applied the drizzle migrations to the postgres database.",
 				);
 			} catch (error) {
-				throw new Error(
-					"Failed to apply the drizzle migrations to the postgres database.",
-					{
-						cause: error,
-					},
-				);
+				// Check if it's an "already exists" error - these are expected if migrations were already applied
+				const errorMessage =
+					error instanceof Error ? error.message : String(error);
+				const errorCode =
+					error && typeof error === "object" && "code" in error
+						? String(error.code)
+						: "";
+				const causeCode =
+					error &&
+					typeof error === "object" &&
+					"cause" in error &&
+					error.cause &&
+					typeof error.cause === "object" &&
+					"code" in error.cause
+						? String(error.cause.code)
+						: "";
+
+				const isAlreadyExistsError =
+					errorMessage.includes("already exists") ||
+					errorMessage.includes("42P06") || // schema already exists
+					errorMessage.includes("42P07") || // relation already exists
+					errorMessage.includes("42710") || // duplicate object
+					errorCode === "42P06" ||
+					errorCode === "42P07" ||
+					errorCode === "42710" ||
+					causeCode === "42P06" ||
+					causeCode === "42P07" ||
+					causeCode === "42710";
+
+				if (isAlreadyExistsError) {
+					// Log but continue if it's just an "already exists" error
+					fastify.log.info(
+						"Migrations already applied or partially applied, continuing...",
+					);
+				} else {
+					// Re-throw if it's not an "already exists" error
+					throw new Error(
+						"Failed to apply the drizzle migrations to the postgres database.",
+						{
+							cause: error,
+						},
+					);
+				}
 			}
 		}
 
