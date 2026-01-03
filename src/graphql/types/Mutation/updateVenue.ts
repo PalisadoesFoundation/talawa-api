@@ -164,6 +164,7 @@ builder.mutationField("updateVenue", (t) =>
 									fields.organizationId,
 									existingVenue.organizationId,
 								),
+								operators.ne(fields.id, parsedArgs.input.id),
 							),
 					});
 
@@ -252,19 +253,18 @@ builder.mutationField("updateVenue", (t) =>
 					const uploaded: string[] = [];
 					try {
 						await Promise.all(
-							createdVenueAttachments.map((attachment, index) => {
-								if (attachments[index] !== undefined) {
-									return ctx.minio.client
-										.putObject(
-											ctx.minio.bucketName,
-											attachment.name,
-											attachments[index].createReadStream(),
-											undefined,
-											{ "content-type": attachment.mimeType },
-										)
-										.then(() => uploaded.push(attachment.name));
+							createdVenueAttachments.map(async (attachment, index) => {
+								const file = attachments[index];
+								if (file) {
+									await ctx.minio.client.putObject(
+										ctx.minio.bucketName,
+										attachment.name,
+										file.createReadStream(),
+										undefined,
+										{ "content-type": attachment.mimeType },
+									);
+									uploaded.push(attachment.name);
 								}
-								return undefined;
 							}),
 						);
 					} catch (e) {
@@ -274,7 +274,14 @@ builder.mutationField("updateVenue", (t) =>
 								ctx.minio.client.removeObject(ctx.minio.bucketName, name),
 							),
 						);
-						throw e;
+						if (e instanceof TalawaGraphQLError) {
+							throw e;
+						}
+						throw new TalawaGraphQLError({
+							extensions: {
+								code: "unexpected",
+							},
+						});
 					}
 
 					return Object.assign(updatedVenue, {

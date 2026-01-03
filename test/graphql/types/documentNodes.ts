@@ -2606,3 +2606,23 @@ export const Query_community = gql(`
 		}
 	}
 `);
+
+export const Mutation_updateCommunity = gql(`
+	mutation Mutation_updateCommunity($input: MutationUpdateCommunityInput!) {
+		updateCommunity(input: $input) {
+			id
+			name
+			facebookURL
+			githubURL
+			instagramURL
+			linkedinURL
+			logoMimeType
+			redditURL
+			slackURL
+			websiteURL
+			xURL
+			youtubeURL
+			inactivityTimeoutDuration
+		}
+	}
+`);

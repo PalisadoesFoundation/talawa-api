@@ -53,7 +53,9 @@ pre-commit:
         set -e
         if [ -f .venv/bin/python3 ]; then
           .venv/bin/python3 .github/workflows/scripts/disable_statements_check.py --repo=api --files {staged_files}
+          .venv/bin/python3 .github/workflows/scripts/disable_statements_check.py --repo=api --files {staged_files}
         elif [ -f .venv/Scripts/python.exe ]; then
+          .venv/Scripts/python.exe .github/workflows/scripts/disable_statements_check.py --repo=api --files {staged_files}
           .venv/Scripts/python.exe .github/workflows/scripts/biome_disable_check.py --files {staged_files}
         else
           echo "Error: Python virtual environment not found."
