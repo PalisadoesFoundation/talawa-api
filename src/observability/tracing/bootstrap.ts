@@ -29,7 +29,7 @@ export async function initTracing() {
 	try {
 		// Validate sampling ratio early
 		const ratio = observabilityConfig.samplingRatio;
-		if (typeof ratio !== "number" || ratio < 0 || ratio > 1) {
+		if (Number.isNaN(ratio) || ratio < 0 || ratio > 1) {
 			throw new Error(
 				`Invalid samplingRatio: ${ratio}. Expected number between 0 and 1.`,
 			);
