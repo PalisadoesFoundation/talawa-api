@@ -26,6 +26,7 @@ vi.mock("fastify-plugin", () => ({
 	default: vi.fn((fn) => fn),
 }));
 
+import { drizzle } from "drizzle-orm/postgres-js";
 import { migrate } from "drizzle-orm/postgres-js/migrator";
 import { drizzleClient } from "../../src/fastifyPlugins/drizzleClient";
 
@@ -286,6 +287,130 @@ describe("drizzleClient Plugin - Migration Error Handling", () => {
 			expect(mockFastify.log.info).not.toHaveBeenCalledWith(
 				"Applying the drizzle migration files to the postgres database.",
 			);
+		});
+	});
+
+	describe("Database Connection", () => {
+		it("should check database connection on startup", async () => {
+			await drizzleClient(mockFastify as FastifyInstance);
+
+			expect(mockFastify.log.info).toHaveBeenCalledWith(
+				"Checking the connection to the postgres database.",
+			);
+			expect(mockFastify.log.info).toHaveBeenCalledWith(
+				"Successfully connected to the postgres database.",
+			);
+		});
+
+		it("should throw error if database connection fails", async () => {
+			vi.clearAllMocks();
+
+			// Mock drizzle to return a client with execute that rejects
+			const mockDrizzleClient = {
+				execute: vi.fn().mockRejectedValue(new Error("Connection failed")),
+				$client: {
+					end: vi.fn().mockResolvedValue(undefined),
+				},
+			};
+
+			vi.mocked(drizzle).mockReturnValue(
+				mockDrizzleClient as unknown as ReturnType<typeof drizzle>,
+			);
+
+			await expect(
+				drizzleClient(mockFastify as FastifyInstance),
+			).rejects.toThrow("Failed to connect to the postgres database.");
+
+			expect(mockFastify.log.info).toHaveBeenCalledWith(
+				"Checking the connection to the postgres database.",
+			);
+			expect(mockFastify.log.info).not.toHaveBeenCalledWith(
+				"Successfully connected to the postgres database.",
+			);
+		});
+	});
+
+	describe("Connection Cleanup (onClose Hook)", () => {
+		it("should register onClose hook and close database connection successfully", async () => {
+			vi.clearAllMocks();
+
+			await drizzleClient(mockFastify as FastifyInstance);
+
+			expect(mockFastify.addHook).toHaveBeenCalledWith(
+				"onClose",
+				expect.any(Function),
+			);
+
+			const onCloseHook = (mockFastify.addHook as ReturnType<typeof vi.fn>).mock
+				.calls[0]?.[1];
+			expect(onCloseHook).toBeDefined();
+
+			// Invoke the registered hook callback
+			await onCloseHook?.();
+
+			expect(mockFastify.log.info).toHaveBeenCalledWith(
+				"Closing all the connections in the postgres connection pool.",
+			);
+			expect(mockFastify.log.info).toHaveBeenCalledWith(
+				"Successfully closed all the connections in the postgres connection pool.",
+			);
+		});
+
+		it("should handle errors during connection cleanup in onClose hook", async () => {
+			vi.clearAllMocks();
+
+			// Mock drizzle to return a client with $client.end that rejects
+			const mockEnd = vi.fn().mockRejectedValue(new Error("Close failed"));
+			const mockDrizzleClient = {
+				execute: vi.fn().mockResolvedValue(undefined),
+				$client: {
+					end: mockEnd,
+				},
+			};
+
+			vi.mocked(drizzle).mockReturnValue(
+				mockDrizzleClient as unknown as ReturnType<typeof drizzle>,
+			);
+
+			await drizzleClient(mockFastify as FastifyInstance);
+
+			const onCloseHook = (mockFastify.addHook as ReturnType<typeof vi.fn>).mock
+				.calls[0]?.[1];
+
+			// Invoke the registered hook callback
+			await onCloseHook?.();
+
+			expect(mockFastify.log.info).toHaveBeenCalledWith(
+				"Closing all the connections in the postgres connection pool.",
+			);
+			expect(mockFastify.log.error).toHaveBeenCalledWith(
+				{ error: expect.any(Error) },
+				"Something went wrong while trying to close all the connections in the postgres connection pool.",
+			);
+			expect(mockFastify.log.info).not.toHaveBeenCalledWith(
+				"Successfully closed all the connections in the postgres connection pool.",
+			);
+		});
+	});
+
+	describe("Fastify Decoration", () => {
+		it("should decorate fastify instance with drizzleClient", async () => {
+			vi.clearAllMocks();
+
+			await drizzleClient(mockFastify as FastifyInstance);
+
+			expect(mockFastify.decorate).toHaveBeenCalledWith(
+				"drizzleClient",
+				expect.any(Object),
+			);
+
+			// Verify the decorated client has the expected structure
+			const decorateCall = (mockFastify.decorate as ReturnType<typeof vi.fn>).mock
+				.calls.find((call) => call[0] === "drizzleClient");
+			expect(decorateCall).toBeDefined();
+			expect(decorateCall?.[1]).toBeDefined();
+			expect(decorateCall?.[1]).toHaveProperty("execute");
+			expect(decorateCall?.[1]).toHaveProperty("$client");
 		});
 	});
 });
