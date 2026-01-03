@@ -303,8 +303,6 @@ describe("drizzleClient Plugin - Migration Error Handling", () => {
 		});
 
 		it("should throw error if database connection fails", async () => {
-			vi.clearAllMocks();
-
 			// Mock drizzle to return a client with execute that rejects
 			const mockDrizzleClient = {
 				execute: vi.fn().mockRejectedValue(new Error("Connection failed")),
@@ -332,8 +330,6 @@ describe("drizzleClient Plugin - Migration Error Handling", () => {
 
 	describe("Connection Cleanup (onClose Hook)", () => {
 		it("should register onClose hook and close database connection successfully", async () => {
-			vi.clearAllMocks();
-
 			await drizzleClient(mockFastify as FastifyInstance);
 
 			expect(mockFastify.addHook).toHaveBeenCalledWith(
@@ -357,8 +353,6 @@ describe("drizzleClient Plugin - Migration Error Handling", () => {
 		});
 
 		it("should handle errors during connection cleanup in onClose hook", async () => {
-			vi.clearAllMocks();
-
 			// Mock drizzle to return a client with $client.end that rejects
 			const mockEnd = vi.fn().mockRejectedValue(new Error("Close failed"));
 			const mockDrizzleClient = {
@@ -395,8 +389,6 @@ describe("drizzleClient Plugin - Migration Error Handling", () => {
 
 	describe("Fastify Decoration", () => {
 		it("should decorate fastify instance with drizzleClient", async () => {
-			vi.clearAllMocks();
-
 			await drizzleClient(mockFastify as FastifyInstance);
 
 			expect(mockFastify.decorate).toHaveBeenCalledWith(
