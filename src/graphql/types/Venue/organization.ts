@@ -22,7 +22,7 @@ export const resolveOrganization = async (
 				venueId: parent.id,
 				organizationId: parent.organizationId,
 			},
-			"DataLoader returned empty result for venue.organizationId",
+			"DataLoader returned null for a venue's organization id that isn't null.",
 		);
 
 		throw new TalawaGraphQLError({

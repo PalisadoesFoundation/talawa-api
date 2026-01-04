@@ -122,6 +122,10 @@ describe("TagFolder Resolver - Organization Field", () => {
 		).toBe("unexpected");
 
 		expect(logErrorSpy).toHaveBeenCalledWith(
+			{
+				tagFolderId: mockTagFolder.id,
+				organizationId: mockTagFolder.organizationId,
+			},
 			"DataLoader returned an empty array for a tag folder's organization id that isn't null.",
 		);
 	});

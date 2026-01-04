@@ -66,7 +66,8 @@ describe("Venue Resolver - Organization Field", () => {
 			);
 
 			expect(ctx.log.error).toHaveBeenCalledWith(
-				`DataLoader returned empty result for venue.organizationId: venue=${mockVenue.id}, organizationId=${mockVenue.organizationId}`,
+				{ venueId: mockVenue.id, organizationId: mockVenue.organizationId },
+				"DataLoader returned null for a venue's organization id that isn't null.",
 			);
 		});
 	});
@@ -149,7 +150,8 @@ describe("Venue Resolver - Organization Field", () => {
 				await resolveOrganization(mockVenue, {}, ctx);
 			} catch (error) {
 				expect(ctx.log.error).toHaveBeenCalledWith(
-					`DataLoader returned empty result for venue.organizationId: venue=${mockVenue.id}, organizationId=${mockVenue.organizationId}`,
+					{ venueId: mockVenue.id, organizationId: mockVenue.organizationId },
+					"DataLoader returned null for a venue's organization id that isn't null.",
 				);
 				expect(error).toBeInstanceOf(TalawaGraphQLError);
 				expect((error as TalawaGraphQLError).extensions.code).toBe(
@@ -459,7 +461,11 @@ describe("Venue Resolver - Organization Field", () => {
 			);
 
 			expect(ctx.log.error).toHaveBeenCalledWith(
-				expect.stringContaining("venue.organizationId"),
+				expect.objectContaining({
+					venueId: mockVenue.id,
+					organizationId: mockVenue.organizationId,
+				}),
+				expect.stringContaining("venue's organization id"),
 			);
 		});
 	});
@@ -472,7 +478,11 @@ describe("Venue Resolver - Organization Field", () => {
 				await resolveOrganization(mockVenue, {}, ctx);
 			} catch (_error) {
 				expect(ctx.log.error).toHaveBeenCalledWith(
-					expect.stringContaining("DataLoader returned empty result"),
+					expect.objectContaining({
+						venueId: mockVenue.id,
+						organizationId: mockVenue.organizationId,
+					}),
+					expect.stringContaining("DataLoader returned null"),
 				);
 			}
 		});
@@ -486,7 +496,11 @@ describe("Venue Resolver - Organization Field", () => {
 				await resolveOrganization(mockVenue, {}, ctx);
 			} catch (_error) {
 				expect(ctx.log.error).toHaveBeenCalledWith(
-					expect.stringContaining("venue.organizationId"),
+					expect.objectContaining({
+						venueId: mockVenue.id,
+						organizationId: "missing-org-123",
+					}),
+					expect.stringContaining("venue's organization id"),
 				);
 			}
 		});

@@ -1,9 +1,9 @@
 import { faker } from "@faker-js/faker";
 import { initGraphQLTada } from "gql.tada";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import type { ClientCustomScalars } from "~/src/graphql/scalars/index";
-// Import the actual implementation to ensure it's loaded for coverage
-import "~/src/graphql/types/Fund/organization";
+import { resolveOrganization } from "~/src/graphql/types/Fund/organization";
+import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import { assertToBeNonNullish } from "../../../helpers";
 import { server } from "../../../server";
 import { mercuriusClient } from "../client";
@@ -202,14 +202,15 @@ describe("Fund.organization Resolver - Integration", () => {
 			);
 			const fund = await createTestFund(adminAuth.token, organization.id);
 
-			// Query without auth header
-			mercuriusClient.setHeaders({});
+			// Query without auth header - pass empty authorization in query options
+			// instead of mutating global client state with setHeaders({})
 			const result = await mercuriusClient.query(Query_Fund_Organization, {
 				variables: {
 					input: {
 						id: fund.id,
 					},
 				},
+				headers: { authorization: "" },
 			});
 
 			expect(result.errors).toBeDefined();
@@ -261,8 +262,8 @@ describe("Fund.organization Resolver - Integration", () => {
 		});
 	});
 
-	describe("DataLoader Behavior", () => {
-		it("should efficiently resolve organization for multiple funds in same org", async () => {
+	describe("Multiple Funds Resolution", () => {
+		it("should resolve organization correctly for multiple funds in same org", async () => {
 			const adminAuth = await getAdminAuth();
 			const organization = await createTestOrganization(adminAuth.token);
 			await createOrgMembership(
@@ -276,7 +277,9 @@ describe("Fund.organization Resolver - Integration", () => {
 			const fund2 = await createTestFund(adminAuth.token, organization.id);
 			const fund3 = await createTestFund(adminAuth.token, organization.id);
 
-			// Query each fund individually - DataLoader should batch organization lookups
+			// Query each fund individually and verify organization resolution
+			// Note: Each query is a separate HTTP request with its own DataLoader instance,
+			// so this tests concurrent resolution correctness, not DataLoader batching
 			const results = await Promise.all([
 				mercuriusClient.query(Query_Fund_Organization, {
 					headers: { authorization: `bearer ${adminAuth.token}` },
@@ -461,6 +464,144 @@ describe("Fund.organization Resolver - Integration", () => {
 			// Verify organization is resolved
 			assertToBeNonNullish(result.data.fund.organization);
 			expect(result.data.fund.organization.id).toBe(organization.id);
+		});
+	});
+
+	describe("Error Handling - Orphaned Fund", () => {
+		it("should throw 'unexpected' error when organization DataLoader returns null", async () => {
+			// Simulate an orphaned fund where the organization no longer exists
+			// This could happen due to data corruption or improper deletion
+			const mockFund = {
+				id: "orphaned-fund-id",
+				organizationId: "deleted-org-id",
+				name: "Orphaned Fund",
+				isTaxDeductible: true,
+				isDefault: false,
+				isArchived: false,
+				creatorId: "creator-id",
+				updaterId: null,
+				createdAt: new Date(),
+				updatedAt: new Date(),
+				referenceNumber: null,
+			};
+
+			const mockCtx = {
+				dataloaders: {
+					organization: {
+						load: vi.fn().mockResolvedValue(null),
+					},
+				},
+				log: {
+					error: vi.fn(),
+					info: vi.fn(),
+					warn: vi.fn(),
+					debug: vi.fn(),
+				},
+			};
+
+			await expect(
+				resolveOrganization(
+					mockFund,
+					{},
+					mockCtx as unknown as Parameters<typeof resolveOrganization>[2],
+				),
+			).rejects.toThrow(TalawaGraphQLError);
+
+			// Verify the error was logged
+			expect(mockCtx.log.error).toHaveBeenCalledWith(
+				"Postgres select operation returned an empty array for a fund's organization id that isn't null.",
+			);
+
+			// Verify DataLoader was called with the correct organization ID
+			expect(mockCtx.dataloaders.organization.load).toHaveBeenCalledWith(
+				"deleted-org-id",
+			);
+		});
+
+		it("should throw error with 'unexpected' code for orphaned fund", async () => {
+			const mockFund = {
+				id: "orphaned-fund-id-2",
+				organizationId: "missing-org-id",
+				name: "Another Orphaned Fund",
+				isTaxDeductible: false,
+				isDefault: false,
+				isArchived: false,
+				creatorId: "creator-id",
+				updaterId: null,
+				createdAt: new Date(),
+				updatedAt: new Date(),
+				referenceNumber: null,
+			};
+
+			const mockCtx = {
+				dataloaders: {
+					organization: {
+						load: vi.fn().mockResolvedValue(null),
+					},
+				},
+				log: {
+					error: vi.fn(),
+					info: vi.fn(),
+					warn: vi.fn(),
+					debug: vi.fn(),
+				},
+			};
+
+			let thrownError: unknown;
+			try {
+				await resolveOrganization(
+					mockFund,
+					{},
+					mockCtx as unknown as Parameters<typeof resolveOrganization>[2],
+				);
+			} catch (error) {
+				thrownError = error;
+			}
+
+			expect(thrownError).toBeDefined();
+			expect(thrownError).toBeInstanceOf(TalawaGraphQLError);
+			expect((thrownError as TalawaGraphQLError).extensions.code).toBe(
+				"unexpected",
+			);
+		});
+
+		it("should propagate DataLoader errors for fund organization lookup", async () => {
+			const mockFund = {
+				id: "fund-with-error",
+				organizationId: "org-causing-error",
+				name: "Fund With Error",
+				isTaxDeductible: true,
+				isDefault: false,
+				isArchived: false,
+				creatorId: "creator-id",
+				updaterId: null,
+				createdAt: new Date(),
+				updatedAt: new Date(),
+				referenceNumber: null,
+			};
+
+			const dbError = new Error("Database connection failed");
+			const mockCtx = {
+				dataloaders: {
+					organization: {
+						load: vi.fn().mockRejectedValue(dbError),
+					},
+				},
+				log: {
+					error: vi.fn(),
+					info: vi.fn(),
+					warn: vi.fn(),
+					debug: vi.fn(),
+				},
+			};
+
+			await expect(
+				resolveOrganization(
+					mockFund,
+					{},
+					mockCtx as unknown as Parameters<typeof resolveOrganization>[2],
+				),
+			).rejects.toThrow("Database connection failed");
 		});
 	});
 });
