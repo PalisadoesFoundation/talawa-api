@@ -9,6 +9,7 @@ describe("eventGenerationWindows insert schema numeric bounds", () => {
 	};
 
 	it("hotWindowMonthsAhead min/max", () => {
+		// Valid boundary values
 		expect(
 			eventGenerationWindowsTableInsertSchema.safeParse({
 				...base,
@@ -21,16 +22,52 @@ describe("eventGenerationWindows insert schema numeric bounds", () => {
 				hotWindowMonthsAhead: 60,
 			}).success,
 		).toBe(true);
+
+		// Valid middle value
+		expect(
+			eventGenerationWindowsTableInsertSchema.safeParse({
+				...base,
+				hotWindowMonthsAhead: 30,
+			}).success,
+		).toBe(true);
+
+		// Invalid: below minimum
 		expect(
 			eventGenerationWindowsTableInsertSchema.safeParse({
 				...base,
 				hotWindowMonthsAhead: 0,
 			}).success,
 		).toBe(false);
+
+		// Invalid: above maximum
 		expect(
 			eventGenerationWindowsTableInsertSchema.safeParse({
 				...base,
 				hotWindowMonthsAhead: 61,
+			}).success,
+		).toBe(false);
+
+		// Invalid: negative number
+		expect(
+			eventGenerationWindowsTableInsertSchema.safeParse({
+				...base,
+				hotWindowMonthsAhead: -1,
+			}).success,
+		).toBe(false);
+
+		// Invalid: non-integer
+		expect(
+			eventGenerationWindowsTableInsertSchema.safeParse({
+				...base,
+				hotWindowMonthsAhead: 1.5,
+			}).success,
+		).toBe(false);
+
+		// Invalid: non-numeric value
+		expect(
+			eventGenerationWindowsTableInsertSchema.safeParse({
+				...base,
+				hotWindowMonthsAhead: "5" as unknown as number,
 			}).success,
 		).toBe(false);
 	});
