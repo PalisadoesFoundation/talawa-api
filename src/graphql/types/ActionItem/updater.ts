@@ -67,11 +67,9 @@ export const resolveUpdater = async (
 
 	const updaterId = parent.updaterId;
 
-	const existingUser = await ctx.drizzleClient.query.usersTable.findFirst({
-		where: (fields, operators) => operators.eq(fields.id, updaterId),
-	});
+	const existingUser = await ctx.dataloaders.user.load(updaterId);
 
-	if (existingUser === undefined) {
+	if (existingUser === null) {
 		ctx.log.error(
 			"Postgres select operation returned an empty array for an action item's updater id that isn't null.",
 		);

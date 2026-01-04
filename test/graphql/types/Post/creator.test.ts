@@ -28,15 +28,10 @@ const resolveCreator = creatorField.resolve as GraphQLFieldResolver<
 describe("Post Resolver - Creator Field", () => {
 	let mockPost: PostType;
 	let ctx: GraphQLContext;
-	let mocks: ReturnType<typeof createMockGraphQLContext>["mocks"];
 
 	beforeEach(() => {
-		const { context, mocks: newMocks } = createMockGraphQLContext(
-			true,
-			"user-123",
-		);
+		const { context } = createMockGraphQLContext(true, "user-123");
 		ctx = context;
-		mocks = newMocks;
 		mockPost = {
 			id: "post-123",
 			caption: "Test Caption",
@@ -59,31 +54,8 @@ describe("Post Resolver - Creator Field", () => {
 			emailAddress: "test@example.com",
 		};
 
-		mocks.drizzleClient.query.usersTable.findFirst.mockImplementation(
-			(options?: { where?: (...args: unknown[]) => unknown }) => {
-				const whereClause = options?.where;
-				expect(whereClause).toBeDefined();
-
-				if (whereClause) {
-					const mockFields = { id: "mock-field-id" };
-
-					const mockEq = vi.fn((field: unknown, value: unknown) => {
-						expect(field).toBe(mockFields.id);
-						expect(value).toBe(mockPost.creatorId);
-						return true;
-					});
-
-					const mockOperators = { eq: mockEq };
-
-					const conditionResult = whereClause(mockFields, mockOperators);
-
-					expect(mockEq).toHaveBeenCalledTimes(1);
-					expect(conditionResult).toBe(true);
-				}
-
-				return Promise.resolve(mockUser);
-			},
-		);
+		// Mock the DataLoader's load function
+		ctx.dataloaders.user.load = vi.fn().mockResolvedValue(mockUser);
 
 		const result = await resolveCreator(
 			mockPost,
@@ -93,15 +65,13 @@ describe("Post Resolver - Creator Field", () => {
 		);
 
 		expect(result).toEqual(mockUser);
-		expect(
-			mocks.drizzleClient.query.usersTable.findFirst,
-		).toHaveBeenCalledTimes(1);
+		expect(ctx.dataloaders.user.load).toHaveBeenCalledWith(mockPost.creatorId);
 	});
 
 	it("should throw unexpected error if creator user does not exist", async () => {
-		mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValueOnce(
-			undefined,
-		);
+		// DataLoader returns null for non-existent users
+		ctx.dataloaders.user.load = vi.fn().mockResolvedValue(null);
+
 		try {
 			await resolveCreator(mockPost, {}, ctx, {} as GraphQLResolveInfo);
 			throw new Error("Expected resolver to throw");
@@ -113,6 +83,9 @@ describe("Post Resolver - Creator Field", () => {
 	it("should return null when creatorId is null", async () => {
 		mockPost.creatorId = null as unknown as string;
 
+		// Mock the DataLoader to verify it's not called
+		ctx.dataloaders.user.load = vi.fn();
+
 		const result = await resolveCreator(
 			mockPost,
 			{},
@@ -121,8 +94,6 @@ describe("Post Resolver - Creator Field", () => {
 		);
 
 		expect(result).toBeNull();
-		expect(
-			mocks.drizzleClient.query.usersTable.findFirst,
-		).not.toHaveBeenCalled();
+		expect(ctx.dataloaders.user.load).not.toHaveBeenCalled();
 	});
 });

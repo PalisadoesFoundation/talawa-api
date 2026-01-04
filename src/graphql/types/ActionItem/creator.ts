@@ -66,11 +66,9 @@ export const resolveCreator = async (
 
 	const creatorId = parent.creatorId;
 
-	const existingUser = await ctx.drizzleClient.query.usersTable.findFirst({
-		where: (fields, operators) => operators.eq(fields.id, creatorId),
-	});
+	const existingUser = await ctx.dataloaders.user.load(creatorId);
 
-	if (existingUser === undefined) {
+	if (existingUser === null) {
 		ctx.log.error(
 			"Postgres select operation returned an empty array for an action item's creator id that isn't null.",
 		);
