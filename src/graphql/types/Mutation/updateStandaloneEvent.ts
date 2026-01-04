@@ -70,6 +70,7 @@ builder.mutationField("updateStandaloneEvent", (t) =>
 						allDay: true,
 						isPublic: true,
 						isRegisterable: true,
+						isInviteOnly: true,
 						location: true,
 						creatorId: true,
 					},
@@ -203,6 +204,30 @@ builder.mutationField("updateStandaloneEvent", (t) =>
 			}
 			if (parsedArgs.input.location !== undefined) {
 				updateData.location = parsedArgs.input.location;
+			}
+
+			// Validate final event visibility state after update
+			const finalIsPublic =
+				parsedArgs.input.isPublic ?? existingEvent.isPublic ?? false;
+			const finalIsInviteOnly =
+				parsedArgs.input.isInviteOnly ?? existingEvent.isInviteOnly ?? false;
+
+			if (finalIsPublic === true && finalIsInviteOnly === true) {
+				throw new TalawaGraphQLError({
+					extensions: {
+						code: "invalid_arguments",
+						issues: [
+							{
+								argumentPath: ["input", "isPublic"],
+								message: "cannot be both Public and Invite-Only",
+							},
+							{
+								argumentPath: ["input", "isInviteOnly"],
+								message: "cannot be both Public and Invite-Only",
+							},
+						],
+					},
+				});
 			}
 
 			const [updatedEvent] = await ctx.drizzleClient
