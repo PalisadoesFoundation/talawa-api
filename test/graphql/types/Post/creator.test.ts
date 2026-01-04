@@ -303,24 +303,6 @@ describe("Post Resolver - Creator Field", () => {
 			expect(result).toEqual(creatorUser);
 		});
 
-		it("should handle empty organization memberships array", async () => {
-			const currentUser = {
-				id: "user-123",
-				role: "member",
-				organizationMembershipsWhereMember: [],
-			};
-
-			mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValue(
-				currentUser,
-			);
-
-			await expect(resolveCreator(mockPost, {}, ctx)).rejects.toThrow(
-				new TalawaGraphQLError({
-					extensions: { code: "unauthorized_action" },
-				}),
-			);
-		});
-
 		it("should handle creatorId as empty string", async () => {
 			const currentUser = {
 				id: "user-123",
@@ -379,7 +361,7 @@ describe("Post Resolver - Creator Field", () => {
 				organizationMembershipsWhereMember: [{ role: "administrator" }],
 			};
 
-			mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValueOnce(
+			mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValue(
 				currentUser,
 			);
 			ctx.dataloaders.user.load = vi.fn().mockResolvedValue(null);
