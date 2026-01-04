@@ -130,7 +130,11 @@ if [ "$INSTALL_MODE" = "docker" ]; then
         warn "Skipping Docker installation (--skip-prereqs)"
     else
         info "Installing Docker..."
-        curl -fsSL https://get.docker.com | sh
+        # Security Note: This uses Docker's official convenience script over HTTPS.
+        # The script is from a trusted source (get.docker.com) but piping to shell
+        # carries inherent risk. Users can review the script first by visiting:
+        # https://get.docker.com or using: curl -fsSL https://get.docker.com | less
+        curl -fsSL --connect-timeout 30 --max-time 300 https://get.docker.com | sh
         
         info "Adding current user to docker group..."
         sudo usermod -aG docker "$USER"
@@ -160,7 +164,9 @@ if command_exists fnm; then
     eval "$(fnm env)"
 else
     info "Installing fnm..."
-    curl -fsSL https://fnm.vercel.app/install | bash -s -- --skip-shell
+    # Security Note: This uses fnm's official installer over HTTPS.
+    # Users can review the script first at: https://fnm.vercel.app/install
+    curl -fsSL --connect-timeout 30 --max-time 120 https://fnm.vercel.app/install | bash -s -- --skip-shell
     
     # Set up fnm for current session
     export PATH="$HOME/.local/share/fnm:$PATH"

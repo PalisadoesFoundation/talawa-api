@@ -9,8 +9,14 @@ import { detectOS } from "./osDetection";
 
 /**
  * Check if a command/package is available in PATH
+ * @param command - Command name to check (alphanumeric, hyphens, underscores only)
  */
 export function isInstalled(command: string): boolean {
+	// Validate command to prevent injection - only allow safe characters
+	if (!/^[a-zA-Z0-9_-]+$/.test(command)) {
+		return false;
+	}
+
 	const currentOS = detectOS();
 
 	try {

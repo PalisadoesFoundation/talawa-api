@@ -164,12 +164,21 @@ export async function install(
 	logger.banner();
 	displaySystemInfo(fullConfig);
 
-	const packageJsonPath = path.resolve(process.cwd(), "package.json");
+	// Auto-detect repository root relative to this script's location
+	// This script is at src/install/index.ts, so repo root is 2 directories up
+	const scriptDir = path.dirname(new URL(import.meta.url).pathname);
+	// Handle Windows paths (URL pathname starts with / on Windows, e.g., /C:/...)
+	const normalizedScriptDir =
+		process.platform === "win32"
+			? scriptDir.replace(/^\/([A-Z]:)/i, "$1")
+			: scriptDir;
+	const repoRoot = path.resolve(normalizedScriptDir, "..", "..");
+	const packageJsonPath = path.join(repoRoot, "package.json");
 
 	// Verify package.json exists
 	if (!fs.existsSync(packageJsonPath)) {
 		logger.error(
-			`package.json not found at ${packageJsonPath}. Please run this script from the repository root.`,
+			`package.json not found at ${packageJsonPath}. Ensure the install directory structure is correct.`,
 		);
 		return {
 			success: false,

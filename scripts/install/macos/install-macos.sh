@@ -77,7 +77,10 @@ else
     fi
     
     info "Installing Homebrew..."
-    /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+    # Security Note: This uses Homebrew's official installer over HTTPS.
+    # Users can review the script first at: https://brew.sh or
+    # https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh
+    /bin/bash -c "$(curl -fsSL --connect-timeout 30 --max-time 300 https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
     
     # Add Homebrew to PATH for Apple Silicon Macs
     if [ -f /opt/homebrew/bin/brew ]; then

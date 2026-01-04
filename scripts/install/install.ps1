@@ -172,6 +172,11 @@ function Install-TalawaPrerequisites {
         } else {
             Write-Info "Installing Chocolatey..."
             
+            # Security Note: This uses Chocolatey's official installer over HTTPS.
+            # The script is from a trusted source (chocolatey.org) but downloading
+            # and executing remote scripts carries inherent risk. Users can review
+            # the script first at: https://community.chocolatey.org/install.ps1
+            
             # Temporarily allow script execution for this process only (does not persist)
             Set-ExecutionPolicy Bypass -Scope Process -Force
             # Enforce TLS 1.2+ for secure download
