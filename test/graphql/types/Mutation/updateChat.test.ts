@@ -18,8 +18,7 @@ const Mutation_updateChat = gql(`
       id
       name
       description
-      avatarName
-      avatarMimeType
+      avatarURL
     }
   }
 `);
@@ -117,10 +116,16 @@ suite("updateChat mutation", () => {
 			creatorId: user.userId,
 		});
 
+		await server.drizzleClient.insert(organizationMembershipsTable).values({
+			memberId: user.userId,
+			organizationId: orgId,
+			role: "administrator",
+		});
+
 		const fakeUpload = Promise.resolve({
 			filename: "evil.exe",
 			mimetype: "application/x-msdownload",
-			createReadStream: () => Readable.from("fake"),
+			createReadStream: () => Readable.from(Buffer.from("fake")),
 		});
 
 		const result = await mercuriusClient.mutate(Mutation_updateChat, {
@@ -222,12 +227,6 @@ suite("updateChat mutation", () => {
 			chatId,
 			memberId: chatAdmin.userId,
 			role: "administrator",
-		});
-
-		await server.drizzleClient.insert(organizationMembershipsTable).values({
-			memberId: chatAdmin.userId,
-			organizationId: orgId,
-			role: "regular",
 		});
 
 		const result = await mercuriusClient.mutate(Mutation_updateChat, {
@@ -338,7 +337,8 @@ suite("updateChat mutation", () => {
 		});
 
 		expect(result.errors).toBeUndefined();
-		expect(result.data?.updateChat.avatarName).toBeNull();
+		expect(result.data?.updateChat.avatarURL).toBeNull();
+
 		const rows = await server.drizzleClient
 			.select()
 			.from(chatsTable)
@@ -351,8 +351,6 @@ suite("updateChat mutation", () => {
 		expect(chat).toBeDefined();
 		expect(chat?.avatarName).toBeNull();
 		expect(chat?.avatarMimeType).toBeNull();
-
-		expect(result.data?.updateChat.avatarMimeType).toBeNull();
 	});
 
 	test("returns unexpected when transaction throws an error", async () => {
