@@ -8,19 +8,9 @@ import {
 	Mutation_createOrganizationMembership,
 	Mutation_createTag,
 	Mutation_deleteCurrentUser,
+	Mutation_deleteTag,
 	Query_signIn,
 } from "../documentNodes";
-
-const DeleteTagMutation = `
-	mutation DeleteTag($input: MutationDeleteTagInput!) {
-		deleteTag(input: $input) {
-			id
-			name
-			createdAt
-			updatedAt
-		}
-	}
-`;
 
 const signInResult = await mercuriusClient.query(Query_signIn, {
 	variables: {
@@ -38,7 +28,7 @@ suite("Mutation field deleteTag", () => {
 	//// 1. Unauthenticated
 	suite("when the client is not authenticated", () => {
 		test("should return an error with unauthenticated extensions code", async () => {
-			const result = await mercuriusClient.mutate(DeleteTagMutation, {
+			const result = await mercuriusClient.mutate(Mutation_deleteTag, {
 				variables: {
 					input: {
 						id: faker.string.uuid(),
@@ -61,7 +51,7 @@ suite("Mutation field deleteTag", () => {
 	//// 2. Invalid arguments
 	suite("when arguments are invalid (parse error)", () => {
 		test("should return an error with invalid_arguments extensions code", async () => {
-			const result = await mercuriusClient.mutate(DeleteTagMutation, {
+			const result = await mercuriusClient.mutate(Mutation_deleteTag, {
 				headers: { authorization: `bearer ${authToken}` },
 				variables: {
 					input: {
@@ -93,7 +83,7 @@ suite("Mutation field deleteTag", () => {
 		test("should return an error with arguments_associated_resources_not_found extensions code", async () => {
 			const nonExistentTagId = faker.string.uuid();
 
-			const result = await mercuriusClient.mutate(DeleteTagMutation, {
+			const result = await mercuriusClient.mutate(Mutation_deleteTag, {
 				headers: { authorization: `bearer ${authToken}` },
 				variables: {
 					input: {
@@ -156,7 +146,7 @@ suite("Mutation field deleteTag", () => {
 				headers: { authorization: `bearer ${userToken}` },
 			});
 
-			const result = await mercuriusClient.mutate(DeleteTagMutation, {
+			const result = await mercuriusClient.mutate(Mutation_deleteTag, {
 				headers: { authorization: `bearer ${userToken}` },
 				variables: {
 					input: {
@@ -213,7 +203,7 @@ suite("Mutation field deleteTag", () => {
 			assertToBeNonNullish(tagId);
 
 			// Try to delete as regular user (not a member)
-			const result = await mercuriusClient.mutate(DeleteTagMutation, {
+			const result = await mercuriusClient.mutate(Mutation_deleteTag, {
 				headers: { authorization: `bearer ${regularAuthToken}` },
 				variables: {
 					input: {
@@ -283,7 +273,7 @@ suite("Mutation field deleteTag", () => {
 			assertToBeNonNullish(tagId);
 
 			// Try to delete as regular member
-			const result = await mercuriusClient.mutate(DeleteTagMutation, {
+			const result = await mercuriusClient.mutate(Mutation_deleteTag, {
 				headers: { authorization: `bearer ${memberAuthToken}` },
 				variables: {
 					input: {
@@ -353,7 +343,7 @@ suite("Mutation field deleteTag", () => {
 			assertToBeNonNullish(tagId);
 
 			// Delete as organization admin (should succeed)
-			const result = await mercuriusClient.mutate(DeleteTagMutation, {
+			const result = await mercuriusClient.mutate(Mutation_deleteTag, {
 				headers: { authorization: `bearer ${orgAdminToken}` },
 				variables: {
 					input: {
@@ -410,7 +400,7 @@ suite("Mutation field deleteTag", () => {
 					returning: vi.fn().mockResolvedValue([]),
 				});
 
-				const result = await mercuriusClient.mutate(DeleteTagMutation, {
+				const result = await mercuriusClient.mutate(Mutation_deleteTag, {
 					headers: { authorization: `bearer ${authToken}` },
 					variables: {
 						input: {
@@ -466,7 +456,7 @@ suite("Mutation field deleteTag", () => {
 			assertToBeNonNullish(tagId);
 
 			// Delete tag
-			const result = await mercuriusClient.mutate(DeleteTagMutation, {
+			const result = await mercuriusClient.mutate(Mutation_deleteTag, {
 				headers: { authorization: `bearer ${authToken}` },
 				variables: {
 					input: {
@@ -533,7 +523,7 @@ suite("Mutation field deleteTag", () => {
 			assertToBeNonNullish(tagId);
 
 			// Delete tag as organization admin
-			const result = await mercuriusClient.mutate(DeleteTagMutation, {
+			const result = await mercuriusClient.mutate(Mutation_deleteTag, {
 				headers: { authorization: `bearer ${orgAdminToken}` },
 				variables: {
 					input: {
