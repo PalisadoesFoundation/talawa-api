@@ -116,6 +116,13 @@ step $CURRENT_STEP $TOTAL_STEPS "Checking Docker installation..."
 if [ "$INSTALL_MODE" = "docker" ]; then
     if command_exists docker; then
         success "Docker is already installed: $(docker --version)"
+        # Verify Docker is running
+        if ! docker info >/dev/null 2>&1; then
+            warn "Docker is installed but not running."
+            info "Please launch Docker Desktop from Applications and wait for it to start."
+        else
+            success "Docker is running"
+        fi
     elif [ "$SKIP_PREREQS" = "true" ]; then
         warn "Skipping Docker installation (--skip-prereqs)"
     else
@@ -222,6 +229,13 @@ if command_exists pnpm; then
 else
     info "Installing pnpm..."
     npm install -g "pnpm@$PNPM_VERSION"
+fi
+
+# Verify pnpm is available in PATH
+if ! command_exists pnpm; then
+    error "pnpm installation succeeded but command not found in PATH"
+    info "You may need to restart your shell or add npm global bin to PATH"
+    exit 1
 fi
 
 success "pnpm installed: v$(pnpm --version)"

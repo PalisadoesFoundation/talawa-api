@@ -149,6 +149,17 @@ if [ "$INSTALL_MODE" = "docker" ]; then
     else
         warn "Docker Compose not found. It may be included with Docker Desktop or installed separately."
     fi
+    
+    # Verify Docker is running
+    if command_exists docker; then
+        if ! docker info >/dev/null 2>&1; then
+            warn "Docker is installed but not running."
+            info "Start Docker with: sudo systemctl start docker"
+            info "Enable on boot with: sudo systemctl enable docker"
+        else
+            success "Docker is running"
+        fi
+    fi
 else
     info "Local installation mode - skipping Docker setup"
 fi
@@ -249,6 +260,13 @@ if command_exists pnpm; then
 else
     info "Installing pnpm..."
     npm install -g "pnpm@$PNPM_VERSION"
+fi
+
+# Verify pnpm is available in PATH
+if ! command_exists pnpm; then
+    error "pnpm installation succeeded but command not found in PATH"
+    info "You may need to restart your shell or add npm global bin to PATH"
+    exit 1
 fi
 
 success "pnpm installed: v$(pnpm --version)"

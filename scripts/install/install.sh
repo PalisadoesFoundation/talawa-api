@@ -115,6 +115,14 @@ main() {
     
     if is_wsl; then
         warn "Running in WSL environment"
+        if [ "$INSTALL_MODE" = "docker" ]; then
+            warn "For Docker support in WSL, you have two options:"
+            info "  1. Install Docker Desktop for Windows and enable WSL integration (recommended)"
+            info "     See: https://docs.docker.com/desktop/wsl/"
+            info "  2. Install Docker Engine directly in WSL (advanced)"
+            info "     See: https://docs.docker.com/engine/install/ubuntu/"
+            echo ""
+        fi
     fi
     
     # Get the directory where this script is located

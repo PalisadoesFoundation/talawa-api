@@ -119,11 +119,12 @@ function Get-RepoRoot {
 function Install-TalawaPrerequisites {
     Show-Banner
     
-    # Check for admin rights (recommended but not required for all operations)
+    # Check for admin rights - required for Chocolatey and many package installations
     if (-not (Test-Administrator)) {
-        Write-Warn "Not running as Administrator. Some installations may require elevation."
-        Write-Warn "Consider running PowerShell as Administrator for best results."
-        Write-Host ""
+        Write-Err "This script requires Administrator privileges."
+        Write-Info "Please run PowerShell as Administrator and try again."
+        Write-Info "Right-click PowerShell and select 'Run as Administrator'"
+        exit 1
     }
     
     # Get repo root
@@ -166,8 +167,14 @@ function Install-TalawaPrerequisites {
             # Enforce TLS 1.2+ for secure download
             [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072
             # Use Invoke-WebRequest with timeout (30 seconds) to prevent indefinite hangs
-            $installScript = (Invoke-WebRequest -Uri 'https://community.chocolatey.org/install.ps1' -UseBasicParsing -TimeoutSec 30).Content
-            Invoke-Expression $installScript
+            try {
+                $installScript = (Invoke-WebRequest -Uri 'https://community.chocolatey.org/install.ps1' -UseBasicParsing -TimeoutSec 30).Content
+                Invoke-Expression $installScript
+            } catch {
+                Write-Err "Failed to download/install Chocolatey: $_"
+                Write-Info "You can manually install Chocolatey from https://chocolatey.org/install"
+                exit 1
+            }
             
             # Refresh environment
             $env:Path = [System.Environment]::GetEnvironmentVariable("Path", "Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path", "User")
