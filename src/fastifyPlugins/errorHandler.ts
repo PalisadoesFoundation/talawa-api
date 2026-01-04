@@ -5,6 +5,7 @@ import type {
 	FastifyRequest,
 } from "fastify";
 import fastifyPlugin from "fastify-plugin";
+import { GRAPHQL_PATH } from "~/src/routes/graphql";
 import { normalizeError } from "~/src/utilities/errors/errorTransformer";
 import { TalawaRestError } from "~/src/utilities/errors/TalawaRestError";
 
@@ -66,7 +67,7 @@ export const errorHandlerPlugin = fastifyPlugin(
 
 				// Check if it's a GraphQL request (POST /graphql)
 				// If so, we should return 200 OK because GraphQL handles errors in the body
-				if (request.url === "/graphql" && request.method === "POST") {
+				if (request.url === GRAPHQL_PATH && request.method === "POST") {
 					return reply.status(200).send({
 						errors: [
 							{

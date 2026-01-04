@@ -3,6 +3,8 @@ import type { FastifyBaseLogger } from "fastify";
 import type { ScheduledTask, ScheduleOptions } from "node-cron";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import type * as schema from "~/src/drizzle/schema";
+import { ErrorCode } from "~/src/utilities/errors/errorCodes";
+import { TalawaRestError } from "~/src/utilities/errors/TalawaRestError";
 
 import {
 	runCleanupWorkerSafely,
@@ -310,7 +312,10 @@ describe("backgroundServiceWorker", () => {
 			const cron = await import("node-cron");
 
 			const stopMock = vi.fn().mockImplementationOnce(() => {
-				throw new Error("stop boom");
+				throw new TalawaRestError({
+					code: ErrorCode.INTERNAL_SERVER_ERROR,
+					message: "stop boom",
+				});
 			});
 
 			const thrownTask: Partial<ScheduledTask> = {

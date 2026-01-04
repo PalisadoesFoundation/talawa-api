@@ -4,6 +4,8 @@ import path from "node:path";
 import process from "node:process";
 import dotenv from "dotenv";
 import inquirer from "inquirer";
+import { ErrorCode } from "src/utilities/errors/errorCodes";
+import { TalawaRestError } from "src/utilities/errors/TalawaRestError";
 import { envFileBackup } from "./envFileBackup/envFileBackup";
 import { updateEnvVariable } from "./updateEnvVariable";
 
@@ -97,7 +99,10 @@ export function generateJwtSecret(): string {
 			"⚠️ Warning: Permission denied while generating JWT secret. Ensure the process has sufficient filesystem access.",
 			err,
 		);
-		throw new Error("Failed to generate JWT secret");
+		throw new TalawaRestError({
+			code: ErrorCode.INTERNAL_SERVER_ERROR,
+			message: "Failed to generate JWT secret",
+		});
 	}
 }
 
@@ -186,9 +191,10 @@ export function initializeEnvFile(answers: SetupAnswers): void {
 
 	if (!fs.existsSync(envFileToUse)) {
 		console.warn(`⚠️ Warning: Configuration file '${envFileToUse}' is missing.`);
-		throw new Error(
-			`Configuration file '${envFileToUse}' is missing. Please create the file or use a different environment configuration.`,
-		);
+		throw new TalawaRestError({
+			code: ErrorCode.NOT_FOUND,
+			message: `Configuration file '${envFileToUse}' is missing. Please create the file or use a different environment configuration.`,
+		});
 	}
 
 	try {
@@ -213,9 +219,11 @@ export function initializeEnvFile(answers: SetupAnswers): void {
 			`❌ Error: Failed to load environment file '${envFileToUse}'.`,
 		);
 		console.error(error instanceof Error ? error.message : error);
-		throw new Error(
-			"Failed to load environment file. Please check file permissions and ensure it contains valid environment variables.",
-		);
+		throw new TalawaRestError({
+			code: ErrorCode.INTERNAL_SERVER_ERROR,
+			message:
+				"Failed to load environment file. Please check file permissions and ensure it contains valid environment variables.",
+		});
 	}
 }
 

@@ -11,8 +11,13 @@ import {
 	Query_signIn,
 } from "../documentNodes";
 
-afterEach(() => {
+afterEach(async () => {
 	vi.clearAllMocks();
+	// Clear rate limit keys to prevent rate limiting between tests
+	const keys = await server.redis.keys("rate-limit:*");
+	if (keys.length > 0) {
+		await server.redis.del(...keys);
+	}
 });
 
 // Helper function to create a test organization

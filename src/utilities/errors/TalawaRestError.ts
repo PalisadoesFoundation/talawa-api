@@ -96,11 +96,8 @@ export class TalawaRestError extends Error {
 		const error: StandardErrorPayload["error"] = {
 			code: this.code,
 			message: this.message,
+			details: this.details, // Always include details, even if undefined
 		};
-
-		if (this.details !== undefined) {
-			error.details = this.details;
-		}
 
 		if (correlationId !== undefined) {
 			error.correlationId = correlationId;

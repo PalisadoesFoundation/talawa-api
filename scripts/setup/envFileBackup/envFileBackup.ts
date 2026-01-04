@@ -1,5 +1,7 @@
 import fs, { constants } from "node:fs";
 import path from "node:path";
+import { ErrorCode } from "src/utilities/errors/errorCodes";
+import { TalawaRestError } from "src/utilities/errors/TalawaRestError";
 
 export const envFileBackup = async (shouldBackup: boolean): Promise<void> => {
 	try {
@@ -29,6 +31,9 @@ export const envFileBackup = async (shouldBackup: boolean): Promise<void> => {
 		}
 	} catch (error) {
 		console.error("Error backing up .env file:", error);
-		throw new Error(`Failed to backup .env file: ${(error as Error).message}`);
+		throw new TalawaRestError({
+			code: ErrorCode.INTERNAL_SERVER_ERROR,
+			message: `Failed to backup .env file: ${(error as Error).message}`,
+		});
 	}
 };

@@ -49,6 +49,7 @@ export function createMockGraphQLContext(
 
 	// Create the explicit context
 	const explicitContext: ExplicitGraphQLContext = {
+		id: "test-correlation-id",
 		cache: {
 			get: vi.fn().mockImplementation(async (key: string) => {
 				return cacheState[key] ?? null;

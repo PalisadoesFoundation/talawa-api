@@ -4,11 +4,11 @@ import { afterEach, expect, suite, test } from "vitest";
 import { usersTable } from "~/src/drizzle/schema";
 import { agendaItemsTableInsertSchema } from "~/src/drizzle/tables/agendaItems";
 import { ErrorCode } from "~/src/utilities/errors/errorCodes";
-import {
-	TalawaGraphQLError,
-	type TalawaGraphQLFormattedError,
-	type UnauthenticatedExtensions,
+import type {
+	TalawaGraphQLFormattedError,
+	UnauthenticatedExtensions,
 } from "~/src/utilities/TalawaGraphQLError";
+import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import { assertToBeNonNullish } from "../../../helpers";
 import { server } from "../../../server";
 import { mercuriusClient } from "../client";
@@ -51,7 +51,7 @@ async function getAdminAuthTokenAndId(): Promise<{
 		) {
 			throw new TalawaGraphQLError({
 				extensions: {
-					code: ErrorCode.INTERNAL_SERVER_ERROR,
+					code: ErrorCode.INVALID_INPUT,
 				},
 				message: "Admin credentials are missing in environment configuration",
 			});
@@ -82,7 +82,7 @@ async function getAdminAuthTokenAndId(): Promise<{
 		) {
 			throw new TalawaGraphQLError({
 				extensions: {
-					code: ErrorCode.UNAUTHENTICATED,
+					code: ErrorCode.INTERNAL_SERVER_ERROR,
 				},
 				message:
 					"Admin authentication succeeded but no token or user ID was returned",

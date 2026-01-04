@@ -1,8 +1,6 @@
-import { getTestEnvConfig } from "test/envConfigSchema";
 import { describe, expect, it } from "vitest";
 import { createServer } from "~/src/createServer";
-
-const testEnvConfig = getTestEnvConfig();
+import { testEnvConfig } from "../../envConfigSchema";
 
 describe("Server-Timing header", () => {
 	it("includes db, cache, total", async () => {

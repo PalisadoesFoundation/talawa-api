@@ -3,6 +3,8 @@ import { eq } from "drizzle-orm";
 import { afterEach, expect, suite, test, vi } from "vitest";
 
 import { usersTable } from "~/src/drizzle/schema";
+import { ErrorCode } from "~/src/utilities/errors/errorCodes";
+import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import { assertToBeNonNullish } from "../../../helpers";
 import { server } from "../../../server";
 import { mercuriusClient } from "../client";
@@ -31,9 +33,12 @@ async function getAdminAuth() {
 			!server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS ||
 			!server.envConfig.API_ADMINISTRATOR_USER_PASSWORD
 		) {
-			throw new Error(
-				"Admin credentials are missing in environment configuration",
-			);
+			throw new TalawaGraphQLError({
+				extensions: {
+					code: ErrorCode.INVALID_INPUT,
+				},
+				message: "Admin credentials are missing in environment configuration",
+			});
 		}
 
 		const adminSignInResult = await mercuriusClient.query(Query_signIn, {
@@ -46,11 +51,14 @@ async function getAdminAuth() {
 		});
 
 		if (adminSignInResult.errors) {
-			throw new Error(
-				`Admin authentication failed: ${
+			throw new TalawaGraphQLError({
+				extensions: {
+					code: ErrorCode.UNAUTHENTICATED,
+				},
+				message: `Admin authentication failed: ${
 					adminSignInResult.errors[0]?.message || "Unknown error"
 				}`,
-			);
+			});
 		}
 		assertToBeNonNullish(adminSignInResult.data.signIn?.authenticationToken);
 		assertToBeNonNullish(adminSignInResult.data.signIn?.user?.id);
@@ -62,11 +70,14 @@ async function getAdminAuth() {
 
 		return cachedAdminAuth;
 	} catch (error) {
-		throw new Error(
-			`Failed to get admin authentication token: ${
+		throw new TalawaGraphQLError({
+			extensions: {
+				code: ErrorCode.INTERNAL_SERVER_ERROR,
+			},
+			message: `Failed to get admin authentication token: ${
 				error instanceof Error ? error.message : "Unknown error"
 			}`,
-		);
+		});
 	}
 }
 
@@ -86,9 +97,12 @@ async function createOrganization(adminAuthToken: string): Promise<string> {
 	);
 
 	if (createOrgResult.errors) {
-		throw new Error(
-			`Organization creation failed: ${JSON.stringify(createOrgResult.errors)}`,
-		);
+		throw new TalawaGraphQLError({
+			extensions: {
+				code: ErrorCode.INTERNAL_SERVER_ERROR,
+			},
+			message: `Organization creation failed: ${JSON.stringify(createOrgResult.errors)}`,
+		});
 	}
 
 	assertToBeNonNullish(createOrgResult.data?.createOrganization?.id);
@@ -117,9 +131,12 @@ async function addOrganizationMembership(params: {
 	);
 
 	if (result.errors) {
-		throw new Error(
-			`Organization membership creation failed: ${JSON.stringify(result.errors)}`,
-		);
+		throw new TalawaGraphQLError({
+			extensions: {
+				code: ErrorCode.INTERNAL_SERVER_ERROR,
+			},
+			message: `Organization membership creation failed: ${JSON.stringify(result.errors)}`,
+		});
 	}
 }
 
@@ -140,9 +157,12 @@ async function createTagFolder(params: {
 	});
 
 	if (result.errors) {
-		throw new Error(
-			`Tag folder creation failed: ${JSON.stringify(result.errors)}`,
-		);
+		throw new TalawaGraphQLError({
+			extensions: {
+				code: ErrorCode.INTERNAL_SERVER_ERROR,
+			},
+			message: `Tag folder creation failed: ${JSON.stringify(result.errors)}`,
+		});
 	}
 
 	assertToBeNonNullish(result.data?.createTagFolder?.id);
@@ -455,7 +475,7 @@ suite("Mutation field deleteTagFolder", () => {
 				},
 			});
 
-			expect(result.data?.deleteTagFolder).toEqual(null);
+			expect(result.data?.deleteTagFolder).toBeNull();
 			expect(result.errors).toEqual(
 				expect.arrayContaining([
 					expect.objectContaining({

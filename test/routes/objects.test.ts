@@ -48,7 +48,7 @@ const createTestApp = async () => {
 	return app;
 };
 
-describe("Objects route error handling", () => {
+describe("Error handler integration using mocked objects route", () => {
 	let app: Awaited<ReturnType<typeof createTestApp>>;
 
 	beforeEach(async () => {

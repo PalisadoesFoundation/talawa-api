@@ -1,5 +1,5 @@
 import { faker } from "@faker-js/faker";
-import { expect, suite, test, vi } from "vitest";
+import { beforeEach, expect, suite, test, vi } from "vitest";
 import { POST_CAPTION_MAX_LENGTH } from "~/src/drizzle/tables/posts";
 import type { InvalidArgumentsExtensions } from "~/src/utilities/TalawaGraphQLError";
 import { assertToBeNonNullish } from "../../../helpers";
@@ -27,6 +27,14 @@ const adminToken = signInResult.data?.signIn?.authenticationToken ?? null;
 assertToBeNonNullish(adminToken);
 
 suite("Mutation field updatePost", () => {
+	beforeEach(async () => {
+		// Clear rate limit keys to prevent rate limiting between tests
+		const keys = await server.redis.keys("rate-limit:*");
+		if (keys.length > 0) {
+			await server.redis.del(...keys);
+		}
+	});
+
 	suite("when the client is not authenticated", () => {
 		test("should return an error with unauthenticated extensions code", async () => {
 			const result = await mercuriusClient.mutate(Mutation_updatePost, {

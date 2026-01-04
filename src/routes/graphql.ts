@@ -29,6 +29,12 @@ import { DEFAULT_REFRESH_TOKEN_EXPIRES_MS } from "../utilities/refreshTokenUtils
 import { TalawaGraphQLError } from "../utilities/TalawaGraphQLError";
 
 /**
+ * GraphQL endpoint path constant.
+ * This centralizes the GraphQL endpoint path configuration for reuse across modules.
+ */
+export const GRAPHQL_PATH = "/graphql";
+
+/**
  * Type of the initial context argument provided to the createContext function by the graphql server.
  */
 type InitialContext = {
@@ -394,7 +400,7 @@ export const graphql = fastifyPlugin(async (fastify) => {
 			enabled: fastify.envConfig.API_IS_GRAPHIQL,
 		},
 		cache: false,
-		path: "/graphql",
+		path: GRAPHQL_PATH,
 		schema: initialSchema,
 		errorFormatter,
 		subscription: {

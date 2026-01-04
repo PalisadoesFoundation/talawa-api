@@ -1,7 +1,7 @@
 import { createServer } from "~/src/createServer";
-import { getTestEnvConfig } from "./envConfigSchema";
+import { testEnvConfig } from "./envConfigSchema";
 
-export const testEnvConfig = getTestEnvConfig();
+export { testEnvConfig };
 
 // Ensure API_COOKIE_SECRET is set in process.env for createServer's internal validation
 // This uses the default value from testEnvConfigSchema if not present in env
@@ -31,5 +31,11 @@ export const server = await createServer({
 		 * This makes the server test instance use the test cookie secret.
 		 */
 		API_COOKIE_SECRET: testEnvConfig.API_COOKIE_SECRET,
+		/**
+		 * Set very high rate limits for testing to prevent test failures due to rate limiting.
+		 * Tests run in parallel and generate high volumes of requests.
+		 */
+		API_RATE_LIMIT_BUCKET_CAPACITY: 1000000, // 1 million requests
+		API_RATE_LIMIT_REFILL_RATE: 100000, // 100k requests per second refill
 	},
 });

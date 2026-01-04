@@ -38,6 +38,12 @@ suite("Mutation field updateOrganization", () => {
 	const testCleanupFunctions: Array<() => Promise<void>> = [];
 
 	afterEach(async () => {
+		// Clear rate limit keys to prevent rate limiting between tests
+		const keys = await server.redis.keys("rate-limit:*");
+		if (keys.length > 0) {
+			await server.redis.del(...keys);
+		}
+
 		let firstError: unknown;
 		while (testCleanupFunctions.length > 0) {
 			const cleanup = testCleanupFunctions.pop();
@@ -447,7 +453,7 @@ suite("Mutation field updateOrganization", () => {
 			},
 		});
 
-		expect(result.data?.updateOrganization).toBeNull();
+		expect(result.data?.updateOrganization ?? null).toBeNull();
 		expect(result.errors).toEqual(
 			expect.arrayContaining([
 				expect.objectContaining({

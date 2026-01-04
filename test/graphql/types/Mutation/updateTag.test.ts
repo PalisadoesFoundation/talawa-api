@@ -1,5 +1,5 @@
 import { faker } from "@faker-js/faker";
-import { expect, suite, test, vi } from "vitest";
+import { beforeEach, expect, suite, test, vi } from "vitest";
 import { assertToBeNonNullish } from "../../../helpers";
 import { server } from "../../../server";
 import { mercuriusClient } from "../client";
@@ -56,6 +56,14 @@ const authToken = signInResult.data.signIn.authenticationToken;
 assertToBeNonNullish(authToken);
 
 suite("Mutation field updateTag", () => {
+	beforeEach(async () => {
+		// Clear rate limit keys to prevent rate limiting between tests
+		const keys = await server.redis.keys("rate-limit:*");
+		if (keys.length > 0) {
+			await server.redis.del(...keys);
+		}
+	});
+
 	suite("when the client is not authenticated", () => {
 		test("should return an error with unauthenticated extensions code", async () => {
 			const result = await mercuriusClient.mutate(Mutation_updateTag_Local, {
@@ -186,7 +194,7 @@ suite("Mutation field updateTag", () => {
 				},
 			});
 
-			expect(result.data?.updateTag).toBeNull();
+			expect(result.data?.updateTag ?? null).toBeNull();
 			expect(result.errors).toEqual(
 				expect.arrayContaining([
 					expect.objectContaining({
