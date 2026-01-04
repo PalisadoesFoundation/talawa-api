@@ -1,3 +1,4 @@
+import type { CookieSerializeOptions } from "@fastify/cookie";
 import type { FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
 import "@fastify/cookie";
 import { GraphQLObjectType, GraphQLSchema, GraphQLString } from "graphql";
@@ -9,7 +10,7 @@ import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 // Mock dependencies
 vi.mock("@pothos/plugin-complexity", () => ({
 	complexityFromQuery: vi.fn(),
-})); 
+}));
 
 vi.mock("~/src/graphql/schemaManager", () => ({
 	default: {
@@ -36,8 +37,20 @@ const iso8601 = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?Z$/;
 
 describe("GraphQL Routes", () => {
 	let mockFastify: Partial<FastifyInstance>;
-	let mockRequest: Partial<FastifyRequest> & { cookies: Record<string, string> };
-	let mockReply: Partial<FastifyReply> & { setCookie: ReturnType<typeof vi.fn> };
+	let mockRequest: Partial<FastifyRequest> & {
+		cookies: Record<string, string>;
+	};
+	let mockReply: Partial<FastifyReply> & {
+		setCookie: ReturnType<
+			typeof vi.fn<
+				(
+					name: string,
+					value: string,
+					options?: CookieSerializeOptions,
+				) => FastifyReply
+			>
+		>;
+	};
 	let mockSocket: Partial<WebSocket>;
 
 	beforeEach(() => {
@@ -80,7 +93,14 @@ describe("GraphQL Routes", () => {
 
 		// Setup mock reply
 		mockReply = {
-			setCookie: vi.fn(),
+			setCookie:
+				vi.fn<
+					(
+						name: string,
+						value: string,
+						options?: CookieSerializeOptions,
+					) => FastifyReply
+				>(),
 		};
 
 		// Setup mock socket
@@ -857,12 +877,12 @@ describe("GraphQL Routes", () => {
 				new Error("No token"),
 			);
 
-		vi.mocked(TalawaGraphQLError).mockImplementation(function (config) {
-			const error = new Error(config.message);
-			(error as Error & { extensions?: unknown }).extensions =
-				config.extensions;
-			return error as TalawaGraphQLError;
-		});
+			vi.mocked(TalawaGraphQLError).mockImplementation((config) => {
+				const error = new Error(config.message);
+				(error as Error & { extensions?: unknown }).extensions =
+					config.extensions;
+				return error as TalawaGraphQLError;
+			});
 
 			expect(TalawaGraphQLError).toHaveBeenCalledWith({
 				extensions: {
@@ -881,12 +901,12 @@ describe("GraphQL Routes", () => {
 			);
 			vi.mocked(leakyBucket).mockResolvedValue(false);
 
-		vi.mocked(TalawaGraphQLError).mockImplementation(function (config) {
-			const error = new Error("Rate limit exceeded");
-			(error as Error & { extensions?: unknown }).extensions =
-				config.extensions;
-			return error as TalawaGraphQLError;
-		});
+			vi.mocked(TalawaGraphQLError).mockImplementation((config) => {
+				const error = new Error("Rate limit exceeded");
+				(error as Error & { extensions?: unknown }).extensions =
+					config.extensions;
+				return error as TalawaGraphQLError;
+			});
 			expect(TalawaGraphQLError).toHaveBeenCalledWith({
 				extensions: { code: "too_many_requests" },
 			});

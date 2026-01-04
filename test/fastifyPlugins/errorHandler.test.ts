@@ -4,7 +4,9 @@ import errorHandlerPlugin from "../../src/fastifyPlugins/errorHandler";
 
 describe("errorHandlerPlugin", () => {
 	let app: ReturnType<typeof Fastify>;
-	let errorSpy: ReturnType<typeof vi.fn>;
+	let errorSpy: ReturnType<
+		typeof vi.fn<[unknown, string?, ...unknown[]], void>
+	>;
 
 	beforeEach(async () => {
 		app = Fastify({
@@ -14,7 +16,7 @@ describe("errorHandlerPlugin", () => {
 			},
 		});
 
-		errorSpy = vi.fn();
+		errorSpy = vi.fn<[unknown, string?, ...unknown[]], void>();
 
 		// Attach spy to request-scoped logger
 		app.addHook("onRequest", async (request: FastifyRequest) => {
