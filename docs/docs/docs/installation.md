@@ -172,6 +172,4 @@ eval "$(fnm env --use-on-cd)"
 
 ## Manual Installation
 
-For manual installation without the one-click scripts, see:
-- [INSTALLATION.md](../INSTALLATION.md) - Detailed manual setup guide
-- [Docker Setup](./docker-setup.md) - Docker-specific configuration
+For manual installation without the one-click scripts, see the [INSTALLATION.md](https://github.com/PalisadoesFoundation/talawa-api/blob/develop/INSTALLATION.md) file in the repository root for detailed manual setup instructions.
