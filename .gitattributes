@@ -1,0 +1,20 @@
+# This file is necessary for Windows automatic installation compatibility.
+# It ensures shell scripts have correct LF line endings when cloned on Windows,
+# preventing "bad interpreter" errors when running install scripts in WSL or Git Bash.
+#
+# Normalize line endings to LF on checkin, native on checkout
+* text=auto
+
+# Explicitly declare text files
+*.ts text
+*.js text
+*.json text
+*.json5 text
+*.md text
+
+# Exclude workflow files from normalization to prevent CI issues
+.github/workflows/* -text
+# Declare script files with platform-specific line endings
+# Shell scripts: LF (Unix), PowerShell scripts: CRLF (Windows)
+*.sh text eol=lf
+*.ps1 text eol=crlf

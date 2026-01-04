@@ -12,6 +12,7 @@
 	"entryPoints": ["src"],
 	"exclude": [
 		"src/vite-env.d.ts",
+		"src/install/**",
 		"**/*.spec.{ts,tsx}",
 		"**/*.test.{ts,tsx}",
 		"**/__tests__/**",
