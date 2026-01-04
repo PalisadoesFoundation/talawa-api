@@ -1,8 +1,8 @@
 import { createMockGraphQLContext } from "test/_Mocks_/mockContextCreator/mockContextCreator";
 import { beforeEach, describe, expect, it } from "vitest";
 import type { GraphQLContext } from "~/src/graphql/context";
-import type { Tag as TagType } from "~/src/graphql/types/Tag/Tag";
 import { tagCreatorResolver } from "~/src/graphql/types/Tag/creator";
+import type { Tag as TagType } from "~/src/graphql/types/Tag/Tag";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 
 //mock current user details

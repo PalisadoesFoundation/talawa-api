@@ -1,5 +1,4 @@
 import {
-	type SQL,
 	and,
 	asc,
 	desc,
@@ -9,6 +8,7 @@ import {
 	isNotNull,
 	lt,
 	or,
+	type SQL,
 } from "drizzle-orm";
 import { z } from "zod";
 import {
@@ -16,18 +16,19 @@ import {
 	commentVotesTableInsertSchema,
 } from "~/src/drizzle/tables/commentVotes";
 import { User } from "~/src/graphql/types/User/User";
-import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
+import envConfig from "~/src/utilities/graphqLimits";
 import {
 	defaultGraphQLConnectionArgumentsSchema,
 	transformDefaultGraphQLConnectionArguments,
 	transformToDefaultGraphQLConnection,
-} from "~/src/utilities/defaultGraphQLConnection";
-import envConfig from "~/src/utilities/graphqLimits";
+} from "~/src/utilities/graphqlConnection";
+import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import { Comment } from "./Comment";
+
 const upVotersArgumentsSchema = defaultGraphQLConnectionArgumentsSchema
 	.transform(transformDefaultGraphQLConnectionArguments)
 	.transform((arg, ctx) => {
-		let cursor: z.infer<typeof cursorSchema> | undefined = undefined;
+		let cursor: z.infer<typeof cursorSchema> | undefined;
 
 		try {
 			if (arg.cursor !== undefined) {
@@ -35,7 +36,7 @@ const upVotersArgumentsSchema = defaultGraphQLConnectionArgumentsSchema
 					JSON.parse(Buffer.from(arg.cursor, "base64url").toString("utf-8")),
 				);
 			}
-		} catch (error) {
+		} catch (_error) {
 			ctx.addIssue({
 				code: "custom",
 				message: "Not a valid cursor.",
@@ -205,13 +206,10 @@ Comment.implement({
 					}
 
 					return transformToDefaultGraphQLConnection({
-						createCursor: (vote) =>
-							Buffer.from(
-								JSON.stringify({
-									createdAt: vote.createdAt.toISOString(),
-									creatorId: vote.creatorId,
-								}),
-							).toString("base64url"),
+						createCursor: (vote) => ({
+							createdAt: vote.createdAt,
+							creatorId: vote.creatorId ?? "",
+						}),
 						createNode: (vote) => vote.creator,
 						parsedArgs,
 						// None of the comment votes below contain a `creator` field with `null` as the value because of the sql query logic. This filter operation is here just to prevent type errors.

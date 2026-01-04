@@ -6,8 +6,8 @@ import { recurringEventInstancesTable } from "~/src/drizzle/tables/recurringEven
 import { usersTable } from "~/src/drizzle/tables/users";
 import { builder } from "~/src/graphql/builder";
 import { EventAttendee } from "~/src/graphql/types/EventAttendee/EventAttendee";
-import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import envConfig from "~/src/utilities/graphqLimits";
+import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 
 const queryGetEventAttendeeArgumentsSchema = z
 	.object({

@@ -66,12 +66,12 @@ describe("Advertisement GraphQL Type", () => {
 		// Create a mock 't' (schema builder) to capture field definitions
 		// We need to return the options object to access 'resolve' later.
 		const tStub = {
-			expose: vi.fn((name, opts) => opts),
-			exposeString: vi.fn((name, opts) => opts),
-			exposeID: vi.fn((name, opts) => opts),
+			expose: vi.fn((_name, opts) => opts),
+			exposeString: vi.fn((_name, opts) => opts),
+			exposeID: vi.fn((_name, opts) => opts),
 			string: vi.fn((opts) => opts),
 			field: vi.fn((opts) => opts),
-			listRef: vi.fn((ref, opts) => opts),
+			listRef: vi.fn((_ref, opts) => opts),
 		};
 
 		// Execute the fields factory to get the field definitions

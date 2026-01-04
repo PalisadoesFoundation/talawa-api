@@ -1,0 +1,25 @@
+// GritQL plugin to detect Pothos string resolvers that might need escapeHTML()
+//
+// IMPORTANT: GritQL comments are stripped from AST - cannot use disable comments.
+// To exclude files, use Biome's linter.rules configuration in biome.jsonc.
+//
+// This is a diagnostic-only rule. It warns but cannot auto-fix.
+//
+// Examples:
+//
+// Triggers warning:
+// t.string({
+//   resolve: (parent) => parent.bio // No escapeHTML
+// })
+//
+// Does NOT trigger warning:
+// t.string({
+//   resolve: (parent) => escapeHTML(parent.bio)
+// })
+
+// Match t.string with resolve function, flag if no escapeHTML call inside
+`t.string({ $props })` where {
+    $props <: contains `resolve: $resolver`,
+    not $resolver <: contains `escapeHTML($arg)`,
+    register_diagnostic(span=$props, message="String resolver may need escapeHTML() for XSS prevention. Import from '~/src/utilities/sanitizer'.", severity="warn")
+}

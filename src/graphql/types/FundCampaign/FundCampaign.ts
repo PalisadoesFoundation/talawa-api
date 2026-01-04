@@ -18,6 +18,9 @@ FundCampaign.implement({
 			description: "Date time at the time the fund campaign ends at.",
 			type: "DateTime",
 		}),
+		amountRaised: t.exposeInt("amountRaised", {
+			description: "The amount of money raised so far for the fund campaign.",
+		}),
 		goalAmount: t.exposeInt("goalAmount", {
 			description:
 				"Minimum amount of money that is set as the goal for the fund campaign.",

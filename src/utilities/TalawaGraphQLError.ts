@@ -37,6 +37,23 @@ export type ArgumentsAssociatedResourcesNotFoundExtensions = {
 };
 
 /**
+ * When the user's account is temporarily locked due to too many failed login attempts.
+ * The retryAfter field indicates when the account will be unlocked (ISO 8601 timestamp).
+ *
+ * @example
+ * throw new TalawaGraphQLError({
+ * 	extensions: {
+ * 		code: "account_locked",
+ * 		retryAfter: new Date(Date.now() + 900000).toISOString(),
+ * 	},
+ * });
+ */
+export type AccountLockedExtensions = {
+	code: "account_locked";
+	retryAfter: string;
+};
+
+/**
  * When the client tries to perform an action that conflicts with real world expectations of the application.
  *
  * @example
@@ -127,6 +144,31 @@ export type InvalidArgumentsExtensions = {
 };
 
 /**
+ * When the client provides invalid credentials (email/password) during authentication.
+ * This error is intentionally vague to prevent user enumeration attacks.
+ *
+ * @example
+ * throw new TalawaGraphQLError({
+ * 	extensions: {
+ * 		code: "invalid_credentials",
+ * 		issues: [
+ * 			{
+ * 				argumentPath: ["input"],
+ * 				message: "Invalid email address or password.",
+ * 			},
+ * 		],
+ * 	},
+ * });
+ */
+export type InvalidCredentialsExtensions = {
+	code: "invalid_credentials";
+	issues: {
+		argumentPath: (string | number)[];
+		message: string;
+	}[];
+};
+
+/**
  * When the client is not authorized to perform an action.
  *
  * @example
@@ -202,11 +244,13 @@ export type TooManyRequestsExtensions = {
 	code: "too_many_requests";
 };
 export type TalawaGraphQLErrorExtensions =
+	| AccountLockedExtensions
 	| ArgumentsAssociatedResourcesNotFoundExtensions
 	| ForbiddenActionExtensions
 	| ForbiddenActionOnArgumentsAssociatedResourcesExtensions
 	| UnauthenticatedExtensions
 	| InvalidArgumentsExtensions
+	| InvalidCredentialsExtensions
 	| UnauthorizedActionExtensions
 	| UnauthorizedActionOnArgumentsAssociatedResourcesExtensions
 	| UnauthorizedArgumentsExtensions
@@ -216,12 +260,15 @@ export type TalawaGraphQLErrorExtensions =
 export const defaultTalawaGraphQLErrorMessages: {
 	[Key in TalawaGraphQLErrorExtensions["code"]]: string;
 } = {
+	account_locked:
+		"Account temporarily locked due to too many failed login attempts. Please try again later.",
 	arguments_associated_resources_not_found:
 		"No associated resources found for the provided arguments.",
 	forbidden_action: "This action is forbidden.",
 	forbidden_action_on_arguments_associated_resources:
 		"This action is forbidden on the resources associated to the provided arguments.",
 	invalid_arguments: "You have provided invalid arguments for this action.",
+	invalid_credentials: "Invalid email address or password.",
 	unauthenticated: "You must be authenticated to perform this action.",
 	unauthorized_action: "You are not authorized to perform this action.",
 	unauthorized_action_on_arguments_associated_resources:

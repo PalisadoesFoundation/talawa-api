@@ -1,9 +1,8 @@
 import { createMockGraphQLContext } from "test/_Mocks_/mockContextCreator/mockContextCreator";
-import { beforeEach, describe, expect, it } from "vitest";
-import { vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { GraphQLContext } from "~/src/graphql/context";
-import type { Fund as FundType } from "~/src/graphql/types/Fund/Fund";
 import { FundCreatorResolver } from "~/src/graphql/types/Fund/creator";
+import type { Fund as FundType } from "~/src/graphql/types/Fund/Fund";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 
 type MockUser = {
@@ -35,6 +34,9 @@ describe("Fund Creator Resolver Tests", () => {
 			organizationId: "64e9bb4b5",
 			isTaxDeductible: false,
 			updaterId: null,
+			isDefault: false,
+			isArchived: false,
+			referenceNumber: null,
 		};
 	});
 	describe("Authentication and Authorization", () => {
@@ -178,7 +180,7 @@ describe("Fund Creator Resolver Tests", () => {
 
 			try {
 				await FundCreatorResolver(mockFund, {}, ctx);
-			} catch (error) {
+			} catch (_error) {
 				// Expected error
 			}
 
@@ -215,7 +217,7 @@ describe("Fund Creator Resolver Tests", () => {
 
 			try {
 				await FundCreatorResolver(mockFund, {}, ctx);
-			} catch (error) {
+			} catch (_error) {
 				// Expected error
 			}
 
@@ -245,7 +247,7 @@ describe("Fund Creator Resolver Tests", () => {
 
 			try {
 				await FundCreatorResolver(mockFund, {}, ctx);
-			} catch (error) {
+			} catch (_error) {
 				// Expected error
 			}
 

@@ -7,9 +7,10 @@ import {
 	mutationUpdateTagInputSchema,
 } from "~/src/graphql/inputs/MutationUpdateTagInput";
 import { Tag } from "~/src/graphql/types/Tag/Tag";
-import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import envConfig from "~/src/utilities/graphqLimits";
 import { isNotNullish } from "~/src/utilities/isNotNullish";
+import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
+
 const mutationUpdateTagArgumentsSchema = z.object({
 	input: mutationUpdateTagInputSchema,
 });
@@ -111,7 +112,7 @@ builder.mutationField("updateTag", (t) =>
 				const folderId = parsedArgs.input.folderId;
 
 				const existingTagFolder =
-					await ctx.drizzleClient.query.tagsTable.findFirst({
+					await ctx.drizzleClient.query.tagFoldersTable.findFirst({
 						columns: {
 							organizationId: true,
 						},

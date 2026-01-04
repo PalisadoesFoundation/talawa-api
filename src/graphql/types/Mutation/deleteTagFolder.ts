@@ -7,8 +7,9 @@ import {
 	mutationDeleteTagFolderInputSchema,
 } from "~/src/graphql/inputs/MutationDeleteTagFolderInput";
 import { TagFolder } from "~/src/graphql/types/TagFolder/TagFolder";
-import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import envConfig from "~/src/utilities/graphqLimits";
+import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
+
 const mutationDeleteTagFolderArgumentsSchema = z.object({
 	input: mutationDeleteTagFolderInputSchema,
 });

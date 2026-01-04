@@ -90,7 +90,7 @@ async function createTestOrganization(): Promise<TestOrganization> {
 			try {
 				// Cleanup organization (cascade deletes related records)
 				// Note: You may need to add a deleteOrganization mutation if not already present
-			} catch (error) {
+			} catch (_error) {
 				// Silently ignore cleanup errors
 			}
 		},
@@ -126,7 +126,7 @@ async function createTestUser(): Promise<TestUser> {
 		cleanup: async () => {
 			try {
 				// Cleanup user if needed
-			} catch (error) {
+			} catch (_error) {
 				// Silently ignore cleanup errors
 			}
 		},
@@ -193,7 +193,7 @@ suite("Mutation sendEventInvitations - Integration Tests", () => {
 		for (const cleanup of cleanupFunctionsToRun.reverse()) {
 			try {
 				await cleanup();
-			} catch (error) {
+			} catch (_error) {
 				// Silently ignore cleanup errors
 			}
 		}

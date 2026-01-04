@@ -1,7 +1,7 @@
 import { Event } from "~/src/graphql/types/Event/Event";
 import type { GraphQLContext } from "../../context";
-import { EventVolunteerGroup } from "./EventVolunteerGroup";
 import type { EventVolunteerGroup as EventVolunteerGroupType } from "./EventVolunteerGroup";
+import { EventVolunteerGroup } from "./EventVolunteerGroup";
 
 export const RecurringEventInstanceResolver = async (
 	parent: EventVolunteerGroupType,

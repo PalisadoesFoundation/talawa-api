@@ -5,6 +5,7 @@
   },
   "dependencies": {
     "@aws-sdk/client-ses": "^3.848.0",
+    "@fastify/cookie": "^11.0.2",
     "@fastify/cors": "^11.1.0",
     "@fastify/helmet": "^13.0.2",
     "@fastify/jwt": "^10.0.0",
@@ -18,6 +19,7 @@
     "@sinclair/typebox": "^0.34.41",
     "ajv-formats": "^3.0.1",
     "close-with-grace": "^2.3.0",
+    "dataloader": "^2.2.3",
     "dotenv": "^17.2.3",
     "drizzle-orm": "^0.44.1",
     "drizzle-zod": "0.7.1",
@@ -41,9 +43,10 @@
   },
   "description": "talawa-api is a backend repository written using Node.js and graphql for generating APIs for the talawa flutter app.",
   "devDependencies": {
-    "@biomejs/biome": "^1.9.4",
-    "@faker-js/faker": "^9.4.0",
-    "@swc/cli": "0.6.0",
+    "@biomejs/biome": "^2.3.10",
+    "@faker-js/faker": "^10.1.0",
+    "@microsoft/tsdoc": "^0.16.0",
+    "@swc/cli": "0.7.9",
     "@swc/core": "^1.15.3",
     "@types/node": "^22.13.17",
     "@types/node-cron": "^3.0.11",
@@ -66,7 +69,7 @@
     "vitest": "^3.1.1"
   },
   "engines": {
-    "node": "23.7.0"
+    "node": "24.12.0"
   },
   "homepage": "https://github.com/PalisadoesFoundation/talawa-api#readme",
   "keywords": [
@@ -78,7 +81,7 @@
   "license": "GNU General Public License v3.0",
   "main": "./dist/index.js",
   "name": "talawa-api",
-  "packageManager": "pnpm@10.2.1",
+  "packageManager": "pnpm@10.26.1",
   "repository": {
     "type": "git",
     "url": "https://github.com/PalisadoesFoundation/talawa-api"
@@ -96,8 +99,10 @@
     "drop_drizzle_migrations": "drizzle-kit drop",
     "enable_git_hooks": "lefthook install",
     "format:fix": "biome check --error-on-warnings --write",
+    "lint:sanitization": "tsx scripts/check_sanitization.ts",
+    "lint:tsdoc": "tsx scripts/check_tsdoc.ts",
     "postgenerate-docs": "find docs/docs/auto-docs -name 'README.md' -delete && node scripts/docs/fix-repo-url.js && node scripts/docs/fix-readme-links.js && node scripts/docs/fix-mdx-generics.js",
-    "generate:docs": "typedoc && pnpm run postgenerate-docs",
+    "generate-docs": "typedoc && pnpm run postgenerate-docs",
     "generate_drizzle_migrations": "drizzle-kit generate",
     "generate_graphql_sdl_file": "tsx ./scripts/generateGraphQLSDLFile.ts",
     "generate_gql_tada": "gql.tada generate-output && gql.tada turbo --fail-on-warn",

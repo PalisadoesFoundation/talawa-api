@@ -1,5 +1,7 @@
 import type { FastifyInstance } from "fastify";
 import type { usersTable } from "~/src/drizzle/tables/users";
+import type { CacheService } from "~/src/services/caching";
+import type { Dataloaders } from "~/src/utilities/dataloaders";
 import type { PubSub } from "./pubsub";
 
 /**
@@ -39,14 +41,58 @@ export type CurrentClient =
  * Type of the transport protocol agnostic explicit context object that is merged with the implcit mercurius context object and passed to the graphql resolvers each time they resolve a graphql operation at runtime.
  */
 export type ExplicitGraphQLContext = {
+	/**
+	 * Redis-backed cache service for caching entities and query results.
+	 */
+	cache: CacheService;
 	currentClient: CurrentClient;
+	/**
+	 * Request-scoped DataLoaders for batching database queries.
+	 */
+	dataloaders: Dataloaders;
 	drizzleClient: FastifyInstance["drizzleClient"];
 	envConfig: Pick<
 		FastifyInstance["envConfig"],
-		"API_BASE_URL" | "FRONTEND_URL"
+		| "API_ACCOUNT_LOCKOUT_DURATION_MS"
+		| "API_ACCOUNT_LOCKOUT_THRESHOLD"
+		| "API_BASE_URL"
+		| "API_COMMUNITY_NAME"
+		| "API_REFRESH_TOKEN_EXPIRES_IN"
+		| "API_PASSWORD_RESET_USER_TOKEN_EXPIRES_SECONDS"
+		| "API_PASSWORD_RESET_ADMIN_TOKEN_EXPIRES_SECONDS"
+		| "API_COOKIE_DOMAIN"
+		| "API_IS_SECURE_COOKIES"
+		| "API_JWT_EXPIRES_IN"
+		| "AWS_ACCESS_KEY_ID"
+		| "AWS_SECRET_ACCESS_KEY"
+		| "AWS_SES_REGION"
+		| "AWS_SES_FROM_EMAIL"
+		| "AWS_SES_FROM_NAME"
+		| "FRONTEND_URL"
+		| "RECAPTCHA_SECRET_KEY"
 	>;
 	jwt: {
 		sign: (payload: ExplicitAuthenticationTokenPayload) => string;
+	};
+	/**
+	 * Cookie helper for setting HTTP-Only authentication cookies.
+	 * Only available for HTTP requests (not WebSocket subscriptions).
+	 */
+	cookie?: {
+		/**
+		 * Sets both access token and refresh token as HTTP-Only cookies.
+		 * @param accessToken - The JWT access token
+		 * @param refreshToken - The refresh token
+		 */
+		setAuthCookies: (accessToken: string, refreshToken: string) => void;
+		/**
+		 * Clears both authentication cookies (for logout).
+		 */
+		clearAuthCookies: () => void;
+		/**
+		 * Gets the refresh token from cookies if present.
+		 */
+		getRefreshToken: () => string | undefined;
 	};
 	log: FastifyInstance["log"];
 	minio: FastifyInstance["minio"];

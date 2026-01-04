@@ -4,11 +4,11 @@
 		"src/graphql/**/*.ts": ["exports"],
 		"src/services/ses/**/*.ts": ["exports"],
 		"src/drizzle/tables/**": ["exports"],
-		"src/workers/backgroundWorkerService.ts": ["exports"]
+		"src/workers/backgroundWorkerService.ts": ["exports"],
+		"scripts/dbManagement/helpers.ts": ["nsExports", "nsTypes"]
 	},
 	"ignore": [
 		"src/plugins/**",
-		"src/graphql/types/**/*.ts",
 		"src/graphql/inputs/**/*.ts",
 		"src/graphql/schemaImportWorker.ts"
 	],

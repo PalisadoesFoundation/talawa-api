@@ -5,8 +5,8 @@ import { eventsTable } from "~/src/drizzle/tables/events";
 import { recurringEventInstancesTable } from "~/src/drizzle/tables/recurringEventInstances";
 import { builder } from "~/src/graphql/builder";
 import { EventAttendee } from "~/src/graphql/types/EventAttendee/EventAttendee";
-import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import envConfig from "~/src/utilities/graphqLimits";
+import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 
 const mutationRegisterForEventArgumentsSchema = z.object({
 	id: z.string().uuid(),

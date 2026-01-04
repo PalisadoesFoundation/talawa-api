@@ -14,4 +14,4 @@ Creates a default configuration object for the job discovery process.
 
 [`JobDiscoveryConfig`](../interfaces/JobDiscoveryConfig.md)
 
-A default job discovery configuration.
+- A default job discovery configuration.

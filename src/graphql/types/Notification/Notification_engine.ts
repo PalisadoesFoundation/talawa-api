@@ -61,7 +61,7 @@ export class NotificationEngine {
 	 * @param variables - Object containing variables to be replaced in template
 	 * @param audience - Target audience for the notification
 	 * @param channelType - Channel to deliver notification (in_app, email)
-	 * @returns The created notification log ID
+	 * @returns - The created notification log ID
 	 */
 	async createNotification(
 		eventType: string,
@@ -353,7 +353,7 @@ export class NotificationEngine {
 	 *
 	 * @param template - The notification template
 	 * @param variables - Variables to replace in the template
-	 * @returns Rendered content object
+	 * @returns - Rendered content object
 	 */
 	private renderTemplate(
 		template: typeof notificationTemplatesTable.$inferSelect,
@@ -379,7 +379,7 @@ export class NotificationEngine {
 	 * @param variables - Variables to render in the template
 	 * @param receiverMail - Email address of the recipient(s)
 	 * @param channelType - Channel type (defaults to EMAIL)
-	 * @returns The created email notification ID
+	 * @returns - The created email notification ID
 	 */
 	async createDirectEmailNotification(
 		eventType: string,

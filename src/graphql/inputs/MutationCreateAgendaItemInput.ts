@@ -31,7 +31,7 @@ export const mutationCreateAgendaItemInputSchema = agendaItemsTableInsertSchema
 					message: `Cannot be provided for an agenda item of type "${arg.type}".`,
 					path: ["duration"],
 				});
-			} else {
+			} else if (arg.key !== undefined) {
 				ctx.addIssue({
 					code: "custom",
 					message: `Cannot be provided for an agenda item of type "${arg.type}".`,

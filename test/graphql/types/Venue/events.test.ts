@@ -43,6 +43,10 @@ const VenueEventsQuery = `
             id
             name
             description
+            attachments {
+              mimeType
+              url
+            }
           }
           cursor
         }
@@ -736,6 +740,142 @@ suite("Venue events Field", () => {
 		expect(result.errors).toBeUndefined();
 		expect(result.data?.venue?.events?.edges).toHaveLength(1);
 		expect(result.data?.venue?.events?.edges?.[0]?.node?.id).toBe(eventId);
+	});
+
+	test("should handle events with null attachmentsWhereEvent", async () => {
+		const createOrgResult = await mercuriusClient.mutate(
+			Mutation_createOrganization,
+			{
+				headers: { authorization: `Bearer ${authToken}` },
+				variables: {
+					input: {
+						name: `Null Attachments Venue Org ${faker.string.uuid()}`,
+						description: "Org with venue with events",
+						countryCode: "us",
+						state: "CA",
+						city: "San Francisco",
+						postalCode: "94101",
+						addressLine1: "100 Test St",
+						addressLine2: "Suite 1",
+					},
+				},
+			},
+		);
+		const orgId = createOrgResult.data?.createOrganization?.id;
+		assertToBeNonNullish(orgId);
+
+		const createVenueResult = await mercuriusClient.mutate(
+			Mutation_createVenue,
+			{
+				headers: { authorization: `Bearer ${authToken}` },
+				variables: {
+					input: {
+						name: `Test Venue ${faker.string.uuid()}`,
+						description: "Test venue with events",
+						organizationId: orgId,
+						capacity: 100,
+					},
+				},
+			},
+		);
+
+		const venueId = createVenueResult.data?.createVenue?.id;
+		assertToBeNonNullish(venueId);
+
+		// Add regular user as organization member
+		const { authToken: memberAuthToken } = await createRegularUserUsingAdmin();
+
+		await mercuriusClient.mutate(Mutation_joinPublicOrganization, {
+			headers: { authorization: `Bearer ${memberAuthToken}` },
+			variables: {
+				input: {
+					organizationId: orgId,
+				},
+			},
+		});
+
+		// Create an event with the member token (events created without attachments will have null attachmentsWhereEvent)
+		const createEventResult = await mercuriusClient.mutate(
+			Mutation_createEvent,
+			{
+				headers: { authorization: `Bearer ${memberAuthToken}` },
+				variables: {
+					input: {
+						name: `Test Event ${faker.string.uuid()}`,
+						description: "Test event for venue",
+						organizationId: orgId,
+						startAt: new Date(Date.now() + 86400000).toISOString(),
+						endAt: new Date(Date.now() + 90000000).toISOString(),
+					},
+				},
+			},
+		);
+
+		const eventId = createEventResult.data?.createEvent?.id;
+		assertToBeNonNullish(eventId);
+
+		// Create venue booking with admin token
+		await mercuriusClient.mutate(Mutation_createVenueBooking, {
+			headers: { authorization: `Bearer ${authToken}` },
+			variables: {
+				input: {
+					venueId: venueId,
+					eventId: eventId,
+				},
+			},
+		});
+
+		// Mock the query to return event with null attachmentsWhereEvent
+		// The original query includes with: { event: { with: { attachmentsWhereEvent: true } } }
+		// so the result will have the event relation, but TypeScript needs a type assertion
+		const originalFindMany =
+			server.drizzleClient.query.venueBookingsTable.findMany;
+		server.drizzleClient.query.venueBookingsTable.findMany = vi
+			.fn()
+			.mockImplementation(async (options) => {
+				// Call original but modify the result to set attachmentsWhereEvent to null
+				// The options include the event relation, so the result will have it
+				const result = await originalFindMany.call(
+					server.drizzleClient.query.venueBookingsTable,
+					options,
+				);
+				// Type assertion: the query includes event relation, so booking will have event property
+				type BookingWithEvent = (typeof result)[number] & {
+					event: { attachmentsWhereEvent: unknown } | null;
+				};
+				// Modify the event to have null attachmentsWhereEvent
+				return result.map((booking) => {
+					const bookingWithEvent = booking as BookingWithEvent;
+					if (!bookingWithEvent.event) {
+						return booking;
+					}
+					return {
+						...bookingWithEvent,
+						event: {
+							...bookingWithEvent.event,
+							attachmentsWhereEvent: null,
+						},
+					};
+				});
+			});
+
+		try {
+			const result = await mercuriusClient.query(VenueEventsQuery, {
+				headers: { authorization: `Bearer ${authToken}` },
+				variables: { input: { id: venueId }, first: 10 },
+			});
+
+			expect(result.errors).toBeUndefined();
+			expect(result.data?.venue?.events?.edges).toHaveLength(1);
+			expect(result.data?.venue?.events?.edges?.[0]?.node?.id).toBe(eventId);
+			// Attachments should be empty array when attachmentsWhereEvent is null (covered by the || [] fallback)
+			const attachments =
+				result.data?.venue?.events?.edges?.[0]?.node?.attachments;
+			expect(attachments).toBeDefined();
+			expect(attachments).toEqual([]);
+		} finally {
+			server.drizzleClient.query.venueBookingsTable.findMany = originalFindMany;
+		}
 	});
 
 	test("should handle forward pagination with cursor (first + after)", async () => {

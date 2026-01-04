@@ -7,13 +7,15 @@ import { imageMimeTypeEnum } from "~/src/drizzle/enums/imageMimeType";
  */
 describe("imageMimeTypeEnum", () => {
 	describe("allowed MIME types", () => {
-		it.each([["image/avif"], ["image/jpeg"], ["image/png"], ["image/webp"]])(
-			"should accept %s",
-			(mimeType) => {
-				const result = imageMimeTypeEnum.safeParse(mimeType);
-				expect(result.success).toBe(true);
-			},
-		);
+		it.each([
+			["image/avif"],
+			["image/jpeg"],
+			["image/png"],
+			["image/webp"],
+		])("should accept %s", (mimeType) => {
+			const result = imageMimeTypeEnum.safeParse(mimeType);
+			expect(result.success).toBe(true);
+		});
 	});
 
 	describe("rejected MIME types", () => {

@@ -1,12 +1,12 @@
 import { createMockGraphQLContext } from "test/_Mocks_/mockContextCreator/mockContextCreator";
-import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { Mock } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { GraphQLContext } from "~/src/graphql/context";
 
 // Mock the GraphQL builder to track the queryField registration
 vi.mock("~/src/graphql/builder", () => ({
 	builder: {
-		queryField: vi.fn((name: string, fieldFn: (t: unknown) => unknown) => {
+		queryField: vi.fn((_name: string, fieldFn: (t: unknown) => unknown) => {
 			// Mock the 't' object that provides field builder methods
 			const mockT = {
 				field: vi.fn().mockReturnValue(undefined),
@@ -292,7 +292,7 @@ describe("Query Resolver - getMyPledgesForCampaign", () => {
 
 				const mockOperators = {
 					and: vi.fn((...args: unknown[]) => ({ type: "and", args })),
-					or: vi.fn((...args: unknown[]) => orSentinel),
+					or: vi.fn((..._args: unknown[]) => orSentinel),
 					eq: vi.fn((field: unknown, value: unknown) => {
 						if (field === "campaignId") return eqCampaignSentinel;
 						if (field === "pledgerId") return eqPledgerSentinel;

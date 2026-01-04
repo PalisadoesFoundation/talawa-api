@@ -1,6 +1,6 @@
 import { UserEducationGrade } from "~/src/graphql/enums/UserEducationGrade";
-import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import envConfig from "~/src/utilities/graphqLimits";
+import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import { User } from "./User";
 
 User.implement({

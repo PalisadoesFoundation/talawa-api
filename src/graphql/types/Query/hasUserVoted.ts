@@ -1,8 +1,8 @@
 import { z } from "zod";
 import { builder } from "~/src/graphql/builder";
 import { HasUserVoted } from "~/src/graphql/types/Post/hasUserVoted";
-import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import envConfig from "~/src/utilities/graphqLimits";
+import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import {
 	QueryHasUserVotedInput,
 	queryHasUserVotedInputSchema,

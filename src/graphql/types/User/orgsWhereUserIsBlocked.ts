@@ -1,4 +1,4 @@
-import { type SQL, and, asc, desc, eq, gt, lt, or } from "drizzle-orm";
+import { and, asc, desc, eq, gt, lt, or, type SQL } from "drizzle-orm";
 import { z } from "zod";
 import { blockedUsersTable } from "~/src/drizzle/tables/blockedUsers";
 import type {
@@ -6,13 +6,13 @@ import type {
 	ImplicitMercuriusContext,
 } from "~/src/graphql/context";
 import { User } from "~/src/graphql/types/User/User";
-import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
+import envConfig from "~/src/utilities/graphqLimits";
 import {
 	defaultGraphQLConnectionArgumentsSchema,
 	transformDefaultGraphQLConnectionArguments,
 	transformToDefaultGraphQLConnection,
-} from "~/src/utilities/defaultGraphQLConnection";
-import envConfig from "~/src/utilities/graphqLimits";
+} from "~/src/utilities/graphqlConnection";
+import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import { BlockedUser } from "../BlockedUser/BlockedUser";
 
 type ContextType = ExplicitGraphQLContext & ImplicitMercuriusContext;
@@ -159,13 +159,10 @@ export const resolveOrgsWhereUserIsBlocked = async (
 	}
 
 	return transformToDefaultGraphQLConnection({
-		createCursor: (blockedUser) =>
-			Buffer.from(
-				JSON.stringify({
-					createdAt: blockedUser.createdAt.toISOString(),
-					organizationId: blockedUser.organizationId,
-				}),
-			).toString("base64url"),
+		createCursor: (blockedUser) => ({
+			createdAt: blockedUser.createdAt.toISOString(),
+			organizationId: blockedUser.organizationId,
+		}),
 		createNode: (blockedUser) => ({
 			id: blockedUser.organizationId,
 			organization: blockedUser.organization,

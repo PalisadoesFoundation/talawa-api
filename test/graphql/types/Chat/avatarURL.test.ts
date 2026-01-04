@@ -143,14 +143,14 @@ suite("Chat field avatarURL", () => {
 				headers: { authorization: `Bearer ${adminAuthToken}` },
 				variables: { input: { id: testChatId } },
 			});
-		} catch (error) {}
+		} catch (_error) {}
 
 		try {
 			await mercuriusClient.mutate(Mutation_deleteOrganization, {
 				headers: { authorization: `Bearer ${adminAuthToken}` },
 				variables: { input: { id: organizationId } },
 			});
-		} catch (error) {}
+		} catch (_error) {}
 	});
 
 	function createTestContext() {

@@ -1,9 +1,9 @@
 import type { GraphQLContext } from "~/src/graphql/context";
 import { User } from "~/src/graphql/types/User/User";
-import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import envConfig from "~/src/utilities/graphqLimits";
-import { AgendaItem } from "./AgendaItem";
+import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import type { AgendaItem as AgendaItemType } from "./AgendaItem";
+import { AgendaItem } from "./AgendaItem";
 export const resolveUpdater = async (
 	parent: AgendaItemType,
 	_args: Record<string, never>,

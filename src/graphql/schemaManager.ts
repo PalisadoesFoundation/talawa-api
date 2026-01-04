@@ -24,12 +24,12 @@ class GraphQLSchemaManager {
 		const pluginManager = getPluginManagerInstance();
 		if (pluginManager) {
 			// Listen for schema rebuild events
-			pluginManager.on("schema:rebuild", async (data) => {
+			pluginManager.on("schema:rebuild", async (_data) => {
 				await this.rebuildSchema();
 			});
 
 			// Listen for plugin deactivation to remove fields
-			pluginManager.on("plugin:deactivated", async (pluginId) => {
+			pluginManager.on("plugin:deactivated", async (_pluginId) => {
 				await this.rebuildSchema();
 			});
 		}
@@ -155,7 +155,7 @@ class GraphQLSchemaManager {
 					try {
 						// Import the plugin's types file if it exists
 						await import(`${pluginPath}/graphql/types`);
-					} catch (error) {
+					} catch (_error) {
 						// Plugin types file doesn't exist, continue without it
 						console.log(`No types file found for plugin ${extension.pluginId}`);
 					}

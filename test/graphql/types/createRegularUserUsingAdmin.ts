@@ -8,6 +8,9 @@ export async function createRegularUserUsingAdmin(): Promise<{
 	userId: string;
 	authToken: string;
 }> {
+	// Clear any existing headers to ensure a clean sign-in
+	mercuriusClient.setHeaders({});
+
 	const adminSignInResult = await mercuriusClient.query(Query_signIn, {
 		variables: {
 			input: {
@@ -16,7 +19,16 @@ export async function createRegularUserUsingAdmin(): Promise<{
 			},
 		},
 	});
-	assertToBeNonNullish(adminSignInResult.data.signIn?.authenticationToken);
+
+	// Check for errors first
+	if (adminSignInResult.errors) {
+		throw new Error(
+			`Admin sign-in failed: ${JSON.stringify(adminSignInResult.errors)}`,
+		);
+	}
+
+	assertToBeNonNullish(adminSignInResult.data?.signIn);
+	assertToBeNonNullish(adminSignInResult.data.signIn.authenticationToken);
 	const adminAuthToken = adminSignInResult.data.signIn.authenticationToken;
 
 	// Use the admin token to create a regular user
@@ -34,8 +46,20 @@ export async function createRegularUserUsingAdmin(): Promise<{
 			},
 		},
 	});
-	assertToBeNonNullish(createUserResult.data.createUser?.authenticationToken);
-	assertToBeNonNullish(createUserResult.data.createUser?.user?.id);
+
+	// Check for errors first
+	if (createUserResult.errors) {
+		throw new Error(
+			`Create user failed: ${JSON.stringify(createUserResult.errors)}`,
+		);
+	}
+
+	assertToBeNonNullish(createUserResult.data?.createUser);
+	assertToBeNonNullish(createUserResult.data.createUser.authenticationToken);
+	assertToBeNonNullish(createUserResult.data.createUser.user?.id);
+
+	// Clear headers after use to prevent authentication state leakage
+	mercuriusClient.setHeaders({});
 
 	return {
 		userId: createUserResult.data.createUser.user.id,

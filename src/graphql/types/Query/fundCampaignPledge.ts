@@ -5,8 +5,9 @@ import {
 	queryFundCampaignPledgeInputSchema,
 } from "~/src/graphql/inputs/QueryFundCampaignPledgeInput";
 import { FundCampaignPledge } from "~/src/graphql/types/FundCampaignPledge/FundCampaignPledge";
-import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import envConfig from "~/src/utilities/graphqLimits";
+import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
+
 const queryFundCampaignPledgeArgumentsSchema = z.object({
 	input: queryFundCampaignPledgeInputSchema,
 });
@@ -118,9 +119,9 @@ builder.queryField("fundCampaignPledge", (t) =>
 
 			if (
 				currentUser.role !== "administrator" &&
+				currentUserId !== existingFundCampaignPledge.pledgerId &&
 				(currentUserOrganizationMembership === undefined ||
-					(currentUserOrganizationMembership.role !== "administrator" &&
-						currentUserId !== existingFundCampaignPledge.pledgerId))
+					currentUserOrganizationMembership.role !== "administrator")
 			) {
 				throw new TalawaGraphQLError({
 					extensions: {

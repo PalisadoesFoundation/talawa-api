@@ -14,7 +14,7 @@ import type {
  *
  * @param config - The configuration object containing the recurrence rule, base event, and time window.
  * @param logger - The logger for logging debug and informational messages.
- * @returns An array of calculated occurrences, each with its start and end times and metadata.
+ * @returns - An array of calculated occurrences, each with its start and end times and metadata.
  */
 export function calculateInstanceOccurrences(
 	config: OccurrenceCalculationConfig,
@@ -153,7 +153,7 @@ export function calculateInstanceOccurrences(
  * @param recurrenceRule - The recurrence rule for the event.
  * @param baseEvent - The base event template.
  * @param exceptions - An array of exceptions for the event.
- * @returns A recurrence context object with all necessary pre-calculated data.
+ * @returns - A recurrence context object with all necessary pre-calculated data.
  */
 function buildRecurrenceContext(
 	recurrenceRule: typeof recurrenceRulesTable.$inferSelect,
@@ -207,7 +207,7 @@ function buildRecurrenceContext(
  * @param currentDate - The date for which to create the occurrence.
  * @param context - The recurrence context containing duration, exceptions, and other metadata.
  * @param sequenceNumber - The sequence number of this occurrence in the series.
- * @returns A calculated occurrence object with its original and actual start/end times.
+ * @returns - A calculated occurrence object with its original and actual start/end times.
  */
 function createOccurrenceFromDate(
 	currentDate: Date,
@@ -300,8 +300,8 @@ export function shouldGenerateInstanceAtDate(
  * @returns `true` if an instance should be generated, otherwise `false`.
  */
 function shouldGenerateForDaily(
-	date: Date,
-	recurrenceRule: typeof recurrenceRulesTable.$inferSelect,
+	_date: Date,
+	_recurrenceRule: typeof recurrenceRulesTable.$inferSelect,
 ): boolean {
 	// For daily events, no additional day filters needed
 	return true;
@@ -408,7 +408,7 @@ function shouldGenerateForYearly(
  *
  * @param currentDate - The current occurrence date.
  * @param recurrenceRule - The recurrence rule for the event.
- * @returns The date of the next potential occurrence.
+ * @returns - The date of the next potential occurrence.
  */
 export function getNextOccurrenceDate(
 	currentDate: Date,

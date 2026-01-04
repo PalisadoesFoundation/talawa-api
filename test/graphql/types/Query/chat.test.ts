@@ -222,7 +222,7 @@ suite("Query field chat", () => {
 				headers: { authorization: `bearer ${adminAuthToken}` },
 				variables: { input: { id: testChatId } },
 			});
-		} catch (error) {
+		} catch (_error) {
 			// Ignore cleanup errors as resources may already be deleted
 		}
 
@@ -231,7 +231,7 @@ suite("Query field chat", () => {
 				headers: { authorization: `bearer ${adminAuthToken}` },
 				variables: { input: { id: regularUser1Id } },
 			});
-		} catch (error) {
+		} catch (_error) {
 			// Ignore cleanup errors as resources may already be deleted
 		}
 
@@ -240,7 +240,7 @@ suite("Query field chat", () => {
 				headers: { authorization: `bearer ${adminAuthToken}` },
 				variables: { input: { id: regularUser2Id } },
 			});
-		} catch (error) {
+		} catch (_error) {
 			// Ignore cleanup errors as resources may already be deleted
 		}
 
@@ -249,7 +249,7 @@ suite("Query field chat", () => {
 				headers: { authorization: `bearer ${adminAuthToken}` },
 				variables: { input: { id: organizationId } },
 			});
-		} catch (error) {
+		} catch (_error) {
 			// Ignore cleanup errors as resources may already be deleted
 		}
 	});
@@ -542,7 +542,7 @@ suite("Query field chatsByUser", () => {
 				headers: { authorization: `bearer ${adminAuthToken}` },
 				variables: { input: { id: testChatId } },
 			});
-		} catch (error) {
+		} catch (_error) {
 			// Ignore cleanup errors as resources may already be deleted
 		}
 
@@ -551,7 +551,7 @@ suite("Query field chatsByUser", () => {
 				headers: { authorization: `bearer ${adminAuthToken}` },
 				variables: { input: { id: regularUser1Id } },
 			});
-		} catch (error) {
+		} catch (_error) {
 			// Ignore cleanup errors as resources may already be deleted
 		}
 
@@ -560,7 +560,7 @@ suite("Query field chatsByUser", () => {
 				headers: { authorization: `bearer ${adminAuthToken}` },
 				variables: { input: { id: regularUser2Id } },
 			});
-		} catch (error) {
+		} catch (_error) {
 			// Ignore cleanup errors as resources may already be deleted
 		}
 
@@ -569,7 +569,7 @@ suite("Query field chatsByUser", () => {
 				headers: { authorization: `bearer ${adminAuthToken}` },
 				variables: { input: { id: organizationId } },
 			});
-		} catch (error) {
+		} catch (_error) {
 			// Ignore cleanup errors as resources may already be deleted
 		}
 	});

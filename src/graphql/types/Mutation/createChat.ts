@@ -9,9 +9,10 @@ import {
 	mutationCreateChatInputSchema,
 } from "~/src/graphql/inputs/MutationCreateChatInput";
 import { Chat } from "~/src/graphql/types/Chat/Chat";
-import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import envConfig from "~/src/utilities/graphqLimits";
 import { isNotNullish } from "~/src/utilities/isNotNullish";
+import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
+
 const mutationCreateChatArgumentsSchema = z.object({
 	input: mutationCreateChatInputSchema.transform(async (arg, ctx) => {
 		let avatar:

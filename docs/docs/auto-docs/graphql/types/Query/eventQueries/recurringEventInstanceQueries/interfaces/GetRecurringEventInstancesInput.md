@@ -6,9 +6,7 @@
 
 Defined in: [src/graphql/types/Query/eventQueries/recurringEventInstanceQueries.ts:17](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/graphql/types/Query/eventQueries/recurringEventInstanceQueries.ts#L17)
 
-## Description
-
-Defines the input parameters for querying recurring event event instances.
+Defines the input parameters for querying recurring event instances.
 
 ## Properties
 
@@ -34,9 +32,7 @@ Defined in: [src/graphql/types/Query/eventQueries/recurringEventInstanceQueries.
 
 Defined in: [src/graphql/types/Query/eventQueries/recurringEventInstanceQueries.ts:25](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/graphql/types/Query/eventQueries/recurringEventInstanceQueries.ts#L25)
 
-#### Description
-
-An optional limit on the number of instances to return.
+Optional maximum number of instances to return (defaults to 1000).
 
 ***
 

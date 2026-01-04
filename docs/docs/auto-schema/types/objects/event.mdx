@@ -98,6 +98,7 @@ type Event {
   endAt: DateTime
   hasExceptions: Boolean
   id: ID!
+  isInviteOnly: Boolean
   isPublic: Boolean
   isRecurringEventTemplate: Boolean
   isRegisterable: Boolean
@@ -195,6 +196,10 @@ A boolean flag indicating if this materialized instance has any exceptions appli
 #### [<code style={{ fontWeight: 'normal' }}>Event.<b>id</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>ID!</b></code>](/auto-schema/types/scalars/id.mdx) <Badge class="badge badge--secondary badge--non_null" text="non-null"/> <Badge class="badge badge--secondary " text="scalar"/>
 
 The unique global identifier for the event. For recurring instances, this ID refers to the specific materialized instance.
+
+#### [<code style={{ fontWeight: 'normal' }}>Event.<b>isInviteOnly</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>Boolean</b></code>](/auto-schema/types/scalars/boolean.mdx) <Badge class="badge badge--secondary " text="scalar"/>
+
+A boolean flag indicating if the event is invite-only.
 
 #### [<code style={{ fontWeight: 'normal' }}>Event.<b>isPublic</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>Boolean</b></code>](/auto-schema/types/scalars/boolean.mdx) <Badge class="badge badge--secondary " text="scalar"/>
 

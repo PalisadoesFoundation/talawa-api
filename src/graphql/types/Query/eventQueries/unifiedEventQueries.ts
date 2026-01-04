@@ -1,5 +1,7 @@
 import type { InferSelectModel } from "drizzle-orm";
+import { and, eq, inArray, or } from "drizzle-orm";
 import type { eventAttachmentsTable } from "~/src/drizzle/tables/eventAttachments";
+import { eventAttendeesTable } from "~/src/drizzle/tables/eventAttendees";
 import type { eventsTable } from "~/src/drizzle/tables/events";
 import type { ServiceDependencies } from "~/src/services/eventGeneration/types";
 import {
@@ -14,7 +16,7 @@ import {
 } from "./standaloneEventQueries";
 
 /**
- * @description Represents a unified event object that includes attachments and metadata
+ * Represents a unified event object that includes attachments and metadata
  * to distinguish between standalone and generated events.
  */
 export type EventWithAttachments = InferSelectModel<typeof eventsTable> & {
@@ -28,7 +30,7 @@ export type EventWithAttachments = InferSelectModel<typeof eventsTable> & {
 };
 
 /**
- * @description Defines the input parameters for querying a unified list of events,
+ * Defines the input parameters for querying a unified list of events,
  * including both standalone and recurring instances.
  */
 export interface GetUnifiedEventsInput {
@@ -40,6 +42,180 @@ export interface GetUnifiedEventsInput {
 }
 
 /**
+ * Parameters for filtering events based on invite-only visibility rules.
+ */
+export interface FilterInviteOnlyEventsInput {
+	events: EventWithAttachments[];
+	currentUserId: string;
+	currentUserRole: string;
+	/**
+	 * Either a single organization membership (for single-org queries) or
+	 * a map of organization IDs to memberships (for cross-org queries).
+	 * If a map is provided, it will be used to look up membership per event.
+	 */
+	currentUserOrgMembership:
+		| { role: string }
+		| undefined
+		| Map<string, { role: string } | undefined>;
+	drizzleClient: ServiceDependencies["drizzleClient"];
+}
+
+/**
+ * Filters invite-only events based on visibility rules.
+ * An invite-only event is only visible to:
+ * 1. The event creator
+ * 2. Organization admins
+ * 3. Users explicitly invited to the event
+ *
+ * @param input - The input object containing events and user context.
+ * @returns - A filtered array of events that the user can view.
+ */
+export async function filterInviteOnlyEvents(
+	input: FilterInviteOnlyEventsInput,
+): Promise<EventWithAttachments[]> {
+	const {
+		events,
+		currentUserId,
+		currentUserRole,
+		currentUserOrgMembership,
+		drizzleClient,
+	} = input;
+
+	// Helper to get organization membership for an event
+	const getOrgMembership = (
+		organizationId: string,
+	): { role: string } | undefined => {
+		if (currentUserOrgMembership instanceof Map) {
+			return currentUserOrgMembership.get(organizationId);
+		}
+		return currentUserOrgMembership;
+	};
+
+	// Separate invite-only events from public events
+	const inviteOnlyEvents: EventWithAttachments[] = [];
+	const publicEvents: EventWithAttachments[] = [];
+
+	for (const event of events) {
+		if (event.isInviteOnly) {
+			inviteOnlyEvents.push(event);
+		} else {
+			publicEvents.push(event);
+		}
+	}
+
+	// If no invite-only events, return all events
+	if (inviteOnlyEvents.length === 0) {
+		return events;
+	}
+
+	// Check which invite-only events the user can view
+	const visibleInviteOnlyEvents: EventWithAttachments[] = [];
+
+	// Batch check invitations for all invite-only events
+	const standaloneEventIds: string[] = [];
+	const recurringInstanceIds: string[] = [];
+
+	for (const event of inviteOnlyEvents) {
+		// Check if user is creator
+		if (event.creatorId === currentUserId) {
+			visibleInviteOnlyEvents.push(event);
+			continue;
+		}
+
+		// Check if user is admin (global or org admin for this event's org)
+		const eventOrgMembership = getOrgMembership(event.organizationId);
+		if (
+			currentUserRole === "administrator" ||
+			eventOrgMembership?.role === "administrator"
+		) {
+			visibleInviteOnlyEvents.push(event);
+			continue;
+		}
+
+		// Collect event IDs for batch invitation check
+		if (event.eventType === "standalone") {
+			standaloneEventIds.push(event.id);
+		} else {
+			recurringInstanceIds.push(event.id);
+		}
+	}
+
+	// Batch check invitations and registrations for standalone events
+	if (standaloneEventIds.length > 0) {
+		const standaloneAttendees =
+			await drizzleClient.query.eventAttendeesTable.findMany({
+				columns: {
+					eventId: true,
+				},
+				where: and(
+					eq(eventAttendeesTable.userId, currentUserId),
+					or(
+						eq(eventAttendeesTable.isInvited, true),
+						eq(eventAttendeesTable.isRegistered, true),
+					),
+					inArray(eventAttendeesTable.eventId, standaloneEventIds),
+				),
+			});
+
+		const accessibleEventIds = new Set(
+			(standaloneAttendees ?? [])
+				.map((inv) => inv.eventId)
+				.filter(Boolean) as string[],
+		);
+
+		for (const event of inviteOnlyEvents) {
+			if (
+				event.eventType === "standalone" &&
+				accessibleEventIds.has(event.id) &&
+				!visibleInviteOnlyEvents.some((e) => e.id === event.id)
+			) {
+				visibleInviteOnlyEvents.push(event);
+			}
+		}
+	}
+
+	// Batch check invitations and registrations for recurring instances
+	if (recurringInstanceIds.length > 0) {
+		const recurringAttendees =
+			await drizzleClient.query.eventAttendeesTable.findMany({
+				columns: {
+					recurringEventInstanceId: true,
+				},
+				where: and(
+					eq(eventAttendeesTable.userId, currentUserId),
+					or(
+						eq(eventAttendeesTable.isInvited, true),
+						eq(eventAttendeesTable.isRegistered, true),
+					),
+					inArray(
+						eventAttendeesTable.recurringEventInstanceId,
+						recurringInstanceIds,
+					),
+				),
+			});
+
+		const accessibleInstanceIds = new Set(
+			(recurringAttendees ?? [])
+				.map((inv) => inv.recurringEventInstanceId)
+				.filter(Boolean) as string[],
+		);
+
+		for (const event of inviteOnlyEvents) {
+			if (
+				event.eventType === "generated" &&
+				accessibleInstanceIds.has(event.id) &&
+				!visibleInviteOnlyEvents.some((e) => e.id === event.id)
+			) {
+				visibleInviteOnlyEvents.push(event);
+			}
+		}
+	}
+
+	// Combine public events with visible invite-only events
+	return [...publicEvents, ...visibleInviteOnlyEvents];
+}
+
+/**
  * Retrieves a unified list of events, including both standalone events and generated
  * instances of recurring events, within a specified date range. This is the primary function
  * used by the `organization.events` GraphQL resolver.
@@ -47,7 +223,7 @@ export interface GetUnifiedEventsInput {
  * @param input - The input object containing organizationId, date range, and optional filters.
  * @param drizzleClient - The Drizzle ORM client for database access.
  * @param logger - The logger for logging debug and error messages.
- * @returns A promise that resolves to a sorted array of unified event objects.
+ * @returns - A promise that resolves to a sorted array of unified event objects.
  */
 export async function getUnifiedEventsInDateRange(
 	input: GetUnifiedEventsInput,
@@ -117,6 +293,7 @@ export async function getUnifiedEventsInDateRange(
 						allDay: instance.allDay,
 						isPublic: instance.isPublic,
 						isRegisterable: instance.isRegisterable,
+						isInviteOnly: instance.isInviteOnly,
 						organizationId: instance.organizationId,
 						creatorId: instance.creatorId,
 						updaterId: instance.updaterId,
@@ -179,7 +356,7 @@ export async function getUnifiedEventsInDateRange(
  * @param eventIds - An array of event IDs to retrieve.
  * @param drizzleClient - The Drizzle ORM client for database access.
  * @param logger - The logger for logging debug and error messages.
- * @returns A promise that resolves to an array of the requested event objects,
+ * @returns - A promise that resolves to an array of the requested event objects,
  *          unified into a common format.
  */
 export async function getEventsByIds(
@@ -229,6 +406,7 @@ export async function getEventsByIds(
 					allDay: resolvedInstance.allDay,
 					isPublic: resolvedInstance.isPublic,
 					isRegisterable: resolvedInstance.isRegisterable,
+					isInviteOnly: resolvedInstance.isInviteOnly,
 					organizationId: resolvedInstance.organizationId,
 					creatorId: resolvedInstance.creatorId,
 					updaterId: resolvedInstance.updaterId,

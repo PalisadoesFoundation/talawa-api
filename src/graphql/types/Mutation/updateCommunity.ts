@@ -9,9 +9,10 @@ import {
 	mutationUpdateCommunityInputSchema,
 } from "~/src/graphql/inputs/MutationUpdateCommunityInput";
 import { Community } from "~/src/graphql/types/Community/Community";
-import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import envConfig from "~/src/utilities/graphqLimits";
 import { isNotNullish } from "~/src/utilities/isNotNullish";
+import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
+
 const mutationUpdateCommunityArgumentsSchema = z.object({
 	input: mutationUpdateCommunityInputSchema.transform(async (arg, ctx) => {
 		let logo:

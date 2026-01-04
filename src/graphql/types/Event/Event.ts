@@ -62,6 +62,9 @@ Event.implement({
 			description:
 				"A boolean flag indicating if the event lasts for the entire day.",
 		}),
+		isInviteOnly: t.exposeBoolean("isInviteOnly", {
+			description: "A boolean flag indicating if the event is invite-only.",
+		}),
 		isPublic: t.exposeBoolean("isPublic", {
 			description:
 				"A boolean flag indicating if the event is visible to the public.",
@@ -123,9 +126,9 @@ Event.implement({
 					const sequence = event.sequenceNumber;
 					const total = event.totalCount;
 					if (total) {
-						return `${sequence} of ${total}`;
+						return escapeHTML(`${sequence} of ${total}`);
 					}
-					return `#${sequence}`;
+					return escapeHTML(`#${sequence}`);
 				}
 				return null;
 			},
@@ -211,7 +214,7 @@ Event.implement({
 					return null;
 				}
 
-				return formatRecurrenceDescription(recurrenceRule);
+				return escapeHTML(formatRecurrenceDescription(recurrenceRule));
 			},
 		}),
 	}),

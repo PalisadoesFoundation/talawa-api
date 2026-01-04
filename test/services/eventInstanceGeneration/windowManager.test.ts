@@ -1,8 +1,8 @@
 import { faker } from "@faker-js/faker";
 import { and, eq, lt } from "drizzle-orm";
-import { type Mock, afterEach, expect, suite, test, vi } from "vitest";
-import { eventGenerationWindowsTable } from "~/src/drizzle/tables/eventGenerationWindows";
+import { afterEach, expect, type Mock, suite, test, vi } from "vitest";
 import type { CreateGenerationWindowInput } from "~/src/drizzle/tables/eventGenerationWindows";
+import { eventGenerationWindowsTable } from "~/src/drizzle/tables/eventGenerationWindows";
 import { recurringEventInstancesTable } from "~/src/drizzle/tables/recurringEventInstances";
 import type {
 	ServiceDependencies,

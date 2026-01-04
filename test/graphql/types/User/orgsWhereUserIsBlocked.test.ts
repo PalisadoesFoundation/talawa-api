@@ -5,8 +5,8 @@ import type {
 	ExplicitGraphQLContext,
 	ImplicitMercuriusContext,
 } from "~/src/graphql/context";
-import type { User } from "~/src/graphql/types/User/User";
 import { resolveOrgsWhereUserIsBlocked } from "~/src/graphql/types/User/orgsWhereUserIsBlocked";
+import type { User } from "~/src/graphql/types/User/User";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 
 const noCursorArgs = { first: 10 };

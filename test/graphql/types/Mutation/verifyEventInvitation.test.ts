@@ -76,7 +76,7 @@ async function createTestOrganization(): Promise<TestOrganization> {
 		cleanup: async () => {
 			try {
 				// Cleanup organization (cascade deletes related records)
-			} catch (error) {
+			} catch (_error) {
 				// Silently ignore cleanup errors
 			}
 		},
@@ -88,7 +88,7 @@ async function createTestEvent(organizationId: string): Promise<TestEvent> {
 
 	const { token: adminAuthToken, userId: adminId } = await ensureAdminAuth();
 	const startAt = new Date();
-	startAt.setHours(startAt.getHours() + 1);
+	startAt.setDate(startAt.getDate() + 1);
 	const endAt = new Date(startAt);
 	endAt.setHours(endAt.getHours() + 2);
 	await mercuriusClient.mutate(Mutation_createOrganizationMembership, {
@@ -141,7 +141,7 @@ suite("Mutation verifyEventInvitation - Integration Tests", () => {
 		for (const cleanup of cleanupFunctionsToRun.reverse()) {
 			try {
 				await cleanup();
-			} catch (error) {
+			} catch (_error) {
 				// Silently ignore cleanup errors
 			}
 		}
@@ -423,7 +423,7 @@ suite("Mutation verifyEventInvitation - Integration Tests", () => {
 
 		const { token: adminAuth, userId: adminId } = await ensureAdminAuth();
 		const startAt = new Date();
-		startAt.setHours(startAt.getHours() + 1);
+		startAt.setDate(startAt.getDate() + 1);
 		const endAt = new Date(startAt);
 		endAt.setHours(endAt.getHours() + 2);
 
@@ -647,9 +647,11 @@ suite("Mutation verifyEventInvitation - Integration Tests", () => {
 
 		expect(verifyResult.errors).toBeDefined();
 		// GraphQL validation occurs before our resolver, so we expect a GraphQL validation error
-		expect(verifyResult.errors?.[0]?.message).toContain(
-			"String cannot represent a non string value",
-		);
+		const errorMessage = verifyResult.errors?.[0]?.message;
+		expect(
+			errorMessage?.includes("String cannot represent a non string value") ||
+				errorMessage?.includes("Graphql validation error"),
+		).toBe(true);
 	});
 
 	it("Integration: Non-existent invitation token throws not found error", async () => {

@@ -5,8 +5,9 @@ import {
 	queryPostInputSchema,
 } from "~/src/graphql/inputs/QueryPostInput";
 import { Post } from "~/src/graphql/types/Post/Post";
-import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import envConfig from "~/src/utilities/graphqLimits";
+import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
+
 const queryPostArgumentsSchema = z.object({
 	input: queryPostInputSchema,
 });

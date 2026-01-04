@@ -1,4 +1,6 @@
+import { and, eq, or } from "drizzle-orm";
 import { z } from "zod";
+import { eventAttendeesTable } from "~/src/drizzle/tables/eventAttendees";
 import { builder } from "~/src/graphql/builder";
 import {
 	QueryEventInput,
@@ -6,15 +8,15 @@ import {
 } from "~/src/graphql/inputs/QueryEventInput";
 import { Event } from "~/src/graphql/types/Event/Event";
 import { getEventsByIds } from "~/src/graphql/types/Query/eventQueries";
-import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import envConfig from "~/src/utilities/graphqLimits";
+import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 
 const queryEventArgumentsSchema = z.object({
 	input: queryEventInputSchema,
 });
 
 /**
- * @description Defines the 'event' query field for fetching a single event by its ID.
+ * Defines the 'event' query field for fetching a single event by its ID.
  * This query supports both standalone events and materialized instances of recurring events,
  * ensuring a unified way to retrieve any event type.
  */
@@ -121,6 +123,42 @@ builder.queryField("event", (t) =>
 						],
 					},
 				});
+			}
+
+			// Check invite-only visibility
+			if (event.isInviteOnly) {
+				// Check if user is creator
+				const isCreator = event.creatorId === currentUserId;
+
+				// Check if user is admin
+				const isAdmin =
+					currentUser.role === "administrator" ||
+					membership?.role === "administrator";
+
+				// Check if user is invited or registered
+				// Registered users (even if not explicitly invited) can also view invite-only events
+				let canAccess = false;
+				if (!isCreator && !isAdmin) {
+					const attendee =
+						await ctx.drizzleClient.query.eventAttendeesTable.findFirst({
+							where: and(
+								eq(eventAttendeesTable.userId, currentUserId),
+								or(
+									eq(eventAttendeesTable.isInvited, true),
+									eq(eventAttendeesTable.isRegistered, true),
+								),
+								event.eventType === "standalone"
+									? eq(eventAttendeesTable.eventId, event.id)
+									: eq(eventAttendeesTable.recurringEventInstanceId, event.id),
+							),
+						});
+					canAccess = attendee !== undefined;
+				}
+
+				// If user cannot view invite-only event, return null (not found)
+				if (!isCreator && !isAdmin && !canAccess) {
+					return null;
+				}
 			}
 
 			return event;

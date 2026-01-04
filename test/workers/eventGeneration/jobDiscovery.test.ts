@@ -3,11 +3,11 @@ import type { FastifyBaseLogger } from "fastify";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import type * as schema from "~/src/drizzle/schema";
 import {
-	type DiscoveredWorkload,
-	type JobDiscoveryConfig,
 	createDefaultJobDiscoveryConfig,
 	createEventGenerationJobs,
+	type DiscoveredWorkload,
 	discoverEventGenerationWorkloads,
+	type JobDiscoveryConfig,
 } from "~/src/workers/eventGeneration/jobDiscovery";
 import type { WorkerDependencies } from "~/src/workers/eventGeneration/types";
 
@@ -22,7 +22,7 @@ vi.mock("drizzle-orm", async () => {
 	};
 });
 
-vi.mock("~/src/utilities/recurringEventHelpers", () => ({
+vi.mock("~/src/utilities/recurringEvent", () => ({
 	estimateInstanceCount: vi.fn(),
 	normalizeRecurrenceRule: vi.fn(),
 }));
@@ -30,7 +30,7 @@ vi.mock("~/src/utilities/recurringEventHelpers", () => ({
 import {
 	estimateInstanceCount,
 	normalizeRecurrenceRule,
-} from "~/src/utilities/recurringEventHelpers";
+} from "~/src/utilities/recurringEvent";
 
 describe("jobDiscovery", () => {
 	let mockDrizzleClient: NodePgDatabase<typeof schema>;
@@ -81,6 +81,7 @@ describe("jobDiscovery", () => {
 		attendees: [],
 		isPublic: true,
 		isRegisterable: false,
+		isInviteOnly: false,
 		...overrides,
 	});
 

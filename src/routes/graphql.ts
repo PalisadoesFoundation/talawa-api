@@ -10,8 +10,17 @@ import type {
 } from "~/src/graphql/context";
 import schemaManager from "~/src/graphql/schemaManager";
 import NotificationService from "~/src/services/notification/NotificationService";
-import { TalawaGraphQLError } from "../utilities/TalawaGraphQLError";
+import {
+	COOKIE_NAMES,
+	getAccessTokenCookieOptions,
+	getClearAccessTokenCookieOptions,
+	getClearRefreshTokenCookieOptions,
+	getRefreshTokenCookieOptions,
+} from "../utilities/cookieConfig";
+import { createDataloaders } from "../utilities/dataloaders";
 import leakyBucket from "../utilities/leakyBucket";
+import { DEFAULT_REFRESH_TOKEN_EXPIRES_MS } from "../utilities/refreshTokenUtils";
+import { TalawaGraphQLError } from "../utilities/TalawaGraphQLError";
 
 /**
  * Type of the initial context argument provided to the createContext function by the graphql server.
@@ -54,29 +63,102 @@ export type CreateContext = (
 export const createContext: CreateContext = async (initialContext) => {
 	const { fastify, request } = initialContext;
 
+	// Try to authenticate from Authorization header first, then fall back to cookie
 	let currentClient: CurrentClient;
+
 	try {
+		// First try Authorization header (existing behavior for mobile clients)
 		const jwtPayload =
 			await request.jwtVerify<ExplicitAuthenticationTokenPayload>();
 		currentClient = {
 			isAuthenticated: true,
 			user: jwtPayload.user,
 		};
-	} catch (error) {
-		currentClient = {
-			isAuthenticated: false,
-		};
+	} catch (_headerError) {
+		// If no Authorization header, try to get token from cookie (web clients)
+		const accessTokenFromCookie = request.cookies?.[COOKIE_NAMES.ACCESS_TOKEN];
+		if (accessTokenFromCookie) {
+			try {
+				const jwtPayload =
+					await fastify.jwt.verify<ExplicitAuthenticationTokenPayload>(
+						accessTokenFromCookie,
+					);
+				currentClient = {
+					isAuthenticated: true,
+					user: jwtPayload.user,
+				};
+			} catch (_cookieError) {
+				currentClient = {
+					isAuthenticated: false,
+				};
+			}
+		} else {
+			currentClient = {
+				isAuthenticated: false,
+			};
+		}
 	}
 
+	// Cookie configuration options (sameSite is set per-cookie in helpers)
+	const cookieConfig = {
+		isSecure:
+			fastify.envConfig.API_IS_SECURE_COOKIES ??
+			process.env.NODE_ENV === "production",
+		domain: fastify.envConfig.API_COOKIE_DOMAIN,
+		path: "/",
+	};
+
+	// Create cookie helper only for HTTP requests (not WebSocket subscriptions)
+	const cookieHelper =
+		!initialContext.isSubscription && initialContext.reply
+			? {
+					setAuthCookies: (accessToken: string, refreshToken: string) => {
+						const jwtExpiresIn = fastify.envConfig.API_JWT_EXPIRES_IN;
+						const refreshExpiresIn =
+							fastify.envConfig.API_REFRESH_TOKEN_EXPIRES_IN ??
+							DEFAULT_REFRESH_TOKEN_EXPIRES_MS;
+
+						initialContext.reply.setCookie(
+							COOKIE_NAMES.ACCESS_TOKEN,
+							accessToken,
+							getAccessTokenCookieOptions(cookieConfig, jwtExpiresIn),
+						);
+						initialContext.reply.setCookie(
+							COOKIE_NAMES.REFRESH_TOKEN,
+							refreshToken,
+							getRefreshTokenCookieOptions(cookieConfig, refreshExpiresIn),
+						);
+					},
+					clearAuthCookies: () => {
+						initialContext.reply.setCookie(
+							COOKIE_NAMES.ACCESS_TOKEN,
+							"",
+							getClearAccessTokenCookieOptions(cookieConfig),
+						);
+						initialContext.reply.setCookie(
+							COOKIE_NAMES.REFRESH_TOKEN,
+							"",
+							getClearRefreshTokenCookieOptions(cookieConfig),
+						);
+					},
+					getRefreshToken: () => {
+						return request.cookies?.[COOKIE_NAMES.REFRESH_TOKEN];
+					},
+				}
+			: undefined;
+
 	return {
+		cache: fastify.cache,
 		currentClient,
+		dataloaders: createDataloaders(fastify.drizzleClient),
 		drizzleClient: fastify.drizzleClient,
 		envConfig: fastify.envConfig,
 		jwt: {
 			sign: (payload: ExplicitAuthenticationTokenPayload) =>
 				fastify.jwt.sign(payload),
 		},
-		log: fastify.log,
+		cookie: cookieHelper,
+		log: request.log ?? fastify.log,
 		minio: fastify.minio,
 		// attached a per-request notification service that queues notifications and can flush later
 		notification: new NotificationService(),
@@ -134,6 +216,25 @@ export const graphql = fastifyPlugin(async (fastify) => {
 		cache: false,
 		path: "/graphql",
 		schema: initialSchema,
+		errorFormatter: (execution, context) => {
+			const correlationId = context.reply.request.id;
+
+			return {
+				statusCode: 200,
+				response: {
+					data: execution.data ?? null,
+					errors: execution.errors.map((err) => ({
+						message: err.message,
+						locations: err.locations,
+						path: err.path,
+						extensions: {
+							...err.extensions,
+							correlationId,
+						},
+					})),
+				},
+			};
+		},
 		subscription: {
 			onConnect: async (data) => {
 				const { payload } = data;
@@ -151,10 +252,12 @@ export const graphql = fastifyPlugin(async (fastify) => {
 					);
 
 					return {
+						cache: fastify.cache,
 						currentClient: {
 							isAuthenticated: true,
 							user: decoded.user,
 						},
+						dataloaders: createDataloaders(fastify.drizzleClient),
 						drizzleClient: fastify.drizzleClient,
 						envConfig: fastify.envConfig,
 						jwt: {
@@ -179,11 +282,11 @@ export const graphql = fastifyPlugin(async (fastify) => {
 			// KeepAlive is fine as it is
 			keepAlive: 1000 * 30,
 			// A function which is called with the subscription context of the connection after the connection gets disconnected.
-			onDisconnect: (ctx) => {
+			onDisconnect: (_ctx) => {
 				// no cleanup needed on disconnect (intentional no-op)
 			},
 			// This function is used to validate incoming Websocket connections.
-			verifyClient: (info, next) => {
+			verifyClient: (_info, next) => {
 				next(true);
 			},
 		},
@@ -264,7 +367,7 @@ export const graphql = fastifyPlugin(async (fastify) => {
 					isAuthenticated: true,
 					user: jwtPayload.user,
 				};
-			} catch (error) {
+			} catch (_error) {
 				currentClient = {
 					isAuthenticated: false,
 				};
@@ -296,7 +399,6 @@ export const graphql = fastifyPlugin(async (fastify) => {
 				fastify.envConfig.API_RATE_LIMIT_REFILL_RATE,
 				complexity.complexity,
 			);
-			console.log("Complexity: ", complexity.complexity);
 
 			// If the request exceeds rate limits, reject it
 			if (!isRequestAllowed) {

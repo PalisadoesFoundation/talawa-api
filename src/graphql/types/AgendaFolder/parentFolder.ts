@@ -1,6 +1,7 @@
-import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import envConfig from "~/src/utilities/graphqLimits";
+import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import { AgendaFolder } from "./AgendaFolder";
+
 AgendaFolder.implement({
 	fields: (t) => ({
 		parentFolder: t.field({

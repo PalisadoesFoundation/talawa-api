@@ -7,9 +7,9 @@ import {
 	mutationUpdateEventInputSchema,
 } from "~/src/graphql/inputs/MutationUpdateEventInput";
 import { Event } from "~/src/graphql/types/Event/Event";
-import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import envConfig from "~/src/utilities/graphqLimits";
 import { isNotNullish } from "~/src/utilities/isNotNullish";
+import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 
 const mutationUpdateStandaloneEventArgumentsSchema = z.object({
 	input: mutationUpdateEventInputSchema,
@@ -70,6 +70,7 @@ builder.mutationField("updateStandaloneEvent", (t) =>
 						allDay: true,
 						isPublic: true,
 						isRegisterable: true,
+						isInviteOnly: true,
 						location: true,
 						creatorId: true,
 					},
@@ -172,19 +173,66 @@ builder.mutationField("updateStandaloneEvent", (t) =>
 				});
 			}
 
+			// Build update object with only explicitly provided fields
+			const updateData: Partial<typeof eventsTable.$inferInsert> = {
+				updaterId: currentUserId,
+			};
+
+			if (parsedArgs.input.description !== undefined) {
+				updateData.description = parsedArgs.input.description;
+			}
+			if (parsedArgs.input.endAt !== undefined) {
+				updateData.endAt = parsedArgs.input.endAt;
+			}
+			if (parsedArgs.input.name !== undefined) {
+				updateData.name = parsedArgs.input.name;
+			}
+			if (parsedArgs.input.startAt !== undefined) {
+				updateData.startAt = parsedArgs.input.startAt;
+			}
+			if (parsedArgs.input.allDay !== undefined) {
+				updateData.allDay = parsedArgs.input.allDay;
+			}
+			if (parsedArgs.input.isPublic !== undefined) {
+				updateData.isPublic = parsedArgs.input.isPublic;
+			}
+			if (parsedArgs.input.isRegisterable !== undefined) {
+				updateData.isRegisterable = parsedArgs.input.isRegisterable;
+			}
+			if (parsedArgs.input.isInviteOnly !== undefined) {
+				updateData.isInviteOnly = parsedArgs.input.isInviteOnly;
+			}
+			if (parsedArgs.input.location !== undefined) {
+				updateData.location = parsedArgs.input.location;
+			}
+
+			// Validate final event visibility state after update
+			const finalIsPublic =
+				parsedArgs.input.isPublic ?? existingEvent.isPublic ?? false;
+			const finalIsInviteOnly =
+				parsedArgs.input.isInviteOnly ?? existingEvent.isInviteOnly ?? false;
+
+			if (finalIsPublic === true && finalIsInviteOnly === true) {
+				throw new TalawaGraphQLError({
+					extensions: {
+						code: "invalid_arguments",
+						issues: [
+							{
+								argumentPath: ["input", "isPublic"],
+								message: "cannot be both Public and Invite-Only",
+							},
+							{
+								argumentPath: ["input", "isInviteOnly"],
+								message: "cannot be both Public and Invite-Only",
+							},
+						],
+					},
+				});
+			}
+
 			const [updatedEvent] = await ctx.drizzleClient
 				.update(eventsTable)
-				.set({
-					description: parsedArgs.input.description,
-					endAt: parsedArgs.input.endAt,
-					name: parsedArgs.input.name,
-					startAt: parsedArgs.input.startAt,
-					allDay: parsedArgs.input.allDay,
-					isPublic: parsedArgs.input.isPublic,
-					isRegisterable: parsedArgs.input.isRegisterable,
-					location: parsedArgs.input.location,
-					updaterId: currentUserId,
-				})
+				.set(updateData)
 				.where(eq(eventsTable.id, parsedArgs.input.id))
 				.returning();
 

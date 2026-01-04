@@ -563,7 +563,7 @@ describe("ActionItem Resolver - Organization Field", () => {
 
 			try {
 				await resolveOrganization(mockActionItem, {}, ctx);
-			} catch (error) {
+			} catch (_error) {
 				expect(ctx.log.error).toHaveBeenCalledWith(
 					"Postgres select operation returned an empty array for an action item's organization id that isn't null.",
 				);
@@ -579,7 +579,7 @@ describe("ActionItem Resolver - Organization Field", () => {
 
 			try {
 				await resolveOrganization(mockActionItem, {}, ctx);
-			} catch (error) {
+			} catch (_error) {
 				expect(ctx.log.error).toHaveBeenCalledWith(
 					expect.stringContaining("action item's organization id"),
 				);

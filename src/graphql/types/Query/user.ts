@@ -5,8 +5,8 @@ import {
 	queryUserInputSchema,
 } from "~/src/graphql/inputs/QueryUserInput";
 import { User } from "~/src/graphql/types/User/User";
-import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import envConfig from "~/src/utilities/graphqLimits";
+import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 
 const queryUserArgumentsSchema = z.object({
 	input: queryUserInputSchema,

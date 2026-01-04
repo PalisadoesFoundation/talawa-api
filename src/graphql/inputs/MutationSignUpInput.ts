@@ -26,6 +26,7 @@ export const mutationSignUpInputSchema = usersTableInsertSchema
 		avatar: z.custom<Promise<FileUpload>>().nullish(),
 		password: z.string().min(1).max(64),
 		selectedOrganization: z.string().uuid(),
+		recaptchaToken: z.string().optional(),
 	});
 
 export const MutationSignUpInput = builder
@@ -111,6 +112,11 @@ export const MutationSignUpInput = builder
 				description: "The organization the user is signing up for",
 				required: true,
 				type: "ID",
+			}),
+			recaptchaToken: t.string({
+				description:
+					"Optional reCAPTCHA token for verification (required when server-side reCAPTCHA is enabled)",
+				required: false,
 			}),
 		}),
 	});

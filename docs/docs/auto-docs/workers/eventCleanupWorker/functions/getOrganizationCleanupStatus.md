@@ -27,4 +27,4 @@ The ID of the organization to get the status for.
 
 `Promise`\<\{ `instancesEligibleForCleanup`: `number`; `lastCleanupDate`: `Date` \| `null`; `retentionCutoffDate`: `Date` \| `null`; `retentionMonths`: `number`; `totalInstances`: `number`; \}\>
 
-A promise that resolves to an object with the cleanup status details.
+- A promise that resolves to an object with the cleanup status details.

@@ -1,6 +1,6 @@
 import { faker } from "@faker-js/faker";
 import { eq } from "drizzle-orm";
-import { expect, suite, test } from "vitest";
+import { afterEach, expect, suite, test, vi } from "vitest";
 import { eventGenerationWindowsTable } from "~/src/drizzle/tables/eventGenerationWindows";
 import { eventsTable } from "~/src/drizzle/tables/events";
 import { organizationMembershipsTable } from "~/src/drizzle/tables/organizationMemberships";
@@ -15,6 +15,12 @@ import {
 	Mutation_updateThisAndFollowingEvents,
 	Query_signIn,
 } from "../documentNodes";
+
+// Clean up after each test to prevent state leakage
+afterEach(() => {
+	vi.clearAllMocks();
+	mercuriusClient.setHeaders({});
+});
 
 async function addMembership(
 	organizationId: string,
@@ -252,6 +258,109 @@ suite(
 
 			expect(result.errors).toBeDefined();
 			expect(result.errors?.[0]?.extensions?.code).toBe("invalid_arguments");
+		});
+
+		test("should throw invalid_arguments error when both isPublic and isInviteOnly are set to true", async () => {
+			// Create organization
+			const orgId = await createOrganizationAndGetId(authToken);
+
+			// Get current admin user
+			const currentUser = signInResult.data?.signIn?.user;
+			assertToBeNonNullish(currentUser);
+			await addMembership(orgId, currentUser.id, "administrator");
+
+			// Create recurring event with instances
+			const { instanceIds } = await createRecurringEventWithInstances(
+				orgId,
+				currentUser.id,
+			);
+
+			const targetInstanceId = instanceIds[0];
+			assertToBeNonNullish(targetInstanceId);
+
+			const result = await mercuriusClient.mutate(
+				Mutation_updateThisAndFollowingEvents,
+				{
+					headers: { authorization: `bearer ${authToken}` },
+					variables: {
+						input: {
+							id: targetInstanceId,
+							isPublic: true,
+							isInviteOnly: true,
+						},
+					},
+				},
+			);
+
+			expect(result.errors).toBeDefined();
+			expect(result.errors?.[0]?.extensions?.code).toBe("invalid_arguments");
+			expect(result.errors?.[0]?.extensions).toMatchObject({
+				issues: expect.arrayContaining([
+					expect.objectContaining({
+						argumentPath: ["input", "isPublic"],
+						message: expect.stringContaining(
+							"cannot be both Public and Invite-Only",
+						),
+					}),
+					expect.objectContaining({
+						argumentPath: ["input", "isInviteOnly"],
+						message: expect.stringContaining(
+							"cannot be both Public and Invite-Only",
+						),
+					}),
+				]),
+			});
+		});
+
+		test("should throw invalid_arguments error when isInviteOnly conflicts with inherited isPublic", async () => {
+			// Create organization
+			const orgId = await createOrganizationAndGetId(authToken);
+
+			// Get current admin user
+			const currentUser = signInResult.data?.signIn?.user;
+			assertToBeNonNullish(currentUser);
+			await addMembership(orgId, currentUser.id, "administrator");
+
+			// Create recurring event with instances (creates event with isPublic: true)
+			const { instanceIds } = await createRecurringEventWithInstances(
+				orgId,
+				currentUser.id,
+			);
+
+			const targetInstanceId = instanceIds[0];
+			assertToBeNonNullish(targetInstanceId);
+
+			const result = await mercuriusClient.mutate(
+				Mutation_updateThisAndFollowingEvents,
+				{
+					headers: { authorization: `bearer ${authToken}` },
+					variables: {
+						input: {
+							id: targetInstanceId,
+							isInviteOnly: true, // Only provide this, isPublic inherited as true
+						},
+					},
+				},
+			);
+
+			expect(result.errors).toBeDefined();
+			expect(result.errors?.[0]?.extensions?.code).toBe("invalid_arguments");
+			expect(result.errors?.[0]?.extensions).toMatchObject({
+				issues: expect.arrayContaining([
+					expect.objectContaining({
+						argumentPath: ["input", "isPublic"],
+						message: expect.stringContaining(
+							"cannot be both Public and Invite-Only",
+						),
+					}),
+					expect.objectContaining({
+						argumentPath: ["input", "isInviteOnly"],
+						message: expect.stringContaining(
+							"cannot be both Public and Invite-Only",
+						),
+					}),
+				]),
+			});
 		});
 
 		test("should throw arguments_associated_resources_not_found error for non-existent instance", async () => {
@@ -1143,3 +1252,247 @@ test("should handle missing generation window by initializing new one", async ()
 	expect(generationWindow).toBeDefined();
 	expect(generationWindow?.createdById).toBe(currentUser.id);
 }, 15000); // 15 second timeout for this complex test
+
+test("should override isInviteOnly when explicitly provided", async () => {
+	// Create organization
+	const orgId = await createOrganizationAndGetId(authToken);
+
+	// Get current admin user
+	const currentUser = signInResult.data?.signIn?.user;
+	assertToBeNonNullish(currentUser);
+	await addMembership(orgId, currentUser.id, "administrator");
+
+	// Create recurring event with instances (default isInviteOnly = false)
+	const { instanceIds, templateId } = await createRecurringEventWithInstances(
+		orgId,
+		currentUser.id,
+	);
+
+	// Verify original template has isInviteOnly = false
+	const originalTemplate =
+		await server.drizzleClient.query.eventsTable.findFirst({
+			where: (fields, operators) => operators.eq(fields.id, templateId),
+		});
+	assertToBeNonNullish(originalTemplate);
+	expect(originalTemplate.isInviteOnly).toBe(false);
+
+	// Update with explicit isInviteOnly = true
+	const targetInstanceId = instanceIds[1];
+	assertToBeNonNullish(targetInstanceId);
+
+	const result = await mercuriusClient.mutate(
+		Mutation_updateThisAndFollowingEvents,
+		{
+			headers: { authorization: `bearer ${authToken}` },
+			variables: {
+				input: {
+					id: targetInstanceId,
+					isInviteOnly: true, // Explicit override
+					isPublic: false, // Must be false if isInviteOnly is true
+				},
+			},
+		},
+	);
+
+	expect(result.errors).toBeUndefined();
+	expect(result.data?.updateThisAndFollowingEvents).toBeDefined();
+	expect(result.data?.updateThisAndFollowingEvents?.isInviteOnly).toBe(true);
+
+	// Verify new base event has isInviteOnly = true
+	const updatedEvent = result.data?.updateThisAndFollowingEvents;
+	assertToBeNonNullish(updatedEvent);
+	const newInstance =
+		await server.drizzleClient.query.recurringEventInstancesTable.findFirst({
+			where: (fields, operators) => operators.eq(fields.id, updatedEvent.id),
+			with: {
+				baseRecurringEvent: true,
+			},
+		});
+	assertToBeNonNullish(newInstance);
+	expect(newInstance.baseRecurringEvent.isInviteOnly).toBe(true);
+}, 10000);
+
+test("should inherit isInviteOnly from original event when omitted", async () => {
+	// Create organization
+	const orgId = await createOrganizationAndGetId(authToken);
+
+	// Get current admin user
+	const currentUser = signInResult.data?.signIn?.user;
+	assertToBeNonNullish(currentUser);
+	await addMembership(orgId, currentUser.id, "administrator");
+
+	// Create recurring event template with isInviteOnly = true
+	const originalSeriesId = faker.string.uuid();
+	const [template] = await server.drizzleClient
+		.insert(eventsTable)
+		.values({
+			name: "Invite-Only Weekly Meeting",
+			description: "Weekly team meeting",
+			organizationId: orgId,
+			creatorId: currentUser.id,
+			isRecurringEventTemplate: true,
+			startAt: new Date("2024-01-01T10:00:00Z"),
+			endAt: new Date("2024-01-01T11:00:00Z"),
+			allDay: false,
+			location: "Conference Room",
+			isPublic: false, // Must be false if isInviteOnly is true
+			isRegisterable: false,
+			isInviteOnly: true, // Original isInviteOnly = true
+		})
+		.returning();
+
+	assertToBeNonNullish(template);
+
+	const [recurrenceRule] = await server.drizzleClient
+		.insert(recurrenceRulesTable)
+		.values({
+			baseRecurringEventId: template.id,
+			originalSeriesId,
+			recurrenceStartDate: new Date("2024-01-01"),
+			recurrenceEndDate: new Date("2024-12-31"),
+			frequency: "WEEKLY",
+			interval: 1,
+			organizationId: orgId,
+			creatorId: currentUser.id,
+			recurrenceRuleString: "RRULE:FREQ=WEEKLY;INTERVAL=1",
+			latestInstanceDate: new Date("2024-01-15"),
+		})
+		.returning();
+
+	assertToBeNonNullish(recurrenceRule);
+
+	// Create event generation window
+	const currentDate = new Date();
+	const endDate = new Date(currentDate);
+	endDate.setMonth(endDate.getMonth() + 6);
+	const retentionDate = new Date(currentDate);
+	retentionDate.setMonth(retentionDate.getMonth() - 3);
+
+	await server.drizzleClient.insert(eventGenerationWindowsTable).values({
+		organizationId: orgId,
+		createdById: currentUser.id,
+		currentWindowEndDate: endDate,
+		retentionStartDate: retentionDate,
+		hotWindowMonthsAhead: 6,
+	});
+
+	// Create instances
+	const [instance] = await server.drizzleClient
+		.insert(recurringEventInstancesTable)
+		.values({
+			baseRecurringEventId: template.id,
+			recurrenceRuleId: recurrenceRule.id,
+			originalSeriesId,
+			organizationId: orgId,
+			originalInstanceStartTime: new Date("2024-01-01T10:00:00Z"),
+			actualStartTime: new Date("2024-01-01T10:00:00Z"),
+			actualEndTime: new Date("2024-01-01T11:00:00Z"),
+			sequenceNumber: 1,
+		})
+		.returning();
+
+	assertToBeNonNullish(instance);
+
+	// Update without providing isInviteOnly - should inherit from original
+	const result = await mercuriusClient.mutate(
+		Mutation_updateThisAndFollowingEvents,
+		{
+			headers: { authorization: `bearer ${authToken}` },
+			variables: {
+				input: {
+					id: instance.id,
+					name: "Updated Name", // Provide some field to update
+					// isInviteOnly omitted - should inherit
+				},
+			},
+		},
+	);
+
+	expect(result.errors).toBeUndefined();
+	expect(result.data?.updateThisAndFollowingEvents).toBeDefined();
+	expect(result.data?.updateThisAndFollowingEvents?.isInviteOnly).toBe(true); // Should inherit true
+
+	// Verify new base event inherited isInviteOnly = true
+	const updatedEvent = result.data?.updateThisAndFollowingEvents;
+	assertToBeNonNullish(updatedEvent);
+	const newInstance =
+		await server.drizzleClient.query.recurringEventInstancesTable.findFirst({
+			where: (fields, operators) => operators.eq(fields.id, updatedEvent.id),
+			with: {
+				baseRecurringEvent: true,
+			},
+		});
+	assertToBeNonNullish(newInstance);
+	expect(newInstance.baseRecurringEvent.isInviteOnly).toBe(true);
+}, 10000);
+
+test("should propagate isInviteOnly to generated instances", async () => {
+	// Create organization
+	const orgId = await createOrganizationAndGetId(authToken);
+
+	// Get current admin user
+	const currentUser = signInResult.data?.signIn?.user;
+	assertToBeNonNullish(currentUser);
+	await addMembership(orgId, currentUser.id, "administrator");
+
+	// Create recurring event with instances
+	const { instanceIds } = await createRecurringEventWithInstances(
+		orgId,
+		currentUser.id,
+	);
+
+	// Update with isInviteOnly = true
+	const targetInstanceId = instanceIds[0];
+	assertToBeNonNullish(targetInstanceId);
+
+	const result = await mercuriusClient.mutate(
+		Mutation_updateThisAndFollowingEvents,
+		{
+			headers: { authorization: `bearer ${authToken}` },
+			variables: {
+				input: {
+					id: targetInstanceId,
+					isInviteOnly: true,
+					isPublic: false,
+					recurrence: {
+						frequency: "WEEKLY",
+						interval: 1,
+						count: 3, // Generate 3 instances
+					},
+				},
+			},
+		},
+	);
+
+	expect(result.errors).toBeUndefined();
+	expect(result.data?.updateThisAndFollowingEvents).toBeDefined();
+	expect(result.data?.updateThisAndFollowingEvents?.isInviteOnly).toBe(true);
+
+	// Verify all generated instances inherit isInviteOnly = true
+	const updatedEvent = result.data?.updateThisAndFollowingEvents;
+	assertToBeNonNullish(updatedEvent);
+	const newInstance =
+		await server.drizzleClient.query.recurringEventInstancesTable.findFirst({
+			where: (fields, operators) => operators.eq(fields.id, updatedEvent.id),
+			with: {
+				baseRecurringEvent: true,
+			},
+		});
+	assertToBeNonNullish(newInstance);
+	const baseEventId = newInstance.baseRecurringEventId;
+
+	// Get all instances for the new base event
+	const allInstances =
+		await server.drizzleClient.query.recurringEventInstancesTable.findMany({
+			where: (fields, operators) =>
+				operators.eq(fields.baseRecurringEventId, baseEventId),
+			with: {
+				baseRecurringEvent: true,
+			},
+		});
+
+	// All instances should have isInviteOnly = true from the base event
+	for (const instance of allInstances) {
+		expect(instance.baseRecurringEvent.isInviteOnly).toBe(true);
+	}
+}, 10000);
