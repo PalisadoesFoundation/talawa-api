@@ -288,11 +288,10 @@ describe("OTEL bootstrap smoke tests", () => {
 		});
 
 		it("throws timeout error when shutdown hangs", async () => {
-			// Use fake timers before any async operations
 			vi.useFakeTimers();
 
 			const mockShutdown = vi.fn().mockImplementation(
-				() => new Promise(() => {}), // Never resolves
+				() => new Promise(() => {}),
 			);
 			vi.mocked(NodeSDK).mockImplementationOnce(
 				() =>
@@ -314,14 +313,16 @@ describe("OTEL bootstrap smoke tests", () => {
 
 			await initTracing();
 
-			// Start the shutdown promise
-			const shutdownPromise = shutdownTracing();
+			// Start the shutdown promise and catch rejections immediately
+			const shutdownPromise = shutdownTracing().catch((err) => err);
 
 			// Fast-forward time to trigger timeout
 			await vi.advanceTimersByTimeAsync(5001);
 
-			// Verify the promise rejects with timeout error
-			await expect(shutdownPromise).rejects.toThrow(/timeout/i);
+			// Verify the promise rejected with timeout error
+			const result = await shutdownPromise;
+			expect(result).toBeInstanceOf(Error);
+			expect(result.message).toMatch(/timeout/i);
 
 			expect(consoleErrorSpy).toHaveBeenCalledWith(
 				"[observability] Shutdown timed out",
@@ -331,7 +332,6 @@ describe("OTEL bootstrap smoke tests", () => {
 				expect.any(Error),
 			);
 
-			// Clean up timers
 			vi.useRealTimers();
 		});
 
