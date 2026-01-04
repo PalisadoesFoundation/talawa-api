@@ -243,6 +243,8 @@ declare module 'gql.tada' {
       TadaDocumentNode<{ updateActionItemForInstance: { id: string | null; } | null; }, { input: { volunteerId?: string | null | undefined; volunteerGroupId?: string | null | undefined; preCompletionNotes?: string | null | undefined; eventId: string; categoryId?: string | null | undefined; assignedAt?: string | null | undefined; actionId: string; }; }, void>;
     "\n\tmutation Mutation_createComment($input: MutationCreateCommentInput!) {\n\t\tcreateComment(input: $input) {\n\t\t\tid\n\t\t\tbody\n\t\t\tpost {\n\t\t\t\tid\n\t\t\t}\n\t\t\tcreator {\n\t\t\t\tid\n\t\t\t}\n\t\t}\n\t}\n":
       TadaDocumentNode<{ createComment: { id: string; body: string | null; post: { id: string; } | null; creator: { id: string; } | null; } | null; }, { input: { postId: string; body: string; }; }, void>;
+    "\n\tmutation Mutation_deleteComment($input: MutationDeleteCommentInput!) {\n\t\tdeleteComment(input: $input) {\n\t\t\tid\n\t\t}\n\t}\n":
+      TadaDocumentNode<{ deleteComment: { id: string; } | null; }, { input: { id: string; }; }, void>;
     "\n\tmutation Mutation_createCommentVote($input: MutationCreateCommentVoteInput!) {\n\t\tcreateCommentVote(input: $input) {\n\t\t\tid\n\t\t\tbody\n\t\t\tcreator {\n\t\t\t\tid\n\t\t\t}\n\t\t}\n\t}\n":
       TadaDocumentNode<{ createCommentVote: { id: string; body: string | null; creator: { id: string; } | null; } | null; }, { input: { type: "down_vote" | "up_vote"; commentId: string; }; }, void>;
     "\n\tmutation Mutation_deleteCommentVote($input: MutationDeleteCommentVoteInput!) {\n\t\tdeleteCommentVote(input: $input) {\n\t\t\tid\n\t\t\tbody\n\t\t\tcreator {\n\t\t\t\tid\n\t\t\t}\n\t\t}\n\t}\n":
