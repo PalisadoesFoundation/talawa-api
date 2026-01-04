@@ -551,10 +551,7 @@ suite("Mutation field deletePostVote", () => {
 						otherUserSignIn.data?.signIn?.authenticationToken;
 					assertToBeNonNullish(otherUserToken);
 
-					// Current user (non-admin) creates a vote (required for source code check)
-					await createTestPostVote(postId, userToken);
-
-					// Other user creates a vote
+					// Other user creates a vote (the vote being deleted)
 					await createTestPostVote(postId, otherUserToken);
 
 					// First user tries to delete other user's vote (should fail - not an admin)
@@ -837,11 +834,8 @@ suite("Mutation field deletePostVote", () => {
 				const userToken = userSignIn.data?.signIn?.authenticationToken;
 				assertToBeNonNullish(userToken);
 
-				// User creates a vote
+				// User creates a vote (the vote being deleted)
 				await createTestPostVote(postId, userToken);
-
-				// Admin creates a vote (required for source code check)
-				await createTestPostVote(postId, adminAuthToken);
 
 				// System admin deletes the user's vote
 				const result = await mercuriusClient.mutate(Mutation_deletePostVote, {
@@ -932,15 +926,14 @@ suite("Mutation field deletePostVote", () => {
 				const userId = createUserResult.data?.createUser?.user?.id;
 				assertToBeNonNullish(userId);
 
-				// Note: The source code checks the creator's membership role, not the current user's
-				// So we need to make the creator (user) an org admin for the authorization to pass
+				// Make the regular user a member (they will create the vote)
 				await mercuriusClient.mutate(Mutation_createOrganizationMembership, {
 					headers: { authorization: `bearer ${adminAuthToken}` },
 					variables: {
 						input: {
 							organizationId: orgId,
 							memberId: userId,
-							role: "administrator", // Must be admin because source code checks creator's role
+							role: "regular",
 						},
 					},
 				});
@@ -956,11 +949,8 @@ suite("Mutation field deletePostVote", () => {
 				const userToken = userSignIn.data?.signIn?.authenticationToken;
 				assertToBeNonNullish(userToken);
 
-				// User creates a vote
+				// User creates a vote (the vote being deleted)
 				await createTestPostVote(postId, userToken);
-
-				// Org admin creates a vote (required for source code check)
-				await createTestPostVote(postId, orgAdminToken);
 
 				// Org admin deletes the user's vote
 				const result = await mercuriusClient.mutate(Mutation_deletePostVote, {
@@ -1090,10 +1080,8 @@ suite("Mutation field deletePostVote", () => {
 				const randomPostId = faker.string.uuid();
 
 				// Mock the postsTable.findFirst to throw a "Failed query" error
-				const originalFindFirst =
-					server.drizzleClient.query.postsTable.findFirst;
-				server.drizzleClient.query.postsTable.findFirst = vi
-					.fn()
+				const postsFindFirstSpy = vi
+					.spyOn(server.drizzleClient.query.postsTable, "findFirst")
 					.mockRejectedValue(
 						new Error("Failed query: relation does not exist"),
 					);
@@ -1127,7 +1115,7 @@ suite("Mutation field deletePostVote", () => {
 						]),
 					);
 				} finally {
-					server.drizzleClient.query.postsTable.findFirst = originalFindFirst;
+					postsFindFirstSpy.mockRestore();
 				}
 			},
 			SUITE_TIMEOUT,
@@ -1139,19 +1127,15 @@ suite("Mutation field deletePostVote", () => {
 				const randomPostId = faker.string.uuid();
 
 				// Mock postsTable.findFirst to throw "Failed query" error
-				const originalPostsFindFirst =
-					server.drizzleClient.query.postsTable.findFirst;
-				server.drizzleClient.query.postsTable.findFirst = vi
-					.fn()
+				const postsFindFirstSpy = vi
+					.spyOn(server.drizzleClient.query.postsTable, "findFirst")
 					.mockRejectedValue(
 						new Error("Failed query: relation does not exist"),
 					);
 
 				// Mock usersTable.findFirst to also throw "Failed query" error
-				const originalUsersFindFirst =
-					server.drizzleClient.query.usersTable.findFirst;
-				server.drizzleClient.query.usersTable.findFirst = vi
-					.fn()
+				const usersFindFirstSpy = vi
+					.spyOn(server.drizzleClient.query.usersTable, "findFirst")
 					.mockRejectedValue(new Error("Failed query: connection lost"));
 
 				try {
@@ -1178,10 +1162,8 @@ suite("Mutation field deletePostVote", () => {
 						]),
 					);
 				} finally {
-					server.drizzleClient.query.postsTable.findFirst =
-						originalPostsFindFirst;
-					server.drizzleClient.query.usersTable.findFirst =
-						originalUsersFindFirst;
+					postsFindFirstSpy.mockRestore();
+					usersFindFirstSpy.mockRestore();
 				}
 			},
 			SUITE_TIMEOUT,
@@ -1193,10 +1175,8 @@ suite("Mutation field deletePostVote", () => {
 				const randomPostId = faker.string.uuid();
 
 				// Mock postsTable.findFirst to throw a non-"Failed query" error
-				const originalFindFirst =
-					server.drizzleClient.query.postsTable.findFirst;
-				server.drizzleClient.query.postsTable.findFirst = vi
-					.fn()
+				const postsFindFirstSpy = vi
+					.spyOn(server.drizzleClient.query.postsTable, "findFirst")
 					.mockRejectedValue(new Error("Database connection timeout"));
 
 				try {
@@ -1217,7 +1197,7 @@ suite("Mutation field deletePostVote", () => {
 						"Database connection timeout",
 					);
 				} finally {
-					server.drizzleClient.query.postsTable.findFirst = originalFindFirst;
+					postsFindFirstSpy.mockRestore();
 				}
 			},
 			SUITE_TIMEOUT,

@@ -95,7 +95,7 @@ builder.mutationField("deletePostVote", (t) =>
 											role: true,
 										},
 										where: (fields, operators) =>
-											operators.eq(fields.memberId, parsedArgs.input.creatorId),
+											operators.eq(fields.memberId, currentUserId),
 									},
 								},
 							},
@@ -104,7 +104,7 @@ builder.mutationField("deletePostVote", (t) =>
 									type: true,
 								},
 								where: (fields, operators) =>
-									operators.eq(fields.creatorId, currentUserId),
+									operators.eq(fields.creatorId, parsedArgs.input.creatorId),
 							},
 						},
 						where: (fields, operators) =>
