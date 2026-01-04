@@ -247,6 +247,8 @@ declare module 'gql.tada' {
       TadaDocumentNode<{ createCommentVote: { id: string; body: string | null; creator: { id: string; } | null; } | null; }, { input: { type: "down_vote" | "up_vote"; commentId: string; }; }, void>;
     "\n\tmutation Mutation_deleteCommentVote($input: MutationDeleteCommentVoteInput!) {\n\t\tdeleteCommentVote(input: $input) {\n\t\t\tid\n\t\t\tbody\n\t\t\tcreator {\n\t\t\t\tid\n\t\t\t}\n\t\t}\n\t}\n":
       TadaDocumentNode<{ deleteCommentVote: { id: string; body: string | null; creator: { id: string; } | null; } | null; }, { input: { creatorId: string; commentId: string; }; }, void>;
+    "\n\tmutation Mutation_updateCommentVote($input: MutationUpdateCommentVoteInput!) {\n\t\tupdateCommentVote(input: $input) {\n\t\t\tid\n\t\t\tbody\n\t\t\tcreator {\n\t\t\t\tid\n\t\t\t}\n\t\t}\n\t}\n":
+      TadaDocumentNode<{ updateCommentVote: { id: string; body: string | null; creator: { id: string; } | null; } | null; }, { input: { type?: "down_vote" | "up_vote" | null | undefined; commentId: string; }; }, void>;
     "\n\tquery Query_comment($input: QueryCommentInput!) {\n\t\tcomment(input: $input) {\n\t\t\tid\n\t\t\tbody\n\t\t\tcreatedAt\n\t\t\tpost {\n\t\t\t\tid\n\t\t\t}\n\t\t\tcreator {\n\t\t\t\tid\n\t\t\t}\n\t\t}\n\t}\n":
       TadaDocumentNode<{ comment: { id: string; body: string | null; createdAt: string | null; post: { id: string; } | null; creator: { id: string; } | null; } | null; }, { input: { id: string; }; }, void>;
     "\n\tquery Query_commentWithHasUserVoted($input: QueryCommentInput!, $userId: ID!) {\n\t\tcomment(input: $input) {\n\t\t\tid\n\t\t\tbody\n\t\t\thasUserVoted(userId: $userId) {\n\t\t\t\thasVoted\n\t\t\t\tvoteType\n\t\t\t}\n\t\t}\n\t}\n":
