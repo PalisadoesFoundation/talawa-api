@@ -4,6 +4,15 @@ import envConfig from "~/src/utilities/graphqLimits";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import { Post, type Post as PostType } from "./Post";
 
+/**
+ * Resolves the organization that a post belongs to.
+ *
+ * @param parent - The parent Post object containing the organizationId.
+ * @param _args - GraphQL arguments (unused).
+ * @param ctx - The GraphQL context containing dataloaders and logging utilities.
+ * @returns The organization the post belongs to.
+ * @throws TalawaGraphQLError with code "unexpected" if organization is not found (indicates data corruption).
+ */
 export const resolveOrganization = async (
 	parent: PostType,
 	_args: Record<string, never>,

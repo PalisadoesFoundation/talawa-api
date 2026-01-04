@@ -76,7 +76,7 @@ describe("Event Resolver - Organization Field", () => {
 					eventId: mockEvent.id,
 					organizationId: mockEvent.organizationId,
 				},
-				"DataLoader returned an empty array for an event's organization id that isn't null",
+				"DataLoader returned null for an event's organization id that isn't null.",
 			);
 		});
 	});
@@ -163,7 +163,7 @@ describe("Event Resolver - Organization Field", () => {
 						eventId: mockEvent.id,
 						organizationId: mockEvent.organizationId,
 					},
-					"DataLoader returned an empty array for an event's organization id that isn't null",
+					"DataLoader returned null for an event's organization id that isn't null.",
 				);
 				expect(error).toBeInstanceOf(TalawaGraphQLError);
 				expect((error as TalawaGraphQLError).extensions.code).toBe(
@@ -524,7 +524,7 @@ describe("Event Resolver - Organization Field", () => {
 						eventId: mockEvent.id,
 						organizationId: mockEvent.organizationId,
 					},
-					"DataLoader returned an empty array for an event's organization id that isn't null",
+					"DataLoader returned null for an event's organization id that isn't null.",
 				);
 			}
 		});

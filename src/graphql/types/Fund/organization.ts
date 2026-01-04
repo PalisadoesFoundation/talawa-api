@@ -3,6 +3,16 @@ import envConfig from "~/src/utilities/graphqLimits";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import type { GraphQLContext } from "../../context";
 import { Fund } from "./Fund";
+
+/**
+ * Resolves the organization that a fund belongs to.
+ *
+ * @param parent - The parent Fund object containing the organizationId.
+ * @param _args - GraphQL arguments (unused).
+ * @param ctx - The GraphQL context containing dataloaders and logging utilities.
+ * @returns The organization the fund belongs to.
+ * @throws TalawaGraphQLError with code "unexpected" if organization is not found (indicates data corruption).
+ */
 export const resolveOrganization = async (
 	parent: Fund,
 	_args: Record<string, never>,
@@ -14,7 +24,11 @@ export const resolveOrganization = async (
 
 	if (existingOrganization === null) {
 		ctx.log.error(
-			"Postgres select operation returned an empty array for a fund's organization id that isn't null.",
+			{
+				fundId: parent.id,
+				organizationId: parent.organizationId,
+			},
+			"DataLoader returned null for a fund's organization id that isn't null.",
 		);
 
 		throw new TalawaGraphQLError({

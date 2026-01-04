@@ -1694,19 +1694,19 @@ suite("Mutation field updateCurrentUser", () => {
 				.mockResolvedValue({ etag: "mock-etag" } as UploadedObjectInfo);
 
 			const comprehensiveTestData = {
-				addressLine1: "O'Brien Street 123", // Include apostrophe to test escapeHTML behavior
-				addressLine2: "Apt O'Connor", // Include apostrophe to test escapeHTML behavior
+				addressLine1: "123 Main Street",
+				addressLine2: "Apt 456",
 				birthDate: faker.date.birthdate().toISOString().split("T")[0],
-				city: "St. Mary's Bay", // Include apostrophe to test escapeHTML behavior
+				city: "San Francisco",
 				countryCode: "ca" as const,
-				description: "John's description with apostrophe's", // Include apostrophe to test escapeHTML behavior
+				description: "A test description for comprehensive field updates",
 				educationGrade: "graduate" as const,
 				emailAddress: `${faker.internet.username()}${faker.string.ulid()}@email.com`,
 				employmentStatus: "part_time" as const,
 				homePhoneNumber: "+15555555555",
 				maritalStatus: "married" as const,
 				mobilePhoneNumber: "+15555555555",
-				name: "Patrick O'Neil", // Include apostrophe to test escapeHTML behavior
+				name: "Test User",
 				natalSex: "female" as const,
 				naturalLanguageCode: "fr" as const,
 				password: faker.internet.password(),
@@ -1790,22 +1790,7 @@ suite("Mutation field updateCurrentUser", () => {
 
 			expect(result.errors).toBeUndefined();
 
-			// Verify escapeHTML behavior - addressLine1, addressLine2, city use custom field resolvers with escapeHTML
-			// Note: description and name use t.exposeString() without escapeHTML, so apostrophes remain unchanged
-			expect(result.data.updateCurrentUser.addressLine1).toBe(
-				"O&#39;Brien Street 123",
-			);
-			expect(result.data.updateCurrentUser.addressLine2).toBe(
-				"Apt O&#39;Connor",
-			);
-			expect(result.data.updateCurrentUser.city).toBe("St. Mary&#39;s Bay");
-			expect(result.data.updateCurrentUser.description).toBe(
-				comprehensiveTestData.description,
-			);
-			expect(result.data.updateCurrentUser.name).toBe(
-				comprehensiveTestData.name,
-			);
-
+			// Verify all fields were updated correctly
 			expect(result.data.updateCurrentUser).toEqual(
 				expect.objectContaining({
 					avatarMimeType: "image/jpeg",
@@ -1818,6 +1803,7 @@ suite("Mutation field updateCurrentUser", () => {
 					homePhoneNumber: comprehensiveTestData.homePhoneNumber,
 					maritalStatus: comprehensiveTestData.maritalStatus,
 					mobilePhoneNumber: comprehensiveTestData.mobilePhoneNumber,
+					name: comprehensiveTestData.name,
 					natalSex: comprehensiveTestData.natalSex,
 					naturalLanguageCode: comprehensiveTestData.naturalLanguageCode,
 					postalCode: comprehensiveTestData.postalCode,

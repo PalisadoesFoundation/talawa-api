@@ -228,7 +228,7 @@ describe("Chat.organization integration test", () => {
 				chatId: parent.id,
 				organizationId: parent.organizationId,
 			},
-			"DataLoader returned an empty array for a chat's organization id that isn't null",
+			"DataLoader returned null for a chat's organization id that isn't null.",
 		);
 	});
 });

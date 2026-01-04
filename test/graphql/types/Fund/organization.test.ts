@@ -509,7 +509,11 @@ describe("Fund.organization Resolver - Integration", () => {
 
 			// Verify the error was logged
 			expect(mockCtx.log.error).toHaveBeenCalledWith(
-				"Postgres select operation returned an empty array for a fund's organization id that isn't null.",
+				{
+					fundId: "orphaned-fund-id",
+					organizationId: "deleted-org-id",
+				},
+				"DataLoader returned null for a fund's organization id that isn't null.",
 			);
 
 			// Verify DataLoader was called with the correct organization ID

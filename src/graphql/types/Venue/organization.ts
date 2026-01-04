@@ -5,6 +5,15 @@ import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import type { Venue as VenueType } from "./Venue";
 import { Venue } from "./Venue";
 
+/**
+ * Resolves the organization that a venue belongs to.
+ *
+ * @param parent - The parent Venue object containing the organizationId.
+ * @param _args - GraphQL arguments (unused).
+ * @param ctx - The GraphQL context containing dataloaders and logging utilities.
+ * @returns The organization the venue belongs to.
+ * @throws TalawaGraphQLError with code "unexpected" if organization is not found (indicates data corruption).
+ */
 // Export the resolver function so it can be tested
 export const resolveOrganization = async (
 	parent: VenueType,

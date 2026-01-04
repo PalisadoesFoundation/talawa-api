@@ -93,7 +93,11 @@ describe("EventVolunteerEventResolver", () => {
 			});
 
 			expect(context.log.warn).toHaveBeenCalledWith(
-				"Postgres select operation returned an empty array for an event volunteer's event id that isn't null.",
+				{
+					eventVolunteerId: "volunteer-123",
+					eventId: "event-123",
+				},
+				"DataLoader returned null for an event volunteer's event id that isn't null.",
 			);
 		});
 

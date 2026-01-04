@@ -80,7 +80,11 @@ describe("EventAttendee Event Resolver Tests", () => {
 			);
 
 			expect(ctx.log.warn).toHaveBeenCalledWith(
-				"Postgres select operation returned an empty array for an event attendee's event id that isn't null.",
+				{
+					eventAttendeeId: "attendee-123",
+					eventId: "event-456",
+				},
+				"DataLoader returned null for an event attendee's event id that isn't null.",
 			);
 		});
 

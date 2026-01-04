@@ -5,6 +5,16 @@ import type { GraphQLContext } from "../../context";
 import type { EventVolunteer as EventVolunteerType } from "./EventVolunteer";
 import { EventVolunteer } from "./EventVolunteer";
 
+/**
+ * Resolves the event that an event volunteer is associated with.
+ *
+ * @param parent - The parent EventVolunteer object containing the eventId.
+ * @param _args - GraphQL arguments (unused).
+ * @param ctx - The GraphQL context containing dataloaders and logging utilities.
+ * @returns The event the volunteer is associated with.
+ * @throws TalawaGraphQLError with code "unauthenticated" if user is not authenticated.
+ * @throws TalawaGraphQLError with code "unexpected" if event is not found (indicates data corruption).
+ */
 export const EventVolunteerEventResolver = async (
 	parent: EventVolunteerType,
 	_args: Record<string, never>,
@@ -22,7 +32,11 @@ export const EventVolunteerEventResolver = async (
 
 	if (event === null) {
 		ctx.log.warn(
-			"Postgres select operation returned an empty array for an event volunteer's event id that isn't null.",
+			{
+				eventVolunteerId: parent.id,
+				eventId: parent.eventId,
+			},
+			"DataLoader returned null for an event volunteer's event id that isn't null.",
 		);
 		throw new TalawaGraphQLError({
 			extensions: {

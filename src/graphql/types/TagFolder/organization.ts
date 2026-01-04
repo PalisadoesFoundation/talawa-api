@@ -20,7 +20,7 @@ TagFolder.implement({
 							tagFolderId: parent.id,
 							organizationId: parent.organizationId,
 						},
-						"DataLoader returned an empty array for a tag folder's organization id that isn't null.",
+						"DataLoader returned null for a tag folder's organization id that isn't null.",
 					);
 
 					throw new TalawaGraphQLError({

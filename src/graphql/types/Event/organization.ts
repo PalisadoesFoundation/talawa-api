@@ -5,6 +5,15 @@ import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import type { Event as EventType } from "./Event";
 import { Event } from "./Event";
 
+/**
+ * Resolves the organization that an event belongs to.
+ *
+ * @param parent - The parent Event object containing the organizationId.
+ * @param _args - GraphQL arguments (unused).
+ * @param ctx - The GraphQL context containing dataloaders and logging utilities.
+ * @returns The organization the event belongs to.
+ * @throws TalawaGraphQLError with code "unexpected" if organization is not found (indicates data corruption).
+ */
 // Export the resolver function so it can be tested
 export const resolveEventOrganization = async (
 	parent: EventType,
@@ -22,7 +31,7 @@ export const resolveEventOrganization = async (
 				eventId: parent.id,
 				organizationId: parent.organizationId,
 			},
-			"DataLoader returned an empty array for an event's organization id that isn't null",
+			"DataLoader returned null for an event's organization id that isn't null.",
 		);
 
 		throw new TalawaGraphQLError({
