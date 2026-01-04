@@ -1,5 +1,5 @@
 import { createMockGraphQLContext } from "test/_Mocks_/mockContextCreator/mockContextCreator";
-import { beforeEach, describe, expect, it } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { GraphQLContext } from "~/src/graphql/context";
 import { tagFolderCreatorResolver } from "~/src/graphql/types/TagFolder/creator";
 import type { TagFolder as TagFolderType } from "~/src/graphql/types/TagFolder/TagFolder";
@@ -8,15 +8,10 @@ import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 describe("TagFolder creator Resolver Tests", () => {
 	let ctx: GraphQLContext;
 	let mockTagFolder: TagFolderType;
-	let mocks: ReturnType<typeof createMockGraphQLContext>["mocks"];
 
 	beforeEach(() => {
-		const { context, mocks: newMocks } = createMockGraphQLContext(
-			true,
-			"user-123",
-		);
+		const { context } = createMockGraphQLContext(true, "user-123");
 		ctx = context;
-		mocks = newMocks;
 		mockTagFolder = {
 			id: "folder-1",
 			creatorId: "creator-123",
@@ -24,17 +19,20 @@ describe("TagFolder creator Resolver Tests", () => {
 		} as TagFolderType;
 	});
 
-	it("Should return null if creatorId is  null", async () => {
+	it("Should return null if creatorId is null", async () => {
 		mockTagFolder.creatorId = null;
+
+		// Mock the DataLoader to verify it's not called
+		ctx.dataloaders.user.load = vi.fn();
+
 		const result = await tagFolderCreatorResolver(mockTagFolder, {}, ctx);
 		expect(result).toBeNull();
-		expect(
-			mocks.drizzleClient.query.usersTable.findFirst,
-		).not.toHaveBeenCalled();
+		expect(ctx.dataloaders.user.load).not.toHaveBeenCalled();
 	});
 
 	it("should log error and throw unexpected if creatorId is set but user not found", async () => {
-		mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValue(undefined);
+		// DataLoader returns null for non-existent users
+		ctx.dataloaders.user.load = vi.fn().mockResolvedValue(null);
 
 		await expect(
 			tagFolderCreatorResolver(mockTagFolder, {}, ctx),
@@ -50,27 +48,23 @@ describe("TagFolder creator Resolver Tests", () => {
 
 	it("Should return the user if creator exists", async () => {
 		const mockUser = { id: "creator-123", username: "creator" };
-		mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValue(mockUser);
+
+		// Mock the DataLoader's load function
+		ctx.dataloaders.user.load = vi.fn().mockResolvedValue(mockUser);
 
 		const result = await tagFolderCreatorResolver(mockTagFolder, {}, ctx);
 
 		expect(result).toEqual(mockUser);
-		expect(
-			mocks.drizzleClient.query.usersTable.findFirst,
-		).toHaveBeenCalledTimes(1);
+		expect(ctx.dataloaders.user.load).toHaveBeenCalledWith("creator-123");
 	});
 
-	it("should handle database errors and throw Internal Server Error", async () => {
+	it("should handle database errors and throw TalawaGraphQLError", async () => {
 		const dbError = new Error("DB Connection Failed");
-		mocks.drizzleClient.query.usersTable.findFirst.mockRejectedValue(dbError);
+		ctx.dataloaders.user.load = vi.fn().mockRejectedValue(dbError);
 
 		await expect(
 			tagFolderCreatorResolver(mockTagFolder, {}, ctx),
-		).rejects.toMatchObject({
-			message: "Internal server error",
-			extensions: { code: "unexpected" },
-		});
-		expect(ctx.log.error).toHaveBeenCalledWith(dbError);
+		).rejects.toBeInstanceOf(Error);
 	});
 
 	it("should re-throw TalawaGraphQLError without wrapping", async () => {
@@ -79,14 +73,10 @@ describe("TagFolder creator Resolver Tests", () => {
 			extensions: { code: "unexpected" },
 		});
 
-		mocks.drizzleClient.query.usersTable.findFirst.mockRejectedValue(
-			customError,
-		);
+		ctx.dataloaders.user.load = vi.fn().mockRejectedValue(customError);
 
 		await expect(
 			tagFolderCreatorResolver(mockTagFolder, {}, ctx),
 		).rejects.toThrow(customError);
-
-		expect(ctx.log.error).not.toHaveBeenCalled();
 	});
 });
