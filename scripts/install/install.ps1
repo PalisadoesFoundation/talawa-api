@@ -49,23 +49,7 @@ if ($Local) {
     $InstallMode = "docker"
 }
 
-# Colors for output (PowerShell 5.1+ supports ANSI on Windows 10+)
-function Write-ColorOutput {
-    param([string]$Message, [string]$Color = "White")
-    
-    $colors = @{
-        "Red" = "Red"
-        "Green" = "Green"
-        "Yellow" = "Yellow"
-        "Blue" = "Cyan"
-        "Cyan" = "Cyan"
-    }
-    
-    # Use fallback color if requested color not in hashtable
-    $resolvedColor = if ($colors.ContainsKey($Color)) { $colors[$Color] } else { "White" }
-    Write-Host $Message -ForegroundColor $resolvedColor
-}
-
+# Helper functions for colored output
 function Write-Info { Write-Host "i " -ForegroundColor Cyan -NoNewline; Write-Host $args[0] }
 function Write-Success { Write-Host "√ " -ForegroundColor Green -NoNewline; Write-Host $args[0] }
 function Write-Warn { Write-Host "! " -ForegroundColor Yellow -NoNewline; Write-Host $args[0] }
@@ -106,8 +90,8 @@ function Test-Administrator {
 function Test-CommandExists {
     param([string]$Command)
     
-    $null = Get-Command $Command -ErrorAction SilentlyContinue
-    return $?
+    $result = Get-Command $Command -ErrorAction SilentlyContinue
+    return $null -ne $result
 }
 
 # Get repository root
@@ -181,7 +165,9 @@ function Install-TalawaPrerequisites {
             Set-ExecutionPolicy Bypass -Scope Process -Force
             # Enforce TLS 1.2+ for secure download
             [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072
-            Invoke-Expression ((New-Object System.Net.WebClient).DownloadString('https://community.chocolatey.org/install.ps1'))
+            # Use Invoke-WebRequest with timeout (30 seconds) to prevent indefinite hangs
+            $installScript = (Invoke-WebRequest -Uri 'https://community.chocolatey.org/install.ps1' -UseBasicParsing -TimeoutSec 30).Content
+            Invoke-Expression $installScript
             
             # Refresh environment
             $env:Path = [System.Environment]::GetEnvironmentVariable("Path", "Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path", "User")
@@ -334,6 +320,10 @@ function Install-TalawaPrerequisites {
                 exit 1
             }
             fnm default $cleanNodeVersion
+            if ($LASTEXITCODE -ne 0) {
+                Write-Err "Failed to set Node.js v$cleanNodeVersion as default"
+                exit 1
+            }
             
             $nodeInstalled = node --version 2>$null
             Write-Success "Node.js installed: $nodeInstalled"

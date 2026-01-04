@@ -11,6 +11,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 // Mock modules
 vi.mock("node:child_process", () => ({
 	execSync: vi.fn(),
+	execFileSync: vi.fn(),
 }));
 
 vi.mock("node:fs", async () => {
@@ -93,13 +94,16 @@ describe("packageCheck", () => {
 
 	describe("getVersion", () => {
 		it("returns version string when command exists", () => {
-			// isInstalled also calls execSync, so we need multiple returns
-			vi.mocked(childProcess.execSync).mockReturnValue("v22.0.0");
+			// isInstalled uses execSync for 'which' command
+			vi.mocked(childProcess.execSync).mockReturnValue("/usr/bin/node");
+			// getVersion uses execFileSync for version flag
+			vi.mocked(childProcess.execFileSync).mockReturnValue("v22.0.0");
 
 			expect(getVersion("node")).toBe("22.0.0");
 		});
 
 		it("returns null when command does not exist", () => {
+			// isInstalled uses execSync which throws
 			vi.mocked(childProcess.execSync).mockImplementation(() => {
 				throw new Error("Command not found");
 			});
@@ -107,8 +111,12 @@ describe("packageCheck", () => {
 		});
 
 		it("extracts version from various output formats", () => {
-			// Mock always returns git version string
-			vi.mocked(childProcess.execSync).mockReturnValue("git version 2.40.1");
+			// isInstalled uses execSync
+			vi.mocked(childProcess.execSync).mockReturnValue("/usr/bin/git");
+			// getVersion uses execFileSync
+			vi.mocked(childProcess.execFileSync).mockReturnValue(
+				"git version 2.40.1",
+			);
 
 			expect(getVersion("git")).toBe("2.40.1");
 		});
@@ -212,8 +220,10 @@ describe("packageCheck", () => {
 
 	describe("checkPackage", () => {
 		it("returns package info with version when installed", () => {
-			// Use consistent return since checkPackage calls isInstalled then getVersion
-			vi.mocked(childProcess.execSync).mockReturnValue("v22.0.0");
+			// isInstalled uses execSync
+			vi.mocked(childProcess.execSync).mockReturnValue("/usr/bin/node");
+			// getVersion uses execFileSync
+			vi.mocked(childProcess.execFileSync).mockReturnValue("v22.0.0");
 
 			const result = checkPackage("node", ">=18.0.0");
 			expect(result.isInstalled).toBe(true);
@@ -222,7 +232,10 @@ describe("packageCheck", () => {
 		});
 
 		it("returns meetsRequirement false when version is below required", () => {
-			vi.mocked(childProcess.execSync).mockReturnValue("v16.0.0");
+			// isInstalled uses execSync
+			vi.mocked(childProcess.execSync).mockReturnValue("/usr/bin/node");
+			// getVersion uses execFileSync
+			vi.mocked(childProcess.execFileSync).mockReturnValue("v16.0.0");
 
 			const result = checkPackage("node", ">=18.0.0");
 			expect(result.isInstalled).toBe(true);
@@ -249,8 +262,10 @@ describe("packageCheck", () => {
 				}),
 			);
 
-			// Mock all commands as installed
-			vi.mocked(childProcess.execSync).mockReturnValue("version 1.0.0");
+			// Mock isInstalled (uses execSync)
+			vi.mocked(childProcess.execSync).mockReturnValue("/usr/bin/command");
+			// Mock getVersion (uses execFileSync)
+			vi.mocked(childProcess.execFileSync).mockReturnValue("version 1.0.0");
 
 			const checks = checkPrerequisites("/path/to/package.json");
 			expect(Array.isArray(checks)).toBe(true);
@@ -279,7 +294,10 @@ describe("packageCheck", () => {
 			vi.mocked(fs.readFileSync).mockReturnValue(
 				JSON.stringify({ engines: { node: ">=18.0.0" } }),
 			);
-			vi.mocked(childProcess.execSync).mockReturnValue("v22.0.0");
+			// isInstalled uses execSync
+			vi.mocked(childProcess.execSync).mockReturnValue("/usr/bin/node");
+			// getVersion uses execFileSync
+			vi.mocked(childProcess.execFileSync).mockReturnValue("v22.0.0");
 
 			expect(checkNodeVersion("/path/to/package.json")).toBe(true);
 		});
@@ -295,7 +313,10 @@ describe("packageCheck", () => {
 			vi.mocked(fs.readFileSync).mockReturnValue(
 				JSON.stringify({ packageManager: "pnpm@9.0.0" }),
 			);
-			vi.mocked(childProcess.execSync).mockReturnValue("9.15.0");
+			// isInstalled uses execSync
+			vi.mocked(childProcess.execSync).mockReturnValue("/usr/bin/pnpm");
+			// getVersion uses execFileSync
+			vi.mocked(childProcess.execFileSync).mockReturnValue("9.15.0");
 
 			expect(checkPnpmVersion("/path/to/package.json")).toBe(true);
 		});
@@ -345,7 +366,10 @@ describe("packageCheck", () => {
 		});
 
 		it("returns meetsRequirement=true when no required version specified", () => {
-			vi.mocked(childProcess.execSync).mockReturnValue("1.0.0\n");
+			// isInstalled uses execSync
+			vi.mocked(childProcess.execSync).mockReturnValue("/usr/bin/command");
+			// getVersion uses execFileSync
+			vi.mocked(childProcess.execFileSync).mockReturnValue("1.0.0\n");
 
 			const result = checkPackage("some-package");
 
@@ -354,7 +378,10 @@ describe("packageCheck", () => {
 		});
 
 		it("returns meetsRequirement=true when version meets requirement", () => {
-			vi.mocked(childProcess.execSync).mockReturnValue("2.0.0\n");
+			// isInstalled uses execSync
+			vi.mocked(childProcess.execSync).mockReturnValue("/usr/bin/command");
+			// getVersion uses execFileSync
+			vi.mocked(childProcess.execFileSync).mockReturnValue("2.0.0\n");
 
 			const result = checkPackage("some-package", ">=1.0.0");
 
@@ -363,7 +390,10 @@ describe("packageCheck", () => {
 		});
 
 		it("returns meetsRequirement=false when version does not meet requirement", () => {
-			vi.mocked(childProcess.execSync).mockReturnValue("0.9.0\n");
+			// isInstalled uses execSync
+			vi.mocked(childProcess.execSync).mockReturnValue("/usr/bin/command");
+			// getVersion uses execFileSync
+			vi.mocked(childProcess.execFileSync).mockReturnValue("0.9.0\n");
 
 			const result = checkPackage("some-package", ">=1.0.0");
 
@@ -374,14 +404,16 @@ describe("packageCheck", () => {
 
 	describe("getVersion edge cases", () => {
 		it("tries multiple version flags when first fails", () => {
+			// isInstalled uses execSync - always succeed
+			vi.mocked(childProcess.execSync).mockReturnValue("/usr/bin/command");
+
+			// getVersion uses execFileSync - fail first, succeed on retry
 			let callCount = 0;
-			vi.mocked(childProcess.execSync).mockImplementation((_cmd) => {
+			vi.mocked(childProcess.execFileSync).mockImplementation(() => {
 				callCount++;
-				// First call is for isInstalled (which)
-				if (callCount === 1) return "/usr/bin/command";
-				// Second call is --version which fails
-				if (callCount === 2) throw new Error("Unknown flag");
-				// Third call is -v which succeeds
+				// First call is --version which fails
+				if (callCount === 1) throw new Error("Unknown flag");
+				// Second call is -v which succeeds
 				return "1.2.3";
 			});
 
@@ -390,12 +422,11 @@ describe("packageCheck", () => {
 		});
 
 		it("returns null when no version flag works", () => {
-			let callCount = 0;
-			vi.mocked(childProcess.execSync).mockImplementation(() => {
-				callCount++;
-				// First call is for isInstalled (which) - success
-				if (callCount === 1) return "/usr/bin/command";
-				// All other calls fail
+			// isInstalled uses execSync - succeed
+			vi.mocked(childProcess.execSync).mockReturnValue("/usr/bin/command");
+
+			// getVersion uses execFileSync - all calls fail
+			vi.mocked(childProcess.execFileSync).mockImplementation(() => {
 				throw new Error("No version info");
 			});
 

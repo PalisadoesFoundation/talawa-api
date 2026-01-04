@@ -152,7 +152,9 @@ describe("logger", () => {
 		it("logs key-value pair", () => {
 			keyValue("Version", "1.0.0");
 			expect(consoleSpy).toHaveBeenCalledTimes(1);
-			expect(String(consoleSpy.mock.calls[0]?.[0] ?? "")).toContain("Version:");
+			const output = String(consoleSpy.mock.calls[0]?.[0] ?? "");
+			expect(output).toContain("Version:");
+			expect(output).toContain("1.0.0");
 		});
 	});
 

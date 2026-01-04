@@ -2,7 +2,7 @@
  * Package Check Utilities
  */
 
-import { execSync } from "node:child_process";
+import { execFileSync, execSync } from "node:child_process";
 import fs from "node:fs";
 import type { PackageVersion, PrereqCheck } from "../types";
 import { detectOS } from "./osDetection";
@@ -33,8 +33,15 @@ export function isInstalled(command: string): boolean {
 
 /**
  * Get the version of an installed package
+ * @param command - Command name to check (alphanumeric, hyphens, underscores only)
+ * @returns Version string if found, null otherwise
  */
 export function getVersion(command: string): string | null {
+	// Validate command to prevent injection - only allow safe characters
+	if (!/^[a-zA-Z0-9_-]+$/.test(command)) {
+		return null;
+	}
+
 	if (!isInstalled(command)) {
 		return null;
 	}
@@ -45,7 +52,8 @@ export function getVersion(command: string): string | null {
 
 		for (const flag of versionFlags) {
 			try {
-				const output = execSync(`${command} ${flag}`, {
+				// Use execFileSync to avoid shell interpolation issues
+				const output = execFileSync(command, [flag], {
 					encoding: "utf-8",
 					stdio: "pipe",
 				});

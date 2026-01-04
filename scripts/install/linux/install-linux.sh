@@ -214,8 +214,17 @@ info "Target pnpm version: $PNPM_VERSION"
 step $CURRENT_STEP $TOTAL_STEPS "Installing Node.js v$CLEAN_NODE_VERSION..."
 
 fnm install "$CLEAN_NODE_VERSION"
-fnm use "$CLEAN_NODE_VERSION"
+if ! fnm use "$CLEAN_NODE_VERSION"; then
+    error "Failed to activate Node.js v$CLEAN_NODE_VERSION"
+    exit 1
+fi
 fnm default "$CLEAN_NODE_VERSION"
+
+# Verify Node.js is available
+if ! command_exists node; then
+    error "Node.js installation succeeded but node command not found. You may need to restart your shell."
+    exit 1
+fi
 
 success "Node.js installed: $(node --version)"
 
@@ -227,7 +236,11 @@ step $CURRENT_STEP $TOTAL_STEPS "Installing pnpm v$PNPM_VERSION..."
 
 if command_exists pnpm; then
     CURRENT_PNPM=$(pnpm --version)
-    if [ "$CURRENT_PNPM" = "$PNPM_VERSION" ]; then
+    # Skip version comparison if target is "latest" - always update to ensure we have latest
+    if [ "$PNPM_VERSION" = "latest" ]; then
+        info "Updating pnpm to latest version..."
+        npm install -g "pnpm@latest"
+    elif [ "$CURRENT_PNPM" = "$PNPM_VERSION" ]; then
         success "pnpm is already installed: v$CURRENT_PNPM"
     else
         info "Updating pnpm from v$CURRENT_PNPM to v$PNPM_VERSION..."
