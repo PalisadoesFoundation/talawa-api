@@ -3,29 +3,37 @@ import { Readable } from "node:stream";
 import type { FileUpload } from "graphql-upload-minimal";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-// helper function - create a mock ReadStream
-function createMockReadStream(): ReadStream {
-	const stream = new Readable({
-		read() {
-			this.push("mock data");
-			this.push(null);
+// helper function - create a mock file read stream
+const createMockReadStream: FileUpload["createReadStream"] = () => {
+	const stream: ReadStream = Object.assign(
+		new Readable({
+			read() {
+				this.push("mock data");
+				this.push(null);
+			},
+		}),
+		{
+			close: () => undefined,
+			bytesRead: 0,
+			path: "",
+			pending: false,
 		},
-	});
+	);
 
-	return stream as unknown as ReadStream;
-}
+	return stream;
+};
 
 type MockFileUpload = Pick<
 	FileUpload,
-	"createReadStream" | "filename" | "fieldName" | "mimetype" | "encoding"
->;
+	"filename" | "fieldName" | "mimetype" | "encoding"
+> & {
+	createReadStream: FileUpload["createReadStream"];
+};
 
 const buildMockFileUpload = (
 	overrides: Partial<MockFileUpload> = {},
 ): MockFileUpload => ({
-	createReadStream: vi.fn(
-		createMockReadStream,
-	) as unknown as FileUpload["createReadStream"],
+	createReadStream: createMockReadStream,
 	filename: "test.zip",
 	fieldName: "pluginZip",
 	mimetype: "application/zip",
@@ -676,13 +684,7 @@ describe("installPluginFromZip", () => {
 	});
 
 	it("should install a plugin from zip file", async () => {
-		const mockZipFile: Parameters<typeof installPluginFromZip>[0]["zipFile"] = {
-			createReadStream: createMockReadStream,
-			filename: "test.zip",
-			fieldName: "pluginZip",
-			mimetype: "application/zip",
-			encoding: "7bit",
-		};
+		const mockZipFile = buildMockFileUpload();
 
 		const mockDrizzleClient: MockDrizzleClient = {
 			query: {
@@ -720,13 +722,7 @@ describe("installPluginFromZip", () => {
 	});
 
 	it("should handle existing plugin installation", async () => {
-		const mockZipFile: Parameters<typeof installPluginFromZip>[0]["zipFile"] = {
-			createReadStream: createMockReadStream,
-			filename: "test.zip",
-			fieldName: "pluginZip",
-			mimetype: "application/zip",
-			encoding: "7bit",
-		};
+		const mockZipFile = buildMockFileUpload();
 
 		const mockDrizzleClient: MockDrizzleClient = {
 			query: {
@@ -770,13 +766,7 @@ describe("installPluginFromZip", () => {
 		// This test verifies that the plugin installation completes successfully
 		// with the default mocks that provide valid manifest data
 
-		const mockZipFile: Parameters<typeof installPluginFromZip>[0]["zipFile"] = {
-			createReadStream: createMockReadStream,
-			filename: "test.zip",
-			fieldName: "pluginZip",
-			mimetype: "application/zip",
-			encoding: "7bit",
-		};
+		const mockZipFile = buildMockFileUpload();
 
 		const mockDrizzleClient: MockDrizzleClient = {
 			query: {
@@ -898,13 +888,7 @@ describe("installPluginFromZip", () => {
 	});
 
 	it("should handle plugin with database tables", async () => {
-		const mockZipFile: Parameters<typeof installPluginFromZip>[0]["zipFile"] = {
-			createReadStream: createMockReadStream,
-			filename: "test.zip",
-			fieldName: "pluginZip",
-			mimetype: "application/zip",
-			encoding: "7bit",
-		};
+		const mockZipFile = buildMockFileUpload();
 
 		const mockDrizzleClient: MockDrizzleClient = {
 			query: {
@@ -947,13 +931,7 @@ describe("installPluginFromZip", () => {
 		// from plugin installation. The plugin installation should succeed regardless
 		// of table definitions in the manifest.
 
-		const mockZipFile: Parameters<typeof installPluginFromZip>[0]["zipFile"] = {
-			createReadStream: createMockReadStream,
-			filename: "test.zip",
-			fieldName: "pluginZip",
-			mimetype: "application/zip",
-			encoding: "7bit",
-		};
+		const mockZipFile = buildMockFileUpload();
 
 		const mockDrizzleClient: MockDrizzleClient = {
 			query: {
@@ -996,13 +974,7 @@ describe("installPluginFromZip", () => {
 		// from plugin installation. The plugin installation should succeed regardless
 		// of table definitions.
 
-		const mockZipFile: Parameters<typeof installPluginFromZip>[0]["zipFile"] = {
-			createReadStream: createMockReadStream,
-			filename: "test.zip",
-			fieldName: "pluginZip",
-			mimetype: "application/zip",
-			encoding: "7bit",
-		};
+		const mockZipFile = buildMockFileUpload();
 
 		const mockDrizzleClient: MockDrizzleClient = {
 			query: {
@@ -1045,13 +1017,7 @@ describe("installPluginFromZip", () => {
 		// from plugin installation. The plugin installation should succeed regardless
 		// of database table creation issues.
 
-		const mockZipFile: Parameters<typeof installPluginFromZip>[0]["zipFile"] = {
-			createReadStream: createMockReadStream,
-			filename: "test.zip",
-			fieldName: "pluginZip",
-			mimetype: "application/zip",
-			encoding: "7bit",
-		};
+		const mockZipFile = buildMockFileUpload();
 
 		const mockDrizzleClient: MockDrizzleClient = {
 			query: {
@@ -1094,13 +1060,7 @@ describe("installPluginFromZip", () => {
 		// from plugin installation. The plugin installation should succeed regardless
 		// of general table creation errors.
 
-		const mockZipFile: Parameters<typeof installPluginFromZip>[0]["zipFile"] = {
-			createReadStream: createMockReadStream,
-			filename: "test.zip",
-			fieldName: "pluginZip",
-			mimetype: "application/zip",
-			encoding: "7bit",
-		};
+		const mockZipFile = buildMockFileUpload();
 
 		const mockDrizzleClient: MockDrizzleClient = {
 			query: {
@@ -1182,13 +1142,7 @@ describe("installPluginFromZip", () => {
 			extensionPoints: { database: [] },
 		});
 
-		const mockZipFile: Parameters<typeof installPluginFromZip>[0]["zipFile"] = {
-			createReadStream: createMockReadStream,
-			filename: "test.zip",
-			fieldName: "pluginZip",
-			mimetype: "application/zip",
-			encoding: "7bit",
-		};
+		const mockZipFile = buildMockFileUpload();
 
 		const mockDrizzleClient: MockDrizzleClient = {
 			query: {
@@ -1238,13 +1192,7 @@ describe("installPluginFromZip", () => {
 			extensionPoints: { database: [] },
 		});
 
-		const mockZipFile: Parameters<typeof installPluginFromZip>[0]["zipFile"] = {
-			createReadStream: createMockReadStream,
-			filename: "test.zip",
-			fieldName: "pluginZip",
-			mimetype: "application/zip",
-			encoding: "7bit",
-		};
+		const mockZipFile = buildMockFileUpload();
 
 		const mockDrizzleClient: MockDrizzleClient = {
 			query: {
@@ -1299,13 +1247,7 @@ describe("installPluginFromZip", () => {
 		);
 		vi.mocked(getPluginManagerInstance).mockReturnValueOnce(null);
 
-		const mockZipFile: Parameters<typeof installPluginFromZip>[0]["zipFile"] = {
-			createReadStream: createMockReadStream,
-			filename: "test.zip",
-			fieldName: "pluginZip",
-			mimetype: "application/zip",
-			encoding: "7bit",
-		};
+		const mockZipFile = buildMockFileUpload();
 
 		const mockDrizzleClient: MockDrizzleClient = {
 			query: {
