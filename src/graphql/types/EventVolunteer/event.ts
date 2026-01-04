@@ -1,5 +1,3 @@
-import { eq } from "drizzle-orm";
-import { eventsTable } from "~/src/drizzle/tables/events";
 import { Event } from "~/src/graphql/types/Event/Event";
 import envConfig from "~/src/utilities/graphqLimits";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
@@ -20,11 +18,9 @@ export const EventVolunteerEventResolver = async (
 		});
 	}
 
-	const event = await ctx.drizzleClient.query.eventsTable.findFirst({
-		where: eq(eventsTable.id, parent.eventId),
-	});
+	const event = await ctx.dataloaders.event.load(parent.eventId);
 
-	if (event === undefined) {
+	if (event === null) {
 		ctx.log.warn(
 			"Postgres select operation returned an empty array for an event volunteer's event id that isn't null.",
 		);

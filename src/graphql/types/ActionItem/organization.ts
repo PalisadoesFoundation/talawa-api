@@ -11,13 +11,11 @@ export const resolveOrganization = async (
 	_args: Record<string, never>,
 	ctx: GraphQLContext,
 ) => {
-	const existingOrganization =
-		await ctx.drizzleClient.query.organizationsTable.findFirst({
-			where: (fields, operators) =>
-				operators.eq(fields.id, parent.organizationId),
-		});
+	const existingOrganization = await ctx.dataloaders.organization.load(
+		parent.organizationId,
+	);
 
-	if (existingOrganization === undefined) {
+	if (existingOrganization === null) {
 		ctx.log.error(
 			"Postgres select operation returned an empty array for an action item's organization id that isn't null.",
 		);
