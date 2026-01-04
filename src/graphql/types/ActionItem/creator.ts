@@ -4,7 +4,19 @@ import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import type { ActionItem as ActionItemType } from "./ActionItem";
 import { ActionItem } from "./ActionItem";
 
-// Export the resolver function so it can be tested
+/**
+ * Resolves the creator user for an ActionItem.
+ * Requires authentication and administrator permissions (global or organization-level).
+ * Uses DataLoader for batched user queries to prevent N+1 behavior.
+ *
+ * @param parent - The ActionItem parent object
+ * @param _args - GraphQL arguments (unused)
+ * @param ctx - GraphQL context containing dataloaders and authentication state
+ * @returns The creator User object, or null if creatorId is null
+ * @throws {TalawaGraphQLError} With code "unauthenticated" if user is not logged in or not found
+ * @throws {TalawaGraphQLError} With code "unauthorized_action" if user lacks admin permissions
+ * @throws {TalawaGraphQLError} With code "unexpected" if creator user is not found despite non-null creatorId
+ */
 export const resolveCreator = async (
 	parent: ActionItemType,
 	_args: Record<string, never>,

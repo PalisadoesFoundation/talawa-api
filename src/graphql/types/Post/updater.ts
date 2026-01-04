@@ -5,6 +5,19 @@ import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import type { Post as PostType } from "./Post";
 import { Post } from "./Post";
 
+/**
+ * Resolves the updater user for a Post.
+ * Requires authentication and administrator permissions (global or organization-level).
+ * Uses DataLoader for batched user queries to prevent N+1 behavior.
+ *
+ * @param parent - The Post parent object
+ * @param _args - GraphQL arguments (unused)
+ * @param ctx - GraphQL context containing dataloaders and authentication state
+ * @returns The updater User object, or null if updaterId is null
+ * @throws {TalawaGraphQLError} With code "unauthenticated" if user is not logged in or not found
+ * @throws {TalawaGraphQLError} With code "unauthorized_action" if user lacks admin permissions
+ * @throws {TalawaGraphQLError} With code "unexpected" if updater user is not found despite non-null updaterId
+ */
 export const resolveUpdater = async (
 	parent: PostType,
 	_args: Record<string, never>,
