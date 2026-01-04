@@ -1298,7 +1298,7 @@ describe("ActionItem.organization Resolver - Integration", () => {
 					actionItemId: mockActionItem.id,
 					organizationId: mockActionItem.organizationId,
 				},
-				"DataLoader returned an empty array for an action item's organization id that isn't null",
+				"DataLoader returned null for an action item's organization id that isn't null",
 			);
 
 			// Verify the DataLoader was called with the correct organization ID

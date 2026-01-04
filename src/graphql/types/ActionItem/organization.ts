@@ -21,7 +21,7 @@ export const resolveOrganization = async (
 				actionItemId: parent.id,
 				organizationId: parent.organizationId,
 			},
-			"DataLoader returned an empty array for an action item's organization id that isn't null",
+			"DataLoader returned null for an action item's organization id that isn't null",
 		);
 
 		throw new TalawaGraphQLError({
