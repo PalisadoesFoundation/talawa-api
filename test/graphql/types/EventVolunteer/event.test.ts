@@ -60,11 +60,9 @@ describe("EventVolunteerEventResolver", () => {
 
 	describe("Event Retrieval", () => {
 		it("should return event with attachments array when event exists", async () => {
-			const { context, mocks } = createMockGraphQLContext(true, "user-123");
+			const { context } = createMockGraphQLContext(true, "user-123");
 
-			mocks.drizzleClient.query.eventsTable.findFirst.mockResolvedValue(
-				mockEvent,
-			);
+			context.dataloaders.event.load = vi.fn().mockResolvedValue(mockEvent);
 
 			const result = await EventVolunteerEventResolver(
 				mockEventVolunteer,
@@ -76,21 +74,19 @@ describe("EventVolunteerEventResolver", () => {
 				...mockEvent,
 				attachments: [],
 			});
-			expect(
-				mocks.drizzleClient.query.eventsTable.findFirst,
-			).toHaveBeenCalledTimes(1);
+			expect(context.dataloaders.event.load).toHaveBeenCalledWith("event-123");
 		});
 
 		it("should throw unexpected error when event is not found", async () => {
-			const { context, mocks } = createMockGraphQLContext(true, "user-123");
+			const { context } = createMockGraphQLContext(true, "user-123");
 
-			mocks.drizzleClient.query.eventsTable.findFirst.mockResolvedValue(
-				undefined,
-			);
+			context.dataloaders.event.load = vi.fn().mockResolvedValue(null);
 
 			await expect(
 				EventVolunteerEventResolver(mockEventVolunteer, {}, context),
 			).rejects.toThrow(TalawaGraphQLError);
+
+			context.dataloaders.event.load = vi.fn().mockResolvedValue(null);
 
 			await expect(
 				EventVolunteerEventResolver(mockEventVolunteer, {}, context),
@@ -103,29 +99,23 @@ describe("EventVolunteerEventResolver", () => {
 			);
 		});
 
-		it("should query database for event", async () => {
-			const { context, mocks } = createMockGraphQLContext(true, "user-123");
+		it("should call DataLoader for event", async () => {
+			const { context } = createMockGraphQLContext(true, "user-123");
 
-			mocks.drizzleClient.query.eventsTable.findFirst.mockResolvedValue(
-				mockEvent,
-			);
+			context.dataloaders.event.load = vi.fn().mockResolvedValue(mockEvent);
 
 			await EventVolunteerEventResolver(mockEventVolunteer, {}, context);
 
-			// Verify the query was called once (testing behavior, not internal implementation)
-			expect(
-				mocks.drizzleClient.query.eventsTable.findFirst,
-			).toHaveBeenCalledTimes(1);
+			expect(context.dataloaders.event.load).toHaveBeenCalledWith("event-123");
+			expect(context.dataloaders.event.load).toHaveBeenCalledTimes(1);
 		});
 	});
 
 	describe("Return Value Structure", () => {
 		it("should always return event with empty attachments array", async () => {
-			const { context, mocks } = createMockGraphQLContext(true, "user-123");
+			const { context } = createMockGraphQLContext(true, "user-123");
 
-			mocks.drizzleClient.query.eventsTable.findFirst.mockResolvedValue(
-				mockEvent,
-			);
+			context.dataloaders.event.load = vi.fn().mockResolvedValue(mockEvent);
 
 			const result = await EventVolunteerEventResolver(
 				mockEventVolunteer,
@@ -139,11 +129,9 @@ describe("EventVolunteerEventResolver", () => {
 		});
 
 		it("should preserve all event properties", async () => {
-			const { context, mocks } = createMockGraphQLContext(true, "user-123");
+			const { context } = createMockGraphQLContext(true, "user-123");
 
-			mocks.drizzleClient.query.eventsTable.findFirst.mockResolvedValue(
-				mockEvent,
-			);
+			context.dataloaders.event.load = vi.fn().mockResolvedValue(mockEvent);
 
 			const result = await EventVolunteerEventResolver(
 				mockEventVolunteer,
@@ -165,7 +153,7 @@ describe("EventVolunteerEventResolver", () => {
 
 	describe("Edge Cases", () => {
 		it("should handle different event IDs correctly", async () => {
-			const { context, mocks } = createMockGraphQLContext(true, "user-123");
+			const { context } = createMockGraphQLContext(true, "user-123");
 
 			const differentEvent = { ...mockEvent, id: "different-event-456" };
 			const volunteerWithDifferentEvent = {
@@ -173,9 +161,9 @@ describe("EventVolunteerEventResolver", () => {
 				eventId: "different-event-456",
 			};
 
-			mocks.drizzleClient.query.eventsTable.findFirst.mockResolvedValue(
-				differentEvent,
-			);
+			context.dataloaders.event.load = vi
+				.fn()
+				.mockResolvedValue(differentEvent);
 
 			const result = await EventVolunteerEventResolver(
 				volunteerWithDifferentEvent,
@@ -188,11 +176,11 @@ describe("EventVolunteerEventResolver", () => {
 		});
 
 		it("should handle database connection issues", async () => {
-			const { context, mocks } = createMockGraphQLContext(true, "user-123");
+			const { context } = createMockGraphQLContext(true, "user-123");
 
-			mocks.drizzleClient.query.eventsTable.findFirst.mockRejectedValue(
-				new Error("Database connection failed"),
-			);
+			context.dataloaders.event.load = vi
+				.fn()
+				.mockRejectedValue(new Error("Database connection failed"));
 
 			await expect(
 				EventVolunteerEventResolver(mockEventVolunteer, {}, context),

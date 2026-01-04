@@ -4,6 +4,7 @@ import type { GraphQLObjectType, GraphQLResolveInfo } from "graphql";
 import { assertToBeNonNullish } from "test/helpers";
 import { afterEach, describe, expect, test } from "vitest";
 import { schemaManager } from "~/src/graphql/schemaManager";
+import { createDataloaders } from "~/src/utilities/dataloaders";
 import { server } from "../../../server";
 import { mercuriusClient } from "../client";
 import {
@@ -199,6 +200,7 @@ describe("Chat.organization integration test", () => {
 		const ctx = {
 			currentClient: { isAuthenticated: true, user: { id: creatorId } },
 			drizzleClient: server.drizzleClient,
+			dataloaders: createDataloaders(server.drizzleClient),
 			log: server.log,
 			envConfig: server.envConfig,
 			jwt: server.jwt,

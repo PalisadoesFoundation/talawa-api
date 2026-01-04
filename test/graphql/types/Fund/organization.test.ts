@@ -1,5 +1,5 @@
 import { createMockGraphQLContext } from "test/_Mocks_/mockContextCreator/mockContextCreator";
-import { beforeEach, describe, expect, it } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { GraphQLContext } from "~/src/graphql/context";
 import type { Fund as FundType } from "~/src/graphql/types/Fund/Fund";
 import { resolveOrganization } from "~/src/graphql/types/Fund/organization";
@@ -8,7 +8,6 @@ import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 describe("Fund Resolver - Organization Field", () => {
 	let ctx: GraphQLContext;
 	let mockFund: FundType;
-	let mocks: ReturnType<typeof createMockGraphQLContext>["mocks"];
 
 	beforeEach(async () => {
 		mockFund = {
@@ -25,12 +24,8 @@ describe("Fund Resolver - Organization Field", () => {
 			updatedAt: new Date("2024-01-01T10:00:00Z"),
 		};
 
-		const { context, mocks: newMocks } = createMockGraphQLContext(
-			true,
-			"user-123",
-		);
+		const { context } = createMockGraphQLContext(true, "user-123");
 		ctx = context;
-		mocks = newMocks;
 	});
 
 	describe("Organization Resolution", () => {
@@ -52,24 +47,18 @@ describe("Fund Resolver - Organization Field", () => {
 				membershipRequestsEnabled: true,
 			};
 
-			mocks.drizzleClient.query.organizationsTable.findFirst.mockResolvedValue(
-				mockOrganization,
-			);
+			ctx.dataloaders.organization.load = vi
+				.fn()
+				.mockResolvedValue(mockOrganization);
 
 			const result = await resolveOrganization(mockFund, {}, ctx);
 
 			expect(result).toEqual(mockOrganization);
-			expect(
-				mocks.drizzleClient.query.organizationsTable.findFirst,
-			).toHaveBeenCalledWith({
-				where: expect.any(Function),
-			});
+			expect(ctx.dataloaders.organization.load).toHaveBeenCalledWith("org-123");
 		});
 
 		it("should throw unexpected error when organization does not exist", async () => {
-			mocks.drizzleClient.query.organizationsTable.findFirst.mockResolvedValue(
-				undefined,
-			);
+			ctx.dataloaders.organization.load = vi.fn().mockResolvedValue(null);
 
 			await expect(resolveOrganization(mockFund, {}, ctx)).rejects.toThrow(
 				new TalawaGraphQLError({
@@ -84,26 +73,21 @@ describe("Fund Resolver - Organization Field", () => {
 	});
 
 	describe("Database Query Verification", () => {
-		it("should call database query with correct organization ID", async () => {
+		it("should call DataLoader with correct organization ID", async () => {
 			const mockOrganization = {
 				id: "org-123",
 				name: "Test Organization",
 				countryCode: "US",
 			};
 
-			mocks.drizzleClient.query.organizationsTable.findFirst.mockImplementation(
-				((config: { where?: unknown }) => {
-					// Verify where clause is provided
-					expect(config.where).toBeDefined();
-					return Promise.resolve(mockOrganization);
-				}) as unknown as typeof mocks.drizzleClient.query.organizationsTable.findFirst,
-			);
+			ctx.dataloaders.organization.load = vi
+				.fn()
+				.mockResolvedValue(mockOrganization);
 
 			await resolveOrganization(mockFund, {}, ctx);
 
-			expect(
-				mocks.drizzleClient.query.organizationsTable.findFirst,
-			).toHaveBeenCalledTimes(1);
+			expect(ctx.dataloaders.organization.load).toHaveBeenCalledWith("org-123");
+			expect(ctx.dataloaders.organization.load).toHaveBeenCalledTimes(1);
 		});
 
 		it("should handle different organization IDs correctly", async () => {
@@ -121,26 +105,21 @@ describe("Fund Resolver - Organization Field", () => {
 
 			// Test with first organization ID
 			mockFund.organizationId = "org-111";
-			mocks.drizzleClient.query.organizationsTable.findFirst.mockResolvedValueOnce(
-				mockOrganization1,
-			);
+			ctx.dataloaders.organization.load = vi
+				.fn()
+				.mockResolvedValue(mockOrganization1);
 
 			let result = await resolveOrganization(mockFund, {}, ctx);
 			expect(result).toEqual(mockOrganization1);
 
 			// Test with second organization ID
 			mockFund.organizationId = "org-222";
-			mocks.drizzleClient.query.organizationsTable.findFirst.mockResolvedValueOnce(
-				mockOrganization2,
-			);
+			ctx.dataloaders.organization.load = vi
+				.fn()
+				.mockResolvedValue(mockOrganization2);
 
 			result = await resolveOrganization(mockFund, {}, ctx);
 			expect(result).toEqual(mockOrganization2);
-
-			// Verify both calls were made
-			expect(
-				mocks.drizzleClient.query.organizationsTable.findFirst,
-			).toHaveBeenCalledTimes(2);
 		});
 
 		it("should use organizationId from parent correctly", async () => {
@@ -151,25 +130,22 @@ describe("Fund Resolver - Organization Field", () => {
 			};
 
 			mockFund.organizationId = "custom-org-id";
-			mocks.drizzleClient.query.organizationsTable.findFirst.mockResolvedValue(
-				mockOrganization,
-			);
+			ctx.dataloaders.organization.load = vi
+				.fn()
+				.mockResolvedValue(mockOrganization);
 
 			await resolveOrganization(mockFund, {}, ctx);
 
-			expect(
-				mocks.drizzleClient.query.organizationsTable.findFirst,
-			).toHaveBeenCalledWith({
-				where: expect.any(Function),
-			});
+			expect(ctx.dataloaders.organization.load).toHaveBeenCalledWith(
+				"custom-org-id",
+			);
 		});
 	});
 
 	describe("Error Handling", () => {
 		it("should log error with correct message when organization is not found", async () => {
-			mocks.drizzleClient.query.organizationsTable.findFirst.mockResolvedValue(
-				undefined,
-			);
+			ctx.dataloaders.organization.load = vi.fn().mockResolvedValue(null);
+
 			expect.assertions(4);
 			try {
 				await resolveOrganization(mockFund, {}, ctx);
@@ -188,20 +164,15 @@ describe("Fund Resolver - Organization Field", () => {
 			}
 		});
 
-		it("should handle database errors gracefully", async () => {
+		it("should handle DataLoader errors gracefully", async () => {
 			const databaseError = new Error("Database connection failed");
-			mocks.drizzleClient.query.organizationsTable.findFirst.mockRejectedValue(
-				databaseError,
-			);
+			ctx.dataloaders.organization.load = vi
+				.fn()
+				.mockRejectedValue(databaseError);
 
 			await expect(resolveOrganization(mockFund, {}, ctx)).rejects.toThrow(
 				databaseError,
 			);
-
-			// Verify the query was attempted
-			expect(
-				mocks.drizzleClient.query.organizationsTable.findFirst,
-			).toHaveBeenCalledTimes(1);
 		});
 
 		it("should not log errors for successful operations", async () => {
@@ -211,9 +182,9 @@ describe("Fund Resolver - Organization Field", () => {
 				countryCode: "US",
 			};
 
-			mocks.drizzleClient.query.organizationsTable.findFirst.mockResolvedValue(
-				mockOrganization,
-			);
+			ctx.dataloaders.organization.load = vi
+				.fn()
+				.mockResolvedValue(mockOrganization);
 
 			await resolveOrganization(mockFund, {}, ctx);
 
@@ -223,9 +194,9 @@ describe("Fund Resolver - Organization Field", () => {
 		it("should handle query timeout errors", async () => {
 			const timeoutError = new Error("Query timeout");
 			timeoutError.name = "TimeoutError";
-			mocks.drizzleClient.query.organizationsTable.findFirst.mockRejectedValue(
-				timeoutError,
-			);
+			ctx.dataloaders.organization.load = vi
+				.fn()
+				.mockRejectedValue(timeoutError);
 
 			await expect(resolveOrganization(mockFund, {}, ctx)).rejects.toThrow(
 				timeoutError,
@@ -235,9 +206,9 @@ describe("Fund Resolver - Organization Field", () => {
 		it("should handle database constraint violations", async () => {
 			const constraintError = new Error("Foreign key constraint violation");
 			constraintError.name = "PostgresError";
-			mocks.drizzleClient.query.organizationsTable.findFirst.mockRejectedValue(
-				constraintError,
-			);
+			ctx.dataloaders.organization.load = vi
+				.fn()
+				.mockRejectedValue(constraintError);
 
 			await expect(resolveOrganization(mockFund, {}, ctx)).rejects.toThrow(
 				constraintError,
@@ -264,9 +235,9 @@ describe("Fund Resolver - Organization Field", () => {
 				membershipRequestsEnabled: false,
 			};
 
-			mocks.drizzleClient.query.organizationsTable.findFirst.mockResolvedValue(
-				mockOrganization,
-			);
+			ctx.dataloaders.organization.load = vi
+				.fn()
+				.mockResolvedValue(mockOrganization);
 
 			const result = await resolveOrganization(mockFund, {}, ctx);
 
@@ -300,9 +271,9 @@ describe("Fund Resolver - Organization Field", () => {
 				membershipRequestsEnabled: null,
 			};
 
-			mocks.drizzleClient.query.organizationsTable.findFirst.mockResolvedValue(
-				minimalOrganization,
-			);
+			ctx.dataloaders.organization.load = vi
+				.fn()
+				.mockResolvedValue(minimalOrganization);
 
 			const result = await resolveOrganization(mockFund, {}, ctx);
 
@@ -328,13 +299,13 @@ describe("Fund Resolver - Organization Field", () => {
 				zipCode: "A1B 2C3",
 				userRegistrationRequired: false,
 				membershipRequestsEnabled: true,
-				customField: "custom value", // Additional field
+				customField: "custom value",
 				metadata: { type: "nonprofit", verified: true },
 			};
 
-			mocks.drizzleClient.query.organizationsTable.findFirst.mockResolvedValue(
-				complexOrganization,
-			);
+			ctx.dataloaders.organization.load = vi
+				.fn()
+				.mockResolvedValue(complexOrganization);
 
 			const result = await resolveOrganization(mockFund, {}, ctx);
 
@@ -355,9 +326,9 @@ describe("Fund Resolver - Organization Field", () => {
 			};
 
 			mockFund.organizationId = uuidOrgId;
-			mocks.drizzleClient.query.organizationsTable.findFirst.mockResolvedValue(
-				uuidOrganization,
-			);
+			ctx.dataloaders.organization.load = vi
+				.fn()
+				.mockResolvedValue(uuidOrganization);
 
 			const result = await resolveOrganization(mockFund, {}, ctx);
 
@@ -374,9 +345,9 @@ describe("Fund Resolver - Organization Field", () => {
 				countryCode: "US",
 			};
 
-			mocks.drizzleClient.query.organizationsTable.findFirst.mockResolvedValue(
-				specialOrganization,
-			);
+			ctx.dataloaders.organization.load = vi
+				.fn()
+				.mockResolvedValue(specialOrganization);
 
 			const result = await resolveOrganization(mockFund, {}, ctx);
 
@@ -399,9 +370,7 @@ describe("Fund Resolver - Organization Field", () => {
 
 			for (const org of internationalOrgs) {
 				mockFund.organizationId = org.id;
-				mocks.drizzleClient.query.organizationsTable.findFirst.mockResolvedValueOnce(
-					org,
-				);
+				ctx.dataloaders.organization.load = vi.fn().mockResolvedValue(org);
 
 				const result = await resolveOrganization(mockFund, {}, ctx);
 				expect(result).toEqual(org);
@@ -429,9 +398,9 @@ describe("Fund Resolver - Organization Field", () => {
 				updatedAt: new Date("2024-01-01"),
 			};
 
-			mocks.drizzleClient.query.organizationsTable.findFirst.mockResolvedValue(
-				organizationWithNulls,
-			);
+			ctx.dataloaders.organization.load = vi
+				.fn()
+				.mockResolvedValue(organizationWithNulls);
 
 			const result = await resolveOrganization(mockFund, {}, ctx);
 
@@ -449,9 +418,9 @@ describe("Fund Resolver - Organization Field", () => {
 				countryCode: "US",
 			};
 
-			mocks.drizzleClient.query.organizationsTable.findFirst.mockResolvedValue(
-				longNameOrganization,
-			);
+			ctx.dataloaders.organization.load = vi
+				.fn()
+				.mockResolvedValue(longNameOrganization);
 
 			const result = await resolveOrganization(mockFund, {}, ctx);
 
@@ -461,24 +430,22 @@ describe("Fund Resolver - Organization Field", () => {
 	});
 
 	describe("Performance Considerations", () => {
-		it("should make exactly one database query", async () => {
+		it("should make exactly one DataLoader call", async () => {
 			const mockOrganization = {
 				id: "org-123",
 				name: "Test",
 				countryCode: "US",
 			};
-			mocks.drizzleClient.query.organizationsTable.findFirst.mockResolvedValue(
-				mockOrganization,
-			);
+			ctx.dataloaders.organization.load = vi
+				.fn()
+				.mockResolvedValue(mockOrganization);
 
 			await resolveOrganization(mockFund, {}, ctx);
 
-			expect(
-				mocks.drizzleClient.query.organizationsTable.findFirst,
-			).toHaveBeenCalledTimes(1);
+			expect(ctx.dataloaders.organization.load).toHaveBeenCalledTimes(1);
 		});
 
-		it("should not cache organization data between calls", async () => {
+		it("should use DataLoader for batching (multiple calls)", async () => {
 			const mockOrganization1 = {
 				id: "org-1",
 				name: "Org 1",
@@ -492,54 +459,43 @@ describe("Fund Resolver - Organization Field", () => {
 
 			// First call
 			mockFund.organizationId = "org-1";
-			mocks.drizzleClient.query.organizationsTable.findFirst.mockResolvedValueOnce(
-				mockOrganization1,
-			);
+			ctx.dataloaders.organization.load = vi
+				.fn()
+				.mockResolvedValue(mockOrganization1);
 			await resolveOrganization(mockFund, {}, ctx);
 
 			// Second call with different org
 			mockFund.organizationId = "org-2";
-			mocks.drizzleClient.query.organizationsTable.findFirst.mockResolvedValueOnce(
-				mockOrganization2,
-			);
+			ctx.dataloaders.organization.load = vi
+				.fn()
+				.mockResolvedValue(mockOrganization2);
 			await resolveOrganization(mockFund, {}, ctx);
 
-			expect(
-				mocks.drizzleClient.query.organizationsTable.findFirst,
-			).toHaveBeenCalledTimes(2);
+			// Each call uses DataLoader
+			expect(ctx.dataloaders.organization.load).toHaveBeenCalledWith("org-2");
 		});
 	});
 
 	describe("Data Integrity", () => {
 		it("should always require organizationId to be present", async () => {
-			// Since organizationId is non-null in the schema, this test verifies
-			// that the resolver assumes organizationId will always be present
 			const mockOrganization = {
 				id: "org-123",
 				name: "Required Org",
 				countryCode: "US",
 			};
 
-			mocks.drizzleClient.query.organizationsTable.findFirst.mockResolvedValue(
-				mockOrganization,
-			);
+			ctx.dataloaders.organization.load = vi
+				.fn()
+				.mockResolvedValue(mockOrganization);
 
 			const result = await resolveOrganization(mockFund, {}, ctx);
 
 			expect(result).toEqual(mockOrganization);
-			// organizationId should always be used in the query
-			expect(
-				mocks.drizzleClient.query.organizationsTable.findFirst,
-			).toHaveBeenCalledWith({
-				where: expect.any(Function),
-			});
+			expect(ctx.dataloaders.organization.load).toHaveBeenCalledWith("org-123");
 		});
 
 		it("should handle organization referential integrity violations", async () => {
-			// Test case where organizationId exists but organization was deleted
-			mocks.drizzleClient.query.organizationsTable.findFirst.mockResolvedValue(
-				undefined,
-			);
+			ctx.dataloaders.organization.load = vi.fn().mockResolvedValue(null);
 
 			await expect(resolveOrganization(mockFund, {}, ctx)).rejects.toThrow(
 				new TalawaGraphQLError({
@@ -555,9 +511,7 @@ describe("Fund Resolver - Organization Field", () => {
 
 	describe("Logging Verification", () => {
 		it("should log error for missing organization with specific message", async () => {
-			mocks.drizzleClient.query.organizationsTable.findFirst.mockResolvedValue(
-				undefined,
-			);
+			ctx.dataloaders.organization.load = vi.fn().mockResolvedValue(null);
 
 			try {
 				expect.assertions(1);
@@ -571,9 +525,7 @@ describe("Fund Resolver - Organization Field", () => {
 		});
 
 		it("should include fund context in error logs", async () => {
-			mocks.drizzleClient.query.organizationsTable.findFirst.mockResolvedValue(
-				undefined,
-			);
+			ctx.dataloaders.organization.load = vi.fn().mockResolvedValue(null);
 
 			mockFund.organizationId = "missing-org-123";
 
