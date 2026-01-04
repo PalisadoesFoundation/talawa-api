@@ -386,17 +386,15 @@ describe("Post Resolver - Creator Field", () => {
 
 			mockPost.creatorId = "non-existent-user";
 
-			try {
-				await resolveCreator(mockPost, {}, ctx);
-			} catch (error) {
-				expect(ctx.log.error).toHaveBeenCalledWith(
-					"Postgres select operation returned an empty array for a post's creator id that isn't null.",
-				);
-				expect(error).toBeInstanceOf(TalawaGraphQLError);
-				expect((error as TalawaGraphQLError).extensions.code).toBe(
-					"unexpected",
-				);
-			}
+			await expect(resolveCreator(mockPost, {}, ctx)).rejects.toBeInstanceOf(
+				TalawaGraphQLError,
+			);
+			await expect(resolveCreator(mockPost, {}, ctx)).rejects.toMatchObject({
+				extensions: { code: "unexpected" },
+			});
+			expect(ctx.log.error).toHaveBeenCalledWith(
+				"Postgres select operation returned an empty array for a post's creator id that isn't null.",
+			);
 		});
 
 		it("should not log any errors for successful operations", async () => {
