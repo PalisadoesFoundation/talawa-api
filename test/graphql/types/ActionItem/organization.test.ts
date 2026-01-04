@@ -433,8 +433,8 @@ describe("ActionItem.organization Resolver - Integration", () => {
 				volunteerId,
 			);
 
-			// Query without auth header
-			mercuriusClient.setHeaders({});
+			// Query without auth header - pass empty authorization in query options
+			// instead of mutating global client state with setHeaders({})
 			const result = await mercuriusClient.query(
 				Query_ActionItem_Organization,
 				{
@@ -443,6 +443,7 @@ describe("ActionItem.organization Resolver - Integration", () => {
 							organizationId: organization.id,
 						},
 					},
+					headers: { authorization: "" },
 				},
 			);
 
