@@ -290,9 +290,9 @@ describe("OTEL bootstrap smoke tests", () => {
 		it("throws timeout error when shutdown hangs", async () => {
 			vi.useFakeTimers();
 
-			const mockShutdown = vi.fn().mockImplementation(
-				() => new Promise(() => {}),
-			);
+			const mockShutdown = vi
+				.fn()
+				.mockImplementation(() => new Promise(() => {}));
 			vi.mocked(NodeSDK).mockImplementationOnce(
 				() =>
 					({
