@@ -37,17 +37,16 @@ export {
 	discoverEventGenerationWorkloads,
 	type JobDiscoveryConfig,
 } from "./eventGeneration/jobDiscovery";
-
 export {
 	createDefaultPostProcessingConfig,
 	executePostProcessing,
 	type PostProcessingConfig,
 	type PostProcessingResult,
 } from "./eventGeneration/postProcessor";
-
 export type {
 	ProcessingMetrics,
 	ProcessingResult,
 	ResourceUsage,
 	WorkerDependencies,
 } from "./eventGeneration/types";
+export * from "./performanceAggregationWorker";

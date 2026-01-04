@@ -6,7 +6,7 @@
 
 > **default**: (`app`) => `Promise`\<`void`\>
 
-Defined in: [src/fastifyPlugins/performance.ts:31](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/fastifyPlugins/performance.ts#L31)
+Defined in: [src/fastifyPlugins/performance.ts:55](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/fastifyPlugins/performance.ts#L55)
 
 Fastify plugin that adds performance tracking to all requests.
 - Attaches a performance tracker to each request
@@ -22,3 +22,14 @@ Fastify plugin that adds performance tracking to all requests.
 ## Returns
 
 `Promise`\<`void`\>
+
+## Example
+
+```typescript
+// Performance tracker is automatically available on requests
+app.addHook("onRequest", async (req) => {
+  await req.perf?.time("custom-op", async () => {
+    // Your operation
+  });
+});
+```

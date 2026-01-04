@@ -8,9 +8,12 @@ describe("Performance Tracker", () => {
 
 		expect(snapshot).toEqual({
 			totalMs: 0,
+			totalOps: 0,
 			cacheHits: 0,
 			cacheMisses: 0,
+			hitRate: 0,
 			ops: {},
+			slow: [],
 		});
 	});
 
@@ -296,5 +299,107 @@ describe("Performance Tracker", () => {
 		expect(dbOp?.ms).toBe(0);
 		expect(dbOp?.max).toBe(0);
 		expect(snapshot.totalMs).toBe(0);
+		expect(snapshot.totalOps).toBe(1);
+	});
+
+	it("should track slow operations", async () => {
+		const tracker = createPerformanceTracker({ slowMs: 100 });
+
+		await tracker.time("fast-op", async () => {
+			await new Promise((resolve) => setTimeout(resolve, 50));
+		});
+
+		await tracker.time("slow-op", async () => {
+			await new Promise((resolve) => setTimeout(resolve, 150));
+		});
+
+		const snapshot = tracker.snapshot();
+
+		expect(snapshot.slow.length).toBe(1);
+		expect(snapshot.slow[0]?.op).toBe("slow-op");
+		expect(snapshot.slow[0]?.ms).toBeGreaterThanOrEqual(100);
+	});
+
+	it("should calculate hit rate correctly", () => {
+		const tracker = createPerformanceTracker();
+
+		tracker.trackCacheHit();
+		tracker.trackCacheHit();
+		tracker.trackCacheMiss();
+
+		const snapshot = tracker.snapshot();
+
+		expect(snapshot.hitRate).toBeCloseTo(2 / 3, 2);
+	});
+
+	it("should return hit rate of 0 when no cache operations", () => {
+		const tracker = createPerformanceTracker();
+		const snapshot = tracker.snapshot();
+
+		expect(snapshot.hitRate).toBe(0);
+	});
+
+	it("should track totalOps correctly", async () => {
+		const tracker = createPerformanceTracker();
+
+		tracker.trackDb(10);
+		await tracker.time("op1", async () => {
+			await new Promise((resolve) => setTimeout(resolve, 5));
+		});
+		await tracker.time("op2", async () => {
+			await new Promise((resolve) => setTimeout(resolve, 5));
+		});
+
+		const snapshot = tracker.snapshot();
+
+		expect(snapshot.totalOps).toBe(3);
+	});
+
+	it("should limit slow operations to 50", async () => {
+		const tracker = createPerformanceTracker({ slowMs: 1 });
+
+		// Create 60 slow operations
+		for (let i = 0; i < 60; i++) {
+			await tracker.time(`slow-${i}`, async () => {
+				await new Promise((resolve) => setTimeout(resolve, 10));
+			});
+		}
+
+		const snapshot = tracker.snapshot();
+
+		expect(snapshot.slow.length).toBe(50);
+	});
+
+	it("should use custom slowMs threshold", async () => {
+		const tracker = createPerformanceTracker({ slowMs: 50 });
+
+		await tracker.time("op1", async () => {
+			await new Promise((resolve) => setTimeout(resolve, 30));
+		});
+
+		await tracker.time("op2", async () => {
+			await new Promise((resolve) => setTimeout(resolve, 60));
+		});
+
+		const snapshot = tracker.snapshot();
+
+		expect(snapshot.slow.length).toBe(1);
+		expect(snapshot.slow[0]?.op).toBe("op2");
+	});
+
+	it("records op timings and cache stats", async () => {
+		const perf = createPerformanceTracker({ slowMs: 1 });
+		await perf.time(
+			"db:users.byId",
+			async () => new Promise((r) => setTimeout(r, 2)),
+		);
+		perf.trackCacheHit();
+		perf.trackCacheMiss();
+		perf.trackCacheMiss();
+		const snap = perf.snapshot();
+		expect(snap.totalOps).toBe(1);
+		expect(snap.cacheHits).toBe(1);
+		expect(snap.cacheMisses).toBe(2);
+		expect(snap.slow.length).toBeGreaterThanOrEqual(1);
 	});
 });

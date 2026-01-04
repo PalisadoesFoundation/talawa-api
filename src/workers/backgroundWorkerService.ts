@@ -1,5 +1,5 @@
 import type { NodePgDatabase } from "drizzle-orm/node-postgres";
-import type { FastifyBaseLogger } from "fastify";
+import type { FastifyBaseLogger, FastifyInstance } from "fastify";
 import cron from "node-cron";
 import type * as schema from "~/src/drizzle/schema";
 import { cleanupOldInstances } from "./eventCleanupWorker";
@@ -9,9 +9,11 @@ import {
 	type WorkerConfig,
 	type WorkerResult,
 } from "./eventGeneration/eventGenerationPipeline";
+import { aggregatePerformanceMetrics } from "./performanceAggregationWorker";
 
 let materializationTask: cron.ScheduledTask | undefined;
 let cleanupTask: cron.ScheduledTask | undefined;
+let perfAggregationTask: cron.ScheduledTask | undefined;
 let isRunning = false;
 let materializationConfig: WorkerConfig = createDefaultWorkerConfig();
 
@@ -21,6 +23,7 @@ let materializationConfig: WorkerConfig = createDefaultWorkerConfig();
 export async function startBackgroundWorkers(
 	drizzleClient: NodePgDatabase<typeof schema>,
 	logger: FastifyBaseLogger,
+	fastify?: FastifyInstance,
 ): Promise<void> {
 	if (isRunning) {
 		logger.warn("Background workers are already running");
@@ -50,6 +53,21 @@ export async function startBackgroundWorkers(
 			},
 		);
 
+		// Schedule performance aggregation worker - runs every 5 minutes
+		if (fastify) {
+			const perfSchedule =
+				fastify.envConfig.PERF_AGGREGATION_CRON_SCHEDULE ?? "*/5 * * * *";
+			perfAggregationTask = cron.schedule(
+				perfSchedule,
+				() => runPerfAggregationWorkerSafely(fastify, logger),
+				{
+					scheduled: false,
+					timezone: "UTC",
+				},
+			);
+			perfAggregationTask.start();
+		}
+
 		// Start the scheduled tasks
 		materializationTask.start();
 		cleanupTask.start();
@@ -60,6 +78,8 @@ export async function startBackgroundWorkers(
 				materializationSchedule:
 					process.env.EVENT_GENERATION_CRON_SCHEDULE || "0 * * * *",
 				cleanupSchedule: process.env.CLEANUP_CRON_SCHEDULE || "0 2 * * *",
+				perfAggregationSchedule:
+					fastify?.envConfig.PERF_AGGREGATION_CRON_SCHEDULE ?? "*/5 * * * *",
 			},
 			"Background worker service started successfully",
 		);
@@ -94,6 +114,11 @@ export async function stopBackgroundWorkers(
 		if (cleanupTask) {
 			cleanupTask.stop();
 			cleanupTask = undefined;
+		}
+
+		if (perfAggregationTask) {
+			perfAggregationTask.stop();
+			perfAggregationTask = undefined;
 		}
 
 		isRunning = false;
@@ -182,6 +207,39 @@ export async function runCleanupWorkerSafely(
 }
 
 /**
+ * Executes the performance aggregation worker with robust error handling.
+ */
+export async function runPerfAggregationWorkerSafely(
+	fastify: FastifyInstance,
+	logger: FastifyBaseLogger,
+): Promise<void> {
+	const startTime = Date.now();
+	logger.info("Starting performance aggregation worker run");
+
+	try {
+		await aggregatePerformanceMetrics(fastify, logger);
+
+		const duration = Date.now() - startTime;
+		logger.info(
+			{
+				duration: `${duration}ms`,
+			},
+			"Performance aggregation worker completed successfully",
+		);
+	} catch (error) {
+		const duration = Date.now() - startTime;
+		logger.error(
+			{
+				duration: `${duration}ms`,
+				error: error instanceof Error ? error.message : "Unknown error",
+				stack: error instanceof Error ? error.stack : undefined,
+			},
+			"Performance aggregation worker failed",
+		);
+	}
+}
+
+/**
  * Manually triggers a run of the materialization worker, useful for testing or administrative purposes.
  */
 export async function triggerMaterializationWorker(
@@ -220,14 +278,19 @@ export function getBackgroundWorkerStatus(): {
 	isRunning: boolean;
 	materializationSchedule: string;
 	cleanupSchedule: string;
+	perfAggregationSchedule: string;
 	nextMaterializationRun?: Date;
 	nextCleanupRun?: Date;
 } {
+	// Note: This function doesn't have access to fastify instance,
+	// so it falls back to process.env for consistency with other schedules
 	return {
 		isRunning,
 		materializationSchedule:
 			process.env.EVENT_GENERATION_CRON_SCHEDULE || "0 * * * *",
 		cleanupSchedule: process.env.CLEANUP_CRON_SCHEDULE || "0 2 * * *",
+		perfAggregationSchedule:
+			process.env.PERF_AGGREGATION_CRON_SCHEDULE || "*/5 * * * *",
 	};
 }
 

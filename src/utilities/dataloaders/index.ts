@@ -1,4 +1,5 @@
 import type { DrizzleClient } from "~/src/fastifyPlugins/drizzleClient";
+import type { PerformanceTracker } from "~/src/utilities/metrics/performanceTracker";
 import { type ActionItemRow, createActionItemLoader } from "./actionItemLoader";
 import { createEventLoader, type EventRow } from "./eventLoader";
 import {
@@ -35,21 +36,25 @@ export type Dataloaders = {
  * Each loader is request-scoped to ensure proper caching and isolation.
  *
  * @param db - The Drizzle client instance for database operations.
+ * @param perf - Optional performance tracker for monitoring database operations.
  * @returns An object containing all DataLoaders.
  *
  * @example
  * ```typescript
- * const dataloaders = createDataloaders(drizzleClient);
+ * const dataloaders = createDataloaders(drizzleClient, req.perf);
  * const user = await dataloaders.user.load(userId);
  * const organization = await dataloaders.organization.load(orgId);
  * ```
  */
-export function createDataloaders(db: DrizzleClient): Dataloaders {
+export function createDataloaders(
+	db: DrizzleClient,
+	perf?: PerformanceTracker,
+): Dataloaders {
 	return {
-		user: createUserLoader(db),
-		organization: createOrganizationLoader(db),
-		event: createEventLoader(db),
-		actionItem: createActionItemLoader(db),
+		user: createUserLoader(db, perf),
+		organization: createOrganizationLoader(db, perf),
+		event: createEventLoader(db, perf),
+		actionItem: createActionItemLoader(db, perf),
 	};
 }
 

@@ -486,6 +486,40 @@ export const envConfigSchema = Type.Object({
 			minLength: 1,
 		}),
 	),
+
+	/**
+	 * Threshold in milliseconds for marking operations as slow.
+	 * Operations exceeding this duration will be tracked in the slow operations array.
+	 * Default: 200ms
+	 */
+	API_PERF_SLOW_OP_MS: Type.Optional(
+		Type.Integer({
+			minimum: 1,
+			default: 200,
+		}),
+	),
+
+	/**
+	 * Threshold in milliseconds for marking total request time as slow.
+	 * Requests exceeding this duration will trigger a warning log.
+	 * Default: 500ms
+	 */
+	API_PERF_SLOW_REQUEST_MS: Type.Optional(
+		Type.Integer({
+			minimum: 1,
+			default: 500,
+		}),
+	),
+
+	/**
+	 * Cron schedule for the performance aggregation background worker.
+	 * Default: every 5 minutes
+	 */
+	PERF_AGGREGATION_CRON_SCHEDULE: Type.Optional(
+		Type.String({
+			minLength: 9, // Minimum valid cron: "* * * * *"
+		}),
+	),
 });
 
 /**

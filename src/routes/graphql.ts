@@ -9,6 +9,7 @@ import type {
 	ExplicitGraphQLContext,
 } from "~/src/graphql/context";
 import schemaManager from "~/src/graphql/schemaManager";
+import { metricsCacheProxy } from "~/src/services/caching";
 import NotificationService from "~/src/services/notification/NotificationService";
 import {
 	COOKIE_NAMES,
@@ -147,10 +148,16 @@ export const createContext: CreateContext = async (initialContext) => {
 				}
 			: undefined;
 
+	// Get performance tracker from request (attached by performance plugin)
+	const perf = request.perf;
+
+	// Wrap cache service with performance tracking if perf tracker is available
+	const cache = perf ? metricsCacheProxy(fastify.cache, perf) : fastify.cache;
+
 	return {
-		cache: fastify.cache,
+		cache,
 		currentClient,
-		dataloaders: createDataloaders(fastify.drizzleClient),
+		dataloaders: createDataloaders(fastify.drizzleClient, perf),
 		drizzleClient: fastify.drizzleClient,
 		envConfig: fastify.envConfig,
 		jwt: {
@@ -162,6 +169,7 @@ export const createContext: CreateContext = async (initialContext) => {
 		minio: fastify.minio,
 		// attached a per-request notification service that queues notifications and can flush later
 		notification: new NotificationService(),
+		perf,
 	};
 };
 
@@ -217,23 +225,30 @@ export const graphql = fastifyPlugin(async (fastify) => {
 		path: "/graphql",
 		schema: initialSchema,
 		errorFormatter: (execution, context) => {
-			const correlationId = context.reply.request.id;
+			const request = context.reply.request;
+			const correlationId = request.id;
 
-			return {
-				statusCode: 200,
-				response: {
-					data: execution.data ?? null,
-					errors: execution.errors.map((err) => ({
-						message: err.message,
-						locations: err.locations,
-						path: err.path,
-						extensions: {
-							...err.extensions,
-							correlationId,
-						},
-					})),
-				},
-			};
+			// Track time spent formatting errors
+			const end = request.perf?.start("gql:errorFormatter");
+			try {
+				return {
+					statusCode: 200,
+					response: {
+						data: execution.data ?? null,
+						errors: execution.errors.map((err) => ({
+							message: err.message,
+							locations: err.locations,
+							path: err.path,
+							extensions: {
+								...err.extensions,
+								correlationId,
+							},
+						})),
+					},
+				};
+			} finally {
+				end?.();
+			}
 		},
 		subscription: {
 			onConnect: async (data) => {
@@ -290,6 +305,13 @@ export const graphql = fastifyPlugin(async (fastify) => {
 				next(true);
 			},
 		},
+	});
+
+	// Track GraphQL parsing time
+	fastify.graphql.addHook("preParsing", async (_schema, _source, _ctx) => {
+		const request = (_ctx as { reply?: { request?: FastifyRequest } })?.reply
+			?.request;
+		request?.perf?.start("gql:parse")?.();
 	});
 
 	// Register schema update callback to replace schema when plugins are activated/deactivated
@@ -352,6 +374,25 @@ export const graphql = fastifyPlugin(async (fastify) => {
 			if (operationType === "mutation") {
 				complexity.complexity +=
 					fastify.envConfig.API_GRAPHQL_MUTATION_BASE_COST;
+			}
+
+			// Track GraphQL complexity in performance tracker (after mutation base cost is added)
+			const perf = request.perf;
+			if (perf) {
+				const complexityScore = complexity.complexity;
+				// Track complexity calculation time (though it's synchronous, we track for consistency)
+				perf.time("gql:complexity", async () => {
+					return Promise.resolve();
+				});
+
+				// Log high complexity queries
+				if (complexityScore >= 100) {
+					request.log.warn({
+						msg: "High complexity GraphQL query",
+						complexity: complexityScore,
+						operationType: operationType,
+					});
+				}
 			}
 
 			// Get the IP address of the client making the request

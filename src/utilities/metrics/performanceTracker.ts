@@ -20,12 +20,18 @@ export type OpStats = {
 export type PerfSnapshot = {
 	/** Total time spent across all operations in milliseconds */
 	totalMs: number;
+	/** Total number of operations tracked */
+	totalOps: number;
 	/** Number of cache hits */
 	cacheHits: number;
 	/** Number of cache misses */
 	cacheMisses: number;
+	/** Cache hit rate (hits / (hits + misses)) */
+	hitRate: number;
 	/** Statistics for each operation type */
 	ops: Record<string, OpStats>;
+	/** Slow operations that exceeded the threshold */
+	slow: Array<{ op: string; ms: number }>;
 };
 
 /**
@@ -71,14 +77,34 @@ export interface PerformanceTracker {
 }
 
 /**
+ * Options for creating a performance tracker.
+ */
+export interface PerformanceTrackerOptions {
+	/**
+	 * Threshold in milliseconds for considering an operation as slow.
+	 * Operations exceeding this threshold will be added to the slow array.
+	 * Defaults to 200ms if not provided.
+	 */
+	slowMs?: number;
+}
+
+/**
  * Creates a performance tracker for request-level metrics.
  * Tracks operations, cache hits/misses, and provides snapshots.
+ *
+ * @param opts - Optional configuration for the tracker
+ * @returns A new performance tracker instance
  */
-export function createPerformanceTracker(): PerformanceTracker {
+export function createPerformanceTracker(
+	opts?: PerformanceTrackerOptions,
+): PerformanceTracker {
+	const slowMs = opts?.slowMs ?? 200;
 	const ops: Record<string, OpStats> = {};
+	const slow: Array<{ op: string; ms: number }> = [];
 	let cacheHits = 0;
 	let cacheMisses = 0;
 	let totalMs = 0;
+	let totalOps = 0;
 
 	/**
 	 * Ensure an operation entry exists in the ops record.
@@ -108,6 +134,11 @@ export function createPerformanceTracker(): PerformanceTracker {
 		o.ms += ms;
 		o.max = Math.max(o.max, ms);
 		totalMs += ms;
+		totalOps++;
+		// Track slow operations
+		if (ms >= slowMs) {
+			slow.push({ op: k, ms: Math.round(ms) });
+		}
 	};
 
 	return {
@@ -143,11 +174,17 @@ export function createPerformanceTracker(): PerformanceTracker {
 		},
 
 		snapshot(): PerfSnapshot {
+			const totalCacheOps = cacheHits + cacheMisses;
+			const hitRate = totalCacheOps > 0 ? cacheHits / totalCacheOps : 0;
+
 			return {
-				totalMs,
+				totalMs: Math.round(totalMs),
+				totalOps,
 				cacheHits,
 				cacheMisses,
+				hitRate,
 				ops: structuredClone(ops),
+				slow: slow.slice(0, 50), // Limit to 50 slow operations
 			};
 		},
 	};

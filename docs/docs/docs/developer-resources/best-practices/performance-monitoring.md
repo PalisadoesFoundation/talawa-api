@@ -15,6 +15,42 @@ The Performance Metrics Foundation provides:
 - **Server-Timing headers** on all HTTP responses for browser-based performance analysis
 - **`/metrics/perf` endpoint** returning recent performance snapshots for monitoring dashboards
 - **Request-scoped tracking** of database operations, cache hits/misses, and total request duration
+- **Slow query detection** with automatic logging for operations exceeding thresholds
+- **GraphQL complexity tracking** to identify expensive queries
+- **Background worker aggregation** for periodic performance summaries
+
+## End-to-End Request Flow
+
+The following sequence diagram illustrates how performance tracking works throughout a request lifecycle:
+
+```mermaid
+sequenceDiagram
+  participant C as Client
+  participant F as Fastify
+  participant P as PerfTracker
+  participant G as GraphQL
+  participant DB as DB
+  participant K as Cache
+
+  C->>F: HTTP request
+  F->>P: onRequest: create tracker
+  F->>G: /graphql
+  G->>P: start span gql:resolve
+  G->>K: cache.get(key)
+  alt hit
+    K-->>G: value
+    P->>P: trackCacheHit
+  else miss
+    K-->>G: null
+    P->>P: trackCacheMiss
+    G->>DB: SELECT ...
+    DB-->>G: rows
+    G->>K: cache.set
+  end
+  G-->>F: response
+  F->>P: snapshot + Server-Timing
+  F-->>C: 200 OK + Server-Timing
+```
 
 ## Server-Timing Headers
 
@@ -56,13 +92,18 @@ GET http://localhost:4000/metrics/perf
 {
   "recent": [
     {
-      "totalMs": 127.5,
+      "totalMs": 127,
+      "totalOps": 8,
       "cacheHits": 12,
-      "cacheMiss": 3,
+      "cacheMisses": 3,
+      "hitRate": 0.8,
       "ops": {
-        "db": { "count": 5, "ms": 45.2, "max": 18.3 },
-        "query": { "count": 3, "ms": 32.1, "max": 15.8 }
-      }
+        "db:users.byId": { "count": 2, "ms": 45.2, "max": 18.3 },
+        "gql:complexity": { "count": 1, "ms": 0.5, "max": 0.5 }
+      },
+      "slow": [
+        { "op": "db:users.byId", "ms": 250 }
+      ]
     }
   ]
 }
@@ -73,13 +114,18 @@ GET http://localhost:4000/metrics/perf
 | Field | Type | Description |
 |-------|------|-------------|
 | `recent` | Array | Last 50 performance snapshots (limited for memory) |
-| `totalMs` | number | Total time spent in tracked operations |
+| `totalMs` | number | Total time spent in tracked operations (rounded) |
+| `totalOps` | number | Total number of operations tracked |
 | `cacheHits` | number | Number of cache hits during request |
-| `cacheMiss` | number | Number of cache misses during request |
+| `cacheMisses` | number | Number of cache misses during request |
+| `hitRate` | number | Cache hit rate (hits / (hits + misses), 0-1) |
 | `ops` | Object | Operation-level statistics |
 | `ops[name].count` | number | Number of times operation was called |
 | `ops[name].ms` | number | Total milliseconds spent in operation |
 | `ops[name].max` | number | Maximum duration for single operation call |
+| `slow` | Array | Slow operations exceeding threshold (max 50) |
+| `slow[].op` | string | Operation name that was slow |
+| `slow[].ms` | number | Duration of the slow operation (rounded) |
 
 ### Retention
 
@@ -164,6 +210,106 @@ Performance metrics **do not contain PII** (Personally Identifiable Information)
 - ❌ User IDs, emails, or other personal data
 - ❌ Request/response payloads
 
+## Slow Query Detection
+
+The performance tracker automatically identifies and logs slow operations:
+
+- **Operation Threshold**: Operations exceeding 200ms are marked as slow
+- **Request Threshold**: Total request time exceeding 500ms triggers a warning log
+- **GraphQL Complexity**: Queries with complexity score >= 100 are logged as warnings
+
+### Slow Query Logs
+
+Slow requests are automatically logged with details:
+
+```json
+{
+  "msg": "Slow request",
+  "totalMs": 750,
+  "path": "/graphql",
+  "dbMs": 450,
+  "hitRate": 0.6,
+  "slowOps": [
+    { "op": "db:users.byId", "ms": 250 },
+    { "op": "db:organizations.byId", "ms": 200 }
+  ]
+}
+```
+
+## GraphQL Complexity Tracking
+
+GraphQL query complexity is automatically calculated and tracked:
+
+- **Complexity Calculation**: Uses `@pothos/plugin-complexity` to analyze query structure
+- **Mutation Penalty**: Mutations have a base cost added to their complexity score
+- **High Complexity Warning**: Queries with complexity >= 100 are logged as warnings
+- **Tracking**: Complexity calculation time is tracked as `gql:complexity` operation
+
+### Example Complexity Log
+
+```json
+{
+  "msg": "High complexity GraphQL query",
+  "complexity": 150,
+  "operationType": "query"
+}
+```
+
+## Background Worker Aggregation
+
+A background worker runs every 5 minutes (configurable via `PERF_AGGREGATION_CRON_SCHEDULE`) to aggregate and log performance metrics:
+
+### Aggregated Metrics
+
+The worker logs a summary including:
+- Average request duration
+- Average database operation time
+- Total cache hits/misses and hit rate
+- Count of slow requests
+- Count of high complexity queries
+- Top 5 slowest operations
+
+### Example Aggregation Log
+
+```json
+{
+  "msg": "Performance metrics aggregation",
+  "periodStart": "2024-01-01T12:00:00.000Z",
+  "periodEnd": "2024-01-01T12:05:00.000Z",
+  "totalRequests": 1250,
+  "avgRequestMs": 85,
+  "avgDbMs": 45,
+  "totalCacheHits": 8500,
+  "totalCacheMisses": 1200,
+  "avgHitRate": 0.88,
+  "slowRequestCount": 12,
+  "highComplexityCount": 3,
+  "topSlowOps": [
+    { "op": "db:users.byId", "avgMs": 180, "count": 45 },
+    { "op": "db:organizations.byId", "avgMs": 150, "count": 30 }
+  ]
+}
+```
+
+## Automatic Instrumentation
+
+The performance monitoring system automatically instruments:
+
+### DataLoaders
+
+All DataLoaders are automatically wrapped with performance tracking:
+- `users.byId` → tracked as `db:users.byId`
+- `organizations.byId` → tracked as `db:organizations.byId`
+- `events.byId` → tracked as `db:events.byId`
+- `actionItems.byId` → tracked as `db:actionItems.byId`
+
+### Cache Operations
+
+All cache operations are automatically tracked:
+- `get()` operations track hits/misses
+- `mget()` operations track hits/misses per key
+- Cache hit rate is calculated automatically
+
 ## Extending Performance Tracking
 
 ### Custom Operations
@@ -174,7 +320,7 @@ Track custom operations in your code:
 // In a GraphQL resolver
 export const myResolver = async (parent, args, ctx) => {
   // Track external API call
-  const result = await ctx.request.perf?.time('external-api', async () => {
+  const result = await ctx.perf?.time('external-api', async () => {
     return await fetch('https://api.example.com/data');
   });
   
@@ -187,7 +333,7 @@ export const myResolver = async (parent, args, ctx) => {
 For non-async operations:
 
 ```typescript
-const stopTimer = ctx.request.perf?.start('computation');
+const stopTimer = ctx.perf?.start('computation');
 // ... expensive computation ...
 stopTimer?.();
 ```
@@ -212,9 +358,27 @@ If `totalMs` is unexpectedly high:
 2. Review `cacheMiss` count (high misses = more DB hits)
 3. Inspect individual operation max times for bottlenecks
 
+## Configuration
+
+### Environment Variables
+
+- `PERF_AGGREGATION_CRON_SCHEDULE`: Cron schedule for performance aggregation worker (default: `*/5 * * * *` - every 5 minutes)
+
+### Slow Query Thresholds
+
+Thresholds are configurable when creating a performance tracker:
+
+```typescript
+// Custom slow operation threshold (default: 200ms)
+const tracker = createPerformanceTracker({ slowMs: 300 });
+```
+
 ## Further Reading
 
 - [MDN: Server-Timing](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Server-Timing)
 - [W3C Server Timing Specification](https://w3c.github.io/server-timing/)
 - Implementation: `src/fastifyPlugins/performance.ts`
 - Tracker utility: `src/utilities/metrics/performanceTracker.ts`
+- DataLoader instrumentation: `src/utilities/metrics/withMetrics.ts`
+- Cache instrumentation: `src/services/caching/metricsCacheProxy.ts`
+- Aggregation worker: `src/workers/performanceAggregationWorker.ts`
