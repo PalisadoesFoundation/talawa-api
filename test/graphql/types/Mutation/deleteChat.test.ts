@@ -585,14 +585,12 @@ suite("Mutation deleteChat", () => {
 		});
 
 		// Add user to chat as chat ADMINISTRATOR
-		await server.drizzleClient
-			.insert(chatMembershipsTable)
-			.values({
-				chatId,
-				memberId: chatAdminId,
-				role: "administrator",
-				creatorId: chatAdminId,
-			});
+		await server.drizzleClient.insert(chatMembershipsTable).values({
+			chatId,
+			memberId: chatAdminId,
+			role: "administrator",
+			creatorId: chatAdminId,
+		});
 
 		// Verify chat membership role is administrator
 		const dbChatMembership =
@@ -715,20 +713,21 @@ suite("Mutation deleteChat", () => {
 		});
 
 		// Add user to chat as REGULAR member (not chat admin)
-		await server.drizzleClient
-			.insert(chatMembershipsTable)
-			.values({
-				chatId,
-				memberId,
-				role: "regular",
-				creatorId: memberId,
-			});
+		await server.drizzleClient.insert(chatMembershipsTable).values({
+			chatId,
+			memberId,
+			role: "regular",
+			creatorId: memberId,
+		});
 
 		// Verify chat membership role is regular
 		const dbChatMembership =
 			await server.drizzleClient.query.chatMembershipsTable.findFirst({
 				where: (memberships, { eq, and }) =>
-					and(eq(memberships.memberId, memberId), eq(memberships.chatId, chatId)),
+					and(
+						eq(memberships.memberId, memberId),
+						eq(memberships.chatId, chatId),
+					),
 			});
 		assertToBeNonNullish(dbChatMembership);
 		expect(dbChatMembership.role).toBe("regular");
@@ -745,5 +744,3 @@ suite("Mutation deleteChat", () => {
 		);
 	});
 });
-
-
