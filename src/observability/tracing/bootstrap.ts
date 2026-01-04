@@ -30,7 +30,7 @@ export async function initTracing(): Promise<void> {
 		isLocal ? DiagLogLevel.INFO : DiagLogLevel.ERROR,
 	);
 
-	// Validate sampling ratio early
+	// sampling ratio early Validation
 	const ratio = observabilityConfig.samplingRatio;
 	if (Number.isNaN(ratio) || ratio < 0 || ratio > 1) {
 		throw new Error(
