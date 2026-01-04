@@ -1,7 +1,7 @@
+import { FastifyOtelInstrumentation } from "@fastify/otel";
 import { DiagConsoleLogger, DiagLogLevel, diag } from "@opentelemetry/api";
 import { W3CTraceContextPropagator } from "@opentelemetry/core";
 import { OTLPTraceExporter } from "@opentelemetry/exporter-trace-otlp-http";
-import { FastifyInstrumentation } from "@opentelemetry/instrumentation-fastify";
 import { HttpInstrumentation } from "@opentelemetry/instrumentation-http";
 import { resourceFromAttributes } from "@opentelemetry/resources";
 import { NodeSDK } from "@opentelemetry/sdk-node";
@@ -13,6 +13,10 @@ import {
 import { observabilityConfig } from "../../config/observability";
 
 let sdk: NodeSDK | undefined;
+
+export const fastifyOtelInstrumentation = new FastifyOtelInstrumentation({
+	registerOnInitialization: false,
+});
 
 export async function initTracing() {
 	if (!observabilityConfig.enabled) {
@@ -53,10 +57,7 @@ export async function initTracing() {
 				"service.name": observabilityConfig.serviceName,
 				"deployment.environment": observabilityConfig.environment,
 			}),
-			instrumentations: [
-				new HttpInstrumentation(),
-				new FastifyInstrumentation(),
-			],
+			instrumentations: [new HttpInstrumentation()],
 		});
 
 		await sdk.start();

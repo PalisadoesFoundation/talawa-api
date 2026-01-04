@@ -1,4 +1,7 @@
-import { initTracing } from "./observability/tracing/bootstrap";
+import {
+	fastifyOtelInstrumentation,
+	initTracing,
+} from "./observability/tracing/bootstrap";
 
 try {
 	await initTracing();
@@ -8,3 +11,5 @@ try {
 		error,
 	);
 }
+
+export { fastifyOtelInstrumentation };
