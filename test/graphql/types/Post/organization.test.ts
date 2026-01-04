@@ -61,6 +61,10 @@ describe("Post Resolver - Organization Field", () => {
 		});
 
 		expect(logErrorSpy).toHaveBeenCalledWith(
+			{
+				postId: "post-123",
+				organizationId: "org-123",
+			},
 			"DataLoader returned null for a post's organization id that isn't null.",
 		);
 		expect(ctx.dataloaders.organization.load).toHaveBeenCalledWith("org-123");

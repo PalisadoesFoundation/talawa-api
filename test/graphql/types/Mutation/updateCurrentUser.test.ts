@@ -1694,19 +1694,19 @@ suite("Mutation field updateCurrentUser", () => {
 				.mockResolvedValue({ etag: "mock-etag" } as UploadedObjectInfo);
 
 			const comprehensiveTestData = {
-				addressLine1: "123 Main Street",
-				addressLine2: "Apt 456",
+				addressLine1: faker.location.streetAddress(),
+				addressLine2: faker.location.secondaryAddress(),
 				birthDate: faker.date.birthdate().toISOString().split("T")[0],
-				city: "San Francisco",
+				city: faker.location.city().replace(/'/g, ""), // Remove apostrophes to avoid HTML encoding
 				countryCode: "ca" as const,
-				description: "A test description for comprehensive field updates",
+				description: faker.lorem.paragraph(),
 				educationGrade: "graduate" as const,
 				emailAddress: `${faker.internet.username()}${faker.string.ulid()}@email.com`,
 				employmentStatus: "part_time" as const,
 				homePhoneNumber: "+15555555555",
 				maritalStatus: "married" as const,
 				mobilePhoneNumber: "+15555555555",
-				name: "Test User",
+				name: faker.person.fullName(),
 				natalSex: "female" as const,
 				naturalLanguageCode: "fr" as const,
 				password: faker.internet.password(),
@@ -1789,14 +1789,16 @@ suite("Mutation field updateCurrentUser", () => {
 			const result = JSON.parse(response.body);
 
 			expect(result.errors).toBeUndefined();
-
-			// Verify all fields were updated correctly
 			expect(result.data.updateCurrentUser).toEqual(
 				expect.objectContaining({
+					addressLine1: comprehensiveTestData.addressLine1,
+					addressLine2: comprehensiveTestData.addressLine2,
 					avatarMimeType: "image/jpeg",
 					avatarURL: expect.stringContaining("/objects/"),
 					birthDate: comprehensiveTestData.birthDate,
+					city: comprehensiveTestData.city,
 					countryCode: comprehensiveTestData.countryCode,
+					description: comprehensiveTestData.description,
 					educationGrade: comprehensiveTestData.educationGrade,
 					emailAddress: comprehensiveTestData.emailAddress,
 					employmentStatus: comprehensiveTestData.employmentStatus,
