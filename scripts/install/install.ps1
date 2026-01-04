@@ -326,16 +326,12 @@ function Install-TalawaPrerequisites {
         
         if (Test-CommandExists "pnpm") {
             $currentPnpm = pnpm --version 2>$null
-            if ($currentPnpm -eq $pnpmVersion) {
-                Write-Success "pnpm is already installed: v$currentPnpm"
-            } else {
-                Write-Info "Updating pnpm from v$currentPnpm to v$pnpmVersion..."
-                npm install -g "pnpm@$pnpmVersion"
-            }
+            Write-Info "pnpm v$currentPnpm found, ensuring v$pnpmVersion..."
         } else {
             Write-Info "Installing pnpm..."
-            npm install -g "pnpm@$pnpmVersion"
         }
+        # Always run npm install - npm handles idempotency and version matching
+        npm install -g "pnpm@$pnpmVersion"
         
         $pnpmInstalled = pnpm --version 2>$null
         Write-Success "pnpm installed: v$pnpmInstalled"
