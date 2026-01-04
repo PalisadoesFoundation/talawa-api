@@ -35,7 +35,7 @@ const signInResult = await mercuriusClient.query(Query_signIn, {
 assertToBeNonNullish(signInResult.data.signIn?.authenticationToken);
 assertToBeNonNullish(signInResult.data.signIn?.user?.id);
 const adminAuthToken = signInResult.data.signIn.authenticationToken;
-const adminUserId = signInResult.data.signIn.user.id;
+let adminUserId = signInResult.data.signIn.user.id;
 
 /**
  * Creates a test organization
@@ -669,7 +669,7 @@ suite("Mutation field deletePostVote", () => {
 						},
 					},
 				});
-				const adminUserId = adminSignIn.data?.signIn?.user?.id;
+				adminUserId = adminSignIn.data?.signIn?.user?.id as string;
 				assertToBeNonNullish(adminUserId);
 
 				// Mock the delete operation to return empty array
