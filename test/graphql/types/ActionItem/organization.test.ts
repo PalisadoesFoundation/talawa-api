@@ -1,554 +1,707 @@
-import { createMockGraphQLContext } from "test/_Mocks_/mockContextCreator/mockContextCreator";
-import { beforeEach, describe, expect, it, vi } from "vitest";
-import type { GraphQLContext } from "~/src/graphql/context";
-import type { ActionItem as ActionItemType } from "~/src/graphql/types/ActionItem/ActionItem";
-import { resolveOrganization } from "~/src/graphql/types/ActionItem/organization";
-import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
+import { faker } from "@faker-js/faker";
+import { initGraphQLTada } from "gql.tada";
+import { describe, expect, it } from "vitest";
+import type { ClientCustomScalars } from "~/src/graphql/scalars/index";
+// Import the actual implementation to ensure it's loaded for coverage
+import "~/src/graphql/types/ActionItem/organization";
+import { assertToBeNonNullish } from "../../../helpers";
+import { server } from "../../../server";
+import { mercuriusClient } from "../client";
+import {
+	Mutation_createActionItem,
+	Mutation_createActionItemCategory,
+	Mutation_createEvent,
+	Mutation_createEventVolunteer,
+	Mutation_createOrganization,
+	Mutation_createOrganizationMembership,
+	Query_signIn,
+} from "../documentNodes";
+import type { introspection } from "../gql.tada";
 
-describe("ActionItem Resolver - Organization Field", () => {
-	let ctx: GraphQLContext;
-	let mockActionItem: ActionItemType;
+const gql = initGraphQLTada<{
+	introspection: introspection;
+	scalars: ClientCustomScalars;
+}>();
 
-	beforeEach(() => {
-		mockActionItem = {
-			id: "01234567-89ab-cdef-0123-456789abcdef",
-			organizationId: "org-123",
-			categoryId: "category-456",
-			assignedAt: new Date("2024-01-01T10:00:00Z"),
-			isCompleted: false,
-			completionAt: null,
-			preCompletionNotes: null,
-			postCompletionNotes: null,
-			assigneeId: "user-789",
-			creatorId: "user-admin",
-			updaterId: "user-update",
-			eventId: null,
-			isTemplate: false,
-			recurringEventInstanceId: null,
-			volunteerId: null,
-			volunteerGroupId: null,
-			createdAt: new Date("2024-01-01T09:00:00Z"),
-			updatedAt: new Date("2024-01-01T10:00:00Z"),
-		} as ActionItemType;
+const ONE_DAY_MS = 24 * 60 * 60 * 1000;
+const ONE_HOUR_MS = 60 * 60 * 1000;
 
-		const { context } = createMockGraphQLContext(true, "user-123");
-		ctx = context;
+// Query to fetch action items with organization field
+const Query_ActionItem_Organization = gql(`
+  query ActionItemsByOrganizationWithOrg($input: QueryActionItemsByOrganizationInput!) {
+    actionItemsByOrganization(input: $input) {
+      id
+      isCompleted
+      organization {
+        id
+        name
+        countryCode
+        description
+        addressLine1
+        city
+        state
+        postalCode
+      }
+    }
+  }
+`);
+
+type AdminAuth = { token: string; userId: string };
+
+async function getAdminAuth(): Promise<AdminAuth> {
+	const signInResult = await mercuriusClient.query(Query_signIn, {
+		variables: {
+			input: {
+				emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
+				password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
+			},
+		},
 	});
 
-	describe("Organization Resolution", () => {
-		it("should successfully resolve organization when it exists", async () => {
-			const mockOrganization = {
-				id: "org-123",
-				name: "Test Organization",
-				description: "Test Organization Description",
-				countryCode: "US",
-				createdAt: new Date("2024-01-01"),
-				updatedAt: new Date("2024-01-01"),
-				addressLine1: "123 Main St",
-				addressLine2: null,
-				avatarMimeType: null,
-				city: "Test City",
-				state: "Test State",
-				zipCode: "12345",
-				userRegistrationRequired: false,
-				membershipRequestsEnabled: true,
-			};
+	assertToBeNonNullish(signInResult.data?.signIn?.authenticationToken);
+	assertToBeNonNullish(signInResult.data?.signIn?.user);
 
-			ctx.dataloaders.organization.load = vi
-				.fn()
-				.mockResolvedValue(mockOrganization);
+	return {
+		token: signInResult.data.signIn.authenticationToken,
+		userId: signInResult.data.signIn.user.id,
+	};
+}
 
-			const result = await resolveOrganization(mockActionItem, {}, ctx);
-
-			expect(result).toEqual(mockOrganization);
-			expect(ctx.dataloaders.organization.load).toHaveBeenCalledWith("org-123");
-		});
-
-		it("should throw unexpected error when organization does not exist", async () => {
-			ctx.dataloaders.organization.load = vi.fn().mockResolvedValue(null);
-
-			await expect(
-				resolveOrganization(mockActionItem, {}, ctx),
-			).rejects.toThrow(
-				new TalawaGraphQLError({
-					extensions: { code: "unexpected" },
-				}),
-			);
-
-			expect(ctx.log.error).toHaveBeenCalledWith(
-				{
-					actionItemId: mockActionItem.id,
-					organizationId: mockActionItem.organizationId,
+async function createTestOrganization(authToken: string) {
+	const orgName = `ActionItem Org Test ${faker.string.uuid()}`;
+	const createOrgResult = await mercuriusClient.mutate(
+		Mutation_createOrganization,
+		{
+			headers: { authorization: `bearer ${authToken}` },
+			variables: {
+				input: {
+					name: orgName,
+					description: "Organization for ActionItem.organization tests",
+					countryCode: "us",
+					state: "CA",
+					city: "San Francisco",
+					postalCode: "94101",
+					addressLine1: "100 Test Street",
+					addressLine2: "Suite 200",
 				},
-				"DataLoader returned an empty array for an action item's organization id that isn't null",
-			);
-		});
+			},
+		},
+	);
+	assertToBeNonNullish(createOrgResult.data?.createOrganization);
+	const org = createOrgResult.data.createOrganization;
+	assertToBeNonNullish(org.id);
+	return { id: org.id as string, name: org.name as string };
+}
+
+async function createOrgMembership(
+	authToken: string,
+	organizationId: string,
+	memberId: string,
+) {
+	await mercuriusClient.mutate(Mutation_createOrganizationMembership, {
+		headers: { authorization: `bearer ${authToken}` },
+		variables: {
+			input: {
+				organizationId,
+				memberId,
+				role: "administrator",
+			},
+		},
 	});
+}
 
-	describe("DataLoader Query Verification", () => {
-		it("should call DataLoader with correct organization ID", async () => {
-			const mockOrganization = {
-				id: "org-123",
-				name: "Test Organization",
-				countryCode: "US",
-			};
+async function createTestCategory(authToken: string, organizationId: string) {
+	const createCategoryResult = await mercuriusClient.mutate(
+		Mutation_createActionItemCategory,
+		{
+			headers: { authorization: `bearer ${authToken}` },
+			variables: {
+				input: {
+					name: `Test Category ${faker.string.uuid()}`,
+					description: "A category for organization resolver testing",
+					organizationId,
+					isDisabled: false,
+				},
+			},
+		},
+	);
+	assertToBeNonNullish(createCategoryResult.data?.createActionItemCategory);
+	const category = createCategoryResult.data.createActionItemCategory;
+	assertToBeNonNullish(category.id);
+	return { id: category.id as string, name: category.name };
+}
 
-			ctx.dataloaders.organization.load = vi
-				.fn()
-				.mockResolvedValue(mockOrganization);
-
-			await resolveOrganization(mockActionItem, {}, ctx);
-
-			expect(ctx.dataloaders.organization.load).toHaveBeenCalledTimes(1);
-			expect(ctx.dataloaders.organization.load).toHaveBeenCalledWith("org-123");
-		});
-
-		it("should handle different organization IDs correctly", async () => {
-			const mockOrganization1 = {
-				id: "org-111",
-				name: "Organization 1",
-				countryCode: "US",
-			};
-
-			const mockOrganization2 = {
-				id: "org-222",
-				name: "Organization 2",
-				countryCode: "CA",
-			};
-
-			// Test with first organization ID
-			mockActionItem.organizationId = "org-111";
-			ctx.dataloaders.organization.load = vi
-				.fn()
-				.mockResolvedValue(mockOrganization1);
-
-			let result = await resolveOrganization(mockActionItem, {}, ctx);
-			expect(result).toEqual(mockOrganization1);
-
-			// Test with second organization ID
-			mockActionItem.organizationId = "org-222";
-			ctx.dataloaders.organization.load = vi
-				.fn()
-				.mockResolvedValue(mockOrganization2);
-
-			result = await resolveOrganization(mockActionItem, {}, ctx);
-			expect(result).toEqual(mockOrganization2);
-		});
-
-		it("should use organizationId from parent correctly", async () => {
-			const mockOrganization = {
-				id: "custom-org-id",
-				name: "Custom Org",
-				countryCode: "UK",
-			};
-
-			mockActionItem.organizationId = "custom-org-id";
-			ctx.dataloaders.organization.load = vi
-				.fn()
-				.mockResolvedValue(mockOrganization);
-
-			await resolveOrganization(mockActionItem, {}, ctx);
-
-			expect(ctx.dataloaders.organization.load).toHaveBeenCalledWith(
-				"custom-org-id",
-			);
-		});
+async function createTestEventAndVolunteer(
+	authToken: string,
+	organizationId: string,
+	userId: string,
+) {
+	// Create an event
+	const eventResult = await mercuriusClient.mutate(Mutation_createEvent, {
+		headers: { authorization: `bearer ${authToken}` },
+		variables: {
+			input: {
+				organizationId,
+				name: "Test Event for ActionItem",
+				description: "Test event for action item organization tests",
+				startAt: new Date(Date.now() + ONE_DAY_MS).toISOString(),
+				endAt: new Date(Date.now() + ONE_DAY_MS + ONE_HOUR_MS).toISOString(),
+				location: "Test Location",
+			},
+		},
 	});
+	assertToBeNonNullish(eventResult.data?.createEvent);
+	const eventId = eventResult.data.createEvent.id;
 
-	describe("Error Handling", () => {
-		it("should log error with correct message when organization is not found", async () => {
-			ctx.dataloaders.organization.load = vi.fn().mockResolvedValue(null);
+	// Create a volunteer
+	const volunteerResult = await mercuriusClient.mutate(
+		Mutation_createEventVolunteer,
+		{
+			headers: { authorization: `bearer ${authToken}` },
+			variables: {
+				input: {
+					eventId,
+					userId,
+				},
+			},
+		},
+	);
+	assertToBeNonNullish(volunteerResult.data?.createEventVolunteer);
+	const volunteerId = volunteerResult.data.createEventVolunteer.id;
+	assertToBeNonNullish(volunteerId);
+	return {
+		eventId: eventId as string,
+		volunteerId: volunteerId as string,
+	};
+}
 
-			try {
-				await resolveOrganization(mockActionItem, {}, ctx);
-			} catch (error) {
-				expect(ctx.log.error).toHaveBeenCalledWith(
-					{
-						actionItemId: mockActionItem.id,
-						organizationId: mockActionItem.organizationId,
+async function createTestActionItem(
+	authToken: string,
+	categoryId: string,
+	organizationId: string,
+	volunteerId: string,
+) {
+	const createActionItemResult = await mercuriusClient.mutate(
+		Mutation_createActionItem,
+		{
+			headers: { authorization: `bearer ${authToken}` },
+			variables: {
+				input: {
+					categoryId,
+					organizationId,
+					volunteerId,
+					assignedAt: new Date().toISOString(),
+					preCompletionNotes: "Test action item notes",
+				},
+			},
+		},
+	);
+	assertToBeNonNullish(createActionItemResult.data?.createActionItem);
+	return createActionItemResult.data.createActionItem;
+}
+
+describe("ActionItem.organization Resolver - Integration", () => {
+	describe("Organization Resolution", () => {
+		it("should successfully resolve organization when querying action items", async () => {
+			const adminAuth = await getAdminAuth();
+			const organization = await createTestOrganization(adminAuth.token);
+			await createOrgMembership(
+				adminAuth.token,
+				organization.id,
+				adminAuth.userId,
+			);
+			const category = await createTestCategory(
+				adminAuth.token,
+				organization.id,
+			);
+			const { volunteerId } = await createTestEventAndVolunteer(
+				adminAuth.token,
+				organization.id,
+				adminAuth.userId,
+			);
+			await createTestActionItem(
+				adminAuth.token,
+				category.id,
+				organization.id,
+				volunteerId,
+			);
+
+			const result = await mercuriusClient.query(
+				Query_ActionItem_Organization,
+				{
+					headers: { authorization: `bearer ${adminAuth.token}` },
+					variables: {
+						input: {
+							organizationId: organization.id,
+						},
 					},
-					"DataLoader returned an empty array for an action item's organization id that isn't null",
-				);
-				expect(error).toBeInstanceOf(TalawaGraphQLError);
-				expect((error as TalawaGraphQLError).extensions.code).toBe(
-					"unexpected",
-				);
-				expect((error as TalawaGraphQLError).message).toBe(
-					"Something went wrong. Please try again later.",
-				);
+				},
+			);
+
+			expect(result.errors).toBeUndefined();
+			assertToBeNonNullish(result.data?.actionItemsByOrganization);
+			expect(result.data.actionItemsByOrganization.length).toBeGreaterThan(0);
+
+			const actionItem = result.data.actionItemsByOrganization[0];
+			assertToBeNonNullish(actionItem?.organization);
+			expect(actionItem.organization.id).toBe(organization.id);
+			expect(actionItem.organization.name).toBe(organization.name);
+		});
+
+		it("should return organization with all requested fields", async () => {
+			const adminAuth = await getAdminAuth();
+			const organization = await createTestOrganization(adminAuth.token);
+			await createOrgMembership(
+				adminAuth.token,
+				organization.id,
+				adminAuth.userId,
+			);
+			const category = await createTestCategory(
+				adminAuth.token,
+				organization.id,
+			);
+			const { volunteerId } = await createTestEventAndVolunteer(
+				adminAuth.token,
+				organization.id,
+				adminAuth.userId,
+			);
+			await createTestActionItem(
+				adminAuth.token,
+				category.id,
+				organization.id,
+				volunteerId,
+			);
+
+			const result = await mercuriusClient.query(
+				Query_ActionItem_Organization,
+				{
+					headers: { authorization: `bearer ${adminAuth.token}` },
+					variables: {
+						input: {
+							organizationId: organization.id,
+						},
+					},
+				},
+			);
+
+			expect(result.errors).toBeUndefined();
+			assertToBeNonNullish(result.data?.actionItemsByOrganization);
+			const actionItem = result.data.actionItemsByOrganization[0];
+			assertToBeNonNullish(actionItem?.organization);
+
+			// Verify all requested organization fields are present
+			expect(actionItem.organization.id).toBe(organization.id);
+			expect(actionItem.organization.name).toBe(organization.name);
+			expect(actionItem.organization.countryCode).toBe("us");
+			expect(actionItem.organization.description).toBe(
+				"Organization for ActionItem.organization tests",
+			);
+			expect(actionItem.organization.addressLine1).toBe("100 Test Street");
+			expect(actionItem.organization.city).toBe("San Francisco");
+			expect(actionItem.organization.state).toBe("CA");
+			expect(actionItem.organization.postalCode).toBe("94101");
+		});
+
+		it("should resolve organization correctly for multiple action items", async () => {
+			const adminAuth = await getAdminAuth();
+			const organization = await createTestOrganization(adminAuth.token);
+			await createOrgMembership(
+				adminAuth.token,
+				organization.id,
+				adminAuth.userId,
+			);
+			const category = await createTestCategory(
+				adminAuth.token,
+				organization.id,
+			);
+			const { volunteerId } = await createTestEventAndVolunteer(
+				adminAuth.token,
+				organization.id,
+				adminAuth.userId,
+			);
+
+			// Create multiple action items
+			await createTestActionItem(
+				adminAuth.token,
+				category.id,
+				organization.id,
+				volunteerId,
+			);
+			await createTestActionItem(
+				adminAuth.token,
+				category.id,
+				organization.id,
+				volunteerId,
+			);
+			await createTestActionItem(
+				adminAuth.token,
+				category.id,
+				organization.id,
+				volunteerId,
+			);
+
+			const result = await mercuriusClient.query(
+				Query_ActionItem_Organization,
+				{
+					headers: { authorization: `bearer ${adminAuth.token}` },
+					variables: {
+						input: {
+							organizationId: organization.id,
+						},
+					},
+				},
+			);
+
+			expect(result.errors).toBeUndefined();
+			assertToBeNonNullish(result.data?.actionItemsByOrganization);
+			expect(
+				result.data.actionItemsByOrganization.length,
+			).toBeGreaterThanOrEqual(3);
+
+			// All action items should have the same organization
+			for (const actionItem of result.data.actionItemsByOrganization) {
+				assertToBeNonNullish(actionItem?.organization);
+				expect(actionItem.organization.id).toBe(organization.id);
+				expect(actionItem.organization.name).toBe(organization.name);
 			}
 		});
+	});
 
-		it("should handle DataLoader errors gracefully", async () => {
-			const databaseError = new Error("Database connection failed");
-			ctx.dataloaders.organization.load = vi
-				.fn()
-				.mockRejectedValue(databaseError);
+	describe("Authentication", () => {
+		it("should return unauthenticated error when not logged in", async () => {
+			const adminAuth = await getAdminAuth();
+			const organization = await createTestOrganization(adminAuth.token);
+			await createOrgMembership(
+				adminAuth.token,
+				organization.id,
+				adminAuth.userId,
+			);
+			const category = await createTestCategory(
+				adminAuth.token,
+				organization.id,
+			);
+			const { volunteerId } = await createTestEventAndVolunteer(
+				adminAuth.token,
+				organization.id,
+				adminAuth.userId,
+			);
+			await createTestActionItem(
+				adminAuth.token,
+				category.id,
+				organization.id,
+				volunteerId,
+			);
 
-			await expect(
-				resolveOrganization(mockActionItem, {}, ctx),
-			).rejects.toThrow(databaseError);
-		});
+			// Query without auth header
+			mercuriusClient.setHeaders({});
+			const result = await mercuriusClient.query(
+				Query_ActionItem_Organization,
+				{
+					variables: {
+						input: {
+							organizationId: organization.id,
+						},
+					},
+				},
+			);
 
-		it("should not log errors for successful operations", async () => {
-			const mockOrganization = {
-				id: "org-123",
-				name: "Success Organization",
-				countryCode: "US",
-			};
-
-			ctx.dataloaders.organization.load = vi
-				.fn()
-				.mockResolvedValue(mockOrganization);
-
-			await resolveOrganization(mockActionItem, {}, ctx);
-
-			expect(ctx.log.error).not.toHaveBeenCalled();
-		});
-
-		it("should handle query timeout errors", async () => {
-			const timeoutError = new Error("Query timeout");
-			timeoutError.name = "TimeoutError";
-			ctx.dataloaders.organization.load = vi
-				.fn()
-				.mockRejectedValue(timeoutError);
-
-			await expect(
-				resolveOrganization(mockActionItem, {}, ctx),
-			).rejects.toThrow(timeoutError);
-		});
-
-		it("should handle database constraint violations", async () => {
-			const constraintError = new Error("Foreign key constraint violation");
-			constraintError.name = "PostgresError";
-			ctx.dataloaders.organization.load = vi
-				.fn()
-				.mockRejectedValue(constraintError);
-
-			await expect(
-				resolveOrganization(mockActionItem, {}, ctx),
-			).rejects.toThrow(constraintError);
+			expect(result.errors).toBeDefined();
+			expect(result.errors?.[0]?.extensions?.code).toBe("unauthenticated");
 		});
 	});
 
-	describe("Return Values", () => {
-		it("should return organization with all expected properties", async () => {
-			const mockOrganization = {
-				id: "org-123",
-				name: "Complete Organization",
-				description: "A comprehensive organization",
-				countryCode: "US",
-				createdAt: new Date("2024-01-01T00:00:00Z"),
-				updatedAt: new Date("2024-01-01T12:00:00Z"),
-				addressLine1: "123 Business Ave",
-				addressLine2: "Suite 100",
-				avatarMimeType: "image/png",
-				city: "Business City",
-				state: "Business State",
-				zipCode: "12345",
-				userRegistrationRequired: true,
-				membershipRequestsEnabled: false,
-			};
-
-			ctx.dataloaders.organization.load = vi
-				.fn()
-				.mockResolvedValue(mockOrganization);
-
-			const result = await resolveOrganization(mockActionItem, {}, ctx);
-
-			expect(result).toEqual(mockOrganization);
-			expect(result).toHaveProperty("id", "org-123");
-			expect(result).toHaveProperty("name", "Complete Organization");
-			expect(result).toHaveProperty(
-				"description",
-				"A comprehensive organization",
+	describe("Organization via createActionItem mutation", () => {
+		it("should return organization when creating action item", async () => {
+			const adminAuth = await getAdminAuth();
+			const organization = await createTestOrganization(adminAuth.token);
+			await createOrgMembership(
+				adminAuth.token,
+				organization.id,
+				adminAuth.userId,
 			);
-			expect(result).toHaveProperty("countryCode", "US");
-			expect(result).toHaveProperty("city", "Business City");
-			expect(result).toHaveProperty("userRegistrationRequired", true);
+			const category = await createTestCategory(
+				adminAuth.token,
+				organization.id,
+			);
+			const { volunteerId } = await createTestEventAndVolunteer(
+				adminAuth.token,
+				organization.id,
+				adminAuth.userId,
+			);
+
+			// The Mutation_createActionItem already requests organization { id, name }
+			const result = await mercuriusClient.mutate(Mutation_createActionItem, {
+				headers: { authorization: `bearer ${adminAuth.token}` },
+				variables: {
+					input: {
+						categoryId: category.id,
+						organizationId: organization.id,
+						volunteerId,
+						assignedAt: new Date().toISOString(),
+					},
+				},
+			});
+
+			expect(result.errors).toBeUndefined();
+			assertToBeNonNullish(result.data?.createActionItem);
+			assertToBeNonNullish(result.data.createActionItem.organization);
+			expect(result.data.createActionItem.organization.id).toBe(
+				organization.id,
+			);
+			expect(result.data.createActionItem.organization.name).toBe(
+				organization.name,
+			);
 		});
+	});
 
-		it("should return minimal organization data correctly", async () => {
-			const minimalOrganization = {
-				id: "org-123",
-				name: "Minimal Organization",
-				countryCode: "US",
-				createdAt: new Date("2024-01-01"),
-				updatedAt: new Date("2024-01-01"),
-				addressLine1: null,
-				addressLine2: null,
-				avatarMimeType: null,
-				city: null,
-				state: null,
-				zipCode: null,
-				description: null,
-				userRegistrationRequired: null,
-				membershipRequestsEnabled: null,
-			};
+	describe("DataLoader Behavior", () => {
+		it("should efficiently batch organization lookups for multiple action items", async () => {
+			const adminAuth = await getAdminAuth();
+			const organization = await createTestOrganization(adminAuth.token);
+			await createOrgMembership(
+				adminAuth.token,
+				organization.id,
+				adminAuth.userId,
+			);
+			const category = await createTestCategory(
+				adminAuth.token,
+				organization.id,
+			);
+			const { volunteerId } = await createTestEventAndVolunteer(
+				adminAuth.token,
+				organization.id,
+				adminAuth.userId,
+			);
 
-			ctx.dataloaders.organization.load = vi
-				.fn()
-				.mockResolvedValue(minimalOrganization);
+			// Create multiple action items that will all need the same organization
+			const actionItemPromises = [];
+			for (let i = 0; i < 5; i++) {
+				actionItemPromises.push(
+					createTestActionItem(
+						adminAuth.token,
+						category.id,
+						organization.id,
+						volunteerId,
+					),
+				);
+			}
+			await Promise.all(actionItemPromises);
 
-			const result = await resolveOrganization(mockActionItem, {}, ctx);
+			// Query all action items - DataLoader should batch the organization lookups
+			const result = await mercuriusClient.query(
+				Query_ActionItem_Organization,
+				{
+					headers: { authorization: `bearer ${adminAuth.token}` },
+					variables: {
+						input: {
+							organizationId: organization.id,
+						},
+					},
+				},
+			);
 
-			expect(result).toEqual(minimalOrganization);
-			expect(result).toHaveProperty("id", "org-123");
-			expect(result).toHaveProperty("name", "Minimal Organization");
-			expect(result).toHaveProperty("countryCode", "US");
-		});
+			expect(result.errors).toBeUndefined();
+			assertToBeNonNullish(result.data?.actionItemsByOrganization);
+			expect(
+				result.data.actionItemsByOrganization.length,
+			).toBeGreaterThanOrEqual(5);
 
-		it("should preserve all organization properties from database", async () => {
-			const complexOrganization = {
-				id: "org-123",
-				name: "Complex Organization",
-				description: "Organization with many properties",
-				countryCode: "CA",
-				createdAt: new Date("2024-01-01"),
-				updatedAt: new Date("2024-01-02"),
-				addressLine1: "456 Complex St",
-				addressLine2: "Floor 5",
-				avatarMimeType: "image/jpeg",
-				city: "Complex City",
-				state: "Complex Province",
-				zipCode: "A1B 2C3",
-				userRegistrationRequired: false,
-				membershipRequestsEnabled: true,
-			};
-
-			ctx.dataloaders.organization.load = vi
-				.fn()
-				.mockResolvedValue(complexOrganization);
-
-			const result = await resolveOrganization(mockActionItem, {}, ctx);
-
-			expect(result).toEqual(complexOrganization);
+			// Verify all action items have the organization resolved correctly
+			for (const actionItem of result.data.actionItemsByOrganization) {
+				assertToBeNonNullish(actionItem?.organization);
+				expect(actionItem.organization.id).toBe(organization.id);
+			}
 		});
 	});
 
 	describe("Edge Cases", () => {
-		it("should handle organizationId with UUID format", async () => {
-			const uuidOrgId = "01234567-89ab-cdef-0123-456789abcdef";
-			const uuidOrganization = {
-				id: uuidOrgId,
-				name: "UUID Organization",
-				countryCode: "US",
-			};
+		it("should handle organization with minimal required fields", async () => {
+			const adminAuth = await getAdminAuth();
 
-			mockActionItem.organizationId = uuidOrgId;
-			ctx.dataloaders.organization.load = vi
-				.fn()
-				.mockResolvedValue(uuidOrganization);
-
-			const result = await resolveOrganization(mockActionItem, {}, ctx);
-
-			expect(result).toEqual(uuidOrganization);
-			expect(result.id).toBe(uuidOrgId);
-		});
-
-		it("should handle organizations with special characters in name", async () => {
-			const specialOrganization = {
-				id: "org-123",
-				name: "Organization with Special Chars: & < > \" ' %",
-				countryCode: "US",
-			};
-
-			ctx.dataloaders.organization.load = vi
-				.fn()
-				.mockResolvedValue(specialOrganization);
-
-			const result = await resolveOrganization(mockActionItem, {}, ctx);
-
-			expect(result).toEqual(specialOrganization);
-			expect(result.name).toBe("Organization with Special Chars: & < > \" ' %");
-		});
-
-		it("should handle organizations with different country codes", async () => {
-			const internationalOrgs = [
-				{ id: "org-us", name: "US Org", countryCode: "US" },
-				{ id: "org-ca", name: "Canadian Org", countryCode: "CA" },
-				{ id: "org-uk", name: "UK Org", countryCode: "GB" },
-				{ id: "org-jp", name: "Japan Org", countryCode: "JP" },
-			];
-
-			for (const org of internationalOrgs) {
-				mockActionItem.organizationId = org.id;
-				ctx.dataloaders.organization.load = vi.fn().mockResolvedValue(org);
-
-				const result = await resolveOrganization(mockActionItem, {}, ctx);
-				expect(result).toEqual(org);
-				expect(result.countryCode).toBe(org.countryCode);
-			}
-		});
-
-		it("should handle organizations with null optional fields", async () => {
-			const organizationWithNulls = {
-				id: "org-123",
-				name: "Org with Nulls",
-				countryCode: "US",
-				description: null,
-				addressLine1: null,
-				addressLine2: null,
-				avatarMimeType: null,
-				city: null,
-				state: null,
-				zipCode: null,
-				userRegistrationRequired: null,
-				membershipRequestsEnabled: null,
-				createdAt: new Date("2024-01-01"),
-				updatedAt: new Date("2024-01-01"),
-			};
-
-			ctx.dataloaders.organization.load = vi
-				.fn()
-				.mockResolvedValue(organizationWithNulls);
-
-			const result = await resolveOrganization(mockActionItem, {}, ctx);
-
-			expect(result).toEqual(organizationWithNulls);
-			expect(result.description).toBeNull();
-			expect(result.addressLine1).toBeNull();
-			expect(result.city).toBeNull();
-		});
-
-		it("should handle very long organization names", async () => {
-			const longName = `${"Very".repeat(50)}Long Organization Name`;
-			const longNameOrganization = {
-				id: "org-123",
-				name: longName,
-				countryCode: "US",
-			};
-
-			ctx.dataloaders.organization.load = vi
-				.fn()
-				.mockResolvedValue(longNameOrganization);
-
-			const result = await resolveOrganization(mockActionItem, {}, ctx);
-
-			expect(result).toEqual(longNameOrganization);
-			expect(result.name).toBe(longName);
-		});
-	});
-
-	describe("Performance Considerations", () => {
-		it("should make exactly one DataLoader call", async () => {
-			const mockOrganization = {
-				id: "org-123",
-				name: "Test",
-				countryCode: "US",
-			};
-			ctx.dataloaders.organization.load = vi
-				.fn()
-				.mockResolvedValue(mockOrganization);
-
-			await resolveOrganization(mockActionItem, {}, ctx);
-
-			expect(ctx.dataloaders.organization.load).toHaveBeenCalledTimes(1);
-		});
-
-		it("should use DataLoader for batching", async () => {
-			const mockOrganization1 = {
-				id: "org-1",
-				name: "Org 1",
-				countryCode: "US",
-			};
-			const mockOrganization2 = {
-				id: "org-2",
-				name: "Org 2",
-				countryCode: "CA",
-			};
-
-			// First call
-			mockActionItem.organizationId = "org-1";
-			ctx.dataloaders.organization.load = vi
-				.fn()
-				.mockResolvedValue(mockOrganization1);
-			await resolveOrganization(mockActionItem, {}, ctx);
-
-			// Second call with different org
-			mockActionItem.organizationId = "org-2";
-			ctx.dataloaders.organization.load = vi
-				.fn()
-				.mockResolvedValue(mockOrganization2);
-			await resolveOrganization(mockActionItem, {}, ctx);
-
-			// Each call uses DataLoader
-			expect(ctx.dataloaders.organization.load).toHaveBeenCalledWith("org-2");
-		});
-	});
-
-	describe("Data Integrity", () => {
-		it("should always require organizationId to be present", async () => {
-			const mockOrganization = {
-				id: "org-123",
-				name: "Required Org",
-				countryCode: "US",
-			};
-
-			ctx.dataloaders.organization.load = vi
-				.fn()
-				.mockResolvedValue(mockOrganization);
-
-			const result = await resolveOrganization(mockActionItem, {}, ctx);
-
-			expect(result).toEqual(mockOrganization);
-			expect(ctx.dataloaders.organization.load).toHaveBeenCalledWith("org-123");
-		});
-
-		it("should handle organization referential integrity violations", async () => {
-			ctx.dataloaders.organization.load = vi.fn().mockResolvedValue(null);
-
-			await expect(
-				resolveOrganization(mockActionItem, {}, ctx),
-			).rejects.toThrow(
-				new TalawaGraphQLError({
-					extensions: { code: "unexpected" },
-				}),
-			);
-
-			expect(ctx.log.error).toHaveBeenCalledWith(
+			// Create organization with minimal fields
+			const orgName = `Minimal Org ${faker.string.uuid()}`;
+			const createOrgResult = await mercuriusClient.mutate(
+				Mutation_createOrganization,
 				{
-					actionItemId: mockActionItem.id,
-					organizationId: mockActionItem.organizationId,
+					headers: { authorization: `bearer ${adminAuth.token}` },
+					variables: {
+						input: {
+							name: orgName,
+							countryCode: "us",
+						},
+					},
 				},
-				expect.stringContaining("organization id that isn't null"),
 			);
-		});
-	});
+			assertToBeNonNullish(createOrgResult.data?.createOrganization);
+			const organization = createOrgResult.data.createOrganization;
 
-	describe("Logging Verification", () => {
-		it("should log error for missing organization with specific message", async () => {
-			ctx.dataloaders.organization.load = vi.fn().mockResolvedValue(null);
+			await createOrgMembership(
+				adminAuth.token,
+				organization.id,
+				adminAuth.userId,
+			);
+			const category = await createTestCategory(
+				adminAuth.token,
+				organization.id,
+			);
+			const { volunteerId } = await createTestEventAndVolunteer(
+				adminAuth.token,
+				organization.id,
+				adminAuth.userId,
+			);
+			await createTestActionItem(
+				adminAuth.token,
+				category.id,
+				organization.id,
+				volunteerId,
+			);
 
-			try {
-				await resolveOrganization(mockActionItem, {}, ctx);
-			} catch (_error) {
-				expect(ctx.log.error).toHaveBeenCalledWith(
-					{
-						actionItemId: mockActionItem.id,
-						organizationId: mockActionItem.organizationId,
+			const result = await mercuriusClient.query(
+				Query_ActionItem_Organization,
+				{
+					headers: { authorization: `bearer ${adminAuth.token}` },
+					variables: {
+						input: {
+							organizationId: organization.id,
+						},
 					},
-					"DataLoader returned an empty array for an action item's organization id that isn't null",
-				);
-			}
+				},
+			);
+
+			expect(result.errors).toBeUndefined();
+			assertToBeNonNullish(result.data?.actionItemsByOrganization);
+			const actionItem = result.data.actionItemsByOrganization[0];
+			assertToBeNonNullish(actionItem?.organization);
+			expect(actionItem.organization.id).toBe(organization.id);
+			expect(actionItem.organization.name).toBe(orgName);
+			expect(actionItem.organization.countryCode).toBe("us");
+			// Optional fields should be null
+			expect(actionItem.organization.description).toBeNull();
+			expect(actionItem.organization.addressLine1).toBeNull();
 		});
 
-		it("should include organization context in error logs", async () => {
-			ctx.dataloaders.organization.load = vi.fn().mockResolvedValue(null);
+		it("should handle organization with special characters in name", async () => {
+			const adminAuth = await getAdminAuth();
 
-			mockActionItem.organizationId = "missing-org-123";
-
-			try {
-				await resolveOrganization(mockActionItem, {}, ctx);
-			} catch (_error) {
-				expect(ctx.log.error).toHaveBeenCalledWith(
-					{
-						actionItemId: mockActionItem.id,
-						organizationId: "missing-org-123",
+			// Create organization with special characters
+			const orgName = `Test Org & Co. <Special> ${faker.string.uuid()}`;
+			const createOrgResult = await mercuriusClient.mutate(
+				Mutation_createOrganization,
+				{
+					headers: { authorization: `bearer ${adminAuth.token}` },
+					variables: {
+						input: {
+							name: orgName,
+							countryCode: "us",
+						},
 					},
-					expect.stringContaining("action item's organization id"),
-				);
-			}
+				},
+			);
+			assertToBeNonNullish(createOrgResult.data?.createOrganization);
+			const organization = createOrgResult.data.createOrganization;
+
+			await createOrgMembership(
+				adminAuth.token,
+				organization.id,
+				adminAuth.userId,
+			);
+			const category = await createTestCategory(
+				adminAuth.token,
+				organization.id,
+			);
+			const { volunteerId } = await createTestEventAndVolunteer(
+				adminAuth.token,
+				organization.id,
+				adminAuth.userId,
+			);
+			await createTestActionItem(
+				adminAuth.token,
+				category.id,
+				organization.id,
+				volunteerId,
+			);
+
+			const result = await mercuriusClient.query(
+				Query_ActionItem_Organization,
+				{
+					headers: { authorization: `bearer ${adminAuth.token}` },
+					variables: {
+						input: {
+							organizationId: organization.id,
+						},
+					},
+				},
+			);
+
+			expect(result.errors).toBeUndefined();
+			assertToBeNonNullish(result.data?.actionItemsByOrganization);
+			const actionItem = result.data.actionItemsByOrganization[0];
+			assertToBeNonNullish(actionItem?.organization);
+			expect(actionItem.organization.name).toBe(orgName);
+		});
+
+		it("should handle different country codes correctly", async () => {
+			const adminAuth = await getAdminAuth();
+
+			// Test with Canadian country code
+			const orgName = `Canadian Org ${faker.string.uuid()}`;
+			const createOrgResult = await mercuriusClient.mutate(
+				Mutation_createOrganization,
+				{
+					headers: { authorization: `bearer ${adminAuth.token}` },
+					variables: {
+						input: {
+							name: orgName,
+							countryCode: "ca",
+							state: "ON",
+							city: "Toronto",
+						},
+					},
+				},
+			);
+			assertToBeNonNullish(createOrgResult.data?.createOrganization);
+			const organization = createOrgResult.data.createOrganization;
+
+			await createOrgMembership(
+				adminAuth.token,
+				organization.id,
+				adminAuth.userId,
+			);
+			const category = await createTestCategory(
+				adminAuth.token,
+				organization.id,
+			);
+			const { volunteerId } = await createTestEventAndVolunteer(
+				adminAuth.token,
+				organization.id,
+				adminAuth.userId,
+			);
+			await createTestActionItem(
+				adminAuth.token,
+				category.id,
+				organization.id,
+				volunteerId,
+			);
+
+			const result = await mercuriusClient.query(
+				Query_ActionItem_Organization,
+				{
+					headers: { authorization: `bearer ${adminAuth.token}` },
+					variables: {
+						input: {
+							organizationId: organization.id,
+						},
+					},
+				},
+			);
+
+			expect(result.errors).toBeUndefined();
+			assertToBeNonNullish(result.data?.actionItemsByOrganization);
+			const actionItem = result.data.actionItemsByOrganization[0];
+			assertToBeNonNullish(actionItem?.organization);
+			expect(actionItem.organization.countryCode).toBe("ca");
+			expect(actionItem.organization.state).toBe("ON");
+			expect(actionItem.organization.city).toBe("Toronto");
 		});
 	});
 });

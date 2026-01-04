@@ -1694,19 +1694,19 @@ suite("Mutation field updateCurrentUser", () => {
 				.mockResolvedValue({ etag: "mock-etag" } as UploadedObjectInfo);
 
 			const comprehensiveTestData = {
-				addressLine1: faker.location.streetAddress().replace(/'/g, ""), // Remove apostrophes to avoid HTML encoding
-				addressLine2: faker.location.secondaryAddress(),
+				addressLine1: "O'Brien Street 123", // Include apostrophe to test escapeHTML behavior
+				addressLine2: "Apt O'Connor", // Include apostrophe to test escapeHTML behavior
 				birthDate: faker.date.birthdate().toISOString().split("T")[0],
-				city: faker.location.city().replace(/'/g, ""), // Remove apostrophes to avoid HTML encoding
+				city: "St. Mary's Bay", // Include apostrophe to test escapeHTML behavior
 				countryCode: "ca" as const,
-				description: faker.lorem.paragraph(),
+				description: "John's description with apostrophe's", // Include apostrophe to test escapeHTML behavior
 				educationGrade: "graduate" as const,
 				emailAddress: `${faker.internet.username()}${faker.string.ulid()}@email.com`,
 				employmentStatus: "part_time" as const,
 				homePhoneNumber: "+15555555555",
 				maritalStatus: "married" as const,
 				mobilePhoneNumber: "+15555555555",
-				name: faker.person.fullName(),
+				name: "Patrick O'Neil", // Include apostrophe to test escapeHTML behavior
 				natalSex: "female" as const,
 				naturalLanguageCode: "fr" as const,
 				password: faker.internet.password(),
@@ -1789,23 +1789,35 @@ suite("Mutation field updateCurrentUser", () => {
 			const result = JSON.parse(response.body);
 
 			expect(result.errors).toBeUndefined();
+
+			// Verify escapeHTML behavior - addressLine1, addressLine2, city use custom field resolvers with escapeHTML
+			// Note: description and name use t.exposeString() without escapeHTML, so apostrophes remain unchanged
+			expect(result.data.updateCurrentUser.addressLine1).toBe(
+				"O&#39;Brien Street 123",
+			);
+			expect(result.data.updateCurrentUser.addressLine2).toBe(
+				"Apt O&#39;Connor",
+			);
+			expect(result.data.updateCurrentUser.city).toBe("St. Mary&#39;s Bay");
+			expect(result.data.updateCurrentUser.description).toBe(
+				comprehensiveTestData.description,
+			);
+			expect(result.data.updateCurrentUser.name).toBe(
+				comprehensiveTestData.name,
+			);
+
 			expect(result.data.updateCurrentUser).toEqual(
 				expect.objectContaining({
-					addressLine1: comprehensiveTestData.addressLine1,
-					addressLine2: comprehensiveTestData.addressLine2,
 					avatarMimeType: "image/jpeg",
 					avatarURL: expect.stringContaining("/objects/"),
 					birthDate: comprehensiveTestData.birthDate,
-					city: comprehensiveTestData.city,
 					countryCode: comprehensiveTestData.countryCode,
-					description: comprehensiveTestData.description,
 					educationGrade: comprehensiveTestData.educationGrade,
 					emailAddress: comprehensiveTestData.emailAddress,
 					employmentStatus: comprehensiveTestData.employmentStatus,
 					homePhoneNumber: comprehensiveTestData.homePhoneNumber,
 					maritalStatus: comprehensiveTestData.maritalStatus,
 					mobilePhoneNumber: comprehensiveTestData.mobilePhoneNumber,
-					name: comprehensiveTestData.name,
 					natalSex: comprehensiveTestData.natalSex,
 					naturalLanguageCode: comprehensiveTestData.naturalLanguageCode,
 					postalCode: comprehensiveTestData.postalCode,

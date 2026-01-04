@@ -72,7 +72,11 @@ describe("Event Resolver - Organization Field", () => {
 			);
 
 			expect(ctx.log.error).toHaveBeenCalledWith(
-				"Postgres select operation returned an empty array for an event's organization id that isn't null.",
+				{
+					eventId: mockEvent.id,
+					organizationId: mockEvent.organizationId,
+				},
+				"DataLoader returned an empty array for an event's organization id that isn't null",
 			);
 		});
 	});
@@ -155,7 +159,11 @@ describe("Event Resolver - Organization Field", () => {
 				await resolveEventOrganization(mockEvent, {}, ctx);
 			} catch (error) {
 				expect(ctx.log.error).toHaveBeenCalledWith(
-					"Postgres select operation returned an empty array for an event's organization id that isn't null.",
+					{
+						eventId: mockEvent.id,
+						organizationId: mockEvent.organizationId,
+					},
+					"DataLoader returned an empty array for an event's organization id that isn't null",
 				);
 				expect(error).toBeInstanceOf(TalawaGraphQLError);
 				expect((error as TalawaGraphQLError).extensions.code).toBe(
@@ -495,6 +503,10 @@ describe("Event Resolver - Organization Field", () => {
 			);
 
 			expect(ctx.log.error).toHaveBeenCalledWith(
+				{
+					eventId: mockEvent.id,
+					organizationId: mockEvent.organizationId,
+				},
 				expect.stringContaining("organization id that isn't null"),
 			);
 		});
@@ -508,7 +520,11 @@ describe("Event Resolver - Organization Field", () => {
 				await resolveEventOrganization(mockEvent, {}, ctx);
 			} catch (_error) {
 				expect(ctx.log.error).toHaveBeenCalledWith(
-					"Postgres select operation returned an empty array for an event's organization id that isn't null.",
+					{
+						eventId: mockEvent.id,
+						organizationId: mockEvent.organizationId,
+					},
+					"DataLoader returned an empty array for an event's organization id that isn't null",
 				);
 			}
 		});
@@ -522,6 +538,10 @@ describe("Event Resolver - Organization Field", () => {
 				await resolveEventOrganization(mockEvent, {}, ctx);
 			} catch (_error) {
 				expect(ctx.log.error).toHaveBeenCalledWith(
+					{
+						eventId: mockEvent.id,
+						organizationId: "missing-org-123",
+					},
 					expect.stringContaining("event's organization id"),
 				);
 			}
