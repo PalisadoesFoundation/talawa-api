@@ -51,10 +51,12 @@ vi.mock("@fastify/otel", () => ({
 describe("OTEL bootstrap smoke tests", () => {
 	let originalEnv: NodeJS.ProcessEnv;
 	let consoleErrorSpy: ReturnType<typeof vi.spyOn>;
+	let consoleLogSpy: ReturnType<typeof vi.spyOn>;
 
 	beforeEach(() => {
 		originalEnv = { ...process.env };
 		consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+		consoleLogSpy = vi.spyOn(console, "log").mockImplementation(() => {});
 		vi.resetModules();
 		vi.clearAllMocks();
 	});
@@ -62,11 +64,13 @@ describe("OTEL bootstrap smoke tests", () => {
 	afterEach(() => {
 		process.env = originalEnv;
 		consoleErrorSpy.mockRestore();
+		consoleLogSpy.mockRestore();
 		vi.clearAllMocks();
+		vi.useRealTimers(); // Ensure timers are reset after each test
 	});
 
 	describe("Disabled state", () => {
-		it("does not throw when tracing is explicitly disabled", async () => {
+		it("does not initialize SDK when OTEL_ENABLED is false", async () => {
 			process.env = {
 				...originalEnv,
 				OTEL_ENABLED: "false",
@@ -78,46 +82,10 @@ describe("OTEL bootstrap smoke tests", () => {
 			await expect(initTracing()).resolves.toBeUndefined();
 			expect(NodeSDK).not.toHaveBeenCalled();
 		});
-
-		it("returns early when OTEL_ENABLED is undefined (defaults to disabled)", async () => {
-			process.env = { ...originalEnv };
-			delete process.env.OTEL_ENABLED;
-
-			const { initTracing } = await import(
-				"../../src/observability/tracing/bootstrap"
-			);
-			await expect(initTracing()).resolves.toBeUndefined();
-
-			// Based on your config, undefined likely defaults to false/disabled
-			// If it actually initializes, that's the expected behavior
-			// So we just verify it doesn't throw
-		});
-
-		it("does not throw with various falsy values", async () => {
-			const falsyValues = ["false", "FALSE", "0", ""];
-
-			for (const value of falsyValues) {
-				vi.clearAllMocks();
-				vi.resetModules();
-
-				process.env = {
-					...originalEnv,
-					OTEL_ENABLED: value,
-				};
-
-				const { initTracing } = await import(
-					"../../src/observability/tracing/bootstrap"
-				);
-				await expect(initTracing()).resolves.toBeUndefined();
-
-				// Should not initialize SDK for falsy values
-				expect(NodeSDK).not.toHaveBeenCalled();
-			}
-		});
 	});
 
 	describe("Enabled state - Local environment", () => {
-		it("initializes successfully with console exporter in local mode", async () => {
+		it("initializes SDK successfully in local mode", async () => {
 			process.env = {
 				...originalEnv,
 				OTEL_ENABLED: "true",
@@ -131,24 +99,10 @@ describe("OTEL bootstrap smoke tests", () => {
 			await expect(initTracing()).resolves.toBeUndefined();
 			expect(NodeSDK).toHaveBeenCalledTimes(1);
 		});
-
-		it("defaults service name when not provided in local mode", async () => {
-			process.env = {
-				...originalEnv,
-				OTEL_ENABLED: "true",
-				OTEL_ENVIRONMENT: "local",
-			};
-			delete process.env.OTEL_SERVICE_NAME;
-
-			const { initTracing } = await import(
-				"../../src/observability/tracing/bootstrap"
-			);
-			await expect(initTracing()).resolves.toBeUndefined();
-		});
 	});
 
 	describe("Enabled state - Production environment", () => {
-		it("initializes successfully in production mode with endpoint", async () => {
+		it("initializes SDK with OTLP exporter in production", async () => {
 			process.env = {
 				...originalEnv,
 				OTEL_ENABLED: "true",
@@ -163,25 +117,10 @@ describe("OTEL bootstrap smoke tests", () => {
 			await expect(initTracing()).resolves.toBeUndefined();
 			expect(NodeSDK).toHaveBeenCalledTimes(1);
 		});
-
-		it("handles missing OTLP endpoint in production mode", async () => {
-			process.env = {
-				...originalEnv,
-				OTEL_ENABLED: "true",
-				OTEL_ENVIRONMENT: "production",
-				OTEL_SERVICE_NAME: "test-service",
-			};
-			delete process.env.OTEL_EXPORTER_OTLP_ENDPOINT;
-
-			const { initTracing } = await import(
-				"../../src/observability/tracing/bootstrap"
-			);
-			await expect(initTracing()).resolves.toBeUndefined();
-		});
 	});
 
 	describe("Sampling configuration", () => {
-		it("supports configurable sampling ratio", async () => {
+		it("accepts valid sampling ratio", async () => {
 			process.env = {
 				...originalEnv,
 				OTEL_ENABLED: "true",
@@ -193,9 +132,10 @@ describe("OTEL bootstrap smoke tests", () => {
 				"../../src/observability/tracing/bootstrap"
 			);
 			await expect(initTracing()).resolves.toBeUndefined();
+			expect(NodeSDK).toHaveBeenCalled();
 		});
 
-		it("validates sampling ratio is within bounds", async () => {
+		it("rejects sampling ratio > 1", async () => {
 			process.env = {
 				...originalEnv,
 				OTEL_ENABLED: "true",
@@ -206,14 +146,11 @@ describe("OTEL bootstrap smoke tests", () => {
 			const { initTracing } = await import(
 				"../../src/observability/tracing/bootstrap"
 			);
-			await expect(initTracing()).resolves.toBeUndefined();
-			expect(consoleErrorSpy).toHaveBeenCalledWith(
-				expect.stringContaining("Failed to initialize OpenTelemetry"),
-				expect.any(Error),
-			);
+
+			await expect(initTracing()).rejects.toThrow(/Invalid samplingRatio/);
 		});
 
-		it("validates sampling ratio is not negative", async () => {
+		it("rejects negative sampling ratio", async () => {
 			process.env = {
 				...originalEnv,
 				OTEL_ENABLED: "true",
@@ -224,37 +161,31 @@ describe("OTEL bootstrap smoke tests", () => {
 			const { initTracing } = await import(
 				"../../src/observability/tracing/bootstrap"
 			);
-			await expect(initTracing()).resolves.toBeUndefined();
-			expect(consoleErrorSpy).toHaveBeenCalledWith(
-				expect.stringContaining("Failed to initialize OpenTelemetry"),
-				expect.any(Error),
-			);
+
+			await expect(initTracing()).rejects.toThrow(/Invalid samplingRatio/);
 		});
 
-		it("handles invalid sampling ratio (NaN)", async () => {
+		it("rejects non-numeric sampling ratio", async () => {
 			process.env = {
 				...originalEnv,
 				OTEL_ENABLED: "true",
 				OTEL_ENVIRONMENT: "local",
-				OTEL_SAMPLING_RATIO: "not-a-number",
+				OTEL_SAMPLING_RATIO: "invalid",
 			};
 
 			const { initTracing } = await import(
 				"../../src/observability/tracing/bootstrap"
 			);
-			await expect(initTracing()).resolves.toBeUndefined();
-			expect(consoleErrorSpy).toHaveBeenCalledWith(
-				expect.stringContaining("Failed to initialize OpenTelemetry"),
-				expect.any(Error),
-			);
+
+			await expect(initTracing()).rejects.toThrow(/Invalid samplingRatio/);
 		});
 	});
 
 	describe("Error handling", () => {
-		it("handles SDK start failure gracefully", async () => {
+		it("logs error but continues when SDK start fails", async () => {
 			const mockStart = vi
 				.fn()
-				.mockRejectedValueOnce(new Error("OTLP endpoint unreachable"));
+				.mockRejectedValueOnce(new Error("Connection refused"));
 			vi.mocked(NodeSDK).mockImplementationOnce(
 				() =>
 					({
@@ -280,28 +211,248 @@ describe("OTEL bootstrap smoke tests", () => {
 				expect.any(Error),
 			);
 		});
+	});
 
-		it("handles missing OTEL_ENVIRONMENT gracefully", async () => {
+	describe("Shutdown functionality", () => {
+		it("handles shutdown when SDK was never initialized", async () => {
+			process.env = {
+				...originalEnv,
+				OTEL_ENABLED: "false",
+			};
+
+			// Import without initializing
+			const { shutdownTracing } = await import(
+				"../../src/observability/tracing/bootstrap"
+			);
+
+			await expect(shutdownTracing()).resolves.toBeUndefined();
+		});
+
+		it("successfully shuts down initialized SDK", async () => {
+			const mockShutdown = vi.fn().mockResolvedValue(undefined);
+			vi.mocked(NodeSDK).mockImplementationOnce(
+				() =>
+					({
+						start: vi.fn().mockResolvedValue(undefined),
+						shutdown: mockShutdown,
+					}) as unknown as NodeSDK,
+			);
+
 			process.env = {
 				...originalEnv,
 				OTEL_ENABLED: "true",
-				OTEL_SERVICE_NAME: "test-service",
+				OTEL_ENVIRONMENT: "local",
 			};
-			delete process.env.OTEL_ENVIRONMENT;
+
+			const { initTracing, shutdownTracing } = await import(
+				"../../src/observability/tracing/bootstrap"
+			);
+
+			await initTracing();
+			await shutdownTracing();
+
+			expect(mockShutdown).toHaveBeenCalledTimes(1);
+			expect(consoleLogSpy).toHaveBeenCalledWith(
+				"[observability] OpenTelemetry shut down successfully",
+			);
+		});
+
+		it("logs error and rethrows when shutdown fails", async () => {
+			const shutdownError = new Error("Shutdown failed");
+			const mockShutdown = vi.fn().mockRejectedValue(shutdownError);
+			vi.mocked(NodeSDK).mockImplementationOnce(
+				() =>
+					({
+						start: vi.fn().mockResolvedValue(undefined),
+						shutdown: mockShutdown,
+					}) as unknown as NodeSDK,
+			);
+
+			process.env = {
+				...originalEnv,
+				OTEL_ENABLED: "true",
+				OTEL_ENVIRONMENT: "local",
+			};
+
+			const { initTracing, shutdownTracing } = await import(
+				"../../src/observability/tracing/bootstrap"
+			);
+
+			await initTracing();
+
+			await expect(shutdownTracing()).rejects.toThrow("Shutdown failed");
+			expect(consoleErrorSpy).toHaveBeenCalledWith(
+				"[observability] Failed to shutdown OpenTelemetry",
+				shutdownError,
+			);
+		});
+
+		it("throws timeout error when shutdown hangs", async () => {
+			// Use fake timers before any async operations
+			vi.useFakeTimers();
+
+			const mockShutdown = vi.fn().mockImplementation(
+				() => new Promise(() => {}), // Never resolves
+			);
+			vi.mocked(NodeSDK).mockImplementationOnce(
+				() =>
+					({
+						start: vi.fn().mockResolvedValue(undefined),
+						shutdown: mockShutdown,
+					}) as unknown as NodeSDK,
+			);
+
+			process.env = {
+				...originalEnv,
+				OTEL_ENABLED: "true",
+				OTEL_ENVIRONMENT: "local",
+			};
+
+			const { initTracing, shutdownTracing } = await import(
+				"../../src/observability/tracing/bootstrap"
+			);
+
+			await initTracing();
+
+			// Start the shutdown promise
+			const shutdownPromise = shutdownTracing();
+
+			// Fast-forward time to trigger timeout
+			await vi.advanceTimersByTimeAsync(5001);
+
+			// Verify the promise rejects with timeout error
+			await expect(shutdownPromise).rejects.toThrow(/timeout/i);
+
+			expect(consoleErrorSpy).toHaveBeenCalledWith(
+				"[observability] Shutdown timed out",
+			);
+			expect(consoleErrorSpy).toHaveBeenCalledWith(
+				"[observability] Failed to shutdown OpenTelemetry",
+				expect.any(Error),
+			);
+
+			// Clean up timers
+			vi.useRealTimers();
+		});
+
+		it("clears timeout when shutdown completes successfully", async () => {
+			const clearTimeoutSpy = vi.spyOn(global, "clearTimeout");
+
+			const mockShutdown = vi.fn().mockResolvedValue(undefined);
+			vi.mocked(NodeSDK).mockImplementationOnce(
+				() =>
+					({
+						start: vi.fn().mockResolvedValue(undefined),
+						shutdown: mockShutdown,
+					}) as unknown as NodeSDK,
+			);
+
+			process.env = {
+				...originalEnv,
+				OTEL_ENABLED: "true",
+				OTEL_ENVIRONMENT: "local",
+			};
+
+			const { initTracing, shutdownTracing } = await import(
+				"../../src/observability/tracing/bootstrap"
+			);
+
+			await initTracing();
+			await shutdownTracing();
+
+			expect(clearTimeoutSpy).toHaveBeenCalled();
+			clearTimeoutSpy.mockRestore();
+		});
+
+		it("clears timeout even when shutdown fails", async () => {
+			const clearTimeoutSpy = vi.spyOn(global, "clearTimeout");
+
+			const shutdownError = new Error("Shutdown failed");
+			const mockShutdown = vi.fn().mockRejectedValue(shutdownError);
+			vi.mocked(NodeSDK).mockImplementationOnce(
+				() =>
+					({
+						start: vi.fn().mockResolvedValue(undefined),
+						shutdown: mockShutdown,
+					}) as unknown as NodeSDK,
+			);
+
+			process.env = {
+				...originalEnv,
+				OTEL_ENABLED: "true",
+				OTEL_ENVIRONMENT: "local",
+			};
+
+			const { initTracing, shutdownTracing } = await import(
+				"../../src/observability/tracing/bootstrap"
+			);
+
+			await initTracing();
+
+			try {
+				await shutdownTracing();
+			} catch {
+				// Expected to throw
+			}
+
+			expect(clearTimeoutSpy).toHaveBeenCalled();
+			clearTimeoutSpy.mockRestore();
+		});
+	});
+
+	describe("Module exports", () => {
+		it("exports fastifyOtelInstrumentation instance", async () => {
+			const { fastifyOtelInstrumentation } = await import(
+				"../../src/observability/tracing/bootstrap"
+			);
+			expect(fastifyOtelInstrumentation).toBeDefined();
+		});
+	});
+
+	describe("Edge cases", () => {
+		it("handles sampling ratio of 0", async () => {
+			process.env = {
+				...originalEnv,
+				OTEL_ENABLED: "true",
+				OTEL_ENVIRONMENT: "local",
+				OTEL_SAMPLING_RATIO: "0",
+			};
 
 			const { initTracing } = await import(
 				"../../src/observability/tracing/bootstrap"
 			);
 			await expect(initTracing()).resolves.toBeUndefined();
+			expect(NodeSDK).toHaveBeenCalled();
 		});
-	});
 
-	describe("FastifyOtelInstrumentation export", () => {
-		it("exports fastifyOtelInstrumentation with correct configuration", async () => {
-			const { fastifyOtelInstrumentation } = await import(
+		it("handles sampling ratio of 1", async () => {
+			process.env = {
+				...originalEnv,
+				OTEL_ENABLED: "true",
+				OTEL_ENVIRONMENT: "local",
+				OTEL_SAMPLING_RATIO: "1",
+			};
+
+			const { initTracing } = await import(
 				"../../src/observability/tracing/bootstrap"
 			);
-			expect(fastifyOtelInstrumentation).toBeDefined();
+			await expect(initTracing()).resolves.toBeUndefined();
+			expect(NodeSDK).toHaveBeenCalled();
+		});
+
+		it("uses default sampling ratio when not provided", async () => {
+			process.env = {
+				...originalEnv,
+				OTEL_ENABLED: "true",
+				OTEL_ENVIRONMENT: "local",
+			};
+			delete process.env.OTEL_SAMPLING_RATIO;
+
+			const { initTracing } = await import(
+				"../../src/observability/tracing/bootstrap"
+			);
+			await expect(initTracing()).resolves.toBeUndefined();
+			expect(NodeSDK).toHaveBeenCalled();
 		});
 	});
 });

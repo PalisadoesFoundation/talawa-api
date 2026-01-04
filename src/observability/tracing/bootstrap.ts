@@ -18,7 +18,7 @@ export const fastifyOtelInstrumentation = new FastifyOtelInstrumentation({
 	registerOnInitialization: false,
 });
 
-export async function initTracing() {
+export async function initTracing(): Promise<void> {
 	if (!observabilityConfig.enabled) {
 		return;
 	}
@@ -30,25 +30,25 @@ export async function initTracing() {
 		isLocal ? DiagLogLevel.INFO : DiagLogLevel.ERROR,
 	);
 
+	// Validate sampling ratio early
+	const ratio = observabilityConfig.samplingRatio;
+	if (Number.isNaN(ratio) || ratio < 0 || ratio > 1) {
+		throw new Error(
+			`Invalid samplingRatio: ${ratio}. Expected number between 0 and 1.`,
+		);
+	}
+
+	const exporter = isLocal
+		? new ConsoleSpanExporter()
+		: new OTLPTraceExporter({
+				url: observabilityConfig.otlpEndpoint,
+			});
+
+	const sampler = new ParentBasedSampler({
+		root: new TraceIdRatioBasedSampler(ratio),
+	});
+
 	try {
-		// Validate sampling ratio early
-		const ratio = observabilityConfig.samplingRatio;
-		if (Number.isNaN(ratio) || ratio < 0 || ratio > 1) {
-			throw new Error(
-				`Invalid samplingRatio: ${ratio}. Expected number between 0 and 1.`,
-			);
-		}
-
-		const exporter = isLocal
-			? new ConsoleSpanExporter()
-			: new OTLPTraceExporter({
-					url: observabilityConfig.otlpEndpoint,
-				});
-
-		const sampler = new ParentBasedSampler({
-			root: new TraceIdRatioBasedSampler(ratio),
-		});
-
 		sdk = new NodeSDK({
 			sampler,
 			textMapPropagator: new W3CTraceContextPropagator(),
@@ -69,31 +69,39 @@ export async function initTracing() {
 			err,
 		);
 		sdk = undefined;
+	}
+}
+
+/**
+ * Shutdown OpenTelemetry tracing gracefully.
+ * This function should be called from the graceful shutdown handler.
+ * Throws an error if shutdown fails or times out.
+ */
+export async function shutdownTracing(): Promise<void> {
+	if (!sdk) {
 		return;
 	}
 
-	const shutdown = async (signal: NodeJS.Signals) => {
-		const timeoutMs = 5000;
+	const timeoutMs = 5000;
+	let timeoutId: NodeJS.Timeout | undefined;
 
-		console.log(`Received ${signal}, shutting down OpenTelemetry...`);
+	// Create a timeout promise that rejects
+	const timeoutPromise = new Promise<never>((_, reject) => {
+		timeoutId = setTimeout(() => {
+			console.error("[observability] Shutdown timed out");
+			reject(new Error("OpenTelemetry shutdown timeout"));
+		}, timeoutMs);
+	});
 
-		const timer = setTimeout(() => {
-			console.error("Shutdown timed out, forcing exit");
-			process.exit(1);
-		}, timeoutMs).unref();
-
-		try {
-			if (sdk) {
-				await sdk.shutdown();
-			}
-		} catch (err) {
-			console.error("Error shutting down SDK", err);
-			process.exit(1);
-		} finally {
-			clearTimeout(timer);
-			process.exit(0);
+	try {
+		await Promise.race([sdk.shutdown(), timeoutPromise]);
+		console.log("[observability] OpenTelemetry shut down successfully");
+	} catch (error) {
+		console.error("[observability] Failed to shutdown OpenTelemetry", error);
+		throw error;
+	} finally {
+		if (timeoutId) {
+			clearTimeout(timeoutId);
 		}
-	};
-	process.on("SIGTERM", () => shutdown("SIGTERM"));
-	process.on("SIGINT", () => shutdown("SIGINT"));
+	}
 }
