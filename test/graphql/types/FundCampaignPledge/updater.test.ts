@@ -1,5 +1,13 @@
 import { createMockGraphQLContext } from "test/_Mocks_/mockContextCreator/mockContextCreator";
-import { type Mock, beforeEach, describe, expect, test, vi } from "vitest";
+import {
+	type Mock,
+	afterEach,
+	beforeEach,
+	describe,
+	expect,
+	test,
+	vi,
+} from "vitest";
 import type { GraphQLContext } from "~/src/graphql/context";
 import type { FundCampaignPledge } from "~/src/graphql/types/FundCampaignPledge/FundCampaignPledge";
 import { resolveUpdater } from "~/src/graphql/types/FundCampaignPledge/updater";
@@ -28,6 +36,10 @@ describe("resolveUpdater", () => {
 		ctx = context;
 		mocks = newMocks;
 		vi.clearAllMocks();
+	});
+
+	afterEach(() => {
+		vi.restoreAllMocks();
 	});
 
 	test("throws an unauthenticated error if user is not authenticated or not found", async () => {
@@ -405,6 +417,57 @@ describe("resolveUpdater", () => {
 				);
 			}
 		}
+	});
+
+	test("returns null when pledger views own pledge with null updaterId", async () => {
+		const pledgerId = "user123";
+
+		const result = await resolveUpdater(
+			{ ...mockFundCampaignPledge, pledgerId, updaterId: null },
+			{},
+			ctx,
+		);
+
+		expect(result).toBeNull();
+	});
+
+	test("returns current user when pledger is also the updater", async () => {
+		const pledgerId = "user123";
+		const updaterId = "user123";
+
+		mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValue({
+			id: "user123",
+			role: "regular",
+		});
+
+		const result = await resolveUpdater(
+			{ ...mockFundCampaignPledge, pledgerId, updaterId },
+			{},
+			ctx,
+		);
+
+		expect(result).toEqual({ id: "user123", role: "regular" });
+	});
+
+	test("throws unauthenticated error when pledger is updater but user no longer exists", async () => {
+		const pledgerId = "user123";
+		const updaterId = "user123";
+
+		mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValue(undefined);
+
+		await expect(
+			resolveUpdater(
+				{ ...mockFundCampaignPledge, pledgerId, updaterId },
+				{},
+				ctx,
+			),
+		).rejects.toThrow(
+			expect.objectContaining({
+				extensions: expect.objectContaining({
+					code: "unauthenticated",
+				}),
+			}),
+		);
 	});
 
 	test("returns existing updater when pledger views own pledge with different updater", async () => {
