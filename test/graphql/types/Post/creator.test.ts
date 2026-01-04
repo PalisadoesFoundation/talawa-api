@@ -149,7 +149,7 @@ describe("Post Resolver - Creator Field", () => {
 		});
 
 		it("should return null if creatorId is null", async () => {
-			mockPost.creatorId = null as unknown as string;
+			mockPost.creatorId = null;
 
 			const result = await resolveCreator(mockPost, {}, ctx);
 			expect(result).toBeNull();
@@ -368,10 +368,10 @@ describe("Post Resolver - Creator Field", () => {
 
 			mockPost.creatorId = "non-existent-user";
 
-			await expect(resolveCreator(mockPost, {}, ctx)).rejects.toBeInstanceOf(
-				TalawaGraphQLError,
-			);
-			await expect(resolveCreator(mockPost, {}, ctx)).rejects.toMatchObject({
+			const promise = resolveCreator(mockPost, {}, ctx);
+
+			await expect(promise).rejects.toBeInstanceOf(TalawaGraphQLError);
+			await expect(promise).rejects.toMatchObject({
 				extensions: { code: "unexpected" },
 			});
 			expect(ctx.log.error).toHaveBeenCalledWith(
