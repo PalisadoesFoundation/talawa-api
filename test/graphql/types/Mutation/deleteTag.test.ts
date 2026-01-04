@@ -294,71 +294,6 @@ suite("Mutation field deleteTag", () => {
 				]),
 			);
 		});
-
-		test("should allow organization administrator to delete tag", async () => {
-			const { authToken: orgAdminToken, userId: orgAdminId } = await import(
-				"../createRegularUserUsingAdmin"
-			).then((module) => module.createRegularUserUsingAdmin());
-			assertToBeNonNullish(orgAdminToken);
-			assertToBeNonNullish(orgAdminId);
-
-			// Create organization and tag as global admin
-			const createOrgResult = await mercuriusClient.mutate(
-				Mutation_createOrganization,
-				{
-					headers: { authorization: `bearer ${authToken}` },
-					variables: {
-						input: {
-							name: `Org ${faker.string.uuid()}`,
-							countryCode: "us",
-						},
-					},
-				},
-			);
-			const orgId = createOrgResult.data?.createOrganization?.id;
-			assertToBeNonNullish(orgId);
-
-			// Grant organization admin role to regular user
-			await mercuriusClient.mutate(Mutation_createOrganizationMembership, {
-				headers: { authorization: `bearer ${authToken}` },
-				variables: {
-					input: {
-						organizationId: orgId,
-						memberId: orgAdminId,
-						role: "administrator",
-					},
-				},
-			});
-
-			const createTagResult = await mercuriusClient.mutate(Mutation_createTag, {
-				headers: { authorization: `bearer ${authToken}` },
-				variables: {
-					input: {
-						name: `Tag ${faker.string.uuid()}`,
-						organizationId: orgId,
-					},
-				},
-			});
-			const tagId = createTagResult.data?.createTag?.id;
-			assertToBeNonNullish(tagId);
-
-			// Delete as organization admin (should succeed)
-			const result = await mercuriusClient.mutate(Mutation_deleteTag, {
-				headers: { authorization: `bearer ${orgAdminToken}` },
-				variables: {
-					input: {
-						id: tagId,
-					},
-				},
-			});
-
-			expect(result.errors).toBeUndefined();
-			expect(result.data?.deleteTag).toEqual(
-				expect.objectContaining({
-					id: tagId,
-				}),
-			);
-		});
 	});
 
 	suite("when the database delete operation unexpectedly fails", () => {
@@ -426,6 +361,71 @@ suite("Mutation field deleteTag", () => {
 	});
 
 	suite("when deleting tag successfully", () => {
+		test("should allow organization administrator to delete tag", async () => {
+			const { authToken: orgAdminToken, userId: orgAdminId } = await import(
+				"../createRegularUserUsingAdmin"
+			).then((module) => module.createRegularUserUsingAdmin());
+			assertToBeNonNullish(orgAdminToken);
+			assertToBeNonNullish(orgAdminId);
+
+			// Create organization and tag as global admin
+			const createOrgResult = await mercuriusClient.mutate(
+				Mutation_createOrganization,
+				{
+					headers: { authorization: `bearer ${authToken}` },
+					variables: {
+						input: {
+							name: `Org ${faker.string.uuid()}`,
+							countryCode: "us",
+						},
+					},
+				},
+			);
+			const orgId = createOrgResult.data?.createOrganization?.id;
+			assertToBeNonNullish(orgId);
+
+			// Grant organization admin role to regular user
+			await mercuriusClient.mutate(Mutation_createOrganizationMembership, {
+				headers: { authorization: `bearer ${authToken}` },
+				variables: {
+					input: {
+						organizationId: orgId,
+						memberId: orgAdminId,
+						role: "administrator",
+					},
+				},
+			});
+
+			const createTagResult = await mercuriusClient.mutate(Mutation_createTag, {
+				headers: { authorization: `bearer ${authToken}` },
+				variables: {
+					input: {
+						name: `Tag ${faker.string.uuid()}`,
+						organizationId: orgId,
+					},
+				},
+			});
+			const tagId = createTagResult.data?.createTag?.id;
+			assertToBeNonNullish(tagId);
+
+			// Delete as organization admin (should succeed)
+			const result = await mercuriusClient.mutate(Mutation_deleteTag, {
+				headers: { authorization: `bearer ${orgAdminToken}` },
+				variables: {
+					input: {
+						id: tagId,
+					},
+				},
+			});
+
+			expect(result.errors).toBeUndefined();
+			expect(result.data?.deleteTag).toEqual(
+				expect.objectContaining({
+					id: tagId,
+				}),
+			);
+		});
+
 		test("should successfully delete a tag as global administrator", async () => {
 			const createOrgResult = await mercuriusClient.mutate(
 				Mutation_createOrganization,
