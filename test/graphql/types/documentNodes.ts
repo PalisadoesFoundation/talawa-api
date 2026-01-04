@@ -2006,6 +2006,18 @@ export const Mutation_deleteCommentVote = gql(`
 	}
 `);
 
+export const Mutation_updateCommentVote = gql(`
+	mutation Mutation_updateCommentVote($input: MutationUpdateCommentVoteInput!) {
+		updateCommentVote(input: $input) {
+			id
+			body
+			creator {
+				id
+			}
+		}
+	}
+`);
+
 export const Query_comment = gql(`
 	query Query_comment($input: QueryCommentInput!) {
 		comment(input: $input) {
