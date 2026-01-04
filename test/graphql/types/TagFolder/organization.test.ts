@@ -122,7 +122,7 @@ describe("TagFolder Resolver - Organization Field", () => {
 		).toBe("unexpected");
 
 		expect(logErrorSpy).toHaveBeenCalledWith(
-			"Postgres select operation returned an empty array for a tag folder's organization id that isn't null.",
+			"DataLoader returned an empty array for a tag folder's organization id that isn't null.",
 		);
 	});
 

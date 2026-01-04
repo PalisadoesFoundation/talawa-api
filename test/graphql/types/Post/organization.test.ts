@@ -61,7 +61,7 @@ describe("Post Resolver - Organization Field", () => {
 		});
 
 		expect(logErrorSpy).toHaveBeenCalledWith(
-			"Postgres select operation returned undefined for a post's organization id that isn't null.",
+			"DataLoader returned null for a post's organization id that isn't null.",
 		);
 		expect(ctx.dataloaders.organization.load).toHaveBeenCalledWith("org-123");
 	});

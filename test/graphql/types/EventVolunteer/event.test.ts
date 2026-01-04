@@ -86,8 +86,6 @@ describe("EventVolunteerEventResolver", () => {
 				EventVolunteerEventResolver(mockEventVolunteer, {}, context),
 			).rejects.toThrow(TalawaGraphQLError);
 
-			context.dataloaders.event.load = vi.fn().mockResolvedValue(null);
-
 			await expect(
 				EventVolunteerEventResolver(mockEventVolunteer, {}, context),
 			).rejects.toMatchObject({

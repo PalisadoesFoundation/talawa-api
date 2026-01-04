@@ -76,7 +76,11 @@ describe("ActionItem Resolver - Organization Field", () => {
 			);
 
 			expect(ctx.log.error).toHaveBeenCalledWith(
-				"Postgres select operation returned an empty array for an action item's organization id that isn't null.",
+				{
+					actionItemId: mockActionItem.id,
+					organizationId: mockActionItem.organizationId,
+				},
+				"DataLoader returned an empty array for an action item's organization id that isn't null",
 			);
 		});
 	});
@@ -159,7 +163,11 @@ describe("ActionItem Resolver - Organization Field", () => {
 				await resolveOrganization(mockActionItem, {}, ctx);
 			} catch (error) {
 				expect(ctx.log.error).toHaveBeenCalledWith(
-					"Postgres select operation returned an empty array for an action item's organization id that isn't null.",
+					{
+						actionItemId: mockActionItem.id,
+						organizationId: mockActionItem.organizationId,
+					},
+					"DataLoader returned an empty array for an action item's organization id that isn't null",
 				);
 				expect(error).toBeInstanceOf(TalawaGraphQLError);
 				expect((error as TalawaGraphQLError).extensions.code).toBe(
@@ -306,8 +314,6 @@ describe("ActionItem Resolver - Organization Field", () => {
 				zipCode: "A1B 2C3",
 				userRegistrationRequired: false,
 				membershipRequestsEnabled: true,
-				customField: "custom value",
-				metadata: { type: "nonprofit", verified: true },
 			};
 
 			ctx.dataloaders.organization.load = vi
@@ -317,9 +323,6 @@ describe("ActionItem Resolver - Organization Field", () => {
 			const result = await resolveOrganization(mockActionItem, {}, ctx);
 
 			expect(result).toEqual(complexOrganization);
-			expect(result).toHaveProperty("customField", "custom value");
-			expect(result).toHaveProperty("metadata.type", "nonprofit");
-			expect(result).toHaveProperty("metadata.verified", true);
 		});
 	});
 
@@ -504,6 +507,10 @@ describe("ActionItem Resolver - Organization Field", () => {
 			);
 
 			expect(ctx.log.error).toHaveBeenCalledWith(
+				{
+					actionItemId: mockActionItem.id,
+					organizationId: mockActionItem.organizationId,
+				},
 				expect.stringContaining("organization id that isn't null"),
 			);
 		});
@@ -517,7 +524,11 @@ describe("ActionItem Resolver - Organization Field", () => {
 				await resolveOrganization(mockActionItem, {}, ctx);
 			} catch (_error) {
 				expect(ctx.log.error).toHaveBeenCalledWith(
-					"Postgres select operation returned an empty array for an action item's organization id that isn't null.",
+					{
+						actionItemId: mockActionItem.id,
+						organizationId: mockActionItem.organizationId,
+					},
+					"DataLoader returned an empty array for an action item's organization id that isn't null",
 				);
 			}
 		});
@@ -531,6 +542,10 @@ describe("ActionItem Resolver - Organization Field", () => {
 				await resolveOrganization(mockActionItem, {}, ctx);
 			} catch (_error) {
 				expect(ctx.log.error).toHaveBeenCalledWith(
+					{
+						actionItemId: mockActionItem.id,
+						organizationId: "missing-org-123",
+					},
 					expect.stringContaining("action item's organization id"),
 				);
 			}

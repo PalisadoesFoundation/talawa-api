@@ -17,7 +17,11 @@ export const resolveOrganization = async (
 
 	if (existingOrganization === null) {
 		ctx.log.error(
-			"Postgres select operation returned an empty array for an action item's organization id that isn't null.",
+			{
+				actionItemId: parent.id,
+				organizationId: parent.organizationId,
+			},
+			"DataLoader returned an empty array for an action item's organization id that isn't null",
 		);
 
 		throw new TalawaGraphQLError({

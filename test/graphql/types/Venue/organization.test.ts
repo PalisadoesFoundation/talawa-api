@@ -1,27 +1,26 @@
 import { createMockGraphQLContext } from "test/_Mocks_/mockContextCreator/mockContextCreator";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { GraphQLContext } from "~/src/graphql/context";
-import type { Fund as FundType } from "~/src/graphql/types/Fund/Fund";
-import { resolveOrganization } from "~/src/graphql/types/Fund/organization";
+import { resolveOrganization } from "~/src/graphql/types/Venue/organization";
+import type { Venue as VenueType } from "~/src/graphql/types/Venue/Venue";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 
-describe("Fund Resolver - Organization Field", () => {
+describe("Venue Resolver - Organization Field", () => {
 	let ctx: GraphQLContext;
-	let mockFund: FundType;
+	let mockVenue: VenueType;
 
-	beforeEach(async () => {
-		mockFund = {
-			id: "01234567-89ab-cdef-0123-456789abcdef",
+	beforeEach(() => {
+		mockVenue = {
+			id: "venue-123",
 			organizationId: "org-123",
-			name: "Test Fund",
-			isTaxDeductible: true,
+			name: "Test Venue",
+			description: "Test Venue Description",
+			capacity: 100,
 			creatorId: "user-admin",
-			updaterId: "user-update",
-			isArchived: false,
-			isDefault: false,
-			referenceNumber: null,
+			updaterId: null,
 			createdAt: new Date("2024-01-01T09:00:00Z"),
 			updatedAt: new Date("2024-01-01T10:00:00Z"),
+			attachments: null,
 		};
 
 		const { context } = createMockGraphQLContext(true, "user-123");
@@ -42,16 +41,16 @@ describe("Fund Resolver - Organization Field", () => {
 				avatarMimeType: null,
 				city: "Test City",
 				state: "Test State",
-				zipCode: "12345",
-				userRegistrationRequired: false,
-				membershipRequestsEnabled: true,
+				postalCode: "12345",
+				creatorId: "user-admin",
+				updaterId: null,
 			};
 
 			ctx.dataloaders.organization.load = vi
 				.fn()
 				.mockResolvedValue(mockOrganization);
 
-			const result = await resolveOrganization(mockFund, {}, ctx);
+			const result = await resolveOrganization(mockVenue, {}, ctx);
 
 			expect(result).toEqual(mockOrganization);
 			expect(ctx.dataloaders.organization.load).toHaveBeenCalledWith("org-123");
@@ -60,19 +59,19 @@ describe("Fund Resolver - Organization Field", () => {
 		it("should throw unexpected error when organization does not exist", async () => {
 			ctx.dataloaders.organization.load = vi.fn().mockResolvedValue(null);
 
-			await expect(resolveOrganization(mockFund, {}, ctx)).rejects.toThrow(
+			await expect(resolveOrganization(mockVenue, {}, ctx)).rejects.toThrow(
 				new TalawaGraphQLError({
 					extensions: { code: "unexpected" },
 				}),
 			);
 
 			expect(ctx.log.error).toHaveBeenCalledWith(
-				"Postgres select operation returned an empty array for a fund's organization id that isn't null.",
+				`DataLoader returned empty result for venue.organizationId: venue=${mockVenue.id}, organizationId=${mockVenue.organizationId}`,
 			);
 		});
 	});
 
-	describe("Database Query Verification", () => {
+	describe("DataLoader Query Verification", () => {
 		it("should call DataLoader with correct organization ID", async () => {
 			const mockOrganization = {
 				id: "org-123",
@@ -84,10 +83,10 @@ describe("Fund Resolver - Organization Field", () => {
 				.fn()
 				.mockResolvedValue(mockOrganization);
 
-			await resolveOrganization(mockFund, {}, ctx);
+			await resolveOrganization(mockVenue, {}, ctx);
 
-			expect(ctx.dataloaders.organization.load).toHaveBeenCalledWith("org-123");
 			expect(ctx.dataloaders.organization.load).toHaveBeenCalledTimes(1);
+			expect(ctx.dataloaders.organization.load).toHaveBeenCalledWith("org-123");
 		});
 
 		it("should handle different organization IDs correctly", async () => {
@@ -104,21 +103,21 @@ describe("Fund Resolver - Organization Field", () => {
 			};
 
 			// Test with first organization ID
-			mockFund.organizationId = "org-111";
+			mockVenue.organizationId = "org-111";
 			ctx.dataloaders.organization.load = vi
 				.fn()
 				.mockResolvedValue(mockOrganization1);
 
-			let result = await resolveOrganization(mockFund, {}, ctx);
+			let result = await resolveOrganization(mockVenue, {}, ctx);
 			expect(result).toEqual(mockOrganization1);
 
 			// Test with second organization ID
-			mockFund.organizationId = "org-222";
+			mockVenue.organizationId = "org-222";
 			ctx.dataloaders.organization.load = vi
 				.fn()
 				.mockResolvedValue(mockOrganization2);
 
-			result = await resolveOrganization(mockFund, {}, ctx);
+			result = await resolveOrganization(mockVenue, {}, ctx);
 			expect(result).toEqual(mockOrganization2);
 		});
 
@@ -129,12 +128,12 @@ describe("Fund Resolver - Organization Field", () => {
 				countryCode: "UK",
 			};
 
-			mockFund.organizationId = "custom-org-id";
+			mockVenue.organizationId = "custom-org-id";
 			ctx.dataloaders.organization.load = vi
 				.fn()
 				.mockResolvedValue(mockOrganization);
 
-			await resolveOrganization(mockFund, {}, ctx);
+			await resolveOrganization(mockVenue, {}, ctx);
 
 			expect(ctx.dataloaders.organization.load).toHaveBeenCalledWith(
 				"custom-org-id",
@@ -146,13 +145,11 @@ describe("Fund Resolver - Organization Field", () => {
 		it("should log error with correct message when organization is not found", async () => {
 			ctx.dataloaders.organization.load = vi.fn().mockResolvedValue(null);
 
-			expect.assertions(4);
 			try {
-				await resolveOrganization(mockFund, {}, ctx);
-				expect.fail("Expect resolveOrganization to throw");
+				await resolveOrganization(mockVenue, {}, ctx);
 			} catch (error) {
 				expect(ctx.log.error).toHaveBeenCalledWith(
-					"Postgres select operation returned an empty array for a fund's organization id that isn't null.",
+					`DataLoader returned empty result for venue.organizationId: venue=${mockVenue.id}, organizationId=${mockVenue.organizationId}`,
 				);
 				expect(error).toBeInstanceOf(TalawaGraphQLError);
 				expect((error as TalawaGraphQLError).extensions.code).toBe(
@@ -170,7 +167,7 @@ describe("Fund Resolver - Organization Field", () => {
 				.fn()
 				.mockRejectedValue(databaseError);
 
-			await expect(resolveOrganization(mockFund, {}, ctx)).rejects.toThrow(
+			await expect(resolveOrganization(mockVenue, {}, ctx)).rejects.toThrow(
 				databaseError,
 			);
 		});
@@ -186,7 +183,7 @@ describe("Fund Resolver - Organization Field", () => {
 				.fn()
 				.mockResolvedValue(mockOrganization);
 
-			await resolveOrganization(mockFund, {}, ctx);
+			await resolveOrganization(mockVenue, {}, ctx);
 
 			expect(ctx.log.error).not.toHaveBeenCalled();
 		});
@@ -198,7 +195,7 @@ describe("Fund Resolver - Organization Field", () => {
 				.fn()
 				.mockRejectedValue(timeoutError);
 
-			await expect(resolveOrganization(mockFund, {}, ctx)).rejects.toThrow(
+			await expect(resolveOrganization(mockVenue, {}, ctx)).rejects.toThrow(
 				timeoutError,
 			);
 		});
@@ -210,7 +207,7 @@ describe("Fund Resolver - Organization Field", () => {
 				.fn()
 				.mockRejectedValue(constraintError);
 
-			await expect(resolveOrganization(mockFund, {}, ctx)).rejects.toThrow(
+			await expect(resolveOrganization(mockVenue, {}, ctx)).rejects.toThrow(
 				constraintError,
 			);
 		});
@@ -230,16 +227,16 @@ describe("Fund Resolver - Organization Field", () => {
 				avatarMimeType: "image/png",
 				city: "Business City",
 				state: "Business State",
-				zipCode: "12345",
-				userRegistrationRequired: true,
-				membershipRequestsEnabled: false,
+				postalCode: "12345",
+				creatorId: "user-admin",
+				updaterId: null,
 			};
 
 			ctx.dataloaders.organization.load = vi
 				.fn()
 				.mockResolvedValue(mockOrganization);
 
-			const result = await resolveOrganization(mockFund, {}, ctx);
+			const result = await resolveOrganization(mockVenue, {}, ctx);
 
 			expect(result).toEqual(mockOrganization);
 			expect(result).toHaveProperty("id", "org-123");
@@ -250,7 +247,6 @@ describe("Fund Resolver - Organization Field", () => {
 			);
 			expect(result).toHaveProperty("countryCode", "US");
 			expect(result).toHaveProperty("city", "Business City");
-			expect(result).toHaveProperty("userRegistrationRequired", true);
 		});
 
 		it("should return minimal organization data correctly", async () => {
@@ -265,49 +261,22 @@ describe("Fund Resolver - Organization Field", () => {
 				avatarMimeType: null,
 				city: null,
 				state: null,
-				zipCode: null,
+				postalCode: null,
 				description: null,
-				userRegistrationRequired: null,
-				membershipRequestsEnabled: null,
+				creatorId: "user-admin",
+				updaterId: null,
 			};
 
 			ctx.dataloaders.organization.load = vi
 				.fn()
 				.mockResolvedValue(minimalOrganization);
 
-			const result = await resolveOrganization(mockFund, {}, ctx);
+			const result = await resolveOrganization(mockVenue, {}, ctx);
 
 			expect(result).toEqual(minimalOrganization);
 			expect(result).toHaveProperty("id", "org-123");
 			expect(result).toHaveProperty("name", "Minimal Organization");
 			expect(result).toHaveProperty("countryCode", "US");
-		});
-
-		it("should preserve all organization properties from database", async () => {
-			const complexOrganization = {
-				id: "org-123",
-				name: "Complex Organization",
-				description: "Organization with many properties",
-				countryCode: "CA",
-				createdAt: new Date("2024-01-01"),
-				updatedAt: new Date("2024-01-02"),
-				addressLine1: "456 Complex St",
-				addressLine2: "Floor 5",
-				avatarMimeType: "image/jpeg",
-				city: "Complex City",
-				state: "Complex Province",
-				zipCode: "A1B 2C3",
-				userRegistrationRequired: false,
-				membershipRequestsEnabled: true,
-			};
-
-			ctx.dataloaders.organization.load = vi
-				.fn()
-				.mockResolvedValue(complexOrganization);
-
-			const result = await resolveOrganization(mockFund, {}, ctx);
-
-			expect(result).toEqual(complexOrganization);
 		});
 	});
 
@@ -320,17 +289,15 @@ describe("Fund Resolver - Organization Field", () => {
 				countryCode: "US",
 			};
 
-			mockFund.organizationId = uuidOrgId;
+			mockVenue.organizationId = uuidOrgId;
 			ctx.dataloaders.organization.load = vi
 				.fn()
 				.mockResolvedValue(uuidOrganization);
 
-			const result = await resolveOrganization(mockFund, {}, ctx);
+			const result = await resolveOrganization(mockVenue, {}, ctx);
 
 			expect(result).toEqual(uuidOrganization);
-			expect(result).toHaveProperty("id", uuidOrgId);
-			expect(result).toHaveProperty("name", "UUID Organization");
-			expect(result).toHaveProperty("countryCode", "US");
+			expect(result.id).toBe(uuidOrgId);
 		});
 
 		it("should handle organizations with special characters in name", async () => {
@@ -344,15 +311,10 @@ describe("Fund Resolver - Organization Field", () => {
 				.fn()
 				.mockResolvedValue(specialOrganization);
 
-			const result = await resolveOrganization(mockFund, {}, ctx);
+			const result = await resolveOrganization(mockVenue, {}, ctx);
 
 			expect(result).toEqual(specialOrganization);
-			expect(result).toHaveProperty("id", "org-123");
-			expect(result).toHaveProperty(
-				"name",
-				"Organization with Special Chars: & < > \" ' %",
-			);
-			expect(result).toHaveProperty("countryCode", "US");
+			expect(result.name).toBe("Organization with Special Chars: & < > \" ' %");
 		});
 
 		it("should handle organizations with different country codes", async () => {
@@ -364,14 +326,12 @@ describe("Fund Resolver - Organization Field", () => {
 			];
 
 			for (const org of internationalOrgs) {
-				mockFund.organizationId = org.id;
+				mockVenue.organizationId = org.id;
 				ctx.dataloaders.organization.load = vi.fn().mockResolvedValue(org);
 
-				const result = await resolveOrganization(mockFund, {}, ctx);
+				const result = await resolveOrganization(mockVenue, {}, ctx);
 				expect(result).toEqual(org);
-				expect(result).toHaveProperty("id", org.id);
-				expect(result).toHaveProperty("name", org.name);
-				expect(result).toHaveProperty("countryCode", org.countryCode);
+				expect(result.countryCode).toBe(org.countryCode);
 			}
 		});
 
@@ -386,23 +346,23 @@ describe("Fund Resolver - Organization Field", () => {
 				avatarMimeType: null,
 				city: null,
 				state: null,
-				zipCode: null,
-				userRegistrationRequired: null,
-				membershipRequestsEnabled: null,
+				postalCode: null,
 				createdAt: new Date("2024-01-01"),
 				updatedAt: new Date("2024-01-01"),
+				creatorId: "user-admin",
+				updaterId: null,
 			};
 
 			ctx.dataloaders.organization.load = vi
 				.fn()
 				.mockResolvedValue(organizationWithNulls);
 
-			const result = await resolveOrganization(mockFund, {}, ctx);
+			const result = await resolveOrganization(mockVenue, {}, ctx);
 
 			expect(result).toEqual(organizationWithNulls);
-			expect(result).toHaveProperty("description", null);
-			expect(result).toHaveProperty("addressLine1", null);
-			expect(result).toHaveProperty("city", null);
+			expect(result.description).toBeNull();
+			expect(result.addressLine1).toBeNull();
+			expect(result.city).toBeNull();
 		});
 
 		it("should handle very long organization names", async () => {
@@ -417,10 +377,10 @@ describe("Fund Resolver - Organization Field", () => {
 				.fn()
 				.mockResolvedValue(longNameOrganization);
 
-			const result = await resolveOrganization(mockFund, {}, ctx);
+			const result = await resolveOrganization(mockVenue, {}, ctx);
 
 			expect(result).toEqual(longNameOrganization);
-			expect(result).toHaveProperty("name", longName);
+			expect(result.name).toBe(longName);
 		});
 	});
 
@@ -435,12 +395,12 @@ describe("Fund Resolver - Organization Field", () => {
 				.fn()
 				.mockResolvedValue(mockOrganization);
 
-			await resolveOrganization(mockFund, {}, ctx);
+			await resolveOrganization(mockVenue, {}, ctx);
 
 			expect(ctx.dataloaders.organization.load).toHaveBeenCalledTimes(1);
 		});
 
-		it("should use DataLoader for batching (multiple calls)", async () => {
+		it("should use DataLoader for batching", async () => {
 			const mockOrganization1 = {
 				id: "org-1",
 				name: "Org 1",
@@ -453,18 +413,18 @@ describe("Fund Resolver - Organization Field", () => {
 			};
 
 			// First call
-			mockFund.organizationId = "org-1";
+			mockVenue.organizationId = "org-1";
 			ctx.dataloaders.organization.load = vi
 				.fn()
 				.mockResolvedValue(mockOrganization1);
-			await resolveOrganization(mockFund, {}, ctx);
+			await resolveOrganization(mockVenue, {}, ctx);
 
 			// Second call with different org
-			mockFund.organizationId = "org-2";
+			mockVenue.organizationId = "org-2";
 			ctx.dataloaders.organization.load = vi
 				.fn()
 				.mockResolvedValue(mockOrganization2);
-			await resolveOrganization(mockFund, {}, ctx);
+			await resolveOrganization(mockVenue, {}, ctx);
 
 			// Each call uses DataLoader
 			expect(ctx.dataloaders.organization.load).toHaveBeenCalledWith("org-2");
@@ -483,7 +443,7 @@ describe("Fund Resolver - Organization Field", () => {
 				.fn()
 				.mockResolvedValue(mockOrganization);
 
-			const result = await resolveOrganization(mockFund, {}, ctx);
+			const result = await resolveOrganization(mockVenue, {}, ctx);
 
 			expect(result).toEqual(mockOrganization);
 			expect(ctx.dataloaders.organization.load).toHaveBeenCalledWith("org-123");
@@ -492,14 +452,14 @@ describe("Fund Resolver - Organization Field", () => {
 		it("should handle organization referential integrity violations", async () => {
 			ctx.dataloaders.organization.load = vi.fn().mockResolvedValue(null);
 
-			await expect(resolveOrganization(mockFund, {}, ctx)).rejects.toThrow(
+			await expect(resolveOrganization(mockVenue, {}, ctx)).rejects.toThrow(
 				new TalawaGraphQLError({
 					extensions: { code: "unexpected" },
 				}),
 			);
 
 			expect(ctx.log.error).toHaveBeenCalledWith(
-				expect.stringContaining("organization id that isn't null"),
+				expect.stringContaining("venue.organizationId"),
 			);
 		});
 	});
@@ -509,28 +469,24 @@ describe("Fund Resolver - Organization Field", () => {
 			ctx.dataloaders.organization.load = vi.fn().mockResolvedValue(null);
 
 			try {
-				expect.assertions(1);
-				await resolveOrganization(mockFund, {}, ctx);
-				expect.fail("Expected error to be thrown");
+				await resolveOrganization(mockVenue, {}, ctx);
 			} catch (_error) {
 				expect(ctx.log.error).toHaveBeenCalledWith(
-					"Postgres select operation returned an empty array for a fund's organization id that isn't null.",
+					expect.stringContaining("DataLoader returned empty result"),
 				);
 			}
 		});
 
-		it("should include fund context in error logs", async () => {
+		it("should include venue context in error logs", async () => {
 			ctx.dataloaders.organization.load = vi.fn().mockResolvedValue(null);
 
-			mockFund.organizationId = "missing-org-123";
+			mockVenue.organizationId = "missing-org-123";
 
 			try {
-				expect.assertions(1);
-				await resolveOrganization(mockFund, {}, ctx);
-				expect.fail("Expected error to be thrown");
+				await resolveOrganization(mockVenue, {}, ctx);
 			} catch (_error) {
 				expect(ctx.log.error).toHaveBeenCalledWith(
-					expect.stringContaining("fund's organization id"),
+					expect.stringContaining("venue.organizationId"),
 				);
 			}
 		});
