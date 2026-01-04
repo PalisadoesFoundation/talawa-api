@@ -419,9 +419,8 @@ suite("Mutation field deletePostVote", () => {
 					},
 				});
 
-				// Try to delete a vote that doesn't exist (creator hasn't voted)
-				// The source code checks existingPost.votesWherePost[0] which is the current user's vote
-				// Since the current user (admin) hasn't voted, this will be undefined
+				// Try to delete a vote that doesn't exist (target creator hasn't voted)
+				// The source code filters votesWherePost by creatorId (target user), so no vote is found
 				const result = await mercuriusClient.mutate(Mutation_deletePostVote, {
 					headers: { authorization: `bearer ${adminAuthToken}` },
 					variables: {
