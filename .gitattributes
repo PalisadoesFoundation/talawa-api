@@ -11,6 +11,8 @@
 *.json text
 *.json5 text
 *.md text
+*.yaml text eol=lf
+*.yml text eol=lf
 
 # Exclude workflow files from normalization to prevent CI issues
 .github/workflows/* -text

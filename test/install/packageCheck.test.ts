@@ -254,7 +254,14 @@ describe("packageCheck", () => {
 
 			const checks = checkPrerequisites("/path/to/package.json");
 			expect(Array.isArray(checks)).toBe(true);
-			expect(checks.length).toBeGreaterThan(0);
+			expect(checks).toHaveLength(5);
+			expect(checks.map((c) => c.name)).toEqual([
+				"git",
+				"node",
+				"pnpm",
+				"docker",
+				"docker-compose",
+			]);
 
 			const gitCheck = checks.find((c) => c.name === "git");
 			expect(gitCheck).toBeDefined();
