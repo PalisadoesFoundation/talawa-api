@@ -1,4 +1,7 @@
 import { isDeepStrictEqual } from "node:util";
+import { and } from "drizzle-orm";
+import { notificationTemplatesTable } from "~/src/drizzle/tables/NotificationTemplate";
+import { server } from "./server";
 
 /**
  * This function is used to narrow the type of a value passed to it to not be equal to `null` or `undefined`. More information can be found at the following links:
@@ -19,7 +22,15 @@ export function assertToBeNonNullish<T>(
 	message?: string,
 ): asserts value is T {
 	if (value === undefined || value === null) {
-		throw new Error(message ?? "Not a non-nullish value.");
+		const pretty =
+			value === undefined
+				? "undefined"
+				: value === null
+					? "null"
+					: JSON.stringify(value);
+		throw new Error(
+			`${message ?? "Not a non-nullish value."} — Actual: ${pretty}`,
+		);
 	}
 }
 
@@ -46,3 +57,56 @@ export const isSubSequence = <T>(sequence: T[], subsequence: T[]) => {
 	// Return true or false depending on whether the matching for the entire subsequence has completed along with the loop exit.
 	return j === subsequence.length;
 };
+
+/**
+ * Ensures common notification templates exist in the test database.
+ * This prevents "No notification template found" errors during tests.
+ * Call this function in test setup or beforeAll hooks.
+ */
+export async function ensureCommonNotificationTemplates(): Promise<void> {
+	const commonTemplates = [
+		{
+			eventType: "fund_created",
+			channelType: "in_app",
+			name: "Fund Created",
+			title: "Fund Created",
+			body: "A new fund has been created: {fundName}",
+		},
+		{
+			eventType: "fund_campaign_created",
+			channelType: "in_app",
+			name: "Fund Campaign Created",
+			title: "Fund Campaign Created",
+			body: "A new fund campaign has been created: {campaignName}",
+		},
+		{
+			eventType: "fund_campaign_pledge_created",
+			channelType: "in_app",
+			name: "Fund Campaign Pledge Created",
+			title: "Fund Campaign Pledge Created",
+			body: "A new pledge has been created: {pledgeAmount}",
+		},
+	];
+
+	for (const template of commonTemplates) {
+		const existing =
+			await server.drizzleClient.query.notificationTemplatesTable.findFirst({
+				where: (fields, operators) =>
+					and(
+						operators.eq(fields.eventType, template.eventType),
+						operators.eq(fields.channelType, template.channelType),
+					),
+			});
+
+		if (!existing) {
+			await server.drizzleClient.insert(notificationTemplatesTable).values({
+				name: template.name,
+				eventType: template.eventType,
+				title: template.title,
+				body: template.body,
+				channelType: template.channelType,
+				linkedRouteName: null,
+			});
+		}
+	}
+}

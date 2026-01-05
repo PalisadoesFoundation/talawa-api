@@ -151,31 +151,44 @@ export function createPerformanceTracker(
 		totalOps++;
 		// Track slow operations with bounded insertion
 		if (ms >= slowMs) {
-			const roundedMs = Math.round(ms);
+			const roundedMs = Math.ceil(ms);
 			if (slow.length < MAX_SLOW) {
 				// Still have room, just push
 				slow.push({ op: k, ms: roundedMs });
 			} else {
-				// Find the minimum slow operation
-				let minIndex = 0;
-				// Access slow[0] - this can be undefined in edge cases (sparse arrays)
-				// but should never happen with our push() usage. This is a defensive check.
-				const firstSlow = slow[0];
-				if (!firstSlow) {
-					return; // Safety check, should not happen
-				}
-				let minMs = firstSlow.ms;
-				for (let i = 1; i < slow.length; i++) {
-					const currentSlow = slow[i];
-					if (currentSlow && currentSlow.ms < minMs) {
-						minMs = currentSlow.ms;
-						minIndex = i;
+				// Find the minimum slow operation using the same rounding convention
+				// Defensive: handle sparse arrays and invalid entries
+				let minIdx = -1;
+				let minMs = Infinity;
+
+				for (let i = 0; i < slow.length; i++) {
+					const cur = slow[i];
+					// Skip sparse/invalid entries
+					if (!cur || typeof cur.ms !== "number") {
+						continue;
+					}
+					// Use same rounding for comparison (values are already rounded when stored,
+					// but we ensure consistency by using the stored rounded value)
+					const curMs = cur.ms;
+					if (curMs < minMs) {
+						minMs = curMs;
+						minIdx = i;
 					}
 				}
-				// Only replace if new operation is slower than the current minimum
-				if (roundedMs > minMs) {
-					slow[minIndex] = { op: k, ms: roundedMs };
+
+				// If we couldn't find a valid entry, do nothing (defensive)
+				if (minIdx === -1 || minMs === Infinity) {
+					return;
 				}
+
+				// Only replace when the new duration is strictly greater than the current minimum.
+				// If roundedMs <= minMs, do not add/replace.
+				if (roundedMs <= minMs) {
+					return;
+				}
+
+				// Replace the minimum entry with the new slow op
+				slow[minIdx] = { op: k, ms: roundedMs };
 			}
 		}
 	};
