@@ -654,6 +654,30 @@ export async function caddySetup(answers: SetupAnswers): Promise<SetupAnswers> {
 	return answers;
 }
 
+export async function observabilitySetup(
+	answers: SetupAnswers,
+): Promise<SetupAnswers> {
+	try {
+		answers.OTEL_ENABLED = await promptInput(
+			"OTEL_ENABLED",
+			"Observability enabled (true/false):",
+			"true",
+		);
+
+		if (answers.OTEL_ENABLED === "true") {
+			answers.OTEL_SAMPLING_RATIO = await promptInput(
+				"OTEL_SAMPLING_RATIO",
+				"Observability sampling ratio (between 0 & 1):",
+				"1",
+			);
+		}
+
+		return answers;
+	} catch (err) {
+		handlePromptError(err);
+	}
+}
+
 export async function setup(): Promise<SetupAnswers> {
 	const initialCI = process.env.CI;
 	let answers: SetupAnswers = {};
@@ -751,6 +775,16 @@ export async function setup(): Promise<SetupAnswers> {
 	);
 	if (!useDefaultCaddy) {
 		answers = await caddySetup(answers);
+	}
+
+	const useDefaultObservability = await promptConfirm(
+		"useDefaultObservability",
+		"Use recommended default Observability settings?",
+		true,
+	);
+
+	if (!useDefaultObservability) {
+		answers = await observabilitySetup(answers);
 	}
 
 	const useDefaultApi = await promptConfirm(

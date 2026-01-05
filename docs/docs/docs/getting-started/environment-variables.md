@@ -603,3 +603,20 @@ This environment variable is used to enable or disable container services to be 
 This environment variable is used to configure the prefix for identifiers of all the container services to be run by docker compose.
 
 - More information can be found at [this](https://docs.docker.com/compose/environment-variables/envvars/##compose_project_name) link.
+
+## Observability
+
+### OTEL_ENABLED
+- Takes values as `true` or `false` to enable and disable OTEL logging,
+
+### OTEL_ENVIRONMENT
+- set `local` for development environment and `production` for production environment.
+
+### OTEL_SERVICE_NAME
+- Its values should be `talawa-api`
+
+### OTEL_SAMPLING_RATIO
+- It takes values between 0 and 1, controlling spans depth
+
+### OTEL_EXPORTER_OTLP_ENDPOINT
+- Only for `production` environment for now. will be available for local as well once some observability tool is integrated.

@@ -1,3 +1,10 @@
+---
+id: observability
+title: Observability
+slug: /developer-resources/observability
+sidebar_position: 10
+---
+
 Observability
 =============
 
@@ -45,15 +52,13 @@ Tracing behavior is controlled through environment variables and centralized in 
 
 ### Environment Variables
 
-| Variable | Required | Description | Example |
+| Variable | Required | Description | Values |
 | --- | --- | --- | --- |
-| OTEL_ENABLED | Yes | Enable or disable tracing | true |
+| OTEL_ENABLED | Yes | Enable or disable tracing | true, false |
 | OTEL_ENVIRONMENT | Yes | Runtime environment | local, production |
 | OTEL_SERVICE_NAME | No | Service identifier | talawa-api |
-| OTEL_SAMPLING_RATIO | No | Trace sampling ratio (0--1) | 1, 0.1 |
-| OTEL_EXPORTER_OTLP_ENDPOINT | No* | OTLP HTTP endpoint | http://collector:4318/v1/traces |
-
-* Required when `OTEL_ENVIRONMENT` is not `local`
+| OTEL_SAMPLING_RATIO | No | Trace sampling ratio (0--1) | [0.1, 1] |
+| OTEL_EXPORTER_OTLP_ENDPOINT | No* | OTLP HTTP endpoint | http://localhost:4000/v1/traces |
 
 * * * * *
 
@@ -201,18 +206,6 @@ The following instrumentations are enabled by default:
 > Instrumentation is registered during SDK initialization and must occur **before Fastify is imported**.
 
 Additional instrumentations (e.g. database, GraphQL resolvers) can be added later.
-
-* * * * *
-
-Graceful Shutdown
------------------
-
-Tracing shuts down cleanly on process termination:
-
--   `SIGINT`
--   `SIGTERM`
-
-This ensures all pending spans are flushed before exit.
 
 * * * * *
 
