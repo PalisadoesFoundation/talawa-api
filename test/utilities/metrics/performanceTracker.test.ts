@@ -44,6 +44,7 @@ describe("Performance Tracker", () => {
 
 		expect(snapshot.cacheHits).toBe(3);
 		expect(snapshot.cacheMisses).toBe(0);
+		expect(snapshot.hitRate).toBe(1.0);
 	});
 
 	it("should track cache misses", () => {
@@ -71,6 +72,7 @@ describe("Performance Tracker", () => {
 
 		expect(snapshot.cacheHits).toBe(3);
 		expect(snapshot.cacheMisses).toBe(2);
+		expect(snapshot.hitRate).toBeCloseTo(0.6, 2);
 	});
 
 	it("should time async operations", async () => {
@@ -413,7 +415,8 @@ describe("Performance Tracker", () => {
 
 		const snapshot = tracker.snapshot();
 
-		// Should not have created gql:complexity op for invalid values
+		// Should not have set complexityScore for invalid values
+		expect(snapshot.complexityScore).toBeUndefined();
 		expect(snapshot.ops["gql:complexity"]).toBeUndefined();
 	});
 
@@ -423,10 +426,9 @@ describe("Performance Tracker", () => {
 		tracker.trackComplexity(0);
 
 		const snapshot = tracker.snapshot();
-		const complexityOp = snapshot.ops["gql:complexity"];
 
-		expect(complexityOp).toBeDefined();
-		expect(complexityOp?.score).toBe(0);
+		expect(snapshot.complexityScore).toBe(0);
+		expect(snapshot.ops["gql:complexity"]).toBeUndefined();
 	});
 
 	it("should track complexity score correctly", () => {
@@ -436,11 +438,10 @@ describe("Performance Tracker", () => {
 		tracker.trackComplexity(150);
 
 		const snapshot = tracker.snapshot();
-		const complexityOp = snapshot.ops["gql:complexity"];
 
-		expect(complexityOp).toBeDefined();
-		// Last call should set the score to 150
-		expect(complexityOp?.score).toBe(150);
+		// Last call should set the complexityScore to 150
+		expect(snapshot.complexityScore).toBe(150);
+		expect(snapshot.ops["gql:complexity"]).toBeUndefined();
 	});
 
 	it("should handle slow operations array edge case when replacing minimum", async () => {

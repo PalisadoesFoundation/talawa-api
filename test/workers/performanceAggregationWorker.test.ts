@@ -121,14 +121,8 @@ describe("performanceAggregationWorker", () => {
 				cacheHits: 0,
 				cacheMisses: 0,
 				hitRate: 0,
-				ops: {
-					"gql:complexity": {
-						count: 1,
-						ms: 0.5,
-						max: 0.5,
-						score: 150,
-					},
-				},
+				ops: {},
+				complexityScore: 150,
 				slow: [],
 			},
 			{
@@ -137,14 +131,8 @@ describe("performanceAggregationWorker", () => {
 				cacheHits: 0,
 				cacheMisses: 0,
 				hitRate: 0,
-				ops: {
-					"gql:complexity": {
-						count: 1,
-						ms: 0.3,
-						max: 0.3,
-						score: 50,
-					},
-				},
+				ops: {},
+				complexityScore: 50,
 				slow: [],
 			},
 		];
@@ -597,14 +585,8 @@ describe("performanceAggregationWorker", () => {
 				cacheHits: 0,
 				cacheMisses: 0,
 				hitRate: 0,
-				ops: {
-					"gql:complexity": {
-						count: 1,
-						ms: 0.5,
-						max: 0.5,
-						score: 99,
-					},
-				},
+				ops: {},
+				complexityScore: 99,
 				slow: [],
 			},
 		];

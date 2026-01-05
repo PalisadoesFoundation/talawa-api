@@ -12,8 +12,6 @@ export type OpStats = {
 	ms: number;
 	/** Maximum time in milliseconds for a single execution */
 	max: number;
-	/** Complexity score (for GraphQL complexity tracking) */
-	score?: number;
 };
 
 /**
@@ -34,6 +32,8 @@ export type PerfSnapshot = {
 	ops: Record<string, OpStats>;
 	/** Slow operations that exceeded the threshold */
 	slow: Array<{ op: string; ms: number }>;
+	/** GraphQL query complexity score (if tracked) */
+	complexityScore?: number;
 };
 
 /**
@@ -119,6 +119,7 @@ export function createPerformanceTracker(
 	let cacheMisses = 0;
 	let totalMs = 0;
 	let totalOps = 0;
+	let complexityScore: number | undefined;
 
 	/**
 	 * Ensure an operation entry exists in the ops record.
@@ -229,9 +230,8 @@ export function createPerformanceTracker(
 			if (!Number.isFinite(score) || score < 0) {
 				return; // Ignore invalid values
 			}
-			const op = ensure("gql:complexity");
-			// Store the complexity score (not execution time)
-			op.score = score;
+			// Store the complexity score separately from timing metrics
+			complexityScore = score;
 		},
 
 		snapshot(): PerfSnapshot {
@@ -246,6 +246,7 @@ export function createPerformanceTracker(
 				hitRate,
 				ops: structuredClone(ops),
 				slow: slow.slice(), // Already bounded to MAX_SLOW during accumulation
+				complexityScore,
 			};
 		},
 	};

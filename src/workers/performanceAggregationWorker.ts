@@ -151,16 +151,13 @@ export async function aggregatePerformanceMetrics(
 		}
 
 		// Count high complexity queries (using actual complexity score, not execution time)
-		if (snap.ops && typeof snap.ops === "object") {
-			const complexityOp = snap.ops["gql:complexity"];
-			const COMPLEXITY_THRESHOLD = 100;
-			if (
-				complexityOp &&
-				typeof complexityOp.score === "number" &&
-				complexityOp.score >= COMPLEXITY_THRESHOLD
-			) {
-				highComplexityCount++;
-			}
+		const COMPLEXITY_THRESHOLD = 100;
+		if (
+			snap.complexityScore !== undefined &&
+			typeof snap.complexityScore === "number" &&
+			snap.complexityScore >= COMPLEXITY_THRESHOLD
+		) {
+			highComplexityCount++;
 		}
 
 		// Aggregate slow operations (handle malformed entries)
