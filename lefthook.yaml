@@ -65,7 +65,10 @@ pre-commit:
             DOWNLOAD_SUCCESS=true
             echo "✅ Script downloaded successfully"
           fi
-        elif command -v wget &> /dev/null; then
+        fi
+        
+        # If curl failed or wasn't available, try wget
+        if [ "$DOWNLOAD_SUCCESS" = false ] && command -v wget &> /dev/null; then
           echo "   Using wget to download..."
           if wget -q -O "$SCRIPT_PATH" "$SCRIPT_URL" 2>/dev/null; then
             DOWNLOAD_SUCCESS=true
