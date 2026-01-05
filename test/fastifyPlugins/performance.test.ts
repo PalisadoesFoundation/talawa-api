@@ -401,5 +401,76 @@ describe("performancePlugin", () => {
 			// Should reject invalid CIDR
 			expect(res.statusCode).toBe(403);
 		});
+
+		it("should reject when req.ip is missing and allowedIps is configured", async () => {
+			await app.close();
+
+			app = Fastify({
+				logger: {
+					level: "info",
+				},
+			});
+
+			app.decorate("envConfig", {
+				METRICS_ALLOWED_IPS: "127.0.0.1",
+				METRICS_API_KEY: undefined,
+			});
+
+			await app.register(performancePlugin);
+
+			// Register a hook that runs after the plugin's onRequest to clear req.ip
+			// This must run before the preHandler executes
+			app.addHook("onRequest", async (req: FastifyRequest) => {
+				// Clear req.ip to simulate missing IP address
+				// This needs to happen after plugin registration but before route handler
+				if (req.url === "/metrics/perf") {
+					(req as { ip?: string }).ip = undefined;
+				}
+			});
+
+			await app.ready();
+
+			const res = await app.inject({
+				method: "GET",
+				url: "/metrics/perf",
+			});
+
+			expect(res.statusCode).toBe(403);
+			const body = JSON.parse(res.body);
+			expect(body.error).toBe("Forbidden");
+			expect(body.message).toBe("IP address not available");
+		});
+
+		it("should reject when neither IP nor API key matches", async () => {
+			await app.close();
+
+			app = Fastify({
+				logger: {
+					level: "info",
+				},
+			});
+
+			app.decorate("envConfig", {
+				METRICS_API_KEY: "correct-key",
+				METRICS_ALLOWED_IPS: "192.168.1.1",
+			});
+
+			await app.register(performancePlugin);
+			await app.ready();
+
+			// Request from wrong IP with wrong API key
+			const res = await app.inject({
+				method: "GET",
+				url: "/metrics/perf",
+				headers: {
+					authorization: "wrong-key",
+				},
+			});
+
+			expect(res.statusCode).toBe(403);
+			const body = JSON.parse(res.body);
+			expect(body.error).toBe("Forbidden");
+			expect(body.message).toBe("Access denied");
+		});
 	});
 });

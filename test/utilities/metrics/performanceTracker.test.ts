@@ -402,4 +402,69 @@ describe("Performance Tracker", () => {
 		expect(snap.cacheMisses).toBe(2);
 		expect(snap.slow.length).toBeGreaterThanOrEqual(1);
 	});
+
+	it("should silently ignore invalid values in trackComplexity()", () => {
+		const tracker = createPerformanceTracker();
+
+		tracker.trackComplexity(Number.NaN);
+		tracker.trackComplexity(Number.POSITIVE_INFINITY);
+		tracker.trackComplexity(Number.NEGATIVE_INFINITY);
+		tracker.trackComplexity(-50);
+
+		const snapshot = tracker.snapshot();
+
+		// Should not have created gql:complexity op for invalid values
+		expect(snapshot.ops["gql:complexity"]).toBeUndefined();
+	});
+
+	it("should handle trackComplexity(0) as valid edge case", () => {
+		const tracker = createPerformanceTracker();
+
+		tracker.trackComplexity(0);
+
+		const snapshot = tracker.snapshot();
+		const complexityOp = snapshot.ops["gql:complexity"];
+
+		expect(complexityOp).toBeDefined();
+		expect(complexityOp?.score).toBe(0);
+	});
+
+	it("should track complexity score correctly", () => {
+		const tracker = createPerformanceTracker();
+
+		tracker.trackComplexity(100);
+		tracker.trackComplexity(150);
+
+		const snapshot = tracker.snapshot();
+		const complexityOp = snapshot.ops["gql:complexity"];
+
+		expect(complexityOp).toBeDefined();
+		// Last call should set the score to 150
+		expect(complexityOp?.score).toBe(150);
+	});
+
+	it("should handle slow operations array edge case when replacing minimum", async () => {
+		const tracker = createPerformanceTracker({ slowMs: 1 });
+
+		// Fill up the slow array to MAX_SLOW (50)
+		for (let i = 0; i < 50; i++) {
+			await tracker.time(`slow-${i}`, async () => {
+				await new Promise((resolve) => setTimeout(resolve, 10 + i));
+			});
+		}
+
+		// Add one more that's slower than the minimum
+		await tracker.time("very-slow", async () => {
+			await new Promise((resolve) => setTimeout(resolve, 1000));
+		});
+
+		const snapshot = tracker.snapshot();
+
+		// Should still have exactly 50 slow operations
+		expect(snapshot.slow.length).toBe(50);
+		// The very-slow operation should be in the list
+		const verySlowOp = snapshot.slow.find((op) => op.op === "very-slow");
+		expect(verySlowOp).toBeDefined();
+		expect(verySlowOp?.ms).toBeGreaterThanOrEqual(1000);
+	});
 });
