@@ -166,7 +166,21 @@ export default fp(
 				) {
 					return -1;
 				}
-				return (a << 24) | (b << 16) | (c << 8) | d;
+				// Validate each octet is in valid range (0-255)
+				if (
+					a < 0 ||
+					a > 255 ||
+					b < 0 ||
+					b > 255 ||
+					c < 0 ||
+					c > 255 ||
+					d < 0 ||
+					d > 255
+				) {
+					return -1;
+				}
+				// Coerce to unsigned 32-bit number
+				return ((a << 24) | (b << 16) | (c << 8) | d) >>> 0;
 			};
 
 			const ipNum = ipToNumber(ip);

@@ -402,6 +402,58 @@ describe("performancePlugin", () => {
 			expect(res.statusCode).toBe(403);
 		});
 
+		it("should reject IP addresses with out-of-range octets", async () => {
+			await app.close();
+
+			app = Fastify({
+				logger: {
+					level: "info",
+				},
+			});
+
+			// Test with IP containing octet > 255
+			app.decorate("envConfig", {
+				METRICS_ALLOWED_IPS: "256.168.1.0/24",
+			});
+
+			await app.register(performancePlugin);
+			await app.ready();
+
+			const res = await app.inject({
+				method: "GET",
+				url: "/metrics/perf",
+			});
+
+			// Should reject invalid IP with out-of-range octet
+			expect(res.statusCode).toBe(403);
+		});
+
+		it("should reject IP addresses with negative octets", async () => {
+			await app.close();
+
+			app = Fastify({
+				logger: {
+					level: "info",
+				},
+			});
+
+			// Test with IP containing negative octet
+			app.decorate("envConfig", {
+				METRICS_ALLOWED_IPS: "-1.168.1.0/24",
+			});
+
+			await app.register(performancePlugin);
+			await app.ready();
+
+			const res = await app.inject({
+				method: "GET",
+				url: "/metrics/perf",
+			});
+
+			// Should reject invalid IP with negative octet
+			expect(res.statusCode).toBe(403);
+		});
+
 		it("should reject when req.ip is missing and allowedIps is configured", async () => {
 			await app.close();
 
