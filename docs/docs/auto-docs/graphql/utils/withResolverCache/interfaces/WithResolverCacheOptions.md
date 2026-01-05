@@ -4,7 +4,7 @@
 
 # Interface: WithResolverCacheOptions\<TParent, TArgs, TContext, _TResult\>
 
-Defined in: src/graphql/utils/withResolverCache.ts:11
+Defined in: [src/graphql/utils/withResolverCache.ts:11](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/graphql/utils/withResolverCache.ts#L11)
 
 Options for wrapping a GraphQL resolver with caching.
 
@@ -42,7 +42,7 @@ The GraphQL context type (must include `cache`).
 
 > **keyFactory**: (`parent`, `args`, `context`) => `string`
 
-Defined in: src/graphql/utils/withResolverCache.ts:26
+Defined in: [src/graphql/utils/withResolverCache.ts:26](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/graphql/utils/withResolverCache.ts#L26)
 
 Factory function to generate the cache key from resolver arguments.
 Use `entityKey` or `listKey` from `~/src/services/caching` for consistent key generation.
@@ -79,7 +79,7 @@ A unique cache key string.
 
 > `optional` **skip**: (`parent`, `args`, `context`) => `boolean`
 
-Defined in: src/graphql/utils/withResolverCache.ts:43
+Defined in: [src/graphql/utils/withResolverCache.ts:43](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/graphql/utils/withResolverCache.ts#L43)
 
 Optional callback to conditionally skip caching.
 If this returns `true`, the cache is bypassed and the resolver is called directly.
@@ -116,7 +116,7 @@ The GraphQL context.
 
 > **ttlSeconds**: `number`
 
-Defined in: src/graphql/utils/withResolverCache.ts:32
+Defined in: [src/graphql/utils/withResolverCache.ts:32](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/graphql/utils/withResolverCache.ts#L32)
 
 Time-to-live in seconds for cached values.
 Use `getTTL` from `~/src/services/caching` for consistent TTL per entity type.
