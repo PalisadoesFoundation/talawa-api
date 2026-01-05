@@ -173,18 +173,37 @@ suite("updateChat mutation", () => {
 				versionId: "test-version-id",
 			});
 
+		const validAvatar = Promise.resolve({
+			filename: "avatar.png",
+			mimetype: "image/png",
+			createReadStream: () => Readable.from(Buffer.from("fake-png-data")),
+		});
+
 		const result = await mercuriusClient.mutate(Mutation_updateChat, {
 			headers: { authorization: `bearer ${user.authToken}` },
 			variables: {
 				input: {
 					id: chatId,
-					name: "Chat with avatar",
+					avatar: validAvatar,
 				},
 			},
 		});
 
 		expect(result.errors).toBeUndefined();
 		expect(result.data?.updateChat.id).toBe(chatId);
+		expect(result.data?.updateChat.avatarURL).toBeDefined();
+		expect(result.data?.updateChat.avatarURL).not.toBeNull();
+
+		const rows = await server.drizzleClient
+			.select()
+			.from(chatsTable)
+			.where(eq(chatsTable.id, chatId));
+
+		expect(rows.length).toBe(1);
+		expect(rows[0]?.avatarName).toBeDefined();
+		expect(rows[0]?.avatarMimeType).toBe("image/png");
+
+		expect(putObjectSpy).toHaveBeenCalled();
 
 		putObjectSpy.mockRestore();
 	});
