@@ -306,7 +306,7 @@ export class ErrorHandlingValidator {
 	public branchExists(branch: string): boolean {
 		try {
 			const safeBranch = this.sanitizeGitRef(branch);
-			execSync(`git rev-parse --verify ${safeBranch}`, {
+			execFileSync("git", ["rev-parse", "--verify", safeBranch], {
 				cwd: rootDir,
 				stdio: "ignore",
 			});

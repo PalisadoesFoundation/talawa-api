@@ -597,6 +597,13 @@ describe("ErrorHandlingValidator", () => {
 	});
 
 	describe("Utility Methods Coverage", () => {
+		it("should calculate correct line number from position", () => {
+			const content = "line1\nline2\nline3";
+			expect(validator.getLineNumberFromPosition(content, 0)).toBe(1);
+			expect(validator.getLineNumberFromPosition(content, 6)).toBe(2);
+			expect(validator.getLineNumberFromPosition(content, 12)).toBe(3);
+		});
+
 		describe("removeCommentsAndStrings", () => {
 			it("should handle mixed content correctly", () => {
 				const input = `
@@ -695,12 +702,12 @@ describe("ErrorHandlingValidator", () => {
 
 		describe("branchExists", () => {
 			it("should return true if git command succeeds", () => {
-				vi.mocked(child_process.execSync).mockReturnValue("");
+				vi.mocked(child_process.execFileSync).mockReturnValue("");
 				expect(validator.branchExists("main")).toBe(true);
 			});
 
 			it("should return false if git command fails", () => {
-				vi.mocked(child_process.execSync).mockImplementation(() => {
+				vi.mocked(child_process.execFileSync).mockImplementation(() => {
 					throw new TalawaRestError({
 						code: ErrorCode.INTERNAL_SERVER_ERROR,
 						message: "fatal: not a valid object name",

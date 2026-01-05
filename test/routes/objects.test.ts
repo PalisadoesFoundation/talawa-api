@@ -6,6 +6,7 @@ import { errorHandlerPlugin } from "~/src/fastifyPlugins/errorHandler";
 import { objects } from "~/src/routes/objects";
 import { ErrorCode } from "~/src/utilities/errors/errorCodes";
 import { TalawaRestError } from "~/src/utilities/errors/TalawaRestError";
+import { testEnvConfig } from "../envConfigSchema";
 
 // Mock the objects route behavior for testing
 const createTestApp = async () => {
@@ -189,8 +190,8 @@ describe("Objects route with MinIO integration", () => {
 			} as unknown as Client,
 			bucketName: "talawa",
 			config: {
-				endPoint: process.env.API_MINIO_TEST_HOST as string,
-				port: Number(process.env.API_MINIO_TEST_PORT),
+				endPoint: testEnvConfig.API_MINIO_TEST_END_POINT,
+				port: testEnvConfig.API_MINIO_TEST_PORT,
 			},
 		});
 

@@ -95,10 +95,6 @@ export function generateJwtSecret(): string {
 	try {
 		return crypto.randomBytes(64).toString("hex");
 	} catch (err) {
-		console.error(
-			"⚠️ Warning: Permission denied while generating JWT secret. Ensure the process has sufficient filesystem access.",
-			err,
-		);
 		throw new TalawaRestError({
 			code: ErrorCode.INTERNAL_SERVER_ERROR,
 			message: "Failed to generate JWT secret",
@@ -198,6 +194,11 @@ export function initializeEnvFile(answers: SetupAnswers): void {
 		throw new TalawaRestError({
 			code: ErrorCode.NOT_FOUND,
 			message: `Configuration file '${envFileToUse}' is missing. Please create the file or use a different environment configuration.`,
+			details: {
+				envFileToUse,
+				expectedPath: path.resolve(envFileToUse),
+				envName: answers.CI === "true" ? "CI" : "devcontainer",
+			},
 		});
 	}
 
@@ -219,10 +220,6 @@ export function initializeEnvFile(answers: SetupAnswers): void {
 			`✅ Environment variables loaded successfully from ${envFileToUse}`,
 		);
 	} catch (error) {
-		console.error(
-			`❌ Error: Failed to load environment file '${envFileToUse}'.`,
-		);
-		console.error(error instanceof Error ? error.message : error);
 		throw new TalawaRestError({
 			code: ErrorCode.INTERNAL_SERVER_ERROR,
 			message:

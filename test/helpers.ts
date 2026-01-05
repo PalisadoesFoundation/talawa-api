@@ -18,7 +18,12 @@ export function assertToBeNonNullish<T>(
 	value: T | null | undefined,
 ): asserts value is T {
 	if (value === undefined || value === null) {
-		throw new Error("Not a non-nullish value.");
+		// Using a more descriptive error message that includes context
+		const error = new Error(
+			`Expected value to be non-nullish but received: ${value}`,
+		);
+		error.name = "AssertionError";
+		throw error;
 	}
 }
 

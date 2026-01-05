@@ -404,21 +404,73 @@ describe("backgroundServiceWorker", () => {
 	});
 
 	describe("Manual Triggers", () => {
+		it("triggerMaterializationWorker triggers worker when service is running", async () => {
+			// Start the service to set isRunning = true
+			const { runMaterializationWorker } = await import(
+				"~/src/workers/eventGeneration/eventGenerationPipeline"
+			);
+			vi.mocked(runMaterializationWorker).mockResolvedValue({
+				organizationsProcessed: 1,
+				instancesCreated: 5,
+				windowsUpdated: 1,
+				errorsEncountered: 0,
+				processingTimeMs: 50,
+			});
+			await startBackgroundWorkers(mockDrizzleClient, mockLogger);
+			vi.clearAllMocks(); // Clear logs from startup
+			await triggerMaterializationWorker(mockDrizzleClient, mockLogger);
+			expect(mockLogger.info).toHaveBeenCalledWith(
+				"Manually triggering materialization worker",
+			);
+			expect(mockLogger.info).toHaveBeenCalledWith(
+				"Starting materialization worker run",
+			);
+			expect(runMaterializationWorker).toHaveBeenCalled();
+			await stopBackgroundWorkers(mockLogger);
+		});
+		it("triggerCleanupWorker triggers worker when service is running", async () => {
+			const { runMaterializationWorker } = await import(
+				"~/src/workers/eventGeneration/eventGenerationPipeline"
+			);
+			const { cleanupOldInstances } = await import(
+				"~/src/workers/eventCleanupWorker"
+			);
+			vi.mocked(runMaterializationWorker).mockResolvedValue({
+				organizationsProcessed: 0,
+				instancesCreated: 0,
+				windowsUpdated: 0,
+				errorsEncountered: 0,
+				processingTimeMs: 1,
+			});
+			vi.mocked(cleanupOldInstances).mockResolvedValue({
+				organizationsProcessed: 1,
+				instancesDeleted: 3,
+				errorsEncountered: 0,
+			});
+			await startBackgroundWorkers(mockDrizzleClient, mockLogger);
+			vi.clearAllMocks();
+			await triggerCleanupWorker(mockDrizzleClient, mockLogger);
+			expect(mockLogger.info).toHaveBeenCalledWith(
+				"Manually triggering cleanup worker",
+			);
+			expect(mockLogger.info).toHaveBeenCalledWith(
+				"Starting cleanup worker run",
+			);
+			expect(cleanupOldInstances).toHaveBeenCalled();
+			await stopBackgroundWorkers(mockLogger);
+		});
 		it("triggerMaterializationWorker throws when service is not running", async () => {
 			await expect(
 				triggerMaterializationWorker(mockDrizzleClient, mockLogger),
 			).rejects.toThrow(TalawaRestError);
-
 			await expect(
 				triggerMaterializationWorker(mockDrizzleClient, mockLogger),
 			).rejects.toHaveProperty("code", ErrorCode.INTERNAL_SERVER_ERROR);
 		});
-
 		it("triggerCleanupWorker throws when service is not running", async () => {
 			await expect(
 				triggerCleanupWorker(mockDrizzleClient, mockLogger),
 			).rejects.toThrow(TalawaRestError);
-
 			await expect(
 				triggerCleanupWorker(mockDrizzleClient, mockLogger),
 			).rejects.toHaveProperty("code", ErrorCode.INTERNAL_SERVER_ERROR);

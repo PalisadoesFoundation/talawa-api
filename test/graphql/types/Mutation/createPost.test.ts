@@ -16,18 +16,20 @@ import {
 	Query_signIn,
 } from "../documentNodes";
 
-const signInResult = await mercuriusClient.query(Query_signIn, {
-	variables: {
-		input: {
-			emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-			password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
+async function getAdminAuthToken(): Promise<string> {
+	const signInResult = await mercuriusClient.query(Query_signIn, {
+		variables: {
+			input: {
+				emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
+				password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
+			},
 		},
-	},
-});
-assertToBeNonNullish(signInResult.data?.signIn);
-assertToBeNonNullish(signInResult.data?.signIn);
-const authToken = signInResult.data.signIn.authenticationToken;
-assertToBeNonNullish(authToken);
+	});
+	assertToBeNonNullish(signInResult.data?.signIn);
+	const authToken = signInResult.data.signIn.authenticationToken;
+	assertToBeNonNullish(authToken);
+	return authToken;
+}
 
 suite("Mutation field createPost", () => {
 	suite("when the client is not authenticated", () => {
@@ -54,6 +56,7 @@ suite("Mutation field createPost", () => {
 
 	suite("when the specified organization does not exist", () => {
 		test("should return an error with arguments_associated_resources_not_found extensions code", async () => {
+			const authToken = await getAdminAuthToken();
 			const result = await mercuriusClient.mutate(Mutation_createPost, {
 				headers: { authorization: `bearer ${authToken}` },
 				variables: {
@@ -141,6 +144,7 @@ suite("Mutation field createPost", () => {
 
 	suite("when setting pin status", () => {
 		test("should set pinnedAt when isPinned is true", async () => {
+			const authToken = await getAdminAuthToken();
 			const createOrgResult = await mercuriusClient.mutate(
 				Mutation_createOrganization,
 				{
@@ -184,6 +188,7 @@ suite("Mutation field createPost", () => {
 		});
 
 		test("should leave pinnedAt undefined when isPinned is false", async () => {
+			const authToken = await getAdminAuthToken();
 			const createOrgResult = await mercuriusClient.mutate(
 				Mutation_createOrganization,
 				{
@@ -292,6 +297,7 @@ suite("Mutation field createPost", () => {
 
 	suite("when arguments are invalid (parse error)", () => {
 		test("should return an error with invalid_arguments extension code", async () => {
+			const authToken = await getAdminAuthToken();
 			const invalidOrganizationId = "not-a-valid-uuid";
 			const result = await mercuriusClient.mutate(Mutation_createPost, {
 				headers: { authorization: `bearer ${authToken}` },
@@ -412,6 +418,7 @@ suite("Mutation field createPost", () => {
 
 	suite("when the database insert operation unexpectedly fails", () => {
 		test("should return an error with unexpected extensions code", async () => {
+			const authToken = await getAdminAuthToken();
 			const createOrgResult = await mercuriusClient.mutate(
 				Mutation_createOrganization,
 				{
@@ -484,6 +491,7 @@ suite("Mutation field createPost", () => {
 		"when the client is authorized and the post is created successfully",
 		() => {
 			test("should create a post and return the post data", async () => {
+				const authToken = await getAdminAuthToken();
 				const createOrgResult = await mercuriusClient.mutate(
 					Mutation_createOrganization,
 					{
@@ -530,6 +538,7 @@ suite("Mutation field createPost", () => {
 
 	suite("security checks", () => {
 		test("should escape HTML in caption", async () => {
+			const authToken = await getAdminAuthToken();
 			const createOrgResult = await mercuriusClient.mutate(
 				Mutation_createOrganization,
 				{
@@ -568,6 +577,7 @@ suite("Mutation field createPost", () => {
 		});
 
 		test("should reject caption exceeding length limit", async () => {
+			const authToken = await getAdminAuthToken();
 			const createOrgResult = await mercuriusClient.mutate(
 				Mutation_createOrganization,
 				{
@@ -611,6 +621,7 @@ suite("Mutation field createPost", () => {
 		});
 
 		test("should create post with valid body field and return body in response", async () => {
+			const authToken = await getAdminAuthToken();
 			const createOrgResult = await mercuriusClient.mutate(
 				Mutation_createOrganization,
 				{
@@ -649,6 +660,7 @@ suite("Mutation field createPost", () => {
 		});
 
 		test("should create post with body at exactly POST_BODY_MAX_LENGTH", async () => {
+			const authToken = await getAdminAuthToken();
 			const createOrgResult = await mercuriusClient.mutate(
 				Mutation_createOrganization,
 				{
@@ -687,6 +699,7 @@ suite("Mutation field createPost", () => {
 		});
 
 		test("should reject body exceeding POST_BODY_MAX_LENGTH", async () => {
+			const authToken = await getAdminAuthToken();
 			const createOrgResult = await mercuriusClient.mutate(
 				Mutation_createOrganization,
 				{
@@ -731,6 +744,7 @@ suite("Mutation field createPost", () => {
 		});
 
 		test("should properly escape HTML/XSS payloads in body", async () => {
+			const authToken = await getAdminAuthToken();
 			const createOrgResult = await mercuriusClient.mutate(
 				Mutation_createOrganization,
 				{

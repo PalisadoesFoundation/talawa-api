@@ -18,15 +18,56 @@ class GraphQLSchemaManager {
 	private currentSchema: GraphQLSchema | null = null;
 	private isRebuilding = false;
 	private schemaUpdateCallbacks: Array<(schema: GraphQLSchema) => void> = [];
+
+	/**
+	 * Helper function to safely serialize error objects
+	 */
+	private serializeError(error: unknown): Record<string, unknown> {
+		if (error instanceof Error) {
+			const serialized: Record<string, unknown> = {
+				name: error.name,
+				message: error.message,
+				stack: error.stack,
+			};
+
+			// Include enumerable properties
+			for (const key in error) {
+				if (Object.hasOwn(error, key)) {
+					serialized[key] = (error as unknown as Record<string, unknown>)[key];
+				}
+			}
+
+			return serialized;
+		}
+
+		return { message: String(error) };
+	}
+
 	private logger: {
 		info: (msg: string) => void;
 		error: (msg: string, error?: unknown) => void;
 	} = {
-		info: (msg: string) => console.log(msg),
-		error: (msg: string, error?: unknown) =>
-			process.stderr.write(
-				`${JSON.stringify({ level: "error", msg, error })}\n`,
-			),
+		info: (msg: string) => {
+			const logEntry = {
+				timestamp: new Date().toISOString(),
+				level: "info",
+				msg,
+			};
+			process.stdout.write(`${JSON.stringify(logEntry)}\n`);
+		},
+		error: (msg: string, error?: unknown) => {
+			const logEntry: Record<string, unknown> = {
+				timestamp: new Date().toISOString(),
+				level: "error",
+				msg,
+			};
+
+			if (error) {
+				logEntry.error = this.serializeError(error);
+			}
+
+			process.stderr.write(`${JSON.stringify(logEntry)}\n`);
+		},
 	};
 
 	/**

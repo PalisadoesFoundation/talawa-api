@@ -15,16 +15,19 @@ import {
 	Query_signIn,
 } from "../documentNodes";
 
-const signInResult = await mercuriusClient.query(Query_signIn, {
-	variables: {
-		input: {
-			emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-			password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
+async function getAdminAuthToken(): Promise<string> {
+	const signInResult = await mercuriusClient.query(Query_signIn, {
+		variables: {
+			input: {
+				emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
+				password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
+			},
 		},
-	},
-});
-const adminToken = signInResult.data?.signIn?.authenticationToken ?? null;
-assertToBeNonNullish(adminToken);
+	});
+	const adminToken = signInResult.data?.signIn?.authenticationToken ?? null;
+	assertToBeNonNullish(adminToken);
+	return adminToken;
+}
 
 suite("Mutation field updatePost", () => {
 	beforeEach(async () => {
@@ -194,6 +197,7 @@ suite("Mutation field updatePost", () => {
 		"when non-admin user (member) attempts update and is not the creator",
 		() => {
 			test("should return an error with unauthorized_action_on_arguments_associated_resources", async () => {
+				const adminToken = await getAdminAuthToken();
 				const { authToken: regularAuthToken, userId } =
 					await createRegularUserUsingAdmin();
 				assertToBeNonNullish(regularAuthToken);
@@ -263,6 +267,7 @@ suite("Mutation field updatePost", () => {
 	);
 	suite("updatePost - pinnedAt update branch", () => {
 		test("should update pinnedAt to a new Date when isPinned is true and existingPost.pinnedAt is null", async () => {
+			const adminToken = await getAdminAuthToken();
 			const createOrgResult = await mercuriusClient.mutate(
 				Mutation_createOrganization,
 				{
@@ -322,6 +327,7 @@ suite("Mutation field updatePost", () => {
 
 	suite("when updatePost arguments fail validation", () => {
 		test("should return an error with invalid_arguments code", async () => {
+			const adminToken = await getAdminAuthToken();
 			const updateResult = await mercuriusClient.mutate(Mutation_updatePost, {
 				headers: { authorization: `bearer ${adminToken}` },
 				variables: {
@@ -353,6 +359,7 @@ suite("Mutation field updatePost", () => {
 	});
 	suite("when update operation unexpectedly returns empty array", () => {
 		test("should return an error with unexpected extensions code", async () => {
+			const adminToken = await getAdminAuthToken();
 			// Create an organization for testing
 			const orgName = `Unexpected-Error-Org-${faker.string.alphanumeric(8)}`;
 			const createOrgResult = await mercuriusClient.mutate(
@@ -454,6 +461,7 @@ suite("Mutation field updatePost", () => {
 
 	suite("when the current user does not exist", () => {
 		test("should return an error with unauthenticated extensions code", async () => {
+			const adminToken = await getAdminAuthToken();
 			const { authToken: userToken } = await createRegularUserUsingAdmin();
 			assertToBeNonNullish(userToken);
 
@@ -505,6 +513,7 @@ suite("Mutation field updatePost", () => {
 
 	suite("when current user is non-admin member and not the creator", () => {
 		test("should return an error with unauthorized_action_on_arguments_associated_resources code", async () => {
+			const adminToken = await getAdminAuthToken();
 			const createOrgResult = await mercuriusClient.mutate(
 				Mutation_createOrganization,
 				{
@@ -573,6 +582,7 @@ suite("Mutation field updatePost", () => {
 		"when regular member tries to update isPinned attribute on their own post",
 		() => {
 			test("should return an error with unauthorized_arguments code", async () => {
+				const adminToken = await getAdminAuthToken();
 				const { authToken: regularAuthToken, userId } =
 					await createRegularUserUsingAdmin();
 				assertToBeNonNullish(regularAuthToken);
@@ -764,6 +774,7 @@ suite("Mutation field updatePost", () => {
 
 	suite("updatePost - pinnedAt setting to null", () => {
 		test("should update pinnedAt to null when isPinned is false and existingPost.pinnedAt is not null", async () => {
+			const adminToken = await getAdminAuthToken();
 			const createOrgResult = await mercuriusClient.mutate(
 				Mutation_createOrganization,
 				{
@@ -879,6 +890,7 @@ suite("Mutation field updatePost", () => {
 
 	suite("security checks", () => {
 		test("should escape HTML in caption", async () => {
+			const adminToken = await getAdminAuthToken();
 			const createOrgResult = await mercuriusClient.mutate(
 				Mutation_createOrganization,
 				{
@@ -932,6 +944,7 @@ suite("Mutation field updatePost", () => {
 		});
 
 		test("should reject caption exceeding length limit", async () => {
+			const adminToken = await getAdminAuthToken();
 			const createOrgResult = await mercuriusClient.mutate(
 				Mutation_createOrganization,
 				{
