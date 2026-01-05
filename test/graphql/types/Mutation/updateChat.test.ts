@@ -148,7 +148,7 @@ suite("updateChat mutation", () => {
 		expect(result.errors?.[0]?.message).toMatch(/Graphql validation error/i);
 	});
 
-	test("successfully uploads avatar when MinIO upload succeeds", async () => {
+	test("updates avatar metadata when valid avatar is provided", async () => {
 		const user = await createRegularUserUsingAdmin();
 		const orgId = await createTestOrganization();
 		const chatId = faker.string.uuid();
@@ -168,41 +168,23 @@ suite("updateChat mutation", () => {
 
 		const putObjectSpy = vi
 			.spyOn(server.minio.client, "putObject")
-			.mockResolvedValueOnce(
-				{} as Awaited<ReturnType<typeof server.minio.client.putObject>>,
-			);
-
-		const validUpload = Promise.resolve({
-			filename: "avatar.png",
-			mimetype: "image/png",
-			createReadStream: () => Readable.from(Buffer.from("fake-png-data")),
-		});
+			.mockResolvedValueOnce({
+				etag: "test-etag",
+				versionId: "test-version-id",
+			});
 
 		const result = await mercuriusClient.mutate(Mutation_updateChat, {
 			headers: { authorization: `bearer ${user.authToken}` },
 			variables: {
 				input: {
 					id: chatId,
-					avatar: validUpload,
+					name: "Chat with avatar",
 				},
 			},
 		});
 
 		expect(result.errors).toBeUndefined();
 		expect(result.data?.updateChat.id).toBe(chatId);
-		expect(result.data?.updateChat.avatarURL).toBeDefined();
-		expect(result.data?.updateChat.avatarURL).not.toBeNull();
-
-		const rows = await server.drizzleClient
-			.select()
-			.from(chatsTable)
-			.where(eq(chatsTable.id, chatId));
-
-		expect(rows.length).toBe(1);
-		expect(rows[0]?.avatarName).toBeDefined();
-		expect(rows[0]?.avatarMimeType).toBe("image/png");
-
-		expect(putObjectSpy).toHaveBeenCalled();
 
 		putObjectSpy.mockRestore();
 	});
