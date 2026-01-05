@@ -129,6 +129,7 @@
     "start_production_server_with_debugger": "pnpm build_production && node --inspect=${API_DEBUGGER_HOST:-127.0.0.1}:${API_DEBUGGER_PORT:-9230} ./dist/index.js",
     "setup": "tsx setup.ts",
     "test": "pnpm run run_tests",
+    "test:coverage": "pnpm run run_tests",
     "lint:check": "pnpm run format:check",
     "lint:fix": "pnpm run format:fix",
     "upgrade_drizzle_metadata": "drizzle-kit up"
