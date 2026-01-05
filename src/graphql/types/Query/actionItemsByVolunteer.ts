@@ -82,12 +82,8 @@ export const actionItemsByVolunteer = builder.queryField(
 							id: true,
 							userId: true,
 						},
-						where: (fields, operators) => {
-							return operators.eq(
-								fields.id,
-								parsedArgs.input.volunteerId as string,
-							);
-						},
+						where: (fields, operators) =>
+							operators.eq(fields.id, parsedArgs.input.volunteerId),
 					});
 
 				if (!targetVolunteer) {
@@ -122,10 +118,7 @@ export const actionItemsByVolunteer = builder.queryField(
 					await ctx.drizzleClient.query.actionItemsTable.findMany({
 						where: (fields, operators) => {
 							const conditions = [
-								operators.eq(
-									fields.volunteerId,
-									parsedArgs.input.volunteerId as string,
-								),
+								operators.eq(fields.volunteerId, parsedArgs.input.volunteerId),
 							];
 							if (parsedArgs.input.organizationId) {
 								conditions.push(
@@ -139,8 +132,7 @@ export const actionItemsByVolunteer = builder.queryField(
 						},
 					});
 
-				// Always return an array (never null/undefined)
-				return actionItems ?? [];
+				return actionItems;
 			},
 			type: [ActionItem], // Returns an array of ActionItems
 		}),

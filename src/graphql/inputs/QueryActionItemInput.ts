@@ -30,8 +30,8 @@ export const QueryActionItemsByOrganizationInput = builder
  * Defines the Zod validation schema for querying ActionItems by volunteerId.
  */
 export const queryActionItemsByVolunteerInputSchema = z.object({
-	volunteerId: actionItemsTableInsertSchema.shape.volunteerId.unwrap(), // Make volunteerId required
-	organizationId: actionItemsTableInsertSchema.shape.organizationId.optional(), // Optional org filter
+	volunteerId: z.string().uuid(), // Required UUID string
+	organizationId: z.string().uuid().optional(), // Optional org filter
 });
 
 /**
