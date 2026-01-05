@@ -317,6 +317,40 @@ suite("Mutation field createChat", () => {
 		);
 	});
 
+	test("system administrator can create chat in organization they do not belong to", async () => {
+		// Create a system administrator user
+		const systemAdmin = await createTestUser(adminAuthToken, "administrator");
+		createdUserIds.push(systemAdmin.userId);
+
+		// Create a separate organization (system admin is NOT a member)
+		const separateOrgId = await createTestOrganization(adminAuthToken);
+		createdOrganizationIds.push(separateOrgId);
+
+		const chatName = `System Admin Chat ${faker.string.uuid()}`;
+		const result = await mercuriusClient.mutate(Mutation_createChat, {
+			headers: {
+				authorization: `bearer ${systemAdmin.authToken}`,
+			},
+			variables: {
+				input: {
+					name: chatName,
+					description: "Chat created by system admin in non-member org",
+					organizationId: separateOrgId,
+				},
+			},
+		});
+
+		// Assert successful creation
+		expect(result.errors).toBeUndefined();
+		expect(result.data?.createChat).not.toBeNull();
+		expect(result.data?.createChat?.name).toBe(chatName);
+		expect(result.data?.createChat?.id).toBeDefined();
+
+		if (result.data?.createChat?.id) {
+			createdChatIds.push(result.data.createChat.id);
+		}
+	});
+
 	test("organization administrator can successfully create a chat", async () => {
 		const chatName = `Admin Test Chat ${faker.string.uuid()}`;
 		const result = await mercuriusClient.mutate(Mutation_createChat, {
