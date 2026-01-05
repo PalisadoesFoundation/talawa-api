@@ -125,10 +125,9 @@ describe("performancePlugin", () => {
 		const slowRequestCall = logWarnSpy.mock.calls.find((call) =>
 			call[0]?.msg?.includes("Slow request"),
 		);
-		if (slowRequestCall) {
-			expect(slowRequestCall[0]).toHaveProperty("slowOps");
-			expect(Array.isArray(slowRequestCall[0].slowOps)).toBe(true);
-		}
+		expect(slowRequestCall).toBeDefined();
+		expect(slowRequestCall?.[0]).toHaveProperty("slowOps");
+		expect(Array.isArray(slowRequestCall?.[0]?.slowOps)).toBe(true);
 	});
 
 	it("should limit snapshots to 200", async () => {
@@ -201,12 +200,11 @@ describe("performancePlugin", () => {
 		const res = await app.inject({ method: "GET", url: "/metrics/perf" });
 		const body = JSON.parse(res.body);
 
-		if (body.recent.length > 0) {
-			const snapshot = body.recent[0];
-			// Should have slow operations recorded
-			expect(snapshot.slow).toBeDefined();
-			expect(Array.isArray(snapshot.slow)).toBe(true);
-		}
+		expect(body.recent.length).toBeGreaterThan(0);
+		const snapshot = body.recent[0];
+		// Should have slow operations recorded
+		expect(snapshot.slow).toBeDefined();
+		expect(Array.isArray(snapshot.slow)).toBe(true);
 	});
 
 	it("should use custom slow request threshold from envConfig", async () => {
@@ -300,11 +298,10 @@ describe("performancePlugin", () => {
 		// Extract db duration
 		const dbMatch = st.match(/db;dur=(\d+)/);
 		expect(dbMatch).not.toBeNull();
-		if (dbMatch?.[1]) {
-			const dbMs = Number.parseInt(dbMatch[1], 10);
-			// Should be at least 80ms (50 + 30)
-			expect(dbMs).toBeGreaterThanOrEqual(80);
-		}
+		expect(dbMatch?.[1]).toBeDefined();
+		const dbMs = Number.parseInt(dbMatch?.[1] ?? "0", 10);
+		// Should be at least 80ms (50 + 30)
+		expect(dbMs).toBeGreaterThanOrEqual(80);
 	});
 
 	it("should include cache metrics in Server-Timing header", async () => {
@@ -527,6 +524,140 @@ describe("performancePlugin", () => {
 			const body = JSON.parse(res.body);
 			expect(body.error).toBe("Forbidden");
 			expect(body.message).toBe("Access denied");
+		});
+	});
+
+	describe("positive authentication tests", () => {
+		it("should allow access with valid API key", async () => {
+			await app.close();
+
+			app = Fastify({
+				logger: {
+					level: "info",
+				},
+			});
+
+			app.decorate("envConfig", {
+				METRICS_API_KEY: "test-api-key-123",
+				METRICS_ALLOWED_IPS: undefined,
+			});
+
+			await app.register(performancePlugin);
+			await app.ready();
+
+			const res = await app.inject({
+				method: "GET",
+				url: "/metrics/perf",
+				headers: {
+					authorization: "test-api-key-123",
+				},
+			});
+
+			expect(res.statusCode).toBe(200);
+			const body = JSON.parse(res.body);
+			expect(body).toHaveProperty("totalRequests");
+			expect(body).toHaveProperty("avgMs");
+			expect(body).toHaveProperty("recent");
+		});
+
+		it("should allow access with valid Bearer token", async () => {
+			await app.close();
+
+			app = Fastify({
+				logger: {
+					level: "info",
+				},
+			});
+
+			app.decorate("envConfig", {
+				METRICS_API_KEY: "test-api-key-123",
+				METRICS_ALLOWED_IPS: undefined,
+			});
+
+			await app.register(performancePlugin);
+			await app.ready();
+
+			const res = await app.inject({
+				method: "GET",
+				url: "/metrics/perf",
+				headers: {
+					authorization: "Bearer test-api-key-123",
+				},
+			});
+
+			expect(res.statusCode).toBe(200);
+			const body = JSON.parse(res.body);
+			expect(body).toHaveProperty("totalRequests");
+			expect(body).toHaveProperty("avgMs");
+			expect(body).toHaveProperty("recent");
+		});
+
+		it("should allow access from allowed IP address", async () => {
+			await app.close();
+
+			app = Fastify({
+				logger: {
+					level: "info",
+				},
+			});
+
+			app.decorate("envConfig", {
+				METRICS_API_KEY: undefined,
+				METRICS_ALLOWED_IPS: "127.0.0.1",
+			});
+
+			await app.register(performancePlugin);
+			await app.ready();
+
+			// app.inject() uses 127.0.0.1 by default, which matches our allowed IP
+			const res = await app.inject({
+				method: "GET",
+				url: "/metrics/perf",
+			});
+
+			expect(res.statusCode).toBe(200);
+			const body = JSON.parse(res.body);
+			expect(body).toHaveProperty("totalRequests");
+			expect(body).toHaveProperty("avgMs");
+			expect(body).toHaveProperty("recent");
+		});
+
+		it("should log warning and allow access when no auth is configured", async () => {
+			await app.close();
+
+			app = Fastify({
+				logger: {
+					level: "info",
+				},
+			});
+
+			const warnSpy = vi.fn();
+			vi.spyOn(app.log, "warn").mockImplementation(warnSpy);
+
+			app.decorate("envConfig", {
+				METRICS_API_KEY: undefined,
+				METRICS_ALLOWED_IPS: undefined,
+			});
+
+			await app.register(performancePlugin);
+			await app.ready();
+
+			const res = await app.inject({
+				method: "GET",
+				url: "/metrics/perf",
+			});
+
+			// Should log warning about unprotected endpoint
+			expect(warnSpy).toHaveBeenCalledWith(
+				"/metrics/perf endpoint is unprotected. Set METRICS_API_KEY or METRICS_ALLOWED_IPS for production.",
+			);
+
+			// Should still allow access
+			expect(res.statusCode).toBe(200);
+			const body = JSON.parse(res.body);
+			expect(body).toHaveProperty("totalRequests");
+			expect(body).toHaveProperty("avgMs");
+			expect(body).toHaveProperty("recent");
 		});
 	});
 });
