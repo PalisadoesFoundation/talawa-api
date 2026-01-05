@@ -35,12 +35,10 @@ export const postsTable = pgTable(
 		/**
 		 * Foreign key reference to the id of the user who created the post.
 		 */
-		creatorId: uuid("creator_id")
-			.notNull()
-			.references(() => usersTable.id, {
-				onDelete: "set null",
-				onUpdate: "cascade",
-			}),
+		creatorId: uuid("creator_id").references(() => usersTable.id, {
+			onDelete: "set null",
+			onUpdate: "cascade",
+		}),
 		/**
 		 * Primary unique identifier of the post.
 		 */

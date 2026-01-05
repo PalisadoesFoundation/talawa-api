@@ -257,17 +257,47 @@ builder.mutationField("updateSingleRecurringEventInstance", (t) =>
 					},
 				);
 
+				let finalExceptionData = exceptionData;
+
 				if (existingException) {
-					const mergedExceptionData = {
+					finalExceptionData = {
 						...(existingException.exceptionData as Record<string, unknown>),
 						...exceptionData,
 					};
+				}
 
+				// Validate visibility consistency (cannot be both public and invite-only)
+				const finalIsPublic =
+					(finalExceptionData.isPublic as boolean | undefined) ??
+					existingInstance.baseRecurringEvent.isPublic;
+				const finalIsInviteOnly =
+					(finalExceptionData.isInviteOnly as boolean | undefined) ??
+					existingInstance.baseRecurringEvent.isInviteOnly;
+
+				if (finalIsPublic && finalIsInviteOnly) {
+					throw new TalawaGraphQLError({
+						extensions: {
+							code: "invalid_arguments",
+							issues: [
+								{
+									argumentPath: ["input", "isPublic"],
+									message: "cannot be both Public and Invite-Only",
+								},
+								{
+									argumentPath: ["input", "isInviteOnly"],
+									message: "cannot be both Public and Invite-Only",
+								},
+							],
+						},
+					});
+				}
+
+				if (existingException) {
 					// Update existing exception
 					await tx
 						.update(eventExceptionsTable)
 						.set({
-							exceptionData: mergedExceptionData,
+							exceptionData: finalExceptionData,
 							updaterId: currentUserId,
 							updatedAt: new Date(),
 						})
