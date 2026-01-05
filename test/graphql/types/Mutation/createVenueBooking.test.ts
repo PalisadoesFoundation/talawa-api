@@ -1,6 +1,7 @@
 import { faker } from "@faker-js/faker";
 import { graphql } from "gql.tada";
 import { expect, suite, test, vi } from "vitest";
+import { venueBookingsTable } from "~/src/drizzle/tables/venueBookings";
 import type {
 	ArgumentsAssociatedResourcesNotFoundExtensions,
 	ForbiddenActionOnArgumentsAssociatedResourcesExtensions,
@@ -775,14 +776,26 @@ suite("Mutation field createVenueBooking", () => {
 				const venueId = await createTestVenue(orgId);
 				const eventId = await createTestEvent(orgId);
 
-				// Mock the drizzleClient.insert to return an empty array for the venue booking insert
+				// Type-safe, scoped mock: only targets venueBookingsTable insert
 				const insertSpy = vi.spyOn(server.drizzleClient, "insert");
+				const originalInsert = server.drizzleClient.insert;
 
-				insertSpy.mockImplementation(((_table: unknown) => ({
-					values: () => ({
-						returning: vi.fn().mockResolvedValue([]), // Return empty array
+				// Create a type-safe mock return value matching Drizzle's insert chain
+				const mockInsertChain = {
+					values: vi.fn().mockReturnValue({
+						returning: vi.fn().mockResolvedValue([]),
 					}),
-				})) as never);
+				} as unknown as ReturnType<typeof server.drizzleClient.insert>;
+
+				// Mock only when venueBookingsTable is being inserted
+				// This ensures test isolation and doesn't affect other inserts
+				insertSpy.mockImplementation((table) => {
+					if (table === venueBookingsTable) {
+						return mockInsertChain;
+					}
+					// For all other tables, use original implementation
+					return originalInsert.call(server.drizzleClient, table);
+				});
 
 				try {
 					const createVenueBookingResult = await mercuriusClient.mutate(
@@ -814,7 +827,7 @@ suite("Mutation field createVenueBooking", () => {
 					);
 				} finally {
 					// Restore original implementation
-					vi.restoreAllMocks();
+					insertSpy.mockRestore();
 				}
 			});
 		},

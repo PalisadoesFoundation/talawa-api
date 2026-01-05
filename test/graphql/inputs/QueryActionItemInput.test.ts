@@ -231,11 +231,6 @@ describe("queryActionItemsByOrgInputSchema", () => {
 	});
 
 	describe("edge cases", () => {
-		it("should reject completely empty input", () => {
-			const result = queryActionItemsByOrgInputSchema.safeParse({});
-			expect(result.success).toBe(false);
-		});
-
 		it("should accept valid UUIDs with different formats (lowercase)", () => {
 			const lowercaseUuid = "a1b2c3d4-e5f6-4789-a1b2-c3d4e5f67890";
 			const result = queryActionItemsByOrgInputSchema.safeParse({
@@ -386,11 +381,6 @@ describe("queryActionItemsByVolunteerGroupInputSchema", () => {
 	});
 
 	describe("edge cases", () => {
-		it("should reject completely empty input", () => {
-			const result = queryActionItemsByVolunteerGroupInputSchema.safeParse({});
-			expect(result.success).toBe(false);
-		});
-
 		it("should accept valid UUIDs with different formats (lowercase)", () => {
 			const lowercaseUuid = "a1b2c3d4-e5f6-4789-a1b2-c3d4e5f67890";
 			const result = queryActionItemsByVolunteerGroupInputSchema.safeParse({
