@@ -85,6 +85,9 @@ else
     # Add Homebrew to PATH for Apple Silicon Macs
     if [ -f /opt/homebrew/bin/brew ]; then
         eval "$(/opt/homebrew/bin/brew shellenv)"
+    # Add Homebrew to PATH for Intel Macs
+    elif [ -f /usr/local/bin/brew ]; then
+        eval "$(/usr/local/bin/brew shellenv)"
     fi
     
     success "Homebrew installed successfully"
@@ -100,12 +103,12 @@ if [ "$SKIP_PREREQS" = "true" ]; then
     warn "Skipping prerequisite installation (--skip-prereqs)"
 else
     info "Installing git, jq, curl..."
-    if ! brew install git jq curl; then
+    if brew install git jq curl; then
+        success "System dependencies installed"
+    else
         warn "Some packages may have failed to install. Continuing anyway..."
     fi
 fi
-
-success "System dependencies installed"
 
 ##############################################################################
 # Step 3: Install Docker (optional)
