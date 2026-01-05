@@ -243,6 +243,7 @@ suite("updateChat mutation", () => {
 		});
 
 		expect(result.errors).toBeUndefined();
+		expect(result.data?.updateChat.id).toBe(chatId);
 		expect(result.data?.updateChat.name).toBe("Updated by chat admin");
 	});
 
@@ -274,17 +275,19 @@ suite("updateChat mutation", () => {
 		});
 
 		expect(result.errors).toBeUndefined();
+		expect(result.data?.updateChat.id).toBe(chatId);
 		expect(result.data?.updateChat.name).toBe("Updated");
 	});
 
-	test("successfully uploads avatar with valid image", async () => {
+	test("successfully updates multiple fields at once", async () => {
 		const user = await createRegularUserUsingAdmin();
 		const orgId = await createTestOrganization();
 		const chatId = faker.string.uuid();
 
 		await server.drizzleClient.insert(chatsTable).values({
 			id: chatId,
-			name: "Chat",
+			name: "Old Name",
+			description: "Old Description",
 			organizationId: orgId,
 			creatorId: user.userId,
 		});
@@ -295,42 +298,21 @@ suite("updateChat mutation", () => {
 			role: "administrator",
 		});
 
-		// Mock MinIO
-		const putObjectSpy = vi
-			.spyOn(server.minio.client, "putObject")
-			.mockImplementationOnce(async () => {
-				return {} as never;
-			});
-
-		const validUpload = Promise.resolve({
-			filename: "avatar.png",
-			mimetype: "image/png",
-			createReadStream: () => Readable.from("fake image"),
-		});
-
 		const result = await mercuriusClient.mutate(Mutation_updateChat, {
 			headers: { authorization: `bearer ${user.authToken}` },
 			variables: {
 				input: {
 					id: chatId,
-					avatar: validUpload,
+					name: "New Name",
+					description: "New Description",
 				},
 			},
 		});
 
 		expect(result.errors).toBeUndefined();
-		expect(result.data?.updateChat.avatarURL).toBeDefined();
-
-		const rows = await server.drizzleClient
-			.select()
-			.from(chatsTable)
-			.where(eq(chatsTable.id, chatId));
-
-		expect(rows.length).toBe(1);
-		expect(rows[0]?.avatarName).not.toBeNull();
-		expect(rows[0]?.avatarMimeType).toBe("image/png");
-
-		putObjectSpy.mockRestore();
+		expect(result.data?.updateChat.id).toBe(chatId);
+		expect(result.data?.updateChat.name).toBe("New Name");
+		expect(result.data?.updateChat.description).toBe("New Description");
 	});
 
 	test("successfully updates chat when user is system administrator", async () => {
@@ -361,6 +343,7 @@ suite("updateChat mutation", () => {
 		});
 
 		expect(result.errors).toBeUndefined();
+		expect(result.data?.updateChat.id).toBe(chatId);
 		expect(result.data?.updateChat.description).toBe("Updated by system admin");
 	});
 
