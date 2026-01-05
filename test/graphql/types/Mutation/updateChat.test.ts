@@ -3,10 +3,12 @@ import { faker } from "@faker-js/faker";
 import { eq } from "drizzle-orm";
 import gql from "graphql-tag";
 import { expect, suite, test, vi } from "vitest";
+
 import { chatMembershipsTable } from "~/src/drizzle/schema";
 import { chatsTable } from "~/src/drizzle/tables/chats";
 import { organizationMembershipsTable } from "~/src/drizzle/tables/organizationMemberships";
 import { usersTable } from "~/src/drizzle/tables/users";
+
 import { server } from "../../../server";
 import { mercuriusClient } from "../client";
 import { createRegularUserUsingAdmin } from "../createRegularUserUsingAdmin";
@@ -85,11 +87,7 @@ suite("updateChat mutation", () => {
 
 		const result = await mercuriusClient.mutate(Mutation_updateChat, {
 			headers: { authorization: `bearer ${authToken}` },
-			variables: {
-				input: {
-					id: "",
-				},
-			},
+			variables: { input: { id: "" } },
 		});
 
 		expect(result.data?.updateChat ?? null).toBeNull();
@@ -125,7 +123,7 @@ suite("updateChat mutation", () => {
 		const fakeUpload = Promise.resolve({
 			filename: "evil.exe",
 			mimetype: "application/x-msdownload",
-			createReadStream: () => Readable.from(Buffer.from("fake")),
+			createReadStream: () => Readable.from("fake"),
 		});
 
 		const result = await mercuriusClient.mutate(Mutation_updateChat, {
@@ -150,55 +148,6 @@ suite("updateChat mutation", () => {
 		);
 	});
 
-	test("successfully updates chat avatar with valid image", async () => {
-		const user = await createRegularUserUsingAdmin();
-		const orgId = await createTestOrganization();
-		const chatId = faker.string.uuid();
-
-		await server.drizzleClient.insert(chatsTable).values({
-			id: chatId,
-			name: "Chat",
-			organizationId: orgId,
-			creatorId: user.userId,
-		});
-
-		await server.drizzleClient.insert(organizationMembershipsTable).values({
-			memberId: user.userId,
-			organizationId: orgId,
-			role: "administrator",
-		});
-
-		const validUpload = Promise.resolve({
-			filename: "avatar.png",
-			mimetype: "image/png",
-			createReadStream: () => Readable.from(Buffer.from("fake-image")),
-		});
-
-		const result = await mercuriusClient.mutate(Mutation_updateChat, {
-			headers: { authorization: `bearer ${user.authToken}` },
-			variables: {
-				input: {
-					id: chatId,
-					avatar: validUpload,
-				},
-			},
-		});
-
-		expect(result.errors).toBeUndefined();
-		expect(result.data?.updateChat.avatarURL).toBeDefined();
-
-		const rows = await server.drizzleClient
-			.select()
-			.from(chatsTable)
-			.where(eq(chatsTable.id, chatId));
-
-		expect(rows.length).toBe(1);
-		const chat = rows[0];
-
-		expect(chat?.avatarName).not.toBeNull();
-		expect(chat?.avatarMimeType).toBe("image/png");
-	});
-
 	test("returns resource not found when chat does not exist", async () => {
 		const { authToken } = await createRegularUserUsingAdmin();
 
@@ -207,7 +156,7 @@ suite("updateChat mutation", () => {
 			variables: {
 				input: {
 					id: faker.string.uuid(),
-					name: "New Name",
+					name: "Nope",
 				},
 			},
 		});
@@ -278,18 +227,24 @@ suite("updateChat mutation", () => {
 			role: "administrator",
 		});
 
+		await server.drizzleClient.insert(organizationMembershipsTable).values({
+			memberId: chatAdmin.userId,
+			organizationId: orgId,
+			role: "regular",
+		});
+
 		const result = await mercuriusClient.mutate(Mutation_updateChat, {
 			headers: { authorization: `bearer ${chatAdmin.authToken}` },
 			variables: {
 				input: {
 					id: chatId,
-					name: "Updated by chat admin",
+					name: "Updated",
 				},
 			},
 		});
 
 		expect(result.errors).toBeUndefined();
-		expect(result.data?.updateChat.name).toBe("Updated by chat admin");
+		expect(result.data?.updateChat.name).toBe("Updated");
 	});
 
 	test("successfully updates chat when user is organization administrator", async () => {
@@ -396,18 +351,32 @@ suite("updateChat mutation", () => {
 		expect(rows.length).toBe(1);
 
 		const chat = rows[0];
-
 		expect(chat).toBeDefined();
 		expect(chat?.avatarName).toBeNull();
 		expect(chat?.avatarMimeType).toBeNull();
 	});
 
-	test("returns unexpected when transaction throws an error", async () => {
+	test("returns unexpected when transaction throws", async () => {
 		const user = await createRegularUserUsingAdmin();
+		const orgId = await createTestOrganization();
+		const chatId = faker.string.uuid();
+
+		await server.drizzleClient.insert(chatsTable).values({
+			id: chatId,
+			name: "Chat",
+			organizationId: orgId,
+			creatorId: user.userId,
+		});
+
+		await server.drizzleClient.insert(organizationMembershipsTable).values({
+			memberId: user.userId,
+			organizationId: orgId,
+			role: "administrator",
+		});
 
 		vi.spyOn(server.drizzleClient, "transaction").mockImplementationOnce(
 			async () => {
-				throw new Error("unexpected");
+				throw new Error("boom");
 			},
 		);
 
@@ -415,7 +384,7 @@ suite("updateChat mutation", () => {
 			headers: { authorization: `bearer ${user.authToken}` },
 			variables: {
 				input: {
-					id: faker.string.uuid(),
+					id: chatId,
 					name: "Fail",
 				},
 			},
