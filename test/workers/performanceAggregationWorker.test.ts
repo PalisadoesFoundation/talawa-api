@@ -106,7 +106,7 @@ describe("performanceAggregationWorker", () => {
 		expect(result.totalCacheHits).toBe(3);
 		expect(result.totalCacheMisses).toBe(3);
 		expect(result.avgHitRate).toBe(0.5); // 3 hits / 6 total
-		expect(result.slowRequestCount).toBe(1); // Only second snapshot >= 500ms
+		expect(result.slowRequestCount).toBe(0); // Neither snapshot >= 500ms (100 and 200)
 		expect(result.highComplexityCount).toBe(0);
 		expect(result.topSlowOps).toEqual([
 			{ op: "db:users.byId", avgMs: 300, count: 1 },

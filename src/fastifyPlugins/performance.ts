@@ -152,7 +152,9 @@ export default fp(
 
 			// Convert IPs to numbers for comparison
 			const ipToNumber = (addr: string): number => {
-				const addrParts = addr.split(".").map(Number.parseInt);
+				const addrParts = addr
+					.split(".")
+					.map((s) => Number.parseInt(s.trim(), 10));
 				if (addrParts.length !== 4 || addrParts.some(Number.isNaN)) return -1;
 				const [a, b, c, d] = addrParts;
 				if (
@@ -193,17 +195,17 @@ export default fp(
 				return;
 			}
 
-			const clientIp = req.ip;
-			if (!clientIp) {
-				reply.status(403).send({
-					error: "Forbidden",
-					message: "IP address not available",
-				});
-				return;
-			}
-
-			// Check if IP is in allowed list
+			// Check if IP is in allowed list (only if allowedIps is configured)
 			if (allowedIps) {
+				const clientIp = req.ip;
+				if (!clientIp) {
+					reply.status(403).send({
+						error: "Forbidden",
+						message: "IP address not available",
+					});
+					return;
+				}
+
 				const allowedIpList = allowedIps.split(",").map((ip) => ip.trim());
 				const isAllowed = allowedIpList.some((cidr) =>
 					isIpInRange(clientIp, cidr),
@@ -240,7 +242,7 @@ export default fp(
 				return; // API key is valid, proceed
 			}
 
-			// Neither IP nor API key matched
+			// Neither IP nor API key matched (or only allowedIps was configured and IP didn't match)
 			reply.status(403).send({
 				error: "Forbidden",
 				message: "Access denied",
