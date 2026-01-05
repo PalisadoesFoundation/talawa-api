@@ -70,23 +70,6 @@ describe("Post Resolver - Organization Field", () => {
 		expect(ctx.dataloaders.organization.load).toHaveBeenCalledWith("org-123");
 	});
 
-	it("should call DataLoader with parent.organizationId", async () => {
-		const mockOrganization = {
-			id: "org-123",
-			name: "Test Organization",
-		};
-
-		ctx.dataloaders.organization.load = vi
-			.fn()
-			.mockResolvedValue(mockOrganization);
-
-		await resolveOrganization(mockPost, {}, ctx);
-
-		expect(ctx.dataloaders.organization.load).toHaveBeenCalledWith(
-			mockPost.organizationId,
-		);
-	});
-
 	it("should handle different organizationId values correctly", async () => {
 		const mockOrganization1 = {
 			id: "org-111",
