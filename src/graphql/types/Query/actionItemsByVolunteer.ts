@@ -67,43 +67,42 @@ export const actionItemsByVolunteer = builder.queryField(
 					where: (fields, operators) => operators.eq(fields.id, currentUserId),
 				});
 
-				if (currentUser === undefined) {
-					throw new TalawaGraphQLError({
-						extensions: {
-							code: "unauthenticated",
-						},
-					});
-				}
+			if (!currentUser) {
+				throw new TalawaGraphQLError({
+					extensions: {
+						code: "unauthenticated",
+					},
+				});
+			}
 
-				// Check if the volunteerId exists (target volunteer we're getting items for)
-				const targetVolunteer =
-					await ctx.drizzleClient.query.eventVolunteersTable.findFirst({
-						columns: {
-							id: true,
-							userId: true,
-						},
-						where: (fields, operators) => {
-							// Fix: Use non-nullable string comparison
-							return operators.eq(
-								fields.id,
-								parsedArgs.input.volunteerId as string,
-							);
-						},
-					});
+			// Check if the volunteerId exists (target volunteer we're getting items for)
+			const targetVolunteer =
+				await ctx.drizzleClient.query.eventVolunteersTable.findFirst({
+					columns: {
+						id: true,
+						userId: true,
+					},
+					where: (fields, operators) => {
+						return operators.eq(
+							fields.id,
+							parsedArgs.input.volunteerId as string,
+						);
+					},
+				});
 
-				if (targetVolunteer === undefined) {
-					throw new TalawaGraphQLError({
-						message: "The specified volunteer does not exist.",
-						extensions: {
-							code: "arguments_associated_resources_not_found",
-							issues: [
-								{
-									argumentPath: ["input", "volunteerId"],
-								},
-							],
-						},
-					});
-				}
+			if (!targetVolunteer) {
+				throw new TalawaGraphQLError({
+					message: "The specified volunteer does not exist.",
+					extensions: {
+						code: "arguments_associated_resources_not_found",
+						issues: [
+							{
+								argumentPath: ["input", "volunteerId"],
+							},
+						],
+					},
+				});
+			}
 
 				// Authorization check - only the volunteer's user or an administrator can query their action items
 				if (
@@ -118,29 +117,30 @@ export const actionItemsByVolunteer = builder.queryField(
 					});
 				}
 
-				// Build the query for action items
-				const actionItems =
-					await ctx.drizzleClient.query.actionItemsTable.findMany({
-						where: (fields, operators) => {
-							const conditions = [
+			// Build the query for action items
+			const actionItems =
+				await ctx.drizzleClient.query.actionItemsTable.findMany({
+					where: (fields, operators) => {
+						const conditions = [
+							operators.eq(
+								fields.volunteerId,
+								parsedArgs.input.volunteerId as string,
+							),
+						];
+						if (parsedArgs.input.organizationId) {
+							conditions.push(
 								operators.eq(
-									fields.volunteerId,
-									parsedArgs.input.volunteerId as string,
+									fields.organizationId,
+									parsedArgs.input.organizationId,
 								),
-							];
-							if (parsedArgs.input.organizationId) {
-								conditions.push(
-									operators.eq(
-										fields.organizationId,
-										parsedArgs.input.organizationId,
-									),
-								);
-							}
-							return operators.and(...conditions);
-						},
-					});
+							);
+						}
+						return operators.and(...conditions);
+					},
+				});
 
-				return actionItems;
+			// Always return an array (never null/undefined)
+			return actionItems ?? [];
 			},
 			type: [ActionItem], // Returns an array of ActionItems
 		}),

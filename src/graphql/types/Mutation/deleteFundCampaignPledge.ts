@@ -103,7 +103,7 @@ builder.mutationField("deleteFundCampaignPledge", (t) =>
 				}),
 			]);
 
-			if (currentUser === undefined) {
+			if (!currentUser) {
 				throw new TalawaGraphQLError({
 					extensions: {
 						code: "unauthenticated",
@@ -111,7 +111,7 @@ builder.mutationField("deleteFundCampaignPledge", (t) =>
 				});
 			}
 
-			if (existingFundCampaignPledge === undefined) {
+			if (!existingFundCampaignPledge) {
 				throw new TalawaGraphQLError({
 					extensions: {
 						code: "arguments_associated_resources_not_found",
@@ -148,14 +148,19 @@ builder.mutationField("deleteFundCampaignPledge", (t) =>
 
 			const deletedFundCampaignPledge = await ctx.drizzleClient.transaction(
 				async (tx) => {
-					const [deletedPledge] = await tx
+					const deleteResult = await tx
 						.delete(fundCampaignPledgesTable)
 						.where(eq(fundCampaignPledgesTable.id, parsedArgs.input.id))
 						.returning();
 
-					if (deletedPledge === undefined) {
-						tx.rollback();
-						return;
+					const deletedPledge = deleteResult[0];
+
+					if (!deletedPledge) {
+						throw new TalawaGraphQLError({
+							extensions: {
+								code: "unexpected",
+							},
+						});
 					}
 
 					await tx
