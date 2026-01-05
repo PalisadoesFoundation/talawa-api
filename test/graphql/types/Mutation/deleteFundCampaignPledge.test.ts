@@ -236,7 +236,7 @@ async function createUser() {
 		headers: { authorization: `bearer ${adminToken}` },
 		variables: {
 			input: {
-				emailAddress: faker.internet.email(),
+				emailAddress: `test-${faker.string.uuid()}@example.com`,
 				password: faker.internet.password(),
 				role: "regular",
 				name: `org-${faker.string.uuid()}`,
