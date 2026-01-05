@@ -1,0 +1,9 @@
+[API Docs](/)
+
+***
+
+# Variable: mutationUpdateEventInputSchema
+
+> `const` **mutationUpdateEventInputSchema**: `ZodEffects`\<`ZodObject`\<\{ `allDay`: `ZodOptional`\<`ZodOptional`\<`ZodBoolean`\>\>; `description`: `ZodOptional`\<`ZodNullable`\<`ZodOptional`\<`ZodString`\>\>\>; `endAt`: `ZodOptional`\<`ZodDate`\>; `id`: `ZodString`; `isInviteOnly`: `ZodOptional`\<`ZodOptional`\<`ZodBoolean`\>\>; `isPublic`: `ZodOptional`\<`ZodOptional`\<`ZodBoolean`\>\>; `isRegisterable`: `ZodOptional`\<`ZodOptional`\<`ZodBoolean`\>\>; `location`: `ZodOptional`\<`ZodNullable`\<`ZodOptional`\<`ZodString`\>\>\>; `name`: `ZodOptional`\<`ZodString`\>; `startAt`: `ZodOptional`\<`ZodDate`\>; \}, `"strip"`, `ZodTypeAny`, \{ `allDay?`: `boolean`; `description?`: `string` \| `null`; `endAt?`: `Date`; `id`: `string`; `isInviteOnly?`: `boolean`; `isPublic?`: `boolean`; `isRegisterable?`: `boolean`; `location?`: `string` \| `null`; `name?`: `string`; `startAt?`: `Date`; \}, \{ `allDay?`: `boolean`; `description?`: `string` \| `null`; `endAt?`: `Date`; `id`: `string`; `isInviteOnly?`: `boolean`; `isPublic?`: `boolean`; `isRegisterable?`: `boolean`; `location?`: `string` \| `null`; `name?`: `string`; `startAt?`: `Date`; \}\>, \{ `allDay?`: `boolean`; `description?`: `string` \| `null`; `endAt?`: `Date`; `id`: `string`; `isInviteOnly?`: `boolean`; `isPublic?`: `boolean`; `isRegisterable?`: `boolean`; `location?`: `string` \| `null`; `name?`: `string`; `startAt?`: `Date`; \}, \{ `allDay?`: `boolean`; `description?`: `string` \| `null`; `endAt?`: `Date`; `id`: `string`; `isInviteOnly?`: `boolean`; `isPublic?`: `boolean`; `isRegisterable?`: `boolean`; `location?`: `string` \| `null`; `name?`: `string`; `startAt?`: `Date`; \}\>
+
+Defined in: [src/graphql/inputs/MutationUpdateEventInput.ts:6](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/graphql/inputs/MutationUpdateEventInput.ts#L6)
