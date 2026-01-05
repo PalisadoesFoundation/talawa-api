@@ -223,6 +223,7 @@ export function initializeEnvFile(answers: SetupAnswers): void {
 			code: ErrorCode.INTERNAL_SERVER_ERROR,
 			message:
 				"Failed to load environment file. Please check file permissions and ensure it contains valid environment variables.",
+			details: error as Record<string, unknown>,
 		});
 	}
 }

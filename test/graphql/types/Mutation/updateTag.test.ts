@@ -1,5 +1,5 @@
 import { faker } from "@faker-js/faker";
-import { beforeEach, expect, suite, test, vi } from "vitest";
+import { afterEach, expect, suite, test, vi } from "vitest";
 import { assertToBeNonNullish } from "../../../helpers";
 import { server } from "../../../server";
 import { mercuriusClient } from "../client";
@@ -56,7 +56,7 @@ const authToken = signInResult.data.signIn.authenticationToken;
 assertToBeNonNullish(authToken);
 
 suite("Mutation field updateTag", () => {
-	beforeEach(async () => {
+	afterEach(async () => {
 		// Clear rate limit keys to prevent rate limiting between tests
 		const keys = await server.redis.keys("rate-limit:*");
 		if (keys.length > 0) {

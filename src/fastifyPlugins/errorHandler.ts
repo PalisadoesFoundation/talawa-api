@@ -99,7 +99,7 @@ export const errorHandlerPlugin = fastifyPlugin(
 						code: normalized.code,
 						message: normalized.message,
 						correlationId,
-						...(normalized.details ? { details: normalized.details } : {}),
+						details: normalized.details || null,
 					},
 				});
 			},

@@ -320,24 +320,36 @@ export const graphql = fastifyPlugin(async (fastify) => {
 
 			// Sanitize extensions by removing sensitive keys and whitelisting safe ones
 			const sensitiveKeys = new Set([
-				"stack",
-				"internal",
-				"debug",
-				"raw",
-				"error",
-				"secrets",
-				"exception",
+				"stack", // Stack trace (internal implementation details)
+				"internal", // Internal error details
+				"debug", // Debugging information
+				"raw", // Raw error object
+				"error", // Error object
+				"secrets", // Secrets/credentials
+				"exception", // Exception details
 			]);
 			const sanitizedExtensions: Record<string, unknown> = {};
 
 			if (e.extensions && typeof e.extensions === "object") {
 				for (const [key, value] of Object.entries(e.extensions)) {
-					// Only include safe keys that aren't sensitive
-					if (
-						!sensitiveKeys.has(key) &&
-						typeof key === "string" &&
-						key.length > 0
-					) {
+					// Handle "error" key specifically to scrub sensitive subfields if it's an object
+					if (key === "error" && typeof value === "object" && value !== null) {
+						const { stack, internal, raw, exception, ...safeError } =
+							value as Record<string, unknown>;
+						// Only include the sanitized error object if it has safe properties
+						if (Object.keys(safeError).length > 0) {
+							sanitizedExtensions[key] = safeError;
+						}
+						continue;
+					}
+
+					// Skip all sensitive keys (including "error" when it's not an object)
+					if (sensitiveKeys.has(key)) {
+						continue;
+					}
+
+					// Only include safe keys
+					if (typeof key === "string" && key.length > 0) {
 						sanitizedExtensions[key] = value;
 					}
 				}
@@ -360,8 +372,7 @@ export const graphql = fastifyPlugin(async (fastify) => {
 		});
 
 		// Return 200 for HTTP per spec; use mapped status for subscriptions or tests.
-		const isRealHttpRequest =
-			context.reply && typeof context.reply.send === "function";
+		const isRealHttpRequest = !!context.reply;
 		const statusCode = isRealHttpRequest
 			? 200
 			: (formatted[0]?.extensions?.httpStatus ?? 500);

@@ -24,7 +24,8 @@ export async function main(): Promise<void> {
 		} catch (error: unknown) {
 			throw new TalawaRestError({
 				code: ErrorCode.DATABASE_ERROR,
-				message: `Database connection failed: ${error}`,
+				message: "Database connection failed",
+				details: error as Record<string, unknown>,
 			});
 		}
 		try {

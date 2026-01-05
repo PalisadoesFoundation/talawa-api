@@ -39,6 +39,12 @@ const existingPlugin = {
 
 type TestCtx = {
 	id: string;
+	log: {
+		error: ReturnType<typeof vi.fn>;
+		info: ReturnType<typeof vi.fn>;
+		warn: ReturnType<typeof vi.fn>;
+		debug: ReturnType<typeof vi.fn>;
+	};
 	drizzleClient: {
 		query: {
 			pluginsTable: {

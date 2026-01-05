@@ -199,7 +199,7 @@ suite("Mutation field deleteTagFolder", () => {
 				expect.arrayContaining([
 					expect.objectContaining({
 						extensions: expect.objectContaining({
-							code: "unauthenticated",
+							code: ErrorCode.UNAUTHENTICATED,
 						}),
 						message: expect.any(String),
 						path: ["deleteTagFolder"],
@@ -232,7 +232,7 @@ suite("Mutation field deleteTagFolder", () => {
 				expect.arrayContaining([
 					expect.objectContaining({
 						extensions: expect.objectContaining({
-							code: "unauthenticated",
+							code: ErrorCode.UNAUTHENTICATED,
 						}),
 						message: expect.any(String),
 						path: ["deleteTagFolder"],
@@ -277,7 +277,7 @@ suite("Mutation field deleteTagFolder", () => {
 				expect.arrayContaining([
 					expect.objectContaining({
 						extensions: expect.objectContaining({
-							code: "unauthorized_action_on_arguments_associated_resources",
+							code: "unauthorized_action_on_arguments_associated_resources", // Custom code for specialized unauthorized action
 							issues: expect.arrayContaining([
 								expect.objectContaining({
 									argumentPath: ["input", "id"],
@@ -335,7 +335,7 @@ suite("Mutation field deleteTagFolder", () => {
 				expect.arrayContaining([
 					expect.objectContaining({
 						extensions: expect.objectContaining({
-							code: "unauthorized_action_on_arguments_associated_resources",
+							code: "unauthorized_action_on_arguments_associated_resources", // Custom code for specialized unauthorized action
 							issues: expect.arrayContaining([
 								expect.objectContaining({
 									argumentPath: ["input", "id"],
@@ -451,7 +451,8 @@ suite("Mutation field deleteTagFolder", () => {
 			// Check that we got either an invalid_arguments error or a GraphQL validation error
 			const hasValidationError = result.errors?.some(
 				(error) =>
-					error.extensions?.code === "invalid_arguments" ||
+					error.extensions?.code === ErrorCode.INVALID_INPUT ||
+					error.extensions?.code === ErrorCode.INVALID_ARGUMENTS ||
 					error.message.includes("got invalid value") ||
 					error.message.includes("ID cannot represent") ||
 					error.message.includes("Expected ID"),
@@ -480,7 +481,7 @@ suite("Mutation field deleteTagFolder", () => {
 				expect.arrayContaining([
 					expect.objectContaining({
 						extensions: expect.objectContaining({
-							code: "arguments_associated_resources_not_found",
+							code: ErrorCode.ARGUMENTS_ASSOCIATED_RESOURCES_NOT_FOUND,
 							issues: expect.arrayContaining([
 								expect.objectContaining({
 									argumentPath: ["input", "id"],
@@ -540,7 +541,7 @@ suite("Mutation field deleteTagFolder", () => {
 					expect.arrayContaining([
 						expect.objectContaining({
 							extensions: expect.objectContaining({
-								code: "unexpected",
+								code: "unexpected", // Custom code for unexpected database behavior
 							}),
 						}),
 					]),

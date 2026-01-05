@@ -32,12 +32,13 @@ describe("ErrorHandlingValidator", () => {
 			const positiveCases = [
 				"src/routes/user.ts",
 				"src/graphql/types/User/user.ts",
-				"src/graphql/resolvers/Mutation/updateUser.ts",
-				"src/REST/auth/login.ts",
 				"src/utilities/date.ts",
 				"src/workers/email.ts",
 				"src/plugin/loader.ts",
 				"scripts/deploy.ts",
+				"src/file.json",
+				"test/integration/api.test.ts",
+				"setup.ts",
 			];
 
 			positiveCases.forEach((file) => {
@@ -49,10 +50,13 @@ describe("ErrorHandlingValidator", () => {
 			const negativeCases = [
 				"node_modules/some-package/index.ts",
 				"dist/index.js",
-				"src/routes/user.test.ts",
-				"src/routes/user.spec.ts",
-				"test/integration/api.test.ts",
 				"coverage/lcov-report/index.html",
+				"docs/api.md",
+				"src/types.d.ts",
+				"pnpm-lock.yaml",
+				"package-lock.json",
+				".github/workflows/ci.yml",
+				"docker/Dockerfile.yml",
 			];
 
 			negativeCases.forEach((file) => {
@@ -61,47 +65,40 @@ describe("ErrorHandlingValidator", () => {
 		});
 
 		it("should handle edge cases like node_modules_backup", () => {
-			// This file matches SCAN_PATTERNS (starts with src/)
-			// And it should NOT be excluded because "node_modules_backup" does not match "**/node_modules/**" exclusion
 			expect(
 				validator.shouldScanFile("src/utilities/node_modules_backup/index.ts"),
 			).toBe(true);
 
-			// But actual node_modules should be excluded
 			expect(
 				validator.shouldScanFile("src/utilities/node_modules/index.ts"),
 			).toBe(false);
 		});
 
 		it("should handle .test.ts.backup files correctly", () => {
-			// .backup files don't match *.ts patterns, so they should be excluded
 			expect(validator.shouldScanFile("src/routes/user.test.ts.backup")).toBe(
 				false,
 			);
 
-			// But a .ts file with test in the name (not ending with .test.ts) should be included
 			expect(validator.shouldScanFile("src/routes/user_test_helper.ts")).toBe(
 				true,
 			);
 		});
 
 		it("should handle routes_v2 correctly", () => {
-			// routes_v2 doesn't match src/routes/**/*.ts pattern, so it should be false
-			// unless we add a specific pattern for it
-			expect(validator.shouldScanFile("src/routes_v2/api.ts")).toBe(false);
+			expect(validator.shouldScanFile("src/routes_v2/api.ts")).toBe(true);
 		});
 
-		it("should exclude allowed files (exemptions)", () => {
-			// ALLOWED_PATTERNS - these should be excluded from scanning
+		it("should include allowed files in shouldScanFile but exclude them in getFilesToScan", () => {
 			const allowedFiles = [
 				"src/utilities/errors/errorHandler.ts",
 				"src/fastifyPlugins/errorHandler.ts",
 				"setup.ts",
-				"config/default.ts",
+				"scripts/config.ts",
 			];
 
 			allowedFiles.forEach((file) => {
-				expect(validator.shouldScanFile(file)).toBe(false);
+				expect(validator.shouldScanFile(file)).toBe(true);
+				expect(validator.isAllowedFile(file)).toBe(true);
 			});
 		});
 	});
@@ -213,9 +210,9 @@ describe("ErrorHandlingValidator", () => {
 			expect(validator.addViolation).toHaveBeenCalledWith(
 				"src/routes/api.ts",
 				10,
-				"generic_error_in_route_resolver",
+				"generic_error_usage",
 				line,
-				expect.any(String),
+				expect.stringContaining("Use TalawaRestError"),
 			);
 		});
 
@@ -228,9 +225,9 @@ describe("ErrorHandlingValidator", () => {
 			expect(validator.addViolation).toHaveBeenCalledWith(
 				"src/graphql/types/User/user.ts",
 				10,
-				"generic_error_in_route_resolver",
+				"generic_error_usage",
 				line,
-				expect.any(String),
+				expect.stringContaining("Use TalawaGraphQLError"),
 			);
 		});
 
@@ -239,7 +236,7 @@ describe("ErrorHandlingValidator", () => {
 			validator.addViolation = vi.fn();
 			validator.checkGenericError("src/utilities/helper.ts", 10, line);
 
-			expect(validator.addViolation).not.toHaveBeenCalled();
+			expect(validator.addViolation).toHaveBeenCalled();
 		});
 
 		it("should respect ALLOWED_PATTERNS exemptions", () => {
@@ -618,16 +615,6 @@ describe("ErrorHandlingValidator", () => {
 
 			it("should handle template literal interpolation", () => {
 				const input = "const x = `val " + "$" + "{a + b} end`;";
-				// Inside ${} code is preserved (ROOT state)
-				// The bounding backticks form the template
-				// "const x = " -> ROOT
-				// "`" -> TEMPLATE
-				// "val " -> masked
-				// "${" -> ROOT, braceDepth 0->0? No, stack push.
-				// "a + b" -> preserved
-				// "}" -> pop, back to TEMPLATE
-				// " end" -> masked
-				// "`" -> end TEMPLATE
 				const result = validator.removeCommentsAndStrings(input);
 				expect(result).toContain("a + b");
 				expect(result).not.toContain("val");
@@ -673,11 +660,10 @@ describe("ErrorHandlingValidator", () => {
 				const lines = [
 					"try {",
 					"  doSomething();",
-					"} catch (e) {", // Line 3
-					"  console.log(e);", // Line 4
+					"} catch (e) {",
+					"  console.log(e);",
 					"}",
 				];
-				// If we report on line 4 (inside catch), it might look for 'catch' around it
 				expect(validator.getLineContent(lines, 4)).toBe("} catch (e) {");
 			});
 		});

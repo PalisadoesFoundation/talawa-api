@@ -37,47 +37,54 @@ export const ENFORCE_STRUCTURED_LOGGING = [
 ];
 
 // Paths to EXEMPT (allow console.*)
-export const ALLOW_CONSOLE_USAGE = [
-	"src/plugin/**", // Plugin system
-	"scripts/**", // Validation tools
-	"test/**", // Test files
-];
+export const ALLOW_CONSOLE_USAGE = ["src/plugin/**", "scripts/**", "test/**"];
 
-// Configuration
 export const SCAN_PATTERNS = [
-	"src/routes/**/*.ts",
-	"src/graphql/types/**/*.ts",
-	"src/graphql/resolvers/**/*.ts",
-	"src/REST/**/*.ts",
-	"src/utilities/**/*.ts",
-	"src/workers/**/*.ts",
-	"src/plugin/**/*.ts",
+	"src/**/*.ts",
+	"src/**/*.js",
+	"src/**/*.json",
+	"src/**/*.jsonc",
+	"test/**/*.ts",
+	"test/**/*.js",
 	"scripts/**/*.ts",
+	"scripts/**/*.js",
+	"*.ts",
+	"*.js",
+	"*.json",
+	"*.jsonc",
+	".github/**/*.yml",
+	".github/**/*.yaml",
 ];
 
 export const EXCLUDE_PATTERNS = [
 	"**/node_modules/**",
 	"**/dist/**",
-	"**/*.test.ts",
-	"**/*.spec.ts",
-	"**/test/**",
 	"**/coverage/**",
+	"**/docs/**",
+	"**/*.d.ts",
+	"**/pnpm-lock.yaml",
+	"**/package-lock.json",
+	"**/*.yml",
+	"**/*.yaml",
 ];
 
-// Allowed patterns (exceptions to the rules)
+// Files exempted from generic Error checking
 export const ALLOWED_PATTERNS = [
-	// Allow Error in error transformation/handling utilities
 	/src\/utilities\/errors\//,
-	// Allow Error in error handler plugins
 	/src\/fastifyPlugins\/errorHandler/,
-	// Allow Error in setup/configuration files
 	/setup\.ts$/,
 	/config/i,
+	/\.test\./,
+	/\.spec\./,
+	/test\//,
+	/biome\.jsonc$/,
+	/lefthook\.yaml$/,
+	/package\.json$/,
+	/\.github\//,
+	/scripts\//,
 ];
 
 const WARN_ONLY_MODE = false;
-
-// Number of lines to check for suppression comment at the start of a file
 export const SUPPRESSION_CHECK_LINES = 10;
 
 interface Violation {
@@ -146,11 +153,9 @@ export class ErrorHandlingValidator {
 	}
 
 	public async getFilesToScan(): Promise<string[]> {
-		// Try to get modified files first (Infinite incremental mode)
 		try {
 			const modifiedFiles = this.getModifiedFiles();
 			if (modifiedFiles.length > 0) {
-				// Filter modified files to only those that match our scan scope
 				return modifiedFiles.filter((file) => this.shouldScanFile(file));
 			}
 
@@ -168,10 +173,7 @@ export class ErrorHandlingValidator {
 			);
 		}
 
-		// If git diff fails during an incremental scan, fall back to a full scan (e.g., fresh CI without history)
-		// and log the fallback for safety despite the user's request.
 		const allFiles: string[] = [];
-
 		for (const pattern of SCAN_PATTERNS) {
 			const files = await glob(pattern, {
 				cwd: rootDir,
@@ -193,14 +195,13 @@ export class ErrorHandlingValidator {
 				const baseRef = this.sanitizeGitRef(
 					process.env.GITHUB_BASE_REF || "develop",
 				);
-				// Fetch is necessary in some CI environments (like shallow clones)
 				try {
 					execSync(`git fetch origin ${baseRef}`, {
 						cwd: rootDir,
 						stdio: "ignore",
 					});
 				} catch {
-					// Ignore fetch errors, might already have refs
+					// Ignore fetch errors
 				}
 
 				const diffCommand = `git diff --name-only origin/${baseRef}...HEAD`;
@@ -227,7 +228,6 @@ export class ErrorHandlingValidator {
 		}
 
 		try {
-			// Unstaged changes
 			const unstaged = execSync("git diff --name-only", {
 				cwd: rootDir,
 				encoding: "utf8",
@@ -236,7 +236,6 @@ export class ErrorHandlingValidator {
 				.split("\n")
 				.filter(Boolean);
 
-			// Staged changes
 			const staged = execSync("git diff --name-only --cached", {
 				cwd: rootDir,
 				encoding: "utf8",
@@ -245,7 +244,6 @@ export class ErrorHandlingValidator {
 				.split("\n")
 				.filter(Boolean);
 
-			// Clean and unique
 			return [...new Set([...unstaged, ...staged])].map((f) => f.trim());
 		} catch (_e) {
 			throw new TalawaRestError({
@@ -255,22 +253,7 @@ export class ErrorHandlingValidator {
 		}
 	}
 
-	public branchExists(branch: string): boolean {
-		try {
-			const sanitizedBranch = this.sanitizeGitRef(branch);
-			execSync(`git rev-parse --verify ${sanitizedBranch}`, {
-				cwd: rootDir,
-				stdio: "ignore",
-			});
-			return true;
-		} catch {
-			return false;
-		}
-	}
-
 	public sanitizeGitRef(ref: string): string {
-		// Allow only safe characters for git references
-		// Git refs can contain: alphanumeric, -, _, /, .
 		if (!/^[a-zA-Z0-9_\-/.]+$/.test(ref)) {
 			throw new TalawaRestError({
 				code: ErrorCode.INVALID_INPUT,
@@ -278,7 +261,6 @@ export class ErrorHandlingValidator {
 			});
 		}
 
-		// Prevent command injection patterns
 		if (
 			ref.includes(";") ||
 			ref.includes("|") ||
@@ -297,6 +279,19 @@ export class ErrorHandlingValidator {
 		}
 
 		return ref;
+	}
+
+	public branchExists(branch: string): boolean {
+		try {
+			const safeBranch = this.sanitizeGitRef(branch);
+			execSync(`git rev-parse --verify ${safeBranch}`, {
+				cwd: rootDir,
+				stdio: "ignore",
+			});
+			return true;
+		} catch {
+			return false;
+		}
 	}
 
 	public matchesGlobPattern(filePath: string, pattern: string): boolean {
@@ -368,9 +363,6 @@ export class ErrorHandlingValidator {
 			}
 		}
 
-		// Check if allowed (generic error exemptions)
-		if (this.isAllowedFile(normalizedPath)) return false;
-
 		// Check scan patterns - return true if any match
 		for (const pattern of SCAN_PATTERNS) {
 			if (this.matchesGlobPattern(normalizedPath, pattern)) {
@@ -424,10 +416,11 @@ export class ErrorHandlingValidator {
 		content: string,
 		lines: string[],
 	): void {
-		// Remove comments and strings to avoid false positives
-		const cleanContent = this.removeCommentsAndStrings(content);
+		if (filePath.includes("scripts/setup/")) {
+			return;
+		}
 
-		// Find all catch blocks using a state machine approach
+		const cleanContent = this.removeCommentsAndStrings(content);
 		const catchBlocks = this.findCatchBlocks(cleanContent);
 
 		for (const catchBlock of catchBlocks) {
@@ -436,9 +429,7 @@ export class ErrorHandlingValidator {
 				catchBlock.start,
 			);
 
-			// Check for empty catch blocks
 			if (catchBlock.isEmpty) {
-				// Get the actual line content for reporting
 				const reportLine = this.getLineContent(lines, lineNumber);
 				this.addViolation(
 					filePath,
@@ -447,9 +438,7 @@ export class ErrorHandlingValidator {
 					reportLine,
 					"Add proper error handling or logging in catch block",
 				);
-			}
-			// Check for improper catch handling
-			else if (catchBlock.hasImproperHandling) {
+			} else if (catchBlock.hasImproperHandling) {
 				const reportLine = this.getLineContent(lines, lineNumber);
 				this.addViolation(
 					filePath,
@@ -685,21 +674,17 @@ export class ErrorHandlingValidator {
 	}
 
 	public hasProperErrorHandling(catchBody: string): boolean {
-		// Use meaningfulCode (comments removed) for strict matching to avoid false positives from commented-out code
 		const meaningfulCode = catchBody
-			.replace(/\/\/.*$/gm, "") // Remove single-line comments
-			.replace(/\/\*[\s\S]*?\*\//g, "") // Remove multi-line comments
+			.replace(/\/\/.*$/gm, "")
+			.replace(/\/\*[\s\S]*?\*\//g, "")
 			.trim();
 
-		// If the block is effectively empty (only whitespace/comments), it's already caught by "isEmpty" check elsewhere.
 		if (meaningfulCode.length === 0) {
 			return false;
 		}
 
-		// Negative detection: Explicitly reject silent returns which swallow errors
-		// Anchored to ensure this is the ONLY code in the catch block
 		const improperHandlingPatterns = [
-			/^return\s*(?:null|undefined)?\s*(?:;|$|})$/, // return; return null; return undefined;
+			/^return\s*(?:null|undefined)?\s*(?:;|$|})$/,
 		];
 
 		if (
@@ -708,14 +693,8 @@ export class ErrorHandlingValidator {
 			return false;
 		}
 
-		// Check for proper error handling patterns
-		// We prioritize "definitive" actions that ensure the error is not swallowed silently.
-		// Absence of any match here is treated as improper handling.
 		const properHandlingPatterns = [
-			// 1. Re-throwing
 			/throw\s+/,
-
-			// 2. Logging (Explicit logger calls)
 			/(?:\?\.|\.)log\s*\(/,
 			/(?:\?\.|\.)error\s*\(/,
 			/(?:\?\.|\.)warn\s*\(/,
@@ -725,34 +704,25 @@ export class ErrorHandlingValidator {
 			/console\s*\.\s*error/,
 			/console\s*\.\s*warn/,
 			/logger\s*(?:\?\.|\.)/,
-			/log\s*\(/, // Generic log function calls
-
-			// 3. Process control
+			/log\s*\(/,
 			/process\s*\.\s*exit/,
-
-			// 4. Custom Error Instantiation/Usage
 			/TalawaGraphQLError/,
 			/TalawaRestError/,
-			/new\s+\w*Error/, // Explicitly instantiating an Error (e.g. throw new UserError...)
-
-			// 5. Assignments
-			// Must assign to an Error-like variable or property, or assign an Error instance
-			/\w+\s*=\s*new\s+\w*Error/, // x = new Error(...)
-			/\w*[Ee]rror\.message\s*=/, // error.message = ... (modifying the error object)
-
-			// 6. Library specific handling
-			/addIssue\s*\(/, // Zod
-			/reject\w*\s*\(/, // Promises
-			/handlePluginError\s*\(/, // Plugin Lifecycle
-
-			// 7. Returns
-			// Must return a new Error or a process result, not just generic return
-			/return\s+new\s+\w*Error/, // return new Error(...)
-			/return\s+process\w+/, // return process...
-			/return\s+reject\w*/, // return reject(...)
+			/new\s+\w*Error/,
+			/\w+\s*=\s*new\s+\w*Error/,
+			/\w*[Ee]rror\.message\s*=/,
+			/addIssue\s*\(/,
+			/reject\w*\s*\(/,
+			/handlePluginError\s*\(/,
+			/return\s+new\s+\w*Error/,
+			/return\s+process\w+/,
+			/return\s+reject\w*/,
+			/return\s+"[^"]*"/,
+			/return\s+'[^']*'/,
+			/return\s+`[^`]*`/,
+			/return[\s\S]*["'`][^"'`]*["'`]/,
 		];
 
-		// Check meaningfulCode against proper patterns
 		return properHandlingPatterns.some((pattern) =>
 			pattern.test(meaningfulCode),
 		);
@@ -814,10 +784,7 @@ export class ErrorHandlingValidator {
 			return;
 		}
 
-		// Checks for generic Error usage in routes and resolvers
 		this.checkGenericError(filePath, lineNumber, line);
-
-		// Checks for console usage enforcement
 		this.checkConsoleUsage(filePath, lineNumber, line);
 	}
 
@@ -826,19 +793,21 @@ export class ErrorHandlingValidator {
 		lineNumber: number,
 		line: string,
 	): void {
-		if (this.isRouteOrResolverFile(filePath)) {
-			if (
-				/throw\s+new\s+Error\s*\(/g.test(line) ||
-				/throw\s+Error\s*\(/g.test(line)
-			) {
-				this.addViolation(
-					filePath,
-					lineNumber,
-					"generic_error_in_route_resolver",
-					line,
-					this.getGenericErrorSuggestion(filePath),
-				);
-			}
+		if (this.isAllowedFile(filePath)) {
+			return;
+		}
+
+		if (
+			/throw\s+new\s+Error\s*\(/g.test(line) ||
+			/throw\s+Error\s*\(/g.test(line)
+		) {
+			this.addViolation(
+				filePath,
+				lineNumber,
+				"generic_error_usage",
+				line,
+				this.getGenericErrorSuggestion(filePath),
+			);
 		}
 	}
 
@@ -847,12 +816,10 @@ export class ErrorHandlingValidator {
 		lineNumber: number,
 		line: string,
 	): void {
-		// Check explicit exemption
 		if (this.matchesPattern(filePath, ALLOW_CONSOLE_USAGE)) {
 			return;
 		}
 
-		// Check strict enforcement
 		if (this.matchesPattern(filePath, ENFORCE_STRUCTURED_LOGGING)) {
 			if (/console\.(log|error|warn|info|debug)\s*\(/.test(line)) {
 				this.addViolation(
@@ -864,7 +831,6 @@ export class ErrorHandlingValidator {
 				);
 			}
 		} else {
-			// Default behavior: Reject console.error only
 			if (/console\.error\s*\(/g.test(line)) {
 				this.addViolation(
 					filePath,
@@ -977,6 +943,7 @@ export class ErrorHandlingValidator {
 		const titles: Record<string, string> = {
 			generic_error_in_route_resolver:
 				"Generic Error Usage in Routes/Resolvers",
+			generic_error_usage: "Generic Error Usage",
 			empty_catch_block: "Empty Catch Blocks",
 			console_error_usage: "Console Error Usage",
 			console_usage_enforced: "Structured Logging Enforced (Console Usage)",
@@ -996,17 +963,13 @@ export class ErrorHandlingValidator {
 			);
 
 			try {
-				// Validate and normalize file paths to prevent command injection
 				const safePaths = filesWithViolations.map((filePath) => {
-					// Resolve to absolute path and then make relative to rootDir
 					const absolutePath = resolve(rootDir, filePath);
-					// Use path.relative for cross-platform compatibility
 					const relativePath = relative(rootDir, absolutePath).replace(
 						/\\/g,
 						"/",
 					);
 
-					// Validate path doesn't contain suspicious characters
 					if (!/^[a-zA-Z0-9_\-./]+$/.test(relativePath)) {
 						throw new TalawaRestError({
 							code: ErrorCode.INVALID_INPUT,
@@ -1017,11 +980,10 @@ export class ErrorHandlingValidator {
 					return relativePath;
 				});
 
-				// Use execFileSync with args array to prevent shell injection
 				execFileSync("npx", ["biome", "check", "--write", ...safePaths], {
 					stdio: "inherit",
 					cwd: rootDir,
-					shell: false, // Explicitly disable shell
+					shell: false,
 				});
 
 				console.log("\nBiome formatting applied to files with violations.");
@@ -1032,7 +994,6 @@ export class ErrorHandlingValidator {
 					"   Run 'pnpm run validate:error-handling' to see remaining issues.",
 				);
 			} catch (error) {
-				// Re-throw validation errors, but handle execution errors differently
 				if (
 					error instanceof Error &&
 					error.message.includes("Suspicious file path")

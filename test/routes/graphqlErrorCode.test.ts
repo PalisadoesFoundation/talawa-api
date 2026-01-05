@@ -397,7 +397,7 @@ describe("GraphQL Error Formatting", () => {
 			expect(logErrorSpy).toHaveBeenCalledWith(
 				expect.objectContaining({
 					correlationId: "req-log-test",
-					statusCode: 500, // Non-HTTP context falls back to error status
+					statusCode: 200, // HTTP context returns 200 per GraphQL spec
 					errors: expect.arrayContaining([
 						expect.objectContaining({
 							message: "Log Test Error",

@@ -33,7 +33,8 @@ export const envFileBackup = async (shouldBackup: boolean): Promise<void> => {
 		console.error("Error backing up .env file:", error);
 		throw new TalawaRestError({
 			code: ErrorCode.INTERNAL_SERVER_ERROR,
-			message: `Failed to backup .env file: ${(error as Error).message}`,
+			message: "Failed to backup .env file",
+			details: error as Record<string, unknown>,
 		});
 	}
 };

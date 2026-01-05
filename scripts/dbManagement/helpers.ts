@@ -14,8 +14,7 @@ import {
 	envConfigSchema,
 	envSchemaAjv,
 } from "src/envConfigSchema";
-import { ErrorCode } from "src/utilities/errors/errorCodes";
-import { TalawaRestError } from "src/utilities/errors/TalawaRestError";
+
 import { uuidv7 } from "uuidv7";
 
 const envConfig = envSchema<EnvConfig>({
@@ -72,11 +71,9 @@ export async function formatDatabase(): Promise<boolean> {
 	const adminEmail = envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS;
 
 	if (!adminEmail) {
-		throw new TalawaRestError({
-			code: ErrorCode.INVALID_INPUT,
-			message:
-				"Missing adminEmail environment variable. Aborting to prevent accidental deletion of all users.",
-		});
+		throw new Error(
+			"Missing adminEmail environment variable. Aborting to prevent accidental deletion of all users.",
+		);
 	}
 
 	type TableRow = { tablename: string };
@@ -152,10 +149,7 @@ export async function pingDB(): Promise<boolean> {
 	try {
 		await db.execute(sql`SELECT 1`);
 	} catch (_error) {
-		throw new TalawaRestError({
-			code: ErrorCode.DATABASE_ERROR,
-			message: "Unable to connect to the database.",
-		});
+		throw new Error(`Unable to connect to the database. Cause: ${_error}`);
 	}
 	return true;
 }
@@ -204,10 +198,7 @@ export async function insertCollections(
 			envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS;
 
 		if (!API_ADMINISTRATOR_USER_EMAIL_ADDRESS) {
-			throw new TalawaRestError({
-				code: ErrorCode.INVALID_INPUT,
-				message: "API_ADMINISTRATOR_USER_EMAIL_ADDRESS is not defined.",
-			});
+			throw new Error("API_ADMINISTRATOR_USER_EMAIL_ADDRESS is not defined.");
 		}
 
 		for (const collection of collections) {
@@ -273,11 +264,9 @@ export async function insertCollections(
 							),
 					});
 					if (!API_ADMINISTRATOR_USER) {
-						throw new TalawaRestError({
-							code: ErrorCode.NOT_FOUND,
-							message:
-								"API_ADMINISTRATOR_USER_EMAIL_ADDRESS is not found in users table",
-						});
+						throw new Error(
+							"API_ADMINISTRATOR_USER_EMAIL_ADDRESS is not found in users table",
+						);
 					}
 
 					const organizationAdminMembership = organizations.map((org) => ({
@@ -691,10 +680,7 @@ export async function insertCollections(
 
 		await checkDataSize("After");
 	} catch (err) {
-		throw new TalawaRestError({
-			code: ErrorCode.DATABASE_ERROR,
-			message: `Error adding data to tables: ${err}`,
-		});
+		throw new Error(`Error adding data to tables: ${err}`);
 	}
 
 	return true;
@@ -776,10 +762,7 @@ export async function disconnect(): Promise<boolean> {
 	try {
 		await queryClient.end();
 	} catch (err) {
-		throw new TalawaRestError({
-			code: ErrorCode.DATABASE_ERROR,
-			message: `Error disconnecting from the database: ${err}`,
-		});
+		throw new Error(`Error disconnecting from the database: ${err}`);
 	}
 	return true;
 }

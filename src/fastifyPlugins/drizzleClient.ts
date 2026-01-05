@@ -121,12 +121,12 @@ export const drizzleClient = fastifyPlugin(
 					);
 				} else {
 					// Re-throw if it's not an "already exists" error
-          throw new TalawaRestError({
-					code: ErrorCode.DATABASE_ERROR,
-					message:
-						"Failed to apply the drizzle migrations to the postgres database.",
-					details: { cause: error },
-				});
+					throw new TalawaRestError({
+						code: ErrorCode.DATABASE_ERROR,
+						message:
+							"Failed to apply the drizzle migrations to the postgres database.",
+						details: { cause: error },
+					});
 				}
 			}
 		}
