@@ -215,15 +215,6 @@ export default fp(
 
 			// Check if IP is in allowed list (only if allowedIps is configured)
 			if (allowedIps) {
-				// Guard check: ensure req exists before accessing req.ip
-				if (!req) {
-					reply.status(403).send({
-						error: "Forbidden",
-						message: "IP address not available",
-					});
-					return;
-				}
-
 				const clientIp = req.ip;
 				if (!clientIp) {
 					reply.status(403).send({
