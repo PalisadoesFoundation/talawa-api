@@ -256,10 +256,137 @@ describe("performanceAggregationWorker", () => {
 
 		const result = await aggregatePerformanceMetrics(mockFastify, mockLogger);
 
+		// Assert all expected operations are present
+		const expectedOps = new Set([
+			"db:users.byId",
+			"db:organizations.byId",
+			"db:events.byId",
+		]);
+		const actualOps = new Set(result.topSlowOps.map((op) => op.op));
+		expect(actualOps).toEqual(expectedOps);
+
+		// Assert length is correct
+		expect(result.topSlowOps.length).toBe(3);
 		expect(result.topSlowOps.length).toBeLessThanOrEqual(5);
+
+		// Assert list is sorted by avgMs descending
+		for (let i = 0; i < result.topSlowOps.length - 1; i++) {
+			expect(result.topSlowOps[i]?.avgMs).toBeGreaterThanOrEqual(
+				result.topSlowOps[i + 1]?.avgMs ?? 0,
+			);
+		}
+
+		// Assert specific values
 		expect(result.topSlowOps[0]?.op).toBe("db:users.byId");
 		expect(result.topSlowOps[0]?.avgMs).toBe(275); // (250 + 300) / 2
 		expect(result.topSlowOps[0]?.count).toBe(2);
+
+		expect(result.topSlowOps[1]?.op).toBe("db:organizations.byId");
+		expect(result.topSlowOps[1]?.avgMs).toBe(200);
+		expect(result.topSlowOps[1]?.count).toBe(1);
+
+		expect(result.topSlowOps[2]?.op).toBe("db:events.byId");
+		expect(result.topSlowOps[2]?.avgMs).toBe(150);
+		expect(result.topSlowOps[2]?.count).toBe(1);
+	});
+
+	it("should truncate to top 5 slow operations when more than 5 distinct ops exist", async () => {
+		const snapshots: PerfSnapshot[] = [
+			{
+				totalMs: 100,
+				totalOps: 1,
+				cacheHits: 0,
+				cacheMisses: 0,
+				hitRate: 0,
+				ops: {},
+				slow: [
+					{ op: "db:op1", ms: 600 }, // Highest avgMs
+					{ op: "db:op2", ms: 500 },
+					{ op: "db:op3", ms: 400 },
+					{ op: "db:op4", ms: 300 },
+					{ op: "db:op5", ms: 200 },
+					{ op: "db:op6", ms: 100 }, // Should be excluded
+					{ op: "db:op7", ms: 50 }, // Should be excluded
+				],
+			},
+			{
+				totalMs: 100,
+				totalOps: 1,
+				cacheHits: 0,
+				cacheMisses: 0,
+				hitRate: 0,
+				ops: {},
+				slow: [
+					{ op: "db:op1", ms: 700 }, // avgMs = (600 + 700) / 2 = 650
+					{ op: "db:op2", ms: 550 }, // avgMs = (500 + 550) / 2 = 525
+					{ op: "db:op3", ms: 450 }, // avgMs = (400 + 450) / 2 = 425
+					{ op: "db:op4", ms: 350 }, // avgMs = (300 + 350) / 2 = 325
+					{ op: "db:op5", ms: 250 }, // avgMs = (200 + 250) / 2 = 225
+					{ op: "db:op6", ms: 150 }, // avgMs = (100 + 150) / 2 = 125 (excluded)
+					{ op: "db:op7", ms: 75 }, // avgMs = (50 + 75) / 2 = 62.5 (excluded)
+				],
+			},
+		];
+
+		mockFastify.perfAggregate = {
+			get totalRequests() {
+				return 0;
+			},
+			get totalMs() {
+				return 0;
+			},
+			get lastSnapshots() {
+				return snapshots;
+			},
+		} as typeof mockFastify.perfAggregate;
+
+		const result = await aggregatePerformanceMetrics(mockFastify, mockLogger);
+
+		// Assert truncation to top 5
+		expect(result.topSlowOps.length).toBe(5);
+
+		// Assert all expected top 5 operations are present
+		const expectedTop5Ops = new Set([
+			"db:op1",
+			"db:op2",
+			"db:op3",
+			"db:op4",
+			"db:op5",
+		]);
+		const actualOps = new Set(result.topSlowOps.map((op) => op.op));
+		expect(actualOps).toEqual(expectedTop5Ops);
+
+		// Assert excluded operations are not present
+		expect(actualOps.has("db:op6")).toBe(false);
+		expect(actualOps.has("db:op7")).toBe(false);
+
+		// Assert list is sorted by avgMs descending
+		for (let i = 0; i < result.topSlowOps.length - 1; i++) {
+			expect(result.topSlowOps[i]?.avgMs).toBeGreaterThanOrEqual(
+				result.topSlowOps[i + 1]?.avgMs ?? 0,
+			);
+		}
+
+		// Assert correct order and values
+		expect(result.topSlowOps[0]?.op).toBe("db:op1");
+		expect(result.topSlowOps[0]?.avgMs).toBe(650); // (600 + 700) / 2
+		expect(result.topSlowOps[0]?.count).toBe(2);
+
+		expect(result.topSlowOps[1]?.op).toBe("db:op2");
+		expect(result.topSlowOps[1]?.avgMs).toBe(525); // (500 + 550) / 2
+		expect(result.topSlowOps[1]?.count).toBe(2);
+
+		expect(result.topSlowOps[2]?.op).toBe("db:op3");
+		expect(result.topSlowOps[2]?.avgMs).toBe(425); // (400 + 450) / 2
+		expect(result.topSlowOps[2]?.count).toBe(2);
+
+		expect(result.topSlowOps[3]?.op).toBe("db:op4");
+		expect(result.topSlowOps[3]?.avgMs).toBe(325); // (300 + 350) / 2
+		expect(result.topSlowOps[3]?.count).toBe(2);
+
+		expect(result.topSlowOps[4]?.op).toBe("db:op5");
+		expect(result.topSlowOps[4]?.avgMs).toBe(225); // (200 + 250) / 2
+		expect(result.topSlowOps[4]?.count).toBe(2);
 	});
 
 	it("should use custom cron schedule from envConfig", async () => {
@@ -377,8 +504,17 @@ describe("performanceAggregationWorker", () => {
 		expect(mockLogger.info).toHaveBeenCalledWith(
 			expect.objectContaining({
 				msg: "Performance metrics aggregation",
+				periodStart: expect.any(Date),
+				periodEnd: expect.any(Date),
 				totalRequests: 1,
 				avgRequestMs: expect.any(Number),
+				avgDbMs: expect.any(Number),
+				totalCacheHits: expect.any(Number),
+				totalCacheMisses: expect.any(Number),
+				avgHitRate: expect.any(Number),
+				slowRequestCount: expect.any(Number),
+				highComplexityCount: expect.any(Number),
+				topSlowOps: expect.any(Array),
 			}),
 			"Performance metrics aggregated",
 		);
@@ -488,5 +624,286 @@ describe("performanceAggregationWorker", () => {
 		const result = await aggregatePerformanceMetrics(mockFastify, mockLogger);
 
 		expect(result.highComplexityCount).toBe(0);
+	});
+
+	describe("error handling and edge cases", () => {
+		it("should handle snapshot with ops: null and return safe defaults", async () => {
+			const snapshots: PerfSnapshot[] = [
+				{
+					totalMs: 100,
+					totalOps: 1,
+					cacheHits: 1,
+					cacheMisses: 0,
+					hitRate: 1,
+					ops: null as unknown as PerfSnapshot["ops"],
+					slow: [],
+				},
+			];
+
+			mockFastify.perfAggregate = {
+				get totalRequests() {
+					return 0;
+				},
+				get totalMs() {
+					return 0;
+				},
+				get lastSnapshots() {
+					return snapshots;
+				},
+			} as typeof mockFastify.perfAggregate;
+
+			const result = await aggregatePerformanceMetrics(mockFastify, mockLogger);
+
+			expect(result).toBeDefined();
+			expect(result.avgDbMs).toBe(0);
+			expect(result.totalRequests).toBe(1);
+			expect(result.totalCacheHits).toBe(1);
+			expect(result.totalCacheMisses).toBe(0);
+			expect(result.highComplexityCount).toBe(0);
+			expect(result.topSlowOps).toEqual([]);
+		});
+
+		it("should handle malformed slow entries and ignore invalid ones", async () => {
+			const snapshots: PerfSnapshot[] = [
+				{
+					totalMs: 100,
+					totalOps: 1,
+					cacheHits: 0,
+					cacheMisses: 0,
+					hitRate: 0,
+					ops: {},
+					slow: [
+						{ op: "db:users.byId", ms: 250 }, // Valid entry
+						{ op: "db:organizations.byId", ms: "invalid" as unknown as number }, // Invalid: non-number ms
+						{ op: "", ms: 200 }, // Invalid: empty op
+						{ ms: 150 } as { op: string; ms: number }, // Invalid: missing op
+						{ op: "db:events.byId", ms: Number.NaN }, // Invalid: NaN ms
+						{ op: "db:posts.byId", ms: 300 }, // Valid entry
+					],
+				},
+			];
+
+			mockFastify.perfAggregate = {
+				get totalRequests() {
+					return 0;
+				},
+				get totalMs() {
+					return 0;
+				},
+				get lastSnapshots() {
+					return snapshots;
+				},
+			} as typeof mockFastify.perfAggregate;
+
+			const result = await aggregatePerformanceMetrics(mockFastify, mockLogger);
+
+			expect(result.topSlowOps.length).toBe(2); // Only valid entries
+			expect(result.topSlowOps[0]?.op).toBe("db:posts.byId");
+			expect(result.topSlowOps[0]?.avgMs).toBe(300);
+			expect(result.topSlowOps[1]?.op).toBe("db:users.byId");
+			expect(result.topSlowOps[1]?.avgMs).toBe(250);
+		});
+
+		it("should handle extremely large numbers without overflow or NaN", async () => {
+			const snapshots: PerfSnapshot[] = [
+				{
+					totalMs: Number.MAX_SAFE_INTEGER,
+					totalOps: 1,
+					cacheHits: Number.MAX_SAFE_INTEGER,
+					cacheMisses: Number.MAX_SAFE_INTEGER,
+					hitRate: 0.5,
+					ops: {
+						"db:users.byId": {
+							count: 1,
+							ms: Number.MAX_SAFE_INTEGER,
+							max: Number.MAX_SAFE_INTEGER,
+						},
+					},
+					slow: [{ op: "db:users.byId", ms: Number.MAX_SAFE_INTEGER }],
+				},
+				{
+					totalMs: 100,
+					totalOps: 1,
+					cacheHits: 1,
+					cacheMisses: 1,
+					hitRate: 0.5,
+					ops: {
+						"db:organizations.byId": { count: 1, ms: 50, max: 50 },
+					},
+					slow: [],
+				},
+			];
+
+			mockFastify.perfAggregate = {
+				get totalRequests() {
+					return 0;
+				},
+				get totalMs() {
+					return 0;
+				},
+				get lastSnapshots() {
+					return snapshots;
+				},
+			} as typeof mockFastify.perfAggregate;
+
+			const result = await aggregatePerformanceMetrics(mockFastify, mockLogger);
+
+			expect(result).toBeDefined();
+			expect(Number.isFinite(result.avgRequestMs)).toBe(true);
+			expect(Number.isFinite(result.avgDbMs)).toBe(true);
+			expect(Number.isFinite(result.avgHitRate)).toBe(true);
+			expect(Number.isNaN(result.avgRequestMs)).toBe(false);
+			expect(Number.isNaN(result.avgDbMs)).toBe(false);
+			expect(Number.isNaN(result.avgHitRate)).toBe(false);
+			expect(result.totalRequests).toBe(2);
+			expect(result.totalCacheHits).toBeGreaterThan(0);
+			expect(result.totalCacheMisses).toBeGreaterThan(0);
+		});
+
+		it("should catch and log internal errors without bubbling up", async () => {
+			const snapshots: PerfSnapshot[] = [
+				{
+					totalMs: 100,
+					totalOps: 1,
+					cacheHits: 1,
+					cacheMisses: 0,
+					hitRate: 1,
+					ops: {
+						"db:users.byId": { count: 1, ms: 50, max: 50 },
+					},
+					slow: [],
+				},
+			];
+
+			mockFastify.perfAggregate = {
+				get totalRequests() {
+					return 0;
+				},
+				get totalMs() {
+					return 0;
+				},
+				get lastSnapshots() {
+					return snapshots;
+				},
+			} as typeof mockFastify.perfAggregate;
+
+			// Mock logger.info to throw an error
+			mockLogger.info = vi.fn().mockImplementation(() => {
+				throw new Error("Logger failure");
+			});
+
+			const result = await aggregatePerformanceMetrics(mockFastify, mockLogger);
+
+			// Should still return valid metrics despite logger error
+			expect(result).toBeDefined();
+			expect(result.totalRequests).toBe(1);
+			expect(result.avgRequestMs).toBe(100);
+			expect(result.avgDbMs).toBe(50);
+
+			// Should log the error
+			expect(mockLogger.error).toHaveBeenCalledWith(
+				expect.objectContaining({
+					error: "Logger failure",
+				}),
+				"Failed to log aggregated metrics",
+			);
+		});
+
+		it("should handle snapshot with undefined ops", async () => {
+			const snapshots: PerfSnapshot[] = [
+				{
+					totalMs: 100,
+					totalOps: 1,
+					cacheHits: 1,
+					cacheMisses: 0,
+					hitRate: 1,
+					ops: undefined as unknown as PerfSnapshot["ops"],
+					slow: [],
+				},
+			];
+
+			mockFastify.perfAggregate = {
+				get totalRequests() {
+					return 0;
+				},
+				get totalMs() {
+					return 0;
+				},
+				get lastSnapshots() {
+					return snapshots;
+				},
+			} as typeof mockFastify.perfAggregate;
+
+			const result = await aggregatePerformanceMetrics(mockFastify, mockLogger);
+
+			expect(result).toBeDefined();
+			expect(result.avgDbMs).toBe(0);
+			expect(result.highComplexityCount).toBe(0);
+		});
+
+		it("should handle snapshot with non-number totalMs", async () => {
+			const snapshots: PerfSnapshot[] = [
+				{
+					totalMs: "invalid" as unknown as number,
+					totalOps: 1,
+					cacheHits: 1,
+					cacheMisses: 0,
+					hitRate: 1,
+					ops: {},
+					slow: [],
+				},
+			];
+
+			mockFastify.perfAggregate = {
+				get totalRequests() {
+					return 0;
+				},
+				get totalMs() {
+					return 0;
+				},
+				get lastSnapshots() {
+					return snapshots;
+				},
+			} as typeof mockFastify.perfAggregate;
+
+			const result = await aggregatePerformanceMetrics(mockFastify, mockLogger);
+
+			expect(result).toBeDefined();
+			expect(result.avgRequestMs).toBe(0);
+			expect(result.slowRequestCount).toBe(0);
+		});
+
+		it("should handle snapshot with non-number cacheHits and cacheMisses", async () => {
+			const snapshots: PerfSnapshot[] = [
+				{
+					totalMs: 100,
+					totalOps: 1,
+					cacheHits: "invalid" as unknown as number,
+					cacheMisses: null as unknown as number,
+					hitRate: 0,
+					ops: {},
+					slow: [],
+				},
+			];
+
+			mockFastify.perfAggregate = {
+				get totalRequests() {
+					return 0;
+				},
+				get totalMs() {
+					return 0;
+				},
+				get lastSnapshots() {
+					return snapshots;
+				},
+			} as typeof mockFastify.perfAggregate;
+
+			const result = await aggregatePerformanceMetrics(mockFastify, mockLogger);
+
+			expect(result).toBeDefined();
+			expect(result.totalCacheHits).toBe(0);
+			expect(result.totalCacheMisses).toBe(0);
+			expect(result.avgHitRate).toBe(0);
+		});
 	});
 });

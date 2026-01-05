@@ -1,4 +1,4 @@
-import Fastify from "fastify";
+import Fastify, { type FastifyRequest } from "fastify";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import performancePlugin from "~/src/fastifyPlugins/performance";
 import { createPerformanceTracker } from "~/src/utilities/metrics/performanceTracker";
@@ -13,55 +13,61 @@ describe("performancePlugin", () => {
 			},
 		});
 
+		// Decorate with envConfig (required by performance plugin)
+		app.decorate("envConfig", {
+			API_PERF_SLOW_OP_MS: undefined,
+			API_PERF_SLOW_REQUEST_MS: undefined,
+			METRICS_API_KEY: undefined,
+			METRICS_ALLOWED_IPS: undefined,
+		});
+
 		await app.register(performancePlugin);
-		await app.ready();
+		// Don't call app.ready() here - let each test control when ready() is called
 	});
 
 	afterEach(async () => {
-		await app.close();
+		if (app) {
+			await app.close();
+		}
 		vi.restoreAllMocks();
 	});
 
 	it("should attach performance tracker to requests", async () => {
-		app.get(
-			"/test",
-			async (req: { perf?: ReturnType<typeof createPerformanceTracker> }) => {
-				expect(req.perf).toBeDefined();
-				return { ok: true };
-			},
-		);
+		app.get("/test", async (req: FastifyRequest) => {
+			// Verify perf tracker is attached (don't throw if not, just return status)
+			if (!req.perf) {
+				return { error: "perf tracker not attached" };
+			}
+			return { ok: true };
+		});
+
+		await app.ready();
 
 		const res = await app.inject({ method: "GET", url: "/test" });
 
 		expect(res.statusCode).toBe(200);
 		expect(res.headers["server-timing"]).toBeDefined();
+		const body = res.json();
+		expect(body).toEqual({ ok: true });
 	});
 
 	it("should log slow requests when threshold is exceeded", async () => {
-		const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
-
-		app.get(
-			"/slow",
-			async (req: { perf?: ReturnType<typeof createPerformanceTracker> }) => {
-				// Simulate slow operation
-				await req.perf?.time("slow-op", async () => {
-					await new Promise((resolve) => setTimeout(resolve, 600));
-				});
-				return { ok: true };
-			},
-		);
-
-		await app.inject({ method: "GET", url: "/slow" });
-
 		// Check that slow request was logged
 		// The log.warn is called on the request logger, so we need to spy on it
 		const logWarnSpy = vi.fn();
-		app.addHook(
-			"onRequest",
-			async (req: { log: { warn: ReturnType<typeof vi.fn> } }) => {
-				vi.spyOn(req.log, "warn").mockImplementation(logWarnSpy);
-			},
-		);
+		app.addHook("onRequest", async (req: FastifyRequest) => {
+			vi.spyOn(req.log, "warn").mockImplementation(logWarnSpy);
+		});
+
+		app.get("/slow", async (req: FastifyRequest) => {
+			// Simulate slow operation
+			await req.perf?.time("slow-op", async () => {
+				await new Promise((resolve) => setTimeout(resolve, 600));
+			});
+			return { ok: true };
+		});
+
+		await app.ready();
 
 		await app.inject({ method: "GET", url: "/slow" });
 
@@ -73,22 +79,19 @@ describe("performancePlugin", () => {
 				path: "/slow",
 			}),
 		);
-
-		warnSpy.mockRestore();
 	});
 
 	it("should not log requests below slow threshold", async () => {
 		const logWarnSpy = vi.fn();
-		app.addHook(
-			"onRequest",
-			async (req: { log: { warn: ReturnType<typeof vi.fn> } }) => {
-				vi.spyOn(req.log, "warn").mockImplementation(logWarnSpy);
-			},
-		);
+		app.addHook("onRequest", async (req: FastifyRequest) => {
+			vi.spyOn(req.log, "warn").mockImplementation(logWarnSpy);
+		});
 
 		app.get("/fast", async () => {
 			return { ok: true };
 		});
+
+		await app.ready();
 
 		await app.inject({ method: "GET", url: "/fast" });
 
@@ -101,24 +104,20 @@ describe("performancePlugin", () => {
 
 	it("should include slow operations in slow request log", async () => {
 		const logWarnSpy = vi.fn();
-		app.addHook(
-			"onRequest",
-			async (req: { log: { warn: ReturnType<typeof vi.fn> } }) => {
-				vi.spyOn(req.log, "warn").mockImplementation(logWarnSpy);
-			},
-		);
+		app.addHook("onRequest", async (req: FastifyRequest) => {
+			vi.spyOn(req.log, "warn").mockImplementation(logWarnSpy);
+		});
 
-		app.get(
-			"/slow-ops",
-			async (req: { perf?: ReturnType<typeof createPerformanceTracker> }) => {
-				// Create slow operations
-				await req.perf?.time("db:slow-query", async () => {
-					await new Promise((resolve) => setTimeout(resolve, 300));
-				});
+		app.get("/slow-ops", async (req: FastifyRequest) => {
+			// Create slow operations
+			await req.perf?.time("db:slow-query", async () => {
 				await new Promise((resolve) => setTimeout(resolve, 300));
-				return { ok: true };
-			},
-		);
+			});
+			await new Promise((resolve) => setTimeout(resolve, 300));
+			return { ok: true };
+		});
+
+		await app.ready();
 
 		await app.inject({ method: "GET", url: "/slow-ops" });
 
@@ -135,9 +134,12 @@ describe("performancePlugin", () => {
 	it("should limit snapshots to 200", async () => {
 		app.get("/test", async () => ({ ok: true }));
 
+		await app.ready();
+
 		// Make 250 requests
 		for (let i = 0; i < 250; i++) {
-			await app.inject({ method: "GET", url: "/test" });
+			const res = await app.inject({ method: "GET", url: "/test" });
+			expect(res.statusCode).toBe(200);
 		}
 
 		// Check metrics endpoint
@@ -152,9 +154,12 @@ describe("performancePlugin", () => {
 	it("should handle exactly 201 snapshots and splice correctly", async () => {
 		app.get("/test", async () => ({ ok: true }));
 
+		await app.ready();
+
 		// Make exactly 201 requests to test the splice logic
 		for (let i = 0; i < 201; i++) {
-			await app.inject({ method: "GET", url: "/test" });
+			const res = await app.inject({ method: "GET", url: "/test" });
+			expect(res.statusCode).toBe(200);
 		}
 
 		// Verify internal storage is limited to 200
@@ -180,18 +185,16 @@ describe("performancePlugin", () => {
 		});
 
 		await app.register(performancePlugin);
-		await app.ready();
 
-		app.get(
-			"/test",
-			async (req: { perf?: ReturnType<typeof createPerformanceTracker> }) => {
-				// Create operation that takes 150ms (should be slow with 100ms threshold)
-				await req.perf?.time("test-op", async () => {
-					await new Promise((resolve) => setTimeout(resolve, 150));
-				});
-				return { ok: true };
-			},
-		);
+		app.get("/test", async (req: FastifyRequest) => {
+			// Create operation that takes 150ms (should be slow with 100ms threshold)
+			await req.perf?.time("test-op", async () => {
+				await new Promise((resolve) => setTimeout(resolve, 150));
+			});
+			return { ok: true };
+		});
+
+		await app.ready();
 
 		await app.inject({ method: "GET", url: "/test" });
 
@@ -220,21 +223,19 @@ describe("performancePlugin", () => {
 		});
 
 		await app.register(performancePlugin);
-		await app.ready();
 
 		const logWarnSpy = vi.fn();
-		app.addHook(
-			"onRequest",
-			async (req: { log: { warn: ReturnType<typeof vi.fn> } }) => {
-				vi.spyOn(req.log, "warn").mockImplementation(logWarnSpy);
-			},
-		);
+		app.addHook("onRequest", async (req: FastifyRequest) => {
+			vi.spyOn(req.log, "warn").mockImplementation(logWarnSpy);
+		});
 
 		app.get("/test", async () => {
 			// Create request that takes 250ms (should be slow with 200ms threshold)
 			await new Promise((resolve) => setTimeout(resolve, 250));
 			return { ok: true };
 		});
+
+		await app.ready();
 
 		await app.inject({ method: "GET", url: "/test" });
 
@@ -246,14 +247,13 @@ describe("performancePlugin", () => {
 	});
 
 	it("should handle requests without perf tracker gracefully", async () => {
-		app.get(
-			"/no-perf",
-			async (req: { perf?: ReturnType<typeof createPerformanceTracker> }) => {
-				// Manually remove perf tracker
-				delete req.perf;
-				return { ok: true };
-			},
-		);
+		app.get("/no-perf", async (req: FastifyRequest) => {
+			// Manually remove perf tracker
+			delete req.perf;
+			return { ok: true };
+		});
+
+		await app.ready();
 
 		const res = await app.inject({ method: "GET", url: "/no-perf" });
 
@@ -264,18 +264,14 @@ describe("performancePlugin", () => {
 	});
 
 	it("should handle requests without _t0 timestamp", async () => {
-		app.addHook(
-			"onRequest",
-			async (req: {
-				_t0?: number;
-				perf?: ReturnType<typeof createPerformanceTracker>;
-			}) => {
-				// Don't set _t0 to test fallback
-				req.perf = createPerformanceTracker();
-			},
-		);
+		app.addHook("onRequest", async (req: FastifyRequest) => {
+			// Don't set _t0 to test fallback
+			req.perf = createPerformanceTracker();
+		});
 
 		app.get("/no-t0", async () => ({ ok: true }));
+
+		await app.ready();
 
 		const res = await app.inject({ method: "GET", url: "/no-t0" });
 
@@ -285,21 +281,21 @@ describe("performancePlugin", () => {
 	});
 
 	it("should calculate dbMs correctly from ops", async () => {
-		app.get(
-			"/test-db",
-			async (req: { perf?: ReturnType<typeof createPerformanceTracker> }) => {
-				await req.perf?.time("db:users.byId", async () => {
-					await new Promise((resolve) => setTimeout(resolve, 50));
-				});
-				await req.perf?.time("db:organizations.byId", async () => {
-					await new Promise((resolve) => setTimeout(resolve, 30));
-				});
-				return { ok: true };
-			},
-		);
+		app.get("/test-db", async (req: FastifyRequest) => {
+			await req.perf?.time("db:users.byId", async () => {
+				await new Promise((resolve) => setTimeout(resolve, 50));
+			});
+			await req.perf?.time("db:organizations.byId", async () => {
+				await new Promise((resolve) => setTimeout(resolve, 30));
+			});
+			return { ok: true };
+		});
+
+		await app.ready();
 
 		const res = await app.inject({ method: "GET", url: "/test-db" });
 
+		expect(res.statusCode).toBe(200);
 		const st = res.headers["server-timing"] as string;
 		// Extract db duration
 		const dbMatch = st.match(/db;dur=(\d+)/);
@@ -312,18 +308,18 @@ describe("performancePlugin", () => {
 	});
 
 	it("should include cache metrics in Server-Timing header", async () => {
-		app.get(
-			"/test-cache",
-			async (req: { perf?: ReturnType<typeof createPerformanceTracker> }) => {
-				req.perf?.trackCacheHit();
-				req.perf?.trackCacheHit();
-				req.perf?.trackCacheMiss();
-				return { ok: true };
-			},
-		);
+		app.get("/test-cache", async (req: FastifyRequest) => {
+			req.perf?.trackCacheHit();
+			req.perf?.trackCacheHit();
+			req.perf?.trackCacheMiss();
+			return { ok: true };
+		});
+
+		await app.ready();
 
 		const res = await app.inject({ method: "GET", url: "/test-cache" });
 
+		expect(res.statusCode).toBe(200);
 		const st = res.headers["server-timing"] as string;
 		expect(st).toMatch(/cache;desc="hit:\d+\|miss:\d+"/);
 		// Should have 2 hits and 1 miss

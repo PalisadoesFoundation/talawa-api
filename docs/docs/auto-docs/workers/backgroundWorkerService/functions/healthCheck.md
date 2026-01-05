@@ -6,7 +6,7 @@
 
 > **healthCheck**(`schedules?`): `Promise`\<\{ `details`: `Record`\<`string`, `unknown`\>; `status`: `"healthy"` \| `"unhealthy"`; \}\>
 
-Defined in: [src/workers/backgroundWorkerService.ts:340](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/workers/backgroundWorkerService.ts#L340)
+Defined in: [src/workers/backgroundWorkerService.ts:345](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/workers/backgroundWorkerService.ts#L345)
 
 Performs a health check of the background worker service, suitable for use by monitoring systems.
 

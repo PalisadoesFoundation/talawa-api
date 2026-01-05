@@ -143,6 +143,11 @@ export async function stopBackgroundWorkers(
 		}
 
 		isRunning = false;
+		// Clear stored schedules when stopping workers
+		materializationSchedule = undefined;
+		cleanupSchedule = undefined;
+		perfAggregationSchedule = undefined;
+
 		logger.info("Background worker service stopped successfully");
 	} catch (error) {
 		logger.error(error, "Error stopping background worker service:");

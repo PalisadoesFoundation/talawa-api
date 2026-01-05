@@ -122,37 +122,61 @@ export async function aggregatePerformanceMetrics(
 	const slowOpsMap = new Map<string, { totalMs: number; count: number }>();
 
 	for (const snap of snapshots) {
-		totalRequestMs += snap.totalMs;
-		totalCacheHits += snap.cacheHits;
-		totalCacheMisses += snap.cacheMisses;
+		// Safely handle snapshots with invalid or missing data
+		const safeTotalMs = typeof snap.totalMs === "number" ? snap.totalMs : 0;
+		const safeCacheHits =
+			typeof snap.cacheHits === "number" ? snap.cacheHits : 0;
+		const safeCacheMisses =
+			typeof snap.cacheMisses === "number" ? snap.cacheMisses : 0;
 
-		// Sum database operation times
-		const dbOps = Object.entries(snap.ops).filter(([key]) =>
-			key.startsWith("db:"),
-		);
-		for (const [, stats] of dbOps) {
-			totalDbMs += stats.ms;
+		totalRequestMs += safeTotalMs;
+		totalCacheHits += safeCacheHits;
+		totalCacheMisses += safeCacheMisses;
+
+		// Sum database operation times (handle null/undefined ops)
+		if (snap.ops && typeof snap.ops === "object") {
+			const dbOps = Object.entries(snap.ops).filter(([key]) =>
+				key.startsWith("db:"),
+			);
+			for (const [, stats] of dbOps) {
+				if (stats && typeof stats.ms === "number") {
+					totalDbMs += stats.ms;
+				}
+			}
 		}
 
 		// Count slow requests
-		if (snap.totalMs >= 500) {
+		if (safeTotalMs >= 500) {
 			slowRequestCount++;
 		}
 
 		// Count high complexity queries (using actual complexity score, not execution time)
-		const complexityOp = snap.ops["gql:complexity"];
-		const COMPLEXITY_THRESHOLD = 100;
-		if (
-			complexityOp &&
-			complexityOp.score !== undefined &&
-			complexityOp.score >= COMPLEXITY_THRESHOLD
-		) {
-			highComplexityCount++;
+		if (snap.ops && typeof snap.ops === "object") {
+			const complexityOp = snap.ops["gql:complexity"];
+			const COMPLEXITY_THRESHOLD = 100;
+			if (
+				complexityOp &&
+				typeof complexityOp.score === "number" &&
+				complexityOp.score >= COMPLEXITY_THRESHOLD
+			) {
+				highComplexityCount++;
+			}
 		}
 
-		// Aggregate slow operations
-		if (snap.slow && snap.slow.length > 0) {
+		// Aggregate slow operations (handle malformed entries)
+		if (snap.slow && Array.isArray(snap.slow) && snap.slow.length > 0) {
 			for (const slowOp of snap.slow) {
+				// Skip invalid entries (missing op, empty op, or non-number ms)
+				if (
+					!slowOp ||
+					typeof slowOp.op !== "string" ||
+					!slowOp.op.trim() ||
+					typeof slowOp.ms !== "number" ||
+					Number.isNaN(slowOp.ms)
+				) {
+					continue;
+				}
+
 				const existing = slowOpsMap.get(slowOp.op);
 				if (existing) {
 					existing.totalMs += slowOp.ms;
@@ -198,14 +222,24 @@ export async function aggregatePerformanceMetrics(
 		topSlowOps,
 	};
 
-	// Log aggregated metrics
-	logger.info(
-		{
-			msg: "Performance metrics aggregation",
-			...metrics,
-		},
-		"Performance metrics aggregated",
-	);
+	// Log aggregated metrics (with error handling)
+	try {
+		logger.info(
+			{
+				msg: "Performance metrics aggregation",
+				...metrics,
+			},
+			"Performance metrics aggregated",
+		);
+	} catch (error) {
+		// Log error but don't fail aggregation
+		logger.error(
+			{
+				error: error instanceof Error ? error.message : "Unknown error",
+			},
+			"Failed to log aggregated metrics",
+		);
+	}
 
 	return metrics;
 }

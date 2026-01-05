@@ -1,3 +1,4 @@
+import { timingSafeEqual } from "node:crypto";
 import type { FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
 import fp from "fastify-plugin";
 import {
@@ -231,7 +232,15 @@ export default fp(
 					? authHeader.slice(7)
 					: authHeader;
 
-				if (providedKey !== apiKey) {
+				// Use timing-safe comparison to prevent timing attacks
+				const apiKeyBuffer = Buffer.from(apiKey, "utf8");
+				const providedKeyBuffer = Buffer.from(providedKey, "utf8");
+
+				// Check lengths first (if different, treat as mismatch without calling timingSafeEqual)
+				if (
+					apiKeyBuffer.length !== providedKeyBuffer.length ||
+					!timingSafeEqual(apiKeyBuffer, providedKeyBuffer)
+				) {
 					reply.status(403).send({
 						error: "Forbidden",
 						message: "Invalid API key",

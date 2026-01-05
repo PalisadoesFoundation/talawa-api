@@ -631,7 +631,10 @@ describe("backgroundServiceWorker", () => {
 			expect(status.perfAggregationSchedule).toBe("*/10 * * * *");
 		});
 
-		it("should fall back to process.env when schedules not provided", () => {
+		it("should fall back to process.env when schedules not provided", async () => {
+			// Ensure workers are stopped and schedules are cleared
+			await stopBackgroundWorkers(mockLogger);
+
 			const originalEnv = process.env.EVENT_GENERATION_CRON_SCHEDULE;
 			process.env.EVENT_GENERATION_CRON_SCHEDULE = "*/15 * * * *";
 
