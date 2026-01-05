@@ -418,13 +418,17 @@ describe("performancePlugin", () => {
 
 			await app.register(performancePlugin);
 
-			// Register a hook that runs after the plugin's onRequest to clear req.ip
-			// This must run before the preHandler executes
-			app.addHook("onRequest", async (req: FastifyRequest) => {
-				// Clear req.ip to simulate missing IP address
-				// This needs to happen after plugin registration but before route handler
+			// Register a hook that runs before the preHandler to clear req.ip
+			// Use preHandler hook to modify req.ip right before the metrics preHandler runs
+			app.addHook("preHandler", async (req: FastifyRequest) => {
+				// Clear req.ip to simulate missing IP address for /metrics/perf endpoint
 				if (req.url === "/metrics/perf") {
-					(req as { ip?: string }).ip = undefined;
+					// Use Object.defineProperty to safely set ip to undefined
+					Object.defineProperty(req, "ip", {
+						value: undefined,
+						writable: true,
+						configurable: true,
+					});
 				}
 			});
 

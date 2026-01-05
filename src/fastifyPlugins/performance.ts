@@ -196,8 +196,20 @@ export default fp(
 				return;
 			}
 
+			// Track if IP check was attempted and failed
+			let ipCheckFailed = false;
+
 			// Check if IP is in allowed list (only if allowedIps is configured)
 			if (allowedIps) {
+				// Guard check: ensure req exists before accessing req.ip
+				if (!req) {
+					reply.status(403).send({
+						error: "Forbidden",
+						message: "IP address not available",
+					});
+					return;
+				}
+
 				const clientIp = req.ip;
 				if (!clientIp) {
 					reply.status(403).send({
@@ -214,6 +226,8 @@ export default fp(
 				if (isAllowed) {
 					return; // IP is allowed, proceed
 				}
+				// IP check failed, but continue to API key check if configured
+				ipCheckFailed = true;
 			}
 
 			// Check API key in Authorization header
@@ -241,10 +255,18 @@ export default fp(
 					apiKeyBuffer.length !== providedKeyBuffer.length ||
 					!timingSafeEqual(apiKeyBuffer, providedKeyBuffer)
 				) {
-					reply.status(403).send({
-						error: "Forbidden",
-						message: "Invalid API key",
-					});
+					// If IP check also failed, return "Access denied" instead of "Invalid API key"
+					if (ipCheckFailed) {
+						reply.status(403).send({
+							error: "Forbidden",
+							message: "Access denied",
+						});
+					} else {
+						reply.status(403).send({
+							error: "Forbidden",
+							message: "Invalid API key",
+						});
+					}
 					return;
 				}
 
