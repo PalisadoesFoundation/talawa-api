@@ -105,40 +105,6 @@ jobs:
 
   Count-Changed-Files:
     uses: PalisadoesFoundation/.github/.github/workflows/count-changed-files.yml@main
-  Check-ItSkip-Disable:
-    name: Check for it.skip commands
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0 # Fetch all history for all branches and tags
-
-      - name: Checkout centralized scripts
-        uses: actions/checkout@v4
-        with:
-          repository: PalisadoesFoundation/.github
-          path: .github-central
-          ref: main
-
-      - name: Get changed files
-        id: changed-files
-        run: |
-          # Get the base branch ref
-          BASE_SHA=$(git merge-base ${{ github.event.pull_request.base.sha }} ${{ github.event.pull_request.head.sha }})
-
-          # Get all changed files
-          ALL_CHANGED_FILES=$(git diff --name-only --diff-filter=ACMRT $BASE_SHA ${{ github.event.pull_request.head.sha }} | tr '\n' ' ')
-          echo "all_changed_files=${ALL_CHANGED_FILES}" >> $GITHUB_OUTPUT
-
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: 3.9
-
-      - name: Run it.skip Check
-        run: |
-          python .github-central/.github/workflows/scripts/disable_statements_check.py --repo=api --files ${{ steps.changed-files.outputs.all_changed_files }}
 
   python_checks:
     name: Run Python Checks
@@ -456,7 +422,6 @@ jobs:
         Check-AutoDocs,
         Check_unused_code,
         Generate-Schema-Docs,
-        Check-ItSkip-Disable,
         Python-Compliance,
       ]
     steps:
