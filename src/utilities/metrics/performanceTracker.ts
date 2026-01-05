@@ -158,6 +158,8 @@ export function createPerformanceTracker(
 			} else {
 				// Find the minimum slow operation
 				let minIndex = 0;
+				// Access slow[0] - this can be undefined in edge cases (sparse arrays)
+				// but should never happen with our push() usage. This is a defensive check.
 				const firstSlow = slow[0];
 				if (!firstSlow) {
 					return; // Safety check, should not happen

@@ -451,6 +451,68 @@ describe("performancePlugin", () => {
 			expect(res.statusCode).toBe(403);
 		});
 
+		it("should handle IP with undefined octets after destructuring (defensive check)", async () => {
+			// This test covers the defensive check on line 167: if (a === undefined || ...) return -1
+			// To trigger this, we need an array with length 4, no NaN values, but with undefined elements
+			// after destructuring. Since split().map() never produces sparse arrays naturally, we use
+			// a mock to intercept the map operation and create an array with undefined values.
+			//
+			// The check exists for TypeScript type safety - in practice, split().map() always produces
+			// a dense array, so this should never trigger. However, for coverage purposes, we test it.
+
+			await app.close();
+
+			app = Fastify({
+				logger: {
+					level: "info",
+				},
+			});
+
+			// Mock Array.prototype.map to create an array with undefined at index 1
+			// This simulates the edge case where destructuring could produce undefined
+			const originalMap = Array.prototype.map;
+			let mapCallCount = 0;
+
+			Array.prototype.map = function <T, U>(
+				this: T[],
+				callbackfn: (value: T, index: number, array: T[]) => U,
+			): U[] {
+				// Intercept calls for IP addresses (arrays with 4 elements from split("."))
+				// Only modify the network part (first call), not the client IP
+				if (this.length === 4 && mapCallCount === 0) {
+					mapCallCount++;
+					// Create array with undefined at index 1 to trigger the defensive check on line 167
+					// The array must pass: length === 4 and !some(Number.isNaN) checks first
+					const result = originalMap.call(this, callbackfn) as U[];
+					// Set index 1 to undefined to trigger the check
+					result[1] = undefined as U;
+					return result;
+				}
+				return originalMap.call(this, callbackfn) as U[];
+			};
+
+			try {
+				app.decorate("envConfig", {
+					METRICS_ALLOWED_IPS: "192.168.1.0/24",
+				});
+
+				await app.register(performancePlugin);
+				await app.ready();
+
+				const res = await app.inject({
+					method: "GET",
+					url: "/metrics/perf",
+				});
+
+				// Should reject because ipToNumber returns -1 due to undefined check on line 167
+				// The network IP parsing fails, so isIpInRange returns false
+				expect(res.statusCode).toBe(403);
+			} finally {
+				// Restore original map
+				Array.prototype.map = originalMap;
+			}
+		});
+
 		it("should reject when req.ip is missing and allowedIps is configured", async () => {
 			await app.close();
 
