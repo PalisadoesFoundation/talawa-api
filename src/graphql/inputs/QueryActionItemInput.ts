@@ -1,12 +1,11 @@
 import { z } from "zod";
-import { actionItemsTableInsertSchema } from "~/src/drizzle/tables/actionItems";
 import { builder } from "~/src/graphql/builder";
 
 /**
  * Defines the Zod validation schema for querying ActionItems by organizationId.
  */
 export const queryActionItemsByOrgInputSchema = z.object({
-	organizationId: actionItemsTableInsertSchema.shape.organizationId,
+	organizationId: z.string().uuid(), // Required UUID string
 });
 
 /**
@@ -59,9 +58,8 @@ export const QueryActionItemsByVolunteerInput = builder
  * Defines the Zod validation schema for querying ActionItems by volunteerGroupId.
  */
 export const queryActionItemsByVolunteerGroupInputSchema = z.object({
-	volunteerGroupId:
-		actionItemsTableInsertSchema.shape.volunteerGroupId.unwrap(), // Make volunteerGroupId required
-	organizationId: actionItemsTableInsertSchema.shape.organizationId.optional(), // Optional org filter
+	volunteerGroupId: z.string().uuid(), // Required UUID string
+	organizationId: z.string().uuid().optional(), // Optional org filter
 });
 
 /**
