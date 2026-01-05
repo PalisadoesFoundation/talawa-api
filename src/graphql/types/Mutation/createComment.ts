@@ -6,6 +6,7 @@ import {
 	mutationCreateCommentInputSchema,
 } from "~/src/graphql/inputs/MutationCreateCommentInput";
 import { Comment } from "~/src/graphql/types/Comment/Comment";
+import { firstOrThrow } from "~/src/utilities/dbHelpers";
 import envConfig from "~/src/utilities/graphqLimits";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 
@@ -125,7 +126,7 @@ builder.mutationField("createComment", (t) =>
 				});
 			}
 
-			const [createdComment] = await ctx.drizzleClient
+			const rows = await ctx.drizzleClient
 				.insert(commentsTable)
 				.values({
 					body: parsedArgs.input.body,
@@ -134,17 +135,7 @@ builder.mutationField("createComment", (t) =>
 				})
 				.returning();
 
-			// Inserted comment not being returned is an external defect unrelated to this code. It is very unlikely for this error to occur.
-			if (createdComment === undefined) {
-				ctx.log.error(
-					"Postgres insert operation unexpectedly returned an empty array instead of throwing an error.",
-				);
-				throw new TalawaGraphQLError({
-					extensions: {
-						code: "unexpected",
-					},
-				});
-			}
+			const createdComment = firstOrThrow(rows, "Comment creation failed");
 
 			return createdComment;
 		},

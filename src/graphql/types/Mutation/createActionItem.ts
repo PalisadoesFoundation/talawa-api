@@ -4,6 +4,7 @@ import { z } from "zod";
 import { actionItemsTable } from "~/src/drizzle/tables/actionItems";
 import { builder } from "~/src/graphql/builder";
 import { ActionItem } from "~/src/graphql/types/ActionItem/ActionItem";
+import { firstOrThrow } from "~/src/utilities/dbHelpers";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 
 const mutationCreateActionItemArgumentsSchema = z.object({
@@ -175,7 +176,7 @@ builder.mutationField("createActionItem", (t) =>
 				});
 			}
 
-			const [createdActionItem] = await ctx.drizzleClient
+			const rows = await ctx.drizzleClient
 				.insert(actionItemsTable)
 				.values({
 					id: uuidv7(),
@@ -200,12 +201,10 @@ builder.mutationField("createActionItem", (t) =>
 				})
 				.returning();
 
-			if (!createdActionItem) {
-				ctx.log.error(
-					"Postgres insert operation unexpectedly returned an empty array.",
-				);
-				throw new TalawaGraphQLError({ extensions: { code: "unexpected" } });
-			}
+			const createdActionItem = firstOrThrow(
+				rows,
+				"Action item creation failed",
+			);
 
 			return createdActionItem;
 		},

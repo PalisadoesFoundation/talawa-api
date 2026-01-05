@@ -136,7 +136,8 @@ export const actionItemsByVolunteer = builder.queryField(
 						},
 					});
 
-				return actionItems;
+				// Ensure we always return an array (never undefined)
+				return actionItems ?? [];
 			},
 			type: [ActionItem], // Returns an array of ActionItems
 		}),
