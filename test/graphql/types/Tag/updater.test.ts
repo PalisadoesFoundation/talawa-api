@@ -68,9 +68,10 @@ describe("Tag Resolver - Updater Field", () => {
 		};
 
 		mockTag.updaterId = "user-456";
-		mocks.drizzleClient.query.usersTable.findFirst
-			.mockResolvedValueOnce(currentUser)
-			.mockResolvedValueOnce(updaterUser);
+		mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValueOnce(
+			currentUser,
+		);
+		ctx.dataloaders.user.load = vi.fn().mockResolvedValue(updaterUser);
 
 		const result = await resolveUpdater(mockTag, {}, ctx);
 		expect(result).toEqual(updaterUser);
@@ -84,10 +85,10 @@ describe("Tag Resolver - Updater Field", () => {
 		};
 
 		mockTag.updaterId = "user-456";
-		mocks.drizzleClient.query.usersTable.findFirst
-
-			.mockResolvedValueOnce(currentUser)
-			.mockResolvedValueOnce(undefined);
+		mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValueOnce(
+			currentUser,
+		);
+		ctx.dataloaders.user.load = vi.fn().mockResolvedValue(null);
 
 		await expect(async () => {
 			await resolveUpdater(mockTag, {}, ctx);
