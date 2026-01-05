@@ -102,6 +102,10 @@ export function generateJwtSecret(): string {
 		throw new TalawaRestError({
 			code: ErrorCode.INTERNAL_SERVER_ERROR,
 			message: "Failed to generate JWT secret",
+			details: {
+				cause: err instanceof Error ? err.message : String(err),
+				stack: err instanceof Error ? err.stack : undefined,
+			},
 		});
 	}
 }

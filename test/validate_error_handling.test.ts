@@ -231,7 +231,7 @@ describe("ErrorHandlingValidator", () => {
 			);
 		});
 
-		it("should not report generic errors in non-route/resolver files", () => {
+		it("should report generic errors in non-route/resolver files", () => {
 			const line = 'throw new Error("Generic error");';
 			validator.addViolation = vi.fn();
 			validator.checkGenericError("src/utilities/helper.ts", 10, line);

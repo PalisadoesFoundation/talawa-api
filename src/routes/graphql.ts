@@ -12,10 +12,7 @@ import type {
 } from "~/src/graphql/context";
 import schemaManager from "~/src/graphql/schemaManager";
 import NotificationService from "~/src/services/notification/NotificationService";
-import {
-	ERROR_CODE_TO_HTTP_STATUS,
-	ErrorCode,
-} from "~/src/utilities/errors/errorCodes";
+import { ErrorCode } from "~/src/utilities/errors/errorCodes";
 import {
 	COOKIE_NAMES,
 	getAccessTokenCookieOptions,
@@ -24,6 +21,7 @@ import {
 	getRefreshTokenCookieOptions,
 } from "../utilities/cookieConfig";
 import { createDataloaders } from "../utilities/dataloaders";
+import { formatGraphQLErrors } from "../utilities/formatGraphQLErrors";
 import leakyBucket from "../utilities/leakyBucket";
 import { DEFAULT_REFRESH_TOKEN_EXPIRES_MS } from "../utilities/refreshTokenUtils";
 import { TalawaGraphQLError } from "../utilities/TalawaGraphQLError";
@@ -280,117 +278,24 @@ export const graphql = fastifyPlugin(async (fastify) => {
 			(context as { correlationId?: string }).correlationId ??
 			`sub-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
 
-		const formatted = errors.map((e) => {
-			const rawCode = e.extensions?.code as string | undefined;
-
-			// Normalize error code for internal logic (status lookup)
-			let normalizedCode: ErrorCode;
-
-			if (rawCode && Object.values(ErrorCode).includes(rawCode as ErrorCode)) {
-				normalizedCode = rawCode as ErrorCode;
-			} else {
-				// Map legacy codes to standard ErrorCodes
-				switch (rawCode) {
-					case "too_many_requests":
-						normalizedCode = ErrorCode.RATE_LIMIT_EXCEEDED;
-						break;
-					case "forbidden_action_on_arguments_associated_resources":
-						normalizedCode = ErrorCode.UNAUTHORIZED;
-						break;
-					case "invalid_credentials":
-						normalizedCode = ErrorCode.UNAUTHENTICATED;
-						break;
-					case "account_locked":
-						normalizedCode = ErrorCode.UNAUTHORIZED;
-						break;
-					case "unauthorized_action":
-					case "unauthorized_arguments":
-						normalizedCode = ErrorCode.INSUFFICIENT_PERMISSIONS;
-						break;
-					default:
-						normalizedCode = ErrorCode.INTERNAL_SERVER_ERROR;
-				}
-			}
-
-			// Determine HTTP status: specific override > mapped from code > default 500
-			const httpStatus =
-				(e.extensions?.httpStatus as number) ??
-				ERROR_CODE_TO_HTTP_STATUS[normalizedCode] ??
-				500;
-
-			// Sanitize extensions by removing sensitive keys and whitelisting safe ones
-			const sensitiveKeys = new Set([
-				"stack", // Stack trace (internal implementation details)
-				"internal", // Internal error details
-				"debug", // Debugging information
-				"raw", // Raw error object
-				"error", // Error object
-				"secrets", // Secrets/credentials
-				"exception", // Exception details
-			]);
-			const sanitizedExtensions: Record<string, unknown> = {};
-
-			if (e.extensions && typeof e.extensions === "object") {
-				for (const [key, value] of Object.entries(e.extensions)) {
-					// Handle "error" key specifically to scrub sensitive subfields if it's an object
-					if (key === "error" && typeof value === "object" && value !== null) {
-						const { stack, internal, raw, exception, ...safeError } =
-							value as Record<string, unknown>;
-						// Only include the sanitized error object if it has safe properties
-						if (Object.keys(safeError).length > 0) {
-							sanitizedExtensions[key] = safeError;
-						}
-						continue;
-					}
-
-					// Skip all sensitive keys (including "error" when it's not an object)
-					if (sensitiveKeys.has(key)) {
-						continue;
-					}
-
-					// Only include safe keys
-					if (typeof key === "string" && key.length > 0) {
-						sanitizedExtensions[key] = value;
-					}
-				}
-			}
-
-			return {
-				message: e.message,
-				locations: e.locations,
-				path: e.path,
-				extensions: {
-					// Spread sanitized extensions first so they can't override our standardized keys
-					...sanitizedExtensions,
-					// Use original rawCode if present to preserve external behavior, else normalized
-					code: rawCode ?? normalizedCode,
-					details: e.extensions?.details,
-					correlationId,
-					httpStatus,
-				},
-			};
-		});
-
-		// Return 200 for HTTP per spec; use mapped status for subscriptions or tests.
-		const isRealHttpRequest = !!context.reply;
-		const statusCode = isRealHttpRequest
-			? 200
-			: (formatted[0]?.extensions?.httpStatus ?? 500);
-
-		// Log error
 		const logger =
-			(context as unknown as ExplicitGraphQLContext).log ??
-			context.reply?.request?.log;
-		logger?.error({
-			msg: "GraphQL error",
+			"log" in context
+				? (context as { log: FastifyInstance["log"] }).log
+				: context.reply?.request?.log;
+
+		// Return 200 for HTTP per spec
+		// use mapped status for subscriptions or tests.
+		const isRealHttpRequest = !!context.reply;
+		const httpStatusCode = isRealHttpRequest ? 200 : undefined;
+
+		const { formatted, statusCode: mappedStatusCode } = formatGraphQLErrors(
+			errors,
 			correlationId,
-			statusCode,
-			errors: formatted.map((fe) => ({
-				message: fe.message,
-				code: fe.extensions?.code,
-				details: fe.extensions?.details,
-			})),
-		});
+			logger,
+			httpStatusCode, // Passing the HTTP status code for logging
+		);
+
+		const statusCode = httpStatusCode ?? mappedStatusCode;
 
 		return {
 			statusCode,

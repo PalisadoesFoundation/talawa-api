@@ -194,7 +194,7 @@ suite("Mutation field updateTag", () => {
 				},
 			});
 
-			expect(result.data?.updateTag ?? null).toBeNull();
+			expect(result.data?.updateTag).toBeNull();
 			expect(result.errors).toEqual(
 				expect.arrayContaining([
 					expect.objectContaining({

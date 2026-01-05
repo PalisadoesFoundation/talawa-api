@@ -2,6 +2,8 @@ import type { NodePgDatabase } from "drizzle-orm/node-postgres";
 import type { FastifyBaseLogger } from "fastify";
 import cron from "node-cron";
 import type * as schema from "~/src/drizzle/schema";
+import { ErrorCode } from "~/src/utilities/errors/errorCodes";
+import { TalawaRestError } from "~/src/utilities/errors/TalawaRestError";
 import { cleanupOldInstances } from "./eventCleanupWorker";
 import {
 	createDefaultWorkerConfig,
@@ -189,7 +191,10 @@ export async function triggerMaterializationWorker(
 	logger: FastifyBaseLogger,
 ): Promise<void> {
 	if (!isRunning) {
-		throw new Error("Background worker service is not running");
+		throw new TalawaRestError({
+			code: ErrorCode.INTERNAL_SERVER_ERROR,
+			message: "Background worker service is not running",
+		});
 	}
 
 	logger.info("Manually triggering materialization worker");
@@ -204,7 +209,10 @@ export async function triggerCleanupWorker(
 	logger: FastifyBaseLogger,
 ): Promise<void> {
 	if (!isRunning) {
-		throw new Error("Background worker service is not running");
+		throw new TalawaRestError({
+			code: ErrorCode.INTERNAL_SERVER_ERROR,
+			message: "Background worker service is not running",
+		});
 	}
 
 	logger.info("Manually triggering cleanup worker");
@@ -234,9 +242,10 @@ export function getBackgroundWorkerStatus(): {
 /**
  * Performs a health check of the background worker service, suitable for use by monitoring systems.
  *
+ * @param logger - Optional logger for error reporting
  * @returns - A promise that resolves to an object indicating the health status and any relevant details.
  */
-export async function healthCheck(): Promise<{
+export async function healthCheck(logger?: FastifyBaseLogger): Promise<{
 	status: "healthy" | "unhealthy";
 	details: Record<string, unknown>;
 }> {
@@ -258,6 +267,9 @@ export async function healthCheck(): Promise<{
 			details: status,
 		};
 	} catch (error) {
+		if (logger) {
+			logger.error({ err: error }, "Health check failed");
+		}
 		return {
 			status: "unhealthy",
 			details: {

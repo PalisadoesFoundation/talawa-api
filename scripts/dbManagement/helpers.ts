@@ -148,8 +148,8 @@ export async function emptyMinioBucket(): Promise<boolean> {
 export async function pingDB(): Promise<boolean> {
 	try {
 		await db.execute(sql`SELECT 1`);
-	} catch (_error) {
-		throw new Error(`Unable to connect to the database. Cause: ${_error}`);
+	} catch (error) {
+		throw new Error(`Unable to connect to the database. Cause: ${error}`);
 	}
 	return true;
 }

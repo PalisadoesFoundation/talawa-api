@@ -6,7 +6,7 @@
 
 > `const` **FILE\_UPLOAD\_CONFIG**: `object`
 
-Defined in: [src/routes/graphql.ts:193](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/routes/graphql.ts#L193)
+Defined in: [src/routes/graphql.ts:191](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/routes/graphql.ts#L191)
 
 File upload configuration for GraphQL multipart requests.
 These limits are enforced by mercurius-upload and are exported for use in tests.

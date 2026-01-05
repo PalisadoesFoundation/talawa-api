@@ -153,6 +153,23 @@ export class ErrorHandlingValidator {
 	}
 
 	public async getFilesToScan(): Promise<string[]> {
+		// Check if changed files are provided via environment variable (from CI)
+		const envChangedFiles = process.env.CHANGED_FILES;
+		if (envChangedFiles?.trim()) {
+			const files = envChangedFiles
+				.trim()
+				.split(/\s+/)
+				.filter(Boolean)
+				.filter((file) => this.shouldScanFile(file));
+
+			if (files.length > 0) {
+				console.log(
+					`Using changed files from environment: ${files.length} files`,
+				);
+				return files;
+			}
+		}
+
 		try {
 			const modifiedFiles = this.getModifiedFiles();
 			if (modifiedFiles.length > 0) {
