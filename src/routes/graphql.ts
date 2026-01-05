@@ -158,7 +158,7 @@ export const createContext: CreateContext = async (initialContext) => {
 				fastify.jwt.sign(payload),
 		},
 		cookie: cookieHelper,
-		log: fastify.log,
+		log: request.log ?? fastify.log,
 		minio: fastify.minio,
 		// attached a per-request notification service that queues notifications and can flush later
 		notification: new NotificationService(),
@@ -216,6 +216,25 @@ export const graphql = fastifyPlugin(async (fastify) => {
 		cache: false,
 		path: "/graphql",
 		schema: initialSchema,
+		errorFormatter: (execution, context) => {
+			const correlationId = context.reply.request.id;
+
+			return {
+				statusCode: 200,
+				response: {
+					data: execution.data ?? null,
+					errors: execution.errors.map((err) => ({
+						message: err.message,
+						locations: err.locations,
+						path: err.path,
+						extensions: {
+							...err.extensions,
+							correlationId,
+						},
+					})),
+				},
+			};
+		},
 		subscription: {
 			onConnect: async (data) => {
 				const { payload } = data;

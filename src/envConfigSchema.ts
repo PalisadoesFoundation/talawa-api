@@ -476,6 +476,16 @@ export const envConfigSchema = Type.Object({
 			minLength: 9, // Minimum valid cron: "* * * * *"
 		}),
 	),
+
+	/**
+	 * Secret key for Google reCAPTCHA v2 verification.
+	 * Used to verify reCAPTCHA tokens on the server side.
+	 */
+	RECAPTCHA_SECRET_KEY: Type.Optional(
+		Type.String({
+			minLength: 1,
+		}),
+	),
 });
 
 /**

@@ -12,7 +12,7 @@ import type {
 import { schema } from "~/src/graphql/schema";
 import type { Post as PostType } from "~/src/graphql/types/Post/Post";
 import type { User } from "~/src/graphql/types/User/User";
-import type { DefaultGraphQLConnection as Connection } from "~/src/utilities/defaultGraphQLConnection";
+import type { DefaultGraphQLConnection as Connection } from "~/src/utilities/graphqlConnection";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 
 // Get the upVoters resolver from the schema

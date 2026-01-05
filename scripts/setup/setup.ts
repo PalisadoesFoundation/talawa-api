@@ -244,6 +244,27 @@ export async function administratorEmail(
 	return answers;
 }
 
+export async function reCaptchaSetup(
+	answers: SetupAnswers,
+): Promise<SetupAnswers> {
+	try {
+		answers.RECAPTCHA_SECRET_KEY = await promptInput(
+			"RECAPTCHA_SECRET_KEY",
+			"Enter Google reCAPTCHA v2 Secret Key:",
+			"",
+			(input: string) => {
+				if (input.trim().length < 1) {
+					return "reCAPTCHA Secret Key cannot be empty.";
+				}
+				return true;
+			},
+		);
+	} catch (err) {
+		handlePromptError(err);
+	}
+	return answers;
+}
+
 export async function apiSetup(answers: SetupAnswers): Promise<SetupAnswers> {
 	try {
 		answers.API_BASE_URL = await promptInput(
@@ -743,6 +764,16 @@ export async function setup(): Promise<SetupAnswers> {
 	}
 
 	answers = await administratorEmail(answers);
+
+	const setupReCaptcha = await promptConfirm(
+		"setupReCaptcha",
+		"Do you want to set up Google reCAPTCHA v2 now?",
+		false,
+	);
+
+	if (setupReCaptcha) {
+		answers = await reCaptchaSetup(answers);
+	}
 
 	updateEnvVariable(answers);
 	console.log("Configuration complete.");

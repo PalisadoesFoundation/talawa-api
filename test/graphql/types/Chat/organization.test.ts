@@ -2,8 +2,9 @@ import { faker } from "@faker-js/faker";
 import { graphql } from "gql.tada";
 import type { GraphQLObjectType, GraphQLResolveInfo } from "graphql";
 import { assertToBeNonNullish } from "test/helpers";
-import { afterEach, describe, expect, test } from "vitest";
+import { afterEach, describe, expect, test, vi } from "vitest";
 import { schemaManager } from "~/src/graphql/schemaManager";
+import { createDataloaders } from "~/src/utilities/dataloaders";
 import { server } from "../../../server";
 import { mercuriusClient } from "../client";
 import {
@@ -196,10 +197,15 @@ describe("Chat.organization integration test", () => {
 			creatorId: creatorId,
 		};
 
+		const mockLogError = vi.fn();
 		const ctx = {
 			currentClient: { isAuthenticated: true, user: { id: creatorId } },
 			drizzleClient: server.drizzleClient,
-			log: server.log,
+			dataloaders: createDataloaders(server.drizzleClient),
+			log: {
+				...server.log,
+				error: mockLogError,
+			} as unknown as typeof server.log,
 			envConfig: server.envConfig,
 			jwt: server.jwt,
 			minio: server.minio,
@@ -216,5 +222,13 @@ describe("Chat.organization integration test", () => {
 		).rejects.toMatchObject({
 			extensions: expect.objectContaining({ code: "unexpected" }),
 		});
+
+		expect(mockLogError).toHaveBeenCalledWith(
+			{
+				chatId: parent.id,
+				organizationId: parent.organizationId,
+			},
+			"DataLoader returned null for a chat's organization id that isn't null.",
+		);
 	});
 });

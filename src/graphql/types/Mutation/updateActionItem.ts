@@ -217,12 +217,6 @@ builder.mutationField("updateActionItem", (t) =>
 					.where(eq(actionItemExceptionsTable.actionId, actionItemId));
 			}
 
-			if (updatedActionItem) {
-				await ctx.drizzleClient
-					.delete(actionItemExceptionsTable)
-					.where(eq(actionItemExceptionsTable.actionId, actionItemId));
-			}
-
 			if (!updatedActionItem) {
 				throw new TalawaGraphQLError({
 					extensions: {
@@ -302,12 +296,6 @@ builder.mutationField("markActionItemAsPending", (t) =>
 				})
 				.where(eq(actionItemsTable.id, input.id))
 				.returning();
-
-			if (updatedActionItem) {
-				await ctx.drizzleClient
-					.delete(actionItemExceptionsTable)
-					.where(eq(actionItemExceptionsTable.actionId, input.id));
-			}
 
 			if (updatedActionItem) {
 				await ctx.drizzleClient

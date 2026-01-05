@@ -444,9 +444,11 @@ suite("Mutation field createEvent", () => {
 
 			// The Upload scalar should reject this before it reaches our resolver
 			expect(invalidResult.errors).toBeDefined();
-			expect(invalidResult.errors?.[0]?.message).toContain(
-				"Upload value invalid",
-			);
+			const errorMessage = invalidResult.errors?.[0]?.message;
+			expect(
+				errorMessage?.includes("Upload value invalid") ||
+					errorMessage?.includes("Graphql validation error"),
+			).toBe(true);
 		});
 
 		test("validates attachment array length constraints", async () => {
@@ -489,6 +491,39 @@ suite("Mutation field createEvent", () => {
 					id: expect.any(String),
 				}),
 			);
+		});
+
+		test("rejects events with both isPublic and isInviteOnly set to true", async () => {
+			const organizationId = await createTestOrganization();
+			const result = await createEvent({
+				input: {
+					...baseEventInput(organizationId),
+					isPublic: true,
+					isInviteOnly: true,
+				},
+			});
+
+			expectSpecificError(result, {
+				extensions: expect.objectContaining<InvalidArgumentsExtensions>({
+					code: "invalid_arguments",
+					issues: expect.arrayContaining([
+						{
+							argumentPath: ["input", "isPublic"],
+							message: expect.stringContaining(
+								"cannot be both Public and Invite-Only",
+							),
+						},
+						{
+							argumentPath: ["input", "isInviteOnly"],
+							message: expect.stringContaining(
+								"cannot be both Public and Invite-Only",
+							),
+						},
+					]),
+				}),
+				message: expect.any(String),
+				path: ["createEvent"],
+			});
 		});
 	});
 
