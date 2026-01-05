@@ -150,6 +150,55 @@ suite("updateChat mutation", () => {
 		);
 	});
 
+	test("successfully updates chat avatar with valid image", async () => {
+		const user = await createRegularUserUsingAdmin();
+		const orgId = await createTestOrganization();
+		const chatId = faker.string.uuid();
+
+		await server.drizzleClient.insert(chatsTable).values({
+			id: chatId,
+			name: "Chat",
+			organizationId: orgId,
+			creatorId: user.userId,
+		});
+
+		await server.drizzleClient.insert(organizationMembershipsTable).values({
+			memberId: user.userId,
+			organizationId: orgId,
+			role: "administrator",
+		});
+
+		const validUpload = Promise.resolve({
+			filename: "avatar.png",
+			mimetype: "image/png",
+			createReadStream: () => Readable.from(Buffer.from("fake-image")),
+		});
+
+		const result = await mercuriusClient.mutate(Mutation_updateChat, {
+			headers: { authorization: `bearer ${user.authToken}` },
+			variables: {
+				input: {
+					id: chatId,
+					avatar: validUpload,
+				},
+			},
+		});
+
+		expect(result.errors).toBeUndefined();
+		expect(result.data?.updateChat.avatarURL).toBeDefined();
+
+		const rows = await server.drizzleClient
+			.select()
+			.from(chatsTable)
+			.where(eq(chatsTable.id, chatId));
+
+		expect(rows.length).toBe(1);
+		const chat = rows[0];
+
+		expect(chat?.avatarName).not.toBeNull();
+		expect(chat?.avatarMimeType).toBe("image/png");
+	});
+
 	test("returns resource not found when chat does not exist", async () => {
 		const { authToken } = await createRegularUserUsingAdmin();
 
