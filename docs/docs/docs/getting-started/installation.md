@@ -207,7 +207,39 @@ pip3 list | grep -E "(black|pydocstyle|flake8|docstring)"
 
 You should see all the packages listed.
 
-Proceed to the next section.
+#### 6. Install curl or wget (For Downloading Validation Scripts)
+
+:::note
+The pre-commit hooks automatically download the latest validation scripts from the centralized [PalisadoesFoundation/.github](https://github.com/PalisadoesFoundation/.github) repository. This requires `curl` or `wget` to be installed on your system.
+:::
+
+Most systems have `curl` or `wget` pre-installed, but you can verify and install if needed:
+
+**Check if curl is installed:**
+```bash
+curl --version
+```
+
+**Check if wget is installed:**
+```bash
+wget --version
+```
+
+**Install curl if needed:**
+- **Ubuntu/Debian**: `sudo apt install curl`
+- **Fedora/RHEL**: `sudo dnf install curl`
+- **macOS**: curl is pre-installed
+- **Windows 10+**: curl is pre-installed, or use `winget install curl.curl`
+
+**Alternatively, install wget:**
+- **Ubuntu/Debian**: `sudo apt install wget`
+- **Fedora/RHEL**: `sudo dnf install wget`
+- **macOS**: `brew install wget`
+- **Windows**: `winget install wget.wget`
+
+:::info
+The pre-commit hooks will use whichever is available (`curl` is tried first, then `wget`). You only need one of them installed.
+:::
 
 
 ### Install The Required Packages

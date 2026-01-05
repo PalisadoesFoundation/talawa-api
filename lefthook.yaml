@@ -46,10 +46,65 @@ pre-commit:
       glob: "**/*.{ts,tsx}"
       run: |
         set -e
+        
+        echo "📥 Downloading centralized disable_statements_check.py script..."
+        
+        # Download the centralized script from PalisadoesFoundation/.github repository
+        SCRIPT_URL="https://raw.githubusercontent.com/PalisadoesFoundation/.github/main/.github/workflows/scripts/disable_statements_check.py"
+        SCRIPT_DIR=".github-central-scripts"
+        SCRIPT_PATH="$SCRIPT_DIR/disable_statements_check.py"
+        
+        # Create directory for downloaded scripts
+        mkdir -p "$SCRIPT_DIR"
+        
+        # Try to download with curl first, then wget as fallback
+        DOWNLOAD_SUCCESS=false
+        if command -v curl &> /dev/null; then
+          echo "   Using curl to download..."
+          if curl -sSfL "$SCRIPT_URL" -o "$SCRIPT_PATH" 2>/dev/null; then
+            DOWNLOAD_SUCCESS=true
+            echo "✅ Script downloaded successfully"
+          fi
+        elif command -v wget &> /dev/null; then
+          echo "   Using wget to download..."
+          if wget -q -O "$SCRIPT_PATH" "$SCRIPT_URL" 2>/dev/null; then
+            DOWNLOAD_SUCCESS=true
+            echo "✅ Script downloaded successfully"
+          fi
+        fi
+        
+        # Handle download errors
+        if [ "$DOWNLOAD_SUCCESS" = false ]; then
+          if ! command -v curl &> /dev/null && ! command -v wget &> /dev/null; then
+            echo "Error: Neither curl nor wget is installed."
+            echo "Please install one of them to download the centralized validation script:"
+            echo ""
+            echo "  - Ubuntu/Debian: sudo apt install curl"
+            echo "  - Fedora/RHEL: sudo dnf install curl"
+            echo "  - macOS: curl is pre-installed"
+            echo "  - Windows 10+: curl is pre-installed, or use 'winget install curl.curl'"
+            echo ""
+            echo "Alternatively, install wget:"
+            echo "  - Ubuntu/Debian: sudo apt install wget"
+            echo "  - Fedora/RHEL: sudo dnf install wget"
+            echo "  - macOS: brew install wget"
+            echo "  - Windows: winget install wget"
+          else
+            echo "Error: Failed to download centralized disable_statements_check.py script."
+            echo "Please check your internet connection and try again."
+            echo ""
+            echo "Script URL: $SCRIPT_URL"
+          fi
+          exit 1
+        fi
+        
+        echo "🔍 Running disable statements check..."
+        
+        # Run the downloaded script with the virtual environment Python
         if [ -f .venv/bin/python3 ]; then
-          .venv/bin/python3 .github/workflows/scripts/disable_statements_check.py --repo=api --files {staged_files}
+          .venv/bin/python3 "$SCRIPT_PATH" --repo=api --files {staged_files}
         elif [ -f .venv/Scripts/python.exe ]; then
-          .venv/Scripts/python.exe .github/workflows/scripts/disable_statements_check.py --repo=api --files {staged_files}
+          .venv/Scripts/python.exe "$SCRIPT_PATH" --repo=api --files {staged_files}
         else
           echo "Error: Python virtual environment not found."
           echo "Please ensure Python 3.9+ is installed. If 'python3 -m venv' fails, you may need to install:"
