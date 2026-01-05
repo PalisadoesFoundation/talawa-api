@@ -11,6 +11,8 @@ import {
 	runMaterializationWorkerSafely,
 	startBackgroundWorkers,
 	stopBackgroundWorkers,
+	triggerCleanupWorker,
+	triggerMaterializationWorker,
 } from "~/src/workers/backgroundWorkerService";
 
 vi.mock("node-cron", () => {
@@ -398,6 +400,28 @@ describe("backgroundServiceWorker", () => {
 				startupError,
 				"Failed to start background worker service",
 			);
+		});
+	});
+
+	describe("Manual Triggers", () => {
+		it("triggerMaterializationWorker throws when service is not running", async () => {
+			await expect(
+				triggerMaterializationWorker(mockDrizzleClient, mockLogger),
+			).rejects.toThrow(TalawaRestError);
+
+			await expect(
+				triggerMaterializationWorker(mockDrizzleClient, mockLogger),
+			).rejects.toHaveProperty("code", ErrorCode.INTERNAL_SERVER_ERROR);
+		});
+
+		it("triggerCleanupWorker throws when service is not running", async () => {
+			await expect(
+				triggerCleanupWorker(mockDrizzleClient, mockLogger),
+			).rejects.toThrow(TalawaRestError);
+
+			await expect(
+				triggerCleanupWorker(mockDrizzleClient, mockLogger),
+			).rejects.toHaveProperty("code", ErrorCode.INTERNAL_SERVER_ERROR);
 		});
 	});
 });

@@ -185,6 +185,7 @@ export async function runCleanupWorkerSafely(
 
 /**
  * Manually triggers a run of the materialization worker, useful for testing or administrative purposes.
+ * @throws {TalawaRestError} Thrown when the background worker service is not running.
  */
 export async function triggerMaterializationWorker(
 	drizzleClient: NodePgDatabase<typeof schema>,
@@ -203,6 +204,7 @@ export async function triggerMaterializationWorker(
 
 /**
  * Manually triggers a run of the cleanup worker, useful for testing or administrative purposes.
+ * @throws {TalawaRestError} Thrown when the background worker service is not running.
  */
 export async function triggerCleanupWorker(
 	drizzleClient: NodePgDatabase<typeof schema>,

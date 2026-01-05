@@ -197,7 +197,9 @@ export class ErrorHandlingValidator {
 				ignore: EXCLUDE_PATTERNS,
 				absolute: false,
 			});
-			allFiles.push(...files);
+			if (files && Array.isArray(files)) {
+				allFiles.push(...files);
+			}
 		}
 
 		const uniqueFiles = [...new Set(allFiles)];
@@ -213,19 +215,22 @@ export class ErrorHandlingValidator {
 					process.env.GITHUB_BASE_REF || "develop",
 				);
 				try {
-					execSync(`git fetch origin ${baseRef}`, {
+					execFileSync("git", ["fetch", "origin", baseRef], {
 						cwd: rootDir,
 						stdio: "ignore",
+						shell: false,
 					});
 				} catch {
 					// Ignore fetch errors
 				}
 
-				const diffCommand = `git diff --name-only origin/${baseRef}...HEAD`;
-				return execSync(diffCommand, {
+				const diffArgs = ["diff", "--name-only", `origin/${baseRef}...HEAD`];
+
+				return execFileSync("git", diffArgs, {
 					cwd: rootDir,
 					encoding: "utf8",
 					stdio: ["pipe", "pipe", "ignore"],
+					shell: false,
 				})
 					.split("\n")
 					.filter(Boolean)

@@ -23,7 +23,10 @@ class GraphQLSchemaManager {
 		error: (msg: string, error?: unknown) => void;
 	} = {
 		info: (msg: string) => console.log(msg),
-		error: (msg: string, error?: unknown) => console.error(msg, error),
+		error: (msg: string, error?: unknown) =>
+			process.stderr.write(
+				`${JSON.stringify({ level: "error", msg, error })}\n`,
+			),
 	};
 
 	/**

@@ -351,7 +351,7 @@ describe("ErrorHandlingValidator", () => {
 			try {
 				process.env = { ...originalEnv, CI: "true", GITHUB_BASE_REF: "main" };
 
-				vi.mocked(child_process.execSync).mockReturnValue(
+				vi.mocked(child_process.execFileSync).mockReturnValue(
 					"src/routes/changed.ts\n",
 				);
 
@@ -362,9 +362,18 @@ describe("ErrorHandlingValidator", () => {
 
 				const files = await validator.getFilesToScan();
 				expect(files).toContain("src/routes/changed.ts");
-				expect(child_process.execSync).toHaveBeenCalledWith(
-					expect.stringContaining("git diff --name-only origin/main...HEAD"),
-					expect.anything(),
+				expect(child_process.execFileSync).toHaveBeenCalledTimes(2);
+				expect(child_process.execFileSync).toHaveBeenNthCalledWith(
+					1,
+					"git",
+					["fetch", "origin", "main"],
+					expect.objectContaining({ shell: false }),
+				);
+				expect(child_process.execFileSync).toHaveBeenNthCalledWith(
+					2,
+					"git",
+					["diff", "--name-only", "origin/main...HEAD"],
+					expect.objectContaining({ shell: false }),
 				);
 			} finally {
 				if (shouldScanFileSpy) {
@@ -402,7 +411,7 @@ describe("ErrorHandlingValidator", () => {
 				process.env = { ...originalEnv, CI: "true", GITHUB_BASE_REF: "main" };
 
 				// Mock fetch to fail but diff to succeed
-				vi.mocked(child_process.execSync)
+				vi.mocked(child_process.execFileSync)
 					.mockImplementationOnce(() => {
 						throw new TalawaRestError({
 							code: ErrorCode.INTERNAL_SERVER_ERROR,

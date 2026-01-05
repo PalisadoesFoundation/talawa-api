@@ -6,7 +6,7 @@
 
 > **triggerMaterializationWorker**(`drizzleClient`, `logger`): `Promise`\<`void`\>
 
-Defined in: [src/workers/backgroundWorkerService.ts:189](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/workers/backgroundWorkerService.ts#L189)
+Defined in: [src/workers/backgroundWorkerService.ts:190](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/workers/backgroundWorkerService.ts#L190)
 
 Manually triggers a run of the materialization worker, useful for testing or administrative purposes.
 
@@ -23,3 +23,7 @@ Manually triggers a run of the materialization worker, useful for testing or adm
 ## Returns
 
 `Promise`\<`void`\>
+
+## Throws
+
+Thrown when the background worker service is not running.
