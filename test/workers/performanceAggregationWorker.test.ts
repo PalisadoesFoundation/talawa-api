@@ -299,7 +299,7 @@ describe("performanceAggregationWorker", () => {
 		const result = await aggregatePerformanceMetrics(mockFastify, mockLogger);
 
 		const timeDiff = result.periodEnd.getTime() - result.periodStart.getTime();
-		expect(timeDiff).toBe(24 * 60 * 1000 * 60); // 24 hours in milliseconds
+		expect(timeDiff).toBe(24 * 60 * 60 * 1000); // 24 hours in milliseconds
 	});
 
 	it("should handle unrecognized cron patterns with default", async () => {
