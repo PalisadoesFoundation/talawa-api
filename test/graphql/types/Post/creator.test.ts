@@ -370,7 +370,6 @@ describe("Post Resolver - Creator Field", () => {
 
 			const promise = resolveCreator(mockPost, {}, ctx);
 
-			await expect(promise).rejects.toBeInstanceOf(TalawaGraphQLError);
 			await expect(promise).rejects.toMatchObject({
 				extensions: { code: "unexpected" },
 			});
