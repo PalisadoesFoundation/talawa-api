@@ -170,7 +170,7 @@ builder.mutationField("deleteFundCampaignPledge", (t) =>
 			);
 
 			// Deleted fund campaign pledge not being returned means that either it was deleted or its `id` column was changed by external entities before this delete operation could take place.
-			if (deletedFundCampaignPledge === undefined) {
+			if (!deletedFundCampaignPledge) {
 				throw new TalawaGraphQLError({
 					extensions: {
 						code: "unexpected",

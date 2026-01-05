@@ -250,7 +250,7 @@ builder.mutationField("createFundCampaignPledge", (t) =>
 			);
 
 			// Inserted fund campaign pledge not being returned is an external defect unrelated to this code. It is very unlikely for this error to occur.
-			if (createdFundCampaignPledge === undefined) {
+			if (!createdFundCampaignPledge) {
 				ctx.log.error(
 					"Postgres insert operation unexpectedly returned an empty array instead of throwing an error.",
 				);
