@@ -118,7 +118,8 @@ export const deleteChat = builder.mutationField("deleteChat", (t) =>
 
 			const currentUserOrganizationMembership =
 				existingChat.organization.membershipsWhereOrganization[0];
-			const currentUserChatMembership = existingChat.chatMembershipsWhereChat[0];
+			const currentUserChatMembership =
+				existingChat.chatMembershipsWhereChat[0];
 
 			if (
 				currentUser.role !== "administrator" &&
