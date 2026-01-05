@@ -22,15 +22,8 @@ export function assertToBeNonNullish<T>(
 	message?: string,
 ): asserts value is T {
 	if (value === undefined || value === null) {
-		const pretty =
-			value === undefined
-				? "undefined"
-				: value === null
-					? "null"
-					: JSON.stringify(value);
-		throw new Error(
-			`${message ?? "Not a non-nullish value."} — Actual: ${pretty}`,
-		);
+		const pretty = value === undefined ? "undefined" : value === null ? "null" : JSON.stringify(value);
+		throw new Error(`${message ?? "Not a non-nullish value."} — Actual: ${pretty}`);
 	}
 }
 
