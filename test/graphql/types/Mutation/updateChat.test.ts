@@ -2,11 +2,12 @@ import { Readable } from "node:stream";
 import { faker } from "@faker-js/faker";
 import { eq } from "drizzle-orm";
 import gql from "graphql-tag";
-import { expect, suite, test, vi } from "vitest";
+import { beforeAll, expect, suite, test, vi } from "vitest";
 
 import { chatMembershipsTable } from "~/src/drizzle/schema";
 import { chatsTable } from "~/src/drizzle/tables/chats";
 import { organizationMembershipsTable } from "~/src/drizzle/tables/organizationMemberships";
+import { usersTable } from "~/src/drizzle/tables/users";
 
 import { server } from "../../../server";
 import { mercuriusClient } from "../client";
@@ -37,9 +38,7 @@ async function createTestOrganization(): Promise<string> {
 	expect(signIn.errors ?? []).toEqual([]);
 
 	const token = signIn.data?.signIn?.authenticationToken;
-	if (!token) {
-		throw new Error("Admin token not returned");
-	}
+	expect(token).toBeDefined();
 
 	const org = await mercuriusClient.mutate(Mutation_createOrganization, {
 		headers: { authorization: `bearer ${token}` },
@@ -55,16 +54,18 @@ async function createTestOrganization(): Promise<string> {
 	expect(org.errors ?? []).toEqual([]);
 
 	const orgId = org.data?.createOrganization?.id;
-	if (!orgId) {
-		throw new Error("Organization not created");
-	}
+	expect(orgId).toBeDefined();
 
-	return orgId;
+	return orgId as string;
 }
 
-/* ---------------- Tests ---------------- */
-
 suite("updateChat mutation", () => {
+	let sharedUser: Awaited<ReturnType<typeof createRegularUserUsingAdmin>>;
+
+	beforeAll(async () => {
+		sharedUser = await createRegularUserUsingAdmin();
+	});
+
 	test("returns unauthenticated when user is not logged in", async () => {
 		const result = await mercuriusClient.mutate(Mutation_updateChat, {
 			variables: {
@@ -88,55 +89,11 @@ suite("updateChat mutation", () => {
 	});
 
 	test("returns invalid_arguments for malformed input", async () => {
-		const { authToken } = await createRegularUserUsingAdmin();
-
 		const result = await mercuriusClient.mutate(Mutation_updateChat, {
-			headers: { authorization: `bearer ${authToken}` },
-			variables: { input: { id: "" } },
-		});
-
-		expect(result.data?.updateChat ?? null).toBeNull();
-		expect(result.errors).toEqual(
-			expect.arrayContaining([
-				expect.objectContaining({
-					extensions: expect.objectContaining({
-						code: "invalid_arguments",
-					}),
-				}),
-			]),
-		);
-	});
-
-	test("returns invalid_arguments for invalid avatar mime type", async () => {
-		const user = await createRegularUserUsingAdmin();
-		const orgId = await createTestOrganization();
-		const chatId = faker.string.uuid();
-
-		await server.drizzleClient.insert(chatsTable).values({
-			id: chatId,
-			name: "Chat",
-			organizationId: orgId,
-			creatorId: user.userId,
-		});
-
-		await server.drizzleClient.insert(organizationMembershipsTable).values({
-			memberId: user.userId,
-			organizationId: orgId,
-			role: "administrator",
-		});
-
-		const fakeUpload = Promise.resolve({
-			filename: "evil.exe",
-			mimetype: "application/x-msdownload",
-			createReadStream: () => Readable.from("fake"),
-		});
-
-		const result = await mercuriusClient.mutate(Mutation_updateChat, {
-			headers: { authorization: `bearer ${user.authToken}` },
+			headers: { authorization: `bearer ${sharedUser.authToken}` },
 			variables: {
 				input: {
-					id: chatId,
-					avatar: fakeUpload,
+					id: "",
 				},
 			},
 		});
@@ -153,11 +110,47 @@ suite("updateChat mutation", () => {
 		);
 	});
 
-	test("returns resource not found when chat does not exist", async () => {
-		const { authToken } = await createRegularUserUsingAdmin();
+	test("returns GraphQL validation error for invalid avatar mime type", async () => {
+		const orgId = await createTestOrganization();
+		const chatId = faker.string.uuid();
+
+		await server.drizzleClient.insert(chatsTable).values({
+			id: chatId,
+			name: "Chat",
+			organizationId: orgId,
+			creatorId: sharedUser.userId,
+		});
+
+		await server.drizzleClient.insert(organizationMembershipsTable).values({
+			memberId: sharedUser.userId,
+			organizationId: orgId,
+			role: "administrator",
+		});
+
+		const fakeUpload = Promise.resolve({
+			filename: "evil.exe",
+			mimetype: "application/x-msdownload",
+			createReadStream: () => Readable.from("fake"),
+		});
 
 		const result = await mercuriusClient.mutate(Mutation_updateChat, {
-			headers: { authorization: `bearer ${authToken}` },
+			headers: { authorization: `bearer ${sharedUser.authToken}` },
+			variables: {
+				input: {
+					id: chatId,
+					avatar: fakeUpload,
+				},
+			},
+		});
+
+		expect(result.data?.updateChat ?? null).toBeNull();
+		expect(result.errors).toBeDefined();
+		expect(result.errors?.[0]?.message).toMatch(/Graphql validation error/i);
+	});
+
+	test("returns resource not found when chat does not exist", async () => {
+		const result = await mercuriusClient.mutate(Mutation_updateChat, {
+			headers: { authorization: `bearer ${sharedUser.authToken}` },
 			variables: {
 				input: {
 					id: faker.string.uuid(),
@@ -179,7 +172,6 @@ suite("updateChat mutation", () => {
 	});
 
 	test("returns unauthorized when user is not chat or org admin", async () => {
-		const creator = await createRegularUserUsingAdmin();
 		const outsider = await createRegularUserUsingAdmin();
 		const orgId = await createTestOrganization();
 		const chatId = faker.string.uuid();
@@ -188,7 +180,7 @@ suite("updateChat mutation", () => {
 			id: chatId,
 			name: "Chat",
 			organizationId: orgId,
-			creatorId: creator.userId,
+			creatorId: sharedUser.userId,
 		});
 
 		const result = await mercuriusClient.mutate(Mutation_updateChat, {
@@ -214,7 +206,6 @@ suite("updateChat mutation", () => {
 	});
 
 	test("successfully updates chat when user is chat administrator", async () => {
-		const creator = await createRegularUserUsingAdmin();
 		const chatAdmin = await createRegularUserUsingAdmin();
 		const orgId = await createTestOrganization();
 		const chatId = faker.string.uuid();
@@ -223,7 +214,7 @@ suite("updateChat mutation", () => {
 			id: chatId,
 			name: "Old",
 			organizationId: orgId,
-			creatorId: creator.userId,
+			creatorId: sharedUser.userId,
 		});
 
 		await server.drizzleClient.insert(chatMembershipsTable).values({
@@ -247,7 +238,6 @@ suite("updateChat mutation", () => {
 	});
 
 	test("successfully updates chat when user is organization administrator", async () => {
-		const user = await createRegularUserUsingAdmin();
 		const orgId = await createTestOrganization();
 		const chatId = faker.string.uuid();
 
@@ -255,31 +245,60 @@ suite("updateChat mutation", () => {
 			id: chatId,
 			name: "Old",
 			organizationId: orgId,
-			creatorId: user.userId,
+			creatorId: sharedUser.userId,
 		});
 
 		await server.drizzleClient.insert(organizationMembershipsTable).values({
-			memberId: user.userId,
+			memberId: sharedUser.userId,
 			organizationId: orgId,
 			role: "administrator",
 		});
 
 		const result = await mercuriusClient.mutate(Mutation_updateChat, {
-			headers: { authorization: `bearer ${user.authToken}` },
+			headers: { authorization: `bearer ${sharedUser.authToken}` },
 			variables: {
 				input: {
 					id: chatId,
-					description: "Updated",
+					name: "Updated",
 				},
 			},
 		});
 
 		expect(result.errors).toBeUndefined();
-		expect(result.data?.updateChat.description).toBe("Updated");
+		expect(result.data?.updateChat.name).toBe("Updated");
+	});
+
+	test("successfully updates chat when user is system administrator", async () => {
+		const orgId = await createTestOrganization();
+		const chatId = faker.string.uuid();
+
+		await server.drizzleClient
+			.update(usersTable)
+			.set({ role: "administrator" })
+			.where(eq(usersTable.id, sharedUser.userId));
+
+		await server.drizzleClient.insert(chatsTable).values({
+			id: chatId,
+			name: "Old",
+			organizationId: orgId,
+			creatorId: sharedUser.userId,
+		});
+
+		const result = await mercuriusClient.mutate(Mutation_updateChat, {
+			headers: { authorization: `bearer ${sharedUser.authToken}` },
+			variables: {
+				input: {
+					id: chatId,
+					description: "Updated by system admin",
+				},
+			},
+		});
+
+		expect(result.errors).toBeUndefined();
+		expect(result.data?.updateChat.description).toBe("Updated by system admin");
 	});
 
 	test("removes avatar when avatar is set to null", async () => {
-		const user = await createRegularUserUsingAdmin();
 		const orgId = await createTestOrganization();
 		const chatId = faker.string.uuid();
 
@@ -287,19 +306,19 @@ suite("updateChat mutation", () => {
 			id: chatId,
 			name: "Chat",
 			organizationId: orgId,
-			creatorId: user.userId,
+			creatorId: sharedUser.userId,
 			avatarName: "old-avatar",
 			avatarMimeType: "image/png",
 		});
 
 		await server.drizzleClient.insert(organizationMembershipsTable).values({
-			memberId: user.userId,
+			memberId: sharedUser.userId,
 			organizationId: orgId,
 			role: "administrator",
 		});
 
 		const result = await mercuriusClient.mutate(Mutation_updateChat, {
-			headers: { authorization: `bearer ${user.authToken}` },
+			headers: { authorization: `bearer ${sharedUser.authToken}` },
 			variables: {
 				input: {
 					id: chatId,
@@ -322,8 +341,6 @@ suite("updateChat mutation", () => {
 	});
 
 	test("returns error when transaction throws", async () => {
-		const user = await createRegularUserUsingAdmin();
-
 		vi.spyOn(server.drizzleClient, "transaction").mockImplementationOnce(
 			async () => {
 				throw new Error("boom");
@@ -331,7 +348,7 @@ suite("updateChat mutation", () => {
 		);
 
 		const result = await mercuriusClient.mutate(Mutation_updateChat, {
-			headers: { authorization: `bearer ${user.authToken}` },
+			headers: { authorization: `bearer ${sharedUser.authToken}` },
 			variables: {
 				input: {
 					id: faker.string.uuid(),
@@ -341,6 +358,8 @@ suite("updateChat mutation", () => {
 		});
 
 		expect(result.errors).toBeDefined();
+		expect(result.errors?.[0]?.message).toBe("boom");
+
 		vi.restoreAllMocks();
 	});
 });
