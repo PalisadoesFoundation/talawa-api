@@ -351,12 +351,7 @@ Organization.implement({
 							},
 						);
 
-					// Ensure we always have an array (never undefined)
-					const normalizedMemberships = Array.isArray(organizationMemberships)
-						? organizationMemberships
-						: [];
-
-					if (cursor !== undefined && normalizedMemberships.length === 0) {
+					if (cursor !== undefined && organizationMemberships.length === 0) {
 						throw new TalawaGraphQLError({
 							extensions: {
 								code: "arguments_associated_resources_not_found",
@@ -377,7 +372,7 @@ Organization.implement({
 						createNode: (organizationMembership) =>
 							organizationMembership.member,
 						parsedArgs,
-						rawNodes: normalizedMemberships,
+						rawNodes: organizationMemberships,
 					});
 				},
 				type: User,

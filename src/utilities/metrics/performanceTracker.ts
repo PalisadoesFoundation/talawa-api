@@ -117,7 +117,6 @@ export function createPerformanceTracker(
 	const slow: Array<{ op: string; ms: number }> = [];
 	let cacheHits = 0;
 	let cacheMisses = 0;
-	let totalMs = 0;
 	let totalOps = 0;
 	let complexityScore: number | undefined;
 
@@ -148,7 +147,6 @@ export function createPerformanceTracker(
 		o.count++;
 		o.ms += ms;
 		o.max = Math.max(o.max, ms);
-		totalMs += ms;
 		totalOps++;
 		// Track slow operations with bounded insertion
 		if (ms >= slowMs) {
@@ -238,8 +236,14 @@ export function createPerformanceTracker(
 			const totalCacheOps = cacheHits + cacheMisses;
 			const hitRate = totalCacheOps > 0 ? cacheHits / totalCacheOps : 0;
 
+			// Calculate totalMs from ops to ensure accuracy (sum of all operation durations)
+			const calculatedTotalMs = Object.values(ops).reduce(
+				(sum, op) => sum + (op.ms ?? 0),
+				0,
+			);
+
 			return {
-				totalMs: Math.round(totalMs),
+				totalMs: Math.ceil(calculatedTotalMs),
 				totalOps,
 				cacheHits,
 				cacheMisses,

@@ -323,6 +323,7 @@ suite("Mutation field createComment", () => {
 			expect(result.errors).toEqual(
 				expect.arrayContaining([
 					expect.objectContaining({
+						message: "Comment creation failed",
 						extensions: expect.objectContaining({ code: "unexpected" }),
 					}),
 				]),
