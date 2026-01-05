@@ -525,6 +525,68 @@ describe("performancePlugin", () => {
 			expect(body.error).toBe("Forbidden");
 			expect(body.message).toBe("Access denied");
 		});
+
+		it("should reject when only allowedIps is configured and IP doesn't match", async () => {
+			await app.close();
+
+			app = Fastify({
+				logger: {
+					level: "info",
+				},
+			});
+
+			app.decorate("envConfig", {
+				METRICS_API_KEY: undefined,
+				METRICS_ALLOWED_IPS: "192.168.1.1",
+			});
+
+			await app.register(performancePlugin);
+			await app.ready();
+
+			// Request from wrong IP (app.inject uses 127.0.0.1 by default, which doesn't match 192.168.1.1)
+			// Since no API key is configured, should return "Access denied"
+			const res = await app.inject({
+				method: "GET",
+				url: "/metrics/perf",
+			});
+
+			expect(res.statusCode).toBe(403);
+			const body = JSON.parse(res.body);
+			expect(body.error).toBe("Forbidden");
+			expect(body.message).toBe("Access denied");
+		});
+
+		it("should reject with Invalid API key when only API key is configured and wrong", async () => {
+			await app.close();
+
+			app = Fastify({
+				logger: {
+					level: "info",
+				},
+			});
+
+			app.decorate("envConfig", {
+				METRICS_API_KEY: "correct-key",
+				METRICS_ALLOWED_IPS: undefined,
+			});
+
+			await app.register(performancePlugin);
+			await app.ready();
+
+			// Request with wrong API key (no IP check configured, so ipCheckFailed is false)
+			const res = await app.inject({
+				method: "GET",
+				url: "/metrics/perf",
+				headers: {
+					authorization: "wrong-key",
+				},
+			});
+
+			expect(res.statusCode).toBe(403);
+			const body = JSON.parse(res.body);
+			expect(body.error).toBe("Forbidden");
+			expect(body.message).toBe("Invalid API key");
+		});
 	});
 
 	describe("positive authentication tests", () => {
