@@ -168,7 +168,9 @@ suite("updateChat mutation", () => {
 
 		const putObjectSpy = vi
 			.spyOn(server.minio.client, "putObject")
-			.mockResolvedValueOnce(undefined as any);
+			.mockResolvedValueOnce(
+				{} as Awaited<ReturnType<typeof server.minio.client.putObject>>,
+			);
 
 		const result = await mercuriusClient.mutate(Mutation_updateChat, {
 			headers: { authorization: `bearer ${user.authToken}` },
