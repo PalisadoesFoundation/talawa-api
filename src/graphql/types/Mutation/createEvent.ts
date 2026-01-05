@@ -117,6 +117,28 @@ builder.mutationField("createEvent", (t) =>
 
 			const currentUserId = ctx.currentClient.user.id;
 
+			// Validate event visibility: cannot be both Public and Invite-Only
+			if (
+				parsedArgs.input.isPublic === true &&
+				parsedArgs.input.isInviteOnly === true
+			) {
+				throw new TalawaGraphQLError({
+					extensions: {
+						code: "invalid_arguments",
+						issues: [
+							{
+								argumentPath: ["input", "isPublic"],
+								message: "cannot be both Public and Invite-Only",
+							},
+							{
+								argumentPath: ["input", "isInviteOnly"],
+								message: "cannot be both Public and Invite-Only",
+							},
+						],
+					},
+				});
+			}
+
 			// Validate recurrence input if provided
 			if (parsedArgs.input.recurrence) {
 				const validation = validateRecurrenceInput(

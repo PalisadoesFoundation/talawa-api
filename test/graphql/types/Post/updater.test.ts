@@ -153,12 +153,16 @@ describe("Post Resolver - Updater Field", () => {
 		};
 
 		mockPost.updaterId = "updater-456";
-		mocks.drizzleClient.query.usersTable.findFirst
-			.mockResolvedValueOnce(currentUser)
-			.mockResolvedValueOnce(updaterUser);
+		// First findFirst for currentUser permission check
+		mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValueOnce(
+			currentUser,
+		);
+		// DataLoader is used to fetch the updater user
+		ctx.dataloaders.user.load = vi.fn().mockResolvedValue(updaterUser);
 
 		const result = await resolveUpdater(mockPost, {}, ctx);
 		expect(result).toEqual(updaterUser);
+		expect(ctx.dataloaders.user.load).toHaveBeenCalledWith("updater-456");
 	});
 
 	it("should handle empty organization memberships array", async () => {
@@ -188,9 +192,12 @@ describe("Post Resolver - Updater Field", () => {
 		};
 
 		mockPost.updaterId = "updater-456";
-		mocks.drizzleClient.query.usersTable.findFirst
-			.mockResolvedValueOnce(currentUser)
-			.mockResolvedValueOnce(undefined);
+		// First findFirst for currentUser permission check
+		mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValueOnce(
+			currentUser,
+		);
+		// DataLoader returns null for non-existent users
+		ctx.dataloaders.user.load = vi.fn().mockResolvedValue(null);
 
 		await expect(async () => {
 			await resolveUpdater(mockPost, {}, ctx);

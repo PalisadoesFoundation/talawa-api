@@ -7,5 +7,3 @@ on:
 jobs:
   Check-CodeRabbit-Approval:
     uses: PalisadoesFoundation/.github/.github/workflows/pull-request-review.yml@main
-    secrets:
-      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
