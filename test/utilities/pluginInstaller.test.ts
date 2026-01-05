@@ -1,4 +1,45 @@
+import type { ReadStream } from "node:fs";
+import { Readable } from "node:stream";
+import type { FileUpload } from "graphql-upload-minimal";
 import { beforeEach, describe, expect, it, vi } from "vitest";
+
+// helper function - create a mock file read stream
+const createMockReadStream: FileUpload["createReadStream"] = () => {
+	const stream: ReadStream = Object.assign(
+		new Readable({
+			read() {
+				this.push("mock data");
+				this.push(null);
+			},
+		}),
+		{
+			close: () => undefined,
+			bytesRead: 0,
+			path: "",
+			pending: false,
+		},
+	);
+
+	return stream;
+};
+
+type MockFileUpload = Pick<
+	FileUpload,
+	"filename" | "fieldName" | "mimetype" | "encoding"
+> & {
+	createReadStream: FileUpload["createReadStream"];
+};
+
+const buildMockFileUpload = (
+	overrides: Partial<MockFileUpload> = {},
+): MockFileUpload => ({
+	createReadStream: createMockReadStream,
+	filename: "test.zip",
+	fieldName: "pluginZip",
+	mimetype: "application/zip",
+	encoding: "7bit",
+	...overrides,
+});
 
 // Mock yauzl with simpler approach
 vi.mock("yauzl", () => {
@@ -177,14 +218,6 @@ import {
 } from "../../src/utilities/pluginInstaller";
 
 // Type definitions for mocks
-interface MockFileUpload {
-	createReadStream: ReturnType<typeof vi.fn>;
-	filename: string;
-	fieldName: string;
-	mimetype: string;
-	encoding: string;
-}
-
 interface MockDrizzleClient {
 	query: {
 		pluginsTable: {
@@ -661,20 +694,7 @@ describe("installPluginFromZip", () => {
 	});
 
 	it("should install a plugin from zip file", async () => {
-		const mockZipFile: MockFileUpload = {
-			createReadStream: vi.fn(() => ({
-				pipe: vi.fn(),
-				on: vi.fn((event, handler) => {
-					if (event === "data") handler("mock data");
-					if (event === "end") handler();
-					return { pipe: vi.fn() };
-				}),
-			})),
-			filename: "test.zip",
-			fieldName: "pluginZip",
-			mimetype: "application/zip",
-			encoding: "7bit",
-		};
+		const mockZipFile = buildMockFileUpload();
 
 		const mockDrizzleClient: MockDrizzleClient = {
 			query: {
@@ -712,20 +732,7 @@ describe("installPluginFromZip", () => {
 	});
 
 	it("should handle existing plugin installation", async () => {
-		const mockZipFile: MockFileUpload = {
-			createReadStream: vi.fn(() => ({
-				pipe: vi.fn(),
-				on: vi.fn((event, handler) => {
-					if (event === "data") handler("mock data");
-					if (event === "end") handler();
-					return { pipe: vi.fn() };
-				}),
-			})),
-			filename: "test.zip",
-			fieldName: "pluginZip",
-			mimetype: "application/zip",
-			encoding: "7bit",
-		};
+		const mockZipFile = buildMockFileUpload();
 
 		const mockDrizzleClient: MockDrizzleClient = {
 			query: {
@@ -769,20 +776,7 @@ describe("installPluginFromZip", () => {
 		// This test verifies that the plugin installation completes successfully
 		// with the default mocks that provide valid manifest data
 
-		const mockZipFile: MockFileUpload = {
-			createReadStream: vi.fn(() => ({
-				pipe: vi.fn(),
-				on: vi.fn((event, handler) => {
-					if (event === "data") handler("mock data");
-					if (event === "end") handler();
-					return { pipe: vi.fn() };
-				}),
-			})),
-			filename: "test.zip",
-			fieldName: "pluginZip",
-			mimetype: "application/zip",
-			encoding: "7bit",
-		};
+		const mockZipFile = buildMockFileUpload();
 
 		const mockDrizzleClient: MockDrizzleClient = {
 			query: {
@@ -821,20 +815,7 @@ describe("installPluginFromZip", () => {
 	});
 
 	it("should handle database insert failure when creating new plugin", async () => {
-		const mockZipFile: MockFileUpload = {
-			createReadStream: vi.fn(() => ({
-				pipe: vi.fn(),
-				on: vi.fn((event, handler) => {
-					if (event === "data") handler("mock data");
-					if (event === "end") handler();
-					return { pipe: vi.fn() };
-				}),
-			})),
-			filename: "test.zip",
-			fieldName: "pluginZip",
-			mimetype: "application/zip",
-			encoding: "7bit",
-		};
+		const mockZipFile = buildMockFileUpload();
 
 		const mockDrizzleClient: MockDrizzleClient = {
 			query: {
@@ -874,20 +855,7 @@ describe("installPluginFromZip", () => {
 	});
 
 	it("should handle database update failure when updating existing plugin", async () => {
-		const mockZipFile: MockFileUpload = {
-			createReadStream: vi.fn(() => ({
-				pipe: vi.fn(),
-				on: vi.fn((event, handler) => {
-					if (event === "data") handler("mock data");
-					if (event === "end") handler();
-					return { pipe: vi.fn() };
-				}),
-			})),
-			filename: "test.zip",
-			fieldName: "pluginZip",
-			mimetype: "application/zip",
-			encoding: "7bit",
-		};
+		const mockZipFile = buildMockFileUpload();
 
 		const mockDrizzleClient: MockDrizzleClient = {
 			query: {
@@ -930,20 +898,7 @@ describe("installPluginFromZip", () => {
 	});
 
 	it("should handle plugin with database tables", async () => {
-		const mockZipFile: MockFileUpload = {
-			createReadStream: vi.fn(() => ({
-				pipe: vi.fn(),
-				on: vi.fn((event, handler) => {
-					if (event === "data") handler("mock data");
-					if (event === "end") handler();
-					return { pipe: vi.fn() };
-				}),
-			})),
-			filename: "test.zip",
-			fieldName: "pluginZip",
-			mimetype: "application/zip",
-			encoding: "7bit",
-		};
+		const mockZipFile = buildMockFileUpload();
 
 		const mockDrizzleClient: MockDrizzleClient = {
 			query: {
@@ -986,20 +941,7 @@ describe("installPluginFromZip", () => {
 		// from plugin installation. The plugin installation should succeed regardless
 		// of table definitions in the manifest.
 
-		const mockZipFile: MockFileUpload = {
-			createReadStream: vi.fn(() => ({
-				pipe: vi.fn(),
-				on: vi.fn((event, handler) => {
-					if (event === "data") handler("mock data");
-					if (event === "end") handler();
-					return { pipe: vi.fn() };
-				}),
-			})),
-			filename: "test.zip",
-			fieldName: "pluginZip",
-			mimetype: "application/zip",
-			encoding: "7bit",
-		};
+		const mockZipFile = buildMockFileUpload();
 
 		const mockDrizzleClient: MockDrizzleClient = {
 			query: {
@@ -1042,20 +984,7 @@ describe("installPluginFromZip", () => {
 		// from plugin installation. The plugin installation should succeed regardless
 		// of table definitions.
 
-		const mockZipFile: MockFileUpload = {
-			createReadStream: vi.fn(() => ({
-				pipe: vi.fn(),
-				on: vi.fn((event, handler) => {
-					if (event === "data") handler("mock data");
-					if (event === "end") handler();
-					return { pipe: vi.fn() };
-				}),
-			})),
-			filename: "test.zip",
-			fieldName: "pluginZip",
-			mimetype: "application/zip",
-			encoding: "7bit",
-		};
+		const mockZipFile = buildMockFileUpload();
 
 		const mockDrizzleClient: MockDrizzleClient = {
 			query: {
@@ -1098,20 +1027,7 @@ describe("installPluginFromZip", () => {
 		// from plugin installation. The plugin installation should succeed regardless
 		// of database table creation issues.
 
-		const mockZipFile: MockFileUpload = {
-			createReadStream: vi.fn(() => ({
-				pipe: vi.fn(),
-				on: vi.fn((event, handler) => {
-					if (event === "data") handler("mock data");
-					if (event === "end") handler();
-					return { pipe: vi.fn() };
-				}),
-			})),
-			filename: "test.zip",
-			fieldName: "pluginZip",
-			mimetype: "application/zip",
-			encoding: "7bit",
-		};
+		const mockZipFile = buildMockFileUpload();
 
 		const mockDrizzleClient: MockDrizzleClient = {
 			query: {
@@ -1154,20 +1070,7 @@ describe("installPluginFromZip", () => {
 		// from plugin installation. The plugin installation should succeed regardless
 		// of general table creation errors.
 
-		const mockZipFile: MockFileUpload = {
-			createReadStream: vi.fn(() => ({
-				pipe: vi.fn(),
-				on: vi.fn((event, handler) => {
-					if (event === "data") handler("mock data");
-					if (event === "end") handler();
-					return { pipe: vi.fn() };
-				}),
-			})),
-			filename: "test.zip",
-			fieldName: "pluginZip",
-			mimetype: "application/zip",
-			encoding: "7bit",
-		};
+		const mockZipFile = buildMockFileUpload();
 
 		const mockDrizzleClient: MockDrizzleClient = {
 			query: {
@@ -1249,20 +1152,7 @@ describe("installPluginFromZip", () => {
 			extensionPoints: { database: [] },
 		});
 
-		const mockZipFile: MockFileUpload = {
-			createReadStream: vi.fn(() => ({
-				pipe: vi.fn(),
-				on: vi.fn((event, handler) => {
-					if (event === "data") handler("mock data");
-					if (event === "end") handler();
-					return { pipe: vi.fn() };
-				}),
-			})),
-			filename: "test.zip",
-			fieldName: "pluginZip",
-			mimetype: "application/zip",
-			encoding: "7bit",
-		};
+		const mockZipFile = buildMockFileUpload();
 
 		const mockDrizzleClient: MockDrizzleClient = {
 			query: {
@@ -1312,20 +1202,7 @@ describe("installPluginFromZip", () => {
 			extensionPoints: { database: [] },
 		});
 
-		const mockZipFile: MockFileUpload = {
-			createReadStream: vi.fn(() => ({
-				pipe: vi.fn(),
-				on: vi.fn((event, handler) => {
-					if (event === "data") handler("mock data");
-					if (event === "end") handler();
-					return { pipe: vi.fn() };
-				}),
-			})),
-			filename: "test.zip",
-			fieldName: "pluginZip",
-			mimetype: "application/zip",
-			encoding: "7bit",
-		};
+		const mockZipFile = buildMockFileUpload();
 
 		const mockDrizzleClient: MockDrizzleClient = {
 			query: {
@@ -1380,20 +1257,7 @@ describe("installPluginFromZip", () => {
 		);
 		vi.mocked(getPluginManagerInstance).mockReturnValueOnce(null);
 
-		const mockZipFile: MockFileUpload = {
-			createReadStream: vi.fn(() => ({
-				pipe: vi.fn(),
-				on: vi.fn((event, handler) => {
-					if (event === "data") handler("mock data");
-					if (event === "end") handler();
-					return { pipe: vi.fn() };
-				}),
-			})),
-			filename: "test.zip",
-			fieldName: "pluginZip",
-			mimetype: "application/zip",
-			encoding: "7bit",
-		};
+		const mockZipFile = buildMockFileUpload();
 
 		const mockDrizzleClient: MockDrizzleClient = {
 			query: {
@@ -1454,20 +1318,7 @@ describe("installPluginFromZip", () => {
 			},
 		);
 
-		const mockZipFile: MockFileUpload = {
-			createReadStream: vi.fn(() => ({
-				pipe: vi.fn(),
-				on: vi.fn((event, handler) => {
-					if (event === "data") handler("mock data");
-					if (event === "end") handler();
-					return { pipe: vi.fn() };
-				}),
-			})),
-			filename: "test.zip",
-			fieldName: "pluginZip",
-			mimetype: "application/zip",
-			encoding: "7bit",
-		};
+		const mockZipFile = buildMockFileUpload();
 
 		const mockDrizzleClient: MockDrizzleClient = {
 			query: {
@@ -1540,20 +1391,7 @@ describe("installPluginFromZip", () => {
 			},
 		);
 
-		const mockZipFile: MockFileUpload = {
-			createReadStream: vi.fn(() => ({
-				pipe: vi.fn(),
-				on: vi.fn((event, handler) => {
-					if (event === "data") handler("mock data");
-					if (event === "end") handler();
-					return { pipe: vi.fn() };
-				}),
-			})),
-			filename: "test.zip",
-			fieldName: "pluginZip",
-			mimetype: "application/zip",
-			encoding: "7bit",
-		};
+		const mockZipFile = buildMockFileUpload();
 
 		const mockDrizzleClient: MockDrizzleClient = {
 			query: {
@@ -1618,20 +1456,7 @@ describe("installPluginFromZip", () => {
 			},
 		});
 
-		const mockZipFile: MockFileUpload = {
-			createReadStream: vi.fn(() => ({
-				pipe: vi.fn(),
-				on: vi.fn((event, handler) => {
-					if (event === "data") handler("mock data");
-					if (event === "end") handler();
-					return { pipe: vi.fn() };
-				}),
-			})),
-			filename: "test.zip",
-			fieldName: "pluginZip",
-			mimetype: "application/zip",
-			encoding: "7bit",
-		};
+		const mockZipFile = buildMockFileUpload();
 
 		const mockDrizzleClient: MockDrizzleClient = {
 			query: {
@@ -1687,20 +1512,7 @@ describe("installPluginFromZip", () => {
 			mockPluginManager,
 		);
 
-		const mockZipFile: MockFileUpload = {
-			createReadStream: vi.fn(() => ({
-				pipe: vi.fn(),
-				on: vi.fn((event, handler) => {
-					if (event === "data") handler("mock data");
-					if (event === "end") handler();
-					return { pipe: vi.fn() };
-				}),
-			})),
-			filename: "test.zip",
-			fieldName: "pluginZip",
-			mimetype: "application/zip",
-			encoding: "7bit",
-		};
+		const mockZipFile = buildMockFileUpload();
 
 		const mockDrizzleClient: MockDrizzleClient = {
 			query: {
@@ -1759,20 +1571,7 @@ describe("installPluginFromZip", () => {
 			mockPluginManager,
 		);
 
-		const mockZipFile: MockFileUpload = {
-			createReadStream: vi.fn(() => ({
-				pipe: vi.fn(),
-				on: vi.fn((event, handler) => {
-					if (event === "data") handler("mock data");
-					if (event === "end") handler();
-					return { pipe: vi.fn() };
-				}),
-			})),
-			filename: "test.zip",
-			fieldName: "pluginZip",
-			mimetype: "application/zip",
-			encoding: "7bit",
-		};
+		const mockZipFile = buildMockFileUpload();
 
 		const mockDrizzleClient: MockDrizzleClient = {
 			query: {
@@ -1826,20 +1625,7 @@ describe("installPluginFromZip", () => {
 				apiManifest: undefined, // This will trigger the manifest check
 			});
 
-		const mockZipFile: MockFileUpload = {
-			createReadStream: vi.fn(() => ({
-				pipe: vi.fn(),
-				on: vi.fn((event, handler) => {
-					if (event === "data") handler("mock data");
-					if (event === "end") handler();
-					return { pipe: vi.fn() };
-				}),
-			})),
-			filename: "test.zip",
-			fieldName: "pluginZip",
-			mimetype: "application/zip",
-			encoding: "7bit",
-		};
+		const mockZipFile = buildMockFileUpload();
 
 		const mockDrizzleClient: MockDrizzleClient = {
 			query: {
