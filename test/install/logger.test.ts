@@ -122,7 +122,7 @@ describe("logger", () => {
 			header("Test Header");
 			expect(consoleSpy).toHaveBeenCalled();
 			// Check that at least one call contains the header text
-			const calls = consoleSpy.mock.calls.map((c) => String(c[0]));
+			const calls = consoleSpy.mock.calls.map((c: any[]) => String(c[0]));
 			expect(calls.some((c: string) => c.includes("Test Header"))).toBe(true);
 		});
 	});
@@ -131,7 +131,7 @@ describe("logger", () => {
 		it("logs sub-header message", () => {
 			subHeader("Test Sub Header");
 			expect(consoleSpy).toHaveBeenCalled();
-			const calls = consoleSpy.mock.calls.map((c) => String(c[0]));
+			const calls = consoleSpy.mock.calls.map((c: any[]) => String(c[0]));
 			expect(calls.some((c: string) => c.includes("Test Sub Header"))).toBe(
 				true,
 			);
@@ -170,7 +170,7 @@ describe("logger", () => {
 			banner();
 			expect(consoleSpy).toHaveBeenCalled();
 			// Banner contains TALAWA text
-			const calls = consoleSpy.mock.calls.map((c) => String(c[0]));
+			const calls = consoleSpy.mock.calls.map((c: any[]) => String(c[0]));
 			expect(calls.some((c: string) => c.includes("One-Click"))).toBe(true);
 		});
 	});
