@@ -16,6 +16,7 @@ import { isDeepStrictEqual } from "node:util";
  */
 export function assertToBeNonNullish<T>(
 	value: T | null | undefined,
+	message?: string,
 ): asserts value is T {
 	if (value === undefined || value === null) {
 		// Using a more descriptive error message that includes context

@@ -1982,6 +1982,14 @@ export const Mutation_createComment = gql(`
 	}
 `);
 
+export const Mutation_deleteComment = gql(`
+	mutation Mutation_deleteComment($input: MutationDeleteCommentInput!) {
+		deleteComment(input: $input) {
+			id
+		}
+	}
+`);
+
 export const Mutation_createCommentVote = gql(`
 	mutation Mutation_createCommentVote($input: MutationCreateCommentVoteInput!) {
 		createCommentVote(input: $input) {
@@ -1997,6 +2005,18 @@ export const Mutation_createCommentVote = gql(`
 export const Mutation_deleteCommentVote = gql(`
 	mutation Mutation_deleteCommentVote($input: MutationDeleteCommentVoteInput!) {
 		deleteCommentVote(input: $input) {
+			id
+			body
+			creator {
+				id
+			}
+		}
+	}
+`);
+
+export const Mutation_updateCommentVote = gql(`
+	mutation Mutation_updateCommentVote($input: MutationUpdateCommentVoteInput!) {
+		updateCommentVote(input: $input) {
 			id
 			body
 			creator {

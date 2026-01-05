@@ -14,11 +14,12 @@ const mutationDeleteChatArgumentsSchema = z.object({
 	input: mutationDeleteChatInputSchema,
 });
 
-builder.mutationField("deleteChat", (t) =>
+export const deleteChat = builder.mutationField("deleteChat", (t) =>
 	t.field({
 		args: {
 			input: t.arg({
-				description: "",
+				description:
+					"Input containing the UUID `id` of the chat to delete (required).",
 				required: true,
 				type: MutationDeleteChatInput,
 			}),
@@ -74,9 +75,10 @@ builder.mutationField("deleteChat", (t) =>
 								operators.eq(fields.memberId, currentUserId),
 						},
 						organization: {
-							columns: {
-								countryCode: true,
-							},
+							// Intentionally do not select organization-level scalar fields here;
+							// only the nested `membershipsWhereOrganization` is required for
+							// authorization checks. Omitting unnecessary columns reduces fetch
+							// size for this resolver.
 							with: {
 								membershipsWhereOrganization: {
 									columns: {
