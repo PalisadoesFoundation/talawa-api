@@ -27,6 +27,7 @@ export const mutationUpdateSingleRecurringEventInstanceInputSchema = z
 		allDay: z.boolean().optional(),
 		isPublic: z.boolean().optional(),
 		isRegisterable: z.boolean().optional(),
+		isInviteOnly: z.boolean().optional(),
 	})
 	.superRefine(({ id, ...remainingArgs }, ctx) => {
 		// Ensure at least one field is being updated
@@ -91,6 +92,10 @@ export const MutationUpdateSingleRecurringEventInstanceInput = builder
 			isRegisterable: t.boolean({
 				description:
 					"Whether users can register for this specific event instance.",
+			}),
+			isInviteOnly: t.boolean({
+				description: "Whether this specific event instance is invite-only.",
+				required: false,
 			}),
 		}),
 	});

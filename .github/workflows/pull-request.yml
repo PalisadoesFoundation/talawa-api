@@ -41,6 +41,10 @@ jobs:
         run: docker buildx build --file ./docker/api.Containerfile --tag talawa_api --target non_production ./
       - name: Check code format
         run: docker container run talawa_api pnpm format:check
+      - name: Check TSDoc comments
+        run: docker container run talawa_api pnpm lint:tsdoc
+      - name: Check sanitization
+        run: docker container run talawa_api pnpm lint:sanitization
       - name: Check if the source and target branches are different
         if: ${{ github.event.pull_request.base.ref == github.event.pull_request.head.ref }}
         run: |
@@ -50,6 +54,57 @@ jobs:
           echo "Error: Close this PR and try again."
           exit 1
 
+  Python-Compliance:
+    name: Check Python Code Style
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v4
+        with:
+          python-version: 3.11
+
+      - name: Cache pip packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
+
+      - name: Install dependencies
+        run: |
+          python3 -m venv venv
+          source venv/bin/activate
+          python -m pip install --upgrade pip
+          pip install -r .github/workflows/requirements.txt
+
+      - name: Run Black Formatter Check
+        run: |
+          source venv/bin/activate
+          black --check .
+
+      - name: Run Flake8 Linter
+        run: |
+          source venv/bin/activate
+          flake8 --docstring-convention google --ignore E402,E722,E203,F401,W503 .github
+
+      - name: Run pydocstyle
+        run: |
+          source venv/bin/activate
+          pydocstyle --convention=google --add-ignore=D415,D205 .github
+
+      - name: Run docstring compliance check
+        run: |
+          source venv/bin/activate
+          python .github/workflows/scripts/check_docstrings.py --directories .github
+
+  Count-Changed-Files:
+    uses: PalisadoesFoundation/.github/.github/workflows/count-changed-files.yml@main
   Check-ItSkip-Disable:
     name: Check for it.skip commands
     runs-on: ubuntu-latest
@@ -74,52 +129,9 @@ jobs:
         with:
           python-version: 3.9
 
-      - name: Run Python script
+      - name: Run it.skip Check
         run: |
-          python .github/workflows/scripts/itskip_disable_check.py --files ${{ steps.changed-files.outputs.all_changed_files }}
-
-  Check-AutoDocs:
-    name: Generate and Validate Documentation
-    runs-on: ubuntu-latest
-    needs: [Code-Quality-Checks]
-    steps:
-      - name: Checkout the Repository
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
-      - name: Install pnpm
-        uses: pnpm/action-setup@v4
-        with:
-          run_install: false
-
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: "24.x"
-          cache: "pnpm"
-
-      - name: Prepare dependency store
-        run: pnpm fetch
-
-      - name: Install Dependencies (frozen)
-        run: pnpm install --frozen-lockfile --prefer-offline
-
-      - name: Run documentation generation
-        run: pnpm run generate:docs
-
-      - name: Check for uncommitted doc changes
-        run: |
-          if [ -n "$(git status --porcelain)" ]; then
-            echo "::error::Documentation files are outdated or missing."
-            echo "Please run 'pnpm run generate:docs' locally and commit the updated files."
-            echo ""
-            echo "Changed files:"
-            git status --porcelain
-            exit 1
-          else
-            echo "Documentation is up to date."
-          fi
+          python .github/workflows/scripts/disable_statements_check.py --repo=api --files ${{ steps.changed-files.outputs.all_changed_files }}
 
   python_checks:
     name: Run Python Checks
@@ -140,17 +152,9 @@ jobs:
         with:
           python-version: 3.9
 
-      - name: Run Biome Ignore Check
+      - name: Run Disable Statements Check
         run: |
-          python .github/workflows/scripts/biome_disable_check.py --files ${{ steps.changed-files.outputs.all_changed_files }}
-
-      - name: Run Code Coverage Disable Check
-        run: |
-          python .github/workflows/scripts/code_coverage_disable_check.py --files ${{ steps.changed-files.outputs.all_changed_files }}
-
-      - name: Run TS Ignore Check
-        run: |
-          python .github/workflows/scripts/detect_ts_ignore.py --files ${{ steps.changed-files.outputs.all_changed_files }}
+          python .github/workflows/scripts/disable_statements_check.py --repo=api --files ${{ steps.changed-files.outputs.all_changed_files }}
 
   check_gql_tada:
     name: Check gql tada files and configuration
@@ -196,51 +200,6 @@ jobs:
       - name: Check mock isolation
         run: docker container run talawa_api pnpm check_mock_isolation
 
-  Generate-Schema-Docs:
-    if: ${{ github.actor != 'dependabot[bot]' }}
-    name: Generate GraphQL Schema Documentation
-    runs-on: ubuntu-latest
-    needs: [Code-Quality-Checks]
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
-      - name: Install pnpm
-        uses: pnpm/action-setup@v4
-        with:
-          run_install: false
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: "24.x"
-          cache: "pnpm"
-
-      - name: Prepare dependency store
-        run: pnpm fetch
-
-      - name: Install Docs dependencies
-        working-directory: ./docs
-        run: pnpm install --frozen-lockfile --prefer-offline
-
-      - name: Generate GraphQL Schema Markdown
-        working-directory: ./docs
-        run: pnpm docusaurus graphql-to-doc
-      - name: Check for uncommitted schema changes
-        run: |
-          if [ -n "$(git status --porcelain)" ]; then
-            echo "::error::Schema files are outdated or missing."
-            echo "Please run 'pnpm docusaurus graphql-to-doc' inside '/docs' locally and commit the updated files."
-            echo ""
-            echo "Changed files:"
-            git status --porcelain
-            exit 1
-          else
-            echo "Schema is up to date."
-          fi
-
   Check_unused_code:
     name: Check for unused files, exports and dependencies
     runs-on: ubuntu-latest
@@ -250,7 +209,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: "22.x"
+          node-version: "24.x"
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
       - name: Install dependencies
@@ -419,8 +378,58 @@ jobs:
           echo "Add the 'ignore-sensitive-files-pr' label to this PR."
           exit 1
 
-  Run-Tests:
-    name: Run tests for talawa api (Shard ${{ matrix.shard }})
+  Check-AutoDocs:
+    needs: [Code-Quality-Checks]
+    uses: PalisadoesFoundation/.github/.github/workflows/typescript-autodocs.yml@main
+    with:
+      pnpm-version: "10.26.1"
+  Generate-Schema-Docs:
+    if: ${{ github.actor != 'dependabot[bot]' }}
+    name: Generate GraphQL Schema Documentation
+    runs-on: ubuntu-latest
+    needs: [Code-Quality-Checks]
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          run_install: false
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "24.x"
+          cache: "pnpm"
+
+      - name: Prepare dependency store
+        run: pnpm fetch
+
+      - name: Install Docs dependencies
+        working-directory: ./docs
+        run: pnpm install --frozen-lockfile --prefer-offline
+
+      - name: Generate GraphQL Schema Markdown
+        working-directory: ./docs
+        run: pnpm docusaurus graphql-to-doc
+      - name: Check for uncommitted schema changes
+        run: |
+          if [ -n "$(git status --porcelain)" ]; then
+            echo "::error::Schema files are outdated or missing."
+            echo "Please run 'pnpm docusaurus graphql-to-doc' inside '/docs' locally and commit the updated files."
+            echo ""
+            echo "Changed files:"
+            git status --porcelain
+            exit 1
+          else
+            echo "Schema is up to date."
+          fi
+
+  Pre-Test-Checks-Pass:
+    name: All Pre-Testing Checks Pass
     runs-on: ubuntu-latest
     needs:
       [
@@ -434,7 +443,16 @@ jobs:
         Check_unused_code,
         Generate-Schema-Docs,
         Check-ItSkip-Disable,
+        Python-Compliance,
       ]
+    steps:
+      - name: This job intentionally does nothing
+        run: echo "This job intentionally does nothing"
+
+  Run-Tests:
+    name: Run tests for talawa api (Shard ${{ matrix.shard }})
+    runs-on: ubuntu-latest
+    needs: [Pre-Test-Checks-Pass]
     env:
       TOTAL_SHARDS: 12
     strategy:
@@ -757,12 +775,12 @@ jobs:
         uses: VeryGoodOpenSource/very_good_coverage@v3
         with:
           path: "./coverage/vitest/lcov.info"
-          min_coverage: 68.0
+          min_coverage: 80.0
 
   Test-Docusaurus-Deployment:
     name: Test Deployment to https://docs-api.talawa.io
     runs-on: ubuntu-latest
-    needs: [Merge-Coverage]
+    needs: [Run-Tests]
     # Run only if the develop branch and not dependabot
     if: ${{ github.actor != 'dependabot[bot]' && github.event.pull_request.base.ref == 'develop' }}
     steps:
@@ -781,92 +799,92 @@ jobs:
         working-directory: ./docs
         run: pnpm build
 
-  Python-Compliance:
-    name: Check Python Code Style
+  Check-Sample-Data:
+    name: Check If Sample Data Script Executes Successfully
+    timeout-minutes: 5
     runs-on: ubuntu-latest
-    needs: [Code-Quality-Checks]
+    needs: [Run-Tests]
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
+      - name: Checkout Backend
+        uses: actions/checkout@v4.2.2
 
-      - name: Set up Python 3.11
-        uses: actions/setup-python@v4
-        with:
-          python-version: 3.11
-
-      - name: Cache pip packages
-        uses: actions/cache@v4
-        with:
-          path: ~/.cache/pip
-          key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
-          restore-keys: |
-            ${{ runner.os }}-pip-
-
-      - name: Install dependencies
+      - name: Setup Devcontainer
         run: |
-          python3 -m venv venv
-          source venv/bin/activate
-          python -m pip install --upgrade pip
-          pip install -r .github/workflows/requirements.txt
-
-      - name: Run Black Formatter Check
+          npm install -g @devcontainers/cli
+          cp envFiles/.env.devcontainer .env
+          devcontainer up --workspace-folder .
+          echo "Devcontainer started"
+      - name: Wait for Postgres in devcontainer before migrations
         run: |
-          source venv/bin/activate
-          black --check .
+          set -euo pipefail
+          POSTGRES_USER=postgres
+          echo "Waiting for Postgres service via compose..."
+          timeout=90
+          until docker compose exec -T postgres pg_isready -h localhost -p 5432 -U "$POSTGRES_USER" >/dev/null 2>&1 || [ "$timeout" -le 0 ]; do
+            echo "Postgres not ready ($timeout s left)"
+            sleep 1
+            ((timeout--))
+          done
+          if [ "$timeout" -eq 0 ]; then
+            echo "Error: Postgres failed to start"
+            docker compose ps
+            docker compose logs postgres
+            exit 1
+          fi
 
-      - name: Run Flake8 Linter
+      - name: Apply Database Migrations
         run: |
-          source venv/bin/activate
-          flake8 --docstring-convention google --ignore E402,E722,E203,F401,W503 .github
+          docker exec talawa-api-1 /bin/bash -c 'pnpm apply_drizzle_migrations'
 
-      - name: Run pydocstyle
+      - name: Start Backend Server
         run: |
-          source venv/bin/activate
-          pydocstyle --convention=google --add-ignore=D415,D205 .github
+          docker exec -d talawa-api-1 /bin/bash -c 'pnpm run start_development_server'
 
-      - name: Run docstring compliance check
+      - name: Wait for Backend to be Ready
         run: |
-          source venv/bin/activate
-          python .github/workflows/scripts/check_docstrings.py --directories .github
+          echo "Waiting for backend at http://localhost:4000/healthcheck"
 
-  Count-Changed-Files:
-    if: ${{ github.actor != 'dependabot[bot]' }}
-    name: Checks if number of files changed is acceptable
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0 # Fetch all history for all branches and tags
+          TIMEOUT=60
+          INTERVAL=3
+          ELAPSED=0
 
-      - name: Get changed files
-        id: changed-files
+          until docker exec talawa-api-1 curl -sf http://localhost:4000/healthcheck > /dev/null; do
+            if [ "$ELAPSED" -ge "$TIMEOUT" ]; then
+              echo "Backend failed to start within ${TIMEOUT}s"
+              echo "=== Backend container logs ==="
+              docker logs talawa-api-1 --tail 100
+              exit 1
+            fi
+            echo "Backend not ready yet... (${ELAPSED}s)"
+            sleep $INTERVAL
+            ELAPSED=$((ELAPSED + INTERVAL))
+          done
+
+          echo "Backend is up and responding"
+
+      - name: Seed Sample Data
         run: |
-          # Get the base branch ref
-          BASE_SHA=$(git merge-base ${{ github.event.pull_request.base.sha }} ${{ github.event.pull_request.head.sha }})
+          set -euo pipefail
+          echo "=== Seeding Sample Data ==="
+          if docker exec talawa-api-1 /bin/bash -c 'set -a; source ./.env; set +a; pnpm run add:sample_data'; then
+            echo "Seeding completed successfully"
+          else
+            echo "Seeding failed"
+            echo "=== Container status ==="
+            docker ps | grep talawa || true
+            echo "=== Backend logs ==="
+            docker logs talawa-api-1 --tail 50
+            echo "=== Users table contents ==="
+            docker exec talawa-postgres-1 psql -U talawa -d talawa \
+              -c "SELECT id, email_address, name, role FROM users;" \
+              2>/dev/null || echo "Could not query users"
+            exit 1
+          fi
 
-          # Count all changed files
-          ALL_CHANGED_FILES_COUNT=$(git diff --name-only --diff-filter=ACMRT $BASE_SHA ${{ github.event.pull_request.head.sha }} | wc -l | tr -d ' ')
-          echo "all_changed_files_count=$ALL_CHANGED_FILES_COUNT" >> $GITHUB_OUTPUT
-
-      - name: Echo number of changed files
-        env:
-          CHANGED_FILES_COUNT: ${{ steps.changed-files.outputs.all_changed_files_count }}
+      - name: Cleanup - Free ports by stopping containers
+        if: always()
         run: |
-          echo "Number of files changed: $CHANGED_FILES_COUNT"
-
-      - name: Check if the number of changed files is less than 100
-        if: steps.changed-files.outputs.all_changed_files_count > 100
-        env:
-          CHANGED_FILES_COUNT: ${{ steps.changed-files.outputs.all_changed_files_count }}
-        run: |
-          echo "Error: Too many files (greater than 100) changed in the pull request."
-          echo "Possible issues:"
-          echo "- Contributor may be merging into an incorrect branch."
-          echo "- Source branch may be incorrect please use develop as source branch."
-          exit 1
+          docker compose down
 
   Check-App-Startup:
     name: Check App Startup and Health

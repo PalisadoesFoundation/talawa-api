@@ -133,6 +133,10 @@ This environment variable is used to configure the secret used for signing and v
 
 - More information can be found at [this](https://github.com/fastify/fastify-jwt?tab=readme-ov-file##secret-required) link.
 
+### API_REFRESH_TOKEN_EXPIRES_IN
+
+This environment variable is used to configure the time in milliseconds it takes for a refresh token issued by talawa api to expire. Refresh tokens are long-lived tokens used to obtain new short-lived access tokens without requiring users to re-authenticate. Recommended value is 7 days (604800000 milliseconds).
+
 ### API_LOG_LEVEL
 
 This environment variable is used to configure the [log level](https://github.com/pinojs/pino/blob/main/docs/api.md##logger-level) for talawa api's [pino.js](https://github.com/pinojs/pino) logger. Possible values are `debug`, `error`, `fatal`, `info`, `trace` and `warn`.
@@ -240,6 +244,23 @@ This environment variable is used to configure the host port of the redis server
 This environment variable is used to configure the host ip of the redis server for talawa api's redis client to connect with.
 
 - More information can be found at [this](https://github.com/redis/redis) link.
+
+### CACHE_ENTITY_TTLS
+
+This environment variable is used to configure custom TTL (time-to-live) values in seconds for cached entities. It accepts a JSON object where keys are entity names and values are TTL durations in seconds.
+
+**Default values** (used when not specified):
+- `user`: 600 (10 minutes)
+- `organization`: 600 (10 minutes)
+- `event`: 240 (4 minutes)
+- `post`: 120 (2 minutes)
+
+**Example:**
+```json
+{"user": 300, "organization": 900, "event": 180, "post": 60}
+```
+
+This allows operators to tune cache behavior based on their specific read/write patterns and data freshness requirements.
 
 ### API_GRAPHQL_SCALAR_FIELD_COST
 

@@ -7,8 +7,9 @@ import {
 } from "~/src/graphql/inputs/MutationCreateFundCampaignInput";
 import { FundCampaign } from "~/src/graphql/types/FundCampaign/FundCampaign";
 import { notificationEventBus } from "~/src/graphql/types/Notification/EventBus/eventBus";
-import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import envConfig from "~/src/utilities/graphqLimits";
+import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
+
 const mutationCreateFundCampaignArgumentsSchema = z.object({
 	input: mutationCreateFundCampaignInputSchema,
 });

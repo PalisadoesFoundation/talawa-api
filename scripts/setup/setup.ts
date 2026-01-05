@@ -109,7 +109,7 @@ export function validateURL(input: string): true | string {
 			return "Please enter a valid URL with http:// or https:// protocol.";
 		}
 		return true;
-	} catch (error) {
+	} catch (_error) {
 		return "Please enter a valid URL.";
 	}
 }
@@ -161,7 +161,7 @@ export function validateCloudBeaverURL(input: string): true | string {
 			return "URL must use HTTP or HTTPS protocol";
 		}
 		const port = url.port || (url.protocol === "https:" ? "443" : "80");
-		if (!/^\d+$/.test(port) || Number.parseInt(port) > 65535) {
+		if (!/^\d+$/.test(port) || Number.parseInt(port, 10) > 65535) {
 			return "Invalid port in URL";
 		}
 		return true;
@@ -237,6 +237,27 @@ export async function administratorEmail(
 			"Enter email:",
 			"administrator@email.com",
 			validateEmail,
+		);
+	} catch (err) {
+		handlePromptError(err);
+	}
+	return answers;
+}
+
+export async function reCaptchaSetup(
+	answers: SetupAnswers,
+): Promise<SetupAnswers> {
+	try {
+		answers.RECAPTCHA_SECRET_KEY = await promptInput(
+			"RECAPTCHA_SECRET_KEY",
+			"Enter Google reCAPTCHA v2 Secret Key:",
+			"",
+			(input: string) => {
+				if (input.trim().length < 1) {
+					return "reCAPTCHA Secret Key cannot be empty.";
+				}
+				return true;
+			},
 		);
 	} catch (err) {
 		handlePromptError(err);
@@ -743,6 +764,16 @@ export async function setup(): Promise<SetupAnswers> {
 	}
 
 	answers = await administratorEmail(answers);
+
+	const setupReCaptcha = await promptConfirm(
+		"setupReCaptcha",
+		"Do you want to set up Google reCAPTCHA v2 now?",
+		false,
+	);
+
+	if (setupReCaptcha) {
+		answers = await reCaptchaSetup(answers);
+	}
 
 	updateEnvVariable(answers);
 	console.log("Configuration complete.");

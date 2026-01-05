@@ -24,6 +24,11 @@ Post.implement({
 			description: "Caption for the post.",
 			resolve: (root) => escapeHTML(root.caption),
 		}),
+		body: t.string({
+			description: "Body for the post.",
+			nullable: true,
+			resolve: (root) => (root.body ? escapeHTML(root.body) : null),
+		}),
 		createdAt: t.expose("createdAt", {
 			description: "Date time at the time the post was created.",
 			type: "DateTime",

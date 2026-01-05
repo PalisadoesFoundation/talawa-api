@@ -1,5 +1,4 @@
 import {
-	type SQL,
 	and,
 	asc,
 	desc,
@@ -11,6 +10,7 @@ import {
 	lt,
 	ne,
 	or,
+	type SQL,
 } from "drizzle-orm";
 import { z } from "zod";
 import { organizationMembershipRoleEnum } from "~/src/drizzle/enums/organizationMembershipRole";
@@ -20,17 +20,18 @@ import {
 } from "~/src/drizzle/tables/organizationMemberships";
 import { usersTable } from "~/src/drizzle/tables/users";
 import { User } from "~/src/graphql/types/User/User";
-import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
+import envConfig from "~/src/utilities/graphqLimits";
 import {
-	type ParsedDefaultGraphQLConnectionArgumentsWithWhere,
 	createGraphQLConnectionWithWhereSchema,
 	type defaultGraphQLConnectionArgumentsSchema,
+	type ParsedDefaultGraphQLConnectionArgumentsWithWhere,
 	transformGraphQLConnectionArgumentsWithWhere,
 	transformToDefaultGraphQLConnection,
-} from "~/src/utilities/defaultGraphQLConnection";
-import envConfig from "~/src/utilities/graphqLimits";
+} from "~/src/utilities/graphqlConnection";
+import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import { MembersWhereInput } from "../../inputs/QueryOrganizationInput";
 import { Organization } from "./Organization";
+
 type UserRole = z.infer<typeof organizationMembershipRoleEnum>;
 type MembersWhere = {
 	name_contains?: string;
@@ -61,7 +62,7 @@ const membersArgumentsSchema = createGraphQLConnectionWithWhereSchema(
 		ctx,
 	);
 
-	let cursor: z.infer<typeof cursorSchema> | undefined = undefined;
+	let cursor: z.infer<typeof cursorSchema> | undefined;
 	try {
 		if (transformedArg.cursor !== undefined) {
 			cursor = cursorSchema.parse(
@@ -70,7 +71,7 @@ const membersArgumentsSchema = createGraphQLConnectionWithWhereSchema(
 				),
 			);
 		}
-	} catch (error) {
+	} catch (_error) {
 		ctx.addIssue({
 			code: "custom",
 			message: "Not a valid cursor.",
@@ -364,13 +365,10 @@ Organization.implement({
 					}
 
 					return transformToDefaultGraphQLConnection({
-						createCursor: (organizationMembership) =>
-							Buffer.from(
-								JSON.stringify({
-									createdAt: organizationMembership.createdAt.toISOString(),
-									memberId: organizationMembership.memberId,
-								}),
-							).toString("base64url"),
+						createCursor: (organizationMembership) => ({
+							createdAt: organizationMembership.createdAt,
+							memberId: organizationMembership.memberId,
+						}),
 						createNode: (organizationMembership) =>
 							organizationMembership.member,
 						parsedArgs,

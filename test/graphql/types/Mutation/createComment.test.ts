@@ -1,24 +1,79 @@
-import { afterAll, beforeAll, expect, suite, test } from "vitest";
-import { COMMENT_BODY_MAX_LENGTH } from "~/src/drizzle/tables/comments";
-import type { InvalidArgumentsExtensions } from "~/src/utilities/TalawaGraphQLError";
+import { faker } from "@faker-js/faker";
+import { eq } from "drizzle-orm";
+import {
+	afterEach,
+	beforeAll,
+	beforeEach,
+	expect,
+	suite,
+	test,
+	vi,
+} from "vitest";
+import { usersTable } from "../../../../src/drizzle/tables/users";
 import { assertToBeNonNullish } from "../../../helpers";
 import { server } from "../../../server";
 import { mercuriusClient } from "../client";
 import {
 	Mutation_createComment,
 	Mutation_createOrganization,
+	Mutation_createOrganizationMembership,
 	Mutation_createPost,
-	Mutation_deleteOrganization,
+	Mutation_createUser,
 	Query_signIn,
 } from "../documentNodes";
 
-suite("Mutation field createComment", () => {
-	let adminToken: string;
-	let orgId: string;
-	let postId: string;
+afterEach(() => {
+	vi.clearAllMocks();
+});
 
+// Declare authToken at module scope
+let authToken!: string;
+
+/**
+ * Creates a new organization and returns its ID for testing purposes
+ * @returns Promise resolving to the organization ID
+ */
+async function createOrganizationAndGetId(): Promise<string> {
+	const uniqueName = `Test Org ${faker.string.uuid()}`;
+	const result = await mercuriusClient.mutate(Mutation_createOrganization, {
+		headers: { authorization: `bearer ${authToken}` },
+		variables: {
+			input: {
+				name: uniqueName,
+				countryCode: "us",
+			},
+		},
+	});
+	expect(result.errors).toBeUndefined();
+	const orgId = result.data?.createOrganization?.id;
+	assertToBeNonNullish(orgId);
+	return orgId;
+}
+
+/**
+ * Creates a new post in the specified organization
+ * @param organizationId - The organization ID where the post will be created
+ * @returns Promise resolving to the post ID
+ */
+async function createPost(organizationId: string): Promise<string> {
+	const result = await mercuriusClient.mutate(Mutation_createPost, {
+		headers: { authorization: `bearer ${authToken}` },
+		variables: {
+			input: {
+				caption: `Test Post ${faker.string.uuid()}`,
+				organizationId: organizationId,
+			},
+		},
+	});
+	expect(result.errors).toBeUndefined();
+	const postId = result.data?.createPost?.id;
+	assertToBeNonNullish(postId);
+	return postId;
+}
+
+suite("Mutation field createComment", () => {
 	beforeAll(async () => {
-		// Sign in to get admin token
+		// Sign in as admin to get authentication token
 		const signInResult = await mercuriusClient.query(Query_signIn, {
 			variables: {
 				input: {
@@ -27,294 +82,361 @@ suite("Mutation field createComment", () => {
 				},
 			},
 		});
-		if (signInResult.errors?.length) {
-			throw new Error(`signIn failed: ${JSON.stringify(signInResult.errors)}`);
-		}
-		const token = signInResult.data?.signIn?.authenticationToken ?? null;
-		assertToBeNonNullish(token);
-		// Verify token is a non-empty string (not just non-nullish)
-		if (typeof token !== "string" || token.trim() === "") {
-			throw new Error("signIn returned empty or invalid authenticationToken");
-		}
-		adminToken = token;
+		assertToBeNonNullish(signInResult.data?.signIn);
 
-		// Create a shared organization for tests
-		const createOrgResult = await mercuriusClient.mutate(
-			Mutation_createOrganization,
-			{
-				headers: { authorization: `Bearer ${adminToken}` },
+		// Add ! here to assert it's not null
+		const token = signInResult.data.signIn.authenticationToken;
+		assertToBeNonNullish(token);
+		authToken = token;
+	});
+
+	suite("when the client is not authenticated", () => {
+		test("should return an error with unauthenticated code", async () => {
+			const result = await mercuriusClient.mutate(Mutation_createComment, {
 				variables: {
 					input: {
-						name: "Test Organization Beta",
-						description: "A test organization for create comment tests",
-						countryCode: "jm",
-						state: "St Andrew",
-						city: "Kingston",
-						postalCode: "12345",
-						addressLine1: "456 Test Avenue",
+						body: "Test comment",
+						postId: faker.string.uuid(),
 					},
 				},
-			},
-		);
-		if (createOrgResult.errors?.length) {
-			throw new Error(
-				`createOrganization failed: ${JSON.stringify(createOrgResult.errors)}`,
+			});
+			expect(result.data?.createComment).toBeNull();
+			expect(result.errors).toEqual(
+				expect.arrayContaining([
+					expect.objectContaining({
+						extensions: expect.objectContaining({ code: "unauthenticated" }),
+					}),
+				]),
 			);
-		}
-		const createdOrgId = createOrgResult.data?.createOrganization?.id;
-		assertToBeNonNullish(createdOrgId);
-		orgId = createdOrgId;
-
-		// Create a shared post for tests
-		const postResult = await mercuriusClient.mutate(Mutation_createPost, {
-			variables: {
-				input: {
-					caption: "Test post for create comment tests",
-					organizationId: orgId,
-				},
-			},
-			headers: {
-				authorization: `Bearer ${adminToken}`,
-			},
 		});
-		if (postResult.errors?.length) {
-			throw new Error(
-				`createPost failed: ${JSON.stringify(postResult.errors)}`,
-			);
-		}
-		const createdPostId = postResult.data?.createPost?.id;
-		assertToBeNonNullish(createdPostId);
-		postId = createdPostId;
 	});
 
-	afterAll(async () => {
-		// Cleanup: delete the organization (cascades to posts and comments)
-		if (orgId) {
-			const deleteOrgResult = await mercuriusClient.mutate(
-				Mutation_deleteOrganization,
+	suite("when authenticated user record is deleted", () => {
+		test("should return an error with unauthenticated code", async () => {
+			// Create a user first
+			const testUserEmail = `deleteduser${faker.string.uuid()}@example.com`;
+			const createUserResult = await mercuriusClient.mutate(
+				Mutation_createUser,
 				{
-					headers: { authorization: `Bearer ${adminToken}` },
+					headers: { authorization: `bearer ${authToken}` },
 					variables: {
-						input: { id: orgId },
+						input: {
+							emailAddress: testUserEmail,
+							isEmailAddressVerified: true,
+							name: "User To Delete",
+							password: "password",
+							role: "regular",
+						},
 					},
 				},
 			);
-			if (deleteOrgResult.errors?.length) {
-				throw new Error(
-					`deleteOrganization cleanup failed: ${JSON.stringify(deleteOrgResult.errors)}`,
-				);
-			}
-		}
-	});
+			expect(createUserResult.errors).toBeUndefined();
+			const userId = createUserResult.data?.createUser?.user?.id;
+			assertToBeNonNullish(userId);
 
-	test("should create comment and return escaped body", async () => {
-		// Create a comment with HTML
-		const htmlBody = "<script>alert('xss')</script>";
-		const commentResult = await mercuriusClient.mutate(Mutation_createComment, {
-			variables: {
-				input: {
-					postId,
-					body: htmlBody,
+			// Sign in as that user to get their token
+			const userSignIn = await mercuriusClient.query(Query_signIn, {
+				variables: {
+					input: {
+						emailAddress: testUserEmail,
+						password: "password",
+					},
 				},
-			},
-			headers: {
-				authorization: `Bearer ${adminToken}`,
-			},
-		});
-		if (
-			Array.isArray(commentResult.errors) &&
-			commentResult.errors.length > 0
-		) {
-			throw new Error(
-				`createComment failed: ${JSON.stringify(commentResult.errors)}`,
+			});
+			const userToken = userSignIn.data?.signIn?.authenticationToken;
+			assertToBeNonNullish(userToken);
+
+			// Delete the user from database
+			await server.drizzleClient
+				.delete(usersTable)
+				.where(eq(usersTable.id, userId));
+
+			// Create org and post for the test
+			const orgId = await createOrganizationAndGetId();
+			const postId = await createPost(orgId);
+
+			// Try to create comment with deleted user's token
+			const result = await mercuriusClient.mutate(Mutation_createComment, {
+				headers: { authorization: `bearer ${userToken}` },
+				variables: {
+					input: {
+						body: "Test comment",
+						postId: postId,
+					},
+				},
+			});
+
+			expect(result.data?.createComment).toBeNull();
+			expect(result.errors).toEqual(
+				expect.arrayContaining([
+					expect.objectContaining({
+						extensions: expect.objectContaining({
+							code: "unauthenticated",
+						}),
+					}),
+				]),
 			);
-		}
-		const createdComment = commentResult.data?.createComment;
-		assertToBeNonNullish(createdComment);
-
-		// The API returns the body via the resolver, which calls escapeHTML.
-		// Verify the content is properly escaped using flexible assertions.
-		const body = createdComment.body;
-
-		// Check that angle brackets are escaped
-		expect(body).toContain("&lt;script&gt;");
-		expect(body).toContain("&lt;/script&gt;");
-
-		// Check that raw HTML is not present
-		expect(body).not.toContain("<script>");
-		expect(body).not.toContain("</script>");
-
-		// Check that quotes are escaped (accepts common HTML entity variants: &#39;, &apos;, &#x27;, case-insensitive)
-		expect(body).toMatch(/&#39;|&apos;|&#x27;/i);
+		});
 	});
 
-	test("should return error if comment body exceeds length limit", async () => {
-		// Create comment with body exceeding max length
-		const longBody = "a".repeat(COMMENT_BODY_MAX_LENGTH + 1);
-		const commentResult = await mercuriusClient.mutate(Mutation_createComment, {
-			variables: {
-				input: {
-					postId,
-					body: longBody,
+	suite("when the arguments are invalid", () => {
+		test("should return an error with invalid_arguments code", async () => {
+			const result = await mercuriusClient.mutate(Mutation_createComment, {
+				headers: { authorization: `bearer ${authToken}` },
+				variables: {
+					input: {
+						body: "",
+						postId: "invalid-uuid",
+					},
 				},
-			},
-			headers: {
-				authorization: `Bearer ${adminToken}`,
-			},
+			});
+			expect(result.data?.createComment).toBeNull();
+			expect(result.errors).toEqual(
+				expect.arrayContaining([
+					expect.objectContaining({
+						extensions: expect.objectContaining({ code: "invalid_arguments" }),
+					}),
+				]),
+			);
 		});
-
-		// Handle both { data: null, errors: [...] } and { data: { createComment: null }, errors: [...] }
-		expect(
-			commentResult.data === null || commentResult.data?.createComment === null,
-		).toBe(true);
-		expect(commentResult.errors).toBeDefined();
-
-		// Find the error with the expected extension code (robust to error ordering)
-		const validationError = commentResult.errors?.find(
-			(error) =>
-				(error.extensions as { code?: string } | undefined)?.code ===
-				"invalid_arguments",
-		);
-		expect(validationError).toBeDefined();
-
-		// Safely access extensions with proper type narrowing
-		const extensions = validationError?.extensions;
-		const issues =
-			typeof extensions === "object" &&
-			extensions !== null &&
-			"issues" in extensions
-				? (extensions as InvalidArgumentsExtensions).issues
-				: undefined;
-		expect(issues).toBeDefined();
-
-		// Ensure issues is a non-empty array
-		expect(Array.isArray(issues)).toBe(true);
-		expect(issues?.length).toBeGreaterThan(0);
-
-		const issueMessages = issues?.map((i) => i.message).join(" ");
-		// Use simple assertion for message matching
-		expect(issueMessages).toContain(
-			`Comment body must not exceed ${COMMENT_BODY_MAX_LENGTH} characters`,
-		);
 	});
 
-	test("should create comment with body length exactly COMMENT_BODY_MAX_LENGTH", async () => {
-		const body = "a".repeat(COMMENT_BODY_MAX_LENGTH);
-		const commentResult = await mercuriusClient.mutate(Mutation_createComment, {
-			variables: {
-				input: {
-					postId,
-					body,
+	suite("when the specified post does not exist", () => {
+		test("should return an error with arguments_associated_resources_not_found", async () => {
+			const result = await mercuriusClient.mutate(Mutation_createComment, {
+				headers: { authorization: `bearer ${authToken}` },
+				variables: {
+					input: {
+						body: "Test comment",
+						postId: faker.string.uuid(),
+					},
 				},
-			},
-			headers: {
-				authorization: `Bearer ${adminToken}`,
-			},
+			});
+			expect(result.data?.createComment).toBeNull();
+			expect(result.errors).toEqual(
+				expect.arrayContaining([
+					expect.objectContaining({
+						extensions: expect.objectContaining({
+							code: "arguments_associated_resources_not_found",
+						}),
+					}),
+				]),
+			);
 		});
-
-		expect(commentResult.errors?.length ?? 0).toBe(0);
-		expect(commentResult.data?.createComment).toBeDefined();
 	});
 
-	test("should create comment with body length exactly COMMENT_BODY_MAX_LENGTH - 1", async () => {
-		const body = "a".repeat(COMMENT_BODY_MAX_LENGTH - 1);
-		const commentResult = await mercuriusClient.mutate(Mutation_createComment, {
-			variables: {
-				input: {
-					postId,
-					body,
-				},
-			},
-			headers: {
-				authorization: `Bearer ${adminToken}`,
-			},
-		});
+	suite("when user is not authorized to comment on organization post", () => {
+		test("should return an error with unauthorized_action_on_arguments_associated_resources", async () => {
+			const orgId = await createOrganizationAndGetId();
+			const postId = await createPost(orgId);
 
-		expect(commentResult.errors).toBeUndefined();
-		expect(commentResult.data?.createComment).toBeDefined();
+			// Create new regular user
+			const newUserEmail = `testuser${faker.string.uuid()}@example.com`;
+			const createUserResult = await mercuriusClient.mutate(
+				Mutation_createUser,
+				{
+					headers: { authorization: `bearer ${authToken}` },
+					variables: {
+						input: {
+							emailAddress: newUserEmail,
+							isEmailAddressVerified: true,
+							name: "Non Member User",
+							password: "password",
+							role: "regular",
+						},
+					},
+				},
+			);
+			expect(createUserResult.errors).toBeUndefined();
+
+			const nonMemberSignIn = await mercuriusClient.query(Query_signIn, {
+				variables: {
+					input: {
+						emailAddress: newUserEmail,
+						password: "password",
+					},
+				},
+			});
+			const nonMemberToken = nonMemberSignIn.data?.signIn?.authenticationToken;
+			assertToBeNonNullish(nonMemberToken);
+
+			const result = await mercuriusClient.mutate(Mutation_createComment, {
+				headers: { authorization: `bearer ${nonMemberToken}` },
+				variables: {
+					input: {
+						body: "Test comment",
+						postId: postId,
+					},
+				},
+			});
+
+			expect(result.data?.createComment).toBeNull();
+			expect(result.errors).toEqual(
+				expect.arrayContaining([
+					expect.objectContaining({
+						extensions: expect.objectContaining({
+							code: "unauthorized_action_on_arguments_associated_resources",
+						}),
+					}),
+				]),
+			);
+		});
 	});
 
-	test("should return error if comment body is empty string", async () => {
-		const commentResult = await mercuriusClient.mutate(Mutation_createComment, {
-			variables: {
-				input: {
-					postId,
-					body: "",
-				},
-			},
-			headers: {
-				authorization: `Bearer ${adminToken}`,
-			},
+	suite("when the database insert operation fails", () => {
+		let originalInsert: typeof server.drizzleClient.insert;
+		let orgId: string;
+		let postId: string;
+
+		// Create test data BEFORE any mocking happens
+		beforeAll(async () => {
+			orgId = await createOrganizationAndGetId();
+			postId = await createPost(orgId);
 		});
 
-		expect(commentResult.errors).toBeDefined();
-		const validationError = commentResult.errors?.find(
-			(error) =>
-				(error.extensions as { code?: string } | undefined)?.code ===
-				"invalid_arguments",
-		);
-		expect(validationError).toBeDefined();
+		beforeEach(() => {
+			// Now mock ONLY for the actual comment creation
+			originalInsert = server.drizzleClient.insert;
+			server.drizzleClient.insert = vi.fn().mockReturnValue({
+				values: vi.fn().mockReturnValue({
+					returning: vi.fn().mockResolvedValue([]),
+				}),
+			});
+		});
 
-		const extensions = validationError?.extensions;
-		const issues =
-			typeof extensions === "object" &&
-			extensions !== null &&
-			"issues" in extensions
-				? (extensions as InvalidArgumentsExtensions).issues
-				: undefined;
-		expect(issues).toBeDefined();
-		expect(Array.isArray(issues)).toBe(true);
-		expect(issues?.length).toBeGreaterThan(0);
+		afterEach(() => {
+			server.drizzleClient.insert = originalInsert;
+		});
 
-		// Check that at least one issue relates to the "body" field or mentions length requirements
-		const hasBodyIssue = issues?.some(
-			(i) =>
-				i.argumentPath?.includes("body") ||
-				/at least|min|length/i.test(i.message) ||
-				i.message.includes("1"),
-		);
-		expect(hasBodyIssue).toBe(true);
+		test("should return an error with unexpected code", async () => {
+			const result = await mercuriusClient.mutate(Mutation_createComment, {
+				headers: { authorization: `bearer ${authToken}` },
+				variables: {
+					input: {
+						body: "Test comment",
+						postId: postId,
+					},
+				},
+			});
+
+			expect(result.data?.createComment).toBeNull();
+			expect(result.errors).toEqual(
+				expect.arrayContaining([
+					expect.objectContaining({
+						extensions: expect.objectContaining({ code: "unexpected" }),
+					}),
+				]),
+			);
+		});
 	});
 
-	test("should return error if comment body is whitespace only", async () => {
-		const commentResult = await mercuriusClient.mutate(Mutation_createComment, {
-			variables: {
-				input: {
-					postId,
-					body: "   ",
+	suite("when comment is created successfully by organization member", () => {
+		test("should return a valid comment", async () => {
+			const orgId = await createOrganizationAndGetId();
+
+			// Create a user and make them a member
+			const newUserEmail = `testuser${faker.string.uuid()}@example.com`;
+			const createUserResult = await mercuriusClient.mutate(
+				Mutation_createUser,
+				{
+					headers: { authorization: `bearer ${authToken}` },
+					variables: {
+						input: {
+							emailAddress: newUserEmail,
+							isEmailAddressVerified: true,
+							name: "Member User",
+							password: "password",
+							role: "regular",
+						},
+					},
 				},
-			},
-			headers: {
-				authorization: `Bearer ${adminToken}`,
-			},
+			);
+			expect(createUserResult.errors).toBeUndefined();
+			const memberUserId = createUserResult.data?.createUser?.user?.id;
+			assertToBeNonNullish(memberUserId);
+
+			const membershipResult = await mercuriusClient.mutate(
+				Mutation_createOrganizationMembership,
+				{
+					headers: { authorization: `bearer ${authToken}` },
+					variables: {
+						input: {
+							organizationId: orgId,
+							memberId: memberUserId,
+							role: "regular",
+						},
+					},
+				},
+			);
+			expect(membershipResult.errors).toBeUndefined();
+
+			const memberSignIn = await mercuriusClient.query(Query_signIn, {
+				variables: {
+					input: {
+						emailAddress: newUserEmail,
+						password: "password",
+					},
+				},
+			});
+			const memberToken = memberSignIn.data?.signIn?.authenticationToken;
+			assertToBeNonNullish(memberToken);
+
+			const postId = await createPost(orgId);
+
+			const result = await mercuriusClient.mutate(Mutation_createComment, {
+				headers: { authorization: `bearer ${memberToken}` },
+				variables: {
+					input: {
+						body: "Great post!",
+						postId: postId,
+					},
+				},
+			});
+
+			expect(result.errors).toBeUndefined();
+			expect(result.data?.createComment).toEqual(
+				expect.objectContaining({
+					id: expect.any(String),
+					body: "Great post!",
+					post: expect.objectContaining({
+						id: postId,
+					}),
+					creator: expect.objectContaining({
+						id: memberUserId,
+					}),
+				}),
+			);
 		});
+	});
 
-		expect(commentResult.errors).toBeDefined();
-		const validationError = commentResult.errors?.find(
-			(error) =>
-				(error.extensions as { code?: string } | undefined)?.code ===
-				"invalid_arguments",
-		);
-		expect(validationError).toBeDefined();
+	suite("when comment is created successfully by administrator", () => {
+		test("should return a valid comment", async () => {
+			const orgId = await createOrganizationAndGetId();
+			const postId = await createPost(orgId);
 
-		const extensions = validationError?.extensions;
-		const issues =
-			typeof extensions === "object" &&
-			extensions !== null &&
-			"issues" in extensions
-				? (extensions as InvalidArgumentsExtensions).issues
-				: undefined;
-		expect(issues).toBeDefined();
-		expect(Array.isArray(issues)).toBe(true);
-		expect(issues?.length).toBeGreaterThan(0);
+			const result = await mercuriusClient.mutate(Mutation_createComment, {
+				headers: { authorization: `bearer ${authToken}` },
+				variables: {
+					input: {
+						body: "Admin comment",
+						postId: postId,
+					},
+				},
+			});
 
-		// Check that at least one issue relates to the "body" field or mentions length requirements
-		const hasBodyIssue = issues?.some(
-			(i) =>
-				i.argumentPath?.includes("body") ||
-				/at least|min|length/i.test(i.message) ||
-				i.message.includes("1"),
-		);
-		expect(hasBodyIssue).toBe(true);
+			expect(result.errors).toBeUndefined();
+			expect(result.data?.createComment).toEqual(
+				expect.objectContaining({
+					id: expect.any(String),
+					body: "Admin comment",
+					post: expect.objectContaining({
+						id: postId,
+					}),
+					creator: expect.objectContaining({
+						id: expect.any(String),
+					}),
+				}),
+			);
+		});
 	});
 });

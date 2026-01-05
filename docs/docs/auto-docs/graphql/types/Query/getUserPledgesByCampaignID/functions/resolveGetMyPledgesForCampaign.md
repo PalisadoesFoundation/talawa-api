@@ -36,4 +36,4 @@ GraphQL context
 
 `Promise`\<`object`[]\>
 
-Array of fund campaign pledges
+- Array of fund campaign pledges

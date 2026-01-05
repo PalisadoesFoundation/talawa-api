@@ -100,7 +100,10 @@ suite("Query field venue", () => {
 		expect(result.errors).toEqual(
 			expect.arrayContaining([
 				expect.objectContaining({
-					extensions: { code: "unauthenticated" },
+					extensions: {
+						code: "unauthenticated",
+						correlationId: expect.any(String),
+					},
 					path: ["venue"],
 				}),
 			]),
@@ -127,6 +130,7 @@ suite("Query field venue", () => {
 				expect.objectContaining({
 					extensions: expect.objectContaining({
 						code: "invalid_arguments",
+						correlationId: expect.any(String),
 					}),
 					path: ["venue"],
 				}),
@@ -162,6 +166,7 @@ suite("Query field venue", () => {
 				expect.objectContaining({
 					extensions: expect.objectContaining({
 						code: "unauthenticated",
+						correlationId: expect.any(String),
 					}),
 					path: ["venue"],
 				}),
@@ -189,6 +194,7 @@ suite("Query field venue", () => {
 				expect.objectContaining({
 					extensions: expect.objectContaining({
 						code: "arguments_associated_resources_not_found",
+						correlationId: expect.any(String),
 					}),
 					path: ["venue"],
 				}),
@@ -223,6 +229,7 @@ suite("Query field venue", () => {
 				expect.objectContaining({
 					extensions: expect.objectContaining({
 						code: "unauthorized_action_on_arguments_associated_resources",
+						correlationId: expect.any(String),
 					}),
 					path: ["venue"],
 				}),
@@ -305,6 +312,7 @@ suite("Query field venue", () => {
 				expect.objectContaining({
 					extensions: expect.objectContaining({
 						code: "invalid_arguments",
+						correlationId: expect.any(String),
 					}),
 					path: ["venue"],
 				}),

@@ -46,6 +46,18 @@ export const fundsTable = pgTable(
 		 */
 		isTaxDeductible: boolean("is_tax_deductible").notNull(),
 		/**
+		 * Boolean to tell if the fund is the default fund.
+		 */
+		isDefault: boolean("is_default").notNull().default(false),
+		/**
+		 * Boolean to tell if the fund is archived.
+		 */
+		isArchived: boolean("is_archived").notNull().default(false),
+		/**
+		 * Reference number of the fund.
+		 */
+		referenceNumber: text("reference_number"),
+		/**
 		 * Name of the fund.
 		 */
 		name: text("name", {}).notNull(),

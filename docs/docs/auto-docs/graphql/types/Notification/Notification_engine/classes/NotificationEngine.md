@@ -71,7 +71,7 @@ Channel type (defaults to EMAIL)
 
 `Promise`\<`string`\>
 
-The created email notification ID
+- The created email notification ID
 
 ***
 
@@ -113,4 +113,4 @@ Channel to deliver notification (in_app, email)
 
 `Promise`\<`string`\>
 
-The created notification log ID
+- The created notification log ID

@@ -6,4 +6,4 @@
 
 > `const` **defaultTalawaGraphQLErrorMessages**: `{ [Key in TalawaGraphQLErrorExtensions["code"]]: string }`
 
-Defined in: [src/utilities/TalawaGraphQLError.ts:216](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/utilities/TalawaGraphQLError.ts#L216)
+Defined in: [src/utilities/TalawaGraphQLError.ts:260](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/utilities/TalawaGraphQLError.ts#L260)

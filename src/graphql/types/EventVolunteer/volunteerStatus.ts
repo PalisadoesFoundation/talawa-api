@@ -1,10 +1,11 @@
+// check-sanitization-disable: Enum-like status field; no user input involved
 import { and, eq } from "drizzle-orm";
 import { eventVolunteerMembershipsTable } from "~/src/drizzle/tables/eventVolunteerMemberships";
-import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import envConfig from "~/src/utilities/graphqLimits";
+import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import type { GraphQLContext } from "../../context";
-import { EventVolunteer } from "./EventVolunteer";
 import type { EventVolunteer as EventVolunteerType } from "./EventVolunteer";
+import { EventVolunteer } from "./EventVolunteer";
 
 export type VolunteerStatusType = "accepted" | "rejected" | "pending";
 

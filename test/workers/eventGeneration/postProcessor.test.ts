@@ -4,9 +4,9 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import type * as schema from "~/src/drizzle/schema";
 import type { EventGenerationExecutionResult } from "~/src/workers/eventGeneration/executionEngine";
 import {
-	type PostProcessingConfig,
 	createDefaultPostProcessingConfig,
 	executePostProcessing,
+	type PostProcessingConfig,
 } from "~/src/workers/eventGeneration/postProcessor";
 import type {
 	ProcessingMetrics,

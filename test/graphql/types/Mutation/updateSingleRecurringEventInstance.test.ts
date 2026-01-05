@@ -47,6 +47,7 @@ function mockRecurringEventInstance(
 	userId: string,
 	userRole: "administrator" | "member" = "administrator",
 	isCancelled = false,
+	isInviteOnly = false,
 ) {
 	return {
 		id: instanceId,
@@ -76,8 +77,9 @@ function mockRecurringEventInstance(
 			description: "Original description",
 			location: "Original Location",
 			allDay: false,
-			isPublic: true,
+			isPublic: !isInviteOnly,
 			isRegisterable: true,
+			isInviteOnly,
 			creatorId: userId,
 			updaterId: userId,
 			createdAt: new Date(),
@@ -471,6 +473,139 @@ suite("Mutation field updateSingleRecurringEventInstance", () => {
 					}),
 				]),
 			);
+		});
+
+		test("should return an error when isInviteOnly conflicts with existing isPublic state", async () => {
+			const instanceId = faker.string.uuid();
+			const orgId = await createTestOrganization(adminToken);
+
+			const originalUserFindFirst =
+				server.drizzleClient.query.usersTable.findFirst;
+			const originalInstanceFindFirst =
+				server.drizzleClient.query.recurringEventInstancesTable.findFirst;
+
+			server.drizzleClient.query.usersTable.findFirst = vi
+				.fn()
+				.mockResolvedValue({ role: "administrator" });
+			server.drizzleClient.query.recurringEventInstancesTable.findFirst = vi
+				.fn()
+				.mockResolvedValue(
+					mockRecurringEventInstance(instanceId, orgId, "admin-user-id"),
+				);
+
+			try {
+				const result = await mercuriusClient.mutate(
+					Mutation_updateSingleRecurringEventInstance,
+					{
+						headers: { authorization: `bearer ${adminToken}` },
+						variables: {
+							input: {
+								id: instanceId,
+								isInviteOnly: true,
+							},
+						},
+					},
+				);
+
+				expect(
+					result.data?.updateSingleRecurringEventInstance ?? null,
+				).toBeNull();
+				expect(result.errors).toEqual(
+					expect.arrayContaining([
+						expect.objectContaining({
+							extensions: expect.objectContaining({
+								code: "invalid_arguments",
+								issues: expect.arrayContaining([
+									expect.objectContaining({
+										argumentPath: ["input", "isPublic"],
+										message: expect.stringContaining(
+											"cannot be both Public and Invite-Only",
+										),
+									}),
+									expect.objectContaining({
+										argumentPath: ["input", "isInviteOnly"],
+										message: expect.stringContaining(
+											"cannot be both Public and Invite-Only",
+										),
+									}),
+								]),
+							}),
+							path: ["updateSingleRecurringEventInstance"],
+						}),
+					]),
+				);
+			} finally {
+				server.drizzleClient.query.usersTable.findFirst = originalUserFindFirst;
+				server.drizzleClient.query.recurringEventInstancesTable.findFirst =
+					originalInstanceFindFirst;
+			}
+		});
+
+		test("should return an error when input explicitly sets both isPublic and isInviteOnly to true", async () => {
+			const instanceId = faker.string.uuid();
+			const orgId = await createTestOrganization(adminToken);
+
+			const originalUserFindFirst =
+				server.drizzleClient.query.usersTable.findFirst;
+			const originalInstanceFindFirst =
+				server.drizzleClient.query.recurringEventInstancesTable.findFirst;
+
+			server.drizzleClient.query.usersTable.findFirst = vi
+				.fn()
+				.mockResolvedValue({ role: "administrator" });
+			server.drizzleClient.query.recurringEventInstancesTable.findFirst = vi
+				.fn()
+				.mockResolvedValue(
+					mockRecurringEventInstance(instanceId, orgId, "admin-user-id"),
+				);
+
+			try {
+				const result = await mercuriusClient.mutate(
+					Mutation_updateSingleRecurringEventInstance,
+					{
+						headers: { authorization: `bearer ${adminToken}` },
+						variables: {
+							input: {
+								id: instanceId,
+								isPublic: true,
+								isInviteOnly: true,
+							},
+						},
+					},
+				);
+
+				expect(
+					result.data?.updateSingleRecurringEventInstance ?? null,
+				).toBeNull();
+				expect(result.errors).toEqual(
+					expect.arrayContaining([
+						expect.objectContaining({
+							extensions: expect.objectContaining({
+								code: "invalid_arguments",
+								issues: expect.arrayContaining([
+									expect.objectContaining({
+										argumentPath: ["input", "isPublic"],
+										message: expect.stringContaining(
+											"cannot be both Public and Invite-Only",
+										),
+									}),
+									expect.objectContaining({
+										argumentPath: ["input", "isInviteOnly"],
+										message: expect.stringContaining(
+											"cannot be both Public and Invite-Only",
+										),
+									}),
+								]),
+							}),
+							path: ["updateSingleRecurringEventInstance"],
+						}),
+					]),
+				);
+			} finally {
+				server.drizzleClient.query.usersTable.findFirst = originalUserFindFirst;
+				server.drizzleClient.query.recurringEventInstancesTable.findFirst =
+					originalInstanceFindFirst;
+			}
 		});
 	});
 
@@ -1114,6 +1249,377 @@ suite("Mutation field updateSingleRecurringEventInstance", () => {
 						name: "Updated by Org Admin",
 					}),
 				);
+			} finally {
+				server.drizzleClient.query.usersTable.findFirst = originalUserFindFirst;
+				server.drizzleClient.query.recurringEventInstancesTable.findFirst =
+					originalInstanceFindFirst;
+				server.drizzleClient.transaction = originalTransaction;
+			}
+		});
+
+		test("should update only non-timing fields when timing is not changed", async () => {
+			const instanceId = faker.string.uuid();
+			const orgId = await createTestOrganization(adminToken);
+
+			// Mock successful scenario
+			const originalUserFindFirst =
+				server.drizzleClient.query.usersTable.findFirst;
+			const originalInstanceFindFirst =
+				server.drizzleClient.query.recurringEventInstancesTable.findFirst;
+			const originalTransaction = server.drizzleClient.transaction;
+
+			server.drizzleClient.query.usersTable.findFirst = vi
+				.fn()
+				.mockResolvedValue({ role: "administrator" });
+
+			const mockInstance = mockRecurringEventInstance(
+				instanceId,
+				orgId,
+				"admin-user-id",
+			);
+			// Set specific times that won't be changed
+			const originalStartTime = new Date("2024-12-02T10:00:00Z");
+			const originalEndTime = new Date("2024-12-02T12:00:00Z");
+			mockInstance.actualStartTime = originalStartTime;
+			mockInstance.actualEndTime = originalEndTime;
+
+			server.drizzleClient.query.recurringEventInstancesTable.findFirst = vi
+				.fn()
+				.mockResolvedValue(mockInstance);
+
+			// Mock successful transaction - timing fields should NOT be in updateData
+			server.drizzleClient.transaction = vi
+				.fn()
+				.mockImplementation(async (callback) => {
+					const mockTx = {
+						query: {
+							eventExceptionsTable: {
+								findFirst: vi.fn().mockResolvedValue(null),
+							},
+						},
+						insert: vi.fn().mockReturnValue({
+							values: vi.fn().mockResolvedValue(undefined),
+						}),
+						update: vi.fn().mockReturnValue({
+							set: vi.fn().mockImplementation((updateData) => {
+								// Verify that timing fields are NOT included when not changed
+								expect(updateData.actualStartTime).toBeUndefined();
+								expect(updateData.actualEndTime).toBeUndefined();
+								expect(updateData.lastUpdatedAt).toBeDefined();
+								return {
+									where: vi.fn().mockReturnValue({
+										returning: vi.fn().mockResolvedValue([
+											{
+												id: instanceId,
+												actualStartTime: originalStartTime, // Unchanged
+												actualEndTime: originalEndTime, // Unchanged
+												lastUpdatedAt: new Date(),
+											},
+										]),
+									}),
+								};
+							}),
+						}),
+					};
+					return await callback(mockTx);
+				});
+
+			try {
+				const result = await mercuriusClient.mutate(
+					Mutation_updateSingleRecurringEventInstance,
+					{
+						headers: { authorization: `bearer ${adminToken}` },
+						variables: {
+							input: {
+								id: instanceId,
+								name: "Updated Name Only",
+								// No startAt or endAt provided - timing should not change
+							},
+						},
+					},
+				);
+
+				expect(result.errors).toBeUndefined();
+				expect(result.data?.updateSingleRecurringEventInstance).toEqual(
+					expect.objectContaining({
+						id: instanceId,
+						name: "Updated Name Only",
+					}),
+				);
+			} finally {
+				server.drizzleClient.query.usersTable.findFirst = originalUserFindFirst;
+				server.drizzleClient.query.recurringEventInstancesTable.findFirst =
+					originalInstanceFindFirst;
+				server.drizzleClient.transaction = originalTransaction;
+			}
+		});
+
+		test("should successfully override isInviteOnly from true to false", async () => {
+			const instanceId = faker.string.uuid();
+			const orgId = await createTestOrganization(adminToken);
+
+			// Mock successful scenario with isInviteOnly = true
+			const originalUserFindFirst =
+				server.drizzleClient.query.usersTable.findFirst;
+			const originalInstanceFindFirst =
+				server.drizzleClient.query.recurringEventInstancesTable.findFirst;
+			const originalTransaction = server.drizzleClient.transaction;
+
+			server.drizzleClient.query.usersTable.findFirst = vi
+				.fn()
+				.mockResolvedValue({ role: "administrator" });
+			server.drizzleClient.query.recurringEventInstancesTable.findFirst = vi
+				.fn()
+				.mockResolvedValue(
+					mockRecurringEventInstance(
+						instanceId,
+						orgId,
+						"admin-user-id",
+						"administrator",
+						false,
+						true, // Original isInviteOnly = true
+					),
+				);
+
+			// Mock successful transaction
+			server.drizzleClient.transaction = vi
+				.fn()
+				.mockImplementation(async (callback) => {
+					const mockTx = {
+						query: {
+							eventExceptionsTable: {
+								findFirst: vi.fn().mockResolvedValue(null),
+							},
+						},
+						insert: vi.fn().mockReturnValue({
+							values: vi.fn().mockResolvedValue(undefined),
+						}),
+						update: vi.fn().mockReturnValue({
+							set: vi.fn().mockReturnValue({
+								where: vi.fn().mockReturnValue({
+									returning: vi.fn().mockResolvedValue([
+										{
+											id: instanceId,
+											actualStartTime: new Date("2024-12-02T10:00:00Z"),
+											actualEndTime: new Date("2024-12-02T12:00:00Z"),
+											lastUpdatedAt: new Date(),
+										},
+									]),
+								}),
+							}),
+						}),
+					};
+					return await callback(mockTx);
+				});
+
+			try {
+				const result = await mercuriusClient.mutate(
+					Mutation_updateSingleRecurringEventInstance,
+					{
+						headers: { authorization: `bearer ${adminToken}` },
+						variables: {
+							input: {
+								id: instanceId,
+								isInviteOnly: false, // Override to false
+							},
+						},
+					},
+				);
+
+				expect(result.errors).toBeUndefined();
+				expect(result.data?.updateSingleRecurringEventInstance).toEqual(
+					expect.objectContaining({
+						id: instanceId,
+						isInviteOnly: false, // Should be false after override
+						hasExceptions: true,
+					}),
+				);
+			} finally {
+				server.drizzleClient.query.usersTable.findFirst = originalUserFindFirst;
+				server.drizzleClient.query.recurringEventInstancesTable.findFirst =
+					originalInstanceFindFirst;
+				server.drizzleClient.transaction = originalTransaction;
+			}
+		});
+
+		test("should successfully override isInviteOnly from false to true", async () => {
+			const instanceId = faker.string.uuid();
+			const orgId = await createTestOrganization(adminToken);
+
+			// Mock successful scenario with isInviteOnly = false
+			const originalUserFindFirst =
+				server.drizzleClient.query.usersTable.findFirst;
+			const originalInstanceFindFirst =
+				server.drizzleClient.query.recurringEventInstancesTable.findFirst;
+			const originalTransaction = server.drizzleClient.transaction;
+
+			server.drizzleClient.query.usersTable.findFirst = vi
+				.fn()
+				.mockResolvedValue({ role: "administrator" });
+			server.drizzleClient.query.recurringEventInstancesTable.findFirst = vi
+				.fn()
+				.mockResolvedValue(
+					mockRecurringEventInstance(
+						instanceId,
+						orgId,
+						"admin-user-id",
+						"administrator",
+						false,
+						false, // Original isInviteOnly = false
+					),
+				);
+
+			// Mock successful transaction
+			server.drizzleClient.transaction = vi
+				.fn()
+				.mockImplementation(async (callback) => {
+					const mockTx = {
+						query: {
+							eventExceptionsTable: {
+								findFirst: vi.fn().mockResolvedValue(null),
+							},
+						},
+						insert: vi.fn().mockReturnValue({
+							values: vi.fn().mockResolvedValue(undefined),
+						}),
+						update: vi.fn().mockReturnValue({
+							set: vi.fn().mockReturnValue({
+								where: vi.fn().mockReturnValue({
+									returning: vi.fn().mockResolvedValue([
+										{
+											id: instanceId,
+											actualStartTime: new Date("2024-12-02T10:00:00Z"),
+											actualEndTime: new Date("2024-12-02T12:00:00Z"),
+											lastUpdatedAt: new Date(),
+										},
+									]),
+								}),
+							}),
+						}),
+					};
+					return await callback(mockTx);
+				});
+
+			try {
+				const result = await mercuriusClient.mutate(
+					Mutation_updateSingleRecurringEventInstance,
+					{
+						headers: { authorization: `bearer ${adminToken}` },
+						variables: {
+							input: {
+								id: instanceId,
+								isInviteOnly: true, // Override to true
+								isPublic: false,
+							},
+						},
+					},
+				);
+
+				expect(result.errors).toBeUndefined();
+				expect(result.data?.updateSingleRecurringEventInstance).toEqual(
+					expect.objectContaining({
+						id: instanceId,
+						isInviteOnly: true, // Should be true after override
+						hasExceptions: true,
+					}),
+				);
+			} finally {
+				server.drizzleClient.query.usersTable.findFirst = originalUserFindFirst;
+				server.drizzleClient.query.recurringEventInstancesTable.findFirst =
+					originalInstanceFindFirst;
+				server.drizzleClient.transaction = originalTransaction;
+			}
+		});
+
+		test("should persist isInviteOnly override in exception data", async () => {
+			const instanceId = faker.string.uuid();
+			const orgId = await createTestOrganization(adminToken);
+
+			// Mock successful scenario
+			const originalUserFindFirst =
+				server.drizzleClient.query.usersTable.findFirst;
+			const originalInstanceFindFirst =
+				server.drizzleClient.query.recurringEventInstancesTable.findFirst;
+			const originalTransaction = server.drizzleClient.transaction;
+
+			server.drizzleClient.query.usersTable.findFirst = vi
+				.fn()
+				.mockResolvedValue({ role: "administrator" });
+			server.drizzleClient.query.recurringEventInstancesTable.findFirst = vi
+				.fn()
+				.mockResolvedValue(
+					mockRecurringEventInstance(
+						instanceId,
+						orgId,
+						"admin-user-id",
+						"administrator",
+						false,
+						false, // Original isInviteOnly = false
+					),
+				);
+
+			// Mock successful transaction - verify exception data includes isInviteOnly
+			const insertValuesSpy = vi.fn().mockResolvedValue(undefined);
+			server.drizzleClient.transaction = vi
+				.fn()
+				.mockImplementation(async (callback) => {
+					const mockTx = {
+						query: {
+							eventExceptionsTable: {
+								findFirst: vi.fn().mockResolvedValue(null),
+							},
+						},
+						insert: vi.fn().mockReturnValue({
+							values: insertValuesSpy,
+						}),
+						update: vi.fn().mockReturnValue({
+							set: vi.fn().mockReturnValue({
+								where: vi.fn().mockReturnValue({
+									returning: vi.fn().mockResolvedValue([
+										{
+											id: instanceId,
+											actualStartTime: new Date("2024-12-02T10:00:00Z"),
+											actualEndTime: new Date("2024-12-02T12:00:00Z"),
+											lastUpdatedAt: new Date(),
+										},
+									]),
+								}),
+							}),
+						}),
+					};
+					return await callback(mockTx);
+				});
+
+			try {
+				const result = await mercuriusClient.mutate(
+					Mutation_updateSingleRecurringEventInstance,
+					{
+						headers: { authorization: `bearer ${adminToken}` },
+						variables: {
+							input: {
+								id: instanceId,
+								isInviteOnly: true, // Override to true
+								isPublic: false,
+							},
+						},
+					},
+				);
+
+				expect(result.errors).toBeUndefined();
+				expect(result.data?.updateSingleRecurringEventInstance).toEqual(
+					expect.objectContaining({
+						id: instanceId,
+						isInviteOnly: true,
+						hasExceptions: true,
+					}),
+				);
+
+				// Verify that exception data includes isInviteOnly
+				expect(insertValuesSpy).toHaveBeenCalled();
+				const insertCall = insertValuesSpy.mock.calls[0]?.[0];
+				expect(insertCall).toBeDefined();
+				expect(insertCall.exceptionData).toBeDefined();
+				expect(insertCall.exceptionData.isInviteOnly).toBe(true);
 			} finally {
 				server.drizzleClient.query.usersTable.findFirst = originalUserFindFirst;
 				server.drizzleClient.query.recurringEventInstancesTable.findFirst =

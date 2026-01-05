@@ -16,15 +16,26 @@ import {
 	generateInstancesForRecurringEvent,
 	initializeGenerationWindow,
 } from "~/src/services/eventGeneration";
-import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import envConfig from "~/src/utilities/graphqLimits";
 import {
 	buildRRuleString,
 	validateRecurrenceInput,
-} from "~/src/utilities/recurringEventHelpers";
+} from "~/src/utilities/recurringEvent";
+import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 
-const mutationCreateEventArgumentsSchema = z.object({
+export const mutationCreateEventArgumentsSchema = z.object({
 	input: mutationCreateEventInputSchema.transform(async (arg, ctx) => {
+		const now = new Date();
+		const gracePeriod = 2000; // 2 seconds for clock skew
+		if (arg.startAt.getTime() < now.getTime() - gracePeriod) {
+			ctx.addIssue({
+				code: "custom",
+				path: ["startAt"],
+				message:
+					"Start date must be in the future or within the next few seconds",
+			});
+		}
+
 		let attachments:
 			| (FileUpload & {
 					mimetype: z.infer<typeof eventAttachmentMimeTypeEnum>;
@@ -105,6 +116,28 @@ builder.mutationField("createEvent", (t) =>
 			}
 
 			const currentUserId = ctx.currentClient.user.id;
+
+			// Validate event visibility: cannot be both Public and Invite-Only
+			if (
+				parsedArgs.input.isPublic === true &&
+				parsedArgs.input.isInviteOnly === true
+			) {
+				throw new TalawaGraphQLError({
+					extensions: {
+						code: "invalid_arguments",
+						issues: [
+							{
+								argumentPath: ["input", "isPublic"],
+								message: "cannot be both Public and Invite-Only",
+							},
+							{
+								argumentPath: ["input", "isInviteOnly"],
+								message: "cannot be both Public and Invite-Only",
+							},
+						],
+					},
+				});
+			}
 
 			// Validate recurrence input if provided
 			if (parsedArgs.input.recurrence) {
@@ -205,6 +238,7 @@ builder.mutationField("createEvent", (t) =>
 							allDay: parsedArgs.input.allDay ?? false,
 							isPublic: parsedArgs.input.isPublic ?? false,
 							isRegisterable: parsedArgs.input.isRegisterable ?? false,
+							isInviteOnly: parsedArgs.input.isInviteOnly ?? false,
 							location: parsedArgs.input.location,
 							// Set as recurring template if recurrence is provided
 							isRecurringEventTemplate: !!parsedArgs.input.recurrence,
@@ -405,6 +439,7 @@ builder.mutationField("createEvent", (t) =>
 										},
 									);
 								}
+								return undefined;
 							}),
 						);
 					}

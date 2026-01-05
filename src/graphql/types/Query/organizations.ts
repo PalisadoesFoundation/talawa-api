@@ -4,8 +4,8 @@ import type { organizationsTable } from "~/src/drizzle/schema";
 import { builder } from "~/src/graphql/builder";
 import type { GraphQLContext } from "~/src/graphql/context";
 import { Organization } from "~/src/graphql/types/Organization/Organization";
-import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import envConfig from "~/src/utilities/graphqLimits";
+import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 
 // Define type for organization model
 type OrganizationType = InferSelectModel<typeof organizationsTable>;

@@ -104,7 +104,7 @@ export async function formatDatabase(): Promise<boolean> {
 		});
 
 		return true;
-	} catch (error) {
+	} catch (_error) {
 		return false;
 	}
 }
@@ -116,14 +116,9 @@ export async function emptyMinioBucket(): Promise<boolean> {
 			(resolve, reject) => {
 				const objects: string[] = [];
 				const stream = minioClient.listObjects(bucketName, "", true);
-				stream.on(
-					"data",
-					(obj: {
-						name: string;
-					}) => {
-						objects.push(obj.name);
-					},
-				);
+				stream.on("data", (obj: { name: string }) => {
+					objects.push(obj.name);
+				});
 				stream.on("error", (err: Error) => {
 					console.error("Error listing objects in bucket:", err);
 					reject(err);
@@ -145,48 +140,13 @@ export async function emptyMinioBucket(): Promise<boolean> {
 }
 
 /**
- * Lists sample data files and their document counts in the sample_data directory.
- */
-export async function listSampleData(): Promise<boolean> {
-	try {
-		const sampleDataPath = path.resolve(dirname, "./sample_data");
-		const files = await fs.readdir(sampleDataPath);
-		console.log(files);
-		console.log("Sample Data Files:\n");
-
-		console.log(
-			`${"| File Name".padEnd(30)}| Document Count |
-${"|".padEnd(30, "-")}|----------------|
-`,
-		);
-
-		for (const file of files) {
-			const filePath = path.resolve(sampleDataPath, file);
-			const stats = await fs.stat(filePath);
-			if (stats.isFile()) {
-				const data = await fs.readFile(filePath, "utf8");
-				const docs = JSON.parse(data);
-				console.log(
-					`| ${file.padEnd(28)}| ${docs.length.toString().padEnd(15)}|`,
-				);
-			}
-		}
-		console.log();
-	} catch (err) {
-		throw new Error(`\x1b[31mError listing sample data: ${err}\x1b[0m`);
-	}
-
-	return true;
-}
-
-/**
  * Check database connection
  */
 
 export async function pingDB(): Promise<boolean> {
 	try {
 		await db.execute(sql`SELECT 1`);
-	} catch (error) {
+	} catch (_error) {
 		throw new Error("Unable to connect to the database.");
 	}
 	return true;
@@ -335,9 +295,7 @@ export async function insertCollections(
 
 				case "organization_memberships": {
 					const organizationMemberships = JSON.parse(fileContent).map(
-						(membership: {
-							createdAt: string | number | Date;
-						}) => ({
+						(membership: { createdAt: string | number | Date }) => ({
 							...membership,
 							createdAt: parseDate(membership.createdAt),
 						}),
@@ -440,7 +398,7 @@ export async function insertCollections(
 								const fileData = await fs.readFile(filePath);
 								await minioClient.putObject(
 									bucketName,
-									attachment.name,
+									attachment.objectName,
 									fileData,
 									undefined,
 									{

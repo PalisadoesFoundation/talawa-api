@@ -1,5 +1,5 @@
 import { Buffer } from "node:buffer";
-import { type SQL, and, asc, desc, eq, exists, gt, lt } from "drizzle-orm";
+import { and, asc, desc, eq, exists, gt, lt, type SQL } from "drizzle-orm";
 import type { z } from "zod";
 import {
 	actionItemCategoriesTable,
@@ -7,21 +7,21 @@ import {
 } from "~/src/drizzle/tables/actionItemCategories";
 import type { GraphQLContext } from "~/src/graphql/context";
 import { ActionItemCategory } from "~/src/graphql/types/ActionItemCategory/ActionItemCategory";
-import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
+import envConfig from "~/src/utilities/graphqLimits";
 import {
 	defaultGraphQLConnectionArgumentsSchema,
 	transformDefaultGraphQLConnectionArguments,
 	transformToDefaultGraphQLConnection,
-} from "~/src/utilities/defaultGraphQLConnection";
-import envConfig from "~/src/utilities/graphqLimits";
-import { Organization } from "./Organization";
+} from "~/src/utilities/graphqlConnection";
+import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import type { Organization as OrganizationType } from "./Organization";
+import { Organization } from "./Organization";
 
 const actionItemCategoriesArgumentsSchema =
 	defaultGraphQLConnectionArgumentsSchema
 		.transform(transformDefaultGraphQLConnectionArguments)
 		.transform((arg, ctx) => {
-			let cursor: z.infer<typeof cursorSchema> | undefined = undefined;
+			let cursor: z.infer<typeof cursorSchema> | undefined;
 
 			try {
 				if (arg.cursor !== undefined) {
@@ -29,7 +29,7 @@ const actionItemCategoriesArgumentsSchema =
 						JSON.parse(Buffer.from(arg.cursor, "base64url").toString("utf-8")),
 					);
 				}
-			} catch (error) {
+			} catch (_error) {
 				ctx.addIssue({
 					code: "custom",
 					message: "Not a valid cursor.",
@@ -196,12 +196,9 @@ export const resolveActionItemCategories = async (
 	}
 
 	return transformToDefaultGraphQLConnection({
-		createCursor: (actionItemCategory) =>
-			Buffer.from(
-				JSON.stringify({
-					name: actionItemCategory.name,
-				}),
-			).toString("base64url"),
+		createCursor: (actionItemCategory) => ({
+			name: actionItemCategory.name,
+		}),
 		createNode: (actionItemCategory) => actionItemCategory,
 		parsedArgs,
 		rawNodes: actionItemCategories,

@@ -4,14 +4,14 @@ import { eventVolunteerGroupsTable } from "~/src/drizzle/tables/eventVolunteerGr
 import { recurringEventInstancesTable } from "~/src/drizzle/tables/recurringEventInstances";
 import type { GraphQLContext } from "~/src/graphql/context";
 import { EventVolunteerGroup } from "~/src/graphql/types/EventVolunteerGroup/EventVolunteerGroup";
-import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import envConfig from "~/src/utilities/graphqLimits";
-import { Event } from "./Event";
+import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import type { Event as EventType } from "./Event";
+import { Event } from "./Event";
 
 export const EventVolunteerGroupsResolver = async (
 	parent: EventType,
-	args: Record<string, never>,
+	_args: Record<string, never>,
 	ctx: GraphQLContext,
 ) => {
 	if (!ctx.currentClient.isAuthenticated) {

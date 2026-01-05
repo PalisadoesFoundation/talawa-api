@@ -81,6 +81,10 @@ export const eventsTable = pgTable(
 		 */
 		allDay: boolean("all_day").notNull().default(false),
 		/**
+		 * Indicates if the event is invite-only.
+		 */
+		isInviteOnly: boolean("is_invite_only").notNull().default(false),
+		/**
 		 * Indicates if the event is publicly visible.
 		 */
 		isPublic: boolean("is_public").notNull().default(false),
@@ -130,6 +134,7 @@ export const eventsTable = pgTable(
 		),
 		startAtIdx: index("events_start_at_idx").on(self.startAt),
 		allDayIdx: index("events_all_day_idx").on(self.allDay),
+		isInviteOnlyIdx: index("events_is_invite_only_idx").on(self.isInviteOnly),
 		isPublicIdx: index("events_is_public_idx").on(self.isPublic),
 		isRegisterableIdx: index("events_is_registerable_idx").on(
 			self.isRegisterable,
@@ -197,6 +202,7 @@ export const eventsTableInsertSchema = createInsertSchema(eventsTable, {
 		schema.min(1).max(EVENT_DESCRIPTION_MAX_LENGTH).optional(),
 	name: (schema) => schema.min(1).max(EVENT_NAME_MAX_LENGTH),
 	allDay: (schema) => schema.optional(),
+	isInviteOnly: (schema) => schema.optional(),
 	isPublic: (schema) => schema.optional(),
 	isRegisterable: (schema) => schema.optional(),
 	location: (schema) => schema.min(1).max(EVENT_LOCATION_MAX_LENGTH).optional(),

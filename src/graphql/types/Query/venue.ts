@@ -5,8 +5,8 @@ import {
 	queryVenueInputSchema,
 } from "~/src/graphql/inputs/QueryVenueInput";
 import { Venue } from "~/src/graphql/types/Venue/Venue";
-import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import envConfig from "~/src/utilities/graphqLimits";
+import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 
 const queryVenueArgumentsSchema = z.object({
 	input: queryVenueInputSchema,

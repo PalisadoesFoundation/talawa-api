@@ -1,34 +1,39 @@
 import { Organization } from "~/src/graphql/types/Organization/Organization";
-import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import envConfig from "~/src/utilities/graphqLimits";
+import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
+import type { GraphQLContext } from "../../context";
 import { Fund } from "./Fund";
+export const resolveOrganization = async (
+	parent: Fund,
+	_args: Record<string, never>,
+	ctx: GraphQLContext,
+) => {
+	const existingOrganization =
+		await ctx.drizzleClient.query.organizationsTable.findFirst({
+			where: (fields, operators) =>
+				operators.eq(fields.id, parent.organizationId),
+		});
+
+	if (existingOrganization === undefined) {
+		ctx.log.error(
+			"Postgres select operation returned an empty array for a fund's organization id that isn't null.",
+		);
+
+		throw new TalawaGraphQLError({
+			extensions: {
+				code: "unexpected",
+			},
+		});
+	}
+
+	return existingOrganization;
+};
 Fund.implement({
 	fields: (t) => ({
 		organization: t.field({
 			description: "Organization which the fund belongs to.",
 			complexity: envConfig.API_GRAPHQL_OBJECT_FIELD_COST,
-			resolve: async (parent, _args, ctx) => {
-				const existingOrganization =
-					await ctx.drizzleClient.query.organizationsTable.findFirst({
-						where: (fields, operators) =>
-							operators.eq(fields.id, parent.organizationId),
-					});
-
-				// Organziation id existing but the associated organization not existing is a business logic error and probably means that the corresponding data in the database is in a corrupted state. It must be investigated and fixed as soon as possible to prevent additional data corruption.
-				if (existingOrganization === undefined) {
-					ctx.log.error(
-						"Postgres select operation returned an empty array for a fund's organization id that isn't null.",
-					);
-
-					throw new TalawaGraphQLError({
-						extensions: {
-							code: "unexpected",
-						},
-					});
-				}
-
-				return existingOrganization;
-			},
+			resolve: resolveOrganization,
 			type: Organization,
 		}),
 	}),

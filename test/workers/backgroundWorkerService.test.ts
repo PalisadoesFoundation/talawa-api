@@ -1,6 +1,6 @@
 import type { NodePgDatabase } from "drizzle-orm/node-postgres";
 import type { FastifyBaseLogger } from "fastify";
-import type { ScheduleOptions, ScheduledTask } from "node-cron";
+import type { ScheduledTask, ScheduleOptions } from "node-cron";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import type * as schema from "~/src/drizzle/schema";
 

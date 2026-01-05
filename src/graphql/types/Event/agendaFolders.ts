@@ -1,5 +1,4 @@
 import {
-	type SQL,
 	and,
 	asc,
 	desc,
@@ -9,6 +8,7 @@ import {
 	isNull,
 	lt,
 	or,
+	type SQL,
 } from "drizzle-orm";
 import type { z } from "zod";
 import {
@@ -16,18 +16,19 @@ import {
 	agendaFoldersTableInsertSchema,
 } from "~/src/drizzle/tables/agendaFolders";
 import { AgendaFolder } from "~/src/graphql/types/AgendaFolder/AgendaFolder";
-import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
+import envConfig from "~/src/utilities/graphqLimits";
 import {
 	defaultGraphQLConnectionArgumentsSchema,
 	transformDefaultGraphQLConnectionArguments,
 	transformToDefaultGraphQLConnection,
-} from "~/src/utilities/defaultGraphQLConnection";
-import envConfig from "~/src/utilities/graphqLimits";
+} from "~/src/utilities/graphqlConnection";
+import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import { Event } from "./Event";
+
 const agendaFoldersArgumentsSchema = defaultGraphQLConnectionArgumentsSchema
 	.transform(transformDefaultGraphQLConnectionArguments)
 	.transform((arg, ctx) => {
-		let cursor: z.infer<typeof cursorSchema> | undefined = undefined;
+		let cursor: z.infer<typeof cursorSchema> | undefined;
 
 		try {
 			if (arg.cursor !== undefined) {
@@ -35,7 +36,7 @@ const agendaFoldersArgumentsSchema = defaultGraphQLConnectionArgumentsSchema
 					JSON.parse(Buffer.from(arg.cursor, "base64url").toString("utf-8")),
 				);
 			}
-		} catch (error) {
+		} catch (_error) {
 			ctx.addIssue({
 				code: "custom",
 				message: "Not a valid cursor.",
@@ -178,13 +179,10 @@ Event.implement({
 					}
 
 					return transformToDefaultGraphQLConnection({
-						createCursor: (agendaFolder) =>
-							Buffer.from(
-								JSON.stringify({
-									id: agendaFolder.id,
-									name: agendaFolder.name,
-								}),
-							).toString("base64url"),
+						createCursor: (agendaFolder) => ({
+							id: agendaFolder.id,
+							name: agendaFolder.name,
+						}),
 						createNode: (agendaFolder) => agendaFolder,
 						parsedArgs,
 						rawNodes: agendaFolders,

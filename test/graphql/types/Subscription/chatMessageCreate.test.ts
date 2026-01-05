@@ -41,21 +41,23 @@ describe("chatMessageCreate subscription", () => {
 		const builderModule = await import("~/src/graphql/builder");
 		const builder = builderModule.builder;
 
-		const fieldMock = vi.fn().mockImplementation(
-			(config: {
-				description?: string;
-				subscribe?: (
-					parent: unknown,
-					args: { input: { id: string } },
-					context: GraphQLContext,
-					info: unknown,
-				) => Promise<unknown>;
-			}) => {
-				fieldDescription = config.description;
-				subscribeFunction = config.subscribe as typeof subscribeFunction;
-				return config;
-			},
-		);
+		const fieldMock = vi
+			.fn()
+			.mockImplementation(
+				(config: {
+					description?: string;
+					subscribe?: (
+						parent: unknown,
+						args: { input: { id: string } },
+						context: GraphQLContext,
+						info: unknown,
+					) => Promise<unknown>;
+				}) => {
+					fieldDescription = config.description;
+					subscribeFunction = config.subscribe as typeof subscribeFunction;
+					return config;
+				},
+			);
 
 		const argMock = vi.fn().mockImplementation((config: unknown) => {
 			capturedArgConfig = config;

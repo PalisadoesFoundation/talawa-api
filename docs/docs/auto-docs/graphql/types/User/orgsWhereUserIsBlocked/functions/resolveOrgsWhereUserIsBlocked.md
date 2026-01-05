@@ -4,7 +4,7 @@
 
 # Function: resolveOrgsWhereUserIsBlocked()
 
-> **resolveOrgsWhereUserIsBlocked**(`parent`, `args`, `ctx`): `Promise`\<[`DefaultGraphQLConnection`](../../../../../utilities/defaultGraphQLConnection/type-aliases/DefaultGraphQLConnection.md)\<[`BlockedUser`](../../../BlockedUser/BlockedUser/type-aliases/BlockedUser.md)\>\>
+> **resolveOrgsWhereUserIsBlocked**(`parent`, `args`, `ctx`): `Promise`\<[`DefaultGraphQLConnection`](../../../../../utilities/graphqlConnection/types/type-aliases/DefaultGraphQLConnection.md)\<[`BlockedUser`](../../../BlockedUser/BlockedUser/type-aliases/BlockedUser.md)\>\>
 
 Defined in: [src/graphql/types/User/orgsWhereUserIsBlocked.ts:54](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/graphql/types/User/orgsWhereUserIsBlocked.ts#L54)
 
@@ -64,6 +64,10 @@ Defined in: [src/graphql/types/User/orgsWhereUserIsBlocked.ts:54](https://github
 
 `"full_time"` \| `"part_time"` \| `"unemployed"` \| `null`
 
+#### failedLoginAttempts
+
+`number`
+
 #### homePhoneNumber
 
 `string` \| `null`
@@ -75,6 +79,14 @@ Defined in: [src/graphql/types/User/orgsWhereUserIsBlocked.ts:54](https://github
 #### isEmailAddressVerified
 
 `boolean`
+
+#### lastFailedLoginAt
+
+`Date` \| `null`
+
+#### lockedUntil
+
+`Date` \| `null`
 
 #### maritalStatus
 
@@ -134,4 +146,4 @@ Defined in: [src/graphql/types/User/orgsWhereUserIsBlocked.ts:54](https://github
 
 ## Returns
 
-`Promise`\<[`DefaultGraphQLConnection`](../../../../../utilities/defaultGraphQLConnection/type-aliases/DefaultGraphQLConnection.md)\<[`BlockedUser`](../../../BlockedUser/BlockedUser/type-aliases/BlockedUser.md)\>\>
+`Promise`\<[`DefaultGraphQLConnection`](../../../../../utilities/graphqlConnection/types/type-aliases/DefaultGraphQLConnection.md)\<[`BlockedUser`](../../../BlockedUser/BlockedUser/type-aliases/BlockedUser.md)\>\>

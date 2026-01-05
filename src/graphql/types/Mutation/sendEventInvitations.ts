@@ -12,8 +12,8 @@ import {
 	sendEventInvitationsInputSchema,
 } from "~/src/graphql/inputs/MutationSendEventInvitationsInput";
 import { EventInvitation } from "~/src/graphql/types/EventInvitation/EventInvitation";
-import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import envConfig from "~/src/utilities/graphqLimits";
+import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 
 const mutationSendEventInvitationsArgumentsSchema = z.object({
 	input: sendEventInvitationsInputSchema,

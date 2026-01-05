@@ -27,8 +27,8 @@ interface IPluginManager {
 	emit(event: string, ...args: unknown[]): boolean;
 }
 
-import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import { installPluginDependenciesWithErrorHandling } from "~/src/utilities/pluginDependencyInstaller";
+import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import { PluginStatus } from "../types";
 import {
 	createPluginTables,

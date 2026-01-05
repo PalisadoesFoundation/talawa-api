@@ -4,7 +4,7 @@ import fs from "node:fs";
 import dotenv from "dotenv";
 import inquirer from "inquirer";
 import { postgresSetup, setup } from "scripts/setup/setup";
-import { type MockInstance, afterEach, describe, expect, it, vi } from "vitest";
+import { afterEach, describe, expect, it, type MockInstance, vi } from "vitest";
 
 describe("Setup -> postgresSetup", () => {
 	const originalEnv = { ...process.env };

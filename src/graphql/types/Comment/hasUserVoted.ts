@@ -1,8 +1,8 @@
 import type { z } from "zod";
 import type { commentVoteTypeEnum } from "~/src/drizzle/enums/commentVoteType";
 import { builder } from "~/src/graphql/builder";
-import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import envConfig from "~/src/utilities/graphqLimits";
+import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import { CommentVoteType } from "../../enums/CommentVoteType";
 import { Comment } from "./Comment";
 

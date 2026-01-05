@@ -24,7 +24,7 @@ afterEach(() => {
 
 suite("Mutation field updateChatMessage", () => {
 	suite(
-		`results in a graphql error with \"unauthenticated\" extensions code in the \"errors\" field and \"null\" as the value of \"data.updateChatMessage\" field if`,
+		`results in a graphql error with "unauthenticated" extensions code in the "errors" field and "null" as the value of "data.updateChatMessage" field if`,
 		() => {
 			test("client triggering the graphql operation is not authenticated.", async () => {
 				const updateChatMessageResult = await mercuriusClient.mutate(

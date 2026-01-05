@@ -84,9 +84,12 @@ type Fund {
   createdAt: DateTime
   creator: User
   id: ID!
+  isArchived: Boolean
+  isDefault: Boolean
   isTaxDeductible: Boolean
   name: String
   organization: Organization
+  referenceNumber: String
   updatedAt: DateTime
   updater: User
 }
@@ -118,6 +121,14 @@ User who created the Fund.
 
 Global identifier of the fund.
 
+#### [<code style={{ fontWeight: 'normal' }}>Fund.<b>isArchived</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>Boolean</b></code>](/auto-schema/types/scalars/boolean.mdx) <Badge class="badge badge--secondary " text="scalar"/>
+
+Boolean to tell if the fund is archived.
+
+#### [<code style={{ fontWeight: 'normal' }}>Fund.<b>isDefault</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>Boolean</b></code>](/auto-schema/types/scalars/boolean.mdx) <Badge class="badge badge--secondary " text="scalar"/>
+
+Boolean to tell if the fund is the default fund.
+
 #### [<code style={{ fontWeight: 'normal' }}>Fund.<b>isTaxDeductible</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>Boolean</b></code>](/auto-schema/types/scalars/boolean.mdx) <Badge class="badge badge--secondary " text="scalar"/>
 
 Boolean to tell if the fund is tax deductible.
@@ -129,6 +140,10 @@ Name of the fund.
 #### [<code style={{ fontWeight: 'normal' }}>Fund.<b>organization</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>Organization</b></code>](/auto-schema/types/objects/organization.mdx) <Badge class="badge badge--secondary " text="object"/>
 
 Organization which the fund belongs to.
+
+#### [<code style={{ fontWeight: 'normal' }}>Fund.<b>referenceNumber</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>String</b></code>](/auto-schema/types/scalars/string.mdx) <Badge class="badge badge--secondary " text="scalar"/>
+
+Reference number of the fund.
 
 #### [<code style={{ fontWeight: 'normal' }}>Fund.<b>updatedAt</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>DateTime</b></code>](/auto-schema/types/scalars/date-time.mdx) <Badge class="badge badge--secondary " text="scalar"/>
 

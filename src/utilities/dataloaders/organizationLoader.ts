@@ -1,0 +1,42 @@
+import DataLoader from "dataloader";
+import { inArray } from "drizzle-orm";
+import { organizationsTable } from "~/src/drizzle/tables/organizations";
+import type { DrizzleClient } from "~/src/fastifyPlugins/drizzleClient";
+
+/**
+ * Type representing an organization row from the database.
+ */
+export type OrganizationRow = typeof organizationsTable.$inferSelect;
+
+/**
+ * Creates a DataLoader for batching organization lookups by ID.
+ *
+ * @param db - The Drizzle client instance for database operations.
+ * @returns A DataLoader that batches and caches organization lookups within a single request.
+ *
+ * @example
+ * ```typescript
+ * const organizationLoader = createOrganizationLoader(drizzleClient);
+ * const organization = await organizationLoader.load(organizationId);
+ * ```
+ */
+export function createOrganizationLoader(db: DrizzleClient) {
+	return new DataLoader<string, OrganizationRow | null>(
+		async (ids) => {
+			const rows = await db
+				.select()
+				.from(organizationsTable)
+				.where(inArray(organizationsTable.id, ids as string[]));
+
+			const map = new Map<string, OrganizationRow>(
+				rows.map((r: OrganizationRow) => [r.id, r]),
+			);
+
+			return ids.map((id) => map.get(id) ?? null);
+		},
+		{
+			// Coalesce loads triggered within the same event loop tick
+			batchScheduleFn: (cb) => setTimeout(cb, 0),
+		},
+	);
+}

@@ -115,3 +115,6 @@ import "./CheckInCheckOutInput";
 import "./MutationSendEventInvitationsInput";
 import "./MutationAcceptEventInvitationInput";
 import "./MutationVerifyEventInvitationInput";
+import "./MutationRequestPasswordResetInput";
+import "./QueryVerifyPasswordResetTokenInput";
+import "./MutationResetPasswordInput";

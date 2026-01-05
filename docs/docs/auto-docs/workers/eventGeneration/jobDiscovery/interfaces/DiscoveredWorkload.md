@@ -6,8 +6,6 @@
 
 Defined in: [src/workers/eventGeneration/jobDiscovery.ts:25](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/workers/eventGeneration/jobDiscovery.ts#L25)
 
-## Description
-
 Represents a discovered workload for a single organization, including all
 recurring events that require EventGeneration.
 

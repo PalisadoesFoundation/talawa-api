@@ -17,6 +17,7 @@ const mockFundCampaign: FundCampaign = {
 	fundId: "fund-456",
 	goalAmount: 10000,
 	startAt: new Date("2024-02-01T00:00:00Z"),
+	amountRaised: 0,
 };
 
 describe("updatedAtResolver", () => {

@@ -4,10 +4,10 @@ import cron from "node-cron";
 import type * as schema from "~/src/drizzle/schema";
 import { cleanupOldInstances } from "./eventCleanupWorker";
 import {
-	type WorkerConfig,
-	type WorkerResult,
 	createDefaultWorkerConfig,
 	runMaterializationWorker,
+	type WorkerConfig,
+	type WorkerResult,
 } from "./eventGeneration/eventGenerationPipeline";
 
 let materializationTask: cron.ScheduledTask | undefined;
@@ -214,7 +214,7 @@ export async function triggerCleanupWorker(
 /**
  * Retrieves the current status of the background worker service, including scheduling information.
  *
- * @returns An object containing the current status of the service.
+ * @returns - An object containing the current status of the service.
  */
 export function getBackgroundWorkerStatus(): {
 	isRunning: boolean;
@@ -234,7 +234,7 @@ export function getBackgroundWorkerStatus(): {
 /**
  * Performs a health check of the background worker service, suitable for use by monitoring systems.
  *
- * @returns A promise that resolves to an object indicating the health status and any relevant details.
+ * @returns - A promise that resolves to an object indicating the health status and any relevant details.
  */
 export async function healthCheck(): Promise<{
 	status: "healthy" | "unhealthy";

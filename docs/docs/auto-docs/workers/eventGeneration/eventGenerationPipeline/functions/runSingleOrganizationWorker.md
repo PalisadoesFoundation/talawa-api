@@ -34,4 +34,4 @@ The logger for logging the process.
 
 `Promise`\<[`WorkerResult`](../interfaces/WorkerResult.md)\>
 
-A promise that resolves to the result of the processing for the specified organization.
+- A promise that resolves to the result of the processing for the specified organization.

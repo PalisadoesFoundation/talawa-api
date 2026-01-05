@@ -1,8 +1,8 @@
 import { createMockGraphQLContext } from "test/_Mocks_/mockContextCreator/mockContextCreator";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { GraphQLContext } from "~/src/graphql/context";
-import type { FundCampaignPledge } from "~/src/graphql/types/FundCampaignPledge/FundCampaignPledge";
 import { createdAtResolver } from "~/src/graphql/types/FundCampaignPledge/createdAt";
+import type { FundCampaignPledge } from "~/src/graphql/types/FundCampaignPledge/FundCampaignPledge";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 
 describe("FundCampaignPledge Resolver - createdAt Field", () => {
