@@ -509,15 +509,8 @@ jobs:
       - name: Copy coverage from container
         if: always()
         run: |
-          # Check if coverage directory exists in container before copying
-          if docker exec talawa-api-test-shard-${{ matrix.shard }} test -d /home/talawa/api/coverage; then
-            echo "Coverage directory exists, copying..."
-            docker cp talawa-api-test-shard-${{ matrix.shard }}:/home/talawa/api/coverage ./coverage || echo "::warning::Failed to copy coverage from container talawa-api-test-shard-${{ matrix.shard }}"
-          else
-            echo "::warning::Coverage directory not found in container talawa-api-test-shard-${{ matrix.shard }}. Tests may have been skipped or coverage generation failed."
-            # Create empty coverage directory to prevent merge step from failing
-            mkdir -p ./coverage
-          fi
+          # Copy coverage from the named container
+          docker cp talawa-api-test-shard-${{ matrix.shard }}:/home/talawa/api/coverage ./coverage || echo "::warning::Failed to copy coverage from container talawa-api-test-shard-${{ matrix.shard }}"
 
       - name: Cleanup test container
         if: always()
