@@ -183,4 +183,214 @@ describe("Server-Timing header", () => {
 			expect(totalDur).toBeGreaterThanOrEqual(10);
 		}
 	});
+
+	describe("/metrics/perf authentication", () => {
+		it("should allow access without auth when no API key or IPs configured", async () => {
+			const app = await createServer({
+				envConfig: {
+					API_POSTGRES_HOST: testEnvConfig.API_POSTGRES_TEST_HOST,
+					API_REDIS_HOST: testEnvConfig.API_REDIS_TEST_HOST,
+					API_MINIO_END_POINT: testEnvConfig.API_MINIO_TEST_END_POINT,
+					METRICS_API_KEY: undefined,
+					METRICS_ALLOWED_IPS: undefined,
+				},
+			});
+
+			const res = await app.inject({
+				method: "GET",
+				url: "/metrics/perf",
+			});
+
+			expect(res.statusCode).toBe(200);
+		});
+
+		it("should require API key when METRICS_API_KEY is set", async () => {
+			const app = await createServer({
+				envConfig: {
+					API_POSTGRES_HOST: testEnvConfig.API_POSTGRES_TEST_HOST,
+					API_REDIS_HOST: testEnvConfig.API_REDIS_TEST_HOST,
+					API_MINIO_END_POINT: testEnvConfig.API_MINIO_TEST_END_POINT,
+					METRICS_API_KEY: "test-api-key-123",
+					METRICS_ALLOWED_IPS: undefined,
+				},
+			});
+
+			const res = await app.inject({
+				method: "GET",
+				url: "/metrics/perf",
+			});
+
+			expect(res.statusCode).toBe(401);
+			const body = JSON.parse(res.body);
+			expect(body.error).toBe("Unauthorized");
+			expect(body.message).toBe("Missing Authorization header");
+		});
+
+		it("should accept valid API key in Authorization header", async () => {
+			const app = await createServer({
+				envConfig: {
+					API_POSTGRES_HOST: testEnvConfig.API_POSTGRES_TEST_HOST,
+					API_REDIS_HOST: testEnvConfig.API_REDIS_TEST_HOST,
+					API_MINIO_END_POINT: testEnvConfig.API_MINIO_TEST_END_POINT,
+					METRICS_API_KEY: "test-api-key-123",
+					METRICS_ALLOWED_IPS: undefined,
+				},
+			});
+
+			const res = await app.inject({
+				method: "GET",
+				url: "/metrics/perf",
+				headers: {
+					authorization: "test-api-key-123",
+				},
+			});
+
+			expect(res.statusCode).toBe(200);
+		});
+
+		it("should accept valid API key in Bearer format", async () => {
+			const app = await createServer({
+				envConfig: {
+					API_POSTGRES_HOST: testEnvConfig.API_POSTGRES_TEST_HOST,
+					API_REDIS_HOST: testEnvConfig.API_REDIS_TEST_HOST,
+					API_MINIO_END_POINT: testEnvConfig.API_MINIO_TEST_END_POINT,
+					METRICS_API_KEY: "test-api-key-123",
+					METRICS_ALLOWED_IPS: undefined,
+				},
+			});
+
+			const res = await app.inject({
+				method: "GET",
+				url: "/metrics/perf",
+				headers: {
+					authorization: "Bearer test-api-key-123",
+				},
+			});
+
+			expect(res.statusCode).toBe(200);
+		});
+
+		it("should reject invalid API key", async () => {
+			const app = await createServer({
+				envConfig: {
+					API_POSTGRES_HOST: testEnvConfig.API_POSTGRES_TEST_HOST,
+					API_REDIS_HOST: testEnvConfig.API_REDIS_TEST_HOST,
+					API_MINIO_END_POINT: testEnvConfig.API_MINIO_TEST_END_POINT,
+					METRICS_API_KEY: "test-api-key-123",
+					METRICS_ALLOWED_IPS: undefined,
+				},
+			});
+
+			const res = await app.inject({
+				method: "GET",
+				url: "/metrics/perf",
+				headers: {
+					authorization: "wrong-key",
+				},
+			});
+
+			expect(res.statusCode).toBe(403);
+			const body = JSON.parse(res.body);
+			expect(body.error).toBe("Forbidden");
+			expect(body.message).toBe("Invalid API key");
+		});
+
+		it("should allow access from allowed IP", async () => {
+			const app = await createServer({
+				envConfig: {
+					API_POSTGRES_HOST: testEnvConfig.API_POSTGRES_TEST_HOST,
+					API_REDIS_HOST: testEnvConfig.API_REDIS_TEST_HOST,
+					API_MINIO_END_POINT: testEnvConfig.API_MINIO_TEST_END_POINT,
+					METRICS_API_KEY: undefined,
+					METRICS_ALLOWED_IPS: "127.0.0.1",
+				},
+			});
+
+			const res = await app.inject({
+				method: "GET",
+				url: "/metrics/perf",
+			});
+
+			expect(res.statusCode).toBe(200);
+		});
+
+		it("should allow access from IP in CIDR range", async () => {
+			const app = await createServer({
+				envConfig: {
+					API_POSTGRES_HOST: testEnvConfig.API_POSTGRES_TEST_HOST,
+					API_REDIS_HOST: testEnvConfig.API_REDIS_TEST_HOST,
+					API_MINIO_END_POINT: testEnvConfig.API_MINIO_TEST_END_POINT,
+					METRICS_API_KEY: undefined,
+					METRICS_ALLOWED_IPS: "127.0.0.0/8",
+				},
+			});
+
+			const res = await app.inject({
+				method: "GET",
+				url: "/metrics/perf",
+			});
+
+			expect(res.statusCode).toBe(200);
+		});
+
+		it("should reject access from IP not in allowed list", async () => {
+			const app = await createServer({
+				envConfig: {
+					API_POSTGRES_HOST: testEnvConfig.API_POSTGRES_TEST_HOST,
+					API_REDIS_HOST: testEnvConfig.API_REDIS_TEST_HOST,
+					API_MINIO_END_POINT: testEnvConfig.API_MINIO_TEST_END_POINT,
+					METRICS_API_KEY: undefined,
+					METRICS_ALLOWED_IPS: "192.168.1.1",
+				},
+			});
+
+			const res = await app.inject({
+				method: "GET",
+				url: "/metrics/perf",
+			});
+
+			expect(res.statusCode).toBe(403);
+			const body = JSON.parse(res.body);
+			expect(body.error).toBe("Forbidden");
+		});
+
+		it("should allow access when IP matches one of multiple allowed IPs", async () => {
+			const app = await createServer({
+				envConfig: {
+					API_POSTGRES_HOST: testEnvConfig.API_POSTGRES_TEST_HOST,
+					API_REDIS_HOST: testEnvConfig.API_REDIS_TEST_HOST,
+					API_MINIO_END_POINT: testEnvConfig.API_MINIO_TEST_END_POINT,
+					METRICS_API_KEY: undefined,
+					METRICS_ALLOWED_IPS: "192.168.1.1,127.0.0.1,10.0.0.1",
+				},
+			});
+
+			const res = await app.inject({
+				method: "GET",
+				url: "/metrics/perf",
+			});
+
+			expect(res.statusCode).toBe(200);
+		});
+
+		it("should prioritize IP check over API key when both are configured", async () => {
+			const app = await createServer({
+				envConfig: {
+					API_POSTGRES_HOST: testEnvConfig.API_POSTGRES_TEST_HOST,
+					API_REDIS_HOST: testEnvConfig.API_REDIS_TEST_HOST,
+					API_MINIO_END_POINT: testEnvConfig.API_MINIO_TEST_END_POINT,
+					METRICS_API_KEY: "test-api-key-123",
+					METRICS_ALLOWED_IPS: "127.0.0.1",
+				},
+			});
+
+			// Should allow access from allowed IP without API key
+			const res = await app.inject({
+				method: "GET",
+				url: "/metrics/perf",
+			});
+
+			expect(res.statusCode).toBe(200);
+		});
+	});
 });

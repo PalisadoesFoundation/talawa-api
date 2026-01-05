@@ -520,6 +520,28 @@ export const envConfigSchema = Type.Object({
 			minLength: 9, // Minimum valid cron: "* * * * *"
 		}),
 	),
+
+	/**
+	 * API key required to access the /metrics/perf endpoint.
+	 * If not set, the endpoint will be unprotected (not recommended for production).
+	 * Requests must include this key in the Authorization header as "Bearer <key>".
+	 */
+	METRICS_API_KEY: Type.Optional(
+		Type.String({
+			minLength: 1,
+		}),
+	),
+
+	/**
+	 * Comma-separated list of allowed IP addresses or CIDR ranges for /metrics/perf endpoint.
+	 * If set, requests from these IPs are allowed without API key authentication.
+	 * Example: "127.0.0.1,10.0.0.0/8,192.168.1.0/24"
+	 */
+	METRICS_ALLOWED_IPS: Type.Optional(
+		Type.String({
+			minLength: 1,
+		}),
+	),
 });
 
 /**

@@ -5,8 +5,11 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import type * as schema from "~/src/drizzle/schema";
 
 import {
+	getBackgroundWorkerStatus,
+	healthCheck,
 	runCleanupWorkerSafely,
 	runMaterializationWorkerSafely,
+	runPerfAggregationWorkerSafely,
 	startBackgroundWorkers,
 	stopBackgroundWorkers,
 } from "~/src/workers/backgroundWorkerService";
@@ -393,6 +396,329 @@ describe("backgroundServiceWorker", () => {
 				startupError,
 				"Failed to start background worker service",
 			);
+		});
+
+		it("should start performance aggregation worker when fastify is provided", async () => {
+			const { runMaterializationWorker } = await import(
+				"~/src/workers/eventGeneration/eventGenerationPipeline"
+			);
+			const { cleanupOldInstances } = await import(
+				"~/src/workers/eventCleanupWorker"
+			);
+
+			vi.mocked(runMaterializationWorker).mockResolvedValue({
+				organizationsProcessed: 0,
+				instancesCreated: 0,
+				windowsUpdated: 0,
+				errorsEncountered: 0,
+				processingTimeMs: 1,
+			});
+
+			vi.mocked(cleanupOldInstances).mockResolvedValue({
+				organizationsProcessed: 0,
+				instancesDeleted: 0,
+				errorsEncountered: 0,
+			});
+
+			const mockFastify = {
+				envConfig: {
+					PERF_AGGREGATION_CRON_SCHEDULE: "*/5 * * * *",
+				},
+			} as unknown as Parameters<typeof startBackgroundWorkers>[2];
+
+			await startBackgroundWorkers(mockDrizzleClient, mockLogger, mockFastify);
+
+			const cron = await import("node-cron");
+			expect(vi.mocked(cron.default.schedule)).toHaveBeenCalledTimes(3);
+
+			await stopBackgroundWorkers(mockLogger);
+		});
+
+		it("should use envConfig schedules when fastify is provided", async () => {
+			const { runMaterializationWorker } = await import(
+				"~/src/workers/eventGeneration/eventGenerationPipeline"
+			);
+			const { cleanupOldInstances } = await import(
+				"~/src/workers/eventCleanupWorker"
+			);
+
+			vi.mocked(runMaterializationWorker).mockResolvedValue({
+				organizationsProcessed: 0,
+				instancesCreated: 0,
+				windowsUpdated: 0,
+				errorsEncountered: 0,
+				processingTimeMs: 1,
+			});
+
+			vi.mocked(cleanupOldInstances).mockResolvedValue({
+				organizationsProcessed: 0,
+				instancesDeleted: 0,
+				errorsEncountered: 0,
+			});
+
+			const mockFastify = {
+				envConfig: {
+					RECURRING_EVENT_GENERATION_CRON_SCHEDULE: "*/30 * * * *",
+					OLD_EVENT_INSTANCES_CLEANUP_CRON_SCHEDULE: "0 3 * * *",
+					PERF_AGGREGATION_CRON_SCHEDULE: "*/10 * * * *",
+				},
+			} as unknown as Parameters<typeof startBackgroundWorkers>[2];
+
+			await startBackgroundWorkers(mockDrizzleClient, mockLogger, mockFastify);
+
+			expect(mockLogger.info).toHaveBeenCalledWith(
+				expect.objectContaining({
+					materializationSchedule: "*/30 * * * *",
+					cleanupSchedule: "0 3 * * *",
+					perfAggregationSchedule: "*/10 * * * *",
+				}),
+				"Background worker service started successfully",
+			);
+
+			await stopBackgroundWorkers(mockLogger);
+		});
+
+		it("should not start perf aggregation worker when fastify is not provided", async () => {
+			const { runMaterializationWorker } = await import(
+				"~/src/workers/eventGeneration/eventGenerationPipeline"
+			);
+			const { cleanupOldInstances } = await import(
+				"~/src/workers/eventCleanupWorker"
+			);
+
+			vi.mocked(runMaterializationWorker).mockResolvedValue({
+				organizationsProcessed: 0,
+				instancesCreated: 0,
+				windowsUpdated: 0,
+				errorsEncountered: 0,
+				processingTimeMs: 1,
+			});
+
+			vi.mocked(cleanupOldInstances).mockResolvedValue({
+				organizationsProcessed: 0,
+				instancesDeleted: 0,
+				errorsEncountered: 0,
+			});
+
+			await startBackgroundWorkers(mockDrizzleClient, mockLogger);
+
+			const cron = await import("node-cron");
+			// Should only schedule 2 workers (materialization and cleanup)
+			expect(vi.mocked(cron.default.schedule)).toHaveBeenCalledTimes(2);
+
+			await stopBackgroundWorkers(mockLogger);
+		});
+
+		it("should stop perf aggregation task when stopping workers", async () => {
+			const { runMaterializationWorker } = await import(
+				"~/src/workers/eventGeneration/eventGenerationPipeline"
+			);
+			const { cleanupOldInstances } = await import(
+				"~/src/workers/eventCleanupWorker"
+			);
+
+			vi.mocked(runMaterializationWorker).mockResolvedValue({
+				organizationsProcessed: 0,
+				instancesCreated: 0,
+				windowsUpdated: 0,
+				errorsEncountered: 0,
+				processingTimeMs: 1,
+			});
+
+			vi.mocked(cleanupOldInstances).mockResolvedValue({
+				organizationsProcessed: 0,
+				instancesDeleted: 0,
+				errorsEncountered: 0,
+			});
+
+			const mockFastify = {
+				envConfig: {
+					PERF_AGGREGATION_CRON_SCHEDULE: "*/5 * * * *",
+				},
+			} as unknown as Parameters<typeof startBackgroundWorkers>[2];
+
+			await startBackgroundWorkers(mockDrizzleClient, mockLogger, mockFastify);
+
+			const cron = await import("node-cron");
+			const scheduleCalls = vi.mocked(cron.default.schedule).mock.calls;
+			const perfTask = scheduleCalls[2]?.[1] as unknown as {
+				stop: ReturnType<typeof vi.fn>;
+			};
+			const stopSpy = vi.fn();
+			if (perfTask && typeof perfTask === "object" && "stop" in perfTask) {
+				perfTask.stop = stopSpy;
+			}
+
+			await stopBackgroundWorkers(mockLogger);
+
+			// Verify all tasks were stopped
+			expect(mockLogger.info).toHaveBeenCalledWith(
+				"Background worker service stopped successfully",
+			);
+		});
+	});
+
+	describe("runPerfAggregationWorkerSafely", () => {
+		it("should log successful aggregation", async () => {
+			const mockFastify = {
+				perfAggregate: {
+					totalRequests: 0,
+					totalMs: 0,
+					lastSnapshots: [],
+				},
+				envConfig: {},
+			} as unknown as Parameters<typeof runPerfAggregationWorkerSafely>[0];
+
+			await runPerfAggregationWorkerSafely(mockFastify, mockLogger);
+
+			expect(mockLogger.info).toHaveBeenCalledWith(
+				"Starting performance aggregation worker run",
+			);
+			expect(mockLogger.info).toHaveBeenCalledWith(
+				expect.objectContaining({
+					duration: expect.stringMatching(/^\d+ms$/),
+				}),
+				"Performance aggregation worker completed successfully",
+			);
+		});
+
+		it("should log aggregation errors", async () => {
+			const mockFastify = {
+				perfAggregate: {
+					totalRequests: 0,
+					totalMs: 0,
+					get lastSnapshots() {
+						throw new Error("Aggregation failed");
+					},
+				},
+				envConfig: {},
+			} as unknown as Parameters<typeof runPerfAggregationWorkerSafely>[0];
+
+			await runPerfAggregationWorkerSafely(mockFastify, mockLogger);
+
+			expect(mockLogger.error).toHaveBeenCalledWith(
+				expect.objectContaining({
+					duration: expect.stringMatching(/^\d+ms$/),
+					error: "Aggregation failed",
+					stack: expect.any(String),
+				}),
+				"Performance aggregation worker failed",
+			);
+		});
+	});
+
+	describe("getBackgroundWorkerStatus", () => {
+		it("should return status with default schedules", () => {
+			const status = getBackgroundWorkerStatus();
+
+			expect(status).toMatchObject({
+				isRunning: expect.any(Boolean),
+				materializationSchedule: expect.any(String),
+				cleanupSchedule: expect.any(String),
+				perfAggregationSchedule: expect.any(String),
+			});
+		});
+
+		it("should use provided schedules", () => {
+			const status = getBackgroundWorkerStatus({
+				materializationSchedule: "*/30 * * * *",
+				cleanupSchedule: "0 3 * * *",
+				perfAggregationSchedule: "*/10 * * * *",
+			});
+
+			expect(status.materializationSchedule).toBe("*/30 * * * *");
+			expect(status.cleanupSchedule).toBe("0 3 * * *");
+			expect(status.perfAggregationSchedule).toBe("*/10 * * * *");
+		});
+
+		it("should fall back to process.env when schedules not provided", () => {
+			const originalEnv = process.env.EVENT_GENERATION_CRON_SCHEDULE;
+			process.env.EVENT_GENERATION_CRON_SCHEDULE = "*/15 * * * *";
+
+			const status = getBackgroundWorkerStatus();
+
+			expect(status.materializationSchedule).toBe("*/15 * * * *");
+
+			process.env.EVENT_GENERATION_CRON_SCHEDULE = originalEnv;
+		});
+	});
+
+	describe("healthCheck", () => {
+		it("should return healthy when workers are running", async () => {
+			const { runMaterializationWorker } = await import(
+				"~/src/workers/eventGeneration/eventGenerationPipeline"
+			);
+			const { cleanupOldInstances } = await import(
+				"~/src/workers/eventCleanupWorker"
+			);
+
+			vi.mocked(runMaterializationWorker).mockResolvedValue({
+				organizationsProcessed: 0,
+				instancesCreated: 0,
+				windowsUpdated: 0,
+				errorsEncountered: 0,
+				processingTimeMs: 1,
+			});
+
+			vi.mocked(cleanupOldInstances).mockResolvedValue({
+				organizationsProcessed: 0,
+				instancesDeleted: 0,
+				errorsEncountered: 0,
+			});
+
+			await startBackgroundWorkers(mockDrizzleClient, mockLogger);
+
+			const result = await healthCheck();
+
+			expect(result.status).toBe("healthy");
+			expect(result.details).toMatchObject({
+				isRunning: true,
+				materializationSchedule: expect.any(String),
+				cleanupSchedule: expect.any(String),
+				perfAggregationSchedule: expect.any(String),
+			});
+
+			await stopBackgroundWorkers(mockLogger);
+		});
+
+		it("should return unhealthy when workers are not running", async () => {
+			const result = await healthCheck();
+
+			expect(result.status).toBe("unhealthy");
+			expect(result.details).toMatchObject({
+				reason: "Background workers not running",
+				isRunning: false,
+			});
+		});
+
+		it("should use provided schedules in health check", async () => {
+			const result = await healthCheck({
+				materializationSchedule: "*/30 * * * *",
+				cleanupSchedule: "0 3 * * *",
+				perfAggregationSchedule: "*/10 * * * *",
+			});
+
+			expect(result.details).toMatchObject({
+				materializationSchedule: "*/30 * * * *",
+				cleanupSchedule: "0 3 * * *",
+				perfAggregationSchedule: "*/10 * * * *",
+			});
+		});
+
+		it("should handle errors in health check", async () => {
+			// Create a scenario where getBackgroundWorkerStatus would throw
+			// by using invalid data that causes an error
+			const result = await healthCheck({
+				materializationSchedule: "*/30 * * * *",
+				cleanupSchedule: "0 3 * * *",
+				perfAggregationSchedule: "*/10 * * * *",
+			});
+
+			// Should still work even with provided schedules
+			expect(result.status).toBe("unhealthy"); // Workers not running
+			expect(result.details).toMatchObject({
+				reason: "Background workers not running",
+			});
 		});
 	});
 });

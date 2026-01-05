@@ -311,7 +311,10 @@ export const graphql = fastifyPlugin(async (fastify) => {
 	fastify.graphql.addHook("preParsing", async (_schema, _source, _ctx) => {
 		const request = (_ctx as { reply?: { request?: FastifyRequest } })?.reply
 			?.request;
-		request?.perf?.start("gql:parse")?.();
+		// Store the end function to call later in preExecution to measure actual parse duration
+		if (request?.perf) {
+			request.__parseTimerEnd = request.perf.start("gql:parse");
+		}
 	});
 
 	// Register schema update callback to replace schema when plugins are activated/deactivated
@@ -354,12 +357,11 @@ export const graphql = fastifyPlugin(async (fastify) => {
 	fastify.graphql.addHook(
 		"preExecution",
 		async (schema, context, document, variables) => {
-			// Calculate the complexity of the incoming GraphQL query
-			const complexity = complexityFromQuery(document.__currentQuery, {
-				schema: schema,
-				variables: variables,
-			});
 			const request = document.reply.request;
+
+			// End the parse timer that was started in preParsing hook
+			// This measures the actual GraphQL parsing duration
+			request.__parseTimerEnd?.();
 
 			// Find the operation definition node to determine if this is a query, mutation, or subscription
 			const operationDefinition = context.definitions.find(
@@ -369,6 +371,20 @@ export const graphql = fastifyPlugin(async (fastify) => {
 				? operationDefinition.operation
 				: undefined;
 
+			// Calculate the complexity of the incoming GraphQL query and track the calculation time
+			const perf = request.perf;
+			const complexity = perf
+				? await perf.time("gql:complexity", async () => {
+						return complexityFromQuery(document.__currentQuery, {
+							schema: schema,
+							variables: variables,
+						});
+					})
+				: complexityFromQuery(document.__currentQuery, {
+						schema: schema,
+						variables: variables,
+					});
+
 			// Mutations typically have a higher base cost than queries
 			// Add the configured base cost for mutations to increase their complexity score
 			if (operationType === "mutation") {
@@ -376,16 +392,11 @@ export const graphql = fastifyPlugin(async (fastify) => {
 					fastify.envConfig.API_GRAPHQL_MUTATION_BASE_COST;
 			}
 
-			// Track GraphQL complexity in performance tracker (after mutation base cost is added)
-			const perf = request.perf;
+			// Track and log high complexity queries (after mutation base cost is added)
 			if (perf) {
 				const complexityScore = complexity.complexity;
-				// Track complexity calculation time (though it's synchronous, we track for consistency)
-				perf.time("gql:complexity", async () => {
-					return Promise.resolve();
-				});
-
-				// Log high complexity queries
+				// Track the actual complexity score (not execution time)
+				perf.trackComplexity(complexityScore);
 				if (complexityScore >= 100) {
 					request.log.warn({
 						msg: "High complexity GraphQL query",

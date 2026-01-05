@@ -30,6 +30,7 @@ import { complexityFromQuery } from "@pothos/plugin-complexity";
 import schemaManager from "~/src/graphql/schemaManager";
 import { COOKIE_NAMES } from "~/src/utilities/cookieConfig";
 import leakyBucket from "~/src/utilities/leakyBucket";
+import { createPerformanceTracker } from "~/src/utilities/metrics/performanceTracker";
 
 const iso8601 = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?Z$/;
 
@@ -648,6 +649,161 @@ describe("GraphQL Routes", () => {
 		});
 	});
 
+	describe("preParsing Hook", () => {
+		let mockFastifyInstance: {
+			register: ReturnType<typeof vi.fn>;
+			envConfig: {
+				API_IS_GRAPHIQL: boolean;
+				API_GRAPHQL_MUTATION_BASE_COST: number;
+				API_RATE_LIMIT_BUCKET_CAPACITY: number;
+				API_RATE_LIMIT_REFILL_RATE: number;
+			};
+			log: {
+				info: ReturnType<typeof vi.fn>;
+				error: ReturnType<typeof vi.fn>;
+			};
+			graphql: {
+				replaceSchema: ReturnType<typeof vi.fn>;
+				addHook: ReturnType<typeof vi.fn>;
+			};
+		};
+		let preParsingHook: (
+			schema: GraphQLSchema,
+			source: string,
+			ctx: {
+				reply?: {
+					request?: { perf?: ReturnType<typeof createPerformanceTracker> };
+				};
+			},
+		) => Promise<void>;
+
+		beforeEach(async () => {
+			mockFastifyInstance = {
+				register: vi.fn(),
+				envConfig: {
+					API_IS_GRAPHIQL: true,
+					API_GRAPHQL_MUTATION_BASE_COST: 10,
+					API_RATE_LIMIT_BUCKET_CAPACITY: 100,
+					API_RATE_LIMIT_REFILL_RATE: 1,
+				},
+				log: {
+					info: vi.fn(),
+					error: vi.fn(),
+				},
+				graphql: {
+					replaceSchema: vi.fn(),
+					addHook: vi.fn(),
+				},
+			};
+
+			vi.mocked(schemaManager.buildInitialSchema).mockResolvedValue(
+				new GraphQLSchema({
+					query: new GraphQLObjectType({
+						name: "Query",
+						fields: {
+							hello: {
+								type: GraphQLString,
+								resolve: () => "Hello World",
+							},
+						},
+					}),
+				}),
+			);
+			vi.mocked(schemaManager.onSchemaUpdate).mockImplementation(() => {});
+
+			// Import and register the plugin to capture the hook
+			const { graphql } = await import("~/src/routes/graphql");
+			await graphql(mockFastifyInstance as unknown as FastifyInstance);
+
+			// Extract the preParsing hook
+			const addHookCall = mockFastifyInstance.graphql.addHook.mock.calls.find(
+				(call: unknown[]) => call?.[0] === "preParsing",
+			);
+			preParsingHook = addHookCall?.[1] as typeof preParsingHook;
+		});
+
+		it("should start parse timer when perf tracker is available", async () => {
+			const perf = createPerformanceTracker();
+			const mockCtx: {
+				reply?: {
+					request?: {
+						perf?: ReturnType<typeof createPerformanceTracker>;
+						__parseTimerEnd?: () => void;
+					};
+				};
+			} = {
+				reply: {
+					request: {
+						perf,
+					},
+				},
+			};
+
+			await preParsingHook(
+				new GraphQLSchema({
+					query: new GraphQLObjectType({
+						name: "Query",
+						fields: {},
+					}),
+				}),
+				"{ __typename }",
+				mockCtx,
+			);
+
+			// Verify parse timer was started
+			expect(mockCtx.reply).toBeDefined();
+			expect(mockCtx.reply?.request).toBeDefined();
+			expect(mockCtx.reply?.request?.__parseTimerEnd).toBeDefined();
+			expect(typeof mockCtx.reply?.request?.__parseTimerEnd).toBe("function");
+		});
+
+		it("should not start parse timer when perf tracker is not available", async () => {
+			const mockCtx: {
+				reply?: {
+					request?: {
+						perf?: ReturnType<typeof createPerformanceTracker>;
+						__parseTimerEnd?: () => void;
+					};
+				};
+			} = {
+				reply: {
+					request: {},
+				},
+			};
+
+			await preParsingHook(
+				new GraphQLSchema({
+					query: new GraphQLObjectType({
+						name: "Query",
+						fields: {},
+					}),
+				}),
+				"{ __typename }",
+				mockCtx,
+			);
+
+			// Verify parse timer was not started
+			expect(mockCtx.reply?.request?.__parseTimerEnd).toBeUndefined();
+		});
+
+		it("should handle missing reply in context", async () => {
+			const mockCtx = {};
+
+			await expect(
+				preParsingHook(
+					new GraphQLSchema({
+						query: new GraphQLObjectType({
+							name: "Query",
+							fields: {},
+						}),
+					}),
+					"{ __typename }",
+					mockCtx,
+				),
+			).resolves.toBeUndefined();
+		});
+	});
+
 	describe("preExecution Hook", () => {
 		let mockFastifyInstance: {
 			register: ReturnType<typeof vi.fn>;
@@ -680,6 +836,11 @@ describe("GraphQL Routes", () => {
 				request: {
 					ip?: string;
 					jwtVerify: ReturnType<typeof vi.fn>;
+					perf?: ReturnType<typeof createPerformanceTracker>;
+					__parseTimerEnd?: () => void;
+					log?: {
+						warn: ReturnType<typeof vi.fn>;
+					};
 				};
 			};
 		};
@@ -737,6 +898,11 @@ describe("GraphQL Routes", () => {
 					request: {
 						ip: "192.168.1.1",
 						jwtVerify: vi.fn(),
+						perf: undefined,
+						__parseTimerEnd: undefined,
+						log: {
+							warn: vi.fn(),
+						},
 					},
 				},
 			};
@@ -964,6 +1130,140 @@ describe("GraphQL Routes", () => {
 				1,
 				2,
 			);
+		});
+
+		it("should track parse timer from preParsing hook", async () => {
+			const mockComplexity = { complexity: 5, breadth: 1, depth: 1 };
+			vi.mocked(complexityFromQuery).mockReturnValue(mockComplexity);
+
+			// Create a performance tracker
+			const perf = createPerformanceTracker();
+			mockDocument.reply.request.perf = perf;
+			mockDocument.reply.request.__parseTimerEnd = perf.start("gql:parse");
+
+			mockDocument.reply.request.jwtVerify.mockRejectedValue(
+				new Error("No token"),
+			);
+			vi.mocked(leakyBucket).mockResolvedValue(true);
+
+			await preExecutionHook(
+				mockSchema,
+				mockContext,
+				mockDocument,
+				mockVariables,
+			);
+
+			// Verify parse timer was called
+			const snapshot = perf.snapshot();
+			expect(snapshot.ops["gql:parse"]).toBeDefined();
+		});
+
+		it("should handle preExecution when perf is undefined", async () => {
+			const mockComplexity = { complexity: 5, breadth: 1, depth: 1 };
+			vi.mocked(complexityFromQuery).mockReturnValue(mockComplexity);
+
+			// Remove perf tracker
+			mockDocument.reply.request.perf = undefined;
+			mockDocument.reply.request.jwtVerify.mockRejectedValue(
+				new Error("No token"),
+			);
+			vi.mocked(leakyBucket).mockResolvedValue(true);
+
+			await preExecutionHook(
+				mockSchema,
+				mockContext,
+				mockDocument,
+				mockVariables,
+			);
+
+			// Should still work without perf tracker
+			expect(complexityFromQuery).toHaveBeenCalled();
+			expect(leakyBucket).toHaveBeenCalled();
+		});
+
+		it("should log high complexity queries", async () => {
+			const mockComplexity = { complexity: 150, breadth: 1, depth: 1 };
+			vi.mocked(complexityFromQuery).mockReturnValue(mockComplexity);
+
+			const perf = createPerformanceTracker();
+			mockDocument.reply.request.perf = perf;
+			const logWarnSpy = vi.fn();
+			if (mockDocument.reply.request.log) {
+				mockDocument.reply.request.log.warn = logWarnSpy;
+			}
+
+			mockDocument.reply.request.jwtVerify.mockRejectedValue(
+				new Error("No token"),
+			);
+			vi.mocked(leakyBucket).mockResolvedValue(true);
+
+			await preExecutionHook(
+				mockSchema,
+				mockContext,
+				mockDocument,
+				mockVariables,
+			);
+
+			// Should log high complexity query
+			expect(logWarnSpy).toHaveBeenCalledWith({
+				msg: "High complexity GraphQL query",
+				complexity: 150,
+				operationType: "query",
+			});
+		});
+
+		it("should track complexity score using trackComplexity", async () => {
+			const mockComplexity = { complexity: 120, breadth: 1, depth: 1 };
+			vi.mocked(complexityFromQuery).mockReturnValue(mockComplexity);
+
+			const perf = createPerformanceTracker();
+			mockDocument.reply.request.perf = perf;
+			const trackComplexitySpy = vi.spyOn(perf, "trackComplexity");
+
+			mockDocument.reply.request.jwtVerify.mockRejectedValue(
+				new Error("No token"),
+			);
+			vi.mocked(leakyBucket).mockResolvedValue(true);
+
+			await preExecutionHook(
+				mockSchema,
+				mockContext,
+				mockDocument,
+				mockVariables,
+			);
+
+			// Should track complexity score
+			expect(trackComplexitySpy).toHaveBeenCalledWith(120);
+		});
+
+		it("should not log queries below complexity threshold", async () => {
+			const mockComplexity = { complexity: 50, breadth: 1, depth: 1 };
+			vi.mocked(complexityFromQuery).mockReturnValue(mockComplexity);
+
+			const perf = createPerformanceTracker();
+			mockDocument.reply.request.perf = perf;
+			const logWarnSpy = vi.fn();
+			if (mockDocument.reply.request.log) {
+				mockDocument.reply.request.log.warn = logWarnSpy;
+			}
+
+			mockDocument.reply.request.jwtVerify.mockRejectedValue(
+				new Error("No token"),
+			);
+			vi.mocked(leakyBucket).mockResolvedValue(true);
+
+			await preExecutionHook(
+				mockSchema,
+				mockContext,
+				mockDocument,
+				mockVariables,
+			);
+
+			// Should not log queries below 100 complexity
+			const highComplexityLogs = logWarnSpy.mock.calls.filter((call) =>
+				call[0]?.msg?.includes("High complexity"),
+			);
+			expect(highComplexityLogs.length).toBe(0);
 		});
 	});
 

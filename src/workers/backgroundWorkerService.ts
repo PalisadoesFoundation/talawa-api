@@ -16,6 +16,10 @@ let cleanupTask: cron.ScheduledTask | undefined;
 let perfAggregationTask: cron.ScheduledTask | undefined;
 let isRunning = false;
 let materializationConfig: WorkerConfig = createDefaultWorkerConfig();
+// Store the actual schedules used when starting workers
+let materializationSchedule: string | undefined;
+let cleanupSchedule: string | undefined;
+let perfAggregationSchedule: string | undefined;
 
 /**
  * Initializes and starts all background workers, scheduling them to run at their configured intervals.
@@ -33,9 +37,28 @@ export async function startBackgroundWorkers(
 	try {
 		logger.info("Starting background worker service...");
 
+		// Get schedules from fastify.envConfig if available, otherwise fall back to process.env
+		const materializationScheduleValue =
+			fastify?.envConfig.RECURRING_EVENT_GENERATION_CRON_SCHEDULE ??
+			process.env.EVENT_GENERATION_CRON_SCHEDULE ??
+			"0 * * * *";
+		const cleanupScheduleValue =
+			fastify?.envConfig.OLD_EVENT_INSTANCES_CLEANUP_CRON_SCHEDULE ??
+			process.env.CLEANUP_CRON_SCHEDULE ??
+			"0 2 * * *";
+		const perfAggregationScheduleValue =
+			fastify?.envConfig.PERF_AGGREGATION_CRON_SCHEDULE ??
+			process.env.PERF_AGGREGATION_CRON_SCHEDULE ??
+			"*/5 * * * *";
+
+		// Store schedules for status reporting
+		materializationSchedule = materializationScheduleValue;
+		cleanupSchedule = cleanupScheduleValue;
+		perfAggregationSchedule = perfAggregationScheduleValue;
+
 		// Schedule event generation worker - runs every hour
 		materializationTask = cron.schedule(
-			process.env.EVENT_GENERATION_CRON_SCHEDULE || "0 * * * *",
+			materializationScheduleValue,
 			() => runMaterializationWorkerSafely(drizzleClient, logger),
 			{
 				scheduled: false,
@@ -45,7 +68,7 @@ export async function startBackgroundWorkers(
 
 		// Schedule cleanup worker - runs daily at 2 AM UTC
 		cleanupTask = cron.schedule(
-			process.env.CLEANUP_CRON_SCHEDULE || "0 2 * * *",
+			cleanupScheduleValue,
 			() => runCleanupWorkerSafely(drizzleClient, logger),
 			{
 				scheduled: false,
@@ -55,31 +78,29 @@ export async function startBackgroundWorkers(
 
 		// Schedule performance aggregation worker - runs every 5 minutes
 		if (fastify) {
-			const perfSchedule =
-				fastify.envConfig.PERF_AGGREGATION_CRON_SCHEDULE ?? "*/5 * * * *";
 			perfAggregationTask = cron.schedule(
-				perfSchedule,
+				perfAggregationScheduleValue,
 				() => runPerfAggregationWorkerSafely(fastify, logger),
 				{
 					scheduled: false,
 					timezone: "UTC",
 				},
 			);
-			perfAggregationTask.start();
 		}
 
 		// Start the scheduled tasks
 		materializationTask.start();
 		cleanupTask.start();
+		if (perfAggregationTask) {
+			perfAggregationTask.start();
+		}
 
 		isRunning = true;
 		logger.info(
 			{
-				materializationSchedule:
-					process.env.EVENT_GENERATION_CRON_SCHEDULE || "0 * * * *",
-				cleanupSchedule: process.env.CLEANUP_CRON_SCHEDULE || "0 2 * * *",
-				perfAggregationSchedule:
-					fastify?.envConfig.PERF_AGGREGATION_CRON_SCHEDULE ?? "*/5 * * * *",
+				materializationSchedule: materializationScheduleValue,
+				cleanupSchedule: cleanupScheduleValue,
+				perfAggregationSchedule: perfAggregationScheduleValue,
 			},
 			"Background worker service started successfully",
 		);
@@ -272,9 +293,15 @@ export async function triggerCleanupWorker(
 /**
  * Retrieves the current status of the background worker service, including scheduling information.
  *
+ * @param schedules - Optional object containing the actual schedules used when starting workers.
+ *                    If not provided, falls back to stored schedules or process.env for backward compatibility.
  * @returns - An object containing the current status of the service.
  */
-export function getBackgroundWorkerStatus(): {
+export function getBackgroundWorkerStatus(schedules?: {
+	materializationSchedule?: string;
+	cleanupSchedule?: string;
+	perfAggregationSchedule?: string;
+}): {
 	isRunning: boolean;
 	materializationSchedule: string;
 	cleanupSchedule: string;
@@ -282,29 +309,44 @@ export function getBackgroundWorkerStatus(): {
 	nextMaterializationRun?: Date;
 	nextCleanupRun?: Date;
 } {
-	// Note: This function doesn't have access to fastify instance,
-	// so it falls back to process.env for consistency with other schedules
+	// Use provided schedules, then stored schedules, then fall back to process.env for backward compatibility
 	return {
 		isRunning,
 		materializationSchedule:
-			process.env.EVENT_GENERATION_CRON_SCHEDULE || "0 * * * *",
-		cleanupSchedule: process.env.CLEANUP_CRON_SCHEDULE || "0 2 * * *",
+			schedules?.materializationSchedule ??
+			materializationSchedule ??
+			process.env.EVENT_GENERATION_CRON_SCHEDULE ??
+			"0 * * * *",
+		cleanupSchedule:
+			schedules?.cleanupSchedule ??
+			cleanupSchedule ??
+			process.env.CLEANUP_CRON_SCHEDULE ??
+			"0 2 * * *",
 		perfAggregationSchedule:
-			process.env.PERF_AGGREGATION_CRON_SCHEDULE || "*/5 * * * *",
+			schedules?.perfAggregationSchedule ??
+			perfAggregationSchedule ??
+			process.env.PERF_AGGREGATION_CRON_SCHEDULE ??
+			"*/5 * * * *",
 	};
 }
 
 /**
  * Performs a health check of the background worker service, suitable for use by monitoring systems.
  *
+ * @param schedules - Optional object containing the actual schedules used when starting workers.
+ *                    If not provided, falls back to stored schedules or process.env for backward compatibility.
  * @returns - A promise that resolves to an object indicating the health status and any relevant details.
  */
-export async function healthCheck(): Promise<{
+export async function healthCheck(schedules?: {
+	materializationSchedule?: string;
+	cleanupSchedule?: string;
+	perfAggregationSchedule?: string;
+}): Promise<{
 	status: "healthy" | "unhealthy";
 	details: Record<string, unknown>;
 }> {
 	try {
-		const status = getBackgroundWorkerStatus();
+		const status = getBackgroundWorkerStatus(schedules);
 
 		if (!status.isRunning) {
 			return {

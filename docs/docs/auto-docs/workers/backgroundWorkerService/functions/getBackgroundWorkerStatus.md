@@ -4,11 +4,30 @@
 
 # Function: getBackgroundWorkerStatus()
 
-> **getBackgroundWorkerStatus**(): `object`
+> **getBackgroundWorkerStatus**(`schedules?`): `object`
 
-Defined in: [src/workers/backgroundWorkerService.ts:277](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/workers/backgroundWorkerService.ts#L277)
+Defined in: [src/workers/backgroundWorkerService.ts:300](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/workers/backgroundWorkerService.ts#L300)
 
 Retrieves the current status of the background worker service, including scheduling information.
+
+## Parameters
+
+### schedules?
+
+Optional object containing the actual schedules used when starting workers.
+                   If not provided, falls back to stored schedules or process.env for backward compatibility.
+
+#### cleanupSchedule?
+
+`string`
+
+#### materializationSchedule?
+
+`string`
+
+#### perfAggregationSchedule?
+
+`string`
 
 ## Returns
 

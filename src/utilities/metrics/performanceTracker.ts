@@ -12,6 +12,8 @@ export type OpStats = {
 	ms: number;
 	/** Maximum time in milliseconds for a single execution */
 	max: number;
+	/** Complexity score (for GraphQL complexity tracking) */
+	score?: number;
 };
 
 /**
@@ -70,6 +72,12 @@ export interface PerformanceTracker {
 	trackCacheMiss(): void;
 
 	/**
+	 * Record a GraphQL query complexity score.
+	 * @param score - Complexity score for the query
+	 */
+	trackComplexity(score: number): void;
+
+	/**
 	 * Get a snapshot of current performance metrics.
 	 * @returns Performance snapshot
 	 */
@@ -87,6 +95,12 @@ export interface PerformanceTrackerOptions {
 	 */
 	slowMs?: number;
 }
+
+/**
+ * Maximum number of slow operations to retain in memory.
+ * When this limit is reached, only operations slower than the current minimum are added.
+ */
+const MAX_SLOW = 50;
 
 /**
  * Creates a performance tracker for request-level metrics.
@@ -135,9 +149,32 @@ export function createPerformanceTracker(
 		o.max = Math.max(o.max, ms);
 		totalMs += ms;
 		totalOps++;
-		// Track slow operations
+		// Track slow operations with bounded insertion
 		if (ms >= slowMs) {
-			slow.push({ op: k, ms: Math.round(ms) });
+			const roundedMs = Math.round(ms);
+			if (slow.length < MAX_SLOW) {
+				// Still have room, just push
+				slow.push({ op: k, ms: roundedMs });
+			} else {
+				// Find the minimum slow operation
+				let minIndex = 0;
+				const firstSlow = slow[0];
+				if (!firstSlow) {
+					return; // Safety check, should not happen
+				}
+				let minMs = firstSlow.ms;
+				for (let i = 1; i < slow.length; i++) {
+					const currentSlow = slow[i];
+					if (currentSlow && currentSlow.ms < minMs) {
+						minMs = currentSlow.ms;
+						minIndex = i;
+					}
+				}
+				// Only replace if new operation is slower than the current minimum
+				if (roundedMs > minMs) {
+					slow[minIndex] = { op: k, ms: roundedMs };
+				}
+			}
 		}
 	};
 
@@ -173,6 +210,15 @@ export function createPerformanceTracker(
 			cacheMisses++;
 		},
 
+		trackComplexity(score: number): void {
+			if (!Number.isFinite(score) || score < 0) {
+				return; // Ignore invalid values
+			}
+			const op = ensure("gql:complexity");
+			// Store the complexity score (not execution time)
+			op.score = score;
+		},
+
 		snapshot(): PerfSnapshot {
 			const totalCacheOps = cacheHits + cacheMisses;
 			const hitRate = totalCacheOps > 0 ? cacheHits / totalCacheOps : 0;
@@ -184,7 +230,7 @@ export function createPerformanceTracker(
 				cacheMisses,
 				hitRate,
 				ops: structuredClone(ops),
-				slow: slow.slice(0, 50), // Limit to 50 slow operations
+				slow: slow.slice(), // Already bounded to MAX_SLOW during accumulation
 			};
 		},
 	};

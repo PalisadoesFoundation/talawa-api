@@ -44,22 +44,13 @@ export function metricsCacheProxy(
 
 		async mget<T>(keys: string[]): Promise<(T | null)[]> {
 			const results = await cache.mget<T>(keys);
-			// Track hits and misses for batch operations
-			let hits = 0;
-			let misses = 0;
+			// Track hits and misses for batch operations in a single loop
 			for (const result of results) {
 				if (result !== null) {
-					hits++;
+					perf.trackCacheHit();
 				} else {
-					misses++;
+					perf.trackCacheMiss();
 				}
-			}
-			// Track each hit and miss individually
-			for (let i = 0; i < hits; i++) {
-				perf.trackCacheHit();
-			}
-			for (let i = 0; i < misses; i++) {
-				perf.trackCacheMiss();
 			}
 			return results;
 		},

@@ -4,11 +4,30 @@
 
 # Function: healthCheck()
 
-> **healthCheck**(): `Promise`\<\{ `details`: `Record`\<`string`, `unknown`\>; `status`: `"healthy"` \| `"unhealthy"`; \}\>
+> **healthCheck**(`schedules?`): `Promise`\<\{ `details`: `Record`\<`string`, `unknown`\>; `status`: `"healthy"` \| `"unhealthy"`; \}\>
 
-Defined in: [src/workers/backgroundWorkerService.ts:302](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/workers/backgroundWorkerService.ts#L302)
+Defined in: [src/workers/backgroundWorkerService.ts:340](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/workers/backgroundWorkerService.ts#L340)
 
 Performs a health check of the background worker service, suitable for use by monitoring systems.
+
+## Parameters
+
+### schedules?
+
+Optional object containing the actual schedules used when starting workers.
+                   If not provided, falls back to stored schedules or process.env for backward compatibility.
+
+#### cleanupSchedule?
+
+`string`
+
+#### materializationSchedule?
+
+`string`
+
+#### perfAggregationSchedule?
+
+`string`
 
 ## Returns
 

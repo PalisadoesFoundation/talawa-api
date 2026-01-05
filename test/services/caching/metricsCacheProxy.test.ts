@@ -185,4 +185,112 @@ describe("metricsCacheProxy", () => {
 		expect(snapshot.cacheHits).toBe(2); // 1 from get, 1 from mget
 		expect(snapshot.cacheMisses).toBe(2); // 1 from get, 1 from mget
 	});
+
+	describe("error propagation", () => {
+		it("should propagate errors from get", async () => {
+			const cache = createMockCache();
+			const error = new Error("Cache get failed");
+			cache.get.mockRejectedValue(error);
+			const perf = createPerformanceTracker();
+
+			const proxy = metricsCacheProxy(cache, perf);
+
+			await expect(proxy.get("key1")).rejects.toThrow("Cache get failed");
+			expect(cache.get).toHaveBeenCalledWith("key1");
+			const snapshot = perf.snapshot();
+			expect(snapshot.cacheHits).toBe(0);
+			expect(snapshot.cacheMisses).toBe(0);
+		});
+
+		it("should propagate errors from set", async () => {
+			const cache = createMockCache();
+			const error = new Error("Cache set failed");
+			cache.set.mockRejectedValue(error);
+			const perf = createPerformanceTracker();
+
+			const proxy = metricsCacheProxy(cache, perf);
+
+			await expect(proxy.set("key1", { data: "test" }, 300)).rejects.toThrow(
+				"Cache set failed",
+			);
+			expect(cache.set).toHaveBeenCalledWith("key1", { data: "test" }, 300);
+		});
+
+		it("should propagate errors from del", async () => {
+			const cache = createMockCache();
+			const error = new Error("Cache del failed");
+			cache.del.mockRejectedValue(error);
+			const perf = createPerformanceTracker();
+
+			const proxy = metricsCacheProxy(cache, perf);
+
+			await expect(proxy.del("key1")).rejects.toThrow("Cache del failed");
+			expect(cache.del).toHaveBeenCalledWith("key1");
+		});
+
+		it("should propagate errors from clearByPattern", async () => {
+			const cache = createMockCache();
+			const error = new Error("Cache clearByPattern failed");
+			cache.clearByPattern.mockRejectedValue(error);
+			const perf = createPerformanceTracker();
+
+			const proxy = metricsCacheProxy(cache, perf);
+
+			await expect(proxy.clearByPattern("pattern:*")).rejects.toThrow(
+				"Cache clearByPattern failed",
+			);
+			expect(cache.clearByPattern).toHaveBeenCalledWith("pattern:*");
+		});
+
+		it("should propagate errors from mget", async () => {
+			const cache = createMockCache();
+			const error = new Error("Cache mget failed");
+			cache.mget.mockRejectedValue(error);
+			const perf = createPerformanceTracker();
+
+			const proxy = metricsCacheProxy(cache, perf);
+
+			await expect(proxy.mget(["key1", "key2"])).rejects.toThrow(
+				"Cache mget failed",
+			);
+			expect(cache.mget).toHaveBeenCalledWith(["key1", "key2"]);
+			const snapshot = perf.snapshot();
+			expect(snapshot.cacheHits).toBe(0);
+			expect(snapshot.cacheMisses).toBe(0);
+		});
+
+		it("should propagate errors from mset", async () => {
+			const cache = createMockCache();
+			const error = new Error("Cache mset failed");
+			cache.mset.mockRejectedValue(error);
+			const perf = createPerformanceTracker();
+
+			const proxy = metricsCacheProxy(cache, perf);
+
+			await expect(
+				proxy.mset([
+					{ key: "key1", value: { data: "test1" }, ttlSeconds: 300 },
+				]),
+			).rejects.toThrow("Cache mset failed");
+			expect(cache.mset).toHaveBeenCalledWith([
+				{ key: "key1", value: { data: "test1" }, ttlSeconds: 300 },
+			]);
+		});
+	});
+
+	it("should handle empty array in mget without tracking hits/misses", async () => {
+		const cache = createMockCache();
+		cache.mget.mockResolvedValue([]);
+		const perf = createPerformanceTracker();
+
+		const proxy = metricsCacheProxy(cache, perf);
+
+		const result = await proxy.mget([]);
+
+		expect(cache.mget).toHaveBeenCalledWith([]);
+		expect(result).toEqual([]);
+		const snapshot = perf.snapshot();
+		expect(snapshot.cacheHits).toBe(0);
+		expect(snapshot.cacheMisses).toBe(0);
+	});
 });

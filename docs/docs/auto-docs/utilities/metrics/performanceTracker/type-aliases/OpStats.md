@@ -39,3 +39,13 @@ Maximum time in milliseconds for a single execution
 Defined in: [src/utilities/metrics/performanceTracker.ts:12](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/utilities/metrics/performanceTracker.ts#L12)
 
 Total time in milliseconds across all executions
+
+***
+
+### score?
+
+> `optional` **score**: `number`
+
+Defined in: [src/utilities/metrics/performanceTracker.ts:16](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/utilities/metrics/performanceTracker.ts#L16)
+
+Complexity score (for GraphQL complexity tracking)

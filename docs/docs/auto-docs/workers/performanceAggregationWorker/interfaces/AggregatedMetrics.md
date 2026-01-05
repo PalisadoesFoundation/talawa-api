@@ -4,7 +4,7 @@
 
 # Interface: AggregatedMetrics
 
-Defined in: [src/workers/performanceAggregationWorker.ts:6](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/workers/performanceAggregationWorker.ts#L6)
+Defined in: [src/workers/performanceAggregationWorker.ts:48](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/workers/performanceAggregationWorker.ts#L48)
 
 Aggregated performance metrics for a time period.
 
@@ -14,7 +14,7 @@ Aggregated performance metrics for a time period.
 
 > **avgDbMs**: `number`
 
-Defined in: [src/workers/performanceAggregationWorker.ts:16](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/workers/performanceAggregationWorker.ts#L16)
+Defined in: [src/workers/performanceAggregationWorker.ts:58](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/workers/performanceAggregationWorker.ts#L58)
 
 Average database operation time (ms)
 
@@ -24,7 +24,7 @@ Average database operation time (ms)
 
 > **avgHitRate**: `number`
 
-Defined in: [src/workers/performanceAggregationWorker.ts:22](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/workers/performanceAggregationWorker.ts#L22)
+Defined in: [src/workers/performanceAggregationWorker.ts:64](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/workers/performanceAggregationWorker.ts#L64)
 
 Average cache hit rate
 
@@ -34,7 +34,7 @@ Average cache hit rate
 
 > **avgRequestMs**: `number`
 
-Defined in: [src/workers/performanceAggregationWorker.ts:14](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/workers/performanceAggregationWorker.ts#L14)
+Defined in: [src/workers/performanceAggregationWorker.ts:56](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/workers/performanceAggregationWorker.ts#L56)
 
 Average request duration (ms)
 
@@ -44,7 +44,7 @@ Average request duration (ms)
 
 > **highComplexityCount**: `number`
 
-Defined in: [src/workers/performanceAggregationWorker.ts:26](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/workers/performanceAggregationWorker.ts#L26)
+Defined in: [src/workers/performanceAggregationWorker.ts:68](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/workers/performanceAggregationWorker.ts#L68)
 
 Number of high complexity queries (>=100)
 
@@ -54,7 +54,7 @@ Number of high complexity queries (>=100)
 
 > **periodEnd**: `Date`
 
-Defined in: [src/workers/performanceAggregationWorker.ts:10](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/workers/performanceAggregationWorker.ts#L10)
+Defined in: [src/workers/performanceAggregationWorker.ts:52](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/workers/performanceAggregationWorker.ts#L52)
 
 Time period end timestamp
 
@@ -64,7 +64,7 @@ Time period end timestamp
 
 > **periodStart**: `Date`
 
-Defined in: [src/workers/performanceAggregationWorker.ts:8](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/workers/performanceAggregationWorker.ts#L8)
+Defined in: [src/workers/performanceAggregationWorker.ts:50](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/workers/performanceAggregationWorker.ts#L50)
 
 Time period start timestamp
 
@@ -74,7 +74,7 @@ Time period start timestamp
 
 > **slowRequestCount**: `number`
 
-Defined in: [src/workers/performanceAggregationWorker.ts:24](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/workers/performanceAggregationWorker.ts#L24)
+Defined in: [src/workers/performanceAggregationWorker.ts:66](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/workers/performanceAggregationWorker.ts#L66)
 
 Number of slow requests (>500ms)
 
@@ -84,7 +84,7 @@ Number of slow requests (>500ms)
 
 > **topSlowOps**: `object`[]
 
-Defined in: [src/workers/performanceAggregationWorker.ts:28](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/workers/performanceAggregationWorker.ts#L28)
+Defined in: [src/workers/performanceAggregationWorker.ts:70](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/workers/performanceAggregationWorker.ts#L70)
 
 Most common slow operations
 
@@ -106,7 +106,7 @@ Most common slow operations
 
 > **totalCacheHits**: `number`
 
-Defined in: [src/workers/performanceAggregationWorker.ts:18](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/workers/performanceAggregationWorker.ts#L18)
+Defined in: [src/workers/performanceAggregationWorker.ts:60](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/workers/performanceAggregationWorker.ts#L60)
 
 Total cache hits
 
@@ -116,7 +116,7 @@ Total cache hits
 
 > **totalCacheMisses**: `number`
 
-Defined in: [src/workers/performanceAggregationWorker.ts:20](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/workers/performanceAggregationWorker.ts#L20)
+Defined in: [src/workers/performanceAggregationWorker.ts:62](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/workers/performanceAggregationWorker.ts#L62)
 
 Total cache misses
 
@@ -126,6 +126,6 @@ Total cache misses
 
 > **totalRequests**: `number`
 
-Defined in: [src/workers/performanceAggregationWorker.ts:12](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/workers/performanceAggregationWorker.ts#L12)
+Defined in: [src/workers/performanceAggregationWorker.ts:54](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/workers/performanceAggregationWorker.ts#L54)
 
 Total number of requests in this period

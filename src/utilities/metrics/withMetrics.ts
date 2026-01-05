@@ -21,6 +21,11 @@ export function wrapBatchWithMetrics<K, V>(
 	batchFn: (keys: readonly K[]) => Promise<(V | null)[]>,
 ): (keys: readonly K[]) => Promise<(V | null)[]> {
 	return async (keys: readonly K[]) => {
+		// Validate operation name before prepending "db:" prefix
+		// This ensures the error is thrown when the wrapped function is called
+		if (!op || !op.trim()) {
+			throw new Error("Operation name cannot be empty or whitespace");
+		}
 		return perf.time(`db:${op}`, async () => batchFn(keys));
 	};
 }

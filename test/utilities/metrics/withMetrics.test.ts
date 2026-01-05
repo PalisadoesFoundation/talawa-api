@@ -62,4 +62,38 @@ describe("wrapBatchWithMetrics", () => {
 
 		expect(result).toEqual([null, "result", null]);
 	});
+
+	it("should reject empty or whitespace operation names", async () => {
+		const perf = createPerformanceTracker();
+		const batchFn = vi.fn().mockResolvedValue(["result"]);
+
+		const wrappedEmpty = wrapBatchWithMetrics("", perf, batchFn);
+		await expect(wrappedEmpty(["id1"])).rejects.toThrow(
+			"Operation name cannot be empty or whitespace",
+		);
+
+		const wrappedWhitespace = wrapBatchWithMetrics("   ", perf, batchFn);
+		await expect(wrappedWhitespace(["id1"])).rejects.toThrow(
+			"Operation name cannot be empty or whitespace",
+		);
+
+		expect(batchFn).not.toHaveBeenCalled();
+	});
+
+	it("should handle empty keys array", async () => {
+		const perf = createPerformanceTracker();
+		const batchFn = vi.fn().mockResolvedValue([]);
+
+		const wrapped = wrapBatchWithMetrics("test.byId", perf, batchFn);
+		const result = await wrapped([]);
+
+		expect(result).toEqual([]);
+		expect(batchFn).toHaveBeenCalledWith([]);
+
+		const snapshot = perf.snapshot();
+		const op = snapshot.ops["db:test.byId"];
+
+		expect(op).toBeDefined();
+		expect(op?.count).toBe(1);
+	});
 });

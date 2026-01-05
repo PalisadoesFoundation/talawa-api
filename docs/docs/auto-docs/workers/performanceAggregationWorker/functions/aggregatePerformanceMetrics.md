@@ -6,7 +6,7 @@
 
 > **aggregatePerformanceMetrics**(`fastify`, `logger`): `Promise`\<[`AggregatedMetrics`](../interfaces/AggregatedMetrics.md)\>
 
-Defined in: [src/workers/performanceAggregationWorker.ts:39](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/workers/performanceAggregationWorker.ts#L39)
+Defined in: [src/workers/performanceAggregationWorker.ts:81](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/workers/performanceAggregationWorker.ts#L81)
 
 Aggregates performance metrics from recent snapshots and logs summary.
 This worker should be called periodically to provide aggregated performance insights.

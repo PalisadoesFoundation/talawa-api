@@ -1,6 +1,48 @@
 import type { FastifyBaseLogger, FastifyInstance } from "fastify";
 
 /**
+ * Parses a cron schedule string to determine the interval in milliseconds.
+ * Handles common patterns like "*\/5 * * * *" (every 5 minutes).
+ * Falls back to 5 minutes (300000ms) for unrecognized patterns.
+ *
+ * @param cronSchedule - Cron schedule string (e.g., "*\/5 * * * *")
+ * @returns Interval in milliseconds
+ */
+function parseCronIntervalToMs(cronSchedule: string): number {
+	// Default to 5 minutes if schedule is not provided
+	if (!cronSchedule) {
+		return 5 * 60 * 1000; // 5 minutes in milliseconds
+	}
+
+	const parts = cronSchedule.trim().split(/\s+/);
+	if (parts.length < 5) {
+		return 5 * 60 * 1000; // Default fallback
+	}
+
+	// Handle "*/N * * * *" pattern (every N minutes)
+	const minutePattern = parts[0];
+	if (minutePattern?.startsWith("*/")) {
+		const interval = Number.parseInt(minutePattern.slice(2), 10);
+		if (!Number.isNaN(interval) && interval > 0) {
+			return interval * 60 * 1000; // Convert minutes to milliseconds
+		}
+	}
+
+	// Handle "0 * * * *" pattern (every hour)
+	if (minutePattern === "0" && parts[1] === "*") {
+		return 60 * 60 * 1000; // 1 hour in milliseconds
+	}
+
+	// Handle "0 0 * * *" pattern (daily)
+	if (minutePattern === "0" && parts[1] === "0") {
+		return 24 * 60 * 60 * 1000; // 24 hours in milliseconds
+	}
+
+	// Default fallback to 5 minutes for unrecognized patterns
+	return 5 * 60 * 1000;
+}
+
+/**
  * Aggregated performance metrics for a time period.
  */
 export interface AggregatedMetrics {
@@ -42,12 +84,22 @@ export async function aggregatePerformanceMetrics(
 ): Promise<AggregatedMetrics> {
 	const agg = fastify.perfAggregate;
 	const snapshots = agg.lastSnapshots;
+	const periodEnd = new Date();
+
+	// Get the aggregation interval from the configured cron schedule
+	const cronSchedule =
+		fastify.envConfig.PERF_AGGREGATION_CRON_SCHEDULE ??
+		process.env.PERF_AGGREGATION_CRON_SCHEDULE ??
+		"*/5 * * * *";
+	const aggregationIntervalMs = parseCronIntervalToMs(cronSchedule);
 
 	if (snapshots.length === 0) {
 		logger.info("No performance snapshots available for aggregation");
+		// For empty snapshots, use the configured interval as fallback
+		const periodStart = new Date(periodEnd.getTime() - aggregationIntervalMs);
 		return {
-			periodStart: new Date(),
-			periodEnd: new Date(),
+			periodStart,
+			periodEnd,
 			totalRequests: 0,
 			avgRequestMs: 0,
 			avgDbMs: 0,
@@ -87,9 +139,14 @@ export async function aggregatePerformanceMetrics(
 			slowRequestCount++;
 		}
 
-		// Count high complexity queries
+		// Count high complexity queries (using actual complexity score, not execution time)
 		const complexityOp = snap.ops["gql:complexity"];
-		if (complexityOp && complexityOp.ms >= 100) {
+		const COMPLEXITY_THRESHOLD = 100;
+		if (
+			complexityOp &&
+			complexityOp.score !== undefined &&
+			complexityOp.score >= COMPLEXITY_THRESHOLD
+		) {
 			highComplexityCount++;
 		}
 
@@ -123,9 +180,13 @@ export async function aggregatePerformanceMetrics(
 		.sort((a, b) => b.avgMs - a.avgMs)
 		.slice(0, 5);
 
+	// Calculate periodStart based on the aggregation interval
+	// This reflects the actual time window covered by this aggregation run
+	const periodStart = new Date(periodEnd.getTime() - aggregationIntervalMs);
+
 	const metrics: AggregatedMetrics = {
-		periodStart: new Date(Date.now() - 60000), // Last minute (approximate)
-		periodEnd: new Date(),
+		periodStart,
+		periodEnd,
 		totalRequests: requestCount,
 		avgRequestMs: Math.round(avgRequestMs),
 		avgDbMs: Math.round(avgDbMs),

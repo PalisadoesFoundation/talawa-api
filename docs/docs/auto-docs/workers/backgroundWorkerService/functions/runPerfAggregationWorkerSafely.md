@@ -6,7 +6,7 @@
 
 > **runPerfAggregationWorkerSafely**(`fastify`, `logger`): `Promise`\<`void`\>
 
-Defined in: [src/workers/backgroundWorkerService.ts:212](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/workers/backgroundWorkerService.ts#L212)
+Defined in: [src/workers/backgroundWorkerService.ts:233](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/workers/backgroundWorkerService.ts#L233)
 
 Executes the performance aggregation worker with robust error handling.
 

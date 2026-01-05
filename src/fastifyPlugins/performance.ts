@@ -1,4 +1,4 @@
-import type { FastifyInstance } from "fastify";
+import type { FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
 import fp from "fastify-plugin";
 import {
 	createPerformanceTracker,
@@ -19,6 +19,12 @@ declare module "fastify" {
 		 * Used to calculate total request duration.
 		 */
 		_t0?: number;
+
+		/**
+		 * Timer end function for GraphQL parsing operation.
+		 * Set in preParsing hook and called in preExecution hook to measure parse duration.
+		 */
+		__parseTimerEnd?: () => void;
 	}
 
 	interface FastifyInstance {
@@ -124,16 +130,139 @@ export default fp(
 			}
 		});
 
-		// Endpoint to retrieve recent performance snapshots
-		app.get("/metrics/perf", async () => {
-			const agg = app.perfAggregate;
-			const avg = agg.totalRequests > 0 ? agg.totalMs / agg.totalRequests : 0;
-			return {
-				totalRequests: agg.totalRequests,
-				avgMs: Math.round(avg),
-				recent: agg.lastSnapshots.slice(0, 20),
+		/**
+		 * Validates if an IP address matches a CIDR range or exact IP.
+		 * @param ip - IP address to check (e.g., "192.168.1.1")
+		 * @param cidr - CIDR range or exact IP (e.g., "192.168.1.0/24" or "127.0.0.1")
+		 * @returns true if IP matches the CIDR range or exact IP
+		 */
+		const isIpInRange = (ip: string, cidr: string): boolean => {
+			if (ip === cidr) return true; // Exact match
+
+			// Check if it's a CIDR notation
+			if (!cidr.includes("/")) return false;
+
+			const parts = cidr.split("/");
+			const network = parts[0];
+			const prefixLength = parts[1];
+			if (!network || !prefixLength) return false;
+
+			const prefix = Number.parseInt(prefixLength, 10);
+			if (Number.isNaN(prefix) || prefix < 0 || prefix > 32) return false;
+
+			// Convert IPs to numbers for comparison
+			const ipToNumber = (addr: string): number => {
+				const addrParts = addr.split(".").map(Number.parseInt);
+				if (addrParts.length !== 4 || addrParts.some(Number.isNaN)) return -1;
+				const [a, b, c, d] = addrParts;
+				if (
+					a === undefined ||
+					b === undefined ||
+					c === undefined ||
+					d === undefined
+				) {
+					return -1;
+				}
+				return (a << 24) | (b << 16) | (c << 8) | d;
 			};
-		});
+
+			const ipNum = ipToNumber(ip);
+			const networkNum = ipToNumber(network);
+			if (ipNum === -1 || networkNum === -1) return false;
+
+			const mask = (0xffffffff << (32 - prefix)) >>> 0;
+			return (ipNum & mask) === (networkNum & mask);
+		};
+
+		/**
+		 * PreHandler to authenticate /metrics/perf endpoint requests.
+		 * Validates either API key in Authorization header or client IP address.
+		 */
+		const metricsAuthPreHandler = async (
+			req: FastifyRequest,
+			reply: FastifyReply,
+		): Promise<void> => {
+			const apiKey = app.envConfig.METRICS_API_KEY;
+			const allowedIps = app.envConfig.METRICS_ALLOWED_IPS;
+
+			// If no authentication is configured, allow access (not recommended for production)
+			if (!apiKey && !allowedIps) {
+				app.log.warn(
+					"/metrics/perf endpoint is unprotected. Set METRICS_API_KEY or METRICS_ALLOWED_IPS for production.",
+				);
+				return;
+			}
+
+			const clientIp = req.ip;
+			if (!clientIp) {
+				reply.status(403).send({
+					error: "Forbidden",
+					message: "IP address not available",
+				});
+				return;
+			}
+
+			// Check if IP is in allowed list
+			if (allowedIps) {
+				const allowedIpList = allowedIps.split(",").map((ip) => ip.trim());
+				const isAllowed = allowedIpList.some((cidr) =>
+					isIpInRange(clientIp, cidr),
+				);
+				if (isAllowed) {
+					return; // IP is allowed, proceed
+				}
+			}
+
+			// Check API key in Authorization header
+			if (apiKey) {
+				const authHeader = req.headers.authorization;
+				if (!authHeader) {
+					reply.status(401).send({
+						error: "Unauthorized",
+						message: "Missing Authorization header",
+					});
+					return;
+				}
+
+				// Support "Bearer <key>" or just "<key>" format
+				const providedKey = authHeader.startsWith("Bearer ")
+					? authHeader.slice(7)
+					: authHeader;
+
+				if (providedKey !== apiKey) {
+					reply.status(403).send({
+						error: "Forbidden",
+						message: "Invalid API key",
+					});
+					return;
+				}
+
+				return; // API key is valid, proceed
+			}
+
+			// Neither IP nor API key matched
+			reply.status(403).send({
+				error: "Forbidden",
+				message: "Access denied",
+			});
+		};
+
+		// Endpoint to retrieve recent performance snapshots
+		app.get(
+			"/metrics/perf",
+			{
+				preHandler: metricsAuthPreHandler,
+			},
+			async () => {
+				const agg = app.perfAggregate;
+				const avg = agg.totalRequests > 0 ? agg.totalMs / agg.totalRequests : 0;
+				return {
+					totalRequests: agg.totalRequests,
+					avgMs: Math.round(avg),
+					recent: agg.lastSnapshots.slice(0, 20),
+				};
+			},
+		);
 
 		app.log.info({ msg: "Performance plugin registered" });
 	},
