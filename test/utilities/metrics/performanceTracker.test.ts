@@ -644,4 +644,67 @@ describe("Performance Tracker", () => {
 			Array.prototype.push = originalPush;
 		}
 	});
+
+	it("should handle edge case when all slow entries are invalid (minIdx === -1 || minMs === Infinity)", async () => {
+		// This test covers the defensive check on lines 179-181:
+		// if (minIdx === -1 || minMs === Infinity) { return; }
+		// This happens when slow.length >= MAX_SLOW but all entries are invalid
+		// (null, undefined, or have invalid ms values), so the loop doesn't find any valid entry.
+
+		const tracker = createPerformanceTracker({ slowMs: 1 });
+
+		// Mock Array.prototype.push to corrupt all entries after filling to MAX_SLOW
+		const originalPush = Array.prototype.push;
+		let callCount = 0;
+
+		Array.prototype.push = function <T>(...items: T[]): number {
+			const result = originalPush.apply(this, items);
+			callCount++;
+			// After the 50th push (when array reaches MAX_SLOW), corrupt all entries
+			if (callCount === 50) {
+				// Make all entries invalid by setting ms to null
+				// This ensures typeof cur.ms !== "number" will be true for all entries
+				for (let i = 0; i < this.length; i++) {
+					if (this[i] && typeof this[i] === "object") {
+						(this[i] as { ms?: number | null }).ms = null;
+					}
+				}
+			}
+			return result;
+		};
+
+		try {
+			// Fill tracker to MAX_SLOW (50 operations)
+			for (let i = 0; i < 50; i++) {
+				await tracker.time(`slow-${i}`, async () => {
+					await new Promise((resolve) => setTimeout(resolve, 10 + i));
+				});
+			}
+
+			// Verify array is at capacity and ALL entries are corrupted
+			const snapshot = tracker.snapshot();
+			expect(snapshot.slow.length).toBe(50);
+			// Verify ALL entries have ms = null (corrupted) - this is critical for the test
+			// All entries must be invalid so the loop finds no valid entry
+			const allEntriesInvalid = snapshot.slow.every(
+				(entry) => entry && entry.ms === null,
+			);
+			expect(allEntriesInvalid).toBe(true);
+
+			// Add one more slow operation - this should trigger the defensive check
+			// because all entries are invalid (ms = null), so the loop skips them all,
+			// leaving minIdx = -1 and minMs = Infinity, which triggers the return on line 180
+			await tracker.time("very-slow", async () => {
+				await new Promise((resolve) => setTimeout(resolve, 2000));
+			});
+
+			// The defensive check should have been triggered (minIdx === -1 || minMs === Infinity)
+			// Verify the tracker still works correctly
+			const snapshotAfter = tracker.snapshot();
+			expect(snapshotAfter.slow.length).toBe(50);
+		} finally {
+			// Restore original push
+			Array.prototype.push = originalPush;
+		}
+	});
 });
