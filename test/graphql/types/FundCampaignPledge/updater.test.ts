@@ -1,6 +1,6 @@
 import { createMockGraphQLContext } from "test/_Mocks_/mockContextCreator/mockContextCreator";
 import {
-	afterEach,   
+	afterEach,
 	beforeEach,
 	describe,
 	expect,
