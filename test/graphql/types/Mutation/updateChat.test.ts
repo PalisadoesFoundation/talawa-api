@@ -206,6 +206,7 @@ suite("updateChat mutation", () => {
 	});
 
 	test("successfully updates chat when user is chat administrator", async () => {
+		const creator = await createRegularUserUsingAdmin();
 		const chatAdmin = await createRegularUserUsingAdmin();
 		const orgId = await createTestOrganization();
 		const chatId = faker.string.uuid();
@@ -214,9 +215,17 @@ suite("updateChat mutation", () => {
 			id: chatId,
 			name: "Old",
 			organizationId: orgId,
-			creatorId: sharedUser.userId,
+			creatorId: creator.userId,
 		});
 
+		// 👇 REQUIRED: org membership (can be regular)
+		await server.drizzleClient.insert(organizationMembershipsTable).values({
+			memberId: chatAdmin.userId,
+			organizationId: orgId,
+			role: "regular",
+		});
+
+		// 👇 chat admin role
 		await server.drizzleClient.insert(chatMembershipsTable).values({
 			chatId,
 			memberId: chatAdmin.userId,
@@ -341,6 +350,23 @@ suite("updateChat mutation", () => {
 	});
 
 	test("returns error when transaction throws", async () => {
+		const user = await createRegularUserUsingAdmin();
+		const orgId = await createTestOrganization();
+		const chatId = faker.string.uuid();
+
+		await server.drizzleClient.insert(chatsTable).values({
+			id: chatId,
+			name: "Chat",
+			organizationId: orgId,
+			creatorId: user.userId,
+		});
+
+		await server.drizzleClient.insert(organizationMembershipsTable).values({
+			memberId: user.userId,
+			organizationId: orgId,
+			role: "administrator",
+		});
+
 		vi.spyOn(server.drizzleClient, "transaction").mockImplementationOnce(
 			async () => {
 				throw new Error("boom");
@@ -348,10 +374,10 @@ suite("updateChat mutation", () => {
 		);
 
 		const result = await mercuriusClient.mutate(Mutation_updateChat, {
-			headers: { authorization: `bearer ${sharedUser.authToken}` },
+			headers: { authorization: `bearer ${user.authToken}` },
 			variables: {
 				input: {
-					id: faker.string.uuid(),
+					id: chatId,
 					name: "Fail",
 				},
 			},
