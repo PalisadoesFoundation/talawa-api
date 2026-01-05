@@ -338,7 +338,6 @@ suite("updateChat mutation", () => {
 		const orgId = await createTestOrganization();
 		const chatId = faker.string.uuid();
 
-		// elevate ONLY this user
 		await server.drizzleClient
 			.update(usersTable)
 			.set({ role: "administrator" })
