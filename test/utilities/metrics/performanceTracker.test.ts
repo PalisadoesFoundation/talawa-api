@@ -446,24 +446,32 @@ describe("Performance Tracker", () => {
 	it("should handle slow operations array edge case when replacing minimum", async () => {
 		const tracker = createPerformanceTracker({ slowMs: 1 });
 
-		// Fill up the slow array to MAX_SLOW (50)
+		// Fill up the slow array to MAX_SLOW (50) with varying durations
+		// Use increasing delays to create a predictable minimum
 		for (let i = 0; i < 50; i++) {
 			await tracker.time(`slow-${i}`, async () => {
+				// Use increasing delays: 10ms, 11ms, 12ms, ... 59ms
 				await new Promise((resolve) => setTimeout(resolve, 10 + i));
 			});
 		}
 
-		// Add one more that's slower than the minimum
-		await tracker.time("very-slow", async () => {
+		// Verify we have exactly 50 slow operations before adding the replacement
+		const snapshotBefore = tracker.snapshot();
+		expect(snapshotBefore.slow.length).toBe(50);
+
+		// Add one more that's slower than the minimum (1000ms >> 10ms minimum)
+		await tracker.time("very-slow-replacement", async () => {
 			await new Promise((resolve) => setTimeout(resolve, 1000));
 		});
 
-		const snapshot = tracker.snapshot();
+		const snapshotAfter = tracker.snapshot();
 
 		// Should still have exactly 50 slow operations
-		expect(snapshot.slow.length).toBe(50);
-		// The very-slow operation should be in the list
-		const verySlowOp = snapshot.slow.find((op) => op.op === "very-slow");
+		expect(snapshotAfter.slow.length).toBe(50);
+		// The very-slow-replacement operation should be in the list
+		const verySlowOp = snapshotAfter.slow.find(
+			(op) => op.op === "very-slow-replacement",
+		);
 		expect(verySlowOp).toBeDefined();
 		expect(verySlowOp?.ms).toBeGreaterThanOrEqual(1000);
 	});
@@ -471,12 +479,13 @@ describe("Performance Tracker", () => {
 	it("should not add slow operation when it's not slower than minimum", async () => {
 		const tracker = createPerformanceTracker({ slowMs: 1 });
 
-		// Fill up the slow array to MAX_SLOW (50) with operations of increasing duration
-		// Start with small durations and increase
+		// Fill up the slow array to MAX_SLOW (50) with operations of large duration
+		// Use large delays (100ms+) to ensure the minimum is well above any small test delay
 		for (let i = 0; i < 50; i++) {
 			await tracker.time(`slow-${i}`, async () => {
-				// Use increasing delays: 10ms, 11ms, 12ms, ... 59ms
-				await new Promise((resolve) => setTimeout(resolve, 10 + i));
+				// Use increasing delays: 100ms, 101ms, 102ms, ... 149ms
+				// This ensures minMs will be at least 100ms
+				await new Promise((resolve) => setTimeout(resolve, 100 + i));
 			});
 		}
 
@@ -487,13 +496,15 @@ describe("Performance Tracker", () => {
 		);
 		const minMs = minSlowOp.ms;
 
-		// Add an operation that's slow (>= slowMs) but NOT slower than the current minimum
+		// Verify minMs is large enough (should be at least 100ms)
+		expect(minMs).toBeGreaterThanOrEqual(100);
+
+		// Add an operation that's slow (>= slowMs = 1) but NOT slower than the current minimum
+		// Use a small delay (10ms) which is guaranteed to be < minMs (>= 100ms)
 		// This tests the case where roundedMs <= minMs (line 174 condition is false)
 		await tracker.time("not-slower-than-min", async () => {
-			// Use a delay that results in a roundedMs <= minMs
-			await new Promise((resolve) =>
-				setTimeout(resolve, Math.max(1, minMs - 1)),
-			);
+			// Use a small delay that's guaranteed to be less than minMs
+			await new Promise((resolve) => setTimeout(resolve, 10));
 		});
 
 		const snapshotAfter = tracker.snapshot();
@@ -505,37 +516,5 @@ describe("Performance Tracker", () => {
 			(op) => op.op === "not-slower-than-min",
 		);
 		expect(notSlowerOp).toBeUndefined();
-	});
-
-	it("should handle edge case when slow array is at capacity", async () => {
-		const tracker = createPerformanceTracker({ slowMs: 1 });
-
-		// Fill up the slow array to MAX_SLOW (50) with varying durations
-		for (let i = 0; i < 50; i++) {
-			await tracker.time(`slow-${i}`, async () => {
-				// Use varying delays to ensure we have a mix of slow operations
-				await new Promise((resolve) => setTimeout(resolve, 5 + (i % 10) * 2));
-			});
-		}
-
-		// Verify we have exactly 50 slow operations
-		const snapshotBefore = tracker.snapshot();
-		expect(snapshotBefore.slow.length).toBe(50);
-
-		// Add a very slow operation that should replace the minimum
-		await tracker.time("very-slow-replacement", async () => {
-			await new Promise((resolve) => setTimeout(resolve, 1000));
-		});
-
-		const snapshotAfter = tracker.snapshot();
-
-		// Should still have exactly 50 slow operations
-		expect(snapshotAfter.slow.length).toBe(50);
-		// The very-slow-replacement should be in the list
-		const verySlowOp = snapshotAfter.slow.find(
-			(op) => op.op === "very-slow-replacement",
-		);
-		expect(verySlowOp).toBeDefined();
-		expect(verySlowOp?.ms).toBeGreaterThanOrEqual(1000);
 	});
 });
