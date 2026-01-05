@@ -775,13 +775,14 @@ suite("Mutation field createVenueBooking", () => {
 				const venueId = await createTestVenue(orgId);
 				const eventId = await createTestEvent(orgId);
 
-				// Mock the drizzleClient.insert().returning() to return an empty array
-				const mockReturning = vi.fn().mockResolvedValue([]);
-				vi.spyOn(server.drizzleClient, "insert").mockReturnValueOnce({
-					values: vi.fn().mockReturnValue({
-						returning: mockReturning,
+				// Mock the drizzleClient.insert to return an empty array for the venue booking insert
+				const insertSpy = vi.spyOn(server.drizzleClient, "insert");
+
+				insertSpy.mockImplementation(((_table: unknown) => ({
+					values: () => ({
+						returning: vi.fn().mockResolvedValue([]), // Return empty array
 					}),
-				} as never);
+				})) as never);
 
 				try {
 					const createVenueBookingResult = await mercuriusClient.mutate(
