@@ -2,6 +2,8 @@ import type { NodePgDatabase } from "drizzle-orm/node-postgres";
 import type { FastifyBaseLogger } from "fastify";
 import cron from "node-cron";
 import type * as schema from "~/src/drizzle/schema";
+import type { CacheService } from "~/src/services/caching";
+import { entityKey, getTTL } from "~/src/services/caching";
 import { cleanupOldInstances } from "./eventCleanupWorker";
 import {
 	createDefaultWorkerConfig,
@@ -17,10 +19,15 @@ let materializationConfig: WorkerConfig = createDefaultWorkerConfig();
 
 /**
  * Initializes and starts all background workers, scheduling them to run at their configured intervals.
+ *
+ * @param drizzleClient - The database client for queries.
+ * @param logger - The logger instance.
+ * @param cache - Optional cache service for cache warming on startup.
  */
 export async function startBackgroundWorkers(
 	drizzleClient: NodePgDatabase<typeof schema>,
 	logger: FastifyBaseLogger,
+	cache?: CacheService,
 ): Promise<void> {
 	if (isRunning) {
 		logger.warn("Background workers are already running");
@@ -63,6 +70,11 @@ export async function startBackgroundWorkers(
 			},
 			"Background worker service started successfully",
 		);
+
+		// Warm cache on startup if cache service is available
+		if (cache) {
+			await warmCacheSafely(drizzleClient, cache, logger);
+		}
 
 		// Run materialization worker once immediately on startup
 		await runMaterializationWorkerSafely(drizzleClient, logger);
@@ -178,6 +190,55 @@ export async function runCleanupWorkerSafely(
 			},
 			"Cleanup worker failed",
 		);
+	}
+}
+
+/**
+ * Warms the cache with frequently accessed entities on startup.
+ * Pre-fetches top organizations to reduce cache misses for common queries.
+ */
+export async function warmCacheSafely(
+	drizzleClient: NodePgDatabase<typeof schema>,
+	cache: CacheService,
+	logger: FastifyBaseLogger,
+): Promise<void> {
+	const startTime = Date.now();
+	logger.info("Starting cache warming");
+
+	try {
+		// Pre-warm top organizations (most frequently accessed entities)
+		const organizations = await drizzleClient.query.organizationsTable.findMany(
+			{
+				limit: 50,
+				orderBy: (fields, ops) => ops.desc(fields.createdAt),
+			},
+		);
+
+		let warmedCount = 0;
+		for (const org of organizations) {
+			const key = entityKey("organization", org.id);
+			await cache.set(key, org, getTTL("organization"));
+			warmedCount++;
+		}
+
+		const duration = Date.now() - startTime;
+		logger.info(
+			{
+				duration: `${duration}ms`,
+				organizationsWarmed: warmedCount,
+			},
+			"Cache warming completed successfully",
+		);
+	} catch (error) {
+		const duration = Date.now() - startTime;
+		logger.warn(
+			{
+				duration: `${duration}ms`,
+				error: error instanceof Error ? error.message : "Unknown error",
+			},
+			"Cache warming failed (non-fatal)",
+		);
+		// Cache warming failures are non-fatal - continue startup
 	}
 }
 

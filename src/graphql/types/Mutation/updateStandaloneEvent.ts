@@ -7,6 +7,10 @@ import {
 	mutationUpdateEventInputSchema,
 } from "~/src/graphql/inputs/MutationUpdateEventInput";
 import { Event } from "~/src/graphql/types/Event/Event";
+import {
+	invalidateEntity,
+	invalidateEntityLists,
+} from "~/src/services/caching";
 import envConfig from "~/src/utilities/graphqLimits";
 import { isNotNullish } from "~/src/utilities/isNotNullish";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
@@ -244,6 +248,10 @@ builder.mutationField("updateStandaloneEvent", (t) =>
 					},
 				});
 			}
+
+			// Invalidate event caches
+			await invalidateEntity(ctx.cache, "event", parsedArgs.input.id);
+			await invalidateEntityLists(ctx.cache, "event");
 
 			return Object.assign(updatedEvent, {
 				attachments: existingEvent.attachmentsWhereEvent,

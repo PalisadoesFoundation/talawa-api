@@ -9,6 +9,7 @@ import {
 	mutationCreateOrganizationInputSchema,
 } from "~/src/graphql/inputs/MutationCreateOrganizationInput";
 import { Organization } from "~/src/graphql/types/Organization/Organization";
+import { invalidateEntityLists } from "~/src/services/caching";
 import envConfig from "~/src/utilities/graphqLimits";
 import { isNotNullish } from "~/src/utilities/isNotNullish";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
@@ -183,6 +184,9 @@ builder.mutationField("createOrganization", (t) =>
 						},
 					);
 				}
+
+				// Invalidate organization list caches
+				await invalidateEntityLists(ctx.cache, "organization");
 
 				return createdOrganization;
 			});

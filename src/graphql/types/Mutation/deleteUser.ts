@@ -7,6 +7,10 @@ import {
 	mutationDeleteUserInputSchema,
 } from "~/src/graphql/inputs/MutationDeleteUserInput";
 import { User } from "~/src/graphql/types/User/User";
+import {
+	invalidateEntity,
+	invalidateEntityLists,
+} from "~/src/services/caching";
 import envConfig from "~/src/utilities/graphqLimits";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 
@@ -139,6 +143,10 @@ builder.mutationField("deleteUser", (t) =>
 						ctx.minio.bucketName,
 						existingUser.avatarName,
 					);
+
+				// Invalidate user caches
+				await invalidateEntity(ctx.cache, "user", parsedArgs.input.id);
+				await invalidateEntityLists(ctx.cache, "user");
 
 				return deletedUser;
 			});

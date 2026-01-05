@@ -9,6 +9,7 @@ import {
 	runMaterializationWorkerSafely,
 	startBackgroundWorkers,
 	stopBackgroundWorkers,
+	warmCacheSafely,
 } from "~/src/workers/backgroundWorkerService";
 
 vi.mock("node-cron", () => {
@@ -392,6 +393,123 @@ describe("backgroundServiceWorker", () => {
 			expect(mockLogger.error).toHaveBeenCalledWith(
 				startupError,
 				"Failed to start background worker service",
+			);
+		});
+	});
+
+	describe("warmCacheSafely", () => {
+		it("should warm cache with organizations successfully", async () => {
+			const mockOrganizations = [
+				{ id: "org1", name: "Org 1", createdAt: new Date() },
+				{ id: "org2", name: "Org 2", createdAt: new Date() },
+			];
+
+			const mockDrizzleWithQuery = {
+				query: {
+					organizationsTable: {
+						findMany: vi.fn().mockResolvedValue(mockOrganizations),
+					},
+				},
+			} as unknown as NodePgDatabase<typeof schema>;
+
+			const mockCache = {
+				set: vi.fn().mockResolvedValue(undefined),
+			};
+
+			await warmCacheSafely(
+				mockDrizzleWithQuery,
+				mockCache as never,
+				mockLogger,
+			);
+
+			expect(mockLogger.info).toHaveBeenCalledWith("Starting cache warming");
+			expect(mockCache.set).toHaveBeenCalledTimes(2);
+			expect(mockLogger.info).toHaveBeenCalledWith(
+				expect.objectContaining({
+					duration: expect.stringMatching(/^\d+ms$/),
+					organizationsWarmed: 2,
+				}),
+				"Cache warming completed successfully",
+			);
+		});
+
+		it("should handle cache warming failure gracefully (non-fatal)", async () => {
+			const mockDrizzleWithQuery = {
+				query: {
+					organizationsTable: {
+						findMany: vi.fn().mockRejectedValue(new Error("Database error")),
+					},
+				},
+			} as unknown as NodePgDatabase<typeof schema>;
+
+			const mockCache = {
+				set: vi.fn(),
+			};
+
+			// Should not throw - cache warming failures are non-fatal
+			await expect(
+				warmCacheSafely(mockDrizzleWithQuery, mockCache as never, mockLogger),
+			).resolves.not.toThrow();
+
+			expect(mockLogger.warn).toHaveBeenCalledWith(
+				expect.objectContaining({
+					duration: expect.stringMatching(/^\d+ms$/),
+					error: "Database error",
+				}),
+				"Cache warming failed (non-fatal)",
+			);
+		});
+
+		it("should handle non-Error thrown during cache warming", async () => {
+			const mockDrizzleWithQuery = {
+				query: {
+					organizationsTable: {
+						findMany: vi.fn().mockRejectedValue("String error"),
+					},
+				},
+			} as unknown as NodePgDatabase<typeof schema>;
+
+			const mockCache = {
+				set: vi.fn(),
+			};
+
+			await expect(
+				warmCacheSafely(mockDrizzleWithQuery, mockCache as never, mockLogger),
+			).resolves.not.toThrow();
+
+			expect(mockLogger.warn).toHaveBeenCalledWith(
+				expect.objectContaining({
+					error: "Unknown error",
+				}),
+				"Cache warming failed (non-fatal)",
+			);
+		});
+
+		it("should warm zero organizations when database is empty", async () => {
+			const mockDrizzleWithQuery = {
+				query: {
+					organizationsTable: {
+						findMany: vi.fn().mockResolvedValue([]),
+					},
+				},
+			} as unknown as NodePgDatabase<typeof schema>;
+
+			const mockCache = {
+				set: vi.fn(),
+			};
+
+			await warmCacheSafely(
+				mockDrizzleWithQuery,
+				mockCache as never,
+				mockLogger,
+			);
+
+			expect(mockCache.set).not.toHaveBeenCalled();
+			expect(mockLogger.info).toHaveBeenCalledWith(
+				expect.objectContaining({
+					organizationsWarmed: 0,
+				}),
+				"Cache warming completed successfully",
 			);
 		});
 	});

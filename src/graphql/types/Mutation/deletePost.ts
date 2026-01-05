@@ -7,6 +7,10 @@ import {
 	mutationDeletePostInputSchema,
 } from "~/src/graphql/inputs/MutationDeletePostInput";
 import { Post } from "~/src/graphql/types/Post/Post";
+import {
+	invalidateEntity,
+	invalidateEntityLists,
+} from "~/src/services/caching";
 import envConfig from "~/src/utilities/graphqLimits";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 
@@ -151,6 +155,10 @@ builder.mutationField("deletePost", (t) =>
 						.map((attachment) => attachment.objectName)
 						.filter((name): name is string => name !== null),
 				);
+
+				// Invalidate post caches
+				await invalidateEntity(ctx.cache, "post", parsedArgs.input.id);
+				await invalidateEntityLists(ctx.cache, "post");
 
 				return Object.assign(deletedPost, {
 					attachments: existingPost.attachmentsWherePost,

@@ -10,6 +10,7 @@ import {
 } from "~/src/graphql/inputs/MutationCreatePostInput";
 import { notificationEventBus } from "~/src/graphql/types/Notification/EventBus/eventBus";
 import { Post } from "~/src/graphql/types/Post/Post";
+import { invalidateEntityLists } from "~/src/services/caching";
 import { getKeyPathsWithNonUndefinedValues } from "~/src/utilities/getKeyPathsWithNonUndefinedValues";
 import envConfig from "~/src/utilities/graphqLimits";
 import { isNotNullish } from "~/src/utilities/isNotNullish";
@@ -245,6 +246,9 @@ builder.mutationField("createPost", (t) =>
 					},
 					ctx,
 				);
+
+				// Invalidate post list caches
+				await invalidateEntityLists(ctx.cache, "post");
 
 				return finalPost;
 			});

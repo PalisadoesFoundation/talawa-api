@@ -7,6 +7,10 @@ import {
 	mutationDeleteOrganizationInputSchema,
 } from "~/src/graphql/inputs/MutationDeleteOrganizationInput";
 import { Organization } from "~/src/graphql/types/Organization/Organization";
+import {
+	invalidateEntity,
+	invalidateEntityLists,
+} from "~/src/services/caching";
 import envConfig from "~/src/utilities/graphqLimits";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 
@@ -195,6 +199,10 @@ builder.mutationField("deleteOrganization", (t) =>
 				}
 
 				await ctx.minio.client.removeObjects(ctx.minio.bucketName, objectNames);
+
+				// Invalidate organization caches
+				await invalidateEntity(ctx.cache, "organization", parsedArgs.input.id);
+				await invalidateEntityLists(ctx.cache, "organization");
 
 				return deletedOrganization;
 			});

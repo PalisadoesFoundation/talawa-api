@@ -10,6 +10,10 @@ import {
 	mutationUpdatePostInputSchema,
 } from "~/src/graphql/inputs/MutationUpdatePostInput";
 import { Post } from "~/src/graphql/types/Post/Post";
+import {
+	invalidateEntity,
+	invalidateEntityLists,
+} from "~/src/services/caching";
 import { getKeyPathsWithNonUndefinedValues } from "~/src/utilities/getKeyPathsWithNonUndefinedValues";
 import envConfig from "~/src/utilities/graphqLimits";
 import { isNotNullish } from "~/src/utilities/isNotNullish";
@@ -304,6 +308,10 @@ builder.mutationField("updatePost", (t) =>
 						createdAttachment = attachmentResult;
 					}
 
+					// Invalidate post caches
+					await invalidateEntity(ctx.cache, "post", parsedArgs.input.id);
+					await invalidateEntityLists(ctx.cache, "post");
+
 					return Object.assign(updatedPost, {
 						attachments: createdAttachment ? [createdAttachment] : [],
 					});
@@ -333,12 +341,20 @@ builder.mutationField("updatePost", (t) =>
 						}
 					}
 
+					// Invalidate post caches
+					await invalidateEntity(ctx.cache, "post", parsedArgs.input.id);
+					await invalidateEntityLists(ctx.cache, "post");
+
 					return Object.assign(updatedPost, {
 						attachments: [],
 					});
 				}
 
 				// If attachments aren't part of the update, keep the existing ones
+				// Invalidate post caches
+				await invalidateEntity(ctx.cache, "post", parsedArgs.input.id);
+				await invalidateEntityLists(ctx.cache, "post");
+
 				return Object.assign(updatedPost, {
 					attachments: existingPost.attachmentsWherePost,
 				});

@@ -8,6 +8,10 @@ import {
 	mutationDeleteStandaloneEventInputSchema,
 } from "~/src/graphql/inputs/MutationDeleteStandaloneEventInput";
 import { Event } from "~/src/graphql/types/Event/Event";
+import {
+	invalidateEntity,
+	invalidateEntityLists,
+} from "~/src/services/caching";
 import envConfig from "~/src/utilities/graphqLimits";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 
@@ -173,6 +177,10 @@ builder.mutationField("deleteStandaloneEvent", (t) =>
 						(attachment) => attachment.name,
 					),
 				);
+
+				// Invalidate event caches
+				await invalidateEntity(ctx.cache, "event", parsedArgs.input.id);
+				await invalidateEntityLists(ctx.cache, "event");
 
 				return Object.assign(deletedEvent, {
 					attachments: existingEvent.attachmentsWhereEvent,
