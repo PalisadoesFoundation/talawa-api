@@ -18,6 +18,45 @@ Installation is not difficult, but there are many steps. This is a brief explana
 
 These steps are explained in more detail in the sections that follow.
 
+## Quick Start: One-Click Installation
+
+For a simplified setup experience, use our automated installation scripts that handle all prerequisites automatically.
+
+### Linux / macOS / WSL
+
+```bash
+# Clone the repository
+git clone https://github.com/PalisadoesFoundation/talawa-api.git
+cd talawa-api
+
+# Run the installation script
+./scripts/install/install.sh
+```
+
+### Windows (PowerShell)
+
+```powershell
+# Clone the repository
+git clone https://github.com/PalisadoesFoundation/talawa-api.git
+cd talawa-api
+
+# Run the installation script (as Administrator)
+.\scripts\install\install.ps1
+```
+
+### Installation Modes
+
+| Mode | Command (Linux/macOS) | Command (Windows) | Use Case |
+|------|----------------------|-------------------|----------|
+| Docker (default) | `./scripts/install/install.sh --docker` | `.\scripts\install\install.ps1 -Docker` | Production-like, containerized |
+| Local | `./scripts/install/install.sh --local` | `.\scripts\install\install.ps1 -Local` | Development with hot reloading |
+
+After the script completes, run `pnpm run setup` to configure the application.
+
+:::tip
+The one-click scripts automatically install Git, Node.js, pnpm, and Docker if not present. For manual installation steps, continue reading below.
+:::
+
 ## Prerequisites
 
 In this section we'll explain how to set up all the prerequisite software packages to get you up and running.
@@ -138,6 +177,77 @@ pnpm install -g typescript
 This command installs TypeScript globally on your system so that it can be accessed from any project.
 
 Proceed to the next section.
+
+### Install Python (For Developers)
+
+:::note
+Python is required for local pre-commit hooks that validate code quality. If you're contributing code, you'll need to set up Python to ensure your commits pass all validation checks locally before pushing to GitHub.
+:::
+
+The pre-commit hooks use Python scripts to validate code quality and enforce best practices. Follow these steps to set up Python:
+
+#### 1. Install Python 3.9 or Higher
+
+- **Windows**: Download from [python.org](https://www.python.org/downloads/) or use `winget install Python.Python.3.11`
+- **MacOS**: Use Homebrew: `brew install python@3.11` or download from [python.org](https://www.python.org/downloads/)
+- **Linux**: Use your package manager:
+  - Ubuntu/Debian: `sudo apt install python3 python3-pip python3-venv`
+  - Fedora: `sudo dnf install python3 python3-pip python3-venv`
+
+:::tip
+On some Linux distributions, the `venv` module is distributed separately. If you get an error like `No module named 'venv'`, you need to install the `python3-venv` package as shown above.
+:::
+
+#### 2. Verify Python Installation
+
+```bash
+python3 --version
+# Should show Python 3.9 or higher
+```
+
+#### 3. Create and Activate Virtual Environment
+
+```bash
+# Create virtual environment in the repository
+python3 -m venv .venv
+
+# Activate the virtual environment
+# On Linux/MacOS:
+source .venv/bin/activate
+
+# On Windows:
+# - Command Prompt:
+.venv\Scripts\activate.bat
+
+# - PowerShell:
+.venv\Scripts\Activate.ps1
+
+# - Git Bash:
+source .venv/Scripts/activate
+```
+
+#### 4. Install Required Python Packages
+
+```bash
+pip3 install -r .github/workflows/requirements.txt
+```
+
+This installs the following packages needed for code quality checks:
+- `black` - Python code formatter
+- `pydocstyle` - Docstring style checker
+- `flake8` and `flake8-docstrings` - Python linter
+- `docstring_parser` - Docstring parsing library
+
+#### 5. Verify Installation
+
+```bash
+pip3 list | grep -E "(black|pydocstyle|flake8|docstring)"
+```
+
+You should see all the packages listed.
+
+Proceed to the next section.
+
 
 ### Install The Required Packages
 

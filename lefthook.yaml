@@ -42,6 +42,45 @@ pre-commit:
       glob: "test/**/*.{test,spec}.{ts,tsx}"
       run: pnpm run check_mock_isolation {staged_files}
 
+    10_check_disable_statements:
+      glob: "**/*.{ts,tsx}"
+      run: |
+        set -e
+        if [ -f .venv/bin/python3 ]; then
+          .venv/bin/python3 .github/workflows/scripts/disable_statements_check.py --repo=api --files {staged_files}
+        elif [ -f .venv/Scripts/python.exe ]; then
+          .venv/Scripts/python.exe .github/workflows/scripts/disable_statements_check.py --repo=api --files {staged_files}
+        else
+          echo "Error: Python virtual environment not found."
+          echo "Please ensure Python 3.9+ is installed. If 'python3 -m venv' fails, you may need to install:"
+          echo "  - Ubuntu/Debian: sudo apt install python3-venv"
+          echo "  - Fedora/RHEL: sudo dnf install python3-venv"
+          echo "  - macOS/Windows: venv is included with Python"
+          echo ""
+          echo "Then run: python3 -m venv .venv && source .venv/bin/activate && pip install -r .github/workflows/requirements.txt"
+          exit 1
+        fi
+
+    10.6_check_python_docstrings:
+      glob: ".github/**/*.py"
+      run: |
+        set -e
+        if [ -f .venv/bin/python3 ]; then
+          .venv/bin/python3 .github/workflows/scripts/check_docstrings.py --directories .github
+        elif [ -f .venv/Scripts/python.exe ]; then
+          .venv/Scripts/python.exe .github/workflows/scripts/check_docstrings.py --directories .github
+        else
+          echo "Error: Python virtual environment not found."
+          echo "Please ensure Python 3.9+ is installed. If 'python3 -m venv' fails, you may need to install:"
+          echo "  - Ubuntu/Debian: sudo apt install python3-venv"
+          echo "  - Fedora/RHEL: sudo dnf install python3-venv"
+          echo "  - macOS/Windows: venv is included with Python"
+          echo ""
+          echo "Then run: python3 -m venv .venv && source .venv/bin/activate && pip install -r .github/workflows/requirements.txt"
+          exit 1
+        fi
+
+
     11_generate_docs:
       run: |
         set -e

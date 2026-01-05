@@ -9,12 +9,12 @@ import {
 	type EventWithAttachments,
 	filterInviteOnlyEvents,
 } from "~/src/graphql/types/Query/eventQueries";
+import envConfig from "~/src/utilities/graphqLimits";
 import {
 	defaultGraphQLConnectionArgumentsSchema,
 	transformDefaultGraphQLConnectionArguments,
 	transformToDefaultGraphQLConnection,
-} from "~/src/utilities/defaultGraphQLConnection";
-import envConfig from "~/src/utilities/graphqLimits";
+} from "~/src/utilities/graphqlConnection";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import { Venue } from "./Venue";
 
@@ -299,13 +299,10 @@ Venue.implement({
 						.slice(0, limit + 1);
 
 					return transformToDefaultGraphQLConnection({
-						createCursor: (booking) =>
-							Buffer.from(
-								JSON.stringify({
-									createdAt: booking.createdAt.toISOString(),
-									eventId: booking.eventId,
-								}),
-							).toString("base64url"),
+						createCursor: (booking) => ({
+							createdAt: booking.createdAt,
+							eventId: booking.eventId,
+						}),
 						createNode: ({ event: { attachmentsWhereEvent, ...event } }) =>
 							Object.assign(event, {
 								attachments: attachmentsWhereEvent || [],

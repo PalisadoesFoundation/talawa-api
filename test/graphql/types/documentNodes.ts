@@ -1982,6 +1982,14 @@ export const Mutation_createComment = gql(`
 	}
 `);
 
+export const Mutation_deleteComment = gql(`
+	mutation Mutation_deleteComment($input: MutationDeleteCommentInput!) {
+		deleteComment(input: $input) {
+			id
+		}
+	}
+`);
+
 export const Mutation_createCommentVote = gql(`
 	mutation Mutation_createCommentVote($input: MutationCreateCommentVoteInput!) {
 		createCommentVote(input: $input) {
@@ -1997,6 +2005,18 @@ export const Mutation_createCommentVote = gql(`
 export const Mutation_deleteCommentVote = gql(`
 	mutation Mutation_deleteCommentVote($input: MutationDeleteCommentVoteInput!) {
 		deleteCommentVote(input: $input) {
+			id
+			body
+			creator {
+				id
+			}
+		}
+	}
+`);
+
+export const Mutation_updateCommentVote = gql(`
+	mutation Mutation_updateCommentVote($input: MutationUpdateCommentVoteInput!) {
+		updateCommentVote(input: $input) {
 			id
 			body
 			creator {
@@ -2603,6 +2623,26 @@ export const Query_community = gql(`
 		community {
 			id
 			name
+		}
+	}
+`);
+
+export const Mutation_updateCommunity = gql(`
+	mutation Mutation_updateCommunity($input: MutationUpdateCommunityInput!) {
+		updateCommunity(input: $input) {
+			id
+			name
+			facebookURL
+			githubURL
+			instagramURL
+			linkedinURL
+			logoMimeType
+			redditURL
+			slackURL
+			websiteURL
+			xURL
+			youtubeURL
+			inactivityTimeoutDuration
 		}
 	}
 `);
