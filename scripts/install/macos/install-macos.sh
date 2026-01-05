@@ -165,7 +165,7 @@ step $CURRENT_STEP $TOTAL_STEPS "Reading configuration from package.json..."
 NODE_VERSION=$(jq -r '.engines.node // "lts"' package.json)
 # Clean version string (handle >=, ^, etc.)
 if [[ "$NODE_VERSION" =~ ^(\^|>=|~) ]]; then
-    # Extract full semantic version (e.g., ">=18.0.0" -> "18.0.0")
+    # Extract version number after prefix (fnm handles both full semver and major-only)
     CLEAN_NODE_VERSION=$(echo "$NODE_VERSION" | grep -oE '[0-9]+\.[0-9]+\.[0-9]+' | head -1)
     # Fallback to major version only if full semver not found
     if [ -z "$CLEAN_NODE_VERSION" ]; then

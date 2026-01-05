@@ -53,6 +53,16 @@ describe("packageCheck", () => {
 	});
 
 	describe("isInstalled", () => {
+		it("returns false for commands with invalid characters (injection prevention)", () => {
+			vi.mocked(detectOS).mockReturnValue("linux");
+			// These should return false without calling execSync
+			expect(isInstalled("git; rm -rf /")).toBe(false);
+			expect(isInstalled("git|cat")).toBe(false);
+			expect(isInstalled("$(whoami)")).toBe(false);
+			expect(isInstalled("git && echo pwned")).toBe(false);
+			expect(childProcess.execSync).not.toHaveBeenCalled();
+		});
+
 		it("returns true when command exists (Linux/macOS)", () => {
 			vi.mocked(detectOS).mockReturnValue("linux");
 			vi.mocked(childProcess.execSync).mockReturnValue("/usr/bin/git");
@@ -93,6 +103,15 @@ describe("packageCheck", () => {
 	});
 
 	describe("getVersion", () => {
+		it("returns null for commands with invalid characters (injection prevention)", () => {
+			// Should return null without attempting to execute
+			expect(getVersion("git; rm -rf /")).toBe(null);
+			expect(getVersion("git|cat")).toBe(null);
+			expect(getVersion("$(whoami)")).toBe(null);
+			expect(childProcess.execSync).not.toHaveBeenCalled();
+			expect(childProcess.execFileSync).not.toHaveBeenCalled();
+		});
+
 		it("returns version string when command exists", () => {
 			// isInstalled uses execSync for 'which' command
 			vi.mocked(childProcess.execSync).mockReturnValue("/usr/bin/node");
