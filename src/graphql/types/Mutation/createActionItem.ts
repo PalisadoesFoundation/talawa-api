@@ -4,7 +4,7 @@ import { z } from "zod";
 import { actionItemsTable } from "~/src/drizzle/tables/actionItems";
 import { builder } from "~/src/graphql/builder";
 import { ActionItem } from "~/src/graphql/types/ActionItem/ActionItem";
-import { firstOrThrow } from "~/src/utilities/dbHelpers";
+import { firstOrThrow } from "~/src/lib/dbHelpers";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 
 const mutationCreateActionItemArgumentsSchema = z.object({
@@ -58,7 +58,9 @@ builder.mutationField("createActionItem", (t) =>
 
 			if (!ctx.currentClient.isAuthenticated) {
 				throw new TalawaGraphQLError({
-					extensions: { code: "unauthenticated" },
+					extensions: {
+						code: "unauthenticated",
+					},
 				});
 			}
 
@@ -204,6 +206,7 @@ builder.mutationField("createActionItem", (t) =>
 			const createdActionItem = firstOrThrow(
 				rows,
 				"Action item creation failed",
+				"unexpected",
 			);
 
 			return createdActionItem;

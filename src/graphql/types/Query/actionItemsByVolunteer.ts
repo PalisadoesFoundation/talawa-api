@@ -96,7 +96,11 @@ export const actionItemsByVolunteer = builder.queryField(
 						message: "The specified volunteer does not exist.",
 						extensions: {
 							code: "arguments_associated_resources_not_found",
-							issues: [{ argumentPath: ["input", "volunteerId"] }],
+							issues: [
+								{
+									argumentPath: ["input", "volunteerId"],
+								},
+							],
 						},
 					});
 				}
@@ -137,7 +141,7 @@ export const actionItemsByVolunteer = builder.queryField(
 					});
 
 				// Ensure we always return an array (never undefined)
-				return actionItems ?? [];
+				return Array.isArray(actionItems) ? actionItems : [];
 			},
 			type: [ActionItem], // Returns an array of ActionItems
 		}),

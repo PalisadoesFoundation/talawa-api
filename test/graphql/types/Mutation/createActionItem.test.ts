@@ -1,5 +1,13 @@
 import { faker } from "@faker-js/faker";
-import { expect, suite, test } from "vitest";
+import {
+	afterEach,
+	beforeAll,
+	beforeEach,
+	expect,
+	suite,
+	test,
+	vi,
+} from "vitest";
 import { assertToBeNonNullish } from "../../../helpers";
 import { server } from "../../../server";
 import { mercuriusClient } from "../client";
@@ -386,6 +394,83 @@ suite("Mutation field createActionItem", () => {
 				expect.objectContaining({
 					id: expect.any(String),
 				}),
+			);
+		});
+	});
+
+	// 8. Database insert operation fails.
+	suite("when the database insert operation fails", () => {
+		let originalInsert: typeof server.drizzleClient.insert;
+		let orgId: string;
+		let categoryId: string;
+		let volunteerId: string;
+
+		// Create test data BEFORE any mocking happens
+		beforeAll(async () => {
+			orgId = await createOrganizationAndGetId();
+			const createUserResult = await mercuriusClient.mutate(
+				Mutation_createUser,
+				{
+					headers: { authorization: `bearer ${authToken}` },
+					variables: {
+						input: {
+							emailAddress: `assignee${faker.string.ulid()}@example.com`,
+							isEmailAddressVerified: true,
+							name: "Assignee User",
+							password: "password",
+							role: "regular",
+						},
+					},
+				},
+			);
+			assertToBeNonNullish(createUserResult.data?.createUser);
+			assertToBeNonNullish(createUserResult.data.createUser.user);
+			const assigneeUserId = createUserResult.data.createUser.user.id;
+			assertToBeNonNullish(assigneeUserId);
+
+			categoryId = await createActionItemCategory(orgId);
+			const eventAndVolunteer = await createEventAndVolunteer(
+				orgId,
+				assigneeUserId,
+			);
+			volunteerId = eventAndVolunteer.volunteerId;
+		});
+
+		beforeEach(() => {
+			// Now mock ONLY for the actual action item creation
+			originalInsert = server.drizzleClient.insert;
+			server.drizzleClient.insert = vi.fn().mockReturnValue({
+				values: vi.fn().mockReturnValue({
+					returning: vi.fn().mockResolvedValue([]),
+				}),
+			});
+		});
+
+		afterEach(() => {
+			server.drizzleClient.insert = originalInsert;
+		});
+
+		test("should return an error with unexpected code and correct message", async () => {
+			const result = await mercuriusClient.mutate(Mutation_createActionItem, {
+				headers: { authorization: `bearer ${authToken}` },
+				variables: {
+					input: {
+						categoryId: categoryId,
+						volunteerId: volunteerId,
+						organizationId: orgId,
+						assignedAt: "2025-04-01T00:00:00Z",
+					},
+				},
+			});
+
+			expect(result.data?.createActionItem).toBeNull();
+			expect(result.errors).toEqual(
+				expect.arrayContaining([
+					expect.objectContaining({
+						extensions: expect.objectContaining({ code: "unexpected" }),
+						message: "Action item creation failed",
+					}),
+				]),
 			);
 		});
 	});

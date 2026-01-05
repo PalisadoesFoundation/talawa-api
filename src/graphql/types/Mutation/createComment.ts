@@ -6,7 +6,7 @@ import {
 	mutationCreateCommentInputSchema,
 } from "~/src/graphql/inputs/MutationCreateCommentInput";
 import { Comment } from "~/src/graphql/types/Comment/Comment";
-import { firstOrThrow } from "~/src/utilities/dbHelpers";
+import { firstOrThrow } from "~/src/lib/dbHelpers";
 import envConfig from "~/src/utilities/graphqLimits";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 
@@ -135,7 +135,11 @@ builder.mutationField("createComment", (t) =>
 				})
 				.returning();
 
-			const createdComment = firstOrThrow(rows, "Comment creation failed");
+			const createdComment = firstOrThrow(
+				rows,
+				"Comment creation failed",
+				"unexpected",
+			);
 
 			return createdComment;
 		},
