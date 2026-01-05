@@ -334,23 +334,25 @@ suite("updateChat mutation", () => {
 	});
 
 	test("successfully updates chat when user is system administrator", async () => {
+		const systemAdmin = await createRegularUserUsingAdmin();
 		const orgId = await createTestOrganization();
 		const chatId = faker.string.uuid();
 
+		// elevate ONLY this user
 		await server.drizzleClient
 			.update(usersTable)
 			.set({ role: "administrator" })
-			.where(eq(usersTable.id, sharedUser.userId));
+			.where(eq(usersTable.id, systemAdmin.userId));
 
 		await server.drizzleClient.insert(chatsTable).values({
 			id: chatId,
 			name: "Old",
 			organizationId: orgId,
-			creatorId: sharedUser.userId,
+			creatorId: systemAdmin.userId,
 		});
 
 		const result = await mercuriusClient.mutate(Mutation_updateChat, {
-			headers: { authorization: `bearer ${sharedUser.authToken}` },
+			headers: { authorization: `bearer ${systemAdmin.authToken}` },
 			variables: {
 				input: {
 					id: chatId,
