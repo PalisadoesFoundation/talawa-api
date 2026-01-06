@@ -9,6 +9,7 @@ import {
 	test,
 	vi,
 } from "vitest";
+import { refreshTokensTable } from "../../../../src/drizzle/tables/refreshTokens";
 import { usersTable } from "../../../../src/drizzle/tables/users";
 import { assertToBeNonNullish } from "../../../helpers";
 import { server } from "../../../server";
@@ -145,6 +146,11 @@ suite("Mutation field createComment", () => {
 			});
 			const userToken = userSignIn.data?.signIn?.authenticationToken;
 			assertToBeNonNullish(userToken);
+
+			// Delete refresh tokens first (due to foreign key constraint)
+			await server.drizzleClient
+				.delete(refreshTokensTable)
+				.where(eq(refreshTokensTable.userId, userId));
 
 			// Delete the user from database
 			await server.drizzleClient
