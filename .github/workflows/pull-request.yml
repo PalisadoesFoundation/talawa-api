@@ -155,7 +155,7 @@ jobs:
 
       - name: Run Disable Statements Check
         run: |
-          python .github-central/.github/workflows/scripts/disable_statements_check.py --repo=api --files ${{ steps.changed-files.outputs.all_changed_files }}
+          python .github-central/.github/workflows/scripts/disable_statements_check.py --files ${{ steps.changed-files.outputs.all_changed_files }}
 
   check_gql_tada:
     name: Check gql tada files and configuration
