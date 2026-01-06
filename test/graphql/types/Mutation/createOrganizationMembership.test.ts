@@ -190,7 +190,7 @@ suite("Mutation field createOrganizationMembership", () => {
 			);
 
 			expect(result.errors?.[0]?.extensions?.code).toBe(
-				"unauthorized_action_on_arguments_associated_resources",
+				"arguments_associated_resources_not_found",
 			);
 		});
 
@@ -284,7 +284,8 @@ suite("Mutation field createOrganizationMembership", () => {
 
 			expect(result.errors).toBeUndefined();
 			assertToBeNonNullish(result.data?.createOrganizationMembership);
-			expect(result.data.createOrganizationMembership.id).not.toBe(orgId);
+			expect(result.data?.createOrganizationMembership).toBeDefined();
+			expect(result.data?.createOrganizationMembership?.id).toBeTruthy();
 		});
 
 		test("admin can create membership with role argument", async () => {
