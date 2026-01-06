@@ -10,6 +10,28 @@ Options for creating a performance tracker.
 
 ## Properties
 
+### \_\_slowArray?
+
+> `optional` **\_\_slowArray**: `object`[]
+
+Defined in: [src/utilities/metrics/performanceTracker.ts:102](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/utilities/metrics/performanceTracker.ts#L102)
+
+**`Internal`**
+
+Optional custom slow array for testing purposes.
+If provided, this array will be used instead of creating a new one.
+ - For testing only
+
+#### ms
+
+> **ms**: `number`
+
+#### op
+
+> **op**: `string`
+
+***
+
 ### slowMs?
 
 > `optional` **slowMs**: `number`

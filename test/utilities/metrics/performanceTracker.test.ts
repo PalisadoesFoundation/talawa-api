@@ -519,68 +519,90 @@ describe("Performance Tracker", () => {
 		expect(notSlowerOp).toBeUndefined();
 	});
 
-	it("should handle slow array replacement when at capacity", async () => {
-		const tracker = createPerformanceTracker({ slowMs: 1 });
+	it("should not replace when new operation ms equals current minimum", async () => {
+		// This test exercises the boundary case where roundedMs === minMs
+		// The condition on line 185 checks: if (roundedMs <= minMs) { return; }
+		// So when roundedMs === minMs, the operation should NOT be added/replaced
+		// We use trackDb to directly set the ms value to avoid timing variance
 
-		// Fill up exactly to MAX_SLOW (50) to trigger the else branch
+		// Fill up exactly to MAX_SLOW (50) with operations where the minimum is exactly 20ms
+		// Create an array where minMs will be exactly 20ms
+		const customSlowArray: Array<{ op: string; ms: number }> = [];
 		for (let i = 0; i < 50; i++) {
-			await tracker.time(`slow-${i}`, async () => {
-				await new Promise((resolve) => setTimeout(resolve, 10 + i));
-			});
+			customSlowArray.push({ op: `slow-${i}`, ms: 20 + i });
 		}
 
-		// Verify we have exactly 50
-		const snapshotBefore = tracker.snapshot();
-		expect(snapshotBefore.slow.length).toBe(50);
-		expect(snapshotBefore.slow[0]).toBeDefined();
-
-		// Add one more slow operation that's slower than the minimum - this exercises the
-		// replacement logic in the else branch
-		await tracker.time("very-slow-replacement", async () => {
-			await new Promise((resolve) => setTimeout(resolve, 50));
+		const trackerWithCustomArray = createPerformanceTracker({
+			slowMs: 1,
+			__slowArray: customSlowArray,
 		});
 
-		const snapshotAfter = tracker.snapshot();
+		// Verify we have exactly 50 and minimum is 20ms
+		const snapshotBefore = trackerWithCustomArray.snapshot();
+		expect(snapshotBefore.slow.length).toBe(50);
+		const minSlowOp = snapshotBefore.slow.reduce((min, op) =>
+			op.ms < min.ms ? op : min,
+		);
+		const minMs = minSlowOp.ms;
+		expect(minMs).toBe(20);
+
+		// Use trackDb to directly record exactly 20ms (which rounds to 20ms)
+		// This should NOT replace because roundedMs (20) <= minMs (20)
+		trackerWithCustomArray.trackDb(20);
+
+		const snapshotAfter = trackerWithCustomArray.snapshot();
 		expect(snapshotAfter.slow.length).toBe(50);
 
-		// Verify the replacement worked correctly
-		const verySlowOp = snapshotAfter.slow.find(
-			(op) => op.op === "very-slow-replacement",
+		// Verify the db operation was NOT added to slow array (boundary condition)
+		// trackDb records as "db" operation, so check that "db" is not in slow array
+		// or that the slow array still has the same entries
+		const dbOpInSlow = snapshotAfter.slow.find((op) => op.op === "db");
+		expect(dbOpInSlow).toBeUndefined();
+		// Verify the original minimum entry is still there
+		const minSlowOpAfter = snapshotAfter.slow.reduce((min, op) =>
+			op.ms < min.ms ? op : min,
 		);
-		expect(verySlowOp).toBeDefined();
-		expect(verySlowOp?.ms).toBeGreaterThanOrEqual(50);
+		expect(minSlowOpAfter.ms).toBe(20);
 	});
 
 	it("should handle edge case when slow array has undefined entries during iteration", async () => {
 		// This test covers the sparse-array skip behavior on line 166: if (!cur) { continue; }
 		// To trigger this, we need slow.length >= MAX_SLOW with at least one undefined entry.
-		// Since slow is a closure variable, we mock Array.prototype.push to create
-		// a sparse array by deleting index 0 after push is called.
-		//
-		// Following the codebase pattern (see test/fastifyPlugins/performance.test.ts
-		// and test/services/ses/EmailService.test.ts) where undefined/null edge cases
-		// are tested using mocks to achieve 100% coverage.
+		// We use a custom slow array with a sparse entry to test this without global mocks.
 
-		const tracker = createPerformanceTracker({ slowMs: 1 });
-
-		// Fill up to MAX_SLOW - 1 (49 operations) first
+		// Create a custom slow array with 49 valid entries and prepare for the 50th
+		const customSlowArray: Array<{ op: string; ms: number } | undefined> = [];
 		for (let i = 0; i < 49; i++) {
-			await tracker.time(`slow-${i}`, async () => {
-				await new Promise((resolve) => setTimeout(resolve, 10 + i));
-			});
+			customSlowArray.push({ op: `slow-${i}`, ms: 10 + i });
 		}
 
-		// Mock Array.prototype.push to create a sparse array when we reach MAX_SLOW
+		// Mock Array.prototype.push to create a sparse array ONLY when the tracker's
+		// 50th slow operation is added (identified by the operation name "slow-49")
 		const originalPush = Array.prototype.push;
 		let pushCallCount = 0;
 
 		Array.prototype.push = function <T>(...items: T[]): number {
-			// Intercept the 50th push (when slow.length becomes MAX_SLOW)
-			if (this.length === 49 && pushCallCount === 0) {
+			// Narrow interception: only affect the tracker's slow array when adding "slow-49"
+			// Check if this is the slow array (has objects with 'op' and 'ms') and
+			// the item being pushed is the 50th operation (slow-49)
+			const isSlowArray =
+				this.length === 49 &&
+				this[0] &&
+				typeof this[0] === "object" &&
+				"op" in this[0] &&
+				"ms" in this[0];
+			const isSlow49Push =
+				items.length > 0 &&
+				items[0] &&
+				typeof items[0] === "object" &&
+				"op" in items[0] &&
+				(items[0] as { op: string }).op === "slow-49";
+
+			if (isSlowArray && isSlow49Push && pushCallCount === 0) {
 				pushCallCount++;
 				// Call original push to add the item
 				const result = originalPush.apply(this, items);
-				// Now create a sparse array by deleting index 0
+				// Create a sparse array by deleting index 0
 				// This makes slow[0] undefined while slow.length === 50
 				delete this[0];
 				return result;
@@ -589,6 +611,11 @@ describe("Performance Tracker", () => {
 		};
 
 		try {
+			const tracker = createPerformanceTracker({
+				slowMs: 1,
+				__slowArray: customSlowArray as Array<{ op: string; ms: number }>,
+			});
+
 			// Add the 50th slow operation - push mock will create sparse array
 			await tracker.time("slow-49", async () => {
 				await new Promise((resolve) => setTimeout(resolve, 20));
@@ -626,71 +653,37 @@ describe("Performance Tracker", () => {
 		// if (minIdx === -1 || minMs === Infinity) { return; }
 		// This happens when slow.length >= MAX_SLOW but all entries are invalid
 		// (null, undefined, or have invalid ms values), so the loop doesn't find any valid entry.
+		// We use a custom slow array with invalid entries to test this without global mocks.
 
-		const tracker = createPerformanceTracker({ slowMs: 1 });
-
-		// Mock Array.prototype.push to corrupt all entries when slow array reaches MAX_SLOW
-		const originalPush = Array.prototype.push;
-		let slowArrayCorrupted = false;
-
-		Array.prototype.push = function <T>(...items: T[]): number {
-			const result = originalPush.apply(this, items);
-			// Only corrupt if this is the slow array reaching MAX_SLOW (50)
-			// We detect this by checking if the array has objects with 'op' and 'ms' properties
-			// and if the length is exactly 50 after the push
-			if (
-				!slowArrayCorrupted &&
-				this.length === 50 &&
-				this[0] &&
-				typeof this[0] === "object" &&
-				"op" in this[0] &&
-				"ms" in this[0]
-			) {
-				slowArrayCorrupted = true;
-				// Make all entries invalid by setting ms to null
-				// This ensures typeof cur.ms !== "number" will be true for all entries
-				for (let i = 0; i < this.length; i++) {
-					if (this[i] && typeof this[i] === "object") {
-						(this[i] as { ms?: number | null }).ms = null;
-					}
-				}
-			}
-			return result;
-		};
-
-		try {
-			// Fill tracker to MAX_SLOW (50 operations)
-			// The push mock will corrupt all entries when the 50th operation is added
-			for (let i = 0; i < 50; i++) {
-				await tracker.time(`slow-${i}`, async () => {
-					await new Promise((resolve) => setTimeout(resolve, 10 + i));
-				});
-			}
-
-			// Verify array is at capacity
-			const snapshot = tracker.snapshot();
-			expect(snapshot.slow.length).toBe(50);
-
-			// Add one more slow operation - this should trigger the defensive check
-			// because all entries are invalid (ms = null), so the loop skips them all,
-			// leaving minIdx = -1 and minMs = Infinity, which triggers the return on line 180
-			await tracker.time("very-slow", async () => {
-				await new Promise((resolve) => setTimeout(resolve, 50));
-			});
-
-			// The defensive check should have been triggered (minIdx === -1 || minMs === Infinity)
-			// This means the very-slow operation was NOT added because the loop found no valid entries
-			// Verify the tracker still works correctly and the array length remains 50
-			const snapshotAfter = tracker.snapshot();
-			expect(snapshotAfter.slow.length).toBe(50);
-			// Verify the very-slow operation was NOT added (defensive check returned early)
-			const verySlowOp = snapshotAfter.slow.find(
-				(op) => op?.op === "very-slow",
-			);
-			expect(verySlowOp).toBeUndefined();
-		} finally {
-			// Restore original push
-			Array.prototype.push = originalPush;
+		// Create a custom slow array with 50 entries, all with invalid ms values
+		const customSlowArray: Array<{ op: string; ms: number | null }> = [];
+		for (let i = 0; i < 50; i++) {
+			customSlowArray.push({ op: `slow-${i}`, ms: null });
 		}
+
+		const tracker = createPerformanceTracker({
+			slowMs: 1,
+			__slowArray: customSlowArray as Array<{ op: string; ms: number }>,
+		});
+
+		// Verify array is at capacity with invalid entries
+		const snapshot = tracker.snapshot();
+		expect(snapshot.slow.length).toBe(50);
+
+		// Add one more slow operation - this should trigger the defensive check
+		// because all entries are invalid (ms = null), so the loop skips them all,
+		// leaving minIdx = -1 and minMs = Infinity, which triggers the return on line 180
+		await tracker.time("very-slow", async () => {
+			await new Promise((resolve) => setTimeout(resolve, 50));
+		});
+
+		// The defensive check should have been triggered (minIdx === -1 || minMs === Infinity)
+		// This means the very-slow operation was NOT added because the loop found no valid entries
+		// Verify the tracker still works correctly and the array length remains 50
+		const snapshotAfter = tracker.snapshot();
+		expect(snapshotAfter.slow.length).toBe(50);
+		// Verify the very-slow operation was NOT added (defensive check returned early)
+		const verySlowOp = snapshotAfter.slow.find((op) => op?.op === "very-slow");
+		expect(verySlowOp).toBeUndefined();
 	});
 });

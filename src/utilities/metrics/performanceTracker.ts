@@ -94,6 +94,12 @@ export interface PerformanceTrackerOptions {
 	 * Defaults to 200ms if not provided.
 	 */
 	slowMs?: number;
+	/**
+	 * Optional custom slow array for testing purposes.
+	 * If provided, this array will be used instead of creating a new one.
+	 * @internal - For testing only
+	 */
+	__slowArray?: Array<{ op: string; ms: number }>;
 }
 
 /**
@@ -114,7 +120,7 @@ export function createPerformanceTracker(
 ): PerformanceTracker {
 	const slowMs = opts?.slowMs ?? 200;
 	const ops: Record<string, OpStats> = {};
-	const slow: Array<{ op: string; ms: number }> = [];
+	const slow: Array<{ op: string; ms: number }> = opts?.__slowArray ?? [];
 	let cacheHits = 0;
 	let cacheMisses = 0;
 	let totalOps = 0;
