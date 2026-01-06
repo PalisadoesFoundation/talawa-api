@@ -44,6 +44,7 @@ export const cacheService = fastifyPlugin(
 		}
 
 		const cache = new RedisCacheService(redis as never, fastify.log);
+		console.log('CacheService initialized with Redis client:', redis);
 		fastify.decorate("cache", cache);
 
 		fastify.log.info({ msg: "CacheService registered" });

@@ -56,6 +56,7 @@ export class RedisCacheService implements CacheService {
 	async set<T>(key: string, value: T, ttlSeconds: number): Promise<void> {
 		try {
 			const str = JSON.stringify(value);
+			console.log('Setting cache key:', key, 'with TTL (s):', ttlSeconds);
 			await this.redis.setex(key, ttlSeconds, str);
 		} catch (err) {
 			this.logger.warn({ msg: "cache set failed", key, ttlSeconds, err });

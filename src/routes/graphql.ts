@@ -21,6 +21,7 @@ import { createDataloaders } from "../utilities/dataloaders";
 import leakyBucket from "../utilities/leakyBucket";
 import { DEFAULT_REFRESH_TOKEN_EXPIRES_MS } from "../utilities/refreshTokenUtils";
 import { TalawaGraphQLError } from "../utilities/TalawaGraphQLError";
+import { metricsCacheProxy } from "../services/metrics/metricsCacheProxy";
 
 /**
  * Type of the initial context argument provided to the createContext function by the graphql server.
@@ -148,7 +149,9 @@ export const createContext: CreateContext = async (initialContext) => {
 			: undefined;
 
 	return {
-		cache: fastify.cache,
+		  cache: request.perf
+    ? metricsCacheProxy(fastify.cache, request.perf)
+    : fastify.cache,
 		currentClient,
 		dataloaders: createDataloaders(fastify.drizzleClient),
 		drizzleClient: fastify.drizzleClient,
