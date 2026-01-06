@@ -60,7 +60,7 @@ pre-commit:
         NEEDS_DOWNLOAD=true
         if [ -f "$SCRIPT_PATH" ]; then
           # Get file modification time in seconds since epoch
-          if [[ "$OSTYPE" == "darwin"* ]]; then
+          if [ "$(uname)" = "Darwin" ]; then
             # macOS
             FILE_MOD_TIME=$(stat -f %m "$SCRIPT_PATH")
           else
