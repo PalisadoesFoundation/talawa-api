@@ -658,15 +658,15 @@ export async function observabilitySetup(
 	answers: SetupAnswers,
 ): Promise<SetupAnswers> {
 	try {
-		answers.OTEL_ENABLED = await promptInput(
-			"OTEL_ENABLED",
+		answers.API_OTEL_ENABLED = await promptInput(
+			"API_OTEL_ENABLED",
 			"Observability enabled (true/false):",
 			"true",
 		);
 
-		if (answers.OTEL_ENABLED === "true") {
-			answers.OTEL_SAMPLING_RATIO = await promptInput(
-				"OTEL_SAMPLING_RATIO",
+		if (answers.API_OTEL_ENABLED === "true") {
+			answers.API_OTEL_SAMPLING_RATIO = await promptInput(
+				"API_OTEL_SAMPLING_RATIO",
 				"Observability sampling ratio (between 0 & 1):",
 				"1",
 			);

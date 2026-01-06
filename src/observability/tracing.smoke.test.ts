@@ -70,10 +70,10 @@ describe("OTEL bootstrap smoke tests", () => {
 	});
 
 	describe("Disabled state", () => {
-		it("does not initialize SDK when OTEL_ENABLED is false", async () => {
+		it("does not initialize SDK when API_OTEL_ENABLED is false", async () => {
 			process.env = {
 				...originalEnv,
-				OTEL_ENABLED: "false",
+				API_OTEL_ENABLED: "false",
 			};
 
 			const { initTracing } = await import(
@@ -88,9 +88,9 @@ describe("OTEL bootstrap smoke tests", () => {
 		it("initializes SDK successfully in local mode", async () => {
 			process.env = {
 				...originalEnv,
-				OTEL_ENABLED: "true",
-				OTEL_ENVIRONMENT: "local",
-				OTEL_SERVICE_NAME: "test-service",
+				API_OTEL_ENABLED: "true",
+				API_OTEL_ENVIRONMENT: "local",
+				API_OTEL_SERVICE_NAME: "test-service",
 			};
 
 			const { initTracing } = await import(
@@ -105,10 +105,10 @@ describe("OTEL bootstrap smoke tests", () => {
 		it("initializes SDK with OTLP exporter in production", async () => {
 			process.env = {
 				...originalEnv,
-				OTEL_ENABLED: "true",
-				OTEL_ENVIRONMENT: "production",
-				OTEL_SERVICE_NAME: "test-service",
-				OTEL_EXPORTER_OTLP_ENDPOINT: "http://localhost:4318/v1/traces",
+				API_OTEL_ENABLED: "true",
+				API_OTEL_ENVIRONMENT: "production",
+				API_OTEL_SERVICE_NAME: "test-service",
+				API_OTEL_EXPORTER_OTLP_ENDPOINT: "http://localhost:4318/v1/traces",
 			};
 
 			const { initTracing } = await import(
@@ -123,9 +123,9 @@ describe("OTEL bootstrap smoke tests", () => {
 		it("accepts valid sampling ratio", async () => {
 			process.env = {
 				...originalEnv,
-				OTEL_ENABLED: "true",
-				OTEL_ENVIRONMENT: "local",
-				OTEL_SAMPLING_RATIO: "0.25",
+				API_OTEL_ENABLED: "true",
+				API_OTEL_ENVIRONMENT: "local",
+				API_OTEL_SAMPLING_RATIO: "0.25",
 			};
 
 			const { initTracing } = await import(
@@ -138,9 +138,9 @@ describe("OTEL bootstrap smoke tests", () => {
 		it("rejects sampling ratio > 1", async () => {
 			process.env = {
 				...originalEnv,
-				OTEL_ENABLED: "true",
-				OTEL_ENVIRONMENT: "local",
-				OTEL_SAMPLING_RATIO: "1.5",
+				API_OTEL_ENABLED: "true",
+				API_OTEL_ENVIRONMENT: "local",
+				API_OTEL_SAMPLING_RATIO: "1.5",
 			};
 
 			const { initTracing } = await import(
@@ -153,9 +153,9 @@ describe("OTEL bootstrap smoke tests", () => {
 		it("rejects negative sampling ratio", async () => {
 			process.env = {
 				...originalEnv,
-				OTEL_ENABLED: "true",
-				OTEL_ENVIRONMENT: "local",
-				OTEL_SAMPLING_RATIO: "-0.1",
+				API_OTEL_ENABLED: "true",
+				API_OTEL_ENVIRONMENT: "local",
+				API_OTEL_SAMPLING_RATIO: "-0.1",
 			};
 
 			const { initTracing } = await import(
@@ -168,9 +168,9 @@ describe("OTEL bootstrap smoke tests", () => {
 		it("rejects non-numeric sampling ratio", async () => {
 			process.env = {
 				...originalEnv,
-				OTEL_ENABLED: "true",
-				OTEL_ENVIRONMENT: "local",
-				OTEL_SAMPLING_RATIO: "invalid",
+				API_OTEL_ENABLED: "true",
+				API_OTEL_ENVIRONMENT: "local",
+				API_OTEL_SAMPLING_RATIO: "invalid",
 			};
 
 			const { initTracing } = await import(
@@ -196,10 +196,10 @@ describe("OTEL bootstrap smoke tests", () => {
 
 			process.env = {
 				...originalEnv,
-				OTEL_ENABLED: "true",
-				OTEL_ENVIRONMENT: "production",
-				OTEL_SERVICE_NAME: "test-service",
-				OTEL_EXPORTER_OTLP_ENDPOINT: "http://localhost:4318/v1/traces",
+				API_OTEL_ENABLED: "true",
+				API_OTEL_ENVIRONMENT: "production",
+				API_OTEL_SERVICE_NAME: "test-service",
+				API_OTEL_EXPORTER_OTLP_ENDPOINT: "http://localhost:4318/v1/traces",
 			};
 
 			const { initTracing } = await import(
@@ -217,7 +217,7 @@ describe("OTEL bootstrap smoke tests", () => {
 		it("handles shutdown when SDK was never initialized", async () => {
 			process.env = {
 				...originalEnv,
-				OTEL_ENABLED: "false",
+				API_OTEL_ENABLED: "false",
 			};
 
 			// Import without initializing
@@ -240,8 +240,8 @@ describe("OTEL bootstrap smoke tests", () => {
 
 			process.env = {
 				...originalEnv,
-				OTEL_ENABLED: "true",
-				OTEL_ENVIRONMENT: "local",
+				API_OTEL_ENABLED: "true",
+				API_OTEL_ENVIRONMENT: "local",
 			};
 
 			const { initTracing, shutdownTracing } = await import(
@@ -270,8 +270,8 @@ describe("OTEL bootstrap smoke tests", () => {
 
 			process.env = {
 				...originalEnv,
-				OTEL_ENABLED: "true",
-				OTEL_ENVIRONMENT: "local",
+				API_OTEL_ENABLED: "true",
+				API_OTEL_ENVIRONMENT: "local",
 			};
 
 			const { initTracing, shutdownTracing } = await import(
@@ -303,8 +303,8 @@ describe("OTEL bootstrap smoke tests", () => {
 
 			process.env = {
 				...originalEnv,
-				OTEL_ENABLED: "true",
-				OTEL_ENVIRONMENT: "local",
+				API_OTEL_ENABLED: "true",
+				API_OTEL_ENVIRONMENT: "local",
 			};
 
 			const { initTracing, shutdownTracing } = await import(
@@ -349,8 +349,8 @@ describe("OTEL bootstrap smoke tests", () => {
 
 			process.env = {
 				...originalEnv,
-				OTEL_ENABLED: "true",
-				OTEL_ENVIRONMENT: "local",
+				API_OTEL_ENABLED: "true",
+				API_OTEL_ENVIRONMENT: "local",
 			};
 
 			const { initTracing, shutdownTracing } = await import(
@@ -379,8 +379,8 @@ describe("OTEL bootstrap smoke tests", () => {
 
 			process.env = {
 				...originalEnv,
-				OTEL_ENABLED: "true",
-				OTEL_ENVIRONMENT: "local",
+				API_OTEL_ENABLED: "true",
+				API_OTEL_ENVIRONMENT: "local",
 			};
 
 			const { initTracing, shutdownTracing } = await import(
@@ -413,9 +413,9 @@ describe("OTEL bootstrap smoke tests", () => {
 		it("handles sampling ratio of 0", async () => {
 			process.env = {
 				...originalEnv,
-				OTEL_ENABLED: "true",
-				OTEL_ENVIRONMENT: "local",
-				OTEL_SAMPLING_RATIO: "0",
+				API_OTEL_ENABLED: "true",
+				API_OTEL_ENVIRONMENT: "local",
+				API_OTEL_SAMPLING_RATIO: "0",
 			};
 
 			const { initTracing } = await import(
@@ -428,9 +428,9 @@ describe("OTEL bootstrap smoke tests", () => {
 		it("handles sampling ratio of 1", async () => {
 			process.env = {
 				...originalEnv,
-				OTEL_ENABLED: "true",
-				OTEL_ENVIRONMENT: "local",
-				OTEL_SAMPLING_RATIO: "1",
+				API_OTEL_ENABLED: "true",
+				API_OTEL_ENVIRONMENT: "local",
+				API_OTEL_SAMPLING_RATIO: "1",
 			};
 
 			const { initTracing } = await import(
@@ -443,10 +443,10 @@ describe("OTEL bootstrap smoke tests", () => {
 		it("uses default sampling ratio when not provided", async () => {
 			process.env = {
 				...originalEnv,
-				OTEL_ENABLED: "true",
-				OTEL_ENVIRONMENT: "local",
+				API_OTEL_ENABLED: "true",
+				API_OTEL_ENVIRONMENT: "local",
 			};
-			delete process.env.OTEL_SAMPLING_RATIO;
+			delete process.env.API_OTEL_SAMPLING_RATIO;
 
 			const { initTracing } = await import(
 				"../../src/observability/tracing/bootstrap"

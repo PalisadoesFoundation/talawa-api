@@ -250,14 +250,16 @@ This environment variable is used to configure the host ip of the redis server f
 This environment variable is used to configure custom TTL (time-to-live) values in seconds for cached entities. It accepts a JSON object where keys are entity names and values are TTL durations in seconds.
 
 **Default values** (used when not specified):
+
 - `user`: 600 (10 minutes)
 - `organization`: 600 (10 minutes)
 - `event`: 240 (4 minutes)
 - `post`: 120 (2 minutes)
 
 **Example:**
+
 ```json
-{"user": 300, "organization": 900, "event": 180, "post": 60}
+{ "user": 300, "organization": 900, "event": 180, "post": 60 }
 ```
 
 This allows operators to tune cache behavior based on their specific read/write patterns and data freshness requirements.
@@ -606,17 +608,22 @@ This environment variable is used to configure the prefix for identifiers of all
 
 ## Observability
 
-### OTEL_ENABLED
+### API_OTEL_ENABLED
+
 - Takes values as `true` or `false` to enable and disable OTEL logging,
 
-### OTEL_ENVIRONMENT
+### API_OTEL_ENVIRONMENT
+
 - set `local` for development environment and `production` for production environment.
 
-### OTEL_SERVICE_NAME
-- Its values should be `talawa-api`
+### API_OTEL_EXPORTER_OTLP_ENDPOINT
 
-### OTEL_SAMPLING_RATIO
+- Only for `production` environment for now. will be available for local as well once some observability tool is integrated.
+
+### API_OTEL_SAMPLING_RATIO
+
 - It takes values between 0 and 1, controlling spans depth
 
-### OTEL_EXPORTER_OTLP_ENDPOINT
-- Only for `production` environment for now. will be available for local as well once some observability tool is integrated.
+### API_OTEL_SERVICE_NAME
+
+- Its values should be `talawa-api`
