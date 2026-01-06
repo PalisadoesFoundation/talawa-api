@@ -7,8 +7,202 @@ import inquirer from "inquirer";
 import { envFileBackup } from "./envFileBackup/envFileBackup";
 import { updateEnvVariable } from "./updateEnvVariable";
 
-interface SetupAnswers {
-	[key: string]: string;
+/**
+ * Strongly-typed interface for setup configuration answers.
+ * All fields are optional during setup but required fields are validated before completion.
+ * Index signature is included for backward compatibility with updateEnvVariable.
+ */
+export interface SetupAnswers {
+	// Index signature for backward compatibility
+	[key: string]: string | undefined;
+
+	// CI/CD Configuration
+	CI?: "true" | "false";
+
+	// API Configuration
+	API_ADMINISTRATOR_USER_EMAIL_ADDRESS?: string;
+	API_BASE_URL?: string;
+	API_HOST?: string;
+	API_PORT?: string;
+	API_IS_APPLY_DRIZZLE_MIGRATIONS?: "true" | "false";
+	API_IS_GRAPHIQL?: "true" | "false";
+	API_IS_PINO_PRETTY?: "true" | "false";
+	API_LOG_LEVEL?: "info" | "debug";
+
+	// JWT Configuration
+	API_JWT_SECRET?: string;
+	API_JWT_EXPIRES_IN?: string;
+
+	// MinIO API Configuration
+	API_MINIO_ACCESS_KEY?: string;
+	API_MINIO_END_POINT?: string;
+	API_MINIO_PORT?: string;
+	API_MINIO_SECRET_KEY?: string;
+	API_MINIO_TEST_END_POINT?: string;
+	API_MINIO_USE_SSL?: "true" | "false";
+
+	// PostgreSQL API Configuration
+	API_POSTGRES_DATABASE?: string;
+	API_POSTGRES_HOST?: string;
+	API_POSTGRES_PORT?: string;
+	API_POSTGRES_USER?: string;
+	API_POSTGRES_PASSWORD?: string;
+	API_POSTGRES_SSL_MODE?: "true" | "false";
+	API_POSTGRES_TEST_HOST?: string;
+
+	// MinIO Docker Configuration
+	MINIO_BROWSER?: "on" | "off";
+	MINIO_ROOT_USER?: string;
+	MINIO_ROOT_PASSWORD?: string;
+	MINIO_API_MAPPED_HOST_IP?: string;
+	MINIO_API_MAPPED_PORT?: string;
+	MINIO_CONSOLE_MAPPED_HOST_IP?: string;
+	MINIO_CONSOLE_MAPPED_PORT?: string;
+
+	// PostgreSQL Docker Configuration
+	POSTGRES_USER?: string;
+	POSTGRES_PASSWORD?: string;
+	POSTGRES_DB?: string;
+	POSTGRES_MAPPED_HOST_IP?: string;
+	POSTGRES_MAPPED_PORT?: string;
+
+	// CloudBeaver Configuration
+	CLOUDBEAVER_ADMIN_NAME?: string;
+	CLOUDBEAVER_ADMIN_PASSWORD?: string;
+	CLOUDBEAVER_MAPPED_HOST_IP?: string;
+	CLOUDBEAVER_MAPPED_PORT?: string;
+	CLOUDBEAVER_SERVER_NAME?: string;
+	CLOUDBEAVER_SERVER_URL?: string;
+
+	// Caddy Configuration
+	CADDY_HTTP_MAPPED_PORT?: string;
+	CADDY_HTTPS_MAPPED_PORT?: string;
+	CADDY_HTTP3_MAPPED_PORT?: string;
+	CADDY_TALAWA_API_DOMAIN_NAME?: string;
+	CADDY_TALAWA_API_EMAIL?: string;
+	CADDY_TALAWA_API_HOST?: string;
+	CADDY_TALAWA_API_PORT?: string;
+
+	// reCAPTCHA Configuration
+	RECAPTCHA_SECRET_KEY?: string;
+}
+
+/**
+ * Type guard to check if a value is a valid boolean string.
+ */
+export function isBooleanString(value: unknown): value is "true" | "false" {
+	return value === "true" || value === "false";
+}
+
+/**
+ * Validates that all required fields are present in the answers.
+ * @param answers - The setup answers to validate
+ * @throws {Error} If required fields are missing
+ */
+export function validateRequiredFields(answers: SetupAnswers): void {
+	const requiredFields: (keyof SetupAnswers)[] = [
+		"CI",
+		"API_ADMINISTRATOR_USER_EMAIL_ADDRESS",
+	];
+
+	const missingFields: string[] = [];
+
+	for (const field of requiredFields) {
+		if (answers[field] === undefined || answers[field] === "") {
+			missingFields.push(String(field));
+		}
+	}
+
+	if (missingFields.length > 0) {
+		throw new Error(
+			`Missing required configuration fields:\n  - ${missingFields.join("\n  - ")}`,
+		);
+	}
+}
+
+/**
+ * Validates that boolean fields have valid values.
+ * @param answers - The setup answers to validate
+ * @throws {Error} If boolean fields have invalid values
+ */
+export function validateBooleanFields(answers: SetupAnswers): void {
+	const booleanFields: (keyof SetupAnswers)[] = [
+		"CI",
+		"API_IS_APPLY_DRIZZLE_MIGRATIONS",
+		"API_IS_GRAPHIQL",
+		"API_IS_PINO_PRETTY",
+		"API_MINIO_USE_SSL",
+		"API_POSTGRES_SSL_MODE",
+	];
+
+	const invalidFields: string[] = [];
+
+	for (const field of booleanFields) {
+		const value = answers[field];
+		if (value !== undefined && !isBooleanString(value)) {
+			invalidFields.push(`${field} (got: ${value})`);
+		}
+	}
+
+	if (invalidFields.length > 0) {
+		throw new Error(
+			`Boolean fields must be "true" or "false":\n  - ${invalidFields.join("\n  - ")}`,
+		);
+	}
+}
+
+/**
+ * Validates that port numbers are valid (1-65535).
+ * @param answers - The setup answers to validate
+ * @throws {Error} If port numbers are invalid
+ */
+export function validatePortNumbers(answers: SetupAnswers): void {
+	const portFields: (keyof SetupAnswers)[] = [
+		"API_PORT",
+		"API_MINIO_PORT",
+		"API_POSTGRES_PORT",
+		"MINIO_API_MAPPED_PORT",
+		"MINIO_CONSOLE_MAPPED_PORT",
+		"POSTGRES_MAPPED_PORT",
+		"CLOUDBEAVER_MAPPED_PORT",
+		"CADDY_HTTP_MAPPED_PORT",
+		"CADDY_HTTPS_MAPPED_PORT",
+		"CADDY_HTTP3_MAPPED_PORT",
+		"CADDY_TALAWA_API_PORT",
+	];
+
+	const invalidPorts: string[] = [];
+
+	for (const field of portFields) {
+		const value = answers[field];
+		if (value !== undefined) {
+			const port = Number.parseInt(value, 10);
+			if (Number.isNaN(port) || port < 1 || port > 65535) {
+				invalidPorts.push(`${field} (got: ${value})`);
+			}
+		}
+	}
+
+	if (invalidPorts.length > 0) {
+		throw new Error(
+			`Port numbers must be between 1 and 65535:\n  - ${invalidPorts.join("\n  - ")}`,
+		);
+	}
+}
+
+/**
+ * Comprehensive validation of all answers before writing to .env.
+ * @param answers - The setup answers to validate
+ * @throws {Error} If any validation fails
+ */
+export function validateAllAnswers(answers: SetupAnswers): void {
+	console.log("\n📋 Validating configuration...");
+
+	validateRequiredFields(answers);
+	validateBooleanFields(answers);
+	validatePortNumbers(answers);
+
+	console.log("✅ All validations passed");
 }
 
 async function promptInput(
@@ -23,16 +217,16 @@ async function promptInput(
 	return result;
 }
 
-async function promptList(
+async function promptList<T extends string>(
 	name: string,
 	message: string,
-	choices: string[],
-	defaultValue?: string,
-): Promise<string> {
+	choices: T[],
+	defaultValue?: T,
+): Promise<T> {
 	const { [name]: result } = await inquirer.prompt([
 		{ type: "list", name, message, choices, default: defaultValue },
 	]);
-	return result;
+	return result as T;
 }
 
 async function promptConfirm(
@@ -221,7 +415,12 @@ export function initializeEnvFile(answers: SetupAnswers): void {
 
 export async function setCI(answers: SetupAnswers): Promise<SetupAnswers> {
 	try {
-		answers.CI = await promptList("CI", "Set CI:", ["true", "false"], "false");
+		answers.CI = await promptList(
+			"CI",
+			"Set CI:",
+			["true", "false"] as const,
+			"false",
+		);
 	} catch (err) {
 		handlePromptError(err);
 	}
@@ -285,21 +484,21 @@ export async function apiSetup(answers: SetupAnswers): Promise<SetupAnswers> {
 		answers.API_IS_APPLY_DRIZZLE_MIGRATIONS = await promptList(
 			"API_IS_APPLY_DRIZZLE_MIGRATIONS",
 			"Apply Drizzle migrations?",
-			["true", "false"],
+			["true", "false"] as const,
 			"true",
 		);
 
 		answers.API_IS_GRAPHIQL = await promptList(
 			"API_IS_GRAPHIQL",
 			"Enable GraphQL?",
-			["true", "false"],
+			["true", "false"] as const,
 			answers.CI === "false" ? "true" : "false",
 		);
 
 		answers.API_IS_PINO_PRETTY = await promptList(
 			"API_IS_PINO_PRETTY",
 			"Enable Pino Pretty logs?",
-			["true", "false"],
+			["true", "false"] as const,
 			answers.CI === "false" ? "true" : "false",
 		);
 
@@ -326,7 +525,7 @@ export async function apiSetup(answers: SetupAnswers): Promise<SetupAnswers> {
 		answers.API_LOG_LEVEL = await promptList(
 			"API_LOG_LEVEL",
 			"Log level:",
-			["info", "debug"],
+			["info", "debug"] as const,
 			answers.CI === "true" ? "info" : "debug",
 		);
 
@@ -372,7 +571,7 @@ export async function apiSetup(answers: SetupAnswers): Promise<SetupAnswers> {
 		answers.API_MINIO_USE_SSL = await promptList(
 			"API_MINIO_USE_SSL",
 			"Use Minio SSL?",
-			["true", "false"],
+			["true", "false"] as const,
 			"false",
 		);
 
@@ -412,7 +611,7 @@ export async function apiSetup(answers: SetupAnswers): Promise<SetupAnswers> {
 		answers.API_POSTGRES_SSL_MODE = await promptList(
 			"API_POSTGRES_SSL_MODE",
 			"Use Postgres SSL?",
-			["true", "false"],
+			["true", "false"] as const,
 			"false",
 		);
 
@@ -486,9 +685,10 @@ export async function cloudbeaverSetup(
 
 export async function minioSetup(answers: SetupAnswers): Promise<SetupAnswers> {
 	try {
-		answers.MINIO_BROWSER = await promptInput(
+		answers.MINIO_BROWSER = await promptList(
 			"MINIO_BROWSER",
-			"Minio browser (on/off):",
+			"Minio browser:",
+			["on", "off"] as const,
 			answers.CI === "true" ? "off" : "on",
 		);
 
@@ -809,7 +1009,26 @@ export async function setup(): Promise<SetupAnswers> {
 		answers = await reCaptchaSetup(answers);
 	}
 
-	updateEnvVariable(answers);
+	try {
+		validateAllAnswers(answers);
+	} catch (error) {
+		console.error("\n❌ Configuration validation failed:");
+		console.error((error as Error).message);
+		console.error("\n⚠️  Setup cannot continue with invalid configuration.");
+		console.error("   Please fix the issues above and try again.\n");
+		restoreLatestBackup();
+		process.exit(1);
+	}
+
+	// Filter out undefined values before passing to updateEnvVariable
+	const definedAnswers: { [key: string]: string } = {};
+	for (const [key, value] of Object.entries(answers)) {
+		if (value !== undefined) {
+			definedAnswers[key] = value;
+		}
+	}
+
+	updateEnvVariable(definedAnswers);
 	console.log("Configuration complete.");
 	return answers;
 }
