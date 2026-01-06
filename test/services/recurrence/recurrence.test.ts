@@ -35,6 +35,12 @@ describe("recurrence utilities", () => {
 			expect(() => parseRRule("FREQ=INVALID;INTERVAL=1")).toThrow(RangeError);
 			expect(() => parseRRule("FREQ=YEARLY;INTERVAL=1")).toThrow(RangeError);
 		});
+
+		test("throws when FREQ is missing", () => {
+			expect(() => parseRRule("INTERVAL=1")).toThrow(RangeError);
+			expect(() => parseRRule(""))
+				.toThrow(new RangeError("RRULE missing FREQ"));
+		});
 		test("throws when BYDAY has invalid tokens", () => {
 			expect(() => parseRRule("FREQ=WEEKLY;BYDAY=MO,XX,FR")).toThrow(
 				RangeError,
