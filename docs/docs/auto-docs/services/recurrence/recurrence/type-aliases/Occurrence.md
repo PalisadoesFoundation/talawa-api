@@ -6,7 +6,7 @@
 
 > **Occurrence** = `object`
 
-Defined in: [src/services/recurrence/recurrence.ts:46](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/recurrence/recurrence.ts#L46)
+Defined in: [src/services/recurrence/recurrence.ts:103](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/recurrence/recurrence.ts#L103)
 
 ## Properties
 
@@ -14,7 +14,7 @@ Defined in: [src/services/recurrence/recurrence.ts:46](https://github.com/Palisa
 
 > **endAt**: `Date`
 
-Defined in: [src/services/recurrence/recurrence.ts:48](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/recurrence/recurrence.ts#L48)
+Defined in: [src/services/recurrence/recurrence.ts:105](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/recurrence/recurrence.ts#L105)
 
 ***
 
@@ -22,7 +22,7 @@ Defined in: [src/services/recurrence/recurrence.ts:48](https://github.com/Palisa
 
 > **seq**: `number`
 
-Defined in: [src/services/recurrence/recurrence.ts:49](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/recurrence/recurrence.ts#L49)
+Defined in: [src/services/recurrence/recurrence.ts:106](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/recurrence/recurrence.ts#L106)
 
 ***
 
@@ -30,4 +30,4 @@ Defined in: [src/services/recurrence/recurrence.ts:49](https://github.com/Palisa
 
 > **startAt**: `Date`
 
-Defined in: [src/services/recurrence/recurrence.ts:47](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/recurrence/recurrence.ts#L47)
+Defined in: [src/services/recurrence/recurrence.ts:104](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/recurrence/recurrence.ts#L104)

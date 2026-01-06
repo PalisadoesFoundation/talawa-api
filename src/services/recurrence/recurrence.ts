@@ -4,6 +4,18 @@ export type Weekday = "SU" | "MO" | "TU" | "WE" | "TH" | "FR" | "SA";
 // Frequency values supported by our recurrence engine
 export type Freq = "DAILY" | "WEEKLY" | "MONTHLY";
 
+// Allowed Frequency
+export const Allowed_Freq: readonly Freq[] = ["DAILY", "WEEKLY", "MONTHLY"];
+const ALLOWED_WEEKDAYS: readonly Weekday[] = [
+	"SU",
+	"MO",
+	"TU",
+	"WE",
+	"TH",
+	"FR",
+	"SA",
+];
+const RFC5545_COMPACT_UTC = /^\d{8}T\d{6}Z$/;
 export type RecurrenceRule = {
 	freq: Freq; // example : DAILY
 	byDay?: Weekday[]; // example : ["MO","FR"]
@@ -11,6 +23,52 @@ export type RecurrenceRule = {
 	count?: number; // stops after some nth count
 	until?: Date; // stop before some date
 };
+
+function parseFreq(raw?: string): Freq {
+	if (!raw) {
+		throw new RangeError("RRULE missing FREQ");
+	}
+
+	const normalized = raw.trim().toUpperCase();
+	if (Allowed_Freq.includes(normalized as Freq)) {
+		return normalized as Freq;
+	}
+
+	throw new RangeError(`Invalid RRULE FREQ: ${raw}`);
+}
+
+function parseByDay(raw?: string): Weekday[] | undefined {
+	if (!raw) return undefined;
+
+	const tokens = raw
+		.split(",")
+		.map((token) => token.trim().toUpperCase())
+		.filter((token) => token.length > 0);
+
+	const invalid = tokens.filter(
+		(token): token is string => !ALLOWED_WEEKDAYS.includes(token as Weekday),
+	);
+	if (invalid.length > 0) {
+		throw new RangeError(`Invalid RRULE BYDAY: ${invalid.join(",")}`);
+	}
+
+	return tokens.length > 0 ? (tokens as Weekday[]) : undefined;
+}
+
+function parseUntil(raw?: string): Date | undefined {
+	if (!raw) return undefined;
+
+	const trimmed = raw.trim();
+	const normalized = RFC5545_COMPACT_UTC.test(trimmed)
+		? `${trimmed.slice(0, 4)}-${trimmed.slice(4, 6)}-${trimmed.slice(6, 8)}T${trimmed.slice(9, 11)}:${trimmed.slice(11, 13)}:${trimmed.slice(13, 15)}Z`
+		: trimmed;
+
+	const parsed = new Date(normalized);
+	if (Number.isNaN(parsed.getTime())) {
+		throw new RangeError(`Invalid RRULE UNTIL: ${raw}`);
+	}
+	return parsed;
+}
 
 // Parse an RFC5545 RRULE string into our RecurrenceRule shape
 export function parseRRule(rrule: string): RecurrenceRule {
@@ -23,17 +81,16 @@ export function parseRRule(rrule: string): RecurrenceRule {
 		}
 		return acc;
 	}, {});
-	const freq = (map.FREQ ?? "WEEKLY") as Freq;
+	const freq = parseFreq(map.FREQ);
 	const interval = Math.max(1, Number(map.INTERVAL ?? "1"));
-	const byDay = map.BYDAY
-		? (map.BYDAY.split(",").map((s: string) => s.trim()) as Weekday[])
-		: undefined;
+	const byDay = parseByDay(map.BYDAY);
 	const count = map.COUNT ? Number(map.COUNT) : undefined;
-	const until = map.UNTIL ? new Date(map.UNTIL) : undefined;
+	const until = parseUntil(map.UNTIL);
 	return { freq, interval, byDay, count, until };
 }
 
 // helpers
+// NOTE: These helpers use UTC/millisecond arithmetic. Local clock time will shift across DST boundaries; this is deliberate for UTC-anchored recurrence math.
 export function addDays(d: Date, n: number): Date {
 	const dt = new Date(d.getTime() + n * 24 * 60 * 60 * 1000);
 	return dt;
@@ -139,7 +196,7 @@ export function generateOccurrences(
 	if (rule.freq === "DAILY") {
 		for (
 			let candidate = new Date(baseStart);
-			candidate < stopAt;
+			!(rule.until ? candidate > stopAt : candidate >= stopAt);
 			candidate = addDays(candidate, rule.interval)
 		) {
 			if (rule.count && sequence >= rule.count) {
@@ -186,7 +243,7 @@ export function generateOccurrences(
 			if (rule.count && sequence >= rule.count) break;
 			const candidate = addMonthSafely(baseStart, i * rule.interval);
 			i++;
-			if (candidate >= stopAt) break;
+			if (candidate > stopAt) break;
 			if (rule.until && candidate > rule.until) break;
 			recordOccurrence(candidate);
 		}

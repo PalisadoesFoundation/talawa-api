@@ -8,7 +8,9 @@ import {
 	generateOccurrences,
 	parseRRule,
 	type RecurrenceRule,
+	startOfWeek,
 	type Weekday,
+	weekOffset,
 } from "~/src/services/recurrence/recurrence";
 
 const TEMPLATE_START = new Date("2025-01-01T10:00:00Z");
@@ -27,6 +29,32 @@ describe("recurrence utilities", () => {
 				count: 4,
 			});
 			expect(rule.until?.toISOString()).toBe("2025-02-01T00:00:00.000Z");
+		});
+
+		test("throws when FREQ is invalid", () => {
+			expect(() => parseRRule("FREQ=INVALID;INTERVAL=1")).toThrow(RangeError);
+			expect(() => parseRRule("FREQ=YEARLY;INTERVAL=1")).toThrow(RangeError);
+		});
+		test("throws when BYDAY has invalid tokens", () => {
+			expect(() => parseRRule("FREQ=WEEKLY;BYDAY=MO,XX,FR")).toThrow(
+				RangeError,
+			);
+		});
+
+		test("parses BYDAY when tokens are valid", () => {
+			const rule = parseRRule("FREQ=WEEKLY;BYDAY=mo,we,fr");
+			expect(rule.byDay).toEqual(["MO", "WE", "FR"]);
+		});
+
+		test("parses compact UNTIL format", () => {
+			const rule = parseRRule("FREQ=DAILY;UNTIL=20251231T235959Z");
+			expect(rule.until?.toISOString()).toBe("2025-12-31T23:59:59.000Z");
+		});
+
+		test("throws when UNTIL is invalid", () => {
+			expect(() => parseRRule("FREQ=DAILY;UNTIL=not-a-date")).toThrow(
+				RangeError,
+			);
 		});
 	});
 
@@ -56,6 +84,29 @@ describe("recurrence utilities", () => {
 		test("handles negative weeks for backward navigation", () => {
 			const priorWeek = addWeeks(TEMPLATE_START, -1);
 			expect(priorWeek.toISOString()).toBe("2024-12-25T10:00:00.000Z");
+		});
+	});
+
+	describe("startOfWeek", () => {
+		test("returns prior Sunday for mid-week date", () => {
+			const base = new Date("2025-01-08T10:00:00Z"); // Wednesday
+			const start = startOfWeek(base);
+			expect(start.toISOString()).toBe("2025-01-05T10:00:00.000Z");
+		});
+
+		test("returns same date when already Sunday", () => {
+			const base = new Date("2025-01-05T10:00:00Z"); // Sunday
+			const start = startOfWeek(base);
+			expect(start.toISOString()).toBe("2025-01-05T10:00:00.000Z");
+		});
+	});
+
+	describe("weekOffset", () => {
+		test("maps weekday codes to numeric offsets", () => {
+			expect(weekOffset.SU).toBe(0);
+			expect(weekOffset.MO).toBe(1);
+			expect(weekOffset.WE).toBe(3);
+			expect(weekOffset.FR).toBe(5);
 		});
 	});
 	describe("addMonthSafely", () => {

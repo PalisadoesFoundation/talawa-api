@@ -6,7 +6,7 @@
 
 > **daysInMonth**(`year`, `monthIdx`): `number`
 
-Defined in: [src/services/recurrence/recurrence.ts:65](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/recurrence/recurrence.ts#L65)
+Defined in: [src/services/recurrence/recurrence.ts:122](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/recurrence/recurrence.ts#L122)
 
 ## Parameters
 

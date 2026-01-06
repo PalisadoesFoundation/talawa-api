@@ -24,4 +24,4 @@ An object containing the generated instance, base template, and optional excepti
 
 [`ResolvedRecurringEventInstance`](../../../../drizzle/tables/recurringEventInstances/type-aliases/ResolvedRecurringEventInstance.md)
 
-- A fully resolved generated event instance with all properties correctly inherited and overridden.
+A fully resolved generated event instance with all properties correctly inherited and overridden.

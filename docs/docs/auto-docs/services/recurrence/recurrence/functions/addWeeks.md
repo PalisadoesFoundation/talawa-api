@@ -6,7 +6,7 @@
 
 > **addWeeks**(`d`, `n`): `Date`
 
-Defined in: [src/services/recurrence/recurrence.ts:42](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/recurrence/recurrence.ts#L42)
+Defined in: [src/services/recurrence/recurrence.ts:99](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/recurrence/recurrence.ts#L99)
 
 ## Parameters
 
