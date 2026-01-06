@@ -205,38 +205,6 @@ export function validateAllAnswers(answers: SetupAnswers): void {
 	console.log("✅ All validations passed");
 }
 
-/**
- * Type-safe getter for environment variables.
- * @param answers - The setup answers object
- * @param key - The key to retrieve
- * @returns The value for the key
- * @throws {Error} If the key is not set
- */
-export function getEnvValue<K extends keyof SetupAnswers>(
-	answers: SetupAnswers,
-	key: K,
-): NonNullable<SetupAnswers[K]> {
-	const value = answers[key];
-	if (value === undefined) {
-		throw new Error(`Required environment variable ${key} is not set`);
-	}
-	return value as NonNullable<SetupAnswers[K]>;
-}
-
-/**
- * Type-safe setter for environment variables.
- * @param answers - The setup answers object
- * @param key - The key to set
- * @param value - The value to set
- */
-export function setEnvValue<K extends keyof SetupAnswers>(
-	answers: SetupAnswers,
-	key: K,
-	value: SetupAnswers[K],
-): void {
-	answers[key] = value;
-}
-
 async function promptInput(
 	name: string,
 	message: string,
