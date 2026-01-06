@@ -53,6 +53,7 @@ export type TestEnvConfig = Static<typeof testEnvConfigSchema>;
 /**
  * Function to get the test environment configuration.
  * This function parses and validates environment variables for testing.
+ * It acts as a wrapper for lazy initialization or potential mocking during tests.
  */
 export function getTestEnvConfig(): TestEnvConfig {
 	return envSchema<TestEnvConfig>({

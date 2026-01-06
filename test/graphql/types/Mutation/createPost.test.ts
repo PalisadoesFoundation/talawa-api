@@ -5,7 +5,7 @@ import {
 	POST_CAPTION_MAX_LENGTH,
 } from "~/src/drizzle/tables/posts";
 import type { InvalidArgumentsExtensions } from "~/src/utilities/TalawaGraphQLError";
-import { assertToBeNonNullish } from "../../../helpers";
+import { assertToBeNonNullish, getAdminAuthToken } from "../../../helpers";
 import { server } from "../../../server";
 import { mercuriusClient } from "../client";
 import {
@@ -15,21 +15,6 @@ import {
 	Mutation_joinPublicOrganization,
 	Query_signIn,
 } from "../documentNodes";
-
-async function getAdminAuthToken(): Promise<string> {
-	const signInResult = await mercuriusClient.query(Query_signIn, {
-		variables: {
-			input: {
-				emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-				password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-			},
-		},
-	});
-	assertToBeNonNullish(signInResult.data?.signIn);
-	const authToken = signInResult.data.signIn.authenticationToken;
-	assertToBeNonNullish(authToken);
-	return authToken;
-}
 
 suite("Mutation field createPost", () => {
 	suite("when the client is not authenticated", () => {
@@ -228,7 +213,7 @@ suite("Mutation field createPost", () => {
 					caption: "Unpinned Post",
 				}),
 			);
-			expect(post.pinnedAt == null).toBe(true);
+			expect(post.pinnedAt).toBeNull();
 		});
 	});
 
@@ -790,17 +775,7 @@ suite("Mutation field createPost", () => {
 });
 
 test("successfully creates post with valid image attachment", async () => {
-	const adminSignIn = await mercuriusClient.query(Query_signIn, {
-		variables: {
-			input: {
-				emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-				password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-			},
-		},
-	});
-
-	const token = adminSignIn.data.signIn?.authenticationToken;
-	assertToBeNonNullish(token);
+	const token = await getAdminAuthToken();
 
 	const createOrgResult = await mercuriusClient.mutate(
 		Mutation_createOrganization,
@@ -887,17 +862,7 @@ test("returns unexpected error when MinIO upload fails", async () => {
 	const originalPutObject = server.minio.client.putObject;
 
 	try {
-		const adminSignIn = await mercuriusClient.query(Query_signIn, {
-			variables: {
-				input: {
-					emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-					password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-				},
-			},
-		});
-
-		const token = adminSignIn.data.signIn?.authenticationToken;
-		assertToBeNonNullish(token);
+		const token = await getAdminAuthToken();
 
 		const createOrgResult = await mercuriusClient.mutate(
 			Mutation_createOrganization,
@@ -989,17 +954,7 @@ test("removes MinIO object and returns unexpected error when attachment DB inser
 	const removeObjectSpy = vi.fn().mockResolvedValue(undefined);
 
 	try {
-		const adminSignIn = await mercuriusClient.query(Query_signIn, {
-			variables: {
-				input: {
-					emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-					password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-				},
-			},
-		});
-
-		const token = adminSignIn.data.signIn?.authenticationToken;
-		assertToBeNonNullish(token);
+		const token = await getAdminAuthToken();
 
 		const createOrgResult = await mercuriusClient.mutate(
 			Mutation_createOrganization,

@@ -462,18 +462,18 @@ describe("backgroundServiceWorker", () => {
 		it("triggerMaterializationWorker throws when service is not running", async () => {
 			await expect(
 				triggerMaterializationWorker(mockDrizzleClient, mockLogger),
-			).rejects.toThrow(TalawaRestError);
-			await expect(
-				triggerMaterializationWorker(mockDrizzleClient, mockLogger),
-			).rejects.toHaveProperty("code", ErrorCode.INTERNAL_SERVER_ERROR);
+			).rejects.toMatchObject({
+				constructor: TalawaRestError,
+				code: ErrorCode.INTERNAL_SERVER_ERROR,
+			});
 		});
 		it("triggerCleanupWorker throws when service is not running", async () => {
 			await expect(
 				triggerCleanupWorker(mockDrizzleClient, mockLogger),
-			).rejects.toThrow(TalawaRestError);
-			await expect(
-				triggerCleanupWorker(mockDrizzleClient, mockLogger),
-			).rejects.toHaveProperty("code", ErrorCode.INTERNAL_SERVER_ERROR);
+			).rejects.toMatchObject({
+				constructor: TalawaRestError,
+				code: ErrorCode.INTERNAL_SERVER_ERROR,
+			});
 		});
 	});
 });

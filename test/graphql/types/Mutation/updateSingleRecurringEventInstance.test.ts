@@ -1,6 +1,6 @@
 import { faker } from "@faker-js/faker";
-import { afterEach, expect, suite, test, vi } from "vitest";
-import { assertToBeNonNullish } from "../../../helpers";
+import { beforeEach, expect, suite, test, vi } from "vitest";
+import { assertToBeNonNullish, getAdminAuthToken } from "../../../helpers";
 import { server } from "../../../server";
 import { mercuriusClient } from "../client";
 import { createRegularUserUsingAdmin } from "../createRegularUserUsingAdmin";
@@ -8,10 +8,9 @@ import {
 	Mutation_createOrganization,
 	Mutation_deleteCurrentUser,
 	Mutation_updateSingleRecurringEventInstance,
-	Query_signIn,
 } from "../documentNodes";
 
-afterEach(async () => {
+beforeEach(async () => {
 	vi.clearAllMocks();
 	// Clear rate limit keys to prevent rate limiting between tests
 	const keys = await server.redis.keys("rate-limit:*");
@@ -94,16 +93,7 @@ function mockRecurringEventInstance(
 }
 
 // Get admin authentication token
-const signInResult = await mercuriusClient.query(Query_signIn, {
-	variables: {
-		input: {
-			emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-			password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-		},
-	},
-});
-const adminToken = signInResult.data?.signIn?.authenticationToken ?? null;
-assertToBeNonNullish(adminToken);
+const adminToken = await getAdminAuthToken();
 
 suite("Mutation field updateSingleRecurringEventInstance", () => {
 	suite("when the client is not authenticated", () => {

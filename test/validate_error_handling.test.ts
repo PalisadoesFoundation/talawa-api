@@ -727,17 +727,27 @@ describe("ErrorHandlingValidator", () => {
 				GITHUB_BASE_REF: undefined,
 			};
 
-			vi.mocked(child_process.execSync)
-				// First call for unstaged
-				.mockReturnValueOnce("src/file1.ts\n")
-				// Second call for staged
-				.mockReturnValueOnce("src/file2.ts\n");
+			vi.mocked(child_process.execFileSync).mockImplementation(
+				(cmd, args: readonly string[] = []) => {
+					if (cmd !== "git") return "";
+
+					const argsStr = args.join(" ");
+					if (argsStr.includes("diff --name-only --cached")) {
+						return "src/file2.ts\n";
+					}
+					if (argsStr.includes("diff --name-only")) {
+						return "src/file1.ts\n";
+					}
+					return "";
+				},
+			);
 
 			const modified = validator.getModifiedFiles();
 			expect(modified).toContain("src/file1.ts");
 			expect(modified).toContain("src/file2.ts");
-			expect(child_process.execSync).toHaveBeenCalledWith(
-				expect.stringContaining("diff --name-only"),
+			expect(child_process.execFileSync).toHaveBeenCalledWith(
+				"git",
+				expect.arrayContaining(["diff", "--name-only"]),
 				expect.anything(),
 			);
 
@@ -752,7 +762,7 @@ describe("ErrorHandlingValidator", () => {
 				GITHUB_BASE_REF: undefined,
 			};
 
-			vi.mocked(child_process.execSync).mockImplementation(() => {
+			vi.mocked(child_process.execFileSync).mockImplementation(() => {
 				throw new TalawaRestError({
 					code: ErrorCode.INTERNAL_SERVER_ERROR,
 					message: "Git failed",
@@ -852,11 +862,9 @@ describe("ErrorHandlingValidator", () => {
 				"VIOLATIONS Error handling issues found:\n",
 			);
 			expect(consoleSpy).toHaveBeenCalledWith(
-				"Generic Error Usage in Routes/Resolvers (1 issues):",
+				"Generic Error Usage in Routes/Resolvers (1 issue):",
 			);
-			expect(consoleSpy).toHaveBeenCalledWith(
-				"Console Error Usage (1 issues):",
-			);
+			expect(consoleSpy).toHaveBeenCalledWith("Console Error Usage (1 issue):");
 			expect(consoleSpy).toHaveBeenCalledWith("Summary: 2 issues in 2 files");
 
 			consoleSpy.mockRestore();

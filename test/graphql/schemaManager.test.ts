@@ -966,5 +966,186 @@ describe("GraphQLSchemaManager", () => {
 				"Registered builder extension: test_plugin.getTestData",
 			);
 		});
+
+		it("should log error when schema rebuild fails", async () => {
+			const error = new Error("Rebuild failed");
+			vi.mocked(builder.toSchema).mockImplementation(() => {
+				throw error;
+			});
+
+			vi.mocked(mockPluginManager.isSystemInitialized).mockReturnValue(true);
+			vi.mocked(mockPluginManager.getLoadedPlugins).mockReturnValue([]);
+			vi.mocked(mockPluginManager.getExtensionRegistry).mockReturnValue({
+				graphql: { builderExtensions: [] },
+				database: { tables: {}, enums: {}, relations: {} },
+				hooks: { pre: {}, post: {} },
+				webhooks: { handlers: {} },
+			});
+
+			await expect(schemaManager.rebuildSchema()).rejects.toThrow(
+				"Rebuild failed",
+			);
+			expect(mockLogger.error).toHaveBeenCalledWith(
+				"Schema rebuild failed:",
+				error,
+			);
+		});
+
+		it("should log error when builder extension registration fails", async () => {
+			const error = new Error("Extension failed");
+			const mockExtensionRegistry: IExtensionRegistry = {
+				graphql: {
+					builderExtensions: [
+						{
+							pluginId: "test_plugin",
+							type: "query",
+							fieldName: "test",
+							builderFunction: () => {
+								throw error;
+							},
+						},
+					],
+				},
+				database: { tables: {}, enums: {}, relations: {} },
+				hooks: { pre: {}, post: {} },
+				webhooks: { handlers: {} },
+			};
+
+			vi.mocked(mockPluginManager.isSystemInitialized).mockReturnValue(true);
+			vi.mocked(mockPluginManager.getLoadedPlugins).mockReturnValue([
+				{
+					id: "test_plugin",
+					status: PluginStatus.ACTIVE,
+				} as unknown as ILoadedPlugin,
+			]);
+			vi.mocked(mockPluginManager.getExtensionRegistry).mockReturnValue(
+				mockExtensionRegistry,
+			);
+			vi.mocked(mockPluginManager.isPluginActive).mockReturnValue(true);
+			vi.mocked(mockPluginManager.getPluginsDirectory).mockReturnValue(
+				"/test/plugins",
+			);
+
+			const registerActivePluginExtensions = (
+				schemaManager as unknown as {
+					registerActivePluginExtensions: () => Promise<void>;
+				}
+			).registerActivePluginExtensions.bind(schemaManager);
+
+			await registerActivePluginExtensions();
+
+			expect(mockLogger.error).toHaveBeenCalledWith(
+				"Failed to register builder extension test_plugin.test:",
+				error,
+			);
+		});
+
+		it("should log error when schema update callback fails", async () => {
+			const error = new Error("Callback failed");
+			const callback = vi.fn().mockImplementation(() => {
+				throw error;
+			});
+			schemaManager.onSchemaUpdate(callback);
+
+			vi.mocked(builder.toSchema).mockReturnValue(
+				{} as unknown as GraphQLSchema,
+			);
+			vi.mocked(mockPluginManager.isSystemInitialized).mockReturnValue(true);
+			vi.mocked(mockPluginManager.getLoadedPlugins).mockReturnValue([]);
+			vi.mocked(mockPluginManager.getExtensionRegistry).mockReturnValue({
+				graphql: { builderExtensions: [] },
+				database: { tables: {}, enums: {}, relations: {} },
+				hooks: { pre: {}, post: {} },
+				webhooks: { handlers: {} },
+			});
+
+			await schemaManager.rebuildSchema();
+
+			expect(mockLogger.error).toHaveBeenCalledWith(
+				"Schema update callback failed:",
+				error,
+			);
+		});
+	});
+
+	describe("Default Logger", () => {
+		it("should use default logger when no logger is set", async () => {
+			const stderrSpy = vi
+				.spyOn(process.stderr, "write")
+				.mockImplementation(() => true);
+			const error = new Error("Test error");
+
+			// Force an error in rebuildSchema
+			vi.mocked(builder.toSchema).mockImplementation(() => {
+				throw error;
+			});
+
+			vi.mocked(mockPluginManager.isSystemInitialized).mockReturnValue(true);
+			vi.mocked(mockPluginManager.getLoadedPlugins).mockReturnValue([]);
+			vi.mocked(mockPluginManager.getExtensionRegistry).mockReturnValue({
+				graphql: { builderExtensions: [] },
+				database: { tables: {}, enums: {}, relations: {} },
+				hooks: { pre: {}, post: {} },
+				webhooks: { handlers: {} },
+			});
+
+			await expect(schemaManager.rebuildSchema()).rejects.toThrow("Test error");
+
+			expect(stderrSpy).toHaveBeenCalled();
+			const lastCallArgs = stderrSpy.mock.calls[0]?.[0] as string;
+			expect(lastCallArgs).toContain('"level":"error"');
+			expect(lastCallArgs).toContain("Schema rebuild failed");
+			expect(lastCallArgs).toContain("Test error");
+
+			stderrSpy.mockRestore();
+		});
+
+		it("should use default logger when no logger is set (without calling setLogger)", async () => {
+			const stderrSpy = vi
+				.spyOn(process.stderr, "write")
+				.mockImplementation(() => true);
+			const stdoutSpy = vi
+				.spyOn(process.stdout, "write")
+				.mockImplementation(() => true);
+
+			// Ensure logger is reset to default (fresh instance)
+			const freshSchemaManager = new GraphQLSchemaManager();
+
+			// Cast to unknown then to a shape with logger to access private property test-safely without 'any'
+			const manager = freshSchemaManager as unknown as {
+				logger: {
+					info: (msg: string) => void;
+					error: (msg: string, error?: unknown) => void;
+				};
+			};
+
+			// Directly access the logger (it should be the default one)
+			expect(typeof manager.logger.info).toBe("function");
+
+			// Invoke a method that uses the logger
+			manager.logger.info("Test default logger info message");
+			// Pass an error object to trigger 'this.serializeError' usage
+			manager.logger.error(
+				"Test default logger error message",
+				new Error("Inner error"),
+			);
+
+			expect(stdoutSpy).toHaveBeenCalled();
+			const stdoutCalls = stdoutSpy.mock.calls;
+			const infoCall = stdoutCalls.find((call) =>
+				(call[0] as string).includes("Test default logger info message"),
+			);
+			expect(infoCall).toBeDefined();
+
+			expect(stderrSpy).toHaveBeenCalled();
+			const stderrCalls = stderrSpy.mock.calls;
+			const errorCall = stderrCalls.find((call) =>
+				(call[0] as string).includes("Test default logger error message"),
+			);
+			expect(errorCall).toBeDefined();
+
+			stderrSpy.mockRestore();
+			stdoutSpy.mockRestore();
+		});
 	});
 });

@@ -111,7 +111,6 @@ describe("Error handler integration using mocked objects route", () => {
 			error: {
 				code: "internal_server_error",
 				message: "Generic error message",
-				details: undefined,
 				correlationId: expect.any(String),
 			},
 		});

@@ -17,7 +17,7 @@
  * 1 - Violations found
  */
 
-import { execFileSync, execSync } from "node:child_process";
+import { execFileSync } from "node:child_process";
 import { existsSync, readFileSync } from "node:fs";
 import { dirname, join, relative, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -250,18 +250,20 @@ export class ErrorHandlingValidator {
 		}
 
 		try {
-			const unstaged = execSync("git diff --name-only", {
+			const unstaged = execFileSync("git", ["diff", "--name-only"], {
 				cwd: rootDir,
 				encoding: "utf8",
 				stdio: ["pipe", "pipe", "ignore"],
+				shell: false,
 			})
 				.split("\n")
 				.filter(Boolean);
 
-			const staged = execSync("git diff --name-only --cached", {
+			const staged = execFileSync("git", ["diff", "--name-only", "--cached"], {
 				cwd: rootDir,
 				encoding: "utf8",
 				stdio: ["pipe", "pipe", "ignore"],
+				shell: false,
 			})
 				.split("\n")
 				.filter(Boolean);
@@ -277,23 +279,6 @@ export class ErrorHandlingValidator {
 
 	public sanitizeGitRef(ref: string): string {
 		if (!/^[a-zA-Z0-9_\-/.]+$/.test(ref)) {
-			throw new TalawaRestError({
-				code: ErrorCode.INVALID_INPUT,
-				message: `Invalid git reference: ${ref}`,
-			});
-		}
-
-		if (
-			ref.includes(";") ||
-			ref.includes("|") ||
-			ref.includes("&") ||
-			ref.includes("$") ||
-			ref.includes("`") ||
-			ref.includes("(") ||
-			ref.includes(")") ||
-			ref.includes("<") ||
-			ref.includes(">")
-		) {
 			throw new TalawaRestError({
 				code: ErrorCode.INVALID_INPUT,
 				message: `Invalid git reference: ${ref}`,
@@ -945,8 +930,9 @@ export class ErrorHandlingValidator {
 		);
 
 		Object.entries(violationsByType).forEach(([type, violations]) => {
+			const issueWord = violations.length === 1 ? "issue" : "issues";
 			console.log(
-				`${this.getViolationTitle(type)} (${violations.length} issues):`,
+				`${this.getViolationTitle(type)} (${violations.length} ${issueWord}):`,
 			);
 
 			violations.forEach((violation) => {
@@ -956,8 +942,9 @@ export class ErrorHandlingValidator {
 			});
 		});
 
+		const issueWord = this.result.violationCount === 1 ? "issue" : "issues";
 		console.log(
-			`Summary: ${this.result.violationCount} issues in ${this.result.fileCount} files`,
+			`Summary: ${this.result.violationCount} ${issueWord} in ${this.result.fileCount} files`,
 		);
 	}
 
@@ -1022,7 +1009,9 @@ export class ErrorHandlingValidator {
 				) {
 					throw error;
 				}
-				console.error("Error applying Biome formatting:", error);
+				const errorMessage =
+					error instanceof Error ? error.message : String(error);
+				console.error("Error applying Biome formatting:", errorMessage);
 				process.exit(1);
 			}
 		}

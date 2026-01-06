@@ -1,4 +1,7 @@
 import { isDeepStrictEqual } from "node:util";
+import { mercuriusClient } from "./graphql/types/client";
+import { Query_signIn } from "./graphql/types/documentNodes";
+import { server } from "./server";
 
 /**
  * This function is used to narrow the type of a value passed to it to not be equal to `null` or `undefined`. More information can be found at the following links:
@@ -19,10 +22,8 @@ export function assertToBeNonNullish<T>(
 	message?: string,
 ): asserts value is T {
 	if (value === undefined || value === null) {
-		// Using a more descriptive error message that includes context
-		const error = new Error(
-			`Expected value to be non-nullish but received: ${value}`,
-		);
+		const defaultMessage = `Expected value to be non-nullish but received: ${value}`;
+		const error = new Error(message ?? defaultMessage);
 		error.name = "AssertionError";
 		throw error;
 	}
@@ -51,3 +52,26 @@ export const isSubSequence = <T>(sequence: T[], subsequence: T[]) => {
 	// Return true or false depending on whether the matching for the entire subsequence has completed along with the loop exit.
 	return j === subsequence.length;
 };
+
+/**
+ * Retrieves an administrative authentication token for testing purposes.
+ * This helper function performs a sign-in operation using the administrator
+ * credentials configured in the server environment and asserts that a valid
+ * token is returned.
+ *
+ * @returns {Promise<string>} A promise that resolves to the admin authentication token.
+ * @throws {AssertionError} If the sign-in fails or no token is returned.
+ */
+export async function getAdminAuthToken(): Promise<string> {
+	const signInResult = await mercuriusClient.query(Query_signIn, {
+		variables: {
+			input: {
+				emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
+				password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
+			},
+		},
+	});
+	const adminToken = signInResult.data?.signIn?.authenticationToken ?? null;
+	assertToBeNonNullish(adminToken);
+	return adminToken;
+}
