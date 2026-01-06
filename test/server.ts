@@ -37,5 +37,10 @@ export const server = await createServer({
 		 * This makes the server test instance use the test cookie secret.
 		 */
 		API_COOKIE_SECRET: testEnvConfig.API_COOKIE_SECRET,
+		/**
+		 * Set high rate limits for tests to prevent "Too many requests" errors.
+		 */
+		API_RATE_LIMIT_BUCKET_CAPACITY: 10000,
+		API_RATE_LIMIT_REFILL_RATE: 10000,
 	},
 });

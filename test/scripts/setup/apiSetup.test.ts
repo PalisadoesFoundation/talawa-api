@@ -8,6 +8,7 @@ import {
 	apiSetup,
 	checkEnvFile,
 	generateJwtSecret,
+	type SetupAnswers,
 	setup,
 	validatePort,
 	validateURL,
@@ -179,7 +180,7 @@ describe("Setup -> apiSetup", () => {
 			.mockResolvedValueOnce({ API_POSTGRES_USER: "mocked-user" });
 		const consoleWarnSpy = vi.spyOn(console, "warn");
 
-		let answers: Record<string, string> = {};
+		let answers: SetupAnswers = {};
 		answers = await apiSetup(answers);
 
 		// Verify user is prompted twice because first attempt was incorrect
