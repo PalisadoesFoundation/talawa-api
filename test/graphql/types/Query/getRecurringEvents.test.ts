@@ -528,7 +528,7 @@ suite("Query field getRecurringEvents", () => {
 			const [organizationRow] = await server.drizzleClient
 				.insert(organizationsTable)
 				.values({
-					name: faker.company.name(),
+					name: `${faker.company.name()}-${faker.string.uuid()}`,
 					userRegistrationRequired: false,
 				})
 				.returning({ id: organizationsTable.id });
@@ -604,7 +604,7 @@ suite("Query field getRecurringEvents", () => {
 			const [organizationRow] = await server.drizzleClient
 				.insert(organizationsTable)
 				.values({
-					name: faker.company.name(),
+					name: `${faker.company.name()}-${faker.string.uuid()}`,
 					userRegistrationRequired: false,
 				})
 				.returning({ id: organizationsTable.id });
@@ -673,7 +673,7 @@ suite("Query field getRecurringEvents", () => {
 			const [organizationRow] = await server.drizzleClient
 				.insert(organizationsTable)
 				.values({
-					name: faker.company.name(),
+					name: `${faker.company.name()}-${faker.string.uuid()}`,
 					userRegistrationRequired: false,
 				})
 				.returning({ id: organizationsTable.id });

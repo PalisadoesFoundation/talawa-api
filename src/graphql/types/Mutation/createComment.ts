@@ -86,7 +86,7 @@ builder.mutationField("createComment", (t) =>
 				}),
 			]);
 
-			if (currentUser === undefined) {
+			if (!currentUser) {
 				throw new TalawaGraphQLError({
 					extensions: {
 						code: "unauthenticated",
@@ -94,7 +94,7 @@ builder.mutationField("createComment", (t) =>
 				});
 			}
 
-			if (existingPost === undefined) {
+			if (!existingPost) {
 				throw new TalawaGraphQLError({
 					extensions: {
 						code: "arguments_associated_resources_not_found",
@@ -112,7 +112,7 @@ builder.mutationField("createComment", (t) =>
 
 			if (
 				currentUser.role !== "administrator" &&
-				currentUserOrganizationMembership === undefined
+				!currentUserOrganizationMembership
 			) {
 				throw new TalawaGraphQLError({
 					extensions: {
