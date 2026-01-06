@@ -690,8 +690,7 @@ describe("eventGenerationWindows insert schema numeric bounds", () => {
 	it("accepts a fully valid object with all the fields", () => {
 		const completeValidObject = {
 			organizationId: "3f738d7f-22e7-4bda-b47f-61f0a9c9c9a1",
-			hotWindowMonthsAhead: new Date("2025-12-31"),
-			currentWindowEndDate: new Date("2024-01-01"),
+			currentWindowEndDate: new Date("2025-12-31"),
 			retentionStartDate: new Date("2024-01-01"),
 			hotWindowMonthsAhead: 12,
 			historyRetentionMonths: 24,
