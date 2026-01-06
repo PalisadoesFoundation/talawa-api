@@ -34,6 +34,8 @@ describe("GraphQL Correlation ID Integration", () => {
 		server = await createServer({
 			envConfig: {
 				API_REDIS_HOST: testEnvConfig.API_REDIS_TEST_HOST,
+				API_RATE_LIMIT_BUCKET_CAPACITY: 10000,
+				API_RATE_LIMIT_REFILL_RATE: 10000,
 			},
 		});
 		await server.ready();
