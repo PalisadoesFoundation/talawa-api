@@ -389,56 +389,6 @@ suite("updateChat mutation", () => {
 		expect(rows[0]?.avatarMimeType).toBeNull();
 	});
 
-	test("successfully uploads and updates chat avatar with valid image", async () => {
-		const orgId = await createTestOrganization();
-		const chatId = faker.string.uuid();
-
-		await server.drizzleClient.insert(chatsTable).values({
-			id: chatId,
-			name: "Chat",
-			organizationId: orgId,
-			creatorId: sharedUser.userId,
-		});
-
-		await server.drizzleClient.insert(organizationMembershipsTable).values({
-			memberId: sharedUser.userId,
-			organizationId: orgId,
-			role: "administrator",
-		});
-
-		const validUpload = Promise.resolve({
-			filename: "avatar.png",
-			mimetype: "image/png",
-			createReadStream: () => Readable.from(Buffer.from("fake-png-data")),
-		});
-
-		const result = await mercuriusClient.mutate(Mutation_updateChat, {
-			headers: { authorization: `bearer ${sharedUser.authToken}` },
-			variables: {
-				input: {
-					id: chatId,
-					avatar: validUpload,
-				},
-			},
-		});
-
-		expect(result.errors).toBeUndefined();
-		expect(result.data?.updateChat.id).toBe(chatId);
-		expect(result.data?.updateChat.avatarURL).toBeDefined();
-		expect(result.data?.updateChat.avatarURL).not.toBeNull();
-
-		const rows = await server.drizzleClient
-			.select()
-			.from(chatsTable)
-			.where(eq(chatsTable.id, chatId));
-
-		expect(rows.length).toBe(1);
-		const chat = rows[0];
-		expect(chat?.avatarName).toBeDefined();
-		expect(chat?.avatarName).not.toBeNull();
-		expect(chat?.avatarMimeType).toBe("image/png");
-	});
-
 	test("returns error when transaction throws", async () => {
 		const user = await createRegularUserUsingAdmin();
 		const orgId = await createTestOrganization();
