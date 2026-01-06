@@ -305,21 +305,21 @@ describe("Performance Tracker", () => {
 	});
 
 	it("should track slow operations", async () => {
-		const tracker = createPerformanceTracker({ slowMs: 100 });
+		const tracker = createPerformanceTracker({ slowMs: 10 });
 
 		await tracker.time("fast-op", async () => {
-			await new Promise((resolve) => setTimeout(resolve, 50));
+			await new Promise((resolve) => setTimeout(resolve, 5));
 		});
 
 		await tracker.time("slow-op", async () => {
-			await new Promise((resolve) => setTimeout(resolve, 150));
+			await new Promise((resolve) => setTimeout(resolve, 20));
 		});
 
 		const snapshot = tracker.snapshot();
 
 		expect(snapshot.slow.length).toBe(1);
 		expect(snapshot.slow[0]?.op).toBe("slow-op");
-		expect(snapshot.slow[0]?.ms).toBeGreaterThanOrEqual(100);
+		expect(snapshot.slow[0]?.ms).toBeGreaterThanOrEqual(10);
 	});
 
 	it("should calculate hit rate correctly", () => {
@@ -460,9 +460,9 @@ describe("Performance Tracker", () => {
 		const snapshotBefore = tracker.snapshot();
 		expect(snapshotBefore.slow.length).toBe(50);
 
-		// Add one more that's slower than the minimum (1000ms >> 10ms minimum)
+		// Add one more that's slower than the minimum (50ms >> 10ms minimum)
 		await tracker.time("very-slow-replacement", async () => {
-			await new Promise((resolve) => setTimeout(resolve, 1000));
+			await new Promise((resolve) => setTimeout(resolve, 50));
 		});
 
 		const snapshotAfter = tracker.snapshot();
@@ -474,19 +474,19 @@ describe("Performance Tracker", () => {
 			(op) => op.op === "very-slow-replacement",
 		);
 		expect(verySlowOp).toBeDefined();
-		expect(verySlowOp?.ms).toBeGreaterThanOrEqual(1000);
+		expect(verySlowOp?.ms).toBeGreaterThanOrEqual(50);
 	});
 
 	it("should not add slow operation when it's not slower than minimum", async () => {
 		const tracker = createPerformanceTracker({ slowMs: 1 });
 
 		// Fill up the slow array to MAX_SLOW (50) with operations of large duration
-		// Use large delays (100ms+) to ensure the minimum is well above any small test delay
+		// Use delays (20ms+) to ensure the minimum is well above any small test delay
 		for (let i = 0; i < 50; i++) {
 			await tracker.time(`slow-${i}`, async () => {
-				// Use increasing delays: 100ms, 101ms, 102ms, ... 149ms
-				// This ensures minMs will be at least 100ms
-				await new Promise((resolve) => setTimeout(resolve, 100 + i));
+				// Use increasing delays: 20ms, 21ms, 22ms, ... 69ms
+				// This ensures minMs will be at least 20ms
+				await new Promise((resolve) => setTimeout(resolve, 20 + i));
 			});
 		}
 
@@ -497,11 +497,11 @@ describe("Performance Tracker", () => {
 		);
 		const minMs = minSlowOp.ms;
 
-		// Verify minMs is large enough (should be at least 100ms)
-		expect(minMs).toBeGreaterThanOrEqual(100);
+		// Verify minMs is large enough (should be at least 20ms)
+		expect(minMs).toBeGreaterThanOrEqual(20);
 
 		// Add an operation that's slow (>= slowMs = 1) but NOT slower than the current minimum
-		// Use a small delay (10ms) which is guaranteed to be < minMs (>= 100ms)
+		// Use a small delay (10ms) which is guaranteed to be < minMs (>= 20ms)
 		// This tests the case where roundedMs <= minMs (line 174 condition is false)
 		await tracker.time("not-slower-than-min", async () => {
 			// Use a small delay that's guaranteed to be less than minMs
@@ -537,7 +537,7 @@ describe("Performance Tracker", () => {
 		// Add one more slow operation that's slower than the minimum - this exercises the
 		// replacement logic in the else branch
 		await tracker.time("very-slow-replacement", async () => {
-			await new Promise((resolve) => setTimeout(resolve, 2000));
+			await new Promise((resolve) => setTimeout(resolve, 50));
 		});
 
 		const snapshotAfter = tracker.snapshot();
@@ -548,7 +548,7 @@ describe("Performance Tracker", () => {
 			(op) => op.op === "very-slow-replacement",
 		);
 		expect(verySlowOp).toBeDefined();
-		expect(verySlowOp?.ms).toBeGreaterThanOrEqual(2000);
+		expect(verySlowOp?.ms).toBeGreaterThanOrEqual(50);
 	});
 
 	it("should handle edge case when slow array has undefined entries during iteration", async () => {
@@ -591,7 +591,7 @@ describe("Performance Tracker", () => {
 		try {
 			// Add the 50th slow operation - push mock will create sparse array
 			await tracker.time("slow-49", async () => {
-				await new Promise((resolve) => setTimeout(resolve, 100));
+				await new Promise((resolve) => setTimeout(resolve, 20));
 			});
 
 			// Verify the array is sparse (slow[0] is undefined)
@@ -603,7 +603,7 @@ describe("Performance Tracker", () => {
 			// and hit the if (!cur) { continue; } branch when it encounters slow[0] (undefined)
 			// The loop will skip the undefined entry and continue processing other valid entries
 			await tracker.time("very-slow", async () => {
-				await new Promise((resolve) => setTimeout(resolve, 2000));
+				await new Promise((resolve) => setTimeout(resolve, 50));
 			});
 
 			// Verify the tracker still works correctly after encountering undefined entries
@@ -614,7 +614,7 @@ describe("Performance Tracker", () => {
 				(op) => op?.op === "very-slow",
 			);
 			expect(verySlowOp).toBeDefined();
-			expect(verySlowOp?.ms).toBeGreaterThanOrEqual(2000);
+			expect(verySlowOp?.ms).toBeGreaterThanOrEqual(50);
 		} finally {
 			// Restore original push
 			Array.prototype.push = originalPush;
@@ -675,7 +675,7 @@ describe("Performance Tracker", () => {
 			// because all entries are invalid (ms = null), so the loop skips them all,
 			// leaving minIdx = -1 and minMs = Infinity, which triggers the return on line 180
 			await tracker.time("very-slow", async () => {
-				await new Promise((resolve) => setTimeout(resolve, 2000));
+				await new Promise((resolve) => setTimeout(resolve, 50));
 			});
 
 			// The defensive check should have been triggered (minIdx === -1 || minMs === Infinity)
