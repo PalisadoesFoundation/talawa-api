@@ -111,7 +111,7 @@ builder.mutationField("createUser", (t) =>
 				}),
 			]);
 
-			if (currentUser === undefined) {
+			if (!currentUser) {
 				throw new TalawaGraphQLError({
 					extensions: {
 						code: "unauthenticated",
@@ -127,7 +127,7 @@ builder.mutationField("createUser", (t) =>
 				});
 			}
 
-			if (existingUserWithEmailAddress !== undefined) {
+			if (existingUserWithEmailAddress) {
 				throw new TalawaGraphQLError({
 					extensions: {
 						code: "forbidden_action_on_arguments_associated_resources",
@@ -181,7 +181,7 @@ builder.mutationField("createUser", (t) =>
 					.returning();
 
 				// Inserted user not being returned is a external defect unrelated to this code. It is very unlikely for this error to occur.
-				if (createdUser === undefined) {
+				if (!createdUser) {
 					ctx.log.error(
 						"Postgres insert operation unexpectedly returned an empty array instead of throwing an error.",
 					);
