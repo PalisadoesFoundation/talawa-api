@@ -256,7 +256,7 @@ export function createPerformanceTracker(
 				hitRate,
 				ops: structuredClone(ops),
 				slow: slow.slice(), // Already bounded to MAX_SLOW during accumulation
-				complexityScore,
+				...(complexityScore !== undefined && { complexityScore }),
 			};
 		},
 	};

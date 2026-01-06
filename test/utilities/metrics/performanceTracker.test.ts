@@ -15,6 +15,8 @@ describe("Performance Tracker", () => {
 			ops: {},
 			slow: [],
 		});
+		// Verify complexityScore is not present when undefined
+		expect(snapshot).not.toHaveProperty("complexityScore");
 	});
 
 	it("should track database operations", () => {
@@ -416,7 +418,8 @@ describe("Performance Tracker", () => {
 		const snapshot = tracker.snapshot();
 
 		// Should not have set complexityScore for invalid values
-		expect(snapshot.complexityScore).toBeUndefined();
+		// Verify complexityScore is not present in the snapshot when undefined
+		expect(snapshot).not.toHaveProperty("complexityScore");
 		expect(snapshot.ops["gql:complexity"]).toBeUndefined();
 	});
 
@@ -568,84 +571,42 @@ describe("Performance Tracker", () => {
 	it("should handle edge case when slow array has undefined entries during iteration", async () => {
 		// This test covers the sparse-array skip behavior on line 166: if (!cur) { continue; }
 		// To trigger this, we need slow.length >= MAX_SLOW with at least one undefined entry.
-		// We use a custom slow array with a sparse entry to test this without global mocks.
+		// We create a sparse array directly without global mocks by using array length manipulation.
 
-		// Create a custom slow array with 49 valid entries and prepare for the 50th
+		// Create a sparse array with 50 length but index 0 is undefined
+		// This simulates the case where slow.length === 50 but slow[0] is undefined
 		const customSlowArray: Array<{ op: string; ms: number } | undefined> = [];
-		for (let i = 0; i < 49; i++) {
-			customSlowArray.push({ op: `slow-${i}`, ms: 10 + i });
+		// Fill indices 1-49 with valid entries
+		for (let i = 1; i < 50; i++) {
+			customSlowArray[i] = { op: `slow-${i}`, ms: 10 + i };
 		}
+		// Set length to 50, leaving index 0 as undefined (sparse)
+		customSlowArray.length = 50;
 
-		// Mock Array.prototype.push to create a sparse array ONLY when the tracker's
-		// 50th slow operation is added (identified by the operation name "slow-49")
-		const originalPush = Array.prototype.push;
-		let pushCallCount = 0;
+		const tracker = createPerformanceTracker({
+			slowMs: 1,
+			__slowArray: customSlowArray as Array<{ op: string; ms: number }>,
+		});
 
-		Array.prototype.push = function <T>(...items: T[]): number {
-			// Narrow interception: only affect the tracker's slow array when adding "slow-49"
-			// Check if this is the slow array (has objects with 'op' and 'ms') and
-			// the item being pushed is the 50th operation (slow-49)
-			const isSlowArray =
-				this.length === 49 &&
-				this[0] &&
-				typeof this[0] === "object" &&
-				"op" in this[0] &&
-				"ms" in this[0];
-			const isSlow49Push =
-				items.length > 0 &&
-				items[0] &&
-				typeof items[0] === "object" &&
-				"op" in items[0] &&
-				(items[0] as { op: string }).op === "slow-49";
+		// Verify the array is sparse (slow[0] is undefined, but length is 50)
+		const snapshotBefore = tracker.snapshot();
+		expect(snapshotBefore.slow.length).toBe(50);
+		expect(snapshotBefore.slow[0]).toBeUndefined();
 
-			if (isSlowArray && isSlow49Push && pushCallCount === 0) {
-				pushCallCount++;
-				// Call original push to add the item
-				const result = originalPush.apply(this, items);
-				// Create a sparse array by deleting index 0
-				// This makes slow[0] undefined while slow.length === 50
-				delete this[0];
-				return result;
-			}
-			return originalPush.apply(this, items);
-		};
+		// Now add one more that's slower - this will iterate through the slow array
+		// and hit the if (!cur) { continue; } branch when it encounters slow[0] (undefined)
+		// The loop will skip the undefined entry and continue processing other valid entries
+		await tracker.time("very-slow", async () => {
+			await new Promise((resolve) => setTimeout(resolve, 50));
+		});
 
-		try {
-			const tracker = createPerformanceTracker({
-				slowMs: 1,
-				__slowArray: customSlowArray as Array<{ op: string; ms: number }>,
-			});
-
-			// Add the 50th slow operation - push mock will create sparse array
-			await tracker.time("slow-49", async () => {
-				await new Promise((resolve) => setTimeout(resolve, 20));
-			});
-
-			// Verify the array is sparse (slow[0] is undefined)
-			const snapshotAfterPush = tracker.snapshot();
-			expect(snapshotAfterPush.slow.length).toBe(50);
-			expect(snapshotAfterPush.slow[0]).toBeUndefined();
-
-			// Now add one more that's slower - this will iterate through the slow array
-			// and hit the if (!cur) { continue; } branch when it encounters slow[0] (undefined)
-			// The loop will skip the undefined entry and continue processing other valid entries
-			await tracker.time("very-slow", async () => {
-				await new Promise((resolve) => setTimeout(resolve, 50));
-			});
-
-			// Verify the tracker still works correctly after encountering undefined entries
-			const snapshotAfter = tracker.snapshot();
-			// The very-slow operation should be added (replacing the minimum valid entry)
-			expect(snapshotAfter.slow.length).toBe(50);
-			const verySlowOp = snapshotAfter.slow.find(
-				(op) => op?.op === "very-slow",
-			);
-			expect(verySlowOp).toBeDefined();
-			expect(verySlowOp?.ms).toBeGreaterThanOrEqual(50);
-		} finally {
-			// Restore original push
-			Array.prototype.push = originalPush;
-		}
+		// Verify the tracker still works correctly after encountering undefined entries
+		const snapshotAfter = tracker.snapshot();
+		// The very-slow operation should be added (replacing the minimum valid entry)
+		expect(snapshotAfter.slow.length).toBe(50);
+		const verySlowOp = snapshotAfter.slow.find((op) => op?.op === "very-slow");
+		expect(verySlowOp).toBeDefined();
+		expect(verySlowOp?.ms).toBeGreaterThanOrEqual(50);
 	});
 
 	it("should handle edge case when all slow entries are invalid (minIdx === -1 || minMs === Infinity)", async () => {
