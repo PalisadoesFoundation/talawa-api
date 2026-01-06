@@ -1,6 +1,7 @@
 import dotenv from "dotenv";
 
 dotenv.config();
+
 export const observabilityConfig = {
 	enabled: process.env.API_OTEL_ENABLED === "true",
 	environment: process.env.API_OTEL_ENVIRONMENT ?? "local",
