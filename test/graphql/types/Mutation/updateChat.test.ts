@@ -148,6 +148,90 @@ suite("updateChat mutation", () => {
 		expect(result.errors?.[0]?.message).toMatch(/Graphql validation error/i);
 	});
 
+	test("successfully uploads and updates chat avatar with valid image", async () => {
+		const user = await createRegularUserUsingAdmin();
+		const orgId = await createTestOrganization();
+		const chatId = faker.string.uuid();
+
+		await server.drizzleClient.insert(chatsTable).values({
+			id: chatId,
+			name: "Chat",
+			organizationId: orgId,
+			creatorId: user.userId,
+		});
+
+		await server.drizzleClient.insert(organizationMembershipsTable).values({
+			memberId: user.userId,
+			organizationId: orgId,
+			role: "administrator",
+		});
+
+		const boundary = `----WebKitFormBoundary${Math.random().toString(36).slice(2)}`;
+
+		const operations = JSON.stringify({
+			query: `
+      mutation UpdateChat($input: MutationUpdateChatInput!) {
+        updateChat(input: $input) {
+          id
+          avatarURL
+        }
+      }
+    `,
+			variables: {
+				input: {
+					id: chatId,
+					avatar: null,
+				},
+			},
+		});
+
+		const map = JSON.stringify({
+			"0": ["variables.input.avatar"],
+		});
+
+		const body = [
+			`--${boundary}`,
+			'Content-Disposition: form-data; name="operations"',
+			"",
+			operations,
+			`--${boundary}`,
+			'Content-Disposition: form-data; name="map"',
+			"",
+			map,
+			`--${boundary}`,
+			'Content-Disposition: form-data; name="0"; filename="avatar.png"',
+			"Content-Type: image/png",
+			"",
+			"fake image content",
+			`--${boundary}--`,
+		].join("\r\n");
+
+		const response = await server.inject({
+			method: "POST",
+			url: "/graphql",
+			headers: {
+				"content-type": `multipart/form-data; boundary=${boundary}`,
+				authorization: `bearer ${user.authToken}`,
+			},
+			payload: body,
+		});
+
+		const json = JSON.parse(response.body);
+
+		expect(json.errors).toBeUndefined();
+		expect(json.data.updateChat.id).toBe(chatId);
+		expect(json.data.updateChat.avatarURL).toBeDefined();
+
+		const [chat] = await server.drizzleClient
+			.select()
+			.from(chatsTable)
+			.where(eq(chatsTable.id, chatId));
+
+		expect(chat).toBeDefined();
+		expect(chat?.avatarName).not.toBeNull();
+		expect(chat?.avatarMimeType).toBe("image/png");
+	});
+
 	test("returns resource not found when chat does not exist", async () => {
 		const result = await mercuriusClient.mutate(Mutation_updateChat, {
 			headers: { authorization: `bearer ${sharedUser.authToken}` },
