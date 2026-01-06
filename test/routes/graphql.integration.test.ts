@@ -25,12 +25,17 @@ vi.mock("~/src/fastifyPlugins/performance", () => ({
 import type { FastifyInstance } from "fastify";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { createServer } from "~/src/createServer";
+import { testEnvConfig } from "../envConfigSchema";
 
 describe("GraphQL Correlation ID Integration", () => {
 	let server: FastifyInstance;
 
 	beforeEach(async () => {
-		server = await createServer();
+		server = await createServer({
+			envConfig: {
+				API_REDIS_HOST: testEnvConfig.API_REDIS_TEST_HOST,
+			},
+		});
 		await server.ready();
 	});
 
