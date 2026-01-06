@@ -1,6 +1,6 @@
 import { faker } from "@faker-js/faker";
 import { graphql } from "gql.tada";
-import { expect, suite, test, vi } from "vitest";
+import { afterEach, beforeAll, expect, suite, test, vi } from "vitest";
 import type {
 	ArgumentsAssociatedResourcesNotFoundExtensions,
 	InvalidArgumentsExtensions,
@@ -19,6 +19,10 @@ import {
 	Mutation_createUser,
 	Query_signIn,
 } from "../documentNodes";
+
+afterEach(() => {
+	vi.clearAllMocks();
+});
 
 const Mutation_createVenue = graphql(`
 	mutation Mutation_createVenue($input: MutationCreateVenueInput!) {
@@ -169,10 +173,22 @@ async function createTestVenueBooking(eventId: string, venueId: string) {
 	return createVenueBookingResult.data.createVenueBooking.id;
 }
 
+// Create users at suite level to avoid rate limiting
+let testUser1: { userId: string; authToken: string };
+let testUser2: { userId: string; authToken: string };
+let testUser3: { userId: string; authToken: string };
+
+beforeAll(async () => {
+	// Create 3 users to be reused across tests
+	testUser1 = await createRegularUserHelper();
+	testUser2 = await createRegularUserHelper();
+	testUser3 = await createRegularUserHelper();
+});
+
 /**
- * Helper to create a regular user with no org membership.
+ * Helper to create a regular user with no org membership (used only in beforeAll).
  */
-async function createRegularUser() {
+async function createRegularUserHelper() {
 	const createUserResult = await mercuriusClient.mutate(Mutation_createUser, {
 		headers: { authorization: `bearer ${adminToken}` },
 		variables: {
@@ -247,7 +263,8 @@ suite("Mutation field deleteVenueBooking", () => {
 			 * Tests that deleted user tokens are properly invalidated.
 			 */
 			test("client triggering the graphql operation has no existing user associated to their authentication context.", async () => {
-				const { authToken: userToken } = await createRegularUser();
+				// Create a temporary user to delete (can't reuse pre-created users)
+				const { authToken: userToken } = await createRegularUserHelper();
 
 				// Delete the user using their own token
 				const Mutation_deleteCurrentUser = graphql(`
@@ -571,9 +588,9 @@ suite("Mutation field deleteVenueBooking", () => {
 				const eventId = await createTestEvent(orgId);
 				await createTestVenueBooking(eventId, venueId);
 
-				// Create a regular user
+				// Use pre-created user
 				const { userId: regularUserId, authToken: regularUserToken } =
-					await createRegularUser();
+					testUser1;
 
 				// Add user as non-admin member of the organization
 				await mercuriusClient.mutate(Mutation_createOrganizationMembership, {
@@ -637,8 +654,8 @@ suite("Mutation field deleteVenueBooking", () => {
 				const eventId = await createTestEvent(orgId);
 				await createTestVenueBooking(eventId, venueId);
 
-				// Create a regular user (not a member of the organization)
-				const { authToken: regularUserToken } = await createRegularUser();
+				// Use pre-created user (not a member of the organization)
+				const { authToken: regularUserToken } = testUser2;
 
 				// Try to delete venue booking as non-member user
 				const deleteVenueBookingResult = await mercuriusClient.mutate(
@@ -729,9 +746,8 @@ suite("Mutation field deleteVenueBooking", () => {
 				const eventId = await createTestEvent(orgId);
 				await createTestVenueBooking(eventId, venueId);
 
-				// Create a regular user
-				const { userId: orgAdminUserId, authToken: orgAdminToken } =
-					await createRegularUser();
+				// Use pre-created user
+				const { userId: orgAdminUserId, authToken: orgAdminToken } = testUser3;
 
 				// Add user as admin member of the organization
 				await mercuriusClient.mutate(Mutation_createOrganizationMembership, {
