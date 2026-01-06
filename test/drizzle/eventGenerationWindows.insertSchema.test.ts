@@ -7,6 +7,40 @@ describe("eventGenerationWindows insert schema numeric bounds", () => {
 		currentWindowEndDate: new Date(),
 		retentionStartDate: new Date(),
 	};
+	it("required fields validation", () => {
+		// Missing organizationId
+		expect(
+			eventGenerationWindowsTableInsertSchema.safeParse({
+				currentWindowEndDate: new Date(),
+				retentionStartDate: new Date(),
+			}).success,
+		).toBe(false);
+
+		// Missing currentWindowEndDate
+		expect(
+			eventGenerationWindowsTableInsertSchema.safeParse({
+				organizationId: "3f738d7f-22e7-4bda-b47f-61f0a9c9c9a1",
+				retentionStartDate: new Date(),
+			}).success,
+		).toBe(false);
+
+		// Missing retentionStartDate
+		expect(
+			eventGenerationWindowsTableInsertSchema.safeParse({
+				organizationId: "3f738d7f-22e7-4bda-b47f-61f0a9c9c9a1",
+				currentWindowEndDate: new Date(),
+			}).success,
+		).toBe(false);
+
+		// All required fields present (should succeed)
+		expect(
+			eventGenerationWindowsTableInsertSchema.safeParse({
+				organizationId: "3f738d7f-22e7-4bda-b47f-61f0a9c9c9a1",
+				currentWindowEndDate: new Date(),
+				retentionStartDate: new Date(),
+			}).success,
+		).toBe(true);
+	});
 
 	it("hotWindowMonthsAhead min/max", () => {
 		// Valid boundary values
@@ -651,5 +685,26 @@ describe("eventGenerationWindows insert schema numeric bounds", () => {
 				isEnabled: 0 as unknown as boolean,
 			}).success,
 		).toBe(false);
+	});
+
+	it("accepts a fully valid object with all the fields", () => {
+		const completeValidObject = {
+			organizationId: "3f738d7f-22e7-4bda-b47f-61f0a9c9c9a1",
+			hotWindowMonthsAhead: new Date("2025-12-31"),
+			currentWindowEndDate: new Date("2024-01-01"),
+			retentionStartDate: new Date("2024-01-01"),
+			hotWindowMonthsAhead: 12,
+			historyRetentionMonths: 24,
+			processingPriority: 5,
+			maxInstancesPerRun: 500,
+			lastProcessedInstanceCount: 100,
+			configurationNotes: "Production configuration for Q1 2025",
+			createdById: "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+			lastUpdatedById: "b2c3d4e5-f6a7-8901-bcde-f12345678901",
+			isEnabled: true,
+		};
+		const result =
+			eventGenerationWindowsTableInsertSchema.safeParse(completeValidObject);
+		expect(result.success).toBe(true);
 	});
 });
