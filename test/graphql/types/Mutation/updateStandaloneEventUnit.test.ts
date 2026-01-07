@@ -355,6 +355,71 @@ describe("updateStandaloneEvent Resolver Cache Invalidation Tests", () => {
 				"Failed to invalidate event cache (non-fatal)",
 			);
 		});
+
+		it("should short-circuit on invalidateEntity failure and NOT call invalidateEntityLists", async () => {
+			const eventId = "41234567-89ab-cdef-0123-456789abcdef";
+
+			mocks.drizzle.query.usersTable.findFirst.mockResolvedValue({
+				role: "administrator",
+			});
+			mocks.drizzle.query.eventsTable.findFirst.mockResolvedValue({
+				id: eventId,
+				startAt: new Date(),
+				endAt: new Date(Date.now() + 3600000),
+				creatorId: "admin-id",
+				attachmentsWhereEvent: [],
+				organization: {
+					countryCode: "us",
+					membershipsWhereOrganization: [{ role: "administrator" }],
+				},
+			});
+			mocks.drizzle.returning.mockResolvedValueOnce([
+				{
+					id: eventId,
+					name: "Updated Event",
+					startAt: new Date(),
+					endAt: new Date(),
+					organizationId: "org-1",
+				},
+			]);
+
+			// Make invalidateEntity throw an error (simulating consecutive cache failures)
+			const cacheError = new Error("Redis unavailable");
+			mocks.invalidateEntity.mockRejectedValueOnce(cacheError);
+
+			const args = {
+				input: {
+					id: eventId,
+					name: "Updated Event Name",
+				},
+			};
+
+			// Resolver should succeed despite cache errors (graceful degradation)
+			const result = await resolver(null, args, mockContext);
+
+			// Verify the resolver succeeded and returned the updated event
+			expect(result).toBeDefined();
+
+			// Verify invalidateEntity was called (and threw)
+			expect(mocks.invalidateEntity).toHaveBeenCalledWith(
+				mockContext.cache,
+				"event",
+				eventId,
+			);
+			expect(mocks.invalidateEntity).toHaveBeenCalledTimes(1);
+
+			// Verify invalidateEntityLists was NOT called (try-block short-circuited)
+			expect(mocks.invalidateEntityLists).not.toHaveBeenCalled();
+
+			// Verify warning was logged with the error and eventId
+			expect(mockContext.log.warn).toHaveBeenCalledWith(
+				{
+					error: cacheError,
+					eventId: eventId,
+				},
+				"Failed to invalidate event cache (non-fatal)",
+			);
+		});
 	});
 
 	describe("Cache invalidation is executed after the DB update", () => {
