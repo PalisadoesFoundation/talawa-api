@@ -1,4 +1,8 @@
 import type { CacheService } from "~/src/services/caching";
+import type {
+	CacheWrapperLogger,
+	CacheWrapperMetrics,
+} from "~/src/services/caching/wrappers";
 
 /**
  * Options for wrapping a GraphQL resolver with caching.
@@ -30,6 +34,16 @@ export interface WithResolverCacheOptions<
 	 * Use `getTTL` from `~/src/services/caching` for consistent TTL per entity type.
 	 */
 	ttlSeconds: number;
+
+	/**
+	 * Optional logger for recording cache operation failures.
+	 */
+	logger?: CacheWrapperLogger;
+
+	/**
+	 * Optional metrics client for tracking cache operation failures.
+	 */
+	metrics?: CacheWrapperMetrics;
 
 	/**
 	 * Optional callback to conditionally skip caching.
@@ -92,7 +106,7 @@ export function withResolverCache<
 		context: TContext,
 	) => Promise<TResult>,
 ): (parent: TParent, args: TArgs, context: TContext) => Promise<TResult> {
-	const { keyFactory, ttlSeconds, skip } = options;
+	const { keyFactory, ttlSeconds, skip, logger, metrics } = options;
 
 	return async (
 		parent: TParent,
@@ -107,7 +121,22 @@ export function withResolverCache<
 		const cacheKey = keyFactory(parent, args, context);
 
 		// Try to get from cache
-		const cached = await context.cache.get<TResult>(cacheKey);
+		let cached: TResult | null;
+		try {
+			cached = await context.cache.get<TResult>(cacheKey);
+		} catch (error) {
+			logger?.debug(
+				{
+					msg: "cache.read.failure",
+					cacheKey,
+					error,
+				},
+				"Cache read failed, falling back to resolver",
+			);
+			metrics?.increment("cache.read.failure");
+			cached = null; // Treat as cache miss
+		}
+
 		if (cached !== null) {
 			return cached;
 		}
@@ -120,11 +149,16 @@ export function withResolverCache<
 			try {
 				await context.cache.set(cacheKey, result, ttlSeconds);
 			} catch (error) {
-				console.error("Failed to write to cache", {
-					cacheKey,
-					ttlSeconds,
-					error,
-				});
+				logger?.debug(
+					{
+						msg: "cache.write.failure",
+						cacheKey,
+						ttlSeconds,
+						error,
+					},
+					"Failed to write to cache",
+				);
+				metrics?.increment("cache.write.failure");
 			}
 		}
 

@@ -267,11 +267,12 @@ describe("withResolverCache", () => {
 			expect(cache.set).not.toHaveBeenCalled();
 		});
 
-		it("should propagate cache.get errors", async () => {
+		it("should fall back to resolver when cache.get fails", async () => {
 			const cache = createMockCache();
 			cache.get.mockRejectedValue(new Error("Redis connection failed"));
 
-			const resolver = vi.fn();
+			const resolverResult = { id: "org-1", name: "From Resolver" };
+			const resolver = vi.fn().mockResolvedValue(resolverResult);
 
 			const wrappedResolver = withResolverCache(
 				{
@@ -283,9 +284,11 @@ describe("withResolverCache", () => {
 
 			const ctx = { cache } as { cache: CacheService };
 
-			await expect(wrappedResolver({}, {}, ctx)).rejects.toThrow(
-				"Redis connection failed",
-			);
+			// Should NOT throw, should gracefully fall back to resolver
+			const result = await wrappedResolver({}, {}, ctx);
+
+			expect(result).toEqual(resolverResult);
+			expect(resolver).toHaveBeenCalledTimes(1);
 		});
 
 		it("should return resolver result even if cache.set rejects", async () => {
@@ -313,6 +316,111 @@ describe("withResolverCache", () => {
 				resolverResult,
 				60,
 			);
+		});
+
+		it("should log cache read failures with logger?.debug()", async () => {
+			const cache = createMockCache();
+			const cacheError = new Error("Redis connection failed");
+			cache.get.mockRejectedValue(cacheError);
+
+			const logger = { debug: vi.fn() };
+			const resolver = vi.fn().mockResolvedValue({ id: "1" });
+
+			const wrappedResolver = withResolverCache(
+				{
+					keyFactory: () => "test-key",
+					ttlSeconds: 60,
+					logger,
+				},
+				resolver,
+			);
+
+			const ctx = { cache } as { cache: CacheService };
+			await wrappedResolver({}, {}, ctx);
+
+			expect(logger.debug).toHaveBeenCalledWith(
+				expect.objectContaining({
+					msg: "cache.read.failure",
+					cacheKey: "test-key",
+					error: cacheError,
+				}),
+				"Cache read failed, falling back to resolver",
+			);
+		});
+
+		it("should increment cache.read.failure metric on read error", async () => {
+			const cache = createMockCache();
+			cache.get.mockRejectedValue(new Error("Redis error"));
+
+			const metrics = { increment: vi.fn() };
+			const resolver = vi.fn().mockResolvedValue({ id: "1" });
+
+			const wrappedResolver = withResolverCache(
+				{
+					keyFactory: () => "key",
+					ttlSeconds: 60,
+					metrics,
+				},
+				resolver,
+			);
+
+			const ctx = { cache } as { cache: CacheService };
+			await wrappedResolver({}, {}, ctx);
+
+			expect(metrics.increment).toHaveBeenCalledWith("cache.read.failure");
+		});
+
+		it("should log cache write failures with logger?.debug()", async () => {
+			const cache = createMockCache();
+			const writeError = new Error("Redis write failed");
+			cache.set.mockRejectedValue(writeError);
+
+			const logger = { debug: vi.fn() };
+			const resolver = vi.fn().mockResolvedValue({ id: "1" });
+
+			const wrappedResolver = withResolverCache(
+				{
+					keyFactory: () => "write-test-key",
+					ttlSeconds: 300,
+					logger,
+				},
+				resolver,
+			);
+
+			const ctx = { cache } as { cache: CacheService };
+			await wrappedResolver({}, {}, ctx);
+
+			expect(logger.debug).toHaveBeenCalledWith(
+				expect.objectContaining({
+					msg: "cache.write.failure",
+					cacheKey: "write-test-key",
+					ttlSeconds: 300,
+					error: writeError,
+				}),
+				"Failed to write to cache",
+			);
+		});
+
+		it("should increment cache.write.failure metric on write error", async () => {
+			const cache = createMockCache();
+			cache.set.mockRejectedValue(new Error("Redis write failed"));
+
+			const metrics = { increment: vi.fn() };
+			const resolver = vi.fn().mockResolvedValue({ id: "1" });
+
+			const wrappedResolver = withResolverCache(
+				{
+					keyFactory: () => "key",
+					ttlSeconds: 60,
+					metrics,
+				},
+				resolver,
+			);
+
+			const ctx = { cache } as { cache: CacheService };
+			await wrappedResolver({}, {}, ctx);
+
+			expect(metrics.increment).toHaveBeenCalledWith("cache.write.failure");
 		});
 	});
 
