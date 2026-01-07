@@ -116,6 +116,44 @@ app.get('/my-route', async (req, reply) => {
 - `perf.trackComplexity(score)` - Track GraphQL query complexity
 - `perf.snapshot()` - Get current performance snapshot
 
+## Performance Metrics Reference
+
+The following table explains all available performance metrics and their acceptable ranges:
+
+| Metric | Type | Description | Acceptable Range | Notes |
+|--------|------|-------------|------------------|-------|
+| `totalMs` | number | Total time (milliseconds) spent in all tracked operations during the request | < 500ms (good)<br>< 1000ms (acceptable)<br>> 1000ms (needs investigation) | Includes database queries, cache operations, and custom tracked operations. Does not include network latency or client processing time. |
+| `totalOps` | number | Total count of tracked operations (database queries, cache operations, etc.) | Varies by endpoint<br>Simple queries: 1-5<br>Complex queries: 5-20<br>> 50 (may indicate N+1 problem) | Higher counts may indicate inefficient data fetching patterns. Monitor for sudden increases. |
+| `cacheHits` | number | Number of successful cache retrievals | Higher is better<br>Target: > 70% of total cache operations | Reduces database load and improves response times. |
+| `cacheMisses` | number | Number of cache lookups that required database queries | Lower is better<br>Target: < 30% of total cache operations | High miss rates indicate cache warming issues or short TTLs. |
+| `hitRate` | number (0-1) | Cache hit rate: `cacheHits / (cacheHits + cacheMisses)` | > 0.7 (good)<br>0.5-0.7 (acceptable)<br>< 0.5 (needs optimization) | Calculated automatically. A value of 1.0 means all cache operations were hits. |
+| `ops[name].count` | number | Number of times a specific operation was called | Varies by operation type | Track individual operation frequency to identify hotspots. |
+| `ops[name].ms` | number | Total time (milliseconds) spent in a specific operation | Database: < 100ms per operation<br>Cache: < 10ms per operation | Sum of all durations for this operation type. Divide by `count` for average. |
+| `ops[name].max` | number | Maximum duration (milliseconds) for a single operation call | Database: < 200ms<br>Cache: < 50ms | Identifies slow outliers that may need optimization. |
+| `slow` | Array | List of operations that exceeded the slow threshold (default: 200ms) | Empty array (ideal)<br>< 5 entries (acceptable)<br>> 10 entries (investigate) | Each entry contains `{ op: string, ms: number }`. Maximum 50 entries retained. |
+| `complexityScore` | number (optional) | GraphQL query complexity score | < 100 (simple)<br>100-500 (moderate)<br>500-1000 (complex)<br>> 1000 (very complex) | Only present for GraphQL requests. Higher scores indicate more expensive queries that may need optimization or rate limiting. |
+
+### Interpreting Metrics
+
+**Good Performance Indicators:**
+- `totalMs` < 500ms for most requests
+- `hitRate` > 0.7 (70% cache hit rate)
+- `slow` array is empty or has < 5 entries
+- `ops.db.max` < 200ms (no slow database queries)
+
+**Warning Signs:**
+- `totalMs` consistently > 1000ms
+- `hitRate` < 0.5 (poor cache efficiency)
+- `slow` array frequently has > 10 entries
+- `ops.db.max` > 500ms (very slow database queries)
+- `totalOps` > 50 (possible N+1 query problem)
+
+**Action Required:**
+- `totalMs` > 2000ms (request timeout risk)
+- `hitRate` < 0.3 (cache not working effectively)
+- `complexityScore` > 1000 (query may be too expensive)
+- Multiple operations with `max` > 1000ms
+
 ## Server-Timing Headers
 
 Every API response includes a `Server-Timing` header with performance breakdown:
