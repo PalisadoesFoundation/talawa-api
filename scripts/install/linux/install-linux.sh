@@ -54,11 +54,6 @@ check_docker_compose() {
     local output
     local exit_code
     
-    # Check standalone docker-compose first
-    if command_exists docker-compose; then
-        return 0
-    fi
-    
     # Check docker compose plugin
     output=$(docker compose version 2>&1) && exit_code=$? || exit_code=$?
     
