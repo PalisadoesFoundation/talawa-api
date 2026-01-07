@@ -16,6 +16,106 @@ The Performance Metrics Foundation provides:
 - **`/metrics/perf` endpoint** returning recent performance snapshots for monitoring dashboards
 - **Request-scoped tracking** of database operations, cache hits/misses, and total request duration
 
+## How to Access Performance Monitoring
+
+Performance monitoring is automatically enabled for all HTTP requests. There are three main ways to access performance metrics:
+
+### 1. Server-Timing Headers (Automatic)
+
+Every HTTP response includes a `Server-Timing` header with performance metrics. No configuration needed - it's automatically added to all responses.
+
+**Access via Browser DevTools:**
+1. Open your browser's **Developer Tools** (F12 or right-click → Inspect)
+2. Navigate to the **Network** tab
+3. Make any API request to your Talawa API server
+4. Click on the request in the Network tab
+5. View the **Timing** or **Headers** section to see the `Server-Timing` header
+
+**Access via Command Line:**
+```bash
+curl -v http://localhost:4000/graphql
+# Look for the "Server-Timing" header in the response
+```
+
+### 2. `/metrics/perf` Endpoint (API)
+
+Query the metrics endpoint to retrieve recent performance snapshots programmatically:
+
+```bash
+GET http://localhost:4000/metrics/perf
+```
+
+**Example Response:**
+```json
+{
+  "recent": [
+    {
+      "totalMs": 127.5,
+      "totalOps": 8,
+      "cacheHits": 12,
+      "cacheMisses": 3,
+      "hitRate": 0.8,
+      "ops": {
+        "db": { "count": 5, "ms": 45.2, "max": 18.3 }
+      },
+      "slow": [
+        { "op": "db", "ms": 18 }
+      ]
+    }
+  ]
+}
+```
+
+**Use Cases:**
+- Monitoring dashboards
+- Alerting systems
+- Performance analysis tools
+- Custom analytics
+
+### 3. Programmatic Access (In Code)
+
+Access the performance tracker directly in your GraphQL resolvers or route handlers:
+
+**In GraphQL Resolvers:**
+```typescript
+export const myResolver = async (parent, args, ctx) => {
+  // Access the performance tracker
+  const perf = ctx.perf;
+  
+  // Get current snapshot
+  const snapshot = perf?.snapshot();
+  console.log(`Total operations: ${snapshot?.totalOps}`);
+  
+  // Track custom operations
+  const result = await perf?.time('custom-operation', async () => {
+    // Your code here
+    return await someAsyncOperation();
+  });
+  
+  return result;
+};
+```
+
+**In Route Handlers:**
+```typescript
+app.get('/my-route', async (req, reply) => {
+  // Access via request object
+  const perf = req.perf;
+  const snapshot = perf?.snapshot();
+  
+  return { metrics: snapshot };
+});
+```
+
+**Available Methods:**
+- `perf.time(name, asyncFn)` - Track async operations
+- `perf.start(name)` - Start manual timing (returns stop function)
+- `perf.trackDb(ms)` - Track database operation duration
+- `perf.trackCacheHit()` - Record cache hit
+- `perf.trackCacheMiss()` - Record cache miss
+- `perf.trackComplexity(score)` - Track GraphQL query complexity
+- `perf.snapshot()` - Get current performance snapshot
+
 ## Server-Timing Headers
 
 Every API response includes a `Server-Timing` header with performance breakdown:
