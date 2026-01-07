@@ -87,7 +87,7 @@ export interface SetupAnswers {
 	RECAPTCHA_SECRET_KEY?: string;
 
 	// Observability Configuration
-	API_OTEL_ENABLED?: "true" | "false";
+	API_OTEL_ENABLED?: string;
 	API_OTEL_SAMPLING_RATIO?: string;
 }
 
