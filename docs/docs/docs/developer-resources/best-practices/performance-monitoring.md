@@ -20,7 +20,7 @@ The Performance Metrics Foundation provides:
 
 Performance monitoring is automatically enabled for all HTTP requests. There are three main ways to access performance metrics:
 
-### 1. Server-Timing Headers (Automatic)
+### Server-Timing Headers (Automatic)
 
 Every HTTP response includes a `Server-Timing` header with performance metrics. No configuration needed - it's automatically added to all responses.
 
@@ -37,7 +37,7 @@ curl -v http://localhost:4000/graphql
 # Look for the "Server-Timing" header in the response
 ```
 
-### 2. `/metrics/perf` Endpoint (API)
+### `/metrics/perf` Endpoint (API)
 
 Query the metrics endpoint to retrieve recent performance snapshots programmatically:
 
@@ -72,7 +72,7 @@ GET http://localhost:4000/metrics/perf
 - Performance analysis tools
 - Custom analytics
 
-### 3. Programmatic Access (In Code)
+### Programmatic Access (In Code)
 
 Access the performance tracker directly in your GraphQL resolvers or route handlers:
 
