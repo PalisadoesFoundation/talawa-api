@@ -149,9 +149,13 @@ suite("Mutation field createOrganizationMembership", () => {
 	});
 
 	suite("authorization", () => {
-		test("non-admin cannot add other users", async () => {
-			const { authToken } = await import("../createRegularUserUsingAdmin").then(
-				(m) => m.createRegularUserUsingAdmin(),
+		test("non-admin cannot add other existing users", async () => {
+			const userA = await import("../createRegularUserUsingAdmin").then((m) =>
+				m.createRegularUserUsingAdmin(),
+			);
+
+			const userB = await import("../createRegularUserUsingAdmin").then((m) =>
+				m.createRegularUserUsingAdmin(),
 			);
 
 			const createOrg = await mercuriusClient.mutate(
@@ -179,10 +183,10 @@ suite("Mutation field createOrganizationMembership", () => {
 			const result = await mercuriusClient.mutate(
 				Mutation_createOrganizationMembership,
 				{
-					headers: { authorization: `bearer ${authToken}` },
+					headers: { authorization: `bearer ${userA.authToken}` },
 					variables: {
 						input: {
-							memberId: faker.string.uuid(),
+							memberId: userB.userId,
 							organizationId: orgId,
 						},
 					},
@@ -190,7 +194,7 @@ suite("Mutation field createOrganizationMembership", () => {
 			);
 
 			expect(result.errors?.[0]?.extensions?.code).toBe(
-				"arguments_associated_resources_not_found",
+				"unauthorized_action_on_arguments_associated_resources",
 			);
 		});
 
@@ -286,6 +290,51 @@ suite("Mutation field createOrganizationMembership", () => {
 			assertToBeNonNullish(result.data?.createOrganizationMembership);
 			expect(result.data?.createOrganizationMembership).toBeDefined();
 			expect(result.data?.createOrganizationMembership?.id).toBeTruthy();
+			expect(result.data?.createOrganizationMembership?.role).toBe("regular");
+		});
+
+		test("non-admin can add themselves to organization", async () => {
+			const user = await import("../createRegularUserUsingAdmin").then((m) =>
+				m.createRegularUserUsingAdmin(),
+			);
+
+			const createOrg = await mercuriusClient.mutate(
+				Mutation_createOrganization,
+				{
+					headers: { authorization: `bearer ${adminToken}` },
+					variables: {
+						input: {
+							name: "Self Org",
+							description: "self join",
+							countryCode: "us",
+							state: "CA",
+							city: "SF",
+							postalCode: "94101",
+							addressLine1: "Self",
+							addressLine2: "Suite",
+						},
+					},
+				},
+			);
+
+			const orgId = createOrg.data?.createOrganization?.id;
+			assertToBeNonNullish(orgId);
+
+			const result = await mercuriusClient.mutate(
+				Mutation_createOrganizationMembership,
+				{
+					headers: { authorization: `bearer ${user.authToken}` },
+					variables: {
+						input: {
+							memberId: user.userId,
+							organizationId: orgId,
+						},
+					},
+				},
+			);
+
+			expect(result.errors).toBeUndefined();
+			assertToBeNonNullish(result.data?.createOrganizationMembership);
 		});
 
 		test("admin can create membership with role argument", async () => {
