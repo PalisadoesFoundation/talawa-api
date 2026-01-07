@@ -243,7 +243,7 @@ export function generateOccurrences(
 			if (rule.count && sequence >= rule.count) break;
 			const candidate = addMonthSafely(baseStart, i * rule.interval);
 			i++;
-			if (candidate > stopAt) break;
+			if (candidate >= stopAt) break;
 			if (rule.until && candidate > rule.until) break;
 			recordOccurrence(candidate);
 		}

@@ -93,3 +93,4 @@ TalawaGraphQLError with code "unauthenticated" if user is not authenticated.
 ## Throws
 
 TalawaGraphQLError with code "unexpected" if event is not found (indicates data corruption).
+`Promise`\<\{ `allDay`: `boolean`; `attachments`: `never`[]; `attachmentsPolicy`: `string`; `createdAt`: `Date`; `creatorId`: `string` \| `null`; `description`: `string` \| `null`; `endAt`: `Date`; `id`: `string`; `isInviteOnly`: `boolean`; `isPublic`: `boolean`; `isRecurringEventTemplate`: `boolean`; `isRegisterable`: `boolean`; `location`: `string` \| `null`; `name`: `string`; `organizationId`: `string`; `recurrenceRule`: `string` \| `null`; `recurrenceUntil`: `Date` \| `null`; `startAt`: `Date`; `timezone`: `string`; `updatedAt`: `Date` \| `null`; `updaterId`: `string` \| `null`; \} \| `null`\>
