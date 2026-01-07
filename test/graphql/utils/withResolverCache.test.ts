@@ -287,6 +287,33 @@ describe("withResolverCache", () => {
 				"Redis connection failed",
 			);
 		});
+
+		it("should return resolver result even if cache.set rejects", async () => {
+			const cache = createMockCache();
+			cache.set.mockRejectedValue(new Error("Redis write failed"));
+
+			const resolverResult = { id: "org-1", name: "Test Org" };
+			const resolver = vi.fn().mockResolvedValue(resolverResult);
+
+			const wrappedResolver = withResolverCache(
+				{
+					keyFactory: () => "talawa:v1:organization:org-1",
+					ttlSeconds: 60,
+				},
+				resolver,
+			);
+
+			const ctx = { cache } as { cache: CacheService };
+
+			const result = await wrappedResolver({}, {}, ctx);
+
+			expect(result).toEqual(resolverResult);
+			expect(cache.set).toHaveBeenCalledWith(
+				"talawa:v1:organization:org-1",
+				resolverResult,
+				60,
+			);
+		});
 	});
 
 	describe("keyFactory", () => {

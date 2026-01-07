@@ -117,7 +117,15 @@ export function withResolverCache<
 
 		// Only cache non-null results
 		if (result !== null && result !== undefined) {
-			await context.cache.set(cacheKey, result, ttlSeconds);
+			try {
+				await context.cache.set(cacheKey, result, ttlSeconds);
+			} catch (error) {
+				console.error("Failed to write to cache", {
+					cacheKey,
+					ttlSeconds,
+					error,
+				});
+			}
 		}
 
 		return result;
