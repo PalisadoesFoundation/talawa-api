@@ -10,6 +10,7 @@ import {
 import { createInsertSchema } from "drizzle-zod";
 import { uuidv7 } from "uuidv7";
 import { z } from "zod";
+import { IANA_TIMEZONE_SET } from "~/src/utilities/timezones";
 import { agendaFoldersTable } from "./agendaFolders";
 import { eventAttachmentsTable } from "./eventAttachments";
 import { organizationsTable } from "./organizations";
@@ -116,12 +117,32 @@ export const eventsTable = pgTable(
 
 		// RECURRING EVENT FIELDS
 		/**
-		 * Indicates if this event is a recurring template (base event).
-		 * Template events store the default properties that all instances inherit.
+		 * This event is a template for repeating events. It is not shown to users directly.
 		 */
 		isRecurringEventTemplate: boolean("is_recurring_template")
 			.notNull()
 			.default(false),
+		/**
+		 * Recurrence rule for repeating events, e.g., "FREQ=WEEKLY;INTERVAL=1;BYDAY=MO,WE"
+		 */
+		recurrenceRule: text("recurrence_rule").default(sql`${null}`),
+		/**
+		 * The last date for repeating this event.
+		 */
+		recurrenceUntil: timestamp("recurrence_until", {
+			mode: "date",
+			precision: 3,
+			withTimezone: true,
+		}).default(sql`${null}`),
+		/**
+		 * The time zone for this event. Defaults to UTC.
+		 *
+		 */
+		timezone: text("time_zone").notNull().default("UTC"),
+		/**
+		 * How attachments are handled: 'inherit' or 'override'.
+		 */
+		attachmentsPolicy: text("attachments_policy").notNull().default("inherit"),
 	},
 	(self) => ({
 		// Existing indexes with better naming
@@ -208,4 +229,12 @@ export const eventsTableInsertSchema = createInsertSchema(eventsTable, {
 	location: (schema) => schema.min(1).max(EVENT_LOCATION_MAX_LENGTH).optional(),
 	// Recurring event fields validation
 	isRecurringEventTemplate: z.boolean().optional(),
+	attachmentsPolicy: z.enum(["inherit", "override"]).optional(),
+	timezone: (schema) =>
+		schema
+			.min(1)
+			.refine((value) => IANA_TIMEZONE_SET.has(value), {
+				message: "timezone must be a valid IANA identifier",
+			})
+			.optional(),
 });

@@ -12,7 +12,7 @@ import type { ResolveInstanceInput, ServiceDependencies } from "./types";
  * ensuring that each instance accurately reflects its intended state.
  *
  * @param input - An object containing the generated instance, base template, and optional exception.
- * @returns - A fully resolved generated event instance with all properties correctly inherited and overridden.
+ * @returns A fully resolved generated event instance with all properties correctly inherited and overridden.
  */
 export function resolveInstanceWithInheritance(
 	input: ResolveInstanceInput,
@@ -131,7 +131,6 @@ function isValidExceptionField(
 		"allDay",
 		"isPublic",
 		"isRegisterable",
-		"isInviteOnly",
 		"actualStartTime",
 		"actualEndTime",
 		"isCancelled",
@@ -150,7 +149,7 @@ function isValidExceptionField(
  * @param templatesMap - A map of base event templates, keyed by their IDs.
  * @param exceptionsMap - A map of event exceptions, keyed by a composite key.
  * @param logger - The logger for logging warnings or errors.
- * @returns - An array of fully resolved generated event instances.
+ * @returns An array of fully resolved generated event instances.
  */
 export function resolveMultipleInstances(
 	instances: (typeof recurringEventInstancesTable.$inferSelect)[],
@@ -201,7 +200,7 @@ export function resolveMultipleInstances(
  *
  * @param recurringEventId - The ID of the recurring event.
  * @param instanceStartTime - The original start time of the instance.
- * @returns - A string representing the composite key.
+ * @returns A string representing the composite key.
  */
 export function createExceptionKey(
 	recurringEventId: string,
@@ -215,7 +214,7 @@ export function createExceptionKey(
  * The map is keyed by a composite key of the recurring event ID and instance start time.
  *
  * @param exceptions - An array of event exceptions.
- * @returns - A map of exceptions, keyed for quick lookup.
+ * @returns A map of exceptions, keyed for quick lookup.
  */
 export function createExceptionLookupMap(
 	exceptions: (typeof eventExceptionsTable.$inferSelect)[],
@@ -239,7 +238,7 @@ export function createExceptionLookupMap(
  * The map is keyed by the event template ID.
  *
  * @param templates - An array of event templates.
- * @returns - A map of templates, keyed by their IDs.
+ * @returns A map of templates, keyed by their IDs.
  */
 export function createTemplateLookupMap(
 	templates: (typeof eventsTable.$inferSelect)[],

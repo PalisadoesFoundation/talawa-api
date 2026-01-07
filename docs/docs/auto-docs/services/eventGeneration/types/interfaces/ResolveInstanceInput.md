@@ -20,6 +20,10 @@ Defined in: [src/services/eventGeneration/types.ts:58](https://github.com/Palisa
 
 > **allDay**: `boolean`
 
+#### attachmentsPolicy
+
+> **attachmentsPolicy**: `string`
+
 #### createdAt
 
 > **createdAt**: `Date`
@@ -68,9 +72,21 @@ Defined in: [src/services/eventGeneration/types.ts:58](https://github.com/Palisa
 
 > **organizationId**: `string`
 
+#### recurrenceRule
+
+> **recurrenceRule**: `string` \| `null`
+
+#### recurrenceUntil
+
+> **recurrenceUntil**: `Date` \| `null`
+
 #### startAt
 
 > **startAt**: `Date`
+
+#### timezone
+
+> **timezone**: `string`
 
 #### updatedAt
 

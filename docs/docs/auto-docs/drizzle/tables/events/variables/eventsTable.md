@@ -6,6 +6,6 @@
 
 > `const` **eventsTable**: `PgTableWithColumns`\<\{ \}\>
 
-Defined in: [src/drizzle/tables/events.ts:22](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/drizzle/tables/events.ts#L22)
+Defined in: [src/drizzle/tables/events.ts:23](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/drizzle/tables/events.ts#L23)
 
 Drizzle orm postgres table definition for events.

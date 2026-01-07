@@ -1,5 +1,3 @@
-import { randomUUID } from "node:crypto";
-import fastifyCookie from "@fastify/cookie";
 import fastifyCors from "@fastify/cors";
 import fastifyHelmet from "@fastify/helmet";
 import { fastifyJwt } from "@fastify/jwt";
@@ -62,23 +60,7 @@ export const createServer = async (options?: {
 					}
 				: undefined,
 		},
-		genReqId: (req) => {
-			const headerValue = req.headers["x-correlation-id"];
-			if (
-				typeof headerValue === "string" &&
-				/^[a-f0-9-]{36}$/i.test(headerValue)
-			) {
-				return headerValue;
-			}
-			return randomUUID();
-		},
 	}).withTypeProvider<TypeBoxTypeProvider>();
-
-	fastify.addHook("onRequest", async (request, reply) => {
-		const correlationId = request.id as string;
-		reply.header("x-correlation-id", correlationId);
-		request.log = request.log.child({ correlationId });
-	});
 
 	// THE FASTIFY PLUGIN LOAD ORDER MATTERS, PLUGINS MIGHT BE DEPENDENT ON OTHER PLUGINS ALREADY BEING REGISTERED. THEREFORE THE ORDER OF REGISTRATION MUST BE MAINTAINED UNLESS THE DEVELOPER KNOWS WHAT THEY'RE DOING.
 
@@ -114,13 +96,6 @@ export const createServer = async (options?: {
 	// 	url: fastify.envConfig.API_REDIS_URI,
 	// 	closeClient: true,
 	// });
-
-	// More information at this link: https://github.com/fastify/fastify-cookie
-	// Used for HTTP-Only cookie authentication to protect session tokens from XSS attacks
-	fastify.register(fastifyCookie, {
-		secret: fastify.envConfig.API_COOKIE_SECRET,
-		parseOptions: {},
-	});
 
 	// More information at this link: https://github.com/fastify/fastify-jwt
 	fastify.register(fastifyJwt, {
