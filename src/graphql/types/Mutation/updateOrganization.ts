@@ -178,73 +178,90 @@ builder.mutationField("updateOrganization", (t) =>
 				avatarMimeType = parsedArgs.input.avatar.mimetype;
 			}
 
-			return await ctx.drizzleClient.transaction(async (tx) => {
-				const [updatedOrganization] = await tx
-					.update(organizationsTable)
-					.set({
-						addressLine1: parsedArgs.input.addressLine1,
-						addressLine2: parsedArgs.input.addressLine2,
-						...(parsedArgs.input.avatar !== undefined && {
-							avatarMimeType: isNotNullish(parsedArgs.input.avatar)
-								? avatarMimeType
-								: null,
-							avatarName: isNotNullish(parsedArgs.input.avatar)
-								? avatarName
-								: null,
-						}),
-						city: parsedArgs.input.city,
-						countryCode: parsedArgs.input.countryCode,
-						description: parsedArgs.input.description,
-						name: parsedArgs.input.name,
-						postalCode: parsedArgs.input.postalCode,
-						state: parsedArgs.input.state,
-						updaterId: currentUserId,
-						userRegistrationRequired:
-							parsedArgs.input.isUserRegistrationRequired,
-					})
-					.where(eq(organizationsTable.id, parsedArgs.input.id))
-					.returning();
+			return await ctx.drizzleClient
+				.transaction(async (tx) => {
+					const [updatedOrganization] = await tx
+						.update(organizationsTable)
+						.set({
+							addressLine1: parsedArgs.input.addressLine1,
+							addressLine2: parsedArgs.input.addressLine2,
+							...(parsedArgs.input.avatar !== undefined && {
+								avatarMimeType: isNotNullish(parsedArgs.input.avatar)
+									? avatarMimeType
+									: null,
+								avatarName: isNotNullish(parsedArgs.input.avatar)
+									? avatarName
+									: null,
+							}),
+							city: parsedArgs.input.city,
+							countryCode: parsedArgs.input.countryCode,
+							description: parsedArgs.input.description,
+							name: parsedArgs.input.name,
+							postalCode: parsedArgs.input.postalCode,
+							state: parsedArgs.input.state,
+							updaterId: currentUserId,
+							userRegistrationRequired:
+								parsedArgs.input.isUserRegistrationRequired,
+						})
+						.where(eq(organizationsTable.id, parsedArgs.input.id))
+						.returning();
 
-				// Updated organization not being returned means that either it doesn't exist or it was deleted or its `id` column was changed by external entities before this update operation could take place.
-				if (updatedOrganization === undefined) {
-					throw new TalawaGraphQLError({
-						extensions: {
-							code: "arguments_associated_resources_not_found",
-							issues: [
-								{
-									argumentPath: ["input", "id"],
-								},
-							],
-						},
-					});
-				}
+					// Updated organization not being returned means that either it doesn't exist or it was deleted or its `id` column was changed by external entities before this update operation could take place.
+					if (updatedOrganization === undefined) {
+						throw new TalawaGraphQLError({
+							extensions: {
+								code: "arguments_associated_resources_not_found",
+								issues: [
+									{
+										argumentPath: ["input", "id"],
+									},
+								],
+							},
+						});
+					}
 
-				if (isNotNullish(parsedArgs.input.avatar)) {
-					await ctx.minio.client.putObject(
-						ctx.minio.bucketName,
-						avatarName,
-						parsedArgs.input.avatar.createReadStream(),
-						undefined,
-						{
-							"content-type": parsedArgs.input.avatar.mimetype,
-						},
-					);
-				} else if (
-					parsedArgs.input.avatar !== undefined &&
-					existingOrganization.avatarName !== null
-				) {
-					await ctx.minio.client.removeObject(
-						ctx.minio.bucketName,
-						existingOrganization.avatarName,
-					);
-				}
+					if (isNotNullish(parsedArgs.input.avatar)) {
+						await ctx.minio.client.putObject(
+							ctx.minio.bucketName,
+							avatarName,
+							parsedArgs.input.avatar.createReadStream(),
+							undefined,
+							{
+								"content-type": parsedArgs.input.avatar.mimetype,
+							},
+						);
+					} else if (
+						parsedArgs.input.avatar !== undefined &&
+						existingOrganization.avatarName !== null
+					) {
+						await ctx.minio.client.removeObject(
+							ctx.minio.bucketName,
+							existingOrganization.avatarName,
+						);
+					}
 
-				// Invalidate organization caches
-				await invalidateEntity(ctx.cache, "organization", parsedArgs.input.id);
-				await invalidateEntityLists(ctx.cache, "organization");
+					return updatedOrganization;
+				})
+				.then(async (updatedOrganization) => {
+					// Invalidate organization caches (graceful degradation - don't break mutation on cache errors)
+					try {
+						await invalidateEntity(
+							ctx.cache,
+							"organization",
+							parsedArgs.input.id,
+						);
+						await invalidateEntityLists(ctx.cache, "organization");
+					} catch (error) {
+						ctx.log.warn(
+							{
+								error: error instanceof Error ? error.message : "Unknown error",
+							},
+							"Failed to invalidate organization cache (non-fatal)",
+						);
+					}
 
-				return updatedOrganization;
-			});
+					return updatedOrganization;
+				});
 		},
 		type: Organization,
 	}),

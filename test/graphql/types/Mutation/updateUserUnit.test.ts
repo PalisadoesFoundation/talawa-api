@@ -106,22 +106,25 @@ const mocks = vi.hoisted(() => {
 	};
 });
 
-// Track transaction execution
-let transactionExecuted = false;
-let cacheInvalidationCalledInTransaction = false;
+// Track transaction execution and post-transaction invalidation
+let transactionCompleted = false;
+let invalidatedAfterTx = false;
+const txCallOrder: string[] = [];
 
-// Configure Drizzle Mock
+// Configure Drizzle Mock to track transaction completion and post-tx invalidation
 mocks.drizzle.transaction.mockImplementation(
 	async (cb: (tx: typeof mocks.tx) => Promise<unknown>) => {
-		transactionExecuted = true;
-		cacheInvalidationCalledInTransaction = false;
+		transactionCompleted = false;
+		invalidatedAfterTx = false;
+		txCallOrder.length = 0;
 
-		// Track if invalidateEntity is called during the transaction callback
+		// Track if invalidateEntity is called after the transaction completes
 		const originalInvalidateEntity =
 			mocks.invalidateEntity.getMockImplementation();
 		mocks.invalidateEntity.mockImplementation(async (...args) => {
-			if (transactionExecuted) {
-				cacheInvalidationCalledInTransaction = true;
+			txCallOrder.push("invalidateEntity");
+			if (transactionCompleted) {
+				invalidatedAfterTx = true;
 			}
 			if (originalInvalidateEntity) {
 				return originalInvalidateEntity(...args);
@@ -129,6 +132,8 @@ mocks.drizzle.transaction.mockImplementation(
 		});
 
 		const result = await cb(mocks.tx);
+		txCallOrder.push("tx_commit");
+		transactionCompleted = true;
 		return result;
 	},
 );
@@ -233,8 +238,9 @@ describe("updateUser Resolver Cache Invalidation Tests", () => {
 
 	afterEach(() => {
 		vi.clearAllMocks();
-		transactionExecuted = false;
-		cacheInvalidationCalledInTransaction = false;
+		transactionCompleted = false;
+		invalidatedAfterTx = false;
+		txCallOrder.length = 0;
 	});
 
 	it("should be defined", () => {
@@ -354,8 +360,8 @@ describe("updateUser Resolver Cache Invalidation Tests", () => {
 		});
 	});
 
-	describe("invalidateEntity is executed inside the DB transaction", () => {
-		it("should call invalidateEntity within the transaction boundary", async () => {
+	describe("invalidateEntity is executed after the DB transaction completes", () => {
+		it("should call invalidateEntity after the transaction commits", async () => {
 			const targetUserId = "31234567-89ab-cdef-0123-456789abcdef";
 
 			// Current user is an admin
@@ -388,11 +394,16 @@ describe("updateUser Resolver Cache Invalidation Tests", () => {
 			// Verify transaction was executed
 			expect(mocks.drizzle.transaction).toHaveBeenCalled();
 
-			// Verify invalidateEntity was called within the transaction
-			expect(cacheInvalidationCalledInTransaction).toBe(true);
+			// Verify invalidateEntity was called after the transaction completed
+			expect(invalidatedAfterTx).toBe(true);
+
+			// Verify call order: transaction commits before invalidation
+			expect(txCallOrder.indexOf("tx_commit")).toBeLessThan(
+				txCallOrder.indexOf("invalidateEntity"),
+			);
 		});
 
-		it("should call invalidateEntity after database update but before transaction completes", async () => {
+		it("should call invalidateEntity after database update and transaction commit completes", async () => {
 			const targetUserId = "41234567-89ab-cdef-0123-456789abcdef";
 			const callOrder: string[] = [];
 
@@ -406,7 +417,7 @@ describe("updateUser Resolver Cache Invalidation Tests", () => {
 				});
 
 			mocks.tx.returning.mockImplementationOnce(async () => {
-				callOrder.push("db_update");
+				callOrder.push("tx_returning");
 				return [
 					{
 						id: targetUserId,
@@ -416,6 +427,17 @@ describe("updateUser Resolver Cache Invalidation Tests", () => {
 					},
 				];
 			});
+
+			// Track transaction commit by wrapping the transaction mock
+			const originalTransactionImpl =
+				mocks.drizzle.transaction.getMockImplementation();
+			mocks.drizzle.transaction.mockImplementationOnce(
+				async (cb: (tx: typeof mocks.tx) => Promise<unknown>) => {
+					const result = await cb(mocks.tx);
+					callOrder.push("tx_commit");
+					return result;
+				},
+			);
 
 			mocks.invalidateEntity.mockImplementationOnce(async () => {
 				callOrder.push("invalidateEntity");
@@ -430,10 +452,29 @@ describe("updateUser Resolver Cache Invalidation Tests", () => {
 
 			await resolver(null, args, mockContext);
 
-			// Verify order: DB update happens before cache invalidation
-			expect(callOrder).toContain("db_update");
+			// Restore original transaction mock for other tests
+			if (originalTransactionImpl) {
+				mocks.drizzle.transaction.mockImplementation(originalTransactionImpl);
+			}
+
+			// Verify order: tx.returning completes → transaction commits → cache invalidation
+			expect(callOrder).toContain("tx_returning");
+			expect(callOrder).toContain("tx_commit");
 			expect(callOrder).toContain("invalidateEntity");
-			expect(callOrder.indexOf("db_update")).toBeLessThan(
+
+			// Assert tx.returning completes before transaction commit
+			expect(callOrder.indexOf("tx_returning")).toBeLessThan(
+				callOrder.indexOf("tx_commit"),
+			);
+
+			// Assert invalidateEntity is called after tx.returning handler finished
+			expect(callOrder.indexOf("tx_returning")).toBeLessThan(
+				callOrder.indexOf("invalidateEntity"),
+			);
+
+			// Assert invalidateEntity is called after transaction commit
+			// This verifies the actual flow: DB update → transaction commit → cache invalidation
+			expect(callOrder.indexOf("tx_commit")).toBeLessThan(
 				callOrder.indexOf("invalidateEntity"),
 			);
 		});

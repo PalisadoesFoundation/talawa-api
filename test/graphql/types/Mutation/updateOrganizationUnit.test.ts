@@ -263,7 +263,7 @@ describe("updateOrganization Resolver Unit Coverage", () => {
 		);
 	});
 
-	it("should document that cache errors propagate (cache is inside transaction)", async () => {
+	it("should succeed despite cache invalidation errors (graceful degradation)", async () => {
 		const orgId = "org-2";
 
 		mocks.drizzle.query.usersTable.findFirst.mockResolvedValue({
@@ -296,13 +296,23 @@ describe("updateOrganization Resolver Unit Coverage", () => {
 			},
 		};
 
-		// Currently cache invalidation is inside the transaction, so cache errors propagate.
-		// TODO: Move cache invalidation outside transaction and add try-catch for graceful degradation.
-		await expect(resolver(null, args, mockContext)).rejects.toThrow(
-			"Redis unavailable",
-		);
+		// Cache invalidation is now outside the transaction with try-catch.
+		// Resolver should succeed despite cache errors (graceful degradation).
+		const result = await resolver(null, args, mockContext);
+
+		// Verify the resolver succeeded and returned the updated organization
+		expect(result).toEqual({
+			id: orgId,
+			name: "Updated Org",
+		});
 
 		// Verify cache invalidation was still attempted
 		expect(mocks.invalidateEntity).toHaveBeenCalled();
+
+		// Verify warning was logged for the cache error
+		expect(mockContext.log.warn).toHaveBeenCalledWith(
+			{ error: "Redis unavailable" },
+			"Failed to invalidate organization cache (non-fatal)",
+		);
 	});
 });

@@ -151,41 +151,54 @@ builder.mutationField("deleteStandaloneEvent", (t) =>
 				});
 			}
 
-			return await ctx.drizzleClient.transaction(async (tx) => {
-				// First, delete any action items associated with the event
-				await tx
-					.delete(actionItemsTable)
-					.where(eq(actionItemsTable.eventId, parsedArgs.input.id));
+			return await ctx.drizzleClient
+				.transaction(async (tx) => {
+					// First, delete any action items associated with the event
+					await tx
+						.delete(actionItemsTable)
+						.where(eq(actionItemsTable.eventId, parsedArgs.input.id));
 
-				const [deletedEvent] = await tx
-					.delete(eventsTable)
-					.where(eq(eventsTable.id, parsedArgs.input.id))
-					.returning();
+					const [deletedEvent] = await tx
+						.delete(eventsTable)
+						.where(eq(eventsTable.id, parsedArgs.input.id))
+						.returning();
 
-				// Deleted event not being returned means that either it was deleted or its `id` column was changed by external entities before this delete operation could take place.
-				if (deletedEvent === undefined) {
-					throw new TalawaGraphQLError({
-						extensions: {
-							code: "unexpected",
-						},
+					// Deleted event not being returned means that either it was deleted or its `id` column was changed by external entities before this delete operation could take place.
+					if (deletedEvent === undefined) {
+						throw new TalawaGraphQLError({
+							extensions: {
+								code: "unexpected",
+							},
+						});
+					}
+
+					await ctx.minio.client.removeObjects(
+						ctx.minio.bucketName,
+						existingEvent.attachmentsWhereEvent.map(
+							(attachment) => attachment.name,
+						),
+					);
+
+					return Object.assign(deletedEvent, {
+						attachments: existingEvent.attachmentsWhereEvent,
 					});
-				}
+				})
+				.then(async (deletedEvent) => {
+					// Invalidate event caches (graceful degradation - don't break mutation on cache errors)
+					try {
+						await invalidateEntity(ctx.cache, "event", parsedArgs.input.id);
+						await invalidateEntityLists(ctx.cache, "event");
+					} catch (error) {
+						ctx.log.warn(
+							{
+								error: error instanceof Error ? error.message : "Unknown error",
+							},
+							"Failed to invalidate event cache (non-fatal)",
+						);
+					}
 
-				await ctx.minio.client.removeObjects(
-					ctx.minio.bucketName,
-					existingEvent.attachmentsWhereEvent.map(
-						(attachment) => attachment.name,
-					),
-				);
-
-				// Invalidate event caches
-				await invalidateEntity(ctx.cache, "event", parsedArgs.input.id);
-				await invalidateEntityLists(ctx.cache, "event");
-
-				return Object.assign(deletedEvent, {
-					attachments: existingEvent.attachmentsWhereEvent,
+					return deletedEvent;
 				});
-			});
 		},
 		type: Event,
 	}),
