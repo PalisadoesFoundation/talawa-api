@@ -37,13 +37,16 @@ success() { echo -e "${GREEN}✓${NC} $1"; }
 warn() { echo -e "${YELLOW}⚠${NC} $1"; }
 error() { echo -e "${RED}✗${NC} $1"; }
 step() { echo -e "${CYAN}[$1/$2]${NC} $3"; }
+print_usage() {
+    error "Usage: $0 [INSTALL_MODE] [SKIP_PREREQS]"
+    error "  INSTALL_MODE : docker (default) | local"
+    error "  SKIP_PREREQS : true | false (default)"
+}
 
 # Validate INSTALL_MODE
 if [[ "$INSTALL_MODE" != "docker" ]] && [[ "$INSTALL_MODE" != "local" ]]; then
     error "Invalid INSTALL_MODE: '$INSTALL_MODE'. Must be 'docker' or 'local'."
-    error "Usage: $0 [INSTALL_MODE] [SKIP_PREREQS]"
-    error "  INSTALL_MODE : docker (default) | local"
-    error "  SKIP_PREREQS : true | false (default)"
+    print_usage
 
     exit 1
 fi
@@ -51,9 +54,7 @@ fi
 # Validate SKIP_PREREQS
 if [[ "$SKIP_PREREQS" != "true" ]] && [[ "$SKIP_PREREQS" != "false" ]]; then
     error "Invalid SKIP_PREREQS: '$SKIP_PREREQS'. Must be 'true' or 'false'."
-    error "Usage: $0 [INSTALL_MODE] [SKIP_PREREQS]"
-    error "  INSTALL_MODE : docker (default) | local"
-    error "  SKIP_PREREQS : true | false (default)"
+    print_usage
 
     exit 1
 fi
