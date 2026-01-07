@@ -131,6 +131,16 @@ mocks.drizzle.transaction.mockImplementation(
 			}
 		});
 
+		// Track if invalidateEntityLists is called after the transaction completes
+		const originalInvalidateEntityLists =
+			mocks.invalidateEntityLists.getMockImplementation();
+		mocks.invalidateEntityLists.mockImplementation(async (...args) => {
+			txCallOrder.push("invalidateEntityLists");
+			if (originalInvalidateEntityLists) {
+				return originalInvalidateEntityLists(...args);
+			}
+		});
+
 		const result = await cb(mocks.tx);
 		txCallOrder.push("tx_commit");
 		transactionCompleted = true;
@@ -285,6 +295,13 @@ describe("updateUser Resolver Cache Invalidation Tests", () => {
 				targetUserId,
 			);
 			expect(mocks.invalidateEntity).toHaveBeenCalledTimes(1);
+
+			// Verify invalidateEntityLists was called with correct arguments
+			expect(mocks.invalidateEntityLists).toHaveBeenCalledWith(
+				mockContext.cache,
+				"user",
+			);
+			expect(mocks.invalidateEntityLists).toHaveBeenCalledTimes(1);
 		});
 	});
 
@@ -308,6 +325,7 @@ describe("updateUser Resolver Cache Invalidation Tests", () => {
 
 			// Verify invalidateEntity was NOT called
 			expect(mocks.invalidateEntity).not.toHaveBeenCalled();
+			expect(mocks.invalidateEntityLists).not.toHaveBeenCalled();
 		});
 
 		it("should NOT call invalidateEntity when current user is not admin (unauthorized)", async () => {
@@ -332,6 +350,7 @@ describe("updateUser Resolver Cache Invalidation Tests", () => {
 
 			// Verify invalidateEntity was NOT called
 			expect(mocks.invalidateEntity).not.toHaveBeenCalled();
+			expect(mocks.invalidateEntityLists).not.toHaveBeenCalled();
 		});
 
 		it("should NOT call invalidateEntity when trying to update self", async () => {
@@ -357,6 +376,7 @@ describe("updateUser Resolver Cache Invalidation Tests", () => {
 
 			// Verify invalidateEntity was NOT called
 			expect(mocks.invalidateEntity).not.toHaveBeenCalled();
+			expect(mocks.invalidateEntityLists).not.toHaveBeenCalled();
 		});
 	});
 
@@ -401,6 +421,12 @@ describe("updateUser Resolver Cache Invalidation Tests", () => {
 			expect(txCallOrder.indexOf("tx_commit")).toBeLessThan(
 				txCallOrder.indexOf("invalidateEntity"),
 			);
+
+			// Verify invalidateEntityLists was also called after transaction commit
+			expect(txCallOrder).toContain("invalidateEntityLists");
+			expect(txCallOrder.indexOf("tx_commit")).toBeLessThan(
+				txCallOrder.indexOf("invalidateEntityLists"),
+			);
 		});
 
 		it("should call invalidateEntity after database update and transaction commit completes", async () => {
@@ -443,6 +469,10 @@ describe("updateUser Resolver Cache Invalidation Tests", () => {
 				callOrder.push("invalidateEntity");
 			});
 
+			mocks.invalidateEntityLists.mockImplementationOnce(async () => {
+				callOrder.push("invalidateEntityLists");
+			});
+
 			const args = {
 				input: {
 					id: targetUserId,
@@ -461,6 +491,7 @@ describe("updateUser Resolver Cache Invalidation Tests", () => {
 			expect(callOrder).toContain("tx_returning");
 			expect(callOrder).toContain("tx_commit");
 			expect(callOrder).toContain("invalidateEntity");
+			expect(callOrder).toContain("invalidateEntityLists");
 
 			// Assert tx.returning completes before transaction commit
 			expect(callOrder.indexOf("tx_returning")).toBeLessThan(
@@ -476,6 +507,67 @@ describe("updateUser Resolver Cache Invalidation Tests", () => {
 			// This verifies the actual flow: DB update → transaction commit → cache invalidation
 			expect(callOrder.indexOf("tx_commit")).toBeLessThan(
 				callOrder.indexOf("invalidateEntity"),
+			);
+
+			// Assert invalidateEntityLists is called after transaction commit
+			expect(callOrder.indexOf("tx_commit")).toBeLessThan(
+				callOrder.indexOf("invalidateEntityLists"),
+			);
+		});
+	});
+
+	describe("Cache invalidation error handling (graceful degradation)", () => {
+		it("should succeed despite cache invalidation errors and log warning", async () => {
+			const targetUserId = "51234567-89ab-cdef-0123-456789abcdef";
+
+			// Current user is an admin
+			mocks.drizzle.query.usersTable.findFirst
+				.mockResolvedValueOnce({ role: "administrator" }) // currentUser
+				.mockResolvedValueOnce({
+					// existingUser
+					role: "regular",
+					avatarName: null,
+				});
+
+			mocks.tx.returning.mockResolvedValueOnce([
+				{
+					id: targetUserId,
+					name: "Updated User",
+					role: "regular",
+					emailAddress: "updated@test.com",
+				},
+			]);
+
+			// Make cache invalidation throw an error
+			mocks.invalidateEntity.mockRejectedValueOnce(
+				new Error("Redis connection failed"),
+			);
+
+			const args = {
+				input: {
+					id: targetUserId,
+					name: "Updated Name",
+				},
+			};
+
+			// Resolver should succeed despite cache errors (graceful degradation)
+			const result = await resolver(null, args, mockContext);
+
+			// Verify the resolver succeeded and returned the updated user
+			expect(result).toEqual({
+				id: targetUserId,
+				name: "Updated User",
+				role: "regular",
+				emailAddress: "updated@test.com",
+			});
+
+			// Verify cache invalidation was attempted
+			expect(mocks.invalidateEntity).toHaveBeenCalled();
+
+			// Verify warning was logged for the cache error
+			expect(mockContext.log.warn).toHaveBeenCalledWith(
+				{ error: "Redis connection failed" },
+				"Failed to invalidate user cache (non-fatal)",
 			);
 		});
 	});

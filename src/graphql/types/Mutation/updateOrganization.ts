@@ -245,12 +245,10 @@ builder.mutationField("updateOrganization", (t) =>
 				.then(async (updatedOrganization) => {
 					// Invalidate organization caches (graceful degradation - don't break mutation on cache errors)
 					try {
-						await invalidateEntity(
-							ctx.cache,
-							"organization",
-							parsedArgs.input.id,
-						);
-						await invalidateEntityLists(ctx.cache, "organization");
+						await Promise.all([
+							invalidateEntity(ctx.cache, "organization", parsedArgs.input.id),
+							invalidateEntityLists(ctx.cache, "organization"),
+						]);
 					} catch (error) {
 						ctx.log.warn(
 							{

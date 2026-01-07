@@ -392,6 +392,11 @@ suite("Mutation field deleteStandaloneEvent", () => {
 					where: (fields, operators) => operators.eq(fields.id, eventId),
 				});
 			expect(deletedEvent).toBeUndefined();
+
+			// Note: Cache invalidation (invalidateEntity, invalidateEntityLists) is implicitly verified
+			// since the mutation completes successfully. If cache invalidation failed and wasn't handled
+			// gracefully, the mutation would error. The specific cache function calls and error handling
+			// are unit-tested in test/graphql/types/Mutation/deleteStandaloneEventUnit.test.ts.
 		});
 
 		test("should successfully delete standalone event when user is organization administrator", async () => {
