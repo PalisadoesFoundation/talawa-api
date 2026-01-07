@@ -323,16 +323,20 @@ suite("Mutation field createOrganization", () => {
 		});
 
 		// Invalid countryCode should result in no organization being created
-		// GraphQL validation errors may return undefined rather than null
+		// GraphQL validation errors may return undefined rather than null for result.data
 		expect(result.data?.createOrganization ?? null).toBeNull();
-		// Should have errors
+
+		// Mutation_createOrganization countryCode enum validation:
+		// Invalid enum values (like "xx") are caught by the GraphQL schema validation layer
+		// BEFORE reaching the resolver. This returns a validation error with message
+		// "Graphql validation error" and a correlationId, NOT the resolver-level
+		// "invalid_arguments" code used for business logic validation.
 		expect(result.errors).toBeDefined();
 		expect(result.errors?.length).toBeGreaterThan(0);
-		// Verify error structure - invalid enum values are caught at GraphQL validation layer
-		// which returns a different structure than resolver-level validation (invalid_arguments)
 		expect(result.errors).toEqual(
 			expect.arrayContaining([
 				expect.objectContaining({
+					message: "Graphql validation error",
 					extensions: expect.objectContaining({
 						correlationId: expect.any(String),
 					}),
@@ -789,17 +793,15 @@ suite("Mutation field createOrganization", () => {
 			// Should have an error - the transaction should rollback on MinIO failure
 			expect(result.errors).toBeDefined();
 			expect(result.errors?.length).toBeGreaterThan(0);
-			// Verify the error has an extensions object (error structure may vary)
-			// The error could be 'unexpected' when MinIO failure propagates as an unhandled exception
-			// or it could surface differently depending on how the transaction handles the error
-			expect(result.errors[0].extensions).toBeDefined();
-			// The error should either be 'unexpected' (from explicit throw) or have a correlation ID
-			// indicating it was properly tracked by the error handling system
-			const errorCode = result.errors[0].extensions?.code;
-			expect(
-				errorCode === "unexpected" ||
-					result.errors[0].extensions?.correlationId,
-			).toBeTruthy();
+
+			// MinIO putObject failure propagates as an unhandled exception within the transaction.
+			// The global error handler catches it and wraps it with an extensions object containing
+			// a correlationId for tracing. Verify the error structure explicitly.
+			const extensions = result.errors[0].extensions;
+			expect(extensions).toBeDefined();
+			expect(extensions.correlationId).toEqual(expect.any(String));
+			// The error message should indicate an internal/generic error occurred
+			expect(result.errors[0].message).toBeDefined();
 		} finally {
 			// Restore original method
 			server.minio.client.putObject = originalPutObject;
