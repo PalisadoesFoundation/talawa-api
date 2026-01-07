@@ -134,14 +134,14 @@ builder.mutationField("deletePost", (t) =>
 				}
 			}
 
-			return await ctx.drizzleClient.transaction(async (tx) => {
-				const [deletedPost] = await tx
+			const deletedPost = await ctx.drizzleClient.transaction(async (tx) => {
+				const [deletedPostResult] = await tx
 					.delete(postsTable)
 					.where(eq(postsTable.id, parsedArgs.input.id))
 					.returning();
 
 				// Deleted post not being returned means that either it was deleted or its `id` column was changed by external entities before this delete operation.
-				if (deletedPost === undefined) {
+				if (deletedPostResult === undefined) {
 					throw new TalawaGraphQLError({
 						extensions: {
 							code: "unexpected",
@@ -156,14 +156,23 @@ builder.mutationField("deletePost", (t) =>
 						.filter((name): name is string => name !== null),
 				);
 
-				// Invalidate post caches
-				await invalidateEntity(ctx.cache, "post", parsedArgs.input.id);
-				await invalidateEntityLists(ctx.cache, "post");
-
-				return Object.assign(deletedPost, {
+				return Object.assign(deletedPostResult, {
 					attachments: existingPost.attachmentsWherePost,
 				});
 			});
+
+			// Invalidate post caches (graceful degradation - don't break mutation on cache errors)
+			try {
+				await invalidateEntity(ctx.cache, "post", parsedArgs.input.id);
+				await invalidateEntityLists(ctx.cache, "post");
+			} catch (error) {
+				ctx.log.warn(
+					{ error: error instanceof Error ? error.message : "Unknown error" },
+					"Failed to invalidate post cache (non-fatal)",
+				);
+			}
+
+			return deletedPost;
 		},
 		type: Post,
 	}),

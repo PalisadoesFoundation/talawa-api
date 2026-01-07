@@ -118,14 +118,14 @@ builder.mutationField("deleteUser", (t) =>
 				});
 			}
 
-			return await ctx.drizzleClient.transaction(async (tx) => {
-				const [deletedUser] = await tx
+			const deletedUser = await ctx.drizzleClient.transaction(async (tx) => {
+				const [deletedUserResult] = await tx
 					.delete(usersTable)
 					.where(eq(usersTable.id, parsedArgs.input.id))
 					.returning();
 
 				// Deleted user not being returned means that either it was deleted or its `id` column was changed by an external entity before this operation.
-				if (deletedUser === undefined) {
+				if (deletedUserResult === undefined) {
 					throw new TalawaGraphQLError({
 						extensions: {
 							code: "arguments_associated_resources_not_found",
@@ -144,12 +144,21 @@ builder.mutationField("deleteUser", (t) =>
 						existingUser.avatarName,
 					);
 
-				// Invalidate user caches
+				return deletedUserResult;
+			});
+
+			// Invalidate user caches (graceful degradation - don't break mutation on cache errors)
+			try {
 				await invalidateEntity(ctx.cache, "user", parsedArgs.input.id);
 				await invalidateEntityLists(ctx.cache, "user");
+			} catch (error) {
+				ctx.log.warn(
+					{ error: error instanceof Error ? error.message : "Unknown error" },
+					"Failed to invalidate user cache (non-fatal)",
+				);
+			}
 
-				return deletedUser;
-			});
+			return deletedUser;
 		},
 		type: User,
 	}),

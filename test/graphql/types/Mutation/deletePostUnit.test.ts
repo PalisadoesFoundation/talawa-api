@@ -46,16 +46,16 @@ const mocks = vi.hoisted(() => {
 			where: vi.fn(),
 			returning: vi.fn().mockResolvedValue([
 				{
-					id: "org-1",
-					name: "Test Org",
-					countryCode: "us",
+					id: "post-1",
+					caption: "Test Post",
+					organizationId: "org-1",
 				},
 			]),
 		},
 		drizzle: {
 			transaction: vi.fn(),
 			query: {
-				organizationsTable: {
+				postsTable: {
 					findFirst: vi.fn(),
 				},
 				usersTable: {
@@ -118,35 +118,32 @@ vi.mock("~/src/services/minio", () => ({
 	minio: mocks.minio,
 }));
 
-// Mock the Organization type to prevent import errors or side effects
-vi.mock("~/src/graphql/types/Organization/Organization", () => ({
-	Organization: "OrganizationType",
+// Mock the Post type
+vi.mock("~/src/graphql/types/Post/Post", () => ({
+	Post: "PostType",
 }));
 
-vi.mock("~/src/graphql/inputs/MutationDeleteOrganizationInput", async () => {
+vi.mock("~/src/graphql/inputs/MutationDeletePostInput", async () => {
 	const { z } = await vi.importActual<typeof import("zod")>("zod");
 	return {
-		mutationDeleteOrganizationInputSchema: z.object({
+		mutationDeletePostInputSchema: z.object({
 			id: z.string().uuid(),
 		}),
-		MutationDeleteOrganizationInput: "MutationDeleteOrganizationInput",
+		MutationDeletePostInput: "MutationDeletePostInput",
 	};
 });
 
-import "~/src/graphql/types/Mutation/deleteOrganization";
+import "~/src/graphql/types/Mutation/deletePost";
 
-describe("deleteOrganization Resolver Unit Coverage", () => {
+describe("deletePost Resolver Cache Invalidation Tests", () => {
 	let resolver: (...args: unknown[]) => unknown;
 
 	beforeAll(() => {
 		// Capture the resolver from the builder mock
 		const calls = mocks.builder.mutationField.mock.calls;
-		const deleteOrgCall = calls.find(
-			(c: unknown[]) => c[0] === "deleteOrganization",
-		);
-		if (deleteOrgCall) {
-			// The resolver is passed in the field definition
-			const fieldDef = deleteOrgCall[1]({
+		const deletePostCall = calls.find((c: unknown[]) => c[0] === "deletePost");
+		if (deletePostCall) {
+			const fieldDef = deletePostCall[1]({
 				field: mocks.builder.field,
 				arg: mocks.builder.arg,
 			});
@@ -162,96 +159,105 @@ describe("deleteOrganization Resolver Unit Coverage", () => {
 		expect(resolver).toBeDefined();
 	});
 
-	it("should call invalidateEntity with correct organization ID after successful deletion", async () => {
-		const orgId = "01234567-89ab-cdef-0123-456789abcdef";
+	it("should call invalidateEntity and invalidateEntityLists after successful deletion", async () => {
+		const postId = "01234567-89ab-cdef-0123-456789abcdef";
 
 		mocks.drizzle.query.usersTable.findFirst.mockResolvedValue({
 			role: "administrator",
 		});
-		mocks.drizzle.query.organizationsTable.findFirst.mockResolvedValue({
-			id: orgId,
-			avatarName: null,
-			advertisementsWhereOrganization: [],
-			chatsWhereOrganization: [],
-			eventsWhereOrganization: [],
-			postsWhereOrganization: [],
-			venuesWhereOrganization: [],
+		mocks.drizzle.query.postsTable.findFirst.mockResolvedValue({
+			id: postId,
+			creatorId: "admin-id",
+			attachmentsWherePost: [],
+			organization: {
+				countryCode: "us",
+				membershipsWhereOrganization: [{ role: "administrator" }],
+			},
 		});
 		mocks.tx.returning.mockResolvedValue([
 			{
-				id: orgId,
-				name: "Deleted Org",
-				countryCode: "us",
+				id: postId,
+				caption: "Deleted Post",
 			},
 		]);
 
 		const args = {
 			input: {
-				id: orgId,
+				id: postId,
 			},
 		};
 
 		await resolver(null, args, mockContext);
 
-		// Verify invalidateEntity was called with correct organization ID
+		// Verify invalidateEntity was called with correct args
 		expect(mocks.invalidateEntity).toHaveBeenCalledWith(
 			mockContext.cache,
-			"organization",
-			orgId,
+			"post",
+			postId,
+		);
+
+		// Verify invalidateEntityLists was called with correct args
+		expect(mocks.invalidateEntityLists).toHaveBeenCalledWith(
+			mockContext.cache,
+			"post",
 		);
 	});
 
-	it("should call invalidateEntityLists after successful deletion", async () => {
-		const orgId = "11234567-89ab-cdef-0123-456789abcdef";
+	it("should succeed despite cache invalidation errors (graceful degradation)", async () => {
+		const postId = "11234567-89ab-cdef-0123-456789abcdef";
 
 		mocks.drizzle.query.usersTable.findFirst.mockResolvedValue({
 			role: "administrator",
 		});
-		mocks.drizzle.query.organizationsTable.findFirst.mockResolvedValue({
-			id: orgId,
-			avatarName: null,
-			advertisementsWhereOrganization: [],
-			chatsWhereOrganization: [],
-			eventsWhereOrganization: [],
-			postsWhereOrganization: [],
-			venuesWhereOrganization: [],
+		mocks.drizzle.query.postsTable.findFirst.mockResolvedValue({
+			id: postId,
+			creatorId: "admin-id",
+			attachmentsWherePost: [],
+			organization: {
+				countryCode: "us",
+				membershipsWhereOrganization: [{ role: "administrator" }],
+			},
 		});
 		mocks.tx.returning.mockResolvedValue([
 			{
-				id: orgId,
-				name: "Deleted Org",
-				countryCode: "us",
+				id: postId,
+				caption: "Deleted Post",
 			},
 		]);
 
+		// Make cache invalidation throw an error
+		mocks.invalidateEntity.mockRejectedValueOnce(
+			new Error("Redis unavailable"),
+		);
+
 		const args = {
 			input: {
-				id: orgId,
+				id: postId,
 			},
 		};
 
-		await resolver(null, args, mockContext);
+		// Resolver should succeed despite cache errors
+		const result = await resolver(null, args, mockContext);
 
-		// Verify invalidateEntityLists was called for organization
-		expect(mocks.invalidateEntityLists).toHaveBeenCalledWith(
-			mockContext.cache,
-			"organization",
+		expect(result).toBeDefined();
+		expect(mocks.invalidateEntity).toHaveBeenCalled();
+		expect(mockContext.log.warn).toHaveBeenCalledWith(
+			{ error: "Redis unavailable" },
+			"Failed to invalidate post cache (non-fatal)",
 		);
 	});
 
-	it("should NOT call cache invalidation when deletion fails (org not found)", async () => {
-		const orgId = "21234567-89ab-cdef-0123-456789abcdef";
+	it("should NOT call cache invalidation when post not found", async () => {
+		const postId = "21234567-89ab-cdef-0123-456789abcdef";
 
 		mocks.drizzle.query.usersTable.findFirst.mockResolvedValue({
 			role: "administrator",
 		});
-		mocks.drizzle.query.organizationsTable.findFirst.mockResolvedValue(
-			undefined,
-		);
+		mocks.drizzle.query.postsTable.findFirst.mockResolvedValue(undefined);
 
 		const args = {
 			input: {
-				id: orgId,
+				id: postId,
 			},
 		};
 
@@ -263,24 +269,24 @@ describe("deleteOrganization Resolver Unit Coverage", () => {
 	});
 
 	it("should call cache invalidation in correct order (delete DB first, then invalidate cache)", async () => {
-		const orgId = "31234567-89ab-cdef-0123-456789abcdef";
+		const postId = "31234567-89ab-cdef-0123-456789abcdef";
 		const callOrder: string[] = [];
 
 		mocks.drizzle.query.usersTable.findFirst.mockResolvedValue({
 			role: "administrator",
 		});
-		mocks.drizzle.query.organizationsTable.findFirst.mockResolvedValue({
-			id: orgId,
-			avatarName: null,
-			advertisementsWhereOrganization: [],
-			chatsWhereOrganization: [],
-			eventsWhereOrganization: [],
-			postsWhereOrganization: [],
-			venuesWhereOrganization: [],
+		mocks.drizzle.query.postsTable.findFirst.mockResolvedValue({
+			id: postId,
+			creatorId: "admin-id",
+			attachmentsWherePost: [],
+			organization: {
+				countryCode: "us",
+				membershipsWhereOrganization: [{ role: "administrator" }],
+			},
 		});
 		mocks.tx.returning.mockImplementation(async () => {
 			callOrder.push("db_delete");
-			return [{ id: orgId, name: "Deleted Org", countryCode: "us" }];
+			return [{ id: postId, caption: "Deleted Post" }];
 		});
 		mocks.invalidateEntity.mockImplementation(async () => {
 			callOrder.push("invalidateEntity");
@@ -291,7 +297,7 @@ describe("deleteOrganization Resolver Unit Coverage", () => {
 
 		const args = {
 			input: {
-				id: orgId,
+				id: postId,
 			},
 		};
 
@@ -303,55 +309,5 @@ describe("deleteOrganization Resolver Unit Coverage", () => {
 			"invalidateEntity",
 			"invalidateEntityLists",
 		]);
-	});
-
-	it("should succeed despite cache invalidation errors (graceful degradation)", async () => {
-		const orgId = "41234567-89ab-cdef-0123-456789abcdef";
-
-		mocks.drizzle.query.usersTable.findFirst.mockResolvedValue({
-			role: "administrator",
-		});
-		mocks.drizzle.query.organizationsTable.findFirst.mockResolvedValue({
-			id: orgId,
-			avatarName: null,
-			advertisementsWhereOrganization: [],
-			chatsWhereOrganization: [],
-			eventsWhereOrganization: [],
-			postsWhereOrganization: [],
-			venuesWhereOrganization: [],
-		});
-		mocks.tx.returning.mockResolvedValue([
-			{
-				id: orgId,
-				name: "Deleted Org",
-				countryCode: "us",
-			},
-		]);
-
-		// Make cache invalidation throw an error
-		mocks.invalidateEntity.mockRejectedValueOnce(
-			new Error("Redis unavailable"),
-		);
-
-		const args = {
-			input: {
-				id: orgId,
-			},
-		};
-
-		// Resolver should succeed despite cache errors
-		const result = await resolver(null, args, mockContext);
-
-		expect(result).toEqual({
-			id: orgId,
-			name: "Deleted Org",
-			countryCode: "us",
-		});
-
-		expect(mocks.invalidateEntity).toHaveBeenCalled();
-		expect(mockContext.log.warn).toHaveBeenCalledWith(
-			{ error: "Redis unavailable" },
-			"Failed to invalidate organization cache (non-fatal)",
-		);
 	});
 });

@@ -409,4 +409,105 @@ describe("updatePost Resolver Cache Invalidation Tests", () => {
 			expect(callOrder).toEqual(["invalidateEntity", "invalidateEntityLists"]);
 		});
 	});
+
+	describe("graceful degradation on cache errors", () => {
+		it("should succeed despite invalidateEntity throwing an error", async () => {
+			const postId = "41234567-89ab-cdef-0123-456789abcdef";
+
+			mocks.drizzle.query.usersTable.findFirst.mockResolvedValue({
+				role: "administrator",
+			});
+			mocks.drizzle.query.postsTable.findFirst.mockResolvedValue({
+				id: postId,
+				pinnedAt: null,
+				creatorId: "admin-id",
+				attachmentsWherePost: [],
+				organization: {
+					countryCode: "us",
+					membershipsWhereOrganization: [{ role: "administrator" }],
+				},
+			});
+			mocks.tx.returning.mockResolvedValueOnce([
+				{
+					id: postId,
+					caption: "Updated Post",
+					body: "Body",
+					pinnedAt: null,
+					organizationId: "org-1",
+				},
+			]);
+
+			// Make cache invalidation throw an error
+			mocks.invalidateEntity.mockRejectedValueOnce(
+				new Error("Redis unavailable"),
+			);
+
+			const args = {
+				input: {
+					id: postId,
+					caption: "Updated",
+				},
+			};
+
+			// Resolver should succeed despite cache errors
+			const result = await resolver(null, args, mockContext);
+
+			expect(result).toBeDefined();
+			expect(mocks.invalidateEntity).toHaveBeenCalled();
+			expect(mockContext.log.warn).toHaveBeenCalledWith(
+				{ error: "Redis unavailable" },
+				"Failed to invalidate post cache (non-fatal)",
+			);
+		});
+
+		it("should succeed despite invalidateEntityLists throwing an error", async () => {
+			const postId = "51234567-89ab-cdef-0123-456789abcdef";
+
+			mocks.drizzle.query.usersTable.findFirst.mockResolvedValue({
+				role: "administrator",
+			});
+			mocks.drizzle.query.postsTable.findFirst.mockResolvedValue({
+				id: postId,
+				pinnedAt: null,
+				creatorId: "admin-id",
+				attachmentsWherePost: [],
+				organization: {
+					countryCode: "us",
+					membershipsWhereOrganization: [{ role: "administrator" }],
+				},
+			});
+			mocks.tx.returning.mockResolvedValueOnce([
+				{
+					id: postId,
+					caption: "Updated Post",
+					body: "Body",
+					pinnedAt: null,
+					organizationId: "org-1",
+				},
+			]);
+
+			// invalidateEntity succeeds, invalidateEntityLists fails
+			mocks.invalidateEntity.mockResolvedValueOnce(undefined);
+			mocks.invalidateEntityLists.mockRejectedValueOnce(
+				new Error("Redis timeout"),
+			);
+
+			const args = {
+				input: {
+					id: postId,
+					caption: "Updated",
+				},
+			};
+
+			// Resolver should succeed despite cache errors
+			const result = await resolver(null, args, mockContext);
+
+			expect(result).toBeDefined();
+			expect(mocks.invalidateEntityLists).toHaveBeenCalled();
+			expect(mockContext.log.warn).toHaveBeenCalledWith(
+				{ error: "Redis timeout" },
+				"Failed to invalidate post cache (non-fatal)",
+			);
+		});
+	});
 });

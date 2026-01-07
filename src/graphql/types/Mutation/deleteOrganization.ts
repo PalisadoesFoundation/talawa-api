@@ -142,70 +142,84 @@ builder.mutationField("deleteOrganization", (t) =>
 				});
 			}
 
-			return await ctx.drizzleClient.transaction(async (tx) => {
-				const [deletedOrganization] = await tx
-					.delete(organizationsTable)
-					.where(eq(organizationsTable.id, parsedArgs.input.id))
-					.returning();
+			const deletedOrganization = await ctx.drizzleClient.transaction(
+				async (tx) => {
+					const [deletedOrg] = await tx
+						.delete(organizationsTable)
+						.where(eq(organizationsTable.id, parsedArgs.input.id))
+						.returning();
 
-				// Deleted organization not being returned means that either it doesn't exist or it was deleted or its `id` column was changed by external entities before this delete operation could take place.
-				if (deletedOrganization === undefined) {
-					throw new TalawaGraphQLError({
-						extensions: {
-							code: "arguments_associated_resources_not_found",
-							issues: [
-								{
-									argumentPath: ["input", "id"],
-								},
-							],
-						},
-					});
-				}
-
-				const objectNames: string[] = [];
-
-				if (existingOrganization.avatarName !== null) {
-					objectNames.push(existingOrganization.avatarName);
-				}
-
-				for (const advertisement of existingOrganization.advertisementsWhereOrganization) {
-					for (const attachment of advertisement.attachmentsWhereAdvertisement) {
-						objectNames.push(attachment.name);
+					// Deleted organization not being returned means that either it doesn't exist or it was deleted or its `id` column was changed by external entities before this delete operation could take place.
+					if (deletedOrg === undefined) {
+						throw new TalawaGraphQLError({
+							extensions: {
+								code: "arguments_associated_resources_not_found",
+								issues: [
+									{
+										argumentPath: ["input", "id"],
+									},
+								],
+							},
+						});
 					}
-				}
 
-				for (const chat of existingOrganization.chatsWhereOrganization) {
-					if (chat.avatarName !== null) {
-						objectNames.push(chat.avatarName);
+					const objectNames: string[] = [];
+
+					if (existingOrganization.avatarName !== null) {
+						objectNames.push(existingOrganization.avatarName);
 					}
-				}
 
-				for (const event of existingOrganization.eventsWhereOrganization) {
-					for (const attachment of event.attachmentsWhereEvent) {
-						objectNames.push(attachment.name);
+					for (const advertisement of existingOrganization.advertisementsWhereOrganization) {
+						for (const attachment of advertisement.attachmentsWhereAdvertisement) {
+							objectNames.push(attachment.name);
+						}
 					}
-				}
 
-				for (const post of existingOrganization.postsWhereOrganization) {
-					for (const attachment of post.attachmentsWherePost) {
-						objectNames.push(attachment.name);
+					for (const chat of existingOrganization.chatsWhereOrganization) {
+						if (chat.avatarName !== null) {
+							objectNames.push(chat.avatarName);
+						}
 					}
-				}
 
-				for (const venue of existingOrganization.venuesWhereOrganization) {
-					for (const attachment of venue.attachmentsWhereVenue) {
-						objectNames.push(attachment.name);
+					for (const event of existingOrganization.eventsWhereOrganization) {
+						for (const attachment of event.attachmentsWhereEvent) {
+							objectNames.push(attachment.name);
+						}
 					}
-				}
 
-				await ctx.minio.client.removeObjects(ctx.minio.bucketName, objectNames);
+					for (const post of existingOrganization.postsWhereOrganization) {
+						for (const attachment of post.attachmentsWherePost) {
+							objectNames.push(attachment.name);
+						}
+					}
 
-				// Invalidate organization caches
+					for (const venue of existingOrganization.venuesWhereOrganization) {
+						for (const attachment of venue.attachmentsWhereVenue) {
+							objectNames.push(attachment.name);
+						}
+					}
+
+					await ctx.minio.client.removeObjects(
+						ctx.minio.bucketName,
+						objectNames,
+					);
+
+					return deletedOrg;
+				},
+			);
+
+			// Invalidate organization caches (graceful degradation - don't break mutation on cache errors)
+			try {
 				await invalidateEntity(ctx.cache, "organization", parsedArgs.input.id);
 				await invalidateEntityLists(ctx.cache, "organization");
+			} catch (error) {
+				ctx.log.warn(
+					{ error: error instanceof Error ? error.message : "Unknown error" },
+					"Failed to invalidate organization cache (non-fatal)",
+				);
+			}
 
-				return deletedOrganization;
-			});
+			return deletedOrganization;
 		},
 		type: Organization,
 	}),
