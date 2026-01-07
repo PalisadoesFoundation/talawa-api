@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 import type { DrizzleClient } from "~/src/fastifyPlugins/drizzleClient";
-import type { CacheService } from "~/src/services/caching";
+import { type CacheService, entityKey } from "~/src/services/caching";
 import { createDataloaders } from "~/src/utilities/dataloaders";
 import { createActionItemLoader } from "~/src/utilities/dataloaders/actionItemLoader";
 import { createEventLoader } from "~/src/utilities/dataloaders/eventLoader";
@@ -274,65 +274,164 @@ describe("DataLoader infrastructure", () => {
 	});
 
 	describe("cache integration", () => {
-		it("uses wrapWithCache when cache is provided", async () => {
-			const mockCache = createMockCache();
-			const { db, whereSpy } = createMockDb([{ id: "org1", name: "Org A" }]);
+		describe("createOrganizationLoader cache", () => {
+			it("uses wrapWithCache when cache is provided", async () => {
+				const mockCache = createMockCache();
+				const { db, whereSpy } = createMockDb([{ id: "org1", name: "Org A" }]);
 
-			const loader = createOrganizationLoader(db, mockCache);
-			await loader.load("org1");
+				const loader = createOrganizationLoader(db, mockCache);
+				await loader.load("org1");
 
-			// Verify cache was checked (mget is called by wrapWithCache)
-			expect(mockCache.mget).toHaveBeenCalled();
-			// Verify result was cached (mset is called for cache misses)
-			expect(mockCache.mset).toHaveBeenCalled();
-			// Verify DB was hit since cache returned null
-			expect(whereSpy).toHaveBeenCalledTimes(1);
+				// Verify cache was checked (mget is called by wrapWithCache)
+				expect(mockCache.mget).toHaveBeenCalled();
+				// Verify result was cached (mset is called for cache misses)
+				expect(mockCache.mset).toHaveBeenCalled();
+				// Verify DB was hit since cache returned null
+				expect(whereSpy).toHaveBeenCalledTimes(1);
+			});
+
+			it("falls back to database when cache is null", async () => {
+				const { db, whereSpy } = createMockDb([{ id: "org1", name: "Org A" }]);
+
+				const loader = createOrganizationLoader(db, null);
+				await loader.load("org1");
+
+				// Verify DB was hit directly
+				expect(whereSpy).toHaveBeenCalledTimes(1);
+			});
+
+			it("returns cached value on cache hit and skips database", async () => {
+				const cachedOrg = { id: "org1", name: "Cached Org" };
+				const cachedValues = new Map([
+					[entityKey("organization", "org1"), cachedOrg],
+				]);
+				const mockCache = createMockCache(cachedValues);
+				const { db, whereSpy } = createMockDb([]);
+
+				const loader = createOrganizationLoader(db, mockCache);
+				const result = await loader.load("org1");
+
+				// Verify cached value returned
+				expect(result).toEqual(cachedOrg);
+				// Verify DB was NOT hit (cache hit)
+				expect(whereSpy).not.toHaveBeenCalled();
+			});
+
+			it("stores fetched values in cache on cache miss", async () => {
+				const mockCache = createMockCache();
+				const dbOrg = { id: "org1", name: "DB Org" };
+				const { db } = createMockDb([dbOrg]);
+
+				const loader = createOrganizationLoader(db, mockCache);
+				await loader.load("org1");
+
+				// Verify mset was called with the fetched value using entityKey format
+				expect(mockCache.mset).toHaveBeenCalledWith(
+					expect.arrayContaining([
+						expect.objectContaining({
+							key: entityKey("organization", "org1"),
+							value: dbOrg,
+						}),
+					]),
+				);
+			});
 		});
 
-		it("falls back to database when cache is null", async () => {
-			const { db, whereSpy } = createMockDb([{ id: "org1", name: "Org A" }]);
+		describe("createEventLoader cache", () => {
+			it("calls mget/mset on cache miss and hits database", async () => {
+				const mockCache = createMockCache();
+				const { db, whereSpy } = createMockDb([
+					{ id: "evt1", name: "Event A" },
+				]);
 
-			const loader = createOrganizationLoader(db, null);
-			await loader.load("org1");
+				const loader = createEventLoader(db, mockCache);
+				await loader.load("evt1");
 
-			// Verify DB was hit directly
-			expect(whereSpy).toHaveBeenCalledTimes(1);
-		});
+				// Verify cache was checked (mget is called by wrapWithCache)
+				expect(mockCache.mget).toHaveBeenCalled();
+				// Verify result was cached (mset is called for cache misses)
+				expect(mockCache.mset).toHaveBeenCalled();
+				// Verify DB was hit since cache returned null
+				expect(whereSpy).toHaveBeenCalledTimes(1);
+			});
 
-		it("returns cached value on cache hit and skips database", async () => {
-			const cachedOrg = { id: "org1", name: "Cached Org" };
-			const cachedValues = new Map([
-				["talawa:v1:organization:org1", cachedOrg],
-			]);
-			const mockCache = createMockCache(cachedValues);
-			const { db, whereSpy } = createMockDb([]);
+			it("falls back to database when cache is null", async () => {
+				const { db, whereSpy } = createMockDb([
+					{ id: "evt1", name: "Event A" },
+				]);
 
-			const loader = createOrganizationLoader(db, mockCache);
-			const result = await loader.load("org1");
+				const loader = createEventLoader(db, null);
+				await loader.load("evt1");
 
-			// Verify cached value returned
-			expect(result).toEqual(cachedOrg);
-			// Verify DB was NOT hit (cache hit)
-			expect(whereSpy).not.toHaveBeenCalled();
-		});
+				// Verify DB was hit directly
+				expect(whereSpy).toHaveBeenCalledTimes(1);
+			});
 
-		it("stores fetched values in cache on cache miss", async () => {
-			const mockCache = createMockCache();
-			const dbOrg = { id: "org1", name: "DB Org" };
-			const { db } = createMockDb([dbOrg]);
+			it("returns cached event on cache hit and prevents DB calls", async () => {
+				const cachedEvent = { id: "evt1", name: "Cached Event" };
+				const cachedValues = new Map([
+					[entityKey("event", "evt1"), cachedEvent],
+				]);
+				const mockCache = createMockCache(cachedValues);
+				const { db, whereSpy } = createMockDb([]);
 
-			const loader = createOrganizationLoader(db, mockCache);
-			await loader.load("org1");
+				const loader = createEventLoader(db, mockCache);
+				const result = await loader.load("evt1");
 
-			// Verify mset was called with the fetched value
-			expect(mockCache.mset).toHaveBeenCalledWith(
-				expect.arrayContaining([
-					expect.objectContaining({
-						key: "talawa:v1:organization:org1",
-						value: dbOrg,
-					}),
-				]),
-			);
+				// Verify cached value returned
+				expect(result).toEqual(cachedEvent);
+				// Verify DB was NOT hit (cache hit)
+				expect(whereSpy).not.toHaveBeenCalled();
+			});
+
+			it("stores fetched values in cache on cache miss", async () => {
+				const mockCache = createMockCache();
+				const dbEvent = { id: "evt1", name: "DB Event" };
+				const { db } = createMockDb([dbEvent]);
+
+				const loader = createEventLoader(db, mockCache);
+				await loader.load("evt1");
+
+				// Verify mset was called with the fetched value using entityKey format
+				expect(mockCache.mset).toHaveBeenCalledWith(
+					expect.arrayContaining([
+						expect.objectContaining({
+							key: entityKey("event", "evt1"),
+							value: dbEvent,
+						}),
+					]),
+				);
+			});
+
+			it("handles multiple events with mixed cache hits and misses", async () => {
+				const cachedEvent = { id: "evt1", name: "Cached Event" };
+				const cachedValues = new Map([
+					[entityKey("event", "evt1"), cachedEvent],
+				]);
+				const mockCache = createMockCache(cachedValues);
+				const dbEvent = { id: "evt2", name: "DB Event" };
+				const { db, whereSpy } = createMockDb([dbEvent]);
+
+				const loader = createEventLoader(db, mockCache);
+				const results = await Promise.all([
+					loader.load("evt1"),
+					loader.load("evt2"),
+				]);
+
+				// Verify both results returned correctly
+				expect(results).toEqual([cachedEvent, dbEvent]);
+				// Verify DB was hit only for cache miss (evt2)
+				expect(whereSpy).toHaveBeenCalledTimes(1);
+				// Verify mset was called for the cache miss
+				expect(mockCache.mset).toHaveBeenCalledWith(
+					expect.arrayContaining([
+						expect.objectContaining({
+							key: entityKey("event", "evt2"),
+							value: dbEvent,
+						}),
+					]),
+				);
+			});
 		});
 	});
 });
