@@ -299,7 +299,7 @@ jobs:
             'pnpm-lock.yaml$'
             'package.json$'
             'package-lock.json$'
-            '^./*.md$'
+            '*.md$'
             '.nojekyll$'
             'knip.json$'
             'docs/docusaurus.config.ts$'
