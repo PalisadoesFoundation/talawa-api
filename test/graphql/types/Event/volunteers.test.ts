@@ -23,6 +23,10 @@ const mockEvent = {
 	isInviteOnly: false,
 	updaterId: null,
 	isRecurringEventTemplate: false,
+	attachmentsPolicy: "inherit",
+	timezone: "UTC",
+	recurrenceRule: null,
+	recurrenceUntil: null,
 	attachments: [],
 };
 
@@ -31,6 +35,10 @@ const mockRecurringInstance = {
 	...mockEvent,
 	id: "recurring-instance-123",
 	baseRecurringEventId: "base-event-123",
+	attachmentsPolicy: "inherit",
+	timezone: "UTC",
+	recurrenceRule: null,
+	recurrenceUntil: null,
 	attachments: [],
 };
 

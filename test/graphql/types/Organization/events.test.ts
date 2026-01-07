@@ -80,6 +80,10 @@ describe("Organization Events Resolver Tests", () => {
 			registrationClosesAt: new Date(),
 			attachments: [],
 			isRecurringEventTemplate: false,
+			attachmentsPolicy: "inherit",
+			timezone: "UTC",
+			recurrenceRule: null,
+			recurrenceUntil: null,
 		},
 		{
 			id: "event-2",
@@ -102,6 +106,10 @@ describe("Organization Events Resolver Tests", () => {
 			registrationClosesAt: new Date(),
 			attachments: [],
 			isRecurringEventTemplate: false,
+			attachmentsPolicy: "inherit",
+			timezone: "UTC",
+			recurrenceRule: null,
+			recurrenceUntil: null,
 		},
 	];
 
@@ -515,6 +523,10 @@ describe("Organization Events Resolver Tests", () => {
 				registrationClosesAt: new Date(),
 				attachments: [],
 				isRecurringEventTemplate: false,
+				attachmentsPolicy: "inherit",
+				timezone: "UTC",
+				recurrenceRule: null,
+				recurrenceUntil: null,
 			}));
 
 			mockGetUnifiedEventsInDateRange.mockResolvedValue(manyEvents);
@@ -577,6 +589,10 @@ describe("Organization Events Resolver Tests", () => {
 					registrationClosesAt: new Date(),
 					attachments: [],
 					isRecurringEventTemplate: false,
+					attachmentsPolicy: "inherit",
+					timezone: "UTC",
+					recurrenceRule: null,
+					recurrenceUntil: null,
 				},
 				...mockEvents,
 			];

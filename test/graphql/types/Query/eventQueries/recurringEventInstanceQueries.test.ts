@@ -71,6 +71,10 @@ const mockBaseTemplate: typeof eventsTable.$inferSelect = {
 	createdAt: new Date("2025-01-01T00:00:00.000Z"),
 	updatedAt: null,
 	isRecurringEventTemplate: true,
+	attachmentsPolicy: "inherit",
+	timezone: "UTC",
+	recurrenceRule: null,
+	recurrenceUntil: null,
 };
 
 const mockException: typeof eventExceptionsTable.$inferSelect = {

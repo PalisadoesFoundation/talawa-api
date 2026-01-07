@@ -67,6 +67,10 @@ describe("getUnifiedEventsInDateRange", () => {
 		createdAt: new Date("2025-01-01T00:00:00.000Z"),
 		updatedAt: null,
 		isRecurringEventTemplate: false,
+		attachmentsPolicy: "inherit",
+		timezone: "UTC",
+		recurrenceRule: null,
+		recurrenceUntil: null,
 		attachments: [],
 		eventType: "standalone" as const,
 	};
@@ -784,6 +788,10 @@ describe("getEventsByIds", () => {
 		createdAt: new Date("2025-01-01T00:00:00.000Z"),
 		updatedAt: null,
 		isRecurringEventTemplate: false,
+		attachmentsPolicy: "inherit",
+		timezone: "UTC",
+		recurrenceRule: null,
+		recurrenceUntil: null,
 		attachments: [],
 		eventType: "standalone" as const,
 	};

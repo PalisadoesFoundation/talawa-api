@@ -93,6 +93,10 @@ describe("windowManager", () => {
 		isPublic: true,
 		isRegisterable: false,
 		isInviteOnly: false,
+		attachmentsPolicy: "inherit",
+		timezone: "UTC",
+		recurrenceRule: null,
+		recurrenceUntil: null,
 		...overrides,
 	});
 

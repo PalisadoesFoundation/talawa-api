@@ -54,6 +54,10 @@ describe("filterInviteOnlyEvents", () => {
 		updatedAt: null,
 		updaterId: null,
 		isRecurringEventTemplate: false,
+		attachmentsPolicy: "inherit",
+		timezone: "UTC",
+		recurrenceRule: null,
+		recurrenceUntil: null,
 		attachments: [],
 		eventType,
 	});
