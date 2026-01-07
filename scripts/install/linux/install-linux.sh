@@ -25,6 +25,20 @@ BLUE='\033[0;34m'
 CYAN='\033[0;36m'
 NC='\033[0m'
 
+# Installation paths
+readonly FNM_INSTALL_DIR="${FNM_DIR:-$HOME/.local/share/fnm}"
+readonly FNM_BIN_DIR="$FNM_INSTALL_DIR"
+readonly INSTALLATION_LOG="/tmp/talawa-install-$$.log"
+
+# Version requirements
+readonly MIN_NODE_MAJOR_VERSION=18
+readonly MIN_DISK_SPACE_GB=2
+
+# Timeouts
+readonly CURL_CONNECT_TIMEOUT=30
+readonly CURL_MAX_TIME_DOCKER=300
+readonly CURL_MAX_TIME_FNM=120
+
 # Print functions
 info() { echo -e "${BLUE}ℹ${NC} $1"; }
 success() { echo -e "${GREEN}✓${NC} $1"; }
@@ -134,7 +148,7 @@ if [ "$INSTALL_MODE" = "docker" ]; then
         # The script is from a trusted source (get.docker.com) but piping to shell
         # carries inherent risk. Users can review the script first by visiting:
         # https://get.docker.com or using: curl -fsSL https://get.docker.com | less
-        curl -fsSL --connect-timeout 30 --max-time 300 https://get.docker.com | sh
+        curl -fsSL --connect-timeout $CURL_CONNECT_TIMEOUT --max-time $CURL_MAX_TIME_DOCKER https://get.docker.com | sh
         
         info "Adding current user to docker group..."
         sudo usermod -aG docker "$USER"
@@ -177,10 +191,10 @@ else
     info "Installing fnm..."
     # Security Note: This uses fnm's official installer over HTTPS.
     # Users can review the script first at: https://fnm.vercel.app/install
-    curl -fsSL --connect-timeout 30 --max-time 120 https://fnm.vercel.app/install | bash -s -- --skip-shell
+    curl -fsSL --connect-timeout $CURL_CONNECT_TIMEOUT --max-time $CURL_MAX_TIME_FNM https://fnm.vercel.app/install | bash -s -- --skip-shell
     
     # Set up fnm for current session
-    export PATH="$HOME/.local/share/fnm:$PATH"
+    export PATH="$FNM_BIN_DIR:$PATH"
     eval "$(fnm env)"
     
     success "fnm installed successfully"
@@ -297,7 +311,7 @@ if command_exists docker; then
 fi
 echo ""
 warn "NOTE: To make fnm available in new terminal sessions, add this to your ~/.bashrc or ~/.zshrc:"
-echo "  export PATH=\"\$HOME/.local/share/fnm:\$PATH\""
+echo "  export PATH=\"\$FNM_BIN_DIR:\$PATH\""
 echo "  eval \"\$(fnm env)\""
 echo ""
 info "Then restart your terminal or run: source ~/.bashrc (or ~/.zshrc)"
