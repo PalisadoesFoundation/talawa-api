@@ -2,6 +2,20 @@ import type { CacheService } from "./CacheService";
 import { CacheNamespace } from "./cacheConfig";
 
 /**
+ * Logger interface for cache wrapper operations.
+ */
+export interface CacheWrapperLogger {
+	debug: (obj: object, msg?: string) => void;
+}
+
+/**
+ * Metrics interface for cache wrapper operations.
+ */
+export interface CacheWrapperMetrics {
+	increment: (metric: string, tags?: Record<string, string>) => void;
+}
+
+/**
  * Options for wrapping a batch function with caching.
  */
 export interface WrapWithCacheOptions<K, _V> {
@@ -23,6 +37,14 @@ export interface WrapWithCacheOptions<K, _V> {
 	 * TTL in seconds for cached values.
 	 */
 	ttlSeconds: number;
+	/**
+	 * Optional logger for recording cache operation failures.
+	 */
+	logger?: CacheWrapperLogger;
+	/**
+	 * Optional metrics client for tracking cache operation failures.
+	 */
+	metrics?: CacheWrapperMetrics;
 }
 
 /**
@@ -48,7 +70,7 @@ export function wrapWithCache<K, V>(
 	batchFn: (keys: readonly K[]) => Promise<(V | null)[]>,
 	opts: WrapWithCacheOptions<K, V>,
 ): (keys: readonly K[]) => Promise<(V | null)[]> {
-	const { cache, entity, keyFn, ttlSeconds } = opts;
+	const { cache, entity, keyFn, ttlSeconds, logger, metrics } = opts;
 
 	return async (keys: readonly K[]): Promise<(V | null)[]> => {
 		// Generate cache keys for all input keys
@@ -60,8 +82,18 @@ export function wrapWithCache<K, V>(
 		let cached: (V | null)[];
 		try {
 			cached = await cache.mget<V>(cacheKeys);
-		} catch {
+		} catch (err) {
 			// Cache read failed, treat all as cache misses and proceed to DB
+			logger?.debug(
+				{
+					msg: "cache.read.failure",
+					entity,
+					keys: cacheKeys,
+					err,
+				},
+				"Cache mget failed, falling back to database",
+			);
+			metrics?.increment("cache.read.failure", { entity });
 			cached = new Array<V | null>(keys.length).fill(null);
 		}
 
@@ -105,9 +137,20 @@ export function wrapWithCache<K, V>(
 				await cache.mset(
 					toSet.map((e) => ({ key: e.key, value: e.value, ttlSeconds })),
 				);
-			} catch {
+			} catch (err) {
 				// Cache write failed, but we still have the fetched results
 				// Continue without caching - the next request will refetch
+				logger?.debug(
+					{
+						msg: "cache.write.failure",
+						entity,
+						keys: toSet.map((e) => e.key),
+						ttlSeconds,
+						err,
+					},
+					"Cache mset failed, proceeding without caching",
+				);
+				metrics?.increment("cache.write.failure", { entity });
 			}
 		}
 
