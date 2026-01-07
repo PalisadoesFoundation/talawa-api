@@ -11,7 +11,7 @@
 # - pnpm (version from package.json)
 ##############################################################################
 
-set -e
+set -euo pipefail
 
 # Arguments
 INSTALL_MODE="${1:-docker}"
@@ -144,20 +144,22 @@ if [ "$INSTALL_MODE" = "docker" ]; then
     fi
     
     # Check docker-compose
-    if command_exists docker-compose || docker compose version &> /dev/null; then
-        success "Docker Compose is available"
+    if command_exists docker-compose; then
+        success "Docker Compose is available (standalone)"
+    elif docker compose version > /dev/null 2>&1; then
+        success "Docker Compose is available (plugin)"
     else
         warn "Docker Compose not found. It may be included with Docker Desktop or installed separately."
     fi
     
     # Verify Docker is running
     if command_exists docker; then
-        if ! docker info >/dev/null 2>&1; then
+        if docker info > /dev/null 2>&1; then
+            success "Docker is running"
+        else
             warn "Docker is installed but not running."
             info "Start Docker with: sudo systemctl start docker"
             info "Enable on boot with: sudo systemctl enable docker"
-        else
-            success "Docker is running"
         fi
     fi
 else
