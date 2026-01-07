@@ -433,5 +433,133 @@ describe("DataLoader infrastructure", () => {
 				);
 			});
 		});
+
+		describe("createUserLoader cache", () => {
+			it("calls mget/mset on cache miss and hits database", async () => {
+				const mockCache = createMockCache();
+				const { db, whereSpy } = createMockDb([{ id: "u1", name: "User A" }]);
+
+				const loader = createUserLoader(db, mockCache);
+				await loader.load("u1");
+
+				// Verify cache was checked (mget is called by wrapWithCache)
+				expect(mockCache.mget).toHaveBeenCalled();
+				// Verify result was cached (mset is called for cache misses)
+				expect(mockCache.mset).toHaveBeenCalled();
+				// Verify DB was hit since cache returned null
+				expect(whereSpy).toHaveBeenCalledTimes(1);
+			});
+
+			it("falls back to database when cache is null", async () => {
+				const { db, whereSpy } = createMockDb([{ id: "u1", name: "User A" }]);
+
+				const loader = createUserLoader(db, null);
+				await loader.load("u1");
+
+				// Verify DB was hit directly
+				expect(whereSpy).toHaveBeenCalledTimes(1);
+			});
+
+			it("returns cached user on cache hit and prevents DB calls", async () => {
+				const cachedUser = { id: "u1", name: "Cached User" };
+				const cachedValues = new Map([[entityKey("user", "u1"), cachedUser]]);
+				const mockCache = createMockCache(cachedValues);
+				const { db, whereSpy } = createMockDb([]);
+
+				const loader = createUserLoader(db, mockCache);
+				const result = await loader.load("u1");
+
+				// Verify cached value returned
+				expect(result).toEqual(cachedUser);
+				// Verify DB was NOT hit (cache hit)
+				expect(whereSpy).not.toHaveBeenCalled();
+			});
+
+			it("stores fetched values in cache on cache miss", async () => {
+				const mockCache = createMockCache();
+				const dbUser = { id: "u1", name: "DB User" };
+				const { db } = createMockDb([dbUser]);
+
+				const loader = createUserLoader(db, mockCache);
+				await loader.load("u1");
+
+				// Verify mset was called with the fetched value using entityKey format
+				expect(mockCache.mset).toHaveBeenCalledWith(
+					expect.arrayContaining([
+						expect.objectContaining({
+							key: entityKey("user", "u1"),
+							value: dbUser,
+						}),
+					]),
+				);
+			});
+		});
+
+		describe("createActionItemLoader cache", () => {
+			it("calls mget/mset on cache miss and hits database", async () => {
+				const mockCache = createMockCache();
+				const { db, whereSpy } = createMockDb([
+					{ id: "ai1", organizationId: "org1" },
+				]);
+
+				const loader = createActionItemLoader(db, mockCache);
+				await loader.load("ai1");
+
+				// Verify cache was checked (mget is called by wrapWithCache)
+				expect(mockCache.mget).toHaveBeenCalled();
+				// Verify result was cached (mset is called for cache misses)
+				expect(mockCache.mset).toHaveBeenCalled();
+				// Verify DB was hit since cache returned null
+				expect(whereSpy).toHaveBeenCalledTimes(1);
+			});
+
+			it("falls back to database when cache is null", async () => {
+				const { db, whereSpy } = createMockDb([
+					{ id: "ai1", organizationId: "org1" },
+				]);
+
+				const loader = createActionItemLoader(db, null);
+				await loader.load("ai1");
+
+				// Verify DB was hit directly
+				expect(whereSpy).toHaveBeenCalledTimes(1);
+			});
+
+			it("returns cached actionItem on cache hit and prevents DB calls", async () => {
+				const cachedActionItem = { id: "ai1", organizationId: "org1" };
+				const cachedValues = new Map([
+					[entityKey("actionItem", "ai1"), cachedActionItem],
+				]);
+				const mockCache = createMockCache(cachedValues);
+				const { db, whereSpy } = createMockDb([]);
+
+				const loader = createActionItemLoader(db, mockCache);
+				const result = await loader.load("ai1");
+
+				// Verify cached value returned
+				expect(result).toEqual(cachedActionItem);
+				// Verify DB was NOT hit (cache hit)
+				expect(whereSpy).not.toHaveBeenCalled();
+			});
+
+			it("stores fetched values in cache on cache miss", async () => {
+				const mockCache = createMockCache();
+				const dbActionItem = { id: "ai1", organizationId: "org1" };
+				const { db } = createMockDb([dbActionItem]);
+
+				const loader = createActionItemLoader(db, mockCache);
+				await loader.load("ai1");
+
+				// Verify mset was called with the fetched value using entityKey format
+				expect(mockCache.mset).toHaveBeenCalledWith(
+					expect.arrayContaining([
+						expect.objectContaining({
+							key: entityKey("actionItem", "ai1"),
+							value: dbActionItem,
+						}),
+					]),
+				);
+			});
+		});
 	});
 });
