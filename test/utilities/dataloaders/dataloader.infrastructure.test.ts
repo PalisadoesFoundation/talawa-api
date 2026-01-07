@@ -1,5 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 import type { DrizzleClient } from "~/src/fastifyPlugins/drizzleClient";
+import type { CacheService } from "~/src/services/caching";
 import { createDataloaders } from "~/src/utilities/dataloaders";
 import { createActionItemLoader } from "~/src/utilities/dataloaders/actionItemLoader";
 import { createEventLoader } from "~/src/utilities/dataloaders/eventLoader";
@@ -20,6 +21,22 @@ function createMockDb<T>(mockResults: T[]) {
 	return { db, whereSpy };
 }
 
+/**
+ * Creates a mock CacheService for testing cache integration.
+ */
+function createMockCache(cachedValues: Map<string, unknown> = new Map()) {
+	return {
+		get: vi.fn().mockResolvedValue(null),
+		set: vi.fn().mockResolvedValue(undefined),
+		del: vi.fn().mockResolvedValue(undefined),
+		clearByPattern: vi.fn().mockResolvedValue(undefined),
+		mget: vi.fn().mockImplementation((keys: string[]) => {
+			return Promise.resolve(keys.map((k) => cachedValues.get(k) ?? null));
+		}),
+		mset: vi.fn().mockResolvedValue(undefined),
+	} as unknown as CacheService;
+}
+
 describe("DataLoader infrastructure", () => {
 	describe("createUserLoader", () => {
 		it("returns results in the same order as keys and batches calls", async () => {
@@ -28,7 +45,7 @@ describe("DataLoader infrastructure", () => {
 				{ id: "u1", name: "A" },
 			]);
 
-			const loader = createUserLoader(db);
+			const loader = createUserLoader(db, null);
 
 			// Trigger multiple loads in the same tick to ensure batching
 			const p1 = loader.load("u1");
@@ -51,7 +68,7 @@ describe("DataLoader infrastructure", () => {
 		it("returns null for non-existent IDs", async () => {
 			const { db } = createMockDb([]);
 
-			const loader = createUserLoader(db);
+			const loader = createUserLoader(db, null);
 
 			const result = await loader.load("nonexistent");
 			expect(result).toBeNull();
@@ -60,7 +77,7 @@ describe("DataLoader infrastructure", () => {
 		it("caches results within the same loader instance", async () => {
 			const { db, whereSpy } = createMockDb([{ id: "u1", name: "A" }]);
 
-			const loader = createUserLoader(db);
+			const loader = createUserLoader(db, null);
 
 			// Load the same key twice
 			const result1 = await loader.load("u1");
@@ -82,7 +99,7 @@ describe("DataLoader infrastructure", () => {
 				{ id: "org1", name: "Org A" },
 			]);
 
-			const loader = createOrganizationLoader(db);
+			const loader = createOrganizationLoader(db, null);
 
 			const p1 = loader.load("org1");
 			const p2 = loader.load("org2");
@@ -102,7 +119,7 @@ describe("DataLoader infrastructure", () => {
 		it("returns null for non-existent IDs", async () => {
 			const { db } = createMockDb([]);
 
-			const loader = createOrganizationLoader(db);
+			const loader = createOrganizationLoader(db, null);
 
 			const result = await loader.load("nonexistent");
 			expect(result).toBeNull();
@@ -111,7 +128,7 @@ describe("DataLoader infrastructure", () => {
 		it("caches results within the same loader instance", async () => {
 			const { db, whereSpy } = createMockDb([{ id: "org1", name: "Org A" }]);
 
-			const loader = createOrganizationLoader(db);
+			const loader = createOrganizationLoader(db, null);
 
 			// Load the same key twice
 			const result1 = await loader.load("org1");
@@ -133,7 +150,7 @@ describe("DataLoader infrastructure", () => {
 				{ id: "evt1", name: "Event A" },
 			]);
 
-			const loader = createEventLoader(db);
+			const loader = createEventLoader(db, null);
 
 			const p1 = loader.load("evt1");
 			const p2 = loader.load("evt2");
@@ -153,7 +170,7 @@ describe("DataLoader infrastructure", () => {
 		it("returns null for non-existent IDs", async () => {
 			const { db } = createMockDb([]);
 
-			const loader = createEventLoader(db);
+			const loader = createEventLoader(db, null);
 
 			const result = await loader.load("nonexistent");
 			expect(result).toBeNull();
@@ -162,7 +179,7 @@ describe("DataLoader infrastructure", () => {
 		it("caches results within the same loader instance", async () => {
 			const { db, whereSpy } = createMockDb([{ id: "evt1", name: "Event A" }]);
 
-			const loader = createEventLoader(db);
+			const loader = createEventLoader(db, null);
 
 			// Load the same key twice
 			const result1 = await loader.load("evt1");
@@ -184,7 +201,7 @@ describe("DataLoader infrastructure", () => {
 				{ id: "ai1", organizationId: "org1" },
 			]);
 
-			const loader = createActionItemLoader(db);
+			const loader = createActionItemLoader(db, null);
 
 			const p1 = loader.load("ai1");
 			const p2 = loader.load("ai2");
@@ -204,7 +221,7 @@ describe("DataLoader infrastructure", () => {
 		it("returns null for non-existent IDs", async () => {
 			const { db } = createMockDb([]);
 
-			const loader = createActionItemLoader(db);
+			const loader = createActionItemLoader(db, null);
 
 			const result = await loader.load("nonexistent");
 			expect(result).toBeNull();
@@ -215,7 +232,7 @@ describe("DataLoader infrastructure", () => {
 				{ id: "ai1", organizationId: "org1" },
 			]);
 
-			const loader = createActionItemLoader(db);
+			const loader = createActionItemLoader(db, null);
 
 			// Load the same key twice
 			const result1 = await loader.load("ai1");
@@ -234,7 +251,7 @@ describe("DataLoader infrastructure", () => {
 		it("creates all loaders from a single db instance", () => {
 			const { db } = createMockDb([]);
 
-			const loaders = createDataloaders(db);
+			const loaders = createDataloaders(db, null);
 
 			expect(loaders).toHaveProperty("user");
 			expect(loaders).toHaveProperty("organization");
@@ -245,14 +262,77 @@ describe("DataLoader infrastructure", () => {
 		it("creates independent loader instances on each call", () => {
 			const { db } = createMockDb([]);
 
-			const loaders1 = createDataloaders(db);
-			const loaders2 = createDataloaders(db);
+			const loaders1 = createDataloaders(db, null);
+			const loaders2 = createDataloaders(db, null);
 
 			// Each call should create new loader instances (request-scoped)
 			expect(loaders1.user).not.toBe(loaders2.user);
 			expect(loaders1.organization).not.toBe(loaders2.organization);
 			expect(loaders1.event).not.toBe(loaders2.event);
 			expect(loaders1.actionItem).not.toBe(loaders2.actionItem);
+		});
+	});
+
+	describe("cache integration", () => {
+		it("uses wrapWithCache when cache is provided", async () => {
+			const mockCache = createMockCache();
+			const { db, whereSpy } = createMockDb([{ id: "org1", name: "Org A" }]);
+
+			const loader = createOrganizationLoader(db, mockCache);
+			await loader.load("org1");
+
+			// Verify cache was checked (mget is called by wrapWithCache)
+			expect(mockCache.mget).toHaveBeenCalled();
+			// Verify result was cached (mset is called for cache misses)
+			expect(mockCache.mset).toHaveBeenCalled();
+			// Verify DB was hit since cache returned null
+			expect(whereSpy).toHaveBeenCalledTimes(1);
+		});
+
+		it("falls back to database when cache is null", async () => {
+			const { db, whereSpy } = createMockDb([{ id: "org1", name: "Org A" }]);
+
+			const loader = createOrganizationLoader(db, null);
+			await loader.load("org1");
+
+			// Verify DB was hit directly
+			expect(whereSpy).toHaveBeenCalledTimes(1);
+		});
+
+		it("returns cached value on cache hit and skips database", async () => {
+			const cachedOrg = { id: "org1", name: "Cached Org" };
+			const cachedValues = new Map([
+				["talawa:v1:organization:org1", cachedOrg],
+			]);
+			const mockCache = createMockCache(cachedValues);
+			const { db, whereSpy } = createMockDb([]);
+
+			const loader = createOrganizationLoader(db, mockCache);
+			const result = await loader.load("org1");
+
+			// Verify cached value returned
+			expect(result).toEqual(cachedOrg);
+			// Verify DB was NOT hit (cache hit)
+			expect(whereSpy).not.toHaveBeenCalled();
+		});
+
+		it("stores fetched values in cache on cache miss", async () => {
+			const mockCache = createMockCache();
+			const dbOrg = { id: "org1", name: "DB Org" };
+			const { db } = createMockDb([dbOrg]);
+
+			const loader = createOrganizationLoader(db, mockCache);
+			await loader.load("org1");
+
+			// Verify mset was called with the fetched value
+			expect(mockCache.mset).toHaveBeenCalledWith(
+				expect.arrayContaining([
+					expect.objectContaining({
+						key: "talawa:v1:organization:org1",
+						value: dbOrg,
+					}),
+				]),
+			);
 		});
 	});
 });
