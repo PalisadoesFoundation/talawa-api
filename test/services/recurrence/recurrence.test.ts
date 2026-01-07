@@ -38,9 +38,7 @@ describe("recurrence utilities", () => {
 
     test("throws when FREQ is missing", () => {
       expect(() => parseRRule("INTERVAL=1")).toThrow(RangeError);
-      expect(() => parseRRule("")).toThrow(
-        new RangeError("RRULE missing FREQ")
-      );
+      expect(() => parseRRule("")).toThrow("RRULE missing FREQ");
     });
     test("throws when BYDAY has invalid tokens", () => {
       expect(() => parseRRule("FREQ=WEEKLY;BYDAY=MO,XX,FR")).toThrow(
@@ -480,6 +478,37 @@ describe("recurrence utilities", () => {
         "2025-01-06T10:00:00.000Z",
         "2025-01-08T10:00:00.000Z",
         "2025-01-13T10:00:00.000Z",
+      ]);
+    });
+
+    test("WEEKLY: respects until cutoff", () => {
+      const baseStart = new Date("2025-01-01T10:00:00Z"); // Wednesday
+      const baseEnd = new Date("2025-01-01T11:00:00Z");
+      const rule: RecurrenceRule = {
+        freq: "WEEKLY",
+        interval: 1,
+        count: 50,
+        byDay: ["WE", "FR"],
+        until: new Date("2025-01-17T23:59:59Z"),
+      };
+      const windowStart = new Date("2024-12-30T00:00:00Z");
+      const windowEnd = new Date("2025-02-15T00:00:00Z");
+
+      const occurrences = generateOccurrences(
+        baseStart,
+        baseEnd,
+        rule,
+        windowStart,
+        windowEnd
+      );
+
+      expect(occurrences.map((o) => o.startAt.toISOString())).toEqual([
+        "2025-01-01T10:00:00.000Z",
+        "2025-01-03T10:00:00.000Z",
+        "2025-01-08T10:00:00.000Z",
+        "2025-01-10T10:00:00.000Z",
+        "2025-01-15T10:00:00.000Z",
+        "2025-01-17T10:00:00.000Z",
       ]);
     });
 

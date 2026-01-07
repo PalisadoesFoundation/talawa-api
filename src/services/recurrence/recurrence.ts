@@ -70,6 +70,18 @@ function parseUntil(raw?: string): Date | undefined {
 	return parsed;
 }
 
+// Validate COUNT as a positive integer when provided; returns undefined when absent.
+function parseCount(raw?: string): number | undefined {
+	if (raw === undefined) return undefined;
+
+	const value = Number(raw);
+	if (!Number.isFinite(value) || !Number.isInteger(value) || value <= 0) {
+		throw new RangeError(`Invalid RRULE COUNT: ${raw}`);
+	}
+
+	return value;
+}
+
 // Parse an RFC5545 RRULE string into our RecurrenceRule shape
 export function parseRRule(rrule: string): RecurrenceRule {
 	const map = rrule.split(";").reduce<Record<string, string>>((acc, part) => {
@@ -84,7 +96,7 @@ export function parseRRule(rrule: string): RecurrenceRule {
 	const freq = parseFreq(map.FREQ);
 	const interval = Math.max(1, Number(map.INTERVAL ?? "1"));
 	const byDay = parseByDay(map.BYDAY);
-	const count = map.COUNT ? Number(map.COUNT) : undefined;
+	const count = parseCount(map.COUNT);
 	const until = parseUntil(map.UNTIL);
 	return { freq, interval, byDay, count, until };
 }
