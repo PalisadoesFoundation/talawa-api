@@ -1,4 +1,4 @@
-import { afterEach, expect, suite, test } from "vitest";
+import { afterEach, expect, suite, test, vi } from "vitest";
 import { assertToBeNonNullish } from "../../../helpers";
 import { server } from "../../../server";
 import { mercuriusClient } from "../client";
@@ -314,7 +314,9 @@ suite("Mutation field createOrganization", () => {
 			variables: {
 				input: {
 					name: `Valid Org Name ${Date.now()}`,
-					// Using type assertion to test invalid value that TypeScript wouldn't normally allow
+					// Intentional type cast: `as "us"` bypasses TypeScript's compile-time enum check
+					// so this test can exercise the runtime GraphQL validation layer of the
+					// Mutation_createOrganization countryCode field with an invalid ISO 3166-1 alpha-2 code.
 					countryCode: "xx" as "us",
 				},
 			},
@@ -343,7 +345,7 @@ suite("Mutation field createOrganization", () => {
 		// This test verifies that the mutation completes successfully,
 		// which implicitly exercises the cache invalidation path in the resolver.
 		// If cache invalidation failed and wasn't handled gracefully, the mutation would error.
-		// Cache invalidation is unit-tested in test/graphql/types/Mutation/*Unit.test.ts (invalidateEntity, invalidateEntityLists)
+		// Cache invalidation is unit-tested in test/services/caching/invalidation.test.ts (invalidateEntity, invalidateEntityLists)
 		const orgName = `Cache Test Org ${Date.now()}`;
 
 		const result = await mercuriusClient.mutate(Mutation_createOrganization, {
@@ -534,5 +536,273 @@ suite("Mutation field createOrganization", () => {
 				}),
 			]),
 		);
+	});
+
+	test("should return an error with unexpected extensions code when DB insert returns undefined", async () => {
+		// Mock the transaction to simulate the DB insert returning an empty array (undefined organization)
+		const originalTransaction = server.drizzleClient.transaction;
+		server.drizzleClient.transaction = vi
+			.fn()
+			.mockImplementation(async (callback) => {
+				// Create a mock transaction object with an insert method that returns empty array
+				const mockTx = {
+					insert: () => ({
+						values: () => ({
+							returning: async () => [],
+						}),
+					}),
+				};
+
+				// Call the callback with our mock transaction
+				return await callback(mockTx);
+			});
+
+		try {
+			const result = await mercuriusClient.mutate(Mutation_createOrganization, {
+				headers: { authorization: `bearer ${authToken}` },
+				variables: {
+					input: {
+						name: `DB Error Test Org ${Date.now()}`,
+						countryCode: "us",
+					},
+				},
+			});
+
+			expect(result.data?.createOrganization).toBeNull();
+			expect(result.errors).toEqual(
+				expect.arrayContaining([
+					expect.objectContaining({
+						extensions: expect.objectContaining({
+							code: "unexpected",
+						}),
+						path: ["createOrganization"],
+					}),
+				]),
+			);
+		} finally {
+			// Restore the original function
+			server.drizzleClient.transaction = originalTransaction;
+		}
+	});
+
+	suite("schema string length boundary tests", () => {
+		// Schema constraints from organizations.ts:
+		// name: min(1).max(256)
+		// description: min(1).max(2048)
+		const NAME_MAX_LENGTH = 256;
+		const DESCRIPTION_MAX_LENGTH = 2048;
+
+		test("should accept organization name at exactly max length (256)", async () => {
+			const maxLengthName = "a".repeat(NAME_MAX_LENGTH);
+
+			const result = await mercuriusClient.mutate(Mutation_createOrganization, {
+				headers: { authorization: `bearer ${authToken}` },
+				variables: {
+					input: {
+						name: maxLengthName,
+						countryCode: "us",
+					},
+				},
+			});
+
+			expect(result.errors).toBeUndefined();
+			expect(result.data?.createOrganization).toEqual(
+				expect.objectContaining({
+					id: expect.any(String),
+					name: maxLengthName,
+				}),
+			);
+
+			const orgId = result.data?.createOrganization?.id;
+			assertToBeNonNullish(orgId);
+
+			// Add cleanup
+			testCleanupFunctions.push(async () => {
+				await mercuriusClient.mutate(Mutation_deleteOrganization, {
+					headers: { authorization: `bearer ${authToken}` },
+					variables: { input: { id: orgId } },
+				});
+			});
+		});
+
+		test("should reject organization name exceeding max length (256)", async () => {
+			const overLengthName = "a".repeat(NAME_MAX_LENGTH + 1);
+
+			const result = await mercuriusClient.mutate(Mutation_createOrganization, {
+				headers: { authorization: `bearer ${authToken}` },
+				variables: {
+					input: {
+						name: overLengthName,
+						countryCode: "us",
+					},
+				},
+			});
+
+			expect(result.data?.createOrganization).toBeNull();
+			expect(result.errors).toEqual(
+				expect.arrayContaining([
+					expect.objectContaining({
+						extensions: expect.objectContaining({
+							code: "invalid_arguments",
+						}),
+						path: ["createOrganization"],
+					}),
+				]),
+			);
+		});
+
+		test("should accept organization description at exactly max length (2048)", async () => {
+			const maxLengthDescription = "a".repeat(DESCRIPTION_MAX_LENGTH);
+			const orgName = `Desc Max Length Org ${Date.now()}`;
+
+			const result = await mercuriusClient.mutate(Mutation_createOrganization, {
+				headers: { authorization: `bearer ${authToken}` },
+				variables: {
+					input: {
+						name: orgName,
+						description: maxLengthDescription,
+						countryCode: "us",
+					},
+				},
+			});
+
+			expect(result.errors).toBeUndefined();
+			expect(result.data?.createOrganization).toEqual(
+				expect.objectContaining({
+					id: expect.any(String),
+					name: orgName,
+					description: maxLengthDescription,
+				}),
+			);
+
+			const orgId = result.data?.createOrganization?.id;
+			assertToBeNonNullish(orgId);
+
+			// Add cleanup
+			testCleanupFunctions.push(async () => {
+				await mercuriusClient.mutate(Mutation_deleteOrganization, {
+					headers: { authorization: `bearer ${authToken}` },
+					variables: { input: { id: orgId } },
+				});
+			});
+		});
+
+		test("should reject organization description exceeding max length (2048)", async () => {
+			const overLengthDescription = "a".repeat(DESCRIPTION_MAX_LENGTH + 1);
+
+			const result = await mercuriusClient.mutate(Mutation_createOrganization, {
+				headers: { authorization: `bearer ${authToken}` },
+				variables: {
+					input: {
+						name: `Over Desc Org ${Date.now()}`,
+						description: overLengthDescription,
+						countryCode: "us",
+					},
+				},
+			});
+
+			expect(result.data?.createOrganization).toBeNull();
+			expect(result.errors).toEqual(
+				expect.arrayContaining([
+					expect.objectContaining({
+						extensions: expect.objectContaining({
+							code: "invalid_arguments",
+						}),
+						path: ["createOrganization"],
+					}),
+				]),
+			);
+		});
+	});
+
+	test("should return an error when MinIO upload fails during avatar upload", async () => {
+		// Save original method for restoration
+		const originalPutObject = server.minio.client.putObject;
+
+		try {
+			// Mock MinIO failure
+			server.minio.client.putObject = vi
+				.fn()
+				.mockRejectedValue(new Error("simulated MinIO failure"));
+
+			const orgName = `MinIO Fail Test Org ${Date.now()}`;
+			const boundary = `----WebKitFormBoundary${Math.random().toString(36)}`;
+
+			const operations = JSON.stringify({
+				query: `
+				mutation Mutation_createOrganization($input: MutationCreateOrganizationInput!) {
+					createOrganization(input: $input) {
+						id
+						name
+						countryCode
+						avatarMimeType
+						avatarURL
+					}
+				}
+				`,
+				variables: {
+					input: {
+						name: orgName,
+						countryCode: "us",
+						avatar: null, // placeholder for map
+					},
+				},
+			});
+
+			const map = JSON.stringify({
+				"0": ["variables.input.avatar"],
+			});
+
+			const fileContent = "test image content";
+
+			const body = [
+				`--${boundary}`,
+				'Content-Disposition: form-data; name="operations"',
+				"",
+				operations,
+				`--${boundary}`,
+				'Content-Disposition: form-data; name="map"',
+				"",
+				map,
+				`--${boundary}`,
+				'Content-Disposition: form-data; name="0"; filename="test.png"',
+				"Content-Type: image/png",
+				"",
+				fileContent,
+				`--${boundary}--`,
+			].join("\r\n");
+
+			const response = await server.inject({
+				method: "POST",
+				url: "/graphql",
+				headers: {
+					"content-type": `multipart/form-data; boundary=${boundary}`,
+					authorization: `bearer ${authToken}`,
+				},
+				payload: body,
+			});
+
+			const result = JSON.parse(response.body);
+
+			// MinIO failure should result in no organization being created
+			expect(result.data?.createOrganization).toBeNull();
+			// Should have an error - the transaction should rollback on MinIO failure
+			expect(result.errors).toBeDefined();
+			expect(result.errors?.length).toBeGreaterThan(0);
+			// Verify the error has an extensions object (error structure may vary)
+			// The error could be 'unexpected' when MinIO failure propagates as an unhandled exception
+			// or it could surface differently depending on how the transaction handles the error
+			expect(result.errors[0].extensions).toBeDefined();
+			// The error should either be 'unexpected' (from explicit throw) or have a correlation ID
+			// indicating it was properly tracked by the error handling system
+			const errorCode = result.errors[0].extensions?.code;
+			expect(
+				errorCode === "unexpected" ||
+					result.errors[0].extensions?.correlationId,
+			).toBeTruthy();
+		} finally {
+			// Restore original method
+			server.minio.client.putObject = originalPutObject;
+		}
 	});
 });
