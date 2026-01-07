@@ -12,7 +12,7 @@
 # - pnpm (version from package.json)
 ##############################################################################
 
-set -e
+set -euo pipefail
 
 # Arguments
 INSTALL_MODE="${1:-docker}"
