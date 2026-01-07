@@ -31,8 +31,8 @@ readonly FNM_BIN_DIR="$FNM_INSTALL_DIR"
 readonly INSTALLATION_LOG="/tmp/talawa-install-$$.log"
 
 # Version requirements
-readonly MIN_NODE_MAJOR_VERSION=18
-readonly MIN_DISK_SPACE_GB=2
+readonly MIN_NODE_MAJOR_VERSION=18 #placeholder for future references
+readonly MIN_DISK_SPACE_GB=2 #placeholder for future references
 
 # Timeouts
 readonly CURL_CONNECT_TIMEOUT=30
@@ -311,7 +311,7 @@ if command_exists docker; then
 fi
 echo ""
 warn "NOTE: To make fnm available in new terminal sessions, add this to your ~/.bashrc or ~/.zshrc:"
-echo "  export PATH=\"\$FNM_BIN_DIR:\$PATH\""
+echo "  export PATH=\"$FNM_BIN_DIR:\$PATH\""
 echo "  eval \"\$(fnm env)\""
 echo ""
 info "Then restart your terminal or run: source ~/.bashrc (or ~/.zshrc)"
