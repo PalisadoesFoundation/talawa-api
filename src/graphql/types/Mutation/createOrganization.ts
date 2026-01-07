@@ -96,7 +96,7 @@ builder.mutationField("createOrganization", (t) =>
 				where: (fields, operators) => operators.eq(fields.id, currentUserId),
 			});
 
-			if (currentUser === undefined) {
+			if (!currentUser) {
 				throw new TalawaGraphQLError({
 					extensions: {
 						code: "unauthenticated",
@@ -118,7 +118,7 @@ builder.mutationField("createOrganization", (t) =>
 						operators.eq(fields.name, parsedArgs.input.name),
 				});
 
-			if (existingOrganizationWithName !== undefined) {
+			if (existingOrganizationWithName) {
 				throw new TalawaGraphQLError({
 					extensions: {
 						code: "forbidden_action_on_arguments_associated_resources",
