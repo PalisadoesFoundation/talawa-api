@@ -38,6 +38,7 @@ readonly MIN_DISK_SPACE_GB=2 #placeholder for future references
 readonly CURL_CONNECT_TIMEOUT=30
 readonly CURL_MAX_TIME_DOCKER=300
 readonly CURL_MAX_TIME_FNM=120
+readonly MAX_RETRY_ATTEMPTS=3 # placeholder for future retry logic
 
 # Print functions
 info() { echo -e "${BLUE}ℹ${NC} $1"; }
