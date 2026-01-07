@@ -255,7 +255,10 @@ builder.mutationField("updateStandaloneEvent", (t) =>
 				await invalidateEntityLists(ctx.cache, "event");
 			} catch (error) {
 				ctx.log.warn(
-					{ error: error instanceof Error ? error.message : "Unknown error" },
+					{
+						error,
+						eventId: parsedArgs.input.id,
+					},
 					"Failed to invalidate event cache (non-fatal)",
 				);
 			}

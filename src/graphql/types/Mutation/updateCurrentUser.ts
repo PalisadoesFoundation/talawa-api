@@ -200,31 +200,41 @@ builder.mutationField("updateCurrentUser", (t) =>
 						});
 					}
 
-					const updatedUser = updateResult[0];
-
-					if (isNotNullish(parsedArgs.input.avatar) && avatarUpdate) {
-						await ctx.minio.client.putObject(
-							ctx.minio.bucketName,
-							avatarUpdate.avatarName,
-							parsedArgs.input.avatar.createReadStream(),
-							undefined,
-							{
-								"content-type": parsedArgs.input.avatar.mimetype,
-							},
-						);
-					} else if (
-						parsedArgs.input.avatar !== undefined &&
-						currentUser.avatarName !== null
-					) {
-						await ctx.minio.client.removeObject(
-							ctx.minio.bucketName,
-							currentUser.avatarName,
-						);
-					}
-
-					return updatedUser;
+					return updateResult[0];
 				},
 			);
+
+			// Handle MinIO operations after transaction commits (graceful degradation)
+			try {
+				if (isNotNullish(parsedArgs.input.avatar) && avatarUpdate) {
+					await ctx.minio.client.putObject(
+						ctx.minio.bucketName,
+						avatarUpdate.avatarName,
+						parsedArgs.input.avatar.createReadStream(),
+						undefined,
+						{
+							"content-type": parsedArgs.input.avatar.mimetype,
+						},
+					);
+				} else if (
+					parsedArgs.input.avatar !== undefined &&
+					currentUser.avatarName !== null
+				) {
+					await ctx.minio.client.removeObject(
+						ctx.minio.bucketName,
+						currentUser.avatarName,
+					);
+				}
+			} catch (error) {
+				ctx.log.warn(
+					{
+						error: error instanceof Error ? error.message : "Unknown error",
+						userId: currentUserId,
+						avatarName: avatarUpdate?.avatarName ?? currentUser.avatarName,
+					},
+					"Failed to update avatar in MinIO (non-fatal) - consider cleanup job",
+				);
+			}
 
 			// Invalidate user caches (graceful degradation - don't break mutation on cache errors)
 			try {

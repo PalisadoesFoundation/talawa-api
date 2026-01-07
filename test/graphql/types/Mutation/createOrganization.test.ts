@@ -807,4 +807,55 @@ suite("Mutation field createOrganization", () => {
 			server.minio.client.putObject = originalPutObject;
 		}
 	});
+
+	test("should succeed despite cache invalidation failure (graceful degradation)", async () => {
+		// This test exercises the try/catch around invalidateEntityLists in the resolver
+		// by mocking the cache service to throw an error. The mutation should still succeed.
+
+		// Import the cache module to mock it
+		const cachingModule = await import("~/src/services/caching");
+
+		// Create a spy that throws an error
+		const mockError = new Error("Redis connection failed");
+		const invalidateEntityListsSpy = vi
+			.spyOn(cachingModule, "invalidateEntityLists")
+			.mockRejectedValue(mockError);
+
+		try {
+			const orgName = `Cache Fail Test Org ${Date.now()}`;
+
+			const result = await mercuriusClient.mutate(Mutation_createOrganization, {
+				headers: { authorization: `bearer ${authToken}` },
+				variables: {
+					input: {
+						name: orgName,
+						countryCode: "us",
+						description: "Testing graceful degradation on cache failure",
+					},
+				},
+			});
+
+			// Mutation should succeed despite cache failure (graceful degradation)
+			expect(result.errors).toBeUndefined();
+			expect(result.data?.createOrganization).toBeDefined();
+			expect(result.data?.createOrganization?.name).toBe(orgName);
+
+			const orgId = result.data?.createOrganization?.id;
+			assertToBeNonNullish(orgId);
+
+			// Verify the cache invalidation was attempted
+			expect(invalidateEntityListsSpy).toHaveBeenCalled();
+
+			// Add cleanup
+			testCleanupFunctions.push(async () => {
+				await mercuriusClient.mutate(Mutation_deleteOrganization, {
+					headers: { authorization: `bearer ${authToken}` },
+					variables: { input: { id: orgId } },
+				});
+			});
+		} finally {
+			// Restore original function
+			invalidateEntityListsSpy.mockRestore();
+		}
+	});
 });

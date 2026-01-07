@@ -380,11 +380,21 @@ describe("deleteStandaloneEvent Resolver Cache Invalidation Tests", () => {
 
 		await resolver(null, args, mockContext);
 
+		// Verify all steps were executed
+		expect(callOrder).toContain("db_delete");
+		expect(callOrder).toContain("invalidateEntity");
+		expect(callOrder).toContain("invalidateEntityLists");
+
 		// Verify order: DB delete happens before cache invalidation
-		expect(callOrder).toEqual([
-			"db_delete",
-			"invalidateEntity",
+		// Note: invalidateEntity and invalidateEntityLists run in parallel via Promise.all,
+		// so we only verify db_delete comes before both, not the order between them
+		const dbDeleteIndex = callOrder.indexOf("db_delete");
+		const invalidateEntityIndex = callOrder.indexOf("invalidateEntity");
+		const invalidateEntityListsIndex = callOrder.indexOf(
 			"invalidateEntityLists",
-		]);
+		);
+
+		expect(dbDeleteIndex).toBeLessThan(invalidateEntityIndex);
+		expect(dbDeleteIndex).toBeLessThan(invalidateEntityListsIndex);
 	});
 });

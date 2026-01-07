@@ -257,7 +257,7 @@ describe("createOrganization Resolver Cache Invalidation Tests", () => {
 		);
 	});
 
-	it("should call cache invalidation after transaction commits (correct order)", async () => {
+	it("should call cache invalidation after transaction completes (correct order)", async () => {
 		const callOrder: string[] = [];
 
 		mocks.drizzle.query.usersTable.findFirst.mockResolvedValue({
@@ -268,7 +268,7 @@ describe("createOrganization Resolver Cache Invalidation Tests", () => {
 		);
 
 		mocks.tx.returning.mockImplementation(async () => {
-			callOrder.push("tx_commit");
+			callOrder.push("tx_returning");
 			return [{ id: "org-3", name: "Test Org 3", countryCode: "us" }];
 		});
 
@@ -285,7 +285,7 @@ describe("createOrganization Resolver Cache Invalidation Tests", () => {
 
 		await resolver(null, args, mockContext);
 
-		// Verify order: transaction commits before cache invalidation
-		expect(callOrder).toEqual(["tx_commit", "invalidateEntityLists"]);
+		// Verify order: transaction returning completes before cache invalidation
+		expect(callOrder).toEqual(["tx_returning", "invalidateEntityLists"]);
 	});
 });
