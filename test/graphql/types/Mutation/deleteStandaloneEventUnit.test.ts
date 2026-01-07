@@ -308,18 +308,15 @@ describe("deleteStandaloneEvent Resolver Cache Invalidation Tests", () => {
 			},
 		};
 
-		// The mutation should still complete because cache errors should not break the transaction
-		// Note: If the implementation doesn't have try-catch around cache calls, this test will fail
-		// which indicates the implementation needs to be updated
-		try {
-			await resolver(null, args, mockContext);
-			// If we get here, the implementation handles cache errors gracefully
-			expect(mocks.invalidateEntity).toHaveBeenCalled();
-		} catch (_error) {
-			// If we get here, the implementation lets cache errors propagate
-			// The test documents this current behavior
-			expect(mocks.invalidateEntity).toHaveBeenCalled();
-		}
+		// Currently cache invalidation is inside the transaction, so cache errors propagate.
+		// This test documents the current behavior - cache errors will cause the mutation to fail.
+		// TODO: Move cache invalidation outside transaction and add try-catch for graceful degradation.
+		await expect(resolver(null, args, mockContext)).rejects.toThrow(
+			"Redis unavailable",
+		);
+
+		// Verify cache invalidation was still attempted
+		expect(mocks.invalidateEntity).toHaveBeenCalled();
 	});
 
 	it("should call cache invalidation in correct order (delete DB first, then invalidate cache)", async () => {

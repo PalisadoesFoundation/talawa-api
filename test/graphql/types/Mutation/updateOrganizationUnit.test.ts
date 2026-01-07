@@ -76,6 +76,8 @@ const mocks = vi.hoisted(() => {
 			},
 			bucketName: "talawa",
 		},
+		invalidateEntity: vi.fn().mockResolvedValue(undefined),
+		invalidateEntityLists: vi.fn().mockResolvedValue(undefined),
 	};
 });
 
@@ -92,6 +94,12 @@ vi.mock("~/src/graphql/builder", () => ({
 	builder: mocks.builder,
 }));
 
+// Mock cache invalidation functions
+vi.mock("~/src/services/caching", () => ({
+	invalidateEntity: mocks.invalidateEntity,
+	invalidateEntityLists: mocks.invalidateEntityLists,
+}));
+
 // Mock context and services
 const mockContext = {
 	currentClient: {
@@ -103,6 +111,11 @@ const mockContext = {
 	cache: {
 		del: vi.fn().mockResolvedValue(undefined),
 		clearByPattern: vi.fn().mockResolvedValue(undefined),
+	},
+	log: {
+		error: vi.fn(),
+		warn: vi.fn(),
+		info: vi.fn(),
 	},
 };
 
@@ -204,5 +217,92 @@ describe("updateOrganization Resolver Unit Coverage", () => {
 				avatarName: "old-avatar",
 			}),
 		);
+	});
+
+	it("should call invalidateEntity and invalidateEntityLists after successful update", async () => {
+		const orgId = "org-1";
+
+		mocks.drizzle.query.usersTable.findFirst.mockResolvedValue({
+			role: "administrator",
+		});
+		// First call: get existing organization, Second call: check duplicate name (should return undefined)
+		mocks.drizzle.query.organizationsTable.findFirst
+			.mockResolvedValueOnce({
+				id: orgId,
+				avatarName: null,
+			})
+			.mockResolvedValueOnce(undefined); // No duplicate name found
+
+		mocks.tx.returning.mockResolvedValue([
+			{
+				id: orgId,
+				name: "Updated Org",
+			},
+		]);
+
+		const args = {
+			input: {
+				id: orgId,
+				name: "Updated Org Name",
+			},
+		};
+
+		await resolver(null, args, mockContext);
+
+		// Verify invalidateEntity was called with correct args
+		expect(mocks.invalidateEntity).toHaveBeenCalledWith(
+			mockContext.cache,
+			"organization",
+			orgId,
+		);
+
+		// Verify invalidateEntityLists was called with correct args
+		expect(mocks.invalidateEntityLists).toHaveBeenCalledWith(
+			mockContext.cache,
+			"organization",
+		);
+	});
+
+	it("should document that cache errors propagate (cache is inside transaction)", async () => {
+		const orgId = "org-2";
+
+		mocks.drizzle.query.usersTable.findFirst.mockResolvedValue({
+			role: "administrator",
+		});
+		// First call: get existing organization, Second call: check duplicate name (should return undefined)
+		mocks.drizzle.query.organizationsTable.findFirst
+			.mockResolvedValueOnce({
+				id: orgId,
+				avatarName: null,
+			})
+			.mockResolvedValueOnce(undefined); // No duplicate name found
+
+		mocks.tx.returning.mockResolvedValue([
+			{
+				id: orgId,
+				name: "Updated Org",
+			},
+		]);
+
+		// Make cache invalidation throw an error
+		mocks.invalidateEntity.mockRejectedValueOnce(
+			new Error("Redis unavailable"),
+		);
+
+		const args = {
+			input: {
+				id: orgId,
+				name: "Updated Org Name",
+			},
+		};
+
+		// Currently cache invalidation is inside the transaction, so cache errors propagate.
+		// TODO: Move cache invalidation outside transaction and add try-catch for graceful degradation.
+		await expect(resolver(null, args, mockContext)).rejects.toThrow(
+			"Redis unavailable",
+		);
+
+		// Verify cache invalidation was still attempted
+		expect(mocks.invalidateEntity).toHaveBeenCalled();
 	});
 });

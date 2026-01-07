@@ -1,3 +1,25 @@
+/**
+ * Unit Tests for updateUser Resolver - Cache Invalidation Logic
+ *
+ * PURPOSE: These unit tests specifically verify cache invalidation behavior
+ * which cannot be easily asserted in integration tests. They complement the
+ * comprehensive integration tests in updateUser.test.ts.
+ *
+ * WHY UNIT TESTS FOR CACHE INVALIDATION:
+ * - Integration tests (updateUser.test.ts) verify end-to-end behavior via mercuriusClient
+ * - Unit tests here verify internal implementation details: that invalidateEntity and
+ *   invalidateEntityLists are called with correct arguments at the right time
+ * - Cache side effects are difficult to observe in integration tests without
+ *   instrumenting the cache layer, so mock-based verification is appropriate
+ *
+ * TRADEOFFS:
+ * - Heavy mocking makes these tests fragile to internal refactoring
+ * - But they provide valuable coverage for cache invalidation logic
+ * - If the resolver's internal structure changes significantly, these tests
+ *   will need updating - this is acceptable given the value they provide
+ *
+ * SEE ALSO: updateUser.test.ts for end-to-end integration tests using mercuriusClient
+ */
 import { afterEach, beforeAll, describe, expect, it, vi } from "vitest";
 
 vi.mock("postgres", () => ({
@@ -13,11 +35,17 @@ vi.mock("~/src/server", () => ({
 	},
 }));
 
-// Mock utilities
+// Mock utilities - TalawaGraphQLError mock matches real constructor signature
 vi.mock("~/src/utilities/TalawaGraphQLError", () => ({
-	TalawaGraphQLError: class extends Error {
-		constructor(message: string, _options?: Record<string, unknown>) {
-			super(message);
+	TalawaGraphQLError: class TalawaGraphQLError extends Error {
+		extensions: Record<string, unknown>;
+
+		constructor(options: {
+			message?: string;
+			extensions: Record<string, unknown>;
+		}) {
+			super(options.message ?? "GraphQL Error");
+			this.extensions = options.extensions;
 		}
 	},
 }));
@@ -74,6 +102,7 @@ const mocks = vi.hoisted(() => {
 			bucketName: "talawa",
 		},
 		invalidateEntity: vi.fn().mockResolvedValue(undefined),
+		invalidateEntityLists: vi.fn().mockResolvedValue(undefined),
 	};
 });
 
@@ -114,6 +143,7 @@ vi.mock("~/src/graphql/builder", () => ({
 // Mock cache invalidation functions
 vi.mock("~/src/services/caching", () => ({
 	invalidateEntity: mocks.invalidateEntity,
+	invalidateEntityLists: mocks.invalidateEntityLists,
 }));
 
 // Mock context and services
@@ -151,12 +181,32 @@ vi.mock("~/src/graphql/types/User/User", () => ({
 vi.mock("~/src/graphql/inputs/MutationUpdateUserInput", async () => {
 	const { z } = await vi.importActual<typeof import("zod")>("zod");
 	return {
+		// Mock schema mirrors the real mutationUpdateUserInputSchema fields
 		mutationUpdateUserInputSchema: z.object({
 			id: z.string().uuid(),
-			name: z.string().optional(),
+			// All optional fields from the real schema
+			addressLine1: z.string().min(1).max(1024).nullish(),
+			addressLine2: z.string().min(1).max(1024).nullish(),
+			avatar: z.any().nullish(),
+			birthDate: z.date().nullish(),
+			city: z.string().min(1).max(64).nullish(),
+			countryCode: z.string().length(2).nullish(),
+			description: z.string().min(1).max(2048).nullish(),
+			educationGrade: z.string().nullish(),
 			emailAddress: z.string().email().optional(),
+			employmentStatus: z.string().nullish(),
+			homePhoneNumber: z.string().nullish(),
+			isEmailAddressVerified: z.boolean().optional(),
+			maritalStatus: z.string().nullish(),
+			mobilePhoneNumber: z.string().nullish(),
+			name: z.string().min(1).max(256).optional(),
+			natalSex: z.string().nullish(),
+			naturalLanguageCode: z.string().nullish(),
+			password: z.string().min(1).max(64).optional(),
+			postalCode: z.string().min(1).max(32).nullish(),
 			role: z.enum(["administrator", "regular"]).optional(),
-			avatar: z.any().optional(),
+			state: z.string().min(1).max(64).nullish(),
+			workPhoneNumber: z.string().nullish(),
 		}),
 		MutationUpdateUserInput: "MutationUpdateUserInput",
 	};

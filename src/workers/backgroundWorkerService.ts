@@ -206,7 +206,7 @@ export async function warmCacheSafely(
 	logger.info("Starting cache warming");
 
 	try {
-		// Pre-warm top organizations (most frequently accessed entities)
+		// Pre-warm recently created organizations (used as proxy for active entities when access metrics are unavailable)
 		const organizations = await drizzleClient.query.organizationsTable.findMany(
 			{
 				limit: 50,

@@ -164,8 +164,8 @@ builder.mutationField("updateUser", (t) =>
 				avatarMimeType = parsedArgs.input.avatar.mimetype;
 			}
 
-			return await ctx.drizzleClient.transaction(async (tx) => {
-				const [updatedUser] = await tx
+			const updatedUser = await ctx.drizzleClient.transaction(async (tx) => {
+				const [updatedUserResult] = await tx
 					.update(usersTable)
 					.set({
 						addressLine1: parsedArgs.input.addressLine1,
@@ -204,7 +204,7 @@ builder.mutationField("updateUser", (t) =>
 					.returning();
 
 				// Updated user not being returned means that either the user does not exist or it was deleted or its `id` column was changed by an external entity before this upate operation.
-				if (updatedUser === undefined) {
+				if (updatedUserResult === undefined) {
 					throw new TalawaGraphQLError({
 						extensions: {
 							code: "arguments_associated_resources_not_found",
@@ -237,12 +237,21 @@ builder.mutationField("updateUser", (t) =>
 					);
 				}
 
-				// Invalidate user caches
+				return updatedUserResult;
+			});
+
+			// Invalidate user caches (graceful degradation - don't break mutation on cache errors)
+			try {
 				await invalidateEntity(ctx.cache, "user", parsedArgs.input.id);
 				await invalidateEntityLists(ctx.cache, "user");
+			} catch (error) {
+				ctx.log.warn(
+					{ error: error instanceof Error ? error.message : "Unknown error" },
+					"Failed to invalidate user cache (non-fatal)",
+				);
+			}
 
-				return updatedUser;
-			});
+			return updatedUser;
 		},
 		type: User,
 	}),

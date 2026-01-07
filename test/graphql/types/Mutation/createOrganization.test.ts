@@ -302,10 +302,30 @@ suite("Mutation field createOrganization", () => {
 		);
 	});
 
+	test("should return an error for invalid countryCode (non-ISO 3166-1 alpha-2)", async () => {
+		const result = await mercuriusClient.mutate(Mutation_createOrganization, {
+			headers: { authorization: `bearer ${authToken}` },
+			variables: {
+				input: {
+					name: `Valid Org Name ${Date.now()}`,
+					// Using type assertion to test invalid value that TypeScript wouldn't normally allow
+					countryCode: "xx" as "us",
+				},
+			},
+		});
+
+		// Invalid countryCode should result in no organization being created
+		expect(result.data?.createOrganization).toBeFalsy();
+		// Should have errors
+		expect(result.errors).toBeDefined();
+		expect(result.errors?.length).toBeGreaterThan(0);
+	});
+
 	test("should successfully complete mutation with cache invalidation (implicit test)", async () => {
 		// This test verifies that the mutation completes successfully,
 		// which implicitly exercises the cache invalidation path in the resolver.
 		// If cache invalidation failed and wasn't handled gracefully, the mutation would error.
+		// Cache invalidation is unit-tested in test/graphql/types/Mutation/*Unit.test.ts (invalidateEntity, invalidateEntityLists)
 		const orgName = `Cache Test Org ${Date.now()}`;
 
 		const result = await mercuriusClient.mutate(Mutation_createOrganization, {
