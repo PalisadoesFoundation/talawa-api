@@ -1,6 +1,6 @@
 #!/bin/bash
 
-##############################################################################
+##################################################################################
 # Talawa API - macOS Installation Script
 # 
 # This script installs all prerequisites for running Talawa API:
@@ -10,7 +10,12 @@
 # - fnm (Fast Node Manager)
 # - Node.js (version from package.json)
 # - pnpm (version from package.json)
-##############################################################################
+#
+# install-macos.sh can be called directly, bypassing the main install.sh wrapper:
+# - ./scripts/install/macos/install-macos.sh [INSTALL_MODE] [SKIP_PREREQS]
+# - INSTALL_MODE : docker (default) | local
+# - SKIP_PREREQS : true | false (default)
+##################################################################################
 
 set -euo pipefail
 
@@ -32,6 +37,25 @@ success() { echo -e "${GREEN}✓${NC} $1"; }
 warn() { echo -e "${YELLOW}⚠${NC} $1"; }
 error() { echo -e "${RED}✗${NC} $1"; }
 step() { echo -e "${CYAN}[$1/$2]${NC} $3"; }
+print_usage() {
+    error "Usage: $0 [INSTALL_MODE] [SKIP_PREREQS]"
+    error "  INSTALL_MODE : docker (default) | local"
+    error "  SKIP_PREREQS : true | false (default)"
+}
+
+# Validate INSTALL_MODE
+if [[ "$INSTALL_MODE" != "docker" ]] && [[ "$INSTALL_MODE" != "local" ]]; then
+    error "Invalid INSTALL_MODE: '$INSTALL_MODE'. Must be 'docker' or 'local'."
+    print_usage
+    exit 1
+fi
+
+# Validate SKIP_PREREQS
+if [[ "$SKIP_PREREQS" != "true" ]] && [[ "$SKIP_PREREQS" != "false" ]]; then
+    error "Invalid SKIP_PREREQS: '$SKIP_PREREQS'. Must be 'true' or 'false'."
+    print_usage
+    exit 1
+fi
 
 # Check if command exists
 command_exists() {
