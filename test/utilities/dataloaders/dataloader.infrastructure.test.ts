@@ -335,6 +335,36 @@ describe("DataLoader infrastructure", () => {
 					]),
 				);
 			});
+
+			it("handles multiple organizations with mixed cache hits and misses", async () => {
+				const cachedOrg = { id: "org1", name: "Cached Org" };
+				const cachedValues = new Map([
+					[entityKey("organization", "org1"), cachedOrg],
+				]);
+				const mockCache = createMockCache(cachedValues);
+				const dbOrg = { id: "org2", name: "DB Org" };
+				const { db, whereSpy } = createMockDb([dbOrg]);
+
+				const loader = createOrganizationLoader(db, mockCache);
+				const results = await Promise.all([
+					loader.load("org1"),
+					loader.load("org2"),
+				]);
+
+				// Verify both results returned correctly
+				expect(results).toEqual([cachedOrg, dbOrg]);
+				// Verify DB was hit only for cache miss (org2)
+				expect(whereSpy).toHaveBeenCalledTimes(1);
+				// Verify mset was called for the cache miss
+				expect(mockCache.mset).toHaveBeenCalledWith(
+					expect.arrayContaining([
+						expect.objectContaining({
+							key: entityKey("organization", "org2"),
+							value: dbOrg,
+						}),
+					]),
+				);
+			});
 		});
 
 		describe("createEventLoader cache", () => {
@@ -493,6 +523,34 @@ describe("DataLoader infrastructure", () => {
 					]),
 				);
 			});
+
+			it("handles multiple users with mixed cache hits and misses", async () => {
+				const cachedUser = { id: "u1", name: "Cached User" };
+				const cachedValues = new Map([[entityKey("user", "u1"), cachedUser]]);
+				const mockCache = createMockCache(cachedValues);
+				const dbUser = { id: "u2", name: "DB User" };
+				const { db, whereSpy } = createMockDb([dbUser]);
+
+				const loader = createUserLoader(db, mockCache);
+				const results = await Promise.all([
+					loader.load("u1"),
+					loader.load("u2"),
+				]);
+
+				// Verify both results returned correctly
+				expect(results).toEqual([cachedUser, dbUser]);
+				// Verify DB was hit only for cache miss (u2)
+				expect(whereSpy).toHaveBeenCalledTimes(1);
+				// Verify mset was called for the cache miss
+				expect(mockCache.mset).toHaveBeenCalledWith(
+					expect.arrayContaining([
+						expect.objectContaining({
+							key: entityKey("user", "u2"),
+							value: dbUser,
+						}),
+					]),
+				);
+			});
 		});
 
 		describe("createActionItemLoader cache", () => {
@@ -559,6 +617,117 @@ describe("DataLoader infrastructure", () => {
 						}),
 					]),
 				);
+			});
+
+			it("handles multiple actionItems with mixed cache hits and misses", async () => {
+				const cachedActionItem = { id: "ai1", organizationId: "org1" };
+				const cachedValues = new Map([
+					[entityKey("actionItem", "ai1"), cachedActionItem],
+				]);
+				const mockCache = createMockCache(cachedValues);
+				const dbActionItem = { id: "ai2", organizationId: "org1" };
+				const { db, whereSpy } = createMockDb([dbActionItem]);
+
+				const loader = createActionItemLoader(db, mockCache);
+				const results = await Promise.all([
+					loader.load("ai1"),
+					loader.load("ai2"),
+				]);
+
+				// Verify both results returned correctly
+				expect(results).toEqual([cachedActionItem, dbActionItem]);
+				// Verify DB was hit only for cache miss (ai2)
+				expect(whereSpy).toHaveBeenCalledTimes(1);
+				// Verify mset was called for the cache miss
+				expect(mockCache.mset).toHaveBeenCalledWith(
+					expect.arrayContaining([
+						expect.objectContaining({
+							key: entityKey("actionItem", "ai2"),
+							value: dbActionItem,
+						}),
+					]),
+				);
+			});
+		});
+
+		describe("cache error handling", () => {
+			it("falls back to database when cache.mget throws an error", async () => {
+				const mockCache = {
+					...createMockCache(),
+					mget: vi.fn().mockRejectedValue(new Error("Cache unavailable")),
+				};
+				const { db, whereSpy } = createMockDb([{ id: "org1", name: "Org A" }]);
+
+				const loader = createOrganizationLoader(db, mockCache);
+				const result = await loader.load("org1");
+
+				// Should still return DB result despite cache error
+				expect(result).toEqual({ id: "org1", name: "Org A" });
+				expect(whereSpy).toHaveBeenCalledTimes(1);
+			});
+
+			it("returns result even when cache.mset throws an error", async () => {
+				const mockCache = {
+					...createMockCache(),
+					mset: vi.fn().mockRejectedValue(new Error("Cache write failed")),
+				};
+				const { db, whereSpy } = createMockDb([{ id: "org1", name: "Org A" }]);
+
+				const loader = createOrganizationLoader(db, mockCache);
+				const result = await loader.load("org1");
+
+				// Should still return DB result despite cache write error
+				expect(result).toEqual({ id: "org1", name: "Org A" });
+				expect(whereSpy).toHaveBeenCalledTimes(1);
+			});
+
+			it("falls back to database for event loader when cache.mget throws", async () => {
+				const mockCache = {
+					...createMockCache(),
+					mget: vi.fn().mockRejectedValue(new Error("Cache unavailable")),
+				};
+				const { db, whereSpy } = createMockDb([
+					{ id: "evt1", name: "Event A" },
+				]);
+
+				const loader = createEventLoader(db, mockCache);
+				const result = await loader.load("evt1");
+
+				// Should still return DB result despite cache error
+				expect(result).toEqual({ id: "evt1", name: "Event A" });
+				expect(whereSpy).toHaveBeenCalledTimes(1);
+			});
+
+			it("falls back to database for user loader when cache.mget throws", async () => {
+				const mockCache = {
+					...createMockCache(),
+					mget: vi.fn().mockRejectedValue(new Error("Cache unavailable")),
+				};
+				const { db, whereSpy } = createMockDb([{ id: "u1", name: "User A" }]);
+
+				const loader = createUserLoader(db, mockCache);
+				const result = await loader.load("u1");
+
+				// Should still return DB result despite cache error
+				expect(result).toEqual({ id: "u1", name: "User A" });
+				expect(whereSpy).toHaveBeenCalledTimes(1);
+			});
+
+			it("falls back to database for actionItem loader when cache.mget throws", async () => {
+				const mockCache = {
+					...createMockCache(),
+					mget: vi.fn().mockRejectedValue(new Error("Cache unavailable")),
+				};
+				const { db, whereSpy } = createMockDb([
+					{ id: "ai1", organizationId: "org1" },
+				]);
+
+				const loader = createActionItemLoader(db, mockCache);
+				const result = await loader.load("ai1");
+
+				// Should still return DB result despite cache error
+				expect(result).toEqual({ id: "ai1", organizationId: "org1" });
+				expect(whereSpy).toHaveBeenCalledTimes(1);
 			});
 		});
 	});

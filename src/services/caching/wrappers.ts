@@ -56,8 +56,14 @@ export function wrapWithCache<K, V>(
 			(k) => `${CacheNamespace}:${entity}:${String(keyFn(k))}`,
 		);
 
-		// Try to get all values from cache
-		const cached = await cache.mget<V>(cacheKeys);
+		// Try to get all values from cache, falling back to empty on error
+		let cached: (V | null)[];
+		try {
+			cached = await cache.mget<V>(cacheKeys);
+		} catch {
+			// Cache read failed, treat all as cache misses and proceed to DB
+			cached = new Array<V | null>(keys.length).fill(null);
+		}
 
 		// Build result array and identify missing indices
 		const results: (V | null)[] = new Array(keys.length).fill(null);
@@ -93,11 +99,16 @@ export function wrapWithCache<K, V>(
 			}
 		}
 
-		// Store fetched values in cache
+		// Store fetched values in cache (fire-and-forget on error)
 		if (toSet.length) {
-			await cache.mset(
-				toSet.map((e) => ({ key: e.key, value: e.value, ttlSeconds })),
-			);
+			try {
+				await cache.mset(
+					toSet.map((e) => ({ key: e.key, value: e.value, ttlSeconds })),
+				);
+			} catch {
+				// Cache write failed, but we still have the fetched results
+				// Continue without caching - the next request will refetch
+			}
 		}
 
 		// Fill in the missing results
