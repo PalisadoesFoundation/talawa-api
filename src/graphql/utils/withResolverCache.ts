@@ -138,10 +138,12 @@ export function withResolverCache<
 		}
 
 		if (cached !== null) {
+			metrics?.increment("cache.hit");
 			return cached;
 		}
 
 		// Cache miss: execute resolver and cache result
+		metrics?.increment("cache.miss");
 		const result = await resolver(parent, args, context);
 
 		// Only cache non-null results
