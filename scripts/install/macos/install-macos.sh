@@ -169,10 +169,10 @@ NODE_VERSION=$(jq -r '.engines.node // "lts"' package.json)
 # Clean version string (handle >=, ^, etc.)
 if [[ "$NODE_VERSION" =~ ^(\^|>=|~) ]]; then
     # Extract version number after prefix (fnm handles both full semver and major-only)
-    CLEAN_NODE_VERSION=$(echo "$NODE_VERSION" | grep -oE '[0-9]+\.[0-9]+\.[0-9]+' | head -1)
+    CLEAN_NODE_VERSION=$(echo "$NODE_VERSION" | grep -oE '[0-9]+\.[0-9]+\.[0-9]+' | head -1 || true)
     # Fallback to major version only if full semver not found
     if [ -z "$CLEAN_NODE_VERSION" ]; then
-        CLEAN_NODE_VERSION=$(echo "$NODE_VERSION" | grep -oE '[0-9]+' | head -1)
+        CLEAN_NODE_VERSION=$(echo "$NODE_VERSION" | grep -oE '[0-9]+' | head -1 || true)
     fi
 else
     CLEAN_NODE_VERSION="$NODE_VERSION"
