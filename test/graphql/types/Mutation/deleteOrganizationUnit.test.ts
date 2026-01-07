@@ -354,4 +354,55 @@ describe("deleteOrganization Resolver Unit Coverage", () => {
 			"Failed to invalidate organization cache (non-fatal)",
 		);
 	});
+
+	it("should succeed despite invalidateEntityLists throwing an error (graceful degradation)", async () => {
+		const orgId = "51234567-89ab-cdef-0123-456789abcdef";
+
+		mocks.drizzle.query.usersTable.findFirst.mockResolvedValue({
+			role: "administrator",
+		});
+		mocks.drizzle.query.organizationsTable.findFirst.mockResolvedValue({
+			id: orgId,
+			avatarName: null,
+			advertisementsWhereOrganization: [],
+			chatsWhereOrganization: [],
+			eventsWhereOrganization: [],
+			postsWhereOrganization: [],
+			venuesWhereOrganization: [],
+		});
+		mocks.tx.returning.mockResolvedValue([
+			{
+				id: orgId,
+				name: "Deleted Org",
+				countryCode: "us",
+			},
+		]);
+
+		// invalidateEntity succeeds, invalidateEntityLists fails
+		mocks.invalidateEntity.mockResolvedValueOnce(undefined);
+		mocks.invalidateEntityLists.mockRejectedValueOnce(
+			new Error("Redis timeout"),
+		);
+
+		const args = {
+			input: {
+				id: orgId,
+			},
+		};
+
+		// Resolver should succeed despite cache errors
+		const result = await resolver(null, args, mockContext);
+
+		expect(result).toEqual({
+			id: orgId,
+			name: "Deleted Org",
+			countryCode: "us",
+		});
+
+		expect(mocks.invalidateEntityLists).toHaveBeenCalled();
+		expect(mockContext.log.warn).toHaveBeenCalledWith(
+			{ error: "Redis timeout" },
+			"Failed to invalidate organization cache (non-fatal)",
+		);
+	});
 });

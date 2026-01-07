@@ -186,8 +186,10 @@ builder.mutationField("deleteStandaloneEvent", (t) =>
 				.then(async (deletedEvent) => {
 					// Invalidate event caches (graceful degradation - don't break mutation on cache errors)
 					try {
-						await invalidateEntity(ctx.cache, "event", parsedArgs.input.id);
-						await invalidateEntityLists(ctx.cache, "event");
+						await Promise.all([
+							invalidateEntity(ctx.cache, "event", parsedArgs.input.id),
+							invalidateEntityLists(ctx.cache, "event"),
+						]);
 					} catch (error) {
 						ctx.log.warn(
 							{

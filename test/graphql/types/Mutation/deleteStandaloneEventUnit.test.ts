@@ -16,8 +16,13 @@ vi.mock("~/src/server", () => ({
 // Mock utilities
 vi.mock("~/src/utilities/TalawaGraphQLError", () => ({
 	TalawaGraphQLError: class extends Error {
-		constructor(message: string, _options?: Record<string, unknown>) {
-			super(message);
+		extensions: Record<string, unknown>;
+		constructor(options: {
+			message?: string;
+			extensions: Record<string, unknown>;
+		}) {
+			super(options.message ?? "TalawaGraphQLError");
+			this.extensions = options.extensions;
 		}
 	},
 }));

@@ -249,9 +249,16 @@ builder.mutationField("updateStandaloneEvent", (t) =>
 				});
 			}
 
-			// Invalidate event caches
-			await invalidateEntity(ctx.cache, "event", parsedArgs.input.id);
-			await invalidateEntityLists(ctx.cache, "event");
+			// Invalidate event caches (graceful degradation - don't break mutation on cache errors)
+			try {
+				await invalidateEntity(ctx.cache, "event", parsedArgs.input.id);
+				await invalidateEntityLists(ctx.cache, "event");
+			} catch (error) {
+				ctx.log.warn(
+					{ error: error instanceof Error ? error.message : "Unknown error" },
+					"Failed to invalidate event cache (non-fatal)",
+				);
+			}
 
 			return Object.assign(updatedEvent, {
 				attachments: existingEvent.attachmentsWhereEvent,

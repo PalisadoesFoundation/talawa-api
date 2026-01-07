@@ -228,8 +228,10 @@ builder.mutationField("updateCurrentUser", (t) =>
 
 			// Invalidate user caches (graceful degradation - don't break mutation on cache errors)
 			try {
-				await invalidateEntity(ctx.cache, "user", currentUserId);
-				await invalidateEntityLists(ctx.cache, "user");
+				await Promise.all([
+					invalidateEntity(ctx.cache, "user", currentUserId),
+					invalidateEntityLists(ctx.cache, "user"),
+				]);
 			} catch (error) {
 				ctx.log.warn(
 					{ error: error instanceof Error ? error.message : "Unknown error" },

@@ -16,8 +16,13 @@ vi.mock("~/src/server", () => ({
 // Mock utilities
 vi.mock("~/src/utilities/TalawaGraphQLError", () => ({
 	TalawaGraphQLError: class extends Error {
-		constructor(message: string, _options?: Record<string, unknown>) {
-			super(message);
+		extensions: Record<string, unknown>;
+		constructor(options: {
+			message?: string;
+			extensions: Record<string, unknown>;
+		}) {
+			super(options.message ?? "TalawaGraphQLError");
+			this.extensions = options.extensions;
 		}
 	},
 }));
@@ -407,6 +412,73 @@ describe("updatePost Resolver Cache Invalidation Tests", () => {
 
 			// Verify order: entity invalidation before list invalidation
 			expect(callOrder).toEqual(["invalidateEntity", "invalidateEntityLists"]);
+		});
+
+		it("should execute cache invalidation after DB transaction commits", async () => {
+			const postId = "61234567-89ab-cdef-0123-456789abcdef";
+			const callOrder: string[] = [];
+
+			mocks.drizzle.query.usersTable.findFirst.mockResolvedValue({
+				role: "administrator",
+			});
+			mocks.drizzle.query.postsTable.findFirst.mockResolvedValue({
+				id: postId,
+				pinnedAt: null,
+				creatorId: "admin-id",
+				attachmentsWherePost: [],
+				organization: {
+					countryCode: "us",
+					membershipsWhereOrganization: [{ role: "administrator" }],
+				},
+			});
+
+			// Track when transaction commit happens
+			mocks.tx.returning.mockImplementation(async () => {
+				callOrder.push("tx_commit");
+				return [
+					{
+						id: postId,
+						caption: "Updated Post",
+						body: "Body",
+						pinnedAt: null,
+						organizationId: "org-1",
+					},
+				];
+			});
+
+			// Track when cache invalidation happens
+			mocks.invalidateEntity.mockImplementation(async () => {
+				callOrder.push("invalidateEntity");
+			});
+			mocks.invalidateEntityLists.mockImplementation(async () => {
+				callOrder.push("invalidateEntityLists");
+			});
+
+			const args = {
+				input: {
+					id: postId,
+					caption: "Updated",
+				},
+			};
+
+			await resolver(null, args, mockContext);
+
+			// Verify order: DB transaction commits before cache invalidation
+			expect(callOrder).toEqual([
+				"tx_commit",
+				"invalidateEntity",
+				"invalidateEntityLists",
+			]);
+
+			// Extra assertions to confirm invalidation ran after commit
+			const txCommitIndex = callOrder.indexOf("tx_commit");
+			const invalidateEntityIndex = callOrder.indexOf("invalidateEntity");
+			const invalidateEntityListsIndex = callOrder.indexOf(
+				"invalidateEntityLists",
+			);
+
+			expect(txCommitIndex).toBeLessThan(invalidateEntityIndex);
+			expect(txCommitIndex).toBeLessThan(invalidateEntityListsIndex);
 		});
 	});
 
