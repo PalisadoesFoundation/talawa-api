@@ -34,6 +34,10 @@ describe("Event Attendees Resolver Tests", () => {
 			isInviteOnly: false,
 			location: null,
 			isRecurringEventTemplate: false,
+			attachmentsPolicy: "inherit",
+			recurrenceRule: null,
+			recurrenceUntil: null,
+			timezone: "UTC",
 			attachments: [],
 		} as EventType;
 	});

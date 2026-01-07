@@ -1,12 +1,12 @@
 [API Docs](/)
 
----
+***
 
 # Type Alias: RecurrenceRule
 
 > **RecurrenceRule** = `object`
 
-Defined in: [src/services/recurrence/recurrence.ts:7](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/recurrence/recurrence.ts#L7)
+Defined in: [src/services/recurrence/recurrence.ts:19](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/recurrence/recurrence.ts#L19)
 
 ## Properties
 
@@ -14,36 +14,36 @@ Defined in: [src/services/recurrence/recurrence.ts:7](https://github.com/Palisad
 
 > `optional` **byDay**: [`Weekday`](Weekday.md)[]
 
-Defined in: [src/services/recurrence/recurrence.ts:9](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/recurrence/recurrence.ts#L9)
+Defined in: [src/services/recurrence/recurrence.ts:21](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/recurrence/recurrence.ts#L21)
 
----
+***
 
 ### count?
 
 > `optional` **count**: `number`
 
-Defined in: [src/services/recurrence/recurrence.ts:11](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/recurrence/recurrence.ts#L11)
+Defined in: [src/services/recurrence/recurrence.ts:23](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/recurrence/recurrence.ts#L23)
 
----
+***
 
 ### freq
 
 > **freq**: [`Freq`](Freq.md)
 
-Defined in: [src/services/recurrence/recurrence.ts:8](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/recurrence/recurrence.ts#L8)
+Defined in: [src/services/recurrence/recurrence.ts:20](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/recurrence/recurrence.ts#L20)
 
----
+***
 
 ### interval
 
 > **interval**: `number`
 
-Defined in: [src/services/recurrence/recurrence.ts:10](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/recurrence/recurrence.ts#L10)
+Defined in: [src/services/recurrence/recurrence.ts:22](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/recurrence/recurrence.ts#L22)
 
----
+***
 
 ### until?
 
 > `optional` **until**: `Date`
 
-Defined in: [src/services/recurrence/recurrence.ts:12](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/recurrence/recurrence.ts#L12)
+Defined in: [src/services/recurrence/recurrence.ts:24](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/recurrence/recurrence.ts#L24)

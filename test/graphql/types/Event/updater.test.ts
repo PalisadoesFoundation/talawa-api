@@ -29,6 +29,10 @@ const MockEvent = {
 	isInviteOnly: false,
 	location: "Test Location",
 	isRecurringEventTemplate: false,
+	attachmentsPolicy: "inherit",
+	recurrenceRule: null,
+	recurrenceUntil: null,
+	timezone: "UTC",
 	attachments: [],
 };
 

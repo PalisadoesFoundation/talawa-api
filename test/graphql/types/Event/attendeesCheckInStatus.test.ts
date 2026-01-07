@@ -35,6 +35,10 @@ describe("Event AttendeesCheckInStatus Resolver Tests", () => {
 			isRegisterable: true,
 			isInviteOnly: false,
 			isRecurringEventTemplate: false,
+			attachmentsPolicy: "inherit",
+			recurrenceRule: null,
+			recurrenceUntil: null,
+			timezone: "UTC",
 		} as EventType;
 	});
 

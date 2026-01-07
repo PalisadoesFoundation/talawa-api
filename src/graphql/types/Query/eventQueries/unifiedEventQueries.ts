@@ -308,6 +308,10 @@ export async function getUnifiedEventsInDateRange(
 						sequenceNumber: instance.sequenceNumber,
 						totalCount: instance.totalCount,
 						hasExceptions: instance.hasExceptions,
+						recurrenceRule: null,
+						recurrenceUntil: null,
+						timezone: "UTC",
+						attachmentsPolicy: "inherit",
 						isGenerated: true,
 
 						attachments: [],
@@ -417,6 +421,10 @@ export async function getEventsByIds(
 					sequenceNumber: resolvedInstance.sequenceNumber,
 					totalCount: resolvedInstance.totalCount,
 					hasExceptions: resolvedInstance.hasExceptions,
+					recurrenceRule: null,
+					recurrenceUntil: null,
+					timezone: "UTC",
+					attachmentsPolicy: "inherit",
 					attachments: [], // TODO: Handle attachments for generated instances
 					eventType: "generated" as const,
 					isGenerated: true,

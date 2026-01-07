@@ -1,6 +1,6 @@
 [API Docs](/)
 
----
+***
 
 # Function: generateOccurrences()
 

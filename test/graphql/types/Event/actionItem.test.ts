@@ -1,6 +1,7 @@
 import { faker } from "@faker-js/faker";
 import { expect, suite, test } from "vitest";
 import { resolveActionItemsPaginated } from "../../../../src/graphql/types/Event/actionItems";
+import type { Event as EventType } from "../../../../src/graphql/types/Event/Event";
 import { TalawaGraphQLError } from "../../../../src/utilities/TalawaGraphQLError";
 import { createMockGraphQLContext } from "../../../_Mocks_/mockContextCreator/mockContextCreator";
 import { assertToBeNonNullish } from "../../../helpers";
@@ -37,19 +38,92 @@ type ActionItemWithException = {
 	isInstanceException?: boolean;
 };
 
-const adminSignInResult = await mercuriusClient.query(Query_signIn, {
-	variables: {
-		input: {
-			emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-			password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-		},
-	},
-});
-assertToBeNonNullish(adminSignInResult.data?.signIn);
-const adminAuthToken = adminSignInResult.data.signIn.authenticationToken;
-assertToBeNonNullish(adminAuthToken);
-assertToBeNonNullish(adminSignInResult.data.signIn.user);
-const adminUser = adminSignInResult.data.signIn.user;
+const baseMockEvent: EventType = {
+	id: "550e8400-e29b-41d4-a716-446655440000",
+	name: "Test Event",
+	description: "A test event",
+	organizationId: "789e1234-e89b-12d3-a456-426614174002",
+	startAt: new Date(),
+	endAt: new Date(Date.now() + 3600 * 1000),
+	createdAt: new Date(),
+	updatedAt: new Date(),
+	creatorId: "123e4567-e89b-12d3-a456-426614174000",
+	updaterId: "223e4567-e89b-12d3-a456-426614174001",
+	allDay: false,
+	isPublic: true,
+	isRegisterable: true,
+	isInviteOnly: false,
+	location: "Test Location",
+	isRecurringEventTemplate: false,
+	baseRecurringEventId: undefined,
+	attachmentsPolicy: "inherit",
+	recurrenceRule: null,
+	recurrenceUntil: null,
+	timezone: "UTC",
+	attachments: [],
+};
+
+const makeMockEvent = (
+	overrides: Partial<EventType> & { baseRecurringEventId?: string | null } = {},
+): EventType => {
+	const { baseRecurringEventId, ...rest } = overrides;
+	return {
+		...baseMockEvent,
+		...rest,
+		...(baseRecurringEventId !== undefined
+			? { baseRecurringEventId: baseRecurringEventId ?? undefined }
+			: {}),
+	};
+};
+
+async function signInAdmin(retries = 8, delayMs = 1000) {
+	const email = server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS;
+	const password = server.envConfig.API_ADMINISTRATOR_USER_PASSWORD;
+
+	if (!email || !password) {
+		throw new Error("Missing administrator credentials in env config");
+	}
+
+	let lastError: unknown;
+	// Give the server a brief moment after startup/user creation.
+	await new Promise((resolve) => setTimeout(resolve, delayMs));
+
+	for (let attempt = 1; attempt <= retries; attempt++) {
+		try {
+			const result = await mercuriusClient.query(Query_signIn, {
+				variables: {
+					input: {
+						emailAddress: email,
+						password,
+					},
+				},
+			});
+			const token = result.data?.signIn?.authenticationToken;
+			const user = result.data?.signIn?.user;
+			if (token && user) {
+				return { token, user };
+			}
+			const errors = result.errors?.map((err) => err.message).join("; ");
+			lastError = new Error(
+				`Sign-in returned nullish result${errors ? `; errors: ${errors}` : ""}`,
+			);
+		} catch (error) {
+			lastError = error;
+		}
+		if (attempt < retries) {
+			await new Promise((resolve) => setTimeout(resolve, delayMs));
+		}
+	}
+	const serializedError =
+		lastError instanceof Error ? lastError.message : String(lastError);
+	throw new Error(
+		`Admin sign-in failed after ${retries} attempts: ${serializedError}`,
+	);
+}
+
+const adminCredentials = await signInAdmin();
+const adminAuthToken = adminCredentials.token;
+const adminUser = adminCredentials.user;
 
 async function createOrg() {
 	const createOrgResult = await mercuriusClient.mutate(
@@ -211,25 +285,7 @@ suite("Event.actionItems", () => {
 
 	test("should throw unauthenticated error when calling resolver directly with unauthenticated user", async () => {
 		const { context } = createMockGraphQLContext(false);
-		const mockEvent = {
-			id: "550e8400-e29b-41d4-a716-446655440000",
-			name: "Test Event",
-			description: "A test event",
-			organizationId: "789e1234-e89b-12d3-a456-426614174002",
-			startAt: new Date(),
-			endAt: new Date(Date.now() + 3600 * 1000),
-			createdAt: new Date(),
-			updatedAt: new Date(),
-			creatorId: "123e4567-e89b-12d3-a456-426614174000",
-			updaterId: "223e4567-e89b-12d3-a456-426614174001",
-			allDay: false,
-			isPublic: true,
-			isRegisterable: true,
-			isInviteOnly: false,
-			location: "Test Location",
-			isRecurringEventTemplate: false,
-			attachments: [],
-		};
+		const mockEvent = makeMockEvent();
 
 		await expect(
 			resolveActionItemsPaginated(mockEvent, { first: 10 }, context),
@@ -244,25 +300,7 @@ suite("Event.actionItems", () => {
 
 	test("should throw unauthenticated error when current user does not exist in database", async () => {
 		const { context, mocks } = createMockGraphQLContext(true, "user-123");
-		const mockEvent = {
-			id: "550e8400-e29b-41d4-a716-446655440000",
-			name: "Test Event",
-			description: "A test event",
-			organizationId: "789e1234-e89b-12d3-a456-426614174002",
-			startAt: new Date(),
-			endAt: new Date(Date.now() + 3600 * 1000),
-			createdAt: new Date(),
-			updatedAt: new Date(),
-			creatorId: "123e4567-e89b-12d3-a456-426614174000",
-			updaterId: "223e4567-e89b-12d3-a456-426614174001",
-			allDay: false,
-			isPublic: true,
-			isRegisterable: true,
-			isInviteOnly: false,
-			location: "Test Location",
-			isRecurringEventTemplate: false,
-			attachments: [],
-		};
+		const mockEvent = makeMockEvent();
 
 		// Mock the database query to return undefined (user not found)
 		mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValue(undefined);
@@ -280,25 +318,7 @@ suite("Event.actionItems", () => {
 
 	test("should throw unauthorized_action error when user lacks proper permissions", async () => {
 		const { context, mocks } = createMockGraphQLContext(true, "user-123");
-		const mockEvent = {
-			id: "550e8400-e29b-41d4-a716-446655440000",
-			name: "Test Event",
-			description: "A test event",
-			organizationId: "789e1234-e89b-12d3-a456-426614174002",
-			startAt: new Date(),
-			endAt: new Date(Date.now() + 3600 * 1000),
-			createdAt: new Date(),
-			updatedAt: new Date(),
-			creatorId: "123e4567-e89b-12d3-a456-426614174000",
-			updaterId: "223e4567-e89b-12d3-a456-426614174001",
-			allDay: false,
-			isPublic: true,
-			isRegisterable: true,
-			isInviteOnly: false,
-			location: "Test Location",
-			isRecurringEventTemplate: false,
-			attachments: [],
-		};
+		const mockEvent = makeMockEvent();
 
 		// Mock user with insufficient permissions (regular user with no organization membership)
 		const mockUserData = {
@@ -323,25 +343,7 @@ suite("Event.actionItems", () => {
 
 	test("should throw invalid_arguments error when arguments are invalid", async () => {
 		const { context, mocks } = createMockGraphQLContext(true, "user-123");
-		const mockEvent = {
-			id: "550e8400-e29b-41d4-a716-446655440000",
-			name: "Test Event",
-			description: "A test event",
-			organizationId: "789e1234-e89b-12d3-a456-426614174002",
-			startAt: new Date(),
-			endAt: new Date(Date.now() + 3600 * 1000),
-			createdAt: new Date(),
-			updatedAt: new Date(),
-			creatorId: "123e4567-e89b-12d3-a456-426614174000",
-			updaterId: "223e4567-e89b-12d3-a456-426614174001",
-			allDay: false,
-			isPublic: true,
-			isRegisterable: true,
-			isInviteOnly: false,
-			location: "Test Location",
-			isRecurringEventTemplate: false,
-			attachments: [],
-		};
+		const mockEvent = makeMockEvent();
 
 		// Mock user with proper permissions to pass authentication/authorization checks
 		const mockUserData = {
@@ -368,25 +370,7 @@ suite("Event.actionItems", () => {
 
 	test("should throw invalid_arguments error when cursor is invalid", async () => {
 		const { context, mocks } = createMockGraphQLContext(true, "user-123");
-		const mockEvent = {
-			id: "550e8400-e29b-41d4-a716-446655440000",
-			name: "Test Event",
-			description: "A test event",
-			organizationId: "789e1234-e89b-12d3-a456-426614174002",
-			startAt: new Date(),
-			endAt: new Date(Date.now() + 3600 * 1000),
-			createdAt: new Date(),
-			updatedAt: new Date(),
-			creatorId: "123e4567-e89b-12d3-a456-426614174000",
-			updaterId: "223e4567-e89b-12d3-a456-426614174001",
-			allDay: false,
-			isPublic: true,
-			isRegisterable: true,
-			isInviteOnly: false,
-			location: "Test Location",
-			isRecurringEventTemplate: false,
-			attachments: [],
-		};
+		const mockEvent = makeMockEvent();
 
 		// Mock user with proper permissions to pass authentication/authorization checks
 		const mockUserData = {
@@ -418,26 +402,7 @@ suite("Event.actionItems", () => {
 	test("should use baseRecurringEventId when parent has it and it is truthy", async () => {
 		const { context, mocks } = createMockGraphQLContext(true, "user-123");
 		const baseRecurringEventId = "110e8400-e29b-41d4-a716-446655440012";
-		const mockEvent = {
-			id: "550e8400-e29b-41d4-a716-446655440000",
-			name: "Test Event",
-			description: "A test event",
-			organizationId: "789e1234-e89b-12d3-a456-426614174002",
-			startAt: new Date(),
-			endAt: new Date(Date.now() + 3600 * 1000),
-			createdAt: new Date(),
-			updatedAt: new Date(),
-			creatorId: "123e4567-e89b-12d3-a456-426614174000",
-			updaterId: "223e4567-e89b-12d3-a456-426614174001",
-			allDay: false,
-			isPublic: true,
-			isRegisterable: true,
-			isInviteOnly: false,
-			location: "Test Location",
-			isRecurringEventTemplate: false,
-			baseRecurringEventId,
-			attachments: [],
-		};
+		const mockEvent = makeMockEvent({ baseRecurringEventId });
 
 		// Mock user with proper permissions to pass authentication/authorization checks
 		const mockUserData = {
@@ -462,26 +427,7 @@ suite("Event.actionItems", () => {
 
 	test("should use parent.id when parent has baseRecurringEventId but it is falsy", async () => {
 		const { context, mocks } = createMockGraphQLContext(true, "user-123");
-		const mockEvent = {
-			id: "550e8400-e29b-41d4-a716-446655440000",
-			name: "Test Event",
-			description: "A test event",
-			organizationId: "789e1234-e89b-12d3-a456-426614174002",
-			startAt: new Date(),
-			endAt: new Date(Date.now() + 3600 * 1000),
-			createdAt: new Date(),
-			updatedAt: new Date(),
-			creatorId: "123e4567-e89b-12d3-a456-426614174000",
-			updaterId: "223e4567-e89b-12d3-a456-426614174001",
-			allDay: false,
-			isPublic: true,
-			isRegisterable: true,
-			isInviteOnly: false,
-			location: "Test Location",
-			isRecurringEventTemplate: false,
-			baseRecurringEventId: null, // falsy value
-			attachments: [],
-		};
+		const mockEvent = makeMockEvent({ baseRecurringEventId: "" });
 
 		// Mock user with proper permissions to pass authentication/authorization checks
 		const mockUserData = {
@@ -506,26 +452,7 @@ suite("Event.actionItems", () => {
 
 	test("should use parent.id when parent does not have baseRecurringEventId property", async () => {
 		const { context, mocks } = createMockGraphQLContext(true, "user-123");
-		const mockEvent = {
-			id: "550e8400-e29b-41d4-a716-446655440000",
-			name: "Test Event",
-			description: "A test event",
-			organizationId: "789e1234-e89b-12d3-a456-426614174002",
-			startAt: new Date(),
-			endAt: new Date(Date.now() + 3600 * 1000),
-			createdAt: new Date(),
-			updatedAt: new Date(),
-			creatorId: "123e4567-e89b-12d3-a456-426614174000",
-			updaterId: "223e4567-e89b-12d3-a456-426614174001",
-			allDay: false,
-			isPublic: true,
-			isRegisterable: true,
-			isInviteOnly: false,
-			location: "Test Location",
-			isRecurringEventTemplate: false,
-			attachments: [],
-			// No baseRecurringEventId property
-		};
+		const mockEvent = makeMockEvent();
 
 		// Mock user with proper permissions to pass authentication/authorization checks
 		const mockUserData = {
@@ -551,26 +478,7 @@ suite("Event.actionItems", () => {
 	test("should handle baseRecurringEventId logic correctly with empty results", async () => {
 		const { context, mocks } = createMockGraphQLContext(true, "user-123");
 		const baseRecurringEventId = "110e8400-e29b-41d4-a716-446655440012";
-		const mockEvent = {
-			id: "550e8400-e29b-41d4-a716-446655440000",
-			name: "Test Event",
-			description: "A test event",
-			organizationId: "789e1234-e89b-12d3-a456-426614174002",
-			startAt: new Date(),
-			endAt: new Date(Date.now() + 3600 * 1000),
-			createdAt: new Date(),
-			updatedAt: new Date(),
-			creatorId: "123e4567-e89b-12d3-a456-426614174000",
-			updaterId: "223e4567-e89b-12d3-a456-426614174001",
-			allDay: false,
-			isPublic: true,
-			isRegisterable: true,
-			isInviteOnly: false,
-			location: "Test Location",
-			isRecurringEventTemplate: false,
-			baseRecurringEventId,
-			attachments: [],
-		};
+		const mockEvent = makeMockEvent({ baseRecurringEventId });
 
 		// Mock user with proper permissions to pass authentication/authorization checks
 		const mockUserData = {
@@ -599,25 +507,7 @@ suite("Event.actionItems", () => {
 
 	test("should throw arguments_associated_resources_not_found error with 'before' argument path when using before cursor and no items are returned", async () => {
 		const { context, mocks } = createMockGraphQLContext(true, "user-123");
-		const mockEvent = {
-			id: "550e8400-e29b-41d4-a716-446655440000",
-			name: "Test Event",
-			description: "A test event",
-			organizationId: "789e1234-e89b-12d3-a456-426614174002",
-			startAt: new Date(),
-			endAt: new Date(Date.now() + 3600 * 1000),
-			createdAt: new Date(),
-			updatedAt: new Date(),
-			creatorId: "123e4567-e89b-12d3-a456-426614174000",
-			updaterId: "223e4567-e89b-12d3-a456-426614174001",
-			allDay: false,
-			isPublic: true,
-			isRegisterable: true,
-			isInviteOnly: false,
-			location: "Test Location",
-			isRecurringEventTemplate: false,
-			attachments: [],
-		};
+		const mockEvent = makeMockEvent();
 
 		// Mock user with proper permissions to pass authentication/authorization checks
 		const mockUserData = {
@@ -643,25 +533,7 @@ suite("Event.actionItems", () => {
 
 	test("should exclude action items marked as deleted in exceptions", async () => {
 		const { context, mocks } = createMockGraphQLContext(true, "user-123");
-		const mockEvent = {
-			id: "550e8400-e29b-41d4-a716-446655440000",
-			name: "Test Event",
-			description: "A test event",
-			organizationId: "789e1234-e89b-12d3-a456-426614174002",
-			startAt: new Date(),
-			endAt: new Date(Date.now() + 3600 * 1000),
-			createdAt: new Date(),
-			updatedAt: new Date(),
-			creatorId: "123e4567-e89b-12d3-a456-426614174000",
-			updaterId: "223e4567-e89b-12d3-a456-426614174001",
-			allDay: false,
-			isPublic: true,
-			isRegisterable: true,
-			isInviteOnly: false,
-			location: "Test Location",
-			isRecurringEventTemplate: false,
-			attachments: [],
-		};
+		const mockEvent = makeMockEvent();
 
 		const mockUserData = {
 			id: "user-123",
@@ -763,25 +635,7 @@ suite("Event.actionItems", () => {
 
 	test("should apply exception overrides and set isInstanceException flag", async () => {
 		const { context, mocks } = createMockGraphQLContext(true, "user-123");
-		const mockEvent = {
-			id: "550e8400-e29b-41d4-a716-446655440000",
-			name: "Test Event",
-			description: "A test event",
-			organizationId: "789e1234-e89b-12d3-a456-426614174002",
-			startAt: new Date(),
-			endAt: new Date(Date.now() + 3600 * 1000),
-			createdAt: new Date(),
-			updatedAt: new Date(),
-			creatorId: "123e4567-e89b-12d3-a456-426614174000",
-			updaterId: "223e4567-e89b-12d3-a456-426614174001",
-			allDay: false,
-			isPublic: true,
-			isRegisterable: true,
-			isInviteOnly: false,
-			location: "Test Location",
-			isRecurringEventTemplate: false,
-			attachments: [],
-		};
+		const mockEvent = makeMockEvent();
 
 		const mockUserData = {
 			id: "user-123",

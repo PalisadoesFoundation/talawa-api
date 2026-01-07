@@ -2168,10 +2168,7 @@ type Mutation {
   deleteAgendaItem(input: MutationDeleteAgendaItemInput!): AgendaItem
 
   """Mutation field to delete a chat."""
-  deleteChat(
-    """Input containing the UUID `id` of the chat to delete (required)."""
-    input: MutationDeleteChatInput!
-  ): Chat
+  deleteChat(input: MutationDeleteChatInput!): Chat
 
   """Mutation field to delete a chat membership."""
   deleteChatMembership(input: MutationDeleteChatMembershipInput!): Chat
