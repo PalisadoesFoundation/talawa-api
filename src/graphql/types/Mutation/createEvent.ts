@@ -477,8 +477,15 @@ builder.mutationField("createEvent", (t) =>
 				);
 			}
 
-			// Invalidate event list caches
-			await invalidateEntityLists(ctx.cache, "event");
+			// Invalidate event list caches (graceful degradation - don't break mutation on cache errors)
+			try {
+				await invalidateEntityLists(ctx.cache, "event");
+			} catch (error) {
+				ctx.log.warn(
+					{ error: error instanceof Error ? error.message : "Unknown error" },
+					"Failed to invalidate event list caches (non-fatal)",
+				);
+			}
 
 			return createdEventResult;
 		},

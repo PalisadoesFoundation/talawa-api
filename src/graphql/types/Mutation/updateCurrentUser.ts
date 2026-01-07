@@ -11,7 +11,10 @@ import {
 	mutationUpdateCurrentUserInputSchema,
 } from "~/src/graphql/inputs/MutationUpdateCurrentUserInput";
 import { User } from "~/src/graphql/types/User/User";
-import { invalidateEntity } from "~/src/services/caching";
+import {
+	invalidateEntity,
+	invalidateEntityLists,
+} from "~/src/services/caching";
 import envConfig from "~/src/utilities/graphqLimits";
 import { isNotNullish } from "~/src/utilities/isNotNullish";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
@@ -144,85 +147,97 @@ builder.mutationField("updateCurrentUser", (t) =>
 					}
 				: null;
 
-			return await ctx.drizzleClient.transaction(async (tx) => {
-				const updateResult = await tx
-					.update(usersTable)
-					.set({
-						addressLine1: parsedArgs.input.addressLine1,
-						addressLine2: parsedArgs.input.addressLine2,
-						avatarMimeType:
-							parsedArgs.input.avatar === undefined
-								? undefined // Do not update if undefined
-								: avatarUpdate !== null
-									? avatarUpdate.avatarMimeType
-									: null, // Set to null if null
-						avatarName:
-							parsedArgs.input.avatar === undefined
-								? undefined // Do not update if undefined
-								: avatarUpdate !== null
-									? avatarUpdate.avatarName
-									: null, // Set to null if null
-						birthDate: parsedArgs.input.birthDate,
-						city: parsedArgs.input.city,
-						countryCode: parsedArgs.input.countryCode,
-						description: parsedArgs.input.description,
-						educationGrade: parsedArgs.input.educationGrade,
-						emailAddress: parsedArgs.input.emailAddress,
-						employmentStatus: parsedArgs.input.employmentStatus,
-						homePhoneNumber: parsedArgs.input.homePhoneNumber,
-						maritalStatus: parsedArgs.input.maritalStatus,
-						mobilePhoneNumber: parsedArgs.input.mobilePhoneNumber,
-						name: parsedArgs.input.name,
-						natalSex: parsedArgs.input.natalSex,
-						naturalLanguageCode: parsedArgs.input.naturalLanguageCode,
-						passwordHash:
-							parsedArgs.input.password !== undefined
-								? await hash(parsedArgs.input.password)
-								: undefined,
-						postalCode: parsedArgs.input.postalCode,
-						state: parsedArgs.input.state,
-						updaterId: currentUserId,
-						workPhoneNumber: parsedArgs.input.workPhoneNumber,
-					})
-					.where(eq(usersTable.id, currentUserId))
-					.returning();
+			const updatedCurrentUser = await ctx.drizzleClient.transaction(
+				async (tx) => {
+					const updateResult = await tx
+						.update(usersTable)
+						.set({
+							addressLine1: parsedArgs.input.addressLine1,
+							addressLine2: parsedArgs.input.addressLine2,
+							avatarMimeType:
+								parsedArgs.input.avatar === undefined
+									? undefined // Do not update if undefined
+									: avatarUpdate !== null
+										? avatarUpdate.avatarMimeType
+										: null, // Set to null if null
+							avatarName:
+								parsedArgs.input.avatar === undefined
+									? undefined // Do not update if undefined
+									: avatarUpdate !== null
+										? avatarUpdate.avatarName
+										: null, // Set to null if null
+							birthDate: parsedArgs.input.birthDate,
+							city: parsedArgs.input.city,
+							countryCode: parsedArgs.input.countryCode,
+							description: parsedArgs.input.description,
+							educationGrade: parsedArgs.input.educationGrade,
+							emailAddress: parsedArgs.input.emailAddress,
+							employmentStatus: parsedArgs.input.employmentStatus,
+							homePhoneNumber: parsedArgs.input.homePhoneNumber,
+							maritalStatus: parsedArgs.input.maritalStatus,
+							mobilePhoneNumber: parsedArgs.input.mobilePhoneNumber,
+							name: parsedArgs.input.name,
+							natalSex: parsedArgs.input.natalSex,
+							naturalLanguageCode: parsedArgs.input.naturalLanguageCode,
+							passwordHash:
+								parsedArgs.input.password !== undefined
+									? await hash(parsedArgs.input.password)
+									: undefined,
+							postalCode: parsedArgs.input.postalCode,
+							state: parsedArgs.input.state,
+							updaterId: currentUserId,
+							workPhoneNumber: parsedArgs.input.workPhoneNumber,
+						})
+						.where(eq(usersTable.id, currentUserId))
+						.returning();
 
-				// Updated user not being returned means that either it was deleted or its `id` column was changed by an external entity before this update operation which correspondingly means that the current client is using an invalid authentication token which hasn't expired yet.
-				if (updateResult.length === 0) {
-					throw new TalawaGraphQLError({
-						extensions: {
-							code: "unauthenticated",
-						},
-					});
-				}
+					// Updated user not being returned means that either it was deleted or its `id` column was changed by an external entity before this update operation which correspondingly means that the current client is using an invalid authentication token which hasn't expired yet.
+					if (updateResult.length === 0) {
+						throw new TalawaGraphQLError({
+							extensions: {
+								code: "unauthenticated",
+							},
+						});
+					}
 
-				const updatedCurrentUser = updateResult[0];
+					const updatedUser = updateResult[0];
 
-				if (isNotNullish(parsedArgs.input.avatar) && avatarUpdate) {
-					await ctx.minio.client.putObject(
-						ctx.minio.bucketName,
-						avatarUpdate.avatarName,
-						parsedArgs.input.avatar.createReadStream(),
-						undefined,
-						{
-							"content-type": parsedArgs.input.avatar.mimetype,
-						},
-					);
-				} else if (
-					parsedArgs.input.avatar !== undefined &&
-					currentUser.avatarName !== null
-				) {
-					await ctx.minio.client.removeObject(
-						ctx.minio.bucketName,
-						currentUser.avatarName,
-					);
-				}
+					if (isNotNullish(parsedArgs.input.avatar) && avatarUpdate) {
+						await ctx.minio.client.putObject(
+							ctx.minio.bucketName,
+							avatarUpdate.avatarName,
+							parsedArgs.input.avatar.createReadStream(),
+							undefined,
+							{
+								"content-type": parsedArgs.input.avatar.mimetype,
+							},
+						);
+					} else if (
+						parsedArgs.input.avatar !== undefined &&
+						currentUser.avatarName !== null
+					) {
+						await ctx.minio.client.removeObject(
+							ctx.minio.bucketName,
+							currentUser.avatarName,
+						);
+					}
 
-				// Invalidate user cache
+					return updatedUser;
+				},
+			);
+
+			// Invalidate user caches (graceful degradation - don't break mutation on cache errors)
+			try {
 				await invalidateEntity(ctx.cache, "user", currentUserId);
+				await invalidateEntityLists(ctx.cache, "user");
+			} catch (error) {
+				ctx.log.warn(
+					{ error: error instanceof Error ? error.message : "Unknown error" },
+					"Failed to invalidate user cache (non-fatal)",
+				);
+			}
 
-				return updatedCurrentUser;
-			});
+			return updatedCurrentUser;
 		},
 		type: User,
 	}),

@@ -214,12 +214,20 @@ export async function warmCacheSafely(
 			},
 		);
 
-		let warmedCount = 0;
-		for (const org of organizations) {
-			const key = entityKey("organization", org.id);
-			await cache.set(key, org, getTTL("organization"));
-			warmedCount++;
-		}
+		// Warm cache in parallel using Promise.allSettled
+		// Individual failures don't abort the whole warm operation
+		const warmResults = await Promise.allSettled(
+			organizations.map(async (org) => {
+				const key = entityKey("organization", org.id);
+				await cache.set(key, org, getTTL("organization"));
+				return org.id;
+			}),
+		);
+
+		// Count only successful warms
+		const warmedCount = warmResults.filter(
+			(result) => result.status === "fulfilled",
+		).length;
 
 		const duration = Date.now() - startTime;
 		logger.info(

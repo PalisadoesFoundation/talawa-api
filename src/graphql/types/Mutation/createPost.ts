@@ -144,85 +144,25 @@ builder.mutationField("createPost", (t) =>
 				}
 			}
 
-			return await ctx.drizzleClient.transaction(async (tx) => {
-				const [createdPost] = await tx
-					.insert(postsTable)
-					.values({
-						creatorId: currentUserId,
-						caption: parsedArgs.input.caption,
-						body: parsedArgs.input.body,
-						pinnedAt:
-							parsedArgs.input.isPinned === undefined ||
-							parsedArgs.input.isPinned === false
-								? undefined
-								: new Date(),
-						organizationId: parsedArgs.input.organizationId,
-					})
-					.returning();
-				if (createdPost === undefined) {
-					ctx.log.error(
-						"Postgres insert operation unexpectedly returned an empty array instead of throwing an error.",
-					);
-					throw new TalawaGraphQLError({
-						extensions: {
-							code: "unexpected",
-						},
-					});
-				}
-
-				// Handle direct file upload
-				let createdAttachment: typeof postAttachmentsTable.$inferSelect | null =
-					null;
-				if (isNotNullish(parsedArgs.input.attachment)) {
-					const attachment = parsedArgs.input.attachment;
-					const objectName = ulid();
-					try {
-						// Upload media file to MinIO
-						await ctx.minio.client.putObject(
-							ctx.minio.bucketName,
-							objectName,
-							attachment.createReadStream(),
-							undefined,
-							{
-								"content-type": attachment.mimetype,
-							},
-						);
-					} catch (error) {
-						ctx.log.error(`Error uploading file to MinIO: ${error}`);
-						throw new TalawaGraphQLError({
-							extensions: {
-								code: "unexpected",
-							},
-						});
-					}
-
-					// Create attachment record
-					const attachmentRecord = {
-						creatorId: currentUserId,
-						mimeType: attachment.mimetype,
-						id: uuidv7(),
-						name: attachment.filename,
-						postId: createdPost.id,
-						objectName: objectName,
-						fileHash: ulid(), // Placeholder - no deduplication for direct uploads
-					};
-
-					const [attachmentResult] = await tx
-						.insert(postAttachmentsTable)
-						.values(attachmentRecord)
+			const createdPostResult = await ctx.drizzleClient.transaction(
+				async (tx) => {
+					const [createdPost] = await tx
+						.insert(postsTable)
+						.values({
+							creatorId: currentUserId,
+							caption: parsedArgs.input.caption,
+							body: parsedArgs.input.body,
+							pinnedAt:
+								parsedArgs.input.isPinned === undefined ||
+								parsedArgs.input.isPinned === false
+									? undefined
+									: new Date(),
+							organizationId: parsedArgs.input.organizationId,
+						})
 						.returning();
-
-					if (attachmentResult) {
-						createdAttachment = attachmentResult;
-					} else {
-						//remove MinIO object if DB insert fails
-						await ctx.minio.client.removeObject(
-							ctx.minio.bucketName,
-							objectName,
-						);
-						// Log and throw error
+					if (createdPost === undefined) {
 						ctx.log.error(
-							"Postgres insert operation for post attachment unexpectedly returned an empty array instead of throwing an error.",
+							"Postgres insert operation unexpectedly returned an empty array instead of throwing an error.",
 						);
 						throw new TalawaGraphQLError({
 							extensions: {
@@ -230,28 +170,100 @@ builder.mutationField("createPost", (t) =>
 							},
 						});
 					}
-				}
 
-				const finalPost = Object.assign(createdPost, {
-					attachments: createdAttachment ? [createdAttachment] : [],
-				});
+					// Handle direct file upload
+					let createdAttachment:
+						| typeof postAttachmentsTable.$inferSelect
+						| null = null;
+					if (isNotNullish(parsedArgs.input.attachment)) {
+						const attachment = parsedArgs.input.attachment;
+						const objectName = ulid();
+						try {
+							// Upload media file to MinIO
+							await ctx.minio.client.putObject(
+								ctx.minio.bucketName,
+								objectName,
+								attachment.createReadStream(),
+								undefined,
+								{
+									"content-type": attachment.mimetype,
+								},
+							);
+						} catch (error) {
+							ctx.log.error(`Error uploading file to MinIO: ${error}`);
+							throw new TalawaGraphQLError({
+								extensions: {
+									code: "unexpected",
+								},
+							});
+						}
 
-				notificationEventBus.emitPostCreated(
-					{
-						postId: createdPost.id,
-						organizationId: parsedArgs.input.organizationId,
-						authorName: currentUser.name || "Anonymous",
-						organizationName: existingOrganization.name || "Organization",
-						postCaption: parsedArgs.input.caption || "New post",
-					},
-					ctx,
-				);
+						// Create attachment record
+						const attachmentRecord = {
+							creatorId: currentUserId,
+							mimeType: attachment.mimetype,
+							id: uuidv7(),
+							name: attachment.filename,
+							postId: createdPost.id,
+							objectName: objectName,
+							fileHash: ulid(), // Placeholder - no deduplication for direct uploads
+						};
 
-				// Invalidate post list caches
+						const [attachmentResult] = await tx
+							.insert(postAttachmentsTable)
+							.values(attachmentRecord)
+							.returning();
+
+						if (attachmentResult) {
+							createdAttachment = attachmentResult;
+						} else {
+							//remove MinIO object if DB insert fails
+							await ctx.minio.client.removeObject(
+								ctx.minio.bucketName,
+								objectName,
+							);
+							// Log and throw error
+							ctx.log.error(
+								"Postgres insert operation for post attachment unexpectedly returned an empty array instead of throwing an error.",
+							);
+							throw new TalawaGraphQLError({
+								extensions: {
+									code: "unexpected",
+								},
+							});
+						}
+					}
+
+					const finalPost = Object.assign(createdPost, {
+						attachments: createdAttachment ? [createdAttachment] : [],
+					});
+
+					notificationEventBus.emitPostCreated(
+						{
+							postId: createdPost.id,
+							organizationId: parsedArgs.input.organizationId,
+							authorName: currentUser.name || "Anonymous",
+							organizationName: existingOrganization.name || "Organization",
+							postCaption: parsedArgs.input.caption || "New post",
+						},
+						ctx,
+					);
+
+					return finalPost;
+				},
+			);
+
+			// Invalidate post list caches (graceful degradation - don't break mutation on cache errors)
+			try {
 				await invalidateEntityLists(ctx.cache, "post");
+			} catch (error) {
+				ctx.log.warn(
+					{ error: error instanceof Error ? error.message : "Unknown error" },
+					"Failed to invalidate post list caches (non-fatal)",
+				);
+			}
 
-				return finalPost;
-			});
+			return createdPostResult;
 		},
 		type: Post,
 	}),

@@ -11,7 +11,10 @@ import {
 	mutationUpdateUserInputSchema,
 } from "~/src/graphql/inputs/MutationUpdateUserInput";
 import { User } from "~/src/graphql/types/User/User";
-import { invalidateEntity } from "~/src/services/caching";
+import {
+	invalidateEntity,
+	invalidateEntityLists,
+} from "~/src/services/caching";
 import envConfig from "~/src/utilities/graphqLimits";
 import { isNotNullish } from "~/src/utilities/isNotNullish";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
@@ -234,8 +237,9 @@ builder.mutationField("updateUser", (t) =>
 					);
 				}
 
-				// Invalidate user cache
+				// Invalidate user caches
 				await invalidateEntity(ctx.cache, "user", parsedArgs.input.id);
+				await invalidateEntityLists(ctx.cache, "user");
 
 				return updatedUser;
 			});
