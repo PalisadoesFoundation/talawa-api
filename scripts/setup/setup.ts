@@ -85,6 +85,10 @@ export interface SetupAnswers {
 
 	// reCAPTCHA Configuration
 	RECAPTCHA_SECRET_KEY?: string;
+
+	// Observability Configuration
+	API_OTEL_ENABLED?: "true" | "false";
+	API_OTEL_SAMPLING_RATIO?: string;
 }
 
 /**
@@ -312,6 +316,14 @@ export function validatePort(input: string): true | string {
 	const portNumber = Number(input);
 	if (Number.isNaN(portNumber) || portNumber <= 0 || portNumber > 65535) {
 		return "Please enter a valid port number (1-65535).";
+	}
+	return true;
+}
+
+export function validateSamplingRatio(input: string): true | string {
+	const ratio = Number(input);
+	if (Number.isNaN(ratio) || ratio < 0 || ratio > 1) {
+		return "Please enter valid sampling ratio (0-1).";
 	}
 	return true;
 }
@@ -869,6 +881,7 @@ export async function observabilitySetup(
 				"API_OTEL_SAMPLING_RATIO",
 				"Observability sampling ratio (between 0 & 1):",
 				"1",
+				validateSamplingRatio,
 			);
 		}
 
