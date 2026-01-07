@@ -47,7 +47,6 @@ print_usage() {
 if [[ "$INSTALL_MODE" != "docker" ]] && [[ "$INSTALL_MODE" != "local" ]]; then
     error "Invalid INSTALL_MODE: '$INSTALL_MODE'. Must be 'docker' or 'local'."
     print_usage
-
     exit 1
 fi
 
@@ -55,7 +54,6 @@ fi
 if [[ "$SKIP_PREREQS" != "true" ]] && [[ "$SKIP_PREREQS" != "false" ]]; then
     error "Invalid SKIP_PREREQS: '$SKIP_PREREQS'. Must be 'true' or 'false'."
     print_usage
-
     exit 1
 fi
 
