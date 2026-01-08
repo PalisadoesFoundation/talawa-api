@@ -1707,3 +1707,101 @@ suite("updatePost - MinIO operations", () => {
 		}
 	});
 });
+
+suite("updatePost - Cache invalidation graceful degradation", () => {
+	test("should succeed despite cache invalidation failure (graceful degradation)", async () => {
+		// Import the cache module to spy on it
+		const cachingModule = await import("~/src/services/caching");
+
+		// Create spies that throw errors
+		const invalidateEntitySpy = vi
+			.spyOn(cachingModule, "invalidateEntity")
+			.mockRejectedValue(new Error("Redis connection failed"));
+		const invalidateEntityListsSpy = vi
+			.spyOn(cachingModule, "invalidateEntityLists")
+			.mockRejectedValue(new Error("Redis connection failed"));
+
+		try {
+			// Admin login
+			const adminSignIn = await mercuriusClient.query(Query_signIn, {
+				variables: {
+					input: {
+						emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
+						password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
+					},
+				},
+			});
+			const token = adminSignIn.data.signIn?.authenticationToken;
+			assertToBeNonNullish(token);
+
+			// Create organization
+			const createOrgResult = await mercuriusClient.mutate(
+				Mutation_createOrganization,
+				{
+					headers: { authorization: `bearer ${token}` },
+					variables: {
+						input: {
+							name: `CacheDegradeOrg_${faker.string.ulid()}`,
+							description: faker.lorem.sentence(),
+						},
+					},
+				},
+			);
+			const orgId = createOrgResult.data.createOrganization?.id;
+			assertToBeNonNullish(orgId);
+
+			// Create initial post
+			const createPostResult = await mercuriusClient.mutate(
+				Mutation_createPost,
+				{
+					headers: { authorization: `bearer ${token}` },
+					variables: {
+						input: {
+							caption: "Original caption",
+							organizationId: orgId,
+						},
+					},
+				},
+			);
+			const postId = createPostResult.data.createPost?.id;
+			assertToBeNonNullish(postId);
+
+			// Reset spies to track calls only for the update operation
+			invalidateEntitySpy.mockClear();
+			invalidateEntityListsSpy.mockClear();
+
+			// Make cache invalidation throw errors
+			invalidateEntitySpy.mockRejectedValue(
+				new Error("Redis connection failed"),
+			);
+			invalidateEntityListsSpy.mockRejectedValue(
+				new Error("Redis connection failed"),
+			);
+
+			// Update the post - should succeed despite cache errors
+			const updateResult = await mercuriusClient.mutate(Mutation_updatePost, {
+				headers: { authorization: `bearer ${token}` },
+				variables: {
+					input: {
+						id: postId,
+						caption: "Updated caption with cache failure",
+					},
+				},
+			});
+
+			// Mutation should succeed despite cache failure (graceful degradation)
+			expect(updateResult.errors).toBeUndefined();
+			expect(updateResult.data?.updatePost).toBeDefined();
+			expect(updateResult.data?.updatePost?.caption).toBe(
+				"Updated caption with cache failure",
+			);
+
+			// Verify cache invalidation was attempted
+			expect(invalidateEntitySpy).toHaveBeenCalled();
+		} finally {
+			// Restore original functions
+			invalidateEntitySpy.mockRestore();
+			invalidateEntityListsSpy.mockRestore();
+		}
+	});
+});

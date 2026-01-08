@@ -145,6 +145,9 @@ mocks.drizzle.transaction.mockImplementation(
 			mocks.invalidateEntityLists.getMockImplementation();
 		mocks.invalidateEntityLists.mockImplementation(async (...args) => {
 			txCallOrder.push("invalidateEntityLists");
+			if (transactionCompleted) {
+				invalidatedAfterTx = true;
+			}
 			if (originalInvalidateEntityLists) {
 				return originalInvalidateEntityLists(...args);
 			}
@@ -576,6 +579,61 @@ describe("updateUser Resolver Cache Invalidation Tests", () => {
 			// Verify warning was logged for the cache error
 			expect(mockContext.log.warn).toHaveBeenCalledWith(
 				{ error: "Redis connection failed" },
+				"Failed to invalidate user cache (non-fatal)",
+			);
+		});
+
+		it("should succeed despite invalidateEntityLists errors and log warning", async () => {
+			const targetUserId = "61234567-89ab-cdef-0123-456789abcdef";
+
+			// Current user is an admin
+			mocks.drizzle.query.usersTable.findFirst
+				.mockResolvedValueOnce({ role: "administrator" }) // currentUser
+				.mockResolvedValueOnce({
+					// existingUser
+					role: "regular",
+					avatarName: null,
+				});
+
+			mocks.tx.returning.mockResolvedValueOnce([
+				{
+					id: targetUserId,
+					name: "Updated User",
+					role: "regular",
+					emailAddress: "updated@test.com",
+				},
+			]);
+
+			// invalidateEntity succeeds, but invalidateEntityLists fails
+			mocks.invalidateEntity.mockResolvedValueOnce(undefined);
+			mocks.invalidateEntityLists.mockRejectedValueOnce(
+				new Error("Redis connection failed on list invalidation"),
+			);
+
+			const args = {
+				input: {
+					id: targetUserId,
+					name: "Updated Name",
+				},
+			};
+
+			// Resolver should succeed despite cache errors (graceful degradation)
+			const result = await resolver(null, args, mockContext);
+
+			// Verify the resolver succeeded and returned the updated user
+			expect(result).toEqual({
+				id: targetUserId,
+				name: "Updated User",
+				role: "regular",
+				emailAddress: "updated@test.com",
+			});
+
+			// Verify invalidateEntityLists was attempted
+			expect(mocks.invalidateEntityLists).toHaveBeenCalled();
+
+			// Verify warning was logged for the list cache error
+			expect(mockContext.log.warn).toHaveBeenCalledWith(
+				{ error: "Redis connection failed on list invalidation" },
 				"Failed to invalidate user cache (non-fatal)",
 			);
 		});
