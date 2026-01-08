@@ -1798,6 +1798,15 @@ suite("updatePost - Cache invalidation graceful degradation", () => {
 
 			// Verify cache invalidation was attempted
 			expect(invalidateEntitySpy).toHaveBeenCalled();
+			expect(invalidateEntityListsSpy).toHaveBeenCalled();
+
+			// NOTE: Logger assertion for cache failure warning is omitted in this integration test
+			// because mercuriusClient doesn't expose the server's internal logger (ctx.log).
+			// The warning log assertion is covered in unit tests. See:
+			// - test/graphql/types/Mutation/updateUserUnit.test.ts (line ~577-580)
+			// - test/graphql/types/Mutation/updateCurrentUserUnit.test.ts
+			// These unit tests mock the resolver context and verify ctx.log.warn is called
+			// with the expected error message when cache invalidation fails.
 		} finally {
 			// Restore original functions
 			invalidateEntitySpy.mockRestore();

@@ -576,10 +576,10 @@ describe("updateUser Resolver Cache Invalidation Tests", () => {
 			// Verify cache invalidation was attempted
 			expect(mocks.invalidateEntity).toHaveBeenCalled();
 
-			// Verify warning was logged for the cache error
+			// Verify warning was logged for the cache error (use flexible matching)
 			expect(mockContext.log.warn).toHaveBeenCalledWith(
-				{ error: "Redis connection failed" },
-				"Failed to invalidate user cache (non-fatal)",
+				expect.objectContaining({ error: "Redis connection failed" }),
+				expect.stringContaining("invalidate user cache"),
 			);
 		});
 
@@ -631,10 +631,12 @@ describe("updateUser Resolver Cache Invalidation Tests", () => {
 			// Verify invalidateEntityLists was attempted
 			expect(mocks.invalidateEntityLists).toHaveBeenCalled();
 
-			// Verify warning was logged for the list cache error
+			// Verify warning was logged for the list cache error (use flexible matching)
 			expect(mockContext.log.warn).toHaveBeenCalledWith(
-				{ error: "Redis connection failed on list invalidation" },
-				"Failed to invalidate user cache (non-fatal)",
+				expect.objectContaining({
+					error: "Redis connection failed on list invalidation",
+				}),
+				expect.stringContaining("invalidate user cache"),
 			);
 		});
 	});

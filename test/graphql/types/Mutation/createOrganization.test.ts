@@ -805,6 +805,56 @@ suite("Mutation field createOrganization", () => {
 		}
 	});
 
+	test("should invalidate cache after successful organization creation", async () => {
+		// Import the cache module to spy on it
+		const cachingModule = await import("~/src/services/caching");
+
+		// Create a spy to track invalidateEntityLists calls
+		const invalidateEntityListsSpy = vi.spyOn(
+			cachingModule,
+			"invalidateEntityLists",
+		);
+
+		try {
+			const orgName = `Cache Invalidation Test Org ${Date.now()}`;
+
+			const result = await mercuriusClient.mutate(Mutation_createOrganization, {
+				headers: { authorization: `bearer ${authToken}` },
+				variables: {
+					input: {
+						name: orgName,
+						countryCode: "us",
+						description: "Testing cache invalidation after creation",
+					},
+				},
+			});
+
+			// Mutation should succeed
+			expect(result.errors).toBeUndefined();
+			expect(result.data?.createOrganization).toBeDefined();
+			expect(result.data?.createOrganization?.name).toBe(orgName);
+
+			const orgId = result.data?.createOrganization?.id;
+			assertToBeNonNullish(orgId);
+
+			// Verify invalidateEntityLists was called with correct arguments
+			expect(invalidateEntityListsSpy).toHaveBeenCalledWith(
+				expect.anything(),
+				"organization",
+			);
+
+			// Add cleanup
+			testCleanupFunctions.push(async () => {
+				await mercuriusClient.mutate(Mutation_deleteOrganization, {
+					headers: { authorization: `bearer ${authToken}` },
+					variables: { input: { id: orgId } },
+				});
+			});
+		} finally {
+			invalidateEntityListsSpy.mockRestore();
+		}
+	});
+
 	test("should succeed despite cache invalidation failure (graceful degradation)", async () => {
 		// This test exercises the try/catch around invalidateEntityLists in the resolver
 		// by mocking the cache service to throw an error. The mutation should still succeed.
