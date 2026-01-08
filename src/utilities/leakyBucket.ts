@@ -39,8 +39,6 @@ async function leakyBucket(
 			? Number.parseInt(bucket.lastUpdate, 10)
 			: Date.now();
 	}
-	console.log("Tokens: ", tokens);
-	console.log("Last Update: ", lastUpdate);
 	const now = Date.now();
 	const elapsed = (now - lastUpdate) / 1000;
 	// Refill tokens based on elapsed time and refill rate
