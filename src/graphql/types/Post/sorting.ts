@@ -84,6 +84,7 @@ builder.queryField("postsByOrganization", (t) =>
 			const posts = await ctx.drizzleClient.query.postsTable.findMany({
 				where: eq(postsTable.organizationId, organizationId),
 				orderBy: [orderBy],
+				// nullish coalescing required: GraphQL returns null but Drizzle expects undefined
 				limit: limit ?? undefined,
 				offset: offset ?? undefined,
 			});

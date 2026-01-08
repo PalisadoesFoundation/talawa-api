@@ -1052,4 +1052,30 @@ suite("Query field postsByOrganization - sorting", () => {
 		expect(result.errors).toBeUndefined();
 		expect(result.data?.postsByOrganization).toBeDefined();
 	});
+
+	test("should handle null pagination parameters gracefully", async () => {
+		const authToken = await getAuthToken();
+		const organizationId = await createTestOrganization();
+
+		await createTestPost(organizationId, adminUserId);
+		await createTestPost(organizationId, adminUserId);
+		await createTestPost(organizationId, adminUserId);
+
+		const result = await mercuriusClient.query(Query_postsByOrganization, {
+			headers: {
+				authorization: `Bearer ${authToken}`,
+			},
+			variables: {
+				input: {
+					organizationId,
+					limit: null,
+					offset: null,
+				},
+			},
+		});
+
+		expect(result.errors).toBeUndefined();
+		expect(result.data?.postsByOrganization).toBeDefined();
+		expect(result.data?.postsByOrganization).toHaveLength(3);
+	});
 });
