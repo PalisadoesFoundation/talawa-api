@@ -74,7 +74,7 @@ execute_installation_script() {
         
         display_failure_guidance "$exit_code" "$platform_name" "$mode"
         
-        return $exit_code
+        return "$exit_code"
     fi
 }
 
@@ -205,6 +205,7 @@ done
 main() {
     print_banner
     
+    local OS
     OS=$(detect_os)
     
     info "Detected OS: $OS"
@@ -222,11 +223,12 @@ main() {
         fi
     fi
     
+    local SCRIPT_DIR
     SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
     
     case $OS in
         linux)
-            LINUX_SCRIPT="$SCRIPT_DIR/linux/install-linux.sh"
+            local LINUX_SCRIPT="$SCRIPT_DIR/linux/install-linux.sh"
             
             if [ ! -f "$LINUX_SCRIPT" ]; then
                 error "Linux installation script not found: $LINUX_SCRIPT"
@@ -244,14 +246,10 @@ main() {
             fi
             
             execute_installation_script "$LINUX_SCRIPT" "Linux" "$INSTALL_MODE" "$SKIP_PREREQS"
-            local rc=$?
-            if [ $rc -ne 0 ]; then
-                exit $rc
-            fi
             ;;
             
         macos)
-            MACOS_SCRIPT="$SCRIPT_DIR/macos/install-macos.sh"
+            local MACOS_SCRIPT="$SCRIPT_DIR/macos/install-macos.sh"
             
             if [ ! -f "$MACOS_SCRIPT" ]; then
                 error "macOS installation script not found: $MACOS_SCRIPT"
@@ -269,10 +267,6 @@ main() {
             fi
             
             execute_installation_script "$MACOS_SCRIPT" "macOS" "$INSTALL_MODE" "$SKIP_PREREQS"
-            local rc=$?
-            if [ $rc -ne 0 ]; then
-                exit $rc
-            fi
             ;;
             
         *)
