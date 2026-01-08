@@ -81,6 +81,31 @@ check_docker_running() {
     fi
 }
 
+# Check if apt cache was updated recently (within the last hour)
+# Returns: 0 if cache is fresh, 1 if stale or missing
+apt_cache_is_fresh() {
+    local apt_lists_dir="/var/lib/apt/lists"
+    local cache_max_age=3600  # 1 hour (in seconds)
+    
+    if [ -d "$apt_lists_dir" ]; then
+        # Find the most recently modified file in apt lists directory
+        local last_update
+        last_update=$(find "$apt_lists_dir" -type f -printf '%T@\n' 2>/dev/null | sort -n | tail -1 | cut -d. -f1)
+        # If no files found or find failed, cache is stale
+        if [ -z "$last_update" ]; then
+            return 1
+        fi
+        local current_time
+        current_time=$(date +%s)
+        local cache_age=$((current_time - last_update))
+        
+        if [ $cache_age -lt $cache_max_age ]; then
+            return 0  # Cache is fresh
+        fi
+    fi
+    return 1  # Cache is stale or doesn't exist
+}
+
 # Get the repository root directory
 get_repo_root() {
     local script_dir
@@ -160,8 +185,12 @@ else
     INSTALLED_PREREQS=false
     case $DISTRO in
         ubuntu|debian|linuxmint|pop)
-            info "Updating package lists..."
-            sudo apt-get update -qq
+            if apt_cache_is_fresh; then
+                info "Package lists are up-to-date (updated within the last hour)"
+            else
+                info "Updating package lists..."
+                sudo apt-get update -qq
+            fi
             
             info "Installing git, curl, jq, unzip..."
             sudo apt-get install -y -qq git curl jq unzip
@@ -407,12 +436,45 @@ success "Node.js installed: $(node --version)"
 : $((CURRENT_STEP++))
 step $CURRENT_STEP $TOTAL_STEPS "Installing pnpm v$PNPM_VERSION..."
 
+PNPM_VERSION_CACHE="/tmp/.talawa-pnpm-latest-check"
+PNPM_CACHE_MAX_AGE=86400  # 24 hours
+
 if command_exists pnpm; then
     CURRENT_PNPM=$(pnpm --version)
-    # Skip version comparison if target is "latest" - always update to ensure we have latest
     if [ "$PNPM_VERSION" = "latest" ]; then
-        info "Updating pnpm to latest version..."
-        npm install -g "pnpm@latest"
+        # Query npm registry for actual latest version
+        LATEST_PNPM=$(npm view pnpm version 2>/dev/null) || LATEST_PNPM=""
+         # Check if we recently verified the latest version
+        SHOULD_CHECK=true
+        if [ -f "$PNPM_VERSION_CACHE" ]; then
+            CACHE_TIME=$(stat -c %Y "$PNPM_VERSION_CACHE" 2>/dev/null || echo 0)
+            CURRENT_TIME=$(date +%s)
+            CACHE_AGE=$((CURRENT_TIME - CACHE_TIME))
+            if [ $CACHE_AGE -lt $PNPM_CACHE_MAX_AGE ]; then
+                CACHED_VERSION=$(cat "$PNPM_VERSION_CACHE" 2>/dev/null)
+                if [ "$CACHED_VERSION" = "$CURRENT_PNPM" ]; then
+                    SHOULD_CHECK=false
+                    success "pnpm is already at latest version: v$CURRENT_PNPM (verified within 24h)"
+                fi
+            fi
+        fi
+        
+        if [ "$SHOULD_CHECK" = true ]; then
+            # Query npm registry for actual latest version
+            LATEST_PNPM=$(npm view pnpm version 2>/dev/null) || LATEST_PNPM=""
+            if [ -n "$LATEST_PNPM" ] && [ "$CURRENT_PNPM" = "$LATEST_PNPM" ]; then
+                echo "$CURRENT_PNPM" > "$PNPM_VERSION_CACHE"
+                success "pnpm is already at latest version: v$CURRENT_PNPM"
+            elif [ -n "$LATEST_PNPM" ]; then
+                info "Updating pnpm from v$CURRENT_PNPM to latest (v$LATEST_PNPM)..."
+                npm install -g "pnpm@latest"
+                echo "$LATEST_PNPM" > "$PNPM_VERSION_CACHE"
+            else
+                warn "Could not determine latest pnpm version from npm registry"
+                info "Updating pnpm to latest version..."
+                npm install -g "pnpm@latest"
+            fi
+        fi
     elif [ "$CURRENT_PNPM" = "$PNPM_VERSION" ]; then
         success "pnpm is already installed: v$CURRENT_PNPM"
     else
@@ -472,9 +534,47 @@ success "pnpm installed: v$(pnpm --version)"
 : $((CURRENT_STEP++))
 step $CURRENT_STEP $TOTAL_STEPS "Installing project dependencies..."
 
-pnpm install
+# Make pnpm install idempotent by tracking lockfile hash (outside node_modules to survive deletion)
+LOCKFILE_HASH_CACHE=".talawa-pnpm-lock-hash"
+NEEDS_INSTALL=true
 
-success "Project dependencies installed"
+if [ -f "pnpm-lock.yaml" ]; then
+    CURRENT_LOCKFILE_HASH=$(sha256sum pnpm-lock.yaml 2>/dev/null | cut -d ' ' -f 1)
+    if [ -z "$CURRENT_LOCKFILE_HASH" ]; then
+        warn "Failed to compute lockfile hash, proceeding with install"
+        CURRENT_LOCKFILE_HASH="unknown"
+    fi    
+
+    if [ -d "node_modules" ] && [ -f "$LOCKFILE_HASH_CACHE" ]; then
+        CACHED_HASH=$(cat "$LOCKFILE_HASH_CACHE" 2>/dev/null) || CACHED_HASH=""
+        if [ "$CURRENT_LOCKFILE_HASH" = "$CACHED_HASH" ]; then
+            NEEDS_INSTALL=false
+            success "Dependencies already up-to-date (lockfile unchanged)"
+        fi
+    fi
+    
+    if [ "$NEEDS_INSTALL" = true ]; then
+        info "Installing dependencies..."
+        pnpm install
+        # Cache the lockfile hash after successful install
+        if [ "$CURRENT_LOCKFILE_HASH" != "unknown" ]; then
+            echo "$CURRENT_LOCKFILE_HASH" > "$LOCKFILE_HASH_CACHE" 2>/dev/null || warn "Failed to cache lockfile hash"
+        fi
+        success "Project dependencies installed"
+    fi
+else
+    # No lockfile exists, run install to generate it
+    info "No pnpm-lock.yaml found, running fresh install..."
+    pnpm install
+    # Cache the new lockfile hash
+    if [ -f "pnpm-lock.yaml" ]; then
+        NEW_HASH=$(sha256sum pnpm-lock.yaml 2>/dev/null | cut -d ' ' -f 1)
+        if [ -n "$NEW_HASH" ]; then
+            echo "$NEW_HASH" > "$LOCKFILE_HASH_CACHE" 2>/dev/null || warn "Failed to cache lockfile hash"
+        fi
+    fi
+    success "Project dependencies installed"
+fi
 
 ##############################################################################
 # Complete
