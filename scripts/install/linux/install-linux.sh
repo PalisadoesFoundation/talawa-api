@@ -13,9 +13,6 @@
 
 set -euo pipefail
 
-# Installation log file for error tracking
-readonly INSTALLATION_LOG="/tmp/talawa-install-$$.log"
-
 # Arguments
 INSTALL_MODE="${1:-docker}"
 SKIP_PREREQS="${2:-false}"
