@@ -57,10 +57,17 @@ detect_os() {
 
 
 # Check if running in WSL
+# Uses multiple detection methods with early returns for optimal performance
+# Methods checked in order of reliability and speed:
+#   1. /proc/version - works for most WSL 1 and WSL 2 installations
+#   2. WSL_DISTRO_NAME - environment variable set by WSL
+#   3. /run/WSL or /run/wsl - present in WSL 2 installations
+#   4. WSLInterop - Windows interoperability flag (checks for "1" = enabled)
+#   5. /proc/sys/kernel/osrelease - alternative kernel signature check
 is_wsl() {
     local detection_method=""
     
-    # Check /proc/version for Microsoft or WSL keywords
+    # Method 1: Check /proc/version for Microsoft or WSL keywords
     if [ -f /proc/version ]; then
         if grep -qi "microsoft\|wsl" /proc/version 2>/dev/null; then
             detection_method="/proc/version contains Microsoft/WSL"
@@ -69,30 +76,30 @@ is_wsl() {
         fi
     fi
     
-    # Check WSL_DISTRO_NAME environment variable
+    # Method 2: Check WSL_DISTRO_NAME environment variable
     if [ -n "${WSL_DISTRO_NAME:-}" ]; then
         detection_method="WSL_DISTRO_NAME environment variable set to '$WSL_DISTRO_NAME'"
         [ "${WSL_DETECTION_DEBUG:-false}" = true ] && echo "[DEBUG] WSL detected via: $detection_method" >&2
         return 0
     fi
     
-    # Check for /run/WSL or /run/wsl directory (case-insensitive)
+    # Method 3: Check for /run/WSL or /run/wsl directory (case-insensitive)
     if [ -d "/run/WSL" ] || [ -d "/run/wsl" ]; then
         detection_method="/run/WSL directory exists"
         [ "${WSL_DETECTION_DEBUG:-false}" = true ] && echo "[DEBUG] WSL detected via: $detection_method" >&2
         return 0
     fi
     
-    # Check for WSL interop flag
+    # Method 4: Check for WSL interop flag (file contains "1" when enabled, "0" when disabled)
     if [ -f /proc/sys/fs/binfmt_misc/WSLInterop ]; then
-        if grep -q "^enabled$" /proc/sys/fs/binfmt_misc/WSLInterop 2>/dev/null; then
+        if grep -q "^1$" /proc/sys/fs/binfmt_misc/WSLInterop 2>/dev/null; then
             detection_method="WSL interop enabled"
             [ "${WSL_DETECTION_DEBUG:-false}" = true ] && echo "[DEBUG] WSL detected via: $detection_method" >&2
             return 0
         fi
     fi
     
-    # Check /proc/sys/kernel/osrelease for Microsoft signature
+    # Method 5: Check /proc/sys/kernel/osrelease for Microsoft signature
     if [ -f /proc/sys/kernel/osrelease ]; then
         if grep -qi "microsoft" /proc/sys/kernel/osrelease 2>/dev/null; then
             detection_method="/proc/sys/kernel/osrelease contains Microsoft"
