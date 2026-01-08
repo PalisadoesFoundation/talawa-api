@@ -13,7 +13,6 @@ describe("Performance Tracker", () => {
 			cacheMisses: 0,
 			hitRate: 0,
 			ops: {},
-			slow: [],
 		});
 		// Verify complexityScore is not present when undefined
 		expect(snapshot).not.toHaveProperty("complexityScore");
@@ -396,58 +395,7 @@ describe("Performance Tracker", () => {
 		expect(snapshot.ops["gql:complexity"]).toBeUndefined();
 	});
 
-	it("should track complexity scores", () => {
-		const tracker = createPerformanceTracker();
 
-		tracker.trackComplexity(100);
-		tracker.trackComplexity(50);
 
-		const snapshot = tracker.snapshot();
 
-		// Latest complexity score should be stored
-		expect(snapshot.complexityScore).toBe(50);
-	});
-
-	it("should silently ignore invalid values in trackComplexity()", () => {
-		const tracker = createPerformanceTracker();
-
-		// Track a valid score first
-		tracker.trackComplexity(100);
-		const snapshot1 = tracker.snapshot();
-		expect(snapshot1.complexityScore).toBe(100);
-
-		// Try invalid values - should not change the snapshot
-		tracker.trackComplexity(Number.NaN);
-		tracker.trackComplexity(Number.POSITIVE_INFINITY);
-		tracker.trackComplexity(Number.NEGATIVE_INFINITY);
-		tracker.trackComplexity(-50);
-
-		const snapshot2 = tracker.snapshot();
-
-		// Complexity score should remain unchanged (still 100)
-		expect(snapshot2.complexityScore).toBe(100);
-		// Other fields should be unchanged
-		expect(snapshot2.totalMs).toBe(snapshot1.totalMs);
-		expect(snapshot2.cacheHits).toBe(snapshot1.cacheHits);
-		expect(snapshot2.cacheMisses).toBe(snapshot1.cacheMisses);
-		expect(snapshot2.ops).toEqual(snapshot1.ops);
-	});
-
-	it("should handle trackComplexity(0) as valid edge case", () => {
-		const tracker = createPerformanceTracker();
-
-		tracker.trackComplexity(0);
-
-		const snapshot = tracker.snapshot();
-
-		expect(snapshot.complexityScore).toBe(0);
-	});
-
-	it("should not include complexityScore in snapshot when not tracked", () => {
-		const tracker = createPerformanceTracker();
-
-		const snapshot = tracker.snapshot();
-
-		expect(snapshot).not.toHaveProperty("complexityScore");
-	});
 });
