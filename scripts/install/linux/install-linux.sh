@@ -322,20 +322,44 @@ success "Node.js installed: $(node --version)"
 : $((CURRENT_STEP++))
 step $CURRENT_STEP $TOTAL_STEPS "Installing pnpm v$PNPM_VERSION..."
 
+PNPM_VERSION_CACHE="/tmp/.talawa-pnpm-latest-check"
+PNPM_CACHE_MAX_AGE=86400  # 24 hours
+
 if command_exists pnpm; then
     CURRENT_PNPM=$(pnpm --version)
     if [ "$PNPM_VERSION" = "latest" ]; then
         # Query npm registry for actual latest version
         LATEST_PNPM=$(npm view pnpm version 2>/dev/null) || LATEST_PNPM=""
-        if [ -n "$LATEST_PNPM" ] && [ "$CURRENT_PNPM" = "$LATEST_PNPM" ]; then
-            success "pnpm is already at latest version: v$CURRENT_PNPM"
-        elif [ -n "$LATEST_PNPM" ]; then
-            info "Updating pnpm from v$CURRENT_PNPM to latest (v$LATEST_PNPM)..."
-            npm install -g "pnpm@latest"
-        else
-            warn "Could not determine latest pnpm version from npm registry"
-            info "Updating pnpm to latest version..."
-            npm install -g "pnpm@latest"
+         # Check if we recently verified the latest version
+        SHOULD_CHECK=true
+        if [ -f "$PNPM_VERSION_CACHE" ]; then
+            CACHE_TIME=$(stat -c %Y "$PNPM_VERSION_CACHE" 2>/dev/null || echo 0)
+            CURRENT_TIME=$(date +%s)
+            CACHE_AGE=$((CURRENT_TIME - CACHE_TIME))
+            if [ $CACHE_AGE -lt $PNPM_CACHE_MAX_AGE ]; then
+                CACHED_VERSION=$(cat "$PNPM_VERSION_CACHE" 2>/dev/null)
+                if [ "$CACHED_VERSION" = "$CURRENT_PNPM" ]; then
+                    SHOULD_CHECK=false
+                    success "pnpm is already at latest version: v$CURRENT_PNPM (verified within 24h)"
+                fi
+            fi
+        fi
+        
+        if [ "$SHOULD_CHECK" = true ]; then
+            # Query npm registry for actual latest version
+            LATEST_PNPM=$(npm view pnpm version 2>/dev/null) || LATEST_PNPM=""
+            if [ -n "$LATEST_PNPM" ] && [ "$CURRENT_PNPM" = "$LATEST_PNPM" ]; then
+                echo "$CURRENT_PNPM" > "$PNPM_VERSION_CACHE"
+                success "pnpm is already at latest version: v$CURRENT_PNPM"
+            elif [ -n "$LATEST_PNPM" ]; then
+                info "Updating pnpm from v$CURRENT_PNPM to latest (v$LATEST_PNPM)..."
+                npm install -g "pnpm@latest"
+                echo "$LATEST_PNPM" > "$PNPM_VERSION_CACHE"
+            else
+                warn "Could not determine latest pnpm version from npm registry"
+                info "Updating pnpm to latest version..."
+                npm install -g "pnpm@latest"
+            fi
         fi
     elif [ "$CURRENT_PNPM" = "$PNPM_VERSION" ]; then
         success "pnpm is already installed: v$CURRENT_PNPM"
@@ -363,13 +387,17 @@ success "pnpm installed: v$(pnpm --version)"
 : $((CURRENT_STEP++))
 step $CURRENT_STEP $TOTAL_STEPS "Installing project dependencies..."
 
-# Make pnpm install idempotent by tracking lockfile hash
-LOCKFILE_HASH_CACHE="node_modules/.pnpm-lock-hash"
+# Make pnpm install idempotent by tracking lockfile hash (outside node_modules to survive deletion)
+LOCKFILE_HASH_CACHE=".talawa-pnpm-lock-hash"
 NEEDS_INSTALL=true
 
 if [ -f "pnpm-lock.yaml" ]; then
-    CURRENT_LOCKFILE_HASH=$(sha256sum pnpm-lock.yaml | cut -d ' ' -f 1)
-    
+    CURRENT_LOCKFILE_HASH=$(sha256sum pnpm-lock.yaml 2>/dev/null | cut -d ' ' -f 1)
+    if [ -z "$CURRENT_LOCKFILE_HASH" ]; then
+        warn "Failed to compute lockfile hash, proceeding with install"
+        CURRENT_LOCKFILE_HASH="unknown"
+    fi    
+
     if [ -d "node_modules" ] && [ -f "$LOCKFILE_HASH_CACHE" ]; then
         CACHED_HASH=$(cat "$LOCKFILE_HASH_CACHE" 2>/dev/null) || CACHED_HASH=""
         if [ "$CURRENT_LOCKFILE_HASH" = "$CACHED_HASH" ]; then
@@ -382,7 +410,9 @@ if [ -f "pnpm-lock.yaml" ]; then
         info "Installing dependencies..."
         pnpm install
         # Cache the lockfile hash after successful install
-        echo "$CURRENT_LOCKFILE_HASH" > "$LOCKFILE_HASH_CACHE"
+        if [ "$CURRENT_LOCKFILE_HASH" != "unknown" ]; then
+            echo "$CURRENT_LOCKFILE_HASH" > "$LOCKFILE_HASH_CACHE" 2>/dev/null || warn "Failed to cache lockfile hash"
+        fi
         success "Project dependencies installed"
     fi
 else
@@ -391,7 +421,10 @@ else
     pnpm install
     # Cache the new lockfile hash
     if [ -f "pnpm-lock.yaml" ]; then
-        sha256sum pnpm-lock.yaml | cut -d ' ' -f 1 > "$LOCKFILE_HASH_CACHE"
+        NEW_HASH=$(sha256sum pnpm-lock.yaml 2>/dev/null | cut -d ' ' -f 1)
+        if [ -n "$NEW_HASH" ]; then
+            echo "$NEW_HASH" > "$LOCKFILE_HASH_CACHE" 2>/dev/null || warn "Failed to cache lockfile hash"
+        fi
     fi
     success "Project dependencies installed"
 fi
