@@ -11,7 +11,10 @@
 # - pnpm (version from package.json)
 ##############################################################################
 
-set -e
+set -euo pipefail
+
+# Installation log file for error tracking
+readonly INSTALLATION_LOG="/tmp/talawa-install-$$.log"
 
 # Arguments
 INSTALL_MODE="${1:-docker}"
@@ -32,9 +35,50 @@ warn() { echo -e "${YELLOW}⚠${NC} $1"; }
 error() { echo -e "${RED}✗${NC} $1"; }
 step() { echo -e "${CYAN}[$1/$2]${NC} $3"; }
 
+# Log error to installation log file
+log_error() {
+    local message="$1"
+    local timestamp
+    timestamp=$(date '+%Y-%m-%d %H:%M:%S')
+    echo "[$timestamp] ERROR: $message" >> "$INSTALLATION_LOG"
+}
+
 # Check if command exists
 command_exists() {
     command -v "$1" &> /dev/null
+}
+
+# Check Docker Compose availability and log errors
+# Returns: 0 if available, 1 if not available
+check_docker_compose() {
+    local output
+    local exit_code
+    
+    # Check docker compose plugin
+    output=$(docker compose version 2>&1) && exit_code=$? || exit_code=$?
+    
+    if [ $exit_code -eq 0 ]; then
+        return 0
+    else
+        log_error "Docker Compose check failed (exit code: $exit_code): $output"
+        return 1
+    fi
+}
+
+# Check if Docker daemon is running and log errors
+# Returns: 0 if running, 1 if not running
+check_docker_running() {
+    local output
+    local exit_code
+    
+    output=$(docker info 2>&1) && exit_code=$? || exit_code=$?
+    
+    if [ $exit_code -eq 0 ]; then
+        return 0
+    else
+        log_error "Docker daemon check failed (exit code: $exit_code): $output"
+        return 1
+    fi
 }
 
 # Get the repository root directory
@@ -144,20 +188,24 @@ if [ "$INSTALL_MODE" = "docker" ]; then
     fi
     
     # Check docker-compose
-    if command_exists docker-compose || docker compose version &> /dev/null; then
-        success "Docker Compose is available"
+    if command_exists docker-compose; then
+        success "Docker Compose is available (standalone)"
+    elif check_docker_compose; then
+        success "Docker Compose is available (plugin)"
     else
         warn "Docker Compose not found. It may be included with Docker Desktop or installed separately."
+        warn "Check $INSTALLATION_LOG for details."
     fi
     
     # Verify Docker is running
     if command_exists docker; then
-        if ! docker info >/dev/null 2>&1; then
+        if check_docker_running; then
+            success "Docker is running"
+        else
             warn "Docker is installed but not running."
+            warn "Check $INSTALLATION_LOG for details."
             info "Start Docker with: sudo systemctl start docker"
             info "Enable on boot with: sudo systemctl enable docker"
-        else
-            success "Docker is running"
         fi
     fi
 else
