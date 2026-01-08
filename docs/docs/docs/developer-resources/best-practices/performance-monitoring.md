@@ -58,9 +58,7 @@ GET http://localhost:4000/metrics/perf
       "ops": {
         "db": { "count": 5, "ms": 45.2, "max": 18.3 }
       },
-      "slow": [
-        { "op": "db", "ms": 18 }
-      ]
+      "complexityScore": 42
     }
   ]
 }
@@ -130,7 +128,6 @@ The following table explains all available performance metrics and their accepta
 | `ops[name].count` | number | Number of times a specific operation was called | Varies by operation type | Track individual operation frequency to identify hotspots. |
 | `ops[name].ms` | number | Total time (milliseconds) spent in a specific operation | Database: < 100ms per operation. Cache: < 10ms per operation | Sum of all durations for this operation type. Divide by `count` for average. |
 | `ops[name].max` | number | Maximum duration (milliseconds) for a single operation call | Database: < 200ms. Cache: < 50ms | Identifies slow outliers that may need optimization. |
-| `slow` | Array | List of operations that exceeded the slow threshold (default: 200ms) | Empty array (ideal), < 5 entries (acceptable), > 10 entries (investigate) | Each entry contains `{ op: string, ms: number }`. Maximum 50 entries retained. |
 | `complexityScore` | number (optional) | GraphQL query complexity score | < 100 (simple), 100-500 (moderate), 500-1000 (complex), > 1000 (very complex) | Only present for GraphQL requests. Higher scores indicate more expensive queries that may need optimization or rate limiting. |
 
 ### Interpreting Metrics
@@ -138,15 +135,15 @@ The following table explains all available performance metrics and their accepta
 **Good Performance Indicators:**
 - `totalMs` < 500ms for most requests
 - `hitRate` > 0.7 (70% cache hit rate)
-- `slow` array is empty or has < 5 entries
 - `ops.db.max` < 200ms (no slow database queries)
+- `complexityScore` < 100 for GraphQL queries
 
 **Warning Signs:**
 - `totalMs` consistently > 1000ms
 - `hitRate` < 0.5 (poor cache efficiency)
-- `slow` array frequently has > 10 entries
 - `ops.db.max` > 500ms (very slow database queries)
 - `totalOps` > 50 (possible N+1 query problem)
+- `complexityScore` > 500 for GraphQL queries
 
 **Action Required:**
 - `totalMs` > 2000ms (request timeout risk)
@@ -154,9 +151,7 @@ The following table explains all available performance metrics and their accepta
 - `complexityScore` > 1000 (query may be too expensive)
 - Multiple operations with `max` > 1000ms
 
-## Server-Timing Headers
-
-Every API response includes a `Server-Timing` header with performance breakdown:
+## Integration Examples
 
 ```
 Server-Timing: db;dur=45, cache;desc="hit:12|miss:3", total;dur=127
