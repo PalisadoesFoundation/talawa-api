@@ -168,14 +168,27 @@ describe("updateStandaloneEvent Resolver Cache Invalidation Tests", () => {
 		const updateEventCall = calls.find(
 			(c: unknown[]) => c[0] === "updateStandaloneEvent",
 		);
-		if (updateEventCall) {
-			// The resolver is passed in the field definition
-			const fieldDef = updateEventCall[1]({
-				field: mocks.builder.field,
-				arg: mocks.builder.arg,
-			});
-			resolver = fieldDef.resolve;
+
+		if (!updateEventCall) {
+			throw new Error(
+				"Test setup failed: 'updateStandaloneEvent' mutation field was not registered. " +
+					`Found ${calls.length} mutationField calls: [${calls.map((c) => c[0]).join(", ")}]`,
+			);
 		}
+
+		// The resolver is passed in the field definition
+		const fieldDef = updateEventCall[1]({
+			field: mocks.builder.field,
+			arg: mocks.builder.arg,
+		});
+
+		if (!fieldDef.resolve) {
+			throw new Error(
+				"Test setup failed: 'updateStandaloneEvent' field definition does not have a resolve function.",
+			);
+		}
+
+		resolver = fieldDef.resolve;
 	});
 
 	afterEach(() => {
