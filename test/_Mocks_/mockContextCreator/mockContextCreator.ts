@@ -47,48 +47,52 @@ export function createMockGraphQLContext(
 			(payload) => `mocked.jwt.${JSON.stringify(payload)}.token`,
 		);
 
+	// Create mock cache service
+	const mockCache = {
+		get: vi.fn().mockImplementation(async (key: string) => {
+			return cacheState[key] ?? null;
+		}),
+		set: vi.fn().mockImplementation(async (key: string, value: unknown) => {
+			cacheState[key] = value;
+		}),
+		del: vi.fn().mockImplementation(async (keys: string | string[]) => {
+			const arr = Array.isArray(keys) ? keys : [keys];
+			for (const k of arr) delete cacheState[k];
+		}),
+		clearByPattern: vi.fn().mockImplementation(async (pattern: string) => {
+			// Simple mock, doesn't actually clear by pattern to avoid regex complexity
+			// Just clears if empty pattern given for full flush
+			if (pattern === "*") {
+				for (const k in cacheState) delete cacheState[k];
+			}
+		}),
+		mget: vi
+			.fn()
+			.mockImplementation(async (keys: string[]) =>
+				keys.map((k) => (cacheState[k] as unknown) ?? null),
+			),
+		mset: vi
+			.fn()
+			.mockImplementation(
+				async (
+					entries: Array<{ key: string; value: unknown; ttlSeconds: number }>,
+				) => {
+					for (const { key, value } of entries) {
+						cacheState[key] = value;
+					}
+				},
+			),
+	};
+
 	// Create the explicit context
 	const explicitContext: ExplicitGraphQLContext = {
-		cache: {
-			get: vi.fn().mockImplementation(async (key: string) => {
-				return cacheState[key] ?? null;
-			}),
-			set: vi.fn().mockImplementation(async (key: string, value: unknown) => {
-				cacheState[key] = value;
-			}),
-			del: vi.fn().mockImplementation(async (keys: string | string[]) => {
-				const arr = Array.isArray(keys) ? keys : [keys];
-				for (const k of arr) delete cacheState[k];
-			}),
-			clearByPattern: vi.fn().mockImplementation(async (pattern: string) => {
-				// Simple mock, doesn't actually clear by pattern to avoid regex complexity
-				// Just clears if empty pattern given for full flush
-				if (pattern === "*") {
-					for (const k in cacheState) delete cacheState[k];
-				}
-			}),
-			mget: vi
-				.fn()
-				.mockImplementation(async (keys: string[]) =>
-					keys.map((k) => (cacheState[k] as unknown) ?? null),
-				),
-			mset: vi
-				.fn()
-				.mockImplementation(
-					async (
-						entries: Array<{ key: string; value: unknown; ttlSeconds: number }>,
-					) => {
-						for (const { key, value } of entries) {
-							cacheState[key] = value;
-						}
-					},
-				),
-		},
+		cache: mockCache,
 		currentClient: isAuthenticated
 			? authenticatedClient(userId)
 			: unauthenticatedClient,
 		dataloaders: createDataloaders(
 			mockDrizzleClient as unknown as FastifyInstance["drizzleClient"],
+			mockCache,
 		),
 		drizzleClient:
 			mockDrizzleClient as unknown as FastifyInstance["drizzleClient"],
