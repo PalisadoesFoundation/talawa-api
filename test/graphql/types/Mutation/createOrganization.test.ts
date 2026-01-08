@@ -796,9 +796,9 @@ suite("Mutation field createOrganization", () => {
 
 			// MinIO putObject failure propagates as an unhandled exception within the transaction.
 			// The resolver doesn't explicitly catch MinIO errors, so they bubble up to the global
-			// error handler which returns an "unexpected" error code with a correlationId for tracing.
-			const errorCode = result.errors[0].extensions?.code;
-			expect(errorCode).toBe("unexpected");
+			// error handler which includes a correlationId for tracing in the extensions.
+			expect(result.errors[0].message).toBe("simulated MinIO failure");
+			expect(result.errors[0].extensions?.correlationId).toBeDefined();
 		} finally {
 			// Restore original method
 			server.minio.client.putObject = originalPutObject;

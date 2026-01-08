@@ -527,8 +527,8 @@ describe("updatePost Resolver Cache Invalidation Tests", () => {
 			expect(result).toBeDefined();
 			expect(mocks.invalidateEntity).toHaveBeenCalled();
 			expect(mockContext.log.warn).toHaveBeenCalledWith(
-				{ error: "Redis unavailable" },
-				"Failed to invalidate post cache (non-fatal)",
+				{ error: expect.any(Error), postId },
+				"Failed to invalidate post entity cache (non-fatal)",
 			);
 		});
 
@@ -577,8 +577,8 @@ describe("updatePost Resolver Cache Invalidation Tests", () => {
 			expect(result).toBeDefined();
 			expect(mocks.invalidateEntityLists).toHaveBeenCalled();
 			expect(mockContext.log.warn).toHaveBeenCalledWith(
-				{ error: "Redis timeout" },
-				"Failed to invalidate post cache (non-fatal)",
+				{ error: expect.any(Error), postId },
+				"Failed to invalidate post list cache (non-fatal)",
 			);
 		});
 	});
