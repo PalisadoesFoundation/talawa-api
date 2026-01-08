@@ -1,11 +1,14 @@
 #!/bin/bash
 
+
 ##############################################################################
 # Talawa API - One-Click Installation Script
 # Entry point for Linux/macOS systems
 ##############################################################################
 
+
 set -e
+
 
 # Colors for output
 RED='\033[0;31m'
@@ -15,11 +18,13 @@ BLUE='\033[0;34m'
 CYAN='\033[0;36m'
 NC='\033[0m' # No Color
 
+
 # Print colored output
 info() { echo -e "${BLUE}ℹ${NC} $1"; }
 success() { echo -e "${GREEN}✓${NC} $1"; }
 warn() { echo -e "${YELLOW}⚠${NC} $1"; }
 error() { echo -e "${RED}✗${NC} $1"; }
+
 
 # Print banner
 print_banner() {
@@ -38,6 +43,7 @@ print_banner() {
     echo -e "${NC}"
 }
 
+
 # Detect OS
 detect_os() {
     if [[ "$OSTYPE" == "linux-gnu"* ]]; then
@@ -49,49 +55,57 @@ detect_os() {
     fi
 }
 
-is_wsl() {
-    local detected=false
-    local detection_method=""
 
+# Check if running in WSL
+is_wsl() {
+    local detection_method=""
+    
+    # Check /proc/version for Microsoft or WSL keywords
     if [ -f /proc/version ]; then
         if grep -qi "microsoft\|wsl" /proc/version 2>/dev/null; then
-            detected=true
             detection_method="/proc/version contains Microsoft/WSL"
+            [ "${WSL_DETECTION_DEBUG:-false}" = true ] && echo "[DEBUG] WSL detected via: $detection_method" >&2
+            return 0
         fi
     fi
     
-    if [ "$detected" = false ] && [ -n "${WSL_DISTRO_NAME:-}" ]; then
-        detected=true
+    # Check WSL_DISTRO_NAME environment variable
+    if [ -n "${WSL_DISTRO_NAME:-}" ]; then
         detection_method="WSL_DISTRO_NAME environment variable set to '$WSL_DISTRO_NAME'"
+        [ "${WSL_DETECTION_DEBUG:-false}" = true ] && echo "[DEBUG] WSL detected via: $detection_method" >&2
+        return 0
     fi
     
-    if [ "$detected" = false ] && [ -d "/run/WSL" ]; then
-        detected=true
+    # Check for /run/WSL or /run/wsl directory (case-insensitive)
+    if [ -d "/run/WSL" ] || [ -d "/run/wsl" ]; then
         detection_method="/run/WSL directory exists"
+        [ "${WSL_DETECTION_DEBUG:-false}" = true ] && echo "[DEBUG] WSL detected via: $detection_method" >&2
+        return 0
     fi
     
-    if [ "$detected" = false ] && [ -f /proc/sys/fs/binfmt_misc/WSLInterop ]; then
-        detected=true
-        detection_method="WSL interop enabled"
+    # Check for WSL interop flag
+    if [ -f /proc/sys/fs/binfmt_misc/WSLInterop ]; then
+        if grep -q "^enabled$" /proc/sys/fs/binfmt_misc/WSLInterop 2>/dev/null; then
+            detection_method="WSL interop enabled"
+            [ "${WSL_DETECTION_DEBUG:-false}" = true ] && echo "[DEBUG] WSL detected via: $detection_method" >&2
+            return 0
+        fi
     fi
     
-    if [ "$detected" = false ] && [ -f /proc/sys/kernel/osrelease ]; then
+    # Check /proc/sys/kernel/osrelease for Microsoft signature
+    if [ -f /proc/sys/kernel/osrelease ]; then
         if grep -qi "microsoft" /proc/sys/kernel/osrelease 2>/dev/null; then
-            detected=true
             detection_method="/proc/sys/kernel/osrelease contains Microsoft"
+            [ "${WSL_DETECTION_DEBUG:-false}" = true ] && echo "[DEBUG] WSL detected via: $detection_method" >&2
+            return 0
         fi
     fi
     
-    if [ "${WSL_DETECTION_DEBUG:-false}" = true ]; then
-        if [ "$detected" = true ]; then
-            echo "[DEBUG] WSL detected via: $detection_method" >&2
-        else
-            echo "[DEBUG] WSL not detected (checked 5 methods)" >&2
-        fi
-    fi
-    
-    [ "$detected" = true ]
+    # No WSL detected after checking all methods
+    [ "${WSL_DETECTION_DEBUG:-false}" = true ] && echo "[DEBUG] WSL not detected (checked 5 methods)" >&2
+    return 1
 }
+
 
 # Show usage
 show_usage() {
@@ -108,9 +122,11 @@ show_usage() {
     echo "  $0 --local"
 }
 
+
 # Parse arguments
 INSTALL_MODE="docker"
 SKIP_PREREQS=false
+
 
 while [[ $# -gt 0 ]]; do
     case $1 in
@@ -137,6 +153,7 @@ while [[ $# -gt 0 ]]; do
             ;;
     esac
 done
+
 
 # Main
 main() {
@@ -193,5 +210,6 @@ main() {
     info "  1. Run 'pnpm run setup' to configure the application"
     info "  2. Follow the prompts to set up your environment"
 }
+
 
 main
