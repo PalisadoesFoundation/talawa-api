@@ -62,6 +62,24 @@ Statistics for each operation type
 
 ***
 
+### slow
+
+> **slow**: `object`[]
+
+Defined in: [src/utilities/metrics/performanceTracker.ts:34](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/utilities/metrics/performanceTracker.ts#L34)
+
+Slow operations that exceeded the threshold
+
+#### ms
+
+> **ms**: `number`
+
+#### op
+
+> **op**: `string`
+
+***
+
 ### totalMs
 
 > **totalMs**: `number`

@@ -13,6 +13,7 @@ describe("Performance Tracker", () => {
 			cacheMisses: 0,
 			hitRate: 0,
 			ops: {},
+			slow: [],
 		});
 		// Verify complexityScore is not present when undefined
 		expect(snapshot).not.toHaveProperty("complexityScore");

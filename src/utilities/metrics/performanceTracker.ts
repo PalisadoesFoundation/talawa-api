@@ -83,13 +83,41 @@ export interface PerformanceTracker {
 }
 
 /**
+ * Options for creating a performance tracker.
+ */
+export interface PerformanceTrackerOptions {
+	/**
+	 * Threshold in milliseconds for considering an operation as slow.
+	 * Operations exceeding this threshold will be added to the slow array.
+	 * Defaults to 200ms if not provided.
+	 */
+	slowMs?: number;
+	/**
+	 * Optional custom slow array for testing purposes.
+	 * If provided, this array will be used instead of creating a new one.
+	 * @internal - For testing only
+	 */
+	__slowArray?: Array<{ op: string; ms: number }>;
+}
+
+/**
+ * Maximum number of slow operations to retain in memory.
+ * When this limit is reached, only operations slower than the current minimum are added.
+ */
+const MAX_SLOW = 50;
+
+/**
  * Creates a performance tracker for request-level metrics.
  * Tracks operations, cache hits/misses, and provides snapshots.
  *
  * @returns A new performance tracker instance
  */
-export function createPerformanceTracker(): PerformanceTracker {
+export function createPerformanceTracker(
+	opts?: PerformanceTrackerOptions,
+): PerformanceTracker {
+	const slowMs = opts?.slowMs ?? 200;
 	const ops: Record<string, OpStats> = {};
+	const slow: Array<{ op: string; ms: number }> = opts?.__slowArray ?? [];
 	let cacheHits = 0;
 	let cacheMisses = 0;
 	let totalOps = 0;
