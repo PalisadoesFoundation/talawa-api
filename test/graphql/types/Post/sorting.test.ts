@@ -847,6 +847,12 @@ suite("Query field postsByOrganization - sorting", () => {
 		expect(result.errors).toHaveLength(1);
 		const error = result.errors?.[0] as unknown as TalawaGraphQLFormattedError;
 		expect(error?.extensions?.code).toBe("invalid_arguments");
+		expect(error?.extensions?.issues).toEqual([
+			{
+				argumentPath: ["input", "limit"],
+				message: "Limit must be at least 1.",
+			},
+		]);
 	});
 
 	test("should reject zero limit with invalid_arguments error", async () => {
@@ -869,6 +875,12 @@ suite("Query field postsByOrganization - sorting", () => {
 		expect(result.errors).toHaveLength(1);
 		const error = result.errors?.[0] as unknown as TalawaGraphQLFormattedError;
 		expect(error?.extensions?.code).toBe("invalid_arguments");
+		expect(error?.extensions?.issues).toEqual([
+			{
+				argumentPath: ["input", "limit"],
+				message: "Limit must be at least 1.",
+			},
+		]);
 	});
 
 	test("should reject limit exceeding 100 with invalid_arguments error", async () => {
@@ -891,6 +903,12 @@ suite("Query field postsByOrganization - sorting", () => {
 		expect(result.errors).toHaveLength(1);
 		const error = result.errors?.[0] as unknown as TalawaGraphQLFormattedError;
 		expect(error?.extensions?.code).toBe("invalid_arguments");
+		expect(error?.extensions?.issues).toEqual([
+			{
+				argumentPath: ["input", "limit"],
+				message: "Limit must not exceed 100.",
+			},
+		]);
 	});
 
 	test("should reject negative offset with invalid_arguments error", async () => {
@@ -913,6 +931,12 @@ suite("Query field postsByOrganization - sorting", () => {
 		expect(result.errors).toHaveLength(1);
 		const error = result.errors?.[0] as unknown as TalawaGraphQLFormattedError;
 		expect(error?.extensions?.code).toBe("invalid_arguments");
+		expect(error?.extensions?.issues).toEqual([
+			{
+				argumentPath: ["input", "offset"],
+				message: "Offset must be non-negative.",
+			},
+		]);
 	});
 
 	test("should work with limit only (no offset)", async () => {
