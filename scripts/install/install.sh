@@ -62,7 +62,7 @@ detect_os() {
 #   1. /proc/version - works for most WSL 1 and WSL 2 installations
 #   2. WSL_DISTRO_NAME - environment variable set by WSL
 #   3. /run/WSL or /run/wsl - present in WSL 2 installations
-#   4. WSLInterop - Windows interoperability flag (checks for "1" = enabled)
+#   4. WSLInterop - Windows interoperability flag
 #   5. /proc/sys/kernel/osrelease - alternative kernel signature check
 is_wsl() {
     local detection_method=""
@@ -90,9 +90,9 @@ is_wsl() {
         return 0
     fi
     
-    # Method 4: Check for WSL interop flag (file contains "1" when enabled, "0" when disabled)
+    # Method 4: Check for WSL interop flag
     if [ -f /proc/sys/fs/binfmt_misc/WSLInterop ]; then
-        if grep -q "^1$" /proc/sys/fs/binfmt_misc/WSLInterop 2>/dev/null; then
+        if grep -q "enabled" /proc/sys/fs/binfmt_misc/WSLInterop 2>/dev/null; then
             detection_method="WSL interop enabled"
             [ "${WSL_DETECTION_DEBUG:-false}" = true ] && echo "[DEBUG] WSL detected via: $detection_method" >&2
             return 0
