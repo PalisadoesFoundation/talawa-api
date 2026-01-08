@@ -734,4 +734,96 @@ suite("Query field postsByOrganization - sorting", () => {
 		expect(postIds).toContain(post2.id);
 		expect(postIds).toContain(post3.id);
 	});
+
+	test("should correctly paginate posts using limit and offset", async () => {
+		const authToken = await getAuthToken();
+		const organizationId = await createTestOrganization();
+
+		// Create 5 posts with distinct timestamps
+		const now = Date.now();
+		const post1 = await createTestPost(
+			organizationId,
+			adminUserId,
+			new Date(now - 86400000 * 4), // 4 days ago
+		);
+		const post2 = await createTestPost(
+			organizationId,
+			adminUserId,
+			new Date(now - 86400000 * 3), // 3 days ago
+		);
+		const post3 = await createTestPost(
+			organizationId,
+			adminUserId,
+			new Date(now - 86400000 * 2), // 2 days ago
+		);
+		const post4 = await createTestPost(
+			organizationId,
+			adminUserId,
+			new Date(now - 86400000 * 1), // 1 day ago
+		);
+		const post5 = await createTestPost(
+			organizationId,
+			adminUserId,
+			new Date(now), // now
+		);
+
+		// Fetch first 2 posts (DESC order: newest first)
+		const result1 = await mercuriusClient.query(Query_postsByOrganization, {
+			headers: {
+				authorization: `Bearer ${authToken}`,
+			},
+			variables: {
+				input: {
+					organizationId,
+					limit: 2,
+					offset: 0,
+				},
+			},
+		});
+
+		expect(result1.errors).toBeUndefined();
+		expect(result1.data?.postsByOrganization).toHaveLength(2);
+		const batch1 = result1.data?.postsByOrganization;
+		expect(batch1?.[0]?.id).toBe(post5.id);
+		expect(batch1?.[1]?.id).toBe(post4.id);
+
+		// Fetch next 2 posts
+		const result2 = await mercuriusClient.query(Query_postsByOrganization, {
+			headers: {
+				authorization: `Bearer ${authToken}`,
+			},
+			variables: {
+				input: {
+					organizationId,
+					limit: 2,
+					offset: 2,
+				},
+			},
+		});
+
+		expect(result2.errors).toBeUndefined();
+		expect(result2.data?.postsByOrganization).toHaveLength(2);
+		const batch2 = result2.data?.postsByOrganization;
+		expect(batch2?.[0]?.id).toBe(post3.id);
+		expect(batch2?.[1]?.id).toBe(post2.id);
+
+		// Fetch last post
+		const result3 = await mercuriusClient.query(Query_postsByOrganization, {
+			headers: {
+				authorization: `Bearer ${authToken}`,
+			},
+			variables: {
+				input: {
+					organizationId,
+					limit: 2,
+					offset: 4,
+				},
+			},
+		});
+
+		expect(result3.errors).toBeUndefined();
+		expect(result3.data?.postsByOrganization).toHaveLength(1);
+		const batch3 = result3.data?.postsByOrganization;
+		expect(batch3?.[0]?.id).toBe(post1.id);
+	});
 });
