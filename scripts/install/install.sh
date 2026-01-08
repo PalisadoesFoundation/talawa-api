@@ -1,27 +1,19 @@
 #!/bin/bash
 
-##############################################################################
-# Talawa API - One-Click Installation Script
-# Entry point for Linux/macOS systems
-##############################################################################
-
 set -e
 
-# Colors for output
 RED='\033[0;31m'
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
 BLUE='\033[0;34m'
 CYAN='\033[0;36m'
-NC='\033[0m' # No Color
+NC='\033[0m'
 
-# Print colored output
 info() { echo -e "${BLUE}ℹ${NC} $1"; }
 success() { echo -e "${GREEN}✓${NC} $1"; }
 warn() { echo -e "${YELLOW}⚠${NC} $1"; }
 error() { echo -e "${RED}✗${NC} $1"; }
 
-# Print banner
 print_banner() {
     echo -e "${CYAN}"
     echo "╔════════════════════════════════════════════════════════╗"
@@ -38,7 +30,111 @@ print_banner() {
     echo -e "${NC}"
 }
 
-# Detect OS
+execute_installation_script() {
+    local script_path="$1"
+    local platform_name="$2"
+    local mode="$3"
+    local skip_prereqs="$4"
+    
+    echo ""
+    echo "════════════════════════════════════════════════════════════"
+    info "Starting $platform_name installation"
+    info "Mode: $mode"
+    info "Skip prerequisites: $skip_prereqs"
+    echo "════════════════════════════════════════════════════════════"
+    echo ""
+    
+    local start_time=$(date +%s)
+    
+    local exit_code=0
+    bash "$script_path" "$mode" "$skip_prereqs" || exit_code=$?
+    
+    local end_time=$(date +%s)
+    local duration=$((end_time - start_time))
+    local minutes=$((duration / 60))
+    local seconds=$((duration % 60))
+    
+    echo ""
+    echo "════════════════════════════════════════════════════════════"
+    
+    if [ $exit_code -eq 0 ]; then
+        success "$platform_name installation completed successfully!"
+        info "Duration: ${minutes}m ${seconds}s"
+        echo "════════════════════════════════════════════════════════════"
+        echo ""
+        return 0
+    else
+        error "$platform_name installation failed!"
+        error "Exit code: $exit_code"
+        error "Duration: ${minutes}m ${seconds}s"
+        echo "════════════════════════════════════════════════════════════"
+        echo ""
+        
+        display_failure_guidance "$exit_code" "$platform_name" "$mode"
+        
+        return $exit_code
+    fi
+}
+
+display_failure_guidance() {
+    local exit_code=$1
+    local platform=$2
+    local mode=$3
+    
+    error "Troubleshooting Guide:"
+    echo ""
+    
+    case $exit_code in
+        1)
+            info "  • General error - review error messages above"
+            ;;
+        2)
+            info "  • Missing dependencies - ensure prerequisites are installed"
+            ;;
+        126)
+            info "  • Permission denied - check file permissions"
+            info "    Try: chmod +x scripts/install/$platform/*.sh"
+            ;;
+        127)
+            info "  • Command not found - required tool may be missing"
+            ;;
+        130)
+            info "  • Installation interrupted (Ctrl+C)"
+            ;;
+        *)
+            info "  • Unexpected error (exit code $exit_code)"
+            ;;
+    esac
+    
+    echo ""
+    info "General troubleshooting steps:"
+    echo "  1. Read error messages above carefully"
+    echo "  2. Verify all prerequisites are installed:"
+    
+    if [ "$mode" = "docker" ]; then
+        echo "     - Docker Engine (latest version)"
+        echo "     - Docker Compose (v2 or higher)"
+    else
+        echo "     - Node.js LTS (v18 or v20)"
+        echo "     - MongoDB (v5 or higher)"
+        echo "     - Redis (v6 or higher)"
+    fi
+    
+    echo "  3. Check file permissions: ls -la scripts/install/"
+    echo "  4. Ensure sufficient disk space"
+    echo "  5. Try with --skip-prereqs if prerequisites verified"
+    echo "  6. Review documentation: https://docs.talawa.io"
+    echo "  7. Search existing issues: https://github.com/PalisadoesFoundation/talawa-api/issues"
+    echo "  8. Ask for help: https://github.com/PalisadoesFoundation/talawa-api/discussions"
+    echo ""
+    
+    error "If issue persists, report it with:"
+    echo "  • Complete error output above"
+    echo "  • System info: $(uname -s) $(uname -r)"
+    echo "  • Installation mode: $mode"
+    echo ""
+}
+
 detect_os() {
     if [[ "$OSTYPE" == "linux-gnu"* ]]; then
         echo "linux"
@@ -49,7 +145,6 @@ detect_os() {
     fi
 }
 
-# Check if running in WSL
 is_wsl() {
     if [ -f /proc/version ]; then
         if grep -qi "microsoft\|wsl" /proc/version 2>/dev/null; then
@@ -59,7 +154,6 @@ is_wsl() {
     return 1
 }
 
-# Show usage
 show_usage() {
     echo "Usage: $0 [options]"
     echo ""
@@ -74,7 +168,6 @@ show_usage() {
     echo "  $0 --local"
 }
 
-# Parse arguments
 INSTALL_MODE="docker"
 SKIP_PREREQS=false
 
@@ -104,7 +197,6 @@ while [[ $# -gt 0 ]]; do
     esac
 done
 
-# Main
 main() {
     print_banner
     
@@ -125,39 +217,88 @@ main() {
         fi
     fi
     
-    # Get the directory where this script is located
     SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
     
     case $OS in
         linux)
-            info "Running Linux installation..."
-            if [ -f "$SCRIPT_DIR/linux/install-linux.sh" ]; then
-                bash "$SCRIPT_DIR/linux/install-linux.sh" "$INSTALL_MODE" "$SKIP_PREREQS"
-            else
-                error "Linux installation script not found: $SCRIPT_DIR/linux/install-linux.sh"
+            LINUX_SCRIPT="$SCRIPT_DIR/linux/install-linux.sh"
+            
+            if [ ! -f "$LINUX_SCRIPT" ]; then
+                error "Linux installation script not found: $LINUX_SCRIPT"
                 exit 1
             fi
+            
+            if [ ! -x "$LINUX_SCRIPT" ]; then
+                warn "Linux installation script not executable"
+                info "Making script executable..."
+                chmod +x "$LINUX_SCRIPT" || {
+                    error "Failed to make script executable"
+                    info "Try: chmod +x $LINUX_SCRIPT"
+                    exit 1
+                }
+            fi
+            
+            if ! execute_installation_script "$LINUX_SCRIPT" "Linux" "$INSTALL_MODE" "$SKIP_PREREQS"; then
+                exit $?
+            fi
             ;;
+            
         macos)
-            info "Running macOS installation..."
-            if [ -f "$SCRIPT_DIR/macos/install-macos.sh" ]; then
-                bash "$SCRIPT_DIR/macos/install-macos.sh" "$INSTALL_MODE" "$SKIP_PREREQS"
-            else
-                error "macOS installation script not found: $SCRIPT_DIR/macos/install-macos.sh"
+            MACOS_SCRIPT="$SCRIPT_DIR/macos/install-macos.sh"
+            
+            if [ ! -f "$MACOS_SCRIPT" ]; then
+                error "macOS installation script not found: $MACOS_SCRIPT"
                 exit 1
             fi
+            
+            if [ ! -x "$MACOS_SCRIPT" ]; then
+                warn "macOS installation script not executable"
+                info "Making script executable..."
+                chmod +x "$MACOS_SCRIPT" || {
+                    error "Failed to make script executable"
+                    info "Try: chmod +x $MACOS_SCRIPT"
+                    exit 1
+                }
+            fi
+            
+            if ! execute_installation_script "$MACOS_SCRIPT" "macOS" "$INSTALL_MODE" "$SKIP_PREREQS"; then
+                exit $?
+            fi
             ;;
+            
         *)
             error "Unsupported operating system: $OS"
-            error "Please use the Windows PowerShell script instead: install.ps1"
+            info "Supported platforms: Linux, macOS"
+            info "For Windows, use: install.ps1"
             exit 1
             ;;
     esac
     
     echo ""
+    echo "╔════════════════════════════════════════════════════════════╗"
+    echo "║                                                            ║"
+    echo "║        🎉 Installation Completed Successfully! 🎉          ║"
+    echo "║                                                            ║"
+    echo "╚════════════════════════════════════════════════════════════╝"
+    echo ""
+    success "Talawa API development environment is ready!"
+    echo ""
     info "Next steps:"
-    info "  1. Run 'pnpm run setup' to configure the application"
-    info "  2. Follow the prompts to set up your environment"
+    echo "  1. Configure environment: cp .env.sample .env"
+    echo "  2. Edit .env with your settings"
+    
+    if [ "$INSTALL_MODE" = "docker" ]; then
+        echo "  3. Start services: docker compose up -d"
+        echo "  4. View logs: docker compose logs -f"
+    else
+        echo "  3. Start MongoDB and Redis services"
+        echo "  4. Run setup: npm run setup"
+        echo "  5. Start development: npm run dev"
+    fi
+    
+    echo ""
+    info "Documentation: https://docs.talawa.io"
+    echo ""
 }
 
 main
