@@ -49,14 +49,48 @@ detect_os() {
     fi
 }
 
-# Check if running in WSL
 is_wsl() {
+    local detected=false
+    local detection_method=""
+
     if [ -f /proc/version ]; then
         if grep -qi "microsoft\|wsl" /proc/version 2>/dev/null; then
-            return 0
+            detected=true
+            detection_method="/proc/version contains Microsoft/WSL"
         fi
     fi
-    return 1
+    
+    if [ "$detected" = false ] && [ -n "${WSL_DISTRO_NAME:-}" ]; then
+        detected=true
+        detection_method="WSL_DISTRO_NAME environment variable set to '$WSL_DISTRO_NAME'"
+    fi
+    
+    if [ "$detected" = false ] && [ -d "/run/WSL" ]; then
+        detected=true
+        detection_method="/run/WSL directory exists"
+    fi
+    
+    if [ "$detected" = false ] && [ -f /proc/sys/fs/binfmt_misc/WSLInterop ]; then
+        detected=true
+        detection_method="WSL interop enabled"
+    fi
+    
+    if [ "$detected" = false ] && [ -f /proc/sys/kernel/osrelease ]; then
+        if grep -qi "microsoft" /proc/sys/kernel/osrelease 2>/dev/null; then
+            detected=true
+            detection_method="/proc/sys/kernel/osrelease contains Microsoft"
+        fi
+    fi
+    
+    if [ "${WSL_DETECTION_DEBUG:-false}" = true ]; then
+        if [ "$detected" = true ]; then
+            echo "[DEBUG] WSL detected via: $detection_method" >&2
+        else
+            echo "[DEBUG] WSL not detected (checked 5 methods)" >&2
+        fi
+    fi
+    
+    [ "$detected" = true ]
 }
 
 # Show usage
