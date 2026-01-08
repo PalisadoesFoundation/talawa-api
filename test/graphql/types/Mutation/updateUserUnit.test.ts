@@ -7,19 +7,28 @@
  *
  * WHY UNIT TESTS FOR CACHE INVALIDATION:
  * - Integration tests (updateUser.test.ts) verify end-to-end behavior via mercuriusClient
- * - Unit tests here verify internal implementation details: that invalidateEntity and
- *   invalidateEntityLists are called with correct arguments at the right time
- * - Cache side effects are difficult to observe in integration tests without
- *   instrumenting the cache layer, so mock-based verification is appropriate
+ *   and cover all error paths, validation, authentication, and successful updates
+ * - Unit tests here verify internal implementation details that are invisible to
+ *   integration tests:
+ *     1. invalidateEntity is called with correct entity type ("user") and user ID
+ *     2. invalidateEntityLists is called with correct entity type ("user")
+ *     3. Cache invalidation runs AFTER the database transaction commits
+ *     4. Graceful degradation when cache operations fail (mutation still succeeds)
+ *     5. No cache invalidation occurs on failed updates (error paths early-exit)
  *
  * TRADEOFFS:
  * - Heavy mocking makes these tests fragile to internal refactoring
- * - But they provide valuable coverage for cache invalidation logic
+ * - But they provide valuable coverage for cache invalidation correctness
  * - If the resolver's internal structure changes significantly, these tests
  *   will need updating - this is acceptable given the value they provide
  *
- * SEE ALSO: updateUser.test.ts for end-to-end integration tests using mercuriusClient
+ * TESTING STRATEGY:
+ * - For end-to-end mutation behavior → see updateUser.test.ts (mercuriusClient)
+ * - For cache invalidation verification → this file (mock-based unit tests)
+ *
+ * @see {@link file://./updateUser.test.ts} for integration tests
  */
+
 import { afterEach, beforeAll, describe, expect, it, vi } from "vitest";
 
 vi.mock("postgres", () => ({

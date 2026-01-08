@@ -194,10 +194,7 @@ builder.mutationField("createOrganization", (t) =>
 			try {
 				await invalidateEntityLists(ctx.cache, "organization");
 			} catch (error) {
-				ctx.log.warn(
-					{ error: error instanceof Error ? error.message : "Unknown error" },
-					"Failed to invalidate organization list caches (non-fatal)",
-				);
+				ctx.log.warn(`Cache invalidation failed for organization: ${error}`);
 			}
 
 			return createdOrganization;

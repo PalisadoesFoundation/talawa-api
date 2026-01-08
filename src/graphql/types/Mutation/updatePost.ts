@@ -352,13 +352,28 @@ builder.mutationField("updatePost", (t) =>
 			);
 
 			// Invalidate post caches (graceful degradation - don't break mutation on cache errors)
+			// Use independent try-catch blocks so both invalidation attempts are always made
 			try {
 				await invalidateEntity(ctx.cache, "post", parsedArgs.input.id);
+			} catch (error) {
+				ctx.log.warn(
+					{
+						error,
+						postId: parsedArgs.input.id,
+					},
+					"Failed to invalidate post entity cache (non-fatal)",
+				);
+			}
+
+			try {
 				await invalidateEntityLists(ctx.cache, "post");
 			} catch (error) {
 				ctx.log.warn(
-					{ error: error instanceof Error ? error.message : "Unknown error" },
-					"Failed to invalidate post cache (non-fatal)",
+					{
+						error,
+						postId: parsedArgs.input.id,
+					},
+					"Failed to invalidate post list cache (non-fatal)",
 				);
 			}
 

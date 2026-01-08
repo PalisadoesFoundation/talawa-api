@@ -311,7 +311,7 @@ describe("updateStandaloneEvent Resolver Cache Invalidation Tests", () => {
 					error: cacheError,
 					eventId: eventId,
 				},
-				"Failed to invalidate event cache (non-fatal)",
+				"Failed to invalidate event entity cache (non-fatal)",
 			);
 		});
 
@@ -373,11 +373,11 @@ describe("updateStandaloneEvent Resolver Cache Invalidation Tests", () => {
 					error: cacheError,
 					eventId: eventId,
 				},
-				"Failed to invalidate event cache (non-fatal)",
+				"Failed to invalidate event list cache (non-fatal)",
 			);
 		});
 
-		it("should short-circuit on invalidateEntity failure and NOT call invalidateEntityLists", async () => {
+		it("should call invalidateEntityLists even when invalidateEntity fails (no short-circuit)", async () => {
 			const eventId = "41234567-89ab-cdef-0123-456789abcdef";
 
 			mocks.drizzle.query.usersTable.findFirst.mockResolvedValue({
@@ -404,9 +404,11 @@ describe("updateStandaloneEvent Resolver Cache Invalidation Tests", () => {
 				},
 			]);
 
-			// Make invalidateEntity throw an error (simulating consecutive cache failures)
-			const cacheError = new Error("Redis unavailable");
-			mocks.invalidateEntity.mockRejectedValueOnce(cacheError);
+			// Make invalidateEntity throw an error
+			const entityError = new Error("Redis unavailable");
+			mocks.invalidateEntity.mockRejectedValueOnce(entityError);
+			// invalidateEntityLists should still succeed
+			mocks.invalidateEntityLists.mockResolvedValueOnce(undefined);
 
 			const args = {
 				input: {
@@ -433,16 +435,103 @@ describe("updateStandaloneEvent Resolver Cache Invalidation Tests", () => {
 			);
 			expect(mocks.invalidateEntity).toHaveBeenCalledTimes(1);
 
-			// Verify invalidateEntityLists was NOT called (try-block short-circuited)
-			expect(mocks.invalidateEntityLists).not.toHaveBeenCalled();
+			// Verify invalidateEntityLists WAS called (no short-circuit with independent try-catch)
+			expect(mocks.invalidateEntityLists).toHaveBeenCalledWith(
+				mockContext.cache,
+				"event",
+			);
+			expect(mocks.invalidateEntityLists).toHaveBeenCalledTimes(1);
 
-			// Verify warning was logged with the error and eventId
+			// Verify warning was logged for invalidateEntity failure
 			expect(mockContext.log.warn).toHaveBeenCalledWith(
 				{
-					error: cacheError,
+					error: entityError,
 					eventId: eventId,
 				},
-				"Failed to invalidate event cache (non-fatal)",
+				"Failed to invalidate event entity cache (non-fatal)",
+			);
+		});
+
+		/**
+		 * Test verifying that both cache invalidation calls are attempted
+		 * and both failures are logged independently.
+		 */
+		it("should log both failures when both cache invalidation calls fail", async () => {
+			const eventId = "51234567-89ab-cdef-0123-456789abcdef";
+
+			mocks.drizzle.query.usersTable.findFirst.mockResolvedValue({
+				role: "administrator",
+			});
+			mocks.drizzle.query.eventsTable.findFirst.mockResolvedValue({
+				id: eventId,
+				startAt: new Date(),
+				endAt: new Date(Date.now() + 3600000),
+				creatorId: "admin-id",
+				attachmentsWhereEvent: [],
+				organization: {
+					countryCode: "us",
+					membershipsWhereOrganization: [{ role: "administrator" }],
+				},
+			});
+			mocks.drizzle.returning.mockResolvedValueOnce([
+				{
+					id: eventId,
+					name: "Updated Event",
+					startAt: new Date(),
+					endAt: new Date(),
+					organizationId: "org-1",
+				},
+			]);
+
+			// Both cache invalidation calls fail
+			const entityError = new Error("Redis entity cache failure");
+			const listError = new Error("Redis list cache failure");
+			mocks.invalidateEntity.mockRejectedValueOnce(entityError);
+			mocks.invalidateEntityLists.mockRejectedValueOnce(listError);
+
+			const args = {
+				input: {
+					id: eventId,
+					name: "Updated Event Name",
+				},
+			};
+
+			// Resolver should succeed despite both cache errors (graceful degradation)
+			const result = await resolver(null, args, mockContext);
+
+			// Verify the resolver succeeded and returned the correctly updated event
+			expect(result).toMatchObject({
+				id: eventId,
+				name: "Updated Event",
+				organizationId: "org-1",
+			});
+
+			// Verify both invalidation calls were attempted
+			expect(mocks.invalidateEntity).toHaveBeenCalledWith(
+				mockContext.cache,
+				"event",
+				eventId,
+			);
+			expect(mocks.invalidateEntityLists).toHaveBeenCalledWith(
+				mockContext.cache,
+				"event",
+			);
+
+			// Verify both warnings were logged independently
+			expect(mockContext.log.warn).toHaveBeenCalledTimes(2);
+			expect(mockContext.log.warn).toHaveBeenCalledWith(
+				{
+					error: entityError,
+					eventId: eventId,
+				},
+				"Failed to invalidate event entity cache (non-fatal)",
+			);
+			expect(mockContext.log.warn).toHaveBeenCalledWith(
+				{
+					error: listError,
+					eventId: eventId,
+				},
+				"Failed to invalidate event list cache (non-fatal)",
 			);
 		});
 	});

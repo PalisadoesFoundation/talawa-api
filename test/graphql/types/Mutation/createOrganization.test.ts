@@ -795,13 +795,10 @@ suite("Mutation field createOrganization", () => {
 			expect(result.errors?.length).toBeGreaterThan(0);
 
 			// MinIO putObject failure propagates as an unhandled exception within the transaction.
-			// The global error handler catches it and wraps it with an extensions object containing
-			// a correlationId for tracing. Verify the error structure explicitly.
-			const extensions = result.errors[0].extensions;
-			expect(extensions).toBeDefined();
-			expect(extensions.correlationId).toEqual(expect.any(String));
-			// The error message should indicate an internal/generic error occurred
-			expect(result.errors[0].message).toBeDefined();
+			// The resolver doesn't explicitly catch MinIO errors, so they bubble up to the global
+			// error handler which returns an "unexpected" error code with a correlationId for tracing.
+			const errorCode = result.errors[0].extensions?.code;
+			expect(errorCode).toBe("unexpected");
 		} finally {
 			// Restore original method
 			server.minio.client.putObject = originalPutObject;

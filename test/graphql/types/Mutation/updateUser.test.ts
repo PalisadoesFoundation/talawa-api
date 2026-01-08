@@ -14,6 +14,15 @@
  * - Successful avatar upload/removal paths are intentionally excluded
  *
  * These paths are expected to be covered by dedicated integration or E2E tests.
+ *
+ * NOTE ON CACHE INVALIDATION TESTING
+ *
+ * Cache invalidation behavior (invalidateEntity, invalidateEntityLists) is verified
+ * in updateUserUnit.test.ts using mock-based unit tests. Integration tests here
+ * implicitly exercise cache invalidation as a side effect of successful mutations,
+ * but cannot directly assert on cache invalidation arguments or execution order.
+ *
+ * @see {@link file://./updateUserUnit.test.ts} for cache invalidation unit tests
  */
 
 import { Readable } from "node:stream";

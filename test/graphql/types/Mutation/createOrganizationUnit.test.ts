@@ -252,8 +252,7 @@ describe("createOrganization Resolver Cache Invalidation Tests", () => {
 
 		// Verify warning was logged for the cache error
 		expect(mockContext.log.warn).toHaveBeenCalledWith(
-			{ error: "Redis unavailable" },
-			"Failed to invalidate organization list caches (non-fatal)",
+			expect.stringContaining("Cache invalidation failed for organization:"),
 		);
 	});
 

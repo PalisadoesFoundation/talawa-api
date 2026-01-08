@@ -250,8 +250,20 @@ builder.mutationField("updateStandaloneEvent", (t) =>
 			}
 
 			// Invalidate event caches (graceful degradation - don't break mutation on cache errors)
+			// Use independent try-catch blocks so both invalidation attempts are always made
 			try {
 				await invalidateEntity(ctx.cache, "event", parsedArgs.input.id);
+			} catch (error) {
+				ctx.log.warn(
+					{
+						error,
+						eventId: parsedArgs.input.id,
+					},
+					"Failed to invalidate event entity cache (non-fatal)",
+				);
+			}
+
+			try {
 				await invalidateEntityLists(ctx.cache, "event");
 			} catch (error) {
 				ctx.log.warn(
@@ -259,7 +271,7 @@ builder.mutationField("updateStandaloneEvent", (t) =>
 						error,
 						eventId: parsedArgs.input.id,
 					},
-					"Failed to invalidate event cache (non-fatal)",
+					"Failed to invalidate event list cache (non-fatal)",
 				);
 			}
 
