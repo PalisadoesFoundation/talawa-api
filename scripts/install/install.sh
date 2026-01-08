@@ -293,16 +293,15 @@ main() {
     success "Talawa API development environment is ready!"
     echo ""
     info "Next steps:"
-    echo "  1. Configure environment: cp .env.sample .env"
-    echo "  2. Edit .env with your settings"
     
     if [ "$INSTALL_MODE" = "docker" ]; then
-        echo "  3. Start services: docker compose up -d"
-        echo "  4. View logs: docker compose logs -f"
+        echo "  1. Review Docker Compose configuration in docker/ directory"
+        echo "  2. Start services using Docker Compose"
+        echo "  3. Check logs for service status"
     else
-        echo "  3. Start MongoDB and Redis services"
-        echo "  4. Run setup: npm run setup"
-        echo "  5. Start development: npm run dev"
+        echo "  1. Configure your environment variables"
+        echo "  2. Start MongoDB and Redis services"
+        echo "  3. Run: npm run start_development_server"
     fi
     
     echo ""
