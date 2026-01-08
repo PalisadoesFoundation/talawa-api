@@ -10,6 +10,8 @@ const GetPostsByOrgInput = builder.inputType("GetPostsByOrgInput", {
 	fields: (t) => ({
 		organizationId: t.string({ required: true }),
 		sortOrder: t.string({ required: false }),
+		limit: t.int({ required: false }),
+		offset: t.int({ required: false }),
 	}),
 });
 
@@ -27,7 +29,7 @@ builder.queryField("postsByOrganization", (t) =>
 				});
 			}
 
-			const { organizationId, sortOrder } = input;
+			const { organizationId, sortOrder, limit, offset } = input;
 
 			const orderBy =
 				sortOrder === "ASC"
@@ -37,6 +39,8 @@ builder.queryField("postsByOrganization", (t) =>
 			const posts = await ctx.drizzleClient.query.postsTable.findMany({
 				where: eq(postsTable.organizationId, organizationId),
 				orderBy: [orderBy],
+				limit: limit ?? undefined,
+				offset: offset ?? undefined,
 			});
 
 			const postIds = posts.map((post) => post.id);
