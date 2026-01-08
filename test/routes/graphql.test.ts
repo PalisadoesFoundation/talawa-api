@@ -3,6 +3,10 @@ import { GraphQLObjectType, GraphQLSchema, GraphQLString } from "graphql";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { ExplicitAuthenticationTokenPayload } from "~/src/graphql/context";
 import { createContext } from "~/src/routes/graphql";
+import {
+	createPerformanceTracker,
+	type PerformanceTracker,
+} from "~/src/utilities/metrics/performanceTracker";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 
 // Mock dependencies
@@ -426,6 +430,92 @@ describe("GraphQL Routes", () => {
 				);
 			});
 		});
+
+		describe("Performance Tracker Integration", () => {
+			it("should include perf in context when request.perf is available", async () => {
+				const mockPerf = createPerformanceTracker();
+				mockRequest.perf = mockPerf;
+				mockRequest.jwtVerify = vi
+					.fn()
+					.mockRejectedValue(new Error("No token"));
+
+				const context = await createContext({
+					fastify: mockFastify as FastifyInstance,
+					request: mockRequest as FastifyRequest,
+					isSubscription: false,
+					reply: mockReply as FastifyReply,
+				});
+
+				expect(context.perf).toBe(mockPerf);
+				expect(context.perf).toBeDefined();
+			});
+
+			it("should set perf to undefined when request.perf is not available", async () => {
+				mockRequest.perf = undefined;
+				mockRequest.jwtVerify = vi
+					.fn()
+					.mockRejectedValue(new Error("No token"));
+
+				const context = await createContext({
+					fastify: mockFastify as FastifyInstance,
+					request: mockRequest as FastifyRequest,
+					isSubscription: false,
+					reply: mockReply as FastifyReply,
+				});
+
+				expect(context.perf).toBeUndefined();
+			});
+
+			it("should allow resolvers to use context.perf to track operations", async () => {
+				const mockPerf = createPerformanceTracker();
+				mockRequest.perf = mockPerf;
+				mockRequest.jwtVerify = vi
+					.fn()
+					.mockRejectedValue(new Error("No token"));
+
+				const context = await createContext({
+					fastify: mockFastify as FastifyInstance,
+					request: mockRequest as FastifyRequest,
+					isSubscription: false,
+					reply: mockReply as FastifyReply,
+				});
+
+				// Simulate resolver using perf tracker
+				await context.perf?.time("customOperation", async () => {
+					await new Promise((resolve) => setTimeout(resolve, 10));
+					return "result";
+				});
+
+				const snapshot = context.perf?.snapshot();
+				expect(snapshot?.ops.customOperation).toBeDefined();
+				expect(snapshot?.ops.customOperation?.count).toBe(1);
+			});
+
+			it("should allow resolvers to track cache hits and misses", async () => {
+				const mockPerf = createPerformanceTracker();
+				mockRequest.perf = mockPerf;
+				mockRequest.jwtVerify = vi
+					.fn()
+					.mockRejectedValue(new Error("No token"));
+
+				const context = await createContext({
+					fastify: mockFastify as FastifyInstance,
+					request: mockRequest as FastifyRequest,
+					isSubscription: false,
+					reply: mockReply as FastifyReply,
+				});
+
+				// Simulate cache operations
+				context.perf?.trackCacheHit();
+				context.perf?.trackCacheHit();
+				context.perf?.trackCacheMiss();
+
+				const snapshot = context.perf?.snapshot();
+				expect(snapshot?.cacheHits).toBe(2);
+				expect(snapshot?.cacheMisses).toBe(1);
+				expect(snapshot?.hitRate).toBeCloseTo(2 / 3, 2);
+			});
+		});
 	});
 
 	describe("GraphQL Plugin Registration", () => {
@@ -680,6 +770,7 @@ describe("GraphQL Routes", () => {
 				request: {
 					ip?: string;
 					jwtVerify: ReturnType<typeof vi.fn>;
+					perf?: PerformanceTracker;
 				};
 			};
 		};
@@ -737,6 +828,7 @@ describe("GraphQL Routes", () => {
 					request: {
 						ip: "192.168.1.1",
 						jwtVerify: vi.fn(),
+						perf: undefined,
 					},
 				},
 			};
@@ -965,6 +1057,70 @@ describe("GraphQL Routes", () => {
 				2,
 			);
 		});
+
+		it("should track complexity score in performance tracker", async () => {
+			const mockComplexity = { complexity: 15, breadth: 2, depth: 3 };
+			vi.mocked(complexityFromQuery).mockReturnValue(mockComplexity);
+
+			const mockPerf = createPerformanceTracker();
+			mockDocument.reply.request.perf = mockPerf;
+			mockDocument.reply.request.jwtVerify.mockRejectedValue(
+				new Error("No token"),
+			);
+			vi.mocked(leakyBucket).mockResolvedValue(true);
+
+			await preExecutionHook(
+				mockSchema,
+				mockContext,
+				mockDocument,
+				mockVariables,
+			);
+
+			const snapshot = mockPerf.snapshot();
+			expect(snapshot.complexityScore).toBe(15);
+		});
+
+		it("should track complexity score with mutation base cost", async () => {
+			const mockComplexity = { complexity: 5, breadth: 1, depth: 1 };
+			vi.mocked(complexityFromQuery).mockReturnValue(mockComplexity);
+
+			const mockPerf = createPerformanceTracker();
+			mockDocument.reply.request.perf = mockPerf;
+			if (mockContext.definitions[0]) {
+				mockContext.definitions[0].operation = "mutation";
+			}
+			mockDocument.reply.request.jwtVerify.mockRejectedValue(
+				new Error("No token"),
+			);
+			vi.mocked(leakyBucket).mockResolvedValue(true);
+
+			await preExecutionHook(
+				mockSchema,
+				mockContext,
+				mockDocument,
+				mockVariables,
+			);
+
+			const snapshot = mockPerf.snapshot();
+			// Should track complexity with mutation base cost (5 + 10 = 15)
+			expect(snapshot.complexityScore).toBe(15);
+		});
+
+		it("should not fail when perf is not available in preExecution", async () => {
+			const mockComplexity = { complexity: 5, breadth: 1, depth: 1 };
+			vi.mocked(complexityFromQuery).mockReturnValue(mockComplexity);
+
+			mockDocument.reply.request.perf = undefined;
+			mockDocument.reply.request.jwtVerify.mockRejectedValue(
+				new Error("No token"),
+			);
+			vi.mocked(leakyBucket).mockResolvedValue(true);
+
+			// Should not throw when perf is undefined
+			await expect(
+				preExecutionHook(mockSchema, mockContext, mockDocument, mockVariables),
+			).resolves.not.toThrow();
+		});
 	});
 
 	describe("Subscription Configuration", () => {
@@ -984,6 +1140,9 @@ describe("GraphQL Routes", () => {
 			jwt?: {
 				verify: ReturnType<typeof vi.fn>;
 			};
+			cache: FastifyInstance["cache"];
+			drizzleClient: FastifyInstance["drizzleClient"];
+			minio: FastifyInstance["minio"];
 		};
 
 		beforeEach(() => {
@@ -1000,6 +1159,9 @@ describe("GraphQL Routes", () => {
 					replaceSchema: vi.fn(),
 					addHook: vi.fn(),
 				},
+				cache: {} as FastifyInstance["cache"],
+				drizzleClient: {} as FastifyInstance["drizzleClient"],
+				minio: {} as FastifyInstance["minio"],
 			};
 
 			vi.mocked(schemaManager.buildInitialSchema).mockResolvedValue(
@@ -1114,6 +1276,250 @@ describe("GraphQL Routes", () => {
 
 			expect(result).toBe(false);
 			expect(mockFastifyInstance.log.error).toHaveBeenCalled();
+		});
+
+		it("should extract perf from socket.request.perf for subscriptions", async () => {
+			const { graphql } = await import("~/src/routes/graphql");
+
+			const mockPerf = createPerformanceTracker();
+			const decoded = {
+				user: { id: "user-789" },
+			} as ExplicitAuthenticationTokenPayload;
+
+			mockFastifyInstance.jwt = { verify: vi.fn().mockResolvedValue(decoded) };
+
+			await graphql(mockFastifyInstance as unknown as FastifyInstance);
+
+			const mercuriusCall = mockFastifyInstance.register.mock.calls.find(
+				(call: unknown[]) =>
+					(call?.[1] as { subscription?: unknown })?.subscription,
+			);
+
+			const subscriptionConfig = mercuriusCall?.[1] as {
+				subscription: {
+					onConnect: (data: unknown) => Promise<boolean | object>;
+				};
+			};
+
+			const result = (await subscriptionConfig.subscription.onConnect({
+				payload: { authorization: "Bearer valid-token" },
+				socket: {
+					request: {
+						perf: mockPerf,
+					},
+				},
+			})) as { perf?: unknown };
+
+			expect(result).not.toBe(false);
+			expect(result.perf).toBe(mockPerf);
+		});
+
+		it("should set perf to undefined when socket.request.perf is not available", async () => {
+			const { graphql } = await import("~/src/routes/graphql");
+
+			const decoded = {
+				user: { id: "user-789" },
+			} as ExplicitAuthenticationTokenPayload;
+
+			mockFastifyInstance.jwt = { verify: vi.fn().mockResolvedValue(decoded) };
+
+			await graphql(mockFastifyInstance as unknown as FastifyInstance);
+
+			const mercuriusCall = mockFastifyInstance.register.mock.calls.find(
+				(call: unknown[]) =>
+					(call?.[1] as { subscription?: unknown })?.subscription,
+			);
+
+			const subscriptionConfig = mercuriusCall?.[1] as {
+				subscription: {
+					onConnect: (data: unknown) => Promise<boolean | object>;
+				};
+			};
+
+			const result = (await subscriptionConfig.subscription.onConnect({
+				payload: { authorization: "Bearer valid-token" },
+				socket: {
+					request: {},
+				},
+			})) as { perf?: unknown };
+
+			expect(result).not.toBe(false);
+			expect(result.perf).toBeUndefined();
+		});
+
+		it("should handle invalid perf object in subscription with type guard", async () => {
+			const { graphql } = await import("~/src/routes/graphql");
+
+			const decoded = {
+				user: { id: "user-789" },
+			} as ExplicitAuthenticationTokenPayload;
+
+			mockFastifyInstance.jwt = { verify: vi.fn().mockResolvedValue(decoded) };
+
+			await graphql(mockFastifyInstance as unknown as FastifyInstance);
+
+			const mercuriusCall = mockFastifyInstance.register.mock.calls.find(
+				(call: unknown[]) =>
+					(call?.[1] as { subscription?: unknown })?.subscription,
+			);
+
+			const subscriptionConfig = mercuriusCall?.[1] as {
+				subscription: {
+					onConnect: (data: unknown) => Promise<boolean | object>;
+				};
+			};
+
+			// Pass an invalid perf object (missing required methods)
+			const result = (await subscriptionConfig.subscription.onConnect({
+				payload: { authorization: "Bearer valid-token" },
+				socket: {
+					request: {
+						perf: { someInvalidProperty: true },
+					},
+				},
+			})) as { perf?: unknown };
+
+			expect(result).not.toBe(false);
+			// Type guard should reject invalid perf object
+			expect(result.perf).toBeUndefined();
+		});
+
+		it("should handle null perf in subscription", async () => {
+			const { graphql } = await import("~/src/routes/graphql");
+
+			const decoded = {
+				user: { id: "user-789" },
+			} as ExplicitAuthenticationTokenPayload;
+
+			mockFastifyInstance.jwt = { verify: vi.fn().mockResolvedValue(decoded) };
+
+			await graphql(mockFastifyInstance as unknown as FastifyInstance);
+
+			const mercuriusCall = mockFastifyInstance.register.mock.calls.find(
+				(call: unknown[]) =>
+					(call?.[1] as { subscription?: unknown })?.subscription,
+			);
+
+			const subscriptionConfig = mercuriusCall?.[1] as {
+				subscription: {
+					onConnect: (data: unknown) => Promise<boolean | object>;
+				};
+			};
+
+			const result = (await subscriptionConfig.subscription.onConnect({
+				payload: { authorization: "Bearer valid-token" },
+				socket: {
+					request: {
+						perf: null,
+					},
+				},
+			})) as { perf?: unknown };
+
+			expect(result).not.toBe(false);
+			expect(result.perf).toBeUndefined();
+		});
+
+		it("should handle non-object perf in subscription", async () => {
+			const { graphql } = await import("~/src/routes/graphql");
+
+			const decoded = {
+				user: { id: "user-789" },
+			} as ExplicitAuthenticationTokenPayload;
+
+			mockFastifyInstance.jwt = { verify: vi.fn().mockResolvedValue(decoded) };
+
+			await graphql(mockFastifyInstance as unknown as FastifyInstance);
+
+			const mercuriusCall = mockFastifyInstance.register.mock.calls.find(
+				(call: unknown[]) =>
+					(call?.[1] as { subscription?: unknown })?.subscription,
+			);
+
+			const subscriptionConfig = mercuriusCall?.[1] as {
+				subscription: {
+					onConnect: (data: unknown) => Promise<boolean | object>;
+				};
+			};
+
+			// Test with string (not an object)
+			const result1 = (await subscriptionConfig.subscription.onConnect({
+				payload: { authorization: "Bearer valid-token" },
+				socket: {
+					request: {
+						perf: "not-an-object",
+					},
+				},
+			})) as { perf?: unknown };
+
+			expect(result1).not.toBe(false);
+			expect(result1.perf).toBeUndefined();
+
+			// Test with number (not an object)
+			const result2 = (await subscriptionConfig.subscription.onConnect({
+				payload: { authorization: "Bearer valid-token" },
+				socket: {
+					request: {
+						perf: 123,
+					},
+				},
+			})) as { perf?: unknown };
+
+			expect(result2).not.toBe(false);
+			expect(result2.perf).toBeUndefined();
+		});
+
+		it("should handle perf object with missing methods in subscription", async () => {
+			const { graphql } = await import("~/src/routes/graphql");
+
+			const decoded = {
+				user: { id: "user-789" },
+			} as ExplicitAuthenticationTokenPayload;
+
+			mockFastifyInstance.jwt = { verify: vi.fn().mockResolvedValue(decoded) };
+
+			await graphql(mockFastifyInstance as unknown as FastifyInstance);
+
+			const mercuriusCall = mockFastifyInstance.register.mock.calls.find(
+				(call: unknown[]) =>
+					(call?.[1] as { subscription?: unknown })?.subscription,
+			);
+
+			const subscriptionConfig = mercuriusCall?.[1] as {
+				subscription: {
+					onConnect: (data: unknown) => Promise<boolean | object>;
+				};
+			};
+
+			// Test with object that has snapshot but not trackComplexity
+			const result1 = (await subscriptionConfig.subscription.onConnect({
+				payload: { authorization: "Bearer valid-token" },
+				socket: {
+					request: {
+						perf: {
+							snapshot: vi.fn(),
+						},
+					},
+				},
+			})) as { perf?: unknown };
+
+			expect(result1).not.toBe(false);
+			expect(result1.perf).toBeUndefined();
+
+			// Test with object that has both properties but they're not functions
+			const result2 = (await subscriptionConfig.subscription.onConnect({
+				payload: { authorization: "Bearer valid-token" },
+				socket: {
+					request: {
+						perf: {
+							snapshot: "not-a-function",
+							trackComplexity: "not-a-function",
+						},
+					},
+				},
+			})) as { perf?: unknown };
+
+			expect(result2).not.toBe(false);
+			expect(result2.perf).toBeUndefined();
 		});
 
 		it("should configure subscription onDisconnect as no-op", async () => {

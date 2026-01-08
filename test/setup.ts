@@ -27,17 +27,58 @@ export const teardown = async () => {
 
 	// *** NEW: Clean up Redis rate limiting state ***
 	try {
-		// Clear all rate limiting buckets from Redis
-		const keys = await server.redis.keys("rate-limit:*");
-		if (keys.length > 0) {
-			await server.redis.del(...keys);
-			console.log(`Cleared ${keys.length} rate limit buckets from Redis`);
+		// Check if Redis is available and connected before attempting cleanup
+		if (server.redis && typeof server.redis.keys === "function") {
+			// Add timeout to prevent hanging if Redis is unavailable
+			const cleanupPromise = (async () => {
+				const keys = await server.redis.keys("rate-limit:*");
+				if (keys.length > 0) {
+					await server.redis.del(...keys);
+					console.log(`Cleared ${keys.length} rate limit buckets from Redis`);
+				}
+			})();
+
+			// Wait max 2 seconds for Redis cleanup
+			await Promise.race([
+				cleanupPromise,
+				new Promise((_, reject) =>
+					setTimeout(() => reject(new Error("Redis cleanup timeout")), 2000),
+				),
+			]);
 		}
 	} catch (error) {
-		console.warn("Redis cleanup failed:", error);
+		// Silently ignore Redis cleanup errors - Redis might not be available
+		console.warn(
+			"Redis cleanup failed (this is OK if Redis is not running):",
+			error,
+		);
+	}
+
+	// Close Redis connection if available
+	try {
+		if (server.redis && typeof server.redis.quit === "function") {
+			await Promise.race([
+				server.redis.quit(),
+				new Promise((_, reject) =>
+					setTimeout(() => reject(new Error("Redis quit timeout")), 1000),
+				),
+			]);
+		}
+	} catch (error) {
+		// Silently ignore - Redis might already be closed or unavailable
+		console.warn("Redis connection close failed (this is OK):", error);
 	}
 
 	// Original cleanup
-	await reset(server.drizzleClient, schema);
-	await server.close();
+	try {
+		await reset(server.drizzleClient, schema);
+	} catch (error) {
+		console.warn("Database reset failed:", error);
+	}
+
+	try {
+		await server.close();
+	} catch (error) {
+		console.warn("Server close failed:", error);
+	}
 };

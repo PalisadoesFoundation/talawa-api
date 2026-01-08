@@ -19,6 +19,7 @@ import {
 } from "../utilities/cookieConfig";
 import { createDataloaders } from "../utilities/dataloaders";
 import leakyBucket from "../utilities/leakyBucket";
+import type { PerformanceTracker } from "../utilities/metrics/performanceTracker";
 import { DEFAULT_REFRESH_TOKEN_EXPIRES_MS } from "../utilities/refreshTokenUtils";
 import { TalawaGraphQLError } from "../utilities/TalawaGraphQLError";
 
@@ -160,6 +161,7 @@ export const createContext: CreateContext = async (initialContext) => {
 		cookie: cookieHelper,
 		log: request.log ?? fastify.log,
 		minio: fastify.minio,
+		perf: request.perf, // Attach performance tracker from request (added by performance plugin)
 		// attached a per-request notification service that queues notifications and can flush later
 		notification: new NotificationService(),
 	};
@@ -251,6 +253,25 @@ export const graphql = fastifyPlugin(async (fastify) => {
 						"Subscription connection authorized.",
 					);
 
+					// Extract perf from socket.request.perf (attached by performance plugin)
+					const socketPerf = (
+						data as { socket?: { request?: { perf?: unknown } } }
+					).socket?.request?.perf;
+
+					// Type guard to ensure it's a PerformanceTracker
+					const perf =
+						socketPerf &&
+						typeof socketPerf === "object" &&
+						socketPerf !== null &&
+						"snapshot" in socketPerf &&
+						"trackComplexity" in socketPerf &&
+						typeof (socketPerf as { snapshot?: unknown }).snapshot ===
+							"function" &&
+						typeof (socketPerf as { trackComplexity?: unknown })
+							.trackComplexity === "function"
+							? (socketPerf as PerformanceTracker)
+							: undefined;
+
 					return {
 						cache: fastify.cache,
 						currentClient: {
@@ -269,6 +290,7 @@ export const graphql = fastifyPlugin(async (fastify) => {
 						},
 						log: fastify.log,
 						minio: fastify.minio,
+						perf,
 						notification: new NotificationService(),
 					};
 				} catch (error) {
@@ -355,6 +377,11 @@ export const graphql = fastifyPlugin(async (fastify) => {
 			if (operationType === "mutation") {
 				complexity.complexity +=
 					fastify.envConfig.API_GRAPHQL_MUTATION_BASE_COST;
+			}
+
+			// Track complexity score in performance tracker
+			if (request.perf) {
+				request.perf.trackComplexity(complexity.complexity);
 			}
 
 			// Get the IP address of the client making the request
