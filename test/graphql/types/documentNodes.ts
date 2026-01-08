@@ -542,7 +542,6 @@ export const Mutation_createOrganizationMembership =
 	gql(`mutation Mutation_createOrganizationMembership($input: MutationCreateOrganizationMembershipInput!) {
     createOrganizationMembership(input: $input) {
       id
-      role
     }
   }`);
 

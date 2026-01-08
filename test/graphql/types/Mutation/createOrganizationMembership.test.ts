@@ -1,5 +1,8 @@
 import { faker } from "@faker-js/faker";
+import { and, eq } from "drizzle-orm";
+import { organizationMembershipsTable } from "src/drizzle/tables/organizationMemberships";
 import { expect, suite, test } from "vitest";
+import { usersTable } from "~/src/drizzle/schema";
 import { assertToBeNonNullish } from "../../../helpers";
 import { server } from "../../../server";
 import { mercuriusClient } from "../client";
@@ -32,6 +35,57 @@ suite("Mutation field createOrganizationMembership", () => {
 						input: {
 							memberId: faker.string.uuid(),
 							organizationId: faker.string.uuid(),
+						},
+					},
+				},
+			);
+
+			expect(result.data?.createOrganizationMembership ?? null).toBeNull();
+			expect(result.errors?.[0]?.extensions?.code).toBe("unauthenticated");
+		});
+
+		test("rejects authenticated request if current user no longer exists in database", async () => {
+			const user = await import("../createRegularUserUsingAdmin").then((m) =>
+				m.createRegularUserUsingAdmin(),
+			);
+
+			// 2. Delete that user directly from the database
+			await server.drizzleClient
+				.delete(usersTable)
+				.where(eq(usersTable.id, user.userId));
+
+			// 3. Create an organization (by admin)
+			const createOrg = await mercuriusClient.mutate(
+				Mutation_createOrganization,
+				{
+					headers: { authorization: `bearer ${adminToken}` },
+					variables: {
+						input: {
+							name: "Deleted User Org",
+							description: "deleted user test",
+							countryCode: "us",
+							state: "CA",
+							city: "SF",
+							postalCode: "94101",
+							addressLine1: "Ghost",
+							addressLine2: "User",
+						},
+					},
+				},
+			);
+
+			const orgId = createOrg.data?.createOrganization?.id;
+			assertToBeNonNullish(orgId);
+
+			// 4. Call mutation with token of deleted user
+			const result = await mercuriusClient.mutate(
+				Mutation_createOrganizationMembership,
+				{
+					headers: { authorization: `bearer ${user.authToken}` },
+					variables: {
+						input: {
+							memberId: user.userId,
+							organizationId: orgId,
 						},
 					},
 				},
@@ -290,7 +344,6 @@ suite("Mutation field createOrganizationMembership", () => {
 			assertToBeNonNullish(result.data?.createOrganizationMembership);
 			expect(result.data?.createOrganizationMembership).toBeDefined();
 			expect(result.data?.createOrganizationMembership?.id).toBeTruthy();
-			expect(result.data?.createOrganizationMembership?.role).toBe("regular");
 		});
 
 		test("non-admin can add themselves to organization", async () => {
@@ -382,6 +435,64 @@ suite("Mutation field createOrganizationMembership", () => {
 			assertToBeNonNullish(result.data?.createOrganizationMembership);
 			const org = result.data?.createOrganizationMembership;
 			expect(org?.id).toBe(orgId);
+		});
+
+		test("assigns default role of 'regular' when role not provided", async () => {
+			const user = await import("../createRegularUserUsingAdmin").then((m) =>
+				m.createRegularUserUsingAdmin(),
+			);
+
+			const createOrg = await mercuriusClient.mutate(
+				Mutation_createOrganization,
+				{
+					headers: { authorization: `bearer ${adminToken}` },
+					variables: {
+						input: {
+							name: "Default Role Org",
+							description: "default role test",
+							countryCode: "us",
+							state: "CA",
+							city: "SF",
+							postalCode: "94101",
+							addressLine1: "Role",
+							addressLine2: "Test",
+						},
+					},
+				},
+			);
+
+			const orgId = createOrg.data?.createOrganization?.id;
+			assertToBeNonNullish(orgId);
+
+			const result = await mercuriusClient.mutate(
+				Mutation_createOrganizationMembership,
+				{
+					headers: { authorization: `bearer ${adminToken}` },
+					variables: {
+						input: {
+							memberId: user.userId,
+							organizationId: orgId,
+						},
+					},
+				},
+			);
+
+			expect(result.errors).toBeUndefined();
+			assertToBeNonNullish(result.data?.createOrganizationMembership);
+
+			// Verify in DB
+			const [membership] = await server.drizzleClient
+				.select()
+				.from(organizationMembershipsTable)
+				.where(
+					and(
+						eq(organizationMembershipsTable.memberId, user.userId),
+						eq(organizationMembershipsTable.organizationId, orgId),
+					),
+				);
+
+			assertToBeNonNullish(membership);
+			expect(membership.role).toBe("regular");
 		});
 
 		test("prevents duplicate membership", async () => {
