@@ -434,6 +434,20 @@ suite("Mutation field createOrganizationMembership", () => {
 			assertToBeNonNullish(result.data?.createOrganizationMembership);
 			const org = result.data?.createOrganizationMembership;
 			expect(org?.id).toBe(orgId);
+
+			// Verify role was stored correctly in DB
+			const [membership] = await server.drizzleClient
+				.select()
+				.from(organizationMembershipsTable)
+				.where(
+					and(
+						eq(organizationMembershipsTable.memberId, memberId),
+						eq(organizationMembershipsTable.organizationId, orgId),
+					),
+				);
+
+			assertToBeNonNullish(membership);
+			expect(membership.role).toBe("administrator");
 		});
 
 		test("assigns default role of 'regular' when role not provided", async () => {
