@@ -342,8 +342,7 @@ suite("Mutation field createOrganizationMembership", () => {
 
 			expect(result.errors).toBeUndefined();
 			assertToBeNonNullish(result.data?.createOrganizationMembership);
-			expect(result.data?.createOrganizationMembership).toBeDefined();
-			expect(result.data?.createOrganizationMembership?.id).toBeTruthy();
+			expect(result.data.createOrganizationMembership.id).toBeTruthy();
 		});
 
 		test("non-admin can add themselves to organization", async () => {
