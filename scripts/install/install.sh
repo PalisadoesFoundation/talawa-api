@@ -140,6 +140,26 @@ display_failure_guidance() {
     echo ""
 }
 
+validate_and_prepare_script() {
+    local script_path="$1"
+    local platform_name="$2"
+    
+    if [ ! -f "$script_path" ]; then
+        error "$platform_name installation script not found: $script_path"
+        exit 1
+    fi
+    
+    if [ ! -x "$script_path" ]; then
+        warn "$platform_name installation script not executable"
+        info "Making script executable..."
+        chmod +x "$script_path" || {
+            error "Failed to make script executable"
+            info "Try: chmod +x $script_path"
+            exit 1
+        }
+    fi
+}
+
 detect_os() {
     if [[ "$OSTYPE" == "linux-gnu"* ]]; then
         echo "linux"
@@ -229,43 +249,13 @@ main() {
     case $OS in
         linux)
             local LINUX_SCRIPT="$SCRIPT_DIR/linux/install-linux.sh"
-            
-            if [ ! -f "$LINUX_SCRIPT" ]; then
-                error "Linux installation script not found: $LINUX_SCRIPT"
-                exit 1
-            fi
-            
-            if [ ! -x "$LINUX_SCRIPT" ]; then
-                warn "Linux installation script not executable"
-                info "Making script executable..."
-                chmod +x "$LINUX_SCRIPT" || {
-                    error "Failed to make script executable"
-                    info "Try: chmod +x $LINUX_SCRIPT"
-                    exit 1
-                }
-            fi
-            
+            validate_and_prepare_script "$LINUX_SCRIPT" "Linux"
             execute_installation_script "$LINUX_SCRIPT" "Linux" "$INSTALL_MODE" "$SKIP_PREREQS"
             ;;
             
         macos)
             local MACOS_SCRIPT="$SCRIPT_DIR/macos/install-macos.sh"
-            
-            if [ ! -f "$MACOS_SCRIPT" ]; then
-                error "macOS installation script not found: $MACOS_SCRIPT"
-                exit 1
-            fi
-            
-            if [ ! -x "$MACOS_SCRIPT" ]; then
-                warn "macOS installation script not executable"
-                info "Making script executable..."
-                chmod +x "$MACOS_SCRIPT" || {
-                    error "Failed to make script executable"
-                    info "Try: chmod +x $MACOS_SCRIPT"
-                    exit 1
-                }
-            fi
-            
+            validate_and_prepare_script "$MACOS_SCRIPT" "macOS"
             execute_installation_script "$MACOS_SCRIPT" "macOS" "$INSTALL_MODE" "$SKIP_PREREQS"
             ;;
             
