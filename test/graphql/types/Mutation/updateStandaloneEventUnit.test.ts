@@ -295,8 +295,12 @@ describe("updateStandaloneEvent Resolver Cache Invalidation Tests", () => {
 			// Resolver should succeed despite cache errors (graceful degradation)
 			const result = await resolver(null, args, mockContext);
 
-			// Verify the resolver succeeded and returned the updated event
-			expect(result).toBeDefined();
+			// Verify the resolver succeeded and returned the correctly updated event
+			expect(result).toMatchObject({
+				id: eventId,
+				name: "Updated Event",
+				organizationId: "org-1",
+			});
 
 			// Verify cache invalidation was attempted
 			expect(mocks.invalidateEntity).toHaveBeenCalled();
@@ -353,8 +357,12 @@ describe("updateStandaloneEvent Resolver Cache Invalidation Tests", () => {
 			// Resolver should succeed despite cache errors (graceful degradation)
 			const result = await resolver(null, args, mockContext);
 
-			// Verify the resolver succeeded
-			expect(result).toBeDefined();
+			// Verify the resolver succeeded and returned the correctly updated event
+			expect(result).toMatchObject({
+				id: eventId,
+				name: "Updated Event",
+				organizationId: "org-1",
+			});
 
 			// Verify cache invalidation was attempted
 			expect(mocks.invalidateEntityLists).toHaveBeenCalled();
@@ -410,8 +418,12 @@ describe("updateStandaloneEvent Resolver Cache Invalidation Tests", () => {
 			// Resolver should succeed despite cache errors (graceful degradation)
 			const result = await resolver(null, args, mockContext);
 
-			// Verify the resolver succeeded and returned the updated event
-			expect(result).toBeDefined();
+			// Verify the resolver succeeded and returned the correctly updated event
+			expect(result).toMatchObject({
+				id: eventId,
+				name: "Updated Event",
+				organizationId: "org-1",
+			});
 
 			// Verify invalidateEntity was called (and threw)
 			expect(mocks.invalidateEntity).toHaveBeenCalledWith(
