@@ -731,6 +731,11 @@ suite("Mutation field updateTag", () => {
 						},
 					},
 				);
+				if (createOrgResult.errors) {
+					throw new Error(
+						`Organization creation failed: ${JSON.stringify(createOrgResult.errors)}`,
+					);
+				}
 				const orgId = createOrgResult.data?.createOrganization?.id;
 				assertToBeNonNullish(orgId);
 
