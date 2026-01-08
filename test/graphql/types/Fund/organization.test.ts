@@ -1,591 +1,611 @@
-import { createMockGraphQLContext } from "test/_Mocks_/mockContextCreator/mockContextCreator";
-import { beforeEach, describe, expect, it } from "vitest";
-import type { GraphQLContext } from "~/src/graphql/context";
-import type { Fund as FundType } from "~/src/graphql/types/Fund/Fund";
+import { faker } from "@faker-js/faker";
+import { initGraphQLTada } from "gql.tada";
+import { describe, expect, it, vi } from "vitest";
+import type { ClientCustomScalars } from "~/src/graphql/scalars/index";
 import { resolveOrganization } from "~/src/graphql/types/Fund/organization";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
+import { assertToBeNonNullish } from "../../../helpers";
+import { server } from "../../../server";
+import { mercuriusClient } from "../client";
+import {
+	Mutation_createFund,
+	Mutation_createOrganization,
+	Mutation_createOrganizationMembership,
+	Query_signIn,
+} from "../documentNodes";
+import type { introspection } from "../gql.tada";
 
-describe("Fund Resolver - Organization Field", () => {
-	let ctx: GraphQLContext;
-	let mockFund: FundType;
-	let mocks: ReturnType<typeof createMockGraphQLContext>["mocks"];
+const gql = initGraphQLTada<{
+	introspection: introspection;
+	scalars: ClientCustomScalars;
+}>();
 
-	beforeEach(async () => {
-		mockFund = {
-			id: "01234567-89ab-cdef-0123-456789abcdef",
-			organizationId: "org-123",
-			name: "Test Fund",
-			isTaxDeductible: true,
-			creatorId: "user-admin",
-			updaterId: "user-update",
-			isArchived: false,
-			isDefault: false,
-			referenceNumber: null,
-			createdAt: new Date("2024-01-01T09:00:00Z"),
-			updatedAt: new Date("2024-01-01T10:00:00Z"),
-		};
+// Query to fetch a fund with its organization field
+const Query_Fund_Organization = gql(`
+  query FundWithOrganization($input: QueryFundInput!) {
+    fund(input: $input) {
+      id
+      name
+      isTaxDeductible
+      organization {
+        id
+        name
+        countryCode
+        description
+        addressLine1
+        city
+        state
+        postalCode
+      }
+    }
+  }
+`);
 
-		const { context, mocks: newMocks } = createMockGraphQLContext(
-			true,
-			"user-123",
-		);
-		ctx = context;
-		mocks = newMocks;
+type AdminAuth = { token: string; userId: string };
+
+async function getAdminAuth(): Promise<AdminAuth> {
+	const signInResult = await mercuriusClient.query(Query_signIn, {
+		variables: {
+			input: {
+				emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
+				password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
+			},
+		},
 	});
 
+	assertToBeNonNullish(signInResult.data?.signIn?.authenticationToken);
+	assertToBeNonNullish(signInResult.data?.signIn?.user);
+
+	return {
+		token: signInResult.data.signIn.authenticationToken,
+		userId: signInResult.data.signIn.user.id,
+	};
+}
+
+async function createTestOrganization(authToken: string) {
+	const orgName = `Fund Org Test ${faker.string.uuid()}`;
+	const createOrgResult = await mercuriusClient.mutate(
+		Mutation_createOrganization,
+		{
+			headers: { authorization: `bearer ${authToken}` },
+			variables: {
+				input: {
+					name: orgName,
+					description: "Organization for Fund.organization tests",
+					countryCode: "us",
+					state: "CA",
+					city: "San Francisco",
+					postalCode: "94101",
+					addressLine1: "100 Fund Street",
+					addressLine2: "Suite 200",
+				},
+			},
+		},
+	);
+	assertToBeNonNullish(createOrgResult.data?.createOrganization);
+	const org = createOrgResult.data.createOrganization;
+	assertToBeNonNullish(org.id);
+	return { id: org.id as string, name: org.name as string };
+}
+
+async function createOrgMembership(
+	authToken: string,
+	organizationId: string,
+	memberId: string,
+) {
+	await mercuriusClient.mutate(Mutation_createOrganizationMembership, {
+		headers: { authorization: `bearer ${authToken}` },
+		variables: {
+			input: {
+				organizationId,
+				memberId,
+				role: "administrator",
+			},
+		},
+	});
+}
+
+async function createTestFund(authToken: string, organizationId: string) {
+	const fundName = `Test Fund ${faker.string.uuid()}`;
+	const createFundResult = await mercuriusClient.mutate(Mutation_createFund, {
+		headers: { authorization: `bearer ${authToken}` },
+		variables: {
+			input: {
+				name: fundName,
+				organizationId,
+				isTaxDeductible: true,
+				isDefault: false,
+				isArchived: false,
+			},
+		},
+	});
+	assertToBeNonNullish(createFundResult.data?.createFund);
+	const fund = createFundResult.data.createFund;
+	assertToBeNonNullish(fund.id);
+	return { id: fund.id as string, name: fund.name as string };
+}
+
+describe("Fund.organization Resolver - Integration", () => {
 	describe("Organization Resolution", () => {
-		it("should successfully resolve organization when it exists", async () => {
-			const mockOrganization = {
-				id: "org-123",
-				name: "Test Organization",
-				description: "Test Organization Description",
-				countryCode: "US",
-				createdAt: new Date("2024-01-01"),
-				updatedAt: new Date("2024-01-01"),
-				addressLine1: "123 Main St",
-				addressLine2: null,
-				avatarMimeType: null,
-				city: "Test City",
-				state: "Test State",
-				zipCode: "12345",
-				userRegistrationRequired: false,
-				membershipRequestsEnabled: true,
-			};
-
-			mocks.drizzleClient.query.organizationsTable.findFirst.mockResolvedValue(
-				mockOrganization,
+		it("should successfully resolve organization when querying a fund", async () => {
+			const adminAuth = await getAdminAuth();
+			const organization = await createTestOrganization(adminAuth.token);
+			await createOrgMembership(
+				adminAuth.token,
+				organization.id,
+				adminAuth.userId,
 			);
+			const fund = await createTestFund(adminAuth.token, organization.id);
 
-			const result = await resolveOrganization(mockFund, {}, ctx);
-
-			expect(result).toEqual(mockOrganization);
-			expect(
-				mocks.drizzleClient.query.organizationsTable.findFirst,
-			).toHaveBeenCalledWith({
-				where: expect.any(Function),
+			const result = await mercuriusClient.query(Query_Fund_Organization, {
+				headers: { authorization: `bearer ${adminAuth.token}` },
+				variables: {
+					input: {
+						id: fund.id,
+					},
+				},
 			});
+
+			expect(result.errors).toBeUndefined();
+			assertToBeNonNullish(result.data?.fund);
+			assertToBeNonNullish(result.data.fund.organization);
+			expect(result.data.fund.organization.id).toBe(organization.id);
+			expect(result.data.fund.organization.name).toBe(organization.name);
 		});
 
-		it("should throw unexpected error when organization does not exist", async () => {
-			mocks.drizzleClient.query.organizationsTable.findFirst.mockResolvedValue(
-				undefined,
+		it("should return organization with all requested fields", async () => {
+			const adminAuth = await getAdminAuth();
+			const organization = await createTestOrganization(adminAuth.token);
+			await createOrgMembership(
+				adminAuth.token,
+				organization.id,
+				adminAuth.userId,
+			);
+			const fund = await createTestFund(adminAuth.token, organization.id);
+
+			const result = await mercuriusClient.query(Query_Fund_Organization, {
+				headers: { authorization: `bearer ${adminAuth.token}` },
+				variables: {
+					input: {
+						id: fund.id,
+					},
+				},
+			});
+
+			expect(result.errors).toBeUndefined();
+			assertToBeNonNullish(result.data?.fund?.organization);
+
+			// Verify all requested organization fields are present
+			expect(result.data.fund.organization.id).toBe(organization.id);
+			expect(result.data.fund.organization.name).toBe(organization.name);
+			expect(result.data.fund.organization.countryCode).toBe("us");
+			expect(result.data.fund.organization.description).toBe(
+				"Organization for Fund.organization tests",
+			);
+			expect(result.data.fund.organization.addressLine1).toBe(
+				"100 Fund Street",
+			);
+			expect(result.data.fund.organization.city).toBe("San Francisco");
+			expect(result.data.fund.organization.state).toBe("CA");
+			expect(result.data.fund.organization.postalCode).toBe("94101");
+		});
+	});
+
+	describe("Authentication", () => {
+		it("should return unauthenticated error when not logged in", async () => {
+			const adminAuth = await getAdminAuth();
+			const organization = await createTestOrganization(adminAuth.token);
+			await createOrgMembership(
+				adminAuth.token,
+				organization.id,
+				adminAuth.userId,
+			);
+			const fund = await createTestFund(adminAuth.token, organization.id);
+
+			// Query without auth header - pass empty authorization in query options
+			// instead of mutating global client state with setHeaders({})
+			const result = await mercuriusClient.query(Query_Fund_Organization, {
+				variables: {
+					input: {
+						id: fund.id,
+					},
+				},
+				headers: { authorization: "" },
+			});
+
+			expect(result.errors).toBeDefined();
+			expect(result.errors?.[0]?.extensions?.code).toBe("unauthenticated");
+		});
+	});
+
+	describe("Organization via createFund mutation", () => {
+		it("should create fund with valid organization reference", async () => {
+			const adminAuth = await getAdminAuth();
+			const organization = await createTestOrganization(adminAuth.token);
+			await createOrgMembership(
+				adminAuth.token,
+				organization.id,
+				adminAuth.userId,
 			);
 
-			await expect(resolveOrganization(mockFund, {}, ctx)).rejects.toThrow(
-				new TalawaGraphQLError({
-					extensions: { code: "unexpected" },
+			const fundName = `Test Fund ${faker.string.uuid()}`;
+			const result = await mercuriusClient.mutate(Mutation_createFund, {
+				headers: { authorization: `bearer ${adminAuth.token}` },
+				variables: {
+					input: {
+						name: fundName,
+						organizationId: organization.id,
+						isTaxDeductible: true,
+						isDefault: false,
+						isArchived: false,
+					},
+				},
+			});
+
+			expect(result.errors).toBeUndefined();
+			assertToBeNonNullish(result.data?.createFund);
+			expect(result.data.createFund.name).toBe(fundName);
+
+			// Now query the fund with organization field
+			const fundQuery = await mercuriusClient.query(Query_Fund_Organization, {
+				headers: { authorization: `bearer ${adminAuth.token}` },
+				variables: {
+					input: {
+						id: result.data.createFund.id,
+					},
+				},
+			});
+
+			expect(fundQuery.errors).toBeUndefined();
+			assertToBeNonNullish(fundQuery.data?.fund?.organization);
+			expect(fundQuery.data.fund.organization.id).toBe(organization.id);
+		});
+	});
+
+	describe("Multiple Funds Resolution", () => {
+		it("should resolve organization correctly for multiple funds in same org", async () => {
+			const adminAuth = await getAdminAuth();
+			const organization = await createTestOrganization(adminAuth.token);
+			await createOrgMembership(
+				adminAuth.token,
+				organization.id,
+				adminAuth.userId,
+			);
+
+			// Create multiple funds in the same organization
+			const fund1 = await createTestFund(adminAuth.token, organization.id);
+			const fund2 = await createTestFund(adminAuth.token, organization.id);
+			const fund3 = await createTestFund(adminAuth.token, organization.id);
+
+			// Query each fund individually and verify organization resolution
+			// Note: Each query is a separate HTTP request with its own DataLoader instance,
+			// so this tests concurrent resolution correctness, not DataLoader batching
+			const results = await Promise.all([
+				mercuriusClient.query(Query_Fund_Organization, {
+					headers: { authorization: `bearer ${adminAuth.token}` },
+					variables: { input: { id: fund1.id } },
 				}),
-			);
+				mercuriusClient.query(Query_Fund_Organization, {
+					headers: { authorization: `bearer ${adminAuth.token}` },
+					variables: { input: { id: fund2.id } },
+				}),
+				mercuriusClient.query(Query_Fund_Organization, {
+					headers: { authorization: `bearer ${adminAuth.token}` },
+					variables: { input: { id: fund3.id } },
+				}),
+			]);
 
-			expect(ctx.log.error).toHaveBeenCalledWith(
-				"Postgres select operation returned an empty array for a fund's organization id that isn't null.",
-			);
-		});
-	});
-
-	describe("Database Query Verification", () => {
-		it("should call database query with correct organization ID", async () => {
-			const mockOrganization = {
-				id: "org-123",
-				name: "Test Organization",
-				countryCode: "US",
-			};
-
-			mocks.drizzleClient.query.organizationsTable.findFirst.mockImplementation(
-				((config: { where?: unknown }) => {
-					// Verify where clause is provided
-					expect(config.where).toBeDefined();
-					return Promise.resolve(mockOrganization);
-				}) as unknown as typeof mocks.drizzleClient.query.organizationsTable.findFirst,
-			);
-
-			await resolveOrganization(mockFund, {}, ctx);
-
-			expect(
-				mocks.drizzleClient.query.organizationsTable.findFirst,
-			).toHaveBeenCalledTimes(1);
-		});
-
-		it("should handle different organization IDs correctly", async () => {
-			const mockOrganization1 = {
-				id: "org-111",
-				name: "Organization 1",
-				countryCode: "US",
-			};
-
-			const mockOrganization2 = {
-				id: "org-222",
-				name: "Organization 2",
-				countryCode: "CA",
-			};
-
-			// Test with first organization ID
-			mockFund.organizationId = "org-111";
-			mocks.drizzleClient.query.organizationsTable.findFirst.mockResolvedValueOnce(
-				mockOrganization1,
-			);
-
-			let result = await resolveOrganization(mockFund, {}, ctx);
-			expect(result).toEqual(mockOrganization1);
-
-			// Test with second organization ID
-			mockFund.organizationId = "org-222";
-			mocks.drizzleClient.query.organizationsTable.findFirst.mockResolvedValueOnce(
-				mockOrganization2,
-			);
-
-			result = await resolveOrganization(mockFund, {}, ctx);
-			expect(result).toEqual(mockOrganization2);
-
-			// Verify both calls were made
-			expect(
-				mocks.drizzleClient.query.organizationsTable.findFirst,
-			).toHaveBeenCalledTimes(2);
-		});
-
-		it("should use organizationId from parent correctly", async () => {
-			const mockOrganization = {
-				id: "custom-org-id",
-				name: "Custom Org",
-				countryCode: "UK",
-			};
-
-			mockFund.organizationId = "custom-org-id";
-			mocks.drizzleClient.query.organizationsTable.findFirst.mockResolvedValue(
-				mockOrganization,
-			);
-
-			await resolveOrganization(mockFund, {}, ctx);
-
-			expect(
-				mocks.drizzleClient.query.organizationsTable.findFirst,
-			).toHaveBeenCalledWith({
-				where: expect.any(Function),
-			});
-		});
-	});
-
-	describe("Error Handling", () => {
-		it("should log error with correct message when organization is not found", async () => {
-			mocks.drizzleClient.query.organizationsTable.findFirst.mockResolvedValue(
-				undefined,
-			);
-			expect.assertions(4);
-			try {
-				await resolveOrganization(mockFund, {}, ctx);
-				expect.fail("Expect resolveOrganization to throw");
-			} catch (error) {
-				expect(ctx.log.error).toHaveBeenCalledWith(
-					"Postgres select operation returned an empty array for a fund's organization id that isn't null.",
-				);
-				expect(error).toBeInstanceOf(TalawaGraphQLError);
-				expect((error as TalawaGraphQLError).extensions.code).toBe(
-					"unexpected",
-				);
-				expect((error as TalawaGraphQLError).message).toBe(
-					"Something went wrong. Please try again later.",
-				);
+			// All queries should succeed and return the same organization
+			for (const result of results) {
+				expect(result.errors).toBeUndefined();
+				assertToBeNonNullish(result.data?.fund?.organization);
+				expect(result.data.fund.organization.id).toBe(organization.id);
+				expect(result.data.fund.organization.name).toBe(organization.name);
 			}
-		});
-
-		it("should handle database errors gracefully", async () => {
-			const databaseError = new Error("Database connection failed");
-			mocks.drizzleClient.query.organizationsTable.findFirst.mockRejectedValue(
-				databaseError,
-			);
-
-			await expect(resolveOrganization(mockFund, {}, ctx)).rejects.toThrow(
-				databaseError,
-			);
-
-			// Verify the query was attempted
-			expect(
-				mocks.drizzleClient.query.organizationsTable.findFirst,
-			).toHaveBeenCalledTimes(1);
-		});
-
-		it("should not log errors for successful operations", async () => {
-			const mockOrganization = {
-				id: "org-123",
-				name: "Success Organization",
-				countryCode: "US",
-			};
-
-			mocks.drizzleClient.query.organizationsTable.findFirst.mockResolvedValue(
-				mockOrganization,
-			);
-
-			await resolveOrganization(mockFund, {}, ctx);
-
-			expect(ctx.log.error).not.toHaveBeenCalled();
-		});
-
-		it("should handle query timeout errors", async () => {
-			const timeoutError = new Error("Query timeout");
-			timeoutError.name = "TimeoutError";
-			mocks.drizzleClient.query.organizationsTable.findFirst.mockRejectedValue(
-				timeoutError,
-			);
-
-			await expect(resolveOrganization(mockFund, {}, ctx)).rejects.toThrow(
-				timeoutError,
-			);
-		});
-
-		it("should handle database constraint violations", async () => {
-			const constraintError = new Error("Foreign key constraint violation");
-			constraintError.name = "PostgresError";
-			mocks.drizzleClient.query.organizationsTable.findFirst.mockRejectedValue(
-				constraintError,
-			);
-
-			await expect(resolveOrganization(mockFund, {}, ctx)).rejects.toThrow(
-				constraintError,
-			);
-		});
-	});
-
-	describe("Return Values", () => {
-		it("should return organization with all expected properties", async () => {
-			const mockOrganization = {
-				id: "org-123",
-				name: "Complete Organization",
-				description: "A comprehensive organization",
-				countryCode: "US",
-				createdAt: new Date("2024-01-01T00:00:00Z"),
-				updatedAt: new Date("2024-01-01T12:00:00Z"),
-				addressLine1: "123 Business Ave",
-				addressLine2: "Suite 100",
-				avatarMimeType: "image/png",
-				city: "Business City",
-				state: "Business State",
-				zipCode: "12345",
-				userRegistrationRequired: true,
-				membershipRequestsEnabled: false,
-			};
-
-			mocks.drizzleClient.query.organizationsTable.findFirst.mockResolvedValue(
-				mockOrganization,
-			);
-
-			const result = await resolveOrganization(mockFund, {}, ctx);
-
-			expect(result).toEqual(mockOrganization);
-			expect(result).toHaveProperty("id", "org-123");
-			expect(result).toHaveProperty("name", "Complete Organization");
-			expect(result).toHaveProperty(
-				"description",
-				"A comprehensive organization",
-			);
-			expect(result).toHaveProperty("countryCode", "US");
-			expect(result).toHaveProperty("city", "Business City");
-			expect(result).toHaveProperty("userRegistrationRequired", true);
-		});
-
-		it("should return minimal organization data correctly", async () => {
-			const minimalOrganization = {
-				id: "org-123",
-				name: "Minimal Organization",
-				countryCode: "US",
-				createdAt: new Date("2024-01-01"),
-				updatedAt: new Date("2024-01-01"),
-				addressLine1: null,
-				addressLine2: null,
-				avatarMimeType: null,
-				city: null,
-				state: null,
-				zipCode: null,
-				description: null,
-				userRegistrationRequired: null,
-				membershipRequestsEnabled: null,
-			};
-
-			mocks.drizzleClient.query.organizationsTable.findFirst.mockResolvedValue(
-				minimalOrganization,
-			);
-
-			const result = await resolveOrganization(mockFund, {}, ctx);
-
-			expect(result).toEqual(minimalOrganization);
-			expect(result).toHaveProperty("id", "org-123");
-			expect(result).toHaveProperty("name", "Minimal Organization");
-			expect(result).toHaveProperty("countryCode", "US");
-		});
-
-		it("should preserve all organization properties from database", async () => {
-			const complexOrganization = {
-				id: "org-123",
-				name: "Complex Organization",
-				description: "Organization with many properties",
-				countryCode: "CA",
-				createdAt: new Date("2024-01-01"),
-				updatedAt: new Date("2024-01-02"),
-				addressLine1: "456 Complex St",
-				addressLine2: "Floor 5",
-				avatarMimeType: "image/jpeg",
-				city: "Complex City",
-				state: "Complex Province",
-				zipCode: "A1B 2C3",
-				userRegistrationRequired: false,
-				membershipRequestsEnabled: true,
-				customField: "custom value", // Additional field
-				metadata: { type: "nonprofit", verified: true },
-			};
-
-			mocks.drizzleClient.query.organizationsTable.findFirst.mockResolvedValue(
-				complexOrganization,
-			);
-
-			const result = await resolveOrganization(mockFund, {}, ctx);
-
-			expect(result).toEqual(complexOrganization);
-			expect(result).toHaveProperty("customField", "custom value");
-			expect(result).toHaveProperty("metadata.type", "nonprofit");
-			expect(result).toHaveProperty("metadata.verified", true);
 		});
 	});
 
 	describe("Edge Cases", () => {
-		it("should handle organizationId with UUID format", async () => {
-			const uuidOrgId = "01234567-89ab-cdef-0123-456789abcdef";
-			const uuidOrganization = {
-				id: uuidOrgId,
-				name: "UUID Organization",
-				countryCode: "US",
-			};
+		it("should handle organization with minimal required fields", async () => {
+			const adminAuth = await getAdminAuth();
 
-			mockFund.organizationId = uuidOrgId;
-			mocks.drizzleClient.query.organizationsTable.findFirst.mockResolvedValue(
-				uuidOrganization,
+			// Create organization with minimal fields
+			const orgName = `Minimal Org ${faker.string.uuid()}`;
+			const createOrgResult = await mercuriusClient.mutate(
+				Mutation_createOrganization,
+				{
+					headers: { authorization: `bearer ${adminAuth.token}` },
+					variables: {
+						input: {
+							name: orgName,
+							countryCode: "us",
+						},
+					},
+				},
 			);
+			assertToBeNonNullish(createOrgResult.data?.createOrganization);
+			const organization = createOrgResult.data.createOrganization;
+			assertToBeNonNullish(organization.id);
+			const orgId = organization.id as string;
 
-			const result = await resolveOrganization(mockFund, {}, ctx);
+			await createOrgMembership(adminAuth.token, orgId, adminAuth.userId);
+			const fund = await createTestFund(adminAuth.token, orgId);
 
-			expect(result).toEqual(uuidOrganization);
-			expect(result).toHaveProperty("id", uuidOrgId);
-			expect(result).toHaveProperty("name", "UUID Organization");
-			expect(result).toHaveProperty("countryCode", "US");
-		});
-
-		it("should handle organizations with special characters in name", async () => {
-			const specialOrganization = {
-				id: "org-123",
-				name: "Organization with Special Chars: & < > \" ' %",
-				countryCode: "US",
-			};
-
-			mocks.drizzleClient.query.organizationsTable.findFirst.mockResolvedValue(
-				specialOrganization,
-			);
-
-			const result = await resolveOrganization(mockFund, {}, ctx);
-
-			expect(result).toEqual(specialOrganization);
-			expect(result).toHaveProperty("id", "org-123");
-			expect(result).toHaveProperty(
-				"name",
-				"Organization with Special Chars: & < > \" ' %",
-			);
-			expect(result).toHaveProperty("countryCode", "US");
-		});
-
-		it("should handle organizations with different country codes", async () => {
-			const internationalOrgs = [
-				{ id: "org-us", name: "US Org", countryCode: "US" },
-				{ id: "org-ca", name: "Canadian Org", countryCode: "CA" },
-				{ id: "org-uk", name: "UK Org", countryCode: "GB" },
-				{ id: "org-jp", name: "Japan Org", countryCode: "JP" },
-			];
-
-			for (const org of internationalOrgs) {
-				mockFund.organizationId = org.id;
-				mocks.drizzleClient.query.organizationsTable.findFirst.mockResolvedValueOnce(
-					org,
-				);
-
-				const result = await resolveOrganization(mockFund, {}, ctx);
-				expect(result).toEqual(org);
-				expect(result).toHaveProperty("id", org.id);
-				expect(result).toHaveProperty("name", org.name);
-				expect(result).toHaveProperty("countryCode", org.countryCode);
-			}
-		});
-
-		it("should handle organizations with null optional fields", async () => {
-			const organizationWithNulls = {
-				id: "org-123",
-				name: "Org with Nulls",
-				countryCode: "US",
-				description: null,
-				addressLine1: null,
-				addressLine2: null,
-				avatarMimeType: null,
-				city: null,
-				state: null,
-				zipCode: null,
-				userRegistrationRequired: null,
-				membershipRequestsEnabled: null,
-				createdAt: new Date("2024-01-01"),
-				updatedAt: new Date("2024-01-01"),
-			};
-
-			mocks.drizzleClient.query.organizationsTable.findFirst.mockResolvedValue(
-				organizationWithNulls,
-			);
-
-			const result = await resolveOrganization(mockFund, {}, ctx);
-
-			expect(result).toEqual(organizationWithNulls);
-			expect(result).toHaveProperty("description", null);
-			expect(result).toHaveProperty("addressLine1", null);
-			expect(result).toHaveProperty("city", null);
-		});
-
-		it("should handle very long organization names", async () => {
-			const longName = `${"Very".repeat(50)}Long Organization Name`;
-			const longNameOrganization = {
-				id: "org-123",
-				name: longName,
-				countryCode: "US",
-			};
-
-			mocks.drizzleClient.query.organizationsTable.findFirst.mockResolvedValue(
-				longNameOrganization,
-			);
-
-			const result = await resolveOrganization(mockFund, {}, ctx);
-
-			expect(result).toEqual(longNameOrganization);
-			expect(result).toHaveProperty("name", longName);
-		});
-	});
-
-	describe("Performance Considerations", () => {
-		it("should make exactly one database query", async () => {
-			const mockOrganization = {
-				id: "org-123",
-				name: "Test",
-				countryCode: "US",
-			};
-			mocks.drizzleClient.query.organizationsTable.findFirst.mockResolvedValue(
-				mockOrganization,
-			);
-
-			await resolveOrganization(mockFund, {}, ctx);
-
-			expect(
-				mocks.drizzleClient.query.organizationsTable.findFirst,
-			).toHaveBeenCalledTimes(1);
-		});
-
-		it("should not cache organization data between calls", async () => {
-			const mockOrganization1 = {
-				id: "org-1",
-				name: "Org 1",
-				countryCode: "US",
-			};
-			const mockOrganization2 = {
-				id: "org-2",
-				name: "Org 2",
-				countryCode: "CA",
-			};
-
-			// First call
-			mockFund.organizationId = "org-1";
-			mocks.drizzleClient.query.organizationsTable.findFirst.mockResolvedValueOnce(
-				mockOrganization1,
-			);
-			await resolveOrganization(mockFund, {}, ctx);
-
-			// Second call with different org
-			mockFund.organizationId = "org-2";
-			mocks.drizzleClient.query.organizationsTable.findFirst.mockResolvedValueOnce(
-				mockOrganization2,
-			);
-			await resolveOrganization(mockFund, {}, ctx);
-
-			expect(
-				mocks.drizzleClient.query.organizationsTable.findFirst,
-			).toHaveBeenCalledTimes(2);
-		});
-	});
-
-	describe("Data Integrity", () => {
-		it("should always require organizationId to be present", async () => {
-			// Since organizationId is non-null in the schema, this test verifies
-			// that the resolver assumes organizationId will always be present
-			const mockOrganization = {
-				id: "org-123",
-				name: "Required Org",
-				countryCode: "US",
-			};
-
-			mocks.drizzleClient.query.organizationsTable.findFirst.mockResolvedValue(
-				mockOrganization,
-			);
-
-			const result = await resolveOrganization(mockFund, {}, ctx);
-
-			expect(result).toEqual(mockOrganization);
-			// organizationId should always be used in the query
-			expect(
-				mocks.drizzleClient.query.organizationsTable.findFirst,
-			).toHaveBeenCalledWith({
-				where: expect.any(Function),
+			const result = await mercuriusClient.query(Query_Fund_Organization, {
+				headers: { authorization: `bearer ${adminAuth.token}` },
+				variables: {
+					input: {
+						id: fund.id,
+					},
+				},
 			});
+
+			expect(result.errors).toBeUndefined();
+			assertToBeNonNullish(result.data?.fund?.organization);
+			expect(result.data.fund.organization.id).toBe(orgId);
+			expect(result.data.fund.organization.name).toBe(orgName);
+			expect(result.data.fund.organization.countryCode).toBe("us");
+			// Optional fields should be null
+			expect(result.data.fund.organization.description).toBeNull();
+			expect(result.data.fund.organization.addressLine1).toBeNull();
 		});
 
-		it("should handle organization referential integrity violations", async () => {
-			// Test case where organizationId exists but organization was deleted
-			mocks.drizzleClient.query.organizationsTable.findFirst.mockResolvedValue(
-				undefined,
-			);
+		it("should handle organization with special characters in name", async () => {
+			const adminAuth = await getAdminAuth();
 
-			await expect(resolveOrganization(mockFund, {}, ctx)).rejects.toThrow(
-				new TalawaGraphQLError({
-					extensions: { code: "unexpected" },
-				}),
+			// Create organization with special characters
+			const orgName = `Test Org & Co. <Special> ${faker.string.uuid()}`;
+			const createOrgResult = await mercuriusClient.mutate(
+				Mutation_createOrganization,
+				{
+					headers: { authorization: `bearer ${adminAuth.token}` },
+					variables: {
+						input: {
+							name: orgName,
+							countryCode: "us",
+						},
+					},
+				},
 			);
+			assertToBeNonNullish(createOrgResult.data?.createOrganization);
+			const organization = createOrgResult.data.createOrganization;
+			assertToBeNonNullish(organization.id);
+			const orgId = organization.id as string;
 
-			expect(ctx.log.error).toHaveBeenCalledWith(
-				expect.stringContaining("organization id that isn't null"),
+			await createOrgMembership(adminAuth.token, orgId, adminAuth.userId);
+			const fund = await createTestFund(adminAuth.token, orgId);
+
+			const result = await mercuriusClient.query(Query_Fund_Organization, {
+				headers: { authorization: `bearer ${adminAuth.token}` },
+				variables: {
+					input: {
+						id: fund.id,
+					},
+				},
+			});
+
+			expect(result.errors).toBeUndefined();
+			assertToBeNonNullish(result.data?.fund?.organization);
+			expect(result.data.fund.organization.name).toBe(orgName);
+		});
+
+		it("should handle different country codes correctly", async () => {
+			const adminAuth = await getAdminAuth();
+
+			// Test with Canadian country code
+			const orgName = `Canadian Org ${faker.string.uuid()}`;
+			const createOrgResult = await mercuriusClient.mutate(
+				Mutation_createOrganization,
+				{
+					headers: { authorization: `bearer ${adminAuth.token}` },
+					variables: {
+						input: {
+							name: orgName,
+							countryCode: "ca",
+							state: "ON",
+							city: "Toronto",
+						},
+					},
+				},
 			);
+			assertToBeNonNullish(createOrgResult.data?.createOrganization);
+			const organization = createOrgResult.data.createOrganization;
+			assertToBeNonNullish(organization.id);
+			const orgId = organization.id as string;
+
+			await createOrgMembership(adminAuth.token, orgId, adminAuth.userId);
+			const fund = await createTestFund(adminAuth.token, orgId);
+
+			const result = await mercuriusClient.query(Query_Fund_Organization, {
+				headers: { authorization: `bearer ${adminAuth.token}` },
+				variables: {
+					input: {
+						id: fund.id,
+					},
+				},
+			});
+
+			expect(result.errors).toBeUndefined();
+			assertToBeNonNullish(result.data?.fund?.organization);
+			expect(result.data.fund.organization.countryCode).toBe("ca");
+			expect(result.data.fund.organization.state).toBe("ON");
+			expect(result.data.fund.organization.city).toBe("Toronto");
 		});
 	});
 
-	describe("Logging Verification", () => {
-		it("should log error for missing organization with specific message", async () => {
-			mocks.drizzleClient.query.organizationsTable.findFirst.mockResolvedValue(
-				undefined,
+	describe("Fund Properties with Organization", () => {
+		it("should return fund properties along with organization", async () => {
+			const adminAuth = await getAdminAuth();
+			const organization = await createTestOrganization(adminAuth.token);
+			await createOrgMembership(
+				adminAuth.token,
+				organization.id,
+				adminAuth.userId,
+			);
+			const fund = await createTestFund(adminAuth.token, organization.id);
+
+			const result = await mercuriusClient.query(Query_Fund_Organization, {
+				headers: { authorization: `bearer ${adminAuth.token}` },
+				variables: {
+					input: {
+						id: fund.id,
+					},
+				},
+			});
+
+			expect(result.errors).toBeUndefined();
+			assertToBeNonNullish(result.data?.fund);
+
+			// Verify fund properties
+			expect(result.data.fund.id).toBe(fund.id);
+			expect(result.data.fund.name).toBe(fund.name);
+			expect(result.data.fund.isTaxDeductible).toBe(true);
+
+			// Verify organization is resolved
+			assertToBeNonNullish(result.data.fund.organization);
+			expect(result.data.fund.organization.id).toBe(organization.id);
+		});
+	});
+
+	describe("Error Handling - Orphaned Fund", () => {
+		it("should throw 'unexpected' error when organization DataLoader returns null", async () => {
+			// Simulate an orphaned fund where the organization no longer exists
+			// This could happen due to data corruption or improper deletion
+			const mockFund = {
+				id: "orphaned-fund-id",
+				organizationId: "deleted-org-id",
+				name: "Orphaned Fund",
+				isTaxDeductible: true,
+				isDefault: false,
+				isArchived: false,
+				creatorId: "creator-id",
+				updaterId: null,
+				createdAt: new Date(),
+				updatedAt: new Date(),
+				referenceNumber: null,
+			};
+
+			const mockCtx = {
+				dataloaders: {
+					organization: {
+						load: vi.fn().mockResolvedValue(null),
+					},
+				},
+				log: {
+					error: vi.fn(),
+					info: vi.fn(),
+					warn: vi.fn(),
+					debug: vi.fn(),
+				},
+			};
+
+			await expect(
+				resolveOrganization(
+					mockFund,
+					{},
+					mockCtx as unknown as Parameters<typeof resolveOrganization>[2],
+				),
+			).rejects.toThrow(TalawaGraphQLError);
+
+			// Verify the error was logged
+			expect(mockCtx.log.error).toHaveBeenCalledWith(
+				{
+					fundId: "orphaned-fund-id",
+					organizationId: "deleted-org-id",
+				},
+				"DataLoader returned null for a fund's organization id that isn't null.",
 			);
 
-			try {
-				expect.assertions(1);
-				await resolveOrganization(mockFund, {}, ctx);
-				expect.fail("Expected error to be thrown");
-			} catch (_error) {
-				expect(ctx.log.error).toHaveBeenCalledWith(
-					"Postgres select operation returned an empty array for a fund's organization id that isn't null.",
-				);
-			}
+			// Verify DataLoader was called with the correct organization ID
+			expect(mockCtx.dataloaders.organization.load).toHaveBeenCalledWith(
+				"deleted-org-id",
+			);
 		});
 
-		it("should include fund context in error logs", async () => {
-			mocks.drizzleClient.query.organizationsTable.findFirst.mockResolvedValue(
-				undefined,
-			);
+		it("should throw error with 'unexpected' code for orphaned fund", async () => {
+			const mockFund = {
+				id: "orphaned-fund-id-2",
+				organizationId: "missing-org-id",
+				name: "Another Orphaned Fund",
+				isTaxDeductible: false,
+				isDefault: false,
+				isArchived: false,
+				creatorId: "creator-id",
+				updaterId: null,
+				createdAt: new Date(),
+				updatedAt: new Date(),
+				referenceNumber: null,
+			};
 
-			mockFund.organizationId = "missing-org-123";
+			const mockCtx = {
+				dataloaders: {
+					organization: {
+						load: vi.fn().mockResolvedValue(null),
+					},
+				},
+				log: {
+					error: vi.fn(),
+					info: vi.fn(),
+					warn: vi.fn(),
+					debug: vi.fn(),
+				},
+			};
 
+			let thrownError: unknown;
 			try {
-				expect.assertions(1);
-				await resolveOrganization(mockFund, {}, ctx);
-				expect.fail("Expected error to be thrown");
-			} catch (_error) {
-				expect(ctx.log.error).toHaveBeenCalledWith(
-					expect.stringContaining("fund's organization id"),
+				await resolveOrganization(
+					mockFund,
+					{},
+					mockCtx as unknown as Parameters<typeof resolveOrganization>[2],
 				);
+			} catch (error) {
+				thrownError = error;
 			}
+
+			expect(thrownError).toBeDefined();
+			expect(thrownError).toBeInstanceOf(TalawaGraphQLError);
+			expect((thrownError as TalawaGraphQLError).extensions.code).toBe(
+				"unexpected",
+			);
+		});
+
+		it("should propagate DataLoader errors for fund organization lookup", async () => {
+			const mockFund = {
+				id: "fund-with-error",
+				organizationId: "org-causing-error",
+				name: "Fund With Error",
+				isTaxDeductible: true,
+				isDefault: false,
+				isArchived: false,
+				creatorId: "creator-id",
+				updaterId: null,
+				createdAt: new Date(),
+				updatedAt: new Date(),
+				referenceNumber: null,
+			};
+
+			const dbError = new Error("Database connection failed");
+			const mockCtx = {
+				dataloaders: {
+					organization: {
+						load: vi.fn().mockRejectedValue(dbError),
+					},
+				},
+				log: {
+					error: vi.fn(),
+					info: vi.fn(),
+					warn: vi.fn(),
+					debug: vi.fn(),
+				},
+			};
+
+			await expect(
+				resolveOrganization(
+					mockFund,
+					{},
+					mockCtx as unknown as Parameters<typeof resolveOrganization>[2],
+				),
+			).rejects.toThrow("Database connection failed");
 		});
 	});
 });

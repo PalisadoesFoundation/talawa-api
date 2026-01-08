@@ -678,6 +678,17 @@ export const Mutation_createTag = gql(`
     }
   }`);
 
+export const Mutation_deleteTag = gql(`
+  mutation Mutation_deleteTag($input: MutationDeleteTagInput!) {
+    deleteTag(input: $input) {
+      id
+      name
+      createdAt
+      updatedAt
+    }
+  }
+`);
+
 export const Mutation_createTagFolder = gql(`
   mutation Mutation_createTagFolder($input: MutationCreateTagFolderInput!) {
     createTagFolder(input: $input) {

@@ -18,6 +18,45 @@ Installation is not difficult, but there are many steps. This is a brief explana
 
 These steps are explained in more detail in the sections that follow.
 
+## Quick Start: One-Click Installation
+
+For a simplified setup experience, use our automated installation scripts that handle all prerequisites automatically.
+
+### Linux / macOS / WSL
+
+```bash
+# Clone the repository
+git clone https://github.com/PalisadoesFoundation/talawa-api.git
+cd talawa-api
+
+# Run the installation script
+./scripts/install/install.sh
+```
+
+### Windows (PowerShell)
+
+```powershell
+# Clone the repository
+git clone https://github.com/PalisadoesFoundation/talawa-api.git
+cd talawa-api
+
+# Run the installation script (as Administrator)
+.\scripts\install\install.ps1
+```
+
+### Installation Modes
+
+| Mode | Command (Linux/macOS) | Command (Windows) | Use Case |
+|------|----------------------|-------------------|----------|
+| Docker (default) | `./scripts/install/install.sh --docker` | `.\scripts\install\install.ps1 -Docker` | Production-like, containerized |
+| Local | `./scripts/install/install.sh --local` | `.\scripts\install\install.ps1 -Local` | Development with hot reloading |
+
+After the script completes, run `pnpm run setup` to configure the application.
+
+:::tip
+The one-click scripts automatically install Git, Node.js, pnpm, and Docker if not present. For manual installation steps, continue reading below.
+:::
+
 ## Prerequisites
 
 In this section we'll explain how to set up all the prerequisite software packages to get you up and running.
@@ -207,7 +246,39 @@ pip3 list | grep -E "(black|pydocstyle|flake8|docstring)"
 
 You should see all the packages listed.
 
-Proceed to the next section.
+#### 6. Install curl or wget (For Downloading Validation Scripts)
+
+:::note
+The pre-commit hooks automatically download the latest validation scripts from the centralized [PalisadoesFoundation/.github](https://github.com/PalisadoesFoundation/.github) repository. This requires `curl` or `wget` to be installed on your system.
+:::
+
+Most systems have `curl` or `wget` pre-installed, but you can verify and install if needed:
+
+**Check if curl is installed:**
+```bash
+curl --version
+```
+
+**Check if wget is installed:**
+```bash
+wget --version
+```
+
+**Install curl if needed:**
+- **Ubuntu/Debian**: `sudo apt install curl`
+- **Fedora/RHEL**: `sudo dnf install curl`
+- **macOS**: curl is pre-installed
+- **Windows 10+**: curl is pre-installed, or use `winget install curl.curl`
+
+**Alternatively, install wget:**
+- **Ubuntu/Debian**: `sudo apt install wget`
+- **Fedora/RHEL**: `sudo dnf install wget`
+- **macOS**: `brew install wget`
+- **Windows**: `winget install wget.wget`
+
+:::info
+The pre-commit hooks will use whichever is available (`curl` is tried first, then `wget`). You only need one of them installed.
+:::
 
 
 ### Install The Required Packages

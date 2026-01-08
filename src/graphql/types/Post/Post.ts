@@ -6,8 +6,9 @@ import {
 } from "~/src/graphql/types/PostAttachment/PostAttachment";
 import { escapeHTML } from "~/src/utilities/sanitizer";
 
-export type Post = typeof postsTable.$inferSelect & {
+export type Post = Omit<typeof postsTable.$inferSelect, "creatorId"> & {
 	attachments: PostAttachmentType[] | null;
+	creatorId: string | null;
 };
 
 export const Post = builder.objectRef<Post>("Post");

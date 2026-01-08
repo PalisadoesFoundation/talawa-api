@@ -15,6 +15,7 @@ import {
 } from "./envConfigSchema";
 import plugins from "./fastifyPlugins/index";
 import routes from "./routes/index";
+import { fastifyOtelInstrumentation } from "./tracing";
 
 // Currently fastify provides typescript integration through the usage of ambient typescript declarations where the type of global fastify instance is extended with our custom types. This approach is not sustainable for implementing scoped and encapsulated business logic which is meant to be the main advantage of fastify plugins. The fastify team is aware of this problem and is currently looking for a more elegant approach for typescript integration. More information can be found at this link: https://github.com/fastify/fastify/issues/5061
 declare module "fastify" {
@@ -79,6 +80,8 @@ export const createServer = async (options?: {
 		reply.header("x-correlation-id", correlationId);
 		request.log = request.log.child({ correlationId });
 	});
+
+	await fastify.register(fastifyOtelInstrumentation.plugin());
 
 	// THE FASTIFY PLUGIN LOAD ORDER MATTERS, PLUGINS MIGHT BE DEPENDENT ON OTHER PLUGINS ALREADY BEING REGISTERED. THEREFORE THE ORDER OF REGISTRATION MUST BE MAINTAINED UNLESS THE DEVELOPER KNOWS WHAT THEY'RE DOING.
 

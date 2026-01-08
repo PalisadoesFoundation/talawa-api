@@ -150,7 +150,7 @@ export const createContext: CreateContext = async (initialContext) => {
 	return {
 		cache: fastify.cache,
 		currentClient,
-		dataloaders: createDataloaders(fastify.drizzleClient),
+		dataloaders: createDataloaders(fastify.drizzleClient, fastify.cache),
 		drizzleClient: fastify.drizzleClient,
 		envConfig: fastify.envConfig,
 		jwt: {
@@ -257,7 +257,10 @@ export const graphql = fastifyPlugin(async (fastify) => {
 							isAuthenticated: true,
 							user: decoded.user,
 						},
-						dataloaders: createDataloaders(fastify.drizzleClient),
+						dataloaders: createDataloaders(
+							fastify.drizzleClient,
+							fastify.cache,
+						),
 						drizzleClient: fastify.drizzleClient,
 						envConfig: fastify.envConfig,
 						jwt: {

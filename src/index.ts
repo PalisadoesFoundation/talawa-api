@@ -1,5 +1,7 @@
+import "./tracing";
 import closeWithGrace from "close-with-grace";
 import { createServer } from "./createServer";
+import { shutdownTracing } from "./observability/tracing/bootstrap";
 
 // Talawa api server instance.
 const server = await createServer();
@@ -26,6 +28,7 @@ closeWithGrace(async ({ err, signal }) => {
 
 	// Triggers `onClose` handlers within all fastify plugin functions.
 	await server.close();
+	await shutdownTracing();
 });
 
 server.listen(
