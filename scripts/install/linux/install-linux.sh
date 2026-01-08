@@ -88,7 +88,7 @@ apt_cache_is_fresh() {
     local cache_max_age=3600  # 1 hour (in seconds)
     
     if [ -d "$apt_lists_dir" ]; then
-        # Find the most recently modified file in apt file
+        # Find the most recently modified file in apt lists directory
         local last_update
         last_update=$(find "$apt_lists_dir" -type f -printf '%T@\n' 2>/dev/null | sort -n | tail -1 | cut -d. -f1)
         # If no files found or find failed, cache is stale
