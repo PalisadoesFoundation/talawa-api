@@ -357,7 +357,7 @@ If `totalMs` is unexpectedly high:
 - Implementation: `src/fastifyPlugins/performance.ts`
 - Tracker utility: `src/utilities/metrics/performanceTracker.ts`
 
-# Observability
+## Observability
 
 This document describes the observability setup for **Talawa API**, focusing on **distributed tracing using OpenTelemetry**.
 
@@ -365,7 +365,7 @@ Talawa API uses OpenTelemetry to provide end-to-end visibility into incoming req
 
 ---
 
-## Distributed Tracing
+### Distributed Tracing
 
 Talawa API uses the **OpenTelemetry Node SDK** with **automatic instrumentation** and **W3C Trace Context propagation**.
 
@@ -380,7 +380,7 @@ Talawa API uses the **OpenTelemetry Node SDK** with **automatic instrumentation*
 
 ---
 
-## Architecture
+### Architecture
 
 - **SDK**: OpenTelemetry Node SDK (`@opentelemetry/sdk-node`)
 - **Propagation**: W3C Trace Context (`traceparent` header)
@@ -394,7 +394,7 @@ Talawa API uses the **OpenTelemetry Node SDK** with **automatic instrumentation*
 
 ---
 
-## Configuration
+### Configuration
 
 Tracing behavior is controlled through environment variables and centralized in `observabilityConfig`.
 
@@ -410,7 +410,7 @@ Tracing behavior is controlled through environment variables and centralized in 
 
 ---
 
-## Configuration Source
+### Configuration Source
 
 All observability settings are centralized in:
 
@@ -433,7 +433,7 @@ export const observabilityConfig = {
 
 ---
 
-## Tracing Initialization
+### Tracing Initialization
 
 Tracing is initialized explicitly via an async bootstrap function:
 
@@ -448,7 +448,7 @@ Tracing is initialized explicitly via an async bootstrap function:
 
 ---
 
-## Local Development
+### Local Development
 
 In the `local` environment, traces are printed directly to the console using `ConsoleSpanExporter`.
 
@@ -489,7 +489,7 @@ curl http://localhost:4000/graphql
 
 ---
 
-## Sampling Behavior
+### Sampling Behavior
 
 Talawa API uses **parent-based sampling**:
 
@@ -509,7 +509,7 @@ This allows high-volume production systems to reduce telemetry cost without losi
 
 ---
 
-## W3C Trace Context Propagation
+### W3C Trace Context Propagation
 
 Talawa API automatically propagates trace context using the standard `traceparent` header.
 
@@ -533,7 +533,7 @@ Behavior:
 
 ---
 
-## Instrumentation
+### Instrumentation
 
 The following instrumentations are enabled by default:
 
@@ -551,7 +551,7 @@ Additional instrumentations (e.g. database, GraphQL resolvers) can be added late
 
 ---
 
-## Disabling Tracing
+### Disabling Tracing
 
 Tracing can be completely disabled with zero overhead:
 
