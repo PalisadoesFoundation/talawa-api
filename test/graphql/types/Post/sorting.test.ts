@@ -826,4 +826,230 @@ suite("Query field postsByOrganization - sorting", () => {
 		const batch3 = result3.data?.postsByOrganization;
 		expect(batch3?.[0]?.id).toBe(post1.id);
 	});
+
+	test("should reject negative limit with invalid_arguments error", async () => {
+		const authToken = await getAuthToken();
+		const organizationId = await createTestOrganization();
+
+		const result = await mercuriusClient.query(Query_postsByOrganization, {
+			headers: {
+				authorization: `Bearer ${authToken}`,
+			},
+			variables: {
+				input: {
+					organizationId,
+					limit: -1,
+				},
+			},
+		});
+
+		expect(result.errors).toBeDefined();
+		expect(result.errors).toHaveLength(1);
+		const error = result.errors?.[0] as unknown as TalawaGraphQLFormattedError;
+		expect(error?.extensions?.code).toBe("invalid_arguments");
+	});
+
+	test("should reject zero limit with invalid_arguments error", async () => {
+		const authToken = await getAuthToken();
+		const organizationId = await createTestOrganization();
+
+		const result = await mercuriusClient.query(Query_postsByOrganization, {
+			headers: {
+				authorization: `Bearer ${authToken}`,
+			},
+			variables: {
+				input: {
+					organizationId,
+					limit: 0,
+				},
+			},
+		});
+
+		expect(result.errors).toBeDefined();
+		expect(result.errors).toHaveLength(1);
+		const error = result.errors?.[0] as unknown as TalawaGraphQLFormattedError;
+		expect(error?.extensions?.code).toBe("invalid_arguments");
+	});
+
+	test("should reject limit exceeding 100 with invalid_arguments error", async () => {
+		const authToken = await getAuthToken();
+		const organizationId = await createTestOrganization();
+
+		const result = await mercuriusClient.query(Query_postsByOrganization, {
+			headers: {
+				authorization: `Bearer ${authToken}`,
+			},
+			variables: {
+				input: {
+					organizationId,
+					limit: 101,
+				},
+			},
+		});
+
+		expect(result.errors).toBeDefined();
+		expect(result.errors).toHaveLength(1);
+		const error = result.errors?.[0] as unknown as TalawaGraphQLFormattedError;
+		expect(error?.extensions?.code).toBe("invalid_arguments");
+	});
+
+	test("should reject negative offset with invalid_arguments error", async () => {
+		const authToken = await getAuthToken();
+		const organizationId = await createTestOrganization();
+
+		const result = await mercuriusClient.query(Query_postsByOrganization, {
+			headers: {
+				authorization: `Bearer ${authToken}`,
+			},
+			variables: {
+				input: {
+					organizationId,
+					offset: -1,
+				},
+			},
+		});
+
+		expect(result.errors).toBeDefined();
+		expect(result.errors).toHaveLength(1);
+		const error = result.errors?.[0] as unknown as TalawaGraphQLFormattedError;
+		expect(error?.extensions?.code).toBe("invalid_arguments");
+	});
+
+	test("should work with limit only (no offset)", async () => {
+		const authToken = await getAuthToken();
+		const organizationId = await createTestOrganization();
+
+		await createTestPost(organizationId, adminUserId);
+		await createTestPost(organizationId, adminUserId);
+		await createTestPost(organizationId, adminUserId);
+
+		const result = await mercuriusClient.query(Query_postsByOrganization, {
+			headers: {
+				authorization: `Bearer ${authToken}`,
+			},
+			variables: {
+				input: {
+					organizationId,
+					limit: 2,
+				},
+			},
+		});
+
+		expect(result.errors).toBeUndefined();
+		expect(result.data?.postsByOrganization).toHaveLength(2);
+	});
+
+	test("should return empty array when offset exceeds total posts", async () => {
+		const authToken = await getAuthToken();
+		const organizationId = await createTestOrganization();
+
+		await createTestPost(organizationId, adminUserId);
+		await createTestPost(organizationId, adminUserId);
+
+		const result = await mercuriusClient.query(Query_postsByOrganization, {
+			headers: {
+				authorization: `Bearer ${authToken}`,
+			},
+			variables: {
+				input: {
+					organizationId,
+					limit: 10,
+					offset: 100,
+				},
+			},
+		});
+
+		expect(result.errors).toBeUndefined();
+		expect(result.data?.postsByOrganization).toHaveLength(0);
+	});
+
+	test("should work with pagination and ASC sorting", async () => {
+		const authToken = await getAuthToken();
+		const organizationId = await createTestOrganization();
+
+		const now = Date.now();
+		const post1 = await createTestPost(
+			organizationId,
+			adminUserId,
+			new Date(now - 86400000 * 2),
+		);
+		const post2 = await createTestPost(
+			organizationId,
+			adminUserId,
+			new Date(now - 86400000 * 1),
+		);
+		await createTestPost(organizationId, adminUserId, new Date(now));
+
+		const result = await mercuriusClient.query(Query_postsByOrganization, {
+			headers: {
+				authorization: `Bearer ${authToken}`,
+			},
+			variables: {
+				input: {
+					organizationId,
+					sortOrder: "ASC",
+					limit: 2,
+					offset: 0,
+				},
+			},
+		});
+
+		expect(result.errors).toBeUndefined();
+		expect(result.data?.postsByOrganization).toHaveLength(2);
+		const posts = result.data?.postsByOrganization;
+		expect(posts?.[0]?.id).toBe(post1.id);
+		expect(posts?.[1]?.id).toBe(post2.id);
+	});
+
+	test("should correctly paginate posts with attachments", async () => {
+		const authToken = await getAuthToken();
+		const organizationId = await createTestOrganization();
+
+		const post1 = await createTestPost(organizationId, adminUserId);
+		const post2 = await createTestPost(organizationId, adminUserId);
+
+		await createTestAttachment(post1.id);
+		await createTestAttachment(post2.id);
+		await createTestAttachment(post2.id);
+
+		const result = await mercuriusClient.query(Query_postsByOrganization, {
+			headers: {
+				authorization: `Bearer ${authToken}`,
+			},
+			variables: {
+				input: {
+					organizationId,
+					limit: 1,
+					offset: 0,
+				},
+			},
+		});
+
+		expect(result.errors).toBeUndefined();
+		expect(result.data?.postsByOrganization).toHaveLength(1);
+		const returnedPost = result.data?.postsByOrganization?.[0];
+		expect(returnedPost?.attachments).toBeDefined();
+	});
+
+	test("should accept maximum valid limit of 100", async () => {
+		const authToken = await getAuthToken();
+		const organizationId = await createTestOrganization();
+
+		await createTestPost(organizationId, adminUserId);
+
+		const result = await mercuriusClient.query(Query_postsByOrganization, {
+			headers: {
+				authorization: `Bearer ${authToken}`,
+			},
+			variables: {
+				input: {
+					organizationId,
+					limit: 100,
+				},
+			},
+		});
+
+		expect(result.errors).toBeUndefined();
+		expect(result.data?.postsByOrganization).toBeDefined();
+	});
 });

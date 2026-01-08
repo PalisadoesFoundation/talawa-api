@@ -31,6 +31,51 @@ builder.queryField("postsByOrganization", (t) =>
 
 			const { organizationId, sortOrder, limit, offset } = input;
 
+			// Validate limit parameter
+			if (limit !== undefined && limit !== null) {
+				if (limit < 1) {
+					throw new TalawaGraphQLError({
+						extensions: {
+							code: "invalid_arguments",
+							issues: [
+								{
+									argumentPath: ["input", "limit"],
+									message: "Limit must be at least 1.",
+								},
+							],
+						},
+					});
+				}
+				if (limit > 100) {
+					throw new TalawaGraphQLError({
+						extensions: {
+							code: "invalid_arguments",
+							issues: [
+								{
+									argumentPath: ["input", "limit"],
+									message: "Limit must not exceed 100.",
+								},
+							],
+						},
+					});
+				}
+			}
+
+			// Validate offset parameter
+			if (offset !== undefined && offset !== null && offset < 0) {
+				throw new TalawaGraphQLError({
+					extensions: {
+						code: "invalid_arguments",
+						issues: [
+							{
+								argumentPath: ["input", "offset"],
+								message: "Offset must be non-negative.",
+							},
+						],
+					},
+				});
+			}
+
 			const orderBy =
 				sortOrder === "ASC"
 					? asc(postsTable.createdAt)
