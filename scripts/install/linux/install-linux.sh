@@ -81,6 +81,27 @@ check_docker_running() {
     fi
 }
 
+# Check if apt cache was updated recently (within the last hour)
+# Returns: 0 if cache is fresh, 1 if stale or missing
+apt_cache_is_fresh() {
+    local apt_lists_dir="/var/lib/apt/lists"
+    local cache_max_age=3600  # 1 hour(in seconds)
+    
+    if [ -d "$apt_lists_dir" ]; then
+        # Find the most recently modified file in apt lists
+        local last_update
+        last_update=$(stat -c %Y "$apt_lists_dir" 2>/dev/null) || return 1
+        local current_time
+        current_time=$(date +%s)
+        local cache_age=$((current_time - last_update))
+        
+        if [ $cache_age -lt $cache_max_age ]; then
+            return 0  # Cache is fresh
+        fi
+    fi
+    return 1  # Cache is stale or doesn't exist
+}
+
 # Get the repository root directory
 get_repo_root() {
     local script_dir
@@ -134,8 +155,12 @@ else
     INSTALLED_PREREQS=false
     case $DISTRO in
         ubuntu|debian|linuxmint|pop)
-            info "Updating package lists..."
-            sudo apt-get update -qq
+            if apt_cache_is_fresh; then
+                info "Package lists are up-to-date (updated within the last hour)"
+            else
+                info "Updating package lists..."
+                sudo apt-get update -qq
+            fi
             
             info "Installing git, curl, jq, unzip..."
             sudo apt-get install -y -qq git curl jq unzip
@@ -295,10 +320,19 @@ step $CURRENT_STEP $TOTAL_STEPS "Installing pnpm v$PNPM_VERSION..."
 
 if command_exists pnpm; then
     CURRENT_PNPM=$(pnpm --version)
-    # Skip version comparison if target is "latest" - always update to ensure we have latest
     if [ "$PNPM_VERSION" = "latest" ]; then
-        info "Updating pnpm to latest version..."
-        npm install -g "pnpm@latest"
+        # Query npm registry for actual latest version
+        LATEST_PNPM=$(npm view pnpm version 2>/dev/null) || LATEST_PNPM=""
+        if [ -n "$LATEST_PNPM" ] && [ "$CURRENT_PNPM" = "$LATEST_PNPM" ]; then
+            success "pnpm is already at latest version: v$CURRENT_PNPM"
+        elif [ -n "$LATEST_PNPM" ]; then
+            info "Updating pnpm from v$CURRENT_PNPM to latest (v$LATEST_PNPM)..."
+            npm install -g "pnpm@latest"
+        else
+            warn "Could not determine latest pnpm version from npm registry"
+            info "Updating pnpm to latest version..."
+            npm install -g "pnpm@latest"
+        fi
     elif [ "$CURRENT_PNPM" = "$PNPM_VERSION" ]; then
         success "pnpm is already installed: v$CURRENT_PNPM"
     else
@@ -325,9 +359,38 @@ success "pnpm installed: v$(pnpm --version)"
 : $((CURRENT_STEP++))
 step $CURRENT_STEP $TOTAL_STEPS "Installing project dependencies..."
 
-pnpm install
+# Make pnpm install idempotent by tracking lockfile hash
+LOCKFILE_HASH_CACHE="node_modules/.pnpm-lock-hash"
+NEEDS_INSTALL=true
 
-success "Project dependencies installed"
+if [ -f "pnpm-lock.yaml" ]; then
+    CURRENT_LOCKFILE_HASH=$(sha256sum pnpm-lock.yaml | cut -d ' ' -f 1)
+    
+    if [ -d "node_modules" ] && [ -f "$LOCKFILE_HASH_CACHE" ]; then
+        CACHED_HASH=$(cat "$LOCKFILE_HASH_CACHE" 2>/dev/null) || CACHED_HASH=""
+        if [ "$CURRENT_LOCKFILE_HASH" = "$CACHED_HASH" ]; then
+            NEEDS_INSTALL=false
+            success "Dependencies already up-to-date (lockfile unchanged)"
+        fi
+    fi
+    
+    if [ "$NEEDS_INSTALL" = true ]; then
+        info "Installing dependencies..."
+        pnpm install
+        # Cache the lockfile hash after successful install
+        echo "$CURRENT_LOCKFILE_HASH" > "$LOCKFILE_HASH_CACHE"
+        success "Project dependencies installed"
+    fi
+else
+    # No lockfile exists, run install to generate it
+    info "No pnpm-lock.yaml found, running fresh install..."
+    pnpm install
+    # Cache the new lockfile hash
+    if [ -f "pnpm-lock.yaml" ]; then
+        sha256sum pnpm-lock.yaml | cut -d ' ' -f 1 > "$LOCKFILE_HASH_CACHE"
+    fi
+    success "Project dependencies installed"
+fi
 
 ##############################################################################
 # Complete
