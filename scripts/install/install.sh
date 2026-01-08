@@ -44,12 +44,14 @@ execute_installation_script() {
     echo "════════════════════════════════════════════════════════════"
     echo ""
     
-    local start_time=$(date +%s)
+    local start_time
+    start_time=$(date +%s)
     
     local exit_code=0
     bash "$script_path" "$mode" "$skip_prereqs" || exit_code=$?
     
-    local end_time=$(date +%s)
+    local end_time
+    end_time=$(date +%s)
     local duration=$((end_time - start_time))
     local minutes=$((duration / 60))
     local seconds=$((duration % 60))
@@ -57,7 +59,7 @@ execute_installation_script() {
     echo ""
     echo "════════════════════════════════════════════════════════════"
     
-    if [ $exit_code -eq 0 ]; then
+    if [ "$exit_code" -eq 0 ]; then
         success "$platform_name installation completed successfully!"
         info "Duration: ${minutes}m ${seconds}s"
         echo "════════════════════════════════════════════════════════════"
@@ -80,6 +82,9 @@ display_failure_guidance() {
     local exit_code=$1
     local platform=$2
     local mode=$3
+    local platform_dir
+    
+    platform_dir=$(echo "$platform" | tr '[:upper:]' '[:lower:]')
     
     error "Troubleshooting Guide:"
     echo ""
@@ -93,7 +98,7 @@ display_failure_guidance() {
             ;;
         126)
             info "  • Permission denied - check file permissions"
-            info "    Try: chmod +x scripts/install/$platform/*.sh"
+            info "    Try: chmod +x scripts/install/$platform_dir/*.sh"
             ;;
         127)
             info "  • Command not found - required tool may be missing"
@@ -238,8 +243,10 @@ main() {
                 }
             fi
             
-            if ! execute_installation_script "$LINUX_SCRIPT" "Linux" "$INSTALL_MODE" "$SKIP_PREREQS"; then
-                exit $?
+            execute_installation_script "$LINUX_SCRIPT" "Linux" "$INSTALL_MODE" "$SKIP_PREREQS"
+            local rc=$?
+            if [ $rc -ne 0 ]; then
+                exit $rc
             fi
             ;;
             
@@ -261,8 +268,10 @@ main() {
                 }
             fi
             
-            if ! execute_installation_script "$MACOS_SCRIPT" "macOS" "$INSTALL_MODE" "$SKIP_PREREQS"; then
-                exit $?
+            execute_installation_script "$MACOS_SCRIPT" "macOS" "$INSTALL_MODE" "$SKIP_PREREQS"
+            local rc=$?
+            if [ $rc -ne 0 ]; then
+                exit $rc
             fi
             ;;
             
