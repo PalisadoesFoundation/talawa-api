@@ -394,8 +394,4 @@ describe("Performance Tracker", () => {
 		expect(snapshot.complexityScore).toBe(150);
 		expect(snapshot.ops["gql:complexity"]).toBeUndefined();
 	});
-
-
-
-
 });
