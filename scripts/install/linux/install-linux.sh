@@ -85,12 +85,16 @@ check_docker_running() {
 # Returns: 0 if cache is fresh, 1 if stale or missing
 apt_cache_is_fresh() {
     local apt_lists_dir="/var/lib/apt/lists"
-    local cache_max_age=3600  # 1 hour(in seconds)
+    local cache_max_age=3600  # 1 hour (in seconds)
     
     if [ -d "$apt_lists_dir" ]; then
-        # Find the most recently modified file in apt lists
+        # Find the most recently modified file in apt file
         local last_update
-        last_update=$(stat -c %Y "$apt_lists_dir" 2>/dev/null) || return 1
+        last_update=$(find "$apt_lists_dir" -type f -printf '%T@\n' 2>/dev/null | sort -n | tail -1 | cut -d. -f1)
+        # If no files found or find failed, cache is stale
+        if [ -z "$last_update" ]; then
+            return 1
+        fi
         local current_time
         current_time=$(date +%s)
         local cache_age=$((current_time - last_update))
