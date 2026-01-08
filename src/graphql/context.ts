@@ -2,6 +2,7 @@ import type { FastifyInstance } from "fastify";
 import type { usersTable } from "~/src/drizzle/tables/users";
 import type { CacheService } from "~/src/services/caching";
 import type { Dataloaders } from "~/src/utilities/dataloaders";
+import type { PerformanceTracker } from "~/src/utilities/metrics/performanceTracker";
 import type { PubSub } from "./pubsub";
 
 /**
@@ -132,6 +133,11 @@ export type ExplicitGraphQLContext = {
 			ctx: GraphQLContext,
 		) => Promise<void>;
 	};
+	/**
+	 * Request-scoped performance tracker for monitoring operation durations,
+	 * cache hits/misses, slow queries, and GraphQL complexity scores.
+	 */
+	perf?: PerformanceTracker;
 };
 
 /**

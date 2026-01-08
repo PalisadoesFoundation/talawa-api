@@ -20,12 +20,18 @@ export type OpStats = {
 export type PerfSnapshot = {
 	/** Total time spent across all operations in milliseconds */
 	totalMs: number;
+	/** Total number of operations tracked */
+	totalOps: number;
 	/** Number of cache hits */
 	cacheHits: number;
 	/** Number of cache misses */
 	cacheMisses: number;
+	/** Cache hit rate (hits / (hits + misses)) */
+	hitRate: number;
 	/** Statistics for each operation type */
 	ops: Record<string, OpStats>;
+	/** GraphQL query complexity score (if tracked) */
+	complexityScore?: number;
 };
 
 /**
@@ -64,6 +70,12 @@ export interface PerformanceTracker {
 	trackCacheMiss(): void;
 
 	/**
+	 * Record a GraphQL query complexity score.
+	 * @param score - Complexity score for the query
+	 */
+	trackComplexity(score: number): void;
+
+	/**
 	 * Get a snapshot of current performance metrics.
 	 * @returns Performance snapshot
 	 */
@@ -73,12 +85,15 @@ export interface PerformanceTracker {
 /**
  * Creates a performance tracker for request-level metrics.
  * Tracks operations, cache hits/misses, and provides snapshots.
+ *
+ * @returns A new performance tracker instance
  */
 export function createPerformanceTracker(): PerformanceTracker {
 	const ops: Record<string, OpStats> = {};
 	let cacheHits = 0;
 	let cacheMisses = 0;
-	let totalMs = 0;
+	let totalOps = 0;
+	let complexityScore: number | undefined;
 
 	/**
 	 * Ensure an operation entry exists in the ops record.
@@ -107,7 +122,7 @@ export function createPerformanceTracker(): PerformanceTracker {
 		o.count++;
 		o.ms += ms;
 		o.max = Math.max(o.max, ms);
-		totalMs += ms;
+		totalOps++;
 	};
 
 	return {
@@ -142,12 +157,32 @@ export function createPerformanceTracker(): PerformanceTracker {
 			cacheMisses++;
 		},
 
+		trackComplexity(score: number): void {
+			if (!Number.isFinite(score) || score < 0) {
+				return; // Ignore invalid values
+			}
+			// Store the complexity score separately from timing metrics
+			complexityScore = score;
+		},
+
 		snapshot(): PerfSnapshot {
+			const totalCacheOps = cacheHits + cacheMisses;
+			const hitRate = totalCacheOps > 0 ? cacheHits / totalCacheOps : 0;
+
+			// Calculate totalMs from ops to ensure accuracy (sum of all operation durations)
+			const calculatedTotalMs = Object.values(ops).reduce(
+				(sum, op) => sum + op.ms,
+				0,
+			);
+
 			return {
-				totalMs,
+				totalMs: Math.ceil(calculatedTotalMs),
+				totalOps,
 				cacheHits,
 				cacheMisses,
+				hitRate,
 				ops: structuredClone(ops),
+				...(complexityScore !== undefined && { complexityScore }),
 			};
 		},
 	};

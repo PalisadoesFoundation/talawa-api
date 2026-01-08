@@ -10,6 +10,7 @@ import type {
 } from "~/src/graphql/context";
 import schemaManager from "~/src/graphql/schemaManager";
 import NotificationService from "~/src/services/notification/NotificationService";
+import type { PerformanceTracker } from "~/src/utilities/metrics/performanceTracker";
 import {
 	COOKIE_NAMES,
 	getAccessTokenCookieOptions,
@@ -162,6 +163,8 @@ export const createContext: CreateContext = async (initialContext) => {
 		minio: fastify.minio,
 		// attached a per-request notification service that queues notifications and can flush later
 		notification: new NotificationService(),
+		// Attach performance tracker from request (added by performance plugin)
+		perf: request.perf,
 	};
 };
 
@@ -251,6 +254,27 @@ export const graphql = fastifyPlugin(async (fastify) => {
 						"Subscription connection authorized.",
 					);
 
+					// Try to get performance tracker from socket request if available
+					// WebSocket connections typically don't go through onRequest hook,
+					// but we check in case it's available
+					const socketPerf = (
+						data as { socket?: { request?: { perf?: unknown } } }
+					).socket?.request?.perf;
+					// Type guard: ensure it's a valid PerformanceTracker instance
+					// Reject malformed objects (e.g., missing snapshot or trackComplexity)
+					const perf =
+						socketPerf &&
+						typeof socketPerf === "object" &&
+						socketPerf !== null &&
+						"snapshot" in socketPerf &&
+						"trackComplexity" in socketPerf &&
+						typeof (socketPerf as { snapshot?: unknown }).snapshot ===
+							"function" &&
+						typeof (socketPerf as { trackComplexity?: unknown })
+							.trackComplexity === "function"
+							? (socketPerf as PerformanceTracker)
+							: undefined;
+
 					return {
 						cache: fastify.cache,
 						currentClient: {
@@ -267,6 +291,7 @@ export const graphql = fastifyPlugin(async (fastify) => {
 						log: fastify.log,
 						minio: fastify.minio,
 						notification: new NotificationService(),
+						perf,
 					};
 				} catch (error) {
 					fastify.log.error(
@@ -352,6 +377,11 @@ export const graphql = fastifyPlugin(async (fastify) => {
 			if (operationType === "mutation") {
 				complexity.complexity +=
 					fastify.envConfig.API_GRAPHQL_MUTATION_BASE_COST;
+			}
+
+			// Track complexity score in performance tracker
+			if (request.perf) {
+				request.perf.trackComplexity(complexity.complexity);
 			}
 
 			// Get the IP address of the client making the request

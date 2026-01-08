@@ -16,7 +16,7 @@ Snapshot of performance metrics for a single request.
 
 > **cacheHits**: `number`
 
-Defined in: [src/utilities/metrics/performanceTracker.ts:24](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/utilities/metrics/performanceTracker.ts#L24)
+Defined in: [src/utilities/metrics/performanceTracker.ts:26](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/utilities/metrics/performanceTracker.ts#L26)
 
 Number of cache hits
 
@@ -26,9 +26,29 @@ Number of cache hits
 
 > **cacheMisses**: `number`
 
-Defined in: [src/utilities/metrics/performanceTracker.ts:26](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/utilities/metrics/performanceTracker.ts#L26)
+Defined in: [src/utilities/metrics/performanceTracker.ts:28](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/utilities/metrics/performanceTracker.ts#L28)
 
 Number of cache misses
+
+***
+
+### complexityScore?
+
+> `optional` **complexityScore**: `number`
+
+Defined in: [src/utilities/metrics/performanceTracker.ts:34](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/utilities/metrics/performanceTracker.ts#L34)
+
+GraphQL query complexity score (if tracked)
+
+***
+
+### hitRate
+
+> **hitRate**: `number`
+
+Defined in: [src/utilities/metrics/performanceTracker.ts:30](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/utilities/metrics/performanceTracker.ts#L30)
+
+Cache hit rate (hits / (hits + misses))
 
 ***
 
@@ -36,7 +56,7 @@ Number of cache misses
 
 > **ops**: `Record`\<`string`, [`OpStats`](OpStats.md)\>
 
-Defined in: [src/utilities/metrics/performanceTracker.ts:28](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/utilities/metrics/performanceTracker.ts#L28)
+Defined in: [src/utilities/metrics/performanceTracker.ts:32](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/utilities/metrics/performanceTracker.ts#L32)
 
 Statistics for each operation type
 
@@ -49,3 +69,13 @@ Statistics for each operation type
 Defined in: [src/utilities/metrics/performanceTracker.ts:22](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/utilities/metrics/performanceTracker.ts#L22)
 
 Total time spent across all operations in milliseconds
+
+***
+
+### totalOps
+
+> **totalOps**: `number`
+
+Defined in: [src/utilities/metrics/performanceTracker.ts:24](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/utilities/metrics/performanceTracker.ts#L24)
+
+Total number of operations tracked

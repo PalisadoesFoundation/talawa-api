@@ -8,10 +8,14 @@ describe("Performance Tracker", () => {
 
 		expect(snapshot).toEqual({
 			totalMs: 0,
+			totalOps: 0,
 			cacheHits: 0,
 			cacheMisses: 0,
+			hitRate: 0,
 			ops: {},
 		});
+		// Verify complexityScore is not present when undefined
+		expect(snapshot).not.toHaveProperty("complexityScore");
 	});
 
 	it("should track database operations", () => {
@@ -41,6 +45,7 @@ describe("Performance Tracker", () => {
 
 		expect(snapshot.cacheHits).toBe(3);
 		expect(snapshot.cacheMisses).toBe(0);
+		expect(snapshot.hitRate).toBe(1.0);
 	});
 
 	it("should track cache misses", () => {
@@ -68,6 +73,7 @@ describe("Performance Tracker", () => {
 
 		expect(snapshot.cacheHits).toBe(3);
 		expect(snapshot.cacheMisses).toBe(2);
+		expect(snapshot.hitRate).toBeCloseTo(0.6, 2);
 	});
 
 	it("should time async operations", async () => {
@@ -296,5 +302,151 @@ describe("Performance Tracker", () => {
 		expect(dbOp?.ms).toBe(0);
 		expect(dbOp?.max).toBe(0);
 		expect(snapshot.totalMs).toBe(0);
+		expect(snapshot.totalOps).toBe(1);
+	});
+
+	it("should calculate hit rate correctly", () => {
+		const tracker = createPerformanceTracker();
+
+		tracker.trackCacheHit();
+		tracker.trackCacheHit();
+		tracker.trackCacheMiss();
+
+		const snapshot = tracker.snapshot();
+
+		expect(snapshot.hitRate).toBeCloseTo(2 / 3, 2);
+	});
+
+	it("should return hit rate of 0 when no cache operations", () => {
+		const tracker = createPerformanceTracker();
+		const snapshot = tracker.snapshot();
+
+		expect(snapshot.hitRate).toBe(0);
+	});
+
+	it("should track totalOps correctly", async () => {
+		const tracker = createPerformanceTracker();
+
+		tracker.trackDb(10);
+		await tracker.time("op1", async () => {
+			await new Promise((resolve) => setTimeout(resolve, 5));
+		});
+		await tracker.time("op2", async () => {
+			await new Promise((resolve) => setTimeout(resolve, 5));
+		});
+
+		const snapshot = tracker.snapshot();
+
+		expect(snapshot.totalOps).toBe(3);
+	});
+
+	it("records op timings and cache stats", async () => {
+		const perf = createPerformanceTracker();
+		await perf.time(
+			"db:users.byId",
+			async () => new Promise((r) => setTimeout(r, 2)),
+		);
+		perf.trackCacheHit();
+		perf.trackCacheMiss();
+		perf.trackCacheMiss();
+		const snap = perf.snapshot();
+		expect(snap.totalOps).toBe(1);
+		expect(snap.cacheHits).toBe(1);
+		expect(snap.cacheMisses).toBe(2);
+	});
+
+	it("should silently ignore invalid values in trackComplexity()", () => {
+		const tracker = createPerformanceTracker();
+
+		tracker.trackComplexity(Number.NaN);
+		tracker.trackComplexity(Number.POSITIVE_INFINITY);
+		tracker.trackComplexity(Number.NEGATIVE_INFINITY);
+		tracker.trackComplexity(-50);
+
+		const snapshot = tracker.snapshot();
+
+		// Should not have set complexityScore for invalid values
+		// Verify complexityScore is not present in the snapshot when undefined
+		expect(snapshot).not.toHaveProperty("complexityScore");
+		expect(snapshot.ops["gql:complexity"]).toBeUndefined();
+	});
+
+	it("should handle trackComplexity(0) as valid edge case", () => {
+		const tracker = createPerformanceTracker();
+
+		tracker.trackComplexity(0);
+
+		const snapshot = tracker.snapshot();
+
+		expect(snapshot.complexityScore).toBe(0);
+		expect(snapshot.ops["gql:complexity"]).toBeUndefined();
+	});
+
+	it("should track complexity score correctly", () => {
+		const tracker = createPerformanceTracker();
+
+		tracker.trackComplexity(100);
+		tracker.trackComplexity(150);
+
+		const snapshot = tracker.snapshot();
+
+		// Last call should set the complexityScore to 150
+		expect(snapshot.complexityScore).toBe(150);
+		expect(snapshot.ops["gql:complexity"]).toBeUndefined();
+	});
+
+	it("should track complexity scores", () => {
+		const tracker = createPerformanceTracker();
+
+		tracker.trackComplexity(100);
+		tracker.trackComplexity(50);
+
+		const snapshot = tracker.snapshot();
+
+		// Latest complexity score should be stored
+		expect(snapshot.complexityScore).toBe(50);
+	});
+
+	it("should silently ignore invalid values in trackComplexity()", () => {
+		const tracker = createPerformanceTracker();
+
+		// Track a valid score first
+		tracker.trackComplexity(100);
+		const snapshot1 = tracker.snapshot();
+		expect(snapshot1.complexityScore).toBe(100);
+
+		// Try invalid values - should not change the snapshot
+		tracker.trackComplexity(Number.NaN);
+		tracker.trackComplexity(Number.POSITIVE_INFINITY);
+		tracker.trackComplexity(Number.NEGATIVE_INFINITY);
+		tracker.trackComplexity(-50);
+
+		const snapshot2 = tracker.snapshot();
+
+		// Complexity score should remain unchanged (still 100)
+		expect(snapshot2.complexityScore).toBe(100);
+		// Other fields should be unchanged
+		expect(snapshot2.totalMs).toBe(snapshot1.totalMs);
+		expect(snapshot2.cacheHits).toBe(snapshot1.cacheHits);
+		expect(snapshot2.cacheMisses).toBe(snapshot1.cacheMisses);
+		expect(snapshot2.ops).toEqual(snapshot1.ops);
+	});
+
+	it("should handle trackComplexity(0) as valid edge case", () => {
+		const tracker = createPerformanceTracker();
+
+		tracker.trackComplexity(0);
+
+		const snapshot = tracker.snapshot();
+
+		expect(snapshot.complexityScore).toBe(0);
+	});
+
+	it("should not include complexityScore in snapshot when not tracked", () => {
+		const tracker = createPerformanceTracker();
+
+		const snapshot = tracker.snapshot();
+
+		expect(snapshot).not.toHaveProperty("complexityScore");
 	});
 });
