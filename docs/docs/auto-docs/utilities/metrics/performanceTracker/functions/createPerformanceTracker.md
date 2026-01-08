@@ -4,20 +4,12 @@
 
 # Function: createPerformanceTracker()
 
-> **createPerformanceTracker**(`opts?`): [`PerformanceTracker`](../interfaces/PerformanceTracker.md)
+> **createPerformanceTracker**(): [`PerformanceTracker`](../interfaces/PerformanceTracker.md)
 
 Defined in: [src/utilities/metrics/performanceTracker.ts:91](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/utilities/metrics/performanceTracker.ts#L91)
 
 Creates a performance tracker for request-level metrics.
 Tracks operations, cache hits/misses, and provides snapshots.
-
-## Parameters
-
-### opts?
-
-[`PerformanceTrackerOptions`](../interfaces/PerformanceTrackerOptions.md)
-
-Optional configuration for the tracker
 
 ## Returns
 
