@@ -148,11 +148,20 @@ export const createContext: CreateContext = async (initialContext) => {
 				}
 			: undefined;
 
+	// Use wrapped clients from request if available (for performance tracking),
+	// otherwise fall back to original clients from fastify instance
+	// The performance plugin wraps these in the onRequest hook, so they should
+	// be available for HTTP requests. For subscriptions, use original clients.
+	// fastify.drizzleClient and fastify.cache are guaranteed by plugin dependencies,
+	// so the fallback will always provide valid values (never undefined).
+	const drizzleClient = request.drizzleClient ?? fastify.drizzleClient;
+	const cache = request.cache ?? fastify.cache;
+
 	return {
-		cache: fastify.cache,
+		cache,
 		currentClient,
-		dataloaders: createDataloaders(fastify.drizzleClient, fastify.cache),
-		drizzleClient: fastify.drizzleClient,
+		dataloaders: createDataloaders(drizzleClient, cache),
+		drizzleClient,
 		envConfig: fastify.envConfig,
 		jwt: {
 			sign: (payload: ExplicitAuthenticationTokenPayload) =>

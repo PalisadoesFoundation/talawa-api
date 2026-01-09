@@ -49,6 +49,10 @@ describe("GraphQL Routes", () => {
 		// Setup mock fastify instance
 		mockFastify = {
 			drizzleClient: {} as FastifyInstance["drizzleClient"],
+			cache: {
+				get: vi.fn(),
+				set: vi.fn(),
+			} as unknown as FastifyInstance["cache"],
 			envConfig: {
 				API_IS_GRAPHIQL: true,
 				API_GRAPHQL_MUTATION_BASE_COST: 10,
@@ -226,6 +230,86 @@ describe("GraphQL Routes", () => {
 			});
 
 			expect(mockRequest.jwtVerify).toHaveBeenCalled();
+		});
+
+		it("should use fastify.drizzleClient and fastify.cache for subscriptions (not request wrapped clients)", async () => {
+			// Create wrapped clients on request to simulate performance plugin
+			const wrappedDrizzleClient = {
+				_wrapped: true,
+				query: mockFastify.drizzleClient?.query,
+			};
+			const wrappedCache = {
+				_wrapped: true,
+				get: vi.fn(),
+				set: vi.fn(),
+			};
+
+			mockRequest.drizzleClient =
+				wrappedDrizzleClient as unknown as FastifyInstance["drizzleClient"];
+			mockRequest.cache = wrappedCache as unknown as FastifyInstance["cache"];
+			mockRequest.jwtVerify = vi.fn().mockRejectedValue(new Error("No token"));
+
+			const context = await createContext({
+				fastify: mockFastify as FastifyInstance,
+				request: mockRequest as FastifyRequest,
+				isSubscription: true,
+				socket: mockSocket as WebSocket,
+			});
+
+			// Subscriptions should use original fastify clients, not wrapped request clients
+			expect(context.drizzleClient).toBe(mockFastify.drizzleClient);
+			expect(context.drizzleClient).not.toBe(wrappedDrizzleClient);
+			expect(context.cache).toBe(mockFastify.cache);
+			expect(context.cache).not.toBe(wrappedCache);
+		});
+
+		it("should use request.drizzleClient and request.cache for HTTP requests when available", async () => {
+			// Create wrapped clients on request to simulate performance plugin
+			const wrappedDrizzleClient = {
+				_wrapped: true,
+				query: mockFastify.drizzleClient?.query,
+			};
+			const wrappedCache = {
+				_wrapped: true,
+				get: vi.fn(),
+				set: vi.fn(),
+			};
+
+			mockRequest.drizzleClient =
+				wrappedDrizzleClient as unknown as FastifyInstance["drizzleClient"];
+			mockRequest.cache = wrappedCache as unknown as FastifyInstance["cache"];
+			mockRequest.jwtVerify = vi.fn().mockRejectedValue(new Error("No token"));
+
+			const context = await createContext({
+				fastify: mockFastify as FastifyInstance,
+				request: mockRequest as FastifyRequest,
+				isSubscription: false,
+				reply: mockReply as FastifyReply,
+			});
+
+			// HTTP requests should use wrapped request clients for performance tracking
+			expect(context.drizzleClient).toBe(wrappedDrizzleClient);
+			expect(context.drizzleClient).not.toBe(mockFastify.drizzleClient);
+			expect(context.cache).toBe(wrappedCache);
+			expect(context.cache).not.toBe(mockFastify.cache);
+		});
+
+		it("should fall back to fastify.drizzleClient and fastify.cache when request clients are not available", async () => {
+			// Don't set request.drizzleClient or request.cache
+			mockRequest.drizzleClient = undefined;
+			mockRequest.cache = undefined;
+			mockRequest.jwtVerify = vi.fn().mockRejectedValue(new Error("No token"));
+
+			const context = await createContext({
+				fastify: mockFastify as FastifyInstance,
+				request: mockRequest as FastifyRequest,
+				isSubscription: false,
+				reply: mockReply as FastifyReply,
+			});
+
+			// Should fall back to fastify clients
+			expect(context.drizzleClient).toBe(mockFastify.drizzleClient);
+			expect(context.cache).toBe(mockFastify.cache);
 		});
 
 		it("should provide working JWT sign function", async () => {

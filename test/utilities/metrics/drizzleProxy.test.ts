@@ -767,6 +767,89 @@ describe("wrapDrizzleWithMetrics", () => {
 			if (!op) throw new Error("op is undefined");
 			expect(op.count).toBe(1);
 		});
+
+		it("should handle perf becoming undefined during builder .then() call", async () => {
+			// Test the new behavior where perf is checked when .then() is called, not at Proxy creation
+			const result = [{ id: "1" }];
+			const promise = new Promise<typeof result>((resolve) => {
+				setImmediate(() => resolve(result));
+			});
+
+			type Builder = Promise<typeof result> & {
+				from: (table: string) => Builder;
+				where: (condition: Record<string, unknown>) => Builder;
+			};
+
+			const builder = Object.assign(promise, {
+				from: vi.fn((_table: string) => builder),
+				where: vi.fn((_condition: Record<string, unknown>) => builder),
+			}) as Builder;
+
+			vi.mocked(mockClient.select).mockReturnValue(builder as never);
+
+			// getPerf returns undefined when .then() is called
+			const getPerfUndefined = () => undefined;
+
+			const wrapped = wrapDrizzleWithMetrics(
+				mockClient as unknown as DrizzleClient,
+				getPerfUndefined,
+			);
+
+			// Create builder and chain methods
+			const selectResult = wrapped.select() as unknown as Builder;
+			const fromResult = selectResult.from("users");
+			const whereResult = fromResult.where({});
+
+			// When awaited, .then() is called and perf is checked
+			// Since perf is undefined, it should call original .then() without tracking
+			const rows = await whereResult;
+
+			expect(rows).toEqual([{ id: "1" }]);
+			expect(builder.from).toHaveBeenCalledWith("users");
+			expect(builder.where).toHaveBeenCalled();
+
+			// Verify no metrics were recorded
+			const snapshot = mockPerf.snapshot();
+			expect(snapshot.ops["db:select"]).toBeUndefined();
+		});
+
+		it("should handle perf becoming undefined during builder .execute() call", async () => {
+			// Test when perf is undefined when .execute() is called on a builder
+			const result = [{ id: "1" }];
+			const promise = Promise.resolve(result);
+
+			type Builder = Promise<typeof result> & {
+				values: (values: unknown) => Builder;
+				execute: () => Promise<typeof result>;
+			};
+
+			const executeFn = vi.fn().mockResolvedValue(result);
+			const builder = Object.assign(promise, {
+				values: vi.fn((_values: unknown) => builder),
+				execute: executeFn,
+			}) as Builder;
+
+			vi.mocked(mockClient.insert).mockReturnValue(builder as never);
+
+			// getPerf returns undefined when .execute() is called
+			const getPerfUndefined = () => undefined;
+
+			const wrapped = wrapDrizzleWithMetrics(
+				mockClient as unknown as DrizzleClient,
+				getPerfUndefined,
+			);
+
+			const insertResult = wrapped.insert({} as never) as unknown as Builder;
+			const valuesResult = insertResult.values({ name: "test" });
+			const rows = await valuesResult.execute();
+
+			expect(rows).toEqual([{ id: "1" }]);
+			expect(executeFn).toHaveBeenCalledTimes(1);
+
+			// Verify no metrics were recorded
+			const snapshot = mockPerf.snapshot();
+			expect(snapshot.ops["db:insert"]).toBeUndefined();
+		});
 	});
 
 	describe("Execute Method Edge Cases", () => {

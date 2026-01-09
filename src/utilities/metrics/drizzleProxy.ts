@@ -241,10 +241,8 @@ function wrapBuilderMethod(
 
 		// For builders, wrap .then() and .execute() (if present) to track execution
 		// while preserving all chainable methods
-		const perf = getPerf();
-		if (!perf) {
-			return builder;
-		}
+		// Don't capture perf here - get it when .then() is actually called
+		// This allows perf to be enabled/disabled dynamically
 
 		// Create a proxy that intercepts .then() and .execute() calls
 		// Also wraps chainable methods to return the proxied builder, preserving the Proxy through chaining
@@ -265,6 +263,13 @@ function wrapBuilderMethod(
 							onRejected?: (reason: unknown) => unknown,
 						) => Promise<unknown>;
 
+						// Get perf when .then() is actually called (not when Proxy is created)
+						const perf = getPerf();
+						if (!perf) {
+							// No perf tracker, call original .then() without tracking
+							return originalThen.call(target, onFulfilled, onRejected);
+						}
+
 						// Track timing when the builder is actually executed (via .then())
 						return perf.time(`db:${methodName}`, async () => {
 							const promise = originalThen.call(
@@ -283,6 +288,12 @@ function wrapBuilderMethod(
 						const originalExecute = original as (
 							...args: unknown[]
 						) => Promise<unknown>;
+						// Get perf when .execute() is actually called
+						const perf = getPerf();
+						if (!perf) {
+							// No perf tracker, call original .execute() without tracking
+							return originalExecute.apply(target, executeArgs);
+						}
 						return perf.time(`db:${methodName}`, async () => {
 							return await originalExecute.apply(target, executeArgs);
 						});

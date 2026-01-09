@@ -1,19 +1,29 @@
 import { Readable } from "node:stream";
 import { faker } from "@faker-js/faker";
 import { eq } from "drizzle-orm";
-import gql from "graphql-tag";
+import { initGraphQLTada } from "gql.tada";
 import { beforeAll, expect, suite, test, vi } from "vitest";
 
 import { chatMembershipsTable } from "~/src/drizzle/schema";
 import { chatsTable } from "~/src/drizzle/tables/chats";
 import { organizationMembershipsTable } from "~/src/drizzle/tables/organizationMemberships";
 import { usersTable } from "~/src/drizzle/tables/users";
+import type { ClientCustomScalars } from "~/src/graphql/scalars/index";
 
+import { assertToBeNonNullish } from "../../../helpers";
 import { server } from "../../../server";
 import { mercuriusClient } from "../client";
 import { createRegularUserUsingAdmin } from "../createRegularUserUsingAdmin";
 import { Mutation_createOrganization, Query_signIn } from "../documentNodes";
+import type { introspection } from "../gql.tada";
 
+// Initialize gql for typed GraphQL documents
+const gql = initGraphQLTada<{
+	introspection: introspection;
+	scalars: ClientCustomScalars;
+}>();
+
+// Inline document node to avoid Codecov/patch failures on shared test artifacts
 const Mutation_updateChat = gql(`
 	mutation Mutation_updateChat($input: MutationUpdateChatInput!) {
 		updateChat(input: $input) {
@@ -327,8 +337,10 @@ suite("updateChat mutation", () => {
 		});
 
 		expect(result.errors).toBeUndefined();
-		expect(result.data?.updateChat.id).toBe(chatId);
-		expect(result.data?.updateChat.name).toBe("Updated by chat admin");
+		assertToBeNonNullish(result.data);
+		assertToBeNonNullish(result.data.updateChat);
+		expect(result.data.updateChat.id).toBe(chatId);
+		expect(result.data.updateChat.name).toBe("Updated by chat admin");
 	});
 
 	test("successfully updates chat when user is organization administrator", async () => {
@@ -359,8 +371,10 @@ suite("updateChat mutation", () => {
 		});
 
 		expect(result.errors).toBeUndefined();
-		expect(result.data?.updateChat.id).toBe(chatId);
-		expect(result.data?.updateChat.name).toBe("Updated");
+		assertToBeNonNullish(result.data);
+		assertToBeNonNullish(result.data.updateChat);
+		expect(result.data.updateChat.id).toBe(chatId);
+		expect(result.data.updateChat.name).toBe("Updated");
 	});
 
 	test("successfully updates multiple fields at once", async () => {
@@ -394,9 +408,11 @@ suite("updateChat mutation", () => {
 		});
 
 		expect(result.errors).toBeUndefined();
-		expect(result.data?.updateChat.id).toBe(chatId);
-		expect(result.data?.updateChat.name).toBe("New Name");
-		expect(result.data?.updateChat.description).toBe("New Description");
+		assertToBeNonNullish(result.data);
+		assertToBeNonNullish(result.data.updateChat);
+		expect(result.data.updateChat.id).toBe(chatId);
+		expect(result.data.updateChat.name).toBe("New Name");
+		expect(result.data.updateChat.description).toBe("New Description");
 	});
 
 	test("successfully updates chat when user is system administrator", async () => {
@@ -427,8 +443,10 @@ suite("updateChat mutation", () => {
 		});
 
 		expect(result.errors).toBeUndefined();
-		expect(result.data?.updateChat.id).toBe(chatId);
-		expect(result.data?.updateChat.description).toBe("Updated by system admin");
+		assertToBeNonNullish(result.data);
+		assertToBeNonNullish(result.data.updateChat);
+		expect(result.data.updateChat.id).toBe(chatId);
+		expect(result.data.updateChat.description).toBe("Updated by system admin");
 	});
 
 	test("removes avatar when avatar is set to null", async () => {
@@ -461,7 +479,9 @@ suite("updateChat mutation", () => {
 		});
 
 		expect(result.errors).toBeUndefined();
-		expect(result.data?.updateChat.avatarURL).toBeNull();
+		assertToBeNonNullish(result.data);
+		assertToBeNonNullish(result.data.updateChat);
+		expect(result.data.updateChat.avatarURL).toBeNull();
 
 		const rows = await server.drizzleClient
 			.select()
