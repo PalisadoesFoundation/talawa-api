@@ -34,17 +34,21 @@ TOTAL_PASSED=0
 TOTAL_FAILED=0
 TOTAL_FILES_PASSED=0
 TOTAL_FILES_FAILED=0
+SHARD_ANY_FAILED=0
 
 # Configurable container working directory (default matches Docker image)
 CONTAINER_WORKDIR="${CONTAINER_WORKDIR:-/home/talawa/api}"
+
+# Use workspace-based path for deterministic JSON file locations
+# Export GITHUB_WORKSPACE to container so run-shard.js uses the same path
+WORKSPACE_DIR="${GITHUB_WORKSPACE:-$(pwd)}"
 
 # Use seq for portability (works on macOS and Linux)
 for i in $(seq 1 "$SHARD_COUNT"); do
   echo "=== Running Shard $i/$SHARD_COUNT ==="
   
   # Deterministic JSON output file path (unique per shard to avoid collisions)
-  # Use workspace-based path (accessible from host via bind mount)
-  WORKSPACE_DIR="${GITHUB_WORKSPACE:-$(pwd)}"
+  # Use workspace-based path derived from GITHUB_WORKSPACE
   JSON_OUTPUT_FILE="${WORKSPACE_DIR}/.test-results/shard-${i}-results.json"
   
   # Remove stale host JSON file before running/copying to avoid parsing old results
@@ -58,28 +62,29 @@ for i in $(seq 1 "$SHARD_COUNT"); do
   set +e
   # Run shard (JSON output is written to file by run-shard.js inside container)
   # Use --name (without --rm) to allow copying files out after container stops
-  docker compose run --name "$CONTAINER_NAME" -e "SHARD_INDEX=$i" -e "SHARD_COUNT=$SHARD_COUNT" api pnpm test:shard:coverage
+  # Export GITHUB_WORKSPACE to container so run-shard.js uses CONTAINER_WORKDIR as workspace
+  docker compose run --name "$CONTAINER_NAME" \
+    -e "SHARD_INDEX=$i" \
+    -e "SHARD_COUNT=$SHARD_COUNT" \
+    -e "GITHUB_WORKSPACE=$CONTAINER_WORKDIR" \
+    api pnpm test:shard:coverage
   SHARD_STATUS=$?
   # Restore errexit
   set -e
   
-  # Log failure but continue to collect results from all shards
+  # Track if any shard failed
   if [ "$SHARD_STATUS" -ne 0 ]; then
     echo "Shard $i failed with exit code $SHARD_STATUS" >&2
-    # Still try to copy JSON file even on failure for debugging
-    CONTAINER_JSON="${CONTAINER_WORKDIR}/.test-results/shard-${i}-results.json"
-    mkdir -p "$(dirname "$JSON_OUTPUT_FILE")"
-    docker cp "${CONTAINER_NAME}:${CONTAINER_JSON}" "$JSON_OUTPUT_FILE" 2>/dev/null || true
-    docker rm -f "$CONTAINER_NAME" >/dev/null 2>&1 || true
-    # Continue to next shard instead of exiting (collect all results first)
-    # We'll exit with failure at the end if any shard failed
+    SHARD_ANY_FAILED=1
   fi
   
   # Copy JSON file from container to host (workspace may not be mounted in testing compose)
   # Wait a moment for file to be fully written
   sleep 2
+  # JSON file path in container matches run-shard.js output (uses GITHUB_WORKSPACE which we set to CONTAINER_WORKDIR)
   CONTAINER_JSON="${CONTAINER_WORKDIR}/.test-results/shard-${i}-results.json"
   mkdir -p "$(dirname "$JSON_OUTPUT_FILE")"
+  # Attempt single docker cp before removing container (suppress errors to allow continuation)
   if docker cp "${CONTAINER_NAME}:${CONTAINER_JSON}" "$JSON_OUTPUT_FILE" 2>/dev/null; then
     echo "  Copied JSON results from container"
   else
@@ -89,7 +94,7 @@ for i in $(seq 1 "$SHARD_COUNT"); do
       docker exec "$CONTAINER_NAME" ls -la "$CONTAINER_JSON" 2>/dev/null || echo "  File does not exist in container" >&2
     fi
   fi
-  # Clean up container (remove --rm since we used --name)
+  # Remove container only once after copy attempt
   docker rm -f "$CONTAINER_NAME" >/dev/null 2>&1 || true
   
   # Load JSON directly from the deterministic output file
@@ -129,8 +134,8 @@ echo "Total Tests: $TOTAL_PASSED passed, $TOTAL_FAILED failed"
 echo "Total Files: $TOTAL_FILES_PASSED passed, $TOTAL_FILES_FAILED failed"
 echo "=========================================="
 
-# Exit with failure if any tests failed
-if [ "$TOTAL_FAILED" -gt 0 ] || [ "$TOTAL_FILES_FAILED" -gt 0 ]; then
+# Exit with failure if any shard execution failed or any tests failed
+if [ "$SHARD_ANY_FAILED" -ne 0 ] || [ "$TOTAL_FAILED" -gt 0 ] || [ "$TOTAL_FILES_FAILED" -gt 0 ]; then
   exit 1
 fi
 exit 0
