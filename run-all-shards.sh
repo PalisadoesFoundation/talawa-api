@@ -96,7 +96,7 @@ for i in $(seq 1 "$SHARD_COUNT"); do
   FILES_FAILED=$((FILES_FAILED_SANITIZED + 0))
   
   # Check if graphql.test.ts ran in this shard (non-fatal grep)
-  if grep -q "graphql.test" "$SHARD_OUTPUT_FILE" 2>/dev/null || true; then
+  if grep -q "graphql.test" "$SHARD_OUTPUT_FILE" 2>/dev/null; then
     echo "  ✓ graphql.test.ts found in this shard!"
     grep -A 10 "graphql.test" "$SHARD_OUTPUT_FILE" 2>/dev/null || true
   fi
