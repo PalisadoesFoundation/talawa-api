@@ -286,6 +286,7 @@ describe("wrapDrizzleWithMetrics", () => {
 		it("should track errors from insert builder when awaited", async () => {
 			const dbError = new Error("Insert query failed");
 			const mockPromise = Promise.reject(dbError);
+			const mockTable = {}; // Dummy table object
 			vi.mocked(mockClient.insert).mockReturnValue(mockPromise as never);
 
 			const wrapped = wrapDrizzleWithMetrics(
@@ -293,7 +294,9 @@ describe("wrapDrizzleWithMetrics", () => {
 				getPerf,
 			);
 
-			await expect(wrapped.insert()).rejects.toThrow("Insert query failed");
+			await expect(wrapped.insert(mockTable)).rejects.toThrow(
+				"Insert query failed",
+			);
 
 			// Operation should still be tracked even if it failed
 			const snapshot = mockPerf.snapshot();
@@ -303,6 +306,7 @@ describe("wrapDrizzleWithMetrics", () => {
 		it("should track errors from update builder when awaited", async () => {
 			const dbError = new Error("Update query failed");
 			const mockPromise = Promise.reject(dbError);
+			const mockTable = {}; // Dummy table object
 			vi.mocked(mockClient.update).mockReturnValue(mockPromise as never);
 
 			const wrapped = wrapDrizzleWithMetrics(
@@ -310,7 +314,9 @@ describe("wrapDrizzleWithMetrics", () => {
 				getPerf,
 			);
 
-			await expect(wrapped.update()).rejects.toThrow("Update query failed");
+			await expect(wrapped.update(mockTable)).rejects.toThrow(
+				"Update query failed",
+			);
 
 			// Operation should still be tracked even if it failed
 			const snapshot = mockPerf.snapshot();
@@ -320,6 +326,7 @@ describe("wrapDrizzleWithMetrics", () => {
 		it("should track errors from delete builder when awaited", async () => {
 			const dbError = new Error("Delete query failed");
 			const mockPromise = Promise.reject(dbError);
+			const mockTable = {}; // Dummy table object
 			vi.mocked(mockClient.delete).mockReturnValue(mockPromise as never);
 
 			const wrapped = wrapDrizzleWithMetrics(
@@ -327,7 +334,9 @@ describe("wrapDrizzleWithMetrics", () => {
 				getPerf,
 			);
 
-			await expect(wrapped.delete()).rejects.toThrow("Delete query failed");
+			await expect(wrapped.delete(mockTable)).rejects.toThrow(
+				"Delete query failed",
+			);
 
 			// Operation should still be tracked even if it failed
 			const snapshot = mockPerf.snapshot();
@@ -577,6 +586,7 @@ describe("wrapDrizzleWithMetrics", () => {
 		it("should preserve builder chaining and only time on await for insert", async () => {
 			const result = [{ id: "1", name: "test" }];
 			const promise = Promise.resolve(result);
+			const mockTable = {}; // Dummy table object
 
 			type Builder = Promise<typeof result> & {
 				values: (values: unknown) => Builder;
@@ -595,9 +605,9 @@ describe("wrapDrizzleWithMetrics", () => {
 				getPerf,
 			);
 
-			const insertResult = wrapped.insert() as unknown as Builder;
+			const insertResult = wrapped.insert(mockTable) as unknown as Builder;
 			const valuesResult = insertResult.values({ name: "test" });
-			const returningResult = valuesResult.returning();
+			const returningResult = valuesResult.returning(undefined);
 			const rows = await returningResult;
 
 			expect(rows).toEqual([{ id: "1", name: "test" }]);
@@ -612,6 +622,7 @@ describe("wrapDrizzleWithMetrics", () => {
 		it("should preserve builder chaining and only time on await for update", async () => {
 			const result = [{ id: "1", name: "updated" }];
 			const promise = Promise.resolve(result);
+			const mockTable = {}; // Dummy table object
 
 			type Builder = Promise<typeof result> & {
 				set: (values: unknown) => Builder;
@@ -632,10 +643,10 @@ describe("wrapDrizzleWithMetrics", () => {
 				getPerf,
 			);
 
-			const updateResult = wrapped.update() as unknown as Builder;
+			const updateResult = wrapped.update(mockTable) as unknown as Builder;
 			const setResult = updateResult.set({ name: "updated" });
 			const whereResult = setResult.where({ id: "1" });
-			const returningResult = whereResult.returning();
+			const returningResult = whereResult.returning(undefined);
 			const rows = await returningResult;
 
 			expect(rows).toEqual([{ id: "1", name: "updated" }]);
@@ -651,6 +662,7 @@ describe("wrapDrizzleWithMetrics", () => {
 		it("should preserve builder chaining and only time on await for delete", async () => {
 			const result = [{ id: "1" }];
 			const promise = Promise.resolve(result);
+			const mockTable = {}; // Dummy table object
 
 			type Builder = Promise<typeof result> & {
 				where: (condition: unknown) => Builder;
@@ -669,9 +681,9 @@ describe("wrapDrizzleWithMetrics", () => {
 				getPerf,
 			);
 
-			const deleteResult = wrapped.delete() as unknown as Builder;
+			const deleteResult = wrapped.delete(mockTable) as unknown as Builder;
 			const whereResult = deleteResult.where({ id: "1" });
-			const returningResult = whereResult.returning();
+			const returningResult = whereResult.returning(undefined);
 			const rows = await returningResult;
 
 			expect(rows).toEqual([{ id: "1" }]);
