@@ -189,10 +189,11 @@ for i in $(seq 1 "$SHARD_COUNT"); do
   # Fallback to 0 if file is missing or invalid (don't mask errors, but allow continuation)
   if [ -f "$JSON_OUTPUT_FILE" ] && jq -e '.numPassedTests >= 0' "$JSON_OUTPUT_FILE" >/dev/null 2>&1; then
     # Parse JSON summary with jq, defaulting to 0 if fields are missing
-    TESTS_PASSED=$(jq -r '.numPassedTests // 0' "$JSON_OUTPUT_FILE" 2>/dev/null || echo "0")
-    TESTS_FAILED=$(jq -r '.numFailedTests // 0' "$JSON_OUTPUT_FILE" 2>/dev/null || echo "0")
-    FILES_PASSED=$(jq -r '.numPassedTestSuites // 0' "$JSON_OUTPUT_FILE" 2>/dev/null || echo "0")
-    FILES_FAILED=$(jq -r '.numFailedTestSuites // 0' "$JSON_OUTPUT_FILE" 2>/dev/null || echo "0")
+    # Use tonumber? to ensure output is always a numeric integer for bash arithmetic
+    TESTS_PASSED=$(jq -r '(.numPassedTests // 0) | tonumber? // 0' "$JSON_OUTPUT_FILE" 2>/dev/null || echo "0")
+    TESTS_FAILED=$(jq -r '(.numFailedTests // 0) | tonumber? // 0' "$JSON_OUTPUT_FILE" 2>/dev/null || echo "0")
+    FILES_PASSED=$(jq -r '(.numPassedTestSuites // 0) | tonumber? // 0' "$JSON_OUTPUT_FILE" 2>/dev/null || echo "0")
+    FILES_FAILED=$(jq -r '(.numFailedTestSuites // 0) | tonumber? // 0' "$JSON_OUTPUT_FILE" 2>/dev/null || echo "0")
   else
     # File missing or invalid - log warning but don't fail (allows debugging)
     echo "  Warning: JSON output file not found or invalid: $JSON_OUTPUT_FILE" >&2
