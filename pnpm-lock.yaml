@@ -33,13 +33,8 @@ importers:
         specifier: ^7.0.2
         version: 7.1.0
       '@fastify/type-provider-typebox':
-<<<<<<< HEAD
-        specifier: ^5.1.0
-        version: 5.2.0(@sinclair/typebox@0.34.46)
-=======
         specifier: ^6.1.0
         version: 6.1.0(typebox@1.0.71)
->>>>>>> 1811f419db (chore: bump @fastify/type-provider-typebox to 6.1.0)
       '@node-rs/argon2':
         specifier: ^2.0.2
         version: 2.0.2
@@ -72,14 +67,7 @@ importers:
         version: 4.1.2(@pothos/core@4.12.0(graphql@16.12.0))(graphql@16.12.0)
       '@pothos/plugin-relay':
         specifier: ^4.3.0
-<<<<<<< HEAD
         version: 4.6.2(@pothos/core@4.12.0(graphql@16.12.0))(graphql@16.12.0)
-      '@sinclair/typebox':
-        specifier: ^0.34.41
-        version: 0.34.46
-=======
-        version: 4.6.2(@pothos/core@4.10.0(graphql@16.12.0))(graphql@16.12.0)
->>>>>>> 1811f419db (chore: bump @fastify/type-provider-typebox to 6.1.0)
       ajv-formats:
         specifier: ^3.0.1
         version: 3.0.1(ajv@8.17.1)
@@ -1919,12 +1907,6 @@ packages:
   '@shikijs/vscode-textmate@10.0.2':
     resolution: {integrity: sha512-83yeghZ2xxin3Nj8z1NMd/NCuca+gsYXswywDy5bHvwlWL8tpTQmzGeUuHd9FC3E/SBEMvzJRwWEOz5gGes9Qg==}
 
-<<<<<<< HEAD
-  '@sinclair/typebox@0.34.46':
-    resolution: {integrity: sha512-kiW7CtS/NkdvTUjkjUJo7d5JsFfbJ14YjdhDk9KoEgK6nFjKNXZPrX0jfLA8ZlET4cFLHxOZ/0vFKOP+bOxIOQ==}
-
-=======
->>>>>>> 1811f419db (chore: bump @fastify/type-provider-typebox to 6.1.0)
   '@sindresorhus/is@5.6.0':
     resolution: {integrity: sha512-TV7t8GKYaJWsn00tFDqBw8+Uqmr8A0fRU1tvTQhyZzGv0sJCGRQL3JGMI3ucuKo3XIZdUP+Lx7/gh2t3lewy7g==}
     engines: {node: '>=14.16'}
@@ -5507,15 +5489,9 @@ snapshots:
       fastq: 1.20.1
       glob: 11.1.0
 
-<<<<<<< HEAD
-  '@fastify/type-provider-typebox@5.2.0(@sinclair/typebox@0.34.46)':
-    dependencies:
-      '@sinclair/typebox': 0.34.46
-=======
   '@fastify/type-provider-typebox@6.1.0(typebox@1.0.71)':
     dependencies:
       typebox: 1.0.71
->>>>>>> 1811f419db (chore: bump @fastify/type-provider-typebox to 6.1.0)
 
   '@fastify/websocket@11.2.0':
     dependencies:
@@ -6333,11 +6309,6 @@ snapshots:
 
   '@shikijs/vscode-textmate@10.0.2': {}
 
-<<<<<<< HEAD
-  '@sinclair/typebox@0.34.46': {}
-
-=======
->>>>>>> 1811f419db (chore: bump @fastify/type-provider-typebox to 6.1.0)
   '@sindresorhus/is@5.6.0': {}
 
   '@sindresorhus/merge-streams@4.0.0': {}
