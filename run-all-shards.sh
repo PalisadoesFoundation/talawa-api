@@ -1,6 +1,46 @@
 #!/bin/bash
 
-# Script to run all test shards and collect results
+################################################################################
+# run-all-shards.sh - Orchestrate test shards and collect JSON results
+#
+# Purpose:
+#   Runs all test shards in sequence using docker compose, collects JSON result
+#   files from each shard container, and aggregates test statistics. The script
+#   uses docker compose to run the 'api' container which invokes run-shard.js
+#   to execute Vitest with sharding enabled.
+#
+# Usage:
+#   ./run-all-shards.sh
+#   SHARD_COUNT=8 ./run-all-shards.sh
+#   GITHUB_WORKSPACE=/custom/path ./run-all-shards.sh
+#
+# Environment Variables:
+#   SHARD_COUNT       - Number of test shards to run (default: 12, must be positive integer)
+#   GITHUB_WORKSPACE  - Workspace directory path (default: current working directory)
+#   CONTAINER_WORKDIR - Container working directory (default: /home/talawa/api)
+#
+# External Dependencies:
+#   - docker: Required for container management
+#   - docker compose: Required to run test containers
+#   - jq: Required for parsing JSON result files
+#
+# Runtime Behavior:
+#   - Uses docker compose to run 'api' container which invokes run-shard.js
+#   - Each shard writes JSON results to .test-results/shard-<n>-results.json inside container
+#   - Results are copied from container to host via docker cp
+#   - Script temporarily disables errexit (set +e) around docker compose run to capture
+#     exit codes even when shards fail, allowing collection of results from all shards
+#
+# Exit Codes:
+#   0 - All shards completed successfully and all tests passed
+#   1 - One or more shards failed to execute OR tests failed (TOTAL_FAILED > 0 OR TOTAL_FILES_FAILED > 0)
+#
+# Configurable Defaults:
+#   - SHARD_COUNT defaults to 12 if not set
+#   - GITHUB_WORKSPACE defaults to current working directory if not set
+#   - CONTAINER_WORKDIR defaults to /home/talawa/api if not set
+################################################################################
+
 # Enable safer bash options for better error handling
 # Note: We use set +e around docker commands to handle failures gracefully
 set -euo pipefail
@@ -18,11 +58,10 @@ fi
 
 # Make shard count configurable (default to 12)
 SHARD_COUNT="${SHARD_COUNT:-12}"
-# Validate SHARD_COUNT is a positive integer
+# Validate SHARD_COUNT is a positive integer - fail fast on invalid input
 if ! [[ "$SHARD_COUNT" =~ ^[1-9][0-9]*$ ]]; then
-	echo "Error: SHARD_COUNT must be a positive integer, got: $SHARD_COUNT" >&2
-	echo "Resetting to default value: 12" >&2
-	SHARD_COUNT=12
+	echo "Error: SHARD_COUNT must be a positive integer (>= 1), got: $SHARD_COUNT" >&2
+	exit 1
 fi
 
 echo "=========================================="
@@ -79,19 +118,68 @@ for i in $(seq 1 "$SHARD_COUNT"); do
   fi
   
   # Copy JSON file from container to host (workspace may not be mounted in testing compose)
-  # Wait a moment for file to be fully written
-  sleep 2
+  # Wait for JSON file to be fully written using polling loop
   # JSON file path in container matches run-shard.js output (uses GITHUB_WORKSPACE which we set to CONTAINER_WORKDIR)
   CONTAINER_JSON="${CONTAINER_WORKDIR}/.test-results/shard-${i}-results.json"
   mkdir -p "$(dirname "$JSON_OUTPUT_FILE")"
+  
+  # Poll for JSON file existence and size stability (wait for file to be fully written)
+  POLL_TIMEOUT=60  # Maximum iterations to wait (60 * 0.5s = 30 seconds max)
+  POLL_INTERVAL=0.5  # Check every 0.5 seconds
+  STABLE_ITERATIONS=2  # File size must be unchanged for 2 consecutive checks
+  ITERATION=0
+  PREV_SIZE=-1
+  STABLE_COUNT=0
+  
+  while [ $ITERATION -lt $POLL_TIMEOUT ]; do
+    # Check if container is still running
+    CONTAINER_RUNNING=$(docker ps --format "{{.Names}}" | grep -q "^${CONTAINER_NAME}$" && echo "true" || echo "false")
+    
+    # Check if file exists and get its size
+    # Use docker exec if container is running, otherwise container has stopped and file should be ready
+    if [ "$CONTAINER_RUNNING" = "true" ]; then
+      FILE_SIZE=$(docker exec "$CONTAINER_NAME" sh -c "test -f '$CONTAINER_JSON' && stat -c%s '$CONTAINER_JSON' 2>/dev/null || echo '0'" 2>/dev/null || echo "0")
+    else
+      # Container stopped - file should be written by now, break polling and proceed to copy
+      break
+    fi
+    
+    if [ "$FILE_SIZE" != "0" ] && [ "$FILE_SIZE" != "" ]; then
+      if [ "$FILE_SIZE" = "$PREV_SIZE" ]; then
+        STABLE_COUNT=$((STABLE_COUNT + 1))
+        if [ $STABLE_COUNT -ge $STABLE_ITERATIONS ]; then
+          # File size is stable, proceed with copy
+          break
+        fi
+      else
+        # Size changed, reset stable count
+        STABLE_COUNT=0
+        PREV_SIZE="$FILE_SIZE"
+      fi
+    fi
+    
+    sleep "$POLL_INTERVAL"
+    ITERATION=$((ITERATION + 1))
+  done
+  
+  # Fallback to fixed sleep if polling timeout reached
+  if [ $ITERATION -ge $POLL_TIMEOUT ]; then
+    echo "  Warning: Polling timeout reached, using fallback sleep" >&2
+    sleep 2
+  fi
+  
   # Attempt single docker cp before removing container (suppress errors to allow continuation)
   if docker cp "${CONTAINER_NAME}:${CONTAINER_JSON}" "$JSON_OUTPUT_FILE" 2>/dev/null; then
     echo "  Copied JSON results from container"
   else
     echo "  Warning: Could not copy JSON file from container" >&2
-    # Try to check if container still exists and file is there
+    # Inspect container state and logs for debugging (docker exec doesn't work on stopped containers)
     if docker ps -a --format "{{.Names}}" | grep -q "^${CONTAINER_NAME}$"; then
-      docker exec "$CONTAINER_NAME" ls -la "$CONTAINER_JSON" 2>/dev/null || echo "  File does not exist in container" >&2
+      echo "  Container state:" >&2
+      docker inspect "$CONTAINER_NAME" --format "  Status: {{.State.Status}}, ExitCode: {{.State.ExitCode}}" 2>/dev/null || true
+      echo "  Last 10 log lines:" >&2
+      docker logs --tail 10 "$CONTAINER_NAME" 2>/dev/null || true
+      echo "  Expected file path: $CONTAINER_JSON" >&2
     fi
   fi
   # Remove container only once after copy attempt
