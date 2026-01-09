@@ -46,6 +46,11 @@ export function wrapDrizzleWithMetrics(
 
 			// Handle query object - recursively wrap table access
 			if (prop === "query") {
+				// Zero overhead: return original query object when perf is undefined
+				const perf = getPerf();
+				if (!perf) {
+					return original;
+				}
 				return wrapQueryObject(original, getPerf);
 			}
 
@@ -86,6 +91,11 @@ function wrapQueryObject(
 	query: DrizzleClient["query"],
 	getPerf: PerfGetter,
 ): DrizzleClient["query"] {
+	// Zero overhead: return original query object when perf is undefined
+	const perf = getPerf();
+	if (!perf) {
+		return query;
+	}
 	return new Proxy(query, {
 		get(target, prop) {
 			const table = Reflect.get(target, prop);
@@ -116,6 +126,11 @@ function wrapQueryObject(
 						typeof (table as { findMany?: unknown }).findMany === "function";
 				}
 				if (hasFunctions) {
+					// Zero overhead: return original table when perf is undefined
+					const perf = getPerf();
+					if (!perf) {
+						return table;
+					}
 					return wrapTableMethods(table, prop as string, getPerf);
 				}
 				// Plain data objects without functions are returned as-is to preserve reference equality
@@ -137,6 +152,11 @@ function wrapTableMethods(
 	tableName: string,
 	getPerf: PerfGetter,
 ): typeof table {
+	// Zero overhead: return original table when perf is undefined
+	const perf = getPerf();
+	if (!perf) {
+		return table;
+	}
 	return new Proxy(table, {
 		get(target, prop) {
 			const method = Reflect.get(target, prop);
@@ -241,8 +261,13 @@ function wrapBuilderMethod(
 
 		// For builders, wrap .then() and .execute() (if present) to track execution
 		// while preserving all chainable methods
-		// Don't capture perf here - get it when .then() is actually called
-		// This allows perf to be enabled/disabled dynamically
+		// Check perf at Proxy creation for zero-overhead path (when perf is always undefined)
+		// Also check perf at runtime for dynamic enable/disable (when perf might change)
+		const initialPerf = getPerf();
+		if (!initialPerf) {
+			// Zero overhead: return builder as-is when perf is undefined
+			return builder;
+		}
 
 		// Create a proxy that intercepts .then() and .execute() calls
 		// Also wraps chainable methods to return the proxied builder, preserving the Proxy through chaining

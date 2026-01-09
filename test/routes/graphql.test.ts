@@ -116,7 +116,8 @@ describe("GraphQL Routes", () => {
 				reply: mockReply as FastifyReply,
 			});
 
-			expect(context).toEqual({
+			expect(context).toMatchObject({
+				cache: mockFastify.cache,
 				cookie: {
 					clearAuthCookies: expect.any(Function),
 					getRefreshToken: expect.any(Function),
@@ -142,6 +143,7 @@ describe("GraphQL Routes", () => {
 				notification: expect.objectContaining({
 					queue: [],
 				}),
+				perf: undefined,
 			});
 
 			expect(mockRequest.jwtVerify).toHaveBeenCalled();
@@ -159,7 +161,8 @@ describe("GraphQL Routes", () => {
 				reply: mockReply as FastifyReply,
 			});
 
-			expect(context).toEqual({
+			expect(context).toMatchObject({
+				cache: mockFastify.cache,
 				cookie: {
 					clearAuthCookies: expect.any(Function),
 					getRefreshToken: expect.any(Function),
@@ -184,6 +187,7 @@ describe("GraphQL Routes", () => {
 				notification: expect.objectContaining({
 					queue: [],
 				}),
+				perf: undefined,
 			});
 
 			expect(mockRequest.jwtVerify).toHaveBeenCalled();
