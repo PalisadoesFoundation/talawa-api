@@ -31,21 +31,20 @@ class MockCacheService implements CacheService {
 	}
 
 	async clearByPattern(pattern: string): Promise<void> {
-		// First replace '*' with a placeholder to preserve them
-		// Then escape all regex metacharacters
-		// Finally replace placeholder back to '.*' for regex wildcard
-		const placeholder = "__STAR_PLACEHOLDER__";
-		const escapedPattern = pattern
-			.replace(/\*/g, placeholder)
-			.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")
-			.replace(
-				new RegExp(placeholder.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "g"),
-				".*",
-			);
-		const regex = new RegExp(`^${escapedPattern}$`);
-		for (const key of this.store.keys()) {
-			if (regex.test(key)) {
-				this.store.delete(key);
+		// Simple deterministic matcher: avoid ReDoS by using string operations instead of regex
+		// If pattern ends with '*', treat it as a prefix match, otherwise use exact equality
+		// NOTE: This is a test mock - only supports prefix wildcards for simplicity
+		if (pattern.endsWith("*")) {
+			const prefix = pattern.slice(0, -1);
+			for (const key of this.store.keys()) {
+				if (key.startsWith(prefix)) {
+					this.store.delete(key);
+				}
+			}
+		} else {
+			// Exact match
+			if (this.store.has(pattern)) {
+				this.store.delete(pattern);
 			}
 		}
 	}

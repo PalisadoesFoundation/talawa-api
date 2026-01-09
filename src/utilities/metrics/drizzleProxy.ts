@@ -79,6 +79,8 @@ export function wrapDrizzleWithMetrics(
 
 /**
  * Wraps the query object to intercept table access and method calls.
+ * Treats any non-null object as a potential table and wraps it.
+ * The strict inspection (checking for actual function methods) happens in wrapTableMethods.
  */
 function wrapQueryObject(
 	query: DrizzleClient["query"],
@@ -88,18 +90,21 @@ function wrapQueryObject(
 		get(target, prop) {
 			const table = Reflect.get(target, prop);
 
-			// If accessing a table (e.g., usersTable, organizationsTable)
-			// Drizzle tables are objects with methods like findFirst, findMany, etc.
-			// We check if it has these methods to distinguish from plain objects
+			// If it's a non-null object, treat it as a potential table and wrap it.
+			// wrapTableMethods will handle the actual inspection and only instrument function calls.
+			// Exclude arrays and functions explicitly for performance and correctness.
+			// Note: Drizzle tables are objects (may be class instances or plain objects),
+			// so we wrap all objects and let wrapTableMethods filter by function presence.
 			if (
 				table &&
 				typeof table === "object" &&
-				("findFirst" in table || "findMany" in table)
+				!Array.isArray(table) &&
+				typeof table !== "function"
 			) {
 				return wrapTableMethods(table, prop as string, getPerf);
 			}
 
-			// For non-table properties (plain objects, primitives, etc.), return as-is
+			// For primitives, arrays, functions, null, and undefined, return as-is
 			return table;
 		},
 	}) as DrizzleClient["query"];
@@ -107,6 +112,8 @@ function wrapQueryObject(
 
 /**
  * Wraps table methods (findFirst, findMany, insert, update, delete, etc.) with timing.
+ * Only instruments actual function calls - plain objects are returned unchanged.
+ * This is where the strict inspection happens to distinguish Drizzle tables from plain objects.
  */
 function wrapTableMethods(
 	table: Record<string, unknown>,
@@ -117,7 +124,8 @@ function wrapTableMethods(
 		get(target, prop) {
 			const method = Reflect.get(target, prop);
 
-			// If it's a function (findFirst, findMany, insert, update, delete, etc.)
+			// Only instrument if it's actually a function (findFirst, findMany, insert, update, delete, etc.)
+			// Plain objects will have their properties returned as-is without instrumentation
 			if (typeof method === "function") {
 				return function (this: unknown, ...args: unknown[]) {
 					const perf = getPerf();
@@ -137,6 +145,7 @@ function wrapTableMethods(
 				};
 			}
 
+			// For non-function properties (plain objects, primitives, etc.), return as-is
 			return method;
 		},
 	});
