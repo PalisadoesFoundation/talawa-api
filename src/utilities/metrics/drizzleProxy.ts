@@ -261,14 +261,15 @@ function wrapBuilderMethod(
 								return originalThen.call(target, onFulfilled, onRejected);
 							}
 
-							return perf.time(`db:${methodName}`, async () => {
-								const promise = originalThen.call(
-									target,
-									onFulfilled,
-									onRejected,
-								);
-								return await promise;
+							// Time the base promise execution, then attach user callbacks
+							// Call .then() without callbacks to get the base promise
+							const basePromise = originalThen.call(target);
+							// Measure the base promise execution
+							const timedPromise = perf.time(`db:${methodName}`, async () => {
+								return await basePromise;
 							});
+							// Attach user callbacks to the timed promise
+							return timedPromise.then(onFulfilled, onRejected);
 						};
 					}
 					return original;
@@ -312,16 +313,15 @@ function wrapBuilderMethod(
 							return originalThen.call(target, onFulfilled, onRejected);
 						}
 
-						// Track timing for the promise execution
-						// Wrap the entire promise chain to measure database operation time
-						return perf.time(`db:${methodName}`, async () => {
-							const promise = originalThen.call(
-								target,
-								onFulfilled,
-								onRejected,
-							);
-							return await promise;
+						// Time the base promise execution, then attach user callbacks
+						// Call .then() without callbacks to get the base promise
+						const basePromise = originalThen.call(target);
+						// Measure the base promise execution
+						const timedPromise = perf.time(`db:${methodName}`, async () => {
+							return await basePromise;
 						});
+						// Attach user callbacks to the timed promise
+						return timedPromise.then(onFulfilled, onRejected);
 					};
 				}
 
