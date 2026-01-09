@@ -1,7 +1,5 @@
 import { faker } from "@faker-js/faker";
-import { initGraphQLTada } from "gql.tada";
 import { describe, expect, it, vi } from "vitest";
-import type { ClientCustomScalars } from "~/src/graphql/scalars/index";
 import { resolveOrganization } from "~/src/graphql/types/Fund/organization";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import { assertToBeNonNullish } from "../../../helpers";

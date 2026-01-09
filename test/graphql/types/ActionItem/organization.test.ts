@@ -1,7 +1,5 @@
 import { faker } from "@faker-js/faker";
-import { initGraphQLTada } from "gql.tada";
 import { describe, expect, it, vi } from "vitest";
-import type { ClientCustomScalars } from "~/src/graphql/scalars/index";
 // Import the actual implementation to ensure it's loaded for coverage
 import "~/src/graphql/types/ActionItem/organization";
 import { resolveOrganization } from "~/src/graphql/types/ActionItem/organization";
