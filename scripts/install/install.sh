@@ -171,11 +171,51 @@ detect_os() {
 }
 
 is_wsl() {
+    local detection_method=""
+    
+    # Method 1: Check /proc/version for Microsoft or WSL keywords
     if [ -f /proc/version ]; then
         if grep -qi "microsoft\|wsl" /proc/version 2>/dev/null; then
+            detection_method="/proc/version contains Microsoft/WSL"
+            [ "${WSL_DETECTION_DEBUG:-false}" = true ] && echo "[DEBUG] WSL detected via: $detection_method" >&2
             return 0
         fi
     fi
+    
+    # Method 2: Check WSL_DISTRO_NAME environment variable
+    if [ -n "${WSL_DISTRO_NAME:-}" ]; then
+        detection_method="WSL_DISTRO_NAME environment variable set to '$WSL_DISTRO_NAME'"
+        [ "${WSL_DETECTION_DEBUG:-false}" = true ] && echo "[DEBUG] WSL detected via: $detection_method" >&2
+        return 0
+    fi
+    
+    # Method 3: Check for /run/WSL or /run/wsl directory (case-insensitive)
+    if [ -d "/run/WSL" ] || [ -d "/run/wsl" ]; then
+        detection_method="/run/WSL directory exists"
+        [ "${WSL_DETECTION_DEBUG:-false}" = true ] && echo "[DEBUG] WSL detected via: $detection_method" >&2
+        return 0
+    fi
+    
+    # Method 4: Check for WSL interop flag
+    if [ -f /proc/sys/fs/binfmt_misc/WSLInterop ]; then
+        if grep -q "enabled" /proc/sys/fs/binfmt_misc/WSLInterop 2>/dev/null; then
+            detection_method="WSL interop enabled"
+            [ "${WSL_DETECTION_DEBUG:-false}" = true ] && echo "[DEBUG] WSL detected via: $detection_method" >&2
+            return 0
+        fi
+    fi
+    
+    # Method 5: Check /proc/sys/kernel/osrelease for Microsoft signature
+    if [ -f /proc/sys/kernel/osrelease ]; then
+        if grep -qi "microsoft" /proc/sys/kernel/osrelease 2>/dev/null; then
+            detection_method="/proc/sys/kernel/osrelease contains Microsoft"
+            [ "${WSL_DETECTION_DEBUG:-false}" = true ] && echo "[DEBUG] WSL detected via: $detection_method" >&2
+            return 0
+        fi
+    fi
+    
+    # No WSL detected after checking all methods
+    [ "${WSL_DETECTION_DEBUG:-false}" = true ] && echo "[DEBUG] WSL not detected (checked 5 methods)" >&2
     return 1
 }
 
@@ -195,6 +235,7 @@ show_usage() {
 
 INSTALL_MODE="docker"
 SKIP_PREREQS=false
+
 
 while [[ $# -gt 0 ]]; do
     case $1 in
@@ -292,5 +333,6 @@ main() {
     info "Documentation: https://docs.talawa.io"
     echo ""
 }
+
 
 main

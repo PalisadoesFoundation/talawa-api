@@ -865,4 +865,98 @@ describe("Validation Helpers", () => {
 			);
 		});
 	});
+
+	describe("observabilitySetup", () => {
+		let observabilitySetup: typeof import("scripts/setup/setup").observabilitySetup;
+		type SetupAnswers = import("scripts/setup/setup").SetupAnswers;
+
+		beforeAll(async () => {
+			const module = await import("scripts/setup/setup");
+			observabilitySetup = module.observabilitySetup;
+		});
+
+		afterEach(() => {
+			vi.restoreAllMocks();
+		});
+
+		it("prompts for sampling ratio when observability is enabled", async () => {
+			const promptMock = vi.spyOn(inquirer, "prompt");
+
+			promptMock.mockResolvedValueOnce({
+				API_OTEL_ENABLED: "true",
+			});
+
+			promptMock.mockResolvedValueOnce({
+				API_OTEL_SAMPLING_RATIO: "0.5",
+			});
+
+			const answers: SetupAnswers = {};
+
+			const result = await observabilitySetup(answers);
+
+			expect(promptMock).toHaveBeenCalledTimes(2);
+			expect(result.API_OTEL_ENABLED).toBe("true");
+			expect(result.API_OTEL_SAMPLING_RATIO).toBe("0.5");
+		});
+
+		it("does not prompt for sampling ratio when observability is disabled", async () => {
+			const promptMock = vi.spyOn(inquirer, "prompt");
+
+			promptMock.mockResolvedValueOnce({
+				API_OTEL_ENABLED: "false",
+			});
+
+			const answers: SetupAnswers = {};
+
+			const result = await observabilitySetup(answers);
+
+			expect(promptMock).toHaveBeenCalledTimes(1);
+			expect(result.API_OTEL_ENABLED).toBe("false");
+			expect(result.API_OTEL_SAMPLING_RATIO).toBeUndefined();
+		});
+
+		it("preserves existing answers", async () => {
+			const promptMock = vi.spyOn(inquirer, "prompt");
+
+			promptMock.mockResolvedValueOnce({
+				API_OTEL_ENABLED: "false",
+			});
+
+			const answers: SetupAnswers = {
+				CI: "true",
+			};
+
+			const result = await observabilitySetup(answers);
+
+			expect(result.CI).toBe("true");
+			expect(result.API_OTEL_ENABLED).toBe("false");
+		});
+	});
+
+	describe("validateSamplingRatio", () => {
+		let validateSamplingRatio: typeof import("scripts/setup/setup").validateSamplingRatio;
+
+		beforeAll(async () => {
+			const module = await import("scripts/setup/setup");
+			validateSamplingRatio = module.validateSamplingRatio;
+		});
+
+		it("returns true for valid ratios", () => {
+			expect(validateSamplingRatio("0")).toBe(true);
+			expect(validateSamplingRatio("1")).toBe(true);
+			expect(validateSamplingRatio("0.5")).toBe(true);
+		});
+
+		it("returns error message for invalid ratios", () => {
+			expect(validateSamplingRatio("-1")).toBe(
+				"Please enter valid sampling ratio (0-1).",
+			);
+			expect(validateSamplingRatio("1.1")).toBe(
+				"Please enter valid sampling ratio (0-1).",
+			);
+			expect(validateSamplingRatio("abc")).toBe(
+				"Please enter valid sampling ratio (0-1).",
+			);
+		});
+	});
 });

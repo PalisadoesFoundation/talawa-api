@@ -85,6 +85,10 @@ export interface SetupAnswers {
 
 	// reCAPTCHA Configuration
 	RECAPTCHA_SECRET_KEY?: string;
+
+	// Observability Configuration
+	API_OTEL_ENABLED?: string;
+	API_OTEL_SAMPLING_RATIO?: string;
 }
 
 /**
@@ -312,6 +316,14 @@ export function validatePort(input: string): true | string {
 	const portNumber = Number(input);
 	if (Number.isNaN(portNumber) || portNumber <= 0 || portNumber > 65535) {
 		return "Please enter a valid port number (1-65535).";
+	}
+	return true;
+}
+
+export function validateSamplingRatio(input: string): true | string {
+	const ratio = Number(input);
+	if (Number.isNaN(ratio) || ratio < 0 || ratio > 1) {
+		return "Please enter valid sampling ratio (0-1).";
 	}
 	return true;
 }
@@ -854,6 +866,31 @@ export async function caddySetup(answers: SetupAnswers): Promise<SetupAnswers> {
 	return answers;
 }
 
+export async function observabilitySetup(
+	answers: SetupAnswers,
+): Promise<SetupAnswers> {
+	try {
+		answers.API_OTEL_ENABLED = await promptInput(
+			"API_OTEL_ENABLED",
+			"Observability enabled (true/false):",
+			"true",
+		);
+
+		if (answers.API_OTEL_ENABLED === "true") {
+			answers.API_OTEL_SAMPLING_RATIO = await promptInput(
+				"API_OTEL_SAMPLING_RATIO",
+				"Observability sampling ratio (between 0 & 1):",
+				"1",
+				validateSamplingRatio,
+			);
+		}
+
+		return answers;
+	} catch (err) {
+		handlePromptError(err);
+	}
+}
+
 export async function setup(): Promise<SetupAnswers> {
 	const initialCI = process.env.CI;
 	let answers: SetupAnswers = {};
@@ -951,6 +988,16 @@ export async function setup(): Promise<SetupAnswers> {
 	);
 	if (!useDefaultCaddy) {
 		answers = await caddySetup(answers);
+	}
+
+	const useDefaultObservability = await promptConfirm(
+		"useDefaultObservability",
+		"Use recommended default Observability settings?",
+		true,
+	);
+
+	if (!useDefaultObservability) {
+		answers = await observabilitySetup(answers);
 	}
 
 	const useDefaultApi = await promptConfirm(
