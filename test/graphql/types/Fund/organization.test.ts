@@ -11,35 +11,9 @@ import {
 	Mutation_createFund,
 	Mutation_createOrganization,
 	Mutation_createOrganizationMembership,
+	Query_fundWithFullOrg,
 	Query_signIn,
 } from "../documentNodes";
-import type { introspection } from "../gql.tada";
-
-const gql = initGraphQLTada<{
-	introspection: introspection;
-	scalars: ClientCustomScalars;
-}>();
-
-// Query to fetch a fund with its organization field
-const Query_Fund_Organization = gql(`
-  query FundWithOrganization($input: QueryFundInput!) {
-    fund(input: $input) {
-      id
-      name
-      isTaxDeductible
-      organization {
-        id
-        name
-        countryCode
-        description
-        addressLine1
-        city
-        state
-        postalCode
-      }
-    }
-  }
-`);
 
 type AdminAuth = { token: string; userId: string };
 
@@ -137,7 +111,7 @@ describe("Fund.organization Resolver - Integration", () => {
 			);
 			const fund = await createTestFund(adminAuth.token, organization.id);
 
-			const result = await mercuriusClient.query(Query_Fund_Organization, {
+			const result = await mercuriusClient.query(Query_fundWithFullOrg, {
 				headers: { authorization: `bearer ${adminAuth.token}` },
 				variables: {
 					input: {
@@ -163,7 +137,7 @@ describe("Fund.organization Resolver - Integration", () => {
 			);
 			const fund = await createTestFund(adminAuth.token, organization.id);
 
-			const result = await mercuriusClient.query(Query_Fund_Organization, {
+			const result = await mercuriusClient.query(Query_fundWithFullOrg, {
 				headers: { authorization: `bearer ${adminAuth.token}` },
 				variables: {
 					input: {
@@ -204,7 +178,7 @@ describe("Fund.organization Resolver - Integration", () => {
 
 			// Query without auth header - pass empty authorization in query options
 			// instead of mutating global client state with setHeaders({})
-			const result = await mercuriusClient.query(Query_Fund_Organization, {
+			const result = await mercuriusClient.query(Query_fundWithFullOrg, {
 				variables: {
 					input: {
 						id: fund.id,
@@ -331,7 +305,7 @@ describe("Fund.organization Resolver - Integration", () => {
 			await createOrgMembership(adminAuth.token, orgId, adminAuth.userId);
 			const fund = await createTestFund(adminAuth.token, orgId);
 
-			const result = await mercuriusClient.query(Query_Fund_Organization, {
+			const result = await mercuriusClient.query(Query_fundWithFullOrg, {
 				headers: { authorization: `bearer ${adminAuth.token}` },
 				variables: {
 					input: {
@@ -375,7 +349,7 @@ describe("Fund.organization Resolver - Integration", () => {
 			await createOrgMembership(adminAuth.token, orgId, adminAuth.userId);
 			const fund = await createTestFund(adminAuth.token, orgId);
 
-			const result = await mercuriusClient.query(Query_Fund_Organization, {
+			const result = await mercuriusClient.query(Query_fundWithFullOrg, {
 				headers: { authorization: `bearer ${adminAuth.token}` },
 				variables: {
 					input: {
@@ -416,7 +390,7 @@ describe("Fund.organization Resolver - Integration", () => {
 			await createOrgMembership(adminAuth.token, orgId, adminAuth.userId);
 			const fund = await createTestFund(adminAuth.token, orgId);
 
-			const result = await mercuriusClient.query(Query_Fund_Organization, {
+			const result = await mercuriusClient.query(Query_fundWithFullOrg, {
 				headers: { authorization: `bearer ${adminAuth.token}` },
 				variables: {
 					input: {
@@ -444,7 +418,7 @@ describe("Fund.organization Resolver - Integration", () => {
 			);
 			const fund = await createTestFund(adminAuth.token, organization.id);
 
-			const result = await mercuriusClient.query(Query_Fund_Organization, {
+			const result = await mercuriusClient.query(Query_fundWithFullOrg, {
 				headers: { authorization: `bearer ${adminAuth.token}` },
 				variables: {
 					input: {

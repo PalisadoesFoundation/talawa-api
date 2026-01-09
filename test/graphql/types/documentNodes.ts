@@ -396,15 +396,36 @@ export const Query_user_updater =
 }`);
 
 export const Query_fund = gql(`query Query_fund($input: QueryFundInput!) {
+	fund(input: $input) {
+		id
+		isTaxDeductible
+		name
+		isDefault
+		isArchived
+		referenceNumber
+	}
+}`);
+
+// Query variant with extended organization fields for testing organization resolver
+export const Query_fundWithFullOrg = gql(`
+  query FundWithFullOrg($input: QueryFundInput!) {
     fund(input: $input) {
       id
-      isTaxDeductible
       name
-      isDefault
-      isArchived
-      referenceNumber
+      isTaxDeductible
+      organization {
+        id
+        name
+        countryCode
+        description
+        addressLine1
+        city
+        state
+        postalCode
+      }
     }
-  }`);
+  }
+`);
 
 export const Query_fundCampaign =
 	gql(`query Query_fundCampaign($input: QueryFundCampaignInput!) {
@@ -1378,6 +1399,26 @@ export const Query_actionItemsByOrganization = gql(`
         name
       }
       createdAt
+    }
+  }
+`);
+
+// Query variant with extended organization fields for testing organization resolver
+export const Query_actionItemsByOrganizationWithFullOrg = gql(`
+  query ActionItemsByOrganizationWithFullOrg($input: QueryActionItemsByOrganizationInput!) {
+    actionItemsByOrganization(input: $input) {
+      id
+      isCompleted
+      organization {
+        id
+        name
+        countryCode
+        description
+        addressLine1
+        city
+        state
+        postalCode
+      }
     }
   }
 `);

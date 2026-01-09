@@ -17,37 +17,12 @@ import {
 	Mutation_createOrganization,
 	Mutation_createOrganizationMembership,
 	Mutation_createUser,
+	Query_actionItemsByOrganizationWithFullOrg,
 	Query_signIn,
 } from "../documentNodes";
-import type { introspection } from "../gql.tada";
-
-const gql = initGraphQLTada<{
-	introspection: introspection;
-	scalars: ClientCustomScalars;
-}>();
 
 const ONE_DAY_MS = 24 * 60 * 60 * 1000;
 const ONE_HOUR_MS = 60 * 60 * 1000;
-
-// Query to fetch action items with organization field
-const Query_ActionItem_Organization = gql(`
-  query ActionItemsByOrganizationWithOrg($input: QueryActionItemsByOrganizationInput!) {
-    actionItemsByOrganization(input: $input) {
-      id
-      isCompleted
-      organization {
-        id
-        name
-        countryCode
-        description
-        addressLine1
-        city
-        state
-        postalCode
-      }
-    }
-  }
-`);
 
 type AdminAuth = { token: string; userId: string };
 
@@ -268,7 +243,7 @@ describe("ActionItem.organization Resolver - Integration", () => {
 			);
 
 			const result = await mercuriusClient.query(
-				Query_ActionItem_Organization,
+				Query_actionItemsByOrganizationWithFullOrg,
 				{
 					headers: { authorization: `bearer ${adminAuth.token}` },
 					variables: {
@@ -315,7 +290,7 @@ describe("ActionItem.organization Resolver - Integration", () => {
 			);
 
 			const result = await mercuriusClient.query(
-				Query_ActionItem_Organization,
+				Query_actionItemsByOrganizationWithFullOrg,
 				{
 					headers: { authorization: `bearer ${adminAuth.token}` },
 					variables: {
@@ -383,7 +358,7 @@ describe("ActionItem.organization Resolver - Integration", () => {
 			);
 
 			const result = await mercuriusClient.query(
-				Query_ActionItem_Organization,
+				Query_actionItemsByOrganizationWithFullOrg,
 				{
 					headers: { authorization: `bearer ${adminAuth.token}` },
 					variables: {
@@ -436,7 +411,7 @@ describe("ActionItem.organization Resolver - Integration", () => {
 			// Query without auth header - pass empty authorization in query options
 			// instead of mutating global client state with setHeaders({})
 			const result = await mercuriusClient.query(
-				Query_ActionItem_Organization,
+				Query_actionItemsByOrganizationWithFullOrg,
 				{
 					variables: {
 						input: {
@@ -484,7 +459,7 @@ describe("ActionItem.organization Resolver - Integration", () => {
 
 			// Query the original organization with the other user's token
 			const result = await mercuriusClient.query(
-				Query_ActionItem_Organization,
+				Query_actionItemsByOrganizationWithFullOrg,
 				{
 					headers: { authorization: `bearer ${otherUser.token}` },
 					variables: {
@@ -542,7 +517,7 @@ describe("ActionItem.organization Resolver - Integration", () => {
 
 			// Query with the regular member's token - should succeed
 			const result = await mercuriusClient.query(
-				Query_ActionItem_Organization,
+				Query_actionItemsByOrganizationWithFullOrg,
 				{
 					headers: { authorization: `bearer ${regularUser.token}` },
 					variables: {
@@ -594,7 +569,7 @@ describe("ActionItem.organization Resolver - Integration", () => {
 
 			// Query with the user's token - should be rejected
 			const result = await mercuriusClient.query(
-				Query_ActionItem_Organization,
+				Query_actionItemsByOrganizationWithFullOrg,
 				{
 					headers: { authorization: `bearer ${userWithNoMembership.token}` },
 					variables: {
@@ -691,7 +666,7 @@ describe("ActionItem.organization Resolver - Integration", () => {
 
 			// Query all action items - DataLoader should batch the organization lookups
 			const result = await mercuriusClient.query(
-				Query_ActionItem_Organization,
+				Query_actionItemsByOrganizationWithFullOrg,
 				{
 					headers: { authorization: `bearer ${adminAuth.token}` },
 					variables: {
@@ -758,7 +733,7 @@ describe("ActionItem.organization Resolver - Integration", () => {
 			);
 
 			const result = await mercuriusClient.query(
-				Query_ActionItem_Organization,
+				Query_actionItemsByOrganizationWithFullOrg,
 				{
 					headers: { authorization: `bearer ${adminAuth.token}` },
 					variables: {
@@ -823,7 +798,7 @@ describe("ActionItem.organization Resolver - Integration", () => {
 			);
 
 			const result = await mercuriusClient.query(
-				Query_ActionItem_Organization,
+				Query_actionItemsByOrganizationWithFullOrg,
 				{
 					headers: { authorization: `bearer ${adminAuth.token}` },
 					variables: {
@@ -885,7 +860,7 @@ describe("ActionItem.organization Resolver - Integration", () => {
 			);
 
 			const result = await mercuriusClient.query(
-				Query_ActionItem_Organization,
+				Query_actionItemsByOrganizationWithFullOrg,
 				{
 					headers: { authorization: `bearer ${adminAuth.token}` },
 					variables: {
