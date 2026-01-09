@@ -3,20 +3,17 @@
  * Intercepts all query operations and tracks timing using the request-scoped performance tracker.
  */
 
-import type { PostgresJsDatabase } from "drizzle-orm/postgres-js";
-import type * as drizzleSchema from "~/src/drizzle/schema";
+import type { DrizzleClient } from "~/src/fastifyPlugins/drizzleClient";
 import type { PerformanceTracker } from "./performanceTracker";
-
-/**
- * Type for the Drizzle client with schema.
- */
-type DrizzleClient = PostgresJsDatabase<typeof drizzleSchema>;
 
 /**
  * Getter function type for accessing the performance tracker at runtime.
  * This allows the proxy to access request.perf without storing a direct reference.
  */
-type PerfGetter = () => PerformanceTracker | undefined;
+export type PerfGetter = () => PerformanceTracker | undefined;
+
+// Re-export DrizzleClient for consumers
+export type { DrizzleClient };
 
 /**
  * Wraps a Drizzle client with automatic performance tracking.
@@ -105,21 +102,26 @@ function wrapQueryObject(
 				!Array.isArray(table) &&
 				typeof table !== "function"
 			) {
-				// Check if the object has any function properties (indicating it's a table)
-				// This is a lightweight check that preserves reference equality for plain objects
-				// Use try-catch to handle edge cases where Object.values might fail (e.g., Proxy objects)
-				let hasFunctions = false;
-				try {
-					hasFunctions = Object.values(table).some(
-						(value) => typeof value === "function",
-					);
-				} catch {
-					// If Object.values fails (e.g., on Proxy objects), check for common Drizzle table methods
-					hasFunctions =
-						typeof (table as { findFirst?: unknown }).findFirst ===
-							"function" ||
-						typeof (table as { findMany?: unknown }).findMany === "function";
+				// First, use lightweight direct-method probe for common Drizzle table methods
+				// This is faster than Object.values() and covers the majority of cases
+				let hasFunctions =
+					typeof (table as { findFirst?: unknown }).findFirst === "function" ||
+					typeof (table as { findMany?: unknown }).findMany === "function";
+
+				// Only if direct checks are inconclusive, fall back to Object.values() for edge cases
+				// (e.g., tables with only other methods, or Proxy objects that might throw)
+				if (!hasFunctions) {
+					try {
+						hasFunctions = Object.values(table).some(
+							(value) => typeof value === "function",
+						);
+					} catch {
+						// If Object.values fails (e.g., on Proxy objects), we've already checked
+						// the direct methods, so hasFunctions remains false
+						hasFunctions = false;
+					}
 				}
+
 				if (hasFunctions) {
 					// Note: getPerf() is already checked before wrapQueryObject is called,
 					// so perf should be defined here. However, we could add a defensive check
@@ -209,6 +211,17 @@ function wrapExecuteMethod(
  * We intercept builder.then() and builder.execute() (if present) to track execution
  * without breaking chainability. Chainable methods (.from, .where, .values, etc.) are
  * forwarded unchanged so chaining still works.
+ *
+ * This function handles two distinct paths:
+ * - Plain Promises (lines 244-278): Intercepts .then() to time the base promise before attaching user callbacks
+ * - Builders (lines 280-365): Intercepts .then(), .execute(), and chainable methods while preserving Proxy through chaining
+ *
+ * The promise-timing logic (lines 266-272 and 318-324) correctly implements timing only the base promise
+ * execution, not user callbacks, by calling .then() without callbacks first, timing that, then attaching callbacks.
+ *
+ * @remarks This function has high cyclomatic complexity This function has high cyclomatic complexity with nested Proxies and multiple conditional paths.
+ * While the logic is correct, consider extracting helper functions (e.g., wrapPlainPromise, wrapBuilderPromise)
+ * in future refactoring to improve maintainability and testability.
  */
 function wrapBuilderMethod(
 	originalMethod: unknown,

@@ -559,6 +559,34 @@ describe("wrapDrizzleWithMetrics", () => {
 			expect(op.count).toBe(1);
 		});
 
+		it("should handle plain Promise when perf is undefined at runtime", async () => {
+			// Test line 275: plain Promise path when perf is undefined when .then() is called
+			const mockPromise = Promise.resolve([]);
+			vi.mocked(mockClient.select).mockReturnValue(mockPromise as never);
+
+			// Create a getPerf that returns undefined when called
+			let callCount = 0;
+			const getPerfUndefined = () => {
+				callCount++;
+				// Return undefined when .then() is called (runtime check)
+				return undefined;
+			};
+
+			const wrapped = wrapDrizzleWithMetrics(
+				mockClient as unknown as DrizzleClient,
+				getPerfUndefined,
+			);
+
+			const result = await wrapped.select();
+
+			expect(result).toEqual([]);
+			// Verify perf was checked (at runtime when .then() was called)
+			expect(callCount).toBeGreaterThan(0);
+			// Verify no metrics were recorded
+			const snapshot = mockPerf.snapshot();
+			expect(snapshot.ops["db:select"]).toBeUndefined();
+		});
+
 		it("should preserve builder chaining and only time on await for select", async () => {
 			// Create a builder stub that is both thenable (has .then()) and chainable (has .from(), .where())
 			// This simulates real Drizzle builders which are both thenable and chainable
@@ -925,6 +953,39 @@ describe("wrapDrizzleWithMetrics", () => {
 				"function",
 			);
 		});
+
+		it("should handle Proxy objects that throw on Object.values and have no findFirst/findMany", () => {
+			// Create a Proxy that throws when Object.values is called AND has no findFirst/findMany
+			// This tests the catch block where hasFunctions is set to false (line 121)
+			const throwingProxy = new Proxy(
+				{ someProperty: "value" }, // Plain object without findFirst/findMany
+				{
+					ownKeys: () => {
+						throw new Error("Cannot access ownKeys");
+					},
+					get: (target, prop) => {
+						return Reflect.get(target, prop);
+					},
+				},
+			);
+
+			// Mock query object to return the throwing proxy
+			(mockClient.query as { testTable?: typeof throwingProxy }).testTable =
+				throwingProxy;
+
+			const wrapped = wrapDrizzleWithMetrics(
+				mockClient as unknown as DrizzleClient,
+				getPerf,
+			);
+
+			// Accessing the table should trigger the catch block
+			// Since findFirst/findMany don't exist, hasFunctions should be set to false
+			const table = (wrapped.query as { testTable?: typeof throwingProxy })
+				.testTable;
+			expect(table).toBeDefined();
+			// The table should NOT be wrapped since it has no table methods
+			expect(table).toBe(throwingProxy);
+		});
 	});
 
 	describe("Builder Method Edge Cases", () => {
@@ -1037,6 +1098,133 @@ describe("wrapDrizzleWithMetrics", () => {
 			const snapshot = mockPerf.snapshot();
 			expect(snapshot.ops["db:insert"]).toBeDefined();
 			expect(snapshot.ops["db:insert"]?.count).toBe(1);
+		});
+
+		it("should handle builder .then() when perf is undefined at runtime", async () => {
+			// Test lines 313-314, 338-339: Builder .then() wrapper when perf is undefined at runtime
+			const result = [{ id: "1" }];
+			const promise = new Promise<typeof result>((resolve) => {
+				setImmediate(() => resolve(result));
+			});
+
+			type Builder = Promise<typeof result> & {
+				from: (table: string) => Builder;
+				where: (condition: Record<string, unknown>) => Builder;
+			};
+
+			const builder = Object.assign(promise, {
+				from: vi.fn((_table: string) => builder),
+				where: vi.fn((_condition: Record<string, unknown>) => builder),
+			}) as Builder;
+
+			vi.mocked(mockClient.select).mockReturnValue(builder as never);
+
+			// getPerf returns perf initially, but undefined when .then() is called
+			let thenCallCount = 0;
+			const getPerfDynamic = () => {
+				thenCallCount++;
+				// Return undefined when .then() is called (runtime check)
+				return thenCallCount > 1 ? undefined : mockPerf;
+			};
+
+			const wrapped = wrapDrizzleWithMetrics(
+				mockClient as unknown as DrizzleClient,
+				getPerfDynamic,
+			);
+
+			const selectResult = wrapped.select() as unknown as Builder;
+			const fromResult = selectResult.from("users");
+			const whereResult = fromResult.where({});
+
+			// When awaited, .then() is called and perf should be undefined
+			const rows = await whereResult;
+
+			expect(rows).toEqual(result);
+			// Verify perf was checked at runtime
+			expect(thenCallCount).toBeGreaterThan(1);
+		});
+
+		it("should handle builder .execute() when perf is undefined at runtime", async () => {
+			// Test line 357: Builder .execute() wrapper when perf is undefined at runtime
+			const result = [{ id: "1", name: "test" }];
+			const promise = Promise.resolve(result);
+
+			type Builder = Promise<typeof result> & {
+				from: (table: string) => Builder;
+				values: (data: unknown) => Builder;
+				execute: () => Promise<typeof result>;
+			};
+
+			const executeFn = vi.fn().mockResolvedValue(result);
+
+			const builder = Object.assign(promise, {
+				from: vi.fn((_table: string) => builder),
+				values: vi.fn((_data: unknown) => builder),
+				execute: executeFn,
+			}) as Builder;
+
+			vi.mocked(mockClient.insert).mockReturnValue(builder as never);
+
+			// getPerf returns perf initially, but undefined when .execute() is called
+			let executeCallCount = 0;
+			const getPerfDynamic = () => {
+				executeCallCount++;
+				// Return undefined when .execute() is called (runtime check)
+				return executeCallCount > 1 ? undefined : mockPerf;
+			};
+
+			const wrapped = wrapDrizzleWithMetrics(
+				mockClient as unknown as DrizzleClient,
+				getPerfDynamic,
+			);
+
+			const mockTable = mockClient.query.usersTable as unknown as Parameters<
+				DrizzleClient["insert"]
+			>[0];
+			const insertResult = wrapped.insert(mockTable) as unknown as Builder;
+			const valuesResult = insertResult.values({ name: "test" });
+
+			// When .execute() is called, perf should be undefined
+			const rows = await valuesResult.execute();
+
+			expect(rows).toEqual(result);
+			expect(executeFn).toHaveBeenCalledTimes(1);
+			// Verify perf was checked at runtime
+			expect(executeCallCount).toBeGreaterThan(1);
+		});
+
+		it("should handle chainable methods that return non-builder values", () => {
+			// Test line 362: Chainable method wrapper when method returns something other than builder
+			const result = [{ id: "1" }];
+			const promise = Promise.resolve(result);
+
+			type Builder = Promise<typeof result> & {
+				from: (table: string) => Builder;
+				getTableName: () => string; // Returns string, not builder
+			};
+
+			const builder = Object.assign(promise, {
+				from: vi.fn((_table: string) => builder),
+				getTableName: vi.fn(() => "users"),
+			}) as Builder;
+
+			vi.mocked(mockClient.select).mockReturnValue(builder as never);
+
+			const wrapped = wrapDrizzleWithMetrics(
+				mockClient as unknown as DrizzleClient,
+				getPerf,
+			);
+
+			const selectResult = wrapped.select() as unknown as Builder;
+
+			// Chainable method that returns builder should preserve Proxy
+			const fromResult = selectResult.from("users");
+			expect(fromResult).not.toBe(builder); // Should be proxied
+
+			// Method that returns non-builder value should return original result
+			const tableName = selectResult.getTableName();
+			expect(tableName).toBe("users");
+			expect(builder.getTableName).toHaveBeenCalled();
 		});
 	});
 });
