@@ -9,13 +9,13 @@ BLUE='\033[0;34m'
 CYAN='\033[0;36m'
 NC='\033[0m'
 
-info() { printf "${BLUE}ℹ${NC} %s\n" "$1"; }
-success() { printf "${GREEN}✓${NC} %s\n" "$1"; }
-warn() { printf "${YELLOW}⚠${NC} %s\n" "$1"; }
-error() { printf "${RED}✗${NC} %s\n" "$1"; }
+info() { printf "%b%s\n" "${BLUE}ℹ${NC} " "$1"; }
+success() { printf "%b%s\n" "${GREEN}✓${NC} " "$1"; }
+warn() { printf "%b%s\n" "${YELLOW}⚠${NC} " "$1"; }
+error() { printf "%b%s\n" "${RED}✗${NC} " "$1"; }
 
 print_banner() {
-    printf "${CYAN}\n"
+    printf "%b\n" "${CYAN}"
     printf "╔════════════════════════════════════════════════════════╗\n"
     printf "║                                                        ║\n"
     printf "║   ████████╗ █████╗ ██╗      █████╗ ██╗    ██╗ █████╗   ║\n"
@@ -27,7 +27,7 @@ print_banner() {
     printf "║                                                        ║\n"
     printf "║              One-Click Installation Script             ║\n"
     printf "╚════════════════════════════════════════════════════════╝\n"
-    printf "${NC}\n"
+    printf "%b\n" "${NC}"
 }
 
 execute_installation_script() {
@@ -49,7 +49,12 @@ execute_installation_script() {
     start_time=$(date +%s)
     
     local exit_code=0
-    bash "$script_path" "$mode" "$skip_prereqs" || exit_code=$?
+    # Pass arguments based on skip_prereqs flag
+    if [ "$skip_prereqs" = true ]; then
+        bash "$script_path" "$mode" --skip-prereqs || exit_code=$?
+    else
+        bash "$script_path" "$mode" || exit_code=$?
+    fi
     
     local end_time
     end_time=$(date +%s)
@@ -163,64 +168,71 @@ validate_and_prepare_script() {
 }
 
 detect_os() {
-    # Try $OSTYPE first, fall back to uname -s for robustness
+    # Try $OSTYPE first (bash-specific), with MSYS/Cygwin support
     if [[ -n "${OSTYPE:-}" ]]; then
-        if [[ "$OSTYPE" == "linux-gnu"* ]]; then
-            printf "linux"
-            return 0
-        elif [[ "$OSTYPE" == "darwin"* ]]; then
-            printf "macos"
-            return 0
-        fi
+        case "$OSTYPE" in
+            linux-gnu*)
+                printf "linux\n"
+                return 0
+                ;;
+            darwin*)
+                printf "macos\n"
+                return 0
+                ;;
+            msys*|cygwin*)
+                # Git Bash / MSYS / Cygwin on Windows
+                warn "MSYS/Cygwin detected - use install.ps1 for native Windows installation"
+                printf "linux\n"  # Treat as Linux-like for compatibility
+                return 0
+                ;;
+        esac
     fi
     
-    # Fallback to uname -s
+    # Fallback to uname -s for robustness
     local os_name
     os_name=$(uname -s 2>/dev/null || printf "unknown")
     case "$os_name" in
         Linux*)
-            printf "linux"
+            printf "linux\n"
             ;;
         Darwin*)
-            printf "macos"
+            printf "macos\n"
+            ;;
+        MSYS*|MINGW*|CYGWIN*)
+            warn "Windows environment detected - consider using install.ps1"
+            printf "linux\n"  # Treat as Linux-like for compatibility
             ;;
         *)
-            printf "unknown"
+            printf "unknown\n"
             ;;
     esac
 }
 
 is_wsl() {
-    local detection_method=""
-    
-    # Method 1: Check /proc/version for Microsoft or WSL keywords (improved regex)
+    # Method 1: Check /proc/version for Microsoft or WSL keywords
     if [ -f /proc/version ]; then
         if grep -qEi 'microsoft|wsl' /proc/version 2>/dev/null; then
-            detection_method="/proc/version contains Microsoft/WSL"
-            [ "${WSL_DETECTION_DEBUG:-false}" = true ] && printf "[DEBUG] WSL detected via: %s\n" "$detection_method" >&2
+            [ "${WSL_DETECTION_DEBUG:-false}" = true ] && printf "[DEBUG] WSL detected via: /proc/version contains Microsoft/WSL\n" >&2
             return 0
         fi
     fi
     
     # Method 2: Check WSL_DISTRO_NAME environment variable
     if [ -n "${WSL_DISTRO_NAME:-}" ]; then
-        detection_method="WSL_DISTRO_NAME environment variable set to '$WSL_DISTRO_NAME'"
-        [ "${WSL_DETECTION_DEBUG:-false}" = true ] && printf "[DEBUG] WSL detected via: %s\n" "$detection_method" >&2
+        [ "${WSL_DETECTION_DEBUG:-false}" = true ] && printf "[DEBUG] WSL detected via: WSL_DISTRO_NAME=%s\n" "$WSL_DISTRO_NAME" >&2
         return 0
     fi
     
-    # Method 3: Check for /run/WSL or /run/wsl directory (case-insensitive)
+    # Method 3: Check for /run/WSL or /run/wsl directory
     if [ -d "/run/WSL" ] || [ -d "/run/wsl" ]; then
-        detection_method="/run/WSL directory exists"
-        [ "${WSL_DETECTION_DEBUG:-false}" = true ] && printf "[DEBUG] WSL detected via: %s\n" "$detection_method" >&2
+        [ "${WSL_DETECTION_DEBUG:-false}" = true ] && printf "[DEBUG] WSL detected via: /run/WSL directory exists\n" >&2
         return 0
     fi
     
     # Method 4: Check for WSL interop flag
     if [ -f /proc/sys/fs/binfmt_misc/WSLInterop ]; then
         if grep -q "enabled" /proc/sys/fs/binfmt_misc/WSLInterop 2>/dev/null; then
-            detection_method="WSL interop enabled"
-            [ "${WSL_DETECTION_DEBUG:-false}" = true ] && printf "[DEBUG] WSL detected via: %s\n" "$detection_method" >&2
+            [ "${WSL_DETECTION_DEBUG:-false}" = true ] && printf "[DEBUG] WSL detected via: WSL interop enabled\n" >&2
             return 0
         fi
     fi
@@ -228,13 +240,12 @@ is_wsl() {
     # Method 5: Check /proc/sys/kernel/osrelease for Microsoft signature
     if [ -f /proc/sys/kernel/osrelease ]; then
         if grep -qi "microsoft" /proc/sys/kernel/osrelease 2>/dev/null; then
-            detection_method="/proc/sys/kernel/osrelease contains Microsoft"
-            [ "${WSL_DETECTION_DEBUG:-false}" = true ] && printf "[DEBUG] WSL detected via: %s\n" "$detection_method" >&2
+            [ "${WSL_DETECTION_DEBUG:-false}" = true ] && printf "[DEBUG] WSL detected via: /proc/sys/kernel/osrelease contains Microsoft\n" >&2
             return 0
         fi
     fi
     
-    # No WSL detected after checking all methods
+    # No WSL detected
     [ "${WSL_DETECTION_DEBUG:-false}" = true ] && printf "[DEBUG] WSL not detected (checked 5 methods)\n" >&2
     return 1
 }
@@ -304,7 +315,10 @@ main() {
     fi
     
     local SCRIPT_DIR
-    SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+    SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)" || {
+        error "Failed to determine script directory"
+        exit 1
+    }
     
     local ret=0
     
