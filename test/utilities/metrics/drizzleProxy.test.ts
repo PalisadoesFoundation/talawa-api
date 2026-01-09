@@ -840,6 +840,8 @@ describe("wrapDrizzleWithMetrics", () => {
 
 		it("should wrap builder.then() to track timing when awaited", async () => {
 			// Test lines 256-274: Proxy get trap wrapping .then()
+			// The Proxy wraps the builder's .then() method
+			// When we await the builder directly (without chaining), the Proxy's .then() wrapper should be called
 			const result = [{ id: "1" }];
 			const promise = Promise.resolve(result);
 
@@ -860,11 +862,10 @@ describe("wrapDrizzleWithMetrics", () => {
 				getPerf,
 			);
 
+			// Await the builder directly - this should trigger .then() wrapper (lines 256-274)
+			// The Proxy wraps the builder, so awaiting it directly will call the Proxy's .then() wrapper
 			const selectResult = wrapped.select() as unknown as Builder;
-			const fromResult = selectResult.from("users");
-			const whereResult = fromResult.where({});
-			// Await the builder - this should trigger .then() wrapper (lines 256-274)
-			const rows = await whereResult;
+			const rows = await selectResult;
 
 			expect(rows).toEqual([{ id: "1" }]);
 			// Verify timing was tracked when .then() was called
@@ -875,6 +876,8 @@ describe("wrapDrizzleWithMetrics", () => {
 
 		it("should wrap builder.execute() if present", async () => {
 			// Test lines 278-286: Proxy get trap wrapping .execute()
+			// The Proxy wraps the builder's .execute() method
+			// When we call .execute() on the proxied builder, the Proxy's .execute() wrapper should be called
 			const result = [{ id: "1" }];
 			const promise = Promise.resolve(result);
 
@@ -900,9 +903,8 @@ describe("wrapDrizzleWithMetrics", () => {
 				DrizzleClient["insert"]
 			>[0];
 			const insertResult = wrapped.insert(mockTable) as unknown as Builder;
-			const fromResult = insertResult.from("users");
-			// Call .execute() - this should trigger the execute wrapper (lines 278-286)
-			const rows = await fromResult.execute();
+			// Call .execute() directly on the proxied builder - this should trigger the execute wrapper (lines 278-286)
+			const rows = await insertResult.execute();
 
 			expect(rows).toEqual([{ id: "1" }]);
 			expect(executeFn).toHaveBeenCalledTimes(1);

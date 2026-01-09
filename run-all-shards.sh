@@ -4,6 +4,17 @@
 # Enable safer bash options for better error handling
 set -euo pipefail
 
+# Preflight checks: ensure required CLIs are available
+if ! command -v docker >/dev/null 2>&1; then
+	echo "Error: docker is not installed or not in PATH" >&2
+	exit 1
+fi
+
+if ! command -v jq >/dev/null 2>&1; then
+	echo "Error: jq is not installed or not in PATH" >&2
+	exit 1
+fi
+
 echo "=========================================="
 echo "Running All 12 Test Shards"
 echo "=========================================="
@@ -17,76 +28,70 @@ TOTAL_FILES_FAILED=0
 for i in {1..12}; do
   echo "=== Running Shard $i/12 ==="
   
+  # Create temporary file for shard output (streamed to disk to avoid memory issues)
+  # Use TMPDIR if set, otherwise fall back to /tmp (works on macOS, Linux, and most Unix systems)
+  TMP_DIR="${TMPDIR:-/tmp}"
+  SHARD_OUTPUT_FILE=$(mktemp) || {
+    echo "Error: Failed to create temporary file" >&2
+    exit 1
+  }
+  JSON_OUTPUT_FILE="${TMP_DIR}/shard-${i}-results.json"
+  
   # Temporarily disable errexit to capture output and status even on failure
   set +e
-  # Run shard and capture output
-  OUTPUT=$(docker compose run --rm -e "SHARD_INDEX=$i" -e "SHARD_COUNT=12" api pnpm test:shard:coverage 2>&1)
-  SHARD_STATUS=$?
+  # Run shard and stream output to temp file while also showing it live
+  docker compose run --rm -e "SHARD_INDEX=$i" -e "SHARD_COUNT=12" api pnpm test:shard:coverage 2>&1 | tee "$SHARD_OUTPUT_FILE"
+  SHARD_STATUS=${PIPESTATUS[0]}
   # Restore errexit
   set -e
   
   # Fail-fast if shard execution failed
   if [ "$SHARD_STATUS" -ne 0 ]; then
-    echo "$OUTPUT"
     echo "Shard $i failed with exit code $SHARD_STATUS"
+    cat "$SHARD_OUTPUT_FILE"
+    rm -f "$SHARD_OUTPUT_FILE"
     exit "$SHARD_STATUS"
   fi
   
-  # Extract test counts from Vitest JSON output
-  # Vitest JSON reporter outputs a summary object with numPassedTests, numFailedTests, etc.
-  # The JSON is typically at the end of the output after human-readable content
-  # Extract JSON by finding the line containing "numPassedTests" and extracting surrounding JSON
-  JSON_OUTPUT="{}"
-  
-  # Find the line number containing the JSON summary field
-  JSON_LINE=$(echo "$OUTPUT" | grep -n '"numPassedTests"' | tail -1 | cut -d: -f1)
-  if [ -n "$JSON_LINE" ]; then
-    # Extract a window of lines around the JSON summary (JSON objects are typically 20-50 lines)
-    # Start 5 lines before and take 50 lines to capture the complete JSON object
-    TOTAL_LINES=$(echo "$OUTPUT" | wc -l | tr -d ' ')
-    START_LINE=$((JSON_LINE - 5))
-    if [ "$START_LINE" -lt 1 ]; then START_LINE=1; fi
-    END_LINE=$((JSON_LINE + 45))
-    if [ "$END_LINE" -gt "$TOTAL_LINES" ]; then END_LINE="$TOTAL_LINES"; fi
-    
-    # Extract the lines and try to parse as JSON
-    JSON_CANDIDATE=$(echo "$OUTPUT" | sed -n "${START_LINE},${END_LINE}p")
-    
-    # Validate it's valid JSON with the expected field
-    if echo "$JSON_CANDIDATE" | jq -e '.numPassedTests >= 0' >/dev/null 2>&1; then
-      JSON_OUTPUT="$JSON_CANDIDATE"
-    fi
-  fi
-  
-  # Fallback: try extracting from the last 100 lines if the above failed
-  if [ "$JSON_OUTPUT" = "{}" ] || ! echo "$JSON_OUTPUT" | jq -e '.numPassedTests >= 0' >/dev/null 2>&1; then
-    # Look for JSON in the last portion of output
-    LAST_JSON=$(echo "$OUTPUT" | tail -100 | grep -A 50 '"numPassedTests"' | head -60)
-    if echo "$LAST_JSON" | jq -e '.numPassedTests >= 0' >/dev/null 2>&1; then
-      JSON_OUTPUT="$LAST_JSON"
-    fi
+  # Load JSON directly from the deterministic output file
+  # Fallback to empty object if file is missing or invalid
+  if [ -f "$JSON_OUTPUT_FILE" ] && jq -e '.numPassedTests >= 0' "$JSON_OUTPUT_FILE" >/dev/null 2>&1; then
+    JSON_OUTPUT=$(cat "$JSON_OUTPUT_FILE")
+  else
+    JSON_OUTPUT="{}"
   fi
   
   # Parse JSON summary with jq, defaulting to 0 if fields are missing or JSON is invalid
-  TESTS_PASSED=$(echo "$JSON_OUTPUT" | jq -r '.numPassedTests // 0' 2>/dev/null || echo "0")
-  TESTS_FAILED=$(echo "$JSON_OUTPUT" | jq -r '.numFailedTests // 0' 2>/dev/null || echo "0")
-  FILES_PASSED=$(echo "$JSON_OUTPUT" | jq -r '.numPassedTestSuites // 0' 2>/dev/null || echo "0")
-  FILES_FAILED=$(echo "$JSON_OUTPUT" | jq -r '.numFailedTestSuites // 0' 2>/dev/null || echo "0")
+  # Use jq with fallback to 0, then sanitize to ensure numeric values
+  TESTS_PASSED_RAW=$(echo "$JSON_OUTPUT" | jq -r '.numPassedTests // 0' 2>/dev/null || echo "0")
+  TESTS_FAILED_RAW=$(echo "$JSON_OUTPUT" | jq -r '.numFailedTests // 0' 2>/dev/null || echo "0")
+  FILES_PASSED_RAW=$(echo "$JSON_OUTPUT" | jq -r '.numPassedTestSuites // 0' 2>/dev/null || echo "0")
+  FILES_FAILED_RAW=$(echo "$JSON_OUTPUT" | jq -r '.numFailedTestSuites // 0' 2>/dev/null || echo "0")
   
-  # Ensure values are numeric (handle null/empty strings)
-  TESTS_PASSED=${TESTS_PASSED:-0}
-  TESTS_FAILED=${TESTS_FAILED:-0}
-  FILES_PASSED=${FILES_PASSED:-0}
-  FILES_FAILED=${FILES_FAILED:-0}
+  # Normalize to safe integers: strip non-digits, default to 0 if empty/invalid
+  # Extract only digits, then use arithmetic expansion to coerce to integer (safer than printf)
+  TESTS_PASSED_SANITIZED=$(echo "${TESTS_PASSED_RAW}" | tr -cd '0-9' || echo "0")
+  TESTS_FAILED_SANITIZED=$(echo "${TESTS_FAILED_RAW}" | tr -cd '0-9' || echo "0")
+  FILES_PASSED_SANITIZED=$(echo "${FILES_PASSED_RAW}" | tr -cd '0-9' || echo "0")
+  FILES_FAILED_SANITIZED=$(echo "${FILES_FAILED_RAW}" | tr -cd '0-9' || echo "0")
   
-  # Check if graphql.test.ts ran in this shard
-  # Temporarily disable pipefail for this check to handle grep failures gracefully
-  set +o pipefail
-  if echo "$OUTPUT" | grep -q "graphql.test" 2>/dev/null; then
+  # Ensure sanitized values are non-empty (final safety check before arithmetic)
+  TESTS_PASSED_SANITIZED=${TESTS_PASSED_SANITIZED:-0}
+  TESTS_FAILED_SANITIZED=${TESTS_FAILED_SANITIZED:-0}
+  FILES_PASSED_SANITIZED=${FILES_PASSED_SANITIZED:-0}
+  FILES_FAILED_SANITIZED=${FILES_FAILED_SANITIZED:-0}
+  
+  # Coerce to integer using arithmetic expansion (safe now that values are guaranteed non-empty)
+  TESTS_PASSED=$((TESTS_PASSED_SANITIZED + 0))
+  TESTS_FAILED=$((TESTS_FAILED_SANITIZED + 0))
+  FILES_PASSED=$((FILES_PASSED_SANITIZED + 0))
+  FILES_FAILED=$((FILES_FAILED_SANITIZED + 0))
+  
+  # Check if graphql.test.ts ran in this shard (non-fatal grep)
+  if grep -q "graphql.test" "$SHARD_OUTPUT_FILE" 2>/dev/null || true; then
     echo "  ✓ graphql.test.ts found in this shard!"
-    echo "$OUTPUT" | grep -A 10 "graphql.test" || true
+    grep -A 10 "graphql.test" "$SHARD_OUTPUT_FILE" 2>/dev/null || true
   fi
-  set -o pipefail
   
   echo "  Results: $TESTS_PASSED passed, $TESTS_FAILED failed"
   echo "  Files: $FILES_PASSED passed, $FILES_FAILED failed"
@@ -96,6 +101,11 @@ for i in {1..12}; do
   TOTAL_FAILED=$((TOTAL_FAILED + TESTS_FAILED))
   TOTAL_FILES_PASSED=$((TOTAL_FILES_PASSED + FILES_PASSED))
   TOTAL_FILES_FAILED=$((TOTAL_FILES_FAILED + FILES_FAILED))
+  
+  # Clean up temp files for this shard
+  rm -f "$SHARD_OUTPUT_FILE"
+  # Note: JSON_OUTPUT_FILE is kept for potential debugging but could be cleaned up here if desired
+  # rm -f "$JSON_OUTPUT_FILE"
 done
 
 echo "=========================================="

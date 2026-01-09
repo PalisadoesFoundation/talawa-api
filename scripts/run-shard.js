@@ -6,6 +6,8 @@
  */
 
 import { spawn } from "node:child_process";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 
 const isCI = !!process.env.CI;
 
@@ -46,6 +48,10 @@ if (withCoverage) args.push("--coverage");
 args.push("--shard", `${shardIndex}/${shardCount}`);
 // Add JSON reporter for machine-readable output (in addition to default reporter for human-readable output)
 args.push("--reporter=verbose", "--reporter=json");
+// Write JSON output to a deterministic file for reliable parsing
+// Use os.tmpdir() for cross-platform compatibility (works on Windows, macOS, Linux)
+const jsonOutputFile = join(tmpdir(), `shard-${shardIndex}-results.json`);
+args.push("--outputFile", jsonOutputFile);
 
 // Ensure SHARD_INDEX is set for vitest.config.ts to detect sharded runs
 const env = {
