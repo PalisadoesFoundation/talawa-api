@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Script to run all 12 test shards and collect results
+# Script to run all test shards and collect results
 # Enable safer bash options for better error handling
 set -euo pipefail
 
@@ -15,8 +15,11 @@ if ! command -v jq >/dev/null 2>&1; then
 	exit 1
 fi
 
+# Make shard count configurable (default to 12)
+SHARD_COUNT="${SHARD_COUNT:-12}"
+
 echo "=========================================="
-echo "Running All 12 Test Shards"
+echo "Running All $SHARD_COUNT Test Shards"
 echo "=========================================="
 echo ""
 
@@ -25,13 +28,16 @@ TOTAL_FAILED=0
 TOTAL_FILES_PASSED=0
 TOTAL_FILES_FAILED=0
 
-for i in {1..12}; do
-  echo "=== Running Shard $i/12 ==="
+# Use seq for portability (works on macOS and Linux)
+for i in $(seq 1 "$SHARD_COUNT"); do
+  echo "=== Running Shard $i/$SHARD_COUNT ==="
   
   # Create temporary file for shard output (streamed to disk to avoid memory issues)
   # Use TMPDIR if set, otherwise fall back to /tmp (works on macOS, Linux, and most Unix systems)
   TMP_DIR="${TMPDIR:-/tmp}"
-  SHARD_OUTPUT_FILE=$(mktemp "${TMP_DIR}/shard-XXXXXX") || {
+  # Export TMPDIR so mktemp -t works across platforms
+  export TMPDIR="$TMP_DIR"
+  SHARD_OUTPUT_FILE=$(mktemp -t "shard-XXXXXX") || {
     echo "Error: Failed to create temporary file" >&2
     exit 1
   }
@@ -42,7 +48,7 @@ for i in {1..12}; do
   # Temporarily disable errexit to capture output and status even on failure
   set +e
   # Run shard and stream output to temp file while also showing it live
-  docker compose run --rm -e "SHARD_INDEX=$i" -e "SHARD_COUNT=12" api pnpm test:shard:coverage 2>&1 | tee "$SHARD_OUTPUT_FILE"
+  docker compose run --rm -e "SHARD_INDEX=$i" -e "SHARD_COUNT=$SHARD_COUNT" api pnpm test:shard:coverage 2>&1 | tee "$SHARD_OUTPUT_FILE"
   SHARD_STATUS=${PIPESTATUS[0]}
   # Restore errexit
   set -e

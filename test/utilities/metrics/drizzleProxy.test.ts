@@ -32,6 +32,12 @@ describe("wrapDrizzleWithMetrics", () => {
 
 			// Should be a proxy (not the same reference), but should work identically
 			expect(wrapped).not.toBe(mockClient);
+			// Verify no additional wrapping when perf is undefined - members should be identical
+			expect(wrapped.query).toBe(mockClient.query);
+			expect(wrapped.query.usersTable).toBe(mockClient.query.usersTable);
+			expect(wrapped.query.usersTable.findFirst).toBe(
+				mockClient.query.usersTable.findFirst,
+			);
 			// Should still work - forward to original client
 			vi.mocked(mockClient.query.usersTable.findFirst).mockResolvedValue(
 				{} as never,
@@ -64,11 +70,10 @@ describe("wrapDrizzleWithMetrics", () => {
 			const snapshot = mockPerf.snapshot();
 			const op = snapshot.ops["db:query.usersTable.findFirst"];
 			expect(op).toBeDefined();
-			expect(op).not.toBeUndefined();
-			// Use optional chaining since we've verified op is defined
-			expect(op?.count).toBe(1);
-			expect(op?.ms).toBeGreaterThanOrEqual(0);
-			expect(typeof op?.ms).toBe("number");
+			if (!op) throw new Error("op is undefined");
+			expect(op.count).toBe(1);
+			expect(op.ms).toBeGreaterThanOrEqual(0);
+			expect(typeof op.ms).toBe("number");
 		});
 
 		it("should track findMany operations", async () => {
@@ -90,7 +95,8 @@ describe("wrapDrizzleWithMetrics", () => {
 			const snapshot = mockPerf.snapshot();
 			const op = snapshot.ops["db:query.usersTable.findMany"];
 			expect(op).toBeDefined();
-			expect(op?.count).toBe(1);
+			if (!op) throw new Error("op is undefined");
+			expect(op.count).toBe(1);
 		});
 
 		// Note: insert, update, delete are not methods on query tables in real Drizzle
@@ -117,8 +123,9 @@ describe("wrapDrizzleWithMetrics", () => {
 			const op2 = snapshot.ops["db:query.usersTable.findMany"];
 			expect(op1).toBeDefined();
 			expect(op2).toBeDefined();
-			expect(op1?.count).toBe(1);
-			expect(op2?.count).toBe(1);
+			if (!op1 || !op2) throw new Error("op1 or op2 is undefined");
+			expect(op1.count).toBe(1);
+			expect(op2.count).toBe(1);
 			expect(snapshot.totalOps).toBe(2);
 		});
 
@@ -161,7 +168,8 @@ describe("wrapDrizzleWithMetrics", () => {
 			const snapshot = mockPerf.snapshot();
 			const op = snapshot.ops["db:execute"];
 			expect(op).toBeDefined();
-			expect(op?.count).toBe(1);
+			if (!op) throw new Error("op is undefined");
+			expect(op.count).toBe(1);
 		});
 	});
 
@@ -202,31 +210,35 @@ describe("wrapDrizzleWithMetrics", () => {
 		it("should track operation duration accurately", async () => {
 			// Use fake timers for deterministic timing
 			vi.useFakeTimers();
-			// Simulate a slow operation
-			vi.mocked(mockClient.query.usersTable.findFirst).mockImplementation(
-				async () => {
-					await new Promise((resolve) => setTimeout(resolve, 50));
-					return {} as never;
-				},
-			);
+			try {
+				// Simulate a slow operation
+				vi.mocked(mockClient.query.usersTable.findFirst).mockImplementation(
+					async () => {
+						await new Promise((resolve) => setTimeout(resolve, 50));
+						return {} as never;
+					},
+				);
 
-			const wrapped = wrapDrizzleWithMetrics(
-				mockClient as unknown as DrizzleClient,
-				getPerf,
-			);
-			const promise = wrapped.query.usersTable.findFirst({});
-			// Advance timers to resolve the promise
-			await vi.advanceTimersByTimeAsync(50);
-			await promise;
+				const wrapped = wrapDrizzleWithMetrics(
+					mockClient as unknown as DrizzleClient,
+					getPerf,
+				);
+				const promise = wrapped.query.usersTable.findFirst({});
+				// Advance timers to resolve the promise
+				await vi.advanceTimersByTimeAsync(50);
+				await promise;
 
-			const snapshot = mockPerf.snapshot();
-			const op = snapshot.ops["db:query.usersTable.findFirst"];
-			expect(op).toBeDefined();
-			expect(typeof op?.ms).toBe("number");
-			expect(typeof op?.max).toBe("number");
-			expect(op?.ms).toBeGreaterThanOrEqual(0);
-			expect(op?.max).toBeGreaterThanOrEqual(0);
-			vi.useRealTimers();
+				const snapshot = mockPerf.snapshot();
+				const op = snapshot.ops["db:query.usersTable.findFirst"];
+				expect(op).toBeDefined();
+				if (!op) throw new Error("op is undefined");
+				expect(typeof op.ms).toBe("number");
+				expect(typeof op.max).toBe("number");
+				expect(op.ms).toBeGreaterThanOrEqual(0);
+				expect(op.max).toBeGreaterThanOrEqual(0);
+			} finally {
+				vi.useRealTimers();
+			}
 		});
 	});
 
@@ -253,7 +265,10 @@ describe("wrapDrizzleWithMetrics", () => {
 
 		it("should track errors from select builder when awaited", async () => {
 			const dbError = new Error("Select query failed");
-			const mockPromise = Promise.reject(dbError);
+			// Create promise that rejects asynchronously to avoid unhandled rejection warnings
+			const mockPromise = new Promise<never>((_, reject) => {
+				queueMicrotask(() => reject(dbError));
+			});
 			vi.mocked(mockClient.select).mockReturnValue(mockPromise as never);
 
 			const wrapped = wrapDrizzleWithMetrics(
@@ -270,7 +285,10 @@ describe("wrapDrizzleWithMetrics", () => {
 
 		it("should track errors from insert builder when awaited", async () => {
 			const dbError = new Error("Insert query failed");
-			const mockPromise = Promise.reject(dbError);
+			// Create promise that rejects asynchronously to avoid unhandled rejection warnings
+			const mockPromise = new Promise<never>((_, reject) => {
+				queueMicrotask(() => reject(dbError));
+			});
 			// Use a mock table from the client - cast to satisfy TypeScript
 			const mockTable = mockClient.query.usersTable as unknown as Parameters<
 				DrizzleClient["insert"]
@@ -293,7 +311,10 @@ describe("wrapDrizzleWithMetrics", () => {
 
 		it("should track errors from update builder when awaited", async () => {
 			const dbError = new Error("Update query failed");
-			const mockPromise = Promise.reject(dbError);
+			// Create promise that rejects asynchronously to avoid unhandled rejection warnings
+			const mockPromise = new Promise<never>((_, reject) => {
+				queueMicrotask(() => reject(dbError));
+			});
 			// Use a mock table from the client - cast to satisfy TypeScript
 			const mockTable = mockClient.query.usersTable as unknown as Parameters<
 				DrizzleClient["update"]
@@ -316,7 +337,10 @@ describe("wrapDrizzleWithMetrics", () => {
 
 		it("should track errors from delete builder when awaited", async () => {
 			const dbError = new Error("Delete query failed");
-			const mockPromise = Promise.reject(dbError);
+			// Create promise that rejects asynchronously to avoid unhandled rejection warnings
+			const mockPromise = new Promise<never>((_, reject) => {
+				queueMicrotask(() => reject(dbError));
+			});
 			// Use a mock table from the client - cast to satisfy TypeScript
 			const mockTable = mockClient.query.usersTable as unknown as Parameters<
 				DrizzleClient["delete"]
@@ -398,9 +422,9 @@ describe("wrapDrizzleWithMetrics", () => {
 			const snapshot = mockPerf.snapshot();
 			// Only first operation should be tracked
 			const op = snapshot.ops["db:query.usersTable.findFirst"];
-			if (op) {
-				expect(op.count).toBe(1);
-			}
+			expect(op).toBeDefined();
+			if (!op) throw new Error("op is undefined");
+			expect(op.count).toBe(1);
 		});
 	});
 
@@ -523,7 +547,8 @@ describe("wrapDrizzleWithMetrics", () => {
 			const snapshot = mockPerf.snapshot();
 			const op = snapshot.ops["db:select"];
 			expect(op).toBeDefined();
-			expect(op?.count).toBe(1);
+			if (!op) throw new Error("op is undefined");
+			expect(op.count).toBe(1);
 		});
 
 		it("should preserve builder chaining and only time on await for select", async () => {
@@ -571,7 +596,8 @@ describe("wrapDrizzleWithMetrics", () => {
 			const snapshot = mockPerf.snapshot();
 			const op = snapshot.ops["db:select"];
 			expect(op).toBeDefined();
-			expect(op?.count).toBe(1);
+			if (!op) throw new Error("op is undefined");
+			expect(op.count).toBe(1);
 		});
 
 		it("should preserve builder chaining and only time on await for insert", async () => {
@@ -612,7 +638,8 @@ describe("wrapDrizzleWithMetrics", () => {
 			const snapshot = mockPerf.snapshot();
 			const op = snapshot.ops["db:insert"];
 			expect(op).toBeDefined();
-			expect(op?.count).toBe(1);
+			if (!op) throw new Error("op is undefined");
+			expect(op.count).toBe(1);
 		});
 
 		it("should preserve builder chaining and only time on await for update", async () => {
@@ -657,7 +684,8 @@ describe("wrapDrizzleWithMetrics", () => {
 			const snapshot = mockPerf.snapshot();
 			const op = snapshot.ops["db:update"];
 			expect(op).toBeDefined();
-			expect(op?.count).toBe(1);
+			if (!op) throw new Error("op is undefined");
+			expect(op.count).toBe(1);
 		});
 
 		it("should preserve builder chaining and only time on await for delete", async () => {
@@ -698,7 +726,8 @@ describe("wrapDrizzleWithMetrics", () => {
 			const snapshot = mockPerf.snapshot();
 			const op = snapshot.ops["db:delete"];
 			expect(op).toBeDefined();
-			expect(op?.count).toBe(1);
+			if (!op) throw new Error("op is undefined");
+			expect(op.count).toBe(1);
 		});
 
 		it("should handle builder methods when perf becomes undefined", async () => {
@@ -722,9 +751,9 @@ describe("wrapDrizzleWithMetrics", () => {
 			expect(result).toEqual([]);
 			const snapshot = mockPerf.snapshot();
 			const op = snapshot.ops["db:select"];
-			if (op) {
-				expect(op.count).toBe(1);
-			}
+			expect(op).toBeDefined();
+			if (!op) throw new Error("op is undefined");
+			expect(op.count).toBe(1);
 		});
 	});
 
@@ -750,9 +779,9 @@ describe("wrapDrizzleWithMetrics", () => {
 			expect(mockExecute).toHaveBeenCalledTimes(2);
 			const snapshot = mockPerf.snapshot();
 			const op = snapshot.ops["db:execute"];
-			if (op) {
-				expect(op.count).toBe(1);
-			}
+			expect(op).toBeDefined();
+			if (!op) throw new Error("op is undefined");
+			expect(op.count).toBe(1);
 		});
 	});
 
@@ -862,8 +891,10 @@ describe("wrapDrizzleWithMetrics", () => {
 			expect(rows).toEqual([{ id: "1" }]);
 			// Verify timing was tracked when .then() was called
 			const snapshot = mockPerf.snapshot();
-			expect(snapshot.ops["db:select"]).toBeDefined();
-			expect(snapshot.ops["db:select"]?.count).toBe(1);
+			const op = snapshot.ops["db:select"];
+			expect(op).toBeDefined();
+			if (!op) throw new Error("op is undefined");
+			expect(op.count).toBe(1);
 		});
 
 		it("should wrap builder.execute() if present", async () => {
