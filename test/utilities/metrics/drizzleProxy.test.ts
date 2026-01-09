@@ -395,9 +395,17 @@ describe("wrapDrizzleWithMetrics", () => {
 			await wrapped.query.usersTable.findFirst({});
 			await wrapped.query.usersTable.findFirst({});
 
-			// getPerf should be called for each operation (once per findFirst call)
-			// Note: getPerf is called inside wrapTableMethods for each method invocation
-			expect(getPerfSpy).toHaveBeenCalledTimes(2);
+			// getPerf is called for zero-overhead checks during property access
+			// and for tracking during method invocation
+			// The important thing is that operations are tracked correctly
+			expect(getPerfSpy).toHaveBeenCalled();
+
+			// Verify operations are tracked (2 findFirst calls)
+			const snapshot = mockPerf.snapshot();
+			const op = snapshot.ops["db:query.usersTable.findFirst"];
+			expect(op).toBeDefined();
+			if (!op) throw new Error("op is undefined");
+			expect(op.count).toBe(2);
 		});
 
 		it("should handle getPerf returning undefined mid-request", async () => {

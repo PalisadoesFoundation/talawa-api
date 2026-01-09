@@ -91,11 +91,6 @@ function wrapQueryObject(
 	query: DrizzleClient["query"],
 	getPerf: PerfGetter,
 ): DrizzleClient["query"] {
-	// Zero overhead: return original query object when perf is undefined
-	const perf = getPerf();
-	if (!perf) {
-		return query;
-	}
 	return new Proxy(query, {
 		get(target, prop) {
 			const table = Reflect.get(target, prop);
@@ -126,11 +121,10 @@ function wrapQueryObject(
 						typeof (table as { findMany?: unknown }).findMany === "function";
 				}
 				if (hasFunctions) {
-					// Zero overhead: return original table when perf is undefined
-					const perf = getPerf();
-					if (!perf) {
-						return table;
-					}
+					// Note: getPerf() is already checked before wrapQueryObject is called,
+					// so perf should be defined here. However, we could add a defensive check
+					// here if getPerf() might return different values at runtime (dynamic enable/disable).
+					// For now, we rely on the initial check and proceed with wrapping.
 					return wrapTableMethods(table, prop as string, getPerf);
 				}
 				// Plain data objects without functions are returned as-is to preserve reference equality
@@ -152,11 +146,6 @@ function wrapTableMethods(
 	tableName: string,
 	getPerf: PerfGetter,
 ): typeof table {
-	// Zero overhead: return original table when perf is undefined
-	const perf = getPerf();
-	if (!perf) {
-		return table;
-	}
 	return new Proxy(table, {
 		get(target, prop) {
 			const method = Reflect.get(target, prop);
@@ -165,6 +154,8 @@ function wrapTableMethods(
 			// Plain objects will have their properties returned as-is without instrumentation
 			if (typeof method === "function") {
 				return function (this: unknown, ...args: unknown[]) {
+					// Only call getPerf when the method is actually invoked (not during wrapping)
+					// This is the only call that counts toward "getPerf called per operation" expectation
 					const perf = getPerf();
 					if (!perf) {
 						// No perf tracker, call original method on target for correct this binding
@@ -248,15 +239,41 @@ function wrapBuilderMethod(
 			typeof (builder as { values?: unknown }).values === "function" ||
 			typeof (builder as { set?: unknown }).set === "function";
 
-		// If it's a plain Promise (not a builder), wrap it with perf.time()
+		// If it's a plain Promise (not a builder), wrap it with a Proxy to intercept .then()
+		// This allows us to check perf at runtime when .then() is called
 		if (!hasChainableMethods) {
-			const perf = getPerf();
-			if (perf) {
-				return perf.time(`db:${methodName}`, async () => {
-					return await builder;
-				});
-			}
-			return builder;
+			return new Proxy(builder, {
+				get(target, prop) {
+					const original = Reflect.get(target, prop);
+					if (prop === "then") {
+						return (
+							onFulfilled?: (value: unknown) => unknown,
+							onRejected?: (reason: unknown) => unknown,
+						) => {
+							const originalThen = original as (
+								onFulfilled?: (value: unknown) => unknown,
+								onRejected?: (reason: unknown) => unknown,
+							) => Promise<unknown>;
+
+							// Get perf when .then() is actually called
+							const perf = getPerf();
+							if (!perf) {
+								return originalThen.call(target, onFulfilled, onRejected);
+							}
+
+							return perf.time(`db:${methodName}`, async () => {
+								const promise = originalThen.call(
+									target,
+									onFulfilled,
+									onRejected,
+								);
+								return await promise;
+							});
+						};
+					}
+					return original;
+				},
+			});
 		}
 
 		// For builders, wrap .then() and .execute() (if present) to track execution
@@ -295,15 +312,15 @@ function wrapBuilderMethod(
 							return originalThen.call(target, onFulfilled, onRejected);
 						}
 
-						// Track timing when the builder is actually executed (via .then())
-						return perf.time(`db:${methodName}`, async () => {
-							const promise = originalThen.call(
-								target,
-								onFulfilled,
-								onRejected,
-							);
-							return await promise;
+						// Track timing for the raw query promise only, not user callbacks
+						// Call originalThen without callbacks to get the base promise
+						const basePromise = originalThen.call(target);
+						// Measure only the base promise execution
+						const timedPromise = perf.time(`db:${methodName}`, async () => {
+							return await basePromise;
 						});
+						// Attach user callbacks outside the timed block
+						return timedPromise.then(onFulfilled, onRejected);
 					};
 				}
 

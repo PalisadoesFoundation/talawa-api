@@ -274,16 +274,19 @@ export const graphql = fastifyPlugin(async (fastify) => {
 					).socket?.request?.perf;
 
 					// Type guard to ensure it's a PerformanceTracker
+					// Verify presence and function type of snapshot, trackComplexity, and time methods
 					const perf =
 						socketPerf &&
 						typeof socketPerf === "object" &&
 						socketPerf !== null &&
 						"snapshot" in socketPerf &&
 						"trackComplexity" in socketPerf &&
+						"time" in socketPerf &&
 						typeof (socketPerf as { snapshot?: unknown }).snapshot ===
 							"function" &&
 						typeof (socketPerf as { trackComplexity?: unknown })
-							.trackComplexity === "function"
+							.trackComplexity === "function" &&
+						typeof (socketPerf as { time?: unknown }).time === "function"
 							? (socketPerf as PerformanceTracker)
 							: undefined;
 

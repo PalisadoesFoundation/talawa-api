@@ -16,13 +16,13 @@ import {
 	Query_signIn,
 } from "../documentNodes";
 
-// Admin auth (fetched once per suite)
+// Admin auth (fetched once per suite, but re-authenticates on failure)
 let adminToken: string | null = null;
 let adminUserId: string | null = null;
 
 async function ensureAdminAuth(): Promise<{ token: string; userId: string }> {
-	if (adminToken && adminUserId)
-		return { token: adminToken, userId: adminUserId };
+	// Always re-authenticate to avoid token expiration issues during long test runs
+	// The slight performance cost is worth the reliability
 	if (
 		!server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS ||
 		!server.envConfig.API_ADMINISTRATOR_USER_PASSWORD
