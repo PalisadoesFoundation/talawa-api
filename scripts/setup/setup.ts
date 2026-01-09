@@ -1,7 +1,6 @@
 import crypto from "node:crypto";
 import { promises as fs } from "node:fs";
-import path from "node:path";
-import { resolve } from "node:path";
+import path, { resolve } from "node:path";
 import process from "node:process";
 import { pathToFileURL } from "node:url";
 import dotenv from "dotenv";
@@ -228,6 +227,131 @@ export function validateCloudBeaverURL(input: string): true | string {
 	} catch {
 		return "Invalid URL format";
 	}
+}
+
+export function isBooleanString(value: string): boolean {
+	return value === "true" || value === "false";
+}
+
+export function validateRequiredFields(answers: SetupAnswers): true | string {
+	const requiredFields = [
+		"CI",
+		"API_BASE_URL",
+		"API_HOST",
+		"API_PORT",
+		"API_ADMINISTRATOR_USER_EMAIL_ADDRESS",
+	];
+
+	for (const field of requiredFields) {
+		if (!answers[field]) {
+			return `Required field ${field} is missing`;
+		}
+	}
+	return true;
+}
+
+export function validateBooleanFields(answers: SetupAnswers): true | string {
+	const booleanFields = [
+		"CI",
+		"API_IS_APPLY_DRIZZLE_MIGRATIONS",
+		"API_IS_GRAPHIQL",
+		"API_IS_PINO_PRETTY",
+		"API_MINIO_USE_SSL",
+		"API_POSTGRES_SSL_MODE",
+	];
+
+	for (const field of booleanFields) {
+		const value = answers[field];
+		if (value !== undefined && !isBooleanString(value)) {
+			return `Field ${field} must be "true" or "false"`;
+		}
+	}
+	return true;
+}
+
+export function validatePortNumbers(answers: SetupAnswers): true | string {
+	const portFields = [
+		"API_PORT",
+		"API_MINIO_PORT",
+		"API_POSTGRES_PORT",
+		"CLOUDBEAVER_MAPPED_PORT",
+		"MINIO_API_MAPPED_PORT",
+		"MINIO_CONSOLE_MAPPED_PORT",
+		"POSTGRES_MAPPED_PORT",
+		"CADDY_HTTP_MAPPED_PORT",
+		"CADDY_HTTPS_MAPPED_PORT",
+		"CADDY_HTTP3_MAPPED_PORT",
+		"CADDY_TALAWA_API_PORT",
+	];
+
+	for (const field of portFields) {
+		const value = answers[field];
+		if (value !== undefined) {
+			const validation = validatePort(value);
+			if (validation !== true) {
+				return `${field}: ${validation}`;
+			}
+		}
+	}
+	return true;
+}
+
+export function validateSamplingRatio(input: string): true | string {
+	const ratio = Number.parseFloat(input);
+	if (Number.isNaN(ratio) || ratio < 0 || ratio > 1) {
+		return "Sampling ratio must be a number between 0 and 1";
+	}
+	return true;
+}
+
+export function validateAllAnswers(answers: SetupAnswers): true | string {
+	const requiredValidation = validateRequiredFields(answers);
+	if (requiredValidation !== true) {
+		return requiredValidation;
+	}
+
+	const booleanValidation = validateBooleanFields(answers);
+	if (booleanValidation !== true) {
+		return booleanValidation;
+	}
+
+	const portValidation = validatePortNumbers(answers);
+	if (portValidation !== true) {
+		return portValidation;
+	}
+
+	return true;
+}
+
+export async function observabilitySetup(
+	answers: SetupAnswers,
+): Promise<SetupAnswers> {
+	try {
+		const enableObservability = await promptConfirm(
+			"enableObservability",
+			"Enable observability features?",
+			false,
+		);
+
+		if (enableObservability) {
+			answers.OBSERVABILITY_ENABLED = await promptList(
+				"OBSERVABILITY_ENABLED",
+				"Enable observability?",
+				["true", "false"],
+				"true",
+			);
+
+			answers.OBSERVABILITY_SAMPLING_RATIO = await promptInput(
+				"OBSERVABILITY_SAMPLING_RATIO",
+				"Observability sampling ratio (0-1):",
+				"1.0",
+				validateSamplingRatio,
+			);
+		}
+	} catch (err) {
+		await handlePromptError(err);
+	}
+	return answers;
 }
 
 async function handlePromptError(err: unknown): Promise<never> {
@@ -548,7 +672,6 @@ export async function cloudbeaverSetup(
 	} catch (err) {
 		await handlePromptError(err);
 	}
-	
 	return answers;
 }
 
@@ -598,7 +721,7 @@ export async function minioSetup(answers: SetupAnswers): Promise<SetupAnswers> {
 					answers.MINIO_CONSOLE_MAPPED_PORT = await promptInput(
 						"MINIO_CONSOLE_MAPPED_PORT",
 						"Please enter a different Minio console mapped port:",
-						String(Number(answers.MINIO_API_MAPPED_PORT) + 1), // Suggest next available port
+						String(Number(answers.MINIO_API_MAPPED_PORT) + 1),
 						validatePort,
 					);
 				} else {
@@ -621,7 +744,6 @@ export async function minioSetup(answers: SetupAnswers): Promise<SetupAnswers> {
 	} catch (err) {
 		await handlePromptError(err);
 	}
-	
 	return answers;
 }
 
@@ -664,7 +786,6 @@ export async function postgresSetup(
 	} catch (err) {
 		await handlePromptError(err);
 	}
-	
 	return answers;
 }
 
@@ -848,7 +969,10 @@ export async function setup(): Promise<SetupAnswers> {
 	return answers;
 }
 
-if (process.argv[1] && import.meta.url === pathToFileURL(resolve(process.argv[1])).href) {
+if (
+	process.argv[1] &&
+	import.meta.url === pathToFileURL(resolve(process.argv[1])).href
+) {
 	setup().catch((err) => {
 		console.error("Setup failed:", err);
 		process.exit(1);

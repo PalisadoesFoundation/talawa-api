@@ -41,12 +41,11 @@ export async function updateEnvVariable(config: {
 
 		for (const key in config) {
 			const value = config[key];
-			
 			// Skip undefined values
 			if (value === undefined) {
 				continue;
 			}
-			
+
 			const regex = new RegExp(
 				`^${key.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}=.*`,
 				"gm",
