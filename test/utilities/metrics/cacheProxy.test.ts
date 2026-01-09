@@ -450,9 +450,8 @@ describe("wrapCacheWithMetrics", () => {
 			expect(snapshot.cacheHits).toBe(0);
 			expect(snapshot.cacheMisses).toBe(0);
 			const op = snapshot.ops["cache:mget"];
-			if (op) {
-				expect(op.count).toBe(1);
-			}
+			expect(op).toBeDefined();
+			expect(op?.count).toBe(1);
 		});
 
 		it("should handle empty mset array", async () => {
@@ -461,9 +460,8 @@ describe("wrapCacheWithMetrics", () => {
 
 			const snapshot = mockPerf.snapshot();
 			const op = snapshot.ops["cache:mset"];
-			if (op) {
-				expect(op.count).toBe(1);
-			}
+			expect(op).toBeDefined();
+			expect(op?.count).toBe(1);
 		});
 
 		it("should preserve cache behavior when getPerf returns undefined", async () => {

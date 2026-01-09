@@ -1,4 +1,4 @@
-import type { FastifyInstance, FastifyRequest } from "fastify";
+import type { FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
 import fp from "fastify-plugin";
 import { wrapCacheWithMetrics } from "../utilities/metrics/cacheProxy";
 import { wrapDrizzleWithMetrics } from "../utilities/metrics/drizzleProxy";
@@ -7,7 +7,6 @@ import {
 	type PerformanceTracker,
 	type PerfSnapshot,
 } from "../utilities/metrics/performanceTracker";
-import { TalawaGraphQLError } from "../utilities/TalawaGraphQLError";
 
 declare module "fastify" {
 	interface FastifyRequest {
@@ -47,7 +46,7 @@ declare module "fastify" {
 export default fp(
 	async function perfPlugin(app: FastifyInstance) {
 		// Store recent performance snapshots in memory (last 200 requests)
-		// Using push/shift pattern for O(1) amortized inserts
+		// Using push/shift pattern (Array.shift() is O(n), but buffer is small so cost is negligible)
 		const recent: PerfSnapshot[] = [];
 
 		// Check if performance metrics endpoint is enabled
@@ -105,11 +104,12 @@ export default fp(
 				`db;dur=${dbMs}, cache;desc="${cacheDesc}", total;dur=${Math.round(total)}`,
 			);
 
-			// Store snapshot in recent buffer (O(1) amortized)
+			// Store snapshot in recent buffer
 			if (snap) {
 				// Add timestamp for chronological ordering - use t0 which is guaranteed to be defined
 				recent.push({ ...snap, timestamp: t0 });
 				// Keep only last 200 snapshots (FIFO)
+				// Note: Array.shift() is O(n), but with a small buffer (200 items) the cost is negligible
 				if (recent.length > 200) {
 					recent.shift();
 				}
@@ -124,21 +124,17 @@ export default fp(
 			app.get(
 				"/metrics/perf",
 				{
-					preHandler: async (req: FastifyRequest, _reply) => {
+					preHandler: async (req: FastifyRequest, reply: FastifyReply) => {
 						// Require authentication via JWT - endpoint is protected and only accessible
 						// to authenticated users when API_ENABLE_PERF_METRICS is enabled
 						try {
 							await req.jwtVerify();
 						} catch (_error) {
-							const error = new TalawaGraphQLError({
-								extensions: {
-									code: "unauthenticated",
-								},
-								message:
-									"Authentication required to access performance metrics",
-							});
-							// Set HTTP status code for REST endpoint error handling
-							(error as { statusCode?: number }).statusCode = 401;
+							// Use Fastify's standard HTTP error pattern for REST endpoints
+							const error = new Error(
+								"Authentication required to access performance metrics",
+							) as Error & { statusCode: number };
+							error.statusCode = 401;
 							throw error;
 						}
 					},

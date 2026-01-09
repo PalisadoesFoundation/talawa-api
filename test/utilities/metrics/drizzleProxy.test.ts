@@ -77,11 +77,11 @@ describe("wrapDrizzleWithMetrics", () => {
 			const snapshot = mockPerf.snapshot();
 			const op = snapshot.ops["db:query.usersTable.findFirst"];
 			expect(op).toBeDefined();
-			if (op) {
-				expect(op.count).toBe(1);
-				expect(op.ms).toBeGreaterThanOrEqual(0);
-				expect(typeof op.ms).toBe("number");
-			}
+			expect(op).not.toBeUndefined();
+			// Use non-null assertion since we've verified op is defined
+			expect(op!.count).toBe(1);
+			expect(op!.ms).toBeGreaterThanOrEqual(0);
+			expect(typeof op!.ms).toBe("number");
 		});
 
 		it("should track findMany operations", async () => {
@@ -265,6 +265,93 @@ describe("wrapDrizzleWithMetrics", () => {
 			const snapshot = mockPerf.snapshot();
 			expect(snapshot.ops["db:query.usersTable.findFirst"]).toBeDefined();
 		});
+
+		it("should track errors from select builder when awaited", async () => {
+			const dbError = new Error("Select query failed");
+			const mockPromise = Promise.reject(dbError);
+			vi.mocked(mockClient.select).mockReturnValue(mockPromise as never);
+
+			const wrapped = wrapDrizzleWithMetrics(
+				mockClient as unknown as DrizzleClient,
+				getPerf,
+			);
+
+			await expect(wrapped.select()).rejects.toThrow("Select query failed");
+
+			// Operation should still be tracked even if it failed
+			const snapshot = mockPerf.snapshot();
+			expect(snapshot.ops["db:select"]).toBeDefined();
+		});
+
+		it("should track errors from insert builder when awaited", async () => {
+			const dbError = new Error("Insert query failed");
+			const mockPromise = Promise.reject(dbError);
+			vi.mocked(mockClient.insert).mockReturnValue(mockPromise as never);
+
+			const wrapped = wrapDrizzleWithMetrics(
+				mockClient as unknown as DrizzleClient,
+				getPerf,
+			);
+
+			await expect(wrapped.insert()).rejects.toThrow("Insert query failed");
+
+			// Operation should still be tracked even if it failed
+			const snapshot = mockPerf.snapshot();
+			expect(snapshot.ops["db:insert"]).toBeDefined();
+		});
+
+		it("should track errors from update builder when awaited", async () => {
+			const dbError = new Error("Update query failed");
+			const mockPromise = Promise.reject(dbError);
+			vi.mocked(mockClient.update).mockReturnValue(mockPromise as never);
+
+			const wrapped = wrapDrizzleWithMetrics(
+				mockClient as unknown as DrizzleClient,
+				getPerf,
+			);
+
+			await expect(wrapped.update()).rejects.toThrow("Update query failed");
+
+			// Operation should still be tracked even if it failed
+			const snapshot = mockPerf.snapshot();
+			expect(snapshot.ops["db:update"]).toBeDefined();
+		});
+
+		it("should track errors from delete builder when awaited", async () => {
+			const dbError = new Error("Delete query failed");
+			const mockPromise = Promise.reject(dbError);
+			vi.mocked(mockClient.delete).mockReturnValue(mockPromise as never);
+
+			const wrapped = wrapDrizzleWithMetrics(
+				mockClient as unknown as DrizzleClient,
+				getPerf,
+			);
+
+			await expect(wrapped.delete()).rejects.toThrow("Delete query failed");
+
+			// Operation should still be tracked even if it failed
+			const snapshot = mockPerf.snapshot();
+			expect(snapshot.ops["db:delete"]).toBeDefined();
+		});
+
+		it("should track errors from execute method", async () => {
+			const dbError = new Error("Execute query failed");
+			const mockExecute = vi.fn().mockRejectedValue(dbError);
+			(mockClient as { execute?: typeof mockExecute }).execute = mockExecute;
+
+			const wrapped = wrapDrizzleWithMetrics(
+				mockClient as unknown as DrizzleClient,
+				getPerf,
+			);
+
+			await expect(wrapped.execute("SELECT 1")).rejects.toThrow(
+				"Execute query failed",
+			);
+
+			// Operation should still be tracked even if it failed
+			const snapshot = mockPerf.snapshot();
+			expect(snapshot.ops["db:execute"]).toBeDefined();
+		});
 	});
 
 	describe("Perf Getter Function", () => {
@@ -438,7 +525,7 @@ describe("wrapDrizzleWithMetrics", () => {
 			}
 		});
 
-		it("should preserve builder chaining and only time on await", async () => {
+		it("should preserve builder chaining and only time on await for select", async () => {
 			// Create a builder stub that is both thenable (has .then()) and chainable (has .from(), .where())
 			// This simulates real Drizzle builders which are both thenable and chainable
 			// Use Object.assign to create a Promise with chainable methods (avoids biome-ignore)
@@ -480,11 +567,120 @@ describe("wrapDrizzleWithMetrics", () => {
 
 			// Verify timing was NOT recorded for builder methods
 			// Builder methods should return the builder as-is, not wrap with perf.time()
-			// The actual execution timing happens when the query object methods are called
+			// The actual execution timing happens when .then() is called (on await)
 			const snapshot = mockPerf.snapshot();
-			// Since we're not using query object methods, there should be no db:select operation
-			// The builder is returned as-is to preserve chainability
-			expect(snapshot.ops["db:select"]).toBeUndefined();
+			// The builder is returned as-is to preserve chainability, and wrapBuilderMethod
+			// wraps .then() to track timing when awaited, so the operation should be tracked
+			expect(snapshot.ops["db:select"]).toBeDefined();
+		});
+
+		it("should preserve builder chaining and only time on await for insert", async () => {
+			const result = [{ id: "1", name: "test" }];
+			const promise = Promise.resolve(result);
+
+			type Builder = Promise<typeof result> & {
+				values: (values: unknown) => Builder;
+				returning: (columns: unknown) => Builder;
+			};
+
+			const builder = Object.assign(promise, {
+				values: vi.fn((_values: unknown) => builder),
+				returning: vi.fn((_columns: unknown) => builder),
+			}) as Builder;
+
+			vi.mocked(mockClient.insert).mockReturnValue(builder as never);
+
+			const wrapped = wrapDrizzleWithMetrics(
+				mockClient as unknown as DrizzleClient,
+				getPerf,
+			);
+
+			const insertResult = wrapped.insert() as unknown as Builder;
+			const valuesResult = insertResult.values({ name: "test" });
+			const returningResult = valuesResult.returning();
+			const rows = await returningResult;
+
+			expect(rows).toEqual([{ id: "1", name: "test" }]);
+			expect(builder.values).toHaveBeenCalledWith({ name: "test" });
+			expect(builder.returning).toHaveBeenCalled();
+
+			const snapshot = mockPerf.snapshot();
+			// Timing occurs when .then() is called (on await), so db:insert should be tracked
+			expect(snapshot.ops["db:insert"]).toBeDefined();
+		});
+
+		it("should preserve builder chaining and only time on await for update", async () => {
+			const result = [{ id: "1", name: "updated" }];
+			const promise = Promise.resolve(result);
+
+			type Builder = Promise<typeof result> & {
+				set: (values: unknown) => Builder;
+				where: (condition: unknown) => Builder;
+				returning: (columns: unknown) => Builder;
+			};
+
+			const builder = Object.assign(promise, {
+				set: vi.fn((_values: unknown) => builder),
+				where: vi.fn((_condition: unknown) => builder),
+				returning: vi.fn((_columns: unknown) => builder),
+			}) as Builder;
+
+			vi.mocked(mockClient.update).mockReturnValue(builder as never);
+
+			const wrapped = wrapDrizzleWithMetrics(
+				mockClient as unknown as DrizzleClient,
+				getPerf,
+			);
+
+			const updateResult = wrapped.update() as unknown as Builder;
+			const setResult = updateResult.set({ name: "updated" });
+			const whereResult = setResult.where({ id: "1" });
+			const returningResult = whereResult.returning();
+			const rows = await returningResult;
+
+			expect(rows).toEqual([{ id: "1", name: "updated" }]);
+			expect(builder.set).toHaveBeenCalledWith({ name: "updated" });
+			expect(builder.where).toHaveBeenCalledWith({ id: "1" });
+			expect(builder.returning).toHaveBeenCalled();
+
+			const snapshot = mockPerf.snapshot();
+			// Timing occurs when .then() is called (on await), so db:update should be tracked
+			expect(snapshot.ops["db:update"]).toBeDefined();
+		});
+
+		it("should preserve builder chaining and only time on await for delete", async () => {
+			const result = [{ id: "1" }];
+			const promise = Promise.resolve(result);
+
+			type Builder = Promise<typeof result> & {
+				where: (condition: unknown) => Builder;
+				returning: (columns: unknown) => Builder;
+			};
+
+			const builder = Object.assign(promise, {
+				where: vi.fn((_condition: unknown) => builder),
+				returning: vi.fn((_columns: unknown) => builder),
+			}) as Builder;
+
+			vi.mocked(mockClient.delete).mockReturnValue(builder as never);
+
+			const wrapped = wrapDrizzleWithMetrics(
+				mockClient as unknown as DrizzleClient,
+				getPerf,
+			);
+
+			const deleteResult = wrapped.delete() as unknown as Builder;
+			const whereResult = deleteResult.where({ id: "1" });
+			const returningResult = whereResult.returning();
+			const rows = await returningResult;
+
+			expect(rows).toEqual([{ id: "1" }]);
+			expect(builder.where).toHaveBeenCalledWith({ id: "1" });
+			expect(builder.returning).toHaveBeenCalled();
+
+			const snapshot = mockPerf.snapshot();
+			// Timing occurs when .then() is called (on await), so db:delete should be tracked
+			expect(snapshot.ops["db:delete"]).toBeDefined();
 		});
 
 		it("should handle builder methods when perf becomes undefined", async () => {

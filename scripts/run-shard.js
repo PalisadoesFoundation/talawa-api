@@ -44,6 +44,8 @@ if (
 const args = ["vitest", "run"];
 if (withCoverage) args.push("--coverage");
 args.push("--shard", `${shardIndex}/${shardCount}`);
+// Add JSON reporter for machine-readable output (in addition to default reporter for human-readable output)
+args.push("--reporter=verbose", "--reporter=json");
 
 // Ensure SHARD_INDEX is set for vitest.config.ts to detect sharded runs
 const env = {

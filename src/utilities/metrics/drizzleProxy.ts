@@ -195,14 +195,15 @@ function wrapExecuteMethod(
 /**
  * Wraps builder methods (select, insert, update, delete) to track when they execute.
  * These methods return query builders that are both thenable AND chainable.
- * We must NOT convert them to Promises as that breaks chaining (e.g., .from(), .where()).
- * Instead, return the builder as-is and let query object tracking handle execution timing.
+ * We intercept builder.then() and builder.execute() (if present) to track execution
+ * without breaking chainability. Chainable methods (.from, .where, .values, etc.) are
+ * forwarded unchanged so chaining still works.
  */
 function wrapBuilderMethod(
 	originalMethod: unknown,
 	target: DrizzleClient,
-	_methodName: string,
-	_getPerf: PerfGetter,
+	methodName: string,
+	getPerf: PerfGetter,
 ): unknown {
 	return function (this: unknown, ...args: unknown[]) {
 		// Call the original method on target for correct this binding in Drizzle internals
@@ -211,10 +212,83 @@ function wrapBuilderMethod(
 			args,
 		);
 
-		// Return the builder as-is to preserve chainability
-		// Drizzle builders are both thenable (have .then()) and chainable (have .from(), .where(), etc.)
-		// If we wrap them with perf.time() which returns a Promise, we lose the chainable methods
-		// The actual execution will be tracked by wrapTableMethods when the query object methods are called
-		return builder;
+		// If result is not a thenable object, return as-is
+		if (
+			!builder ||
+			typeof builder !== "object" ||
+			typeof (builder as { then?: unknown }).then !== "function"
+		) {
+			return builder;
+		}
+
+		// Check if it's a builder (has chainable methods) or just a Promise
+		const hasChainableMethods =
+			typeof (builder as { from?: unknown }).from === "function" ||
+			typeof (builder as { where?: unknown }).where === "function" ||
+			typeof (builder as { values?: unknown }).values === "function" ||
+			typeof (builder as { set?: unknown }).set === "function";
+
+		// If it's a plain Promise (not a builder), wrap it with perf.time()
+		if (!hasChainableMethods) {
+			const perf = getPerf();
+			if (perf) {
+				return perf.time(`db:${methodName}`, async () => {
+					return await builder;
+				});
+			}
+			return builder;
+		}
+
+		// For builders, wrap .then() and .execute() (if present) to track execution
+		// while preserving all chainable methods
+		const perf = getPerf();
+		if (!perf) {
+			return builder;
+		}
+
+		// Create a proxy that intercepts .then() and .execute() calls
+		return new Proxy(builder, {
+			get(target, prop) {
+				const original = Reflect.get(target, prop);
+
+				// Wrap .then() to track execution when the builder is awaited
+				if (prop === "then") {
+					return (
+						onFulfilled?: (value: unknown) => unknown,
+						onRejected?: (reason: unknown) => unknown,
+					) => {
+						const originalThen = original as (
+							onFulfilled?: (value: unknown) => unknown,
+							onRejected?: (reason: unknown) => unknown,
+						) => Promise<unknown>;
+
+						// Track timing when the builder is actually executed (via .then())
+						return perf.time(`db:${methodName}`, async () => {
+							const promise = originalThen.call(
+								target,
+								onFulfilled,
+								onRejected,
+							);
+							return await promise;
+						});
+					};
+				}
+
+				// Wrap .execute() if present (some builders have explicit execute methods)
+				if (prop === "execute" && typeof original === "function") {
+					return (...executeArgs: unknown[]) => {
+						const originalExecute = original as (
+							...args: unknown[]
+						) => Promise<unknown>;
+						return perf.time(`db:${methodName}`, async () => {
+							return await originalExecute.apply(target, executeArgs);
+						});
+					};
+				}
+
+				// Forward all other properties (chainable methods, etc.) unchanged
+				return original;
+			},
+		});
 	};
 }
