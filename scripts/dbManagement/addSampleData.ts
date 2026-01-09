@@ -2,6 +2,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { disconnect, insertCollections, pingDB } from "./helpers";
 
+// 👇 I added "recurring_events" and "recurrence_rules" here
 type Collection =
 	| "users"
 	| "organizations"
@@ -14,12 +15,16 @@ type Collection =
 	| "comment_votes"
 	| "action_categories"
 	| "events"
+	| "recurring_events"
+	| "recurrence_rules"
 	| "event_volunteers"
 	| "event_volunteer_memberships"
 	| "action_items"
 	| "notification_templates";
 
 export async function main(): Promise<void> {
+	// 👇 I added them to this list too. 
+	// IMPORTANT: "recurrence_rules" must be AFTER "events" because rules depend on events.
 	const collections: Collection[] = [
 		"users",
 		"organizations",
@@ -32,6 +37,8 @@ export async function main(): Promise<void> {
 		"comment_votes",
 		"action_categories",
 		"events",
+		"recurring_events", 
+		"recurrence_rules",
 		"event_volunteers",
 		"event_volunteer_memberships",
 		"action_items",
