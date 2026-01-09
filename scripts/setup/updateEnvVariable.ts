@@ -1,24 +1,26 @@
-import fs from "node:fs";
+import { promises as fs } from "node:fs";
 
 /**
  * Updates environment variables in the .env or .env_test file and synchronizes them with `process.env`.
  * @param config - An object containing key-value pairs where the keys are the environment variable names and
  * the values are the new values for those variables.
  */
-export function updateEnvVariable(config: {
+export async function updateEnvVariable(config: {
 	[key: string]: string | number;
-}): void {
+}): Promise<void> {
 	const envFileName = process.env.NODE_ENV === "test" ? ".env_test" : ".env";
 
 	const backupFile = `${envFileName}.backup`;
-	if (fs.existsSync(envFileName)) {
-		fs.copyFileSync(envFileName, backupFile);
-	}
+	try {
+		await fs.access(envFileName);
+		await fs.copyFile(envFileName, backupFile);
+	} catch {}
 
 	try {
-		const existingContent: string = fs.existsSync(envFileName)
-			? fs.readFileSync(envFileName, "utf8")
-			: "";
+		let existingContent = "";
+		try {
+			existingContent = await fs.readFile(envFileName, "utf8");
+		} catch {}
 
 		let updatedContent: string = existingContent;
 
@@ -38,11 +40,11 @@ export function updateEnvVariable(config: {
 			process.env[key] = String(value);
 		}
 
-		fs.writeFileSync(envFileName, updatedContent, "utf8");
+		await fs.writeFile(envFileName, updatedContent, "utf8");
 	} catch (error) {
-		if (fs.existsSync(backupFile)) {
-			fs.copyFileSync(backupFile, envFileName);
-		}
+		try {
+			await fs.copyFile(backupFile, envFileName);
+		} catch {}
 		throw error;
 	}
 }
