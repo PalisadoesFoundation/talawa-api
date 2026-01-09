@@ -19,7 +19,7 @@ export const deleteChat = builder.mutationField("deleteChat", (t) =>
 		args: {
 			input: t.arg({
 				description:
-					"Input containing the UUID `id` of the chat to delete (required).",
+					"Input containing the ID of the chat to delete (required).",
 				required: true,
 				type: MutationDeleteChatInput,
 			}),

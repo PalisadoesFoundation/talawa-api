@@ -14,7 +14,7 @@ export const MutationDeleteChatInput = builder
 		description: "",
 		fields: (t) => ({
 			id: t.id({
-				description: "Global identifier of the chat.",
+				description: "ID of the chat.",
 				required: true,
 			}),
 		}),
