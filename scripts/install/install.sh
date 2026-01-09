@@ -9,25 +9,26 @@ BLUE='\033[0;34m'
 CYAN='\033[0;36m'
 NC='\033[0m'
 
-info() { printf "%b%s\n" "${BLUE}ℹ${NC} " "$1"; }
-success() { printf "%b%s\n" "${GREEN}✓${NC} " "$1"; }
-warn() { printf "%b%s\n" "${YELLOW}⚠${NC} " "$1"; }
-error() { printf "%b%s\n" "${RED}✗${NC} " "$1"; }
+# Fixed: All messaging functions now write to stderr
+info() { printf "%b%s\n" "${BLUE}ℹ${NC} " "$1" >&2; }
+success() { printf "%b%s\n" "${GREEN}✓${NC} " "$1" >&2; }
+warn() { printf "%b%s\n" "${YELLOW}⚠${NC} " "$1" >&2; }
+error() { printf "%b%s\n" "${RED}✗${NC} " "$1" >&2; }
 
 print_banner() {
-    printf "%b\n" "${CYAN}"
-    printf "╔════════════════════════════════════════════════════════╗\n"
-    printf "║                                                        ║\n"
-    printf "║   ████████╗ █████╗ ██╗      █████╗ ██╗    ██╗ █████╗   ║\n"
-    printf "║   ╚══██╔══╝██╔══██╗██║     ██╔══██╗██║    ██║██╔══██╗  ║\n"
-    printf "║      ██║   ███████║██║     ███████║██║ █╗ ██║███████║  ║\n"
-    printf "║      ██║   ██╔══██║██║     ██╔══██║██║███╗██║██╔══██║  ║\n"
-    printf "║      ██║   ██║  ██║███████╗██║  ██║╚███╔███╔╝██║  ██║  ║\n"
-    printf "║      ╚═╝   ╚═╝  ╚═╝╚══════╝╚═╝  ╚═╝ ╚══╝╚══╝ ╚═╝  ╚═╝  ║\n"
-    printf "║                                                        ║\n"
-    printf "║              One-Click Installation Script             ║\n"
-    printf "╚════════════════════════════════════════════════════════╝\n"
-    printf "%b\n" "${NC}"
+    printf "%b\n" "${CYAN}" >&2
+    printf "╔════════════════════════════════════════════════════════╗\n" >&2
+    printf "║                                                        ║\n" >&2
+    printf "║   ████████╗ █████╗ ██╗      █████╗ ██╗    ██╗ █████╗   ║\n" >&2
+    printf "║   ╚══██╔══╝██╔══██╗██║     ██╔══██╗██║    ██║██╔══██╗  ║\n" >&2
+    printf "║      ██║   ███████║██║     ███████║██║ █╗ ██║███████║  ║\n" >&2
+    printf "║      ██║   ██╔══██║██║     ██╔══██║██║███╗██║██╔══██║  ║\n" >&2
+    printf "║      ██║   ██║  ██║███████╗██║  ██║╚███╔███╔╝██║  ██║  ║\n" >&2
+    printf "║      ╚═╝   ╚═╝  ╚═╝╚══════╝╚═╝  ╚═╝ ╚══╝╚══╝ ╚═╝  ╚═╝  ║\n" >&2
+    printf "║                                                        ║\n" >&2
+    printf "║              One-Click Installation Script             ║\n" >&2
+    printf "╚════════════════════════════════════════════════════════╝\n" >&2
+    printf "%b\n" "${NC}" >&2
 }
 
 execute_installation_script() {
@@ -37,13 +38,13 @@ execute_installation_script() {
     local skip_prereqs="$4"
     local script_dir="$5"
     
-    printf "\n"
-    printf "════════════════════════════════════════════════════════════\n"
+    printf "\n" >&2
+    printf "════════════════════════════════════════════════════════════\n" >&2
     info "Starting $platform_name installation"
     info "Mode: $mode"
     info "Skip prerequisites: $skip_prereqs"
-    printf "════════════════════════════════════════════════════════════\n"
-    printf "\n"
+    printf "════════════════════════════════════════════════════════════\n" >&2
+    printf "\n" >&2
     
     local start_time
     start_time=$(date +%s)
@@ -62,25 +63,26 @@ execute_installation_script() {
     local minutes=$((duration / 60))
     local seconds=$((duration % 60))
     
-    printf "\n"
-    printf "════════════════════════════════════════════════════════════\n"
+    printf "\n" >&2
+    printf "════════════════════════════════════════════════════════════\n" >&2
     
     if [ "$exit_code" -eq 0 ]; then
         success "$platform_name installation completed successfully!"
         info "Duration: ${minutes}m ${seconds}s"
-        printf "════════════════════════════════════════════════════════════\n"
-        printf "\n"
+        printf "════════════════════════════════════════════════════════════\n" >&2
+        printf "\n" >&2
         return 0
     else
         error "$platform_name installation failed!"
         error "Exit code: $exit_code"
         error "Duration: ${minutes}m ${seconds}s"
-        printf "════════════════════════════════════════════════════════════\n"
-        printf "\n"
+        printf "════════════════════════════════════════════════════════════\n" >&2
+        printf "\n" >&2
         
         display_failure_guidance "$exit_code" "$platform_name" "$mode" "$script_dir"
         
-        return "$exit_code"
+        # Exit immediately with the captured exit code
+        exit "$exit_code"
     fi
 }
 
@@ -94,7 +96,7 @@ display_failure_guidance() {
     platform_dir=$(printf "%s" "$platform" | tr '[:upper:]' '[:lower:]')
     
     error "Troubleshooting Guide:"
-    printf "\n"
+    printf "\n" >&2
     
     case $exit_code in
         1)
@@ -118,33 +120,33 @@ display_failure_guidance() {
             ;;
     esac
     
-    printf "\n"
+    printf "\n" >&2
     info "General troubleshooting steps:"
-    printf "  1. Read error messages above carefully\n"
-    printf "  2. Verify all prerequisites are installed:\n"
+    printf "  1. Read error messages above carefully\n" >&2
+    printf "  2. Verify all prerequisites are installed:\n" >&2
     
     if [ "$mode" = "docker" ]; then
-        printf "     - Docker Engine (latest version)\n"
-        printf "     - Docker Compose (v2 or higher)\n"
+        printf "     - Docker Engine (latest version)\n" >&2
+        printf "     - Docker Compose (v2 or higher)\n" >&2
     else
-        printf "     - Node.js LTS (v18 or v20)\n"
-        printf "     - MongoDB (v5 or higher)\n"
-        printf "     - Redis (v6 or higher)\n"
+        printf "     - Node.js LTS (v18 or v20)\n" >&2
+        printf "     - MongoDB (v5 or higher)\n" >&2
+        printf "     - Redis (v6 or higher)\n" >&2
     fi
     
-    printf "  3. Check file permissions: ls -la \"%s/\"\n" "$script_dir"
-    printf "  4. Ensure sufficient disk space\n"
-    printf "  5. Try with --skip-prereqs if prerequisites verified\n"
-    printf "  6. Review documentation: https://docs.talawa.io\n"
-    printf "  7. Search existing issues: https://github.com/PalisadoesFoundation/talawa-api/issues\n"
-    printf "  8. Ask for help: https://github.com/PalisadoesFoundation/talawa-api/discussions\n"
-    printf "\n"
+    printf "  3. Check file permissions: ls -la \"%s/\"\n" "$script_dir" >&2
+    printf "  4. Ensure sufficient disk space\n" >&2
+    printf "  5. Try with --skip-prereqs if prerequisites verified\n" >&2
+    printf "  6. Review documentation: https://docs.talawa.io\n" >&2
+    printf "  7. Search existing issues: https://github.com/PalisadoesFoundation/talawa-api/issues\n" >&2
+    printf "  8. Ask for help: https://github.com/PalisadoesFoundation/talawa-api/discussions\n" >&2
+    printf "\n" >&2
     
     error "If issue persists, report it with:"
-    printf "  • Complete error output above\n"
-    printf "  • System info: %s %s\n" "$(uname -s)" "$(uname -r)"
-    printf "  • Installation mode: %s\n" "$mode"
-    printf "\n"
+    printf "  • Complete error output above\n" >&2
+    printf "  • System info: %s %s\n" "$(uname -s)" "$(uname -r)" >&2
+    printf "  • Installation mode: %s\n" "$mode" >&2
+    printf "\n" >&2
 }
 
 validate_and_prepare_script() {
@@ -172,17 +174,18 @@ detect_os() {
     if [[ -n "${OSTYPE:-}" ]]; then
         case "$OSTYPE" in
             linux-gnu*)
-                printf "linux\n"
+                printf "linux"
                 return 0
                 ;;
             darwin*)
-                printf "macos\n"
+                printf "macos"
                 return 0
                 ;;
             msys*|cygwin*)
                 # Git Bash / MSYS / Cygwin on Windows
-                warn "MSYS/Cygwin detected - use install.ps1 for native Windows installation"
-                printf "linux\n"  # Treat as Linux-like for compatibility
+                # Warning goes to stderr, doesn't pollute stdout
+                printf "%b%s\n" "${YELLOW}⚠${NC} " "MSYS/Cygwin detected - use install.ps1 for native Windows installation" >&2
+                printf "linux"  # Only "linux" goes to stdout for capture
                 return 0
                 ;;
         esac
@@ -193,17 +196,18 @@ detect_os() {
     os_name=$(uname -s 2>/dev/null || printf "unknown")
     case "$os_name" in
         Linux*)
-            printf "linux\n"
+            printf "linux"
             ;;
         Darwin*)
-            printf "macos\n"
+            printf "macos"
             ;;
         MSYS*|MINGW*|CYGWIN*)
-            warn "Windows environment detected - consider using install.ps1"
-            printf "linux\n"  # Treat as Linux-like for compatibility
+            # Warning goes to stderr, doesn't pollute stdout
+            printf "%b%s\n" "${YELLOW}⚠${NC} " "Windows environment detected - consider using install.ps1" >&2
+            printf "linux"  # Only "linux" goes to stdout for capture
             ;;
         *)
-            printf "unknown\n"
+            printf "unknown"
             ;;
     esac
 }
@@ -251,17 +255,17 @@ is_wsl() {
 }
 
 show_usage() {
-    printf "Usage: %s [options]\n" "$0"
-    printf "\n"
-    printf "Options:\n"
-    printf "  --docker       Install with Docker support (default)\n"
-    printf "  --local        Install for local development (no Docker)\n"
-    printf "  --skip-prereqs Skip prerequisite installation\n"
-    printf "  --help         Show this help message\n"
-    printf "\n"
-    printf "Examples:\n"
-    printf "  %s --docker\n" "$0"
-    printf "  %s --local\n" "$0"
+    printf "Usage: %s [options]\n" "$0" >&2
+    printf "\n" >&2
+    printf "Options:\n" >&2
+    printf "  --docker       Install with Docker support (default)\n" >&2
+    printf "  --local        Install for local development (no Docker)\n" >&2
+    printf "  --skip-prereqs Skip prerequisite installation\n" >&2
+    printf "  --help         Show this help message\n" >&2
+    printf "\n" >&2
+    printf "Examples:\n" >&2
+    printf "  %s --docker\n" "$0" >&2
+    printf "  %s --local\n" "$0" >&2
 }
 
 INSTALL_MODE="docker"
@@ -310,7 +314,7 @@ main() {
             info "     See: https://docs.docker.com/desktop/wsl/"
             info "  2. Install Docker Engine directly in WSL (advanced)"
             info "     See: https://docs.docker.com/engine/install/ubuntu/"
-            printf "\n"
+            printf "\n" >&2
         fi
     fi
     
@@ -320,27 +324,17 @@ main() {
         exit 1
     }
     
-    local ret=0
-    
     case $OS in
         linux)
             local LINUX_SCRIPT="$SCRIPT_DIR/linux/install-linux.sh"
             validate_and_prepare_script "$LINUX_SCRIPT" "Linux"
             execute_installation_script "$LINUX_SCRIPT" "Linux" "$INSTALL_MODE" "$SKIP_PREREQS" "$SCRIPT_DIR"
-            ret=$?
-            if [ "$ret" -ne 0 ]; then
-                exit "$ret"
-            fi
             ;;
             
         macos)
             local MACOS_SCRIPT="$SCRIPT_DIR/macos/install-macos.sh"
             validate_and_prepare_script "$MACOS_SCRIPT" "macOS"
             execute_installation_script "$MACOS_SCRIPT" "macOS" "$INSTALL_MODE" "$SKIP_PREREQS" "$SCRIPT_DIR"
-            ret=$?
-            if [ "$ret" -ne 0 ]; then
-                exit "$ret"
-            fi
             ;;
             
         *)
@@ -352,30 +346,30 @@ main() {
     esac
     
     # Only reached if installation succeeded
-    printf "\n"
-    printf "╔════════════════════════════════════════════════════════════╗\n"
-    printf "║                                                            ║\n"
-    printf "║        🎉 Installation Completed Successfully! 🎉          ║\n"
-    printf "║                                                            ║\n"
-    printf "╚════════════════════════════════════════════════════════════╝\n"
-    printf "\n"
+    printf "\n" >&2
+    printf "╔════════════════════════════════════════════════════════════╗\n" >&2
+    printf "║                                                            ║\n" >&2
+    printf "║        🎉 Installation Completed Successfully! 🎉          ║\n" >&2
+    printf "║                                                            ║\n" >&2
+    printf "╚════════════════════════════════════════════════════════════╝\n" >&2
+    printf "\n" >&2
     success "Talawa API development environment is ready!"
-    printf "\n"
+    printf "\n" >&2
     info "Next steps:"
     
     if [ "$INSTALL_MODE" = "docker" ]; then
-        printf "  1. Review Docker Compose configuration in docker/ directory\n"
-        printf "  2. Start services using Docker Compose\n"
-        printf "  3. Check logs for service status\n"
+        printf "  1. Review Docker Compose configuration in docker/ directory\n" >&2
+        printf "  2. Start services using Docker Compose\n" >&2
+        printf "  3. Check logs for service status\n" >&2
     else
-        printf "  1. Configure your environment variables\n"
-        printf "  2. Start MongoDB and Redis services\n"
-        printf "  3. Run: npm run start_development_server\n"
+        printf "  1. Configure your environment variables\n" >&2
+        printf "  2. Start MongoDB and Redis services\n" >&2
+        printf "  3. Run: npm run start_development_server\n" >&2
     fi
     
-    printf "\n"
+    printf "\n" >&2
     info "Documentation: https://docs.talawa.io"
-    printf "\n"
+    printf "\n" >&2
 }
 
 main
