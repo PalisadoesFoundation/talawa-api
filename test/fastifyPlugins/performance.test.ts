@@ -4,6 +4,7 @@
 
 import fastifyJwt from "@fastify/jwt";
 import Fastify, { type FastifyInstance, type FastifyRequest } from "fastify";
+import fp from "fastify-plugin";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import performancePlugin from "~/src/fastifyPlugins/performance";
 
@@ -27,6 +28,64 @@ vi.mock("~/src/utilities/metrics/cacheProxy", () => ({
 import { wrapCacheWithMetrics } from "~/src/utilities/metrics/cacheProxy";
 import { wrapDrizzleWithMetrics } from "~/src/utilities/metrics/drizzleProxy";
 
+/**
+ * Helper function to create a test app with required mock plugins registered.
+ * This ensures Fastify's plugin dependency system is satisfied.
+ */
+async function createTestApp(
+	mockDrizzleClient: unknown,
+	mockCache: unknown,
+	envConfig?: FastifyInstance["envConfig"],
+): Promise<FastifyInstance> {
+	const testApp = Fastify({
+		logger: {
+			level: "silent",
+		},
+	});
+
+	// Decorate envConfig
+	testApp.decorate(
+		"envConfig",
+		envConfig ??
+			({
+				API_ENABLE_PERF_METRICS: true,
+			} as FastifyInstance["envConfig"]),
+	);
+
+	// Register JWT plugin for authentication
+	await testApp.register(fastifyJwt, {
+		secret: "test-secret-key-for-jwt-verification-in-tests",
+	});
+
+	// Register mock plugins with the names expected by performance plugin dependencies
+	// This satisfies Fastify's plugin dependency system
+	const mockDrizzlePlugin = fp(
+		async (fastify: FastifyInstance) => {
+			fastify.decorate(
+				"drizzleClient",
+				mockDrizzleClient as FastifyInstance["drizzleClient"],
+			);
+		},
+		{
+			name: "drizzleClient",
+		},
+	);
+
+	const mockCachePlugin = fp(
+		async (fastify: FastifyInstance) => {
+			fastify.decorate("cache", mockCache as FastifyInstance["cache"]);
+		},
+		{
+			name: "cacheService",
+		},
+	);
+
+	await testApp.register(mockDrizzlePlugin);
+	await testApp.register(mockCachePlugin);
+
+	return testApp;
+}
+
 describe("Performance Plugin", () => {
 	let app: FastifyInstance;
 	let mockDrizzleClient: unknown;
@@ -38,28 +97,8 @@ describe("Performance Plugin", () => {
 		mockDrizzleClient = { query: {} };
 		mockCache = { get: vi.fn() };
 
-		app = Fastify({
-			logger: {
-				level: "silent",
-			},
-		});
-
-		// Decorate with required properties
-		app.decorate(
-			"drizzleClient",
-			mockDrizzleClient as FastifyInstance["drizzleClient"],
-		);
-		app.decorate("cache", mockCache as FastifyInstance["cache"]);
-
-		// Enable performance metrics endpoint for tests
-		app.decorate("envConfig", {
-			API_ENABLE_PERF_METRICS: true,
-		} as FastifyInstance["envConfig"]);
-
-		// Register JWT plugin for authentication
-		await app.register(fastifyJwt, {
-			secret: "test-secret-key-for-jwt-verification-in-tests",
-		});
+		// Create test app with mock plugins registered
+		app = await createTestApp(mockDrizzleClient, mockCache);
 
 		// Register all test routes before app.ready()
 		// These routes are used across multiple tests
@@ -200,24 +239,7 @@ describe("Performance Plugin", () => {
 
 		it("should include cache hit/miss information in Server-Timing header", async () => {
 			// Create a new app instance for this test to register route before ready
-			const testApp = Fastify({
-				logger: {
-					level: "silent",
-				},
-			});
-
-			testApp.decorate(
-				"drizzleClient",
-				mockDrizzleClient as FastifyInstance["drizzleClient"],
-			);
-			testApp.decorate("cache", mockCache as FastifyInstance["cache"]);
-			testApp.decorate("envConfig", {
-				API_ENABLE_PERF_METRICS: true,
-			} as FastifyInstance["envConfig"]);
-
-			await testApp.register(fastifyJwt, {
-				secret: "test-secret-key-for-jwt-verification-in-tests",
-			});
+			const testApp = await createTestApp(mockDrizzleClient, mockCache);
 
 			// Register route before ready
 			testApp.get("/cache-test", async (request: FastifyRequest) => {
@@ -242,24 +264,7 @@ describe("Performance Plugin", () => {
 
 		it("should handle requests without perf tracker gracefully", async () => {
 			// Create a new app instance for this test
-			const testApp = Fastify({
-				logger: {
-					level: "silent",
-				},
-			});
-
-			testApp.decorate(
-				"drizzleClient",
-				mockDrizzleClient as FastifyInstance["drizzleClient"],
-			);
-			testApp.decorate("cache", mockCache as FastifyInstance["cache"]);
-			testApp.decorate("envConfig", {
-				API_ENABLE_PERF_METRICS: true,
-			} as FastifyInstance["envConfig"]);
-
-			await testApp.register(fastifyJwt, {
-				secret: "test-secret-key-for-jwt-verification-in-tests",
-			});
+			const testApp = await createTestApp(mockDrizzleClient, mockCache);
 
 			// Register route before ready
 			testApp.get("/test-no-perf", async () => ({ ok: true }));
@@ -415,24 +420,7 @@ describe("Performance Plugin", () => {
 	describe("Integration with Wrapped Clients", () => {
 		it("should allow resolvers to use wrapped clients from request", async () => {
 			// Create a new app instance for this test to register route before ready
-			const testApp = Fastify({
-				logger: {
-					level: "silent",
-				},
-			});
-
-			testApp.decorate(
-				"drizzleClient",
-				mockDrizzleClient as FastifyInstance["drizzleClient"],
-			);
-			testApp.decorate("cache", mockCache as FastifyInstance["cache"]);
-			testApp.decorate("envConfig", {
-				API_ENABLE_PERF_METRICS: true,
-			} as FastifyInstance["envConfig"]);
-
-			await testApp.register(fastifyJwt, {
-				secret: "test-secret-key-for-jwt-verification-in-tests",
-			});
+			const testApp = await createTestApp(mockDrizzleClient, mockCache);
 
 			// Register route before ready
 			let requestDrizzleClient: unknown;
@@ -465,24 +453,9 @@ describe("Performance Plugin", () => {
 
 	describe("Performance Metrics Endpoint Configuration", () => {
 		it("should not register /metrics/perf endpoint when API_ENABLE_PERF_METRICS is false", async () => {
-			const testApp = Fastify({
-				logger: {
-					level: "silent",
-				},
-			});
-
-			testApp.decorate(
-				"drizzleClient",
-				mockDrizzleClient as FastifyInstance["drizzleClient"],
-			);
-			testApp.decorate("cache", mockCache as FastifyInstance["cache"]);
-			testApp.decorate("envConfig", {
+			const testApp = await createTestApp(mockDrizzleClient, mockCache, {
 				API_ENABLE_PERF_METRICS: false,
 			} as FastifyInstance["envConfig"]);
-
-			await testApp.register(fastifyJwt, {
-				secret: "test-secret-key-for-jwt-verification-in-tests",
-			});
 
 			await testApp.register(performancePlugin);
 			await testApp.ready();
@@ -499,24 +472,9 @@ describe("Performance Plugin", () => {
 		});
 
 		it("should not register /metrics/perf endpoint when API_ENABLE_PERF_METRICS is undefined", async () => {
-			const testApp = Fastify({
-				logger: {
-					level: "silent",
-				},
-			});
-
-			testApp.decorate(
-				"drizzleClient",
-				mockDrizzleClient as FastifyInstance["drizzleClient"],
-			);
-			testApp.decorate("cache", mockCache as FastifyInstance["cache"]);
-			testApp.decorate("envConfig", {
+			const testApp = await createTestApp(mockDrizzleClient, mockCache, {
 				API_ENABLE_PERF_METRICS: undefined,
 			} as FastifyInstance["envConfig"]);
-
-			await testApp.register(fastifyJwt, {
-				secret: "test-secret-key-for-jwt-verification-in-tests",
-			});
 
 			await testApp.register(performancePlugin);
 			await testApp.ready();

@@ -532,14 +532,17 @@ describe("wrapCacheWithMetrics", () => {
 
 		it("should support Object.keys() via ownKeys trap", async () => {
 			const wrapped = wrapCacheWithMetrics(mockCache, getPerf);
-			// Test that ownKeys trap works - should return cache method names
-			const keys = Object.keys(wrapped);
-			expect(keys).toContain("get");
-			expect(keys).toContain("set");
-			expect(keys).toContain("del");
-			expect(keys).toContain("mget");
-			expect(keys).toContain("mset");
-			expect(keys).toContain("clearByPattern");
+			// Test that ownKeys trap works - Object.keys() returns enumerable own properties
+			// Class methods are on the prototype, so they won't be in Object.keys()
+			// But ownKeys should return the same keys as the original object
+			const originalKeys = Object.keys(mockCache);
+			const wrappedKeys = Object.keys(wrapped);
+			expect(wrappedKeys).toEqual(originalKeys);
+
+			// Test that Reflect.ownKeys includes all own property keys
+			const originalOwnKeys = Reflect.ownKeys(mockCache);
+			const wrappedOwnKeys = Reflect.ownKeys(wrapped);
+			expect(wrappedOwnKeys).toEqual(originalOwnKeys);
 		});
 
 		it("should forward non-function properties from original cache", async () => {

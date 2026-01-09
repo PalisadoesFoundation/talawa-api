@@ -38,14 +38,8 @@ export function wrapDrizzleWithMetrics(
 	client: DrizzleClient,
 	getPerf: PerfGetter,
 ): DrizzleClient {
-	const perf = getPerf();
-
-	// If no performance tracker, return original client (zero overhead)
-	if (!perf) {
-		return client;
-	}
-
-	// Create proxy for the client
+	// Always return a Proxy that calls getPerf() at call-time
+	// This allows metrics to be enabled/disabled dynamically and preserves all client properties
 	return new Proxy(client, {
 		get(target, prop, receiver) {
 			const original = Reflect.get(target, prop, receiver);
@@ -74,6 +68,12 @@ export function wrapDrizzleWithMetrics(
 			// For all other properties (like $client, etc.), return as-is
 			return original;
 		},
+		has(target, prop) {
+			return Reflect.has(target, prop);
+		},
+		ownKeys(target) {
+			return Reflect.ownKeys(target);
+		},
 	}) as DrizzleClient;
 }
 
@@ -89,10 +89,17 @@ function wrapQueryObject(
 			const table = Reflect.get(target, prop);
 
 			// If accessing a table (e.g., usersTable, organizationsTable)
-			if (table && typeof table === "object") {
+			// Drizzle tables are objects with methods like findFirst, findMany, etc.
+			// We check if it has these methods to distinguish from plain objects
+			if (
+				table &&
+				typeof table === "object" &&
+				("findFirst" in table || "findMany" in table)
+			) {
 				return wrapTableMethods(table, prop as string, getPerf);
 			}
 
+			// For non-table properties (plain objects, primitives, etc.), return as-is
 			return table;
 		},
 	}) as DrizzleClient["query"];

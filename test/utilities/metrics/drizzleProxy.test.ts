@@ -24,24 +24,37 @@ describe("wrapDrizzleWithMetrics", () => {
 	});
 
 	describe("Zero Overhead", () => {
-		it("should return original client when perf is undefined", () => {
+		it("should return proxy that forwards calls when perf is undefined", async () => {
 			const getPerfUndefined = () => undefined;
 			const wrapped = wrapDrizzleWithMetrics(
 				mockClient as unknown as DrizzleClient,
 				getPerfUndefined,
 			);
 
-			// Should be the same reference (no wrapping occurred)
-			expect(wrapped).toBe(mockClient);
+			// Should be a proxy (not the same reference), but should work identically
+			expect(wrapped).not.toBe(mockClient);
+			// Should still work - forward to original client
+			vi.mocked(mockClient.query.usersTable.findFirst).mockResolvedValue(
+				{} as never,
+			);
+			const result = await wrapped.query.usersTable.findFirst({});
+			expect(result).toBeDefined();
 		});
 
-		it("should return original client when perf getter returns undefined", () => {
+		it("should return proxy that forwards calls when perf getter returns undefined", async () => {
 			const wrapped = wrapDrizzleWithMetrics(
 				mockClient as unknown as DrizzleClient,
 				() => undefined,
 			);
 
-			expect(wrapped).toBe(mockClient);
+			// Should be a proxy, but should work identically
+			expect(wrapped).not.toBe(mockClient);
+			// Should still work - forward to original client
+			vi.mocked(mockClient.query.usersTable.findFirst).mockResolvedValue(
+				{} as never,
+			);
+			const result = await wrapped.query.usersTable.findFirst({});
+			expect(result).toBeDefined();
 		});
 	});
 
@@ -266,7 +279,8 @@ describe("wrapDrizzleWithMetrics", () => {
 			await wrapped.query.usersTable.findFirst({});
 			await wrapped.query.usersTable.findFirst({});
 
-			// getPerf should be called for each operation
+			// getPerf should be called for each operation (once per findFirst call)
+			// Note: getPerf is called inside wrapTableMethods for each method invocation
 			expect(getPerfSpy).toHaveBeenCalledTimes(2);
 		});
 
