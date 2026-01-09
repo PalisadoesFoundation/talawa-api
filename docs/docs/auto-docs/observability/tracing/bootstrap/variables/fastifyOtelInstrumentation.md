@@ -4,6 +4,6 @@
 
 # Variable: fastifyOtelInstrumentation
 
-> `const` **fastifyOtelInstrumentation**: `any`
+> `const` **fastifyOtelInstrumentation**: `FastifyOtelInstrumentation`\<`FastifyOtelInstrumentationOpts`\>
 
 Defined in: [src/observability/tracing/bootstrap.ts:17](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/observability/tracing/bootstrap.ts#L17)
