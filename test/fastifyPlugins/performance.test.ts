@@ -277,21 +277,27 @@ describe("Performance Plugin", () => {
 			// Register route
 			testApp.get("/test-getter", async () => ({ ok: true }));
 
-			// Register performance plugin
+			// Register performance plugin first to set up the wrapDrizzleWithMetrics mock
 			await testApp.register(performancePlugin);
+
+			// Add onRequest hook after plugin registration to capture getter function
+			// This ensures wrapDrizzleWithMetrics mock has been set up by the plugin
+			let getPerfFunction: (() => unknown) | undefined;
+			testApp.addHook("onRequest", async () => {
+				// Capture the getter function passed to wrapDrizzleWithMetrics from mock calls
+				const calls = (wrapDrizzleWithMetrics as ReturnType<typeof vi.fn>).mock
+					.calls;
+				getPerfFunction = calls[calls.length - 1]?.[1] as
+					| (() => unknown)
+					| undefined;
+			});
+
 			await testApp.ready();
 
 			await testApp.inject({
 				method: "GET",
 				url: "/test-getter",
 			});
-
-			// Capture the getter function passed to wrapDrizzleWithMetrics from mock calls
-			const calls = (wrapDrizzleWithMetrics as ReturnType<typeof vi.fn>).mock
-				.calls;
-			const getPerfFunction = calls[calls.length - 1]?.[1] as
-				| (() => unknown)
-				| undefined;
 
 			expect(getPerfFunction).toBeDefined();
 			if (getPerfFunction) {
@@ -414,10 +420,11 @@ describe("Performance Plugin", () => {
 				});
 			}
 
-			// Create a test token for authentication
-			const token = app.jwt.sign({ user: { id: "test-user" } });
+			// Create a test token for authentication using testApp
+			const token = testApp.jwt.sign({ user: { id: "test-user" } });
 
-			const response = await app.inject({
+			// Query metrics from testApp (the same instance that received the 250 requests)
+			const response = await testApp.inject({
 				method: "GET",
 				url: "/metrics/perf",
 				headers: {
@@ -476,10 +483,11 @@ describe("Performance Plugin", () => {
 				});
 			}
 
-			// Create a test token for authentication
-			const token = app.jwt.sign({ user: { id: "test-user" } });
+			// Create a test token for authentication using testApp
+			const token = testApp.jwt.sign({ user: { id: "test-user" } });
 
-			const response = await app.inject({
+			// Query metrics from testApp (the same instance that received the 100 requests)
+			const response = await testApp.inject({
 				method: "GET",
 				url: "/metrics/perf",
 				headers: {
@@ -495,6 +503,7 @@ describe("Performance Plugin", () => {
 
 		it("should return snapshots in reverse chronological order", async () => {
 			// Routes are already registered in beforeEach
+			// Make two requests with a delay to ensure they're stored in order
 			await app.inject({ method: "GET", url: "/test1" });
 			await new Promise((resolve) => setTimeout(resolve, 10));
 			await app.inject({ method: "GET", url: "/test2" });
@@ -511,10 +520,28 @@ describe("Performance Plugin", () => {
 			});
 
 			const body = response.json() as {
-				recent?: Array<{ totalMs?: number }>;
+				recent?: Array<{ totalMs?: number; timestamp?: number }>;
 			};
-			// Most recent should be first
+
+			// Ensure we have at least two snapshots to verify ordering
+			expect(body.recent?.length).toBeGreaterThanOrEqual(2);
+
+			// Verify both snapshots are defined
 			expect(body.recent?.[0]).toBeDefined();
+			expect(body.recent?.[1]).toBeDefined();
+
+			// Verify both snapshots have valid timestamp values for ordering
+			expect(body.recent?.[0]?.timestamp).toBeDefined();
+			expect(body.recent?.[1]?.timestamp).toBeDefined();
+			expect(typeof body.recent?.[0]?.timestamp).toBe("number");
+			expect(typeof body.recent?.[1]?.timestamp).toBe("number");
+
+			// Verify reverse chronological order: the first snapshot (index 0) should be
+			// more recent than the second (index 1), meaning timestamp[0] > timestamp[1]
+			// The second request (test2) was made after test1, so it should have a later timestamp
+			expect(body.recent?.[0]?.timestamp).toBeGreaterThan(
+				body.recent?.[1]?.timestamp ?? 0,
+			);
 		});
 	});
 

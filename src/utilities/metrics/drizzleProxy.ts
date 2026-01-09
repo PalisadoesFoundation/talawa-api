@@ -51,7 +51,7 @@ export function wrapDrizzleWithMetrics(
 
 			// Handle execute method
 			if (prop === "execute") {
-				return wrapExecuteMethod(original, getPerf);
+				return wrapExecuteMethod(original, target, getPerf);
 			}
 
 			// Handle select, insert, update, delete methods (builder methods)
@@ -62,7 +62,7 @@ export function wrapDrizzleWithMetrics(
 				prop === "update" ||
 				prop === "delete"
 			) {
-				return wrapBuilderMethod(original, prop as string, getPerf);
+				return wrapBuilderMethod(original, target, prop as string, getPerf);
 			}
 
 			// For all other properties (like $client, etc.), return as-is
@@ -147,16 +147,17 @@ function wrapTableMethods(
 				return function (this: unknown, ...args: unknown[]) {
 					const perf = getPerf();
 					if (!perf) {
-						// No perf tracker, call original method
-						return method.apply(this, args);
+						// No perf tracker, call original method on target for correct this binding
+						return method.apply(target, args);
 					}
 
 					// Create operation name: db:query.usersTable.findFirst
 					const operationName = `db:query.${tableName}.${String(prop)}`;
 
 					// Track timing using perf.time()
+					// Use target instead of this for correct binding in Drizzle internals
 					return perf.time(operationName, async () => {
-						const result = await method.apply(this, args);
+						const result = await method.apply(target, args);
 						return result;
 					});
 				};
@@ -173,54 +174,47 @@ function wrapTableMethods(
  */
 function wrapExecuteMethod(
 	originalExecute: DrizzleClient["execute"],
+	target: DrizzleClient,
 	getPerf: PerfGetter,
 ): DrizzleClient["execute"] {
 	return function (this: unknown, ...args: Parameters<typeof originalExecute>) {
 		const perf = getPerf();
 		if (!perf) {
-			return originalExecute.apply(this, args);
+			// Use target instead of this for correct binding in Drizzle internals
+			return originalExecute.apply(target, args);
 		}
 
 		// Track as db:execute
+		// Use target instead of this for correct binding in Drizzle internals
 		return perf.time("db:execute", async () => {
-			return await originalExecute.apply(this, args);
+			return await originalExecute.apply(target, args);
 		});
 	} as typeof originalExecute;
 }
 
 /**
  * Wraps builder methods (select, insert, update, delete) to track when they execute.
- * These methods return query builders, so we need to wrap the final execution.
+ * These methods return query builders that are both thenable AND chainable.
+ * We must NOT convert them to Promises as that breaks chaining (e.g., .from(), .where()).
+ * Instead, return the builder as-is and let query object tracking handle execution timing.
  */
 function wrapBuilderMethod(
 	originalMethod: unknown,
-	methodName: string,
-	getPerf: PerfGetter,
+	target: DrizzleClient,
+	_methodName: string,
+	_getPerf: PerfGetter,
 ): unknown {
 	return function (this: unknown, ...args: unknown[]) {
+		// Call the original method on target for correct this binding in Drizzle internals
 		const builder = (originalMethod as (...args: unknown[]) => unknown).apply(
-			this,
+			target,
 			args,
 		);
 
-		// If the builder has methods that execute (like .then for promises, or specific execute methods)
-		// We need to wrap those. However, Drizzle builders are complex, so we'll track at a higher level.
-		// For now, we'll return the builder as-is and rely on query object tracking for most operations.
-		// The execute() method wrapper will catch raw SQL executions.
-
-		// If builder is a promise-like object, wrap it
-		if (builder && typeof builder === "object" && "then" in builder) {
-			const perf = getPerf();
-			if (!perf) {
-				return builder;
-			}
-
-			const operationName = `db:${methodName}`;
-			return perf.time(operationName, async () => {
-				return await builder;
-			});
-		}
-
+		// Return the builder as-is to preserve chainability
+		// Drizzle builders are both thenable (have .then()) and chainable (have .from(), .where(), etc.)
+		// If we wrap them with perf.time() which returns a Promise, we lose the chainable methods
+		// The actual execution will be tracked by wrapTableMethods when the query object methods are called
 		return builder;
 	};
 }

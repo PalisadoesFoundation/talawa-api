@@ -51,12 +51,16 @@ export default fp(
 		const recent: PerfSnapshot[] = [];
 
 		// Check if performance metrics endpoint is enabled
+		// Sources: app.envConfig.API_ENABLE_PERF_METRICS (parsed from schema) or process.env.API_ENABLE_PERF_METRICS (raw env var)
 		const rawEnablePerfMetrics =
 			app.envConfig.API_ENABLE_PERF_METRICS ??
 			process.env.API_ENABLE_PERF_METRICS ??
 			"false";
+		// Explicitly handle both boolean and string types
 		const enablePerfMetrics =
-			rawEnablePerfMetrics.toString().toLowerCase() === "true";
+			typeof rawEnablePerfMetrics === "boolean"
+				? rawEnablePerfMetrics
+				: String(rawEnablePerfMetrics).toLowerCase() === "true";
 
 		// Attach performance tracker to each request
 		app.addHook("onRequest", async (req) => {
@@ -78,10 +82,21 @@ export default fp(
 		// Add Server-Timing header to each response
 		app.addHook("onSend", async (req, reply) => {
 			const snap = req.perf?.snapshot?.();
-			const total = Date.now() - (req._t0 ?? Date.now());
+			// Ensure _t0 is defined - if not, use current time as fallback (shouldn't happen in normal flow)
+			const t0 = req._t0 ?? Date.now();
+			const total = Date.now() - t0;
 
-			// Extract metrics from snapshot
-			const dbMs = Math.round(snap?.ops?.db?.ms ?? 0);
+			// Extract metrics from snapshot - aggregate all db operations
+			// Database operations are keyed as "db:query.tableName.method" or "db:execute", etc.
+			let dbMs = 0;
+			if (snap?.ops) {
+				for (const [key, op] of Object.entries(snap.ops)) {
+					if (key.startsWith("db:")) {
+						dbMs += op.ms;
+					}
+				}
+			}
+			dbMs = Math.round(dbMs);
 			const cacheDesc = `hit:${snap?.cacheHits ?? 0}|miss:${snap?.cacheMisses ?? 0}`;
 
 			// Add Server-Timing header with db, cache, and total metrics
@@ -92,7 +107,8 @@ export default fp(
 
 			// Store snapshot in recent buffer (O(1) amortized)
 			if (snap) {
-				recent.push({ ...snap });
+				// Add timestamp for chronological ordering - use t0 which is guaranteed to be defined
+				recent.push({ ...snap, timestamp: t0 });
 				// Keep only last 200 snapshots (FIFO)
 				if (recent.length > 200) {
 					recent.shift();
@@ -128,21 +144,13 @@ export default fp(
 					},
 				},
 				async () => {
-					// Double-check enablePerfMetrics in handler for defense in depth
-					// (though endpoint registration is already gated above)
-					if (!enablePerfMetrics) {
-						throw new TalawaGraphQLError({
-							extensions: {
-								code: "unauthenticated",
-							},
-							message: "Performance metrics endpoint is disabled",
-						});
-					}
-
 					// Return most recent 50 snapshots in reverse chronological order
 					// (newest first, matching original behavior)
+					// Note: This endpoint is only registered when enablePerfMetrics is true
+					// Optimize: slice first, then reverse to avoid unnecessary operations
+					const last50 = recent.slice(-50);
 					return {
-						recent: recent.slice(-50).reverse(),
+						recent: last50.reverse(),
 					};
 				},
 			);

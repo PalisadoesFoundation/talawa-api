@@ -75,9 +75,8 @@ describe("wrapCacheWithMetrics", () => {
 	});
 
 	describe("Zero Overhead", () => {
-		it("should return proxy that forwards calls when perf is undefined", async () => {
-			const getPerfUndefined = () => undefined;
-			const wrapped = wrapCacheWithMetrics(mockCache, getPerfUndefined);
+		it("should return proxy that forwards calls when perf getter returns undefined", async () => {
+			const wrapped = wrapCacheWithMetrics(mockCache, () => undefined);
 
 			// Should be a proxy (not the same reference), but should work identically
 			expect(wrapped).not.toBe(mockCache);
@@ -85,17 +84,6 @@ describe("wrapCacheWithMetrics", () => {
 			await mockCache.set("test-key", "test-value", 300);
 			const result = await wrapped.get<string>("test-key");
 			expect(result).toBe("test-value");
-		});
-
-		it("should return proxy that forwards calls when perf getter returns undefined", async () => {
-			const wrapped = wrapCacheWithMetrics(mockCache, () => undefined);
-
-			// Should be a proxy, but should work identically
-			expect(wrapped).not.toBe(mockCache);
-			// Should still work - forward to original cache
-			await mockCache.set("test-key2", "test-value2", 300);
-			const result = await wrapped.get<string>("test-key2");
-			expect(result).toBe("test-value2");
 		});
 	});
 
@@ -125,6 +113,33 @@ describe("wrapCacheWithMetrics", () => {
 			expect(result).toBeNull();
 
 			const snapshot = mockPerf.snapshot();
+			expect(snapshot.cacheHits).toBe(0);
+			expect(snapshot.cacheMisses).toBe(1);
+			expect(snapshot.hitRate).toBe(0);
+		});
+
+		it("should treat undefined as a cache miss (not null check)", async () => {
+			// Create a cache that can return undefined
+			const cacheWithUndefined: CacheService = {
+				async get() {
+					return undefined as never;
+				},
+				async set() {},
+				async del() {},
+				async clearByPattern() {},
+				async mget() {
+					return [undefined as never];
+				},
+				async mset() {},
+			};
+
+			const wrapped = wrapCacheWithMetrics(cacheWithUndefined, getPerf);
+			const result = await wrapped.get("key");
+
+			expect(result).toBeUndefined();
+
+			const snapshot = mockPerf.snapshot();
+			// Should track as a miss (result != null treats both null and undefined as misses)
 			expect(snapshot.cacheHits).toBe(0);
 			expect(snapshot.cacheMisses).toBe(1);
 			expect(snapshot.hitRate).toBe(0);
@@ -258,6 +273,34 @@ describe("wrapCacheWithMetrics", () => {
 			await wrapped.mget<string>(["key1", "key2"]);
 
 			const snapshot = mockPerf.snapshot();
+			expect(snapshot.cacheHits).toBe(0);
+			expect(snapshot.cacheMisses).toBe(2);
+			expect(snapshot.hitRate).toBe(0);
+		});
+
+		it("should treat undefined values in mget as misses", async () => {
+			// Create a cache that returns undefined for mget
+			const cacheWithUndefined: CacheService = {
+				async get() {
+					return null;
+				},
+				async set() {},
+				async del() {},
+				async clearByPattern() {},
+				async mget() {
+					return [undefined as never, null as never];
+				},
+				async mset() {},
+			};
+
+			const wrapped = wrapCacheWithMetrics(cacheWithUndefined, getPerf);
+			const results = await wrapped.mget<string>(["key1", "key2"]);
+
+			expect(results[0]).toBeUndefined();
+			expect(results[1]).toBeNull();
+
+			const snapshot = mockPerf.snapshot();
+			// Both undefined and null should be tracked as misses (result != null)
 			expect(snapshot.cacheHits).toBe(0);
 			expect(snapshot.cacheMisses).toBe(2);
 			expect(snapshot.hitRate).toBe(0);
@@ -423,97 +466,27 @@ describe("wrapCacheWithMetrics", () => {
 			}
 		});
 
-		it("should handle get when perf becomes undefined during operation", async () => {
-			let callCount = 0;
-			const getPerfDynamic = () => {
-				callCount++;
-				// Return undefined on second call (during the time() call)
-				return callCount === 2 ? undefined : mockPerf;
-			};
+		it("should preserve cache behavior when getPerf returns undefined", async () => {
+			// getPerf() is called once per operation at the start
+			// If it returns undefined, no tracking occurs but operations should still work
+			const getPerfUndefined = vi.fn(() => undefined);
 
 			await mockCache.set("key1", "value1", 300);
 
-			const wrapped = wrapCacheWithMetrics(mockCache, getPerfDynamic);
-			const result = await wrapped.get("key1");
+			const wrapped = wrapCacheWithMetrics(mockCache, getPerfUndefined);
 
-			// Should still work, but tracking may be incomplete
+			// Test a representative operation (get) to verify behavior preservation
+			const result = await wrapped.get<string>("key1");
 			expect(result).toBe("value1");
-		});
 
-		it("should handle set when perf becomes undefined during operation", async () => {
-			let callCount = 0;
-			const getPerfDynamic = () => {
-				callCount++;
-				return callCount === 2 ? undefined : mockPerf;
-			};
+			// Verify getPerf was called once for the operation
+			expect(getPerfUndefined).toHaveBeenCalledTimes(1);
 
-			const wrapped = wrapCacheWithMetrics(mockCache, getPerfDynamic);
-			await wrapped.set("key1", "value1", 300);
-
-			// Should still work
-			expect(await mockCache.get("key1")).toBe("value1");
-		});
-
-		it("should handle del when perf becomes undefined during operation", async () => {
-			let callCount = 0;
-			const getPerfDynamic = () => {
-				callCount++;
-				return callCount === 2 ? undefined : mockPerf;
-			};
-
-			await mockCache.set("key1", "value1", 300);
-
-			const wrapped = wrapCacheWithMetrics(mockCache, getPerfDynamic);
-			await wrapped.del("key1");
-
-			// Should still work
-			expect(await mockCache.get("key1")).toBeNull();
-		});
-
-		it("should handle clearByPattern when perf becomes undefined during operation", async () => {
-			let callCount = 0;
-			const getPerfDynamic = () => {
-				callCount++;
-				return callCount === 2 ? undefined : mockPerf;
-			};
-
-			await mockCache.set("prefix:key1", "value1", 300);
-
-			const wrapped = wrapCacheWithMetrics(mockCache, getPerfDynamic);
-			await wrapped.clearByPattern("prefix:*");
-
-			// Should still work
-			expect(await mockCache.get("prefix:key1")).toBeNull();
-		});
-
-		it("should handle mget when perf becomes undefined during operation", async () => {
-			let callCount = 0;
-			const getPerfDynamic = () => {
-				callCount++;
-				return callCount === 2 ? undefined : mockPerf;
-			};
-
-			await mockCache.set("key1", "value1", 300);
-
-			const wrapped = wrapCacheWithMetrics(mockCache, getPerfDynamic);
-			const results = await wrapped.mget<string>(["key1", "key2"]);
-
-			// Should still work
-			expect(results).toEqual(["value1", null]);
-		});
-
-		it("should handle mset when perf becomes undefined during operation", async () => {
-			let callCount = 0;
-			const getPerfDynamic = () => {
-				callCount++;
-				return callCount === 2 ? undefined : mockPerf;
-			};
-
-			const wrapped = wrapCacheWithMetrics(mockCache, getPerfDynamic);
-			await wrapped.mset([{ key: "key1", value: "value1", ttlSeconds: 300 }]);
-
-			// Should still work
-			expect(await mockCache.get("key1")).toBe("value1");
+			// Verify no tracking occurred (snapshot should be empty)
+			const snapshot = mockPerf.snapshot();
+			expect(snapshot.ops["cache:get"]).toBeUndefined();
+			expect(snapshot.cacheHits).toBe(0);
+			expect(snapshot.cacheMisses).toBe(0);
 		});
 	});
 

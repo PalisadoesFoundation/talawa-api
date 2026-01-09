@@ -34,6 +34,8 @@ export type PerfSnapshot = {
 	slow: Array<{ op: string; ms: number }>;
 	/** GraphQL query complexity score (if tracked) */
 	complexityScore?: number;
+	/** Request start timestamp (milliseconds since epoch) for chronological ordering */
+	timestamp?: number;
 };
 
 /**

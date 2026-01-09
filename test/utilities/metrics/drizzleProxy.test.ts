@@ -438,6 +438,58 @@ describe("wrapDrizzleWithMetrics", () => {
 			}
 		});
 
+		it("should preserve builder chaining and only time on await", async () => {
+			// Create a builder stub that is both thenable (has .then()) and chainable (has .from(), .where())
+			// This simulates real Drizzle builders which are both thenable and chainable
+			const builder = {
+				from: vi.fn((..._args: unknown[]) => builder),
+				where: vi.fn((..._args: unknown[]) => builder),
+				// biome-ignore lint/suspicious/noThenProperty: Test mock needs to simulate thenable builder for Drizzle
+				then: vi.fn(
+					(
+						onFulfilled?: (value: unknown) => unknown,
+						_onRejected?: (reason: unknown) => unknown,
+					) => {
+						// Simulate a thenable that resolves with data
+						const result = [{ id: "1" }];
+						if (onFulfilled) {
+							return Promise.resolve(onFulfilled(result));
+						}
+						return Promise.resolve(result);
+					},
+				),
+			};
+
+			vi.mocked(mockClient.select).mockReturnValue(builder as never);
+
+			const wrapped = wrapDrizzleWithMetrics(
+				mockClient as unknown as DrizzleClient,
+				getPerf,
+			);
+
+			// Perform a chained operation: select().from().where()
+			// The builder should preserve chainability, and timing should only occur on await
+			const selectResult = wrapped.select() as unknown as typeof builder;
+			const fromResult = selectResult.from("users");
+			const whereResult = fromResult.where({});
+			const rows = await whereResult;
+
+			// Verify the final result
+			expect(rows).toEqual([{ id: "1" }]);
+
+			// Verify chaining methods were called on the original builder
+			expect(builder.from).toHaveBeenCalledWith("users");
+			expect(builder.where).toHaveBeenCalledWith({});
+
+			// Verify timing was NOT recorded for builder methods
+			// Builder methods should return the builder as-is, not wrap with perf.time()
+			// The actual execution timing happens when the query object methods are called
+			const snapshot = mockPerf.snapshot();
+			// Since we're not using query object methods, there should be no db:select operation
+			// The builder is returned as-is to preserve chainability
+			expect(snapshot.ops["db:select"]).toBeUndefined();
+		});
+
 		it("should handle builder methods when perf becomes undefined", async () => {
 			let callCount = 0;
 			const getPerfDynamic = () => {

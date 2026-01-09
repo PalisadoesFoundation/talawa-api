@@ -57,7 +57,8 @@ export function wrapCacheWithMetrics(
 						return perf.time(operationName, async () => {
 							const result = await original.apply(target, args);
 							// Track hit or miss based on result
-							if (result !== null) {
+							// Treat both null and undefined as misses
+							if (result != null) {
 								perf.trackCacheHit();
 							} else {
 								perf.trackCacheMiss();
@@ -70,8 +71,9 @@ export function wrapCacheWithMetrics(
 						return perf.time(operationName, async () => {
 							const results = await original.apply(target, args);
 							// Track hits and misses for each key
+							// Treat both null and undefined as misses
 							for (const result of results) {
-								if (result !== null) {
+								if (result != null) {
 									perf.trackCacheHit();
 								} else {
 									perf.trackCacheMiss();
@@ -90,12 +92,6 @@ export function wrapCacheWithMetrics(
 
 			// For non-function properties, return as-is
 			return original;
-		},
-		has(target, prop) {
-			return Reflect.has(target, prop);
-		},
-		ownKeys(target) {
-			return Reflect.ownKeys(target);
 		},
 	}) as CacheService;
 }

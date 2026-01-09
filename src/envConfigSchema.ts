@@ -461,7 +461,11 @@ export const envConfigSchema = Type.Object({
 	 * Enables the /metrics/perf endpoint for performance metrics. Default is false.
 	 * When enabled, the endpoint requires JWT authentication.
 	 */
-	API_ENABLE_PERF_METRICS: Type.Optional(Type.Boolean()),
+	API_ENABLE_PERF_METRICS: Type.Optional(
+		Type.Boolean({
+			default: false,
+		}),
+	),
 
 	/**
 	 * Cron schedule for the recurring event instance generation background worker.
