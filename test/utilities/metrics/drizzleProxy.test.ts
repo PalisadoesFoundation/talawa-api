@@ -78,10 +78,10 @@ describe("wrapDrizzleWithMetrics", () => {
 			const op = snapshot.ops["db:query.usersTable.findFirst"];
 			expect(op).toBeDefined();
 			expect(op).not.toBeUndefined();
-			// Use non-null assertion since we've verified op is defined
-			expect(op!.count).toBe(1);
-			expect(op!.ms).toBeGreaterThanOrEqual(0);
-			expect(typeof op!.ms).toBe("number");
+			// Use optional chaining since we've verified op is defined
+			expect(op?.count).toBe(1);
+			expect(op?.ms).toBeGreaterThanOrEqual(0);
+			expect(typeof op?.ms).toBe("number");
 		});
 
 		it("should track findMany operations", async () => {

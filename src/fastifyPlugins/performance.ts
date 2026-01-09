@@ -124,7 +124,7 @@ export default fp(
 			app.get(
 				"/metrics/perf",
 				{
-					preHandler: async (req: FastifyRequest, reply: FastifyReply) => {
+					preHandler: async (req: FastifyRequest, _reply: FastifyReply) => {
 						// Require authentication via JWT - endpoint is protected and only accessible
 						// to authenticated users when API_ENABLE_PERF_METRICS is enabled
 						try {
