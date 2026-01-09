@@ -556,7 +556,10 @@ describe("wrapDrizzleWithMetrics", () => {
 			// This simulates real Drizzle builders which are both thenable and chainable
 			// Use Object.assign to create a Promise with chainable methods (avoids biome-ignore)
 			const result = [{ id: "1" }];
-			const promise = Promise.resolve(result);
+			// Use a Promise that resolves asynchronously to ensure .then() is called through Proxy
+			const promise = new Promise<typeof result>((resolve) => {
+				setImmediate(() => resolve(result));
+			});
 
 			// Define builder type for proper TypeScript inference
 			type Builder = Promise<typeof result> & {
@@ -602,7 +605,10 @@ describe("wrapDrizzleWithMetrics", () => {
 
 		it("should preserve builder chaining and only time on await for insert", async () => {
 			const result = [{ id: "1", name: "test" }];
-			const promise = Promise.resolve(result);
+			// Use a Promise that resolves asynchronously to ensure .then() is called through Proxy
+			const promise = new Promise<typeof result>((resolve) => {
+				setImmediate(() => resolve(result));
+			});
 			// Use a mock table from the client - cast to satisfy TypeScript
 			const mockTable = mockClient.query.usersTable as unknown as Parameters<
 				DrizzleClient["insert"]
@@ -644,7 +650,10 @@ describe("wrapDrizzleWithMetrics", () => {
 
 		it("should preserve builder chaining and only time on await for update", async () => {
 			const result = [{ id: "1", name: "updated" }];
-			const promise = Promise.resolve(result);
+			// Use a Promise that resolves asynchronously to ensure .then() is called through Proxy
+			const promise = new Promise<typeof result>((resolve) => {
+				setImmediate(() => resolve(result));
+			});
 			// Use a mock table from the client - cast to satisfy TypeScript
 			const mockTable = mockClient.query.usersTable as unknown as Parameters<
 				DrizzleClient["update"]
@@ -690,7 +699,10 @@ describe("wrapDrizzleWithMetrics", () => {
 
 		it("should preserve builder chaining and only time on await for delete", async () => {
 			const result = [{ id: "1" }];
-			const promise = Promise.resolve(result);
+			// Use a Promise that resolves asynchronously to ensure .then() is called through Proxy
+			const promise = new Promise<typeof result>((resolve) => {
+				setImmediate(() => resolve(result));
+			});
 			// Use a mock table from the client - cast to satisfy TypeScript
 			const mockTable = mockClient.query.usersTable as unknown as Parameters<
 				DrizzleClient["delete"]
