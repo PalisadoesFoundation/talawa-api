@@ -444,12 +444,18 @@ describe("wrapDrizzleWithMetrics", () => {
 			// Use Object.assign to create a Promise with chainable methods (avoids biome-ignore)
 			const result = [{ id: "1" }];
 			const promise = Promise.resolve(result);
-			const fromFn = vi.fn(() => promise);
-			const whereFn = vi.fn(() => promise);
+
+			// Define builder type for proper TypeScript inference
+			type Builder = Promise<typeof result> & {
+				from: (table: string) => Builder;
+				where: (condition: Record<string, unknown>) => Builder;
+			};
+
+			// Create builder with chainable methods that return the builder itself
 			const builder = Object.assign(promise, {
-				from: fromFn,
-				where: whereFn,
-			});
+				from: vi.fn((_table: string) => builder),
+				where: vi.fn((_condition: Record<string, unknown>) => builder),
+			}) as Builder;
 
 			vi.mocked(mockClient.select).mockReturnValue(builder as never);
 
@@ -460,7 +466,7 @@ describe("wrapDrizzleWithMetrics", () => {
 
 			// Perform a chained operation: select().from().where()
 			// The builder should preserve chainability, and timing should only occur on await
-			const selectResult = wrapped.select() as unknown as typeof builder;
+			const selectResult = wrapped.select() as unknown as Builder;
 			const fromResult = selectResult.from("users");
 			const whereResult = fromResult.where({});
 			const rows = await whereResult;
@@ -469,8 +475,8 @@ describe("wrapDrizzleWithMetrics", () => {
 			expect(rows).toEqual([{ id: "1" }]);
 
 			// Verify chaining methods were called on the original builder
-			expect(fromFn).toHaveBeenCalledWith("users");
-			expect(whereFn).toHaveBeenCalledWith({});
+			expect(builder.from).toHaveBeenCalledWith("users");
+			expect(builder.where).toHaveBeenCalledWith({});
 
 			// Verify timing was NOT recorded for builder methods
 			// Builder methods should return the builder as-is, not wrap with perf.time()
