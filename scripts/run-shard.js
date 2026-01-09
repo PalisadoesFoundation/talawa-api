@@ -7,6 +7,7 @@
 
 import { spawn } from "node:child_process";
 import { mkdirSync } from "node:fs";
+import { join } from "node:path";
 
 const isCI = !!process.env.CI;
 
@@ -50,9 +51,10 @@ args.push("--reporter=verbose", "--reporter=json");
 // Write JSON output to a deterministic file for reliable parsing
 // Use workspace-based path (accessible from host via bind mount) with shard index to ensure unique file per shard
 // Note: When using multiple reporters, must use --outputFile.json=path (not --outputFile=path)
+// Use path.join for Windows-safe path concatenation
 const workspaceDir = process.env.GITHUB_WORKSPACE || process.cwd();
-const outputDir = `${workspaceDir}/.test-results`;
-const jsonOutputFile = `${outputDir}/shard-${shardIndex}-results.json`;
+const outputDir = join(workspaceDir, ".test-results");
+const jsonOutputFile = join(outputDir, `shard-${shardIndex}-results.json`);
 // Ensure directory exists (create if it doesn't exist)
 try {
 	mkdirSync(outputDir, { recursive: true });
@@ -69,7 +71,9 @@ const env = {
 	SHARD_COUNT: shardCount,
 };
 
-const child = spawn("npx", args, { stdio: "inherit", shell: false, env });
+// Use npx.cmd on Windows, npx on other platforms (npx is a batch file on Windows)
+const npxCommand = process.platform === "win32" ? "npx.cmd" : "npx";
+const child = spawn(npxCommand, args, { stdio: "inherit", shell: false, env });
 
 child.on("error", (err) => {
 	console.error("Failed to spawn test process:", err);

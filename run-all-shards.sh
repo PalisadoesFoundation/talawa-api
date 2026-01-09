@@ -3,7 +3,7 @@
 # Script to run all test shards and collect results
 # Enable safer bash options for better error handling
 # Note: We use set +e around docker commands to handle failures gracefully
-set -uo pipefail
+set -euo pipefail
 
 # Preflight checks: ensure required CLIs are available
 if ! command -v docker >/dev/null 2>&1; then
@@ -18,6 +18,12 @@ fi
 
 # Make shard count configurable (default to 12)
 SHARD_COUNT="${SHARD_COUNT:-12}"
+# Validate SHARD_COUNT is a positive integer
+if ! [[ "$SHARD_COUNT" =~ ^[1-9][0-9]*$ ]]; then
+	echo "Error: SHARD_COUNT must be a positive integer, got: $SHARD_COUNT" >&2
+	echo "Resetting to default value: 12" >&2
+	SHARD_COUNT=12
+fi
 
 echo "=========================================="
 echo "Running All $SHARD_COUNT Test Shards"
@@ -29,6 +35,9 @@ TOTAL_FAILED=0
 TOTAL_FILES_PASSED=0
 TOTAL_FILES_FAILED=0
 
+# Configurable container working directory (default matches Docker image)
+CONTAINER_WORKDIR="${CONTAINER_WORKDIR:-/home/talawa/api}"
+
 # Use seq for portability (works on macOS and Linux)
 for i in $(seq 1 "$SHARD_COUNT"); do
   echo "=== Running Shard $i/$SHARD_COUNT ==="
@@ -37,6 +46,9 @@ for i in $(seq 1 "$SHARD_COUNT"); do
   # Use workspace-based path (accessible from host via bind mount)
   WORKSPACE_DIR="${GITHUB_WORKSPACE:-$(pwd)}"
   JSON_OUTPUT_FILE="${WORKSPACE_DIR}/.test-results/shard-${i}-results.json"
+  
+  # Remove stale host JSON file before running/copying to avoid parsing old results
+  rm -f "$JSON_OUTPUT_FILE"
   
   # Clean up any existing container with this name before starting
   CONTAINER_NAME="talawa-api-test-shard-${i}"
@@ -51,21 +63,22 @@ for i in $(seq 1 "$SHARD_COUNT"); do
   # Restore errexit
   set -e
   
-  # Fail-fast if shard execution failed
+  # Log failure but continue to collect results from all shards
   if [ "$SHARD_STATUS" -ne 0 ]; then
     echo "Shard $i failed with exit code $SHARD_STATUS" >&2
     # Still try to copy JSON file even on failure for debugging
-    CONTAINER_JSON="/home/talawa/api/.test-results/shard-${i}-results.json"
+    CONTAINER_JSON="${CONTAINER_WORKDIR}/.test-results/shard-${i}-results.json"
     mkdir -p "$(dirname "$JSON_OUTPUT_FILE")"
     docker cp "${CONTAINER_NAME}:${CONTAINER_JSON}" "$JSON_OUTPUT_FILE" 2>/dev/null || true
     docker rm -f "$CONTAINER_NAME" >/dev/null 2>&1 || true
-    exit "$SHARD_STATUS"
+    # Continue to next shard instead of exiting (collect all results first)
+    # We'll exit with failure at the end if any shard failed
   fi
   
   # Copy JSON file from container to host (workspace may not be mounted in testing compose)
   # Wait a moment for file to be fully written
   sleep 2
-  CONTAINER_JSON="/home/talawa/api/.test-results/shard-${i}-results.json"
+  CONTAINER_JSON="${CONTAINER_WORKDIR}/.test-results/shard-${i}-results.json"
   mkdir -p "$(dirname "$JSON_OUTPUT_FILE")"
   if docker cp "${CONTAINER_NAME}:${CONTAINER_JSON}" "$JSON_OUTPUT_FILE" 2>/dev/null; then
     echo "  Copied JSON results from container"
@@ -115,3 +128,9 @@ echo "=========================================="
 echo "Total Tests: $TOTAL_PASSED passed, $TOTAL_FAILED failed"
 echo "Total Files: $TOTAL_FILES_PASSED passed, $TOTAL_FILES_FAILED failed"
 echo "=========================================="
+
+# Exit with failure if any tests failed
+if [ "$TOTAL_FAILED" -gt 0 ] || [ "$TOTAL_FILES_FAILED" -gt 0 ]; then
+  exit 1
+fi
+exit 0

@@ -587,6 +587,29 @@ describe("wrapDrizzleWithMetrics", () => {
 			expect(snapshot.ops["db:select"]).toBeUndefined();
 		});
 
+		it("should return original property when accessing non-then property on plain Promise", () => {
+			// Test line 288: Proxy get handler fallback for plain Promise when accessing non-then property
+			// Create a plain Promise with a custom property
+			const mockPromise = Promise.resolve([]);
+			// Add a custom property to the promise
+			(mockPromise as { customProp?: string }).customProp = "test-value";
+			vi.mocked(mockClient.select).mockReturnValue(mockPromise as never);
+
+			const wrapped = wrapDrizzleWithMetrics(
+				mockClient as unknown as DrizzleClient,
+				getPerf,
+			);
+
+			const selectResult = wrapped.select() as unknown as Promise<unknown[]> & {
+				customProp?: string;
+			};
+
+			// Accessing a non-then property should return the original value (line 288)
+			expect(selectResult.customProp).toBe("test-value");
+			// The promise should still be a Promise (thenable)
+			expect(typeof selectResult.then).toBe("function");
+		});
+
 		it("should preserve builder chaining and only time on await for select", async () => {
 			// Create a builder stub that is both thenable (has .then()) and chainable (has .from(), .where())
 			// This simulates real Drizzle builders which are both thenable and chainable
