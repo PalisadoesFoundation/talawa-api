@@ -5,7 +5,7 @@
     "description": "Weekly Architecture Sync (Recurring)",
     "organizationId": "01960b81-bfed-7369-ae96-689dbd4281ba",
     "creatorId": "658930fd-2caa-9d8d-6908-745c00000008",
-    "updaterId": null,
+    "updaterId": "658930fd-2caa-9d8d-6908-745c00000008",
     "allDay": false,
     "isRecurringEventTemplate": true,
 
