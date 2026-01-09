@@ -58,12 +58,19 @@ describe("Server-Timing header", () => {
 				API_POSTGRES_HOST: testEnvConfig.API_POSTGRES_TEST_HOST,
 				API_REDIS_HOST: testEnvConfig.API_REDIS_TEST_HOST,
 				API_MINIO_END_POINT: testEnvConfig.API_MINIO_TEST_END_POINT,
+				API_ENABLE_PERF_METRICS: true,
 			},
 		});
+
+		// Create a test token for authentication
+		const token = app.jwt.sign({ user: { id: "test-user" } });
 
 		const res = await app.inject({
 			method: "GET",
 			url: "/metrics/perf",
+			headers: {
+				Authorization: `Bearer ${token}`,
+			},
 		});
 
 		const st = res.headers["server-timing"] as string;
@@ -87,6 +94,7 @@ describe("Server-Timing header", () => {
 				API_POSTGRES_HOST: testEnvConfig.API_POSTGRES_TEST_HOST,
 				API_REDIS_HOST: testEnvConfig.API_REDIS_TEST_HOST,
 				API_MINIO_END_POINT: testEnvConfig.API_MINIO_TEST_END_POINT,
+				API_ENABLE_PERF_METRICS: true,
 			},
 		});
 
@@ -95,10 +103,16 @@ describe("Server-Timing header", () => {
 		await app.inject({ method: "GET", url: "/test-perf-1" });
 		await app.inject({ method: "GET", url: "/test-perf-1" });
 
+		// Create a test token for authentication
+		const token = app.jwt.sign({ user: { id: "test-user" } });
+
 		// Request metrics
 		const res = await app.inject({
 			method: "GET",
 			url: "/metrics/perf",
+			headers: {
+				Authorization: `Bearer ${token}`,
+			},
 		});
 
 		expect(res.statusCode).toBe(200);
@@ -131,6 +145,7 @@ describe("Server-Timing header", () => {
 				API_POSTGRES_HOST: testEnvConfig.API_POSTGRES_TEST_HOST,
 				API_REDIS_HOST: testEnvConfig.API_REDIS_TEST_HOST,
 				API_MINIO_END_POINT: testEnvConfig.API_MINIO_TEST_END_POINT,
+				API_ENABLE_PERF_METRICS: true,
 			},
 		});
 
@@ -142,10 +157,16 @@ describe("Server-Timing header", () => {
 			await app.inject({ method: "GET", url: "/test-many" });
 		}
 
+		// Create a test token for authentication
+		const token = app.jwt.sign({ user: { id: "test-user" } });
+
 		// Request metrics
 		const res = await app.inject({
 			method: "GET",
 			url: "/metrics/perf",
+			headers: {
+				Authorization: `Bearer ${token}`,
+			},
 		});
 
 		const body = JSON.parse(res.body);

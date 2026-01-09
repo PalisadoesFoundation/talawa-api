@@ -15,10 +15,11 @@ type PerfGetter = () => PerformanceTracker | undefined;
 /**
  * Wraps a CacheService with automatic performance tracking.
  * All cache operations are automatically timed, and hits/misses are tracked.
+ * Uses a Proxy to call getPerf() at call-time, enabling dynamic metrics and preserving all cache properties.
  *
  * @param cache - The original CacheService to wrap
  * @param getPerf - Function that returns the current request's performance tracker
- * @returns A proxied CacheService with automatic tracking, or the original cache if perf is not available
+ * @returns A proxied CacheService with automatic tracking that always wraps the cache
  *
  * @example
  * ```typescript
@@ -32,103 +33,69 @@ export function wrapCacheWithMetrics(
 	cache: CacheService,
 	getPerf: PerfGetter,
 ): CacheService {
-	const perf = getPerf();
+	// Always return a Proxy that calls getPerf() at call-time
+	// This allows metrics to be enabled/disabled dynamically and preserves all cache properties
+	return new Proxy(cache, {
+		get(target, prop, receiver) {
+			const original = Reflect.get(target, prop, receiver);
 
-	// If no performance tracker, return original cache (zero overhead)
-	if (!perf) {
-		return cache;
-	}
+			// If it's a function (method), wrap it with metrics tracking
+			if (typeof original === "function") {
+				return function (this: unknown, ...args: unknown[]) {
+					const perf = getPerf();
+					if (!perf) {
+						// No perf tracker, call original method directly on target
+						return original.apply(target, args);
+					}
 
-	// Return a new object that implements CacheService interface
-	return {
-		async get<T>(key: string): Promise<T | null> {
-			const perf = getPerf();
-			if (!perf) {
-				return cache.get<T>(key);
+					// Track based on method name
+					const methodName = String(prop);
+					const operationName = `cache:${methodName}`;
+
+					// Special handling for get and mget to track hits/misses
+					if (methodName === "get") {
+						return perf.time(operationName, async () => {
+							const result = await original.apply(target, args);
+							// Track hit or miss based on result
+							if (result !== null) {
+								perf.trackCacheHit();
+							} else {
+								perf.trackCacheMiss();
+							}
+							return result;
+						});
+					}
+
+					if (methodName === "mget") {
+						return perf.time(operationName, async () => {
+							const results = await original.apply(target, args);
+							// Track hits and misses for each key
+							for (const result of results) {
+								if (result !== null) {
+									perf.trackCacheHit();
+								} else {
+									perf.trackCacheMiss();
+								}
+							}
+							return results;
+						});
+					}
+
+					// For other methods (set, del, clearByPattern, mset), just track timing
+					return perf.time(operationName, async () => {
+						return await original.apply(target, args);
+					});
+				};
 			}
 
-			// Track timing and hit/miss
-			const result = await perf.time("cache:get", async () => {
-				return await cache.get<T>(key);
-			});
-
-			// Track hit or miss based on result
-			if (result !== null) {
-				perf.trackCacheHit();
-			} else {
-				perf.trackCacheMiss();
-			}
-
-			return result;
+			// For non-function properties, return as-is
+			return original;
 		},
-
-		async set<T>(key: string, value: T, ttlSeconds: number): Promise<void> {
-			const perf = getPerf();
-			if (!perf) {
-				return cache.set(key, value, ttlSeconds);
-			}
-
-			return perf.time("cache:set", async () => {
-				return await cache.set(key, value, ttlSeconds);
-			});
+		has(target, prop) {
+			return Reflect.has(target, prop);
 		},
-
-		async del(keys: string | string[]): Promise<void> {
-			const perf = getPerf();
-			if (!perf) {
-				return cache.del(keys);
-			}
-
-			return perf.time("cache:del", async () => {
-				return await cache.del(keys);
-			});
+		ownKeys(target) {
+			return Reflect.ownKeys(target);
 		},
-
-		async clearByPattern(pattern: string): Promise<void> {
-			const perf = getPerf();
-			if (!perf) {
-				return cache.clearByPattern(pattern);
-			}
-
-			return perf.time("cache:clearByPattern", async () => {
-				return await cache.clearByPattern(pattern);
-			});
-		},
-
-		async mget<T>(keys: string[]): Promise<(T | null)[]> {
-			const perf = getPerf();
-			if (!perf) {
-				return cache.mget<T>(keys);
-			}
-
-			// Track timing
-			const results = await perf.time("cache:mget", async () => {
-				return await cache.mget<T>(keys);
-			});
-
-			// Track hits and misses for each key
-			for (const result of results) {
-				if (result !== null) {
-					perf.trackCacheHit();
-				} else {
-					perf.trackCacheMiss();
-				}
-			}
-
-			return results;
-		},
-
-		async mset<T>(
-			entries: Array<{ key: string; value: T; ttlSeconds: number }>,
-		): Promise<void> {
-			const perf = getPerf();
-			if (!perf) {
-				return cache.mset(entries);
-			}
-
-			return perf.time("cache:mset", async () => {
-				return await cache.mset(entries);
-			});
-		},
-	};
+	}) as CacheService;
 }

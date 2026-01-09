@@ -31,7 +31,18 @@ class MockCacheService implements CacheService {
 	}
 
 	async clearByPattern(pattern: string): Promise<void> {
-		const regex = new RegExp(`^${pattern.replace(/\*/g, ".*")}$`);
+		// First replace '*' with a placeholder to preserve them
+		// Then escape all regex metacharacters
+		// Finally replace placeholder back to '.*' for regex wildcard
+		const placeholder = "__STAR_PLACEHOLDER__";
+		const escapedPattern = pattern
+			.replace(/\*/g, placeholder)
+			.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")
+			.replace(
+				new RegExp(placeholder.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "g"),
+				".*",
+			);
+		const regex = new RegExp(`^${escapedPattern}$`);
 		for (const key of this.store.keys()) {
 			if (regex.test(key)) {
 				this.store.delete(key);
@@ -65,18 +76,27 @@ describe("wrapCacheWithMetrics", () => {
 	});
 
 	describe("Zero Overhead", () => {
-		it("should return original cache when perf is undefined", () => {
+		it("should return proxy that forwards calls when perf is undefined", async () => {
 			const getPerfUndefined = () => undefined;
 			const wrapped = wrapCacheWithMetrics(mockCache, getPerfUndefined);
 
-			// Should be the same reference (no wrapping occurred)
-			expect(wrapped).toBe(mockCache);
+			// Should be a proxy (not the same reference), but should work identically
+			expect(wrapped).not.toBe(mockCache);
+			// Should still work - forward to original cache
+			await mockCache.set("test-key", "test-value", 300);
+			const result = await wrapped.get<string>("test-key");
+			expect(result).toBe("test-value");
 		});
 
-		it("should return original cache when perf getter returns undefined", () => {
+		it("should return proxy that forwards calls when perf getter returns undefined", async () => {
 			const wrapped = wrapCacheWithMetrics(mockCache, () => undefined);
 
-			expect(wrapped).toBe(mockCache);
+			// Should be a proxy, but should work identically
+			expect(wrapped).not.toBe(mockCache);
+			// Should still work - forward to original cache
+			await mockCache.set("test-key2", "test-value2", 300);
+			const result = await wrapped.get<string>("test-key2");
+			expect(result).toBe("test-value2");
 		});
 	});
 
@@ -495,6 +515,47 @@ describe("wrapCacheWithMetrics", () => {
 
 			// Should still work
 			expect(await mockCache.get("key1")).toBe("value1");
+		});
+	});
+
+	describe("Proxy Traps", () => {
+		it("should support 'in' operator via has trap", async () => {
+			const wrapped = wrapCacheWithMetrics(mockCache, getPerf);
+			// Test that 'has' trap works - properties should be accessible
+			expect("get" in wrapped).toBe(true);
+			expect("set" in wrapped).toBe(true);
+			expect("del" in wrapped).toBe(true);
+			expect("mget" in wrapped).toBe(true);
+			expect("mset" in wrapped).toBe(true);
+			expect("clearByPattern" in wrapped).toBe(true);
+		});
+
+		it("should support Object.keys() via ownKeys trap", async () => {
+			const wrapped = wrapCacheWithMetrics(mockCache, getPerf);
+			// Test that ownKeys trap works - should return cache method names
+			const keys = Object.keys(wrapped);
+			expect(keys).toContain("get");
+			expect(keys).toContain("set");
+			expect(keys).toContain("del");
+			expect(keys).toContain("mget");
+			expect(keys).toContain("mset");
+			expect(keys).toContain("clearByPattern");
+		});
+
+		it("should forward non-function properties from original cache", async () => {
+			// Create a cache with a custom property
+			const cacheWithProperty = {
+				...mockCache,
+				customProperty: "test-value",
+			} as CacheService & { customProperty: string };
+
+			const wrapped = wrapCacheWithMetrics(
+				cacheWithProperty,
+				getPerf,
+			) as typeof cacheWithProperty;
+
+			// Non-function properties should be accessible
+			expect(wrapped.customProperty).toBe("test-value");
 		});
 	});
 });

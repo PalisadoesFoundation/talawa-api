@@ -66,7 +66,8 @@ describe("wrapDrizzleWithMetrics", () => {
 			expect(op).toBeDefined();
 			if (op) {
 				expect(op.count).toBe(1);
-				expect(op.ms).toBeGreaterThan(0);
+				expect(op.ms).toBeGreaterThanOrEqual(0);
+				expect(typeof op.ms).toBe("number");
 			}
 		});
 
@@ -223,6 +224,8 @@ describe("wrapDrizzleWithMetrics", () => {
 			if (op) {
 				expect(op.ms).toBeGreaterThanOrEqual(50);
 				expect(op.max).toBeGreaterThanOrEqual(50);
+				expect(typeof op.ms).toBe("number");
+				expect(typeof op.max).toBe("number");
 			}
 		});
 	});

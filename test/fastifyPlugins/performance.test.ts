@@ -2,6 +2,7 @@
  * Tests for the performance plugin that adds automatic tracking to requests.
  */
 
+import fastifyJwt from "@fastify/jwt";
 import Fastify, { type FastifyInstance, type FastifyRequest } from "fastify";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import performancePlugin from "~/src/fastifyPlugins/performance";
@@ -49,6 +50,27 @@ describe("Performance Plugin", () => {
 			mockDrizzleClient as FastifyInstance["drizzleClient"],
 		);
 		app.decorate("cache", mockCache as FastifyInstance["cache"]);
+
+		// Enable performance metrics endpoint for tests
+		app.decorate("envConfig", {
+			API_ENABLE_PERF_METRICS: true,
+		} as FastifyInstance["envConfig"]);
+
+		// Register JWT plugin for authentication
+		await app.register(fastifyJwt, {
+			secret: "test-secret-key-for-jwt-verification-in-tests",
+		});
+
+		// Register all test routes before app.ready()
+		// These routes are used across multiple tests
+		app.get("/test", async () => ({ ok: true }));
+		app.get("/test1", async () => ({ ok: true }));
+		app.get("/test2", async () => ({ ok: true }));
+		app.get("/test3", async () => ({ ok: true }));
+		// Register routes for limit tests (test-0 through test-249)
+		for (let i = 0; i < 250; i++) {
+			app.get(`/test-${i}`, async () => ({ ok: true }));
+		}
 
 		await app.register(performancePlugin);
 		await app.ready();
@@ -177,29 +199,84 @@ describe("Performance Plugin", () => {
 		});
 
 		it("should include cache hit/miss information in Server-Timing header", async () => {
-			// Create a request that uses cache
-			app.get("/cache-test", async (request: FastifyRequest) => {
+			// Create a new app instance for this test to register route before ready
+			const testApp = Fastify({
+				logger: {
+					level: "silent",
+				},
+			});
+
+			testApp.decorate(
+				"drizzleClient",
+				mockDrizzleClient as FastifyInstance["drizzleClient"],
+			);
+			testApp.decorate("cache", mockCache as FastifyInstance["cache"]);
+			testApp.decorate("envConfig", {
+				API_ENABLE_PERF_METRICS: true,
+			} as FastifyInstance["envConfig"]);
+
+			await testApp.register(fastifyJwt, {
+				secret: "test-secret-key-for-jwt-verification-in-tests",
+			});
+
+			// Register route before ready
+			testApp.get("/cache-test", async (request: FastifyRequest) => {
 				// Use the wrapped cache to trigger tracking
 				await request.cache?.get("test-key");
 				return { success: true };
 			});
 
-			const response = await app.inject({
+			await testApp.register(performancePlugin);
+			await testApp.ready();
+
+			const response = await testApp.inject({
 				method: "GET",
 				url: "/cache-test",
 			});
 
 			const serverTiming = response.headers["server-timing"] as string;
 			expect(serverTiming).toMatch(/cache;desc="hit:\d+\|miss:\d+"/);
+
+			await testApp.close();
 		});
 
 		it("should handle requests without perf tracker gracefully", async () => {
-			// This test verifies that the onSend hook handles missing perf gracefully
-			// The performance plugin always creates perf, so we test the onSend logic
-			// by checking that it handles the case where snap might be undefined
-			const response = await app.inject({
+			// Create a new app instance for this test
+			const testApp = Fastify({
+				logger: {
+					level: "silent",
+				},
+			});
+
+			testApp.decorate(
+				"drizzleClient",
+				mockDrizzleClient as FastifyInstance["drizzleClient"],
+			);
+			testApp.decorate("cache", mockCache as FastifyInstance["cache"]);
+			testApp.decorate("envConfig", {
+				API_ENABLE_PERF_METRICS: true,
+			} as FastifyInstance["envConfig"]);
+
+			await testApp.register(fastifyJwt, {
+				secret: "test-secret-key-for-jwt-verification-in-tests",
+			});
+
+			// Register route before ready
+			testApp.get("/test-no-perf", async () => ({ ok: true }));
+
+			await testApp.register(performancePlugin);
+
+			// Add hook to remove perf tracker after it's created
+			testApp.addHook("onRequest", async (req) => {
+				// Remove perf tracker to simulate missing perf scenario
+				delete req.perf;
+			});
+
+			await testApp.ready();
+
+			const response = await testApp.inject({
 				method: "GET",
-				url: "/test",
+				url: "/test-no-perf",
 			});
 
 			// Should still add header with default values
@@ -207,6 +284,8 @@ describe("Performance Plugin", () => {
 			const serverTiming = response.headers["server-timing"] as string;
 			expect(serverTiming).toContain("db;dur=0");
 			expect(serverTiming).toContain('cache;desc="hit:0|miss:0"');
+
+			await testApp.close();
 		});
 
 		it("should store snapshot in recent buffer", async () => {
@@ -215,9 +294,15 @@ describe("Performance Plugin", () => {
 				url: "/test",
 			});
 
+			// Create a test token for authentication
+			const token = app.jwt.sign({ user: { id: "test-user" } });
+
 			const response = await app.inject({
 				method: "GET",
 				url: "/metrics/perf",
+				headers: {
+					Authorization: `Bearer ${token}`,
+				},
 			});
 
 			const body = response.json() as { recent?: unknown[] };
@@ -226,6 +311,7 @@ describe("Performance Plugin", () => {
 		});
 
 		it("should limit recent snapshots to 200", async () => {
+			// Routes are already registered in beforeEach, so we can use them
 			// Make 250 requests
 			for (let i = 0; i < 250; i++) {
 				await app.inject({
@@ -234,9 +320,15 @@ describe("Performance Plugin", () => {
 				});
 			}
 
+			// Create a test token for authentication
+			const token = app.jwt.sign({ user: { id: "test-user" } });
+
 			const response = await app.inject({
 				method: "GET",
 				url: "/metrics/perf",
+				headers: {
+					Authorization: `Bearer ${token}`,
+				},
 			});
 
 			const body = response.json() as { recent?: unknown[] };
@@ -246,14 +338,21 @@ describe("Performance Plugin", () => {
 
 	describe("/metrics/perf Endpoint", () => {
 		it("should return recent performance snapshots", async () => {
+			// Routes are already registered in beforeEach
 			// Make a few requests to generate snapshots
 			await app.inject({ method: "GET", url: "/test1" });
 			await app.inject({ method: "GET", url: "/test2" });
 			await app.inject({ method: "GET", url: "/test3" });
 
+			// Create a test token for authentication
+			const token = app.jwt.sign({ user: { id: "test-user" } });
+
 			const response = await app.inject({
 				method: "GET",
 				url: "/metrics/perf",
+				headers: {
+					Authorization: `Bearer ${token}`,
+				},
 			});
 
 			expect(response.statusCode).toBe(200);
@@ -264,6 +363,7 @@ describe("Performance Plugin", () => {
 		});
 
 		it("should limit returned snapshots to 50", async () => {
+			// Routes are already registered in beforeEach
 			// Make 100 requests
 			for (let i = 0; i < 100; i++) {
 				await app.inject({
@@ -272,9 +372,15 @@ describe("Performance Plugin", () => {
 				});
 			}
 
+			// Create a test token for authentication
+			const token = app.jwt.sign({ user: { id: "test-user" } });
+
 			const response = await app.inject({
 				method: "GET",
 				url: "/metrics/perf",
+				headers: {
+					Authorization: `Bearer ${token}`,
+				},
 			});
 
 			const body = response.json() as { recent?: unknown[] };
@@ -282,13 +388,20 @@ describe("Performance Plugin", () => {
 		});
 
 		it("should return snapshots in reverse chronological order", async () => {
+			// Routes are already registered in beforeEach
 			await app.inject({ method: "GET", url: "/test1" });
 			await new Promise((resolve) => setTimeout(resolve, 10));
 			await app.inject({ method: "GET", url: "/test2" });
 
+			// Create a test token for authentication
+			const token = app.jwt.sign({ user: { id: "test-user" } });
+
 			const response = await app.inject({
 				method: "GET",
 				url: "/metrics/perf",
+				headers: {
+					Authorization: `Bearer ${token}`,
+				},
 			});
 
 			const body = response.json() as {
@@ -301,16 +414,40 @@ describe("Performance Plugin", () => {
 
 	describe("Integration with Wrapped Clients", () => {
 		it("should allow resolvers to use wrapped clients from request", async () => {
+			// Create a new app instance for this test to register route before ready
+			const testApp = Fastify({
+				logger: {
+					level: "silent",
+				},
+			});
+
+			testApp.decorate(
+				"drizzleClient",
+				mockDrizzleClient as FastifyInstance["drizzleClient"],
+			);
+			testApp.decorate("cache", mockCache as FastifyInstance["cache"]);
+			testApp.decorate("envConfig", {
+				API_ENABLE_PERF_METRICS: true,
+			} as FastifyInstance["envConfig"]);
+
+			await testApp.register(fastifyJwt, {
+				secret: "test-secret-key-for-jwt-verification-in-tests",
+			});
+
+			// Register route before ready
 			let requestDrizzleClient: unknown;
 			let requestCache: unknown;
 
-			app.get("/test-clients", async (request: FastifyRequest) => {
+			testApp.get("/test-clients", async (request: FastifyRequest) => {
 				requestDrizzleClient = request.drizzleClient;
 				requestCache = request.cache;
 				return { success: true };
 			});
 
-			await app.inject({
+			await testApp.register(performancePlugin);
+			await testApp.ready();
+
+			await testApp.inject({
 				method: "GET",
 				url: "/test-clients",
 			});
@@ -321,6 +458,96 @@ describe("Performance Plugin", () => {
 				true,
 			);
 			expect((requestCache as { _wrapped?: boolean })?._wrapped).toBe(true);
+
+			await testApp.close();
+		});
+	});
+
+	describe("Performance Metrics Endpoint Configuration", () => {
+		it("should not register /metrics/perf endpoint when API_ENABLE_PERF_METRICS is false", async () => {
+			const testApp = Fastify({
+				logger: {
+					level: "silent",
+				},
+			});
+
+			testApp.decorate(
+				"drizzleClient",
+				mockDrizzleClient as FastifyInstance["drizzleClient"],
+			);
+			testApp.decorate("cache", mockCache as FastifyInstance["cache"]);
+			testApp.decorate("envConfig", {
+				API_ENABLE_PERF_METRICS: false,
+			} as FastifyInstance["envConfig"]);
+
+			await testApp.register(fastifyJwt, {
+				secret: "test-secret-key-for-jwt-verification-in-tests",
+			});
+
+			await testApp.register(performancePlugin);
+			await testApp.ready();
+
+			// Endpoint should not be registered
+			const response = await testApp.inject({
+				method: "GET",
+				url: "/metrics/perf",
+			});
+
+			expect(response.statusCode).toBe(404);
+
+			await testApp.close();
+		});
+
+		it("should not register /metrics/perf endpoint when API_ENABLE_PERF_METRICS is undefined", async () => {
+			const testApp = Fastify({
+				logger: {
+					level: "silent",
+				},
+			});
+
+			testApp.decorate(
+				"drizzleClient",
+				mockDrizzleClient as FastifyInstance["drizzleClient"],
+			);
+			testApp.decorate("cache", mockCache as FastifyInstance["cache"]);
+			testApp.decorate("envConfig", {
+				API_ENABLE_PERF_METRICS: undefined,
+			} as FastifyInstance["envConfig"]);
+
+			await testApp.register(fastifyJwt, {
+				secret: "test-secret-key-for-jwt-verification-in-tests",
+			});
+
+			await testApp.register(performancePlugin);
+			await testApp.ready();
+
+			// Endpoint should not be registered (defaults to false)
+			const response = await testApp.inject({
+				method: "GET",
+				url: "/metrics/perf",
+			});
+
+			expect(response.statusCode).toBe(404);
+
+			await testApp.close();
+		});
+
+		it("should require JWT authentication for /metrics/perf endpoint", async () => {
+			// This test verifies the preHandler authentication
+			const response = await app.inject({
+				method: "GET",
+				url: "/metrics/perf",
+				// No Authorization header
+			});
+
+			expect(response.statusCode).toBe(200); // Fastify returns 200 but with error in body
+			const body = response.json() as { errors?: unknown[] };
+			expect(body.errors).toBeDefined();
+			expect(Array.isArray(body.errors)).toBe(true);
+			if (Array.isArray(body.errors) && body.errors.length > 0) {
+				const error = body.errors[0] as { extensions?: { code?: string } };
+				expect(error.extensions?.code).toBe("unauthenticated");
+			}
 		});
 	});
 });
