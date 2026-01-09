@@ -247,9 +247,10 @@ function wrapBuilderMethod(
 		}
 
 		// Create a proxy that intercepts .then() and .execute() calls
-		return new Proxy(builder, {
-			get(target, prop) {
-				const original = Reflect.get(target, prop);
+		// Also wraps chainable methods to return the proxied builder, preserving the Proxy through chaining
+		const proxiedBuilder = new Proxy(builder, {
+			get(target, prop, receiver) {
+				const original = Reflect.get(target, prop, receiver);
 
 				// Wrap .then() to track execution when the builder is awaited
 				if (prop === "then") {
@@ -286,9 +287,24 @@ function wrapBuilderMethod(
 					};
 				}
 
-				// Forward all other properties (chainable methods, etc.) unchanged
+				// Wrap chainable methods to return the proxied builder instead of the original
+				// This ensures the Proxy is preserved through method chaining
+				if (typeof original === "function") {
+					return function (this: unknown, ...args: unknown[]) {
+						const result = original.apply(target, args);
+						// If the chainable method returns the builder itself (for chaining),
+						// return the proxied builder instead to preserve the Proxy
+						if (result === target) {
+							return proxiedBuilder;
+						}
+						return result;
+					};
+				}
+
+				// Forward all other properties unchanged
 				return original;
 			},
 		});
+		return proxiedBuilder;
 	};
 }
