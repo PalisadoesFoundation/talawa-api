@@ -286,7 +286,10 @@ describe("wrapDrizzleWithMetrics", () => {
 		it("should track errors from insert builder when awaited", async () => {
 			const dbError = new Error("Insert query failed");
 			const mockPromise = Promise.reject(dbError);
-			const mockTable = {}; // Dummy table object
+			// Use a mock table from the client - cast to satisfy TypeScript
+			const mockTable = mockClient.query.usersTable as unknown as Parameters<
+				DrizzleClient["insert"]
+			>[0];
 			vi.mocked(mockClient.insert).mockReturnValue(mockPromise as never);
 
 			const wrapped = wrapDrizzleWithMetrics(
@@ -306,7 +309,10 @@ describe("wrapDrizzleWithMetrics", () => {
 		it("should track errors from update builder when awaited", async () => {
 			const dbError = new Error("Update query failed");
 			const mockPromise = Promise.reject(dbError);
-			const mockTable = {}; // Dummy table object
+			// Use a mock table from the client - cast to satisfy TypeScript
+			const mockTable = mockClient.query.usersTable as unknown as Parameters<
+				DrizzleClient["update"]
+			>[0];
 			vi.mocked(mockClient.update).mockReturnValue(mockPromise as never);
 
 			const wrapped = wrapDrizzleWithMetrics(
@@ -326,7 +332,10 @@ describe("wrapDrizzleWithMetrics", () => {
 		it("should track errors from delete builder when awaited", async () => {
 			const dbError = new Error("Delete query failed");
 			const mockPromise = Promise.reject(dbError);
-			const mockTable = {}; // Dummy table object
+			// Use a mock table from the client - cast to satisfy TypeScript
+			const mockTable = mockClient.query.usersTable as unknown as Parameters<
+				DrizzleClient["delete"]
+			>[0];
 			vi.mocked(mockClient.delete).mockReturnValue(mockPromise as never);
 
 			const wrapped = wrapDrizzleWithMetrics(
@@ -586,7 +595,10 @@ describe("wrapDrizzleWithMetrics", () => {
 		it("should preserve builder chaining and only time on await for insert", async () => {
 			const result = [{ id: "1", name: "test" }];
 			const promise = Promise.resolve(result);
-			const mockTable = {}; // Dummy table object
+			// Use a mock table from the client - cast to satisfy TypeScript
+			const mockTable = mockClient.query.usersTable as unknown as Parameters<
+				DrizzleClient["insert"]
+			>[0];
 
 			type Builder = Promise<typeof result> & {
 				values: (values: unknown) => Builder;
@@ -622,7 +634,10 @@ describe("wrapDrizzleWithMetrics", () => {
 		it("should preserve builder chaining and only time on await for update", async () => {
 			const result = [{ id: "1", name: "updated" }];
 			const promise = Promise.resolve(result);
-			const mockTable = {}; // Dummy table object
+			// Use a mock table from the client - cast to satisfy TypeScript
+			const mockTable = mockClient.query.usersTable as unknown as Parameters<
+				DrizzleClient["update"]
+			>[0];
 
 			type Builder = Promise<typeof result> & {
 				set: (values: unknown) => Builder;
@@ -662,7 +677,10 @@ describe("wrapDrizzleWithMetrics", () => {
 		it("should preserve builder chaining and only time on await for delete", async () => {
 			const result = [{ id: "1" }];
 			const promise = Promise.resolve(result);
-			const mockTable = {}; // Dummy table object
+			// Use a mock table from the client - cast to satisfy TypeScript
+			const mockTable = mockClient.query.usersTable as unknown as Parameters<
+				DrizzleClient["delete"]
+			>[0];
 
 			type Builder = Promise<typeof result> & {
 				where: (condition: unknown) => Builder;
