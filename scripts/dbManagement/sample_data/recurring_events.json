@@ -1,0 +1,16 @@
+[
+  {
+    "id": "11111111-1111-1111-1111-111111111111",
+    "createdAt": "2025-01-01T10:00:00.000Z",
+    "creatorId": "658930fd-2caa-9d8d-6908-745c00000008",
+    "description": "Weekly Architecture Sync (Recurring)",
+    "endAt": "2025-01-01T11:00:00.000Z",
+    "name": "Weekly Architecture Sync",
+    "organizationId": "01960b81-bfed-7369-ae96-689dbd4281ba",
+    "startAt": "2025-01-01T10:00:00.000Z",
+    "allDay": false,
+    "updatedAt": null,
+    "updaterId": null,
+    "isRecurringEventTemplate": true
+  }
+]

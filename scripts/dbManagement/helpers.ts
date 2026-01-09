@@ -104,7 +104,7 @@ export async function formatDatabase(): Promise<boolean> {
 		});
 
 		return true;
-	} catch (_error) {
+	} catch (error) {
 		return false;
 	}
 }
@@ -116,9 +116,14 @@ export async function emptyMinioBucket(): Promise<boolean> {
 			(resolve, reject) => {
 				const objects: string[] = [];
 				const stream = minioClient.listObjects(bucketName, "", true);
-				stream.on("data", (obj: { name: string }) => {
-					objects.push(obj.name);
-				});
+				stream.on(
+					"data",
+					(obj: {
+						name: string;
+					}) => {
+						objects.push(obj.name);
+					},
+				);
 				stream.on("error", (err: Error) => {
 					console.error("Error listing objects in bucket:", err);
 					reject(err);
@@ -140,13 +145,48 @@ export async function emptyMinioBucket(): Promise<boolean> {
 }
 
 /**
+ * Lists sample data files and their document counts in the sample_data directory.
+ */
+export async function listSampleData(): Promise<boolean> {
+	try {
+		const sampleDataPath = path.resolve(dirname, "./sample_data");
+		const files = await fs.readdir(sampleDataPath);
+		console.log(files);
+		console.log("Sample Data Files:\n");
+
+		console.log(
+			`${"| File Name".padEnd(30)}| Document Count |
+${"|".padEnd(30, "-")}|----------------|
+`,
+		);
+
+		for (const file of files) {
+			const filePath = path.resolve(sampleDataPath, file);
+			const stats = await fs.stat(filePath);
+			if (stats.isFile()) {
+				const data = await fs.readFile(filePath, "utf8");
+				const docs = JSON.parse(data);
+				console.log(
+					`| ${file.padEnd(28)}| ${docs.length.toString().padEnd(15)}|`,
+				);
+			}
+		}
+		console.log();
+	} catch (err) {
+		throw new Error(`\x1b[31mError listing sample data: ${err}\x1b[0m`);
+	}
+
+	return true;
+}
+
+/**
  * Check database connection
  */
 
 export async function pingDB(): Promise<boolean> {
 	try {
 		await db.execute(sql`SELECT 1`);
-	} catch (_error) {
+	} catch (error) {
 		throw new Error("Unable to connect to the database.");
 	}
 	return true;
@@ -295,7 +335,9 @@ export async function insertCollections(
 
 				case "organization_memberships": {
 					const organizationMemberships = JSON.parse(fileContent).map(
-						(membership: { createdAt: string | number | Date }) => ({
+						(membership: {
+							createdAt: string | number | Date;
+						}) => ({
 							...membership,
 							createdAt: parseDate(membership.createdAt),
 						}),
@@ -398,7 +440,7 @@ export async function insertCollections(
 								const fileData = await fs.readFile(filePath);
 								await minioClient.putObject(
 									bucketName,
-									attachment.objectName,
+									attachment.name,
 									fileData,
 									undefined,
 									{
@@ -502,7 +544,88 @@ export async function insertCollections(
 					);
 					break;
 				}
+				
+				case "recurring_events": {
+					// 🟢 NEW LOGIC: Master Templates always start TODAY
+					const now = new Date();
+					const events = JSON.parse(fileContent).map(
+						(event: any) => ({
+							...event,
+							// Force the template to start today at 10:00 AM
+							createdAt: now,
+							startAt: new Date(now.setHours(10, 0, 0, 0)),
+							endAt: new Date(now.setHours(11, 0, 0, 0)),
+							updatedAt: null,
+						}),
+					) as (typeof schema.eventsTable.$inferInsert)[];
 
+					await checkAndInsertData(
+						schema.eventsTable,
+						events,
+						schema.eventsTable.id,
+						1000,
+					);
+
+					console.log(
+						"\x1b[35mAdded: Recurring Master Events (Dynamic Start Date)\x1b[0m",
+					);
+					break;
+				}
+
+				case "recurrence_rules": {
+					// 🟢 NEW LOGIC: Rules allow events to repeat for 1 Year from TODAY
+					const now = new Date();
+					const oneYearFromNow = new Date();
+					oneYearFromNow.setFullYear(now.getFullYear() + 1);
+
+					// Convert Date to iCal RRULE format (YYYYMMDDTHHMMSSZ)
+					const untilString =
+						oneYearFromNow.toISOString().replace(/[-:]/g, "").split(".")[0] +
+						"Z";
+
+					const rules = JSON.parse(fileContent).map(
+						(rule: any) => ({
+							id: rule.id,
+							baseRecurringEventId: rule.baseRecurringEventId,
+							creatorId: rule.creatorId,
+							updaterId: rule.updaterId,
+							organizationId: "01960b81-bfed-7369-ae96-689dbd4281ba",
+
+							// 🟢 FIX 1: Must be UPPERCASE according to schema Line 21
+							frequency: "WEEKLY",
+							interval: 1,
+
+							// 🟢 FIX 2: The Missing Field! (Schema Line 89)
+							latestInstanceDate: now,
+
+							// 🟢 FIX 3: Explicit nulls for optional fields
+							count: null,
+							originalSeriesId: null,
+							byDay: null,
+							byMonth: null,
+							byMonthDay: null,
+							
+							// Timestamps & Dates
+							createdAt: now,
+							updatedAt: now,
+							recurrenceStartDate: now,
+							recurrenceEndDate: oneYearFromNow,
+							recurrenceRuleString: `FREQ=WEEKLY;INTERVAL=1;UNTIL=${untilString}`,
+						}),
+					) as (typeof schema.recurrenceRulesTable.$inferInsert)[];
+
+					await checkAndInsertData(
+						schema.recurrenceRulesTable,
+						rules,
+						schema.recurrenceRulesTable.id,
+						1000,
+					);
+
+					console.log(
+						"\x1b[35mAdded: Recurrence Rules (Dynamic UNTIL Date 🚀)\x1b[0m",
+					);
+					break;
+				}
 				case "event_volunteers": {
 					const eventVolunteers = JSON.parse(fileContent).map(
 						(volunteer: {
