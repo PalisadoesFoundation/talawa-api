@@ -114,13 +114,16 @@ export default fp(
 						try {
 							await req.jwtVerify();
 						} catch (_error) {
-							throw new TalawaGraphQLError({
+							const error = new TalawaGraphQLError({
 								extensions: {
 									code: "unauthenticated",
 								},
 								message:
 									"Authentication required to access performance metrics",
 							});
+							// Set HTTP status code for REST endpoint error handling
+							(error as { statusCode?: number }).statusCode = 401;
+							throw error;
 						}
 					},
 				},

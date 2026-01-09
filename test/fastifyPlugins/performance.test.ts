@@ -122,51 +122,79 @@ describe("Performance Plugin", () => {
 
 	describe("onRequest Hook", () => {
 		it("should attach performance tracker to request", async () => {
+			// Create a new app instance to add hooks before ready()
+			const testApp = await createTestApp(mockDrizzleClient, mockCache);
+			testApp.get("/test-perf", async () => ({ ok: true }));
+
 			let requestPerf: unknown;
 
-			app.addHook("onRequest", async (req) => {
+			// Add hook before ready()
+			testApp.addHook("onRequest", async (req) => {
 				requestPerf = req.perf;
 			});
 
-			await app.inject({
+			await testApp.register(performancePlugin);
+			await testApp.ready();
+
+			await testApp.inject({
 				method: "GET",
-				url: "/test",
+				url: "/test-perf",
 			});
 
 			expect(requestPerf).toBeDefined();
 			expect(requestPerf).toHaveProperty("snapshot");
 			expect(requestPerf).toHaveProperty("time");
+
+			await testApp.close();
 		});
 
 		it("should set request start timestamp", async () => {
+			// Create a new app instance to add hooks before ready()
+			const testApp = await createTestApp(mockDrizzleClient, mockCache);
+			testApp.get("/test-t0", async () => ({ ok: true }));
+
 			let requestT0: number | undefined;
 
-			app.addHook("onRequest", async (req) => {
+			// Add hook before ready()
+			testApp.addHook("onRequest", async (req) => {
 				requestT0 = req._t0;
 			});
 
+			await testApp.register(performancePlugin);
+			await testApp.ready();
+
 			const beforeRequest = Date.now();
-			await app.inject({
+			await testApp.inject({
 				method: "GET",
-				url: "/test",
+				url: "/test-t0",
 			});
 			const afterRequest = Date.now();
 
 			expect(requestT0).toBeDefined();
 			expect(requestT0).toBeGreaterThanOrEqual(beforeRequest);
 			expect(requestT0).toBeLessThanOrEqual(afterRequest);
+
+			await testApp.close();
 		});
 
 		it("should wrap drizzleClient with metrics", async () => {
+			// Create a new app instance to add hooks before ready()
+			const testApp = await createTestApp(mockDrizzleClient, mockCache);
+			testApp.get("/test-drizzle", async () => ({ ok: true }));
+
 			let requestDrizzleClient: unknown;
 
-			app.addHook("onRequest", async (req) => {
+			// Add hook before ready()
+			testApp.addHook("onRequest", async (req) => {
 				requestDrizzleClient = req.drizzleClient;
 			});
 
-			await app.inject({
+			await testApp.register(performancePlugin);
+			await testApp.ready();
+
+			await testApp.inject({
 				method: "GET",
-				url: "/test",
+				url: "/test-drizzle",
 			});
 
 			expect(wrapDrizzleWithMetrics).toHaveBeenCalledWith(
@@ -177,18 +205,28 @@ describe("Performance Plugin", () => {
 			expect((requestDrizzleClient as { _wrapped?: boolean })?._wrapped).toBe(
 				true,
 			);
+
+			await testApp.close();
 		});
 
 		it("should wrap cache with metrics", async () => {
+			// Create a new app instance to add hooks before ready()
+			const testApp = await createTestApp(mockDrizzleClient, mockCache);
+			testApp.get("/test-cache", async () => ({ ok: true }));
+
 			let requestCache: unknown;
 
-			app.addHook("onRequest", async (req) => {
+			// Add hook before ready()
+			testApp.addHook("onRequest", async (req) => {
 				requestCache = req.cache;
 			});
 
-			await app.inject({
+			await testApp.register(performancePlugin);
+			await testApp.ready();
+
+			await testApp.inject({
 				method: "GET",
-				url: "/test",
+				url: "/test-cache",
 			});
 
 			expect(wrapCacheWithMetrics).toHaveBeenCalledWith(
@@ -197,21 +235,31 @@ describe("Performance Plugin", () => {
 			);
 			expect(requestCache).toBeDefined();
 			expect((requestCache as { _wrapped?: boolean })?._wrapped).toBe(true);
+
+			await testApp.close();
 		});
 
 		it("should pass getter function that returns request.perf", async () => {
+			// Create a new app instance to add hooks before ready()
+			const testApp = await createTestApp(mockDrizzleClient, mockCache);
+			testApp.get("/test-getter", async () => ({ ok: true }));
+
 			let getPerfFunction: (() => unknown) | undefined;
 
-			app.addHook("onRequest", async (_req) => {
+			// Add hook before ready()
+			testApp.addHook("onRequest", async (_req) => {
 				// Capture the getter function passed to wrapDrizzleWithMetrics
 				const calls = (wrapDrizzleWithMetrics as ReturnType<typeof vi.fn>).mock
 					.calls;
 				getPerfFunction = calls[calls.length - 1]?.[1] as () => unknown;
 			});
 
-			await app.inject({
+			await testApp.register(performancePlugin);
+			await testApp.ready();
+
+			await testApp.inject({
 				method: "GET",
-				url: "/test",
+				url: "/test-getter",
 			});
 
 			expect(getPerfFunction).toBeDefined();
@@ -220,6 +268,8 @@ describe("Performance Plugin", () => {
 				expect(perf).toBeDefined();
 				expect(perf).toHaveProperty("snapshot");
 			}
+
+			await testApp.close();
 		});
 	});
 
@@ -498,14 +548,11 @@ describe("Performance Plugin", () => {
 				// No Authorization header
 			});
 
-			expect(response.statusCode).toBe(200); // Fastify returns 200 but with error in body
-			const body = response.json() as { errors?: unknown[] };
-			expect(body.errors).toBeDefined();
-			expect(Array.isArray(body.errors)).toBe(true);
-			if (Array.isArray(body.errors) && body.errors.length > 0) {
-				const error = body.errors[0] as { extensions?: { code?: string } };
-				expect(error.extensions?.code).toBe("unauthenticated");
-			}
+			// REST endpoint should return 401 for unauthenticated requests
+			expect(response.statusCode).toBe(401);
+			const body = response.json() as { error?: { message?: string } };
+			expect(body.error).toBeDefined();
+			expect(body.error?.message).toContain("Authentication required");
 		});
 	});
 });
