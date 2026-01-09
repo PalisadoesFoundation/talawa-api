@@ -31,11 +31,13 @@ for i in {1..12}; do
   # Create temporary file for shard output (streamed to disk to avoid memory issues)
   # Use TMPDIR if set, otherwise fall back to /tmp (works on macOS, Linux, and most Unix systems)
   TMP_DIR="${TMPDIR:-/tmp}"
-  SHARD_OUTPUT_FILE=$(mktemp) || {
+  SHARD_OUTPUT_FILE=$(mktemp "${TMP_DIR}/shard-XXXXXX") || {
     echo "Error: Failed to create temporary file" >&2
     exit 1
   }
-  JSON_OUTPUT_FILE="${TMP_DIR}/shard-${i}-results.json"
+  # Use workspace-based path (accessible outside containers) to match run-shard.js
+  WORKSPACE_DIR="${GITHUB_WORKSPACE:-$(pwd)}"
+  JSON_OUTPUT_FILE="${WORKSPACE_DIR}/.test-results/shard-${i}-results.json"
   
   # Temporarily disable errexit to capture output and status even on failure
   set +e
