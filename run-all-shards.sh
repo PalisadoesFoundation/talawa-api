@@ -45,9 +45,9 @@ for i in {1..12}; do
     # Start 5 lines before and take 50 lines to capture the complete JSON object
     TOTAL_LINES=$(echo "$OUTPUT" | wc -l | tr -d ' ')
     START_LINE=$((JSON_LINE - 5))
-    if [ $START_LINE -lt 1 ]; then START_LINE=1; fi
+    if [ "$START_LINE" -lt 1 ]; then START_LINE=1; fi
     END_LINE=$((JSON_LINE + 45))
-    if [ $END_LINE -gt $TOTAL_LINES ]; then END_LINE=$TOTAL_LINES; fi
+    if [ "$END_LINE" -gt "$TOTAL_LINES" ]; then END_LINE="$TOTAL_LINES"; fi
     
     # Extract the lines and try to parse as JSON
     JSON_CANDIDATE=$(echo "$OUTPUT" | sed -n "${START_LINE},${END_LINE}p")

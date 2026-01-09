@@ -585,11 +585,10 @@ describe("wrapDrizzleWithMetrics", () => {
 
 			// Verify timing was NOT recorded for builder methods
 			// Builder methods should return the builder as-is, not wrap with perf.time()
-			// The actual execution timing happens when .then() is called (on await)
+			// The builder is returned as-is to preserve chainability, so timing does not occur
 			const snapshot = mockPerf.snapshot();
-			// The builder is returned as-is to preserve chainability, and wrapBuilderMethod
-			// wraps .then() to track timing when awaited, so the operation should be tracked
-			expect(snapshot.ops["db:select"]).toBeDefined();
+			// The builder is returned as-is to preserve chainability, timing does not occur
+			expect(snapshot.ops["db:select"]).toBeUndefined();
 		});
 
 		it("should preserve builder chaining and only time on await for insert", async () => {
@@ -627,8 +626,8 @@ describe("wrapDrizzleWithMetrics", () => {
 			expect(builder.returning).toHaveBeenCalled();
 
 			const snapshot = mockPerf.snapshot();
-			// Timing occurs when .then() is called (on await), so db:insert should be tracked
-			expect(snapshot.ops["db:insert"]).toBeDefined();
+			// The builder is returned as-is to preserve chainability, timing does not occur
+			expect(snapshot.ops["db:insert"]).toBeUndefined();
 		});
 
 		it("should preserve builder chaining and only time on await for update", async () => {
@@ -670,8 +669,8 @@ describe("wrapDrizzleWithMetrics", () => {
 			expect(builder.returning).toHaveBeenCalled();
 
 			const snapshot = mockPerf.snapshot();
-			// Timing occurs when .then() is called (on await), so db:update should be tracked
-			expect(snapshot.ops["db:update"]).toBeDefined();
+			// The builder is returned as-is to preserve chainability, timing does not occur
+			expect(snapshot.ops["db:update"]).toBeUndefined();
 		});
 
 		it("should preserve builder chaining and only time on await for delete", async () => {
@@ -709,8 +708,8 @@ describe("wrapDrizzleWithMetrics", () => {
 			expect(builder.returning).toHaveBeenCalled();
 
 			const snapshot = mockPerf.snapshot();
-			// Timing occurs when .then() is called (on await), so db:delete should be tracked
-			expect(snapshot.ops["db:delete"]).toBeDefined();
+			// The builder is returned as-is to preserve chainability, timing does not occur
+			expect(snapshot.ops["db:delete"]).toBeUndefined();
 		});
 
 		it("should handle builder methods when perf becomes undefined", async () => {

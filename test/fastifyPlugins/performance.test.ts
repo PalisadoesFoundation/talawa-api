@@ -628,15 +628,18 @@ describe("Performance Plugin", () => {
 
 			// REST endpoint should return 401 for unauthenticated requests
 			expect(response.statusCode).toBe(401);
-			// Verify that an error response is returned (format may vary without error handler)
-			const body = response.json() as { error?: { message?: string } };
+			// Verify that an error response is returned with correlationId
+			const body = response.json() as {
+				error?: { message?: string; correlationId?: string };
+			};
 			expect(body).toBeDefined();
-			// The response should indicate an error (either { error: ... } or Fastify's default format)
 			expect(body.error).toBeDefined();
-			// If error.message exists and is a string, verify it contains authentication message
-			if (body.error?.message && typeof body.error.message === "string") {
-				expect(body.error.message).toContain("Authentication required");
-			}
+			// Verify error message contains authentication requirement
+			expect(body.error?.message).toBeDefined();
+			expect(body.error?.message).toContain("Authentication required");
+			// Verify correlationId is included in error response (for consistency with error handler)
+			expect(body.error?.correlationId).toBeDefined();
+			expect(typeof body.error?.correlationId).toBe("string");
 		});
 	});
 });

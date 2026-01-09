@@ -124,18 +124,23 @@ export default fp(
 			app.get(
 				"/metrics/perf",
 				{
-					preHandler: async (req: FastifyRequest, _reply: FastifyReply) => {
+					preHandler: async (req: FastifyRequest, reply: FastifyReply) => {
 						// Require authentication via JWT - endpoint is protected and only accessible
 						// to authenticated users when API_ENABLE_PERF_METRICS is enabled
 						try {
 							await req.jwtVerify();
 						} catch (_error) {
-							// Use Fastify's standard HTTP error pattern for REST endpoints
-							const error = new Error(
-								"Authentication required to access performance metrics",
-							) as Error & { statusCode: number };
-							error.statusCode = 401;
-							throw error;
+							// Use Fastify's standard HTTP error response for REST endpoints
+							// Send 401 Unauthorized with error message
+							// Include correlationId for consistency with error handler format
+							const correlationId = req.id as string;
+							return reply.code(401).send({
+								error: {
+									message:
+										"Authentication required to access performance metrics",
+									correlationId,
+								},
+							});
 						}
 					},
 				},
