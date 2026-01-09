@@ -766,4 +766,150 @@ describe("wrapDrizzleWithMetrics", () => {
 			}
 		});
 	});
+
+	describe("Query Object Edge Cases - Object.values failure", () => {
+		it("should handle Proxy objects that throw on Object.values", () => {
+			// Create a Proxy that throws when Object.values is called
+			// Object.values internally uses ownKeys, so throwing in ownKeys will cause Object.values to fail
+			const throwingProxy = new Proxy(
+				{ findFirst: vi.fn(), findMany: vi.fn() },
+				{
+					ownKeys: () => {
+						throw new Error("Cannot access ownKeys");
+					},
+					get: (target, prop) => {
+						// Allow direct property access to work
+						return Reflect.get(target, prop);
+					},
+				},
+			);
+
+			// Mock query object to return the throwing proxy
+			(mockClient.query as { testTable?: typeof throwingProxy }).testTable =
+				throwingProxy;
+
+			const wrapped = wrapDrizzleWithMetrics(
+				mockClient as unknown as DrizzleClient,
+				getPerf,
+			);
+
+			// Accessing the table should trigger the catch block (lines 113-117)
+			// and fall back to checking findFirst/findMany directly
+			const table = (wrapped.query as { testTable?: typeof throwingProxy })
+				.testTable;
+			expect(table).toBeDefined();
+			// The table should be wrapped even though Object.values failed
+			// Verify findFirst and findMany are accessible (fallback check worked)
+			expect(typeof (table as { findFirst?: unknown }).findFirst).toBe(
+				"function",
+			);
+		});
+	});
+
+	describe("Builder Method Edge Cases", () => {
+		it("should return builder as-is when perf is undefined in wrapBuilderMethod", async () => {
+			// Test line 246: when perf is undefined, builder should be returned as-is
+			const getPerfUndefined = () => undefined;
+			const result = [{ id: "1" }];
+			const promise = Promise.resolve(result);
+
+			type Builder = Promise<typeof result> & {
+				from: (table: string) => Builder;
+				where: (condition: Record<string, unknown>) => Builder;
+			};
+
+			const builder = Object.assign(promise, {
+				from: vi.fn((_table: string) => builder),
+				where: vi.fn((_condition: Record<string, unknown>) => builder),
+			}) as Builder;
+
+			vi.mocked(mockClient.select).mockReturnValue(builder as never);
+
+			const wrapped = wrapDrizzleWithMetrics(
+				mockClient as unknown as DrizzleClient,
+				getPerfUndefined,
+			);
+
+			const selectResult = wrapped.select() as unknown as Builder;
+			// Builder should be returned as-is (not wrapped with Proxy) when perf is undefined
+			expect(selectResult).toBe(builder);
+			// Chaining should still work
+			const fromResult = selectResult.from("users");
+			expect(fromResult).toBe(builder);
+		});
+
+		it("should wrap builder.then() to track timing when awaited", async () => {
+			// Test lines 256-274: Proxy get trap wrapping .then()
+			const result = [{ id: "1" }];
+			const promise = Promise.resolve(result);
+
+			type Builder = Promise<typeof result> & {
+				from: (table: string) => Builder;
+				where: (condition: Record<string, unknown>) => Builder;
+			};
+
+			const builder = Object.assign(promise, {
+				from: vi.fn((_table: string) => builder),
+				where: vi.fn((_condition: Record<string, unknown>) => builder),
+			}) as Builder;
+
+			vi.mocked(mockClient.select).mockReturnValue(builder as never);
+
+			const wrapped = wrapDrizzleWithMetrics(
+				mockClient as unknown as DrizzleClient,
+				getPerf,
+			);
+
+			const selectResult = wrapped.select() as unknown as Builder;
+			const fromResult = selectResult.from("users");
+			const whereResult = fromResult.where({});
+			// Await the builder - this should trigger .then() wrapper (lines 256-274)
+			const rows = await whereResult;
+
+			expect(rows).toEqual([{ id: "1" }]);
+			// Verify timing was tracked when .then() was called
+			const snapshot = mockPerf.snapshot();
+			expect(snapshot.ops["db:select"]).toBeDefined();
+			expect(snapshot.ops["db:select"]?.count).toBe(1);
+		});
+
+		it("should wrap builder.execute() if present", async () => {
+			// Test lines 278-286: Proxy get trap wrapping .execute()
+			const result = [{ id: "1" }];
+			const promise = Promise.resolve(result);
+
+			type Builder = Promise<typeof result> & {
+				from: (table: string) => Builder;
+				execute: () => Promise<typeof result>;
+			};
+
+			const executeFn = vi.fn().mockResolvedValue(result);
+			const builder = Object.assign(promise, {
+				from: vi.fn((_table: string) => builder),
+				execute: executeFn,
+			}) as Builder;
+
+			vi.mocked(mockClient.insert).mockReturnValue(builder as never);
+
+			const wrapped = wrapDrizzleWithMetrics(
+				mockClient as unknown as DrizzleClient,
+				getPerf,
+			);
+
+			const mockTable = mockClient.query.usersTable as unknown as Parameters<
+				DrizzleClient["insert"]
+			>[0];
+			const insertResult = wrapped.insert(mockTable) as unknown as Builder;
+			const fromResult = insertResult.from("users");
+			// Call .execute() - this should trigger the execute wrapper (lines 278-286)
+			const rows = await fromResult.execute();
+
+			expect(rows).toEqual([{ id: "1" }]);
+			expect(executeFn).toHaveBeenCalledTimes(1);
+			// Verify timing was tracked when .execute() was called
+			const snapshot = mockPerf.snapshot();
+			expect(snapshot.ops["db:insert"]).toBeDefined();
+			expect(snapshot.ops["db:insert"]?.count).toBe(1);
+		});
+	});
 });
