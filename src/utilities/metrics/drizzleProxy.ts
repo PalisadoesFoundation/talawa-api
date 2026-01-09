@@ -90,18 +90,35 @@ function wrapQueryObject(
 		get(target, prop) {
 			const table = Reflect.get(target, prop);
 
-			// If it's a non-null object, treat it as a potential table and wrap it.
-			// wrapTableMethods will handle the actual inspection and only instrument function calls.
-			// Exclude arrays and functions explicitly for performance and correctness.
-			// Note: Drizzle tables are objects (may be class instances or plain objects),
-			// so we wrap all objects and let wrapTableMethods filter by function presence.
+			// If it's a non-null object, check if it looks like a Drizzle table.
+			// Drizzle tables are objects with methods like findFirst, findMany, etc.
+			// We check for function properties to distinguish tables from plain data objects.
+			// This preserves reference equality for plain objects while wrapping tables.
 			if (
 				table &&
 				typeof table === "object" &&
 				!Array.isArray(table) &&
 				typeof table !== "function"
 			) {
-				return wrapTableMethods(table, prop as string, getPerf);
+				// Check if the object has any function properties (indicating it's a table)
+				// This is a lightweight check that preserves reference equality for plain objects
+				// Use try-catch to handle edge cases where Object.values might fail (e.g., Proxy objects)
+				let hasFunctions = false;
+				try {
+					hasFunctions = Object.values(table).some(
+						(value) => typeof value === "function",
+					);
+				} catch {
+					// If Object.values fails (e.g., on Proxy objects), check for common Drizzle table methods
+					hasFunctions =
+						typeof (table as { findFirst?: unknown }).findFirst ===
+							"function" ||
+						typeof (table as { findMany?: unknown }).findMany === "function";
+				}
+				if (hasFunctions) {
+					return wrapTableMethods(table, prop as string, getPerf);
+				}
+				// Plain data objects without functions are returned as-is to preserve reference equality
 			}
 
 			// For primitives, arrays, functions, null, and undefined, return as-is

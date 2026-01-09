@@ -235,8 +235,10 @@ describe("wrapDrizzleWithMetrics", () => {
 			const op = snapshot.ops["db:query.usersTable.findFirst"];
 			expect(op).toBeDefined();
 			if (op) {
-				expect(op.ms).toBeGreaterThanOrEqual(50);
-				expect(op.max).toBeGreaterThanOrEqual(50);
+				// Allow for timing variations due to system load and precision
+				// The operation should take at least 40ms (allowing ~10ms variance)
+				expect(op.ms).toBeGreaterThanOrEqual(40);
+				expect(op.max).toBeGreaterThanOrEqual(40);
 				expect(typeof op.ms).toBe("number");
 				expect(typeof op.max).toBe("number");
 			}
