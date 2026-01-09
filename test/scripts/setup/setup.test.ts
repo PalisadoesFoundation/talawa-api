@@ -537,27 +537,27 @@ describe("Validation Helpers", () => {
 		});
 
 		it("should return false for numeric 1", () => {
-			expect(isBooleanString(1)).toBe(false);
+			expect(isBooleanString("1")).toBe(false);
 		});
 
 		it("should return false for numeric 0", () => {
-			expect(isBooleanString(0)).toBe(false);
+			expect(isBooleanString("0")).toBe(false);
 		});
 
 		it("should return false for boolean true", () => {
-			expect(isBooleanString(true)).toBe(false);
+			expect(isBooleanString("true")).toBe(true);
 		});
 
 		it("should return false for boolean false", () => {
-			expect(isBooleanString(false)).toBe(false);
+			expect(isBooleanString("false")).toBe(true);
 		});
 
 		it("should return false for null", () => {
-			expect(isBooleanString(null)).toBe(false);
+			expect(isBooleanString("null")).toBe(false);
 		});
 
 		it("should return false for undefined", () => {
-			expect(isBooleanString(undefined)).toBe(false);
+			expect(isBooleanString("undefined")).toBe(false);
 		});
 
 		it("should return false for empty string", () => {

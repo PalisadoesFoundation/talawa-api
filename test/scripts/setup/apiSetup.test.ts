@@ -34,11 +34,10 @@ describe("Setup -> apiSetup", () => {
 		vi.resetAllMocks();
 	});
 
-	const isEnvConfigured = checkEnvFile();
-
 	it("should prompt the user for API configuration and update environment variables", async () => {
 		process.env.MINIO_ROOT_PASSWORD = "password";
 		process.env.POSTGRES_PASSWORD = "password";
+		const isEnvConfigured = await checkEnvFile();
 		const mockResponses = [
 			...(isEnvConfigured ? [{ envReconfigure: true }] : []),
 			{ CI: "true" },
