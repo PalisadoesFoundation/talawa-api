@@ -24,28 +24,27 @@ suite("addSampleData main function tests", () => {
 		expect(pingDBSpy).toHaveBeenCalled();
 
 		// NOTE: Collection order matters.
-// "events" must be seeded before "recurring_events",
-// and "recurrence_rules" must come after events due to FK dependencies.
+		// "events" must be seeded before "recurring_events",
+		// and "recurrence_rules" must come after events due to FK dependencies.
 		expect(insertCollectionsSpy).toHaveBeenCalledWith([
-  "users",
-  "organizations",
-  "organization_memberships",
-  "posts",
-  "post_votes",
-  "post_attachments",
-  "comments",
-  "membership_requests",
-  "comment_votes",
-  "action_categories",
-  "events",
-  "recurring_events",
-  "recurrence_rules",
-  "event_volunteers",
-  "event_volunteer_memberships",
-  "action_items",
-  "notification_templates",
-]);
-
+			"users",
+			"organizations",
+			"organization_memberships",
+			"posts",
+			"post_votes",
+			"post_attachments",
+			"comments",
+			"membership_requests",
+			"comment_votes",
+			"action_categories",
+			"events",
+			"recurring_events",
+			"recurrence_rules",
+			"event_volunteers",
+			"event_volunteer_memberships",
+			"action_items",
+			"notification_templates",
+		]);
 
 		// Verify that success messages are logged.
 		expect(consoleLogSpy).toHaveBeenCalledWith(
