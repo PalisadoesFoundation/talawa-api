@@ -544,11 +544,11 @@ describe("Validation Helpers", () => {
 			expect(isBooleanString("0")).toBe(false);
 		});
 
-		it("should return false for boolean true", () => {
+		it("should return true for string 'true'", () => {
 			expect(isBooleanString("true")).toBe(true);
 		});
 
-		it("should return false for boolean false", () => {
+		it("should return true for string 'false'", () => {
 			expect(isBooleanString("false")).toBe(true);
 		});
 
