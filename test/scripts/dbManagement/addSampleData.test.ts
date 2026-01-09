@@ -23,22 +23,25 @@ suite("addSampleData main function tests", () => {
 		// Assert: verify that each helper was called as expected.
 		expect(pingDBSpy).toHaveBeenCalled();
 		expect(insertCollectionsSpy).toHaveBeenCalledWith([
-			"users",
-			"organizations",
-			"organization_memberships",
-			"posts",
-			"post_votes",
-			"post_attachments",
-			"comments",
-			"membership_requests",
-			"comment_votes",
-			"action_categories",
-			"events",
-			"event_volunteers",
-			"event_volunteer_memberships",
-			"action_items",
-			"notification_templates",
-		]);
+  "users",
+  "organizations",
+  "organization_memberships",
+  "posts",
+  "post_votes",
+  "post_attachments",
+  "comments",
+  "membership_requests",
+  "comment_votes",
+  "action_categories",
+  "events",
+  "recurring_events",
+  "recurrence_rules",
+  "event_volunteers",
+  "event_volunteer_memberships",
+  "action_items",
+  "notification_templates",
+]);
+
 
 		// Verify that success messages are logged.
 		expect(consoleLogSpy).toHaveBeenCalledWith(
