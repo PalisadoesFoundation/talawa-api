@@ -145,6 +145,7 @@ async function restoreLatestBackup(): Promise<void> {
 		}
 	} catch (readError) {
 		console.error("Error reading backup directory:", readError);
+		throw readError;
 	}
 }
 
@@ -229,28 +230,29 @@ export function validateCloudBeaverURL(input: string): true | string {
 	}
 }
 
-export function isBooleanString(value: string): boolean {
-	return value === "true" || value === "false";
+export function isBooleanString(input: unknown): input is "true" | "false" {
+	return typeof input === "string" && (input === "true" || input === "false");
 }
 
-export function validateRequiredFields(answers: SetupAnswers): true | string {
-	const requiredFields = [
-		"CI",
-		"API_BASE_URL",
-		"API_HOST",
-		"API_PORT",
-		"API_ADMINISTRATOR_USER_EMAIL_ADDRESS",
-	];
+export function validateRequiredFields(answers: SetupAnswers): void {
+	const requiredFields = ["CI", "API_ADMINISTRATOR_USER_EMAIL_ADDRESS"];
+	const missingFields: string[] = [];
 
 	for (const field of requiredFields) {
-		if (!answers[field]) {
-			return `Required field ${field} is missing`;
+		const value = answers[field];
+		if (!value || value.trim() === "") {
+			missingFields.push(field);
 		}
 	}
-	return true;
+
+	if (missingFields.length > 0) {
+		throw new Error(
+			`Missing required configuration fields: ${missingFields.join(", ")}`,
+		);
+	}
 }
 
-export function validateBooleanFields(answers: SetupAnswers): true | string {
+export function validateBooleanFields(answers: SetupAnswers): void {
 	const booleanFields = [
 		"CI",
 		"API_IS_APPLY_DRIZZLE_MIGRATIONS",
@@ -259,17 +261,23 @@ export function validateBooleanFields(answers: SetupAnswers): true | string {
 		"API_MINIO_USE_SSL",
 		"API_POSTGRES_SSL_MODE",
 	];
+	const invalidFields: string[] = [];
 
 	for (const field of booleanFields) {
 		const value = answers[field];
 		if (value !== undefined && !isBooleanString(value)) {
-			return `Field ${field} must be "true" or "false"`;
+			invalidFields.push(field);
 		}
 	}
-	return true;
+
+	if (invalidFields.length > 0) {
+		throw new Error(
+			`Boolean fields must be "true" or "false": ${invalidFields.join(", ")}`,
+		);
+	}
 }
 
-export function validatePortNumbers(answers: SetupAnswers): true | string {
+export function validatePortNumbers(answers: SetupAnswers): void {
 	const portFields = [
 		"API_PORT",
 		"API_MINIO_PORT",
@@ -283,67 +291,56 @@ export function validatePortNumbers(answers: SetupAnswers): true | string {
 		"CADDY_HTTP3_MAPPED_PORT",
 		"CADDY_TALAWA_API_PORT",
 	];
+	const invalidFields: string[] = [];
 
 	for (const field of portFields) {
 		const value = answers[field];
 		if (value !== undefined) {
-			const validation = validatePort(value);
-			if (validation !== true) {
-				return `${field}: ${validation}`;
+			const port = Number.parseInt(value, 10);
+			if (Number.isNaN(port) || port < 1 || port > 65535) {
+				invalidFields.push(field);
 			}
 		}
 	}
-	return true;
+
+	if (invalidFields.length > 0) {
+		throw new Error(
+			`Port numbers must be between 1 and 65535: ${invalidFields.join(", ")}`,
+		);
+	}
 }
 
 export function validateSamplingRatio(input: string): true | string {
 	const ratio = Number.parseFloat(input);
 	if (Number.isNaN(ratio) || ratio < 0 || ratio > 1) {
-		return "Sampling ratio must be a number between 0 and 1";
+		throw new Error("Please enter valid sampling ratio (0-1).");
 	}
 	return true;
 }
 
-export function validateAllAnswers(answers: SetupAnswers): true | string {
-	const requiredValidation = validateRequiredFields(answers);
-	if (requiredValidation !== true) {
-		return requiredValidation;
-	}
-
-	const booleanValidation = validateBooleanFields(answers);
-	if (booleanValidation !== true) {
-		return booleanValidation;
-	}
-
-	const portValidation = validatePortNumbers(answers);
-	if (portValidation !== true) {
-		return portValidation;
-	}
-
-	return true;
+export function validateAllAnswers(answers: SetupAnswers): void {
+	console.log("\n📋 Validating configuration...");
+	validateRequiredFields(answers);
+	validateBooleanFields(answers);
+	validatePortNumbers(answers);
+	console.log("✅ All validations passed");
 }
 
 export async function observabilitySetup(
 	answers: SetupAnswers,
 ): Promise<SetupAnswers> {
 	try {
-		const enableObservability = await promptConfirm(
-			"enableObservability",
-			"Enable observability features?",
-			false,
+		answers.API_OTEL_ENABLED = await promptList(
+			"API_OTEL_ENABLED",
+			"Enable OpenTelemetry observability?",
+			["true", "false"],
+			"false",
 		);
 
-		if (enableObservability) {
-			answers.OBSERVABILITY_ENABLED = await promptList(
-				"OBSERVABILITY_ENABLED",
-				"Enable observability?",
-				["true", "false"],
-				"true",
-			);
-
-			answers.OBSERVABILITY_SAMPLING_RATIO = await promptInput(
-				"OBSERVABILITY_SAMPLING_RATIO",
-				"Observability sampling ratio (0-1):",
+		if (answers.API_OTEL_ENABLED === "true") {
+			answers.API_OTEL_SAMPLING_RATIO = await promptInput(
+				"API_OTEL_SAMPLING_RATIO",
+				"OpenTelemetry sampling ratio (0-1):",
 				"1.0",
 				validateSamplingRatio,
 			);
