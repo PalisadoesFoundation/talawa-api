@@ -7,7 +7,6 @@
 
 import { spawn } from "node:child_process";
 import { mkdirSync } from "node:fs";
-import { join } from "node:path";
 
 const isCI = !!process.env.CI;
 
@@ -49,12 +48,19 @@ args.push("--shard", `${shardIndex}/${shardCount}`);
 // Add JSON reporter for machine-readable output (in addition to default reporter for human-readable output)
 args.push("--reporter=verbose", "--reporter=json");
 // Write JSON output to a deterministic file for reliable parsing
-// Use workspace-based path (accessible outside containers) instead of tmpdir()
+// Use workspace-based path (accessible from host via bind mount) with shard index to ensure unique file per shard
+// Note: When using multiple reporters, must use --outputFile.json=path (not --outputFile=path)
 const workspaceDir = process.env.GITHUB_WORKSPACE || process.cwd();
-const outputDir = join(workspaceDir, ".test-results");
-mkdirSync(outputDir, { recursive: true });
-const jsonOutputFile = join(outputDir, `shard-${shardIndex}-results.json`);
-args.push("--outputFile", jsonOutputFile);
+const outputDir = `${workspaceDir}/.test-results`;
+const jsonOutputFile = `${outputDir}/shard-${shardIndex}-results.json`;
+// Ensure directory exists (create if it doesn't exist)
+try {
+	mkdirSync(outputDir, { recursive: true });
+} catch (error) {
+	console.error(`Failed to create output directory: ${outputDir}`, error);
+	process.exit(1);
+}
+args.push(`--outputFile.json=${jsonOutputFile}`);
 
 // Ensure SHARD_INDEX is set for vitest.config.ts to detect sharded runs
 const env = {
