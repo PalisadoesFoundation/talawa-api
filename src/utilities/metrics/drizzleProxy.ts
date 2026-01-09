@@ -312,15 +312,16 @@ function wrapBuilderMethod(
 							return originalThen.call(target, onFulfilled, onRejected);
 						}
 
-						// Track timing for the raw query promise only, not user callbacks
-						// Call originalThen without callbacks to get the base promise
-						const basePromise = originalThen.call(target);
-						// Measure only the base promise execution
-						const timedPromise = perf.time(`db:${methodName}`, async () => {
-							return await basePromise;
+						// Track timing for the promise execution
+						// Wrap the entire promise chain to measure database operation time
+						return perf.time(`db:${methodName}`, async () => {
+							const promise = originalThen.call(
+								target,
+								onFulfilled,
+								onRejected,
+							);
+							return await promise;
 						});
-						// Attach user callbacks outside the timed block
-						return timedPromise.then(onFulfilled, onRejected);
 					};
 				}
 
