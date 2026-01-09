@@ -22,6 +22,10 @@ suite("addSampleData main function tests", () => {
 
 		// Assert: verify that each helper was called as expected.
 		expect(pingDBSpy).toHaveBeenCalled();
+
+		// NOTE: Collection order matters.
+// "events" must be seeded before "recurring_events",
+// and "recurrence_rules" must come after events due to FK dependencies.
 		expect(insertCollectionsSpy).toHaveBeenCalledWith([
   "users",
   "organizations",
