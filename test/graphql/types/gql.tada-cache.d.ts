@@ -361,6 +361,8 @@ declare module 'gql.tada' {
       TadaDocumentNode<{ deleteAgendaFolder: { id: string; name: string | null; isAgendaItemFolder: boolean | null; } | null; }, { input: { id: string; }; }, void>;
     "\n\tmutation Mutation_deleteFund($input: MutationDeleteFundInput!) {\n\t\tdeleteFund(input: $input) {\n\t\t\tid\n\t\t}\n\t}\n":
       TadaDocumentNode<{ deleteFund: { id: string; } | null; }, { input: { id: string; }; }, void>;
+    "\n\tmutation Mutation_deleteVenueBooking($input: MutationDeleteVenueBookingInput!) {\n\t\tdeleteVenueBooking(input: $input) {\n\t\t\tid\n\t\t\tname\n\t\t\tdescription\n\t\t\tcapacity\n\t\t\torganization { id }\n\t\t\tattachments { mimeType }\n\t\t}\n\t}\n":
+      TadaDocumentNode<{ deleteVenueBooking: { id: string; name: string | null; description: string | null; capacity: number | null; organization: { id: string; } | null; attachments: { mimeType: string | null; }[] | null; } | null; }, { input: { venueId: string; eventId: string; }; }, void>;
     "mutation Mutation_refreshToken($refreshToken: String) {\n    refreshToken(refreshToken: $refreshToken) {\n        authenticationToken\n        refreshToken\n        user {\n            id\n            name\n        }\n    }\n}":
       TadaDocumentNode<{ refreshToken: { authenticationToken: string | null; refreshToken: string | null; user: { id: string; name: string | null; } | null; } | null; }, { refreshToken?: string | null | undefined; }, void>;
     "\n    mutation Mutation_blockUser($organizationId: ID!, $userId: ID!) {\n        blockUser(organizationId: $organizationId, userId: $userId)\n    }\n":
