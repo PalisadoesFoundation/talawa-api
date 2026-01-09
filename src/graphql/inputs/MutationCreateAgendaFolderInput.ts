@@ -39,7 +39,7 @@ export const MutationCreateAgendaFolderInput = builder
 				required: true,
 			}),
 			organizationId: t.id({
-				description: "ID of the organization this category belongs to.",
+				description: "ID of the organization this folder belongs to.",
 				required: true,
 			}),
 			parentFolderId: t.id({

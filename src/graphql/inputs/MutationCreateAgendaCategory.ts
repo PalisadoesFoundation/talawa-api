@@ -18,16 +18,16 @@ export const MutationCreateAgendaCategoriesInput = builder
 		description: "",
 		fields: (t) => ({
 			description: t.string({
-				description: "Description of Agenda Folder",
+				description: "Description of Agenda category",
 				required: true,
 			}),
 			eventId: t.id({
 				description:
-					"Global identifier of the event the agenda folder is associated to.",
+					"Global identifier of the event the agenda category is associated to.",
 				required: true,
 			}),
 			name: t.string({
-				description: "Name of the agenda folder.",
+				description: "Name of the agenda category.",
 				required: true,
 			}),
 			organizationId: t.id({

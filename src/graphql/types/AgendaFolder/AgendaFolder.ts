@@ -11,6 +11,7 @@ AgendaFolder.implement({
 	fields: (t) => ({
 		description: t.exposeString("description", {
 			description: "Custom information about the agenda folder.",
+			nullable: true,
 		}),
 		id: t.exposeID("id", {
 			description: "Global identifier of the agenda folder.",
@@ -25,6 +26,7 @@ AgendaFolder.implement({
 		}),
 		sequence: t.exposeInt("sequence", {
 			description: "Sequence of agenda folder.",
+			nullable: true,
 		}),
 		isDefaultFolder: t.exposeBoolean("isDefaultFolder", {
 			description: "Boolean to tell if agenda folder is default or not",

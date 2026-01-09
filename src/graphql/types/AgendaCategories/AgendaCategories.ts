@@ -7,17 +7,17 @@ export const AgendaCategory =
 	builder.objectRef<AgendaCategory>("AgendaCategory");
 
 AgendaCategory.implement({
-	description: "Agenda Categories for the agenda items",
+	description: "Agenda category for organizing agenda items within an event.",
 	fields: (t) => ({
 		description: t.exposeString("description", {
-			description: "Custom information about the agenda categories.",
+			description: "Custom information about the agenda category.",
 		}),
 		id: t.exposeID("id", {
-			description: "Global identifier of the agenda categories.",
+			description: "Global identifier of the agenda category.",
 			nullable: false,
 		}),
 		name: t.exposeString("name", {
-			description: "Name of the agenda categories.",
+			description: "Name of the agenda category.",
 		}),
 		isDefaultCategory: t.exposeBoolean("isDefaultCategory", {
 			description: "Boolean to tell if agenda category is default or not",

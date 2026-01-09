@@ -79,7 +79,7 @@ CREATE TABLE "agenda_categories" (
 	"description" text,
 	"event_id" uuid NOT NULL,
 	"id" uuid PRIMARY KEY NOT NULL,
-	"is_default_folder" boolean DEFAULT false NOT NULL,
+	"is_default_categories" boolean DEFAULT false NOT NULL,
 	"name" text NOT NULL,
 	"organization_id" uuid NOT NULL,
 	"updated_at" timestamp (3) with time zone,

@@ -17,7 +17,7 @@ builder.mutationField("createAgendaCategory", (t) =>
 	t.field({
 		args: {
 			input: t.arg({
-				description: "",
+				description: "Input for creating a new agenda category.",
 				required: true,
 				type: MutationCreateAgendaCategoriesInput,
 			}),
@@ -67,6 +67,7 @@ builder.mutationField("createAgendaCategory", (t) =>
 					with: {
 						organization: {
 							columns: {
+								id: true,
 								countryCode: true,
 							},
 							with: {
@@ -126,21 +127,21 @@ builder.mutationField("createAgendaCategory", (t) =>
 				});
 			}
 
-			const [createdAgendaFolder] = await ctx.drizzleClient
+			const [createdAgendaCategory] = await ctx.drizzleClient
 				.insert(agendaCategoriesTable)
 				.values({
 					creatorId: currentUserId,
 					eventId: parsedArgs.input.eventId,
 					name: parsedArgs.input.name,
 					description: parsedArgs.input.description,
-					organizationId: parsedArgs.input.organizationId,
+					organizationId: existingEvent.organization.id,
 				})
 				.returning();
 
 			// Inserted agenda folder not being returned is an external defect unrelated to this code. It is very unlikely for this error to occur.
-			if (createdAgendaFolder === undefined) {
+			if (createdAgendaCategory === undefined) {
 				ctx.log.error(
-					"Postgres insert operation unexpectedly returned an empty array instead of throwing an error.",
+					"Postgres insert operation for agenda category unexpectedly returned an empty array instead of throwing an error.",
 				);
 
 				throw new TalawaGraphQLError({
@@ -150,7 +151,7 @@ builder.mutationField("createAgendaCategory", (t) =>
 				});
 			}
 
-			return createdAgendaFolder;
+			return createdAgendaCategory;
 		},
 		type: AgendaCategory,
 	}),

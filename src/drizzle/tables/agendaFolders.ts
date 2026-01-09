@@ -40,7 +40,7 @@ export const agendaFoldersTable = pgTable(
 			onUpdate: "cascade",
 		}),
 		/**
-		 * Description about the agenda category.
+		 * Description about the agenda folder.
 		 */
 		description: text("description"),
 		/**
@@ -78,6 +78,9 @@ export const agendaFoldersTable = pgTable(
 				onUpdate: "cascade",
 			},
 		),
+		/**
+		 * Foreign key reference to the id of the organization the agenda folder belongs to.
+		 */
 		organizationId: uuid("organization_id")
 			.notNull()
 			.references(() => organizationsTable.id, {

@@ -30,7 +30,7 @@ export const MutationUpdateAgendaFolderInput = builder
 		description: "",
 		fields: (t) => ({
 			description: t.string({
-				description: "Description of the agenda category.",
+				description: "Description of the agenda folder.",
 			}),
 			id: t.id({
 				description: "Global identifier of the agenda folder.",

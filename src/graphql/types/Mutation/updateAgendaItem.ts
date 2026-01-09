@@ -307,6 +307,7 @@ builder.mutationField("updateAgendaItem", (t) =>
 							parsedArgs.input.url.map((u) => ({
 								agendaItemId: parsedArgs.input.id,
 								agendaItemURL: u.agendaItemURL,
+								creatorId: currentUserId,
 								updaterId: currentUserId,
 							})),
 						);

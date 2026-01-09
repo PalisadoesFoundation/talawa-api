@@ -20,8 +20,7 @@ builder.queryField("agendaCategoryByEventId", (t) =>
 			}),
 		},
 		complexity: envConfig.API_GRAPHQL_OBJECT_FIELD_COST,
-		description:
-			"Query field to get all Agenda Categories for a specific event.",
+		description: "Query field to get all Agenda Folders for a specific event.",
 		nullable: true,
 		resolve: async (_parent, args, ctx) => {
 			const {
@@ -43,23 +42,21 @@ builder.queryField("agendaCategoryByEventId", (t) =>
 			}
 
 			// Check if event exists
-			if (parsedArgs.eventId) {
-				const event = await ctx.drizzleClient.query.eventsTable.findFirst({
-					where: eq(eventsTable.id, parsedArgs.eventId),
-				});
+			const event = await ctx.drizzleClient.query.eventsTable.findFirst({
+				where: eq(eventsTable.id, parsedArgs.eventId),
+			});
 
-				if (!event) {
-					throw new TalawaGraphQLError({
-						extensions: {
-							code: "arguments_associated_resources_not_found",
-							issues: [
-								{
-									argumentPath: ["eventId"],
-								},
-							],
-						},
-					});
-				}
+			if (!event) {
+				throw new TalawaGraphQLError({
+					extensions: {
+						code: "arguments_associated_resources_not_found",
+						issues: [
+							{
+								argumentPath: ["eventId"],
+							},
+						],
+					},
+				});
 			}
 
 			// Get all AgendaCategory for the event

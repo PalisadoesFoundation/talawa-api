@@ -113,7 +113,7 @@ export const MutationCreateAgendaItemInput = builder
 			description: t.string({
 				description: "Custom information about the agenda item.",
 			}),
-			categoryId: t.string({
+			categoryId: t.id({
 				description: "Category id",
 				required: true,
 			}),
@@ -147,6 +147,7 @@ export const MutationCreateAgendaItemInput = builder
 				type: AgendaItemType,
 			}),
 			url: t.field({
+				description: "URLs associated with the agenda item.",
 				type: [AgendaItemUrlInput],
 				required: false,
 			}),

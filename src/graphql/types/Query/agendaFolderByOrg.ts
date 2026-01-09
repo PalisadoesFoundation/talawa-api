@@ -23,7 +23,7 @@ const QueryAgendaFolderByOrganizationInput = builder.inputType(
 );
 
 /**
- * GraphQL Query: Fetches all Action Item Categories by organizationId.
+ * GraphQL Query: Fetches all Agenda Folders by organizationId.
  */
 
 export const agendaFolderByOrganization = builder.queryField(
@@ -33,7 +33,7 @@ export const agendaFolderByOrganization = builder.queryField(
 			args: {
 				input: t.arg({
 					description:
-						"Input parameters to fetch action item categories by organizationId.",
+						"Input parameters to fetch agenda folders by organizationId.",
 					required: true,
 					type: QueryAgendaFolderByOrganizationInput,
 				}),
@@ -70,17 +70,23 @@ export const agendaFolderByOrganization = builder.queryField(
 
 				const currentUserId = ctx.currentClient.user.id;
 
-				const [currentUser, agendaFolder] = await Promise.all([
-					ctx.drizzleClient.query.usersTable.findFirst({
-						columns: { role: true },
-						where: (fields, operators) =>
-							operators.eq(fields.id, currentUserId),
-					}),
-					ctx.drizzleClient.query.agendaFoldersTable.findMany({
-						where: (fields, operators) =>
-							operators.eq(fields.organizationId, parsedArgs.organizationId),
-					}),
-				]);
+				const [currentUser, organizationExists, agendaFolder] =
+					await Promise.all([
+						ctx.drizzleClient.query.usersTable.findFirst({
+							columns: { id: true },
+							where: (fields, operators) =>
+								operators.eq(fields.id, currentUserId),
+						}),
+						ctx.drizzleClient.query.organizationsTable.findFirst({
+							columns: { id: true },
+							where: (fields, operators) =>
+								operators.eq(fields.id, parsedArgs.organizationId),
+						}),
+						ctx.drizzleClient.query.agendaFoldersTable.findMany({
+							where: (fields, operators) =>
+								operators.eq(fields.organizationId, parsedArgs.organizationId),
+						}),
+					]);
 
 				if (!currentUser) {
 					throw new TalawaGraphQLError({
@@ -90,12 +96,6 @@ export const agendaFolderByOrganization = builder.queryField(
 					});
 				}
 
-				const organizationExists =
-					await ctx.drizzleClient.query.organizationsTable.findFirst({
-						where: (fields, operators) =>
-							operators.eq(fields.id, parsedArgs.organizationId),
-					});
-
 				if (!organizationExists) {
 					throw new TalawaGraphQLError({
 						message: "Organization not found.",
@@ -104,10 +104,6 @@ export const agendaFolderByOrganization = builder.queryField(
 							issues: [{ argumentPath: ["input", "organizationId"] }],
 						},
 					});
-				}
-
-				if (!agendaFolder.length) {
-					return [];
 				}
 
 				return agendaFolder;

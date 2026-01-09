@@ -19,7 +19,7 @@ export const resolveOrganization = async (
 
 	if (existingOrganization === undefined) {
 		ctx.log.error(
-			"Postgres select operation returned an empty array for an agenda item category's organization id that isn't null.",
+			"Postgres select operation returned an empty array for an agenda item folder's organization id that isn't null.",
 		);
 
 		throw new TalawaGraphQLError({
@@ -35,7 +35,7 @@ export const resolveOrganization = async (
 AgendaFolder.implement({
 	fields: (t) => ({
 		organization: t.field({
-			description: "Organization which the agenda item category belongs to.",
+			description: "Organization which the agenda folder belongs to.",
 			type: Organization,
 			complexity: envConfig.API_GRAPHQL_OBJECT_FIELD_COST,
 			resolve: resolveOrganization, // Use the exported function

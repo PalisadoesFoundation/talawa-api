@@ -18,13 +18,14 @@ builder.mutationField("updateAgendaItemSequence", (t) =>
 	t.field({
 		args: {
 			input: t.arg({
-				description: "",
+				description:
+					"Input containing the agenda item ID and new sequence value.",
 				required: true,
 				type: MutationUpdateAgendaItemSequenceInput,
 			}),
 		},
 		complexity: envConfig.API_GRAPHQL_OBJECT_FIELD_COST,
-		description: "Mutation field to update an agenda item.",
+		description: "Mutation field to update the sequence of an agenda item.",
 		resolve: async (_parent, args, ctx) => {
 			if (!ctx.currentClient.isAuthenticated) {
 				throw new TalawaGraphQLError({

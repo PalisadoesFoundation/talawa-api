@@ -14,13 +14,13 @@ import { organizationsTable } from "./organizations";
 import { usersTable } from "./users";
 
 /**
- * Drizzle orm postgres table definition for agenda folders.
+ * Drizzle orm postgres table definition for agenda categories.
  */
 export const agendaCategoriesTable = pgTable(
 	"agenda_categories",
 	{
 		/**
-		 * Date time at the time the agenda ategories was created.
+		 * Date time at the time the agenda categories was created.
 		 */
 		createdAt: timestamp("created_at", {
 			mode: "date",
@@ -41,7 +41,7 @@ export const agendaCategoriesTable = pgTable(
 		 */
 		description: text("description"),
 		/**
-		 * Foreign key reference to the id of the event the agenda folder is associated to.
+		 * Foreign key reference to the id of the event the agenda category is associated to.
 		 */
 		eventId: uuid("event_id")
 			.notNull()
@@ -50,19 +50,21 @@ export const agendaCategoriesTable = pgTable(
 				onUpdate: "cascade",
 			}),
 		/**
-		 * Primary unique identifier of the agenda folder.
+		 * Primary unique identifier of the agenda category.
 		 */
 		id: uuid("id").primaryKey().$default(uuidv7),
 		/**
 		 * Boolean to tell if the agenda category is default or not.
 		 */
-		isDefaultCategory: boolean("is_default_folder").notNull().default(false),
+		isDefaultCategory: boolean("is_default_categories")
+			.notNull()
+			.default(false),
 		/**
-		 * Name of the agenda folder.
+		 * Name of the agenda category.
 		 */
 		name: text("name", {}).notNull(),
 		/**
-		 * Foreign key reference to the id of the organization in which the advertisement is made.
+		 * Foreign key reference to the id of the organization this agenda category belongs to.
 		 */
 		organizationId: uuid("organization_id")
 			.notNull()
@@ -100,36 +102,36 @@ export const agendaCategoriesTableRelations = relations(
 	agendaCategoriesTable,
 	({ one }) => ({
 		/**
-		 * Many to one relationship from `agenda_folders` table to `users` table.
+		 * Many to one relationship from `agenda_categories` table to `users` table.
 		 */
 		creator: one(usersTable, {
 			fields: [agendaCategoriesTable.creatorId],
 			references: [usersTable.id],
-			relationName: "agenda_folders.creator_id:users.id",
+			relationName: "agenda_categories.creator_id:users.id",
 		}),
 		/**
-		 * Many to one relationship from `agenda_folders` table to `events` table.
+		 * Many to one relationship from `agenda_categories` table to `events` table.
 		 */
 		event: one(eventsTable, {
 			fields: [agendaCategoriesTable.eventId],
 			references: [eventsTable.id],
-			relationName: "agenda_folders.event_id:events.id",
+			relationName: "agenda_categories.event_id:events.id",
 		}),
 		/**
-		 * Many to one relationship from `agenda_folders` table to `org` table.
+		 * Many to one relationship from `agenda_categories` table to `org` table.
 		 */
 		organization: one(organizationsTable, {
 			fields: [agendaCategoriesTable.organizationId],
 			references: [organizationsTable.id],
-			relationName: "agenda_folder.organization_id:organizations.id",
+			relationName: "agenda_categories.organization_id:organizations.id",
 		}),
 		/**
-		 * Many to one relationship from `agenda_folders` table to `users` table.
+		 * Many to one relationship from `agenda_categories` table to `users` table.
 		 */
 		updater: one(usersTable, {
 			fields: [agendaCategoriesTable.updaterId],
 			references: [usersTable.id],
-			relationName: "agenda_folders.updater_id:users.id",
+			relationName: "agenda_categories.updater_id:users.id",
 		}),
 	}),
 );

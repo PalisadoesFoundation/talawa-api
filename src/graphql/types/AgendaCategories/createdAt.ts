@@ -75,29 +75,16 @@ AgendaCategory.implement({
 				const currentUserOrganizationMembership =
 					existingEvent.organization.membershipsWhereOrganization[0];
 
-				if (currentUser.role !== "administrator") {
-					if (currentUserOrganizationMembership === undefined) {
-						// User is neither a super admin nor a member of the organization
-						throw new TalawaGraphQLError({
-							extensions: {
-								code: "unauthorized_action",
-							},
-						});
-					}
-
-					// User is a member, but membership role is insufficient for this action
-					if (currentUserOrganizationMembership.role !== "administrator") {
-						throw new TalawaGraphQLError({
-							extensions: {
-								code: "unauthorized_action_on_arguments_associated_resources",
-								issues: [
-									{
-										argumentPath: [],
-									},
-								],
-							},
-						});
-					}
+				if (
+					currentUser.role !== "administrator" &&
+					(currentUserOrganizationMembership === undefined ||
+						currentUserOrganizationMembership.role !== "administrator")
+				) {
+					throw new TalawaGraphQLError({
+						extensions: {
+							code: "unauthorized_action",
+						},
+					});
 				}
 
 				return parent.createdAt;

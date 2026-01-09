@@ -39,7 +39,7 @@ export const agendaItemsTable = pgTable(
 			onUpdate: "cascade",
 		}),
 		/**
-		 * Custom information about the agenda item.
+		 * Foreign key reference to the id of the agenda category the agenda item belongs
 		 */
 		categoryId: uuid("category_id")
 			.notNull()
@@ -137,7 +137,7 @@ export const agendaItemsTableRelations = relations(
 		/**
 		 * Many to one relationship from `agenda_items` table to `agenda_category` table.
 		 */
-		categories: one(agendaCategoriesTable, {
+		category: one(agendaCategoriesTable, {
 			fields: [agendaItemsTable.categoryId],
 			references: [agendaCategoriesTable.id],
 			relationName: "agenda_items.category_id:agenda_category.id",
@@ -148,7 +148,7 @@ export const agendaItemsTableRelations = relations(
 		event: one(eventsTable, {
 			fields: [agendaItemsTable.eventId],
 			references: [eventsTable.id],
-			relationName: "agenda_item.event_id:events.id",
+			relationName: "agenda_items.event_id:events.id",
 		}),
 		/**
 		 * Many to one relationship from `agenda_items` table to `agenda_folders` table.

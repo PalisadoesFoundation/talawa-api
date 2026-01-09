@@ -18,7 +18,7 @@ builder.mutationField("updateAgendaCategory", (t) =>
 	t.field({
 		args: {
 			input: t.arg({
-				description: "",
+				description: "Input containing the agenda category fields to update.",
 				required: true,
 				type: MutationUpdateAgendaCategoryInput,
 			}),

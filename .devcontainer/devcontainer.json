@@ -71,7 +71,7 @@
 		}
 	},
 	"init": true,
-	"initializeCommand": "powershell.exe -Command Copy-Item -Path envFiles/.env.devcontainer -Destination .env -Force",
+	"initializeCommand": "/bin/sh -c '[ ! -f .env ] && cp ./envFiles/.env.devcontainer ./.env || true'",
 	"name": "talawa_api",
 	"overrideCommand": true,
 	"postCreateCommand": "sudo chown talawa:talawa ./.pnpm-store ./node_modules && fnm install && fnm use && corepack enable npm && corepack enable && corepack install && pnpm install",

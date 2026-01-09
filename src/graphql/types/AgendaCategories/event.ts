@@ -7,28 +7,66 @@ AgendaCategory.implement({
 	fields: (t) => ({
 		event: t.field({
 			description:
-				"Event for which the agenda item constituting a part of the agenda.",
+				"Event for which the agenda category constitutes a part of the agenda.",
 			complexity: envConfig.API_GRAPHQL_OBJECT_FIELD_COST,
+			type: Event,
 			resolve: async (parent, _args, ctx) => {
-				const existingEvent =
-					await ctx.drizzleClient.query.eventsTable.findFirst({
+				if (!ctx.currentClient.isAuthenticated) {
+					throw new TalawaGraphQLError({
+						extensions: { code: "unauthenticated" },
+					});
+				}
+
+				const currentUserId = ctx.currentClient.user.id;
+
+				const [currentUser, existingEvent] = await Promise.all([
+					ctx.drizzleClient.query.usersTable.findFirst({
+						columns: { role: true },
+						where: (fields, operators) =>
+							operators.eq(fields.id, currentUserId),
+					}),
+					ctx.drizzleClient.query.eventsTable.findFirst({
 						where: (fields, operators) =>
 							operators.eq(fields.id, parent.eventId),
 						with: {
 							attachmentsWhereEvent: true,
+							organization: {
+								with: {
+									membershipsWhereOrganization: {
+										columns: { role: true },
+										where: (fields, operators) =>
+											operators.eq(fields.memberId, currentUserId),
+									},
+								},
+							},
 						},
-					});
+					}),
+				]);
 
-				// Event id existing but the associated event not existing is a business logic error and probably means that the corresponding data in the database is in a corrupted state. It must be investigated and fixed as soon as possible to prevent additional data corruption.
-				if (existingEvent === undefined) {
+				if (!currentUser) {
+					throw new TalawaGraphQLError({
+						extensions: { code: "unauthenticated" },
+					});
+				}
+
+				if (!existingEvent) {
 					ctx.log.error(
 						"Postgres select operation returned an empty array for an agenda category event id that isn't null.",
 					);
-
 					throw new TalawaGraphQLError({
-						extensions: {
-							code: "unexpected",
-						},
+						extensions: { code: "unexpected" },
+					});
+				}
+
+				const membership =
+					existingEvent.organization.membershipsWhereOrganization[0];
+
+				if (
+					currentUser.role !== "administrator" &&
+					(!membership || membership.role !== "administrator")
+				) {
+					throw new TalawaGraphQLError({
+						extensions: { code: "unauthorized_action" },
 					});
 				}
 
@@ -36,7 +74,6 @@ AgendaCategory.implement({
 					attachments: existingEvent.attachmentsWhereEvent,
 				});
 			},
-			type: Event,
 		}),
 	}),
 });

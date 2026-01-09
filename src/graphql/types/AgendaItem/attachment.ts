@@ -1,6 +1,6 @@
 import { eq } from "drizzle-orm";
 import { agendaItemAttachmentsTable } from "~/src/drizzle/tables/agendaItemAttachment";
-import { AgendaItemAttachment } from "../AgendaItemAttachment.ts/AgendaItemAttachment";
+import { AgendaItemAttachment } from "../AgendaItemAttachment/AgendaItemAttachment";
 import { AgendaItem } from "./AgendaItem";
 
 AgendaItem.implement({

@@ -124,7 +124,7 @@ builder.mutationField("deleteAgendaFolder", (t) =>
 						issues: [
 							{
 								argumentPath: ["input", "id"],
-								message: "This agenda folder cannot be delete.",
+								message: "This agenda folder cannot be deleted.",
 							},
 						],
 					},

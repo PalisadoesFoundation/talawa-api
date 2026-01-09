@@ -250,7 +250,7 @@ builder.mutationField("createAgendaItem", (t) =>
 								.values(
 									parsedArgs.input.url.map((url) => ({
 										agendaItemId: createdAgendaItem.id,
-										creatorId: createdAgendaItem.creatorId,
+										creatorId: currentUserId,
 										agendaItemURL: url.agendaItemURL,
 									})),
 								)

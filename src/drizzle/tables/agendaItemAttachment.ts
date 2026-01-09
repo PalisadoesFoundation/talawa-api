@@ -64,7 +64,7 @@ export const agendaItemAttachmentsTable = pgTable(
 		fileHash: text("file_hash", {}).notNull(),
 
 		/**
-		 * Foreign key reference to the id of the user who last updated the attachment.
+		 * Date time at the time the attachment was last updated.
 		 */
 		updatedAt: timestamp("updated_at", {
 			mode: "date",
@@ -110,7 +110,7 @@ export const agendaItemAttachmentsTableRelations = relations(
 			relationName: "agenda_item_attachments.agendaItem_id:agendaItems.id",
 		}),
 		/**
-		 * Date time at the time the attachment was last updated.
+		 * Many to one relationship from `agenda_item_attachments` table to `users` table.
 		 */
 		updater: one(usersTable, {
 			fields: [agendaItemAttachmentsTable.updaterId],

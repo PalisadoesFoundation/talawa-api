@@ -12,9 +12,7 @@ const queryGetAgendaItemByEventIdArgumentsSchema = z.object({
 });
 
 /**
- * GraphQL query to get all event registrants for a specific event.
- * Handles both standalone events and recurring event instances.
- * Only returns attendees who have registered for the event.
+ * GraphQL query to get all agenda folders for a specific event.
  */
 builder.queryField("agendaFolderByEventId", (t) =>
 	t.field({
@@ -25,8 +23,7 @@ builder.queryField("agendaFolderByEventId", (t) =>
 			}),
 		},
 		complexity: envConfig.API_GRAPHQL_OBJECT_FIELD_COST,
-		description:
-			"Query field to get all Agenda Categories for a specific event.",
+		description: "Query field to get all Agenda Folders for a specific event.",
 		nullable: true,
 		resolve: async (_parent, args, ctx) => {
 			const {
@@ -48,26 +45,24 @@ builder.queryField("agendaFolderByEventId", (t) =>
 			}
 
 			// Check if event exists
-			if (parsedArgs.eventId) {
-				const event = await ctx.drizzleClient.query.eventsTable.findFirst({
-					where: eq(eventsTable.id, parsedArgs.eventId),
-				});
+			const event = await ctx.drizzleClient.query.eventsTable.findFirst({
+				where: eq(eventsTable.id, parsedArgs.eventId),
+			});
 
-				if (!event) {
-					throw new TalawaGraphQLError({
-						extensions: {
-							code: "arguments_associated_resources_not_found",
-							issues: [
-								{
-									argumentPath: ["eventId"],
-								},
-							],
-						},
-					});
-				}
+			if (!event) {
+				throw new TalawaGraphQLError({
+					extensions: {
+						code: "arguments_associated_resources_not_found",
+						issues: [
+							{
+								argumentPath: ["eventId"],
+							},
+						],
+					},
+				});
 			}
 
-			// Get all AgendaItems for the event
+			// Get all AgendaFolders for the event
 			const eventAgendas =
 				await ctx.drizzleClient.query.agendaFoldersTable.findMany({
 					where: eq(agendaFoldersTable.eventId, parsedArgs.eventId),

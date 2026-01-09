@@ -1,5 +1,5 @@
 {
-  "id": "7fc16767-5852-4ce4-aaeb-430691231b90",
+  "id": "af0da633-867d-4aad-8ee5-9d0dd2aa347f",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -1106,8 +1106,8 @@
           "primaryKey": true,
           "notNull": true
         },
-        "is_default_folder": {
-          "name": "is_default_folder",
+        "is_default_categories": {
+          "name": "is_default_categories",
           "type": "boolean",
           "primaryKey": false,
           "notNull": true,

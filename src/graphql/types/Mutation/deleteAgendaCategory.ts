@@ -18,7 +18,8 @@ builder.mutationField("deleteAgendaCategory", (t) =>
 	t.field({
 		args: {
 			input: t.arg({
-				description: "",
+				description:
+					"Input containing the ID of the agenda category to delete.",
 				required: true,
 				type: MutationDeleteAgendaCategoryInput,
 			}),
@@ -54,7 +55,7 @@ builder.mutationField("deleteAgendaCategory", (t) =>
 
 			const currentUserId = ctx.currentClient.user.id;
 
-			const [currentUser] = await Promise.all([
+			const [currentUser, existingAgendaCategory] = await Promise.all([
 				ctx.drizzleClient.query.usersTable.findFirst({
 					columns: {
 						role: true,
@@ -98,12 +99,38 @@ builder.mutationField("deleteAgendaCategory", (t) =>
 				});
 			}
 
+			if (existingAgendaCategory === undefined) {
+				throw new TalawaGraphQLError({
+					extensions: {
+						code: "arguments_associated_resources_not_found",
+						issues: [{ argumentPath: ["input", "id"] }],
+					},
+				});
+			}
+
+			const currentUserOrganizationMembership =
+				existingAgendaCategory.event?.organization
+					?.membershipsWhereOrganization[0];
+
+			const isAuthorized =
+				currentUser.role === "administrator" ||
+				currentUserOrganizationMembership?.role === "administrator";
+
+			if (!isAuthorized) {
+				throw new TalawaGraphQLError({
+					extensions: {
+						code: "unauthorized_action_on_arguments_associated_resources",
+						issues: [{ argumentPath: ["input", "id"] }],
+					},
+				});
+			}
+
 			const [deletedAgendaCategory] = await ctx.drizzleClient
 				.delete(agendaCategoriesTable)
 				.where(eq(agendaCategoriesTable.id, parsedArgs.input.id))
 				.returning();
 
-			// Deleted agenda folder not being returned means that either it was deleted or its `id` column was changed by external entities before this delete operation could take place.
+			// Deleted agenda category not being returned means that either it was deleted or its `id` column was changed by external entities before this delete operation could take place.
 			if (deletedAgendaCategory === undefined) {
 				throw new TalawaGraphQLError({
 					extensions: {
