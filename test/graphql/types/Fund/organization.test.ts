@@ -219,7 +219,7 @@ describe("Fund.organization Resolver - Integration", () => {
 			expect(result.data.createFund.name).toBe(fundName);
 
 			// Now query the fund with organization field
-			const fundQuery = await mercuriusClient.query(Query_Fund_Organization, {
+			const fundQuery = await mercuriusClient.query(Query_fundWithFullOrg, {
 				headers: { authorization: `bearer ${adminAuth.token}` },
 				variables: {
 					input: {
@@ -253,15 +253,15 @@ describe("Fund.organization Resolver - Integration", () => {
 			// Note: Each query is a separate HTTP request with its own DataLoader instance,
 			// so this tests concurrent resolution correctness, not DataLoader batching
 			const results = await Promise.all([
-				mercuriusClient.query(Query_Fund_Organization, {
+				mercuriusClient.query(Query_fundWithFullOrg, {
 					headers: { authorization: `bearer ${adminAuth.token}` },
 					variables: { input: { id: fund1.id } },
 				}),
-				mercuriusClient.query(Query_Fund_Organization, {
+				mercuriusClient.query(Query_fundWithFullOrg, {
 					headers: { authorization: `bearer ${adminAuth.token}` },
 					variables: { input: { id: fund2.id } },
 				}),
-				mercuriusClient.query(Query_Fund_Organization, {
+				mercuriusClient.query(Query_fundWithFullOrg, {
 					headers: { authorization: `bearer ${adminAuth.token}` },
 					variables: { input: { id: fund3.id } },
 				}),
