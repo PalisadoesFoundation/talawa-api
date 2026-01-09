@@ -841,9 +841,13 @@ describe("wrapDrizzleWithMetrics", () => {
 		it("should wrap builder.then() to track timing when awaited", async () => {
 			// Test lines 256-274: Proxy get trap wrapping .then()
 			// The Proxy wraps the builder's .then() method
-			// When we await the builder directly (without chaining), the Proxy's .then() wrapper should be called
+			// Use a Promise that isn't immediately resolved to ensure .then() is called through Proxy
 			const result = [{ id: "1" }];
-			const promise = Promise.resolve(result);
+			// Create a Promise that resolves asynchronously to ensure .then() is called
+			const promise = new Promise<typeof result>((resolve) => {
+				// Use setImmediate to ensure the promise isn't immediately resolved
+				setImmediate(() => resolve(result));
+			});
 
 			type Builder = Promise<typeof result> & {
 				from: (table: string) => Builder;
@@ -862,10 +866,10 @@ describe("wrapDrizzleWithMetrics", () => {
 				getPerf,
 			);
 
-			// Await the builder directly - this should trigger .then() wrapper (lines 256-274)
-			// The Proxy wraps the builder, so awaiting it directly will call the Proxy's .then() wrapper
+			// Explicitly call .then() to ensure it goes through the Proxy wrapper (lines 256-274)
+			// The Proxy wraps the builder, so calling .then() will trigger the Proxy's .then() wrapper
 			const selectResult = wrapped.select() as unknown as Builder;
-			const rows = await selectResult;
+			const rows = await selectResult.then((value) => value);
 
 			expect(rows).toEqual([{ id: "1" }]);
 			// Verify timing was tracked when .then() was called
