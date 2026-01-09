@@ -1,14 +1,66 @@
 import crypto from "node:crypto";
 import { promises as fs } from "node:fs";
 import path from "node:path";
+import { resolve } from "node:path";
 import process from "node:process";
+import { pathToFileURL } from "node:url";
 import dotenv from "dotenv";
 import inquirer from "inquirer";
 import { envFileBackup } from "./envFileBackup/envFileBackup";
 import { updateEnvVariable } from "./updateEnvVariable";
 
-interface SetupAnswers {
-	[key: string]: string;
+export interface SetupAnswers {
+	[key: string]: string | undefined;
+	CI?: string;
+	API_ADMINISTRATOR_USER_EMAIL_ADDRESS?: string;
+	RECAPTCHA_SECRET_KEY?: string;
+	API_BASE_URL?: string;
+	API_HOST?: string;
+	API_PORT?: string;
+	API_IS_APPLY_DRIZZLE_MIGRATIONS?: string;
+	API_IS_GRAPHIQL?: string;
+	API_IS_PINO_PRETTY?: string;
+	API_JWT_EXPIRES_IN?: string;
+	API_JWT_SECRET?: string;
+	API_LOG_LEVEL?: string;
+	API_MINIO_ACCESS_KEY?: string;
+	API_MINIO_END_POINT?: string;
+	API_MINIO_PORT?: string;
+	API_MINIO_SECRET_KEY?: string;
+	API_MINIO_TEST_END_POINT?: string;
+	API_MINIO_USE_SSL?: string;
+	API_POSTGRES_DATABASE?: string;
+	API_POSTGRES_HOST?: string;
+	API_POSTGRES_PASSWORD?: string;
+	API_POSTGRES_PORT?: string;
+	API_POSTGRES_SSL_MODE?: string;
+	API_POSTGRES_TEST_HOST?: string;
+	API_POSTGRES_USER?: string;
+	CLOUDBEAVER_ADMIN_NAME?: string;
+	CLOUDBEAVER_ADMIN_PASSWORD?: string;
+	CLOUDBEAVER_MAPPED_HOST_IP?: string;
+	CLOUDBEAVER_MAPPED_PORT?: string;
+	CLOUDBEAVER_SERVER_NAME?: string;
+	CLOUDBEAVER_SERVER_URL?: string;
+	MINIO_BROWSER?: string;
+	MINIO_API_MAPPED_HOST_IP?: string;
+	MINIO_API_MAPPED_PORT?: string;
+	MINIO_CONSOLE_MAPPED_HOST_IP?: string;
+	MINIO_CONSOLE_MAPPED_PORT?: string;
+	MINIO_ROOT_PASSWORD?: string;
+	MINIO_ROOT_USER?: string;
+	POSTGRES_DB?: string;
+	POSTGRES_MAPPED_HOST_IP?: string;
+	POSTGRES_MAPPED_PORT?: string;
+	POSTGRES_PASSWORD?: string;
+	POSTGRES_USER?: string;
+	CADDY_HTTP_MAPPED_PORT?: string;
+	CADDY_HTTPS_MAPPED_PORT?: string;
+	CADDY_HTTP3_MAPPED_PORT?: string;
+	CADDY_TALAWA_API_DOMAIN_NAME?: string;
+	CADDY_TALAWA_API_EMAIL?: string;
+	CADDY_TALAWA_API_HOST?: string;
+	CADDY_TALAWA_API_PORT?: string;
 }
 
 async function promptInput(
@@ -54,9 +106,14 @@ async function restoreLatestBackup(): Promise<void> {
 
 	try {
 		await fs.access(backupDir);
-	} catch {
-		console.warn("Backup directory .backup does not exist");
-		return;
+	} catch (err: unknown) {
+		const error = err as NodeJS.ErrnoException;
+		if (error.code === "ENOENT") {
+			console.warn("Backup directory .backup does not exist");
+			return;
+		}
+		console.error("Error accessing backup directory:", error);
+		throw error;
 	}
 
 	try {
@@ -173,10 +230,10 @@ export function validateCloudBeaverURL(input: string): true | string {
 	}
 }
 
-function handlePromptError(err: unknown): never {
+async function handlePromptError(err: unknown): Promise<never> {
 	console.error(err);
-	restoreLatestBackup().finally(() => process.exit(1));
-	throw err;
+	await restoreLatestBackup();
+	process.exit(1);
 }
 
 export async function checkEnvFile(): Promise<boolean> {
@@ -234,7 +291,7 @@ export async function setCI(answers: SetupAnswers): Promise<SetupAnswers> {
 	try {
 		answers.CI = await promptList("CI", "Set CI:", ["true", "false"], "false");
 	} catch (err) {
-		handlePromptError(err);
+		await handlePromptError(err);
 	}
 	return answers;
 }
@@ -250,7 +307,7 @@ export async function administratorEmail(
 			validateEmail,
 		);
 	} catch (err) {
-		handlePromptError(err);
+		await handlePromptError(err);
 	}
 	return answers;
 }
@@ -271,7 +328,7 @@ export async function reCaptchaSetup(
 			},
 		);
 	} catch (err) {
-		handlePromptError(err);
+		await handlePromptError(err);
 	}
 	return answers;
 }
@@ -439,7 +496,7 @@ export async function apiSetup(answers: SetupAnswers): Promise<SetupAnswers> {
 			"talawa",
 		);
 	} catch (err) {
-		handlePromptError(err);
+		await handlePromptError(err);
 	}
 
 	return answers;
@@ -488,11 +545,11 @@ export async function cloudbeaverSetup(
 			"http://127.0.0.1:8978",
 			validateCloudBeaverURL,
 		);
-
-		return answers;
 	} catch (err) {
-		handlePromptError(err);
+		await handlePromptError(err);
 	}
+	
+	return answers;
 }
 
 export async function minioSetup(answers: SetupAnswers): Promise<SetupAnswers> {
@@ -561,11 +618,11 @@ export async function minioSetup(answers: SetupAnswers): Promise<SetupAnswers> {
 			"Minio root user:",
 			"talawa",
 		);
-
-		return answers;
 	} catch (err) {
-		handlePromptError(err);
+		await handlePromptError(err);
 	}
+	
+	return answers;
 }
 
 export async function postgresSetup(
@@ -604,11 +661,11 @@ export async function postgresSetup(
 			"Postgres user:",
 			"talawa",
 		);
-
-		return answers;
 	} catch (err) {
-		handlePromptError(err);
+		await handlePromptError(err);
 	}
+	
+	return answers;
 }
 
 export async function caddySetup(answers: SetupAnswers): Promise<SetupAnswers> {
@@ -660,7 +717,7 @@ export async function caddySetup(answers: SetupAnswers): Promise<SetupAnswers> {
 			validatePort,
 		);
 	} catch (err) {
-		handlePromptError(err);
+		await handlePromptError(err);
 	}
 	return answers;
 }
@@ -681,7 +738,7 @@ export async function setup(): Promise<SetupAnswers> {
 
 	dotenv.config({ path: envFileName });
 
-	process.on("SIGINT", async () => {
+	process.once("SIGINT", async () => {
 		console.log("\nProcess interrupted! Undoing changes...");
 		answers = {};
 		await restoreLatestBackup();
@@ -791,7 +848,7 @@ export async function setup(): Promise<SetupAnswers> {
 	return answers;
 }
 
-if (import.meta.url === `file://${process.argv[1]}`) {
+if (process.argv[1] && import.meta.url === pathToFileURL(resolve(process.argv[1])).href) {
 	setup().catch((err) => {
 		console.error("Setup failed:", err);
 		process.exit(1);

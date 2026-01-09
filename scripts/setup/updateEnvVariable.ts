@@ -6,26 +6,47 @@ import { promises as fs } from "node:fs";
  * the values are the new values for those variables.
  */
 export async function updateEnvVariable(config: {
-	[key: string]: string | number;
+	[key: string]: string | number | undefined;
 }): Promise<void> {
 	const envFileName = process.env.NODE_ENV === "test" ? ".env_test" : ".env";
 
 	const backupFile = `${envFileName}.backup`;
+	let backupCreated = false;
+
 	try {
 		await fs.access(envFileName);
 		await fs.copyFile(envFileName, backupFile);
-	} catch {}
+		backupCreated = true;
+	} catch (err: unknown) {
+		const error = err as NodeJS.ErrnoException;
+		if (error.code !== "ENOENT") {
+			console.error("Error creating backup:", error);
+			throw error;
+		}
+	}
 
 	try {
 		let existingContent = "";
 		try {
 			existingContent = await fs.readFile(envFileName, "utf8");
-		} catch {}
+		} catch (err: unknown) {
+			const error = err as NodeJS.ErrnoException;
+			if (error.code !== "ENOENT") {
+				console.error("Error reading env file:", error);
+				throw error;
+			}
+		}
 
 		let updatedContent: string = existingContent;
 
 		for (const key in config) {
 			const value = config[key];
+			
+			// Skip undefined values
+			if (value === undefined) {
+				continue;
+			}
+			
 			const regex = new RegExp(
 				`^${key.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}=.*`,
 				"gm",
@@ -42,9 +63,17 @@ export async function updateEnvVariable(config: {
 
 		await fs.writeFile(envFileName, updatedContent, "utf8");
 	} catch (error) {
-		try {
-			await fs.copyFile(backupFile, envFileName);
-		} catch {}
+		if (backupCreated) {
+			try {
+				await fs.copyFile(backupFile, envFileName);
+			} catch (restoreErr: unknown) {
+				const restoreError = restoreErr as NodeJS.ErrnoException;
+				if (restoreError.code !== "ENOENT") {
+					console.error("Error restoring backup:", restoreError);
+					throw restoreError;
+				}
+			}
+		}
 		throw error;
 	}
 }
