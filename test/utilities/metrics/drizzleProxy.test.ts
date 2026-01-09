@@ -441,24 +441,15 @@ describe("wrapDrizzleWithMetrics", () => {
 		it("should preserve builder chaining and only time on await", async () => {
 			// Create a builder stub that is both thenable (has .then()) and chainable (has .from(), .where())
 			// This simulates real Drizzle builders which are both thenable and chainable
-			const builder = {
-				from: vi.fn((..._args: unknown[]) => builder),
-				where: vi.fn((..._args: unknown[]) => builder),
-				// biome-ignore lint/suspicious/noThenProperty: Test mock needs to simulate thenable builder for Drizzle
-				then: vi.fn(
-					(
-						onFulfilled?: (value: unknown) => unknown,
-						_onRejected?: (reason: unknown) => unknown,
-					) => {
-						// Simulate a thenable that resolves with data
-						const result = [{ id: "1" }];
-						if (onFulfilled) {
-							return Promise.resolve(onFulfilled(result));
-						}
-						return Promise.resolve(result);
-					},
-				),
-			};
+			// Use Object.assign to create a Promise with chainable methods (avoids biome-ignore)
+			const result = [{ id: "1" }];
+			const promise = Promise.resolve(result);
+			const fromFn = vi.fn(() => promise);
+			const whereFn = vi.fn(() => promise);
+			const builder = Object.assign(promise, {
+				from: fromFn,
+				where: whereFn,
+			});
 
 			vi.mocked(mockClient.select).mockReturnValue(builder as never);
 
@@ -478,8 +469,8 @@ describe("wrapDrizzleWithMetrics", () => {
 			expect(rows).toEqual([{ id: "1" }]);
 
 			// Verify chaining methods were called on the original builder
-			expect(builder.from).toHaveBeenCalledWith("users");
-			expect(builder.where).toHaveBeenCalledWith({});
+			expect(fromFn).toHaveBeenCalledWith("users");
+			expect(whereFn).toHaveBeenCalledWith({});
 
 			// Verify timing was NOT recorded for builder methods
 			// Builder methods should return the builder as-is, not wrap with perf.time()

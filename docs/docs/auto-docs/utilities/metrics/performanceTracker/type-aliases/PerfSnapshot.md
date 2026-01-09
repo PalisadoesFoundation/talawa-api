@@ -80,6 +80,16 @@ Slow operations that exceeded the threshold
 
 ***
 
+### timestamp?
+
+> `optional` **timestamp**: `number`
+
+Defined in: [src/utilities/metrics/performanceTracker.ts:38](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/utilities/metrics/performanceTracker.ts#L38)
+
+Request start timestamp (milliseconds since epoch) for chronological ordering
+
+***
+
 ### totalMs
 
 > **totalMs**: `number`
