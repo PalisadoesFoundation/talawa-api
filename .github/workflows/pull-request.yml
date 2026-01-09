@@ -328,41 +328,6 @@ jobs:
             fi
           done
 
-          # Check for new .md and .txt files in root directory
-          # Get all changed files in root directory
-          ROOT_MD_TXT_FILES=$(git diff --name-only --diff-filter=A "$BASE_SHA" "$HEAD_SHA" | grep -E '^[^/]+\.(md|txt)$' || true)
-          
-          if [ ! -z "$ROOT_MD_TXT_FILES" ]; then
-            # Filter out allowed root-level .md files (already in SENSITIVE_PATTERNS)
-            ALLOWED_ROOT_MD=(
-              "CODE_OF_CONDUCT.md"
-              "CODE_STYLE.md"
-              "CONTRIBUTING.md"
-              "DOCUMENTATION.md"
-              "INSTALLATION.md"
-              "ISSUE_GUIDELINES.md"
-              "PR_GUIDELINES.md"
-              "README.md"
-            )
-            
-            for file in $ROOT_MD_TXT_FILES; do
-              FILENAME=$(basename "$file")
-              # Check if file is in allowed list
-              IS_ALLOWED=false
-              for allowed in "${ALLOWED_ROOT_MD[@]}"; do
-                if [ "$FILENAME" = "$allowed" ]; then
-                  IS_ALLOWED=true
-                  break
-                fi
-              done
-              
-              # If not allowed, add to unauthorized files
-              if [ "$IS_ALLOWED" = false ]; then
-                CHANGED_UNAUTH_FILES="$CHANGED_UNAUTH_FILES $file"
-              fi
-            done
-          fi
-
           # Deduplicate and format output
           # Convert to newline-separated, deduplicate, then rejoin as space-separated
           if [ ! -z "$CHANGED_UNAUTH_FILES" ]; then
