@@ -25,11 +25,11 @@ builder.queryField("agendaCategoryByEventId", (t) =>
 		nullable: true,
 		resolve: async (_parent, args, ctx) => {
 			if (!ctx.currentClient.isAuthenticated) {
-							throw new TalawaGraphQLError({
-								extensions: { code: "unauthenticated" },
-							});
-						}
-						
+				throw new TalawaGraphQLError({
+					extensions: { code: "unauthenticated" },
+				});
+			}
+
 			const {
 				data: parsedArgs,
 				error,

@@ -101,7 +101,7 @@ builder.mutationField("createAgendaItem", (t) =>
 							code: "arguments_associated_resources_not_found",
 							issues: [
 								{
-								argumentPath: ["input", "eventId"],
+									argumentPath: ["input", "eventId"],
 								},
 							],
 						},
