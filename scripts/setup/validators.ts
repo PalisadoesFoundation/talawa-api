@@ -55,8 +55,11 @@ export type SetupKey =
 	| "API_OTEL_ENABLED"
 	| "API_OTEL_SAMPLING_RATIO";
 
-// Replace the index signature with a constrained mapping
-// Allow string indexing so tests and dynamic access are permitted
+/**
+ * Strongly-typed type for setup configuration answers.
+ * All fields are optional during setup but required fields are validated before completion.
+ * Index signature is included for backward compatibility with updateEnvVariable.
+ */
 export type SetupAnswers = Partial<Record<SetupKey, string>> & {
 	[key: string]: string | undefined;
 };

@@ -39,7 +39,7 @@ describe("Setup -> apiSetup", () => {
 		process.env.POSTGRES_PASSWORD = "password";
 		const isEnvConfigured = await checkEnvFile();
 		const mockResponses = [
-			...(isEnvConfigured ? [{ envReconfigure: true }] : []),
+			...((await isEnvConfigured) ? [{ envReconfigure: true }] : []),
 			{ CI: "true" },
 			{ useDefaultMinio: true },
 			{ useDefaultPostgres: true },
