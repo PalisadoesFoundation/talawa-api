@@ -1,0 +1,8 @@
+onlyBuiltDependencies:
+  - core-js
+  - core-js-pure
+  - fast-folder-size
+  - gifsicle
+  - highlight.js
+  - jpegtran-bin
+  - optipng-bin

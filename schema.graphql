@@ -1301,6 +1301,8 @@ type FundCampaignsConnectionEdge {
 }
 
 input GetPostsByOrgInput {
+  limit: Int
+  offset: Int
   organizationId: String!
   sortOrder: String
 }
@@ -2168,7 +2170,10 @@ type Mutation {
   deleteAgendaItem(input: MutationDeleteAgendaItemInput!): AgendaItem
 
   """Mutation field to delete a chat."""
-  deleteChat(input: MutationDeleteChatInput!): Chat
+  deleteChat(
+    """Input containing the UUID `id` of the chat to delete (required)."""
+    input: MutationDeleteChatInput!
+  ): Chat
 
   """Mutation field to delete a chat membership."""
   deleteChatMembership(input: MutationDeleteChatMembershipInput!): Chat
