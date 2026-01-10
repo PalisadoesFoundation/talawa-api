@@ -61,24 +61,18 @@ retry_command() {
     shift
     local attempt=1
     local exit_code=0
-
     while [ "$attempt" -le "$max_attempts" ]; do
         if [ "$attempt" -gt 1 ]; then
             local delay=$((2 ** (attempt - 1)))
             warn "Retry attempt $attempt of $max_attempts... sleeping for ${delay}s"
             sleep "$delay"
         fi
-
-        "$@"
-        exit_code=$?
-
-        if [ "$exit_code" -eq 0 ]; then
+        if "$@"; then
             return 0
         fi
-
+        exit_code=$?
         ((attempt++))
     done
-
     error "Command failed after $max_attempts attempts: $*"
     return "$exit_code"
 }
@@ -296,14 +290,15 @@ if [ "$INSTALL_MODE" = "docker" ]; then
         # carries inherent risk. Users can review the script first by visiting:
         # https://get.docker.com or using: curl -fsSL https://get.docker.com | less
         # curl -fsSL --connect-timeout $CURL_CONNECT_TIMEOUT --max-time $CURL_MAX_TIME_DOCKER https://get.docker.com | sh
-        docker_installer="/tmp/get-docker-$$.sh"
+        docker_installer="$(mktemp /tmp/get-docker.XXXXXX.sh)"
+        trap 'rm -f "$docker_installer"' RETURN
         if retry_command "$MAX_RETRY_ATTEMPTS" curl -fsSL --connect-timeout "$CURL_CONNECT_TIMEOUT" --max-time "$CURL_MAX_TIME_DOCKER" -o "$docker_installer" https://get.docker.com; then
             sh "$docker_installer"
-            rm -f "$docker_installer"
         else
             error "Failed to download Docker installer after multiple attempts."
             exit 1
         fi
+        trap - RETURN
         
         info "Adding current user to docker group..."
         sudo usermod -aG docker "$USER"
@@ -352,14 +347,15 @@ else
     # Users can review the script first at: https://fnm.vercel.app/install
     # curl -fsSL --connect-timeout $CURL_CONNECT_TIMEOUT --max-time $CURL_MAX_TIME_FNM https://fnm.vercel.app/install | bash -s -- --skip-shell
 
-    fnm_installer="/tmp/fnm-install-$$.sh"
+    fnm_installer="$(mktemp /tmp/fnm-install.XXXXXX.sh)"
+    trap 'rm -f "$fnm_installer"' RETURN
     if retry_command "$MAX_RETRY_ATTEMPTS" curl -fsSL --connect-timeout "$CURL_CONNECT_TIMEOUT" --max-time "$CURL_MAX_TIME_FNM" -o "$fnm_installer" https://fnm.vercel.app/install; then
         bash "$fnm_installer" --skip-shell
-        rm -f "$fnm_installer"
     else
         error "Failed to download fnm installer."
         exit 1
     fi
+    trap - RETURN
     
     # Set up fnm for current session
     export PATH="$FNM_BIN_DIR:$PATH"
