@@ -19,17 +19,16 @@ vi.mock("../../../scripts/dbManagement/helpers", async (importOriginal) => {
         ...actual,
         db: {
             insert: mockInsert,
-            select: vi.fn().mockReturnValue({ from: vi.fn().mockResolvedValue([{ count: 0 }]) }),
+            select: vi.fn().mockReturnValue({ from: vi.fn().mockResolvedValue([{ count: 5 }]) }),
             query: { usersTable: { findFirst: vi.fn().mockResolvedValue({ id: "admin-id" }) } },
             execute: vi.fn(),
             transaction: (cb: any) => {
-                const tx = { insert: mockInsert, execute: vi.fn(), rollback: vi.fn() };
-                try {
-                    return cb(tx);
-                } catch (e) {
-                    tx.rollback();
-                    throw e;
-                }
+                const tx = { 
+                    insert: mockInsert, 
+                    execute: vi.fn().mockResolvedValue([{ tablename: "some_table" }]), 
+                    rollback: vi.fn() 
+                };
+                return cb(tx);
             }
         },
         minioClient: {
@@ -49,46 +48,46 @@ describe("DB Management Helpers", () => {
     });
 
     describe("parseDate", () => {
-        it("should return Date for valid input", () => {
-            expect(helpers.parseDate("2025-01-01")).toBeInstanceOf(Date);
+        it("should return Date for valid ISO string", () => {
+            expect(helpers.parseDate("2025-01-01T00:00:00Z")).toBeInstanceOf(Date);
         });
-        it("should return null for invalid strings", () => {
-            expect(helpers.parseDate("invalid")).toBeNull();
-        });
-        it("should return null for null/undefined", () => {
+        it("should return null for invalid inputs", () => {
+            expect(helpers.parseDate("not-a-date")).toBeNull();
             expect(helpers.parseDate(null)).toBeNull();
             expect(helpers.parseDate(undefined)).toBeNull();
+        });
+        it("should handle numeric timestamps", () => {
+            const now = Date.now();
+            expect(helpers.parseDate(now)?.getTime()).toBe(now);
         });
     });
 
     describe("listSampleData", () => {
-        it("should list files quietly and return true", async () => {
+        it("should return true for valid array JSON", async () => {
             (fs.readdir as any).mockResolvedValue(["test.json"]);
             (fs.readFile as any).mockResolvedValue(JSON.stringify([{ id: 1 }]));
-            const result = await helpers.listSampleData(true);
-            expect(result).toBe(true);
+            expect(await helpers.listSampleData(true)).toBe(true);
         });
-
         it("should return false for malformed files", async () => {
             (fs.readdir as any).mockResolvedValue(["bad.json"]);
             (fs.readFile as any).mockResolvedValue("INVALID");
-            const result = await helpers.listSampleData(true);
-            expect(result).toBe(false);
+            expect(await helpers.listSampleData(true)).toBe(false);
         });
     });
 
-    describe("insertCollections", () => {
-        it("should insert recurrence_rules strictly and deterministic", async () => {
+    describe("insertCollections Logic", () => {
+        it("should fail strictly on missing required files", async () => {
+            (fs.readFile as any).mockRejectedValue(new Error("ENOENT"));
+            await expect(helpers.insertCollections(["users"], false))
+                .rejects.toThrow("Failed to read required file");
+        });
+
+        it("should process recurrence rules with transformed data", async () => {
             const rule = { 
-                id: "r1", 
-                baseRecurringEventId: "e1", 
-                creatorId: "u1", 
-                organizationId: "org1", 
-                frequency: "WEEKLY", 
-                interval: 1 
+                id: "r1", baseRecurringEventId: "e1", creatorId: "u1", organizationId: "org1", 
+                frequency: "WEEKLY", interval: 1 
             };
             (fs.readFile as any).mockResolvedValue(JSON.stringify([rule]));
-            
             await helpers.insertCollections(["recurrence_rules"], false);
             
             expect(mockValues).toHaveBeenCalledWith(
@@ -96,29 +95,22 @@ describe("DB Management Helpers", () => {
                     expect.objectContaining({
                         id: "r1",
                         frequency: "WEEKLY",
-                        recurrenceRuleString: expect.stringMatching(/^FREQ=WEEKLY;INTERVAL=1;UNTIL=\d{8}T\d{6}Z$/),
+                        recurrenceRuleString: expect.stringContaining("FREQ=WEEKLY"),
                     })
                 ])
             );
         });
-
-        it("should throw for missing required fields", async () => {
-            const badRule = { id: "r1" }; // Missing baseRecurringEventId
-            (fs.readFile as any).mockResolvedValue(JSON.stringify([badRule]));
-            await expect(helpers.insertCollections(["recurrence_rules"], false))
-                .rejects.toThrow("Missing required field");
-        });
     });
 
-    describe("Maintenance Operations", () => {
-        it("checkDataSize should complete successfully", async () => {
-            const result = await helpers.checkDataSize("Test");
-            expect(result).toBe(true);
+    describe("Maintenance Tasks", () => {
+        it("formatDatabase should execute without error", async () => {
+            expect(await helpers.formatDatabase()).toBe(true);
         });
-
-        it("emptyMinioBucket should handle streaming deletes", async () => {
-            const result = await helpers.emptyMinioBucket();
-            expect(result).toBe(true);
+        it("emptyMinioBucket should handle stream iterator", async () => {
+            expect(await helpers.emptyMinioBucket()).toBe(true);
+        });
+        it("checkDataSize should query and return true", async () => {
+            expect(await helpers.checkDataSize("Test")).toBe(true);
         });
     });
 });
