@@ -24,6 +24,7 @@
     "@pothos/core": "^4.5.0",
     "@pothos/plugin-complexity": "^4.1.2",
     "@pothos/plugin-relay": "^4.3.0",
+    "@sinclair/typebox": "^0.34.47",
     "ajv-formats": "^3.0.1",
     "close-with-grace": "^2.3.0",
     "dataloader": "^2.2.3",

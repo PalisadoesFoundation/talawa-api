@@ -57,7 +57,6 @@ export default defineConfig({
 			"drizzle_migrations/**",
 			"envFiles/**",
 			"scripts/**",
-			"**/scripts/**",
 		],
 		coverage: {
 			provider: "v8", // or 'istanbul' if you prefer
@@ -72,7 +71,6 @@ export default defineConfig({
 				"docker/**",
 				"drizzle_migrations/**",
 				"envFiles/**",
-				"**/scripts/**", // Mirror test exclusion to exclude nested scripts
 			],
 		},
 
