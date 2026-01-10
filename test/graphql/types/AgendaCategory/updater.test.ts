@@ -1,9 +1,9 @@
+import { createMockGraphQLContext } from "test/_Mocks_/mockContextCreator/mockContextCreator";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { GraphQLContext } from "~/src/graphql/context";
 import type { AgendaCategory as AgendaCategoryType } from "~/src/graphql/types/AgendaCategory/AgendaCategory";
 import { resolveUpdater } from "~/src/graphql/types/AgendaCategory/updater";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
-import { createMockGraphQLContext } from "test/_Mocks_/mockContextCreator/mockContextCreator";
 
 describe("AgendaCategory.updater resolver", () => {
 	let ctx: GraphQLContext;
