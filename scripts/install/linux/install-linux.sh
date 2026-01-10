@@ -62,23 +62,25 @@ retry_command() {
     local attempt=1
     local exit_code=0
 
-    while [ $attempt -le $max_attempts ]; do
-        if [ $attempt -gt 1 ]; then
+    while [ "$attempt" -le "$max_attempts" ]; do
+        if [ "$attempt" -gt 1 ]; then
             local delay=$((2 ** (attempt - 1)))
             warn "Retry attempt $attempt of $max_attempts... sleeping for ${delay}s"
             sleep "$delay"
         fi
 
-        if "$@"; then
+        "$@"
+        exit_code=$?
+
+        if [ "$exit_code" -eq 0 ]; then
             return 0
         fi
 
-        exit_code=$?
         ((attempt++))
     done
 
     error "Command failed after $max_attempts attempts: $*"
-    return $exit_code
+    return "$exit_code"
 }
 
 
@@ -352,7 +354,7 @@ else
 
     fnm_installer="/tmp/fnm-install-$$.sh"
     if retry_command "$MAX_RETRY_ATTEMPTS" curl -fsSL --connect-timeout "$CURL_CONNECT_TIMEOUT" --max-time "$CURL_MAX_TIME_FNM" -o "$fnm_installer" https://fnm.vercel.app/install; then
-        bash "$fnm_installer" -- --skip-shell
+        bash "$fnm_installer" --skip-shell
         rm -f "$fnm_installer"
     else
         error "Failed to download fnm installer."
@@ -523,23 +525,36 @@ if command_exists pnpm; then
                 success "pnpm is already at latest version: v$CURRENT_PNPM"
             elif [ -n "$LATEST_PNPM" ]; then
                 info "Updating pnpm from v$CURRENT_PNPM to latest (v$LATEST_PNPM)..."
-                retry_command "$MAX_RETRY_ATTEMPTS" npm install -g "pnpm@latest"
+                if ! retry_command "$MAX_RETRY_ATTEMPTS" npm install -g "pnpm@latest"; then
+                    error "Failed to install pnpm after $MAX_RETRY_ATTEMPTS attempts"
+                    exit 1
+                fi
                 echo "$LATEST_PNPM" > "$PNPM_VERSION_CACHE"
             else
                 warn "Could not determine latest pnpm version from npm registry"
                 info "Updating pnpm to latest version..."
-                retry_command "$MAX_RETRY_ATTEMPTS" npm install -g "pnpm@latest"
+                if ! retry_command "$MAX_RETRY_ATTEMPTS" npm install -g "pnpm@latest"; then
+                    error "Failed to install pnpm after $MAX_RETRY_ATTEMPTS attempts"
+                    exit 1
+                fi
+             fi
             fi
         fi
     elif [ "$CURRENT_PNPM" = "$PNPM_VERSION" ]; then
         success "pnpm is already installed: v$CURRENT_PNPM"
     else
         info "Updating pnpm from v$CURRENT_PNPM to v$PNPM_VERSION..."
-        retry_command "$MAX_RETRY_ATTEMPTS" npm install -g "pnpm@$PNPM_VERSION"
+        if ! retry_command "$MAX_RETRY_ATTEMPTS" npm install -g "pnpm@$PNPM_VERSION"; then
+            error "Failed to install pnpm v$PNPM_VERSION after $MAX_RETRY_ATTEMPTS attempts"
+            exit 1
+        fi
     fi
 else
     info "Installing pnpm..."
-    retry_command "$MAX_RETRY_ATTEMPTS" npm install -g "pnpm@$PNPM_VERSION"
+    if ! retry_command "$MAX_RETRY_ATTEMPTS" npm install -g "pnpm@$PNPM_VERSION"; then
+        error "Failed to install pnpm v$PNPM_VERSION after $MAX_RETRY_ATTEMPTS attempts"
+        exit 1
+    fi
 fi
 
 # Verify pnpm is available in PATH
