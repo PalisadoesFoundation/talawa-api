@@ -90,7 +90,6 @@ export async function formatDatabase(): Promise<boolean> {
 }
 
 export async function emptyMinioBucket(): Promise<boolean> {
-    // Fix: Use async iterator to prevent race conditions
 	try {
         const objectsToDelete: string[] = [];
         const BATCH_SIZE = 1000;
@@ -186,11 +185,13 @@ async function insertUsers(data: any[]) {
 	const users = data.map((user: any) => {
         const { createdAt, updatedAt, ...rest } = user;
         const parsedCreatedAt = parseDate(createdAt);
+        const parsedUpdatedAt = parseDate(updatedAt);
         
         return {
             ...rest,
+            // Fix: Conditional spread for both timestamps to handle nulls cleanly
             ...(parsedCreatedAt && { createdAt: parsedCreatedAt }),
-            updatedAt: parseDate(updatedAt),
+            ...(parsedUpdatedAt && { updatedAt: parsedUpdatedAt }),
         };
     });
 	await checkAndInsertData(schema.usersTable, users, schema.usersTable.id, 1000);
@@ -212,6 +213,7 @@ async function insertOrganizations(data: any[]) {
 		columns: { id: true },
 		where: (fields, operators) => operators.eq(fields.emailAddress, adminEmail),
 	});
+    
 	if (adminUser) {
 		const memberships = organizations.map((org: any) => ({
 			organizationId: org.id,
@@ -221,7 +223,10 @@ async function insertOrganizations(data: any[]) {
 			role: "administrator",
 		}));
 		await checkAndInsertData(schema.organizationMembershipsTable, memberships, [schema.organizationMembershipsTable.organizationId, schema.organizationMembershipsTable.memberId], 1000);
-	}
+	} else {
+        // Fix: Log warning if admin user not found
+        console.warn(`Admin user (${adminEmail}) not found. Skipping organization memberships.`);
+    }
 	console.log(`Added: Organizations`);
 }
 
@@ -269,7 +274,6 @@ async function insertRecurrenceRules(data: any[]) {
 	const until = oneYear.toISOString().replace(/[-:]/g, "").split(".")[0] + "Z";
 
 	const rules = data.map((rule: any) => {
-        // Fix: Validate required FKs and Identity fields
         const requiredFields = ["id", "baseRecurringEventId", "creatorId", "organizationId"];
         for (const field of requiredFields) {
             if (!rule[field]) {
@@ -337,12 +341,17 @@ async function insertRecurrenceRules(data: any[]) {
 async function insertEventAttendees(data: any[]) {
     const attendees = data.map((attendee: any) => {
         const parsedCreatedAt = parseDate(attendee.createdAt);
+        const parsedUpdatedAt = parseDate(attendee.updatedAt);
+        const parsedCheckin = parseDate(attendee.checkinTime);
+        const parsedCheckout = parseDate(attendee.checkoutTime);
+
         return {
             ...attendee,
+            // Fix: Conditional spread for all date fields
             ...(parsedCreatedAt && { createdAt: parsedCreatedAt }),
-            updatedAt: parseDate(attendee.updatedAt),
-            checkinTime: parseDate(attendee.checkinTime),
-            checkoutTime: parseDate(attendee.checkoutTime),
+            ...(parsedUpdatedAt && { updatedAt: parsedUpdatedAt }),
+            ...(parsedCheckin && { checkinTime: parsedCheckin }),
+            ...(parsedCheckout && { checkoutTime: parsedCheckout }),
         };
     });
     await checkAndInsertData(schema.eventAttendeesTable, attendees, schema.eventAttendeesTable.id, 1000);
@@ -397,7 +406,11 @@ export async function insertCollections(
             let parsedData;
             try {
                 parsedData = JSON.parse(fileContent);
-                if (!Array.isArray(parsedData)) parsedData = [parsedData];
+                if (!Array.isArray(parsedData)) {
+                    // Fix: Log warning when wrapping non-array data
+                    console.warn(`Warning: ${collection}.json contains non-array data, wrapping in array`);
+                    parsedData = [parsedData];
+                }
             } catch (e) {
                 if (optionalCollections.includes(collection)) {
                     console.warn(`Skipping malformed optional collection: ${collection}`);
@@ -425,6 +438,8 @@ export async function checkDataSize(stage: string): Promise<boolean> {
             { name: "events", table: schema.eventsTable },
             { name: "recurrence_rules", table: schema.recurrenceRulesTable },
             { name: "event_attendees", table: schema.eventAttendeesTable },
+            // Fix: Added missing table check
+            { name: "organization_memberships", table: schema.organizationMembershipsTable },
         ];
 
         console.log(`\nRecord Counts ${stage} Import:\n`);
