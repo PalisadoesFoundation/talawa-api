@@ -1,11 +1,12 @@
 import pino, { type Logger, type LoggerOptions } from "pino";
 
 const level = process.env.LOG_LEVEL ?? "info";
-const isDev = process.env.NODE_ENV !== "production";
+const nodeEnv = process.env.NODE_ENV ?? "development";
+const isDev = nodeEnv === "development";
 
 const base: Record<string, unknown> = {
 	service: "talawa-api",
-	env: process.env.NODE_ENV ?? "development",
+	env: nodeEnv,
 	version: process.env.APP_VERSION ?? "0.0.0",
 };
 

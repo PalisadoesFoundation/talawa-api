@@ -2,7 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { AppLogger } from "~/src/utilities/logging/logger";
 
 describe("logger.ts coverage", () => {
-	const originalEnv = process.env;
+	const originalEnv = { ...process.env };
 
 	beforeEach(() => {
 		vi.resetModules();
@@ -10,10 +10,11 @@ describe("logger.ts coverage", () => {
 	});
 
 	afterEach(() => {
-		process.env = originalEnv;
+		process.env = { ...originalEnv };
 	});
 
 	it("exports a valid rootLogger", async () => {
+		process.env.NODE_ENV = "production";
 		const { rootLogger } = await import("~/src/utilities/logging/logger");
 		expect(rootLogger).toBeDefined();
 		expect(typeof rootLogger.info).toBe("function");
@@ -35,6 +36,20 @@ describe("logger.ts coverage", () => {
 
 	it("disables transport for production environment", async () => {
 		process.env.NODE_ENV = "production";
+		const { loggerOptions } = await import("~/src/utilities/logging/logger");
+
+		expect(loggerOptions.transport).toBeUndefined();
+	});
+
+	it("disables transport for test environment", async () => {
+		process.env.NODE_ENV = "test";
+		const { loggerOptions } = await import("~/src/utilities/logging/logger");
+
+		expect(loggerOptions.transport).toBeUndefined();
+	});
+
+	it("disables transport for staging environment", async () => {
+		process.env.NODE_ENV = "staging";
 		const { loggerOptions } = await import("~/src/utilities/logging/logger");
 
 		expect(loggerOptions.transport).toBeUndefined();

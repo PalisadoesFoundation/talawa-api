@@ -7,11 +7,18 @@ import {
 import type { AppLogger } from "../utilities/logging/logger";
 
 const emailQueuePlugin = async (fastify: FastifyInstance) => {
+	// Check if email queue is enabled
+	const envConfig = fastify.envConfig as { API_ENABLE_EMAIL_QUEUE: boolean };
+	if (!envConfig.API_ENABLE_EMAIL_QUEUE) {
+		fastify.log.info("Email queue disabled by API_ENABLE_EMAIL_QUEUE env var");
+		return;
+	}
+
 	// Initialize after drizzle client is available
 	initializeEmailQueue({
 		drizzleClient: fastify.drizzleClient,
 		log: fastify.log as AppLogger,
-		envConfig: fastify.envConfig as { API_ENABLE_EMAIL_QUEUE: boolean },
+		envConfig: envConfig,
 	});
 
 	fastify.addHook("onClose", async (instance) => {
