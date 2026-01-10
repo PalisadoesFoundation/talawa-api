@@ -69,10 +69,9 @@ export class SetupError extends Error {
 		this.context = context;
 		this.cause = cause;
 
-		// biome-ignore lint/suspicious/noExplicitAny: Standard pattern for V8 captureStackTrace
-		if ((Error as any).captureStackTrace) {
-			// biome-ignore lint/suspicious/noExplicitAny: Standard pattern for V8 captureStackTrace
-			(Error as any).captureStackTrace(this, SetupError);
+		// Error.captureStackTrace is a V8-specific API
+		if ("captureStackTrace" in Error) {
+			Error.captureStackTrace(this, SetupError);
 		}
 	}
 
