@@ -501,13 +501,20 @@ export async function apiSetup(answers: SetupAnswers): Promise<SetupAnswers> {
 			"Minio secret key:",
 			"password",
 		);
-		while (answers.API_MINIO_SECRET_KEY !== process.env.MINIO_ROOT_PASSWORD) {
-			console.warn("⚠️ API_MINIO_SECRET_KEY must match MINIO_ROOT_PASSWORD.");
-			answers.API_MINIO_SECRET_KEY = await promptInput(
-				"API_MINIO_SECRET_KEY",
-				"Minio secret key:",
-				"password",
-			);
+		if (process.env.MINIO_ROOT_PASSWORD) {
+			// Environment variable exists, validate against it
+			while (answers.API_MINIO_SECRET_KEY !== process.env.MINIO_ROOT_PASSWORD) {
+				console.warn("⚠️ API_MINIO_SECRET_KEY must match MINIO_ROOT_PASSWORD.");
+				answers.API_MINIO_SECRET_KEY = await promptInput(
+					"API_MINIO_SECRET_KEY",
+					"Minio secret key:",
+					process.env.MINIO_ROOT_PASSWORD, // Use env var as default
+				);
+			}
+			console.log("✅ API_MINIO_SECRET_KEY matches MINIO_ROOT_PASSWORD");
+		} else {
+			// Environment variable not set, skip validation
+			console.log("ℹ️  MINIO_ROOT_PASSWORD will be set to match API_MINIO_SECRET_KEY");
 		}
 		answers.API_MINIO_TEST_END_POINT = await promptInput(
 			"API_MINIO_TEST_END_POINT",
@@ -535,13 +542,20 @@ export async function apiSetup(answers: SetupAnswers): Promise<SetupAnswers> {
 			"Postgres password:",
 			"password",
 		);
-		while (answers.API_POSTGRES_PASSWORD !== process.env.POSTGRES_PASSWORD) {
-			console.warn("⚠️ API_POSTGRES_PASSWORD must match POSTGRES_PASSWORD.");
-			answers.API_POSTGRES_PASSWORD = await promptInput(
-				"API_POSTGRES_PASSWORD",
-				"Postgres password:",
-				"password",
-			);
+		if (process.env.POSTGRES_PASSWORD) {
+			// Environment variable exists, validate against it
+			while (answers.API_POSTGRES_PASSWORD !== process.env.POSTGRES_PASSWORD) {
+				console.warn("⚠️ API_POSTGRES_PASSWORD must match POSTGRES_PASSWORD.");
+				answers.API_POSTGRES_PASSWORD = await promptInput(
+					"API_POSTGRES_PASSWORD",
+					"Postgres password:",
+					process.env.POSTGRES_PASSWORD, // Use env var as default
+				);
+			}
+			console.log("✅ API_POSTGRES_PASSWORD matches POSTGRES_PASSWORD");
+		} else {
+			// Environment variable not set, skip validation
+			console.log("ℹ️  POSTGRES_PASSWORD will be set to match API_POSTGRES_PASSWORD");
 		}
 		answers.API_POSTGRES_PORT = await promptInput(
 			"API_POSTGRES_PORT",
