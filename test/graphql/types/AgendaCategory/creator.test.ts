@@ -22,10 +22,6 @@ describe("AgendaCategory.creator resolver", () => {
 			organizationId: "org-123",
 			creatorId: "creator-123",
 		} as AgendaCategoryType;
-
-		ctx.dataloaders.user = {
-			load: vi.fn(),
-		} as any;
 	});
 
 	it("throws unauthenticated when client is not authenticated", async () => {
@@ -48,9 +44,7 @@ describe("AgendaCategory.creator resolver", () => {
 		mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValue({
 			id: "user-123",
 			role: "member",
-			organizationMembershipsWhereMember: [
-				{ role: "member" },
-			],
+			organizationMembershipsWhereMember: [{ role: "member" }],
 		});
 
 		await expect(resolveCreator(mockCategory, {}, ctx)).rejects.toThrow(
@@ -80,7 +74,9 @@ describe("AgendaCategory.creator resolver", () => {
 			organizationMembershipsWhereMember: [],
 		};
 
-		mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValue(currentUser);
+		mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValue(
+			currentUser,
+		);
 
 		const result = await resolveCreator(mockCategory, {}, ctx);
 		expect(result).toEqual(currentUser);
@@ -93,7 +89,7 @@ describe("AgendaCategory.creator resolver", () => {
 			organizationMembershipsWhereMember: [],
 		});
 
-		(ctx.dataloaders.user.load as any).mockResolvedValue(undefined);
+		ctx.dataloaders.user.load = vi.fn().mockResolvedValue(undefined);
 
 		await expect(resolveCreator(mockCategory, {}, ctx)).rejects.toThrow(
 			new TalawaGraphQLError({ extensions: { code: "unexpected" } }),
@@ -116,8 +112,11 @@ describe("AgendaCategory.creator resolver", () => {
 			role: "member",
 		};
 
-		mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValue(currentUser);
-		(ctx.dataloaders.user.load as any).mockResolvedValue(creatorUser);
+		mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValue(
+			currentUser,
+		);
+
+		ctx.dataloaders.user.load = vi.fn().mockResolvedValue(creatorUser);
 
 		const result = await resolveCreator(mockCategory, {}, ctx);
 		expect(result).toEqual(creatorUser);

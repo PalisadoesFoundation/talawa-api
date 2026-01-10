@@ -42,9 +42,7 @@ describe("AgendaCategory.createdAt resolver", () => {
 	it("throws unauthorized_action when user is neither admin nor org admin", async () => {
 		mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValue({
 			role: "member",
-			organizationMembershipsWhereMember: [
-				{ role: "member" },
-			],
+			organizationMembershipsWhereMember: [{ role: "member" }],
 		});
 
 		await expect(resolveCreatedAt(mockAgendaCategory, {}, ctx)).rejects.toThrow(
@@ -65,9 +63,7 @@ describe("AgendaCategory.createdAt resolver", () => {
 	it("allows access when user is an organization administrator", async () => {
 		mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValue({
 			role: "member",
-			organizationMembershipsWhereMember: [
-				{ role: "administrator" },
-			],
+			organizationMembershipsWhereMember: [{ role: "administrator" }],
 		});
 
 		const result = await resolveCreatedAt(mockAgendaCategory, {}, ctx);

@@ -15,10 +15,6 @@ describe("AgendaCategory.updater resolver", () => {
 		ctx = setup.context;
 		mocks = setup.mocks;
 
-		ctx.dataloaders.user = {
-			load: vi.fn(),
-		} as any;
-
 		mockAgendaCategory = {
 			id: "category-123",
 			organizationId: "org-123",
@@ -75,7 +71,9 @@ describe("AgendaCategory.updater resolver", () => {
 
 		mockAgendaCategory.updaterId = "user-123";
 
-		mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValue(currentUser);
+		mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValue(
+			currentUser,
+		);
 
 		const result = await resolveUpdater(mockAgendaCategory, {}, ctx);
 		expect(result).toEqual(currentUser);
@@ -88,7 +86,7 @@ describe("AgendaCategory.updater resolver", () => {
 			organizationMembershipsWhereMember: [],
 		});
 
-		(ctx.dataloaders.user.load as any).mockResolvedValue(undefined);
+		ctx.dataloaders.user.load = vi.fn().mockResolvedValue(undefined);
 
 		await expect(resolveUpdater(mockAgendaCategory, {}, ctx)).rejects.toThrow(
 			new TalawaGraphQLError({ extensions: { code: "unexpected" } }),
@@ -111,8 +109,11 @@ describe("AgendaCategory.updater resolver", () => {
 			role: "member",
 		};
 
-		mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValue(currentUser);
-		(ctx.dataloaders.user.load as any).mockResolvedValue(updaterUser);
+		mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValue(
+			currentUser,
+		);
+
+		ctx.dataloaders.user.load = vi.fn().mockResolvedValue(updaterUser);
 
 		const result = await resolveUpdater(mockAgendaCategory, {}, ctx);
 		expect(result).toEqual(updaterUser);
@@ -127,7 +128,9 @@ describe("AgendaCategory.updater resolver", () => {
 
 		mockAgendaCategory.updaterId = "user-123";
 
-		mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValue(currentUser);
+		mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValue(
+			currentUser,
+		);
 
 		const result = await resolveUpdater(mockAgendaCategory, {}, ctx);
 		expect(result).toEqual(currentUser);

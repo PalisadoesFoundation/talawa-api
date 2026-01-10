@@ -52,7 +52,9 @@ describe("AgendaCategory.updatedAt resolver", () => {
 			role: "administrator",
 		});
 
-		mocks.drizzleClient.query.eventsTable.findFirst.mockResolvedValue(undefined);
+		mocks.drizzleClient.query.eventsTable.findFirst.mockResolvedValue(
+			undefined,
+		);
 
 		const logSpy = vi.spyOn(ctx.log, "error");
 

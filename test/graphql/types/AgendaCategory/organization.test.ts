@@ -24,10 +24,6 @@ describe("AgendaCategory.organization resolver", () => {
 		const result = createMockGraphQLContext(true, "user-1");
 		ctx = result.context;
 		mocks = result.mocks;
-
-		ctx.dataloaders.organization = {
-			load: vi.fn(),
-		} as any;
 	});
 
 	it("returns organization when authorized and organization exists", async () => {
@@ -46,9 +42,9 @@ describe("AgendaCategory.organization resolver", () => {
 			},
 		});
 
-		(ctx.dataloaders.organization.load as any).mockResolvedValue(
-			mockOrganization,
-		);
+		ctx.dataloaders.organization.load = vi
+			.fn()
+			.mockResolvedValue(mockOrganization);
 
 		const result = await resolveOrganization(mockCategory, {}, ctx);
 		expect(result).toEqual(mockOrganization);
@@ -81,7 +77,9 @@ describe("AgendaCategory.organization resolver", () => {
 			role: "administrator",
 		});
 
-		mocks.drizzleClient.query.eventsTable.findFirst.mockResolvedValue(undefined);
+		mocks.drizzleClient.query.eventsTable.findFirst.mockResolvedValue(
+			undefined,
+		);
 
 		const logSpy = vi.spyOn(ctx.log, "error");
 
@@ -121,7 +119,7 @@ describe("AgendaCategory.organization resolver", () => {
 			},
 		});
 
-		(ctx.dataloaders.organization.load as any).mockResolvedValue(null);
+		ctx.dataloaders.organization.load = vi.fn().mockResolvedValue(null);
 
 		const logSpy = vi.spyOn(ctx.log, "error");
 
