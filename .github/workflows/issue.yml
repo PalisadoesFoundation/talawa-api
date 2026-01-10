@@ -7,5 +7,3 @@ on:
 jobs:
   issue-workflow:
     uses: PalisadoesFoundation/.github/.github/workflows/issue.yml@main
-    secrets:
-      ORG_ACCESS_TOKEN: ${{ secrets.ORG_ACCESS_TOKEN }}
