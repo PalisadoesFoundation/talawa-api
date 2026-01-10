@@ -19,9 +19,11 @@ AgendaCategory.implement({
 		}),
 		name: t.exposeString("name", {
 			description: "Name of the agenda category.",
+			nullable: false,
 		}),
 		isDefaultCategory: t.exposeBoolean("isDefaultCategory", {
 			description: "Boolean to tell if agenda category is default or not",
+			nullable: false,
 		}),
 	}),
 });
