@@ -64,7 +64,6 @@ export async function formatDatabase(): Promise<boolean> {
 
 	type TableRow = { tablename: string };
 	const USERS_TABLE = "users";
-    // Avoid truncating internal tables
     const DENY_LIST = new Set([USERS_TABLE, "__drizzle_migrations", "__drizzle_migrations_lock"]);
 
 	try {
@@ -91,32 +90,23 @@ export async function formatDatabase(): Promise<boolean> {
 }
 
 export async function emptyMinioBucket(): Promise<boolean> {
-    // Fix: Stream deletions instead of buffering all names
+    // Fix: Use async iterator to prevent race conditions
 	try {
         const objectsToDelete: string[] = [];
         const BATCH_SIZE = 1000;
+        const stream = minioClient.listObjects(bucketName, "", true);
 
-        await new Promise<void>((resolve, reject) => {
-            const stream = minioClient.listObjects(bucketName, "", true);
-            
-            stream.on("data", async (obj) => {
-                objectsToDelete.push(obj.name);
-                if (objectsToDelete.length >= BATCH_SIZE) {
-                    stream.pause();
-                    await minioClient.removeObjects(bucketName, [...objectsToDelete]);
-                    objectsToDelete.length = 0;
-                    stream.resume();
-                }
-            });
-            
-            stream.on("error", (err) => reject(err));
-            stream.on("end", async () => {
-                if (objectsToDelete.length > 0) {
-                    await minioClient.removeObjects(bucketName, objectsToDelete);
-                }
-                resolve();
-            });
-        });
+        for await (const obj of stream) {
+            objectsToDelete.push(obj.name);
+            if (objectsToDelete.length >= BATCH_SIZE) {
+                await minioClient.removeObjects(bucketName, [...objectsToDelete]);
+                objectsToDelete.length = 0;
+            }
+        }
+
+        if (objectsToDelete.length > 0) {
+            await minioClient.removeObjects(bucketName, objectsToDelete);
+        }
 		return true;
 	} catch (error: unknown) {
         console.error("Error emptying bucket:", error);
@@ -140,7 +130,6 @@ export async function listSampleData(): Promise<boolean> {
             const content = await fs.readFile(filePath, "utf8");
             try {
                 const docs = JSON.parse(content);
-                // Fix: Treat non-array as invalid
                 if (!Array.isArray(docs)) {
                     console.log(`| ${file.padEnd(28)}| ${"Invalid (Not Array)".padEnd(15)}|`);
                     errorsFound = true;
@@ -195,13 +184,11 @@ export function parseDate(date: string | number | Date): Date | null {
 
 async function insertUsers(data: any[]) {
 	const users = data.map((user: any) => {
-        // Fix: Destructure to ensure clean override
         const { createdAt, updatedAt, ...rest } = user;
         const parsedCreatedAt = parseDate(createdAt);
         
         return {
             ...rest,
-            // Only set createdAt if valid, ensuring no invalid string remains
             ...(parsedCreatedAt && { createdAt: parsedCreatedAt }),
             updatedAt: parseDate(updatedAt),
         };
@@ -212,12 +199,10 @@ async function insertUsers(data: any[]) {
 
 async function insertOrganizations(data: any[]) {
     const adminEmail = envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS;
-    // Fix: Guard admin email
     if (!adminEmail) throw new Error("API_ADMINISTRATOR_USER_EMAIL_ADDRESS is not defined.");
 
 	const organizations = data.map((org: any) => ({
 		...org,
-        // Fix: Fallback timestamp
 		createdAt: parseDate(org.createdAt) ?? new Date(),
 		updatedAt: parseDate(org.updatedAt),
 	}));
@@ -255,8 +240,6 @@ async function insertRecurringEvents(data: any[]) {
     const seedNow = new Date();
 	const events = data.map((event: any, index: number) => {
         const startAt = new Date(seedNow);
-        
-        // Fix: Push to future (tomorrow + index) to ensure validity
         startAt.setDate(seedNow.getDate() + index + 1);
         
         const hourOffset = 9 + (index % 5);
@@ -278,7 +261,6 @@ async function insertRecurringEvents(data: any[]) {
 }
 
 async function insertRecurrenceRules(data: any[]) {
-    // Fix: Guard empty input
     if (!data.length) return;
 
 	const now = new Date();
@@ -287,17 +269,23 @@ async function insertRecurrenceRules(data: any[]) {
 	const until = oneYear.toISOString().replace(/[-:]/g, "").split(".")[0] + "Z";
 
 	const rules = data.map((rule: any) => {
+        // Fix: Validate required FKs and Identity fields
+        const requiredFields = ["id", "baseRecurringEventId", "creatorId", "organizationId"];
+        for (const field of requiredFields) {
+            if (!rule[field]) {
+                throw new Error(`Missing required field: ${field} in rule ${rule.id || 'unknown'}`);
+            }
+        }
+
 		const freq = rule.frequency === "DYNAMIC" ? "WEEKLY" : rule.frequency;
         const validFrequencies = ["DAILY", "WEEKLY", "MONTHLY", "YEARLY"];
         if (!validFrequencies.includes(freq)) throw new Error(`Invalid frequency: ${freq}`);
 
-        // Fix: Coerce interval safely
         const intRaw = rule.interval === "DYNAMIC" ? 1 : rule.interval;
         const int = typeof intRaw === "number" ? intRaw : Number.parseInt(String(intRaw), 10);
         if (!Number.isFinite(int) || int <= 0) throw new Error(`Invalid interval: ${rule.interval}`);
 
 		const bd = rule.byDay || null;
-        // Fix: Trim tokens and filter empty
         const byDayArray = bd 
             ? (Array.isArray(bd) ? bd : String(bd).split(",")).map((s: string) => s.trim()).filter(Boolean) 
             : null;
@@ -331,7 +319,6 @@ async function insertRecurrenceRules(data: any[]) {
 		};
 	});
 
-    // Fix: Upsert logic includes key fields
 	await db.insert(schema.recurrenceRulesTable).values(rules).onConflictDoUpdate({
 		target: schema.recurrenceRulesTable.id,
 		set: {
@@ -349,7 +336,6 @@ async function insertRecurrenceRules(data: any[]) {
 
 async function insertEventAttendees(data: any[]) {
     const attendees = data.map((attendee: any) => {
-        // Fix: Use conditional spread for NOT NULL createdAt
         const parsedCreatedAt = parseDate(attendee.createdAt);
         return {
             ...attendee,
@@ -389,7 +375,6 @@ export async function insertCollections(
         const optionalCollections = ["event_attendees"];
 
 		for (const collection of collections) {
-            // Fix: Validate collection name before reading file
             if (!collectionHandlers[collection]) {
                 console.warn(`Skipping unknown collection: ${collection}`);
                 continue;
@@ -414,7 +399,6 @@ export async function insertCollections(
                 parsedData = JSON.parse(fileContent);
                 if (!Array.isArray(parsedData)) parsedData = [parsedData];
             } catch (e) {
-                // Fix: Strict error handling for required collections
                 if (optionalCollections.includes(collection)) {
                     console.warn(`Skipping malformed optional collection: ${collection}`);
                     continue;
@@ -448,7 +432,6 @@ export async function checkDataSize(stage: string): Promise<boolean> {
         console.log(`${"|".padEnd(30, "-")}|----------------|`);
 
         for (const { name, table } of tables) {
-            // Fix: Remove generic <number> and cast result to Number
             const result = await db.select({ count: sql`count(*)` }).from(table);
             const count = Number(result?.[0]?.count ?? 0);
             console.log(`| ${name.padEnd(28)}| ${count.toString().padEnd(15)}|`);

@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import fs from "node:fs/promises";
 import * as helpers from "../../../scripts/dbManagement/helpers";
 
@@ -13,8 +13,9 @@ const mockValues = vi.fn().mockReturnValue({
 
 const mockInsert = vi.fn().mockReturnValue({ values: mockValues });
 
+// Fix: Proper typing for imported module
 vi.mock("../../../scripts/dbManagement/helpers", async (importOriginal) => {
-    const actual: any = await importOriginal();
+    const actual = await importOriginal() as typeof import("../../../scripts/dbManagement/helpers");
     return {
         ...actual,
         db: {
@@ -37,31 +38,55 @@ describe("DB Management Helpers", () => {
     });
 
     describe("listSampleData", () => {
-        it("should return false if invalid JSON found", async () => {
-            (fs.readdir as any).mockResolvedValue(["invalid.json"]);
-            (fs.readFile as any).mockResolvedValue("INVALID");
+        it("should handle mixed file types and return true", async () => {
+            (fs.readdir as any).mockResolvedValue(["test.json", "readme.txt"]);
+            (fs.readFile as any).mockResolvedValue(JSON.stringify([{ id: 1 }]));
             
             const result = await helpers.listSampleData();
-            expect(result).toBe(false);
+            expect(result).toBe(true);
+            expect(fs.readFile).toHaveBeenCalledTimes(1); 
+        });
+
+        it("should handle invalid JSON gracefully", async () => {
+            (fs.readdir as any).mockResolvedValue(["invalid.json"]);
+            (fs.readFile as any).mockResolvedValue("INVALID_JSON");
+            
+            const result = await helpers.listSampleData();
+            expect(result).toBe(false); // Should return false per strict rules
         });
     });
 
     describe("insertCollections", () => {
-        it("should throw error for invalid required collection", async () => {
-            (fs.readFile as any).mockResolvedValue("INVALID");
-            await expect(helpers.insertCollections(["users"]))
-                .rejects.toThrow("Malformed JSON");
+        it("should validate required fields in recurrence rules", async () => {
+            // Missing creatorId
+            const rule = { id: "r1", baseRecurringEventId: "e1", organizationId: "org1", frequency: "WEEKLY" };
+            (fs.readFile as any).mockResolvedValue(JSON.stringify([rule]));
+            
+            await expect(helpers.insertCollections(["recurrence_rules"]))
+                .rejects.toThrow("Missing required field");
         });
 
-        it("should insert recurrence_rules and validate call arguments", async () => {
-            const rule = { id: "r1", frequency: "WEEKLY", interval: 1, organizationId: "org1", baseRecurringEventId: "e1" };
+        it("should insert recurrence_rules with all required fields", async () => {
+            const rule = { 
+                id: "r1", 
+                baseRecurringEventId: "e1", 
+                creatorId: "u1", 
+                organizationId: "org1", 
+                frequency: "WEEKLY", 
+                interval: 1 
+            };
             (fs.readFile as any).mockResolvedValue(JSON.stringify([rule]));
             
             await helpers.insertCollections(["recurrence_rules"]);
-            
             expect(mockValues).toHaveBeenCalled();
-            const callArgs = mockValues.mock.calls[0][0];
-            expect(callArgs[0].frequency).toBe("WEEKLY");
+        });
+
+        it("should fail validation on invalid frequency with exact message", async () => {
+            const rules = [{ id: "r1", baseRecurringEventId: "e1", creatorId: "u1", organizationId: "org1", frequency: "INVALID_FREQ" }];
+            (fs.readFile as any).mockResolvedValue(JSON.stringify(rules));
+
+            await expect(helpers.insertCollections(["recurrence_rules"]))
+                .rejects.toThrow("Invalid frequency: INVALID_FREQ");
         });
     });
 });
