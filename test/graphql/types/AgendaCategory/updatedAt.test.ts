@@ -29,9 +29,7 @@ describe("AgendaCategory.updatedAt resolver", () => {
 		ctx.currentClient.isAuthenticated = false;
 
 		await expect(resolveUpdatedAt(mockCategory, {}, ctx)).rejects.toThrow(
-			new TalawaGraphQLError({
-				extensions: { code: "unauthenticated" },
-			}),
+			new TalawaGraphQLError({ extensions: { code: "unauthenticated" } }),
 		);
 	});
 
@@ -39,17 +37,13 @@ describe("AgendaCategory.updatedAt resolver", () => {
 		mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValue(undefined);
 
 		mocks.drizzleClient.query.eventsTable.findFirst.mockResolvedValue({
-			startAt: new Date(),
 			organization: {
-				countryCode: "US",
 				membershipsWhereOrganization: [],
 			},
 		});
 
 		await expect(resolveUpdatedAt(mockCategory, {}, ctx)).rejects.toThrow(
-			new TalawaGraphQLError({
-				extensions: { code: "unexpected" },
-			}),
+			new TalawaGraphQLError({ extensions: { code: "unauthenticated" } }),
 		);
 	});
 
@@ -58,16 +52,12 @@ describe("AgendaCategory.updatedAt resolver", () => {
 			role: "administrator",
 		});
 
-		mocks.drizzleClient.query.eventsTable.findFirst.mockResolvedValue(
-			undefined,
-		);
+		mocks.drizzleClient.query.eventsTable.findFirst.mockResolvedValue(undefined);
 
 		const logSpy = vi.spyOn(ctx.log, "error");
 
 		await expect(resolveUpdatedAt(mockCategory, {}, ctx)).rejects.toThrow(
-			new TalawaGraphQLError({
-				extensions: { code: "unexpected" },
-			}),
+			new TalawaGraphQLError({ extensions: { code: "unexpected" } }),
 		);
 
 		expect(logSpy).toHaveBeenCalledWith(
@@ -81,17 +71,13 @@ describe("AgendaCategory.updatedAt resolver", () => {
 		});
 
 		mocks.drizzleClient.query.eventsTable.findFirst.mockResolvedValue({
-			startAt: new Date(),
 			organization: {
-				countryCode: "US",
 				membershipsWhereOrganization: [{ role: "member" }],
 			},
 		});
 
 		await expect(resolveUpdatedAt(mockCategory, {}, ctx)).rejects.toThrow(
-			new TalawaGraphQLError({
-				extensions: { code: "unauthorized_action" },
-			}),
+			new TalawaGraphQLError({ extensions: { code: "unauthorized_action" } }),
 		);
 	});
 
@@ -101,9 +87,7 @@ describe("AgendaCategory.updatedAt resolver", () => {
 		});
 
 		mocks.drizzleClient.query.eventsTable.findFirst.mockResolvedValue({
-			startAt: new Date(),
 			organization: {
-				countryCode: "US",
 				membershipsWhereOrganization: [],
 			},
 		});
@@ -118,9 +102,7 @@ describe("AgendaCategory.updatedAt resolver", () => {
 		});
 
 		mocks.drizzleClient.query.eventsTable.findFirst.mockResolvedValue({
-			startAt: new Date(),
 			organization: {
-				countryCode: "US",
 				membershipsWhereOrganization: [{ role: "administrator" }],
 			},
 		});

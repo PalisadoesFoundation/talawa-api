@@ -7,112 +7,59 @@ import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 
 describe("AgendaCategory.updater resolver", () => {
 	let ctx: GraphQLContext;
-	let mockAgendaCategory: AgendaCategoryType;
 	let mocks: ReturnType<typeof createMockGraphQLContext>["mocks"];
+	let mockAgendaCategory: AgendaCategoryType;
 
 	beforeEach(() => {
-		const { context, mocks: newMocks } = createMockGraphQLContext(
-			true,
-			"user-123",
-		);
-		ctx = context;
-		mocks = newMocks;
+		const setup = createMockGraphQLContext(true, "user-123");
+		ctx = setup.context;
+		mocks = setup.mocks;
+
+		ctx.dataloaders.user = {
+			load: vi.fn(),
+		} as any;
 
 		mockAgendaCategory = {
 			id: "category-123",
-			eventId: "event-123",
+			organizationId: "org-123",
 			updaterId: "user-456",
 		} as AgendaCategoryType;
 	});
 
-	it("throws unauthenticated error when client is not authenticated", async () => {
+	it("throws unauthenticated when client is not authenticated", async () => {
 		ctx.currentClient.isAuthenticated = false;
 
 		await expect(resolveUpdater(mockAgendaCategory, {}, ctx)).rejects.toThrow(
-			new TalawaGraphQLError({
-				extensions: { code: "unauthenticated" },
-			}),
+			new TalawaGraphQLError({ extensions: { code: "unauthenticated" } }),
 		);
 	});
 
-	it("throws unauthenticated error when current user is not found", async () => {
-		mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValueOnce(
-			undefined,
-		);
-
-		mocks.drizzleClient.query.eventsTable.findFirst.mockResolvedValueOnce({
-			startAt: new Date(),
-			organization: {
-				countryCode: "US",
-				membershipsWhereOrganization: [{ role: "administrator" }],
-			},
-		});
+	it("throws unauthenticated when current user does not exist", async () => {
+		mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValue(undefined);
 
 		await expect(resolveUpdater(mockAgendaCategory, {}, ctx)).rejects.toThrow(
-			new TalawaGraphQLError({
-				extensions: { code: "unauthenticated" },
-			}),
+			new TalawaGraphQLError({ extensions: { code: "unauthenticated" } }),
 		);
 	});
 
-	it("throws unexpected error when associated event is missing", async () => {
-		mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValueOnce({
-			id: "user-123",
+	it("throws unauthorized_action when user is neither admin nor org admin", async () => {
+		mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValue({
 			role: "member",
-		});
-
-		mocks.drizzleClient.query.eventsTable.findFirst.mockResolvedValueOnce(
-			undefined,
-		);
-
-		const logSpy = vi.spyOn(ctx.log, "error");
-
-		await expect(resolveUpdater(mockAgendaCategory, {}, ctx)).rejects.toThrow(
-			new TalawaGraphQLError({
-				extensions: { code: "unexpected" },
-			}),
-		);
-
-		expect(logSpy).toHaveBeenCalledWith(
-			"Postgres select operation returned an empty array for an agenda category's event id that isn't null.",
-		);
-	});
-
-	it("throws unauthorized_action when user is neither superadmin nor org admin", async () => {
-		mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValueOnce({
-			id: "user-123",
-			role: "member",
-		});
-
-		mocks.drizzleClient.query.eventsTable.findFirst.mockResolvedValueOnce({
-			startAt: new Date(),
-			organization: {
-				countryCode: "US",
-				membershipsWhereOrganization: [{ role: "regular" }],
-			},
+			organizationMembershipsWhereMember: [{ role: "member" }],
 		});
 
 		await expect(resolveUpdater(mockAgendaCategory, {}, ctx)).rejects.toThrow(
-			new TalawaGraphQLError({
-				extensions: { code: "unauthorized_action" },
-			}),
+			new TalawaGraphQLError({ extensions: { code: "unauthorized_action" } }),
 		);
 	});
 
 	it("returns null when updaterId is null", async () => {
 		mockAgendaCategory.updaterId = null;
 
-		mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValueOnce({
+		mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValue({
 			id: "user-123",
 			role: "administrator",
-		});
-
-		mocks.drizzleClient.query.eventsTable.findFirst.mockResolvedValueOnce({
-			startAt: new Date(),
-			organization: {
-				countryCode: "US",
-				membershipsWhereOrganization: [],
-			},
+			organizationMembershipsWhereMember: [],
 		});
 
 		const result = await resolveUpdater(mockAgendaCategory, {}, ctx);
@@ -123,51 +70,31 @@ describe("AgendaCategory.updater resolver", () => {
 		const currentUser = {
 			id: "user-123",
 			role: "administrator",
+			organizationMembershipsWhereMember: [],
 		};
 
 		mockAgendaCategory.updaterId = "user-123";
 
-		mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValueOnce(
-			currentUser,
-		);
-
-		mocks.drizzleClient.query.eventsTable.findFirst.mockResolvedValueOnce({
-			startAt: new Date(),
-			organization: {
-				countryCode: "US",
-				membershipsWhereOrganization: [],
-			},
-		});
+		mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValue(currentUser);
 
 		const result = await resolveUpdater(mockAgendaCategory, {}, ctx);
 		expect(result).toEqual(currentUser);
 	});
 
-	it("throws unexpected error when updater user does not exist", async () => {
-		mocks.drizzleClient.query.usersTable.findFirst
-			.mockResolvedValueOnce({
-				id: "user-123",
-				role: "administrator",
-			}) // current user
-			.mockResolvedValueOnce(undefined); // updater user missing
-
-		mocks.drizzleClient.query.eventsTable.findFirst.mockResolvedValueOnce({
-			startAt: new Date(),
-			organization: {
-				countryCode: "US",
-				membershipsWhereOrganization: [],
-			},
+	it("throws unexpected when updater user does not exist", async () => {
+		mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValue({
+			id: "user-123",
+			role: "administrator",
+			organizationMembershipsWhereMember: [],
 		});
 
-		const logSpy = vi.spyOn(ctx.log, "error");
+		(ctx.dataloaders.user.load as any).mockResolvedValue(undefined);
 
 		await expect(resolveUpdater(mockAgendaCategory, {}, ctx)).rejects.toThrow(
-			new TalawaGraphQLError({
-				extensions: { code: "unexpected" },
-			}),
+			new TalawaGraphQLError({ extensions: { code: "unexpected" } }),
 		);
 
-		expect(logSpy).toHaveBeenCalledWith(
+		expect(ctx.log.error).toHaveBeenCalledWith(
 			"Postgres select operation returned an empty array for an agenda category's updater id that isn't null.",
 		);
 	});
@@ -176,6 +103,7 @@ describe("AgendaCategory.updater resolver", () => {
 		const currentUser = {
 			id: "user-123",
 			role: "administrator",
+			organizationMembershipsWhereMember: [],
 		};
 
 		const updaterUser = {
@@ -183,17 +111,8 @@ describe("AgendaCategory.updater resolver", () => {
 			role: "member",
 		};
 
-		mocks.drizzleClient.query.usersTable.findFirst
-			.mockResolvedValueOnce(currentUser) // current user
-			.mockResolvedValueOnce(updaterUser); // updater user
-
-		mocks.drizzleClient.query.eventsTable.findFirst.mockResolvedValueOnce({
-			startAt: new Date(),
-			organization: {
-				countryCode: "US",
-				membershipsWhereOrganization: [],
-			},
-		});
+		mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValue(currentUser);
+		(ctx.dataloaders.user.load as any).mockResolvedValue(updaterUser);
 
 		const result = await resolveUpdater(mockAgendaCategory, {}, ctx);
 		expect(result).toEqual(updaterUser);
@@ -203,21 +122,12 @@ describe("AgendaCategory.updater resolver", () => {
 		const currentUser = {
 			id: "user-123",
 			role: "member",
+			organizationMembershipsWhereMember: [{ role: "administrator" }],
 		};
 
 		mockAgendaCategory.updaterId = "user-123";
 
-		mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValueOnce(
-			currentUser,
-		);
-
-		mocks.drizzleClient.query.eventsTable.findFirst.mockResolvedValueOnce({
-			startAt: new Date(),
-			organization: {
-				countryCode: "US",
-				membershipsWhereOrganization: [{ role: "administrator" }],
-			},
-		});
+		mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValue(currentUser);
 
 		const result = await resolveUpdater(mockAgendaCategory, {}, ctx);
 		expect(result).toEqual(currentUser);
