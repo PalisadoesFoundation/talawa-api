@@ -4,7 +4,7 @@
 
 # Function: withFields()
 
-> **withFields**(`logger`, `fields`): [`AppLogger`](../type-aliases/AppLogger.md)
+> **withFields**(`logger`, `fields`): `Logger`
 
 Defined in: [src/utilities/logging/logger.ts:42](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/utilities/logging/logger.ts#L42)
 
@@ -12,7 +12,7 @@ Defined in: [src/utilities/logging/logger.ts:42](https://github.com/PalisadoesFo
 
 ### logger
 
-[`AppLogger`](../type-aliases/AppLogger.md)
+`Logger`
 
 ### fields
 
@@ -20,4 +20,4 @@ Defined in: [src/utilities/logging/logger.ts:42](https://github.com/PalisadoesFo
 
 ## Returns
 
-[`AppLogger`](../type-aliases/AppLogger.md)
+`Logger`
