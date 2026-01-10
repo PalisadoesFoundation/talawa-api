@@ -50,12 +50,7 @@ execute_installation_script() {
     start_time=$(date +%s)
     
     local exit_code=0
-    # Pass arguments based on skip_prereqs flag
-    if [ "$skip_prereqs" = true ]; then
-        bash "$script_path" "$mode" --skip-prereqs || exit_code=$?
-    else
-        bash "$script_path" "$mode" || exit_code=$?
-    fi
+    bash "$script_path" "$mode" "$skip_prereqs" || exit_code=$?
     
     local end_time
     end_time=$(date +%s)
