@@ -78,13 +78,13 @@ describe("emailQueue plugin coverage", () => {
 		await fastify.register(emailQueuePlugin);
 		await fastify.ready();
 
-		// Verify NO initialization
-		expect(emailServiceInstance.initializeEmailQueue).not.toHaveBeenCalled();
+		// Verify initialization IS called (delegating check to service)
+		expect(emailServiceInstance.initializeEmailQueue).toHaveBeenCalledTimes(1);
 
 		// Trigger close
 		await fastify.close();
 
-		// Verify NO stop
-		expect(emailServiceInstance.stopEmailQueue).not.toHaveBeenCalled();
+		// Verify stop IS called (safe to call even if not initialized)
+		expect(emailServiceInstance.stopEmailQueue).toHaveBeenCalledTimes(1);
 	});
 });
