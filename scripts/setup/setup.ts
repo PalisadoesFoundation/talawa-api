@@ -501,23 +501,26 @@ export async function apiSetup(answers: SetupAnswers): Promise<SetupAnswers> {
 		answers.API_MINIO_SECRET_KEY = await promptInput(
 			"API_MINIO_SECRET_KEY",
 			"Minio secret key:",
-			existingMinioPassword || "password",
+			existingMinioPassword ?? "password",
 		);
-		if (existingMinioPassword) {
-			// Existing password found, validate against it
+		if (existingMinioPassword !== undefined) {
+			// Configured password found (including empty string), validate against it
 			const minioPassword = existingMinioPassword;
 			while (answers.API_MINIO_SECRET_KEY !== minioPassword) {
 				console.warn("⚠️ API_MINIO_SECRET_KEY must match MINIO_ROOT_PASSWORD.");
 				answers.API_MINIO_SECRET_KEY = await promptInput(
 					"API_MINIO_SECRET_KEY",
 					"Minio secret key:",
-					minioPassword, // Use existing password as default
+					minioPassword, // Use configured password as default
 				);
 			}
 			console.log("✅ API_MINIO_SECRET_KEY matches MINIO_ROOT_PASSWORD");
 		} else {
-			// No existing password found, assign to answers for .env consistency
+			// No configured value: set both answers.MINIO_ROOT_PASSWORD and
+			// process.env.MINIO_ROOT_PASSWORD to answers.API_MINIO_SECRET_KEY
+			// so the chosen API_MINIO_SECRET_KEY becomes the stored Minio password
 			answers.MINIO_ROOT_PASSWORD = answers.API_MINIO_SECRET_KEY;
+			process.env.MINIO_ROOT_PASSWORD = answers.API_MINIO_SECRET_KEY;
 			console.log(
 				"ℹ️  MINIO_ROOT_PASSWORD will be set to match API_MINIO_SECRET_KEY",
 			);
