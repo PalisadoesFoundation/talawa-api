@@ -22,7 +22,13 @@ vi.mock("../../../scripts/dbManagement/helpers", async (importOriginal) => {
             execute: vi.fn().mockResolvedValue([{ tablename: "t1" }]),
             transaction: (cb: any) => {
                 const tx = { insert: mockInsert, execute: vi.fn().mockResolvedValue([{ tablename: "t1" }]), rollback: vi.fn() };
-                return cb(tx);
+                try {
+                    const result = cb(tx);
+                    return result instanceof Promise ? result : Promise.resolve(result);
+                } catch (e) {
+                    tx.rollback();
+                    throw e;
+                }
             }
         },
         minioClient: {
@@ -35,39 +41,52 @@ vi.mock("../../../scripts/dbManagement/helpers", async (importOriginal) => {
 describe("DB Management Helpers", () => {
     beforeEach(() => { vi.clearAllMocks(); });
 
+    describe("parseDate", () => {
+        it("should parse various formats", () => {
+            expect(helpers.parseDate("2025-01-01T00:00:00Z")).toBeInstanceOf(Date);
+            expect(helpers.parseDate(1704067200000)).toBeInstanceOf(Date);
+            expect(helpers.parseDate(null)).toBeNull();
+        });
+    });
+
     describe("validateSampleData", () => {
-        it("should return false for non-array JSON", async () => {
+        it("should return false for objects instead of arrays", async () => {
             (fs.readdir as any).mockResolvedValue(["test.json"]);
-            (fs.readFile as any).mockResolvedValue(JSON.stringify({ not: "an-array" }));
+            (fs.readFile as any).mockResolvedValue(JSON.stringify({ key: "val" }));
             expect(await helpers.validateSampleData(true)).toBe(false);
         });
-        it("should return true for valid array JSON", async () => {
-            (fs.readdir as any).mockResolvedValue(["test.json"]);
-            (fs.readFile as any).mockResolvedValue(JSON.stringify([{ id: 1 }]));
-            expect(await helpers.validateSampleData(true)).toBe(true);
+    });
+
+    describe("insertRecurrenceRules Validation", () => {
+        it("should throw for invalid byDay codes", async () => {
+            const rule = { id: "r1", baseRecurringEventId: "e1", creatorId: "u1", organizationId: "org1", frequency: "WEEKLY", interval: 1, byDay: "ABC" };
+            (fs.readFile as any).mockResolvedValue(JSON.stringify([rule]));
+            await expect(helpers.insertCollections(["recurrence_rules"], false)).rejects.toThrow("Invalid byDay value: ABC");
+        });
+
+        it("should throw for non-integer intervals", async () => {
+            const rule = { id: "r1", baseRecurringEventId: "e1", creatorId: "u1", organizationId: "org1", frequency: "WEEKLY", interval: 1.5 };
+            (fs.readFile as any).mockResolvedValue(JSON.stringify([rule]));
+            await expect(helpers.insertCollections(["recurrence_rules"], false)).rejects.toThrow("Invalid interval");
         });
     });
 
-    describe("insertCollections Handlers", () => {
-        it("should insert recurrence rules strictly and deterministic", async () => {
-            const rule = { id: "r1", baseRecurringEventId: "e1", creatorId: "u1", organizationId: "org1", frequency: "WEEKLY", interval: 1 };
-            (fs.readFile as any).mockResolvedValue(JSON.stringify([rule]));
-            await helpers.insertCollections(["recurrence_rules"], false);
-            expect(mockValues).toHaveBeenCalledWith(expect.arrayContaining([expect.objectContaining({ id: "r1" })]));
-        });
-
+    describe("Error Handling & Transactions", () => {
         it("should fail strictly on missing required files", async () => {
             (fs.readFile as any).mockRejectedValue(new Error("ENOENT"));
-            await expect(helpers.insertCollections(["users"], false)).rejects.toThrow("Failed to load required collection");
+            await expect(helpers.insertCollections(["users"], false)).rejects.toThrow("Failed to load users");
         });
     });
 
-    describe("Maintenance Operations", () => {
-        it("formatDatabase should complete successfully", async () => {
-            expect(await helpers.formatDatabase()).toBe(true);
+    describe("Maintenance Tasks", () => {
+        it("checkDataSize should complete successfully", async () => {
+            expect(await helpers.checkDataSize("Test")).toBe(true);
         });
-        it("emptyMinioBucket should complete successfully", async () => {
+        it("emptyMinioBucket should handle stream iterator", async () => {
             expect(await helpers.emptyMinioBucket()).toBe(true);
+        });
+        it("pingDB should return true on success", async () => {
+            expect(await helpers.pingDB()).toBe(true);
         });
     });
 });

@@ -45,6 +45,71 @@ export const minioClient = new MinioClient({
 
 export const db = drizzle(queryClient, { schema });
 
+// --- Interfaces for Type Safety ---
+
+interface BaseSample {
+	id: string;
+	createdAt?: string | Date;
+	updatedAt?: string | Date | null;
+}
+
+interface SampleUser extends BaseSample {
+	emailAddress: string;
+	[key: string]: any;
+}
+
+interface SampleOrganization extends BaseSample {
+	name: string;
+}
+
+interface SampleEvent extends BaseSample {
+	name: string;
+	organizationId: string;
+	startAt: string | Date;
+	endAt: string | Date;
+}
+
+interface SampleRecurrenceRule extends BaseSample {
+	baseRecurringEventId: string;
+	organizationId: string;
+	creatorId: string;
+	frequency: string;
+	interval: number | string;
+	byDay?: string | string[] | null;
+}
+
+interface SampleEventAttendee extends BaseSample {
+	eventId: string;
+	userId: string;
+	checkinTime?: string | Date | null;
+	checkoutTime?: string | Date | null;
+}
+
+// --- Utilities ---
+
+/**
+ * Deterministically formats a date to iCalendar UTC format (YYYYMMDDTHHMMSSZ).
+ */
+function toICalendarUntil(date: Date): string {
+	const pad = (n: number) => n.toString().padStart(2, "0");
+	return (
+		date.getUTCFullYear().toString() +
+		pad(date.getUTCMonth() + 1) +
+		pad(date.getUTCDate()) +
+		"T" +
+		pad(date.getUTCHours()) +
+		pad(date.getUTCMinutes()) +
+		pad(date.getUTCSeconds()) +
+		"Z"
+	);
+}
+
+export function parseDate(date: any): Date | null {
+	if (date === null || date === undefined) return null;
+	const parsedDate = new Date(date);
+	return Number.isNaN(parsedDate.getTime()) ? null : parsedDate;
+}
+
 export async function askUserToContinue(question: string): Promise<boolean> {
 	return new Promise((resolve) => {
 		const rl = readline.createInterface({
@@ -61,7 +126,7 @@ export async function askUserToContinue(question: string): Promise<boolean> {
 export async function formatDatabase(): Promise<boolean> {
 	const adminEmail = envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS;
 	if (!adminEmail) {
-		console.error("Missing adminEmail variable.");
+		console.error("formatDatabase: Missing required API_ADMINISTRATOR_USER_EMAIL_ADDRESS env variable.");
 		return false;
 	}
 
@@ -109,8 +174,9 @@ export async function emptyMinioBucket(): Promise<boolean> {
 }
 
 /**
- * Validates sample JSON data files.
- * @param quiet - If true, silences console output.
+ * Validates sample JSON data files are valid arrays.
+ * @param quiet - If true, silences console logging.
+ * @returns true if all files are valid, false otherwise.
  */
 export async function validateSampleData(quiet = false): Promise<boolean> {
 	try {
@@ -126,17 +192,17 @@ export async function validateSampleData(quiet = false): Promise<boolean> {
 			try {
 				const docs = JSON.parse(content);
 				if (!Array.isArray(docs)) {
-					if (!quiet) console.error(`| ${file.padEnd(28)}| Invalid (Not Array) |`);
+					if (!quiet) console.error(`validateSampleData: ${file} must be an array.`);
 					errorsFound = true;
 				}
 			} catch (e) {
-				if (!quiet) console.error(`| ${file.padEnd(28)}| Invalid JSON |`);
+				if (!quiet) console.error(`validateSampleData: ${file} contains invalid JSON.`);
 				errorsFound = true;
 			}
 		}
 		return !errorsFound;
 	} catch (error) {
-		console.error("validateSampleData failed:", error);
+		console.error("validateSampleData exception:", error);
 		return false;
 	}
 }
@@ -169,15 +235,9 @@ export async function checkAndInsertData<T>(
 	return true;
 }
 
-export function parseDate(date: any): Date | null {
-	if (date === null || date === undefined) return null;
-	const parsedDate = new Date(date);
-	return Number.isNaN(parsedDate.getTime()) ? null : parsedDate;
-}
-
 // --- Handlers ---
 
-export async function insertUsers(data: any[]) {
+async function insertUsers(data: SampleUser[]) {
 	const users = data.map((user) => {
 		const { createdAt, updatedAt, ...rest } = user;
 		const pCreated = parseDate(createdAt);
@@ -192,7 +252,7 @@ export async function insertUsers(data: any[]) {
 	console.log("Added: Users");
 }
 
-export async function insertOrganizations(data: any[]) {
+async function insertOrganizations(data: SampleOrganization[]) {
 	const adminEmail = envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS;
 	if (!adminEmail) throw new Error("API_ADMINISTRATOR_USER_EMAIL_ADDRESS missing.");
 
@@ -217,13 +277,11 @@ export async function insertOrganizations(data: any[]) {
 			role: "administrator",
 		}));
 		await checkAndInsertData(schema.organizationMembershipsTable, memberships, [schema.organizationMembershipsTable.organizationId, schema.organizationMembershipsTable.memberId], 1000);
-	} else {
-		console.warn(`Admin user (${adminEmail}) not found. Membership creation skipped.`);
 	}
 	console.log("Added: Organizations");
 }
 
-export async function insertEvents(data: any[]) {
+async function insertEvents(data: SampleEvent[]) {
 	const now = new Date();
 	const events = data.map((event, index) => {
 		const start = new Date(now);
@@ -234,7 +292,7 @@ export async function insertEvents(data: any[]) {
 	console.log("Added: Events");
 }
 
-export async function insertRecurringEvents(data: any[]) {
+async function insertRecurringEvents(data: SampleEvent[]) {
 	const seedNow = new Date();
 	const events = data.map((event, index) => {
 		const startAt = new Date(seedNow);
@@ -243,33 +301,43 @@ export async function insertRecurringEvents(data: any[]) {
 		startAt.setHours(hourOffset, 0, 0, 0);
 		const endAt = new Date(startAt);
 		endAt.setHours(hourOffset + 1, 0, 0, 0);
-
 		return { ...event, createdAt: seedNow, startAt, endAt, updatedAt: null };
 	});
 	await checkAndInsertData(schema.eventsTable, events, schema.eventsTable.id, 1000);
 	console.log("Added: Recurring Events");
 }
 
-export async function insertRecurrenceRules(data: any[]) {
+async function insertRecurrenceRules(data: SampleRecurrenceRule[]) {
 	if (!data.length) return;
 	const now = new Date();
 	const oneYear = new Date();
 	oneYear.setFullYear(now.getFullYear() + 1);
-	const until = oneYear.toISOString().replace(/[-:]/g, "").split(".")[0] + "Z";
+	const until = toICalendarUntil(oneYear);
 
 	const rules = data.map((rule, index) => {
 		const required = ["id", "baseRecurringEventId", "creatorId", "organizationId"];
 		for (const f of required) if (!rule[f]) throw new Error(`Missing required field: ${f} in rule ${rule.id || index}`);
 
 		const freq = rule.frequency === "DYNAMIC" ? "WEEKLY" : rule.frequency;
-		if (!["DAILY", "WEEKLY", "MONTHLY", "YEARLY"].includes(freq)) throw new Error(`Invalid frequency: ${freq}`);
+		const validFreq = ["DAILY", "WEEKLY", "MONTHLY", "YEARLY"];
+		if (!validFreq.includes(freq)) throw new Error(`Invalid frequency: ${freq}`);
 
 		const intRaw = rule.interval === "DYNAMIC" ? 1 : rule.interval;
 		const int = typeof intRaw === "number" ? intRaw : Number.parseInt(String(intRaw), 10);
-		if (!Number.isFinite(int) || int <= 0) throw new Error(`Invalid interval: ${rule.interval}`);
+		if (!Number.isInteger(int) || int <= 0) throw new Error(`Invalid interval: ${rule.interval}`);
 
 		const bd = rule.byDay || null;
-		const byDayArray = bd ? (Array.isArray(bd) ? bd : String(bd).split(",")).map((s: string) => s.trim()).filter(Boolean) : null;
+		const byDayArray = bd
+			? (Array.isArray(bd) ? bd : String(bd).split(",")).map((s: string) => s.trim()).filter(Boolean)
+			: null;
+
+		if (byDayArray && byDayArray.length > 0) {
+			const validDays = ["MO", "TU", "WE", "TH", "FR", "SA", "SU"];
+			for (const day of byDayArray) {
+				const clean = day.replace(/^[+-]?\d+/, "").trim();
+				if (!validDays.includes(clean)) throw new Error(`Invalid byDay value: ${day}`);
+			}
+		}
 
 		const byDayString = byDayArray && byDayArray.length > 0 ? `;BYDAY=${byDayArray.join(",")}` : "";
 
@@ -306,13 +374,12 @@ export async function insertRecurrenceRules(data: any[]) {
 	console.log("Added: Recurrence Rules");
 }
 
-export async function insertEventAttendees(data: any[]) {
+async function insertEventAttendees(data: SampleEventAttendee[]) {
 	const attendees = data.map((attendee) => {
 		const pCreated = parseDate(attendee.createdAt);
 		const pUpdated = parseDate(attendee.updatedAt);
 		const pCheckin = parseDate(attendee.checkinTime);
 		const pCheckout = parseDate(attendee.checkoutTime);
-
 		return {
 			...attendee,
 			...(pCreated && { createdAt: pCreated }),
@@ -325,12 +392,17 @@ export async function insertEventAttendees(data: any[]) {
 	console.log("Added: Event Attendees");
 }
 
+/**
+ * Inserts sample data collections into the database.
+ * @param inputCollections - Array of collection names (e.g., ['users', 'events']).
+ * @param autoIncludeEventAttendees - If true, adds 'event_attendees' to the processing list.
+ * @returns Promise resolving to true on success.
+ */
 export async function insertCollections(inputCollections: string[], autoIncludeEventAttendees = true): Promise<boolean> {
 	try {
 		const collections = [...inputCollections];
 		if (autoIncludeEventAttendees && !collections.includes("event_attendees")) {
 			collections.push("event_attendees");
-			console.log("Note: Automatically including event_attendees collection");
 		}
 
 		const handlers: Record<string, (data: any[]) => Promise<void>> = {
@@ -343,22 +415,19 @@ export async function insertCollections(inputCollections: string[], autoIncludeE
 		};
 
 		for (const col of collections) {
-			if (!handlers[col]) {
-				console.warn(`Skipping unknown collection: ${col}`);
-				continue;
-			}
+			if (!handlers[col]) continue;
 			const dataPath = path.resolve(dirname, `./sample_data/${col}.json`);
 			let parsed;
 			try {
 				const content = await fs.readFile(dataPath, "utf8");
 				parsed = JSON.parse(content);
 				if (!Array.isArray(parsed)) {
-					console.warn(`Warning: ${col}.json is not an array. Wrapping.`);
+					console.warn(`insertCollections: ${col}.json is not an array. Wrapping for compatibility.`);
 					parsed = [parsed];
 				}
 			} catch (e) {
 				if (col === "event_attendees") continue;
-				throw new Error(`Failed to load required collection: ${col}`, { cause: e });
+				throw new Error(`Failed to load ${col}`, { cause: e });
 			}
 			await handlers[col](parsed);
 		}
