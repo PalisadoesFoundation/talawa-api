@@ -64,7 +64,10 @@ export type SetupKey =
 	| "API_OTEL_SAMPLING_RATIO";
 
 // Replace the index signature with a constrained mapping
-export type SetupAnswers = Partial<Record<SetupKey, string>>;
+// Allow string indexing so tests and dynamic access are permitted
+export type SetupAnswers = Partial<Record<SetupKey, string>> & {
+	[key: string]: string | undefined;
+};
 
 async function promptInput(
 	name: string,
