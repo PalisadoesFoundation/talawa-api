@@ -44,6 +44,9 @@ export const minioClient = new MinioClient({
 
 export const db = drizzle(queryClient, { schema });
 
+/**
+ * Prompts the user for confirmation using the built-in readline module.
+ */
 export async function askUserToContinue(question: string): Promise<boolean> {
 	return new Promise((resolve) => {
 		const rl = readline.createInterface({
@@ -57,6 +60,9 @@ export async function askUserToContinue(question: string): Promise<boolean> {
 	});
 }
 
+/**
+ * Clears all tables in the database.
+ */
 export async function formatDatabase(): Promise<boolean> {
 	const adminEmail = envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS;
 	if (!adminEmail) throw new Error("Missing adminEmail variable.");
@@ -164,192 +170,227 @@ export async function checkAndInsertData<T>(
 	return true;
 }
 
-export async function insertCollections(inputCollections: string[]): Promise<boolean> {
-	try {
-		const API_ADMINISTRATOR_USER_EMAIL_ADDRESS = envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS;
-		if (!API_ADMINISTRATOR_USER_EMAIL_ADDRESS) throw new Error("API_ADMINISTRATOR_USER_EMAIL_ADDRESS is not defined.");
-
-        const collections = inputCollections.includes("event_attendees") 
-            ? [...inputCollections] 
-            : [...inputCollections, "event_attendees"];
-
-		for (const collection of collections) {
-			const dataPath = path.resolve(dirname, `./sample_data/${collection}.json`);
-			
-			let fileContent = "[]";
-			try {
-				fileContent = await fs.readFile(dataPath, "utf8");
-			} catch (e) {
-				console.log(`Skipping optional file: ${collection}.json`);
-				continue;
-			}
-
-			switch (collection) {
-				case "users": {
-					const users = JSON.parse(fileContent).map((user: any) => ({
-						...user,
-						createdAt: parseDate(user.createdAt),
-						updatedAt: parseDate(user.updatedAt),
-					}));
-					await checkAndInsertData(schema.usersTable, users, schema.usersTable.id, 1000);
-					console.log(`Added: Users`);
-					break;
-				}
-				case "organizations": {
-					const organizations = JSON.parse(fileContent).map((org: any) => ({
-						...org,
-						createdAt: parseDate(org.createdAt),
-						updatedAt: parseDate(org.updatedAt),
-					}));
-					await checkAndInsertData(schema.organizationsTable, organizations, schema.organizationsTable.id, 1000);
-					
-					const API_ADMINISTRATOR_USER = await db.query.usersTable.findFirst({
-						columns: { id: true },
-						where: (fields, operators) => operators.eq(fields.emailAddress, API_ADMINISTRATOR_USER_EMAIL_ADDRESS),
-					});
-					if (API_ADMINISTRATOR_USER) {
-						const memberships = organizations.map((org: any) => ({
-							organizationId: org.id,
-							memberId: API_ADMINISTRATOR_USER.id,
-							creatorId: API_ADMINISTRATOR_USER.id,
-							createdAt: new Date(),
-							role: "administrator",
-						}));
-						await checkAndInsertData(schema.organizationMembershipsTable, memberships, [schema.organizationMembershipsTable.organizationId, schema.organizationMembershipsTable.memberId], 1000);
-					}
-					console.log(`Added: Organizations`);
-					break;
-				}
-				case "events": {
-					const now = new Date();
-					const events = JSON.parse(fileContent).map((event: any, index: number) => {
-						const start = new Date(now);
-						start.setDate(now.getDate() + index);
-						return { ...event, createdAt: start, startAt: start, endAt: new Date(start.getTime() + 2 * 86400000), updatedAt: null };
-					});
-					await checkAndInsertData(schema.eventsTable, events, schema.eventsTable.id, 1000);
-					console.log(`Added: Events`);
-					break;
-				}
-				case "recurring_events": {
-					const events = JSON.parse(fileContent).map((event: any) => {
-                        const now = new Date();
-                        const startAt = new Date(now);
-                        startAt.setHours(10, 0, 0, 0);
-                        const endAt = new Date(now);
-                        endAt.setHours(11, 0, 0, 0);
-                        
-                        return {
-                            ...event,
-                            createdAt: now,
-                            startAt,
-                            endAt,
-                            updatedAt: null,
-                        };
-                    });
-					await checkAndInsertData(schema.eventsTable, events, schema.eventsTable.id, 1000);
-					console.log(`Added: Recurring Events`);
-					break;
-				}
-				case "recurrence_rules": {
-					const now = new Date();
-					const oneYear = new Date();
-					oneYear.setFullYear(now.getFullYear() + 1);
-					const until = oneYear.toISOString().replace(/[-:]/g, "").split(".")[0] + "Z";
-					
-					let parsed = JSON.parse(fileContent);
-					if (!Array.isArray(parsed)) parsed = [parsed];
-
-					const rules = parsed.map((rule: any) => {
-						const freq = rule.frequency === "DYNAMIC" ? "WEEKLY" : rule.frequency;
-                        
-                        // Validate Frequency
-                        const validFrequencies = ["DAILY", "WEEKLY", "MONTHLY", "YEARLY"];
-                        if (!validFrequencies.includes(freq)) {
-                            throw new Error(`Invalid frequency: ${freq}`);
-                        }
-
-						const int = rule.interval === "DYNAMIC" ? 1 : rule.interval;
-						const bd = rule.byDay || null;
-                        
-                        // Validate and Split ByDay
-                        const byDayArray = bd 
-                            ? (Array.isArray(bd) ? bd : bd.split(",")) 
-                            : null;
-
-                        if (byDayArray) {
-                            const validDays = ["MO", "TU", "WE", "TH", "FR", "SA", "SU"];
-                            for (const day of byDayArray) {
-                                // Allow iCal format (e.g. 1MO, -2FR)
-                                const cleanDay = day.replace(/^[+-]?\d+/, "").trim();
-                                if (!validDays.includes(cleanDay)) {
-                                    throw new Error(`Invalid byDay value: ${day}`);
-                                }
-                            }
-                        }
-
-						return {
-							id: rule.id,
-							baseRecurringEventId: rule.baseRecurringEventId,
-							creatorId: rule.creatorId,
-							updaterId: rule.updaterId,
-							organizationId: rule.organizationId,
-							frequency: freq,
-							interval: int,
-							byDay: byDayArray, 
-							latestInstanceDate: now,
-							createdAt: now,
-							updatedAt: now,
-							recurrenceStartDate: now,
-							recurrenceEndDate: oneYear,
-							recurrenceRuleString: `FREQ=${freq};INTERVAL=${int}${bd ? `;BYDAY=${bd}` : ""};UNTIL=${until}`,
-							count: null, originalSeriesId: null, byMonth: null, byMonthDay: null
-						};
-					});
-
-					await db.insert(schema.recurrenceRulesTable).values(rules).onConflictDoUpdate({
-						target: schema.recurrenceRulesTable.id,
-						set: {
-							recurrenceEndDate: sql`excluded.recurrence_end_date`,
-							recurrenceRuleString: sql`excluded.recurrence_rule_string`,
-							latestInstanceDate: sql`excluded.latest_instance_date`,
-							updatedAt: now
-						}
-					});
-					console.log(`Added: Recurrence Rules`);
-					break;
-				}
-                case "event_attendees": {
-                    const attendees = JSON.parse(fileContent).map((attendee: any) => ({
-                        ...attendee,
-                        createdAt: parseDate(attendee.createdAt),
-                        updatedAt: parseDate(attendee.updatedAt),
-                        checkinTime: parseDate(attendee.checkinTime),
-                        checkoutTime: parseDate(attendee.checkoutTime),
-                    }));
-                    await checkAndInsertData(schema.eventAttendeesTable, attendees, schema.eventAttendeesTable.id, 1000);
-                    console.log(`Added: Event Attendees`);
-                    break;
-                }
-				default: {
-					console.warn(`Skipping unknown collection: ${collection}`);
-					break;
-				}
-			}
-		}
-	} catch (err) {
-		throw new Error(`Error adding data: ${err}`);
-	}
-	return true;
-}
-
+/**
+ * Parses a date string and returns a Date object. Returns null if the date is invalid.
+ * @param date - The date string to parse
+ * @returns The parsed Date object or null
+ */
 export function parseDate(date: string | number | Date): Date | null {
 	const parsedDate = new Date(date);
 	return Number.isNaN(parsedDate.getTime()) ? null : parsedDate;
 }
 
+// --- Handler Functions (Refactored per CodeRabbit) ---
+
+async function insertUsers(data: any[]) {
+	const users = data.map((user: any) => ({
+		...user,
+		createdAt: parseDate(user.createdAt),
+		updatedAt: parseDate(user.updatedAt),
+	}));
+	await checkAndInsertData(schema.usersTable, users, schema.usersTable.id, 1000);
+	console.log(`Added: Users`);
+}
+
+async function insertOrganizations(data: any[]) {
+    const API_ADMINISTRATOR_USER_EMAIL_ADDRESS = envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS;
+	const organizations = data.map((org: any) => ({
+		...org,
+		createdAt: parseDate(org.createdAt),
+		updatedAt: parseDate(org.updatedAt),
+	}));
+	await checkAndInsertData(schema.organizationsTable, organizations, schema.organizationsTable.id, 1000);
+	
+	const adminUser = await db.query.usersTable.findFirst({
+		columns: { id: true },
+		where: (fields, operators) => operators.eq(fields.emailAddress, API_ADMINISTRATOR_USER_EMAIL_ADDRESS!),
+	});
+	if (adminUser) {
+		const memberships = organizations.map((org: any) => ({
+			organizationId: org.id,
+			memberId: adminUser.id,
+			creatorId: adminUser.id,
+			createdAt: new Date(),
+			role: "administrator",
+		}));
+		await checkAndInsertData(schema.organizationMembershipsTable, memberships, [schema.organizationMembershipsTable.organizationId, schema.organizationMembershipsTable.memberId], 1000);
+	}
+	console.log(`Added: Organizations`);
+}
+
+async function insertEvents(data: any[]) {
+    const now = new Date();
+	const events = data.map((event: any, index: number) => {
+		const start = new Date(now);
+		start.setDate(now.getDate() + index);
+		return { ...event, createdAt: start, startAt: start, endAt: new Date(start.getTime() + 2 * 86400000), updatedAt: null };
+	});
+	await checkAndInsertData(schema.eventsTable, events, schema.eventsTable.id, 1000);
+	console.log(`Added: Events`);
+}
+
+async function insertRecurringEvents(data: any[]) {
+	const events = data.map((event: any) => {
+        // Fix: Create fresh Date objects to avoid mutation bugs
+        const now = new Date();
+        const startAt = new Date(now);
+        startAt.setHours(10, 0, 0, 0);
+        const endAt = new Date(now);
+        endAt.setHours(11, 0, 0, 0);
+        
+        return {
+            ...event,
+            createdAt: now,
+            startAt,
+            endAt,
+            updatedAt: null,
+        };
+    });
+	await checkAndInsertData(schema.eventsTable, events, schema.eventsTable.id, 1000);
+	console.log(`Added: Recurring Events`);
+}
+
+async function insertRecurrenceRules(data: any[]) {
+	const now = new Date();
+	const oneYear = new Date();
+	oneYear.setFullYear(now.getFullYear() + 1);
+	const until = oneYear.toISOString().replace(/[-:]/g, "").split(".")[0] + "Z";
+
+	const rules = data.map((rule: any) => {
+		const freq = rule.frequency === "DYNAMIC" ? "WEEKLY" : rule.frequency;
+        
+        // Validate Frequency Enum
+        const validFrequencies = ["DAILY", "WEEKLY", "MONTHLY", "YEARLY"];
+        if (!validFrequencies.includes(freq)) {
+            throw new Error(`Invalid frequency: ${freq}`);
+        }
+
+		const int = rule.interval === "DYNAMIC" ? 1 : rule.interval;
+		const bd = rule.byDay || null;
+        
+        // Fix: Safe array splitting and validation
+        const byDayArray = bd ? (Array.isArray(bd) ? bd : bd.split(",")) : null;
+
+        if (byDayArray) {
+            const validDays = ["MO", "TU", "WE", "TH", "FR", "SA", "SU"];
+            for (const day of byDayArray) {
+                // Allow iCal format (e.g. 1MO, -2FR)
+                const cleanDay = day.replace(/^[+-]?\d+/, "").trim();
+                if (!validDays.includes(cleanDay)) {
+                    throw new Error(`Invalid byDay value: ${day}`);
+                }
+            }
+        }
+
+        const byDayString = byDayArray ? `;BYDAY=${byDayArray.join(",")}` : "";
+
+		return {
+			id: rule.id,
+			baseRecurringEventId: rule.baseRecurringEventId,
+			creatorId: rule.creatorId,
+			updaterId: rule.updaterId,
+			organizationId: rule.organizationId,
+			frequency: freq,
+			interval: int,
+			byDay: byDayArray, 
+			latestInstanceDate: now,
+			createdAt: now,
+			updatedAt: now,
+			recurrenceStartDate: now,
+			recurrenceEndDate: oneYear,
+			recurrenceRuleString: `FREQ=${freq};INTERVAL=${int}${byDayString};UNTIL=${until}`,
+			count: null, originalSeriesId: null, byMonth: null, byMonthDay: null
+		};
+	});
+
+	await db.insert(schema.recurrenceRulesTable).values(rules).onConflictDoUpdate({
+		target: schema.recurrenceRulesTable.id,
+		set: {
+			recurrenceEndDate: sql`excluded.recurrence_end_date`,
+			recurrenceRuleString: sql`excluded.recurrence_rule_string`,
+			latestInstanceDate: sql`excluded.latest_instance_date`,
+			updatedAt: now
+		}
+	});
+	console.log(`Added: Recurrence Rules`);
+}
+
+async function insertEventAttendees(data: any[]) {
+    const attendees = data.map((attendee: any) => ({
+        ...attendee,
+        createdAt: parseDate(attendee.createdAt),
+        updatedAt: parseDate(attendee.updatedAt),
+        checkinTime: parseDate(attendee.checkinTime),
+        checkoutTime: parseDate(attendee.checkoutTime),
+    }));
+    await checkAndInsertData(schema.eventAttendeesTable, attendees, schema.eventAttendeesTable.id, 1000);
+    console.log(`Added: Event Attendees`);
+}
+
+/**
+ * Inserts sample data collections into the database.
+ * @param inputCollections - Array of collection names to insert. event_attendees is automatically included if not present.
+ * @returns Promise that resolves to true if insertion succeeds
+ */
+export async function insertCollections(inputCollections: string[]): Promise<boolean> {
+	try {
+		const API_ADMINISTRATOR_USER_EMAIL_ADDRESS = envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS;
+		if (!API_ADMINISTRATOR_USER_EMAIL_ADDRESS) throw new Error("API_ADMINISTRATOR_USER_EMAIL_ADDRESS is not defined.");
+
+        // Fix: Avoid mutation of input param
+        const collections = inputCollections.includes("event_attendees") 
+            ? [...inputCollections] 
+            : [...inputCollections, "event_attendees"];
+
+        const collectionHandlers: Record<string, (data: any[]) => Promise<void>> = {
+            users: insertUsers,
+            organizations: insertOrganizations,
+            events: insertEvents,
+            recurring_events: insertRecurringEvents,
+            recurrence_rules: insertRecurrenceRules,
+            event_attendees: insertEventAttendees,
+            // Add other simple handlers if needed or handle in default
+        };
+
+		for (const collection of collections) {
+			const dataPath = path.resolve(dirname, `./sample_data/${collection}.json`);
+			let fileContent = "[]";
+			try {
+				fileContent = await fs.readFile(dataPath, "utf8");
+			} catch (e) {
+                // Silently skip missing files as they might be optional
+				continue;
+			}
+
+            let parsedData;
+            try {
+                parsedData = JSON.parse(fileContent);
+                if (!Array.isArray(parsedData)) parsedData = [parsedData];
+            } catch (e) {
+                console.warn(`Skipping malformed collection: ${collection}`);
+                continue;
+            }
+
+            const handler = collectionHandlers[collection];
+            if (handler) {
+                await handler(parsedData);
+            } else {
+                // Fallback for simple tables not needing special logic
+                // For Phase 1 we only strictly support the defined handlers
+                console.warn(`Skipping unknown collection: ${collection}`);
+            }
+		}
+
+		await checkDataSize("After");
+        return true;
+	} catch (err) {
+		throw new Error(`Error adding data: ${err}`);
+	}
+}
+
 /**
  * Checks and displays record counts for key tables.
+ * Useful for verifying data before and after seeding operations.
  * @param stage - Label for the current stage (e.g., "Before", "After")
  * @returns Promise that resolves to true if check succeeds, false otherwise
  */
