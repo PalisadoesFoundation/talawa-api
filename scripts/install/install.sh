@@ -107,7 +107,7 @@ display_failure_guidance() {
             ;;
         126)
             info "  • Permission denied - check file permissions"
-            info "    Try: chmod +x \"$script_dir/$platform_dir/*.sh\""
+            info "    Try: chmod +x \"$script_dir/$platform_dir\"/*.sh"
             ;;
         127)
             info "  • Command not found - required tool may be missing"
