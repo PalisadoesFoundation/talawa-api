@@ -48,7 +48,6 @@ export class SetupError extends Error {
 	public readonly code: SetupErrorCode;
 	public readonly context: SetupErrorContext;
 
-
 	/**
 	 * Creates a new SetupError instance.
 	 *
