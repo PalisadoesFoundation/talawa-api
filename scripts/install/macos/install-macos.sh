@@ -331,11 +331,22 @@ step $CURRENT_STEP $TOTAL_STEPS "Installing pnpm v$CLEAN_PNPM_VERSION..."
 
 if command_exists pnpm; then
     CURRENT_PNPM=$(pnpm --version)
+    
+    # Normalize current version to same precision as target
+    CURRENT_PNPM_NORMALIZED="$CURRENT_PNPM"
+    if [[ "$CLEAN_PNPM_VERSION" =~ ^[0-9]+$ ]]; then
+        # Target is major-only, extract major from current
+        CURRENT_PNPM_NORMALIZED=$(echo "$CURRENT_PNPM" | grep -oE '^[0-9]+' || echo "$CURRENT_PNPM")
+    elif [[ "$CLEAN_PNPM_VERSION" =~ ^[0-9]+\.[0-9]+$ ]]; then
+        # Target is major.minor, extract major.minor from current
+        CURRENT_PNPM_NORMALIZED=$(echo "$CURRENT_PNPM" | grep -oE '^[0-9]+\.[0-9]+' || echo "$CURRENT_PNPM")
+    fi
+
     # Skip version comparison if target is "latest" - always update to ensure we have latest
     if [ "$CLEAN_PNPM_VERSION" = "latest" ]; then
         info "Updating pnpm to latest version..."
         npm install -g "pnpm@latest"
-    elif [ "$CURRENT_PNPM" = "$CLEAN_PNPM_VERSION" ]; then
+    elif [ "$CURRENT_PNPM_NORMALIZED" = "$CLEAN_PNPM_VERSION" ]; then
         success "pnpm is already installed: v$CURRENT_PNPM"
     else
         info "Updating pnpm from v$CURRENT_PNPM to v$CLEAN_PNPM_VERSION..."
