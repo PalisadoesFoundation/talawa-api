@@ -260,49 +260,53 @@ describe("Setup", () => {
 			envReconfigure: false,
 		});
 
+		// Mock fs.promises methods instead of sync methods
+		const fsAccessSpy = vi
+			.spyOn(fs.promises, "access")
+			.mockResolvedValue(undefined);
+		const fsReaddirSpy = vi
+			.spyOn(fs.promises, "readdir")
+			.mockResolvedValue([
+				".env.1600000000",
+				".env.1700000000",
+			] as unknown as Awaited<ReturnType<typeof fs.promises.readdir>>);
+		const fsCopyFileSpy = vi
+			.spyOn(fs.promises, "copyFile")
+			.mockResolvedValue(undefined);
+
 		const fsExistsSyncSpy = vi.spyOn(fs, "existsSync").mockReturnValue(true);
-		const fsReaddirSyncSpy = vi.spyOn(
-			fs,
-			"readdirSync",
-		) as unknown as MockInstance<(path: fs.PathLike) => string[]>;
-		fsReaddirSyncSpy.mockImplementation(() => [
-			".env.1600000000",
-			".env.1700000000",
-		]);
-		const fsCopyFileSyncSpy = vi
-			.spyOn(fs, "copyFileSync")
-			.mockImplementation(() => {});
 
 		await expect(SetupModule.setup()).rejects.toThrow("process.exit called");
 		expect(processExitSpy).toHaveBeenCalledWith(0);
 
-		expect(fsCopyFileSyncSpy).not.toHaveBeenCalled();
+		expect(fsCopyFileSpy).not.toHaveBeenCalled();
 
 		processExitSpy.mockRestore();
 		fsExistsSyncSpy.mockRestore();
-		fsReaddirSyncSpy.mockRestore();
-		fsCopyFileSyncSpy.mockRestore();
+		fsAccessSpy.mockRestore();
+		fsReaddirSpy.mockRestore();
+		fsCopyFileSpy.mockRestore();
 	});
 
 	it("should restore .env on SIGINT (Ctrl+C) and exit with code 1", async () => {
 		const consoleLogSpy = vi.spyOn(console, "log").mockImplementation(() => {});
-		const copyFileSpy = vi
-			.spyOn(fs, "copyFileSync")
-			.mockImplementation(() => {});
-		const existsSyncSpy = vi
-			.spyOn(fs, "existsSync")
-			.mockImplementation((path) => {
-				if (path === ".backup") return true;
-				return false;
+
+		// Mock fs.promises methods instead of sync methods
+		const fsCopyFileSpy = vi
+			.spyOn(fs.promises, "copyFile")
+			.mockResolvedValue(undefined);
+		const fsAccessSpy = vi
+			.spyOn(fs.promises, "access")
+			.mockImplementation(async (path) => {
+				if (String(path) === ".backup") return undefined;
+				throw { code: "ENOENT" };
 			});
-		const readdirSyncSpy = vi.spyOn(
-			fs,
-			"readdirSync",
-		) as unknown as MockInstance<(path: fs.PathLike) => string[]>;
-		readdirSyncSpy.mockImplementation(() => [
-			".env.1600000000",
-			".env.1700000000",
-		]);
+		const fsReaddirSpy = vi
+			.spyOn(fs.promises, "readdir")
+			.mockResolvedValue([
+				".env.1600000000",
+				".env.1700000000",
+			] as unknown as Awaited<ReturnType<typeof fs.promises.readdir>>);
 
 		const processExitSpy = vi.spyOn(process, "exit").mockImplementation(() => {
 			throw new Error("process.exit called");
@@ -312,7 +316,10 @@ describe("Setup", () => {
 			"process.exit called",
 		);
 
-		expect(copyFileSpy).toHaveBeenCalledWith(".backup/.env.1700000000", ".env");
+		expect(fsCopyFileSpy).toHaveBeenCalledWith(
+			".backup/.env.1700000000",
+			".env",
+		);
 		expect(consoleLogSpy).toHaveBeenCalledWith(
 			"\nProcess interrupted! Undoing changes...",
 		);
@@ -320,9 +327,9 @@ describe("Setup", () => {
 
 		consoleLogSpy.mockRestore();
 		processExitSpy.mockRestore();
-		copyFileSpy.mockRestore();
-		existsSyncSpy.mockRestore();
-		readdirSyncSpy.mockRestore();
+		fsCopyFileSpy.mockRestore();
+		fsAccessSpy.mockRestore();
+		fsReaddirSpy.mockRestore();
 	});
 
 	it("should skip backup when CI=true and TALAWA_SKIP_ENV_BACKUP=true", async () => {
@@ -501,7 +508,6 @@ describe("Setup", () => {
 		});
 	});
 });
-
 describe("Validation Helpers", () => {
 	let isBooleanString: typeof import("scripts/setup/setup").isBooleanString;
 	let validateRequiredFields: typeof import("scripts/setup/setup").validateRequiredFields;
@@ -536,32 +542,48 @@ describe("Validation Helpers", () => {
 			expect(isBooleanString("no")).toBe(false);
 		});
 
-		it("should return false for numeric 1", () => {
-			expect(isBooleanString(1)).toBe(false);
+		it('should return false for numeric string "1"', () => {
+			expect(isBooleanString("1")).toBe(false);
 		});
 
-		it("should return false for numeric 0", () => {
-			expect(isBooleanString(0)).toBe(false);
+		it('should return false for numeric string "0"', () => {
+			expect(isBooleanString("0")).toBe(false);
 		});
 
-		it("should return false for boolean true", () => {
-			expect(isBooleanString(true)).toBe(false);
+		it('should return false for string "null"', () => {
+			expect(isBooleanString("null")).toBe(false);
 		});
 
-		it("should return false for boolean false", () => {
-			expect(isBooleanString(false)).toBe(false);
-		});
-
-		it("should return false for null", () => {
-			expect(isBooleanString(null)).toBe(false);
-		});
-
-		it("should return false for undefined", () => {
-			expect(isBooleanString(undefined)).toBe(false);
+		it('should return false for string "undefined"', () => {
+			expect(isBooleanString("undefined")).toBe(false);
 		});
 
 		it("should return false for empty string", () => {
 			expect(isBooleanString("")).toBe(false);
+		});
+
+		it("should return false for numeric primitive 1", () => {
+			expect(isBooleanString(1)).toBe(false);
+		});
+
+		it("should return false for numeric primitive 0", () => {
+			expect(isBooleanString(0)).toBe(false);
+		});
+
+		it("should return false for null primitive", () => {
+			expect(isBooleanString(null)).toBe(false);
+		});
+
+		it("should return false for undefined primitive", () => {
+			expect(isBooleanString(undefined)).toBe(false);
+		});
+
+		it("should return false for boolean primitive true", () => {
+			expect(isBooleanString(true)).toBe(false);
+		});
+
+		it("should return false for boolean primitive false", () => {
+			expect(isBooleanString(false)).toBe(false);
 		});
 	});
 
