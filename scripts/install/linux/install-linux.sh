@@ -291,14 +291,17 @@ if [ "$INSTALL_MODE" = "docker" ]; then
         # https://get.docker.com or using: curl -fsSL https://get.docker.com | less
         # curl -fsSL --connect-timeout $CURL_CONNECT_TIMEOUT --max-time $CURL_MAX_TIME_DOCKER https://get.docker.com | sh
         docker_installer="$(mktemp /tmp/get-docker.XXXXXX.sh)"
-        trap 'rm -f "$docker_installer"' RETURN
-        if retry_command "$MAX_RETRY_ATTEMPTS" curl -fsSL --connect-timeout "$CURL_CONNECT_TIMEOUT" --max-time "$CURL_MAX_TIME_DOCKER" -o "$docker_installer" https://get.docker.com; then
-            sh "$docker_installer"
-        else
+        trap 'rm -f "$docker_installer"' EXIT
+        if ! retry_command "$MAX_RETRY_ATTEMPTS" curl -fsSL --connect-timeout "$CURL_CONNECT_TIMEOUT" --max-time "$CURL_MAX_TIME_DOCKER" -o "$docker_installer" https://get.docker.com; then
             error "Failed to download Docker installer after multiple attempts."
             exit 1
         fi
-        trap - RETURN
+        if ! sh "$docker_installer"; then
+            error "Docker installer script failed."
+            exit 1
+        fi
+        rm -f "$docker_installer"
+        trap - EXIT
         
         info "Adding current user to docker group..."
         sudo usermod -aG docker "$USER"
@@ -348,14 +351,17 @@ else
     # curl -fsSL --connect-timeout $CURL_CONNECT_TIMEOUT --max-time $CURL_MAX_TIME_FNM https://fnm.vercel.app/install | bash -s -- --skip-shell
 
     fnm_installer="$(mktemp /tmp/fnm-install.XXXXXX.sh)"
-    trap 'rm -f "$fnm_installer"' RETURN
-    if retry_command "$MAX_RETRY_ATTEMPTS" curl -fsSL --connect-timeout "$CURL_CONNECT_TIMEOUT" --max-time "$CURL_MAX_TIME_FNM" -o "$fnm_installer" https://fnm.vercel.app/install; then
-        bash "$fnm_installer" --skip-shell
-    else
+    trap 'rm -f "$fnm_installer"' EXIT
+    if ! retry_command "$MAX_RETRY_ATTEMPTS" curl -fsSL --connect-timeout "$CURL_CONNECT_TIMEOUT" --max-time "$CURL_MAX_TIME_FNM" -o "$fnm_installer" https://fnm.vercel.app/install; then
         error "Failed to download fnm installer."
         exit 1
     fi
-    trap - RETURN
+    if ! bash "$fnm_installer" --skip-shell; then
+        error "fnm installer script failed."
+        exit 1
+    fi
+    rm -f "$fnm_installer"
+    trap - EXIT
     
     # Set up fnm for current session
     export PATH="$FNM_BIN_DIR:$PATH"
@@ -534,7 +540,7 @@ if command_exists pnpm; then
                     exit 1
                 fi
              fi
-            fi
+            
         fi
     elif [ "$CURRENT_PNPM" = "$PNPM_VERSION" ]; then
         success "pnpm is already installed: v$CURRENT_PNPM"
