@@ -65,23 +65,16 @@ export async function formatDatabase(): Promise<boolean> {
 		return false;
 	}
 
-	type TableRow = { tablename: string };
 	const USERS_TABLE = "users";
 	const DENY_LIST = new Set([USERS_TABLE, "__drizzle_migrations", "__drizzle_migrations_lock"]);
 
 	try {
 		await db.transaction(async (tx) => {
-			const tables: TableRow[] = await tx.execute(sql`
-		  SELECT tablename FROM pg_catalog.pg_tables WHERE schemaname = 'public'`);
-			const tableNames = tables
-				.map((row) => row.tablename)
-				.filter((name) => !DENY_LIST.has(name));
+			const tables = await tx.execute(sql`SELECT tablename FROM pg_catalog.pg_tables WHERE schemaname = 'public'`);
+			const tableNames = tables.map((row: any) => row.tablename).filter((name) => !DENY_LIST.has(name));
 
 			if (tableNames.length > 0) {
-				await tx.execute(sql`TRUNCATE TABLE ${sql.join(
-					tableNames.map((table) => sql.identifier(table)),
-					sql`, `,
-				)} RESTART IDENTITY CASCADE;`);
+				await tx.execute(sql`TRUNCATE TABLE ${sql.join(tableNames.map((t) => sql.identifier(t)), sql`, `)} RESTART IDENTITY CASCADE;`);
 			}
 			await tx.execute(sql`DELETE FROM ${sql.identifier(USERS_TABLE)} WHERE email_address != ${adminEmail};`);
 		});
@@ -95,12 +88,11 @@ export async function formatDatabase(): Promise<boolean> {
 export async function emptyMinioBucket(): Promise<boolean> {
 	try {
 		const objectsToDelete: string[] = [];
-		const BATCH_SIZE = 1000;
 		const stream = minioClient.listObjects(bucketName, "", true);
 
 		for await (const obj of stream) {
 			objectsToDelete.push(obj.name);
-			if (objectsToDelete.length >= BATCH_SIZE) {
+			if (objectsToDelete.length >= 1000) {
 				await minioClient.removeObjects(bucketName, [...objectsToDelete]);
 				objectsToDelete.length = 0;
 			}
@@ -117,18 +109,14 @@ export async function emptyMinioBucket(): Promise<boolean> {
 }
 
 /**
- * Lists sample data files.
- * @param quiet - If true, prevents printing to console.log.
+ * Validates sample JSON data files.
+ * @param quiet - If true, silences console output.
  */
-export async function listSampleData(quiet = false): Promise<boolean> {
+export async function validateSampleData(quiet = false): Promise<boolean> {
 	try {
 		const sampleDataPath = path.resolve(dirname, "./sample_data");
 		const files = await fs.readdir(sampleDataPath);
-		if (!quiet) {
-			console.log("\nSample Data Files:");
-			console.log(`${"| File Name".padEnd(30)}| Document Count |`);
-			console.log(`${"|".padEnd(30, "-")}|----------------|`);
-		}
+		if (!quiet) console.log("\nValidating Sample Data Files...");
 
 		let errorsFound = false;
 		for (const file of files) {
@@ -138,19 +126,17 @@ export async function listSampleData(quiet = false): Promise<boolean> {
 			try {
 				const docs = JSON.parse(content);
 				if (!Array.isArray(docs)) {
-					if (!quiet) console.log(`| ${file.padEnd(28)}| ${"Invalid (Not Array)".padEnd(15)}|`);
+					if (!quiet) console.error(`| ${file.padEnd(28)}| Invalid (Not Array) |`);
 					errorsFound = true;
-				} else {
-					if (!quiet) console.log(`| ${file.padEnd(28)}| ${docs.length.toString().padEnd(15)}|`);
 				}
 			} catch (e) {
-				if (!quiet) console.log(`| ${file.padEnd(28)}| ${"Invalid JSON".padEnd(15)}|`);
+				if (!quiet) console.error(`| ${file.padEnd(28)}| Invalid JSON |`);
 				errorsFound = true;
 			}
 		}
 		return !errorsFound;
 	} catch (error) {
-		console.error("listSampleData failed:", error);
+		console.error("validateSampleData failed:", error);
 		return false;
 	}
 }
@@ -158,10 +144,11 @@ export async function listSampleData(quiet = false): Promise<boolean> {
 export async function pingDB(): Promise<boolean> {
 	try {
 		await db.execute(sql`SELECT 1`);
+		return true;
 	} catch (error) {
-		throw new Error("Unable to connect to the database.");
+		console.error("pingDB failed:", error);
+		return false;
 	}
-	return true;
 }
 
 export async function checkAndInsertData<T>(
@@ -182,20 +169,19 @@ export async function checkAndInsertData<T>(
 	return true;
 }
 
-export function parseDate(date: string | number | Date | null | undefined): Date | null {
+export function parseDate(date: any): Date | null {
 	if (date === null || date === undefined) return null;
 	const parsedDate = new Date(date);
 	return Number.isNaN(parsedDate.getTime()) ? null : parsedDate;
 }
 
-// --- Handler Functions ---
+// --- Handlers ---
 
-async function insertUsers(data: any[]) {
-	const users = data.map((user: any) => {
+export async function insertUsers(data: any[]) {
+	const users = data.map((user) => {
 		const { createdAt, updatedAt, ...rest } = user;
 		const pCreated = parseDate(createdAt);
 		const pUpdated = parseDate(updatedAt);
-
 		return {
 			...rest,
 			...(pCreated && { createdAt: pCreated }),
@@ -206,11 +192,11 @@ async function insertUsers(data: any[]) {
 	console.log("Added: Users");
 }
 
-async function insertOrganizations(data: any[]) {
+export async function insertOrganizations(data: any[]) {
 	const adminEmail = envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS;
-	if (!adminEmail) throw new Error("API_ADMINISTRATOR_USER_EMAIL_ADDRESS is not defined.");
+	if (!adminEmail) throw new Error("API_ADMINISTRATOR_USER_EMAIL_ADDRESS missing.");
 
-	const organizations = data.map((org: any) => ({
+	const organizations = data.map((org) => ({
 		...org,
 		createdAt: parseDate(org.createdAt) ?? new Date(),
 		updatedAt: parseDate(org.updatedAt),
@@ -223,7 +209,7 @@ async function insertOrganizations(data: any[]) {
 	});
 
 	if (adminUser) {
-		const memberships = organizations.map((org: any) => ({
+		const memberships = organizations.map((org) => ({
 			organizationId: org.id,
 			memberId: adminUser.id,
 			creatorId: adminUser.id,
@@ -232,14 +218,14 @@ async function insertOrganizations(data: any[]) {
 		}));
 		await checkAndInsertData(schema.organizationMembershipsTable, memberships, [schema.organizationMembershipsTable.organizationId, schema.organizationMembershipsTable.memberId], 1000);
 	} else {
-		console.warn(`Admin user (${adminEmail}) not found. Skipping membership creation.`);
+		console.warn(`Admin user (${adminEmail}) not found. Membership creation skipped.`);
 	}
 	console.log("Added: Organizations");
 }
 
-async function insertEvents(data: any[]) {
+export async function insertEvents(data: any[]) {
 	const now = new Date();
-	const events = data.map((event: any, index: number) => {
+	const events = data.map((event, index) => {
 		const start = new Date(now);
 		start.setDate(now.getDate() + index);
 		return { ...event, createdAt: start, startAt: start, endAt: new Date(start.getTime() + 2 * MS_PER_DAY), updatedAt: null };
@@ -248,9 +234,9 @@ async function insertEvents(data: any[]) {
 	console.log("Added: Events");
 }
 
-async function insertRecurringEvents(data: any[]) {
+export async function insertRecurringEvents(data: any[]) {
 	const seedNow = new Date();
-	const events = data.map((event: any, index: number) => {
+	const events = data.map((event, index) => {
 		const startAt = new Date(seedNow);
 		startAt.setDate(seedNow.getDate() + index + 1);
 		const hourOffset = 9 + (index % 5);
@@ -258,66 +244,41 @@ async function insertRecurringEvents(data: any[]) {
 		const endAt = new Date(startAt);
 		endAt.setHours(hourOffset + 1, 0, 0, 0);
 
-		return {
-			...event,
-			createdAt: seedNow,
-			startAt,
-			endAt,
-			updatedAt: null,
-		};
+		return { ...event, createdAt: seedNow, startAt, endAt, updatedAt: null };
 	});
 	await checkAndInsertData(schema.eventsTable, events, schema.eventsTable.id, 1000);
 	console.log("Added: Recurring Events");
 }
 
-async function insertRecurrenceRules(data: any[]) {
+export async function insertRecurrenceRules(data: any[]) {
 	if (!data.length) return;
-
 	const now = new Date();
 	const oneYear = new Date();
 	oneYear.setFullYear(now.getFullYear() + 1);
 	const until = oneYear.toISOString().replace(/[-:]/g, "").split(".")[0] + "Z";
 
-	const rules = data.map((rule: any, index: number) => {
+	const rules = data.map((rule, index) => {
 		const required = ["id", "baseRecurringEventId", "creatorId", "organizationId"];
-		for (const f of required) {
-			if (!rule[f]) throw new Error(`Missing required field: ${f} in rule ${rule.id || index}`);
-		}
+		for (const f of required) if (!rule[f]) throw new Error(`Missing required field: ${f} in rule ${rule.id || index}`);
 
 		const freq = rule.frequency === "DYNAMIC" ? "WEEKLY" : rule.frequency;
-		const validFreq = ["DAILY", "WEEKLY", "MONTHLY", "YEARLY"];
-		if (!validFreq.includes(freq)) throw new Error(`Invalid frequency: ${freq}`);
+		if (!["DAILY", "WEEKLY", "MONTHLY", "YEARLY"].includes(freq)) throw new Error(`Invalid frequency: ${freq}`);
 
 		const intRaw = rule.interval === "DYNAMIC" ? 1 : rule.interval;
 		const int = typeof intRaw === "number" ? intRaw : Number.parseInt(String(intRaw), 10);
 		if (!Number.isFinite(int) || int <= 0) throw new Error(`Invalid interval: ${rule.interval}`);
 
 		const bd = rule.byDay || null;
-		const byDayArray = bd
-			? (Array.isArray(bd) ? bd : String(bd).split(",")).map((s: string) => s.trim()).filter(Boolean)
-			: null;
-
-		if (byDayArray && byDayArray.length > 0) {
-			const validDays = ["MO", "TU", "WE", "TH", "FR", "SA", "SU"];
-			for (const day of byDayArray) {
-				const clean = day.replace(/^[+-]?\d+/, "").trim();
-				if (!validDays.includes(clean)) throw new Error(`Invalid byDay value: ${day}`);
-			}
-		}
+		const byDayArray = bd ? (Array.isArray(bd) ? bd : String(bd).split(",")).map((s: string) => s.trim()).filter(Boolean) : null;
 
 		const byDayString = byDayArray && byDayArray.length > 0 ? `;BYDAY=${byDayArray.join(",")}` : "";
 
-		// Semantic Fix: Recurrence start should align with typical event start
 		const recurrenceStart = new Date(now);
 		recurrenceStart.setDate(now.getDate() + index + 1);
 		recurrenceStart.setHours(9 + (index % 5), 0, 0, 0);
 
 		return {
-			id: rule.id,
-			baseRecurringEventId: rule.baseRecurringEventId,
-			creatorId: rule.creatorId,
-			updaterId: rule.updaterId,
-			organizationId: rule.organizationId,
+			...rule,
 			frequency: freq,
 			interval: int,
 			byDay: byDayArray && byDayArray.length > 0 ? byDayArray : null,
@@ -327,30 +288,26 @@ async function insertRecurrenceRules(data: any[]) {
 			recurrenceStartDate: recurrenceStart,
 			recurrenceEndDate: oneYear,
 			recurrenceRuleString: `FREQ=${freq};INTERVAL=${int}${byDayString};UNTIL=${until}`,
-			count: null,
-			originalSeriesId: null,
-			byMonth: null,
-			byMonthDay: null,
 		};
 	});
 
 	await db.insert(schema.recurrenceRulesTable).values(rules).onConflictDoUpdate({
 		target: schema.recurrenceRulesTable.id,
 		set: {
-			frequency: schema.recurrenceRulesTable.frequency,
-			interval: schema.recurrenceRulesTable.interval,
-			byDay: schema.recurrenceRulesTable.byDay,
-			recurrenceEndDate: schema.recurrenceRulesTable.recurrenceEndDate,
-			recurrenceRuleString: schema.recurrenceRulesTable.recurrenceRuleString,
-			latestInstanceDate: schema.recurrenceRulesTable.latestInstanceDate,
+			frequency: sql`excluded.frequency`,
+			interval: sql`excluded.interval`,
+			byDay: sql`excluded.by_day`,
+			recurrenceEndDate: sql`excluded.recurrence_end_date`,
+			recurrenceRuleString: sql`excluded.recurrence_rule_string`,
+			latestInstanceDate: sql`excluded.latest_instance_date`,
 			updatedAt: now,
 		},
 	});
 	console.log("Added: Recurrence Rules");
 }
 
-async function insertEventAttendees(data: any[]) {
-	const attendees = data.map((attendee: any) => {
+export async function insertEventAttendees(data: any[]) {
+	const attendees = data.map((attendee) => {
 		const pCreated = parseDate(attendee.createdAt);
 		const pUpdated = parseDate(attendee.updatedAt);
 		const pCheckin = parseDate(attendee.checkinTime);
@@ -368,14 +325,8 @@ async function insertEventAttendees(data: any[]) {
 	console.log("Added: Event Attendees");
 }
 
-export async function insertCollections(
-	inputCollections: string[],
-	autoIncludeEventAttendees = true,
-): Promise<boolean> {
+export async function insertCollections(inputCollections: string[], autoIncludeEventAttendees = true): Promise<boolean> {
 	try {
-		const adminEmail = envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS;
-		if (!adminEmail) throw new Error("API_ADMINISTRATOR_USER_EMAIL_ADDRESS is not defined.");
-
 		const collections = [...inputCollections];
 		if (autoIncludeEventAttendees && !collections.includes("event_attendees")) {
 			collections.push("event_attendees");
@@ -391,42 +342,24 @@ export async function insertCollections(
 			event_attendees: insertEventAttendees,
 		};
 
-		const optional = ["event_attendees"];
-
 		for (const col of collections) {
 			if (!handlers[col]) {
 				console.warn(`Skipping unknown collection: ${col}`);
 				continue;
 			}
-
 			const dataPath = path.resolve(dirname, `./sample_data/${col}.json`);
-			let fileContent = "[]";
-			try {
-				fileContent = await fs.readFile(dataPath, "utf8");
-			} catch (e) {
-				if (optional.includes(col)) {
-					console.log(`Skipping optional file: ${col}.json`);
-					continue;
-				} else {
-					throw new Error(`Failed to read required file: ${dataPath}`, { cause: e });
-				}
-			}
-
 			let parsed;
 			try {
-				parsed = JSON.parse(fileContent);
+				const content = await fs.readFile(dataPath, "utf8");
+				parsed = JSON.parse(content);
 				if (!Array.isArray(parsed)) {
-					console.warn(`Warning: ${col}.json contains non-array data, wrapping in array.`);
+					console.warn(`Warning: ${col}.json is not an array. Wrapping.`);
 					parsed = [parsed];
 				}
 			} catch (e) {
-				if (optional.includes(col)) {
-					console.warn(`Skipping malformed optional collection: ${col}`);
-					continue;
-				}
-				throw new Error(`Malformed JSON in required collection: ${col}`, { cause: e });
+				if (col === "event_attendees") continue;
+				throw new Error(`Failed to load required collection: ${col}`, { cause: e });
 			}
-
 			await handlers[col](parsed);
 		}
 
@@ -443,24 +376,19 @@ export async function checkDataSize(stage: string): Promise<boolean> {
 		const tables = [
 			{ name: "users", table: schema.usersTable },
 			{ name: "organizations", table: schema.organizationsTable },
+			{ name: "organization_memberships", table: schema.organizationMembershipsTable },
 			{ name: "events", table: schema.eventsTable },
 			{ name: "recurrence_rules", table: schema.recurrenceRulesTable },
 			{ name: "event_attendees", table: schema.eventAttendeesTable },
-			{ name: "organization_memberships", table: schema.organizationMembershipsTable },
 		];
-
-		console.log(`\nRecord Counts ${stage} Import:\n`);
-		console.log(`${"| Table Name".padEnd(30)}| Record Count |`);
-		console.log(`${"|".padEnd(30, "-")}|----------------|`);
-
+		console.log(`\nRecord Counts ${stage} Import:`);
 		for (const { name, table } of tables) {
 			const result = await db.select({ count: sql`count(*)` }).from(table);
-			const count = Number(result?.[0]?.count ?? 0);
-			console.log(`| ${name.padEnd(28)}| ${count.toString().padEnd(15)}|`);
+			console.log(`| ${name.padEnd(28)}| ${Number(result?.[0]?.count ?? 0).toString().padEnd(15)}|`);
 		}
 		return true;
 	} catch (err) {
-		console.error(`Error checking size: ${err}`);
+		console.error("checkDataSize failed:", err);
 		return false;
 	}
 }
@@ -468,9 +396,9 @@ export async function checkDataSize(stage: string): Promise<boolean> {
 export async function disconnect(): Promise<boolean> {
 	try {
 		await queryClient.end();
+		return true;
 	} catch (err) {
 		if (err instanceof Error) throw err;
 		throw new Error("Error disconnecting", { cause: err });
 	}
-	return true;
 }

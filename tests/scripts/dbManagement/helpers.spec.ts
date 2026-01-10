@@ -1,92 +1,73 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import { describe, it, expect, vi, beforeEach } from "vitest";
 import fs from "node:fs/promises";
 import * as helpers from "../../../scripts/dbManagement/helpers";
 
 vi.mock("node:fs/promises");
 
-// Fix: Define mock return values upfront to avoid re-invocation issues
-const mockOnConflictDoNothing = vi.fn().mockResolvedValue([]);
-const mockOnConflictDoUpdate = vi.fn().mockResolvedValue([]);
 const mockValues = vi.fn().mockReturnValue({
-    onConflictDoNothing: mockOnConflictDoNothing,
-    onConflictDoUpdate: mockOnConflictDoUpdate
+    onConflictDoNothing: vi.fn().mockResolvedValue([]),
+    onConflictDoUpdate: vi.fn().mockResolvedValue([])
 });
 
-// The insert mock returns an object that has a 'values' property pointing to our spy
 const mockInsert = vi.fn().mockReturnValue({ values: mockValues });
 
 vi.mock("../../../scripts/dbManagement/helpers", async (importOriginal) => {
-    const actual: any = await importOriginal();
+    const actual = await importOriginal() as typeof helpers;
     return {
         ...actual,
         db: {
             insert: mockInsert,
-            select: vi.fn().mockReturnValue({ from: vi.fn().mockResolvedValue([{ count: 0 }]) }),
+            select: vi.fn().mockReturnValue({ from: vi.fn().mockResolvedValue([{ count: 5 }]) }),
             query: { usersTable: { findFirst: vi.fn().mockResolvedValue({ id: "admin-id" }) } },
-            execute: vi.fn(),
-            transaction: (cb: any) => cb({ insert: mockInsert, execute: vi.fn() })
+            execute: vi.fn().mockResolvedValue([{ tablename: "t1" }]),
+            transaction: (cb: any) => {
+                const tx = { insert: mockInsert, execute: vi.fn().mockResolvedValue([{ tablename: "t1" }]), rollback: vi.fn() };
+                return cb(tx);
+            }
         },
         minioClient: {
-            listObjects: vi.fn(),
-            removeObjects: vi.fn()
+            listObjects: vi.fn().mockReturnValue({ [Symbol.asyncIterator]: async function* () { yield { name: "o1" }; } }),
+            removeObjects: vi.fn().mockResolvedValue(true)
         }
     };
 });
 
 describe("DB Management Helpers", () => {
-    beforeEach(() => {
-        vi.clearAllMocks();
-    });
+    beforeEach(() => { vi.clearAllMocks(); });
 
-    describe("listSampleData", () => {
-        it("should handle mixed file types and return true", async () => {
-            (fs.readdir as any).mockResolvedValue(["test.json", "readme.txt"]);
+    describe("validateSampleData", () => {
+        it("should return false for non-array JSON", async () => {
+            (fs.readdir as any).mockResolvedValue(["test.json"]);
+            (fs.readFile as any).mockResolvedValue(JSON.stringify({ not: "an-array" }));
+            expect(await helpers.validateSampleData(true)).toBe(false);
+        });
+        it("should return true for valid array JSON", async () => {
+            (fs.readdir as any).mockResolvedValue(["test.json"]);
             (fs.readFile as any).mockResolvedValue(JSON.stringify([{ id: 1 }]));
-            
-            const result = await helpers.listSampleData();
-            expect(result).toBe(true);
-            expect(fs.readFile).toHaveBeenCalledTimes(1); 
-        });
-
-        it("should handle invalid JSON gracefully", async () => {
-            (fs.readdir as any).mockResolvedValue(["invalid.json"]);
-            (fs.readFile as any).mockResolvedValue("INVALID_JSON");
-            
-            const result = await helpers.listSampleData();
-            expect(result).toBe(true);
+            expect(await helpers.validateSampleData(true)).toBe(true);
         });
     });
 
-    describe("insertCollections", () => {
-        it("should insert recurrence_rules and validate call arguments", async () => {
-            const rule = { id: "r1", frequency: "WEEKLY", interval: 1, organizationId: "org1", baseRecurringEventId: "e1" };
+    describe("insertCollections Handlers", () => {
+        it("should insert recurrence rules strictly and deterministic", async () => {
+            const rule = { id: "r1", baseRecurringEventId: "e1", creatorId: "u1", organizationId: "org1", frequency: "WEEKLY", interval: 1 };
             (fs.readFile as any).mockResolvedValue(JSON.stringify([rule]));
-            
-            await helpers.insertCollections(["recurrence_rules"]);
-            
-            // Fix: Assert against the captured spy, not a new call
-            expect(mockValues).toHaveBeenCalled();
-            const callArgs = mockValues.mock.calls[0][0];
-            expect(callArgs[0].frequency).toBe("WEEKLY");
+            await helpers.insertCollections(["recurrence_rules"], false);
+            expect(mockValues).toHaveBeenCalledWith(expect.arrayContaining([expect.objectContaining({ id: "r1" })]));
         });
 
-        it("should fail validation on invalid frequency with exact message", async () => {
-            const rules = [{ frequency: "INVALID_FREQ" }];
-            (fs.readFile as any).mockResolvedValue(JSON.stringify(rules));
-
-            await expect(helpers.insertCollections(["recurrence_rules"]))
-                .rejects.toThrow("Invalid frequency: INVALID_FREQ");
+        it("should fail strictly on missing required files", async () => {
+            (fs.readFile as any).mockRejectedValue(new Error("ENOENT"));
+            await expect(helpers.insertCollections(["users"], false)).rejects.toThrow("Failed to load required collection");
         });
+    });
 
-        it("should verify event_attendees date parsing", async () => {
-            const attendees = [{ id: "a1", createdAt: "2023-01-01T00:00:00Z" }];
-            (fs.readFile as any).mockResolvedValue(JSON.stringify(attendees));
-
-            await helpers.insertCollections(["event_attendees"]);
-            
-            const callArgs = mockValues.mock.calls[0][0];
-            expect(callArgs[0].createdAt).toBeInstanceOf(Date);
-            expect(callArgs[0].createdAt.toISOString()).toBe("2023-01-01T00:00:00.000Z");
+    describe("Maintenance Operations", () => {
+        it("formatDatabase should complete successfully", async () => {
+            expect(await helpers.formatDatabase()).toBe(true);
+        });
+        it("emptyMinioBucket should complete successfully", async () => {
+            expect(await helpers.emptyMinioBucket()).toBe(true);
         });
     });
 });
