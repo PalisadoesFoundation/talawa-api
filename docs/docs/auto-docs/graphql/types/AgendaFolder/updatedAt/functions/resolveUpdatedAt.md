@@ -25,6 +25,10 @@ The parent AgendaFolder object
 
 `string` \| `null`
 
+#### description
+
+`string` \| `null`
+
 #### eventId
 
 `string`
@@ -37,13 +41,25 @@ The parent AgendaFolder object
 
 `boolean`
 
+#### isDefaultFolder
+
+`boolean`
+
 #### name
+
+`string`
+
+#### organizationId
 
 `string`
 
 #### parentFolderId
 
 `string` \| `null`
+
+#### sequence
+
+`number` \| `null`
 
 #### updatedAt
 

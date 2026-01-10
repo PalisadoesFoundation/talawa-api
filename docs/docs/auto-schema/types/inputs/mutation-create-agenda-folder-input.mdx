@@ -73,14 +73,21 @@ export const Details = ({
 
 ```graphql
 input MutationCreateAgendaFolderInput {
+  description: String!
   eventId: ID!
   isAgendaItemFolder: Boolean!
   name: String!
+  organizationId: ID!
   parentFolderId: ID
+  sequence: Int!
 }
 ```
 
 ### Fields
+
+#### [<code style={{ fontWeight: 'normal' }}>MutationCreateAgendaFolderInput.<b>description</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>String!</b></code>](/auto-schema/types/scalars/string.mdx) <Badge class="badge badge--secondary badge--non_null" text="non-null"/> <Badge class="badge badge--secondary " text="scalar"/>
+
+Description of Agenda Folder
 
 #### [<code style={{ fontWeight: 'normal' }}>MutationCreateAgendaFolderInput.<b>eventId</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>ID!</b></code>](/auto-schema/types/scalars/id.mdx) <Badge class="badge badge--secondary badge--non_null" text="non-null"/> <Badge class="badge badge--secondary " text="scalar"/>
 
@@ -94,9 +101,17 @@ Boolean to tell if the agenda folder is meant to be a folder for agenda items or
 
 Name of the agenda folder.
 
+#### [<code style={{ fontWeight: 'normal' }}>MutationCreateAgendaFolderInput.<b>organizationId</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>ID!</b></code>](/auto-schema/types/scalars/id.mdx) <Badge class="badge badge--secondary badge--non_null" text="non-null"/> <Badge class="badge badge--secondary " text="scalar"/>
+
+ID of the organization this folder belongs to.
+
 #### [<code style={{ fontWeight: 'normal' }}>MutationCreateAgendaFolderInput.<b>parentFolderId</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>ID</b></code>](/auto-schema/types/scalars/id.mdx) <Badge class="badge badge--secondary " text="scalar"/>
 
 Global identifier of the agenda folder the agenda folder is contained within.
+
+#### [<code style={{ fontWeight: 'normal' }}>MutationCreateAgendaFolderInput.<b>sequence</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>Int!</b></code>](/auto-schema/types/scalars/int.mdx) <Badge class="badge badge--secondary badge--non_null" text="non-null"/> <Badge class="badge badge--secondary " text="scalar"/>
+
+Sequence of the Agenda Folder.
 
 ### Member Of
 
