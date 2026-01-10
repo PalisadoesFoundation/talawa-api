@@ -7,5 +7,3 @@ on:
 jobs:
   issue-unassigned:
     uses: PalisadoesFoundation/.github/.github/workflows/issue-unassigned.yml@main
-    # secrets:
-    #   ORG_ACCESS_TOKEN: ${{ secrets.ORG_ACCESS_TOKEN }}
