@@ -16,6 +16,7 @@ import {
 import plugins from "./fastifyPlugins/index";
 import routes from "./routes/index";
 import { fastifyOtelInstrumentation } from "./tracing";
+import { loggerOptions } from "./utilities/logging/logger";
 
 // Currently fastify provides typescript integration through the usage of ambient typescript declarations where the type of global fastify instance is extended with our custom types. This approach is not sustainable for implementing scoped and encapsulated business logic which is meant to be the main advantage of fastify plugins. The fastify team is aware of this problem and is currently looking for a more elegant approach for typescript integration. More information can be found at this link: https://github.com/fastify/fastify/issues/5061
 declare module "fastify" {
@@ -55,14 +56,7 @@ export const createServer = async (options?: {
 		pluginTimeout: 30000,
 
 		// For configuring the pino.js logger that comes integrated with fastify. More information at this link: https://fastify.dev/docs/latest/Reference/Logging/
-		logger: {
-			level: envConfig.API_LOG_LEVEL,
-			transport: envConfig.API_IS_PINO_PRETTY
-				? {
-						target: "pino-pretty",
-					}
-				: undefined,
-		},
+		logger: loggerOptions,
 		genReqId: (req) => {
 			const headerValue = req.headers["x-correlation-id"];
 			if (
