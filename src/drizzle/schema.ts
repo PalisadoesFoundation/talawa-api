@@ -22,6 +22,10 @@ export {
 	advertisementsTableRelations,
 } from "./tables/advertisements";
 export {
+	agendaCategoriesTable,
+	agendaCategoriesTableRelations,
+} from "./tables/agendaCategories"
+export {
 	agendaFoldersTable,
 	agendaFoldersTableRelations,
 } from "./tables/agendaFolders";
