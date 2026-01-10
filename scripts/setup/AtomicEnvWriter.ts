@@ -292,7 +292,7 @@ export async function readEnv(
 	}
 }
 
-export async function cleanupBackup(
+async function _cleanupBackup(
 	backupFile: string = ".env.backup",
 ): Promise<void> {
 	try {
