@@ -7,6 +7,7 @@ import inquirer from "inquirer";
  * @param defaultValue - Optional default value
  * @param validate - Optional validation function returning true or an error message
  * @returns The user's input string
+ * @throws {Error} If the prompt response is not a string
  */
 export async function promptInput(
 	name: string,
@@ -31,6 +32,7 @@ export async function promptInput(
  * @param choices - Array of choices to select from
  * @param defaultValue - Optional default selection
  * @returns The selected choice
+ * @throws {Error} If the prompt response is not a string
  */
 export async function promptList(
 	name: string,
@@ -54,6 +56,7 @@ export async function promptList(
  * @param message - The message to display to the user
  * @param defaultValue - Optional default value
  * @returns Boolean indicating user's choice
+ * @throws {Error} If the prompt response is not a boolean
  */
 export async function promptConfirm(
 	name: string,
