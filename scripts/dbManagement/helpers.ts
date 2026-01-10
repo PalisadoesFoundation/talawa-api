@@ -24,6 +24,8 @@ const envConfig = envSchema<EnvConfig>({
 
 export const dirname: string = path.dirname(fileURLToPath(import.meta.url));
 export const bucketName: string = envConfig.MINIO_ROOT_USER || "";
+// Fix: Define constant for magic number
+export const MS_PER_DAY = 24 * 60 * 60 * 1000;
 
 export const queryClient = postgres({
 	host: envConfig.API_POSTGRES_HOST,
@@ -180,14 +182,18 @@ export function parseDate(date: string | number | Date): Date | null {
 	return Number.isNaN(parsedDate.getTime()) ? null : parsedDate;
 }
 
-// --- Handler Functions (Refactored per CodeRabbit) ---
+// --- Handler Functions ---
 
 async function insertUsers(data: any[]) {
-	const users = data.map((user: any) => ({
-		...user,
-		createdAt: parseDate(user.createdAt),
-		updatedAt: parseDate(user.updatedAt),
-	}));
+	const users = data.map((user: any) => {
+        // Fix: Safety check to avoid null violation on createdAt
+        const parsedCreatedAt = parseDate(user.createdAt);
+        return {
+            ...user,
+            ...(parsedCreatedAt && { createdAt: parsedCreatedAt }),
+            updatedAt: parseDate(user.updatedAt),
+        };
+    });
 	await checkAndInsertData(schema.usersTable, users, schema.usersTable.id, 1000);
 	console.log(`Added: Users`);
 }
@@ -223,20 +229,24 @@ async function insertEvents(data: any[]) {
 	const events = data.map((event: any, index: number) => {
 		const start = new Date(now);
 		start.setDate(now.getDate() + index);
-		return { ...event, createdAt: start, startAt: start, endAt: new Date(start.getTime() + 2 * 86400000), updatedAt: null };
+        // Fix: Use named constant instead of magic number
+		return { ...event, createdAt: start, startAt: start, endAt: new Date(start.getTime() + 2 * MS_PER_DAY), updatedAt: null };
 	});
 	await checkAndInsertData(schema.eventsTable, events, schema.eventsTable.id, 1000);
 	console.log(`Added: Events`);
 }
 
 async function insertRecurringEvents(data: any[]) {
-	const events = data.map((event: any) => {
-        // Fix: Create fresh Date objects to avoid mutation bugs
+	const events = data.map((event: any, index: number) => {
         const now = new Date();
         const startAt = new Date(now);
-        startAt.setHours(10, 0, 0, 0);
+        
+        // Fix: Dynamic time based on index (not fixed 10-11 for everyone)
+        const hourOffset = 9 + (index % 5); // 9, 10, 11, 12, 13
+        startAt.setHours(hourOffset, 0, 0, 0);
+        
         const endAt = new Date(now);
-        endAt.setHours(11, 0, 0, 0);
+        endAt.setHours(hourOffset + 1, 0, 0, 0);
         
         return {
             ...event,
@@ -258,27 +268,18 @@ async function insertRecurrenceRules(data: any[]) {
 
 	const rules = data.map((rule: any) => {
 		const freq = rule.frequency === "DYNAMIC" ? "WEEKLY" : rule.frequency;
-        
-        // Validate Frequency Enum
         const validFrequencies = ["DAILY", "WEEKLY", "MONTHLY", "YEARLY"];
-        if (!validFrequencies.includes(freq)) {
-            throw new Error(`Invalid frequency: ${freq}`);
-        }
+        if (!validFrequencies.includes(freq)) throw new Error(`Invalid frequency: ${freq}`);
 
 		const int = rule.interval === "DYNAMIC" ? 1 : rule.interval;
 		const bd = rule.byDay || null;
-        
-        // Fix: Safe array splitting and validation
         const byDayArray = bd ? (Array.isArray(bd) ? bd : bd.split(",")) : null;
 
         if (byDayArray) {
             const validDays = ["MO", "TU", "WE", "TH", "FR", "SA", "SU"];
             for (const day of byDayArray) {
-                // Allow iCal format (e.g. 1MO, -2FR)
                 const cleanDay = day.replace(/^[+-]?\d+/, "").trim();
-                if (!validDays.includes(cleanDay)) {
-                    throw new Error(`Invalid byDay value: ${day}`);
-                }
+                if (!validDays.includes(cleanDay)) throw new Error(`Invalid byDay value: ${day}`);
             }
         }
 
@@ -329,18 +330,24 @@ async function insertEventAttendees(data: any[]) {
 
 /**
  * Inserts sample data collections into the database.
- * @param inputCollections - Array of collection names to insert. event_attendees is automatically included if not present.
+ * @param inputCollections - Array of collection names to insert. 
+ * @param autoIncludeEventAttendees - Whether to automatically append event_attendees (default: true).
  * @returns Promise that resolves to true if insertion succeeds
  */
-export async function insertCollections(inputCollections: string[]): Promise<boolean> {
+export async function insertCollections(
+    inputCollections: string[], 
+    autoIncludeEventAttendees: boolean = true
+): Promise<boolean> {
 	try {
 		const API_ADMINISTRATOR_USER_EMAIL_ADDRESS = envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS;
 		if (!API_ADMINISTRATOR_USER_EMAIL_ADDRESS) throw new Error("API_ADMINISTRATOR_USER_EMAIL_ADDRESS is not defined.");
 
-        // Fix: Avoid mutation of input param
-        const collections = inputCollections.includes("event_attendees") 
-            ? [...inputCollections] 
-            : [...inputCollections, "event_attendees"];
+        // Fix: Explicit flag handling with logging
+        const collections = [...inputCollections];
+        if (autoIncludeEventAttendees && !collections.includes("event_attendees")) {
+            collections.push("event_attendees");
+            console.log("Note: Automatically including event_attendees collection");
+        }
 
         const collectionHandlers: Record<string, (data: any[]) => Promise<void>> = {
             users: insertUsers,
@@ -349,8 +356,10 @@ export async function insertCollections(inputCollections: string[]): Promise<boo
             recurring_events: insertRecurringEvents,
             recurrence_rules: insertRecurrenceRules,
             event_attendees: insertEventAttendees,
-            // Add other simple handlers if needed or handle in default
         };
+
+        // Define optional collections to allow silent skipping only for them
+        const optionalCollections = ["event_attendees"];
 
 		for (const collection of collections) {
 			const dataPath = path.resolve(dirname, `./sample_data/${collection}.json`);
@@ -358,8 +367,14 @@ export async function insertCollections(inputCollections: string[]): Promise<boo
 			try {
 				fileContent = await fs.readFile(dataPath, "utf8");
 			} catch (e) {
-                // Silently skip missing files as they might be optional
-				continue;
+                // Fix: Log skipped files, fail if required file is missing
+                if (optionalCollections.includes(collection)) {
+                    console.log(`Skipping optional file: ${collection}.json`);
+				    continue;
+                } else {
+                    console.error(`Failed to read required file: ${dataPath}`, e);
+                    throw e;
+                }
 			}
 
             let parsedData;
@@ -375,8 +390,6 @@ export async function insertCollections(inputCollections: string[]): Promise<boo
             if (handler) {
                 await handler(parsedData);
             } else {
-                // Fallback for simple tables not needing special logic
-                // For Phase 1 we only strictly support the defined handlers
                 console.warn(`Skipping unknown collection: ${collection}`);
             }
 		}
@@ -390,9 +403,7 @@ export async function insertCollections(inputCollections: string[]): Promise<boo
 
 /**
  * Checks and displays record counts for key tables.
- * Useful for verifying data before and after seeding operations.
  * @param stage - Label for the current stage (e.g., "Before", "After")
- * @returns Promise that resolves to true if check succeeds, false otherwise
  */
 export async function checkDataSize(stage: string): Promise<boolean> {
     try {
@@ -401,6 +412,8 @@ export async function checkDataSize(stage: string): Promise<boolean> {
             { name: "organizations", table: schema.organizationsTable },
             { name: "events", table: schema.eventsTable },
             { name: "recurrence_rules", table: schema.recurrenceRulesTable },
+            // Fix: Added missing event_attendees table check
+            { name: "event_attendees", table: schema.eventAttendeesTable },
         ];
 
         console.log(`\nRecord Counts ${stage} Import:\n`);
