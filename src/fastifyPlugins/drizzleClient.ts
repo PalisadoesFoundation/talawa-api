@@ -33,7 +33,12 @@ export const drizzleClient = fastifyPlugin(
 				host: fastify.envConfig.API_POSTGRES_HOST,
 				password: fastify.envConfig.API_POSTGRES_PASSWORD,
 				port: fastify.envConfig.API_POSTGRES_PORT,
-				ssl: fastify.envConfig.API_POSTGRES_SSL_MODE,
+				ssl: fastify.envConfig.API_POSTGRES_SSL_MODE as
+					| boolean
+					| "allow"
+					| "prefer"
+					| "require"
+					| "verify-full",
 				user: fastify.envConfig.API_POSTGRES_USER,
 			},
 			// logger: new DrizzlePinoLogger(),

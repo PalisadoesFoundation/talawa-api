@@ -1,5 +1,5 @@
-import { type Static, Type } from "@sinclair/typebox";
 import { envSchema } from "env-schema";
+import { type Static, Type } from "typebox";
 import { envConfigSchema, envSchemaAjv } from "../envConfigSchema";
 
 const schema = Type.Pick(envConfigSchema, [

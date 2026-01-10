@@ -1,8 +1,8 @@
-import type { FastifyBaseLogger } from "fastify";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { GraphQLContext } from "~/src/graphql/context";
 import { EmailQueueProcessor } from "~/src/services/ses/EmailQueueProcessor";
 import { EmailService } from "~/src/services/ses/EmailService";
+import { createMockLogger } from "../../utilities/mockLogger";
 
 type ProcessorWithPrivates = {
 	isProcessing: boolean;
@@ -74,15 +74,7 @@ describe("EmailQueueProcessor", () => {
 			}),
 		};
 
-		const logger = {
-			info: vi.fn(),
-			error: vi.fn(),
-			warn: vi.fn(),
-			debug: vi.fn(),
-			trace: vi.fn(),
-			fatal: vi.fn(),
-			child: () => logger,
-		} as unknown as FastifyBaseLogger;
+		const logger = createMockLogger();
 
 		const ctxSubset = {
 			drizzleClient: fakeDb as unknown as GraphQLContext["drizzleClient"],
