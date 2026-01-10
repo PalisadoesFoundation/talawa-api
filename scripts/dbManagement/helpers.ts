@@ -81,6 +81,8 @@ export async function formatDatabase(): Promise<boolean> {
 		});
 		return true;
 	} catch (error) {
+        // Fix #4: Log error instead of silent fail
+		console.error("formatDatabase failed:", error);
 		return false;
 	}
 }
@@ -99,12 +101,37 @@ export async function emptyMinioBucket(): Promise<boolean> {
 		}
 		return true;
 	} catch (error: unknown) {
+        console.error("Error emptying bucket:", error);
 		return false;
 	}
 }
 
 export async function listSampleData(): Promise<boolean> {
-	return true; 
+    // Fix #2: Implement real listing logic instead of stub
+    try {
+        const sampleDataPath = path.resolve(dirname, "./sample_data");
+        const files = await fs.readdir(sampleDataPath);
+        console.log("\nSample Data Files:");
+        console.log(`${"| File Name".padEnd(30)}| Document Count |`);
+        console.log(`${"|".padEnd(30, "-")}|----------------|`);
+
+        for (const file of files) {
+            if (!file.endsWith('.json')) continue;
+            const filePath = path.resolve(sampleDataPath, file);
+            const content = await fs.readFile(filePath, "utf8");
+            try {
+                const docs = JSON.parse(content);
+                const count = Array.isArray(docs) ? docs.length : 1;
+                console.log(`| ${file.padEnd(28)}| ${count.toString().padEnd(15)}|`);
+            } catch (e) {
+                console.log(`| ${file.padEnd(28)}| ${"Invalid JSON".padEnd(15)}|`);
+            }
+        }
+        return true;
+    } catch (error) {
+        console.error("listSampleData failed:", error);
+        return false;
+    }
 }
 
 export async function pingDB(): Promise<boolean> {
@@ -134,20 +161,19 @@ export async function checkAndInsertData<T>(
 	return true;
 }
 
-export async function insertCollections(collections: string[]): Promise<boolean> {
+export async function insertCollections(inputCollections: string[]): Promise<boolean> {
 	try {
 		const API_ADMINISTRATOR_USER_EMAIL_ADDRESS = envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS;
 		if (!API_ADMINISTRATOR_USER_EMAIL_ADDRESS) throw new Error("API_ADMINISTRATOR_USER_EMAIL_ADDRESS is not defined.");
 
-		// Ensure event_attendees is in the list of collections to process if not already
-		if (!collections.includes("event_attendees")) {
-			collections.push("event_attendees");
-		}
+        // Fix #5: Avoid mutation of input param
+        const collections = inputCollections.includes("event_attendees") 
+            ? [...inputCollections] 
+            : [...inputCollections, "event_attendees"];
 
 		for (const collection of collections) {
 			const dataPath = path.resolve(dirname, `./sample_data/${collection}.json`);
 			
-			// Gracefully handle missing files
 			let fileContent = "[]";
 			try {
 				fileContent = await fs.readFile(dataPath, "utf8");
@@ -204,14 +230,22 @@ export async function insertCollections(collections: string[]): Promise<boolean>
 					break;
 				}
 				case "recurring_events": {
-					const now = new Date();
-					const events = JSON.parse(fileContent).map((event: any) => ({
-						...event,
-						createdAt: now,
-						startAt: new Date(now.setHours(10, 0, 0, 0)),
-						endAt: new Date(now.setHours(11, 0, 0, 0)),
-						updatedAt: null,
-					}));
+                    // Fix #6: Fix Date mutation bug
+					const events = JSON.parse(fileContent).map((event: any) => {
+                        const now = new Date();
+                        const startAt = new Date(now);
+                        startAt.setHours(10, 0, 0, 0);
+                        const endAt = new Date(now);
+                        endAt.setHours(11, 0, 0, 0);
+                        
+                        return {
+                            ...event,
+                            createdAt: now,
+                            startAt,
+                            endAt,
+                            updatedAt: null,
+                        };
+                    });
 					await checkAndInsertData(schema.eventsTable, events, schema.eventsTable.id, 1000);
 					console.log(`Added: Recurring Events`);
 					break;
@@ -230,8 +264,10 @@ export async function insertCollections(collections: string[]): Promise<boolean>
 						const int = rule.interval === "DYNAMIC" ? 1 : rule.interval;
 						const bd = rule.byDay || null;
                         
-                        // Fix for Array type
-                        const byDayArray = bd ? bd.split(",") : null;
+                        // Fix #7: Safe array splitting
+                        const byDayArray = bd 
+                            ? (Array.isArray(bd) ? bd : bd.split(",")) 
+                            : null;
 
 						return {
 							id: rule.id,
@@ -264,7 +300,6 @@ export async function insertCollections(collections: string[]): Promise<boolean>
 					console.log(`Added: Recurrence Rules`);
 					break;
 				}
-                // 🟢 NEW: Added Infrastructure for Event Attendees (Phase 1 Requirement)
                 case "event_attendees": {
                     const attendees = JSON.parse(fileContent).map((attendee: any) => ({
                         ...attendee,
@@ -278,13 +313,8 @@ export async function insertCollections(collections: string[]): Promise<boolean>
                     break;
                 }
 				default: {
-					// Fallback for simple tables
-                    try {
-                        const data = JSON.parse(fileContent);
-                        if (Array.isArray(data) && data.length > 0) {
-                             // Placeholder for other tables
-                        }
-                    } catch (e) {}
+                    // Fix #3: Warn on unknown collections instead of silent ignore
+					console.warn(`Skipping unknown collection: ${collection}`);
 					break;
 				}
 			}
@@ -300,8 +330,30 @@ export function parseDate(date: string | number | Date): Date | null {
 	return Number.isNaN(parsedDate.getTime()) ? null : parsedDate;
 }
 
+// Fix #1: Implement checkDataSize logic (using DB counts)
 export async function checkDataSize(stage: string): Promise<boolean> {
-	return true; 
+    try {
+        const tables = [
+            { name: "users", table: schema.usersTable },
+            { name: "organizations", table: schema.organizationsTable },
+            { name: "events", table: schema.eventsTable },
+            { name: "recurrence_rules", table: schema.recurrenceRulesTable },
+        ];
+
+        console.log(`\nRecord Counts ${stage} Import:\n`);
+        console.log(`${"| Table Name".padEnd(30)}| Record Count |`);
+        console.log(`${"|".padEnd(30, "-")}|----------------|`);
+
+        for (const { name, table } of tables) {
+            const result = await db.select({ count: sql<number>`count(*)` }).from(table);
+            const count = result?.[0]?.count ?? 0;
+            console.log(`| ${name.padEnd(28)}| ${count.toString().padEnd(15)}|`);
+        }
+        return true;
+    } catch (err) {
+        console.error(`Error checking size: ${err}`);
+        return false;
+    }
 }
 
 export async function disconnect(): Promise<boolean> {
