@@ -188,31 +188,92 @@ fi
 : $((CURRENT_STEP++))
 step $CURRENT_STEP $TOTAL_STEPS "Reading configuration from package.json..."
 
-# Extract Node.js version
+# Parse Node.js version from package.json
 NODE_VERSION=$(jq -r '.engines.node // "lts"' package.json)
-# Clean version string (handle >=, ^, etc.)
-if [[ "$NODE_VERSION" =~ ^(\^|>=|~) ]]; then
-    # Extract version number after prefix (fnm handles both full semver and major-only)
-    CLEAN_NODE_VERSION=$(echo "$NODE_VERSION" | grep -oE '[0-9]+\.[0-9]+\.[0-9]+' | head -1 || true)
-    # Fallback to major version only if full semver not found
-    if [ -z "$CLEAN_NODE_VERSION" ]; then
-        CLEAN_NODE_VERSION=$(echo "$NODE_VERSION" | grep -oE '[0-9]+' | head -1 || true)
-    fi
-else
+info "Node.js version from package.json: \"$NODE_VERSION\""
+
+# Clean version string (remove >=, ^, ~, and other operators)
+# First try to extract full semver (e.g., 20.10.0)
+CLEAN_NODE_VERSION=$(echo "$NODE_VERSION" | grep -oE '[0-9]+\.[0-9]+\.[0-9]+' | head -1 || true)
+
+# If no full version found, try to extract major.minor version (e.g., 20.10)
+if [ -z "$CLEAN_NODE_VERSION" ]; then
+    CLEAN_NODE_VERSION=$(echo "$NODE_VERSION" | grep -oE '[0-9]+\.[0-9]+' | head -1 || true)
+fi
+
+# If no major.minor version found, try to extract major version (e.g., 20)
+if [ -z "$CLEAN_NODE_VERSION" ]; then
+    CLEAN_NODE_VERSION=$(echo "$NODE_VERSION" | grep -oE '[0-9]+' | head -1 || true)
+fi
+
+# If version is 'lts' or 'latest', keep it as-is
+if [ "$NODE_VERSION" = "lts" ] || [ "$NODE_VERSION" = "latest" ]; then
     CLEAN_NODE_VERSION="$NODE_VERSION"
 fi
 
-# Extract pnpm version
+# Validate we got a usable version
+if [ -z "$CLEAN_NODE_VERSION" ]; then
+    error "Could not parse Node.js version from package.json: '$NODE_VERSION'"
+    error ""
+    error "Expected formats:"
+    error "  - Semver with operator: '>=20.10.0' or '~20.10.0'"
+    error "  - Semver: '20.10.0'"
+    error "  - Major version: '20'"
+    error "  - Aliases: 'lts' or 'latest'"
+    error ""
+    error "Current value in package.json engines.node: '$NODE_VERSION'"
+    error "Please verify package.json is correctly formatted"
+    exit 1
+fi
+
+info "Parsed Node.js version: $CLEAN_NODE_VERSION"
+
+# Parse pnpm version from package.json
+# First try packageManager field (preferred)
 PNPM_FULL=$(jq -r '.packageManager // ""' package.json)
 if [[ "$PNPM_FULL" == pnpm@* ]]; then
     PNPM_VERSION="${PNPM_FULL#pnpm@}"
     PNPM_VERSION="${PNPM_VERSION%%+*}"  # Remove hash if present
+    info "pnpm version from package.json packageManager: \"$PNPM_VERSION\""
 else
-    PNPM_VERSION="latest"
+    # Fallback to engines.pnpm field
+    PNPM_VERSION=$(jq -r '.engines.pnpm // "latest"' package.json)
+    info "pnpm version from package.json engines.pnpm: \"$PNPM_VERSION\""
 fi
 
-info "Target Node.js version: $CLEAN_NODE_VERSION"
-info "Target pnpm version: $PNPM_VERSION"
+# Accept specific versions (e.g., 9.1.0) or aliases (latest)
+if [ "$PNPM_VERSION" = "latest" ]; then
+    CLEAN_PNPM_VERSION="latest"
+else
+    # Try to extract version number
+    CLEAN_PNPM_VERSION=$(echo "$PNPM_VERSION" | grep -oE '[0-9]+\.[0-9]+\.[0-9]+' | head -1 || true)
+    
+    # If no full version, try major.minor
+    if [ -z "$CLEAN_PNPM_VERSION" ]; then
+        CLEAN_PNPM_VERSION=$(echo "$PNPM_VERSION" | grep -oE '[0-9]+\.[0-9]+' | head -1 || true)
+    fi
+    
+    # If still no version, try major only
+    if [ -z "$CLEAN_PNPM_VERSION" ]; then
+        CLEAN_PNPM_VERSION=$(echo "$PNPM_VERSION" | grep -oE '[0-9]+' | head -1 || true)
+    fi
+    
+    # Validate we got something
+    if [ -z "$CLEAN_PNPM_VERSION" ]; then
+        error "Could not parse pnpm version from package.json: '$PNPM_VERSION'"
+        error ""
+        error "Expected formats:"
+        error "  - Semver: '9.1.0' or '9.1'"
+        error "  - Major version: '9'"
+        error "  - Alias: 'latest'"
+        error ""
+        error "Current value in package.json: '$PNPM_VERSION'"
+        error "Please verify package.json is correctly formatted"
+        exit 1
+    fi
+fi
+
+info "Using pnpm version: $CLEAN_PNPM_VERSION"
 
 ##############################################################################
 # Step 6: Install Node.js
@@ -220,12 +281,39 @@ info "Target pnpm version: $PNPM_VERSION"
 : $((CURRENT_STEP++))
 step $CURRENT_STEP $TOTAL_STEPS "Installing Node.js v$CLEAN_NODE_VERSION..."
 
-fnm install "$CLEAN_NODE_VERSION"
-if ! fnm use "$CLEAN_NODE_VERSION"; then
-    error "Failed to activate Node.js v$CLEAN_NODE_VERSION"
-    exit 1
+if [ "$CLEAN_NODE_VERSION" = "lts" ]; then
+    info "Installing latest LTS version of Node.js..."
+    if ! fnm install --lts; then
+        error "Failed to install LTS version of Node.js"
+        exit 1
+    fi
+    if ! fnm use lts-latest; then
+        error "Failed to activate LTS version of Node.js"
+        exit 1
+    fi
+    fnm default "$(fnm current)" || echo "Warning: Failed to set LTS as default Node.js version. Current session has correct version but future shells may not." >&2
+elif [ "$CLEAN_NODE_VERSION" = "latest" ]; then
+    info "Installing latest version of Node.js..."
+    if ! fnm install --latest; then
+        error "Failed to install latest version of Node.js"
+        exit 1
+    fi
+    if ! fnm use latest; then
+        error "Failed to activate latest version of Node.js"
+        exit 1
+    fi
+    fnm default "$(fnm current)" || echo "Warning: Failed to set latest as default Node.js version. Current session has correct version but future shells may not." >&2
+else
+    if ! fnm install "$CLEAN_NODE_VERSION"; then
+        error "Failed to install Node.js v$CLEAN_NODE_VERSION"
+        exit 1
+    fi
+    if ! fnm use "$CLEAN_NODE_VERSION"; then
+        error "Failed to activate Node.js v$CLEAN_NODE_VERSION"
+        exit 1
+    fi
+    fnm default "$(fnm current)" || echo "Warning: Failed to set Node.js v$CLEAN_NODE_VERSION as default. Current session has correct version but future shells may not." >&2
 fi
-fnm default "$CLEAN_NODE_VERSION"
 
 # Verify Node.js is available
 if ! command_exists node; then
@@ -239,23 +327,34 @@ success "Node.js installed: $(node --version)"
 # Step 7: Install pnpm
 ##############################################################################
 : $((CURRENT_STEP++))
-step $CURRENT_STEP $TOTAL_STEPS "Installing pnpm v$PNPM_VERSION..."
+step $CURRENT_STEP $TOTAL_STEPS "Installing pnpm v$CLEAN_PNPM_VERSION..."
 
 if command_exists pnpm; then
     CURRENT_PNPM=$(pnpm --version)
+    
+    # Normalize current version to same precision as target
+    CURRENT_PNPM_NORMALIZED="$CURRENT_PNPM"
+    if [[ "$CLEAN_PNPM_VERSION" =~ ^[0-9]+$ ]]; then
+        # Target is major-only, extract major from current
+        CURRENT_PNPM_NORMALIZED=$(echo "$CURRENT_PNPM" | grep -oE '^[0-9]+' || echo "$CURRENT_PNPM")
+    elif [[ "$CLEAN_PNPM_VERSION" =~ ^[0-9]+\.[0-9]+$ ]]; then
+        # Target is major.minor, extract major.minor from current
+        CURRENT_PNPM_NORMALIZED=$(echo "$CURRENT_PNPM" | grep -oE '^[0-9]+\.[0-9]+' || echo "$CURRENT_PNPM")
+    fi
+
     # Skip version comparison if target is "latest" - always update to ensure we have latest
-    if [ "$PNPM_VERSION" = "latest" ]; then
+    if [ "$CLEAN_PNPM_VERSION" = "latest" ]; then
         info "Updating pnpm to latest version..."
         npm install -g "pnpm@latest"
-    elif [ "$CURRENT_PNPM" = "$PNPM_VERSION" ]; then
+    elif [ "$CURRENT_PNPM_NORMALIZED" = "$CLEAN_PNPM_VERSION" ]; then
         success "pnpm is already installed: v$CURRENT_PNPM"
     else
-        info "Updating pnpm from v$CURRENT_PNPM to v$PNPM_VERSION..."
-        npm install -g "pnpm@$PNPM_VERSION"
+        info "Updating pnpm from v$CURRENT_PNPM to v$CLEAN_PNPM_VERSION..."
+        npm install -g "pnpm@$CLEAN_PNPM_VERSION"
     fi
 else
     info "Installing pnpm..."
-    npm install -g "pnpm@$PNPM_VERSION"
+    npm install -g "pnpm@$CLEAN_PNPM_VERSION"
 fi
 
 # Verify pnpm is available in PATH
@@ -273,7 +372,8 @@ success "pnpm installed: v$(pnpm --version)"
 : $((CURRENT_STEP++))
 step $CURRENT_STEP $TOTAL_STEPS "Installing project dependencies..."
 
-pnpm install
+# Run pnpm install non-interactively (CI=true prevents interactive prompts)
+CI=true pnpm install
 
 success "Project dependencies installed"
 
