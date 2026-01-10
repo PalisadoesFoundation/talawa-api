@@ -24,7 +24,7 @@ export {
 export {
 	agendaCategoriesTable,
 	agendaCategoriesTableRelations,
-} from "./tables/agendaCategories"
+} from "./tables/agendaCategories";
 export {
 	agendaFoldersTable,
 	agendaFoldersTableRelations,
