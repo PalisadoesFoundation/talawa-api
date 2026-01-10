@@ -46,6 +46,24 @@ describe("AgendaCategory.creator resolver", () => {
 		);
 	});
 
+	it("throws unauthorized_action when user is not admin and has no organization membership", async () => {
+		mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValue({
+			id: "user-123",
+			role: "member",
+		});
+		mocks.drizzleClient.query.eventsTable.findFirst.mockResolvedValue({
+			startAt: new Date(),
+			organization: {
+				countryCode: "US",
+				membershipsWhereOrganization: [], // Empty array - no membership
+			},
+		});
+
+		await expect(resolveCreator(mockCategory, {}, ctx)).rejects.toThrow(
+			new TalawaGraphQLError({ extensions: { code: "unauthorized_action" } }),
+		);
+	});
+
 	it("throws unexpected when event does not exist", async () => {
 		mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValue({
 			id: "user-123",

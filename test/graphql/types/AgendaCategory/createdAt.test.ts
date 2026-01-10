@@ -3,7 +3,6 @@ import type { GraphQLContext } from "~/src/graphql/context";
 import type { AgendaCategory as AgendaCategoryType } from "~/src/graphql/types/AgendaCategory/AgendaCategory";
 import { resolveCreatedAt } from "~/src/graphql/types/AgendaCategory/createdAt";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
-import "~/src/graphql/types/AgendaCategories/AgendaCategories";
 import { createMockGraphQLContext } from "test/_Mocks_/mockContextCreator/mockContextCreator";
 
 describe("AgendaCategory.createdAt resolver", () => {
