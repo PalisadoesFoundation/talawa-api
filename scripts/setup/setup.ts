@@ -1,73 +1,43 @@
-import crypto from "node:crypto";
 import { promises as fs } from "node:fs";
 import path, { resolve } from "node:path";
+
+// Re-export validator helpers for test/typecheck compatibility
+export {
+	generateJwtSecret,
+	isBooleanString,
+	validateAllAnswers,
+	validateBooleanFields,
+	validateCloudBeaverAdmin,
+	validateCloudBeaverPassword,
+	validateCloudBeaverURL,
+	validateEmail,
+	validatePort,
+	validatePortNumbers,
+	validateRequiredFields,
+	validateSamplingRatio,
+	validateURL,
+} from "./validators";
+
+import type { SetupAnswers } from "./validators";
+import {
+	generateJwtSecret,
+	validateCloudBeaverAdmin,
+	validateCloudBeaverPassword,
+	validateCloudBeaverURL,
+	validateEmail,
+	validatePort,
+	validateSamplingRatio,
+	validateURL,
+} from "./validators";
+
+export type { SetupAnswers } from "./validators";
+
 import process from "node:process";
 import { pathToFileURL } from "node:url";
 import dotenv from "dotenv";
 import inquirer from "inquirer";
 import { envFileBackup } from "./envFileBackup/envFileBackup";
 import { updateEnvVariable } from "./updateEnvVariable";
-
-// Define a union type of all allowed environment keys
-export type SetupKey =
-	| "CI"
-	| "API_ADMINISTRATOR_USER_EMAIL_ADDRESS"
-	| "RECAPTCHA_SECRET_KEY"
-	| "API_BASE_URL"
-	| "API_HOST"
-	| "API_PORT"
-	| "API_IS_APPLY_DRIZZLE_MIGRATIONS"
-	| "API_IS_GRAPHIQL"
-	| "API_IS_PINO_PRETTY"
-	| "API_JWT_EXPIRES_IN"
-	| "API_JWT_SECRET"
-	| "API_LOG_LEVEL"
-	| "API_MINIO_ACCESS_KEY"
-	| "API_MINIO_END_POINT"
-	| "API_MINIO_PORT"
-	| "API_MINIO_SECRET_KEY"
-	| "API_MINIO_TEST_END_POINT"
-	| "API_MINIO_USE_SSL"
-	| "API_POSTGRES_DATABASE"
-	| "API_POSTGRES_HOST"
-	| "API_POSTGRES_PASSWORD"
-	| "API_POSTGRES_PORT"
-	| "API_POSTGRES_SSL_MODE"
-	| "API_POSTGRES_TEST_HOST"
-	| "API_POSTGRES_USER"
-	| "CLOUDBEAVER_ADMIN_NAME"
-	| "CLOUDBEAVER_ADMIN_PASSWORD"
-	| "CLOUDBEAVER_MAPPED_HOST_IP"
-	| "CLOUDBEAVER_MAPPED_PORT"
-	| "CLOUDBEAVER_SERVER_NAME"
-	| "CLOUDBEAVER_SERVER_URL"
-	| "MINIO_BROWSER"
-	| "MINIO_API_MAPPED_HOST_IP"
-	| "MINIO_API_MAPPED_PORT"
-	| "MINIO_CONSOLE_MAPPED_HOST_IP"
-	| "MINIO_CONSOLE_MAPPED_PORT"
-	| "MINIO_ROOT_PASSWORD"
-	| "MINIO_ROOT_USER"
-	| "POSTGRES_DB"
-	| "POSTGRES_MAPPED_HOST_IP"
-	| "POSTGRES_MAPPED_PORT"
-	| "POSTGRES_PASSWORD"
-	| "POSTGRES_USER"
-	| "CADDY_HTTP_MAPPED_PORT"
-	| "CADDY_HTTPS_MAPPED_PORT"
-	| "CADDY_HTTP3_MAPPED_PORT"
-	| "CADDY_TALAWA_API_DOMAIN_NAME"
-	| "CADDY_TALAWA_API_EMAIL"
-	| "CADDY_TALAWA_API_HOST"
-	| "CADDY_TALAWA_API_PORT"
-	| "API_OTEL_ENABLED"
-	| "API_OTEL_SAMPLING_RATIO";
-
-// Replace the index signature with a constrained mapping
-// Allow string indexing so tests and dynamic access are permitted
-export type SetupAnswers = Partial<Record<SetupKey, string>> & {
-	[key: string]: string | undefined;
-};
 
 async function promptInput(
 	name: string,
@@ -145,167 +115,6 @@ async function restoreLatestBackup(): Promise<void> {
 		console.error("Error reading backup directory:", readError);
 		throw readError;
 	}
-}
-export function generateJwtSecret(): string {
-	try {
-		return crypto.randomBytes(64).toString("hex");
-	} catch (err) {
-		console.error(
-			"⚠️ Warning: Permission denied while generating JWT secret. Ensure the process has sufficient filesystem access.",
-			err,
-		);
-		throw new Error("Failed to generate JWT secret");
-	}
-}
-export function validateURL(input: string): true | string {
-	try {
-		const url = new URL(input);
-		const protocol = url.protocol.toLowerCase();
-		if (protocol !== "http:" && protocol !== "https:") {
-			return "Please enter a valid URL with http:// or https:// protocol.";
-		}
-		return true;
-	} catch (_error) {
-		return "Please enter a valid URL.";
-	}
-}
-export function validatePort(input: string): true | string {
-	const portNumber = Number(input);
-	if (Number.isNaN(portNumber) || portNumber <= 0 || portNumber > 65535) {
-		return "Please enter a valid port number (1-65535).";
-	}
-	return true;
-}
-export function validateEmail(input: string): true | string {
-	if (!input.trim()) {
-		return "Email cannot be empty.";
-	}
-	if (input.length > 254) {
-		return "Email is too long.";
-	}
-	const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-	if (!emailRegex.test(input)) {
-		return "Invalid email format. Please enter a valid email address.";
-	}
-	return true;
-}
-export function validateCloudBeaverAdmin(input: string): true | string {
-	if (!input) return "Admin name is required";
-	if (input.length < 3) return "Admin name must be at least 3 characters long";
-	if (!/^[a-zA-Z0-9_]+$/.test(input))
-		return "Admin name can only contain letters, numbers, and underscores";
-	return true;
-}
-export function validateCloudBeaverPassword(input: string): true | string {
-	if (!input) return "Password is required";
-	if (input.length < 8) return "Password must be at least 8 characters long";
-	if (!/[A-Za-z]/.test(input) || !/[0-9]/.test(input)) {
-		return "Password must contain both letters and numbers";
-	}
-	return true;
-}
-export function validateCloudBeaverURL(input: string): true | string {
-	if (!input) return "Server URL is required";
-	try {
-		const url = new URL(input);
-		if (!["http:", "https:"].includes(url.protocol)) {
-			return "URL must use HTTP or HTTPS protocol";
-		}
-		const port = url.port || (url.protocol === "https:" ? "443" : "80");
-		if (!/^\d+$/.test(port) || Number.parseInt(port, 10) > 65535) {
-			return "Invalid port in URL";
-		}
-		return true;
-	} catch {
-		return "Invalid URL format";
-	}
-}
-export function isBooleanString(input: unknown): input is "true" | "false" {
-	return typeof input === "string" && (input === "true" || input === "false");
-}
-export function validateRequiredFields(answers: SetupAnswers): void {
-	const requiredFields: SetupKey[] = [
-		"CI",
-		"API_ADMINISTRATOR_USER_EMAIL_ADDRESS",
-	];
-	const missingFields: string[] = [];
-	for (const field of requiredFields) {
-		const value = answers[field];
-		if (!value || value.trim() === "") {
-			missingFields.push(field);
-		}
-	}
-	if (missingFields.length > 0) {
-		throw new Error(
-			`Missing required configuration fields: ${missingFields.join(", ")}`,
-		);
-	}
-}
-export function validateBooleanFields(answers: SetupAnswers): void {
-	const booleanFields: SetupKey[] = [
-		"CI",
-		"API_IS_APPLY_DRIZZLE_MIGRATIONS",
-		"API_IS_GRAPHIQL",
-		"API_IS_PINO_PRETTY",
-		"API_MINIO_USE_SSL",
-		"API_POSTGRES_SSL_MODE",
-	];
-	const invalidFields: string[] = [];
-	for (const field of booleanFields) {
-		const value = answers[field];
-		if (value !== undefined && !isBooleanString(value)) {
-			invalidFields.push(field);
-		}
-	}
-	if (invalidFields.length > 0) {
-		throw new Error(
-			`Boolean fields must be "true" or "false": ${invalidFields.join(", ")}`,
-		);
-	}
-}
-export function validatePortNumbers(answers: SetupAnswers): void {
-	const portFields: SetupKey[] = [
-		"API_PORT",
-		"API_MINIO_PORT",
-		"API_POSTGRES_PORT",
-		"CLOUDBEAVER_MAPPED_PORT",
-		"MINIO_API_MAPPED_PORT",
-		"MINIO_CONSOLE_MAPPED_PORT",
-		"POSTGRES_MAPPED_PORT",
-		"CADDY_HTTP_MAPPED_PORT",
-		"CADDY_HTTPS_MAPPED_PORT",
-		"CADDY_HTTP3_MAPPED_PORT",
-		"CADDY_TALAWA_API_PORT",
-	];
-	const invalidFields: string[] = [];
-	for (const field of portFields) {
-		const value = answers[field];
-		if (value !== undefined) {
-			const port = Number.parseInt(value, 10);
-			if (Number.isNaN(port) || port < 1 || port > 65535) {
-				invalidFields.push(field);
-			}
-		}
-	}
-	if (invalidFields.length > 0) {
-		throw new Error(
-			`Port numbers must be between 1 and 65535: ${invalidFields.join(", ")}`,
-		);
-	}
-}
-export function validateSamplingRatio(input: string): true | string {
-	const ratio = Number.parseFloat(input);
-	if (Number.isNaN(ratio) || ratio < 0 || ratio > 1) {
-		return "Please enter valid sampling ratio (0-1).";
-	}
-	return true;
-}
-export function validateAllAnswers(answers: SetupAnswers): void {
-	console.log("\n📋 Validating configuration...");
-	validateRequiredFields(answers);
-	validateBooleanFields(answers);
-	validatePortNumbers(answers);
-	console.log("✅ All validations passed");
 }
 export async function observabilitySetup(
 	answers: SetupAnswers,
