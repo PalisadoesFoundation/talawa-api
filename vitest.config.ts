@@ -43,27 +43,16 @@ if (isCI) {
 	}
 }
 
-export default defineConfig({
-	plugins: [tsconfigPaths()],
-	test: {
-		exclude: [
-			...configDefaults.exclude,
-			"dist/**",
-			"coverage/**",
-			"docs/**",
-			"**/*.d.ts",
-			"data/**",
-			"docker/**",
-			"drizzle_migrations/**",
-			"envFiles/**",
-			"scripts/**",
-			"**/scripts/**",
-		],
-		coverage: {
-			provider: "v8", // or 'istanbul' if you prefer
-			reporter: ["text", "lcov", "html", "json"],
+export default defineConfig(() => {
+	const isScriptTest = process.argv.some((arg) =>
+		arg.includes("test/scripts/"),
+	);
+
+	return {
+		plugins: [tsconfigPaths()],
+		test: {
 			exclude: [
-				...(configDefaults.coverage?.exclude ?? []),
+				...configDefaults.exclude,
 				"dist/**",
 				"coverage/**",
 				"docs/**",
@@ -72,30 +61,45 @@ export default defineConfig({
 				"docker/**",
 				"drizzle_migrations/**",
 				"envFiles/**",
-				"**/scripts/**", // Mirror test exclusion to exclude nested scripts
+				"scripts/**",
 			],
+			coverage: {
+				provider: "v8" as const,
+				reporter: ["text", "lcov", "html", "json"],
+				exclude: [
+					...(configDefaults.coverage?.exclude ?? []),
+					"dist/**",
+					"coverage/**",
+					"docs/**",
+					"**/*.d.ts",
+					"data/**",
+					"docker/**",
+					"drizzle_migrations/**",
+					"envFiles/**",
+				],
+			},
+
+			// https://vitest.dev/config/#globalsetup
+			globalSetup: isScriptTest ? [] : ["./test/setup.ts"],
+
+			// https://vitest.dev/config/#passwithnotests
+			passWithNoTests: true,
+
+			hookTimeout: 30000, // 30 seconds for hooks
+			testTimeout: 60000, // 60 seconds per test
+			pool: "threads", // for faster test execution and to avoid postgres max-limit error
+			isolate: true,
+			maxWorkers: isCI ? ciThreads : localThreads,
+			// Set maxConcurrency lower than maxWorkers to prevent single heavy test files
+			// from consuming all workers and blocking other test files
+			maxConcurrency: isCI
+				? Math.max(1, Math.floor(ciThreads / 2))
+				: Math.max(1, Math.floor(localThreads / 2)),
+			fileParallelism: true,
+			sequence: {
+				shuffle: false,
+				concurrent: false,
+			},
 		},
-
-		// https://vitest.dev/config/#globalsetup
-		globalSetup: ["./test/setup.ts"],
-
-		// https://vitest.dev/config/#passwithnotests
-		passWithNoTests: true,
-
-		hookTimeout: 30000, // 30 seconds for hooks
-		testTimeout: 60000, // 60 seconds per test
-		pool: "threads", // for faster test execution and to avoid postgres max-limit error
-		isolate: true,
-		maxWorkers: isCI ? ciThreads : localThreads,
-		// Set maxConcurrency lower than maxWorkers to prevent single heavy test files
-		// from consuming all workers and blocking other test files
-		maxConcurrency: isCI
-			? Math.max(1, Math.floor(ciThreads / 2))
-			: Math.max(1, Math.floor(localThreads / 2)),
-		fileParallelism: true,
-		sequence: {
-			shuffle: false,
-			concurrent: false,
-		},
-	},
+	};
 });

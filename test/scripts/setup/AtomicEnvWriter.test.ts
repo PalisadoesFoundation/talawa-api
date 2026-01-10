@@ -1,456 +1,263 @@
-/**
- * Test suite for AtomicEnvWriter
- *
- * Tests atomic .env file operations including:
- * - Backup creation
- * - Atomic writes
- * - Failure recovery
- * - Cleanup operations
- */
-
-import { promises as fs } from "node:fs";
+import { promises as fs, type PathLike } from "node:fs";
+import os from "node:os";
 import path from "node:path";
-import {
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+
+import * as AW from "../../../scripts/setup/AtomicEnvWriter.js";
+
+const {
 	atomicWriteEnv,
+	cleanupBackup,
 	cleanupTemp,
 	commitTemp,
 	ensureBackup,
 	fileExists,
+	getErrCode,
 	readEnv,
 	restoreBackup,
 	SetupError,
+	SetupErrorCode,
 	writeTemp,
-} from "../../../scripts/setup/AtomicEnvWriter.js";
+} = AW;
 
-// Test directory for isolated tests
-const TEST_DIR = path.join(process.cwd(), "test-temp-atomic-env");
-const TEST_ENV = path.join(TEST_DIR, ".env");
-const TEST_BACKUP = path.join(TEST_DIR, ".env.backup");
-const TEST_TEMP = path.join(TEST_DIR, ".env.tmp");
+const ROOT = path.join(os.tmpdir(), "atomic-env-writer-tests");
+const ENV = path.join(ROOT, ".env");
+const BACKUP = path.join(ROOT, ".env.backup");
+const TEMP = path.join(ROOT, ".env.tmp");
 
-/**
- * Setup test environment before each test
- */
-async function setupTest(): Promise<void> {
-	await fs.mkdir(TEST_DIR, { recursive: true });
+async function write(file: string, content: string): Promise<void> {
+	await fs.writeFile(file, content, "utf-8");
 }
 
-/**
- * Cleanup test environment after each test
- */
-async function cleanupTest(): Promise<void> {
-	try {
-		await fs.rm(TEST_DIR, { recursive: true, force: true });
-	} catch (_e) {
-		// Ignore cleanup errors
-	}
+async function read(file: string): Promise<string> {
+	return fs.readFile(file, "utf-8");
 }
 
-/**
- * Helper to create a test file with content
- */
-async function createTestFile(
-	filePath: string,
-	content: string,
-): Promise<void> {
-	await fs.writeFile(filePath, content, "utf-8");
-}
+beforeEach(async () => {
+	await fs.rm(ROOT, { recursive: true, force: true });
+	await fs.mkdir(ROOT, { recursive: true });
+});
 
-/**
- * Helper to read a test file
- */
-async function readTestFile(filePath: string): Promise<string> {
-	return await fs.readFile(filePath, "utf-8");
-}
+afterEach(async () => {
+	await fs.rm(ROOT, { recursive: true, force: true });
+	vi.restoreAllMocks();
+});
 
-/**
- * Test: ensureBackup creates backup when file exists
- */
-async function testEnsureBackupCreatesBackup(): Promise<void> {
-	await setupTest();
+describe("ensureBackup", () => {
+	it("creates a backup when env exists", async () => {
+		await write(ENV, "A=1\n");
 
-	try {
-		const originalContent = "KEY=value\nOTHER=test";
-		await createTestFile(TEST_ENV, originalContent);
+		await ensureBackup(ENV, BACKUP);
 
-		await ensureBackup(TEST_ENV, TEST_BACKUP);
+		expect(await fileExists(BACKUP)).toBe(true);
+		expect(await read(BACKUP)).toBe("A=1\n");
+	});
 
-		const backupExists = await fileExists(TEST_BACKUP);
-		const backupContent = await readTestFile(TEST_BACKUP);
+	it("does nothing when env does not exist", async () => {
+		await ensureBackup(ENV, BACKUP);
+		expect(await fileExists(BACKUP)).toBe(false);
+	});
+});
 
-		if (!backupExists) {
-			throw new Error("Backup file was not created");
-		}
+describe("writeTemp", () => {
+	it("writes content to temp file", async () => {
+		await writeTemp(TEMP, "TMP=1\n");
+		expect(await read(TEMP)).toBe("TMP=1\n");
+	});
+});
 
-		if (backupContent !== originalContent) {
-			throw new Error("Backup content does not match original");
-		}
+describe("commitTemp", () => {
+	it("renames temp file atomically when possible", async () => {
+		await write(TEMP, "X=1\n");
 
-		console.log("✓ ensureBackup creates backup when file exists");
-	} finally {
-		await cleanupTest();
-	}
-}
+		await commitTemp(ENV, TEMP);
 
-/**
- * Test: ensureBackup doesn't fail when file doesn't exist
- */
-async function testEnsureBackupNoFile(): Promise<void> {
-	await setupTest();
+		expect(await fileExists(TEMP)).toBe(false);
+		expect(await read(ENV)).toBe("X=1\n");
+	});
 
-	try {
-		// Should not throw when file doesn't exist
-		await ensureBackup(TEST_ENV, TEST_BACKUP);
+	it("falls back to copy+unlink on EXDEV and preserves original error", async () => {
+		await write(TEMP, "Y=2\n");
 
-		const backupExists = await fileExists(TEST_BACKUP);
-
-		if (backupExists) {
-			throw new Error(
-				"Backup should not exist when source file does not exist",
+		const renameSpy = vi
+			.spyOn(fs, "rename")
+			.mockRejectedValueOnce(
+				Object.assign(new Error("EXDEV"), { code: "EXDEV" }),
 			);
-		}
 
-		console.log("✓ ensureBackup handles non-existent file gracefully");
-	} finally {
-		await cleanupTest();
-	}
-}
+		await commitTemp(ENV, TEMP);
 
-/**
- * Test: writeTemp creates temporary file with correct content
- */
-async function testWriteTemp(): Promise<void> {
-	await setupTest();
+		expect(renameSpy).toHaveBeenCalled();
+		expect(await fileExists(TEMP)).toBe(false);
+		expect(await read(ENV)).toBe("Y=2\n");
+	});
+});
 
-	try {
-		const content = "TEMP_KEY=temp_value\n";
-		await writeTemp(TEST_TEMP, content);
+describe("cleanupTemp", () => {
+	it("removes temp file", async () => {
+		await write(TEMP, "TMP\n");
+		await cleanupTemp(TEMP);
+		expect(await fileExists(TEMP)).toBe(false);
+	});
 
-		const tempExists = await fileExists(TEST_TEMP);
-		const tempContent = await readTestFile(TEST_TEMP);
+	it("ignores ENOENT", async () => {
+		await cleanupTemp(TEMP);
+		expect(await fileExists(TEMP)).toBe(false);
+	});
+});
 
-		if (!tempExists) {
-			throw new Error("Temp file was not created");
-		}
+describe("cleanupBackup", () => {
+	it("removes backup file", async () => {
+		await write(BACKUP, "B\n");
+		await cleanupBackup(BACKUP);
+		expect(await fileExists(BACKUP)).toBe(false);
+	});
 
-		if (tempContent !== content) {
-			throw new Error("Temp file content does not match expected");
-		}
+	it("ignores ENOENT", async () => {
+		await cleanupBackup(BACKUP);
+		expect(await fileExists(BACKUP)).toBe(false);
+	});
+});
 
-		console.log("✓ writeTemp creates temp file with correct content");
-	} finally {
-		await cleanupTest();
-	}
-}
+describe("restoreBackup", () => {
+	it("restores env from backup", async () => {
+		await write(BACKUP, "RESTORED=1\n");
+		await write(ENV, "BROKEN\n");
 
-/**
- * Test: commitTemp atomically renames temp to env file
- */
-async function testCommitTemp(): Promise<void> {
-	await setupTest();
+		await restoreBackup(ENV, BACKUP);
 
-	try {
-		const content = "COMMITTED=true\n";
-		await createTestFile(TEST_TEMP, content);
+		expect(await read(ENV)).toBe("RESTORED=1\n");
+	});
 
-		await commitTemp(TEST_ENV, TEST_TEMP);
+	it("does nothing when backup is missing", async () => {
+		await restoreBackup(ENV, BACKUP);
+		expect(await fileExists(ENV)).toBe(false);
+	});
+});
 
-		const envExists = await fileExists(TEST_ENV);
-		const envContent = await readTestFile(TEST_ENV);
-		const tempExists = await fileExists(TEST_TEMP);
+describe("atomicWriteEnv", () => {
+	it("writes env atomically and creates backup", async () => {
+		await write(ENV, "OLD=1\n");
 
-		if (!envExists) {
-			throw new Error("Env file was not created");
-		}
-
-		if (tempExists) {
-			throw new Error("Temp file should be removed after commit");
-		}
-
-		if (envContent !== content) {
-			throw new Error("Env file content does not match expected");
-		}
-
-		console.log("✓ commitTemp atomically commits temp file");
-	} finally {
-		await cleanupTest();
-	}
-}
-
-/**
- * Test: restoreBackup restores from backup file
- */
-async function testRestoreBackup(): Promise<void> {
-	await setupTest();
-
-	try {
-		const backupContent = "RESTORED=from_backup\n";
-		await createTestFile(TEST_BACKUP, backupContent);
-		await createTestFile(TEST_ENV, "CORRUPTED=data\n");
-
-		await restoreBackup(TEST_ENV, TEST_BACKUP);
-
-		const envContent = await readTestFile(TEST_ENV);
-
-		if (envContent !== backupContent) {
-			throw new Error("Env file was not restored from backup");
-		}
-
-		console.log("✓ restoreBackup restores from backup");
-	} finally {
-		await cleanupTest();
-	}
-}
-
-/**
- * Test: restoreBackup handles missing backup gracefully
- */
-async function testRestoreBackupNoBackup(): Promise<void> {
-	await setupTest();
-
-	try {
-		// Should not throw when backup doesn't exist
-		await restoreBackup(TEST_ENV, TEST_BACKUP);
-
-		console.log("✓ restoreBackup handles missing backup gracefully");
-	} finally {
-		await cleanupTest();
-	}
-}
-
-/**
- * Test: cleanupTemp removes temporary file
- */
-async function testCleanupTemp(): Promise<void> {
-	await setupTest();
-
-	try {
-		await createTestFile(TEST_TEMP, "temp");
-
-		await cleanupTemp(TEST_TEMP);
-
-		const tempExists = await fileExists(TEST_TEMP);
-
-		if (tempExists) {
-			throw new Error("Temp file should be removed");
-		}
-
-		console.log("✓ cleanupTemp removes temp file");
-	} finally {
-		await cleanupTest();
-	}
-}
-
-/**
- * Test: cleanupTemp handles missing file gracefully
- */
-async function testCleanupTempNoFile(): Promise<void> {
-	await setupTest();
-
-	try {
-		// Should not throw when file doesn't exist
-		await cleanupTemp(TEST_TEMP);
-
-		console.log("✓ cleanupTemp handles missing file gracefully");
-	} finally {
-		await cleanupTest();
-	}
-}
-
-/**
- * Test: atomicWriteEnv complete successful flow
- */
-async function testAtomicWriteEnvSuccess(): Promise<void> {
-	await setupTest();
-
-	try {
-		const originalContent = "ORIGINAL=value\n";
-		const newContent = "NEW=updated_value\n";
-
-		await createTestFile(TEST_ENV, originalContent);
-
-		await atomicWriteEnv(newContent, {
-			envFile: TEST_ENV,
-			backupFile: TEST_BACKUP,
-			tempFile: TEST_TEMP,
+		await atomicWriteEnv("NEW=2\n", {
+			envFile: ENV,
+			backupFile: BACKUP,
+			tempFile: TEMP,
 		});
 
-		const envContent = await readTestFile(TEST_ENV);
-		const backupExists = await fileExists(TEST_BACKUP);
-		const tempExists = await fileExists(TEST_TEMP);
+		expect(await read(ENV)).toBe("NEW=2\n");
+		expect(await read(BACKUP)).toBe("OLD=1\n");
+		expect(await fileExists(TEMP)).toBe(false);
+	});
 
-		if (envContent !== newContent) {
-			throw new Error("Env file was not updated correctly");
-		}
+	it("works with createBackup=false", async () => {
+		await atomicWriteEnv("NO_BACKUP=1\n", {
+			envFile: ENV,
+			backupFile: BACKUP,
+			tempFile: TEMP,
+			createBackup: false,
+		});
 
-		if (!backupExists) {
-			throw new Error("Backup should exist after successful write");
-		}
+		expect(await read(ENV)).toBe("NO_BACKUP=1\n");
+		expect(await fileExists(BACKUP)).toBe(false);
+	});
 
-		if (tempExists) {
-			throw new Error("Temp file should be cleaned up");
-		}
+	it("does not restore when autoRestore=false", async () => {
+		await write(ENV, "SAFE=1\n");
 
-		console.log("✓ atomicWriteEnv completes successful flow");
-	} finally {
-		await cleanupTest();
-	}
-}
+		vi.spyOn(fs, "writeFile").mockRejectedValueOnce(new Error("disk full"));
 
-/**
- * Test: atomicWriteEnv restores from backup on failure
- *
- * This simulates a failure mid-write and verifies backup restoration
- */
-async function testAtomicWriteEnvFailureRestore(): Promise<void> {
-	await setupTest();
+		await expect(
+			atomicWriteEnv("FAIL=1\n", {
+				envFile: ENV,
+				backupFile: BACKUP,
+				tempFile: TEMP,
+				autoRestore: false,
+			}),
+		).rejects.toBeInstanceOf(Error);
 
-	try {
-		const originalContent = "ORIGINAL=safe_value\n";
-		await createTestFile(TEST_ENV, originalContent);
+		expect(await read(ENV)).toBe("SAFE=1\n");
+	});
 
-		// Make the temp directory read-only to simulate failure
-		// Note: This is a simplified simulation - in real scenarios failures can happen
-		// in various ways (disk full, permissions, etc.)
+	it("restores backup on write failure", async () => {
+		await write(ENV, "ORIGINAL=1\n");
 
-		try {
-			// Try to write to an invalid path to trigger an error
-			await atomicWriteEnv("NEW=value\n", {
-				envFile: TEST_ENV,
-				backupFile: TEST_BACKUP,
-				tempFile: "/invalid/path/.env.tmp", // Invalid path to trigger error
-			});
+		vi.spyOn(fs, "writeFile").mockRejectedValueOnce(new Error("write fail"));
 
-			throw new Error("Should have thrown an error");
-		} catch (error) {
-			// Error is expected
-			if (!(error instanceof SetupError)) {
-				// Check that original content is preserved
-				const envContent = await readTestFile(TEST_ENV);
-				if (envContent !== originalContent) {
-					throw new Error("Original content should be preserved on failure");
+		await expect(
+			atomicWriteEnv("BAD=1\n", {
+				envFile: ENV,
+				backupFile: BACKUP,
+				tempFile: TEMP,
+			}),
+		).rejects.toBeInstanceOf(Error);
+
+		expect(await read(ENV)).toBe("ORIGINAL=1\n");
+	});
+
+	it("throws combined error when write and restore both fail", async () => {
+		await write(ENV, "X=1\n");
+
+		vi.spyOn(fs, "writeFile").mockRejectedValueOnce(new Error("write failed"));
+		// force the restore to fail after write failure by inspecting copyFile args
+
+		vi.spyOn(fs, "copyFile").mockImplementation(
+			async (src: PathLike, dest: PathLike) => {
+				if (src === BACKUP && dest === ENV) {
+					throw new Error("restore failed");
 				}
-			}
-		}
+				return Promise.resolve();
+			},
+		);
 
-		console.log("✓ atomicWriteEnv handles failures gracefully");
-	} finally {
-		await cleanupTest();
-	}
-}
+		await expect(
+			atomicWriteEnv("Y=2\n", {
+				envFile: ENV,
+				backupFile: BACKUP,
+				tempFile: TEMP,
+			}),
+		).rejects.toBeInstanceOf(SetupError);
 
-/**
- * Test: readEnv reads existing file
- */
-async function testReadEnv(): Promise<void> {
-	await setupTest();
-
-	try {
-		const content = "READ=test\n";
-		await createTestFile(TEST_ENV, content);
-
-		const readContent = await readEnv(TEST_ENV);
-
-		if (readContent !== content) {
-			throw new Error("Read content does not match expected");
-		}
-
-		console.log("✓ readEnv reads existing file");
-	} finally {
-		await cleanupTest();
-	}
-}
-
-/**
- * Test: readEnv returns empty string for non-existent file
- */
-async function testReadEnvNoFile(): Promise<void> {
-	await setupTest();
-
-	try {
-		const content = await readEnv(TEST_ENV);
-
-		if (content !== "") {
-			throw new Error("Should return empty string for non-existent file");
-		}
-
-		console.log("✓ readEnv returns empty string for non-existent file");
-	} finally {
-		await cleanupTest();
-	}
-}
-
-/**
- * Test: fileExists returns correct values
- */
-async function testFileExists(): Promise<void> {
-	await setupTest();
-
-	try {
-		await createTestFile(TEST_ENV, "test");
-
-		const exists = await fileExists(TEST_ENV);
-		const notExists = await fileExists(TEST_BACKUP);
-
-		if (!exists) {
-			throw new Error("Should return true for existing file");
-		}
-
-		if (notExists) {
-			throw new Error("Should return false for non-existent file");
-		}
-
-		console.log("✓ fileExists returns correct values");
-	} finally {
-		await cleanupTest();
-	}
-}
-
-/**
- * Run all tests
- */
-async function runAllTests(): Promise<void> {
-	console.log("Running AtomicEnvWriter tests...\n");
-
-	const tests = [
-		testEnsureBackupCreatesBackup,
-		testEnsureBackupNoFile,
-		testWriteTemp,
-		testCommitTemp,
-		testRestoreBackup,
-		testRestoreBackupNoBackup,
-		testCleanupTemp,
-		testCleanupTempNoFile,
-		testAtomicWriteEnvSuccess,
-		testAtomicWriteEnvFailureRestore,
-		testReadEnv,
-		testReadEnvNoFile,
-		testFileExists,
-	];
-
-	let passed = 0;
-	let failed = 0;
-
-	for (const test of tests) {
 		try {
-			await test();
-			passed++;
-		} catch (error) {
-			failed++;
-			console.error(`✗ ${test.name} failed:`, error);
+			await atomicWriteEnv("Y=2\n", {
+				envFile: ENV,
+				backupFile: BACKUP,
+				tempFile: TEMP,
+			});
+		} catch (err: unknown) {
+			expect([
+				SetupErrorCode.RESTORE_FAILED,
+				SetupErrorCode.FILE_OP_FAILED,
+			]).toContain(getErrCode(err));
 		}
-	}
+	});
+});
 
-	console.log(`\nTest Results: ${passed} passed, ${failed} failed`);
+describe("SetupError", () => {
+	it("formats detailed message with context and cause", () => {
+		const err = new SetupError(
+			SetupErrorCode.COMMIT_FAILED,
+			"commit failed",
+			{ filePath: ".env" },
+			new Error("EXDEV"),
+		);
 
-	if (failed > 0) {
-		process.exit(1);
-	}
-}
+		const msg = err.getDetailedMessage();
 
-// Run tests if this file is executed directly
-if (import.meta.url === `file://${process.argv[1]}`) {
-	runAllTests().catch(console.error);
-}
+		expect(msg).toContain("COMMIT_FAILED");
+		expect(msg).toContain("filePath: .env");
+		expect(msg).toContain("EXDEV");
+	});
+});
 
-export { runAllTests, setupTest, cleanupTest };
+describe("readEnv & fileExists", () => {
+	it("readEnv returns empty string when file missing", async () => {
+		expect(await readEnv(ENV)).toBe("");
+	});
+
+	it("fileExists reflects actual state", async () => {
+		expect(await fileExists(ENV)).toBe(false);
+		await write(ENV, "A=1\n");
+		expect(await fileExists(ENV)).toBe(true);
+	});
+});

@@ -19,7 +19,7 @@ export interface SetupErrorContext {
 	[key: string]: unknown;
 }
 
-function getErrCode(err: unknown): string | undefined {
+export function getErrCode(err: unknown): string | undefined {
 	if (typeof err === "object" && err !== null && "code" in err) {
 		return (err as { code?: unknown }).code as string | undefined;
 	}
@@ -41,21 +41,17 @@ export class SetupError extends Error {
 		context: SetupErrorContext = {},
 		cause?: Error,
 	) {
-		super(message);
+		super(message, { cause });
 		this.name = "SetupError";
 		this.code = code;
 		this.context = context;
 		this.cause = cause;
 
-		// Maintains proper stack trace for where our error was thrown (only available on V8)
 		if (Error.captureStackTrace) {
 			Error.captureStackTrace(this, SetupError);
 		}
 	}
 
-	/**
-	 * Get a detailed error message including context
-	 */
 	getDetailedMessage(): string {
 		const contextStr = Object.entries(this.context)
 			.map(([key, value]) => `${key}: ${value}`)
@@ -73,34 +69,11 @@ export class SetupError extends Error {
 }
 
 export interface AtomicWriteOptions {
-	/**
-	 * Path to the .env file (default: '.env')
-	 */
 	envFile?: string;
-
-	/**
-	 * Path to the backup file (default: '.env.backup')
-	 */
 	backupFile?: string;
-
-	/**
-	 * Path to the temporary file (default: '.env.tmp')
-	 */
 	tempFile?: string;
-
-	/**
-	 * Whether to create a backup before writing (default: true)
-	 */
 	createBackup?: boolean;
-
-	/**
-	 * Whether to automatically restore from backup on failure (default: true)
-	 */
 	autoRestore?: boolean;
-
-	/**
-	 * Encoding for file operations (default: 'utf-8')
-	 */
 	encoding?: BufferEncoding;
 }
 
@@ -113,18 +86,19 @@ const DEFAULT_OPTIONS: Required<AtomicWriteOptions> = {
 	encoding: "utf-8",
 };
 
+/**
+ * Creates a backup of the .env file if it exists.
+ * @param envFile - Path to the .env file to backup
+ * @param backupFile - Path where the backup should be created
+ * @throws {SetupError} When backup creation fails (except for missing source file)
+ */
 export async function ensureBackup(
 	envFile: string,
 	backupFile: string,
 ): Promise<void> {
 	try {
-		// Check if the env file exists
-		await fs.access(envFile);
-
-		// Create backup by copying the file
 		await fs.copyFile(envFile, backupFile);
 	} catch (e: unknown) {
-		// If the file doesn't exist (ENOENT), it's okay - nothing to backup
 		if (getErrCode(e) !== "ENOENT") {
 			throw new SetupError(
 				SetupErrorCode.BACKUP_FAILED,
@@ -136,6 +110,13 @@ export async function ensureBackup(
 	}
 }
 
+/**
+ * Writes content to a temporary file.
+ * @param tempFile - Path to the temporary file
+ * @param content - Content to write
+ * @param encoding - Text encoding (default: "utf-8")
+ * @throws {SetupError} When file write fails
+ */
 export async function writeTemp(
 	tempFile: string,
 	content: string,
@@ -153,41 +134,67 @@ export async function writeTemp(
 	}
 }
 
+/**
+ * Atomically commits a temporary file to the final .env location.
+ * Uses rename when possible, falls back to copy+unlink.
+ * @param envFile - Target .env file path
+ * @param tempFile - Source temporary file path
+ * @throws {SetupError} When commit fails
+ */
 export async function commitTemp(
 	envFile: string,
 	tempFile: string,
 ): Promise<void> {
 	try {
-		// Try atomic rename first (works on same filesystem)
 		await fs.rename(tempFile, envFile);
 	} catch (_e: unknown) {
-		// If rename fails (e.g., cross-filesystem), fall back to copy+delete
+		const originalError = errToError(_e);
 		try {
 			await fs.copyFile(tempFile, envFile);
-			await fs.unlink(tempFile);
-		} catch (f: unknown) {
+			try {
+				await fs.unlink(tempFile);
+			} catch (unlinkError: unknown) {
+				throw new SetupError(
+					SetupErrorCode.COMMIT_FAILED,
+					"Temp file committed but cleanup failed",
+					{
+						operation: "commitTemp",
+						filePath: envFile,
+						originalError: originalError.message,
+						unlinkError: errToError(unlinkError).message,
+					},
+					originalError,
+				);
+			}
+		} catch (copyError: unknown) {
 			throw new SetupError(
 				SetupErrorCode.COMMIT_FAILED,
 				"Failed to commit temporary file to .env",
-				{ operation: "commitTemp", filePath: envFile },
-				errToError(f),
+				{
+					operation: "commitTemp",
+					filePath: envFile,
+					originalError: originalError.message,
+					fallbackError: errToError(copyError).message,
+				},
+				originalError,
 			);
 		}
 	}
 }
 
+/**
+ * Restores .env file from backup if backup exists.
+ * @param envFile - Path to the .env file to restore
+ * @param backupFile - Path to the backup file
+ * @throws {SetupError} When restore fails (except for missing backup file)
+ */
 export async function restoreBackup(
 	envFile: string,
 	backupFile: string,
 ): Promise<void> {
 	try {
-		// Check if backup exists
-		await fs.access(backupFile);
-
-		// Restore from backup
 		await fs.copyFile(backupFile, envFile);
 	} catch (e: unknown) {
-		// If backup doesn't exist (ENOENT), it's okay - nothing to restore
 		if (getErrCode(e) !== "ENOENT") {
 			throw new SetupError(
 				SetupErrorCode.RESTORE_FAILED,
@@ -199,25 +206,54 @@ export async function restoreBackup(
 	}
 }
 
-export async function cleanupTemp(tempFile: string): Promise<void> {
+/**
+ * Removes backup file if it exists.
+ * @param backupFile - Path to the backup file (default: ".env.backup")
+ */
+export async function cleanupBackup(
+	backupFile: string = ".env.backup",
+): Promise<void> {
 	try {
-		await fs.unlink(tempFile);
+		await fs.unlink(backupFile);
 	} catch (e: unknown) {
-		// Only warn if it's not a "file not found" error
 		if (getErrCode(e) !== "ENOENT") {
 			console.warn(
-				`Warning: Failed to cleanup temporary file: ${errToError(e).message}`,
+				`Warning: Failed to cleanup backup file: ${errToError(e).message}`,
 			);
 		}
-		// Never throw - cleanup is best-effort
 	}
 }
 
+/**
+ * Removes temporary file if it exists.
+ * @param tempFile - Path to the temporary file
+ * @param logger - Optional logger for warnings (falls back to no-op)
+ */
+export async function cleanupTemp(
+	tempFile: string,
+	logger?: { warn: (msg: string) => void },
+): Promise<void> {
+	try {
+		await fs.unlink(tempFile);
+	} catch (e: unknown) {
+		if (getErrCode(e) !== "ENOENT") {
+			logger?.warn(
+				`Warning: Failed to cleanup temporary file: ${errToError(e).message}`,
+			);
+		}
+	}
+}
+
+/**
+ * Atomically writes content to .env file with backup and restore capabilities.
+ * @param content - Content to write to the .env file
+ * @param options - Configuration options
+ * @throws {SetupError} When write or restore operations fail
+ */
 export async function atomicWriteEnv(
 	content: string,
 	options: AtomicWriteOptions = {},
 ): Promise<void> {
-	// Merge options with defaults
 	const opts: Required<AtomicWriteOptions> = {
 		...DEFAULT_OPTIONS,
 		...options,
@@ -227,50 +263,41 @@ export async function atomicWriteEnv(
 		opts;
 
 	try {
-		// Step 1: Create backup if enabled
 		if (createBackup) {
 			await ensureBackup(envFile, backupFile);
 		}
 
-		// Step 2: Write to temporary file
 		await writeTemp(tempFile, content, encoding);
-
-		// Step 3: Atomically commit temporary file
 		await commitTemp(envFile, tempFile);
-
-		// Step 4: Cleanup (best-effort, won't throw)
-		await cleanupTemp(tempFile);
 	} catch (error: unknown) {
-		// On failure, attempt to restore from backup
 		if (autoRestore && createBackup) {
 			try {
 				await restoreBackup(envFile, backupFile);
 			} catch (restoreError) {
-				// If restore also fails, include both errors in the message
 				throw new SetupError(
 					SetupErrorCode.RESTORE_FAILED,
 					"Write failed and backup restoration also failed",
 					{
 						operation: "atomicWriteEnv",
-						originalError:
-							error instanceof Error ? error.message : String(error),
-						restoreError:
-							restoreError instanceof Error
-								? restoreError.message
-								: String(restoreError),
+						originalError: errToError(error).message,
+						restoreError: errToError(restoreError).message,
 					},
 				);
 			}
 		}
 
-		// Attempt cleanup even on failure (best-effort)
 		await cleanupTemp(tempFile);
-
-		// Re-throw the original error
 		throw error instanceof Error ? error : errToError(error);
 	}
 }
 
+/**
+ * Reads content from .env file, returns empty string if file doesn't exist.
+ * @param envFile - Path to the .env file (default: ".env")
+ * @param encoding - Text encoding (default: "utf-8")
+ * @returns Promise resolving to file content or empty string
+ * @throws {SetupError} When file read fails (except for missing file)
+ */
 export async function readEnv(
 	envFile: string = ".env",
 	encoding: BufferEncoding = "utf-8",
@@ -278,7 +305,6 @@ export async function readEnv(
 	try {
 		return await fs.readFile(envFile, encoding);
 	} catch (e: unknown) {
-		// Return empty string if file doesn't exist
 		if (getErrCode(e) === "ENOENT") {
 			return "";
 		}
@@ -292,22 +318,13 @@ export async function readEnv(
 	}
 }
 
-async function _cleanupBackup(
-	backupFile: string = ".env.backup",
-): Promise<void> {
-	try {
-		await fs.unlink(backupFile);
-	} catch (e: unknown) {
-		// Only warn if it's not a "file not found" error
-		if (getErrCode(e) !== "ENOENT") {
-			console.warn(
-				`Warning: Failed to cleanup backup file: ${errToError(e).message}`,
-			);
-		}
-		// Never throw - cleanup is best-effort
-	}
-}
+// (removed unused backup cleanup helper)
 
+/**
+ * Checks if a file exists.
+ * @param filePath - Path to the file to check
+ * @returns Promise resolving to true if file exists, false otherwise
+ */
 export async function fileExists(filePath: string): Promise<boolean> {
 	try {
 		await fs.access(filePath);
