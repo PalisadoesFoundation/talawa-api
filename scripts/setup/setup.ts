@@ -4,8 +4,8 @@ import path, { resolve } from "node:path";
 import process from "node:process";
 import { pathToFileURL } from "node:url";
 import dotenv from "dotenv";
-import { promptConfirm, promptInput, promptList } from "./promptHelpers";
 import { envFileBackup } from "./envFileBackup/envFileBackup";
+import { promptConfirm, promptInput, promptList } from "./promptHelpers";
 import { updateEnvVariable } from "./updateEnvVariable";
 
 // Define a union type of all allowed environment keys
@@ -68,7 +68,6 @@ export type SetupKey =
 export type SetupAnswers = Partial<Record<SetupKey, string>> & {
 	[key: string]: string | undefined;
 };
-
 
 const envFileName = ".env";
 async function restoreLatestBackup(): Promise<void> {

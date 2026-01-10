@@ -14,9 +14,13 @@ export async function promptInput(
 	defaultValue?: string,
 	validate?: (input: string) => true | string,
 ): Promise<string> {
-	const { [name]: result } = await inquirer.prompt([
+	const answers = await inquirer.prompt<Record<string, string>>([
 		{ type: "input", name, message, default: defaultValue, validate },
 	]);
+	const result = answers[name];
+	if (typeof result !== "string") {
+		throw new Error(`Expected string response for prompt "${name}"`);
+	}
 	return result;
 }
 
@@ -34,9 +38,13 @@ export async function promptList(
 	choices: string[],
 	defaultValue?: string,
 ): Promise<string> {
-	const { [name]: result } = await inquirer.prompt([
+	const answers = await inquirer.prompt<Record<string, string>>([
 		{ type: "list", name, message, choices, default: defaultValue },
 	]);
+	const result = answers[name];
+	if (typeof result !== "string") {
+		throw new Error(`Expected string response for prompt "${name}"`);
+	}
 	return result;
 }
 
@@ -52,8 +60,12 @@ export async function promptConfirm(
 	message: string,
 	defaultValue?: boolean,
 ): Promise<boolean> {
-	const { [name]: result } = await inquirer.prompt([
+	const answers = await inquirer.prompt<Record<string, boolean>>([
 		{ type: "confirm", name, message, default: defaultValue },
 	]);
+	const result = answers[name];
+	if (typeof result !== "boolean") {
+		throw new Error(`Expected boolean response for prompt "${name}"`);
+	}
 	return result;
 }
