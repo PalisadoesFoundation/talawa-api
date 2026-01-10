@@ -95,7 +95,7 @@ export type ExplicitGraphQLContext = {
 		 */
 		getRefreshToken: () => string | undefined;
 	};
-	log: FastifyInstance["log"];
+	log: AppLogger;
 	minio: FastifyInstance["minio"];
 	/**
 	 * Request-scoped performance tracker for monitoring operation durations,

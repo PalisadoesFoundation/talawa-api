@@ -174,7 +174,7 @@ export const createContext: CreateContext = async (initialContext) => {
 				fastify.jwt.sign(payload),
 		},
 		cookie: cookieHelper,
-		log: request.log ?? fastify.log,
+		log: opLogger,
 		minio: fastify.minio,
 		perf: request.perf, // Attach performance tracker from request (added by performance plugin)
 		// attached a per-request notification service that queues notifications and can flush later
@@ -446,6 +446,7 @@ export const graphql = fastifyPlugin(async (fastify) => {
 				fastify.envConfig.API_RATE_LIMIT_BUCKET_CAPACITY,
 				fastify.envConfig.API_RATE_LIMIT_REFILL_RATE,
 				complexity.complexity,
+				request.log as AppLogger,
 			);
 
 			// If the request exceeds rate limits, reject it

@@ -135,7 +135,7 @@ Defined in: [src/graphql/context.ts:75](https://github.com/PalisadoesFoundation/
 
 ### log
 
-> **log**: `FastifyInstance`\[`"log"`\]
+> **log**: [`AppLogger`](../../../utilities/logging/logger/type-aliases/AppLogger.md)
 
 Defined in: [src/graphql/context.ts:98](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/graphql/context.ts#L98)
 
@@ -153,7 +153,7 @@ Defined in: [src/graphql/context.ts:99](https://github.com/PalisadoesFoundation/
 
 > `optional` **notification**: `object`
 
-Defined in: [src/graphql/context.ts:109](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/graphql/context.ts#L109)
+Defined in: [src/graphql/context.ts:104](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/graphql/context.ts#L104)
 
 Per-request notification helper. Implementations may enqueue notifications
 for delivery and support flush() to perform delivery after transaction commit.
