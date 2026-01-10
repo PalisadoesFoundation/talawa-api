@@ -189,20 +189,19 @@ fi
 step $CURRENT_STEP $TOTAL_STEPS "Reading configuration from package.json..."
 
 # Parse Node.js version from package.json
-if [ -f package.json ]; then
-    NODE_VERSION=$(jq -r '.engines.node // "lts"' package.json)
-    info "Node.js version from package.json: \"$NODE_VERSION\""
-else
-    error "package.json not found in current directory"
-    error "Please run this script from the talawa-api root directory"
-    exit 1
-fi
+NODE_VERSION=$(jq -r '.engines.node // "lts"' package.json)
+info "Node.js version from package.json: \"$NODE_VERSION\""
 
 # Clean version string (remove >=, ^, ~, and other operators)
 # First try to extract full semver (e.g., 20.10.0)
 CLEAN_NODE_VERSION=$(echo "$NODE_VERSION" | grep -oE '[0-9]+\.[0-9]+\.[0-9]+' | head -1 || true)
 
-# If no full version found, try to extract major version (e.g., 20)
+# If no full version found, try to extract major.minor version (e.g., 20.10)
+if [ -z "$CLEAN_NODE_VERSION" ]; then
+    CLEAN_NODE_VERSION=$(echo "$NODE_VERSION" | grep -oE '[0-9]+\.[0-9]+' | head -1 || true)
+fi
+
+# If no major.minor version found, try to extract major version (e.g., 20)
 if [ -z "$CLEAN_NODE_VERSION" ]; then
     CLEAN_NODE_VERSION=$(echo "$NODE_VERSION" | grep -oE '[0-9]+' | head -1 || true)
 fi
@@ -230,21 +229,16 @@ fi
 info "Parsed Node.js version: $CLEAN_NODE_VERSION"
 
 # Parse pnpm version from package.json
-if [ -f package.json ]; then
-    # First try packageManager field (preferred)
-    PNPM_FULL=$(jq -r '.packageManager // ""' package.json)
-    if [[ "$PNPM_FULL" == pnpm@* ]]; then
-        PNPM_VERSION="${PNPM_FULL#pnpm@}"
-        PNPM_VERSION="${PNPM_VERSION%%+*}"  # Remove hash if present
-        info "pnpm version from package.json packageManager: \"$PNPM_VERSION\""
-    else
-        # Fallback to engines.pnpm field
-        PNPM_VERSION=$(jq -r '.engines.pnpm // "latest"' package.json)
-        info "pnpm version from package.json engines.pnpm: \"$PNPM_VERSION\""
-    fi
+# First try packageManager field (preferred)
+PNPM_FULL=$(jq -r '.packageManager // ""' package.json)
+if [[ "$PNPM_FULL" == pnpm@* ]]; then
+    PNPM_VERSION="${PNPM_FULL#pnpm@}"
+    PNPM_VERSION="${PNPM_VERSION%%+*}"  # Remove hash if present
+    info "pnpm version from package.json packageManager: \"$PNPM_VERSION\""
 else
-    error "package.json not found"
-    exit 1
+    # Fallback to engines.pnpm field
+    PNPM_VERSION=$(jq -r '.engines.pnpm // "latest"' package.json)
+    info "pnpm version from package.json engines.pnpm: \"$PNPM_VERSION\""
 fi
 
 # Clean and validate pnpm version
@@ -290,17 +284,26 @@ step $CURRENT_STEP $TOTAL_STEPS "Installing Node.js v$CLEAN_NODE_VERSION..."
 
 if [ "$CLEAN_NODE_VERSION" = "lts" ]; then
     info "Installing latest LTS version of Node.js..."
-    fnm install --lts
-    fnm use lts-latest
+    if ! fnm install --lts; then
+        error "Failed to install LTS version of Node.js"
+        exit 1
+    fi
+    if ! fnm use lts-latest; then
+        error "Failed to activate LTS version of Node.js"
+        exit 1
+    fi
     fnm default lts-latest
 elif [ "$CLEAN_NODE_VERSION" = "latest" ]; then
     info "Installing latest version of Node.js..."
-    # Resolve 'latest' to actual version number using npm
-    LATEST_VERSION=$(npm view node version)
-    info "Resolved 'latest' to $LATEST_VERSION"
-    fnm install "$LATEST_VERSION"
-    fnm use "$LATEST_VERSION"
-    fnm default "$LATEST_VERSION"
+    if ! fnm install latest; then
+        error "Failed to install latest version of Node.js"
+        exit 1
+    fi
+    if ! fnm use latest; then
+        error "Failed to activate latest version of Node.js"
+        exit 1
+    fi
+    fnm default latest
 else
     fnm install "$CLEAN_NODE_VERSION"
     if ! fnm use "$CLEAN_NODE_VERSION"; then
