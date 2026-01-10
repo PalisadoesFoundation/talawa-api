@@ -79,7 +79,7 @@ CREATE TABLE "agenda_categories" (
 	"description" text,
 	"event_id" uuid NOT NULL,
 	"id" uuid PRIMARY KEY NOT NULL,
-	"is_default_categories" boolean DEFAULT false NOT NULL,
+	"is_default_category" boolean DEFAULT false NOT NULL,
 	"name" text NOT NULL,
 	"organization_id" uuid NOT NULL,
 	"updated_at" timestamp (3) with time zone,
@@ -117,7 +117,7 @@ CREATE TABLE "agenda_item_attachments" (
 --> statement-breakpoint
 CREATE TABLE "agenda_item_url" (
 	"agenda_item_id" uuid NOT NULL,
-	"agenda_item_url" text,
+	"agenda_item_url" text NOT NULL,
 	"created_at" timestamp (3) with time zone DEFAULT now() NOT NULL,
 	"creator_id" uuid,
 	"id" uuid PRIMARY KEY NOT NULL,
@@ -590,7 +590,7 @@ CREATE TABLE "posts" (
 	"caption" text NOT NULL,
 	"body" text,
 	"created_at" timestamp (3) with time zone DEFAULT now() NOT NULL,
-	"creator_id" uuid NOT NULL,
+	"creator_id" uuid,
 	"id" uuid PRIMARY KEY NOT NULL,
 	"organization_id" uuid NOT NULL,
 	"pinned_at" timestamp (3) with time zone,
@@ -942,6 +942,7 @@ CREATE INDEX "agenda_categories_created_at_index" ON "agenda_categories" USING b
 CREATE INDEX "agenda_categories_creator_id_index" ON "agenda_categories" USING btree ("creator_id");--> statement-breakpoint
 CREATE INDEX "agenda_categories_event_id_index" ON "agenda_categories" USING btree ("event_id");--> statement-breakpoint
 CREATE INDEX "agenda_categories_name_index" ON "agenda_categories" USING btree ("name");--> statement-breakpoint
+CREATE INDEX "agenda_categories_organization_id_index" ON "agenda_categories" USING btree ("organization_id");--> statement-breakpoint
 CREATE INDEX "agenda_folders_created_at_index" ON "agenda_folders" USING btree ("created_at");--> statement-breakpoint
 CREATE INDEX "agenda_folders_creator_id_index" ON "agenda_folders" USING btree ("creator_id");--> statement-breakpoint
 CREATE INDEX "agenda_folders_event_id_index" ON "agenda_folders" USING btree ("event_id");--> statement-breakpoint
@@ -955,7 +956,6 @@ CREATE INDEX "agenda_item_attachments_file_hash_index" ON "agenda_item_attachmen
 CREATE INDEX "agenda_item_attachments_object_name_index" ON "agenda_item_attachments" USING btree ("object_name");--> statement-breakpoint
 CREATE INDEX "agenda_item_url_created_at_index" ON "agenda_item_url" USING btree ("created_at");--> statement-breakpoint
 CREATE INDEX "agenda_item_url_creator_id_index" ON "agenda_item_url" USING btree ("creator_id");--> statement-breakpoint
-CREATE INDEX "agenda_item_url_id_index" ON "agenda_item_url" USING btree ("id");--> statement-breakpoint
 CREATE INDEX "agenda_item_url_agenda_item_url_index" ON "agenda_item_url" USING btree ("agenda_item_url");--> statement-breakpoint
 CREATE INDEX "agenda_item_url_agenda_item_id_index" ON "agenda_item_url" USING btree ("agenda_item_id");--> statement-breakpoint
 CREATE INDEX "agenda_items_created_at_index" ON "agenda_items" USING btree ("created_at");--> statement-breakpoint

@@ -11,6 +11,7 @@ AgendaCategory.implement({
 	fields: (t) => ({
 		description: t.exposeString("description", {
 			description: "Custom information about the agenda category.",
+			nullable: true,
 		}),
 		id: t.exposeID("id", {
 			description: "Global identifier of the agenda category.",

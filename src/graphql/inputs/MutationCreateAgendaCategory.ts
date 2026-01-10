@@ -19,7 +19,7 @@ export const MutationCreateAgendaCategoriesInput = builder
 		fields: (t) => ({
 			description: t.string({
 				description: "Description of Agenda category",
-				required: true,
+				required: false,
 			}),
 			eventId: t.id({
 				description:

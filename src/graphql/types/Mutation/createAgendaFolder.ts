@@ -69,6 +69,7 @@ builder.mutationField("createAgendaFolder", (t) =>
 						organization: {
 							columns: {
 								countryCode: true,
+								id: true,
 							},
 							with: {
 								membershipsWhereOrganization: {
@@ -163,6 +164,21 @@ builder.mutationField("createAgendaFolder", (t) =>
 						},
 					});
 				}
+			}
+
+			if (parsedArgs.input.organizationId !== existingEvent.organization.id) {
+				throw new TalawaGraphQLError({
+					extensions: {
+						code: "invalid_arguments",
+						issues: [
+							{
+								argumentPath: ["input", "organizationId"],
+								message:
+									"organizationId must match the organization associated with the event.",
+							},
+						],
+					},
+				});
 			}
 
 			const currentUserOrganizationMembership =

@@ -7,7 +7,7 @@ import { AgendaFolder } from "~/src/graphql/types/AgendaFolder/AgendaFolder";
 import envConfig from "~/src/utilities/graphqLimits";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 
-const queryGetAgendaItemByEventIdArgumentsSchema = z.object({
+const queryGetAgendaFolderByEventIdArgumentsSchema = z.object({
 	eventId: z.string().uuid(),
 });
 
@@ -26,11 +26,17 @@ builder.queryField("agendaFolderByEventId", (t) =>
 		description: "Query field to get all Agenda Folders for a specific event.",
 		nullable: true,
 		resolve: async (_parent, args, ctx) => {
+			if (!ctx.currentClient.isAuthenticated) {
+				throw new TalawaGraphQLError({
+					extensions: { code: "unauthenticated" },
+				});
+			}
+
 			const {
 				data: parsedArgs,
 				error,
 				success,
-			} = queryGetAgendaItemByEventIdArgumentsSchema.safeParse(args);
+			} = queryGetAgendaFolderByEventIdArgumentsSchema.safeParse(args);
 
 			if (!success) {
 				throw new TalawaGraphQLError({

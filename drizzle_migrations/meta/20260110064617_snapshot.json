@@ -1,5 +1,5 @@
 {
-  "id": "af0da633-867d-4aad-8ee5-9d0dd2aa347f",
+  "id": "48c4f00d-c083-4efa-a5ba-e64a7f3194cf",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -1106,8 +1106,8 @@
           "primaryKey": true,
           "notNull": true
         },
-        "is_default_categories": {
-          "name": "is_default_categories",
+        "is_default_category": {
+          "name": "is_default_category",
           "type": "boolean",
           "primaryKey": false,
           "notNull": true,
@@ -1189,6 +1189,21 @@
           "columns": [
             {
               "expression": "name",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "agenda_categories_organization_id_index": {
+          "name": "agenda_categories_organization_id_index",
+          "columns": [
+            {
+              "expression": "organization_id",
               "isExpression": false,
               "asc": true,
               "nulls": "last"
@@ -1714,7 +1729,7 @@
           "name": "agenda_item_url",
           "type": "text",
           "primaryKey": false,
-          "notNull": false
+          "notNull": true
         },
         "created_at": {
           "name": "created_at",
@@ -1769,21 +1784,6 @@
           "columns": [
             {
               "expression": "creator_id",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        },
-        "agenda_item_url_id_index": {
-          "name": "agenda_item_url_id_index",
-          "columns": [
-            {
-              "expression": "id",
               "isExpression": false,
               "asc": true,
               "nulls": "last"
@@ -8518,7 +8518,7 @@
           "name": "creator_id",
           "type": "uuid",
           "primaryKey": false,
-          "notNull": true
+          "notNull": false
         },
         "id": {
           "name": "id",

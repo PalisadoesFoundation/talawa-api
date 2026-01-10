@@ -20,7 +20,7 @@ export const agendaItemUrlTable = pgTable(
 		/**
 		 * URL to the agenda item.
 		 */
-		agendaItemURL: text("agenda_item_url"),
+		agendaItemURL: text("agenda_item_url").notNull(),
 		/**
 		 * Date time at the time the agenda item was created.
 		 */
@@ -63,7 +63,6 @@ export const agendaItemUrlTable = pgTable(
 	(self) => [
 		index().on(self.createdAt),
 		index().on(self.creatorId),
-		index().on(self.id),
 		index().on(self.agendaItemURL),
 		index().on(self.agendaItemId),
 	],

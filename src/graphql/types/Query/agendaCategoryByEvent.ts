@@ -20,7 +20,8 @@ builder.queryField("agendaCategoryByEventId", (t) =>
 			}),
 		},
 		complexity: envConfig.API_GRAPHQL_OBJECT_FIELD_COST,
-		description: "Query field to get all Agenda Folders for a specific event.",
+		description:
+			"Query field to get all Agenda Categories for a specific event.",
 		nullable: true,
 		resolve: async (_parent, args, ctx) => {
 			const {

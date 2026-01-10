@@ -272,7 +272,7 @@ type AgendaFolderItemsConnectionEdge {
 
 type AgendaItem {
   """Attachments for the agenda item"""
-  attachment: [AgendaItemAttachment!]
+  attachments: [AgendaItemAttachment!]
 
   """Agenda category"""
   category: AgendaCategory
@@ -2735,7 +2735,7 @@ input MutationCreateAdvertisementInput {
 """"""
 input MutationCreateAgendaCategoryInput {
   """Description of Agenda category"""
-  description: String!
+  description: String
 
   """Global identifier of the event the agenda category is associated to."""
   eventId: ID!
@@ -4795,7 +4795,7 @@ type Query {
   """Query field to read an advertisement."""
   advertisement(input: QueryAdvertisementInput!): Advertisement
 
-  """Query field to get all Agenda Folders for a specific event."""
+  """Query field to get all Agenda Categories for a specific event."""
   agendaCategoryByEventId(
     """ID of the standalone event"""
     eventId: ID!
@@ -4808,14 +4808,6 @@ type Query {
   agendaFolderByEventId(
     """ID of the standalone event"""
     eventId: ID!
-  ): [AgendaFolder!]
-
-  """
-  Query field to fetch all agenda folders linked to a specific organization.
-  """
-  agendaFolderByOrganization(
-    """Input parameters to fetch agenda folders by organizationId."""
-    input: QueryAgendaFolderByOrganizationInput!
   ): [AgendaFolder!]
 
   """Query field to read an agenda item."""
@@ -5068,10 +5060,6 @@ input QueryActionItemsByVolunteerInput {
 input QueryAdvertisementInput {
   """Global id of the advertisement."""
   id: String!
-}
-
-input QueryAgendaFolderByOrganizationInput {
-  organizationId: String!
 }
 
 """"""

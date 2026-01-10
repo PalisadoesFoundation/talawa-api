@@ -25,6 +25,17 @@ import {
 } from "~/src/utilities/recurringEvent";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 
+const DEFAULT_AGENDA_FOLDER_CONFIG = {
+	name: "Default",
+	description: "Default agenda folder",
+	sequence: 1,
+} as const;
+
+const DEFAULT_AGENDA_CATEGORY_CONFIG = {
+	name: "Default",
+	description: "Default agenda category",
+} as const;
+
 export const mutationCreateEventArgumentsSchema = z.object({
 	input: mutationCreateEventInputSchema.transform(async (arg, ctx) => {
 		const now = new Date();
@@ -262,21 +273,21 @@ builder.mutationField("createEvent", (t) =>
 
 					// Creates default agenda folder
 					await tx.insert(agendaFoldersTable).values({
-						name: "Default",
-						description: "Default agenda folder",
+						name: DEFAULT_AGENDA_FOLDER_CONFIG.name,
+						description: DEFAULT_AGENDA_FOLDER_CONFIG.description,
 						eventId: createdEvent.id,
 						organizationId: parsedArgs.input.organizationId,
 						isAgendaItemFolder: true,
 						isDefaultFolder: true,
 						parentFolderId: null,
-						sequence: 1,
+						sequence: DEFAULT_AGENDA_FOLDER_CONFIG.sequence,
 						creatorId: currentUserId,
 					});
 
 					// Creates default agenda category
 					await tx.insert(agendaCategoriesTable).values({
-						name: "Default",
-						description: "Default agenda category",
+						name: DEFAULT_AGENDA_CATEGORY_CONFIG.name,
+						description: DEFAULT_AGENDA_CATEGORY_CONFIG.description,
 						eventId: createdEvent.id,
 						organizationId: parsedArgs.input.organizationId,
 						isDefaultCategory: true,

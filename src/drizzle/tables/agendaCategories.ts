@@ -56,9 +56,7 @@ export const agendaCategoriesTable = pgTable(
 		/**
 		 * Boolean to tell if the agenda category is default or not.
 		 */
-		isDefaultCategory: boolean("is_default_categories")
-			.notNull()
-			.default(false),
+		isDefaultCategory: boolean("is_default_category").notNull().default(false),
 		/**
 		 * Name of the agenda category.
 		 */
@@ -95,6 +93,7 @@ export const agendaCategoriesTable = pgTable(
 		index().on(self.creatorId),
 		index().on(self.eventId),
 		index().on(self.name),
+		index().on(self.organizationId),
 	],
 );
 

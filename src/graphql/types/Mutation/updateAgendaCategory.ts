@@ -135,13 +135,21 @@ builder.mutationField("updateAgendaCategory", (t) =>
 				});
 			}
 
+			const updateData: Partial<typeof agendaCategoriesTable.$inferInsert> = {
+				updaterId: currentUserId,
+			};
+
+			if (parsedArgs.input.name !== undefined) {
+				updateData.name = parsedArgs.input.name;
+			}
+
+			if (parsedArgs.input.description !== undefined) {
+				updateData.description = parsedArgs.input.description;
+			}
+
 			const [updatedAgendaCategory] = await ctx.drizzleClient
 				.update(agendaCategoriesTable)
-				.set({
-					name: parsedArgs.input.name,
-					description: parsedArgs.input.description,
-					updaterId: currentUserId,
-				})
+				.set(updateData)
 				.where(eq(agendaCategoriesTable.id, parsedArgs.input.id))
 				.returning();
 

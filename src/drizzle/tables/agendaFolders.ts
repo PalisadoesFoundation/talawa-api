@@ -153,7 +153,7 @@ export const agendaFoldersTableRelations = relations(
 		organization: one(organizationsTable, {
 			fields: [agendaFoldersTable.organizationId],
 			references: [organizationsTable.id],
-			relationName: "agenda_folder.organization_id:organizations.id",
+			relationName: "agenda_folders.organization_id:organizations.id",
 		}),
 		/**
 		 * Many to one relationship from `agenda_folders` table to `agenda_folders` table.

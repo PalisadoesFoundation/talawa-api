@@ -117,6 +117,7 @@ builder.mutationField("createAgendaItem", (t) =>
 				ctx.drizzleClient.query.agendaFoldersTable.findFirst({
 					columns: {
 						isAgendaItemFolder: true,
+						eventId: true,
 					},
 					with: {
 						event: {
@@ -160,7 +161,23 @@ builder.mutationField("createAgendaItem", (t) =>
 						code: "arguments_associated_resources_not_found",
 						issues: [
 							{
-								argumentPath: ["input", "id"],
+								argumentPath: ["input", "folderId"],
+							},
+						],
+					},
+				});
+			}
+
+			if (existingAgendaFolder.eventId !== parsedArgs.input.eventId) {
+				throw new TalawaGraphQLError({
+					message: "folderId does not belong to the provided eventId.",
+					extensions: {
+						code: "forbidden_action_on_arguments_associated_resources",
+						issues: [
+							{
+								argumentPath: ["input", "eventId"],
+								message:
+									"You do not have permission to perform this action on the specified event.",
 							},
 						],
 					},
@@ -195,9 +212,28 @@ builder.mutationField("createAgendaItem", (t) =>
 						code: "unauthorized_action_on_arguments_associated_resources",
 						issues: [
 							{
-								argumentPath: ["input", "id"],
+								argumentPath: ["input", "folderId"],
 							},
 						],
+					},
+				});
+			}
+
+			const existingAgendaCategory =
+				await ctx.drizzleClient.query.agendaCategoriesTable.findFirst({
+					columns: { id: true },
+					where: (fields, operators) =>
+						operators.and(
+							operators.eq(fields.id, resolvedCategoryId),
+							operators.eq(fields.eventId, parsedArgs.input.eventId),
+						),
+				});
+
+			if (!existingAgendaCategory) {
+				throw new TalawaGraphQLError({
+					extensions: {
+						code: "arguments_associated_resources_not_found",
+						issues: [{ argumentPath: ["input", "categoryId"] }],
 					},
 				});
 			}

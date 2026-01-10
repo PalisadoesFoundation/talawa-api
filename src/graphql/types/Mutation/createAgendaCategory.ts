@@ -107,6 +107,21 @@ builder.mutationField("createAgendaCategory", (t) =>
 				});
 			}
 
+			if (parsedArgs.input.organizationId !== existingEvent.organization.id) {
+				throw new TalawaGraphQLError({
+					extensions: {
+						code: "invalid_arguments",
+						issues: [
+							{
+								argumentPath: ["input", "organizationId"],
+								message:
+									"organizationId must match the organization associated with the event.",
+							},
+						],
+					},
+				});
+			}
+
 			const currentUserOrganizationMembership =
 				existingEvent.organization.membershipsWhereOrganization[0];
 
