@@ -81,7 +81,6 @@ export async function formatDatabase(): Promise<boolean> {
 		});
 		return true;
 	} catch (error) {
-        // Fix #4: Log error instead of silent fail
 		console.error("formatDatabase failed:", error);
 		return false;
 	}
@@ -106,8 +105,12 @@ export async function emptyMinioBucket(): Promise<boolean> {
 	}
 }
 
+/**
+ * Lists all sample data files in the sample_data directory with their document counts.
+ * Displays results in a formatted table showing file names and document counts.
+ * @returns Promise that resolves to true if listing succeeds, false otherwise
+ */
 export async function listSampleData(): Promise<boolean> {
-    // Fix #2: Implement real listing logic instead of stub
     try {
         const sampleDataPath = path.resolve(dirname, "./sample_data");
         const files = await fs.readdir(sampleDataPath);
@@ -166,7 +169,6 @@ export async function insertCollections(inputCollections: string[]): Promise<boo
 		const API_ADMINISTRATOR_USER_EMAIL_ADDRESS = envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS;
 		if (!API_ADMINISTRATOR_USER_EMAIL_ADDRESS) throw new Error("API_ADMINISTRATOR_USER_EMAIL_ADDRESS is not defined.");
 
-        // Fix #5: Avoid mutation of input param
         const collections = inputCollections.includes("event_attendees") 
             ? [...inputCollections] 
             : [...inputCollections, "event_attendees"];
@@ -230,7 +232,6 @@ export async function insertCollections(inputCollections: string[]): Promise<boo
 					break;
 				}
 				case "recurring_events": {
-                    // Fix #6: Fix Date mutation bug
 					const events = JSON.parse(fileContent).map((event: any) => {
                         const now = new Date();
                         const startAt = new Date(now);
@@ -261,13 +262,31 @@ export async function insertCollections(inputCollections: string[]): Promise<boo
 
 					const rules = parsed.map((rule: any) => {
 						const freq = rule.frequency === "DYNAMIC" ? "WEEKLY" : rule.frequency;
+                        
+                        // Validate Frequency
+                        const validFrequencies = ["DAILY", "WEEKLY", "MONTHLY", "YEARLY"];
+                        if (!validFrequencies.includes(freq)) {
+                            throw new Error(`Invalid frequency: ${freq}`);
+                        }
+
 						const int = rule.interval === "DYNAMIC" ? 1 : rule.interval;
 						const bd = rule.byDay || null;
                         
-                        // Fix #7: Safe array splitting
+                        // Validate and Split ByDay
                         const byDayArray = bd 
                             ? (Array.isArray(bd) ? bd : bd.split(",")) 
                             : null;
+
+                        if (byDayArray) {
+                            const validDays = ["MO", "TU", "WE", "TH", "FR", "SA", "SU"];
+                            for (const day of byDayArray) {
+                                // Allow iCal format (e.g. 1MO, -2FR)
+                                const cleanDay = day.replace(/^[+-]?\d+/, "").trim();
+                                if (!validDays.includes(cleanDay)) {
+                                    throw new Error(`Invalid byDay value: ${day}`);
+                                }
+                            }
+                        }
 
 						return {
 							id: rule.id,
@@ -313,7 +332,6 @@ export async function insertCollections(inputCollections: string[]): Promise<boo
                     break;
                 }
 				default: {
-                    // Fix #3: Warn on unknown collections instead of silent ignore
 					console.warn(`Skipping unknown collection: ${collection}`);
 					break;
 				}
@@ -330,7 +348,11 @@ export function parseDate(date: string | number | Date): Date | null {
 	return Number.isNaN(parsedDate.getTime()) ? null : parsedDate;
 }
 
-// Fix #1: Implement checkDataSize logic (using DB counts)
+/**
+ * Checks and displays record counts for key tables.
+ * @param stage - Label for the current stage (e.g., "Before", "After")
+ * @returns Promise that resolves to true if check succeeds, false otherwise
+ */
 export async function checkDataSize(stage: string): Promise<boolean> {
     try {
         const tables = [
