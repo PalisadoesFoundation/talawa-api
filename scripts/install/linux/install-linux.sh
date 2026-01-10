@@ -55,6 +55,30 @@ log_error() {
     echo "[$timestamp] ERROR: $message" >> "$INSTALLATION_LOG"
 }
 
+# Add retry utility function
+retry_command() {
+    local max_attempts="$1"
+    shift
+    local attempt=1
+    local exit_code=0
+    
+    while [ $attempt -le $max_attempts ]; do
+        if [ $attempt -gt 1 ]; then
+            warn "Retry attempt $attempt of $max_attempts..."
+            sleep $((attempt * 2))  # Exponential backoff
+        fi
+        
+        if "$@"; then
+            return 0
+        fi
+        exit_code=$?
+        ((attempt++))
+    done
+    
+    error "Command failed after $max_attempts attempts: $*"
+    return $exit_code
+}
+
 # Check if command exists
 command_exists() {
     command -v "$1" &> /dev/null
@@ -266,7 +290,15 @@ if [ "$INSTALL_MODE" = "docker" ]; then
         # The script is from a trusted source (get.docker.com) but piping to shell
         # carries inherent risk. Users can review the script first by visiting:
         # https://get.docker.com or using: curl -fsSL https://get.docker.com | less
-        curl -fsSL --connect-timeout $CURL_CONNECT_TIMEOUT --max-time $CURL_MAX_TIME_DOCKER https://get.docker.com | sh
+        # curl -fsSL --connect-timeout $CURL_CONNECT_TIMEOUT --max-time $CURL_MAX_TIME_DOCKER https://get.docker.com | sh
+        local docker_installer="/tmp/get-docker-$$.sh"
+        if retry_command "$MAX_RETRY_ATTEMPTS" curl -fsSL --connect-timeout "$CURL_CONNECT_TIMEOUT" --max-time "$CURL_MAX_TIME_DOCKER" -o "$docker_installer" https://get.docker.com; then
+            sh "$docker_installer"
+            rm -f "$docker_installer"
+        else
+            error "Failed to download Docker installer after multiple attempts."
+            exit 1
+        fi
         
         info "Adding current user to docker group..."
         sudo usermod -aG docker "$USER"
@@ -313,7 +345,16 @@ else
     info "Installing fnm..."
     # Security Note: This uses fnm's official installer over HTTPS.
     # Users can review the script first at: https://fnm.vercel.app/install
-    curl -fsSL --connect-timeout $CURL_CONNECT_TIMEOUT --max-time $CURL_MAX_TIME_FNM https://fnm.vercel.app/install | bash -s -- --skip-shell
+    # curl -fsSL --connect-timeout $CURL_CONNECT_TIMEOUT --max-time $CURL_MAX_TIME_FNM https://fnm.vercel.app/install | bash -s -- --skip-shell
+
+    local fnm_installer="/tmp/fnm-install-$$.sh"
+    if retry_command "$MAX_RETRY_ATTEMPTS" curl -fsSL --connect-timeout "$CURL_CONNECT_TIMEOUT" --max-time "$CURL_MAX_TIME_FNM" -o "$fnm_installer" https://fnm.vercel.app/install; then
+        bash "$fnm_installer" -- --skip-shell
+        rm -f "$fnm_installer"
+    else
+        error "Failed to download fnm installer."
+        exit 1
+    fi
     
     # Set up fnm for current session
     export PATH="$FNM_BIN_DIR:$PATH"
@@ -479,23 +520,23 @@ if command_exists pnpm; then
                 success "pnpm is already at latest version: v$CURRENT_PNPM"
             elif [ -n "$LATEST_PNPM" ]; then
                 info "Updating pnpm from v$CURRENT_PNPM to latest (v$LATEST_PNPM)..."
-                npm install -g "pnpm@latest"
+                retry_command "$MAX_RETRY_ATTEMPTS" npm install -g "pnpm@latest"
                 echo "$LATEST_PNPM" > "$PNPM_VERSION_CACHE"
             else
                 warn "Could not determine latest pnpm version from npm registry"
                 info "Updating pnpm to latest version..."
-                npm install -g "pnpm@latest"
+                retry_command "$MAX_RETRY_ATTEMPTS" npm install -g "pnpm@latest"
             fi
         fi
     elif [ "$CURRENT_PNPM" = "$PNPM_VERSION" ]; then
         success "pnpm is already installed: v$CURRENT_PNPM"
     else
         info "Updating pnpm from v$CURRENT_PNPM to v$PNPM_VERSION..."
-        npm install -g "pnpm@$PNPM_VERSION"
+        retry_command "$MAX_RETRY_ATTEMPTS" npm install -g "pnpm@$PNPM_VERSION"
     fi
 else
     info "Installing pnpm..."
-    npm install -g "pnpm@$PNPM_VERSION"
+    retry_command "$MAX_RETRY_ATTEMPTS" npm install -g "pnpm@$PNPM_VERSION"
 fi
 
 # Verify pnpm is available in PATH
@@ -567,7 +608,14 @@ if [ -f "pnpm-lock.yaml" ]; then
     
     if [ "$NEEDS_INSTALL" = true ]; then
         info "Installing dependencies..."
-        pnpm install
+        if ! retry_command "$MAX_RETRY_ATTEMPTS" pnpm install; then
+             error "Failed to install dependencies after $MAX_RETRY_ATTEMPTS attempts"
+             info "Possible causes:"
+             info "  - Network connectivity issues"
+             info "  - Package registry temporarily unavailable"
+             info "  - Corrupted pnpm cache (try: pnpm store prune)"
+             exit 1
+        fi
         # Cache the lockfile hash after successful install
         if [ "$CURRENT_LOCKFILE_HASH" != "unknown" ]; then
             echo "$CURRENT_LOCKFILE_HASH" > "$LOCKFILE_HASH_CACHE" 2>/dev/null || warn "Failed to cache lockfile hash"
@@ -577,7 +625,10 @@ if [ -f "pnpm-lock.yaml" ]; then
 else
     # No lockfile exists, run install to generate it
     info "No pnpm-lock.yaml found, running fresh install..."
-    pnpm install
+    if ! retry_command "$MAX_RETRY_ATTEMPTS" pnpm install; then
+         error "Failed to install dependencies."
+         exit 1
+    fi
     # Cache the new lockfile hash
     if [ -f "pnpm-lock.yaml" ]; then
         NEW_HASH=$(sha256sum pnpm-lock.yaml 2>/dev/null | cut -d ' ' -f 1)
