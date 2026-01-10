@@ -1,9 +1,10 @@
 /**
  * More information at this link: {@link https://orm.drizzle.team/kit-docs/config-reference}
  */
+
+import { type Static, Type } from "@sinclair/typebox";
 import { defineConfig } from "drizzle-kit";
 import { envSchema } from "env-schema";
-import { type Static, Type } from "@sinclair/typebox";
 import { envConfigSchema, envSchemaAjv } from "./src/envConfigSchema";
 
 const schema = Type.Pick(envConfigSchema, [

@@ -1,9 +1,10 @@
 /**
  * This file is required for `package.json` scripts specific to the postgres test database to work. More information at this link: {@link https://orm.drizzle.team/kit-docs/config-reference}
  */
+
+import { type Static, Type } from "@sinclair/typebox";
 import { defineConfig } from "drizzle-kit";
 import { envSchema } from "env-schema";
-import { type Static, Type } from "@sinclair/typebox";
 import { envConfigSchema, envSchemaAjv } from "~/src/envConfigSchema";
 import { testEnvConfigSchema } from "./envConfigSchema";
 
