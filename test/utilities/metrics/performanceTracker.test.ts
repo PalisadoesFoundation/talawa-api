@@ -326,7 +326,7 @@ describe("Performance Tracker", () => {
 		expect(slowOps.length).toBeGreaterThanOrEqual(1);
 		expect(slowOps[0]?.op).toBe("db");
 		expect(slowOps[0]?.ms).toBeGreaterThanOrEqual(10);
-		
+
 		// Verify fast-op is not in slow array (it should measure < 1ms, well below threshold)
 		const fastOps = snapshot.slow.filter((entry) => entry.op === "fast-op");
 		expect(fastOps.length).toBe(0);
