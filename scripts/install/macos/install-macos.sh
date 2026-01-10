@@ -362,6 +362,7 @@ success "pnpm installed: v$(pnpm --version)"
 : $((CURRENT_STEP++))
 step $CURRENT_STEP $TOTAL_STEPS "Installing project dependencies..."
 
+# Run pnpm install non-interactively (CI=true prevents interactive prompts)
 CI=true pnpm install
 
 success "Project dependencies installed"
