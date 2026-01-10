@@ -499,16 +499,17 @@ export async function apiSetup(answers: SetupAnswers): Promise<SetupAnswers> {
 		answers.API_MINIO_SECRET_KEY = await promptInput(
 			"API_MINIO_SECRET_KEY",
 			"Minio secret key:",
-			"password",
+			process.env.MINIO_ROOT_PASSWORD || "password",
 		);
 		if (process.env.MINIO_ROOT_PASSWORD) {
 			// Environment variable exists, validate against it
-			while (answers.API_MINIO_SECRET_KEY !== process.env.MINIO_ROOT_PASSWORD) {
+			const minioPassword = process.env.MINIO_ROOT_PASSWORD;
+			while (answers.API_MINIO_SECRET_KEY !== minioPassword) {
 				console.warn("⚠️ API_MINIO_SECRET_KEY must match MINIO_ROOT_PASSWORD.");
 				answers.API_MINIO_SECRET_KEY = await promptInput(
 					"API_MINIO_SECRET_KEY",
 					"Minio secret key:",
-					process.env.MINIO_ROOT_PASSWORD, // Use env var as default
+					minioPassword, // Use env var as default
 				);
 			}
 			console.log("✅ API_MINIO_SECRET_KEY matches MINIO_ROOT_PASSWORD");
@@ -542,16 +543,17 @@ export async function apiSetup(answers: SetupAnswers): Promise<SetupAnswers> {
 		answers.API_POSTGRES_PASSWORD = await promptInput(
 			"API_POSTGRES_PASSWORD",
 			"Postgres password:",
-			"password",
+			process.env.POSTGRES_PASSWORD || "password",
 		);
 		if (process.env.POSTGRES_PASSWORD) {
 			// Environment variable exists, validate against it
-			while (answers.API_POSTGRES_PASSWORD !== process.env.POSTGRES_PASSWORD) {
+			const postgresPassword = process.env.POSTGRES_PASSWORD;
+			while (answers.API_POSTGRES_PASSWORD !== postgresPassword) {
 				console.warn("⚠️ API_POSTGRES_PASSWORD must match POSTGRES_PASSWORD.");
 				answers.API_POSTGRES_PASSWORD = await promptInput(
 					"API_POSTGRES_PASSWORD",
 					"Postgres password:",
-					process.env.POSTGRES_PASSWORD, // Use env var as default
+					postgresPassword, // Use env var as default
 				);
 			}
 			console.log("✅ API_POSTGRES_PASSWORD matches POSTGRES_PASSWORD");
