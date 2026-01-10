@@ -9,6 +9,7 @@ import {
 	mutationCreateOrganizationInputSchema,
 } from "~/src/graphql/inputs/MutationCreateOrganizationInput";
 import { Organization } from "~/src/graphql/types/Organization/Organization";
+import { invalidateEntityLists } from "~/src/services/caching";
 import envConfig from "~/src/utilities/graphqLimits";
 import { isNotNullish } from "~/src/utilities/isNotNullish";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
@@ -139,53 +140,64 @@ builder.mutationField("createOrganization", (t) =>
 				avatarMimeType = parsedArgs.input.avatar.mimetype;
 			}
 
-			return await ctx.drizzleClient.transaction(async (tx) => {
-				const [createdOrganization] = await tx
-					.insert(organizationsTable)
-					.values({
-						addressLine1: parsedArgs.input.addressLine1,
-						addressLine2: parsedArgs.input.addressLine2,
-						avatarMimeType,
-						avatarName,
-						city: parsedArgs.input.city,
-						countryCode: parsedArgs.input.countryCode,
-						description: parsedArgs.input.description,
-						creatorId: currentUserId,
-						name: parsedArgs.input.name,
-						postalCode: parsedArgs.input.postalCode,
-						state: parsedArgs.input.state,
-						userRegistrationRequired:
-							parsedArgs.input.isUserRegistrationRequired,
-					})
-					.returning();
+			const createdOrganization = await ctx.drizzleClient.transaction(
+				async (tx) => {
+					const [createdOrg] = await tx
+						.insert(organizationsTable)
+						.values({
+							addressLine1: parsedArgs.input.addressLine1,
+							addressLine2: parsedArgs.input.addressLine2,
+							avatarMimeType,
+							avatarName,
+							city: parsedArgs.input.city,
+							countryCode: parsedArgs.input.countryCode,
+							description: parsedArgs.input.description,
+							creatorId: currentUserId,
+							name: parsedArgs.input.name,
+							postalCode: parsedArgs.input.postalCode,
+							state: parsedArgs.input.state,
+							userRegistrationRequired:
+								parsedArgs.input.isUserRegistrationRequired,
+						})
+						.returning();
 
-				// Inserted organization not being returned is an external defect unrelated to this code. It is very unlikely for this error to occur.
-				if (!createdOrganization) {
-					ctx.log.error(
-						"Postgres insert operation unexpectedly returned an empty array instead of throwing an error.",
-					);
+					// Inserted organization not being returned is an external defect unrelated to this code. It is very unlikely for this error to occur.
+					if (createdOrg === undefined) {
+						ctx.log.error(
+							"Postgres insert operation unexpectedly returned an empty array instead of throwing an error.",
+						);
 
-					throw new TalawaGraphQLError({
-						extensions: {
-							code: "unexpected",
-						},
-					});
-				}
+						throw new TalawaGraphQLError({
+							extensions: {
+								code: "unexpected",
+							},
+						});
+					}
 
-				if (isNotNullish(parsedArgs.input.avatar)) {
-					await ctx.minio.client.putObject(
-						ctx.minio.bucketName,
-						avatarName,
-						parsedArgs.input.avatar.createReadStream(),
-						undefined,
-						{
-							"content-type": parsedArgs.input.avatar.mimetype,
-						},
-					);
-				}
+					if (isNotNullish(parsedArgs.input.avatar)) {
+						await ctx.minio.client.putObject(
+							ctx.minio.bucketName,
+							avatarName,
+							parsedArgs.input.avatar.createReadStream(),
+							undefined,
+							{
+								"content-type": parsedArgs.input.avatar.mimetype,
+							},
+						);
+					}
 
-				return createdOrganization;
-			});
+					return createdOrg;
+				},
+			);
+
+			// Invalidate organization list caches (graceful degradation - don't break mutation on cache errors)
+			try {
+				await invalidateEntityLists(ctx.cache, "organization");
+			} catch (error) {
+				ctx.log.warn(`Cache invalidation failed for organization: ${error}`);
+			}
+
+			return createdOrganization;
 		},
 		type: Organization,
 	}),

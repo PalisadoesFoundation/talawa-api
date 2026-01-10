@@ -7,6 +7,10 @@ import {
 	mutationUpdateEventInputSchema,
 } from "~/src/graphql/inputs/MutationUpdateEventInput";
 import { Event } from "~/src/graphql/types/Event/Event";
+import {
+	invalidateEntity,
+	invalidateEntityLists,
+} from "~/src/services/caching";
 import envConfig from "~/src/utilities/graphqLimits";
 import { isNotNullish } from "~/src/utilities/isNotNullish";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
@@ -243,6 +247,32 @@ builder.mutationField("updateStandaloneEvent", (t) =>
 						code: "unexpected",
 					},
 				});
+			}
+
+			// Invalidate event caches (graceful degradation - don't break mutation on cache errors)
+			// Use independent try-catch blocks so both invalidation attempts are always made
+			try {
+				await invalidateEntity(ctx.cache, "event", parsedArgs.input.id);
+			} catch (error) {
+				ctx.log.warn(
+					{
+						error,
+						eventId: parsedArgs.input.id,
+					},
+					"Failed to invalidate event entity cache (non-fatal)",
+				);
+			}
+
+			try {
+				await invalidateEntityLists(ctx.cache, "event");
+			} catch (error) {
+				ctx.log.warn(
+					{
+						error,
+						eventId: parsedArgs.input.id,
+					},
+					"Failed to invalidate event list cache (non-fatal)",
+				);
 			}
 
 			return Object.assign(updatedEvent, {

@@ -9,6 +9,7 @@ import {
 	runMaterializationWorkerSafely,
 	startBackgroundWorkers,
 	stopBackgroundWorkers,
+	warmCacheSafely,
 } from "~/src/workers/backgroundWorkerService";
 
 vi.mock("node-cron", () => {
@@ -392,6 +393,303 @@ describe("backgroundServiceWorker", () => {
 			expect(mockLogger.error).toHaveBeenCalledWith(
 				startupError,
 				"Failed to start background worker service",
+			);
+		});
+
+		it("calls warmCacheSafely when cache is provided", async () => {
+			const mockOrganizations = [
+				{ id: "org1", name: "Org 1", createdAt: new Date() },
+			];
+
+			const mockDrizzleWithQuery = {
+				...mockDrizzleClient,
+				query: {
+					organizationsTable: {
+						findMany: vi.fn().mockResolvedValue(mockOrganizations),
+					},
+				},
+			} as unknown as NodePgDatabase<typeof schema>;
+
+			const mockCache = {
+				set: vi.fn().mockResolvedValue(undefined),
+			};
+
+			const { runMaterializationWorker } = await import(
+				"~/src/workers/eventGeneration/eventGenerationPipeline"
+			);
+			const { cleanupOldInstances } = await import(
+				"~/src/workers/eventCleanupWorker"
+			);
+
+			vi.mocked(runMaterializationWorker).mockResolvedValue({
+				organizationsProcessed: 0,
+				instancesCreated: 0,
+				windowsUpdated: 0,
+				errorsEncountered: 0,
+				processingTimeMs: 1,
+			});
+
+			vi.mocked(cleanupOldInstances).mockResolvedValue({
+				organizationsProcessed: 0,
+				instancesDeleted: 0,
+				errorsEncountered: 0,
+			});
+
+			await startBackgroundWorkers(
+				mockDrizzleWithQuery,
+				mockLogger,
+				mockCache as never,
+			);
+
+			// Verify warmCacheSafely was invoked (evidence: cache.set was called)
+			expect(mockLogger.info).toHaveBeenCalledWith("Starting cache warming");
+			expect(mockCache.set).toHaveBeenCalled();
+			expect(mockLogger.info).toHaveBeenCalledWith(
+				expect.objectContaining({
+					organizationsWarmed: 1,
+				}),
+				"Cache warming completed successfully",
+			);
+
+			await stopBackgroundWorkers(mockLogger);
+		});
+
+		it("handles undefined cache gracefully without calling warmCacheSafely", async () => {
+			const { runMaterializationWorker } = await import(
+				"~/src/workers/eventGeneration/eventGenerationPipeline"
+			);
+			const { cleanupOldInstances } = await import(
+				"~/src/workers/eventCleanupWorker"
+			);
+
+			vi.mocked(runMaterializationWorker).mockResolvedValue({
+				organizationsProcessed: 0,
+				instancesCreated: 0,
+				windowsUpdated: 0,
+				errorsEncountered: 0,
+				processingTimeMs: 1,
+			});
+
+			vi.mocked(cleanupOldInstances).mockResolvedValue({
+				organizationsProcessed: 0,
+				instancesDeleted: 0,
+				errorsEncountered: 0,
+			});
+
+			// Call without cache (undefined)
+			await expect(
+				startBackgroundWorkers(mockDrizzleClient, mockLogger, undefined),
+			).resolves.not.toThrow();
+
+			// Verify warmCacheSafely was NOT invoked (no "Starting cache warming" log)
+			expect(mockLogger.info).not.toHaveBeenCalledWith(
+				"Starting cache warming",
+			);
+
+			// Verify services started successfully
+			expect(mockLogger.info).toHaveBeenCalledWith(
+				expect.objectContaining({
+					materializationSchedule: expect.any(String),
+					cleanupSchedule: expect.any(String),
+				}),
+				"Background worker service started successfully",
+			);
+
+			// Verify clean stop
+			await stopBackgroundWorkers(mockLogger);
+			expect(mockLogger.info).toHaveBeenCalledWith(
+				"Background worker service stopped successfully",
+			);
+		});
+	});
+
+	describe("warmCacheSafely", () => {
+		it("should warm cache with organizations successfully", async () => {
+			const mockOrganizations = [
+				{ id: "org1", name: "Org 1", createdAt: new Date() },
+				{ id: "org2", name: "Org 2", createdAt: new Date() },
+			];
+
+			const mockDrizzleWithQuery = {
+				query: {
+					organizationsTable: {
+						findMany: vi.fn().mockResolvedValue(mockOrganizations),
+					},
+				},
+			} as unknown as NodePgDatabase<typeof schema>;
+
+			const mockCache = {
+				set: vi.fn().mockResolvedValue(undefined),
+			};
+
+			await warmCacheSafely(
+				mockDrizzleWithQuery,
+				mockCache as never,
+				mockLogger,
+			);
+
+			expect(mockLogger.info).toHaveBeenCalledWith("Starting cache warming");
+			expect(mockCache.set).toHaveBeenCalledTimes(2);
+			expect(mockLogger.info).toHaveBeenCalledWith(
+				expect.objectContaining({
+					duration: expect.stringMatching(/^\d+ms$/),
+					organizationsWarmed: 2,
+				}),
+				"Cache warming completed successfully",
+			);
+		});
+
+		it("should handle cache warming failure gracefully (non-fatal)", async () => {
+			const mockDrizzleWithQuery = {
+				query: {
+					organizationsTable: {
+						findMany: vi.fn().mockRejectedValue(new Error("Database error")),
+					},
+				},
+			} as unknown as NodePgDatabase<typeof schema>;
+
+			const mockCache = {
+				set: vi.fn(),
+			};
+
+			// Should not throw - cache warming failures are non-fatal
+			await expect(
+				warmCacheSafely(mockDrizzleWithQuery, mockCache as never, mockLogger),
+			).resolves.not.toThrow();
+
+			expect(mockLogger.warn).toHaveBeenCalledWith(
+				expect.objectContaining({
+					duration: expect.stringMatching(/^\d+ms$/),
+					error: "Database error",
+				}),
+				"Cache warming failed (non-fatal)",
+			);
+		});
+
+		it("should handle non-Error thrown during cache warming", async () => {
+			const mockDrizzleWithQuery = {
+				query: {
+					organizationsTable: {
+						findMany: vi.fn().mockRejectedValue("String error"),
+					},
+				},
+			} as unknown as NodePgDatabase<typeof schema>;
+
+			const mockCache = {
+				set: vi.fn(),
+			};
+
+			await expect(
+				warmCacheSafely(mockDrizzleWithQuery, mockCache as never, mockLogger),
+			).resolves.not.toThrow();
+
+			expect(mockLogger.warn).toHaveBeenCalledWith(
+				expect.objectContaining({
+					error: "Unknown error",
+				}),
+				"Cache warming failed (non-fatal)",
+			);
+		});
+
+		it("should warm zero organizations when database is empty", async () => {
+			const mockDrizzleWithQuery = {
+				query: {
+					organizationsTable: {
+						findMany: vi.fn().mockResolvedValue([]),
+					},
+				},
+			} as unknown as NodePgDatabase<typeof schema>;
+
+			const mockCache = {
+				set: vi.fn(),
+			};
+
+			await warmCacheSafely(
+				mockDrizzleWithQuery,
+				mockCache as never,
+				mockLogger,
+			);
+
+			expect(mockCache.set).not.toHaveBeenCalled();
+			expect(mockLogger.info).toHaveBeenCalledWith(
+				expect.objectContaining({
+					organizationsWarmed: 0,
+				}),
+				"Cache warming completed successfully",
+			);
+		});
+
+		it("should handle cache.set failure gracefully with partial success", async () => {
+			const mockOrganizations = [
+				{ id: "org1", name: "Org 1", createdAt: new Date() },
+				{ id: "org2", name: "Org 2", createdAt: new Date() },
+			];
+
+			const mockDrizzleWithQuery = {
+				query: {
+					organizationsTable: {
+						findMany: vi.fn().mockResolvedValue(mockOrganizations),
+					},
+				},
+			} as unknown as NodePgDatabase<typeof schema>;
+
+			const mockCache = {
+				// First call succeeds, second call fails
+				set: vi
+					.fn()
+					.mockResolvedValueOnce(undefined)
+					.mockRejectedValueOnce(new Error("Redis connection failed")),
+			};
+
+			// Should not throw - cache.set failures are handled gracefully via Promise.allSettled
+			await expect(
+				warmCacheSafely(mockDrizzleWithQuery, mockCache as never, mockLogger),
+			).resolves.not.toThrow();
+
+			// cache.set was called twice (once per org)
+			expect(mockCache.set).toHaveBeenCalledTimes(2);
+
+			// Only 1 of 2 succeeded (due to Promise.allSettled handling)
+			expect(mockLogger.info).toHaveBeenCalledWith(
+				expect.objectContaining({
+					duration: expect.stringMatching(/^\d+ms$/),
+					organizationsWarmed: 1,
+				}),
+				"Cache warming completed successfully",
+			);
+		});
+
+		it("should handle complete cache.set failure gracefully", async () => {
+			const mockOrganizations = [
+				{ id: "org1", name: "Org 1", createdAt: new Date() },
+			];
+
+			const mockDrizzleWithQuery = {
+				query: {
+					organizationsTable: {
+						findMany: vi.fn().mockResolvedValue(mockOrganizations),
+					},
+				},
+			} as unknown as NodePgDatabase<typeof schema>;
+
+			const mockCache = {
+				set: vi.fn().mockRejectedValue(new Error("Redis connection failed")),
+			};
+
+			// Should not throw - cache.set failures are handled gracefully
+			await expect(
+				warmCacheSafely(mockDrizzleWithQuery, mockCache as never, mockLogger),
+			).resolves.not.toThrow();
+
+			expect(mockCache.set).toHaveBeenCalledTimes(1);
+
+			// 0 organizations warmed (all failed)
+			expect(mockLogger.info).toHaveBeenCalledWith(
+				expect.objectContaining({
+					duration: expect.stringMatching(/^\d+ms$/),
+					organizationsWarmed: 0,
+				}),
+				"Cache warming completed successfully",
 			);
 		});
 	});

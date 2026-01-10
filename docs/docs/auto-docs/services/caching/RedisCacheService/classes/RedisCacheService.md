@@ -41,10 +41,10 @@ Defined in: [src/services/caching/RedisCacheService.ts:41](https://github.com/Pa
 
 > **clearByPattern**(`pattern`): `Promise`\<`void`\>
 
-Defined in: [src/services/caching/RedisCacheService.ts:76](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/caching/RedisCacheService.ts#L76)
+Defined in: [src/services/caching/RedisCacheService.ts:123](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/caching/RedisCacheService.ts#L123)
 
 Delete all keys matching a glob pattern.
-Uses SCAN internally to avoid blocking Redis.
+Uses SCAN internally to avoid blocking Redis with the KEYS command.
 
 #### Parameters
 
@@ -58,6 +58,12 @@ Glob pattern (e.g., "talawa:v1:user:list:*").
 
 `Promise`\<`void`\>
 
+#### Example
+
+```typescript
+await cache.clearByPattern('talawa:v1:organization:list:*');
+```
+
 #### Implementation of
 
 [`CacheService`](../../CacheService/interfaces/CacheService.md).[`clearByPattern`](../../CacheService/interfaces/CacheService.md#clearbypattern)
@@ -68,7 +74,7 @@ Glob pattern (e.g., "talawa:v1:user:list:*").
 
 > **del**(`keys`): `Promise`\<`void`\>
 
-Defined in: [src/services/caching/RedisCacheService.ts:65](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/caching/RedisCacheService.ts#L65)
+Defined in: [src/services/caching/RedisCacheService.ts:101](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/caching/RedisCacheService.ts#L101)
 
 Delete one or more keys from the cache.
 
@@ -84,6 +90,13 @@ Single key or array of keys to delete.
 
 `Promise`\<`void`\>
 
+#### Example
+
+```typescript
+await cache.del('talawa:v1:user:123');
+await cache.del(['key1', 'key2', 'key3']);
+```
+
 #### Implementation of
 
 [`CacheService`](../../CacheService/interfaces/CacheService.md).[`del`](../../CacheService/interfaces/CacheService.md#del)
@@ -94,7 +107,7 @@ Single key or array of keys to delete.
 
 > **get**\<`T`\>(`key`): `Promise`\<`T` \| `null`\>
 
-Defined in: [src/services/caching/RedisCacheService.ts:46](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/caching/RedisCacheService.ts#L46)
+Defined in: [src/services/caching/RedisCacheService.ts:58](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/caching/RedisCacheService.ts#L58)
 
 Retrieve a cached value by key.
 
@@ -103,6 +116,8 @@ Retrieve a cached value by key.
 ##### T
 
 `T`
+
+The expected type of the cached value.
 
 #### Parameters
 
@@ -116,7 +131,13 @@ The cache key to retrieve.
 
 `Promise`\<`T` \| `null`\>
 
-The cached value or null if not found/expired.
+The cached value deserialized from JSON, or null if not found/expired/invalid.
+
+#### Example
+
+```typescript
+const user = await cache.get<User>('talawa:v1:user:123');
+```
 
 #### Implementation of
 
@@ -128,7 +149,7 @@ The cached value or null if not found/expired.
 
 > **mget**\<`T`\>(`keys`): `Promise`\<(`T` \| `null`)[]\>
 
-Defined in: [src/services/caching/RedisCacheService.ts:98](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/caching/RedisCacheService.ts#L98)
+Defined in: [src/services/caching/RedisCacheService.ts:157](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/caching/RedisCacheService.ts#L157)
 
 Batch get multiple keys.
 
@@ -137,6 +158,8 @@ Batch get multiple keys.
 ##### T
 
 `T`
+
+The expected type of the cached values.
 
 #### Parameters
 
@@ -150,7 +173,13 @@ Array of cache keys.
 
 `Promise`\<(`T` \| `null`)[]\>
 
-Array of values in the same order as keys (null for missing).
+Array of values in the same order as keys (null for missing/invalid).
+
+#### Example
+
+```typescript
+const users = await cache.mget<User>(['user:1', 'user:2', 'user:3']);
+```
 
 #### Implementation of
 
@@ -162,15 +191,18 @@ Array of values in the same order as keys (null for missing).
 
 > **mset**\<`T`\>(`entries`): `Promise`\<`void`\>
 
-Defined in: [src/services/caching/RedisCacheService.ts:118](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/caching/RedisCacheService.ts#L118)
+Defined in: [src/services/caching/RedisCacheService.ts:192](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/caching/RedisCacheService.ts#L192)
 
 Batch set multiple key-value pairs with TTLs.
+Uses Promise.allSettled to persist successful entries even if some fail.
 
 #### Type Parameters
 
 ##### T
 
 `T`
+
+The type of the values to cache.
 
 #### Parameters
 
@@ -184,6 +216,15 @@ Array of `{ key, value, ttlSeconds }` objects.
 
 `Promise`\<`void`\>
 
+#### Example
+
+```typescript
+await cache.mset([
+  { key: 'user:1', value: user1, ttlSeconds: 300 },
+  { key: 'user:2', value: user2, ttlSeconds: 300 },
+]);
+```
+
 #### Implementation of
 
 [`CacheService`](../../CacheService/interfaces/CacheService.md).[`mset`](../../CacheService/interfaces/CacheService.md#mset)
@@ -194,7 +235,7 @@ Array of `{ key, value, ttlSeconds }` objects.
 
 > **set**\<`T`\>(`key`, `value`, `ttlSeconds`): `Promise`\<`void`\>
 
-Defined in: [src/services/caching/RedisCacheService.ts:56](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/caching/RedisCacheService.ts#L56)
+Defined in: [src/services/caching/RedisCacheService.ts:81](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/caching/RedisCacheService.ts#L81)
 
 Store a value in the cache with a TTL.
 
@@ -203,6 +244,8 @@ Store a value in the cache with a TTL.
 ##### T
 
 `T`
+
+The type of the value to cache.
 
 #### Parameters
 
@@ -227,6 +270,12 @@ Time-to-live in seconds.
 #### Returns
 
 `Promise`\<`void`\>
+
+#### Example
+
+```typescript
+await cache.set('talawa:v1:user:123', userData, 300);
+```
 
 #### Implementation of
 

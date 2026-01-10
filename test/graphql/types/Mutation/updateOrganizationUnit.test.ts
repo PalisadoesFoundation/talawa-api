@@ -76,6 +76,8 @@ const mocks = vi.hoisted(() => {
 			},
 			bucketName: "talawa",
 		},
+		invalidateEntity: vi.fn().mockResolvedValue(undefined),
+		invalidateEntityLists: vi.fn().mockResolvedValue(undefined),
 	};
 });
 
@@ -92,6 +94,12 @@ vi.mock("~/src/graphql/builder", () => ({
 	builder: mocks.builder,
 }));
 
+// Mock cache invalidation functions
+vi.mock("~/src/services/caching", () => ({
+	invalidateEntity: mocks.invalidateEntity,
+	invalidateEntityLists: mocks.invalidateEntityLists,
+}));
+
 // Mock context and services
 const mockContext = {
 	currentClient: {
@@ -100,6 +108,15 @@ const mockContext = {
 	},
 	drizzleClient: mocks.drizzle,
 	minio: mocks.minio,
+	cache: {
+		del: vi.fn().mockResolvedValue(undefined),
+		clearByPattern: vi.fn().mockResolvedValue(undefined),
+	},
+	log: {
+		error: vi.fn(),
+		warn: vi.fn(),
+		info: vi.fn(),
+	},
 };
 
 vi.mock("~/src/drizzle/client", () => ({
@@ -199,6 +216,157 @@ describe("updateOrganization Resolver Unit Coverage", () => {
 				avatarMimeType: "image/png",
 				avatarName: "old-avatar",
 			}),
+		);
+	});
+
+	it("should call invalidateEntity and invalidateEntityLists after successful update", async () => {
+		const orgId = "org-1";
+
+		mocks.drizzle.query.usersTable.findFirst.mockResolvedValue({
+			role: "administrator",
+		});
+		// First call: get existing organization, Second call: check duplicate name (should return undefined)
+		mocks.drizzle.query.organizationsTable.findFirst
+			.mockResolvedValueOnce({
+				id: orgId,
+				avatarName: null,
+			})
+			.mockResolvedValueOnce(undefined); // No duplicate name found
+
+		mocks.tx.returning.mockResolvedValue([
+			{
+				id: orgId,
+				name: "Updated Org",
+			},
+		]);
+
+		const args = {
+			input: {
+				id: orgId,
+				name: "Updated Org Name",
+			},
+		};
+
+		await resolver(null, args, mockContext);
+
+		// Verify invalidateEntity was called with correct args
+		expect(mocks.invalidateEntity).toHaveBeenCalledWith(
+			mockContext.cache,
+			"organization",
+			orgId,
+		);
+
+		// Verify invalidateEntityLists was called with correct args
+		expect(mocks.invalidateEntityLists).toHaveBeenCalledWith(
+			mockContext.cache,
+			"organization",
+		);
+	});
+
+	it("should succeed despite cache invalidation errors (graceful degradation)", async () => {
+		const orgId = "org-2";
+
+		mocks.drizzle.query.usersTable.findFirst.mockResolvedValue({
+			role: "administrator",
+		});
+		// First call: get existing organization, Second call: check duplicate name (should return undefined)
+		mocks.drizzle.query.organizationsTable.findFirst
+			.mockResolvedValueOnce({
+				id: orgId,
+				avatarName: null,
+			})
+			.mockResolvedValueOnce(undefined); // No duplicate name found
+
+		mocks.tx.returning.mockResolvedValue([
+			{
+				id: orgId,
+				name: "Updated Org",
+			},
+		]);
+
+		// Make cache invalidation throw an error
+		mocks.invalidateEntity.mockRejectedValueOnce(
+			new Error("Redis unavailable"),
+		);
+
+		const args = {
+			input: {
+				id: orgId,
+				name: "Updated Org Name",
+			},
+		};
+
+		// Cache invalidation is now outside the transaction with try-catch.
+		// Resolver should succeed despite cache errors (graceful degradation).
+		const result = await resolver(null, args, mockContext);
+
+		// Verify the resolver succeeded and returned the updated organization
+		expect(result).toEqual({
+			id: orgId,
+			name: "Updated Org",
+		});
+
+		// Verify cache invalidation was still attempted
+		expect(mocks.invalidateEntity).toHaveBeenCalled();
+
+		// Verify warning was logged for the cache error
+		expect(mockContext.log.warn).toHaveBeenCalledWith(
+			{ error: "Redis unavailable" },
+			"Failed to invalidate organization cache (non-fatal)",
+		);
+	});
+
+	it("should succeed when invalidateEntity succeeds but invalidateEntityLists fails (graceful degradation)", async () => {
+		const orgId = "org-3";
+
+		mocks.drizzle.query.usersTable.findFirst.mockResolvedValue({
+			role: "administrator",
+		});
+		// First call: get existing organization, Second call: check duplicate name (should return undefined)
+		mocks.drizzle.query.organizationsTable.findFirst
+			.mockResolvedValueOnce({
+				id: orgId,
+				avatarName: null,
+			})
+			.mockResolvedValueOnce(undefined); // No duplicate name found
+
+		mocks.tx.returning.mockResolvedValue([
+			{
+				id: orgId,
+				name: "Updated Org",
+			},
+		]);
+
+		// invalidateEntity succeeds, but invalidateEntityLists fails
+		mocks.invalidateEntity.mockResolvedValueOnce(undefined);
+		mocks.invalidateEntityLists.mockRejectedValueOnce(
+			new Error("Redis timeout"),
+		);
+
+		const args = {
+			input: {
+				id: orgId,
+				name: "Updated Org Name",
+			},
+		};
+
+		// Resolver should succeed despite cache errors (graceful degradation)
+		const result = await resolver(null, args, mockContext);
+
+		// Verify the resolver succeeded and returned the updated organization
+		expect(result).toEqual({
+			id: orgId,
+			name: "Updated Org",
+		});
+
+		// Verify both cache invalidation functions were called
+		expect(mocks.invalidateEntity).toHaveBeenCalled();
+		expect(mocks.invalidateEntityLists).toHaveBeenCalled();
+
+		// Verify warning was logged for the cache error
+		expect(mockContext.log.warn).toHaveBeenCalledWith(
+			{ error: "Redis timeout" },
+			"Failed to invalidate organization cache (non-fatal)",
 		);
 	});
 });

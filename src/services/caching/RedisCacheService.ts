@@ -43,6 +43,18 @@ export class RedisCacheService implements CacheService {
 		private readonly logger: Logger,
 	) {}
 
+	/**
+	 * Retrieve a cached value by key.
+	 *
+	 * @typeParam T - The expected type of the cached value.
+	 * @param key - The cache key to retrieve.
+	 * @returns The cached value deserialized from JSON, or null if not found/expired/invalid.
+	 *
+	 * @example
+	 * ```typescript
+	 * const user = await cache.get<User>('talawa:v1:user:123');
+	 * ```
+	 */
 	async get<T>(key: string): Promise<T | null> {
 		try {
 			const raw = await this.redis.get(key);
@@ -53,6 +65,19 @@ export class RedisCacheService implements CacheService {
 		}
 	}
 
+	/**
+	 * Store a value in the cache with a TTL.
+	 *
+	 * @typeParam T - The type of the value to cache.
+	 * @param key - The cache key.
+	 * @param value - The value to cache (will be JSON serialized).
+	 * @param ttlSeconds - Time-to-live in seconds.
+	 *
+	 * @example
+	 * ```typescript
+	 * await cache.set('talawa:v1:user:123', userData, 300);
+	 * ```
+	 */
 	async set<T>(key: string, value: T, ttlSeconds: number): Promise<void> {
 		try {
 			const str = JSON.stringify(value);
@@ -62,6 +87,17 @@ export class RedisCacheService implements CacheService {
 		}
 	}
 
+	/**
+	 * Delete one or more keys from the cache.
+	 *
+	 * @param keys - Single key or array of keys to delete.
+	 *
+	 * @example
+	 * ```typescript
+	 * await cache.del('talawa:v1:user:123');
+	 * await cache.del(['key1', 'key2', 'key3']);
+	 * ```
+	 */
 	async del(keys: string | string[]): Promise<void> {
 		try {
 			const arr = Array.isArray(keys) ? keys : [keys];
@@ -73,6 +109,17 @@ export class RedisCacheService implements CacheService {
 		}
 	}
 
+	/**
+	 * Delete all keys matching a glob pattern.
+	 * Uses SCAN internally to avoid blocking Redis with the KEYS command.
+	 *
+	 * @param pattern - Glob pattern (e.g., "talawa:v1:user:list:*").
+	 *
+	 * @example
+	 * ```typescript
+	 * await cache.clearByPattern('talawa:v1:organization:list:*');
+	 * ```
+	 */
 	async clearByPattern(pattern: string): Promise<void> {
 		// Use SCAN to avoid blocking Redis with KEYS command
 		try {
@@ -95,6 +142,18 @@ export class RedisCacheService implements CacheService {
 		}
 	}
 
+	/**
+	 * Batch get multiple keys.
+	 *
+	 * @typeParam T - The expected type of the cached values.
+	 * @param keys - Array of cache keys.
+	 * @returns Array of values in the same order as keys (null for missing/invalid).
+	 *
+	 * @example
+	 * ```typescript
+	 * const users = await cache.mget<User>(['user:1', 'user:2', 'user:3']);
+	 * ```
+	 */
 	async mget<T>(keys: string[]): Promise<(T | null)[]> {
 		if (!keys.length) {
 			return [];
@@ -115,6 +174,21 @@ export class RedisCacheService implements CacheService {
 		}
 	}
 
+	/**
+	 * Batch set multiple key-value pairs with TTLs.
+	 * Uses Promise.allSettled to persist successful entries even if some fail.
+	 *
+	 * @typeParam T - The type of the values to cache.
+	 * @param entries - Array of `{ key, value, ttlSeconds }` objects.
+	 *
+	 * @example
+	 * ```typescript
+	 * await cache.mset([
+	 *   { key: 'user:1', value: user1, ttlSeconds: 300 },
+	 *   { key: 'user:2', value: user2, ttlSeconds: 300 },
+	 * ]);
+	 * ```
+	 */
 	async mset<T>(
 		entries: Array<{ key: string; value: T; ttlSeconds: number }>,
 	): Promise<void> {

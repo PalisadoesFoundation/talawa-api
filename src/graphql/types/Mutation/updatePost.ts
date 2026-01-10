@@ -10,6 +10,10 @@ import {
 	mutationUpdatePostInputSchema,
 } from "~/src/graphql/inputs/MutationUpdatePostInput";
 import { Post } from "~/src/graphql/types/Post/Post";
+import {
+	invalidateEntity,
+	invalidateEntityLists,
+} from "~/src/services/caching";
 import { getKeyPathsWithNonUndefinedValues } from "~/src/utilities/getKeyPathsWithNonUndefinedValues";
 import envConfig from "~/src/utilities/graphqLimits";
 import { isNotNullish } from "~/src/utilities/isNotNullish";
@@ -201,58 +205,31 @@ builder.mutationField("updatePost", (t) =>
 				}
 			}
 
-			return await ctx.drizzleClient.transaction(async (tx) => {
-				const [updatedPost] = await tx
-					.update(postsTable)
-					.set({
-						caption: parsedArgs.input.caption,
-						body: parsedArgs.input.body,
-						pinnedAt:
-							parsedArgs.input.isPinned === undefined
-								? undefined
-								: parsedArgs.input.isPinned
-									? existingPost.pinnedAt === null
-										? new Date()
-										: undefined
-									: null,
-						updaterId: currentUserId,
-					})
-					.where(eq(postsTable.id, parsedArgs.input.id))
-					.returning();
+			const updatedPostResult = await ctx.drizzleClient.transaction(
+				async (tx) => {
+					const [updatedPost] = await tx
+						.update(postsTable)
+						.set({
+							caption: parsedArgs.input.caption,
+							body: parsedArgs.input.body,
+							pinnedAt:
+								parsedArgs.input.isPinned === undefined
+									? undefined
+									: parsedArgs.input.isPinned
+										? existingPost.pinnedAt === null
+											? new Date()
+											: undefined
+										: null,
+							updaterId: currentUserId,
+						})
+						.where(eq(postsTable.id, parsedArgs.input.id))
+						.returning();
 
-				// Updated post not being returned means that either it was deleted or its `id` column was changed
-				if (updatedPost === undefined) {
-					ctx.log.error(
-						"Postgres update operation unexpectedly returned an empty array instead of throwing an error.",
-					);
-					throw new TalawaGraphQLError({
-						extensions: {
-							code: "unexpected",
-						},
-					});
-				}
-
-				// Handle direct file upload
-				let createdAttachment: typeof postAttachmentsTable.$inferSelect | null =
-					null;
-
-				if (isNotNullish(parsedArgs.input.attachment)) {
-					const attachment = parsedArgs.input.attachment;
-					const objectName = ulid();
-
-					// Upload new file first before any cleanup
-					try {
-						await ctx.minio.client.putObject(
-							ctx.minio.bucketName,
-							objectName,
-							attachment.createReadStream(),
-							undefined,
-							{
-								"content-type": attachment.mimetype,
-							},
+					// Updated post not being returned means that either it was deleted or its `id` column was changed
+					if (updatedPost === undefined) {
+						ctx.log.error(
+							"Postgres update operation unexpectedly returned an empty array instead of throwing an error.",
 						);
-					} catch (error) {
-						ctx.log.error(`Error uploading file to MinIO: ${error}`);
 						throw new TalawaGraphQLError({
 							extensions: {
 								code: "unexpected",
@@ -260,89 +237,147 @@ builder.mutationField("updatePost", (t) =>
 						});
 					}
 
-					// After successfully uploading the new file, delete old MinIO objects
-					for (const oldAttachment of existingPost.attachmentsWherePost) {
+					// Handle direct file upload
+					let createdAttachment:
+						| typeof postAttachmentsTable.$inferSelect
+						| null = null;
+
+					if (isNotNullish(parsedArgs.input.attachment)) {
+						const attachment = parsedArgs.input.attachment;
+						const objectName = ulid();
+
+						// Upload new file first before any cleanup
 						try {
-							await ctx.minio.client.removeObject(
+							await ctx.minio.client.putObject(
 								ctx.minio.bucketName,
-								oldAttachment.objectName,
+								objectName,
+								attachment.createReadStream(),
+								undefined,
+								{
+									"content-type": attachment.mimetype,
+								},
 							);
-						} catch (removeError) {
-							ctx.log.error(
-								`Failed to remove old MinIO object ${oldAttachment.objectName}: ${removeError}`,
-							);
+						} catch (error) {
+							ctx.log.error(`Error uploading file to MinIO: ${error}`);
 							throw new TalawaGraphQLError({
 								extensions: {
 									code: "unexpected",
 								},
 							});
 						}
-					}
 
-					// First delete existing attachments
-					await tx
-						.delete(postAttachmentsTable)
-						.where(eq(postAttachmentsTable.postId, updatedPost.id));
-
-					// Create attachment record
-					const attachmentRecord = {
-						creatorId: currentUserId,
-						mimeType: attachment.mimetype,
-						id: uuidv7(),
-						name: attachment.filename || "uploaded-file",
-						postId: updatedPost.id,
-						objectName: objectName,
-						fileHash: ulid(), // Placeholder - no deduplication for direct uploads
-					};
-
-					const [attachmentResult] = await tx
-						.insert(postAttachmentsTable)
-						.values(attachmentRecord)
-						.returning();
-
-					if (attachmentResult) {
-						createdAttachment = attachmentResult;
-					}
-
-					return Object.assign(updatedPost, {
-						attachments: createdAttachment ? [createdAttachment] : [],
-					});
-				}
-
-				// Handle explicit null attachment (remove existing attachments)
-				if (parsedArgs.input.attachment === null) {
-					await tx
-						.delete(postAttachmentsTable)
-						.where(eq(postAttachmentsTable.postId, updatedPost.id));
-					// Delete existing MinIO objects
-					for (const oldAttachment of existingPost.attachmentsWherePost) {
-						try {
-							await ctx.minio.client.removeObject(
-								ctx.minio.bucketName,
-								oldAttachment.objectName,
-							);
-						} catch (removeError) {
-							ctx.log.error(
-								`Failed to remove old MinIO object ${oldAttachment.objectName}: ${removeError}`,
-							);
-							throw new TalawaGraphQLError({
-								extensions: {
-									code: "unexpected",
-								},
-							});
+						// After successfully uploading the new file, delete old MinIO objects
+						for (const oldAttachment of existingPost.attachmentsWherePost) {
+							try {
+								await ctx.minio.client.removeObject(
+									ctx.minio.bucketName,
+									oldAttachment.objectName,
+								);
+							} catch (removeError) {
+								ctx.log.error(
+									`Failed to remove old MinIO object ${oldAttachment.objectName}: ${removeError}`,
+								);
+								throw new TalawaGraphQLError({
+									extensions: {
+										code: "unexpected",
+									},
+								});
+							}
 						}
+
+						// First delete existing attachments
+						await tx
+							.delete(postAttachmentsTable)
+							.where(eq(postAttachmentsTable.postId, updatedPost.id));
+
+						// Create attachment record
+						const attachmentRecord = {
+							creatorId: currentUserId,
+							mimeType: attachment.mimetype,
+							id: uuidv7(),
+							name: attachment.filename || "uploaded-file",
+							postId: updatedPost.id,
+							objectName: objectName,
+							fileHash: ulid(), // Placeholder - no deduplication for direct uploads
+						};
+
+						const [attachmentResult] = await tx
+							.insert(postAttachmentsTable)
+							.values(attachmentRecord)
+							.returning();
+
+						if (attachmentResult) {
+							createdAttachment = attachmentResult;
+						}
+
+						return Object.assign(updatedPost, {
+							attachments: createdAttachment ? [createdAttachment] : [],
+						});
 					}
 
-					return Object.assign(updatedPost, {
-						attachments: [],
-					});
-				}
+					// Handle explicit null attachment (remove existing attachments)
+					if (parsedArgs.input.attachment === null) {
+						await tx
+							.delete(postAttachmentsTable)
+							.where(eq(postAttachmentsTable.postId, updatedPost.id));
+						// Delete existing MinIO objects
+						for (const oldAttachment of existingPost.attachmentsWherePost) {
+							try {
+								await ctx.minio.client.removeObject(
+									ctx.minio.bucketName,
+									oldAttachment.objectName,
+								);
+							} catch (removeError) {
+								ctx.log.error(
+									`Failed to remove old MinIO object ${oldAttachment.objectName}: ${removeError}`,
+								);
+								throw new TalawaGraphQLError({
+									extensions: {
+										code: "unexpected",
+									},
+								});
+							}
+						}
 
-				// If attachments aren't part of the update, keep the existing ones
-				return Object.assign(updatedPost, {
-					attachments: existingPost.attachmentsWherePost,
-				});
-			});
+						return Object.assign(updatedPost, {
+							attachments: [],
+						});
+					}
+
+					// If attachments aren't part of the update, keep the existing ones
+					return Object.assign(updatedPost, {
+						attachments: existingPost.attachmentsWherePost,
+					});
+				},
+			);
+
+			// Invalidate post caches (graceful degradation - don't break mutation on cache errors)
+			// Use independent try-catch blocks so both invalidation attempts are always made
+			try {
+				await invalidateEntity(ctx.cache, "post", parsedArgs.input.id);
+			} catch (error) {
+				ctx.log.warn(
+					{
+						error,
+						postId: parsedArgs.input.id,
+					},
+					"Failed to invalidate post entity cache (non-fatal)",
+				);
+			}
+
+			try {
+				await invalidateEntityLists(ctx.cache, "post");
+			} catch (error) {
+				ctx.log.warn(
+					{
+						error,
+						postId: parsedArgs.input.id,
+					},
+					"Failed to invalidate post list cache (non-fatal)",
+				);
+			}
+
+			return updatedPostResult;
 		},
 		type: Post,
 	}),
