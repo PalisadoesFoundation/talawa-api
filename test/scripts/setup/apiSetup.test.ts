@@ -345,7 +345,9 @@ describe("Setup -> apiSetup", () => {
 			.mockResolvedValueOnce({ API_POSTGRES_DATABASE: "mocked-database" })
 			.mockResolvedValueOnce({ API_POSTGRES_HOST: "mocked-host" })
 			.mockResolvedValueOnce({ API_POSTGRES_PASSWORD: "wrong-password" })
-			.mockResolvedValueOnce({ API_POSTGRES_PASSWORD: "expected-postgres-password" })
+			.mockResolvedValueOnce({
+				API_POSTGRES_PASSWORD: "expected-postgres-password",
+			})
 			.mockResolvedValueOnce({ API_POSTGRES_PORT: "5433" })
 			.mockResolvedValueOnce({ API_POSTGRES_SSL_MODE: "true" })
 			.mockResolvedValueOnce({ API_POSTGRES_TEST_HOST: "mocked-test-host" })
