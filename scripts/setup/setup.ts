@@ -555,12 +555,13 @@ export async function apiSetup(answers: SetupAnswers): Promise<SetupAnswers> {
 		);
 		if (postgresPassword !== undefined) {
 			// Configured password found (including empty string), validate against it
-			while (answers.API_POSTGRES_PASSWORD !== postgresPassword) {
+			const postgresPasswordLocal = postgresPassword;
+			while (answers.API_POSTGRES_PASSWORD !== postgresPasswordLocal) {
 				console.warn("⚠️ API_POSTGRES_PASSWORD must match POSTGRES_PASSWORD.");
 				answers.API_POSTGRES_PASSWORD = await promptInput(
 					"API_POSTGRES_PASSWORD",
 					"Postgres password:",
-					postgresPassword, // Use configured password as default
+					postgresPasswordLocal, // Use configured password as default
 				);
 			}
 			console.log("✅ API_POSTGRES_PASSWORD matches POSTGRES_PASSWORD");
