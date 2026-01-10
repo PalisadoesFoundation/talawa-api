@@ -4,7 +4,7 @@ import path, { resolve } from "node:path";
 import process from "node:process";
 import { pathToFileURL } from "node:url";
 import dotenv from "dotenv";
-import inquirer from "inquirer";
+import { promptConfirm, promptInput, promptList } from "./promptHelpers";
 import { envFileBackup } from "./envFileBackup/envFileBackup";
 import { updateEnvVariable } from "./updateEnvVariable";
 
@@ -69,38 +69,7 @@ export type SetupAnswers = Partial<Record<SetupKey, string>> & {
 	[key: string]: string | undefined;
 };
 
-async function promptInput(
-	name: string,
-	message: string,
-	defaultValue?: string,
-	validate?: (input: string) => true | string,
-): Promise<string> {
-	const { [name]: result } = await inquirer.prompt([
-		{ type: "input", name, message, default: defaultValue, validate },
-	]);
-	return result;
-}
-async function promptList(
-	name: string,
-	message: string,
-	choices: string[],
-	defaultValue?: string,
-): Promise<string> {
-	const { [name]: result } = await inquirer.prompt([
-		{ type: "list", name, message, choices, default: defaultValue },
-	]);
-	return result;
-}
-async function promptConfirm(
-	name: string,
-	message: string,
-	defaultValue?: boolean,
-): Promise<boolean> {
-	const { [name]: result } = await inquirer.prompt([
-		{ type: "confirm", name, message, default: defaultValue },
-	]);
-	return result;
-}
+
 const envFileName = ".env";
 async function restoreLatestBackup(): Promise<void> {
 	const backupDir = ".backup";
