@@ -182,10 +182,8 @@ detect_os() {
                 return 0
                 ;;
             msys*|cygwin*)
-                # Git Bash / MSYS / Cygwin on Windows
-                # Warning goes to stderr, doesn't pollute stdout
                 printf "%b%s\n" "${YELLOW}⚠${NC} " "MSYS/Cygwin detected - use install.ps1 for native Windows installation" >&2
-                printf "linux"  # Only "linux" goes to stdout for capture
+                printf "unknown"
                 return 0
                 ;;
         esac
@@ -202,9 +200,8 @@ detect_os() {
             printf "macos"
             ;;
         MSYS*|MINGW*|CYGWIN*)
-            # Warning goes to stderr, doesn't pollute stdout
             printf "%b%s\n" "${YELLOW}⚠${NC} " "Windows environment detected - consider using install.ps1" >&2
-            printf "linux"  # Only "linux" goes to stdout for capture
+            printf "unknown"
             ;;
         *)
             printf "unknown"
