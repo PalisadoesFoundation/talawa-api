@@ -13,32 +13,53 @@ describe("logger.ts coverage", () => {
 		process.env = originalEnv;
 	});
 
-	it("configures transport for development environment", async () => {
+	it("exports a valid rootLogger", async () => {
+		const { rootLogger } = await import("~/src/utilities/logging/logger");
+		expect(rootLogger).toBeDefined();
+		expect(typeof rootLogger.info).toBe("function");
+	});
+
+	it("configures transport for development environment (detailed)", async () => {
 		process.env.NODE_ENV = "development";
-		// Reload module to pick up env change
 		const { loggerOptions } = await import("~/src/utilities/logging/logger");
 
-		expect(loggerOptions.transport).toBeDefined();
 		expect(loggerOptions.transport).toMatchObject({
 			target: "pino-pretty",
 			options: {
 				colorize: true,
+				singleLine: true,
+				translateTime: "SYS:standard",
 			},
 		});
 	});
 
 	it("disables transport for production environment", async () => {
 		process.env.NODE_ENV = "production";
-		// Reload module
 		const { loggerOptions } = await import("~/src/utilities/logging/logger");
 
 		expect(loggerOptions.transport).toBeUndefined();
 	});
 
-	it("withFields creates a child logger", async () => {
+	it("configures redaction paths", async () => {
+		const { loggerOptions } = await import("~/src/utilities/logging/logger");
+		expect(loggerOptions.redact).toEqual({
+			paths: [
+				"req.headers.authorization",
+				"req.headers.cookie",
+				"password",
+				"credentials",
+				"token",
+			],
+			remove: true,
+		});
+	});
+
+	it("withFields creates and returns a child logger", async () => {
 		const { withFields } = await import("~/src/utilities/logging/logger");
+
+		const mockChild = { info: vi.fn() };
 		const mockLogger = {
-			child: vi.fn().mockReturnThis(),
+			child: vi.fn().mockReturnValue(mockChild),
 		};
 
 		const result = withFields(mockLogger as unknown as AppLogger, {
@@ -46,6 +67,6 @@ describe("logger.ts coverage", () => {
 		});
 
 		expect(mockLogger.child).toHaveBeenCalledWith({ foo: "bar" });
-		expect(result).toBe(mockLogger);
+		expect(result).toBe(mockChild);
 	});
 });

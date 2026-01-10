@@ -1,4 +1,4 @@
-import type { Logger, LoggerOptions } from "pino";
+import pino, { type Logger, type LoggerOptions } from "pino";
 
 const level = process.env.LOG_LEVEL ?? "info";
 const isDev = process.env.NODE_ENV !== "production";
@@ -42,3 +42,5 @@ export const withFields = (
 	logger: AppLogger,
 	fields: Record<string, unknown>,
 ): AppLogger => logger.child(fields);
+
+export const rootLogger: AppLogger = pino(loggerOptions);
