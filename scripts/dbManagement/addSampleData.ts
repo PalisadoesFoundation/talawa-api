@@ -1,8 +1,13 @@
-import path from "node:path";
-import { fileURLToPath } from "node:url";
-import { disconnect, insertCollections, pingDB } from "./helpers";
+import {
+	askUserToContinue,
+	disconnect,
+	emptyMinioBucket,
+	formatDatabase,
+	insertCollections,
+	listSampleData,
+	pingDB,
+} from "./helpers";
 
-// 👇 I added "recurring_events" and "recurrence_rules" here
 type Collection =
 	| "users"
 	| "organizations"
@@ -17,73 +22,73 @@ type Collection =
 	| "events"
 	| "recurring_events"
 	| "recurrence_rules"
+	| "event_attendees" // 🟢 Added
 	| "event_volunteers"
 	| "event_volunteer_memberships"
 	| "action_items"
 	| "notification_templates";
 
-export async function main(): Promise<void> {
-	// 👇 I added them to this list too. 
-	// IMPORTANT: "recurrence_rules" must be AFTER "events" because rules depend on events.
-	const collections: Collection[] = [
-		"users",
-		"organizations",
-		"organization_memberships",
-		"posts",
-		"post_votes",
-		"post_attachments",
-		"comments",
-		"membership_requests",
-		"comment_votes",
-		"action_categories",
-		"events",
-		"recurring_events", 
-		"recurrence_rules",
-		"event_volunteers",
-		"event_volunteer_memberships",
-		"action_items",
-		"notification_templates",
-	];
+const collections: Collection[] = [
+	"users",
+	"organizations",
+	"organization_memberships",
+	"posts",
+	"post_votes",
+	"post_attachments",
+	"comments",
+	"membership_requests",
+	"comment_votes",
+	"action_categories",
+	"events",
+	"recurring_events",
+	"recurrence_rules",
+	"event_attendees", // 🟢 Added
+	"event_volunteers",
+	"event_volunteer_memberships",
+	"action_items",
+	"notification_templates",
+];
+
+async function main() {
+	let connectionSuccessful = false;
+
+	console.log(
+		`\x1b[33m\n⚠ WARNING: This script will delete all data in your database and MinIO bucket.\x1b[0m`,
+	);
+
+	const userConfirmed = await askUserToContinue(
+		"Are you sure you want to proceed?",
+	);
+
+	if (!userConfirmed) {
+		console.log("\x1b[31mOperation cancelled by user.\x1b[0m");
+		process.exit(0);
+	}
 
 	try {
-		await pingDB();
-		console.log("\n\x1b[32mSuccess:\x1b[0m Database connected successfully\n");
-	} catch (error: unknown) {
-		throw new Error(`Database connection failed: ${error}`);
-	}
-	try {
-		await insertCollections(collections);
-		console.log("\n\x1b[32mSuccess:\x1b[0m Sample Data added to the database");
-	} catch (error: unknown) {
-		console.error("Error: ", error);
-		throw new Error("Error adding sample data");
-	}
-
-	return;
-}
-
-const scriptPath = fileURLToPath(import.meta.url);
-export const isMain =
-	process.argv[1] && path.resolve(process.argv[1]) === path.resolve(scriptPath);
-
-if (isMain) {
-	let exitCode = 0;
-	(async () => {
-		try {
-			await main();
-		} catch (error: unknown) {
-			exitCode = 1;
+		connectionSuccessful = await pingDB();
+		if (connectionSuccessful) {
+			console.log("\n\x1b[32mSuccess: Database connected successfully\x1b[0m");
 		}
-		try {
+
+		await formatDatabase();
+		await emptyMinioBucket();
+		await insertCollections(collections);
+
+		console.log(
+			"\n\x1b[32mSuccess: Sample Data added to the database\x1b[0m\n",
+		);
+	} catch (error) {
+		console.error(`\x1b[31mError: ${error}\x1b[0m`);
+		process.exit(1);
+	} finally {
+		if (connectionSuccessful) {
 			await disconnect();
 			console.log(
-				"\n\x1b[32mSuccess:\x1b[0m Gracefully disconnecting from the database\n",
+				"\x1b[32mSuccess: Gracefully disconnecting from the database\x1b[0m\n",
 			);
-		} catch (error: unknown) {
-			console.error("Error: Cannot disconnect", error);
-			exitCode = 1;
-		} finally {
-			process.exit(exitCode);
 		}
-	})();
+	}
 }
+
+main();
