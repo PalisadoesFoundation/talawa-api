@@ -1,12 +1,16 @@
 import { describe, expect, it } from "vitest";
-import { SetupError, SetupErrorCode } from "../../../scripts/setup/SetupError";
+import {
+	SetupError,
+	SetupErrorCode,
+	type SetupErrorContext,
+} from "../../../scripts/setup/SetupError";
 
 describe("SetupError", () => {
 	const mockContext = {
 		operation: "test-operation",
 		filePath: "/test/path",
 		details: { key: "value" },
-	};
+	} satisfies SetupErrorContext;
 
 	it("should create an instance with correct properties", () => {
 		const error = new SetupError(
@@ -48,6 +52,27 @@ describe("SetupError", () => {
 		expect(error.cause).toBe(cause);
 		const json = error.toJSON();
 		expect(json.cause).toBe(cause);
+	});
+
+	it("should serialize non-primitive object cause safely", () => {
+		// Create a circular object to verify safety
+		const cause: Record<string, unknown> = { data: "big data" };
+		cause["self"] = cause;
+
+		const error = new SetupError(
+			SetupErrorCode.VALIDATION_FAILED,
+			"Validation failed",
+			mockContext,
+			cause,
+		);
+
+		expect(error.cause).toBe(cause);
+		const json = error.toJSON();
+
+		// Should not match the original circular object
+		expect(json.cause).not.toBe(cause);
+		// Should return a safe summary object
+		expect(json.cause).toEqual({ type: "object" });
 	});
 
 	it("should serialize to JSON correctly", () => {

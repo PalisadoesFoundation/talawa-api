@@ -73,16 +73,28 @@ export class SetupError extends Error {
 		}
 	}
 
+	private static serializeCause(cause: unknown): unknown {
+		if (cause instanceof Error) {
+			return { name: cause.name, message: cause.message };
+		}
+		if (cause === undefined || cause === null) {
+			return cause;
+		}
+		const type = typeof cause;
+		if (type === "string" || type === "number" || type === "boolean") {
+			return cause;
+		}
+		// Avoid logging arbitrary objects which might be huge, circular, or sensitive
+		return { type };
+	}
+
 	toJSON() {
 		return {
 			name: this.name,
 			message: this.message,
 			code: this.code,
 			context: this.context,
-			cause:
-				this.cause instanceof Error
-					? { name: this.cause.name, message: this.cause.message }
-					: this.cause,
+			cause: SetupError.serializeCause(this.cause),
 		};
 	}
 }
