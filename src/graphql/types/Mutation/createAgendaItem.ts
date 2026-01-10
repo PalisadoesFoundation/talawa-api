@@ -55,7 +55,7 @@ builder.mutationField("createAgendaItem", (t) =>
 
 			const currentUserId = ctx.currentClient.user.id;
 			const { folderId, categoryId, eventId } = parsedArgs.input;
-
+			const isCategoryProvidedByUser = categoryId !== undefined;
 			let resolvedFolderId = folderId;
 			let resolvedCategoryId = categoryId;
 
@@ -74,8 +74,12 @@ builder.mutationField("createAgendaItem", (t) =>
 				if (!defaultFolder) {
 					throw new TalawaGraphQLError({
 						extensions: {
-							code: "unexpected",
-							message: "Default agenda folder not found for event",
+							code: "arguments_associated_resources_not_found",
+							issues: [
+								{
+									argumentPath: ["input", "eventId"],
+								},
+							],
 						},
 					});
 				}
@@ -237,7 +241,13 @@ builder.mutationField("createAgendaItem", (t) =>
 				throw new TalawaGraphQLError({
 					extensions: {
 						code: "arguments_associated_resources_not_found",
-						issues: [{ argumentPath: ["input", "categoryId"] }],
+						issues: [
+							{
+								argumentPath: isCategoryProvidedByUser
+									? ["input", "categoryId"]
+									: ["input", "eventId"],
+							},
+						],
 					},
 				});
 			}
@@ -261,7 +271,14 @@ builder.mutationField("createAgendaItem", (t) =>
 
 				if (!createdAgendaItem) {
 					throw new TalawaGraphQLError({
-						extensions: { code: "unexpected" },
+						extensions: {
+							code: "arguments_associated_resources_not_found",
+							issues: [
+								{
+									argumentPath: ["input", "folderId"],
+								},
+							],
+						},
 					});
 				}
 

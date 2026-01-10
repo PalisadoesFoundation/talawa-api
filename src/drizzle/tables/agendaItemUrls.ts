@@ -22,7 +22,7 @@ export const agendaItemUrlTable = pgTable(
 		 */
 		agendaItemURL: text("agenda_item_url").notNull(),
 		/**
-		 * Date time at the time the agenda item was created.
+		 * Date time at the time the agenda item URL was created.
 		 */
 		createdAt: timestamp("created_at", {
 			mode: "date",

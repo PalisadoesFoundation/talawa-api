@@ -22,7 +22,6 @@ builder.queryField("agendaCategoryByEventId", (t) =>
 		complexity: envConfig.API_GRAPHQL_OBJECT_FIELD_COST,
 		description:
 			"Query field to get all Agenda Categories for a specific event.",
-		nullable: true,
 		resolve: async (_parent, args, ctx) => {
 			if (!ctx.currentClient.isAuthenticated) {
 				throw new TalawaGraphQLError({
@@ -57,6 +56,42 @@ builder.queryField("agendaCategoryByEventId", (t) =>
 				throw new TalawaGraphQLError({
 					extensions: {
 						code: "arguments_associated_resources_not_found",
+						issues: [
+							{
+								argumentPath: ["eventId"],
+							},
+						],
+					},
+				});
+			}
+
+			const currentUserId = ctx.currentClient.user.id;
+
+			const [currentUser, membership] = await Promise.all([
+				ctx.drizzleClient.query.usersTable.findFirst({
+					columns: { role: true },
+					where: (fields, operators) => operators.eq(fields.id, currentUserId),
+				}),
+				ctx.drizzleClient.query.organizationMembershipsTable.findFirst({
+					columns: { role: true },
+					where: (fields, operators) =>
+						operators.and(
+							operators.eq(fields.memberId, currentUserId),
+							operators.eq(fields.organizationId, event.organizationId),
+						),
+				}),
+			]);
+
+			if (!currentUser) {
+				throw new TalawaGraphQLError({
+					extensions: { code: "unauthenticated" },
+				});
+			}
+
+			if (currentUser.role !== "administrator" && !membership) {
+				throw new TalawaGraphQLError({
+					extensions: {
+						code: "unauthorized_action_on_arguments_associated_resources",
 						issues: [
 							{
 								argumentPath: ["eventId"],
