@@ -36,6 +36,20 @@ describe("SetupError", () => {
 		expect(error.cause).toBe(originalError);
 	});
 
+	it("should create an instance with a non-Error cause", () => {
+		const cause = "Something went wrong";
+		const error = new SetupError(
+			SetupErrorCode.VALIDATION_FAILED,
+			"Validation failed",
+			mockContext,
+			cause,
+		);
+
+		expect(error.cause).toBe(cause);
+		const json = error.toJSON();
+		expect(json.cause).toBe(cause);
+	});
+
 	it("should serialize to JSON correctly", () => {
 		const originalError = new Error("Original error");
 		const error = new SetupError(

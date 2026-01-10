@@ -47,7 +47,7 @@ export interface SetupErrorContext {
 export class SetupError extends Error {
 	public readonly code: SetupErrorCode;
 	public readonly context: SetupErrorContext;
-	public override readonly cause?: Error;
+
 
 	/**
 	 * Creates a new SetupError instance.
@@ -61,13 +61,12 @@ export class SetupError extends Error {
 		code: SetupErrorCode,
 		message: string,
 		context: SetupErrorContext,
-		cause?: Error,
+		cause?: unknown,
 	) {
-		super(message);
+		super(message, cause !== undefined ? { cause } : undefined);
 		this.name = "SetupError";
 		this.code = code;
 		this.context = context;
-		this.cause = cause;
 
 		// Error.captureStackTrace is a V8-specific API
 		if ("captureStackTrace" in Error) {
@@ -81,9 +80,10 @@ export class SetupError extends Error {
 			message: this.message,
 			code: this.code,
 			context: this.context,
-			cause: this.cause
-				? { name: this.cause.name, message: this.cause.message }
-				: undefined,
+			cause:
+				this.cause instanceof Error
+					? { name: this.cause.name, message: this.cause.message }
+					: this.cause,
 		};
 	}
 }
