@@ -106,12 +106,58 @@ else
     # https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh
     /bin/bash -c "$(curl -fsSL --connect-timeout 30 --max-time 300 https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
     
-    # Add Homebrew to PATH for Apple Silicon Macs
+    # Add Homebrew to PATH with error handling
     if [ -f /opt/homebrew/bin/brew ]; then
-        eval "$(/opt/homebrew/bin/brew shellenv)"
-    # Add Homebrew to PATH for Intel Macs
+        # Apple Silicon Mac
+        info "Configuring Homebrew environment for Apple Silicon..."
+        
+        # Capture brew shellenv output and exit code before evaluating
+        BREW_ENV="$(/opt/homebrew/bin/brew shellenv 2>&1)"
+        BREW_EXIT_CODE=$?
+        
+        if [ $BREW_EXIT_CODE -eq 0 ]; then
+            eval "$BREW_ENV"
+            success "Homebrew environment configured for Apple Silicon"
+        else
+            warn "Failed to configure Homebrew environment for Apple Silicon"
+            warn "Brew shellenv returned: $BREW_ENV"
+            warn ""
+            warn "Troubleshooting:"
+            warn "  1. Check Homebrew installation: /opt/homebrew/bin/brew --version"
+            warn "  2. Check permissions: ls -la /opt/homebrew/bin/brew"
+            warn "  3. Try manually: eval \"\$(/opt/homebrew/bin/brew shellenv)\""
+            warn ""
+            warn "Continuing installation, but Homebrew commands may fail..."
+        fi
     elif [ -f /usr/local/bin/brew ]; then
-        eval "$(/usr/local/bin/brew shellenv)"
+        # Intel Mac
+        info "Configuring Homebrew environment for Intel Mac..."
+        
+        # Capture brew shellenv output and exit code before evaluating
+        BREW_ENV="$(/usr/local/bin/brew shellenv 2>&1)"
+        BREW_EXIT_CODE=$?
+        
+        if [ $BREW_EXIT_CODE -eq 0 ]; then
+            eval "$BREW_ENV"
+            success "Homebrew environment configured for Intel Mac"
+        else
+            warn "Failed to configure Homebrew environment for Intel Mac"
+            warn "Brew shellenv returned: $BREW_ENV"
+            warn ""
+            warn "Troubleshooting:"
+            warn "  1. Check Homebrew installation: /usr/local/bin/brew --version"
+            warn "  2. Check permissions: ls -la /usr/local/bin/brew"
+            warn "  3. Try manually: eval \"\$(/usr/local/bin/brew shellenv)\""
+            warn ""
+            warn "Continuing installation, but Homebrew commands may fail..."
+        fi
+    else
+        warn "Homebrew binary not found after installation"
+        warn "Expected locations:"
+        warn "  - Apple Silicon: /opt/homebrew/bin/brew"
+        warn "  - Intel Mac: /usr/local/bin/brew"
+        warn ""
+        warn "Continuing, but Homebrew commands may fail..."
     fi
     
     success "Homebrew installed successfully"
