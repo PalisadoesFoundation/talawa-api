@@ -48,7 +48,7 @@ describe("AgendaCategory.updatedAt resolver", () => {
 
 		await expect(resolveUpdatedAt(mockCategory, {}, ctx)).rejects.toThrow(
 			new TalawaGraphQLError({
-				extensions: { code: "unauthenticated" },
+				extensions: { code: "unexpected" },
 			}),
 		);
 	});

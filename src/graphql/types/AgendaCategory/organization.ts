@@ -39,7 +39,7 @@ export const resolveOrganization = async (
 		}),
 	]);
 
-	if (!currentUser) {
+	if (currentUser === undefined) {
 		throw new TalawaGraphQLError({
 			extensions: { code: "unauthenticated" },
 		});
@@ -58,7 +58,7 @@ export const resolveOrganization = async (
 
 	if (
 		currentUser.role !== "administrator" &&
-		(!membership || membership.role !== "administrator")
+		(membership === undefined || membership.role !== "administrator")
 	) {
 		throw new TalawaGraphQLError({
 			extensions: { code: "unauthorized_action" },
