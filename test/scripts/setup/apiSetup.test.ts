@@ -8,6 +8,7 @@ import {
 	apiSetup,
 	checkEnvFile,
 	generateJwtSecret,
+	type SetupAnswers,
 	setup,
 	validatePort,
 	validateURL,
@@ -33,11 +34,10 @@ describe("Setup -> apiSetup", () => {
 		vi.resetAllMocks();
 	});
 
-	const isEnvConfigured = checkEnvFile();
-
 	it("should prompt the user for API configuration and update environment variables", async () => {
 		process.env.MINIO_ROOT_PASSWORD = "password";
 		process.env.POSTGRES_PASSWORD = "password";
+		const isEnvConfigured = await checkEnvFile();
 		const mockResponses = [
 			...(isEnvConfigured ? [{ envReconfigure: true }] : []),
 			{ CI: "true" },
@@ -179,7 +179,7 @@ describe("Setup -> apiSetup", () => {
 			.mockResolvedValueOnce({ API_POSTGRES_USER: "mocked-user" });
 		const consoleWarnSpy = vi.spyOn(console, "warn");
 
-		let answers: Record<string, string> = {};
+		let answers: SetupAnswers = {};
 		answers = await apiSetup(answers);
 
 		// Verify user is prompted twice because first attempt was incorrect

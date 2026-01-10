@@ -2,12 +2,12 @@ import { and, asc, desc, eq, exists, gt, lt, type SQL } from "drizzle-orm";
 import { z } from "zod";
 import { postsTable, postsTableInsertSchema } from "~/src/drizzle/tables/posts";
 import { Post } from "~/src/graphql/types/Post/Post";
+import envConfig from "~/src/utilities/graphqLimits";
 import {
 	defaultGraphQLConnectionArgumentsSchema,
 	transformDefaultGraphQLConnectionArguments,
 	transformToDefaultGraphQLConnection,
-} from "~/src/utilities/defaultGraphQLConnection";
-import envConfig from "~/src/utilities/graphqLimits";
+} from "~/src/utilities/graphqlConnection";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import { Organization } from "./Organization";
 
@@ -195,12 +195,9 @@ Organization.implement({
 					}
 
 					return transformToDefaultGraphQLConnection({
-						createCursor: (post) =>
-							Buffer.from(
-								JSON.stringify({
-									id: post.id,
-								}),
-							).toString("base64url"),
+						createCursor: (post) => ({
+							id: post.id,
+						}),
 						createNode: ({ attachmentsWherePost, ...post }) =>
 							Object.assign(post, {
 								attachments: attachmentsWherePost,

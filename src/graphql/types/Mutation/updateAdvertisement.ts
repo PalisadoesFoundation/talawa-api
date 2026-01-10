@@ -161,6 +161,7 @@ builder.mutationField("updateAdvertisement", (t) =>
 									fields.organizationId,
 									existingAdvertisement.organizationId,
 								),
+								operators.ne(fields.id, parsedArgs.input.id),
 							),
 					});
 

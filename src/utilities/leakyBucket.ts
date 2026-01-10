@@ -1,4 +1,5 @@
 import type { FastifyInstance } from "fastify";
+import type { AppLogger } from "./logging/logger";
 
 /**
  * Implements a leaky bucket rate limiter.
@@ -8,6 +9,7 @@ import type { FastifyInstance } from "fastify";
  * @param capacity - The maximum capacity of the bucket.
  * @param refillRate - The rate at which tokens are added to the bucket.
  * @param cost - The cost in tokens for each request.
+ * @param logger - The logger instance.
  * @returns - A promise that resolves to a boolean indicating if the request is allowed.
  */
 async function leakyBucket(
@@ -16,6 +18,7 @@ async function leakyBucket(
 	capacity: number,
 	refillRate: number,
 	cost: number,
+	logger: AppLogger,
 ): Promise<boolean> {
 	const redis = fastify.redis;
 	const bucket = await redis.hgetall(key);
@@ -39,8 +42,7 @@ async function leakyBucket(
 			? Number.parseInt(bucket.lastUpdate, 10)
 			: Date.now();
 	}
-	console.log("Tokens: ", tokens);
-	console.log("Last Update: ", lastUpdate);
+	logger.debug({ tokens, lastUpdate }, "Leaky bucket state");
 	const now = Date.now();
 	const elapsed = (now - lastUpdate) / 1000;
 	// Refill tokens based on elapsed time and refill rate

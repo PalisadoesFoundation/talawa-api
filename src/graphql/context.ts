@@ -2,6 +2,7 @@ import type { FastifyInstance } from "fastify";
 import type { usersTable } from "~/src/drizzle/tables/users";
 import type { CacheService } from "~/src/services/caching";
 import type { Dataloaders } from "~/src/utilities/dataloaders";
+import type { AppLogger } from "~/src/utilities/logging/logger";
 import type { PubSub } from "./pubsub";
 
 /**
@@ -69,6 +70,7 @@ export type ExplicitGraphQLContext = {
 		| "AWS_SES_FROM_EMAIL"
 		| "AWS_SES_FROM_NAME"
 		| "FRONTEND_URL"
+		| "RECAPTCHA_SECRET_KEY"
 	>;
 	jwt: {
 		sign: (payload: ExplicitAuthenticationTokenPayload) => string;
@@ -93,7 +95,7 @@ export type ExplicitGraphQLContext = {
 		 */
 		getRefreshToken: () => string | undefined;
 	};
-	log: FastifyInstance["log"];
+	log: AppLogger;
 	minio: FastifyInstance["minio"];
 	/**
 	 * Per-request notification helper. Implementations may enqueue notifications

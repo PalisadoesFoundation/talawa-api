@@ -55,6 +55,7 @@ function mockStandaloneEvent(
 		isPublic: true,
 		isRegisterable: true,
 		location: "Original Location",
+		isInviteOnly: false,
 		organizationId: orgId,
 		attachmentsWhereEvent: [
 			{
@@ -341,6 +342,276 @@ suite("Mutation field updateStandaloneEvent", () => {
 					}),
 				]),
 			);
+		});
+
+		test("should return an error when both isPublic and isInviteOnly are set to true", async () => {
+			const eventId = faker.string.uuid();
+			const orgId = await createTestOrganization(adminToken);
+
+			// Mock event with isPublic=false, isInviteOnly=false
+			const originalUserFindFirst =
+				server.drizzleClient.query.usersTable.findFirst;
+			const originalEventFindFirst =
+				server.drizzleClient.query.eventsTable.findFirst;
+
+			server.drizzleClient.query.usersTable.findFirst = vi
+				.fn()
+				.mockResolvedValue({ role: "administrator" });
+
+			const mockEvent = mockStandaloneEvent(eventId, orgId, "admin-user-id");
+			mockEvent.isPublic = false;
+			mockEvent.isInviteOnly = false;
+
+			server.drizzleClient.query.eventsTable.findFirst = vi
+				.fn()
+				.mockResolvedValue(mockEvent);
+
+			try {
+				const result = await mercuriusClient.mutate(
+					Mutation_updateStandaloneEvent,
+					{
+						headers: { authorization: `bearer ${adminToken}` },
+						variables: {
+							input: {
+								id: eventId,
+								isPublic: true,
+								isInviteOnly: true,
+							},
+						},
+					},
+				);
+
+				expect(result.data?.updateStandaloneEvent ?? null).toBeNull();
+				expect(result.errors).toEqual(
+					expect.arrayContaining([
+						expect.objectContaining({
+							extensions: expect.objectContaining({
+								code: "invalid_arguments",
+								issues: expect.arrayContaining([
+									expect.objectContaining({
+										argumentPath: ["input", "isPublic"],
+										message: expect.stringContaining(
+											"cannot be both Public and Invite-Only",
+										),
+									}),
+									expect.objectContaining({
+										argumentPath: ["input", "isInviteOnly"],
+										message: expect.stringContaining(
+											"cannot be both Public and Invite-Only",
+										),
+									}),
+								]),
+							}),
+							path: ["updateStandaloneEvent"],
+						}),
+					]),
+				);
+			} finally {
+				server.drizzleClient.query.usersTable.findFirst = originalUserFindFirst;
+				server.drizzleClient.query.eventsTable.findFirst =
+					originalEventFindFirst;
+			}
+		});
+
+		test("should return an error when isInviteOnly conflicts with inherited isPublic", async () => {
+			const eventId = faker.string.uuid();
+			const orgId = await createTestOrganization(adminToken);
+
+			const originalUserFindFirst =
+				server.drizzleClient.query.usersTable.findFirst;
+			const originalEventFindFirst =
+				server.drizzleClient.query.eventsTable.findFirst;
+
+			server.drizzleClient.query.usersTable.findFirst = vi
+				.fn()
+				.mockResolvedValue({ role: "administrator" });
+
+			// Mock existing event: isPublic=true, isInviteOnly=false
+			const mockEvent = mockStandaloneEvent(eventId, orgId, "admin-user-id");
+			mockEvent.isPublic = true;
+			mockEvent.isInviteOnly = false;
+
+			server.drizzleClient.query.eventsTable.findFirst = vi
+				.fn()
+				.mockResolvedValue(mockEvent);
+
+			try {
+				const result = await mercuriusClient.mutate(
+					Mutation_updateStandaloneEvent,
+					{
+						headers: { authorization: `bearer ${adminToken}` },
+						variables: {
+							input: {
+								id: eventId,
+								isInviteOnly: true, // Conflict: final state is Public=true (inherited), InviteOnly=true
+							},
+						},
+					},
+				);
+
+				expect(result.data?.updateStandaloneEvent ?? null).toBeNull();
+				expect(result.errors).toEqual(
+					expect.arrayContaining([
+						expect.objectContaining({
+							extensions: expect.objectContaining({
+								code: "invalid_arguments",
+								issues: expect.arrayContaining([
+									expect.objectContaining({
+										argumentPath: ["input", "isPublic"],
+										message: expect.stringContaining(
+											"cannot be both Public and Invite-Only",
+										),
+									}),
+									expect.objectContaining({
+										argumentPath: ["input", "isInviteOnly"],
+										message: expect.stringContaining(
+											"cannot be both Public and Invite-Only",
+										),
+									}),
+								]),
+							}),
+						}),
+					]),
+				);
+			} finally {
+				server.drizzleClient.query.usersTable.findFirst = originalUserFindFirst;
+				server.drizzleClient.query.eventsTable.findFirst =
+					originalEventFindFirst;
+			}
+		});
+
+		test("should return an error when isPublic conflicts with inherited isInviteOnly", async () => {
+			const eventId = faker.string.uuid();
+			const orgId = await createTestOrganization(adminToken);
+
+			const originalUserFindFirst =
+				server.drizzleClient.query.usersTable.findFirst;
+			const originalEventFindFirst =
+				server.drizzleClient.query.eventsTable.findFirst;
+
+			server.drizzleClient.query.usersTable.findFirst = vi
+				.fn()
+				.mockResolvedValue({ role: "administrator" });
+
+			// Mock existing event: isPublic=false, isInviteOnly=true
+			const mockEvent = mockStandaloneEvent(eventId, orgId, "admin-user-id");
+			mockEvent.isPublic = false;
+			mockEvent.isInviteOnly = true;
+
+			server.drizzleClient.query.eventsTable.findFirst = vi
+				.fn()
+				.mockResolvedValue(mockEvent);
+
+			try {
+				const result = await mercuriusClient.mutate(
+					Mutation_updateStandaloneEvent,
+					{
+						headers: { authorization: `bearer ${adminToken}` },
+						variables: {
+							input: {
+								id: eventId,
+								isPublic: true, // Conflict: final state is Public=true, InviteOnly=true (inherited)
+							},
+						},
+					},
+				);
+
+				expect(result.data?.updateStandaloneEvent ?? null).toBeNull();
+				expect(result.errors).toEqual(
+					expect.arrayContaining([
+						expect.objectContaining({
+							extensions: expect.objectContaining({
+								code: "invalid_arguments",
+								issues: expect.arrayContaining([
+									expect.objectContaining({
+										argumentPath: ["input", "isPublic"],
+										message: expect.stringContaining(
+											"cannot be both Public and Invite-Only",
+										),
+									}),
+									expect.objectContaining({
+										argumentPath: ["input", "isInviteOnly"],
+										message: expect.stringContaining(
+											"cannot be both Public and Invite-Only",
+										),
+									}),
+								]),
+							}),
+						}),
+					]),
+				);
+			} finally {
+				server.drizzleClient.query.usersTable.findFirst = originalUserFindFirst;
+				server.drizzleClient.query.eventsTable.findFirst =
+					originalEventFindFirst;
+			}
+		});
+
+		test("should return an error when updating unrelated field on legacy invalid event", async () => {
+			const eventId = faker.string.uuid();
+			const orgId = await createTestOrganization(adminToken);
+
+			const originalUserFindFirst =
+				server.drizzleClient.query.usersTable.findFirst;
+			const originalEventFindFirst =
+				server.drizzleClient.query.eventsTable.findFirst;
+
+			server.drizzleClient.query.usersTable.findFirst = vi
+				.fn()
+				.mockResolvedValue({ role: "administrator" });
+
+			// Mock existing legacy invalid event: isPublic=true, isInviteOnly=true
+			const mockEvent = mockStandaloneEvent(eventId, orgId, "admin-user-id");
+			mockEvent.isPublic = true;
+			mockEvent.isInviteOnly = true;
+
+			server.drizzleClient.query.eventsTable.findFirst = vi
+				.fn()
+				.mockResolvedValue(mockEvent);
+
+			try {
+				const result = await mercuriusClient.mutate(
+					Mutation_updateStandaloneEvent,
+					{
+						headers: { authorization: `bearer ${adminToken}` },
+						variables: {
+							input: {
+								id: eventId,
+								name: "New Name", // Unrelated update
+							},
+						},
+					},
+				);
+
+				expect(result.data?.updateStandaloneEvent ?? null).toBeNull();
+				expect(result.errors).toEqual(
+					expect.arrayContaining([
+						expect.objectContaining({
+							extensions: expect.objectContaining({
+								code: "invalid_arguments",
+								issues: expect.arrayContaining([
+									expect.objectContaining({
+										argumentPath: ["input", "isPublic"],
+										message: expect.stringContaining(
+											"cannot be both Public and Invite-Only",
+										),
+									}),
+									expect.objectContaining({
+										argumentPath: ["input", "isInviteOnly"],
+										message: expect.stringContaining(
+											"cannot be both Public and Invite-Only",
+										),
+									}),
+								]),
+							}),
+						}),
+					]),
+				);
+			} finally {
+				server.drizzleClient.query.usersTable.findFirst = originalUserFindFirst;
+				server.drizzleClient.query.eventsTable.findFirst =
+					originalEventFindFirst;
+			}
 		});
 	});
 
@@ -855,11 +1126,11 @@ suite("Mutation field updateStandaloneEvent", () => {
 			server.drizzleClient.query.usersTable.findFirst = vi
 				.fn()
 				.mockResolvedValue({ role: "administrator" });
+			const mockEvent = mockStandaloneEvent(eventId, orgId, "admin-user-id");
+			mockEvent.isPublic = false; // Set to false to avoid illegal state
 			server.drizzleClient.query.eventsTable.findFirst = vi
 				.fn()
-				.mockResolvedValue(
-					mockStandaloneEvent(eventId, orgId, "admin-user-id"),
-				);
+				.mockResolvedValue(mockEvent);
 
 			// Mock successful update with isInviteOnly
 			const updatedEvent = {
@@ -870,7 +1141,7 @@ suite("Mutation field updateStandaloneEvent", () => {
 				startAt: new Date("2024-12-01T10:00:00Z"),
 				endAt: new Date("2024-12-01T12:00:00Z"),
 				allDay: false,
-				isPublic: true,
+				isPublic: false,
 				isRegisterable: true,
 				isInviteOnly: true,
 				organizationId: orgId,

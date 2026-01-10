@@ -1,6 +1,6 @@
-import { type Static, Type } from "@sinclair/typebox";
 import ajvFormats from "ajv-formats";
 import type { EnvSchemaOpt } from "env-schema";
+import { type Static, Type } from "typebox";
 
 /**
  * JSON schema of a record of environment variables accessible to the talawa api at runtime.
@@ -474,6 +474,16 @@ export const envConfigSchema = Type.Object({
 	OLD_EVENT_INSTANCES_CLEANUP_CRON_SCHEDULE: Type.Optional(
 		Type.String({
 			minLength: 9, // Minimum valid cron: "* * * * *"
+		}),
+	),
+
+	/**
+	 * Secret key for Google reCAPTCHA v2 verification.
+	 * Used to verify reCAPTCHA tokens on the server side.
+	 */
+	RECAPTCHA_SECRET_KEY: Type.Optional(
+		Type.String({
+			minLength: 1,
 		}),
 	),
 });

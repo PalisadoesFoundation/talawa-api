@@ -57,7 +57,7 @@ async function createTestOrganization(token: string) {
 		headers: { authorization: `bearer ${token}` },
 		variables: {
 			input: {
-				name: faker.company.name(),
+				name: `${faker.company.name()} ${faker.string.ulid()}`,
 				description: faker.lorem.sentence(),
 				countryCode: "us",
 				state: "CA",

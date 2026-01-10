@@ -6,7 +6,7 @@ import {
 	defaultGraphQLConnectionArgumentsSchema,
 	transformDefaultGraphQLConnectionArguments,
 	transformToDefaultGraphQLConnection,
-} from "~/src/utilities/defaultGraphQLConnection";
+} from "~/src/utilities/graphqlConnection";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import { Organization } from "./Organization";
 
@@ -123,13 +123,10 @@ Organization.implement({
 				}
 
 				return transformToDefaultGraphQLConnection({
-					createCursor: (blockedUser) =>
-						Buffer.from(
-							JSON.stringify({
-								createdAt: blockedUser.createdAt.toISOString(),
-								userId: blockedUser.userId,
-							}),
-						).toString("base64url"),
+					createCursor: (blockedUser) => ({
+						createdAt: blockedUser.createdAt.toISOString(),
+						userId: blockedUser.userId,
+					}),
 					createNode: (blockedUser) => blockedUser.user,
 					parsedArgs,
 					rawNodes: blockedUsers,

@@ -11,8 +11,8 @@ import {
 	queryFundCampaignPledgesByUserInputSchema,
 } from "~/src/graphql/inputs/QueryFundCampaignPledgeInput";
 import { FundCampaignPledge } from "~/src/graphql/types/FundCampaignPledge/FundCampaignPledge";
-import type { ParsedDefaultGraphQLConnectionArgumentsWithWhere } from "~/src/utilities/defaultGraphQLConnection";
 import envConfig from "~/src/utilities/graphqLimits";
+import type { ParsedDefaultGraphQLConnectionArgumentsWithWhere } from "~/src/utilities/graphqlConnection";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 
 const queryFundCampaignPledgeArgumentsSchema = z.object({

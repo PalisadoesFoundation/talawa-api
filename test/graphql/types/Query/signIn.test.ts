@@ -3,7 +3,16 @@ import { sql } from "drizzle-orm";
 import type { VariablesOf } from "gql.tada";
 import { print } from "graphql";
 import { assertToBeNonNullish } from "test/helpers";
-import { afterAll, beforeAll, expect, suite, test } from "vitest";
+import {
+	afterAll,
+	afterEach,
+	beforeAll,
+	beforeEach,
+	expect,
+	suite,
+	test,
+	vi,
+} from "vitest";
 import { COOKIE_NAMES } from "~/src/utilities/cookieConfig";
 import type {
 	AccountLockedExtensions,
@@ -29,8 +38,13 @@ suite("Query field signIn", () => {
 	let user1Email = "";
 	let adminAuth = "";
 	let orgId = "";
-
+	let originalRecaptchaSecret: string | undefined;
 	beforeAll(async () => {
+		// Save original value for restoration
+		originalRecaptchaSecret = server.envConfig.RECAPTCHA_SECRET_KEY;
+
+		// make reCaptcha key undefined as they are tested in different test suite
+		server.envConfig.RECAPTCHA_SECRET_KEY = undefined;
 		const administratorUserSignInResult = await mercuriusClient.query(
 			Query_signIn,
 			{
@@ -105,6 +119,9 @@ suite("Query field signIn", () => {
 	});
 
 	afterAll(async () => {
+		// Restore original env config
+		server.envConfig.RECAPTCHA_SECRET_KEY = originalRecaptchaSecret;
+
 		await mercuriusClient.mutate(Mutation_deleteUser, {
 			headers: {
 				authorization: `bearer ${adminAuth}`,
@@ -895,6 +912,311 @@ suite("Query field signIn", () => {
 								{
 									argumentPath: ["input"],
 									message: "Invalid email address or password.",
+								},
+							]),
+						}),
+						message: expect.any(String),
+						path: ["signIn"],
+					}),
+				]),
+			);
+		});
+	});
+
+	suite("reCAPTCHA validation", () => {
+		let originalRecaptchaSecret: string | undefined;
+		let originalFetch: typeof global.fetch;
+
+		beforeEach(() => {
+			originalRecaptchaSecret = server.envConfig.RECAPTCHA_SECRET_KEY;
+			originalFetch = global.fetch;
+		});
+
+		afterEach(() => {
+			server.envConfig.RECAPTCHA_SECRET_KEY = originalRecaptchaSecret;
+			global.fetch = originalFetch;
+			vi.restoreAllMocks();
+		});
+
+		test("should skip reCAPTCHA validation when RECAPTCHA_SECRET_KEY is not configured", async () => {
+			// Temporarily remove the reCAPTCHA secret key
+			server.envConfig.RECAPTCHA_SECRET_KEY = undefined;
+
+			const result = await mercuriusClient.query(Query_signIn, {
+				variables: {
+					input: {
+						emailAddress: user1Email,
+						password: "password",
+						// No recaptchaToken provided, should be fine when secret key is not set
+					},
+				},
+			});
+
+			expect(result.errors).toBeUndefined();
+			expect(result.data.signIn).not.toBeNull();
+			expect(result.data.signIn?.user?.emailAddress).toBe(user1Email);
+		});
+
+		test.each([
+			{ scenario: "token not provided", token: undefined },
+			{ scenario: "token is empty string", token: "" },
+		])("should require reCAPTCHA token when RECAPTCHA_SECRET_KEY is configured but $scenario", async ({
+			token,
+		}) => {
+			// Set a mock reCAPTCHA secret key
+			server.envConfig.RECAPTCHA_SECRET_KEY = "test-secret-key";
+
+			const result = await mercuriusClient.query(Query_signIn, {
+				variables: {
+					input: {
+						emailAddress: user1Email,
+						password: "password",
+						...(token !== undefined && { recaptchaToken: token }),
+					},
+				},
+			});
+
+			expect(result.data.signIn).toEqual(null);
+			expect(result.errors).toEqual(
+				expect.arrayContaining<TalawaGraphQLFormattedError>([
+					expect.objectContaining<TalawaGraphQLFormattedError>({
+						extensions: expect.objectContaining<InvalidArgumentsExtensions>({
+							code: "invalid_arguments",
+							issues: expect.arrayContaining<
+								InvalidArgumentsExtensions["issues"][number]
+							>([
+								{
+									argumentPath: ["input", "recaptchaToken"],
+									message: "reCAPTCHA token is required.",
+								},
+							]),
+						}),
+						message: expect.any(String),
+						path: ["signIn"],
+					}),
+				]),
+			);
+		});
+
+		test("should require reCAPTCHA token when RECAPTCHA_SECRET_KEY is configured but token is null", async () => {
+			// Set a mock reCAPTCHA secret key
+			server.envConfig.RECAPTCHA_SECRET_KEY = "test-secret-key";
+
+			const result = await mercuriusClient.query(Query_signIn, {
+				variables: {
+					input: {
+						emailAddress: user1Email,
+						password: "password",
+						recaptchaToken: null,
+					},
+				},
+			});
+
+			expect(result.data.signIn).toEqual(null);
+			expect(result.errors).toEqual(
+				expect.arrayContaining<TalawaGraphQLFormattedError>([
+					expect.objectContaining<TalawaGraphQLFormattedError>({
+						extensions: expect.objectContaining<InvalidArgumentsExtensions>({
+							code: "invalid_arguments",
+							issues: expect.arrayContaining<
+								InvalidArgumentsExtensions["issues"][number]
+							>([
+								{
+									argumentPath: ["input", "recaptchaToken"],
+									message: "Expected string, received null",
+								},
+							]),
+						}),
+						message: expect.any(String),
+						path: ["signIn"],
+					}),
+				]),
+			);
+		});
+
+		test("should reject invalid reCAPTCHA token", async () => {
+			// Set a mock reCAPTCHA secret key
+			server.envConfig.RECAPTCHA_SECRET_KEY = "test-secret-key";
+
+			// Mock fetch to return failed verification
+			global.fetch = vi.fn().mockResolvedValue({
+				json: () => Promise.resolve({ success: false }),
+			} as Response);
+
+			const result = await mercuriusClient.query(Query_signIn, {
+				variables: {
+					input: {
+						emailAddress: user1Email,
+						password: "password",
+						recaptchaToken: "invalid-token",
+					},
+				},
+			});
+
+			expect(result.data.signIn).toEqual(null);
+			expect(result.errors).toEqual(
+				expect.arrayContaining<TalawaGraphQLFormattedError>([
+					expect.objectContaining<TalawaGraphQLFormattedError>({
+						extensions: expect.objectContaining<InvalidArgumentsExtensions>({
+							code: "invalid_arguments",
+							issues: expect.arrayContaining<
+								InvalidArgumentsExtensions["issues"][number]
+							>([
+								{
+									argumentPath: ["input", "recaptchaToken"],
+									message: "Invalid reCAPTCHA token.",
+								},
+							]),
+						}),
+						message: expect.any(String),
+						path: ["signIn"],
+					}),
+				]),
+			);
+		});
+
+		test("should accept valid reCAPTCHA token and proceed with authentication", async () => {
+			// Set a mock reCAPTCHA secret key
+			server.envConfig.RECAPTCHA_SECRET_KEY = "test-secret-key";
+
+			// Mock fetch to return successful verification
+			global.fetch = vi.fn().mockResolvedValue({
+				json: () => Promise.resolve({ success: true }),
+			} as Response);
+
+			const result = await mercuriusClient.query(Query_signIn, {
+				variables: {
+					input: {
+						emailAddress: user1Email,
+						password: "password",
+						recaptchaToken: "valid-token",
+					},
+				},
+			});
+
+			expect(result.errors).toBeUndefined();
+			expect(result.data.signIn).not.toBeNull();
+			expect(result.data.signIn?.user?.emailAddress).toBe(user1Email);
+
+			// Verify fetch was called with correct URL and method
+			expect(global.fetch).toHaveBeenCalledWith(
+				"https://www.google.com/recaptcha/api/siteverify",
+				expect.objectContaining({
+					method: "POST",
+					headers: {
+						"Content-Type": "application/x-www-form-urlencoded",
+					},
+					body: expect.any(URLSearchParams),
+				}),
+			);
+
+			// Verify the body contains the correct parameters
+			const fetchCall = (global.fetch as ReturnType<typeof vi.fn>).mock
+				.calls[0];
+			const body = fetchCall?.[1]?.body as URLSearchParams;
+			expect(body.get("secret")).toBe("test-secret-key");
+			expect(body.get("response")).toBe("valid-token");
+		});
+
+		test("should handle reCAPTCHA API network error gracefully", async () => {
+			// Set a mock reCAPTCHA secret key
+			server.envConfig.RECAPTCHA_SECRET_KEY = "test-secret-key";
+
+			// Mock fetch to throw network error
+			global.fetch = vi.fn().mockRejectedValue(new Error("Network error"));
+
+			const result = await mercuriusClient.query(Query_signIn, {
+				variables: {
+					input: {
+						emailAddress: user1Email,
+						password: "password",
+						recaptchaToken: "test-token",
+					},
+				},
+			});
+
+			expect(result.data.signIn).toEqual(null);
+			expect(result.errors).toEqual(
+				expect.arrayContaining<TalawaGraphQLFormattedError>([
+					expect.objectContaining<TalawaGraphQLFormattedError>({
+						extensions: expect.objectContaining({
+							code: "unexpected",
+						}),
+						message: expect.any(String),
+						path: ["signIn"],
+					}),
+				]),
+			);
+		});
+
+		test("should handle malformed reCAPTCHA API response gracefully", async () => {
+			// Set a mock reCAPTCHA secret key
+			server.envConfig.RECAPTCHA_SECRET_KEY = "test-secret-key";
+
+			// Mock fetch to return malformed response
+			global.fetch = vi.fn().mockResolvedValue({
+				json: () => Promise.resolve(null), // Malformed response
+			} as Response);
+
+			const result = await mercuriusClient.query(Query_signIn, {
+				variables: {
+					input: {
+						emailAddress: user1Email,
+						password: "password",
+						recaptchaToken: "test-token",
+					},
+				},
+			});
+
+			expect(result.data.signIn).toEqual(null);
+			expect(result.errors).toEqual(
+				expect.arrayContaining<TalawaGraphQLFormattedError>([
+					expect.objectContaining<TalawaGraphQLFormattedError>({
+						extensions: expect.objectContaining({
+							code: "unexpected",
+						}),
+						message: expect.any(String),
+						path: ["signIn"],
+					}),
+				]),
+			);
+		});
+
+		test("should handle reCAPTCHA validation with error-codes in response", async () => {
+			// Set a mock reCAPTCHA secret key
+			server.envConfig.RECAPTCHA_SECRET_KEY = "test-secret-key";
+
+			// Mock fetch to return response with error codes
+			global.fetch = vi.fn().mockResolvedValue({
+				json: () =>
+					Promise.resolve({
+						success: false,
+						"error-codes": ["timeout-or-duplicate", "invalid-input-response"],
+					}),
+			} as Response);
+
+			const result = await mercuriusClient.query(Query_signIn, {
+				variables: {
+					input: {
+						emailAddress: user1Email,
+						password: "password",
+						recaptchaToken: "expired-or-duplicate-token",
+					},
+				},
+			});
+
+			expect(result.data.signIn).toEqual(null);
+			expect(result.errors).toEqual(
+				expect.arrayContaining<TalawaGraphQLFormattedError>([
+					expect.objectContaining<TalawaGraphQLFormattedError>({
+						extensions: expect.objectContaining<InvalidArgumentsExtensions>({
+							code: "invalid_arguments",
+							issues: expect.arrayContaining<
+								InvalidArgumentsExtensions["issues"][number]
+							>([
+								{
+									argumentPath: ["input", "recaptchaToken"],
+									message: "Invalid reCAPTCHA token.",
 								},
 							]),
 						}),

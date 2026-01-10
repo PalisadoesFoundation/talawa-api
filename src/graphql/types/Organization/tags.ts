@@ -2,12 +2,12 @@ import { and, asc, desc, eq, exists, gt, lt, type SQL } from "drizzle-orm";
 import type { z } from "zod";
 import { tagsTable, tagsTableInsertSchema } from "~/src/drizzle/tables/tags";
 import { Tag } from "~/src/graphql/types/Tag/Tag";
+import envConfig from "~/src/utilities/graphqLimits";
 import {
 	defaultGraphQLConnectionArgumentsSchema,
 	transformDefaultGraphQLConnectionArguments,
 	transformToDefaultGraphQLConnection,
-} from "~/src/utilities/defaultGraphQLConnection";
-import envConfig from "~/src/utilities/graphqLimits";
+} from "~/src/utilities/graphqlConnection";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import { Organization } from "./Organization";
 
@@ -193,12 +193,9 @@ Organization.implement({
 					}
 
 					return transformToDefaultGraphQLConnection({
-						createCursor: (tag) =>
-							Buffer.from(
-								JSON.stringify({
-									name: tag.name,
-								}),
-							).toString("base64url"),
+						createCursor: (tag) => ({
+							name: tag.name,
+						}),
 						createNode: (tag) => tag,
 						parsedArgs,
 						rawNodes: tags,

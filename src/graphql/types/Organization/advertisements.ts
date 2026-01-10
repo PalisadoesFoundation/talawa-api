@@ -5,14 +5,14 @@ import {
 	advertisementsTableInsertSchema,
 } from "~/src/drizzle/tables/advertisements";
 import { Advertisement } from "~/src/graphql/types/Advertisement/Advertisement";
+import envConfig from "~/src/utilities/graphqLimits";
 import {
 	createGraphQLConnectionWithWhereSchema,
 	type defaultGraphQLConnectionArgumentsSchema,
 	type ParsedDefaultGraphQLConnectionArgumentsWithWhere,
 	transformGraphQLConnectionArgumentsWithWhere,
 	transformToDefaultGraphQLConnection,
-} from "~/src/utilities/defaultGraphQLConnection";
-import envConfig from "~/src/utilities/graphqLimits";
+} from "~/src/utilities/graphqlConnection";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import { AdvertisementWhereInput } from "../../inputs/QueryOrganizationInput";
 import { Organization } from "./Organization";
@@ -307,12 +307,9 @@ Organization.implement({
 					}
 
 					return transformToDefaultGraphQLConnection({
-						createCursor: (advertisement) =>
-							Buffer.from(
-								JSON.stringify({
-									name: advertisement.name,
-								}),
-							).toString("base64url"),
+						createCursor: (advertisement) => ({
+							name: advertisement.name,
+						}),
 						createNode: ({ attachmentsWhereAdvertisement, ...advertisement }) =>
 							Object.assign(advertisement, {
 								attachments: attachmentsWhereAdvertisement,

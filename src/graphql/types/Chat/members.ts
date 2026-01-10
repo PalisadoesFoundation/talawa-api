@@ -4,12 +4,12 @@ import {
 	chatMembershipsTable,
 	chatMembershipsTableInsertSchema,
 } from "~/src/drizzle/tables/chatMemberships";
+import envConfig from "~/src/utilities/graphqLimits";
 import {
 	defaultGraphQLConnectionArgumentsSchema,
 	transformDefaultGraphQLConnectionArguments,
 	transformToDefaultGraphQLConnection,
-} from "~/src/utilities/defaultGraphQLConnection";
-import envConfig from "~/src/utilities/graphqLimits";
+} from "~/src/utilities/graphqlConnection";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import { Chat } from "./Chat";
 import { ChatMember } from "./ChatMember";
@@ -180,13 +180,10 @@ Chat.implement({
 					}
 
 					return transformToDefaultGraphQLConnection({
-						createCursor: (chatMembership) =>
-							Buffer.from(
-								JSON.stringify({
-									createdAt: chatMembership.createdAt.toISOString(),
-									memberId: chatMembership.memberId,
-								}),
-							).toString("base64url"),
+						createCursor: (chatMembership) => ({
+							createdAt: chatMembership.createdAt,
+							memberId: chatMembership.memberId,
+						}),
 						createNode: (chatMembership) => chatMembership,
 						parsedArgs,
 						rawNodes: chatMemberships,

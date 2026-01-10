@@ -16,12 +16,12 @@ import {
 	postVotesTableInsertSchema,
 } from "~/src/drizzle/tables/postVotes";
 import { User } from "~/src/graphql/types/User/User";
+import envConfig from "~/src/utilities/graphqLimits";
 import {
 	defaultGraphQLConnectionArgumentsSchema,
 	transformDefaultGraphQLConnectionArguments,
 	transformToDefaultGraphQLConnection,
-} from "~/src/utilities/defaultGraphQLConnection";
-import envConfig from "~/src/utilities/graphqLimits";
+} from "~/src/utilities/graphqlConnection";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import { Post } from "./Post";
 
@@ -200,13 +200,10 @@ Post.implement({
 					}
 
 					return transformToDefaultGraphQLConnection({
-						createCursor: (vote) =>
-							Buffer.from(
-								JSON.stringify({
-									createdAt: vote.createdAt.toISOString(),
-									creatorId: vote.creatorId,
-								}),
-							).toString("base64url"),
+						createCursor: (vote) => ({
+							createdAt: vote.createdAt,
+							creatorId: vote.creatorId ?? "",
+						}),
 						createNode: (vote) => vote.creator,
 						parsedArgs,
 						// None of the post votes below contain a `creator` field with `null` as the value because of the sql query logic. This filter operation is here just to prevent type errors.

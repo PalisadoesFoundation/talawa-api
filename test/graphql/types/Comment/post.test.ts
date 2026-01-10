@@ -1,3 +1,4 @@
+import { randomUUID } from "node:crypto";
 import { faker } from "@faker-js/faker";
 import { eq } from "drizzle-orm";
 import { afterEach, expect, suite, test, vi } from "vitest";
@@ -46,7 +47,7 @@ async function createTestComment(creatorId: string) {
 	const [org] = await server.drizzleClient
 		.insert(organizationsTable)
 		.values({
-			name: faker.company.name(),
+			name: `${faker.company.name()}-${randomUUID()}`,
 			countryCode: "us",
 			userRegistrationRequired: false,
 		})

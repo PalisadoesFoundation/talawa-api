@@ -2,12 +2,12 @@ import { and, asc, desc, eq, exists, gt, lt, type SQL } from "drizzle-orm";
 import type { z } from "zod";
 import { fundsTable, fundsTableInsertSchema } from "~/src/drizzle/tables/funds";
 import { Fund } from "~/src/graphql/types/Fund/Fund";
+import envConfig from "~/src/utilities/graphqLimits";
 import {
 	defaultGraphQLConnectionArgumentsSchema,
 	transformDefaultGraphQLConnectionArguments,
 	transformToDefaultGraphQLConnection,
-} from "~/src/utilities/defaultGraphQLConnection";
-import envConfig from "~/src/utilities/graphqLimits";
+} from "~/src/utilities/graphqlConnection";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import { Organization } from "./Organization";
 
@@ -191,12 +191,9 @@ Organization.implement({
 					}
 
 					return transformToDefaultGraphQLConnection({
-						createCursor: (fund) =>
-							Buffer.from(
-								JSON.stringify({
-									name: fund.name,
-								}),
-							).toString("base64url"),
+						createCursor: (fund) => ({
+							name: fund.name,
+						}),
 						createNode: (fund) => fund,
 						parsedArgs,
 						rawNodes: funds,

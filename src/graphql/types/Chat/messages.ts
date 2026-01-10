@@ -5,12 +5,12 @@ import {
 	chatMessagesTableInsertSchema,
 } from "~/src/drizzle/tables/chatMessages";
 import { ChatMessage } from "~/src/graphql/types/ChatMessage/ChatMessage";
+import envConfig from "~/src/utilities/graphqLimits";
 import {
 	defaultGraphQLConnectionArgumentsSchema,
 	transformDefaultGraphQLConnectionArguments,
 	transformToDefaultGraphQLConnection,
-} from "~/src/utilities/defaultGraphQLConnection";
-import envConfig from "~/src/utilities/graphqLimits";
+} from "~/src/utilities/graphqlConnection";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import { Chat } from "./Chat";
 
@@ -204,12 +204,9 @@ Chat.implement({
 					}
 
 					return transformToDefaultGraphQLConnection({
-						createCursor: (message) =>
-							Buffer.from(
-								JSON.stringify({
-									id: message.id,
-								}),
-							).toString("base64url"),
+						createCursor: (message) => ({
+							id: message.id,
+						}),
 						createNode: (message) => message,
 						parsedArgs,
 						rawNodes: chatMessages,

@@ -77,20 +77,12 @@ builder.mutationField("deleteFundCampaignPledge", (t) =>
 								fund: {
 									columns: {
 										isTaxDeductible: true,
+										organizationId: true,
 									},
 									with: {
 										organization: {
 											columns: {
 												countryCode: true,
-											},
-											with: {
-												membershipsWhereOrganization: {
-													columns: {
-														role: true,
-													},
-													where: (fields, operators) =>
-														operators.eq(fields.memberId, currentUserId),
-												},
 											},
 										},
 									},
@@ -125,8 +117,17 @@ builder.mutationField("deleteFundCampaignPledge", (t) =>
 			}
 
 			const currentUserOrganizationMembership =
-				existingFundCampaignPledge.campaign.fund.organization
-					.membershipsWhereOrganization[0];
+				await ctx.drizzleClient.query.organizationMembershipsTable.findFirst({
+					columns: { role: true },
+					where: (fields, operators) =>
+						operators.and(
+							operators.eq(
+								fields.organizationId,
+								existingFundCampaignPledge.campaign.fund.organizationId,
+							),
+							operators.eq(fields.memberId, currentUserId),
+						),
+				});
 
 			if (
 				currentUser.role !== "administrator" &&

@@ -2,12 +2,12 @@ import { and, asc, desc, eq, exists, gt, lt, or, type SQL } from "drizzle-orm";
 import type { z } from "zod";
 import { chatsTable, chatsTableInsertSchema } from "~/src/drizzle/tables/chats";
 import { Chat } from "~/src/graphql/types/Chat/Chat";
+import envConfig from "~/src/utilities/graphqLimits";
 import {
 	defaultGraphQLConnectionArgumentsSchema,
 	transformDefaultGraphQLConnectionArguments,
 	transformToDefaultGraphQLConnection,
-} from "~/src/utilities/defaultGraphQLConnection";
-import envConfig from "~/src/utilities/graphqLimits";
+} from "~/src/utilities/graphqlConnection";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import { Organization } from "./Organization";
 
@@ -210,13 +210,10 @@ Organization.implement({
 					}
 
 					return transformToDefaultGraphQLConnection({
-						createCursor: (chat) =>
-							Buffer.from(
-								JSON.stringify({
-									id: chat.id,
-									name: chat.name,
-								}),
-							).toString("base64url"),
+						createCursor: (chat) => ({
+							id: chat.id,
+							name: chat.name,
+						}),
 						createNode: (chat) => chat,
 						parsedArgs,
 						rawNodes: chats,

@@ -1,6 +1,6 @@
 import { faker } from "@faker-js/faker";
 import { initGraphQLTada } from "gql.tada";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import type { ClientCustomScalars } from "~/src/graphql/scalars/index";
 // Import the actual implementation to ensure it's loaded for coverage
 import "~/src/graphql/types/Tag/organization";
@@ -401,209 +401,107 @@ describe("Tag.organization resolver - Integration", () => {
 	});
 });
 
-// NOTE: The following unit tests use mocked context instead of the repository's preferred
-// mercuriusClient integration test pattern (as recommended in PRs #4049 and #4136).
-// This deviation is necessary because:
-//
-// 1. FIELD-LEVEL AUTH PATHS: The authentication/authorization checks in the organization
-//    resolver are defensive code that's unreachable through integration tests. Query.tag
-//    authorization runs first and blocks unauthenticated/unauthorized users, so the
-//    field resolver's auth checks never execute in normal GraphQL flow.
-//
-// 2. MISSING ORGANIZATION EDGE CASE: Testing a corrupted state (organization undefined
-//    despite tag having organizationId) via integration tests fails due to foreign key
-//    constraints that correctly enforce referential integrity.
-//
-// 3. These edge cases are unreachable through normal GraphQL operations, making them similar
-//    to testing zod schema validation edge cases (PR #4030), where unit testing with mocks
-//    is the pragmatic approach for achieving 100% code coverage.
-//
-// Therefore, these unit tests with mocked context are justified as the only feasible way
-// to test defensive code paths while maintaining the codebase's integrity constraints.
-describe("Tag.organization resolver - Unit test edge cases", () => {
-	it("should throw unauthenticated error when user is not authenticated", async () => {
-		const graphqlInstance = (
-			server as unknown as {
-				graphql?: { schema?: import("graphql").GraphQLSchema };
-			}
-		).graphql;
-		expect(graphqlInstance).toBeDefined();
-		const schema = graphqlInstance?.schema;
-		expect(schema).toBeDefined();
-
-		const tagType = schema?.getType("Tag");
-		expect(tagType).toBeDefined();
-
-		const fields = (tagType as import("graphql").GraphQLObjectType).getFields();
-		expect(fields.organization).toBeDefined();
-
-		const resolver = fields.organization?.resolve as (
-			parent: unknown,
-			args: unknown,
-			ctx: unknown,
-			info: unknown,
-		) => Promise<unknown>;
+// Unit tests for the Tag.organization resolver using mocked context
+// These tests directly call the exported resolveOrganization function
+describe("Tag.organization resolver - Unit tests", () => {
+	it("should successfully return organization when DataLoader finds it", async () => {
+		const { resolveOrganization } = await import(
+			"~/src/graphql/types/Tag/organization"
+		);
 
 		const parent = {
 			id: "tag-123",
 			organizationId: "org-123",
 			name: "Test Tag",
+			folderId: null,
+			creatorId: "user-123",
+			updaterId: null,
+			createdAt: new Date(),
+			updatedAt: new Date(),
 		};
 
-		const { context } = createMockGraphQLContext(false); // Not authenticated
+		const mockOrganization = {
+			id: "org-123",
+			name: "Test Organization",
+		};
 
-		await expect(resolver(parent, {}, context, {})).rejects.toEqual(
-			expect.objectContaining({
-				extensions: expect.objectContaining({ code: "unauthenticated" }),
-			} as unknown),
+		const { context } = createMockGraphQLContext(true, "user-123");
+		context.dataloaders.organization.load = vi
+			.fn()
+			.mockResolvedValue(mockOrganization);
+
+		const result = await resolveOrganization(parent, {}, context);
+
+		expect(context.dataloaders.organization.load).toHaveBeenCalledWith(
+			"org-123",
 		);
+		expect(result).toEqual(mockOrganization);
 	});
 
-	it("should throw unauthenticated error when user is not found in database", async () => {
-		const graphqlInstance = (
-			server as unknown as {
-				graphql?: { schema?: import("graphql").GraphQLSchema };
-			}
-		).graphql;
-		expect(graphqlInstance).toBeDefined();
-		const schema = graphqlInstance?.schema;
-		expect(schema).toBeDefined();
-
-		const tagType = schema?.getType("Tag");
-		expect(tagType).toBeDefined();
-
-		const fields = (tagType as import("graphql").GraphQLObjectType).getFields();
-		expect(fields.organization).toBeDefined();
-
-		const resolver = fields.organization?.resolve as (
-			parent: unknown,
-			args: unknown,
-			ctx: unknown,
-			info: unknown,
-		) => Promise<unknown>;
+	it("should throw 'unexpected' error and log when organization is null (data corruption)", async () => {
+		const { resolveOrganization } = await import(
+			"~/src/graphql/types/Tag/organization"
+		);
 
 		const parent = {
-			id: "tag-123",
-			organizationId: "org-123",
+			id: "tag-456",
+			organizationId: "org-missing",
 			name: "Test Tag",
+			folderId: null,
+			creatorId: "user-123",
+			updaterId: null,
+			createdAt: new Date(),
+			updatedAt: new Date(),
 		};
 
-		const { context, mocks } = createMockGraphQLContext(true, "user-123");
+		const { context } = createMockGraphQLContext(true, "user-123");
+		context.dataloaders.organization.load = vi.fn().mockResolvedValue(null);
 
-		// Mock user lookup to return undefined
-		mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValueOnce(
-			undefined,
-		);
+		const logErrorSpy = vi.spyOn(context.log, "error");
 
-		await expect(resolver(parent, {}, context, {})).rejects.toEqual(
-			expect.objectContaining({
-				extensions: expect.objectContaining({ code: "unauthenticated" }),
-			} as unknown),
-		);
-	});
-
-	it("should throw unauthorized error when user is not org member or admin", async () => {
-		const graphqlInstance = (
-			server as unknown as {
-				graphql?: { schema?: import("graphql").GraphQLSchema };
-			}
-		).graphql;
-		expect(graphqlInstance).toBeDefined();
-		const schema = graphqlInstance?.schema;
-		expect(schema).toBeDefined();
-
-		const tagType = schema?.getType("Tag");
-		expect(tagType).toBeDefined();
-
-		const fields = (tagType as import("graphql").GraphQLObjectType).getFields();
-		expect(fields.organization).toBeDefined();
-
-		const resolver = fields.organization?.resolve as (
-			parent: unknown,
-			args: unknown,
-			ctx: unknown,
-			info: unknown,
-		) => Promise<unknown>;
-
-		const parent = {
-			id: "tag-123",
-			organizationId: "org-123",
-			name: "Test Tag",
-		};
-
-		const { context, mocks } = createMockGraphQLContext(true, "user-123");
-
-		// Mock user lookup to return a non-admin user with no org membership
-		mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValueOnce({
-			id: "user-123",
-			role: "user", // Not a system administrator
-			organizationMembershipsWhereMember: [], // Not a member of the organization
-		});
-
-		await expect(resolver(parent, {}, context, {})).rejects.toEqual(
-			expect.objectContaining({
-				extensions: expect.objectContaining({ code: "unauthorized_action" }),
-			} as unknown),
-		);
-	});
-
-	it("should throw unexpected error when organization is not found", async () => {
-		const graphqlInstance = (
-			server as unknown as {
-				graphql?: { schema?: import("graphql").GraphQLSchema };
-			}
-		).graphql;
-		expect(graphqlInstance).toBeDefined();
-		const schema = graphqlInstance?.schema;
-		expect(schema).toBeDefined();
-
-		const tagType = schema?.getType("Tag");
-		expect(tagType).toBeDefined();
-
-		const fields = (tagType as import("graphql").GraphQLObjectType).getFields();
-		expect(fields.organization).toBeDefined();
-
-		const resolver = fields.organization?.resolve as (
-			parent: unknown,
-			args: unknown,
-			ctx: unknown,
-			info: unknown,
-		) => Promise<unknown>;
-
-		const parent = {
-			id: "tag-123",
-			organizationId: "org-123",
-			name: "Test Tag",
-		};
-
-		const { context, mocks } = createMockGraphQLContext(true, "admin-user");
-
-		// Mock the current user as an administrator
-		mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValueOnce({
-			id: "admin-user",
-			role: "administrator",
-			organizationMembershipsWhereMember: [],
-		});
-
-		// Mock organization lookup to return undefined (simulating database corruption or race condition)
-		mocks.drizzleClient.query.organizationsTable.findFirst.mockResolvedValueOnce(
-			undefined,
-		);
-
-		const ctx = {
-			...context,
-			drizzleClient: mocks.drizzleClient,
-		};
-
-		await expect(resolver(parent, {}, ctx, {})).rejects.toEqual(
+		await expect(resolveOrganization(parent, {}, context)).rejects.toEqual(
 			expect.objectContaining({
 				extensions: expect.objectContaining({ code: "unexpected" }),
 			} as unknown),
 		);
 
-		// Verify error was logged
-		expect(context.log.error).toHaveBeenCalledWith(
-			"Postgres select operation returned an empty array for a tag's organization id that isn't null.",
+		expect(logErrorSpy).toHaveBeenCalledWith(
+			{
+				tagId: "tag-456",
+				organizationId: "org-missing",
+			},
+			"DataLoader returned null for a tag's organization id that isn't null.",
+		);
+	});
+
+	it("should call DataLoader with correct organizationId from parent", async () => {
+		const { resolveOrganization } = await import(
+			"~/src/graphql/types/Tag/organization"
+		);
+
+		const parent = {
+			id: "tag-789",
+			organizationId: "specific-org-id",
+			name: "Test Tag",
+			folderId: null,
+			creatorId: "user-123",
+			updaterId: null,
+			createdAt: new Date(),
+			updatedAt: new Date(),
+		};
+
+		const mockOrganization = { id: "specific-org-id", name: "Specific Org" };
+
+		const { context } = createMockGraphQLContext(true, "user-123");
+		context.dataloaders.organization.load = vi
+			.fn()
+			.mockResolvedValue(mockOrganization);
+
+		await resolveOrganization(parent, {}, context);
+
+		expect(context.dataloaders.organization.load).toHaveBeenCalledTimes(1);
+		expect(context.dataloaders.organization.load).toHaveBeenCalledWith(
+			"specific-org-id",
 		);
 	});
 });

@@ -165,7 +165,7 @@ describe("Server-Timing header", () => {
 
 		app.get("/test-duration", async () => {
 			// Simulate some work
-			await new Promise((resolve) => setTimeout(resolve, 10));
+			await new Promise((resolve) => setTimeout(resolve, 20));
 			return { ok: true };
 		});
 
@@ -179,8 +179,8 @@ describe("Server-Timing header", () => {
 
 		if (totalMatch?.[1]) {
 			const totalDur = Number.parseInt(totalMatch[1], 10);
-			// Should be at least 10ms due to our delay
-			expect(totalDur).toBeGreaterThanOrEqual(10);
+			// Should be at least 15ms due to our delay
+			expect(totalDur).toBeGreaterThanOrEqual(15);
 		}
 	});
 });

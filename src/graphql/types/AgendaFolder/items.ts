@@ -5,12 +5,12 @@ import {
 	agendaItemsTableInsertSchema,
 } from "~/src/drizzle/tables/agendaItems";
 import { AgendaItem } from "~/src/graphql/types/AgendaItem/AgendaItem";
+import envConfig from "~/src/utilities/graphqLimits";
 import {
 	defaultGraphQLConnectionArgumentsSchema,
 	transformDefaultGraphQLConnectionArguments,
 	transformToDefaultGraphQLConnection,
-} from "~/src/utilities/defaultGraphQLConnection";
-import envConfig from "~/src/utilities/graphqLimits";
+} from "~/src/utilities/graphqlConnection";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import { AgendaFolder } from "./AgendaFolder";
 export const itemsArgumentsSchema = defaultGraphQLConnectionArgumentsSchema
@@ -163,13 +163,10 @@ AgendaFolder.implement({
 					}
 
 					return transformToDefaultGraphQLConnection({
-						createCursor: (agendaItem) =>
-							Buffer.from(
-								JSON.stringify({
-									id: agendaItem.id,
-									name: agendaItem.name,
-								}),
-							).toString("base64url"),
+						createCursor: (agendaItem) => ({
+							id: agendaItem.id,
+							name: agendaItem.name,
+						}),
 						createNode: (agendaItem) => agendaItem,
 						parsedArgs,
 						rawNodes: agendaItems,

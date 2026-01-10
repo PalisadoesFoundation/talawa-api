@@ -1,21 +1,12 @@
-import type { FastifyBaseLogger } from "fastify";
 import { vi } from "vitest";
-
-/**
- * Configuration options for the mock logger.
- * @interface MockLoggerConfig
- * @property {string} [level] - The logging level to use. Defaults to "info".
- * @property {Set<string>} [enabledLevels] - Set of enabled log levels.
- */
+import type { AppLogger } from "~/src/utilities/logging/logger";
 
 interface MockLoggerConfig {
 	level?: string;
 	enabledLevels?: Set<string>;
 }
 
-export const createMockLogger = (
-	config?: MockLoggerConfig,
-): FastifyBaseLogger => {
+export const createMockLogger = (config?: MockLoggerConfig): AppLogger => {
 	const level = config?.level ?? "info";
 	const enabledLevels =
 		config?.enabledLevels ??
@@ -45,7 +36,17 @@ export const createMockLogger = (
 		isDebugEnabled: () => enabledLevels.has("debug"),
 		isTraceEnabled: () => enabledLevels.has("trace"),
 		isSilentEnabled: () => enabledLevels.has("silent"),
-	};
+		msgPrefix: "",
+		version: "1.0.0",
+		levels: {
+			labels: {},
+			values: {},
+		},
+		useLevelLabels: false,
+		levelVal: 30,
+		onChild: vi.fn(),
+		[Symbol.for("pino.serializers")]: {},
+	} as unknown as AppLogger;
 
 	return logger;
 };

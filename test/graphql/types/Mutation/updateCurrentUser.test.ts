@@ -1701,7 +1701,7 @@ suite("Mutation field updateCurrentUser", () => {
 				countryCode: "ca" as const,
 				description: faker.lorem.paragraph(),
 				educationGrade: "graduate" as const,
-				emailAddress: `${faker.internet.userName()}${faker.string.ulid()}@email.com`,
+				emailAddress: `${faker.internet.username()}${faker.string.ulid()}@email.com`,
 				employmentStatus: "part_time" as const,
 				homePhoneNumber: "+15555555555",
 				maritalStatus: "married" as const,

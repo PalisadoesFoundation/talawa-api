@@ -4,12 +4,12 @@ import {
 	tagFoldersTable,
 	tagFoldersTableInsertSchema,
 } from "~/src/drizzle/tables/tagFolders";
+import envConfig from "~/src/utilities/graphqLimits";
 import {
 	defaultGraphQLConnectionArgumentsSchema,
 	transformDefaultGraphQLConnectionArguments,
 	transformToDefaultGraphQLConnection,
-} from "~/src/utilities/defaultGraphQLConnection";
-import envConfig from "~/src/utilities/graphqLimits";
+} from "~/src/utilities/graphqlConnection";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import { TagFolder } from "./TagFolder";
 
@@ -145,12 +145,9 @@ TagFolder.implement({
 					}
 
 					return transformToDefaultGraphQLConnection({
-						createCursor: (tag) =>
-							Buffer.from(
-								JSON.stringify({
-									name: tag.name,
-								}),
-							).toString("base64url"),
+						createCursor: (tag) => ({
+							name: tag.name,
+						}),
 						createNode: (tag) => tag,
 						parsedArgs,
 						rawNodes: tagFolders,

@@ -12,6 +12,7 @@ export type EntityTTL = {
 	organization: number;
 	event: number;
 	post: number;
+	actionItem: number;
 };
 
 /**
@@ -22,6 +23,7 @@ export const defaultEntityTTL: EntityTTL = {
 	organization: 300, // 5 minutes
 	event: 120, // 2 minutes
 	post: 60, // 1 minute
+	actionItem: 120, // 2 minutes
 };
 
 /**

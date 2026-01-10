@@ -110,25 +110,8 @@ suite("Mutation deleteFundCampaignPledge", () => {
 	test("pledger with organization membership can delete own pledge", async () => {
 		const user = await createUser();
 
-		const { orgId, campaignId } = await createOrgAndCampaign();
-
-		// 👇 ADD ORG MEMBERSHIP
-		await mercuriusClient.mutate(Mutation_createOrganizationMembership, {
-			headers: { authorization: `bearer ${adminToken}` },
-			variables: {
-				input: {
-					organizationId: orgId,
-					memberId: user.id,
-					role: "regular",
-				},
-			},
-		});
-
-		const pledgeId = await createPledgeWithCampaign(
-			user.token,
-			user.id,
-			campaignId,
-		);
+		// The helper createPledgeAsUser now handles creating the organization membership
+		const pledgeId = await createPledgeAsUser(user.token, user.id);
 
 		const res = await mercuriusClient.mutate(
 			Mutation_deleteFundCampaignPledge,
@@ -236,7 +219,7 @@ async function createUser() {
 		headers: { authorization: `bearer ${adminToken}` },
 		variables: {
 			input: {
-				emailAddress: faker.internet.email(),
+				emailAddress: `test-${faker.string.uuid()}@example.com`,
 				password: faker.internet.password(),
 				role: "regular",
 				name: `org-${faker.string.uuid()}`,
@@ -303,7 +286,19 @@ async function createOrgAndCampaign() {
 }
 
 async function createPledgeAsUser(token: string, userId: string) {
-	const { campaignId } = await createOrgAndCampaign();
+	const { campaignId, orgId } = await createOrgAndCampaign();
+
+	await mercuriusClient.mutate(Mutation_createOrganizationMembership, {
+		headers: { authorization: `bearer ${adminToken}` },
+		variables: {
+			input: {
+				organizationId: orgId,
+				memberId: userId,
+				role: "regular",
+			},
+		},
+	});
+
 	return createPledgeWithCampaign(token, userId, campaignId);
 }
 

@@ -5,7 +5,19 @@ import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import type { ActionItem as ActionItemType } from "./ActionItem";
 import { ActionItem } from "./ActionItem";
 
-// Export the resolver function so it can be tested
+/**
+ * Resolves the updater user for an ActionItem.
+ * Requires authentication and administrator permissions (global or organization-level).
+ * Uses DataLoader for batched user queries to prevent N+1 behavior.
+ *
+ * @param parent - The ActionItem parent object
+ * @param _args - GraphQL arguments (unused)
+ * @param ctx - GraphQL context containing dataloaders and authentication state
+ * @returns The updater User object, or null if updaterId is null
+ * @throws {TalawaGraphQLError} With code "unauthenticated" if user is not logged in or not found
+ * @throws {TalawaGraphQLError} With code "unauthorized_action" if user lacks admin permissions
+ * @throws {TalawaGraphQLError} With code "unexpected" if updater user is not found despite non-null updaterId
+ */
 export const resolveUpdater = async (
 	parent: ActionItemType,
 	_args: Record<string, never>,
@@ -67,11 +79,9 @@ export const resolveUpdater = async (
 
 	const updaterId = parent.updaterId;
 
-	const existingUser = await ctx.drizzleClient.query.usersTable.findFirst({
-		where: (fields, operators) => operators.eq(fields.id, updaterId),
-	});
+	const existingUser = await ctx.dataloaders.user.load(updaterId);
 
-	if (existingUser === undefined) {
+	if (existingUser === null) {
 		ctx.log.error(
 			"Postgres select operation returned an empty array for an action item's updater id that isn't null.",
 		);
