@@ -61,23 +61,26 @@ retry_command() {
     shift
     local attempt=1
     local exit_code=0
-    
+
     while [ $attempt -le $max_attempts ]; do
         if [ $attempt -gt 1 ]; then
-            warn "Retry attempt $attempt of $max_attempts..."
-            sleep $((attempt * 2))  # Exponential backoff
+            local delay=$((2 ** (attempt - 1)))
+            warn "Retry attempt $attempt of $max_attempts... sleeping for ${delay}s"
+            sleep "$delay"
         fi
-        
+
         if "$@"; then
             return 0
         fi
+
         exit_code=$?
         ((attempt++))
     done
-    
+
     error "Command failed after $max_attempts attempts: $*"
     return $exit_code
 }
+
 
 # Check if command exists
 command_exists() {
@@ -291,7 +294,7 @@ if [ "$INSTALL_MODE" = "docker" ]; then
         # carries inherent risk. Users can review the script first by visiting:
         # https://get.docker.com or using: curl -fsSL https://get.docker.com | less
         # curl -fsSL --connect-timeout $CURL_CONNECT_TIMEOUT --max-time $CURL_MAX_TIME_DOCKER https://get.docker.com | sh
-        local docker_installer="/tmp/get-docker-$$.sh"
+        docker_installer="/tmp/get-docker-$$.sh"
         if retry_command "$MAX_RETRY_ATTEMPTS" curl -fsSL --connect-timeout "$CURL_CONNECT_TIMEOUT" --max-time "$CURL_MAX_TIME_DOCKER" -o "$docker_installer" https://get.docker.com; then
             sh "$docker_installer"
             rm -f "$docker_installer"
@@ -347,7 +350,7 @@ else
     # Users can review the script first at: https://fnm.vercel.app/install
     # curl -fsSL --connect-timeout $CURL_CONNECT_TIMEOUT --max-time $CURL_MAX_TIME_FNM https://fnm.vercel.app/install | bash -s -- --skip-shell
 
-    local fnm_installer="/tmp/fnm-install-$$.sh"
+    fnm_installer="/tmp/fnm-install-$$.sh"
     if retry_command "$MAX_RETRY_ATTEMPTS" curl -fsSL --connect-timeout "$CURL_CONNECT_TIMEOUT" --max-time "$CURL_MAX_TIME_FNM" -o "$fnm_installer" https://fnm.vercel.app/install; then
         bash "$fnm_installer" -- --skip-shell
         rm -f "$fnm_installer"
