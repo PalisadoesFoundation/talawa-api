@@ -19,6 +19,7 @@ import {
 } from "../utilities/cookieConfig";
 import { createDataloaders } from "../utilities/dataloaders";
 import leakyBucket from "../utilities/leakyBucket";
+import type { AppLogger } from "../utilities/logging/logger";
 import type { PerformanceTracker } from "../utilities/metrics/performanceTracker";
 import { DEFAULT_REFRESH_TOKEN_EXPIRES_MS } from "../utilities/refreshTokenUtils";
 import { TalawaGraphQLError } from "../utilities/TalawaGraphQLError";
@@ -174,7 +175,7 @@ export const createContext: CreateContext = async (initialContext) => {
 				fastify.jwt.sign(payload),
 		},
 		cookie: cookieHelper,
-		log: opLogger,
+		log: (request.log ?? fastify.log) as AppLogger,
 		minio: fastify.minio,
 		perf: request.perf, // Attach performance tracker from request (added by performance plugin)
 		// attached a per-request notification service that queues notifications and can flush later

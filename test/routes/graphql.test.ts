@@ -139,7 +139,7 @@ describe("GraphQL Routes", () => {
 				jwt: {
 					sign: expect.any(Function),
 				},
-				log: mockFastify.log,
+				log: mockRequest.log, // Uses request.log when available (request.log ?? fastify.log)
 				minio: mockFastify.minio,
 				notification: expect.objectContaining({
 					queue: [],
@@ -183,7 +183,7 @@ describe("GraphQL Routes", () => {
 				jwt: {
 					sign: expect.any(Function),
 				},
-				log: mockFastify.log,
+				log: mockRequest.log, // Uses request.log when available (request.log ?? fastify.log)
 				minio: mockFastify.minio,
 				notification: expect.objectContaining({
 					queue: [],
@@ -192,6 +192,28 @@ describe("GraphQL Routes", () => {
 			});
 
 			expect(mockRequest.jwtVerify).toHaveBeenCalled();
+		});
+
+		it("should fallback to fastify.log when request.log is undefined", async () => {
+			mockRequest.jwtVerify = vi
+				.fn()
+				.mockRejectedValue(new Error("Invalid token"));
+
+			// Explicitly set request.log to undefined to test fallback
+			mockRequest.log = undefined;
+
+			const context = await createContext({
+				fastify: mockFastify as FastifyInstance,
+				request: mockRequest as FastifyRequest,
+				isSubscription: false,
+				reply: mockReply as FastifyReply,
+			});
+
+			// Verify that context.log uses fastify.log as fallback
+			expect(context.log).toBe(mockFastify.log);
+			expect(context.currentClient).toEqual({
+				isAuthenticated: false,
+			});
 		});
 
 		it("should create context for subscription with authenticated user", async () => {

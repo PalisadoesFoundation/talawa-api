@@ -2171,7 +2171,7 @@ type Mutation {
 
   """Mutation field to delete a chat."""
   deleteChat(
-    """Input containing the UUID `id` of the chat to delete (required)."""
+    """Input containing the ID of the chat to delete (required)."""
     input: MutationDeleteChatInput!
   ): Chat
 
