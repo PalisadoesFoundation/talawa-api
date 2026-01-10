@@ -3,12 +3,12 @@
  */
 import { defineConfig } from "drizzle-kit";
 import { envSchema } from "env-schema";
-import { type Static, Type } from "typebox";
+import { type Static, Type } from "@sinclair/typebox";
 import { envConfigSchema, envSchemaAjv } from "~/src/envConfigSchema";
 import { testEnvConfigSchema } from "./envConfigSchema";
 
 const schema = Type.Pick(
-	Type.Evaluate(Type.Intersect([envConfigSchema, testEnvConfigSchema])),
+	Type.Intersect([envConfigSchema, testEnvConfigSchema]),
 	[
 		"API_POSTGRES_DATABASE",
 		"API_POSTGRES_PASSWORD",

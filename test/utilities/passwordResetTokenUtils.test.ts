@@ -1,6 +1,6 @@
 import { createHmac } from "node:crypto";
 import { envSchema } from "env-schema";
-import { type Static, Type } from "typebox";
+import { type Static, Type } from "@sinclair/typebox";
 import { afterEach, beforeEach, expect, suite, test, vi } from "vitest";
 import { envConfigSchema, envSchemaAjv } from "~/src/envConfigSchema";
 import {

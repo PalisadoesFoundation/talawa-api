@@ -131,9 +131,6 @@ importers:
       postgres:
         specifier: ^3.4.7
         version: 3.4.7
-      typebox:
-        specifier: ^1.0.0
-        version: 1.0.71
       ulidx:
         specifier: ^2.4.1
         version: 2.4.1
