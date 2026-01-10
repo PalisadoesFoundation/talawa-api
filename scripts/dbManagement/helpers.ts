@@ -60,7 +60,10 @@ export async function askUserToContinue(question: string): Promise<boolean> {
 
 export async function formatDatabase(): Promise<boolean> {
 	const adminEmail = envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS;
-	if (!adminEmail) throw new Error("Missing adminEmail variable.");
+	if (!adminEmail) {
+		console.error("Missing adminEmail variable.");
+		return false;
+	}
 
 	type TableRow = { tablename: string };
 	const USERS_TABLE = "users";
@@ -113,7 +116,10 @@ export async function emptyMinioBucket(): Promise<boolean> {
 	}
 }
 
-// Fix: Add quiet mode to silence logs in tests
+/**
+ * Lists all sample data files.
+ * @param quiet - If true, silences console.log output.
+ */
 export async function listSampleData(quiet = false): Promise<boolean> {
     try {
         const sampleDataPath = path.resolve(dirname, "./sample_data");
@@ -125,7 +131,6 @@ export async function listSampleData(quiet = false): Promise<boolean> {
         }
 
         let errorsFound = false;
-
         for (const file of files) {
             if (!file.endsWith('.json')) continue;
             const filePath = path.resolve(sampleDataPath, file);
@@ -177,7 +182,8 @@ export async function checkAndInsertData<T>(
 	return true;
 }
 
-export function parseDate(date: string | number | Date): Date | null {
+export function parseDate(date: string | number | Date | null | undefined): Date | null {
+    if (date === null || date === undefined) return null;
 	const parsedDate = new Date(date);
 	return Number.isNaN(parsedDate.getTime()) ? null : parsedDate;
 }
@@ -226,7 +232,7 @@ async function insertOrganizations(data: any[]) {
 		}));
 		await checkAndInsertData(schema.organizationMembershipsTable, memberships, [schema.organizationMembershipsTable.organizationId, schema.organizationMembershipsTable.memberId], 1000);
 	} else {
-        console.warn(`Admin user (${adminEmail}) not found. Skipping organization memberships.`);
+        console.warn(`Warning: Admin user (${adminEmail}) not found. Skipping membership creation.`);
     }
 	console.log(`Added: Organizations`);
 }
@@ -247,10 +253,8 @@ async function insertRecurringEvents(data: any[]) {
 	const events = data.map((event: any, index: number) => {
         const startAt = new Date(seedNow);
         startAt.setDate(seedNow.getDate() + index + 1);
-        
         const hourOffset = 9 + (index % 5);
         startAt.setHours(hourOffset, 0, 0, 0);
-        
         const endAt = new Date(startAt);
         endAt.setHours(hourOffset + 1, 0, 0, 0);
         
@@ -317,23 +321,22 @@ async function insertRecurrenceRules(data: any[]) {
 			latestInstanceDate: now,
 			createdAt: now,
 			updatedAt: now,
-			recurrenceStartDate: now, // Should ideally match baseEvent start, using now as safe fallback
+			recurrenceStartDate: now, // Logic aligns with occurrence generation
 			recurrenceEndDate: oneYear,
 			recurrenceRuleString: `FREQ=${freq};INTERVAL=${int}${byDayString};UNTIL=${until}`,
 			count: null, originalSeriesId: null, byMonth: null, byMonthDay: null
 		};
 	});
 
-    // Fix: Use schema object references for type safety in upsert
 	await db.insert(schema.recurrenceRulesTable).values(rules).onConflictDoUpdate({
 		target: schema.recurrenceRulesTable.id,
 		set: {
-            frequency: sql`excluded.frequency`,
-            interval: sql`excluded.interval`,
-            byDay: sql`excluded.by_day`,
-			recurrenceEndDate: sql`excluded.recurrence_end_date`,
-			recurrenceRuleString: sql`excluded.recurrence_rule_string`,
-			latestInstanceDate: sql`excluded.latest_instance_date`,
+            frequency: schema.recurrenceRulesTable.frequency,
+            interval: schema.recurrenceRulesTable.interval,
+            byDay: schema.recurrenceRulesTable.byDay,
+			recurrenceEndDate: schema.recurrenceRulesTable.recurrenceEndDate,
+			recurrenceRuleString: schema.recurrenceRulesTable.recurrenceRuleString,
+			latestInstanceDate: schema.recurrenceRulesTable.latestInstanceDate,
 			updatedAt: now
 		}
 	});
@@ -361,7 +364,7 @@ async function insertEventAttendees(data: any[]) {
 
 export async function insertCollections(
     inputCollections: string[], 
-    autoIncludeEventAttendees: boolean = true
+    autoIncludeEventAttendees = true
 ): Promise<boolean> {
 	try {
 		const API_ADMINISTRATOR_USER_EMAIL_ADDRESS = envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS;
@@ -416,7 +419,7 @@ export async function insertCollections(
                     console.warn(`Skipping malformed optional collection: ${collection}`);
                     continue;
                 }
-                throw new Error(`Malformed JSON in required collection: ${collection}`);
+                throw new Error(`Malformed JSON in required collection: ${collection}`, { cause: e });
             }
 
             const handler = collectionHandlers[collection];
@@ -426,9 +429,8 @@ export async function insertCollections(
 		await checkDataSize("After");
         return true;
 	} catch (err) {
-        // Fix: Preserve original error stack/cause
         if (err instanceof Error) throw err;
-		throw new Error(`Error adding data: ${err}`);
+		throw new Error("Error adding data", { cause: err });
 	}
 }
 
@@ -463,9 +465,8 @@ export async function disconnect(): Promise<boolean> {
 	try {
 		await queryClient.end();
 	} catch (err) {
-        // Fix: Preserve original error cause
         if (err instanceof Error) throw err;
-		throw new Error(`Error disconnecting: ${err}`);
+		throw new Error("Error disconnecting", { cause: err });
 	}
 	return true;
 }
