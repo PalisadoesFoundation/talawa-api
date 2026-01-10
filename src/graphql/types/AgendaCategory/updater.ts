@@ -26,14 +26,11 @@ export const resolveUpdater = async (
 		}),
 		ctx.drizzleClient.query.eventsTable.findFirst({
 			columns: {
-				startAt: true,
+				id: true,
 			},
 			where: (fields, operators) => operators.eq(fields.id, parent.eventId),
 			with: {
 				organization: {
-					columns: {
-						countryCode: true,
-					},
 					with: {
 						membershipsWhereOrganization: {
 							columns: {
@@ -121,6 +118,7 @@ AgendaCategory.implement({
 			complexity: envConfig.API_GRAPHQL_OBJECT_FIELD_COST,
 			resolve: resolveUpdater,
 			type: User,
+			nullable: true
 		}),
 	}),
 });

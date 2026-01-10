@@ -52,9 +52,12 @@ export const resolveUpdatedAt = async (
 	]);
 
 	if (currentUser === undefined) {
+		ctx.log.error(
+			"Postgres select operation returned undefined for an authenticated user id.",
+		);
 		throw new TalawaGraphQLError({
 			extensions: {
-				code: "unauthenticated",
+				code: "unexpected",
 			},
 		});
 	}
