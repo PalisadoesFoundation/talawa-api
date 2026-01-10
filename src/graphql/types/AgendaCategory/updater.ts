@@ -118,7 +118,7 @@ AgendaCategory.implement({
 			complexity: envConfig.API_GRAPHQL_OBJECT_FIELD_COST,
 			resolve: resolveUpdater,
 			type: User,
-			nullable: true
+			nullable: true,
 		}),
 	}),
 });
