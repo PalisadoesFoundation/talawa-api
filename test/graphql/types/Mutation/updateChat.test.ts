@@ -8,9 +8,7 @@ import { chatMembershipsTable } from "~/src/drizzle/schema";
 import { chatsTable } from "~/src/drizzle/tables/chats";
 import { organizationMembershipsTable } from "~/src/drizzle/tables/organizationMemberships";
 import { usersTable } from "~/src/drizzle/tables/users";
-import type { ClientCustomScalars } from "~/src/graphql/scalars/index";
 
-import { assertToBeNonNullish } from "../../../helpers";
 import { server } from "../../../server";
 import { mercuriusClient } from "../client";
 import { createRegularUserUsingAdmin } from "../createRegularUserUsingAdmin";
@@ -165,13 +163,15 @@ suite("updateChat mutation", () => {
 
 		const operations = JSON.stringify({
 			query: `
-      mutation UpdateChat($input: MutationUpdateChatInput!) {
-        updateChat(input: $input) {
-          id
-          avatarURL
-        }
-      }
-    `,
+  mutation Mutation_updateChat($input: MutationUpdateChatInput!) {
+    updateChat(input: $input) {
+      id
+      name
+      description
+      avatarURL
+    }
+  }
+`,
 			variables: {
 				input: {
 					id: chatId,

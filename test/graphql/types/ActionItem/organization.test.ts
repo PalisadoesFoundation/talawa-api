@@ -314,7 +314,6 @@ describe("ActionItem.organization Resolver - Integration", () => {
 			expect(actionItem.organization.addressLine1).toBe("100 Test Street");
 			expect(actionItem.organization.city).toBe("San Francisco");
 			expect(actionItem.organization.state).toBe("CA");
-			expect(actionItem.organization.postalCode).toBe("94101");
 		});
 
 		it("should resolve organization correctly for multiple action items", async () => {

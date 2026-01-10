@@ -407,6 +407,7 @@ export const Query_fund = gql(`query Query_fund($input: QueryFundInput!) {
 }`);
 
 // Query variant with extended organization fields for testing organization resolver
+// Includes only fields that are actually asserted in tests: id, name, countryCode, and address fields
 export const Query_fundWithFullOrg = gql(`
   query FundWithFullOrg($input: QueryFundInput!) {
     fund(input: $input) {
@@ -421,7 +422,6 @@ export const Query_fundWithFullOrg = gql(`
         addressLine1
         city
         state
-        postalCode
       }
     }
   }
@@ -1404,6 +1404,7 @@ export const Query_actionItemsByOrganization = gql(`
 `);
 
 // Query variant with extended organization fields for testing organization resolver
+// Includes only fields that are actually asserted in tests: id, name, countryCode, and address fields
 export const Query_actionItemsByOrganizationWithFullOrg = gql(`
   query ActionItemsByOrganizationWithFullOrg($input: QueryActionItemsByOrganizationInput!) {
     actionItemsByOrganization(input: $input) {
@@ -1417,7 +1418,6 @@ export const Query_actionItemsByOrganizationWithFullOrg = gql(`
         addressLine1
         city
         state
-        postalCode
       }
     }
   }

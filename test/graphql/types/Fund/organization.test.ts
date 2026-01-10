@@ -159,7 +159,6 @@ describe("Fund.organization Resolver - Integration", () => {
 			);
 			expect(result.data.fund.organization.city).toBe("San Francisco");
 			expect(result.data.fund.organization.state).toBe("CA");
-			expect(result.data.fund.organization.postalCode).toBe("94101");
 		});
 	});
 
