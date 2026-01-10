@@ -24,6 +24,12 @@ builder.queryField("agendaCategoryByEventId", (t) =>
 			"Query field to get all Agenda Categories for a specific event.",
 		nullable: true,
 		resolve: async (_parent, args, ctx) => {
+			if (!ctx.currentClient.isAuthenticated) {
+							throw new TalawaGraphQLError({
+								extensions: { code: "unauthenticated" },
+							});
+						}
+						
 			const {
 				data: parsedArgs,
 				error,

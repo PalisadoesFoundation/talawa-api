@@ -98,8 +98,12 @@ builder.mutationField("createAgendaItem", (t) =>
 				if (!defaultCategory) {
 					throw new TalawaGraphQLError({
 						extensions: {
-							code: "unexpected",
-							message: "Default agenda category not found for event",
+							code: "arguments_associated_resources_not_found",
+							issues: [
+								{
+								argumentPath: ["input", "eventId"],
+								},
+							],
 						},
 					});
 				}

@@ -63,7 +63,6 @@ export const agendaItemUrlTable = pgTable(
 	(self) => [
 		index().on(self.createdAt),
 		index().on(self.creatorId),
-		index().on(self.agendaItemURL),
 		index().on(self.agendaItemId),
 	],
 );

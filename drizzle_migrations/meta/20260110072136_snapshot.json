@@ -1,5 +1,5 @@
 {
-  "id": "48c4f00d-c083-4efa-a5ba-e64a7f3194cf",
+  "id": "0d9e9c5c-05d3-4016-9ee2-b824ecf9cc6e",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -1213,6 +1213,27 @@
           "concurrently": false,
           "method": "btree",
           "with": {}
+        },
+        "agenda_categories_event_id_name_index": {
+          "name": "agenda_categories_event_id_name_index",
+          "columns": [
+            {
+              "expression": "event_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "name",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
         }
       },
       "foreignKeys": {
@@ -1441,6 +1462,21 @@
           "columns": [
             {
               "expression": "parent_folder_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "agenda_folders_organization_id_index": {
+          "name": "agenda_folders_organization_id_index",
+          "columns": [
+            {
+              "expression": "organization_id",
               "isExpression": false,
               "asc": true,
               "nulls": "last"
@@ -1784,21 +1820,6 @@
           "columns": [
             {
               "expression": "creator_id",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        },
-        "agenda_item_url_agenda_item_url_index": {
-          "name": "agenda_item_url_agenda_item_url_index",
-          "columns": [
-            {
-              "expression": "agenda_item_url",
               "isExpression": false,
               "asc": true,
               "nulls": "last"

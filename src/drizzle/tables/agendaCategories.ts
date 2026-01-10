@@ -5,6 +5,7 @@ import {
 	pgTable,
 	text,
 	timestamp,
+	uniqueIndex,
 	uuid,
 } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
@@ -94,6 +95,7 @@ export const agendaCategoriesTable = pgTable(
 		index().on(self.eventId),
 		index().on(self.name),
 		index().on(self.organizationId),
+		uniqueIndex().on(self.eventId, self.name),
 	],
 );
 

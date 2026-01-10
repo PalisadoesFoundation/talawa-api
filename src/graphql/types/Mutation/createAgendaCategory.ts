@@ -153,7 +153,7 @@ builder.mutationField("createAgendaCategory", (t) =>
 				})
 				.returning();
 
-			// Inserted agenda folder not being returned is an external defect unrelated to this code. It is very unlikely for this error to occur.
+			// Inserted agenda category not being returned is an external defect unrelated to this code. It is very unlikely for this error to occur.
 			if (createdAgendaCategory === undefined) {
 				ctx.log.error(
 					"Postgres insert operation for agenda category unexpectedly returned an empty array instead of throwing an error.",

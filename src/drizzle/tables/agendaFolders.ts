@@ -116,6 +116,7 @@ export const agendaFoldersTable = pgTable(
 		index().on(self.isAgendaItemFolder),
 		index().on(self.name),
 		index().on(self.parentFolderId),
+		index().on(self.organizationId),
 	],
 );
 
