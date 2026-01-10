@@ -188,31 +188,99 @@ fi
 : $((CURRENT_STEP++))
 step $CURRENT_STEP $TOTAL_STEPS "Reading configuration from package.json..."
 
-# Extract Node.js version
-NODE_VERSION=$(jq -r '.engines.node // "lts"' package.json)
-# Clean version string (handle >=, ^, etc.)
-if [[ "$NODE_VERSION" =~ ^(\^|>=|~) ]]; then
-    # Extract version number after prefix (fnm handles both full semver and major-only)
-    CLEAN_NODE_VERSION=$(echo "$NODE_VERSION" | grep -oE '[0-9]+\.[0-9]+\.[0-9]+' | head -1 || true)
-    # Fallback to major version only if full semver not found
-    if [ -z "$CLEAN_NODE_VERSION" ]; then
-        CLEAN_NODE_VERSION=$(echo "$NODE_VERSION" | grep -oE '[0-9]+' | head -1 || true)
-    fi
+# Parse Node.js version from package.json
+if [ -f package.json ]; then
+    NODE_VERSION=$(jq -r '.engines.node // "lts"' package.json)
+    info "Node.js version from package.json: \"$NODE_VERSION\""
 else
+    error "package.json not found in current directory"
+    error "Please run this script from the talawa-api root directory"
+    exit 1
+fi
+
+# Clean version string (remove >=, ^, ~, and other operators)
+# First try to extract full semver (e.g., 20.10.0)
+CLEAN_NODE_VERSION=$(echo "$NODE_VERSION" | grep -oE '[0-9]+\.[0-9]+\.[0-9]+' | head -1 || true)
+
+# If no full version found, try to extract major version (e.g., 20)
+if [ -z "$CLEAN_NODE_VERSION" ]; then
+    CLEAN_NODE_VERSION=$(echo "$NODE_VERSION" | grep -oE '[0-9]+' | head -1 || true)
+fi
+
+# If version is 'lts' or 'latest', keep it as-is
+if [ "$NODE_VERSION" = "lts" ] || [ "$NODE_VERSION" = "latest" ]; then
     CLEAN_NODE_VERSION="$NODE_VERSION"
 fi
 
-# Extract pnpm version
-PNPM_FULL=$(jq -r '.packageManager // ""' package.json)
-if [[ "$PNPM_FULL" == pnpm@* ]]; then
-    PNPM_VERSION="${PNPM_FULL#pnpm@}"
-    PNPM_VERSION="${PNPM_VERSION%%+*}"  # Remove hash if present
-else
-    PNPM_VERSION="latest"
+# Validate we got a usable version
+if [ -z "$CLEAN_NODE_VERSION" ]; then
+    error "Could not parse Node.js version from package.json: '$NODE_VERSION'"
+    error ""
+    error "Expected formats:"
+    error "  - Semver with operator: '>=20.10.0' or '~20.10.0'"
+    error "  - Semver: '20.10.0'"
+    error "  - Major version: '20'"
+    error "  - Aliases: 'lts' or 'latest'"
+    error ""
+    error "Current value in package.json engines.node: '$NODE_VERSION'"
+    error "Please verify package.json is correctly formatted"
+    exit 1
 fi
 
-info "Target Node.js version: $CLEAN_NODE_VERSION"
-info "Target pnpm version: $PNPM_VERSION"
+info "Parsed Node.js version: $CLEAN_NODE_VERSION"
+
+# Parse pnpm version from package.json
+if [ -f package.json ]; then
+    # First try packageManager field (preferred)
+    PNPM_FULL=$(jq -r '.packageManager // ""' package.json)
+    if [[ "$PNPM_FULL" == pnpm@* ]]; then
+        PNPM_VERSION="${PNPM_FULL#pnpm@}"
+        PNPM_VERSION="${PNPM_VERSION%%+*}"  # Remove hash if present
+        info "pnpm version from package.json packageManager: \"$PNPM_VERSION\""
+    else
+        # Fallback to engines.pnpm field
+        PNPM_VERSION=$(jq -r '.engines.pnpm // "latest"' package.json)
+        info "pnpm version from package.json engines.pnpm: \"$PNPM_VERSION\""
+    fi
+else
+    error "package.json not found"
+    exit 1
+fi
+
+# Clean and validate pnpm version
+# Accept specific versions (e.g., 9.1.0) or aliases (latest)
+if [ "$PNPM_VERSION" != "latest" ]; then
+    # Try to extract version number
+    CLEAN_PNPM_VERSION=$(echo "$PNPM_VERSION" | grep -oE '[0-9]+\.[0-9]+\.[0-9]+' | head -1 || true)
+    
+    # If no full version, try major.minor
+    if [ -z "$CLEAN_PNPM_VERSION" ]; then
+        CLEAN_PNPM_VERSION=$(echo "$PNPM_VERSION" | grep -oE '[0-9]+\.[0-9]+' | head -1 || true)
+    fi
+    
+    # If still no version, try major only
+    if [ -z "$CLEAN_PNPM_VERSION" ]; then
+        CLEAN_PNPM_VERSION=$(echo "$PNPM_VERSION" | grep -oE '[0-9]+' | head -1 || true)
+    fi
+    
+    # Validate we got something
+    if [ -z "$CLEAN_PNPM_VERSION" ]; then
+        error "Could not parse pnpm version from package.json: '$PNPM_VERSION'"
+        error ""
+        error "Expected formats:"
+        error "  - Semver: '9.1.0' or '9.1'"
+        error "  - Major version: '9'"
+        error "  - Alias: 'latest'"
+        error ""
+        error "Current value in package.json: '$PNPM_VERSION'"
+        error "Please verify package.json is correctly formatted"
+        exit 1
+    fi
+    
+    PNPM_VERSION="$CLEAN_PNPM_VERSION"
+fi
+
+info "Using pnpm version: $PNPM_VERSION"
 
 ##############################################################################
 # Step 6: Install Node.js
@@ -220,12 +288,27 @@ info "Target pnpm version: $PNPM_VERSION"
 : $((CURRENT_STEP++))
 step $CURRENT_STEP $TOTAL_STEPS "Installing Node.js v$CLEAN_NODE_VERSION..."
 
-fnm install "$CLEAN_NODE_VERSION"
-if ! fnm use "$CLEAN_NODE_VERSION"; then
-    error "Failed to activate Node.js v$CLEAN_NODE_VERSION"
-    exit 1
+if [ "$CLEAN_NODE_VERSION" = "lts" ]; then
+    info "Installing latest LTS version of Node.js..."
+    fnm install --lts
+    fnm use lts-latest
+    fnm default lts-latest
+elif [ "$CLEAN_NODE_VERSION" = "latest" ]; then
+    info "Installing latest version of Node.js..."
+    # Resolve 'latest' to actual version number using npm
+    LATEST_VERSION=$(npm view node version)
+    info "Resolved 'latest' to $LATEST_VERSION"
+    fnm install "$LATEST_VERSION"
+    fnm use "$LATEST_VERSION"
+    fnm default "$LATEST_VERSION"
+else
+    fnm install "$CLEAN_NODE_VERSION"
+    if ! fnm use "$CLEAN_NODE_VERSION"; then
+        error "Failed to activate Node.js v$CLEAN_NODE_VERSION"
+        exit 1
+    fi
+    fnm default "$CLEAN_NODE_VERSION"
 fi
-fnm default "$CLEAN_NODE_VERSION"
 
 # Verify Node.js is available
 if ! command_exists node; then
@@ -273,7 +356,7 @@ success "pnpm installed: v$(pnpm --version)"
 : $((CURRENT_STEP++))
 step $CURRENT_STEP $TOTAL_STEPS "Installing project dependencies..."
 
-pnpm install
+CI=true pnpm install
 
 success "Project dependencies installed"
 
