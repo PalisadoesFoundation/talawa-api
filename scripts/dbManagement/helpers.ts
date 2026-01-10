@@ -113,13 +113,16 @@ export async function emptyMinioBucket(): Promise<boolean> {
 	}
 }
 
-export async function listSampleData(): Promise<boolean> {
+// Fix: Add quiet mode to silence logs in tests
+export async function listSampleData(quiet = false): Promise<boolean> {
     try {
         const sampleDataPath = path.resolve(dirname, "./sample_data");
         const files = await fs.readdir(sampleDataPath);
-        console.log("\nSample Data Files:");
-        console.log(`${"| File Name".padEnd(30)}| Document Count |`);
-        console.log(`${"|".padEnd(30, "-")}|----------------|`);
+        if (!quiet) {
+            console.log("\nSample Data Files:");
+            console.log(`${"| File Name".padEnd(30)}| Document Count |`);
+            console.log(`${"|".padEnd(30, "-")}|----------------|`);
+        }
 
         let errorsFound = false;
 
@@ -130,13 +133,13 @@ export async function listSampleData(): Promise<boolean> {
             try {
                 const docs = JSON.parse(content);
                 if (!Array.isArray(docs)) {
-                    console.log(`| ${file.padEnd(28)}| ${"Invalid (Not Array)".padEnd(15)}|`);
+                    if (!quiet) console.log(`| ${file.padEnd(28)}| ${"Invalid (Not Array)".padEnd(15)}|`);
                     errorsFound = true;
                 } else {
-                    console.log(`| ${file.padEnd(28)}| ${docs.length.toString().padEnd(15)}|`);
+                    if (!quiet) console.log(`| ${file.padEnd(28)}| ${docs.length.toString().padEnd(15)}|`);
                 }
             } catch (e) {
-                console.log(`| ${file.padEnd(28)}| ${"Invalid JSON".padEnd(15)}|`);
+                if (!quiet) console.log(`| ${file.padEnd(28)}| ${"Invalid JSON".padEnd(15)}|`);
                 errorsFound = true;
             }
         }
@@ -189,7 +192,6 @@ async function insertUsers(data: any[]) {
         
         return {
             ...rest,
-            // Fix: Conditional spread for both timestamps to handle nulls cleanly
             ...(parsedCreatedAt && { createdAt: parsedCreatedAt }),
             ...(parsedUpdatedAt && { updatedAt: parsedUpdatedAt }),
         };
@@ -224,7 +226,6 @@ async function insertOrganizations(data: any[]) {
 		}));
 		await checkAndInsertData(schema.organizationMembershipsTable, memberships, [schema.organizationMembershipsTable.organizationId, schema.organizationMembershipsTable.memberId], 1000);
 	} else {
-        // Fix: Log warning if admin user not found
         console.warn(`Admin user (${adminEmail}) not found. Skipping organization memberships.`);
     }
 	console.log(`Added: Organizations`);
@@ -316,13 +317,14 @@ async function insertRecurrenceRules(data: any[]) {
 			latestInstanceDate: now,
 			createdAt: now,
 			updatedAt: now,
-			recurrenceStartDate: now,
+			recurrenceStartDate: now, // Should ideally match baseEvent start, using now as safe fallback
 			recurrenceEndDate: oneYear,
 			recurrenceRuleString: `FREQ=${freq};INTERVAL=${int}${byDayString};UNTIL=${until}`,
 			count: null, originalSeriesId: null, byMonth: null, byMonthDay: null
 		};
 	});
 
+    // Fix: Use schema object references for type safety in upsert
 	await db.insert(schema.recurrenceRulesTable).values(rules).onConflictDoUpdate({
 		target: schema.recurrenceRulesTable.id,
 		set: {
@@ -347,7 +349,6 @@ async function insertEventAttendees(data: any[]) {
 
         return {
             ...attendee,
-            // Fix: Conditional spread for all date fields
             ...(parsedCreatedAt && { createdAt: parsedCreatedAt }),
             ...(parsedUpdatedAt && { updatedAt: parsedUpdatedAt }),
             ...(parsedCheckin && { checkinTime: parsedCheckin }),
@@ -407,7 +408,6 @@ export async function insertCollections(
             try {
                 parsedData = JSON.parse(fileContent);
                 if (!Array.isArray(parsedData)) {
-                    // Fix: Log warning when wrapping non-array data
                     console.warn(`Warning: ${collection}.json contains non-array data, wrapping in array`);
                     parsedData = [parsedData];
                 }
@@ -426,6 +426,8 @@ export async function insertCollections(
 		await checkDataSize("After");
         return true;
 	} catch (err) {
+        // Fix: Preserve original error stack/cause
+        if (err instanceof Error) throw err;
 		throw new Error(`Error adding data: ${err}`);
 	}
 }
@@ -438,7 +440,6 @@ export async function checkDataSize(stage: string): Promise<boolean> {
             { name: "events", table: schema.eventsTable },
             { name: "recurrence_rules", table: schema.recurrenceRulesTable },
             { name: "event_attendees", table: schema.eventAttendeesTable },
-            // Fix: Added missing table check
             { name: "organization_memberships", table: schema.organizationMembershipsTable },
         ];
 
@@ -462,6 +463,8 @@ export async function disconnect(): Promise<boolean> {
 	try {
 		await queryClient.end();
 	} catch (err) {
+        // Fix: Preserve original error cause
+        if (err instanceof Error) throw err;
 		throw new Error(`Error disconnecting: ${err}`);
 	}
 	return true;

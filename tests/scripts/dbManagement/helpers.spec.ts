@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import { describe, it, expect, vi, beforeEach } from "vitest";
 import fs from "node:fs/promises";
 import * as helpers from "../../../scripts/dbManagement/helpers";
 
@@ -41,7 +41,8 @@ describe("DB Management Helpers", () => {
             (fs.readdir as any).mockResolvedValue(["test.json", "readme.txt"]);
             (fs.readFile as any).mockResolvedValue(JSON.stringify([{ id: 1 }]));
             
-            const result = await helpers.listSampleData();
+            // Fix: Use quiet mode for tests
+            const result = await helpers.listSampleData(true);
             expect(result).toBe(true);
             expect(fs.readFile).toHaveBeenCalledTimes(1); 
         });
@@ -50,7 +51,7 @@ describe("DB Management Helpers", () => {
             (fs.readdir as any).mockResolvedValue(["invalid.json"]);
             (fs.readFile as any).mockResolvedValue("INVALID_JSON");
             
-            const result = await helpers.listSampleData();
+            const result = await helpers.listSampleData(true);
             expect(result).toBe(false); 
         });
     });
@@ -67,16 +68,15 @@ describe("DB Management Helpers", () => {
             };
             (fs.readFile as any).mockResolvedValue(JSON.stringify([rule]));
             
-            await helpers.insertCollections(["recurrence_rules"]);
+            // Fix: Disable auto-include for deterministic test
+            await helpers.insertCollections(["recurrence_rules"], false);
             
-            // Fix: Strict assertion on transformed payload using arrayContaining/objectContaining
             expect(mockValues).toHaveBeenCalledWith(
                 expect.arrayContaining([
                     expect.objectContaining({
                         id: "r1",
                         frequency: "WEEKLY",
                         interval: 1,
-                        // Matches "FREQ=WEEKLY;INTERVAL=1;UNTIL=YYYYMMDDTHHMMSSZ"
                         recurrenceRuleString: expect.stringMatching(/^FREQ=WEEKLY;INTERVAL=1;UNTIL=\d{8}T\d{6}Z$/),
                     })
                 ])
@@ -87,7 +87,8 @@ describe("DB Management Helpers", () => {
             const rules = [{ id: "r1", baseRecurringEventId: "e1", creatorId: "u1", organizationId: "org1", frequency: "INVALID_FREQ" }];
             (fs.readFile as any).mockResolvedValue(JSON.stringify(rules));
 
-            await expect(helpers.insertCollections(["recurrence_rules"]))
+            // Fix: Disable auto-include here too
+            await expect(helpers.insertCollections(["recurrence_rules"], false))
                 .rejects.toThrow("Invalid frequency: INVALID_FREQ");
         });
     });
