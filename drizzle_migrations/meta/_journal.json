@@ -71,13 +71,6 @@
       "when": 1766912475911,
       "tag": "20251228090115_faulty_lizard",
       "breakpoints": true
-    },
-    {
-      "idx": 17,
-      "version": "7",
-      "when": 1768098530987,
-      "tag": "20260111022850_faithful_zemo",
-      "breakpoints": true
     }
   ]
 }
