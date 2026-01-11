@@ -263,11 +263,12 @@ else
         error "Could not parse pnpm version from package.json: '$PNPM_VERSION'"
         error ""
         error "Expected formats:"
+        error "  - Semver with operator: '>=9.1.0' or '~9.1.0'"
         error "  - Semver: '9.1.0' or '9.1'"
         error "  - Major version: '9'"
         error "  - Alias: 'latest'"
         error ""
-        error "Current value in package.json: '$PNPM_VERSION'"
+        error "Current value in package.json: '$PNPM_VERSION' (parsed: '$CLEAN_PNPM_VERSION')"
         error "Please verify package.json is correctly formatted"
         exit 1
     fi
@@ -287,7 +288,7 @@ if [ "$CLEAN_NODE_VERSION" = "lts" ]; then
         error "Failed to install LTS version of Node.js"
         exit 1
     fi
-    if ! fnm use lts-latest; then
+    if ! fnm use lts/latest; then
         error "Failed to activate LTS version of Node.js"
         exit 1
     fi
