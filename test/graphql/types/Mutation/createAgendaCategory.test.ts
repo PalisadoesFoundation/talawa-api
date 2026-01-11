@@ -56,16 +56,19 @@ async function addOrganizationMembership(params: {
 	organizationId: string;
 	role: "administrator" | "regular";
 }) {
-	const result = await mercuriusClient.mutate(Mutation_createOrganizationMembership, {
-		headers: { authorization: `bearer ${params.adminAuthToken}` },
-		variables: {
-			input: {
-				memberId: params.memberId,
-				organizationId: params.organizationId,
-				role: params.role,
+	const result = await mercuriusClient.mutate(
+		Mutation_createOrganizationMembership,
+		{
+			headers: { authorization: `bearer ${params.adminAuthToken}` },
+			variables: {
+				input: {
+					memberId: params.memberId,
+					organizationId: params.organizationId,
+					role: params.role,
+				},
 			},
 		},
-	});
+	);
 	expect(result.errors).toBeUndefined();
 }
 
