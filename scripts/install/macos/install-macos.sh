@@ -218,10 +218,11 @@ if [ -z "$CLEAN_NODE_VERSION" ]; then
     error "Expected formats:"
     error "  - Semver with operator: '>=20.10.0' or '~20.10.0'"
     error "  - Semver: '20.10.0'"
+    error "  - Major.Minor version: '20.10'"
     error "  - Major version: '20'"
     error "  - Aliases: 'lts' or 'latest'"
     error ""
-    error "Current value in package.json engines.node: '$NODE_VERSION'"
+    error "Current value in package.json engines.node: '$NODE_VERSION' (parsed: '$CLEAN_NODE_VERSION')"
     error "Please verify package.json is correctly formatted"
     exit 1
 fi
@@ -288,11 +289,11 @@ if [ "$CLEAN_NODE_VERSION" = "lts" ]; then
         error "Failed to install LTS version of Node.js"
         exit 1
     fi
-    if ! fnm use lts/latest; then
+    if ! fnm use --lts; then
         error "Failed to activate LTS version of Node.js"
         exit 1
     fi
-    fnm default "$(fnm current)" || echo "Warning: Failed to set LTS as default Node.js version. Current session has correct version but future shells may not." >&2
+    fnm default "$(fnm current | awk '{print $1}')" || echo "Warning: Failed to set LTS as default Node.js version. Current session has correct version but future shells may not." >&2
 elif [ "$CLEAN_NODE_VERSION" = "latest" ]; then
     info "Installing latest version of Node.js..."
     if ! fnm install --latest; then
@@ -303,7 +304,7 @@ elif [ "$CLEAN_NODE_VERSION" = "latest" ]; then
         error "Failed to activate latest version of Node.js"
         exit 1
     fi
-    fnm default "$(fnm current)" || echo "Warning: Failed to set latest as default Node.js version. Current session has correct version but future shells may not." >&2
+    fnm default "$(fnm current | awk '{print $1}')" || echo "Warning: Failed to set latest as default Node.js version. Current session has correct version but future shells may not." >&2
 else
     if ! fnm install "$CLEAN_NODE_VERSION"; then
         error "Failed to install Node.js v$CLEAN_NODE_VERSION"
@@ -313,7 +314,7 @@ else
         error "Failed to activate Node.js v$CLEAN_NODE_VERSION"
         exit 1
     fi
-    fnm default "$(fnm current)" || echo "Warning: Failed to set Node.js v$CLEAN_NODE_VERSION as default. Current session has correct version but future shells may not." >&2
+    fnm default "$(fnm current | awk '{print $1}')" || echo "Warning: Failed to set Node.js v$CLEAN_NODE_VERSION as default. Current session has correct version but future shells may not." >&2
 fi
 
 # Verify Node.js is available
