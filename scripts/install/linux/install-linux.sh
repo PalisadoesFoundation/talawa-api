@@ -191,6 +191,8 @@ parse_package_json() {
     
     # Return the successfully parsed result
     echo "$result"
+}
+
 # Check Docker Compose availability and log errors
 # Returns: 0 if available, 1 if not available
 check_docker_compose() {
