@@ -13,9 +13,6 @@
 
 set -euo pipefail
 
-# Installation log file for error tracking
-readonly INSTALLATION_LOG="/tmp/talawa-install-$$.log"
-
 # Arguments
 INSTALL_MODE="${1:-docker}"
 SKIP_PREREQS="${2:-false}"
@@ -27,6 +24,21 @@ YELLOW='\033[1;33m'
 BLUE='\033[0;34m'
 CYAN='\033[0;36m'
 NC='\033[0m'
+
+# Installation paths
+readonly FNM_INSTALL_DIR="${FNM_DIR:-$HOME/.local/share/fnm}"
+readonly FNM_BIN_DIR="$FNM_INSTALL_DIR"
+readonly INSTALLATION_LOG="/tmp/talawa-install-$$.log"
+
+# Version requirements
+readonly MIN_NODE_MAJOR_VERSION=18 #placeholder for future references
+readonly MIN_DISK_SPACE_GB=2 #placeholder for future references
+
+# Timeouts
+readonly CURL_CONNECT_TIMEOUT=30
+readonly CURL_MAX_TIME_DOCKER=300
+readonly CURL_MAX_TIME_FNM=120
+readonly MAX_RETRY_ATTEMPTS=3 # placeholder for future retry logic
 
 # Print functions
 info() { echo -e "${BLUE}ℹ${NC} $1"; }
@@ -43,9 +55,142 @@ log_error() {
     echo "[$timestamp] ERROR: $message" >> "$INSTALLATION_LOG"
 }
 
+# Add retry utility function
+retry_command() {
+    local max_attempts="$1"
+    shift
+    local attempt=1
+    local exit_code=0
+    while [ "$attempt" -le "$max_attempts" ]; do
+        if [ "$attempt" -gt 1 ]; then
+            local delay=$((2 ** (attempt - 1)))
+            warn "Retry attempt $attempt of $max_attempts... sleeping for ${delay}s"
+            sleep "$delay"
+        fi
+        if "$@"; then
+            return 0
+        fi
+        exit_code=$?
+        ((attempt++))
+    done
+    error "Command failed after $max_attempts attempts: $*"
+    return "$exit_code"
+}
+
+
 # Check if command exists
 command_exists() {
     command -v "$1" &> /dev/null
+}
+
+##############################################################################
+# Safe jq parsing helper function
+# 
+# This function provides robust jq parsing with:
+# - Verification that jq is installed
+# - Error handling for malformed JSON
+# - Null/empty result handling with defaults
+# - Clear error messages for debugging
+##############################################################################
+parse_package_json() {
+    local jq_query="$1"
+    local default_value="$2"
+    local field_name="$3"
+    local is_required="${4:-false}"
+    
+    # Verify jq is available before attempting to parse
+    if ! command_exists jq; then
+        error "jq is required but not installed"
+        echo ""
+        info "jq is a lightweight JSON processor needed to parse package.json"
+        echo ""
+        info "Install jq using your package manager:"
+        echo "  • Ubuntu/Debian:  sudo apt-get install jq"
+        echo "  • Fedora/RHEL:    sudo dnf install jq"
+        echo "  • Arch/Manjaro:   sudo pacman -S jq"
+        echo "  • macOS:          brew install jq"
+        echo ""
+        info "After installing jq, re-run this script"
+        exit 1
+    fi
+    
+    # Verify package.json exists and is readable
+    if [ ! -r "package.json" ]; then
+        error "Cannot read package.json file"
+        echo ""
+        info "Ensure package.json exists and is readable in the current directory"
+        exit 1
+    fi
+    
+    local result
+    local jq_exit_code
+    
+    # Attempt to parse with jq, coalescing null to empty string
+    # Using '// empty' ensures null values become empty strings rather than literal "null"
+    result=$(jq -r "($jq_query) // empty" package.json 2>&1)
+    jq_exit_code=$?
+    
+    # Check if jq command failed (malformed JSON or invalid query)
+    if [ $jq_exit_code -ne 0 ]; then
+        error "Failed to parse $field_name from package.json"
+        echo ""
+        info "jq error: $result"
+        echo ""
+        info "Common causes:"
+        echo "  • Malformed JSON syntax in package.json"
+        echo "  • Invalid jq query expression"
+        echo "  • Corrupted package.json file"
+        echo ""
+        info "Troubleshooting steps:"
+        echo "  1. Validate package.json syntax:"
+        echo "     jq . package.json"
+        echo ""
+        echo "  2. Check for common JSON errors:"
+        echo "     • Missing commas between properties"
+        echo "     • Trailing commas after last property"
+        echo "     • Unmatched brackets or braces"
+        echo "     • Invalid escape sequences in strings"
+        echo ""
+        echo "  3. If package.json is corrupted, restore it:"
+        echo "     git checkout package.json"
+        echo ""
+        info "Documentation: https://github.com/PalisadoesFoundation/talawa-api/blob/develop/INSTALLATION.md"
+        exit 1
+    fi
+    
+    # Check for empty results (null values are coalesced to empty by jq)
+    if [ -z "$result" ]; then
+        if [ "$is_required" = "true" ]; then
+            error "$field_name not found in package.json (required field)"
+            echo ""
+            info "The field '$field_name' is required but was not found or is null"
+            echo ""
+            info "Expected location in package.json: $jq_query"
+            echo ""
+            info "Troubleshooting steps:"
+            echo "  1. Check if the field exists in package.json:"
+            echo "     jq '$jq_query' package.json"
+            echo ""
+            echo "  2. Ensure you have the latest version of the repository:"
+            echo "     git pull origin develop"
+            echo ""
+            info "Report issues: https://github.com/PalisadoesFoundation/talawa-api/issues"
+            exit 1
+        fi
+        
+        # Use default value if provided
+        if [ -n "$default_value" ]; then
+            echo "$default_value"
+            return 0
+        fi
+        
+        # Return empty string if no default and not required
+        echo ""
+        return 0
+    fi
+    
+    # Return the successfully parsed result
+    echo "$result"
 }
 
 # Check Docker Compose availability and log errors
@@ -81,6 +226,31 @@ check_docker_running() {
     fi
 }
 
+# Check if apt cache was updated recently (within the last hour)
+# Returns: 0 if cache is fresh, 1 if stale or missing
+apt_cache_is_fresh() {
+    local apt_lists_dir="/var/lib/apt/lists"
+    local cache_max_age=3600  # 1 hour (in seconds)
+    
+    if [ -d "$apt_lists_dir" ]; then
+        # Find the most recently modified file in apt lists directory
+        local last_update
+        last_update=$(find "$apt_lists_dir" -type f -printf '%T@\n' 2>/dev/null | sort -n | tail -1 | cut -d. -f1)
+        # If no files found or find failed, cache is stale
+        if [ -z "$last_update" ]; then
+            return 1
+        fi
+        local current_time
+        current_time=$(date +%s)
+        local cache_age=$((current_time - last_update))
+        
+        if [ $cache_age -lt $cache_max_age ]; then
+            return 0  # Cache is fresh
+        fi
+    fi
+    return 1  # Cache is stale or doesn't exist
+}
+
 # Get the repository root directory
 get_repo_root() {
     local script_dir
@@ -97,7 +267,33 @@ REPO_ROOT=$(get_repo_root)
 cd "$REPO_ROOT"
 
 if [ ! -f "package.json" ]; then
-    error "package.json not found. Please run this script from the talawa-api repository root."
+    error "package.json not found in current directory: $PWD"
+    echo ""
+    info "Common causes:"
+    echo "  • You haven't cloned the repository yet"
+    echo "  • You're running the script from a different directory"
+    echo "  • The repository is incomplete or corrupted"
+    echo ""
+    info "Troubleshooting steps:"
+    echo "  1. Clone the repository (if not done already):"
+    echo "     git clone https://github.com/PalisadoesFoundation/talawa-api.git"
+    echo ""
+    echo "  2. Navigate to the repository root:"
+    echo "     cd talawa-api"
+    echo ""
+    echo "  3. Verify package.json exists:"
+    echo "     ls -la package.json"
+    echo ""
+    echo "  4. Run this script again from the repository root"
+    echo ""
+    info "Diagnostic commands:"
+    echo "  • Check current directory: pwd"
+    echo "  • List files in current directory: ls -la"
+    echo "  • Find package.json: find . -name 'package.json' -type f 2>/dev/null | head -5"
+    echo ""
+    info "Documentation: https://github.com/PalisadoesFoundation/talawa-api/blob/develop/INSTALLATION.md"
+    info "Report issues: https://github.com/PalisadoesFoundation/talawa-api/issues"
+    info "  Include: OS version, current directory, and output of 'ls -la'"
     exit 1
 fi
 
@@ -134,8 +330,12 @@ else
     INSTALLED_PREREQS=false
     case $DISTRO in
         ubuntu|debian|linuxmint|pop)
-            info "Updating package lists..."
-            sudo apt-get update -qq
+            if apt_cache_is_fresh; then
+                info "Package lists are up-to-date (updated within the last hour)"
+            else
+                info "Updating package lists..."
+                sudo apt-get update -qq
+            fi
             
             info "Installing git, curl, jq, unzip..."
             sudo apt-get install -y -qq git curl jq unzip
@@ -152,7 +352,28 @@ else
             INSTALLED_PREREQS=true
             ;;
         *)
-            warn "Unknown distribution. Please install git, curl, jq, unzip manually."
+            warn "Unknown distribution: $DISTRO"
+            echo ""
+            info "This script supports: Ubuntu, Debian, Linux Mint, Pop!_OS, Fedora, RHEL, CentOS, Arch, Manjaro"
+            echo ""
+            info "Manual installation required. Install the following packages using your package manager:"
+            echo "  • git       - Version control system"
+            echo "  • curl      - HTTP client for downloads"
+            echo "  • jq        - JSON processor"
+            echo "  • unzip     - Archive extraction utility"
+            echo ""
+            info "Example commands for common package managers:"
+            echo "  • apt (Debian-based):    sudo apt install git curl jq unzip"
+            echo "  • dnf (Fedora/RHEL):     sudo dnf install git curl jq unzip"
+            echo "  • pacman (Arch-based):   sudo pacman -S git curl jq unzip"
+            echo "  • zypper (openSUSE):     sudo zypper install git curl jq unzip"
+            echo ""
+            info "After installing dependencies manually, re-run this script with:"
+            echo "  ./scripts/install/linux/install-linux.sh --skip-prereqs"
+            echo ""
+            info "To check your distribution: cat /etc/os-release"
+            info "Report unsupported distros: https://github.com/PalisadoesFoundation/talawa-api/issues"
+            info "  Include: Output of 'cat /etc/os-release'"
             ;;
     esac
     
@@ -178,7 +399,19 @@ if [ "$INSTALL_MODE" = "docker" ]; then
         # The script is from a trusted source (get.docker.com) but piping to shell
         # carries inherent risk. Users can review the script first by visiting:
         # https://get.docker.com or using: curl -fsSL https://get.docker.com | less
-        curl -fsSL --connect-timeout 30 --max-time 300 https://get.docker.com | sh
+        # curl -fsSL --connect-timeout $CURL_CONNECT_TIMEOUT --max-time $CURL_MAX_TIME_DOCKER https://get.docker.com | sh
+        docker_installer="$(mktemp /tmp/get-docker.XXXXXX.sh)"
+        trap 'rm -f "$docker_installer"' EXIT
+        if ! retry_command "$MAX_RETRY_ATTEMPTS" curl -fsSL --connect-timeout "$CURL_CONNECT_TIMEOUT" --max-time "$CURL_MAX_TIME_DOCKER" -o "$docker_installer" https://get.docker.com; then
+            error "Failed to download Docker installer after multiple attempts."
+            exit 1
+        fi
+        if ! sh "$docker_installer"; then
+            error "Docker installer script failed."
+            exit 1
+        fi
+        rm -f "$docker_installer"
+        trap - EXIT
         
         info "Adding current user to docker group..."
         sudo usermod -aG docker "$USER"
@@ -225,10 +458,23 @@ else
     info "Installing fnm..."
     # Security Note: This uses fnm's official installer over HTTPS.
     # Users can review the script first at: https://fnm.vercel.app/install
-    curl -fsSL --connect-timeout 30 --max-time 120 https://fnm.vercel.app/install | bash -s -- --skip-shell
+    # curl -fsSL --connect-timeout $CURL_CONNECT_TIMEOUT --max-time $CURL_MAX_TIME_FNM https://fnm.vercel.app/install | bash -s -- --skip-shell
+
+    fnm_installer="$(mktemp /tmp/fnm-install.XXXXXX.sh)"
+    trap 'rm -f "$fnm_installer"' EXIT
+    if ! retry_command "$MAX_RETRY_ATTEMPTS" curl -fsSL --connect-timeout "$CURL_CONNECT_TIMEOUT" --max-time "$CURL_MAX_TIME_FNM" -o "$fnm_installer" https://fnm.vercel.app/install; then
+        error "Failed to download fnm installer."
+        exit 1
+    fi
+    if ! bash "$fnm_installer" --skip-shell; then
+        error "fnm installer script failed."
+        exit 1
+    fi
+    rm -f "$fnm_installer"
+    trap - EXIT
     
     # Set up fnm for current session
-    export PATH="$HOME/.local/share/fnm:$PATH"
+    export PATH="$FNM_BIN_DIR:$PATH"
     eval "$(fnm env)"
     
     success "fnm installed successfully"
@@ -240,8 +486,10 @@ fi
 : $((CURRENT_STEP++))
 step $CURRENT_STEP $TOTAL_STEPS "Reading configuration from package.json..."
 
-# Extract Node.js version
-NODE_VERSION=$(jq -r '.engines.node // "lts"' package.json)
+# Extract Node.js version using safe parsing
+# The 'lts' default is used if engines.node is not specified
+NODE_VERSION=$(parse_package_json '.engines.node' "lts" "Node.js version (engines.node)" "false")
+
 # Clean version string (handle >=, ^, etc.)
 if [[ "$NODE_VERSION" =~ ^(\^|>=|~) ]]; then
     # Extract full semantic version (e.g., ">=18.0.0" -> "18.0.0")
@@ -254,12 +502,46 @@ else
     CLEAN_NODE_VERSION="$NODE_VERSION"
 fi
 
-# Extract pnpm version
-PNPM_FULL=$(jq -r '.packageManager // ""' package.json)
+# Final validation of cleaned Node.js version
+if [ -z "$CLEAN_NODE_VERSION" ]; then
+    error "Could not determine a valid Node.js version from package.json"
+    echo ""
+    info "Found value: '$NODE_VERSION' but could not extract version number"
+    echo ""
+    info "Expected formats:"
+    echo "  • Exact version:  \"18.0.0\""
+    echo "  • Range:          \">=18.0.0\""
+    echo "  • Caret:          \"^18.0.0\""
+    echo "  • Tilde:          \"~18.0.0\""
+    echo ""
+    info "Check package.json engines.node field:"
+    echo "  jq '.engines.node' package.json"
+    echo ""
+    info "Falling back to LTS version"
+    CLEAN_NODE_VERSION="lts"
+fi
+
+# Extract pnpm version using safe parsing
+PNPM_FULL=$(parse_package_json '.packageManager' "" "pnpm version (packageManager)" "false")
+
+# Validate and extract pnpm version
 if [[ "$PNPM_FULL" == pnpm@* ]]; then
     PNPM_VERSION="${PNPM_FULL#pnpm@}"
     PNPM_VERSION="${PNPM_VERSION%%+*}"  # Remove hash if present
+    
+    # Validate extracted pnpm version is not empty
+    if [ -z "$PNPM_VERSION" ]; then
+        warn "Could not extract pnpm version from '$PNPM_FULL', using latest"
+        PNPM_VERSION="latest"
+    fi
+elif [ -n "$PNPM_FULL" ]; then
+    # packageManager field exists but doesn't match expected pnpm format
+    warn "packageManager field '$PNPM_FULL' is not in expected format 'pnpm@version'"
+    info "Using latest pnpm version instead"
+    PNPM_VERSION="latest"
 else
+    # No packageManager field specified
+    info "No packageManager specified in package.json, using latest pnpm"
     PNPM_VERSION="latest"
 fi
 
@@ -275,13 +557,80 @@ step $CURRENT_STEP $TOTAL_STEPS "Installing Node.js v$CLEAN_NODE_VERSION..."
 fnm install "$CLEAN_NODE_VERSION"
 if ! fnm use "$CLEAN_NODE_VERSION"; then
     error "Failed to activate Node.js v$CLEAN_NODE_VERSION"
+    echo ""
+    info "Common causes:"
+    echo "  • Node.js version not installed correctly"
+    echo "  • fnm environment not properly initialized"
+    echo "  • Incompatible Node.js version for your system architecture"
+    echo "  • Disk space issues during installation"
+    echo ""
+    info "Troubleshooting steps:"
+    echo "  1. Check fnm installation:"
+    echo "     fnm --version"
+    echo ""
+    echo "  2. List installed Node.js versions:"
+    echo "     fnm list"
+    echo ""
+    echo "  3. Try reinstalling the Node.js version:"
+    echo "     fnm uninstall $CLEAN_NODE_VERSION"
+    echo "     fnm install $CLEAN_NODE_VERSION"
+    echo ""
+    echo "  4. Check fnm environment:"
+    echo "     eval \"\$(fnm env)\""
+    echo "     fnm use $CLEAN_NODE_VERSION"
+    echo ""
+    info "Diagnostic commands:"
+    echo "  • Check fnm directory: ls -la ~/.local/share/fnm/"
+    echo "  • Check available disk space: df -h"
+    echo "  • Check system architecture: uname -m"
+    echo ""
+    info "If using a non-standard Node.js version, try:"
+    echo "  fnm install lts/latest"
+    echo "  fnm use lts/latest"
+    echo ""
+    info "Documentation: https://github.com/Schniz/fnm#usage"
+    info "Report issues: https://github.com/PalisadoesFoundation/talawa-api/issues"
+    info "  Include: fnm version, OS, architecture, and error messages above"
     exit 1
 fi
 fnm default "$CLEAN_NODE_VERSION"
 
 # Verify Node.js is available
 if ! command_exists node; then
-    error "Node.js installation succeeded but node command not found. You may need to restart your shell."
+    error "Node.js installation succeeded but 'node' command not found in PATH"
+    echo ""
+    info "Common causes:"
+    echo "  • Shell configuration needs to be refreshed"
+    echo "  • fnm environment variables not set correctly"
+    echo "  • PATH not updated with fnm binary location"
+    echo ""
+    info "Quick fix - Run these commands in your terminal:"
+    echo "  export PATH=\"\$HOME/.local/share/fnm:\$PATH\""
+    echo "  eval \"\$(fnm env)\""
+    echo ""
+    info "Permanent fix - Add to your shell configuration:"
+    echo "  For bash (~/.bashrc):"
+    echo "    echo 'export PATH=\"\$HOME/.local/share/fnm:\$PATH\"' >> ~/.bashrc"
+    echo "    echo 'eval \"\$(fnm env)\"' >> ~/.bashrc"
+    echo "    source ~/.bashrc"
+    echo ""
+    echo "  For zsh (~/.zshrc):"
+    echo "    echo 'export PATH=\"\$HOME/.local/share/fnm:\$PATH\"' >> ~/.zshrc"
+    echo "    echo 'eval \"\$(fnm env)\"' >> ~/.zshrc"
+    echo "    source ~/.zshrc"
+    echo ""
+    info "Alternative - Open a new terminal window and run:"
+    echo "  node --version"
+    echo ""
+    info "Diagnostic commands:"
+    echo "  • Check PATH: echo \$PATH"
+    echo "  • Find node binary: find ~/.local/share/fnm -name 'node' -type f 2>/dev/null"
+    echo "  • Check fnm installations: ls -la ~/.local/share/fnm/node-versions/"
+    echo "  • Check current shell: echo \$SHELL"
+    echo ""
+    info "Documentation: https://github.com/PalisadoesFoundation/talawa-api/blob/develop/INSTALLATION.md"
+    info "Report issues: https://github.com/PalisadoesFoundation/talawa-api/issues"
+    info "  Include: Output of 'echo \$PATH' and 'ls ~/.local/share/fnm/'"
     exit 1
 fi
 
@@ -293,27 +642,106 @@ success "Node.js installed: $(node --version)"
 : $((CURRENT_STEP++))
 step $CURRENT_STEP $TOTAL_STEPS "Installing pnpm v$PNPM_VERSION..."
 
+PNPM_VERSION_CACHE="/tmp/.talawa-pnpm-latest-check"
+PNPM_CACHE_MAX_AGE=86400  # 24 hours
+
 if command_exists pnpm; then
     CURRENT_PNPM=$(pnpm --version)
-    # Skip version comparison if target is "latest" - always update to ensure we have latest
     if [ "$PNPM_VERSION" = "latest" ]; then
-        info "Updating pnpm to latest version..."
-        npm install -g "pnpm@latest"
+        # Query npm registry for actual latest version
+        LATEST_PNPM=$(npm view pnpm version 2>/dev/null) || LATEST_PNPM=""
+         # Check if we recently verified the latest version
+        SHOULD_CHECK=true
+        if [ -f "$PNPM_VERSION_CACHE" ]; then
+            CACHE_TIME=$(stat -c %Y "$PNPM_VERSION_CACHE" 2>/dev/null || echo 0)
+            CURRENT_TIME=$(date +%s)
+            CACHE_AGE=$((CURRENT_TIME - CACHE_TIME))
+            if [ $CACHE_AGE -lt $PNPM_CACHE_MAX_AGE ]; then
+                CACHED_VERSION=$(cat "$PNPM_VERSION_CACHE" 2>/dev/null)
+                if [ "$CACHED_VERSION" = "$CURRENT_PNPM" ]; then
+                    SHOULD_CHECK=false
+                    success "pnpm is already at latest version: v$CURRENT_PNPM (verified within 24h)"
+                fi
+            fi
+        fi
+        
+        if [ "$SHOULD_CHECK" = true ]; then
+            # Query npm registry for actual latest version
+            LATEST_PNPM=$(npm view pnpm version 2>/dev/null) || LATEST_PNPM=""
+            if [ -n "$LATEST_PNPM" ] && [ "$CURRENT_PNPM" = "$LATEST_PNPM" ]; then
+                echo "$CURRENT_PNPM" > "$PNPM_VERSION_CACHE"
+                success "pnpm is already at latest version: v$CURRENT_PNPM"
+            elif [ -n "$LATEST_PNPM" ]; then
+                info "Updating pnpm from v$CURRENT_PNPM to latest (v$LATEST_PNPM)..."
+                if ! retry_command "$MAX_RETRY_ATTEMPTS" npm install -g "pnpm@latest"; then
+                    error "Failed to install pnpm after $MAX_RETRY_ATTEMPTS attempts"
+                    exit 1
+                fi
+                echo "$LATEST_PNPM" > "$PNPM_VERSION_CACHE"
+            else
+                warn "Could not determine latest pnpm version from npm registry"
+                info "Updating pnpm to latest version..."
+                if ! retry_command "$MAX_RETRY_ATTEMPTS" npm install -g "pnpm@latest"; then
+                    error "Failed to install pnpm after $MAX_RETRY_ATTEMPTS attempts"
+                    exit 1
+                fi
+             fi
+            
+        fi
     elif [ "$CURRENT_PNPM" = "$PNPM_VERSION" ]; then
         success "pnpm is already installed: v$CURRENT_PNPM"
     else
         info "Updating pnpm from v$CURRENT_PNPM to v$PNPM_VERSION..."
-        npm install -g "pnpm@$PNPM_VERSION"
+        if ! retry_command "$MAX_RETRY_ATTEMPTS" npm install -g "pnpm@$PNPM_VERSION"; then
+            error "Failed to install pnpm v$PNPM_VERSION after $MAX_RETRY_ATTEMPTS attempts"
+            exit 1
+        fi
     fi
 else
     info "Installing pnpm..."
-    npm install -g "pnpm@$PNPM_VERSION"
+    if ! retry_command "$MAX_RETRY_ATTEMPTS" npm install -g "pnpm@$PNPM_VERSION"; then
+        error "Failed to install pnpm v$PNPM_VERSION after $MAX_RETRY_ATTEMPTS attempts"
+        exit 1
+    fi
 fi
 
 # Verify pnpm is available in PATH
 if ! command_exists pnpm; then
-    error "pnpm installation succeeded but command not found in PATH"
-    info "You may need to restart your shell or add npm global bin to PATH"
+    error "pnpm installation succeeded but 'pnpm' command not found in PATH"
+    echo ""
+    info "Common causes:"
+    echo "  • npm global bin directory not in PATH"
+    echo "  • Shell configuration needs to be refreshed"
+    echo "  • pnpm installed in unexpected location"
+    echo ""
+    info "Quick fix - Find and add pnpm to PATH:"
+    echo "  1. Find npm global bin directory:"
+    echo "     npm config get prefix"
+    echo ""
+    echo "  2. Add to PATH (replace <prefix> with output from above):"
+    echo "     export PATH=\"<prefix>/bin:\$PATH\""
+    echo ""
+    info "Alternative installation method:"
+    echo "  curl -fsSL https://get.pnpm.io/install.sh | sh -"
+    echo ""
+    info "Permanent fix - Add npm global bin to shell configuration:"
+    echo "  For bash (~/.bashrc):"
+    echo "    echo 'export PATH=\"\$(npm config get prefix)/bin:\$PATH\"' >> ~/.bashrc"
+    echo "    source ~/.bashrc"
+    echo ""
+    echo "  For zsh (~/.zshrc):"
+    echo "    echo 'export PATH=\"\$(npm config get prefix)/bin:\$PATH\"' >> ~/.zshrc"
+    echo "    source ~/.zshrc"
+    echo ""
+    info "Diagnostic commands:"
+    echo "  • Check npm prefix: npm config get prefix"
+    echo "  • List global packages: npm list -g --depth=0"
+    echo "  • Find pnpm: which pnpm || find ~ -name 'pnpm' -type f 2>/dev/null | head -5"
+    echo "  • Check PATH: echo \$PATH | tr ':' '\\n'"
+    echo ""
+    info "Documentation: https://pnpm.io/installation"
+    info "Report issues: https://github.com/PalisadoesFoundation/talawa-api/issues"
+    info "  Include: Output of 'npm config get prefix' and 'echo \$PATH'"
     exit 1
 fi
 
@@ -325,9 +753,57 @@ success "pnpm installed: v$(pnpm --version)"
 : $((CURRENT_STEP++))
 step $CURRENT_STEP $TOTAL_STEPS "Installing project dependencies..."
 
-pnpm install
+# Make pnpm install idempotent by tracking lockfile hash (outside node_modules to survive deletion)
+LOCKFILE_HASH_CACHE=".talawa-pnpm-lock-hash"
+NEEDS_INSTALL=true
 
-success "Project dependencies installed"
+if [ -f "pnpm-lock.yaml" ]; then
+    CURRENT_LOCKFILE_HASH=$(sha256sum pnpm-lock.yaml 2>/dev/null | cut -d ' ' -f 1)
+    if [ -z "$CURRENT_LOCKFILE_HASH" ]; then
+        warn "Failed to compute lockfile hash, proceeding with install"
+        CURRENT_LOCKFILE_HASH="unknown"
+    fi    
+
+    if [ -d "node_modules" ] && [ -f "$LOCKFILE_HASH_CACHE" ]; then
+        CACHED_HASH=$(cat "$LOCKFILE_HASH_CACHE" 2>/dev/null) || CACHED_HASH=""
+        if [ "$CURRENT_LOCKFILE_HASH" = "$CACHED_HASH" ]; then
+            NEEDS_INSTALL=false
+            success "Dependencies already up-to-date (lockfile unchanged)"
+        fi
+    fi
+    
+    if [ "$NEEDS_INSTALL" = true ]; then
+        info "Installing dependencies..."
+        if ! retry_command "$MAX_RETRY_ATTEMPTS" pnpm install; then
+             error "Failed to install dependencies after $MAX_RETRY_ATTEMPTS attempts"
+             info "Possible causes:"
+             info "  - Network connectivity issues"
+             info "  - Package registry temporarily unavailable"
+             info "  - Corrupted pnpm cache (try: pnpm store prune)"
+             exit 1
+        fi
+        # Cache the lockfile hash after successful install
+        if [ "$CURRENT_LOCKFILE_HASH" != "unknown" ]; then
+            echo "$CURRENT_LOCKFILE_HASH" > "$LOCKFILE_HASH_CACHE" 2>/dev/null || warn "Failed to cache lockfile hash"
+        fi
+        success "Project dependencies installed"
+    fi
+else
+    # No lockfile exists, run install to generate it
+    info "No pnpm-lock.yaml found, running fresh install..."
+    if ! retry_command "$MAX_RETRY_ATTEMPTS" pnpm install; then
+         error "Failed to install dependencies."
+         exit 1
+    fi
+    # Cache the new lockfile hash
+    if [ -f "pnpm-lock.yaml" ]; then
+        NEW_HASH=$(sha256sum pnpm-lock.yaml 2>/dev/null | cut -d ' ' -f 1)
+        if [ -n "$NEW_HASH" ]; then
+            echo "$NEW_HASH" > "$LOCKFILE_HASH_CACHE" 2>/dev/null || warn "Failed to cache lockfile hash"
+        fi
+    fi
+    success "Project dependencies installed"
+fi
 
 ##############################################################################
 # Complete
@@ -345,7 +821,7 @@ if command_exists docker; then
 fi
 echo ""
 warn "NOTE: To make fnm available in new terminal sessions, add this to your ~/.bashrc or ~/.zshrc:"
-echo "  export PATH=\"\$HOME/.local/share/fnm:\$PATH\""
+echo "  export PATH=\"$FNM_BIN_DIR:\$PATH\""
 echo "  eval \"\$(fnm env)\""
 echo ""
 info "Then restart your terminal or run: source ~/.bashrc (or ~/.zshrc)"

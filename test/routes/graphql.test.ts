@@ -60,7 +60,7 @@ describe("GraphQL Routes", () => {
 				info: vi.fn(),
 				error: vi.fn(),
 				warn: () => {},
-				child: vi.fn(),
+				child: vi.fn().mockReturnThis(),
 				level: "info",
 				fatal: vi.fn(),
 				debug: vi.fn(),
@@ -75,6 +75,7 @@ describe("GraphQL Routes", () => {
 			jwtVerify: vi.fn(),
 			ip: "127.0.0.1",
 			cookies: {},
+			log: mockFastify.log as unknown as FastifyRequest["log"],
 		};
 
 		// Setup mock reply
@@ -109,6 +110,7 @@ describe("GraphQL Routes", () => {
 			});
 
 			expect(context).toEqual({
+				cache: mockFastify.cache,
 				cookie: {
 					clearAuthCookies: expect.any(Function),
 					getRefreshToken: expect.any(Function),
@@ -152,6 +154,7 @@ describe("GraphQL Routes", () => {
 			});
 
 			expect(context).toEqual({
+				cache: mockFastify.cache,
 				cookie: {
 					clearAuthCookies: expect.any(Function),
 					getRefreshToken: expect.any(Function),
@@ -680,6 +683,7 @@ describe("GraphQL Routes", () => {
 				request: {
 					ip?: string;
 					jwtVerify: ReturnType<typeof vi.fn>;
+					log?: unknown;
 				};
 			};
 		};
@@ -737,6 +741,7 @@ describe("GraphQL Routes", () => {
 					request: {
 						ip: "192.168.1.1",
 						jwtVerify: vi.fn(),
+						log: mockFastifyInstance.log,
 					},
 				},
 			};
@@ -791,6 +796,7 @@ describe("GraphQL Routes", () => {
 				100,
 				1,
 				5,
+				mockFastifyInstance.log,
 			);
 		});
 
@@ -819,6 +825,7 @@ describe("GraphQL Routes", () => {
 				100,
 				1,
 				15,
+				mockFastifyInstance.log,
 			);
 		});
 
@@ -844,6 +851,7 @@ describe("GraphQL Routes", () => {
 				100,
 				1,
 				3,
+				mockFastifyInstance.log,
 			);
 		});
 
@@ -934,6 +942,7 @@ describe("GraphQL Routes", () => {
 				100,
 				1,
 				5,
+				mockFastifyInstance.log,
 			);
 		});
 
@@ -963,6 +972,7 @@ describe("GraphQL Routes", () => {
 				100,
 				1,
 				2,
+				mockFastifyInstance.log,
 			);
 		});
 	});

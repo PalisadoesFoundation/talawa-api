@@ -2665,3 +2665,14 @@ export const Mutation_updateCommunity = gql(`
 		}
 	}
 `);
+
+export const Mutation_updateChat = gql(`
+  mutation Mutation_updateChat($input: MutationUpdateChatInput!) {
+    updateChat(input: $input) {
+      id
+      name
+      description
+      avatarURL
+    }
+  }
+`);
