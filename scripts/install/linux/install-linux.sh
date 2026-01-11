@@ -125,8 +125,9 @@ parse_package_json() {
     local result
     local jq_exit_code
     
-    # Attempt to parse with jq, capturing both output and exit code
-    result=$(jq -r "$jq_query" package.json 2>&1)
+    # Attempt to parse with jq, coalescing null to empty string
+    # Using '// empty' ensures null values become empty strings rather than literal "null"
+    result=$(jq -r "($jq_query) // empty" package.json 2>&1)
     jq_exit_code=$?
     
     # Check if jq command failed (malformed JSON or invalid query)
@@ -157,8 +158,8 @@ parse_package_json() {
         exit 1
     fi
     
-    # Check for null or empty results
-    if [ -z "$result" ] || [ "$result" = "null" ]; then
+    # Check for empty results (null values are coalesced to empty by jq)
+    if [ -z "$result" ]; then
         if [ "$is_required" = "true" ]; then
             error "$field_name not found in package.json (required field)"
             echo ""
