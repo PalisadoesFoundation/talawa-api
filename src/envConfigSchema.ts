@@ -285,6 +285,18 @@ export const envConfigSchema = Type.Object({
 	 */
 	API_IS_SECURE_COOKIES: Type.Optional(Type.Boolean()),
 	/**
+	 * Sampling ratio for OpenTelemetry traces.
+	 * Value between 0 (no traces) and 1 (all traces).
+	 * Default: 1 (sample all traces)
+	 */
+	API_OTEL_SAMPLING_RATIO: Type.Optional(
+		Type.Number({
+			minimum: 0,
+			maximum: 1,
+			default: 1,
+		}),
+	),
+	/**
 	 * Used for providing the log level for the logger used in talawa api.
 	 *
 	 * @privateRemarks
