@@ -496,26 +496,32 @@ export async function createPluginTables(
 					`Successfully created table and indexes for: ${tableName}`,
 				);
 			} catch (error) {
-				logger?.error?.({
-					msg: `Table creation failed for ${tableName}`,
-					err: error,
-				}) ??
+				if (logger?.error) {
+					logger.error({
+						msg: `Table creation failed for ${tableName}`,
+						err: error,
+					});
+				} else {
 					rootLogger.error({
 						msg: `Table creation failed for ${tableName}`,
 						err: error,
 					});
+				}
 				throw error;
 			}
 		}
 	} catch (error) {
-		logger?.error?.({
-			msg: `Table creation process failed for plugin ${pluginId}`,
-			err: error,
-		}) ??
+		if (logger?.error) {
+			logger.error({
+				msg: `Table creation process failed for plugin ${pluginId}`,
+				err: error,
+			});
+		} else {
 			rootLogger.error({
 				msg: `Table creation process failed for plugin ${pluginId}`,
 				err: error,
 			});
+		}
 		throw error;
 	}
 }

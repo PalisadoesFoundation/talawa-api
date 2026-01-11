@@ -355,59 +355,26 @@ describe("PluginManager", () => {
 
 	it("should handle initialization failure in initializePlugins catch block (covers lines 152-157)", async () => {
 		const context = createPluginContext([mockDbPlugin]);
+
+		// Force initialization failure by making directoryExists throw
+		// This simulates a random error during the async initialization process
+		(directoryExists as ReturnType<typeof vi.fn>).mockRejectedValueOnce(
+			new Error("simulated initialization failure"),
+		);
+
 		const manager = new TestablePluginManager(context, "/plugins");
-		await new Promise((resolve) => setTimeout(resolve, 10));
 
-		// Reset the error mock to check the specific error
-		if (context.logger.error) {
-			vi.mocked(context.logger.error).mockClear();
-		}
-
-		// Override initializePlugins to throw inside it after calling getInstalledPlugins
-		const origInit = (
-			manager as unknown as { initializePlugins: () => Promise<void> }
-		).initializePlugins.bind(manager);
-
-		(
-			manager as unknown as { initializePlugins: () => Promise<void> }
-		).initializePlugins = async () => {
-			// Simulate throwing after getInstalledPlugins but before markAsInitialized
-			throw new Error("initialization inner failure");
-		};
-
-		// Call initializePlugins directly to test the catch block in the constructor
-		try {
-			await (
-				manager as unknown as { initializePlugins: () => Promise<void> }
-			).initializePlugins();
-		} catch {
-			// Expected to throw
-		}
-
-		// The constructor's .catch() should have caught this
-		// But since we're testing the inner catch, let's directly invoke the actual method
-		// with a mock that makes emit throw
-		(
-			manager as unknown as { initializePlugins: () => Promise<void> }
-		).initializePlugins = origInit;
-
-		// Mock emit to throw to trigger the inner catch block
-		vi.spyOn(manager, "emit").mockImplementation(() => {
-			throw new Error("emit failed");
+		// Wait for initialization to complete via event instead of timeout
+		await new Promise<void>((resolve) => {
+			manager.once("plugins:ready", () => resolve());
 		});
 
-		// Create a new manager to trigger initialization with the throwing emit
-		const context2 = createPluginContext([mockDbPlugin]);
-		const manager2 = new TestablePluginManager(context2, "/plugins");
-		vi.spyOn(manager2, "emit").mockImplementation(() => {
-			throw new Error("emit failed");
-		});
-
-		await new Promise((resolve) => setTimeout(resolve, 50));
-
-		expect(context2.logger.error).toHaveBeenCalledWith(
+		expect(context.logger.error).toHaveBeenCalledWith(
 			expect.objectContaining({
 				msg: "Plugin system initialization failed",
+				err: expect.objectContaining({
+					message: "simulated initialization failure",
+				}),
 			}),
 		);
 	});
