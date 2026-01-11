@@ -762,11 +762,11 @@ suite("Mutation field createChatMessage", () => {
 		const chatId = await createChat(orgId, orgAdminToken);
 
 		// Mock the database insert to return empty array
-		const insertSpy = vi.spyOn(server.drizzleClient, "insert").mockReturnValue({
-			values: () => ({
-				returning: () => Promise.resolve([]), // Empty array causes undefined
-			}),
-		} as never);
+		const mockReturning = vi.fn().mockResolvedValue([]);
+		const mockValues = vi.fn().mockReturnValue({ returning: mockReturning });
+		const insertSpy = vi
+			.spyOn(server.drizzleClient, "insert")
+			.mockReturnValue({ values: mockValues } as any);
 
 		const result = await mercuriusClient.mutate(Mutation_createChatMessage, {
 			headers: { authorization: `bearer ${orgAdminToken}` },
