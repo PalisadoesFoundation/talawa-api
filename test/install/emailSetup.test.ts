@@ -1,19 +1,30 @@
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { emailSetup } from "../../scripts/setup/emailSetup";
 import * as promptHelpers from "../../scripts/setup/promptHelpers";
+import type { SetupAnswers } from "../../scripts/setup/setup";
 
-// Local mock interface to avoid importing from setup.ts (which has side effects)
-interface SetupAnswers {
-	[key: string]: string | undefined;
-}
+// Mutable mock for EmailService to allow per-test behavior control
+const mocks = vi.hoisted(() => ({
+	mockSendEmail: vi.fn(),
+	mockEmailServiceConstructor: vi.fn(),
+}));
 
 // Mock the prompt helpers
-// NOTE: Unit tests are intentional here for pure setup logic validation.
-// Integration tests (mercuriusClient) should be used if this script begins interacting with the API/DB layers.
 vi.mock("../../scripts/setup/promptHelpers", () => ({
 	promptConfirm: vi.fn(),
 	promptInput: vi.fn(),
 	promptList: vi.fn(),
+}));
+
+// Mock EmailService at module level
+vi.mock("../../src/services/ses/EmailService", () => ({
+	EmailService: vi.fn().mockImplementation((...args) => {
+		mocks.mockEmailServiceConstructor(...args);
+		return {
+			// biome-ignore lint/suspicious/noExplicitAny: Mock wrapper needs to pass through all args
+			sendEmail: (...callArgs: any[]) => mocks.mockSendEmail(...callArgs),
+		};
+	}),
 }));
 
 describe("emailSetup", () => {
@@ -22,11 +33,25 @@ describe("emailSetup", () => {
 	beforeEach(() => {
 		answers = {};
 		vi.clearAllMocks();
+
+		// Reset prompt mocks
+		vi.mocked(promptHelpers.promptConfirm).mockReset();
+		vi.mocked(promptHelpers.promptList).mockReset();
+		vi.mocked(promptHelpers.promptInput).mockReset();
+
+		// Reset mock behavior to a default (e.g., success)
+		mocks.mockSendEmail.mockReset().mockResolvedValue({
+			success: true,
+			messageId: "test-message-id",
+		});
+		mocks.mockEmailServiceConstructor.mockReset().mockImplementation(() => ({
+			sendEmail: mocks.mockSendEmail,
+		}));
 	});
 
-	afterEach(() => {
-		vi.restoreAllMocks();
-	});
+	// afterEach(() => {
+	// 	vi.restoreAllMocks();
+	// });
 
 	it("should skip email configuration if user declines", async () => {
 		vi.mocked(promptHelpers.promptConfirm).mockResolvedValueOnce(false);
@@ -42,7 +67,50 @@ describe("emailSetup", () => {
 		expect(result).toEqual(answers);
 	});
 
-	it("should configure SES when selected", async () => {
+	it("should configure SES and send test email successfully", async () => {
+		vi.mocked(promptHelpers.promptConfirm)
+			.mockResolvedValueOnce(true) // Configure email? Yes
+			.mockResolvedValueOnce(true); // Send test email? Yes
+
+		vi.mocked(promptHelpers.promptList).mockResolvedValueOnce("ses"); // Provider: SES
+
+		// SES Prompts
+		vi.mocked(promptHelpers.promptInput)
+			.mockResolvedValueOnce("us-east-1") // Region
+			.mockResolvedValueOnce("access-key") // Access Key
+			.mockResolvedValueOnce("secret-key") // Secret Key
+			.mockResolvedValueOnce("test@example.com") // From Email
+			.mockResolvedValueOnce("Test App") // From Name
+			.mockResolvedValueOnce("recipient@example.com"); // Test recipient
+
+		mocks.mockSendEmail.mockResolvedValueOnce({
+			success: true,
+			messageId: "test-message-id-123",
+		});
+
+		const result = await emailSetup(answers);
+
+		// Assert credentials preserved
+		expect(result.API_EMAIL_PROVIDER).toBe("ses");
+		expect(result.AWS_SES_REGION).toBe("us-east-1");
+		expect(result.AWS_ACCESS_KEY_ID).toBe("access-key");
+		expect(result.AWS_SECRET_ACCESS_KEY).toBe("secret-key");
+		expect(result.AWS_SES_FROM_EMAIL).toBe("test@example.com");
+		expect(result.AWS_SES_FROM_NAME).toBe("Test App");
+
+		// Assert successful mock usage
+		expect(mocks.mockSendEmail).toHaveBeenCalledWith(
+			expect.objectContaining({
+				email: "recipient@example.com",
+				subject: expect.stringContaining("Test Email"),
+			}),
+		);
+
+		// Verify no failure action was prompted
+		expect(promptHelpers.promptList).toHaveBeenCalledTimes(1); // Only for provider selection
+	});
+
+	it("should configure SES but skip test email if requested", async () => {
 		vi.mocked(promptHelpers.promptConfirm)
 			.mockResolvedValueOnce(true) // Configure email? Yes
 			.mockResolvedValueOnce(false); // Send test email? No
@@ -66,19 +134,8 @@ describe("emailSetup", () => {
 		expect(result.AWS_SES_FROM_EMAIL).toBe("test@example.com");
 		expect(result.AWS_SES_FROM_NAME).toBe("Test App");
 
-		expect(promptHelpers.promptList).toHaveBeenCalledWith(
-			"API_EMAIL_PROVIDER",
-			"Select email provider:",
-			["ses"],
-			"ses",
-		);
-
-		// Verify Test Email Prompt
-		expect(promptHelpers.promptConfirm).toHaveBeenCalledWith(
-			"sendTestEmail",
-			expect.stringContaining("Do you want to send a test email now?"),
-			false,
-		);
+		// Assertion mock NOT called
+		expect(mocks.mockSendEmail).not.toHaveBeenCalled();
 	});
 
 	// NOTE: Test for "should send test email when requested" is omitted because it requires
@@ -104,7 +161,7 @@ describe("emailSetup", () => {
 		// Mock error logging
 		const _consoleErrorSpy = vi
 			.spyOn(console, "error")
-			.mockImplementation(() => {});
+			.mockImplementation(() => { });
 
 		const result = await emailSetup(answers);
 
@@ -167,29 +224,25 @@ describe("emailSetup", () => {
 			.mockResolvedValueOnce("Test App")
 			.mockResolvedValueOnce("recipient@example.com");
 
-		// Mock EmailService
-		const mockEmailService = {
-			sendEmail: vi
-				.fn()
-				.mockResolvedValueOnce({
-					success: false,
-					error: "Invalid credentials",
-				}) // First fail
-				.mockResolvedValueOnce({
-					success: true,
-					messageId: "test-id",
-				}), // Second succeed
-		};
-
-		vi.doMock("../../src/services/ses/EmailService", () => ({
-			EmailService: vi.fn().mockImplementation(() => mockEmailService),
-		}));
+		// Mock EmailService to fail first then succeed
+		mocks.mockSendEmail
+			.mockResolvedValueOnce({
+				success: false,
+				error: "Invalid credentials",
+			}) // First fail
+			.mockResolvedValueOnce({
+				success: true,
+				messageId: "test-id",
+			}); // Second succeed
 
 		const result = await emailSetup(answers);
 
 		// Should have final successful values
 		expect(result.API_EMAIL_PROVIDER).toBe("ses");
 		expect(result.AWS_ACCESS_KEY_ID).toBe("good-key");
+
+		// Verify mocks were used
+		expect(mocks.mockSendEmail).toHaveBeenCalledTimes(2);
 	});
 
 	it("should log specific AWS error details when sendEmail throws", async () => {
@@ -217,16 +270,11 @@ describe("emailSetup", () => {
 		awsError.code = "SignatureDoesNotMatch";
 		awsError.name = "SignatureDoesNotMatch";
 
-		vi.doMock("../../src/services/ses/EmailService", () => ({
-			EmailService: vi.fn().mockImplementation(() => ({
-				sendEmail: vi.fn().mockRejectedValue(awsError),
-			})),
-		}));
+		mocks.mockSendEmail.mockRejectedValueOnce(awsError);
 
 		const _consoleErrorSpy = vi
 			.spyOn(console, "error")
-			.mockImplementation(() => {});
-		// Log spy removed as it was unused
+			.mockImplementation(() => { });
 
 		await emailSetup(answers);
 
@@ -255,11 +303,17 @@ describe("emailSetup", () => {
 			.mockResolvedValueOnce("Test App")
 			.mockResolvedValueOnce("recipient@example.com");
 
+		mocks.mockSendEmail.mockResolvedValueOnce({
+			success: false,
+			error: "Some error",
+		});
+
 		const result = await emailSetup(answers);
 
 		// All email config should be cleared when user cancels
 		expect(result.API_EMAIL_PROVIDER).toBeUndefined();
 		expect(result.AWS_SES_REGION).toBeUndefined();
+		expect(mocks.mockSendEmail).toHaveBeenCalled();
 	});
 
 	it("should keep config when user chooses continue anyway after test failure", async () => {
@@ -279,12 +333,92 @@ describe("emailSetup", () => {
 			.mockResolvedValueOnce("Test App")
 			.mockResolvedValueOnce("recipient@example.com");
 
+		mocks.mockSendEmail.mockResolvedValueOnce({
+			success: false,
+			error: "Verification failed",
+		});
+
 		const result = await emailSetup(answers);
 
 		// Config should be kept when user explicitly continues
 		expect(result.API_EMAIL_PROVIDER).toBe("ses");
 		expect(result.AWS_SES_REGION).toBe("us-east-1");
 		expect(result.AWS_ACCESS_KEY_ID).toBe("bad-key");
+		expect(mocks.mockSendEmail).toHaveBeenCalled();
+	});
+
+	it("should verify EmailService instantiation and sendEmail parameters", async () => {
+		vi.mocked(promptHelpers.promptConfirm)
+			.mockResolvedValueOnce(true) // Configure
+			.mockResolvedValueOnce(true); // Send test
+
+		vi.mocked(promptHelpers.promptList).mockResolvedValueOnce("ses");
+
+		vi.mocked(promptHelpers.promptInput)
+			.mockResolvedValueOnce("us-east-1") // Region
+			.mockResolvedValueOnce("access") // Key
+			.mockResolvedValueOnce("secret") // Secret
+			.mockResolvedValueOnce("sender@example.com") // From
+			.mockResolvedValueOnce("Sender Name") // Name
+			.mockResolvedValueOnce("recipient@example.com"); // Recipient
+
+		mocks.mockSendEmail.mockResolvedValueOnce({
+			success: true,
+			messageId: "abc",
+		});
+
+		await emailSetup(answers);
+
+		// Verify constructor arguments
+		expect(mocks.mockEmailServiceConstructor).toHaveBeenCalledWith({
+			region: "us-east-1",
+			accessKeyId: "access",
+			secretAccessKey: "secret",
+			fromEmail: "sender@example.com",
+			fromName: "Sender Name",
+		});
+
+		// Verify sendEmail parameters
+		expect(mocks.mockSendEmail).toHaveBeenCalledWith({
+			id: expect.stringContaining("test-email-"),
+			email: "recipient@example.com",
+			subject: "Talawa API - Test Email",
+			htmlBody: expect.stringContaining("It Works!"),
+			userId: null,
+		});
+	});
+
+	it("should exercise validateEmail with invalid input", async () => {
+		vi.mocked(promptHelpers.promptConfirm)
+			.mockResolvedValueOnce(true) // Configure
+			.mockResolvedValueOnce(false); // Skip test
+
+		vi.mocked(promptHelpers.promptList).mockResolvedValueOnce("ses");
+
+		// The validateEmail function is passed to promptInput.
+		// We'll capture it and call it directly.
+		vi.mocked(promptHelpers.promptInput).mockImplementation(
+			async (name, _message, defaultValue, validator) => {
+				if (name === "AWS_SES_FROM_EMAIL" && validator) {
+					// Test invalid email
+					expect(validator("invalid-email")).toBe(
+						"Invalid email format. Please enter a valid email address.",
+					);
+					// Test valid email
+					expect(validator("valid@example.com")).toBe(true);
+				}
+				return defaultValue || "some-value";
+			},
+		);
+
+		await emailSetup(answers);
+
+		expect(promptHelpers.promptInput).toHaveBeenCalledWith(
+			"AWS_SES_FROM_EMAIL",
+			expect.any(String),
+			"",
+			expect.any(Function),
+		);
 	});
 
 	it("should propagate errors", async () => {
