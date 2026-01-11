@@ -173,7 +173,32 @@ Add the **secret key** to your `.env` file:
 RECAPTCHA_SECRET_KEY=6LeIxAcTAAAAAGG-vFI1TnRWxMZNFuojJ4WifJWe
 ```
 
-### Operating the Production Server
+#### Update the Email Configuration
+
+Talawa API requires email configuration for features like user registration verification and event invitations.
+
+You will need to update the `.env` file with the following information.
+
+1. `EMAIL_PROVIDER` - Set to `ses` (default)
+2. `AWS_SES_REGION` - Your AWS SES region (e.g., `ap-south-1`)
+3. `AWS_ACCESS_KEY_ID` - Your AWS IAM Access Key
+4. `AWS_SECRET_ACCESS_KEY` - Your AWS IAM Secret Key
+5. `AWS_SES_FROM_EMAIL` - The email address you have verified in SES
+6. `AWS_SES_FROM_NAME` - (Optional) The name to display as the sender (default: "Talawa")
+
+**Required IAM Permissions:**
+Your AWS IAM user needs the following permissions:
+- `ses:SendEmail`
+- `ses:SendRawEmail`
+
+### Troubleshooting
+
+If you encounter issues with email delivery:
+
+1.  **"Email not verified" Error**: AWS SES Sandbox mode requires verification of *both* the sender and recipient addresses. Verify the email addresses in the SES Console.
+2.  **"Access Denied" Error**: Ensure your IAM user has `ses:SendEmail` and `ses:SendRawEmail` permissions. check that the access key and secret key are correct.
+3.  **"Throttling" Error**: You may have exceeded your SES sending rate limits. Request a quota increase in the AWS Console.
+4.  **Test Email Fails**: If the setup script test email fails, check the console output for the specific error message. Common causes include network firewalls blocking the SES endpoint.
 
 After all the configuration steps are complete, you will be ready to start the production server.
 

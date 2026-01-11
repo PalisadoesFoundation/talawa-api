@@ -66,9 +66,9 @@ export class EmailService {
 				credentials:
 					this.config.accessKeyId && this.config.secretAccessKey
 						? {
-								accessKeyId: this.config.accessKeyId,
-								secretAccessKey: this.config.secretAccessKey,
-							}
+							accessKeyId: this.config.accessKeyId,
+							secretAccessKey: this.config.secretAccessKey,
+						}
 						: undefined,
 			}) as {
 				send: (command: unknown) => Promise<{ MessageId?: string }>;
@@ -99,7 +99,9 @@ export class EmailService {
 	async sendEmail(job: EmailJob): Promise<EmailResult> {
 		try {
 			if (!this.config.fromEmail) {
-				throw new Error("fromEmail is required in EmailConfig to send emails");
+				throw new Error(
+					"Email service not configured. Please run 'npm run setup' to configure email or set EMAIL_PROVIDER and related environment variables.",
+				);
 			}
 
 			const { client, SendEmailCommand } = await this.getSesArtifacts();

@@ -4,6 +4,7 @@ import path, { resolve } from "node:path";
 import process from "node:process";
 import { pathToFileURL } from "node:url";
 import dotenv from "dotenv";
+import { emailSetup } from "./emailSetup";
 import { envFileBackup } from "./envFileBackup/envFileBackup";
 import { promptConfirm, promptInput, promptList } from "./promptHelpers";
 import { updateEnvVariable } from "./updateEnvVariable";
@@ -760,6 +761,7 @@ export async function caddySetup(answers: SetupAnswers): Promise<SetupAnswers> {
 	}
 	return answers;
 }
+
 export async function setup(): Promise<SetupAnswers> {
 	const initialCI = process.env.CI;
 	let answers: SetupAnswers = {};
@@ -864,6 +866,7 @@ export async function setup(): Promise<SetupAnswers> {
 	if (setupReCaptcha) {
 		answers = await reCaptchaSetup(answers);
 	}
+	answers = await emailSetup(answers);
 	await updateEnvVariable(answers);
 	console.log("Configuration complete.");
 	return answers;
