@@ -679,6 +679,8 @@ describe("isPerformanceTracker", () => {
 			trackDb: () => {},
 			trackCacheHit: () => {},
 			trackCacheMiss: () => {},
+			time: () => {},
+			start: () => {},
 		};
 		expect(isPerformanceTracker(invalidTracker)).toBe(false);
 	});
@@ -689,6 +691,8 @@ describe("isPerformanceTracker", () => {
 			trackDb: () => {},
 			trackCacheHit: () => {},
 			trackCacheMiss: () => {},
+			time: () => {},
+			start: () => {},
 		};
 		expect(isPerformanceTracker(invalidTracker)).toBe(false);
 	});
@@ -699,6 +703,8 @@ describe("isPerformanceTracker", () => {
 			snapshot: () => ({}),
 			trackCacheHit: () => {},
 			trackCacheMiss: () => {},
+			time: () => {},
+			start: () => {},
 		};
 		expect(isPerformanceTracker(invalidTracker)).toBe(false);
 	});
@@ -709,6 +715,8 @@ describe("isPerformanceTracker", () => {
 			snapshot: () => ({}),
 			trackDb: () => {},
 			trackCacheMiss: () => {},
+			time: () => {},
+			start: () => {},
 		};
 		expect(isPerformanceTracker(invalidTracker)).toBe(false);
 	});
@@ -719,20 +727,45 @@ describe("isPerformanceTracker", () => {
 			snapshot: () => ({}),
 			trackDb: () => {},
 			trackCacheHit: () => {},
+			time: () => {},
+			start: () => {},
+		};
+		expect(isPerformanceTracker(invalidTracker)).toBe(false);
+	});
+
+	it("should return false for an object missing time", () => {
+		const invalidTracker = {
+			trackComplexity: () => {},
+			snapshot: () => ({}),
+			trackDb: () => {},
+			trackCacheHit: () => {},
+			trackCacheMiss: () => {},
+			start: () => {},
+		};
+		expect(isPerformanceTracker(invalidTracker)).toBe(false);
+	});
+
+	it("should return false for an object missing start", () => {
+		const invalidTracker = {
+			trackComplexity: () => {},
+			snapshot: () => ({}),
+			trackDb: () => {},
+			trackCacheHit: () => {},
+			trackCacheMiss: () => {},
+			time: () => {},
 		};
 		expect(isPerformanceTracker(invalidTracker)).toBe(false);
 	});
 
 	it("should return true for an object with all required methods", () => {
 		const validTracker = {
+			time: () => {},
+			start: () => {},
 			trackComplexity: () => {},
 			snapshot: () => ({}),
 			trackDb: () => {},
 			trackCacheHit: () => {},
 			trackCacheMiss: () => {},
-			// Additional methods don't matter
-			time: () => {},
-			start: () => {},
 		};
 		expect(isPerformanceTracker(validTracker)).toBe(true);
 	});

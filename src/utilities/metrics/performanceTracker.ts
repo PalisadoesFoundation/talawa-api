@@ -273,6 +273,8 @@ export function isPerformanceTracker(
 	return (
 		typeof value === "object" &&
 		value !== null &&
+		"time" in value &&
+		"start" in value &&
 		"trackComplexity" in value &&
 		"snapshot" in value &&
 		"trackDb" in value &&
