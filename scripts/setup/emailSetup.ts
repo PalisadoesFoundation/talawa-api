@@ -97,6 +97,26 @@ export async function emailSetup(answers: SetupAnswers): Promise<SetupAnswers> {
 				console.error(
 					`❌ Cannot send test email. Missing required credentials: ${missingCreds.join(", ")}`,
 				);
+
+				const continueAnyway = await promptConfirm(
+					"continueWithoutTest",
+					"Continue with email setup without sending test? (Credentials will be saved)",
+					false,
+				);
+
+				if (!continueAnyway) {
+					console.log(
+						"⚠️  Email configuration cancelled. No credentials saved.",
+					);
+					// Clear email-related answers to prevent saving
+					delete answers.API_EMAIL_PROVIDER;
+					delete answers.AWS_SES_REGION;
+					delete answers.AWS_ACCESS_KEY_ID;
+					delete answers.AWS_SECRET_ACCESS_KEY;
+					delete answers.AWS_SES_FROM_EMAIL;
+					delete answers.AWS_SES_FROM_NAME;
+					return answers;
+				}
 			} else {
 				const testRecipient = await promptInput(
 					"testRecipient",
@@ -106,6 +126,8 @@ export async function emailSetup(answers: SetupAnswers): Promise<SetupAnswers> {
 				);
 
 				console.log("Sending test email...");
+				let testSuccess = false;
+
 				try {
 					// dynamically import to avoid early instantiation issues or circular deps
 					const { EmailService } = await import(
@@ -133,6 +155,7 @@ export async function emailSetup(answers: SetupAnswers): Promise<SetupAnswers> {
 						console.log(
 							`✅ Test email sent successfully! Message ID: ${result.messageId}`,
 						);
+						testSuccess = true;
 					} else {
 						console.error(`❌ Failed to send test email: ${result.error}`);
 						console.log(
@@ -141,6 +164,51 @@ export async function emailSetup(answers: SetupAnswers): Promise<SetupAnswers> {
 					}
 				} catch (error) {
 					console.error("❌ Error attempting to send test email:", error);
+				}
+
+				// If test failed, ask user what to do
+				if (!testSuccess) {
+					const action = await promptList(
+						"testFailureAction",
+						"Test email failed. What would you like to do?",
+						[
+							"Retry with different credentials",
+							"Continue anyway (save current credentials)",
+							"Cancel email setup",
+						],
+						"Cancel email setup",
+					);
+
+					if (action === "Retry with different credentials") {
+						console.log(
+							"⚠️  Email configuration cancelled. Please run setup again to retry.",
+						);
+						// Clear email-related answers to prevent saving
+						delete answers.API_EMAIL_PROVIDER;
+						delete answers.AWS_SES_REGION;
+						delete answers.AWS_ACCESS_KEY_ID;
+						delete answers.AWS_SECRET_ACCESS_KEY;
+						delete answers.AWS_SES_FROM_EMAIL;
+						delete answers.AWS_SES_FROM_NAME;
+						return answers;
+					} else if (action === "Cancel email setup") {
+						console.log(
+							"⚠️  Email configuration cancelled. No credentials saved.",
+						);
+						// Clear email-related answers to prevent saving
+						delete answers.API_EMAIL_PROVIDER;
+						delete answers.AWS_SES_REGION;
+						delete answers.AWS_ACCESS_KEY_ID;
+						delete answers.AWS_SECRET_ACCESS_KEY;
+						delete answers.AWS_SES_FROM_EMAIL;
+						delete answers.AWS_SES_FROM_NAME;
+						return answers;
+					} else {
+						// "Continue anyway" - credentials will be saved
+						console.log(
+							"⚠️  Continuing with current credentials. You can fix them later in .env",
+						);
+					}
 				}
 			}
 		}
