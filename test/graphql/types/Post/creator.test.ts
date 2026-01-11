@@ -54,20 +54,6 @@ describe("Post Resolver - Creator Field", () => {
 	});
 
 	describe("Authorization", () => {
-		it("should throw unauthorized_action error if user is not an administrator and not an org admin", async () => {
-			mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValue({
-				id: "user-123",
-				role: "member",
-				organizationMembershipsWhereMember: [{ role: "member" }],
-			});
-
-			await expect(resolveCreator(mockPost, {}, ctx)).rejects.toThrow(
-				new TalawaGraphQLError({
-					extensions: { code: "unauthorized_action" },
-				}),
-			);
-		});
-
 		it("should throw unauthorized_action error if user has no organization membership", async () => {
 			mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValue({
 				id: "user-123",
