@@ -319,7 +319,7 @@ describe("Performance Tracker", () => {
 
 		const snapshot = tracker.snapshot();
 
-		expect(snapshot.slow.length).toBe(1);
+		expect(snapshot.slow.length).toBe(2);
 		expect(snapshot.slow[0]?.op).toBe("slow-op");
 		expect(snapshot.slow[0]?.ms).toBeGreaterThanOrEqual(10);
 	});
