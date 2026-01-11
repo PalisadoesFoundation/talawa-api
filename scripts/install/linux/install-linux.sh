@@ -83,6 +83,116 @@ command_exists() {
     command -v "$1" &> /dev/null
 }
 
+##############################################################################
+# Safe jq parsing helper function
+# 
+# This function provides robust jq parsing with:
+# - Verification that jq is installed
+# - Error handling for malformed JSON
+# - Null/empty result handling with defaults
+# - Clear error messages for debugging
+##############################################################################
+parse_package_json() {
+    local jq_query="$1"
+    local default_value="$2"
+    local field_name="$3"
+    local is_required="${4:-false}"
+    
+    # Verify jq is available before attempting to parse
+    if ! command_exists jq; then
+        error "jq is required but not installed"
+        echo ""
+        info "jq is a lightweight JSON processor needed to parse package.json"
+        echo ""
+        info "Install jq using your package manager:"
+        echo "  • Ubuntu/Debian:  sudo apt-get install jq"
+        echo "  • Fedora/RHEL:    sudo dnf install jq"
+        echo "  • Arch/Manjaro:   sudo pacman -S jq"
+        echo "  • macOS:          brew install jq"
+        echo ""
+        info "After installing jq, re-run this script"
+        exit 1
+    fi
+    
+    # Verify package.json exists and is readable
+    if [ ! -r "package.json" ]; then
+        error "Cannot read package.json file"
+        echo ""
+        info "Ensure package.json exists and is readable in the current directory"
+        exit 1
+    fi
+    
+    local result
+    local jq_exit_code
+    
+    # Attempt to parse with jq, coalescing null to empty string
+    # Using '// empty' ensures null values become empty strings rather than literal "null"
+    result=$(jq -r "($jq_query) // empty" package.json 2>&1)
+    jq_exit_code=$?
+    
+    # Check if jq command failed (malformed JSON or invalid query)
+    if [ $jq_exit_code -ne 0 ]; then
+        error "Failed to parse $field_name from package.json"
+        echo ""
+        info "jq error: $result"
+        echo ""
+        info "Common causes:"
+        echo "  • Malformed JSON syntax in package.json"
+        echo "  • Invalid jq query expression"
+        echo "  • Corrupted package.json file"
+        echo ""
+        info "Troubleshooting steps:"
+        echo "  1. Validate package.json syntax:"
+        echo "     jq . package.json"
+        echo ""
+        echo "  2. Check for common JSON errors:"
+        echo "     • Missing commas between properties"
+        echo "     • Trailing commas after last property"
+        echo "     • Unmatched brackets or braces"
+        echo "     • Invalid escape sequences in strings"
+        echo ""
+        echo "  3. If package.json is corrupted, restore it:"
+        echo "     git checkout package.json"
+        echo ""
+        info "Documentation: https://github.com/PalisadoesFoundation/talawa-api/blob/develop/INSTALLATION.md"
+        exit 1
+    fi
+    
+    # Check for empty results (null values are coalesced to empty by jq)
+    if [ -z "$result" ]; then
+        if [ "$is_required" = "true" ]; then
+            error "$field_name not found in package.json (required field)"
+            echo ""
+            info "The field '$field_name' is required but was not found or is null"
+            echo ""
+            info "Expected location in package.json: $jq_query"
+            echo ""
+            info "Troubleshooting steps:"
+            echo "  1. Check if the field exists in package.json:"
+            echo "     jq '$jq_query' package.json"
+            echo ""
+            echo "  2. Ensure you have the latest version of the repository:"
+            echo "     git pull origin develop"
+            echo ""
+            info "Report issues: https://github.com/PalisadoesFoundation/talawa-api/issues"
+            exit 1
+        fi
+        
+        # Use default value if provided
+        if [ -n "$default_value" ]; then
+            echo "$default_value"
+            return 0
+        fi
+        
+        # Return empty string if no default and not required
+        echo ""
+        return 0
+    fi
+    
+    # Return the successfully parsed result
+    echo "$result"
+}
+
 # Check Docker Compose availability and log errors
 # Returns: 0 if available, 1 if not available
 check_docker_compose() {
@@ -376,8 +486,10 @@ fi
 : $((CURRENT_STEP++))
 step $CURRENT_STEP $TOTAL_STEPS "Reading configuration from package.json..."
 
-# Extract Node.js version
-NODE_VERSION=$(jq -r '.engines.node // "lts"' package.json)
+# Extract Node.js version using safe parsing
+# The 'lts' default is used if engines.node is not specified
+NODE_VERSION=$(parse_package_json '.engines.node' "lts" "Node.js version (engines.node)" "false")
+
 # Clean version string (handle >=, ^, etc.)
 if [[ "$NODE_VERSION" =~ ^(\^|>=|~) ]]; then
     # Extract full semantic version (e.g., ">=18.0.0" -> "18.0.0")
@@ -390,12 +502,46 @@ else
     CLEAN_NODE_VERSION="$NODE_VERSION"
 fi
 
-# Extract pnpm version
-PNPM_FULL=$(jq -r '.packageManager // ""' package.json)
+# Final validation of cleaned Node.js version
+if [ -z "$CLEAN_NODE_VERSION" ]; then
+    error "Could not determine a valid Node.js version from package.json"
+    echo ""
+    info "Found value: '$NODE_VERSION' but could not extract version number"
+    echo ""
+    info "Expected formats:"
+    echo "  • Exact version:  \"18.0.0\""
+    echo "  • Range:          \">=18.0.0\""
+    echo "  • Caret:          \"^18.0.0\""
+    echo "  • Tilde:          \"~18.0.0\""
+    echo ""
+    info "Check package.json engines.node field:"
+    echo "  jq '.engines.node' package.json"
+    echo ""
+    info "Falling back to LTS version"
+    CLEAN_NODE_VERSION="lts"
+fi
+
+# Extract pnpm version using safe parsing
+PNPM_FULL=$(parse_package_json '.packageManager' "" "pnpm version (packageManager)" "false")
+
+# Validate and extract pnpm version
 if [[ "$PNPM_FULL" == pnpm@* ]]; then
     PNPM_VERSION="${PNPM_FULL#pnpm@}"
     PNPM_VERSION="${PNPM_VERSION%%+*}"  # Remove hash if present
+    
+    # Validate extracted pnpm version is not empty
+    if [ -z "$PNPM_VERSION" ]; then
+        warn "Could not extract pnpm version from '$PNPM_FULL', using latest"
+        PNPM_VERSION="latest"
+    fi
+elif [ -n "$PNPM_FULL" ]; then
+    # packageManager field exists but doesn't match expected pnpm format
+    warn "packageManager field '$PNPM_FULL' is not in expected format 'pnpm@version'"
+    info "Using latest pnpm version instead"
+    PNPM_VERSION="latest"
 else
+    # No packageManager field specified
+    info "No packageManager specified in package.json, using latest pnpm"
     PNPM_VERSION="latest"
 fi
 
