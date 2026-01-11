@@ -137,6 +137,7 @@ describe("GraphQL Routes", () => {
 				notification: expect.objectContaining({
 					queue: [],
 				}),
+				perf: undefined,
 			});
 
 			expect(mockRequest.jwtVerify).toHaveBeenCalled();
@@ -180,6 +181,7 @@ describe("GraphQL Routes", () => {
 				notification: expect.objectContaining({
 					queue: [],
 				}),
+				perf: undefined,
 			});
 
 			expect(mockRequest.jwtVerify).toHaveBeenCalled();
@@ -468,7 +470,7 @@ describe("GraphQL Routes", () => {
 				expect(context.perf).toBeUndefined();
 			});
 
-			it("should include perf tracker in subscription context when available", async () => {
+			it("should not include perf tracker in subscription context (handled in onConnect)", async () => {
 				const perfTracker = createPerformanceTracker();
 				const mockSocketWithPerf = {
 					request: {
@@ -487,9 +489,9 @@ describe("GraphQL Routes", () => {
 					socket: mockSocketWithPerf,
 				});
 
-				// Note: For subscriptions, perf is extracted in onConnect, not createContext
-				// This test verifies createContext works with subscription flag
-				expect(context).toBeDefined();
+				// For subscriptions, perf is extracted in onConnect, not createContext
+				// This test documents that createContext does not extract perf from socket
+				expect(context.perf).toBeUndefined();
 			});
 		});
 	});
@@ -914,6 +916,16 @@ describe("GraphQL Routes", () => {
 
 			// Should track complexity with mutation base cost (5 + 10 = 15)
 			expect(trackComplexitySpy).toHaveBeenCalledWith(15);
+
+			// Verify rate-limiting uses the same computed complexity to ensure consistency
+			expect(leakyBucket).toHaveBeenCalledWith(
+				mockFastifyInstance,
+				"rate-limit:ip:192.168.1.1",
+				100,
+				1,
+				15,
+				mockFastifyInstance.log,
+			);
 		});
 
 		it("should handle missing perf tracker gracefully in complexity tracking", async () => {
@@ -1282,92 +1294,17 @@ describe("GraphQL Routes", () => {
 			);
 		});
 
-		it("should handle missing perf tracker in subscription onConnect", async () => {
-			const { graphql } = await import("~/src/routes/graphql");
-
-			const fakeToken = "signed-jwt-token";
-			const decoded = {
-				user: { id: "user-789" },
-			} as ExplicitAuthenticationTokenPayload;
-
-			vi.mocked(schemaManager.buildInitialSchema).mockResolvedValue(
-				new GraphQLSchema({
-					query: new GraphQLObjectType({
-						name: "Query",
-						fields: {
-							hello: { type: GraphQLString, resolve: () => "Hello" },
-						},
-					}),
-				}),
-			);
-
-			mockFastifyInstance.jwt = { verify: vi.fn().mockResolvedValue(decoded) };
-
-			await graphql(mockFastifyInstance as unknown as FastifyInstance);
-
-			const mercuriusCall = mockFastifyInstance.register.mock.calls.find(
-				(call: unknown[]) =>
-					(call?.[1] as { subscription?: unknown })?.subscription,
-			);
-
-			const subscriptionConfig = mercuriusCall?.[1] as {
-				subscription: {
-					onConnect: (data: unknown) => Promise<boolean | object>;
-				};
-			};
-
-			const result = await subscriptionConfig.subscription.onConnect({
-				payload: { authorization: `Bearer ${fakeToken}` },
+		it.each([
+			{
+				description:
+					"should handle missing perf tracker in subscription onConnect",
 				socket: {
 					request: {},
 				},
-			});
-
-			expect(result).toEqual(
-				expect.objectContaining({
-					currentClient: { isAuthenticated: true, user: decoded.user },
-					perf: undefined,
-				}),
-			);
-		});
-
-		it("should validate perf tracker with type guard in subscription onConnect", async () => {
-			const { graphql } = await import("~/src/routes/graphql");
-
-			const fakeToken = "signed-jwt-token";
-			const decoded = {
-				user: { id: "user-789" },
-			} as ExplicitAuthenticationTokenPayload;
-
-			vi.mocked(schemaManager.buildInitialSchema).mockResolvedValue(
-				new GraphQLSchema({
-					query: new GraphQLObjectType({
-						name: "Query",
-						fields: {
-							hello: { type: GraphQLString, resolve: () => "Hello" },
-						},
-					}),
-				}),
-			);
-
-			mockFastifyInstance.jwt = { verify: vi.fn().mockResolvedValue(decoded) };
-
-			await graphql(mockFastifyInstance as unknown as FastifyInstance);
-
-			const mercuriusCall = mockFastifyInstance.register.mock.calls.find(
-				(call: unknown[]) =>
-					(call?.[1] as { subscription?: unknown })?.subscription,
-			);
-
-			const subscriptionConfig = mercuriusCall?.[1] as {
-				subscription: {
-					onConnect: (data: unknown) => Promise<boolean | object>;
-				};
-			};
-
-			// Test with invalid perf object (missing required methods)
-			const result = await subscriptionConfig.subscription.onConnect({
-				payload: { authorization: `Bearer ${fakeToken}` },
+			},
+			{
+				description:
+					"should validate perf tracker with type guard in subscription onConnect",
 				socket: {
 					request: {
 						perf: {
@@ -1376,218 +1313,49 @@ describe("GraphQL Routes", () => {
 						},
 					},
 				},
-			});
-
-			// Type guard should reject invalid perf tracker
-			expect(result).toEqual(
-				expect.objectContaining({
-					currentClient: { isAuthenticated: true, user: decoded.user },
-					perf: undefined,
-				}),
-			);
-		});
-
-		it("should handle undefined socket in subscription onConnect", async () => {
-			const { graphql } = await import("~/src/routes/graphql");
-
-			const fakeToken = "signed-jwt-token";
-			const decoded = {
-				user: { id: "user-789" },
-			} as ExplicitAuthenticationTokenPayload;
-
-			vi.mocked(schemaManager.buildInitialSchema).mockResolvedValue(
-				new GraphQLSchema({
-					query: new GraphQLObjectType({
-						name: "Query",
-						fields: {
-							hello: { type: GraphQLString, resolve: () => "Hello" },
-						},
-					}),
-				}),
-			);
-
-			mockFastifyInstance.jwt = { verify: vi.fn().mockResolvedValue(decoded) };
-
-			await graphql(mockFastifyInstance as unknown as FastifyInstance);
-
-			const mercuriusCall = mockFastifyInstance.register.mock.calls.find(
-				(call: unknown[]) =>
-					(call?.[1] as { subscription?: unknown })?.subscription,
-			);
-
-			const subscriptionConfig = mercuriusCall?.[1] as {
-				subscription: {
-					onConnect: (data: unknown) => Promise<boolean | object>;
-				};
-			};
-
-			// Test with undefined socket
-			const result = await subscriptionConfig.subscription.onConnect({
-				payload: { authorization: `Bearer ${fakeToken}` },
+			},
+			{
+				description: "should handle undefined socket in subscription onConnect",
 				socket: undefined,
-			});
-
-			expect(result).toEqual(
-				expect.objectContaining({
-					currentClient: { isAuthenticated: true, user: decoded.user },
-					perf: undefined,
-				}),
-			);
-		});
-
-		it("should handle socket without request property in subscription onConnect", async () => {
-			const { graphql } = await import("~/src/routes/graphql");
-
-			const fakeToken = "signed-jwt-token";
-			const decoded = {
-				user: { id: "user-789" },
-			} as ExplicitAuthenticationTokenPayload;
-
-			vi.mocked(schemaManager.buildInitialSchema).mockResolvedValue(
-				new GraphQLSchema({
-					query: new GraphQLObjectType({
-						name: "Query",
-						fields: {
-							hello: { type: GraphQLString, resolve: () => "Hello" },
-						},
-					}),
-				}),
-			);
-
-			mockFastifyInstance.jwt = { verify: vi.fn().mockResolvedValue(decoded) };
-
-			await graphql(mockFastifyInstance as unknown as FastifyInstance);
-
-			const mercuriusCall = mockFastifyInstance.register.mock.calls.find(
-				(call: unknown[]) =>
-					(call?.[1] as { subscription?: unknown })?.subscription,
-			);
-
-			const subscriptionConfig = mercuriusCall?.[1] as {
-				subscription: {
-					onConnect: (data: unknown) => Promise<boolean | object>;
-				};
-			};
-
-			// Test with socket that doesn't have request property
-			const result = await subscriptionConfig.subscription.onConnect({
-				payload: { authorization: `Bearer ${fakeToken}` },
+			},
+			{
+				description:
+					"should handle socket without request property in subscription onConnect",
 				socket: {} as { request?: never },
-			});
-
-			expect(result).toEqual(
-				expect.objectContaining({
-					currentClient: { isAuthenticated: true, user: decoded.user },
-					perf: undefined,
-				}),
-			);
-		});
-
-		it("should handle socket.request without perf property in subscription onConnect", async () => {
-			const { graphql } = await import("~/src/routes/graphql");
-
-			const fakeToken = "signed-jwt-token";
-			const decoded = {
-				user: { id: "user-789" },
-			} as ExplicitAuthenticationTokenPayload;
-
-			vi.mocked(schemaManager.buildInitialSchema).mockResolvedValue(
-				new GraphQLSchema({
-					query: new GraphQLObjectType({
-						name: "Query",
-						fields: {
-							hello: { type: GraphQLString, resolve: () => "Hello" },
-						},
-					}),
-				}),
-			);
-
-			mockFastifyInstance.jwt = { verify: vi.fn().mockResolvedValue(decoded) };
-
-			await graphql(mockFastifyInstance as unknown as FastifyInstance);
-
-			const mercuriusCall = mockFastifyInstance.register.mock.calls.find(
-				(call: unknown[]) =>
-					(call?.[1] as { subscription?: unknown })?.subscription,
-			);
-
-			const subscriptionConfig = mercuriusCall?.[1] as {
-				subscription: {
-					onConnect: (data: unknown) => Promise<boolean | object>;
-				};
-			};
-
-			// Test with socket.request that doesn't have perf property
-			const result = await subscriptionConfig.subscription.onConnect({
-				payload: { authorization: `Bearer ${fakeToken}` },
+			},
+			{
+				description:
+					"should handle socket.request without perf property in subscription onConnect",
 				socket: {
 					request: {
 						// No perf property
 					},
 				},
-			});
-
-			expect(result).toEqual(
-				expect.objectContaining({
-					currentClient: { isAuthenticated: true, user: decoded.user },
-					perf: undefined,
-				}),
-			);
-		});
-
-		it("should handle null perf value in socket.request.perf in subscription onConnect", async () => {
-			const { graphql } = await import("~/src/routes/graphql");
-
-			const fakeToken = "signed-jwt-token";
-			const decoded = {
-				user: { id: "user-789" },
-			} as ExplicitAuthenticationTokenPayload;
-
-			vi.mocked(schemaManager.buildInitialSchema).mockResolvedValue(
-				new GraphQLSchema({
-					query: new GraphQLObjectType({
-						name: "Query",
-						fields: {
-							hello: { type: GraphQLString, resolve: () => "Hello" },
-						},
-					}),
-				}),
-			);
-
-			mockFastifyInstance.jwt = { verify: vi.fn().mockResolvedValue(decoded) };
-
-			await graphql(mockFastifyInstance as unknown as FastifyInstance);
-
-			const mercuriusCall = mockFastifyInstance.register.mock.calls.find(
-				(call: unknown[]) =>
-					(call?.[1] as { subscription?: unknown })?.subscription,
-			);
-
-			const subscriptionConfig = mercuriusCall?.[1] as {
-				subscription: {
-					onConnect: (data: unknown) => Promise<boolean | object>;
-				};
-			};
-
-			// Test with null perf value (type guard should reject null)
-			const result = await subscriptionConfig.subscription.onConnect({
-				payload: { authorization: `Bearer ${fakeToken}` },
+			},
+			{
+				description:
+					"should handle null perf value in socket.request.perf in subscription onConnect",
 				socket: {
 					request: {
 						perf: null,
 					},
 				},
-			});
-
-			expect(result).toEqual(
-				expect.objectContaining({
-					currentClient: { isAuthenticated: true, user: decoded.user },
-					perf: undefined,
-				}),
-			);
-		});
-
-		it("should handle non-object perf value in socket.request.perf in subscription onConnect", async () => {
+			},
+			{
+				description:
+					"should handle non-object perf value in socket.request.perf in subscription onConnect",
+				socket: {
+					request: {
+						perf: "not-an-object" as unknown,
+					},
+				},
+			},
+		])("$description", async ({
+			socket,
+		}: {
+			description: string;
+			socket: unknown;
+		}) => {
 			const { graphql } = await import("~/src/routes/graphql");
 
 			const fakeToken = "signed-jwt-token";
@@ -1621,14 +1389,9 @@ describe("GraphQL Routes", () => {
 				};
 			};
 
-			// Test with non-object perf value (type guard should reject non-objects)
 			const result = await subscriptionConfig.subscription.onConnect({
 				payload: { authorization: `Bearer ${fakeToken}` },
-				socket: {
-					request: {
-						perf: "not-an-object" as unknown,
-					},
-				},
+				socket,
 			});
 
 			expect(result).toEqual(

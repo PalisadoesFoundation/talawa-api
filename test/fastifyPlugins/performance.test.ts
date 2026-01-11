@@ -17,7 +17,9 @@ describe("Performance Plugin", () => {
 	});
 
 	afterEach(async () => {
-		await app.close();
+		if (app) {
+			await app.close();
+		}
 	});
 
 	describe("Plugin Registration", () => {
@@ -37,14 +39,25 @@ describe("Performance Plugin", () => {
 
 	describe("onRequest Hook", () => {
 		it("should attach perf tracker to request", async () => {
+			// Create fresh instance for this test since we're adding a route
+			const testApp = Fastify({
+				logger: {
+					level: "silent",
+				},
+			});
+
+			await testApp.register(performancePlugin);
+
 			let requestPerf: unknown;
 
-			app.get("/test-perf-attach", async (request: FastifyRequest) => {
+			testApp.get("/test-perf-attach", async (request: FastifyRequest) => {
 				requestPerf = request.perf;
 				return { ok: true };
 			});
 
-			await app.inject({
+			await testApp.ready();
+
+			await testApp.inject({
 				method: "GET",
 				url: "/test-perf-attach",
 			});
@@ -55,17 +68,30 @@ describe("Performance Plugin", () => {
 			expect(requestPerf).toHaveProperty("trackDb");
 			expect(requestPerf).toHaveProperty("trackCacheHit");
 			expect(requestPerf).toHaveProperty("trackCacheMiss");
+
+			await testApp.close();
 		});
 
 		it("should attach _t0 timestamp to request", async () => {
+			// Create fresh instance for this test since we're adding a route
+			const testApp = Fastify({
+				logger: {
+					level: "silent",
+				},
+			});
+
+			await testApp.register(performancePlugin);
+
 			let requestT0: number | undefined;
 
-			app.get("/test-t0-attach", async (request: FastifyRequest) => {
+			testApp.get("/test-t0-attach", async (request: FastifyRequest) => {
 				requestT0 = request._t0;
 				return { ok: true };
 			});
 
-			await app.inject({
+			await testApp.ready();
+
+			await testApp.inject({
 				method: "GET",
 				url: "/test-t0-attach",
 			});
@@ -73,14 +99,27 @@ describe("Performance Plugin", () => {
 			expect(requestT0).toBeDefined();
 			expect(typeof requestT0).toBe("number");
 			expect(requestT0).toBeGreaterThan(0);
+
+			await testApp.close();
 		});
 	});
 
 	describe("onSend Hook", () => {
 		it("should add Server-Timing header to response", async () => {
-			app.get("/test-timing", async () => ({ ok: true }));
+			// Create fresh instance for this test since we're adding a route
+			const testApp = Fastify({
+				logger: {
+					level: "silent",
+				},
+			});
 
-			const response = await app.inject({
+			await testApp.register(performancePlugin);
+
+			testApp.get("/test-timing", async () => ({ ok: true }));
+
+			await testApp.ready();
+
+			const response = await testApp.inject({
 				method: "GET",
 				url: "/test-timing",
 			});
@@ -91,10 +130,21 @@ describe("Performance Plugin", () => {
 			expect(serverTiming).toMatch(/db;dur=\d+/);
 			expect(serverTiming).toMatch(/cache;desc="hit:\d+\|miss:\d+"/);
 			expect(serverTiming).toMatch(/total;dur=\d+/);
+
+			await testApp.close();
 		});
 
 		it("should format Server-Timing header correctly", async () => {
-			app.get("/test-format", async (request: FastifyRequest) => {
+			// Create fresh instance for this test since we're adding a route
+			const testApp = Fastify({
+				logger: {
+					level: "silent",
+				},
+			});
+
+			await testApp.register(performancePlugin);
+
+			testApp.get("/test-format", async (request: FastifyRequest) => {
 				// Track some operations
 				request.perf?.trackDb(50);
 				request.perf?.trackCacheHit();
@@ -102,7 +152,9 @@ describe("Performance Plugin", () => {
 				return { ok: true };
 			});
 
-			const response = await app.inject({
+			await testApp.ready();
+
+			const response = await testApp.inject({
 				method: "GET",
 				url: "/test-format",
 			});
@@ -115,21 +167,34 @@ describe("Performance Plugin", () => {
 			expect(serverTiming).toMatch(/cache;desc="hit:1\|miss:1"/);
 			// Verify total duration is present
 			expect(serverTiming).toMatch(/total;dur=\d+/);
+
+			await testApp.close();
 		});
 
 		it("should store snapshot in recent buffer", async () => {
-			app.get("/test-snapshot", async (request: FastifyRequest) => {
+			// Create fresh instance for this test since we're adding a route
+			const testApp = Fastify({
+				logger: {
+					level: "silent",
+				},
+			});
+
+			await testApp.register(performancePlugin);
+
+			testApp.get("/test-snapshot", async (request: FastifyRequest) => {
 				request.perf?.trackDb(30);
 				request.perf?.trackCacheHit();
 				return { ok: true };
 			});
 
-			await app.inject({
+			await testApp.ready();
+
+			await testApp.inject({
 				method: "GET",
 				url: "/test-snapshot",
 			});
 
-			const response = await app.inject({
+			const response = await testApp.inject({
 				method: "GET",
 				url: "/metrics/perf",
 			});
@@ -146,20 +211,33 @@ describe("Performance Plugin", () => {
 			expect(snapshot).toHaveProperty("cacheMisses");
 			expect(snapshot).toHaveProperty("ops");
 			expect(snapshot.cacheHits).toBe(1);
+
+			await testApp.close();
 		});
 
 		it("should limit recent buffer to 200 snapshots", async () => {
-			app.get("/test-buffer-limit", async () => ({ ok: true }));
+			// Create fresh instance for this test since we're adding a route
+			const testApp = Fastify({
+				logger: {
+					level: "silent",
+				},
+			});
+
+			await testApp.register(performancePlugin);
+
+			testApp.get("/test-buffer-limit", async () => ({ ok: true }));
+
+			await testApp.ready();
 
 			// Make 210 requests to exceed the 200 snapshot limit
 			for (let i = 0; i < 210; i++) {
-				await app.inject({
+				await testApp.inject({
 					method: "GET",
 					url: "/test-buffer-limit",
 				});
 			}
 
-			const response = await app.inject({
+			const response = await testApp.inject({
 				method: "GET",
 				url: "/metrics/perf",
 			});
@@ -169,15 +247,29 @@ describe("Performance Plugin", () => {
 			// The buffer should be limited to 200, but /metrics/perf returns max 50
 			// So we should see at most 50 snapshots
 			expect(body.recent.length).toBeLessThanOrEqual(50);
+
+			await testApp.close();
 		});
 	});
 
 	describe("/metrics/perf Endpoint", () => {
 		it("should return JSON response with recent snapshots", async () => {
-			app.get("/test-metrics-1", async () => ({ ok: true }));
-			await app.inject({ method: "GET", url: "/test-metrics-1" });
+			// Create fresh instance for this test since we're adding a route
+			const testApp = Fastify({
+				logger: {
+					level: "silent",
+				},
+			});
 
-			const response = await app.inject({
+			await testApp.register(performancePlugin);
+
+			testApp.get("/test-metrics-1", async () => ({ ok: true }));
+
+			await testApp.ready();
+
+			await testApp.inject({ method: "GET", url: "/test-metrics-1" });
+
+			const response = await testApp.inject({
 				method: "GET",
 				url: "/metrics/perf",
 			});
@@ -188,17 +280,30 @@ describe("Performance Plugin", () => {
 			const body = response.json();
 			expect(body).toHaveProperty("recent");
 			expect(Array.isArray(body.recent)).toBe(true);
+
+			await testApp.close();
 		});
 
 		it("should return at most 50 snapshots", async () => {
-			app.get("/test-metrics-2", async () => ({ ok: true }));
+			// Create fresh instance for this test since we're adding a route
+			const testApp = Fastify({
+				logger: {
+					level: "silent",
+				},
+			});
+
+			await testApp.register(performancePlugin);
+
+			testApp.get("/test-metrics-2", async () => ({ ok: true }));
+
+			await testApp.ready();
 
 			// Make 60 requests
 			for (let i = 0; i < 60; i++) {
-				await app.inject({ method: "GET", url: "/test-metrics-2" });
+				await testApp.inject({ method: "GET", url: "/test-metrics-2" });
 			}
 
-			const response = await app.inject({
+			const response = await testApp.inject({
 				method: "GET",
 				url: "/metrics/perf",
 			});
@@ -207,10 +312,21 @@ describe("Performance Plugin", () => {
 
 			// Should return at most 50 snapshots
 			expect(body.recent.length).toBeLessThanOrEqual(50);
+
+			await testApp.close();
 		});
 
 		it("should return snapshots in correct format", async () => {
-			app.get("/test-metrics-3", async (request: FastifyRequest) => {
+			// Create fresh instance for this test since we're adding a route
+			const testApp = Fastify({
+				logger: {
+					level: "silent",
+				},
+			});
+
+			await testApp.register(performancePlugin);
+
+			testApp.get("/test-metrics-3", async (request: FastifyRequest) => {
 				request.perf?.trackDb(25);
 				request.perf?.trackCacheHit();
 				request.perf?.trackCacheMiss();
@@ -218,9 +334,11 @@ describe("Performance Plugin", () => {
 				return { ok: true };
 			});
 
-			await app.inject({ method: "GET", url: "/test-metrics-3" });
+			await testApp.ready();
 
-			const response = await app.inject({
+			await testApp.inject({ method: "GET", url: "/test-metrics-3" });
+
+			const response = await testApp.inject({
 				method: "GET",
 				url: "/metrics/perf",
 			});
@@ -254,25 +372,36 @@ describe("Performance Plugin", () => {
 					expect(snapshot.complexityScore).toBe(10);
 				}
 			}
+
+			await testApp.close();
 		});
 
 		it("should return most recent snapshots first", async () => {
-			app.get("/test-metrics-4", async (request: FastifyRequest, i: number) => {
-				// Track different operations to distinguish snapshots
-				request.perf?.trackDb(i * 10);
-				return { ok: true };
+			// Create fresh instance for this test since we're adding routes
+			const testApp = Fastify({
+				logger: {
+					level: "silent",
+				},
 			});
 
-			// Make 5 requests with different db times
+			await testApp.register(performancePlugin);
+
+			// Register all routes before ready
 			for (let i = 1; i <= 5; i++) {
-				app.get(`/test-metrics-4-${i}`, async (request: FastifyRequest) => {
+				testApp.get(`/test-metrics-4-${i}`, async (request: FastifyRequest) => {
 					request.perf?.trackDb(i * 10);
 					return { ok: true };
 				});
-				await app.inject({ method: "GET", url: `/test-metrics-4-${i}` });
 			}
 
-			const response = await app.inject({
+			await testApp.ready();
+
+			// Make 5 requests with different db times
+			for (let i = 1; i <= 5; i++) {
+				await testApp.inject({ method: "GET", url: `/test-metrics-4-${i}` });
+			}
+
+			const response = await testApp.inject({
 				method: "GET",
 				url: "/metrics/perf",
 			});
@@ -289,19 +418,32 @@ describe("Performance Plugin", () => {
 				expect(first).toBeDefined();
 				expect(second).toBeDefined();
 			}
+
+			await testApp.close();
 		});
 	});
 
 	describe("Edge Cases", () => {
 		it("should handle missing perf tracker gracefully", async () => {
+			// Create fresh instance for this test since we're adding hooks and routes
+			const testApp = Fastify({
+				logger: {
+					level: "silent",
+				},
+			});
+
+			await testApp.register(performancePlugin);
+
 			// Manually remove perf tracker to simulate edge case
-			app.addHook("onRequest", async (request: FastifyRequest) => {
+			testApp.addHook("onRequest", async (request: FastifyRequest) => {
 				delete request.perf;
 			});
 
-			app.get("/test-no-perf", async () => ({ ok: true }));
+			testApp.get("/test-no-perf", async () => ({ ok: true }));
 
-			const response = await app.inject({
+			await testApp.ready();
+
+			const response = await testApp.inject({
 				method: "GET",
 				url: "/test-no-perf",
 			});
@@ -314,17 +456,30 @@ describe("Performance Plugin", () => {
 			expect(serverTiming).toBeDefined();
 			expect(serverTiming).toMatch(/db;dur=0/);
 			expect(serverTiming).toMatch(/cache;desc="hit:0\|miss:0"/);
+
+			await testApp.close();
 		});
 
 		it("should handle missing _t0 timestamp gracefully", async () => {
+			// Create fresh instance for this test since we're adding hooks and routes
+			const testApp = Fastify({
+				logger: {
+					level: "silent",
+				},
+			});
+
+			await testApp.register(performancePlugin);
+
 			// Manually remove _t0 to simulate edge case
-			app.addHook("onRequest", async (request: FastifyRequest) => {
+			testApp.addHook("onRequest", async (request: FastifyRequest) => {
 				delete request._t0;
 			});
 
-			app.get("/test-no-t0", async () => ({ ok: true }));
+			testApp.get("/test-no-t0", async () => ({ ok: true }));
 
-			const response = await app.inject({
+			await testApp.ready();
+
+			const response = await testApp.inject({
 				method: "GET",
 				url: "/test-no-t0",
 			});
@@ -335,17 +490,30 @@ describe("Performance Plugin", () => {
 			// Server-Timing should still be present
 			const serverTiming = response.headers["server-timing"] as string;
 			expect(serverTiming).toBeDefined();
+
+			await testApp.close();
 		});
 
 		it("should handle concurrent requests", async () => {
-			app.get("/test-concurrent", async (request: FastifyRequest) => {
+			// Create fresh instance for this test since we're adding a route
+			const testApp = Fastify({
+				logger: {
+					level: "silent",
+				},
+			});
+
+			await testApp.register(performancePlugin);
+
+			testApp.get("/test-concurrent", async (request: FastifyRequest) => {
 				request.perf?.trackDb(10);
 				return { ok: true };
 			});
 
+			await testApp.ready();
+
 			// Make multiple concurrent requests
 			const promises = Array.from({ length: 10 }, () =>
-				app.inject({
+				testApp.inject({
 					method: "GET",
 					url: "/test-concurrent",
 				}),
@@ -359,12 +527,25 @@ describe("Performance Plugin", () => {
 				const serverTiming = response.headers["server-timing"] as string;
 				expect(serverTiming).toBeDefined();
 			});
+
+			await testApp.close();
 		});
 
 		it("should handle requests with no cache operations", async () => {
-			app.get("/test-no-cache", async () => ({ ok: true }));
+			// Create fresh instance for this test since we're adding a route
+			const testApp = Fastify({
+				logger: {
+					level: "silent",
+				},
+			});
 
-			const response = await app.inject({
+			await testApp.register(performancePlugin);
+
+			testApp.get("/test-no-cache", async () => ({ ok: true }));
+
+			await testApp.ready();
+
+			const response = await testApp.inject({
 				method: "GET",
 				url: "/test-no-cache",
 			});
@@ -373,15 +554,28 @@ describe("Performance Plugin", () => {
 
 			// Should have cache description with zero hits and misses
 			expect(serverTiming).toMatch(/cache;desc="hit:0\|miss:0"/);
+
+			await testApp.close();
 		});
 
 		it("should handle requests with no database operations", async () => {
-			app.get("/test-no-db", async (request: FastifyRequest) => {
+			// Create fresh instance for this test since we're adding a route
+			const testApp = Fastify({
+				logger: {
+					level: "silent",
+				},
+			});
+
+			await testApp.register(performancePlugin);
+
+			testApp.get("/test-no-db", async (request: FastifyRequest) => {
 				request.perf?.trackCacheHit();
 				return { ok: true };
 			});
 
-			const response = await app.inject({
+			await testApp.ready();
+
+			const response = await testApp.inject({
 				method: "GET",
 				url: "/test-no-db",
 			});
@@ -390,6 +584,8 @@ describe("Performance Plugin", () => {
 
 			// Should have db duration of 0
 			expect(serverTiming).toMatch(/db;dur=0/);
+
+			await testApp.close();
 		});
 	});
 });

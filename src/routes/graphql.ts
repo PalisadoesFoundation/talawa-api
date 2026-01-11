@@ -20,7 +20,10 @@ import {
 import { createDataloaders } from "../utilities/dataloaders";
 import leakyBucket from "../utilities/leakyBucket";
 import { type AppLogger, withFields } from "../utilities/logging/logger";
-import type { PerformanceTracker } from "../utilities/metrics/performanceTracker";
+import {
+	isPerformanceTracker,
+	type PerformanceTracker,
+} from "../utilities/metrics/performanceTracker";
 import { DEFAULT_REFRESH_TOKEN_EXPIRES_MS } from "../utilities/refreshTokenUtils";
 import { TalawaGraphQLError } from "../utilities/TalawaGraphQLError";
 
@@ -269,21 +272,6 @@ export const graphql = fastifyPlugin(async (fastify) => {
 						{ user: decoded.user },
 						"Subscription connection authorized.",
 					);
-
-					// Type guard to safely extract perf tracker from socket request
-					const isPerformanceTracker = (
-						value: unknown,
-					): value is PerformanceTracker => {
-						return (
-							typeof value === "object" &&
-							value !== null &&
-							"trackComplexity" in value &&
-							"snapshot" in value &&
-							"trackDb" in value &&
-							"trackCacheHit" in value &&
-							"trackCacheMiss" in value
-						);
-					};
 
 					// Extract perf from socket.request.perf if available
 					const perf =
