@@ -16,7 +16,15 @@ import {
     validateURL,
 } from "../../scripts/setup/validators";
 
+/**
+ * Note: Backward compatibility of re-exports from setup.ts is verified by:
+ * 1. TypeScript compilation (type checking ensures exports exist)
+ * 2. CodeRabbit static analysis (verified in PR review)
+ * Tests cannot import setup.ts directly due to its dependencies on main project modules.
+ */
+
 describe("validators", () => {
+
     describe("generateJwtSecret", () => {
         afterEach(() => {
             vi.restoreAllMocks();
@@ -28,10 +36,11 @@ describe("validators", () => {
             expect(/^[0-9a-f]+$/.test(secret)).toBe(true);
         });
 
-        it("generates unique secrets on each call", () => {
-            const secret1 = generateJwtSecret();
-            const secret2 = generateJwtSecret();
-            expect(secret1).not.toBe(secret2);
+        it("calls crypto.randomBytes with 64 bytes", () => {
+            const spy = vi.spyOn(crypto, "randomBytes");
+            const secret = generateJwtSecret();
+            expect(spy).toHaveBeenCalledWith(64);
+            expect(secret).toHaveLength(128);
         });
 
         it("throws error when crypto.randomBytes fails", () => {
@@ -317,6 +326,10 @@ describe("validators", () => {
 
         it("returns error for empty URL", () => {
             expect(validateCloudBeaverURL("")).toBe("Server URL is required");
+        });
+
+        it("returns error for whitespace-only URL", () => {
+            expect(validateCloudBeaverURL("   ")).toBe("Server URL is required");
         });
 
         it("returns error for FTP protocol", () => {

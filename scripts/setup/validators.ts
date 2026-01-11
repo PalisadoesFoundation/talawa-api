@@ -109,14 +109,14 @@ export function validateCloudBeaverPassword(input: string): true | string {
  * @returns `true` if valid, or an error message string if invalid.
  */
 export function validateCloudBeaverURL(input: string): true | string {
-	if (!input) return "Server URL is required";
+	if (!input.trim()) return "Server URL is required";
 	try {
 		const url = new URL(input);
 		if (!["http:", "https:"].includes(url.protocol)) {
 			return "URL must use HTTP or HTTPS protocol";
 		}
 		const port = url.port || (url.protocol === "https:" ? "443" : "80");
-		const portNum = Number.parseInt(port);
+		const portNum = Number.parseInt(port, 10);
 		if (!/^\d+$/.test(port) || portNum < 1 || portNum > 65535) {
 			return "Invalid port in URL";
 		}
