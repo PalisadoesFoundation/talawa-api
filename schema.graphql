@@ -2664,9 +2664,6 @@ input MutationCreateAgendaCategoryInput {
 
   """Name of the agenda category."""
   name: String!
-
-  """ID of the organization this category belongs to."""
-  organizationId: ID!
 }
 
 """"""
