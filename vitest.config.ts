@@ -43,6 +43,9 @@ if (isCI) {
 	}
 }
 
+// Skip global setup for pure unit tests that don't need server/db
+const isUnitTest = process.argv.some((arg) => arg.includes("test/unit/"));
+
 export default defineConfig({
 	plugins: [tsconfigPaths()],
 	test: {
@@ -77,7 +80,7 @@ export default defineConfig({
 		},
 
 		// https://vitest.dev/config/#globalsetup
-		globalSetup: ["./test/setup.ts"],
+		globalSetup: isUnitTest ? [] : ["./test/setup.ts"],
 
 		// https://vitest.dev/config/#passwithnotests
 		passWithNoTests: true,
