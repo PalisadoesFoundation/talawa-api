@@ -21,8 +21,7 @@ vi.mock("../../src/services/ses/EmailService", () => ({
 	EmailService: vi.fn().mockImplementation((...args) => {
 		mocks.mockEmailServiceConstructor(...args);
 		return {
-			// biome-ignore lint/suspicious/noExplicitAny: Mock wrapper needs to pass through all args
-			sendEmail: (...callArgs: any[]) => mocks.mockSendEmail(...callArgs),
+			sendEmail: (...callArgs: unknown[]) => mocks.mockSendEmail(...callArgs),
 		};
 	}),
 }));
