@@ -6,7 +6,7 @@
 
 > **CreateContext** = (`initialContext`) => `Promise`\<[`ExplicitGraphQLContext`](../../../graphql/context/type-aliases/ExplicitGraphQLContext.md)\>
 
-Defined in: [src/routes/graphql.ts:58](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/routes/graphql.ts#L58)
+Defined in: [src/routes/graphql.ts:61](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/routes/graphql.ts#L61)
 
 ## Parameters
 
