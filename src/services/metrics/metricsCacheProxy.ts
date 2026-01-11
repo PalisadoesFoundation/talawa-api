@@ -3,21 +3,6 @@
  *
  * This function instruments cache operations (`get`, `mget`, `set`, `del`) to track cache hits
  * and misses using a performance monitoring object.
- *
- * @param cache - Cache implementation providing `get`, `set`, `del`, and optional `mget`
- * @param perf - Performance tracker with `trackCacheHit` and `trackCacheMiss` methods
- *
- * @returns A proxy object exposing the following async methods:
- * - `get(key)` – Retrieves a single value and tracks hit or miss
- * - `mget(keys)` – Retrieves multiple values and tracks hits and misses
- * - `set(key, value, ttl)` – Stores a value with TTL
- * - `del(keys)` – Deletes one or more keys
- *
- * @example
- * ```ts
- * const proxiedCache = metricsCacheProxy(redisCache, performanceTracker);
- * const value = await proxiedCache.get('myKey');
- * ```
  */
 export function metricsCacheProxy<
 	TCache extends {
@@ -34,48 +19,59 @@ export function metricsCacheProxy<
 	},
 ) {
 	return {
+		/**
+		 * Get a single value from cache.
+		 * - Normalizes undefined → null
+		 * - Tracks hit/miss correctly
+		 */
 		async get<T>(key: string): Promise<T | null> {
 			const value = await cache.get(key);
-			if (value === null || value === undefined) {
+
+			if (value == null) {
 				perf.trackCacheMiss();
-			} else {
-				perf.trackCacheHit();
+				return null;
 			}
-			return value as T | null;
+
+			else{
+			perf.trackCacheHit();
+			}
+			return value as T;
 		},
 
+		/**
+		 * Get multiple values from cache.
+		 * - Works with or without native mget
+		 * - Normalizes undefined → null per element
+		 * - Tracks hits/misses in a single pass
+		 */
 		async mget<T>(keys: string[]): Promise<(T | null)[]> {
-			const res = await (cache.mget
+			const raw = await (cache.mget
 				? cache.mget(keys)
 				: Promise.all(keys.map((k) => cache.get(k))));
 
-			// Count hits (non-null values)
-			let hits = 0;
-			let misses = 0;
-
-			for (const v of res) {
-				if (v !== null && v !== undefined) {
-					hits++;
-				} else {
-					misses++;
+			return raw.map((value) => {
+				if (value == null) {
+					perf.trackCacheMiss();
+					return null;
 				}
-			}
 
-			// Track each hit and miss individually
-			for (let i = 0; i < hits; i++) {
+else{
 				perf.trackCacheHit();
-			}
-			for (let i = 0; i < misses; i++) {
-				perf.trackCacheMiss();
-			}
-
-			return res as (T | null)[];
+}
+				return value as T;
+			});
 		},
 
+		/**
+		 * Set a value in cache.
+		 */
 		async set<T>(key: string, value: T, ttl: number) {
 			return cache.set(key, value, ttl);
 		},
 
+		/**
+		 * Delete one or more keys from cache.
+		 */
 		async del(keys: string | string[]) {
 			return cache.del(keys);
 		},

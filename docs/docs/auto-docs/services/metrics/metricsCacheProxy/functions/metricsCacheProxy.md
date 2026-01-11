@@ -6,7 +6,7 @@
 
 > **metricsCacheProxy**\<`TCache`\>(`cache`, `perf`): `object`
 
-Defined in: [src/services/metrics/metricsCacheProxy.ts:22](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/metrics/metricsCacheProxy.ts#L22)
+Defined in: [src/services/metrics/metricsCacheProxy.ts:7](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/metrics/metricsCacheProxy.ts#L7)
 
 Creates a cache proxy that wraps a cache implementation with performance tracking capabilities.
 
@@ -25,11 +25,7 @@ and misses using a performance monitoring object.
 
 `TCache`
 
-Cache implementation providing `get`, `set`, `del`, and optional `mget`
-
 ### perf
-
-Performance tracker with `trackCacheHit` and `trackCacheMiss` methods
 
 #### trackCacheHit
 
@@ -41,17 +37,11 @@ Performance tracker with `trackCacheHit` and `trackCacheMiss` methods
 
 ## Returns
 
-`object`
-
-A proxy object exposing the following async methods:
-- `get(key)` – Retrieves a single value and tracks hit or miss
-- `mget(keys)` – Retrieves multiple values and tracks hits and misses
-- `set(key, value, ttl)` – Stores a value with TTL
-- `del(keys)` – Deletes one or more keys
-
 ### del()
 
 > **del**(`keys`): `Promise`\<`unknown`\>
+
+Delete one or more keys from cache.
 
 #### Parameters
 
@@ -66,6 +56,10 @@ A proxy object exposing the following async methods:
 ### get()
 
 > **get**\<`T`\>(`key`): `Promise`\<`T` \| `null`\>
+
+Get a single value from cache.
+- Normalizes undefined → null
+- Tracks hit/miss correctly
 
 #### Type Parameters
 
@@ -87,6 +81,11 @@ A proxy object exposing the following async methods:
 
 > **mget**\<`T`\>(`keys`): `Promise`\<(`T` \| `null`)[]\>
 
+Get multiple values from cache.
+- Works with or without native mget
+- Normalizes undefined → null per element
+- Tracks hits/misses in a single pass
+
 #### Type Parameters
 
 ##### T
@@ -106,6 +105,8 @@ A proxy object exposing the following async methods:
 ### set()
 
 > **set**\<`T`\>(`key`, `value`, `ttl`): `Promise`\<`unknown`\>
+
+Set a value in cache.
 
 #### Type Parameters
 
@@ -130,10 +131,3 @@ A proxy object exposing the following async methods:
 #### Returns
 
 `Promise`\<`unknown`\>
-
-## Example
-
-```ts
-const proxiedCache = metricsCacheProxy(redisCache, performanceTracker);
-const value = await proxiedCache.get('myKey');
-```
