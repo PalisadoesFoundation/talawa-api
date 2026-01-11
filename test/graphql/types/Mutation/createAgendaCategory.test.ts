@@ -209,6 +209,43 @@ suite("Mutation field createAgendaCategory", () => {
 			assertToBeNonNullish(result.data?.createAgendaCategory);
 		});
 
+		test("Returns error when user exists in token but not in DB", async () => {
+			const regularUser = await createRegularUserUsingAdmin();
+
+			await server.drizzleClient
+				.delete(usersTable)
+				.where(eq(usersTable.id, regularUser.userId));
+
+			const result = await mercuriusClient.mutate(
+				Mutation_createAgendaCategory,
+				{
+					headers: {
+						authorization: `bearer ${regularUser.authToken}`,
+					},
+					variables: {
+						input: {
+							eventId: faker.string.uuid(),
+							name: "Category",
+						},
+					},
+				},
+			);
+
+			expect(result.data?.createAgendaCategory ?? null).toEqual(null);
+			expect(result.errors).toEqual(
+				expect.arrayContaining([
+					expect.objectContaining({
+						path: ["createAgendaCategory"],
+						extensions: expect.objectContaining({
+							code: "unauthenticated",
+						}),
+					}),
+				]),
+			);
+		});
+	});
+
+	suite("Successful Creation", () => {
 		test("Successfully creates category with description", async () => {
 			const [{ token }, orgAdmin] = await Promise.all([
 				getAdminAuth(),
@@ -244,41 +281,6 @@ suite("Mutation field createAgendaCategory", () => {
 			assertToBeNonNullish(result.data?.createAgendaCategory);
 			expect(result.data.createAgendaCategory.description).toEqual(
 				"This is a test description",
-			);
-		});
-
-		test("Returns error when user exists in token but not in DB", async () => {
-			const regularUser = await createRegularUserUsingAdmin();
-
-			await server.drizzleClient
-				.delete(usersTable)
-				.where(eq(usersTable.id, regularUser.userId));
-
-			const result = await mercuriusClient.mutate(
-				Mutation_createAgendaCategory,
-				{
-					headers: {
-						authorization: `bearer ${regularUser.authToken}`,
-					},
-					variables: {
-						input: {
-							eventId: faker.string.uuid(),
-							name: "Category",
-						},
-					},
-				},
-			);
-
-			expect(result.data?.createAgendaCategory ?? null).toEqual(null);
-			expect(result.errors).toEqual(
-				expect.arrayContaining([
-					expect.objectContaining({
-						path: ["createAgendaCategory"],
-						extensions: expect.objectContaining({
-							code: "unauthenticated",
-						}),
-					}),
-				]),
 			);
 		});
 	});
