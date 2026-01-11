@@ -111,7 +111,7 @@ describe("EmailService", () => {
 		const result = await serviceNoFrom.sendEmail(buildJob());
 
 		expect(result.success).toBe(false);
-		expect(result.error).toContain("fromEmail is required");
+		expect(result.error).toContain("Email service not configured");
 	});
 
 	it("uses fromEmail directly when fromName is not provided", async () => {
