@@ -295,10 +295,12 @@ export const envConfigSchema = Type.Object({
 	/**
 	 * The threshold in milliseconds for a request to be considered slow.
 	 */
-	API_SLOW_REQUEST_MS: Type.Number({
-		minimum: 0,
-		default: 500,
-	}),
+	API_SLOW_REQUEST_MS: Type.Optional(
+		Type.Number({
+			minimum: 0,
+			default: 500,
+		}),
+	),
 	/**
 	 * Enabled state for OpenTelemetry tracing.
 	 */
