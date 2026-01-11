@@ -139,38 +139,103 @@ describe("emailSetup", () => {
 		expect(result.AWS_ACCESS_KEY_ID).toBeUndefined();
 	});
 
-	it("should clear config when user chooses retry after test failure", async () => {
+	it("should retry setup when user chooses retry after test failure", async () => {
 		vi.mocked(promptHelpers.promptConfirm)
 			.mockResolvedValueOnce(true) // Configure email? Yes
-			.mockResolvedValueOnce(true); // Send test email? Yes
+			.mockResolvedValueOnce(true) // Send test email? Yes (First attempt)
+			.mockResolvedValueOnce(true) // Configure email? Yes (Retry loop)
+			.mockResolvedValueOnce(true); // Send test email? Yes (Second attempt)
 
 		vi.mocked(promptHelpers.promptList)
-			.mockResolvedValueOnce("ses") // Provider
-			.mockResolvedValueOnce("Retry with different credentials"); // Test failure action
+			.mockResolvedValueOnce("ses") // Provider (First attempt)
+			.mockResolvedValueOnce("Retry with different credentials") // Action (First failure)
+			.mockResolvedValueOnce("ses"); // Provider (Retry loop)
 
+		// First attempt inputs (fail)
 		vi.mocked(promptHelpers.promptInput)
 			.mockResolvedValueOnce("us-east-1")
 			.mockResolvedValueOnce("bad-key")
 			.mockResolvedValueOnce("bad-secret")
 			.mockResolvedValueOnce("test@example.com")
 			.mockResolvedValueOnce("Test App")
-			.mockResolvedValueOnce("recipient@example.com"); // Test recipient
+			.mockResolvedValueOnce("recipient@example.com")
+			// Second attempt inputs (succeed)
+			.mockResolvedValueOnce("us-east-1")
+			.mockResolvedValueOnce("good-key")
+			.mockResolvedValueOnce("good-secret")
+			.mockResolvedValueOnce("test@example.com")
+			.mockResolvedValueOnce("Test App")
+			.mockResolvedValueOnce("recipient@example.com");
 
-		// Mock EmailService to fail
+		// Mock EmailService
 		const mockEmailService = {
 			sendEmail: vi
 				.fn()
-				.mockResolvedValue({ success: false, error: "Invalid credentials" }),
+				.mockResolvedValueOnce({
+					success: false,
+					error: "Invalid credentials",
+				}) // First fail
+				.mockResolvedValueOnce({
+					success: true,
+					messageId: "test-id",
+				}), // Second succeed
 		};
+
 		vi.doMock("../../src/services/ses/EmailService", () => ({
 			EmailService: vi.fn().mockImplementation(() => mockEmailService),
 		}));
 
 		const result = await emailSetup(answers);
 
-		// All email config should be cleared when user chooses retry
-		expect(result.API_EMAIL_PROVIDER).toBeUndefined();
-		expect(result.AWS_SES_REGION).toBeUndefined();
+		// Should have final successful values
+		expect(result.API_EMAIL_PROVIDER).toBe("ses");
+		expect(result.AWS_ACCESS_KEY_ID).toBe("good-key");
+	});
+
+	it("should log specific AWS error details when sendEmail throws", async () => {
+		vi.mocked(promptHelpers.promptConfirm)
+			.mockResolvedValueOnce(true) // Configure email? Yes
+			.mockResolvedValueOnce(true); // Send test email? Yes
+
+		vi.mocked(promptHelpers.promptList)
+			.mockResolvedValueOnce("ses") // Provider
+			.mockResolvedValueOnce("Cancel email setup"); // Cancel after error
+
+		vi.mocked(promptHelpers.promptInput)
+			.mockResolvedValueOnce("us-east-1")
+			.mockResolvedValueOnce("key")
+			.mockResolvedValueOnce("secret")
+			.mockResolvedValueOnce("test@example.com")
+			.mockResolvedValueOnce("Test App")
+			.mockResolvedValueOnce("recipient@example.com");
+
+		// Mock Error with specific AWS-like properties
+		const awsError = new Error("SignatureDoesNotMatch") as Error & {
+			code?: string;
+			name?: string;
+		};
+		awsError.code = "SignatureDoesNotMatch";
+		awsError.name = "SignatureDoesNotMatch";
+
+		vi.doMock("../../src/services/ses/EmailService", () => ({
+			EmailService: vi.fn().mockImplementation(() => ({
+				sendEmail: vi.fn().mockRejectedValue(awsError),
+			})),
+		}));
+
+		const _consoleErrorSpy = vi
+			.spyOn(console, "error")
+			.mockImplementation(() => {});
+		// Log spy removed as it was unused
+
+		await emailSetup(answers);
+
+		expect(_consoleErrorSpy).toHaveBeenCalledWith(
+			expect.stringContaining("Error Details: SignatureDoesNotMatch"),
+		);
+		expect(_consoleErrorSpy).toHaveBeenCalledWith(
+			expect.stringContaining("Code: SignatureDoesNotMatch"),
+		);
 	});
 
 	it("should clear config when user chooses cancel after test failure", async () => {
