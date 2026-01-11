@@ -36,9 +36,9 @@
 //
 // Reference: See updateOrganization.ts for the full caching pattern with graceful degradation.
 
-// Match mutation definitions that lack both import AND usage of cache invalidation
+// Match mutation definitions where the resolver body lacks cache invalidation calls
 `builder.mutationField($name, $resolver)` where {
-    // Warn if file does not contain a call to invalidateEntity or invalidateEntityLists
+    // Warn if $resolver does not contain a call to invalidateEntity or invalidateEntityLists
     not $resolver <: contains `invalidateEntity($args)`,
     not $resolver <: contains `invalidateEntityLists($args)`,
     register_diagnostic(
