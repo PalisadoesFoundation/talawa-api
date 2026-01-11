@@ -48,9 +48,7 @@ describe("emailSetup", () => {
 			success: true,
 			messageId: "test-message-id",
 		});
-		mocks.mockEmailServiceConstructor.mockReset().mockImplementation(() => ({
-			sendEmail: mocks.mockSendEmail,
-		}));
+		mocks.mockEmailServiceConstructor.mockReset();
 	});
 
 	afterEach(() => {
@@ -220,11 +218,6 @@ describe("emailSetup", () => {
 		// 1. configureEmail (once)
 		// 2. sendTestEmail (first attempt)
 		// 3. sendTestEmail (second attempt)
-		vi.mocked(promptHelpers.promptConfirm)
-			.mockResolvedValueOnce(true) // Configure email
-			.mockResolvedValueOnce(true) // Send test (1)
-			.mockResolvedValueOnce(true); // Send test (2)
-
 		vi.mocked(promptHelpers.promptList)
 			.mockResolvedValueOnce("ses") // Provider (First attempt)
 			.mockResolvedValueOnce("Retry with different credentials") // Action (First failure)
@@ -443,6 +436,60 @@ describe("emailSetup", () => {
 			"AWS_SES_FROM_EMAIL",
 			expect.any(String),
 			"",
+			expect.any(Function),
+		);
+	});
+
+	it("should exercise AWS credential validators", async () => {
+		vi.mocked(promptHelpers.promptConfirm)
+			.mockResolvedValueOnce(true) // Configure
+			.mockResolvedValueOnce(false); // Skip test
+
+		vi.mocked(promptHelpers.promptList).mockResolvedValueOnce("ses");
+
+		// Capture validators for Region and Keys
+		vi.mocked(promptHelpers.promptInput).mockImplementation(
+			async (name, _message, defaultValue, validator) => {
+				if (name === "AWS_SES_REGION" && validator) {
+					// Empty
+					expect(validator("")).toBe("AWS SES Region is required");
+					// Invalid format
+					expect(validator("invalid")).toBe(
+						"Invalid region format. Expected format: us-east-1, us-gov-east-1, us-iso-east-1, etc.",
+					);
+					// Valid format
+					expect(validator("us-east-1")).toBe(true);
+				}
+				if (name === "AWS_ACCESS_KEY_ID" && validator) {
+					expect(validator("")).toBe(
+						"AWS Access Key ID is required for SES configuration",
+					);
+					expect(validator("some-key")).toBe(true);
+				}
+				return defaultValue || "some-value";
+			},
+		);
+
+		// Also check Secret Key validator which is in promptPassword
+		vi.mocked(promptHelpers.promptPassword).mockImplementation(
+			async (name, _message, validator) => {
+				if (name === "AWS_SECRET_ACCESS_KEY" && validator) {
+					expect(validator("")).toBe(
+						"AWS Secret Access Key is required for SES configuration",
+					);
+					expect(validator("some-secret")).toBe(true);
+				}
+				return "some-secret";
+			},
+		);
+
+		await emailSetup(answers);
+
+		// Ensure we actually hit these checks
+		expect(promptHelpers.promptInput).toHaveBeenCalledWith(
+			"AWS_SES_REGION",
+			expect.any(String),
+			expect.any(String),
 			expect.any(Function),
 		);
 	});

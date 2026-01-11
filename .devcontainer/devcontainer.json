@@ -74,7 +74,6 @@
 	"name": "talawa_api",
 	"overrideCommand": true,
 	"postCreateCommand": "./.devcontainer/post-create.sh",
-	"postStartCommand": "pnpm install",
 	"remoteUser": "talawa",
 	"service": "api",
 	"shutdownAction": "stopCompose",

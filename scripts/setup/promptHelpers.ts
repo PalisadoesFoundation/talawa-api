@@ -77,7 +77,6 @@ export async function promptConfirm(
  * Prompts the user for password input (masked with asterisks).
  * @param name - The name/key for the prompt answer
  * @param message - The message to display to the user
- * @param defaultValue - Optional default value
  * @param validate - Optional validation function returning true or an error message
  * @returns The user's password input string
  * @throws {Error} If the prompt response is not a string

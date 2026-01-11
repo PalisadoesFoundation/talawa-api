@@ -293,6 +293,27 @@ export const envConfigSchema = Type.Object({
 		}),
 	),
 	/**
+	 * Enabled state for OpenTelemetry tracing.
+	 */
+	API_OTEL_ENABLED: Type.Optional(Type.Boolean()),
+	/**
+	 * Environment name for OpenTelemetry (e.g. 'production', 'development').
+	 */
+	API_OTEL_ENVIRONMENT: Type.Optional(Type.String({ minLength: 1 })),
+	/**
+	 * OTLP Exporter Endpoint URL.
+	 */
+	API_OTEL_EXPORTER_OTLP_ENDPOINT: Type.Optional(
+		Type.String({
+			minLength: 1,
+			format: "uri", // Using format: uri for validation
+		}),
+	),
+	/**
+	 * Service name for OpenTelemetry.
+	 */
+	API_OTEL_SERVICE_NAME: Type.Optional(Type.String({ minLength: 1 })),
+	/**
 	 * Used for providing the log level for the logger used in talawa api.
 	 *
 	 * @privateRemarks
