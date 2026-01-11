@@ -88,7 +88,8 @@ describe("emailSetup", () => {
 	it("should show error when credentials are missing", async () => {
 		vi.mocked(promptHelpers.promptConfirm)
 			.mockResolvedValueOnce(true) // Configure email? Yes
-			.mockResolvedValueOnce(true); // Send test email? Yes (to trigger check)
+			.mockResolvedValueOnce(true) // Send test email? Yes (to trigger check)
+			.mockResolvedValueOnce(true); // Continue without test? Yes (new prompt)
 
 		vi.mocked(promptHelpers.promptList).mockResolvedValueOnce("ses"); // Provider: SES
 
@@ -112,7 +113,113 @@ describe("emailSetup", () => {
 				"Cannot send test email. Missing required credentials",
 			),
 		);
-		expect(result.API_EMAIL_PROVIDER).toBe("ses"); // Should still return partial config
+		expect(result.API_EMAIL_PROVIDER).toBe("ses"); // Should still return partial config when user continues
+	});
+
+	it("should clear config when user declines to continue without test", async () => {
+		vi.mocked(promptHelpers.promptConfirm)
+			.mockResolvedValueOnce(true) // Configure email? Yes
+			.mockResolvedValueOnce(true) // Send test email? Yes
+			.mockResolvedValueOnce(false); // Continue without test? No
+
+		vi.mocked(promptHelpers.promptList).mockResolvedValueOnce("ses");
+
+		vi.mocked(promptHelpers.promptInput)
+			.mockResolvedValueOnce("") // Missing region
+			.mockResolvedValueOnce("") // Missing access key
+			.mockResolvedValueOnce("") // Missing secret
+			.mockResolvedValueOnce("") // Missing email
+			.mockResolvedValueOnce("Test App");
+
+		const result = await emailSetup(answers);
+
+		// All email config should be cleared
+		expect(result.API_EMAIL_PROVIDER).toBeUndefined();
+		expect(result.AWS_SES_REGION).toBeUndefined();
+		expect(result.AWS_ACCESS_KEY_ID).toBeUndefined();
+	});
+
+	it("should clear config when user chooses retry after test failure", async () => {
+		vi.mocked(promptHelpers.promptConfirm)
+			.mockResolvedValueOnce(true) // Configure email? Yes
+			.mockResolvedValueOnce(true); // Send test email? Yes
+
+		vi.mocked(promptHelpers.promptList)
+			.mockResolvedValueOnce("ses") // Provider
+			.mockResolvedValueOnce("Retry with different credentials"); // Test failure action
+
+		vi.mocked(promptHelpers.promptInput)
+			.mockResolvedValueOnce("us-east-1")
+			.mockResolvedValueOnce("bad-key")
+			.mockResolvedValueOnce("bad-secret")
+			.mockResolvedValueOnce("test@example.com")
+			.mockResolvedValueOnce("Test App")
+			.mockResolvedValueOnce("recipient@example.com"); // Test recipient
+
+		// Mock EmailService to fail
+		const mockEmailService = {
+			sendEmail: vi
+				.fn()
+				.mockResolvedValue({ success: false, error: "Invalid credentials" }),
+		};
+		vi.doMock("../../src/services/ses/EmailService", () => ({
+			EmailService: vi.fn().mockImplementation(() => mockEmailService),
+		}));
+
+		const result = await emailSetup(answers);
+
+		// All email config should be cleared when user chooses retry
+		expect(result.API_EMAIL_PROVIDER).toBeUndefined();
+		expect(result.AWS_SES_REGION).toBeUndefined();
+	});
+
+	it("should clear config when user chooses cancel after test failure", async () => {
+		vi.mocked(promptHelpers.promptConfirm)
+			.mockResolvedValueOnce(true) // Configure email? Yes
+			.mockResolvedValueOnce(true); // Send test email? Yes
+
+		vi.mocked(promptHelpers.promptList)
+			.mockResolvedValueOnce("ses") // Provider
+			.mockResolvedValueOnce("Cancel email setup"); // Test failure action
+
+		vi.mocked(promptHelpers.promptInput)
+			.mockResolvedValueOnce("us-east-1")
+			.mockResolvedValueOnce("bad-key")
+			.mockResolvedValueOnce("bad-secret")
+			.mockResolvedValueOnce("test@example.com")
+			.mockResolvedValueOnce("Test App")
+			.mockResolvedValueOnce("recipient@example.com");
+
+		const result = await emailSetup(answers);
+
+		// All email config should be cleared when user cancels
+		expect(result.API_EMAIL_PROVIDER).toBeUndefined();
+		expect(result.AWS_SES_REGION).toBeUndefined();
+	});
+
+	it("should keep config when user chooses continue anyway after test failure", async () => {
+		vi.mocked(promptHelpers.promptConfirm)
+			.mockResolvedValueOnce(true) // Configure email? Yes
+			.mockResolvedValueOnce(true); // Send test email? Yes
+
+		vi.mocked(promptHelpers.promptList)
+			.mockResolvedValueOnce("ses") // Provider
+			.mockResolvedValueOnce("Continue anyway (save current credentials)"); // Test failure action
+
+		vi.mocked(promptHelpers.promptInput)
+			.mockResolvedValueOnce("us-east-1")
+			.mockResolvedValueOnce("bad-key")
+			.mockResolvedValueOnce("bad-secret")
+			.mockResolvedValueOnce("test@example.com")
+			.mockResolvedValueOnce("Test App")
+			.mockResolvedValueOnce("recipient@example.com");
+
+		const result = await emailSetup(answers);
+
+		// Config should be kept when user explicitly continues
+		expect(result.API_EMAIL_PROVIDER).toBe("ses");
+		expect(result.AWS_SES_REGION).toBe("us-east-1");
+		expect(result.AWS_ACCESS_KEY_ID).toBe("bad-key");
 	});
 
 	it("should propagate errors", async () => {
