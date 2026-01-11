@@ -86,6 +86,7 @@ describe("Post Resolver - Creator Field", () => {
 
 			const result = await resolveCreator(mockPost, {}, ctx);
 			expect(result).toEqual(creatorUser);
+			expect(ctx.dataloaders.user.load).toHaveBeenCalledWith("user-456");
 		});
 		it("should throw unauthorized_action error when organization membership is undefined", async () => {
 			mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValue({
