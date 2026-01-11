@@ -4,6 +4,7 @@ import type { CacheService } from "~/src/services/caching";
 import type { Dataloaders } from "~/src/utilities/dataloaders";
 import type { AppLogger } from "~/src/utilities/logging/logger";
 import type { PerformanceTracker } from "~/src/utilities/metrics/performanceTracker";
+import type { metricsCacheProxy } from "../services/metrics/metricsCacheProxy";
 import type { PubSub } from "./pubsub";
 
 /**
@@ -46,7 +47,7 @@ export type ExplicitGraphQLContext = {
 	/**
 	 * Redis-backed cache service for caching entities and query results.
 	 */
-	cache: CacheService;
+	cache: CacheService | ReturnType<typeof metricsCacheProxy>;
 	currentClient: CurrentClient;
 	/**
 	 * Request-scoped DataLoaders for batching database queries.

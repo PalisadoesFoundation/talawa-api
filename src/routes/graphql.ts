@@ -10,6 +10,7 @@ import type {
 } from "~/src/graphql/context";
 import schemaManager from "~/src/graphql/schemaManager";
 import NotificationService from "~/src/services/notification/NotificationService";
+import { metricsCacheProxy } from "../services/metrics/metricsCacheProxy";
 import {
 	COOKIE_NAMES,
 	getAccessTokenCookieOptions,
@@ -174,7 +175,9 @@ export const createContext: CreateContext = async (initialContext) => {
 	});
 
 	return {
-		cache: fastify.cache,
+		cache: request.perf
+			? metricsCacheProxy(fastify.cache, request.perf)
+			: fastify.cache,
 		currentClient,
 		dataloaders: createDataloaders(fastify.drizzleClient, fastify.cache),
 		drizzleClient: fastify.drizzleClient,
