@@ -58,6 +58,19 @@ type InitialContext = {
 	  }
 );
 
+/**
+ * Type for the data passed to the subscription onConnect callback.
+ * Contains the authorization payload and optional socket with performance tracker.
+ */
+type SubscriptionConnectionData = {
+	payload?: { authorization?: string };
+	socket?: {
+		request?: {
+			perf?: PerformanceTracker;
+		};
+	};
+};
+
 export type CreateContext = (
 	initialContext: InitialContext,
 ) => Promise<ExplicitGraphQLContext>;
@@ -251,14 +264,7 @@ export const graphql = fastifyPlugin(async (fastify) => {
 			};
 		},
 		subscription: {
-			onConnect: async (data: {
-				payload?: { authorization?: string };
-				socket?: {
-					request?: {
-						perf?: PerformanceTracker;
-					};
-				};
-			}) => {
+			onConnect: async (data: SubscriptionConnectionData) => {
 				const { payload, socket } = data;
 				if (!payload?.authorization) {
 					return false;

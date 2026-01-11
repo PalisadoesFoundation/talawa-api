@@ -6,6 +6,6 @@
 
 > `const` **createContext**: [`CreateContext`](../type-aliases/CreateContext.md)
 
-Defined in: [src/routes/graphql.ts:68](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/routes/graphql.ts#L68)
+Defined in: [src/routes/graphql.ts:81](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/routes/graphql.ts#L81)
 
 This function is used to create the explicit context passed to the graphql resolvers each time they resolve a graphql operation at runtime. All the transport protocol specific information should be dealt with within this function and the return type of this function must be transport protocol agnostic.
