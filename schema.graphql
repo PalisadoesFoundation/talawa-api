@@ -176,10 +176,10 @@ type AgendaCategory {
   id: ID!
 
   """Boolean to tell if agenda category is default or not"""
-  isDefaultCategory: Boolean!
+  isDefaultCategory: Boolean
 
   """Name of the agenda category."""
-  name: String!
+  name: String
 
   """Organization which the agenda item category belongs to."""
   organization: Organization
