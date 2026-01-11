@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { emailSetup } from "../../scripts/setup/emailSetup";
 import * as promptHelpers from "../../scripts/setup/promptHelpers";
 import type { SetupAnswers } from "../../scripts/setup/setup";
@@ -30,6 +30,9 @@ vi.mock("../../src/services/ses/EmailService", () => ({
 describe("emailSetup", () => {
 	let answers: SetupAnswers;
 
+	// Track console spies to restore them individually
+	let consoleErrorSpy: ReturnType<typeof vi.spyOn> | undefined;
+
 	beforeEach(() => {
 		answers = {};
 		vi.clearAllMocks();
@@ -50,9 +53,12 @@ describe("emailSetup", () => {
 		}));
 	});
 
-	// Note: We intentionally do NOT use vi.restoreAllMocks() in afterEach
-	// because it destroys the EmailService mock implementation between tests.
-	// vi.clearAllMocks() in beforeEach is sufficient for resetting call counts.
+	afterEach(() => {
+		if (consoleErrorSpy) {
+			consoleErrorSpy.mockRestore();
+			consoleErrorSpy = undefined;
+		}
+	});
 
 	it("should skip email configuration if user declines", async () => {
 		vi.mocked(promptHelpers.promptConfirm).mockResolvedValueOnce(false);
@@ -159,9 +165,7 @@ describe("emailSetup", () => {
 		vi.mocked(promptHelpers.promptPassword).mockResolvedValueOnce(""); // Secret Key (Missing)
 
 		// Mock error logging
-		const consoleErrorSpy = vi
-			.spyOn(console, "error")
-			.mockImplementation(() => {});
+		consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
 
 		const result = await emailSetup(answers);
 
@@ -199,8 +203,27 @@ describe("emailSetup", () => {
 		vi.mocked(promptHelpers.promptConfirm)
 			.mockResolvedValueOnce(true) // Configure email? Yes
 			.mockResolvedValueOnce(true) // Send test email? Yes (First attempt)
-			.mockResolvedValueOnce(true) // Configure email? Yes (Retry loop)
-			.mockResolvedValueOnce(true); // Send test email? Yes (Second attempt)
+			.mockResolvedValueOnce(true); // Retry action triggers re-send? (Wait, actually emailSetup calls promptConfirm only for "sendTestEmail")
+		// The loop logic:
+		// 1. promptConfirm("configureEmail") -> true
+		// 2. promptList("API_EMAIL_PROVIDER") -> ses
+		// ... inputs ...
+		// 3. promptConfirm("sendTestEmail") -> true
+		// ... fail ...
+		// 4. promptList("testFailureAction") -> Retry
+		// ... loop back ...
+		// 5. promptList("API_EMAIL_PROVIDER") -> ses
+		// ... inputs ...
+		// 6. promptConfirm("sendTestEmail") -> true (Retry attempt)
+
+		// So we need:
+		// 1. configureEmail (once)
+		// 2. sendTestEmail (first attempt)
+		// 3. sendTestEmail (second attempt)
+		vi.mocked(promptHelpers.promptConfirm)
+			.mockResolvedValueOnce(true) // Configure email
+			.mockResolvedValueOnce(true) // Send test (1)
+			.mockResolvedValueOnce(true); // Send test (2)
 
 		vi.mocked(promptHelpers.promptList)
 			.mockResolvedValueOnce("ses") // Provider (First attempt)
@@ -274,9 +297,7 @@ describe("emailSetup", () => {
 
 		mocks.mockSendEmail.mockRejectedValueOnce(awsError);
 
-		const consoleErrorSpy = vi
-			.spyOn(console, "error")
-			.mockImplementation(() => {});
+		consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
 
 		await emailSetup(answers);
 

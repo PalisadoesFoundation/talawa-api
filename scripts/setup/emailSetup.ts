@@ -87,7 +87,6 @@ export async function emailSetup(answers: SetupAnswers): Promise<SetupAnswers> {
 				answers.AWS_SECRET_ACCESS_KEY = await promptPassword(
 					"AWS_SECRET_ACCESS_KEY",
 					"AWS Secret Access Key:",
-					"",
 					(value) => {
 						if (!value || value.trim().length === 0) {
 							return "AWS Secret Access Key is required for SES configuration";
@@ -119,11 +118,13 @@ export async function emailSetup(answers: SetupAnswers): Promise<SetupAnswers> {
 			if (sendTest) {
 				// Pre-flight validation for required credentials
 				const missingCreds: string[] = [];
-				if (!answers.AWS_SES_REGION) missingCreds.push("AWS_SES_REGION");
-				if (!answers.AWS_ACCESS_KEY_ID) missingCreds.push("AWS_ACCESS_KEY_ID");
-				if (!answers.AWS_SECRET_ACCESS_KEY)
+				if (!answers.AWS_SES_REGION?.trim())
+					missingCreds.push("AWS_SES_REGION");
+				if (!answers.AWS_ACCESS_KEY_ID?.trim())
+					missingCreds.push("AWS_ACCESS_KEY_ID");
+				if (!answers.AWS_SECRET_ACCESS_KEY?.trim())
 					missingCreds.push("AWS_SECRET_ACCESS_KEY");
-				if (!answers.AWS_SES_FROM_EMAIL)
+				if (!answers.AWS_SES_FROM_EMAIL?.trim())
 					missingCreds.push("AWS_SES_FROM_EMAIL");
 
 				if (missingCreds.length > 0) {

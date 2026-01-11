@@ -85,7 +85,6 @@ export async function promptConfirm(
 export async function promptPassword(
 	name: string,
 	message: string,
-	defaultValue?: string,
 	validate?: (input: string) => true | string,
 ): Promise<string> {
 	const answers = await inquirer.prompt<Record<string, string>>([
@@ -93,7 +92,6 @@ export async function promptPassword(
 			type: "password",
 			name,
 			message,
-			default: defaultValue,
 			validate,
 			mask: "*",
 		},
