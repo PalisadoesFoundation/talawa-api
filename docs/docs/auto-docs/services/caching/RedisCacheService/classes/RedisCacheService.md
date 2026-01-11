@@ -41,7 +41,7 @@ Defined in: [src/services/caching/RedisCacheService.ts:41](https://github.com/Pa
 
 > **clearByPattern**(`pattern`): `Promise`\<`void`\>
 
-Defined in: [src/services/caching/RedisCacheService.ts:76](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/caching/RedisCacheService.ts#L76)
+Defined in: [src/services/caching/RedisCacheService.ts:80](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/caching/RedisCacheService.ts#L80)
 
 Delete all keys matching a glob pattern.
 Uses SCAN internally to avoid blocking Redis.
@@ -68,7 +68,7 @@ Glob pattern (e.g., "talawa:v1:user:list:*").
 
 > **del**(`keys`): `Promise`\<`void`\>
 
-Defined in: [src/services/caching/RedisCacheService.ts:65](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/caching/RedisCacheService.ts#L65)
+Defined in: [src/services/caching/RedisCacheService.ts:69](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/caching/RedisCacheService.ts#L69)
 
 Delete one or more keys from the cache.
 
@@ -128,7 +128,7 @@ The cached value or null if not found/expired.
 
 > **mget**\<`T`\>(`keys`): `Promise`\<(`T` \| `null`)[]\>
 
-Defined in: [src/services/caching/RedisCacheService.ts:98](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/caching/RedisCacheService.ts#L98)
+Defined in: [src/services/caching/RedisCacheService.ts:102](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/caching/RedisCacheService.ts#L102)
 
 Batch get multiple keys.
 
@@ -162,7 +162,7 @@ Array of values in the same order as keys (null for missing).
 
 > **mset**\<`T`\>(`entries`): `Promise`\<`void`\>
 
-Defined in: [src/services/caching/RedisCacheService.ts:118](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/caching/RedisCacheService.ts#L118)
+Defined in: [src/services/caching/RedisCacheService.ts:124](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/caching/RedisCacheService.ts#L124)
 
 Batch set multiple key-value pairs with TTLs.
 
@@ -194,7 +194,7 @@ Array of `{ key, value, ttlSeconds }` objects.
 
 > **set**\<`T`\>(`key`, `value`, `ttlSeconds`): `Promise`\<`void`\>
 
-Defined in: [src/services/caching/RedisCacheService.ts:56](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/caching/RedisCacheService.ts#L56)
+Defined in: [src/services/caching/RedisCacheService.ts:58](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/caching/RedisCacheService.ts#L58)
 
 Store a value in the cache with a TTL.
 

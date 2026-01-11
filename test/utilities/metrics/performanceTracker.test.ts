@@ -647,4 +647,229 @@ describe("Performance Tracker", () => {
 		const verySlowOp = snapshotAfter.slow.find((op) => op?.op === "very-slow");
 		expect(verySlowOp).toBeUndefined();
 	});
+	describe("Slow Request Detection Integration", () => {
+		it("should track operations that exceed slow threshold", async () => {
+			const tracker = createPerformanceTracker({ slowMs: 20 });
+
+			await tracker.time("slow-query", async () => {
+				await new Promise((resolve) => setTimeout(resolve, 30));
+			});
+
+			await tracker.time("fast-query", async () => {
+				await new Promise((resolve) => setTimeout(resolve, 10));
+			});
+
+			const snapshot = tracker.snapshot();
+
+			expect(snapshot.slow.length).toBe(1);
+			expect(snapshot.slow[0]?.op).toBe("slow-query");
+			expect(snapshot.slow[0]?.ms).toBeGreaterThanOrEqual(20);
+		});
+
+		it("should not track operations below slow threshold", async () => {
+			const tracker = createPerformanceTracker({ slowMs: 50 });
+
+			await tracker.time("fast-op-1", async () => {
+				await new Promise((resolve) => setTimeout(resolve, 10));
+			});
+
+			await tracker.time("fast-op-2", async () => {
+				await new Promise((resolve) => setTimeout(resolve, 20));
+			});
+
+			const snapshot = tracker.snapshot();
+
+			expect(snapshot.slow.length).toBe(0);
+		});
+
+		it("should track operations at exact threshold boundary", async () => {
+			const tracker = createPerformanceTracker({ slowMs: 25 });
+
+			await tracker.time("boundary-op", async () => {
+				await new Promise((resolve) => setTimeout(resolve, 25));
+			});
+
+			const snapshot = tracker.snapshot();
+
+			expect(snapshot.slow.length).toBe(1);
+			expect(snapshot.slow[0]?.op).toBe("boundary-op");
+		});
+
+		it("should track operations just above threshold boundary", async () => {
+			const tracker = createPerformanceTracker({ slowMs: 25 });
+
+			// Operation above threshold should be tracked
+			await tracker.time("above-boundary-op", async () => {
+				await new Promise((resolve) => setTimeout(resolve, 26));
+			});
+
+			const snapshot = tracker.snapshot();
+
+			expect(snapshot.slow.length).toBe(1);
+			expect(snapshot.slow[0]?.op).toBe("above-boundary-op");
+		});
+
+		it("should track database operations as slow when exceeding threshold", () => {
+			const tracker = createPerformanceTracker({ slowMs: 30 });
+
+			tracker.trackDb(50);
+			tracker.trackDb(10);
+			const snapshot = tracker.snapshot();
+
+			expect(snapshot.slow.length).toBe(1);
+			expect(snapshot.slow[0]?.op).toBe("db");
+			expect(snapshot.slow[0]?.ms).toBe(50);
+		});
+
+		it("should maintain slow operations across multiple tracker calls", async () => {
+			const tracker = createPerformanceTracker({ slowMs: 15 });
+
+			await tracker.time("slow-1", async () => {
+				await new Promise((resolve) => setTimeout(resolve, 20));
+			});
+
+			tracker.trackDb(25);
+
+			await tracker.time("slow-2", async () => {
+				await new Promise((resolve) => setTimeout(resolve, 30));
+			});
+
+			const snapshot = tracker.snapshot();
+
+			expect(snapshot.slow.length).toBe(3);
+			expect(snapshot.slow.map((op) => op.op)).toContain("slow-1");
+			expect(snapshot.slow.map((op) => op.op)).toContain("db");
+			expect(snapshot.slow.map((op) => op.op)).toContain("slow-2");
+		});
+
+		it("should round slow operation ms values", async () => {
+			const tracker = createPerformanceTracker({ slowMs: 10 });
+
+			tracker.trackDb(25.7);
+
+			const snapshot = tracker.snapshot();
+
+			expect(snapshot.slow.length).toBe(1);
+			expect(snapshot.slow[0]?.ms).toBe(26);
+		});
+
+		it("should handle manual start/stop with slow threshold", async () => {
+			const tracker = createPerformanceTracker({ slowMs: 20 });
+
+			const end = tracker.start("manual-slow");
+			await new Promise((resolve) => setTimeout(resolve, 30));
+			end();
+
+			const snapshot = tracker.snapshot();
+
+			expect(snapshot.slow.length).toBe(1);
+			expect(snapshot.slow[0]?.op).toBe("manual-slow");
+			expect(snapshot.slow[0]?.ms).toBeGreaterThanOrEqual(20);
+		});
+
+		it("should not add slow operation when error is thrown but duration is below threshold", async () => {
+			const tracker = createPerformanceTracker({ slowMs: 50 });
+
+			const asyncFn = async () => {
+				await new Promise((resolve) => setTimeout(resolve, 10));
+				throw new Error("Test error");
+			};
+
+			await expect(tracker.time("error-op", asyncFn)).rejects.toThrow(
+				"Test error",
+			);
+
+			const snapshot = tracker.snapshot();
+
+			expect(snapshot.slow.length).toBe(0);
+		});
+
+		it("should add slow operation even when error is thrown if duration exceeds threshold", async () => {
+			const tracker = createPerformanceTracker({ slowMs: 20 });
+
+			const asyncFn = async () => {
+				await new Promise((resolve) => setTimeout(resolve, 30));
+				throw new Error("Test error");
+			};
+
+			await expect(tracker.time("error-slow-op", asyncFn)).rejects.toThrow(
+				"Test error",
+			);
+
+			const snapshot = tracker.snapshot();
+
+			expect(snapshot.slow.length).toBe(1);
+			expect(snapshot.slow[0]?.op).toBe("error-slow-op");
+			expect(snapshot.slow[0]?.ms).toBeGreaterThanOrEqual(20);
+		});
+
+		it("should handle zero as slowMs threshold", async () => {
+			const tracker = createPerformanceTracker({ slowMs: 0 });
+
+			await tracker.time("any-op", async () => {
+				await new Promise((resolve) => setTimeout(resolve, 5));
+			});
+
+			const snapshot = tracker.snapshot();
+
+			expect(snapshot.slow.length).toBe(1);
+			expect(snapshot.slow[0]?.op).toBe("any-op");
+		});
+
+		it("should track multiple operations with different durations relative to threshold", async () => {
+			const tracker = createPerformanceTracker({ slowMs: 25 });
+
+			await tracker.time("very-fast", async () => {
+				await new Promise((resolve) => setTimeout(resolve, 5));
+			});
+
+			await tracker.time("fast", async () => {
+				await new Promise((resolve) => setTimeout(resolve, 15));
+			});
+
+			await tracker.time("boundary", async () => {
+				await new Promise((resolve) => setTimeout(resolve, 25));
+			});
+
+			await tracker.time("slow", async () => {
+				await new Promise((resolve) => setTimeout(resolve, 35));
+			});
+
+			await tracker.time("very-slow", async () => {
+				await new Promise((resolve) => setTimeout(resolve, 50));
+			});
+
+			const snapshot = tracker.snapshot();
+
+			expect(snapshot.slow.length).toBe(3);
+			expect(snapshot.slow.map((op) => op.op).sort()).toEqual(
+				["boundary", "slow", "very-slow"].sort(),
+			);
+		});
+
+		it("should track operations at exact threshold value", async () => {
+			const tracker = createPerformanceTracker({ slowMs: 100 });
+			tracker.trackDb(100);
+
+			const snapshot = tracker.snapshot();
+			expect(snapshot.slow.length).toBe(1);
+			expect(snapshot.slow[0]?.ms).toBe(100);
+		});
+
+		it("should track operations one millisecond above threshold", async () => {
+			const tracker = createPerformanceTracker({ slowMs: 100 });
+			tracker.trackDb(101);
+			const snapshot = tracker.snapshot();
+
+			expect(snapshot.slow.length).toBe(1);
+			expect(snapshot.slow[0]?.ms).toBe(101);
+		});
+
+		it("should not track operations one millisecond below threshold", async () => {
+			const tracker = createPerformanceTracker({ slowMs: 100 });
+			tracker.trackDb(99);
+			const snapshot = tracker.snapshot();
+			expect(snapshot.slow.length).toBe(0);
+		});
+	});
 });

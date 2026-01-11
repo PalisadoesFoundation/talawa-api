@@ -107,6 +107,8 @@ export function withResolverCache<
 	) => Promise<TResult>,
 ): (parent: TParent, args: TArgs, context: TContext) => Promise<TResult> {
 	const { keyFactory, ttlSeconds, skip, logger, metrics } = options;
+	console.log("?????????????????????????????????????");
+	console.log(options);
 
 	return async (
 		parent: TParent,
@@ -119,6 +121,8 @@ export function withResolverCache<
 		}
 
 		const cacheKey = keyFactory(parent, args, context);
+		console.log("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@");
+		console.log("Cache key:", cacheKey);
 
 		// Try to get from cache
 		let cached: TResult | null;
@@ -138,9 +142,11 @@ export function withResolverCache<
 		}
 
 		if (cached !== null) {
+			console.log("✅ CACHE HIT:", cacheKey);
 			metrics?.increment("cache.hit");
 			return cached;
 		}
+		console.log("❌ CACHE MISS:", cacheKey);
 
 		// Cache miss: execute resolver and cache result
 		metrics?.increment("cache.miss");

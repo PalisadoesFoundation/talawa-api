@@ -143,6 +143,10 @@ This environment variable is used to configure the [log level](https://github.co
 
 - More information can be found at [this](https://github.com/pinojs/pino/blob/main/docs/api.md##logger-level) link.
 
+### API_SLOW_REQUEST_MS
+
+This environment variable is used to configure the threshold in milliseconds for identifying slow requests in talawa api. Requests that exceed this duration will be logged and tracked for performance monitoring purposes.
+
 ### API_MINIO_ACCESS_KEY
 
 This environment variable is used to configure the access key to the minio server for talawa api's minio client to connect with.
