@@ -30,10 +30,8 @@ export function metricsCacheProxy<
 			if (value == null) {
 				perf.trackCacheMiss();
 				return null;
-			}
-
-			else{
-			perf.trackCacheHit();
+			} else {
+				perf.trackCacheHit();
 			}
 			return value as T;
 		},
@@ -53,11 +51,9 @@ export function metricsCacheProxy<
 				if (value == null) {
 					perf.trackCacheMiss();
 					return null;
+				} else {
+					perf.trackCacheHit();
 				}
-
-else{
-				perf.trackCacheHit();
-}
 				return value as T;
 			});
 		},
