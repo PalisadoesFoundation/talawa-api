@@ -1,0 +1,49 @@
+// GritQL plugin to detect mutations missing cache invalidation
+//
+// This rule warns when a GraphQL mutation resolver lacks cache invalidation calls.
+// Mutations should import and call invalidateEntity/invalidateEntityLists from
+// ~/src/services/caching after successful data modifications.
+//
+// IMPORTANT: GritQL comments are stripped from AST - cannot use disable comments.
+// To exclude specific mutation files, use Biome's linter.rules configuration in biome.jsonc.
+//
+// This is a diagnostic-only rule (warn severity). It warns but does not block builds,
+// enabling gradual adoption of caching patterns across all mutations.
+//
+// Examples:
+//
+// Triggers warning (no cache invalidation):
+//   builder.mutationField("updateFoo", (t) =>
+//     t.field({
+//       resolve: async (_, args, ctx) => {
+//         // mutation logic without cache invalidation
+//         return result;
+//       }
+//     })
+//   );
+//
+// Does NOT trigger warning (has cache invalidation):
+//   import { invalidateEntity } from "~/src/services/caching";
+//   builder.mutationField("updateFoo", (t) =>
+//     t.field({
+//       resolve: async (_, args, ctx) => {
+//         // mutation logic
+//         await invalidateEntity(ctx.cache, "foo", id);
+//         return result;
+//       }
+//     })
+//   );
+//
+// Reference: See updateOrganization.ts for the full caching pattern with graceful degradation.
+
+// Match mutation definitions that lack both import AND usage of cache invalidation
+`builder.mutationField($name, $resolver)` where {
+    // Warn if file does not contain a call to invalidateEntity or invalidateEntityLists
+    not $resolver <: contains `invalidateEntity($args)`,
+    not $resolver <: contains `invalidateEntityLists($args)`,
+    register_diagnostic(
+        span=$name,
+        message="Mutation may need cache invalidation. Import and call `invalidateEntity`/`invalidateEntityLists` from '~/src/services/caching' after successful mutations. See updateOrganization.ts for example pattern with graceful degradation.",
+        severity="warn"
+    )
+}
