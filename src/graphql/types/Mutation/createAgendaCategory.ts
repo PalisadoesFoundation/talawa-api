@@ -44,7 +44,7 @@ builder.mutationField("createAgendaCategory", (t) =>
 					extensions: {
 						code: "invalid_arguments",
 						issues: error.issues.map((issue) => ({
-							argumentPath: issue.path,
+							argumentPath: issue.path.map(String),
 							message: issue.message,
 						})),
 					},
@@ -104,7 +104,7 @@ builder.mutationField("createAgendaCategory", (t) =>
 			}
 
 			const currentUserOrganizationMembership =
-				existingEvent.organization.membershipsWhereOrganization[0];
+				existingEvent.organization?.membershipsWhereOrganization[0];
 
 			if (
 				currentUser.role !== "administrator" &&

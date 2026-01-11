@@ -46,7 +46,7 @@ builder.mutationField("deleteAgendaCategory", (t) =>
 					extensions: {
 						code: "invalid_arguments",
 						issues: error.issues.map((issue) => ({
-							argumentPath: issue.path,
+							argumentPath: issue.path.map(String),
 							message: issue.message,
 						})),
 					},
