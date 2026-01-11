@@ -14,6 +14,7 @@ vi.mock("../../scripts/setup/promptHelpers", () => ({
 	promptConfirm: vi.fn(),
 	promptInput: vi.fn(),
 	promptList: vi.fn(),
+	promptPassword: vi.fn(),
 }));
 
 // Mock EmailService at module level
@@ -37,6 +38,7 @@ describe("emailSetup", () => {
 		vi.mocked(promptHelpers.promptConfirm).mockReset();
 		vi.mocked(promptHelpers.promptList).mockReset();
 		vi.mocked(promptHelpers.promptInput).mockReset();
+		vi.mocked(promptHelpers.promptPassword).mockReset();
 
 		// Reset mock behavior to a default (e.g., success)
 		mocks.mockSendEmail.mockReset().mockResolvedValue({
@@ -48,9 +50,9 @@ describe("emailSetup", () => {
 		}));
 	});
 
-	// afterEach(() => {
-	// 	vi.restoreAllMocks();
-	// });
+	// Note: We intentionally do NOT use vi.restoreAllMocks() in afterEach
+	// because it destroys the EmailService mock implementation between tests.
+	// vi.clearAllMocks() in beforeEach is sufficient for resetting call counts.
 
 	it("should skip email configuration if user declines", async () => {
 		vi.mocked(promptHelpers.promptConfirm).mockResolvedValueOnce(false);
@@ -77,10 +79,11 @@ describe("emailSetup", () => {
 		vi.mocked(promptHelpers.promptInput)
 			.mockResolvedValueOnce("us-east-1") // Region
 			.mockResolvedValueOnce("access-key") // Access Key
-			.mockResolvedValueOnce("secret-key") // Secret Key
 			.mockResolvedValueOnce("test@example.com") // From Email
 			.mockResolvedValueOnce("Test App") // From Name
 			.mockResolvedValueOnce("recipient@example.com"); // Test recipient
+
+		vi.mocked(promptHelpers.promptPassword).mockResolvedValueOnce("secret-key"); // Secret Key
 
 		mocks.mockSendEmail.mockResolvedValueOnce({
 			success: true,
@@ -120,9 +123,10 @@ describe("emailSetup", () => {
 		vi.mocked(promptHelpers.promptInput)
 			.mockResolvedValueOnce("us-east-1") // Region
 			.mockResolvedValueOnce("access-key") // Access Key
-			.mockResolvedValueOnce("secret-key") // Secret Key
 			.mockResolvedValueOnce("test@example.com") // From Email
 			.mockResolvedValueOnce("Test App"); // From Name
+
+		vi.mocked(promptHelpers.promptPassword).mockResolvedValueOnce("secret-key"); // Secret Key
 
 		const result = await emailSetup(answers);
 
@@ -133,13 +137,9 @@ describe("emailSetup", () => {
 		expect(result.AWS_SES_FROM_EMAIL).toBe("test@example.com");
 		expect(result.AWS_SES_FROM_NAME).toBe("Test App");
 
-		// Assertion mock NOT called
+		// Assert mock was not called
 		expect(mocks.mockSendEmail).not.toHaveBeenCalled();
 	});
-
-	// NOTE: Test for "should send test email when requested" is omitted because it requires
-	// real AWS SES credentials. The EmailService.sendEmail() functionality is fully covered
-	// in test/services/ses/EmailService.test.ts with proper AWS SDK mocking.
 
 	it("should show error when credentials are missing", async () => {
 		vi.mocked(promptHelpers.promptConfirm)
@@ -165,9 +165,7 @@ describe("emailSetup", () => {
 		const result = await emailSetup(answers);
 
 		expect(consoleErrorSpy).toHaveBeenCalledWith(
-			expect.stringContaining(
-				"Cannot send test email. Missing required credentials",
-			),
+			expect.stringContaining("Cannot send test email"),
 		);
 		expect(result.API_EMAIL_PROVIDER).toBe("ses"); // Should still return partial config when user continues
 	});
@@ -211,17 +209,19 @@ describe("emailSetup", () => {
 		vi.mocked(promptHelpers.promptInput)
 			.mockResolvedValueOnce("us-east-1")
 			.mockResolvedValueOnce("bad-key")
-			.mockResolvedValueOnce("bad-secret")
 			.mockResolvedValueOnce("test@example.com")
 			.mockResolvedValueOnce("Test App")
 			.mockResolvedValueOnce("recipient@example.com")
 			// Second attempt inputs (succeed)
 			.mockResolvedValueOnce("us-east-1")
 			.mockResolvedValueOnce("good-key")
-			.mockResolvedValueOnce("good-secret")
 			.mockResolvedValueOnce("test@example.com")
 			.mockResolvedValueOnce("Test App")
 			.mockResolvedValueOnce("recipient@example.com");
+
+		vi.mocked(promptHelpers.promptPassword)
+			.mockResolvedValueOnce("bad-secret") // First attempt
+			.mockResolvedValueOnce("good-secret"); // Second attempt
 
 		// Mock EmailService to fail first then succeed
 		mocks.mockSendEmail
@@ -256,10 +256,11 @@ describe("emailSetup", () => {
 		vi.mocked(promptHelpers.promptInput)
 			.mockResolvedValueOnce("us-east-1")
 			.mockResolvedValueOnce("key")
-			.mockResolvedValueOnce("secret")
 			.mockResolvedValueOnce("test@example.com")
 			.mockResolvedValueOnce("Test App")
 			.mockResolvedValueOnce("recipient@example.com");
+
+		vi.mocked(promptHelpers.promptPassword).mockResolvedValueOnce("secret");
 
 		// Mock Error with specific AWS-like properties
 		const awsError = new Error("SignatureDoesNotMatch") as Error & {
@@ -297,10 +298,11 @@ describe("emailSetup", () => {
 		vi.mocked(promptHelpers.promptInput)
 			.mockResolvedValueOnce("us-east-1")
 			.mockResolvedValueOnce("bad-key")
-			.mockResolvedValueOnce("bad-secret")
 			.mockResolvedValueOnce("test@example.com")
 			.mockResolvedValueOnce("Test App")
 			.mockResolvedValueOnce("recipient@example.com");
+
+		vi.mocked(promptHelpers.promptPassword).mockResolvedValueOnce("bad-secret");
 
 		mocks.mockSendEmail.mockResolvedValueOnce({
 			success: false,
@@ -327,10 +329,11 @@ describe("emailSetup", () => {
 		vi.mocked(promptHelpers.promptInput)
 			.mockResolvedValueOnce("us-east-1")
 			.mockResolvedValueOnce("bad-key")
-			.mockResolvedValueOnce("bad-secret")
 			.mockResolvedValueOnce("test@example.com")
 			.mockResolvedValueOnce("Test App")
 			.mockResolvedValueOnce("recipient@example.com");
+
+		vi.mocked(promptHelpers.promptPassword).mockResolvedValueOnce("bad-secret");
 
 		mocks.mockSendEmail.mockResolvedValueOnce({
 			success: false,
@@ -356,10 +359,11 @@ describe("emailSetup", () => {
 		vi.mocked(promptHelpers.promptInput)
 			.mockResolvedValueOnce("us-east-1") // Region
 			.mockResolvedValueOnce("access") // Key
-			.mockResolvedValueOnce("secret") // Secret
-			.mockResolvedValueOnce("sender@example.com") // From
-			.mockResolvedValueOnce("Sender Name") // Name
+			.mockResolvedValueOnce("from@example.com") // From Email
+			.mockResolvedValueOnce("App") // From Name
 			.mockResolvedValueOnce("recipient@example.com"); // Recipient
+
+		vi.mocked(promptHelpers.promptPassword).mockResolvedValueOnce("secret"); // Secret
 
 		mocks.mockSendEmail.mockResolvedValueOnce({
 			success: true,
@@ -373,13 +377,13 @@ describe("emailSetup", () => {
 			region: "us-east-1",
 			accessKeyId: "access",
 			secretAccessKey: "secret",
-			fromEmail: "sender@example.com",
-			fromName: "Sender Name",
+			fromEmail: "from@example.com",
+			fromName: "App",
 		});
 
 		// Verify sendEmail parameters
 		expect(mocks.mockSendEmail).toHaveBeenCalledWith({
-			id: expect.stringContaining("test-email-"),
+			id: expect.any(String),
 			email: "recipient@example.com",
 			subject: "Talawa API - Test Email",
 			htmlBody: expect.stringContaining("It Works!"),

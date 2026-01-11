@@ -72,3 +72,35 @@ export async function promptConfirm(
 	}
 	return result;
 }
+
+/**
+ * Prompts the user for password input (masked with asterisks).
+ * @param name - The name/key for the prompt answer
+ * @param message - The message to display to the user
+ * @param defaultValue - Optional default value
+ * @param validate - Optional validation function returning true or an error message
+ * @returns The user's password input string
+ * @throws {Error} If the prompt response is not a string
+ */
+export async function promptPassword(
+	name: string,
+	message: string,
+	defaultValue?: string,
+	validate?: (input: string) => true | string,
+): Promise<string> {
+	const answers = await inquirer.prompt<Record<string, string>>([
+		{
+			type: "password",
+			name,
+			message,
+			default: defaultValue,
+			validate,
+			mask: "*",
+		},
+	]);
+	const result = answers[name];
+	if (typeof result !== "string") {
+		throw new Error(`Expected string response for prompt "${name}"`);
+	}
+	return result;
+}

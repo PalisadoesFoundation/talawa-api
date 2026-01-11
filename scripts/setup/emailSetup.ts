@@ -1,4 +1,9 @@
-import { promptConfirm, promptInput, promptList } from "./promptHelpers";
+import {
+	promptConfirm,
+	promptInput,
+	promptList,
+	promptPassword,
+} from "./promptHelpers";
 import { type SetupAnswers, validateEmail } from "./setup";
 
 /**
@@ -59,9 +64,9 @@ export async function emailSetup(answers: SetupAnswers): Promise<SetupAnswers> {
 						if (!value || value.trim().length === 0) {
 							return "AWS SES Region is required";
 						}
-						// Optional: validate region format (e.g., us-east-1, eu-west-2)
-						if (!/^[a-z]{2}-[a-z]+-\d+$/.test(value)) {
-							return "Invalid region format. Expected format: us-east-1, eu-west-2, etc.";
+						// Validate region format (supports standard, gov, iso, etc.)
+						if (!/^[a-z0-9-]+-\d+$/.test(value.toLowerCase().trim())) {
+							return "Invalid region format. Expected format: us-east-1, us-gov-east-1, us-iso-east-1, etc.";
 						}
 						return true;
 					},
@@ -79,7 +84,7 @@ export async function emailSetup(answers: SetupAnswers): Promise<SetupAnswers> {
 					},
 				);
 
-				answers.AWS_SECRET_ACCESS_KEY = await promptInput(
+				answers.AWS_SECRET_ACCESS_KEY = await promptPassword(
 					"AWS_SECRET_ACCESS_KEY",
 					"AWS Secret Access Key:",
 					"",
@@ -123,7 +128,7 @@ export async function emailSetup(answers: SetupAnswers): Promise<SetupAnswers> {
 
 				if (missingCreds.length > 0) {
 					console.error(
-						`❌ Cannot send test email. Missing required credentials: ${missingCreds.join(", ")}`,
+						`❌ Cannot send test email.Missing required credentials: ${missingCreds.join(", ")} `,
 					);
 
 					const continueAnyway = await promptConfirm(
@@ -167,7 +172,7 @@ export async function emailSetup(answers: SetupAnswers): Promise<SetupAnswers> {
 						});
 
 						const result = await service.sendEmail({
-							id: `test-email-${Date.now()}`,
+							id: `test - email - ${Date.now()} `,
 							email: testRecipient,
 							subject: "Talawa API - Test Email",
 							htmlBody:
@@ -177,12 +182,12 @@ export async function emailSetup(answers: SetupAnswers): Promise<SetupAnswers> {
 
 						if (result.success) {
 							console.log(
-								`✅ Test email sent successfully! Message ID: ${result.messageId}`,
+								`✅ Test email sent successfully! Message ID: ${result.messageId} `,
 							);
 							testSuccess = true;
 							credentialsValid = true;
 						} else {
-							console.error(`❌ Failed to send test email: ${result.error}`);
+							console.error(`❌ Failed to send test email: ${result.error} `);
 							console.log(
 								"Please check your credentials and ensure the 'From' address is verified in SES.",
 							);
@@ -190,9 +195,9 @@ export async function emailSetup(answers: SetupAnswers): Promise<SetupAnswers> {
 					} catch (err: unknown) {
 						const error = err as Error & { code?: string };
 						console.error("❌ Error attempting to send test email.");
-						console.error(`Error Details: ${error.message}`);
-						if (error.code) console.error(`Code: ${error.code}`);
-						if (error.name) console.error(`Type: ${error.name}`);
+						console.error(`Error Details: ${error.message} `);
+						if (error.code) console.error(`Code: ${error.code} `);
+						if (error.name) console.error(`Type: ${error.name} `);
 						console.log(
 							"Tips: Check AWS_SES_REGION, verify AWS_ACCESS_KEY_ID/SECRET, and ensure AWS_SES_FROM_EMAIL is verified in SES.",
 						);
