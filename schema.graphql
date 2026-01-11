@@ -4674,8 +4674,8 @@ type Query {
   """Query field to read an advertisement."""
   advertisement(input: QueryAdvertisementInput!): Advertisement
 
-  """Query field to get all Agenda Categories for a specific event."""
-  agendaCategoryByEventId(
+  """Query field to get all agenda categories for a specific event."""
+  agendaCategoriesByEventId(
     """ID of the standalone event"""
     eventId: ID!
   ): [AgendaCategory!]

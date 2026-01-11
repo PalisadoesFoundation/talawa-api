@@ -8,7 +8,7 @@ import {
 } from "~/src/graphql/inputs/MutationDeleteAgendaCategoryInput";
 import envConfig from "~/src/utilities/graphqLimits";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
-import { AgendaCategory } from "../AgendaCategory/AgendaCategory";
+import { AgendaCategory } from "~/src/graphql/types/AgendaCategory/AgendaCategory";
 
 const mutationDeleteAgendaCategoryArgumentsSchema = z.object({
 	input: mutationDeleteAgendaCategoryInputSchema,
@@ -65,14 +65,8 @@ builder.mutationField("deleteAgendaCategory", (t) =>
 				ctx.drizzleClient.query.agendaCategoriesTable.findFirst({
 					with: {
 						event: {
-							columns: {
-								startAt: true,
-							},
 							with: {
 								organization: {
-									columns: {
-										countryCode: true,
-									},
 									with: {
 										membershipsWhereOrganization: {
 											columns: {

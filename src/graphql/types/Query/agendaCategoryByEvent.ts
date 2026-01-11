@@ -11,7 +11,7 @@ const queryGetAgendaCategoryByEventIdArgumentsSchema = z.object({
 	eventId: z.string().uuid(),
 });
 
-builder.queryField("agendaCategoryByEventId", (t) =>
+builder.queryField("agendaCategoriesByEventId", (t) =>
 	t.field({
 		args: {
 			eventId: t.arg.id({
@@ -21,7 +21,7 @@ builder.queryField("agendaCategoryByEventId", (t) =>
 		},
 		complexity: envConfig.API_GRAPHQL_OBJECT_FIELD_COST,
 		description:
-			"Query field to get all Agenda Categories for a specific event.",
+			"Query field to get all agenda categories for a specific event.",
 		resolve: async (_parent, args, ctx) => {
 			if (!ctx.currentClient.isAuthenticated) {
 				throw new TalawaGraphQLError({
