@@ -16,11 +16,13 @@ mkdir -p .pnpm-store node_modules
 # We check writability first to avoid unnecessary sudo usage.
 # If chown fails on a non-writable directory, we fail fast to prevent hidden issues.
 if [ ! -w ".pnpm-store" ] || [ ! -w "node_modules" ]; then
-  if ! sudo -n chown -R talawa:talawa .pnpm-store node_modules; then
+  # Use current user's UID:GID for ownership to ensure portability
+  if ! sudo -n chown -R "$(id -u):$(id -g)" .pnpm-store node_modules; then
     echo "
 [ERROR] 'chown' failed for .pnpm-store or node_modules.
-Directories are not writable and sudo failed.
-Please fix ownership permissions (e.g., via Docker Compose volumes) or run as root.
+Directories are not writable and sudo failed to change ownership to $(id -u):$(id -g).
+Please fix ownership permissions via Docker Compose volumes options or ensure
+the container user has write access.
 " >&2
     exit 1
   fi

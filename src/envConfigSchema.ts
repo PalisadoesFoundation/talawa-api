@@ -293,9 +293,19 @@ export const envConfigSchema = Type.Object({
 		}),
 	),
 	/**
+	 * The threshold in milliseconds for a request to be considered slow.
+	 */
+	API_SLOW_REQUEST_MS: Type.Number({
+		minimum: 0,
+		default: 500,
+	}),
+	/**
 	 * Enabled state for OpenTelemetry tracing.
 	 */
-	API_OTEL_ENABLED: Type.Optional(Type.Boolean()),
+	API_OTEL_ENABLED: Type.Boolean({
+		default: false,
+		description: "Enable or disable OpenTelemetry tracing",
+	}),
 	/**
 	 * Environment name for OpenTelemetry (e.g. 'production', 'development').
 	 */
