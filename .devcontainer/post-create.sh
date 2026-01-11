@@ -13,18 +13,21 @@ done
 mkdir -p .pnpm-store node_modules
 
 # Fix permissions
-if ! sudo -n chown -R talawa:talawa .pnpm-store node_modules 2>/dev/null; then
-  echo "
-[WARN] 'chown' failed for .pnpm-store or node_modules.
-You may have permission issues. 
-Try running: 'sudo chown -R talawa:talawa .pnpm-store node_modules' manually or rebuild the container.
+# We check writability first to avoid unnecessary sudo usage.
+# If chown fails on a non-writable directory, we fail fast to prevent hidden issues.
+if [ ! -w ".pnpm-store" ] || [ ! -w "node_modules" ]; then
+  if ! sudo -n chown -R talawa:talawa .pnpm-store node_modules; then
+    echo "
+[ERROR] 'chown' failed for .pnpm-store or node_modules.
+Directories are not writable and sudo failed.
+Please fix ownership permissions (e.g., via Docker Compose volumes) or run as root.
 " >&2
-  # We warn but don't exit failure on chown permission issues as it might be a bind mount limitation
+    exit 1
+  fi
 fi
 
 # Install dependencies and tools
 fnm install
 fnm use
-corepack enable npm
 corepack enable
 pnpm install
