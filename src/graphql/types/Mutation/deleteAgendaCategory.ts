@@ -6,9 +6,9 @@ import {
 	MutationDeleteAgendaCategoryInput,
 	mutationDeleteAgendaCategoryInputSchema,
 } from "~/src/graphql/inputs/MutationDeleteAgendaCategoryInput";
+import { AgendaCategory } from "~/src/graphql/types/AgendaCategory/AgendaCategory";
 import envConfig from "~/src/utilities/graphqLimits";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
-import { AgendaCategory } from "~/src/graphql/types/AgendaCategory/AgendaCategory";
 
 const mutationDeleteAgendaCategoryArgumentsSchema = z.object({
 	input: mutationDeleteAgendaCategoryInputSchema,
