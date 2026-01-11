@@ -1,5 +1,5 @@
 import { faker } from "@faker-js/faker";
-import { beforeAll, expect, suite, test, vi } from "vitest";
+import { afterEach, beforeAll, expect, suite, test, vi } from "vitest";
 import { assertToBeNonNullish } from "../../../helpers";
 import { server } from "../../../server";
 import { mercuriusClient } from "../client";
@@ -110,6 +110,10 @@ async function createChat(
 }
 
 suite("Mutation field createChatMessage", () => {
+	afterEach(() => {
+		vi.restoreAllMocks();
+	});
+
 	test("unauthenticated error when client is not authenticated", async () => {
 		const result = await mercuriusClient.mutate(Mutation_createChatMessage, {
 			variables: {
