@@ -36,7 +36,7 @@ Defined in: [src/services/ses/EmailService.ts:7](https://github.com/PalisadoesFo
 
 ### provider?
 
-> `optional` **provider**: `"ses"` \| `"smtp"`
+> `optional` **provider**: `"ses"`
 
 Defined in: [src/services/ses/EmailService.ts:10](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/ses/EmailService.ts#L10)
 

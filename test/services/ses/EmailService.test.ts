@@ -222,16 +222,8 @@ describe("EmailService", () => {
 		);
 	});
 
-	it("throws error when provider is set to smtp", () => {
-		expect(() => {
-			new EmailService({
-				region: "us-east-1",
-				provider: "smtp",
-			});
-		}).toThrow(
-			"SMTP provider is not yet implemented. Only 'ses' is supported.",
-		);
-	});
+	// NOTE: Test for 'smtp' provider removed - TypeScript type safety now prevents
+	// setting provider to 'smtp' at compile time, so runtime validation is unnecessary.
 
 	/**
 	 * Test: Optional textBody handling (lines 118-120)

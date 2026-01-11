@@ -62,7 +62,13 @@ export type SetupKey =
 	| "CADDY_TALAWA_API_HOST"
 	| "CADDY_TALAWA_API_PORT"
 	| "API_OTEL_ENABLED"
-	| "API_OTEL_SAMPLING_RATIO";
+	| "API_OTEL_SAMPLING_RATIO"
+	| "API_EMAIL_PROVIDER"
+	| "AWS_SES_REGION"
+	| "AWS_ACCESS_KEY_ID"
+	| "AWS_SECRET_ACCESS_KEY"
+	| "AWS_SES_FROM_EMAIL"
+	| "AWS_SES_FROM_NAME";
 
 // Replace the index signature with a constrained mapping
 // Allow string indexing so tests and dynamic access are permitted
