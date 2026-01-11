@@ -77,6 +77,43 @@ export type SetupAnswers = Partial<Record<SetupKey, string>> & {
 };
 
 const envFileName = ".env";
+let backupCreated = false;
+let cleanupInProgress = false;
+
+/**
+ * Safely restores the backup file if it exists
+ * @returns true if restoration was successful or no backup was needed, false if restoration failed
+ */
+async function restoreBackup(): Promise<boolean> {
+	if (cleanupInProgress) {
+		// Prevent multiple simultaneous cleanup attempts
+		return false;
+	}
+
+	cleanupInProgress = true;
+
+	try {
+		if (!backupCreated) {
+			console.log("📋 No backup was created yet, nothing to restore");
+			return true; // Not an error, just nothing to do
+		}
+
+		try {
+			await restoreLatestBackup();
+			console.log("✅ Original configuration restored successfully");
+			return true;
+		} catch (error: unknown) {
+			console.error("❌ Failed to restore backup:", error);
+			console.error(
+				"\n   You may need to manually restore from the .backup directory",
+			);
+			return false;
+		}
+	} finally {
+		cleanupInProgress = false;
+	}
+}
+
 async function restoreLatestBackup(): Promise<void> {
 	const backupDir = ".backup";
 	const envPrefix = ".env.";
@@ -769,6 +806,11 @@ export async function caddySetup(answers: SetupAnswers): Promise<SetupAnswers> {
 }
 
 export async function setup(): Promise<SetupAnswers> {
+	// Reset state variables at the start of each setup call
+	// This ensures clean state for tests and multiple setup() calls
+	backupCreated = false;
+	cleanupInProgress = false;
+
 	const initialCI = process.env.CI;
 	let answers: SetupAnswers = {};
 	if (await checkEnvFile()) {
@@ -783,10 +825,26 @@ export async function setup(): Promise<SetupAnswers> {
 	}
 	dotenv.config({ path: envFileName });
 	process.once("SIGINT", async () => {
-		console.log("\nProcess interrupted! Undoing changes...");
-		answers = {};
-		await restoreLatestBackup();
-		process.exit(1);
+		console.log("\n\n⚠️  Setup interrupted by user (CTRL+C)");
+		console.log("=".repeat(60));
+		console.log("📋 Cleaning up and restoring previous configuration...");
+		console.log(`${"=".repeat(60)}\n`);
+
+		const restored = await restoreBackup();
+
+		if (restored) {
+			console.log(
+				"\n✅ Your environment has been restored to its previous state",
+			);
+			console.log("   You can safely run setup again when ready\n");
+			process.exit(0); // Clean exit since we restored successfully
+		} else {
+			console.log("\n⚠️  Cleanup incomplete - please check your .env file");
+			console.log(
+				"   Run setup again or restore manually from .backup directory\n",
+			);
+			process.exit(1); // Error exit since restoration failed
+		}
 	});
 	if (await checkEnvFile()) {
 		const isInteractive =
@@ -810,7 +868,7 @@ export async function setup(): Promise<SetupAnswers> {
 			shouldBackup = process.env.TALAWA_SKIP_ENV_BACKUP !== "true";
 		}
 		try {
-			await envFileBackup(shouldBackup);
+			backupCreated = await envFileBackup(shouldBackup);
 		} catch (err) {
 			if (process.env.NODE_ENV === "production" || initialCI === "true") {
 				console.error("envFileBackup failed (fatal):", err);

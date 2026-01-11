@@ -588,22 +588,54 @@ describe("Error handling without backup", () => {
 		const processExitSpy = vi
 			.spyOn(process, "exit")
 			.mockImplementation(() => undefined as never);
-		const fsExistsSyncSpy = vi.spyOn(fs, "existsSync").mockReturnValue(false);
-		const fsCopyFileSyncSpy = vi
-			.spyOn(fs, "copyFileSync")
-			.mockImplementation(() => undefined);
+		const consoleLogSpy = vi.spyOn(console, "log").mockImplementation(() => {});
 
-		const consoleLogSpy = vi.spyOn(console, "log");
+		// Mock file system to indicate no .env file exists (so no backup will be created)
+		vi.spyOn(fs, "existsSync").mockReturnValue(false);
 
+		// Mock all prompts to prevent setup from hanging
+		vi.spyOn(inquirer, "prompt").mockResolvedValue({
+			CI: "false",
+			useDefaultMinio: true,
+			useDefaultCloudbeaver: true,
+			useDefaultPostgres: true,
+			useDefaultCaddy: true,
+			useDefaultApi: true,
+			API_ADMINISTRATOR_USER_EMAIL_ADDRESS: "test@email.com",
+		});
+
+		// Start setup() which will register the SIGINT handler
+		// Don't await it - we'll interrupt it
+		const setupPromise = setup();
+
+		// Wait a bit for setup to register the handler
+		await new Promise((resolve) => setTimeout(resolve, 50));
+
+		// Emit SIGINT to trigger the handler
 		process.emit("SIGINT");
 
-		expect(consoleLogSpy).toHaveBeenCalledWith(
-			"\nProcess interrupted! Undoing changes...",
-		);
-		expect(fsExistsSyncSpy).toHaveBeenCalledWith(".backup");
-		expect(fsCopyFileSyncSpy).not.toHaveBeenCalled();
-		expect(processExitSpy).toHaveBeenCalledWith(1);
+		// Wait for async handler to complete
+		await new Promise((resolve) => setTimeout(resolve, 100));
 
+		// Check that the new SIGINT handler messages are present
+		expect(consoleLogSpy).toHaveBeenCalledWith(
+			"\n\n⚠️  Setup interrupted by user (CTRL+C)",
+		);
+		expect(consoleLogSpy).toHaveBeenCalledWith(
+			"📋 No backup was created yet, nothing to restore",
+		);
+		// When no backup exists, it should exit with 0 (success, nothing to restore)
+		expect(processExitSpy).toHaveBeenCalledWith(0);
+
+		// Clean up: restore mocks and handle the setup promise rejection
+		processExitSpy.mockRestore();
+		consoleLogSpy.mockRestore();
 		vi.clearAllMocks();
+
+		// The setup promise will reject because process.exit was called
+		// Catch the rejection to prevent unhandled promise rejection warnings
+		setupPromise.catch(() => {
+			// Expected - setup was interrupted
+		});
 	});
 });

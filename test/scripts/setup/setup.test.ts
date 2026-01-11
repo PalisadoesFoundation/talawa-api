@@ -10,7 +10,7 @@ import {
 } from "vitest";
 
 vi.mock("scripts/setup/envFileBackup/envFileBackup", () => ({
-	envFileBackup: vi.fn().mockResolvedValue(undefined),
+	envFileBackup: vi.fn().mockResolvedValue(false),
 }));
 
 vi.mock("env-schema", () => ({
@@ -288,10 +288,10 @@ describe("Setup", () => {
 		fsCopyFileSpy.mockRestore();
 	});
 
-	it("should restore .env on SIGINT (Ctrl+C) and exit with code 1", async () => {
+	it("should restore .env on SIGINT (Ctrl+C) and exit with code 0 when backup exists", async () => {
 		const consoleLogSpy = vi.spyOn(console, "log").mockImplementation(() => {});
 
-		// Mock fs.promises methods instead of sync methods
+		// Mock fs.promises methods for restoreLatestBackup
 		const fsCopyFileSpy = vi
 			.spyOn(fs.promises, "copyFile")
 			.mockResolvedValue(undefined);
@@ -308,28 +308,146 @@ describe("Setup", () => {
 				".env.1700000000",
 			] as unknown as Awaited<ReturnType<typeof fs.promises.readdir>>);
 
+		// Mock envFileBackup to return true (backup was created)
+		vi.mocked(envFileBackup).mockResolvedValue(true);
+
+		// Mock file system to indicate .env file exists
+		vi.spyOn(fs, "existsSync").mockReturnValue(true);
+
+		// Mock all prompts
+		vi.spyOn(inquirer, "prompt").mockResolvedValue({
+			envReconfigure: true,
+			shouldBackup: true,
+			CI: "false",
+			useDefaultMinio: true,
+			useDefaultCloudbeaver: true,
+			useDefaultPostgres: true,
+			useDefaultCaddy: true,
+			useDefaultApi: true,
+			API_ADMINISTRATOR_USER_EMAIL_ADDRESS: "test@email.com",
+		});
+
 		const processExitSpy = vi.spyOn(process, "exit").mockImplementation(() => {
 			throw new Error("process.exit called");
 		});
 
+		// Start setup() which will register the SIGINT handler and create backup
+		const setupPromise = setup();
+
+		// Wait for setup to register handler and create backup
+		await new Promise((resolve) => setTimeout(resolve, 100));
+
+		// Emit SIGINT to trigger the handler
 		await expect(async () => process.emit("SIGINT")).rejects.toThrow(
 			"process.exit called",
 		);
 
+		// Check that restoreLatestBackup was called
 		expect(fsCopyFileSpy).toHaveBeenCalledWith(
 			".backup/.env.1700000000",
 			".env",
 		);
+		// Check new SIGINT handler messages
 		expect(consoleLogSpy).toHaveBeenCalledWith(
-			"\nProcess interrupted! Undoing changes...",
+			"\n\n⚠️  Setup interrupted by user (CTRL+C)",
 		);
-		expect(processExitSpy).toHaveBeenCalledWith(1);
+		expect(consoleLogSpy).toHaveBeenCalledWith(
+			"✅ Original configuration restored successfully",
+		);
+		// Should exit with 0 when restoration succeeds
+		expect(processExitSpy).toHaveBeenCalledWith(0);
 
+		// Clean up: restore mocks and handle the setup promise rejection
 		consoleLogSpy.mockRestore();
 		processExitSpy.mockRestore();
 		fsCopyFileSpy.mockRestore();
 		fsAccessSpy.mockRestore();
 		fsReaddirSpy.mockRestore();
+
+		// The setup promise will reject because process.exit was called
+		// Catch the rejection to prevent unhandled promise rejection warnings
+		setupPromise.catch(() => {
+			// Expected - setup was interrupted
+		});
+	});
+
+	it("should exit with code 1 when restoreLatestBackup fails", async () => {
+		const consoleLogSpy = vi.spyOn(console, "log").mockImplementation(() => {});
+		const consoleErrorSpy = vi
+			.spyOn(console, "error")
+			.mockImplementation(() => {});
+
+		// Mock fs.promises methods for restoreLatestBackup to throw an error
+		const fsAccessSpy = vi
+			.spyOn(fs.promises, "access")
+			.mockImplementation(async (path) => {
+				if (String(path) === ".backup") return undefined;
+				throw { code: "ENOENT" };
+			});
+		const fsReaddirSpy = vi
+			.spyOn(fs.promises, "readdir")
+			.mockRejectedValue(new Error("Failed to read backup directory"));
+
+		// Mock envFileBackup to return true (backup was created)
+		vi.mocked(envFileBackup).mockResolvedValue(true);
+
+		// Mock file system to indicate .env file exists
+		vi.spyOn(fs, "existsSync").mockReturnValue(true);
+
+		// Mock all prompts
+		vi.spyOn(inquirer, "prompt").mockResolvedValue({
+			envReconfigure: true,
+			shouldBackup: true,
+			CI: "false",
+			useDefaultMinio: true,
+			useDefaultCloudbeaver: true,
+			useDefaultPostgres: true,
+			useDefaultCaddy: true,
+			useDefaultApi: true,
+			API_ADMINISTRATOR_USER_EMAIL_ADDRESS: "test@email.com",
+		});
+
+		const processExitSpy = vi.spyOn(process, "exit").mockImplementation(() => {
+			throw new Error("process.exit called");
+		});
+
+		// Start setup() which will register the SIGINT handler and create backup
+		const setupPromise = setup();
+
+		// Wait for setup to register handler and create backup
+		await new Promise((resolve) => setTimeout(resolve, 100));
+
+		// Emit SIGINT to trigger the handler
+		await expect(async () => process.emit("SIGINT")).rejects.toThrow(
+			"process.exit called",
+		);
+
+		// Check that error messages are shown
+		expect(consoleErrorSpy).toHaveBeenCalledWith(
+			"❌ Failed to restore backup:",
+			expect.any(Error),
+		);
+		expect(consoleErrorSpy).toHaveBeenCalledWith(
+			"\n   You may need to manually restore from the .backup directory",
+		);
+		// Should exit with 1 when restoration fails
+		expect(processExitSpy).toHaveBeenCalledWith(1);
+		expect(consoleLogSpy).toHaveBeenCalledWith(
+			"\n⚠️  Cleanup incomplete - please check your .env file",
+		);
+
+		// Clean up: restore mocks and handle the setup promise rejection
+		consoleLogSpy.mockRestore();
+		consoleErrorSpy.mockRestore();
+		processExitSpy.mockRestore();
+		fsAccessSpy.mockRestore();
+		fsReaddirSpy.mockRestore();
+
+		// The setup promise will reject because process.exit was called
+		// Catch the rejection to prevent unhandled promise rejection warnings
+		setupPromise.catch(() => {
+			// Expected - setup was interrupted
+		});
 	});
 
 	it("should skip backup when CI=true and TALAWA_SKIP_ENV_BACKUP=true", async () => {
