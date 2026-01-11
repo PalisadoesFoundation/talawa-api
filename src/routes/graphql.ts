@@ -19,6 +19,7 @@ import {
 } from "../utilities/cookieConfig";
 import { createDataloaders } from "../utilities/dataloaders";
 import leakyBucket from "../utilities/leakyBucket";
+import { type AppLogger, withFields } from "../utilities/logging/logger";
 import { DEFAULT_REFRESH_TOKEN_EXPIRES_MS } from "../utilities/refreshTokenUtils";
 import { TalawaGraphQLError } from "../utilities/TalawaGraphQLError";
 
@@ -147,10 +148,18 @@ export const createContext: CreateContext = async (initialContext) => {
 				}
 			: undefined;
 
+	// Attach operation name to logger if available
+	const body = request.body as Record<string, unknown> | undefined;
+	const operationName = (body?.operationName as string) ?? "unknown";
+
+	const opLogger = withFields(request.log as AppLogger, {
+		operation: operationName,
+	});
+
 	return {
 		cache: fastify.cache,
 		currentClient,
-		dataloaders: createDataloaders(fastify.drizzleClient),
+		dataloaders: createDataloaders(fastify.drizzleClient, fastify.cache),
 		drizzleClient: fastify.drizzleClient,
 		envConfig: fastify.envConfig,
 		jwt: {
@@ -158,8 +167,9 @@ export const createContext: CreateContext = async (initialContext) => {
 				fastify.jwt.sign(payload),
 		},
 		cookie: cookieHelper,
-		log: request.log ?? fastify.log,
+		log: opLogger,
 		minio: fastify.minio,
+
 		// attached a per-request notification service that queues notifications and can flush later
 		notification: new NotificationService(),
 	};
@@ -257,7 +267,10 @@ export const graphql = fastifyPlugin(async (fastify) => {
 							isAuthenticated: true,
 							user: decoded.user,
 						},
-						dataloaders: createDataloaders(fastify.drizzleClient),
+						dataloaders: createDataloaders(
+							fastify.drizzleClient,
+							fastify.cache,
+						),
 						drizzleClient: fastify.drizzleClient,
 						envConfig: fastify.envConfig,
 						jwt: {
@@ -398,6 +411,7 @@ export const graphql = fastifyPlugin(async (fastify) => {
 				fastify.envConfig.API_RATE_LIMIT_BUCKET_CAPACITY,
 				fastify.envConfig.API_RATE_LIMIT_REFILL_RATE,
 				complexity.complexity,
+				request.log as AppLogger,
 			);
 
 			// If the request exceeds rate limits, reject it
