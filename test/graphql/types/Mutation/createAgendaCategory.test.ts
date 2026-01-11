@@ -209,6 +209,44 @@ suite("Mutation field createAgendaCategory", () => {
 			assertToBeNonNullish(result.data?.createAgendaCategory);
 		});
 
+		test("Successfully creates category with description", async () => {
+			const [{ token }, orgAdmin] = await Promise.all([
+				getAdminAuth(),
+				createRegularUserUsingAdmin(),
+			]);
+
+			const { cleanup, eventId, organizationId } =
+				await createOrganizationAndEvent(token, await getAdminUserId());
+			testCleanupFunctions.push(cleanup);
+
+			await addOrganizationMembership({
+				adminAuthToken: token,
+				memberId: orgAdmin.userId,
+				organizationId,
+				role: "administrator",
+			});
+
+			const result = await mercuriusClient.mutate(
+				Mutation_createAgendaCategory,
+				{
+					headers: { authorization: `bearer ${orgAdmin.authToken}` },
+					variables: {
+						input: {
+							eventId,
+							name: "Category With Description",
+							description: "This is a test description",
+						},
+					},
+				},
+			);
+
+			expect(result.errors).toBeUndefined();
+			assertToBeNonNullish(result.data?.createAgendaCategory);
+			expect(result.data.createAgendaCategory.description).toEqual(
+				"This is a test description",
+			);
+		});
+
 		test("Returns error when user exists in token but not in DB", async () => {
 			const regularUser = await createRegularUserUsingAdmin();
 
@@ -231,7 +269,7 @@ suite("Mutation field createAgendaCategory", () => {
 				},
 			);
 
-			expect(result.data.createAgendaCategory).toEqual(null);
+			expect(result.data?.createAgendaCategory ?? null).toEqual(null);
 			expect(result.errors).toEqual(
 				expect.arrayContaining([
 					expect.objectContaining({
@@ -298,7 +336,7 @@ suite("Mutation field createAgendaCategory", () => {
 				},
 			);
 
-			expect(result.data.createAgendaCategory).toEqual(null);
+			expect(result.data?.createAgendaCategory ?? null).toEqual(null);
 			expect(result.errors).toEqual(
 				expect.arrayContaining([
 					expect.objectContaining({
@@ -351,7 +389,7 @@ suite("Mutation field createAgendaCategory", () => {
 				},
 			);
 
-			expect(result.data.createAgendaCategory).toEqual(null);
+			expect(result.data?.createAgendaCategory ?? null).toEqual(null);
 			expect(result.errors).toEqual(
 				expect.arrayContaining([
 					expect.objectContaining({
