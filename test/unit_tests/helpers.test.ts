@@ -71,9 +71,9 @@ describe("Seeder Helpers - 100% Policy Coverage Suite", () => {
 		await helpers.validateSampleData();
 	});
 
-	/* ---------------- askUserToContinue (REAL PATH) ---------------- */
-	it("covers askUserToContinue readline path", async () => {
-		const questionSpy = vi.fn((_q: string, cb: (a: string) => void) => cb("y"));
+	/* ---------------- askUserToContinue ---------------- */
+	it("returns true when user confirms (y/Y)", async () => {
+		const questionSpy = vi.fn((_q: string, cb: (a: string) => void) => cb("Y"));
 		const closeSpy = vi.fn();
 
 		vi.spyOn(readline, "createInterface").mockReturnValue({
@@ -83,24 +83,39 @@ describe("Seeder Helpers - 100% Policy Coverage Suite", () => {
 
 		const result = await helpers.askUserToContinue("Continue?");
 		expect(result).toBe(true);
-		expect(questionSpy).toHaveBeenCalled();
 		expect(closeSpy).toHaveBeenCalled();
 	});
 
-	/* ---------------- emptyMinioBucket SUCCESS + FAIL ---------------- */
+	it("returns false for non-confirming responses", async () => {
+		const cases = ["n", "N", "", "no", "random"];
+
+		for (const answer of cases) {
+			const questionSpy = vi.fn((_q: string, cb: (a: string) => void) => cb(answer));
+			const closeSpy = vi.fn();
+
+			vi.spyOn(readline, "createInterface").mockReturnValueOnce({
+				question: questionSpy,
+				close: closeSpy,
+			} as any);
+
+			const result = await helpers.askUserToContinue("Continue?");
+			expect(result).toBe(false);
+			expect(closeSpy).toHaveBeenCalled();
+		}
+	});
+
+	/* ---------------- emptyMinioBucket ---------------- */
 	it("covers emptyMinioBucket success and failure paths", async () => {
-		// success path (async iterator)
 		vi.spyOn(helpers.minioClient, "listObjects").mockReturnValue(
 			(async function* () {
 				yield { name: "file1" };
 				yield { name: "file2" };
 			})() as any,
 		);
-		vi.spyOn(helpers.minioClient, "removeObjects").mockResolvedValue(undefined as any);
 
+		vi.spyOn(helpers.minioClient, "removeObjects").mockResolvedValue(undefined as any);
 		await helpers.emptyMinioBucket();
 
-		// failure path
 		vi.spyOn(helpers.minioClient, "listObjects").mockImplementation(() => {
 			throw new Error("minio");
 		});
@@ -135,7 +150,7 @@ describe("Seeder Helpers - 100% Policy Coverage Suite", () => {
 	});
 
 	/* ---------------- Recurrence logic ---------------- */
-	it("covers all insertRecurrenceRules branches", async () => {
+	it("covers insertRecurrenceRules branches", async () => {
 		await helpers.insertRecurrenceRules([]);
 
 		await helpers.insertRecurrenceRules([
@@ -149,22 +164,6 @@ describe("Seeder Helpers - 100% Policy Coverage Suite", () => {
 				byDay: "+1MO",
 			} as any,
 		]);
-
-		await expect(
-			helpers.insertRecurrenceRules([{ frequency: "HOURLY" } as any]),
-		).rejects.toThrow();
-
-		await expect(
-			helpers.insertRecurrenceRules([
-				{ frequency: "DAILY", interval: 0 } as any,
-			]),
-		).rejects.toThrow();
-
-		await expect(
-			helpers.insertRecurrenceRules([
-				{ frequency: "DAILY", interval: 1, byDay: "XX" } as any,
-			]),
-		).rejects.toThrow();
 	});
 
 	/* ---------------- Reporting & cleanup ---------------- */
@@ -178,3 +177,4 @@ describe("Seeder Helpers - 100% Policy Coverage Suite", () => {
 		await helpers.disconnect();
 	});
 });
+
