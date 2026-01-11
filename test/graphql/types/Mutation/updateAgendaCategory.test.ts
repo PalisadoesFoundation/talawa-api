@@ -230,13 +230,20 @@ suite("Mutation field updateAgendaCategory", () => {
 			);
 
 			expect(result.data?.updateAgendaCategory ?? null).toEqual(null);
-			expect(
-				result.errors?.some(
-					(e) =>
-						e.extensions?.code === "invalid_arguments" ||
-						e.message.includes("invalid"),
-				),
-			).toBe(true);
+			expect(result.errors).toEqual(
+				expect.arrayContaining([
+					expect.objectContaining({
+						extensions: expect.objectContaining({
+							code: "invalid_arguments",
+							issues: expect.arrayContaining([
+								expect.objectContaining({
+									argumentPath: ["input", "id"],
+								}),
+							]),
+						}),
+					}),
+				]),
+			);
 		});
 	});
 
@@ -367,43 +374,37 @@ suite("Mutation field updateAgendaCategory", () => {
 			);
 			cleanupFns.push(env.cleanup);
 
-			const originalUpdate = server.drizzleClient.update;
-
-			server.drizzleClient.update = vi.fn().mockImplementation(() => ({
+			vi.spyOn(server.drizzleClient, "update").mockReturnValue({
 				set: () => ({
 					where: () => ({
 						returning: async () => [],
 					}),
 				}),
-			}));
+			} as unknown as ReturnType<typeof server.drizzleClient.update>);
 
-			try {
-				const result = await mercuriusClient.mutate(
-					Mutation_updateAgendaCategory,
-					{
-						headers: { authorization: `bearer ${token}` },
-						variables: {
-							input: {
-								id: env.categoryId,
-								name: "Updated",
-							},
+			const result = await mercuriusClient.mutate(
+				Mutation_updateAgendaCategory,
+				{
+					headers: { authorization: `bearer ${token}` },
+					variables: {
+						input: {
+							id: env.categoryId,
+							name: "Updated",
 						},
 					},
-				);
+				},
+			);
 
-				expect(result.data?.updateAgendaCategory ?? null).toEqual(null);
-				expect(result.errors).toEqual(
-					expect.arrayContaining([
-						expect.objectContaining({
-							extensions: expect.objectContaining({
-								code: "unexpected",
-							}),
+			expect(result.data?.updateAgendaCategory ?? null).toEqual(null);
+			expect(result.errors).toEqual(
+				expect.arrayContaining([
+					expect.objectContaining({
+						extensions: expect.objectContaining({
+							code: "unexpected",
 						}),
-					]),
-				);
-			} finally {
-				server.drizzleClient.update = originalUpdate;
-			}
+					}),
+				]),
+			);
 		});
 	});
 });

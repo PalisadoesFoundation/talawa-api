@@ -135,7 +135,9 @@ suite("Mutation field createAgendaCategory", () => {
 			try {
 				await cleanup();
 			} catch (error) {
-				console.error("Cleanup failed:", error);
+				if (process.env.DEBUG_TEST_CLEANUP === "true") {
+					console.error("Cleanup failed:", error);
+				}
 			}
 		}
 		testCleanupFunctions.length = 0;
@@ -166,6 +168,41 @@ suite("Mutation field createAgendaCategory", () => {
 					}),
 				]),
 			);
+		});
+
+		test("Allows organization admin to create category", async () => {
+			const [{ token }, orgAdmin] = await Promise.all([
+				getAdminAuth(),
+				createRegularUserUsingAdmin(),
+			]);
+
+			const { cleanup, eventId, organizationId } =
+				await createOrganizationAndEvent(token, await getAdminUserId());
+			testCleanupFunctions.push(cleanup);
+
+			// Make user an org admin (not super admin)
+			await addOrganizationMembership({
+				adminAuthToken: token,
+				memberId: orgAdmin.userId,
+				organizationId,
+				role: "administrator",
+			});
+
+			const result = await mercuriusClient.mutate(
+				Mutation_createAgendaCategory,
+				{
+					headers: { authorization: `bearer ${orgAdmin.authToken}` },
+					variables: {
+						input: {
+							eventId,
+							name: "Org Admin Category",
+						},
+					},
+				},
+			);
+
+			expect(result.errors).toBeUndefined();
+			assertToBeNonNullish(result.data?.createAgendaCategory);
 		});
 
 		test("Returns error when user exists in token but not in DB", async () => {

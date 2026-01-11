@@ -88,7 +88,10 @@ builder.queryField("agendaCategoriesByEventId", (t) =>
 				});
 			}
 
-			if (currentUser.role !== "administrator" && !membership) {
+			if (
+				currentUser.role !== "administrator" &&
+				membership?.role !== "administrator"
+			) {
 				throw new TalawaGraphQLError({
 					extensions: {
 						code: "unauthorized_action_on_arguments_associated_resources",

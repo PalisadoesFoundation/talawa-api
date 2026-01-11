@@ -86,6 +86,12 @@ suite("Query field agendaCategoriesByEventId", () => {
 		);
 		assertToBeNonNullish(createOrgResult.data?.createOrganization);
 		const organizationId = createOrgResult.data.createOrganization.id;
+		cleanupFns.push(async () => {
+			await mercuriusClient.mutate(Mutation_deleteOrganization, {
+				headers: { authorization: `bearer ${adminAuthToken}` },
+				variables: { input: { id: organizationId } },
+			});
+		});
 
 		await mercuriusClient.mutate(Mutation_createOrganizationMembership, {
 			headers: { authorization: `bearer ${adminAuthToken}` },
@@ -191,6 +197,12 @@ suite("Query field agendaCategoriesByEventId", () => {
 
 		assertToBeNonNullish(createOrgResult.data?.createOrganization);
 		const organizationId = createOrgResult.data.createOrganization.id;
+		cleanupFns.push(async () => {
+			await mercuriusClient.mutate(Mutation_deleteOrganization, {
+				headers: { authorization: `bearer ${adminAuthToken}` },
+				variables: { input: { id: organizationId } },
+			});
+		});
 
 		await mercuriusClient.mutate(Mutation_createOrganizationMembership, {
 			headers: { authorization: `bearer ${adminAuthToken}` },
@@ -261,6 +273,12 @@ suite("Query field agendaCategoriesByEventId", () => {
 
 		assertToBeNonNullish(createOrgResult.data?.createOrganization);
 		const organizationId = createOrgResult.data.createOrganization.id;
+		cleanupFns.push(async () => {
+			await mercuriusClient.mutate(Mutation_deleteOrganization, {
+				headers: { authorization: `bearer ${adminAuthToken}` },
+				variables: { input: { id: organizationId } },
+			});
+		});
 
 		await mercuriusClient.mutate(Mutation_createOrganizationMembership, {
 			headers: { authorization: `bearer ${adminAuthToken}` },
@@ -316,6 +334,12 @@ suite("Query field agendaCategoriesByEventId", () => {
 
 		assertToBeNonNullish(createOrgResult.data?.createOrganization);
 		const organizationId = createOrgResult.data.createOrganization.id;
+		cleanupFns.push(async () => {
+			await mercuriusClient.mutate(Mutation_deleteOrganization, {
+				headers: { authorization: `bearer ${adminAuthToken}` },
+				variables: { input: { id: organizationId } },
+			});
+		});
 
 		await mercuriusClient.mutate(Mutation_createOrganizationMembership, {
 			headers: { authorization: `bearer ${adminAuthToken}` },

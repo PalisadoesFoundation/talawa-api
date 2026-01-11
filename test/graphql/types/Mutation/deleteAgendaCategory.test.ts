@@ -308,6 +308,36 @@ suite("Mutation field deleteAgendaCategory", () => {
 			expect(result.data.deleteAgendaCategory.id).toEqual(env.categoryId);
 		});
 
+		test("Deletes agenda category successfully as org admin", async () => {
+			const [{ token }, orgAdmin] = await Promise.all([
+				getAdminAuth(),
+				createRegularUserUsingAdmin(),
+			]);
+
+			const env = await createOrganizationEventAndCategory(token);
+			cleanupFns.push(env.cleanup);
+
+			// Make the regular user an org admin
+			await addOrganizationMembership({
+				adminAuthToken: token,
+				memberId: orgAdmin.userId,
+				organizationId: env.organizationId,
+				role: "administrator",
+			});
+
+			const result = await mercuriusClient.mutate(
+				Mutation_deleteAgendaCategory,
+				{
+					headers: { authorization: `bearer ${orgAdmin.authToken}` },
+					variables: { input: { id: env.categoryId } },
+				},
+			);
+
+			expect(result.errors).toBeUndefined();
+			assertToBeNonNullish(result.data?.deleteAgendaCategory);
+			expect(result.data.deleteAgendaCategory.id).toEqual(env.categoryId);
+		});
+
 		test("Returns error when deleting same category twice", async () => {
 			const { token } = await getAdminAuth();
 

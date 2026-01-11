@@ -103,8 +103,16 @@ builder.mutationField("createAgendaCategory", (t) =>
 				});
 			}
 
+			if (existingEvent.organization === undefined) {
+				throw new TalawaGraphQLError({
+					extensions: {
+						code: "unexpected",
+					},
+				});
+			}
+
 			const currentUserOrganizationMembership =
-				existingEvent.organization?.membershipsWhereOrganization[0];
+				existingEvent.organization.membershipsWhereOrganization[0];
 
 			if (
 				currentUser.role !== "administrator" &&
