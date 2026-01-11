@@ -1,6 +1,6 @@
 import { eq } from "drizzle-orm";
 import { z } from "zod";
-import { agendaCategoriesTable } from "~/src/drizzle/schema";
+import { agendaCategoriesTable } from "~/src/drizzle/tables/agendaCategories";
 import { builder } from "~/src/graphql/builder";
 import {
 	MutationDeleteAgendaCategoryInput,

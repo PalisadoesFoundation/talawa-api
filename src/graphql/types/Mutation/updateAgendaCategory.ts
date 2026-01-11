@@ -67,14 +67,8 @@ builder.mutationField("updateAgendaCategory", (t) =>
 					},
 					with: {
 						event: {
-							columns: {
-								startAt: true,
-							},
 							with: {
 								organization: {
-									columns: {
-										countryCode: true,
-									},
 									with: {
 										membershipsWhereOrganization: {
 											columns: {
@@ -115,8 +109,8 @@ builder.mutationField("updateAgendaCategory", (t) =>
 			}
 
 			const currentUserOrganizationMembership =
-				existingAgendaCategory.event.organization
-					.membershipsWhereOrganization[0];
+				existingAgendaCategory.event?.organization
+					?.membershipsWhereOrganization[0];
 
 			if (
 				currentUser.role !== "administrator" &&

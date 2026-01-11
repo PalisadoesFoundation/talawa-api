@@ -2,15 +2,15 @@ import { z } from "zod";
 import { agendaCategoriesTable } from "~/src/drizzle/tables/agendaCategories";
 import { builder } from "~/src/graphql/builder";
 import {
-	MutationCreateAgendaCategoriesInput,
-	mutationCreateAgendaCategoriesInputSchema,
+	MutationCreateAgendaCategoryInput,
+	mutationCreateAgendaCategoryInputSchema,
 } from "~/src/graphql/inputs/MutationCreateAgendaCategoryInput";
 import { AgendaCategory } from "~/src/graphql/types/AgendaCategory/AgendaCategory";
 import envConfig from "~/src/utilities/graphqLimits";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 
 const mutationCreateAgendaCategoryArgumentsSchema = z.object({
-	input: mutationCreateAgendaCategoriesInputSchema,
+	input: mutationCreateAgendaCategoryInputSchema,
 });
 
 builder.mutationField("createAgendaCategory", (t) =>
@@ -19,7 +19,7 @@ builder.mutationField("createAgendaCategory", (t) =>
 			input: t.arg({
 				description: "Input for creating a new agenda category.",
 				required: true,
-				type: MutationCreateAgendaCategoriesInput,
+				type: MutationCreateAgendaCategoryInput,
 			}),
 		},
 		complexity: envConfig.API_GRAPHQL_OBJECT_FIELD_COST,
@@ -101,21 +101,6 @@ builder.mutationField("createAgendaCategory", (t) =>
 						issues: [
 							{
 								argumentPath: ["input", "eventId"],
-							},
-						],
-					},
-				});
-			}
-
-			if (parsedArgs.input.organizationId !== existingEvent.organization.id) {
-				throw new TalawaGraphQLError({
-					extensions: {
-						code: "invalid_arguments",
-						issues: [
-							{
-								argumentPath: ["input", "organizationId"],
-								message:
-									"organizationId must match the organization associated with the event.",
 							},
 						],
 					},

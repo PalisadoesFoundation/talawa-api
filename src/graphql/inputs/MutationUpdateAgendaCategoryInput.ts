@@ -30,6 +30,7 @@ export const MutationUpdateAgendaCategoryInput = builder
 		fields: (t) => ({
 			description: t.string({
 				description: "Description of the agenda category.",
+				required: false,
 			}),
 			id: t.id({
 				description: "Global identifier of the agenda category.",
@@ -37,6 +38,7 @@ export const MutationUpdateAgendaCategoryInput = builder
 			}),
 			name: t.string({
 				description: "Name of the agenda category.",
+				required: false,
 			}),
 		}),
 	});

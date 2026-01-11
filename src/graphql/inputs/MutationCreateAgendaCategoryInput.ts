@@ -2,16 +2,15 @@ import type { z } from "zod";
 import { agendaCategoriesTableInsertSchema } from "~/src/drizzle/tables/agendaCategories";
 import { builder } from "~/src/graphql/builder";
 
-export const mutationCreateAgendaCategoriesInputSchema =
+export const mutationCreateAgendaCategoryInputSchema =
 	agendaCategoriesTableInsertSchema.pick({
 		eventId: true,
 		name: true,
 		description: true,
-		organizationId: true,
 	});
 
-export const MutationCreateAgendaCategoriesInput = builder
-	.inputRef<z.infer<typeof mutationCreateAgendaCategoriesInputSchema>>(
+export const MutationCreateAgendaCategoryInput = builder
+	.inputRef<z.infer<typeof mutationCreateAgendaCategoryInputSchema>>(
 		"MutationCreateAgendaCategoryInput",
 	)
 	.implement({
@@ -28,10 +27,6 @@ export const MutationCreateAgendaCategoriesInput = builder
 			}),
 			name: t.string({
 				description: "Name of the agenda category.",
-				required: true,
-			}),
-			organizationId: t.id({
-				description: "ID of the organization this category belongs to.",
 				required: true,
 			}),
 		}),
