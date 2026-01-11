@@ -39,8 +39,9 @@
 // Match mutation definitions where the resolver body lacks cache invalidation calls
 `builder.mutationField($name, $resolver)` where {
     // Warn if $resolver does not contain a call to invalidateEntity or invalidateEntityLists
-    not $resolver <: contains `invalidateEntity($args)`,
-    not $resolver <: contains `invalidateEntityLists($args)`,
+    // Uses $_ wildcard to match function calls with any arguments
+    not $resolver <: contains `invalidateEntity($_)`,
+    not $resolver <: contains `invalidateEntityLists($_)`,
     register_diagnostic(
         span=$name,
         message="Mutation may need cache invalidation. Import and call `invalidateEntity`/`invalidateEntityLists` from '~/src/services/caching' after successful mutations. See updateOrganization.ts for example pattern with graceful degradation.",
