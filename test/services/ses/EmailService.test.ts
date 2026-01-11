@@ -74,7 +74,7 @@ describe("EmailService", () => {
 			.mockResolvedValueOnce({ MessageId: "m1" })
 			.mockResolvedValueOnce({ MessageId: "m2" });
 
-		vi.spyOn(global, "setTimeout").mockImplementation(((
+		const setTimeoutSpy = vi.spyOn(global, "setTimeout").mockImplementation(((
 			cb: (...args: unknown[]) => void,
 		) => {
 			cb();
@@ -91,7 +91,6 @@ describe("EmailService", () => {
 
 		const jobs = [buildJob({ id: "a" }), buildJob({ id: "b" })];
 		// Mock setTimeout to verify it's called
-		const setTimeoutSpy = vi.spyOn(global, "setTimeout");
 
 		const results = await service.sendBulkEmails(jobs);
 
@@ -220,6 +219,17 @@ describe("EmailService", () => {
 		expect(result.success).toBe(false);
 		expect(result.error).toContain(
 			"Both accessKeyId and secretAccessKey must be provided together",
+		);
+	});
+
+	it("throws error when provider is set to smtp", () => {
+		expect(() => {
+			new EmailService({
+				region: "us-east-1",
+				provider: "smtp",
+			});
+		}).toThrow(
+			"SMTP provider is not yet implemented. Only 'ses' is supported.",
 		);
 	});
 

@@ -7,6 +7,7 @@ export interface EmailConfig {
 	fromName?: string;
 	accessKeyId?: string;
 	secretAccessKey?: string;
+	provider?: "ses" | "smtp";
 }
 
 /**
@@ -43,6 +44,12 @@ export class EmailService {
 
 	constructor(config: EmailConfig) {
 		this.config = config;
+		// Validate provider support
+		if (this.config.provider === "smtp") {
+			throw new Error(
+				"SMTP provider is not yet implemented. Only 'ses' is supported.",
+			);
+		}
 	}
 
 	private async getSesArtifacts(): Promise<{

@@ -73,7 +73,7 @@
 	"initializeCommand": "/bin/sh -c '[ ! -f .env ] && cp ./envFiles/.env.devcontainer ./.env || true'",
 	"name": "talawa_api",
 	"overrideCommand": true,
-	"postCreateCommand": "sudo chown talawa:talawa ./.pnpm-store ./node_modules && fnm install 24.12.0 && fnm use 24.12.0 && corepack enable npm && corepack enable && corepack install && pnpm install",
+	"postCreateCommand": "mkdir -p .pnpm-store node_modules && sudo chown -R talawa:talawa .pnpm-store node_modules || true && fnm install && fnm use && corepack enable npm && corepack enable && corepack install && pnpm install",
 	"postStartCommand": "pnpm install",
 	"remoteUser": "talawa",
 	"service": "api",

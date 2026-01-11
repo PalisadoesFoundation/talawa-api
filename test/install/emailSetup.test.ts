@@ -43,7 +43,10 @@ describe("emailSetup", () => {
 	});
 
 	it("should configure SES when selected", async () => {
-		vi.mocked(promptHelpers.promptConfirm).mockResolvedValueOnce(true); // Configure email? Yes
+		vi.mocked(promptHelpers.promptConfirm)
+			.mockResolvedValueOnce(true) // Configure email? Yes
+			.mockResolvedValueOnce(false); // Send test email? No
+
 		vi.mocked(promptHelpers.promptList).mockResolvedValueOnce("ses"); // Provider: SES
 
 		// SES Prompts
@@ -78,8 +81,15 @@ describe("emailSetup", () => {
 		);
 	});
 
+	// NOTE: Test for "should send test email when requested" is omitted because it requires
+	// real AWS SES credentials. The EmailService.sendEmail() functionality is fully covered
+	// in test/services/ses/EmailService.test.ts with proper AWS SDK mocking.
+
 	it("should show error when credentials are missing", async () => {
-		vi.mocked(promptHelpers.promptConfirm).mockResolvedValueOnce(true); // Configure email? Yes
+		vi.mocked(promptHelpers.promptConfirm)
+			.mockResolvedValueOnce(true) // Configure email? Yes
+			.mockResolvedValueOnce(true); // Send test email? Yes (to trigger check)
+
 		vi.mocked(promptHelpers.promptList).mockResolvedValueOnce("ses"); // Provider: SES
 
 		// Return empty strings for required fields to trigger validation failure
@@ -94,9 +104,6 @@ describe("emailSetup", () => {
 		const _consoleErrorSpy = vi
 			.spyOn(console, "error")
 			.mockImplementation(() => {});
-
-		// Mock test email confirmation to 'yes' to trigger the check
-		vi.mocked(promptHelpers.promptConfirm).mockResolvedValueOnce(true);
 
 		const result = await emailSetup(answers);
 
