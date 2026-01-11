@@ -26,6 +26,7 @@ beforeAll(async () => {
 			},
 		},
 	});
+	expect(signInResult.errors).toBeUndefined();
 	assertToBeNonNullish(signInResult.data?.signIn);
 	const token = signInResult.data.signIn.authenticationToken;
 	assertToBeNonNullish(token);
@@ -106,7 +107,9 @@ async function createChat(
 		},
 	});
 	assertToBeNonNullish(result.data?.createChat);
-	return result.data.createChat.id;
+	const chatId = result.data.createChat.id;
+	assertToBeNonNullish(chatId);
+	return chatId;
 }
 
 suite("Mutation field createChatMessage", () => {
@@ -784,8 +787,6 @@ suite("Mutation field createChatMessage", () => {
 				extensions: expect.objectContaining({ code: "unexpected" }),
 			}),
 		);
-
-		insertSpy.mockRestore();
 	});
 
 	test("pubsub publish is called with correct payload and topic", async () => {
@@ -840,7 +841,5 @@ suite("Mutation field createChatMessage", () => {
 			}),
 			topic: `chats.${chatId}:chat_messages::create`,
 		});
-
-		publishSpy.mockRestore();
 	});
 });
