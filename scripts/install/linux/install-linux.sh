@@ -84,6 +84,69 @@ command_exists() {
 }
 
 ##############################################################################
+# Validate version strings to prevent command injection
+# 
+# This function validates version strings from package.json to prevent:
+# - Command injection via malicious version strings (e.g., "18.0.0; rm -rf /")
+# - Word splitting from spaces in version strings
+# - Glob expansion from special characters
+#
+# Allowed characters: alphanumeric, dots, hyphens, carets, tildes, equals,
+#                     greater than, less than (covers semver patterns)
+#
+# Usage: validate_version_string "version" "field_name"
+# Returns: 0 if valid, 1 if invalid
+##############################################################################
+validate_version_string() {
+    local version="$1"
+    local field_name="$2"
+    
+    # Check if version is empty or null
+    if [ -z "$version" ] || [ "$version" = "null" ]; then
+        error "Invalid $field_name: version string is empty or null"
+        return 1
+    fi
+    
+    # Allow only: alphanumeric, dots, hyphens, carets, tildes, equals, greater/less than
+    # This covers semver patterns like: 18.0.0, ^18.0.0, ~18.0.0, >=18.0.0, lts, lts/latest
+    # Pattern stored in variable to avoid shell interpretation issues
+    local pattern='^[a-zA-Z0-9./_~^=-]+$'
+    if [[ ! "$version" =~ $pattern ]]; then
+        error "Invalid $field_name: '$version'"
+        echo ""
+        info "Version strings must contain only:"
+        echo "  • Letters (a-z, A-Z)"
+        echo "  • Numbers (0-9)"
+        echo "  • Dots (.)"
+        echo "  • Hyphens (-)"
+        echo "  • Version operators (^, ~, =, -)"
+        echo "  • Forward slash (/) for lts/latest patterns"
+        echo ""
+        info "Rejected characters found: $(echo "$version" | tr -d 'a-zA-Z0-9./_~^=-')"
+        echo ""
+        info "Security note: Special characters, spaces, semicolons, and shell"
+        info "metacharacters are not allowed to prevent command injection."
+        return 1
+    fi
+    
+    # Additional check: ensure it looks like a version (has at least one number)
+    # Exception: allow 'lts' or 'latest' as valid version identifiers
+    if [[ ! "$version" =~ [0-9] ]] && [[ ! "$version" =~ ^(lts|latest|lts/latest|lts/[a-zA-Z]+)$ ]]; then
+        error "Invalid $field_name: '$version' doesn't appear to be a valid version"
+        echo ""
+        info "Expected formats:"
+        echo "  • Exact version:  \"18.0.0\" or \"23.7.0\""
+        echo "  • Range:          \">=18.0.0\""
+        echo "  • Caret:          \"^18.0.0\""
+        echo "  • Tilde:          \"~18.0.0\""
+        echo "  • LTS:            \"lts\" or \"lts/latest\""
+        return 1
+    fi
+    
+    return 0
+}
+
+##############################################################################
 # Safe jq parsing helper function
 # 
 # This function provides robust jq parsing with:
@@ -490,6 +553,33 @@ step $CURRENT_STEP $TOTAL_STEPS "Reading configuration from package.json..."
 # The 'lts' default is used if engines.node is not specified
 NODE_VERSION=$(parse_package_json '.engines.node' "lts" "Node.js version (engines.node)" "false")
 
+# SECURITY: Validate raw NODE_VERSION before any processing
+# This prevents command injection via malicious package.json
+if ! validate_version_string "$NODE_VERSION" "Node.js version (engines.node)"; then
+    error "❌ Security validation failed for Node.js version"
+    echo ""
+    info "The value in package.json engines.node field contains invalid characters."
+    echo ""
+    info "Current value: '$NODE_VERSION'"
+    echo ""
+    info "This could indicate:"
+    echo "  • Corrupted package.json file"
+    echo "  • Potentially malicious version string"
+    echo "  • Typo or formatting error"
+    echo ""
+    info "Troubleshooting steps:"
+    echo "  1. Check the engines.node field in package.json:"
+    echo "     jq '.engines.node' package.json"
+    echo ""
+    echo "  2. Restore package.json if corrupted:"
+    echo "     git checkout package.json"
+    echo ""
+    echo "  3. Ensure version follows semver format (e.g., 18.0.0, ^18.0.0)"
+    echo ""
+    info "Report issues: https://github.com/PalisadoesFoundation/talawa-api/issues"
+    exit 1
+fi
+
 # Clean version string (handle >=, ^, etc.)
 if [[ "$NODE_VERSION" =~ ^(\^|>=|~) ]]; then
     # Extract full semantic version (e.g., ">=18.0.0" -> "18.0.0")
@@ -521,6 +611,22 @@ if [ -z "$CLEAN_NODE_VERSION" ]; then
     CLEAN_NODE_VERSION="lts"
 fi
 
+# SECURITY: Validate cleaned Node.js version before use in commands
+# This is the final check before the version is passed to fnm
+if ! validate_version_string "$CLEAN_NODE_VERSION" "cleaned Node.js version"; then
+    error "❌ Security validation failed for cleaned Node.js version: '$CLEAN_NODE_VERSION'"
+    echo ""
+    info "The cleaned version string contains invalid characters."
+    info "This should not happen with valid package.json values."
+    echo ""
+    info "Troubleshooting steps:"
+    echo "  1. Restore package.json: git checkout package.json"
+    echo "  2. Re-run this script"
+    echo ""
+    info "Report issues: https://github.com/PalisadoesFoundation/talawa-api/issues"
+    exit 1
+fi
+
 # Extract pnpm version using safe parsing
 PNPM_FULL=$(parse_package_json '.packageManager' "" "pnpm version (packageManager)" "false")
 
@@ -533,6 +639,33 @@ if [[ "$PNPM_FULL" == pnpm@* ]]; then
     if [ -z "$PNPM_VERSION" ]; then
         warn "Could not extract pnpm version from '$PNPM_FULL', using latest"
         PNPM_VERSION="latest"
+    fi
+    
+    # SECURITY: Validate pnpm version before use in commands
+    if ! validate_version_string "$PNPM_VERSION" "pnpm version (packageManager)"; then
+        error "Security validation failed for pnpm version"
+        echo ""
+        info "The pnpm version in package.json packageManager field contains invalid characters."
+        echo ""
+        info "Current value: '$PNPM_FULL'"
+        info "Extracted version: '$PNPM_VERSION'"
+        echo ""
+        info "This could indicate:"
+        echo "  • Corrupted package.json file"
+        echo "  • Potentially malicious version string"
+        echo "  • Typo or formatting error"
+        echo ""
+        info "Troubleshooting steps:"
+        echo "  1. Check the packageManager field in package.json:"
+        echo "     jq '.packageManager' package.json"
+        echo ""
+        echo "  2. Restore package.json if corrupted:"
+        echo "     git checkout package.json"
+        echo ""
+        echo "  3. Ensure version follows format: pnpm@X.Y.Z (e.g., pnpm@10.2.1)"
+        echo ""
+        info "Report issues: https://github.com/PalisadoesFoundation/talawa-api/issues"
+        exit 1
     fi
 elif [ -n "$PNPM_FULL" ]; then
     # packageManager field exists but doesn't match expected pnpm format
