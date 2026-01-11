@@ -464,17 +464,33 @@ export async function apiSetup(answers: SetupAnswers): Promise<SetupAnswers> {
 			"Minio port:",
 			"9000",
 		);
+		const existingMinioPassword =
+			answers.MINIO_ROOT_PASSWORD ?? process.env.MINIO_ROOT_PASSWORD;
 		answers.API_MINIO_SECRET_KEY = await promptInput(
 			"API_MINIO_SECRET_KEY",
 			"Minio secret key:",
-			"password",
+			existingMinioPassword ?? "password",
 		);
-		while (answers.API_MINIO_SECRET_KEY !== process.env.MINIO_ROOT_PASSWORD) {
-			console.warn("⚠️ API_MINIO_SECRET_KEY must match MINIO_ROOT_PASSWORD.");
-			answers.API_MINIO_SECRET_KEY = await promptInput(
-				"API_MINIO_SECRET_KEY",
-				"Minio secret key:",
-				"password",
+		if (existingMinioPassword !== undefined) {
+			// Configured password found (including empty string), validate against it
+			const minioPassword = existingMinioPassword;
+			while (answers.API_MINIO_SECRET_KEY !== minioPassword) {
+				console.warn("⚠️ API_MINIO_SECRET_KEY must match MINIO_ROOT_PASSWORD.");
+				answers.API_MINIO_SECRET_KEY = await promptInput(
+					"API_MINIO_SECRET_KEY",
+					"Minio secret key:",
+					minioPassword, // Use configured password as default
+				);
+			}
+			console.log("✅ API_MINIO_SECRET_KEY matches MINIO_ROOT_PASSWORD");
+		} else {
+			// No configured value: set both answers.MINIO_ROOT_PASSWORD and
+			// process.env.MINIO_ROOT_PASSWORD to answers.API_MINIO_SECRET_KEY
+			// so the chosen API_MINIO_SECRET_KEY becomes the stored Minio password
+			answers.MINIO_ROOT_PASSWORD = answers.API_MINIO_SECRET_KEY;
+			process.env.MINIO_ROOT_PASSWORD = answers.API_MINIO_SECRET_KEY;
+			console.log(
+				"ℹ️  MINIO_ROOT_PASSWORD will be set to match API_MINIO_SECRET_KEY",
 			);
 		}
 		answers.API_MINIO_TEST_END_POINT = await promptInput(
@@ -498,17 +514,33 @@ export async function apiSetup(answers: SetupAnswers): Promise<SetupAnswers> {
 			"Postgres host:",
 			"postgres",
 		);
+		const postgresPassword =
+			answers.POSTGRES_PASSWORD ?? process.env.POSTGRES_PASSWORD;
 		answers.API_POSTGRES_PASSWORD = await promptInput(
 			"API_POSTGRES_PASSWORD",
 			"Postgres password:",
-			"password",
+			postgresPassword ?? "password",
 		);
-		while (answers.API_POSTGRES_PASSWORD !== process.env.POSTGRES_PASSWORD) {
-			console.warn("⚠️ API_POSTGRES_PASSWORD must match POSTGRES_PASSWORD.");
-			answers.API_POSTGRES_PASSWORD = await promptInput(
-				"API_POSTGRES_PASSWORD",
-				"Postgres password:",
-				"password",
+		if (postgresPassword !== undefined) {
+			// Configured password found (including empty string), validate against it
+			const postgresPasswordLocal = postgresPassword;
+			while (answers.API_POSTGRES_PASSWORD !== postgresPasswordLocal) {
+				console.warn("⚠️ API_POSTGRES_PASSWORD must match POSTGRES_PASSWORD.");
+				answers.API_POSTGRES_PASSWORD = await promptInput(
+					"API_POSTGRES_PASSWORD",
+					"Postgres password:",
+					postgresPasswordLocal, // Use configured password as default
+				);
+			}
+			console.log("✅ API_POSTGRES_PASSWORD matches POSTGRES_PASSWORD");
+		} else {
+			// No configured value: set both answers.POSTGRES_PASSWORD and
+			// process.env.POSTGRES_PASSWORD to answers.API_POSTGRES_PASSWORD
+			// so the chosen API_POSTGRES_PASSWORD becomes the stored Postgres password
+			answers.POSTGRES_PASSWORD = answers.API_POSTGRES_PASSWORD;
+			process.env.POSTGRES_PASSWORD = answers.API_POSTGRES_PASSWORD;
+			console.log(
+				"ℹ️  POSTGRES_PASSWORD will be set to match API_POSTGRES_PASSWORD",
 			);
 		}
 		answers.API_POSTGRES_PORT = await promptInput(
