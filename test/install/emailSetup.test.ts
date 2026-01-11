@@ -8,6 +8,8 @@ interface SetupAnswers {
 }
 
 // Mock the prompt helpers
+// NOTE: Unit tests are intentional here for pure setup logic validation.
+// Integration tests (mercuriusClient) should be used if this script begins interacting with the API/DB layers.
 vi.mock("../../scripts/setup/promptHelpers", () => ({
 	promptConfirm: vi.fn(),
 	promptInput: vi.fn(),
@@ -54,7 +56,7 @@ describe("emailSetup", () => {
 
 		const result = await emailSetup(answers);
 
-		expect(result.EMAIL_PROVIDER).toBe("ses");
+		expect(result.API_EMAIL_PROVIDER).toBe("ses");
 		expect(result.AWS_SES_REGION).toBe("us-east-1");
 		expect(result.AWS_ACCESS_KEY_ID).toBe("access-key");
 		expect(result.AWS_SECRET_ACCESS_KEY).toBe("secret-key");
@@ -62,7 +64,7 @@ describe("emailSetup", () => {
 		expect(result.AWS_SES_FROM_NAME).toBe("Test App");
 
 		expect(promptHelpers.promptList).toHaveBeenCalledWith(
-			"EMAIL_PROVIDER",
+			"API_EMAIL_PROVIDER",
 			"Select email provider:",
 			["ses"],
 			"ses",
@@ -74,6 +76,36 @@ describe("emailSetup", () => {
 			expect.stringContaining("Do you want to send a test email now?"),
 			false,
 		);
+	});
+
+	it("should show error when credentials are missing", async () => {
+		vi.mocked(promptHelpers.promptConfirm).mockResolvedValueOnce(true); // Configure email? Yes
+		vi.mocked(promptHelpers.promptList).mockResolvedValueOnce("ses"); // Provider: SES
+
+		// Return empty strings for required fields to trigger validation failure
+		vi.mocked(promptHelpers.promptInput)
+			.mockResolvedValueOnce("") // Region (Missing)
+			.mockResolvedValueOnce("") // Access Key (Missing)
+			.mockResolvedValueOnce("") // Secret Key (Missing)
+			.mockResolvedValueOnce("") // From Email (Missing)
+			.mockResolvedValueOnce("Test App");
+
+		// Mock error logging
+		const _consoleErrorSpy = vi
+			.spyOn(console, "error")
+			.mockImplementation(() => {});
+
+		// Mock test email confirmation to 'yes' to trigger the check
+		vi.mocked(promptHelpers.promptConfirm).mockResolvedValueOnce(true);
+
+		const result = await emailSetup(answers);
+
+		expect(_consoleErrorSpy).toHaveBeenCalledWith(
+			expect.stringContaining(
+				"Cannot send test email. Missing required credentials",
+			),
+		);
+		expect(result.API_EMAIL_PROVIDER).toBe("ses"); // Should still return partial config
 	});
 
 	it("should propagate errors", async () => {

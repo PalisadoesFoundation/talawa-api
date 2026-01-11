@@ -90,6 +90,9 @@ describe("EmailService", () => {
 		});
 
 		const jobs = [buildJob({ id: "a" }), buildJob({ id: "b" })];
+		// Mock setTimeout to verify it's called
+		const setTimeoutSpy = vi.spyOn(global, "setTimeout");
+
 		const results = await service.sendBulkEmails(jobs);
 
 		expect(results).toHaveLength(2);
@@ -104,6 +107,9 @@ describe("EmailService", () => {
 			messageId: "m2",
 		});
 		expect(sendMock).toHaveBeenCalledTimes(2);
+
+		// Should wait once between the two jobs (jobs.length - 1)
+		expect(setTimeoutSpy).toHaveBeenCalledTimes(1);
 	});
 
 	it("returns error when fromEmail is not configured", async () => {

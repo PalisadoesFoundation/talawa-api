@@ -100,7 +100,7 @@ export class EmailService {
 		try {
 			if (!this.config.fromEmail) {
 				throw new Error(
-					"Email service not configured. Please run 'npm run setup' to configure email or set EMAIL_PROVIDER and related environment variables.",
+					"Email service not configured. Please run 'npm run setup' to configure email or set API_EMAIL_PROVIDER and related environment variables.",
 				);
 			}
 

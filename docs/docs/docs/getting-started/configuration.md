@@ -179,7 +179,7 @@ Talawa API requires email configuration for features like user registration veri
 
 You will need to update the `.env` file with the following information.
 
-1. `EMAIL_PROVIDER` - Set to `ses` (default)
+1. `API_EMAIL_PROVIDER` - Set to `ses` (default)
 2. `AWS_SES_REGION` - Your AWS SES region (e.g., `ap-south-1`)
 3. `AWS_ACCESS_KEY_ID` - Your AWS IAM Access Key
 4. `AWS_SECRET_ACCESS_KEY` - Your AWS IAM Secret Key
