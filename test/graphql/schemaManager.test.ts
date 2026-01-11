@@ -805,8 +805,7 @@ describe("GraphQLSchemaManager", () => {
 			// Capture the callback when 'on' is called
 			let schemaRebuildCallback: (() => Promise<void>) | null = null;
 			vi.mocked(mockPluginManager.on).mockImplementation(
-				// biome-ignore lint/suspicious/noExplicitAny: Mock callback type for EventEmitter.on
-				(event: string | symbol, callback: any) => {
+				(event: string | symbol, callback: (...args: unknown[]) => void) => {
 					if (event === "schema:rebuild") {
 						schemaRebuildCallback = callback as () => Promise<void>;
 					}
@@ -831,8 +830,10 @@ describe("GraphQLSchemaManager", () => {
 			).currentSchema = mockSchema;
 
 			// Call the callback to trigger line 29
-			// biome-ignore lint/style/noNonNullAssertion: Verified not null above with expect
-			await schemaRebuildCallback!();
+			const callback = schemaRebuildCallback as (() => Promise<void>) | null;
+			if (callback) {
+				await callback();
+			}
 		});
 
 		it("should call rebuildSchema when plugin:deactivated event is fired (covers line 34)", async () => {
@@ -852,8 +853,7 @@ describe("GraphQLSchemaManager", () => {
 				| ((pluginId: string) => Promise<void>)
 				| null = null;
 			vi.mocked(mockPluginManager.on).mockImplementation(
-				// biome-ignore lint/suspicious/noExplicitAny: Mock callback type for EventEmitter.on
-				(event: string | symbol, callback: any) => {
+				(event: string | symbol, callback: (...args: unknown[]) => void) => {
 					if (event === "plugin:deactivated") {
 						pluginDeactivatedCallback = callback as (
 							pluginId: string,
@@ -880,8 +880,12 @@ describe("GraphQLSchemaManager", () => {
 			).currentSchema = mockSchema;
 
 			// Call the callback to trigger line 34
-			// biome-ignore lint/style/noNonNullAssertion: Verified not null above with expect
-			await pluginDeactivatedCallback!("test-plugin");
+			const callback = pluginDeactivatedCallback as
+				| ((pluginId: string) => Promise<void>)
+				| null;
+			if (callback) {
+				await callback("test-plugin");
+			}
 		});
 	});
 
