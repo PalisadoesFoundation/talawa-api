@@ -118,3 +118,6 @@ import "./MutationVerifyEventInvitationInput";
 import "./MutationRequestPasswordResetInput";
 import "./QueryVerifyPasswordResetTokenInput";
 import "./MutationResetPasswordInput";
+import "./MutationCreateAgendaCategoryInput";
+import "./MutationDeleteAgendaCategoryInput";
+import "./MutationUpdateAgendaCategoryInput";
