@@ -66,9 +66,9 @@ export class EmailService {
 				credentials:
 					this.config.accessKeyId && this.config.secretAccessKey
 						? {
-							accessKeyId: this.config.accessKeyId,
-							secretAccessKey: this.config.secretAccessKey,
-						}
+								accessKeyId: this.config.accessKeyId,
+								secretAccessKey: this.config.secretAccessKey,
+							}
 						: undefined,
 			}) as {
 				send: (command: unknown) => Promise<{ MessageId?: string }>;
