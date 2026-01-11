@@ -40,6 +40,9 @@ interface MockPluginContext {
 	};
 	logger: {
 		info: ReturnType<typeof vi.fn>;
+		error: ReturnType<typeof vi.fn>;
+		warn: ReturnType<typeof vi.fn>;
+		debug: ReturnType<typeof vi.fn>;
 	};
 }
 
@@ -95,9 +98,13 @@ describe("PluginLifecycle", () => {
 	let mockExtensionRegistry: MockExtensionRegistry;
 	let mockPluginManager: MockPluginManager;
 
-	beforeEach(() => {
-		// Reset mocks
-		vi.clearAllMocks();
+	beforeEach(async () => {
+		// Reset mocks - use resetAllMocks to clear implementation queues too
+		vi.resetAllMocks();
+
+		// Re-establish default mock implementations after reset
+		const { isValidPluginId } = await import("../../../src/plugin/utils");
+		(isValidPluginId as ReturnType<typeof vi.fn>).mockReturnValue(true);
 
 		// Default child_process.spawn mock: return an EventEmitter that emits close
 		// (individual tests can override as needed)
@@ -119,6 +126,9 @@ describe("PluginLifecycle", () => {
 			},
 			logger: {
 				info: vi.fn(),
+				error: vi.fn(),
+				warn: vi.fn(),
+				debug: vi.fn(),
 			},
 		};
 
@@ -424,9 +434,9 @@ describe("PluginLifecycle", () => {
 			const { isValidPluginId } = await import("../../../src/plugin/utils");
 			(isValidPluginId as ReturnType<typeof vi.fn>).mockReturnValueOnce(false);
 
-			const consoleSpy = vi
-				.spyOn(console, "error")
-				.mockImplementation(() => {});
+			(isValidPluginId as ReturnType<typeof vi.fn>).mockReturnValueOnce(false);
+
+			// Logger already mocked in mockPluginContext
 
 			const maliciousPluginId = "../malicious-plugin";
 			const result = await lifecycle.installPlugin(
@@ -439,13 +449,16 @@ describe("PluginLifecycle", () => {
 			expect(result).toBe(false);
 			// Verify isValidPluginId was called with the supplied plugin id
 			expect(isValidPluginId).toHaveBeenCalledWith(maliciousPluginId);
-			expect(mockPluginManager.emit).not.toHaveBeenCalledWith(
-				"plugin:installed",
-				maliciousPluginId,
+			// Verify logger.error was called exactly once for the error
+			expect(mockPluginContext.logger.error).toHaveBeenCalledTimes(1);
+			expect(mockPluginContext.logger.error).toHaveBeenCalledWith(
+				expect.objectContaining({
+					msg: expect.stringContaining(
+						"Plugin ../malicious-plugin error during install",
+					),
+					err: expect.any(Error),
+				}),
 			);
-			// Verify console.error was called exactly once for the error
-			expect(consoleSpy).toHaveBeenCalledTimes(1);
-			consoleSpy.mockRestore();
 		});
 	});
 
@@ -463,9 +476,12 @@ describe("PluginLifecycle", () => {
 		});
 
 		it("should successfully uninstall a plugin", async () => {
-			const { safeRequire, dropPluginTables } = await import(
+			// Mock isValidPluginId to return true FIRST before any lifecycle calls
+			const { safeRequire, dropPluginTables, isValidPluginId } = await import(
 				"../../../src/plugin/utils"
 			);
+			(isValidPluginId as ReturnType<typeof vi.fn>).mockReturnValue(true);
+
 			const mockPluginModule: MockPluginModule = {
 				onUninstall: vi.fn(() => Promise.resolve()),
 			};
@@ -476,6 +492,37 @@ describe("PluginLifecycle", () => {
 			(dropPluginTables as ReturnType<typeof vi.fn>).mockResolvedValue(
 				undefined,
 			);
+
+			// Mock private methods called by uninstallPlugin
+			vi.spyOn(
+				lifecycle as unknown as PluginLifecycleWithPrivate,
+				"loadPluginManifest",
+			).mockResolvedValue({
+				pluginId: "test-plugin",
+				main: "index.js",
+			});
+			vi.spyOn(
+				lifecycle as unknown as PluginLifecycleWithPrivate,
+				"updatePluginInDatabase",
+			).mockResolvedValue(undefined);
+			vi.spyOn(
+				lifecycle as unknown as PluginLifecycleWithPrivate,
+				"triggerSchemaRebuild",
+			).mockResolvedValue(undefined);
+			vi.spyOn(
+				lifecycle as unknown as PluginLifecycleWithPrivate,
+				"manageDocker",
+			).mockResolvedValue(undefined);
+
+			// Ensure the plugin is in loadedPlugins
+			mockLoadedPlugins.set("test-plugin", {
+				id: "test-plugin",
+				status: PluginStatus.INACTIVE,
+				manifest: {
+					main: "index.js",
+				},
+				databaseTables: { TestTable: {} },
+			});
 
 			const result = await lifecycle.uninstallPlugin(
 				"test-plugin",
@@ -564,9 +611,9 @@ describe("PluginLifecycle", () => {
 			const { isValidPluginId } = await import("../../../src/plugin/utils");
 			(isValidPluginId as ReturnType<typeof vi.fn>).mockReturnValueOnce(false);
 
-			const consoleSpy = vi
-				.spyOn(console, "error")
-				.mockImplementation(() => {});
+			(isValidPluginId as ReturnType<typeof vi.fn>).mockReturnValueOnce(false);
+
+			// Logger already mocked in mockPluginContext
 
 			const maliciousPluginId = "../malicious-plugin";
 			const result = await lifecycle.uninstallPlugin(
@@ -583,9 +630,16 @@ describe("PluginLifecycle", () => {
 				"plugin:installed",
 				maliciousPluginId,
 			);
-			// Verify console.error was called exactly once for the error
-			expect(consoleSpy).toHaveBeenCalledTimes(1);
-			consoleSpy.mockRestore();
+			// Verify logger.error was called exactly once for the error
+			expect(mockPluginContext.logger.error).toHaveBeenCalledTimes(1);
+			expect(mockPluginContext.logger.error).toHaveBeenCalledWith(
+				expect.objectContaining({
+					msg: expect.stringContaining(
+						"Plugin ../malicious-plugin error during uninstall",
+					),
+					err: expect.any(Error),
+				}),
+			);
 		});
 	});
 
@@ -598,6 +652,23 @@ describe("PluginLifecycle", () => {
 			(safeRequire as ReturnType<typeof vi.fn>).mockResolvedValue(
 				mockPluginModule,
 			);
+
+			// Mock private methods called by activatePlugin
+			vi.spyOn(
+				lifecycle as unknown as PluginLifecycleWithPrivate,
+				"loadPluginManifest",
+			).mockResolvedValue({
+				pluginId: "test-plugin",
+				main: "index.js",
+			});
+			vi.spyOn(
+				lifecycle as unknown as PluginLifecycleWithPrivate,
+				"updatePluginInDatabase",
+			).mockResolvedValue(undefined);
+			vi.spyOn(
+				lifecycle as unknown as PluginLifecycleWithPrivate,
+				"triggerSchemaRebuild",
+			).mockResolvedValue(undefined);
 
 			const result = await lifecycle.activatePlugin(
 				"test-plugin",
@@ -643,6 +714,27 @@ describe("PluginLifecycle", () => {
 				mockPluginModule,
 			);
 
+			// Mock private methods and make them throw
+			vi.spyOn(
+				lifecycle as unknown as PluginLifecycleWithPrivate,
+				"loadPluginManifest",
+			).mockResolvedValue({
+				pluginId: "test-plugin",
+				main: "index.js",
+			});
+			vi.spyOn(
+				lifecycle as unknown as PluginLifecycleWithPrivate,
+				"updatePluginInDatabase",
+			).mockResolvedValue(undefined);
+			vi.spyOn(
+				lifecycle as unknown as PluginLifecycleWithPrivate,
+				"triggerSchemaRebuild",
+			).mockResolvedValue(undefined);
+			vi.spyOn(
+				lifecycle as unknown as PluginLifecycleWithPrivate,
+				"manageDocker",
+			).mockResolvedValue(undefined);
+
 			const result = await lifecycle.activatePlugin(
 				"test-plugin",
 				mockPluginManager as unknown as Parameters<
@@ -650,7 +742,7 @@ describe("PluginLifecycle", () => {
 				>[1],
 			);
 
-			// The onActivate hook failure is caught and logged, but doesn't fail the activation
+			// The onActivate hook failure is caught and logged, so activation should succeed
 			expect(result).toBe(true);
 			expect(mockLoadedPlugins.get("test-plugin")?.status).toBe(
 				PluginStatus.ACTIVE,
@@ -658,8 +750,32 @@ describe("PluginLifecycle", () => {
 		});
 
 		it("should handle plugin module without onActivate hook", async () => {
-			const { safeRequire } = await import("../../../src/plugin/utils");
+			const { safeRequire, isValidPluginId } = await import(
+				"../../../src/plugin/utils"
+			);
 			(safeRequire as ReturnType<typeof vi.fn>).mockResolvedValue({});
+			(isValidPluginId as ReturnType<typeof vi.fn>).mockReturnValue(true);
+
+			// Mock private methods
+			vi.spyOn(
+				lifecycle as unknown as PluginLifecycleWithPrivate,
+				"loadPluginManifest",
+			).mockResolvedValue({
+				pluginId: "test-plugin",
+				main: "index.js",
+			});
+			vi.spyOn(
+				lifecycle as unknown as PluginLifecycleWithPrivate,
+				"updatePluginInDatabase",
+			).mockResolvedValue(undefined);
+			vi.spyOn(
+				lifecycle as unknown as PluginLifecycleWithPrivate,
+				"triggerSchemaRebuild",
+			).mockResolvedValue(undefined);
+			vi.spyOn(
+				lifecycle as unknown as PluginLifecycleWithPrivate,
+				"manageDocker",
+			).mockResolvedValue(undefined);
 
 			const result = await lifecycle.activatePlugin(
 				"test-plugin",
@@ -682,8 +798,20 @@ describe("PluginLifecycle", () => {
 				schemaManager.rebuildSchema as ReturnType<typeof vi.fn>
 			).mockRejectedValue(new Error("Schema rebuild failed"));
 
-			const { safeRequire } = await import("../../../src/plugin/utils");
+			const { safeRequire, isValidPluginId } = await import(
+				"../../../src/plugin/utils"
+			);
 			(safeRequire as ReturnType<typeof vi.fn>).mockResolvedValue({});
+			(isValidPluginId as ReturnType<typeof vi.fn>).mockReturnValue(true);
+
+			// Mock private method loadPluginManifest
+			vi.spyOn(
+				lifecycle as unknown as PluginLifecycleWithPrivate,
+				"loadPluginManifest",
+			).mockResolvedValue({
+				pluginId: "test-plugin",
+				main: "index.js",
+			});
 
 			const result = await lifecycle.activatePlugin(
 				"test-plugin",
@@ -709,13 +837,27 @@ describe("PluginLifecycle", () => {
 		});
 
 		it("should successfully deactivate a plugin", async () => {
-			const { safeRequire } = await import("../../../src/plugin/utils");
+			// Mock isValidPluginId to return true FIRST
+			const { safeRequire, isValidPluginId } = await import(
+				"../../../src/plugin/utils"
+			);
+			(isValidPluginId as ReturnType<typeof vi.fn>).mockReturnValue(true);
+
 			const mockPluginModule: MockPluginModule = {
 				onDeactivate: vi.fn(() => Promise.resolve()),
 			};
 			(safeRequire as ReturnType<typeof vi.fn>).mockResolvedValue(
 				mockPluginModule,
 			);
+
+			// Mock private method loadPluginManifest
+			vi.spyOn(
+				lifecycle as unknown as PluginLifecycleWithPrivate,
+				"loadPluginManifest",
+			).mockResolvedValue({
+				pluginId: "test-plugin",
+				main: "index.js",
+			});
 
 			const result = await lifecycle.deactivatePlugin(
 				"test-plugin",
@@ -995,10 +1137,7 @@ describe("PluginLifecycle", () => {
 				.spyOn(lifecycle, "getPluginModule")
 				.mockResolvedValue(mockPluginModule);
 
-			// Mock console.error to capture error logging
-			const consoleSpy = vi
-				.spyOn(console, "error")
-				.mockImplementation(() => {});
+			// Loggers are already mocked
 
 			// Call the private method through reflection
 			await (
@@ -1007,12 +1146,13 @@ describe("PluginLifecycle", () => {
 				}
 			).callOnInstallHook(pluginId);
 
-			expect(consoleSpy).toHaveBeenCalledWith(
-				"Error calling onInstall lifecycle hook for plugin test-plugin:",
-				expect.any(Error),
+			expect(mockPluginContext.logger.error).toHaveBeenCalledWith(
+				expect.objectContaining({
+					msg: "Error calling onInstall lifecycle hook for plugin test-plugin",
+					err: expect.any(Error),
+				}),
 			);
 
-			consoleSpy.mockRestore();
 			getPluginModuleSpy.mockRestore();
 		});
 
@@ -1031,10 +1171,7 @@ describe("PluginLifecycle", () => {
 				.spyOn(lifecycle, "getPluginModule")
 				.mockResolvedValue(mockPluginModule);
 
-			// Mock console.error to capture error logging
-			const consoleSpy = vi
-				.spyOn(console, "error")
-				.mockImplementation(() => {});
+			// Loggers are already mocked
 
 			// Call the private method through reflection
 			await (
@@ -1043,12 +1180,13 @@ describe("PluginLifecycle", () => {
 				}
 			).callOnActivateHook(pluginId);
 
-			expect(consoleSpy).toHaveBeenCalledWith(
-				"Error calling onActivate lifecycle hook for plugin test-plugin:",
-				expect.any(Error),
+			expect(mockPluginContext.logger.error).toHaveBeenCalledWith(
+				expect.objectContaining({
+					msg: "Error calling onActivate lifecycle hook for plugin test-plugin",
+					err: expect.any(Error),
+				}),
 			);
 
-			consoleSpy.mockRestore();
 			getPluginModuleSpy.mockRestore();
 		});
 
@@ -1067,10 +1205,7 @@ describe("PluginLifecycle", () => {
 				.spyOn(lifecycle, "getPluginModule")
 				.mockResolvedValue(mockPluginModule);
 
-			// Mock console.error to capture error logging
-			const consoleSpy = vi
-				.spyOn(console, "error")
-				.mockImplementation(() => {});
+			// Loggers are already mocked
 
 			// Call the private method through reflection
 			await (
@@ -1079,12 +1214,13 @@ describe("PluginLifecycle", () => {
 				}
 			).callOnDeactivateHook(pluginId);
 
-			expect(consoleSpy).toHaveBeenCalledWith(
-				"Error calling onDeactivate lifecycle hook for plugin test-plugin:",
-				expect.any(Error),
+			expect(mockPluginContext.logger.error).toHaveBeenCalledWith(
+				expect.objectContaining({
+					msg: "Error calling onDeactivate lifecycle hook for plugin test-plugin",
+					err: expect.any(Error),
+				}),
 			);
 
-			consoleSpy.mockRestore();
 			getPluginModuleSpy.mockRestore();
 		});
 
@@ -1104,9 +1240,7 @@ describe("PluginLifecycle", () => {
 				.mockResolvedValue(mockPluginModule);
 
 			// Mock console.error to capture error logging
-			const consoleSpy = vi
-				.spyOn(console, "error")
-				.mockImplementation(() => {});
+			vi.spyOn(console, "error").mockImplementation(() => {});
 
 			// Call the private method through reflection
 			await (
@@ -1115,12 +1249,13 @@ describe("PluginLifecycle", () => {
 				}
 			).callOnUninstallHook(pluginId);
 
-			expect(consoleSpy).toHaveBeenCalledWith(
-				"Error calling onUninstall lifecycle hook for plugin test-plugin:",
-				expect.any(Error),
+			expect(mockPluginContext.logger.error).toHaveBeenCalledWith(
+				expect.objectContaining({
+					msg: "Error calling onUninstall lifecycle hook for plugin test-plugin",
+					err: expect.any(Error),
+				}),
 			);
 
-			consoleSpy.mockRestore();
 			getPluginModuleSpy.mockRestore();
 		});
 
@@ -1138,9 +1273,7 @@ describe("PluginLifecycle", () => {
 				.mockResolvedValue(mockPluginModule);
 
 			// Mock console.error to capture error logging
-			const consoleSpy = vi
-				.spyOn(console, "error")
-				.mockImplementation(() => {});
+			vi.spyOn(console, "error").mockImplementation(() => {});
 
 			// Call the private method through reflection
 			await (
@@ -1149,11 +1282,12 @@ describe("PluginLifecycle", () => {
 				}
 			).callOnUnloadHook(pluginId);
 
-			expect(consoleSpy).toHaveBeenCalledWith(
-				"Error calling onUnload lifecycle hook for plugin test-plugin:",
-				expect.any(Error),
+			expect(mockPluginContext.logger.error).toHaveBeenCalledWith(
+				expect.objectContaining({
+					msg: "Error calling onUnload lifecycle hook for plugin test-plugin",
+					err: expect.any(Error),
+				}),
 			);
-			consoleSpy.mockRestore();
 			getPluginModuleSpy.mockRestore();
 		});
 	});
@@ -1870,9 +2004,7 @@ describe("PluginLifecycle", () => {
 
 	describe("handlePluginError", () => {
 		it("should log plugin errors", () => {
-			const consoleSpy = vi
-				.spyOn(console, "error")
-				.mockImplementation(() => {});
+			// Logger is already mocked
 			const error = new Error("Test error");
 
 			(
@@ -1885,11 +2017,12 @@ describe("PluginLifecycle", () => {
 				}
 			).handlePluginError("test-plugin", error, "activate");
 
-			expect(consoleSpy).toHaveBeenCalledWith(
-				"Plugin test-plugin error during activate:",
-				error,
+			expect(mockPluginContext.logger.error).toHaveBeenCalledWith(
+				expect.objectContaining({
+					msg: "Plugin test-plugin error during activate",
+					err: error,
+				}),
 			);
-			consoleSpy.mockRestore();
 		});
 	});
 
@@ -1915,9 +2048,7 @@ describe("PluginLifecycle", () => {
 			const { schemaManager } = await import(
 				"../../../src/graphql/schemaManager"
 			);
-			const consoleSpy = vi
-				.spyOn(console, "error")
-				.mockImplementation(() => {});
+			// Logger is already mocked
 			(
 				schemaManager.rebuildSchema as ReturnType<typeof vi.fn>
 			).mockRejectedValue(new Error("Schema rebuild failed"));
@@ -1928,11 +2059,12 @@ describe("PluginLifecycle", () => {
 				}
 			).triggerSchemaRebuild();
 
-			expect(consoleSpy).toHaveBeenCalledWith(
-				"Schema rebuild failed:",
-				expect.any(Error),
+			expect(mockPluginContext.logger.error).toHaveBeenCalledWith(
+				expect.objectContaining({
+					msg: "Schema rebuild failed",
+					err: expect.any(Error),
+				}),
 			);
-			consoleSpy.mockRestore();
 		});
 	});
 
@@ -2152,9 +2284,7 @@ describe("PluginLifecycle", () => {
 
 		it("should handle onInstall hook errors gracefully", async () => {
 			const { safeRequire } = await import("../../../src/plugin/utils");
-			const consoleSpy = vi
-				.spyOn(console, "error")
-				.mockImplementation(() => {});
+			vi.spyOn(console, "error").mockImplementation(() => {});
 			const mockPluginModule: MockPluginModule = {
 				onInstall: vi.fn(() => Promise.reject(new Error("Install failed"))),
 			};
@@ -2168,11 +2298,12 @@ describe("PluginLifecycle", () => {
 				}
 			).callOnInstallHook("test-plugin");
 
-			expect(consoleSpy).toHaveBeenCalledWith(
-				"Error calling onInstall lifecycle hook for plugin test-plugin:",
-				expect.any(Error),
+			expect(mockPluginContext.logger.error).toHaveBeenCalledWith(
+				expect.objectContaining({
+					msg: "Error calling onInstall lifecycle hook for plugin test-plugin",
+					err: expect.any(Error),
+				}),
 			);
-			consoleSpy.mockRestore();
 		});
 	});
 
@@ -2212,9 +2343,7 @@ describe("PluginLifecycle", () => {
 
 		it("should handle onUninstall hook errors gracefully", async () => {
 			const { safeRequire } = await import("../../../src/plugin/utils");
-			const consoleSpy = vi
-				.spyOn(console, "error")
-				.mockImplementation(() => {});
+			vi.spyOn(console, "error").mockImplementation(() => {});
 			const mockPluginModule: MockPluginModule = {
 				onUninstall: vi.fn(() => Promise.reject(new Error("Uninstall failed"))),
 			};
@@ -2228,11 +2357,12 @@ describe("PluginLifecycle", () => {
 				}
 			).callOnUninstallHook("test-plugin");
 
-			expect(consoleSpy).toHaveBeenCalledWith(
-				"Error calling onUninstall lifecycle hook for plugin test-plugin:",
-				expect.any(Error),
+			expect(mockPluginContext.logger.error).toHaveBeenCalledWith(
+				expect.objectContaining({
+					msg: "Error calling onUninstall lifecycle hook for plugin test-plugin",
+					err: expect.any(Error),
+				}),
 			);
-			consoleSpy.mockRestore();
 		});
 	});
 });

@@ -5,6 +5,7 @@
  * and creating the plugin context required by the plugin manager.
  */
 
+import { rootLogger } from "~/src/utilities/logging/logger";
 import PluginManager from "./manager";
 import type { ILogger, IPluginContext } from "./types";
 
@@ -88,7 +89,7 @@ export async function destroyPluginSystem(): Promise<void> {
 
 		pluginManagerInstance = null;
 	} catch (error) {
-		console.error("Error destroying plugin system:", error);
+		rootLogger.error({ msg: "Error destroying plugin system", err: error });
 		throw error;
 	}
 }
