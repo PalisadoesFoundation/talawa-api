@@ -196,7 +196,7 @@ GET http://localhost:4000/metrics/perf
     {
       "totalMs": 127.5,
       "cacheHits": 12,
-      "cacheMisses": 3,
+      "cacheMiss": 3,
       "ops": {
         "db": { "count": 5, "ms": 45.2, "max": 18.3 },
         "query": { "count": 3, "ms": 32.1, "max": 15.8 }
@@ -213,7 +213,7 @@ GET http://localhost:4000/metrics/perf
 | `recent` | Array | Last 50 performance snapshots (limited for memory) |
 | `totalMs` | number | Total time spent in tracked operations |
 | `cacheHits` | number | Number of cache hits during request |
-| `cacheMisses` | number | Number of cache misses during request |
+| `cacheMiss` | number | Number of cache misses during request |
 | `ops` | Object | Operation-level statistics |
 | `ops[name].count` | number | Number of times operation was called |
 | `ops[name].ms` | number | Total milliseconds spent in operation |
@@ -347,7 +347,7 @@ stopTimer?.();
 
 If `totalMs` is unexpectedly high:
 1. Check `ops.db.ms` for slow database queries
-2. Review `cacheMisses` count (high misses = more DB hits)
+2. Review `cacheMiss` count (high misses = more DB hits)
 3. Inspect individual operation max times for bottlenecks
 
 ## Further Reading
