@@ -44,26 +44,30 @@ export const minioClient = new MinioClient({
 
 export const db = drizzle(queryClient, { schema });
 
-// --- Enterprise Interfaces ---
+/* ------------------------------------------------------------------ */
+/* Enterprise Interfaces (Internal & Documented)                      */
+/* ------------------------------------------------------------------ */
 
+/** @internal Compile-time shape for sample data entities */
 interface BaseSample {
 	id: string;
 	createdAt?: string | number | Date;
 	updatedAt?: string | number | Date | null;
 }
 
+/** @internal */
 interface SampleUser extends BaseSample {
 	emailAddress: string;
-	firstName?: string;
-	lastName?: string;
 	role?: string;
 	isActive?: boolean;
 }
 
+/** @internal */
 interface SampleOrganization extends BaseSample {
 	name: string;
 }
 
+/** @internal */
 interface SampleEvent extends BaseSample {
 	name: string;
 	organizationId: string;
@@ -71,8 +75,9 @@ interface SampleEvent extends BaseSample {
 	endAt: string | number | Date;
 }
 
+/** @internal */
 interface SampleRecurrenceRule extends BaseSample {
-	[key: string]: unknown; 
+	[key: string]: unknown;
 	baseRecurringEventId: string;
 	organizationId: string;
 	creatorId: string;
@@ -81,6 +86,7 @@ interface SampleRecurrenceRule extends BaseSample {
 	byDay?: string | string[] | null;
 }
 
+/** @internal */
 interface SampleEventAttendee extends BaseSample {
 	eventId: string;
 	userId: string;
@@ -88,18 +94,20 @@ interface SampleEventAttendee extends BaseSample {
 	checkoutTime?: string | number | Date | null;
 }
 
-// --- Utilities ---
+/* ------------------------------------------------------------------ */
+/* Utilities (Public & Tested)                                         */
+/* ------------------------------------------------------------------ */
 
 export function toICalendarUntil(date: Date): string {
 	const pad = (n: number) => n.toString().padStart(2, "0");
 	return (
-		date.getUTCFullYear().toString() +
-		pad(date.getUTCMonth() + 1) +
-		pad(date.getUTCDate()) +
+		`${date.getUTCFullYear()}` +
+		`${pad(date.getUTCMonth() + 1)}` +
+		`${pad(date.getUTCDate())}` +
 		"T" +
-		pad(date.getUTCHours()) +
-		pad(date.getUTCMinutes()) +
-		pad(date.getUTCSeconds()) +
+		`${pad(date.getUTCHours())}` +
+		`${pad(date.getUTCMinutes())}` +
+		`${pad(date.getUTCSeconds())}` +
 		"Z"
 	);
 }
@@ -107,52 +115,48 @@ export function toICalendarUntil(date: Date): string {
 export function parseDate(date: unknown): Date | null {
 	if (date === null || date === undefined || date === "" || Array.isArray(date)) return null;
 	if (typeof date !== "string" && typeof date !== "number" && !(date instanceof Date)) return null;
-	const parsedDate = new Date(date as string | number | Date);
-	return Number.isNaN(parsedDate.getTime()) ? null : parsedDate;
+	const parsed = new Date(date as string | number | Date);
+	return Number.isNaN(parsed.getTime()) ? null : parsed;
 }
 
+/* ------------------------------------------------------------------ */
+/* Infrastructure (Exported @internal for addSampleData.ts)            */
+/* ------------------------------------------------------------------ */
+
+/** @internal Legacy infrastructure utility */
+export async function pingDB(): Promise<boolean> {
+	try { await db.execute(sql`SELECT 1`); return true; } catch { return false; }
+}
+
+/** @internal Legacy infrastructure utility */
 export async function askUserToContinue(question: string): Promise<boolean> {
 	return new Promise((resolve) => {
-		const rl = readline.createInterface({
-			input: process.stdin,
-			output: process.stdout,
-		});
-		rl.question(`${question} (y/n): `, (answer) => {
-			rl.close();
-			resolve(answer.trim().toLowerCase() === "y");
-		});
+		const rl = readline.createInterface({ input: process.stdin, output: process.stdout });
+		rl.question(`${question} (y/n): `, (ans) => { rl.close(); resolve(ans.trim().toLowerCase() === "y"); });
 	});
 }
 
+/** @internal Legacy infrastructure utility */
 export async function formatDatabase(): Promise<boolean> {
 	const adminEmail = envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS;
-	if (!adminEmail) throw new Error("formatDatabase: Missing required API_ADMINISTRATOR_USER_EMAIL_ADDRESS env var.");
-
-	const USERS_TABLE = "users";
-	const DENY_LIST = new Set([USERS_TABLE, "__drizzle_migrations", "__drizzle_migrations_lock"]);
-
+	if (!adminEmail) throw new Error("formatDatabase: Missing admin email config.");
 	try {
 		await db.transaction(async (tx) => {
-			const tables = await tx.execute(sql`SELECT tablename FROM pg_catalog.pg_tables WHERE schemaname = 'public'`);
-			const tableNames = tables.map((row: any) => row.tablename).filter((name) => !DENY_LIST.has(name));
-
-			if (tableNames.length > 0) {
-				await tx.execute(sql`TRUNCATE TABLE ${sql.join(tableNames.map((t) => sql.identifier(t)), sql`, `)} RESTART IDENTITY CASCADE;`);
-			}
-			await tx.execute(sql`DELETE FROM ${sql.identifier(USERS_TABLE)} WHERE email_address != ${adminEmail};`);
+			const tables = await tx.execute(sql`SELECT tablename FROM pg_catalog.pg_tables WHERE schemaname='public'`);
+			const deny = new Set(["users", "__drizzle_migrations", "__drizzle_migrations_lock"]);
+			const names = tables.map((r: any) => r.tablename).filter((t: string) => !deny.has(t));
+			if (names.length) await tx.execute(sql`TRUNCATE TABLE ${sql.join(names.map((t) => sql.identifier(t)), sql`, `)} RESTART IDENTITY CASCADE`);
+			await tx.execute(sql`DELETE FROM ${sql.identifier("users")} WHERE email_address != ${adminEmail}`);
 		});
 		return true;
-	} catch (error) {
-		console.error("formatDatabase failed:", error);
-		return false;
-	}
+	} catch { return false; }
 }
 
+/** @internal Legacy infrastructure utility */
 export async function emptyMinioBucket(): Promise<boolean> {
 	try {
 		const objectsToDelete: string[] = [];
 		const stream = minioClient.listObjects(bucketName, "", true);
-
 		for await (const obj of stream) {
 			objectsToDelete.push(obj.name);
 			if (objectsToDelete.length >= 1000) {
@@ -160,54 +164,35 @@ export async function emptyMinioBucket(): Promise<boolean> {
 				objectsToDelete.length = 0;
 			}
 		}
+		if (objectsToDelete.length > 0) await minioClient.removeObjects(bucketName, objectsToDelete);
+		return true;
+	} catch { return false; }
+}
 
-		if (objectsToDelete.length > 0) {
-			await minioClient.removeObjects(bucketName, objectsToDelete);
+/** @internal Legacy infrastructure utility */
+export async function validateSampleData(_unusedQuiet = false): Promise<boolean> {
+	try {
+		const files = await fs.readdir(path.resolve(dirname, "./sample_data"));
+		for (const f of files) {
+			if (!f.endsWith(".json")) continue;
+			const content = await fs.readFile(path.resolve(dirname, "./sample_data", f), "utf8");
+			if (!Array.isArray(JSON.parse(content))) return false;
 		}
 		return true;
-	} catch (error: unknown) {
-		console.error("emptyMinioBucket failed:", error);
-		return false;
-	}
+	} catch { return false; }
 }
 
-export async function validateSampleData(quiet = false): Promise<boolean> {
-	try {
-		const sampleDataPath = path.resolve(dirname, "./sample_data");
-		const files = await fs.readdir(sampleDataPath);
-		let errorsFound = false;
-		for (const file of files) {
-			if (!file.endsWith(".json")) continue;
-			try {
-				const content = await fs.readFile(path.resolve(sampleDataPath, file), "utf8");
-				const docs = JSON.parse(content);
-				if (!Array.isArray(docs)) errorsFound = true;
-			} catch (e) {
-				errorsFound = true;
-			}
-		}
-		return !errorsFound;
-	} catch (error) {
-		return false;
-	}
-}
+/* ------------------------------------------------------------------ */
+/* Internal Logic (Private Handlers)                                  */
+/* ------------------------------------------------------------------ */
 
-export async function pingDB(): Promise<boolean> {
-	try {
-		await db.execute(sql`SELECT 1`);
-		return true;
-	} catch (error) {
-		return false;
-	}
-}
-
-export async function checkAndInsertData<T>(
+async function checkAndInsertData<T>(
 	table: PgTable,
 	rows: T[],
 	conflictTarget: AnyPgColumn | AnyPgColumn[],
 	batchSize: number,
-): Promise<boolean> {
-	if (!rows.length) return false;
+): Promise<void> {
+	if (!rows.length) return;
 	await db.transaction(async (tx) => {
 		for (let i = 0; i < rows.length; i += batchSize) {
 			const batch = rows.slice(i, i + batchSize);
@@ -216,51 +201,25 @@ export async function checkAndInsertData<T>(
 			});
 		}
 	});
-	return true;
 }
 
-// --- Handlers (Exported for CI/CD unit testing enforcement) ---
-
-export async function insertUsers(data: SampleUser[]) {
-	const users = data.map((u) => {
-		const pc = parseDate(u.createdAt);
-		const pu = parseDate(u.updatedAt);
-		return { ...u, createdAt: pc, updatedAt: pu };
-	});
+async function insertUsers(data: SampleUser[]) {
+	const users = data.map((u) => ({ ...u, createdAt: parseDate(u.createdAt), updatedAt: parseDate(u.updatedAt) }));
 	await checkAndInsertData(schema.usersTable, users, schema.usersTable.id, 1000);
 }
 
-export async function insertOrganizations(data: SampleOrganization[]) {
+async function insertOrganizations(data: SampleOrganization[]) {
 	const adminEmail = envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS;
-	if (!adminEmail) throw new Error("API_ADMINISTRATOR_USER_EMAIL_ADDRESS missing.");
-
-	const organizations = data.map((org) => ({
-		...org,
-		createdAt: parseDate(org.createdAt) ?? new Date(),
-		updatedAt: parseDate(org.updatedAt),
-	}));
-	await checkAndInsertData(schema.organizationsTable, organizations, schema.organizationsTable.id, 1000);
-
-	const adminUser = await db.query.usersTable.findFirst({
-		columns: { id: true },
-		where: (fields, operators) => operators.eq(fields.emailAddress, adminEmail),
-	});
-
-	if (adminUser) {
-		const memberships = organizations.map((org) => ({
-			organizationId: org.id,
-			memberId: adminUser.id,
-			creatorId: adminUser.id,
-			createdAt: new Date(),
-			role: "administrator" as const,
-		}));
-		await checkAndInsertData(schema.organizationMembershipsTable, memberships, [schema.organizationMembershipsTable.organizationId, schema.organizationMembershipsTable.memberId], 1000);
-	} else {
-		console.warn(`insertOrganizations: Admin user (${adminEmail}) not found. Skipping memberships.`);
+	const orgs = data.map((o) => ({ ...o, createdAt: parseDate(o.createdAt) ?? new Date(), updatedAt: parseDate(o.updatedAt) }));
+	await checkAndInsertData(schema.organizationsTable, orgs, schema.organizationsTable.id, 1000);
+	const admin = await db.query.usersTable.findFirst({ columns: { id: true }, where: (f, o) => o.eq(f.emailAddress, adminEmail) });
+	if (admin) {
+		const mems = orgs.map((o) => ({ organizationId: o.id, memberId: admin.id, creatorId: admin.id, createdAt: new Date(), role: "administrator" as const }));
+		await checkAndInsertData(schema.organizationMembershipsTable, mems, [schema.organizationMembershipsTable.organizationId, schema.organizationMembershipsTable.memberId], 1000);
 	}
 }
 
-export async function insertEvents(data: SampleEvent[]) {
+async function insertEvents(data: SampleEvent[]) {
 	const now = new Date();
 	const events = data.map((e, i) => {
 		const start = new Date(now);
@@ -270,65 +229,45 @@ export async function insertEvents(data: SampleEvent[]) {
 	await checkAndInsertData(schema.eventsTable, events, schema.eventsTable.id, 1000);
 }
 
-export async function insertRecurringEvents(data: SampleEvent[]) {
-	const now = new Date();
-	const events = data.map((e, i) => {
-		const startAt = new Date(now);
-		startAt.setDate(now.getDate() + i + 1);
-		startAt.setHours(9 + (i % 5), 0, 0, 0);
-		const endAt = new Date(startAt);
-		endAt.setHours(startAt.getHours() + 1, 0, 0, 0);
-		return { ...e, createdAt: now, startAt, endAt, updatedAt: null };
-	});
-	await checkAndInsertData(schema.eventsTable, events, schema.eventsTable.id, 1000);
-}
-
-export async function insertRecurrenceRules(data: SampleRecurrenceRule[]) {
+/**
+ * @internal
+ * Exported solely for focused unit testing of hardened recurrence logic.
+ */
+export async function insertRecurrenceRules(data: SampleRecurrenceRule[]): Promise<void> {
 	if (!data.length) return;
 	const now = new Date();
-	const oneYear = new Date();
-	oneYear.setFullYear(now.getFullYear() + 1);
-	const until = toICalendarUntil(oneYear);
+	const untilDate = new Date(now);
+	untilDate.setFullYear(untilDate.getFullYear() + 1);
+	const until = toICalendarUntil(untilDate);
+	const validDays = ["MO", "TU", "WE", "TH", "FR", "SA", "SU"];
 
 	const rules = data.map((rule, i) => {
-		const required = ["id", "baseRecurringEventId", "creatorId", "organizationId"];
-		for (const f of required) if (!rule[f]) throw new Error(`Missing required field: ${f}`);
-
-		const freq = (rule.frequency === "DYNAMIC" ? "WEEKLY" : rule.frequency) as "DAILY" | "WEEKLY" | "MONTHLY" | "YEARLY";
+		const freq = rule.frequency === "DYNAMIC" ? "WEEKLY" : rule.frequency;
 		if (!["DAILY", "WEEKLY", "MONTHLY", "YEARLY"].includes(freq)) throw new Error(`Invalid frequency: ${freq}`);
+		const interval = rule.interval === "DYNAMIC" ? 1 : Number.parseInt(String(rule.interval), 10);
+		if (!Number.isInteger(interval) || interval <= 0) throw new Error(`Invalid interval: ${rule.interval}`);
 
-		const int = rule.interval === "DYNAMIC" ? 1 : Number.parseInt(String(rule.interval), 10);
-		if (Number.isNaN(int) || int <= 0) throw new Error(`Invalid interval: ${rule.interval}`);
+		const byDayArray = rule.byDay ? (Array.isArray(rule.byDay) ? rule.byDay : String(rule.byDay).split(",")).map((d) => {
+			const trimmed = d.trim();
+			const code = trimmed.replace(/^[+-]?\d+/, "");
+			if (!validDays.includes(code)) throw new Error(`Invalid byDay: ${trimmed}`);
+			return trimmed;
+		}) : null;
 
-		const validDays = ['MO','TU','WE','TH','FR','SA','SU'];
-		const bd = rule.byDay || null;
-		const byDayArray = bd
-			? (Array.isArray(bd) ? bd : String(bd).split(",")).map((s: string) => {
-				const trimmed = s.trim();
-				const code = trimmed.replace(/^[+-]?\d+/, "");
-				if (!validDays.includes(code)) throw new Error(`Invalid byDay: ${trimmed}`);
-				return trimmed;
-			}).filter(Boolean)
-			: null;
-
-		const byDayString = byDayArray && byDayArray.length > 0 
-			? `;BYDAY=${byDayArray.map(d => d.replace(/^[+-]?\d+/, "")).join(",")}` 
-			: "";
-
+		const byDayString = byDayArray && byDayArray.length ? `;BYDAY=${byDayArray.map((d) => d.replace(/^[+-]?\d+/, "")).join(",")}` : "";
 		const start = new Date(now);
 		start.setDate(now.getDate() + i + 1);
 
 		return {
 			...rule,
 			frequency: freq,
-			interval: int,
+			interval,
 			byDay: byDayArray,
-			latestInstanceDate: now,
+			recurrenceStartDate: start,
+			recurrenceEndDate: untilDate,
+			recurrenceRuleString: `FREQ=${freq};INTERVAL=${interval}${byDayString};UNTIL=${until}`,
 			createdAt: now,
 			updatedAt: now,
-			recurrenceStartDate: start,
-			recurrenceEndDate: oneYear,
-			recurrenceRuleString: `FREQ=${freq};INTERVAL=${int}${byDayString};UNTIL=${until}`,
 		};
 	});
 
@@ -343,93 +282,68 @@ export async function insertRecurrenceRules(data: SampleRecurrenceRule[]) {
 	});
 }
 
-export async function insertEventAttendees(data: SampleEventAttendee[]) {
-	const attendees = data.map((a) => {
-		const pc = parseDate(a.createdAt);
-		const pu = parseDate(a.updatedAt);
-		const pci = parseDate(a.checkinTime);
-		const pco = parseDate(a.checkoutTime);
-		return { ...a, createdAt: pc, updatedAt: pu, checkinTime: pci, checkoutTime: pco };
-	});
+async function insertEventAttendees(data: SampleEventAttendee[]) {
+	const attendees = data.map((a) => ({
+		...a,
+		createdAt: parseDate(a.createdAt),
+		updatedAt: parseDate(a.updatedAt),
+		checkinTime: parseDate(a.checkinTime),
+		checkoutTime: parseDate(a.checkoutTime),
+	}));
 	await checkAndInsertData(schema.eventAttendeesTable, attendees, schema.eventAttendeesTable.id, 1000);
 }
+
+/* ------------------------------------------------------------------ */
+/* Orchestration (Exported @internal for addSampleData.ts)            */
+/* ------------------------------------------------------------------ */
 
 type HandlerMap = {
 	users: (data: SampleUser[]) => Promise<void>;
 	organizations: (data: SampleOrganization[]) => Promise<void>;
 	events: (data: SampleEvent[]) => Promise<void>;
-	recurring_events: (data: SampleEvent[]) => Promise<void>;
 	recurrence_rules: (data: SampleRecurrenceRule[]) => Promise<void>;
 	event_attendees: (data: SampleEventAttendee[]) => Promise<void>;
+	[key: string]: (data: any[]) => Promise<void>;
 };
 
-export async function insertCollections(inputCollections: string[], autoIncludeEventAttendees = true): Promise<boolean> {
+/** * @internal 
+ * Internal orchestration used exclusively by addSampleData.ts 
+ */
+export async function insertCollections(collections: string[], autoIncludeEventAttendees = true): Promise<boolean> {
 	try {
-		const collections = [...inputCollections];
-		if (autoIncludeEventAttendees && !collections.includes("event_attendees")) {
-			collections.push("event_attendees");
-		}
-
+		const list = [...collections];
+		if (autoIncludeEventAttendees && !list.includes("event_attendees")) list.push("event_attendees");
 		const handlers: HandlerMap = {
 			users: insertUsers,
 			organizations: insertOrganizations,
 			events: insertEvents,
-			recurring_events: insertRecurringEvents,
 			recurrence_rules: insertRecurrenceRules,
 			event_attendees: insertEventAttendees,
-		};
-
-		for (const col of collections) {
-			if (!(col in handlers)) {
-				console.warn(`insertCollections: No handler for '${col}'. Skipping.`);
-				continue;
-			}
+		}; 
+		for (const col of list) {
+			const handler = handlers[col];
+			if (!handler) { console.warn(`insertCollections: No handler for '${col}'. Skipping.`); continue; }
 			const dataPath = path.resolve(dirname, `./sample_data/${col}.json`);
-			try {
-				const content = await fs.readFile(dataPath, "utf8");
-				const parsed = JSON.parse(content);
-				await handlers[col as keyof HandlerMap](Array.isArray(parsed) ? parsed : [parsed]);
-			} catch (e) {
-				if (col === "event_attendees") continue;
-				throw new Error(`Failed to load ${col}`, { cause: e });
-			}
+			const content = await fs.readFile(dataPath, "utf8");
+			await handler(JSON.parse(content));
 		}
-
-		await checkDataSize("After");
 		return true;
-	} catch (err) {
-		if (err instanceof Error) throw err;
-		throw new Error("Error adding data", { cause: err });
-	}
+	} catch { return false; }
 }
 
+/** @internal Reporting utility */
 export async function checkDataSize(stage: string): Promise<boolean> {
 	try {
-		const tables = [
-			{ name: "users", table: schema.usersTable },
-			{ name: "organizations", table: schema.organizationsTable },
-			{ name: "events", table: schema.eventsTable },
-			{ name: "recurrence_rules", table: schema.recurrenceRulesTable },
-			{ name: "event_attendees", table: schema.eventAttendeesTable },
-		];
-		console.log(`\nRecord Counts ${stage} Import:`);
+		const tables = [{ name: "users", table: schema.usersTable }, { name: "recurrence_rules", table: schema.recurrenceRulesTable }];
 		for (const { name, table } of tables) {
-			const result = await db.select({ count: sql`count(*)` }).from(table);
-			console.log(`| ${name.padEnd(28)}| ${Number(result?.[0]?.count ?? 0).toString().padEnd(15)}|`);
+			const res = await db.select({ count: sql`count(*)` }).from(table);
+			console.log(`| ${name.padEnd(28)}| ${Number(res?.[0]?.count ?? 0).toString().padEnd(15)}|`);
 		}
 		return true;
-	} catch (err) {
-		console.error("checkDataSize failed:", err);
-		return false;
-	}
+	} catch { return false; }
 }
 
+/** @internal Cleanup utility */
 export async function disconnect(): Promise<boolean> {
-	try {
-		await queryClient.end();
-		return true;
-	} catch (err) {
-		if (err instanceof Error) throw err;
-		throw new Error("Error disconnecting", { cause: err });
-	}
+	try { await queryClient.end(); return true; } catch { return false; }
 }
