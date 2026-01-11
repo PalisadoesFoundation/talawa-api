@@ -305,12 +305,6 @@ step $CURRENT_STEP $TOTAL_STEPS "Reading configuration from package.json..."
 # The 'lts' default is used if engines.node is not specified
 NODE_VERSION=$(parse_package_json '.engines.node' "lts" "Node.js version (engines.node)" "false")
 
-# Validate that we got a usable Node.js version
-if [ -z "$NODE_VERSION" ]; then
-    warn "No Node.js version specified in package.json, using LTS"
-    NODE_VERSION="lts"
-fi
-
 # Clean version string (handle >=, ^, etc.)
 if [[ "$NODE_VERSION" =~ ^(\^|>=|~) ]]; then
     # Extract full semantic version (e.g., ">=18.0.0" -> "18.0.0")
@@ -355,7 +349,7 @@ if [[ "$PNPM_FULL" == pnpm@* ]]; then
         warn "Could not extract pnpm version from '$PNPM_FULL', using latest"
         PNPM_VERSION="latest"
     fi
-elif [ -n "$PNPM_FULL" ] && [ "$PNPM_FULL" != "null" ]; then
+elif [ -n "$PNPM_FULL" ]; then
     # packageManager field exists but doesn't match expected pnpm format
     warn "packageManager field '$PNPM_FULL' is not in expected format 'pnpm@version'"
     info "Using latest pnpm version instead"
