@@ -8,7 +8,7 @@ const MAX_CI_THREADS = 12; // Reduced to leave headroom
 const MAX_LOCAL_THREADS = 16;
 
 const isScriptTest = process.argv.some(
-	(arg) => arg.includes("scripts/") || arg.includes("test/scripts/")
+	(arg) => arg.includes("scripts/") || arg.includes("test/scripts/"),
 );
 
 // Allow override via env var for CI rollout testing
