@@ -4,12 +4,9 @@ import { configDefaults, defineConfig } from "vitest/config";
 
 const isCI = !!process.env.CI;
 const cpuCount = cpus().length;
+
 const MAX_CI_THREADS = 12; // Reduced to leave headroom
 const MAX_LOCAL_THREADS = 16;
-
-const isScriptTest = process.argv.some(
-	(arg) => arg.includes("scripts/") || arg.includes("test/scripts/"),
-);
 
 // Allow override via env var for CI rollout testing
 const envCiThreads = process.env.VITEST_CI_THREADS
@@ -46,6 +43,9 @@ if (isCI) {
 	}
 }
 
+// Skip global setup for pure unit tests that don't need server/db
+const isUnitTest = process.argv.some((arg) => arg.includes("test/unit/"));
+
 export default defineConfig({
 	plugins: [tsconfigPaths()],
 	test: {
@@ -60,6 +60,7 @@ export default defineConfig({
 			"drizzle_migrations/**",
 			"envFiles/**",
 			"scripts/**",
+			"**/scripts/**",
 		],
 		coverage: {
 			provider: "v8", // or 'istanbul' if you prefer
@@ -74,12 +75,16 @@ export default defineConfig({
 				"docker/**",
 				"drizzle_migrations/**",
 				"envFiles/**",
+				"**/scripts/**", // Mirror test exclusion to exclude nested scripts
 			],
 		},
+
 		// https://vitest.dev/config/#globalsetup
-		globalSetup: isScriptTest ? [] : ["./test/setup.ts"],
+		globalSetup: isUnitTest ? [] : ["./test/setup.ts"],
+
 		// https://vitest.dev/config/#passwithnotests
 		passWithNoTests: true,
+
 		hookTimeout: 30000, // 30 seconds for hooks
 		testTimeout: 60000, // 60 seconds per test
 		pool: "threads", // for faster test execution and to avoid postgres max-limit error
