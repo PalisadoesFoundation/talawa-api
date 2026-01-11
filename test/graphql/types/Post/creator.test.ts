@@ -67,7 +67,26 @@ describe("Post Resolver - Creator Field", () => {
 				}),
 			);
 		});
+		it("should allow organization member access", async () => {
+			const currentUser = {
+				id: "user-123",
+				role: "member",
+				organizationMembershipsWhereMember: [{ role: "member" }],
+			};
 
+			const creatorUser = {
+				id: "user-456",
+				role: "member",
+			};
+
+			mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValueOnce(
+				currentUser,
+			);
+			ctx.dataloaders.user.load = vi.fn().mockResolvedValue(creatorUser);
+
+			const result = await resolveCreator(mockPost, {}, ctx);
+			expect(result).toEqual(creatorUser);
+		});
 		it("should throw unauthorized_action error when organization membership is undefined", async () => {
 			mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValue({
 				id: "user-123",
