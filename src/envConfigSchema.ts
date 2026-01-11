@@ -148,11 +148,11 @@ export const envConfigSchema = Type.Object({
 	/**
 	 * AWS access key ID for SES email service.
 	 */
-	AWS_ACCESS_KEY_ID: Type.Optional(Type.String()),
+	AWS_ACCESS_KEY_ID: Type.Optional(Type.String({ minLength: 1 })),
 	/**
 	 * AWS secret access key for SES email service.
 	 */
-	AWS_SECRET_ACCESS_KEY: Type.Optional(Type.String()),
+	AWS_SECRET_ACCESS_KEY: Type.Optional(Type.String({ minLength: 1 })),
 	/**
 	 * AWS region for SES email service.
 	 */
