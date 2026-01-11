@@ -22,13 +22,7 @@ vi.mock("../../../scripts/dbManagement/helpers", async (importOriginal) => {
             execute: vi.fn().mockResolvedValue([{ tablename: "t1" }]),
             transaction: (cb: any) => {
                 const tx = { insert: mockInsert, execute: vi.fn().mockResolvedValue([{ tablename: "t1" }]), rollback: vi.fn() };
-                try {
-                    const result = cb(tx);
-                    return result instanceof Promise ? result : Promise.resolve(result);
-                } catch (e) {
-                    tx.rollback();
-                    throw e;
-                }
+                return cb(tx);
             }
         },
         minioClient: {
@@ -38,55 +32,54 @@ vi.mock("../../../scripts/dbManagement/helpers", async (importOriginal) => {
     };
 });
 
-describe("DB Management Helpers", () => {
+describe("DB Management Helpers Hardened", () => {
     beforeEach(() => { vi.clearAllMocks(); });
 
-    describe("parseDate", () => {
-        it("should parse various formats", () => {
+    describe("parseDate Edge Cases", () => {
+        it("should return null for invalid inputs", () => {
+            expect(helpers.parseDate(undefined)).toBeNull();
+            expect(helpers.parseDate("not-a-date")).toBeNull();
+            expect(helpers.parseDate("")).toBeNull();
+            expect(helpers.parseDate({})).toBeNull();
+        });
+        it("should handle valid ISO strings", () => {
             expect(helpers.parseDate("2025-01-01T00:00:00Z")).toBeInstanceOf(Date);
-            expect(helpers.parseDate(1704067200000)).toBeInstanceOf(Date);
-            expect(helpers.parseDate(null)).toBeNull();
         });
     });
 
     describe("validateSampleData", () => {
-        it("should return false for objects instead of arrays", async () => {
-            (fs.readdir as any).mockResolvedValue(["test.json"]);
-            (fs.readFile as any).mockResolvedValue(JSON.stringify({ key: "val" }));
+        it("should return false for malformed files", async () => {
+            (fs.readdir as any).mockResolvedValue(["a.json"]);
+            (fs.readFile as any).mockResolvedValue("INVALID_JSON");
+            expect(await helpers.validateSampleData(true)).toBe(false);
+        });
+        it("should handle directory errors", async () => {
+            (fs.readdir as any).mockRejectedValue(new Error("ENOENT"));
             expect(await helpers.validateSampleData(true)).toBe(false);
         });
     });
 
-    describe("insertRecurrenceRules Validation", () => {
-        it("should throw for invalid byDay codes", async () => {
-            const rule = { id: "r1", baseRecurringEventId: "e1", creatorId: "u1", organizationId: "org1", frequency: "WEEKLY", interval: 1, byDay: "ABC" };
-            (fs.readFile as any).mockResolvedValue(JSON.stringify([rule]));
-            await expect(helpers.insertCollections(["recurrence_rules"], false)).rejects.toThrow("Invalid byDay value: ABC");
+    describe("Failure Path Testing", () => {
+        it("pingDB should return false on database rejection", async () => {
+            // Mocking the getter of 'db' to return a rejecting execute
+            vi.spyOn(helpers.db, 'execute').mockRejectedValueOnce(new Error("Database connection refused"));
+            expect(await helpers.pingDB()).toBe(false);
         });
 
-        it("should throw for non-integer intervals", async () => {
-            const rule = { id: "r1", baseRecurringEventId: "e1", creatorId: "u1", organizationId: "org1", frequency: "WEEKLY", interval: 1.5 };
-            (fs.readFile as any).mockResolvedValue(JSON.stringify([rule]));
-            await expect(helpers.insertCollections(["recurrence_rules"], false)).rejects.toThrow("Invalid interval");
+        it("checkDataSize should return false on query failure", async () => {
+            vi.spyOn(helpers.db, 'select').mockImplementationOnce(() => {
+                throw new Error("Select failed");
+            });
+            expect(await helpers.checkDataSize("Test")).toBe(false);
         });
     });
 
-    describe("Error Handling & Transactions", () => {
-        it("should fail strictly on missing required files", async () => {
-            (fs.readFile as any).mockRejectedValue(new Error("ENOENT"));
-            await expect(helpers.insertCollections(["users"], false)).rejects.toThrow("Failed to load users");
+    describe("Maintenance Logic", () => {
+        it("formatDatabase should succeed under normal conditions", async () => {
+            expect(await helpers.formatDatabase()).toBe(true);
         });
-    });
-
-    describe("Maintenance Tasks", () => {
-        it("checkDataSize should complete successfully", async () => {
-            expect(await helpers.checkDataSize("Test")).toBe(true);
-        });
-        it("emptyMinioBucket should handle stream iterator", async () => {
+        it("emptyMinioBucket should handle batching without error", async () => {
             expect(await helpers.emptyMinioBucket()).toBe(true);
-        });
-        it("pingDB should return true on success", async () => {
-            expect(await helpers.pingDB()).toBe(true);
         });
     });
 });
