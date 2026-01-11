@@ -26,7 +26,7 @@ Email configuration from environment variables
 
 ### provider
 
-> **provider**: `"ses"` \| `"smtp"` \| `undefined` = `envConfig.API_EMAIL_PROVIDER`
+> **provider**: `"ses"` \| `undefined` = `envConfig.API_EMAIL_PROVIDER`
 
 ### region
 
