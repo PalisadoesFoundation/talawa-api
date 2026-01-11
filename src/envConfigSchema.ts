@@ -137,21 +137,18 @@ export const envConfigSchema = Type.Object({
 		}),
 	),
 	/**
+	 * Email provider selection.
+	 * Currently only 'ses' is supported.
+	 */
+	API_EMAIL_PROVIDER: Type.Optional(Type.Literal("ses", { default: "ses" })),
+	/**
 	 * AWS access key ID for SES email service.
 	 */
-	AWS_ACCESS_KEY_ID: Type.Optional(
-		Type.String({
-			minLength: 1,
-		}),
-	),
+	AWS_ACCESS_KEY_ID: Type.Optional(Type.String({ minLength: 1 })),
 	/**
 	 * AWS secret access key for SES email service.
 	 */
-	AWS_SECRET_ACCESS_KEY: Type.Optional(
-		Type.String({
-			minLength: 1,
-		}),
-	),
+	AWS_SECRET_ACCESS_KEY: Type.Optional(Type.String({ minLength: 1 })),
 	/**
 	 * AWS region for SES email service.
 	 */
@@ -283,6 +280,51 @@ export const envConfigSchema = Type.Object({
 	 * Defaults to true in production environments. Set explicitly for testing.
 	 */
 	API_IS_SECURE_COOKIES: Type.Optional(Type.Boolean()),
+	/**
+	 * Sampling ratio for OpenTelemetry traces.
+	 * Value between 0 (no traces) and 1 (all traces).
+	 * Default: 1 (sample all traces)
+	 */
+	API_OTEL_SAMPLING_RATIO: Type.Optional(
+		Type.Number({
+			minimum: 0,
+			maximum: 1,
+			default: 1,
+		}),
+	),
+	/**
+	 * The threshold in milliseconds for a request to be considered slow.
+	 */
+	API_SLOW_REQUEST_MS: Type.Optional(
+		Type.Number({
+			minimum: 0,
+			default: 500,
+		}),
+	),
+	/**
+	 * Enabled state for OpenTelemetry tracing.
+	 */
+	API_OTEL_ENABLED: Type.Boolean({
+		default: false,
+		description: "Enable or disable OpenTelemetry tracing",
+	}),
+	/**
+	 * Environment name for OpenTelemetry (e.g. 'production', 'development').
+	 */
+	API_OTEL_ENVIRONMENT: Type.Optional(Type.String({ minLength: 1 })),
+	/**
+	 * OTLP Exporter Endpoint URL.
+	 */
+	API_OTEL_EXPORTER_OTLP_ENDPOINT: Type.Optional(
+		Type.String({
+			minLength: 1,
+			format: "uri", // Using format: uri for validation
+		}),
+	),
+	/**
+	 * Service name for OpenTelemetry.
+	 */
+	API_OTEL_SERVICE_NAME: Type.Optional(Type.String({ minLength: 1 })),
 	/**
 	 * Used for providing the log level for the logger used in talawa api.
 	 *
