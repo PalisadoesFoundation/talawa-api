@@ -153,9 +153,10 @@ describe("emailSetup", () => {
 		vi.mocked(promptHelpers.promptInput)
 			.mockResolvedValueOnce("") // Region (Missing)
 			.mockResolvedValueOnce("") // Access Key (Missing)
-			.mockResolvedValueOnce("") // Secret Key (Missing)
 			.mockResolvedValueOnce("") // From Email (Missing)
-			.mockResolvedValueOnce("Test App");
+			.mockResolvedValueOnce("Test App"); // From Name
+
+		vi.mocked(promptHelpers.promptPassword).mockResolvedValueOnce(""); // Secret Key (Missing)
 
 		// Mock error logging
 		const consoleErrorSpy = vi
@@ -181,9 +182,10 @@ describe("emailSetup", () => {
 		vi.mocked(promptHelpers.promptInput)
 			.mockResolvedValueOnce("") // Missing region
 			.mockResolvedValueOnce("") // Missing access key
-			.mockResolvedValueOnce("") // Missing secret
 			.mockResolvedValueOnce("") // Missing email
-			.mockResolvedValueOnce("Test App");
+			.mockResolvedValueOnce("Test App"); // From Name
+
+		vi.mocked(promptHelpers.promptPassword).mockResolvedValueOnce(""); // Missing secret
 
 		const result = await emailSetup(answers);
 
