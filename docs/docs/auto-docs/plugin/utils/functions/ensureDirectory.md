@@ -6,7 +6,7 @@
 
 > **ensureDirectory**(`dirPath`): `Promise`\<`void`\>
 
-Defined in: [src/plugin/utils.ts:145](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/plugin/utils.ts#L145)
+Defined in: [src/plugin/utils.ts:149](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/plugin/utils.ts#L149)
 
 Creates a directory if it doesn't exist
 

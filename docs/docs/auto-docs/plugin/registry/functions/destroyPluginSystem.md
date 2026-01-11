@@ -6,7 +6,7 @@
 
 > **destroyPluginSystem**(): `Promise`\<`void`\>
 
-Defined in: [src/plugin/registry.ts:80](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/plugin/registry.ts#L80)
+Defined in: [src/plugin/registry.ts:81](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/plugin/registry.ts#L81)
 
 Destroys the plugin system (useful for testing)
 

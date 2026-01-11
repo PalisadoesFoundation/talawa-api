@@ -6,7 +6,7 @@
 
 > **getPluginSystemStatus**(): `object`
 
-Defined in: [src/plugin/registry.ts:99](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/plugin/registry.ts#L99)
+Defined in: [src/plugin/registry.ts:100](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/plugin/registry.ts#L100)
 
 Plugin system health check and status information
 

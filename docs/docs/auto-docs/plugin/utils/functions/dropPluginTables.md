@@ -6,7 +6,7 @@
 
 > **dropPluginTables**(`db`, `pluginId`, `tableDefinitions`, `logger?`): `Promise`\<`void`\>
 
-Defined in: [src/plugin/utils.ts:509](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/plugin/utils.ts#L509)
+Defined in: [src/plugin/utils.ts:526](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/plugin/utils.ts#L526)
 
 Dynamically drops database tables for a plugin
 
@@ -28,9 +28,7 @@ Dynamically drops database tables for a plugin
 
 ### logger?
 
-#### info?
-
-(`message`) => `void`
+[`ILogger`](../../types/interfaces/ILogger.md)
 
 ## Returns
 
