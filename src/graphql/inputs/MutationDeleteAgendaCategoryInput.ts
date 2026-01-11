@@ -11,7 +11,7 @@ export const MutationDeleteAgendaCategoryInput = builder
 		"MutationDeleteAgendaCategoryInput",
 	)
 	.implement({
-		description: "",
+		description: "Input for deleting an agenda category.",
 		fields: (t) => ({
 			id: t.id({
 				description: "Global identifier of the agenda category.",

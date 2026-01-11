@@ -14,10 +14,10 @@ export const MutationCreateAgendaCategoryInput = builder
 		"MutationCreateAgendaCategoryInput",
 	)
 	.implement({
-		description: "",
+		description: "Input for creating an agenda category.",
 		fields: (t) => ({
 			description: t.string({
-				description: "Description of Agenda category",
+				description: "Description of the agenda category.",
 				required: false,
 			}),
 			eventId: t.id({

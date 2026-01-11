@@ -259,9 +259,21 @@ suite("Mutation field createAgendaCategory", () => {
 			);
 
 			expect(result.data?.createAgendaCategory ?? null).toEqual(null);
-			expect(
-				result.errors?.some((e) => e.extensions?.code === "invalid_arguments"),
-			).toBe(true);
+			expect(result.errors).toEqual(
+				expect.arrayContaining([
+					expect.objectContaining({
+						path: ["createAgendaCategory"],
+						extensions: expect.objectContaining({
+							code: "invalid_arguments",
+							issues: expect.arrayContaining([
+								expect.objectContaining({
+									argumentPath: ["input", "eventId"],
+								}),
+							]),
+						}),
+					}),
+				]),
+			);
 		});
 	});
 

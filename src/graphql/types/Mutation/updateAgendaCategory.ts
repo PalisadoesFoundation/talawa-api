@@ -45,7 +45,7 @@ builder.mutationField("updateAgendaCategory", (t) =>
 					extensions: {
 						code: "invalid_arguments",
 						issues: error.issues.map((issue) => ({
-							argumentPath: issue.path,
+							argumentPath: issue.path.map(String),
 							message: issue.message,
 						})),
 					},
@@ -54,14 +54,23 @@ builder.mutationField("updateAgendaCategory", (t) =>
 
 			const currentUserId = ctx.currentClient.user.id;
 
-			const [currentUser, existingAgendaCategory] = await Promise.all([
-				ctx.drizzleClient.query.usersTable.findFirst({
-					columns: {
-						role: true,
+			const currentUser = await ctx.drizzleClient.query.usersTable.findFirst({
+				columns: {
+					role: true,
+				},
+				where: (fields, operators) => operators.eq(fields.id, currentUserId),
+			});
+
+			if (currentUser === undefined) {
+				throw new TalawaGraphQLError({
+					extensions: {
+						code: "unauthenticated",
 					},
-					where: (fields, operators) => operators.eq(fields.id, currentUserId),
-				}),
-				ctx.drizzleClient.query.agendaCategoriesTable.findFirst({
+				});
+			}
+
+			const existingAgendaCategory =
+				await ctx.drizzleClient.query.agendaCategoriesTable.findFirst({
 					columns: {
 						eventId: true,
 					},
@@ -84,16 +93,7 @@ builder.mutationField("updateAgendaCategory", (t) =>
 					},
 					where: (fields, operators) =>
 						operators.eq(fields.id, parsedArgs.input.id),
-				}),
-			]);
-
-			if (currentUser === undefined) {
-				throw new TalawaGraphQLError({
-					extensions: {
-						code: "unauthenticated",
-					},
 				});
-			}
 
 			if (existingAgendaCategory === undefined) {
 				throw new TalawaGraphQLError({

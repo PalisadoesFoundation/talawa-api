@@ -61,16 +61,20 @@ async function addOrganizationMembership(params: {
 	organizationId: string;
 	role: "administrator" | "regular";
 }) {
-	await mercuriusClient.mutate(Mutation_createOrganizationMembership, {
-		headers: { authorization: `bearer ${params.adminAuthToken}` },
-		variables: {
-			input: {
-				memberId: params.memberId,
-				organizationId: params.organizationId,
-				role: params.role,
+	const result = await mercuriusClient.mutate(
+		Mutation_createOrganizationMembership,
+		{
+			headers: { authorization: `bearer ${params.adminAuthToken}` },
+			variables: {
+				input: {
+					memberId: params.memberId,
+					organizationId: params.organizationId,
+					role: params.role,
+				},
 			},
 		},
-	});
+	);
+	expect(result.errors).toBeUndefined();
 }
 
 async function createOrganizationEventAndCategory(adminAuthToken: string) {
@@ -357,8 +361,25 @@ suite("Mutation field deleteAgendaCategory", () => {
 				},
 			);
 
-			expect(secondResult.data.deleteAgendaCategory).toEqual(null);
-			expect(secondResult.errors).toBeDefined();
+			expect(secondResult.data?.deleteAgendaCategory ?? null).toEqual(null);
+			expect(secondResult.errors).toEqual(
+				expect.arrayContaining<TalawaGraphQLFormattedError>([
+					expect.objectContaining({
+						extensions:
+							expect.objectContaining<ArgumentsAssociatedResourcesNotFoundExtensions>(
+								{
+									code: "arguments_associated_resources_not_found",
+									issues: expect.arrayContaining([
+										expect.objectContaining({
+											argumentPath: ["input", "id"],
+										}),
+									]),
+								},
+							),
+						path: ["deleteAgendaCategory"],
+					}),
+				]),
+			);
 		});
 	});
 });

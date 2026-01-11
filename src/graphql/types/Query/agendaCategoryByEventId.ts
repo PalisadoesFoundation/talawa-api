@@ -105,12 +105,12 @@ builder.queryField("agendaCategoriesByEventId", (t) =>
 			}
 
 			// Get all AgendaCategory for the event
-			const eventAgendas =
+			const agendaCategories =
 				await ctx.drizzleClient.query.agendaCategoriesTable.findMany({
 					where: eq(agendaCategoriesTable.eventId, parsedArgs.eventId),
 				});
 
-			return eventAgendas;
+			return agendaCategories;
 		},
 		type: [AgendaCategory],
 	}),

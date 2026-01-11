@@ -233,13 +233,6 @@ suite("Query field agendaCategoriesByEventId", () => {
 		assertToBeNonNullish(createEventResult.data?.createEvent);
 		const eventId = createEventResult.data.createEvent.id;
 
-		cleanupFns.push(async () => {
-			await mercuriusClient.mutate(Mutation_deleteOrganization, {
-				headers: { authorization: `bearer ${adminAuthToken}` },
-				variables: { input: { id: organizationId } },
-			});
-		});
-
 		const result = await mercuriusClient.query(Query_agendaCategoryByEventId, {
 			headers: { authorization: `bearer ${regularUser.authToken}` },
 			variables: { eventId },
