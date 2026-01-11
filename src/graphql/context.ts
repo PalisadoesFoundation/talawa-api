@@ -4,6 +4,7 @@ import type { CacheService } from "~/src/services/caching";
 import type { Dataloaders } from "~/src/utilities/dataloaders";
 import type { AppLogger } from "~/src/utilities/logging/logger";
 import type { PubSub } from "./pubsub";
+import { metricsCacheProxy } from "../services/metrics/metricsCacheProxy";
 
 /**
  * Type of the implicit context object passed by mercurius that is merged with the explicit context object and passed to the graphql resolvers each time they resolve a graphql operation at runtime.
@@ -45,7 +46,7 @@ export type ExplicitGraphQLContext = {
 	/**
 	 * Redis-backed cache service for caching entities and query results.
 	 */
-	cache: CacheService;
+	cache: CacheService | ReturnType<typeof metricsCacheProxy>,
 	currentClient: CurrentClient;
 	/**
 	 * Request-scoped DataLoaders for batching database queries.

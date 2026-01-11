@@ -36,7 +36,6 @@ export function metricsCacheProxy<
 	return {
 		async get<T>(key: string): Promise<T | null> {
 			const value = await cache.get(key);
-			// Only null is considered a miss, undefined is considered a hit (value exists but is undefined)
 			if (value === null || value === undefined) {
 				perf.trackCacheMiss();
 			} else {
