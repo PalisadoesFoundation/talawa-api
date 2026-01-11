@@ -159,13 +159,13 @@ describe("emailSetup", () => {
 			.mockResolvedValueOnce("Test App");
 
 		// Mock error logging
-		const _consoleErrorSpy = vi
+		const consoleErrorSpy = vi
 			.spyOn(console, "error")
-			.mockImplementation(() => { });
+			.mockImplementation(() => {});
 
 		const result = await emailSetup(answers);
 
-		expect(_consoleErrorSpy).toHaveBeenCalledWith(
+		expect(consoleErrorSpy).toHaveBeenCalledWith(
 			expect.stringContaining(
 				"Cannot send test email. Missing required credentials",
 			),
@@ -272,16 +272,16 @@ describe("emailSetup", () => {
 
 		mocks.mockSendEmail.mockRejectedValueOnce(awsError);
 
-		const _consoleErrorSpy = vi
+		const consoleErrorSpy = vi
 			.spyOn(console, "error")
-			.mockImplementation(() => { });
+			.mockImplementation(() => {});
 
 		await emailSetup(answers);
 
-		expect(_consoleErrorSpy).toHaveBeenCalledWith(
+		expect(consoleErrorSpy).toHaveBeenCalledWith(
 			expect.stringContaining("Error Details: SignatureDoesNotMatch"),
 		);
-		expect(_consoleErrorSpy).toHaveBeenCalledWith(
+		expect(consoleErrorSpy).toHaveBeenCalledWith(
 			expect.stringContaining("Code: SignatureDoesNotMatch"),
 		);
 	});

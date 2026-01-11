@@ -55,6 +55,16 @@ export async function emailSetup(answers: SetupAnswers): Promise<SetupAnswers> {
 					"AWS_SES_REGION",
 					"AWS SES Region:",
 					"ap-south-1",
+					(value) => {
+						if (!value || value.trim().length === 0) {
+							return "AWS SES Region is required";
+						}
+						// Optional: validate region format (e.g., us-east-1, eu-west-2)
+						if (!/^[a-z]{2}-[a-z]+-\d+$/.test(value)) {
+							return "Invalid region format. Expected format: us-east-1, eu-west-2, etc.";
+						}
+						return true;
+					},
 				);
 
 				answers.AWS_ACCESS_KEY_ID = await promptInput(
