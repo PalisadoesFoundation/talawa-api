@@ -293,18 +293,19 @@ if [ "$CLEAN_NODE_VERSION" = "lts" ]; then
         error "Failed to activate LTS version of Node.js"
         exit 1
     fi
-    fnm default "$(fnm current | awk '{print $1}')" || echo "Warning: Failed to set LTS as default Node.js version. Current session has correct version but future shells may not." >&2
+    fnm default "$(fnm current | awk '{sub(/^v/, "", $1); print $1}')" || echo "Warning: Failed to set LTS as default Node.js version. Current session has correct version but future shells may not." >&2
 elif [ "$CLEAN_NODE_VERSION" = "latest" ]; then
     info "Installing latest version of Node.js..."
     if ! fnm install --latest; then
         error "Failed to install latest version of Node.js"
         exit 1
     fi
-    if ! fnm use latest; then
+    VERSION="$(fnm current | awk '{sub(/^v/, "", $1); print $1}')"
+    if ! fnm use "$VERSION"; then
         error "Failed to activate latest version of Node.js"
         exit 1
     fi
-    fnm default "$(fnm current | awk '{print $1}')" || echo "Warning: Failed to set latest as default Node.js version. Current session has correct version but future shells may not." >&2
+    fnm default "$VERSION" || echo "Warning: Failed to set latest as default Node.js version. Current session has correct version but future shells may not." >&2
 else
     if ! fnm install "$CLEAN_NODE_VERSION"; then
         error "Failed to install Node.js v$CLEAN_NODE_VERSION"
@@ -314,7 +315,7 @@ else
         error "Failed to activate Node.js v$CLEAN_NODE_VERSION"
         exit 1
     fi
-    fnm default "$(fnm current | awk '{print $1}')" || echo "Warning: Failed to set Node.js v$CLEAN_NODE_VERSION as default. Current session has correct version but future shells may not." >&2
+    fnm default "$(fnm current | awk '{sub(/^v/, "", $1); print $1}')" || echo "Warning: Failed to set Node.js v$CLEAN_NODE_VERSION as default. Current session has correct version but future shells may not." >&2
 fi
 
 # Verify Node.js is available
@@ -338,10 +339,10 @@ if command_exists pnpm; then
     CURRENT_PNPM_NORMALIZED="$CURRENT_PNPM"
     if [[ "$CLEAN_PNPM_VERSION" =~ ^[0-9]+$ ]]; then
         # Target is major-only, extract major from current
-        CURRENT_PNPM_NORMALIZED=$(echo "$CURRENT_PNPM" | grep -oE '^[0-9]+' || echo "$CURRENT_PNPM")
+        CURRENT_PNPM_NORMALIZED=$(echo "$CURRENT_PNPM" | grep -oE '^[0-9]+' || echo "$CURRENT_PNPM" || true)
     elif [[ "$CLEAN_PNPM_VERSION" =~ ^[0-9]+\.[0-9]+$ ]]; then
         # Target is major.minor, extract major.minor from current
-        CURRENT_PNPM_NORMALIZED=$(echo "$CURRENT_PNPM" | grep -oE '^[0-9]+\.[0-9]+' || echo "$CURRENT_PNPM")
+        CURRENT_PNPM_NORMALIZED=$(echo "$CURRENT_PNPM" | grep -oE '^[0-9]+\.[0-9]+' || echo "$CURRENT_PNPM" || true)
     fi
 
     # Skip version comparison if target is "latest" - always update to ensure we have latest
