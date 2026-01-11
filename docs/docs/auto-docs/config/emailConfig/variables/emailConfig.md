@@ -14,20 +14,20 @@ Email configuration from environment variables
 
 ### accessKeyId
 
-> **accessKeyId**: `string` \| `undefined` = `envConfig.AWS_ACCESS_KEY_ID`
+> **accessKeyId**: `any` = `envConfig.AWS_ACCESS_KEY_ID`
 
 ### fromEmail
 
-> **fromEmail**: `string` \| `undefined` = `envConfig.AWS_SES_FROM_EMAIL`
+> **fromEmail**: `any` = `envConfig.AWS_SES_FROM_EMAIL`
 
 ### fromName
 
-> **fromName**: `string`
+> **fromName**: `any`
 
 ### region
 
-> **region**: `string`
+> **region**: `any`
 
 ### secretAccessKey
 
-> **secretAccessKey**: `string` \| `undefined` = `envConfig.AWS_SECRET_ACCESS_KEY`
+> **secretAccessKey**: `any` = `envConfig.AWS_SECRET_ACCESS_KEY`

@@ -44,7 +44,7 @@ The cost in tokens for each request.
 
 ### logger
 
-[`AppLogger`](../../logging/logger/type-aliases/AppLogger.md)
+`Logger`
 
 The logger instance.
 

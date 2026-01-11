@@ -6,12 +6,12 @@
 
 > **metricsCacheProxy**\<`TCache`\>(`cache`, `perf`): `object`
 
-Defined in: [src/services/metrics/metricsCacheProxy.ts:24](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/metrics/metricsCacheProxy.ts#L24)
+Defined in: [src/services/metrics/metricsCacheProxy.ts:22](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/metrics/metricsCacheProxy.ts#L22)
 
 Creates a cache proxy that wraps a cache implementation with performance tracking capabilities.
 
-This function instruments cache operations (get, mget, set, del) to track cache hits and misses
-through a performance monitoring object.
+This function instruments cache operations (`get`, `mget`, `set`, `del`) to track cache hits
+and misses using a performance monitoring object.
 
 ## Type Parameters
 
@@ -19,31 +19,39 @@ through a performance monitoring object.
 
 `TCache` *extends* `object`
 
-The cache object type that must implement get, set, del methods and optionally mget
-
 ## Parameters
 
 ### cache
 
 `TCache`
 
-The cache implementation object with get, set, del methods and optional mget method
+Cache implementation providing `get`, `set`, `del`, and optional `mget`
 
 ### perf
 
-`any`
+Performance tracker with `trackCacheHit` and `trackCacheMiss` methods
 
-Performance tracker object with trackCacheHit() and trackCacheMiss() methods
+#### trackCacheHit
+
+() => `void`
+
+#### trackCacheMiss
+
+() => `void`
 
 ## Returns
 
 `object`
 
-A proxy object with the following methods:
+A proxy object exposing the following async methods:
+- `get(key)` – Retrieves a single value and tracks hit or miss
+- `mget(keys)` – Retrieves multiple values and tracks hits and misses
+- `set(key, value, ttl)` – Stores a value with TTL
+- `del(keys)` – Deletes one or more keys
 
 ### del()
 
-> **del**(`keys`): `Promise`\<`any`\>
+> **del**(`keys`): `Promise`\<`unknown`\>
 
 #### Parameters
 
@@ -53,7 +61,7 @@ A proxy object with the following methods:
 
 #### Returns
 
-`Promise`\<`any`\>
+`Promise`\<`unknown`\>
 
 ### get()
 
@@ -97,7 +105,7 @@ A proxy object with the following methods:
 
 ### set()
 
-> **set**\<`T`\>(`key`, `value`, `ttl`): `Promise`\<`any`\>
+> **set**\<`T`\>(`key`, `value`, `ttl`): `Promise`\<`unknown`\>
 
 #### Type Parameters
 
@@ -121,11 +129,11 @@ A proxy object with the following methods:
 
 #### Returns
 
-`Promise`\<`any`\>
+`Promise`\<`unknown`\>
 
 ## Example
 
-```typescript
+```ts
 const proxiedCache = metricsCacheProxy(redisCache, performanceTracker);
 const value = await proxiedCache.get('myKey');
 ```

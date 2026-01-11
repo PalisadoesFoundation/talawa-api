@@ -1,22 +1,20 @@
 /**
  * Creates a cache proxy that wraps a cache implementation with performance tracking capabilities.
  *
- * This function instruments cache operations (get, mget, set, del) to track cache hits and misses
- * through a performance monitoring object.
+ * This function instruments cache operations (`get`, `mget`, `set`, `del`) to track cache hits
+ * and misses using a performance monitoring object.
  *
- * @template TCache - The cache object type that must implement get, set, del methods and optionally mget
+ * @param cache - Cache implementation providing `get`, `set`, `del`, and optional `mget`
+ * @param perf - Performance tracker with `trackCacheHit` and `trackCacheMiss` methods
  *
- * @param cache - The cache implementation object with get, set, del methods and optional mget method
- * @param perf - Performance tracker object with trackCacheHit() and trackCacheMiss() methods
- *
- * @returns A proxy object with the following methods:
- * @returns {Promise<T | null>} get - Retrieves a single value by key and tracks hit/miss
- * @returns {Promise<(T | null)[]>} mget - Retrieves multiple values by keys and tracks hits/misses
- * @returns {Promise<void>} set - Sets a value with TTL
- * @returns {Promise<void>} del - Deletes one or multiple keys
+ * @returns A proxy object exposing the following async methods:
+ * - `get(key)` – Retrieves a single value and tracks hit or miss
+ * - `mget(keys)` – Retrieves multiple values and tracks hits and misses
+ * - `set(key, value, ttl)` – Stores a value with TTL
+ * - `del(keys)` – Deletes one or more keys
  *
  * @example
- * ```typescript
+ * ```ts
  * const proxiedCache = metricsCacheProxy(redisCache, performanceTracker);
  * const value = await proxiedCache.get('myKey');
  * ```

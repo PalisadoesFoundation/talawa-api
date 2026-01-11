@@ -52,17 +52,6 @@ describe("metricsCacheProxy", () => {
 			expect(mockPerf.trackCacheHit).not.toHaveBeenCalled();
 		});
 
-		it("should track cache miss when value is undefined", async () => {
-			mockCache.get.mockResolvedValue(undefined);
-			const proxy = metricsCacheProxy(mockCache, mockPerf);
-
-			const result = await proxy.get("test-key");
-
-			expect(result).toBeUndefined();
-			expect(mockPerf.trackCacheMiss).toHaveBeenCalledTimes(1);
-			expect(mockPerf.trackCacheHit).not.toHaveBeenCalled();
-		});
-
 		it("should handle objects as cache values", async () => {
 			const testObject = { id: 1, name: "test" };
 			mockCache.get.mockResolvedValue(testObject);

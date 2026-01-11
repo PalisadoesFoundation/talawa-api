@@ -45,8 +45,6 @@ export class RedisCacheService implements CacheService {
 
 	async get<T>(key: string): Promise<T | null> {
 		try {
-			console.log("************************");
-			console.log("Getting cache key:", key);
 			const raw = await this.redis.get(key);
 			return raw ? (JSON.parse(raw) as T) : null;
 		} catch (err) {
@@ -57,8 +55,6 @@ export class RedisCacheService implements CacheService {
 
 	async set<T>(key: string, value: T, ttlSeconds: number): Promise<void> {
 		try {
-			console.log("+++++++++++++++++++++++++++++++");
-			console.log("Setting cache key:", key, "with TTL (s):", ttlSeconds);
 			const str = JSON.stringify(value);
 			await this.redis.setex(key, ttlSeconds, str);
 		} catch (err) {
@@ -104,8 +100,6 @@ export class RedisCacheService implements CacheService {
 			return [];
 		}
 		try {
-			console.log("&&&&&&&&&&&&&&&&&&&&&&&&&&&&");
-			console.log("MGetting cache keys:", keys);
 			const results = await this.redis.mget(...keys);
 			return results.map((r) => {
 				if (r === null) return null;
