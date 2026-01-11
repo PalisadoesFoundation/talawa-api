@@ -37,7 +37,7 @@ beforeAll(async () => {
 async function createOrganization(): Promise<string> {
 	const uniqueName = `Test Org ${faker.string.uuid()}`;
 	const result = await mercuriusClient.mutate(Mutation_createOrganization, {
-		headers: { authorization: `bearer ${authToken}` },
+		headers: { authorization: `Bearer ${authToken}` },
 		variables: {
 			input: {
 				name: uniqueName,
@@ -57,7 +57,7 @@ async function createUser(): Promise<{
 }> {
 	const email = `${faker.string.ulid()}@example.com`;
 	const result = await mercuriusClient.mutate(Mutation_createUser, {
-		headers: { authorization: `bearer ${authToken}` },
+		headers: { authorization: `Bearer ${authToken}` },
 		variables: {
 			input: {
 				emailAddress: email,
@@ -98,7 +98,7 @@ async function createChat(
 	userToken: string,
 ): Promise<string> {
 	const result = await mercuriusClient.mutate(Mutation_createChat, {
-		headers: { authorization: `bearer ${userToken}` },
+		headers: { authorization: `Bearer ${userToken}` },
 		variables: {
 			input: {
 				name: `Test Chat ${faker.string.uuid()}`,
@@ -140,7 +140,7 @@ suite("Mutation field createChatMessage", () => {
 		// Create a user
 		const userEmail = `${faker.string.ulid()}@example.com`;
 		const createUserResult = await mercuriusClient.mutate(Mutation_createUser, {
-			headers: { authorization: `bearer ${authToken}` },
+			headers: { authorization: `Bearer ${authToken}` },
 			variables: {
 				input: {
 					emailAddress: userEmail,
@@ -161,7 +161,7 @@ suite("Mutation field createChatMessage", () => {
 
 		// Delete the user
 		await mercuriusClient.mutate(Mutation_deleteUser, {
-			headers: { authorization: `bearer ${authToken}` },
+			headers: { authorization: `Bearer ${authToken}` },
 			variables: {
 				input: { id: userId },
 			},
@@ -169,7 +169,7 @@ suite("Mutation field createChatMessage", () => {
 
 		// Try to create a message with deleted user's token
 		const result = await mercuriusClient.mutate(Mutation_createChatMessage, {
-			headers: { authorization: `bearer ${userToken}` },
+			headers: { authorization: `Bearer ${userToken}` },
 			variables: {
 				input: {
 					chatId: faker.string.uuid(),
@@ -188,7 +188,7 @@ suite("Mutation field createChatMessage", () => {
 
 	test("invalid_arguments error for invalid UUID format", async () => {
 		const result = await mercuriusClient.mutate(Mutation_createChatMessage, {
-			headers: { authorization: `bearer ${authToken}` },
+			headers: { authorization: `Bearer ${authToken}` },
 			variables: {
 				input: {
 					chatId: "not-a-uuid",
@@ -207,7 +207,7 @@ suite("Mutation field createChatMessage", () => {
 
 	test("invalid_arguments error for empty message body", async () => {
 		const result = await mercuriusClient.mutate(Mutation_createChatMessage, {
-			headers: { authorization: `bearer ${authToken}` },
+			headers: { authorization: `Bearer ${authToken}` },
 			variables: {
 				input: {
 					chatId: faker.string.uuid(),
@@ -228,7 +228,7 @@ suite("Mutation field createChatMessage", () => {
 		const nonExistentChatId = faker.string.uuid();
 
 		const result = await mercuriusClient.mutate(Mutation_createChatMessage, {
-			headers: { authorization: `bearer ${authToken}` },
+			headers: { authorization: `Bearer ${authToken}` },
 			variables: {
 				input: {
 					chatId: nonExistentChatId,
@@ -263,7 +263,7 @@ suite("Mutation field createChatMessage", () => {
 
 		// Create organization membership for chat owner
 		await mercuriusClient.mutate(Mutation_createOrganizationMembership, {
-			headers: { authorization: `bearer ${authToken}` },
+			headers: { authorization: `Bearer ${authToken}` },
 			variables: {
 				input: {
 					organizationId: orgId,
@@ -279,7 +279,7 @@ suite("Mutation field createChatMessage", () => {
 		// Try to create message with non-existent parent message
 		const nonExistentParentId = faker.string.uuid();
 		const result = await mercuriusClient.mutate(Mutation_createChatMessage, {
-			headers: { authorization: `bearer ${chatOwnerToken}` },
+			headers: { authorization: `Bearer ${chatOwnerToken}` },
 			variables: {
 				input: {
 					chatId: chatId,
@@ -315,7 +315,7 @@ suite("Mutation field createChatMessage", () => {
 
 		// Create organization membership for chat owner
 		await mercuriusClient.mutate(Mutation_createOrganizationMembership, {
-			headers: { authorization: `bearer ${authToken}` },
+			headers: { authorization: `Bearer ${authToken}` },
 			variables: {
 				input: {
 					organizationId: orgId,
@@ -330,7 +330,7 @@ suite("Mutation field createChatMessage", () => {
 		const parentMessageResult = await mercuriusClient.mutate(
 			Mutation_createChatMessage,
 			{
-				headers: { authorization: `bearer ${chatOwnerToken}` },
+				headers: { authorization: `Bearer ${chatOwnerToken}` },
 				variables: {
 					input: {
 						chatId: chat1Id,
@@ -347,7 +347,7 @@ suite("Mutation field createChatMessage", () => {
 
 		// Try to create message in chat 2 with parent message from chat 1
 		const result = await mercuriusClient.mutate(Mutation_createChatMessage, {
-			headers: { authorization: `bearer ${chatOwnerToken}` },
+			headers: { authorization: `Bearer ${chatOwnerToken}` },
 			variables: {
 				input: {
 					chatId: chat2Id,
@@ -392,7 +392,7 @@ suite("Mutation field createChatMessage", () => {
 
 		// Create organization membership for chat owner
 		await mercuriusClient.mutate(Mutation_createOrganizationMembership, {
-			headers: { authorization: `bearer ${authToken}` },
+			headers: { authorization: `Bearer ${authToken}` },
 			variables: {
 				input: {
 					organizationId: orgId,
@@ -407,7 +407,7 @@ suite("Mutation field createChatMessage", () => {
 
 		// Try to create message as unauthorized user
 		const result = await mercuriusClient.mutate(Mutation_createChatMessage, {
-			headers: { authorization: `bearer ${unauthorizedToken}` },
+			headers: { authorization: `Bearer ${unauthorizedToken}` },
 			variables: {
 				input: {
 					chatId: chatId,
@@ -446,7 +446,7 @@ suite("Mutation field createChatMessage", () => {
 
 		// Create organization membership for chat owner (admin)
 		await mercuriusClient.mutate(Mutation_createOrganizationMembership, {
-			headers: { authorization: `bearer ${authToken}` },
+			headers: { authorization: `Bearer ${authToken}` },
 			variables: {
 				input: {
 					organizationId: orgId,
@@ -458,7 +458,7 @@ suite("Mutation field createChatMessage", () => {
 
 		// Create organization membership for org member (regular, non-admin)
 		await mercuriusClient.mutate(Mutation_createOrganizationMembership, {
-			headers: { authorization: `bearer ${authToken}` },
+			headers: { authorization: `Bearer ${authToken}` },
 			variables: {
 				input: {
 					organizationId: orgId,
@@ -473,7 +473,7 @@ suite("Mutation field createChatMessage", () => {
 
 		// Try to create message as org member who is not in chat
 		const result = await mercuriusClient.mutate(Mutation_createChatMessage, {
-			headers: { authorization: `bearer ${orgMemberToken}` },
+			headers: { authorization: `Bearer ${orgMemberToken}` },
 			variables: {
 				input: {
 					chatId: chatId,
@@ -505,7 +505,7 @@ suite("Mutation field createChatMessage", () => {
 
 		// Create organization membership for chat owner
 		await mercuriusClient.mutate(Mutation_createOrganizationMembership, {
-			headers: { authorization: `bearer ${authToken}` },
+			headers: { authorization: `Bearer ${authToken}` },
 			variables: {
 				input: {
 					organizationId: orgId,
@@ -520,7 +520,7 @@ suite("Mutation field createChatMessage", () => {
 
 		// Create message as global admin
 		const result = await mercuriusClient.mutate(Mutation_createChatMessage, {
-			headers: { authorization: `bearer ${authToken}` },
+			headers: { authorization: `Bearer ${authToken}` },
 			variables: {
 				input: {
 					chatId: chatId,
@@ -560,7 +560,7 @@ suite("Mutation field createChatMessage", () => {
 
 		// Create organization membership for org admin
 		await mercuriusClient.mutate(Mutation_createOrganizationMembership, {
-			headers: { authorization: `bearer ${authToken}` },
+			headers: { authorization: `Bearer ${authToken}` },
 			variables: {
 				input: {
 					organizationId: orgId,
@@ -575,7 +575,7 @@ suite("Mutation field createChatMessage", () => {
 
 		// Create message as org admin
 		const result = await mercuriusClient.mutate(Mutation_createChatMessage, {
-			headers: { authorization: `bearer ${orgAdminToken}` },
+			headers: { authorization: `Bearer ${orgAdminToken}` },
 			variables: {
 				input: {
 					chatId: chatId,
@@ -611,7 +611,7 @@ suite("Mutation field createChatMessage", () => {
 
 		// Create organization membership for chat owner
 		await mercuriusClient.mutate(Mutation_createOrganizationMembership, {
-			headers: { authorization: `bearer ${authToken}` },
+			headers: { authorization: `Bearer ${authToken}` },
 			variables: {
 				input: {
 					organizationId: orgId,
@@ -623,7 +623,7 @@ suite("Mutation field createChatMessage", () => {
 
 		// Create organization membership for chat member (required for authorization)
 		await mercuriusClient.mutate(Mutation_createOrganizationMembership, {
-			headers: { authorization: `bearer ${authToken}` },
+			headers: { authorization: `Bearer ${authToken}` },
 			variables: {
 				input: {
 					organizationId: orgId,
@@ -638,7 +638,7 @@ suite("Mutation field createChatMessage", () => {
 
 		// Add chat member to chat
 		await mercuriusClient.mutate(Mutation_createChatMembership, {
-			headers: { authorization: `bearer ${chatOwnerToken}` },
+			headers: { authorization: `Bearer ${chatOwnerToken}` },
 			variables: {
 				input: {
 					chatId: chatId,
@@ -650,7 +650,7 @@ suite("Mutation field createChatMessage", () => {
 
 		// Create message as chat member
 		const result = await mercuriusClient.mutate(Mutation_createChatMessage, {
-			headers: { authorization: `bearer ${chatMemberToken}` },
+			headers: { authorization: `Bearer ${chatMemberToken}` },
 			variables: {
 				input: {
 					chatId: chatId,
@@ -679,7 +679,7 @@ suite("Mutation field createChatMessage", () => {
 
 		// Create organization membership for org admin
 		await mercuriusClient.mutate(Mutation_createOrganizationMembership, {
-			headers: { authorization: `bearer ${authToken}` },
+			headers: { authorization: `Bearer ${authToken}` },
 			variables: {
 				input: {
 					organizationId: orgId,
@@ -696,7 +696,7 @@ suite("Mutation field createChatMessage", () => {
 		const parentMessageResult = await mercuriusClient.mutate(
 			Mutation_createChatMessage,
 			{
-				headers: { authorization: `bearer ${orgAdminToken}` },
+				headers: { authorization: `Bearer ${orgAdminToken}` },
 				variables: {
 					input: {
 						chatId: chatId,
@@ -711,7 +711,7 @@ suite("Mutation field createChatMessage", () => {
 
 		// Create reply message
 		const result = await mercuriusClient.mutate(Mutation_createChatMessage, {
-			headers: { authorization: `bearer ${orgAdminToken}` },
+			headers: { authorization: `Bearer ${orgAdminToken}` },
 			variables: {
 				input: {
 					chatId: chatId,
@@ -751,7 +751,7 @@ suite("Mutation field createChatMessage", () => {
 
 		// Create organization membership for org admin
 		await mercuriusClient.mutate(Mutation_createOrganizationMembership, {
-			headers: { authorization: `bearer ${authToken}` },
+			headers: { authorization: `Bearer ${authToken}` },
 			variables: {
 				input: {
 					organizationId: orgId,
@@ -767,12 +767,12 @@ suite("Mutation field createChatMessage", () => {
 		// Mock the database insert to return empty array
 		const mockReturning = vi.fn().mockResolvedValue([]);
 		const mockValues = vi.fn().mockReturnValue({ returning: mockReturning });
-		const insertSpy = vi
-			.spyOn(server.drizzleClient, "insert")
-			.mockReturnValue({ values: mockValues } as any);
+		vi.spyOn(server.drizzleClient, "insert")
+			// @ts-expect-error - Mock return type does not match Drizzle builder type
+			.mockImplementation(() => ({ values: mockValues }));
 
 		const result = await mercuriusClient.mutate(Mutation_createChatMessage, {
-			headers: { authorization: `bearer ${orgAdminToken}` },
+			headers: { authorization: `Bearer ${orgAdminToken}` },
 			variables: {
 				input: {
 					chatId: chatId,
@@ -802,7 +802,7 @@ suite("Mutation field createChatMessage", () => {
 
 		// Create organization membership for org admin
 		await mercuriusClient.mutate(Mutation_createOrganizationMembership, {
-			headers: { authorization: `bearer ${authToken}` },
+			headers: { authorization: `Bearer ${authToken}` },
 			variables: {
 				input: {
 					organizationId: orgId,
@@ -820,7 +820,7 @@ suite("Mutation field createChatMessage", () => {
 
 		// Create message
 		const result = await mercuriusClient.mutate(Mutation_createChatMessage, {
-			headers: { authorization: `bearer ${orgAdminToken}` },
+			headers: { authorization: `Bearer ${orgAdminToken}` },
 			variables: {
 				input: {
 					chatId: chatId,
