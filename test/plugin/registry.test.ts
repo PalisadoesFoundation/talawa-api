@@ -264,6 +264,36 @@ describe("Plugin Registry", () => {
 			// The actual implementation doesn't throw errors during destruction
 			await expect(destroyPluginSystem()).resolves.not.toThrow();
 		});
+
+		it("should throw and log error when gracefulShutdown fails", async () => {
+			// Initialize the system first
+			const context = createPluginContext({
+				db: mockDb,
+				graphql: mockGraphQL,
+				pubsub: mockPubSub,
+				logger: mockLogger,
+			});
+
+			await initializePluginSystem(context);
+
+			// Get the plugin manager and mock gracefulShutdown to throw
+			const manager = getPluginManagerInstance();
+			expect(manager).not.toBeNull();
+
+			const shutdownError = new Error("Shutdown failed");
+			const spy = vi
+				.spyOn(manager as NonNullable<typeof manager>, "gracefulShutdown")
+				.mockRejectedValue(shutdownError);
+
+			// Should throw the error
+			await expect(destroyPluginSystem()).rejects.toThrow("Shutdown failed");
+
+			// Restore the mock so afterEach cleanup works
+			spy.mockRestore();
+
+			// Now clean up properly for subsequent tests
+			await destroyPluginSystem();
+		});
 	});
 
 	describe("getPluginSystemStatus", () => {

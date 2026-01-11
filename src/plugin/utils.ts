@@ -554,7 +554,7 @@ export async function dropPluginTables(
 				await db.execute(dropSQL);
 				logger?.info?.(`Successfully dropped table: ${prefixedTableName}`);
 			} catch (error) {
-				logger?.info?.(
+				logger?.error?.(
 					`Error dropping table ${tableName}: ${
 						error instanceof Error ? error.message : String(error)
 					}`,
@@ -565,7 +565,7 @@ export async function dropPluginTables(
 
 		logger?.info?.(`Completed dropping tables for plugin: ${pluginId}`);
 	} catch (error) {
-		logger?.info?.(
+		logger?.error?.(
 			`Error in dropPluginTables for plugin ${pluginId}: ${
 				error instanceof Error ? error.message : String(error)
 			}`,

@@ -551,10 +551,10 @@ class PluginManager extends EventEmitter {
 
 						this.emit("plugin:unloaded", pluginId);
 					} catch (error) {
-						console.error(
-							`Error during graceful shutdown of plugin ${pluginId}:`,
-							error,
-						);
+						this.pluginContext.logger.error?.({
+							msg: `Error during graceful shutdown of plugin ${pluginId}`,
+							err: error,
+						});
 					}
 				}),
 			);
@@ -581,7 +581,10 @@ class PluginManager extends EventEmitter {
 			// Remove all listeners
 			this.removeAllListeners();
 		} catch (error) {
-			console.error("Error during graceful plugin system shutdown:", error);
+			this.pluginContext.logger.error?.({
+				msg: "Error during graceful plugin system shutdown",
+				err: error,
+			});
 		}
 	}
 }

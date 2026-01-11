@@ -353,6 +353,65 @@ describe("PluginManager", () => {
 		expect(context.logger.error).toHaveBeenCalled();
 	});
 
+	it("should handle initialization failure in initializePlugins catch block (covers lines 152-157)", async () => {
+		const context = createPluginContext([mockDbPlugin]);
+		const manager = new TestablePluginManager(context, "/plugins");
+		await new Promise((resolve) => setTimeout(resolve, 10));
+
+		// Reset the error mock to check the specific error
+		if (context.logger.error) {
+			vi.mocked(context.logger.error).mockClear();
+		}
+
+		// Override initializePlugins to throw inside it after calling getInstalledPlugins
+		const origInit = (
+			manager as unknown as { initializePlugins: () => Promise<void> }
+		).initializePlugins.bind(manager);
+
+		(
+			manager as unknown as { initializePlugins: () => Promise<void> }
+		).initializePlugins = async () => {
+			// Simulate throwing after getInstalledPlugins but before markAsInitialized
+			throw new Error("initialization inner failure");
+		};
+
+		// Call initializePlugins directly to test the catch block in the constructor
+		try {
+			await (
+				manager as unknown as { initializePlugins: () => Promise<void> }
+			).initializePlugins();
+		} catch {
+			// Expected to throw
+		}
+
+		// The constructor's .catch() should have caught this
+		// But since we're testing the inner catch, let's directly invoke the actual method
+		// with a mock that makes emit throw
+		(
+			manager as unknown as { initializePlugins: () => Promise<void> }
+		).initializePlugins = origInit;
+
+		// Mock emit to throw to trigger the inner catch block
+		vi.spyOn(manager, "emit").mockImplementation(() => {
+			throw new Error("emit failed");
+		});
+
+		// Create a new manager to trigger initialization with the throwing emit
+		const context2 = createPluginContext([mockDbPlugin]);
+		const manager2 = new TestablePluginManager(context2, "/plugins");
+		vi.spyOn(manager2, "emit").mockImplementation(() => {
+			throw new Error("emit failed");
+		});
+
+		await new Promise((resolve) => setTimeout(resolve, 50));
+
+		expect(context2.logger.error).toHaveBeenCalledWith(
+			expect.objectContaining({
+				msg: "Plugin system initialization failed",
+			}),
+		);
+	});
+
 	it("should call emit in markAsInitialized", () => {
 		const context = createPluginContext();
 		const manager = new TestablePluginManager(context, "/plugins");
@@ -778,19 +837,22 @@ describe("PluginManager", () => {
 			const getPluginModuleSpy = vi
 				.spyOn(lifecycle, "getPluginModule")
 				.mockRejectedValue(new Error("Module error"));
-			const consoleSpy = vi
-				.spyOn(console, "error")
-				.mockImplementation(() => {});
+			const loggerSpy = vi.spyOn(
+				manager.getPluginContext().logger,
+				"error",
+			) as ReturnType<typeof vi.spyOn>;
 
 			await manager.gracefulShutdown();
 
 			expect(getPluginModuleSpy).toHaveBeenCalledWith("test-plugin");
-			expect(consoleSpy).toHaveBeenCalledWith(
-				"Error during graceful shutdown of plugin test-plugin:",
-				expect.any(Error),
+			expect(loggerSpy).toHaveBeenCalledWith(
+				expect.objectContaining({
+					msg: "Error during graceful shutdown of plugin test-plugin",
+					err: expect.any(Error),
+				}),
 			);
 
-			consoleSpy.mockRestore();
+			loggerSpy.mockRestore();
 		});
 
 		it("should handle plugin without onUnload hook during shutdown", async () => {
@@ -852,19 +914,22 @@ describe("PluginManager", () => {
 				.mockResolvedValue({
 					onUnload: vi.fn().mockRejectedValue(new Error("Unload failed")),
 				});
-			const consoleSpy = vi
-				.spyOn(console, "error")
-				.mockImplementation(() => {});
+			const loggerSpy = vi.spyOn(
+				manager.getPluginContext().logger,
+				"error",
+			) as ReturnType<typeof vi.spyOn>;
 
 			await manager.gracefulShutdown();
 
 			expect(getPluginModuleSpy).toHaveBeenCalledWith("test-plugin");
-			expect(consoleSpy).toHaveBeenCalledWith(
-				"Error during graceful shutdown of plugin test-plugin:",
-				expect.any(Error),
+			expect(loggerSpy).toHaveBeenCalledWith(
+				expect.objectContaining({
+					msg: "Error during graceful shutdown of plugin test-plugin",
+					err: expect.any(Error),
+				}),
 			);
 
-			consoleSpy.mockRestore();
+			loggerSpy.mockRestore();
 		});
 
 		it("should handle graceful shutdown error", async () => {
@@ -882,18 +947,47 @@ describe("PluginManager", () => {
 			vi.spyOn(lifecycle, "getPluginModule").mockImplementation(() => {
 				throw new Error("Lifecycle error");
 			});
-			const consoleSpy = vi
-				.spyOn(console, "error")
-				.mockImplementation(() => {});
+			const loggerSpy = vi.spyOn(
+				manager.getPluginContext().logger,
+				"error",
+			) as ReturnType<typeof vi.spyOn>;
 
 			await manager.gracefulShutdown();
 
-			expect(consoleSpy).toHaveBeenCalledWith(
-				"Error during graceful shutdown of plugin test-plugin:",
-				expect.any(Error),
+			expect(loggerSpy).toHaveBeenCalledWith(
+				expect.objectContaining({
+					msg: "Error during graceful shutdown of plugin test-plugin",
+					err: expect.any(Error),
+				}),
 			);
 
-			consoleSpy.mockRestore();
+			loggerSpy.mockRestore();
+		});
+
+		it("should handle outer graceful shutdown error (covers lines 584-585)", async () => {
+			const context = createPluginContext();
+			const manager = new TestablePluginManager(context, "/plugins");
+			await new Promise((resolve) => setTimeout(resolve, 10));
+
+			// Make removeAllListeners throw to trigger outer catch
+			vi.spyOn(manager, "removeAllListeners").mockImplementation(() => {
+				throw new Error("removeAllListeners failed");
+			});
+			const loggerSpy = vi.spyOn(
+				manager.getPluginContext().logger,
+				"error",
+			) as ReturnType<typeof vi.spyOn>;
+
+			await manager.gracefulShutdown();
+
+			expect(loggerSpy).toHaveBeenCalledWith(
+				expect.objectContaining({
+					msg: "Error during graceful plugin system shutdown",
+					err: expect.any(Error),
+				}),
+			);
+
+			loggerSpy.mockRestore();
 		});
 	});
 

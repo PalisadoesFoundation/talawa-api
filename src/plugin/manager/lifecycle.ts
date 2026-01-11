@@ -381,7 +381,7 @@ export class PluginLifecycle {
 				plugin.databaseTables as Record<string, Record<string, unknown>>,
 				this.pluginContext.logger,
 			);
-			console.log(
+			this.pluginContext.logger.info?.(
 				`Successfully removed plugin-defined tables for: ${pluginId}`,
 			);
 		} catch (error) {

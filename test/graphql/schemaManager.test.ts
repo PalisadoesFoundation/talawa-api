@@ -603,6 +603,25 @@ describe("GraphQLSchemaManager", () => {
 				false;
 		});
 
+		it("should return current schema when rebuild is in progress and schema exists (covers lines 67-68)", async () => {
+			const mockSchema = { kind: "Document" } as unknown as GraphQLSchema;
+
+			// Set both isRebuilding and currentSchema to trigger the early return
+			(schemaManager as unknown as { isRebuilding: boolean }).isRebuilding =
+				true;
+			(
+				schemaManager as unknown as { currentSchema: GraphQLSchema | null }
+			).currentSchema = mockSchema;
+
+			const result = await schemaManager.rebuildSchema();
+
+			expect(result).toBe(mockSchema);
+
+			// Reset for other tests
+			(schemaManager as unknown as { isRebuilding: boolean }).isRebuilding =
+				false;
+		});
+
 		it("should handle rebuild errors gracefully", async () => {
 			vi.mocked(builder).toSchema.mockImplementation(() => {
 				throw new Error("Schema build failed");
@@ -769,6 +788,100 @@ describe("GraphQLSchemaManager", () => {
 
 			await setupPluginListeners();
 			// Should not throw
+		});
+
+		it("should call rebuildSchema when schema:rebuild event is fired (covers line 29)", async () => {
+			const mockSchema = {} as GraphQLSchema;
+			vi.mocked(builder).toSchema.mockReturnValue(mockSchema);
+			vi.mocked(mockPluginManager.isSystemInitialized).mockReturnValue(true);
+			vi.mocked(mockPluginManager.getLoadedPlugins).mockReturnValue([]);
+			vi.mocked(mockPluginManager.getExtensionRegistry).mockReturnValue({
+				graphql: { builderExtensions: [] },
+				database: { tables: {}, enums: {}, relations: {} },
+				hooks: { pre: {}, post: {} },
+				webhooks: { handlers: {} },
+			});
+
+			// Capture the callback when 'on' is called
+			let schemaRebuildCallback: (() => Promise<void>) | null = null;
+			vi.mocked(mockPluginManager.on).mockImplementation(
+				// biome-ignore lint/suspicious/noExplicitAny: Mock callback type for EventEmitter.on
+				(event: string | symbol, callback: any) => {
+					if (event === "schema:rebuild") {
+						schemaRebuildCallback = callback as () => Promise<void>;
+					}
+					return mockPluginManager;
+				},
+			);
+
+			const setupPluginListeners = (
+				schemaManager as unknown as {
+					setupPluginListeners: () => Promise<void>;
+				}
+			).setupPluginListeners.bind(schemaManager);
+
+			await setupPluginListeners();
+
+			// Verify callback was captured
+			expect(schemaRebuildCallback).not.toBeNull();
+
+			// Set currentSchema so rebuild doesn't fail
+			(
+				schemaManager as unknown as { currentSchema: GraphQLSchema | null }
+			).currentSchema = mockSchema;
+
+			// Call the callback to trigger line 29
+			// biome-ignore lint/style/noNonNullAssertion: Verified not null above with expect
+			await schemaRebuildCallback!();
+		});
+
+		it("should call rebuildSchema when plugin:deactivated event is fired (covers line 34)", async () => {
+			const mockSchema = {} as GraphQLSchema;
+			vi.mocked(builder).toSchema.mockReturnValue(mockSchema);
+			vi.mocked(mockPluginManager.isSystemInitialized).mockReturnValue(true);
+			vi.mocked(mockPluginManager.getLoadedPlugins).mockReturnValue([]);
+			vi.mocked(mockPluginManager.getExtensionRegistry).mockReturnValue({
+				graphql: { builderExtensions: [] },
+				database: { tables: {}, enums: {}, relations: {} },
+				hooks: { pre: {}, post: {} },
+				webhooks: { handlers: {} },
+			});
+
+			// Capture the callback when 'on' is called
+			let pluginDeactivatedCallback:
+				| ((pluginId: string) => Promise<void>)
+				| null = null;
+			vi.mocked(mockPluginManager.on).mockImplementation(
+				// biome-ignore lint/suspicious/noExplicitAny: Mock callback type for EventEmitter.on
+				(event: string | symbol, callback: any) => {
+					if (event === "plugin:deactivated") {
+						pluginDeactivatedCallback = callback as (
+							pluginId: string,
+						) => Promise<void>;
+					}
+					return mockPluginManager;
+				},
+			);
+
+			const setupPluginListeners = (
+				schemaManager as unknown as {
+					setupPluginListeners: () => Promise<void>;
+				}
+			).setupPluginListeners.bind(schemaManager);
+
+			await setupPluginListeners();
+
+			// Verify callback was captured
+			expect(pluginDeactivatedCallback).not.toBeNull();
+
+			// Set currentSchema so rebuild doesn't fail
+			(
+				schemaManager as unknown as { currentSchema: GraphQLSchema | null }
+			).currentSchema = mockSchema;
+
+			// Call the callback to trigger line 34
+			// biome-ignore lint/style/noNonNullAssertion: Verified not null above with expect
+			await pluginDeactivatedCallback!("test-plugin");
 		});
 	});
 
