@@ -618,10 +618,22 @@ suite("Mutation field createChatMessage", () => {
 			},
 		});
 
+		// Create organization membership for chat member (required for authorization)
+		await mercuriusClient.mutate(Mutation_createOrganizationMembership, {
+			headers: { authorization: `bearer ${authToken}` },
+			variables: {
+				input: {
+					organizationId: orgId,
+					memberId: chatMember.id,
+					role: "regular",
+				},
+			},
+		});
+
 		// Create chat
 		const chatId = await createChat(orgId, chatOwnerToken);
 
-		// Add chat member to chat (this creates chat owner as member automatically)
+		// Add chat member to chat
 		await mercuriusClient.mutate(Mutation_createChatMembership, {
 			headers: { authorization: `bearer ${chatOwnerToken}` },
 			variables: {
