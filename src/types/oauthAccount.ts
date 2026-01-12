@@ -1,6 +1,8 @@
 // Temporarily added to the knip ignore list.
 // This will be removed in a later phase of OAuth implementation.
 
+import type { oauthAccountsTable } from "../drizzle/schema";
+
 /**
  * OAuth provider enum matching database values
  */
@@ -39,3 +41,8 @@ export interface UpdateOAuthAccountInput {
 	profile?: OAuthAccountProfile;
 	lastUsedAt?: Date;
 }
+
+/**
+ * OAuth account record from the database
+ */
+export type OAuthAccount = typeof oauthAccountsTable.$inferSelect;
