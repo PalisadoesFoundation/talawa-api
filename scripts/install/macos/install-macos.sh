@@ -222,6 +222,12 @@ if [ -z "$CLEAN_NODE_VERSION" ]; then
     CLEAN_NODE_VERSION=$(echo "$NODE_VERSION" | grep -oE '[0-9]+' | head -1 || true)
 fi
 
+# Validation: If clean version is empty and not an alias, fail
+if [ -z "$CLEAN_NODE_VERSION" ] && [ "$NODE_VERSION" != "lts" ] && [ "$NODE_VERSION" != "latest" ]; then
+    error "Failed to extract version number from: '$NODE_VERSION'"
+    exit 1
+fi
+
 # If version is 'lts' or 'latest', keep it as-is
 if [ "$NODE_VERSION" = "lts" ] || [ "$NODE_VERSION" = "latest" ]; then
     CLEAN_NODE_VERSION="$NODE_VERSION"
@@ -260,6 +266,12 @@ if echo "$PNPM_VERSION" | grep -E -q '^(latest|([><]=?|[~^=])?[0-9]+(\.[0-9]+(\.
         if [ -z "$CLEAN_PNPM_VERSION" ]; then
             CLEAN_PNPM_VERSION=$(echo "$PNPM_VERSION" | grep -oE '[0-9]+' | head -1 || true)
         fi
+
+        # Validation: If clean version is empty, fail
+        if [ -z "$CLEAN_PNPM_VERSION" ]; then
+             error "Failed to extract numeric pnpm version from: '$PNPM_VERSION'"
+             exit 1
+        fi
     fi
 else
     error "Could not parse pnpm version from package.json: '$PNPM_VERSION'"
@@ -285,14 +297,17 @@ step $CURRENT_STEP $TOTAL_STEPS "Installing Node.js v$CLEAN_NODE_VERSION..."
 
 if [ "$CLEAN_NODE_VERSION" = "lts" ]; then
     info "Installing latest LTS version of Node.js..."
-    if ! OUTPUT=$(fnm install --lts 2>&1); then
-        echo "$OUTPUT"
+    if ! fnm install --lts; then
         error "Failed to install LTS version of Node.js"
         exit 1
     fi
-    echo "$OUTPUT"
-    # Extract version (e.g., v20.10.0)
-    LTS_VERSION=$(echo "$OUTPUT" | grep -oE 'v[0-9]+\.[0-9]+\.[0-9]+' | head -1 | sed 's/^v//')
+    
+    # Robustly get the installed version using fnm current
+    if ! LTS_VERSION=$(fnm current | awk '{sub(/^v/, "", $1); print $1}'); then
+         error "Failed to detect installed LTS version string"
+         exit 1
+    fi
+
     if [ -n "$LTS_VERSION" ]; then
         if ! fnm use "$LTS_VERSION"; then
              error "Failed to activate LTS version of Node.js ($LTS_VERSION)"
@@ -300,7 +315,7 @@ if [ "$CLEAN_NODE_VERSION" = "lts" ]; then
         fi
         fnm default "$LTS_VERSION" || echo "Warning: Failed to set LTS as default Node.js version." >&2
     else
-        error "Could not detect installed LTS version from output."
+        error "Could not detect installed LTS version."
         exit 1
     fi
 elif [ "$CLEAN_NODE_VERSION" = "latest" ]; then
