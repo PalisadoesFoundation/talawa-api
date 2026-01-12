@@ -273,12 +273,19 @@ describe("DataLoader infrastructure", () => {
 			expect(loaders1.actionItem).not.toBe(loaders2.actionItem);
 		});
 
-		it("creates loaders without perf parameter (backward compatibility)", () => {
-			const { db } = createMockDb([]);
+		it("creates loaders without perf parameter (backward compatibility)", async () => {
+			const { db, whereSpy } = createMockDb([{ id: "u1", name: "User 1" }]);
 
 			const loaders = createDataloaders(db, null);
 
-			// Verify all loaders are created successfully without perf
+			// Verify loaders function correctly without perf parameter
+			// This ensures backward compatibility when perf is not provided
+			await loaders.user.load("u1");
+
+			// Verify the loader works (DB was called)
+			expect(whereSpy).toHaveBeenCalledTimes(1);
+
+			// Verify all loaders are created and functional
 			expect(loaders).toHaveProperty("user");
 			expect(loaders).toHaveProperty("organization");
 			expect(loaders).toHaveProperty("event");
@@ -286,7 +293,20 @@ describe("DataLoader infrastructure", () => {
 		});
 
 		it("creates loaders with perf parameter and propagates to all loaders", async () => {
-			const { db, whereSpy } = createMockDb([{ id: "u1", name: "User 1" }]);
+			// Set up mock DB to return different results for each loader call
+			const whereSpy = vi
+				.fn()
+				.mockResolvedValueOnce([{ id: "u1", name: "User 1" }]) // user loader
+				.mockResolvedValueOnce([{ id: "org1", name: "Org 1" }]) // organization loader
+				.mockResolvedValueOnce([{ id: "evt1", name: "Event 1" }]) // event loader
+				.mockResolvedValueOnce([{ id: "ai1", organizationId: "org1" }]); // actionItem loader
+
+			const db = {
+				select: vi.fn().mockReturnThis(),
+				from: vi.fn().mockReturnThis(),
+				where: whereSpy,
+			} as unknown as DrizzleClient;
+
 			const perf = createPerformanceTracker();
 
 			const loaders = createDataloaders(db, null, perf);
@@ -297,22 +317,45 @@ describe("DataLoader infrastructure", () => {
 			expect(loaders).toHaveProperty("event");
 			expect(loaders).toHaveProperty("actionItem");
 
-			// Verify loaders are functional and metrics are tracked
+			// Verify loaders are functional and metrics are tracked for all loaders
 			await loaders.user.load("u1");
+			await loaders.organization.load("org1");
+			await loaders.event.load("evt1");
+			await loaders.actionItem.load("ai1");
 
-			// Verify metrics were tracked for the user loader
+			// Verify metrics were tracked for all loaders
 			const snapshot = perf.snapshot();
+
+			// Verify user loader metrics
 			const userOp = snapshot.ops["db:users.byId"];
 			expect(userOp).toBeDefined();
 			expect(userOp?.count).toBe(1);
 			expect(userOp?.ms).toBeGreaterThanOrEqual(0);
 
-			// Verify DB was called
-			expect(whereSpy).toHaveBeenCalledTimes(1);
+			// Verify organization loader metrics
+			const orgOp = snapshot.ops["db:organizations.byId"];
+			expect(orgOp).toBeDefined();
+			expect(orgOp?.count).toBe(1);
+			expect(orgOp?.ms).toBeGreaterThanOrEqual(0);
+
+			// Verify event loader metrics
+			const eventOp = snapshot.ops["db:events.byId"];
+			expect(eventOp).toBeDefined();
+			expect(eventOp?.count).toBe(1);
+			expect(eventOp?.ms).toBeGreaterThanOrEqual(0);
+
+			// Verify actionItem loader metrics
+			const actionItemOp = snapshot.ops["db:actionItems.byId"];
+			expect(actionItemOp).toBeDefined();
+			expect(actionItemOp?.count).toBe(1);
+			expect(actionItemOp?.ms).toBeGreaterThanOrEqual(0);
+
+			// Verify DB was called for each loader
+			expect(whereSpy).toHaveBeenCalledTimes(4);
 		});
 
-		it("propagates perf parameter correctly when cache is also provided", () => {
-			const { db } = createMockDb([]);
+		it("propagates perf parameter correctly when cache is also provided", async () => {
+			const { db, whereSpy } = createMockDb([{ id: "u1", name: "User 1" }]);
 			const mockCache = createMockCache();
 			const perf = createPerformanceTracker();
 
@@ -323,6 +366,19 @@ describe("DataLoader infrastructure", () => {
 			expect(loaders).toHaveProperty("organization");
 			expect(loaders).toHaveProperty("event");
 			expect(loaders).toHaveProperty("actionItem");
+
+			// Verify metrics are tracked through cache layer
+			await loaders.user.load("u1");
+
+			// Verify metrics were tracked for the user loader
+			const snapshot = perf.snapshot();
+			const userOp = snapshot.ops["db:users.byId"];
+			expect(userOp).toBeDefined();
+			expect(userOp?.count).toBe(1);
+			expect(userOp?.ms).toBeGreaterThanOrEqual(0);
+
+			// Verify DB was called (cache miss scenario)
+			expect(whereSpy).toHaveBeenCalledTimes(1);
 		});
 	});
 
