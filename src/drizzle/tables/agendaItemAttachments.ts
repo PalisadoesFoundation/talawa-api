@@ -5,6 +5,7 @@ import { uuidv7 } from "uuidv7";
 import { agendaAttachmentMimeTypeEnum } from "../enums/agendaItemAttachmentMimeType";
 import { agendaItemsTable } from "./agendaItems";
 import { usersTable } from "./users";
+
 /**
  * Drizzle orm postgres table definition for agendaItem attachments.
  */
@@ -107,7 +108,7 @@ export const agendaItemAttachmentsTableRelations = relations(
 		agendaItem: one(agendaItemsTable, {
 			fields: [agendaItemAttachmentsTable.agendaItemId],
 			references: [agendaItemsTable.id],
-			relationName: "agenda_item_attachments.agendaItem_id:agendaItems.id",
+			relationName: "agenda_item_attachments.agenda_item_id:agenda_items.id",
 		}),
 		/**
 		 * Many to one relationship from `agenda_item_attachments` table to `users` table.

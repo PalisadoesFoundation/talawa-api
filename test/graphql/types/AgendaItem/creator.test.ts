@@ -64,7 +64,10 @@ describe("AgendaItem.creator field resolver - Unit tests", () => {
 			description: "Welcome speech and introductions",
 			duration: "30 minutes",
 			key: null,
-			type: "general",
+			notes: "note 1",
+			sequence: 1,
+			eventId: "eventId-123",
+			categoryId: "categoryId-123",
 		};
 	});
 

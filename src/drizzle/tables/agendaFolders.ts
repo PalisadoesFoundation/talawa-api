@@ -64,7 +64,7 @@ export const agendaFoldersTable = pgTable(
 		 */
 		name: text("name", {}).notNull(),
 		/**
-		 * Foreign key reference to the id of the organization the agenda folder belongs to.
+		 * Many to one relationship from `agenda_folders` table to `organizations` table.
 		 */
 		organizationId: uuid("organization_id")
 			.notNull()

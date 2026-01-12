@@ -102,12 +102,14 @@ describe("AgendaFolder childFolders Resolver", () => {
 			id: "00000000-0000-4000-8000-000000000000",
 			name: "Parent Folder",
 			eventId: "00000000-0000-4000-8000-000000000100",
-			isAgendaItemFolder: false,
-			parentFolderId: null,
 			createdAt: new Date(),
 			updatedAt: new Date(),
 			creatorId: "00000000-0000-4000-8000-000000000200",
 			updaterId: null,
+			description: "desc",
+			sequence: 1,
+			isDefaultFolder: false,
+			organizationId: "orgId-123",
 		};
 
 		const mockSelect = {

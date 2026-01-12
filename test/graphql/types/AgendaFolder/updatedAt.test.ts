@@ -440,12 +440,14 @@ describe("AgendaFolder.updatedAt resolver - Unit tests for branch coverage", () 
 		id: "folder-123",
 		name: "Test Folder",
 		eventId: "event-123",
+		organizationId: "orgId-123",
 		createdAt: new Date("2024-01-01T00:00:00.000Z"),
 		updatedAt: new Date("2024-01-02T00:00:00.000Z"),
+		description: "Description",
 		creatorId: "creator-123",
 		updaterId: "updater-123",
-		parentFolderId: null,
-		isAgendaItemFolder: true,
+		isDefaultFolder: false,
+		sequence: 1,
 	};
 
 	// Note: We test the actual resolver function imported from the source file

@@ -417,8 +417,10 @@ describe("AgendaFolder.createdAt resolver - Unit tests for branch coverage", () 
 		updatedAt: new Date("2024-01-01T00:00:00.000Z"),
 		creatorId: "creator-123",
 		updaterId: "updater-123",
-		parentFolderId: null,
-		isAgendaItemFolder: true,
+		description: "desc",
+		sequence: 1,
+		isDefaultFolder: false,
+		organizationId: "orgId-123",
 	};
 
 	// Helper to create the resolver function that matches the actual implementation

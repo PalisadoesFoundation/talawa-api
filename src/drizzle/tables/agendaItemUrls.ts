@@ -20,7 +20,7 @@ export const agendaItemUrlTable = pgTable(
 		/**
 		 * URL to the agenda item.
 		 */
-		url: text("agenda_item_url").notNull(),
+		url: text("url").notNull(),
 		/**
 		 * Date time at the time the agenda item URL was created.
 		 */
@@ -32,7 +32,7 @@ export const agendaItemUrlTable = pgTable(
 			.notNull()
 			.defaultNow(),
 		/**
-		 * Foreign key reference to the id of the user who created the agenda item.
+		 * Foreign key reference to the id of the user who created the agenda item URL.
 		 */
 		creatorId: uuid("creator_id").references(() => usersTable.id, {
 			onDelete: "set null",
@@ -84,7 +84,7 @@ export const agendaItemUrlTableRelations = relations(
 		agendaItem: one(agendaItemsTable, {
 			fields: [agendaItemUrlTable.agendaItemId],
 			references: [agendaItemsTable.id],
-			relationName: "agenda_item_url.agenda_item_id:agenda_item.id",
+			relationName: "agenda_item_url.agenda_item_id:agenda_items.id",
 		}),
 		/**
 		 * Many to one relationship from `agenda_item_url` table to `users` table.
@@ -97,5 +97,9 @@ export const agendaItemUrlTableRelations = relations(
 	}),
 );
 
-export const agendaItemUrlTableInsertSchema =
-	createInsertSchema(agendaItemUrlTable);
+export const agendaItemUrlTableInsertSchema = createInsertSchema(
+	agendaItemUrlTable,
+	{
+		url: (schema) => schema.min(1).url(),
+	},
+);

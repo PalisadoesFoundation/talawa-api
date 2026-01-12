@@ -3,7 +3,7 @@ import { imageMimeTypeEnum } from "./imageMimeType";
 import { videoMimeTypeEnum } from "./videoMimeType";
 
 /**
- * Possible variants of the type of an attachement of an event.
+ * Possible variants of the MIME type of an attachment of an agenda item.
  */
 export const agendaAttachmentMimeTypeEnum = z.enum([
 	...imageMimeTypeEnum.options,

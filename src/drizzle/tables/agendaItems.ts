@@ -113,6 +113,8 @@ export const agendaItemsTable = pgTable(
 	(self) => [
 		index().on(self.createdAt),
 		index().on(self.creatorId),
+		index().on(self.categoryId),
+		index().on(self.eventId),
 		index().on(self.folderId),
 		index().on(self.name),
 	],
@@ -173,5 +175,6 @@ export const agendaItemsTableInsertSchema = createInsertSchema(
 		description: (schema) =>
 			schema.min(1).max(AGENDA_ITEM_DESCRIPTION_MAX_LENGTH).optional(),
 		name: (schema) => schema.min(1).max(AGENDA_ITEM_NAME_MAX_LENGTH),
+		sequence: (schema) => schema.min(0),
 	},
 );
