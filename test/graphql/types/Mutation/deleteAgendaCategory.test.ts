@@ -218,34 +218,34 @@ suite("Mutation field deleteAgendaCategory", () => {
 			const { token } = await getAdminAuth();
 
 			const result = await mercuriusClient.mutate(
-			Mutation_deleteAgendaCategory,
-			{
-				headers: { authorization: `bearer ${token}` },
-				variables: {
-				input: {
-					id: "invalid-uuid",
+				Mutation_deleteAgendaCategory,
+				{
+					headers: { authorization: `bearer ${token}` },
+					variables: {
+						input: {
+							id: "invalid-uuid",
+						},
+					},
 				},
-				},
-			},
 			);
 
 			expect(result.data?.deleteAgendaCategory ?? null).toEqual(null);
 			expect(result.errors).toEqual(
-			expect.arrayContaining([
-				expect.objectContaining({
-				extensions: expect.objectContaining({
-					code: "invalid_arguments",
-					issues: expect.arrayContaining([
+				expect.arrayContaining([
 					expect.objectContaining({
-						argumentPath: ["input", "id"],
+						extensions: expect.objectContaining({
+							code: "invalid_arguments",
+							issues: expect.arrayContaining([
+								expect.objectContaining({
+									argumentPath: ["input", "id"],
+								}),
+							]),
+						}),
 					}),
-					]),
-				}),
-				}),
-			]),
+				]),
 			);
 		});
-		});
+	});
 
 	suite("Resource Existence", () => {
 		test("Returns not found when agenda category does not exist", async () => {

@@ -223,27 +223,27 @@ suite("Mutation field updateAgendaCategory", () => {
 			const result = await mercuriusClient.mutate(
 				Mutation_updateAgendaCategory,
 				{
-				headers: { authorization: `bearer ${token}` },
-				variables: {
-					input: {
-					id: env.categoryId,
-					// No name or description provided
+					headers: { authorization: `bearer ${token}` },
+					variables: {
+						input: {
+							id: env.categoryId,
+							// No name or description provided
+						},
 					},
-				},
 				},
 			);
 
 			expect(result.data?.updateAgendaCategory ?? null).toEqual(null);
 			expect(result.errors).toEqual(
 				expect.arrayContaining([
-				expect.objectContaining({
-					extensions: expect.objectContaining({
-					code: "invalid_arguments",
+					expect.objectContaining({
+						extensions: expect.objectContaining({
+							code: "invalid_arguments",
+						}),
 					}),
-				}),
 				]),
 			);
-			});
+		});
 
 		test("Returns invalid_arguments for invalid UUID", async () => {
 			const { token } = await getAdminAuth();
