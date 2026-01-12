@@ -193,19 +193,21 @@ NODE_VERSION=$(jq -r '.engines.node // "lts"' package.json)
 info "Node.js version from package.json: \"$NODE_VERSION\""
 
 # Validate Node.js version format strictly
-# Validate Node.js version format strictly
 if ! echo "$NODE_VERSION" | grep -E -q '^(lts|latest|([><]=?|[~^=])[0-9]+(\.[0-9]+(\.[0-9]+)?)?|[0-9]+(\.[0-9]+(\.[0-9]+)?)?)$'; then
-    error "Could not parse Node.js version from package.json: '$NODE_VERSION'"
-    error ""
-    error "Expected formats:"
-    error "  - Semver with operator: '>=20.10.0' or '~20.10.0'"
-    error "  - Semver: '20.10.0'"
-    error "  - Major.Minor version: '20.10'"
-    error "  - Major version: '20'"
-    error "  - Aliases: 'lts' or 'latest'"
-    error ""
-    error "Current value in package.json engines.node: '$NODE_VERSION'"
-    error "Please verify package.json is correctly formatted"
+    error "$(cat <<EOF
+Could not parse Node.js version from package.json: '$NODE_VERSION'
+
+Expected formats:
+  - Semver with operator: '>=20.10.0', '<=20.10.0', etc.
+  - Semver: '20.10.0'
+  - Major.Minor version: '20.10'
+  - Major version: '20'
+  - Aliases: 'lts' or 'latest'
+
+Current value in package.json engines.node: '$NODE_VERSION'
+Please verify package.json is correctly formatted
+EOF
+)"
     exit 1
 fi
 
@@ -275,16 +277,19 @@ if echo "$PNPM_VERSION" | grep -E -q '^(latest|([><]=?|[~^=])?[0-9]+(\.[0-9]+(\.
         fi
     fi
 else
-    error "Could not parse pnpm version from package.json: '$PNPM_VERSION'"
-    error ""
-    error "Expected formats:"
-    error "  - Semver with operator: '>=9.1.0' or '~9.1.0'"
-    error "  - Semver: '9.1.0' or '9.1'"
-    error "  - Major version: '9'"
-    error "  - Alias: 'latest'"
-    error ""
-    error "Current value in package.json: '$PNPM_VERSION'"
-    error "Please verify package.json is correctly formatted"
+    error "$(cat <<EOF
+Could not parse pnpm version from package.json: '$PNPM_VERSION'
+
+Expected formats:
+  - Semver with operator: '>=9.1.0' or '~9.1.0'
+  - Semver: '9.1.0' or '9.1'
+  - Major version: '9'
+  - Alias: 'latest'
+
+Current value in package.json: '$PNPM_VERSION'
+Please verify package.json is correctly formatted
+EOF
+)"
     exit 1
 fi
 
