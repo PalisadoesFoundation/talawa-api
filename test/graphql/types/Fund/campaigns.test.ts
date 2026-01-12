@@ -411,7 +411,7 @@ describe("Fund.campaigns Resolver - Integration", () => {
 				variables: {
 					input: { id: fund.id },
 					last: 5,
-					before: "this-is-not-a-valid-cursor-456",
+					before: "this-is-not-a-valid-cursor-432",
 				},
 			});
 
