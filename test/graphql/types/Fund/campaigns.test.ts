@@ -7,6 +7,13 @@ describe("FundCampaignPledge Resolver - Campaigns Field", () => {
     it("should successfully retrieve a list of campaigns", async () => {
         const { context, mocks } = createMockGraphQLContext(true, "user123");
 
+        const builder = await import("~/src/graphql/builder");
+        const typeConfig = builder.builder.configStore.typeConfigs.get("Fund");
+        const pothosOptions = typeConfig?.pothosOptions as any;
+        const mockSchemaBuilder = { connection: (config: any) => config };
+        const fields = pothosOptions?.fields?.(mockSchemaBuilder);
+        const campaignsResolver = fields?.campaigns?.resolve;
+
         const fund = {
             id: "fund123",
             name: "School Fund",
@@ -31,14 +38,11 @@ describe("FundCampaignPledge Resolver - Campaigns Field", () => {
             mockCampaigns,
         );
 
-        const result = await context.drizzleClient.query.fundCampaignsTable.findMany({
-            where: { fundId: fund.id },
-            limit: 10,
-        });
+        const result = await campaignsResolver(fund, { first: 10 }, context);
 
-        expect(result).toHaveLength(2);
-        expect(result[0].name).toBe("Buy Books");
-        expect(result[1].name).toBe("Buy Computers");
+        expect(result.edges).toHaveLength(2);
+        expect(result.edges[0].node.name).toBe("Buy Books");
+        expect(result.edges[1].node.name).toBe("Buy Computers");
     });
 
     it("should throw an invalid_arguments error when provided with a malformed cursor", async () => {
@@ -176,10 +180,9 @@ describe("FundCampaignPledge Resolver - Campaigns Field", () => {
         expect(result.edges).toHaveLength(1);
         expect(result.edges[0].node.name).toBe("Campaign B");
 
-        if (complexityFn) {
-            const cost = complexityFn(args);
-            expect(cost).toHaveProperty("multiplier", 5);
-        }
+        expect(complexityFn).toBeDefined();
+        const cost = complexityFn(args);
+        expect(cost).toHaveProperty("multiplier", 5);
     });
 
     it("should handle backward pagination correctly without a provided cursor", async () => {
