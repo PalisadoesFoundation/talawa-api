@@ -450,12 +450,12 @@ describe("GraphQLSchemaManager", () => {
 			await expect(importCoreSchema()).resolves.not.toThrow();
 		});
 
-		it("should log error with correct shape when import fails (contract test)", async () => {
+		it("should log error with correct shape when import fails (contract/mock test)", async () => {
 			// ─────────────────────────────────────────────────────────────────────────
-			// NOTE: This is an explicit contract test for the logging call shape
-			// rather than exercising importCoreSchema. We call rootLogger.error
-			// directly to verify the error logging pattern used in the catch block
-			// works correctly with the expected shape of arguments.
+			// TODO: This test is a temporary contract check that mocks the logging behavior
+			// directly. It does not exercise the real failure path in importCoreSchema due to
+			// ESM/mocking limitations.
+			// Tracking issue: Refactor to enable real failure testing.
 			// ─────────────────────────────────────────────────────────────────────────
 			const errorSpy = vi.spyOn(rootLogger, "error");
 
@@ -1060,6 +1060,7 @@ describe("GraphQLSchemaManager", () => {
 				}),
 				"Registered builder extension",
 			);
+			debugSpy.mockRestore();
 		});
 
 		it("should log successful builder extension registration", async () => {
