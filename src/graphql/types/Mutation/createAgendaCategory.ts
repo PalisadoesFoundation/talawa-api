@@ -145,7 +145,11 @@ builder.mutationField("createAgendaCategory", (t) =>
 			// Inserted agenda category not being returned is an external defect unrelated to this code. It is very unlikely for this error to occur.
 			if (createdAgendaCategory === undefined) {
 				ctx.log.error(
-					"Postgres insert operation for agenda category unexpectedly returned an empty array instead of throwing an error.",
+					{
+						mutation: "createAgendaCategory",
+						reason: "insert_returned_empty",
+					},
+					"Agenda category insert unexpectedly returned no rows.",
 				);
 
 				throw new TalawaGraphQLError({

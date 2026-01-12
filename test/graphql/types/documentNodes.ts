@@ -793,8 +793,8 @@ export const Query_organization = gql(`
     }
   `);
 
-export const Query_agendaCategoryByEventId =
-	gql(`query Query_agendaCategoryByEventId($eventId: ID!) {
+export const Query_agendaCategoriesByEventId =
+	gql(`query Query_agendaCategoriesByEventId($eventId: ID!) {
   agendaCategoriesByEventId(eventId: $eventId) {
     id
     name

@@ -162,7 +162,7 @@ suite("Mutation field updateAgendaCategory", () => {
 				},
 			);
 
-			expect(result.data.updateAgendaCategory).toEqual(null);
+			expect(result.data?.updateAgendaCategory ?? null).toEqual(null);
 			expect(result.errors).toEqual(
 				expect.arrayContaining([
 					expect.objectContaining({
@@ -198,7 +198,7 @@ suite("Mutation field updateAgendaCategory", () => {
 				},
 			);
 
-			expect(result.data.updateAgendaCategory).toEqual(null);
+			expect(result.data?.updateAgendaCategory ?? null).toEqual(null);
 			expect(result.errors).toEqual(
 				expect.arrayContaining([
 					expect.objectContaining({
@@ -296,7 +296,7 @@ suite("Mutation field updateAgendaCategory", () => {
 				},
 			);
 
-			expect(result.data.updateAgendaCategory).toEqual(null);
+			expect(result.data?.updateAgendaCategory ?? null).toEqual(null);
 			expect(result.errors).toEqual(
 				expect.arrayContaining([
 					expect.objectContaining({

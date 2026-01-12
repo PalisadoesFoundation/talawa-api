@@ -24,6 +24,8 @@ let cachedAdminAuth: {
 
 async function getAdminAuth() {
 	if (cachedAdminAuth) return cachedAdminAuth;
+	// Ensure no auth/header state leaks across tests
+	mercuriusClient.setHeaders({});
 
 	const result = await mercuriusClient.query(Query_signIn, {
 		variables: {

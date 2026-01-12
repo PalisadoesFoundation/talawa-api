@@ -151,7 +151,12 @@ builder.mutationField("updateAgendaCategory", (t) =>
 			if (updatedAgendaCategory === undefined) {
 				throw new TalawaGraphQLError({
 					extensions: {
-						code: "unexpected",
+						code: "arguments_associated_resources_not_found",
+						issues: [
+							{
+								argumentPath: ["input", "id"],
+							},
+						],
 					},
 				});
 			}

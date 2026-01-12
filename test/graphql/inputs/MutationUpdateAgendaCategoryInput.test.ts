@@ -81,6 +81,46 @@ describe("MutationUpdateAgendaCategoryInput Schema", () => {
 		});
 	});
 
+	describe("name field max length", () => {
+		it("should accept name with length 256", () => {
+			const result = mutationUpdateAgendaCategoryInputSchema.safeParse({
+				id: validId,
+				name: "a".repeat(256),
+			});
+
+			expect(result.success).toBe(true);
+		});
+
+		it("should reject name with length 257", () => {
+			const result = mutationUpdateAgendaCategoryInputSchema.safeParse({
+				id: validId,
+				name: "a".repeat(257),
+			});
+
+			expect(result.success).toBe(false);
+		});
+	});
+
+	describe("description field max length", () => {
+		it("should accept description with length 2048", () => {
+			const result = mutationUpdateAgendaCategoryInputSchema.safeParse({
+				id: validId,
+				description: "a".repeat(2048),
+			});
+
+			expect(result.success).toBe(true);
+		});
+
+		it("should reject description with length 2049", () => {
+			const result = mutationUpdateAgendaCategoryInputSchema.safeParse({
+				id: validId,
+				description: "a".repeat(2049),
+			});
+
+			expect(result.success).toBe(false);
+		});
+	});
+
 	describe("name field constraints", () => {
 		it("should reject empty name", () => {
 			const result = mutationUpdateAgendaCategoryInputSchema.safeParse({
