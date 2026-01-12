@@ -42,7 +42,7 @@ Default sender display name.
 
 ### region
 
-> **region**: [`NonEmptyString`](../type-aliases/NonEmptyString.md)
+> **region**: [`NonEmptyString`](../../../types/type-aliases/NonEmptyString.md)
 
 Defined in: [src/services/email/providers/SESProvider.ts:13](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/email/providers/SESProvider.ts#L13)
 

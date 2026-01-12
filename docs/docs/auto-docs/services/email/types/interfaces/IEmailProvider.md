@@ -4,7 +4,7 @@
 
 # Interface: IEmailProvider
 
-Defined in: [src/services/email/types.ts:26](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/email/types.ts#L26)
+Defined in: [src/services/email/types.ts:31](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/email/types.ts#L31)
 
 Email provider interface
 
@@ -14,7 +14,7 @@ Email provider interface
 
 > **sendBulkEmails**(`jobs`): `Promise`\<[`EmailResult`](EmailResult.md)[]\>
 
-Defined in: [src/services/email/types.ts:28](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/email/types.ts#L28)
+Defined in: [src/services/email/types.ts:33](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/email/types.ts#L33)
 
 #### Parameters
 
@@ -32,7 +32,7 @@ Defined in: [src/services/email/types.ts:28](https://github.com/PalisadoesFounda
 
 > **sendEmail**(`job`): `Promise`\<[`EmailResult`](EmailResult.md)\>
 
-Defined in: [src/services/email/types.ts:27](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/email/types.ts#L27)
+Defined in: [src/services/email/types.ts:32](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/email/types.ts#L32)
 
 #### Parameters
 

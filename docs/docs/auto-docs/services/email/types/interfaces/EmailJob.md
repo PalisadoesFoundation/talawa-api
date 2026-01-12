@@ -4,7 +4,7 @@
 
 # Interface: EmailJob
 
-Defined in: [src/services/email/types.ts:4](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/email/types.ts#L4)
+Defined in: [src/services/email/types.ts:9](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/email/types.ts#L9)
 
 Email job interface
 
@@ -14,7 +14,7 @@ Email job interface
 
 > **email**: `string`
 
-Defined in: [src/services/email/types.ts:6](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/email/types.ts#L6)
+Defined in: [src/services/email/types.ts:11](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/email/types.ts#L11)
 
 ***
 
@@ -22,7 +22,7 @@ Defined in: [src/services/email/types.ts:6](https://github.com/PalisadoesFoundat
 
 > **htmlBody**: `string`
 
-Defined in: [src/services/email/types.ts:8](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/email/types.ts#L8)
+Defined in: [src/services/email/types.ts:13](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/email/types.ts#L13)
 
 ***
 
@@ -30,7 +30,7 @@ Defined in: [src/services/email/types.ts:8](https://github.com/PalisadoesFoundat
 
 > **id**: `string`
 
-Defined in: [src/services/email/types.ts:5](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/email/types.ts#L5)
+Defined in: [src/services/email/types.ts:10](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/email/types.ts#L10)
 
 ***
 
@@ -38,7 +38,7 @@ Defined in: [src/services/email/types.ts:5](https://github.com/PalisadoesFoundat
 
 > **subject**: `string`
 
-Defined in: [src/services/email/types.ts:7](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/email/types.ts#L7)
+Defined in: [src/services/email/types.ts:12](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/email/types.ts#L12)
 
 ***
 
@@ -46,7 +46,7 @@ Defined in: [src/services/email/types.ts:7](https://github.com/PalisadoesFoundat
 
 > `optional` **textBody**: `string`
 
-Defined in: [src/services/email/types.ts:9](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/email/types.ts#L9)
+Defined in: [src/services/email/types.ts:14](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/email/types.ts#L14)
 
 ***
 
@@ -54,4 +54,4 @@ Defined in: [src/services/email/types.ts:9](https://github.com/PalisadoesFoundat
 
 > **userId**: `string` \| `null`
 
-Defined in: [src/services/email/types.ts:10](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/email/types.ts#L10)
+Defined in: [src/services/email/types.ts:15](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/email/types.ts#L15)
