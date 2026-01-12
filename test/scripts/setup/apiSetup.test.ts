@@ -28,6 +28,7 @@ import {
  * @param condition - A function that returns true when the condition is met
  * @param timeout - Maximum time to wait in milliseconds (default: 5000)
  * @param pollInterval - Interval between checks in milliseconds (default: 10)
+ * @throws {Error} If the timeout elapses before the condition becomes true
  */
 async function waitFor(
 	condition: () => boolean,
@@ -37,6 +38,11 @@ async function waitFor(
 	const startTime = Date.now();
 	while (!condition() && Date.now() - startTime < timeout) {
 		await new Promise((resolve) => setTimeout(resolve, pollInterval));
+	}
+	if (!condition()) {
+		throw new Error(
+			`waitFor: timeout waiting for condition after ${timeout}ms`,
+		);
 	}
 }
 
@@ -577,6 +583,14 @@ describe("generateJwtSecret", () => {
 });
 
 describe("Error handling without backup", () => {
+	afterEach(() => {
+		// Remove SIGINT listeners to prevent interference with other tests
+		process.removeAllListeners("SIGINT");
+		// Restore and clear all mocks
+		vi.restoreAllMocks();
+		vi.clearAllMocks();
+	});
+
 	it("should handle prompt errors when backup doesn't exist", async () => {
 		const processExitSpy = vi
 			.spyOn(process, "exit")
@@ -644,6 +658,9 @@ describe("Error handling without backup", () => {
 		// The handler calls process.exit, so we wait for that to be called
 		await waitFor(() => processExitSpy.mock.calls.length > 0);
 
+		// Verify process.exit was called
+		expect(processExitSpy.mock.calls.length).toBeGreaterThan(0);
+
 		// Check that the new SIGINT handler messages are present
 		expect(consoleLogSpy).toHaveBeenCalledWith(
 			"\n\n⚠️  Setup interrupted by user (CTRL+C)",
@@ -653,12 +670,5 @@ describe("Error handling without backup", () => {
 		);
 		// When no backup exists, it should exit with 0 (success, nothing to restore)
 		expect(processExitSpy).toHaveBeenCalledWith(0);
-
-		// Clean up: remove SIGINT listeners to prevent interference with other tests
-		process.removeAllListeners("SIGINT");
-		// Restore mocks
-		processExitSpy.mockRestore();
-		consoleLogSpy.mockRestore();
-		vi.clearAllMocks();
 	});
 });
