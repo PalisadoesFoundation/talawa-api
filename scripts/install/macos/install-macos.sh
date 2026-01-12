@@ -203,7 +203,7 @@ if ! echo "$NODE_VERSION" | grep -E -q '^(lts|latest|([><]=?|[~^=])?[0-9]+(\.[0-
     error "  - Major version: '20'"
     error "  - Aliases: 'lts' or 'latest'"
     error ""
-    error "Current value in package.json engines.node: '$NODE_VERSION' (parsed: '')"
+    error "Current value in package.json engines.node: '$NODE_VERSION'"
     error "Please verify package.json is correctly formatted"
     exit 1
 fi
@@ -243,7 +243,7 @@ else
 fi
 
 # Accept specific versions (e.g., 9.1.0) or aliases (latest)
-if echo "$PNPM_VERSION" | grep -E -q '^(latest|([><]=?|[~^])?[0-9]+(\.[0-9]+(\.[0-9]+)?)?)$'; then
+if echo "$PNPM_VERSION" | grep -E -q '^(latest|([><]=?|[~^=])?[0-9]+(\.[0-9]+(\.[0-9]+)?)?)$'; then
     if [ "$PNPM_VERSION" = "latest" ]; then
         CLEAN_PNPM_VERSION="latest"
     else
@@ -270,7 +270,7 @@ else
     error "  - Major version: '9'"
     error "  - Alias: 'latest'"
     error ""
-    error "Current value in package.json: '$PNPM_VERSION' (parsed: '')"
+    error "Current value in package.json: '$PNPM_VERSION'"
     error "Please verify package.json is correctly formatted"
     exit 1
 fi
@@ -285,12 +285,12 @@ step $CURRENT_STEP $TOTAL_STEPS "Installing Node.js v$CLEAN_NODE_VERSION..."
 
 if [ "$CLEAN_NODE_VERSION" = "lts" ]; then
     info "Installing latest LTS version of Node.js..."
-    OUTPUT=$(fnm install --lts 2>&1)
-    echo "$OUTPUT"
-    if echo "$OUTPUT" | grep -q "Failed"; then
+    if ! OUTPUT=$(fnm install --lts 2>&1); then
+        echo "$OUTPUT"
         error "Failed to install LTS version of Node.js"
         exit 1
     fi
+    echo "$OUTPUT"
     # Extract version (e.g., v20.10.0)
     LTS_VERSION=$(echo "$OUTPUT" | grep -oE 'v[0-9]+\.[0-9]+\.[0-9]+' | head -1 | sed 's/^v//')
     if [ -n "$LTS_VERSION" ]; then
@@ -357,16 +357,25 @@ if command_exists pnpm; then
     # Skip version comparison if target is "latest" - always update to ensure we have latest
     if [ "$CLEAN_PNPM_VERSION" = "latest" ]; then
         info "Updating pnpm to latest version..."
-        npm install -g "pnpm@latest"
+        if ! npm install -g "pnpm@latest"; then
+            error "Failed to update pnpm to latest version"
+            exit 1
+        fi
     elif [ "$CURRENT_PNPM_NORMALIZED" = "$CLEAN_PNPM_VERSION" ]; then
         success "pnpm is already installed: v$CURRENT_PNPM"
     else
         info "Updating pnpm from v$CURRENT_PNPM to v$CLEAN_PNPM_VERSION..."
-        npm install -g "pnpm@$CLEAN_PNPM_VERSION"
+        if ! npm install -g "pnpm@$CLEAN_PNPM_VERSION"; then
+            error "Failed to update pnpm to v$CLEAN_PNPM_VERSION"
+            exit 1
+        fi
     fi
 else
     info "Installing pnpm..."
-    npm install -g "pnpm@$CLEAN_PNPM_VERSION"
+    if ! npm install -g "pnpm@$CLEAN_PNPM_VERSION"; then
+        error "Failed to install pnpm v$CLEAN_PNPM_VERSION"
+        exit 1
+    fi
 fi
 
 # Verify pnpm is available in PATH
