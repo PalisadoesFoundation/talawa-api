@@ -3,7 +3,7 @@ CREATE TABLE "oauth_accounts" (
 	"user_id" uuid NOT NULL,
 	"provider" varchar(50) NOT NULL,
 	"provider_id" varchar(255) NOT NULL,
-	"email" varchar(255) NOT NULL,
+	"email" varchar(255),
 	"profile" jsonb,
 	"linked_at" timestamp (3) with time zone DEFAULT now() NOT NULL,
 	"last_used_at" timestamp (3) with time zone DEFAULT now() NOT NULL,

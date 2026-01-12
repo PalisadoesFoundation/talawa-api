@@ -45,7 +45,7 @@ export const oauthAccountsTable = pgTable(
 		/**
 		 * Email address associated with the OAuth account from the provider.
 		 */
-		email: varchar("email", { length: 255 }).notNull(),
+		email: varchar("email", { length: 255 }),
 
 		/**
 		 * Additional profile data from the OAuth provider stored as JSON.
