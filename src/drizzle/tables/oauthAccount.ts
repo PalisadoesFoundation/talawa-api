@@ -10,6 +10,7 @@ import {
 } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { uuidv7 } from "uuidv7";
+import type { OAuthAccountProfile } from "~/src/types/oauthAccount";
 import { usersTable } from "./users";
 
 /**
@@ -49,12 +50,7 @@ export const oauthAccountsTable = pgTable(
 		/**
 		 * Additional profile data from the OAuth provider stored as JSON.
 		 */
-		profile: jsonb("profile").$type<{
-			name?: string;
-			picture?: string;
-			emailVerified?: boolean;
-			[key: string]: unknown;
-		}>(),
+		profile: jsonb("profile").$type<OAuthAccountProfile>(),
 
 		/**
 		 * Date time when the OAuth account was first linked to the user.
