@@ -25,6 +25,8 @@ function createMockDb<T>(mockResults: T[]) {
 /**
  * Creates a mock DrizzleClient with sequential responses for testing DataLoaders.
  * Each call to where() will return the next result set in the array.
+ * If where() is called more times than entries in mockResultsArray, it returns an empty array
+ * to prevent undefined responses that could mask test bugs.
  * Returns both the mock db and a spy for the where function.
  */
 function createSequentialMockDb<T>(mockResultsArray: T[][]) {
@@ -33,6 +35,8 @@ function createSequentialMockDb<T>(mockResultsArray: T[][]) {
 	for (const mockResults of mockResultsArray) {
 		whereSpy.mockResolvedValueOnce(mockResults);
 	}
+	// Add fallback for extra calls to prevent undefined responses
+	whereSpy.mockResolvedValue([]);
 	const db = {
 		select: vi.fn().mockReturnThis(),
 		from: vi.fn().mockReturnThis(),
@@ -431,6 +435,58 @@ describe("DataLoader infrastructure", () => {
 			// Verify DB was NOT called (cache hit scenario)
 			// Metrics should still be recorded because they wrap the cache layer
 			expect(whereSpy).not.toHaveBeenCalled();
+		});
+
+		it("captures metrics correctly for mixed cache hits and misses", async () => {
+			// Set up mock DB to return results only for cache misses
+			const { db, whereSpy } = createSequentialMockDb([
+				[{ id: "u2", name: "User 2" }], // user loader (cache miss)
+				[{ id: "org2", name: "Org 2" }], // organization loader (cache miss)
+			]);
+
+			// Create mock cache with artificial delay and mixed hit/miss behavior
+			const cacheDelayMs = 10;
+			const cachedValues = new Map([
+				[entityKey("user", "u1"), { id: "u1", name: "User 1" }], // cache hit
+				[entityKey("organization", "org1"), { id: "org1", name: "Org 1" }], // cache hit
+			]);
+			const mockCache = createMockCache();
+			mockCache.mget = vi.fn().mockImplementation(async (keys: string[]) => {
+				// Simulate cache delay to verify metrics capture cache operation time
+				await new Promise((resolve) => setTimeout(resolve, cacheDelayMs));
+				// Return cached value for hits, null for misses
+				return keys.map((k) => cachedValues.get(k) ?? null);
+			});
+
+			const perf = createPerformanceTracker();
+
+			const loaders = createDataloaders(db, mockCache, perf);
+
+			// Exercise loaders with cache hits
+			await loaders.user.load("u1"); // cache hit
+			await loaders.organization.load("org1"); // cache hit
+
+			// Exercise loaders with cache misses (will hit DB)
+			await loaders.user.load("u2"); // cache miss
+			await loaders.organization.load("org2"); // cache miss
+
+			// Verify metrics were tracked for both cache hits and misses
+			const snapshot = perf.snapshot();
+
+			// Verify user loader metrics (2 calls: 1 cache hit, 1 cache miss)
+			const userOp = snapshot.ops["db:users.byId"];
+			expect(userOp).toBeDefined();
+			expect(userOp?.count).toBe(2); // Both cache hit and miss are counted
+			expect(userOp?.ms).toBeGreaterThanOrEqual(cacheDelayMs * 2); // At least cache delay for both
+
+			// Verify organization loader metrics (2 calls: 1 cache hit, 1 cache miss)
+			const orgOp = snapshot.ops["db:organizations.byId"];
+			expect(orgOp).toBeDefined();
+			expect(orgOp?.count).toBe(2); // Both cache hit and miss are counted
+			expect(orgOp?.ms).toBeGreaterThanOrEqual(cacheDelayMs * 2); // At least cache delay for both
+
+			// Verify DB was called only for cache misses (2 calls: u2 and org2)
+			expect(whereSpy).toHaveBeenCalledTimes(2);
 		});
 	});
 
