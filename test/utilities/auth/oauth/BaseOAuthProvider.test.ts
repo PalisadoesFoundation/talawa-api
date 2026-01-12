@@ -641,6 +641,28 @@ describe("BaseOAuthProvider", () => {
 				}),
 			);
 		});
+
+		it("should use custom timeout from config for GET requests", async () => {
+			const customConfig: OAuthConfig = {
+				clientId: "test_client_id",
+				clientSecret: "test_client_secret",
+				requestTimeoutMs: 5000,
+			};
+			const customProvider = new ConcreteOAuthProvider(
+				"custom-timeout",
+				customConfig,
+			);
+
+			mockedGet.mockResolvedValueOnce({ data: {} } as AxiosResponse);
+			await customProvider.testGet("https://test.com");
+
+			expect(mockedGet).toHaveBeenCalledWith(
+				"https://test.com",
+				expect.objectContaining({
+					timeout: 5000,
+				}),
+			);
+		});
 	});
 
 	describe("content-type headers", () => {
