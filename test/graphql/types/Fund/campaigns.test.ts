@@ -97,7 +97,7 @@ async function createOrgMembership(
 	organizationId: string,
 	memberId: string,
 ) {
-	await mercuriusClient.mutate(Mutation_createOrganizationMembership, {
+	const result = await mercuriusClient.mutate(Mutation_createOrganizationMembership, {
 		headers: { authorization: `bearer ${authToken}` },
 		variables: {
 			input: {
@@ -107,6 +107,15 @@ async function createOrgMembership(
 			},
 		},
 	});
+
+	if (result.errors) {
+		throw new Error(
+			`Failed to create organization membership: ${JSON.stringify(result.errors)}`,
+		);
+	}
+
+	assertToBeNonNullish(result.data?.createOrganizationMembership);
+	return result.data.createOrganizationMembership;
 }
 
 async function createTestFund(authToken: string, organizationId: string) {
@@ -219,9 +228,11 @@ describe("Fund.campaigns Resolver - Integration", () => {
 
 			// Campaigns should be ordered by name (alphabetically ascending)
 			const names = edges.map((edge) => edge?.node?.name);
-			expect(names).toContain("Alpha Campaign");
-			expect(names).toContain("Beta Campaign");
-			expect(names).toContain("Gamma Campaign");
+			expect(names).toEqual([
+				"Alpha Campaign",
+				"Beta Campaign",
+				"Gamma Campaign",
+			]);
 
 			// Validate pageInfo structure
 			const pageInfo = result.data.fund.campaigns.pageInfo;
