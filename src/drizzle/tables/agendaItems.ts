@@ -1,9 +1,17 @@
 import { relations, sql } from "drizzle-orm";
-import { index, pgTable, text, timestamp, uuid } from "drizzle-orm/pg-core";
+import {
+	index,
+	integer,
+	pgTable,
+	text,
+	timestamp,
+	uuid,
+} from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { uuidv7 } from "uuidv7";
-import { agendaItemTypeEnum } from "~/src/drizzle/enums/agendaItemType";
+import { agendaCategoriesTable } from "./agendaCategories";
 import { agendaFoldersTable } from "./agendaFolders";
+import { eventsTable } from "./events";
 import { usersTable } from "./users";
 
 /**
@@ -30,6 +38,15 @@ export const agendaItemsTable = pgTable(
 			onUpdate: "cascade",
 		}),
 		/**
+		 * Foreign key reference to the id of the agenda category the agenda item belongs
+		 */
+		categoryId: uuid("category_id")
+			.notNull()
+			.references(() => agendaCategoriesTable.id, {
+				onDelete: "cascade",
+				onUpdate: "cascade",
+			}),
+		/**
 		 * Custom information about the agenda item.
 		 */
 		description: text("description"),
@@ -37,6 +54,15 @@ export const agendaItemsTable = pgTable(
 		 * Duration of the agenda item.
 		 */
 		duration: text("duration"),
+		/**
+		 * Foreign key reference to the id of the event the agenda item is associated to.
+		 */
+		eventId: uuid("event_id")
+			.notNull()
+			.references(() => eventsTable.id, {
+				onDelete: "cascade",
+				onUpdate: "cascade",
+			}),
 		/**
 		 * Foreign key reference to the id of the agenda folder the agenda item is associated to.
 		 */
@@ -59,11 +85,13 @@ export const agendaItemsTable = pgTable(
 		 */
 		name: text("name", {}).notNull(),
 		/**
-		 * Type of the agenda item.
+		 * Notes of the agenda item.
 		 */
-		type: text("type", {
-			enum: agendaItemTypeEnum.options,
-		}).notNull(),
+		notes: text("notes"),
+		/**
+		 * Sequence of the agenda item.
+		 */
+		sequence: integer("sequence").notNull(),
 		/**
 		 * Date time at the time the agenda item was last updated.
 		 */
@@ -87,7 +115,6 @@ export const agendaItemsTable = pgTable(
 		index().on(self.creatorId),
 		index().on(self.folderId),
 		index().on(self.name),
-		index().on(self.type),
 	],
 );
 
@@ -101,6 +128,22 @@ export const agendaItemsTableRelations = relations(
 			fields: [agendaItemsTable.creatorId],
 			references: [usersTable.id],
 			relationName: "agenda_items.creator_id:users.id",
+		}),
+		/**
+		 * Many to one relationship from `agenda_items` table to `agenda_category` table.
+		 */
+		category: one(agendaCategoriesTable, {
+			fields: [agendaItemsTable.categoryId],
+			references: [agendaCategoriesTable.id],
+			relationName: "agenda_items.category_id:agenda_categories.id",
+		}),
+		/**
+		 * Many to one relationship from `agenda_items` table to `events` table.
+		 */
+		event: one(eventsTable, {
+			fields: [agendaItemsTable.eventId],
+			references: [eventsTable.id],
+			relationName: "agenda_items.event_id:events.id",
 		}),
 		/**
 		 * Many to one relationship from `agenda_items` table to `agenda_folders` table.
