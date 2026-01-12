@@ -378,14 +378,12 @@ describe("DataLoader infrastructure", () => {
 				[entityKey("event", "evt1"), { id: "evt1", name: "Event 1" }],
 				[entityKey("actionItem", "ai1"), { id: "ai1", organizationId: "org1" }],
 			]);
-			const mockCache = {
-				...createMockCache(cachedValues),
-				mget: vi.fn().mockImplementation(async (keys: string[]) => {
-					// Simulate cache delay to verify metrics capture cache operation time
-					await new Promise((resolve) => setTimeout(resolve, cacheDelayMs));
-					return keys.map((k) => cachedValues.get(k) ?? null);
-				}),
-			} as unknown as CacheService;
+			const mockCache = createMockCache();
+			mockCache.mget = vi.fn().mockImplementation(async (keys: string[]) => {
+				// Simulate cache delay to verify metrics capture cache operation time
+				await new Promise((resolve) => setTimeout(resolve, cacheDelayMs));
+				return keys.map((k) => cachedValues.get(k) ?? null);
+			});
 
 			const perf = createPerformanceTracker();
 
