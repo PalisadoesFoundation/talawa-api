@@ -593,16 +593,19 @@ describe("Error handling without backup", () => {
 		// Mock file system to indicate no .env file exists (so no backup will be created)
 		vi.spyOn(fs, "existsSync").mockReturnValue(false);
 
-		// Mock all prompts to prevent setup from hanging
-		vi.spyOn(inquirer, "prompt").mockResolvedValue({
-			CI: "false",
-			useDefaultMinio: true,
-			useDefaultCloudbeaver: true,
-			useDefaultPostgres: true,
-			useDefaultCaddy: true,
-			useDefaultApi: true,
-			API_ADMINISTRATOR_USER_EMAIL_ADDRESS: "test@email.com",
-		});
+		// Mock prompts sequentially to match the order setup() calls them
+		// Order: CI -> useDefaultMinio -> useDefaultCloudbeaver (if CI=false) -> useDefaultPostgres -> useDefaultCaddy -> useDefaultApi -> API_ADMINISTRATOR_USER_EMAIL_ADDRESS
+		const promptMock = vi.spyOn(inquirer, "prompt");
+		promptMock
+			.mockResolvedValueOnce({ CI: "false" }) // From setCI()
+			.mockResolvedValueOnce({ useDefaultMinio: true }) // Line 913
+			.mockResolvedValueOnce({ useDefaultCloudbeaver: true }) // Line 922 (only if CI === "false")
+			.mockResolvedValueOnce({ useDefaultPostgres: true }) // Line 931
+			.mockResolvedValueOnce({ useDefaultCaddy: true }) // Line 939
+			.mockResolvedValueOnce({ useDefaultApi: true }) // Line 947
+			.mockResolvedValueOnce({
+				API_ADMINISTRATOR_USER_EMAIL_ADDRESS: "test@email.com",
+			}); // From administratorEmail()
 
 		// Start setup() which will register the SIGINT handler
 		// Don't await it - we'll interrupt it
