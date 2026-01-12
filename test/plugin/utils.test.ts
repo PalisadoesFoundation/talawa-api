@@ -4,6 +4,7 @@ import type { IPluginManifest } from "../../src/plugin/types";
 // Mock rootLogger
 vi.mock("~/src/utilities/logging/logger", () => ({
 	rootLogger: {
+		debug: vi.fn(),
 		info: vi.fn(),
 		error: vi.fn(),
 		warn: vi.fn(),
@@ -391,8 +392,32 @@ describe("createPluginTables & dropPluginTables", () => {
 		// Ensure error is spied on before execution
 		const loggerSpy = vi.spyOn(rootLogger, "error");
 
-		// Provide an empty object for tableDefinitions to trigger the outer catch
-		// by using a bad tableDefinitions that causes Object.entries to throw
+		// ─────────────────────────────────────────────────────────────────────────
+		// IMPORTANT: Why we use a Proxy that throws in ownKeys()
+		// ─────────────────────────────────────────────────────────────────────────
+		// This test targets the outer catch block in createPluginTables (lines 514-518),
+		// which handles unexpected failures and logs via rootLogger.error when no
+		// logger argument is provided.
+		//
+		// The challenge: The outer try-catch wraps the entire function body, including
+		// the `Object.entries(tableDefinitions)` call. Normal mock failures (e.g.,
+		// throwing from db.execute) are caught by inner try-catch blocks and don't
+		// reach the outer catch. To exercise the outer catch path, we need a failure
+		// that occurs *before* any inner try-catch—specifically, during iteration
+		// of tableDefinitions itself.
+		//
+		// This Proxy intercepts `ownKeys()`, which is invoked by `Object.entries()`,
+		// causing it to throw synchronously before any per-table processing begins.
+		// This is admittedly fragile because it relies on the internal behavior of
+		// Object.entries, but it's currently the only way to simulate a failure that
+		// reaches the outer catch block.
+		//
+		// MAINTAINER NOTE: If you find a simpler, less brittle approach to cover
+		// this defensive code path, please update this test. However, do not remove
+		// this test without ensuring the outer catch block remains covered—or
+		// explicitly document that this edge case is intentionally left uncovered
+		// due to testing complexity.
+		// ─────────────────────────────────────────────────────────────────────────
 		const badTableDefinitions = new Proxy(
 			{},
 			{
@@ -516,7 +541,18 @@ describe("clearPluginModuleCache", () => {
 		).not.toThrow();
 	});
 	it("handles normal execution without throwing", () => {
-		// Verifies the function completes without throwing during normal execution
+		// Note: clearPluginModuleCache is a no-op in ES modules because the ES module
+		// cache is not directly accessible like CommonJS's require.cache.
+		// The function exists for API compatibility but only logs a message.
+		//
+		// Testing behavioral assertions (like verifying cache entries are removed)
+		// is not applicable here since:
+		// 1. ES modules don't expose their cache for manipulation
+		// 2. The _cacheObj parameter is unused (prefixed with _)
+		// 3. The function only logs an info message via rootLogger
+		//
+		// We verify the function completes without throwing, which is the extent
+		// of meaningful behavior for this compatibility stub.
 		expect(() => utils.clearPluginModuleCache("/plugin/path")).not.toThrow();
 	});
 });

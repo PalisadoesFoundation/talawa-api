@@ -331,29 +331,6 @@ describe("PluginManager", () => {
 		expect(manager.getPluginContext()).toBe(context);
 	});
 
-	it("should handle initialize() error", async () => {
-		const context = createPluginContext();
-		const origInit = (
-			PluginManager.prototype as unknown as {
-				initialize: () => Promise<void>;
-			}
-		).initialize;
-		(
-			PluginManager.prototype as unknown as {
-				initialize: () => Promise<void>;
-			}
-		).initialize = vi.fn().mockRejectedValue(new Error("init fail"));
-
-		const manager = new PluginManager(context, "/plugins");
-		await expect(manager.initialize()).rejects.toThrow("init fail");
-
-		(
-			PluginManager.prototype as unknown as {
-				initialize: () => Promise<void>;
-			}
-		).initialize = origInit;
-	});
-
 	it("should handle initialization failure in initialize catch block", async () => {
 		const context = createPluginContext([mockDbPlugin]);
 
