@@ -192,6 +192,22 @@ step $CURRENT_STEP $TOTAL_STEPS "Reading configuration from package.json..."
 NODE_VERSION=$(jq -r '.engines.node // "lts"' package.json)
 info "Node.js version from package.json: \"$NODE_VERSION\""
 
+# Validate Node.js version format strictly
+if ! echo "$NODE_VERSION" | grep -E -q '^(lts|latest|([><]=?|[~^=])?[0-9]+(\.[0-9]+(\.[0-9]+)?)?)$'; then
+    error "Could not parse Node.js version from package.json: '$NODE_VERSION'"
+    error ""
+    error "Expected formats:"
+    error "  - Semver with operator: '>=20.10.0' or '~20.10.0'"
+    error "  - Semver: '20.10.0'"
+    error "  - Major.Minor version: '20.10'"
+    error "  - Major version: '20'"
+    error "  - Aliases: 'lts' or 'latest'"
+    error ""
+    error "Current value in package.json engines.node: '$NODE_VERSION' (parsed: '')"
+    error "Please verify package.json is correctly formatted"
+    exit 1
+fi
+
 # Clean version string (remove >=, ^, ~, and other operators)
 # First try to extract full semver (e.g., 20.10.0)
 CLEAN_NODE_VERSION=$(echo "$NODE_VERSION" | grep -oE '[0-9]+\.[0-9]+\.[0-9]+' | head -1 || true)
@@ -211,22 +227,6 @@ if [ "$NODE_VERSION" = "lts" ] || [ "$NODE_VERSION" = "latest" ]; then
     CLEAN_NODE_VERSION="$NODE_VERSION"
 fi
 
-# Validate we got a usable version
-if [ -z "$CLEAN_NODE_VERSION" ]; then
-    error "Could not parse Node.js version from package.json: '$NODE_VERSION'"
-    error ""
-    error "Expected formats:"
-    error "  - Semver with operator: '>=20.10.0' or '~20.10.0'"
-    error "  - Semver: '20.10.0'"
-    error "  - Major.Minor version: '20.10'"
-    error "  - Major version: '20'"
-    error "  - Aliases: 'lts' or 'latest'"
-    error ""
-    error "Current value in package.json engines.node: '$NODE_VERSION' (parsed: '$CLEAN_NODE_VERSION')"
-    error "Please verify package.json is correctly formatted"
-    exit 1
-fi
-
 info "Parsed Node.js version: $CLEAN_NODE_VERSION"
 
 # Parse pnpm version from package.json
@@ -243,36 +243,36 @@ else
 fi
 
 # Accept specific versions (e.g., 9.1.0) or aliases (latest)
-if [ "$PNPM_VERSION" = "latest" ]; then
-    CLEAN_PNPM_VERSION="latest"
+if echo "$PNPM_VERSION" | grep -E -q '^(latest|([><]=?|[~^])?[0-9]+(\.[0-9]+(\.[0-9]+)?)?)$'; then
+    if [ "$PNPM_VERSION" = "latest" ]; then
+        CLEAN_PNPM_VERSION="latest"
+    else
+        # Strip leading operator using numeric extraction
+        # Try full semver
+        CLEAN_PNPM_VERSION=$(echo "$PNPM_VERSION" | grep -oE '[0-9]+\.[0-9]+\.[0-9]+' | head -1 || true)
+        
+        # If no full version, try major.minor
+        if [ -z "$CLEAN_PNPM_VERSION" ]; then
+            CLEAN_PNPM_VERSION=$(echo "$PNPM_VERSION" | grep -oE '[0-9]+\.[0-9]+' | head -1 || true)
+        fi
+        
+        # If still no version, try major only
+        if [ -z "$CLEAN_PNPM_VERSION" ]; then
+            CLEAN_PNPM_VERSION=$(echo "$PNPM_VERSION" | grep -oE '[0-9]+' | head -1 || true)
+        fi
+    fi
 else
-    # Try to extract version number
-    CLEAN_PNPM_VERSION=$(echo "$PNPM_VERSION" | grep -oE '[0-9]+\.[0-9]+\.[0-9]+' | head -1 || true)
-    
-    # If no full version, try major.minor
-    if [ -z "$CLEAN_PNPM_VERSION" ]; then
-        CLEAN_PNPM_VERSION=$(echo "$PNPM_VERSION" | grep -oE '[0-9]+\.[0-9]+' | head -1 || true)
-    fi
-    
-    # If still no version, try major only
-    if [ -z "$CLEAN_PNPM_VERSION" ]; then
-        CLEAN_PNPM_VERSION=$(echo "$PNPM_VERSION" | grep -oE '[0-9]+' | head -1 || true)
-    fi
-    
-    # Validate we got something
-    if [ -z "$CLEAN_PNPM_VERSION" ]; then
-        error "Could not parse pnpm version from package.json: '$PNPM_VERSION'"
-        error ""
-        error "Expected formats:"
-        error "  - Semver with operator: '>=9.1.0' or '~9.1.0'"
-        error "  - Semver: '9.1.0' or '9.1'"
-        error "  - Major version: '9'"
-        error "  - Alias: 'latest'"
-        error ""
-        error "Current value in package.json: '$PNPM_VERSION' (parsed: '$CLEAN_PNPM_VERSION')"
-        error "Please verify package.json is correctly formatted"
-        exit 1
-    fi
+    error "Could not parse pnpm version from package.json: '$PNPM_VERSION'"
+    error ""
+    error "Expected formats:"
+    error "  - Semver with operator: '>=9.1.0' or '~9.1.0'"
+    error "  - Semver: '9.1.0' or '9.1'"
+    error "  - Major version: '9'"
+    error "  - Alias: 'latest'"
+    error ""
+    error "Current value in package.json: '$PNPM_VERSION' (parsed: '')"
+    error "Please verify package.json is correctly formatted"
+    exit 1
 fi
 
 info "Using pnpm version: $CLEAN_PNPM_VERSION"
@@ -285,26 +285,35 @@ step $CURRENT_STEP $TOTAL_STEPS "Installing Node.js v$CLEAN_NODE_VERSION..."
 
 if [ "$CLEAN_NODE_VERSION" = "lts" ]; then
     info "Installing latest LTS version of Node.js..."
-    if ! fnm install --lts; then
+    OUTPUT=$(fnm install --lts 2>&1)
+    echo "$OUTPUT"
+    if echo "$OUTPUT" | grep -q "Failed"; then
         error "Failed to install LTS version of Node.js"
         exit 1
     fi
-    if ! fnm use --lts; then
-        error "Failed to activate LTS version of Node.js"
+    # Extract version (e.g., v20.10.0)
+    LTS_VERSION=$(echo "$OUTPUT" | grep -oE 'v[0-9]+\.[0-9]+\.[0-9]+' | head -1 | sed 's/^v//')
+    if [ -n "$LTS_VERSION" ]; then
+        if ! fnm use "$LTS_VERSION"; then
+             error "Failed to activate LTS version of Node.js ($LTS_VERSION)"
+             exit 1
+        fi
+        fnm default "$LTS_VERSION" || echo "Warning: Failed to set LTS as default Node.js version." >&2
+    else
+        error "Could not detect installed LTS version from output."
         exit 1
     fi
-    fnm default "$(fnm current | awk '{sub(/^v/, "", $1); print $1}')" || echo "Warning: Failed to set LTS as default Node.js version. Current session has correct version but future shells may not." >&2
 elif [ "$CLEAN_NODE_VERSION" = "latest" ]; then
     info "Installing latest version of Node.js..."
     if ! fnm install --latest; then
         error "Failed to install latest version of Node.js"
         exit 1
     fi
-    VERSION="$(fnm current | awk '{sub(/^v/, "", $1); print $1}')"
-    if ! fnm use "$VERSION"; then
+    if ! fnm use latest; then
         error "Failed to activate latest version of Node.js"
         exit 1
     fi
+    VERSION="$(fnm current | awk '{sub(/^v/, "", $1); print $1}')"
     fnm default "$VERSION" || echo "Warning: Failed to set latest as default Node.js version. Current session has correct version but future shells may not." >&2
 else
     if ! fnm install "$CLEAN_NODE_VERSION"; then
@@ -334,15 +343,15 @@ step $CURRENT_STEP $TOTAL_STEPS "Installing pnpm v$CLEAN_PNPM_VERSION..."
 
 if command_exists pnpm; then
     CURRENT_PNPM=$(pnpm --version)
-    
+
     # Normalize current version to same precision as target
     CURRENT_PNPM_NORMALIZED="$CURRENT_PNPM"
     if [[ "$CLEAN_PNPM_VERSION" =~ ^[0-9]+$ ]]; then
         # Target is major-only, extract major from current
-        CURRENT_PNPM_NORMALIZED=$(echo "$CURRENT_PNPM" | grep -oE '^[0-9]+' || echo "$CURRENT_PNPM" || true)
+        CURRENT_PNPM_NORMALIZED=$(echo "$CURRENT_PNPM" | grep -oE '^[0-9]+' || echo "$CURRENT_PNPM")
     elif [[ "$CLEAN_PNPM_VERSION" =~ ^[0-9]+\.[0-9]+$ ]]; then
         # Target is major.minor, extract major.minor from current
-        CURRENT_PNPM_NORMALIZED=$(echo "$CURRENT_PNPM" | grep -oE '^[0-9]+\.[0-9]+' || echo "$CURRENT_PNPM" || true)
+        CURRENT_PNPM_NORMALIZED=$(echo "$CURRENT_PNPM" | grep -oE '^[0-9]+\.[0-9]+' || echo "$CURRENT_PNPM")
     fi
 
     # Skip version comparison if target is "latest" - always update to ensure we have latest
@@ -375,8 +384,12 @@ success "pnpm installed: v$(pnpm --version)"
 : $((CURRENT_STEP++))
 step $CURRENT_STEP $TOTAL_STEPS "Installing project dependencies..."
 
-# Run pnpm install non-interactively (CI=true prevents interactive prompts)
-CI=true pnpm install
+# Run pnpm install non-interactively (only set CI=true if in CI to allow local interaction if needed)
+if [ "${CI:-}" = "true" ] || [ -n "${GITHUB_ACTIONS:-}" ]; then
+    CI=true pnpm install
+else
+    pnpm install
+fi
 
 success "Project dependencies installed"
 
