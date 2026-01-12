@@ -21,13 +21,18 @@ export abstract class BaseOAuthProvider implements IOAuthProvider {
 	 * - MUST NOT be logged or exposed in error messages
 	 */
 	protected config: OAuthConfig;
+	protected providerName: string;
 
-	constructor(config: OAuthConfig) {
+	constructor(providerName: string, config: OAuthConfig) {
+		this.providerName = providerName;
 		this.config = config;
 		this.validateConfig();
 	}
 
-	abstract getProviderName(): string;
+	getProviderName(): string {
+		return this.providerName;
+	}
+
 	abstract exchangeCodeForTokens(
 		code: string,
 		redirectUri: string,
@@ -119,7 +124,7 @@ export abstract class BaseOAuthProvider implements IOAuthProvider {
 			!this.config.redirectUri
 		) {
 			throw new OAuthError(
-				`Invalid OAuth configuration for ${this.getProviderName()}`,
+				`Invalid OAuth configuration for ${this.providerName}`,
 				"INVALID_CONFIG",
 				500,
 			);

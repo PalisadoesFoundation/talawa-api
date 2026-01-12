@@ -17,11 +17,15 @@ Implements common HTTP logic and error handling
 
 ### Constructor
 
-> **new BaseOAuthProvider**(`config`): `BaseOAuthProvider`
+> **new BaseOAuthProvider**(`providerName`, `config`): `BaseOAuthProvider`
 
-Defined in: [src/utilities/auth/oauth/providers/BaseOAuthProvider.ts:25](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/utilities/auth/oauth/providers/BaseOAuthProvider.ts#L25)
+Defined in: [src/utilities/auth/oauth/providers/BaseOAuthProvider.ts:26](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/utilities/auth/oauth/providers/BaseOAuthProvider.ts#L26)
 
 #### Parameters
+
+##### providerName
+
+`string`
 
 ##### config
 
@@ -37,7 +41,7 @@ Defined in: [src/utilities/auth/oauth/providers/BaseOAuthProvider.ts:25](https:/
 
 > `abstract` **exchangeCodeForTokens**(`code`, `redirectUri`): `Promise`\<[`OAuthProviderTokenResponse`](../../../types/interfaces/OAuthProviderTokenResponse.md)\>
 
-Defined in: [src/utilities/auth/oauth/providers/BaseOAuthProvider.ts:31](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/utilities/auth/oauth/providers/BaseOAuthProvider.ts#L31)
+Defined in: [src/utilities/auth/oauth/providers/BaseOAuthProvider.ts:36](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/utilities/auth/oauth/providers/BaseOAuthProvider.ts#L36)
 
 Exchange authorization code for access tokens
 
@@ -77,9 +81,9 @@ If authorization code is invalid
 
 ### getProviderName()
 
-> `abstract` **getProviderName**(): `string`
+> **getProviderName**(): `string`
 
-Defined in: [src/utilities/auth/oauth/providers/BaseOAuthProvider.ts:30](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/utilities/auth/oauth/providers/BaseOAuthProvider.ts#L30)
+Defined in: [src/utilities/auth/oauth/providers/BaseOAuthProvider.ts:32](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/utilities/auth/oauth/providers/BaseOAuthProvider.ts#L32)
 
 Get the unique name identifier for this provider
 
@@ -99,7 +103,7 @@ Provider name (e.g., "google", "github")
 
 > `abstract` **getUserProfile**(`accessToken`): `Promise`\<[`OAuthUserProfile`](../../../types/interfaces/OAuthUserProfile.md)\>
 
-Defined in: [src/utilities/auth/oauth/providers/BaseOAuthProvider.ts:35](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/utilities/auth/oauth/providers/BaseOAuthProvider.ts#L35)
+Defined in: [src/utilities/auth/oauth/providers/BaseOAuthProvider.ts:40](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/utilities/auth/oauth/providers/BaseOAuthProvider.ts#L40)
 
 Fetch user profile information using access token
 

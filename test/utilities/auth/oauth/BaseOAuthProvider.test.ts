@@ -42,10 +42,6 @@ Object.defineProperty(axios, "isAxiosError", {
 });
 
 class ConcreteOAuthProvider extends BaseOAuthProvider {
-	getProviderName(): string {
-		return "test-provider";
-	}
-
 	// Expose protected method for testing
 	public testValidateConfig(): void {
 		this.validateConfig();
@@ -124,7 +120,7 @@ describe("BaseOAuthProvider", () => {
 			redirectUri: "http://localhost:3000/callback",
 		};
 
-		provider = new ConcreteOAuthProvider(config);
+		provider = new ConcreteOAuthProvider("test-provider", config);
 	});
 
 	describe("constructor", () => {
@@ -145,14 +141,14 @@ describe("BaseOAuthProvider", () => {
 
 		it("should throw error when redirectUri is missing", () => {
 			expect(() => {
-				new ConcreteOAuthProvider({
+				new ConcreteOAuthProvider("test-provider", {
 					clientId: "test_id",
 					clientSecret: "test_secret",
 					redirectUri: "",
 				});
 			}).toThrow(OAuthError);
 			expect(() => {
-				new ConcreteOAuthProvider({
+				new ConcreteOAuthProvider("test-provider", {
 					clientId: "test_id",
 					clientSecret: "test_secret",
 					redirectUri: "",
@@ -164,14 +160,14 @@ describe("BaseOAuthProvider", () => {
 
 		it("should throw error when clientId is missing", () => {
 			expect(() => {
-				new ConcreteOAuthProvider({
+				new ConcreteOAuthProvider("test-provider", {
 					clientId: "",
 					clientSecret: "test_secret",
 					redirectUri: "http://localhost:3000/callback",
 				});
 			}).toThrow(OAuthError);
 			expect(() => {
-				new ConcreteOAuthProvider({
+				new ConcreteOAuthProvider("test-provider", {
 					clientId: "",
 					clientSecret: "test_secret",
 					redirectUri: "http://localhost:3000/callback",
@@ -183,14 +179,14 @@ describe("BaseOAuthProvider", () => {
 
 		it("should throw error when clientSecret is missing", () => {
 			expect(() => {
-				new ConcreteOAuthProvider({
+				new ConcreteOAuthProvider("test-provider", {
 					clientId: "test_id",
 					clientSecret: "",
 					redirectUri: "http://localhost:3000/callback",
 				});
 			}).toThrow(OAuthError);
 			expect(() => {
-				new ConcreteOAuthProvider({
+				new ConcreteOAuthProvider("test-provider", {
 					clientId: "test_id",
 					clientSecret: "",
 					redirectUri: "http://localhost:3000/callback",
@@ -202,14 +198,14 @@ describe("BaseOAuthProvider", () => {
 
 		it("should throw error with provider name in message", () => {
 			expect(() => {
-				new ConcreteOAuthProvider({
+				new ConcreteOAuthProvider("test-provider", {
 					clientId: "",
 					clientSecret: "",
 					redirectUri: "",
 				});
 			}).toThrow(OAuthError);
 			expect(() => {
-				new ConcreteOAuthProvider({
+				new ConcreteOAuthProvider("test-provider", {
 					clientId: "",
 					clientSecret: "",
 					redirectUri: "",
@@ -219,14 +215,14 @@ describe("BaseOAuthProvider", () => {
 
 		it("should throw OAuthError with correct code and status", () => {
 			expect(() => {
-				new ConcreteOAuthProvider({
+				new ConcreteOAuthProvider("test-provider", {
 					clientId: "",
 					clientSecret: "",
 					redirectUri: "",
 				});
 			}).toThrow(OAuthError);
 			expect(() => {
-				new ConcreteOAuthProvider({
+				new ConcreteOAuthProvider("test-provider", {
 					clientId: "",
 					clientSecret: "",
 					redirectUri: "",

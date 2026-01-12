@@ -187,7 +187,6 @@ describe("OAuthProviderRegistry", () => {
 
 		it("should handle whitespace in provider name", () => {
 			registry.register(new MockProvider("google"));
-			// This would fail with current impl, pass if trim() is added
 			expect(registry.has("  google  ")).toBe(true);
 		});
 
