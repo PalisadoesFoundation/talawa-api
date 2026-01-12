@@ -149,22 +149,20 @@ describe("BaseOAuthProvider", () => {
 		});
 
 		it("should throw error when clientId is missing", () => {
-			expect(() => {
+			try {
 				new ConcreteOAuthProvider("test-provider", {
 					clientId: "",
 					clientSecret: "test_secret",
 					redirectUri: "http://localhost:3000/callback",
 				});
-			}).toThrow(OAuthError);
-			expect(() => {
-				new ConcreteOAuthProvider("test-provider", {
-					clientId: "",
-					clientSecret: "test_secret",
-					redirectUri: "http://localhost:3000/callback",
+				throw new Error("Expected error to be thrown");
+			} catch (error) {
+				expect(error).toBeInstanceOf(OAuthError);
+				expect(error).toMatchObject({
+					code: "INVALID_CONFIG",
+					statusCode: 500,
 				});
-			}).toThrow(
-				expect.objectContaining({ code: "INVALID_CONFIG", statusCode: 500 }),
-			);
+			}
 		});
 
 		it("should throw error when clientSecret is missing", () => {
@@ -605,6 +603,28 @@ describe("BaseOAuthProvider", () => {
 				expect.any(URLSearchParams),
 				expect.objectContaining({
 					timeout: 10000,
+				}),
+			);
+		});
+		it("should use custom timeout from config when provided", async () => {
+			const customConfig: OAuthConfig = {
+				clientId: "test_client_id",
+				clientSecret: "test_client_secret",
+				requestTimeoutMs: 5000,
+			};
+			const customProvider = new ConcreteOAuthProvider(
+				"custom-timeout",
+				customConfig,
+			);
+
+			mockedPost.mockResolvedValueOnce({ data: {} } as AxiosResponse);
+			await customProvider.testPost("https://test.com", {});
+
+			expect(mockedPost).toHaveBeenCalledWith(
+				"https://test.com",
+				expect.any(URLSearchParams),
+				expect.objectContaining({
+					timeout: 5000,
 				}),
 			);
 		});
