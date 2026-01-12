@@ -4,6 +4,7 @@ import {
 	type NonEmptyString,
 	SESProvider,
 } from "~/src/services/email/providers/SESProvider";
+import type { EmailJob } from "~/src/services/email/types";
 
 // Mock the AWS SDK
 vi.mock("@aws-sdk/client-ses", () => {
@@ -33,7 +34,7 @@ describe("SESProvider", () => {
 	it("should throw error if AWS_SES_REGION is empty string", async () => {
 		const provider = new SESProvider({
 			...mockConfig,
-			region: "",
+			region: "" as NonEmptyString,
 		});
 
 		await expect(
@@ -292,12 +293,59 @@ describe("SESProvider", () => {
 			},
 		];
 
-		// @ts-expect-error - testing sparse array handling
-		const results = await sesProvider.sendBulkEmails(jobs);
+		// Remove the @ts-expect-error comment since we are testing sparse array handling logic directly
+		const results = await sesProvider.sendBulkEmails(
+			jobs as unknown as EmailJob[],
+		);
 
 		expect(results).toHaveLength(2);
 		expect(results[0]?.success).toBe(true);
 		expect(results[1]?.success).toBe(true);
 		expect(mockSend).toHaveBeenCalledTimes(2);
+	});
+
+	it("should include textBody in email when provided", async () => {
+		const mockSend = vi.fn().mockResolvedValue({ MessageId: "msg-text" });
+		(SESClient as unknown as Mock).prototype.send = mockSend;
+
+		const job = {
+			id: "1",
+			email: "recipient@example.com",
+			subject: "Subject",
+			htmlBody: "HTML Body",
+			textBody: "Text Body Content",
+			userId: "123",
+		};
+
+		await sesProvider.sendEmail(job);
+
+		expect(SendEmailCommand).toHaveBeenCalledWith(
+			expect.objectContaining({
+				Message: expect.objectContaining({
+					Body: expect.objectContaining({
+						Text: { Data: "Text Body Content", Charset: "UTF-8" },
+					}),
+				}),
+			}),
+		);
+	});
+
+	it("should wait ~100ms between bulk emails", async () => {
+		// Using real timers to avoid race conditions with dynamic imports + fake timers
+		const mockSend = vi.fn().mockResolvedValue({ MessageId: "msg-id" });
+		(SESClient as unknown as Mock).prototype.send = mockSend;
+
+		const jobs = [
+			{ id: "1", email: "e1@x.com", subject: "s", htmlBody: "b", userId: "u1" },
+			{ id: "2", email: "e2@x.com", subject: "s", htmlBody: "b", userId: "u2" },
+		];
+
+		const start = Date.now();
+		await sesProvider.sendBulkEmails(jobs);
+		const end = Date.now();
+
+		expect(mockSend).toHaveBeenCalledTimes(2);
+		// Should be at least 100ms (1 delay)
+		expect(end - start).toBeGreaterThanOrEqual(95); // Allow small margin for timer imprecision
 	});
 });

@@ -1,3 +1,5 @@
+import type { EmailJob, EmailResult, IEmailProvider } from "../types";
+
 /**
  * Branded type for non-empty strings to enforce validation at the type level.
  */

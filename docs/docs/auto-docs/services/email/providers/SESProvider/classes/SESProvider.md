@@ -4,7 +4,7 @@
 
 # Class: SESProvider
 
-Defined in: [src/services/email/providers/SESProvider.ts:30](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/email/providers/SESProvider.ts#L30)
+Defined in: [src/services/email/providers/SESProvider.ts:32](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/email/providers/SESProvider.ts#L32)
 
 AWS SES implementation of IEmailProvider.
 
@@ -13,7 +13,7 @@ It lazily initializes the SESClient and Command constructors on first use.
 
 ## Implements
 
-- `IEmailProvider`
+- [`IEmailProvider`](../../../types/interfaces/IEmailProvider.md)
 
 ## Constructors
 
@@ -21,7 +21,7 @@ It lazily initializes the SESClient and Command constructors on first use.
 
 > **new SESProvider**(`config`): `SESProvider`
 
-Defined in: [src/services/email/providers/SESProvider.ts:41](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/email/providers/SESProvider.ts#L41)
+Defined in: [src/services/email/providers/SESProvider.ts:43](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/email/providers/SESProvider.ts#L43)
 
 Creates an instance of SESProvider.
 
@@ -41,9 +41,9 @@ The SES configuration object containing region and credentials.
 
 ### sendBulkEmails()
 
-> **sendBulkEmails**(`jobs`): `Promise`\<`EmailResult`[]\>
+> **sendBulkEmails**(`jobs`): `Promise`\<[`EmailResult`](../../../types/interfaces/EmailResult.md)[]\>
 
-Defined in: [src/services/email/providers/SESProvider.ts:143](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/email/providers/SESProvider.ts#L143)
+Defined in: [src/services/email/providers/SESProvider.ts:145](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/email/providers/SESProvider.ts#L145)
 
 Send multiple emails
 
@@ -51,19 +51,23 @@ Send multiple emails
 
 ##### jobs
 
-`EmailJob`[]
+[`EmailJob`](../../../types/interfaces/EmailJob.md)[]
 
 #### Returns
 
-`Promise`\<`EmailResult`[]\>
+`Promise`\<[`EmailResult`](../../../types/interfaces/EmailResult.md)[]\>
+
+#### Implementation of
+
+[`IEmailProvider`](../../../types/interfaces/IEmailProvider.md).[`sendBulkEmails`](../../../types/interfaces/IEmailProvider.md#sendbulkemails)
 
 ***
 
 ### sendEmail()
 
-> **sendEmail**(`job`): `Promise`\<`EmailResult`\>
+> **sendEmail**(`job`): `Promise`\<[`EmailResult`](../../../types/interfaces/EmailResult.md)\>
 
-Defined in: [src/services/email/providers/SESProvider.ts:101](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/email/providers/SESProvider.ts#L101)
+Defined in: [src/services/email/providers/SESProvider.ts:103](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/email/providers/SESProvider.ts#L103)
 
 Send a single email using AWS SES
 
@@ -71,8 +75,12 @@ Send a single email using AWS SES
 
 ##### job
 
-`EmailJob`
+[`EmailJob`](../../../types/interfaces/EmailJob.md)
 
 #### Returns
 
-`Promise`\<`EmailResult`\>
+`Promise`\<[`EmailResult`](../../../types/interfaces/EmailResult.md)\>
+
+#### Implementation of
+
+[`IEmailProvider`](../../../types/interfaces/IEmailProvider.md).[`sendEmail`](../../../types/interfaces/IEmailProvider.md#sendemail)

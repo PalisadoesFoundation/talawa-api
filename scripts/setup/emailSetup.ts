@@ -1,3 +1,4 @@
+import type { NonEmptyString } from "../../src/services/email";
 import {
 	promptConfirm,
 	promptInput,
@@ -163,7 +164,7 @@ export async function emailSetup(answers: SetupAnswers): Promise<SetupAnswers> {
 						const { SESProvider } = await import("../../src/services/email");
 
 						const service = new SESProvider({
-							region: answers.AWS_SES_REGION || "",
+							region: (answers.AWS_SES_REGION || "") as NonEmptyString,
 							accessKeyId: answers.AWS_ACCESS_KEY_ID,
 							secretAccessKey: answers.AWS_SECRET_ACCESS_KEY,
 							fromEmail: answers.AWS_SES_FROM_EMAIL,

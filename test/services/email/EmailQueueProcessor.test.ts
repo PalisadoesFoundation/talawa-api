@@ -1,7 +1,10 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { GraphQLContext } from "~/src/graphql/context";
 import { EmailQueueProcessor } from "~/src/services/email/EmailQueueProcessor";
-import { SESProvider } from "~/src/services/email/providers/SESProvider";
+import {
+	type NonEmptyString,
+	SESProvider,
+} from "~/src/services/email/providers/SESProvider";
 import type { IEmailProvider } from "~/src/services/email/types";
 import { createMockLogger } from "../../utilities/mockLogger";
 
@@ -47,7 +50,7 @@ describe("EmailQueueProcessor", () => {
 	beforeEach(() => {
 		rows = [];
 		emailService = new SESProvider({
-			region: "us-east-1",
+			region: "us-east-1" as NonEmptyString,
 			fromEmail: "noreply@example.com",
 		});
 		vi.spyOn(emailService, "sendBulkEmails").mockImplementation(
