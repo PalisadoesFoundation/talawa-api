@@ -997,7 +997,6 @@ describe("GraphQLSchemaManager", () => {
 		});
 
 		it("should log when plugin types file is not found", async () => {
-			const { rootLogger } = await import("~/src/utilities/logging/logger");
 			const debugSpy = vi.spyOn(rootLogger, "debug");
 			const mockBuilderFunction = vi.fn();
 			const mockExtensionRegistry: IExtensionRegistry = {
