@@ -10,9 +10,9 @@ Normalized user profile from OAuth provider
 
 ## Properties
 
-### email
+### email?
 
-> **email**: `string`
+> `optional` **email**: `string`
 
 Defined in: [src/utilities/auth/oauth/types.ts:18](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/utilities/auth/oauth/types.ts#L18)
 

@@ -15,7 +15,7 @@ export interface OAuthProviderTokenResponse {
  */
 export interface OAuthUserProfile {
 	providerId: string;
-	email: string;
+	email?: string;
 	name?: string;
 	picture?: string;
 	emailVerified?: boolean;
@@ -27,6 +27,6 @@ export interface OAuthUserProfile {
 export interface OAuthConfig {
 	clientId: string;
 	clientSecret: string;
-	redirectUri: string;
-	OAUTH_REQUEST_TIMEOUT_MS?: number;
+	redirectUri?: string;
+	requestTimeoutMs?: number;
 }

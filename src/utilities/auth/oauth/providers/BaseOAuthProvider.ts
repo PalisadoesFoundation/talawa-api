@@ -53,15 +53,19 @@ export abstract class BaseOAuthProvider implements IOAuthProvider {
 		headers?: Record<string, string>,
 	): Promise<T> {
 		try {
+			// Ensure data is URL-encoded for form submission
+			const formData =
+				data instanceof URLSearchParams ? data : new URLSearchParams(data);
+
 			const config: AxiosRequestConfig = {
 				headers: {
 					"Content-Type": "application/x-www-form-urlencoded",
 					...headers,
 				},
-				timeout: this.config.OAUTH_REQUEST_TIMEOUT_MS || 10000, // fallback to 10 second timeout
+				timeout: this.config.requestTimeoutMs || 10000, // fallback to 10 second timeout
 			};
 
-			const response = await axios.post<T>(url, data, config);
+			const response = await axios.post<T>(url, formData, config);
 			return response.data;
 		} catch (error) {
 			if (axios.isAxiosError(error)) {
@@ -95,7 +99,7 @@ export abstract class BaseOAuthProvider implements IOAuthProvider {
 		try {
 			const config: AxiosRequestConfig = {
 				headers,
-				timeout: 10000,
+				timeout: this.config.requestTimeoutMs || 10000, // fallback to 10 second timeout
 			};
 
 			const response = await axios.get<T>(url, config);
@@ -118,11 +122,7 @@ export abstract class BaseOAuthProvider implements IOAuthProvider {
 	 * @throws {OAuthError} If configuration is invalid
 	 */
 	protected validateConfig(): void {
-		if (
-			!this.config.clientId ||
-			!this.config.clientSecret ||
-			!this.config.redirectUri
-		) {
+		if (!this.config.clientId || !this.config.clientSecret) {
 			throw new OAuthError(
 				`Invalid OAuth configuration for ${this.providerName}`,
 				"INVALID_CONFIG",

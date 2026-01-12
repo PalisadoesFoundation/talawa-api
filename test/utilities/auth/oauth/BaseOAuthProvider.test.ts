@@ -139,23 +139,13 @@ describe("BaseOAuthProvider", () => {
 			expect(() => provider.testValidateConfig()).not.toThrow();
 		});
 
-		it("should throw error when redirectUri is missing", () => {
+		it("should not throw error when redirectUri is missing (now optional)", () => {
 			expect(() => {
 				new ConcreteOAuthProvider("test-provider", {
 					clientId: "test_id",
 					clientSecret: "test_secret",
-					redirectUri: "",
 				});
-			}).toThrow(OAuthError);
-			expect(() => {
-				new ConcreteOAuthProvider("test-provider", {
-					clientId: "test_id",
-					clientSecret: "test_secret",
-					redirectUri: "",
-				});
-			}).toThrow(
-				expect.objectContaining({ code: "INVALID_CONFIG", statusCode: 500 }),
-			);
+			}).not.toThrow();
 		});
 
 		it("should throw error when clientId is missing", () => {
@@ -286,7 +276,39 @@ describe("BaseOAuthProvider", () => {
 			expect(result).toEqual(mockResponse);
 			expect(mockedPost).toHaveBeenCalledWith(
 				"https://test.com",
-				{ test: "data", number: "123" },
+				expect.any(URLSearchParams),
+				{
+					headers: {
+						"Content-Type": "application/x-www-form-urlencoded",
+					},
+					timeout: 10000,
+				},
+			);
+
+			// Verify the URLSearchParams content
+			const call = mockedPost.mock.calls[0];
+			const urlParams = call?.[1] as URLSearchParams;
+			expect(urlParams.get("test")).toBe("data");
+			expect(urlParams.get("number")).toBe("123");
+		});
+
+		it("should handle URLSearchParams data directly without conversion", async () => {
+			const mockResponse = { success: true };
+			mockedPost.mockResolvedValueOnce({ data: mockResponse } as AxiosResponse);
+
+			const urlSearchParams = new URLSearchParams();
+			urlSearchParams.append("client_id", "test123");
+			urlSearchParams.append("grant_type", "authorization_code");
+
+			const result = await provider.testPost<{ success: boolean }>(
+				"https://test.com",
+				urlSearchParams,
+			);
+
+			expect(result).toEqual(mockResponse);
+			expect(mockedPost).toHaveBeenCalledWith(
+				"https://test.com",
+				urlSearchParams, // Should be the exact same instance
 				{
 					headers: {
 						"Content-Type": "application/x-www-form-urlencoded",
@@ -308,7 +330,7 @@ describe("BaseOAuthProvider", () => {
 
 			expect(mockedPost).toHaveBeenCalledWith(
 				"https://test.com",
-				{},
+				expect.any(URLSearchParams),
 				{
 					headers: {
 						"Content-Type": "application/x-www-form-urlencoded",
@@ -580,7 +602,7 @@ describe("BaseOAuthProvider", () => {
 
 			expect(mockedPost).toHaveBeenCalledWith(
 				"https://test.com",
-				{},
+				expect.any(URLSearchParams),
 				expect.objectContaining({
 					timeout: 10000,
 				}),
@@ -609,7 +631,7 @@ describe("BaseOAuthProvider", () => {
 
 			expect(mockedPost).toHaveBeenCalledWith(
 				"https://test.com",
-				{},
+				expect.any(URLSearchParams),
 				expect.objectContaining({
 					headers: expect.objectContaining({
 						"Content-Type": "application/x-www-form-urlencoded",
@@ -629,7 +651,7 @@ describe("BaseOAuthProvider", () => {
 
 			expect(mockedPost).toHaveBeenCalledWith(
 				"https://test.com",
-				{},
+				expect.any(URLSearchParams),
 				expect.objectContaining({
 					headers: expect.objectContaining({
 						"Content-Type": "application/x-www-form-urlencoded",
