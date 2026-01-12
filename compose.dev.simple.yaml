@@ -1,0 +1,74 @@
+name: talawa-dev
+# Simple development compose file that runs only the required services
+# Run with: docker compose -f compose.dev.simple.yaml up -d
+networks:
+  minio:
+  postgres:
+  redis:
+
+services:
+  minio:
+    environment:
+      - MINIO_BROWSER=on
+      - MINIO_ROOT_PASSWORD=password
+      - MINIO_ROOT_USER=talawa
+    command: server /data --console-address ":9001"
+    healthcheck:
+      interval: 10s
+      retries: 3
+      start_interval: 1s
+      start_period: 5s
+      test: ["CMD-SHELL", "mc ready local"]
+      timeout: 10s
+    image: minio/minio:RELEASE.2024-12-18T13-15-44Z
+    networks:
+      - minio
+    ports:
+      - "9000:9000"  # MinIO API
+      - "9001:9001"  # MinIO Console
+    restart: unless-stopped
+    volumes:
+      - minio_data:/data
+
+  postgres:
+    environment:
+      - POSTGRES_DB=talawa
+      - POSTGRES_PASSWORD=password
+      - POSTGRES_USER=talawa
+    healthcheck:
+      interval: 10s
+      retries: 3
+      start_interval: 1s
+      start_period: 5s
+      test: ["CMD-SHELL", "pg_isready -d $${POSTGRES_DB} -U $${POSTGRES_USER}"]
+      timeout: 10s
+    image: postgres:17.2-alpine3.21
+    networks:
+      - postgres
+    ports:
+      - "5432:5432"
+    restart: unless-stopped
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  redis:
+    image: redis:8.0-M02-alpine
+    healthcheck:
+      interval: 10s
+      retries: 3
+      start_interval: 1s
+      start_period: 5s
+      test: ["CMD", "redis-cli", "ping"]
+      timeout: 10s
+    networks:
+      - redis
+    ports:
+      - "6379:6379"
+    restart: unless-stopped
+    volumes:
+      - redis_data:/data
+
+volumes:
+  minio_data:
+  postgres_data:
+  redis_data:
