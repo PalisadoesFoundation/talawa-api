@@ -310,21 +310,21 @@ describe("Performance Tracker", () => {
 	});
 
 	it("should track slow operations", async () => {
-		const tracker = createPerformanceTracker({ slowMs: 10 });
+		const tracker = createPerformanceTracker({ slowMs: 15 });
 
 		await tracker.time("fast-op", async () => {
 			await new Promise((resolve) => setTimeout(resolve, 5));
 		});
 
 		await tracker.time("slow-op", async () => {
-			await new Promise((resolve) => setTimeout(resolve, 20));
+			await new Promise((resolve) => setTimeout(resolve, 25));
 		});
 
 		const snapshot = tracker.snapshot();
 
 		expect(snapshot.slow.length).toBe(1);
 		expect(snapshot.slow[0]?.op).toBe("slow-op");
-		expect(snapshot.slow[0]?.ms).toBeGreaterThanOrEqual(10);
+		expect(snapshot.slow[0]?.ms).toBeGreaterThanOrEqual(15);
 	});
 
 	it("should calculate hit rate correctly", () => {
