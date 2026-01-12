@@ -1,5 +1,5 @@
 import type { EmailEnvConfig } from "../../config/emailConfig";
-import { SESProvider } from "./providers/SESProvider";
+import { type NonEmptyString, SESProvider } from "./providers/SESProvider";
 import type { IEmailProvider } from "./types";
 
 export const EmailProviderFactory = {
@@ -18,7 +18,7 @@ export const EmailProviderFactory = {
 					throw new Error("AWS_SES_REGION is required when using SES provider");
 				}
 				return new SESProvider({
-					region,
+					region: region as NonEmptyString,
 					accessKeyId: config.AWS_ACCESS_KEY_ID,
 					secretAccessKey: config.AWS_SECRET_ACCESS_KEY,
 					fromEmail: config.AWS_SES_FROM_EMAIL,

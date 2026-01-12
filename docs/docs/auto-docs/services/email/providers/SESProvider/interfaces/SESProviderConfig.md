@@ -4,7 +4,7 @@
 
 # Interface: SESProviderConfig
 
-Defined in: [src/services/email/providers/SESProvider.ts:6](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/email/providers/SESProvider.ts#L6)
+Defined in: [src/services/email/providers/SESProvider.ts:9](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/email/providers/SESProvider.ts#L9)
 
 Configuration for AWS SES Email Provider.
 
@@ -14,7 +14,7 @@ Configuration for AWS SES Email Provider.
 
 > `optional` **accessKeyId**: `string`
 
-Defined in: [src/services/email/providers/SESProvider.ts:10](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/email/providers/SESProvider.ts#L10)
+Defined in: [src/services/email/providers/SESProvider.ts:13](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/email/providers/SESProvider.ts#L13)
 
 AWS Access Key ID. Optional if using default credential chain (e.g. IAM roles).
 
@@ -24,7 +24,7 @@ AWS Access Key ID. Optional if using default credential chain (e.g. IAM roles).
 
 > `optional` **fromEmail**: `string`
 
-Defined in: [src/services/email/providers/SESProvider.ts:14](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/email/providers/SESProvider.ts#L14)
+Defined in: [src/services/email/providers/SESProvider.ts:17](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/email/providers/SESProvider.ts#L17)
 
 Default sender email address.
 
@@ -34,7 +34,7 @@ Default sender email address.
 
 > `optional` **fromName**: `string`
 
-Defined in: [src/services/email/providers/SESProvider.ts:16](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/email/providers/SESProvider.ts#L16)
+Defined in: [src/services/email/providers/SESProvider.ts:19](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/email/providers/SESProvider.ts#L19)
 
 Default sender display name.
 
@@ -42,9 +42,9 @@ Default sender display name.
 
 ### region
 
-> **region**: `string`
+> **region**: [`NonEmptyString`](../type-aliases/NonEmptyString.md)
 
-Defined in: [src/services/email/providers/SESProvider.ts:8](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/email/providers/SESProvider.ts#L8)
+Defined in: [src/services/email/providers/SESProvider.ts:11](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/email/providers/SESProvider.ts#L11)
 
 AWS region (e.g., 'us-east-1'). Required.
 
@@ -54,6 +54,6 @@ AWS region (e.g., 'us-east-1'). Required.
 
 > `optional` **secretAccessKey**: `string`
 
-Defined in: [src/services/email/providers/SESProvider.ts:12](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/email/providers/SESProvider.ts#L12)
+Defined in: [src/services/email/providers/SESProvider.ts:15](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/email/providers/SESProvider.ts#L15)
 
 AWS Secret Access Key. Optional if using default credential chain.

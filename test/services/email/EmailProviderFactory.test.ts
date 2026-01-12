@@ -52,4 +52,30 @@ describe("EmailProviderFactory", () => {
 			"Unsupported email provider: smtp",
 		);
 	});
+	it("should return SESProvider when credentials are omitted (IAM role scenario)", () => {
+		const config = {
+			API_EMAIL_PROVIDER: "ses",
+			AWS_SES_REGION: "us-east-1",
+			// AWS_ACCESS_KEY_ID omitted
+			// AWS_SECRET_ACCESS_KEY omitted
+			AWS_SES_FROM_EMAIL: "from@example.com",
+		} as unknown as EnvConfig;
+
+		const provider = EmailProviderFactory.create(config);
+		expect(provider).toBeInstanceOf(SESProvider);
+	});
+
+	it("should return SESProvider when AWS_SES_FROM_NAME is omitted", () => {
+		const config = {
+			API_EMAIL_PROVIDER: "ses",
+			AWS_SES_REGION: "us-east-1",
+			AWS_ACCESS_KEY_ID: "key",
+			AWS_SECRET_ACCESS_KEY: "secret",
+			AWS_SES_FROM_EMAIL: "from@example.com",
+			// AWS_SES_FROM_NAME omitted
+		} as unknown as EnvConfig;
+
+		const provider = EmailProviderFactory.create(config);
+		expect(provider).toBeInstanceOf(SESProvider);
+	});
 });

@@ -1,6 +1,9 @@
 import { SESClient, SendEmailCommand } from "@aws-sdk/client-ses";
 import { beforeEach, describe, expect, it, type Mock, vi } from "vitest";
-import { SESProvider } from "~/src/services/email/providers/SESProvider";
+import {
+	type NonEmptyString,
+	SESProvider,
+} from "~/src/services/email/providers/SESProvider";
 
 // Mock the AWS SDK
 vi.mock("@aws-sdk/client-ses", () => {
@@ -14,13 +17,18 @@ vi.mock("@aws-sdk/client-ses", () => {
 
 describe("SESProvider", () => {
 	const mockConfig = {
-		region: "us-east-1",
+		region: "us-east-1" as NonEmptyString,
 		accessKeyId: "test-key",
 		secretAccessKey: "test-secret",
 		fromEmail: "test@example.com",
 		fromName: "Test Sender",
 	};
 	let sesProvider: SESProvider;
+
+	beforeEach(() => {
+		vi.clearAllMocks();
+		sesProvider = new SESProvider(mockConfig);
+	});
 
 	it("should throw error if AWS_SES_REGION is empty string", async () => {
 		const provider = new SESProvider({
@@ -42,11 +50,6 @@ describe("SESProvider", () => {
 				error: "AWS_SES_REGION must be a non-empty string",
 			}),
 		);
-	});
-
-	beforeEach(() => {
-		vi.clearAllMocks();
-		sesProvider = new SESProvider(mockConfig);
 	});
 
 	it("should initialize SESClient with correct config", async () => {
@@ -154,7 +157,7 @@ describe("SESProvider", () => {
 
 	it("should throw error if fromEmail is not configured", async () => {
 		const provider = new SESProvider({
-			region: "us-east-1",
+			region: "us-east-1" as NonEmptyString,
 			accessKeyId: "key",
 			secretAccessKey: "secret",
 			// fromEmail missing

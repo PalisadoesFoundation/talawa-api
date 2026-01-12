@@ -1,11 +1,14 @@
-import type { EmailJob, EmailResult, IEmailProvider } from "../types";
+/**
+ * Branded type for non-empty strings to enforce validation at the type level.
+ */
+export type NonEmptyString = string & { __brand: "NonEmptyString" };
 
 /**
  * Configuration for AWS SES Email Provider.
  */
 export interface SESProviderConfig {
 	/** AWS region (e.g., 'us-east-1'). Required. */
-	region: string;
+	region: NonEmptyString;
 	/** AWS Access Key ID. Optional if using default credential chain (e.g. IAM roles). */
 	accessKeyId?: string;
 	/** AWS Secret Access Key. Optional if using default credential chain. */
