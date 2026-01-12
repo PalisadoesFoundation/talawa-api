@@ -83,9 +83,18 @@ let sigintHandler: (() => void | Promise<void>) | null = null;
 
 /**
  * Safely restores the backup file if it exists
- * @returns true if restoration was successful or no backup was needed, false if restoration failed
+ * @returns Boolean indicating restoration status:
+ *   - `true` if restoration was successful
+ *   - `true` if no backup was created (nothing to restore, not an error)
+ *   - `false` if restoration failed (backup exists but could not be restored)
+ *   - `false` if cleanup is already in progress (prevents concurrent cleanup)
  */
 async function restoreBackup(): Promise<boolean> {
+	// Note: There's a tiny window for a race condition between the check and set
+	// of cleanupInProgress. This is acceptable for SIGINT handler cleanup as:
+	// 1. SIGINT is typically a user-initiated single event
+	// 2. The worst case is redundant cleanup attempts, which are safe
+	// 3. The finally block ensures cleanupInProgress is always reset
 	if (cleanupInProgress) {
 		// Prevent multiple simultaneous cleanup attempts
 		return false;
@@ -100,6 +109,22 @@ async function restoreBackup(): Promise<boolean> {
 		}
 
 		try {
+			// Validate that backup actually exists when backupCreated is true
+			// This ensures state consistency: if backupCreated is true, we should have a backup
+			const backupDir = ".backup";
+			try {
+				await fs.access(backupDir);
+			} catch (err: unknown) {
+				const error = err as NodeJS.ErrnoException;
+				if (error.code === "ENOENT") {
+					console.warn(
+						"⚠️  Backup was marked as created but backup directory does not exist",
+					);
+					return false; // State inconsistency: backupCreated=true but no backup dir
+				}
+				throw err; // Re-throw other errors
+			}
+
 			await restoreLatestBackup();
 			console.log("✅ Original configuration restored successfully");
 			return true;
@@ -166,10 +191,10 @@ async function restoreLatestBackup(): Promise<void> {
 	} catch (err: unknown) {
 		const error = err as NodeJS.ErrnoException;
 		if (error.code === "ENOENT") {
-			console.warn("Backup directory .backup does not exist");
+			console.warn("⚠️  Backup directory .backup does not exist");
 			return;
 		}
-		console.error("Error accessing backup directory:", error);
+		console.error("❌ Error accessing backup directory:", error);
 		throw error;
 	}
 	try {
@@ -190,15 +215,19 @@ async function restoreLatestBackup(): Promise<void> {
 			if (latestBackup) {
 				const backupPath = path.join(backupDir, latestBackup.name);
 				console.log(`Restoring from latest backup: ${backupPath}`);
-				await fs.copyFile(backupPath, ".env");
+				// Use atomic write: write to temp file first, then rename
+				// This ensures the .env file is either fully restored or unchanged
+				const tempPath = ".env.tmp";
+				await fs.copyFile(backupPath, tempPath);
+				await fs.rename(tempPath, ".env"); // Atomic on POSIX systems
 			} else {
-				console.warn("No valid backup files found with epoch timestamps");
+				console.warn("⚠️  No valid backup files found with epoch timestamps");
 			}
 		} else {
-			console.warn("No backup files found in .backup directory");
+			console.warn("⚠️  No backup files found in .backup directory");
 		}
 	} catch (readError) {
-		console.error("Error reading backup directory:", readError);
+		console.error("❌ Error reading backup directory:", readError);
 		throw readError;
 	}
 }
