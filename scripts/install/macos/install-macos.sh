@@ -193,6 +193,9 @@ NODE_VERSION=$(jq -r '.engines.node // "lts"' package.json)
 info "Node.js version from package.json: \"$NODE_VERSION\""
 
 # Validate Node.js version format strictly
+# Note: This regex supports simple semver (X.Y.Z), major/minor (X, X.Y), aliases (lts, latest),
+# and simple operators (>=, <=, ~, ^). It does NOT support complex ranges (e.g., ">=18 <22", "18 || 20", "20.x").
+# If complex ranges are needed in the future, this validation logic will need to be updated.
 if ! echo "$NODE_VERSION" | grep -E -q '^(lts|latest|([><]=?|[~^=])[0-9]+(\.[0-9]+(\.[0-9]+)?)?|[0-9]+(\.[0-9]+(\.[0-9]+)?)?)$'; then
     error "$(cat <<EOF
 Could not parse Node.js version from package.json: '$NODE_VERSION'
@@ -372,10 +375,16 @@ if command_exists pnpm; then
     CURRENT_PNPM_NORMALIZED="$CURRENT_PNPM"
     if [[ "$CLEAN_PNPM_VERSION" =~ ^[0-9]+$ ]]; then
         # Target is major-only, extract major from current
-        CURRENT_PNPM_NORMALIZED=$(echo "$CURRENT_PNPM" | grep -oE '^[0-9]+' || echo "$CURRENT_PNPM")
+        EXTRACTED=$(echo "$CURRENT_PNPM" | grep -oE '^[0-9]+' || true)
+        if [ -n "$EXTRACTED" ]; then
+            CURRENT_PNPM_NORMALIZED="$EXTRACTED"
+        fi
     elif [[ "$CLEAN_PNPM_VERSION" =~ ^[0-9]+\.[0-9]+$ ]]; then
         # Target is major.minor, extract major.minor from current
-        CURRENT_PNPM_NORMALIZED=$(echo "$CURRENT_PNPM" | grep -oE '^[0-9]+\.[0-9]+' || echo "$CURRENT_PNPM")
+        EXTRACTED=$(echo "$CURRENT_PNPM" | grep -oE '^[0-9]+\.[0-9]+' || true)
+        if [ -n "$EXTRACTED" ]; then
+            CURRENT_PNPM_NORMALIZED="$EXTRACTED"
+        fi
     fi
 
     # Skip version comparison if target is "latest" - always update to ensure we have latest
