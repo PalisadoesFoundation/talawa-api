@@ -1,6 +1,6 @@
 import { faker } from "@faker-js/faker";
-import type { GraphQLObjectType } from "graphql";
 import { initGraphQLTada } from "gql.tada";
+import type { GraphQLObjectType } from "graphql";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import type { ClientCustomScalars } from "~/src/graphql/scalars/index";
 import { schema } from "~/src/graphql/schema";
@@ -99,16 +99,19 @@ async function createOrgMembership(
 	organizationId: string,
 	memberId: string,
 ) {
-	const result = await mercuriusClient.mutate(Mutation_createOrganizationMembership, {
-		headers: { authorization: `bearer ${authToken}` },
-		variables: {
-			input: {
-				organizationId,
-				memberId,
-				role: "administrator",
+	const result = await mercuriusClient.mutate(
+		Mutation_createOrganizationMembership,
+		{
+			headers: { authorization: `bearer ${authToken}` },
+			variables: {
+				input: {
+					organizationId,
+					memberId,
+					role: "administrator",
+				},
 			},
 		},
-	});
+	);
 
 	if (result.errors) {
 		throw new Error(
@@ -197,11 +200,7 @@ describe("Fund.campaigns Resolver - Integration", () => {
 		// Create multiple campaigns for pagination tests
 		campaigns = [];
 		for (const name of ["Alpha Campaign", "Beta Campaign", "Gamma Campaign"]) {
-			const campaign = await createTestCampaign(
-				adminAuth.token,
-				fund.id,
-				name,
-			);
+			const campaign = await createTestCampaign(adminAuth.token, fund.id, name);
 			campaigns.push(campaign);
 		}
 	});
@@ -289,13 +288,16 @@ describe("Fund.campaigns Resolver - Integration", () => {
 
 		it("should paginate forward using after cursor", async () => {
 			// First, get the first page
-			const firstPageResult = await mercuriusClient.query(Query_Fund_Campaigns, {
-				headers: { authorization: `bearer ${adminAuth.token}` },
-				variables: {
-					input: { id: fund.id },
-					first: 1,
+			const firstPageResult = await mercuriusClient.query(
+				Query_Fund_Campaigns,
+				{
+					headers: { authorization: `bearer ${adminAuth.token}` },
+					variables: {
+						input: { id: fund.id },
+						first: 1,
+					},
 				},
-			});
+			);
 
 			expect(firstPageResult.errors).toBeUndefined();
 			assertToBeNonNullish(firstPageResult.data?.fund?.campaigns);
@@ -541,7 +543,9 @@ describe("Fund.campaigns Resolver - Integration", () => {
 				!campaignsField.extensions ||
 				!campaignsField.extensions.complexity
 			) {
-				throw new Error("Complexity function not found on Fund.campaigns field");
+				throw new Error(
+					"Complexity function not found on Fund.campaigns field",
+				);
 			}
 			campaignsComplexityFunction = campaignsField.extensions.complexity as (
 				args: Record<string, unknown>,
