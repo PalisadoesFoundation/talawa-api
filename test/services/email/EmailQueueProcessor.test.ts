@@ -2,7 +2,10 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { GraphQLContext } from "~/src/graphql/context";
 import { EmailQueueProcessor } from "~/src/services/email/EmailQueueProcessor";
 import { SESProvider } from "~/src/services/email/providers/SESProvider";
-import type { IEmailProvider, NonEmptyString } from "~/src/services/email/types";
+import type {
+	IEmailProvider,
+	NonEmptyString,
+} from "~/src/services/email/types";
 import { createMockLogger } from "../../utilities/mockLogger";
 
 type ProcessorWithPrivates = {
