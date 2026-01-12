@@ -88,6 +88,14 @@ async function createTestOrganization(authToken: string) {
 			},
 		},
 	);
+
+	// Surface GraphQL errors clearly for easier debugging in tests
+	if (createOrgResult.errors) {
+		throw new Error(
+			`Mutation_createOrganization failed: ${JSON.stringify(createOrgResult.errors)}`,
+		);
+	}
+
 	assertToBeNonNullish(createOrgResult.data?.createOrganization);
 	const org = createOrgResult.data.createOrganization;
 	assertToBeNonNullish(org.id);
@@ -137,6 +145,13 @@ async function createTestFund(authToken: string, organizationId: string) {
 			},
 		},
 	});
+
+	if (createFundResult.errors) {
+		throw new Error(
+			`Mutation_createFund failed: ${JSON.stringify(createFundResult.errors)}`,
+		);
+	}
+
 	assertToBeNonNullish(createFundResult.data?.createFund);
 	const fund = createFundResult.data.createFund;
 	assertToBeNonNullish(fund.id);
@@ -231,13 +246,15 @@ describe("Fund.campaigns Resolver - Integration", () => {
 				"Gamma Campaign",
 			]);
 
-			// Validate pageInfo structure
+			// Validate pageInfo concrete values (we queried first: 10 and have 3 campaigns)
 			const pageInfo = result.data.fund.campaigns.pageInfo;
 			assertToBeNonNullish(pageInfo);
-			expect(pageInfo.hasNextPage).toBeDefined();
-			expect(pageInfo.hasPreviousPage).toBeDefined();
-			expect(pageInfo.startCursor).toBeDefined();
-			expect(pageInfo.endCursor).toBeDefined();
+			expect(pageInfo.hasNextPage).toBe(false);
+			expect(pageInfo.hasPreviousPage).toBe(false);
+			expect(pageInfo.startCursor).toBe(edges[0]?.cursor);
+			expect(pageInfo.endCursor).toBe(
+				edges[edges.length - 1]?.cursor,
+			);
 		});
 
 		it("should return empty edges when fund has no campaigns", async () => {
