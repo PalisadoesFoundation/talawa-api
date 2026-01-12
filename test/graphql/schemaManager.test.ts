@@ -450,21 +450,12 @@ describe("GraphQLSchemaManager", () => {
 			await expect(importCoreSchema()).resolves.not.toThrow();
 		});
 
-		it("should handle core schema import failure and log error", async () => {
+		it("should log error with correct shape when import fails (contract test)", async () => {
 			// ─────────────────────────────────────────────────────────────────────────
-			// NOTE: Testing the actual importCoreSchema failure path is challenging
-			// because the core schema modules (scalars, enums, inputs, types) are
-			// mocked at the top level with vi.mock, and using vi.resetModules() with
-			// vi.doMock to inject a throwing mock causes state leakage across tests.
-			//
-			// This test verifies that the error logging pattern used in the catch block
-			// of importCoreSchema works correctly by directly invoking rootLogger.error
-			// with the same shape of arguments that would be passed on import failure.
-			//
-			// The actual catch block in importCoreSchema (lines 109-112) is exercised
-			// by the test "should import core schema components successfully" which
-			// verifies the happy path, and this test ensures the logging call signature
-			// is correct.
+			// NOTE: This is an explicit contract test for the logging call shape
+			// rather than exercising importCoreSchema. We call rootLogger.error
+			// directly to verify the error logging pattern used in the catch block
+			// works correctly with the expected shape of arguments.
 			// ─────────────────────────────────────────────────────────────────────────
 			const errorSpy = vi.spyOn(rootLogger, "error");
 

@@ -915,7 +915,7 @@ describe("PluginManager", () => {
 		it("should handle outer graceful shutdown error (covers lines 584-585)", async () => {
 			const context = createPluginContext();
 			const manager = new TestablePluginManager(context, "/plugins");
-			await new Promise((resolve) => setTimeout(resolve, 10));
+			await manager.initialize();
 
 			// Make removeAllListeners throw to trigger outer catch
 			vi.spyOn(manager, "removeAllListeners").mockImplementation(() => {
