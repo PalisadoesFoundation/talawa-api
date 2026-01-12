@@ -44,11 +44,7 @@ suite("Query field agendaCategoriesByEventId", () => {
 
 	afterEach(async () => {
 		for (const cleanup of cleanupFns.reverse()) {
-			try {
-				await cleanup();
-			} catch {
-				// cleanup failures are acceptable in tests
-			}
+			await cleanup();
 		}
 		cleanupFns.length = 0;
 	});
@@ -78,6 +74,7 @@ suite("Query field agendaCategoriesByEventId", () => {
 
 	test("Returns unauthenticated error when user is deleted after authentication", async () => {
 		const regularUser = await createRegularUserUsingAdmin();
+		let eventId: string | undefined;
 
 		const createOrgResult = await mercuriusClient.mutate(
 			Mutation_createOrganization,
@@ -91,10 +88,12 @@ suite("Query field agendaCategoriesByEventId", () => {
 		assertToBeNonNullish(createOrgResult.data?.createOrganization);
 		const organizationId = createOrgResult.data.createOrganization.id;
 		cleanupFns.push(async () => {
-			await mercuriusClient.mutate(Mutation_deleteStandaloneEvent, {
-				headers: { authorization: `bearer ${adminAuthToken}` },
-				variables: { input: { id: eventId } },
-			});
+			if (eventId) {
+				await mercuriusClient.mutate(Mutation_deleteStandaloneEvent, {
+					headers: { authorization: `bearer ${adminAuthToken}` },
+					variables: { input: { id: eventId } },
+				});
+			}
 
 			await mercuriusClient.mutate(Mutation_deleteOrganization, {
 				headers: { authorization: `bearer ${adminAuthToken}` },
@@ -128,7 +127,7 @@ suite("Query field agendaCategoriesByEventId", () => {
 			},
 		);
 		assertToBeNonNullish(createEventResult.data?.createEvent);
-		const eventId = createEventResult.data.createEvent.id;
+		eventId = createEventResult.data.createEvent.id;
 
 		await server.drizzleClient
 			.delete(usersTable)
@@ -160,13 +159,19 @@ suite("Query field agendaCategoriesByEventId", () => {
 		);
 
 		expect(result.data?.agendaCategoriesByEventId ?? null).toEqual(null);
-		expect(
-			result.errors?.some(
-				(e) =>
-					e.extensions?.code === "invalid_arguments" ||
-					e.message.includes("Invalid uuid"),
-			),
-		).toBe(true);
+		expect(result.errors).toEqual(
+			expect.arrayContaining([
+				expect.objectContaining({
+					extensions: expect.objectContaining({
+						code: "invalid_arguments",
+						issues: expect.arrayContaining([
+							expect.objectContaining({ argumentPath: ["eventId"] }),
+						]),
+					}),
+					path: ["agendaCategoriesByEventId"],
+				}),
+			]),
+		);
 	});
 
 	test("Returns not_found when event does not exist", async () => {
@@ -199,6 +204,7 @@ suite("Query field agendaCategoriesByEventId", () => {
 
 	test("Returns unauthorized when non-member tries to access agenda categories", async () => {
 		const regularUser = await createRegularUserUsingAdmin();
+		let eventId: string | undefined;
 
 		const createOrgResult = await mercuriusClient.mutate(
 			Mutation_createOrganization,
@@ -216,10 +222,12 @@ suite("Query field agendaCategoriesByEventId", () => {
 		assertToBeNonNullish(createOrgResult.data?.createOrganization);
 		const organizationId = createOrgResult.data.createOrganization.id;
 		cleanupFns.push(async () => {
-			await mercuriusClient.mutate(Mutation_deleteStandaloneEvent, {
-				headers: { authorization: `bearer ${adminAuthToken}` },
-				variables: { input: { id: eventId } },
-			});
+			if (eventId) {
+				await mercuriusClient.mutate(Mutation_deleteStandaloneEvent, {
+					headers: { authorization: `bearer ${adminAuthToken}` },
+					variables: { input: { id: eventId } },
+				});
+			}
 
 			await mercuriusClient.mutate(Mutation_deleteOrganization, {
 				headers: { authorization: `bearer ${adminAuthToken}` },
@@ -254,7 +262,7 @@ suite("Query field agendaCategoriesByEventId", () => {
 		);
 
 		assertToBeNonNullish(createEventResult.data?.createEvent);
-		const eventId = createEventResult.data.createEvent.id;
+		eventId = createEventResult.data.createEvent.id;
 
 		const result = await mercuriusClient.query(
 			Query_agendaCategoriesByEventId,
@@ -277,6 +285,7 @@ suite("Query field agendaCategoriesByEventId", () => {
 	});
 
 	test("Returns empty array when event has no agenda categories", async () => {
+		let eventId: string | undefined;
 		const createOrgResult = await mercuriusClient.mutate(
 			Mutation_createOrganization,
 			{
@@ -293,10 +302,12 @@ suite("Query field agendaCategoriesByEventId", () => {
 		assertToBeNonNullish(createOrgResult.data?.createOrganization);
 		const organizationId = createOrgResult.data.createOrganization.id;
 		cleanupFns.push(async () => {
-			await mercuriusClient.mutate(Mutation_deleteStandaloneEvent, {
-				headers: { authorization: `bearer ${adminAuthToken}` },
-				variables: { input: { id: eventId } },
-			});
+			if (eventId) {
+				await mercuriusClient.mutate(Mutation_deleteStandaloneEvent, {
+					headers: { authorization: `bearer ${adminAuthToken}` },
+					variables: { input: { id: eventId } },
+				});
+			}
 
 			await mercuriusClient.mutate(Mutation_deleteOrganization, {
 				headers: { authorization: `bearer ${adminAuthToken}` },
@@ -331,7 +342,7 @@ suite("Query field agendaCategoriesByEventId", () => {
 		);
 
 		assertToBeNonNullish(createEventResult.data?.createEvent);
-		const eventId = createEventResult.data.createEvent.id;
+		eventId = createEventResult.data.createEvent.id;
 
 		const result = await mercuriusClient.query(
 			Query_agendaCategoriesByEventId,
@@ -346,6 +357,7 @@ suite("Query field agendaCategoriesByEventId", () => {
 	});
 
 	test("Returns agenda categories for event", async () => {
+		let eventId: string | undefined;
 		const createOrgResult = await mercuriusClient.mutate(
 			Mutation_createOrganization,
 			{
@@ -362,10 +374,12 @@ suite("Query field agendaCategoriesByEventId", () => {
 		assertToBeNonNullish(createOrgResult.data?.createOrganization);
 		const organizationId = createOrgResult.data.createOrganization.id;
 		cleanupFns.push(async () => {
-			await mercuriusClient.mutate(Mutation_deleteStandaloneEvent, {
-				headers: { authorization: `bearer ${adminAuthToken}` },
-				variables: { input: { id: eventId } },
-			});
+			if (eventId) {
+				await mercuriusClient.mutate(Mutation_deleteStandaloneEvent, {
+					headers: { authorization: `bearer ${adminAuthToken}` },
+					variables: { input: { id: eventId } },
+				});
+			}
 
 			await mercuriusClient.mutate(Mutation_deleteOrganization, {
 				headers: { authorization: `bearer ${adminAuthToken}` },
@@ -400,7 +414,7 @@ suite("Query field agendaCategoriesByEventId", () => {
 		);
 
 		assertToBeNonNullish(createEventResult.data?.createEvent);
-		const eventId = createEventResult.data.createEvent.id;
+		eventId = createEventResult.data.createEvent.id;
 
 		await mercuriusClient.mutate(Mutation_createAgendaCategory, {
 			headers: { authorization: `bearer ${adminAuthToken}` },

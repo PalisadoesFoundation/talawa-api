@@ -138,6 +138,11 @@ async function createOrganizationEventAndCategory(adminAuthToken: string) {
 		organizationId,
 		eventId,
 		cleanup: async () => {
+			// Best-effort: delete category first to avoid relying on FK cascade.
+			await mercuriusClient.mutate(Mutation_deleteAgendaCategory, {
+				headers: { authorization: `bearer ${adminAuthToken}` },
+				variables: { input: { id: categoryId } },
+			});
 			await mercuriusClient.mutate(Mutation_deleteStandaloneEvent, {
 				headers: { authorization: `bearer ${adminAuthToken}` },
 				variables: { input: { id: eventId } },

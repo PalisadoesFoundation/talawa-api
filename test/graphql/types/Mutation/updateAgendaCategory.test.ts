@@ -406,7 +406,7 @@ suite("Mutation field updateAgendaCategory", () => {
 			);
 			cleanupFns.push(env.cleanup);
 
-			vi.spyOn(server.drizzleClient, "update").mockReturnValue({
+			vi.spyOn(server.drizzleClient, "update").mockReturnValueOnce({
 				set: () => ({
 					where: () => ({
 						returning: async () => [],
@@ -432,8 +432,14 @@ suite("Mutation field updateAgendaCategory", () => {
 				expect.arrayContaining([
 					expect.objectContaining({
 						extensions: expect.objectContaining({
-							code: "unexpected",
+							code: "arguments_associated_resources_not_found",
+							issues: expect.arrayContaining([
+								expect.objectContaining({
+									argumentPath: ["input", "id"],
+								}),
+							]),
 						}),
+						path: ["updateAgendaCategory"],
 					}),
 				]),
 			);

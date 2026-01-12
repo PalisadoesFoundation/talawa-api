@@ -488,12 +488,30 @@ suite("Mutation field createAgendaCategory", () => {
 
 		testCleanupFunctions.push(cleanup);
 
-		vi.spyOn(server.drizzleClient, "insert").mockReturnValueOnce({
-			values: () => ({
-				returning: async () => [],
-			}),
-		} as unknown as ReturnType<typeof server.drizzleClient.insert>);
+		const originalInsert = server.drizzleClient.insert.bind(
+			server.drizzleClient,
+		);
+		vi.spyOn(server.drizzleClient, "insert").mockImplementationOnce(
+			(table: unknown) => {
+				// Narrow at runtime
+				const tableName =
+					typeof table === "object" &&
+					table !== null &&
+					(table as Record<symbol, unknown>)[Symbol.for("drizzle:Name")];
 
+				// Only affect agenda_categories insert
+				if (tableName === "agenda_categories") {
+					return {
+						values: () => ({
+							returning: async () => [],
+						}),
+					} as unknown as ReturnType<typeof server.drizzleClient.insert>;
+				}
+
+				// Delegate to real implementation
+				return originalInsert(table as never);
+			},
+		);
 		const result = await mercuriusClient.mutate(Mutation_createAgendaCategory, {
 			headers: { authorization: `bearer ${token}` },
 			variables: {
