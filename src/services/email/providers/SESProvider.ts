@@ -1,9 +1,9 @@
-import type { EmailJob, EmailResult, IEmailProvider } from "../types";
-
-/**
- * Branded type for non-empty strings to enforce validation at the type level.
- */
-export type NonEmptyString = string & { __brand: "NonEmptyString" };
+import type {
+	EmailJob,
+	EmailResult,
+	IEmailProvider,
+	NonEmptyString,
+} from "../types";
 
 /**
  * Configuration for AWS SES Email Provider.
@@ -22,7 +22,7 @@ export interface SESProviderConfig {
 }
 
 // TODO: Consider batching/parallelizing sendBulkEmails for performance in future updates.
-// See tracking issue: ISSUE_EMAIL_BATCHING.md (Optimization: Batching and Parallelizing SES Bulk Email Sending)
+// This would improve throughput for high-volume scenarios.
 /**
  * AWS SES implementation of IEmailProvider.
  *
@@ -148,6 +148,7 @@ export class SESProvider implements IEmailProvider {
 			if (!job) continue;
 			results.push(await this.sendEmail(job));
 			if (i < jobs.length - 1) {
+				// Rate limiting delay to avoid AWS SES throttling
 				await new Promise((r) => setTimeout(r, 100));
 			}
 		}

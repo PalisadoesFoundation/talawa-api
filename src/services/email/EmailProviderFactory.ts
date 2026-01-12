@@ -1,6 +1,6 @@
 import type { EmailEnvConfig } from "../../config/emailConfig";
-import { type NonEmptyString, SESProvider } from "./providers/SESProvider";
-import type { IEmailProvider } from "./types";
+import { SESProvider } from "./providers/SESProvider";
+import type { IEmailProvider, NonEmptyString } from "./types";
 
 export const EmailProviderFactory = {
 	/**

@@ -1,4 +1,9 @@
 /**
+ * Branded type for non-empty strings to enforce validation at the type level.
+ */
+export type NonEmptyString = string & { __brand: "NonEmptyString" };
+
+/**
  * Email job interface
  */
 export interface EmailJob {

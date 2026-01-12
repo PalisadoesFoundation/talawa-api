@@ -1,10 +1,7 @@
 import { SESClient, SendEmailCommand } from "@aws-sdk/client-ses";
 import { beforeEach, describe, expect, it, type Mock, vi } from "vitest";
-import {
-	type NonEmptyString,
-	SESProvider,
-} from "~/src/services/email/providers/SESProvider";
-import type { EmailJob } from "~/src/services/email/types";
+import { SESProvider } from "~/src/services/email/providers/SESProvider";
+import type { EmailJob, NonEmptyString } from "~/src/services/email/types";
 
 // Mock the AWS SDK
 vi.mock("@aws-sdk/client-ses", () => {
@@ -124,6 +121,28 @@ describe("SESProvider", () => {
 			id: "1",
 			success: false,
 			error: "AWS Error",
+		});
+	});
+
+	it("should handle non-Error thrown values gracefully", async () => {
+		// Test that non-Error exceptions are converted to strings
+		const mockSend = vi.fn().mockRejectedValue("Plain string error");
+		(SESClient as unknown as Mock).prototype.send = mockSend;
+
+		const job = {
+			id: "1",
+			email: "recipient@example.com",
+			subject: "Subject",
+			htmlBody: "Body",
+			userId: "123",
+		};
+
+		const result = await sesProvider.sendEmail(job);
+
+		expect(result).toEqual({
+			id: "1",
+			success: false,
+			error: "Plain string error",
 		});
 	});
 
