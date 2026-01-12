@@ -90,6 +90,9 @@ async function createOrganizationEventAndCategory(adminUserId: string) {
 		categoryId,
 		cleanup: async () => {
 			await server.drizzleClient
+				.delete(agendaCategoriesTable)
+				.where(eq(agendaCategoriesTable.id, categoryId));
+			await server.drizzleClient
 				.delete(eventsTable)
 				.where(eq(eventsTable.id, eventId));
 			await server.drizzleClient
@@ -101,10 +104,6 @@ async function createOrganizationEventAndCategory(adminUserId: string) {
 		},
 	};
 }
-
-/* -------------------------------------------------------------------------- */
-/*                                   Tests                                    */
-/* -------------------------------------------------------------------------- */
 
 suite("Mutation field updateAgendaCategory", () => {
 	const cleanupFns: Array<() => Promise<void>> = [];

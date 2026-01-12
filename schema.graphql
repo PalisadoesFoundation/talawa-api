@@ -2654,9 +2654,9 @@ input MutationCreateAdvertisementInput {
   type: AdvertisementType!
 }
 
-""""""
+"""Input for creating an agenda category."""
 input MutationCreateAgendaCategoryInput {
-  """Description of Agenda category"""
+  """Description of the agenda category."""
   description: String
 
   """Global identifier of the event the agenda category is associated to."""
@@ -3112,7 +3112,7 @@ input MutationDeleteAdvertisementInput {
   id: ID!
 }
 
-""""""
+"""Input for deleting an agenda category."""
 input MutationDeleteAgendaCategoryInput {
   """Global identifier of the agenda category."""
   id: ID!
@@ -3487,7 +3487,7 @@ input MutationUpdateAdvertisementInput {
   type: AdvertisementType
 }
 
-""""""
+"""Input for updating an agenda category."""
 input MutationUpdateAgendaCategoryInput {
   """Description of the agenda category."""
   description: String

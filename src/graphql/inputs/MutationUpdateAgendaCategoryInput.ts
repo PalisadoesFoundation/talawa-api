@@ -26,7 +26,7 @@ export const MutationUpdateAgendaCategoryInput = builder
 		"MutationUpdateAgendaCategoryInput",
 	)
 	.implement({
-		description: "",
+		description: "Input for updating an agenda category.",
 		fields: (t) => ({
 			description: t.string({
 				description: "Description of the agenda category.",

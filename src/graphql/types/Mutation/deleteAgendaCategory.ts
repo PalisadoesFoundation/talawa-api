@@ -46,7 +46,7 @@ builder.mutationField("deleteAgendaCategory", (t) =>
 					extensions: {
 						code: "invalid_arguments",
 						issues: error.issues.map((issue) => ({
-							argumentPath: issue.path.map(String),
+							argumentPath: issue.path,
 							message: issue.message,
 						})),
 					},
@@ -128,7 +128,8 @@ builder.mutationField("deleteAgendaCategory", (t) =>
 			if (deletedAgendaCategory === undefined) {
 				throw new TalawaGraphQLError({
 					extensions: {
-						code: "unexpected",
+						code: "arguments_associated_resources_not_found",
+						issues: [{ argumentPath: ["input", "id"] }],
 					},
 				});
 			}

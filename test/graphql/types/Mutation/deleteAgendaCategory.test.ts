@@ -159,6 +159,7 @@ suite("Mutation field deleteAgendaCategory", () => {
 			await cleanup();
 		}
 		cleanupFns.length = 0;
+		mercuriusClient.setHeaders({});
 	});
 
 	suite("Authorization and Authentication", () => {
