@@ -212,6 +212,39 @@ suite("Mutation field updateAgendaCategory", () => {
 	});
 
 	suite("Input Validation", () => {
+		test("Returns invalid_arguments when no optional field is provided", async () => {
+			const { token } = await getAdminAuth();
+
+			const env = await createOrganizationEventAndCategory(
+				await getAdminUserId(),
+			);
+			cleanupFns.push(env.cleanup);
+
+			const result = await mercuriusClient.mutate(
+				Mutation_updateAgendaCategory,
+				{
+				headers: { authorization: `bearer ${token}` },
+				variables: {
+					input: {
+					id: env.categoryId,
+					// No name or description provided
+					},
+				},
+				},
+			);
+
+			expect(result.data?.updateAgendaCategory ?? null).toEqual(null);
+			expect(result.errors).toEqual(
+				expect.arrayContaining([
+				expect.objectContaining({
+					extensions: expect.objectContaining({
+					code: "invalid_arguments",
+					}),
+				}),
+				]),
+			);
+			});
+
 		test("Returns invalid_arguments for invalid UUID", async () => {
 			const { token } = await getAdminAuth();
 
