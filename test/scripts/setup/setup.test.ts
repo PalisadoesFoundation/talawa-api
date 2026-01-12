@@ -450,6 +450,48 @@ describe("Setup", () => {
 		});
 	});
 
+	it("should return false and skip restoration when cleanupInProgress is true", async () => {
+		const consoleLogSpy = vi.spyOn(console, "log").mockImplementation(() => {});
+		// Spy on file operations that would be performed during restoration
+		const fsAccessSpy = vi.spyOn(fs.promises, "access");
+		const fsReaddirSpy = vi.spyOn(fs.promises, "readdir");
+		const fsCopyFileSpy = vi.spyOn(fs.promises, "copyFile");
+
+		// Import test helpers
+		const { __test__restoreBackup, __test__setCleanupInProgress } =
+			await import("scripts/setup/setup");
+
+		// Set cleanupInProgress to true to simulate concurrent cleanup attempt
+		__test__setCleanupInProgress(true);
+
+		// Call restoreBackup - it should return false immediately without attempting restoration
+		const result = await __test__restoreBackup();
+
+		// Verify it returned false (guard triggered)
+		expect(result).toBe(false);
+
+		// Verify restoreLatestBackup operations were NOT called (restoration skipped)
+		// These are the file operations that restoreLatestBackup would perform
+		expect(fsAccessSpy).not.toHaveBeenCalled();
+		expect(fsReaddirSpy).not.toHaveBeenCalled();
+		expect(fsCopyFileSpy).not.toHaveBeenCalled();
+
+		// Verify no console logs about restoration
+		expect(consoleLogSpy).not.toHaveBeenCalledWith(
+			"✅ Original configuration restored successfully",
+		);
+		expect(consoleLogSpy).not.toHaveBeenCalledWith(
+			"📋 No backup was created yet, nothing to restore",
+		);
+
+		// Clean up: reset cleanupInProgress
+		__test__setCleanupInProgress(false);
+		consoleLogSpy.mockRestore();
+		fsAccessSpy.mockRestore();
+		fsReaddirSpy.mockRestore();
+		fsCopyFileSpy.mockRestore();
+	});
+
 	it("should skip backup when CI=true and TALAWA_SKIP_ENV_BACKUP=true", async () => {
 		process.env.CI = "true";
 		process.env.TALAWA_SKIP_ENV_BACKUP = "true";

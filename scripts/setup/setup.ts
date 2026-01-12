@@ -114,6 +114,22 @@ async function restoreBackup(): Promise<boolean> {
 	}
 }
 
+/**
+ * Test-only export to allow testing the cleanupInProgress guard
+ * @internal
+ */
+export function __test__setCleanupInProgress(value: boolean): void {
+	cleanupInProgress = value;
+}
+
+/**
+ * Test-only export to allow testing restoreBackup function
+ * @internal
+ */
+export async function __test__restoreBackup(): Promise<boolean> {
+	return restoreBackup();
+}
+
 async function restoreLatestBackup(): Promise<void> {
 	const backupDir = ".backup";
 	const envPrefix = ".env.";
