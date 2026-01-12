@@ -193,7 +193,8 @@ NODE_VERSION=$(jq -r '.engines.node // "lts"' package.json)
 info "Node.js version from package.json: \"$NODE_VERSION\""
 
 # Validate Node.js version format strictly
-if ! echo "$NODE_VERSION" | grep -E -q '^(lts|latest|([><]=?|[~^=])?[0-9]+(\.[0-9]+(\.[0-9]+)?)?)$'; then
+# Validate Node.js version format strictly
+if ! echo "$NODE_VERSION" | grep -E -q '^(lts|latest|([><]=?|[~^=])[0-9]+(\.[0-9]+(\.[0-9]+)?)?|[0-9]+(\.[0-9]+(\.[0-9]+)?)?)$'; then
     error "Could not parse Node.js version from package.json: '$NODE_VERSION'"
     error ""
     error "Expected formats:"
@@ -297,27 +298,30 @@ step $CURRENT_STEP $TOTAL_STEPS "Installing Node.js v$CLEAN_NODE_VERSION..."
 
 if [ "$CLEAN_NODE_VERSION" = "lts" ]; then
     info "Installing latest LTS version of Node.js..."
-    if ! fnm install --lts; then
+    # Install LTS and capture output to determine version
+    if ! OUTPUT=$(fnm install --lts 2>&1); then
+        echo "$OUTPUT"
         error "Failed to install LTS version of Node.js"
         exit 1
     fi
+    echo "$OUTPUT"
+
+    # Extract version from output (e.g., "Installing Node v20.10.0" or "Using Node v20.10.0")
+    LTS_VERSION=$(echo "$OUTPUT" | grep -oE 'v[0-9]+\.[0-9]+\.[0-9]+' | head -1 | sed 's/^v//')
     
-    # Robustly get the installed version using fnm current
-    if ! LTS_VERSION=$(fnm current | awk '{sub(/^v/, "", $1); print $1}'); then
-         error "Failed to detect installed LTS version string"
+    if [ -z "$LTS_VERSION" ]; then
+         error "Could not determine installed LTS version from fnm output"
          exit 1
     fi
 
-    if [ -n "$LTS_VERSION" ]; then
-        if ! fnm use "$LTS_VERSION"; then
-             error "Failed to activate LTS version of Node.js ($LTS_VERSION)"
-             exit 1
-        fi
-        fnm default "$LTS_VERSION" || echo "Warning: Failed to set LTS as default Node.js version." >&2
-    else
-        error "Could not detect installed LTS version."
-        exit 1
+    info "Detected LTS version: $LTS_VERSION"
+
+    if ! fnm use "$LTS_VERSION"; then
+         error "Failed to activate LTS version of Node.js ($LTS_VERSION)"
+         exit 1
     fi
+    
+    fnm default "$LTS_VERSION" || echo "Warning: Failed to set LTS as default Node.js version." >&2
 elif [ "$CLEAN_NODE_VERSION" = "latest" ]; then
     info "Installing latest version of Node.js..."
     if ! fnm install --latest; then
