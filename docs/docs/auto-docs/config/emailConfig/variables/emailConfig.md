@@ -6,7 +6,7 @@
 
 > `const` **emailConfig**: `object`
 
-Defined in: [src/config/emailConfig.ts:23](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/config/emailConfig.ts#L23)
+Defined in: [src/config/emailConfig.ts:22](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/config/emailConfig.ts#L22)
 
 Email configuration from environment variables
 
@@ -23,10 +23,6 @@ Email configuration from environment variables
 ### fromName
 
 > **fromName**: `string`
-
-### provider
-
-> **provider**: `"ses"` \| `undefined` = `envConfig.API_EMAIL_PROVIDER`
 
 ### region
 

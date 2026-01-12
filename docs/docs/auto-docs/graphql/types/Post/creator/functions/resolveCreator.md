@@ -9,7 +9,7 @@
 Defined in: [src/graphql/types/Post/creator.ts:21](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/graphql/types/Post/creator.ts#L21)
 
 Resolves the creator user for a Post.
-Requires authentication and either global administrator privileges or organization membership.
+Requires authentication and administrator permissions (global or organization-level).
 Uses DataLoader for batched user queries to prevent N+1 behavior.
 
 ## Parameters
