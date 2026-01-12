@@ -92,7 +92,11 @@ command_exists() {
 # - Glob expansion from special characters
 #
 # Allowed characters: alphanumeric, dots, hyphens, carets, tildes, equals,
-#                     greater than, less than (covers semver patterns)
+#                     greater than, less than, forward slash (covers semver patterns)
+#
+# Test cases (for regression testing):
+#   Should PASS: "18.0.0", "^18.0.0", ">=18.0.0", "~18.0.0", "lts", "lts/latest"
+#   Should FAIL: "18.0.0; rm -rf /", "18.0.0$(whoami)", "18.0.0 && malicious"
 #
 # Usage: validate_version_string "version" "field_name"
 # Returns: 0 if valid, 1 if invalid
@@ -107,10 +111,10 @@ validate_version_string() {
         return 1
     fi
     
-    # Allow only: alphanumeric, dots, hyphens, carets, tildes, equals, greater/less than
+    # Allow only: alphanumeric, dots, hyphens, carets, tildes, equals, greater/less than, forward slash
     # This covers semver patterns like: 18.0.0, ^18.0.0, ~18.0.0, >=18.0.0, lts, lts/latest
     # Pattern stored in variable to avoid shell interpretation issues
-    local pattern='^[a-zA-Z0-9./_~^=<>-]+$'
+    local pattern='^[a-zA-Z0-9./~^=<>-]+$'
     if [[ ! "$version" =~ $pattern ]]; then
         error "Invalid $field_name: '$version'"
         echo ""
@@ -122,7 +126,7 @@ validate_version_string() {
         echo "  • Version operators (^, ~, =, >, <, -)"
         echo "  • Forward slash (/) for lts/latest patterns"
         echo ""
-        info "Rejected characters found: $(echo "$version" | tr -d 'a-zA-Z0-9./_~^=<>-')"
+        info "Rejected characters found: $(echo "$version" | tr -d 'a-zA-Z0-9./~^=<>-')"
         echo ""
         info "Security note: Special characters, spaces, semicolons, and shell"
         info "metacharacters are not allowed to prevent command injection."
