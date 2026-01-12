@@ -23,6 +23,23 @@ import {
 	vi,
 } from "vitest";
 
+/**
+ * Helper function to wait for a condition to become true by polling
+ * @param condition - A function that returns true when the condition is met
+ * @param timeout - Maximum time to wait in milliseconds (default: 5000)
+ * @param pollInterval - Interval between checks in milliseconds (default: 10)
+ */
+async function waitFor(
+	condition: () => boolean,
+	timeout = 5000,
+	pollInterval = 10,
+): Promise<void> {
+	const startTime = Date.now();
+	while (!condition() && Date.now() - startTime < timeout) {
+		await new Promise((resolve) => setTimeout(resolve, pollInterval));
+	}
+}
+
 describe("Setup -> apiSetup", () => {
 	const originalEnv = { ...process.env };
 	beforeAll(() => {
@@ -615,15 +632,7 @@ describe("Error handling without backup", () => {
 		});
 
 		// Wait deterministically for SIGINT handler to be registered
-		const maxWaitTime = 5000; // 5 seconds max
-		const pollInterval = 10; // Check every 10ms
-		const startTime = Date.now();
-		while (
-			process.listenerCount("SIGINT") === 0 &&
-			Date.now() - startTime < maxWaitTime
-		) {
-			await new Promise((resolve) => setTimeout(resolve, pollInterval));
-		}
+		await waitFor(() => process.listenerCount("SIGINT") > 0);
 
 		// Verify handler was registered
 		expect(process.listenerCount("SIGINT")).toBeGreaterThan(0);
@@ -633,13 +642,7 @@ describe("Error handling without backup", () => {
 
 		// Wait for async handler to complete by polling for process.exit call
 		// The handler calls process.exit, so we wait for that to be called
-		const exitCallStartTime = Date.now();
-		while (
-			!processExitSpy.mock.calls.length &&
-			Date.now() - exitCallStartTime < maxWaitTime
-		) {
-			await new Promise((resolve) => setTimeout(resolve, pollInterval));
-		}
+		await waitFor(() => processExitSpy.mock.calls.length > 0);
 
 		// Check that the new SIGINT handler messages are present
 		expect(consoleLogSpy).toHaveBeenCalledWith(
