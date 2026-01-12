@@ -23,6 +23,25 @@ function createMockDb<T>(mockResults: T[]) {
 }
 
 /**
+ * Creates a mock DrizzleClient with sequential responses for testing DataLoaders.
+ * Each call to where() will return the next result set in the array.
+ * Returns both the mock db and a spy for the where function.
+ */
+function createSequentialMockDb<T>(mockResultsArray: T[][]) {
+	const whereSpy = vi.fn();
+	// Set up sequential responses using mockResolvedValueOnce for each result set
+	for (const mockResults of mockResultsArray) {
+		whereSpy.mockResolvedValueOnce(mockResults);
+	}
+	const db = {
+		select: vi.fn().mockReturnThis(),
+		from: vi.fn().mockReturnThis(),
+		where: whereSpy,
+	} as unknown as DrizzleClient;
+	return { db, whereSpy };
+}
+
+/**
  * Creates a mock CacheService for testing cache integration.
  */
 function createMockCache(cachedValues: Map<string, unknown> = new Map()) {
@@ -284,28 +303,16 @@ describe("DataLoader infrastructure", () => {
 
 			// Verify the loader works (DB was called)
 			expect(whereSpy).toHaveBeenCalledTimes(1);
-
-			// Verify all loaders are created and functional
-			expect(loaders).toHaveProperty("user");
-			expect(loaders).toHaveProperty("organization");
-			expect(loaders).toHaveProperty("event");
-			expect(loaders).toHaveProperty("actionItem");
 		});
 
 		it("creates loaders with perf parameter and propagates to all loaders", async () => {
 			// Set up mock DB to return different results for each loader call
-			const whereSpy = vi
-				.fn()
-				.mockResolvedValueOnce([{ id: "u1", name: "User 1" }]) // user loader
-				.mockResolvedValueOnce([{ id: "org1", name: "Org 1" }]) // organization loader
-				.mockResolvedValueOnce([{ id: "evt1", name: "Event 1" }]) // event loader
-				.mockResolvedValueOnce([{ id: "ai1", organizationId: "org1" }]); // actionItem loader
-
-			const db = {
-				select: vi.fn().mockReturnThis(),
-				from: vi.fn().mockReturnThis(),
-				where: whereSpy,
-			} as unknown as DrizzleClient;
+			const { db, whereSpy } = createSequentialMockDb([
+				[{ id: "u1", name: "User 1" }], // user loader
+				[{ id: "org1", name: "Org 1" }], // organization loader
+				[{ id: "evt1", name: "Event 1" }], // event loader
+				[{ id: "ai1", organizationId: "org1" }], // actionItem loader
+			]);
 
 			const perf = createPerformanceTracker();
 
@@ -355,8 +362,31 @@ describe("DataLoader infrastructure", () => {
 		});
 
 		it("propagates perf parameter correctly when cache is also provided", async () => {
-			const { db, whereSpy } = createMockDb([{ id: "u1", name: "User 1" }]);
-			const mockCache = createMockCache();
+			// Set up mock DB to return different results for each loader call
+			const { db, whereSpy } = createSequentialMockDb([
+				[{ id: "u1", name: "User 1" }], // user loader
+				[{ id: "org1", name: "Org 1" }], // organization loader
+				[{ id: "evt1", name: "Event 1" }], // event loader
+				[{ id: "ai1", organizationId: "org1" }], // actionItem loader
+			]);
+
+			// Create mock cache with artificial delay to verify metrics include cache time
+			const cacheDelayMs = 10;
+			const cachedValues = new Map([
+				[entityKey("user", "u1"), { id: "u1", name: "User 1" }],
+				[entityKey("organization", "org1"), { id: "org1", name: "Org 1" }],
+				[entityKey("event", "evt1"), { id: "evt1", name: "Event 1" }],
+				[entityKey("actionItem", "ai1"), { id: "ai1", organizationId: "org1" }],
+			]);
+			const mockCache = {
+				...createMockCache(cachedValues),
+				mget: vi.fn().mockImplementation(async (keys: string[]) => {
+					// Simulate cache delay to verify metrics capture cache operation time
+					await new Promise((resolve) => setTimeout(resolve, cacheDelayMs));
+					return keys.map((k) => cachedValues.get(k) ?? null);
+				}),
+			} as unknown as CacheService;
+
 			const perf = createPerformanceTracker();
 
 			const loaders = createDataloaders(db, mockCache, perf);
@@ -367,18 +397,42 @@ describe("DataLoader infrastructure", () => {
 			expect(loaders).toHaveProperty("event");
 			expect(loaders).toHaveProperty("actionItem");
 
-			// Verify metrics are tracked through cache layer
+			// Exercise all four loaders to verify metrics are tracked for each
 			await loaders.user.load("u1");
+			await loaders.organization.load("org1");
+			await loaders.event.load("evt1");
+			await loaders.actionItem.load("ai1");
 
-			// Verify metrics were tracked for the user loader
+			// Verify metrics were tracked for all loaders
 			const snapshot = perf.snapshot();
+
+			// Verify user loader metrics
 			const userOp = snapshot.ops["db:users.byId"];
 			expect(userOp).toBeDefined();
 			expect(userOp?.count).toBe(1);
-			expect(userOp?.ms).toBeGreaterThanOrEqual(0);
+			expect(userOp?.ms).toBeGreaterThanOrEqual(cacheDelayMs);
 
-			// Verify DB was called (cache miss scenario)
-			expect(whereSpy).toHaveBeenCalledTimes(1);
+			// Verify organization loader metrics
+			const orgOp = snapshot.ops["db:organizations.byId"];
+			expect(orgOp).toBeDefined();
+			expect(orgOp?.count).toBe(1);
+			expect(orgOp?.ms).toBeGreaterThanOrEqual(cacheDelayMs);
+
+			// Verify event loader metrics
+			const eventOp = snapshot.ops["db:events.byId"];
+			expect(eventOp).toBeDefined();
+			expect(eventOp?.count).toBe(1);
+			expect(eventOp?.ms).toBeGreaterThanOrEqual(cacheDelayMs);
+
+			// Verify actionItem loader metrics
+			const actionItemOp = snapshot.ops["db:actionItems.byId"];
+			expect(actionItemOp).toBeDefined();
+			expect(actionItemOp?.count).toBe(1);
+			expect(actionItemOp?.ms).toBeGreaterThanOrEqual(cacheDelayMs);
+
+			// Verify DB was NOT called (cache hit scenario)
+			// Metrics should still be recorded because they wrap the cache layer
+			expect(whereSpy).not.toHaveBeenCalled();
 		});
 	});
 
