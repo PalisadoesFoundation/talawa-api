@@ -516,11 +516,7 @@ describe("clearPluginModuleCache", () => {
 		).not.toThrow();
 	});
 	it("handles normal execution without throwing", () => {
-		// Note: The catch block in clearPluginModuleCache is a defensive measure for an extremely
-		// unlikely scenario (rootLogger.info throwing). We verify the function handles
-		// errors gracefully by passing invalid input.
-
-		// This at least verifies the function doesn't throw on normal execution
+		// Verifies the function completes without throwing during normal execution
 		expect(() => utils.clearPluginModuleCache("/plugin/path")).not.toThrow();
 	});
 });
