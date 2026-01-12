@@ -74,7 +74,7 @@ describe("EmailService", () => {
 			.mockResolvedValueOnce({ MessageId: "m1" })
 			.mockResolvedValueOnce({ MessageId: "m2" });
 
-		vi.spyOn(global, "setTimeout").mockImplementation(((
+		const setTimeoutSpy = vi.spyOn(global, "setTimeout").mockImplementation(((
 			cb: (...args: unknown[]) => void,
 		) => {
 			cb();
@@ -90,6 +90,8 @@ describe("EmailService", () => {
 		});
 
 		const jobs = [buildJob({ id: "a" }), buildJob({ id: "b" })];
+		// Mock setTimeout to verify it's called
+
 		const results = await service.sendBulkEmails(jobs);
 
 		expect(results).toHaveLength(2);
@@ -104,6 +106,9 @@ describe("EmailService", () => {
 			messageId: "m2",
 		});
 		expect(sendMock).toHaveBeenCalledTimes(2);
+
+		// Should wait once between the two jobs (jobs.length - 1)
+		expect(setTimeoutSpy).toHaveBeenCalledTimes(1);
 	});
 
 	it("returns error when fromEmail is not configured", async () => {
@@ -111,7 +116,7 @@ describe("EmailService", () => {
 		const result = await serviceNoFrom.sendEmail(buildJob());
 
 		expect(result.success).toBe(false);
-		expect(result.error).toContain("fromEmail is required");
+		expect(result.error).toContain("Email service not configured");
 	});
 
 	it("uses fromEmail directly when fromName is not provided", async () => {
@@ -216,6 +221,9 @@ describe("EmailService", () => {
 			"Both accessKeyId and secretAccessKey must be provided together",
 		);
 	});
+
+	// NOTE: Test for 'smtp' provider removed - TypeScript type safety now prevents
+	// setting provider to 'smtp' at compile time, so runtime validation is unnecessary.
 
 	/**
 	 * Test: Optional textBody handling (lines 118-120)

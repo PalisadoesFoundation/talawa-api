@@ -261,3 +261,24 @@ export function createPerformanceTracker(
 		},
 	};
 }
+
+/**
+ * Type guard to verify an unknown value is a PerformanceTracker.
+ * @param value - Value to check
+ * @returns True if value is a PerformanceTracker
+ */
+export function isPerformanceTracker(
+	value: unknown,
+): value is PerformanceTracker {
+	return (
+		typeof value === "object" &&
+		value !== null &&
+		"time" in value &&
+		"start" in value &&
+		"trackComplexity" in value &&
+		"snapshot" in value &&
+		"trackDb" in value &&
+		"trackCacheHit" in value &&
+		"trackCacheMiss" in value
+	);
+}

@@ -20,6 +20,10 @@ The `NODE_ENV` variable is extremely sparsely used.
 
 In an environment where one capability is needed but the other is not, using a single environment variable to control all of them at once wouldn't work.
 
+### Variable Naming Convention
+
+Environment variables should be named using uppercase letters, numbers, and underscores. They should also be prefixed with `API_` to indicate that they are specific to the talawa-api application. For example `API_BASE_URL` and `API_PORT`.
+
 ## talawa api (standalone)
 
 At runtime, talawa api requires certain environment variables to be defined in its execution context. Some of these environment variables must be provided by you and some are optional to be provided because they might be using a default value or their requirement is dependent on the environment in which talawa api is running.
@@ -98,6 +102,10 @@ When talawa api debugger is run within a container environment this variable mus
 
 - More information can be found at [this](https://developer.mozilla.org/en-US/docs/Web/API/URL/port) link.
 
+### API_EMAIL_PROVIDER
+
+This environment variable is used to configure the email provider to be used by the talawa api. Currently supports `ses` and `smtp` (future). The default value is `ses`.
+
 ### API_HOST
 
 This environment variable is used to configure the host ip that can access the host port on which talawa api listens to at runtime.
@@ -143,6 +151,10 @@ This environment variable is used to configure the [log level](https://github.co
 
 - More information can be found at [this](https://github.com/pinojs/pino/blob/main/docs/api.md##logger-level) link.
 
+### API_SLOW_REQUEST_MS
+
+This environment variable is used to configure the threshold in milliseconds for identifying slow requests in talawa api. Requests that exceed this duration will be logged and tracked for performance monitoring purposes.
+
 ### API_MINIO_ACCESS_KEY
 
 This environment variable is used to configure the access key to the minio server for talawa api's minio client to connect with.
@@ -172,6 +184,28 @@ This environment variable is used to configure the secret key to the minio serve
 This environment variable is used to configure the ssl mode on the connection between minio server and talawa api's minio client.
 
 - More information can be found at [this](https://min.io/docs/minio/linux/developers/javascript/API.html##constructor) link.
+
+### Observability
+
+#### API_OTEL_ENABLED
+
+- Takes values as `true` or `false` to enable and disable OTEL logging,
+
+#### API_OTEL_ENVIRONMENT
+
+- set `local` for development environment and `production` for production environment.
+
+#### API_OTEL_EXPORTER_OTLP_ENDPOINT
+
+- Only for `production` environment for now. will be available for local as well once some observability tool is integrated.
+
+#### API_OTEL_SAMPLING_RATIO
+
+- It takes values between 0 and 1, controlling spans depth
+
+#### API_OTEL_SERVICE_NAME
+
+- Its values should be `talawa-api`
 
 ### API_PORT
 
@@ -244,6 +278,30 @@ This environment variable is used to configure the host port of the redis server
 This environment variable is used to configure the host ip of the redis server for talawa api's redis client to connect with.
 
 - More information can be found at [this](https://github.com/redis/redis) link.
+
+### AWS (SES)
+
+Listed below are the environment variables for configuring AWS Simple Email Service (SES).
+
+#### AWS_ACCESS_KEY_ID
+
+This environment variable is used to configure the AWS Access Key ID for authentication with AWS SES.
+
+#### AWS_SECRET_ACCESS_KEY
+
+This environment variable is used to configure the AWS Secret Access Key for authentication with AWS SES.
+
+#### AWS_SES_FROM_EMAIL
+
+This environment variable is used to configure the email address that will be used as the sender for emails sent from the talawa api. This email must be verified in AWS SES.
+
+#### AWS_SES_FROM_NAME
+
+This environment variable is used to configure the name that will be displayed as the sender for emails sent from the talawa api.
+
+#### AWS_SES_REGION
+
+This environment variable is used to configure the AWS region where your SES instance is located.
 
 ### CACHE_ENTITY_TTLS
 
@@ -606,24 +664,4 @@ This environment variable is used to configure the prefix for identifiers of all
 
 - More information can be found at [this](https://docs.docker.com/compose/environment-variables/envvars/##compose_project_name) link.
 
-## Observability
 
-### API_OTEL_ENABLED
-
-- Takes values as `true` or `false` to enable and disable OTEL logging,
-
-### API_OTEL_ENVIRONMENT
-
-- set `local` for development environment and `production` for production environment.
-
-### API_OTEL_EXPORTER_OTLP_ENDPOINT
-
-- Only for `production` environment for now. will be available for local as well once some observability tool is integrated.
-
-### API_OTEL_SAMPLING_RATIO
-
-- It takes values between 0 and 1, controlling spans depth
-
-### API_OTEL_SERVICE_NAME
-
-- Its values should be `talawa-api`
