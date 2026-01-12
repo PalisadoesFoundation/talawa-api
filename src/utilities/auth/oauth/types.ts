@@ -28,4 +28,5 @@ export interface OAuthConfig {
 	clientId: string;
 	clientSecret: string;
 	redirectUri: string;
+	OAUTH_REQUEST_TIMEOUT_MS?: number;
 }

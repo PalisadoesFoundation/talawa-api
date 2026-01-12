@@ -58,7 +58,7 @@ export abstract class BaseOAuthProvider implements IOAuthProvider {
 					"Content-Type": "application/x-www-form-urlencoded",
 					...headers,
 				},
-				timeout: 10000, // 10 second timeout
+				timeout: this.config.OAUTH_REQUEST_TIMEOUT_MS || 10000, // fallback to 10 second timeout
 			};
 
 			const response = await axios.post<T>(url, data, config);

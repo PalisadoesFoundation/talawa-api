@@ -72,7 +72,7 @@ importers:
         specifier: ^3.0.1
         version: 3.0.1(ajv@8.17.1)
       axios:
-        specifier: ^1.13.2
+        specifier: ^1.7.9
         version: 1.13.2
       close-with-grace:
         specifier: ^2.3.0
