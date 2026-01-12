@@ -82,7 +82,8 @@ let cleanupInProgress = false;
 let sigintHandler: (() => void | Promise<void>) | null = null;
 
 /**
- * Safely restores the backup file if it exists
+ * Restores .env file from backup if one was created during setup.
+ * Guards against concurrent cleanup attempts.
  * @returns Boolean indicating restoration status:
  *   - `true` if restoration was successful
  *   - `true` if no backup was created (nothing to restore, not an error)
@@ -218,8 +219,18 @@ async function restoreLatestBackup(): Promise<void> {
 				// Use atomic write: write to temp file first, then rename
 				// This ensures the .env file is either fully restored or unchanged
 				const tempPath = ".env.tmp";
-				await fs.copyFile(backupPath, tempPath);
-				await fs.rename(tempPath, ".env"); // Atomic on POSIX systems
+				try {
+					await fs.copyFile(backupPath, tempPath);
+					await fs.rename(tempPath, ".env"); // Atomic on POSIX systems
+				} catch (err) {
+					// Clean up temp file if it exists (e.g., if copyFile succeeded but rename failed)
+					try {
+						await fs.unlink(tempPath);
+					} catch {
+						// Ignore cleanup errors - temp file may not exist or already be removed
+					}
+					throw err; // Re-throw the original error after cleanup attempt
+				}
 			} else {
 				console.warn("⚠️  No valid backup files found with epoch timestamps");
 			}
