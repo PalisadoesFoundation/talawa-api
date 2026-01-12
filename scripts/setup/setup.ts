@@ -896,6 +896,14 @@ export async function setup(): Promise<SetupAnswers> {
 	}
 	answers = await setCI(answers);
 	await initializeEnvFile(answers);
+	const useDefaultApi = await promptConfirm(
+		"useDefaultApi",
+		"Use recommended default API settings?",
+		true,
+	);
+	if (!useDefaultApi) {
+		answers = await apiSetup(answers);
+	}
 	const useDefaultMinio = await promptConfirm(
 		"useDefaultMinio",
 		"Use recommended default Minio settings?",
@@ -929,14 +937,6 @@ export async function setup(): Promise<SetupAnswers> {
 	);
 	if (!useDefaultCaddy) {
 		answers = await caddySetup(answers);
-	}
-	const useDefaultApi = await promptConfirm(
-		"useDefaultApi",
-		"Use recommended default API settings?",
-		true,
-	);
-	if (!useDefaultApi) {
-		answers = await apiSetup(answers);
 	}
 	answers = await administratorEmail(answers);
 	const setupReCaptcha = await promptConfirm(
