@@ -7,6 +7,8 @@ import {
 	getTTL,
 	wrapWithCache,
 } from "~/src/services/caching";
+import type { PerformanceTracker } from "~/src/utilities/metrics/performanceTracker";
+import { wrapBatchWithMetrics } from "~/src/utilities/metrics/withMetrics";
 
 /**
  * Type representing an organization row from the database.
@@ -16,20 +18,23 @@ export type OrganizationRow = typeof organizationsTable.$inferSelect;
 /**
  * Creates a DataLoader for batching organization lookups by ID.
  * When a cache service is provided, wraps the batch function with cache-first logic.
+ * When a performance tracker is provided, wraps the batch function with performance metrics.
  *
  * @param db - The Drizzle client instance for database operations.
  * @param cache - Optional cache service for cache-first lookups. Pass null to disable caching.
+ * @param perf - Optional performance tracker for monitoring database operation durations.
  * @returns A DataLoader that batches and caches organization lookups within a single request.
  *
  * @example
  * ```typescript
- * const organizationLoader = createOrganizationLoader(drizzleClient, cacheService);
+ * const organizationLoader = createOrganizationLoader(drizzleClient, cacheService, perfTracker);
  * const organization = await organizationLoader.load(organizationId);
  * ```
  */
 export function createOrganizationLoader(
 	db: DrizzleClient,
 	cache: CacheService | null,
+	perf?: PerformanceTracker,
 ) {
 	const batchFn = async (
 		ids: readonly string[],
@@ -46,7 +51,8 @@ export function createOrganizationLoader(
 		return ids.map((id) => map.get(id) ?? null);
 	};
 
-	const wrappedBatch = cache
+	// Apply cache wrapping first (if cache is provided)
+	const cacheWrappedBatch = cache
 		? wrapWithCache(batchFn, {
 				cache,
 				entity: "organization",
@@ -54,6 +60,11 @@ export function createOrganizationLoader(
 				ttlSeconds: getTTL("organization"),
 			})
 		: batchFn;
+
+	// Apply metrics wrapping after cache wrapping to measure actual DB time
+	const wrappedBatch = perf
+		? wrapBatchWithMetrics("organizations.byId", perf, cacheWrappedBatch)
+		: cacheWrappedBatch;
 
 	return new DataLoader<string, OrganizationRow | null>(wrappedBatch, {
 		// Coalesce loads triggered within the same event loop tick

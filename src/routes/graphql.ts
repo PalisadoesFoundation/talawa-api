@@ -179,7 +179,11 @@ export const createContext: CreateContext = async (initialContext) => {
 			? metricsCacheProxy(fastify.cache, request.perf)
 			: fastify.cache,
 		currentClient,
-		dataloaders: createDataloaders(fastify.drizzleClient, fastify.cache),
+		dataloaders: createDataloaders(
+			fastify.drizzleClient,
+			fastify.cache,
+			request.perf,
+		),
 		drizzleClient: fastify.drizzleClient,
 		envConfig: fastify.envConfig,
 		jwt: {
@@ -299,6 +303,7 @@ export const graphql = fastifyPlugin(async (fastify) => {
 						dataloaders: createDataloaders(
 							fastify.drizzleClient,
 							fastify.cache,
+							perf,
 						),
 						drizzleClient: fastify.drizzleClient,
 						envConfig: fastify.envConfig,
