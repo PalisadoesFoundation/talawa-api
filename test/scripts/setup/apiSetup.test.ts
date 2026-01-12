@@ -609,7 +609,10 @@ describe("Error handling without backup", () => {
 
 		// Start setup() which will register the SIGINT handler
 		// Don't await it - we'll interrupt it
-		const setupPromise = setup();
+		// Attach catch handler immediately to prevent unhandled promise rejections
+		setup().catch(() => {
+			// Expected - setup will be interrupted by SIGINT
+		});
 
 		// Wait deterministically for SIGINT handler to be registered
 		const maxWaitTime = 5000; // 5 seconds max
@@ -648,15 +651,11 @@ describe("Error handling without backup", () => {
 		// When no backup exists, it should exit with 0 (success, nothing to restore)
 		expect(processExitSpy).toHaveBeenCalledWith(0);
 
-		// Clean up: restore mocks and handle the setup promise rejection
+		// Clean up: remove SIGINT listeners to prevent interference with other tests
+		process.removeAllListeners("SIGINT");
+		// Restore mocks
 		processExitSpy.mockRestore();
 		consoleLogSpy.mockRestore();
 		vi.clearAllMocks();
-
-		// The setup promise will reject because process.exit was called
-		// Catch the rejection to prevent unhandled promise rejection warnings
-		setupPromise.catch(() => {
-			// Expected - setup was interrupted
-		});
 	});
 });
