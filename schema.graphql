@@ -2654,7 +2654,7 @@ input MutationCreateAdvertisementInput {
   type: AdvertisementType!
 }
 
-"""Input for creating an agenda category."""
+""""""
 input MutationCreateAgendaCategoryInput {
   """Description of the agenda category."""
   description: String
