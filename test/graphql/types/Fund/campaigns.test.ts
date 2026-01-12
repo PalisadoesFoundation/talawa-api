@@ -252,9 +252,7 @@ describe("Fund.campaigns Resolver - Integration", () => {
 			expect(pageInfo.hasNextPage).toBe(false);
 			expect(pageInfo.hasPreviousPage).toBe(false);
 			expect(pageInfo.startCursor).toBe(edges[0]?.cursor);
-			expect(pageInfo.endCursor).toBe(
-				edges[edges.length - 1]?.cursor,
-			);
+			expect(pageInfo.endCursor).toBe(edges[edges.length - 1]?.cursor);
 		});
 
 		it("should return empty edges when fund has no campaigns", async () => {
