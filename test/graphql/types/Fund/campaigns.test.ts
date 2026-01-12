@@ -1,7 +1,7 @@
 import { faker } from "@faker-js/faker";
 import { initGraphQLTada } from "gql.tada";
 import type { GraphQLObjectType } from "graphql";
-import { afterAll, beforeAll, describe, expect, it } from "vitest";
+import { beforeAll, describe, expect, it } from "vitest";
 import type { ClientCustomScalars } from "~/src/graphql/scalars/index";
 import { schema } from "~/src/graphql/schema";
 import { assertToBeNonNullish } from "../../../helpers";
@@ -203,10 +203,6 @@ describe("Fund.campaigns Resolver - Integration", () => {
 			const campaign = await createTestCampaign(adminAuth.token, fund.id, name);
 			campaigns.push(campaign);
 		}
-	});
-
-	afterAll(async () => {
-		// Cleanup is handled by test database reset
 	});
 
 	describe("Campaign List Resolution", () => {
