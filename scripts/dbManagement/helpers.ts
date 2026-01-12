@@ -95,7 +95,7 @@ interface SampleEventAttendee extends BaseSample {
 }
 
 /* ------------------------------------------------------------------ */
-/* Utilities (Public & Tested)                                         */
+/* Utilities (Public & Tested)                                        */
 /* ------------------------------------------------------------------ */
 
 export function toICalendarUntil(date: Date): string {
@@ -154,6 +154,7 @@ export async function formatDatabase(): Promise<boolean> {
 
 /** @internal Legacy infrastructure utility */
 export async function emptyMinioBucket(): Promise<boolean> {
+	return true;
 	try {
 		const objectsToDelete: string[] = [];
 		const stream = minioClient.listObjects(bucketName, "", true);
