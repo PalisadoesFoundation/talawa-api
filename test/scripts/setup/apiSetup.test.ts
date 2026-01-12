@@ -608,14 +608,32 @@ describe("Error handling without backup", () => {
 		// Don't await it - we'll interrupt it
 		const setupPromise = setup();
 
-		// Wait a bit for setup to register the handler
-		await new Promise((resolve) => setTimeout(resolve, 50));
+		// Wait deterministically for SIGINT handler to be registered
+		const maxWaitTime = 5000; // 5 seconds max
+		const pollInterval = 10; // Check every 10ms
+		const startTime = Date.now();
+		while (
+			process.listenerCount("SIGINT") === 0 &&
+			Date.now() - startTime < maxWaitTime
+		) {
+			await new Promise((resolve) => setTimeout(resolve, pollInterval));
+		}
+
+		// Verify handler was registered
+		expect(process.listenerCount("SIGINT")).toBeGreaterThan(0);
 
 		// Emit SIGINT to trigger the handler
 		process.emit("SIGINT");
 
-		// Wait for async handler to complete
-		await new Promise((resolve) => setTimeout(resolve, 100));
+		// Wait for async handler to complete by polling for process.exit call
+		// The handler calls process.exit, so we wait for that to be called
+		const exitCallStartTime = Date.now();
+		while (
+			!processExitSpy.mock.calls.length &&
+			Date.now() - exitCallStartTime < maxWaitTime
+		) {
+			await new Promise((resolve) => setTimeout(resolve, pollInterval));
+		}
 
 		// Check that the new SIGINT handler messages are present
 		expect(consoleLogSpy).toHaveBeenCalledWith(

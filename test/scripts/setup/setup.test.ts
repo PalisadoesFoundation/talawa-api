@@ -334,8 +334,19 @@ describe("Setup", () => {
 		// Start setup() which will register the SIGINT handler and create backup
 		const setupPromise = setup();
 
-		// Wait for setup to register handler and create backup
-		await new Promise((resolve) => setTimeout(resolve, 100));
+		// Wait deterministically for SIGINT handler to be registered
+		const maxWaitTime = 5000; // 5 seconds max
+		const pollInterval = 10; // Check every 10ms
+		const startTime = Date.now();
+		while (
+			process.listenerCount("SIGINT") === 0 &&
+			Date.now() - startTime < maxWaitTime
+		) {
+			await new Promise((resolve) => setTimeout(resolve, pollInterval));
+		}
+
+		// Verify handler was registered
+		expect(process.listenerCount("SIGINT")).toBeGreaterThan(0);
 
 		// Emit SIGINT to trigger the handler
 		await expect(async () => process.emit("SIGINT")).rejects.toThrow(
@@ -414,8 +425,19 @@ describe("Setup", () => {
 		// Start setup() which will register the SIGINT handler and create backup
 		const setupPromise = setup();
 
-		// Wait for setup to register handler and create backup
-		await new Promise((resolve) => setTimeout(resolve, 100));
+		// Wait deterministically for SIGINT handler to be registered
+		const maxWaitTime = 5000; // 5 seconds max
+		const pollInterval = 10; // Check every 10ms
+		const startTime = Date.now();
+		while (
+			process.listenerCount("SIGINT") === 0 &&
+			Date.now() - startTime < maxWaitTime
+		) {
+			await new Promise((resolve) => setTimeout(resolve, pollInterval));
+		}
+
+		// Verify handler was registered
+		expect(process.listenerCount("SIGINT")).toBeGreaterThan(0);
 
 		// Emit SIGINT to trigger the handler
 		await expect(async () => process.emit("SIGINT")).rejects.toThrow(

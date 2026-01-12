@@ -79,6 +79,7 @@ export type SetupAnswers = Partial<Record<SetupKey, string>> & {
 const envFileName = ".env";
 let backupCreated = false;
 let cleanupInProgress = false;
+let sigintHandler: (() => void | Promise<void>) | null = null;
 
 /**
  * Safely restores the backup file if it exists
@@ -128,6 +129,33 @@ export function __test__setCleanupInProgress(value: boolean): void {
  */
 export async function __test__restoreBackup(): Promise<boolean> {
 	return restoreBackup();
+}
+
+/**
+ * SIGINT handler that restores backup and exits
+ * Defined at module scope to allow removal before re-registration
+ */
+async function sigintHandlerFunction(): Promise<void> {
+	console.log("\n\n⚠️  Setup interrupted by user (CTRL+C)");
+	console.log("=".repeat(60));
+	console.log("📋 Cleaning up and restoring previous configuration...");
+	console.log(`${"=".repeat(60)}\n`);
+
+	const restored = await restoreBackup();
+
+	if (restored) {
+		console.log(
+			"\n✅ Your environment has been restored to its previous state",
+		);
+		console.log("   You can safely run setup again when ready\n");
+		process.exit(0); // Clean exit since we restored successfully
+	} else {
+		console.log("\n⚠️  Cleanup incomplete - please check your .env file");
+		console.log(
+			"   Run setup again or restore manually from .backup directory\n",
+		);
+		process.exit(1); // Error exit since restoration failed
+	}
 }
 
 async function restoreLatestBackup(): Promise<void> {
@@ -840,28 +868,15 @@ export async function setup(): Promise<SetupAnswers> {
 		}
 	}
 	dotenv.config({ path: envFileName });
-	process.once("SIGINT", async () => {
-		console.log("\n\n⚠️  Setup interrupted by user (CTRL+C)");
-		console.log("=".repeat(60));
-		console.log("📋 Cleaning up and restoring previous configuration...");
-		console.log(`${"=".repeat(60)}\n`);
 
-		const restored = await restoreBackup();
+	// Remove previous SIGINT handler if one exists to prevent accumulation
+	if (sigintHandler) {
+		process.removeListener("SIGINT", sigintHandler);
+	}
 
-		if (restored) {
-			console.log(
-				"\n✅ Your environment has been restored to its previous state",
-			);
-			console.log("   You can safely run setup again when ready\n");
-			process.exit(0); // Clean exit since we restored successfully
-		} else {
-			console.log("\n⚠️  Cleanup incomplete - please check your .env file");
-			console.log(
-				"   Run setup again or restore manually from .backup directory\n",
-			);
-			process.exit(1); // Error exit since restoration failed
-		}
-	});
+	// Register the SIGINT handler
+	sigintHandler = sigintHandlerFunction;
+	process.once("SIGINT", sigintHandler);
 	if (await checkEnvFile()) {
 		const isInteractive =
 			initialCI !== "true" && process.stdin && process.stdin.isTTY;
