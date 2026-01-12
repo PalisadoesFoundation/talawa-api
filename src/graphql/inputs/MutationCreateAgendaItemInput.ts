@@ -1,7 +1,11 @@
-import type { z } from "zod";
+import { z } from "zod";
 import { agendaItemsTableInsertSchema } from "~/src/drizzle/tables/agendaItems";
 import { builder } from "~/src/graphql/builder";
 import { AgendaItemType } from "~/src/graphql/enums/AgendaItemType";
+import {
+	FileMetadataInput,
+	fileMetadataInputSchema,
+} from "./FileMetadataInput";
 
 export const mutationCreateAgendaItemInputSchema = agendaItemsTableInsertSchema
 	.pick({
@@ -11,6 +15,9 @@ export const mutationCreateAgendaItemInputSchema = agendaItemsTableInsertSchema
 		key: true,
 		name: true,
 		type: true,
+	})
+	.extend({
+		attachments: z.array(fileMetadataInputSchema).max(10).optional(),
 	})
 	.superRefine((arg, ctx) => {
 		if (arg.type === "note") {
@@ -59,6 +66,12 @@ export const MutationCreateAgendaItemInput = builder
 	.implement({
 		description: "",
 		fields: (t) => ({
+			attachments: t.field({
+				description:
+					"File metadata for attachments uploaded via MinIO presigned URLs.",
+				required: false,
+				type: [FileMetadataInput],
+			}),
 			description: t.string({
 				description: "Custom information about the agenda item.",
 			}),

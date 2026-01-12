@@ -30,6 +30,10 @@ export {
 	agendaFoldersTableRelations,
 } from "./tables/agendaFolders";
 export {
+	agendaItemAttachmentsTable,
+	agendaItemAttachmentsTableRelations,
+} from "./tables/agendaItemAttachments";
+export {
 	agendaItemsTable,
 	agendaItemsTableRelations,
 } from "./tables/agendaItems";
