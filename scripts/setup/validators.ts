@@ -110,6 +110,17 @@ export function validateCloudBeaverPassword(input: string): true | string {
  */
 export function validateCloudBeaverURL(input: string): true | string {
 	if (!input.trim()) return "Server URL is required";
+
+	// Pre-extract port from URL string before parsing
+	// This handles cases where new URL() throws for invalid ports (>65535)
+	const portMatch = input.match(/:(\d+)(\/|$)/);
+	if (portMatch) {
+		const portNum = Number.parseInt(portMatch[1], 10);
+		if (portNum < 1 || portNum > 65535) {
+			return "Invalid port in URL";
+		}
+	}
+
 	try {
 		const url = new URL(input);
 		if (!["http:", "https:"].includes(url.protocol)) {
