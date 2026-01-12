@@ -1,7 +1,9 @@
 import { faker } from "@faker-js/faker";
+import type { GraphQLObjectType } from "graphql";
 import { initGraphQLTada } from "gql.tada";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import type { ClientCustomScalars } from "~/src/graphql/scalars/index";
+import { schema } from "~/src/graphql/schema";
 import { assertToBeNonNullish } from "../../../helpers";
 import { server } from "../../../server";
 import { mercuriusClient } from "../client";
@@ -522,6 +524,49 @@ describe("Fund.campaigns Resolver - Integration", () => {
 			expect(campaign.id).toBeDefined();
 			expect(campaign.name).toBeDefined();
 			expect(campaign.goalAmount).toBe(10000);
+		});
+	});
+
+	describe("Complexity Calculation", () => {
+		let campaignsComplexityFunction: (args: Record<string, unknown>) => {
+			field: number;
+			multiplier: number;
+		};
+
+		beforeAll(() => {
+			const fundType = schema.getType("Fund") as GraphQLObjectType;
+			const campaignsField = fundType.getFields().campaigns;
+			if (
+				!campaignsField ||
+				!campaignsField.extensions ||
+				!campaignsField.extensions.complexity
+			) {
+				throw new Error("Complexity function not found on Fund.campaigns field");
+			}
+			campaignsComplexityFunction = campaignsField.extensions.complexity as (
+				args: Record<string, unknown>,
+			) => { field: number; multiplier: number };
+		});
+
+		it("should return correct complexity with first argument", () => {
+			const result = campaignsComplexityFunction({ first: 20 });
+			expect(result).toBeDefined();
+			expect(result.multiplier).toBe(20);
+			expect(result.field).toBeDefined();
+		});
+
+		it("should return correct complexity with last argument", () => {
+			const result = campaignsComplexityFunction({ last: 15 });
+			expect(result).toBeDefined();
+			expect(result.multiplier).toBe(15);
+			expect(result.field).toBeDefined();
+		});
+
+		it("should return complexity with fallback multiplier of 1 when no first or last", () => {
+			const result = campaignsComplexityFunction({});
+			expect(result).toBeDefined();
+			expect(result.multiplier).toBe(1);
+			expect(result.field).toBeDefined();
 		});
 	});
 });
