@@ -46,6 +46,12 @@ describe("GraphQL Routes", () => {
 		// Setup mock fastify instance
 		mockFastify = {
 			drizzleClient: {} as FastifyInstance["drizzleClient"],
+			cache: {
+				get: vi.fn(),
+				set: vi.fn(),
+				del: vi.fn(),
+				delete: vi.fn(),
+			} as unknown as FastifyInstance["cache"],
 			envConfig: {
 				API_IS_GRAPHIQL: true,
 				API_GRAPHQL_MUTATION_BASE_COST: 10,
@@ -1328,7 +1334,7 @@ describe("GraphQL Routes", () => {
 			{
 				description:
 					"should handle socket without request property in subscription onConnect",
-				socket: {} as { request?: never },
+				socket: {},
 			},
 			{
 				description:

@@ -408,7 +408,7 @@ describe("Performance Plugin", () => {
 
 			const body = response.json();
 
-			// Most recent should be last (since we unshift, newest is at index 0)
+			// Most recent should be first (since we unshift, newest is at index 0)
 			if (body.recent.length >= 2) {
 				const first = body.recent[0];
 				const second = body.recent[1];
