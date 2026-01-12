@@ -1,6 +1,6 @@
 import { faker } from "@faker-js/faker";
 import { eq } from "drizzle-orm";
-import { afterEach, expect, suite, test, vi } from "vitest";
+import { afterEach, expect, suite, test } from "vitest";
 
 import { usersTable } from "~/src/drizzle/schema";
 import type {
@@ -159,7 +159,6 @@ suite("Mutation field deleteAgendaCategory", () => {
 	const cleanupFns: Array<() => Promise<void>> = [];
 
 	afterEach(async () => {
-		vi.restoreAllMocks();
 		for (const cleanup of cleanupFns.reverse()) {
 			await cleanup();
 		}
