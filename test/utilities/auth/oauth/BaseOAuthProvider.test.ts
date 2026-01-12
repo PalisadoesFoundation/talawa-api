@@ -60,7 +60,7 @@ class ConcreteOAuthProvider extends BaseOAuthProvider {
 	// Expose protected post method for testing
 	public testPost<T>(
 		url: string,
-		data: Record<string, unknown>,
+		data: Record<string, string> | URLSearchParams,
 		headers?: Record<string, string>,
 	): Promise<T> {
 		return this.post<T>(url, data, headers);
@@ -144,37 +144,58 @@ describe("BaseOAuthProvider", () => {
 			expect(() => provider.testValidateConfig()).not.toThrow();
 		});
 
-		it("should throw error when clientId is missing", () => {
-			const invalidProvider = new ConcreteOAuthProvider({
-				clientId: "",
-				clientSecret: "test_secret",
-				redirectUri: "http://localhost:3000/callback",
-			});
+		it("should throw error when redirectUri is missing", () => {
+			try {
+				new ConcreteOAuthProvider({
+					clientId: "test_id",
+					clientSecret: "test_secret",
+					redirectUri: "",
+				});
+				throw new Error("Expected invalid config to throw");
+			} catch (error) {
+				expect(error).toBeInstanceOf(OAuthError);
+				expect((error as OAuthError).code).toBe("INVALID_CONFIG");
+				expect((error as OAuthError).statusCode).toBe(500);
+			}
+		});
 
-			expect(() => invalidProvider.testValidateConfig()).toThrow(OAuthError);
+		it("should throw error when clientId is missing", () => {
+			try {
+				new ConcreteOAuthProvider({
+					clientId: "",
+					clientSecret: "test_secret",
+					redirectUri: "http://localhost:3000/callback",
+				});
+				throw new Error("Expected invalid config to throw");
+			} catch (error) {
+				expect(error).toBeInstanceOf(OAuthError);
+				expect((error as OAuthError).code).toBe("INVALID_CONFIG");
+				expect((error as OAuthError).statusCode).toBe(500);
+			}
 		});
 
 		it("should throw error when clientSecret is missing", () => {
-			const invalidProvider = new ConcreteOAuthProvider({
-				clientId: "test_id",
-				clientSecret: "",
-				redirectUri: "http://localhost:3000/callback",
-			});
-
-			expect(() => invalidProvider.testValidateConfig()).toThrow(OAuthError);
+			try {
+				new ConcreteOAuthProvider({
+					clientId: "test_id",
+					clientSecret: "",
+					redirectUri: "http://localhost:3000/callback",
+				});
+				throw new Error("Expected invalid config to throw");
+			} catch (error) {
+				expect(error).toBeInstanceOf(OAuthError);
+				expect((error as OAuthError).code).toBe("INVALID_CONFIG");
+				expect((error as OAuthError).statusCode).toBe(500);
+			}
 		});
 
 		it("should throw error with provider name in message", () => {
-			const invalidProvider = new ConcreteOAuthProvider({
-				clientId: "",
-				clientSecret: "",
-				redirectUri: "http://localhost:3000/callback",
-			});
-
-			expect(() => invalidProvider.testValidateConfig()).toThrow();
-
 			try {
-				invalidProvider.testValidateConfig();
+				new ConcreteOAuthProvider({
+					clientId: "",
+					clientSecret: "",
+					redirectUri: "",
+				});
 			} catch (error) {
 				expect(error).toBeInstanceOf(OAuthError);
 				expect((error as OAuthError).message).toContain("test-provider");
@@ -182,16 +203,13 @@ describe("BaseOAuthProvider", () => {
 		});
 
 		it("should throw OAuthError with correct code and status", () => {
-			const invalidProvider = new ConcreteOAuthProvider({
-				clientId: "",
-				clientSecret: "",
-				redirectUri: "http://localhost:3000/callback",
-			});
-
-			expect(() => invalidProvider.testValidateConfig()).toThrow();
-
 			try {
-				invalidProvider.testValidateConfig();
+				new ConcreteOAuthProvider({
+					clientId: "",
+					clientSecret: "",
+					redirectUri: "",
+				});
+				throw new Error("Expected invalid config to throw");
 			} catch (error) {
 				expect(error).toBeInstanceOf(OAuthError);
 				const oauthError = error as OAuthError;
@@ -202,6 +220,39 @@ describe("BaseOAuthProvider", () => {
 	});
 
 	describe("post()", () => {
+		it("should handle axios error without response", async () => {
+			const axiosError = {
+				isAxiosError: true,
+				message: "Network error",
+				response: undefined,
+				code: "ECONNABORTED",
+				config: { headers: {} },
+			} as AxiosError;
+
+			mockedIsAxiosError.mockReturnValue(true);
+			mockedPost.mockRejectedValueOnce(axiosError);
+
+			await expect(provider.testPost("https://test.com", {})).rejects.toThrow(
+				TokenExchangeError,
+			);
+		});
+
+		it("should handle axios timeout", async () => {
+			const axiosError = {
+				isAxiosError: true,
+				message: "timeout of 10000ms exceeded",
+				code: "ECONNABORTED",
+				response: undefined,
+				config: { headers: {} },
+			} as AxiosError;
+
+			mockedIsAxiosError.mockReturnValue(true);
+			mockedPost.mockRejectedValueOnce(axiosError);
+
+			await expect(provider.testPost("https://test.com", {})).rejects.toThrow(
+				TokenExchangeError,
+			);
+		});
 		it("should make successful POST request", async () => {
 			const mockResponse: OAuthProviderTokenResponse = {
 				access_token: "test_access_token",
@@ -215,13 +266,13 @@ describe("BaseOAuthProvider", () => {
 
 			const result = await provider.testPost<OAuthProviderTokenResponse>(
 				"https://test.com",
-				{ test: "data" },
+				{ test: "data", number: "123" },
 			);
 
 			expect(result).toEqual(mockResponse);
 			expect(mockedPost).toHaveBeenCalledWith(
 				"https://test.com",
-				{ test: "data" },
+				{ test: "data", number: "123" },
 				{
 					headers: {
 						"Content-Type": "application/x-www-form-urlencoded",
@@ -318,18 +369,34 @@ describe("BaseOAuthProvider", () => {
 			);
 		});
 
-		it("should re-throw non-axios errors", async () => {
+		it("should wrap non-axios errors in TokenExchangeError", async () => {
 			const customError = new Error("Custom error");
 			mockedIsAxiosError.mockReturnValue(false);
 			mockedPost.mockRejectedValueOnce(customError);
 
 			await expect(provider.testPost("https://test.com", {})).rejects.toThrow(
-				"Custom error",
+				TokenExchangeError,
 			);
 		});
 	});
 
 	describe("get()", () => {
+		it("should handle axios error without response in GET request", async () => {
+			const axiosError = {
+				isAxiosError: true,
+				message: "Network error",
+				response: undefined,
+				code: "ECONNABORTED",
+				config: { headers: {} },
+			} as AxiosError;
+
+			mockedIsAxiosError.mockReturnValue(true);
+			mockedGet.mockRejectedValueOnce(axiosError);
+
+			await expect(provider.testGet("https://test.com")).rejects.toThrow(
+				ProfileFetchError,
+			);
+		});
 		it("should make successful GET request", async () => {
 			const mockResponse = {
 				id: "123456",
@@ -386,14 +453,28 @@ describe("BaseOAuthProvider", () => {
 			);
 		});
 
-		it("should re-throw non-axios errors in GET request", async () => {
+		it("should wrap non-axios errors in ProfileFetchError", async () => {
 			const customError = new Error("Custom error");
 			mockedIsAxiosError.mockReturnValue(false);
 			mockedGet.mockRejectedValueOnce(customError);
 
 			await expect(provider.testGet("https://test.com")).rejects.toThrow(
-				"Custom error",
+				ProfileFetchError,
 			);
+		});
+
+		it("should wrap non-Error objects in ProfileFetchError", async () => {
+			// Test case where something other than Error is thrown
+			mockedIsAxiosError.mockReturnValue(false);
+			mockedGet.mockRejectedValueOnce(null);
+
+			try {
+				await provider.testGet("https://test.com");
+				throw new Error("Expected error to be thrown");
+			} catch (error) {
+				expect(error).toBeInstanceOf(ProfileFetchError);
+				expect((error as ProfileFetchError).message).toContain("Unknown error");
+			}
 		});
 	});
 
@@ -451,14 +532,30 @@ describe("BaseOAuthProvider", () => {
 			);
 		});
 
-		it("should pass through non-axios errors", async () => {
+		it("should wrap non-axios errors in TokenExchangeError", async () => {
 			const error = new Error("Non-axios error");
 			mockedIsAxiosError.mockReturnValue(false);
 			mockedPost.mockRejectedValueOnce(error);
 
 			await expect(provider.testPost("https://test.com", {})).rejects.toThrow(
-				"Non-axios error",
+				TokenExchangeError,
 			);
+		});
+
+		it("should wrap non-Error objects in TokenExchangeError", async () => {
+			// Test case where something other than Error is thrown
+			mockedIsAxiosError.mockReturnValue(false);
+			mockedPost.mockRejectedValueOnce("string error");
+
+			try {
+				await provider.testPost("https://test.com", {});
+				throw new Error("Expected error to be thrown");
+			} catch (error) {
+				expect(error).toBeInstanceOf(TokenExchangeError);
+				expect((error as TokenExchangeError).message).toContain(
+					"Unknown error",
+				);
+			}
 		});
 	});
 

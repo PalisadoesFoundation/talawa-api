@@ -7,15 +7,15 @@ import type { IOAuthProvider } from "./interfaces/IOAuthProvider";
  */
 export class OAuthProviderRegistry {
 	private providers: Map<string, IOAuthProvider> = new Map();
-	private static instance: OAuthProviderRegistry;
+	private static instance?: OAuthProviderRegistry;
+
+	private constructor() {}
 
 	/**
 	 * Get singleton instance
 	 */
 	public static getInstance(): OAuthProviderRegistry {
-		if (!OAuthProviderRegistry.instance) {
-			OAuthProviderRegistry.instance = new OAuthProviderRegistry();
-		}
+		OAuthProviderRegistry.instance ??= new OAuthProviderRegistry();
 		return OAuthProviderRegistry.instance;
 	}
 
@@ -25,7 +25,14 @@ export class OAuthProviderRegistry {
 	 * @throws {OAuthError} If provider is already registered
 	 */
 	register(provider: IOAuthProvider): void {
-		const name = provider.getProviderName().toLowerCase();
+		const name = provider.getProviderName().trim().toLowerCase();
+		if (!name) {
+			throw new OAuthError(
+				"Provider name must be non-empty",
+				"INVALID_PROVIDER_NAME",
+				400,
+			);
+		}
 
 		if (this.providers.has(name)) {
 			throw new OAuthError(
@@ -45,7 +52,14 @@ export class OAuthProviderRegistry {
 	 * @throws {OAuthError} If provider not found
 	 */
 	get(providerName: string): IOAuthProvider {
-		const name = providerName.toLowerCase();
+		const name = providerName.trim().toLowerCase();
+		if (!name) {
+			throw new OAuthError(
+				"Provider name must be non-empty",
+				"INVALID_PROVIDER_NAME",
+				400,
+			);
+		}
 		const provider = this.providers.get(name);
 
 		if (!provider) {

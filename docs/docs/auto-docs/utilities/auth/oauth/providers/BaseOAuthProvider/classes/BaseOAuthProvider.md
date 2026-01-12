@@ -19,7 +19,7 @@ Implements common HTTP logic and error handling
 
 > **new BaseOAuthProvider**(`config`): `BaseOAuthProvider`
 
-Defined in: [src/utilities/auth/oauth/providers/BaseOAuthProvider.ts:17](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/utilities/auth/oauth/providers/BaseOAuthProvider.ts#L17)
+Defined in: [src/utilities/auth/oauth/providers/BaseOAuthProvider.ts:25](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/utilities/auth/oauth/providers/BaseOAuthProvider.ts#L25)
 
 #### Parameters
 
@@ -37,7 +37,7 @@ Defined in: [src/utilities/auth/oauth/providers/BaseOAuthProvider.ts:17](https:/
 
 > `abstract` **exchangeCodeForTokens**(`code`, `redirectUri`): `Promise`\<[`OAuthProviderTokenResponse`](../../../types/interfaces/OAuthProviderTokenResponse.md)\>
 
-Defined in: [src/utilities/auth/oauth/providers/BaseOAuthProvider.ts:22](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/utilities/auth/oauth/providers/BaseOAuthProvider.ts#L22)
+Defined in: [src/utilities/auth/oauth/providers/BaseOAuthProvider.ts:31](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/utilities/auth/oauth/providers/BaseOAuthProvider.ts#L31)
 
 Exchange authorization code for access tokens
 
@@ -79,7 +79,7 @@ If authorization code is invalid
 
 > `abstract` **getProviderName**(): `string`
 
-Defined in: [src/utilities/auth/oauth/providers/BaseOAuthProvider.ts:21](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/utilities/auth/oauth/providers/BaseOAuthProvider.ts#L21)
+Defined in: [src/utilities/auth/oauth/providers/BaseOAuthProvider.ts:30](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/utilities/auth/oauth/providers/BaseOAuthProvider.ts#L30)
 
 Get the unique name identifier for this provider
 
@@ -99,7 +99,7 @@ Provider name (e.g., "google", "github")
 
 > `abstract` **getUserProfile**(`accessToken`): `Promise`\<[`OAuthUserProfile`](../../../types/interfaces/OAuthUserProfile.md)\>
 
-Defined in: [src/utilities/auth/oauth/providers/BaseOAuthProvider.ts:26](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/utilities/auth/oauth/providers/BaseOAuthProvider.ts#L26)
+Defined in: [src/utilities/auth/oauth/providers/BaseOAuthProvider.ts:35](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/utilities/auth/oauth/providers/BaseOAuthProvider.ts#L35)
 
 Fetch user profile information using access token
 

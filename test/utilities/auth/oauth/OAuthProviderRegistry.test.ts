@@ -14,7 +14,10 @@ class MockProvider implements IOAuthProvider {
 		return this.name;
 	}
 
-	async exchangeCodeForTokens(): Promise<OAuthProviderTokenResponse> {
+	async exchangeCodeForTokens(
+		_code: string,
+		_redirectUri: string,
+	): Promise<OAuthProviderTokenResponse> {
 		return {
 			access_token: "mock_access_token",
 			token_type: "Bearer",
@@ -22,7 +25,7 @@ class MockProvider implements IOAuthProvider {
 		};
 	}
 
-	async getUserProfile(): Promise<OAuthUserProfile> {
+	async getUserProfile(_accessToken: string): Promise<OAuthUserProfile> {
 		return {
 			providerId: "123456",
 			email: "test@example.com",
@@ -68,8 +71,14 @@ describe("OAuthProviderRegistry", () => {
 
 			registry.register(provider1);
 
-			expect(() => registry.register(provider2)).toThrow(OAuthError);
-			expect(() => registry.register(provider2)).toThrow(/already registered/);
+			try {
+				registry.register(provider2);
+				throw new Error("Expected duplicate registration to throw");
+			} catch (e) {
+				expect(e).toBeInstanceOf(OAuthError);
+				expect((e as OAuthError).code).toBe("DUPLICATE_PROVIDER");
+				expect((e as OAuthError).statusCode).toBe(409);
+			}
 		});
 
 		it("should register multiple different providers", () => {
@@ -83,6 +92,32 @@ describe("OAuthProviderRegistry", () => {
 			expect(registry.listProviders()).toEqual(
 				expect.arrayContaining(["google", "github"]),
 			);
+		});
+
+		it("should throw error for empty provider name", () => {
+			const provider = new MockProvider("");
+
+			try {
+				registry.register(provider);
+				throw new Error("Expected empty provider name to throw");
+			} catch (e) {
+				expect(e).toBeInstanceOf(OAuthError);
+				expect((e as OAuthError).code).toBe("INVALID_PROVIDER_NAME");
+				expect((e as OAuthError).statusCode).toBe(400);
+			}
+		});
+
+		it("should throw error for whitespace-only provider name", () => {
+			const provider = new MockProvider("   ");
+
+			try {
+				registry.register(provider);
+				throw new Error("Expected whitespace-only provider name to throw");
+			} catch (e) {
+				expect(e).toBeInstanceOf(OAuthError);
+				expect((e as OAuthError).code).toBe("INVALID_PROVIDER_NAME");
+				expect((e as OAuthError).statusCode).toBe(400);
+			}
 		});
 	});
 
@@ -104,8 +139,14 @@ describe("OAuthProviderRegistry", () => {
 		});
 
 		it("should throw error when provider not found", () => {
-			expect(() => registry.get("nonexistent")).toThrow(OAuthError);
-			expect(() => registry.get("nonexistent")).toThrow(/not found/);
+			try {
+				registry.get("nonexistent");
+				throw new Error("Expected provider not found to throw");
+			} catch (e) {
+				expect(e).toBeInstanceOf(OAuthError);
+				expect((e as OAuthError).code).toBe("PROVIDER_NOT_FOUND");
+				expect((e as OAuthError).statusCode).toBe(404);
+			}
 		});
 
 		it("should include available providers in error message", () => {
@@ -114,10 +155,34 @@ describe("OAuthProviderRegistry", () => {
 
 			try {
 				registry.get("facebook");
-				expect.fail("Should have thrown error");
+				throw new Error("Expected provider not found to throw");
 			} catch (error) {
+				expect(error).toBeInstanceOf(OAuthError);
+				expect((error as OAuthError).code).toBe("PROVIDER_NOT_FOUND");
 				expect((error as Error).message).toContain("google");
 				expect((error as Error).message).toContain("github");
+			}
+		});
+
+		it("should throw error for empty provider name", () => {
+			try {
+				registry.get("");
+				throw new Error("Expected empty provider name to throw");
+			} catch (e) {
+				expect(e).toBeInstanceOf(OAuthError);
+				expect((e as OAuthError).code).toBe("INVALID_PROVIDER_NAME");
+				expect((e as OAuthError).statusCode).toBe(400);
+			}
+		});
+
+		it("should throw error for whitespace-only provider name", () => {
+			try {
+				registry.get("   ");
+				throw new Error("Expected whitespace-only provider name to throw");
+			} catch (e) {
+				expect(e).toBeInstanceOf(OAuthError);
+				expect((e as OAuthError).code).toBe("INVALID_PROVIDER_NAME");
+				expect((e as OAuthError).statusCode).toBe(400);
 			}
 		});
 	});

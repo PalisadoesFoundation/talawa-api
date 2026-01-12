@@ -12,10 +12,19 @@ import type {
  * Implements common HTTP logic and error handling
  */
 export abstract class BaseOAuthProvider implements IOAuthProvider {
+	/**
+	 * OAuth provider configuration.
+	 *
+	 * SECURITY WARNING:
+	 * - Contains sensitive credentials (e.g. clientSecret)
+	 * - MUST be used server-side only
+	 * - MUST NOT be logged or exposed in error messages
+	 */
 	protected config: OAuthConfig;
 
 	constructor(config: OAuthConfig) {
 		this.config = config;
+		this.validateConfig();
 	}
 
 	abstract getProviderName(): string;
@@ -35,7 +44,7 @@ export abstract class BaseOAuthProvider implements IOAuthProvider {
 	 */
 	protected async post<T>(
 		url: string,
-		data: Record<string, unknown> | URLSearchParams,
+		data: Record<string, string> | URLSearchParams,
 		headers?: Record<string, string>,
 	): Promise<T> {
 		try {
@@ -62,7 +71,11 @@ export abstract class BaseOAuthProvider implements IOAuthProvider {
 
 				throw new TokenExchangeError("Token exchange failed", errorMessage);
 			}
-			throw error;
+			// Wrap non-Axios errors in OAuth error for consistent error handling
+			throw new TokenExchangeError(
+				"Token exchange failed",
+				error instanceof Error ? error.message : "Unknown error",
+			);
 		}
 	}
 
@@ -92,7 +105,10 @@ export abstract class BaseOAuthProvider implements IOAuthProvider {
 					`Failed to fetch user profile: ${axiosError.message}`,
 				);
 			}
-			throw error;
+			// Wrap non-Axios errors in OAuth error for consistent error handling
+			throw new ProfileFetchError(
+				`Failed to fetch user profile: ${error instanceof Error ? error.message : "Unknown error"}`,
+			);
 		}
 	}
 
@@ -101,7 +117,11 @@ export abstract class BaseOAuthProvider implements IOAuthProvider {
 	 * @throws {OAuthError} If configuration is invalid
 	 */
 	protected validateConfig(): void {
-		if (!this.config.clientId || !this.config.clientSecret) {
+		if (
+			!this.config.clientId ||
+			!this.config.clientSecret ||
+			!this.config.redirectUri
+		) {
 			throw new OAuthError(
 				`Invalid OAuth configuration for ${this.getProviderName()}`,
 				"INVALID_CONFIG",

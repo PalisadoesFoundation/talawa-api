@@ -1,5 +1,9 @@
 export * from "./errors";
-export * from "./interfaces/IOAuthProvider";
+export type { IOAuthProvider } from "./interfaces/IOAuthProvider";
 export * from "./OAuthProviderRegistry";
 export * from "./providers/BaseOAuthProvider";
-export * from "./types";
+export type {
+	OAuthConfig,
+	OAuthProviderTokenResponse,
+	OAuthUserProfile,
+} from "./types";

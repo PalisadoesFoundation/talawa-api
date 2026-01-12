@@ -4,7 +4,9 @@
 
 # Interface: OAuthConfig
 
-Defined in: [src/utilities/auth/oauth/types.ts:21](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/utilities/auth/oauth/types.ts#L21)
+Defined in: [src/utilities/auth/oauth/types.ts:27](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/utilities/auth/oauth/types.ts#L27)
+
+Configuration for OAuth provider
 
 ## Properties
 
@@ -12,7 +14,7 @@ Defined in: [src/utilities/auth/oauth/types.ts:21](https://github.com/Palisadoes
 
 > **clientId**: `string`
 
-Defined in: [src/utilities/auth/oauth/types.ts:22](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/utilities/auth/oauth/types.ts#L22)
+Defined in: [src/utilities/auth/oauth/types.ts:28](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/utilities/auth/oauth/types.ts#L28)
 
 ***
 
@@ -20,7 +22,7 @@ Defined in: [src/utilities/auth/oauth/types.ts:22](https://github.com/Palisadoes
 
 > **clientSecret**: `string`
 
-Defined in: [src/utilities/auth/oauth/types.ts:23](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/utilities/auth/oauth/types.ts#L23)
+Defined in: [src/utilities/auth/oauth/types.ts:29](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/utilities/auth/oauth/types.ts#L29)
 
 ***
 
@@ -28,4 +30,4 @@ Defined in: [src/utilities/auth/oauth/types.ts:23](https://github.com/Palisadoes
 
 > **redirectUri**: `string`
 
-Defined in: [src/utilities/auth/oauth/types.ts:24](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/utilities/auth/oauth/types.ts#L24)
+Defined in: [src/utilities/auth/oauth/types.ts:30](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/utilities/auth/oauth/types.ts#L30)

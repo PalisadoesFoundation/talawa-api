@@ -1,3 +1,6 @@
+/**
+ * OAuth token response from provider token endpoint
+ */
 export interface OAuthProviderTokenResponse {
 	access_token: string;
 	token_type: string;
@@ -18,6 +21,9 @@ export interface OAuthUserProfile {
 	emailVerified?: boolean;
 }
 
+/**
+ * Configuration for OAuth provider
+ */
 export interface OAuthConfig {
 	clientId: string;
 	clientSecret: string;
