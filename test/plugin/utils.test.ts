@@ -551,3 +551,307 @@ describe("loadPluginManifest", () => {
 		await expect(utils.loadPluginManifest("/plugin")).rejects.toThrow("fail");
 	});
 });
+
+// --- deepClone additional edge cases ---
+describe("deepClone edge cases", () => {
+	it("returns Date as cloned Date", () => {
+		const date = new Date("2025-01-01");
+		const cloned = utils.deepClone(date);
+		expect(cloned).toBeInstanceOf(Date);
+		expect(cloned.getTime()).toBe(date.getTime());
+		expect(cloned).not.toBe(date);
+	});
+
+	it("returns primitive values as-is", () => {
+		expect(utils.deepClone(42)).toBe(42);
+		expect(utils.deepClone("hello")).toBe("hello");
+		expect(utils.deepClone(null)).toBe(null);
+		expect(utils.deepClone(undefined)).toBe(undefined);
+		expect(utils.deepClone(true)).toBe(true);
+	});
+
+	it("clones nested arrays", () => {
+		const arr = [
+			[1, 2],
+			[3, 4],
+		];
+		const cloned = utils.deepClone(arr);
+		expect(cloned).toEqual(arr);
+		expect(cloned[0]).not.toBe(arr[0]);
+	});
+});
+
+// --- generateCreateTableSQL additional column types ---
+describe("generateCreateTableSQL column types", () => {
+	const drizzleName = Symbol.for("drizzle:Name");
+	const drizzleColumns = Symbol.for("drizzle:Columns");
+
+	it("handles PgInteger column type", () => {
+		const tableDef: Record<string, unknown> = {
+			[drizzleName]: "test_table",
+			[drizzleColumns]: {
+				count: { name: "count", columnType: "PgInteger", notNull: true },
+			},
+		};
+		const sql = utils.generateCreateTableSQL(tableDef, "plugin");
+		expect(sql).toContain('"count" integer NOT NULL');
+	});
+
+	it("handles PgBigInt column type", () => {
+		const tableDef: Record<string, unknown> = {
+			[drizzleName]: "test_table",
+			[drizzleColumns]: {
+				bignum: { name: "bignum", columnType: "PgBigInt" },
+			},
+		};
+		const sql = utils.generateCreateTableSQL(tableDef, "plugin");
+		expect(sql).toContain('"bignum" bigint');
+	});
+
+	it("handles PgBoolean column type", () => {
+		const tableDef: Record<string, unknown> = {
+			[drizzleName]: "test_table",
+			[drizzleColumns]: {
+				flag: { name: "flag", columnType: "PgBoolean", default: true },
+			},
+		};
+		const sql = utils.generateCreateTableSQL(tableDef, "plugin");
+		expect(sql).toContain('"flag" boolean DEFAULT true');
+	});
+
+	it("handles PgTimestamp column type with defaultNow", () => {
+		const tableDef: Record<string, unknown> = {
+			[drizzleName]: "test_table",
+			[drizzleColumns]: {
+				created_at: {
+					name: "created_at",
+					columnType: "PgTimestamp",
+					hasDefault: true,
+				},
+			},
+		};
+		const sql = utils.generateCreateTableSQL(tableDef, "plugin");
+		expect(sql).toContain('"created_at" timestamp DEFAULT now()');
+	});
+
+	it("handles PgDate column type", () => {
+		const tableDef: Record<string, unknown> = {
+			[drizzleName]: "test_table",
+			[drizzleColumns]: {
+				birth_date: { name: "birth_date", columnType: "PgDate" },
+			},
+		};
+		const sql = utils.generateCreateTableSQL(tableDef, "plugin");
+		expect(sql).toContain('"birth_date" date');
+	});
+
+	it("handles PgTime column type", () => {
+		const tableDef: Record<string, unknown> = {
+			[drizzleName]: "test_table",
+			[drizzleColumns]: {
+				start_time: { name: "start_time", columnType: "PgTime" },
+			},
+		};
+		const sql = utils.generateCreateTableSQL(tableDef, "plugin");
+		expect(sql).toContain('"start_time" time');
+	});
+
+	it("handles PgDecimal column type", () => {
+		const tableDef: Record<string, unknown> = {
+			[drizzleName]: "test_table",
+			[drizzleColumns]: {
+				price: { name: "price", columnType: "PgDecimal" },
+			},
+		};
+		const sql = utils.generateCreateTableSQL(tableDef, "plugin");
+		expect(sql).toContain('"price" decimal');
+	});
+
+	it("handles PgReal column type", () => {
+		const tableDef: Record<string, unknown> = {
+			[drizzleName]: "test_table",
+			[drizzleColumns]: {
+				rate: { name: "rate", columnType: "PgReal" },
+			},
+		};
+		const sql = utils.generateCreateTableSQL(tableDef, "plugin");
+		expect(sql).toContain('"rate" real');
+	});
+
+	it("handles PgDoublePrecision column type", () => {
+		const tableDef: Record<string, unknown> = {
+			[drizzleName]: "test_table",
+			[drizzleColumns]: {
+				value: { name: "value", columnType: "PgDoublePrecision" },
+			},
+		};
+		const sql = utils.generateCreateTableSQL(tableDef, "plugin");
+		expect(sql).toContain('"value" double precision');
+	});
+
+	it("handles PgSmallInt column type", () => {
+		const tableDef: Record<string, unknown> = {
+			[drizzleName]: "test_table",
+			[drizzleColumns]: {
+				small: { name: "small", columnType: "PgSmallInt" },
+			},
+		};
+		const sql = utils.generateCreateTableSQL(tableDef, "plugin");
+		expect(sql).toContain('"small" smallint');
+	});
+
+	it("handles PgSerial column type", () => {
+		const tableDef: Record<string, unknown> = {
+			[drizzleName]: "test_table",
+			[drizzleColumns]: {
+				seq: { name: "seq", columnType: "PgSerial" },
+			},
+		};
+		const sql = utils.generateCreateTableSQL(tableDef, "plugin");
+		expect(sql).toContain('"seq" serial');
+	});
+
+	it("handles PgBigSerial column type", () => {
+		const tableDef: Record<string, unknown> = {
+			[drizzleName]: "test_table",
+			[drizzleColumns]: {
+				bigseq: { name: "bigseq", columnType: "PgBigSerial" },
+			},
+		};
+		const sql = utils.generateCreateTableSQL(tableDef, "plugin");
+		expect(sql).toContain('"bigseq" bigserial');
+	});
+
+	it("handles unknown column type defaulting to text", () => {
+		const tableDef: Record<string, unknown> = {
+			[drizzleName]: "test_table",
+			[drizzleColumns]: {
+				unknown_col: { name: "unknown_col", columnType: "PgCustomType" },
+			},
+		};
+		const sql = utils.generateCreateTableSQL(tableDef, "plugin");
+		expect(sql).toContain('"unknown_col" text');
+	});
+
+	it("handles string default value", () => {
+		const tableDef: Record<string, unknown> = {
+			[drizzleName]: "test_table",
+			[drizzleColumns]: {
+				status: { name: "status", columnType: "PgText", default: "pending" },
+			},
+		};
+		const sql = utils.generateCreateTableSQL(tableDef, "plugin");
+		expect(sql).toContain("\"status\" text DEFAULT 'pending'");
+	});
+
+	it("handles null default value", () => {
+		const tableDef: Record<string, unknown> = {
+			[drizzleName]: "test_table",
+			[drizzleColumns]: {
+				nullable: { name: "nullable", columnType: "PgText", default: null },
+			},
+		};
+		const sql = utils.generateCreateTableSQL(tableDef, "plugin");
+		expect(sql).toContain('"nullable" text DEFAULT NULL');
+	});
+
+	it("handles UNIQUE constraint", () => {
+		const tableDef: Record<string, unknown> = {
+			[drizzleName]: "test_table",
+			[drizzleColumns]: {
+				email: { name: "email", columnType: "PgText", unique: true },
+			},
+		};
+		const sql = utils.generateCreateTableSQL(tableDef, "plugin");
+		expect(sql).toContain('"email" text UNIQUE');
+	});
+
+	it("handles UUID id column with defaultFn", () => {
+		const tableDef: Record<string, unknown> = {
+			[drizzleName]: "test_table",
+			[drizzleColumns]: {
+				id: {
+					name: "id",
+					columnType: "PgUUID",
+					notNull: true,
+					primary: true,
+					hasDefault: true,
+				},
+			},
+		};
+		const sql = utils.generateCreateTableSQL(tableDef, "plugin");
+		expect(sql).toContain(
+			'"id" uuid NOT NULL PRIMARY KEY DEFAULT gen_random_uuid()',
+		);
+	});
+
+	it("handles table without plugin prefix when already prefixed", () => {
+		const tableDef: Record<string, unknown> = {
+			[drizzleName]: "plugin_mytable",
+			[drizzleColumns]: {
+				id: { name: "id", columnType: "PgUUID" },
+			},
+		};
+		const sql = utils.generateCreateTableSQL(tableDef, "plugin");
+		expect(sql).toContain('CREATE TABLE IF NOT EXISTS "plugin_mytable"');
+	});
+
+	it("handles missing drizzle symbols gracefully", () => {
+		const tableDef: Record<string, unknown> = {};
+		const sql = utils.generateCreateTableSQL(tableDef, "plugin");
+		expect(sql).toContain('CREATE TABLE IF NOT EXISTS "plugin_unknown_table"');
+	});
+});
+
+// --- isValidPluginId additional edge cases ---
+describe("isValidPluginId edge cases", () => {
+	it("returns false for non-string input", () => {
+		expect(utils.isValidPluginId(null as unknown as string)).toBe(false);
+		expect(utils.isValidPluginId(undefined as unknown as string)).toBe(false);
+		expect(utils.isValidPluginId(123 as unknown as string)).toBe(false);
+	});
+});
+
+// --- generateCreateIndexSQL additional cases ---
+describe("generateCreateIndexSQL additional cases", () => {
+	const drizzleName = Symbol.for("drizzle:Name");
+	const drizzleIndexes = Symbol.for("drizzle:Indexes");
+
+	it("handles table that already has plugin prefix", () => {
+		const tableDef: Record<string, unknown> = {
+			[drizzleName]: "plugin_mytable",
+			[drizzleIndexes]: [{ columns: [{ name: "col1" }], unique: false }],
+		};
+		const indexes = utils.generateCreateIndexSQL(tableDef, "plugin");
+		expect(indexes[0]).toContain('"plugin_mytable"');
+	});
+
+	it("handles empty indexes array", () => {
+		const tableDef: Record<string, unknown> = {
+			[drizzleName]: "mytable",
+			[drizzleIndexes]: [],
+		};
+		const indexes = utils.generateCreateIndexSQL(tableDef, "plugin");
+		expect(indexes).toHaveLength(0);
+	});
+
+	it("handles missing indexes symbol", () => {
+		const tableDef: Record<string, unknown> = {
+			[drizzleName]: "mytable",
+		};
+		const indexes = utils.generateCreateIndexSQL(tableDef, "plugin");
+		expect(indexes).toHaveLength(0);
+	});
+
+	it("handles index with multiple columns", () => {
+		const tableDef: Record<string, unknown> = {
+			[drizzleName]: "mytable",
+			[drizzleIndexes]: [
+				{ columns: [{ name: "col1" }, { name: "col2" }], unique: false },
+			],
+		};
+		const indexes = utils.generateCreateIndexSQL(tableDef, "plugin");
+		expect(indexes[0]).toContain('"col1", "col2"');
+		expect(indexes[0]).toContain("plugin_mytable_col1_col2_index");
+	});
+});

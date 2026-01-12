@@ -1094,4 +1094,78 @@ describe("PluginManager", () => {
 			expect(emitSpy).toHaveBeenCalledWith("plugins:ready");
 		});
 	});
+
+	describe("Initialize with failed plugins", () => {
+		it("should log summary when some plugins fail to load", async () => {
+			// Create context with two plugins in DB
+			const mockDbPlugin1 = {
+				pluginId: "plugin-1",
+				isActivated: true,
+				isInstalled: true,
+				id: "1",
+				backup: false,
+				createdAt: new Date(),
+				updatedAt: null,
+			};
+			const mockDbPlugin2 = {
+				pluginId: "plugin-2",
+				isActivated: false,
+				isInstalled: true,
+				id: "2",
+				backup: false,
+				createdAt: new Date(),
+				updatedAt: null,
+			};
+			const context = createPluginContext([mockDbPlugin1, mockDbPlugin2]);
+
+			// Make first plugin succeed and second fail
+			let loadCallCount = 0;
+			(loadPluginManifest as ReturnType<typeof vi.fn>).mockImplementation(
+				() => {
+					loadCallCount++;
+					if (loadCallCount === 2) {
+						throw new Error("Manifest load failed for plugin-2");
+					}
+					return baseManifest;
+				},
+			);
+
+			const manager = new TestablePluginManager(context, "/plugins");
+			await manager.initialize();
+
+			expect(context.logger.info).toHaveBeenCalledWith(
+				expect.stringContaining("loaded"),
+			);
+		});
+
+		it("should log error when loadPluginManifest throws", async () => {
+			const mockDbPlugin = {
+				pluginId: "error-plugin",
+				isActivated: true,
+				isInstalled: true,
+				id: "1",
+				backup: false,
+				createdAt: new Date(),
+				updatedAt: null,
+			};
+			const context = createPluginContext([mockDbPlugin]);
+
+			// Make loadPluginManifest throw
+			(loadPluginManifest as ReturnType<typeof vi.fn>).mockRejectedValue(
+				new Error("Catastrophic failure"),
+			);
+
+			const manager = new TestablePluginManager(context, "/plugins");
+			await manager.initialize();
+
+			// Should have logged error about loading the manifest (error caught inside loadPlugin)
+			expect(context.logger.error).toHaveBeenCalledWith(
+				expect.objectContaining({
+					msg: expect.stringContaining(
+						"Failed to load manifest for plugin error-plugin",
+					),
+				}),
+			);
+		});
+	});
 });

@@ -2355,4 +2355,322 @@ describe("PluginLifecycle", () => {
 			);
 		});
 	});
+
+	describe("loadPluginManifest validation", () => {
+		it("should throw error for invalid plugin ID in loadPluginManifest", async () => {
+			const { isValidPluginId } = await import("../../../src/plugin/utils");
+			(isValidPluginId as ReturnType<typeof vi.fn>).mockReturnValueOnce(false);
+
+			await expect(
+				(
+					lifecycle as unknown as {
+						loadPluginManifest: (pluginId: string) => Promise<unknown>;
+					}
+				).loadPluginManifest("../malicious"),
+			).rejects.toThrow("Invalid plugin ID: ../malicious");
+		});
+	});
+
+	describe("manageDocker edge cases", () => {
+		it("should warn and return when Docker command fails (docker not available)", async () => {
+			const pluginId = "test-plugin";
+			const manifest = {
+				docker: {
+					enabled: true,
+					composeFile: "docker-compose.yml",
+				},
+			};
+
+			const { spawn } = await import("node:child_process");
+			const EventEmitter = (await import("node:events")).EventEmitter;
+
+			// Make docker --version fail
+			(spawn as unknown as ReturnType<typeof vi.fn>).mockImplementation(
+				(command: string, args: string[]) => {
+					const proc = new EventEmitter();
+					setImmediate(() => {
+						if (command === "docker" && args[0] === "--version") {
+							proc.emit("close", 1); // Non-zero exit code for docker --version
+						} else {
+							proc.emit("close", 0);
+						}
+					});
+					return proc;
+				},
+			);
+
+			await (
+				lifecycle as unknown as {
+					manageDocker: (
+						pluginId: string,
+						manifest: unknown,
+						action: string,
+					) => Promise<void>;
+				}
+			).manageDocker(pluginId, manifest, "install");
+
+			expect(mockPluginContext.logger.warn).toHaveBeenCalledWith(
+				expect.stringContaining("Docker not available"),
+			);
+		});
+
+		it("should warn and return when docker compose is not available", async () => {
+			const pluginId = "test-plugin";
+			const manifest = {
+				docker: {
+					enabled: true,
+					composeFile: "docker-compose.yml",
+				},
+			};
+
+			const { spawn } = await import("node:child_process");
+			const EventEmitter = (await import("node:events")).EventEmitter;
+
+			let callCount = 0;
+			// Make docker compose version fail but docker --version pass
+			(spawn as unknown as ReturnType<typeof vi.fn>).mockImplementation(
+				(command: string, args: string[]) => {
+					const proc = new EventEmitter();
+					setImmediate(() => {
+						callCount++;
+						if (
+							callCount === 2 &&
+							command === "docker" &&
+							args[0] === "compose"
+						) {
+							proc.emit("close", 1); // Non-zero exit code for docker compose
+						} else {
+							proc.emit("close", 0);
+						}
+					});
+					return proc;
+				},
+			);
+
+			await (
+				lifecycle as unknown as {
+					manageDocker: (
+						pluginId: string,
+						manifest: unknown,
+						action: string,
+					) => Promise<void>;
+				}
+			).manageDocker(pluginId, manifest, "install");
+
+			expect(mockPluginContext.logger.warn).toHaveBeenCalledWith(
+				expect.stringContaining("'docker compose' not available"),
+			);
+		});
+
+		it("should handle spawn error event as Docker not available", async () => {
+			const pluginId = "test-plugin";
+			const manifest = {
+				docker: {
+					enabled: true,
+					composeFile: "docker-compose.yml",
+				},
+			};
+
+			const { spawn } = await import("node:child_process");
+			const EventEmitter = (await import("node:events")).EventEmitter;
+
+			// Make spawn emit error - this triggers the Docker availability check failure
+			(spawn as unknown as ReturnType<typeof vi.fn>).mockImplementation(() => {
+				const proc = new EventEmitter();
+				setImmediate(() => {
+					proc.emit("error", new Error("Spawn failed"));
+				});
+				return proc;
+			});
+
+			await (
+				lifecycle as unknown as {
+					manageDocker: (
+						pluginId: string,
+						manifest: unknown,
+						action: string,
+					) => Promise<void>;
+				}
+			).manageDocker(pluginId, manifest, "install");
+
+			// Spawn error during docker --version check results in "Docker not available" message
+			expect(mockPluginContext.logger.warn).toHaveBeenCalledWith(
+				expect.stringContaining("Docker not available"),
+			);
+		});
+
+		it("should skip buildOnInstall when explicitly set to false", async () => {
+			const pluginId = "test-plugin";
+			const manifest = {
+				docker: {
+					enabled: true,
+					composeFile: "docker-compose.yml",
+					buildOnInstall: false,
+				},
+			};
+
+			const { spawn } = await import("node:child_process");
+			const EventEmitter = (await import("node:events")).EventEmitter;
+
+			(spawn as unknown as ReturnType<typeof vi.fn>).mockImplementation(() => {
+				const proc = new EventEmitter();
+				setImmediate(() => proc.emit("close", 0));
+				return proc;
+			});
+
+			await (
+				lifecycle as unknown as {
+					manageDocker: (
+						pluginId: string,
+						manifest: unknown,
+						action: string,
+					) => Promise<void>;
+				}
+			).manageDocker(pluginId, manifest, "install");
+
+			// Should not have called build because buildOnInstall is false
+			expect(spawn).not.toHaveBeenCalledWith(
+				"sudo",
+				expect.arrayContaining(["build"]),
+				expect.any(Object),
+			);
+		});
+
+		it("should skip upOnActivate when explicitly set to false", async () => {
+			const pluginId = "test-plugin";
+			const manifest = {
+				docker: {
+					enabled: true,
+					composeFile: "docker-compose.yml",
+					upOnActivate: false,
+				},
+			};
+
+			const { spawn } = await import("node:child_process");
+			const EventEmitter = (await import("node:events")).EventEmitter;
+
+			(spawn as unknown as ReturnType<typeof vi.fn>).mockImplementation(() => {
+				const proc = new EventEmitter();
+				setImmediate(() => proc.emit("close", 0));
+				return proc;
+			});
+
+			await (
+				lifecycle as unknown as {
+					manageDocker: (
+						pluginId: string,
+						manifest: unknown,
+						action: string,
+					) => Promise<void>;
+				}
+			).manageDocker(pluginId, manifest, "activate");
+
+			// Should not have called up because upOnActivate is false
+			expect(spawn).not.toHaveBeenCalledWith(
+				"sudo",
+				expect.arrayContaining(["up", "-d"]),
+				expect.any(Object),
+			);
+		});
+
+		it("should skip downOnDeactivate when explicitly set to false", async () => {
+			const pluginId = "test-plugin";
+			const manifest = {
+				docker: {
+					enabled: true,
+					composeFile: "docker-compose.yml",
+					downOnDeactivate: false,
+				},
+			};
+
+			const { spawn } = await import("node:child_process");
+			const EventEmitter = (await import("node:events")).EventEmitter;
+
+			(spawn as unknown as ReturnType<typeof vi.fn>).mockImplementation(() => {
+				const proc = new EventEmitter();
+				setImmediate(() => proc.emit("close", 0));
+				return proc;
+			});
+
+			await (
+				lifecycle as unknown as {
+					manageDocker: (
+						pluginId: string,
+						manifest: unknown,
+						action: string,
+					) => Promise<void>;
+				}
+			).manageDocker(pluginId, manifest, "deactivate");
+
+			// Should not have called down because downOnDeactivate is false
+			expect(spawn).not.toHaveBeenCalledWith(
+				"sudo",
+				expect.arrayContaining(["down"]),
+				expect.any(Object),
+			);
+		});
+
+		it("should skip removeOnUninstall when explicitly set to false", async () => {
+			const pluginId = "test-plugin";
+			const manifest = {
+				docker: {
+					enabled: true,
+					composeFile: "docker-compose.yml",
+					removeOnUninstall: false,
+				},
+			};
+
+			const { spawn } = await import("node:child_process");
+			const EventEmitter = (await import("node:events")).EventEmitter;
+
+			(spawn as unknown as ReturnType<typeof vi.fn>).mockImplementation(() => {
+				const proc = new EventEmitter();
+				setImmediate(() => proc.emit("close", 0));
+				return proc;
+			});
+
+			await (
+				lifecycle as unknown as {
+					manageDocker: (
+						pluginId: string,
+						manifest: unknown,
+						action: string,
+					) => Promise<void>;
+				}
+			).manageDocker(pluginId, manifest, "uninstall");
+
+			// Should not have called down -v because removeOnUninstall is false
+			expect(spawn).not.toHaveBeenCalledWith(
+				"sudo",
+				expect.arrayContaining(["down", "-v"]),
+				expect.any(Object),
+			);
+		});
+	});
+
+	describe("removePluginDatabases error handling", () => {
+		it("should handle database table removal error gracefully", async () => {
+			const { dropPluginTables } = await import("../../../src/plugin/utils");
+			const plugin = mockLoadedPlugins.get("test-plugin");
+			if (plugin) {
+				plugin.databaseTables = { TestTable: {} };
+			}
+
+			(dropPluginTables as ReturnType<typeof vi.fn>).mockRejectedValue(
+				new Error("Drop failed"),
+			);
+
+			await (
+				lifecycle as unknown as {
+					removePluginDatabases: (pluginId: string) => Promise<void>;
+				}
+			).removePluginDatabases("test-plugin");
+
+			expect(mockPluginContext.logger.error).toHaveBeenCalledWith(
+				expect.objectContaining({
+					msg: expect.stringContaining("Failed to remove tables"),
+				}),
+			);
+		});
+	});
 });
