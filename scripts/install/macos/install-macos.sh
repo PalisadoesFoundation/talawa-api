@@ -126,7 +126,7 @@ validate_version_string() {
         echo "  • Numbers (0-9)"
         echo "  • Dots (.)"
         echo "  • Hyphens (-)"
-        echo "  • Version operators (^, ~, =, >, <, -)"
+        echo "  • Version operators (^, ~, =, >, <)"
         echo "  • Forward slash (/) for lts/latest patterns"
         echo ""
         info "Rejected characters found: $(echo "$version" | tr -d 'a-zA-Z0-9./~^=<>-')"
