@@ -315,7 +315,7 @@ if [ "$CLEAN_NODE_VERSION" = "lts" ]; then
     echo "$OUTPUT"
 
     # Extract version from output (e.g., "Installing Node v20.10.0" or "Using Node v20.10.0")
-    LTS_VERSION=$(echo "$OUTPUT" | grep -oE 'v[0-9]+\.[0-9]+\.[0-9]+' | head -1 | sed 's/^v//')
+    LTS_VERSION=$(echo "$OUTPUT" | grep -oE 'v[0-9]+\.[0-9]+\.[0-9]+' | head -1 | sed 's/^v//' || true)
     
     if [ -z "$LTS_VERSION" ]; then
          error "Could not determine installed LTS version from fnm output"
