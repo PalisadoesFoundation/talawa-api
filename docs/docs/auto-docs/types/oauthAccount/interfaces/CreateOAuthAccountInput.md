@@ -28,7 +28,7 @@ Defined in: [src/types/oauthAccount.ts:33](https://github.com/PalisadoesFoundati
 
 ### provider
 
-> **provider**: [`OAuthProvider`](../enumerations/OAuthProvider.md)
+> **provider**: `"google"` \| `"github"`
 
 Defined in: [src/types/oauthAccount.ts:30](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/types/oauthAccount.ts#L30)
 

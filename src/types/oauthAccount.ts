@@ -27,7 +27,7 @@ export interface OAuthAccountProfile {
  */
 export interface CreateOAuthAccountInput {
 	userId: string;
-	provider: OAuthProvider;
+	provider: "google" | "github";
 	providerId: string;
 	email: string;
 	profile?: OAuthAccountProfile;
@@ -46,3 +46,8 @@ export interface UpdateOAuthAccountInput {
  * OAuth account record from the database
  */
 export type OAuthAccount = typeof oauthAccountsTable.$inferSelect;
+
+/**
+ * OAuth account insert input for database operations
+ */
+export type NewOAuthAccount = typeof oauthAccountsTable.$inferInsert;

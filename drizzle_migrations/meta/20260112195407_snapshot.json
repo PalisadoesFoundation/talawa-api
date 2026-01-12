@@ -1,5 +1,5 @@
 {
-  "id": "031b2449-f2f1-40f8-be8a-527ef8e1a6cd",
+  "id": "c7b6717a-4109-4c67-bdb0-115ea4b6f23a",
   "prevId": "e6039854-963f-4a17-858b-4eb377614520",
   "version": "7",
   "dialect": "postgresql",
@@ -7164,8 +7164,7 @@
           "name": "id",
           "type": "uuid",
           "primaryKey": true,
-          "notNull": true,
-          "default": "gen_random_uuid()"
+          "notNull": true
         },
         "user_id": {
           "name": "user_id",
@@ -7199,14 +7198,14 @@
         },
         "linked_at": {
           "name": "linked_at",
-          "type": "timestamp with time zone",
+          "type": "timestamp (3) with time zone",
           "primaryKey": false,
           "notNull": true,
           "default": "now()"
         },
         "last_used_at": {
           "name": "last_used_at",
-          "type": "timestamp with time zone",
+          "type": "timestamp (3) with time zone",
           "primaryKey": false,
           "notNull": true,
           "default": "now()"
