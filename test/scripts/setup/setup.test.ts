@@ -10,7 +10,7 @@ import {
 } from "vitest";
 
 vi.mock("scripts/setup/envFileBackup/envFileBackup", () => ({
-	envFileBackup: vi.fn().mockResolvedValue(undefined),
+	envFileBackup: vi.fn().mockResolvedValue(false),
 }));
 
 vi.mock("env-schema", () => ({
@@ -23,6 +23,10 @@ vi.mock("env-schema", () => ({
 		API_GRAPHQL_MUTATION_BASE_COST: 1,
 		API_GRAPHQL_SUBSCRIPTION_BASE_COST: 1,
 	}),
+}));
+
+vi.mock("scripts/setup/emailSetup", () => ({
+	emailSetup: vi.fn().mockImplementation((answers) => Promise.resolve(answers)),
 }));
 
 vi.mock("inquirer");
@@ -90,12 +94,13 @@ describe("Setup", () => {
 	it("should set up environment variables with default configuration when CI=false", async () => {
 		const mockResponses = [
 			{ CI: "false" },
-			{ useDefaultMinio: "true" },
-			{ useDefaultCloudbeaver: "true" },
-			{ useDefaultPostgres: "true" },
-			{ useDefaultCaddy: "true" },
-			{ useDefaultApi: "true" },
+			{ useDefaultApi: true },
+			{ useDefaultMinio: true },
+			{ useDefaultCloudbeaver: true },
+			{ useDefaultPostgres: true },
+			{ useDefaultCaddy: true },
 			{ API_ADMINISTRATOR_USER_EMAIL_ADDRESS: "test@email.com" },
+			{ setupReCaptcha: false },
 		];
 
 		const promptMock = vi.spyOn(inquirer, "prompt");
@@ -114,7 +119,7 @@ describe("Setup", () => {
 			API_HOST: "0.0.0.0",
 			API_PORT: "4000",
 			API_IS_APPLY_DRIZZLE_MIGRATIONS: "true",
-			API_JWT_EXPIRES_IN: "2592000000",
+			API_JWT_EXPIRES_IN: "900000",
 			API_LOG_LEVEL: "debug",
 			API_MINIO_ACCESS_KEY: "talawa",
 			API_MINIO_END_POINT: "minio",
@@ -155,11 +160,12 @@ describe("Setup", () => {
 		const mockResponses = [
 			{ envReconfigure: true },
 			{ CI: "true" },
-			{ useDefaultMinio: "true" },
-			{ useDefaultPostgres: "true" },
-			{ useDefaultCaddy: "true" },
-			{ useDefaultApi: "true" },
+			{ useDefaultApi: true },
+			{ useDefaultMinio: true },
+			{ useDefaultPostgres: true },
+			{ useDefaultCaddy: true },
 			{ API_ADMINISTRATOR_USER_EMAIL_ADDRESS: "test@email.com" },
+			{ setupReCaptcha: false },
 		];
 
 		const promptMock = vi.spyOn(inquirer, "prompt");
@@ -168,6 +174,9 @@ describe("Setup", () => {
 		}
 
 		const fsExistsSyncSpy = vi.spyOn(fs, "existsSync").mockReturnValue(true);
+		const fsAccessSpy = vi
+			.spyOn(fs.promises, "access")
+			.mockResolvedValue(undefined);
 		const fsReadFileSyncSpy = vi
 			.spyOn(fs, "readFileSync")
 			.mockReturnValue(
@@ -249,6 +258,7 @@ describe("Setup", () => {
 		}
 
 		fsExistsSyncSpy.mockRestore();
+		fsAccessSpy.mockRestore();
 		fsReadFileSyncSpy.mockRestore();
 	});
 	it("should restore .env from backup and exit when envReconfigure is false", async () => {
@@ -288,10 +298,10 @@ describe("Setup", () => {
 		fsCopyFileSpy.mockRestore();
 	});
 
-	it("should restore .env on SIGINT (Ctrl+C) and exit with code 1", async () => {
+	it("should restore .env on SIGINT (Ctrl+C) and exit with code 0 when backup exists", async () => {
 		const consoleLogSpy = vi.spyOn(console, "log").mockImplementation(() => {});
 
-		// Mock fs.promises methods instead of sync methods
+		// Mock fs.promises methods for restoreLatestBackup
 		const fsCopyFileSpy = vi
 			.spyOn(fs.promises, "copyFile")
 			.mockResolvedValue(undefined);
@@ -308,28 +318,212 @@ describe("Setup", () => {
 				".env.1700000000",
 			] as unknown as Awaited<ReturnType<typeof fs.promises.readdir>>);
 
+		// Mock envFileBackup to return true (backup was created)
+		vi.mocked(envFileBackup).mockResolvedValue(true);
+
+		// Mock file system to indicate .env file exists
+		vi.spyOn(fs, "existsSync").mockReturnValue(true);
+
+		// Mock all prompts
+		vi.spyOn(inquirer, "prompt").mockResolvedValue({
+			envReconfigure: true,
+			shouldBackup: true,
+			CI: "false",
+			useDefaultApi: true,
+			useDefaultMinio: true,
+			useDefaultCloudbeaver: true,
+			useDefaultPostgres: true,
+			useDefaultCaddy: true,
+			API_ADMINISTRATOR_USER_EMAIL_ADDRESS: "test@email.com",
+			setupReCaptcha: false,
+		});
+
 		const processExitSpy = vi.spyOn(process, "exit").mockImplementation(() => {
 			throw new Error("process.exit called");
 		});
 
+		// Start setup() which will register the SIGINT handler and create backup
+		const setupPromise = setup();
+
+		// Wait deterministically for SIGINT handler to be registered
+		const maxWaitTime = 5000; // 5 seconds max
+		const pollInterval = 10; // Check every 10ms
+		const startTime = Date.now();
+		while (
+			process.listenerCount("SIGINT") === 0 &&
+			Date.now() - startTime < maxWaitTime
+		) {
+			await new Promise((resolve) => setTimeout(resolve, pollInterval));
+		}
+
+		// Verify handler was registered
+		expect(process.listenerCount("SIGINT")).toBeGreaterThan(0);
+
+		// Emit SIGINT to trigger the handler
 		await expect(async () => process.emit("SIGINT")).rejects.toThrow(
 			"process.exit called",
 		);
 
+		// Check that restoreLatestBackup was called
 		expect(fsCopyFileSpy).toHaveBeenCalledWith(
 			".backup/.env.1700000000",
 			".env",
 		);
+		// Check new SIGINT handler messages
 		expect(consoleLogSpy).toHaveBeenCalledWith(
-			"\nProcess interrupted! Undoing changes...",
+			"\n\n⚠️  Setup interrupted by user (CTRL+C)",
 		);
-		expect(processExitSpy).toHaveBeenCalledWith(1);
+		expect(consoleLogSpy).toHaveBeenCalledWith(
+			"✅ Original configuration restored successfully",
+		);
+		// Should exit with 0 when restoration succeeds
+		expect(processExitSpy).toHaveBeenCalledWith(0);
 
+		// Clean up: restore mocks and handle the setup promise rejection
 		consoleLogSpy.mockRestore();
 		processExitSpy.mockRestore();
 		fsCopyFileSpy.mockRestore();
 		fsAccessSpy.mockRestore();
 		fsReaddirSpy.mockRestore();
+
+		// The setup promise will reject because process.exit was called
+		// Catch the rejection to prevent unhandled promise rejection warnings
+		setupPromise.catch(() => {
+			// Expected - setup was interrupted
+		});
+	});
+
+	it("should exit with code 1 when restoreLatestBackup fails", async () => {
+		const consoleLogSpy = vi.spyOn(console, "log").mockImplementation(() => {});
+		const consoleErrorSpy = vi
+			.spyOn(console, "error")
+			.mockImplementation(() => {});
+
+		// Mock fs.promises methods for restoreLatestBackup to throw an error
+		const fsAccessSpy = vi
+			.spyOn(fs.promises, "access")
+			.mockImplementation(async (path) => {
+				if (String(path) === ".backup") return undefined;
+				throw { code: "ENOENT" };
+			});
+		const fsReaddirSpy = vi
+			.spyOn(fs.promises, "readdir")
+			.mockRejectedValue(new Error("Failed to read backup directory"));
+
+		// Mock envFileBackup to return true (backup was created)
+		vi.mocked(envFileBackup).mockResolvedValue(true);
+
+		// Mock file system to indicate .env file exists
+		vi.spyOn(fs, "existsSync").mockReturnValue(true);
+
+		// Mock all prompts
+		vi.spyOn(inquirer, "prompt").mockResolvedValue({
+			envReconfigure: true,
+			shouldBackup: true,
+			CI: "false",
+			useDefaultApi: true,
+			useDefaultMinio: true,
+			useDefaultCloudbeaver: true,
+			useDefaultPostgres: true,
+			useDefaultCaddy: true,
+			API_ADMINISTRATOR_USER_EMAIL_ADDRESS: "test@email.com",
+			setupReCaptcha: false,
+		});
+
+		const processExitSpy = vi.spyOn(process, "exit").mockImplementation(() => {
+			throw new Error("process.exit called");
+		});
+
+		// Start setup() which will register the SIGINT handler and create backup
+		const setupPromise = setup();
+
+		// Wait deterministically for SIGINT handler to be registered
+		const maxWaitTime = 5000; // 5 seconds max
+		const pollInterval = 10; // Check every 10ms
+		const startTime = Date.now();
+		while (
+			process.listenerCount("SIGINT") === 0 &&
+			Date.now() - startTime < maxWaitTime
+		) {
+			await new Promise((resolve) => setTimeout(resolve, pollInterval));
+		}
+
+		// Verify handler was registered
+		expect(process.listenerCount("SIGINT")).toBeGreaterThan(0);
+
+		// Emit SIGINT to trigger the handler
+		await expect(async () => process.emit("SIGINT")).rejects.toThrow(
+			"process.exit called",
+		);
+
+		// Check that error messages are shown
+		expect(consoleErrorSpy).toHaveBeenCalledWith(
+			"❌ Failed to restore backup:",
+			expect.any(Error),
+		);
+		expect(consoleErrorSpy).toHaveBeenCalledWith(
+			"\n   You may need to manually restore from the .backup directory",
+		);
+		// Should exit with 1 when restoration fails
+		expect(processExitSpy).toHaveBeenCalledWith(1);
+		expect(consoleLogSpy).toHaveBeenCalledWith(
+			"\n⚠️  Cleanup incomplete - please check your .env file",
+		);
+
+		// Clean up: restore mocks and handle the setup promise rejection
+		consoleLogSpy.mockRestore();
+		consoleErrorSpy.mockRestore();
+		processExitSpy.mockRestore();
+		fsAccessSpy.mockRestore();
+		fsReaddirSpy.mockRestore();
+
+		// The setup promise will reject because process.exit was called
+		// Catch the rejection to prevent unhandled promise rejection warnings
+		setupPromise.catch(() => {
+			// Expected - setup was interrupted
+		});
+	});
+
+	it("should return false and skip restoration when cleanupInProgress is true", async () => {
+		const consoleLogSpy = vi.spyOn(console, "log").mockImplementation(() => {});
+		// Spy on file operations that would be performed during restoration
+		const fsAccessSpy = vi.spyOn(fs.promises, "access");
+		const fsReaddirSpy = vi.spyOn(fs.promises, "readdir");
+		const fsCopyFileSpy = vi.spyOn(fs.promises, "copyFile");
+
+		// Import test helpers
+		const { __test__restoreBackup, __test__setCleanupInProgress } =
+			await import("scripts/setup/setup");
+
+		// Set cleanupInProgress to true to simulate concurrent cleanup attempt
+		__test__setCleanupInProgress(true);
+
+		// Call restoreBackup - it should return false immediately without attempting restoration
+		const result = await __test__restoreBackup();
+
+		// Verify it returned false (guard triggered)
+		expect(result).toBe(false);
+
+		// Verify restoreLatestBackup operations were NOT called (restoration skipped)
+		// These are the file operations that restoreLatestBackup would perform
+		expect(fsAccessSpy).not.toHaveBeenCalled();
+		expect(fsReaddirSpy).not.toHaveBeenCalled();
+		expect(fsCopyFileSpy).not.toHaveBeenCalled();
+
+		// Verify no console logs about restoration
+		expect(consoleLogSpy).not.toHaveBeenCalledWith(
+			"✅ Original configuration restored successfully",
+		);
+		expect(consoleLogSpy).not.toHaveBeenCalledWith(
+			"📋 No backup was created yet, nothing to restore",
+		);
+
+		// Clean up: reset cleanupInProgress
+		__test__setCleanupInProgress(false);
+		consoleLogSpy.mockRestore();
+		fsAccessSpy.mockRestore();
+		fsReaddirSpy.mockRestore();
+		fsCopyFileSpy.mockRestore();
 	});
 
 	it("should skip backup when CI=true and TALAWA_SKIP_ENV_BACKUP=true", async () => {
@@ -345,11 +539,12 @@ describe("Setup", () => {
 		vi.spyOn(inquirer, "prompt").mockResolvedValue({
 			envReconfigure: true,
 			CI: "true",
+			useDefaultApi: true,
 			useDefaultMinio: true,
 			useDefaultPostgres: true,
 			useDefaultCaddy: true,
-			useDefaultApi: true,
 			API_ADMINISTRATOR_USER_EMAIL_ADDRESS: "test@email.com",
+			setupReCaptcha: false,
 		});
 
 		await setup();
@@ -371,11 +566,12 @@ describe("Setup", () => {
 		vi.spyOn(inquirer, "prompt").mockResolvedValue({
 			envReconfigure: true,
 			CI: "true",
+			useDefaultApi: true,
 			useDefaultMinio: true,
 			useDefaultPostgres: true,
 			useDefaultCaddy: true,
-			useDefaultApi: true,
 			API_ADMINISTRATOR_USER_EMAIL_ADDRESS: "test@email.com",
+			setupReCaptcha: false,
 		});
 
 		await setup();
@@ -415,12 +611,13 @@ describe("Setup", () => {
 
 		vi.spyOn(inquirer, "prompt").mockResolvedValue({
 			CI: "false",
+			useDefaultApi: true,
 			useDefaultMinio: true,
 			useDefaultCloudbeaver: true,
 			useDefaultPostgres: true,
 			useDefaultCaddy: true,
-			useDefaultApi: true,
 			API_ADMINISTRATOR_USER_EMAIL_ADDRESS: "test@email.com",
+			setupReCaptcha: false,
 		});
 
 		await setup();
@@ -446,14 +643,15 @@ describe("Setup", () => {
 		promptMock.mockResolvedValueOnce({ envReconfigure: true });
 		promptMock.mockResolvedValueOnce({ shouldBackup: true });
 		promptMock.mockResolvedValueOnce({ CI: "false" });
+		promptMock.mockResolvedValueOnce({ useDefaultApi: true });
 		promptMock.mockResolvedValueOnce({ useDefaultMinio: true });
 		promptMock.mockResolvedValueOnce({ useDefaultCloudbeaver: true });
 		promptMock.mockResolvedValueOnce({ useDefaultPostgres: true });
 		promptMock.mockResolvedValueOnce({ useDefaultCaddy: true });
-		promptMock.mockResolvedValueOnce({ useDefaultApi: true });
 		promptMock.mockResolvedValueOnce({
 			API_ADMINISTRATOR_USER_EMAIL_ADDRESS: "test@email.com",
 		});
+		promptMock.mockResolvedValueOnce({ setupReCaptcha: false });
 
 		await setup();
 
@@ -486,14 +684,15 @@ describe("Setup", () => {
 		promptMock.mockResolvedValueOnce({ envReconfigure: true });
 		promptMock.mockResolvedValueOnce({ shouldBackup: false });
 		promptMock.mockResolvedValueOnce({ CI: "false" });
+		promptMock.mockResolvedValueOnce({ useDefaultApi: true });
 		promptMock.mockResolvedValueOnce({ useDefaultMinio: true });
 		promptMock.mockResolvedValueOnce({ useDefaultCloudbeaver: true });
 		promptMock.mockResolvedValueOnce({ useDefaultPostgres: true });
 		promptMock.mockResolvedValueOnce({ useDefaultCaddy: true });
-		promptMock.mockResolvedValueOnce({ useDefaultApi: true });
 		promptMock.mockResolvedValueOnce({
 			API_ADMINISTRATOR_USER_EMAIL_ADDRESS: "test@email.com",
 		});
+		promptMock.mockResolvedValueOnce({ setupReCaptcha: false });
 
 		await setup();
 

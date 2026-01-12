@@ -159,6 +159,38 @@ input AdvertisementWhereInput {
   isCompleted: Boolean
 }
 
+type AgendaCategory {
+  """Date time at the time the agenda category was created."""
+  createdAt: DateTime
+
+  """User who created the agenda category."""
+  creator: User
+
+  """Custom information about the agenda category."""
+  description: String
+
+  """Event for which the agenda category constitutes a part of the agenda."""
+  event: Event
+
+  """Global identifier of the agenda category."""
+  id: ID!
+
+  """Boolean to tell if agenda category is default or not"""
+  isDefaultCategory: Boolean!
+
+  """Name of the agenda category."""
+  name: String!
+
+  """Organization which the agenda item category belongs to."""
+  organization: Organization
+
+  """Date time at the time the agenda category was last updated."""
+  updatedAt: DateTime
+
+  """User who last updated the agenda category."""
+  updater: User
+}
+
 type AgendaFolder {
   """
   GraphQL connection to traverse through the agenda folders that have the agenda folder as a parent folder.
