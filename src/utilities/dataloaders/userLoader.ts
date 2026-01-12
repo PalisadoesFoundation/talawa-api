@@ -59,7 +59,10 @@ export function createUserLoader(
 			})
 		: batchFn;
 
-	// Apply metrics wrapping after cache wrapping to measure actual DB time
+	// Apply metrics wrapping after cache wrapping to measure total batch execution time
+	// Since wrapBatchWithMetrics("users.byId", perf, cacheWrappedBatch) wraps cacheWrappedBatch,
+	// metrics include cache layer time (cache hits/misses) rather than only DB time.
+	// The ordering (cache first, then metrics) causes metrics to measure the full execution path.
 	const wrappedBatch = perf
 		? wrapBatchWithMetrics("users.byId", perf, cacheWrappedBatch)
 		: cacheWrappedBatch;
