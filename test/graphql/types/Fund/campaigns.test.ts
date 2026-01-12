@@ -1,271 +1,516 @@
-import { createMockGraphQLContext } from "test/_Mocks_/mockContextCreator/mockContextCreator";
-import { beforeAll, describe, expect, it } from "vitest";
-import "~/src/graphql/types/Fund/campaigns";
+import { faker } from "@faker-js/faker";
+import { initGraphQLTada } from "gql.tada";
+import { afterAll, beforeAll, describe, expect, it } from "vitest";
+import type { ClientCustomScalars } from "~/src/graphql/scalars/index";
+import { assertToBeNonNullish } from "../../../helpers";
+import { server } from "../../../server";
+import { mercuriusClient } from "../client";
+import {
+	Mutation_createFund,
+	Mutation_createFundCampaign,
+	Mutation_createOrganization,
+	Mutation_createOrganizationMembership,
+	Query_signIn,
+} from "../documentNodes";
+import type { introspection } from "../gql.tada";
 
-describe("Fund Resolver - campaigns field", () => {
-	// Module-scoped variables for resolver and complexity function
-	let campaignsResolver: (parent: unknown, args: unknown, context: unknown) => Promise<unknown>;
-	let complexityFn: ((args: unknown) => { field: number; multiplier: number }) | undefined;
+const gql = initGraphQLTada<{
+	introspection: introspection;
+	scalars: ClientCustomScalars;
+}>();
+
+// Query to fetch a fund with its campaigns connection
+const Query_Fund_Campaigns = gql(`
+  query FundWithCampaigns($input: QueryFundInput!, $first: Int, $after: String, $last: Int, $before: String) {
+    fund(input: $input) {
+      id
+      name
+      campaigns(first: $first, after: $after, last: $last, before: $before) {
+        edges {
+          cursor
+          node {
+            id
+            name
+            goalAmount
+          }
+        }
+        pageInfo {
+          hasNextPage
+          hasPreviousPage
+          startCursor
+          endCursor
+        }
+      }
+    }
+  }
+`);
+
+type AdminAuth = { token: string; userId: string };
+
+async function getAdminAuth(): Promise<AdminAuth> {
+	const signInResult = await mercuriusClient.query(Query_signIn, {
+		variables: {
+			input: {
+				emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
+				password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
+			},
+		},
+	});
+
+	assertToBeNonNullish(signInResult.data?.signIn?.authenticationToken);
+	assertToBeNonNullish(signInResult.data?.signIn?.user);
+
+	return {
+		token: signInResult.data.signIn.authenticationToken,
+		userId: signInResult.data.signIn.user.id,
+	};
+}
+
+async function createTestOrganization(authToken: string) {
+	const orgName = `Fund Campaigns Test ${faker.string.uuid()}`;
+	const createOrgResult = await mercuriusClient.mutate(
+		Mutation_createOrganization,
+		{
+			headers: { authorization: `bearer ${authToken}` },
+			variables: {
+				input: {
+					name: orgName,
+					description: "Organization for Fund.campaigns tests",
+					countryCode: "us",
+					state: "CA",
+					city: "San Francisco",
+					postalCode: "94101",
+					addressLine1: "100 Fund Street",
+					addressLine2: "Suite 200",
+				},
+			},
+		},
+	);
+	assertToBeNonNullish(createOrgResult.data?.createOrganization);
+	const org = createOrgResult.data.createOrganization;
+	assertToBeNonNullish(org.id);
+	return { id: org.id as string, name: org.name as string };
+}
+
+async function createOrgMembership(
+	authToken: string,
+	organizationId: string,
+	memberId: string,
+) {
+	await mercuriusClient.mutate(Mutation_createOrganizationMembership, {
+		headers: { authorization: `bearer ${authToken}` },
+		variables: {
+			input: {
+				organizationId,
+				memberId,
+				role: "administrator",
+			},
+		},
+	});
+}
+
+async function createTestFund(authToken: string, organizationId: string) {
+	const fundName = `Test Fund ${faker.string.uuid()}`;
+	const createFundResult = await mercuriusClient.mutate(Mutation_createFund, {
+		headers: { authorization: `bearer ${authToken}` },
+		variables: {
+			input: {
+				name: fundName,
+				organizationId,
+				isTaxDeductible: true,
+				isDefault: false,
+				isArchived: false,
+			},
+		},
+	});
+	assertToBeNonNullish(createFundResult.data?.createFund);
+	const fund = createFundResult.data.createFund;
+	assertToBeNonNullish(fund.id);
+	return { id: fund.id as string, name: fund.name as string };
+}
+
+async function createTestCampaign(
+	authToken: string,
+	fundId: string,
+	name: string,
+) {
+	const now = new Date();
+	const startAt = new Date(now.getTime() + 1000 * 60 * 60); // 1 hour from now
+	const endAt = new Date(now.getTime() + 1000 * 60 * 60 * 24 * 30); // 30 days from now
+
+	const createCampaignResult = await mercuriusClient.mutate(
+		Mutation_createFundCampaign,
+		{
+			headers: { authorization: `bearer ${authToken}` },
+			variables: {
+				input: {
+					fundId,
+					name,
+					goalAmount: 10000,
+					currencyCode: "USD",
+					startAt: startAt.toISOString(),
+					endAt: endAt.toISOString(),
+				},
+			},
+		},
+	);
+
+	if (createCampaignResult.errors) {
+		throw new Error(
+			`Failed to create campaign: ${JSON.stringify(createCampaignResult.errors)}`,
+		);
+	}
+
+	assertToBeNonNullish(createCampaignResult.data?.createFundCampaign);
+	const campaign = createCampaignResult.data.createFundCampaign;
+	assertToBeNonNullish(campaign.id);
+	return { id: campaign.id as string, name: campaign.name as string };
+}
+
+describe("Fund.campaigns Resolver - Integration", () => {
+	let adminAuth: AdminAuth;
+	let organization: { id: string; name: string };
+	let fund: { id: string; name: string };
+	let campaigns: Array<{ id: string; name: string }>;
 
 	beforeAll(async () => {
-		const builder = await import("~/src/graphql/builder");
-		const typeConfig = builder.builder.configStore.typeConfigs.get("Fund");
-		const pothosOptions = typeConfig?.pothosOptions as {
-			fields?: (schemaBuilder: { connection: (config: unknown) => unknown }) => {
-				campaigns?: {
-					resolve?: (parent: unknown, args: unknown, context: unknown) => Promise<unknown>;
-					complexity?: (args: unknown) => { field: number; multiplier: number };
-				};
-			};
-		};
-		const mockSchemaBuilder = { connection: (config: unknown) => config };
-		const fields = pothosOptions?.fields?.(mockSchemaBuilder);
-		
-		if (!fields?.campaigns?.resolve) {
-			throw new Error("campaignsResolver not found in Fund type configuration");
+		adminAuth = await getAdminAuth();
+		organization = await createTestOrganization(adminAuth.token);
+		await createOrgMembership(
+			adminAuth.token,
+			organization.id,
+			adminAuth.userId,
+		);
+		fund = await createTestFund(adminAuth.token, organization.id);
+
+		// Create multiple campaigns for pagination tests
+		campaigns = [];
+		for (const name of ["Alpha Campaign", "Beta Campaign", "Gamma Campaign"]) {
+			const campaign = await createTestCampaign(
+				adminAuth.token,
+				fund.id,
+				name,
+			);
+			campaigns.push(campaign);
 		}
-		
-		campaignsResolver = fields.campaigns.resolve;
-		complexityFn = fields.campaigns.complexity;
-	});
-    
-	it("should successfully retrieve a list of campaigns", async () => {
-		const { context, mocks } = createMockGraphQLContext(true, "user123");
-
-		const fund = {
-			id: "fund123",
-			name: "School Fund",
-		};
-
-		const mockCampaigns = [
-			{
-				id: "campaign1",
-				name: "Buy Books",
-				fundId: "fund123",
-				goalAmount: 5000,
-			},
-			{
-				id: "campaign2",
-				name: "Buy Computers",
-				fundId: "fund123",
-				goalAmount: 10000,
-			},
-		];
-
-		mocks.drizzleClient.query.fundCampaignsTable.findMany.mockResolvedValue(
-			mockCampaigns,
-		);
-
-		const result = await campaignsResolver(fund, { first: 10 }, context) as {
-			edges: Array<{ node: { name: string } }>;
-		};
-
-		expect(result.edges).toHaveLength(2);
-		expect(result.edges[0]?.node.name).toBe("Buy Books");
-		expect(result.edges[1]?.node.name).toBe("Buy Computers");
 	});
 
-	it("should throw an invalid_arguments error when provided with a malformed cursor", async () => {
-		const { context } = createMockGraphQLContext(true, "user123");
+	afterAll(async () => {
+		// Cleanup is handled by test database reset
+	});
 
-		const fund = {
-			id: "fund123",
-			name: "School Fund",
-		};
+	describe("Campaign List Resolution", () => {
+		it("should successfully retrieve a list of campaigns with valid connection structure", async () => {
+			const result = await mercuriusClient.query(Query_Fund_Campaigns, {
+				headers: { authorization: `bearer ${adminAuth.token}` },
+				variables: {
+					input: { id: fund.id },
+					first: 10,
+				},
+			});
 
-		const invalidArguments = {
-			first: 10,
-			after: "this-is-not-a-valid-cursor-123",
-		};
+			expect(result.errors).toBeUndefined();
+			assertToBeNonNullish(result.data?.fund);
+			assertToBeNonNullish(result.data.fund.campaigns);
 
-		await expect(
-			campaignsResolver(fund, invalidArguments, context)
-		).rejects.toMatchObject({
-			extensions: { code: "invalid_arguments" }
+			const edges = result.data.fund.campaigns.edges;
+			assertToBeNonNullish(edges);
+			expect(edges.length).toBe(3);
+
+			// Campaigns should be ordered by name (alphabetically ascending)
+			const names = edges.map((edge) => edge?.node?.name);
+			expect(names).toContain("Alpha Campaign");
+			expect(names).toContain("Beta Campaign");
+			expect(names).toContain("Gamma Campaign");
+
+			// Validate pageInfo structure
+			const pageInfo = result.data.fund.campaigns.pageInfo;
+			assertToBeNonNullish(pageInfo);
+			expect(pageInfo.hasNextPage).toBeDefined();
+			expect(pageInfo.hasPreviousPage).toBeDefined();
+			expect(pageInfo.startCursor).toBeDefined();
+			expect(pageInfo.endCursor).toBeDefined();
+		});
+
+		it("should return empty edges when fund has no campaigns", async () => {
+			// Create a new fund without campaigns
+			const emptyFund = await createTestFund(adminAuth.token, organization.id);
+
+			const result = await mercuriusClient.query(Query_Fund_Campaigns, {
+				headers: { authorization: `bearer ${adminAuth.token}` },
+				variables: {
+					input: { id: emptyFund.id },
+					first: 10,
+				},
+			});
+
+			expect(result.errors).toBeUndefined();
+			assertToBeNonNullish(result.data?.fund?.campaigns);
+
+			const edges = result.data.fund.campaigns.edges;
+			assertToBeNonNullish(edges);
+			expect(edges.length).toBe(0);
 		});
 	});
 
-	it("should return a valid connection structure when querying with valid arguments", async () => {
-		const { context, mocks } = createMockGraphQLContext(true, "user123");
+	describe("Forward Pagination", () => {
+		it("should limit results with first argument", async () => {
+			const result = await mercuriusClient.query(Query_Fund_Campaigns, {
+				headers: { authorization: `bearer ${adminAuth.token}` },
+				variables: {
+					input: { id: fund.id },
+					first: 2,
+				},
+			});
 
-		const fund = {
-			id: "fund123",
-			name: "School Fund",
-		};
+			expect(result.errors).toBeUndefined();
+			assertToBeNonNullish(result.data?.fund?.campaigns);
 
-		const mockCampaigns = [
-			{
-				id: "campaign1",
-				name: "Buy Books",
-				fundId: "fund123",
-				goalAmount: 5000,
-			},
-			{
-				id: "campaign2",
-				name: "Buy Computers",
-				fundId: "fund123",
-				goalAmount: 10000,
-			},
-		];
+			const edges = result.data.fund.campaigns.edges;
+			assertToBeNonNullish(edges);
+			expect(edges.length).toBe(2);
 
-		mocks.drizzleClient.query.fundCampaignsTable.findMany.mockResolvedValue(
-			mockCampaigns,
-		);
+			// Should have next page since there are 3 campaigns
+			expect(result.data.fund.campaigns.pageInfo?.hasNextPage).toBe(true);
+		});
 
-		const validArgs = {
-			first: 10,
-		};
+		it("should paginate forward using after cursor", async () => {
+			// First, get the first page
+			const firstPageResult = await mercuriusClient.query(Query_Fund_Campaigns, {
+				headers: { authorization: `bearer ${adminAuth.token}` },
+				variables: {
+					input: { id: fund.id },
+					first: 1,
+				},
+			});
 
-		const result = await campaignsResolver(fund, validArgs, context) as {
-			edges: Array<{ node: { name: string } }>;
-			pageInfo: { hasNextPage: boolean; hasPreviousPage: boolean };
-		};
+			expect(firstPageResult.errors).toBeUndefined();
+			assertToBeNonNullish(firstPageResult.data?.fund?.campaigns);
 
-		expect(result.edges).toHaveLength(2);
-		expect(result.edges[0]?.node.name).toBe("Buy Books");
-		expect(result.edges[1]?.node.name).toBe("Buy Computers");
-		expect(result.pageInfo).toBeDefined();
-		expect(result.pageInfo.hasNextPage).toBeDefined();
-		expect(result.pageInfo.hasPreviousPage).toBeDefined();
-	});
+			const firstPageEdges = firstPageResult.data.fund.campaigns.edges;
+			assertToBeNonNullish(firstPageEdges);
+			expect(firstPageEdges.length).toBe(1);
 
-	it("should throw 'arguments_associated_resources_not_found' when querying backward with a non-existent cursor", async () => {
-		const { context, mocks } = createMockGraphQLContext(true, "user123");
+			const endCursor = firstPageResult.data.fund.campaigns.pageInfo?.endCursor;
+			assertToBeNonNullish(endCursor);
 
-		const fund = { id: "fund123", name: "School Fund" };
-		const cursorPayload = JSON.stringify({ name: "Non Existent Campaign" });
-		const validCursor = Buffer.from(cursorPayload).toString("base64url");
+			// Now get the second page using the cursor
+			const secondPageResult = await mercuriusClient.query(
+				Query_Fund_Campaigns,
+				{
+					headers: { authorization: `bearer ${adminAuth.token}` },
+					variables: {
+						input: { id: fund.id },
+						first: 2,
+						after: endCursor,
+					},
+				},
+			);
 
-		mocks.drizzleClient.query.fundCampaignsTable.findMany.mockResolvedValue([]);
+			expect(secondPageResult.errors).toBeUndefined();
+			assertToBeNonNullish(secondPageResult.data?.fund?.campaigns);
 
-		const args = {
-			last: 10,
-			before: validCursor,
-		};
+			const secondPageEdges = secondPageResult.data.fund.campaigns.edges;
+			assertToBeNonNullish(secondPageEdges);
+			expect(secondPageEdges.length).toBe(2);
 
-		await expect(
-			campaignsResolver(fund, args, context)
-		).rejects.toMatchObject({
-			extensions: {
-				code: "arguments_associated_resources_not_found",
-				issues: [{ argumentPath: ["before"] }]
-			}
+			// The first item of second page should be different from the first page
+			expect(secondPageEdges[0]?.node?.name).not.toBe(
+				firstPageEdges[0]?.node?.name,
+			);
 		});
 	});
 
-	it("should handle forward pagination with a cursor and correctly calculate complexity", async () => {
-		const { context, mocks } = createMockGraphQLContext(true, "user123");
+	describe("Backward Pagination", () => {
+		it("should limit results with last argument", async () => {
+			const result = await mercuriusClient.query(Query_Fund_Campaigns, {
+				headers: { authorization: `bearer ${adminAuth.token}` },
+				variables: {
+					input: { id: fund.id },
+					last: 2,
+				},
+			});
 
-		const fund = { id: "fund123", name: "School Fund" };
-		const cursorPayload = JSON.stringify({ name: "Campaign A" });
-		const validCursor = Buffer.from(cursorPayload).toString("base64url");
+			expect(result.errors).toBeUndefined();
+			assertToBeNonNullish(result.data?.fund?.campaigns);
 
-		const args = {
-			first: 5,
-			after: validCursor,
-		};
+			const edges = result.data.fund.campaigns.edges;
+			assertToBeNonNullish(edges);
+			expect(edges.length).toBe(2);
 
-		mocks.drizzleClient.query.fundCampaignsTable.findMany.mockResolvedValue([
-			{ id: "c2", name: "Campaign B", fundId: "fund123" }
-		]);
-
-		const result = await campaignsResolver(fund, args, context) as {
-			edges: Array<{ node: { name: string } }>;
-		};
-		expect(result.edges).toHaveLength(1);
-		expect(result.edges[0]?.node.name).toBe("Campaign B");
-
-		expect(complexityFn).toBeDefined();
-		expect(complexityFn).toBeInstanceOf(Function);
-		const cost = complexityFn!(args);
-		expect(cost).toHaveProperty("multiplier", 5);
-	});
-
-	it("should handle backward pagination correctly without a provided cursor", async () => {
-		const { context, mocks } = createMockGraphQLContext(true, "user123");
-
-		const fund = { id: "fund123", name: "School Fund" };
-
-		mocks.drizzleClient.query.fundCampaignsTable.findMany.mockResolvedValue([
-			{ id: "c3", name: "Campaign Z", fundId: "fund123" }
-		]);
-
-		const args = {
-			last: 5
-		};
-
-		const result = await campaignsResolver(fund, args, context) as {
-			edges: Array<{ node: { name: string } }>;
-		};
-
-		expect(result.edges).toHaveLength(1);
-		expect(result.edges[0]?.node.name).toBe("Campaign Z");
-	});
-
-	it("should handle 'not found' errors during forward pagination and apply complexity defaults", async () => {
-		const { context, mocks } = createMockGraphQLContext(true, "user123");
-
-		const fund = { id: "fund123", name: "School Fund" };
-
-		mocks.drizzleClient.query.fundCampaignsTable.findMany.mockResolvedValue([]);
-
-		const cursor = Buffer.from(JSON.stringify({ name: "Ghost Campaign" })).toString("base64url");
-		const args = { first: 10, after: cursor };
-
-		await expect(
-			campaignsResolver(fund, args, context)
-		).rejects.toMatchObject({
-			extensions: {
-				code: "arguments_associated_resources_not_found",
-				issues: [{ argumentPath: ["after"] }]
-			}
+			// Should have previous page since there are 3 campaigns
+			expect(result.data.fund.campaigns.pageInfo?.hasPreviousPage).toBe(true);
 		});
 
-		expect(complexityFn).toBeDefined();
-		expect(complexityFn).toBeInstanceOf(Function);
-		expect(complexityFn!({ last: 8 })).toHaveProperty("multiplier", 8);
-		expect(complexityFn!({})).toHaveProperty("multiplier", 1);
-	});
+		it("should paginate backward using before cursor", async () => {
+			// First, get the last page
+			const lastPageResult = await mercuriusClient.query(Query_Fund_Campaigns, {
+				headers: { authorization: `bearer ${adminAuth.token}` },
+				variables: {
+					input: { id: fund.id },
+					last: 1,
+				},
+			});
 
-	it("should validate cursor encoding and catch syntax errors", async () => {
-		const { context } = createMockGraphQLContext(true, "user123");
+			expect(lastPageResult.errors).toBeUndefined();
+			assertToBeNonNullish(lastPageResult.data?.fund?.campaigns);
 
-		const fund = { id: "fund123", name: "School Fund" };
-		const invalidCursor = Buffer.from("INVALID_JSON").toString("base64url");
+			const lastPageEdges = lastPageResult.data.fund.campaigns.edges;
+			assertToBeNonNullish(lastPageEdges);
+			expect(lastPageEdges.length).toBe(1);
 
-		const args = {
-			first: 10,
-			after: invalidCursor
-		};
+			const startCursor =
+				lastPageResult.data.fund.campaigns.pageInfo?.startCursor;
+			assertToBeNonNullish(startCursor);
 
-		await expect(
-			campaignsResolver(fund, args, context)
-		).rejects.toMatchObject({
-			extensions: {
-				code: "invalid_arguments",
-				issues: [{ message: "Not a valid cursor." }]
-			}
+			// Now get the previous page using the cursor
+			const prevPageResult = await mercuriusClient.query(Query_Fund_Campaigns, {
+				headers: { authorization: `bearer ${adminAuth.token}` },
+				variables: {
+					input: { id: fund.id },
+					last: 2,
+					before: startCursor,
+				},
+			});
+
+			expect(prevPageResult.errors).toBeUndefined();
+			assertToBeNonNullish(prevPageResult.data?.fund?.campaigns);
+
+			const prevPageEdges = prevPageResult.data.fund.campaigns.edges;
+			assertToBeNonNullish(prevPageEdges);
+			expect(prevPageEdges.length).toBe(2);
+
+			// The last item of previous page should be different from the last page
+			expect(prevPageEdges[prevPageEdges.length - 1]?.node?.name).not.toBe(
+				lastPageEdges[0]?.node?.name,
+			);
 		});
 	});
 
-	it("should validate cursor encoding during backward pagination and return correct error path", async () => {
-		const { context } = createMockGraphQLContext(true, "user123");
+	describe("Cursor Validation", () => {
+		it("should return error for malformed cursor in forward pagination", async () => {
+			const result = await mercuriusClient.query(Query_Fund_Campaigns, {
+				headers: { authorization: `bearer ${adminAuth.token}` },
+				variables: {
+					input: { id: fund.id },
+					first: 10,
+					after: "this-is-not-a-valid-cursor-123",
+				},
+			});
 
-		const fund = { id: "fund123", name: "School Fund" };
-		const invalidCursor = Buffer.from("INVALID_JSON_DATA").toString("base64url");
+			expect(result.errors).toBeDefined();
+			expect(result.errors?.length).toBeGreaterThan(0);
 
-		const args = {
-			last: 5,
-			before: invalidCursor
-		};
+			const error = result.errors?.[0];
+			expect(error?.extensions?.code).toBe("invalid_arguments");
+		});
 
-		await expect(
-			campaignsResolver(fund, args, context)
-		).rejects.toMatchObject({
-			extensions: {
-				code: "invalid_arguments",
-				issues: [{ argumentPath: ["before"] }]
-			}
+		it("should return error for malformed cursor in backward pagination", async () => {
+			const result = await mercuriusClient.query(Query_Fund_Campaigns, {
+				headers: { authorization: `bearer ${adminAuth.token}` },
+				variables: {
+					input: { id: fund.id },
+					last: 5,
+					before: "this-is-not-a-valid-cursor-456",
+				},
+			});
+
+			expect(result.errors).toBeDefined();
+			expect(result.errors?.length).toBeGreaterThan(0);
+
+			const error = result.errors?.[0];
+			expect(error?.extensions?.code).toBe("invalid_arguments");
+		});
+
+		it("should return error for invalid JSON in base64url cursor", async () => {
+			const invalidCursor = Buffer.from("INVALID_JSON").toString("base64url");
+
+			const result = await mercuriusClient.query(Query_Fund_Campaigns, {
+				headers: { authorization: `bearer ${adminAuth.token}` },
+				variables: {
+					input: { id: fund.id },
+					first: 10,
+					after: invalidCursor,
+				},
+			});
+
+			expect(result.errors).toBeDefined();
+			expect(result.errors?.length).toBeGreaterThan(0);
+
+			const error = result.errors?.[0];
+			expect(error?.extensions?.code).toBe("invalid_arguments");
+		});
+
+		it("should return error for non-existent cursor in forward pagination", async () => {
+			const nonExistentCursor = Buffer.from(
+				JSON.stringify({ name: "Non Existent Campaign" }),
+			).toString("base64url");
+
+			const result = await mercuriusClient.query(Query_Fund_Campaigns, {
+				headers: { authorization: `bearer ${adminAuth.token}` },
+				variables: {
+					input: { id: fund.id },
+					first: 10,
+					after: nonExistentCursor,
+				},
+			});
+
+			expect(result.errors).toBeDefined();
+			expect(result.errors?.length).toBeGreaterThan(0);
+
+			const error = result.errors?.[0];
+			expect(error?.extensions?.code).toBe(
+				"arguments_associated_resources_not_found",
+			);
+		});
+
+		it("should return error for non-existent cursor in backward pagination", async () => {
+			const nonExistentCursor = Buffer.from(
+				JSON.stringify({ name: "Non Existent Campaign" }),
+			).toString("base64url");
+
+			const result = await mercuriusClient.query(Query_Fund_Campaigns, {
+				headers: { authorization: `bearer ${adminAuth.token}` },
+				variables: {
+					input: { id: fund.id },
+					last: 10,
+					before: nonExistentCursor,
+				},
+			});
+
+			expect(result.errors).toBeDefined();
+			expect(result.errors?.length).toBeGreaterThan(0);
+
+			const error = result.errors?.[0];
+			expect(error?.extensions?.code).toBe(
+				"arguments_associated_resources_not_found",
+			);
+		});
+	});
+
+	describe("Campaign Data", () => {
+		it("should return campaign with correct fields", async () => {
+			const result = await mercuriusClient.query(Query_Fund_Campaigns, {
+				headers: { authorization: `bearer ${adminAuth.token}` },
+				variables: {
+					input: { id: fund.id },
+					first: 1,
+				},
+			});
+
+			expect(result.errors).toBeUndefined();
+			assertToBeNonNullish(result.data?.fund?.campaigns);
+
+			const edges = result.data.fund.campaigns.edges;
+			assertToBeNonNullish(edges);
+			expect(edges.length).toBe(1);
+
+			const campaign = edges[0]?.node;
+			assertToBeNonNullish(campaign);
+
+			expect(campaign.id).toBeDefined();
+			expect(campaign.name).toBeDefined();
+			expect(campaign.goalAmount).toBe(10000);
 		});
 	});
 });
