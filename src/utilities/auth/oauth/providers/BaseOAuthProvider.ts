@@ -1,4 +1,4 @@
-import axios, { type AxiosError, type AxiosRequestConfig } from "axios";
+import axios, { type AxiosRequestConfig } from "axios";
 import { OAuthError, ProfileFetchError, TokenExchangeError } from "../errors";
 import type { IOAuthProvider } from "../interfaces/IOAuthProvider";
 import type {
@@ -60,14 +60,11 @@ export abstract class BaseOAuthProvider implements IOAuthProvider {
 			return response.data;
 		} catch (error) {
 			if (axios.isAxiosError(error)) {
-				const axiosError = error as AxiosError;
-				const errorData = axiosError.response?.data as
+				const errorData = error.response?.data as
 					| { error_description?: string; error?: string }
 					| undefined;
 				const errorMessage =
-					errorData?.error_description ||
-					errorData?.error ||
-					axiosError.message;
+					errorData?.error_description || errorData?.error || error.message;
 
 				throw new TokenExchangeError("Token exchange failed", errorMessage);
 			}
@@ -100,9 +97,8 @@ export abstract class BaseOAuthProvider implements IOAuthProvider {
 			return response.data;
 		} catch (error) {
 			if (axios.isAxiosError(error)) {
-				const axiosError = error as AxiosError;
 				throw new ProfileFetchError(
-					`Failed to fetch user profile: ${axiosError.message}`,
+					`Failed to fetch user profile: ${error.message}`,
 				);
 			}
 			// Wrap non-Axios errors in OAuth error for consistent error handling

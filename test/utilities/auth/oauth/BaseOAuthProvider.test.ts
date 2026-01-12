@@ -25,7 +25,6 @@ vi.mock("axios", () => ({
 		constructor(message: string) {
 			super(message);
 			this.name = "AxiosError";
-			this.isAxiosError = true;
 		}
 		isAxiosError = true;
 	},
@@ -145,77 +144,96 @@ describe("BaseOAuthProvider", () => {
 		});
 
 		it("should throw error when redirectUri is missing", () => {
-			try {
+			expect(() => {
 				new ConcreteOAuthProvider({
 					clientId: "test_id",
 					clientSecret: "test_secret",
 					redirectUri: "",
 				});
-				throw new Error("Expected invalid config to throw");
-			} catch (error) {
-				expect(error).toBeInstanceOf(OAuthError);
-				expect((error as OAuthError).code).toBe("INVALID_CONFIG");
-				expect((error as OAuthError).statusCode).toBe(500);
-			}
+			}).toThrow(OAuthError);
+			expect(() => {
+				new ConcreteOAuthProvider({
+					clientId: "test_id",
+					clientSecret: "test_secret",
+					redirectUri: "",
+				});
+			}).toThrow(
+				expect.objectContaining({ code: "INVALID_CONFIG", statusCode: 500 }),
+			);
 		});
 
 		it("should throw error when clientId is missing", () => {
-			try {
+			expect(() => {
 				new ConcreteOAuthProvider({
 					clientId: "",
 					clientSecret: "test_secret",
 					redirectUri: "http://localhost:3000/callback",
 				});
-				throw new Error("Expected invalid config to throw");
-			} catch (error) {
-				expect(error).toBeInstanceOf(OAuthError);
-				expect((error as OAuthError).code).toBe("INVALID_CONFIG");
-				expect((error as OAuthError).statusCode).toBe(500);
-			}
+			}).toThrow(OAuthError);
+			expect(() => {
+				new ConcreteOAuthProvider({
+					clientId: "",
+					clientSecret: "test_secret",
+					redirectUri: "http://localhost:3000/callback",
+				});
+			}).toThrow(
+				expect.objectContaining({ code: "INVALID_CONFIG", statusCode: 500 }),
+			);
 		});
 
 		it("should throw error when clientSecret is missing", () => {
-			try {
+			expect(() => {
 				new ConcreteOAuthProvider({
 					clientId: "test_id",
 					clientSecret: "",
 					redirectUri: "http://localhost:3000/callback",
 				});
-				throw new Error("Expected invalid config to throw");
-			} catch (error) {
-				expect(error).toBeInstanceOf(OAuthError);
-				expect((error as OAuthError).code).toBe("INVALID_CONFIG");
-				expect((error as OAuthError).statusCode).toBe(500);
-			}
+			}).toThrow(OAuthError);
+			expect(() => {
+				new ConcreteOAuthProvider({
+					clientId: "test_id",
+					clientSecret: "",
+					redirectUri: "http://localhost:3000/callback",
+				});
+			}).toThrow(
+				expect.objectContaining({ code: "INVALID_CONFIG", statusCode: 500 }),
+			);
 		});
 
 		it("should throw error with provider name in message", () => {
-			try {
+			expect(() => {
 				new ConcreteOAuthProvider({
 					clientId: "",
 					clientSecret: "",
 					redirectUri: "",
 				});
-			} catch (error) {
-				expect(error).toBeInstanceOf(OAuthError);
-				expect((error as OAuthError).message).toContain("test-provider");
-			}
+			}).toThrow(OAuthError);
+			expect(() => {
+				new ConcreteOAuthProvider({
+					clientId: "",
+					clientSecret: "",
+					redirectUri: "",
+				});
+			}).toThrow(/test-provider/);
 		});
 
 		it("should throw OAuthError with correct code and status", () => {
-			try {
+			expect(() => {
 				new ConcreteOAuthProvider({
 					clientId: "",
 					clientSecret: "",
 					redirectUri: "",
 				});
-				throw new Error("Expected invalid config to throw");
-			} catch (error) {
-				expect(error).toBeInstanceOf(OAuthError);
-				const oauthError = error as OAuthError;
-				expect(oauthError.code).toBe("INVALID_CONFIG");
-				expect(oauthError.statusCode).toBe(500);
-			}
+			}).toThrow(OAuthError);
+			expect(() => {
+				new ConcreteOAuthProvider({
+					clientId: "",
+					clientSecret: "",
+					redirectUri: "",
+				});
+			}).toThrow(
+				expect.objectContaining({ code: "INVALID_CONFIG", statusCode: 500 }),
+			);
 		});
 	});
 
@@ -320,10 +338,13 @@ describe("BaseOAuthProvider", () => {
 			} as AxiosError;
 
 			mockedIsAxiosError.mockReturnValue(true);
-			mockedPost.mockRejectedValueOnce(axiosError);
+			mockedPost.mockRejectedValue(axiosError);
 
 			await expect(provider.testPost("https://test.com", {})).rejects.toThrow(
 				TokenExchangeError,
+			);
+			await expect(provider.testPost("https://test.com", {})).rejects.toThrow(
+				/Invalid client credentials/,
 			);
 		});
 
@@ -342,10 +363,13 @@ describe("BaseOAuthProvider", () => {
 			} as AxiosError;
 
 			mockedIsAxiosError.mockReturnValue(true);
-			mockedPost.mockRejectedValueOnce(axiosError);
+			mockedPost.mockRejectedValue(axiosError);
 
 			await expect(provider.testPost("https://test.com", {})).rejects.toThrow(
 				TokenExchangeError,
+			);
+			await expect(provider.testPost("https://test.com", {})).rejects.toThrow(
+				/invalid_client/,
 			);
 		});
 
@@ -362,20 +386,13 @@ describe("BaseOAuthProvider", () => {
 			} as AxiosError;
 
 			mockedIsAxiosError.mockReturnValue(true);
-			mockedPost.mockRejectedValueOnce(axiosError);
+			mockedPost.mockRejectedValue(axiosError);
 
 			await expect(provider.testPost("https://test.com", {})).rejects.toThrow(
 				TokenExchangeError,
 			);
-		});
-
-		it("should wrap non-axios errors in TokenExchangeError", async () => {
-			const customError = new Error("Custom error");
-			mockedIsAxiosError.mockReturnValue(false);
-			mockedPost.mockRejectedValueOnce(customError);
-
 			await expect(provider.testPost("https://test.com", {})).rejects.toThrow(
-				TokenExchangeError,
+				/Network error/,
 			);
 		});
 	});

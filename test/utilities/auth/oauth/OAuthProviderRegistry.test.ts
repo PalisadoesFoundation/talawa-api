@@ -71,16 +71,14 @@ describe("OAuthProviderRegistry", () => {
 
 			registry.register(provider1);
 
-			try {
-				registry.register(provider2);
-				throw new Error("Expected duplicate registration to throw");
-			} catch (e) {
-				expect(e).toBeInstanceOf(OAuthError);
-				expect((e as OAuthError).code).toBe("DUPLICATE_PROVIDER");
-				expect((e as OAuthError).statusCode).toBe(409);
-			}
+			expect(() => registry.register(provider2)).toThrow(OAuthError);
+			expect(() => registry.register(provider2)).toThrow(
+				expect.objectContaining({
+					code: "DUPLICATE_PROVIDER",
+					statusCode: 409,
+				}),
+			);
 		});
-
 		it("should register multiple different providers", () => {
 			const google = new MockProvider("google");
 			const github = new MockProvider("github");
@@ -97,27 +95,25 @@ describe("OAuthProviderRegistry", () => {
 		it("should throw error for empty provider name", () => {
 			const provider = new MockProvider("");
 
-			try {
-				registry.register(provider);
-				throw new Error("Expected empty provider name to throw");
-			} catch (e) {
-				expect(e).toBeInstanceOf(OAuthError);
-				expect((e as OAuthError).code).toBe("INVALID_PROVIDER_NAME");
-				expect((e as OAuthError).statusCode).toBe(400);
-			}
+			expect(() => registry.register(provider)).toThrow(OAuthError);
+			expect(() => registry.register(provider)).toThrow(
+				expect.objectContaining({
+					code: "INVALID_PROVIDER_NAME",
+					statusCode: 400,
+				}),
+			);
 		});
 
 		it("should throw error for whitespace-only provider name", () => {
 			const provider = new MockProvider("   ");
 
-			try {
-				registry.register(provider);
-				throw new Error("Expected whitespace-only provider name to throw");
-			} catch (e) {
-				expect(e).toBeInstanceOf(OAuthError);
-				expect((e as OAuthError).code).toBe("INVALID_PROVIDER_NAME");
-				expect((e as OAuthError).statusCode).toBe(400);
-			}
+			expect(() => registry.register(provider)).toThrow(OAuthError);
+			expect(() => registry.register(provider)).toThrow(
+				expect.objectContaining({
+					code: "INVALID_PROVIDER_NAME",
+					statusCode: 400,
+				}),
+			);
 		});
 	});
 
@@ -139,51 +135,45 @@ describe("OAuthProviderRegistry", () => {
 		});
 
 		it("should throw error when provider not found", () => {
-			try {
-				registry.get("nonexistent");
-				throw new Error("Expected provider not found to throw");
-			} catch (e) {
-				expect(e).toBeInstanceOf(OAuthError);
-				expect((e as OAuthError).code).toBe("PROVIDER_NOT_FOUND");
-				expect((e as OAuthError).statusCode).toBe(404);
-			}
+			expect(() => registry.get("nonexistent")).toThrow(OAuthError);
+			expect(() => registry.get("nonexistent")).toThrow(
+				expect.objectContaining({
+					code: "PROVIDER_NOT_FOUND",
+					statusCode: 404,
+				}),
+			);
 		});
 
 		it("should include available providers in error message", () => {
 			registry.register(new MockProvider("google"));
 			registry.register(new MockProvider("github"));
 
-			try {
-				registry.get("facebook");
-				throw new Error("Expected provider not found to throw");
-			} catch (error) {
-				expect(error).toBeInstanceOf(OAuthError);
-				expect((error as OAuthError).code).toBe("PROVIDER_NOT_FOUND");
-				expect((error as Error).message).toContain("google");
-				expect((error as Error).message).toContain("github");
-			}
+			expect(() => registry.get("facebook")).toThrow(OAuthError);
+			expect(() => registry.get("facebook")).toThrow(
+				expect.objectContaining({ code: "PROVIDER_NOT_FOUND" }),
+			);
+			expect(() => registry.get("facebook")).toThrow(/google/);
+			expect(() => registry.get("facebook")).toThrow(/github/);
 		});
 
 		it("should throw error for empty provider name", () => {
-			try {
-				registry.get("");
-				throw new Error("Expected empty provider name to throw");
-			} catch (e) {
-				expect(e).toBeInstanceOf(OAuthError);
-				expect((e as OAuthError).code).toBe("INVALID_PROVIDER_NAME");
-				expect((e as OAuthError).statusCode).toBe(400);
-			}
+			expect(() => registry.get("")).toThrow(OAuthError);
+			expect(() => registry.get("")).toThrow(
+				expect.objectContaining({
+					code: "INVALID_PROVIDER_NAME",
+					statusCode: 400,
+				}),
+			);
 		});
 
 		it("should throw error for whitespace-only provider name", () => {
-			try {
-				registry.get("   ");
-				throw new Error("Expected whitespace-only provider name to throw");
-			} catch (e) {
-				expect(e).toBeInstanceOf(OAuthError);
-				expect((e as OAuthError).code).toBe("INVALID_PROVIDER_NAME");
-				expect((e as OAuthError).statusCode).toBe(400);
-			}
+			expect(() => registry.get("   ")).toThrow(OAuthError);
+			expect(() => registry.get("   ")).toThrow(
+				expect.objectContaining({
+					code: "INVALID_PROVIDER_NAME",
+					statusCode: 400,
+				}),
+			);
 		});
 	});
 
@@ -193,6 +183,12 @@ describe("OAuthProviderRegistry", () => {
 			registry.register(provider);
 
 			expect(registry.has("google")).toBe(true);
+		});
+
+		it("should handle whitespace in provider name", () => {
+			registry.register(new MockProvider("google"));
+			// This would fail with current impl, pass if trim() is added
+			expect(registry.has("  google  ")).toBe(true);
 		});
 
 		it("should return false for unregistered provider", () => {
@@ -240,6 +236,12 @@ describe("OAuthProviderRegistry", () => {
 
 		it("should handle unregistering non-existent provider gracefully", () => {
 			expect(() => registry.unregister("nonexistent")).not.toThrow();
+		});
+
+		it("should unregister case-insensitively", () => {
+			registry.register(new MockProvider("google"));
+			registry.unregister("GOOGLE");
+			expect(registry.has("google")).toBe(false);
 		});
 	});
 

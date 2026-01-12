@@ -79,7 +79,7 @@ export class OAuthProviderRegistry {
 	 * @returns True if provider exists
 	 */
 	has(providerName: string): boolean {
-		return this.providers.has(providerName.toLowerCase());
+		return this.providers.has(providerName.trim().toLowerCase());
 	}
 
 	/**
@@ -95,7 +95,7 @@ export class OAuthProviderRegistry {
 	 * @param providerName - Name of provider to remove
 	 */
 	unregister(providerName: string): void {
-		this.providers.delete(providerName.toLowerCase());
+		this.providers.delete(providerName.trim().toLowerCase());
 	}
 
 	/**
