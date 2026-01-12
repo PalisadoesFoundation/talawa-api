@@ -452,6 +452,11 @@ describe("GraphQL Routes", () => {
 				expect(context.perf).toBe(perfTracker);
 				expect(context.perf).toHaveProperty("trackComplexity");
 				expect(context.perf).toHaveProperty("snapshot");
+
+				// Verify cache is wrapped with metrics proxy
+				expect(context.cache).not.toBe(mockFastify.cache);
+				expect(context.cache).toHaveProperty("get");
+				expect(context.cache).toHaveProperty("set");
 			});
 
 			it("should handle missing perf tracker gracefully", async () => {
@@ -468,6 +473,8 @@ describe("GraphQL Routes", () => {
 				});
 
 				expect(context.perf).toBeUndefined();
+				// Verify cache is NOT wrapped without perf tracker
+				expect(context.cache).toBe(mockFastify.cache);
 			});
 
 			it("should not include perf tracker in subscription context (handled in onConnect)", async () => {
