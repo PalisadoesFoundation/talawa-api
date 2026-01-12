@@ -516,11 +516,8 @@ describe("clearPluginModuleCache", () => {
 			),
 		).not.toThrow();
 	});
-	it("triggers catch block when rootLogger.info throws (covers lines 633-635)", () => {
-		// Note: This test verifies the catch block exists but cannot easily trigger it
-		// because rootLogger is imported at module load time and the mock reference
-		// doesn't propagate to the already-loaded utils module.
-		// The catch block in clearPluginModuleCache is a defensive measure for an extremely
+	it("handles normal execution without throwing", () => {
+		// Note: The catch block in clearPluginModuleCache is a defensive measure for an extremely
 		// unlikely scenario (rootLogger.info throwing). We verify the function handles
 		// errors gracefully by passing invalid input.
 

@@ -297,7 +297,6 @@ export function generateCreateTableSQL(
 			: originalTableName;
 
 	// Warn if table name was automatically prefixed
-	// Warn if table name was automatically prefixed
 	if (
 		pluginId &&
 		!originalTableName.startsWith(`${pluginId}_`) &&
@@ -411,7 +410,6 @@ export function generateCreateIndexSQL(
 			? `${pluginId}_${originalTableName.replace(/^plugin_/, "")}`
 			: originalTableName;
 
-	// Warn if table name was automatically prefixed
 	// Warn if table name was automatically prefixed
 	if (
 		pluginId &&

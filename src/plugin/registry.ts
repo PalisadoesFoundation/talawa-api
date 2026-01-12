@@ -44,13 +44,7 @@ export async function initializePluginSystem(
 		context.logger?.info?.("Initializing plugin system...");
 
 		pluginManagerInstance = new PluginManager(context, pluginsDirectory);
-
-		// Wait for initialization to complete
-		await new Promise<void>((resolve) => {
-			pluginManagerInstance?.once("plugins:ready", () => {
-				resolve();
-			});
-		});
+		await pluginManagerInstance.initialize();
 
 		context.logger?.info?.("Plugin system initialized successfully");
 		return pluginManagerInstance;

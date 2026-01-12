@@ -12,12 +12,15 @@ vi.mock("~/src/plugin/registry", () => ({
 	getPluginManagerInstance: vi.fn(),
 }));
 
+import { rootLogger } from "~/src/utilities/logging/logger";
+
 // Mock rootLogger
 vi.mock("~/src/utilities/logging/logger", () => ({
 	rootLogger: {
 		info: vi.fn(),
 		error: vi.fn(),
 		warn: vi.fn(),
+		debug: vi.fn(),
 	},
 }));
 
@@ -915,8 +918,7 @@ describe("GraphQLSchemaManager", () => {
 	describe("Error Handling", () => {
 		let loggerSpy: ReturnType<typeof vi.spyOn>;
 
-		beforeEach(async () => {
-			const { rootLogger } = await import("~/src/utilities/logging/logger");
+		beforeEach(() => {
 			loggerSpy = vi
 				.spyOn(rootLogger, "info")
 				.mockImplementation(() => undefined);
@@ -973,6 +975,8 @@ describe("GraphQLSchemaManager", () => {
 		});
 
 		it("should log when plugin types file is not found", async () => {
+			const { rootLogger } = await import("~/src/utilities/logging/logger");
+			const debugSpy = vi.spyOn(rootLogger, "debug");
 			const mockBuilderFunction = vi.fn();
 			const mockExtensionRegistry: IExtensionRegistry = {
 				graphql: {
@@ -1024,7 +1028,7 @@ describe("GraphQLSchemaManager", () => {
 			).registerActivePluginExtensions.bind(schemaManager);
 			await registerActivePluginExtensions();
 
-			expect(loggerSpy).toHaveBeenCalledWith(
+			expect(debugSpy).toHaveBeenCalledWith(
 				expect.objectContaining({ pluginId: "test_plugin" }),
 				"No types file found for plugin",
 			);

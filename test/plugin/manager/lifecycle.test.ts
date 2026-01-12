@@ -434,8 +434,6 @@ describe("PluginLifecycle", () => {
 			const { isValidPluginId } = await import("../../../src/plugin/utils");
 			(isValidPluginId as ReturnType<typeof vi.fn>).mockReturnValueOnce(false);
 
-			(isValidPluginId as ReturnType<typeof vi.fn>).mockReturnValueOnce(false);
-
 			// Logger already mocked in mockPluginContext
 
 			const maliciousPluginId = "../malicious-plugin";
@@ -609,8 +607,6 @@ describe("PluginLifecycle", () => {
 
 		it("should reject invalid plugin ID during uninstallation", async () => {
 			const { isValidPluginId } = await import("../../../src/plugin/utils");
-			(isValidPluginId as ReturnType<typeof vi.fn>).mockReturnValueOnce(false);
-
 			(isValidPluginId as ReturnType<typeof vi.fn>).mockReturnValueOnce(false);
 
 			// Logger already mocked in mockPluginContext
@@ -1239,9 +1235,6 @@ describe("PluginLifecycle", () => {
 				.spyOn(lifecycle, "getPluginModule")
 				.mockResolvedValue(mockPluginModule);
 
-			// Mock console.error to capture error logging
-			vi.spyOn(console, "error").mockImplementation(() => {});
-
 			// Call the private method through reflection
 			await (
 				lifecycle as unknown as {
@@ -1271,9 +1264,6 @@ describe("PluginLifecycle", () => {
 			const getPluginModuleSpy = vi
 				.spyOn(lifecycle, "getPluginModule")
 				.mockResolvedValue(mockPluginModule);
-
-			// Mock console.error to capture error logging
-			vi.spyOn(console, "error").mockImplementation(() => {});
 
 			// Call the private method through reflection
 			await (
@@ -2284,7 +2274,7 @@ describe("PluginLifecycle", () => {
 
 		it("should handle onInstall hook errors gracefully", async () => {
 			const { safeRequire } = await import("../../../src/plugin/utils");
-			vi.spyOn(console, "error").mockImplementation(() => {});
+
 			const mockPluginModule: MockPluginModule = {
 				onInstall: vi.fn(() => Promise.reject(new Error("Install failed"))),
 			};
@@ -2343,7 +2333,7 @@ describe("PluginLifecycle", () => {
 
 		it("should handle onUninstall hook errors gracefully", async () => {
 			const { safeRequire } = await import("../../../src/plugin/utils");
-			vi.spyOn(console, "error").mockImplementation(() => {});
+
 			const mockPluginModule: MockPluginModule = {
 				onUninstall: vi.fn(() => Promise.reject(new Error("Uninstall failed"))),
 			};

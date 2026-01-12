@@ -160,7 +160,7 @@ class GraphQLSchemaManager {
 						await import(`${pluginPath}/graphql/types`);
 					} catch (_error) {
 						// Plugin types file doesn't exist, continue without it
-						rootLogger.info(
+						rootLogger.debug(
 							{ pluginId: extension.pluginId },
 							"No types file found for plugin",
 						);
