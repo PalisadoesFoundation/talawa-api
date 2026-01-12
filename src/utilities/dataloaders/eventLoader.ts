@@ -7,6 +7,8 @@ import {
 	getTTL,
 	wrapWithCache,
 } from "~/src/services/caching";
+import type { PerformanceTracker } from "~/src/utilities/metrics/performanceTracker";
+import { wrapBatchWithMetrics } from "~/src/utilities/metrics/withMetrics";
 
 /**
  * Type representing an event row from the database.
@@ -16,20 +18,23 @@ export type EventRow = typeof eventsTable.$inferSelect;
 /**
  * Creates a DataLoader for batching event lookups by ID.
  * When a cache service is provided, wraps the batch function with cache-first logic.
+ * When a performance tracker is provided, wraps the batch function with performance metrics.
  *
  * @param db - The Drizzle client instance for database operations.
  * @param cache - Optional cache service for cache-first lookups. Pass null to disable caching.
+ * @param perf - Optional performance tracker for monitoring database operation durations.
  * @returns A DataLoader that batches and caches event lookups within a single request.
  *
  * @example
  * ```typescript
- * const eventLoader = createEventLoader(drizzleClient, cacheService);
+ * const eventLoader = createEventLoader(drizzleClient, cacheService, perfTracker);
  * const event = await eventLoader.load(eventId);
  * ```
  */
 export function createEventLoader(
 	db: DrizzleClient,
 	cache: CacheService | null,
+	perf?: PerformanceTracker,
 ) {
 	const batchFn = async (
 		ids: readonly string[],
@@ -44,7 +49,8 @@ export function createEventLoader(
 		return ids.map((id) => map.get(id) ?? null);
 	};
 
-	const wrappedBatch = cache
+	// Apply cache wrapping first (if cache is provided)
+	const cacheWrappedBatch = cache
 		? wrapWithCache(batchFn, {
 				cache,
 				entity: "event",
@@ -52,6 +58,14 @@ export function createEventLoader(
 				ttlSeconds: getTTL("event"),
 			})
 		: batchFn;
+
+	// Apply metrics wrapping after cache wrapping to measure total batch execution time
+	// Since wrapBatchWithMetrics("events.byId", perf, cacheWrappedBatch) wraps cacheWrappedBatch,
+	// metrics include cache layer time (cache hits/misses) rather than only DB time.
+	// The ordering (cache first, then metrics) causes metrics to measure the full execution path.
+	const wrappedBatch = perf
+		? wrapBatchWithMetrics("events.byId", perf, cacheWrappedBatch)
+		: cacheWrappedBatch;
 
 	return new DataLoader<string, EventRow | null>(wrappedBatch, {
 		// Coalesce loads triggered within the same event loop tick
