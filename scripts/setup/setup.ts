@@ -77,6 +77,113 @@ export type SetupAnswers = Partial<Record<SetupKey, string>> & {
 };
 
 const envFileName = ".env";
+let backupCreated = false;
+let cleanupInProgress = false;
+let sigintHandler: (() => void | Promise<void>) | null = null;
+
+/**
+ * Restores .env file from backup if one was created during setup.
+ * Guards against concurrent cleanup attempts.
+ * @returns Boolean indicating restoration status:
+ *   - `true` if restoration was successful
+ *   - `true` if no backup was created (nothing to restore, not an error)
+ *   - `false` if restoration failed (backup exists but could not be restored)
+ *   - `false` if cleanup is already in progress (prevents concurrent cleanup)
+ */
+async function restoreBackup(): Promise<boolean> {
+	// Note: There's a tiny window for a race condition between the check and set
+	// of cleanupInProgress. This is acceptable for SIGINT handler cleanup as:
+	// 1. SIGINT is typically a user-initiated single event
+	// 2. The worst case is redundant cleanup attempts, which are safe
+	// 3. The finally block ensures cleanupInProgress is always reset
+	if (cleanupInProgress) {
+		// Prevent multiple simultaneous cleanup attempts
+		return false;
+	}
+
+	cleanupInProgress = true;
+
+	try {
+		if (!backupCreated) {
+			console.log("📋 No backup was created yet, nothing to restore");
+			return true; // Not an error, just nothing to do
+		}
+
+		try {
+			// Validate that backup actually exists when backupCreated is true
+			// This ensures state consistency: if backupCreated is true, we should have a backup
+			const backupDir = ".backup";
+			try {
+				await fs.access(backupDir);
+			} catch (err: unknown) {
+				const error = err as NodeJS.ErrnoException;
+				if (error.code === "ENOENT") {
+					console.warn(
+						"⚠️  Backup was marked as created but backup directory does not exist",
+					);
+					return false; // State inconsistency: backupCreated=true but no backup dir
+				}
+				throw err; // Re-throw other errors
+			}
+
+			await restoreLatestBackup();
+			console.log("✅ Original configuration restored successfully");
+			return true;
+		} catch (error: unknown) {
+			console.error("❌ Failed to restore backup:", error);
+			console.error(
+				"\n   You may need to manually restore from the .backup directory",
+			);
+			return false;
+		}
+	} finally {
+		cleanupInProgress = false;
+	}
+}
+
+/**
+ * Test-only export to allow testing the cleanupInProgress guard
+ * @internal
+ */
+export function __test__setCleanupInProgress(value: boolean): void {
+	cleanupInProgress = value;
+}
+
+/**
+ * Test-only export to allow testing restoreBackup function
+ * @internal
+ */
+export async function __test__restoreBackup(): Promise<boolean> {
+	return restoreBackup();
+}
+
+/**
+ * SIGINT handler that restores backup and exits
+ * Defined at module scope to allow removal before re-registration
+ */
+async function sigintHandlerFunction(): Promise<void> {
+	console.log("\n\n⚠️  Setup interrupted by user (CTRL+C)");
+	console.log("=".repeat(60));
+	console.log("📋 Cleaning up and restoring previous configuration...");
+	console.log(`${"=".repeat(60)}\n`);
+
+	const restored = await restoreBackup();
+
+	if (restored) {
+		console.log(
+			"\n✅ Your environment has been restored to its previous state",
+		);
+		console.log("   You can safely run setup again when ready\n");
+		process.exit(0); // Clean exit since we restored successfully
+	} else {
+		console.log("\n⚠️  Cleanup incomplete - please check your .env file");
+		console.log(
+			"   Run setup again or restore manually from .backup directory\n",
+		);
+		process.exit(1); // Error exit since restoration failed
+	}
+}
+
 async function restoreLatestBackup(): Promise<void> {
 	const backupDir = ".backup";
 	const envPrefix = ".env.";
@@ -85,10 +192,10 @@ async function restoreLatestBackup(): Promise<void> {
 	} catch (err: unknown) {
 		const error = err as NodeJS.ErrnoException;
 		if (error.code === "ENOENT") {
-			console.warn("Backup directory .backup does not exist");
+			console.warn("⚠️  Backup directory .backup does not exist");
 			return;
 		}
-		console.error("Error accessing backup directory:", error);
+		console.error("❌ Error accessing backup directory:", error);
 		throw error;
 	}
 	try {
@@ -109,15 +216,29 @@ async function restoreLatestBackup(): Promise<void> {
 			if (latestBackup) {
 				const backupPath = path.join(backupDir, latestBackup.name);
 				console.log(`Restoring from latest backup: ${backupPath}`);
-				await fs.copyFile(backupPath, ".env");
+				// Use atomic write: write to temp file first, then rename
+				// This ensures the .env file is either fully restored or unchanged
+				const tempPath = ".env.tmp";
+				try {
+					await fs.copyFile(backupPath, tempPath);
+					await fs.rename(tempPath, ".env"); // Atomic on POSIX systems
+				} catch (err) {
+					// Clean up temp file if it exists (e.g., if copyFile succeeded but rename failed)
+					try {
+						await fs.unlink(tempPath);
+					} catch {
+						// Ignore cleanup errors - temp file may not exist or already be removed
+					}
+					throw err; // Re-throw the original error after cleanup attempt
+				}
 			} else {
-				console.warn("No valid backup files found with epoch timestamps");
+				console.warn("⚠️  No valid backup files found with epoch timestamps");
 			}
 		} else {
-			console.warn("No backup files found in .backup directory");
+			console.warn("⚠️  No backup files found in .backup directory");
 		}
 	} catch (readError) {
-		console.error("Error reading backup directory:", readError);
+		console.error("❌ Error reading backup directory:", readError);
 		throw readError;
 	}
 }
@@ -769,6 +890,11 @@ export async function caddySetup(answers: SetupAnswers): Promise<SetupAnswers> {
 }
 
 export async function setup(): Promise<SetupAnswers> {
+	// Reset state variables at the start of each setup call
+	// This ensures clean state for tests and multiple setup() calls
+	backupCreated = false;
+	cleanupInProgress = false;
+
 	const initialCI = process.env.CI;
 	let answers: SetupAnswers = {};
 	if (await checkEnvFile()) {
@@ -782,12 +908,15 @@ export async function setup(): Promise<SetupAnswers> {
 		}
 	}
 	dotenv.config({ path: envFileName });
-	process.once("SIGINT", async () => {
-		console.log("\nProcess interrupted! Undoing changes...");
-		answers = {};
-		await restoreLatestBackup();
-		process.exit(1);
-	});
+
+	// Remove previous SIGINT handler if one exists to prevent accumulation
+	if (sigintHandler) {
+		process.removeListener("SIGINT", sigintHandler);
+	}
+
+	// Register the SIGINT handler
+	sigintHandler = sigintHandlerFunction;
+	process.once("SIGINT", sigintHandler);
 	if (await checkEnvFile()) {
 		const isInteractive =
 			initialCI !== "true" && process.stdin && process.stdin.isTTY;
@@ -810,7 +939,7 @@ export async function setup(): Promise<SetupAnswers> {
 			shouldBackup = process.env.TALAWA_SKIP_ENV_BACKUP !== "true";
 		}
 		try {
-			await envFileBackup(shouldBackup);
+			backupCreated = await envFileBackup(shouldBackup);
 		} catch (err) {
 			if (process.env.NODE_ENV === "production" || initialCI === "true") {
 				console.error("envFileBackup failed (fatal):", err);
