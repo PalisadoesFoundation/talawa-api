@@ -280,7 +280,7 @@ describe("createPluginTables & dropPluginTables", () => {
 		);
 	});
 	it("handles table creation error", async () => {
-		const { rootLogger } = await import("../../src/utilities/logging/logger");
+		const { rootLogger } = await import("~/src/utilities/logging/logger");
 		const loggerSpy = vi.spyOn(rootLogger, "error");
 
 		const db = { execute: vi.fn().mockRejectedValue(new Error("fail")) };
@@ -387,15 +387,9 @@ describe("createPluginTables & dropPluginTables", () => {
 	});
 
 	it("uses rootLogger when no logger is provided in createPluginTables outer catch (covers lines 514-518)", async () => {
-		// Import the mocked rootLogger using the same path as utils.ts
-		const loggerModule = await import("~/src/utilities/logging/logger");
-
-		// Check that the mock is working by verifying rootLogger.error is a mock function
-		if (typeof loggerModule.rootLogger.error !== "function") {
-			throw new Error(
-				"rootLogger.error is not a function - mock may not be applied",
-			);
-		}
+		const { rootLogger } = await import("~/src/utilities/logging/logger");
+		// Ensure error is spied on before execution
+		const loggerSpy = vi.spyOn(rootLogger, "error");
 
 		// Provide an empty object for tableDefinitions to trigger the outer catch
 		// by using a bad tableDefinitions that causes Object.entries to throw
@@ -421,6 +415,11 @@ describe("createPluginTables & dropPluginTables", () => {
 
 		// The test passes if createPluginTables throws as expected
 		// The outer catch logs to rootLogger.error when no logger is provided
+		expect(loggerSpy).toHaveBeenCalledWith(
+			expect.objectContaining({
+				err: expect.objectContaining({ message: "outer catch fail" }),
+			}),
+		);
 	});
 });
 
@@ -444,7 +443,7 @@ describe("removePluginDirectory & clearPluginModuleCache", () => {
 		).resolves.toBeUndefined();
 	});
 	it("throws on fs.rm error", async () => {
-		const { rootLogger } = await import("../../src/utilities/logging/logger");
+		const { rootLogger } = await import("~/src/utilities/logging/logger");
 		const loggerSpy = vi.spyOn(rootLogger, "error");
 
 		vi.spyOn(utils, "clearPluginModuleCache").mockImplementation(() => {});

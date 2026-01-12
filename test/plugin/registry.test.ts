@@ -1,4 +1,15 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+
+// Mock rootLogger
+vi.mock("~/src/utilities/logging/logger", () => ({
+	rootLogger: {
+		info: vi.fn(),
+		error: vi.fn(),
+		warn: vi.fn(),
+		debug: vi.fn(),
+	},
+}));
+
 import type { IPluginContext } from "~/src/plugin/types";
 import {
 	createPluginContext,
@@ -290,6 +301,15 @@ describe("Plugin Registry", () => {
 
 			// Restore the mock so afterEach cleanup works
 			spy.mockRestore();
+
+			// Assert logging
+			const { rootLogger } = await import("~/src/utilities/logging/logger");
+			expect(rootLogger.error).toHaveBeenCalledWith(
+				expect.objectContaining({
+					msg: "Error destroying plugin system",
+					err: shutdownError,
+				}),
+			);
 
 			// Now clean up properly for subsequent tests
 			await destroyPluginSystem();
