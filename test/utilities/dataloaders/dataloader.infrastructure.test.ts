@@ -6,6 +6,7 @@ import { createActionItemLoader } from "~/src/utilities/dataloaders/actionItemLo
 import { createEventLoader } from "~/src/utilities/dataloaders/eventLoader";
 import { createOrganizationLoader } from "~/src/utilities/dataloaders/organizationLoader";
 import { createUserLoader } from "~/src/utilities/dataloaders/userLoader";
+import { createPerformanceTracker } from "~/src/utilities/metrics/performanceTracker";
 
 /**
  * Creates a mock DrizzleClient for testing DataLoaders.
@@ -270,6 +271,58 @@ describe("DataLoader infrastructure", () => {
 			expect(loaders1.organization).not.toBe(loaders2.organization);
 			expect(loaders1.event).not.toBe(loaders2.event);
 			expect(loaders1.actionItem).not.toBe(loaders2.actionItem);
+		});
+
+		it("creates loaders without perf parameter (backward compatibility)", () => {
+			const { db } = createMockDb([]);
+
+			const loaders = createDataloaders(db, null);
+
+			// Verify all loaders are created successfully without perf
+			expect(loaders).toHaveProperty("user");
+			expect(loaders).toHaveProperty("organization");
+			expect(loaders).toHaveProperty("event");
+			expect(loaders).toHaveProperty("actionItem");
+		});
+
+		it("creates loaders with perf parameter and propagates to all loaders", async () => {
+			const { db, whereSpy } = createMockDb([{ id: "u1", name: "User 1" }]);
+			const perf = createPerformanceTracker();
+
+			const loaders = createDataloaders(db, null, perf);
+
+			// Verify all loaders are created successfully with perf
+			expect(loaders).toHaveProperty("user");
+			expect(loaders).toHaveProperty("organization");
+			expect(loaders).toHaveProperty("event");
+			expect(loaders).toHaveProperty("actionItem");
+
+			// Verify loaders are functional and metrics are tracked
+			await loaders.user.load("u1");
+
+			// Verify metrics were tracked for the user loader
+			const snapshot = perf.snapshot();
+			const userOp = snapshot.ops["db:users.byId"];
+			expect(userOp).toBeDefined();
+			expect(userOp?.count).toBe(1);
+			expect(userOp?.ms).toBeGreaterThanOrEqual(0);
+
+			// Verify DB was called
+			expect(whereSpy).toHaveBeenCalledTimes(1);
+		});
+
+		it("propagates perf parameter correctly when cache is also provided", () => {
+			const { db } = createMockDb([]);
+			const mockCache = createMockCache();
+			const perf = createPerformanceTracker();
+
+			const loaders = createDataloaders(db, mockCache, perf);
+
+			// Verify all loaders are created with both cache and perf
+			expect(loaders).toHaveProperty("user");
+			expect(loaders).toHaveProperty("organization");
+			expect(loaders).toHaveProperty("event");
+			expect(loaders).toHaveProperty("actionItem");
 		});
 	});
 
