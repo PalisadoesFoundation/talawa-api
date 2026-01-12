@@ -110,7 +110,7 @@ validate_version_string() {
     # Allow only: alphanumeric, dots, hyphens, carets, tildes, equals, greater/less than
     # This covers semver patterns like: 18.0.0, ^18.0.0, ~18.0.0, >=18.0.0, lts, lts/latest
     # Pattern stored in variable to avoid shell interpretation issues
-    local pattern='^[a-zA-Z0-9./_~^=-]+$'
+    local pattern='^[a-zA-Z0-9./_~^=<>-]+$'
     if [[ ! "$version" =~ $pattern ]]; then
         error "Invalid $field_name: '$version'"
         echo ""
@@ -119,10 +119,10 @@ validate_version_string() {
         echo "  • Numbers (0-9)"
         echo "  • Dots (.)"
         echo "  • Hyphens (-)"
-        echo "  • Version operators (^, ~, =, -)"
+        echo "  • Version operators (^, ~, =, >, <, -)"
         echo "  • Forward slash (/) for lts/latest patterns"
         echo ""
-        info "Rejected characters found: $(echo "$version" | tr -d 'a-zA-Z0-9./_~^=-')"
+        info "Rejected characters found: $(echo "$version" | tr -d 'a-zA-Z0-9./_~^=<>-')"
         echo ""
         info "Security note: Special characters, spaces, semicolons, and shell"
         info "metacharacters are not allowed to prevent command injection."
