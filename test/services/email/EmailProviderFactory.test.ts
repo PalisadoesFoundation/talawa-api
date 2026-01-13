@@ -42,7 +42,7 @@ describe("EmailProviderFactory", () => {
 		);
 	});
 
-	it("should throw error when 'smtp' is selected but not implemented (or if handled in factory)", () => {
+	it("should throw error when SMTP provider is selected but SMTP_HOST is missing", () => {
 		// SMTP is now implemented
 		const config = {
 			API_EMAIL_PROVIDER: "smtp",

@@ -63,6 +63,16 @@ export class SMTPProvider implements IEmailProvider {
 				throw new Error("SMTP_PORT must be provided");
 			}
 
+			// Validate port is a finite integer in the range 1-65535
+			if (
+				!Number.isInteger(this.config.port) ||
+				!Number.isFinite(this.config.port) ||
+				this.config.port < 1 ||
+				this.config.port > 65535
+			) {
+				throw new Error("SMTP_PORT must be an integer between 1 and 65535");
+			}
+
 			// Validate that either both user and password are provided or neither
 			const hasUser = Boolean(this.config.user);
 			const hasPassword = Boolean(this.config.password);
@@ -91,7 +101,15 @@ export class SMTPProvider implements IEmailProvider {
 	}
 
 	/**
-	 * Send a single email using SMTP
+	 * Sanitize string by removing CR and LF characters to prevent SMTP header injection
+	 */
+	private sanitizeHeader(value: string | undefined): string {
+		if (!value) return "";
+		return value.replace(/[\r\n]/g, " ");
+	}
+
+	/**
+	 * Send a single email using the configured SMTP server
 	 */
 	async sendEmail(job: EmailJob): Promise<EmailResult> {
 		try {
@@ -103,14 +121,18 @@ export class SMTPProvider implements IEmailProvider {
 
 			const transporter = await this.getTransporter();
 
-			const fromAddress = this.config.fromName
-				? `${this.config.fromName} <${this.config.fromEmail}>`
+			// Sanitize fromName and subject to prevent SMTP header injection
+			const safeFromName = this.sanitizeHeader(this.config.fromName);
+			const safeSubject = this.sanitizeHeader(job.subject);
+
+			const fromAddress = safeFromName
+				? `${safeFromName} <${this.config.fromEmail}>`
 				: this.config.fromEmail;
 
 			const mailOptions = {
 				from: fromAddress,
 				to: job.email,
-				subject: job.subject,
+				subject: safeSubject,
 				html: job.htmlBody,
 				...(job.textBody ? { text: job.textBody } : {}),
 			};

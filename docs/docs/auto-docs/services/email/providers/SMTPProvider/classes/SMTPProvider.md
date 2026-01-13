@@ -43,7 +43,7 @@ The SMTP configuration object containing host, port, and credentials.
 
 > **sendBulkEmails**(`jobs`): `Promise`\<[`EmailResult`](../../../types/interfaces/EmailResult.md)[]\>
 
-Defined in: [src/services/email/providers/SMTPProvider.ts:132](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/email/providers/SMTPProvider.ts#L132)
+Defined in: [src/services/email/providers/SMTPProvider.ts:154](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/email/providers/SMTPProvider.ts#L154)
 
 Send multiple emails
 
@@ -67,9 +67,9 @@ Send multiple emails
 
 > **sendEmail**(`job`): `Promise`\<[`EmailResult`](../../../types/interfaces/EmailResult.md)\>
 
-Defined in: [src/services/email/providers/SMTPProvider.ts:96](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/email/providers/SMTPProvider.ts#L96)
+Defined in: [src/services/email/providers/SMTPProvider.ts:114](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/email/providers/SMTPProvider.ts#L114)
 
-Send a single email using SMTP
+Send a single email using the configured SMTP server
 
 #### Parameters
 

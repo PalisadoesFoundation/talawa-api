@@ -64,6 +64,14 @@ export async function emailSetup(answers: SetupAnswers): Promise<SetupAnswers> {
 			);
 
 			if (answers.API_EMAIL_PROVIDER === "ses") {
+				// Avoid persisting unrelated provider settings
+				delete answers.SMTP_HOST;
+				delete answers.SMTP_PORT;
+				delete answers.SMTP_USER;
+				delete answers.SMTP_PASSWORD;
+				delete answers.SMTP_SECURE;
+				delete answers.SMTP_FROM_EMAIL;
+				delete answers.SMTP_FROM_NAME;
 				answers.AWS_SES_REGION = await promptInput(
 					"AWS_SES_REGION",
 					"AWS SES Region:",
@@ -116,6 +124,12 @@ export async function emailSetup(answers: SetupAnswers): Promise<SetupAnswers> {
 					"Talawa",
 				);
 			} else if (answers.API_EMAIL_PROVIDER === "smtp") {
+				// Avoid persisting unrelated provider settings
+				delete answers.AWS_SES_REGION;
+				delete answers.AWS_ACCESS_KEY_ID;
+				delete answers.AWS_SECRET_ACCESS_KEY;
+				delete answers.AWS_SES_FROM_EMAIL;
+				delete answers.AWS_SES_FROM_NAME;
 				answers.SMTP_HOST = await promptInput(
 					"SMTP_HOST",
 					"SMTP Host:",
@@ -174,6 +188,10 @@ export async function emailSetup(answers: SetupAnswers): Promise<SetupAnswers> {
 							return true;
 						},
 					);
+				} else {
+					// Clear auth fields when authentication is not required
+					delete answers.SMTP_USER;
+					delete answers.SMTP_PASSWORD;
 				}
 
 				// Determine secure based on port

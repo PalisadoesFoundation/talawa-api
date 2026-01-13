@@ -9,7 +9,14 @@ export const EmailProviderFactory = {
 	 * @param config - Email environment configuration
 	 * @returns Email provider instance implementing IEmailProvider
 	 * @throws Error if AWS_SES_REGION is missing for SES provider
+	 * @throws Error if SMTP_HOST is missing for SMTP provider
+	 * @throws Error if SMTP_PORT is missing for SMTP provider
 	 * @throws Error if provider type is unsupported
+	 * @remarks
+	 * For SMTP provider, optional fields (SMTP_USER, SMTP_PASSWORD, SMTP_SECURE,
+	 * SMTP_FROM_EMAIL, SMTP_FROM_NAME) are passed through to SMTPProvider.
+	 * For SES provider, optional fields (AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY,
+	 * AWS_SES_FROM_NAME) are passed through to SESProvider.
 	 */
 	create(config: EmailEnvConfig): IEmailProvider {
 		switch (config.API_EMAIL_PROVIDER) {

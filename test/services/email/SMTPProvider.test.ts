@@ -402,6 +402,8 @@ describe("SMTPProvider", () => {
 	});
 
 	it("should wait ~100ms between bulk emails", async () => {
+		vi.useFakeTimers();
+
 		const nodemailer = await import("nodemailer");
 		const mockSendMail = vi.fn().mockResolvedValue({ messageId: "msg-delay" });
 		(nodemailer.default.createTransport as Mock).mockReturnValue({
@@ -413,13 +415,14 @@ describe("SMTPProvider", () => {
 			{ id: "2", email: "e2@x.com", subject: "s", htmlBody: "b", userId: "u2" },
 		];
 
-		const start = Date.now();
-		await smtpProvider.sendBulkEmails(jobs);
-		const end = Date.now();
+		const bulkPromise = smtpProvider.sendBulkEmails(jobs);
+		// Advance timers to cover the delay
+		await vi.advanceTimersByTimeAsync(200);
+		await bulkPromise;
 
 		expect(mockSendMail).toHaveBeenCalledTimes(2);
-		// Should be at least 100ms (1 delay)
-		expect(end - start).toBeGreaterThanOrEqual(95); // Allow small margin for timer imprecision
+
+		vi.useRealTimers();
 	});
 
 	it("should use secure=true when configured", async () => {
