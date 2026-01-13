@@ -376,7 +376,6 @@ describe("DataLoader infrastructure", () => {
 
 			// Create mock cache with artificial delay to verify metrics include cache time
 			const cacheDelayMs = 10;
-			const minExpectedMs = Math.floor(cacheDelayMs * 0.9);
 			const cachedValues = new Map([
 				[entityKey("user", "u1"), { id: "u1", name: "User 1" }],
 				[entityKey("organization", "org1"), { id: "org1", name: "Org 1" }],
