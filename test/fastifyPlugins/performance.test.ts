@@ -717,32 +717,22 @@ describe("Performance Plugin", () => {
 
 	describe("Deep Copy Fallback", () => {
 		it("should use manual deep copy when structuredClone is unavailable", async () => {
-			// Save original structuredClone
-			const originalStructuredClone = global.structuredClone;
-
-			// Delete structuredClone to trigger fallback BEFORE resetting modules
-			// This ensures the plugin sees structuredClone as undefined when it loads
-			// Use type assertion to allow deletion for test purposes
-			delete (global as { structuredClone?: typeof global.structuredClone })
-				.structuredClone;
+			// Use vi.stubGlobal to reliably mock structuredClone as undefined
+			// This is more reliable than deleting from global object, especially in CI
+			vi.stubGlobal("structuredClone", undefined);
 
 			try {
-				// Reset modules and re-import the plugin so it re-evaluates structuredClone
-				// The plugin will check typeof structuredClone at runtime in deepCopySnapshot,
-				// so deleting it before module reset ensures the check sees it as undefined
+				// Reset modules and re-import the plugin so it re-evaluates the check
 				vi.resetModules();
 
 				// Re-import Fastify and the plugin after module reset
-				// This ensures all dependencies are fresh
 				const fastifyModule = await import("fastify");
 				const FastifyFresh = fastifyModule.default;
 
-				// Explicitly re-import dependencies to ensure they're fresh
-				// Import performanceTracker first to ensure createPerformanceTracker is available
+				// Import performanceTracker to ensure createPerformanceTracker is available
 				const performanceTrackerModule = await import(
 					"../../src/utilities/metrics/performanceTracker"
 				);
-				// Verify the import worked
 				if (!performanceTrackerModule.createPerformanceTracker) {
 					throw new Error(
 						"createPerformanceTracker not found in performanceTracker module",
@@ -781,8 +771,7 @@ describe("Performance Plugin", () => {
 					});
 				});
 
-				// Register plugin after removing structuredClone so fallback is used
-				// Wrap in try-catch to catch any registration errors
+				// Register plugin - should use manual deep copy fallback
 				try {
 					await testApp.register(performancePluginWithoutClone);
 				} catch (error) {
@@ -791,10 +780,8 @@ describe("Performance Plugin", () => {
 					);
 				}
 
-				// Register route BEFORE calling ready() to ensure it's properly set up
-				// Use FastifyRequest from top-level import (types aren't affected by module reset)
+				// Register route BEFORE calling ready()
 				testApp.get("/test-deep-copy", async (request: FastifyRequest) => {
-					// Defensively check if perf is available before using it
 					if (request.perf) {
 						request.perf.trackDb(30);
 						request.perf.trackCacheHit();
@@ -803,17 +790,15 @@ describe("Performance Plugin", () => {
 					return { ok: true };
 				});
 
-				// Ensure app is ready and all hooks are registered
 				await testApp.ready();
 
-				// Make request and wait for it to complete
+				// Make request
 				const response = await testApp.inject({
 					method: "GET",
 					url: "/test-deep-copy",
 				});
 
 				// Verify response was successful
-				// If it failed, the response body will contain error details
 				if (response.statusCode !== 200) {
 					const body = response.json();
 					throw new Error(
@@ -822,7 +807,7 @@ describe("Performance Plugin", () => {
 				}
 				expect(response.statusCode).toBe(200);
 
-				// Get snapshots - the onSend hook should have fired and stored the snapshot
+				// Get snapshots - the onSend hook should have stored the snapshot using manual deep copy
 				const snapshots = testApp.getPerformanceSnapshots(1);
 
 				expect(snapshots.length).toBe(1);
@@ -861,16 +846,9 @@ describe("Performance Plugin", () => {
 
 				await testApp.close();
 			} finally {
-				// Restore structuredClone
-				if (originalStructuredClone !== undefined) {
-					Object.defineProperty(global, "structuredClone", {
-						value: originalStructuredClone,
-						writable: true,
-						configurable: true,
-						enumerable: true,
-					});
-				}
-				// Reset modules again to restore normal state
+				// Restore structuredClone to its original value using unstubAllGlobals
+				vi.unstubAllGlobals();
+				// Reset modules to restore normal state
 				vi.resetModules();
 			}
 		});
