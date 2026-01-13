@@ -482,8 +482,8 @@ describe("SMTPProvider", () => {
 		];
 
 		const bulkPromise = smtpProvider.sendBulkEmails(jobs);
-		// Advance timers to cover the delay
-		await vi.advanceTimersByTimeAsync(200);
+		// Run all pending timers to completion
+		await vi.runAllTimersAsync();
 		await bulkPromise;
 
 		expect(mockSendMail).toHaveBeenCalledTimes(2);
