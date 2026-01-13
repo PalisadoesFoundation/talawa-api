@@ -200,17 +200,32 @@ fi
 : $((CURRENT_STEP++))
 step $CURRENT_STEP $TOTAL_STEPS "Reading configuration from package.json..."
 
-# Parse Node.js version from package.json
-NODE_VERSION=$(jq -r '.engines.node // "lts"' package.json)
+# Extract Node.js version using safe parsing
+# The 'lts' default is used if engines.node is not specified
+NODE_VERSION=$(parse_package_json '.engines.node' "lts" "Node.js version (engines.node)" "false")
 
-# Validate Node.js version string for security
+# SECURITY: Validate raw NODE_VERSION before any processing
+# This prevents command injection via malicious package.json
 if ! validate_version_string "$NODE_VERSION" "Node.js version (engines.node)"; then
-    error "❌ Security validation failed for Node.js version from package.json"
+    error "❌ Security validation failed for Node.js version"
+    echo ""
+    info "The value in package.json engines.node field contains invalid characters."
+    echo ""
+    info "Current value: '$NODE_VERSION'"
+    echo ""
+    info "This could indicate:"
+    echo "  • Corrupted package.json file"
+    echo "  • Potentially malicious version string"
+    echo "  • Typo or formatting error"
     echo ""
     info "Troubleshooting steps:"
-    echo "  1. Check package.json engines.node field: jq '.engines.node' package.json"
-    echo "  2. Restore package.json: git checkout package.json"
-    echo "  3. Re-run this script"
+    echo "  1. Check the engines.node field in package.json:"
+    echo "     jq '.engines.node' package.json"
+    echo ""
+    echo "  2. Restore package.json if corrupted:"
+    echo "     git checkout package.json"
+    echo ""
+    echo "  3. Ensure version follows semver format (e.g., 18.0.0, ^18.0.0)"
     echo ""
     info "Report issues: https://github.com/PalisadoesFoundation/talawa-api/issues"
     exit 1
@@ -263,8 +278,8 @@ if ! validate_version_string "$CLEAN_NODE_VERSION" "cleaned Node.js version"; th
     exit 1
 fi
 
-# Extract pnpm version
-PNPM_FULL=$(jq -r '.packageManager // ""' package.json)
+# Extract pnpm version using safe parsing
+PNPM_FULL=$(parse_package_json '.packageManager' "" "pnpm version (packageManager)" "false")
 
 # Validate and extract pnpm version
 if [[ "$PNPM_FULL" == pnpm@* ]]; then
