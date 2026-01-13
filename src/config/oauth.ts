@@ -24,6 +24,9 @@ export function loadOAuthConfig(env = process.env): OAuthProvidersConfig {
 	if (validTimeout < 1000) {
 		validTimeout = 1000; // minimum 1 second
 	}
+	if (validTimeout > 60000) {
+		validTimeout = 60000; // maximum 60 seconds
+	}
 	const cfg: OAuthProvidersConfig = {
 		google: {
 			enabled: !!(

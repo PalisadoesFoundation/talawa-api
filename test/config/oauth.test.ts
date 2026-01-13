@@ -331,5 +331,19 @@ describe("OAuth Configuration", () => {
 			// Expecting it to fall back to minimum 1000ms
 			expect(config.google.requestTimeoutMs).toBe(1000);
 		});
+
+		it("should handle timeout value exceeding maximum limit", () => {
+			const mockEnv = {
+				GOOGLE_CLIENT_ID: "google-client-id",
+				GOOGLE_CLIENT_SECRET: "google-client-secret",
+				GOOGLE_REDIRECT_URI: "http://localhost:4000/auth/google/callback",
+				API_OAUTH_REQUEST_TIMEOUT_MS: "120000",
+			};
+
+			const config = loadOAuthConfig(mockEnv);
+			// Expecting it to be clamped to maximum 60000ms
+			expect(config.google.requestTimeoutMs).toBe(60000);
+			expect(config.github.requestTimeoutMs).toBe(60000);
+		});
 	});
 });
