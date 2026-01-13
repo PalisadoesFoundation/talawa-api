@@ -87,12 +87,7 @@ export const resolveCreatedAt = async (
 		if (currentUserOrganizationMembership.role !== "administrator") {
 			throw new TalawaGraphQLError({
 				extensions: {
-					code: "unauthorized_action_on_arguments_associated_resources",
-					issues: [
-						{
-							argumentPath: [],
-						},
-					],
+					code: "unauthorized_action",
 				},
 			});
 		}

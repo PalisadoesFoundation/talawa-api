@@ -19,7 +19,7 @@ export const resolveOrganization = async (
 
 	if (existingOrganization === undefined) {
 		ctx.log.error(
-			"Postgres select operation returned an empty array for an agenda item folder's organization id that isn't null.",
+			"Postgres select operation returned an empty array for an agenda folder's organization id that isn't null.",
 		);
 
 		throw new TalawaGraphQLError({

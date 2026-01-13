@@ -5,3 +5,4 @@ import "./event";
 import "./items";
 import "./updatedAt";
 import "./updater";
+import "./organization";

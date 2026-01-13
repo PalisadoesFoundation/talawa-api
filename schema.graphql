@@ -220,6 +220,9 @@ type AgendaFolder {
   """Name of the agenda folder."""
   name: String
 
+  """Organization which the agenda folder belongs to."""
+  organization: Organization
+
   """Sequence of agenda folder."""
   sequence: Int
 
@@ -2667,10 +2670,10 @@ input MutationCreateAgendaCategoryInput {
   name: String!
 }
 
-""""""
+"""Input type for creating a new agenda folder."""
 input MutationCreateAgendaFolderInput {
   """Description of Agenda Folder"""
-  description: String!
+  description: String
 
   """Global identifier of the event the agenda folder is associated to."""
   eventId: ID!
@@ -2680,11 +2683,6 @@ input MutationCreateAgendaFolderInput {
 
   """ID of the organization this folder belongs to."""
   organizationId: ID!
-
-  """
-  Global identifier of the agenda folder the agenda folder is contained within.
-  """
-  parentFolderId: ID
 
   """Sequence of the Agenda Folder."""
   sequence: Int!

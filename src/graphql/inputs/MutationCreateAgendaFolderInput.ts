@@ -16,11 +16,10 @@ export const MutationCreateAgendaFolderInput = builder
 		"MutationCreateAgendaFolderInput",
 	)
 	.implement({
-		description: "",
+		description: "Input type for creating a new agenda folder.",
 		fields: (t) => ({
 			description: t.string({
 				description: "Description of Agenda Folder",
-				required: true,
 			}),
 			eventId: t.id({
 				description:
@@ -34,10 +33,6 @@ export const MutationCreateAgendaFolderInput = builder
 			organizationId: t.id({
 				description: "ID of the organization this folder belongs to.",
 				required: true,
-			}),
-			parentFolderId: t.id({
-				description:
-					"Global identifier of the agenda folder the agenda folder is contained within.",
 			}),
 			sequence: t.int({
 				description: "Sequence of the Agenda Folder.",
