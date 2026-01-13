@@ -2,7 +2,7 @@
 set -eu
 
 # Preflight checks
-for cmd in fnm corepack pnpm; do
+for cmd in fnm corepack; do
   if ! command -v "$cmd" >/dev/null 2>&1; then
     echo "Error: Required command '$cmd' is not installed." >&2
     exit 1
@@ -31,5 +31,6 @@ fi
 # Install dependencies and tools
 fnm install
 fnm use
+eval "$(fnm env)"
 corepack enable
 pnpm install
