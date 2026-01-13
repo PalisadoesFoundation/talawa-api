@@ -2,6 +2,7 @@ import Fastify, { type FastifyRequest } from "fastify";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { EnvConfig } from "../../src/envConfigSchema";
 import performancePlugin from "../../src/fastifyPlugins/performance";
+import type { PerfSnapshot } from "../../src/utilities/metrics/performanceTracker";
 
 /**
  * Minimal test fixture for the performance plugin's required environment configuration.
@@ -735,6 +736,22 @@ describe("Performance Plugin", () => {
 				// This ensures all dependencies are fresh
 				const fastifyModule = await import("fastify");
 				const FastifyFresh = fastifyModule.default;
+
+				// Explicitly re-import dependencies to ensure they're fresh
+				// Import performanceTracker first to ensure createPerformanceTracker is available
+				const performanceTrackerModule = await import(
+					"../../src/utilities/metrics/performanceTracker"
+				);
+				// Verify the import worked
+				if (!performanceTrackerModule.createPerformanceTracker) {
+					throw new Error(
+						"createPerformanceTracker not found in performanceTracker module",
+					);
+				}
+
+				// Re-import fastify-plugin to ensure it's fresh
+				await import("fastify-plugin");
+
 				const { default: performancePluginWithoutClone } = await import(
 					"../../src/fastifyPlugins/performance"
 				);
@@ -752,15 +769,37 @@ describe("Performance Plugin", () => {
 					performancePluginTestEnvConfig as EnvConfig,
 				);
 
+				// Add a basic error handler to catch and log errors for debugging
+				testApp.setErrorHandler((error, request, reply) => {
+					const err = error instanceof Error ? error : new Error(String(error));
+					request.log.error({ error: err }, "Request error");
+					reply.status(500).send({
+						error: {
+							message: err.message,
+							stack: err.stack,
+						},
+					});
+				});
+
 				// Register plugin after removing structuredClone so fallback is used
-				await testApp.register(performancePluginWithoutClone);
+				// Wrap in try-catch to catch any registration errors
+				try {
+					await testApp.register(performancePluginWithoutClone);
+				} catch (error) {
+					throw new Error(
+						`Failed to register performance plugin: ${error instanceof Error ? error.message : String(error)}`,
+					);
+				}
 
 				// Register route BEFORE calling ready() to ensure it's properly set up
 				// Use FastifyRequest from top-level import (types aren't affected by module reset)
 				testApp.get("/test-deep-copy", async (request: FastifyRequest) => {
-					request.perf?.trackDb(30);
-					request.perf?.trackCacheHit();
-					request.perf?.trackCacheMiss();
+					// Defensively check if perf is available before using it
+					if (request.perf) {
+						request.perf.trackDb(30);
+						request.perf.trackCacheHit();
+						request.perf.trackCacheMiss();
+					}
 					return { ok: true };
 				});
 
@@ -774,6 +813,13 @@ describe("Performance Plugin", () => {
 				});
 
 				// Verify response was successful
+				// If it failed, the response body will contain error details
+				if (response.statusCode !== 200) {
+					const body = response.json();
+					throw new Error(
+						`Request failed with status ${response.statusCode}: ${JSON.stringify(body)}`,
+					);
+				}
 				expect(response.statusCode).toBe(200);
 
 				// Get snapshots - the onSend hook should have fired and stored the snapshot
@@ -827,6 +873,78 @@ describe("Performance Plugin", () => {
 				// Reset modules again to restore normal state
 				vi.resetModules();
 			}
+		});
+
+		it("should correctly perform manual deep copy of snapshot", async () => {
+			// Directly test the exported manualDeepCopySnapshot function
+			// This is simpler and more reliable than testing through the plugin
+			const { manualDeepCopySnapshot } = await import(
+				"../../src/fastifyPlugins/performance"
+			);
+
+			// Create a test snapshot
+			const originalSnapshot: PerfSnapshot = {
+				totalMs: 70,
+				totalOps: 3,
+				ops: {
+					db: { count: 2, ms: 50, max: 30 },
+					query: { count: 1, ms: 20, max: 20 },
+				},
+				slow: [
+					{ op: "db", ms: 30 },
+					{ op: "query", ms: 20 },
+				],
+				cacheHits: 5,
+				cacheMisses: 2,
+				hitRate: 5 / 7, // hits / (hits + misses)
+			};
+
+			// Perform manual deep copy
+			const copiedSnapshot = manualDeepCopySnapshot(originalSnapshot);
+
+			// Verify structure is correct
+			expect(copiedSnapshot).toHaveProperty("ops");
+			expect(copiedSnapshot).toHaveProperty("slow");
+			expect(copiedSnapshot).toHaveProperty("cacheHits");
+			expect(copiedSnapshot).toHaveProperty("cacheMisses");
+
+			// Verify ops is an object (not array)
+			expect(typeof copiedSnapshot.ops).toBe("object");
+			expect(Array.isArray(copiedSnapshot.ops)).toBe(false);
+
+			// Verify slow is an array
+			expect(Array.isArray(copiedSnapshot.slow)).toBe(true);
+
+			// Verify deep copy worked - modify original and check independence
+			const originalOps = { ...copiedSnapshot.ops };
+			copiedSnapshot.ops = {};
+
+			// Original snapshot should be unchanged
+			expect(originalSnapshot.ops).not.toEqual({});
+			expect(originalSnapshot.ops).toEqual(originalOps);
+
+			// Verify nested objects are also independent
+			const originalDbOps = originalSnapshot.ops.db;
+			if (originalDbOps) {
+				originalDbOps.count = 999;
+
+				// The copied snapshot's ops should not be affected
+				expect(copiedSnapshot.ops).toEqual({});
+				// Restore for final check
+				copiedSnapshot.ops = originalOps;
+				const copiedDbOps = copiedSnapshot.ops.db;
+				if (copiedDbOps) {
+					expect(copiedDbOps.count).not.toBe(999);
+					expect(copiedDbOps.count).toBe(2);
+				}
+			}
+
+			// Verify slow array is independent
+			const originalSlow = [...originalSnapshot.slow];
+			originalSnapshot.slow[0] = { op: "modified", ms: 999 };
+
+			expect(copiedSnapshot.slow).not.toEqual(originalSnapshot.slow);
+			expect(copiedSnapshot.slow).toEqual(originalSlow);
 		});
 	});
 });

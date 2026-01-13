@@ -10,7 +10,10 @@ import {
 	type WorkerResult,
 } from "./eventGeneration/eventGenerationPipeline";
 import { runMetricsAggregationWorker } from "./metrics/metricsAggregationWorker";
-import type { MetricsAggregationOptions } from "./metrics/types";
+import type {
+	MetricsAggregationOptions,
+	MetricsAggregationResult,
+} from "./metrics/types";
 
 let materializationTask: cron.ScheduledTask | undefined;
 let cleanupTask: cron.ScheduledTask | undefined;
@@ -310,6 +313,8 @@ export async function runMetricsAggregationWorkerSafely(
 	const startTime = Date.now();
 	logger.info("Starting metrics aggregation worker run");
 
+	let result: MetricsAggregationResult | undefined;
+
 	try {
 		// Get configuration from validated environment config
 		// Values are already validated and typed by the schema
@@ -319,7 +324,7 @@ export async function runMetricsAggregationWorkerSafely(
 			slowThresholdMs: fastify.envConfig.METRICS_SLOW_THRESHOLD_MS ?? 200,
 		};
 
-		const result = runMetricsAggregationWorker(
+		result = runMetricsAggregationWorker(
 			() => fastify.getPerformanceSnapshots(),
 			logger,
 			options,
@@ -328,15 +333,32 @@ export async function runMetricsAggregationWorkerSafely(
 		const duration = Date.now() - startTime;
 
 		// Check if aggregation failed (error field present)
-		if (result.error) {
+		if (result?.error) {
 			logger.error(
 				{
 					duration: `${duration}ms`,
-					snapshotsProcessed: result.snapshotsProcessed,
-					aggregationDuration: `${result.aggregationDurationMs}ms`,
+					snapshotsProcessed: result.snapshotsProcessed ?? 0,
+					aggregationDuration:
+						result.aggregationDurationMs !== undefined
+							? `${result.aggregationDurationMs}ms`
+							: `${duration}ms`,
 					error:
-						result.error instanceof Error ? result.error.message : result.error,
+						result.error instanceof Error
+							? result.error.message
+							: String(result.error),
 					stack: result.error instanceof Error ? result.error.stack : undefined,
+				},
+				"Metrics aggregation worker failed",
+			);
+			return;
+		}
+
+		// If result is undefined, this shouldn't happen but handle it defensively
+		if (!result) {
+			logger.error(
+				{
+					duration: `${duration}ms`,
+					error: "Metrics aggregation worker returned undefined result",
 				},
 				"Metrics aggregation worker failed",
 			);
@@ -358,12 +380,22 @@ export async function runMetricsAggregationWorkerSafely(
 			"Metrics aggregation worker completed successfully",
 		);
 	} catch (error) {
+		// This catch block handles exceptions thrown BEFORE result is assigned
+		// or any other unexpected errors
 		const duration = Date.now() - startTime;
+		const errorMessage = error instanceof Error ? error.message : String(error);
+		const errorStack = error instanceof Error ? error.stack : undefined;
+
 		logger.error(
 			{
 				duration: `${duration}ms`,
-				error: error instanceof Error ? error.message : "Unknown error",
-				stack: error instanceof Error ? error.stack : undefined,
+				snapshotsProcessed: result?.snapshotsProcessed ?? 0,
+				aggregationDuration:
+					result?.aggregationDurationMs !== undefined
+						? `${result.aggregationDurationMs}ms`
+						: `${duration}ms`,
+				error: errorMessage,
+				stack: errorStack,
 			},
 			"Metrics aggregation worker failed",
 		);
@@ -404,26 +436,41 @@ export async function healthCheck(): Promise<{
 	try {
 		const status = getBackgroundWorkerStatus();
 
+		// Check if workers are running
 		if (!status.isRunning) {
 			return {
 				status: "unhealthy",
 				details: {
 					reason: "Background workers not running",
-					...status,
+					isRunning: status.isRunning,
+					materializationSchedule: status.materializationSchedule,
+					cleanupSchedule: status.cleanupSchedule,
+					metricsSchedule: status.metricsSchedule,
+					nextMaterializationRun: status.nextMaterializationRun,
+					nextCleanupRun: status.nextCleanupRun,
 				},
 			};
 		}
 
+		// Workers are running and status check succeeded
 		return {
 			status: "healthy",
-			details: status,
+			details: {
+				isRunning: status.isRunning,
+				materializationSchedule: status.materializationSchedule,
+				cleanupSchedule: status.cleanupSchedule,
+				metricsSchedule: status.metricsSchedule,
+				nextMaterializationRun: status.nextMaterializationRun,
+				nextCleanupRun: status.nextCleanupRun,
+			},
 		};
 	} catch (error) {
+		// Return unhealthy status when getBackgroundWorkerStatus throws
 		return {
 			status: "unhealthy",
 			details: {
 				reason: "Health check failed",
-				error: error instanceof Error ? error.message : "Unknown error",
+				error: error instanceof Error ? error.message : String(error),
 			},
 		};
 	}

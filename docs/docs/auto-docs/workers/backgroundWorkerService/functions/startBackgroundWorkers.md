@@ -6,7 +6,7 @@
 
 > **startBackgroundWorkers**(`drizzleClient`, `logger`, `fastify?`): `Promise`\<`void`\>
 
-Defined in: [src/workers/backgroundWorkerService.ts:51](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/workers/backgroundWorkerService.ts#L51)
+Defined in: [src/workers/backgroundWorkerService.ts:54](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/workers/backgroundWorkerService.ts#L54)
 
 Initializes and starts all background workers, scheduling them to run at their configured intervals.
 

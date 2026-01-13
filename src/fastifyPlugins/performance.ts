@@ -34,6 +34,24 @@ declare module "fastify" {
 }
 
 /**
+ * Manual deep copy implementation for performance snapshots.
+ * Creates new objects for ops and slow arrays to ensure full immutability.
+ * Exported for testing purposes to allow direct testing of the fallback path.
+ *
+ * @param snap - The snapshot to deep clone
+ * @returns A deep-cloned copy of the snapshot
+ */
+export const manualDeepCopySnapshot = (snap: PerfSnapshot): PerfSnapshot => {
+	return {
+		...snap,
+		ops: Object.fromEntries(
+			Object.entries(snap.ops).map(([key, value]) => [key, { ...value }]),
+		),
+		slow: snap.slow.map((item) => ({ ...item })),
+	};
+};
+
+/**
  * Fastify plugin that adds performance tracking to all requests.
  * - Attaches a performance tracker to each request
  * - Adds Server-Timing headers to responses
@@ -53,7 +71,7 @@ const perfPlugin = async (app: FastifyInstance) => {
 
 	/**
 	 * Deep clones a performance snapshot to prevent external mutation of nested structures.
-	 * Creates new objects for ops and slow arrays to ensure full immutability.
+	 * Uses structuredClone when available (Node.js 17+), falls back to manual deep copy.
 	 *
 	 * @param snap - The snapshot to deep clone
 	 * @returns A deep-cloned copy of the snapshot
@@ -66,13 +84,7 @@ const perfPlugin = async (app: FastifyInstance) => {
 		}
 
 		// Manual deep copy fallback
-		return {
-			...snap,
-			ops: Object.fromEntries(
-				Object.entries(snap.ops).map(([key, value]) => [key, { ...value }]),
-			),
-			slow: snap.slow.map((item) => ({ ...item })),
-		};
+		return manualDeepCopySnapshot(snap);
 	};
 
 	/**
