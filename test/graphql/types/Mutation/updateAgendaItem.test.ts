@@ -1033,7 +1033,7 @@ suite("Mutation updateAgendaItem", () => {
 			await server.drizzleClient
 				.update(agendaFoldersTable)
 				.set({
-					isAgendaItemFolder: false,
+					isDefaultFolder: false,
 				})
 				.where(eq(agendaFoldersTable.id, agendaItem.folderId))
 				.execute();
