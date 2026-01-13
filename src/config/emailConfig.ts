@@ -11,20 +11,10 @@ const schema = Type.Pick(envConfigSchema, [
 	"API_EMAIL_PROVIDER",
 ]);
 
-const envConfig = envSchema<Static<typeof schema>>({
+export type EmailEnvConfig = Static<typeof schema>;
+
+export const rawEmailEnvConfig = envSchema<EmailEnvConfig>({
 	ajv: envSchemaAjv,
 	dotenv: true,
 	schema,
 });
-
-/**
- * Email configuration from environment variables
- */
-export const emailConfig = {
-	region: envConfig.AWS_SES_REGION || "ap-south-1",
-	fromEmail: envConfig.AWS_SES_FROM_EMAIL,
-	fromName: envConfig.AWS_SES_FROM_NAME || "Talawa",
-	accessKeyId: envConfig.AWS_ACCESS_KEY_ID,
-	secretAccessKey: envConfig.AWS_SECRET_ACCESS_KEY,
-	provider: envConfig.API_EMAIL_PROVIDER,
-};

@@ -1,4 +1,3 @@
-import crypto from "node:crypto";
 import { promises as fs } from "node:fs";
 import path, { resolve } from "node:path";
 import process from "node:process";
@@ -8,6 +7,26 @@ import { emailSetup } from "./emailSetup";
 import { envFileBackup } from "./envFileBackup/envFileBackup";
 import { promptConfirm, promptInput, promptList } from "./promptHelpers";
 import { updateEnvVariable } from "./updateEnvVariable";
+import {
+	generateJwtSecret,
+	validateCloudBeaverAdmin,
+	validateCloudBeaverPassword,
+	validateCloudBeaverURL,
+	validateEmail,
+	validatePort,
+	validateURL,
+} from "./validators";
+
+// Re-export validators for backward compatibility
+export {
+	generateJwtSecret,
+	validateCloudBeaverAdmin,
+	validateCloudBeaverPassword,
+	validateCloudBeaverURL,
+	validateEmail,
+	validatePort,
+	validateURL,
+} from "./validators";
 
 // Define a union type of all allowed environment keys
 export type SetupKey =
@@ -252,80 +271,7 @@ async function restoreLatestBackup(): Promise<void> {
 		throw readError;
 	}
 }
-export function generateJwtSecret(): string {
-	try {
-		return crypto.randomBytes(64).toString("hex");
-	} catch (err) {
-		console.error(
-			"⚠️ Warning: Permission denied while generating JWT secret. Ensure the process has sufficient filesystem access.",
-			err,
-		);
-		throw new Error("Failed to generate JWT secret");
-	}
-}
-export function validateURL(input: string): true | string {
-	try {
-		const url = new URL(input);
-		const protocol = url.protocol.toLowerCase();
-		if (protocol !== "http:" && protocol !== "https:") {
-			return "Please enter a valid URL with http:// or https:// protocol.";
-		}
-		return true;
-	} catch (_error) {
-		return "Please enter a valid URL.";
-	}
-}
-export function validatePort(input: string): true | string {
-	const portNumber = Number(input);
-	if (Number.isNaN(portNumber) || portNumber <= 0 || portNumber > 65535) {
-		return "Please enter a valid port number (1-65535).";
-	}
-	return true;
-}
-export function validateEmail(input: string): true | string {
-	if (!input.trim()) {
-		return "Email cannot be empty.";
-	}
-	if (input.length > 254) {
-		return "Email is too long.";
-	}
-	const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-	if (!emailRegex.test(input)) {
-		return "Invalid email format. Please enter a valid email address.";
-	}
-	return true;
-}
-export function validateCloudBeaverAdmin(input: string): true | string {
-	if (!input) return "Admin name is required";
-	if (input.length < 3) return "Admin name must be at least 3 characters long";
-	if (!/^[a-zA-Z0-9_]+$/.test(input))
-		return "Admin name can only contain letters, numbers, and underscores";
-	return true;
-}
-export function validateCloudBeaverPassword(input: string): true | string {
-	if (!input) return "Password is required";
-	if (input.length < 8) return "Password must be at least 8 characters long";
-	if (!/[A-Za-z]/.test(input) || !/[0-9]/.test(input)) {
-		return "Password must contain both letters and numbers";
-	}
-	return true;
-}
-export function validateCloudBeaverURL(input: string): true | string {
-	if (!input) return "Server URL is required";
-	try {
-		const url = new URL(input);
-		if (!["http:", "https:"].includes(url.protocol)) {
-			return "URL must use HTTP or HTTPS protocol";
-		}
-		const port = url.port || (url.protocol === "https:" ? "443" : "80");
-		if (!/^\d+$/.test(port) || Number.parseInt(port, 10) > 65535) {
-			return "Invalid port in URL";
-		}
-		return true;
-	} catch {
-		return "Invalid URL format";
-	}
-}
+
 export function isBooleanString(input: unknown): input is "true" | "false" {
 	return typeof input === "string" && (input === "true" || input === "false");
 }
