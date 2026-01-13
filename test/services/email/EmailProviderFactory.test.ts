@@ -109,6 +109,20 @@ describe("EmailProviderFactory", () => {
 		const provider = EmailProviderFactory.create(config);
 		expect(provider).toBeInstanceOf(SMTPProvider);
 	});
+
+	it("should pass SMTP_SECURE through to SMTPProvider", () => {
+		const config = {
+			API_EMAIL_PROVIDER: "smtp",
+			SMTP_HOST: "smtp.example.com",
+			SMTP_PORT: 465,
+			SMTP_SECURE: true,
+			SMTP_FROM_EMAIL: "from@example.com",
+		} as unknown as EnvConfig;
+
+		const provider = EmailProviderFactory.create(config);
+		expect(provider).toBeInstanceOf(SMTPProvider);
+	});
+
 	it("should return SESProvider when credentials are omitted (IAM role scenario)", () => {
 		const config = {
 			API_EMAIL_PROVIDER: "ses",

@@ -98,7 +98,7 @@ describe("SMTPProvider", () => {
 		).resolves.toEqual(
 			expect.objectContaining({
 				success: false,
-				error: "SMTP_PORT must be an integer between 1 and 65535",
+				error: "SMTP_PORT must be provided",
 			}),
 		);
 	});

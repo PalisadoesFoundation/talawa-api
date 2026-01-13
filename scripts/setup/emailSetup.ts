@@ -10,7 +10,7 @@ import { type SetupAnswers, validateEmail } from "./setup";
 /**
  * Interactive setup for email configuration.
  *
- * Prompts the user to select an email provider (currently supports SES) and configure details.
+ * Prompts the user to select an email provider (SES or SMTP) and configure details.
  * Can optionally send a test email to verify credentials.
  *
  * @param answers - The accumulated setup answers object.

@@ -148,9 +148,12 @@ export class SMTPProvider implements IEmailProvider {
 	}
 
 	/**
-	 * Send multiple emails
+	 * Send multiple emails in bulk with rate limiting.
+	 * Accepts sparse arrays (nullish values are skipped).
 	 */
-	async sendBulkEmails(jobs: EmailJob[]): Promise<EmailResult[]> {
+	async sendBulkEmails(
+		jobs: (EmailJob | undefined | null)[],
+	): Promise<EmailResult[]> {
 		const results: EmailResult[] = [];
 		for (const [i, job] of jobs.entries()) {
 			if (!job) continue;
