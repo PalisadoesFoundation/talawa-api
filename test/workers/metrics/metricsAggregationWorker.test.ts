@@ -519,6 +519,9 @@ describe("Metrics Aggregation Worker", () => {
 		it("should handle slow operations with invalid ms values", () => {
 			const snapshots = [
 				createTestSnapshot({
+					ops: {
+						db: { count: 1, ms: 50, max: 50 },
+					},
 					slow: [
 						{ op: "db", ms: 250 },
 						{ op: "db", ms: Number.NaN },
@@ -532,6 +535,8 @@ describe("Metrics Aggregation Worker", () => {
 			const dbOp = result.metrics.operations.db;
 
 			// Only valid slow operations should be used for percentiles
+			// The valid slow op (250) should be used along with max value (50)
+			expect(dbOp).toBeDefined();
 			expect(dbOp?.p95Ms).toBeGreaterThanOrEqual(0);
 		});
 
