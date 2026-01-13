@@ -24,7 +24,7 @@ describe("Setup -> caddySetup", () => {
 			{ CADDY_TALAWA_API_PORT: "3000" },
 		];
 
-		const promptMock = vi.spyOn(inquirer, "prompt");
+		const promptMock = (vi.spyOn(inquirer, "prompt") as any) as any;
 		for (const resp of mockResponses) {
 			promptMock.mockResolvedValueOnce(resp);
 		}

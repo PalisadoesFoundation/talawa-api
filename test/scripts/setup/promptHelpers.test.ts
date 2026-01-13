@@ -20,7 +20,7 @@ describe("promptHelpers", () => {
 
 	describe("promptInput", () => {
 		it("should return user input for basic usage", async () => {
-			vi.spyOn(inquirer, "prompt").mockResolvedValueOnce({
+			((vi.spyOn(inquirer, "prompt") as any) as any).mockResolvedValueOnce({
 				testName: "user input value",
 			});
 
@@ -39,7 +39,7 @@ describe("promptHelpers", () => {
 		});
 
 		it("should use default value when provided", async () => {
-			vi.spyOn(inquirer, "prompt").mockResolvedValueOnce({
+			((vi.spyOn(inquirer, "prompt") as any) as any).mockResolvedValueOnce({
 				testName: "default value",
 			});
 
@@ -67,7 +67,7 @@ describe("promptHelpers", () => {
 				return true;
 			};
 
-			vi.spyOn(inquirer, "prompt").mockResolvedValueOnce({
+			((vi.spyOn(inquirer, "prompt") as any) as any).mockResolvedValueOnce({
 				testName: "valid input",
 			});
 
@@ -91,7 +91,7 @@ describe("promptHelpers", () => {
 		});
 
 		it("should throw error when response is not a string (runtime type guard)", async () => {
-			vi.spyOn(inquirer, "prompt").mockResolvedValueOnce({
+			((vi.spyOn(inquirer, "prompt") as any) as any).mockResolvedValueOnce({
 				testName: 123,
 			});
 
@@ -101,7 +101,7 @@ describe("promptHelpers", () => {
 		});
 
 		it("should throw error when response is undefined (runtime type guard)", async () => {
-			vi.spyOn(inquirer, "prompt").mockResolvedValueOnce({});
+			((vi.spyOn(inquirer, "prompt") as any) as any).mockResolvedValueOnce({});
 
 			await expect(promptInput("testName", "Enter value:")).rejects.toThrow(
 				'Expected string response for prompt "testName"',
@@ -109,7 +109,7 @@ describe("promptHelpers", () => {
 		});
 
 		it("should propagate inquirer errors (e.g., user cancellation)", async () => {
-			vi.spyOn(inquirer, "prompt").mockRejectedValueOnce(
+			((vi.spyOn(inquirer, "prompt") as any) as any).mockRejectedValueOnce(
 				new Error("User force closed the prompt"),
 			);
 
@@ -121,7 +121,7 @@ describe("promptHelpers", () => {
 
 	describe("promptList", () => {
 		it("should return selected choice for basic usage", async () => {
-			vi.spyOn(inquirer, "prompt").mockResolvedValueOnce({
+			((vi.spyOn(inquirer, "prompt") as any) as any).mockResolvedValueOnce({
 				testChoice: "option2",
 			});
 
@@ -144,7 +144,7 @@ describe("promptHelpers", () => {
 		});
 
 		it("should use default value when provided", async () => {
-			vi.spyOn(inquirer, "prompt").mockResolvedValueOnce({
+			((vi.spyOn(inquirer, "prompt") as any) as any).mockResolvedValueOnce({
 				testChoice: "option1",
 			});
 
@@ -168,7 +168,7 @@ describe("promptHelpers", () => {
 		});
 
 		it("should work with empty choices array", async () => {
-			vi.spyOn(inquirer, "prompt").mockResolvedValueOnce({
+			((vi.spyOn(inquirer, "prompt") as any) as any).mockResolvedValueOnce({
 				testChoice: "",
 			});
 
@@ -178,7 +178,7 @@ describe("promptHelpers", () => {
 		});
 
 		it("should throw error when response is not a string (runtime type guard)", async () => {
-			vi.spyOn(inquirer, "prompt").mockResolvedValueOnce({
+			((vi.spyOn(inquirer, "prompt") as any) as any).mockResolvedValueOnce({
 				testChoice: null,
 			});
 
@@ -188,7 +188,7 @@ describe("promptHelpers", () => {
 		});
 
 		it("should throw error when response key is missing (runtime type guard)", async () => {
-			vi.spyOn(inquirer, "prompt").mockResolvedValueOnce({
+			((vi.spyOn(inquirer, "prompt") as any) as any).mockResolvedValueOnce({
 				wrongKey: "value",
 			});
 
@@ -198,7 +198,7 @@ describe("promptHelpers", () => {
 		});
 
 		it("should propagate inquirer errors", async () => {
-			vi.spyOn(inquirer, "prompt").mockRejectedValueOnce(
+			((vi.spyOn(inquirer, "prompt") as any) as any).mockRejectedValueOnce(
 				new Error("Prompt was interrupted"),
 			);
 
@@ -210,7 +210,7 @@ describe("promptHelpers", () => {
 
 	describe("promptConfirm", () => {
 		it("should return true when user confirms", async () => {
-			vi.spyOn(inquirer, "prompt").mockResolvedValueOnce({
+			((vi.spyOn(inquirer, "prompt") as any) as any).mockResolvedValueOnce({
 				confirmed: true,
 			});
 
@@ -228,7 +228,7 @@ describe("promptHelpers", () => {
 		});
 
 		it("should return false when user denies", async () => {
-			vi.spyOn(inquirer, "prompt").mockResolvedValueOnce({
+			((vi.spyOn(inquirer, "prompt") as any) as any).mockResolvedValueOnce({
 				confirmed: false,
 			});
 
@@ -238,7 +238,7 @@ describe("promptHelpers", () => {
 		});
 
 		it("should use default true when provided", async () => {
-			vi.spyOn(inquirer, "prompt").mockResolvedValueOnce({
+			((vi.spyOn(inquirer, "prompt") as any) as any).mockResolvedValueOnce({
 				confirmed: true,
 			});
 
@@ -256,7 +256,7 @@ describe("promptHelpers", () => {
 		});
 
 		it("should use default false when provided", async () => {
-			vi.spyOn(inquirer, "prompt").mockResolvedValueOnce({
+			((vi.spyOn(inquirer, "prompt") as any) as any).mockResolvedValueOnce({
 				confirmed: false,
 			});
 
@@ -274,7 +274,7 @@ describe("promptHelpers", () => {
 		});
 
 		it("should throw error when response is not a boolean (runtime type guard)", async () => {
-			vi.spyOn(inquirer, "prompt").mockResolvedValueOnce({
+			((vi.spyOn(inquirer, "prompt") as any) as any).mockResolvedValueOnce({
 				confirmed: "yes",
 			});
 
@@ -284,7 +284,7 @@ describe("promptHelpers", () => {
 		});
 
 		it("should throw error when response is null (runtime type guard)", async () => {
-			vi.spyOn(inquirer, "prompt").mockResolvedValueOnce({
+			((vi.spyOn(inquirer, "prompt") as any) as any).mockResolvedValueOnce({
 				confirmed: null,
 			});
 
@@ -294,7 +294,7 @@ describe("promptHelpers", () => {
 		});
 
 		it("should throw error when response key is missing (runtime type guard)", async () => {
-			vi.spyOn(inquirer, "prompt").mockResolvedValueOnce({});
+			((vi.spyOn(inquirer, "prompt") as any) as any).mockResolvedValueOnce({});
 
 			await expect(promptConfirm("confirmed", "Are you sure?")).rejects.toThrow(
 				'Expected boolean response for prompt "confirmed"',
@@ -302,7 +302,7 @@ describe("promptHelpers", () => {
 		});
 
 		it("should propagate inquirer errors (user cancellation)", async () => {
-			vi.spyOn(inquirer, "prompt").mockRejectedValueOnce(
+			((vi.spyOn(inquirer, "prompt") as any) as any).mockRejectedValueOnce(
 				new Error("User cancelled"),
 			);
 

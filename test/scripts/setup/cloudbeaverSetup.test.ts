@@ -1,4 +1,4 @@
-import { afterEach, describe, expect, it, type MockInstance, vi } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 
 vi.mock("inquirer");
 
@@ -21,9 +21,11 @@ describe("Setup -> cloudbeaverSetup", () => {
 	});
 
 	it("should prompt the user for CloudBeaver configuration and update process.env", async () => {
+		vi.spyOn(fs.promises, "access").mockResolvedValue(undefined);
 		const mockResponses = [
 			{ envReconfigure: true },
 			{ CI: "false" },
+			{ useDefaultApi: true },
 			{ useDefaultMinio: true },
 			{ useDefaultCloudbeaver: false },
 			{ CLOUDBEAVER_ADMIN_NAME: "mocked-admin" },
@@ -34,11 +36,12 @@ describe("Setup -> cloudbeaverSetup", () => {
 			{ CLOUDBEAVER_SERVER_URL: "https://127.0.0.1:8080" },
 			{ useDefaultPostgres: true },
 			{ useDefaultCaddy: true },
-			{ useDefaultApi: true },
 			{ API_ADMINISTRATOR_USER_EMAIL_ADDRESS: "test@email.com" },
+			{ setupReCaptcha: false },
+			{ configureEmail: false },
 		];
 
-		const promptMock = vi.spyOn(inquirer, "prompt");
+		const promptMock = (vi.spyOn(inquirer, "prompt") as any) as any;
 
 		for (const response of mockResponses) {
 			promptMock.mockResolvedValueOnce(response);
@@ -64,30 +67,29 @@ describe("Setup -> cloudbeaverSetup", () => {
 		const processExitSpy = vi
 			.spyOn(process, "exit")
 			.mockImplementation(() => undefined as never);
-		vi.spyOn(fs, "existsSync").mockImplementation((path) => {
-			if (path === ".backup") return true;
-			return false;
-		});
-		(
-			vi.spyOn(fs, "readdirSync") as unknown as MockInstance<
-				(path: fs.PathLike) => string[]
-			>
-		).mockImplementation(() => [".env.1600000000", ".env.1700000000"]);
-		const fsCopyFileSyncSpy = vi
-			.spyOn(fs, "copyFileSync")
-			.mockImplementation(() => undefined);
+
+		// Mock fs.promises methods used in restoreLatestBackup
+		vi.spyOn(fs.promises, "access").mockResolvedValue(undefined);
+		vi.spyOn(fs.promises, "readdir").mockResolvedValue([
+			".env.1600000000",
+			".env.1700000000",
+		] as any);
+		const fsCopyFileSpy = vi
+			.spyOn(fs.promises, "copyFile")
+			.mockResolvedValue(undefined);
+		vi.spyOn(fs.promises, "rename").mockResolvedValue(undefined);
 
 		const mockError = new Error("Prompt failed");
-		vi.spyOn(inquirer, "prompt").mockRejectedValueOnce(mockError);
+		(vi.spyOn(inquirer, "prompt") as any).mockRejectedValueOnce(mockError);
 
 		const consoleErrorSpy = vi.spyOn(console, "error");
 
 		await cloudbeaverSetup({});
 
 		expect(consoleErrorSpy).toHaveBeenCalledWith(mockError);
-		expect(fsCopyFileSyncSpy).toHaveBeenCalledWith(
+		expect(fsCopyFileSpy).toHaveBeenCalledWith(
 			".backup/.env.1700000000",
-			".env",
+			".env.tmp",
 		);
 		expect(processExitSpy).toHaveBeenCalledWith(1);
 

@@ -35,11 +35,11 @@ import fs, { promises as fsPromises } from "node:fs";
 import dotenv from "dotenv";
 import inquirer from "inquirer";
 import { envFileBackup } from "scripts/setup/envFileBackup/envFileBackup";
-import { type SetupAnswers, setup, __test__resetState } from "scripts/setup/setup";
+import { setup, __test__resetState } from "scripts/setup/setup";
 import * as SetupModule from "scripts/setup/setup";
 
 vi.mock("node:fs", async (importOriginal) => {
-	const actual = await importOriginal<typeof import("node:fs")>();
+	const actual = await importOriginal<any>();
 	const access = vi.fn(actual.promises.access);
 	const copyFile = vi.fn(actual.promises.copyFile);
 	const readFile = vi.fn(actual.promises.readFile);
@@ -124,7 +124,7 @@ describe("Setup", () => {
 
 		// Mock fs.promises.access to indicate .env does NOT exist to avoid envReconfigure prompt
 		// This is important because other parallel tests might have created a .env file
-		const accessSpy = vi.spyOn(fsPromises, "access").mockImplementation(async (path) => {
+		vi.spyOn(fsPromises, "access").mockImplementation(async (path) => {
 			const pathStr = String(path);
 			if (pathStr === ".env" || pathStr === "./.env") {
 				const err = new Error("File not found") as NodeJS.ErrnoException;
@@ -135,8 +135,8 @@ describe("Setup", () => {
 			return undefined;
 		});
 
-		const promptMock = vi.spyOn(inquirer, "prompt");
-		promptMock.mockImplementation(async (questions: any) => {
+		const promptMock = (vi.spyOn(inquirer, "prompt") as any);
+		promptMock.mockImplementation(async (questions: any): Promise<any> => {
 			const name = questions[0].name;
 			const response = mockResponses.shift();
 			if (response) return response;
@@ -207,8 +207,8 @@ describe("Setup", () => {
 			{ configureEmail: false },
 		];
 
-		const promptMock = vi.spyOn(inquirer, "prompt");
-		promptMock.mockImplementation(async (questions: any) => {
+		const promptMock = (vi.spyOn(inquirer, "prompt") as any);
+		promptMock.mockImplementation(async (questions: any): Promise<any> => {
 			const name = questions[0].name;
 			const response = mockResponses.shift();
 			if (response) return response;
@@ -309,7 +309,7 @@ describe("Setup", () => {
 			throw new Error("process.exit called");
 		});
 
-		vi.spyOn(inquirer, "prompt").mockResolvedValueOnce({
+		(vi.spyOn(inquirer, "prompt") as any).mockResolvedValueOnce({
 			envReconfigure: false,
 		});
 
@@ -346,7 +346,7 @@ describe("Setup", () => {
 
 		// Mock fs.promises methods for restoreLatestBackup
 		const fsCopyFileSpy = vi.spyOn(fsPromises, "copyFile").mockResolvedValue(undefined);
-		const fsRenameSpy = vi.spyOn(fsPromises, "rename").mockResolvedValue(undefined);
+		vi.spyOn(fsPromises, "rename").mockResolvedValue(undefined);
 		const fsAccessSpy = vi
 			.spyOn(fsPromises, "access")
 			.mockImplementation(async (path) => {
@@ -374,8 +374,8 @@ describe("Setup", () => {
 			ciPromptReached = resolve;
 		});
 
-		const inquirerPromptSpy = vi.spyOn(inquirer, "prompt");
-		inquirerPromptSpy.mockImplementation(async (questions: any) => {
+		const inquirerPromptSpy = (vi.spyOn(inquirer, "prompt") as any);
+		inquirerPromptSpy.mockImplementation(async (questions: any): Promise<any> => {
 			const name = questions[0].name;
 			if (name === "envReconfigure") return { envReconfigure: true };
 			if (name === "shouldBackup") return { shouldBackup: true };
@@ -465,8 +465,8 @@ describe("Setup", () => {
 			throw { code: "ENOENT" };
 		});
 		const fsReaddirSpy = vi.spyOn(fsPromises, "readdir").mockRejectedValue(new Error("Failed to read backup directory"));
-		const fsCopyFileSpy = vi.spyOn(fsPromises, "copyFile").mockResolvedValue(undefined);
-		const fsRenameSpy = vi.spyOn(fsPromises, "rename").mockRejectedValue(new Error("Rename failed"));
+		vi.spyOn(fsPromises, "copyFile").mockResolvedValue(undefined);
+		vi.spyOn(fsPromises, "rename").mockRejectedValue(new Error("Rename failed"));
 		// Mock envFileBackup to return true (backup was created)
 		vi.mocked(envFileBackup).mockResolvedValue(true);
 
@@ -480,7 +480,7 @@ describe("Setup", () => {
 			ciPromptReached = resolve;
 		});
 
-		vi.spyOn(inquirer, "prompt").mockImplementation(async (questions: any) => {
+		(vi.spyOn(inquirer, "prompt") as any).mockImplementation(async (questions: any): Promise<any> => {
 			const name = questions[0].name;
 			if (name === "envReconfigure") return { envReconfigure: true };
 			if (name === "shouldBackup") return { shouldBackup: true };
@@ -567,7 +567,6 @@ describe("Setup", () => {
 		const {
 			__test__restoreBackup,
 			__test__setCleanupInProgress,
-			__test__resetState,
 		} = await import("scripts/setup/setup");
 
 		// Set cleanupInProgress to true to simulate concurrent cleanup attempt
@@ -611,7 +610,7 @@ describe("Setup", () => {
 		fs.writeFileSync(".env", "DUMMY=content");
 
 		vi.spyOn(fs, "existsSync").mockReturnValue(true);
-		vi.spyOn(inquirer, "prompt").mockResolvedValue({
+		(vi.spyOn(inquirer, "prompt") as any).mockResolvedValue({
 			envReconfigure: true,
 			CI: "true",
 			useDefaultApi: true,
@@ -638,7 +637,7 @@ describe("Setup", () => {
 		fs.writeFileSync(".env", "DUMMY=content");
 
 		vi.spyOn(fs, "existsSync").mockReturnValue(true);
-		vi.spyOn(inquirer, "prompt").mockResolvedValue({
+		(vi.spyOn(inquirer, "prompt") as any).mockResolvedValue({
 			envReconfigure: true,
 			CI: "true",
 			useDefaultApi: true,
@@ -684,7 +683,7 @@ describe("Setup", () => {
 				return originalReadFileSync(path, options);
 			});
 
-		vi.spyOn(inquirer, "prompt").mockResolvedValue({
+		(vi.spyOn(inquirer, "prompt") as any).mockResolvedValue({
 			CI: "false",
 			useDefaultApi: true,
 			useDefaultMinio: true,
@@ -714,7 +713,7 @@ describe("Setup", () => {
 
 		vi.spyOn(fs, "existsSync").mockReturnValue(true);
 
-		const promptMock = vi.spyOn(inquirer, "prompt");
+		const promptMock = (vi.spyOn(inquirer, "prompt") as any);
 		promptMock.mockResolvedValueOnce({ envReconfigure: true });
 		promptMock.mockResolvedValueOnce({ shouldBackup: true });
 		promptMock.mockResolvedValueOnce({ CI: "false" });
@@ -755,7 +754,7 @@ describe("Setup", () => {
 
 		vi.spyOn(fs, "existsSync").mockReturnValue(true);
 
-		const promptMock = vi.spyOn(inquirer, "prompt");
+		const promptMock = (vi.spyOn(inquirer, "prompt") as any);
 		promptMock.mockResolvedValueOnce({ envReconfigure: true });
 		promptMock.mockResolvedValueOnce({ shouldBackup: false });
 		promptMock.mockResolvedValueOnce({ CI: "false" });
@@ -1177,7 +1176,7 @@ describe("Validation Helpers", () => {
 		});
 
 		it("prompts for sampling ratio when observability is enabled", async () => {
-			const promptMock = vi.spyOn(inquirer, "prompt");
+			const promptMock = (vi.spyOn(inquirer, "prompt") as any);
 
 			promptMock.mockResolvedValueOnce({
 				API_OTEL_ENABLED: "true",
@@ -1197,7 +1196,7 @@ describe("Validation Helpers", () => {
 		});
 
 		it("does not prompt for sampling ratio when observability is disabled", async () => {
-			const promptMock = vi.spyOn(inquirer, "prompt");
+			const promptMock = (vi.spyOn(inquirer, "prompt") as any);
 
 			promptMock.mockResolvedValueOnce({
 				API_OTEL_ENABLED: "false",
@@ -1213,7 +1212,7 @@ describe("Validation Helpers", () => {
 		});
 
 		it("preserves existing answers", async () => {
-			const promptMock = vi.spyOn(inquirer, "prompt");
+			const promptMock = (vi.spyOn(inquirer, "prompt") as any);
 
 			promptMock.mockResolvedValueOnce({
 				API_OTEL_ENABLED: "false",
