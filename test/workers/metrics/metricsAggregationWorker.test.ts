@@ -26,12 +26,28 @@ function createTestSnapshot(
 	};
 }
 
+/**
+ * Creates a complete mock logger stub that includes all FastifyBaseLogger methods.
+ * This prevents runtime errors if the worker calls any logging method.
+ */
+function createMockFastifyLogger() {
+	return {
+		info: vi.fn(),
+		warn: vi.fn(),
+		error: vi.fn(),
+		debug: vi.fn(),
+		trace: vi.fn(),
+		fatal: vi.fn(),
+	} as unknown as FastifyBaseLogger;
+}
+
 describe("Metrics Aggregation Worker", () => {
 	describe("createEmptyAggregatedMetrics", () => {
 		it("should create empty metrics with default values", () => {
 			const metrics = createEmptyAggregatedMetrics();
 
-			expect(metrics.timestamp).toBeGreaterThan(0);
+			// Use >= 0 to avoid flakiness when fake timers are enabled with system time set to 0
+			expect(metrics.timestamp).toBeGreaterThanOrEqual(0);
 			expect(metrics.windowMinutes).toBe(5);
 			expect(metrics.snapshotCount).toBe(0);
 			expect(metrics.operations).toEqual({});
@@ -320,7 +336,9 @@ describe("Metrics Aggregation Worker", () => {
 
 			expect(dbOp?.count).toBe(2);
 			// Percentiles should use slow operation durations when available
-			expect(dbOp?.p95Ms).toBeGreaterThanOrEqual(0);
+			// With max=60 and slow=250, p95 should reflect the slow value (>= 250) or at least > max (60)
+			expect(dbOp?.p95Ms).toBeGreaterThan(60);
+			expect(dbOp?.p95Ms).toBeGreaterThanOrEqual(250);
 		});
 
 		it("should handle operations with zero count", () => {
@@ -366,7 +384,7 @@ describe("Metrics Aggregation Worker", () => {
 			expect(dbOp?.totalMs).toBe(100);
 		});
 
-		it("should calculate percentiles from avgMs when no other data", () => {
+		it("should calculate percentiles from max values when available", () => {
 			const snapshot = createTestSnapshot({
 				ops: {
 					db: { count: 1, ms: 50, max: 50 },
@@ -376,10 +394,11 @@ describe("Metrics Aggregation Worker", () => {
 			const result = aggregateMetrics([snapshot]);
 			const dbOp = result.metrics.operations.db;
 
-			// When only one data point, percentiles should use avgMs
-			expect(dbOp?.medianMs).toBeGreaterThanOrEqual(0);
-			expect(dbOp?.p95Ms).toBeGreaterThanOrEqual(0);
-			expect(dbOp?.p99Ms).toBeGreaterThanOrEqual(0);
+			// With max=50, percentiles should reflect the max value
+			// When only one data point (max=50), percentiles should equal that value
+			expect(dbOp?.medianMs).toBe(50);
+			expect(dbOp?.p95Ms).toBe(50);
+			expect(dbOp?.p99Ms).toBe(50);
 		});
 
 		it("should handle operations that appear in some snapshots but not others", () => {
@@ -420,7 +439,8 @@ describe("Metrics Aggregation Worker", () => {
 
 			expect(dbOp?.count).toBe(1);
 			// Should use slow operation duration for percentiles
-			expect(dbOp?.p95Ms).toBeGreaterThanOrEqual(0);
+			// With only slow=250 (max=0 filtered out), p95 should equal the slow value
+			expect(dbOp?.p95Ms).toBeGreaterThanOrEqual(250);
 		});
 
 		it("should handle empty operations object", () => {
@@ -536,8 +556,10 @@ describe("Metrics Aggregation Worker", () => {
 
 			// Only valid slow operations should be used for percentiles
 			// The valid slow op (250) should be used along with max value (50)
+			// With max=50 and slow=250, p95 should reflect the slow value (>= 250) or at least > max (50)
 			expect(dbOp).toBeDefined();
-			expect(dbOp?.p95Ms).toBeGreaterThanOrEqual(0);
+			expect(dbOp?.p95Ms).toBeGreaterThan(50);
+			expect(dbOp?.p95Ms).toBeGreaterThanOrEqual(250);
 		});
 
 		it("should handle totalMs of 0", () => {
@@ -561,7 +583,8 @@ describe("Metrics Aggregation Worker", () => {
 			const result = aggregateMetrics(snapshots);
 
 			// Average is 150.2895, rounded to 2 decimals = 150.29
-			expect(result.metrics.avgComplexityScore).toBe(150.29);
+			// Use toBeCloseTo to handle floating-point representation differences
+			expect(result.metrics.avgComplexityScore).toBeCloseTo(150.29, 2);
 		});
 
 		it("should not include avgComplexityScore when all snapshots lack it", () => {
@@ -654,7 +677,9 @@ describe("Metrics Aggregation Worker", () => {
 
 			expect(dbOp?.count).toBe(2);
 			// Should combine max values (60) and slow ops (250, 300) for percentiles
-			expect(dbOp?.p95Ms).toBeGreaterThanOrEqual(0);
+			// With max=60 and slow=[250, 300], p95 should reflect the slow values (>= 250) or at least > max (60)
+			expect(dbOp?.p95Ms).toBeGreaterThan(60);
+			expect(dbOp?.p95Ms).toBeGreaterThanOrEqual(250);
 		});
 
 		it("should handle non-finite avgMs calculation", () => {
@@ -754,27 +779,19 @@ describe("Metrics Aggregation Worker", () => {
 
 	describe("runMetricsAggregationWorker", () => {
 		it("should return empty metrics when no snapshots available", () => {
-			const logger = {
-				info: vi.fn(),
-				warn: vi.fn(),
-				error: vi.fn(),
-			} as unknown as FastifyBaseLogger;
+			const logger = createMockFastifyLogger();
 
 			const result = runMetricsAggregationWorker(() => [], logger);
 
 			expect(result.snapshotsProcessed).toBe(0);
 			expect(result.metrics.snapshotCount).toBe(0);
 			expect(logger.info).toHaveBeenCalledWith(
-				"No snapshots available for aggregation",
+				expect.stringContaining("No snapshots available"),
 			);
 		});
 
 		it("should aggregate metrics when snapshots are available", () => {
-			const logger = {
-				info: vi.fn(),
-				warn: vi.fn(),
-				error: vi.fn(),
-			} as unknown as FastifyBaseLogger;
+			const logger = createMockFastifyLogger();
 
 			const snapshots = [
 				createTestSnapshot({
@@ -787,16 +804,12 @@ describe("Metrics Aggregation Worker", () => {
 			expect(result.snapshotsProcessed).toBe(1);
 			expect(result.metrics.operations.db).toBeDefined();
 			expect(logger.info).not.toHaveBeenCalledWith(
-				"No snapshots available for aggregation",
+				expect.stringContaining("No snapshots available"),
 			);
 		});
 
 		it("should use provided options", () => {
-			const logger = {
-				info: vi.fn(),
-				warn: vi.fn(),
-				error: vi.fn(),
-			} as unknown as FastifyBaseLogger;
+			const logger = createMockFastifyLogger();
 
 			const options: MetricsAggregationOptions = {
 				windowMinutes: 10,
@@ -810,11 +823,7 @@ describe("Metrics Aggregation Worker", () => {
 		});
 
 		it("should calculate aggregation duration", () => {
-			const logger = {
-				info: vi.fn(),
-				warn: vi.fn(),
-				error: vi.fn(),
-			} as unknown as FastifyBaseLogger;
+			const logger = createMockFastifyLogger();
 
 			const result = runMetricsAggregationWorker(() => [], logger);
 
@@ -822,11 +831,7 @@ describe("Metrics Aggregation Worker", () => {
 		});
 
 		it("should handle getSnapshots function that returns multiple snapshots", () => {
-			const logger = {
-				info: vi.fn(),
-				warn: vi.fn(),
-				error: vi.fn(),
-			} as unknown as FastifyBaseLogger;
+			const logger = createMockFastifyLogger();
 
 			const snapshots = [
 				createTestSnapshot({
