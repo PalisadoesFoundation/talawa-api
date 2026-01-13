@@ -56,12 +56,14 @@ export const resolveEventUpdater = async (
 	if (
 		currentUser.role !== "administrator" &&
 		(currentUserOrganizationMembership === undefined ||
-			currentUserOrganizationMembership.role !== "administrator")
+			(currentUserOrganizationMembership.role !== "administrator" &&
+				currentUserOrganizationMembership.role !== "regular")) &&
+		parent.creatorId !== currentUserId
 	) {
 		throw new TalawaGraphQLError({
 			extensions: {
 				code: "unauthorized_action",
-				message: "Only administrators can access event updater information.",
+				message: "Only administrators or the event creator can access event updater information.",
 			},
 		});
 	}
