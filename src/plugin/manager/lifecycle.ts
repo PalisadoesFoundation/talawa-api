@@ -67,13 +67,10 @@ export class PluginLifecycle {
 			this.pluginContext.logger.info?.(
 				`Installing dependencies for plugin: ${pluginId}`,
 			);
-			await installPluginDependenciesWithErrorHandling(
-				pluginId,
-				this.pluginContext.logger as unknown as {
-					info?: (message: string) => void;
-					error?: (message: string) => void;
-				},
-			);
+			await installPluginDependenciesWithErrorHandling(pluginId, {
+				info: (msg: string) => this.pluginContext.logger.info?.(msg),
+				error: (msg: string) => this.pluginContext.logger.error?.(msg),
+			});
 
 			// Create plugin-defined databases if specified
 			await this.createPluginDatabases(pluginId, manifest);

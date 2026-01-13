@@ -354,6 +354,10 @@ describe("PluginManager", () => {
 				}),
 			}),
 		);
+
+		// Verify manager is still marked as initialized even on failure
+		// (this verifies the implementation calls markAsInitialized() in the catch block)
+		expect(manager.isSystemInitialized()).toBe(true);
 	});
 
 	it("should call emit in markAsInitialized", async () => {

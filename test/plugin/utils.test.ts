@@ -34,7 +34,7 @@ vi.mock("node:path", async () => {
 import { promises as fs } from "node:fs";
 
 afterEach(() => {
-	vi.clearAllMocks();
+	vi.restoreAllMocks();
 });
 
 const mockedFs = vi.mocked(fs);
@@ -336,6 +336,60 @@ describe("createPluginTables & dropPluginTables", () => {
 		);
 	});
 
+	it("logs success with provided logger in createPluginTables (covers lines 493-495)", async () => {
+		const db = { execute: vi.fn().mockResolvedValue(undefined) };
+		const logger = { info: vi.fn() };
+		const drizzleName = Symbol.for("drizzle:Name");
+		const drizzleColumns = Symbol.for("drizzle:Columns");
+		const tableDef: Record<string, unknown> = {
+			[drizzleName]: "mytable",
+			[drizzleColumns]: {
+				id: { name: "id", columnType: "PgUUID", notNull: true, primary: true },
+			},
+		};
+		await utils.createPluginTables(
+			db,
+			"pluginid",
+			{ mytable: tableDef },
+			logger,
+		);
+		expect(logger.info).toHaveBeenCalledWith(
+			expect.stringContaining(
+				"Successfully created table and indexes for: mytable",
+			),
+		);
+	});
+
+	it("uses provided logger.error in dropPluginTables outer catch (covers lines 572-576)", async () => {
+		const logger = { info: vi.fn(), error: vi.fn() };
+		// Use a Proxy that throws on Object.entries to trigger the outer catch
+		const badTableDefinitions = new Proxy(
+			{},
+			{
+				ownKeys() {
+					throw new Error("outer catch fail");
+				},
+				getOwnPropertyDescriptor() {
+					return { configurable: true, enumerable: true };
+				},
+			},
+		);
+
+		await expect(
+			utils.dropPluginTables(
+				{ execute: vi.fn() },
+				"pluginid",
+				badTableDefinitions as Record<string, Record<string, unknown>>,
+				logger,
+			),
+		).rejects.toThrow("outer catch fail");
+
+		// Should use provided logger.error in outer catch
+		expect(logger.error).toHaveBeenCalledWith(
+			expect.stringContaining("Error in dropPluginTables for plugin pluginid"),
+		);
+	});
+
 	it("handles error in dropPluginTables outer try/catch (covers error log)", async () => {
 		const db = {
 			execute: vi.fn().mockImplementation(() => {
@@ -446,6 +500,64 @@ describe("createPluginTables & dropPluginTables", () => {
 			}),
 		);
 	});
+
+	it("uses provided logger.error in createPluginTables inner catch (covers lines 497-507)", async () => {
+		const db = { execute: vi.fn().mockRejectedValue(new Error("db fail")) };
+		const logger = { info: vi.fn(), error: vi.fn() };
+		const drizzleName = Symbol.for("drizzle:Name");
+		const drizzleColumns = Symbol.for("drizzle:Columns");
+		const tableDef: Record<string, unknown> = {
+			[drizzleName]: "mytable",
+			[drizzleColumns]: {
+				id: { name: "id", columnType: "PgUUID", notNull: true, primary: true },
+			},
+		};
+		await expect(
+			utils.createPluginTables(db, "pluginid", { mytable: tableDef }, logger),
+		).rejects.toThrow("db fail");
+
+		// Should use provided logger.error, not rootLogger.error
+		expect(logger.error).toHaveBeenCalledWith(
+			expect.objectContaining({
+				msg: expect.stringContaining("Table creation failed for mytable"),
+				err: expect.any(Error),
+			}),
+		);
+	});
+
+	it("uses provided logger.error in createPluginTables outer catch (covers lines 512-517)", async () => {
+		const logger = { info: vi.fn(), error: vi.fn() };
+		const badTableDefinitions = new Proxy(
+			{},
+			{
+				ownKeys() {
+					throw new Error("outer catch fail");
+				},
+				getOwnPropertyDescriptor() {
+					return { configurable: true, enumerable: true };
+				},
+			},
+		);
+
+		await expect(
+			utils.createPluginTables(
+				{ execute: vi.fn() },
+				"pluginid",
+				badTableDefinitions as Record<string, Record<string, unknown>>,
+				logger,
+			),
+		).rejects.toThrow("outer catch fail");
+
+		// Should use provided logger.error in outer catch
+		expect(logger.error).toHaveBeenCalledWith(
+			expect.objectContaining({
+				msg: expect.stringContaining(
+					"Table creation process failed for plugin pluginid",
+				),
+				err: expect.objectContaining({ message: "outer catch fail" }),
+			}),
+		);
+	});
 });
 
 // --- removePluginDirectory & clearPluginModuleCache ---
@@ -539,6 +651,25 @@ describe("clearPluginModuleCache", () => {
 				badCache as Record<string, unknown>,
 			),
 		).not.toThrow();
+	});
+	it("calls rootLogger.warn in catch block (covers lines 637-639)", async () => {
+		const { rootLogger } = await import("~/src/utilities/logging/logger");
+		const warnSpy = vi.spyOn(rootLogger, "warn");
+		// Mock rootLogger.info to throw, which triggers the catch block
+		const infoSpy = vi.spyOn(rootLogger, "info").mockImplementationOnce(() => {
+			throw new Error("simulated logger error");
+		});
+
+		utils.clearPluginModuleCache("/plugin/path");
+
+		expect(warnSpy).toHaveBeenCalledWith(
+			expect.objectContaining({
+				msg: "Failed to clear module cache",
+				err: expect.any(Error),
+			}),
+		);
+		warnSpy.mockRestore();
+		infoSpy.mockRestore();
 	});
 	it("handles normal execution without throwing", () => {
 		// Note: clearPluginModuleCache is a no-op in ES modules because the ES module

@@ -85,7 +85,7 @@ class GraphQLSchemaManager {
 
 			return newSchema;
 		} catch (error) {
-			rootLogger.error({ msg: "Schema rebuild failed", err: error });
+			rootLogger.error({ err: error }, "Schema rebuild failed");
 			throw error;
 		} finally {
 			this.isRebuilding = false;
@@ -107,7 +107,7 @@ class GraphQLSchemaManager {
 			await import("./types/index");
 			// Note: interfaces and unions directories have empty index files, so skipping them
 		} catch (error) {
-			rootLogger.error({ msg: "Core schema import failed", err: error });
+			rootLogger.error({ err: error }, "Core schema import failed");
 			throw error;
 		}
 	}

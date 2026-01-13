@@ -449,28 +449,6 @@ describe("GraphQLSchemaManager", () => {
 
 			await expect(importCoreSchema()).resolves.not.toThrow();
 		});
-
-		it("should log error with correct shape when import fails (contract/mock test)", async () => {
-			// ─────────────────────────────────────────────────────────────────────────
-			// TODO: This test is a temporary contract check that mocks the logging behavior
-			// directly. It does not exercise the real failure path in importCoreSchema due to
-			// ESM/mocking limitations.
-			// Tracking issue: Refactor to enable real failure testing.
-			// ─────────────────────────────────────────────────────────────────────────
-			const errorSpy = vi.spyOn(rootLogger, "error");
-
-			const testError = new Error("Core schema import failed");
-			rootLogger.error({ msg: "Core schema import failed", err: testError });
-
-			expect(errorSpy).toHaveBeenCalledWith(
-				expect.objectContaining({
-					msg: "Core schema import failed",
-					err: expect.any(Error),
-				}),
-			);
-
-			errorSpy.mockRestore();
-		});
 	});
 
 	describe("Schema Management", () => {
@@ -854,11 +832,18 @@ describe("GraphQLSchemaManager", () => {
 				schemaManager as unknown as { currentSchema: GraphQLSchema | null }
 			).currentSchema = mockSchema;
 
+			// Spy on rebuildSchema to verify it gets called
+			const rebuildSchemaSpy = vi.spyOn(schemaManager, "rebuildSchema");
+
 			// Call the callback to trigger line 29
 			const callback = schemaRebuildCallback as (() => Promise<void>) | null;
 			if (callback) {
 				await callback();
 			}
+
+			// Verify rebuildSchema was actually called
+			expect(rebuildSchemaSpy).toHaveBeenCalled();
+			rebuildSchemaSpy.mockRestore();
 		});
 
 		it("should call rebuildSchema when plugin:deactivated event is fired (covers line 34)", async () => {
@@ -904,6 +889,9 @@ describe("GraphQLSchemaManager", () => {
 				schemaManager as unknown as { currentSchema: GraphQLSchema | null }
 			).currentSchema = mockSchema;
 
+			// Spy on rebuildSchema to verify it gets called
+			const rebuildSchemaSpy = vi.spyOn(schemaManager, "rebuildSchema");
+
 			// Call the callback to trigger line 34
 			const callback = pluginDeactivatedCallback as
 				| ((pluginId: string) => Promise<void>)
@@ -911,6 +899,10 @@ describe("GraphQLSchemaManager", () => {
 			if (callback) {
 				await callback("test-plugin");
 			}
+
+			// Verify rebuildSchema was actually called
+			expect(rebuildSchemaSpy).toHaveBeenCalled();
+			rebuildSchemaSpy.mockRestore();
 		});
 	});
 
