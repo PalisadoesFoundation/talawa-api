@@ -4,7 +4,7 @@
 
 # Function: runMetricsAggregationWorker()
 
-> **runMetricsAggregationWorker**(`getSnapshots`, `logger`, `options`): `Promise`\<[`MetricsAggregationResult`](../../types/interfaces/MetricsAggregationResult.md)\>
+> **runMetricsAggregationWorker**(`getSnapshots`, `logger`, `options`): [`MetricsAggregationResult`](../../types/interfaces/MetricsAggregationResult.md)
 
 Defined in: [src/workers/metrics/metricsAggregationWorker.ts:354](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/workers/metrics/metricsAggregationWorker.ts#L354)
 
@@ -33,6 +33,6 @@ Aggregation options. Note: windowMinutes is deprecated and not functional since 
 
 ## Returns
 
-`Promise`\<[`MetricsAggregationResult`](../../types/interfaces/MetricsAggregationResult.md)\>
+[`MetricsAggregationResult`](../../types/interfaces/MetricsAggregationResult.md)
 
 Aggregated metrics result
