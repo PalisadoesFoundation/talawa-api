@@ -2,10 +2,12 @@ import { describe, expect, it } from "vitest";
 import { eventGenerationWindowsTableInsertSchema } from "~/src/drizzle/tables/eventGenerationWindows";
 
 describe("eventGenerationWindows insert schema numeric bounds", () => {
+	// Base object with minimal valid required fields
 	const base = {
 		organizationId: "3f738d7f-22e7-4bda-b47f-61f0a9c9c9a1",
 		currentWindowEndDate: new Date(),
 		retentionStartDate: new Date(),
+		createdById: "3f738d7f-22e7-4bda-b47f-61f0a9c9c9a1",
 	};
 	it("required fields validation", () => {
 		// Missing organizationId
@@ -13,6 +15,7 @@ describe("eventGenerationWindows insert schema numeric bounds", () => {
 			eventGenerationWindowsTableInsertSchema.safeParse({
 				currentWindowEndDate: new Date(),
 				retentionStartDate: new Date(),
+				createdById: "3f738d7f-22e7-4bda-b47f-61f0a9c9c9a1",
 			}).success,
 		).toBe(false);
 
@@ -21,6 +24,7 @@ describe("eventGenerationWindows insert schema numeric bounds", () => {
 			eventGenerationWindowsTableInsertSchema.safeParse({
 				organizationId: "3f738d7f-22e7-4bda-b47f-61f0a9c9c9a1",
 				retentionStartDate: new Date(),
+				createdById: "3f738d7f-22e7-4bda-b47f-61f0a9c9c9a1",
 			}).success,
 		).toBe(false);
 
@@ -29,17 +33,22 @@ describe("eventGenerationWindows insert schema numeric bounds", () => {
 			eventGenerationWindowsTableInsertSchema.safeParse({
 				organizationId: "3f738d7f-22e7-4bda-b47f-61f0a9c9c9a1",
 				currentWindowEndDate: new Date(),
+				createdById: "3f738d7f-22e7-4bda-b47f-61f0a9c9c9a1",
 			}).success,
 		).toBe(false);
 
 		// All required fields present (should succeed)
-		expect(
-			eventGenerationWindowsTableInsertSchema.safeParse({
-				organizationId: "3f738d7f-22e7-4bda-b47f-61f0a9c9c9a1",
-				currentWindowEndDate: new Date(),
-				retentionStartDate: new Date(),
-			}).success,
-		).toBe(true);
+		const validObj = {
+			organizationId: "3f738d7f-22e7-4bda-b47f-61f0a9c9c9a1",
+			currentWindowEndDate: new Date(),
+			retentionStartDate: new Date(),
+			createdById: "3f738d7f-22e7-4bda-b47f-61f0a9c9c9a1",
+		};
+		const result = eventGenerationWindowsTableInsertSchema.safeParse(validObj);
+		if (!result.success) {
+			console.log("VALIDATION ERROR:", JSON.stringify(result.error.issues, null, 2));
+		}
+		expect(result.success).toBe(true);
 	});
 
 	it("hotWindowMonthsAhead min/max", () => {
