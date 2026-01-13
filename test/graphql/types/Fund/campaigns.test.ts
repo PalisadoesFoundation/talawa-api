@@ -1,7 +1,7 @@
 import { faker } from "@faker-js/faker";
 import { initGraphQLTada } from "gql.tada";
 import type { GraphQLObjectType } from "graphql";
-import { afterEach, beforeAll, describe, expect, it, vi } from "vitest";
+import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from "vitest";
 import type { ClientCustomScalars } from "~/src/graphql/scalars/index";
 import { schema } from "~/src/graphql/schema";
 import { assertToBeNonNullish } from "../../../helpers";
@@ -13,6 +13,8 @@ import {
 	Mutation_createOrganization,
 	Mutation_createOrganizationMembership,
 	Mutation_deleteFund,
+	Mutation_deleteFundCampaign,
+	Mutation_deleteOrganization,
 	Query_signIn,
 } from "../documentNodes";
 import type { introspection } from "../gql.tada";
@@ -203,6 +205,41 @@ describe("Fund.campaigns Resolver - Integration", () => {
 	afterEach(() => {
 		// Clear any mock state to ensure test isolation across shards
 		vi.clearAllMocks();
+	});
+
+	afterAll(async () => {
+		// Clean up all created test data to ensure test isolation
+		// Delete campaigns first (child resources)
+		for (const campaign of campaigns) {
+			try {
+				await mercuriusClient.mutate(Mutation_deleteFundCampaign, {
+					headers: { authorization: `bearer ${adminAuth.token}` },
+					variables: { input: { id: campaign.id } },
+				});
+			} catch {
+				// Ignore errors during cleanup
+			}
+		}
+
+		// Delete fund
+		try {
+			await mercuriusClient.mutate(Mutation_deleteFund, {
+				headers: { authorization: `bearer ${adminAuth.token}` },
+				variables: { input: { id: fund.id } },
+			});
+		} catch {
+			// Ignore errors during cleanup
+		}
+
+		// Delete organization
+		try {
+			await mercuriusClient.mutate(Mutation_deleteOrganization, {
+				headers: { authorization: `bearer ${adminAuth.token}` },
+				variables: { input: { id: organization.id } },
+			});
+		} catch {
+			// Ignore errors during cleanup
+		}
 	});
 
 	beforeAll(async () => {
