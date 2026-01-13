@@ -40,4 +40,19 @@ export class SetupError extends Error {
 			ErrorWithStack.captureStackTrace(this, SetupError);
 		}
 	}
+
+	/**
+	 * Returns a JSON representation of the error.
+	 * This is useful for standardized logging and serialization.
+	 */
+	public toJSON() {
+		return {
+			name: this.name,
+			code: this.code,
+			message: this.message,
+			context: this.context,
+			cause: this.cause,
+			stack: this.stack,
+		};
+	}
 }

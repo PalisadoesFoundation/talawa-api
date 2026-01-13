@@ -44,4 +44,40 @@ describe("SetupError", () => {
 		);
 		expect(error.stack).toBeDefined();
 	});
+
+	it("should correctly serialize to JSON", () => {
+		const code = SetupErrorCode.BACKUP_FAILED;
+		const message = "Backup process failed";
+		const context: SetupErrorContext = {
+			operation: "backup",
+			details: { reason: "disk full", attempts: 3 },
+		};
+		const cause = new Error("Disk full");
+		const error = new SetupError(code, message, context, cause);
+
+		const json = error.toJSON();
+
+		expect(json).toEqual({
+			name: "SetupError",
+			code,
+			message,
+			context,
+			cause,
+			stack: error.stack,
+		});
+		expect(json.context.details).toEqual({ reason: "disk full", attempts: 3 });
+	});
+
+	it("should correctly serialize to JSON without a cause", () => {
+		const code = SetupErrorCode.RESTORE_FAILED;
+		const message = "Restore process failed";
+		const context: SetupErrorContext = { operation: "restore" };
+		const error = new SetupError(code, message, context);
+
+		const json = error.toJSON();
+
+		expect(json.cause).toBeUndefined();
+		expect(json.code).toBe(code);
+		expect(json.message).toBe(message);
+	});
 });
