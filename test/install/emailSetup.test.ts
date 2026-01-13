@@ -3,10 +3,10 @@ import { emailSetup } from "../../scripts/setup/emailSetup";
 import * as promptHelpers from "../../scripts/setup/promptHelpers";
 import type { SetupAnswers } from "../../scripts/setup/setup";
 
-// Mutable mock for EmailService to allow per-test behavior control
+// Mutable mock for SESProvider to allow per-test behavior control
 const mocks = vi.hoisted(() => ({
 	mockSendEmail: vi.fn(),
-	mockEmailServiceConstructor: vi.fn(),
+	mockSESProviderConstructor: vi.fn(),
 }));
 
 // Mock the prompt helpers
@@ -17,10 +17,10 @@ vi.mock("../../scripts/setup/promptHelpers", () => ({
 	promptPassword: vi.fn(),
 }));
 
-// Mock EmailService at module level
-vi.mock("../../src/services/ses/EmailService", () => ({
-	EmailService: vi.fn().mockImplementation((...args) => {
-		mocks.mockEmailServiceConstructor(...args);
+// Mock SESProvider at module level
+vi.mock("../../src/services/email", () => ({
+	SESProvider: vi.fn().mockImplementation((...args) => {
+		mocks.mockSESProviderConstructor(...args);
 		return {
 			sendEmail: (...callArgs: unknown[]) => mocks.mockSendEmail(...callArgs),
 		};
@@ -48,7 +48,7 @@ describe("emailSetup", () => {
 			success: true,
 			messageId: "test-message-id",
 		});
-		mocks.mockEmailServiceConstructor.mockReset();
+		mocks.mockSESProviderConstructor.mockReset();
 	});
 
 	afterEach(() => {
@@ -365,7 +365,7 @@ describe("emailSetup", () => {
 		expect(mocks.mockSendEmail).toHaveBeenCalled();
 	});
 
-	it("should verify EmailService instantiation and sendEmail parameters", async () => {
+	it("should verify SESProvider instantiation and sendEmail parameters", async () => {
 		vi.mocked(promptHelpers.promptConfirm)
 			.mockResolvedValueOnce(true) // Configure
 			.mockResolvedValueOnce(true); // Send test
@@ -389,7 +389,7 @@ describe("emailSetup", () => {
 		await emailSetup(answers);
 
 		// Verify constructor arguments
-		expect(mocks.mockEmailServiceConstructor).toHaveBeenCalledWith({
+		expect(mocks.mockSESProviderConstructor).toHaveBeenCalledWith({
 			region: "us-east-1",
 			accessKeyId: "access",
 			secretAccessKey: "secret",
