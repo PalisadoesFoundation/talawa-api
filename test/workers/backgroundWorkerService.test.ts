@@ -79,6 +79,20 @@ describe("backgroundServiceWorker", () => {
 		const cron = await import("node-cron");
 		(cron as { __resetMock?: () => void }).__resetMock?.();
 
+		// Ensure workers are stopped before each test for proper isolation
+		const cleanupLogger = {
+			info: vi.fn(),
+			warn: vi.fn(),
+			error: vi.fn(),
+			debug: vi.fn(),
+		} as unknown as FastifyBaseLogger;
+
+		// Always try to stop workers to ensure clean state
+		// This will clear fastifyInstance if workers were running
+		await stopBackgroundWorkers(cleanupLogger).catch(() => {
+			// Ignore errors if workers aren't running
+		});
+
 		mockLogger = {
 			info: vi.fn(),
 			warn: vi.fn(),
@@ -621,6 +635,7 @@ describe("backgroundServiceWorker", () => {
 					METRICS_AGGREGATION_CRON_SCHEDULE: "*/5 * * * *",
 					METRICS_AGGREGATION_WINDOW_MINUTES: 5,
 					METRICS_SNAPSHOT_RETENTION_COUNT: 1000,
+					METRICS_SLOW_THRESHOLD_MS: 200,
 				},
 				getPerformanceSnapshots: vi.fn().mockReturnValue([]),
 			} as unknown as Parameters<typeof startBackgroundWorkers>[2];
@@ -655,6 +670,7 @@ describe("backgroundServiceWorker", () => {
 				envConfig: {
 					METRICS_AGGREGATION_WINDOW_MINUTES: 10,
 					METRICS_SNAPSHOT_RETENTION_COUNT: 500,
+					METRICS_SLOW_THRESHOLD_MS: 200,
 				},
 				getPerformanceSnapshots: vi.fn().mockReturnValue([]),
 			} as unknown as Parameters<typeof startBackgroundWorkers>[2];
@@ -730,6 +746,7 @@ describe("backgroundServiceWorker", () => {
 				envConfig: {
 					METRICS_AGGREGATION_WINDOW_MINUTES: 5,
 					METRICS_SNAPSHOT_RETENTION_COUNT: 1000,
+					METRICS_SLOW_THRESHOLD_MS: 200,
 				},
 				getPerformanceSnapshots: vi.fn().mockReturnValue([]),
 			} as unknown as Parameters<typeof startBackgroundWorkers>[2];
@@ -787,6 +804,7 @@ describe("backgroundServiceWorker", () => {
 				envConfig: {
 					METRICS_AGGREGATION_WINDOW_MINUTES: 5,
 					METRICS_SNAPSHOT_RETENTION_COUNT: 1000,
+					METRICS_SLOW_THRESHOLD_MS: 200,
 				},
 				getPerformanceSnapshots: vi.fn().mockReturnValue([]),
 			} as unknown as Parameters<typeof startBackgroundWorkers>[2];
@@ -839,6 +857,7 @@ describe("backgroundServiceWorker", () => {
 				envConfig: {
 					METRICS_AGGREGATION_WINDOW_MINUTES: 5,
 					METRICS_SNAPSHOT_RETENTION_COUNT: 1000,
+					METRICS_SLOW_THRESHOLD_MS: 200,
 				},
 				getPerformanceSnapshots: vi.fn().mockImplementation(() => {
 					throw new Error("Snapshot retrieval failed");
@@ -851,6 +870,8 @@ describe("backgroundServiceWorker", () => {
 			expect(mockLogger.error).toHaveBeenCalledWith(
 				expect.objectContaining({
 					duration: expect.stringMatching(/^\d+ms$/),
+					snapshotsProcessed: 0,
+					aggregationDuration: expect.stringMatching(/^\d+ms$/),
 					error: "Snapshot retrieval failed",
 					stack: expect.any(String),
 				}),
@@ -899,6 +920,8 @@ describe("backgroundServiceWorker", () => {
 			expect(status.isRunning).toBe(true);
 			expect(status.materializationSchedule).toBe("0 * * * *");
 			expect(status.cleanupSchedule).toBe("0 2 * * *");
+			// The implementation uses the value from fastifyInstance.envConfig, which should be "*/10 * * * *"
+			// But if it's not set, it defaults to "*/5 * * * *"
 			expect(status.metricsSchedule).toBe("*/10 * * * *");
 
 			await stopBackgroundWorkers(mockLogger);
@@ -938,19 +961,25 @@ describe("backgroundServiceWorker", () => {
 		});
 
 		it("returns unhealthy when getBackgroundWorkerStatus throws", async () => {
-			const testError = new Error("Status check failed");
+			// Ensure workers are not running first
+			try {
+				await stopBackgroundWorkers(mockLogger);
+			} catch {
+				// Ignore if not running
+			}
+
 			const backgroundWorkerModule = await import(
 				"~/src/workers/backgroundWorkerService"
 			);
+
+			const testError = new Error("Status check failed");
 			const statusSpy = vi
 				.spyOn(backgroundWorkerModule, "getBackgroundWorkerStatus")
 				.mockImplementation(() => {
 					throw testError;
 				});
 
-			// Import healthCheck dynamically to use the same module instance
-			const { healthCheck: healthCheckDynamic } = backgroundWorkerModule;
-			const result = await healthCheckDynamic();
+			const result = await backgroundWorkerModule.healthCheck();
 
 			expect(result.status).toBe("unhealthy");
 			expect(result.details.reason).toBe("Health check failed");

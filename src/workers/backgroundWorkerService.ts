@@ -88,7 +88,7 @@ export async function startBackgroundWorkers(
 		const metricsEnabled =
 			fastify?.envConfig.METRICS_AGGREGATION_ENABLED ?? true;
 		const metricsSchedule = getMetricsSchedule(fastify);
-		if (metricsEnabled && fastify && metricsSchedule !== "disabled") {
+		if (metricsSchedule !== "disabled") {
 			metricsTask = cron.schedule(
 				metricsSchedule,
 				() => runMetricsAggregationWorkerSafely(logger),

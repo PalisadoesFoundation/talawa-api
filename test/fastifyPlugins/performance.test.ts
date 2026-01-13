@@ -4,6 +4,24 @@ import type { EnvConfig } from "../../src/envConfigSchema";
 import performancePlugin from "../../src/fastifyPlugins/performance";
 
 /**
+ * Minimal test fixture for the performance plugin's required environment configuration.
+ * Contains only the fields that the performance plugin actually uses.
+ * This makes it clear what the plugin depends on and robust if more fields are added.
+ */
+interface PerformancePluginTestEnvConfig {
+	METRICS_SNAPSHOT_RETENTION_COUNT: number;
+	API_SLOW_REQUEST_MS: number;
+}
+
+/**
+ * Test fixture providing the minimal envConfig required by the performance plugin.
+ */
+const performancePluginTestEnvConfig: PerformancePluginTestEnvConfig = {
+	METRICS_SNAPSHOT_RETENTION_COUNT: 200,
+	API_SLOW_REQUEST_MS: 500,
+};
+
+/**
  * Helper function to create a Fastify instance with envConfig decorated.
  * This is needed because the performance plugin depends on envConfig.
  */
@@ -16,10 +34,7 @@ function createTestFastifyInstance() {
 
 	// Decorate envConfig before registering the performance plugin
 	// The plugin depends on envConfig for configuration values
-	app.decorate("envConfig", {
-		METRICS_SNAPSHOT_RETENTION_COUNT: 200,
-		API_SLOW_REQUEST_MS: 500,
-	} as Partial<EnvConfig> as EnvConfig);
+	app.decorate("envConfig", performancePluginTestEnvConfig as EnvConfig);
 
 	return app;
 }
@@ -715,6 +730,7 @@ describe("Performance Plugin", () => {
 					"../../src/fastifyPlugins/performance"
 				);
 
+				// Create test app AFTER resetting modules
 				const testApp = createTestFastifyInstance();
 
 				// Register plugin after removing structuredClone so fallback is used
@@ -734,19 +750,16 @@ describe("Performance Plugin", () => {
 					url: "/test-deep-copy",
 				});
 
-				// Wait a bit to ensure the onSend hook completes
-				await new Promise((resolve) => setTimeout(resolve, 10));
-
+				// Get snapshots directly without waiting
 				const snapshots = testApp.getPerformanceSnapshots(1);
 
 				expect(snapshots.length).toBe(1);
 
-				const snapshotRaw = snapshots[0];
-				expect(snapshotRaw).toBeDefined();
-				if (!snapshotRaw) {
+				const snapshot = snapshots[0];
+				expect(snapshot).toBeDefined();
+				if (!snapshot) {
 					throw new Error("Snapshot should be defined");
 				}
-				const snapshot = snapshotRaw;
 
 				// Verify snapshot structure is correct
 				expect(snapshot).toHaveProperty("ops");
@@ -762,16 +775,15 @@ describe("Performance Plugin", () => {
 				expect(Array.isArray(snapshot.slow)).toBe(true);
 
 				// Verify deep copy worked - modify and check independence
-				const originalOps = snapshot.ops;
+				const originalOps = { ...snapshot.ops };
 				snapshot.ops = {};
 
 				const snapshots2 = testApp.getPerformanceSnapshots(1);
-				const snapshot2Raw = snapshots2[0];
-				expect(snapshot2Raw).toBeDefined();
-				if (!snapshot2Raw) {
+				const snapshot2 = snapshots2[0];
+				expect(snapshot2).toBeDefined();
+				if (!snapshot2) {
 					throw new Error("Snapshot2 should be defined");
 				}
-				const snapshot2 = snapshot2Raw;
 				expect(snapshot2.ops).not.toEqual({});
 				expect(snapshot2.ops).toEqual(originalOps);
 
@@ -786,6 +798,8 @@ describe("Performance Plugin", () => {
 						enumerable: true,
 					});
 				}
+				// Reset modules again to restore normal state
+				vi.resetModules();
 			}
 		});
 	});

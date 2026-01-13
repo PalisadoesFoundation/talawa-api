@@ -1,5 +1,6 @@
 import ajvFormats from "ajv-formats";
 import type { EnvSchemaOpt } from "env-schema";
+import { validate as validateCron } from "node-cron";
 import { type Static, Type } from "typebox";
 
 /**
@@ -536,6 +537,7 @@ export const envConfigSchema = Type.Object({
 	METRICS_AGGREGATION_CRON_SCHEDULE: Type.Optional(
 		Type.String({
 			minLength: 9, // Minimum valid cron: "* * * * *"
+			format: "cron", // Validates cron expression syntax at schema-time
 		}),
 	),
 
@@ -610,6 +612,15 @@ export const envSchemaAjv: EnvSchemaOpt["ajv"] = {
 				} catch {
 					return false;
 				}
+			},
+		});
+
+		// Custom "cron" format validator for fail-fast cron expression validation
+		// Uses node-cron.validate to ensure the expression is valid before scheduling
+		ajvInstance.addFormat("cron", {
+			type: "string",
+			validate: (value: string): boolean => {
+				return validateCron(value);
 			},
 		});
 
