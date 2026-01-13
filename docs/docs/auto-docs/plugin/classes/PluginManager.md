@@ -21,7 +21,7 @@ for use throughout the API application.
 
 > **new PluginManager**(`context`, `pluginsDir?`): `PluginManager`
 
-Defined in: [src/plugin/manager/core.ts:61](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/plugin/manager/core.ts#L61)
+Defined in: [src/plugin/manager/core.ts:62](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/plugin/manager/core.ts#L62)
 
 #### Parameters
 
@@ -47,7 +47,7 @@ Defined in: [src/plugin/manager/core.ts:61](https://github.com/PalisadoesFoundat
 
 > **activatePlugin**(`pluginId`): `Promise`\<`boolean`\>
 
-Defined in: [src/plugin/manager/core.ts:323](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/plugin/manager/core.ts#L323)
+Defined in: [src/plugin/manager/core.ts:325](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/plugin/manager/core.ts#L325)
 
 Activate a plugin
 
@@ -67,7 +67,7 @@ Activate a plugin
 
 > **clearErrors**(): `void`
 
-Defined in: [src/plugin/manager/core.ts:492](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/plugin/manager/core.ts#L492)
+Defined in: [src/plugin/manager/core.ts:494](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/plugin/manager/core.ts#L494)
 
 Clear plugin errors
 
@@ -81,7 +81,7 @@ Clear plugin errors
 
 > **deactivatePlugin**(`pluginId`, `dropTables`): `Promise`\<`boolean`\>
 
-Defined in: [src/plugin/manager/core.ts:330](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/plugin/manager/core.ts#L330)
+Defined in: [src/plugin/manager/core.ts:332](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/plugin/manager/core.ts#L332)
 
 Deactivate a plugin
 
@@ -105,7 +105,7 @@ Deactivate a plugin
 
 > **executePostHooks**(`event`, `data`): `Promise`\<`void`\>
 
-Defined in: [src/plugin/manager/core.ts:465](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/plugin/manager/core.ts#L465)
+Defined in: [src/plugin/manager/core.ts:467](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/plugin/manager/core.ts#L467)
 
 Execute post hooks for an event
 
@@ -129,7 +129,7 @@ Execute post hooks for an event
 
 > **executePreHooks**(`event`, `data`): `Promise`\<`unknown`\>
 
-Defined in: [src/plugin/manager/core.ts:444](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/plugin/manager/core.ts#L444)
+Defined in: [src/plugin/manager/core.ts:446](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/plugin/manager/core.ts#L446)
 
 Execute pre hooks for an event
 
@@ -153,7 +153,7 @@ Execute pre hooks for an event
 
 > **getActivePlugins**(): [`ILoadedPlugin`](../types/interfaces/ILoadedPlugin.md)[]
 
-Defined in: [src/plugin/manager/core.ts:406](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/plugin/manager/core.ts#L406)
+Defined in: [src/plugin/manager/core.ts:408](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/plugin/manager/core.ts#L408)
 
 Get active plugins
 
@@ -167,7 +167,7 @@ Get active plugins
 
 > **getErrors**(): [`IPluginError`](../types/interfaces/IPluginError.md)[]
 
-Defined in: [src/plugin/manager/core.ts:485](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/plugin/manager/core.ts#L485)
+Defined in: [src/plugin/manager/core.ts:487](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/plugin/manager/core.ts#L487)
 
 Get plugin errors
 
@@ -181,7 +181,7 @@ Get plugin errors
 
 > **getExtensionRegistry**(): [`IExtensionRegistry`](../types/interfaces/IExtensionRegistry.md)
 
-Defined in: [src/plugin/manager/core.ts:437](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/plugin/manager/core.ts#L437)
+Defined in: [src/plugin/manager/core.ts:439](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/plugin/manager/core.ts#L439)
 
 Get extension registry
 
@@ -195,7 +195,7 @@ Get extension registry
 
 > **getLoadedPluginIds**(): `string`[]
 
-Defined in: [src/plugin/manager/core.ts:399](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/plugin/manager/core.ts#L399)
+Defined in: [src/plugin/manager/core.ts:401](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/plugin/manager/core.ts#L401)
 
 Get loaded plugin IDs
 
@@ -209,7 +209,7 @@ Get loaded plugin IDs
 
 > **getLoadedPlugins**(): [`ILoadedPlugin`](../types/interfaces/ILoadedPlugin.md)[]
 
-Defined in: [src/plugin/manager/core.ts:392](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/plugin/manager/core.ts#L392)
+Defined in: [src/plugin/manager/core.ts:394](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/plugin/manager/core.ts#L394)
 
 Get all loaded plugins
 
@@ -223,7 +223,7 @@ Get all loaded plugins
 
 > **getPlugin**(`pluginId`): [`ILoadedPlugin`](../types/interfaces/ILoadedPlugin.md) \| `undefined`
 
-Defined in: [src/plugin/manager/core.ts:415](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/plugin/manager/core.ts#L415)
+Defined in: [src/plugin/manager/core.ts:417](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/plugin/manager/core.ts#L417)
 
 Get a specific plugin
 
@@ -243,7 +243,7 @@ Get a specific plugin
 
 > **getPluginContext**(): [`IPluginContext`](../types/interfaces/IPluginContext.md)
 
-Defined in: [src/plugin/manager/core.ts:513](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/plugin/manager/core.ts#L513)
+Defined in: [src/plugin/manager/core.ts:522](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/plugin/manager/core.ts#L522)
 
 Get plugin context
 
@@ -257,7 +257,7 @@ Get plugin context
 
 > **getPluginsDirectory**(): `string`
 
-Defined in: [src/plugin/manager/core.ts:506](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/plugin/manager/core.ts#L506)
+Defined in: [src/plugin/manager/core.ts:515](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/plugin/manager/core.ts#L515)
 
 Get plugins directory
 
@@ -271,7 +271,7 @@ Get plugins directory
 
 > **gracefulShutdown**(): `Promise`\<`void`\>
 
-Defined in: [src/plugin/manager/core.ts:521](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/plugin/manager/core.ts#L521)
+Defined in: [src/plugin/manager/core.ts:530](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/plugin/manager/core.ts#L530)
 
 Gracefully shutdown plugin system without triggering deactivation or schema updates
 This is used during server shutdown to avoid unnecessary operations
@@ -282,11 +282,25 @@ This is used during server shutdown to avoid unnecessary operations
 
 ***
 
+### hasInitializationBeenAttempted()
+
+> **hasInitializationBeenAttempted**(): `boolean`
+
+Defined in: [src/plugin/manager/core.ts:508](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/plugin/manager/core.ts#L508)
+
+Check if initialization was attempted (regardless of success/failure)
+
+#### Returns
+
+`boolean`
+
+***
+
 ### initialize()
 
 > **initialize**(): `Promise`\<`void`\>
 
-Defined in: [src/plugin/manager/core.ts:84](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/plugin/manager/core.ts#L84)
+Defined in: [src/plugin/manager/core.ts:85](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/plugin/manager/core.ts#L85)
 
 Initialize the plugin system
 
@@ -300,7 +314,7 @@ Initialize the plugin system
 
 > **installPlugin**(`pluginId`): `Promise`\<`boolean`\>
 
-Defined in: [src/plugin/manager/core.ts:316](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/plugin/manager/core.ts#L316)
+Defined in: [src/plugin/manager/core.ts:318](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/plugin/manager/core.ts#L318)
 
 Install a plugin
 
@@ -320,7 +334,7 @@ Install a plugin
 
 > **isPluginActive**(`pluginId`): `boolean`
 
-Defined in: [src/plugin/manager/core.ts:429](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/plugin/manager/core.ts#L429)
+Defined in: [src/plugin/manager/core.ts:431](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/plugin/manager/core.ts#L431)
 
 Check if plugin is active
 
@@ -340,7 +354,7 @@ Check if plugin is active
 
 > **isPluginLoaded**(`pluginId`): `boolean`
 
-Defined in: [src/plugin/manager/core.ts:422](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/plugin/manager/core.ts#L422)
+Defined in: [src/plugin/manager/core.ts:424](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/plugin/manager/core.ts#L424)
 
 Check if plugin is loaded
 
@@ -360,9 +374,9 @@ Check if plugin is loaded
 
 > **isSystemInitialized**(): `boolean`
 
-Defined in: [src/plugin/manager/core.ts:499](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/plugin/manager/core.ts#L499)
+Defined in: [src/plugin/manager/core.ts:501](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/plugin/manager/core.ts#L501)
 
-Check if system is initialized
+Check if system is initialized (successfully)
 
 #### Returns
 
@@ -374,7 +388,7 @@ Check if system is initialized
 
 > **loadPlugin**(`pluginId`): `Promise`\<`boolean`\>
 
-Defined in: [src/plugin/manager/core.ts:185](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/plugin/manager/core.ts#L185)
+Defined in: [src/plugin/manager/core.ts:187](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/plugin/manager/core.ts#L187)
 
 Load a specific plugin
 
@@ -394,7 +408,7 @@ Load a specific plugin
 
 > **uninstallPlugin**(`pluginId`): `Promise`\<`boolean`\>
 
-Defined in: [src/plugin/manager/core.ts:340](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/plugin/manager/core.ts#L340)
+Defined in: [src/plugin/manager/core.ts:342](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/plugin/manager/core.ts#L342)
 
 Uninstall a plugin
 
@@ -414,7 +428,7 @@ Uninstall a plugin
 
 > **unloadPlugin**(`pluginId`): `Promise`\<`boolean`\>
 
-Defined in: [src/plugin/manager/core.ts:347](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/plugin/manager/core.ts#L347)
+Defined in: [src/plugin/manager/core.ts:349](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/plugin/manager/core.ts#L349)
 
 Unload a plugin from memory
 
