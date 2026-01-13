@@ -89,7 +89,7 @@ CURRENT_STEP=0
 ##############################################################################
 # Source common validation functions
 ##############################################################################
-COMMON_VALIDATION_LIB="$(dirname "$0")/../common/validation.sh"
+COMMON_VALIDATION_LIB="$(dirname "${BASH_SOURCE[0]}")/../common/validation.sh"
 if [ ! -f "$COMMON_VALIDATION_LIB" ]; then
     error "Common validation library not found: $COMMON_VALIDATION_LIB"
     error "Please ensure the installation directory structure is intact."

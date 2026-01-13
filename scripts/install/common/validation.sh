@@ -25,7 +25,7 @@
 # This library depends on info() and error() functions being defined by the
 # calling script. Fail early with a clear message if they are missing.
 ##############################################################################
-if ! command -v info >/dev/null 2>&1 || ! command -v error >/dev/null 2>&1; then
+if ! declare -F info >/dev/null 2>&1 || ! declare -F error >/dev/null 2>&1; then
     echo "ERROR: validation.sh requires info() and error() functions to be defined." >&2
     echo "" >&2
     echo "Please ensure your script defines these functions before sourcing validation.sh:" >&2
@@ -60,6 +60,15 @@ validate_version_string() {
     # Check if version is empty or null
     if [ -z "$version" ] || [ "$version" = "null" ]; then
         error "Invalid $field_name: version string is empty or null"
+        return 1
+    fi
+    
+    # Reject versions starting with dash to prevent option injection (e.g., "-18.0.0" parsed as flag)
+    if [[ "$version" =~ ^- ]]; then
+        error "Invalid $field_name: '$version' (version cannot start with dash)"
+        echo ""
+        info "Version strings starting with '-' are rejected to prevent option injection"
+        info "into package managers (fnm, npm, etc.)"
         return 1
     fi
     
@@ -142,15 +151,13 @@ parse_package_json() {
     fi
     
     local result
-    local jq_exit_code
+    local jq_exit_code=0
     
     # Attempt to parse with jq, coalescing null to empty string
     # Using '// empty' ensures null values become empty strings rather than literal "null"
-    result=$(jq -r "($jq_query) // empty" package.json 2>&1)
-    jq_exit_code=$?
-    
-    # Check if jq command failed (malformed JSON or invalid query)
-    if [ $jq_exit_code -ne 0 ]; then
+    # Wrapped in if-statement to be errexit-safe (set -e won't abort before error handling)
+    if ! result=$(jq -r "($jq_query) // empty" package.json 2>&1); then
+        jq_exit_code=$?
         error "Failed to parse $field_name from package.json"
         echo ""
         info "jq error: $result"
