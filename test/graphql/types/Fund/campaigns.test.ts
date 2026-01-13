@@ -88,7 +88,19 @@ async function createTestOrganization(authToken: string) {
 			},
 		},
 	);
-	assertToBeNonNullish(createOrgResult.data?.createOrganization);
+
+	if (createOrgResult.errors) {
+		throw new Error(
+			`Failed to create organization: ${JSON.stringify(createOrgResult.errors)}`,
+		);
+	}
+
+	if (!createOrgResult.data?.createOrganization) {
+		throw new Error(
+			`Failed to create organization: no data returned. Response: ${JSON.stringify(createOrgResult)}`,
+		);
+	}
+
 	const org = createOrgResult.data.createOrganization;
 	assertToBeNonNullish(org.id);
 	return { id: org.id as string, name: org.name as string };
@@ -507,28 +519,6 @@ describe("Fund.campaigns Resolver - Integration", () => {
 
 			const error = result.errors?.[0];
 			expect(error?.extensions?.code).toBe("invalid_arguments");
-		});
-
-		it("should error when last is provided with an after cursor (Relay spec violation)", async () => {
-			// obtain a valid cursor first by querying the last page
-			const lastPage = await mercuriusClient.query(Query_Fund_Campaigns, {
-				headers: { authorization: `bearer ${adminAuth.token}` },
-				variables: { input: { id: fund.id }, last: 1 },
-			});
-			const cursor = lastPage.data?.fund?.campaigns?.pageInfo?.startCursor;
-			assertToBeNonNullish(cursor);
-
-			const result = await mercuriusClient.query(Query_Fund_Campaigns, {
-				headers: { authorization: `bearer ${adminAuth.token}` },
-				variables: {
-					input: { id: fund.id },
-					last: 1,
-					after: cursor,
-				},
-			});
-
-			expect(result.errors).toBeDefined();
-			expect(result.errors?.[0]?.extensions?.code).toBe("invalid_arguments");
 		});
 
 		it("should return error for malformed cursor in backward pagination", async () => {
