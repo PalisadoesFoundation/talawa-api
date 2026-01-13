@@ -555,6 +555,7 @@ describe("backgroundServiceWorker", () => {
 			expect(mockLogger.info).toHaveBeenCalledWith(
 				"Manually triggering materialization worker",
 			);
+			expect(runMaterializationWorker).toHaveBeenCalled();
 
 			await stopBackgroundWorkers(mockLogger);
 		});
@@ -853,7 +854,7 @@ describe("backgroundServiceWorker", () => {
 			await stopBackgroundWorkers(mockLogger);
 		});
 
-		it("logs error when getPerformanceSnapshots throws", async () => {
+		it("logs error when worker result contains error", async () => {
 			// Mock runMetricsAggregationWorker to return a result with error field
 			// This simulates what happens when getSnapshots throws inside the worker:
 			// The worker catches the error and returns a result with the error field set
@@ -906,6 +907,178 @@ describe("backgroundServiceWorker", () => {
 					aggregationDuration: "5ms",
 					error: "Snapshot retrieval failed",
 					stack: expect.any(String),
+				}),
+				"Metrics aggregation worker failed",
+			);
+
+			await stopBackgroundWorkers(mockLogger);
+		});
+
+		it("logs error when result has error and snapshotsProcessed is undefined", async () => {
+			// Test line 344: result.snapshotsProcessed ?? 0
+			const { runMetricsAggregationWorker } = await import(
+				"~/src/workers/metrics/metricsAggregationWorker"
+			);
+
+			const mockFastify = {
+				envConfig: {
+					METRICS_AGGREGATION_WINDOW_MINUTES: 5,
+					METRICS_SNAPSHOT_RETENTION_COUNT: 1000,
+					METRICS_SLOW_THRESHOLD_MS: 200,
+				},
+				getPerformanceSnapshots: vi.fn().mockReturnValue([]),
+			} as unknown as Parameters<typeof startBackgroundWorkers>[2];
+
+			await startBackgroundWorkers(mockDrizzleClient, mockLogger, mockFastify);
+
+			const aggregationError = new Error("Aggregation error");
+			vi.mocked(runMetricsAggregationWorker).mockReturnValue({
+				metrics: {
+					timestamp: Date.now(),
+					windowMinutes: 5,
+					snapshotCount: 0,
+					operations: {},
+					cache: {
+						totalHits: 0,
+						totalMisses: 0,
+						totalOps: 0,
+						hitRate: 0,
+					},
+					slowOperationCount: 0,
+					avgTotalMs: 0,
+					minTotalMs: 0,
+					maxTotalMs: 0,
+					medianTotalMs: 0,
+					p95TotalMs: 0,
+					p99TotalMs: 0,
+				},
+				// snapshotsProcessed is undefined to test the ?? 0 fallback
+				snapshotsProcessed: undefined,
+				aggregationDurationMs: undefined,
+				error: aggregationError,
+			} as unknown as ReturnType<typeof runMetricsAggregationWorker>);
+
+			await runMetricsAggregationWorkerSafely(mockLogger);
+
+			expect(mockLogger.error).toHaveBeenCalledWith(
+				expect.objectContaining({
+					duration: expect.stringMatching(/^\d+ms$/),
+					snapshotsProcessed: 0, // Should use 0 fallback when undefined
+					aggregationDuration: expect.stringMatching(/^\d+ms$/), // Should use duration fallback
+					error: "Aggregation error",
+					stack: expect.any(String),
+				}),
+				"Metrics aggregation worker failed",
+			);
+
+			await stopBackgroundWorkers(mockLogger);
+		});
+
+		it("logs error when result is undefined", async () => {
+			// Test lines 358-365: handle undefined result defensively
+			const { runMetricsAggregationWorker } = await import(
+				"~/src/workers/metrics/metricsAggregationWorker"
+			);
+
+			const mockFastify = {
+				envConfig: {
+					METRICS_AGGREGATION_WINDOW_MINUTES: 5,
+					METRICS_SNAPSHOT_RETENTION_COUNT: 1000,
+					METRICS_SLOW_THRESHOLD_MS: 200,
+				},
+				getPerformanceSnapshots: vi.fn().mockReturnValue([]),
+			} as unknown as Parameters<typeof startBackgroundWorkers>[2];
+
+			await startBackgroundWorkers(mockDrizzleClient, mockLogger, mockFastify);
+
+			// Mock to return undefined (shouldn't happen but handle defensively)
+			vi.mocked(runMetricsAggregationWorker).mockReturnValue(
+				undefined as unknown as ReturnType<typeof runMetricsAggregationWorker>,
+			);
+
+			await runMetricsAggregationWorkerSafely(mockLogger);
+
+			expect(mockLogger.error).toHaveBeenCalledWith(
+				expect.objectContaining({
+					duration: expect.stringMatching(/^\d+ms$/),
+					error: "Metrics aggregation worker returned undefined result",
+				}),
+				"Metrics aggregation worker failed",
+			);
+
+			await stopBackgroundWorkers(mockLogger);
+		});
+
+		it("logs error when runMetricsAggregationWorker throws exception", async () => {
+			// Test lines 386-402: catch block handles exceptions thrown before result is assigned
+			const { runMetricsAggregationWorker } = await import(
+				"~/src/workers/metrics/metricsAggregationWorker"
+			);
+
+			const mockFastify = {
+				envConfig: {
+					METRICS_AGGREGATION_WINDOW_MINUTES: 5,
+					METRICS_SNAPSHOT_RETENTION_COUNT: 1000,
+					METRICS_SLOW_THRESHOLD_MS: 200,
+				},
+				getPerformanceSnapshots: vi.fn().mockReturnValue([]),
+			} as unknown as Parameters<typeof startBackgroundWorkers>[2];
+
+			await startBackgroundWorkers(mockDrizzleClient, mockLogger, mockFastify);
+
+			const thrownError = new Error("Worker threw exception");
+			// Mock to throw an exception (simulating error before result assignment)
+			vi.mocked(runMetricsAggregationWorker).mockImplementation(() => {
+				throw thrownError;
+			});
+
+			await runMetricsAggregationWorkerSafely(mockLogger);
+
+			expect(mockLogger.error).toHaveBeenCalledWith(
+				expect.objectContaining({
+					duration: expect.stringMatching(/^\d+ms$/),
+					snapshotsProcessed: 0, // result is undefined, so ?? 0
+					aggregationDuration: expect.stringMatching(/^\d+ms$/), // result is undefined, so use duration
+					error: "Worker threw exception",
+					stack: expect.any(String),
+				}),
+				"Metrics aggregation worker failed",
+			);
+
+			await stopBackgroundWorkers(mockLogger);
+		});
+
+		it("logs error when runMetricsAggregationWorker throws non-Error exception", async () => {
+			// Test lines 389-402: catch block handles non-Error exceptions
+			const { runMetricsAggregationWorker } = await import(
+				"~/src/workers/metrics/metricsAggregationWorker"
+			);
+
+			const mockFastify = {
+				envConfig: {
+					METRICS_AGGREGATION_WINDOW_MINUTES: 5,
+					METRICS_SNAPSHOT_RETENTION_COUNT: 1000,
+					METRICS_SLOW_THRESHOLD_MS: 200,
+				},
+				getPerformanceSnapshots: vi.fn().mockReturnValue([]),
+			} as unknown as Parameters<typeof startBackgroundWorkers>[2];
+
+			await startBackgroundWorkers(mockDrizzleClient, mockLogger, mockFastify);
+
+			// Mock to throw a non-Error exception
+			vi.mocked(runMetricsAggregationWorker).mockImplementation(() => {
+				throw "String exception";
+			});
+
+			await runMetricsAggregationWorkerSafely(mockLogger);
+
+			expect(mockLogger.error).toHaveBeenCalledWith(
+				expect.objectContaining({
+					duration: expect.stringMatching(/^\d+ms$/),
+					snapshotsProcessed: 0,
+					aggregationDuration: expect.stringMatching(/^\d+ms$/),
+					error: "String exception",
+					stack: undefined, // Non-Error doesn't have stack
 				}),
 				"Metrics aggregation worker failed",
 			);
@@ -995,11 +1168,46 @@ describe("backgroundServiceWorker", () => {
 			await stopBackgroundWorkers(mockLogger);
 		});
 
-		// Note: A test for "getBackgroundWorkerStatus throws" is not included because:
-		// 1. ESM modules don't allow mocking internal function calls
-		// 2. healthCheck calls getBackgroundWorkerStatus directly within the module
-		// 3. The catch block behavior is verified through code review
-		// See: https://github.com/vitest-dev/vitest/issues/1329
+		it("returns unhealthy when getBackgroundWorkerStatus throws Error", async () => {
+			// Test lines 469-476: catch block handles when getBackgroundWorkerStatus throws
+			const statusError = new Error("Status check failed");
+			const statusSpy = vi
+				.spyOn(
+					await import("~/src/workers/backgroundWorkerService"),
+					"getBackgroundWorkerStatus",
+				)
+				.mockImplementation(() => {
+					throw statusError;
+				});
+
+			const result = await healthCheck();
+
+			expect(result.status).toBe("unhealthy");
+			expect(result.details.reason).toBe("Health check failed");
+			expect(result.details.error).toBe("Status check failed");
+
+			statusSpy.mockRestore();
+		});
+
+		it("returns unhealthy when getBackgroundWorkerStatus throws non-Error", async () => {
+			// Test lines 469-476: catch block handles when getBackgroundWorkerStatus throws non-Error
+			const statusSpy = vi
+				.spyOn(
+					await import("~/src/workers/backgroundWorkerService"),
+					"getBackgroundWorkerStatus",
+				)
+				.mockImplementation(() => {
+					throw "String error";
+				});
+
+			const result = await healthCheck();
+
+			expect(result.status).toBe("unhealthy");
+			expect(result.details.reason).toBe("Health check failed");
+			expect(result.details.error).toBe("String error");
+
+			statusSpy.mockRestore();
+		});
 	});
 
 	describe("updateMaterializationConfig", () => {

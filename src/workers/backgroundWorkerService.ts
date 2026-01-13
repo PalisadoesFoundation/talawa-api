@@ -32,10 +32,14 @@ let fastifyInstance: FastifyInstance | undefined;
  */
 function getMetricsSchedule(fastify?: FastifyInstance): string {
 	const instance = fastify ?? fastifyInstance;
-	const metricsEnabled =
-		instance?.envConfig.METRICS_AGGREGATION_ENABLED ?? true;
 
-	if (metricsEnabled && instance) {
+	if (!instance) {
+		return "disabled";
+	}
+
+	const metricsEnabled = instance.envConfig.METRICS_AGGREGATION_ENABLED ?? true;
+
+	if (metricsEnabled) {
 		return (
 			instance.envConfig.METRICS_AGGREGATION_CRON_SCHEDULE ?? "*/5 * * * *"
 		);
@@ -99,10 +103,7 @@ export async function startBackgroundWorkers(
 				},
 			);
 			metricsTask.start();
-		} else if (
-			(fastify?.envConfig.METRICS_AGGREGATION_ENABLED ?? true) &&
-			!fastify
-		) {
+		} else if (!fastify) {
 			logger.warn(
 				"Metrics aggregation is enabled but Fastify instance is not available. Metrics worker will not start.",
 			);
@@ -318,6 +319,8 @@ export async function runMetricsAggregationWorkerSafely(
 	try {
 		// Get configuration from validated environment config
 		// Values are already validated and typed by the schema
+		// Note: windowMinutes is deprecated and currently non-functional because PerfSnapshot doesn't include timestamps,
+		// but retained for forward compatibility when timestamps are added in a future PR
 		const options: MetricsAggregationOptions = {
 			windowMinutes: fastify.envConfig.METRICS_AGGREGATION_WINDOW_MINUTES ?? 5,
 			maxSnapshots: fastify.envConfig.METRICS_SNAPSHOT_RETENTION_COUNT ?? 1000,

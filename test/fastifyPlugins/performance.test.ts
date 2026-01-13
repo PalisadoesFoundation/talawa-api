@@ -1,5 +1,5 @@
 import Fastify, { type FastifyRequest } from "fastify";
-import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { EnvConfig } from "../../src/envConfigSchema";
 import performancePlugin from "../../src/fastifyPlugins/performance";
 import type { PerfSnapshot } from "../../src/utilities/metrics/performanceTracker";
@@ -35,7 +35,9 @@ function createTestFastifyInstance() {
 
 	// Decorate envConfig before registering the performance plugin
 	// The plugin depends on envConfig for configuration values
-	app.decorate("envConfig", performancePluginTestEnvConfig as EnvConfig);
+	// Using Partial<EnvConfig> to reflect that the test fixture is intentionally minimal
+	const testEnvConfig: Partial<EnvConfig> = performancePluginTestEnvConfig;
+	app.decorate("envConfig", testEnvConfig as unknown as EnvConfig);
 
 	return app;
 }
@@ -564,6 +566,21 @@ describe("Performance Plugin", () => {
 	});
 
 	describe("getPerformanceSnapshots", () => {
+		it("should return empty array when no snapshots exist", async () => {
+			const testApp = createTestFastifyInstance();
+
+			await testApp.register(performancePlugin);
+			await testApp.ready();
+
+			// Call before any requests are made
+			const snapshots = testApp.getPerformanceSnapshots();
+
+			expect(snapshots).toEqual([]);
+			expect(Array.isArray(snapshots)).toBe(true);
+
+			await testApp.close();
+		});
+
 		it("should return all snapshots when limit is undefined", async () => {
 			const testApp = createTestFastifyInstance();
 
@@ -716,11 +733,73 @@ describe("Performance Plugin", () => {
 	});
 
 	describe("Deep Copy Fallback", () => {
-		// Note: Integration test for "structuredClone unavailable" is intentionally omitted.
-		// Testing the fallback path in the plugin requires mocking global `structuredClone`
-		// across vitest's VM/worker boundaries, which is fundamentally unreliable in CI.
-		// The fallback behavior is verified directly via the `manualDeepCopySnapshot` test below.
-		// See: https://github.com/vitest-dev/vitest/issues/1329
+		it("should use manualDeepCopySnapshot when structuredClone is unavailable", async () => {
+			// Test line 87: fallback path when structuredClone is not available
+			// Save original structuredClone
+			const originalStructuredClone = globalThis.structuredClone;
+
+			try {
+				// Stub structuredClone to be undefined to force fallback path
+				vi.stubGlobal("structuredClone", undefined);
+
+				// Create app and register plugin AFTER stubbing structuredClone
+				// This ensures the deepCopySnapshot function checks for structuredClone
+				// when it's actually called, not when the plugin is registered
+				const testApp = createTestFastifyInstance();
+
+				await testApp.register(performancePlugin);
+
+				testApp.get("/test-fallback", async (request: FastifyRequest) => {
+					request.perf?.trackDb(30);
+					request.perf?.trackCacheHit();
+					return { ok: true };
+				});
+
+				await testApp.ready();
+
+				// Make a request to create a snapshot
+				await testApp.inject({
+					method: "GET",
+					url: "/test-fallback",
+				});
+
+				// Get snapshots - this should use the fallback path (line 87)
+				const snapshots = testApp.getPerformanceSnapshots(1);
+
+				expect(snapshots.length).toBe(1);
+				expect(snapshots[0]).toBeDefined();
+				expect(snapshots[0]).toHaveProperty("ops");
+				expect(snapshots[0]).toHaveProperty("cacheHits");
+				expect(snapshots[0]?.cacheHits).toBe(1);
+
+				// Verify the snapshot is deep-copied (independent)
+				const snapshot = snapshots[0];
+				if (snapshot) {
+					const originalOps = snapshot.ops;
+					snapshot.ops = {};
+
+					// Get snapshots again - original should be unchanged
+					const snapshots2 = testApp.getPerformanceSnapshots(1);
+					const snapshot2 = snapshots2[0];
+					expect(snapshot2).toBeDefined();
+					if (snapshot2) {
+						expect(snapshot2.ops).not.toEqual({});
+						expect(snapshot2.ops).toEqual(originalOps);
+					}
+				}
+
+				await testApp.close();
+			} finally {
+				// Restore original structuredClone
+				if (originalStructuredClone) {
+					vi.stubGlobal("structuredClone", originalStructuredClone);
+				} else {
+					// If it was originally undefined, remove the stub
+					// @ts-expect-error - Intentionally removing for cleanup
+					delete globalThis.structuredClone;
+				}
+			}
+		});
 
 		it("should correctly perform manual deep copy of snapshot", async () => {
 			// Directly test the exported manualDeepCopySnapshot function
@@ -744,6 +823,7 @@ describe("Performance Plugin", () => {
 				cacheHits: 5,
 				cacheMisses: 2,
 				hitRate: 5 / 7, // hits / (hits + misses)
+				complexityScore: 42,
 			};
 
 			// Perform manual deep copy
@@ -754,6 +834,8 @@ describe("Performance Plugin", () => {
 			expect(copiedSnapshot).toHaveProperty("slow");
 			expect(copiedSnapshot).toHaveProperty("cacheHits");
 			expect(copiedSnapshot).toHaveProperty("cacheMisses");
+			expect(copiedSnapshot).toHaveProperty("complexityScore");
+			expect(copiedSnapshot.complexityScore).toBe(42);
 
 			// Verify ops is an object (not array)
 			expect(typeof copiedSnapshot.ops).toBe("object");
@@ -762,28 +844,16 @@ describe("Performance Plugin", () => {
 			// Verify slow is an array
 			expect(Array.isArray(copiedSnapshot.slow)).toBe(true);
 
-			// Verify deep copy worked - modify original and check independence
-			const originalOps = { ...copiedSnapshot.ops };
-			copiedSnapshot.ops = {};
-
-			// Original snapshot should be unchanged
-			expect(originalSnapshot.ops).not.toEqual({});
-			expect(originalSnapshot.ops).toEqual(originalOps);
-
 			// Verify nested objects are also independent
 			const originalDbOps = originalSnapshot.ops.db;
-			if (originalDbOps) {
+			const copiedDbOps = copiedSnapshot.ops.db;
+			if (originalDbOps && copiedDbOps) {
+				// Modify original's nested object
 				originalDbOps.count = 999;
 
-				// The copied snapshot's ops should not be affected
-				expect(copiedSnapshot.ops).toEqual({});
-				// Restore for final check
-				copiedSnapshot.ops = originalOps;
-				const copiedDbOps = copiedSnapshot.ops.db;
-				if (copiedDbOps) {
-					expect(copiedDbOps.count).not.toBe(999);
-					expect(copiedDbOps.count).toBe(2);
-				}
+				// Copied snapshot's nested object should be unaffected
+				expect(copiedDbOps.count).toBe(2);
+				expect(copiedDbOps.count).not.toBe(999);
 			}
 
 			// Verify slow array is independent

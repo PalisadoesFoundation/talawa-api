@@ -154,7 +154,7 @@ const perfPlugin = async (app: FastifyInstance) => {
 
 	// Endpoint to retrieve recent performance snapshots
 	app.get("/metrics/perf", async () => ({
-		recent: recent.slice(0, 50),
+		recent: recent.slice(0, 50).map(deepCopySnapshot),
 	}));
 };
 

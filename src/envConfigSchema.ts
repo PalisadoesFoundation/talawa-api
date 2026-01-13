@@ -510,6 +510,7 @@ export const envConfigSchema = Type.Object({
 	RECURRING_EVENT_GENERATION_CRON_SCHEDULE: Type.Optional(
 		Type.String({
 			minLength: 9, // Minimum valid cron: "* * * * *"
+			format: "cron", // Validates cron expression syntax at schema-time
 		}),
 	),
 
@@ -520,6 +521,7 @@ export const envConfigSchema = Type.Object({
 	OLD_EVENT_INSTANCES_CLEANUP_CRON_SCHEDULE: Type.Optional(
 		Type.String({
 			minLength: 9, // Minimum valid cron: "* * * * *"
+			format: "cron", // Validates cron expression syntax at schema-time
 		}),
 	),
 
@@ -541,6 +543,7 @@ export const envConfigSchema = Type.Object({
 		Type.String({
 			minLength: 9, // Minimum valid cron: "* * * * *"
 			format: "cron", // Validates cron expression syntax at schema-time
+			default: "*/5 * * * *",
 		}),
 	),
 

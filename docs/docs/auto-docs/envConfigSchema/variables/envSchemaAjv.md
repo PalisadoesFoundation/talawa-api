@@ -6,6 +6,6 @@
 
 > `const` **envSchemaAjv**: `EnvSchemaOpt`\[`"ajv"`\]
 
-Defined in: [src/envConfigSchema.ts:597](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/envConfigSchema.ts#L597)
+Defined in: [src/envConfigSchema.ts:600](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/envConfigSchema.ts#L600)
 
 The `@sinclair/typebox` package doesn't do format validation by itself and requires custom validators for it. The `ajv-formats` package provides this functionality and this object is used to provide the talawa api specific configuration for the `ajv` property accepted by `envSchema` to define those custom format validators.

@@ -6,7 +6,7 @@
 
 > **runCleanupWorkerSafely**(`drizzleClient`, `logger`): `Promise`\<`void`\>
 
-Defined in: [src/workers/backgroundWorkerService.ts:216](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/workers/backgroundWorkerService.ts#L216)
+Defined in: [src/workers/backgroundWorkerService.ts:217](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/workers/backgroundWorkerService.ts#L217)
 
 Executes the cleanup worker with robust error handling to ensure stability.
 
