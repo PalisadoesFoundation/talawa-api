@@ -528,6 +528,45 @@ export const envConfigSchema = Type.Object({
 			minLength: 1,
 		}),
 	),
+
+	/**
+	 * Cron schedule for the metrics aggregation background worker.
+	 * Default: every 5 minutes (cron: every 5 minutes)
+	 */
+	METRICS_AGGREGATION_CRON_SCHEDULE: Type.Optional(
+		Type.String({
+			minLength: 9, // Minimum valid cron: "* * * * *"
+		}),
+	),
+
+	/**
+	 * Enable or disable the metrics aggregation background worker.
+	 * Default: true
+	 */
+	METRICS_AGGREGATION_ENABLED: Type.Optional(Type.Boolean({ default: true })),
+
+	/**
+	 * Maximum number of performance snapshots to retain in memory.
+	 * Default: 1000
+	 */
+	METRICS_SNAPSHOT_RETENTION_COUNT: Type.Optional(
+		Type.Integer({
+			minimum: 1,
+			default: 1000,
+		}),
+	),
+
+	/**
+	 * Time window in minutes for metrics aggregation.
+	 * Snapshots from the last N minutes will be aggregated.
+	 * Default: 5
+	 */
+	METRICS_AGGREGATION_WINDOW_MINUTES: Type.Optional(
+		Type.Integer({
+			minimum: 1,
+			default: 5,
+		}),
+	),
 });
 
 /**

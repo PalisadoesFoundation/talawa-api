@@ -14,8 +14,8 @@ import { startBackgroundWorkers, stopBackgroundWorkers } from "~/src/workers";
 const backgroundWorkersPlugin = async (fastify: FastifyInstance) => {
 	fastify.log.info("Initializing background workers...");
 
-	// Start the background workers
-	await startBackgroundWorkers(fastify.drizzleClient, fastify.log);
+	// Start the background workers (pass Fastify instance for metrics aggregation)
+	await startBackgroundWorkers(fastify.drizzleClient, fastify.log, fastify);
 
 	fastify.log.info("Background workers started successfully");
 
@@ -30,5 +30,5 @@ const backgroundWorkersPlugin = async (fastify: FastifyInstance) => {
 // Export as fastify plugin
 export default fastifyPlugin(backgroundWorkersPlugin, {
 	name: "backgroundWorkers",
-	dependencies: ["drizzleClient"], // Depends on drizzle client being available
+	dependencies: ["drizzleClient", "performance"], // Depends on drizzle client and performance plugin being available
 });

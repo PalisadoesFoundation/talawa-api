@@ -20,6 +20,17 @@ declare module "fastify" {
 		 */
 		_t0?: number;
 	}
+
+	interface FastifyInstance {
+		/**
+		 * Retrieves recent performance snapshots for metrics aggregation.
+		 * Returns a copy of the snapshots array to prevent external modification.
+		 *
+		 * @param limit - Maximum number of snapshots to return (default: all available)
+		 * @returns Array of performance snapshots
+		 */
+		getPerformanceSnapshots(limit?: number): PerfSnapshot[];
+	}
 }
 
 /**
@@ -27,10 +38,30 @@ declare module "fastify" {
  * - Attaches a performance tracker to each request
  * - Adds Server-Timing headers to responses
  * - Provides /metrics/perf endpoint for recent performance snapshots
+ * - Exposes metrics aggregation interface for background workers
  */
 export default fp(async function perfPlugin(app: FastifyInstance) {
-	// Store recent performance snapshots in memory (last 200 requests)
+	// Get configurable snapshot retention count from validated environment config
+	// Falls back to 1000 if not set (matching schema default)
+	const retentionCount = app.envConfig.METRICS_SNAPSHOT_RETENTION_COUNT ?? 1000;
+
+	// Store recent performance snapshots in memory (most recent first)
+	// Note: unshift is O(n) but acceptable for typical retention counts (< 1000)
 	const recent: PerfSnapshot[] = [];
+
+	/**
+	 * Retrieves recent performance snapshots for metrics aggregation.
+	 * Returns a copy of the snapshots array to prevent external modification.
+	 *
+	 * @param limit - Maximum number of snapshots to return (default: all available)
+	 * @returns Array of performance snapshots
+	 */
+	app.decorate("getPerformanceSnapshots", (limit?: number): PerfSnapshot[] => {
+		if (limit !== undefined && limit > 0) {
+			return recent.slice(0, limit).map((snap) => ({ ...snap }));
+		}
+		return recent.map((snap) => ({ ...snap }));
+	});
 
 	// Attach performance tracker to each request
 	app.addHook("onRequest", async (req) => {
@@ -42,7 +73,9 @@ export default fp(async function perfPlugin(app: FastifyInstance) {
 	app.addHook("onSend", async (req, reply) => {
 		const snap = req.perf?.snapshot?.();
 		const total = Date.now() - (req._t0 ?? Date.now());
-		const slowMs = Number(process.env.API_SLOW_REQUEST_MS ?? 500);
+		// Get slow request threshold from validated environment config
+		// Falls back to 500 if not set (matching schema default)
+		const slowMs = app.envConfig.API_SLOW_REQUEST_MS ?? 500;
 
 		if (total >= slowMs) {
 			req.log.warn({
@@ -64,12 +97,15 @@ export default fp(async function perfPlugin(app: FastifyInstance) {
 			`db;dur=${dbMs}, cache;desc="${cacheDesc}", total;dur=${Math.round(total)}`,
 		);
 
-		// Store snapshot in recent buffer
+		// Store snapshot in recent buffer (most recent first)
+		// Note: unshift is O(n) but acceptable for typical retention counts (< 1000)
+		// For better performance with very large retention counts, consider a proper ring buffer
 		if (snap) {
 			recent.unshift({ ...snap });
-			// Keep only last 200 snapshots
-			if (recent.length > 200) {
-				recent.splice(200);
+			// Keep only the configured number of snapshots
+			// Use splice to remove from the end (more efficient than pop in a loop)
+			if (recent.length > retentionCount) {
+				recent.length = retentionCount;
 			}
 		}
 	});

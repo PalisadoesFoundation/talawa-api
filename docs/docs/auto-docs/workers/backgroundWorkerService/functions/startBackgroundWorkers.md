@@ -4,9 +4,9 @@
 
 # Function: startBackgroundWorkers()
 
-> **startBackgroundWorkers**(`drizzleClient`, `logger`): `Promise`\<`void`\>
+> **startBackgroundWorkers**(`drizzleClient`, `logger`, `fastify?`): `Promise`\<`void`\>
 
-Defined in: [src/workers/backgroundWorkerService.ts:21](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/workers/backgroundWorkerService.ts#L21)
+Defined in: [src/workers/backgroundWorkerService.ts:29](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/workers/backgroundWorkerService.ts#L29)
 
 Initializes and starts all background workers, scheduling them to run at their configured intervals.
 
@@ -16,9 +16,19 @@ Initializes and starts all background workers, scheduling them to run at their c
 
 `NodePgDatabase`\<[API Docs](/)\>
 
+Database client for database operations
+
 ### logger
 
 `FastifyBaseLogger`
+
+Logger instance for logging
+
+### fastify?
+
+`FastifyInstance`\<`RawServerDefault`, `IncomingMessage`, `ServerResponse`\<`IncomingMessage`\>, `FastifyBaseLogger`, `FastifyTypeProviderDefault`\>
+
+Optional Fastify instance for accessing performance snapshots
 
 ## Returns
 

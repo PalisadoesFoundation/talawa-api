@@ -1,5 +1,5 @@
 import type { NodePgDatabase } from "drizzle-orm/node-postgres";
-import type { FastifyBaseLogger } from "fastify";
+import type { FastifyBaseLogger, FastifyInstance } from "fastify";
 import cron from "node-cron";
 import type * as schema from "~/src/drizzle/schema";
 import { cleanupOldInstances } from "./eventCleanupWorker";
@@ -9,18 +9,27 @@ import {
 	type WorkerConfig,
 	type WorkerResult,
 } from "./eventGeneration/eventGenerationPipeline";
+import { runMetricsAggregationWorker } from "./metrics/metricsAggregationWorker";
+import type { MetricsAggregationOptions } from "./metrics/types";
 
 let materializationTask: cron.ScheduledTask | undefined;
 let cleanupTask: cron.ScheduledTask | undefined;
+let metricsTask: cron.ScheduledTask | undefined;
 let isRunning = false;
 let materializationConfig: WorkerConfig = createDefaultWorkerConfig();
+let fastifyInstance: FastifyInstance | undefined;
 
 /**
  * Initializes and starts all background workers, scheduling them to run at their configured intervals.
+ *
+ * @param drizzleClient - Database client for database operations
+ * @param logger - Logger instance for logging
+ * @param fastify - Optional Fastify instance for accessing performance snapshots
  */
 export async function startBackgroundWorkers(
 	drizzleClient: NodePgDatabase<typeof schema>,
 	logger: FastifyBaseLogger,
+	fastify?: FastifyInstance,
 ): Promise<void> {
 	if (isRunning) {
 		logger.warn("Background workers are already running");
@@ -29,6 +38,9 @@ export async function startBackgroundWorkers(
 
 	try {
 		logger.info("Starting background worker service...");
+
+		// Store Fastify instance for metrics aggregation worker
+		fastifyInstance = fastify;
 
 		// Schedule event generation worker - runs every hour
 		materializationTask = cron.schedule(
@@ -50,6 +62,26 @@ export async function startBackgroundWorkers(
 			},
 		);
 
+		// Schedule metrics aggregation worker if enabled
+		const metricsEnabled = process.env.METRICS_AGGREGATION_ENABLED !== "false";
+		if (metricsEnabled && fastify) {
+			const metricsSchedule =
+				process.env.METRICS_AGGREGATION_CRON_SCHEDULE || "*/5 * * * *";
+			metricsTask = cron.schedule(
+				metricsSchedule,
+				() => runMetricsAggregationWorkerSafely(logger),
+				{
+					scheduled: false,
+					timezone: "UTC",
+				},
+			);
+			metricsTask.start();
+		} else if (metricsEnabled && !fastify) {
+			logger.warn(
+				"Metrics aggregation is enabled but Fastify instance is not available. Metrics worker will not start.",
+			);
+		}
+
 		// Start the scheduled tasks
 		materializationTask.start();
 		cleanupTask.start();
@@ -60,6 +92,10 @@ export async function startBackgroundWorkers(
 				materializationSchedule:
 					process.env.EVENT_GENERATION_CRON_SCHEDULE || "0 * * * *",
 				cleanupSchedule: process.env.CLEANUP_CRON_SCHEDULE || "0 2 * * *",
+				metricsSchedule:
+					metricsEnabled && fastify
+						? process.env.METRICS_AGGREGATION_CRON_SCHEDULE || "*/5 * * * *"
+						: "disabled",
 			},
 			"Background worker service started successfully",
 		);
@@ -96,6 +132,12 @@ export async function stopBackgroundWorkers(
 			cleanupTask = undefined;
 		}
 
+		if (metricsTask) {
+			metricsTask.stop();
+			metricsTask = undefined;
+		}
+
+		fastifyInstance = undefined;
 		isRunning = false;
 		logger.info("Background worker service stopped successfully");
 	} catch (error) {
@@ -212,6 +254,85 @@ export async function triggerCleanupWorker(
 }
 
 /**
+ * Manually triggers a run of the metrics aggregation worker, useful for testing or administrative purposes.
+ */
+export async function triggerMetricsAggregationWorker(
+	logger: FastifyBaseLogger,
+): Promise<void> {
+	if (!isRunning) {
+		throw new Error("Background worker service is not running");
+	}
+
+	if (!fastifyInstance) {
+		throw new Error(
+			"Fastify instance is not available for metrics aggregation",
+		);
+	}
+
+	logger.info("Manually triggering metrics aggregation worker");
+	await runMetricsAggregationWorkerSafely(logger);
+}
+
+/**
+ * Executes the metrics aggregation worker with robust error handling to prevent crashes.
+ */
+export async function runMetricsAggregationWorkerSafely(
+	logger: FastifyBaseLogger,
+): Promise<void> {
+	const fastify = fastifyInstance;
+	if (!fastify) {
+		logger.warn(
+			"Metrics aggregation worker cannot run: Fastify instance not available",
+		);
+		return;
+	}
+
+	const startTime = Date.now();
+	logger.info("Starting metrics aggregation worker run");
+
+	try {
+		// Get configuration from validated environment config
+		// Values are already validated and typed by the schema
+		const options: MetricsAggregationOptions = {
+			windowMinutes: fastify.envConfig.METRICS_AGGREGATION_WINDOW_MINUTES ?? 5,
+			maxSnapshots: fastify.envConfig.METRICS_SNAPSHOT_RETENTION_COUNT ?? 1000,
+		};
+
+		const result = await runMetricsAggregationWorker(
+			() => fastify.getPerformanceSnapshots(),
+			logger,
+			options,
+		);
+
+		const duration = Date.now() - startTime;
+		logger.info(
+			{
+				duration: `${duration}ms`,
+				snapshotsProcessed: result.snapshotsProcessed,
+				aggregationDuration: `${result.aggregationDurationMs}ms`,
+				operationsCount: Object.keys(result.metrics.operations).length,
+				cacheHitRate: result.metrics.cache.hitRate,
+				slowOperations: result.metrics.slowOperationCount,
+				avgTotalMs: result.metrics.avgTotalMs,
+				p95TotalMs: result.metrics.p95TotalMs,
+				p99TotalMs: result.metrics.p99TotalMs,
+			},
+			"Metrics aggregation worker completed successfully",
+		);
+	} catch (error) {
+		const duration = Date.now() - startTime;
+		logger.error(
+			{
+				duration: `${duration}ms`,
+				error: error instanceof Error ? error.message : "Unknown error",
+				stack: error instanceof Error ? error.stack : undefined,
+			},
+			"Metrics aggregation worker failed",
+		);
+	}
+}
+
+/**
  * Retrieves the current status of the background worker service, including scheduling information.
  *
  * @returns - An object containing the current status of the service.
@@ -220,14 +341,20 @@ export function getBackgroundWorkerStatus(): {
 	isRunning: boolean;
 	materializationSchedule: string;
 	cleanupSchedule: string;
+	metricsSchedule: string;
 	nextMaterializationRun?: Date;
 	nextCleanupRun?: Date;
 } {
+	const metricsEnabled = process.env.METRICS_AGGREGATION_ENABLED !== "false";
 	return {
 		isRunning,
 		materializationSchedule:
 			process.env.EVENT_GENERATION_CRON_SCHEDULE || "0 * * * *",
 		cleanupSchedule: process.env.CLEANUP_CRON_SCHEDULE || "0 2 * * *",
+		metricsSchedule:
+			metricsEnabled && fastifyInstance
+				? process.env.METRICS_AGGREGATION_CRON_SCHEDULE || "*/5 * * * *"
+				: "disabled",
 	};
 }
 
