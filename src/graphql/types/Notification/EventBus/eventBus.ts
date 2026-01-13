@@ -105,6 +105,7 @@ export class NotificationEventBus extends EventEmitter {
 						organizationName: data.organizationName,
 						startDate: data.startDate,
 						eventId: data.eventId,
+						organizationId: data.organizationId,
 						creatorName: data.creatorName,
 					},
 					{
