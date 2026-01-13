@@ -180,7 +180,9 @@ async function createTestEnvironment(
 				input: {
 					name: "Test Agenda Folder",
 					eventId,
-					isAgendaItemFolder: true,
+					description: "desc",
+					sequence: 1,
+					organizationId: "org-id"
 				},
 			},
 		},
@@ -216,7 +218,9 @@ async function createNonAgendaItemFolder(
 			input: {
 				name: "Non-Item Folder",
 				eventId,
-				isAgendaItemFolder: false,
+				description: "desc",
+				sequence: 1,
+				organizationId: "org-id"
 			},
 		},
 	});
@@ -807,7 +811,9 @@ suite("Mutation field createAgendaItem", () => {
 						input: {
 							name: "Folder",
 							eventId,
-							isAgendaItemFolder: true,
+							description: "desc",
+							sequence: 1,
+							organizationId: "org-id"
 						},
 					},
 				},

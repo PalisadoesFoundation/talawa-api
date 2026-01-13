@@ -119,7 +119,9 @@ async function createOrgEventFolderAndAgendaItem(
 				input: {
 					name: `Folder-${Date.now()}`,
 					eventId,
-					isAgendaItemFolder: true,
+					description: "desc",
+					sequence: 1,
+					organizationId: "org-id"
 				},
 			},
 		},
