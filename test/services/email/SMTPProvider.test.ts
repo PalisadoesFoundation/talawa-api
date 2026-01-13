@@ -81,6 +81,72 @@ describe("SMTPProvider", () => {
 		);
 	});
 
+	it("should throw error if SMTP_PORT is 0 (below range)", async () => {
+		const provider = new SMTPProvider({
+			...mockConfig,
+			port: 0,
+		});
+
+		await expect(
+			provider.sendEmail({
+				id: "1",
+				email: "recipient@example.com",
+				subject: "Subject",
+				htmlBody: "Body",
+				userId: "123",
+			}),
+		).resolves.toEqual(
+			expect.objectContaining({
+				success: false,
+				error: "SMTP_PORT must be an integer between 1 and 65535",
+			}),
+		);
+	});
+
+	it("should throw error if SMTP_PORT is 65536 (above range)", async () => {
+		const provider = new SMTPProvider({
+			...mockConfig,
+			port: 65536,
+		});
+
+		await expect(
+			provider.sendEmail({
+				id: "1",
+				email: "recipient@example.com",
+				subject: "Subject",
+				htmlBody: "Body",
+				userId: "123",
+			}),
+		).resolves.toEqual(
+			expect.objectContaining({
+				success: false,
+				error: "SMTP_PORT must be an integer between 1 and 65535",
+			}),
+		);
+	});
+
+	it("should throw error if SMTP_PORT is non-integer (587.5)", async () => {
+		const provider = new SMTPProvider({
+			...mockConfig,
+			port: 587.5,
+		});
+
+		await expect(
+			provider.sendEmail({
+				id: "1",
+				email: "recipient@example.com",
+				subject: "Subject",
+				htmlBody: "Body",
+				userId: "123",
+			}),
+		).resolves.toEqual(
+			expect.objectContaining({
+				success: false,
+				error: "SMTP_PORT must be an integer between 1 and 65535",
+			}),
+		);
+	});
+
 	it("should initialize nodemailer transporter with correct config", async () => {
 		const job = {
 			id: "1",
@@ -423,6 +489,46 @@ describe("SMTPProvider", () => {
 		expect(mockSendMail).toHaveBeenCalledTimes(2);
 
 		vi.useRealTimers();
+	});
+
+	it("should sanitize fromName and subject to prevent SMTP header injection", async () => {
+		const provider = new SMTPProvider({
+			...mockConfig,
+			fromName: "Malicious\r\nBcc: hacker@evil.com",
+		});
+
+		const nodemailer = await import("nodemailer");
+		const mockSendMail = vi.fn().mockResolvedValue({ messageId: "msg-safe" });
+		(nodemailer.default.createTransport as Mock).mockReturnValue({
+			sendMail: mockSendMail,
+		});
+
+		await provider.sendEmail({
+			id: "1",
+			email: "to@example.com",
+			subject: "Test\r\nBcc: another-hacker@evil.com",
+			htmlBody: "B",
+			userId: "u",
+		});
+
+		// Verify CR/LF characters were removed/replaced
+		expect(mockSendMail).toHaveBeenCalledWith(
+			expect.objectContaining({
+				// fromName should have CR/LF replaced with spaces
+				from: expect.not.stringContaining("\r"),
+				// subject should have CR/LF replaced with spaces
+				subject: expect.not.stringContaining("\r"),
+			}),
+		);
+
+		// Additionally verify the actual sanitized values
+		const callArgs = mockSendMail.mock.calls[0]?.[0];
+		expect(callArgs.from).toContain("Malicious");
+		expect(callArgs.from).not.toContain("\r");
+		expect(callArgs.from).not.toContain("\n");
+		expect(callArgs.subject).toContain("Test");
+		expect(callArgs.subject).not.toContain("\r");
+		expect(callArgs.subject).not.toContain("\n");
 	});
 
 	it("should use secure=true when configured", async () => {

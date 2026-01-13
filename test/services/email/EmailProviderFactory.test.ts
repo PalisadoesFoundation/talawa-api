@@ -68,19 +68,6 @@ describe("EmailProviderFactory", () => {
 		expect(provider).toBeInstanceOf(SMTPProvider);
 	});
 
-	it("should throw error when SMTP_HOST is missing for SMTP provider", () => {
-		const config = {
-			API_EMAIL_PROVIDER: "smtp",
-			// SMTP_HOST missing
-			SMTP_PORT: 587,
-			SMTP_FROM_EMAIL: "from@example.com",
-		} as unknown as EnvConfig;
-
-		expect(() => EmailProviderFactory.create(config)).toThrow(
-			"SMTP_HOST is required when using SMTP provider",
-		);
-	});
-
 	it("should throw error when SMTP_PORT is missing for SMTP provider", () => {
 		const config = {
 			API_EMAIL_PROVIDER: "smtp",

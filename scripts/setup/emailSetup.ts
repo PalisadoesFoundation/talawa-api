@@ -150,6 +150,10 @@ export async function emailSetup(answers: SetupAnswers): Promise<SetupAnswers> {
 						if (!value || value.trim().length === 0) {
 							return "SMTP Port is required";
 						}
+						// Reject non-integer inputs (e.g., "587.5")
+						if (!/^\d+$/.test(value.trim())) {
+							return "Port must be an integer (no decimals or special characters)";
+						}
 						const port = parseInt(value, 10);
 						if (Number.isNaN(port) || port < 1 || port > 65535) {
 							return "Port must be a number between 1 and 65535";
@@ -196,13 +200,13 @@ export async function emailSetup(answers: SetupAnswers): Promise<SetupAnswers> {
 
 				// Determine secure based on port
 				const defaultSecure = parseInt(answers.SMTP_PORT || "0", 10) === 465;
-				answers.SMTP_SECURE = (
-					await promptConfirm(
-						"SMTP_SECURE",
-						"Use SSL/TLS? (true for port 465, false for port 587)",
-						defaultSecure,
-					)
-				).toString();
+				answers.SMTP_SECURE = (await promptConfirm(
+					"SMTP_SECURE",
+					"Use SSL/TLS? (true for port 465, false for port 587)",
+					defaultSecure,
+				))
+					? "true"
+					: "false";
 
 				answers.SMTP_FROM_EMAIL = await promptInput(
 					"SMTP_FROM_EMAIL",

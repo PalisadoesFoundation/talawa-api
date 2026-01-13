@@ -66,7 +66,6 @@ export class SMTPProvider implements IEmailProvider {
 			// Validate port is a finite integer in the range 1-65535
 			if (
 				!Number.isInteger(this.config.port) ||
-				!Number.isFinite(this.config.port) ||
 				this.config.port < 1 ||
 				this.config.port > 65535
 			) {
