@@ -227,7 +227,7 @@ describe("OAuth Configuration", () => {
 
 			const config = getProviderConfig("google", mockEnv);
 
-			// Expecting it to fall back to 10000ms
+			// Expecting it to fall back to minimum 1000ms
 			expect(config.requestTimeoutMs).toBe(1000);
 		});
 
@@ -278,7 +278,7 @@ describe("OAuth Configuration", () => {
 	});
 
 	describe("Edge cases", () => {
-		it("should handle providers with different timeout configurations", () => {
+		it("should apply the same timeout configuration to all providers", () => {
 			const mockEnv = {
 				GOOGLE_CLIENT_ID: "google-client-id",
 				GOOGLE_CLIENT_SECRET: "google-client-secret",

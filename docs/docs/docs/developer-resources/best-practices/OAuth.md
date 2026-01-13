@@ -260,15 +260,15 @@ interface OAuthProvidersConfig {
     enabled: boolean;
     clientId: string;
     clientSecret: string;
-    redirectUri?: string;
-    requestTimeoutMs?: number;
+    redirectUri: string;
+    requestTimeoutMs: number;
   };
   github: {
     enabled: boolean;
     clientId: string;
     clientSecret: string;
-    redirectUri?: string;
-    requestTimeoutMs?: number;
+    redirectUri: string;
+    requestTimeoutMs: number;
   };
 }
 ```

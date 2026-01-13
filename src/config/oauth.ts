@@ -31,8 +31,8 @@ export function loadOAuthConfig(env = process.env): OAuthProvidersConfig {
 				env.GOOGLE_CLIENT_SECRET &&
 				env.GOOGLE_REDIRECT_URI
 			),
-			clientId: env.GOOGLE_CLIENT_ID as string,
-			clientSecret: env.GOOGLE_CLIENT_SECRET as string,
+			clientId: env.GOOGLE_CLIENT_ID ?? "",
+			clientSecret: env.GOOGLE_CLIENT_SECRET ?? "",
 			redirectUri: env.GOOGLE_REDIRECT_URI,
 			requestTimeoutMs: validTimeout,
 		},
@@ -42,8 +42,8 @@ export function loadOAuthConfig(env = process.env): OAuthProvidersConfig {
 				env.GITHUB_CLIENT_SECRET &&
 				env.GITHUB_REDIRECT_URI
 			),
-			clientId: env.GITHUB_CLIENT_ID as string,
-			clientSecret: env.GITHUB_CLIENT_SECRET as string,
+			clientId: env.GITHUB_CLIENT_ID ?? "",
+			clientSecret: env.GITHUB_CLIENT_SECRET ?? "",
 			redirectUri: env.GITHUB_REDIRECT_URI,
 			requestTimeoutMs: validTimeout,
 		},
