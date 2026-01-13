@@ -704,13 +704,9 @@ describe("Performance Plugin", () => {
 			// Save original structuredClone
 			const originalStructuredClone = global.structuredClone;
 
-			// Override structuredClone to be undefined to trigger fallback
-			// Use Object.defineProperty to properly override it
-			Object.defineProperty(global, "structuredClone", {
-				value: undefined,
-				writable: true,
-				configurable: true,
-			});
+			// Delete structuredClone to trigger fallback
+			// @ts-expect-error - Intentionally removing for test
+			delete global.structuredClone;
 
 			try {
 				// Reset modules and re-import the plugin so it re-evaluates structuredClone
@@ -787,10 +783,8 @@ describe("Performance Plugin", () => {
 						value: originalStructuredClone,
 						writable: true,
 						configurable: true,
+						enumerable: true,
 					});
-				} else {
-					// @ts-expect-error - Intentionally removing for cleanup
-					delete global.structuredClone;
 				}
 			}
 		});

@@ -833,6 +833,32 @@ describe("backgroundServiceWorker", () => {
 
 			await stopBackgroundWorkers(mockLogger);
 		});
+
+		it("logs error when getPerformanceSnapshots throws", async () => {
+			const mockFastify = {
+				envConfig: {
+					METRICS_AGGREGATION_WINDOW_MINUTES: 5,
+					METRICS_SNAPSHOT_RETENTION_COUNT: 1000,
+				},
+				getPerformanceSnapshots: vi.fn().mockImplementation(() => {
+					throw new Error("Snapshot retrieval failed");
+				}),
+			} as unknown as Parameters<typeof startBackgroundWorkers>[2];
+
+			await startBackgroundWorkers(mockDrizzleClient, mockLogger, mockFastify);
+			await runMetricsAggregationWorkerSafely(mockLogger);
+
+			expect(mockLogger.error).toHaveBeenCalledWith(
+				expect.objectContaining({
+					duration: expect.stringMatching(/^\d+ms$/),
+					error: "Snapshot retrieval failed",
+					stack: expect.any(String),
+				}),
+				"Metrics aggregation worker failed",
+			);
+
+			await stopBackgroundWorkers(mockLogger);
+		});
 	});
 
 	describe("getBackgroundWorkerStatus", () => {
@@ -922,7 +948,9 @@ describe("backgroundServiceWorker", () => {
 					throw testError;
 				});
 
-			const result = await healthCheck();
+			// Import healthCheck dynamically to use the same module instance
+			const { healthCheck: healthCheckDynamic } = backgroundWorkerModule;
+			const result = await healthCheckDynamic();
 
 			expect(result.status).toBe("unhealthy");
 			expect(result.details.reason).toBe("Health check failed");

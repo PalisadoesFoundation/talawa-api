@@ -567,6 +567,18 @@ export const envConfigSchema = Type.Object({
 			default: 5,
 		}),
 	),
+
+	/**
+	 * Threshold in milliseconds for considering an operation as slow during metrics aggregation.
+	 * Operations exceeding this threshold will be counted in the slow operation metrics.
+	 * Default: 200
+	 */
+	METRICS_SLOW_THRESHOLD_MS: Type.Optional(
+		Type.Integer({
+			minimum: 1,
+			default: 200,
+		}),
+	),
 });
 
 /**

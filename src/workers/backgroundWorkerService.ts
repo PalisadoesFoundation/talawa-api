@@ -315,6 +315,7 @@ export async function runMetricsAggregationWorkerSafely(
 		const options: MetricsAggregationOptions = {
 			windowMinutes: fastify.envConfig.METRICS_AGGREGATION_WINDOW_MINUTES ?? 5,
 			maxSnapshots: fastify.envConfig.METRICS_SNAPSHOT_RETENTION_COUNT ?? 1000,
+			slowThresholdMs: fastify.envConfig.METRICS_SLOW_THRESHOLD_MS ?? 200,
 		};
 
 		const result = runMetricsAggregationWorker(
