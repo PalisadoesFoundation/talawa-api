@@ -719,23 +719,44 @@ describe("Performance Plugin", () => {
 			// Save original structuredClone
 			const originalStructuredClone = global.structuredClone;
 
-			// Delete structuredClone to trigger fallback
-			// @ts-expect-error - Intentionally removing for test
-			delete global.structuredClone;
+			// Delete structuredClone to trigger fallback BEFORE resetting modules
+			// This ensures the plugin sees structuredClone as undefined when it loads
+			// Use type assertion to allow deletion for test purposes
+			delete (global as { structuredClone?: typeof global.structuredClone })
+				.structuredClone;
 
 			try {
 				// Reset modules and re-import the plugin so it re-evaluates structuredClone
+				// The plugin will check typeof structuredClone at runtime in deepCopySnapshot,
+				// so deleting it before module reset ensures the check sees it as undefined
 				vi.resetModules();
+
+				// Re-import Fastify and the plugin after module reset
+				// This ensures all dependencies are fresh
+				const fastifyModule = await import("fastify");
+				const FastifyFresh = fastifyModule.default;
 				const { default: performancePluginWithoutClone } = await import(
 					"../../src/fastifyPlugins/performance"
 				);
 
-				// Create test app AFTER resetting modules
-				const testApp = createTestFastifyInstance();
+				// Create test app AFTER resetting modules using fresh Fastify import
+				const testApp = FastifyFresh({
+					logger: {
+						level: "silent",
+					},
+				});
+
+				// Decorate envConfig before registering the plugin
+				testApp.decorate(
+					"envConfig",
+					performancePluginTestEnvConfig as EnvConfig,
+				);
 
 				// Register plugin after removing structuredClone so fallback is used
 				await testApp.register(performancePluginWithoutClone);
 
+				// Register route BEFORE calling ready() to ensure it's properly set up
+				// Use FastifyRequest from top-level import (types aren't affected by module reset)
 				testApp.get("/test-deep-copy", async (request: FastifyRequest) => {
 					request.perf?.trackDb(30);
 					request.perf?.trackCacheHit();
@@ -743,14 +764,19 @@ describe("Performance Plugin", () => {
 					return { ok: true };
 				});
 
+				// Ensure app is ready and all hooks are registered
 				await testApp.ready();
 
-				await testApp.inject({
+				// Make request and wait for it to complete
+				const response = await testApp.inject({
 					method: "GET",
 					url: "/test-deep-copy",
 				});
 
-				// Get snapshots directly without waiting
+				// Verify response was successful
+				expect(response.statusCode).toBe(200);
+
+				// Get snapshots - the onSend hook should have fired and stored the snapshot
 				const snapshots = testApp.getPerformanceSnapshots(1);
 
 				expect(snapshots.length).toBe(1);

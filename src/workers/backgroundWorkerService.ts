@@ -85,8 +85,6 @@ export async function startBackgroundWorkers(
 		);
 
 		// Schedule metrics aggregation worker if enabled
-		const metricsEnabled =
-			fastify?.envConfig.METRICS_AGGREGATION_ENABLED ?? true;
 		const metricsSchedule = getMetricsSchedule(fastify);
 		if (metricsSchedule !== "disabled") {
 			metricsTask = cron.schedule(
@@ -98,7 +96,10 @@ export async function startBackgroundWorkers(
 				},
 			);
 			metricsTask.start();
-		} else if (metricsEnabled && !fastify) {
+		} else if (
+			(fastify?.envConfig.METRICS_AGGREGATION_ENABLED ?? true) &&
+			!fastify
+		) {
 			logger.warn(
 				"Metrics aggregation is enabled but Fastify instance is not available. Metrics worker will not start.",
 			);

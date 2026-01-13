@@ -353,6 +353,7 @@ describe("backgroundServiceWorker", () => {
 					METRICS_AGGREGATION_CRON_SCHEDULE: "*/5 * * * *",
 					METRICS_AGGREGATION_WINDOW_MINUTES: 5,
 					METRICS_SNAPSHOT_RETENTION_COUNT: 1000,
+					METRICS_SLOW_THRESHOLD_MS: 200,
 				},
 				getPerformanceSnapshots: vi.fn().mockReturnValue([]),
 			} as unknown as Parameters<typeof startBackgroundWorkers>[2];
@@ -853,6 +854,12 @@ describe("backgroundServiceWorker", () => {
 		});
 
 		it("logs error when getPerformanceSnapshots throws", async () => {
+			// Unmock runMetricsAggregationWorker for this test so we can test the real error handling
+			const { runMetricsAggregationWorker } = await import(
+				"~/src/workers/metrics/metricsAggregationWorker"
+			);
+			vi.mocked(runMetricsAggregationWorker).mockRestore();
+
 			const mockFastify = {
 				envConfig: {
 					METRICS_AGGREGATION_WINDOW_MINUTES: 5,
@@ -909,6 +916,9 @@ describe("backgroundServiceWorker", () => {
 				envConfig: {
 					METRICS_AGGREGATION_ENABLED: true,
 					METRICS_AGGREGATION_CRON_SCHEDULE: "*/10 * * * *",
+					METRICS_AGGREGATION_WINDOW_MINUTES: 5,
+					METRICS_SNAPSHOT_RETENTION_COUNT: 1000,
+					METRICS_SLOW_THRESHOLD_MS: 200,
 				},
 				getPerformanceSnapshots: vi.fn().mockReturnValue([]),
 			} as unknown as Parameters<typeof startBackgroundWorkers>[2];
@@ -961,12 +971,20 @@ describe("backgroundServiceWorker", () => {
 		});
 
 		it("returns unhealthy when getBackgroundWorkerStatus throws", async () => {
-			// Ensure workers are not running first
-			try {
-				await stopBackgroundWorkers(mockLogger);
-			} catch {
-				// Ignore if not running
-			}
+			// Start workers first so isRunning is true, allowing getBackgroundWorkerStatus to be called
+			const { runMaterializationWorker } = await import(
+				"~/src/workers/eventGeneration/eventGenerationPipeline"
+			);
+
+			vi.mocked(runMaterializationWorker).mockResolvedValue({
+				organizationsProcessed: 0,
+				instancesCreated: 0,
+				windowsUpdated: 0,
+				errorsEncountered: 0,
+				processingTimeMs: 1,
+			});
+
+			await startBackgroundWorkers(mockDrizzleClient, mockLogger);
 
 			const backgroundWorkerModule = await import(
 				"~/src/workers/backgroundWorkerService"
@@ -986,6 +1004,7 @@ describe("backgroundServiceWorker", () => {
 			expect(result.details.error).toBe("Status check failed");
 
 			statusSpy.mockRestore();
+			await stopBackgroundWorkers(mockLogger);
 		});
 	});
 
