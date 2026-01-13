@@ -343,20 +343,49 @@ elif [ "$CLEAN_NODE_VERSION" = "latest" ]; then
     VERSION="$(fnm current | awk '{sub(/^v/, "", $1); print $1}')"
     fnm default "$VERSION" || echo "Warning: Failed to set latest as default Node.js version. Current session has correct version but future shells may not." >&2
 else
+    # Install the specified Node.js version
+    info "Installing Node.js v$CLEAN_NODE_VERSION..."
     if ! fnm install "$CLEAN_NODE_VERSION"; then
-        error "Failed to install Node.js v$CLEAN_NODE_VERSION"
+        error "$(cat <<EOF
+    Failed to install Node.js v$CLEAN_NODE_VERSION
+
+    This could be due to:
+      - Network connectivity issues
+      - Insufficient disk space
+      - Invalid Node.js version number
+
+    Troubleshooting:
+      1. Check your internet connection
+      2. Verify disk space: df -h
+      3. Try installing manually: fnm install $CLEAN_NODE_VERSION
+    EOF
+    )"
         exit 1
     fi
+
+    success "Node.js v$CLEAN_NODE_VERSION installed successfully"
+
+    # Activate the installed version
+    info "Activating Node.js v$CLEAN_NODE_VERSION..."
     if ! fnm use "$CLEAN_NODE_VERSION"; then
-        error "Failed to activate Node.js v$CLEAN_NODE_VERSION"
+        error "$(cat <<EOF
+    Failed to activate Node.js v$CLEAN_NODE_VERSION
+
+    The installation succeeded but activation failed.
+    Try running: fnm use $CLEAN_NODE_VERSION
+    EOF
+    )"
         exit 1
     fi
+
+    success "Node.js v$CLEAN_NODE_VERSION activated"
     fnm default "$(fnm current | awk '{sub(/^v/, "", $1); print $1}')" || echo "Warning: Failed to set Node.js v$CLEAN_NODE_VERSION as default. Current session has correct version but future shells may not." >&2
 fi
 
 # Verify Node.js is available
 if ! command_exists node; then
-    error "Node.js installation succeeded but node command not found. You may need to restart your shell."
+    error "Node.js was installed but is not available in PATH"
+    error "Try restarting your terminal or running: eval \"\$(fnm env)\""
     exit 1
 fi
 
