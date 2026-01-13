@@ -1,7 +1,7 @@
 import { faker } from "@faker-js/faker";
 import { initGraphQLTada } from "gql.tada";
 import type { GraphQLObjectType } from "graphql";
-import { beforeAll, describe, expect, it } from "vitest";
+import { afterEach, beforeAll, describe, expect, it, vi } from "vitest";
 import type { ClientCustomScalars } from "~/src/graphql/scalars/index";
 import { schema } from "~/src/graphql/schema";
 import { assertToBeNonNullish } from "../../../helpers";
@@ -198,6 +198,11 @@ describe("Fund.campaigns Resolver - Integration", () => {
 	let organization: { id: string; name: string };
 	let fund: { id: string; name: string };
 	let campaigns: Array<{ id: string; name: string }>;
+
+	afterEach(() => {
+		// Clear any mock state to ensure test isolation across shards
+		vi.clearAllMocks();
+	});
 
 	beforeAll(async () => {
 		adminAuth = await getAdminAuth();
