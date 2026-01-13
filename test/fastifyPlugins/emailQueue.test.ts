@@ -4,9 +4,9 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { EnvConfig } from "~/src/envConfigSchema";
 import type { DrizzleClient } from "~/src/fastifyPlugins/drizzleClient";
 import emailQueuePlugin from "~/src/fastifyPlugins/emailQueue";
-import * as emailServiceInstance from "~/src/services/ses/emailServiceInstance";
+import * as emailServiceInstance from "~/src/services/email/emailServiceInstance";
 
-vi.mock("~/src/services/ses/emailServiceInstance", () => ({
+vi.mock("~/src/services/email/emailServiceInstance", () => ({
 	initializeEmailQueue: vi.fn(),
 	stopEmailQueue: vi.fn(),
 }));
