@@ -68,6 +68,45 @@ builder.queryField("agendaFoldersByEventId", (t) =>
 				});
 			}
 
+			const currentUserId = ctx.currentClient.user.id;
+
+			const [currentUser, membership] = await Promise.all([
+				ctx.drizzleClient.query.usersTable.findFirst({
+					columns: { role: true },
+					where: (fields, operators) => operators.eq(fields.id, currentUserId),
+				}),
+				ctx.drizzleClient.query.organizationMembershipsTable.findFirst({
+					columns: { role: true },
+					where: (fields, operators) =>
+						operators.and(
+							operators.eq(fields.memberId, currentUserId),
+							operators.eq(fields.organizationId, event.organizationId),
+						),
+				}),
+			]);
+
+			if (!currentUser) {
+				throw new TalawaGraphQLError({
+					extensions: { code: "unauthenticated" },
+				});
+			}
+
+			if (
+				currentUser.role !== "administrator" &&
+				membership?.role !== "administrator"
+			) {
+				throw new TalawaGraphQLError({
+					extensions: {
+						code: "unauthorized_action_on_arguments_associated_resources",
+						issues: [
+							{
+								argumentPath: ["eventId"],
+							},
+						],
+					},
+				});
+			}
+
 			// Get all AgendaFolders for the event
 			const eventAgendas =
 				await ctx.drizzleClient.query.agendaFoldersTable.findMany({

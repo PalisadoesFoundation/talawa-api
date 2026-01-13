@@ -11,6 +11,14 @@ export const resolveOrganization = async (
 	_args: Record<string, never>,
 	ctx: GraphQLContext,
 ) => {
+	if (!ctx.currentClient.isAuthenticated) {
+		throw new TalawaGraphQLError({
+			extensions: {
+				code: "unauthenticated",
+			},
+		});
+	}
+
 	const existingOrganization =
 		await ctx.drizzleClient.query.organizationsTable.findFirst({
 			where: (fields, operators) =>

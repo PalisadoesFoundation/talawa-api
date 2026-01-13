@@ -1,10 +1,11 @@
 import type { GraphQLContext } from "~/src/graphql/context";
 import envConfig from "~/src/utilities/graphqLimits";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
+import type { AgendaFolder as AgendaFolderType } from "./AgendaFolder";
 import { AgendaFolder } from "./AgendaFolder";
 
 export const resolveCreatedAt = async (
-	parent: { eventId: string; createdAt: Date },
+	parent: AgendaFolderType,
 	_args: Record<string, never>,
 	ctx: GraphQLContext,
 ) => {

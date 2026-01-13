@@ -106,7 +106,7 @@ Event.implement({
 								),
 							);
 						} else {
-							where = and(eq(agendaFoldersTable.eventId, parent.id));
+							where = eq(agendaFoldersTable.eventId, parent.id);
 						}
 					} else {
 						if (cursor !== undefined) {
@@ -133,7 +133,7 @@ Event.implement({
 								),
 							);
 						} else {
-							where = and(eq(agendaFoldersTable.eventId, parent.id));
+							where = eq(agendaFoldersTable.eventId, parent.id);
 						}
 					}
 

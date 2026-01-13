@@ -469,8 +469,10 @@ async function createTestAgendaItem(): Promise<TestAgendaItem> {
 			variables: {
 				input: {
 					name: `Folder ${faker.string.uuid()}`,
+					description: "desc",
 					eventId: eventId,
-					isAgendaItemFolder: true,
+					sequence: 1,
+					organizationId: "org-id",
 				},
 			},
 		},

@@ -8,9 +8,8 @@ import { createMockGraphQLContext } from "test/_Mocks_/mockContextCreator/mockCo
 
 type MockUser = {
 	id: string;
-	role: string;
+	role: "member" | "administrator";
 };
-
 describe("AgendaFolder CreatedAt Resolver Tests", () => {
 	let ctx: GraphQLContext;
 	let mockAgendaFolder: AgendaFolderType;

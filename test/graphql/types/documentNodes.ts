@@ -819,14 +819,52 @@ export const Query_agendaItem =
   }
 }`);
 
+export const Query_agendaFoldersByEventId = gql(`
+    query Query_agendaFoldersByEventId($eventId: ID!) {
+      agendaFoldersByEventId(eventId: $eventId) {
+        id
+        name
+        description
+        createdAt
+        sequence
+        event {
+          id
+          name
+        }
+        creator {
+          id
+          name
+        }
+      }
+    }
+  `);
+
 export const Mutation_createAgendaFolder = gql(`
   mutation Mutation_createAgendaFolder($input: MutationCreateAgendaFolderInput!) {
     createAgendaFolder(input: $input) {
       id
+      createdAt
+      description
       name
+      sequence
       event {
         id
+        name
       }
+      creator {
+        id
+        name
+      }
+    }
+  }
+`);
+
+export const Mutation_deleteAgendaFolder = gql(`
+  mutation Mutation_deleteAgendaFolder($input: MutationDeleteAgendaFolderInput!) {
+    deleteAgendaFolder(input: $input) {
+      id
+      name
+      description
     }
   }
 `);
@@ -836,6 +874,8 @@ export const Mutation_updateAgendaFolder = gql(`
     updateAgendaFolder(input: $input) {
       id
       name
+      description
+      sequence
       event {
         id
       }
