@@ -17,8 +17,188 @@ The OAuth system consists of several key components:
 
 - **BaseOAuthProvider**: Abstract base class that implements common HTTP logic and error handling
 - **OAuthProviderRegistry**: Singleton registry for managing OAuth provider instances
+- **OAuth Accounts Table**: Database table for storing OAuth account linkages and provider data
 - **Type Definitions**: TypeScript interfaces for OAuth configurations and responses
 - **Error Classes**: Specialized error classes for different OAuth failure scenarios
+
+## OAuth Accounts Database Table
+
+The OAuth accounts table (`oauth_accounts`) stores provider-specific account information linked to users. This table serves as the bridge between Talawa users and their external OAuth provider accounts.
+
+### Table Structure
+
+The table is defined using Drizzle ORM and includes the following fields:
+
+```typescript
+export const oauthAccountsTable = pgTable("oauth_accounts", {
+  // Primary unique identifier
+  id: uuid("id").primaryKey().$default(uuidv7),
+  
+  // Foreign key to users table
+  userId: uuid("user_id")
+    .notNull()
+    .references(() => usersTable.id, { onDelete: "cascade" }),
+  
+  // OAuth provider information
+  provider: varchar("provider", { length: 50 }).notNull(),
+  providerId: varchar("provider_id", { length: 255 }).notNull(),
+  
+  // Account details from provider
+  email: varchar("email", { length: 255 }),
+  profile: jsonb("profile").$type<OAuthAccountProfile>(),
+  
+  // Timestamp tracking
+  linkedAt: timestamp("linked_at", {
+    withTimezone: true,
+    mode: "date",
+    precision: 3,
+  }).notNull().defaultNow(),
+  
+  lastUsedAt: timestamp("last_used_at", {
+    withTimezone: true,
+    mode: "date",
+    precision: 3,
+  }).notNull().defaultNow(),
+});
+```
+
+### Field Descriptions
+
+- **`id`**: Primary unique identifier using UUIDv7 for better performance and ordering
+- **`userId`**: Foreign key reference to the user who owns this OAuth account (cascades on delete)
+- **`provider`**: OAuth provider name (e.g., 'google', 'github', 'facebook')
+- **`providerId`**: Provider-specific user identifier (unique per provider)
+- **`email`**: Email address associated with the OAuth account from the provider
+- **`profile`**: Additional profile data from the OAuth provider stored as JSON
+- **`linkedAt`**: Timestamp when the OAuth account was first linked to the user
+- **`lastUsedAt`**: Timestamp when the OAuth account was last used for authentication
+
+### Indexes and Constraints
+
+The table includes several indexes and constraints for data integrity and performance:
+
+```typescript
+// Ensures each external provider account is linked only once
+providerUserUnique: unique("oauth_accounts_provider_provider_id_unique")
+  .on(table.provider, table.providerId),
+
+// Index for efficient user lookups
+userIdIdx: index("oauth_accounts_user_id_idx").on(table.userId),
+
+// Index for provider-based queries
+providerIdx: index("oauth_accounts_provider_idx").on(table.provider),
+```
+
+### Relations
+
+The table establishes a many-to-one relationship with the users table:
+
+```typescript
+export const oauthAccountsTableRelations = relations(
+  oauthAccountsTable,
+  ({ one }) => ({
+    user: one(usersTable, {
+      fields: [oauthAccountsTable.userId],
+      references: [usersTable.id],
+      relationName: "oauth_accounts.user_id:users.id",
+    }),
+  }),
+);
+```
+
+### Usage Examples
+
+#### Querying OAuth Accounts
+
+```typescript
+import { db } from '~/src/drizzle/db';
+import { oauthAccountsTable } from '~/src/drizzle/tables/oauthAccount';
+import { eq, and } from 'drizzle-orm';
+
+// Find all OAuth accounts for a user
+const userOAuthAccounts = await db
+  .select()
+  .from(oauthAccountsTable)
+  .where(eq(oauthAccountsTable.userId, userId));
+
+// Find specific provider account
+const googleAccount = await db
+  .select()
+  .from(oauthAccountsTable)
+  .where(
+    and(
+      eq(oauthAccountsTable.userId, userId),
+      eq(oauthAccountsTable.provider, 'google')
+    )
+  );
+
+// Find account by provider ID
+const providerAccount = await db
+  .select()
+  .from(oauthAccountsTable)
+  .where(
+    and(
+      eq(oauthAccountsTable.provider, 'google'),
+      eq(oauthAccountsTable.providerId, externalUserId)
+    )
+  );
+```
+
+#### Creating OAuth Account Linkage
+
+```typescript
+import { oauthAccountsTableInsertSchema } from '~/src/drizzle/tables/oauthAccount';
+
+// Validate and create new OAuth account linkage
+const newOAuthAccount = oauthAccountsTableInsertSchema.parse({
+  userId: user.id,
+  provider: 'google',
+  providerId: userProfile.providerId,
+  email: userProfile.email,
+  profile: {
+    name: userProfile.name,
+    picture: userProfile.picture,
+    emailVerified: userProfile.emailVerified,
+  },
+});
+
+const [createdAccount] = await db
+  .insert(oauthAccountsTable)
+  .values(newOAuthAccount)
+  .returning();
+```
+
+#### Updating Last Used Timestamp
+
+```typescript
+// Update lastUsedAt when account is used for authentication
+await db
+  .update(oauthAccountsTable)
+  .set({ lastUsedAt: new Date() })
+  .where(eq(oauthAccountsTable.id, oauthAccountId));
+```
+
+### OAuthAccountProfile Type
+
+The `profile` field stores additional provider data using a typed JSONB column:
+
+```typescript
+interface OAuthAccountProfile {
+  name?: string;
+  picture?: string;
+  emailVerified?: boolean;
+  [key: string]: any; // Additional provider-specific fields
+}
+```
+
+This flexible structure allows storing provider-specific profile information while maintaining type safety for common fields.
+
+### Data Integrity and Security
+
+- **Cascade Deletion**: When a user is deleted, all linked OAuth accounts are automatically removed
+- **Unique Constraints**: Each external provider account can only be linked to one Talawa user
+- **Indexing**: Optimized queries for user lookups and provider-based searches
+- **Timezone Support**: All timestamps include timezone information for accurate tracking across regions
 
 ## BaseOAuthProvider
 
