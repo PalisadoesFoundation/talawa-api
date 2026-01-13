@@ -81,8 +81,10 @@ export function validateEmail(input: string): true | string {
  * @returns `true` if valid, or an error message string if invalid.
  */
 export function validateCloudBeaverAdmin(input: string): true | string {
-	if (!input.trim()) return "Admin name is required";
-	if (input.length < 3) return "Admin name must be at least 3 characters long";
+	const trimmed = input.trim();
+	if (!trimmed) return "Admin name is required";
+	if (trimmed.length < 3)
+		return "Admin name must be at least 3 characters long";
 	if (!/^[a-zA-Z0-9_]+$/.test(input))
 		return "Admin name can only contain letters, numbers, and underscores";
 	return true;
