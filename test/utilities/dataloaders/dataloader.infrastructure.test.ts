@@ -6,6 +6,7 @@ import { createActionItemLoader } from "~/src/utilities/dataloaders/actionItemLo
 import { createEventLoader } from "~/src/utilities/dataloaders/eventLoader";
 import { createOrganizationLoader } from "~/src/utilities/dataloaders/organizationLoader";
 import { createUserLoader } from "~/src/utilities/dataloaders/userLoader";
+import { createPerformanceTracker } from "~/src/utilities/metrics/performanceTracker";
 
 /**
  * Creates a mock DrizzleClient for testing DataLoaders.
@@ -13,6 +14,29 @@ import { createUserLoader } from "~/src/utilities/dataloaders/userLoader";
  */
 function createMockDb<T>(mockResults: T[]) {
 	const whereSpy = vi.fn().mockResolvedValue(mockResults);
+	const db = {
+		select: vi.fn().mockReturnThis(),
+		from: vi.fn().mockReturnThis(),
+		where: whereSpy,
+	} as unknown as DrizzleClient;
+	return { db, whereSpy };
+}
+
+/**
+ * Creates a mock DrizzleClient with sequential responses for testing DataLoaders.
+ * Each call to where() will return the next result set in the array.
+ * If where() is called more times than entries in mockResultsArray, it returns an empty array
+ * to prevent undefined responses that could mask test bugs.
+ * Returns both the mock db and a spy for the where function.
+ */
+function createSequentialMockDb<T>(mockResultsArray: T[][]) {
+	const whereSpy = vi.fn();
+	// Set up sequential responses using mockResolvedValueOnce for each result set
+	for (const mockResults of mockResultsArray) {
+		whereSpy.mockResolvedValueOnce(mockResults);
+	}
+	// Add fallback for extra calls to prevent undefined responses
+	whereSpy.mockResolvedValue([]);
 	const db = {
 		select: vi.fn().mockReturnThis(),
 		from: vi.fn().mockReturnThis(),
@@ -270,6 +294,203 @@ describe("DataLoader infrastructure", () => {
 			expect(loaders1.organization).not.toBe(loaders2.organization);
 			expect(loaders1.event).not.toBe(loaders2.event);
 			expect(loaders1.actionItem).not.toBe(loaders2.actionItem);
+		});
+
+		it("creates loaders without perf parameter (backward compatibility)", async () => {
+			const { db, whereSpy } = createMockDb([{ id: "u1", name: "User 1" }]);
+
+			const loaders = createDataloaders(db, null);
+
+			// Verify loaders function correctly without perf parameter
+			// This ensures backward compatibility when perf is not provided
+			await loaders.user.load("u1");
+
+			// Verify the loader works (DB was called)
+			expect(whereSpy).toHaveBeenCalledTimes(1);
+		});
+
+		it("creates loaders with perf parameter and propagates to all loaders", async () => {
+			// Set up mock DB to return different results for each loader call
+			const { db, whereSpy } = createSequentialMockDb([
+				[{ id: "u1", name: "User 1" }], // user loader
+				[{ id: "org1", name: "Org 1" }], // organization loader
+				[{ id: "evt1", name: "Event 1" }], // event loader
+				[{ id: "ai1", organizationId: "org1" }], // actionItem loader
+			]);
+
+			const perf = createPerformanceTracker();
+
+			const loaders = createDataloaders(db, null, perf);
+
+			// Verify all loaders are created successfully with perf
+			expect(loaders).toHaveProperty("user");
+			expect(loaders).toHaveProperty("organization");
+			expect(loaders).toHaveProperty("event");
+			expect(loaders).toHaveProperty("actionItem");
+
+			// Verify loaders are functional and metrics are tracked for all loaders
+			await loaders.user.load("u1");
+			await loaders.organization.load("org1");
+			await loaders.event.load("evt1");
+			await loaders.actionItem.load("ai1");
+
+			// Verify metrics were tracked for all loaders
+			const snapshot = perf.snapshot();
+
+			// Verify user loader metrics
+			const userOp = snapshot.ops["db:users.byId"];
+			expect(userOp).toBeDefined();
+			expect(userOp?.count).toBe(1);
+			expect(userOp?.ms).toBeGreaterThanOrEqual(0);
+
+			// Verify organization loader metrics
+			const orgOp = snapshot.ops["db:organizations.byId"];
+			expect(orgOp).toBeDefined();
+			expect(orgOp?.count).toBe(1);
+			expect(orgOp?.ms).toBeGreaterThanOrEqual(0);
+
+			// Verify event loader metrics
+			const eventOp = snapshot.ops["db:events.byId"];
+			expect(eventOp).toBeDefined();
+			expect(eventOp?.count).toBe(1);
+			expect(eventOp?.ms).toBeGreaterThanOrEqual(0);
+
+			// Verify actionItem loader metrics
+			const actionItemOp = snapshot.ops["db:actionItems.byId"];
+			expect(actionItemOp).toBeDefined();
+			expect(actionItemOp?.count).toBe(1);
+			expect(actionItemOp?.ms).toBeGreaterThanOrEqual(0);
+
+			// Verify DB was called for each loader
+			expect(whereSpy).toHaveBeenCalledTimes(4);
+		});
+
+		it("propagates perf parameter correctly when cache is also provided", async () => {
+			// Set up mock DB to return different results for each loader call
+			const { db, whereSpy } = createSequentialMockDb([
+				[{ id: "u1", name: "User 1" }], // user loader
+				[{ id: "org1", name: "Org 1" }], // organization loader
+				[{ id: "evt1", name: "Event 1" }], // event loader
+				[{ id: "ai1", organizationId: "org1" }], // actionItem loader
+			]);
+
+			// Create mock cache with artificial delay to verify metrics include cache time
+			const cacheDelayMs = 10;
+			const cachedValues = new Map([
+				[entityKey("user", "u1"), { id: "u1", name: "User 1" }],
+				[entityKey("organization", "org1"), { id: "org1", name: "Org 1" }],
+				[entityKey("event", "evt1"), { id: "evt1", name: "Event 1" }],
+				[entityKey("actionItem", "ai1"), { id: "ai1", organizationId: "org1" }],
+			]);
+			const mockCache = createMockCache();
+			mockCache.mget = vi.fn().mockImplementation(async (keys: string[]) => {
+				// Simulate cache delay to verify metrics capture cache operation time
+				await new Promise((resolve) => setTimeout(resolve, cacheDelayMs));
+				return keys.map((k) => cachedValues.get(k) ?? null);
+			});
+
+			const perf = createPerformanceTracker();
+
+			const loaders = createDataloaders(db, mockCache, perf);
+
+			// Verify all loaders are created with both cache and perf
+			expect(loaders).toHaveProperty("user");
+			expect(loaders).toHaveProperty("organization");
+			expect(loaders).toHaveProperty("event");
+			expect(loaders).toHaveProperty("actionItem");
+
+			// Exercise all four loaders to verify metrics are tracked for each
+			await loaders.user.load("u1");
+			await loaders.organization.load("org1");
+			await loaders.event.load("evt1");
+			await loaders.actionItem.load("ai1");
+
+			// Verify metrics were tracked for all loaders
+			const snapshot = perf.snapshot();
+
+			// Verify user loader metrics
+			const userOp = snapshot.ops["db:users.byId"];
+			expect(userOp).toBeDefined();
+			expect(userOp?.count).toBe(1);
+			// Allow 10% timing variance for system imprecision
+			expect(userOp?.ms).toBeGreaterThanOrEqual(cacheDelayMs * 0.9);
+
+			// Verify organization loader metrics
+			const orgOp = snapshot.ops["db:organizations.byId"];
+			expect(orgOp).toBeDefined();
+			expect(orgOp?.count).toBe(1);
+			// Allow 10% timing variance for system imprecision
+			expect(orgOp?.ms).toBeGreaterThanOrEqual(cacheDelayMs * 0.9);
+
+			// Verify event loader metrics
+			const eventOp = snapshot.ops["db:events.byId"];
+			expect(eventOp).toBeDefined();
+			expect(eventOp?.count).toBe(1);
+			// Allow 10% timing variance for system imprecision
+			expect(eventOp?.ms).toBeGreaterThanOrEqual(cacheDelayMs * 0.9);
+
+			// Verify actionItem loader metrics
+			const actionItemOp = snapshot.ops["db:actionItems.byId"];
+			expect(actionItemOp).toBeDefined();
+			expect(actionItemOp?.count).toBe(1);
+			// Allow 10% timing variance for system imprecision
+			expect(actionItemOp?.ms).toBeGreaterThanOrEqual(cacheDelayMs * 0.9);
+
+			// Verify DB was NOT called (cache hit scenario)
+			// Metrics should still be recorded because they wrap the cache layer
+			expect(whereSpy).not.toHaveBeenCalled();
+		});
+
+		it("captures metrics correctly for mixed cache hits and misses", async () => {
+			// Set up mock DB to return results only for cache misses
+			const { db, whereSpy } = createSequentialMockDb([
+				[{ id: "u2", name: "User 2" }], // user loader (cache miss)
+				[{ id: "org2", name: "Org 2" }], // organization loader (cache miss)
+			]);
+
+			// Create mock cache with artificial delay and mixed hit/miss behavior
+			const cacheDelayMs = 10;
+			const cachedValues = new Map([
+				[entityKey("user", "u1"), { id: "u1", name: "User 1" }], // cache hit
+				[entityKey("organization", "org1"), { id: "org1", name: "Org 1" }], // cache hit
+			]);
+			const mockCache = createMockCache();
+			mockCache.mget = vi.fn().mockImplementation(async (keys: string[]) => {
+				// Simulate cache delay to verify metrics capture cache operation time
+				await new Promise((resolve) => setTimeout(resolve, cacheDelayMs));
+				// Return cached value for hits, null for misses
+				return keys.map((k) => cachedValues.get(k) ?? null);
+			});
+
+			const perf = createPerformanceTracker();
+
+			const loaders = createDataloaders(db, mockCache, perf);
+
+			// Exercise loaders with cache hits
+			await loaders.user.load("u1"); // cache hit
+			await loaders.organization.load("org1"); // cache hit
+
+			// Exercise loaders with cache misses (will hit DB)
+			await loaders.user.load("u2"); // cache miss
+			await loaders.organization.load("org2"); // cache miss
+
+			// Verify metrics were tracked for both cache hits and misses
+			const snapshot = perf.snapshot();
+
+			// Verify user loader metrics (2 calls: 1 cache hit, 1 cache miss)
+			const userOp = snapshot.ops["db:users.byId"];
+			expect(userOp).toBeDefined();
+			expect(userOp?.count).toBe(2); // Both cache hit and miss are counted
+			expect(userOp?.ms).toBeGreaterThanOrEqual(cacheDelayMs * 2); // At least cache delay for both
+
+			// Verify organization loader metrics (2 calls: 1 cache hit, 1 cache miss)
+			const orgOp = snapshot.ops["db:organizations.byId"];
+			expect(orgOp).toBeDefined();
+			expect(orgOp?.count).toBe(2); // Both cache hit and miss are counted
+			expect(orgOp?.ms).toBeGreaterThanOrEqual(cacheDelayMs * 2); // At least cache delay for both
+
+			// Verify DB was called only for cache misses (2 calls: u2 and org2)
+			expect(whereSpy).toHaveBeenCalledTimes(2);
 		});
 	});
 
