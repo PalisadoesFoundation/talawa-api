@@ -1,7 +1,7 @@
 import { faker } from "@faker-js/faker";
 import { initGraphQLTada } from "gql.tada";
 import type { GraphQLObjectType } from "graphql";
-import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from "vitest";
+import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import type { ClientCustomScalars } from "~/src/graphql/scalars/index";
 import { schema } from "~/src/graphql/schema";
 import { assertToBeNonNullish } from "../../../helpers";
@@ -200,12 +200,7 @@ describe("Fund.campaigns Resolver - Integration", () => {
 	let adminAuth: AdminAuth;
 	let organization: { id: string; name: string };
 	let fund: { id: string; name: string };
-	let campaigns: Array<{ id: string; name: string }>;
-
-	afterEach(() => {
-		// Clear any mock state to ensure test isolation across shards
-		vi.clearAllMocks();
-	});
+	let campaigns: Array<{ id: string; name: string }> = [];
 
 	afterAll(async () => {
 		// Clean up all created test data to ensure test isolation
@@ -216,29 +211,42 @@ describe("Fund.campaigns Resolver - Integration", () => {
 					headers: { authorization: `bearer ${adminAuth.token}` },
 					variables: { input: { id: campaign.id } },
 				});
-			} catch {
-				// Ignore errors during cleanup
+			} catch (error) {
+				console.error(
+					`[campaigns.test.ts] Failed to delete campaign ${campaign.id}:`,
+					error,
+				);
 			}
 		}
 
 		// Delete fund
-		try {
-			await mercuriusClient.mutate(Mutation_deleteFund, {
-				headers: { authorization: `bearer ${adminAuth.token}` },
-				variables: { input: { id: fund.id } },
-			});
-		} catch {
-			// Ignore errors during cleanup
+		if (fund?.id) {
+			try {
+				await mercuriusClient.mutate(Mutation_deleteFund, {
+					headers: { authorization: `bearer ${adminAuth.token}` },
+					variables: { input: { id: fund.id } },
+				});
+			} catch (error) {
+				console.error(
+					`[campaigns.test.ts] Failed to delete fund ${fund.id}:`,
+					error,
+				);
+			}
 		}
 
 		// Delete organization
-		try {
-			await mercuriusClient.mutate(Mutation_deleteOrganization, {
-				headers: { authorization: `bearer ${adminAuth.token}` },
-				variables: { input: { id: organization.id } },
-			});
-		} catch {
-			// Ignore errors during cleanup
+		if (organization?.id) {
+			try {
+				await mercuriusClient.mutate(Mutation_deleteOrganization, {
+					headers: { authorization: `bearer ${adminAuth.token}` },
+					variables: { input: { id: organization.id } },
+				});
+			} catch (error) {
+				console.error(
+					`[campaigns.test.ts] Failed to delete organization ${organization.id}:`,
+					error,
+				);
+			}
 		}
 	});
 
