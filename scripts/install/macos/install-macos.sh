@@ -310,16 +310,18 @@ if [ "$CLEAN_NODE_VERSION" = "lts" ]; then
     if ! OUTPUT=$(fnm install --lts 2>&1); then
         echo "$OUTPUT"
         error "$(cat <<EOF
-+Failed to install LTS version of Node.js
-+This could be due to:
-+  - Network connectivity issues
-+  - Insufficient disk space
-+Troubleshooting:
-+  1. Check your internet connection
-+  2. Verify disk space: df -h
-+  3. Try installing manually: fnm install --lts
-+EOF
-+)"
+Failed to install LTS version of Node.js
+
+This could be due to:
+  - Network connectivity issues
+  - Insufficient disk space
+
+Troubleshooting:
+  1. Check your internet connection
+  2. Verify disk space: df -h
+  3. Try installing manually: fnm install --lts
+EOF
+)"
         exit 1
     fi
     echo "$OUTPUT"
@@ -348,16 +350,16 @@ elif [ "$CLEAN_NODE_VERSION" = "latest" ]; then
     fi
     if ! fnm use latest; then
         error "$(cat <<EOF
-+Failed to install latest version of Node.js
-+This could be due to:
-+  - Network connectivity issues
-+  - Insufficient disk space
-+Troubleshooting:
-+  1. Check your internet connection
-+  2. Verify disk space: df -h
-+  3. Try installing manually: fnm install --latest
-+EOF
-+)"
+Failed to activate latest Node.js version
+
+The installation succeeded but activation failed.
+
+Troubleshooting:
+  1. Verify the version was installed: fnm list
+  2. Try running manually: fnm use latest
+  3. If needed, reinstall: fnm install --latest
+EOF
+)"
         exit 1
     fi
     VERSION="$(fnm current | awk '{sub(/^v/, "", $1); print $1}')"
