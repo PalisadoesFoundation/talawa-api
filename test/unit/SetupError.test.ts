@@ -80,4 +80,15 @@ describe("SetupError", () => {
 		expect(json.code).toBe(code);
 		expect(json.message).toBe(message);
 	});
+
+	it("should work with COMMIT_FAILED error code", () => {
+		const code = SetupErrorCode.COMMIT_FAILED;
+		const message = "Git commit failed";
+		const context: SetupErrorContext = { operation: "git commit" };
+
+		const error = new SetupError(code, message, context);
+
+		expect(error.code).toBe(SetupErrorCode.COMMIT_FAILED);
+		expect(error.message).toBe(message);
+	});
 });
