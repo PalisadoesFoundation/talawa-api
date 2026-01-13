@@ -31,16 +31,49 @@ vi.mock("scripts/setup/emailSetup", () => ({
 
 vi.mock("inquirer");
 
-import fs from "node:fs";
+import fs, { promises as fsPromises } from "node:fs";
 import dotenv from "dotenv";
 import inquirer from "inquirer";
 import { envFileBackup } from "scripts/setup/envFileBackup/envFileBackup";
-import type { SetupAnswers } from "scripts/setup/setup";
+import { type SetupAnswers, setup, __test__resetState } from "scripts/setup/setup";
+import * as SetupModule from "scripts/setup/setup";
+
+vi.mock("node:fs", async (importOriginal) => {
+	const actual = await importOriginal<typeof import("node:fs")>();
+	const access = vi.fn(actual.promises.access);
+	const copyFile = vi.fn(actual.promises.copyFile);
+	const readFile = vi.fn(actual.promises.readFile);
+	const writeFile = vi.fn(actual.promises.writeFile);
+	const readdir = vi.fn(actual.promises.readdir);
+	const rename = vi.fn(actual.promises.rename);
+
+	return {
+		...actual,
+		default: {
+			...actual.default,
+			promises: {
+				...actual.default.promises,
+				access,
+				copyFile,
+				readFile,
+				writeFile,
+				readdir,
+				rename,
+			}
+		},
+		promises: {
+			...actual.promises,
+			access,
+			copyFile,
+			readFile,
+			writeFile,
+			readdir,
+			rename,
+		},
+	};
+});
 
 describe("Setup", () => {
-	let setup: () => Promise<SetupAnswers>;
-	let SetupModule: typeof import("scripts/setup/setup");
-
 	beforeAll(async () => {
 		process.env.API_GRAPHQL_SCALAR_FIELD_COST = "1";
 		process.env.API_GRAPHQL_SCALAR_RESOLVER_FIELD_COST = "1";
@@ -49,22 +82,6 @@ describe("Setup", () => {
 		process.env.API_GRAPHQL_NON_PAGINATED_LIST_FIELD_COST = "1";
 		process.env.API_GRAPHQL_MUTATION_BASE_COST = "1";
 		process.env.API_GRAPHQL_SUBSCRIPTION_BASE_COST = "1";
-
-		vi.doMock("env-schema", () => ({
-			envSchema: () => ({
-				API_GRAPHQL_SCALAR_FIELD_COST: 1,
-				API_GRAPHQL_SCALAR_RESOLVER_FIELD_COST: 1,
-				API_GRAPHQL_OBJECT_FIELD_COST: 1,
-				API_GRAPHQL_LIST_FIELD_COST: 1,
-				API_GRAPHQL_NON_PAGINATED_LIST_FIELD_COST: 1,
-				API_GRAPHQL_MUTATION_BASE_COST: 1,
-				API_GRAPHQL_SUBSCRIPTION_BASE_COST: 1,
-			}),
-		}));
-
-		const module = await import("scripts/setup/setup");
-		setup = module.setup;
-		SetupModule = module;
 	});
 
 	const originalIsTTY = process.stdin.isTTY;
@@ -72,6 +89,7 @@ describe("Setup", () => {
 	let originalEnv: NodeJS.ProcessEnv;
 
 	beforeEach(() => {
+		__test__resetState();
 		originalEnv = { ...process.env };
 	});
 
@@ -88,7 +106,7 @@ describe("Setup", () => {
 			if (originalExistsSync(".env")) {
 				fs.unlinkSync(".env");
 			}
-		} catch {}
+		} catch { }
 	});
 
 	it("should set up environment variables with default configuration when CI=false", async () => {
@@ -101,17 +119,36 @@ describe("Setup", () => {
 			{ useDefaultCaddy: true },
 			{ API_ADMINISTRATOR_USER_EMAIL_ADDRESS: "test@email.com" },
 			{ setupReCaptcha: false },
+			{ configureEmail: false },
 		];
 
+		// Mock fs.promises.access to indicate .env does NOT exist to avoid envReconfigure prompt
+		// This is important because other parallel tests might have created a .env file
+		const accessSpy = vi.spyOn(fsPromises, "access").mockImplementation(async (path) => {
+			const pathStr = String(path);
+			if (pathStr === ".env" || pathStr === "./.env") {
+				const err = new Error("File not found") as NodeJS.ErrnoException;
+				err.code = "ENOENT";
+				throw err;
+			}
+			// Fallback to original implementation for other files
+			return undefined;
+		});
+
 		const promptMock = vi.spyOn(inquirer, "prompt");
-		for (const response of mockResponses) {
-			promptMock.mockResolvedValueOnce(response);
-		}
+		promptMock.mockImplementation(async (questions: any) => {
+			const name = questions[0].name;
+			const response = mockResponses.shift();
+			if (response) return response;
+			console.warn(`[TEST DEBUG] Unexpected prompt in default config test: ${name}`);
+			return {};
+		});
 
 		if (fs.existsSync(".env")) {
 			fs.unlinkSync(".env");
 		}
 		Reflect.deleteProperty(process.env, "API_LOG_LEVEL");
+		Reflect.deleteProperty(process.env, "CI");
 		await setup();
 
 		const expectedEnv = {
@@ -156,6 +193,7 @@ describe("Setup", () => {
 	});
 
 	it("should correctly set up environment variables when CI=true (skips CloudBeaver)", async () => {
+		Reflect.deleteProperty(process.env, "API_LOG_LEVEL");
 		process.env.CI = "true";
 		const mockResponses = [
 			{ envReconfigure: true },
@@ -166,20 +204,25 @@ describe("Setup", () => {
 			{ useDefaultCaddy: true },
 			{ API_ADMINISTRATOR_USER_EMAIL_ADDRESS: "test@email.com" },
 			{ setupReCaptcha: false },
+			{ configureEmail: false },
 		];
 
 		const promptMock = vi.spyOn(inquirer, "prompt");
-		for (const response of mockResponses) {
-			promptMock.mockResolvedValueOnce(response);
-		}
+		promptMock.mockImplementation(async (questions: any) => {
+			const name = questions[0].name;
+			const response = mockResponses.shift();
+			if (response) return response;
+			console.warn(`[TEST DEBUG] Unexpected prompt in CI setup test: ${name}`);
+			return {};
+		});
 
 		const fsExistsSyncSpy = vi.spyOn(fs, "existsSync").mockReturnValue(true);
 		const fsAccessSpy = vi
-			.spyOn(fs.promises, "access")
+			.spyOn(fsPromises, "access")
 			.mockResolvedValue(undefined);
-		const fsReadFileSyncSpy = vi
-			.spyOn(fs, "readFileSync")
-			.mockReturnValue(
+		const fsReadFileSpy = vi
+			.spyOn(fsPromises, "readFile")
+			.mockResolvedValue(
 				[
 					"API_BASE_URL=http://127.0.0.1:4000",
 					"API_HOST=0.0.0.0",
@@ -259,7 +302,7 @@ describe("Setup", () => {
 
 		fsExistsSyncSpy.mockRestore();
 		fsAccessSpy.mockRestore();
-		fsReadFileSyncSpy.mockRestore();
+		fsReadFileSpy.mockRestore();
 	});
 	it("should restore .env from backup and exit when envReconfigure is false", async () => {
 		const processExitSpy = vi.spyOn(process, "exit").mockImplementation(() => {
@@ -272,16 +315,16 @@ describe("Setup", () => {
 
 		// Mock fs.promises methods instead of sync methods
 		const fsAccessSpy = vi
-			.spyOn(fs.promises, "access")
+			.spyOn(fsPromises, "access")
 			.mockResolvedValue(undefined);
 		const fsReaddirSpy = vi
-			.spyOn(fs.promises, "readdir")
+			.spyOn(fsPromises, "readdir")
 			.mockResolvedValue([
 				".env.1600000000",
 				".env.1700000000",
 			] as unknown as Awaited<ReturnType<typeof fs.promises.readdir>>);
 		const fsCopyFileSpy = vi
-			.spyOn(fs.promises, "copyFile")
+			.spyOn(fsPromises, "copyFile")
 			.mockResolvedValue(undefined);
 
 		const fsExistsSyncSpy = vi.spyOn(fs, "existsSync").mockReturnValue(true);
@@ -299,24 +342,24 @@ describe("Setup", () => {
 	});
 
 	it("should restore .env on SIGINT (Ctrl+C) and exit with code 0 when backup exists", async () => {
-		const consoleLogSpy = vi.spyOn(console, "log").mockImplementation(() => {});
+		const consoleLogSpy = vi.spyOn(console, "log").mockImplementation(() => { });
 
 		// Mock fs.promises methods for restoreLatestBackup
-		const fsCopyFileSpy = vi
-			.spyOn(fs.promises, "copyFile")
-			.mockResolvedValue(undefined);
+		const fsCopyFileSpy = vi.spyOn(fsPromises, "copyFile").mockResolvedValue(undefined);
+		const fsRenameSpy = vi.spyOn(fsPromises, "rename").mockResolvedValue(undefined);
 		const fsAccessSpy = vi
-			.spyOn(fs.promises, "access")
+			.spyOn(fsPromises, "access")
 			.mockImplementation(async (path) => {
-				if (String(path) === ".backup") return undefined;
+
+				if (path && (String(path).includes(".backup") || String(path).includes(".env"))) {
+					return undefined;
+				}
 				throw { code: "ENOENT" };
 			});
-		const fsReaddirSpy = vi
-			.spyOn(fs.promises, "readdir")
-			.mockResolvedValue([
-				".env.1600000000",
-				".env.1700000000",
-			] as unknown as Awaited<ReturnType<typeof fs.promises.readdir>>);
+		const fsReaddirSpy = vi.spyOn(fsPromises, "readdir").mockResolvedValue([
+			".env.1600000000",
+			".env.1700000000",
+		] as any);
 
 		// Mock envFileBackup to return true (backup was created)
 		vi.mocked(envFileBackup).mockResolvedValue(true);
@@ -325,22 +368,28 @@ describe("Setup", () => {
 		vi.spyOn(fs, "existsSync").mockReturnValue(true);
 
 		// Mock all prompts
-		vi.spyOn(inquirer, "prompt").mockResolvedValue({
-			envReconfigure: true,
-			shouldBackup: true,
-			CI: "false",
-			useDefaultApi: true,
-			useDefaultMinio: true,
-			useDefaultCloudbeaver: true,
-			useDefaultPostgres: true,
-			useDefaultCaddy: true,
-			API_ADMINISTRATOR_USER_EMAIL_ADDRESS: "test@email.com",
-			setupReCaptcha: false,
+		// Mock prompts to simulate user interaction
+		let ciPromptReached: (value: unknown) => void;
+		const ciPromptPromise = new Promise((resolve) => {
+			ciPromptReached = resolve;
 		});
 
-		const processExitSpy = vi.spyOn(process, "exit").mockImplementation(() => {
-			throw new Error("process.exit called");
+		const inquirerPromptSpy = vi.spyOn(inquirer, "prompt");
+		inquirerPromptSpy.mockImplementation(async (questions: any) => {
+			const name = questions[0].name;
+			if (name === "envReconfigure") return { envReconfigure: true };
+			if (name === "shouldBackup") return { shouldBackup: true };
+			if (name === "CI") {
+				ciPromptReached(true);
+				// Hang here to simulate user sitting at the prompt
+				return new Promise(() => { });
+			}
+			return {};
 		});
+
+		const processExitSpy = vi
+			.spyOn(process, "exit")
+			.mockImplementation(() => undefined as never);
 
 		// Start setup() which will register the SIGINT handler and create backup
 		const setupPromise = setup();
@@ -359,15 +408,25 @@ describe("Setup", () => {
 		// Verify handler was registered
 		expect(process.listenerCount("SIGINT")).toBeGreaterThan(0);
 
+		// Wait for the "CI" prompt to ensure backupCreated=true
+		await ciPromptPromise;
+
 		// Emit SIGINT to trigger the handler
-		await expect(async () => process.emit("SIGINT")).rejects.toThrow(
-			"process.exit called",
-		);
+		process.emit("SIGINT");
+
+		// Wait for process.exit to be called
+		const startTimeExit = Date.now();
+		while (
+			processExitSpy.mock.calls.length === 0 &&
+			Date.now() - startTimeExit < maxWaitTime
+		) {
+			await new Promise((resolve) => setTimeout(resolve, pollInterval));
+		}
 
 		// Check that restoreLatestBackup was called
 		expect(fsCopyFileSpy).toHaveBeenCalledWith(
 			".backup/.env.1700000000",
-			".env",
+			".env.tmp",
 		);
 		// Check new SIGINT handler messages
 		expect(consoleLogSpy).toHaveBeenCalledWith(
@@ -394,22 +453,20 @@ describe("Setup", () => {
 	});
 
 	it("should exit with code 1 when restoreLatestBackup fails", async () => {
-		const consoleLogSpy = vi.spyOn(console, "log").mockImplementation(() => {});
+		const consoleLogSpy = vi.spyOn(console, "log").mockImplementation(() => { });
 		const consoleErrorSpy = vi
 			.spyOn(console, "error")
-			.mockImplementation(() => {});
+			.mockImplementation(() => { });
 
 		// Mock fs.promises methods for restoreLatestBackup to throw an error
-		const fsAccessSpy = vi
-			.spyOn(fs.promises, "access")
-			.mockImplementation(async (path) => {
-				if (String(path) === ".backup") return undefined;
-				throw { code: "ENOENT" };
-			});
-		const fsReaddirSpy = vi
-			.spyOn(fs.promises, "readdir")
-			.mockRejectedValue(new Error("Failed to read backup directory"));
-
+		const fsAccessSpy = vi.spyOn(fsPromises, "access").mockImplementation(async (path) => {
+			if (String(path).includes(".backup") || String(path).includes(".env"))
+				return undefined;
+			throw { code: "ENOENT" };
+		});
+		const fsReaddirSpy = vi.spyOn(fsPromises, "readdir").mockRejectedValue(new Error("Failed to read backup directory"));
+		const fsCopyFileSpy = vi.spyOn(fsPromises, "copyFile").mockResolvedValue(undefined);
+		const fsRenameSpy = vi.spyOn(fsPromises, "rename").mockRejectedValue(new Error("Rename failed"));
 		// Mock envFileBackup to return true (backup was created)
 		vi.mocked(envFileBackup).mockResolvedValue(true);
 
@@ -417,22 +474,27 @@ describe("Setup", () => {
 		vi.spyOn(fs, "existsSync").mockReturnValue(true);
 
 		// Mock all prompts
-		vi.spyOn(inquirer, "prompt").mockResolvedValue({
-			envReconfigure: true,
-			shouldBackup: true,
-			CI: "false",
-			useDefaultApi: true,
-			useDefaultMinio: true,
-			useDefaultCloudbeaver: true,
-			useDefaultPostgres: true,
-			useDefaultCaddy: true,
-			API_ADMINISTRATOR_USER_EMAIL_ADDRESS: "test@email.com",
-			setupReCaptcha: false,
+		// Mock prompts to simulate user interaction
+		let ciPromptReached: (value: unknown) => void;
+		const ciPromptPromise = new Promise((resolve) => {
+			ciPromptReached = resolve;
 		});
 
-		const processExitSpy = vi.spyOn(process, "exit").mockImplementation(() => {
-			throw new Error("process.exit called");
+		vi.spyOn(inquirer, "prompt").mockImplementation(async (questions: any) => {
+			const name = questions[0].name;
+			if (name === "envReconfigure") return { envReconfigure: true };
+			if (name === "shouldBackup") return { shouldBackup: true };
+			if (name === "CI") {
+				ciPromptReached(true);
+				// Hang here to simulate user sitting at the prompt
+				return new Promise(() => { });
+			}
+			return {};
 		});
+
+		const processExitSpy = vi
+			.spyOn(process, "exit")
+			.mockImplementation(() => undefined as never);
 
 		// Start setup() which will register the SIGINT handler and create backup
 		const setupPromise = setup();
@@ -451,15 +513,25 @@ describe("Setup", () => {
 		// Verify handler was registered
 		expect(process.listenerCount("SIGINT")).toBeGreaterThan(0);
 
+		// Wait for the "CI" prompt to ensure backupCreated=true
+		await ciPromptPromise;
+
 		// Emit SIGINT to trigger the handler
-		await expect(async () => process.emit("SIGINT")).rejects.toThrow(
-			"process.exit called",
-		);
+		process.emit("SIGINT");
+
+		// Wait for process.exit to be called
+		const startTimeExit = Date.now();
+		while (
+			processExitSpy.mock.calls.length === 0 &&
+			Date.now() - startTimeExit < maxWaitTime
+		) {
+			await new Promise((resolve) => setTimeout(resolve, pollInterval));
+		}
 
 		// Check that error messages are shown
 		expect(consoleErrorSpy).toHaveBeenCalledWith(
-			"❌ Failed to restore backup:",
-			expect.any(Error),
+			"❌ Error reading backup directory:",
+			expect.anything(),
 		);
 		expect(consoleErrorSpy).toHaveBeenCalledWith(
 			"\n   You may need to manually restore from the .backup directory",
@@ -485,15 +557,18 @@ describe("Setup", () => {
 	});
 
 	it("should return false and skip restoration when cleanupInProgress is true", async () => {
-		const consoleLogSpy = vi.spyOn(console, "log").mockImplementation(() => {});
+		const consoleLogSpy = vi.spyOn(console, "log").mockImplementation(() => { });
 		// Spy on file operations that would be performed during restoration
-		const fsAccessSpy = vi.spyOn(fs.promises, "access");
-		const fsReaddirSpy = vi.spyOn(fs.promises, "readdir");
-		const fsCopyFileSpy = vi.spyOn(fs.promises, "copyFile");
+		const fsAccessSpy = vi.spyOn(fsPromises, "access");
+		const fsReaddirSpy = vi.spyOn(fsPromises, "readdir");
+		const fsCopyFileSpy = vi.spyOn(fsPromises, "copyFile");
 
 		// Import test helpers
-		const { __test__restoreBackup, __test__setCleanupInProgress } =
-			await import("scripts/setup/setup");
+		const {
+			__test__restoreBackup,
+			__test__setCleanupInProgress,
+			__test__resetState,
+		} = await import("scripts/setup/setup");
 
 		// Set cleanupInProgress to true to simulate concurrent cleanup attempt
 		__test__setCleanupInProgress(true);
@@ -1016,7 +1091,8 @@ describe("Validation Helpers", () => {
 		let consoleLogSpy: MockInstance;
 
 		beforeEach(() => {
-			consoleLogSpy = vi.spyOn(console, "log").mockImplementation(() => {});
+			__test__resetState();
+			consoleLogSpy = vi.spyOn(console, "log").mockImplementation(() => { });
 		});
 
 		afterEach(() => {

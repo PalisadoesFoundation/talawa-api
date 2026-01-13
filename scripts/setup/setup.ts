@@ -158,14 +158,24 @@ export async function __test__restoreBackup(): Promise<boolean> {
 }
 
 /**
+ * Test-only export to allow resetting internal state
+ * @internal
+ */
+export function __test__resetState(): void {
+	backupCreated = false;
+	cleanupInProgress = false;
+	sigintHandler = null;
+}
+
+/**
  * SIGINT handler that restores backup and exits
  * Defined at module scope to allow removal before re-registration
  */
-async function sigintHandlerFunction(): Promise<void> {
+async function handleSigint(): Promise<void> {
 	console.log("\n\n⚠️  Setup interrupted by user (CTRL+C)");
 	console.log("=".repeat(60));
 	console.log("📋 Cleaning up and restoring previous configuration...");
-	console.log(`${"=".repeat(60)}\n`);
+	console.log(`${"=".repeat(60)} \n`);
 
 	const restored = await restoreBackup();
 
@@ -215,7 +225,7 @@ async function restoreLatestBackup(): Promise<void> {
 			const latestBackup = sortedBackups[0];
 			if (latestBackup) {
 				const backupPath = path.join(backupDir, latestBackup.name);
-				console.log(`Restoring from latest backup: ${backupPath}`);
+				console.log(`Restoring from latest backup: ${backupPath} `);
 				// Use atomic write: write to temp file first, then rename
 				// This ensures the .env file is either fully restored or unchanged
 				const tempPath = ".env.tmp";
@@ -333,7 +343,7 @@ export function validateRequiredFields(answers: SetupAnswers): void {
 	}
 	if (missingFields.length > 0) {
 		throw new Error(
-			`Missing required configuration fields: ${missingFields.join(", ")}`,
+			`Missing required configuration fields: ${missingFields.join(", ")} `,
 		);
 	}
 }
@@ -355,7 +365,7 @@ export function validateBooleanFields(answers: SetupAnswers): void {
 	}
 	if (invalidFields.length > 0) {
 		throw new Error(
-			`Boolean fields must be "true" or "false": ${invalidFields.join(", ")}`,
+			`Boolean fields must be "true" or "false": ${invalidFields.join(", ")} `,
 		);
 	}
 }
@@ -385,7 +395,7 @@ export function validatePortNumbers(answers: SetupAnswers): void {
 	}
 	if (invalidFields.length > 0) {
 		throw new Error(
-			`Port numbers must be between 1 and 65535: ${invalidFields.join(", ")}`,
+			`Port numbers must be between 1 and 65535: ${invalidFields.join(", ")} `,
 		);
 	}
 }
@@ -465,7 +475,7 @@ export async function initializeEnvFile(answers: SetupAnswers): Promise<void> {
 		await fs.writeFile(envFileName, safeContent, { encoding: "utf-8" });
 		dotenv.config({ path: envFileName });
 		console.log(
-			`✅ Environment variables loaded successfully from ${envFileToUse}`,
+			`✅ Environment variables loaded successfully from ${envFileToUse} `,
 		);
 	} catch (error) {
 		console.error(
@@ -915,7 +925,7 @@ export async function setup(): Promise<SetupAnswers> {
 	}
 
 	// Register the SIGINT handler
-	sigintHandler = sigintHandlerFunction;
+	sigintHandler = handleSigint;
 	process.once("SIGINT", sigintHandler);
 	if (await checkEnvFile()) {
 		const isInteractive =
