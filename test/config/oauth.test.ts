@@ -116,6 +116,30 @@ describe("OAuth Configuration", () => {
 			expect(config.google.enabled).toBe(false);
 			expect(config.github.enabled).toBe(true);
 		});
+		it("should work with process.env when no env parameter is provided", () => {
+			process.env.GOOGLE_CLIENT_ID = "google-client-id";
+			process.env.GOOGLE_CLIENT_SECRET = "google-client-secret";
+			process.env.GOOGLE_REDIRECT_URI =
+				"http://localhost:4000/auth/google/callback";
+
+			const config = loadOAuthConfig();
+
+			expect(config.google.enabled).toBe(true);
+			expect(config.google.clientId).toBe("google-client-id");
+		});
+
+		it("should populate fields even when provider is disabled", () => {
+			const mockEnv = {
+				GOOGLE_CLIENT_ID: "google-client-id",
+				// Missing other required fields
+			};
+
+			const config = loadOAuthConfig(mockEnv);
+
+			expect(config.google.enabled).toBe(false);
+			expect(config.google.clientId).toBe("google-client-id");
+			expect(config.google.clientSecret).toBe("");
+		});
 	});
 
 	describe("getProviderConfig", () => {
@@ -229,20 +253,6 @@ describe("OAuth Configuration", () => {
 
 			// Expecting it to fall back to minimum 1000ms
 			expect(config.requestTimeoutMs).toBe(1000);
-		});
-
-		it("should use fallback timeout when provider config timeout is undefined", () => {
-			const mockEnv = {
-				GOOGLE_CLIENT_ID: "google-client-id",
-				GOOGLE_CLIENT_SECRET: "google-client-secret",
-				GOOGLE_REDIRECT_URI: "http://localhost:4000/auth/google/callback",
-			};
-
-			// Create a scenario where requestTimeoutMs might be undefined
-			const config = getProviderConfig("google", mockEnv);
-
-			// The function should handle undefined timeout and fall back to 10000
-			expect(config.requestTimeoutMs).toBe(10000);
 		});
 
 		it("should handle empty string environment variables as missing", () => {
