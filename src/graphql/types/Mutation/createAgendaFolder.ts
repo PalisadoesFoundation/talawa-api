@@ -7,7 +7,6 @@ import {
 } from "~/src/graphql/inputs/MutationCreateAgendaFolderInput";
 import { AgendaFolder } from "~/src/graphql/types/AgendaFolder/AgendaFolder";
 import envConfig from "~/src/utilities/graphqLimits";
-import { isNotNullish } from "~/src/utilities/isNotNullish";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 
 const mutationCreateAgendaFolderArgumentsSchema = z.object({
@@ -69,6 +68,7 @@ builder.mutationField("createAgendaFolder", (t) =>
 						organization: {
 							columns: {
 								countryCode: true,
+								id: true,
 							},
 							with: {
 								membershipsWhereOrganization: {
@@ -107,62 +107,19 @@ builder.mutationField("createAgendaFolder", (t) =>
 				});
 			}
 
-			if (isNotNullish(parsedArgs.input.parentFolderId)) {
-				const parentFolderId = parsedArgs.input.parentFolderId;
-
-				const existingParentFolder =
-					await ctx.drizzleClient.query.agendaFoldersTable.findFirst({
-						where: (fields, operators) =>
-							operators.eq(fields.id, parentFolderId),
-					});
-
-				if (existingParentFolder === undefined) {
-					throw new TalawaGraphQLError({
-						extensions: {
-							code: "arguments_associated_resources_not_found",
-							issues: [
-								{
-									argumentPath: ["input", "parentFolderId"],
-								},
-							],
-						},
-					});
-				}
-
-				if (existingParentFolder.eventId !== parsedArgs.input.eventId) {
-					throw new TalawaGraphQLError({
-						extensions: {
-							code: "forbidden_action_on_arguments_associated_resources",
-							issues: [
-								{
-									argumentPath: ["input", "parentFolderId"],
-									message:
-										"This agenda folder does not belong to the provided event.",
-								},
-								{
-									argumentPath: ["input", "eventId"],
-									message:
-										"This event does not contain the provided parent agenda folder.",
-								},
-							],
-						},
-					});
-				}
-
-				if (existingParentFolder.isAgendaItemFolder) {
-					throw new TalawaGraphQLError({
-						extensions: {
-							code: "forbidden_action_on_arguments_associated_resources",
-							issues: [
-								{
-									argumentPath: ["input", "parentFolderId"],
-									message:
-										"This agenda folder cannot be a parent folder for other agenda folders.",
-								},
-							],
-						},
-					});
-				}
+			if (parsedArgs.input.organizationId !== existingEvent.organization.id) {
+				throw new TalawaGraphQLError({
+					extensions: {
+						code: "invalid_arguments",
+						issues: [
+							{
+								argumentPath: ["input", "organizationId"],
+								message:
+									"organizationId must match the organization associated with the event.",
+							},
+						],
+					},
+				});
 			}
 
 			const currentUserOrganizationMembership =
@@ -190,9 +147,10 @@ builder.mutationField("createAgendaFolder", (t) =>
 				.values({
 					creatorId: currentUserId,
 					eventId: parsedArgs.input.eventId,
-					isAgendaItemFolder: parsedArgs.input.isAgendaItemFolder,
 					name: parsedArgs.input.name,
-					parentFolderId: parsedArgs.input.parentFolderId,
+					organizationId: parsedArgs.input.organizationId,
+					description: parsedArgs.input.description,
+					sequence: parsedArgs.input.sequence,
 				})
 				.returning();
 

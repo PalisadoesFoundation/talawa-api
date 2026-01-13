@@ -9,16 +9,23 @@ AgendaFolder.implement({
 	description:
 		"Agenda folders are used to contain either collections of agenda items or collections of agenda folders but not both at the same time. Together with agenda items they constitute the agenda for an event.",
 	fields: (t) => ({
+		description: t.exposeString("description", {
+			description: "Custom information about the agenda folder.",
+			nullable: true,
+		}),
 		id: t.exposeID("id", {
 			description: "Global identifier of the agenda folder.",
 			nullable: false,
 		}),
-		isAgendaItemFolder: t.exposeBoolean("isAgendaItemFolder", {
-			description:
-				"Boolean to tell if the agenda folder is meant to be a folder for agenda items or a parent for agenda folders.",
-		}),
 		name: t.exposeString("name", {
 			description: "Name of the agenda folder.",
+		}),
+		sequence: t.exposeInt("sequence", {
+			description: "Sequence of agenda folder.",
+			nullable: true,
+		}),
+		isDefaultFolder: t.exposeBoolean("isDefaultFolder", {
+			description: "Boolean to tell if agenda folder is default or not",
 		}),
 	}),
 });
