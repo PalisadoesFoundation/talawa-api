@@ -385,7 +385,7 @@ if ! command_exists npm; then
 fi
 
 # Verify npm is working correctly
-NPM_VERSION=$(npm --version 2>/dev/null)
+NPM_VERSION=$(npm --version 2>/dev/null || true)
 if [ -z "$NPM_VERSION" ]; then
     error "npm is found but not functioning correctly"
     exit 1
