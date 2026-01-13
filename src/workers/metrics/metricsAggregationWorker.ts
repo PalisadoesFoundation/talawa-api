@@ -204,7 +204,7 @@ function collectOperationNames(snapshots: PerfSnapshot[]): Set<string> {
  * Aggregates performance metrics from a collection of snapshots.
  *
  * @param snapshots - Array of performance snapshots to aggregate
- * @param options - Aggregation options
+ * @param options - Aggregation options. Note: windowMinutes is deprecated and not functional since PerfSnapshot lacks timestamps. Use maxSnapshots instead.
  * @returns Aggregated metrics result
  */
 export function aggregateMetrics(
@@ -219,7 +219,7 @@ export function aggregateMetrics(
 	} = options;
 
 	// Limit snapshots if needed
-	// Note: windowMinutes is accepted but not used since PerfSnapshot doesn't include timestamps.
+	// Note: windowMinutes is deprecated and not used since PerfSnapshot doesn't include timestamps.
 	// The snapshots array is already ordered by recency (most recent first), so maxSnapshots
 	// effectively limits to the most recent N snapshots.
 	const limitedSnapshots = snapshots.slice(0, maxSnapshots);
@@ -306,7 +306,7 @@ export function aggregateMetrics(
  *
  * @param getSnapshots - Function to retrieve recent performance snapshots
  * @param logger - Logger instance for logging
- * @param options - Aggregation options
+ * @param options - Aggregation options. Note: windowMinutes is deprecated and not functional since PerfSnapshot lacks timestamps. Use maxSnapshots instead.
  * @returns Aggregated metrics result
  */
 export async function runMetricsAggregationWorker(

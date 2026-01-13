@@ -50,17 +50,41 @@ export default fp(async function perfPlugin(app: FastifyInstance) {
 	const recent: PerfSnapshot[] = [];
 
 	/**
+	 * Deep clones a performance snapshot to prevent external mutation of nested structures.
+	 * Creates new objects for ops and slow arrays to ensure full immutability.
+	 *
+	 * @param snap - The snapshot to deep clone
+	 * @returns A deep-cloned copy of the snapshot
+	 */
+	const deepCopySnapshot = (snap: PerfSnapshot): PerfSnapshot => {
+		// Use structuredClone for reliable deep cloning (available in Node.js 17+)
+		// Falls back to manual deep copy if structuredClone is not available
+		if (typeof structuredClone !== "undefined") {
+			return structuredClone(snap);
+		}
+
+		// Manual deep copy fallback
+		return {
+			...snap,
+			ops: Object.fromEntries(
+				Object.entries(snap.ops).map(([key, value]) => [key, { ...value }]),
+			),
+			slow: snap.slow.map((item) => ({ ...item })),
+		};
+	};
+
+	/**
 	 * Retrieves recent performance snapshots for metrics aggregation.
-	 * Returns a copy of the snapshots array to prevent external modification.
+	 * Returns deep-cloned snapshots to prevent external modification of nested structures.
 	 *
 	 * @param limit - Maximum number of snapshots to return (default: all available)
-	 * @returns Array of performance snapshots
+	 * @returns Array of deep-cloned performance snapshots
 	 */
 	app.decorate("getPerformanceSnapshots", (limit?: number): PerfSnapshot[] => {
 		if (limit !== undefined && limit > 0) {
-			return recent.slice(0, limit).map((snap) => ({ ...snap }));
+			return recent.slice(0, limit).map(deepCopySnapshot);
 		}
-		return recent.map((snap) => ({ ...snap }));
+		return recent.map(deepCopySnapshot);
 	});
 
 	// Attach performance tracker to each request

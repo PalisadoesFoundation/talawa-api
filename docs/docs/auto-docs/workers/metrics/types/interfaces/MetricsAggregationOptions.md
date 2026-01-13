@@ -14,7 +14,7 @@ Options for metrics aggregation.
 
 > `optional` **maxSnapshots**: `number`
 
-Defined in: [src/workers/metrics/types.ts:88](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/workers/metrics/types.ts#L88)
+Defined in: [src/workers/metrics/types.ts:90](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/workers/metrics/types.ts#L90)
 
 Maximum number of snapshots to process (default: 1000)
 
@@ -24,19 +24,24 @@ Maximum number of snapshots to process (default: 1000)
 
 > `optional` **slowThresholdMs**: `number`
 
-Defined in: [src/workers/metrics/types.ts:90](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/workers/metrics/types.ts#L90)
+Defined in: [src/workers/metrics/types.ts:92](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/workers/metrics/types.ts#L92)
 
 Threshold in milliseconds for considering an operation as slow (default: 200)
 
 ***
 
-### windowMinutes?
+### ~~windowMinutes?~~
 
 > `optional` **windowMinutes**: `number`
 
-Defined in: [src/workers/metrics/types.ts:86](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/workers/metrics/types.ts#L86)
+Defined in: [src/workers/metrics/types.ts:88](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/workers/metrics/types.ts#L88)
 
 Time window in minutes to aggregate snapshots from (default: 5).
-Note: Currently not used for filtering since PerfSnapshot doesn't include timestamps.
+
+#### Deprecated
+
+This parameter is currently not functional since PerfSnapshot doesn't include timestamps.
+It is accepted for API compatibility but has no effect on filtering.
 The snapshots array is already ordered by recency (most recent first).
 Use maxSnapshots to limit the number of snapshots processed.
+This will be functional in a future PR when timestamps are added to PerfSnapshot.

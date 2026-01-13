@@ -4,7 +4,7 @@
 
 # Interface: MetricsAggregationResult
 
-Defined in: [src/workers/metrics/types.ts:96](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/workers/metrics/types.ts#L96)
+Defined in: [src/workers/metrics/types.ts:98](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/workers/metrics/types.ts#L98)
 
 Result of a metrics aggregation run.
 
@@ -14,7 +14,7 @@ Result of a metrics aggregation run.
 
 > **aggregationDurationMs**: `number`
 
-Defined in: [src/workers/metrics/types.ts:102](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/workers/metrics/types.ts#L102)
+Defined in: [src/workers/metrics/types.ts:104](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/workers/metrics/types.ts#L104)
 
 Duration of aggregation in milliseconds
 
@@ -24,7 +24,7 @@ Duration of aggregation in milliseconds
 
 > **metrics**: [`AggregatedMetrics`](AggregatedMetrics.md)
 
-Defined in: [src/workers/metrics/types.ts:98](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/workers/metrics/types.ts#L98)
+Defined in: [src/workers/metrics/types.ts:100](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/workers/metrics/types.ts#L100)
 
 The aggregated metrics
 
@@ -34,6 +34,6 @@ The aggregated metrics
 
 > **snapshotsProcessed**: `number`
 
-Defined in: [src/workers/metrics/types.ts:100](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/workers/metrics/types.ts#L100)
+Defined in: [src/workers/metrics/types.ts:102](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/workers/metrics/types.ts#L102)
 
 Number of snapshots processed

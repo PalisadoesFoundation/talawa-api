@@ -22,7 +22,7 @@ Array of performance snapshots to aggregate
 
 [`MetricsAggregationOptions`](../../types/interfaces/MetricsAggregationOptions.md) = `{}`
 
-Aggregation options
+Aggregation options. Note: windowMinutes is deprecated and not functional since PerfSnapshot lacks timestamps. Use maxSnapshots instead.
 
 ## Returns
 

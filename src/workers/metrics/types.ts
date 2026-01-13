@@ -79,9 +79,11 @@ export interface AggregatedMetrics extends TimeSeriesMetrics {
 export interface MetricsAggregationOptions {
 	/**
 	 * Time window in minutes to aggregate snapshots from (default: 5).
-	 * Note: Currently not used for filtering since PerfSnapshot doesn't include timestamps.
+	 * @deprecated This parameter is currently not functional since PerfSnapshot doesn't include timestamps.
+	 * It is accepted for API compatibility but has no effect on filtering.
 	 * The snapshots array is already ordered by recency (most recent first).
 	 * Use maxSnapshots to limit the number of snapshots processed.
+	 * This will be functional in a future PR when timestamps are added to PerfSnapshot.
 	 */
 	windowMinutes?: number;
 	/** Maximum number of snapshots to process (default: 1000) */
