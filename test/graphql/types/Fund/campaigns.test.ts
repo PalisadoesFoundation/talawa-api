@@ -12,6 +12,7 @@ import {
 	Mutation_createFundCampaign,
 	Mutation_createOrganization,
 	Mutation_createOrganizationMembership,
+	Mutation_deleteFund,
 	Query_signIn,
 } from "../documentNodes";
 import type { introspection } from "../gql.tada";
@@ -354,20 +355,28 @@ describe("Fund.campaigns Resolver - Integration", () => {
 			// Create a new fund without campaigns
 			const emptyFund = await createTestFund(adminAuth.token, organization.id);
 
-			const result = await mercuriusClient.query(Query_Fund_Campaigns, {
-				headers: { authorization: `bearer ${adminAuth.token}` },
-				variables: {
-					input: { id: emptyFund.id },
-					first: 10,
-				},
-			});
+			try {
+				const result = await mercuriusClient.query(Query_Fund_Campaigns, {
+					headers: { authorization: `bearer ${adminAuth.token}` },
+					variables: {
+						input: { id: emptyFund.id },
+						first: 10,
+					},
+				});
 
-			expect(result.errors).toBeUndefined();
-			assertToBeNonNullish(result.data?.fund?.campaigns);
+				expect(result.errors).toBeUndefined();
+				assertToBeNonNullish(result.data?.fund?.campaigns);
 
-			const edges = result.data.fund.campaigns.edges;
-			assertToBeNonNullish(edges);
-			expect(edges.length).toBe(0);
+				const edges = result.data.fund.campaigns.edges;
+				assertToBeNonNullish(edges);
+				expect(edges.length).toBe(0);
+			} finally {
+				// Clean up the empty fund created for this test
+				await mercuriusClient.mutate(Mutation_deleteFund, {
+					headers: { authorization: `bearer ${adminAuth.token}` },
+					variables: { input: { id: emptyFund.id } },
+				});
+			}
 		});
 	});
 
