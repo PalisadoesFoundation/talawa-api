@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import type { EnvConfig } from "~/src/envConfigSchema";
 import { EmailProviderFactory } from "~/src/services/email/EmailProviderFactory";
 import { SESProvider } from "~/src/services/email/providers/SESProvider";
+import { SMTPProvider } from "~/src/services/email/providers/SMTPProvider";
 
 describe("EmailProviderFactory", () => {
 	it("should return SESProvider when API_EMAIL_PROVIDER is 'ses'", () => {
@@ -42,15 +43,84 @@ describe("EmailProviderFactory", () => {
 	});
 
 	it("should throw error when 'smtp' is selected but not implemented (or if handled in factory)", () => {
-		// Assuming we didn't implement SMTPProvider yet, relying on the factory either handling it or throwing default
+		// SMTP is now implemented
 		const config = {
 			API_EMAIL_PROVIDER: "smtp",
 		} as unknown as EnvConfig;
 
-		// Following current implementation it should throw "Unsupported email provider: smtp"
+		// Should throw error for missing SMTP_HOST
 		expect(() => EmailProviderFactory.create(config)).toThrow(
-			"Unsupported email provider: smtp",
+			"SMTP_HOST is required when using SMTP provider",
 		);
+	});
+
+	it("should return SMTPProvider when API_EMAIL_PROVIDER is 'smtp'", () => {
+		const config = {
+			API_EMAIL_PROVIDER: "smtp",
+			SMTP_HOST: "smtp.example.com",
+			SMTP_PORT: 587,
+			SMTP_USER: "user@example.com",
+			SMTP_PASSWORD: "password",
+			SMTP_FROM_EMAIL: "from@example.com",
+		} as unknown as EnvConfig;
+
+		const provider = EmailProviderFactory.create(config);
+		expect(provider).toBeInstanceOf(SMTPProvider);
+	});
+
+	it("should throw error when SMTP_HOST is missing for SMTP provider", () => {
+		const config = {
+			API_EMAIL_PROVIDER: "smtp",
+			// SMTP_HOST missing
+			SMTP_PORT: 587,
+			SMTP_FROM_EMAIL: "from@example.com",
+		} as unknown as EnvConfig;
+
+		expect(() => EmailProviderFactory.create(config)).toThrow(
+			"SMTP_HOST is required when using SMTP provider",
+		);
+	});
+
+	it("should throw error when SMTP_PORT is missing for SMTP provider", () => {
+		const config = {
+			API_EMAIL_PROVIDER: "smtp",
+			SMTP_HOST: "smtp.example.com",
+			// SMTP_PORT missing
+			SMTP_FROM_EMAIL: "from@example.com",
+		} as unknown as EnvConfig;
+
+		expect(() => EmailProviderFactory.create(config)).toThrow(
+			"SMTP_PORT is required when using SMTP provider",
+		);
+	});
+
+	it("should return SMTPProvider when authentication is omitted", () => {
+		const config = {
+			API_EMAIL_PROVIDER: "smtp",
+			SMTP_HOST: "smtp.example.com",
+			SMTP_PORT: 587,
+			// SMTP_USER omitted
+			// SMTP_PASSWORD omitted
+			SMTP_FROM_EMAIL: "from@example.com",
+		} as unknown as EnvConfig;
+
+		const provider = EmailProviderFactory.create(config);
+		expect(provider).toBeInstanceOf(SMTPProvider);
+	});
+
+	it("should return SMTPProvider when SMTP_FROM_NAME is omitted", () => {
+		const config = {
+			API_EMAIL_PROVIDER: "smtp",
+			SMTP_HOST: "smtp.example.com",
+			SMTP_PORT: 587,
+			SMTP_USER: "user@example.com",
+			SMTP_PASSWORD: "password",
+			SMTP_FROM_EMAIL: "from@example.com",
+			// SMTP_FROM_NAME omitted
+		} as unknown as EnvConfig;
+
+		const provider = EmailProviderFactory.create(config);
+		expect(provider).toBeInstanceOf(SMTPProvider);
 	});
 	it("should return SESProvider when credentials are omitted (IAM role scenario)", () => {
 		const config = {

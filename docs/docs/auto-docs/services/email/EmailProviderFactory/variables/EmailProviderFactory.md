@@ -6,7 +6,7 @@
 
 > `const` **EmailProviderFactory**: `object`
 
-Defined in: [src/services/email/EmailProviderFactory.ts:5](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/email/EmailProviderFactory.ts#L5)
+Defined in: [src/services/email/EmailProviderFactory.ts:6](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/email/EmailProviderFactory.ts#L6)
 
 ## Type Declaration
 
@@ -43,6 +43,34 @@ Email environment configuration
 `string`
 
 ###### AWS_SES_REGION?
+
+`string`
+
+###### SMTP_FROM_EMAIL?
+
+`string`
+
+###### SMTP_FROM_NAME?
+
+`string`
+
+###### SMTP_HOST?
+
+`string`
+
+###### SMTP_PASSWORD?
+
+`string`
+
+###### SMTP_PORT?
+
+`number`
+
+###### SMTP_SECURE?
+
+`boolean`
+
+###### SMTP_USER?
 
 `string`
 

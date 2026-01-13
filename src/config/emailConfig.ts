@@ -9,6 +9,13 @@ const schema = Type.Pick(envConfigSchema, [
 	"AWS_ACCESS_KEY_ID",
 	"AWS_SECRET_ACCESS_KEY",
 	"API_EMAIL_PROVIDER",
+	"SMTP_HOST",
+	"SMTP_PORT",
+	"SMTP_USER",
+	"SMTP_PASSWORD",
+	"SMTP_SECURE",
+	"SMTP_FROM_EMAIL",
+	"SMTP_FROM_NAME",
 ]);
 
 export type EmailEnvConfig = Static<typeof schema>;

@@ -19,7 +19,8 @@ The Talawa API email service is built using the **Strategy Pattern**, allowing s
 src/services/email/
 ├── types.ts                      # Core interfaces and types
 ├── providers/
-│   └── SESProvider.ts           # AWS SES implementation
+│   ├── SESProvider.ts            #AWS SES implementation
+│   └── SMTPProvider.ts           # SMTP implementation
 ├── EmailProviderFactory.ts      # Provider selection logic
 ├── EmailQueueProcessor.ts       # Queue processing and retry logic
 └── emailServiceInstance.ts      # Service initialization
@@ -97,7 +98,23 @@ export interface EmailResult {
 }
 ```
 
-## Current Provider: AWS SES
+##Email Providers
+
+The Talawa API supports multiple email providers through the Strategy Pattern. You can choose between AWS SES (managed cloud service) or SMTP (standard protocol) based on your deployment needs.
+
+### Provider Selection
+
+Set the provider via environment variable:
+
+```bash
+API_EMAIL_PROVIDER=ses   # Use AWS SES (default)
+# or
+API_EMAIL_PROVIDER=smtp  # Use SMTP
+```
+
+---
+
+## AWS SES Provider
 
 ### Configuration
 
@@ -109,8 +126,8 @@ API_EMAIL_PROVIDER=ses
 
 # AWS Configuration
 AWS_SES_REGION=us-east-1          # Required: AWS region
-AWS_SES_ACCESS_KEY_ID=AKIA...     # Optional: if not using IAM roles
-AWS_SES_SECRET_ACCESS_KEY=...     # Optional: if not using IAM roles
+AWS_ACCESS_KEY_ID=AKIA...         # Optional: if not using IAM roles
+AWS_SECRET_ACCESS_KEY=...         # Optional: if not using IAM roles
 
 # Email Settings
 AWS_SES_FROM_EMAIL=noreply@talawa.io  # Required: sender email
@@ -144,6 +161,126 @@ if (!this.config.fromEmail) {
   throw new Error('AWS_SES_FROM_EMAIL is required');
 }
 ```
+
+---
+
+## SMTP Provider
+
+The SMTP provider offers a vendor-neutral solution that works with any SMTP server, including:
+- Self-hosted servers (Postfix, Sendmail)
+- Popular email services (Gmail, Outlook, Yahoo)
+- Web hosting providers (GoDaddy, Bluehost, etc.)
+
+### Configuration
+
+```bash
+# Email Provider Selection
+API_EMAIL_PROVIDER=smtp
+
+# SMTP Server Settings
+SMTP_HOST=smtp.gmail.com          # Required: SMTP server hostname  
+SMTP_PORT=587                     # Required: SMTP port (587 for TLS, 465 for SSL)
+SMTP_SECURE=false                 # Required: true for SSL (port 465), false for TLS (port 587)
+
+# Authentication (optional if server doesn't require auth)
+SMTP_USER=your-email@gmail.com    # SMTP username
+SMTP_PASSWORD=your-app-password   # SMTP password
+
+# Email Settings
+SMTP_FROM_EMAIL=noreply@talawa.io # Required: sender email
+SMTP_FROM_NAME=Talawa             # Optional: sender name (default: "Talawa")
+```
+
+### SMTP Provider Features
+
+**Lazy Initialization**
+- SMTP transporter is initialized on first email send
+- Validates configuration before attempting to connect
+- Provides clear error messages for connection failures
+
+**Rate Limiting**
+- Includes 100ms delay between emails to avoid throttling
+- Prevents overwhelming SMTP servers
+
+**TLS/SSL Support**
+- Configurable security mode via `SMTP_SECURE`
+- STARTTLS support for port 587
+- Direct SSL/TLS for port 465
+
+**Flexible Authentication**
+- Supports username/password authentication
+- Works without authentication if server allows
+
+**Error Handling**
+- Catches and converts Nodemailer errors to EmailResult format
+- Returns descriptive error messages for debugging
+- Handles connection timeouts and authentication failures
+
+### Common SMTP Configurations
+
+**Gmail**
+```bash
+SMTP_HOST=smtp.gmail.com
+SMTP_PORT=587
+SMTP_SECURE=false
+SMTP_USER=your-email@gmail.com
+SMTP_PASSWORD=your-app-password  # Use App Password, not regular password
+SMTP_FROM_EMAIL=your-email@gmail.com
+```
+
+> **Note**: Gmail requires an "App Password" if 2FA is enabled. Generate one at: https://myaccount.google.com/apppasswords
+
+**Outlook/Office 365**
+```bash
+SMTP_HOST=smtp-mail.outlook.com
+SMTP_PORT=587
+SMTP_SECURE=false
+SMTP_USER=your-email@outlook.com
+SMTP_PASSWORD=your-password
+SMTP_FROM_EMAIL=your-email@outlook.com
+```
+
+**GoDaddy**
+```bash
+SMTP_HOST=smtp.secureserver.net
+SMTP_PORT=465
+SMTP_SECURE=true
+SMTP_USER=your-email@yourdomain.com
+SMTP_PASSWORD=your-password
+SMTP_FROM_EMAIL=your-email@yourdomain.com
+```
+
+**Self-Hosted Postfix**
+```bash
+SMTP_HOST=mail.yourdomain.com
+SMTP_PORT=587
+SMTP_SECURE=false
+# Authentication may not be required for local server
+# SMTP_USER and SMTP_PASSWORD can be omitted
+SMTP_FROM_EMAIL=noreply@yourdomain.com
+```
+
+### SMTP Security Best Practices
+
+1. **Use TLS/STARTTLS**: Always use port 587 with `SMTP_SECURE=false` (STARTTLS) or port 465 with `SMTP_SECURE=true` (direct SSL)
+2. **Never use port 25**: Port 25 is often blocked by ISPs and lacks encryption
+3. **Use App Passwords**: For Gmail and other providers with 2FA, use app-specific passwords
+4. **Secure Credentials**: Store SMTP credentials in environment variables, never in code
+5. **Test Configuration**: Use the setup script (`npm run setup`) to verify SMTP settings
+
+---
+
+## Provider Comparison
+
+| Feature | AWS SES | SMTP |
+|---------|---------|------|
+| **Setup Complexity** | Medium (requires AWS account) | Low (works with any provider) |
+| **Cost** | Pay per email sent | Depends on hosting provider |
+| **Vendor Lock-in** | AWS-specific | Vendor-neutral |
+| **Reliability** | Very high (AWS infrastructure) | Depends on SMTP server |
+| **Sending Limits** | High (50 emails/second default) | Varies by provider |
+| **Authentication** | AWS credentials or IAM roles | Username/password |
+| **Best For** | Production deployments, high volume | Development, self-hosted, flexible deployments |
 
 ## Email Queue System
 
@@ -452,7 +589,7 @@ Update this file and the configuration documentation with your new provider's se
 
 **Required for Any Provider**
 ```bash
-API_EMAIL_PROVIDER=ses              # Provider to use
+API_EMAIL_PROVIDER=ses              # Provider to use ('ses' or 'smtp')
 API_ENABLE_EMAIL_QUEUE=true         # Enable background queue
 ```
 
@@ -463,8 +600,19 @@ AWS_SES_FROM_EMAIL=noreply@talawa.io # Sender email (required)
 AWS_SES_FROM_NAME=Talawa            # Sender name (optional)
 
 # Optional: if not using IAM roles
-AWS_SES_ACCESS_KEY_ID=AKIA...
-AWS_SES_SECRET_ACCESS_KEY=...
+AWS_ACCESS_KEY_ID=AKIA...
+AWS_SECRET_ACCESS_KEY=...
+```
+
+**SMTP Provider**
+```bash
+SMTP_HOST=smtp.example.com          # SMTP server hostname (required)
+SMTP_PORT=587                       # SMTP port (required)
+SMTP_SECURE=false                   # Use SSL/TLS (required)
+SMTP_USER=user@example.com          # SMTP username (optional)
+SMTP_PASSWORD=password              # SMTP password (optional)
+SMTP_FROM_EMAIL=noreply@talawa.io   # Sender email (required)
+SMTP_FROM_NAME=Talawa               # Sender name (optional)
 ```
 
 **Queue Processing**
@@ -555,6 +703,72 @@ aws ses get-send-quota --region us-east-1
 3. **"Message rejected: Email address is not verified"**
    - In sandbox mode, verify both sender and recipient
    - Request production access for SES
+
+### SMTP Issues
+
+**Connection refused:**
+
+1. **Check firewall settings:**
+   - Ensure outbound connections to SMTP port are allowed
+   - Common ports: 587 (TLS), 465 (SSL)
+
+2. **Verify SMTP host and port:**
+   ```bash
+   # Test SMTP connection
+   telnet smtp.example.com 587
+   # or
+   openssl s_client -connect smtp.example.com:465 -crlf
+   ```
+
+3. **Check SMTP server status:**
+   - Verify your email provider's status page
+   - Some providers block SMTP by default (requires enabling)
+
+**Authentication failed:**
+
+1. **Verify credentials:**
+   - Double-check SMTP_USER and SMTP_PASSWORD
+   - For Gmail, use App Password (not regular password)
+   - For Office 365, ensure account allows SMTP access
+
+2. **Check authentication requirements:**
+   ```typescript
+   // Some servers don't require auth
+   // Omit SMTP_USER and SMTP_PASSWORD if not needed
+   ```
+
+**SSL/TLS errors:**
+
+1. **Use correct SMTP_SECURE setting:**
+   - Port 587: `SMTP_SECURE=false` (uses STARTTLS)
+   - Port 465: `SMTP_SECURE=true` (direct SSL/TLS)
+   - Never use port 25 (unencrypted)
+
+2. **Certificate issues:**
+   - Ensure system time is correct
+   - Update system CA certificates
+
+**Common SMTP Provider Issues:**
+
+**Gmail:**
+- Enable "Less secure app access" (if not using App Password)
+- Generate App Password: https://myaccount.google.com/apppasswords
+- Check for "suspicious activity" blocks in Gmail account
+
+**Outlook/Office 365:**
+- Enable SMTP AUTH in  Exchange admin center
+- Check if account requires multi-factor authentication
+- Verify account isn't suspended or limited
+
+**GoDaddy:**
+- Ensure email hosting is active
+- Use workspace email credentials (not cPanel login) 
+- Check if SMTP relay is enabled for your plan
+
+**Self-Hosted:**
+- Verify Postfix/Sendmail is running: `sudo systemctl status postfix`
+- Check mail logs: `sudo tail -f /var/log/mail.log`
+- Ensure DNS records (SPF, DKIM, DMARC) are configured
 
 ### Queue Processor Issues
 
@@ -785,9 +999,10 @@ describe('Email Templates', () => {
 
 ### Planned Features
 
-1. **SMTP Provider** (Sub-Issue 3)
-   - Generic SMTP support for self-hosted email servers
-   - Support for Gmail, Outlook, etc.
+1. **Additional Email Providers**
+   - SendGrid integration
+   - Mailgun integration
+   - Resend integration
 
 2. **Email Templates System**
    - Template engine integration (Handlebars/Mustache)
@@ -798,6 +1013,24 @@ describe('Email Templates', () => {
    - Open tracking
    - Click tracking
    - Bounce handling
+   - Delivery reports
+
+4. **Enhanced Queue Management**
+   - Priority queues
+   - Scheduled send times
+   - Batch processing optimization
+   - Dead letter queue for permanently failed emails
+
+5. **Email Attachments**
+   - Support for file attachments
+   - Inline images
+   - Size limits and validation
+
+---
+
+## Summary
+
+The Talawa API email service provides a flexible, reliable system for sending emails using a provider-agnostic architecture. With support for both AWS SES and SMTP, you can choose the solution that best fits your deployment needs. The queue-based processing with automatic retries ensures reliable delivery, while the Strategy Pattern makes it easy to add new providers in the future.
 
 4. **Advanced Queue Features**
    - Priority queue (send important emails first)

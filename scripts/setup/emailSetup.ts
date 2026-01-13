@@ -28,6 +28,13 @@ function clearEmailCredentials(answers: SetupAnswers): void {
 	delete answers.AWS_SECRET_ACCESS_KEY;
 	delete answers.AWS_SES_FROM_EMAIL;
 	delete answers.AWS_SES_FROM_NAME;
+	delete answers.SMTP_HOST;
+	delete answers.SMTP_PORT;
+	delete answers.SMTP_USER;
+	delete answers.SMTP_PASSWORD;
+	delete answers.SMTP_SECURE;
+	delete answers.SMTP_FROM_EMAIL;
+	delete answers.SMTP_FROM_NAME;
 }
 
 export async function emailSetup(answers: SetupAnswers): Promise<SetupAnswers> {
@@ -52,7 +59,7 @@ export async function emailSetup(answers: SetupAnswers): Promise<SetupAnswers> {
 			answers.API_EMAIL_PROVIDER = await promptList(
 				"API_EMAIL_PROVIDER",
 				"Select email provider:",
-				["ses"], // SMTP to be added later
+				["ses", "smtp"],
 				"ses",
 			);
 
@@ -108,6 +115,89 @@ export async function emailSetup(answers: SetupAnswers): Promise<SetupAnswers> {
 					"From Display Name:",
 					"Talawa",
 				);
+			} else if (answers.API_EMAIL_PROVIDER === "smtp") {
+				answers.SMTP_HOST = await promptInput(
+					"SMTP_HOST",
+					"SMTP Host:",
+					"",
+					(value) => {
+						if (!value || value.trim().length === 0) {
+							return "SMTP Host is required";
+						}
+						return true;
+					},
+				);
+
+				const portInput = await promptInput(
+					"SMTP_PORT",
+					"SMTP Port (587 for TLS, 465 for SSL):",
+					"587",
+					(value) => {
+						if (!value || value.trim().length === 0) {
+							return "SMTP Port is required";
+						}
+						const port = parseInt(value, 10);
+						if (Number.isNaN(port) || port < 1 || port > 65535) {
+							return "Port must be a number between 1 and 65535";
+						}
+						return true;
+					},
+				);
+				answers.SMTP_PORT = portInput;
+
+				const useAuth = await promptConfirm(
+					"useSMTPAuth",
+					"Does your SMTP server require authentication?",
+					true,
+				);
+
+				if (useAuth) {
+					answers.SMTP_USER = await promptInput(
+						"SMTP_USER",
+						"SMTP Username:",
+						"",
+						(value) => {
+							if (!value || value.trim().length === 0) {
+								return "SMTP Username is required for authentication";
+							}
+							return true;
+						},
+					);
+
+					answers.SMTP_PASSWORD = await promptPassword(
+						"SMTP_PASSWORD",
+						"SMTP Password:",
+						(value) => {
+							if (!value || value.trim().length === 0) {
+								return "SMTP Password is required for authentication";
+							}
+							return true;
+						},
+					);
+				}
+
+				// Determine secure based on port
+				const defaultSecure = parseInt(answers.SMTP_PORT || "0", 10) === 465;
+				answers.SMTP_SECURE = (
+					await promptConfirm(
+						"SMTP_SECURE",
+						"Use SSL/TLS? (true for port 465, false for port 587)",
+						defaultSecure,
+					)
+				).toString();
+
+				answers.SMTP_FROM_EMAIL = await promptInput(
+					"SMTP_FROM_EMAIL",
+					"From Email Address:",
+					"",
+					validateEmail,
+				);
+
+				answers.SMTP_FROM_NAME = await promptInput(
+					"SMTP_FROM_NAME",
+					"From Display Name:",
+					"Talawa",
+				);
 			}
 
 			const sendTest = await promptConfirm(
@@ -119,14 +209,21 @@ export async function emailSetup(answers: SetupAnswers): Promise<SetupAnswers> {
 			if (sendTest) {
 				// Pre-flight validation for required credentials
 				const missingCreds: string[] = [];
-				if (!answers.AWS_SES_REGION?.trim())
-					missingCreds.push("AWS_SES_REGION");
-				if (!answers.AWS_ACCESS_KEY_ID?.trim())
-					missingCreds.push("AWS_ACCESS_KEY_ID");
-				if (!answers.AWS_SECRET_ACCESS_KEY?.trim())
-					missingCreds.push("AWS_SECRET_ACCESS_KEY");
-				if (!answers.AWS_SES_FROM_EMAIL?.trim())
-					missingCreds.push("AWS_SES_FROM_EMAIL");
+				if (answers.API_EMAIL_PROVIDER === "ses") {
+					if (!answers.AWS_SES_REGION?.trim())
+						missingCreds.push("AWS_SES_REGION");
+					if (!answers.AWS_ACCESS_KEY_ID?.trim())
+						missingCreds.push("AWS_ACCESS_KEY_ID");
+					if (!answers.AWS_SECRET_ACCESS_KEY?.trim())
+						missingCreds.push("AWS_SECRET_ACCESS_KEY");
+					if (!answers.AWS_SES_FROM_EMAIL?.trim())
+						missingCreds.push("AWS_SES_FROM_EMAIL");
+				} else if (answers.API_EMAIL_PROVIDER === "smtp") {
+					if (!answers.SMTP_HOST?.trim()) missingCreds.push("SMTP_HOST");
+					if (!answers.SMTP_PORT) missingCreds.push("SMTP_PORT");
+					if (!answers.SMTP_FROM_EMAIL?.trim())
+						missingCreds.push("SMTP_FROM_EMAIL");
+				}
 
 				if (missingCreds.length > 0) {
 					console.error(
@@ -152,7 +249,9 @@ export async function emailSetup(answers: SetupAnswers): Promise<SetupAnswers> {
 					const testRecipient = await promptInput(
 						"testRecipient",
 						"Enter recipient email address:",
-						answers.AWS_SES_FROM_EMAIL || "",
+						answers.API_EMAIL_PROVIDER === "ses"
+							? answers.AWS_SES_FROM_EMAIL || ""
+							: answers.SMTP_FROM_EMAIL || "",
 						validateEmail,
 					);
 
@@ -160,37 +259,73 @@ export async function emailSetup(answers: SetupAnswers): Promise<SetupAnswers> {
 					let testSuccess = false;
 
 					try {
-						// dynamically import to avoid early instantiation issues or circular deps
-						const { SESProvider } = await import("../../src/services/email");
+						if (answers.API_EMAIL_PROVIDER === "ses") {
+							// dynamically import to avoid early instantiation issues or circular deps
+							const { SESProvider } = await import("../../src/services/email");
 
-						const service = new SESProvider({
-							region: (answers.AWS_SES_REGION || "") as NonEmptyString,
-							accessKeyId: answers.AWS_ACCESS_KEY_ID,
-							secretAccessKey: answers.AWS_SECRET_ACCESS_KEY,
-							fromEmail: answers.AWS_SES_FROM_EMAIL,
-							fromName: answers.AWS_SES_FROM_NAME,
-						});
+							const service = new SESProvider({
+								region: (answers.AWS_SES_REGION || "") as NonEmptyString,
+								accessKeyId: answers.AWS_ACCESS_KEY_ID,
+								secretAccessKey: answers.AWS_SECRET_ACCESS_KEY,
+								fromEmail: answers.AWS_SES_FROM_EMAIL,
+								fromName: answers.AWS_SES_FROM_NAME,
+							});
 
-						const result = await service.sendEmail({
-							id: `test-email-${Date.now()}`,
-							email: testRecipient,
-							subject: "Talawa API - Test Email",
-							htmlBody:
-								"<h1>It Works!</h1><p>Your Talawa API email configuration is correct.</p>",
-							userId: null,
-						});
+							const result = await service.sendEmail({
+								id: `test-email-${Date.now()}`,
+								email: testRecipient,
+								subject: "Talawa API - Test Email",
+								htmlBody:
+									"<h1>It Works!</h1><p>Your Talawa API email configuration is correct.</p>",
+								userId: null,
+							});
 
-						if (result.success) {
-							console.log(
-								`✅ Test email sent successfully! Message ID: ${result.messageId}`,
-							);
-							testSuccess = true;
-							credentialsValid = true;
-						} else {
-							console.error(`❌ Failed to send test email: ${result.error}`);
-							console.log(
-								"Please check your credentials and ensure the 'From' address is verified in SES.",
-							);
+							if (result.success) {
+								console.log(
+									`✅ Test email sent successfully! Message ID: ${result.messageId}`,
+								);
+								testSuccess = true;
+								credentialsValid = true;
+							} else {
+								console.error(`❌ Failed to send test email: ${result.error}`);
+								console.log(
+									"Please check your credentials and ensure the 'From' address is verified in SES.",
+								);
+							}
+						} else if (answers.API_EMAIL_PROVIDER === "smtp") {
+							const { SMTPProvider } = await import("../../src/services/email");
+
+							const service = new SMTPProvider({
+								host: (answers.SMTP_HOST || "") as NonEmptyString,
+								port: parseInt(answers.SMTP_PORT || "587", 10),
+								user: answers.SMTP_USER,
+								password: answers.SMTP_PASSWORD,
+								secure: answers.SMTP_SECURE === "true",
+								fromEmail: answers.SMTP_FROM_EMAIL,
+								fromName: answers.SMTP_FROM_NAME,
+							});
+
+							const result = await service.sendEmail({
+								id: `test-email-${Date.now()}`,
+								email: testRecipient,
+								subject: "Talawa API - Test Email",
+								htmlBody:
+									"<h1>It Works!</h1><p>Your Talawa API email configuration is correct.</p>",
+								userId: null,
+							});
+
+							if (result.success) {
+								console.log(
+									`✅ Test email sent successfully! Message ID: ${result.messageId}`,
+								);
+								testSuccess = true;
+								credentialsValid = true;
+							} else {
+								console.error(`❌ Failed to send test email: ${result.error}`);
+								console.log(
+									"Please check your SMTP credentials and server settings.",
+								);
+							}
 						}
 					} catch (err: unknown) {
 						const error = err as Error & { code?: string };
@@ -198,9 +333,15 @@ export async function emailSetup(answers: SetupAnswers): Promise<SetupAnswers> {
 						console.error(`Error Details: ${error.message}`);
 						if (error.code) console.error(`Code: ${error.code}`);
 						if (error.name) console.error(`Type: ${error.name}`);
-						console.log(
-							"Tips: Check AWS_SES_REGION, verify AWS_ACCESS_KEY_ID/SECRET, and ensure AWS_SES_FROM_EMAIL is verified in SES.",
-						);
+						if (answers.API_EMAIL_PROVIDER === "ses") {
+							console.log(
+								"Tips: Check AWS_SES_REGION, verify AWS_ACCESS_KEY_ID/SECRET, and ensure AWS_SES_FROM_EMAIL is verified in SES.",
+							);
+						} else if (answers.API_EMAIL_PROVIDER === "smtp") {
+							console.log(
+								"Tips: Check SMTP_HOST, SMTP_PORT, verify credentials, and ensure your email provider allows SMTP access.",
+							);
+						}
 					}
 
 					// If test failed, ask user what to do

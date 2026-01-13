@@ -1,0 +1,86 @@
+[API Docs](/)
+
+***
+
+# Class: SMTPProvider
+
+Defined in: [src/services/email/providers/SMTPProvider.ts:36](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/email/providers/SMTPProvider.ts#L36)
+
+SMTP implementation of IEmailProvider using Nodemailer.
+
+This provider uses nodemailer to send emails via SMTP.
+It lazily initializes the transporter on first use.
+
+## Implements
+
+- [`IEmailProvider`](../../../types/interfaces/IEmailProvider.md)
+
+## Constructors
+
+### Constructor
+
+> **new SMTPProvider**(`config`): `SMTPProvider`
+
+Defined in: [src/services/email/providers/SMTPProvider.ts:46](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/email/providers/SMTPProvider.ts#L46)
+
+Creates an instance of SMTPProvider.
+
+#### Parameters
+
+##### config
+
+[`SMTPProviderConfig`](../interfaces/SMTPProviderConfig.md)
+
+The SMTP configuration object containing host, port, and credentials.
+
+#### Returns
+
+`SMTPProvider`
+
+## Methods
+
+### sendBulkEmails()
+
+> **sendBulkEmails**(`jobs`): `Promise`\<[`EmailResult`](../../../types/interfaces/EmailResult.md)[]\>
+
+Defined in: [src/services/email/providers/SMTPProvider.ts:132](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/email/providers/SMTPProvider.ts#L132)
+
+Send multiple emails
+
+#### Parameters
+
+##### jobs
+
+[`EmailJob`](../../../types/interfaces/EmailJob.md)[]
+
+#### Returns
+
+`Promise`\<[`EmailResult`](../../../types/interfaces/EmailResult.md)[]\>
+
+#### Implementation of
+
+[`IEmailProvider`](../../../types/interfaces/IEmailProvider.md).[`sendBulkEmails`](../../../types/interfaces/IEmailProvider.md#sendbulkemails)
+
+***
+
+### sendEmail()
+
+> **sendEmail**(`job`): `Promise`\<[`EmailResult`](../../../types/interfaces/EmailResult.md)\>
+
+Defined in: [src/services/email/providers/SMTPProvider.ts:96](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/email/providers/SMTPProvider.ts#L96)
+
+Send a single email using SMTP
+
+#### Parameters
+
+##### job
+
+[`EmailJob`](../../../types/interfaces/EmailJob.md)
+
+#### Returns
+
+`Promise`\<[`EmailResult`](../../../types/interfaces/EmailResult.md)\>
+
+#### Implementation of
+
+[`IEmailProvider`](../../../types/interfaces/IEmailProvider.md).[`sendEmail`](../../../types/interfaces/IEmailProvider.md#sendemail)

@@ -1,5 +1,6 @@
 import type { EmailEnvConfig } from "../../config/emailConfig";
 import { SESProvider } from "./providers/SESProvider";
+import { SMTPProvider } from "./providers/SMTPProvider";
 import type { IEmailProvider, NonEmptyString } from "./types";
 
 export const EmailProviderFactory = {
@@ -23,6 +24,25 @@ export const EmailProviderFactory = {
 					secretAccessKey: config.AWS_SECRET_ACCESS_KEY,
 					fromEmail: config.AWS_SES_FROM_EMAIL,
 					fromName: config.AWS_SES_FROM_NAME,
+				});
+			}
+			case "smtp": {
+				const host = config.SMTP_HOST;
+				const port = config.SMTP_PORT;
+				if (!host) {
+					throw new Error("SMTP_HOST is required when using SMTP provider");
+				}
+				if (!port) {
+					throw new Error("SMTP_PORT is required when using SMTP provider");
+				}
+				return new SMTPProvider({
+					host: host as NonEmptyString,
+					port,
+					user: config.SMTP_USER,
+					password: config.SMTP_PASSWORD,
+					secure: config.SMTP_SECURE,
+					fromEmail: config.SMTP_FROM_EMAIL,
+					fromName: config.SMTP_FROM_NAME,
 				});
 			}
 			default:
