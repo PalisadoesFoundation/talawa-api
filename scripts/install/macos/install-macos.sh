@@ -265,32 +265,53 @@ fi
 
 # Extract pnpm version
 PNPM_FULL=$(jq -r '.packageManager // ""' package.json)
+
+# Validate and extract pnpm version
 if [[ "$PNPM_FULL" == pnpm@* ]]; then
     PNPM_VERSION="${PNPM_FULL#pnpm@}"
     PNPM_VERSION="${PNPM_VERSION%%+*}"  # Remove hash if present
-    info "pnpm version from package.json packageManager: \"$PNPM_VERSION\""
+    
+    # Validate extracted pnpm version is not empty
+    if [ -z "$PNPM_VERSION" ]; then
+        warn "Could not extract pnpm version from '$PNPM_FULL', using latest"
+        PNPM_VERSION="latest"
+    fi
+    
+    # SECURITY: Validate pnpm version before use in commands
+    if ! validate_version_string "$PNPM_VERSION" "pnpm version (packageManager)"; then
+        error "❌ Security validation failed for pnpm version"
+        echo ""
+        info "The pnpm version in package.json packageManager field contains invalid characters."
+        echo ""
+        info "Current value: '$PNPM_FULL'"
+        info "Extracted version: '$PNPM_VERSION'"
+        echo ""
+        info "This could indicate:"
+        echo "  • Corrupted package.json file"
+        echo "  • Potentially malicious version string"
+        echo "  • Typo or formatting error"
+        echo ""
+        info "Troubleshooting steps:"
+        echo "  1. Check the packageManager field in package.json:"
+        echo "     jq '.packageManager' package.json"
+        echo ""
+        echo "  2. Restore package.json if corrupted:"
+        echo "     git checkout package.json"
+        echo ""
+        echo "  3. Ensure version follows format: pnpm@X.Y.Z (e.g., pnpm@10.2.1)"
+        echo ""
+        info "Report issues: https://github.com/PalisadoesFoundation/talawa-api/issues"
+        exit 1
+    fi
+elif [ -n "$PNPM_FULL" ]; then
+    # packageManager field exists but doesn't match expected pnpm format
+    warn "packageManager field '$PNPM_FULL' is not in expected format 'pnpm@version'"
+    info "Using latest pnpm version instead"
+    PNPM_VERSION="latest"
 else
-    # Fallback to engines.pnpm field
-    PNPM_VERSION=$(jq -r '.engines.pnpm // "latest"' package.json)
-    info "pnpm version from package.json engines.pnpm: \"$PNPM_VERSION\""
-fi
-
-# Validate pnpm version string for security
-if ! validate_version_string "$PNPM_VERSION" "pnpm version (packageManager)"; then
-    error "❌ Security validation failed for pnpm version"
-    echo ""
-    info "The pnpm version in package.json packageManager field contains invalid characters."
-    echo ""
-    info "Current value: '$PNPM_FULL'"
-    info "Extracted version: '$PNPM_VERSION'"
-    echo ""
-    info "Troubleshooting steps:"
-    echo "  1. Check package.json packageManager field: jq '.packageManager' package.json"
-    echo "  2. Restore package.json: git checkout package.json"
-    echo "  3. Re-run this script"
-    echo ""
-    info "Report issues: https://github.com/PalisadoesFoundation/talawa-api/issues"
-    exit 1
+    # No packageManager field specified
+    info "No packageManager specified in package.json, using latest pnpm"
+    PNPM_VERSION="latest"
 fi
 
 info "Target Node.js version: $CLEAN_NODE_VERSION"
