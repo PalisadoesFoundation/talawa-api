@@ -314,8 +314,11 @@ else
     PNPM_VERSION="latest"
 fi
 
+# Set CLEAN_PNPM_VERSION for use in installation commands
+CLEAN_PNPM_VERSION="$PNPM_VERSION"
+
 info "Target Node.js version: $CLEAN_NODE_VERSION"
-info "Target pnpm version: $PNPM_VERSION"
+info "Target pnpm version: $CLEAN_PNPM_VERSION"
 
 ##############################################################################
 # Step 6: Install Node.js
