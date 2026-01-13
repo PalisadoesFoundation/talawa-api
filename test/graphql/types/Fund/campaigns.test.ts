@@ -203,6 +203,11 @@ describe("Fund.campaigns Resolver - Integration", () => {
 	let campaigns: Array<{ id: string; name: string }> = [];
 
 	afterAll(async () => {
+		// Skip cleanup if adminAuth was never initialized (e.g., beforeAll failed)
+		if (!adminAuth?.token) {
+			return;
+		}
+
 		// Clean up all created test data to ensure test isolation
 		// Delete campaigns first (child resources)
 		for (const campaign of campaigns) {
@@ -211,11 +216,8 @@ describe("Fund.campaigns Resolver - Integration", () => {
 					headers: { authorization: `bearer ${adminAuth.token}` },
 					variables: { input: { id: campaign.id } },
 				});
-			} catch (error) {
-				console.error(
-					`[campaigns.test.ts] Failed to delete campaign ${campaign.id}:`,
-					error,
-				);
+			} catch {
+				// Ignore cleanup errors
 			}
 		}
 
@@ -226,11 +228,8 @@ describe("Fund.campaigns Resolver - Integration", () => {
 					headers: { authorization: `bearer ${adminAuth.token}` },
 					variables: { input: { id: fund.id } },
 				});
-			} catch (error) {
-				console.error(
-					`[campaigns.test.ts] Failed to delete fund ${fund.id}:`,
-					error,
-				);
+			} catch {
+				// Ignore cleanup errors
 			}
 		}
 
@@ -241,11 +240,8 @@ describe("Fund.campaigns Resolver - Integration", () => {
 					headers: { authorization: `bearer ${adminAuth.token}` },
 					variables: { input: { id: organization.id } },
 				});
-			} catch (error) {
-				console.error(
-					`[campaigns.test.ts] Failed to delete organization ${organization.id}:`,
-					error,
-				);
+			} catch {
+				// Ignore cleanup errors
 			}
 		}
 	});
@@ -417,10 +413,14 @@ describe("Fund.campaigns Resolver - Integration", () => {
 				expect(edges.length).toBe(0);
 			} finally {
 				// Clean up the empty fund created for this test
-				await mercuriusClient.mutate(Mutation_deleteFund, {
-					headers: { authorization: `bearer ${adminAuth.token}` },
-					variables: { input: { id: emptyFund.id } },
-				});
+				try {
+					await mercuriusClient.mutate(Mutation_deleteFund, {
+						headers: { authorization: `bearer ${adminAuth.token}` },
+						variables: { input: { id: emptyFund.id } },
+					});
+				} catch {
+					// Ignore cleanup errors
+				}
 			}
 		});
 	});
