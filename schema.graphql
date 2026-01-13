@@ -1187,6 +1187,23 @@ input EventsByOrganizationIdInput {
   organizationId: ID!
 }
 
+"""Metadata for files uploaded via presigned URL"""
+input FileMetadataInput {
+  """
+  SHA-256 hash for integrity verification (not DB-enforced deduplication)
+  """
+  fileHash: String!
+
+  """MIME type of the file"""
+  mimeType: PostAttachmentMimeType!
+
+  """Name of the file"""
+  name: String!
+
+  """Object name used in storage"""
+  objectName: String!
+}
+
 """Possible variants of the frequency of a recurring event."""
 enum Frequency {
   DAILY
@@ -2687,6 +2704,9 @@ input MutationCreateAgendaFolderInput {
 
 """"""
 input MutationCreateAgendaItemInput {
+  """File metadata for attachments uploaded via MinIO presigned URLs."""
+  attachments: [FileMetadataInput!]
+
   """Custom information about the agenda item."""
   description: String
 
@@ -3515,6 +3535,9 @@ input MutationUpdateAgendaFolderInput {
 
 """"""
 input MutationUpdateAgendaItemInput {
+  """File metadata for attachments uploaded via MinIO presigned URLs."""
+  attachments: [FileMetadataInput!]
+
   """Custom information about the agenda item."""
   description: String
 
@@ -4591,6 +4614,17 @@ type PostAttachment {
 
   """Object name used when creating presigned URLs."""
   objectName: String
+}
+
+"""Possible MIME types for post/agenda item attachments."""
+enum PostAttachmentMimeType {
+  IMAGE_AVIF
+  IMAGE_JPEG
+  IMAGE_PNG
+  IMAGE_WEBP
+  VIDEO_MP4
+  VIDEO_QUICKTIME
+  VIDEO_WEBM
 }
 
 """"""
