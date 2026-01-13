@@ -8,7 +8,32 @@
 #
 # Usage: Source this file at the beginning of installation scripts:
 #        source "$(dirname "$0")/../common/validation.sh"
+#
+# REQUIREMENTS:
+#   The sourcing script MUST define these functions before sourcing this file:
+#   - info()  : For informational messages (blue output)
+#   - error() : For error messages (red output)
+#
+#   Example definitions:
+#     info() { echo -e "${BLUE}ℹ${NC} $1"; }
+#     error() { echo -e "${RED}✗${NC} $1"; }
 ##############################################################################
+
+##############################################################################
+# Guard: Verify required functions are defined
+# 
+# This library depends on info() and error() functions being defined by the
+# calling script. Fail early with a clear message if they are missing.
+##############################################################################
+if ! command -v info >/dev/null 2>&1 || ! command -v error >/dev/null 2>&1; then
+    echo "ERROR: validation.sh requires info() and error() functions to be defined." >&2
+    echo "" >&2
+    echo "Please ensure your script defines these functions before sourcing validation.sh:" >&2
+    echo "  info() { echo -e \"\${BLUE}ℹ\${NC} \$1\"; }" >&2
+    echo "  error() { echo -e \"\${RED}✗\${NC} \$1\"; }" >&2
+    echo "" >&2
+    exit 1
+fi
 
 ##############################################################################
 # Validate version strings to prevent command injection
