@@ -412,25 +412,29 @@ describe("DataLoader infrastructure", () => {
 			const userOp = snapshot.ops["db:users.byId"];
 			expect(userOp).toBeDefined();
 			expect(userOp?.count).toBe(1);
-			expect(userOp?.ms).toBeGreaterThanOrEqual(cacheDelayMs);
+			// Allow small timing variance (90% of delay) due to setTimeout precision
+			expect(userOp?.ms).toBeGreaterThanOrEqual(cacheDelayMs * 0.9);
 
 			// Verify organization loader metrics
 			const orgOp = snapshot.ops["db:organizations.byId"];
 			expect(orgOp).toBeDefined();
 			expect(orgOp?.count).toBe(1);
-			expect(orgOp?.ms).toBeGreaterThanOrEqual(cacheDelayMs);
+			// Allow small timing variance (90% of delay) due to setTimeout precision
+			expect(orgOp?.ms).toBeGreaterThanOrEqual(cacheDelayMs * 0.9);
 
 			// Verify event loader metrics
 			const eventOp = snapshot.ops["db:events.byId"];
 			expect(eventOp).toBeDefined();
 			expect(eventOp?.count).toBe(1);
-			expect(eventOp?.ms).toBeGreaterThanOrEqual(cacheDelayMs);
+			// Allow small timing variance (90% of delay) due to setTimeout precision
+			expect(eventOp?.ms).toBeGreaterThanOrEqual(cacheDelayMs * 0.9);
 
 			// Verify actionItem loader metrics
 			const actionItemOp = snapshot.ops["db:actionItems.byId"];
 			expect(actionItemOp).toBeDefined();
 			expect(actionItemOp?.count).toBe(1);
-			expect(actionItemOp?.ms).toBeGreaterThanOrEqual(cacheDelayMs);
+			// Allow small timing variance (90% of delay) due to setTimeout precision
+			expect(actionItemOp?.ms).toBeGreaterThanOrEqual(cacheDelayMs * 0.9);
 
 			// Verify DB was NOT called (cache hit scenario)
 			// Metrics should still be recorded because they wrap the cache layer
