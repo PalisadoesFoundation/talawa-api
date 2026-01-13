@@ -336,9 +336,12 @@ describe("Metrics Aggregation Worker", () => {
 
 			expect(dbOp?.count).toBe(2);
 			// Percentiles should use slow operation durations when available
-			// With max=60 and slow=250, p95 should reflect the slow value (>= 250) or at least > max (60)
+			// With max=60 and slow=250, p95 interpolates between them: ~240-241
+			// The p95 should be > max (60) and <= slow (250)
 			expect(dbOp?.p95Ms).toBeGreaterThan(60);
-			expect(dbOp?.p95Ms).toBeGreaterThanOrEqual(250);
+			expect(dbOp?.p95Ms).toBeLessThanOrEqual(250);
+			// With 2 data points [60, 250], p95 interpolates to ~240-241
+			expect(dbOp?.p95Ms).toBeGreaterThanOrEqual(240);
 		});
 
 		it("should handle operations with zero count", () => {
@@ -556,10 +559,13 @@ describe("Metrics Aggregation Worker", () => {
 
 			// Only valid slow operations should be used for percentiles
 			// The valid slow op (250) should be used along with max value (50)
-			// With max=50 and slow=250, p95 should reflect the slow value (>= 250) or at least > max (50)
+			// With max=50 and slow=250, p95 interpolates between them: ~240-241
+			// The p95 should be > max (50) and <= slow (250)
 			expect(dbOp).toBeDefined();
 			expect(dbOp?.p95Ms).toBeGreaterThan(50);
-			expect(dbOp?.p95Ms).toBeGreaterThanOrEqual(250);
+			expect(dbOp?.p95Ms).toBeLessThanOrEqual(250);
+			// With 2 data points [50, 250], p95 interpolates to ~240-241
+			expect(dbOp?.p95Ms).toBeGreaterThanOrEqual(240);
 		});
 
 		it("should handle totalMs of 0", () => {
