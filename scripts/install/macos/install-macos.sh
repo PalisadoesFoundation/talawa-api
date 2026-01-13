@@ -314,11 +314,8 @@ else
     PNPM_VERSION="latest"
 fi
 
-# Set CLEAN_PNPM_VERSION for use in installation commands
-CLEAN_PNPM_VERSION="$PNPM_VERSION"
-
 info "Target Node.js version: $CLEAN_NODE_VERSION"
-info "Target pnpm version: $CLEAN_PNPM_VERSION"
+info "Target pnpm version: $PNPM_VERSION"
 
 ##############################################################################
 # Step 6: Install Node.js
@@ -388,20 +385,20 @@ success "Node.js installed: $(node --version)"
 # Step 7: Install pnpm
 ##############################################################################
 : $((CURRENT_STEP++))
-step $CURRENT_STEP $TOTAL_STEPS "Installing pnpm v$CLEAN_PNPM_VERSION..."
+step $CURRENT_STEP $TOTAL_STEPS "Installing pnpm v$PNPM_VERSION..."
 
 if command_exists pnpm; then
     CURRENT_PNPM=$(pnpm --version)
 
     # Normalize current version to same precision as target
     CURRENT_PNPM_NORMALIZED="$CURRENT_PNPM"
-    if [[ "$CLEAN_PNPM_VERSION" =~ ^[0-9]+$ ]]; then
+    if [[ "$PNPM_VERSION" =~ ^[0-9]+$ ]]; then
         # Target is major-only, extract major from current
         EXTRACTED=$(echo "$CURRENT_PNPM" | grep -oE '^[0-9]+' || true)
         if [ -n "$EXTRACTED" ]; then
             CURRENT_PNPM_NORMALIZED="$EXTRACTED"
         fi
-    elif [[ "$CLEAN_PNPM_VERSION" =~ ^[0-9]+\.[0-9]+$ ]]; then
+    elif [[ "$PNPM_VERSION" =~ ^[0-9]+\.[0-9]+$ ]]; then
         # Target is major.minor, extract major.minor from current
         EXTRACTED=$(echo "$CURRENT_PNPM" | grep -oE '^[0-9]+\.[0-9]+' || true)
         if [ -n "$EXTRACTED" ]; then
@@ -410,25 +407,25 @@ if command_exists pnpm; then
     fi
 
     # Skip version comparison if target is "latest" - always update to ensure we have latest
-    if [ "$CLEAN_PNPM_VERSION" = "latest" ]; then
+    if [ "$PNPM_VERSION" = "latest" ]; then
         info "Updating pnpm to latest version..."
         if ! npm install -g "pnpm@latest"; then
             error "Failed to update pnpm to latest version"
             exit 1
         fi
-    elif [ "$CURRENT_PNPM_NORMALIZED" = "$CLEAN_PNPM_VERSION" ]; then
+    elif [ "$CURRENT_PNPM_NORMALIZED" = "$PNPM_VERSION" ]; then
         success "pnpm is already installed: v$CURRENT_PNPM"
     else
-        info "Updating pnpm from v$CURRENT_PNPM to v$CLEAN_PNPM_VERSION..."
-        if ! npm install -g "pnpm@$CLEAN_PNPM_VERSION"; then
-            error "Failed to update pnpm to v$CLEAN_PNPM_VERSION"
+        info "Updating pnpm from v$CURRENT_PNPM to v$PNPM_VERSION..."
+        if ! npm install -g "pnpm@$PNPM_VERSION"; then
+            error "Failed to update pnpm to v$PNPM_VERSION"
             exit 1
         fi
     fi
 else
     info "Installing pnpm..."
-    if ! npm install -g "pnpm@$CLEAN_PNPM_VERSION"; then
-        error "Failed to install pnpm v$CLEAN_PNPM_VERSION"
+    if ! npm install -g "pnpm@$PNPM_VERSION"; then
+        error "Failed to install pnpm v$PNPM_VERSION"
         exit 1
     fi
 fi
