@@ -4,7 +4,7 @@
 
 # Interface: AggregatedMetrics
 
-Defined in: [src/workers/metrics/types.ts:53](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/workers/metrics/types.ts#L53)
+Defined in: [src/workers/metrics/types.ts:82](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/workers/metrics/types.ts#L82)
 
 Aggregated metrics for a specific time window.
 Contains aggregated performance data from multiple request snapshots.
@@ -19,7 +19,7 @@ Contains aggregated performance data from multiple request snapshots.
 
 > `optional` **avgComplexityScore**: `number`
 
-Defined in: [src/workers/metrics/types.ts:73](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/workers/metrics/types.ts#L73)
+Defined in: [src/workers/metrics/types.ts:102](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/workers/metrics/types.ts#L102)
 
 Average GraphQL complexity score (if tracked)
 
@@ -29,7 +29,7 @@ Average GraphQL complexity score (if tracked)
 
 > **avgTotalMs**: `number`
 
-Defined in: [src/workers/metrics/types.ts:61](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/workers/metrics/types.ts#L61)
+Defined in: [src/workers/metrics/types.ts:90](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/workers/metrics/types.ts#L90)
 
 Average total request time in milliseconds
 
@@ -39,7 +39,7 @@ Average total request time in milliseconds
 
 > **cache**: [`CacheMetrics`](CacheMetrics.md)
 
-Defined in: [src/workers/metrics/types.ts:57](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/workers/metrics/types.ts#L57)
+Defined in: [src/workers/metrics/types.ts:86](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/workers/metrics/types.ts#L86)
 
 Aggregated cache metrics
 
@@ -49,7 +49,7 @@ Aggregated cache metrics
 
 > **maxTotalMs**: `number`
 
-Defined in: [src/workers/metrics/types.ts:65](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/workers/metrics/types.ts#L65)
+Defined in: [src/workers/metrics/types.ts:94](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/workers/metrics/types.ts#L94)
 
 Maximum total request time in milliseconds
 
@@ -59,7 +59,7 @@ Maximum total request time in milliseconds
 
 > **medianTotalMs**: `number`
 
-Defined in: [src/workers/metrics/types.ts:67](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/workers/metrics/types.ts#L67)
+Defined in: [src/workers/metrics/types.ts:96](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/workers/metrics/types.ts#L96)
 
 Median total request time in milliseconds (p50)
 
@@ -69,7 +69,7 @@ Median total request time in milliseconds (p50)
 
 > **minTotalMs**: `number`
 
-Defined in: [src/workers/metrics/types.ts:63](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/workers/metrics/types.ts#L63)
+Defined in: [src/workers/metrics/types.ts:92](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/workers/metrics/types.ts#L92)
 
 Minimum total request time in milliseconds
 
@@ -79,7 +79,7 @@ Minimum total request time in milliseconds
 
 > **operations**: `Record`\<`string`, [`OperationMetrics`](OperationMetrics.md)\>
 
-Defined in: [src/workers/metrics/types.ts:55](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/workers/metrics/types.ts#L55)
+Defined in: [src/workers/metrics/types.ts:84](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/workers/metrics/types.ts#L84)
 
 Aggregated metrics for each operation type
 
@@ -89,7 +89,7 @@ Aggregated metrics for each operation type
 
 > **p95TotalMs**: `number`
 
-Defined in: [src/workers/metrics/types.ts:69](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/workers/metrics/types.ts#L69)
+Defined in: [src/workers/metrics/types.ts:98](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/workers/metrics/types.ts#L98)
 
 95th percentile total request time in milliseconds (p95)
 
@@ -99,7 +99,7 @@ Defined in: [src/workers/metrics/types.ts:69](https://github.com/PalisadoesFound
 
 > **p99TotalMs**: `number`
 
-Defined in: [src/workers/metrics/types.ts:71](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/workers/metrics/types.ts#L71)
+Defined in: [src/workers/metrics/types.ts:100](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/workers/metrics/types.ts#L100)
 
 99th percentile total request time in milliseconds (p99)
 
@@ -109,7 +109,7 @@ Defined in: [src/workers/metrics/types.ts:71](https://github.com/PalisadoesFound
 
 > **slowOperationCount**: `number`
 
-Defined in: [src/workers/metrics/types.ts:59](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/workers/metrics/types.ts#L59)
+Defined in: [src/workers/metrics/types.ts:88](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/workers/metrics/types.ts#L88)
 
 Total number of slow operations across all snapshots
 
@@ -119,7 +119,7 @@ Total number of slow operations across all snapshots
 
 > **snapshotCount**: `number`
 
-Defined in: [src/workers/metrics/types.ts:46](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/workers/metrics/types.ts#L46)
+Defined in: [src/workers/metrics/types.ts:75](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/workers/metrics/types.ts#L75)
 
 Number of snapshots included in this aggregation
 
@@ -133,7 +133,7 @@ Number of snapshots included in this aggregation
 
 > **timestamp**: `number`
 
-Defined in: [src/workers/metrics/types.ts:42](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/workers/metrics/types.ts#L42)
+Defined in: [src/workers/metrics/types.ts:71](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/workers/metrics/types.ts#L71)
 
 Timestamp when this aggregation was performed (milliseconds since epoch)
 
@@ -147,7 +147,7 @@ Timestamp when this aggregation was performed (milliseconds since epoch)
 
 > **windowMinutes**: `number`
 
-Defined in: [src/workers/metrics/types.ts:44](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/workers/metrics/types.ts#L44)
+Defined in: [src/workers/metrics/types.ts:73](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/workers/metrics/types.ts#L73)
 
 Duration of the aggregation window in minutes
 

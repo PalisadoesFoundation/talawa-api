@@ -324,6 +324,23 @@ export async function runMetricsAggregationWorkerSafely(
 		);
 
 		const duration = Date.now() - startTime;
+
+		// Check if aggregation failed (error field present)
+		if (result.error) {
+			logger.error(
+				{
+					duration: `${duration}ms`,
+					snapshotsProcessed: result.snapshotsProcessed,
+					aggregationDuration: `${result.aggregationDurationMs}ms`,
+					error:
+						result.error instanceof Error ? result.error.message : result.error,
+					stack: result.error instanceof Error ? result.error.stack : undefined,
+				},
+				"Metrics aggregation worker failed",
+			);
+			return;
+		}
+
 		logger.info(
 			{
 				duration: `${duration}ms`,

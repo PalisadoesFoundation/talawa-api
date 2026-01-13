@@ -1,5 +1,13 @@
 import type { FastifyInstance } from "fastify";
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import {
+	afterEach,
+	beforeAll,
+	beforeEach,
+	describe,
+	expect,
+	it,
+	vi,
+} from "vitest";
 
 // Type for mock Fastify instance
 type MockFastifyInstance = Partial<FastifyInstance> & {
@@ -18,6 +26,11 @@ type MockFastifyInstance = Partial<FastifyInstance> & {
 	addHook: ReturnType<typeof vi.fn>;
 };
 
+// Create hoisted mock for fastify-plugin to track calls
+const fastifyPluginMock = vi.hoisted(() => {
+	return vi.fn((fn: unknown, _options?: unknown) => fn);
+});
+
 // Mock the background worker service
 vi.mock("~/src/workers", () => ({
 	startBackgroundWorkers: vi.fn(),
@@ -26,21 +39,30 @@ vi.mock("~/src/workers", () => ({
 
 // Mock fastify-plugin
 vi.mock("fastify-plugin", () => ({
-	default: vi.fn((fn) => fn),
+	default: fastifyPluginMock,
 }));
 
-import fastifyPlugin from "fastify-plugin";
 import { startBackgroundWorkers, stopBackgroundWorkers } from "~/src/workers";
 
-// Import the plugin after mocks are set up
-// The default export is wrapped with fastifyPlugin, but our mock returns the function as-is
+// Import the plugin - will be loaded in beforeAll
 let backgroundWorkersPlugin: (fastify: FastifyInstance) => Promise<void>;
 
 describe("Background Workers Plugin", () => {
 	let mockFastify: MockFastifyInstance;
 
+	beforeAll(async () => {
+		// Import the plugin once - this triggers fastifyPlugin call
+		// The default export is wrapped with fastifyPlugin, but our mock returns the function as-is
+		const pluginModule = await import("../../src/plugins/backgroundWorkers");
+		backgroundWorkersPlugin = pluginModule.default as (
+			fastify: FastifyInstance,
+		) => Promise<void>;
+	});
+
 	beforeEach(async () => {
-		vi.clearAllMocks();
+		// Clear mocks but preserve fastifyPluginMock call history
+		vi.mocked(startBackgroundWorkers).mockClear();
+		vi.mocked(stopBackgroundWorkers).mockClear();
 
 		// Create mock fastify instance
 		mockFastify = {
@@ -62,19 +84,13 @@ describe("Background Workers Plugin", () => {
 		// Setup mocks
 		vi.mocked(startBackgroundWorkers).mockResolvedValue(undefined);
 		vi.mocked(stopBackgroundWorkers).mockResolvedValue(undefined);
-		(fastifyPlugin as unknown as ReturnType<typeof vi.fn>).mockImplementation(
-			(fn: unknown) => fn,
-		);
-
-		// Import the plugin - the mock will return the unwrapped function
-		const pluginModule = await import("../../src/plugins/backgroundWorkers");
-		backgroundWorkersPlugin = pluginModule.default as (
-			fastify: FastifyInstance,
-		) => Promise<void>;
 	});
 
 	afterEach(() => {
-		vi.restoreAllMocks();
+		// Clear mocks but don't restore - vi.mock() mocks are automatically managed
+		// We don't restore fastifyPluginMock to preserve its call history
+		vi.mocked(startBackgroundWorkers).mockClear();
+		vi.mocked(stopBackgroundWorkers).mockClear();
 	});
 
 	describe("Plugin Initialization", () => {
@@ -185,34 +201,35 @@ describe("Background Workers Plugin", () => {
 	describe("Plugin Export Configuration", () => {
 		it("should export plugin wrapped with fastifyPlugin", () => {
 			// Verify fastifyPlugin was called (the module import triggers it)
-			expect(fastifyPlugin).toHaveBeenCalled();
+			expect(fastifyPluginMock).toHaveBeenCalled();
 		});
 
 		it("should export plugin with correct name", () => {
 			// Check that fastifyPlugin was called with the correct name
-			const pluginCall = (
-				fastifyPlugin as unknown as ReturnType<typeof vi.fn>
-			).mock.calls.find((call) => call[1]?.name === "backgroundWorkers");
+			const pluginCall = fastifyPluginMock.mock.calls.find(
+				(call) => (call[1] as { name?: string })?.name === "backgroundWorkers",
+			);
 
 			expect(pluginCall).toBeDefined();
-			expect(pluginCall?.[1]?.name).toBe("backgroundWorkers");
+			expect((pluginCall?.[1] as { name?: string })?.name).toBe(
+				"backgroundWorkers",
+			);
 		});
 
 		it("should export plugin with correct dependencies", () => {
 			// Check that fastifyPlugin was called with dependencies
-			const pluginCall = (
-				fastifyPlugin as unknown as ReturnType<typeof vi.fn>
-			).mock.calls.find(
-				(call) =>
-					call[1]?.dependencies?.includes("drizzleClient") &&
-					call[1]?.dependencies?.includes("performance"),
-			);
+			const pluginCall = fastifyPluginMock.mock.calls.find((call) => {
+				const options = call[1] as { dependencies?: string[] };
+				return (
+					options?.dependencies?.includes("drizzleClient") &&
+					options?.dependencies?.includes("performance")
+				);
+			});
 
 			expect(pluginCall).toBeDefined();
-			expect(pluginCall?.[1]?.dependencies).toEqual([
-				"drizzleClient",
-				"performance",
-			]);
+			expect(
+				(pluginCall?.[1] as { dependencies?: string[] })?.dependencies,
+			).toEqual(["drizzleClient", "performance"]);
 		});
 	});
 });

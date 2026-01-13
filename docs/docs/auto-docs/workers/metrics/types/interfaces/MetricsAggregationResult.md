@@ -4,7 +4,7 @@
 
 # Interface: MetricsAggregationResult
 
-Defined in: [src/workers/metrics/types.ts:98](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/workers/metrics/types.ts#L98)
+Defined in: [src/workers/metrics/types.ts:127](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/workers/metrics/types.ts#L127)
 
 Result of a metrics aggregation run.
 
@@ -14,9 +14,21 @@ Result of a metrics aggregation run.
 
 > **aggregationDurationMs**: `number`
 
-Defined in: [src/workers/metrics/types.ts:104](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/workers/metrics/types.ts#L104)
+Defined in: [src/workers/metrics/types.ts:133](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/workers/metrics/types.ts#L133)
 
 Duration of aggregation in milliseconds
+
+***
+
+### error?
+
+> `optional` **error**: `string` \| `Error`
+
+Defined in: [src/workers/metrics/types.ts:139](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/workers/metrics/types.ts#L139)
+
+Error that occurred during aggregation, if any.
+When present, indicates that aggregation failed (e.g., `getSnapshots` or `aggregateMetrics` threw).
+When undefined, indicates successful aggregation (even if no snapshots were available).
 
 ***
 
@@ -24,7 +36,7 @@ Duration of aggregation in milliseconds
 
 > **metrics**: [`AggregatedMetrics`](AggregatedMetrics.md)
 
-Defined in: [src/workers/metrics/types.ts:100](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/workers/metrics/types.ts#L100)
+Defined in: [src/workers/metrics/types.ts:129](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/workers/metrics/types.ts#L129)
 
 The aggregated metrics
 
@@ -34,6 +46,6 @@ The aggregated metrics
 
 > **snapshotsProcessed**: `number`
 
-Defined in: [src/workers/metrics/types.ts:102](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/workers/metrics/types.ts#L102)
+Defined in: [src/workers/metrics/types.ts:131](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/workers/metrics/types.ts#L131)
 
 Number of snapshots processed

@@ -346,7 +346,7 @@ describe("backgroundServiceWorker", () => {
 			await startBackgroundWorkers(mockDrizzleClient, mockLogger, mockFastify);
 			await stopBackgroundWorkers(mockLogger);
 
-			// Verify metricsTask.stop() was called (lines 155-156)
+			// Verify metricsTask.stop() was called when stopping workers with metrics enabled
 			expect(metricsTaskStop).toHaveBeenCalled();
 		});
 
@@ -612,6 +612,7 @@ describe("backgroundServiceWorker", () => {
 				},
 				snapshotsProcessed: 0,
 				aggregationDurationMs: 10,
+				error: undefined, // No error for successful run
 			});
 
 			const mockFastify = {
@@ -693,6 +694,7 @@ describe("backgroundServiceWorker", () => {
 				},
 				snapshotsProcessed: 2,
 				aggregationDurationMs: 15,
+				error: undefined, // No error for successful run
 			});
 
 			await runMetricsAggregationWorkerSafely(mockLogger);
@@ -734,8 +736,30 @@ describe("backgroundServiceWorker", () => {
 
 			await startBackgroundWorkers(mockDrizzleClient, mockLogger, mockFastify);
 
-			vi.mocked(runMetricsAggregationWorker).mockImplementation(() => {
-				throw new Error("Metrics aggregation failed");
+			const aggregationError = new Error("Metrics aggregation failed");
+			vi.mocked(runMetricsAggregationWorker).mockReturnValue({
+				metrics: {
+					timestamp: Date.now(),
+					windowMinutes: 5,
+					snapshotCount: 0,
+					operations: {},
+					cache: {
+						totalHits: 0,
+						totalMisses: 0,
+						totalOps: 0,
+						hitRate: 0,
+					},
+					slowOperationCount: 0,
+					avgTotalMs: 0,
+					minTotalMs: 0,
+					maxTotalMs: 0,
+					medianTotalMs: 0,
+					p95TotalMs: 0,
+					p99TotalMs: 0,
+				},
+				snapshotsProcessed: 0,
+				aggregationDurationMs: 10,
+				error: aggregationError, // Error field indicates failure
 			});
 
 			await runMetricsAggregationWorkerSafely(mockLogger);
@@ -743,6 +767,8 @@ describe("backgroundServiceWorker", () => {
 			expect(mockLogger.error).toHaveBeenCalledWith(
 				expect.objectContaining({
 					duration: expect.stringMatching(/^\d+ms$/),
+					snapshotsProcessed: 0,
+					aggregationDuration: "10ms",
 					error: "Metrics aggregation failed",
 					stack: expect.any(String),
 				}),
@@ -767,8 +793,29 @@ describe("backgroundServiceWorker", () => {
 
 			await startBackgroundWorkers(mockDrizzleClient, mockLogger, mockFastify);
 
-			vi.mocked(runMetricsAggregationWorker).mockImplementation(() => {
-				throw "String error";
+			vi.mocked(runMetricsAggregationWorker).mockReturnValue({
+				metrics: {
+					timestamp: Date.now(),
+					windowMinutes: 5,
+					snapshotCount: 0,
+					operations: {},
+					cache: {
+						totalHits: 0,
+						totalMisses: 0,
+						totalOps: 0,
+						hitRate: 0,
+					},
+					slowOperationCount: 0,
+					avgTotalMs: 0,
+					minTotalMs: 0,
+					maxTotalMs: 0,
+					medianTotalMs: 0,
+					p95TotalMs: 0,
+					p99TotalMs: 0,
+				},
+				snapshotsProcessed: 0,
+				aggregationDurationMs: 10,
+				error: "String error", // Error field indicates failure (can be string)
 			});
 
 			await runMetricsAggregationWorkerSafely(mockLogger);
@@ -776,7 +823,9 @@ describe("backgroundServiceWorker", () => {
 			expect(mockLogger.error).toHaveBeenCalledWith(
 				expect.objectContaining({
 					duration: expect.stringMatching(/^\d+ms$/),
-					error: "Unknown error",
+					snapshotsProcessed: 0,
+					aggregationDuration: "10ms",
+					error: "String error",
 					stack: undefined,
 				}),
 				"Metrics aggregation worker failed",
@@ -863,11 +912,23 @@ describe("backgroundServiceWorker", () => {
 		});
 
 		it("returns unhealthy when getBackgroundWorkerStatus throws", async () => {
-			// This test would require mocking getBackgroundWorkerStatus to throw
-			// For now, we test the normal path. The error path is defensive code.
+			const testError = new Error("Status check failed");
+			const backgroundWorkerModule = await import(
+				"~/src/workers/backgroundWorkerService"
+			);
+			const statusSpy = vi
+				.spyOn(backgroundWorkerModule, "getBackgroundWorkerStatus")
+				.mockImplementation(() => {
+					throw testError;
+				});
+
 			const result = await healthCheck();
 
 			expect(result.status).toBe("unhealthy");
+			expect(result.details.reason).toBe("Health check failed");
+			expect(result.details.error).toBe("Status check failed");
+
+			statusSpy.mockRestore();
 		});
 	});
 

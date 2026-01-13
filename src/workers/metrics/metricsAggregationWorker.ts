@@ -91,12 +91,25 @@ export function createEmptyAggregatedMetrics(
 
 /**
  * Aggregates operation metrics from multiple snapshots.
- * Since we only have aggregated stats per snapshot (not individual durations),
- * we use max values from snapshots and slow operations for percentile calculations.
+ *
+ * @remarks
+ * Since `PerfSnapshot` only stores aggregated statistics per snapshot (count, total ms, and max)
+ * rather than individual operation durations, this function uses per-snapshot max values for
+ * calculating `minMs` and `maxMs`. As a result:
+ * - `minMs` is the minimum of all per-snapshot max values (an approximation, not the actual
+ *   minimum operation duration)
+ * - `maxMs` is the maximum of all per-snapshot max values (an approximation, not the actual
+ *   maximum operation duration)
+ *
+ * For percentile calculations (`medianMs`, `p95Ms`, `p99Ms`), the function combines per-snapshot
+ * max values with slow operation durations (from `PerfSnapshot.slow`) when available, providing
+ * more accurate percentile data.
  *
  * @param snapshots - Array of performance snapshots
  * @param operationName - Name of the operation to aggregate
- * @returns Aggregated operation metrics
+ * @returns Aggregated operation metrics. The `minMs` and `maxMs` fields represent min/max of
+ *          per-snapshot max values, not actual operation durations (see `OperationMetrics` interface
+ *          documentation for details).
  */
 function aggregateOperationMetrics(
 	snapshots: PerfSnapshot[],
@@ -383,9 +396,13 @@ export function runMetricsAggregationWorker(
 	} catch (error) {
 		// Handle errors from getSnapshots or aggregateMetrics
 		const timestamp = Date.now();
+		const errorMessage =
+			error instanceof Error ? error.message : "Unknown error";
+		const errorObject = error instanceof Error ? error : errorMessage;
+
 		logger.error(
 			{
-				error: error instanceof Error ? error.message : "Unknown error",
+				error: errorMessage,
 				stack: error instanceof Error ? error.stack : undefined,
 			},
 			"Failed to aggregate metrics",
@@ -398,6 +415,7 @@ export function runMetricsAggregationWorker(
 			}),
 			snapshotsProcessed: 0,
 			aggregationDurationMs: timestamp - startTime,
+			error: errorObject,
 		};
 	}
 }

@@ -136,10 +136,13 @@ describe("Metrics Aggregation Worker", () => {
 
 		it("should use linear interpolation for percentiles", () => {
 			const values = [10, 20, 30, 40, 50];
-			// p25 should interpolate between 10 and 20
-			const p25 = calculatePercentile(values, 25);
-			expect(p25).toBeGreaterThan(10);
-			expect(p25).toBeLessThan(20);
+			// p24 should interpolate between 10 and 20 (p25 lands exactly on index 1.0, which is 20)
+			// index = (24/100) * 4 = 0.96, so it interpolates between values[0]=10 and values[1]=20
+			const p24 = calculatePercentile(values, 24);
+			expect(p24).toBeGreaterThan(10);
+			expect(p24).toBeLessThan(20);
+			// Verify it's close to the expected interpolated value
+			expect(p24).toBeCloseTo(10 + 0.96 * (20 - 10), 1); // 19.6
 		});
 
 		it("should clamp percentile to valid range", () => {
@@ -874,6 +877,7 @@ describe("Metrics Aggregation Worker", () => {
 
 			expect(result.snapshotsProcessed).toBe(0);
 			expect(result.metrics.snapshotCount).toBe(0);
+			expect(result.error).toBeUndefined(); // No error when no snapshots (legitimate case)
 			expect(logger.info).toHaveBeenCalledWith(
 				expect.stringContaining("No snapshots available"),
 			);
@@ -892,6 +896,7 @@ describe("Metrics Aggregation Worker", () => {
 
 			expect(result.snapshotsProcessed).toBe(1);
 			expect(result.metrics.operations.db).toBeDefined();
+			expect(result.error).toBeUndefined(); // No error on successful aggregation
 			// Verify that none of the logger.info calls contain "No snapshots available"
 			const infoMock = logger.info as ReturnType<typeof vi.fn>;
 			const hasNoSnapshotsMessage = infoMock.mock.calls.some(
@@ -916,6 +921,7 @@ describe("Metrics Aggregation Worker", () => {
 			const result = runMetricsAggregationWorker(() => [], logger, options);
 
 			expect(result.metrics.windowMinutes).toBe(10);
+			expect(result.error).toBeUndefined(); // No error when no snapshots (legitimate case)
 		});
 
 		it("should calculate aggregation duration", () => {
@@ -924,6 +930,7 @@ describe("Metrics Aggregation Worker", () => {
 			const result = runMetricsAggregationWorker(() => [], logger);
 
 			expect(result.aggregationDurationMs).toBeGreaterThanOrEqual(0);
+			expect(result.error).toBeUndefined(); // No error when no snapshots (legitimate case)
 		});
 
 		it("should handle getSnapshots function that returns multiple snapshots", () => {
@@ -947,6 +954,7 @@ describe("Metrics Aggregation Worker", () => {
 			expect(dbOp?.count).toBe(3);
 			expect(result.metrics.cache.totalHits).toBe(2);
 			expect(result.metrics.cache.totalMisses).toBe(1);
+			expect(result.error).toBeUndefined(); // No error on successful aggregation
 		});
 
 		it("should handle error when getSnapshots throws", () => {
@@ -961,6 +969,12 @@ describe("Metrics Aggregation Worker", () => {
 			expect(result.snapshotsProcessed).toBe(0);
 			expect(result.metrics.snapshotCount).toBe(0);
 			expect(result.metrics.operations).toEqual({});
+			// Should include error field to distinguish from "no snapshots" case
+			expect(result.error).toBeDefined();
+			expect(result.error).toBeInstanceOf(Error);
+			expect((result.error as Error).message).toBe(
+				"Failed to retrieve snapshots",
+			);
 
 			// Verify logger.error was called with error information
 			expect(logger.error).toHaveBeenCalled();
@@ -977,6 +991,26 @@ describe("Metrics Aggregation Worker", () => {
 				);
 			});
 			expect(errorCall).toBeDefined();
+		});
+
+		it("should distinguish between no snapshots and aggregation failure", () => {
+			const logger = createMockFastifyLogger();
+
+			// Test case 1: No snapshots (legitimate case, no error)
+			const noSnapshotsResult = runMetricsAggregationWorker(() => [], logger);
+			expect(noSnapshotsResult.snapshotsProcessed).toBe(0);
+			expect(noSnapshotsResult.error).toBeUndefined();
+
+			// Test case 2: getSnapshots throws (error case)
+			const errorResult = runMetricsAggregationWorker(() => {
+				throw new Error("Failed to get snapshots");
+			}, logger);
+			expect(errorResult.snapshotsProcessed).toBe(0);
+			expect(errorResult.error).toBeDefined();
+			expect(errorResult.error).toBeInstanceOf(Error);
+			expect((errorResult.error as Error).message).toBe(
+				"Failed to get snapshots",
+			);
 		});
 	});
 });

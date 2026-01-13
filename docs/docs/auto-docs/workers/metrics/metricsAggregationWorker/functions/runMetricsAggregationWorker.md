@@ -6,7 +6,7 @@
 
 > **runMetricsAggregationWorker**(`getSnapshots`, `logger`, `options`): [`MetricsAggregationResult`](../../types/interfaces/MetricsAggregationResult.md)
 
-Defined in: [src/workers/metrics/metricsAggregationWorker.ts:354](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/workers/metrics/metricsAggregationWorker.ts#L354)
+Defined in: [src/workers/metrics/metricsAggregationWorker.ts:367](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/workers/metrics/metricsAggregationWorker.ts#L367)
 
 Runs the metrics aggregation worker.
 Collects recent performance snapshots and aggregates them into metrics.

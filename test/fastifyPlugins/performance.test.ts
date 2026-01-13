@@ -1,5 +1,5 @@
 import Fastify, { type FastifyRequest } from "fastify";
-import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { EnvConfig } from "../../src/envConfigSchema";
 import performancePlugin from "../../src/fastifyPlugins/performance";
 
@@ -704,15 +704,25 @@ describe("Performance Plugin", () => {
 			// Save original structuredClone
 			const originalStructuredClone = global.structuredClone;
 
-			// Remove structuredClone to trigger fallback before registering plugin
-			// @ts-expect-error - Intentionally removing for test
-			delete global.structuredClone;
+			// Override structuredClone to be undefined to trigger fallback
+			// Use Object.defineProperty to properly override it
+			Object.defineProperty(global, "structuredClone", {
+				value: undefined,
+				writable: true,
+				configurable: true,
+			});
 
 			try {
+				// Reset modules and re-import the plugin so it re-evaluates structuredClone
+				vi.resetModules();
+				const { default: performancePluginWithoutClone } = await import(
+					"../../src/fastifyPlugins/performance"
+				);
+
 				const testApp = createTestFastifyInstance();
 
 				// Register plugin after removing structuredClone so fallback is used
-				await testApp.register(performancePlugin);
+				await testApp.register(performancePluginWithoutClone);
 
 				testApp.get("/test-deep-copy", async (request: FastifyRequest) => {
 					request.perf?.trackDb(30);
@@ -727,6 +737,9 @@ describe("Performance Plugin", () => {
 					method: "GET",
 					url: "/test-deep-copy",
 				});
+
+				// Wait a bit to ensure the onSend hook completes
+				await new Promise((resolve) => setTimeout(resolve, 10));
 
 				const snapshots = testApp.getPerformanceSnapshots(1);
 
@@ -769,8 +782,15 @@ describe("Performance Plugin", () => {
 				await testApp.close();
 			} finally {
 				// Restore structuredClone
-				if (originalStructuredClone) {
-					global.structuredClone = originalStructuredClone;
+				if (originalStructuredClone !== undefined) {
+					Object.defineProperty(global, "structuredClone", {
+						value: originalStructuredClone,
+						writable: true,
+						configurable: true,
+					});
+				} else {
+					// @ts-expect-error - Intentionally removing for cleanup
+					delete global.structuredClone;
 				}
 			}
 		});

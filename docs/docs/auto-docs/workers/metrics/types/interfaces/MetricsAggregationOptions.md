@@ -4,7 +4,7 @@
 
 # Interface: MetricsAggregationOptions
 
-Defined in: [src/workers/metrics/types.ts:79](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/workers/metrics/types.ts#L79)
+Defined in: [src/workers/metrics/types.ts:108](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/workers/metrics/types.ts#L108)
 
 Options for metrics aggregation.
 
@@ -14,7 +14,7 @@ Options for metrics aggregation.
 
 > `optional` **maxSnapshots**: `number`
 
-Defined in: [src/workers/metrics/types.ts:90](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/workers/metrics/types.ts#L90)
+Defined in: [src/workers/metrics/types.ts:119](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/workers/metrics/types.ts#L119)
 
 Maximum number of snapshots to process (default: 1000)
 
@@ -24,7 +24,7 @@ Maximum number of snapshots to process (default: 1000)
 
 > `optional` **slowThresholdMs**: `number`
 
-Defined in: [src/workers/metrics/types.ts:92](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/workers/metrics/types.ts#L92)
+Defined in: [src/workers/metrics/types.ts:121](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/workers/metrics/types.ts#L121)
 
 Threshold in milliseconds for considering an operation as slow (default: 200)
 
@@ -34,7 +34,7 @@ Threshold in milliseconds for considering an operation as slow (default: 200)
 
 > `optional` **windowMinutes**: `number`
 
-Defined in: [src/workers/metrics/types.ts:88](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/workers/metrics/types.ts#L88)
+Defined in: [src/workers/metrics/types.ts:117](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/workers/metrics/types.ts#L117)
 
 Time window in minutes to aggregate snapshots from (default: 5).
 

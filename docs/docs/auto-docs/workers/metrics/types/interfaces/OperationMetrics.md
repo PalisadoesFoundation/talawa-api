@@ -4,9 +4,24 @@
 
 # Interface: OperationMetrics
 
-Defined in: [src/workers/metrics/types.ts:4](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/workers/metrics/types.ts#L4)
+Defined in: [src/workers/metrics/types.ts:18](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/workers/metrics/types.ts#L18)
 
 Statistics for a specific operation type aggregated across multiple snapshots.
+
+## Remarks
+
+**Important Limitation**: The `minMs` and `maxMs` fields represent the minimum and maximum
+of per-snapshot max values (from `PerfSnapshot.ops[operationName].max`), not the actual
+minimum and maximum of individual operation durations. This is because `PerfSnapshot` only
+stores aggregated statistics per snapshot (count, total ms, and max) rather than individual
+operation durations. As a result:
+- `minMs` is the minimum value among all per-snapshot max values (an approximation)
+- `maxMs` is the maximum value among all per-snapshot max values (an approximation)
+- These values may not reflect the true minimum/maximum operation duration if individual
+  operations within a snapshot had durations below the snapshot's max value
+
+For more accurate percentile data, see `medianMs`, `p95Ms`, and `p99Ms`, which use a combination
+of per-snapshot max values and slow operation durations when available.
 
 ## Properties
 
@@ -14,7 +29,7 @@ Statistics for a specific operation type aggregated across multiple snapshots.
 
 > **avgMs**: `number`
 
-Defined in: [src/workers/metrics/types.ts:10](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/workers/metrics/types.ts#L10)
+Defined in: [src/workers/metrics/types.ts:24](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/workers/metrics/types.ts#L24)
 
 Average time in milliseconds per execution
 
@@ -24,7 +39,7 @@ Average time in milliseconds per execution
 
 > **count**: `number`
 
-Defined in: [src/workers/metrics/types.ts:6](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/workers/metrics/types.ts#L6)
+Defined in: [src/workers/metrics/types.ts:20](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/workers/metrics/types.ts#L20)
 
 Number of times this operation was executed
 
@@ -34,9 +49,16 @@ Number of times this operation was executed
 
 > **maxMs**: `number`
 
-Defined in: [src/workers/metrics/types.ts:14](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/workers/metrics/types.ts#L14)
+Defined in: [src/workers/metrics/types.ts:43](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/workers/metrics/types.ts#L43)
 
-Maximum time in milliseconds for a single execution
+Maximum of per-snapshot max values in milliseconds (approximation, not actual max duration).
+
+#### Remarks
+
+This represents the maximum value among all per-snapshot max values from `PerfSnapshot.ops`.
+It is an approximation because individual operation durations are not available in `PerfSnapshot`.
+The true maximum operation duration may be higher than this value if slow operations are tracked
+separately (see `medianMs`, `p95Ms`, `p99Ms` for more accurate percentile data).
 
 ***
 
@@ -44,7 +66,7 @@ Maximum time in milliseconds for a single execution
 
 > **medianMs**: `number`
 
-Defined in: [src/workers/metrics/types.ts:16](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/workers/metrics/types.ts#L16)
+Defined in: [src/workers/metrics/types.ts:45](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/workers/metrics/types.ts#L45)
 
 Median time in milliseconds (p50)
 
@@ -54,9 +76,15 @@ Median time in milliseconds (p50)
 
 > **minMs**: `number`
 
-Defined in: [src/workers/metrics/types.ts:12](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/workers/metrics/types.ts#L12)
+Defined in: [src/workers/metrics/types.ts:33](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/workers/metrics/types.ts#L33)
 
-Minimum time in milliseconds for a single execution
+Minimum of per-snapshot max values in milliseconds (approximation, not actual min duration).
+
+#### Remarks
+
+This represents the minimum value among all per-snapshot max values from `PerfSnapshot.ops`.
+It is an approximation because individual operation durations are not available in `PerfSnapshot`.
+The true minimum operation duration may be lower than this value.
 
 ***
 
@@ -64,7 +92,7 @@ Minimum time in milliseconds for a single execution
 
 > **p95Ms**: `number`
 
-Defined in: [src/workers/metrics/types.ts:18](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/workers/metrics/types.ts#L18)
+Defined in: [src/workers/metrics/types.ts:47](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/workers/metrics/types.ts#L47)
 
 95th percentile time in milliseconds (p95)
 
@@ -74,7 +102,7 @@ Defined in: [src/workers/metrics/types.ts:18](https://github.com/PalisadoesFound
 
 > **p99Ms**: `number`
 
-Defined in: [src/workers/metrics/types.ts:20](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/workers/metrics/types.ts#L20)
+Defined in: [src/workers/metrics/types.ts:49](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/workers/metrics/types.ts#L49)
 
 99th percentile time in milliseconds (p99)
 
@@ -84,6 +112,6 @@ Defined in: [src/workers/metrics/types.ts:20](https://github.com/PalisadoesFound
 
 > **totalMs**: `number`
 
-Defined in: [src/workers/metrics/types.ts:8](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/workers/metrics/types.ts#L8)
+Defined in: [src/workers/metrics/types.ts:22](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/workers/metrics/types.ts#L22)
 
 Total time in milliseconds across all executions
