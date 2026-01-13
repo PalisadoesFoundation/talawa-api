@@ -277,6 +277,25 @@ describe("Fund.campaigns Resolver - Integration", () => {
 			expect(result.errors).toBeDefined();
 			expect(result.errors?.[0]?.extensions?.code).toBe("invalid_arguments");
 		});
+
+		it("should error when last is provided with an after cursor (Relay spec violation)", async () => {
+			// obtain a valid cursor first by querying the last page
+			const lastPage = await mercuriusClient.query(Query_Fund_Campaigns, {
+				headers: { authorization: `bearer ${adminAuth.token}` },
+				variables: { input: { id: fund.id }, last: 1 },
+			});
+			const cursor = lastPage.data?.fund?.campaigns?.pageInfo?.startCursor;
+			assertToBeNonNullish(cursor);
+
+			const result = await mercuriusClient.query(Query_Fund_Campaigns, {
+				headers: { authorization: `bearer ${adminAuth.token}` },
+				variables: { input: { id: fund.id }, last: 1, after: cursor },
+			});
+
+			expect(result.errors).toBeDefined();
+			expect(result.errors?.[0]?.extensions?.code).toBe("invalid_arguments");
+		});
+
 		it("should successfully retrieve a list of campaigns with valid connection structure", async () => {
 			const result = await mercuriusClient.query(Query_Fund_Campaigns, {
 				headers: { authorization: `bearer ${adminAuth.token}` },
@@ -302,13 +321,16 @@ describe("Fund.campaigns Resolver - Integration", () => {
 				"Gamma Campaign",
 			]);
 
-			// Validate pageInfo structure
+			// Validate pageInfo structure and values
 			const pageInfo = result.data.fund.campaigns.pageInfo;
 			assertToBeNonNullish(pageInfo);
-			expect(pageInfo.hasNextPage).toBeDefined();
-			expect(pageInfo.hasPreviousPage).toBeDefined();
-			expect(pageInfo.startCursor).toBeDefined();
-			expect(pageInfo.endCursor).toBeDefined();
+			// With first: 10 and only 3 campaigns, there should be no next or previous page
+			expect(pageInfo.hasNextPage).toBe(false);
+			expect(pageInfo.hasPreviousPage).toBe(false);
+			// startCursor should match the first edge's cursor
+			expect(pageInfo.startCursor).toBe(edges[0]?.cursor);
+			// endCursor should match the last edge's cursor
+			expect(pageInfo.endCursor).toBe(edges[edges.length - 1]?.cursor);
 		});
 
 		it("should return empty edges when fund has no campaigns", async () => {
@@ -485,6 +507,28 @@ describe("Fund.campaigns Resolver - Integration", () => {
 
 			const error = result.errors?.[0];
 			expect(error?.extensions?.code).toBe("invalid_arguments");
+		});
+
+		it("should error when last is provided with an after cursor (Relay spec violation)", async () => {
+			// obtain a valid cursor first by querying the last page
+			const lastPage = await mercuriusClient.query(Query_Fund_Campaigns, {
+				headers: { authorization: `bearer ${adminAuth.token}` },
+				variables: { input: { id: fund.id }, last: 1 },
+			});
+			const cursor = lastPage.data?.fund?.campaigns?.pageInfo?.startCursor;
+			assertToBeNonNullish(cursor);
+
+			const result = await mercuriusClient.query(Query_Fund_Campaigns, {
+				headers: { authorization: `bearer ${adminAuth.token}` },
+				variables: {
+					input: { id: fund.id },
+					last: 1,
+					after: cursor,
+				},
+			});
+
+			expect(result.errors).toBeDefined();
+			expect(result.errors?.[0]?.extensions?.code).toBe("invalid_arguments");
 		});
 
 		it("should return error for malformed cursor in backward pagination", async () => {
