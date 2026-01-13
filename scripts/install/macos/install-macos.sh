@@ -347,19 +347,17 @@ else
     info "Installing Node.js v$CLEAN_NODE_VERSION..."
     if ! fnm install "$CLEAN_NODE_VERSION"; then
         error "$(cat <<EOF
-    Failed to install Node.js v$CLEAN_NODE_VERSION
-
-    This could be due to:
-      - Network connectivity issues
-      - Insufficient disk space
-      - Invalid Node.js version number
-
-    Troubleshooting:
-      1. Check your internet connection
-      2. Verify disk space: df -h
-      3. Try installing manually: fnm install $CLEAN_NODE_VERSION
-    EOF
-    )"
+Failed to install Node.js v$CLEAN_NODE_VERSION
+This could be due to:
+  - Network connectivity issues
+  - Insufficient disk space
+  - Invalid Node.js version number
+Troubleshooting:
+  1. Check your internet connection
+  2. Verify disk space: df -h
+  3. Try installing manually: fnm install $CLEAN_NODE_VERSION
+EOF
+)"
         exit 1
     fi
 
@@ -369,12 +367,11 @@ else
     info "Activating Node.js v$CLEAN_NODE_VERSION..."
     if ! fnm use "$CLEAN_NODE_VERSION"; then
         error "$(cat <<EOF
-    Failed to activate Node.js v$CLEAN_NODE_VERSION
-
-    The installation succeeded but activation failed.
-    Try running: fnm use $CLEAN_NODE_VERSION
-    EOF
-    )"
+Failed to activate Node.js v$CLEAN_NODE_VERSION
+The installation succeeded but activation failed.
+Try running: fnm use $CLEAN_NODE_VERSION
+EOF
+)"
         exit 1
     fi
 
