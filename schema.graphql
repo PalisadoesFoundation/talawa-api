@@ -4704,6 +4704,12 @@ type Query {
   """Query field to read an agenda folder."""
   agendaFolder(input: QueryAgendaFolderInput!): AgendaFolder
 
+  """Query field to get all Agenda Folders for a specific event."""
+  agendaFoldersByEventId(
+    """ID of the standalone event"""
+    eventId: ID!
+  ): [AgendaFolder!]
+
   """Query field to read an agenda item."""
   agendaItem(input: QueryAgendaItemInput!): AgendaItem
 

@@ -824,11 +824,7 @@ export const Mutation_createAgendaFolder = gql(`
     createAgendaFolder(input: $input) {
       id
       name
-      isAgendaItemFolder
       event {
-        id
-      }
-      parentFolder {
         id
       }
     }
@@ -840,11 +836,7 @@ export const Mutation_updateAgendaFolder = gql(`
     updateAgendaFolder(input: $input) {
       id
       name
-      isAgendaItemFolder
       event {
-        id
-      }
-      parentFolder {
         id
       }
     }
