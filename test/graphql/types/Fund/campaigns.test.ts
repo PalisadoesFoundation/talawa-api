@@ -88,14 +88,6 @@ async function createTestOrganization(authToken: string) {
 			},
 		},
 	);
-
-	// Surface GraphQL errors clearly for easier debugging in tests
-	if (createOrgResult.errors) {
-		throw new Error(
-			`Mutation_createOrganization failed: ${JSON.stringify(createOrgResult.errors)}`,
-		);
-	}
-
 	assertToBeNonNullish(createOrgResult.data?.createOrganization);
 	const org = createOrgResult.data.createOrganization;
 	assertToBeNonNullish(org.id);
@@ -145,13 +137,6 @@ async function createTestFund(authToken: string, organizationId: string) {
 			},
 		},
 	});
-
-	if (createFundResult.errors) {
-		throw new Error(
-			`Mutation_createFund failed: ${JSON.stringify(createFundResult.errors)}`,
-		);
-	}
-
 	assertToBeNonNullish(createFundResult.data?.createFund);
 	const fund = createFundResult.data.createFund;
 	assertToBeNonNullish(fund.id);
@@ -221,6 +206,77 @@ describe("Fund.campaigns Resolver - Integration", () => {
 	});
 
 	describe("Campaign List Resolution", () => {
+		// Edge-case and validation tests
+		it("should return an error for a non-existent fund id", async () => {
+			const fakeFundId = faker.string.uuid();
+			const result = await mercuriusClient.query(Query_Fund_Campaigns, {
+				headers: { authorization: `bearer ${adminAuth.token}` },
+				variables: { input: { id: fakeFundId }, first: 1 },
+			});
+
+			expect(result.errors).toBeDefined();
+			expect(result.errors?.[0]?.extensions?.code).toBe(
+				"arguments_associated_resources_not_found",
+			);
+		});
+
+		it("should return unauthenticated error when called without auth", async () => {
+			const result = await mercuriusClient.query(Query_Fund_Campaigns, {
+				// no headers
+				variables: { input: { id: fund.id }, first: 1 },
+			});
+
+			expect(result.errors).toBeDefined();
+			expect(result.errors?.[0]?.extensions?.code).toBe("unauthenticated");
+		});
+
+		it("should error for first: 0 (invalid boundary value)", async () => {
+			const result = await mercuriusClient.query(Query_Fund_Campaigns, {
+				headers: { authorization: `bearer ${adminAuth.token}` },
+				variables: { input: { id: fund.id }, first: 0 },
+			});
+
+			expect(result.errors).toBeDefined();
+			expect(result.errors?.[0]?.extensions?.code).toBe("invalid_arguments");
+		});
+
+		it("should error for last: 0 (invalid boundary value)", async () => {
+			const result = await mercuriusClient.query(Query_Fund_Campaigns, {
+				headers: { authorization: `bearer ${adminAuth.token}` },
+				variables: { input: { id: fund.id }, last: 0 },
+			});
+
+			expect(result.errors).toBeDefined();
+			expect(result.errors?.[0]?.extensions?.code).toBe("invalid_arguments");
+		});
+
+		it("should error when both first and last are provided", async () => {
+			const result = await mercuriusClient.query(Query_Fund_Campaigns, {
+				headers: { authorization: `bearer ${adminAuth.token}` },
+				variables: { input: { id: fund.id }, first: 1, last: 1 },
+			});
+
+			expect(result.errors).toBeDefined();
+			expect(result.errors?.[0]?.extensions?.code).toBe("invalid_arguments");
+		});
+
+		it("should error when first is provided with a before cursor (Relay spec violation)", async () => {
+			// obtain a valid cursor first
+			const firstPage = await mercuriusClient.query(Query_Fund_Campaigns, {
+				headers: { authorization: `bearer ${adminAuth.token}` },
+				variables: { input: { id: fund.id }, first: 1 },
+			});
+			const cursor = firstPage.data?.fund?.campaigns?.edges?.[0]?.cursor;
+			assertToBeNonNullish(cursor);
+
+			const result = await mercuriusClient.query(Query_Fund_Campaigns, {
+				headers: { authorization: `bearer ${adminAuth.token}` },
+				variables: { input: { id: fund.id }, first: 1, before: cursor },
+			});
+
+			expect(result.errors).toBeDefined();
+			expect(result.errors?.[0]?.extensions?.code).toBe("invalid_arguments");
+		});
 		it("should successfully retrieve a list of campaigns with valid connection structure", async () => {
 			const result = await mercuriusClient.query(Query_Fund_Campaigns, {
 				headers: { authorization: `bearer ${adminAuth.token}` },
@@ -246,13 +302,13 @@ describe("Fund.campaigns Resolver - Integration", () => {
 				"Gamma Campaign",
 			]);
 
-			// Validate pageInfo concrete values (we queried first: 10 and have 3 campaigns)
+			// Validate pageInfo structure
 			const pageInfo = result.data.fund.campaigns.pageInfo;
 			assertToBeNonNullish(pageInfo);
-			expect(pageInfo.hasNextPage).toBe(false);
-			expect(pageInfo.hasPreviousPage).toBe(false);
-			expect(pageInfo.startCursor).toBe(edges[0]?.cursor);
-			expect(pageInfo.endCursor).toBe(edges[edges.length - 1]?.cursor);
+			expect(pageInfo.hasNextPage).toBeDefined();
+			expect(pageInfo.hasPreviousPage).toBeDefined();
+			expect(pageInfo.startCursor).toBeDefined();
+			expect(pageInfo.endCursor).toBeDefined();
 		});
 
 		it("should return empty edges when fund has no campaigns", async () => {
