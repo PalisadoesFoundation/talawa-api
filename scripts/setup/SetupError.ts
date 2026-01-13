@@ -39,6 +39,8 @@ export class SetupError extends Error {
 		if (typeof ErrorWithStack.captureStackTrace === "function") {
 			ErrorWithStack.captureStackTrace(this, SetupError);
 		}
+
+		Object.setPrototypeOf(this, SetupError.prototype);
 	}
 
 	/**

@@ -34,6 +34,10 @@ describe("SetupError", () => {
 		const error = new SetupError(code, message, context);
 
 		expect(error.cause).toBeUndefined();
+		expect(error.name).toBe("SetupError");
+		expect(error.code).toBe(code);
+		expect(error.message).toBe(message);
+		expect(error.context).toEqual(context);
 	});
 
 	it("should capture stack trace", () => {
@@ -43,6 +47,8 @@ describe("SetupError", () => {
 			{ operation: "init" },
 		);
 		expect(error.stack).toBeDefined();
+		expect(error.stack).toContain("SetupError");
+		expect(error.stack).toContain("SetupError.test.ts");
 	});
 
 	it("should correctly serialize to JSON", () => {
@@ -65,7 +71,12 @@ describe("SetupError", () => {
 			cause,
 			stack: error.stack,
 		});
-		expect(json.context.details).toEqual({ reason: "disk full", attempts: 3 });
+
+		// Verify serializability and integrity after round-trip
+		const serialized = JSON.parse(JSON.stringify(json));
+		expect(serialized.name).toBe("SetupError");
+		expect(serialized.code).toBe(code);
+		expect(serialized.context.details.reason).toBe("disk full");
 	});
 
 	it("should correctly serialize to JSON without a cause", () => {
@@ -90,5 +101,25 @@ describe("SetupError", () => {
 
 		expect(error.code).toBe(SetupErrorCode.COMMIT_FAILED);
 		expect(error.message).toBe(message);
+	});
+
+	it("should handle complex metadata in context.details", () => {
+		const context: SetupErrorContext = {
+			operation: "complex-op",
+			details: {
+				nested: { array: [1, 2, 3], active: true },
+				timestamp: new Date().toISOString(),
+				nullValue: null,
+			},
+		};
+		const error = new SetupError(
+			SetupErrorCode.VALIDATION_FAILED,
+			"Complex error",
+			context,
+		);
+
+		expect(error.context.details).toEqual(context.details);
+		const json = error.toJSON();
+		expect(json.context.details).toEqual(context.details);
 	});
 });
