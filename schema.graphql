@@ -2101,6 +2101,12 @@ type Mutation {
   """Mutation field to create an advertisement."""
   createAdvertisement(input: MutationCreateAdvertisementInput!): Advertisement
 
+  """Mutation field to create an agenda category."""
+  createAgendaCategory(
+    """Input for creating a new agenda category."""
+    input: MutationCreateAgendaCategoryInput!
+  ): AgendaCategory
+
   """Mutation field to create an agenda folder."""
   createAgendaFolder(input: MutationCreateAgendaFolderInput!): AgendaFolder
 
@@ -2194,6 +2200,12 @@ type Mutation {
 
   """Mutation field to delete an advertisement."""
   deleteAdvertisement(input: MutationDeleteAdvertisementInput!): Advertisement
+
+  """Mutation field to delete an agenda category."""
+  deleteAgendaCategory(
+    """Input containing the ID of the agenda category to delete."""
+    input: MutationDeleteAgendaCategoryInput!
+  ): AgendaCategory
 
   """Mutation field to delete an agenda folder."""
   deleteAgendaFolder(input: MutationDeleteAgendaFolderInput!): AgendaFolder
@@ -2440,6 +2452,12 @@ type Mutation {
   """Mutation field to update an advertisement."""
   updateAdvertisement(input: MutationUpdateAdvertisementInput!): Advertisement
 
+  """Mutation field to update an agenda category."""
+  updateAgendaCategory(
+    """Input containing the agenda category fields to update."""
+    input: MutationUpdateAgendaCategoryInput!
+  ): AgendaCategory
+
   """Mutation field to update an agenda folder."""
   updateAgendaFolder(input: MutationUpdateAgendaFolderInput!): AgendaFolder
 
@@ -2634,6 +2652,18 @@ input MutationCreateAdvertisementInput {
 
   """Type of the advertisement."""
   type: AdvertisementType!
+}
+
+"""Input for creating an agenda category."""
+input MutationCreateAgendaCategoryInput {
+  """Description of the agenda category."""
+  description: String
+
+  """Global identifier of the event the agenda category is associated to."""
+  eventId: ID!
+
+  """Name of the agenda category."""
+  name: String!
 }
 
 """"""
@@ -3082,6 +3112,12 @@ input MutationDeleteAdvertisementInput {
   id: ID!
 }
 
+"""Input for deleting an agenda category."""
+input MutationDeleteAgendaCategoryInput {
+  """Global identifier of the agenda category."""
+  id: ID!
+}
+
 """"""
 input MutationDeleteAgendaFolderInput {
   """Global identifier of the agenda folder."""
@@ -3449,6 +3485,18 @@ input MutationUpdateAdvertisementInput {
 
   """Type of the advertisement."""
   type: AdvertisementType
+}
+
+"""Input for updating an agenda category."""
+input MutationUpdateAgendaCategoryInput {
+  """Description of the agenda category."""
+  description: String
+
+  """Global identifier of the agenda category."""
+  id: ID!
+
+  """Name of the agenda category."""
+  name: String
 }
 
 """"""
@@ -4625,6 +4673,12 @@ type Query {
 
   """Query field to read an advertisement."""
   advertisement(input: QueryAdvertisementInput!): Advertisement
+
+  """Query field to get all agenda categories for a specific event."""
+  agendaCategoriesByEventId(
+    """ID of the standalone event"""
+    eventId: ID!
+  ): [AgendaCategory!]
 
   """Query field to read an agenda folder."""
   agendaFolder(input: QueryAgendaFolderInput!): AgendaFolder

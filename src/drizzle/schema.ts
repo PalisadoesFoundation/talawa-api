@@ -131,6 +131,10 @@ export {
 	notificationTemplatesTableRelations,
 } from "./tables/NotificationTemplate";
 export {
+	oauthAccountsTable,
+	oauthAccountsTableRelations,
+} from "./tables/oauthAccount";
+export {
 	organizationMembershipsTable,
 	organizationMembershipsTableRelations,
 } from "./tables/organizationMemberships";
