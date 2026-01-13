@@ -742,12 +742,20 @@ describe("Performance Plugin", () => {
 				// Stub structuredClone to be undefined to force fallback path
 				vi.stubGlobal("structuredClone", undefined);
 
+				// Reset module cache to ensure the plugin is loaded fresh with the stubbed value
+				vi.resetModules();
+
+				// Dynamically import the plugin AFTER stubbing to ensure it sees the stubbed value
+				const { default: perfPluginModule } = await import(
+					"../../src/fastifyPlugins/performance"
+				);
+
 				// Create app and register plugin AFTER stubbing structuredClone
 				// This ensures the deepCopySnapshot function checks for structuredClone
 				// when it's actually called, not when the plugin is registered
 				const testApp = createTestFastifyInstance();
 
-				await testApp.register(performancePlugin);
+				await testApp.register(perfPluginModule);
 
 				testApp.get("/test-fallback", async (request: FastifyRequest) => {
 					request.perf?.trackDb(30);
