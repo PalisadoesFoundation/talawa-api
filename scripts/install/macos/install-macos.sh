@@ -31,6 +31,9 @@ BLUE='\033[0;34m'
 CYAN='\033[0;36m'
 NC='\033[0m'
 
+# Retry configuration
+readonly MAX_RETRY_ATTEMPTS=3
+
 # Print functions
 info() { echo -e "${BLUE}ℹ${NC} $1"; }
 success() { echo -e "${GREEN}✓${NC} $1"; }
@@ -207,28 +210,7 @@ NODE_VERSION=$(parse_package_json '.engines.node' "lts" "Node.js version (engine
 # SECURITY: Validate raw NODE_VERSION before any processing
 # This prevents command injection via malicious package.json
 if ! validate_version_string "$NODE_VERSION" "Node.js version (engines.node)"; then
-    error "❌ Security validation failed for Node.js version"
-    echo ""
-    info "The value in package.json engines.node field contains invalid characters."
-    echo ""
-    info "Current value: '$NODE_VERSION'"
-    echo ""
-    info "This could indicate:"
-    echo "  • Corrupted package.json file"
-    echo "  • Potentially malicious version string"
-    echo "  • Typo or formatting error"
-    echo ""
-    info "Troubleshooting steps:"
-    echo "  1. Check the engines.node field in package.json:"
-    echo "     jq '.engines.node' package.json"
-    echo ""
-    echo "  2. Restore package.json if corrupted:"
-    echo "     git checkout package.json"
-    echo ""
-    echo "  3. Ensure version follows semver format (e.g., 18.0.0, ^18.0.0)"
-    echo ""
-    info "Report issues: https://github.com/PalisadoesFoundation/talawa-api/issues"
-    exit 1
+    handle_version_validation_error "engines.node" "$NODE_VERSION"
 fi
 
 # Clean version string (handle >=, ^, etc.)
@@ -265,17 +247,7 @@ fi
 # SECURITY: Validate cleaned Node.js version before use in commands
 # This is the final check before the version is passed to fnm
 if ! validate_version_string "$CLEAN_NODE_VERSION" "cleaned Node.js version"; then
-    error "❌ Security validation failed for cleaned Node.js version: '$CLEAN_NODE_VERSION'"
-    echo ""
-    info "The cleaned version string contains invalid characters."
-    info "This should not happen with valid package.json values."
-    echo ""
-    info "Troubleshooting steps:"
-    echo "  1. Restore package.json: git checkout package.json"
-    echo "  2. Re-run this script"
-    echo ""
-    info "Report issues: https://github.com/PalisadoesFoundation/talawa-api/issues"
-    exit 1
+    handle_version_validation_error "cleaned Node.js version" "$CLEAN_NODE_VERSION"
 fi
 
 # Extract pnpm version using safe parsing
@@ -294,29 +266,7 @@ if [[ "$PNPM_FULL" == pnpm@* ]]; then
     
     # SECURITY: Validate pnpm version before use in commands
     if ! validate_version_string "$PNPM_VERSION" "pnpm version (packageManager)"; then
-        error "❌ Security validation failed for pnpm version"
-        echo ""
-        info "The pnpm version in package.json packageManager field contains invalid characters."
-        echo ""
-        info "Current value: '$PNPM_FULL'"
-        info "Extracted version: '$PNPM_VERSION'"
-        echo ""
-        info "This could indicate:"
-        echo "  • Corrupted package.json file"
-        echo "  • Potentially malicious version string"
-        echo "  • Typo or formatting error"
-        echo ""
-        info "Troubleshooting steps:"
-        echo "  1. Check the packageManager field in package.json:"
-        echo "     jq '.packageManager' package.json"
-        echo ""
-        echo "  2. Restore package.json if corrupted:"
-        echo "     git checkout package.json"
-        echo ""
-        echo "  3. Ensure version follows format: pnpm@X.Y.Z (e.g., pnpm@10.2.1)"
-        echo ""
-        info "Report issues: https://github.com/PalisadoesFoundation/talawa-api/issues"
-        exit 1
+        handle_version_validation_error "packageManager" "$PNPM_VERSION"
     fi
 elif [ -n "$PNPM_FULL" ]; then
     # packageManager field exists but doesn't match expected pnpm format
@@ -424,23 +374,23 @@ if command_exists pnpm; then
     # Skip version comparison if target is "latest" - always update to ensure we have latest
     if [ "$PNPM_VERSION" = "latest" ]; then
         info "Updating pnpm to latest version..."
-        if ! npm install -g "pnpm@latest"; then
-            error "Failed to update pnpm to latest version"
+        if ! retry_command "$MAX_RETRY_ATTEMPTS" npm install -g "pnpm@latest"; then
+            error "Failed to update pnpm to latest version after $MAX_RETRY_ATTEMPTS attempts"
             exit 1
         fi
     elif [ "$CURRENT_PNPM_NORMALIZED" = "$PNPM_VERSION" ]; then
         success "pnpm is already installed: v$CURRENT_PNPM"
     else
         info "Updating pnpm from v$CURRENT_PNPM to v$PNPM_VERSION..."
-        if ! npm install -g "pnpm@$PNPM_VERSION"; then
-            error "Failed to update pnpm to v$PNPM_VERSION"
+        if ! retry_command "$MAX_RETRY_ATTEMPTS" npm install -g "pnpm@$PNPM_VERSION"; then
+            error "Failed to update pnpm to v$PNPM_VERSION after $MAX_RETRY_ATTEMPTS attempts"
             exit 1
         fi
     fi
 else
     info "Installing pnpm..."
-    if ! npm install -g "pnpm@$PNPM_VERSION"; then
-        error "Failed to install pnpm v$PNPM_VERSION"
+    if ! retry_command "$MAX_RETRY_ATTEMPTS" npm install -g "pnpm@$PNPM_VERSION"; then
+        error "Failed to install pnpm v$PNPM_VERSION after $MAX_RETRY_ATTEMPTS attempts"
         exit 1
     fi
 fi
@@ -462,9 +412,15 @@ step $CURRENT_STEP $TOTAL_STEPS "Installing project dependencies..."
 
 # Run pnpm install non-interactively (only set CI=true if in CI to allow local interaction if needed)
 if [ "${CI:-}" = "true" ] || [ -n "${GITHUB_ACTIONS:-}" ]; then
-    CI=true pnpm install
+    if ! retry_command "$MAX_RETRY_ATTEMPTS" pnpm install; then
+        error "Failed to install dependencies after $MAX_RETRY_ATTEMPTS attempts"
+        exit 1
+    fi
 else
-    pnpm install
+    if ! retry_command "$MAX_RETRY_ATTEMPTS" pnpm install; then
+        error "Failed to install dependencies after $MAX_RETRY_ATTEMPTS attempts"
+        exit 1
+    fi
 fi
 
 success "Project dependencies installed"

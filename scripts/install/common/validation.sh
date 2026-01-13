@@ -151,13 +151,11 @@ parse_package_json() {
     fi
     
     local result
-    local jq_exit_code=0
     
     # Attempt to parse with jq, coalescing null to empty string
     # Using '// empty' ensures null values become empty strings rather than literal "null"
     # Wrapped in if-statement to be errexit-safe (set -e won't abort before error handling)
     if ! result=$(jq -r "($jq_query) // empty" package.json 2>&1); then
-        jq_exit_code=$?
         error "Failed to parse $field_name from package.json"
         echo ""
         info "jq error: $result"
@@ -217,4 +215,73 @@ parse_package_json() {
     
     # Return the successfully parsed result
     echo "$result"
+}
+
+##############################################################################
+# Validation error handler for version strings
+# 
+# This function provides standardized error output when version validation fails.
+# Used to avoid code duplication across Linux and macOS installation scripts.
+#
+# Usage: handle_version_validation_error "field_name" "current_value"
+##############################################################################
+handle_version_validation_error() {
+    local field_name="$1"
+    local current_value="$2"
+    
+    error "Security validation failed for $field_name"
+    echo ""
+    info "The value in package.json contains invalid characters."
+    echo ""
+    info "Current value: '$current_value'"
+    echo ""
+    info "This could indicate:"
+    echo "  • Corrupted package.json file"
+    echo "  • Potentially malicious version string"
+    echo "  • Typo or formatting error"
+    echo ""
+    info "Troubleshooting steps:"
+    echo "  1. Check the field in package.json:"
+    echo "     jq '.$field_name' package.json"
+    echo ""
+    echo "  2. Restore package.json if corrupted:"
+    echo "     git checkout package.json"
+    echo ""
+    echo "  3. Ensure version follows semver format (e.g., 18.0.0, ^18.0.0)"
+    echo ""
+    info "Report issues: https://github.com/PalisadoesFoundation/talawa-api/issues"
+    exit 1
+}
+
+##############################################################################
+# Retry command with exponential backoff
+# 
+# This function retries a command multiple times with exponential backoff
+# to handle transient network failures gracefully.
+#
+# Usage: retry_command max_attempts command [args...]
+# Returns: 0 on success, last exit code on failure after all attempts
+##############################################################################
+retry_command() {
+    local max_attempts="$1"
+    shift
+    local attempt=1
+    local exit_code=0
+    
+    while [ "$attempt" -le "$max_attempts" ]; do
+        if [ "$attempt" -gt 1 ]; then
+            local delay=$((2 ** (attempt - 1)))
+            warn "Retry attempt $attempt of $max_attempts... sleeping for ${delay}s"
+            sleep "$delay"
+        fi
+        
+        if "$@"; then
+            return 0
+        fi
+        exit_code=$?
+        ((attempt++))
+    done
+    
+    error "Command failed after $max_attempts attempts: $*"
+    return "$exit_code"
 }
