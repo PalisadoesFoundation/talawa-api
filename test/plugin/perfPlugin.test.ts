@@ -1,4 +1,5 @@
 import Fastify from "fastify";
+import type { EnvConfig } from "src/envConfigSchema";
 import perfPlugin from "src/fastifyPlugins/performance";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
@@ -9,17 +10,24 @@ describe("perfPlugin – slow request logging", () => {
 	beforeEach(() => {
 		app = Fastify({ logger: true });
 
+		// Decorate envConfig before registering the performance plugin
+		// The plugin depends on envConfig for configuration values
+		app.decorate("envConfig", {
+			METRICS_SNAPSHOT_RETENTION_COUNT: 1000,
+			API_SLOW_REQUEST_MS: 500,
+		} as Partial<EnvConfig> as EnvConfig);
+
 		vi.spyOn(app.log, "child").mockReturnValue(app.log);
 		warn = vi.spyOn(app.log, "warn");
 	});
 
 	afterEach(async () => {
 		await app.close();
-		delete process.env.API_SLOW_REQUEST_MS;
 	});
 
 	it("logs a warning when request duration exceeds slow threshold", async () => {
-		process.env.API_SLOW_REQUEST_MS = "10";
+		// Update envConfig with test value
+		app.envConfig.API_SLOW_REQUEST_MS = 10;
 
 		await app.register(perfPlugin);
 
@@ -42,7 +50,8 @@ describe("perfPlugin – slow request logging", () => {
 	});
 
 	it("does not log a warning for fast requests", async () => {
-		process.env.API_SLOW_REQUEST_MS = "50";
+		// Update envConfig with test value
+		app.envConfig.API_SLOW_REQUEST_MS = 50;
 
 		await app.register(perfPlugin);
 

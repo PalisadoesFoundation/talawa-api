@@ -6,7 +6,7 @@
 
 > **runMetricsAggregationWorker**(`getSnapshots`, `logger`, `options`): `Promise`\<[`MetricsAggregationResult`](../../types/interfaces/MetricsAggregationResult.md)\>
 
-Defined in: [src/workers/metrics/metricsAggregationWorker.ts:348](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/workers/metrics/metricsAggregationWorker.ts#L348)
+Defined in: [src/workers/metrics/metricsAggregationWorker.ts:354](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/workers/metrics/metricsAggregationWorker.ts#L354)
 
 Runs the metrics aggregation worker.
 Collects recent performance snapshots and aggregates them into metrics.

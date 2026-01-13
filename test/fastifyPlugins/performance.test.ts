@@ -1,16 +1,34 @@
 import Fastify, { type FastifyRequest } from "fastify";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import type { EnvConfig } from "../../src/envConfigSchema";
 import performancePlugin from "../../src/fastifyPlugins/performance";
+
+/**
+ * Helper function to create a Fastify instance with envConfig decorated.
+ * This is needed because the performance plugin depends on envConfig.
+ */
+function createTestFastifyInstance() {
+	const app = Fastify({
+		logger: {
+			level: "silent",
+		},
+	});
+
+	// Decorate envConfig before registering the performance plugin
+	// The plugin depends on envConfig for configuration values
+	app.decorate("envConfig", {
+		METRICS_SNAPSHOT_RETENTION_COUNT: 200,
+		API_SLOW_REQUEST_MS: 500,
+	} as Partial<EnvConfig> as EnvConfig);
+
+	return app;
+}
 
 describe("Performance Plugin", () => {
 	let app: ReturnType<typeof Fastify>;
 
 	beforeEach(async () => {
-		app = Fastify({
-			logger: {
-				level: "silent",
-			},
-		});
+		app = createTestFastifyInstance();
 
 		await app.register(performancePlugin);
 		await app.ready();
@@ -40,11 +58,7 @@ describe("Performance Plugin", () => {
 	describe("onRequest Hook", () => {
 		it("should attach perf tracker to request", async () => {
 			// Create fresh instance for this test since we're adding a route
-			const testApp = Fastify({
-				logger: {
-					level: "silent",
-				},
-			});
+			const testApp = createTestFastifyInstance();
 
 			await testApp.register(performancePlugin);
 
@@ -74,11 +88,7 @@ describe("Performance Plugin", () => {
 
 		it("should attach _t0 timestamp to request", async () => {
 			// Create fresh instance for this test since we're adding a route
-			const testApp = Fastify({
-				logger: {
-					level: "silent",
-				},
-			});
+			const testApp = createTestFastifyInstance();
 
 			await testApp.register(performancePlugin);
 
@@ -107,11 +117,7 @@ describe("Performance Plugin", () => {
 	describe("onSend Hook", () => {
 		it("should add Server-Timing header to response", async () => {
 			// Create fresh instance for this test since we're adding a route
-			const testApp = Fastify({
-				logger: {
-					level: "silent",
-				},
-			});
+			const testApp = createTestFastifyInstance();
 
 			await testApp.register(performancePlugin);
 
@@ -136,11 +142,7 @@ describe("Performance Plugin", () => {
 
 		it("should format Server-Timing header correctly", async () => {
 			// Create fresh instance for this test since we're adding a route
-			const testApp = Fastify({
-				logger: {
-					level: "silent",
-				},
-			});
+			const testApp = createTestFastifyInstance();
 
 			await testApp.register(performancePlugin);
 
@@ -173,11 +175,7 @@ describe("Performance Plugin", () => {
 
 		it("should store snapshot in recent buffer", async () => {
 			// Create fresh instance for this test since we're adding a route
-			const testApp = Fastify({
-				logger: {
-					level: "silent",
-				},
-			});
+			const testApp = createTestFastifyInstance();
 
 			await testApp.register(performancePlugin);
 
@@ -217,11 +215,7 @@ describe("Performance Plugin", () => {
 
 		it("should limit recent buffer to 200 snapshots", async () => {
 			// Create fresh instance for this test since we're adding a route
-			const testApp = Fastify({
-				logger: {
-					level: "silent",
-				},
-			});
+			const testApp = createTestFastifyInstance();
 
 			await testApp.register(performancePlugin);
 
@@ -255,11 +249,7 @@ describe("Performance Plugin", () => {
 	describe("/metrics/perf Endpoint", () => {
 		it("should return JSON response with recent snapshots", async () => {
 			// Create fresh instance for this test since we're adding a route
-			const testApp = Fastify({
-				logger: {
-					level: "silent",
-				},
-			});
+			const testApp = createTestFastifyInstance();
 
 			await testApp.register(performancePlugin);
 
@@ -286,11 +276,7 @@ describe("Performance Plugin", () => {
 
 		it("should return at most 50 snapshots", async () => {
 			// Create fresh instance for this test since we're adding a route
-			const testApp = Fastify({
-				logger: {
-					level: "silent",
-				},
-			});
+			const testApp = createTestFastifyInstance();
 
 			await testApp.register(performancePlugin);
 
@@ -318,11 +304,7 @@ describe("Performance Plugin", () => {
 
 		it("should return snapshots in correct format", async () => {
 			// Create fresh instance for this test since we're adding a route
-			const testApp = Fastify({
-				logger: {
-					level: "silent",
-				},
-			});
+			const testApp = createTestFastifyInstance();
 
 			await testApp.register(performancePlugin);
 
@@ -378,11 +360,7 @@ describe("Performance Plugin", () => {
 
 		it("should return most recent snapshots first", async () => {
 			// Create fresh instance for this test since we're adding routes
-			const testApp = Fastify({
-				logger: {
-					level: "silent",
-				},
-			});
+			const testApp = createTestFastifyInstance();
 
 			await testApp.register(performancePlugin);
 
@@ -426,11 +404,7 @@ describe("Performance Plugin", () => {
 	describe("Edge Cases", () => {
 		it("should handle missing perf tracker gracefully", async () => {
 			// Create fresh instance for this test since we're adding hooks and routes
-			const testApp = Fastify({
-				logger: {
-					level: "silent",
-				},
-			});
+			const testApp = createTestFastifyInstance();
 
 			await testApp.register(performancePlugin);
 
@@ -462,11 +436,7 @@ describe("Performance Plugin", () => {
 
 		it("should handle missing _t0 timestamp gracefully", async () => {
 			// Create fresh instance for this test since we're adding hooks and routes
-			const testApp = Fastify({
-				logger: {
-					level: "silent",
-				},
-			});
+			const testApp = createTestFastifyInstance();
 
 			await testApp.register(performancePlugin);
 
@@ -496,11 +466,7 @@ describe("Performance Plugin", () => {
 
 		it("should handle concurrent requests", async () => {
 			// Create fresh instance for this test since we're adding a route
-			const testApp = Fastify({
-				logger: {
-					level: "silent",
-				},
-			});
+			const testApp = createTestFastifyInstance();
 
 			await testApp.register(performancePlugin);
 
@@ -533,11 +499,7 @@ describe("Performance Plugin", () => {
 
 		it("should handle requests with no cache operations", async () => {
 			// Create fresh instance for this test since we're adding a route
-			const testApp = Fastify({
-				logger: {
-					level: "silent",
-				},
-			});
+			const testApp = createTestFastifyInstance();
 
 			await testApp.register(performancePlugin);
 
@@ -560,11 +522,7 @@ describe("Performance Plugin", () => {
 
 		it("should handle requests with no database operations", async () => {
 			// Create fresh instance for this test since we're adding a route
-			const testApp = Fastify({
-				logger: {
-					level: "silent",
-				},
-			});
+			const testApp = createTestFastifyInstance();
 
 			await testApp.register(performancePlugin);
 

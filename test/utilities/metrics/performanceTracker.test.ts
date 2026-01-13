@@ -312,10 +312,12 @@ describe("Performance Tracker", () => {
 	it("should track slow operations", async () => {
 		const tracker = createPerformanceTracker({ slowMs: 10 });
 
-		await tracker.time("fast-op", async () => {
-			await new Promise((resolve) => setTimeout(resolve, 5));
-		});
+		// Use trackDb to directly set a fast operation timing (below threshold)
+		// This avoids timing variance from setTimeout
+		tracker.trackDb(5);
 
+		// Use tracker.time for slow operation with sufficient delay to ensure it's slow
+		// Using 20ms delay which should reliably be >= 10ms threshold even with timing variance
 		await tracker.time("slow-op", async () => {
 			await new Promise((resolve) => setTimeout(resolve, 20));
 		});

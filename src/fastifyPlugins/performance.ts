@@ -43,7 +43,9 @@ declare module "fastify" {
 const perfPlugin = async (app: FastifyInstance) => {
 	// Get configurable snapshot retention count from validated environment config
 	// Falls back to 1000 if not set (matching schema default)
-	const retentionCount = app.envConfig.METRICS_SNAPSHOT_RETENTION_COUNT ?? 1000;
+	// Use optional chaining to handle cases where envConfig might not be available (e.g., in tests)
+	const retentionCount =
+		app.envConfig?.METRICS_SNAPSHOT_RETENTION_COUNT ?? 1000;
 
 	// Store recent performance snapshots in memory (most recent first)
 	// Note: unshift is O(n) but acceptable for typical retention counts (< 1000)
@@ -102,7 +104,8 @@ const perfPlugin = async (app: FastifyInstance) => {
 		const total = Date.now() - (req._t0 ?? Date.now());
 		// Get slow request threshold from validated environment config
 		// Falls back to 500 if not set (matching schema default)
-		const slowMs = app.envConfig.API_SLOW_REQUEST_MS ?? 500;
+		// Use optional chaining to handle cases where envConfig might not be available (e.g., in tests)
+		const slowMs = app.envConfig?.API_SLOW_REQUEST_MS ?? 500;
 
 		if (total >= slowMs) {
 			req.log.warn({
@@ -128,7 +131,7 @@ const perfPlugin = async (app: FastifyInstance) => {
 		// Note: unshift is O(n) but acceptable for typical retention counts (< 1000)
 		// For better performance with very large retention counts, consider a proper ring buffer
 		if (snap) {
-			recent.unshift({ ...snap });
+			recent.unshift(deepCopySnapshot(snap));
 			// Keep only the configured number of snapshots
 			// Use splice to remove from the end (more efficient than pop in a loop)
 			if (recent.length > retentionCount) {

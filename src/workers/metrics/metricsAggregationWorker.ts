@@ -159,8 +159,12 @@ function aggregateOperationMetrics(
 		totalCount > 0 && Number.isFinite(totalMs / totalCount)
 			? totalMs / totalCount
 			: 0;
+	// Note: minMax is the minimum of per-snapshot max values from PerfSnapshot.ops,
+	// not the actual minimum operation duration (individual operation durations are not available in PerfSnapshot)
 	const minMax =
 		filteredMaxValues.length > 0 ? Math.min(...filteredMaxValues) : 0;
+	// Note: maxMax is the maximum of per-snapshot max values from PerfSnapshot.ops,
+	// not the actual maximum operation duration (individual operation durations are not available in PerfSnapshot)
 	const maxMax =
 		filteredMaxValues.length > 0 ? Math.max(...filteredMaxValues) : 0;
 
@@ -178,7 +182,9 @@ function aggregateOperationMetrics(
 		count: totalCount,
 		totalMs: Math.round(totalMs),
 		avgMs: Math.round(avgMs),
+		// minMs is the minimum of per-snapshot max values from PerfSnapshot.ops (approximation, not actual min duration)
 		minMs: Math.round(minMax),
+		// maxMs is the maximum of per-snapshot max values from PerfSnapshot.ops (approximation, not actual max duration)
 		maxMs: Math.round(maxMax),
 		medianMs: hasPercentileData
 			? Math.round(calculatePercentile(percentileSource, 50))
