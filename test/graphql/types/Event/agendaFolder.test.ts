@@ -257,16 +257,17 @@ describe("Event agendaFolders Resolver", () => {
 	});
 
 	describe("errors", () => {
-		it("returns empty connection when cursor points to non-existent resource", async () => {
+		it("returns empty connection when cursor belongs to another event", async () => {
+			// simulate a valid cursor for a folder that does not belong to the event
+			const otherFolder = { ...mockAgendaFolders[0], eventId: "other-event" };
 			const cursor = createCursor({
-				id: "ghost-id",
-				name: "Ghost Folder",
+				id: otherFolder.id,
+				name: otherFolder.name,
 			});
 
 			mocks.drizzleClient.query.agendaFoldersTable.findMany.mockResolvedValue(
 				[],
 			);
-
 			const result = (await agendaFoldersResolver(
 				mockEvent,
 				{ first: 1, cursor },
@@ -279,21 +280,126 @@ describe("Event agendaFolders Resolver", () => {
 			expect(result.pageInfo.hasPreviousPage).toBe(false);
 		});
 
-		it("returns empty connection when cursor belongs to another event", async () => {
-			// simulate a valid cursor for a folder that does not belong to the event
-			const otherFolder = { ...mockAgendaFolders[0], eventId: "other-event" };
+		it("throws TalawaGraphQLError when cursor has invalid format (forward)", async () => {
+			const invalidCursor = "not-a-valid-base64url-cursor";
+
+			mocks.drizzleClient.query.agendaFoldersTable.findMany.mockResolvedValue(
+				[],
+			);
+
+			await expect(
+				agendaFoldersResolver(
+					mockEvent,
+					{ first: 10, after: invalidCursor },
+					ctx,
+					mockResolveInfo,
+				),
+			).rejects.toMatchObject({
+				extensions: expect.objectContaining({
+					code: "invalid_arguments",
+					issues: expect.arrayContaining([
+						expect.objectContaining({
+							argumentPath: ["after"],
+							message: "Not a valid cursor.",
+						}),
+					]),
+				}),
+			});
+		});
+
+		it("throws TalawaGraphQLError when cursor has invalid format (backward)", async () => {
+			const invalidCursor = "not-a-valid-base64url-cursor";
+
+			mocks.drizzleClient.query.agendaFoldersTable.findMany.mockResolvedValue(
+				[],
+			);
+
+			await expect(
+				agendaFoldersResolver(
+					mockEvent,
+					{ last: 10, before: invalidCursor },
+					ctx,
+					mockResolveInfo,
+				),
+			).rejects.toMatchObject({
+				extensions: expect.objectContaining({
+					code: "invalid_arguments",
+					issues: expect.arrayContaining([
+						expect.objectContaining({
+							argumentPath: ["before"],
+							message: "Not a valid cursor.",
+						}),
+					]),
+				}),
+			});
+		});
+
+		it("throws error when cursor points to non-existent resource (forward)", async () => {
 			const cursor = createCursor({
-				id: otherFolder.id,
-				name: otherFolder.name,
+				id: "00000000-0000-4000-8000-999999999999",
+				name: "Ghost Folder",
 			});
 
 			mocks.drizzleClient.query.agendaFoldersTable.findMany.mockResolvedValue(
 				[],
 			);
 
+			await expect(
+				agendaFoldersResolver(
+					mockEvent,
+					{ first: 10, after: cursor },
+					ctx,
+					mockResolveInfo,
+				),
+			).rejects.toMatchObject({
+				extensions: expect.objectContaining({
+					code: "arguments_associated_resources_not_found",
+					issues: expect.arrayContaining([
+						expect.objectContaining({
+							argumentPath: ["after"],
+						}),
+					]),
+				}),
+			});
+		});
+
+		it("throws error when cursor points to non-existent resource (backward)", async () => {
+			const cursor = createCursor({
+				id: "00000000-0000-4000-8000-999999999999",
+				name: "Ghost Folder",
+			});
+
+			mocks.drizzleClient.query.agendaFoldersTable.findMany.mockResolvedValue(
+				[],
+			);
+
+			await expect(
+				agendaFoldersResolver(
+					mockEvent,
+					{ last: 10, before: cursor },
+					ctx,
+					mockResolveInfo,
+				),
+			).rejects.toMatchObject({
+				extensions: expect.objectContaining({
+					code: "arguments_associated_resources_not_found",
+					issues: expect.arrayContaining([
+						expect.objectContaining({
+							argumentPath: ["before"],
+						}),
+					]),
+				}),
+			});
+		});
+
+		it("returns empty connection when no agenda folders (backward)", async () => {
+			mocks.drizzleClient.query.agendaFoldersTable.findMany.mockResolvedValue(
+				[],
+			);
+
 			const result = (await agendaFoldersResolver(
 				mockEvent,
-				{ first: 1, cursor },
+				{ last: 10 },
 				ctx,
 				mockResolveInfo,
 			)) as Connection;
@@ -301,6 +407,7 @@ describe("Event agendaFolders Resolver", () => {
 			expect(result.edges).toHaveLength(0);
 			expect(result.pageInfo.hasNextPage).toBe(false);
 			expect(result.pageInfo.hasPreviousPage).toBe(false);
+			expect(result.pageInfo.endCursor).toBeNull();
 		});
 	});
 });
