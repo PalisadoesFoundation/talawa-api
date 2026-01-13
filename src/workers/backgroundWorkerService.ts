@@ -317,7 +317,7 @@ export async function runMetricsAggregationWorkerSafely(
 			maxSnapshots: fastify.envConfig.METRICS_SNAPSHOT_RETENTION_COUNT ?? 1000,
 		};
 
-		const result = await runMetricsAggregationWorker(
+		const result = runMetricsAggregationWorker(
 			() => fastify.getPerformanceSnapshots(),
 			logger,
 			options,

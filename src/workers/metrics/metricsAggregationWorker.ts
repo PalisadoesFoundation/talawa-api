@@ -351,11 +351,11 @@ export function aggregateMetrics(
  * @param options - Aggregation options. Note: windowMinutes is deprecated and not functional since PerfSnapshot lacks timestamps. Use maxSnapshots instead.
  * @returns Aggregated metrics result
  */
-export async function runMetricsAggregationWorker(
+export function runMetricsAggregationWorker(
 	getSnapshots: () => PerfSnapshot[],
 	logger: FastifyBaseLogger,
 	options: MetricsAggregationOptions = {},
-): Promise<MetricsAggregationResult> {
+): MetricsAggregationResult {
 	const startTime = Date.now();
 
 	// Get recent snapshots
