@@ -24,7 +24,7 @@ vi.mock("~/src/utilities/leakyBucket", () => ({
 	default: vi.fn(),
 }));
 
-vi.mock("~/src/utilities/TalawaGraphQLError", () => ({
+vi.mock("../../src/utilities/TalawaGraphQLError", () => ({
 	TalawaGraphQLError: vi.fn(),
 }));
 
@@ -80,7 +80,7 @@ describe("GraphQL Routes", () => {
 			log: {
 				info: vi.fn(),
 				error: vi.fn(),
-				warn: () => {},
+				warn: () => { },
 				child: vi.fn().mockReturnThis(),
 				level: "info",
 				fatal: vi.fn(),
@@ -848,7 +848,15 @@ describe("GraphQL Routes", () => {
 			mockVariables = {};
 
 			vi.mocked(schemaManager.buildInitialSchema).mockResolvedValue(mockSchema);
-			vi.mocked(schemaManager.onSchemaUpdate).mockImplementation(() => {});
+			vi.mocked(schemaManager.onSchemaUpdate).mockImplementation(() => { });
+
+			// Make TalawaGraphQLError throw a real Error so that `throw` statements reject the promise
+			vi.mocked(TalawaGraphQLError).mockImplementation((config) => {
+				const error = new Error(config.message ?? "GraphQL Error");
+				(error as Error & { extensions?: unknown }).extensions =
+					config.extensions;
+				return error as TalawaGraphQLError;
+			});
 
 			// Import and register the plugin to capture the hook
 			const { graphql } = await import("~/src/routes/graphql");
@@ -1038,17 +1046,19 @@ describe("GraphQL Routes", () => {
 			const mockComplexity = { complexity: 5, breadth: 1, depth: 1 };
 			vi.mocked(complexityFromQuery).mockReturnValue(mockComplexity);
 
-			mockDocument.reply.request.ip = undefined;
+			delete mockDocument.reply.request.ip
 			mockDocument.reply.request.jwtVerify.mockRejectedValue(
 				new Error("No token"),
 			);
 
-			vi.mocked(TalawaGraphQLError).mockImplementation((config) => {
-				const error = new Error(config.message);
-				(error as Error & { extensions?: unknown }).extensions =
-					config.extensions;
-				return error as TalawaGraphQLError;
-			});
+			await expect(
+				preExecutionHook(
+					mockSchema,
+					mockContext,
+					mockDocument,
+					mockVariables,
+				),
+			).rejects.toThrow();
 
 			expect(TalawaGraphQLError).toHaveBeenCalledWith({
 				extensions: {
@@ -1067,15 +1077,15 @@ describe("GraphQL Routes", () => {
 			);
 			vi.mocked(leakyBucket).mockResolvedValue(false);
 
-			vi.mocked(TalawaGraphQLError).mockImplementation((config) => {
-				const error = new Error("Rate limit exceeded");
-				(error as Error & { extensions?: unknown }).extensions =
-					config.extensions;
-				return error as TalawaGraphQLError;
-			});
-			expect(TalawaGraphQLError).toHaveBeenCalledWith({
-				extensions: { code: "too_many_requests" },
-			});
+			await expect(
+				preExecutionHook(mockSchema, mockContext, mockDocument, mockVariables),
+			).rejects.toThrow();
+
+			expect(TalawaGraphQLError).toHaveBeenCalledWith(
+				expect.objectContaining({
+					extensions: { code: "too_many_requests" },
+				}),
+			);
 		});
 
 		it("should handle operation without operation definition", async () => {

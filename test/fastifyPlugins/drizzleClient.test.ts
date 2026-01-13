@@ -35,6 +35,7 @@ type MockFastifyInstance = Partial<FastifyInstance> & {
 	log: {
 		info: ReturnType<typeof vi.fn>;
 		error: ReturnType<typeof vi.fn>;
+		debug: ReturnType<typeof vi.fn>;
 	};
 	envConfig: {
 		API_IS_APPLY_DRIZZLE_MIGRATIONS: boolean;
@@ -59,6 +60,7 @@ describe("drizzleClient Plugin - Migration Error Handling", () => {
 			log: {
 				info: vi.fn(),
 				error: vi.fn(),
+				debug: vi.fn(),
 			},
 			envConfig: {
 				API_IS_APPLY_DRIZZLE_MIGRATIONS: true,
@@ -72,10 +74,14 @@ describe("drizzleClient Plugin - Migration Error Handling", () => {
 			decorate: vi.fn(),
 			addHook: vi.fn(),
 		} as MockFastifyInstance;
+
+		vi.stubEnv("NODE_ENV", "development");
+		vi.stubEnv("VITEST", undefined);
 	});
 
 	afterEach(() => {
 		vi.restoreAllMocks();
+		vi.unstubAllEnvs();
 	});
 
 	describe("Migration Error Handling - Already Exists Errors", () => {
@@ -311,7 +317,7 @@ describe("drizzleClient Plugin - Migration Error Handling", () => {
 				},
 			};
 
-			vi.mocked(drizzle).mockReturnValue(
+			vi.mocked(drizzle).mockReturnValueOnce(
 				mockDrizzleClient as unknown as ReturnType<typeof drizzle>,
 			);
 
@@ -362,7 +368,7 @@ describe("drizzleClient Plugin - Migration Error Handling", () => {
 				},
 			};
 
-			vi.mocked(drizzle).mockReturnValue(
+			vi.mocked(drizzle).mockReturnValueOnce(
 				mockDrizzleClient as unknown as ReturnType<typeof drizzle>,
 			);
 

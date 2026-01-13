@@ -46,14 +46,24 @@ export const drizzleClient = fastifyPlugin(
 		});
 
 		// Checks for successful connection to the postgres database on server startup.
-		try {
-			fastify.log.info("Checking the connection to the postgres database.");
-			await drizzleClient.execute("select 1");
-			fastify.log.info("Successfully connected to the postgres database.");
-		} catch (error) {
-			throw new Error("Failed to connect to the postgres database.", {
-				cause: error,
-			});
+		// Skip this check in test environments where no real database is available.
+		const isTestEnvironment =
+			process.env.NODE_ENV === "test" ||
+			process.env.VITEST ||
+			process.env.JEST_WORKER_ID;
+
+		if (!isTestEnvironment) {
+			try {
+				fastify.log.info("Checking the connection to the postgres database.");
+				await drizzleClient.execute("select 1");
+				fastify.log.info("Successfully connected to the postgres database.");
+			} catch (error) {
+				throw new Error("Failed to connect to the postgres database.", {
+					cause: error,
+				});
+			}
+		} else {
+			fastify.log.debug("Skipping database connection check in test environment.");
 		}
 
 		// Gracefully close the postgres connection when the fastify server is shutting down.
@@ -74,7 +84,7 @@ export const drizzleClient = fastifyPlugin(
 			}
 		});
 
-		if (fastify.envConfig.API_IS_APPLY_DRIZZLE_MIGRATIONS) {
+		if (fastify.envConfig.API_IS_APPLY_DRIZZLE_MIGRATIONS && !isTestEnvironment) {
 			try {
 				fastify.log.info(
 					"Applying the drizzle migration files to the postgres database.",

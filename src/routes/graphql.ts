@@ -37,7 +37,7 @@ type InitialContext = {
 	fastify: FastifyInstance;
 	request: FastifyRequest;
 } & (
-	| {
+		| {
 			/**
 			 * This field is `false` if the current graphql operation isn't a subscription.
 			 */
@@ -47,8 +47,8 @@ type InitialContext = {
 			 */
 			reply: FastifyReply;
 			socket?: never;
-	  }
-	| {
+		}
+		| {
 			/**
 			 * This field is `true` if the current graphql operation is a subscription.
 			 */
@@ -58,8 +58,8 @@ type InitialContext = {
 			 * This field is only present if the current graphql operation is a subscription.
 			 */
 			socket: WebSocket;
-	  }
-);
+		}
+	);
 
 /**
  * Type for the data passed to the subscription onConnect callback.
@@ -133,39 +133,39 @@ export const createContext: CreateContext = async (initialContext) => {
 	const cookieHelper =
 		!initialContext.isSubscription && initialContext.reply
 			? {
-					setAuthCookies: (accessToken: string, refreshToken: string) => {
-						const jwtExpiresIn = fastify.envConfig.API_JWT_EXPIRES_IN;
-						const refreshExpiresIn =
-							fastify.envConfig.API_REFRESH_TOKEN_EXPIRES_IN ??
-							DEFAULT_REFRESH_TOKEN_EXPIRES_MS;
+				setAuthCookies: (accessToken: string, refreshToken: string) => {
+					const jwtExpiresIn = fastify.envConfig.API_JWT_EXPIRES_IN;
+					const refreshExpiresIn =
+						fastify.envConfig.API_REFRESH_TOKEN_EXPIRES_IN ??
+						DEFAULT_REFRESH_TOKEN_EXPIRES_MS;
 
-						initialContext.reply.setCookie(
-							COOKIE_NAMES.ACCESS_TOKEN,
-							accessToken,
-							getAccessTokenCookieOptions(cookieConfig, jwtExpiresIn),
-						);
-						initialContext.reply.setCookie(
-							COOKIE_NAMES.REFRESH_TOKEN,
-							refreshToken,
-							getRefreshTokenCookieOptions(cookieConfig, refreshExpiresIn),
-						);
-					},
-					clearAuthCookies: () => {
-						initialContext.reply.setCookie(
-							COOKIE_NAMES.ACCESS_TOKEN,
-							"",
-							getClearAccessTokenCookieOptions(cookieConfig),
-						);
-						initialContext.reply.setCookie(
-							COOKIE_NAMES.REFRESH_TOKEN,
-							"",
-							getClearRefreshTokenCookieOptions(cookieConfig),
-						);
-					},
-					getRefreshToken: () => {
-						return request.cookies?.[COOKIE_NAMES.REFRESH_TOKEN];
-					},
-				}
+					initialContext.reply.setCookie(
+						COOKIE_NAMES.ACCESS_TOKEN,
+						accessToken,
+						getAccessTokenCookieOptions(cookieConfig, jwtExpiresIn),
+					);
+					initialContext.reply.setCookie(
+						COOKIE_NAMES.REFRESH_TOKEN,
+						refreshToken,
+						getRefreshTokenCookieOptions(cookieConfig, refreshExpiresIn),
+					);
+				},
+				clearAuthCookies: () => {
+					initialContext.reply.setCookie(
+						COOKIE_NAMES.ACCESS_TOKEN,
+						"",
+						getClearAccessTokenCookieOptions(cookieConfig),
+					);
+					initialContext.reply.setCookie(
+						COOKIE_NAMES.REFRESH_TOKEN,
+						"",
+						getClearRefreshTokenCookieOptions(cookieConfig),
+					);
+				},
+				getRefreshToken: () => {
+					return request.cookies?.[COOKIE_NAMES.REFRESH_TOKEN];
+				},
+			}
 			: undefined;
 
 	// Attach operation name to logger if available
@@ -368,10 +368,10 @@ export const graphql = fastifyPlugin(async (fastify) => {
 					error:
 						error instanceof Error
 							? {
-									message: error.message,
-									stack: error.stack,
-									name: error.name,
-								}
+								message: error.message,
+								stack: error.stack,
+								name: error.name,
+							}
 							: String(error),
 					timestamp: new Date().toISOString(),
 				},
