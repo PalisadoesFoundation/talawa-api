@@ -371,16 +371,22 @@ step $CURRENT_STEP $TOTAL_STEPS "Installing pnpm v$CLEAN_PNPM_VERSION..."
 # Verify npm is available before installing pnpm
 if ! command_exists npm; then
     error "npm is not available. Node.js installation may have failed."
-    error ""
+    echo ""
     error "Troubleshooting:"
     error "  1. Verify Node.js is installed: node --version"
     error "  2. Check if fnm environment is loaded: fnm env"
     error "  3. Try loading fnm manually: eval \"\$(fnm env)\""
     error "  4. Restart your terminal"
-    error ""
+    echo ""
     error "If Node.js is installed but npm is missing:"
     error "  - Node.js installation may be corrupted"
-    error "  - Try reinstalling: fnm install $CLEAN_NODE_VERSION"
+    if [ "$CLEAN_NODE_VERSION" = "lts" ]; then
+        error "  - Try reinstalling: fnm install --lts"
+    elif [ "$CLEAN_NODE_VERSION" = "latest" ]; then
+        error "  - Try reinstalling: fnm install --latest"
+    else
+        error "  - Try reinstalling: fnm install $CLEAN_NODE_VERSION"
+    fi
     exit 1
 fi
 
