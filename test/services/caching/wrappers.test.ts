@@ -210,10 +210,13 @@ describe("wrapWithCache", () => {
 				ttlSeconds: 300,
 			});
 
-			await expect(wrappedFn(["1"])).rejects.toThrow("Redis connection failed");
+			// Cache failure should fall back to producer gracefully
+			const results = await wrappedFn(["1"]);
+			expect(results).toEqual([{ id: "1", name: "Alice" }]);
+			expect(producer).toHaveBeenCalledWith(["1"]);
 		});
 
-		it("should propagate error if cache.mset fails (since wrapper awaits it)", async () => {
+		it("should return results even if cache.mset fails", async () => {
 			const cache = createMockCache();
 			const error = new Error("Redis connection failed");
 			cache.mset.mockRejectedValue(error);
@@ -227,8 +230,10 @@ describe("wrapWithCache", () => {
 				ttlSeconds: 300,
 			});
 
-			// If mset fails, the wrapper awaits it, so it should throw
-			await expect(wrappedFn(["1"])).rejects.toThrow("Redis connection failed");
+			// mset failure should not prevent returning results
+			const results = await wrappedFn(["1"]);
+			expect(results).toEqual([{ id: "1", name: "Alice" }]);
+			expect(producer).toHaveBeenCalledWith(["1"]);
 		});
 
 		it("should handle cache unavailable (Redis down) gracefully if service catches errors", async () => {
@@ -258,6 +263,76 @@ describe("wrapWithCache", () => {
 				{ id: "2", name: "Bob" },
 			]);
 			expect(producer).toHaveBeenCalledWith(["1", "2"]);
+		});
+
+		it("should call logger.debug when cache.mget fails", async () => {
+			const cache = createMockCache();
+			const error = new Error("Redis connection failed");
+			cache.mget.mockRejectedValue(error);
+
+			const mockLogger = { debug: vi.fn() };
+			const mockMetrics = { increment: vi.fn() };
+
+			const producer = vi.fn().mockResolvedValue([{ id: "1", name: "Alice" }]);
+
+			const wrappedFn = wrapWithCache(producer, {
+				cache,
+				entity: "user",
+				keyFn: (id: string) => id,
+				ttlSeconds: 300,
+				logger: mockLogger,
+				metrics: mockMetrics,
+			});
+
+			await wrappedFn(["1"]);
+
+			expect(mockLogger.debug).toHaveBeenCalledWith(
+				expect.objectContaining({
+					msg: "cache.read.failure",
+					entity: "user",
+					err: error,
+				}),
+				expect.any(String),
+			);
+			expect(mockMetrics.increment).toHaveBeenCalledWith("cache.read.failure", {
+				entity: "user",
+			});
+		});
+
+		it("should call logger.debug when cache.mset fails", async () => {
+			const cache = createMockCache();
+			const error = new Error("Redis connection failed");
+			cache.mset.mockRejectedValue(error);
+
+			const mockLogger = { debug: vi.fn() };
+			const mockMetrics = { increment: vi.fn() };
+
+			const producer = vi.fn().mockResolvedValue([{ id: "1", name: "Alice" }]);
+
+			const wrappedFn = wrapWithCache(producer, {
+				cache,
+				entity: "user",
+				keyFn: (id: string) => id,
+				ttlSeconds: 300,
+				logger: mockLogger,
+				metrics: mockMetrics,
+			});
+
+			await wrappedFn(["1"]);
+
+			expect(mockLogger.debug).toHaveBeenCalledWith(
+				expect.objectContaining({
+					msg: "cache.write.failure",
+					entity: "user",
+					ttlSeconds: 300,
+					err: error,
+				}),
+				expect.any(String),
+			);
+			expect(mockMetrics.increment).toHaveBeenCalledWith(
+				"cache.write.failure",
+				{ entity: "user" },
+			);
 		});
 	});
 });

@@ -678,6 +678,17 @@ export const Mutation_createTag = gql(`
     }
   }`);
 
+export const Mutation_deleteTag = gql(`
+  mutation Mutation_deleteTag($input: MutationDeleteTagInput!) {
+    deleteTag(input: $input) {
+      id
+      name
+      createdAt
+      updatedAt
+    }
+  }
+`);
+
 export const Mutation_createTagFolder = gql(`
   mutation Mutation_createTagFolder($input: MutationCreateTagFolderInput!) {
     createTagFolder(input: $input) {
@@ -782,6 +793,20 @@ export const Query_organization = gql(`
     }
   `);
 
+export const Query_agendaCategoriesByEventId =
+	gql(`query Query_agendaCategoriesByEventId($eventId: ID!) {
+  agendaCategoriesByEventId(eventId: $eventId) {
+    id
+    name
+    description
+    createdAt
+    creator {
+      id
+      name
+    }
+  }
+}`);
+
 export const Query_agendaItem =
 	gql(`query Query_agendaItem($input: QueryAgendaItemInput!) {
   agendaItem(input: $input) {
@@ -826,6 +851,24 @@ export const Mutation_updateAgendaFolder = gql(`
   }
 `);
 
+export const Mutation_createAgendaCategory = gql(`
+  mutation Mutation_createAgendaCategory($input: MutationCreateAgendaCategoryInput!) {
+    createAgendaCategory(input: $input) {
+      id
+      name
+      description
+      event {
+        id
+        name
+      }
+      creator {
+        id
+        name
+      }
+    }
+  }
+`);
+
 export const Mutation_createAgendaItem = gql(`
   mutation Mutation_createAgendaItem($input: MutationCreateAgendaItemInput!) {
     createAgendaItem(input: $input) {
@@ -834,6 +877,21 @@ export const Mutation_createAgendaItem = gql(`
       description
       duration
       type
+    }
+  }
+`);
+
+export const Mutation_updateAgendaCategory = gql(`
+  mutation Mutation_updateAgendaCategory($input: MutationUpdateAgendaCategoryInput!) {
+    updateAgendaCategory(input: $input) {
+      id
+      name
+      description
+      updatedAt
+      updater {
+        id
+        name
+      }
     }
   }
 `);
@@ -849,6 +907,17 @@ export const Mutation_updateAgendaItem = gql(`
     }
   }
 `);
+
+export const Mutation_deleteAgendaCategory = gql(`
+  mutation Mutation_deleteAgendaCategory($input: MutationDeleteAgendaCategoryInput!) {
+    deleteAgendaCategory(input: $input) {
+      id
+      name
+      description
+    }
+  }
+`);
+
 export const Mutation_deleteAgendaItem = gql(`
   mutation Mutation_deleteAgendaItem($input: MutationDeleteAgendaItemInput!) {
     deleteAgendaItem(input: $input) {
@@ -2645,4 +2714,15 @@ export const Mutation_updateCommunity = gql(`
 			inactivityTimeoutDuration
 		}
 	}
+`);
+
+export const Mutation_updateChat = gql(`
+  mutation Mutation_updateChat($input: MutationUpdateChatInput!) {
+    updateChat(input: $input) {
+      id
+      name
+      description
+      avatarURL
+    }
+  }
 `);

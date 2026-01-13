@@ -10,6 +10,7 @@ import type {
 } from "~/src/graphql/context";
 import schemaManager from "~/src/graphql/schemaManager";
 import NotificationService from "~/src/services/notification/NotificationService";
+import { metricsCacheProxy } from "../services/metrics/metricsCacheProxy";
 import {
 	COOKIE_NAMES,
 	getAccessTokenCookieOptions,
@@ -19,6 +20,11 @@ import {
 } from "../utilities/cookieConfig";
 import { createDataloaders } from "../utilities/dataloaders";
 import leakyBucket from "../utilities/leakyBucket";
+import { type AppLogger, withFields } from "../utilities/logging/logger";
+import {
+	isPerformanceTracker,
+	type PerformanceTracker,
+} from "../utilities/metrics/performanceTracker";
 import { DEFAULT_REFRESH_TOKEN_EXPIRES_MS } from "../utilities/refreshTokenUtils";
 import { TalawaGraphQLError } from "../utilities/TalawaGraphQLError";
 
@@ -52,6 +58,19 @@ type InitialContext = {
 			socket: WebSocket;
 	  }
 );
+
+/**
+ * Type for the data passed to the subscription onConnect callback.
+ * Contains the authorization payload and optional socket with performance tracker.
+ */
+type SubscriptionConnectionData = {
+	payload?: { authorization?: string };
+	socket?: {
+		request?: {
+			perf?: PerformanceTracker;
+		};
+	};
+};
 
 export type CreateContext = (
 	initialContext: InitialContext,
@@ -147,10 +166,24 @@ export const createContext: CreateContext = async (initialContext) => {
 				}
 			: undefined;
 
+	// Attach operation name to logger if available
+	const body = request.body as Record<string, unknown> | undefined;
+	const operationName = (body?.operationName as string) ?? "unknown";
+
+	const opLogger = withFields(request.log as AppLogger, {
+		operation: operationName,
+	});
+
 	return {
-		cache: fastify.cache,
+		cache: request.perf
+			? metricsCacheProxy(fastify.cache, request.perf)
+			: fastify.cache,
 		currentClient,
-		dataloaders: createDataloaders(fastify.drizzleClient),
+		dataloaders: createDataloaders(
+			fastify.drizzleClient,
+			fastify.cache,
+			request.perf,
+		),
 		drizzleClient: fastify.drizzleClient,
 		envConfig: fastify.envConfig,
 		jwt: {
@@ -158,10 +191,12 @@ export const createContext: CreateContext = async (initialContext) => {
 				fastify.jwt.sign(payload),
 		},
 		cookie: cookieHelper,
-		log: request.log ?? fastify.log,
+		log: opLogger,
 		minio: fastify.minio,
+
 		// attached a per-request notification service that queues notifications and can flush later
 		notification: new NotificationService(),
+		perf: request.perf,
 	};
 };
 
@@ -236,8 +271,8 @@ export const graphql = fastifyPlugin(async (fastify) => {
 			};
 		},
 		subscription: {
-			onConnect: async (data) => {
-				const { payload } = data;
+			onConnect: async (data: SubscriptionConnectionData) => {
+				const { payload, socket } = data;
 				if (!payload?.authorization) {
 					return false;
 				}
@@ -251,13 +286,25 @@ export const graphql = fastifyPlugin(async (fastify) => {
 						"Subscription connection authorized.",
 					);
 
+					// Extract perf from socket.request.perf if available
+					const perf =
+						socket?.request &&
+						"perf" in socket.request &&
+						isPerformanceTracker(socket.request.perf)
+							? socket.request.perf
+							: undefined;
+
 					return {
 						cache: fastify.cache,
 						currentClient: {
 							isAuthenticated: true,
 							user: decoded.user,
 						},
-						dataloaders: createDataloaders(fastify.drizzleClient),
+						dataloaders: createDataloaders(
+							fastify.drizzleClient,
+							fastify.cache,
+							perf,
+						),
 						drizzleClient: fastify.drizzleClient,
 						envConfig: fastify.envConfig,
 						jwt: {
@@ -267,6 +314,7 @@ export const graphql = fastifyPlugin(async (fastify) => {
 						log: fastify.log,
 						minio: fastify.minio,
 						notification: new NotificationService(),
+						perf,
 					};
 				} catch (error) {
 					fastify.log.error(
@@ -354,6 +402,11 @@ export const graphql = fastifyPlugin(async (fastify) => {
 					fastify.envConfig.API_GRAPHQL_MUTATION_BASE_COST;
 			}
 
+			// Track GraphQL complexity score in performance tracker
+			if (request.perf) {
+				request.perf.trackComplexity(complexity.complexity);
+			}
+
 			// Get the IP address of the client making the request
 			const ip = request.ip;
 
@@ -398,6 +451,7 @@ export const graphql = fastifyPlugin(async (fastify) => {
 				fastify.envConfig.API_RATE_LIMIT_BUCKET_CAPACITY,
 				fastify.envConfig.API_RATE_LIMIT_REFILL_RATE,
 				complexity.complexity,
+				request.log as AppLogger,
 			);
 
 			// If the request exceeds rate limits, reject it

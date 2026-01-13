@@ -17,7 +17,6 @@ reviews:
     drafts: false
     base_branches:
       - develop
-      - develop
       - main
   path_filters:
     - "!**/docs/docs/**"
@@ -29,7 +28,7 @@ reviews:
       instructions: |
         Full review
 
-        Perform a comprehensive analysis and reevaluate all resolved items with the following criteria:
+        Perform a comprehensive analysis and reevaluate all resolved and dismissed items with the following criteria:
 
         1. **Test Coverage Analysis:**
             1. For each modified or new test file, verify:

@@ -7,6 +7,7 @@ export interface EmailConfig {
 	fromName?: string;
 	accessKeyId?: string;
 	secretAccessKey?: string;
+	provider?: "ses";
 }
 
 /**
@@ -99,7 +100,9 @@ export class EmailService {
 	async sendEmail(job: EmailJob): Promise<EmailResult> {
 		try {
 			if (!this.config.fromEmail) {
-				throw new Error("fromEmail is required in EmailConfig to send emails");
+				throw new Error(
+					"Email service not configured. Please set AWS_SES_FROM_EMAIL (and optionally AWS_SES_FROM_NAME) or run 'npm run setup' to configure SES.",
+				);
 			}
 
 			const { client, SendEmailCommand } = await this.getSesArtifacts();

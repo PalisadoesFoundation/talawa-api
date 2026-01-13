@@ -160,6 +160,7 @@ builder.mutationField("updateTag", (t) =>
 							operators.and(
 								operators.eq(fields.name, name),
 								operators.eq(fields.organizationId, existingTag.organizationId),
+								operators.ne(fields.id, parsedArgs.input.id),
 							),
 					});
 

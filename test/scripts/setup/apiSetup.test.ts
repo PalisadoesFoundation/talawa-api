@@ -8,6 +8,7 @@ import {
 	apiSetup,
 	checkEnvFile,
 	generateJwtSecret,
+	type SetupAnswers,
 	setup,
 	validatePort,
 	validateURL,
@@ -22,6 +23,29 @@ import {
 	vi,
 } from "vitest";
 
+/**
+ * Helper function to wait for a condition to become true by polling
+ * @param condition - A function that returns true when the condition is met
+ * @param timeout - Maximum time to wait in milliseconds (default: 5000)
+ * @param pollInterval - Interval between checks in milliseconds (default: 10)
+ * @throws {Error} If the timeout elapses before the condition becomes true
+ */
+async function waitFor(
+	condition: () => boolean,
+	timeout = 5000,
+	pollInterval = 10,
+): Promise<void> {
+	const startTime = Date.now();
+	while (!condition() && Date.now() - startTime < timeout) {
+		await new Promise((resolve) => setTimeout(resolve, pollInterval));
+	}
+	if (!condition()) {
+		throw new Error(
+			`waitFor: timeout waiting for condition after ${timeout}ms`,
+		);
+	}
+}
+
 describe("Setup -> apiSetup", () => {
 	const originalEnv = { ...process.env };
 	beforeAll(() => {
@@ -33,11 +57,10 @@ describe("Setup -> apiSetup", () => {
 		vi.resetAllMocks();
 	});
 
-	const isEnvConfigured = checkEnvFile();
-
 	it("should prompt the user for API configuration and update environment variables", async () => {
 		process.env.MINIO_ROOT_PASSWORD = "password";
 		process.env.POSTGRES_PASSWORD = "password";
+		const isEnvConfigured = await checkEnvFile();
 		const mockResponses = [
 			...(isEnvConfigured ? [{ envReconfigure: true }] : []),
 			{ CI: "true" },
@@ -177,9 +200,10 @@ describe("Setup -> apiSetup", () => {
 			.mockResolvedValueOnce({ API_POSTGRES_SSL_MODE: "true" })
 			.mockResolvedValueOnce({ API_POSTGRES_TEST_HOST: "mocked-test-host" })
 			.mockResolvedValueOnce({ API_POSTGRES_USER: "mocked-user" });
+		const consoleLogSpy = vi.spyOn(console, "log");
 		const consoleWarnSpy = vi.spyOn(console, "warn");
 
-		let answers: Record<string, string> = {};
+		let answers: SetupAnswers = {};
 		answers = await apiSetup(answers);
 
 		// Verify user is prompted twice because first attempt was incorrect
@@ -191,6 +215,256 @@ describe("Setup -> apiSetup", () => {
 			["⚠️ API_MINIO_SECRET_KEY must match MINIO_ROOT_PASSWORD."],
 			["⚠️ API_POSTGRES_PASSWORD must match POSTGRES_PASSWORD."],
 		]);
+
+		// Verify success messages on match
+		expect(consoleLogSpy).toHaveBeenCalledWith(
+			"✅ API_MINIO_SECRET_KEY matches MINIO_ROOT_PASSWORD",
+		);
+		expect(consoleLogSpy).toHaveBeenCalledWith(
+			"✅ API_POSTGRES_PASSWORD matches POSTGRES_PASSWORD",
+		);
+	});
+
+	it("should complete successfully in fresh environment without environment variables set", async () => {
+		// Ensure both environment variables are not set
+		delete process.env.MINIO_ROOT_PASSWORD;
+		delete process.env.POSTGRES_PASSWORD;
+
+		const promptMock = vi.spyOn(inquirer, "prompt");
+		const consoleLogSpy = vi.spyOn(console, "log");
+		const consoleWarnSpy = vi.spyOn(console, "warn");
+
+		// Mock all required prompts
+		promptMock
+			.mockResolvedValueOnce({ API_BASE_URL: "http://localhost:5000" })
+			.mockResolvedValueOnce({ API_HOST: "127.0.0.1" })
+			.mockResolvedValueOnce({ API_PORT: "5000" })
+			.mockResolvedValueOnce({ API_IS_APPLY_DRIZZLE_MIGRATIONS: "true" })
+			.mockResolvedValueOnce({ API_IS_GRAPHIQL: "true" })
+			.mockResolvedValueOnce({ API_IS_PINO_PRETTY: "false" })
+			.mockResolvedValueOnce({ API_JWT_EXPIRES_IN: "3600000" })
+			.mockResolvedValueOnce({ API_JWT_SECRET: "mocked-secret" })
+			.mockResolvedValueOnce({ API_LOG_LEVEL: "info" })
+			.mockResolvedValueOnce({ API_MINIO_ACCESS_KEY: "mocked-access-key" })
+			.mockResolvedValueOnce({ API_MINIO_END_POINT: "mocked-endpoint" })
+			.mockResolvedValueOnce({ API_MINIO_PORT: "9001" })
+			.mockResolvedValueOnce({ API_MINIO_SECRET_KEY: "my-secret-key" })
+			.mockResolvedValueOnce({
+				API_MINIO_TEST_END_POINT: "mocked-test-endpoint",
+			})
+			.mockResolvedValueOnce({ API_MINIO_USE_SSL: "true" })
+			.mockResolvedValueOnce({ API_POSTGRES_DATABASE: "mocked-database" })
+			.mockResolvedValueOnce({ API_POSTGRES_HOST: "mocked-host" })
+			.mockResolvedValueOnce({ API_POSTGRES_PASSWORD: "my-postgres-password" })
+			.mockResolvedValueOnce({ API_POSTGRES_PORT: "5433" })
+			.mockResolvedValueOnce({ API_POSTGRES_SSL_MODE: "true" })
+			.mockResolvedValueOnce({ API_POSTGRES_TEST_HOST: "mocked-test-host" })
+			.mockResolvedValueOnce({ API_POSTGRES_USER: "mocked-user" });
+
+		let answers: SetupAnswers = {};
+		answers = await apiSetup(answers);
+
+		// Verify setup completes successfully
+		expect(answers.API_MINIO_SECRET_KEY).toBe("my-secret-key");
+		expect(answers.API_POSTGRES_PASSWORD).toBe("my-postgres-password");
+
+		// Verify informative messages are logged when env vars are not set
+		expect(consoleLogSpy).toHaveBeenCalledWith(
+			"ℹ️  MINIO_ROOT_PASSWORD will be set to match API_MINIO_SECRET_KEY",
+		);
+		expect(consoleLogSpy).toHaveBeenCalledWith(
+			"ℹ️  POSTGRES_PASSWORD will be set to match API_POSTGRES_PASSWORD",
+		);
+
+		// Verify no warnings are shown
+		expect(consoleWarnSpy).not.toHaveBeenCalled();
+	});
+
+	it("should validate MinIO secret key when MINIO_ROOT_PASSWORD is set", async () => {
+		process.env.MINIO_ROOT_PASSWORD = "expected-password";
+		delete process.env.POSTGRES_PASSWORD;
+
+		const promptMock = vi.spyOn(inquirer, "prompt");
+		const consoleLogSpy = vi.spyOn(console, "log");
+		const consoleWarnSpy = vi.spyOn(console, "warn");
+
+		// First provide mismatched password, then matching password
+		promptMock
+			.mockResolvedValueOnce({ API_BASE_URL: "http://localhost:5000" })
+			.mockResolvedValueOnce({ API_HOST: "127.0.0.1" })
+			.mockResolvedValueOnce({ API_PORT: "5000" })
+			.mockResolvedValueOnce({ API_IS_APPLY_DRIZZLE_MIGRATIONS: "true" })
+			.mockResolvedValueOnce({ API_IS_GRAPHIQL: "true" })
+			.mockResolvedValueOnce({ API_IS_PINO_PRETTY: "false" })
+			.mockResolvedValueOnce({ API_JWT_EXPIRES_IN: "3600000" })
+			.mockResolvedValueOnce({ API_JWT_SECRET: "mocked-secret" })
+			.mockResolvedValueOnce({ API_LOG_LEVEL: "info" })
+			.mockResolvedValueOnce({ API_MINIO_ACCESS_KEY: "mocked-access-key" })
+			.mockResolvedValueOnce({ API_MINIO_END_POINT: "mocked-endpoint" })
+			.mockResolvedValueOnce({ API_MINIO_PORT: "9001" })
+			.mockResolvedValueOnce({ API_MINIO_SECRET_KEY: "wrong-password" })
+			.mockResolvedValueOnce({ API_MINIO_SECRET_KEY: "expected-password" })
+			.mockResolvedValueOnce({
+				API_MINIO_TEST_END_POINT: "mocked-test-endpoint",
+			})
+			.mockResolvedValueOnce({ API_MINIO_USE_SSL: "true" })
+			.mockResolvedValueOnce({ API_POSTGRES_DATABASE: "mocked-database" })
+			.mockResolvedValueOnce({ API_POSTGRES_HOST: "mocked-host" })
+			.mockResolvedValueOnce({ API_POSTGRES_PASSWORD: "my-postgres-password" })
+			.mockResolvedValueOnce({ API_POSTGRES_PORT: "5433" })
+			.mockResolvedValueOnce({ API_POSTGRES_SSL_MODE: "true" })
+			.mockResolvedValueOnce({ API_POSTGRES_TEST_HOST: "mocked-test-host" })
+			.mockResolvedValueOnce({ API_POSTGRES_USER: "mocked-user" });
+
+		let answers: SetupAnswers = {};
+		answers = await apiSetup(answers);
+
+		// Verify validation succeeded
+		expect(answers.API_MINIO_SECRET_KEY).toBe("expected-password");
+
+		// Verify warning was shown for mismatch
+		expect(consoleWarnSpy).toHaveBeenCalledWith(
+			"⚠️ API_MINIO_SECRET_KEY must match MINIO_ROOT_PASSWORD.",
+		);
+
+		// Verify success message on match
+		expect(consoleLogSpy).toHaveBeenCalledWith(
+			"✅ API_MINIO_SECRET_KEY matches MINIO_ROOT_PASSWORD",
+		);
+
+		// Verify informative message for POSTGRES_PASSWORD (not set)
+		expect(consoleLogSpy).toHaveBeenCalledWith(
+			"ℹ️  POSTGRES_PASSWORD will be set to match API_POSTGRES_PASSWORD",
+		);
+	});
+
+	it("should validate PostgreSQL password when POSTGRES_PASSWORD is set", async () => {
+		delete process.env.MINIO_ROOT_PASSWORD;
+		process.env.POSTGRES_PASSWORD = "expected-postgres-password";
+
+		const promptMock = vi.spyOn(inquirer, "prompt");
+		const consoleLogSpy = vi.spyOn(console, "log");
+		const consoleWarnSpy = vi.spyOn(console, "warn");
+
+		// First provide mismatched password, then matching password
+		promptMock
+			.mockResolvedValueOnce({ API_BASE_URL: "http://localhost:5000" })
+			.mockResolvedValueOnce({ API_HOST: "127.0.0.1" })
+			.mockResolvedValueOnce({ API_PORT: "5000" })
+			.mockResolvedValueOnce({ API_IS_APPLY_DRIZZLE_MIGRATIONS: "true" })
+			.mockResolvedValueOnce({ API_IS_GRAPHIQL: "true" })
+			.mockResolvedValueOnce({ API_IS_PINO_PRETTY: "false" })
+			.mockResolvedValueOnce({ API_JWT_EXPIRES_IN: "3600000" })
+			.mockResolvedValueOnce({ API_JWT_SECRET: "mocked-secret" })
+			.mockResolvedValueOnce({ API_LOG_LEVEL: "info" })
+			.mockResolvedValueOnce({ API_MINIO_ACCESS_KEY: "mocked-access-key" })
+			.mockResolvedValueOnce({ API_MINIO_END_POINT: "mocked-endpoint" })
+			.mockResolvedValueOnce({ API_MINIO_PORT: "9001" })
+			.mockResolvedValueOnce({ API_MINIO_SECRET_KEY: "my-secret-key" })
+			.mockResolvedValueOnce({
+				API_MINIO_TEST_END_POINT: "mocked-test-endpoint",
+			})
+			.mockResolvedValueOnce({ API_MINIO_USE_SSL: "true" })
+			.mockResolvedValueOnce({ API_POSTGRES_DATABASE: "mocked-database" })
+			.mockResolvedValueOnce({ API_POSTGRES_HOST: "mocked-host" })
+			.mockResolvedValueOnce({ API_POSTGRES_PASSWORD: "wrong-password" })
+			.mockResolvedValueOnce({
+				API_POSTGRES_PASSWORD: "expected-postgres-password",
+			})
+			.mockResolvedValueOnce({ API_POSTGRES_PORT: "5433" })
+			.mockResolvedValueOnce({ API_POSTGRES_SSL_MODE: "true" })
+			.mockResolvedValueOnce({ API_POSTGRES_TEST_HOST: "mocked-test-host" })
+			.mockResolvedValueOnce({ API_POSTGRES_USER: "mocked-user" });
+
+		let answers: SetupAnswers = {};
+		answers = await apiSetup(answers);
+
+		// Verify validation succeeded
+		expect(answers.API_POSTGRES_PASSWORD).toBe("expected-postgres-password");
+
+		// Verify warning was shown for mismatch
+		expect(consoleWarnSpy).toHaveBeenCalledWith(
+			"⚠️ API_POSTGRES_PASSWORD must match POSTGRES_PASSWORD.",
+		);
+
+		// Verify success message on match
+		expect(consoleLogSpy).toHaveBeenCalledWith(
+			"✅ API_POSTGRES_PASSWORD matches POSTGRES_PASSWORD",
+		);
+
+		// Verify informative message for MINIO_ROOT_PASSWORD (not set)
+		expect(consoleLogSpy).toHaveBeenCalledWith(
+			"ℹ️  MINIO_ROOT_PASSWORD will be set to match API_MINIO_SECRET_KEY",
+		);
+	});
+
+	it("should handle mismatched passwords correctly when both env vars are set", async () => {
+		process.env.MINIO_ROOT_PASSWORD = "minio-password";
+		process.env.POSTGRES_PASSWORD = "postgres-password";
+
+		const promptMock = vi.spyOn(inquirer, "prompt");
+		const consoleLogSpy = vi.spyOn(console, "log");
+		const consoleWarnSpy = vi.spyOn(console, "warn");
+
+		// Provide incorrect passwords first, then correct ones
+		promptMock
+			.mockResolvedValueOnce({ API_BASE_URL: "http://localhost:5000" })
+			.mockResolvedValueOnce({ API_HOST: "127.0.0.1" })
+			.mockResolvedValueOnce({ API_PORT: "5000" })
+			.mockResolvedValueOnce({ API_IS_APPLY_DRIZZLE_MIGRATIONS: "true" })
+			.mockResolvedValueOnce({ API_IS_GRAPHIQL: "true" })
+			.mockResolvedValueOnce({ API_IS_PINO_PRETTY: "false" })
+			.mockResolvedValueOnce({ API_JWT_EXPIRES_IN: "3600000" })
+			.mockResolvedValueOnce({ API_JWT_SECRET: "mocked-secret" })
+			.mockResolvedValueOnce({ API_LOG_LEVEL: "info" })
+			.mockResolvedValueOnce({ API_MINIO_ACCESS_KEY: "mocked-access-key" })
+			.mockResolvedValueOnce({ API_MINIO_END_POINT: "mocked-endpoint" })
+			.mockResolvedValueOnce({ API_MINIO_PORT: "9001" })
+			.mockResolvedValueOnce({ API_MINIO_SECRET_KEY: "wrong-minio" })
+			.mockResolvedValueOnce({ API_MINIO_SECRET_KEY: "minio-password" })
+			.mockResolvedValueOnce({
+				API_MINIO_TEST_END_POINT: "mocked-test-endpoint",
+			})
+			.mockResolvedValueOnce({ API_MINIO_USE_SSL: "true" })
+			.mockResolvedValueOnce({ API_POSTGRES_DATABASE: "mocked-database" })
+			.mockResolvedValueOnce({ API_POSTGRES_HOST: "mocked-host" })
+			.mockResolvedValueOnce({ API_POSTGRES_PASSWORD: "wrong-postgres" })
+			.mockResolvedValueOnce({ API_POSTGRES_PASSWORD: "postgres-password" })
+			.mockResolvedValueOnce({ API_POSTGRES_PORT: "5433" })
+			.mockResolvedValueOnce({ API_POSTGRES_SSL_MODE: "true" })
+			.mockResolvedValueOnce({ API_POSTGRES_TEST_HOST: "mocked-test-host" })
+			.mockResolvedValueOnce({ API_POSTGRES_USER: "mocked-user" });
+
+		let answers: SetupAnswers = {};
+		answers = await apiSetup(answers);
+
+		// Verify validation succeeded with correct passwords
+		expect(answers.API_MINIO_SECRET_KEY).toBe("minio-password");
+		expect(answers.API_POSTGRES_PASSWORD).toBe("postgres-password");
+
+		// Verify warnings were shown for mismatches
+		expect(consoleWarnSpy).toHaveBeenCalledWith(
+			"⚠️ API_MINIO_SECRET_KEY must match MINIO_ROOT_PASSWORD.",
+		);
+		expect(consoleWarnSpy).toHaveBeenCalledWith(
+			"⚠️ API_POSTGRES_PASSWORD must match POSTGRES_PASSWORD.",
+		);
+
+		// Verify success messages on match
+		expect(consoleLogSpy).toHaveBeenCalledWith(
+			"✅ API_MINIO_SECRET_KEY matches MINIO_ROOT_PASSWORD",
+		);
+		expect(consoleLogSpy).toHaveBeenCalledWith(
+			"✅ API_POSTGRES_PASSWORD matches POSTGRES_PASSWORD",
+		);
+
+		// Verify no informative messages (env vars are set)
+		expect(consoleLogSpy).not.toHaveBeenCalledWith(
+			"ℹ️  MINIO_ROOT_PASSWORD will be set to match API_MINIO_SECRET_KEY",
+		);
+		expect(consoleLogSpy).not.toHaveBeenCalledWith(
+			"ℹ️  POSTGRES_PASSWORD will be set to match API_POSTGRES_PASSWORD",
+		);
 	});
 });
 describe("validateURL", () => {
@@ -309,6 +583,14 @@ describe("generateJwtSecret", () => {
 });
 
 describe("Error handling without backup", () => {
+	afterEach(() => {
+		// Remove SIGINT listeners to prevent interference with other tests
+		process.removeAllListeners("SIGINT");
+		// Restore and clear all mocks
+		vi.restoreAllMocks();
+		vi.clearAllMocks();
+	});
+
 	it("should handle prompt errors when backup doesn't exist", async () => {
 		const processExitSpy = vi
 			.spyOn(process, "exit")
@@ -337,22 +619,56 @@ describe("Error handling without backup", () => {
 		const processExitSpy = vi
 			.spyOn(process, "exit")
 			.mockImplementation(() => undefined as never);
-		const fsExistsSyncSpy = vi.spyOn(fs, "existsSync").mockReturnValue(false);
-		const fsCopyFileSyncSpy = vi
-			.spyOn(fs, "copyFileSync")
-			.mockImplementation(() => undefined);
+		const consoleLogSpy = vi.spyOn(console, "log").mockImplementation(() => {});
 
-		const consoleLogSpy = vi.spyOn(console, "log");
+		// Mock file system to indicate no .env file exists (so no backup will be created)
+		vi.spyOn(fs, "existsSync").mockReturnValue(false);
 
+		// Mock prompts sequentially to match the order setup() calls them
+		// Order: CI -> useDefaultMinio -> useDefaultCloudbeaver (if CI=false) -> useDefaultPostgres -> useDefaultCaddy -> useDefaultApi -> API_ADMINISTRATOR_USER_EMAIL_ADDRESS
+		const promptMock = vi.spyOn(inquirer, "prompt");
+		promptMock
+			.mockResolvedValueOnce({ CI: "false" }) // From setCI()
+			.mockResolvedValueOnce({ useDefaultMinio: true }) // Line 913
+			.mockResolvedValueOnce({ useDefaultCloudbeaver: true }) // Line 922 (only if CI === "false")
+			.mockResolvedValueOnce({ useDefaultPostgres: true }) // Line 931
+			.mockResolvedValueOnce({ useDefaultCaddy: true }) // Line 939
+			.mockResolvedValueOnce({ useDefaultApi: true }) // Line 947
+			.mockResolvedValueOnce({
+				API_ADMINISTRATOR_USER_EMAIL_ADDRESS: "test@email.com",
+			}); // From administratorEmail()
+
+		// Start setup() which will register the SIGINT handler
+		// Don't await it - we'll interrupt it
+		// Attach catch handler immediately to prevent unhandled promise rejections
+		setup().catch(() => {
+			// Expected - setup will be interrupted by SIGINT
+		});
+
+		// Wait deterministically for SIGINT handler to be registered
+		await waitFor(() => process.listenerCount("SIGINT") > 0);
+
+		// Verify handler was registered
+		expect(process.listenerCount("SIGINT")).toBeGreaterThan(0);
+
+		// Emit SIGINT to trigger the handler
 		process.emit("SIGINT");
 
-		expect(consoleLogSpy).toHaveBeenCalledWith(
-			"\nProcess interrupted! Undoing changes...",
-		);
-		expect(fsExistsSyncSpy).toHaveBeenCalledWith(".backup");
-		expect(fsCopyFileSyncSpy).not.toHaveBeenCalled();
-		expect(processExitSpy).toHaveBeenCalledWith(1);
+		// Wait for async handler to complete by polling for process.exit call
+		// The handler calls process.exit, so we wait for that to be called
+		await waitFor(() => processExitSpy.mock.calls.length > 0);
 
-		vi.clearAllMocks();
+		// Verify process.exit was called
+		expect(processExitSpy.mock.calls.length).toBeGreaterThan(0);
+
+		// Check that the new SIGINT handler messages are present
+		expect(consoleLogSpy).toHaveBeenCalledWith(
+			"\n\n⚠️  Setup interrupted by user (CTRL+C)",
+		);
+		expect(consoleLogSpy).toHaveBeenCalledWith(
+			"📋 No backup was created yet, nothing to restore",
+		);
+		// When no backup exists, it should exit with 0 (success, nothing to restore)
+		expect(processExitSpy).toHaveBeenCalledWith(0);
 	});
 });

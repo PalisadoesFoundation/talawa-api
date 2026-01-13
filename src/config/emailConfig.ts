@@ -1,5 +1,5 @@
-import { type Static, Type } from "@sinclair/typebox";
 import { envSchema } from "env-schema";
+import { type Static, Type } from "typebox";
 import { envConfigSchema, envSchemaAjv } from "../envConfigSchema";
 
 const schema = Type.Pick(envConfigSchema, [
@@ -8,6 +8,7 @@ const schema = Type.Pick(envConfigSchema, [
 	"AWS_SES_FROM_NAME",
 	"AWS_ACCESS_KEY_ID",
 	"AWS_SECRET_ACCESS_KEY",
+	"API_EMAIL_PROVIDER",
 ]);
 
 const envConfig = envSchema<Static<typeof schema>>({
@@ -25,4 +26,5 @@ export const emailConfig = {
 	fromName: envConfig.AWS_SES_FROM_NAME || "Talawa",
 	accessKeyId: envConfig.AWS_ACCESS_KEY_ID,
 	secretAccessKey: envConfig.AWS_SECRET_ACCESS_KEY,
+	provider: envConfig.API_EMAIL_PROVIDER,
 };
