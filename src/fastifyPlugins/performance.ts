@@ -40,7 +40,7 @@ declare module "fastify" {
  * - Provides /metrics/perf endpoint for recent performance snapshots
  * - Exposes metrics aggregation interface for background workers
  */
-export default fp(async function perfPlugin(app: FastifyInstance) {
+const perfPlugin = async (app: FastifyInstance) => {
 	// Get configurable snapshot retention count from validated environment config
 	// Falls back to 1000 if not set (matching schema default)
 	const retentionCount = app.envConfig.METRICS_SNAPSHOT_RETENTION_COUNT ?? 1000;
@@ -77,11 +77,14 @@ export default fp(async function perfPlugin(app: FastifyInstance) {
 	 * Retrieves recent performance snapshots for metrics aggregation.
 	 * Returns deep-cloned snapshots to prevent external modification of nested structures.
 	 *
-	 * @param limit - Maximum number of snapshots to return (default: all available)
+	 * @param limit - Maximum number of snapshots to return (default: all available). Returns empty array if limit is 0 or negative.
 	 * @returns Array of deep-cloned performance snapshots
 	 */
 	app.decorate("getPerformanceSnapshots", (limit?: number): PerfSnapshot[] => {
-		if (limit !== undefined && limit > 0) {
+		if (limit !== undefined) {
+			if (limit <= 0) {
+				return [];
+			}
 			return recent.slice(0, limit).map(deepCopySnapshot);
 		}
 		return recent.map(deepCopySnapshot);
@@ -138,4 +141,8 @@ export default fp(async function perfPlugin(app: FastifyInstance) {
 	app.get("/metrics/perf", async () => ({
 		recent: recent.slice(0, 50),
 	}));
+};
+
+export default fp(perfPlugin, {
+	name: "performance",
 });

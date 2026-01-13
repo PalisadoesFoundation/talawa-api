@@ -55,6 +55,7 @@ export type {
 // Metrics aggregation worker exports
 export {
 	aggregateMetrics,
+	createEmptyAggregatedMetrics,
 	runMetricsAggregationWorker,
 } from "./metrics/metricsAggregationWorker";
 export type {

@@ -6,7 +6,7 @@
 
 > **aggregateMetrics**(`snapshots`, `options`): [`MetricsAggregationResult`](../../types/interfaces/MetricsAggregationResult.md)
 
-Defined in: [src/workers/metrics/metricsAggregationWorker.ts:210](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/workers/metrics/metricsAggregationWorker.ts#L210)
+Defined in: [src/workers/metrics/metricsAggregationWorker.ts:246](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/workers/metrics/metricsAggregationWorker.ts#L246)
 
 Aggregates performance metrics from a collection of snapshots.
 

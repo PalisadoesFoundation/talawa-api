@@ -6,7 +6,7 @@
 
 > **default**: (`app`) => `Promise`\<`void`\>
 
-Defined in: [src/fastifyPlugins/performance.ts:43](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/fastifyPlugins/performance.ts#L43)
+Defined in: [src/fastifyPlugins/performance.ts:146](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/fastifyPlugins/performance.ts#L146)
 
 Fastify plugin that adds performance tracking to all requests.
 - Attaches a performance tracker to each request

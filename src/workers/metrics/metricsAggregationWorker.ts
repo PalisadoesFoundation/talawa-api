@@ -49,6 +49,47 @@ function calculatePercentile(
 }
 
 /**
+ * Creates an empty/default AggregatedMetrics object with all fields set to zero or empty values.
+ * Useful for cases where no snapshots are available or as a starting point for aggregation.
+ *
+ * @param options - Options for creating the empty metrics. Contains windowMinutes (default: 5), timestamp (default: current time), and snapshotCount (default: 0).
+ * @returns An empty AggregatedMetrics object with all fields initialized to default values
+ */
+export function createEmptyAggregatedMetrics(
+	options: {
+		windowMinutes?: number;
+		timestamp?: number;
+		snapshotCount?: number;
+	} = {},
+): AggregatedMetrics {
+	const {
+		windowMinutes = 5,
+		timestamp = Date.now(),
+		snapshotCount = 0,
+	} = options;
+
+	return {
+		timestamp,
+		windowMinutes,
+		snapshotCount,
+		operations: {},
+		cache: {
+			totalHits: 0,
+			totalMisses: 0,
+			totalOps: 0,
+			hitRate: 0,
+		},
+		slowOperationCount: 0,
+		avgTotalMs: 0,
+		minTotalMs: 0,
+		maxTotalMs: 0,
+		medianTotalMs: 0,
+		p95TotalMs: 0,
+		p99TotalMs: 0,
+	};
+}
+
+/**
  * Aggregates operation metrics from multiple snapshots.
  * Since we only have aggregated stats per snapshot (not individual durations),
  * we use max values from snapshots and slow operations for percentile calculations.
@@ -126,14 +167,9 @@ function aggregateOperationMetrics(
 	// Calculate percentiles from the combined duration array
 	// If we have slow operations, they provide more accurate percentile data
 	// Fallback to avgMs only if we have no other data points
+	// Note: filteredMaxValues check is unnecessary since allDurations includes filteredMaxValues
 	const percentileSource =
-		allDurations.length > 0
-			? allDurations
-			: filteredMaxValues.length > 0
-				? filteredMaxValues
-				: avgMs > 0
-					? [avgMs]
-					: [];
+		allDurations.length > 0 ? allDurations : avgMs > 0 ? [avgMs] : [];
 
 	// Only calculate percentiles if we have data points
 	const hasPercentileData = percentileSource.length > 0;
@@ -315,69 +351,26 @@ export async function runMetricsAggregationWorker(
 	options: MetricsAggregationOptions = {},
 ): Promise<MetricsAggregationResult> {
 	const startTime = Date.now();
-	logger.info("Starting metrics aggregation worker");
 
-	try {
-		// Get recent snapshots
-		const snapshots = getSnapshots();
+	// Get recent snapshots
+	const snapshots = getSnapshots();
 
-		if (snapshots.length === 0) {
-			logger.info("No snapshots available for aggregation");
-			return {
-				metrics: {
-					timestamp: Date.now(),
-					windowMinutes: options.windowMinutes ?? 5,
-					snapshotCount: 0,
-					operations: {},
-					cache: {
-						totalHits: 0,
-						totalMisses: 0,
-						totalOps: 0,
-						hitRate: 0,
-					},
-					slowOperationCount: 0,
-					avgTotalMs: 0,
-					minTotalMs: 0,
-					maxTotalMs: 0,
-					medianTotalMs: 0,
-					p95TotalMs: 0,
-					p99TotalMs: 0,
-				},
-				snapshotsProcessed: 0,
-				aggregationDurationMs: Date.now() - startTime,
-			};
-		}
-
-		// Aggregate metrics
-		const result = aggregateMetrics(snapshots, options);
-
-		const duration = Date.now() - startTime;
-		logger.info(
-			{
-				duration: `${duration}ms`,
-				snapshotsProcessed: result.snapshotsProcessed,
-				aggregationDuration: `${result.aggregationDurationMs}ms`,
-				operationsCount: Object.keys(result.metrics.operations).length,
-				cacheHitRate: result.metrics.cache.hitRate,
-				slowOperations: result.metrics.slowOperationCount,
-				avgTotalMs: result.metrics.avgTotalMs,
-				p95TotalMs: result.metrics.p95TotalMs,
-				p99TotalMs: result.metrics.p99TotalMs,
-			},
-			"Metrics aggregation completed successfully",
-		);
-
-		return result;
-	} catch (error) {
-		const duration = Date.now() - startTime;
-		logger.error(
-			{
-				duration: `${duration}ms`,
-				error: error instanceof Error ? error.message : "Unknown error",
-				stack: error instanceof Error ? error.stack : undefined,
-			},
-			"Metrics aggregation worker failed",
-		);
-		throw error;
+	if (snapshots.length === 0) {
+		logger.info("No snapshots available for aggregation");
+		const timestamp = Date.now();
+		return {
+			metrics: createEmptyAggregatedMetrics({
+				windowMinutes: options.windowMinutes,
+				timestamp,
+				snapshotCount: 0,
+			}),
+			snapshotsProcessed: 0,
+			aggregationDurationMs: timestamp - startTime,
+		};
 	}
+
+	// Aggregate metrics
+	const result = aggregateMetrics(snapshots, options);
+
+	return result;
 }

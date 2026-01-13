@@ -20,6 +20,28 @@ let materializationConfig: WorkerConfig = createDefaultWorkerConfig();
 let fastifyInstance: FastifyInstance | undefined;
 
 /**
+ * Computes the metrics aggregation schedule string.
+ * Returns the configured cron schedule if metrics are enabled and Fastify instance is available,
+ * otherwise returns "disabled".
+ *
+ * @param fastify - Optional Fastify instance to check for metrics configuration. If not provided, uses the module-level fastifyInstance.
+ * @returns The cron schedule string or "disabled"
+ */
+function getMetricsSchedule(fastify?: FastifyInstance): string {
+	const instance = fastify ?? fastifyInstance;
+	const metricsEnabled =
+		instance?.envConfig.METRICS_AGGREGATION_ENABLED ?? true;
+
+	if (metricsEnabled && instance) {
+		return (
+			instance.envConfig.METRICS_AGGREGATION_CRON_SCHEDULE ?? "*/5 * * * *"
+		);
+	}
+
+	return "disabled";
+}
+
+/**
  * Initializes and starts all background workers, scheduling them to run at their configured intervals.
  *
  * @param drizzleClient - Database client for database operations
@@ -65,9 +87,8 @@ export async function startBackgroundWorkers(
 		// Schedule metrics aggregation worker if enabled
 		const metricsEnabled =
 			fastify?.envConfig.METRICS_AGGREGATION_ENABLED ?? true;
-		if (metricsEnabled && fastify) {
-			const metricsSchedule =
-				fastify.envConfig.METRICS_AGGREGATION_CRON_SCHEDULE ?? "*/5 * * * *";
+		const metricsSchedule = getMetricsSchedule(fastify);
+		if (metricsEnabled && fastify && metricsSchedule !== "disabled") {
 			metricsTask = cron.schedule(
 				metricsSchedule,
 				() => runMetricsAggregationWorkerSafely(logger),
@@ -93,11 +114,7 @@ export async function startBackgroundWorkers(
 				materializationSchedule:
 					process.env.EVENT_GENERATION_CRON_SCHEDULE || "0 * * * *",
 				cleanupSchedule: process.env.CLEANUP_CRON_SCHEDULE || "0 2 * * *",
-				metricsSchedule:
-					metricsEnabled && fastify
-						? (fastify.envConfig.METRICS_AGGREGATION_CRON_SCHEDULE ??
-							"*/5 * * * *")
-						: "disabled",
+				metricsSchedule: getMetricsSchedule(fastify),
 			},
 			"Background worker service started successfully",
 		);
@@ -347,18 +364,12 @@ export function getBackgroundWorkerStatus(): {
 	nextMaterializationRun?: Date;
 	nextCleanupRun?: Date;
 } {
-	const metricsEnabled =
-		fastifyInstance?.envConfig.METRICS_AGGREGATION_ENABLED ?? true;
 	return {
 		isRunning,
 		materializationSchedule:
 			process.env.EVENT_GENERATION_CRON_SCHEDULE || "0 * * * *",
 		cleanupSchedule: process.env.CLEANUP_CRON_SCHEDULE || "0 2 * * *",
-		metricsSchedule:
-			metricsEnabled && fastifyInstance
-				? (fastifyInstance.envConfig.METRICS_AGGREGATION_CRON_SCHEDULE ??
-					"*/5 * * * *")
-				: "disabled",
+		metricsSchedule: getMetricsSchedule(),
 	};
 }
 
