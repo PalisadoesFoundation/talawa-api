@@ -1,5 +1,6 @@
 import type { DrizzleClient } from "~/src/fastifyPlugins/drizzleClient";
 import type { CacheService } from "~/src/services/caching";
+import type { PerformanceTracker } from "~/src/utilities/metrics/performanceTracker";
 import { type ActionItemRow, createActionItemLoader } from "./actionItemLoader";
 import { createEventLoader, type EventRow } from "./eventLoader";
 import {
@@ -35,14 +36,16 @@ export type Dataloaders = {
  * Creates all DataLoaders for a request context.
  * Each loader is request-scoped to ensure proper caching and isolation.
  * When a cache service is provided, DataLoaders use cache-first lookup strategy.
+ * When a performance tracker is provided, DataLoaders track database operation durations.
  *
  * @param db - The Drizzle client instance for database operations.
  * @param cache - Optional cache service for cache-first lookups. Pass null to disable caching.
+ * @param perf - Optional performance tracker for monitoring database operation durations.
  * @returns An object containing all DataLoaders.
  *
  * @example
  * ```typescript
- * const dataloaders = createDataloaders(drizzleClient, cacheService);
+ * const dataloaders = createDataloaders(drizzleClient, cacheService, perfTracker);
  * const user = await dataloaders.user.load(userId);
  * const organization = await dataloaders.organization.load(orgId);
  * ```
@@ -50,12 +53,13 @@ export type Dataloaders = {
 export function createDataloaders(
 	db: DrizzleClient,
 	cache: CacheService | null,
+	perf?: PerformanceTracker,
 ): Dataloaders {
 	return {
-		user: createUserLoader(db, cache),
-		organization: createOrganizationLoader(db, cache),
-		event: createEventLoader(db, cache),
-		actionItem: createActionItemLoader(db, cache),
+		user: createUserLoader(db, cache, perf),
+		organization: createOrganizationLoader(db, cache, perf),
+		event: createEventLoader(db, cache, perf),
+		actionItem: createActionItemLoader(db, cache, perf),
 	};
 }
 
