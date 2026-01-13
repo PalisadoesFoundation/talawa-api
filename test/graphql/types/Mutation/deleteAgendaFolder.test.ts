@@ -38,7 +38,7 @@ const Mutation_deleteAgendaFolder = gql(`
     deleteAgendaFolder(input: $input) {
       id
       name
-      isAgendaItemFolder
+	  description
     }
   }
 `);

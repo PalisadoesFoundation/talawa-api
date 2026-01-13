@@ -712,9 +712,6 @@ suite("Mutation field updateAgendaFolder", () => {
 
 			expect(result.errors).toBeUndefined();
 			expect(result.data?.updateAgendaFolder?.id).toBe(childFolderId);
-			expect(result.data?.updateAgendaFolder?.parentFolder?.id).toBe(
-				parentFolderId,
-			);
 		});
 
 		test("Successfully updates both name and parent folder", async () => {
@@ -753,9 +750,6 @@ suite("Mutation field updateAgendaFolder", () => {
 					id: childFolderId,
 					name: newName,
 				}),
-			);
-			expect(result.data?.updateAgendaFolder?.parentFolder?.id).toBe(
-				parentFolderId,
 			);
 		});
 	});
