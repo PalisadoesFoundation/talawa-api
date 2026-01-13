@@ -404,23 +404,17 @@ fi
 
 success "pnpm installed: v$(pnpm --version)"
 
+
 ##############################################################################
 # Step 8: Install project dependencies
 ##############################################################################
 : $((CURRENT_STEP++))
 step $CURRENT_STEP $TOTAL_STEPS "Installing project dependencies..."
 
-# Run pnpm install non-interactively (only set CI=true if in CI to allow local interaction if needed)
-if [ "${CI:-}" = "true" ] || [ -n "${GITHUB_ACTIONS:-}" ]; then
-    if ! retry_command "$MAX_RETRY_ATTEMPTS" pnpm install; then
-        error "Failed to install dependencies after $MAX_RETRY_ATTEMPTS attempts"
-        exit 1
-    fi
-else
-    if ! retry_command "$MAX_RETRY_ATTEMPTS" pnpm install; then
-        error "Failed to install dependencies after $MAX_RETRY_ATTEMPTS attempts"
-        exit 1
-    fi
+# Run pnpm install with retry logic
+if ! retry_command "$MAX_RETRY_ATTEMPTS" pnpm install; then
+    error "Failed to install dependencies after $MAX_RETRY_ATTEMPTS attempts"
+    exit 1
 fi
 
 success "Project dependencies installed"

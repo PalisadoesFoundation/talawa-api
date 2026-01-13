@@ -12,24 +12,27 @@
 # REQUIREMENTS:
 #   The sourcing script MUST define these functions before sourcing this file:
 #   - info()  : For informational messages (blue output)
+#   - warn()  : For warning messages (yellow output)
 #   - error() : For error messages (red output)
 #
 #   Example definitions:
 #     info() { echo -e "${BLUE}ℹ${NC} $1"; }
+#     warn() { echo -e "${YELLOW}⚠${NC} $1"; }
 #     error() { echo -e "${RED}✗${NC} $1"; }
 ##############################################################################
 
 ##############################################################################
 # Guard: Verify required functions are defined
 # 
-# This library depends on info() and error() functions being defined by the
-# calling script. Fail early with a clear message if they are missing.
+# This library depends on info(), warn(), and error() functions being defined
+# by the calling script. Fail early with a clear message if they are missing.
 ##############################################################################
-if ! declare -F info >/dev/null 2>&1 || ! declare -F error >/dev/null 2>&1; then
-    echo "ERROR: validation.sh requires info() and error() functions to be defined." >&2
+if ! declare -F info >/dev/null 2>&1 || ! declare -F error >/dev/null 2>&1 || ! declare -F warn >/dev/null 2>&1; then
+    echo "ERROR: validation.sh requires info(), warn(), and error() functions to be defined." >&2
     echo "" >&2
     echo "Please ensure your script defines these functions before sourcing validation.sh:" >&2
     echo "  info() { echo -e \"\${BLUE}ℹ\${NC} \$1\"; }" >&2
+    echo "  warn() { echo -e \"\${YELLOW}⚠\${NC} \$1\"; }" >&2
     echo "  error() { echo -e \"\${RED}✗\${NC} \$1\"; }" >&2
     echo "" >&2
     exit 1
@@ -242,7 +245,7 @@ handle_version_validation_error() {
     echo ""
     info "Troubleshooting steps:"
     echo "  1. Check the field in package.json:"
-    echo "     jq '.$field_name' package.json"
+    echo "     jq '${field_name}' package.json"
     echo ""
     echo "  2. Restore package.json if corrupted:"
     echo "     git checkout package.json"
