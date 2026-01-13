@@ -121,7 +121,7 @@ async function createOrgEventFolderAndAgendaItem(
 					eventId,
 					description: "desc",
 					sequence: 1,
-					organizationId: "org-id"
+					organizationId: "org-id",
 				},
 			},
 		},

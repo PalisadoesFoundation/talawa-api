@@ -175,7 +175,7 @@ async function createTestAgendaItem(): Promise<TestAgendaItem> {
 					eventId: eventId,
 					description: "desc",
 					sequence: 1,
-					organizationId: "org-id"
+					organizationId: "org-id",
 				},
 			},
 		},

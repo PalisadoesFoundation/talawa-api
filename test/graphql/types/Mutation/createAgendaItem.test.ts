@@ -182,7 +182,7 @@ async function createTestEnvironment(
 					eventId,
 					description: "desc",
 					sequence: 1,
-					organizationId: "org-id"
+					organizationId: "org-id",
 				},
 			},
 		},
@@ -220,7 +220,7 @@ async function createNonAgendaItemFolder(
 				eventId,
 				description: "desc",
 				sequence: 1,
-				organizationId: "org-id"
+				organizationId: "org-id",
 			},
 		},
 	});
@@ -813,7 +813,7 @@ suite("Mutation field createAgendaItem", () => {
 							eventId,
 							description: "desc",
 							sequence: 1,
-							organizationId: "org-id"
+							organizationId: "org-id",
 						},
 					},
 				},
