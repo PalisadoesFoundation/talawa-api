@@ -257,7 +257,7 @@ describe("Event agendaFolders Resolver", () => {
 	});
 
 	describe("errors", () => {
-		it("returns empty connection when cursor belongs to another event", async () => {
+		it("throws error when cursor belongs to another event", async () => {
 			// simulate a valid cursor for a folder that does not belong to the event
 			const otherFolder = { ...mockAgendaFolders[0], eventId: "other-event" };
 			const cursor = createCursor({
@@ -268,16 +268,24 @@ describe("Event agendaFolders Resolver", () => {
 			mocks.drizzleClient.query.agendaFoldersTable.findMany.mockResolvedValue(
 				[],
 			);
-			const result = (await agendaFoldersResolver(
-				mockEvent,
-				{ first: 1, cursor },
-				ctx,
-				mockResolveInfo,
-			)) as Connection;
 
-			expect(result.edges).toHaveLength(0);
-			expect(result.pageInfo.hasNextPage).toBe(false);
-			expect(result.pageInfo.hasPreviousPage).toBe(false);
+			await expect(
+				agendaFoldersResolver(
+					mockEvent,
+					{ first: 1, after: cursor },
+					ctx,
+					mockResolveInfo,
+				),
+			).rejects.toMatchObject({
+				extensions: expect.objectContaining({
+					code: "arguments_associated_resources_not_found",
+					issues: expect.arrayContaining([
+						expect.objectContaining({
+							argumentPath: ["after"],
+						}),
+					]),
+				}),
+			});
 		});
 
 		it("throws TalawaGraphQLError when cursor has invalid format (forward)", async () => {
