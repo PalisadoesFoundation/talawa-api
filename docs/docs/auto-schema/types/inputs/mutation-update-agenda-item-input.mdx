@@ -73,6 +73,7 @@ export const Details = ({
 
 ```graphql
 input MutationUpdateAgendaItemInput {
+  attachments: [FileMetadataInput!]
   description: String
   duration: String
   folderId: ID
@@ -83,6 +84,10 @@ input MutationUpdateAgendaItemInput {
 ```
 
 ### Fields
+
+#### [<code style={{ fontWeight: 'normal' }}>MutationUpdateAgendaItemInput.<b>attachments</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>[FileMetadataInput!]</b></code>](/auto-schema/types/inputs/file-metadata-input.mdx) <Badge class="badge badge--secondary " text="list"/> <Badge class="badge badge--secondary " text="input"/>
+
+File metadata for attachments uploaded via MinIO presigned URLs.
 
 #### [<code style={{ fontWeight: 'normal' }}>MutationUpdateAgendaItemInput.<b>description</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>String</b></code>](/auto-schema/types/scalars/string.mdx) <Badge class="badge badge--secondary " text="scalar"/>
 

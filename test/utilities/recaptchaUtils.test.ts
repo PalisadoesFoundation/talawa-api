@@ -52,10 +52,7 @@ describe("validateRecaptchaIfRequired", () => {
 	});
 
 	test("throws error when HTTP request fails", async () => {
-		mockFetch.mockResolvedValueOnce({
-			ok: false,
-			status: 500,
-		} as Response);
+		mockFetch.mockRejectedValueOnce(new Error("Network error"));
 		const result = validateRecaptchaIfRequired("valid-token", "secret-key", [
 			"input",
 			"recaptchaToken",
