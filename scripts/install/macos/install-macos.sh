@@ -205,6 +205,14 @@ NODE_VERSION=$(jq -r '.engines.node // "lts"' package.json)
 
 # Validate Node.js version string for security
 if ! validate_version_string "$NODE_VERSION" "Node.js version (engines.node)"; then
+    error "❌ Security validation failed for Node.js version from package.json"
+    echo ""
+    info "Troubleshooting steps:"
+    echo "  1. Check package.json engines.node field: jq '.engines.node' package.json"
+    echo "  2. Restore package.json: git checkout package.json"
+    echo "  3. Re-run this script"
+    echo ""
+    info "Report issues: https://github.com/PalisadoesFoundation/talawa-api/issues"
     exit 1
 fi
 
@@ -220,6 +228,41 @@ else
     CLEAN_NODE_VERSION="$NODE_VERSION"
 fi
 
+# Validate CLEAN_NODE_VERSION is not empty
+if [ -z "$CLEAN_NODE_VERSION" ]; then
+    error "Could not determine a valid Node.js version from package.json"
+    echo ""
+    info "Found value: '$NODE_VERSION' but could not extract version number"
+    echo ""
+    info "Expected formats:"
+    echo "  • Exact version:  \"18.0.0\""
+    echo "  • Range:          \">=18.0.0\""
+    echo "  • Caret:          \"^18.0.0\""
+    echo "  • Tilde:          \"~18.0.0\""
+    echo ""
+    info "Check package.json engines.node field:"
+    echo "  jq '.engines.node' package.json"
+    echo ""
+    info "Falling back to LTS version"
+    CLEAN_NODE_VERSION="lts"
+fi
+
+# SECURITY: Validate cleaned Node.js version before use in commands
+# This is the final check before the version is passed to fnm
+if ! validate_version_string "$CLEAN_NODE_VERSION" "cleaned Node.js version"; then
+    error "❌ Security validation failed for cleaned Node.js version: '$CLEAN_NODE_VERSION'"
+    echo ""
+    info "The cleaned version string contains invalid characters."
+    info "This should not happen with valid package.json values."
+    echo ""
+    info "Troubleshooting steps:"
+    echo "  1. Restore package.json: git checkout package.json"
+    echo "  2. Re-run this script"
+    echo ""
+    info "Report issues: https://github.com/PalisadoesFoundation/talawa-api/issues"
+    exit 1
+fi
+
 # Extract pnpm version
 PNPM_FULL=$(jq -r '.packageManager // ""' package.json)
 if [[ "$PNPM_FULL" == pnpm@* ]]; then
@@ -231,6 +274,19 @@ fi
 
 # Validate pnpm version string for security
 if ! validate_version_string "$PNPM_VERSION" "pnpm version (packageManager)"; then
+    error "❌ Security validation failed for pnpm version"
+    echo ""
+    info "The pnpm version in package.json packageManager field contains invalid characters."
+    echo ""
+    info "Current value: '$PNPM_FULL'"
+    info "Extracted version: '$PNPM_VERSION'"
+    echo ""
+    info "Troubleshooting steps:"
+    echo "  1. Check package.json packageManager field: jq '.packageManager' package.json"
+    echo "  2. Restore package.json: git checkout package.json"
+    echo "  3. Re-run this script"
+    echo ""
+    info "Report issues: https://github.com/PalisadoesFoundation/talawa-api/issues"
     exit 1
 fi
 
