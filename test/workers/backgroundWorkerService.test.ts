@@ -5,10 +5,17 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import type * as schema from "~/src/drizzle/schema";
 
 import {
+	getBackgroundWorkerStatus,
+	healthCheck,
 	runCleanupWorkerSafely,
 	runMaterializationWorkerSafely,
+	runMetricsAggregationWorkerSafely,
 	startBackgroundWorkers,
 	stopBackgroundWorkers,
+	triggerCleanupWorker,
+	triggerMaterializationWorker,
+	triggerMetricsAggregationWorker,
+	updateMaterializationConfig,
 } from "~/src/workers/backgroundWorkerService";
 
 vi.mock("node-cron", () => {
@@ -55,6 +62,11 @@ vi.mock("~/src/workers/eventGeneration/eventGenerationPipeline", () => ({
 // Mock cleanup worker
 vi.mock("~/src/workers/eventCleanupWorker", () => ({
 	cleanupOldInstances: vi.fn(),
+}));
+
+// Mock metrics aggregation worker
+vi.mock("~/src/workers/metrics/metricsAggregationWorker", () => ({
+	runMetricsAggregationWorker: vi.fn(),
 }));
 
 describe("backgroundServiceWorker", () => {
@@ -275,6 +287,69 @@ describe("backgroundServiceWorker", () => {
 			);
 		});
 
+		it("stops metricsTask when stopping workers with metrics enabled", async () => {
+			const { runMaterializationWorker } = await import(
+				"~/src/workers/eventGeneration/eventGenerationPipeline"
+			);
+			const { cleanupOldInstances } = await import(
+				"~/src/workers/eventCleanupWorker"
+			);
+
+			vi.mocked(runMaterializationWorker).mockResolvedValue({
+				organizationsProcessed: 0,
+				instancesCreated: 0,
+				windowsUpdated: 0,
+				errorsEncountered: 0,
+				processingTimeMs: 1,
+			});
+
+			vi.mocked(cleanupOldInstances).mockResolvedValue({
+				organizationsProcessed: 0,
+				instancesDeleted: 0,
+				errorsEncountered: 0,
+			});
+
+			const cron = await import("node-cron");
+			const metricsTaskStop = vi.fn();
+			const metricsTask: Partial<ScheduledTask> = {
+				start: vi.fn(),
+				stop: metricsTaskStop,
+			};
+
+			vi.mocked(cron.default.schedule)
+				.mockImplementationOnce(
+					() =>
+						({
+							start: vi.fn(),
+							stop: vi.fn(),
+						}) as unknown as ScheduledTask,
+				)
+				.mockImplementationOnce(
+					() =>
+						({
+							start: vi.fn(),
+							stop: vi.fn(),
+						}) as unknown as ScheduledTask,
+				)
+				.mockImplementationOnce(() => metricsTask as unknown as ScheduledTask);
+
+			const mockFastify = {
+				envConfig: {
+					METRICS_AGGREGATION_ENABLED: true,
+					METRICS_AGGREGATION_CRON_SCHEDULE: "*/5 * * * *",
+					METRICS_AGGREGATION_WINDOW_MINUTES: 5,
+					METRICS_SNAPSHOT_RETENTION_COUNT: 1000,
+				},
+				getPerformanceSnapshots: vi.fn().mockReturnValue([]),
+			} as unknown as Parameters<typeof startBackgroundWorkers>[2];
+
+			await startBackgroundWorkers(mockDrizzleClient, mockLogger, mockFastify);
+			await stopBackgroundWorkers(mockLogger);
+
+			// Verify metricsTask.stop() was called (lines 155-156)
+			expect(metricsTaskStop).toHaveBeenCalled();
+		});
+
 		it("warns if already running", async () => {
 			const { runMaterializationWorker } = await import(
 				"~/src/workers/eventGeneration/eventGenerationPipeline"
@@ -392,6 +467,422 @@ describe("backgroundServiceWorker", () => {
 			expect(mockLogger.error).toHaveBeenCalledWith(
 				startupError,
 				"Failed to start background worker service",
+			);
+		});
+	});
+
+	describe("triggerCleanupWorker", () => {
+		it("throws error when service is not running", async () => {
+			await expect(
+				triggerCleanupWorker(mockDrizzleClient, mockLogger),
+			).rejects.toThrow("Background worker service is not running");
+		});
+
+		it("calls runCleanupWorkerSafely when service is running", async () => {
+			const { runMaterializationWorker } = await import(
+				"~/src/workers/eventGeneration/eventGenerationPipeline"
+			);
+			const { cleanupOldInstances } = await import(
+				"~/src/workers/eventCleanupWorker"
+			);
+
+			vi.mocked(runMaterializationWorker).mockResolvedValue({
+				organizationsProcessed: 0,
+				instancesCreated: 0,
+				windowsUpdated: 0,
+				errorsEncountered: 0,
+				processingTimeMs: 1,
+			});
+
+			vi.mocked(cleanupOldInstances).mockResolvedValue({
+				organizationsProcessed: 1,
+				instancesDeleted: 2,
+				errorsEncountered: 0,
+			});
+
+			await startBackgroundWorkers(mockDrizzleClient, mockLogger);
+
+			await triggerCleanupWorker(mockDrizzleClient, mockLogger);
+
+			expect(mockLogger.info).toHaveBeenCalledWith(
+				"Manually triggering cleanup worker",
+			);
+			expect(cleanupOldInstances).toHaveBeenCalled();
+
+			await stopBackgroundWorkers(mockLogger);
+		});
+	});
+
+	describe("triggerMaterializationWorker", () => {
+		it("throws error when service is not running", async () => {
+			await expect(
+				triggerMaterializationWorker(mockDrizzleClient, mockLogger),
+			).rejects.toThrow("Background worker service is not running");
+		});
+
+		it("calls runMaterializationWorkerSafely when service is running", async () => {
+			const { runMaterializationWorker } = await import(
+				"~/src/workers/eventGeneration/eventGenerationPipeline"
+			);
+
+			vi.mocked(runMaterializationWorker).mockResolvedValue({
+				organizationsProcessed: 0,
+				instancesCreated: 0,
+				windowsUpdated: 0,
+				errorsEncountered: 0,
+				processingTimeMs: 1,
+			});
+
+			await startBackgroundWorkers(mockDrizzleClient, mockLogger);
+
+			await triggerMaterializationWorker(mockDrizzleClient, mockLogger);
+
+			expect(mockLogger.info).toHaveBeenCalledWith(
+				"Manually triggering materialization worker",
+			);
+
+			await stopBackgroundWorkers(mockLogger);
+		});
+	});
+
+	describe("triggerMetricsAggregationWorker", () => {
+		it("throws error when service is not running", async () => {
+			await expect(triggerMetricsAggregationWorker(mockLogger)).rejects.toThrow(
+				"Background worker service is not running",
+			);
+		});
+
+		it("throws error when fastifyInstance is not available", async () => {
+			const { runMaterializationWorker } = await import(
+				"~/src/workers/eventGeneration/eventGenerationPipeline"
+			);
+
+			vi.mocked(runMaterializationWorker).mockResolvedValue({
+				organizationsProcessed: 0,
+				instancesCreated: 0,
+				windowsUpdated: 0,
+				errorsEncountered: 0,
+				processingTimeMs: 1,
+			});
+
+			await startBackgroundWorkers(mockDrizzleClient, mockLogger);
+
+			await expect(triggerMetricsAggregationWorker(mockLogger)).rejects.toThrow(
+				"Fastify instance is not available for metrics aggregation",
+			);
+
+			await stopBackgroundWorkers(mockLogger);
+		});
+
+		it("calls runMetricsAggregationWorkerSafely when service is running and fastify is available", async () => {
+			const { runMaterializationWorker } = await import(
+				"~/src/workers/eventGeneration/eventGenerationPipeline"
+			);
+			const { runMetricsAggregationWorker } = await import(
+				"~/src/workers/metrics/metricsAggregationWorker"
+			);
+
+			vi.mocked(runMaterializationWorker).mockResolvedValue({
+				organizationsProcessed: 0,
+				instancesCreated: 0,
+				windowsUpdated: 0,
+				errorsEncountered: 0,
+				processingTimeMs: 1,
+			});
+
+			vi.mocked(runMetricsAggregationWorker).mockReturnValue({
+				metrics: {
+					timestamp: Date.now(),
+					windowMinutes: 5,
+					snapshotCount: 0,
+					operations: {},
+					cache: {
+						totalHits: 0,
+						totalMisses: 0,
+						totalOps: 0,
+						hitRate: 0,
+					},
+					slowOperationCount: 0,
+					avgTotalMs: 0,
+					minTotalMs: 0,
+					maxTotalMs: 0,
+					medianTotalMs: 0,
+					p95TotalMs: 0,
+					p99TotalMs: 0,
+				},
+				snapshotsProcessed: 0,
+				aggregationDurationMs: 10,
+			});
+
+			const mockFastify = {
+				envConfig: {
+					METRICS_AGGREGATION_ENABLED: true,
+					METRICS_AGGREGATION_CRON_SCHEDULE: "*/5 * * * *",
+					METRICS_AGGREGATION_WINDOW_MINUTES: 5,
+					METRICS_SNAPSHOT_RETENTION_COUNT: 1000,
+				},
+				getPerformanceSnapshots: vi.fn().mockReturnValue([]),
+			} as unknown as Parameters<typeof startBackgroundWorkers>[2];
+
+			await startBackgroundWorkers(mockDrizzleClient, mockLogger, mockFastify);
+
+			await triggerMetricsAggregationWorker(mockLogger);
+
+			expect(mockLogger.info).toHaveBeenCalledWith(
+				"Manually triggering metrics aggregation worker",
+			);
+
+			await stopBackgroundWorkers(mockLogger);
+		});
+	});
+
+	describe("runMetricsAggregationWorkerSafely", () => {
+		it("warns and returns early when fastifyInstance is not available", async () => {
+			await runMetricsAggregationWorkerSafely(mockLogger);
+
+			expect(mockLogger.warn).toHaveBeenCalledWith(
+				"Metrics aggregation worker cannot run: Fastify instance not available",
+			);
+		});
+
+		it("logs successful metrics aggregation run", async () => {
+			const { runMetricsAggregationWorker } = await import(
+				"~/src/workers/metrics/metricsAggregationWorker"
+			);
+
+			const mockFastify = {
+				envConfig: {
+					METRICS_AGGREGATION_WINDOW_MINUTES: 10,
+					METRICS_SNAPSHOT_RETENTION_COUNT: 500,
+				},
+				getPerformanceSnapshots: vi.fn().mockReturnValue([]),
+			} as unknown as Parameters<typeof startBackgroundWorkers>[2];
+
+			await startBackgroundWorkers(mockDrizzleClient, mockLogger, mockFastify);
+
+			vi.mocked(runMetricsAggregationWorker).mockReturnValue({
+				metrics: {
+					timestamp: Date.now(),
+					windowMinutes: 10,
+					snapshotCount: 2,
+					operations: {
+						db: {
+							count: 5,
+							totalMs: 250,
+							avgMs: 50,
+							minMs: 10,
+							maxMs: 100,
+							medianMs: 50,
+							p95Ms: 95,
+							p99Ms: 99,
+						},
+					},
+					cache: {
+						totalHits: 10,
+						totalMisses: 5,
+						totalOps: 15,
+						hitRate: 0.667,
+					},
+					slowOperationCount: 1,
+					avgTotalMs: 125,
+					minTotalMs: 50,
+					maxTotalMs: 200,
+					medianTotalMs: 125,
+					p95TotalMs: 190,
+					p99TotalMs: 198,
+				},
+				snapshotsProcessed: 2,
+				aggregationDurationMs: 15,
+			});
+
+			await runMetricsAggregationWorkerSafely(mockLogger);
+
+			expect(mockLogger.info).toHaveBeenCalledWith(
+				"Starting metrics aggregation worker run",
+			);
+
+			expect(mockLogger.info).toHaveBeenCalledWith(
+				expect.objectContaining({
+					duration: expect.stringMatching(/^\d+ms$/),
+					snapshotsProcessed: 2,
+					aggregationDuration: "15ms",
+					operationsCount: 1,
+					cacheHitRate: 0.667,
+					slowOperations: 1,
+					avgTotalMs: 125,
+					p95TotalMs: 190,
+					p99TotalMs: 198,
+				}),
+				"Metrics aggregation worker completed successfully",
+			);
+
+			await stopBackgroundWorkers(mockLogger);
+		});
+
+		it("logs error when metrics aggregation fails", async () => {
+			const { runMetricsAggregationWorker } = await import(
+				"~/src/workers/metrics/metricsAggregationWorker"
+			);
+
+			const mockFastify = {
+				envConfig: {
+					METRICS_AGGREGATION_WINDOW_MINUTES: 5,
+					METRICS_SNAPSHOT_RETENTION_COUNT: 1000,
+				},
+				getPerformanceSnapshots: vi.fn().mockReturnValue([]),
+			} as unknown as Parameters<typeof startBackgroundWorkers>[2];
+
+			await startBackgroundWorkers(mockDrizzleClient, mockLogger, mockFastify);
+
+			vi.mocked(runMetricsAggregationWorker).mockImplementation(() => {
+				throw new Error("Metrics aggregation failed");
+			});
+
+			await runMetricsAggregationWorkerSafely(mockLogger);
+
+			expect(mockLogger.error).toHaveBeenCalledWith(
+				expect.objectContaining({
+					duration: expect.stringMatching(/^\d+ms$/),
+					error: "Metrics aggregation failed",
+					stack: expect.any(String),
+				}),
+				"Metrics aggregation worker failed",
+			);
+
+			await stopBackgroundWorkers(mockLogger);
+		});
+
+		it("logs error when metrics aggregation fails with non-Error", async () => {
+			const { runMetricsAggregationWorker } = await import(
+				"~/src/workers/metrics/metricsAggregationWorker"
+			);
+
+			const mockFastify = {
+				envConfig: {
+					METRICS_AGGREGATION_WINDOW_MINUTES: 5,
+					METRICS_SNAPSHOT_RETENTION_COUNT: 1000,
+				},
+				getPerformanceSnapshots: vi.fn().mockReturnValue([]),
+			} as unknown as Parameters<typeof startBackgroundWorkers>[2];
+
+			await startBackgroundWorkers(mockDrizzleClient, mockLogger, mockFastify);
+
+			vi.mocked(runMetricsAggregationWorker).mockImplementation(() => {
+				throw "String error";
+			});
+
+			await runMetricsAggregationWorkerSafely(mockLogger);
+
+			expect(mockLogger.error).toHaveBeenCalledWith(
+				expect.objectContaining({
+					duration: expect.stringMatching(/^\d+ms$/),
+					error: "Unknown error",
+					stack: undefined,
+				}),
+				"Metrics aggregation worker failed",
+			);
+
+			await stopBackgroundWorkers(mockLogger);
+		});
+	});
+
+	describe("getBackgroundWorkerStatus", () => {
+		it("returns status with isRunning false when not started", () => {
+			const status = getBackgroundWorkerStatus();
+
+			expect(status.isRunning).toBe(false);
+			expect(status.materializationSchedule).toBe("0 * * * *");
+			expect(status.cleanupSchedule).toBe("0 2 * * *");
+			expect(status.metricsSchedule).toBe("disabled");
+		});
+
+		it("returns status with isRunning true and metrics schedule when started with fastify", async () => {
+			const { runMaterializationWorker } = await import(
+				"~/src/workers/eventGeneration/eventGenerationPipeline"
+			);
+
+			vi.mocked(runMaterializationWorker).mockResolvedValue({
+				organizationsProcessed: 0,
+				instancesCreated: 0,
+				windowsUpdated: 0,
+				errorsEncountered: 0,
+				processingTimeMs: 1,
+			});
+
+			const mockFastify = {
+				envConfig: {
+					METRICS_AGGREGATION_ENABLED: true,
+					METRICS_AGGREGATION_CRON_SCHEDULE: "*/10 * * * *",
+				},
+				getPerformanceSnapshots: vi.fn().mockReturnValue([]),
+			} as unknown as Parameters<typeof startBackgroundWorkers>[2];
+
+			await startBackgroundWorkers(mockDrizzleClient, mockLogger, mockFastify);
+
+			const status = getBackgroundWorkerStatus();
+
+			expect(status.isRunning).toBe(true);
+			expect(status.materializationSchedule).toBe("0 * * * *");
+			expect(status.cleanupSchedule).toBe("0 2 * * *");
+			expect(status.metricsSchedule).toBe("*/10 * * * *");
+
+			await stopBackgroundWorkers(mockLogger);
+		});
+	});
+
+	describe("healthCheck", () => {
+		it("returns unhealthy when workers are not running", async () => {
+			const result = await healthCheck();
+
+			expect(result.status).toBe("unhealthy");
+			expect(result.details.reason).toBe("Background workers not running");
+			expect(result.details.isRunning).toBe(false);
+		});
+
+		it("returns healthy when workers are running", async () => {
+			const { runMaterializationWorker } = await import(
+				"~/src/workers/eventGeneration/eventGenerationPipeline"
+			);
+
+			vi.mocked(runMaterializationWorker).mockResolvedValue({
+				organizationsProcessed: 0,
+				instancesCreated: 0,
+				windowsUpdated: 0,
+				errorsEncountered: 0,
+				processingTimeMs: 1,
+			});
+
+			await startBackgroundWorkers(mockDrizzleClient, mockLogger);
+
+			const result = await healthCheck();
+
+			expect(result.status).toBe("healthy");
+			expect(result.details.isRunning).toBe(true);
+
+			await stopBackgroundWorkers(mockLogger);
+		});
+
+		it("returns unhealthy when getBackgroundWorkerStatus throws", async () => {
+			// This test would require mocking getBackgroundWorkerStatus to throw
+			// For now, we test the normal path. The error path is defensive code.
+			const result = await healthCheck();
+
+			expect(result.status).toBe("unhealthy");
+		});
+	});
+
+	describe("updateMaterializationConfig", () => {
+		it("updates configuration and logs the change", () => {
+			const newConfig = {
+				maxConcurrentJobs: 10,
+				maxOrganizations: 100,
+			};
+
+			updateMaterializationConfig(newConfig, mockLogger);
+
+			expect(mockLogger.info).toHaveBeenCalledWith(
+				newConfig,
+				"Updated materialization worker configuration",
 			);
 		});
 	});

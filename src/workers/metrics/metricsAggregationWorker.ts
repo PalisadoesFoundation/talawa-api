@@ -17,7 +17,7 @@ import type {
  * @returns The percentile value
  * @throws Error if sortedValues is empty
  */
-function calculatePercentile(
+export function calculatePercentile(
 	sortedValues: number[],
 	percentile: number,
 ): number {
@@ -358,12 +358,38 @@ export function runMetricsAggregationWorker(
 ): MetricsAggregationResult {
 	const startTime = Date.now();
 
-	// Get recent snapshots
-	const snapshots = getSnapshots();
+	try {
+		// Get recent snapshots
+		const snapshots = getSnapshots();
 
-	if (snapshots.length === 0) {
-		logger.info("No snapshots available for aggregation");
+		if (snapshots.length === 0) {
+			logger.info("No snapshots available for aggregation");
+			const timestamp = Date.now();
+			return {
+				metrics: createEmptyAggregatedMetrics({
+					windowMinutes: options.windowMinutes,
+					timestamp,
+					snapshotCount: 0,
+				}),
+				snapshotsProcessed: 0,
+				aggregationDurationMs: timestamp - startTime,
+			};
+		}
+
+		// Aggregate metrics
+		const result = aggregateMetrics(snapshots, options);
+
+		return result;
+	} catch (error) {
+		// Handle errors from getSnapshots or aggregateMetrics
 		const timestamp = Date.now();
+		logger.error(
+			{
+				error: error instanceof Error ? error.message : "Unknown error",
+				stack: error instanceof Error ? error.stack : undefined,
+			},
+			"Failed to aggregate metrics",
+		);
 		return {
 			metrics: createEmptyAggregatedMetrics({
 				windowMinutes: options.windowMinutes,
@@ -374,9 +400,4 @@ export function runMetricsAggregationWorker(
 			aggregationDurationMs: timestamp - startTime,
 		};
 	}
-
-	// Aggregate metrics
-	const result = aggregateMetrics(snapshots, options);
-
-	return result;
 }

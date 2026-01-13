@@ -376,6 +376,7 @@ describe("DataLoader infrastructure", () => {
 
 			// Create mock cache with artificial delay to verify metrics include cache time
 			const cacheDelayMs = 10;
+			const minExpectedMs = Math.floor(cacheDelayMs * 0.9);
 			const cachedValues = new Map([
 				[entityKey("user", "u1"), { id: "u1", name: "User 1" }],
 				[entityKey("organization", "org1"), { id: "org1", name: "Org 1" }],
@@ -412,29 +413,29 @@ describe("DataLoader infrastructure", () => {
 			const userOp = snapshot.ops["db:users.byId"];
 			expect(userOp).toBeDefined();
 			expect(userOp?.count).toBe(1);
-			// Allow small timing variance (90% of delay) due to setTimeout precision
-			expect(userOp?.ms).toBeGreaterThanOrEqual(cacheDelayMs * 0.9);
+			// Allow timer granularity/scheduling variance (90% of delay)
+			expect(userOp?.ms).toBeGreaterThanOrEqual(minExpectedMs);
 
 			// Verify organization loader metrics
 			const orgOp = snapshot.ops["db:organizations.byId"];
 			expect(orgOp).toBeDefined();
 			expect(orgOp?.count).toBe(1);
-			// Allow small timing variance (90% of delay) due to setTimeout precision
-			expect(orgOp?.ms).toBeGreaterThanOrEqual(cacheDelayMs * 0.9);
+			// Allow timer granularity/scheduling variance (90% of delay)
+			expect(orgOp?.ms).toBeGreaterThanOrEqual(minExpectedMs);
 
 			// Verify event loader metrics
 			const eventOp = snapshot.ops["db:events.byId"];
 			expect(eventOp).toBeDefined();
 			expect(eventOp?.count).toBe(1);
-			// Allow small timing variance (90% of delay) due to setTimeout precision
-			expect(eventOp?.ms).toBeGreaterThanOrEqual(cacheDelayMs * 0.9);
+			// Allow timer granularity/scheduling variance (90% of delay)
+			expect(eventOp?.ms).toBeGreaterThanOrEqual(minExpectedMs);
 
 			// Verify actionItem loader metrics
 			const actionItemOp = snapshot.ops["db:actionItems.byId"];
 			expect(actionItemOp).toBeDefined();
 			expect(actionItemOp?.count).toBe(1);
-			// Allow small timing variance (90% of delay) due to setTimeout precision
-			expect(actionItemOp?.ms).toBeGreaterThanOrEqual(cacheDelayMs * 0.9);
+			// Allow timer granularity/scheduling variance (90% of delay)
+			expect(actionItemOp?.ms).toBeGreaterThanOrEqual(minExpectedMs);
 
 			// Verify DB was NOT called (cache hit scenario)
 			// Metrics should still be recorded because they wrap the cache layer

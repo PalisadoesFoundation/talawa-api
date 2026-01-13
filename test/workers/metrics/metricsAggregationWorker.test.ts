@@ -3,6 +3,7 @@ import { describe, expect, it, vi } from "vitest";
 import type { PerfSnapshot } from "~/src/utilities/metrics/performanceTracker";
 import {
 	aggregateMetrics,
+	calculatePercentile,
 	createEmptyAggregatedMetrics,
 	runMetricsAggregationWorker,
 } from "~/src/workers/metrics/metricsAggregationWorker";
@@ -10,18 +11,37 @@ import type { MetricsAggregationOptions } from "~/src/workers/metrics/types";
 
 /**
  * Helper function to create a test performance snapshot.
+ * Derives totalMs, totalOps, and hitRate from provided ops/cache data to match
+ * real PerfSnapshot semantics, preventing aggregation bugs from being hidden.
  */
 function createTestSnapshot(
 	overrides: Partial<PerfSnapshot> = {},
 ): PerfSnapshot {
+	const ops = overrides.ops ?? {};
+	const cacheHits = overrides.cacheHits ?? 0;
+	const cacheMisses = overrides.cacheMisses ?? 0;
+	const totalCacheOps = cacheHits + cacheMisses;
+
+	// Derive totalMs from sum of operation ms values
+	const derivedTotalMs = Math.ceil(
+		Object.values(ops).reduce((sum, op) => sum + (op?.ms ?? 0), 0),
+	);
+
+	// Derive totalOps from sum of operation counts
+	const derivedTotalOps = Object.values(ops).reduce(
+		(sum, op) => sum + (op?.count ?? 0),
+		0,
+	);
+
 	return {
-		totalMs: 0,
-		totalOps: 0,
-		cacheHits: 0,
-		cacheMisses: 0,
-		hitRate: 0,
-		ops: {},
+		ops,
 		slow: [],
+		cacheHits,
+		cacheMisses,
+		totalMs: overrides.totalMs ?? derivedTotalMs,
+		totalOps: overrides.totalOps ?? derivedTotalOps,
+		hitRate:
+			overrides.hitRate ?? (totalCacheOps > 0 ? cacheHits / totalCacheOps : 0),
 		...overrides,
 	};
 }
@@ -31,14 +51,18 @@ function createTestSnapshot(
  * This prevents runtime errors if the worker calls any logging method.
  */
 function createMockFastifyLogger() {
-	return {
+	const logger = {
 		info: vi.fn(),
 		warn: vi.fn(),
 		error: vi.fn(),
 		debug: vi.fn(),
 		trace: vi.fn(),
 		fatal: vi.fn(),
-	} as unknown as FastifyBaseLogger;
+	} as unknown as FastifyBaseLogger & { child: ReturnType<typeof vi.fn> };
+	// Add child method that returns the same logger instance
+	// This allows calls like logger.child({}) to work while preserving spies
+	logger.child = vi.fn(() => logger);
+	return logger;
 }
 
 describe("Metrics Aggregation Worker", () => {
@@ -88,6 +112,42 @@ describe("Metrics Aggregation Worker", () => {
 			expect(metrics.timestamp).toBe(timestamp);
 			expect(metrics.windowMinutes).toBe(5); // Default
 			expect(metrics.snapshotCount).toBe(0); // Default
+		});
+	});
+
+	describe("calculatePercentile", () => {
+		it("should throw error when given empty array", () => {
+			expect(() => calculatePercentile([], 50)).toThrow(
+				"Cannot calculate percentile from empty array",
+			);
+		});
+
+		it("should return the single value when array has one element", () => {
+			expect(calculatePercentile([42], 50)).toBe(42);
+			expect(calculatePercentile([100], 95)).toBe(100);
+		});
+
+		it("should calculate percentile for multiple values", () => {
+			const values = [10, 20, 30, 40, 50];
+			expect(calculatePercentile(values, 50)).toBe(30);
+			expect(calculatePercentile(values, 0)).toBe(10);
+			expect(calculatePercentile(values, 100)).toBe(50);
+		});
+
+		it("should use linear interpolation for percentiles", () => {
+			const values = [10, 20, 30, 40, 50];
+			// p25 should interpolate between 10 and 20
+			const p25 = calculatePercentile(values, 25);
+			expect(p25).toBeGreaterThan(10);
+			expect(p25).toBeLessThan(20);
+		});
+
+		it("should clamp percentile to valid range", () => {
+			const values = [10, 20, 30];
+			// Percentile < 0 should be clamped to 0
+			expect(calculatePercentile(values, -10)).toBe(10);
+			// Percentile > 100 should be clamped to 100
+			expect(calculatePercentile(values, 150)).toBe(30);
 		});
 	});
 
@@ -298,6 +358,9 @@ describe("Metrics Aggregation Worker", () => {
 		});
 
 		it("should limit snapshots by maxSnapshots", () => {
+			// Snapshots are ordered by recency (most recent first), so the first 5 entries
+			// represent the 5 most recent snapshots. aggregateMetrics will process only
+			// these first 5 when maxSnapshots=5.
 			const snapshots = Array.from({ length: 10 }, (_, i) =>
 				createTestSnapshot({ totalMs: i + 1 }),
 			);
@@ -580,6 +643,24 @@ describe("Metrics Aggregation Worker", () => {
 			expect(result.metrics.maxTotalMs).toBe(0);
 		});
 
+		it("should include zero totalMs values in calculations when mixed with positive values", () => {
+			const snapshots = [
+				createTestSnapshot({ totalMs: 0 }),
+				createTestSnapshot({ totalMs: 100 }),
+				createTestSnapshot({ totalMs: 200 }),
+			];
+
+			const result = aggregateMetrics(snapshots);
+
+			// Zero should be included in all statistical calculations
+			// For [0, 100, 200]: avg = (0 + 100 + 200) / 3 = 100
+			expect(result.metrics.avgTotalMs).toBe(100);
+			expect(result.metrics.minTotalMs).toBe(0);
+			expect(result.metrics.maxTotalMs).toBe(200);
+			// Median of [0, 100, 200] = 100 (middle value)
+			expect(result.metrics.medianTotalMs).toBe(100);
+		});
+
 		it("should round complexity score to 2 decimal places", () => {
 			const snapshots = [
 				createTestSnapshot({ complexityScore: 100.123 }),
@@ -683,9 +764,11 @@ describe("Metrics Aggregation Worker", () => {
 
 			expect(dbOp?.count).toBe(2);
 			// Should combine max values (60) and slow ops (250, 300) for percentiles
-			// With max=60 and slow=[250, 300], p95 should reflect the slow values (>= 250) or at least > max (60)
+			// With data points [60, 250, 300], p95 interpolates:
+			// index = 0.95 * (3-1) = 1.9, lower=1, upper=2, weight=0.9
+			// p95 = 250 + 0.9 * (300 - 250) = 250 + 45 = 295, rounded = 295
 			expect(dbOp?.p95Ms).toBeGreaterThan(60);
-			expect(dbOp?.p95Ms).toBeGreaterThanOrEqual(250);
+			expect(dbOp?.p95Ms).toBe(295);
 		});
 
 		it("should handle non-finite avgMs calculation", () => {
@@ -809,9 +892,16 @@ describe("Metrics Aggregation Worker", () => {
 
 			expect(result.snapshotsProcessed).toBe(1);
 			expect(result.metrics.operations.db).toBeDefined();
-			expect(logger.info).not.toHaveBeenCalledWith(
-				expect.stringContaining("No snapshots available"),
+			// Verify that none of the logger.info calls contain "No snapshots available"
+			const infoMock = logger.info as ReturnType<typeof vi.fn>;
+			const hasNoSnapshotsMessage = infoMock.mock.calls.some(
+				(call: unknown[]) =>
+					call.some(
+						(arg: unknown) =>
+							typeof arg === "string" && arg.includes("No snapshots available"),
+					),
 			);
+			expect(hasNoSnapshotsMessage).toBe(false);
 		});
 
 		it("should use provided options", () => {
@@ -857,6 +947,36 @@ describe("Metrics Aggregation Worker", () => {
 			expect(dbOp?.count).toBe(3);
 			expect(result.metrics.cache.totalHits).toBe(2);
 			expect(result.metrics.cache.totalMisses).toBe(1);
+		});
+
+		it("should handle error when getSnapshots throws", () => {
+			const logger = createMockFastifyLogger();
+			const testError = new Error("Failed to retrieve snapshots");
+
+			const result = runMetricsAggregationWorker(() => {
+				throw testError;
+			}, logger);
+
+			// Should return empty metrics when getSnapshots throws
+			expect(result.snapshotsProcessed).toBe(0);
+			expect(result.metrics.snapshotCount).toBe(0);
+			expect(result.metrics.operations).toEqual({});
+
+			// Verify logger.error was called with error information
+			expect(logger.error).toHaveBeenCalled();
+			const errorMock = logger.error as ReturnType<typeof vi.fn>;
+			const errorCall = errorMock.mock.calls.find((call: unknown[]) => {
+				// Check if first argument (error object) contains the error message
+				const firstArg = call[0];
+				return (
+					typeof firstArg === "object" &&
+					firstArg !== null &&
+					"error" in firstArg &&
+					typeof firstArg.error === "string" &&
+					firstArg.error.includes("Failed to retrieve snapshots")
+				);
+			});
+			expect(errorCall).toBeDefined();
 		});
 	});
 });
