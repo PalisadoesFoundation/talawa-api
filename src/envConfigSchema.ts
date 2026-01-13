@@ -531,6 +531,74 @@ export const envConfigSchema = Type.Object({
 			minLength: 1,
 		}),
 	),
+
+	/**
+	 * Google OAuth Client ID for authentication.
+	 */
+	GOOGLE_CLIENT_ID: Type.Optional(
+		Type.String({
+			minLength: 1,
+		}),
+	),
+
+	/**
+	 * Google OAuth Client Secret for authentication.
+	 */
+	GOOGLE_CLIENT_SECRET: Type.Optional(
+		Type.String({
+			minLength: 1,
+		}),
+	),
+
+	/**
+	 * Google OAuth Redirect URI for authentication callback.
+	 */
+	GOOGLE_REDIRECT_URI: Type.Optional(
+		Type.String({
+			minLength: 1,
+			format: "uri",
+		}),
+	),
+
+	/**
+	 * GitHub OAuth Client ID for authentication.
+	 */
+	GITHUB_CLIENT_ID: Type.Optional(
+		Type.String({
+			minLength: 1,
+		}),
+	),
+
+	/**
+	 * GitHub OAuth Client Secret for authentication.
+	 */
+	GITHUB_CLIENT_SECRET: Type.Optional(
+		Type.String({
+			minLength: 1,
+		}),
+	),
+
+	/**
+	 * GitHub OAuth Redirect URI for authentication callback.
+	 */
+	GITHUB_REDIRECT_URI: Type.Optional(
+		Type.String({
+			minLength: 1,
+			format: "uri",
+		}),
+	),
+
+	/**
+	 * Request timeout in milliseconds for OAuth provider API calls.
+	 * Default: 10000 (10 seconds)
+	 */
+	API_OAUTH_REQUEST_TIMEOUT_MS: Type.Optional(
+		Type.Integer({
+			minimum: 1000,
+			maximum: 60000,
+			default: 10000,
+		}),
+	),
 });
 
 /**
