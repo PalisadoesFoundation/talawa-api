@@ -43,15 +43,16 @@ The SMTP configuration object containing host, port, and credentials.
 
 > **sendBulkEmails**(`jobs`): `Promise`\<[`EmailResult`](../../../types/interfaces/EmailResult.md)[]\>
 
-Defined in: [src/services/email/providers/SMTPProvider.ts:153](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/email/providers/SMTPProvider.ts#L153)
+Defined in: [src/services/email/providers/SMTPProvider.ts:154](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/email/providers/SMTPProvider.ts#L154)
 
-Send multiple emails
+Send multiple emails in bulk with rate limiting.
+Accepts sparse arrays (nullish values are skipped).
 
 #### Parameters
 
 ##### jobs
 
-[`EmailJob`](../../../types/interfaces/EmailJob.md)[]
+([`EmailJob`](../../../types/interfaces/EmailJob.md) \| `null` \| `undefined`)[]
 
 #### Returns
 
