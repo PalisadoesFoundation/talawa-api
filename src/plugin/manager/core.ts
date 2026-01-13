@@ -51,6 +51,7 @@ class PluginManager extends EventEmitter {
 	private pluginContext: IPluginContext;
 	private pluginsDirectory: string;
 	private isInitialized = false;
+	private initializationAttempted = false;
 	private errors: IPluginError[] = [];
 
 	// Component instances
@@ -145,7 +146,8 @@ class PluginManager extends EventEmitter {
 				msg: "Plugin system initialization failed",
 				err: error,
 			});
-			this.markAsInitialized();
+			// Mark initialization as attempted but not successful
+			this.initializationAttempted = true;
 			throw error;
 		}
 	}
@@ -494,10 +496,17 @@ class PluginManager extends EventEmitter {
 	}
 
 	/**
-	 * Check if system is initialized
+	 * Check if system is initialized (successfully)
 	 */
 	public isSystemInitialized(): boolean {
 		return this.isInitialized;
+	}
+
+	/**
+	 * Check if initialization was attempted (regardless of success/failure)
+	 */
+	public hasInitializationBeenAttempted(): boolean {
+		return this.initializationAttempted || this.isInitialized;
 	}
 
 	/**

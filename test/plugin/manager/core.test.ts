@@ -355,9 +355,11 @@ describe("PluginManager", () => {
 			}),
 		);
 
-		// Verify manager is still marked as initialized even on failure
-		// (this verifies the implementation calls markAsInitialized() in the catch block)
-		expect(manager.isSystemInitialized()).toBe(true);
+		// Verify semantic split: initialization was attempted but not successful
+		// isSystemInitialized() should be false because init failed
+		expect(manager.isSystemInitialized()).toBe(false);
+		// hasInitializationBeenAttempted() should be true because we tried
+		expect(manager.hasInitializationBeenAttempted()).toBe(true);
 	});
 
 	it("should call emit in markAsInitialized", async () => {
