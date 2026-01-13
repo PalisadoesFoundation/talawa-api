@@ -83,7 +83,7 @@ export async function destroyPluginSystem(): Promise<void> {
 
 		pluginManagerInstance = null;
 	} catch (error) {
-		rootLogger.error({ msg: "Error destroying plugin system", err: error });
+		rootLogger.error({ err: error }, "Error destroying plugin system");
 		throw error;
 	}
 }

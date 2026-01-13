@@ -302,13 +302,13 @@ describe("Plugin Registry", () => {
 			// Restore the mock so afterEach cleanup works
 			spy.mockRestore();
 
-			// Assert logging
+			// Assert logging - using new Pino pattern: { err }, "message"
 			const { rootLogger } = await import("~/src/utilities/logging/logger");
 			expect(rootLogger.error).toHaveBeenCalledWith(
 				expect.objectContaining({
-					msg: "Error destroying plugin system",
 					err: shutdownError,
 				}),
+				"Error destroying plugin system",
 			);
 
 			// Now clean up properly for subsequent tests
