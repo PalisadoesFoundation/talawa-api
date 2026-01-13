@@ -25,6 +25,10 @@ vi.mock("env-schema", () => ({
 	}),
 }));
 
+vi.mock("scripts/setup/emailSetup", () => ({
+	emailSetup: vi.fn().mockImplementation((answers) => Promise.resolve(answers)),
+}));
+
 vi.mock("inquirer");
 
 import fs from "node:fs";
@@ -90,12 +94,13 @@ describe("Setup", () => {
 	it("should set up environment variables with default configuration when CI=false", async () => {
 		const mockResponses = [
 			{ CI: "false" },
-			{ useDefaultMinio: "true" },
-			{ useDefaultCloudbeaver: "true" },
-			{ useDefaultPostgres: "true" },
-			{ useDefaultCaddy: "true" },
-			{ useDefaultApi: "true" },
+			{ useDefaultApi: true },
+			{ useDefaultMinio: true },
+			{ useDefaultCloudbeaver: true },
+			{ useDefaultPostgres: true },
+			{ useDefaultCaddy: true },
 			{ API_ADMINISTRATOR_USER_EMAIL_ADDRESS: "test@email.com" },
+			{ setupReCaptcha: false },
 		];
 
 		const promptMock = vi.spyOn(inquirer, "prompt");
@@ -114,7 +119,7 @@ describe("Setup", () => {
 			API_HOST: "0.0.0.0",
 			API_PORT: "4000",
 			API_IS_APPLY_DRIZZLE_MIGRATIONS: "true",
-			API_JWT_EXPIRES_IN: "2592000000",
+			API_JWT_EXPIRES_IN: "900000",
 			API_LOG_LEVEL: "debug",
 			API_MINIO_ACCESS_KEY: "talawa",
 			API_MINIO_END_POINT: "minio",
@@ -155,11 +160,12 @@ describe("Setup", () => {
 		const mockResponses = [
 			{ envReconfigure: true },
 			{ CI: "true" },
-			{ useDefaultMinio: "true" },
-			{ useDefaultPostgres: "true" },
-			{ useDefaultCaddy: "true" },
-			{ useDefaultApi: "true" },
+			{ useDefaultApi: true },
+			{ useDefaultMinio: true },
+			{ useDefaultPostgres: true },
+			{ useDefaultCaddy: true },
 			{ API_ADMINISTRATOR_USER_EMAIL_ADDRESS: "test@email.com" },
+			{ setupReCaptcha: false },
 		];
 
 		const promptMock = vi.spyOn(inquirer, "prompt");
@@ -168,6 +174,9 @@ describe("Setup", () => {
 		}
 
 		const fsExistsSyncSpy = vi.spyOn(fs, "existsSync").mockReturnValue(true);
+		const fsAccessSpy = vi
+			.spyOn(fs.promises, "access")
+			.mockResolvedValue(undefined);
 		const fsReadFileSyncSpy = vi
 			.spyOn(fs, "readFileSync")
 			.mockReturnValue(
@@ -249,6 +258,7 @@ describe("Setup", () => {
 		}
 
 		fsExistsSyncSpy.mockRestore();
+		fsAccessSpy.mockRestore();
 		fsReadFileSyncSpy.mockRestore();
 	});
 	it("should restore .env from backup and exit when envReconfigure is false", async () => {
@@ -319,12 +329,13 @@ describe("Setup", () => {
 			envReconfigure: true,
 			shouldBackup: true,
 			CI: "false",
+			useDefaultApi: true,
 			useDefaultMinio: true,
 			useDefaultCloudbeaver: true,
 			useDefaultPostgres: true,
 			useDefaultCaddy: true,
-			useDefaultApi: true,
 			API_ADMINISTRATOR_USER_EMAIL_ADDRESS: "test@email.com",
+			setupReCaptcha: false,
 		});
 
 		const processExitSpy = vi.spyOn(process, "exit").mockImplementation(() => {
@@ -410,12 +421,13 @@ describe("Setup", () => {
 			envReconfigure: true,
 			shouldBackup: true,
 			CI: "false",
+			useDefaultApi: true,
 			useDefaultMinio: true,
 			useDefaultCloudbeaver: true,
 			useDefaultPostgres: true,
 			useDefaultCaddy: true,
-			useDefaultApi: true,
 			API_ADMINISTRATOR_USER_EMAIL_ADDRESS: "test@email.com",
+			setupReCaptcha: false,
 		});
 
 		const processExitSpy = vi.spyOn(process, "exit").mockImplementation(() => {
@@ -527,11 +539,12 @@ describe("Setup", () => {
 		vi.spyOn(inquirer, "prompt").mockResolvedValue({
 			envReconfigure: true,
 			CI: "true",
+			useDefaultApi: true,
 			useDefaultMinio: true,
 			useDefaultPostgres: true,
 			useDefaultCaddy: true,
-			useDefaultApi: true,
 			API_ADMINISTRATOR_USER_EMAIL_ADDRESS: "test@email.com",
+			setupReCaptcha: false,
 		});
 
 		await setup();
@@ -553,11 +566,12 @@ describe("Setup", () => {
 		vi.spyOn(inquirer, "prompt").mockResolvedValue({
 			envReconfigure: true,
 			CI: "true",
+			useDefaultApi: true,
 			useDefaultMinio: true,
 			useDefaultPostgres: true,
 			useDefaultCaddy: true,
-			useDefaultApi: true,
 			API_ADMINISTRATOR_USER_EMAIL_ADDRESS: "test@email.com",
+			setupReCaptcha: false,
 		});
 
 		await setup();
@@ -597,12 +611,13 @@ describe("Setup", () => {
 
 		vi.spyOn(inquirer, "prompt").mockResolvedValue({
 			CI: "false",
+			useDefaultApi: true,
 			useDefaultMinio: true,
 			useDefaultCloudbeaver: true,
 			useDefaultPostgres: true,
 			useDefaultCaddy: true,
-			useDefaultApi: true,
 			API_ADMINISTRATOR_USER_EMAIL_ADDRESS: "test@email.com",
+			setupReCaptcha: false,
 		});
 
 		await setup();
@@ -628,14 +643,15 @@ describe("Setup", () => {
 		promptMock.mockResolvedValueOnce({ envReconfigure: true });
 		promptMock.mockResolvedValueOnce({ shouldBackup: true });
 		promptMock.mockResolvedValueOnce({ CI: "false" });
+		promptMock.mockResolvedValueOnce({ useDefaultApi: true });
 		promptMock.mockResolvedValueOnce({ useDefaultMinio: true });
 		promptMock.mockResolvedValueOnce({ useDefaultCloudbeaver: true });
 		promptMock.mockResolvedValueOnce({ useDefaultPostgres: true });
 		promptMock.mockResolvedValueOnce({ useDefaultCaddy: true });
-		promptMock.mockResolvedValueOnce({ useDefaultApi: true });
 		promptMock.mockResolvedValueOnce({
 			API_ADMINISTRATOR_USER_EMAIL_ADDRESS: "test@email.com",
 		});
+		promptMock.mockResolvedValueOnce({ setupReCaptcha: false });
 
 		await setup();
 
@@ -668,14 +684,15 @@ describe("Setup", () => {
 		promptMock.mockResolvedValueOnce({ envReconfigure: true });
 		promptMock.mockResolvedValueOnce({ shouldBackup: false });
 		promptMock.mockResolvedValueOnce({ CI: "false" });
+		promptMock.mockResolvedValueOnce({ useDefaultApi: true });
 		promptMock.mockResolvedValueOnce({ useDefaultMinio: true });
 		promptMock.mockResolvedValueOnce({ useDefaultCloudbeaver: true });
 		promptMock.mockResolvedValueOnce({ useDefaultPostgres: true });
 		promptMock.mockResolvedValueOnce({ useDefaultCaddy: true });
-		promptMock.mockResolvedValueOnce({ useDefaultApi: true });
 		promptMock.mockResolvedValueOnce({
 			API_ADMINISTRATOR_USER_EMAIL_ADDRESS: "test@email.com",
 		});
+		promptMock.mockResolvedValueOnce({ setupReCaptcha: false });
 
 		await setup();
 

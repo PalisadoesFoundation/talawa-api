@@ -1,3 +1,4 @@
+import type { NonEmptyString } from "../../src/services/email";
 import {
 	promptConfirm,
 	promptInput,
@@ -160,12 +161,10 @@ export async function emailSetup(answers: SetupAnswers): Promise<SetupAnswers> {
 
 					try {
 						// dynamically import to avoid early instantiation issues or circular deps
-						const { EmailService } = await import(
-							"../../src/services/ses/EmailService"
-						);
+						const { SESProvider } = await import("../../src/services/email");
 
-						const service = new EmailService({
-							region: answers.AWS_SES_REGION || "",
+						const service = new SESProvider({
+							region: (answers.AWS_SES_REGION || "") as NonEmptyString,
 							accessKeyId: answers.AWS_ACCESS_KEY_ID,
 							secretAccessKey: answers.AWS_SECRET_ACCESS_KEY,
 							fromEmail: answers.AWS_SES_FROM_EMAIL,
