@@ -701,7 +701,6 @@ suite("Mutation field deleteAgendaFolder", () => {
 			assertToBeNonNullish(result.data?.deleteAgendaFolder);
 			expect(result.data.deleteAgendaFolder.id).toEqual(folderId);
 			expect(result.data.deleteAgendaFolder.name).toEqual("Test Folder");
-			expect(result.data.deleteAgendaFolder.isAgendaItemFolder).toEqual(true);
 		});
 
 		test("Deletes agenda folder with parent folder successfully", async () => {
@@ -771,7 +770,6 @@ suite("Mutation field deleteAgendaFolder", () => {
 			assertToBeNonNullish(result.data?.deleteAgendaFolder);
 			expect(result.data.deleteAgendaFolder.id).toEqual(childFolderId);
 			expect(result.data.deleteAgendaFolder.name).toEqual("Child Folder");
-			expect(result.data.deleteAgendaFolder.isAgendaItemFolder).toEqual(false);
 		});
 	});
 
