@@ -50,7 +50,9 @@ export const eventUpdatedAtResolver = async (
 		if (
 			currentUser.role !== "administrator" &&
 			(currentUserOrganizationMembership === undefined ||
-				currentUserOrganizationMembership.role !== "administrator")
+				(currentUserOrganizationMembership.role !== "administrator" &&
+					currentUserOrganizationMembership.role !== "regular")) &&
+			parent.creatorId !== currentUserId
 		) {
 			throw new TalawaGraphQLError({
 				extensions: {
