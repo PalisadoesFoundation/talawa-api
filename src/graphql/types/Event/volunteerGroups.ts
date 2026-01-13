@@ -57,7 +57,8 @@ export const EventVolunteerGroupsResolver = async (
 		currentUser.role !== "administrator" &&
 		(currentUserOrganizationMembership === undefined ||
 			(currentUserOrganizationMembership.role !== "administrator" &&
-				currentUserOrganizationMembership.role !== "regular"))
+				currentUserOrganizationMembership.role !== "regular")) &&
+		parent.creatorId !== currentUserId
 	) {
 		throw new TalawaGraphQLError({
 			extensions: {
@@ -98,14 +99,14 @@ export const EventVolunteerGroupsResolver = async (
 		await ctx.drizzleClient.query.eventVolunteerGroupsTable.findMany({
 			where: recurringInstance
 				? // For recurring event instances: Get template groups + instance-specific groups for this instance
-					and(
-						eq(eventVolunteerGroupsTable.eventId, baseEventId),
-						// Include template groups OR instance-specific groups for this instance
-						// Template groups: isTemplate = true
-						// Instance-specific groups: isTemplate = false AND recurringEventInstanceId = parent.id
-					)
+				and(
+					eq(eventVolunteerGroupsTable.eventId, baseEventId),
+					// Include template groups OR instance-specific groups for this instance
+					// Template groups: isTemplate = true
+					// Instance-specific groups: isTemplate = false AND recurringEventInstanceId = parent.id
+				)
 				: // For regular events: Get volunteer groups directly associated with this event
-					eq(eventVolunteerGroupsTable.eventId, parent.id),
+				eq(eventVolunteerGroupsTable.eventId, parent.id),
 		});
 
 	// For recurring instances, we need to filter the results based on isTemplate, recurringEventInstanceId, and exceptions
