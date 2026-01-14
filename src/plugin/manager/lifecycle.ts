@@ -317,10 +317,11 @@ export class PluginLifecycle {
 				}
 
 				tableDefinitions[tableExtension.name] = tableDefinition;
-				this.pluginContext.logger.debug?.(
-					{ name: tableExtension.name },
-					"Table definition loaded",
-				);
+				this.pluginContext.logger.debug?.({
+					msg: "Table definition loaded",
+					name: tableExtension.name,
+					file: tableExtension.file,
+				});
 			}
 
 			// Create the plugin-defined tables
@@ -376,9 +377,10 @@ export class PluginLifecycle {
 				plugin.databaseTables as Record<string, Record<string, unknown>>,
 				this.pluginContext.logger,
 			);
-			this.pluginContext.logger.info?.(
-				`Successfully removed plugin-defined tables for: ${pluginId}`,
-			);
+			this.pluginContext.logger.info?.({
+				msg: "Successfully removed plugin-defined tables",
+				pluginId,
+			});
 		} catch (error) {
 			this.pluginContext.logger.error?.({
 				msg: `Failed to remove tables for ${pluginId}`,
