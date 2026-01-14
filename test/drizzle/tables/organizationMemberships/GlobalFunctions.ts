@@ -5,9 +5,10 @@ import {
 } from "test/graphql/types/documentNodes";
 import { assertToBeNonNullish } from "test/helpers";
 import { server } from "test/server";
-import { expect } from "vitest";
 
 export async function createTestOrganization(): Promise<string> {
+  // Clear any existing headers to ensure a clean sign-in
+  mercuriusClient.setHeaders({});
   const signIn = await mercuriusClient.query(Query_signIn, {
     variables: {
       input: {
@@ -16,12 +17,11 @@ export async function createTestOrganization(): Promise<string> {
       },
     },
   });
-
-  expect(signIn.errors ?? []).toEqual([]);
-
+  if (signIn.errors) {
+    throw new Error(`Admin sign-in failed: ${JSON.stringify(signIn.errors)}`);
+  }
   const token = signIn.data?.signIn?.authenticationToken;
-  expect(token).toBeDefined();
-
+  assertToBeNonNullish(token, "Authentication token is missing from sign-in response");
   const org = await mercuriusClient.mutate(Mutation_createOrganization, {
     headers: { authorization: `bearer ${token}` },
     variables: {
@@ -32,19 +32,21 @@ export async function createTestOrganization(): Promise<string> {
       },
     },
   });
-
-  expect(org.errors ?? []).toEqual([]);
-
+  if (org.errors) {
+    throw new Error(`Create organization failed: ${JSON.stringify(org.errors)}`);
+  }
   const orgId = org.data?.createOrganization?.id;
-  expect(orgId).toBeDefined();
-
-  return orgId as string;
+  assertToBeNonNullish(orgId, "Organization ID is missing from creation response");
+  return orgId;
 }
 
 export async function loginAdminUser(): Promise<{
   adminId: string;
   authToken: string;
 }> {
+
+  mercuriusClient.setHeaders({});
+
   const adminSignInResult = await mercuriusClient.query(Query_signIn, {
     variables: {
       input: {

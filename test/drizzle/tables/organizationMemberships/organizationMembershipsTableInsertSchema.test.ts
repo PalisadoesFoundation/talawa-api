@@ -12,7 +12,7 @@ describe("organization Memberships Table Insert Schema edge cases", () => {
   it("Remove the memberId field from the object", () => {
     const data = {
       organizationId: validUUID2,
-      role: "MEMBER",
+      role: "regular",
     };
 
     expect(() =>
@@ -23,7 +23,7 @@ describe("organization Memberships Table Insert Schema edge cases", () => {
   it("Remove the organizationId field from the object", () => {
     const data = {
       memberId: validUUID1,
-      role: "MEMBER",
+      role: "regular",
     };
 
     expect(() =>
@@ -46,7 +46,7 @@ describe("organization Memberships Table Insert Schema edge cases", () => {
     const data = {
       memberId: "not-a-uuid",
       organizationId: validUUID2,
-      role: "MEMBER",
+      role: "regular",
     };
 
     expect(() =>
@@ -70,7 +70,7 @@ describe("organization Memberships Table Insert Schema edge cases", () => {
     const data = {
       memberId: validUUID1,
       organizationId: validUUID2,
-      role: "MEMBER",
+      role: "regular",
     };
 
     expect(() =>
@@ -82,7 +82,7 @@ describe("organization Memberships Table Insert Schema edge cases", () => {
     const data = {
       memberId: validUUID1,
       organizationId: validUUID2,
-      role: "ADMIN",
+      role: "administrator",
       creatorId: validUUID1,
       updaterId: validUUID2,
     };
@@ -96,7 +96,7 @@ describe("organization Memberships Table Insert Schema edge cases", () => {
     const data = {
       memberId: validUUID1,
       organizationId: validUUID2,
-      role: "MEMBER",
+      role: "regular",
       createdAt: new Date("2024-01-01T00:00:00Z"),
     };
 
@@ -109,7 +109,7 @@ describe("organization Memberships Table Insert Schema edge cases", () => {
     const data = {
       memberId: validUUID1,
       organizationId: validUUID2,
-      role: "MEMBER",
+      role: "regular",
       updatedAt: new Date("2024-01-01T00:00:00Z"),
     };
 
@@ -122,7 +122,7 @@ describe("organization Memberships Table Insert Schema edge cases", () => {
     const data = {
       memberId: validUUID1,
       organizationId: validUUID2,
-      role: "MEMBER",
+      role: "regular",
       createdAt: "not-a-date",
     };
 
@@ -135,7 +135,7 @@ describe("organization Memberships Table Insert Schema edge cases", () => {
     const data = {
       memberId: validUUID1,
       organizationId: validUUID2,
-      role: "MEMBER",
+      role: "regular",
       updatedAt: 12345,
     };
 
@@ -148,19 +148,7 @@ describe("organization Memberships Table Insert Schema edge cases", () => {
     const data = {
       memberId: validUUID1,
       organizationId: validUUID2,
-      role: "ADMIN",
-    };
-
-    expect(() =>
-      organizationMembershipsTableInsertSchema.parse(data)
-    ).not.toThrow();
-  });
-
-  it("Send object with OWNER role", () => {
-    const data = {
-      memberId: validUUID1,
-      organizationId: validUUID2,
-      role: "OWNER",
+      role: "administrator",
     };
 
     expect(() =>
@@ -192,11 +180,11 @@ describe("organization Memberships Table Insert Schema edge cases", () => {
     ).toThrow();
   });
 
-  it("Send valid role in lowercase", () => {
+  it("Send valid role in uppercaes", () => {
     const data = {
       memberId: validUUID1,
       organizationId: validUUID2,
-      role: "member",
+      role: "REGULAR",
     };
 
     expect(() =>
@@ -208,7 +196,7 @@ describe("organization Memberships Table Insert Schema edge cases", () => {
     const data = {
       memberId: null,
       organizationId: validUUID2,
-      role: "MEMBER",
+      role: "regular",
     };
 
     expect(() =>
@@ -220,7 +208,7 @@ describe("organization Memberships Table Insert Schema edge cases", () => {
     const data = {
       memberId: validUUID1,
       organizationId: null,
-      role: "MEMBER",
+      role: "regular",
     };
 
     expect(() =>
@@ -232,7 +220,7 @@ describe("organization Memberships Table Insert Schema edge cases", () => {
     const data = {
       memberId: "",
       organizationId: validUUID2,
-      role: "MEMBER",
+      role: "regular",
     };
 
     expect(() =>
@@ -244,7 +232,7 @@ describe("organization Memberships Table Insert Schema edge cases", () => {
     const data = {
       memberId: validUUID1,
       organizationId: "",
-      role: "MEMBER",
+      role: "regular",
     };
 
     expect(() =>
@@ -256,7 +244,7 @@ describe("organization Memberships Table Insert Schema edge cases", () => {
     const data = {
       memberId: "550e8400-e29b-11d4-a716-446655440000", // v1 UUID
       organizationId: validUUID2,
-      role: "MEMBER",
+      role: "regular",
     };
 
     expect(() =>
@@ -268,7 +256,7 @@ describe("organization Memberships Table Insert Schema edge cases", () => {
     const data = {
       memberId: validUUID1,
       organizationId: validUUID2,
-      role: "MEMBER",
+      role: "regular",
       creatorId: "invalid-uuid",
     };
 
@@ -281,7 +269,7 @@ describe("organization Memberships Table Insert Schema edge cases", () => {
     const data = {
       memberId: validUUID1,
       organizationId: validUUID2,
-      role: "MEMBER",
+      role: "regular",
       updaterId: "not-valid",
     };
 
@@ -294,7 +282,7 @@ describe("organization Memberships Table Insert Schema edge cases", () => {
     const data = {
       memberId: validUUID1,
       organizationId: validUUID2,
-      role: "MEMBER",
+      role: "regular",
       creatorId: null,
     };
 
@@ -307,7 +295,7 @@ describe("organization Memberships Table Insert Schema edge cases", () => {
     const data = {
       memberId: validUUID1,
       organizationId: validUUID2,
-      role: "MEMBER",
+      role: "regular",
       updaterId: null,
     };
 
@@ -320,7 +308,7 @@ describe("organization Memberships Table Insert Schema edge cases", () => {
     const data = {
       memberId: validUUID1,
       organizationId: validUUID2,
-      role: "MEMBER",
+      role: "regular",
       unknownField: "should not exist",
     };
 
@@ -332,7 +320,7 @@ describe("organization Memberships Table Insert Schema edge cases", () => {
     const data = {
       memberId: validUUID1,
       organizationId: validUUID2,
-      role: "ADMIN",
+      role: "administrator",
       creatorId: validUUID1,
       updaterId: validUUID2,
       createdAt: new Date("2024-01-01T00:00:00Z"),
@@ -348,7 +336,7 @@ describe("organization Memberships Table Insert Schema edge cases", () => {
     const data = {
       memberId: validUUID1,
       organizationId: validUUID1,
-      role: "OWNER",
+      role: "administrator",
     };
 
     expect(() =>
@@ -360,7 +348,7 @@ describe("organization Memberships Table Insert Schema edge cases", () => {
     const data = {
       memberId: validUUID1,
       organizationId: validUUID2,
-      role: "MEMBER",
+      role: "regular",
       creatorId: validUUID1,
     };
 

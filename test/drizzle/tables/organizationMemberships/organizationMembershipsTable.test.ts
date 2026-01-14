@@ -25,13 +25,17 @@ describe("organizationMembershipsTable database operations", async () => {
     await server.drizzleClient
       .delete(usersTable)
       .where(eq(usersTable.id, testUser.userId));
-
-    await server.drizzleClient
-      .delete(usersTable)
-      .where(eq(usersTable.id, creatorUser.adminId));
   });
 
   it("creates membership with required fields", async () => {
+    await server.drizzleClient
+      .delete(organizationMembershipsTable)
+      .where(
+        and(
+          eq(organizationMembershipsTable.memberId, testUser.userId),
+          eq(organizationMembershipsTable.organizationId, testOrg)
+        )
+      );
     const [membership] = await server.drizzleClient
       .insert(organizationMembershipsTable)
       .values({
@@ -50,6 +54,15 @@ describe("organizationMembershipsTable database operations", async () => {
 
   it("sets createdAt automatically on insert", async () => {
     const before = new Date();
+
+    await server.drizzleClient
+      .delete(organizationMembershipsTable)
+      .where(
+        and(
+          eq(organizationMembershipsTable.memberId, testUser.userId),
+          eq(organizationMembershipsTable.organizationId, testOrg)
+        )
+      );
 
     const [membership] = await server.drizzleClient
       .insert(organizationMembershipsTable)
@@ -71,6 +84,15 @@ describe("organizationMembershipsTable database operations", async () => {
   });
 
   it("allows optional creatorId and updaterId", async () => {
+    await server.drizzleClient
+      .delete(organizationMembershipsTable)
+      .where(
+        and(
+          eq(organizationMembershipsTable.memberId, testUser.userId),
+          eq(organizationMembershipsTable.organizationId, testOrg)
+        )
+      );
+
     const [membership] = await server.drizzleClient
       .insert(organizationMembershipsTable)
       .values({
@@ -87,6 +109,15 @@ describe("organizationMembershipsTable database operations", async () => {
   });
 
   it("enforces composite primary key on memberId and organizationId", async () => {
+    await server.drizzleClient
+      .delete(organizationMembershipsTable)
+      .where(
+        and(
+          eq(organizationMembershipsTable.memberId, testUser.userId),
+          eq(organizationMembershipsTable.organizationId, testOrg)
+        )
+      );
+
     await server.drizzleClient.insert(organizationMembershipsTable).values({
       memberId: testUser.userId,
       organizationId: testOrg,
@@ -103,6 +134,15 @@ describe("organizationMembershipsTable database operations", async () => {
   });
 
   it("updates updatedAt timestamp on update", async () => {
+    await server.drizzleClient
+      .delete(organizationMembershipsTable)
+      .where(
+        and(
+          eq(organizationMembershipsTable.memberId, testUser.userId),
+          eq(organizationMembershipsTable.organizationId, testOrg)
+        )
+      );
+
     const [membership] = await server.drizzleClient
       .insert(organizationMembershipsTable)
       .values({
@@ -133,6 +173,15 @@ describe("organizationMembershipsTable database operations", async () => {
 
   it("cascades delete when user is deleted", async () => {
     const user = await createRegularUserUsingAdmin();
+    await server.drizzleClient
+      .delete(organizationMembershipsTable)
+      .where(
+        and(
+          eq(organizationMembershipsTable.memberId, user.userId),
+          eq(organizationMembershipsTable.organizationId, testOrg)
+        )
+      );
+
     await server.drizzleClient.insert(organizationMembershipsTable).values({
       memberId: user.userId,
       organizationId: testOrg,
@@ -161,6 +210,15 @@ describe("organizationMembershipsTable database operations", async () => {
       })
       .returning();
 
+    await server.drizzleClient
+      .delete(organizationMembershipsTable)
+      .where(
+        and(
+          eq(organizationMembershipsTable.memberId, testUser.userId),
+          eq(organizationMembershipsTable.organizationId, org?.id as string)
+        )
+      );
+
     await server.drizzleClient.insert(organizationMembershipsTable).values({
       memberId: testUser.userId,
       organizationId: org?.id as string,
@@ -183,6 +241,15 @@ describe("organizationMembershipsTable database operations", async () => {
 
   it("sets creatorId to null when creator is deleted", async () => {
     const creator = await createRegularUserUsingAdmin();
+
+    await server.drizzleClient
+      .delete(organizationMembershipsTable)
+      .where(
+        and(
+          eq(organizationMembershipsTable.memberId, testUser.userId),
+          eq(organizationMembershipsTable.organizationId, testOrg)
+        )
+      );
 
     const [membership] = await server.drizzleClient
       .insert(organizationMembershipsTable)
@@ -223,10 +290,19 @@ describe("organizationMembershipsTable database operations", async () => {
     for (const role of roles) {
       const user = await createRegularUserUsingAdmin();
 
+      await server.drizzleClient
+        .delete(organizationMembershipsTable)
+        .where(
+          and(
+            eq(organizationMembershipsTable.memberId, user.userId),
+            eq(organizationMembershipsTable.organizationId, testOrg)
+          )
+        );
+
       const [membership] = await server.drizzleClient
         .insert(organizationMembershipsTable)
         .values({
-          memberId: testUser.userId,
+          memberId: user.userId,
           organizationId: testOrg,
           role: role as "regular" | "administrator",
           creatorId: creatorUser.adminId,
@@ -236,12 +312,25 @@ describe("organizationMembershipsTable database operations", async () => {
       expect(membership?.role).toBe(role);
 
       await server.drizzleClient
+        .delete(organizationMembershipsTable)
+        .where(eq(organizationMembershipsTable.memberId, user.userId));
+
+      await server.drizzleClient
         .delete(usersTable)
         .where(eq(usersTable.id, user.userId));
     }
   });
 
   it("queries membership by indexes", async () => {
+    await server.drizzleClient
+      .delete(organizationMembershipsTable)
+      .where(
+        and(
+          eq(organizationMembershipsTable.memberId, testUser.userId),
+          eq(organizationMembershipsTable.organizationId, testOrg)
+        )
+      );
+
     await server.drizzleClient.insert(organizationMembershipsTable).values({
       memberId: testUser.userId,
       organizationId: testOrg,

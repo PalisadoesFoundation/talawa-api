@@ -24,7 +24,10 @@ describe("organizationMembershipsTableRelations Operations", () => {
     if (!org) throw new Error("Org creation failed");
     orgId = org.id;
 
-    const createUser = async (name: string, role: "regular" | "administrator") => {
+    const createUser = async (
+      name: string,
+      role: "regular" | "administrator"
+    ) => {
       const [user] = await server.drizzleClient
         .insert(usersTable)
         .values({
@@ -61,51 +64,61 @@ describe("organizationMembershipsTableRelations Operations", () => {
     await server.drizzleClient
       .delete(organizationsTable)
       .where(eq(organizationsTable.id, orgId));
+
+    for (const userId of [memberId, creatorId, updaterId]) {
+      await server.drizzleClient
+        .delete(usersTable)
+        .where(eq(usersTable.id, userId));
+    }
   });
 
   it("resolves creator relation", async () => {
-    const [membership] = await server.drizzleClient.query.organizationMembershipsTable.findMany({
-      with: {
-        creator: true,
-      },
-      where: eq(organizationMembershipsTable.memberId, memberId),
-    });
+    const [membership] =
+      await server.drizzleClient.query.organizationMembershipsTable.findMany({
+        with: {
+          creator: true,
+        },
+        where: eq(organizationMembershipsTable.memberId, memberId),
+      });
 
     expect(membership?.creator).toBeDefined();
     expect(membership?.creator?.id).toBe(creatorId);
   });
 
   it("resolves member relation", async () => {
-    const [membership] = await server.drizzleClient.query.organizationMembershipsTable.findMany({
-      with: {
-        member: true,
-      },
-      where: eq(organizationMembershipsTable.memberId, memberId),
-    });
+    const [membership] =
+      await server.drizzleClient.query.organizationMembershipsTable.findMany({
+        with: {
+          member: true,
+        },
+        where: eq(organizationMembershipsTable.memberId, memberId),
+      });
 
     expect(membership?.member).toBeDefined();
     expect(membership?.member?.id).toBe(memberId);
   });
 
   it("resolves organization relation", async () => {
-    const [membership] = await server.drizzleClient.query.organizationMembershipsTable.findMany({
-      with: {
-        organization: true,
-      },
-      where: eq(organizationMembershipsTable.memberId, memberId),
-    });
+    const [membership] =
+      await server.drizzleClient.query.organizationMembershipsTable.findMany({
+        with: {
+          organization: true,
+        },
+        where: eq(organizationMembershipsTable.memberId, memberId),
+      });
 
     expect(membership?.organization).toBeDefined();
     expect(membership?.organization?.id).toBe(orgId);
   });
 
   it("resolves updater relation", async () => {
-    const [membership] = await server.drizzleClient.query.organizationMembershipsTable.findMany({
-      with: {
-        updater: true,
-      },
-      where: eq(organizationMembershipsTable.memberId, memberId),
-    });
+    const [membership] =
+      await server.drizzleClient.query.organizationMembershipsTable.findMany({
+        with: {
+          updater: true,
+        },
+        where: eq(organizationMembershipsTable.memberId, memberId),
+      });
 
     expect(membership?.updater).toBeDefined();
     expect(membership?.updater?.id).toBe(updaterId);
