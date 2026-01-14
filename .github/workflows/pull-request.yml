@@ -920,9 +920,18 @@ jobs:
         run: cp envFiles/.env.rootless.devcontainer .env
       - name: Set XDG_RUNTIME_DIR for rootless Docker socket path
         run: |
-          # In CI, we're using rootful Docker but testing the config paths
-          # Set XDG_RUNTIME_DIR to the standard location for the CI runner
-          echo "XDG_RUNTIME_DIR=/run/user/$(id -u)" >> $GITHUB_ENV
+          # In CI, we're using rootful Docker but testing the rootless config paths
+          # Set XDG_RUNTIME_DIR and UID for the compose file variable interpolation
+          echo "XDG_RUNTIME_DIR=/run/user/$(id -u)" >> "$GITHUB_ENV"
+          echo "UID=$(id -u)" >> "$GITHUB_ENV"
+      - name: Create rootless socket path symlink for CI
+        run: |
+          # The rootless compose file expects socket at /run/user/$UID/docker.sock
+          # In CI (rootful Docker), the socket is at /var/run/docker.sock
+          # Create the directory and symlink so the compose bind mount works
+          sudo mkdir -p "/run/user/$(id -u)"
+          sudo ln -sf /var/run/docker.sock "/run/user/$(id -u)/docker.sock"
+          sudo chown -R "$(id -u):$(id -g)" "/run/user/$(id -u)"
       - name: Bring up rootless devcontainer
         run: |
           # Use the rootless devcontainer config from the subdirectory
@@ -941,7 +950,7 @@ jobs:
           if [ "$timeout" -eq 0 ]; then
             echo "Error: Postgres failed to start"
             docker compose ps
-            docker logs postgres
+            docker compose logs postgres
             exit 1
           fi
       - name: Wait for Devcontainer to be ready
