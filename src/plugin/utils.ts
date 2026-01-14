@@ -634,9 +634,10 @@ export function clearPluginModuleCache(
 		// The garbage collector will handle cleanup of unused modules automatically
 
 		// Log that cache clearing is not available in ES modules
-		rootLogger.info(
-			`Module cache clearing not available in ES modules for plugin: ${pluginPath}`,
-		);
+		rootLogger.info({
+			msg: "Module cache clearing not available in ES modules",
+			pluginPath,
+		});
 
 		// Non-critical operation, continue with cleanup
 	} catch (error) {
