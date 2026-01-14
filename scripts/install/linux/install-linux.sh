@@ -266,36 +266,116 @@ REPO_ROOT=$(get_repo_root)
 # Ensure we're in the repository root
 cd "$REPO_ROOT"
 
-if [ ! -f "package.json" ]; then
-    error "package.json not found in current directory: $PWD"
-    echo ""
-    info "Common causes:"
-    echo "  • You haven't cloned the repository yet"
-    echo "  • You're running the script from a different directory"
-    echo "  • The repository is incomplete or corrupted"
-    echo ""
-    info "Troubleshooting steps:"
-    echo "  1. Clone the repository (if not done already):"
-    echo "     git clone https://github.com/PalisadoesFoundation/talawa-api.git"
-    echo ""
-    echo "  2. Navigate to the repository root:"
-    echo "     cd talawa-api"
-    echo ""
-    echo "  3. Verify package.json exists:"
-    echo "     ls -la package.json"
-    echo ""
-    echo "  4. Run this script again from the repository root"
-    echo ""
-    info "Diagnostic commands:"
-    echo "  • Check current directory: pwd"
-    echo "  • List files in current directory: ls -la"
-    echo "  • Find package.json: find . -name 'package.json' -type f 2>/dev/null | head -5"
-    echo ""
-    info "Documentation: https://github.com/PalisadoesFoundation/talawa-api/blob/develop/INSTALLATION.md"
-    info "Report issues: https://github.com/PalisadoesFoundation/talawa-api/issues"
-    info "  Include: OS version, current directory, and output of 'ls -la'"
-    exit 1
-fi
+##############################################################################
+# Pre-flight Checks: Validate repository and environment
+##############################################################################
+
+# Minimum required disk space in KB (2GB)
+readonly MIN_DISK_SPACE_KB=2097152
+
+validate_repository() {
+    # Verify package.json exists
+    if [ ! -f "package.json" ]; then
+        error "package.json not found. Please run this script from the talawa-api repository root."
+        echo ""
+        info "Remediation steps:"
+        echo "  1. Clone the repository: git clone https://github.com/PalisadoesFoundation/talawa-api.git"
+        echo "  2. Navigate to the repository: cd talawa-api"
+        echo "  3. Run this script again"
+        exit 1
+    fi
+
+    # Verify this is the talawa-api repository
+    PACKAGE_NAME=$(jq -r '.name // empty' package.json 2>/dev/null)
+    if [ -z "$PACKAGE_NAME" ]; then
+        error "Could not read 'name' field from package.json. The file may be corrupted or jq is not installed."
+        info "Try installing jq: sudo apt install jq (Debian/Ubuntu) or sudo dnf install jq (Fedora)"
+        exit 1
+    fi
+
+    if [ "$PACKAGE_NAME" != "talawa-api" ]; then
+        error "This script must be run from the talawa-api repository."
+        echo "  Found p ackage name: '$PACKAGE_NAME'"
+        echo "  Expected: 'talawa-api'"
+        echo ""
+        info "Remediation: Ensure you are in the correct directory and try again."
+        exit 1
+    fi
+
+    # Check 3: Validate required package.json fields exist
+    MISSING_FIELDS=""
+
+    NODE_ENGINE=$(jq -r '.engines.node // empty' package.json 2>/dev/null)
+    if [ -z "$NODE_ENGINE" ]; then
+        MISSING_FIELDS="$MISSING_FIELDS engines.node"
+    fi
+
+    PKG_MANAGER=$(jq -r '.packageManager // empty' package.json 2>/dev/null)
+    if [ -z "$PKG_MANAGER" ]; then
+        MISSING_FIELDS="$MISSING_FIELDS packageManager"
+    fi
+
+    if [ -n "$MISSING_FIELDS" ]; then
+        error "Required fields missing from package.json:$MISSING_FIELDS"
+        echo ""
+        info "Remediation steps:"
+        echo "  1. Ensure you have the latest version of the repository:"
+        echo "     git pull origin develop"
+        echo "  2. If the issue persists, re-clone the repository:"
+        echo "     git clone https://github.com/PalisadoesFoundation/talawa-api.git"
+        exit 1
+    fi
+}
+
+validate_disk_space() {
+    # Verify available disk space (minimum 2GB)
+    AVAILABLE_SPACE_KB=$(df -k "$REPO_ROOT" | awk 'NR==2 {print $4}')
+    if [ -n "$AVAILABLE_SPACE_KB" ] && [ "$AVAILABLE_SPACE_KB" -lt "$MIN_DISK_SPACE_KB" ]; then
+        AVAILABLE_SPACE_MB=$((AVAILABLE_SPACE_KB / 1024))
+        REQUIRED_SPACE_MB=$((MIN_DISK_SPACE_KB / 1024))
+        error "Insufficient disk space. Available: ${AVAILABLE_SPACE_MB}MB, Required: ${REQUIRED_SPACE_MB}MB (2GB)"
+        echo ""
+        info "Remediation steps:"
+        echo "  1. Free up disk space by removing unnecessary files"
+        echo "  2. Check disk usage: df -h"
+        echo "  3. Find large files: du -sh * | sort -rh | head -10"
+        exit 1
+    fi
+}
+
+check_git_repo() {
+    # Verify git repository exists
+    if [ ! -d ".git" ]; then
+        error "This directory is not a git repository."
+        echo ""
+        info "Remediation steps:"
+        echo "  1. Clone the repository properly:"
+        echo "     git clone https://github.com/PalisadoesFoundation/talawa-api.git"
+        echo "  2. Navigate to the cloned directory: cd talawa-api"
+        exit 1
+    fi
+
+    # Verify git is functional and check for uncommitted changes
+    if command_exists git; then
+        # Check if git repository is valid
+        if ! git rev-parse --is-inside-work-tree &>/dev/null; then
+            error "Invalid git repository. The .git directory may be corrupted."
+            info "Remediation: Re-clone the repository from GitHub."
+            exit 1
+        fi
+
+        # Warn about uncommitted changes (non-blocking)
+        if ! git diff-index --quiet HEAD -- 2>/dev/null; then
+            warn "You have uncommitted changes in your repository."
+            info "Consider committing or stashing your changes before installation."
+        fi
+    fi
+}
+
+validate_repository
+validate_disk_space
+check_git_repo
+success "Repository validation passed: talawa-api"
 
 # Detect Linux distribution
 detect_distro() {
