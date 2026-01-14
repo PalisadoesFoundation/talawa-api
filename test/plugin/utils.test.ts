@@ -213,6 +213,7 @@ describe("deepClone", () => {
 		expect(utils.deepClone("hello")).toBe("hello");
 		expect(utils.deepClone(true)).toBe(true);
 		expect(utils.deepClone(undefined)).toBe(undefined);
+		expect(utils.deepClone(null)).toBe(null);
 		// Symbol and function edge cases
 		const sym = Symbol("test");
 		expect(utils.deepClone(sym)).toBe(sym);
@@ -687,6 +688,9 @@ describe("clearPluginModuleCache", () => {
 			),
 		).not.toThrow();
 	});
+	// NOTE: This test is intentionally fragile - it forces rootLogger.info to throw
+	// to cover the catch block that logs via rootLogger.warn (lines 637-639).
+	// The trigger depends on the logging call being the first operation in the try block.
 	it("calls rootLogger.warn in catch block (covers lines 637-639)", async () => {
 		const { rootLogger } = await import("~/src/utilities/logging/logger");
 		const warnSpy = vi.spyOn(rootLogger, "warn");
@@ -762,14 +766,6 @@ describe("deepClone edge cases", () => {
 		expect(cloned).toBeInstanceOf(Date);
 		expect(cloned.getTime()).toBe(date.getTime());
 		expect(cloned).not.toBe(date);
-	});
-
-	it("returns primitive values as-is", () => {
-		expect(utils.deepClone(42)).toBe(42);
-		expect(utils.deepClone("hello")).toBe("hello");
-		expect(utils.deepClone(null)).toBe(null);
-		expect(utils.deepClone(undefined)).toBe(undefined);
-		expect(utils.deepClone(true)).toBe(true);
 	});
 
 	it("clones nested arrays", () => {
