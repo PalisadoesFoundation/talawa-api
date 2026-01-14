@@ -1,4 +1,4 @@
-[API Docs](/)
+[**talawa-api**](../../../README.md)
 
 ***
 
@@ -6,7 +6,7 @@
 
 > `const` **emailConfig**: `object`
 
-Defined in: [src/config/emailConfig.ts:22](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/config/emailConfig.ts#L22)
+Defined in: [src/config/emailConfig.ts:22](https://github.com/avinxshKD/talawa-api/blob/d546483f2198a0a1a77eb1a770c24fa474a2fb9c/src/config/emailConfig.ts#L22)
 
 Email configuration from environment variables
 

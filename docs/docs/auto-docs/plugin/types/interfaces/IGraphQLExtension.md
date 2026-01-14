@@ -1,10 +1,10 @@
-[API Docs](/)
+[**talawa-api**](../../../README.md)
 
 ***
 
 # Interface: IGraphQLExtension
 
-Defined in: [src/plugin/types.ts:39](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/plugin/types.ts#L39)
+Defined in: [src/plugin/types.ts:39](https://github.com/avinxshKD/talawa-api/blob/d546483f2198a0a1a77eb1a770c24fa474a2fb9c/src/plugin/types.ts#L39)
 
 ## Properties
 
@@ -12,7 +12,7 @@ Defined in: [src/plugin/types.ts:39](https://github.com/PalisadoesFoundation/tal
 
 > **builderDefinition**: `string`
 
-Defined in: [src/plugin/types.ts:45](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/plugin/types.ts#L45)
+Defined in: [src/plugin/types.ts:45](https://github.com/avinxshKD/talawa-api/blob/d546483f2198a0a1a77eb1a770c24fa474a2fb9c/src/plugin/types.ts#L45)
 
 ***
 
@@ -20,7 +20,7 @@ Defined in: [src/plugin/types.ts:45](https://github.com/PalisadoesFoundation/tal
 
 > `optional` **description**: `string`
 
-Defined in: [src/plugin/types.ts:43](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/plugin/types.ts#L43)
+Defined in: [src/plugin/types.ts:43](https://github.com/avinxshKD/talawa-api/blob/d546483f2198a0a1a77eb1a770c24fa474a2fb9c/src/plugin/types.ts#L43)
 
 ***
 
@@ -28,7 +28,7 @@ Defined in: [src/plugin/types.ts:43](https://github.com/PalisadoesFoundation/tal
 
 > **file**: `string`
 
-Defined in: [src/plugin/types.ts:42](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/plugin/types.ts#L42)
+Defined in: [src/plugin/types.ts:42](https://github.com/avinxshKD/talawa-api/blob/d546483f2198a0a1a77eb1a770c24fa474a2fb9c/src/plugin/types.ts#L42)
 
 ***
 
@@ -36,7 +36,7 @@ Defined in: [src/plugin/types.ts:42](https://github.com/PalisadoesFoundation/tal
 
 > **name**: `string`
 
-Defined in: [src/plugin/types.ts:41](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/plugin/types.ts#L41)
+Defined in: [src/plugin/types.ts:41](https://github.com/avinxshKD/talawa-api/blob/d546483f2198a0a1a77eb1a770c24fa474a2fb9c/src/plugin/types.ts#L41)
 
 ***
 
@@ -44,4 +44,4 @@ Defined in: [src/plugin/types.ts:41](https://github.com/PalisadoesFoundation/tal
 
 > **type**: `"query"` \| `"mutation"` \| `"subscription"`
 
-Defined in: [src/plugin/types.ts:40](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/plugin/types.ts#L40)
+Defined in: [src/plugin/types.ts:40](https://github.com/avinxshKD/talawa-api/blob/d546483f2198a0a1a77eb1a770c24fa474a2fb9c/src/plugin/types.ts#L40)

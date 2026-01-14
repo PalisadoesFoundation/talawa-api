@@ -1,4 +1,4 @@
-[API Docs](/)
+[**talawa-api**](../../../../README.md)
 
 ***
 
@@ -6,7 +6,7 @@
 
 > **createDefaultWorkerConfig**(): [`WorkerConfig`](../interfaces/WorkerConfig.md)
 
-Defined in: [src/workers/eventGeneration/eventGenerationPipeline.ts:228](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/workers/eventGeneration/eventGenerationPipeline.ts#L228)
+Defined in: [src/workers/eventGeneration/eventGenerationPipeline.ts:228](https://github.com/avinxshKD/talawa-api/blob/d546483f2198a0a1a77eb1a770c24fa474a2fb9c/src/workers/eventGeneration/eventGenerationPipeline.ts#L228)
 
 Creates a default configuration object for the materialization worker.
 

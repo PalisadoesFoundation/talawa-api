@@ -1,4 +1,4 @@
-[API Docs](/)
+[**talawa-api**](../../../../README.md)
 
 ***
 
@@ -6,7 +6,7 @@
 
 > `const` **eventExceptionsTable**: `PgTableWithColumns`\<\{ \}\>
 
-Defined in: [src/drizzle/tables/recurringEventExceptions.ts:22](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/drizzle/tables/recurringEventExceptions.ts#L22)
+Defined in: [src/drizzle/tables/recurringEventExceptions.ts:22](https://github.com/avinxshKD/talawa-api/blob/d546483f2198a0a1a77eb1a770c24fa474a2fb9c/src/drizzle/tables/recurringEventExceptions.ts#L22)
 
 Drizzle ORM postgres table definition for recurring event exceptions.
 This table stores instance-specific modifications to recurring events.

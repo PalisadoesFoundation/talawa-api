@@ -1,4 +1,4 @@
-[API Docs](/)
+[**talawa-api**](../../../README.md)
 
 ***
 
@@ -6,7 +6,7 @@
 
 > `const` **COOKIE\_NAMES**: `object`
 
-Defined in: [src/utilities/cookieConfig.ts:7](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/utilities/cookieConfig.ts#L7)
+Defined in: [src/utilities/cookieConfig.ts:7](https://github.com/avinxshKD/talawa-api/blob/d546483f2198a0a1a77eb1a770c24fa474a2fb9c/src/utilities/cookieConfig.ts#L7)
 
 Cookie names used for authentication tokens.
 These are centralized here to ensure consistency across the codebase.

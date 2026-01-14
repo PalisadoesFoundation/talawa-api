@@ -1,4 +1,4 @@
-[API Docs](/)
+[**talawa-api**](../../../../README.md)
 
 ***
 
@@ -6,4 +6,4 @@
 
 > `const` **mutationCreateAgendaItemInputSchema**: `ZodEffects`\<`ZodObject`\<`Pick`\<\{ `createdAt`: `ZodOptional`\<`ZodDate`\>; `creatorId`: `ZodOptional`\<`ZodNullable`\<`ZodString`\>\>; `description`: `ZodNullable`\<`ZodOptional`\<`ZodString`\>\>; `duration`: `ZodOptional`\<`ZodNullable`\<`ZodString`\>\>; `folderId`: `ZodString`; `id`: `ZodOptional`\<`ZodString`\>; `key`: `ZodOptional`\<`ZodNullable`\<`ZodString`\>\>; `name`: `ZodString`; `type`: `ZodEnum`\<\[`"general"`, `"note"`, `"scripture"`, `"song"`\]\>; `updatedAt`: `ZodOptional`\<`ZodNullable`\<`ZodDate`\>\>; `updaterId`: `ZodOptional`\<`ZodNullable`\<`ZodString`\>\>; \}, `"duration"` \| `"name"` \| `"description"` \| `"type"` \| `"folderId"` \| `"key"`\>, `"strip"`, `ZodTypeAny`, \{ `description?`: `string` \| `null`; `duration?`: `string` \| `null`; `folderId`: `string`; `key?`: `string` \| `null`; `name`: `string`; `type`: `"general"` \| `"note"` \| `"scripture"` \| `"song"`; \}, \{ `description?`: `string` \| `null`; `duration?`: `string` \| `null`; `folderId`: `string`; `key?`: `string` \| `null`; `name`: `string`; `type`: `"general"` \| `"note"` \| `"scripture"` \| `"song"`; \}\>, \{ `description?`: `string` \| `null`; `duration?`: `string` \| `null`; `folderId`: `string`; `key?`: `string` \| `null`; `name`: `string`; `type`: `"general"` \| `"note"` \| `"scripture"` \| `"song"`; \}, \{ `description?`: `string` \| `null`; `duration?`: `string` \| `null`; `folderId`: `string`; `key?`: `string` \| `null`; `name`: `string`; `type`: `"general"` \| `"note"` \| `"scripture"` \| `"song"`; \}\>
 
-Defined in: [src/graphql/inputs/MutationCreateAgendaItemInput.ts:6](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/graphql/inputs/MutationCreateAgendaItemInput.ts#L6)
+Defined in: [src/graphql/inputs/MutationCreateAgendaItemInput.ts:6](https://github.com/avinxshKD/talawa-api/blob/d546483f2198a0a1a77eb1a770c24fa474a2fb9c/src/graphql/inputs/MutationCreateAgendaItemInput.ts#L6)

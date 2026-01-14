@@ -1,10 +1,10 @@
-[API Docs](/)
+[**talawa-api**](../../../README.md)
 
 ***
 
 # Interface: IExtensionRegistry
 
-Defined in: [src/plugin/types.ts:92](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/plugin/types.ts#L92)
+Defined in: [src/plugin/types.ts:92](https://github.com/avinxshKD/talawa-api/blob/d546483f2198a0a1a77eb1a770c24fa474a2fb9c/src/plugin/types.ts#L92)
 
 ## Properties
 
@@ -12,7 +12,7 @@ Defined in: [src/plugin/types.ts:92](https://github.com/PalisadoesFoundation/tal
 
 > **database**: `object`
 
-Defined in: [src/plugin/types.ts:97](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/plugin/types.ts#L97)
+Defined in: [src/plugin/types.ts:97](https://github.com/avinxshKD/talawa-api/blob/d546483f2198a0a1a77eb1a770c24fa474a2fb9c/src/plugin/types.ts#L97)
 
 #### enums
 
@@ -32,7 +32,7 @@ Defined in: [src/plugin/types.ts:97](https://github.com/PalisadoesFoundation/tal
 
 > **graphql**: `object`
 
-Defined in: [src/plugin/types.ts:93](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/plugin/types.ts#L93)
+Defined in: [src/plugin/types.ts:93](https://github.com/avinxshKD/talawa-api/blob/d546483f2198a0a1a77eb1a770c24fa474a2fb9c/src/plugin/types.ts#L93)
 
 #### builderExtensions
 
@@ -44,7 +44,7 @@ Defined in: [src/plugin/types.ts:93](https://github.com/PalisadoesFoundation/tal
 
 > **hooks**: `object`
 
-Defined in: [src/plugin/types.ts:102](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/plugin/types.ts#L102)
+Defined in: [src/plugin/types.ts:102](https://github.com/avinxshKD/talawa-api/blob/d546483f2198a0a1a77eb1a770c24fa474a2fb9c/src/plugin/types.ts#L102)
 
 #### post
 
@@ -60,7 +60,7 @@ Defined in: [src/plugin/types.ts:102](https://github.com/PalisadoesFoundation/ta
 
 > **webhooks**: `object`
 
-Defined in: [src/plugin/types.ts:106](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/plugin/types.ts#L106)
+Defined in: [src/plugin/types.ts:106](https://github.com/avinxshKD/talawa-api/blob/d546483f2198a0a1a77eb1a770c24fa474a2fb9c/src/plugin/types.ts#L106)
 
 #### handlers
 

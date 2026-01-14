@@ -1,10 +1,10 @@
-[API Docs](/)
+[**talawa-api**](../../../../README.md)
 
 ***
 
 # Class: NotificationService
 
-Defined in: [src/services/notification/NotificationService.ts:40](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/notification/NotificationService.ts#L40)
+Defined in: [src/services/notification/NotificationService.ts:40](https://github.com/avinxshKD/talawa-api/blob/d546483f2198a0a1a77eb1a770c24fa474a2fb9c/src/services/notification/NotificationService.ts#L40)
 
 Thin per-request notification service. By default it collects notifications in-memory
 during the request and flushes them (delegates to the existing event bus) when
@@ -27,7 +27,7 @@ change the delivery strategy later (DB-backed queue, background worker, etc.).
 
 > **emitEventCreatedImmediate**(`payload`, `ctx`): `Promise`\<`void`\>
 
-Defined in: [src/services/notification/NotificationService.ts:72](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/notification/NotificationService.ts#L72)
+Defined in: [src/services/notification/NotificationService.ts:72](https://github.com/avinxshKD/talawa-api/blob/d546483f2198a0a1a77eb1a770c24fa474a2fb9c/src/services/notification/NotificationService.ts#L72)
 
 Synchronous immediate emit (delegates directly). Useful when you want to
 bypass queuing.
@@ -52,7 +52,7 @@ bypass queuing.
 
 > **emitSendEventInviteImmediate**(`payload`, `ctx`): `Promise`\<`void`\>
 
-Defined in: [src/services/notification/NotificationService.ts:79](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/notification/NotificationService.ts#L79)
+Defined in: [src/services/notification/NotificationService.ts:79](https://github.com/avinxshKD/talawa-api/blob/d546483f2198a0a1a77eb1a770c24fa474a2fb9c/src/services/notification/NotificationService.ts#L79)
 
 #### Parameters
 
@@ -74,7 +74,7 @@ Defined in: [src/services/notification/NotificationService.ts:79](https://github
 
 > **enqueueEventCreated**(`payload`): `void`
 
-Defined in: [src/services/notification/NotificationService.ts:43](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/notification/NotificationService.ts#L43)
+Defined in: [src/services/notification/NotificationService.ts:43](https://github.com/avinxshKD/talawa-api/blob/d546483f2198a0a1a77eb1a770c24fa474a2fb9c/src/services/notification/NotificationService.ts#L43)
 
 #### Parameters
 
@@ -92,7 +92,7 @@ Defined in: [src/services/notification/NotificationService.ts:43](https://github
 
 > **enqueueSendEventInvite**(`payload`): `void`
 
-Defined in: [src/services/notification/NotificationService.ts:47](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/notification/NotificationService.ts#L47)
+Defined in: [src/services/notification/NotificationService.ts:47](https://github.com/avinxshKD/talawa-api/blob/d546483f2198a0a1a77eb1a770c24fa474a2fb9c/src/services/notification/NotificationService.ts#L47)
 
 #### Parameters
 
@@ -110,7 +110,7 @@ Defined in: [src/services/notification/NotificationService.ts:47](https://github
 
 > **flush**(`ctx`): `Promise`\<`void`\>
 
-Defined in: [src/services/notification/NotificationService.ts:55](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/notification/NotificationService.ts#L55)
+Defined in: [src/services/notification/NotificationService.ts:55](https://github.com/avinxshKD/talawa-api/blob/d546483f2198a0a1a77eb1a770c24fa474a2fb9c/src/services/notification/NotificationService.ts#L55)
 
 Flush queued notifications by delegating to the global event bus. Accepts the
 full GraphQL context since the event bus / notification engine require it.

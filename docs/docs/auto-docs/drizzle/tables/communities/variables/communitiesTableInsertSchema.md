@@ -1,4 +1,4 @@
-[API Docs](/)
+[**talawa-api**](../../../../README.md)
 
 ***
 
@@ -6,4 +6,4 @@
 
 > `const` **communitiesTableInsertSchema**: `BuildSchema`\<`"insert"`, \{ `createdAt`: `PgColumn`\<\{ \}, \{ \}, \{ \}\>; `facebookURL`: `PgColumn`\<\{ \}, \{ \}, \{ \}\>; `githubURL`: `PgColumn`\<\{ \}, \{ \}, \{ \}\>; `id`: `PgColumn`\<\{ \}, \{ \}, \{ \}\>; `inactivityTimeoutDuration`: `PgColumn`\<\{ \}, \{ \}, \{ \}\>; `instagramURL`: `PgColumn`\<\{ \}, \{ \}, \{ \}\>; `linkedinURL`: `PgColumn`\<\{ \}, \{ \}, \{ \}\>; `logoMimeType`: `PgColumn`\<\{ \}, \{ \}, \{ \}\>; `logoName`: `PgColumn`\<\{ \}, \{ \}, \{ \}\>; `name`: `PgColumn`\<\{ \}, \{ \}, \{ \}\>; `redditURL`: `PgColumn`\<\{ \}, \{ \}, \{ \}\>; `slackURL`: `PgColumn`\<\{ \}, \{ \}, \{ \}\>; `updatedAt`: `PgColumn`\<\{ \}, \{ \}, \{ \}\>; `updaterId`: `PgColumn`\<\{ \}, \{ \}, \{ \}\>; `websiteURL`: `PgColumn`\<\{ \}, \{ \}, \{ \}\>; `xURL`: `PgColumn`\<\{ \}, \{ \}, \{ \}\>; `youtubeURL`: `PgColumn`\<\{ \}, \{ \}, \{ \}\>; \}, \{ `facebookURL`: (`schema`) => `ZodOptional`\<`ZodString`\>; `githubURL`: (`schema`) => `ZodOptional`\<`ZodString`\>; `inactivityTimeoutDuration`: (`schema`) => `ZodOptional`\<`ZodNumber`\>; `instagramURL`: (`schema`) => `ZodOptional`\<`ZodString`\>; `linkedinURL`: (`schema`) => `ZodOptional`\<`ZodString`\>; `logoName`: (`schema`) => `ZodOptional`\<`ZodString`\>; `name`: (`schema`) => `ZodString`; `redditURL`: (`schema`) => `ZodOptional`\<`ZodString`\>; `slackURL`: (`schema`) => `ZodOptional`\<`ZodString`\>; `websiteURL`: (`schema`) => `ZodOptional`\<`ZodString`\>; `xURL`: (`schema`) => `ZodOptional`\<`ZodString`\>; `youtubeURL`: (`schema`) => `ZodOptional`\<`ZodString`\>; \}\>
 
-Defined in: [src/drizzle/tables/communities.ts:113](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/drizzle/tables/communities.ts#L113)
+Defined in: [src/drizzle/tables/communities.ts:113](https://github.com/avinxshKD/talawa-api/blob/d546483f2198a0a1a77eb1a770c24fa474a2fb9c/src/drizzle/tables/communities.ts#L113)

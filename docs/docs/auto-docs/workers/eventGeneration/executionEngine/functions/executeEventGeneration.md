@@ -1,4 +1,4 @@
-[API Docs](/)
+[**talawa-api**](../../../../README.md)
 
 ***
 
@@ -6,7 +6,7 @@
 
 > **executeEventGeneration**(`job`, `deps`): `Promise`\<[`ProcessingResult`](../../types/interfaces/ProcessingResult.md)\<[`EventGenerationExecutionResult`](../interfaces/EventGenerationExecutionResult.md)\>\>
 
-Defined in: [src/workers/eventGeneration/executionEngine.ts:37](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/workers/eventGeneration/executionEngine.ts#L37)
+Defined in: [src/workers/eventGeneration/executionEngine.ts:37](https://github.com/avinxshKD/talawa-api/blob/d546483f2198a0a1a77eb1a770c24fa474a2fb9c/src/workers/eventGeneration/executionEngine.ts#L37)
 
 Executes the Generation process for a single recurring event job.
 This function is the core of the execution engine, handling the creation of event instances.

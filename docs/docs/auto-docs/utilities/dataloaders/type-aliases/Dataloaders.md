@@ -1,4 +1,4 @@
-[API Docs](/)
+[**talawa-api**](../../../README.md)
 
 ***
 
@@ -6,7 +6,7 @@
 
 > **Dataloaders** = `object`
 
-Defined in: [src/utilities/dataloaders/index.ts:14](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/utilities/dataloaders/index.ts#L14)
+Defined in: [src/utilities/dataloaders/index.ts:14](https://github.com/avinxshKD/talawa-api/blob/d546483f2198a0a1a77eb1a770c24fa474a2fb9c/src/utilities/dataloaders/index.ts#L14)
 
 Type representing all available DataLoaders for the application.
 These loaders provide batched, request-scoped data loading to prevent N+1 queries.
@@ -17,7 +17,7 @@ These loaders provide batched, request-scoped data loading to prevent N+1 querie
 
 > **actionItem**: `ReturnType`\<*typeof* [`createActionItemLoader`](../actionItemLoader/functions/createActionItemLoader.md)\>
 
-Defined in: [src/utilities/dataloaders/index.ts:30](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/utilities/dataloaders/index.ts#L30)
+Defined in: [src/utilities/dataloaders/index.ts:30](https://github.com/avinxshKD/talawa-api/blob/d546483f2198a0a1a77eb1a770c24fa474a2fb9c/src/utilities/dataloaders/index.ts#L30)
 
 DataLoader for fetching action items by ID.
 
@@ -27,7 +27,7 @@ DataLoader for fetching action items by ID.
 
 > **event**: `ReturnType`\<*typeof* [`createEventLoader`](../eventLoader/functions/createEventLoader.md)\>
 
-Defined in: [src/utilities/dataloaders/index.ts:26](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/utilities/dataloaders/index.ts#L26)
+Defined in: [src/utilities/dataloaders/index.ts:26](https://github.com/avinxshKD/talawa-api/blob/d546483f2198a0a1a77eb1a770c24fa474a2fb9c/src/utilities/dataloaders/index.ts#L26)
 
 DataLoader for fetching events by ID.
 
@@ -37,7 +37,7 @@ DataLoader for fetching events by ID.
 
 > **organization**: `ReturnType`\<*typeof* [`createOrganizationLoader`](../organizationLoader/functions/createOrganizationLoader.md)\>
 
-Defined in: [src/utilities/dataloaders/index.ts:22](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/utilities/dataloaders/index.ts#L22)
+Defined in: [src/utilities/dataloaders/index.ts:22](https://github.com/avinxshKD/talawa-api/blob/d546483f2198a0a1a77eb1a770c24fa474a2fb9c/src/utilities/dataloaders/index.ts#L22)
 
 DataLoader for fetching organizations by ID.
 
@@ -47,6 +47,6 @@ DataLoader for fetching organizations by ID.
 
 > **user**: `ReturnType`\<*typeof* [`createUserLoader`](../userLoader/functions/createUserLoader.md)\>
 
-Defined in: [src/utilities/dataloaders/index.ts:18](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/utilities/dataloaders/index.ts#L18)
+Defined in: [src/utilities/dataloaders/index.ts:18](https://github.com/avinxshKD/talawa-api/blob/d546483f2198a0a1a77eb1a770c24fa474a2fb9c/src/utilities/dataloaders/index.ts#L18)
 
 DataLoader for fetching users by ID.

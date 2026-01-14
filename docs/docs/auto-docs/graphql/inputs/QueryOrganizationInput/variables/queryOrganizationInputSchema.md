@@ -1,4 +1,4 @@
-[API Docs](/)
+[**talawa-api**](../../../../README.md)
 
 ***
 
@@ -6,4 +6,4 @@
 
 > `const` **queryOrganizationInputSchema**: `ZodObject`\<\{ `id`: `ZodEffects`\<`ZodOptional`\<`ZodNullable`\<`ZodString`\>\>, `string`, `string` \| `null` \| `undefined`\>; \}, `"strip"`, `ZodTypeAny`, \{ `id`: `string`; \}, \{ `id?`: `string` \| `null`; \}\>
 
-Defined in: [src/graphql/inputs/QueryOrganizationInput.ts:6](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/graphql/inputs/QueryOrganizationInput.ts#L6)
+Defined in: [src/graphql/inputs/QueryOrganizationInput.ts:6](https://github.com/avinxshKD/talawa-api/blob/d546483f2198a0a1a77eb1a770c24fa474a2fb9c/src/graphql/inputs/QueryOrganizationInput.ts#L6)

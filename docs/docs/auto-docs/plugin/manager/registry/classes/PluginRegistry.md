@@ -1,10 +1,10 @@
-[API Docs](/)
+[**talawa-api**](../../../../README.md)
 
 ***
 
 # Class: PluginRegistry
 
-Defined in: [src/plugin/manager/registry.ts:13](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/plugin/manager/registry.ts#L13)
+Defined in: [src/plugin/manager/registry.ts:13](https://github.com/avinxshKD/talawa-api/blob/d546483f2198a0a1a77eb1a770c24fa474a2fb9c/src/plugin/manager/registry.ts#L13)
 
 ## Constructors
 
@@ -12,7 +12,7 @@ Defined in: [src/plugin/manager/registry.ts:13](https://github.com/PalisadoesFou
 
 > **new PluginRegistry**(`pluginContext`): `PluginRegistry`
 
-Defined in: [src/plugin/manager/registry.ts:14](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/plugin/manager/registry.ts#L14)
+Defined in: [src/plugin/manager/registry.ts:14](https://github.com/avinxshKD/talawa-api/blob/d546483f2198a0a1a77eb1a770c24fa474a2fb9c/src/plugin/manager/registry.ts#L14)
 
 #### Parameters
 
@@ -30,7 +30,7 @@ Defined in: [src/plugin/manager/registry.ts:14](https://github.com/PalisadoesFou
 
 > **getPluginFromDatabase**(`pluginId`): `Promise`\<\{ `backup`: `boolean`; `createdAt`: `Date`; `id`: `string`; `isActivated`: `boolean`; `isInstalled`: `boolean`; `pluginId`: `string`; `updatedAt`: `Date` \| `null`; \} \| `null`\>
 
-Defined in: [src/plugin/manager/registry.ts:19](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/plugin/manager/registry.ts#L19)
+Defined in: [src/plugin/manager/registry.ts:19](https://github.com/avinxshKD/talawa-api/blob/d546483f2198a0a1a77eb1a770c24fa474a2fb9c/src/plugin/manager/registry.ts#L19)
 
 Get plugin from database
 
@@ -50,7 +50,7 @@ Get plugin from database
 
 > **updatePluginInDatabase**(`pluginId`, `updates`): `Promise`\<`void`\>
 
-Defined in: [src/plugin/manager/registry.ts:40](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/plugin/manager/registry.ts#L40)
+Defined in: [src/plugin/manager/registry.ts:40](https://github.com/avinxshKD/talawa-api/blob/d546483f2198a0a1a77eb1a770c24fa474a2fb9c/src/plugin/manager/registry.ts#L40)
 
 Update plugin in database
 

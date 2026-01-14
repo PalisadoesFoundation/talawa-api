@@ -1,4 +1,4 @@
-[API Docs](/)
+[**talawa-api**](../../../../../README.md)
 
 ***
 
@@ -6,6 +6,6 @@
 
 > **VolunteerMembership**: `ImplementableObjectRef`\<`ExtendDefaultTypes`\<\{ `Context`: [`GraphQLContext`](../../../../context/type-aliases/GraphQLContext.md); `Scalars`: [`CustomScalars`](../../../../scalars/type-aliases/CustomScalars.md); \}\>, \{ `createdAt`: `Date`; `createdBy`: `string` \| `null`; `eventId`: `string`; `groupId`: `string` \| `null`; `id`: `string`; `status`: `"rejected"` \| `"invited"` \| `"requested"` \| `"accepted"`; `updatedAt`: `Date` \| `null`; `updatedBy`: `string` \| `null`; `volunteerId`: `string`; \}, \{ `createdAt`: `Date`; `createdBy`: `string` \| `null`; `eventId`: `string`; `groupId`: `string` \| `null`; `id`: `string`; `status`: `"rejected"` \| `"invited"` \| `"requested"` \| `"accepted"`; `updatedAt`: `Date` \| `null`; `updatedBy`: `string` \| `null`; `volunteerId`: `string`; \}\>
 
-Defined in: [src/graphql/types/EventVolunteerMembership/EventVolunteerMembership.ts:4](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/graphql/types/EventVolunteerMembership/EventVolunteerMembership.ts#L4)
+Defined in: [src/graphql/types/EventVolunteerMembership/EventVolunteerMembership.ts:4](https://github.com/avinxshKD/talawa-api/blob/d546483f2198a0a1a77eb1a770c24fa474a2fb9c/src/graphql/types/EventVolunteerMembership/EventVolunteerMembership.ts#L4)
 
 GraphQL object reference for VolunteerMembership.

@@ -1,4 +1,4 @@
-[API Docs](/)
+[**talawa-api**](../../../../README.md)
 
 ***
 
@@ -6,7 +6,7 @@
 
 > `const` **volunteerMembershipStatusEnum**: readonly \[`"invited"`, `"requested"`, `"accepted"`, `"rejected"`\]
 
-Defined in: [src/drizzle/tables/eventVolunteerMemberships.ts:21](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/drizzle/tables/eventVolunteerMemberships.ts#L21)
+Defined in: [src/drizzle/tables/eventVolunteerMemberships.ts:21](https://github.com/avinxshKD/talawa-api/blob/d546483f2198a0a1a77eb1a770c24fa474a2fb9c/src/drizzle/tables/eventVolunteerMemberships.ts#L21)
 
 Enum for volunteer membership status.
 Based on the old Talawa API VolunteerMembership status values.

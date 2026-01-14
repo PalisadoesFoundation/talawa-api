@@ -1,10 +1,10 @@
-[API Docs](/)
+[**talawa-api**](../../../README.md)
 
 ***
 
 # Interface: ILogger
 
-Defined in: [src/plugin/types.ts:129](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/plugin/types.ts#L129)
+Defined in: [src/plugin/types.ts:129](https://github.com/avinxshKD/talawa-api/blob/d546483f2198a0a1a77eb1a770c24fa474a2fb9c/src/plugin/types.ts#L129)
 
 ## Properties
 
@@ -12,7 +12,7 @@ Defined in: [src/plugin/types.ts:129](https://github.com/PalisadoesFoundation/ta
 
 > `optional` **debug**: (`message`, ...`args`) => `void`
 
-Defined in: [src/plugin/types.ts:133](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/plugin/types.ts#L133)
+Defined in: [src/plugin/types.ts:133](https://github.com/avinxshKD/talawa-api/blob/d546483f2198a0a1a77eb1a770c24fa474a2fb9c/src/plugin/types.ts#L133)
 
 #### Parameters
 
@@ -34,7 +34,7 @@ Defined in: [src/plugin/types.ts:133](https://github.com/PalisadoesFoundation/ta
 
 > `optional` **error**: (`message`, ...`args`) => `void`
 
-Defined in: [src/plugin/types.ts:131](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/plugin/types.ts#L131)
+Defined in: [src/plugin/types.ts:131](https://github.com/avinxshKD/talawa-api/blob/d546483f2198a0a1a77eb1a770c24fa474a2fb9c/src/plugin/types.ts#L131)
 
 #### Parameters
 
@@ -56,7 +56,7 @@ Defined in: [src/plugin/types.ts:131](https://github.com/PalisadoesFoundation/ta
 
 > `optional` **info**: (`message`, ...`args`) => `void`
 
-Defined in: [src/plugin/types.ts:130](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/plugin/types.ts#L130)
+Defined in: [src/plugin/types.ts:130](https://github.com/avinxshKD/talawa-api/blob/d546483f2198a0a1a77eb1a770c24fa474a2fb9c/src/plugin/types.ts#L130)
 
 #### Parameters
 
@@ -78,7 +78,7 @@ Defined in: [src/plugin/types.ts:130](https://github.com/PalisadoesFoundation/ta
 
 > `optional` **warn**: (`message`, ...`args`) => `void`
 
-Defined in: [src/plugin/types.ts:132](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/plugin/types.ts#L132)
+Defined in: [src/plugin/types.ts:132](https://github.com/avinxshKD/talawa-api/blob/d546483f2198a0a1a77eb1a770c24fa474a2fb9c/src/plugin/types.ts#L132)
 
 #### Parameters
 

@@ -1,4 +1,4 @@
-[API Docs](/)
+[**talawa-api**](../../../README.md)
 
 ***
 
@@ -6,7 +6,7 @@
 
 > **validatePluginZip**(`zipPath`): `Promise`\<[`PluginZipStructure`](../interfaces/PluginZipStructure.md)\>
 
-Defined in: [src/utilities/pluginInstaller.ts:37](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/utilities/pluginInstaller.ts#L37)
+Defined in: [src/utilities/pluginInstaller.ts:37](https://github.com/avinxshKD/talawa-api/blob/d546483f2198a0a1a77eb1a770c24fa474a2fb9c/src/utilities/pluginInstaller.ts#L37)
 
 Validates the structure of a plugin zip file (API-only)
 

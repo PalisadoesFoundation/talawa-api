@@ -1289,7 +1289,7 @@ describe("Mutation: deleteChatMembership", () => {
 		expect(result.data?.deleteChatMembership?.id).toBe(chatId);
 	});
 
-	test("returns arguments_associated_resources_not_found when membership already deleted before mutation", async () => {
+	test("returns arguments_associated_resources_not_found when membership was deleted by another process before validation", async () => {
 		const admin = await mercuriusClient.query(Query_signIn, {
 			variables: {
 				input: {

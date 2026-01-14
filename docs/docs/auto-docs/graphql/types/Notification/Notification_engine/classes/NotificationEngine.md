@@ -1,10 +1,10 @@
-[API Docs](/)
+[**talawa-api**](../../../../../README.md)
 
 ***
 
 # Class: NotificationEngine
 
-Defined in: [src/graphql/types/Notification/Notification\_engine.ts:45](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/graphql/types/Notification/Notification_engine.ts#L45)
+Defined in: [src/graphql/types/Notification/Notification\_engine.ts:45](https://github.com/avinxshKD/talawa-api/blob/d546483f2198a0a1a77eb1a770c24fa474a2fb9c/src/graphql/types/Notification/Notification_engine.ts#L45)
 
 NotificationEngine class for managing notifications across the application
 
@@ -14,7 +14,7 @@ NotificationEngine class for managing notifications across the application
 
 > **new NotificationEngine**(`ctx`): `NotificationEngine`
 
-Defined in: [src/graphql/types/Notification/Notification\_engine.ts:53](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/graphql/types/Notification/Notification_engine.ts#L53)
+Defined in: [src/graphql/types/Notification/Notification\_engine.ts:53](https://github.com/avinxshKD/talawa-api/blob/d546483f2198a0a1a77eb1a770c24fa474a2fb9c/src/graphql/types/Notification/Notification_engine.ts#L53)
 
 Creates a new instance of NotificationEngine
 
@@ -36,7 +36,7 @@ GraphQL context containing database connections and user info
 
 > **createDirectEmailNotification**(`eventType`, `variables`, `receiverMail`, `channelType`): `Promise`\<`string`\>
 
-Defined in: [src/graphql/types/Notification/Notification\_engine.ts:384](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/graphql/types/Notification/Notification_engine.ts#L384)
+Defined in: [src/graphql/types/Notification/Notification\_engine.ts:384](https://github.com/avinxshKD/talawa-api/blob/d546483f2198a0a1a77eb1a770c24fa474a2fb9c/src/graphql/types/Notification/Notification_engine.ts#L384)
 
 Creates a direct email notification for external recipients (non-users).
 Uses the template system with provided variables for rendering.
@@ -79,7 +79,7 @@ Channel type (defaults to EMAIL)
 
 > **createNotification**(`eventType`, `variables`, `audience`, `channelType`): `Promise`\<`string`\>
 
-Defined in: [src/graphql/types/Notification/Notification\_engine.ts:66](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/graphql/types/Notification/Notification_engine.ts#L66)
+Defined in: [src/graphql/types/Notification/Notification\_engine.ts:66](https://github.com/avinxshKD/talawa-api/blob/d546483f2198a0a1a77eb1a770c24fa474a2fb9c/src/graphql/types/Notification/Notification_engine.ts#L66)
 
 Creates a notification using a template and sends it to specified audience
 

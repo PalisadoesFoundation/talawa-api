@@ -1,4 +1,4 @@
-[API Docs](/)
+[**talawa-api**](../../../README.md)
 
 ***
 
@@ -6,7 +6,7 @@
 
 > **destroyPluginSystem**(): `Promise`\<`void`\>
 
-Defined in: [src/plugin/registry.ts:80](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/plugin/registry.ts#L80)
+Defined in: [src/plugin/registry.ts:80](https://github.com/avinxshKD/talawa-api/blob/d546483f2198a0a1a77eb1a770c24fa474a2fb9c/src/plugin/registry.ts#L80)
 
 Destroys the plugin system (useful for testing)
 

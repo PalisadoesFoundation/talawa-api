@@ -1,4 +1,4 @@
-[API Docs](/)
+[**talawa-api**](../../README.md)
 
 ***
 
@@ -6,7 +6,7 @@
 
 > **createServer**(`options?`): `Promise`\<`FastifyInstance`\<`Server`\<*typeof* `IncomingMessage`, *typeof* `ServerResponse`\>, `IncomingMessage`, `ServerResponse`\<`IncomingMessage`\>, `FastifyBaseLogger`, `TypeBoxTypeProvider`\>\>
 
-Defined in: [src/createServer.ts:31](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/createServer.ts#L31)
+Defined in: [src/createServer.ts:31](https://github.com/avinxshKD/talawa-api/blob/d546483f2198a0a1a77eb1a770c24fa474a2fb9c/src/createServer.ts#L31)
 
 This function is used to set up the fastify server.
 
