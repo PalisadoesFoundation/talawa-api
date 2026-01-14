@@ -1,13 +1,14 @@
+import type { MockInstance } from "vitest";
 import { afterEach, beforeEach, expect, suite, test, vi } from "vitest";
 import { emailService } from "~/src/services/email/emailServiceInstance";
+import type { EmailJob, EmailResult } from "~/src/services/email/types";
 import { assertToBeNonNullish } from "../../../helpers";
 import { mercuriusClient } from "../client";
 import { createRegularUserUsingAdmin } from "../createRegularUserUsingAdmin";
 import { Mutation_sendVerificationEmail } from "../documentNodes";
 
 suite("Mutation field sendVerificationEmail", () => {
-	// biome-ignore lint/suspicious/noExplicitAny: generic spy type
-	let sendEmailSpy: any;
+	let sendEmailSpy: MockInstance<(job: EmailJob) => Promise<EmailResult>>;
 
 	beforeEach(async () => {
 		// Spy on email provider BEFORE any user creation to catch welcome emails

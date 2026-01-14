@@ -1,5 +1,7 @@
+import type { MockInstance } from "vitest";
 import { afterEach, beforeEach, expect, suite, test, vi } from "vitest";
 import { emailService } from "~/src/services/email/emailServiceInstance";
+import type { EmailJob, EmailResult } from "~/src/services/email/types";
 import { assertToBeNonNullish } from "../../../helpers";
 import { mercuriusClient } from "../client";
 import { createRegularUserUsingAdmin } from "../createRegularUserUsingAdmin";
@@ -9,8 +11,7 @@ import {
 } from "../documentNodes";
 
 suite("Mutation field verifyEmail", () => {
-	// biome-ignore lint/suspicious/noExplicitAny: generic spy type
-	let sendEmailSpy: any;
+	let sendEmailSpy: MockInstance<(job: EmailJob) => Promise<EmailResult>>;
 
 	beforeEach(async () => {
 		// Spy on email provider BEFORE any user creation to catch welcome emails
@@ -115,7 +116,9 @@ suite("Mutation field verifyEmail", () => {
 
 		const calls = sendEmailSpy.mock.calls;
 		expect(calls.length).toBeGreaterThan(0);
-		const args = calls[0][0] as { htmlBody?: string; textBody?: string };
+		const firstCall = calls[0];
+		assertToBeNonNullish(firstCall);
+		const args = firstCall[0];
 		const emailContent = args.htmlBody || args.textBody;
 		const match = emailContent?.match(/token=([a-zA-Z0-9_-]+)/);
 		const token = match?.[1];
@@ -163,7 +166,10 @@ suite("Mutation field verifyEmail", () => {
 		});
 
 		const calls = sendEmailSpy.mock.calls;
-		const args = calls[0][0] as { htmlBody?: string; textBody?: string };
+		expect(calls.length).toBeGreaterThan(0);
+		const firstCall = calls[0];
+		assertToBeNonNullish(firstCall);
+		const args = firstCall[0];
 		const emailContent = args.htmlBody || args.textBody;
 		const match = emailContent?.match(/token=([a-zA-Z0-9_-]+)/);
 		const token = match?.[1];
