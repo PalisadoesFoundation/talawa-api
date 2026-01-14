@@ -6,7 +6,7 @@
 
 > **default**: (`fastify`) => `Promise`\<`void`\>
 
-Defined in: [src/fastifyPlugins/backgroundWorkers.ts:42](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/fastifyPlugins/backgroundWorkers.ts#L42)
+Defined in: [src/fastifyPlugins/backgroundWorkers.ts:43](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/fastifyPlugins/backgroundWorkers.ts#L43)
 
 Background worker plugin for event materialization.
 
@@ -17,6 +17,9 @@ This plugin:
 - Handles graceful shutdown of workers
 - Provides worker status endpoints
 
+**Dependencies:** The performance plugin must be registered before this plugin.
+This is enforced via the `dependencies` array in the plugin configuration.
+
 ## Parameters
 
 ### fastify
@@ -26,7 +29,3 @@ This plugin:
 ## Returns
 
 `Promise`\<`void`\>
-
-## Requires
-
-performance - The performance plugin must be registered before this plugin

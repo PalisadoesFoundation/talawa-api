@@ -6,7 +6,7 @@
 
 > **runMaterializationWorkerSafely**(`drizzleClient`, `logger`): `Promise`\<`void`\>
 
-Defined in: [src/workers/backgroundWorkerService.ts:173](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/workers/backgroundWorkerService.ts#L173)
+Defined in: [src/workers/backgroundWorkerService.ts:178](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/workers/backgroundWorkerService.ts#L178)
 
 Executes the materialization worker with robust error handling to prevent crashes.
 
