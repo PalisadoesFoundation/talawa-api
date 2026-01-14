@@ -127,10 +127,10 @@ export enum ExtensionPointType {
 
 // Plugin Context Types
 export interface ILogger {
-	info?: (message: string, ...args: unknown[]) => void;
-	error?: (message: string, ...args: unknown[]) => void;
-	warn?: (message: string, ...args: unknown[]) => void;
-	debug?: (message: string, ...args: unknown[]) => void;
+	info?: (messageOrObj: string | object, ...args: unknown[]) => void;
+	error?: (messageOrObj: string | object, ...args: unknown[]) => void;
+	warn?: (messageOrObj: string | object, ...args: unknown[]) => void;
+	debug?: (messageOrObj: string | object, ...args: unknown[]) => void;
 }
 
 export interface IPluginContext {

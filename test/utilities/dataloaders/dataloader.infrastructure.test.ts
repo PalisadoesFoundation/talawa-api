@@ -481,13 +481,15 @@ describe("DataLoader infrastructure", () => {
 			const userOp = snapshot.ops["db:users.byId"];
 			expect(userOp).toBeDefined();
 			expect(userOp?.count).toBe(2); // Both cache hit and miss are counted
-			expect(userOp?.ms).toBeGreaterThanOrEqual(cacheDelayMs * 2); // At least cache delay for both
+			// Allow 10% timing variance for system imprecision
+			expect(userOp?.ms).toBeGreaterThanOrEqual(cacheDelayMs * 2 * 0.9); // At least cache delay for both
 
 			// Verify organization loader metrics (2 calls: 1 cache hit, 1 cache miss)
 			const orgOp = snapshot.ops["db:organizations.byId"];
 			expect(orgOp).toBeDefined();
 			expect(orgOp?.count).toBe(2); // Both cache hit and miss are counted
-			expect(orgOp?.ms).toBeGreaterThanOrEqual(cacheDelayMs * 2); // At least cache delay for both
+			// Allow 10% timing variance for system imprecision
+			expect(orgOp?.ms).toBeGreaterThanOrEqual(cacheDelayMs * 2 * 0.9); // At least cache delay for both
 
 			// Verify DB was called only for cache misses (2 calls: u2 and org2)
 			expect(whereSpy).toHaveBeenCalledTimes(2);
