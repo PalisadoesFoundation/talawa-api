@@ -5,6 +5,7 @@ import { afterAll, beforeEach, describe, expect, it, vi } from "vitest";
 import type * as schema from "~/src/drizzle/schema";
 
 import {
+	__resetBackgroundWorkerServiceForTesting,
 	getBackgroundWorkerStatus,
 	healthCheck,
 	runCleanupWorkerSafely,
@@ -79,27 +80,9 @@ describe("backgroundServiceWorker", () => {
 		const cron = await import("node-cron");
 		(cron as { __resetMock?: () => void }).__resetMock?.();
 
-		// CRITICAL: Ensure workers are fully stopped before each test
-		const cleanupLogger = {
-			info: vi.fn(),
-			warn: vi.fn(),
-			error: vi.fn(),
-			debug: vi.fn(),
-		} as unknown as FastifyBaseLogger;
-
-		// Try multiple times to ensure workers are stopped
-		try {
-			await stopBackgroundWorkers(cleanupLogger);
-		} catch {
-			// Ignore errors on first stop attempt
-		}
-
-		// Second attempt to ensure clean state
-		try {
-			await stopBackgroundWorkers(cleanupLogger);
-		} catch {
-			// Ignore errors on second stop attempt
-		}
+		// Reset the background worker service state completely
+		// This ensures proper test isolation by clearing all module-level state
+		__resetBackgroundWorkerServiceForTesting();
 
 		mockLogger = {
 			info: vi.fn(),
@@ -1337,37 +1320,19 @@ describe("backgroundServiceWorker", () => {
 
 			await startBackgroundWorkers(mockDrizzleClient, mockLogger, mockFastify);
 
-			await expect(stopBackgroundWorkers(mockLogger)).rejects.toThrow(
-				"Metrics stop failed",
+			// stopBackgroundWorkers now handles errors internally and doesn't throw
+			// It logs the error but continues to reset all state
+			await stopBackgroundWorkers(mockLogger);
+
+			// Verify the error was logged
+			expect(mockLogger.error).toHaveBeenCalledWith(
+				expect.any(Error),
+				"Error stopping metrics task:",
 			);
 
-			expect(mockLogger.error).toHaveBeenCalled();
-
-			// CRITICAL: Clean up the mock so it doesn't affect other tests
-			metricsTaskStop.mockRestore();
-
-			// Force clear the worker state by mocking a successful stop
-			vi.mocked(cron.default.schedule).mockImplementation(
-				() =>
-					({
-						start: vi.fn(),
-						stop: vi.fn(), // Normal mock that doesn't throw
-					}) as unknown as ScheduledTask,
-			);
-
-			// Try to stop again to clean up state
-			const cleanupLogger = {
-				info: vi.fn(),
-				warn: vi.fn(),
-				error: vi.fn(),
-				debug: vi.fn(),
-			} as unknown as FastifyBaseLogger;
-
-			try {
-				await stopBackgroundWorkers(cleanupLogger);
-			} catch {
-				// Ignore any errors during cleanup
-			}
+			// Verify state was reset despite the error
+			const status = getBackgroundWorkerStatus();
+			expect(status.isRunning).toBe(false);
 		});
 	});
 

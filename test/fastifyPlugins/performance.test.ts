@@ -810,14 +810,7 @@ describe("Performance Plugin", () => {
 			expect(copiedSnapshot.slow).toEqual(originalSlow);
 		});
 
-		it("should use manualDeepCopySnapshot when structuredClone is unavailable", async () => {
-			// This test verifies that manualDeepCopySnapshot produces correct deep copies
-			// Testing the actual fallback path (line 87) in integration is unreliable due to
-			// module caching and global state issues in vitest. The fallback is verified through:
-			// 1. Code review (the fallback exists at line 87)
-			// 2. Unit test of manualDeepCopySnapshot (previous test)
-			// 3. Manual testing in environments without structuredClone
-
+		it("should deep copy complex snapshots with nested mutations", async () => {
 			const { manualDeepCopySnapshot } = await import(
 				"../../src/fastifyPlugins/performance"
 			);

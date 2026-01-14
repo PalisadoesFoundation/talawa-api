@@ -134,40 +134,55 @@ export async function startBackgroundWorkers(
 
 /**
  * Stops all running background workers and releases any associated resources.
+ * This function is idempotent and will reset all module-level state even if errors occur.
  */
 export async function stopBackgroundWorkers(
 	logger: FastifyBaseLogger,
 ): Promise<void> {
 	if (!isRunning) {
-		logger.warn("Background workers are not running");
+		// Even if not running, ensure all state is cleared for idempotency
+		materializationTask = undefined;
+		cleanupTask = undefined;
+		metricsTask = undefined;
+		fastifyInstance = undefined;
 		return;
 	}
 
-	try {
-		logger.info("Stopping background worker service...");
+	logger.info("Stopping background worker service...");
 
-		if (materializationTask) {
+	// Stop each task individually, catching errors but continuing to reset state
+	// This ensures all state is cleared even if individual stops fail
+	if (materializationTask) {
+		try {
 			materializationTask.stop();
-			materializationTask = undefined;
+		} catch (error) {
+			logger.error(error, "Error stopping materialization task:");
 		}
-
-		if (cleanupTask) {
-			cleanupTask.stop();
-			cleanupTask = undefined;
-		}
-
-		if (metricsTask) {
-			metricsTask.stop();
-			metricsTask = undefined;
-		}
-
-		fastifyInstance = undefined;
-		isRunning = false;
-		logger.info("Background worker service stopped successfully");
-	} catch (error) {
-		logger.error(error, "Error stopping background worker service:");
-		throw error;
+		materializationTask = undefined;
 	}
+
+	if (cleanupTask) {
+		try {
+			cleanupTask.stop();
+		} catch (error) {
+			logger.error(error, "Error stopping cleanup task:");
+		}
+		cleanupTask = undefined;
+	}
+
+	if (metricsTask) {
+		try {
+			metricsTask.stop();
+		} catch (error) {
+			logger.error(error, "Error stopping metrics task:");
+		}
+		metricsTask = undefined;
+	}
+
+	// Always reset module-level state, regardless of errors
+	fastifyInstance = undefined;
+	isRunning = false;
+	logger.info("Background worker service stopped successfully");
 }
 
 /**
@@ -504,3 +519,39 @@ export function updateMaterializationConfig(
 	};
 	logger.info(config, "Updated materialization worker configuration");
 }
+
+/**
+ * Resets the background worker service state.
+ * FOR TESTING PURPOSES ONLY - resets all internal state.
+ * This ensures proper test isolation by clearing all module-level state.
+ */
+export const __resetBackgroundWorkerServiceForTesting = (): void => {
+	if (materializationTask) {
+		try {
+			materializationTask.stop();
+		} catch {
+			// Ignore errors
+		}
+	}
+	if (cleanupTask) {
+		try {
+			cleanupTask.stop();
+		} catch {
+			// Ignore errors
+		}
+	}
+	if (metricsTask) {
+		try {
+			metricsTask.stop();
+		} catch {
+			// Ignore errors
+		}
+	}
+
+	materializationTask = undefined;
+	cleanupTask = undefined;
+	metricsTask = undefined;
+	fastifyInstance = undefined;
+	isRunning = false;
+	materializationConfig = createDefaultWorkerConfig();
+};

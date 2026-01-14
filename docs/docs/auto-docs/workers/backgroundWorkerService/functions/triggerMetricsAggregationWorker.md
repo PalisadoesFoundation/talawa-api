@@ -6,7 +6,7 @@
 
 > **triggerMetricsAggregationWorker**(`logger`): `Promise`\<`void`\>
 
-Defined in: [src/workers/backgroundWorkerService.ts:283](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/workers/backgroundWorkerService.ts#L283)
+Defined in: [src/workers/backgroundWorkerService.ts:298](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/workers/backgroundWorkerService.ts#L298)
 
 Manually triggers a run of the metrics aggregation worker, useful for testing or administrative purposes.
 
