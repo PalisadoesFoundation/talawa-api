@@ -2436,6 +2436,11 @@ type Mutation {
     input: MutationSendMembershipRequestInput!
   ): MembershipRequest
 
+  """
+  Send a verification email to the authenticated user. Returns same response whether email was sent or not.
+  """
+  sendVerificationEmail: SendEmailVerificationPayload
+
   """Mutation field to sign up to talawa."""
   signUp(input: MutationSignUpInput!): AuthenticationPayload
 
@@ -2599,6 +2604,14 @@ type Mutation {
 
   """Upload and install a plugin from a zip file"""
   uploadPluginZip(input: UploadPluginZipInput!): Plugin
+
+  """
+  Verify a user's email address using the token sent to their email. Returns success even if already verified (idempotent).
+  """
+  verifyEmail(
+    """Input for verifying an email address with a token."""
+    input: MutationVerifyEmailInput!
+  ): VerifyEmailPayload
 
   """
   Public preview of an event invitation. Returns masked email and minimal event/org info. Rate-limited.
@@ -4085,6 +4098,11 @@ input MutationUpdateVenueInput {
   name: String
 }
 
+input MutationVerifyEmailInput {
+  """The email verification token received in the verification email."""
+  token: String!
+}
+
 """Minimal notification data for user interfaces."""
 type Notification {
   """Notification message body."""
@@ -5214,6 +5232,17 @@ type RejectMembershipResponse {
   success: Boolean
 }
 
+"""
+Response payload for sendVerificationEmail mutation. Returns same response whether email was sent or not to prevent email enumeration.
+"""
+type SendEmailVerificationPayload {
+  """User-friendly message about the request."""
+  message: String
+
+  """Indicates if the request was processed successfully."""
+  success: Boolean
+}
+
 input SendEventInvitationsInput {
   emails: [String!]
   eventId: ID
@@ -5655,6 +5684,17 @@ type VenueEventsConnection {
 type VenueEventsConnectionEdge {
   cursor: String!
   node: Event
+}
+
+"""Response payload for verifyEmail mutation."""
+type VerifyEmailPayload {
+  """User-friendly message about the verification result."""
+  message: String
+
+  """
+  Indicates if the email was successfully verified. Returns true even if already verified (idempotent).
+  """
+  success: Boolean
 }
 
 input VerifyEventInvitationInput {

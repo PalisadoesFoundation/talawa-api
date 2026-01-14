@@ -109,3 +109,85 @@ export function formatExpiryTime(expirySeconds: number): string {
 	const displayMinutes = Math.max(1, minutes);
 	return displayMinutes === 1 ? "1 minute" : `${displayMinutes} minutes`;
 }
+
+export interface EmailVerificationContext {
+	userName: string;
+	communityName: string;
+	verificationLink: string;
+	expiryText: string;
+}
+
+/**
+ * Generates plain text email content for email verification.
+ * Non-branded, uses configured community name.
+ */
+export function getEmailVerificationEmailText(
+	ctx: EmailVerificationContext,
+): string {
+	return `Hello ${ctx.userName},
+
+Welcome to ${ctx.communityName}!
+
+Please verify your email address to complete your registration:
+${ctx.verificationLink}
+
+${ctx.expiryText ? `This link will expire in ${ctx.expiryText}.` : "This link does not expire."}
+
+If you didn't create an account with ${ctx.communityName}, you can safely ignore this email.
+
+Best regards,
+The ${ctx.communityName} Team
+
+---
+This is an automated message. Please do not reply to this email.`;
+}
+
+/**
+ * Generates HTML email content for email verification.
+ * Simple, non-branded design using community name.
+ */
+export function getEmailVerificationEmailHtml(
+	ctx: EmailVerificationContext,
+): string {
+	return `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Verify Your Email - ${ctx.communityName}</title>
+</head>
+<body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
+  <div style="background-color: #f9f9f9; border-radius: 8px; padding: 30px;">
+    <h1 style="color: #333; margin-top: 0; font-size: 24px;">Welcome to ${ctx.communityName}!</h1>
+    
+    <p>Hello ${ctx.userName},</p>
+    
+    <p>Thank you for creating an account with <strong>${ctx.communityName}</strong>. Please verify your email address to complete your registration and start using the platform.</p>
+    
+    <p>Click the button below to verify your email address:</p>
+    
+    <div style="text-align: center; margin: 30px 0;">
+      <a href="${ctx.verificationLink}" 
+         style="background-color: #10b981; color: white; padding: 14px 28px; text-decoration: none; border-radius: 6px; display: inline-block; font-weight: 500;">
+        Verify Email
+      </a>
+    </div>
+    
+    <p style="color: #666; font-size: 14px;">Or copy and paste this link into your browser:</p>
+    <p style="word-break: break-all; color: #10b981; font-size: 14px;">${ctx.verificationLink}</p>
+    
+    <p style="margin-top: 20px;">
+      ${ctx.expiryText ? `<strong>This link will expire in ${ctx.expiryText}.</strong>` : "<strong>This link does not expire.</strong>"}
+    </p>
+    
+    <p style="color: #666;">If you didn't create an account with ${ctx.communityName}, you can safely ignore this email.</p>
+    
+    <hr style="border: none; border-top: 1px solid #eee; margin: 30px 0;" />
+    
+    <p style="color: #999; font-size: 12px; margin-bottom: 0;">
+      This is an automated message from ${ctx.communityName}. Please do not reply to this email.
+    </p>
+  </div>
+</body>
+</html>`;
+}
