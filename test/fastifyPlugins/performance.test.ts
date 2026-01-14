@@ -811,9 +811,12 @@ describe("Performance Plugin", () => {
 		});
 
 		it("should use manualDeepCopySnapshot when structuredClone is unavailable", async () => {
-			// Test the fallback path by temporarily replacing structuredClone
+			// Test the fallback path by temporarily removing structuredClone
 			// This ensures line 87 (the fallback return) is covered
-			// We use a spy on manualDeepCopySnapshot to verify the fallback is used
+			// Save the original structuredClone
+			const originalStructuredClone = global.structuredClone;
+
+			// Import the module and set up spy before removing structuredClone
 			const performanceModule = await import(
 				"../../src/fastifyPlugins/performance"
 			);
@@ -822,7 +825,6 @@ describe("Performance Plugin", () => {
 				"manualDeepCopySnapshot",
 			);
 
-			const originalStructuredClone = global.structuredClone;
 			let testApp: ReturnType<typeof createTestFastifyInstance> | undefined;
 
 			try {
@@ -841,7 +843,7 @@ describe("Performance Plugin", () => {
 
 				await testApp.ready();
 
-				// Make a request to create a snapshot BEFORE stubbing structuredClone
+				// Make a request to create a snapshot BEFORE removing structuredClone
 				// This ensures we have a snapshot to test with
 				const initialResponse = await testApp.inject({
 					method: "GET",
@@ -850,28 +852,17 @@ describe("Performance Plugin", () => {
 
 				expect(initialResponse.statusCode).toBe(200);
 
-				// Now stub structuredClone to test the fallback path
-				// Use Object.defineProperty with a getter that returns undefined
-				// This ensures typeof check will see it as undefined
-				try {
-					// Try to override with a getter that returns undefined
-					Object.defineProperty(global, "structuredClone", {
-						get: () => undefined,
-						configurable: true,
-						enumerable: true,
-					});
-				} catch (_e) {
-					// If that fails, try vi.stubGlobal
-					vi.stubGlobal("structuredClone", undefined);
-				}
+				// Remove structuredClone to force fallback path
+				// Use delete to actually remove it from global scope
+				delete (global as { structuredClone?: typeof structuredClone })
+					.structuredClone;
 
-				// Verify the stub worked - typeof should be "undefined"
-				const checkBefore = typeof structuredClone;
-				expect(checkBefore).toBe("undefined");
+				// Verify it's actually deleted - typeof should be "undefined"
+				expect(typeof global.structuredClone).toBe("undefined");
 
 				// The snapshot should be stored after the request completes
 				// getPerformanceSnapshots uses deepCopySnapshot which handles the fallback internally
-				// With structuredClone stubbed as undefined, it should use manualDeepCopySnapshot (line 87)
+				// With structuredClone deleted, it should use manualDeepCopySnapshot (line 87)
 				const snapshots = testApp.getPerformanceSnapshots(1);
 
 				// Verify we got snapshots
@@ -916,19 +907,10 @@ describe("Performance Plugin", () => {
 					});
 				}
 				// Restore original structuredClone
-				vi.unstubAllGlobals();
 				if (originalStructuredClone !== undefined) {
-					try {
-						Object.defineProperty(global, "structuredClone", {
-							value: originalStructuredClone,
-							configurable: true,
-							writable: true,
-							enumerable: true,
-						});
-					} catch (_e) {
-						// If restore fails, the original should still be there
-						// or it will be restored by unstubAllGlobals
-					}
+					(
+						global as { structuredClone?: typeof structuredClone }
+					).structuredClone = originalStructuredClone;
 				}
 			}
 		});
