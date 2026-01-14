@@ -468,10 +468,12 @@ describe("SMTPProvider", () => {
 	});
 
 	it("should wait ~100ms between bulk emails", async () => {
-		vi.useFakeTimers();
-
 		const nodemailer = await import("nodemailer");
-		const mockSendMail = vi.fn().mockResolvedValue({ messageId: "msg-delay" });
+		const sendTimes: number[] = [];
+		const mockSendMail = vi.fn().mockImplementation(() => {
+			sendTimes.push(Date.now());
+			return Promise.resolve({ messageId: "msg-delay" });
+		});
 		(nodemailer.default.createTransport as Mock).mockReturnValue({
 			sendMail: mockSendMail,
 		});
@@ -479,16 +481,25 @@ describe("SMTPProvider", () => {
 		const jobs = [
 			{ id: "1", email: "e1@x.com", subject: "s", htmlBody: "b", userId: "u1" },
 			{ id: "2", email: "e2@x.com", subject: "s", htmlBody: "b", userId: "u2" },
+			{ id: "3", email: "e3@x.com", subject: "s", htmlBody: "b", userId: "u3" },
 		];
 
-		const bulkPromise = smtpProvider.sendBulkEmails(jobs);
-		// Run all pending timers to completion
-		await vi.runAllTimersAsync();
-		await bulkPromise;
+		await smtpProvider.sendBulkEmails(jobs);
 
-		expect(mockSendMail).toHaveBeenCalledTimes(2);
-
-		vi.useRealTimers();
+		expect(mockSendMail).toHaveBeenCalledTimes(3);
+		// Verify there was at least some delay between emails (allowing for timing variance)
+		if (sendTimes.length >= 3) {
+			const time0 = sendTimes[0];
+			const time1 = sendTimes[1];
+			const time2 = sendTimes[2];
+			if (time0 !== undefined && time1 !== undefined && time2 !== undefined) {
+				const firstDelay = time1 - time0;
+				const secondDelay = time2 - time1;
+				// Should be at least 50ms delay (allowing for some timing variance)
+				expect(firstDelay).toBeGreaterThanOrEqual(50);
+				expect(secondDelay).toBeGreaterThanOrEqual(50);
+			}
+		}
 	});
 
 	it("should sanitize fromName and subject to prevent SMTP header injection", async () => {
