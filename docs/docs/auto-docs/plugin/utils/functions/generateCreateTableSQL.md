@@ -6,7 +6,7 @@
 
 > **generateCreateTableSQL**(`tableDefinition`, `pluginId?`): `string`
 
-Defined in: [src/plugin/utils.ts:281](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/plugin/utils.ts#L281)
+Defined in: [src/plugin/utils.ts:297](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/plugin/utils.ts#L297)
 
 Generates CREATE TABLE SQL from a Drizzle table definition
 

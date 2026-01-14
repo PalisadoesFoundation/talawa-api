@@ -276,6 +276,22 @@ function drizzleTypeToPostgresType(column: unknown): string {
 }
 
 /**
+ * Warns about automatic table name prefixing
+ */
+function warnAboutTablePrefixing(
+	originalTableName: string,
+	tableName: string,
+	pluginId: string,
+): void {
+	rootLogger.warn(
+		`Plugin table name automatically prefixed: "${originalTableName}" -> "${tableName}" (plugin: ${pluginId})`,
+	);
+	rootLogger.warn(
+		"Consider using prefixed table names in your plugin code to avoid connectivity issues.",
+	);
+}
+
+/**
  * Generates CREATE TABLE SQL from a Drizzle table definition
  */
 export function generateCreateTableSQL(
@@ -302,12 +318,7 @@ export function generateCreateTableSQL(
 		!originalTableName.startsWith(`${pluginId}_`) &&
 		tableName !== originalTableName
 	) {
-		rootLogger.warn(
-			`Plugin table name automatically prefixed: "${originalTableName}" -> "${tableName}" (plugin: ${pluginId})`,
-		);
-		rootLogger.warn(
-			"Consider using prefixed table names in your plugin code to avoid connectivity issues.",
-		);
+		warnAboutTablePrefixing(originalTableName, tableName, pluginId);
 	}
 
 	const columns =
@@ -416,12 +427,7 @@ export function generateCreateIndexSQL(
 		!originalTableName.startsWith(`${pluginId}_`) &&
 		tableName !== originalTableName
 	) {
-		rootLogger.warn(
-			`Plugin table name automatically prefixed: "${originalTableName}" -> "${tableName}" (plugin: ${pluginId})`,
-		);
-		rootLogger.warn(
-			"Consider using prefixed table names in your plugin code to avoid connectivity issues.",
-		);
+		warnAboutTablePrefixing(originalTableName, tableName, pluginId);
 	}
 
 	const indexes =

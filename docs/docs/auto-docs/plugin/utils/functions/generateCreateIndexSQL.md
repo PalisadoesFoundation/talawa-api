@@ -6,7 +6,7 @@
 
 > **generateCreateIndexSQL**(`tableDefinition`, `pluginId?`): `string`[]
 
-Defined in: [src/plugin/utils.ts:395](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/plugin/utils.ts#L395)
+Defined in: [src/plugin/utils.ts:406](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/plugin/utils.ts#L406)
 
 Generates CREATE INDEX SQL for table indexes
 
