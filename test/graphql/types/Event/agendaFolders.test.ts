@@ -124,7 +124,7 @@ describe("Event agendaFolders Resolver", () => {
 				"Folder C",
 			]);
 			expect(result.pageInfo.hasNextPage).toBe(false);
-			expect(result.pageInfo.hasPreviousPage).toBe(false);
+			expect(result.pageInfo.hasPreviousPage).toBe(false); // Unified semantics
 			expect(result.pageInfo.startCursor).toBeDefined();
 			expect(result.pageInfo.endCursor).toBeDefined();
 		});
@@ -146,7 +146,7 @@ describe("Event agendaFolders Resolver", () => {
 				"Folder B",
 				"Folder C",
 			]);
-			expect(result.pageInfo.hasNextPage).toBe(false);
+			expect(result.pageInfo.hasNextPage).toBe(false); // Unified semantics
 			expect(result.pageInfo.hasPreviousPage).toBe(false);
 			expect(result.pageInfo.startCursor).toBeDefined();
 			expect(result.pageInfo.endCursor).toBeDefined();
@@ -164,14 +164,14 @@ describe("Event agendaFolders Resolver", () => {
 			]);
 			const result = (await agendaFoldersResolver(
 				mockEvent,
-				{ first: 1, cursor: validCursor },
+				{ first: 1, after: validCursor },
 				ctx,
 				mockResolveInfo,
 			)) as Connection;
 			expect(result.edges).toHaveLength(1);
 			expect(result.edges[0]?.node?.name).toBe("Folder C");
 			expect(result.pageInfo.hasNextPage).toBe(false);
-			expect(result.pageInfo.hasPreviousPage).toBe(false);
+			expect(result.pageInfo.hasPreviousPage).toBe(true); // Unified semantics
 			expect(result.pageInfo.startCursor).toBeDefined();
 			expect(result.pageInfo.endCursor).toBeDefined();
 		});
@@ -183,18 +183,20 @@ describe("Event agendaFolders Resolver", () => {
 			const validCursor = createCursor(cursorData);
 			const folderA = mockAgendaFolders[0];
 			if (!folderA) throw new Error("folderA is undefined");
+
 			mocks.drizzleClient.query.agendaFoldersTable.findMany.mockResolvedValue([
 				folderA,
 			]);
+
 			const result = (await agendaFoldersResolver(
 				mockEvent,
-				{ last: 1, cursor: validCursor },
+				{ last: 1, before: validCursor },
 				ctx,
 				mockResolveInfo,
 			)) as Connection;
 			expect(result.edges).toHaveLength(1);
 			expect(result.edges[0]?.node?.name).toBe("Folder A");
-			expect(result.pageInfo.hasNextPage).toBe(false);
+			expect(result.pageInfo.hasNextPage).toBe(true); // Updated expectation
 			expect(result.pageInfo.hasPreviousPage).toBe(false);
 			expect(result.pageInfo.startCursor).toBeDefined();
 			expect(result.pageInfo.endCursor).toBeDefined();
@@ -214,6 +216,65 @@ describe("Event agendaFolders Resolver", () => {
 			expect(result.pageInfo.hasNextPage).toBe(false);
 			expect(result.pageInfo.hasPreviousPage).toBe(false);
 			expect(result.pageInfo.startCursor).toBeNull();
+		});
+
+		it("returns empty connection when no agenda folders (backward)", async () => {
+			mocks.drizzleClient.query.agendaFoldersTable.findMany.mockResolvedValue(
+				[],
+			);
+
+			const result = (await agendaFoldersResolver(
+				mockEvent,
+				{ last: 10 },
+				ctx,
+				mockResolveInfo,
+			)) as Connection;
+
+			expect(result.edges).toHaveLength(0);
+			expect(result.pageInfo.hasNextPage).toBe(false);
+			expect(result.pageInfo.hasPreviousPage).toBe(false);
+			expect(result.pageInfo.endCursor).toBeNull();
+		});
+	});
+
+	describe("pagination flags", () => {
+		it("returns correct pagination flags for forward pagination", async () => {
+			mocks.drizzleClient.query.agendaFoldersTable.findMany.mockResolvedValue(
+				mockAgendaFolders.slice(0, 3), // Return 3 folders
+			);
+
+			const result = (await agendaFoldersResolver(
+				mockEvent,
+				{ first: 2 },
+				ctx,
+				mockResolveInfo,
+			)) as Connection;
+
+			expect(result.edges).toHaveLength(2); // Only 2 requested
+			expect(result.pageInfo.hasNextPage).toBe(true); // More data exists
+			expect(result.pageInfo.hasPreviousPage).toBe(false); // No previous data
+			expect(result.pageInfo.startCursor).toBeDefined();
+			expect(result.pageInfo.endCursor).toBeDefined();
+		});
+
+		it("returns correct pagination flags for backward pagination", async () => {
+			const reversedFolders = [...mockAgendaFolders].reverse();
+			mocks.drizzleClient.query.agendaFoldersTable.findMany.mockResolvedValue(
+				reversedFolders.slice(0, 3), // Return 3 folders in reverse order
+			);
+
+			const result = (await agendaFoldersResolver(
+				mockEvent,
+				{ last: 2 },
+				ctx,
+				mockResolveInfo,
+			)) as Connection;
+
+			expect(result.edges).toHaveLength(2); // Only 2 requested
+			expect(result.pageInfo.hasNextPage).toBe(false); // No more data ahead
+			expect(result.pageInfo.hasPreviousPage).toBe(true); // Previous data exists
+			expect(result.pageInfo.startCursor).toBeDefined();
+			expect(result.pageInfo.endCursor).toBeDefined();
 		});
 	});
 
@@ -398,24 +459,6 @@ describe("Event agendaFolders Resolver", () => {
 					]),
 				}),
 			});
-		});
-
-		it("returns empty connection when no agenda folders (backward)", async () => {
-			mocks.drizzleClient.query.agendaFoldersTable.findMany.mockResolvedValue(
-				[],
-			);
-
-			const result = (await agendaFoldersResolver(
-				mockEvent,
-				{ last: 10 },
-				ctx,
-				mockResolveInfo,
-			)) as Connection;
-
-			expect(result.edges).toHaveLength(0);
-			expect(result.pageInfo.hasNextPage).toBe(false);
-			expect(result.pageInfo.hasPreviousPage).toBe(false);
-			expect(result.pageInfo.endCursor).toBeNull();
 		});
 	});
 });
