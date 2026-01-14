@@ -334,9 +334,10 @@ export class PluginLifecycle {
 					tableDefinitions,
 					this.pluginContext.logger, // Using context logger
 				);
-				this.pluginContext.logger.info?.(
-					`Successfully created plugin-defined tables for: ${pluginId}`,
-				);
+				this.pluginContext.logger.info?.({
+					msg: "Successfully created plugin-defined tables",
+					pluginId,
+				});
 			} catch (error) {
 				this.pluginContext.logger.error?.({
 					msg: `Failed to create tables for ${pluginId}`,

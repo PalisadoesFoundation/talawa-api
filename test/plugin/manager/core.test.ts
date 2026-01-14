@@ -281,8 +281,10 @@ describe("PluginManager", () => {
 		expect(errorHook).toHaveBeenCalled();
 		expect(goodHook).toHaveBeenCalled();
 		expect(result).toBe(2);
-		// We expect logger to log the error
-		expect(context.logger.error).toHaveBeenCalled();
+		// Wait for async error handling - we expect logger.error to be called
+		await vi.waitFor(() => {
+			expect(context.logger.error).toHaveBeenCalled();
+		});
 	});
 
 	it("should handle errors in post hooks and continue execution", async () => {
