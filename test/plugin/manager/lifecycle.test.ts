@@ -1470,6 +1470,15 @@ describe("PluginLifecycle", () => {
 				]),
 				expect.any(Object),
 			);
+
+			// Verify structured info log for building docker container
+			expect(mockPluginContext.logger.info).toHaveBeenCalledWith(
+				expect.objectContaining({
+					msg: "Building docker container",
+					pluginId,
+					action: "install",
+				}),
+			);
 		});
 
 		it("should execute docker up command when upOnActivate is true", async () => {
@@ -1514,6 +1523,15 @@ describe("PluginLifecycle", () => {
 				]),
 				expect.any(Object),
 			);
+
+			// Verify structured info log for starting docker container
+			expect(mockPluginContext.logger.info).toHaveBeenCalledWith(
+				expect.objectContaining({
+					msg: "Starting docker container",
+					pluginId,
+					action: "activate",
+				}),
+			);
 		});
 
 		it("should execute docker down command when downOnDeactivate is true", async () => {
@@ -1556,6 +1574,15 @@ describe("PluginLifecycle", () => {
 					"down",
 				]),
 				expect.any(Object),
+			);
+
+			// Verify structured info log for stopping docker container
+			expect(mockPluginContext.logger.info).toHaveBeenCalledWith(
+				expect.objectContaining({
+					msg: "Stopping docker container",
+					pluginId,
+					action: "deactivate",
+				}),
 			);
 		});
 
@@ -1600,6 +1627,15 @@ describe("PluginLifecycle", () => {
 					"-v",
 				]),
 				expect.any(Object),
+			);
+
+			// Verify structured info log for removing docker container
+			expect(mockPluginContext.logger.info).toHaveBeenCalledWith(
+				expect.objectContaining({
+					msg: "Removing docker container",
+					pluginId,
+					action: "uninstall",
+				}),
 			);
 		});
 	});

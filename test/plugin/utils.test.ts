@@ -252,6 +252,29 @@ describe("generateCreateTableSQL & generateCreateIndexSQL", () => {
 		const indexes = utils.generateCreateIndexSQL(tableDef, "pluginid");
 		expect(indexes).toHaveLength(0); // No valid indexes should be processed
 	});
+
+	it("logs warning when table name is automatically prefixed (covers warnAboutTablePrefixing)", async () => {
+		const { rootLogger } = await import("~/src/utilities/logging/logger");
+		const warnSpy = vi.spyOn(rootLogger, "warn");
+
+		const drizzleName = Symbol.for("drizzle:Name");
+		const drizzleColumns = Symbol.for("drizzle:Columns");
+		// Table name without the plugin prefix triggers the warning
+		const tableDef: Record<string, unknown> = {
+			[drizzleName]: "unprefixed_table",
+			[drizzleColumns]: {
+				id: { name: "id", columnType: "PgUUID", notNull: true, primary: true },
+			},
+		};
+		utils.generateCreateTableSQL(tableDef, "myplugin");
+		expect(warnSpy).toHaveBeenCalledWith(
+			expect.stringContaining("Plugin table name automatically prefixed"),
+		);
+		expect(warnSpy).toHaveBeenCalledWith(
+			expect.stringContaining("Consider using prefixed table names"),
+		);
+		warnSpy.mockRestore();
+	});
 });
 
 // --- createPluginTables & dropPluginTables ---
