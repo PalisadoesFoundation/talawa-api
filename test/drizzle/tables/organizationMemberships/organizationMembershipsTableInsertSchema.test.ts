@@ -180,6 +180,30 @@ describe("organization Memberships Table Insert Schema edge cases", () => {
     ).toThrow();
   });
 
+  it("Rejects uppercase REGULAR role (case-sensitive)", () => {
+    const data = {
+      memberId: validUUID1,
+      organizationId: validUUID2,
+      role: "REGULAR",
+    };
+
+    expect(() =>
+      organizationMembershipsTableInsertSchema.parse(data)
+    ).toThrow();
+  });
+
+  it("Rejects uppercase ADMINISTRATOR role (case-sensitive)", () => {
+    const data = {
+      memberId: validUUID1,
+      organizationId: validUUID2,
+      role: "ADMINISTRATOR",
+    };
+
+    expect(() =>
+      organizationMembershipsTableInsertSchema.parse(data)
+    ).toThrow();
+  });
+
   it("Send null as memberId in object", () => {
     const data = {
       memberId: null,
