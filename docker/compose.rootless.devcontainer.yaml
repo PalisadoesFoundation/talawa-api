@@ -61,8 +61,8 @@ services:
       # Mount Docker socket for plugin container management
       # For rootless Docker, the socket is at /run/user/$UID/docker.sock
       # We use XDG_RUNTIME_DIR which is set to /run/user/$UID in rootless mode
-      # Fallback to standard path for compatibility
-      - source: ${XDG_RUNTIME_DIR:-/run/user/1000}/docker.sock
+      # Fallback uses ${UID} env var - users must ensure XDG_RUNTIME_DIR or UID is set
+      - source: ${XDG_RUNTIME_DIR:-/run/user/${UID}}/docker.sock
         target: /var/run/docker.sock
         type: bind
         # https://code.visualstudio.com/remote/advancedcontainers/persist-bash-history
@@ -186,7 +186,6 @@ services:
         name: redis
         published: ${REDIS_MAPPED_PORT:?error}
         target: 6379
-# https://docs.docker.com/reference/compose-file/volumes/
   redis-test:
     ports:
       - host_ip: ${REDIS_MAPPED_HOST_IP:?error}
@@ -197,6 +196,7 @@ services:
       - source: redis_test_data
         target: /data
         type: volume
+# https://docs.docker.com/reference/compose-file/volumes/
 volumes:
   api_bash_history:
   api_node_modules:
