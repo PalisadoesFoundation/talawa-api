@@ -17,6 +17,9 @@ let cleanupTask: cron.ScheduledTask | undefined;
 let metricsTask: cron.ScheduledTask | undefined;
 let isRunning = false;
 let materializationConfig: WorkerConfig = createDefaultWorkerConfig();
+// Store metrics configuration at startup for status reporting
+let metricsEnabled: boolean | undefined;
+let metricsSchedule: string | undefined;
 
 /**
  * Initializes and starts all background workers, scheduling them to run at their configured intervals.
@@ -63,8 +66,14 @@ export async function startBackgroundWorkers(
 		cleanupTask.start();
 
 		// Schedule metrics aggregation worker if enabled and snapshot getter is provided
-		const metricsEnabled =
-			process.env.API_METRICS_AGGREGATION_ENABLED !== "false";
+		// Parse API_METRICS_AGGREGATION_ENABLED explicitly (case-insensitive)
+		const enabledValue = (
+			process.env.API_METRICS_AGGREGATION_ENABLED ?? ""
+		).toLowerCase();
+		metricsEnabled = ["true", "1", "yes"].includes(enabledValue);
+		metricsSchedule =
+			process.env.API_METRICS_AGGREGATION_CRON_SCHEDULE || "*/5 * * * *";
+
 		const rawWindowMinutes = Number(
 			process.env.API_METRICS_AGGREGATION_WINDOW_MINUTES ?? 5,
 		);
@@ -75,7 +84,7 @@ export async function startBackgroundWorkers(
 
 		if (metricsEnabled && getMetricsSnapshots) {
 			metricsTask = cron.schedule(
-				process.env.API_METRICS_AGGREGATION_CRON_SCHEDULE || "*/5 * * * *",
+				metricsSchedule,
 				() =>
 					runMetricsAggregationWorkerSafely(
 						getMetricsSnapshots,
@@ -91,8 +100,7 @@ export async function startBackgroundWorkers(
 			metricsTask.start();
 			logger.info(
 				{
-					metricsSchedule:
-						process.env.API_METRICS_AGGREGATION_CRON_SCHEDULE || "*/5 * * * *",
+					metricsSchedule,
 					metricsWindowMinutes,
 				},
 				"Metrics aggregation worker scheduled",
@@ -255,7 +263,7 @@ export async function runMetricsAggregationWorkerSafely(
 		);
 
 		const duration = Date.now() - startTime;
-		logger.info(
+		logger.debug(
 			{
 				duration: `${duration}ms`,
 			},
@@ -318,19 +326,14 @@ export function getBackgroundWorkerStatus(): {
 	nextMaterializationRun?: Date;
 	nextCleanupRun?: Date;
 } {
-	const metricsEnabled =
-		process.env.API_METRICS_AGGREGATION_ENABLED !== "false";
-	const metricsSchedule =
-		process.env.API_METRICS_AGGREGATION_CRON_SCHEDULE || "*/5 * * * *";
-
 	return {
 		isRunning,
 		materializationSchedule:
 			process.env.EVENT_GENERATION_CRON_SCHEDULE || "0 * * * *",
 		cleanupSchedule: process.env.CLEANUP_CRON_SCHEDULE || "0 2 * * *",
-		...(metricsEnabled && {
+		...(metricsEnabled !== undefined && {
 			metricsSchedule,
-			metricsEnabled: true,
+			metricsEnabled,
 		}),
 	};
 }

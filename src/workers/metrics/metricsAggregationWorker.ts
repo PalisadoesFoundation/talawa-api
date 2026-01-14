@@ -179,12 +179,13 @@ function aggregateComplexityMetrics(
 	}
 
 	const total = complexityScores.reduce((sum, score) => sum + score, 0);
-	complexityScores.sort((a, b) => a - b);
+	const minScore = Math.min(...complexityScores);
+	const maxScore = Math.max(...complexityScores);
 
 	return {
 		avgScore: total / complexityScores.length,
-		minScore: complexityScores[0] ?? 0,
-		maxScore: complexityScores[complexityScores.length - 1] ?? 0,
+		minScore,
+		maxScore,
 		count: complexityScores.length,
 	};
 }

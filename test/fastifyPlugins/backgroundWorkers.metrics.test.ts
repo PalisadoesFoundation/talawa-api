@@ -1,5 +1,7 @@
+import type { NodePgDatabase } from "drizzle-orm/node-postgres";
 import Fastify from "fastify";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import type * as schema from "~/src/drizzle/schema";
 import backgroundWorkersPlugin from "../../src/fastifyPlugins/backgroundWorkers";
 import performancePlugin from "../../src/fastifyPlugins/performance";
 
@@ -70,7 +72,7 @@ describe("Background Workers Plugin - Metrics Integration", () => {
 			}
 		});
 
-		it("should handle backward compatibility when performance plugin dependency is not registered", async () => {
+		it("should reject registration when performance plugin dependency is not registered", async () => {
 			// Create app without performance plugin
 			const testApp = Fastify({
 				logger: {
@@ -78,14 +80,14 @@ describe("Background Workers Plugin - Metrics Integration", () => {
 				},
 			});
 
-			testApp.decorate("drizzleClient", {});
+			testApp.decorate(
+				"drizzleClient",
+				{} as unknown as NodePgDatabase<typeof schema>,
+			);
 
 			// Register background workers without performance plugin
-			// This should not throw due to backward compatibility handling
-			await expect(testApp.register(backgroundWorkersPlugin)).resolves.not.toThrow();
-
-			// Verify the snapshot getter is undefined on the app
-			expect((testApp as any).getMetricsSnapshots).toBeUndefined();
+			// This should throw because performance is a required dependency
+			await expect(testApp.register(backgroundWorkersPlugin)).rejects.toThrow();
 
 			await testApp.close();
 		});

@@ -13,19 +13,14 @@ import {
 } from "~/src/workers/backgroundWorkerService";
 
 vi.mock("node-cron", () => {
-	let callCount = 0;
-
 	const schedule = vi.fn(
 		(
 			_expr: string,
 			funcOrString: string | ((now: Date | "manual" | "init") => void),
 			_options?: ScheduleOptions,
 		): ScheduledTask => {
-			const thisCall = callCount;
-			callCount++;
-
 			const start = vi.fn(() => {
-				if (thisCall === 0 && typeof funcOrString === "function") {
+				if (typeof funcOrString === "function") {
 					funcOrString("manual");
 				}
 			});
@@ -37,7 +32,6 @@ vi.mock("node-cron", () => {
 	);
 
 	const __resetMock = () => {
-		callCount = 0;
 		schedule.mockClear();
 	};
 
@@ -383,9 +377,8 @@ describe("backgroundWorkerService - metrics integration", () => {
 				(call) => call[0] === expectedMetricsSchedule,
 			);
 			expect(metricsTaskCallIndex).toBeGreaterThanOrEqual(0);
-			const metricsTask = scheduleCalls.mock.results[
-				metricsTaskCallIndex
-			]?.value as ScheduledTask;
+			const metricsTask = scheduleCalls.mock.results[metricsTaskCallIndex]
+				?.value as ScheduledTask;
 			expect(metricsTask).toBeDefined();
 
 			await stopBackgroundWorkers(mockLogger);

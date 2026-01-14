@@ -24,7 +24,7 @@ declare module "fastify" {
 	interface FastifyInstance {
 		/**
 		 * Retrieves recent performance snapshots within an optional time window.
-		 * @param windowMinutes - Optional time window in minutes. If provided, only returns snapshots within this window.
+		 * @param windowMinutes - Optional time window in minutes. If zero or negative, returns all snapshots; otherwise returns snapshots within this window.
 		 * @returns Array of performance snapshots
 		 */
 		getMetricsSnapshots?: (windowMinutes?: number) => PerfSnapshot[];
@@ -63,7 +63,7 @@ export default fp(async function perfPlugin(app: FastifyInstance) {
 	 * Internal function to retrieve recent snapshots, optionally filtered by time window.
 	 * Thread-safe for reads (the array is only modified in onSend hook).
 	 *
-	 * @param windowMinutes - Optional time window in minutes. If provided, only returns snapshots within this window.
+	 * @param windowMinutes - Optional time window in minutes. If zero or negative, returns all snapshots; otherwise returns snapshots within this window.
 	 * @returns Array of performance snapshots
 	 */
 	function getRecentSnapshots(windowMinutes?: number): PerfSnapshot[] {

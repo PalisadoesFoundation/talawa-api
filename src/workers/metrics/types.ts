@@ -1,5 +1,3 @@
-import type { PerfSnapshot } from "~/src/utilities/metrics/performanceTracker";
-
 /**
  * Metrics for a specific operation type.
  */

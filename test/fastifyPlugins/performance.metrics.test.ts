@@ -118,18 +118,16 @@ describe("Performance Plugin - Metrics Interface", () => {
 			expect(snapshots?.length).toBeGreaterThanOrEqual(50);
 		});
 
-		it("should handle concurrent snapshot reads safely", async () => {
+		it("should handle multiple sequential snapshot reads safely", async () => {
 			// Make some requests
 			for (let i = 0; i < 10; i++) {
 				await app.inject({ method: "GET", url: "/metrics/perf" });
 			}
 
-			// Read snapshots concurrently
-			const promises = Array.from({ length: 10 }, () =>
-				Promise.resolve(app.getMetricsSnapshots?.()),
+			// Read snapshots sequentially (getMetricsSnapshots is synchronous)
+			const results = Array.from({ length: 10 }, () =>
+				app.getMetricsSnapshots?.(),
 			);
-
-			const results = await Promise.all(promises);
 
 			// All reads should succeed and return arrays
 			for (const result of results) {
@@ -172,23 +170,40 @@ describe("Performance Plugin - Metrics Interface", () => {
 
 	describe("Integration with background worker", () => {
 		it("should allow background worker to access snapshots via getMetricsSnapshots", async () => {
-			// Make some requests
+			const { runMetricsAggregationWorker } = await import(
+				"~/src/workers/metrics/metricsAggregationWorker"
+			);
+
+			// Make some requests to generate snapshots
 			await app.inject({ method: "GET", url: "/metrics/perf" });
 			await app.inject({ method: "GET", url: "/metrics/perf" });
 
-			// Simulate background worker accessing snapshots
-			const snapshots = app.getMetricsSnapshots?.(5);
-			expect(snapshots).toBeDefined();
-			expect(Array.isArray(snapshots)).toBe(true);
-		});
+			// Spy on getMetricsSnapshots to verify it's called
+			const originalGetMetricsSnapshots = app.getMetricsSnapshots;
+			if (!originalGetMetricsSnapshots) {
+				throw new Error("getMetricsSnapshots is not available");
+			}
+			const getMetricsSnapshotsSpy = vi.fn(originalGetMetricsSnapshots);
+			app.getMetricsSnapshots = getMetricsSnapshotsSpy;
 
-		it("should work with window parameter for background worker", async () => {
-			await app.inject({ method: "GET", url: "/metrics/perf" });
+			// Run the metrics aggregation worker
+			const result = await runMetricsAggregationWorker(
+				getMetricsSnapshotsSpy,
+				5,
+				app.log,
+			);
 
-			// Background worker typically uses a window
-			const snapshots = app.getMetricsSnapshots?.(5);
-			expect(snapshots).toBeDefined();
-			expect(Array.isArray(snapshots)).toBe(true);
+			// Verify getMetricsSnapshots was called
+			expect(getMetricsSnapshotsSpy).toHaveBeenCalled();
+
+			// Verify the worker processed the snapshots
+			expect(result).toBeDefined();
+			if (result) {
+				expect(result.snapshotCount).toBeGreaterThanOrEqual(0);
+			}
+
+			// Restore original function
+			app.getMetricsSnapshots = originalGetMetricsSnapshots;
 		});
 	});
 
