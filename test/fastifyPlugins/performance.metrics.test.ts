@@ -48,20 +48,34 @@ describe("Performance Plugin - Metrics Interface", () => {
 		});
 
 		it("should filter snapshots by time window", async () => {
-			// Make a request to generate a snapshot
-			await app.inject({ method: "GET", url: "/metrics/perf" });
+			// Use fake timers for deterministic time control
+			vi.useFakeTimers();
+			const baseTime = Date.now();
+			vi.setSystemTime(baseTime);
 
-			// Get snapshots with a very small window (1 minute)
-			const recentSnapshots = app.getMetricsSnapshots?.(1);
-			expect(recentSnapshots).toBeDefined();
-			expect(recentSnapshots?.length).toBeGreaterThanOrEqual(1);
+			try {
+				// Make first request at base time
+				await app.inject({ method: "GET", url: "/metrics/perf" });
 
-			// Get snapshots with a window in the past (should return empty)
-			// We can't easily test this without manipulating time, but we can test
-			// that the function accepts the parameter
-			const oldSnapshots = app.getMetricsSnapshots?.(0.0001); // Very small window
-			expect(oldSnapshots).toBeDefined();
-			expect(Array.isArray(oldSnapshots)).toBe(true);
+				// Advance time by 2 minutes
+				vi.setSystemTime(baseTime + 2 * 60 * 1000);
+
+				// Make second request 2 minutes later
+				await app.inject({ method: "GET", url: "/metrics/perf" });
+
+				// Get snapshots with 1 minute window (should only include the most recent)
+				const recentSnapshots = app.getMetricsSnapshots?.(1);
+				expect(recentSnapshots).toBeDefined();
+				expect(recentSnapshots?.length).toBe(1);
+
+				// Get snapshots with 5 minute window (should include both)
+				const allRecentSnapshots = app.getMetricsSnapshots?.(5);
+				expect(allRecentSnapshots).toBeDefined();
+				expect(allRecentSnapshots?.length).toBe(2);
+			} finally {
+				// Restore real timers
+				vi.useRealTimers();
+			}
 		});
 
 		it("should return snapshots with correct structure", async () => {

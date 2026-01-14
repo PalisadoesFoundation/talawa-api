@@ -11,7 +11,7 @@ Defined in: [src/fastifyPlugins/performance.ts:49](https://github.com/Palisadoes
 Fastify plugin that adds performance tracking to all requests.
 - Attaches a performance tracker to each request
 - Adds Server-Timing headers to responses
-- Provides /metrics/perf endpoint for recent performance snapshots
+- Provides /metrics/perf endpoint for recent performance snapshots (requires authentication)
 - Exposes getMetricsSnapshots for background worker metrics aggregation
 
 ## Parameters

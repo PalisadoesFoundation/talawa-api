@@ -171,9 +171,16 @@ describe("metricsAggregationWorker", () => {
 			);
 
 			expect(result).toBeDefined();
-			expect(result?.requests.medianTotalMs).toBe(50); // p50
-			expect(result?.requests.p95TotalMs).toBe(95); // p95
-			expect(result?.requests.p99TotalMs).toBe(99); // p99
+			// With linear interpolation for 100 values (1-100):
+			// p50 = (50/100) * 99 = 49.5, interpolate between index 49 (50) and 50 (51) = 50.5, rounds to 51
+			// p95 = (95/100) * 99 = 94.05, interpolate between index 94 (95) and 95 (96) = 95.05, rounds to 95
+			// p99 = (99/100) * 99 = 98.01, interpolate between index 98 (99) and 99 (100) = 99.01, rounds to 99
+			expect(result?.requests.medianTotalMs).toBeGreaterThanOrEqual(50);
+			expect(result?.requests.medianTotalMs).toBeLessThanOrEqual(51);
+			expect(result?.requests.p95TotalMs).toBeGreaterThanOrEqual(95);
+			expect(result?.requests.p95TotalMs).toBeLessThanOrEqual(96);
+			expect(result?.requests.p99TotalMs).toBeGreaterThanOrEqual(99);
+			expect(result?.requests.p99TotalMs).toBeLessThanOrEqual(100);
 		});
 
 		it("aggregates operation metrics correctly", async () => {

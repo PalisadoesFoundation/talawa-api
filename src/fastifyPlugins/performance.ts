@@ -1,4 +1,4 @@
-import type { FastifyInstance } from "fastify";
+import type { FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
 import fp from "fastify-plugin";
 import {
 	createPerformanceTracker,
@@ -43,7 +43,7 @@ interface SnapshotWithTimestamp {
  * Fastify plugin that adds performance tracking to all requests.
  * - Attaches a performance tracker to each request
  * - Adds Server-Timing headers to responses
- * - Provides /metrics/perf endpoint for recent performance snapshots
+ * - Provides /metrics/perf endpoint for recent performance snapshots (requires authentication)
  * - Exposes getMetricsSnapshots for background worker metrics aggregation
  */
 export default fp(
@@ -56,6 +56,14 @@ export default fp(
 			Number.isFinite(rawRetentionCount) && rawRetentionCount > 0
 				? Math.floor(rawRetentionCount)
 				: 1000;
+
+		// Cache slow request threshold at plugin initialization (default: 500ms)
+		const rawSlowMs = Number(process.env.API_SLOW_REQUEST_MS ?? 500);
+		const slowRequestThresholdMs =
+			Number.isFinite(rawSlowMs) && rawSlowMs > 0 ? Math.floor(rawSlowMs) : 500;
+
+		// Get API key for metrics endpoint authentication (optional)
+		const metricsApiKey = process.env.API_METRICS_API_KEY;
 
 		// Store recent performance snapshots with timestamps in memory
 		const recent: SnapshotWithTimestamp[] = [];
@@ -83,6 +91,57 @@ export default fp(
 				.map((item) => item.snapshot);
 		}
 
+		/**
+		 * Pre-handler for metrics endpoint authentication.
+		 * Validates bearer token against API_METRICS_API_KEY environment variable.
+		 * Returns 401 if no token provided, 403 if token is invalid.
+		 */
+		async function metricsAuthPreHandler(
+			request: FastifyRequest,
+			reply: FastifyReply,
+		): Promise<void> {
+			// If no API key is configured, allow access (for development/testing)
+			if (!metricsApiKey) {
+				request.log.warn(
+					"API_METRICS_API_KEY not configured - metrics endpoint is unprotected",
+				);
+				return;
+			}
+
+			const authHeader = request.headers.authorization;
+
+			if (!authHeader) {
+				reply
+					.code(401)
+					.send({
+						error: "Unauthorized",
+						message: "Missing authorization header",
+					});
+				return;
+			}
+
+			// Expect "Bearer <token>" format
+			const [scheme, token] = authHeader.split(" ");
+
+			if (scheme?.toLowerCase() !== "bearer" || !token) {
+				reply
+					.code(401)
+					.send({
+						error: "Unauthorized",
+						message: "Invalid authorization format. Expected: Bearer <token>",
+					});
+				return;
+			}
+
+			// Validate token against configured API key
+			if (token !== metricsApiKey) {
+				reply
+					.code(403)
+					.send({ error: "Forbidden", message: "Invalid API key" });
+				return;
+			}
+		}
+
 		// Attach performance tracker to each request
 		app.addHook("onRequest", async (req) => {
 			req.perf = createPerformanceTracker();
@@ -93,15 +152,14 @@ export default fp(
 		app.addHook("onSend", async (req, reply) => {
 			const snap = req.perf?.snapshot?.();
 			const total = Date.now() - (req._t0 ?? Date.now());
-			const slowMs = Number(process.env.API_SLOW_REQUEST_MS ?? 500);
 
-			if (total >= slowMs) {
+			if (total >= slowRequestThresholdMs) {
 				req.log.warn({
 					msg: "Slow request",
 					method: req.method,
 					path: req.url,
 					totalMs: total,
-					slowThresholdMs: slowMs,
+					slowThresholdMs: slowRequestThresholdMs,
 				});
 			}
 
@@ -131,10 +189,16 @@ export default fp(
 		// Expose snapshot getter for background workers
 		app.getMetricsSnapshots = getRecentSnapshots;
 
-		// Endpoint to retrieve recent performance snapshots
-		app.get("/metrics/perf", async () => ({
-			recent: recent.slice(0, 50).map((item) => item.snapshot),
-		}));
+		// Endpoint to retrieve recent performance snapshots (protected)
+		app.get(
+			"/metrics/perf",
+			{
+				preHandler: metricsAuthPreHandler,
+			},
+			async () => ({
+				recent: recent.slice(0, 50).map((item) => item.snapshot),
+			}),
+		);
 	},
 	{ name: "performance" },
 );

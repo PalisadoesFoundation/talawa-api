@@ -1,5 +1,6 @@
 import type { NodePgDatabase } from "drizzle-orm/node-postgres";
 import Fastify from "fastify";
+import fp from "fastify-plugin";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type * as schema from "~/src/drizzle/schema";
 import backgroundWorkersPlugin from "../../src/fastifyPlugins/backgroundWorkers";
@@ -10,6 +11,17 @@ vi.mock("~/src/workers", () => ({
 	startBackgroundWorkers: vi.fn(),
 	stopBackgroundWorkers: vi.fn(),
 }));
+
+// Create a mock drizzleClient plugin to satisfy the dependency
+const mockDrizzleClientPlugin = fp(
+	async (app) => {
+		app.decorate(
+			"drizzleClient",
+			{} as unknown as NodePgDatabase<typeof schema>,
+		);
+	},
+	{ name: "drizzleClient" },
+);
 
 describe("Background Workers Plugin - Metrics Integration", () => {
 	let app: ReturnType<typeof Fastify>;
@@ -23,10 +35,10 @@ describe("Background Workers Plugin - Metrics Integration", () => {
 			},
 		});
 
-		// Register drizzle client mock
-		app.decorate("drizzleClient", {});
+		// Register drizzle client mock as a named plugin (required dependency)
+		await app.register(mockDrizzleClientPlugin);
 
-		// Register performance plugin first (required dependency)
+		// Register performance plugin (required dependency)
 		await app.register(performancePlugin);
 	});
 
@@ -53,11 +65,12 @@ describe("Background Workers Plugin - Metrics Integration", () => {
 		it("should pass getMetricsSnapshots function to startBackgroundWorkers", async () => {
 			const { startBackgroundWorkers } = await import("~/src/workers");
 
-			// Make a request to generate a snapshot
-			await app.inject({ method: "GET", url: "/metrics/perf" });
-
+			// Register all plugins first, then make requests
 			await app.register(backgroundWorkersPlugin);
 			await app.ready();
+
+			// Make a request to generate a snapshot after plugins are registered
+			await app.inject({ method: "GET", url: "/metrics/perf" });
 
 			const callArgs = vi.mocked(startBackgroundWorkers).mock.calls[0];
 			expect(callArgs).toBeDefined();
@@ -80,10 +93,8 @@ describe("Background Workers Plugin - Metrics Integration", () => {
 				},
 			});
 
-			testApp.decorate(
-				"drizzleClient",
-				{} as unknown as NodePgDatabase<typeof schema>,
-			);
+			// Register drizzleClient as a proper named plugin
+			await testApp.register(mockDrizzleClientPlugin);
 
 			// Register background workers without performance plugin
 			// This should throw because performance is a required dependency
@@ -135,12 +146,13 @@ describe("Background Workers Plugin - Metrics Integration", () => {
 		it("should provide working snapshot getter that returns snapshots", async () => {
 			const { startBackgroundWorkers } = await import("~/src/workers");
 
-			// Make requests to generate snapshots
-			await app.inject({ method: "GET", url: "/metrics/perf" });
-			await app.inject({ method: "GET", url: "/metrics/perf" });
-
+			// Register all plugins first
 			await app.register(backgroundWorkersPlugin);
 			await app.ready();
+
+			// Make requests to generate snapshots after plugins are registered
+			await app.inject({ method: "GET", url: "/metrics/perf" });
+			await app.inject({ method: "GET", url: "/metrics/perf" });
 
 			const callArgs = vi.mocked(startBackgroundWorkers).mock.calls[0];
 			const snapshotGetter = callArgs?.[2];
@@ -155,10 +167,12 @@ describe("Background Workers Plugin - Metrics Integration", () => {
 		it("should provide snapshot getter that respects window parameter", async () => {
 			const { startBackgroundWorkers } = await import("~/src/workers");
 
-			await app.inject({ method: "GET", url: "/metrics/perf" });
-
+			// Register all plugins first
 			await app.register(backgroundWorkersPlugin);
 			await app.ready();
+
+			// Make request after plugins are registered
+			await app.inject({ method: "GET", url: "/metrics/perf" });
 
 			const callArgs = vi.mocked(startBackgroundWorkers).mock.calls[0];
 			const snapshotGetter = callArgs?.[2];

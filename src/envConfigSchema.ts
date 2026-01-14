@@ -681,6 +681,17 @@ export const envConfigSchema = Type.Object({
 			default: 5,
 		}),
 	),
+
+	/**
+	 * API key for authenticating requests to the /metrics/perf endpoint.
+	 * If not set, the endpoint is unprotected (suitable for development).
+	 * In production, set this to a secure random string.
+	 */
+	API_METRICS_API_KEY: Type.Optional(
+		Type.String({
+			minLength: 32,
+		}),
+	),
 });
 
 /**

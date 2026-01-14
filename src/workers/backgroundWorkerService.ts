@@ -268,7 +268,7 @@ export async function runMetricsAggregationWorkerSafely(
 		);
 
 		const duration = Date.now() - startTime;
-		logger.debug(
+		logger.info(
 			{
 				duration: `${duration}ms`,
 			},
@@ -331,14 +331,32 @@ export function getBackgroundWorkerStatus(): {
 	nextMaterializationRun?: Date;
 	nextCleanupRun?: Date;
 } {
+	// Read metrics configuration directly from env vars for accurate status reporting
+	// This ensures tests and status checks always reflect current configuration
+	const enabledValue = process.env.API_METRICS_AGGREGATION_ENABLED;
+
+	// Parse metrics enabled: only true if explicitly set to truthy value
+	let currentMetricsEnabled: boolean;
+	if (enabledValue === undefined || enabledValue === "") {
+		currentMetricsEnabled = false; // Not explicitly configured, treat as disabled for status
+	} else {
+		currentMetricsEnabled = ["true", "1", "yes"].includes(
+			enabledValue.toLowerCase(),
+		);
+	}
+
+	const currentMetricsSchedule =
+		process.env.API_METRICS_AGGREGATION_CRON_SCHEDULE || "*/5 * * * *";
+
 	return {
 		isRunning,
 		materializationSchedule:
 			process.env.EVENT_GENERATION_CRON_SCHEDULE || "0 * * * *",
 		cleanupSchedule: process.env.CLEANUP_CRON_SCHEDULE || "0 2 * * *",
-		...(metricsEnabled !== undefined && {
-			metricsSchedule,
-			metricsEnabled,
+		// Only include metrics fields when explicitly enabled
+		...(currentMetricsEnabled && {
+			metricsSchedule: currentMetricsSchedule,
+			metricsEnabled: currentMetricsEnabled,
 		}),
 	};
 }

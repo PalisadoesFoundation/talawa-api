@@ -19,10 +19,20 @@ const backgroundWorkersPlugin = async (fastify: FastifyInstance) => {
 	fastify.log.info("Initializing background workers...");
 
 	// Get snapshot getter from the required performance plugin
-	// The performance plugin is a required dependency, so getMetricsSnapshots is guaranteed to be available
+	// Runtime guard: verify the dependency is properly registered
 	const getMetricsSnapshots = fastify.getMetricsSnapshots;
 
-	// Start the background workers
+	if (!getMetricsSnapshots) {
+		fastify.log.error(
+			"Performance plugin dependency not properly registered: getMetricsSnapshots is undefined. " +
+				"Ensure the performance plugin is registered before backgroundWorkers.",
+		);
+		throw new Error(
+			"Required dependency 'getMetricsSnapshots' from performance plugin is not available",
+		);
+	}
+
+	// Start the background workers with validated snapshot getter
 	await startBackgroundWorkers(
 		fastify.drizzleClient,
 		fastify.log,

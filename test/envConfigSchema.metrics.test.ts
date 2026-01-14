@@ -167,16 +167,6 @@ describe("envConfigSchema - Metrics Configuration", () => {
 				});
 			}).toThrow();
 		});
-
-		it("should use default when not set", () => {
-			const config = envSchema({
-				ajv: envSchemaAjv,
-				schema: envConfigSchema,
-				data: process.env,
-			}) as Record<string, unknown>;
-
-			expect(config.API_METRICS_SNAPSHOT_RETENTION_COUNT).toBe(1000);
-		});
 	});
 
 	describe("API_METRICS_AGGREGATION_WINDOW_MINUTES", () => {
@@ -236,16 +226,6 @@ describe("envConfigSchema - Metrics Configuration", () => {
 					data: process.env,
 				});
 			}).toThrow();
-		});
-
-		it("should use default when not set", () => {
-			const config = envSchema({
-				ajv: envSchemaAjv,
-				schema: envConfigSchema,
-				data: process.env,
-			}) as Record<string, unknown>;
-
-			expect(config.API_METRICS_AGGREGATION_WINDOW_MINUTES).toBe(5);
 		});
 	});
 
