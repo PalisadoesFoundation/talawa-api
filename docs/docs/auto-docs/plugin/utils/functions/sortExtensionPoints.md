@@ -6,7 +6,7 @@
 
 > **sortExtensionPoints**\<`T`\>(`items`): `T`[]
 
-Defined in: [src/plugin/utils.ts:164](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/plugin/utils.ts#L164)
+Defined in: [src/plugin/utils.ts:161](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/plugin/utils.ts#L161)
 
 Sorts extension points by priority/order
 

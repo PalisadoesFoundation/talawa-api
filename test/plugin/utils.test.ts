@@ -594,8 +594,9 @@ describe("removePluginDirectory & clearPluginModuleCache", () => {
 
 		expect(loggerSpy).toHaveBeenCalledWith(
 			expect.objectContaining({
-				msg: expect.stringContaining("Failed to remove plugin directory"),
+				err: expect.any(Error),
 			}),
+			expect.stringContaining("Failed to remove plugin directory"),
 		);
 		loggerSpy.mockRestore();
 	});

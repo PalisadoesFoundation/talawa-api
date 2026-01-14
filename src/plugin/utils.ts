@@ -123,10 +123,7 @@ export async function safeRequire<T = unknown>(
 		const module = await import(modulePath);
 		return module as T;
 	} catch (error) {
-		rootLogger.error({
-			msg: `Failed to require module: ${modulePath}`,
-			err: error,
-		});
+		rootLogger.error({ err: error }, `Failed to require module: ${modulePath}`);
 		return null;
 	}
 }
@@ -610,10 +607,10 @@ export async function removePluginDirectory(pluginId: string): Promise<void> {
 		// Remove the directory and all its contents
 		await fs.rm(pluginPath, { recursive: true, force: true });
 	} catch (error) {
-		rootLogger.error({
-			msg: `Failed to remove plugin directory ${pluginId}`,
-			err: error,
-		});
+		rootLogger.error(
+			{ err: error },
+			`Failed to remove plugin directory ${pluginId}`,
+		);
 		throw error;
 	}
 }

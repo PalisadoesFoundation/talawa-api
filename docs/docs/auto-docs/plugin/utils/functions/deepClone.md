@@ -6,7 +6,7 @@
 
 > **deepClone**\<`T`\>(`obj`): `T`
 
-Defined in: [src/plugin/utils.ts:198](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/plugin/utils.ts#L198)
+Defined in: [src/plugin/utils.ts:195](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/plugin/utils.ts#L195)
 
 Deep clone an object
 
