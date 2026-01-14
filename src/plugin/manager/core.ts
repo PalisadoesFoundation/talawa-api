@@ -105,7 +105,9 @@ class PluginManager extends EventEmitter {
 			const installedPlugins = await this.getInstalledPlugins();
 
 			if (installedPlugins.length === 0) {
-				this.pluginContext.logger.info?.("No plugins found in database");
+				this.pluginContext.logger.info?.({
+					msg: "No plugins found in database",
+				});
 				this.markAsInitialized();
 				return;
 			}
@@ -134,9 +136,9 @@ class PluginManager extends EventEmitter {
 			const failed = loadResults.length - successful;
 
 			if (successful > 0 || failed > 0) {
-				this.pluginContext.logger.info?.(
-					`Plugin system initialized: ${successful} loaded, ${failed} failed`,
-				);
+				this.pluginContext.logger.info?.({
+					msg: `Plugin system initialized: ${successful} loaded, ${failed} failed`,
+				});
 			}
 
 			this.markAsInitialized();

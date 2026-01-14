@@ -2410,7 +2410,11 @@ describe("PluginLifecycle", () => {
 			).manageDocker(pluginId, manifest, "install");
 
 			expect(mockPluginContext.logger.warn).toHaveBeenCalledWith(
-				expect.stringContaining("Docker not available"),
+				expect.objectContaining({
+					msg: expect.stringContaining("Docker not available"),
+					pluginId: "test-plugin",
+					action: "install",
+				}),
 			);
 		});
 
@@ -2458,7 +2462,11 @@ describe("PluginLifecycle", () => {
 			).manageDocker(pluginId, manifest, "install");
 
 			expect(mockPluginContext.logger.warn).toHaveBeenCalledWith(
-				expect.stringContaining("'docker compose' not available"),
+				expect.objectContaining({
+					msg: expect.stringContaining("'docker compose' not available"),
+					pluginId: "test-plugin",
+					action: "install",
+				}),
 			);
 		});
 
@@ -2495,7 +2503,11 @@ describe("PluginLifecycle", () => {
 
 			// Spawn error during docker --version check results in "Docker not available" message
 			expect(mockPluginContext.logger.warn).toHaveBeenCalledWith(
-				expect.stringContaining("Docker not available"),
+				expect.objectContaining({
+					msg: expect.stringContaining("Docker not available"),
+					pluginId: "test-plugin",
+					action: "install",
+				}),
 			);
 		});
 

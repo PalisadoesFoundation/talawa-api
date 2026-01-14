@@ -1119,7 +1119,9 @@ describe("PluginManager", () => {
 			await manager.initialize();
 
 			expect(context.logger.info).toHaveBeenCalledWith(
-				expect.stringContaining("loaded"),
+				expect.objectContaining({
+					msg: expect.stringContaining("loaded"),
+				}),
 			);
 		});
 
