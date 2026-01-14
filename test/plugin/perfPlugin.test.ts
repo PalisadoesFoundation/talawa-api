@@ -3,6 +3,26 @@ import type { EnvConfig } from "src/envConfigSchema";
 import perfPlugin from "src/fastifyPlugins/performance";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
+/**
+ * Minimal envConfig interface for performance plugin tests.
+ * Contains only the properties that the performance plugin actually accesses.
+ * The plugin uses optional chaining, so other properties are not required.
+ */
+interface PerformancePluginTestEnvConfig {
+	METRICS_SNAPSHOT_RETENTION_COUNT: number;
+	API_SLOW_REQUEST_MS: number;
+}
+
+/**
+ * Test fixture providing the minimal envConfig required by the performance plugin.
+ * The plugin only accesses METRICS_SNAPSHOT_RETENTION_COUNT and API_SLOW_REQUEST_MS,
+ * both with optional chaining and default values, so this minimal config is sufficient.
+ */
+const performancePluginTestEnvConfig: PerformancePluginTestEnvConfig = {
+	METRICS_SNAPSHOT_RETENTION_COUNT: 1000,
+	API_SLOW_REQUEST_MS: 500,
+};
+
 describe("perfPlugin – slow request logging", () => {
 	let warn: ReturnType<typeof vi.spyOn>;
 	let app: ReturnType<typeof Fastify>;
@@ -12,10 +32,11 @@ describe("perfPlugin – slow request logging", () => {
 
 		// Decorate envConfig before registering the performance plugin
 		// The plugin depends on envConfig for configuration values
-		app.decorate("envConfig", {
-			METRICS_SNAPSHOT_RETENTION_COUNT: 1000,
-			API_SLOW_REQUEST_MS: 500,
-		} as Partial<EnvConfig> as EnvConfig);
+		// Using a type-safe minimal mock that includes only the properties the plugin accesses
+		// The plugin uses optional chaining (app.envConfig?.PROPERTY), so this is safe
+		const testEnvConfig: PerformancePluginTestEnvConfig =
+			performancePluginTestEnvConfig;
+		app.decorate("envConfig", testEnvConfig as unknown as EnvConfig);
 
 		vi.spyOn(app.log, "child").mockReturnValue(app.log);
 		warn = vi.spyOn(app.log, "warn");

@@ -105,7 +105,7 @@ export async function startBackgroundWorkers(
 			metricsTask.start();
 		} else if (!fastify) {
 			logger.warn(
-				"Metrics aggregation is enabled but Fastify instance is not available. Metrics worker will not start.",
+				"Fastify instance is not available. Metrics aggregation worker cannot start (metrics configuration cannot be determined without Fastify instance).",
 			);
 		}
 
