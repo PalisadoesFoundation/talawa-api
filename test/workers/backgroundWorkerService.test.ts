@@ -1169,46 +1169,88 @@ describe("backgroundServiceWorker", () => {
 		});
 
 		it("returns unhealthy when getBackgroundWorkerStatus throws Error", async () => {
-			// Test lines 469-476: catch block handles when getBackgroundWorkerStatus throws
-			const statusError = new Error("Status check failed");
-			// Import the module to get the same instance that healthCheck uses
-			const workerModule = await import(
-				"~/src/workers/backgroundWorkerService"
+			// Test lines 470-479: catch block handles when getBackgroundWorkerStatus throws
+			// First, ensure workers are started so isRunning is true
+			// This ensures we're testing the error path, not the "not running" path
+			const { runMaterializationWorker } = await import(
+				"~/src/workers/eventGeneration/eventGenerationPipeline"
 			);
+
+			vi.mocked(runMaterializationWorker).mockResolvedValue({
+				organizationsProcessed: 0,
+				instancesCreated: 0,
+				windowsUpdated: 0,
+				errorsEncountered: 0,
+				processingTimeMs: 1,
+			});
+
+			await startBackgroundWorkers(mockDrizzleClient, mockLogger);
+
+			// Verify workers are running
+			const initialStatus = getBackgroundWorkerStatus();
+			expect(initialStatus.isRunning).toBe(true);
+
+			// Now mock getBackgroundWorkerStatus to throw an error
+			const statusError = new Error("Status check failed");
 			const statusSpy = vi
-				.spyOn(workerModule, "getBackgroundWorkerStatus")
+				.spyOn(
+					await import("~/src/workers/backgroundWorkerService"),
+					"getBackgroundWorkerStatus",
+				)
 				.mockImplementation(() => {
 					throw statusError;
 				});
 
-			const result = await workerModule.healthCheck();
+			const result = await healthCheck();
 
 			expect(result.status).toBe("unhealthy");
 			expect(result.details.reason).toBe("Health check failed");
 			expect(result.details.error).toBe("Status check failed");
 
 			statusSpy.mockRestore();
+			await stopBackgroundWorkers(mockLogger);
 		});
 
 		it("returns unhealthy when getBackgroundWorkerStatus throws non-Error", async () => {
-			// Test lines 469-476: catch block handles when getBackgroundWorkerStatus throws non-Error
-			// Import the module to get the same instance that healthCheck uses
-			const workerModule = await import(
-				"~/src/workers/backgroundWorkerService"
+			// Test lines 470-479: catch block handles when getBackgroundWorkerStatus throws non-Error
+			// First, ensure workers are started so isRunning is true
+			// This ensures we're testing the error path, not the "not running" path
+			const { runMaterializationWorker } = await import(
+				"~/src/workers/eventGeneration/eventGenerationPipeline"
 			);
+
+			vi.mocked(runMaterializationWorker).mockResolvedValue({
+				organizationsProcessed: 0,
+				instancesCreated: 0,
+				windowsUpdated: 0,
+				errorsEncountered: 0,
+				processingTimeMs: 1,
+			});
+
+			await startBackgroundWorkers(mockDrizzleClient, mockLogger);
+
+			// Verify workers are running
+			const initialStatus = getBackgroundWorkerStatus();
+			expect(initialStatus.isRunning).toBe(true);
+
+			// Now mock getBackgroundWorkerStatus to throw a non-Error
 			const statusSpy = vi
-				.spyOn(workerModule, "getBackgroundWorkerStatus")
+				.spyOn(
+					await import("~/src/workers/backgroundWorkerService"),
+					"getBackgroundWorkerStatus",
+				)
 				.mockImplementation(() => {
 					throw "String error";
 				});
 
-			const result = await workerModule.healthCheck();
+			const result = await healthCheck();
 
 			expect(result.status).toBe("unhealthy");
 			expect(result.details.reason).toBe("Health check failed");
 			expect(result.details.error).toBe("String error");
 
 			statusSpy.mockRestore();
+			await stopBackgroundWorkers(mockLogger);
 		});
 	});
 

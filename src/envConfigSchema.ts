@@ -623,10 +623,19 @@ export const envSchemaAjv: EnvSchemaOpt["ajv"] = {
 
 		// Custom "cron" format validator for fail-fast cron expression validation
 		// Uses node-cron.validate to ensure the expression is valid before scheduling
+		// Only accepts 5-field cron expressions (minute hour day month weekday)
+		// Rejects 6-field expressions (seconds minute hour day month weekday) for consistency
 		ajvInstance.addFormat("cron", {
 			type: "string",
 			validate: (value: string): boolean => {
-				return validateCron(value);
+				// First check if it's a valid cron expression
+				if (!validateCron(value)) {
+					return false;
+				}
+
+				// Ensure it's exactly 5 fields (not 6 with seconds)
+				const fields = value.trim().split(/\s+/);
+				return fields.length === 5;
 			},
 		});
 
