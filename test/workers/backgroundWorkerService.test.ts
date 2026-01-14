@@ -455,7 +455,7 @@ describe("backgroundServiceWorker", () => {
 
 			expect(mockLogger.error).toHaveBeenCalledWith(
 				expect.any(Error),
-				"Error stopping background worker service:",
+				"Error stopping materialization task:",
 			);
 			stopMock.mockImplementation(() => {});
 			await stopBackgroundWorkers(mockLogger);
