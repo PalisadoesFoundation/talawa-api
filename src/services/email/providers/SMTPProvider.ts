@@ -90,9 +90,9 @@ export class SMTPProvider implements IEmailProvider {
 				auth:
 					this.config.user && this.config.password
 						? {
-							user: this.config.user,
-							pass: this.config.password,
-						}
+								user: this.config.user,
+								pass: this.config.password,
+							}
 						: undefined,
 			}) as {
 				sendMail: (options: unknown) => Promise<{ messageId?: string }>;

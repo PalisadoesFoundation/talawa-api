@@ -38,9 +38,9 @@ suite("Mutation field verifyEmail", () => {
 
 		const args = firstCall[0] as
 			| {
-				htmlBody?: string;
-				textBody?: string;
-			}
+					htmlBody?: string;
+					textBody?: string;
+			  }
 			| undefined;
 
 		assertToBeNonNullish(args);
