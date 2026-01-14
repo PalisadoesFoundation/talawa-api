@@ -969,7 +969,7 @@ jobs:
         if: always()
         run: |
           echo "Waiting for the GraphQL endpoint to become available..."
-          for i in {1..60}; do
+          for _ in {1..60}; do
             # Check if container exists first
             if ! docker ps | grep -q talawa-api-1; then
               echo "Container talawa-api-1 not found. Waiting..."
