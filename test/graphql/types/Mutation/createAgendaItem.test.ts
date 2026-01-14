@@ -207,27 +207,6 @@ async function createTestEnvironment(
 	};
 }
 
-// Helper function to create a non-agenda-item folder (for forbidden action test)
-async function createNonAgendaItemFolder(
-	adminAuthToken: string,
-	eventId: string,
-) {
-	const result = await mercuriusClient.mutate(Mutation_createAgendaFolder, {
-		headers: { authorization: `bearer ${adminAuthToken}` },
-		variables: {
-			input: {
-				name: "Non-Item Folder",
-				eventId,
-				description: "desc",
-				sequence: 1,
-				organizationId: faker.string.uuid(),
-			},
-		},
-	});
-	assertToBeNonNullish(result.data?.createAgendaFolder);
-	return result.data.createAgendaFolder.id;
-}
-
 suite("Mutation field createAgendaItem", () => {
 	const testCleanupFunctions: Array<() => Promise<void>> = [];
 

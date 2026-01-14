@@ -1046,29 +1046,29 @@ suite("Mutation updateAgendaItem", () => {
 			const result = await mercuriusClient.mutate(Mutation_updateAgendaItem, {
 				headers: { authorization: `bearer ${regularUser.authToken}` },
 				variables: {
-				input: {
-					id: agendaItem.agendaItemId,
-					folderId: agendaItem.folderId,
-					name: "Updated agenda item name",
-				},
+					input: {
+						id: agendaItem.agendaItemId,
+						folderId: agendaItem.folderId,
+						name: "Updated agenda item name",
+					},
 				},
 			});
 
 			expect(result.errors).toEqual(
 				expect.arrayContaining([
-				expect.objectContaining({
-					extensions: expect.objectContaining({
-					code: "forbidden_action_on_arguments_associated_resources",
-					issues: expect.arrayContaining([
-						expect.objectContaining({
-						argumentPath: ["input", "folderId"],
+					expect.objectContaining({
+						extensions: expect.objectContaining({
+							code: "forbidden_action_on_arguments_associated_resources",
+							issues: expect.arrayContaining([
+								expect.objectContaining({
+									argumentPath: ["input", "folderId"],
+								}),
+							]),
 						}),
-					]),
 					}),
-				}),
 				]),
 			);
-			});
+		});
 	});
 
 	suite("Attachments", () => {
