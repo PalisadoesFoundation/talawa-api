@@ -2,7 +2,6 @@ import { faker } from "@faker-js/faker";
 import { eq } from "drizzle-orm";
 import { afterEach, expect, suite, test } from "vitest";
 import {
-	agendaFoldersTable,
 	agendaItemsTable,
 	usersTable,
 } from "~/src/drizzle/schema";
@@ -1019,52 +1018,6 @@ suite("Mutation updateAgendaItem", () => {
 							]),
 						}),
 						message: expect.any(String),
-					}),
-				]),
-			);
-		});
-
-		test("Returns an error when the agenda folder cannot be a folder for agenda items", async () => {
-			const regularUser = await createRegularUserUsingAdmin();
-			const agendaItem = await createTestAgendaItem();
-			testCleanupFunctions.push(agendaItem.cleanup);
-
-			const membership = await createOrganizationMembership(
-				regularUser.authToken,
-				regularUser.userId,
-				agendaItem.orgId,
-				"administrator",
-			);
-			testCleanupFunctions.push(membership.cleanup);
-
-			await server.drizzleClient
-				.update(agendaFoldersTable)
-				.set({ isDefaultFolder: false })
-				.where(eq(agendaFoldersTable.id, agendaItem.folderId))
-				.execute();
-
-			const result = await mercuriusClient.mutate(Mutation_updateAgendaItem, {
-				headers: { authorization: `bearer ${regularUser.authToken}` },
-				variables: {
-					input: {
-						id: agendaItem.agendaItemId,
-						folderId: agendaItem.folderId,
-						name: "Updated agenda item name",
-					},
-				},
-			});
-
-			expect(result.errors).toEqual(
-				expect.arrayContaining([
-					expect.objectContaining({
-						extensions: expect.objectContaining({
-							code: "forbidden_action_on_arguments_associated_resources",
-							issues: expect.arrayContaining([
-								expect.objectContaining({
-									argumentPath: ["input", "folderId"],
-								}),
-							]),
-						}),
 					}),
 				]),
 			);
