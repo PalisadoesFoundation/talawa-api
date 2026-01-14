@@ -1,5 +1,8 @@
+import { and, eq, or, sql } from "drizzle-orm";
 import type { eventsTable } from "~/src/drizzle/tables/events";
+import { eventAttendeesTable } from "~/src/drizzle/tables/eventAttendees";
 import type { ResolvedRecurringEventInstance } from "~/src/drizzle/tables/recurringEventInstances";
+import type { GraphQLContext } from "~/src/graphql/context";
 import { builder } from "~/src/graphql/builder";
 import {
 	EventAttachment,
@@ -13,8 +16,8 @@ import { escapeHTML } from "~/src/utilities/sanitizer";
 export type Event =
 	| (typeof eventsTable.$inferSelect & { attachments: EventAttachmentType[] })
 	| (ResolvedRecurringEventInstance & {
-			attachments: EventAttachmentType[];
-	  });
+		attachments: EventAttachmentType[];
+	});
 
 export const Event = builder.objectRef<Event>("Event");
 
@@ -215,6 +218,52 @@ Event.implement({
 				}
 
 				return escapeHTML(formatRecurrenceDescription(recurrenceRule));
+			},
+		}),
+		attendeesCount: t.int({
+			description: "The number of users who have checked in to the event.",
+			resolve: async (event: Event, _args, { drizzleClient }: GraphQLContext) => {
+				const result = await drizzleClient
+					.select({
+						count: sql<number>`count(*)`,
+					})
+					.from(eventAttendeesTable)
+					.where(
+						or(
+							and(
+								eq(eventAttendeesTable.eventId, event.id),
+								eq(eventAttendeesTable.isCheckedIn, true),
+							),
+							and(
+								eq(eventAttendeesTable.recurringEventInstanceId, event.id),
+								eq(eventAttendeesTable.isCheckedIn, true),
+							),
+						),
+					);
+				return result[0]?.count ?? 0;
+			},
+		}),
+		registrantsCount: t.int({
+			description: "The number of users who have registered for the event.",
+			resolve: async (event: Event, _args, { drizzleClient }: GraphQLContext) => {
+				const result = await drizzleClient
+					.select({
+						count: sql<number>`count(*)`,
+					})
+					.from(eventAttendeesTable)
+					.where(
+						or(
+							and(
+								eq(eventAttendeesTable.eventId, event.id),
+								eq(eventAttendeesTable.isRegistered, true),
+							),
+							and(
+								eq(eventAttendeesTable.recurringEventInstanceId, event.id),
+								eq(eventAttendeesTable.isRegistered, true),
+							),
+						),
+					);
+				return result[0]?.count ?? 0;
 			},
 		}),
 	}),

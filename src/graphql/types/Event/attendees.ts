@@ -12,6 +12,63 @@ export const eventAttendeesResolver = async (
 	_args: Record<string, never>,
 	ctx: GraphQLContext,
 ) => {
+	if (!ctx.currentClient.isAuthenticated) {
+		throw new TalawaGraphQLError({
+			extensions: {
+				code: "unauthenticated",
+			},
+		});
+	}
+
+	const currentUserId = ctx.currentClient.user.id;
+
+	// Get current user with organization membership info
+	const currentUser = await ctx.drizzleClient.query.usersTable.findFirst({
+		columns: {
+			role: true,
+		},
+		with: {
+			organizationMembershipsWhereMember: {
+				columns: {
+					role: true,
+				},
+				where: (fields, operators) =>
+					operators.eq(fields.organizationId, parent.organizationId),
+			},
+		},
+		where: (fields, operators) => operators.eq(fields.id, currentUserId),
+	});
+
+	if (currentUser === undefined) {
+		throw new TalawaGraphQLError({
+			extensions: {
+				code: "unauthenticated",
+			},
+		});
+	}
+
+	const currentUserOrganizationMembership =
+		currentUser.organizationMembershipsWhereMember[0];
+
+	// Check if user is authorized to view attendees
+	// Allow if:
+	// 1. User is global administrator
+	// 2. User is organization administrator or regular member
+	// 3. User is the creator of the event
+	if (
+		currentUser.role !== "administrator" &&
+		(currentUserOrganizationMembership === undefined ||
+			(currentUserOrganizationMembership.role !== "administrator" &&
+				currentUserOrganizationMembership.role !== "regular")) &&
+		parent.creatorId !== currentUserId
+	) {
+		throw new TalawaGraphQLError({
+			extensions: {
+				code: "unauthorized_action",
+			},
+		});
+	}
+
 	try {
 		// Templates don't have attendees (users can only attend actual events/instances)
 		if (

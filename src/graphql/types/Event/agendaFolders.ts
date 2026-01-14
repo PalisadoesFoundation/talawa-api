@@ -66,6 +66,59 @@ Event.implement({
 				description:
 					"GraphQL connection to traverse through the agenda folders that contain agenda items constituting a part of the agenda for the event.",
 				resolve: async (parent, args, ctx) => {
+					if (!ctx.currentClient.isAuthenticated) {
+						throw new TalawaGraphQLError({
+							extensions: {
+								code: "unauthenticated",
+							},
+						});
+					}
+
+					const currentUserId = ctx.currentClient.user.id;
+
+					// Get current user with organization membership info
+					const currentUser = await ctx.drizzleClient.query.usersTable.findFirst({
+						columns: {
+							role: true,
+						},
+						with: {
+							organizationMembershipsWhereMember: {
+								columns: {
+									role: true,
+								},
+								where: (fields, operators) =>
+									operators.eq(fields.organizationId, parent.organizationId),
+							},
+						},
+						where: (fields, operators) => operators.eq(fields.id, currentUserId),
+					});
+
+					if (currentUser === undefined) {
+						throw new TalawaGraphQLError({
+							extensions: {
+								code: "unauthenticated",
+							},
+						});
+					}
+
+					const currentUserOrganizationMembership =
+						currentUser.organizationMembershipsWhereMember[0];
+
+					// Check if user is authorized to view agenda folders
+					if (
+						currentUser.role !== "administrator" &&
+						(currentUserOrganizationMembership === undefined ||
+							(currentUserOrganizationMembership.role !== "administrator" &&
+								currentUserOrganizationMembership.role !== "regular")) &&
+						parent.creatorId !== currentUserId
+					) {
+						throw new TalawaGraphQLError({
+							extensions: {
+								code: "unauthorized_action",
+							},
+						});
+					}
+
 					const {
 						data: parsedArgs,
 						error,

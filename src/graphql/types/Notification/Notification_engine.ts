@@ -105,12 +105,16 @@ export class NotificationEngine {
 				>,
 				renderedContent: renderedContent as { title: string; body: string },
 				sender: senderId,
-				navigation: template.linkedRouteName,
+				navigation: renderedContent.navigation,
 				eventType: eventType,
 				channel: channelType,
 				status: initialStatus,
 			})
 			.returning();
+
+		this.ctx.log.info(
+			`[DEBUG] Notif: type=${eventType}, tmplRoute=${template.linkedRouteName}, nav=${renderedContent.navigation}`,
+		);
 
 		if (!notificationLog) {
 			throw new Error("Failed to create notification log");
@@ -358,17 +362,21 @@ export class NotificationEngine {
 	private renderTemplate(
 		template: typeof notificationTemplatesTable.$inferSelect,
 		variables: NotificationVariables,
-	): { title: string; body: string } {
+	): { title: string; body: string; navigation: string | null } {
 		let title = template.title;
 		let body = template.body;
+		let navigation = template.linkedRouteName;
 
 		for (const [key, value] of Object.entries(variables)) {
 			if (value === null || value === undefined) continue;
 			const placeholder = new RegExp(`{${key}}`, "g");
 			title = title.replace(placeholder, String(value));
 			body = body.replace(placeholder, String(value));
+			if (navigation) {
+				navigation = navigation.replace(placeholder, String(value));
+			}
 		}
-		return { title, body };
+		return { title, body, navigation };
 	}
 
 	/**
@@ -418,7 +426,7 @@ export class NotificationEngine {
 				>,
 				renderedContent: renderedContent as { title: string; body: string },
 				sender: senderId,
-				navigation: template.linkedRouteName,
+				navigation: renderedContent.navigation,
 				eventType: eventType,
 				channel: channelType,
 				status: initialStatus,
