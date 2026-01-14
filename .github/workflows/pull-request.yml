@@ -318,7 +318,7 @@ jobs:
             'ISSUE_GUIDELINES.md$'
             'PR_GUIDELINES.md$'
             'README.md$'
-            '*md'
+            '^./*md'
           )
 
           # Check for changes in sensitive files
