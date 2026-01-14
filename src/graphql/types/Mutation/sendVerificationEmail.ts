@@ -7,6 +7,7 @@ import {
 	getEmailVerificationEmailHtml,
 	getEmailVerificationEmailText,
 } from "~/src/utilities/emailTemplates";
+import { checkEmailVerificationRateLimit } from "~/src/utilities/emailVerificationRateLimit";
 import {
 	DEFAULT_EMAIL_VERIFICATION_TOKEN_EXPIRES_SECONDS,
 	generateEmailVerificationToken,
@@ -55,6 +56,17 @@ builder.mutationField("sendVerificationEmail", (t) =>
 					success: true,
 					message: "Your email address is already verified.",
 				};
+			}
+
+			// Rate limiting: 3 requests per hour per user
+			if (!checkEmailVerificationRateLimit(userId)) {
+				throw new TalawaGraphQLError({
+					extensions: {
+						code: "too_many_requests",
+					},
+					message:
+						"Too many verification email requests. Please wait before requesting another one.",
+				});
 			}
 
 			// Revoke any existing unused verification tokens for this user
