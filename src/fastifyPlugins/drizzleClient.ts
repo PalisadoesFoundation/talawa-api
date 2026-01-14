@@ -63,7 +63,9 @@ export const drizzleClient = fastifyPlugin(
 				});
 			}
 		} else {
-			fastify.log.debug("Skipping database connection check in test environment.");
+			fastify.log.debug(
+				"Skipping database connection check in test environment.",
+			);
 		}
 
 		// Gracefully close the postgres connection when the fastify server is shutting down.
@@ -84,7 +86,10 @@ export const drizzleClient = fastifyPlugin(
 			}
 		});
 
-		if (fastify.envConfig.API_IS_APPLY_DRIZZLE_MIGRATIONS && !isTestEnvironment) {
+		if (
+			fastify.envConfig.API_IS_APPLY_DRIZZLE_MIGRATIONS &&
+			!isTestEnvironment
+		) {
 			try {
 				fastify.log.info(
 					"Applying the drizzle migration files to the postgres database.",

@@ -1,16 +1,16 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, type Mock, vi } from "vitest";
 import { metricsCacheProxy } from "../../../src/services/metrics/metricsCacheProxy";
 
 describe("metricsCacheProxy", () => {
 	let mockCache: {
-		get: ReturnType<typeof vi.fn>;
-		mget?: ReturnType<typeof vi.fn>;
-		set: ReturnType<typeof vi.fn>;
-		del: ReturnType<typeof vi.fn>;
+		get: Mock<(key: string) => Promise<unknown>>;
+		mget?: Mock<(keys: string[]) => Promise<unknown[]>>;
+		set: Mock<(key: string, value: unknown, ttl: number) => Promise<unknown>>;
+		del: Mock<(keys: string | string[]) => Promise<unknown>>;
 	};
 	let mockPerf: {
-		trackCacheHit: ReturnType<typeof vi.fn>;
-		trackCacheMiss: ReturnType<typeof vi.fn>;
+		trackCacheHit: Mock<() => void>;
+		trackCacheMiss: Mock<() => void>;
 	};
 
 	beforeEach(() => {
