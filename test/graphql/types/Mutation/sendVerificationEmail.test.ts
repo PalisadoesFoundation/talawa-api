@@ -1,16 +1,32 @@
-import { afterEach, expect, suite, test, vi } from "vitest";
+import { afterEach, beforeEach, expect, suite, test, vi } from "vitest";
+import { emailService } from "~/src/services/email/emailServiceInstance";
 import { assertToBeNonNullish } from "../../../helpers";
 import { mercuriusClient } from "../client";
 import { createRegularUserUsingAdmin } from "../createRegularUserUsingAdmin";
 import { Mutation_sendVerificationEmail } from "../documentNodes";
 
 suite("Mutation field sendVerificationEmail", () => {
+	// biome-ignore lint/suspicious/noExplicitAny: generic spy type
+	let sendEmailSpy: any;
+
+	beforeEach(async () => {
+		// Spy on email provider BEFORE any user creation to catch welcome emails
+		sendEmailSpy = vi.spyOn(emailService, "sendEmail").mockResolvedValue({
+			id: "mock-id",
+			success: true,
+			messageId: "mock-message-id",
+		});
+	});
+
 	afterEach(() => {
 		vi.restoreAllMocks();
 	});
 
 	test("should return success when authenticated", async () => {
 		const { authToken } = await createRegularUserUsingAdmin();
+
+		// Clear Welcome email call
+		sendEmailSpy.mockClear();
 
 		const result = await mercuriusClient.mutate(
 			Mutation_sendVerificationEmail,
@@ -23,6 +39,9 @@ suite("Mutation field sendVerificationEmail", () => {
 		assertToBeNonNullish(result.data?.sendVerificationEmail);
 		expect(result.data.sendVerificationEmail.success).toBe(true);
 		expect(result.data.sendVerificationEmail.message).toBeDefined();
+
+		// Should send verification email
+		expect(sendEmailSpy).toHaveBeenCalledTimes(1);
 	});
 
 	test("should fail when unauthenticated", async () => {
@@ -38,6 +57,7 @@ suite("Mutation field sendVerificationEmail", () => {
 		assertToBeNonNullish(error);
 		expect(error.extensions?.code).toBe("unauthenticated");
 	});
+
 	test("should return success and not send email when already verified", async () => {
 		const { userId, authToken } = await createRegularUserUsingAdmin();
 
@@ -51,10 +71,8 @@ suite("Mutation field sendVerificationEmail", () => {
 			.set({ isEmailAddressVerified: true })
 			.where(eq(usersTable.id, userId));
 
-		const { emailService } = await import(
-			"~/src/services/email/emailServiceInstance"
-		);
-		const sendEmailSpy = vi.spyOn(emailService, "sendEmail");
+		// Clear Welcome email call
+		sendEmailSpy.mockClear();
 
 		const result = await mercuriusClient.mutate(
 			Mutation_sendVerificationEmail,

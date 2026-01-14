@@ -1,4 +1,4 @@
-import { afterEach, expect, suite, test, vi } from "vitest";
+import { afterEach, beforeEach, expect, suite, test, vi } from "vitest";
 import { emailService } from "~/src/services/email/emailServiceInstance";
 import { assertToBeNonNullish } from "../../../helpers";
 import { mercuriusClient } from "../client";
@@ -9,6 +9,18 @@ import {
 } from "../documentNodes";
 
 suite("Mutation field verifyEmail", () => {
+	// biome-ignore lint/suspicious/noExplicitAny: generic spy type
+	let sendEmailSpy: any;
+
+	beforeEach(async () => {
+		// Spy on email provider BEFORE any user creation to catch welcome emails
+		sendEmailSpy = vi.spyOn(emailService, "sendEmail").mockResolvedValue({
+			id: "mock-id",
+			success: true,
+			messageId: "mock-message-id",
+		});
+	});
+
 	afterEach(() => {
 		vi.restoreAllMocks();
 	});
@@ -16,12 +28,8 @@ suite("Mutation field verifyEmail", () => {
 	test("should successfully verify email with valid token", async () => {
 		const { authToken } = await createRegularUserUsingAdmin();
 
-		// Spy on email provider and mock implementation to prevent actual sending
-		const sendEmailSpy = vi.spyOn(emailService, "sendEmail").mockResolvedValue({
-			id: "mock-id",
-			success: true,
-			messageId: "mock-message-id",
-		});
+		// Clear the welcome email call so we can focus on verification email
+		sendEmailSpy.mockClear();
 
 		// 1. Send verification email
 		await mercuriusClient.mutate(Mutation_sendVerificationEmail, {
@@ -97,12 +105,8 @@ suite("Mutation field verifyEmail", () => {
 		const { eq } = await import("drizzle-orm");
 		const { server } = await import("../../../../test/server");
 
-		// Spy on email provider to capture token
-		const sendEmailSpy = vi.spyOn(emailService, "sendEmail").mockResolvedValue({
-			id: "mock-id",
-			success: true,
-			messageId: "mock-message-id",
-		});
+		// Clear previous calls (welcome email)
+		sendEmailSpy.mockClear();
 
 		// 1. Send verification email
 		await mercuriusClient.mutate(Mutation_sendVerificationEmail, {
@@ -151,12 +155,7 @@ suite("Mutation field verifyEmail", () => {
 	test("should fail with already used verify token (replay attack)", async () => {
 		const { authToken, userId } = await createRegularUserUsingAdmin();
 
-		// Spy on email provider
-		const sendEmailSpy = vi.spyOn(emailService, "sendEmail").mockResolvedValue({
-			id: "mock-id",
-			success: true,
-			messageId: "mock-message-id",
-		});
+		sendEmailSpy.mockClear();
 
 		// 1. Send verification email
 		await mercuriusClient.mutate(Mutation_sendVerificationEmail, {
