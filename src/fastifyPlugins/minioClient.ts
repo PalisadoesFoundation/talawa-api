@@ -63,8 +63,12 @@ export const minioClient = fastifyPlugin(async (fastify) => {
 	}
 
 	let endPoint = fastify.envConfig.API_MINIO_END_POINT;
-	if (endPoint.includes(":")) {
-		endPoint = endPoint.split(":")[0];
+	// Strip port if present, handling both IPv4 (host:port) and IPv6 ([::1]:port)
+	try {
+		const parsed = new URL(`http://${endPoint}`);
+		endPoint = parsed.hostname;
+	} catch {
+		// If parsing fails, use as-is (may already be a plain hostname)
 	}
 
 	const client = new ClientClass({

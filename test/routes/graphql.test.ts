@@ -24,7 +24,7 @@ vi.mock("~/src/utilities/leakyBucket", () => ({
 	default: vi.fn(),
 }));
 
-vi.mock("../../src/utilities/TalawaGraphQLError", () => ({
+vi.mock("~/src/utilities/TalawaGraphQLError", () => ({
 	TalawaGraphQLError: vi.fn(),
 }));
 
@@ -1046,7 +1046,7 @@ describe("GraphQL Routes", () => {
 			const mockComplexity = { complexity: 5, breadth: 1, depth: 1 };
 			vi.mocked(complexityFromQuery).mockReturnValue(mockComplexity);
 
-			delete mockDocument.reply.request.ip
+			delete mockDocument.reply.request.ip;
 			mockDocument.reply.request.jwtVerify.mockRejectedValue(
 				new Error("No token"),
 			);
