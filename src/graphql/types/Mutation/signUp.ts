@@ -14,6 +14,18 @@ import {
 	mutationSignUpInputSchema,
 } from "~/src/graphql/inputs/MutationSignUpInput";
 import { AuthenticationPayload } from "~/src/graphql/types/AuthenticationPayload";
+import { emailService } from "~/src/services/email/emailServiceInstance";
+import {
+	formatExpiryTime,
+	getEmailVerificationEmailHtml,
+	getEmailVerificationEmailText,
+} from "~/src/utilities/emailTemplates";
+import {
+	DEFAULT_EMAIL_VERIFICATION_TOKEN_EXPIRES_SECONDS,
+	generateEmailVerificationToken,
+	hashEmailVerificationToken,
+	storeEmailVerificationToken,
+} from "~/src/utilities/emailVerificationTokenUtils";
 import envConfig from "~/src/utilities/graphqLimits";
 import { isNotNullish } from "~/src/utilities/isNotNullish";
 import { validateRecaptchaIfRequired } from "~/src/utilities/recaptchaUtils";
@@ -210,6 +222,49 @@ builder.mutationField("signUp", (t) =>
 							"content-type": parsedArgs.input.avatar.mimetype,
 						},
 					);
+				}
+
+				// Send email verification token (non-blocking, signup succeeds even if this fails)
+				try {
+					const rawToken = generateEmailVerificationToken();
+					const tokenHash = hashEmailVerificationToken(rawToken);
+					const tokenExpiresInSeconds =
+						ctx.envConfig.API_EMAIL_VERIFICATION_TOKEN_EXPIRES_SECONDS ??
+						DEFAULT_EMAIL_VERIFICATION_TOKEN_EXPIRES_SECONDS;
+					const expiresAt = new Date(Date.now() + tokenExpiresInSeconds * 1000);
+
+					await storeEmailVerificationToken(
+						tx,
+						createdUser.id,
+						tokenHash,
+						expiresAt,
+					);
+
+					const verificationLink = `${ctx.envConfig.FRONTEND_URL}/verify-email?token=${rawToken}`;
+					const emailContext = {
+						userName: createdUser.name,
+						communityName: ctx.envConfig.API_COMMUNITY_NAME,
+						verificationLink,
+						expiryText: formatExpiryTime(tokenExpiresInSeconds),
+					};
+
+					emailService
+						.sendEmail({
+							id: ulid(),
+							email: createdUser.emailAddress,
+							subject: `Verify Your Email - ${ctx.envConfig.API_COMMUNITY_NAME}`,
+							htmlBody: getEmailVerificationEmailHtml(emailContext),
+							textBody: getEmailVerificationEmailText(emailContext),
+							userId: createdUser.id,
+						})
+						.catch((err) =>
+							ctx.log.error(
+								{ error: err },
+								"Failed to send verification email",
+							),
+						);
+				} catch (err) {
+					ctx.log.error({ error: err }, "Failed to create verification token");
 				}
 
 				// If the organization does not require user registration, create a membership for the user in the organization.
