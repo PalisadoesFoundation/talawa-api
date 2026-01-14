@@ -468,8 +468,6 @@ describe("SMTPProvider", () => {
 	});
 
 	it("should wait ~100ms between bulk emails", async () => {
-		vi.useFakeTimers();
-
 		const nodemailer = await import("nodemailer");
 		const mockSendMail = vi.fn().mockResolvedValue({ messageId: "msg-delay" });
 		(nodemailer.default.createTransport as Mock).mockReturnValue({
@@ -482,13 +480,9 @@ describe("SMTPProvider", () => {
 		];
 
 		const bulkPromise = smtpProvider.sendBulkEmails(jobs);
-		// Run all pending timers to completion
-		await vi.runAllTimersAsync();
 		await bulkPromise;
 
 		expect(mockSendMail).toHaveBeenCalledTimes(2);
-
-		vi.useRealTimers();
 	});
 
 	it("should sanitize fromName and subject to prevent SMTP header injection", async () => {
