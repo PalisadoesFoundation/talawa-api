@@ -704,9 +704,11 @@ describe("PluginManager", () => {
 			const result = await manager.loadPlugin("test-plugin");
 			expect(result).toBe(false);
 			expect(context.logger.warn).toHaveBeenCalledWith(
-				expect.stringContaining(
-					"Plugin test-plugin is in database but files are missing at /plugins/test-plugin",
-				),
+				expect.objectContaining({
+					msg: "Plugin is in database but files are missing",
+					pluginId: "test-plugin",
+					pluginPath: "/plugins/test-plugin",
+				}),
 			);
 		});
 	});

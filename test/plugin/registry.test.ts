@@ -11,6 +11,7 @@ vi.mock("~/src/utilities/logging/logger", () => ({
 }));
 
 import type { IPluginContext } from "~/src/plugin/types";
+import { rootLogger } from "~/src/utilities/logging/logger";
 import {
 	createPluginContext,
 	destroyPluginSystem,
@@ -303,7 +304,6 @@ describe("Plugin Registry", () => {
 			spy.mockRestore();
 
 			// Assert logging - using new Pino pattern: { err }, "message"
-			const { rootLogger } = await import("~/src/utilities/logging/logger");
 			expect(rootLogger.error).toHaveBeenCalledWith(
 				expect.objectContaining({
 					err: shutdownError,

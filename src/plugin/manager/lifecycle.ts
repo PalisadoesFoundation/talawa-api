@@ -290,13 +290,11 @@ export class PluginLifecycle {
 			);
 
 			for (const tableExtension of manifest.extensionPoints.database) {
-				this.pluginContext.logger.info?.(
-					{
-						name: tableExtension.name,
-						file: tableExtension.file,
-					},
-					"Loading table definition",
-				);
+				this.pluginContext.logger.info?.({
+					msg: "Loading table definition",
+					name: tableExtension.name,
+					file: tableExtension.file,
+				});
 
 				const tableFilePath = path.join(pluginPath, tableExtension.file);
 				const tableModule =
@@ -647,18 +645,22 @@ export class PluginLifecycle {
 			try {
 				await runCommand("docker", ["--version"]);
 			} catch {
-				this.pluginContext.logger.warn?.(
-					`Docker not available for plugin ${pluginId}. Skipping docker step '${action}'.`,
-				);
+				this.pluginContext.logger.warn?.({
+					msg: "Docker not available. Skipping docker step.",
+					pluginId,
+					action,
+				});
 				return;
 			}
 
 			try {
 				await runCommand("docker", ["compose", "version"]);
 			} catch {
-				this.pluginContext.logger.warn?.(
-					`'docker compose' not available for plugin ${pluginId}. Skipping docker step '${action}'.`,
-				);
+				this.pluginContext.logger.warn?.({
+					msg: "'docker compose' not available. Skipping docker step.",
+					pluginId,
+					action,
+				});
 				return;
 			}
 

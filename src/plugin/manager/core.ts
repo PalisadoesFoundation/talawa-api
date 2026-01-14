@@ -204,9 +204,11 @@ class PluginManager extends EventEmitter {
 			try {
 				await import("node:fs/promises").then((fs) => fs.access(manifestPath));
 			} catch (_error) {
-				this.pluginContext.logger.warn?.(
-					`Plugin ${pluginId} is in database but files are missing at ${pluginPath}`,
-				);
+				this.pluginContext.logger.warn?.({
+					msg: "Plugin is in database but files are missing",
+					pluginId,
+					pluginPath,
+				});
 				return false;
 			}
 
