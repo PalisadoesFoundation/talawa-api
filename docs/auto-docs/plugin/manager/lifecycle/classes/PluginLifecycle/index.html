@@ -4,8 +4,8 @@
 <meta charset="UTF-8">
 <meta name="generator" content="Docusaurus v3.9.2">
 <title data-rh="true">PluginLifecycle | Talawa API Documentation</title><meta data-rh="true" name="viewport" content="width=device-width,initial-scale=1"><meta data-rh="true" name="twitter:card" content="summary_large_image"><meta data-rh="true" property="og:url" content="https://docs-api.talawa.io/docs/auto-docs/plugin/manager/lifecycle/classes/PluginLifecycle"><meta data-rh="true" property="og:locale" content="en"><meta data-rh="true" name="docusaurus_locale" content="en"><meta data-rh="true" name="docsearch:language" content="en"><meta data-rh="true" name="docusaurus_version" content="current"><meta data-rh="true" name="docusaurus_tag" content="docs-default-current"><meta data-rh="true" name="docsearch:version" content="current"><meta data-rh="true" name="docsearch:docusaurus_tag" content="docs-default-current"><meta data-rh="true" property="og:title" content="PluginLifecycle | Talawa API Documentation"><meta data-rh="true" name="description" content="API Docs"><meta data-rh="true" property="og:description" content="API Docs"><link data-rh="true" rel="icon" href="/img/favicon.ico"><link data-rh="true" rel="canonical" href="https://docs-api.talawa.io/docs/auto-docs/plugin/manager/lifecycle/classes/PluginLifecycle"><link data-rh="true" rel="alternate" href="https://docs-api.talawa.io/docs/auto-docs/plugin/manager/lifecycle/classes/PluginLifecycle" hreflang="en"><link data-rh="true" rel="alternate" href="https://docs-api.talawa.io/docs/auto-docs/plugin/manager/lifecycle/classes/PluginLifecycle" hreflang="x-default"><script data-rh="true" type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"PluginLifecycle","item":"https://docs-api.talawa.io/docs/auto-docs/plugin/manager/lifecycle/classes/PluginLifecycle"}]}</script><link rel="stylesheet" href="https://docs.talawa.io/css/styles-latest.css"><link rel="stylesheet" href="/assets/css/styles.ebf53daf.css">
-<script src="/assets/js/runtime~main.858d647b.js" defer="defer"></script>
-<script src="/assets/js/main.fb97d16f.js" defer="defer"></script>
+<script src="/assets/js/runtime~main.5b411770.js" defer="defer"></script>
+<script src="/assets/js/main.2f3749a0.js" defer="defer"></script>
 </head>
 <body class="navigation-with-keyboard">
 <svg style="display: none;"><defs>
@@ -35,7 +35,7 @@
 <blockquote>
 <p><strong>activatePlugin</strong>(<code>pluginId</code>, <code>pluginManager</code>): <code>Promise</code>&lt;<code>boolean</code>&gt;</p>
 </blockquote>
-<p>Defined in: <a href="https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/plugin/manager/lifecycle.ts#L132" target="_blank" rel="noopener noreferrer" class="">src/plugin/manager/lifecycle.ts:132</a></p>
+<p>Defined in: <a href="https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/plugin/manager/lifecycle.ts#L137" target="_blank" rel="noopener noreferrer" class="">src/plugin/manager/lifecycle.ts:137</a></p>
 <p>Activate a plugin - trigger schema rebuild</p>
 <h4 class="anchor anchorTargetStickyNavbar_vRzG" id="parameters-1">Parameters<a href="#parameters-1" class="hash-link" aria-label="Direct link to Parameters" title="Direct link to Parameters" translate="no">​</a></h4>
 <h5 class="anchor anchorTargetStickyNavbar_vRzG" id="pluginid">pluginId<a href="#pluginid" class="hash-link" aria-label="Direct link to pluginId" title="Direct link to pluginId" translate="no">​</a></h5>
@@ -49,7 +49,7 @@
 <blockquote>
 <p><strong>deactivatePlugin</strong>(<code>pluginId</code>, <code>pluginManager</code>, <code>dropTables</code>): <code>Promise</code>&lt;<code>boolean</code>&gt;</p>
 </blockquote>
-<p>Defined in: <a href="https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/plugin/manager/lifecycle.ts#L188" target="_blank" rel="noopener noreferrer" class="">src/plugin/manager/lifecycle.ts:188</a></p>
+<p>Defined in: <a href="https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/plugin/manager/lifecycle.ts#L196" target="_blank" rel="noopener noreferrer" class="">src/plugin/manager/lifecycle.ts:196</a></p>
 <p>Deactivate a plugin - trigger schema rebuild</p>
 <h4 class="anchor anchorTargetStickyNavbar_vRzG" id="parameters-2">Parameters<a href="#parameters-2" class="hash-link" aria-label="Direct link to Parameters" title="Direct link to Parameters" translate="no">​</a></h4>
 <h5 class="anchor anchorTargetStickyNavbar_vRzG" id="pluginid-1">pluginId<a href="#pluginid-1" class="hash-link" aria-label="Direct link to pluginId" title="Direct link to pluginId" translate="no">​</a></h5>
@@ -65,7 +65,7 @@
 <blockquote>
 <p><strong>getPluginModule</strong>(<code>pluginId</code>): <code>Promise</code>&lt;<a class="" href="/docs/auto-docs/plugin/types/interfaces/IPluginLifecycle"><code>IPluginLifecycle</code></a> | <code>null</code>&gt;</p>
 </blockquote>
-<p>Defined in: <a href="https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/plugin/manager/lifecycle.ts#L375" target="_blank" rel="noopener noreferrer" class="">src/plugin/manager/lifecycle.ts:375</a></p>
+<p>Defined in: <a href="https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/plugin/manager/lifecycle.ts#L397" target="_blank" rel="noopener noreferrer" class="">src/plugin/manager/lifecycle.ts:397</a></p>
 <p>Get plugin module for lifecycle hooks</p>
 <h4 class="anchor anchorTargetStickyNavbar_vRzG" id="parameters-3">Parameters<a href="#parameters-3" class="hash-link" aria-label="Direct link to Parameters" title="Direct link to Parameters" translate="no">​</a></h4>
 <h5 class="anchor anchorTargetStickyNavbar_vRzG" id="pluginid-2">pluginId<a href="#pluginid-2" class="hash-link" aria-label="Direct link to pluginId" title="Direct link to pluginId" translate="no">​</a></h5>
@@ -91,7 +91,7 @@
 <blockquote>
 <p><strong>removeFromExtensionRegistry</strong>(<code>pluginId</code>): <code>void</code></p>
 </blockquote>
-<p>Defined in: <a href="https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/plugin/manager/lifecycle.ts#L395" target="_blank" rel="noopener noreferrer" class="">src/plugin/manager/lifecycle.ts:395</a></p>
+<p>Defined in: <a href="https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/plugin/manager/lifecycle.ts#L417" target="_blank" rel="noopener noreferrer" class="">src/plugin/manager/lifecycle.ts:417</a></p>
 <p>Remove plugin from extension registry</p>
 <h4 class="anchor anchorTargetStickyNavbar_vRzG" id="parameters-5">Parameters<a href="#parameters-5" class="hash-link" aria-label="Direct link to Parameters" title="Direct link to Parameters" translate="no">​</a></h4>
 <h5 class="anchor anchorTargetStickyNavbar_vRzG" id="pluginid-4">pluginId<a href="#pluginid-4" class="hash-link" aria-label="Direct link to pluginId" title="Direct link to pluginId" translate="no">​</a></h5>
@@ -103,7 +103,7 @@
 <blockquote>
 <p><strong>uninstallPlugin</strong>(<code>pluginId</code>, <code>pluginManager</code>): <code>Promise</code>&lt;<code>boolean</code>&gt;</p>
 </blockquote>
-<p>Defined in: <a href="https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/plugin/manager/lifecycle.ts#L90" target="_blank" rel="noopener noreferrer" class="">src/plugin/manager/lifecycle.ts:90</a></p>
+<p>Defined in: <a href="https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/plugin/manager/lifecycle.ts#L95" target="_blank" rel="noopener noreferrer" class="">src/plugin/manager/lifecycle.ts:95</a></p>
 <p>Uninstall a plugin - remove tables and cleanup</p>
 <h4 class="anchor anchorTargetStickyNavbar_vRzG" id="parameters-6">Parameters<a href="#parameters-6" class="hash-link" aria-label="Direct link to Parameters" title="Direct link to Parameters" translate="no">​</a></h4>
 <h5 class="anchor anchorTargetStickyNavbar_vRzG" id="pluginid-5">pluginId<a href="#pluginid-5" class="hash-link" aria-label="Direct link to pluginId" title="Direct link to pluginId" translate="no">​</a></h5>
@@ -117,7 +117,7 @@
 <blockquote>
 <p><strong>unloadPlugin</strong>(<code>pluginId</code>, <code>pluginManager</code>): <code>Promise</code>&lt;<code>boolean</code>&gt;</p>
 </blockquote>
-<p>Defined in: <a href="https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/plugin/manager/lifecycle.ts#L521" target="_blank" rel="noopener noreferrer" class="">src/plugin/manager/lifecycle.ts:521</a></p>
+<p>Defined in: <a href="https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/plugin/manager/lifecycle.ts#L546" target="_blank" rel="noopener noreferrer" class="">src/plugin/manager/lifecycle.ts:546</a></p>
 <p>Unload a plugin - remove from memory without database changes</p>
 <h4 class="anchor anchorTargetStickyNavbar_vRzG" id="parameters-7">Parameters<a href="#parameters-7" class="hash-link" aria-label="Direct link to Parameters" title="Direct link to Parameters" translate="no">​</a></h4>
 <h5 class="anchor anchorTargetStickyNavbar_vRzG" id="pluginid-6">pluginId<a href="#pluginid-6" class="hash-link" aria-label="Direct link to pluginId" title="Direct link to pluginId" translate="no">​</a></h5>

@@ -4,8 +4,8 @@
 <meta charset="UTF-8">
 <meta name="generator" content="Docusaurus v3.9.2">
 <title data-rh="true">ILogger | Talawa API Documentation</title><meta data-rh="true" name="viewport" content="width=device-width,initial-scale=1"><meta data-rh="true" name="twitter:card" content="summary_large_image"><meta data-rh="true" property="og:url" content="https://docs-api.talawa.io/docs/auto-docs/plugin/types/interfaces/ILogger"><meta data-rh="true" property="og:locale" content="en"><meta data-rh="true" name="docusaurus_locale" content="en"><meta data-rh="true" name="docsearch:language" content="en"><meta data-rh="true" name="docusaurus_version" content="current"><meta data-rh="true" name="docusaurus_tag" content="docs-default-current"><meta data-rh="true" name="docsearch:version" content="current"><meta data-rh="true" name="docsearch:docusaurus_tag" content="docs-default-current"><meta data-rh="true" property="og:title" content="ILogger | Talawa API Documentation"><meta data-rh="true" name="description" content="API Docs"><meta data-rh="true" property="og:description" content="API Docs"><link data-rh="true" rel="icon" href="/img/favicon.ico"><link data-rh="true" rel="canonical" href="https://docs-api.talawa.io/docs/auto-docs/plugin/types/interfaces/ILogger"><link data-rh="true" rel="alternate" href="https://docs-api.talawa.io/docs/auto-docs/plugin/types/interfaces/ILogger" hreflang="en"><link data-rh="true" rel="alternate" href="https://docs-api.talawa.io/docs/auto-docs/plugin/types/interfaces/ILogger" hreflang="x-default"><script data-rh="true" type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"ILogger","item":"https://docs-api.talawa.io/docs/auto-docs/plugin/types/interfaces/ILogger"}]}</script><link rel="stylesheet" href="https://docs.talawa.io/css/styles-latest.css"><link rel="stylesheet" href="/assets/css/styles.ebf53daf.css">
-<script src="/assets/js/runtime~main.858d647b.js" defer="defer"></script>
-<script src="/assets/js/main.fb97d16f.js" defer="defer"></script>
+<script src="/assets/js/runtime~main.5b411770.js" defer="defer"></script>
+<script src="/assets/js/main.2f3749a0.js" defer="defer"></script>
 </head>
 <body class="navigation-with-keyboard">
 <svg style="display: none;"><defs>
@@ -18,12 +18,12 @@
 <h2 class="anchor anchorTargetStickyNavbar_vRzG" id="properties">Properties<a href="#properties" class="hash-link" aria-label="Direct link to Properties" title="Direct link to Properties" translate="no">​</a></h2>
 <h3 class="anchor anchorTargetStickyNavbar_vRzG" id="debug">debug()?<a href="#debug" class="hash-link" aria-label="Direct link to debug()?" title="Direct link to debug()?" translate="no">​</a></h3>
 <blockquote>
-<p><code>optional</code> <strong>debug</strong>: (<code>message</code>, ...<code>args</code>) =&gt; <code>void</code></p>
+<p><code>optional</code> <strong>debug</strong>: (<code>messageOrObj</code>, ...<code>args</code>) =&gt; <code>void</code></p>
 </blockquote>
 <p>Defined in: <a href="https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/plugin/types.ts#L133" target="_blank" rel="noopener noreferrer" class="">src/plugin/types.ts:133</a></p>
 <h4 class="anchor anchorTargetStickyNavbar_vRzG" id="parameters">Parameters<a href="#parameters" class="hash-link" aria-label="Direct link to Parameters" title="Direct link to Parameters" translate="no">​</a></h4>
-<h5 class="anchor anchorTargetStickyNavbar_vRzG" id="message">message<a href="#message" class="hash-link" aria-label="Direct link to message" title="Direct link to message" translate="no">​</a></h5>
-<p><code>string</code></p>
+<h5 class="anchor anchorTargetStickyNavbar_vRzG" id="messageorobj">messageOrObj<a href="#messageorobj" class="hash-link" aria-label="Direct link to messageOrObj" title="Direct link to messageOrObj" translate="no">​</a></h5>
+<p><code>string</code> | <code>object</code></p>
 <h5 class="anchor anchorTargetStickyNavbar_vRzG" id="args">args<a href="#args" class="hash-link" aria-label="Direct link to args" title="Direct link to args" translate="no">​</a></h5>
 <p>...<code>unknown</code>[]</p>
 <h4 class="anchor anchorTargetStickyNavbar_vRzG" id="returns">Returns<a href="#returns" class="hash-link" aria-label="Direct link to Returns" title="Direct link to Returns" translate="no">​</a></h4>
@@ -31,12 +31,12 @@
 <hr>
 <h3 class="anchor anchorTargetStickyNavbar_vRzG" id="error">error()?<a href="#error" class="hash-link" aria-label="Direct link to error()?" title="Direct link to error()?" translate="no">​</a></h3>
 <blockquote>
-<p><code>optional</code> <strong>error</strong>: (<code>message</code>, ...<code>args</code>) =&gt; <code>void</code></p>
+<p><code>optional</code> <strong>error</strong>: (<code>messageOrObj</code>, ...<code>args</code>) =&gt; <code>void</code></p>
 </blockquote>
 <p>Defined in: <a href="https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/plugin/types.ts#L131" target="_blank" rel="noopener noreferrer" class="">src/plugin/types.ts:131</a></p>
 <h4 class="anchor anchorTargetStickyNavbar_vRzG" id="parameters-1">Parameters<a href="#parameters-1" class="hash-link" aria-label="Direct link to Parameters" title="Direct link to Parameters" translate="no">​</a></h4>
-<h5 class="anchor anchorTargetStickyNavbar_vRzG" id="message-1">message<a href="#message-1" class="hash-link" aria-label="Direct link to message" title="Direct link to message" translate="no">​</a></h5>
-<p><code>string</code></p>
+<h5 class="anchor anchorTargetStickyNavbar_vRzG" id="messageorobj-1">messageOrObj<a href="#messageorobj-1" class="hash-link" aria-label="Direct link to messageOrObj" title="Direct link to messageOrObj" translate="no">​</a></h5>
+<p><code>string</code> | <code>object</code></p>
 <h5 class="anchor anchorTargetStickyNavbar_vRzG" id="args-1">args<a href="#args-1" class="hash-link" aria-label="Direct link to args" title="Direct link to args" translate="no">​</a></h5>
 <p>...<code>unknown</code>[]</p>
 <h4 class="anchor anchorTargetStickyNavbar_vRzG" id="returns-1">Returns<a href="#returns-1" class="hash-link" aria-label="Direct link to Returns" title="Direct link to Returns" translate="no">​</a></h4>
@@ -44,12 +44,12 @@
 <hr>
 <h3 class="anchor anchorTargetStickyNavbar_vRzG" id="info">info()?<a href="#info" class="hash-link" aria-label="Direct link to info()?" title="Direct link to info()?" translate="no">​</a></h3>
 <blockquote>
-<p><code>optional</code> <strong>info</strong>: (<code>message</code>, ...<code>args</code>) =&gt; <code>void</code></p>
+<p><code>optional</code> <strong>info</strong>: (<code>messageOrObj</code>, ...<code>args</code>) =&gt; <code>void</code></p>
 </blockquote>
 <p>Defined in: <a href="https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/plugin/types.ts#L130" target="_blank" rel="noopener noreferrer" class="">src/plugin/types.ts:130</a></p>
 <h4 class="anchor anchorTargetStickyNavbar_vRzG" id="parameters-2">Parameters<a href="#parameters-2" class="hash-link" aria-label="Direct link to Parameters" title="Direct link to Parameters" translate="no">​</a></h4>
-<h5 class="anchor anchorTargetStickyNavbar_vRzG" id="message-2">message<a href="#message-2" class="hash-link" aria-label="Direct link to message" title="Direct link to message" translate="no">​</a></h5>
-<p><code>string</code></p>
+<h5 class="anchor anchorTargetStickyNavbar_vRzG" id="messageorobj-2">messageOrObj<a href="#messageorobj-2" class="hash-link" aria-label="Direct link to messageOrObj" title="Direct link to messageOrObj" translate="no">​</a></h5>
+<p><code>string</code> | <code>object</code></p>
 <h5 class="anchor anchorTargetStickyNavbar_vRzG" id="args-2">args<a href="#args-2" class="hash-link" aria-label="Direct link to args" title="Direct link to args" translate="no">​</a></h5>
 <p>...<code>unknown</code>[]</p>
 <h4 class="anchor anchorTargetStickyNavbar_vRzG" id="returns-2">Returns<a href="#returns-2" class="hash-link" aria-label="Direct link to Returns" title="Direct link to Returns" translate="no">​</a></h4>
@@ -57,12 +57,12 @@
 <hr>
 <h3 class="anchor anchorTargetStickyNavbar_vRzG" id="warn">warn()?<a href="#warn" class="hash-link" aria-label="Direct link to warn()?" title="Direct link to warn()?" translate="no">​</a></h3>
 <blockquote>
-<p><code>optional</code> <strong>warn</strong>: (<code>message</code>, ...<code>args</code>) =&gt; <code>void</code></p>
+<p><code>optional</code> <strong>warn</strong>: (<code>messageOrObj</code>, ...<code>args</code>) =&gt; <code>void</code></p>
 </blockquote>
 <p>Defined in: <a href="https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/plugin/types.ts#L132" target="_blank" rel="noopener noreferrer" class="">src/plugin/types.ts:132</a></p>
 <h4 class="anchor anchorTargetStickyNavbar_vRzG" id="parameters-3">Parameters<a href="#parameters-3" class="hash-link" aria-label="Direct link to Parameters" title="Direct link to Parameters" translate="no">​</a></h4>
-<h5 class="anchor anchorTargetStickyNavbar_vRzG" id="message-3">message<a href="#message-3" class="hash-link" aria-label="Direct link to message" title="Direct link to message" translate="no">​</a></h5>
-<p><code>string</code></p>
+<h5 class="anchor anchorTargetStickyNavbar_vRzG" id="messageorobj-3">messageOrObj<a href="#messageorobj-3" class="hash-link" aria-label="Direct link to messageOrObj" title="Direct link to messageOrObj" translate="no">​</a></h5>
+<p><code>string</code> | <code>object</code></p>
 <h5 class="anchor anchorTargetStickyNavbar_vRzG" id="args-3">args<a href="#args-3" class="hash-link" aria-label="Direct link to args" title="Direct link to args" translate="no">​</a></h5>
 <p>...<code>unknown</code>[]</p>
 <h4 class="anchor anchorTargetStickyNavbar_vRzG" id="returns-3">Returns<a href="#returns-3" class="hash-link" aria-label="Direct link to Returns" title="Direct link to Returns" translate="no">​</a></h4>

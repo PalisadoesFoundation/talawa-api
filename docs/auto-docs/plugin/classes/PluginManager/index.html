@@ -4,8 +4,8 @@
 <meta charset="UTF-8">
 <meta name="generator" content="Docusaurus v3.9.2">
 <title data-rh="true">PluginManager | Talawa API Documentation</title><meta data-rh="true" name="viewport" content="width=device-width,initial-scale=1"><meta data-rh="true" name="twitter:card" content="summary_large_image"><meta data-rh="true" property="og:url" content="https://docs-api.talawa.io/docs/auto-docs/plugin/classes/PluginManager"><meta data-rh="true" property="og:locale" content="en"><meta data-rh="true" name="docusaurus_locale" content="en"><meta data-rh="true" name="docsearch:language" content="en"><meta data-rh="true" name="docusaurus_version" content="current"><meta data-rh="true" name="docusaurus_tag" content="docs-default-current"><meta data-rh="true" name="docsearch:version" content="current"><meta data-rh="true" name="docsearch:docusaurus_tag" content="docs-default-current"><meta data-rh="true" property="og:title" content="PluginManager | Talawa API Documentation"><meta data-rh="true" name="description" content="API Docs"><meta data-rh="true" property="og:description" content="API Docs"><link data-rh="true" rel="icon" href="/img/favicon.ico"><link data-rh="true" rel="canonical" href="https://docs-api.talawa.io/docs/auto-docs/plugin/classes/PluginManager"><link data-rh="true" rel="alternate" href="https://docs-api.talawa.io/docs/auto-docs/plugin/classes/PluginManager" hreflang="en"><link data-rh="true" rel="alternate" href="https://docs-api.talawa.io/docs/auto-docs/plugin/classes/PluginManager" hreflang="x-default"><script data-rh="true" type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"PluginManager","item":"https://docs-api.talawa.io/docs/auto-docs/plugin/classes/PluginManager"}]}</script><link rel="stylesheet" href="https://docs.talawa.io/css/styles-latest.css"><link rel="stylesheet" href="/assets/css/styles.ebf53daf.css">
-<script src="/assets/js/runtime~main.858d647b.js" defer="defer"></script>
-<script src="/assets/js/main.fb97d16f.js" defer="defer"></script>
+<script src="/assets/js/runtime~main.5b411770.js" defer="defer"></script>
+<script src="/assets/js/main.2f3749a0.js" defer="defer"></script>
 </head>
 <body class="navigation-with-keyboard">
 <svg style="display: none;"><defs>
@@ -27,7 +27,7 @@ for use throughout the API application.</p>
 <blockquote>
 <p><strong>new PluginManager</strong>(<code>context</code>, <code>pluginsDir?</code>): <code>PluginManager</code></p>
 </blockquote>
-<p>Defined in: <a href="https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/plugin/manager/core.ts#L61" target="_blank" rel="noopener noreferrer" class="">src/plugin/manager/core.ts:61</a></p>
+<p>Defined in: <a href="https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/plugin/manager/core.ts#L62" target="_blank" rel="noopener noreferrer" class="">src/plugin/manager/core.ts:62</a></p>
 <h4 class="anchor anchorTargetStickyNavbar_vRzG" id="parameters">Parameters<a href="#parameters" class="hash-link" aria-label="Direct link to Parameters" title="Direct link to Parameters" translate="no">​</a></h4>
 <h5 class="anchor anchorTargetStickyNavbar_vRzG" id="context">context<a href="#context" class="hash-link" aria-label="Direct link to context" title="Direct link to context" translate="no">​</a></h5>
 <p><a class="" href="/docs/auto-docs/plugin/types/interfaces/IPluginContext"><code>IPluginContext</code></a></p>
@@ -42,7 +42,7 @@ for use throughout the API application.</p>
 <blockquote>
 <p><strong>activatePlugin</strong>(<code>pluginId</code>): <code>Promise</code>&lt;<code>boolean</code>&gt;</p>
 </blockquote>
-<p>Defined in: <a href="https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/plugin/manager/core.ts#L321" target="_blank" rel="noopener noreferrer" class="">src/plugin/manager/core.ts:321</a></p>
+<p>Defined in: <a href="https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/plugin/manager/core.ts#L329" target="_blank" rel="noopener noreferrer" class="">src/plugin/manager/core.ts:329</a></p>
 <p>Activate a plugin</p>
 <h4 class="anchor anchorTargetStickyNavbar_vRzG" id="parameters-1">Parameters<a href="#parameters-1" class="hash-link" aria-label="Direct link to Parameters" title="Direct link to Parameters" translate="no">​</a></h4>
 <h5 class="anchor anchorTargetStickyNavbar_vRzG" id="pluginid">pluginId<a href="#pluginid" class="hash-link" aria-label="Direct link to pluginId" title="Direct link to pluginId" translate="no">​</a></h5>
@@ -54,7 +54,7 @@ for use throughout the API application.</p>
 <blockquote>
 <p><strong>clearErrors</strong>(): <code>void</code></p>
 </blockquote>
-<p>Defined in: <a href="https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/plugin/manager/core.ts#L487" target="_blank" rel="noopener noreferrer" class="">src/plugin/manager/core.ts:487</a></p>
+<p>Defined in: <a href="https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/plugin/manager/core.ts#L498" target="_blank" rel="noopener noreferrer" class="">src/plugin/manager/core.ts:498</a></p>
 <p>Clear plugin errors</p>
 <h4 class="anchor anchorTargetStickyNavbar_vRzG" id="returns-2">Returns<a href="#returns-2" class="hash-link" aria-label="Direct link to Returns" title="Direct link to Returns" translate="no">​</a></h4>
 <p><code>void</code></p>
@@ -63,7 +63,7 @@ for use throughout the API application.</p>
 <blockquote>
 <p><strong>deactivatePlugin</strong>(<code>pluginId</code>, <code>dropTables</code>): <code>Promise</code>&lt;<code>boolean</code>&gt;</p>
 </blockquote>
-<p>Defined in: <a href="https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/plugin/manager/core.ts#L328" target="_blank" rel="noopener noreferrer" class="">src/plugin/manager/core.ts:328</a></p>
+<p>Defined in: <a href="https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/plugin/manager/core.ts#L336" target="_blank" rel="noopener noreferrer" class="">src/plugin/manager/core.ts:336</a></p>
 <p>Deactivate a plugin</p>
 <h4 class="anchor anchorTargetStickyNavbar_vRzG" id="parameters-2">Parameters<a href="#parameters-2" class="hash-link" aria-label="Direct link to Parameters" title="Direct link to Parameters" translate="no">​</a></h4>
 <h5 class="anchor anchorTargetStickyNavbar_vRzG" id="pluginid-1">pluginId<a href="#pluginid-1" class="hash-link" aria-label="Direct link to pluginId" title="Direct link to pluginId" translate="no">​</a></h5>
@@ -77,7 +77,7 @@ for use throughout the API application.</p>
 <blockquote>
 <p><strong>executePostHooks</strong>(<code>event</code>, <code>data</code>): <code>Promise</code>&lt;<code>void</code>&gt;</p>
 </blockquote>
-<p>Defined in: <a href="https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/plugin/manager/core.ts#L460" target="_blank" rel="noopener noreferrer" class="">src/plugin/manager/core.ts:460</a></p>
+<p>Defined in: <a href="https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/plugin/manager/core.ts#L471" target="_blank" rel="noopener noreferrer" class="">src/plugin/manager/core.ts:471</a></p>
 <p>Execute post hooks for an event</p>
 <h4 class="anchor anchorTargetStickyNavbar_vRzG" id="parameters-3">Parameters<a href="#parameters-3" class="hash-link" aria-label="Direct link to Parameters" title="Direct link to Parameters" translate="no">​</a></h4>
 <h5 class="anchor anchorTargetStickyNavbar_vRzG" id="event">event<a href="#event" class="hash-link" aria-label="Direct link to event" title="Direct link to event" translate="no">​</a></h5>
@@ -91,7 +91,7 @@ for use throughout the API application.</p>
 <blockquote>
 <p><strong>executePreHooks</strong>(<code>event</code>, <code>data</code>): <code>Promise</code>&lt;<code>unknown</code>&gt;</p>
 </blockquote>
-<p>Defined in: <a href="https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/plugin/manager/core.ts#L442" target="_blank" rel="noopener noreferrer" class="">src/plugin/manager/core.ts:442</a></p>
+<p>Defined in: <a href="https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/plugin/manager/core.ts#L450" target="_blank" rel="noopener noreferrer" class="">src/plugin/manager/core.ts:450</a></p>
 <p>Execute pre hooks for an event</p>
 <h4 class="anchor anchorTargetStickyNavbar_vRzG" id="parameters-4">Parameters<a href="#parameters-4" class="hash-link" aria-label="Direct link to Parameters" title="Direct link to Parameters" translate="no">​</a></h4>
 <h5 class="anchor anchorTargetStickyNavbar_vRzG" id="event-1">event<a href="#event-1" class="hash-link" aria-label="Direct link to event" title="Direct link to event" translate="no">​</a></h5>
@@ -105,7 +105,7 @@ for use throughout the API application.</p>
 <blockquote>
 <p><strong>getActivePlugins</strong>(): <a class="" href="/docs/auto-docs/plugin/types/interfaces/ILoadedPlugin"><code>ILoadedPlugin</code></a>[]</p>
 </blockquote>
-<p>Defined in: <a href="https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/plugin/manager/core.ts#L404" target="_blank" rel="noopener noreferrer" class="">src/plugin/manager/core.ts:404</a></p>
+<p>Defined in: <a href="https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/plugin/manager/core.ts#L412" target="_blank" rel="noopener noreferrer" class="">src/plugin/manager/core.ts:412</a></p>
 <p>Get active plugins</p>
 <h4 class="anchor anchorTargetStickyNavbar_vRzG" id="returns-6">Returns<a href="#returns-6" class="hash-link" aria-label="Direct link to Returns" title="Direct link to Returns" translate="no">​</a></h4>
 <p><a class="" href="/docs/auto-docs/plugin/types/interfaces/ILoadedPlugin"><code>ILoadedPlugin</code></a>[]</p>
@@ -114,7 +114,7 @@ for use throughout the API application.</p>
 <blockquote>
 <p><strong>getErrors</strong>(): <a class="" href="/docs/auto-docs/plugin/types/interfaces/IPluginError"><code>IPluginError</code></a>[]</p>
 </blockquote>
-<p>Defined in: <a href="https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/plugin/manager/core.ts#L480" target="_blank" rel="noopener noreferrer" class="">src/plugin/manager/core.ts:480</a></p>
+<p>Defined in: <a href="https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/plugin/manager/core.ts#L491" target="_blank" rel="noopener noreferrer" class="">src/plugin/manager/core.ts:491</a></p>
 <p>Get plugin errors</p>
 <h4 class="anchor anchorTargetStickyNavbar_vRzG" id="returns-7">Returns<a href="#returns-7" class="hash-link" aria-label="Direct link to Returns" title="Direct link to Returns" translate="no">​</a></h4>
 <p><a class="" href="/docs/auto-docs/plugin/types/interfaces/IPluginError"><code>IPluginError</code></a>[]</p>
@@ -123,7 +123,7 @@ for use throughout the API application.</p>
 <blockquote>
 <p><strong>getExtensionRegistry</strong>(): <a class="" href="/docs/auto-docs/plugin/types/interfaces/IExtensionRegistry"><code>IExtensionRegistry</code></a></p>
 </blockquote>
-<p>Defined in: <a href="https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/plugin/manager/core.ts#L435" target="_blank" rel="noopener noreferrer" class="">src/plugin/manager/core.ts:435</a></p>
+<p>Defined in: <a href="https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/plugin/manager/core.ts#L443" target="_blank" rel="noopener noreferrer" class="">src/plugin/manager/core.ts:443</a></p>
 <p>Get extension registry</p>
 <h4 class="anchor anchorTargetStickyNavbar_vRzG" id="returns-8">Returns<a href="#returns-8" class="hash-link" aria-label="Direct link to Returns" title="Direct link to Returns" translate="no">​</a></h4>
 <p><a class="" href="/docs/auto-docs/plugin/types/interfaces/IExtensionRegistry"><code>IExtensionRegistry</code></a></p>
@@ -132,7 +132,7 @@ for use throughout the API application.</p>
 <blockquote>
 <p><strong>getLoadedPluginIds</strong>(): <code>string</code>[]</p>
 </blockquote>
-<p>Defined in: <a href="https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/plugin/manager/core.ts#L397" target="_blank" rel="noopener noreferrer" class="">src/plugin/manager/core.ts:397</a></p>
+<p>Defined in: <a href="https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/plugin/manager/core.ts#L405" target="_blank" rel="noopener noreferrer" class="">src/plugin/manager/core.ts:405</a></p>
 <p>Get loaded plugin IDs</p>
 <h4 class="anchor anchorTargetStickyNavbar_vRzG" id="returns-9">Returns<a href="#returns-9" class="hash-link" aria-label="Direct link to Returns" title="Direct link to Returns" translate="no">​</a></h4>
 <p><code>string</code>[]</p>
@@ -141,7 +141,7 @@ for use throughout the API application.</p>
 <blockquote>
 <p><strong>getLoadedPlugins</strong>(): <a class="" href="/docs/auto-docs/plugin/types/interfaces/ILoadedPlugin"><code>ILoadedPlugin</code></a>[]</p>
 </blockquote>
-<p>Defined in: <a href="https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/plugin/manager/core.ts#L390" target="_blank" rel="noopener noreferrer" class="">src/plugin/manager/core.ts:390</a></p>
+<p>Defined in: <a href="https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/plugin/manager/core.ts#L398" target="_blank" rel="noopener noreferrer" class="">src/plugin/manager/core.ts:398</a></p>
 <p>Get all loaded plugins</p>
 <h4 class="anchor anchorTargetStickyNavbar_vRzG" id="returns-10">Returns<a href="#returns-10" class="hash-link" aria-label="Direct link to Returns" title="Direct link to Returns" translate="no">​</a></h4>
 <p><a class="" href="/docs/auto-docs/plugin/types/interfaces/ILoadedPlugin"><code>ILoadedPlugin</code></a>[]</p>
@@ -150,7 +150,7 @@ for use throughout the API application.</p>
 <blockquote>
 <p><strong>getPlugin</strong>(<code>pluginId</code>): <a class="" href="/docs/auto-docs/plugin/types/interfaces/ILoadedPlugin"><code>ILoadedPlugin</code></a> | <code>undefined</code></p>
 </blockquote>
-<p>Defined in: <a href="https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/plugin/manager/core.ts#L413" target="_blank" rel="noopener noreferrer" class="">src/plugin/manager/core.ts:413</a></p>
+<p>Defined in: <a href="https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/plugin/manager/core.ts#L421" target="_blank" rel="noopener noreferrer" class="">src/plugin/manager/core.ts:421</a></p>
 <p>Get a specific plugin</p>
 <h4 class="anchor anchorTargetStickyNavbar_vRzG" id="parameters-5">Parameters<a href="#parameters-5" class="hash-link" aria-label="Direct link to Parameters" title="Direct link to Parameters" translate="no">​</a></h4>
 <h5 class="anchor anchorTargetStickyNavbar_vRzG" id="pluginid-2">pluginId<a href="#pluginid-2" class="hash-link" aria-label="Direct link to pluginId" title="Direct link to pluginId" translate="no">​</a></h5>
@@ -162,7 +162,7 @@ for use throughout the API application.</p>
 <blockquote>
 <p><strong>getPluginContext</strong>(): <a class="" href="/docs/auto-docs/plugin/types/interfaces/IPluginContext"><code>IPluginContext</code></a></p>
 </blockquote>
-<p>Defined in: <a href="https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/plugin/manager/core.ts#L508" target="_blank" rel="noopener noreferrer" class="">src/plugin/manager/core.ts:508</a></p>
+<p>Defined in: <a href="https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/plugin/manager/core.ts#L526" target="_blank" rel="noopener noreferrer" class="">src/plugin/manager/core.ts:526</a></p>
 <p>Get plugin context</p>
 <h4 class="anchor anchorTargetStickyNavbar_vRzG" id="returns-12">Returns<a href="#returns-12" class="hash-link" aria-label="Direct link to Returns" title="Direct link to Returns" translate="no">​</a></h4>
 <p><a class="" href="/docs/auto-docs/plugin/types/interfaces/IPluginContext"><code>IPluginContext</code></a></p>
@@ -171,7 +171,7 @@ for use throughout the API application.</p>
 <blockquote>
 <p><strong>getPluginsDirectory</strong>(): <code>string</code></p>
 </blockquote>
-<p>Defined in: <a href="https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/plugin/manager/core.ts#L501" target="_blank" rel="noopener noreferrer" class="">src/plugin/manager/core.ts:501</a></p>
+<p>Defined in: <a href="https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/plugin/manager/core.ts#L519" target="_blank" rel="noopener noreferrer" class="">src/plugin/manager/core.ts:519</a></p>
 <p>Get plugins directory</p>
 <h4 class="anchor anchorTargetStickyNavbar_vRzG" id="returns-13">Returns<a href="#returns-13" class="hash-link" aria-label="Direct link to Returns" title="Direct link to Returns" translate="no">​</a></h4>
 <p><code>string</code></p>
@@ -180,91 +180,109 @@ for use throughout the API application.</p>
 <blockquote>
 <p><strong>gracefulShutdown</strong>(): <code>Promise</code>&lt;<code>void</code>&gt;</p>
 </blockquote>
-<p>Defined in: <a href="https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/plugin/manager/core.ts#L516" target="_blank" rel="noopener noreferrer" class="">src/plugin/manager/core.ts:516</a></p>
+<p>Defined in: <a href="https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/plugin/manager/core.ts#L534" target="_blank" rel="noopener noreferrer" class="">src/plugin/manager/core.ts:534</a></p>
 <p>Gracefully shutdown plugin system without triggering deactivation or schema updates
 This is used during server shutdown to avoid unnecessary operations</p>
 <h4 class="anchor anchorTargetStickyNavbar_vRzG" id="returns-14">Returns<a href="#returns-14" class="hash-link" aria-label="Direct link to Returns" title="Direct link to Returns" translate="no">​</a></h4>
+<p><code>Promise</code>&lt;<code>void</code>&gt;</p>
+<hr>
+<h3 class="anchor anchorTargetStickyNavbar_vRzG" id="hasinitializationbeenattempted">hasInitializationBeenAttempted()<a href="#hasinitializationbeenattempted" class="hash-link" aria-label="Direct link to hasInitializationBeenAttempted()" title="Direct link to hasInitializationBeenAttempted()" translate="no">​</a></h3>
+<blockquote>
+<p><strong>hasInitializationBeenAttempted</strong>(): <code>boolean</code></p>
+</blockquote>
+<p>Defined in: <a href="https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/plugin/manager/core.ts#L512" target="_blank" rel="noopener noreferrer" class="">src/plugin/manager/core.ts:512</a></p>
+<p>Check if initialization was attempted (regardless of success/failure)</p>
+<h4 class="anchor anchorTargetStickyNavbar_vRzG" id="returns-15">Returns<a href="#returns-15" class="hash-link" aria-label="Direct link to Returns" title="Direct link to Returns" translate="no">​</a></h4>
+<p><code>boolean</code></p>
+<hr>
+<h3 class="anchor anchorTargetStickyNavbar_vRzG" id="initialize">initialize()<a href="#initialize" class="hash-link" aria-label="Direct link to initialize()" title="Direct link to initialize()" translate="no">​</a></h3>
+<blockquote>
+<p><strong>initialize</strong>(): <code>Promise</code>&lt;<code>void</code>&gt;</p>
+</blockquote>
+<p>Defined in: <a href="https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/plugin/manager/core.ts#L85" target="_blank" rel="noopener noreferrer" class="">src/plugin/manager/core.ts:85</a></p>
+<p>Initialize the plugin system</p>
+<h4 class="anchor anchorTargetStickyNavbar_vRzG" id="returns-16">Returns<a href="#returns-16" class="hash-link" aria-label="Direct link to Returns" title="Direct link to Returns" translate="no">​</a></h4>
 <p><code>Promise</code>&lt;<code>void</code>&gt;</p>
 <hr>
 <h3 class="anchor anchorTargetStickyNavbar_vRzG" id="installplugin">installPlugin()<a href="#installplugin" class="hash-link" aria-label="Direct link to installPlugin()" title="Direct link to installPlugin()" translate="no">​</a></h3>
 <blockquote>
 <p><strong>installPlugin</strong>(<code>pluginId</code>): <code>Promise</code>&lt;<code>boolean</code>&gt;</p>
 </blockquote>
-<p>Defined in: <a href="https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/plugin/manager/core.ts#L314" target="_blank" rel="noopener noreferrer" class="">src/plugin/manager/core.ts:314</a></p>
+<p>Defined in: <a href="https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/plugin/manager/core.ts#L322" target="_blank" rel="noopener noreferrer" class="">src/plugin/manager/core.ts:322</a></p>
 <p>Install a plugin</p>
 <h4 class="anchor anchorTargetStickyNavbar_vRzG" id="parameters-6">Parameters<a href="#parameters-6" class="hash-link" aria-label="Direct link to Parameters" title="Direct link to Parameters" translate="no">​</a></h4>
 <h5 class="anchor anchorTargetStickyNavbar_vRzG" id="pluginid-3">pluginId<a href="#pluginid-3" class="hash-link" aria-label="Direct link to pluginId" title="Direct link to pluginId" translate="no">​</a></h5>
 <p><code>string</code></p>
-<h4 class="anchor anchorTargetStickyNavbar_vRzG" id="returns-15">Returns<a href="#returns-15" class="hash-link" aria-label="Direct link to Returns" title="Direct link to Returns" translate="no">​</a></h4>
+<h4 class="anchor anchorTargetStickyNavbar_vRzG" id="returns-17">Returns<a href="#returns-17" class="hash-link" aria-label="Direct link to Returns" title="Direct link to Returns" translate="no">​</a></h4>
 <p><code>Promise</code>&lt;<code>boolean</code>&gt;</p>
 <hr>
 <h3 class="anchor anchorTargetStickyNavbar_vRzG" id="ispluginactive">isPluginActive()<a href="#ispluginactive" class="hash-link" aria-label="Direct link to isPluginActive()" title="Direct link to isPluginActive()" translate="no">​</a></h3>
 <blockquote>
 <p><strong>isPluginActive</strong>(<code>pluginId</code>): <code>boolean</code></p>
 </blockquote>
-<p>Defined in: <a href="https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/plugin/manager/core.ts#L427" target="_blank" rel="noopener noreferrer" class="">src/plugin/manager/core.ts:427</a></p>
+<p>Defined in: <a href="https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/plugin/manager/core.ts#L435" target="_blank" rel="noopener noreferrer" class="">src/plugin/manager/core.ts:435</a></p>
 <p>Check if plugin is active</p>
 <h4 class="anchor anchorTargetStickyNavbar_vRzG" id="parameters-7">Parameters<a href="#parameters-7" class="hash-link" aria-label="Direct link to Parameters" title="Direct link to Parameters" translate="no">​</a></h4>
 <h5 class="anchor anchorTargetStickyNavbar_vRzG" id="pluginid-4">pluginId<a href="#pluginid-4" class="hash-link" aria-label="Direct link to pluginId" title="Direct link to pluginId" translate="no">​</a></h5>
 <p><code>string</code></p>
-<h4 class="anchor anchorTargetStickyNavbar_vRzG" id="returns-16">Returns<a href="#returns-16" class="hash-link" aria-label="Direct link to Returns" title="Direct link to Returns" translate="no">​</a></h4>
+<h4 class="anchor anchorTargetStickyNavbar_vRzG" id="returns-18">Returns<a href="#returns-18" class="hash-link" aria-label="Direct link to Returns" title="Direct link to Returns" translate="no">​</a></h4>
 <p><code>boolean</code></p>
 <hr>
 <h3 class="anchor anchorTargetStickyNavbar_vRzG" id="ispluginloaded">isPluginLoaded()<a href="#ispluginloaded" class="hash-link" aria-label="Direct link to isPluginLoaded()" title="Direct link to isPluginLoaded()" translate="no">​</a></h3>
 <blockquote>
 <p><strong>isPluginLoaded</strong>(<code>pluginId</code>): <code>boolean</code></p>
 </blockquote>
-<p>Defined in: <a href="https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/plugin/manager/core.ts#L420" target="_blank" rel="noopener noreferrer" class="">src/plugin/manager/core.ts:420</a></p>
+<p>Defined in: <a href="https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/plugin/manager/core.ts#L428" target="_blank" rel="noopener noreferrer" class="">src/plugin/manager/core.ts:428</a></p>
 <p>Check if plugin is loaded</p>
 <h4 class="anchor anchorTargetStickyNavbar_vRzG" id="parameters-8">Parameters<a href="#parameters-8" class="hash-link" aria-label="Direct link to Parameters" title="Direct link to Parameters" translate="no">​</a></h4>
 <h5 class="anchor anchorTargetStickyNavbar_vRzG" id="pluginid-5">pluginId<a href="#pluginid-5" class="hash-link" aria-label="Direct link to pluginId" title="Direct link to pluginId" translate="no">​</a></h5>
 <p><code>string</code></p>
-<h4 class="anchor anchorTargetStickyNavbar_vRzG" id="returns-17">Returns<a href="#returns-17" class="hash-link" aria-label="Direct link to Returns" title="Direct link to Returns" translate="no">​</a></h4>
+<h4 class="anchor anchorTargetStickyNavbar_vRzG" id="returns-19">Returns<a href="#returns-19" class="hash-link" aria-label="Direct link to Returns" title="Direct link to Returns" translate="no">​</a></h4>
 <p><code>boolean</code></p>
 <hr>
 <h3 class="anchor anchorTargetStickyNavbar_vRzG" id="issysteminitialized">isSystemInitialized()<a href="#issysteminitialized" class="hash-link" aria-label="Direct link to isSystemInitialized()" title="Direct link to isSystemInitialized()" translate="no">​</a></h3>
 <blockquote>
 <p><strong>isSystemInitialized</strong>(): <code>boolean</code></p>
 </blockquote>
-<p>Defined in: <a href="https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/plugin/manager/core.ts#L494" target="_blank" rel="noopener noreferrer" class="">src/plugin/manager/core.ts:494</a></p>
-<p>Check if system is initialized</p>
-<h4 class="anchor anchorTargetStickyNavbar_vRzG" id="returns-18">Returns<a href="#returns-18" class="hash-link" aria-label="Direct link to Returns" title="Direct link to Returns" translate="no">​</a></h4>
+<p>Defined in: <a href="https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/plugin/manager/core.ts#L505" target="_blank" rel="noopener noreferrer" class="">src/plugin/manager/core.ts:505</a></p>
+<p>Check if system is initialized (successfully)</p>
+<h4 class="anchor anchorTargetStickyNavbar_vRzG" id="returns-20">Returns<a href="#returns-20" class="hash-link" aria-label="Direct link to Returns" title="Direct link to Returns" translate="no">​</a></h4>
 <p><code>boolean</code></p>
 <hr>
 <h3 class="anchor anchorTargetStickyNavbar_vRzG" id="loadplugin">loadPlugin()<a href="#loadplugin" class="hash-link" aria-label="Direct link to loadPlugin()" title="Direct link to loadPlugin()" translate="no">​</a></h3>
 <blockquote>
 <p><strong>loadPlugin</strong>(<code>pluginId</code>): <code>Promise</code>&lt;<code>boolean</code>&gt;</p>
 </blockquote>
-<p>Defined in: <a href="https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/plugin/manager/core.ts#L183" target="_blank" rel="noopener noreferrer" class="">src/plugin/manager/core.ts:183</a></p>
+<p>Defined in: <a href="https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/plugin/manager/core.ts#L189" target="_blank" rel="noopener noreferrer" class="">src/plugin/manager/core.ts:189</a></p>
 <p>Load a specific plugin</p>
 <h4 class="anchor anchorTargetStickyNavbar_vRzG" id="parameters-9">Parameters<a href="#parameters-9" class="hash-link" aria-label="Direct link to Parameters" title="Direct link to Parameters" translate="no">​</a></h4>
 <h5 class="anchor anchorTargetStickyNavbar_vRzG" id="pluginid-6">pluginId<a href="#pluginid-6" class="hash-link" aria-label="Direct link to pluginId" title="Direct link to pluginId" translate="no">​</a></h5>
 <p><code>string</code></p>
-<h4 class="anchor anchorTargetStickyNavbar_vRzG" id="returns-19">Returns<a href="#returns-19" class="hash-link" aria-label="Direct link to Returns" title="Direct link to Returns" translate="no">​</a></h4>
+<h4 class="anchor anchorTargetStickyNavbar_vRzG" id="returns-21">Returns<a href="#returns-21" class="hash-link" aria-label="Direct link to Returns" title="Direct link to Returns" translate="no">​</a></h4>
 <p><code>Promise</code>&lt;<code>boolean</code>&gt;</p>
 <hr>
 <h3 class="anchor anchorTargetStickyNavbar_vRzG" id="uninstallplugin">uninstallPlugin()<a href="#uninstallplugin" class="hash-link" aria-label="Direct link to uninstallPlugin()" title="Direct link to uninstallPlugin()" translate="no">​</a></h3>
 <blockquote>
 <p><strong>uninstallPlugin</strong>(<code>pluginId</code>): <code>Promise</code>&lt;<code>boolean</code>&gt;</p>
 </blockquote>
-<p>Defined in: <a href="https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/plugin/manager/core.ts#L338" target="_blank" rel="noopener noreferrer" class="">src/plugin/manager/core.ts:338</a></p>
+<p>Defined in: <a href="https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/plugin/manager/core.ts#L346" target="_blank" rel="noopener noreferrer" class="">src/plugin/manager/core.ts:346</a></p>
 <p>Uninstall a plugin</p>
 <h4 class="anchor anchorTargetStickyNavbar_vRzG" id="parameters-10">Parameters<a href="#parameters-10" class="hash-link" aria-label="Direct link to Parameters" title="Direct link to Parameters" translate="no">​</a></h4>
 <h5 class="anchor anchorTargetStickyNavbar_vRzG" id="pluginid-7">pluginId<a href="#pluginid-7" class="hash-link" aria-label="Direct link to pluginId" title="Direct link to pluginId" translate="no">​</a></h5>
 <p><code>string</code></p>
-<h4 class="anchor anchorTargetStickyNavbar_vRzG" id="returns-20">Returns<a href="#returns-20" class="hash-link" aria-label="Direct link to Returns" title="Direct link to Returns" translate="no">​</a></h4>
+<h4 class="anchor anchorTargetStickyNavbar_vRzG" id="returns-22">Returns<a href="#returns-22" class="hash-link" aria-label="Direct link to Returns" title="Direct link to Returns" translate="no">​</a></h4>
 <p><code>Promise</code>&lt;<code>boolean</code>&gt;</p>
 <hr>
 <h3 class="anchor anchorTargetStickyNavbar_vRzG" id="unloadplugin">unloadPlugin()<a href="#unloadplugin" class="hash-link" aria-label="Direct link to unloadPlugin()" title="Direct link to unloadPlugin()" translate="no">​</a></h3>
 <blockquote>
 <p><strong>unloadPlugin</strong>(<code>pluginId</code>): <code>Promise</code>&lt;<code>boolean</code>&gt;</p>
 </blockquote>
-<p>Defined in: <a href="https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/plugin/manager/core.ts#L345" target="_blank" rel="noopener noreferrer" class="">src/plugin/manager/core.ts:345</a></p>
+<p>Defined in: <a href="https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/plugin/manager/core.ts#L353" target="_blank" rel="noopener noreferrer" class="">src/plugin/manager/core.ts:353</a></p>
 <p>Unload a plugin from memory</p>
 <h4 class="anchor anchorTargetStickyNavbar_vRzG" id="parameters-11">Parameters<a href="#parameters-11" class="hash-link" aria-label="Direct link to Parameters" title="Direct link to Parameters" translate="no">​</a></h4>
 <h5 class="anchor anchorTargetStickyNavbar_vRzG" id="pluginid-8">pluginId<a href="#pluginid-8" class="hash-link" aria-label="Direct link to pluginId" title="Direct link to pluginId" translate="no">​</a></h5>
 <p><code>string</code></p>
-<h4 class="anchor anchorTargetStickyNavbar_vRzG" id="returns-21">Returns<a href="#returns-21" class="hash-link" aria-label="Direct link to Returns" title="Direct link to Returns" translate="no">​</a></h4>
-<p><code>Promise</code>&lt;<code>boolean</code>&gt;</p></div><footer class="theme-doc-footer docusaurus-mt-lg"><div class="row margin-top--sm theme-doc-footer-edit-meta-row"><div class="col noPrint_F0Ct"><a href="https://github.com/PalisadoesFoundation/talawa-api/edit/develop/docs/docs/auto-docs/plugin/classes/PluginManager.md" target="_blank" rel="noopener noreferrer" class="theme-edit-this-page"><svg fill="currentColor" height="20" width="20" viewBox="0 0 40 40" class="iconEdit_Y8Mk" aria-hidden="true"><g><path d="m34.5 11.7l-3 3.1-6.3-6.3 3.1-3q0.5-0.5 1.2-0.5t1.1 0.5l3.9 3.9q0.5 0.4 0.5 1.1t-0.5 1.2z m-29.5 17.1l18.4-18.5 6.3 6.3-18.4 18.4h-6.3v-6.2z"></path></g></svg>Edit this page</a></div><div class="col lastUpdated_xtqt"></div></div></footer></article><nav class="docusaurus-mt-lg pagination-nav" aria-label="Docs pages"><a class="pagination-nav__link pagination-nav__link--prev" href="/docs/auto-docs/observability/tracing/bootstrap/variables/fastifyOtelInstrumentation"><div class="pagination-nav__sublabel">Previous</div><div class="pagination-nav__label">fastifyOtelInstrumentation</div></a><a class="pagination-nav__link pagination-nav__link--next" href="/docs/auto-docs/plugin/manager/extensions/classes/ExtensionLoader"><div class="pagination-nav__sublabel">Next</div><div class="pagination-nav__label">ExtensionLoader</div></a></nav></div></div><div class="col col--3"><div class="tableOfContents_xSpt thin-scrollbar theme-doc-toc-desktop"><ul class="table-of-contents table-of-contents__left-border"><li><a href="#extends" class="table-of-contents__link toc-highlight">Extends</a></li><li><a href="#constructors" class="table-of-contents__link toc-highlight">Constructors</a><ul><li><a href="#constructor" class="table-of-contents__link toc-highlight">Constructor</a></li></ul></li><li><a href="#methods" class="table-of-contents__link toc-highlight">Methods</a><ul><li><a href="#activateplugin" class="table-of-contents__link toc-highlight">activatePlugin()</a></li><li><a href="#clearerrors" class="table-of-contents__link toc-highlight">clearErrors()</a></li><li><a href="#deactivateplugin" class="table-of-contents__link toc-highlight">deactivatePlugin()</a></li><li><a href="#executeposthooks" class="table-of-contents__link toc-highlight">executePostHooks()</a></li><li><a href="#executeprehooks" class="table-of-contents__link toc-highlight">executePreHooks()</a></li><li><a href="#getactiveplugins" class="table-of-contents__link toc-highlight">getActivePlugins()</a></li><li><a href="#geterrors" class="table-of-contents__link toc-highlight">getErrors()</a></li><li><a href="#getextensionregistry" class="table-of-contents__link toc-highlight">getExtensionRegistry()</a></li><li><a href="#getloadedpluginids" class="table-of-contents__link toc-highlight">getLoadedPluginIds()</a></li><li><a href="#getloadedplugins" class="table-of-contents__link toc-highlight">getLoadedPlugins()</a></li><li><a href="#getplugin" class="table-of-contents__link toc-highlight">getPlugin()</a></li><li><a href="#getplugincontext" class="table-of-contents__link toc-highlight">getPluginContext()</a></li><li><a href="#getpluginsdirectory" class="table-of-contents__link toc-highlight">getPluginsDirectory()</a></li><li><a href="#gracefulshutdown" class="table-of-contents__link toc-highlight">gracefulShutdown()</a></li><li><a href="#installplugin" class="table-of-contents__link toc-highlight">installPlugin()</a></li><li><a href="#ispluginactive" class="table-of-contents__link toc-highlight">isPluginActive()</a></li><li><a href="#ispluginloaded" class="table-of-contents__link toc-highlight">isPluginLoaded()</a></li><li><a href="#issysteminitialized" class="table-of-contents__link toc-highlight">isSystemInitialized()</a></li><li><a href="#loadplugin" class="table-of-contents__link toc-highlight">loadPlugin()</a></li><li><a href="#uninstallplugin" class="table-of-contents__link toc-highlight">uninstallPlugin()</a></li><li><a href="#unloadplugin" class="table-of-contents__link toc-highlight">unloadPlugin()</a></li></ul></li></ul></div></div></div></div></main></div></div></div><footer class="theme-layout-footer footer footer--dark"><div class="container container-fluid"><div class="row footer__links"><div class="theme-layout-footer-column col footer__col"><div class="footer__title">Community</div><ul class="footer__items clean-list"><li class="footer__item"><a href="https://community.talawa.io/" target="_blank" rel="noopener noreferrer" class="footer__link-item footer__icon footer__news">Forums</a></li><li class="footer__item"><a href="https://www.palisadoes.org/news/" target="_blank" rel="noopener noreferrer" class="footer__link-item footer__icon footer__news">News</a></li><li class="footer__item"><a href="https://www.palisadoes.org/contact/" target="_blank" rel="noopener noreferrer" class="footer__link-item footer__icon footer__contact">Contact Us</a></li></ul></div><div class="theme-layout-footer-column col footer__col"><div class="footer__title">Social Media</div><ul class="footer__items clean-list"><li class="footer__item"><a href="https://twitter.com/palisadoesorg?lang=en" target="_blank" rel="noopener noreferrer" class="footer__link-item footer__icon footer__twitter"> Twitter</a></li><li class="footer__item"><a href="https://www.facebook.com/palisadoesproject/" target="_blank" rel="noopener noreferrer" class="footer__link-item footer__icon footer__facebook"> Facebook</a></li><li class="footer__item"><a href="https://www.instagram.com/palisadoes/?hl=en" target="_blank" rel="noopener noreferrer" class="footer__link-item footer__icon footer__instagram"> Instagram</a></li></ul></div><div class="theme-layout-footer-column col footer__col"><div class="footer__title">Development</div><ul class="footer__items clean-list"><li class="footer__item"><a href="https://github.com/PalisadoesFoundation" target="_blank" rel="noopener noreferrer" class="footer__link-item footer__icon footer__github"> GitHub</a></li></ul></div></div><div class="footer__bottom text--center"><div class="footer__copyright">Copyright © 2026 The Palisadoes Foundation, LLC. Built with Docusaurus.</div></div></div></footer></div>
+<h4 class="anchor anchorTargetStickyNavbar_vRzG" id="returns-23">Returns<a href="#returns-23" class="hash-link" aria-label="Direct link to Returns" title="Direct link to Returns" translate="no">​</a></h4>
+<p><code>Promise</code>&lt;<code>boolean</code>&gt;</p></div><footer class="theme-doc-footer docusaurus-mt-lg"><div class="row margin-top--sm theme-doc-footer-edit-meta-row"><div class="col noPrint_F0Ct"><a href="https://github.com/PalisadoesFoundation/talawa-api/edit/develop/docs/docs/auto-docs/plugin/classes/PluginManager.md" target="_blank" rel="noopener noreferrer" class="theme-edit-this-page"><svg fill="currentColor" height="20" width="20" viewBox="0 0 40 40" class="iconEdit_Y8Mk" aria-hidden="true"><g><path d="m34.5 11.7l-3 3.1-6.3-6.3 3.1-3q0.5-0.5 1.2-0.5t1.1 0.5l3.9 3.9q0.5 0.4 0.5 1.1t-0.5 1.2z m-29.5 17.1l18.4-18.5 6.3 6.3-18.4 18.4h-6.3v-6.2z"></path></g></svg>Edit this page</a></div><div class="col lastUpdated_xtqt"></div></div></footer></article><nav class="docusaurus-mt-lg pagination-nav" aria-label="Docs pages"><a class="pagination-nav__link pagination-nav__link--prev" href="/docs/auto-docs/observability/tracing/bootstrap/variables/fastifyOtelInstrumentation"><div class="pagination-nav__sublabel">Previous</div><div class="pagination-nav__label">fastifyOtelInstrumentation</div></a><a class="pagination-nav__link pagination-nav__link--next" href="/docs/auto-docs/plugin/manager/extensions/classes/ExtensionLoader"><div class="pagination-nav__sublabel">Next</div><div class="pagination-nav__label">ExtensionLoader</div></a></nav></div></div><div class="col col--3"><div class="tableOfContents_xSpt thin-scrollbar theme-doc-toc-desktop"><ul class="table-of-contents table-of-contents__left-border"><li><a href="#extends" class="table-of-contents__link toc-highlight">Extends</a></li><li><a href="#constructors" class="table-of-contents__link toc-highlight">Constructors</a><ul><li><a href="#constructor" class="table-of-contents__link toc-highlight">Constructor</a></li></ul></li><li><a href="#methods" class="table-of-contents__link toc-highlight">Methods</a><ul><li><a href="#activateplugin" class="table-of-contents__link toc-highlight">activatePlugin()</a></li><li><a href="#clearerrors" class="table-of-contents__link toc-highlight">clearErrors()</a></li><li><a href="#deactivateplugin" class="table-of-contents__link toc-highlight">deactivatePlugin()</a></li><li><a href="#executeposthooks" class="table-of-contents__link toc-highlight">executePostHooks()</a></li><li><a href="#executeprehooks" class="table-of-contents__link toc-highlight">executePreHooks()</a></li><li><a href="#getactiveplugins" class="table-of-contents__link toc-highlight">getActivePlugins()</a></li><li><a href="#geterrors" class="table-of-contents__link toc-highlight">getErrors()</a></li><li><a href="#getextensionregistry" class="table-of-contents__link toc-highlight">getExtensionRegistry()</a></li><li><a href="#getloadedpluginids" class="table-of-contents__link toc-highlight">getLoadedPluginIds()</a></li><li><a href="#getloadedplugins" class="table-of-contents__link toc-highlight">getLoadedPlugins()</a></li><li><a href="#getplugin" class="table-of-contents__link toc-highlight">getPlugin()</a></li><li><a href="#getplugincontext" class="table-of-contents__link toc-highlight">getPluginContext()</a></li><li><a href="#getpluginsdirectory" class="table-of-contents__link toc-highlight">getPluginsDirectory()</a></li><li><a href="#gracefulshutdown" class="table-of-contents__link toc-highlight">gracefulShutdown()</a></li><li><a href="#hasinitializationbeenattempted" class="table-of-contents__link toc-highlight">hasInitializationBeenAttempted()</a></li><li><a href="#initialize" class="table-of-contents__link toc-highlight">initialize()</a></li><li><a href="#installplugin" class="table-of-contents__link toc-highlight">installPlugin()</a></li><li><a href="#ispluginactive" class="table-of-contents__link toc-highlight">isPluginActive()</a></li><li><a href="#ispluginloaded" class="table-of-contents__link toc-highlight">isPluginLoaded()</a></li><li><a href="#issysteminitialized" class="table-of-contents__link toc-highlight">isSystemInitialized()</a></li><li><a href="#loadplugin" class="table-of-contents__link toc-highlight">loadPlugin()</a></li><li><a href="#uninstallplugin" class="table-of-contents__link toc-highlight">uninstallPlugin()</a></li><li><a href="#unloadplugin" class="table-of-contents__link toc-highlight">unloadPlugin()</a></li></ul></li></ul></div></div></div></div></main></div></div></div><footer class="theme-layout-footer footer footer--dark"><div class="container container-fluid"><div class="row footer__links"><div class="theme-layout-footer-column col footer__col"><div class="footer__title">Community</div><ul class="footer__items clean-list"><li class="footer__item"><a href="https://community.talawa.io/" target="_blank" rel="noopener noreferrer" class="footer__link-item footer__icon footer__news">Forums</a></li><li class="footer__item"><a href="https://www.palisadoes.org/news/" target="_blank" rel="noopener noreferrer" class="footer__link-item footer__icon footer__news">News</a></li><li class="footer__item"><a href="https://www.palisadoes.org/contact/" target="_blank" rel="noopener noreferrer" class="footer__link-item footer__icon footer__contact">Contact Us</a></li></ul></div><div class="theme-layout-footer-column col footer__col"><div class="footer__title">Social Media</div><ul class="footer__items clean-list"><li class="footer__item"><a href="https://twitter.com/palisadoesorg?lang=en" target="_blank" rel="noopener noreferrer" class="footer__link-item footer__icon footer__twitter"> Twitter</a></li><li class="footer__item"><a href="https://www.facebook.com/palisadoesproject/" target="_blank" rel="noopener noreferrer" class="footer__link-item footer__icon footer__facebook"> Facebook</a></li><li class="footer__item"><a href="https://www.instagram.com/palisadoes/?hl=en" target="_blank" rel="noopener noreferrer" class="footer__link-item footer__icon footer__instagram"> Instagram</a></li></ul></div><div class="theme-layout-footer-column col footer__col"><div class="footer__title">Development</div><ul class="footer__items clean-list"><li class="footer__item"><a href="https://github.com/PalisadoesFoundation" target="_blank" rel="noopener noreferrer" class="footer__link-item footer__icon footer__github"> GitHub</a></li></ul></div></div><div class="footer__bottom text--center"><div class="footer__copyright">Copyright © 2026 The Palisadoes Foundation, LLC. Built with Docusaurus.</div></div></div></footer></div>
 </body>
 </html>
