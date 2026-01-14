@@ -1145,6 +1145,183 @@ describe("backgroundServiceWorker", () => {
 
 			await stopBackgroundWorkers(mockLogger);
 		});
+
+		it("does not schedule metrics task when METRICS_AGGREGATION_ENABLED is false", async () => {
+			const { runMaterializationWorker } = await import(
+				"~/src/workers/eventGeneration/eventGenerationPipeline"
+			);
+
+			vi.mocked(runMaterializationWorker).mockResolvedValue({
+				organizationsProcessed: 0,
+				instancesCreated: 0,
+				windowsUpdated: 0,
+				errorsEncountered: 0,
+				processingTimeMs: 1,
+			});
+
+			const mockFastify = {
+				envConfig: {
+					METRICS_AGGREGATION_ENABLED: false, // Explicitly disabled
+					METRICS_AGGREGATION_CRON_SCHEDULE: "*/5 * * * *",
+					METRICS_AGGREGATION_WINDOW_MINUTES: 5,
+					METRICS_SNAPSHOT_RETENTION_COUNT: 1000,
+					METRICS_SLOW_THRESHOLD_MS: 200,
+				},
+				getPerformanceSnapshots: vi.fn().mockReturnValue([]),
+			} as unknown as Parameters<typeof startBackgroundWorkers>[2];
+
+			const cron = await import("node-cron");
+
+			await startBackgroundWorkers(mockDrizzleClient, mockLogger, mockFastify);
+
+			// Should only schedule 2 tasks (materialization + cleanup), not metrics
+			expect(vi.mocked(cron.default.schedule)).toHaveBeenCalledTimes(2);
+
+			const status = getBackgroundWorkerStatus();
+			expect(status.metricsSchedule).toBe("disabled");
+
+			await stopBackgroundWorkers(mockLogger);
+		});
+
+		it("uses default true when METRICS_AGGREGATION_ENABLED is undefined", async () => {
+			const { runMaterializationWorker } = await import(
+				"~/src/workers/eventGeneration/eventGenerationPipeline"
+			);
+
+			vi.mocked(runMaterializationWorker).mockResolvedValue({
+				organizationsProcessed: 0,
+				instancesCreated: 0,
+				windowsUpdated: 0,
+				errorsEncountered: 0,
+				processingTimeMs: 1,
+			});
+
+			const mockFastify = {
+				envConfig: {
+					// METRICS_AGGREGATION_ENABLED is undefined - should default to true
+					METRICS_AGGREGATION_CRON_SCHEDULE: "*/5 * * * *",
+					METRICS_AGGREGATION_WINDOW_MINUTES: 5,
+					METRICS_SNAPSHOT_RETENTION_COUNT: 1000,
+					METRICS_SLOW_THRESHOLD_MS: 200,
+				},
+				getPerformanceSnapshots: vi.fn().mockReturnValue([]),
+			} as unknown as Parameters<typeof startBackgroundWorkers>[2];
+
+			const cron = await import("node-cron");
+
+			await startBackgroundWorkers(mockDrizzleClient, mockLogger, mockFastify);
+
+			// Should schedule 3 tasks (materialization + cleanup + metrics) since undefined defaults to true
+			expect(vi.mocked(cron.default.schedule)).toHaveBeenCalledTimes(3);
+
+			const status = getBackgroundWorkerStatus();
+			expect(status.metricsSchedule).toBe("*/5 * * * *");
+
+			await stopBackgroundWorkers(mockLogger);
+		});
+
+		it("logs warning when metricsSchedule is disabled and fastify not provided", async () => {
+			const { runMaterializationWorker } = await import(
+				"~/src/workers/eventGeneration/eventGenerationPipeline"
+			);
+
+			vi.mocked(runMaterializationWorker).mockResolvedValue({
+				organizationsProcessed: 0,
+				instancesCreated: 0,
+				windowsUpdated: 0,
+				errorsEncountered: 0,
+				processingTimeMs: 1,
+			});
+
+			// Start workers WITHOUT fastify instance
+			// This will cause getMetricsSchedule to return "disabled" (line 37)
+			// Then the else if (!fastify) condition (line 106) will be true
+			// and the warning should be logged
+			await startBackgroundWorkers(mockDrizzleClient, mockLogger);
+
+			// Verify the warning was logged (line 107-108)
+			expect(mockLogger.warn).toHaveBeenCalledWith(
+				"Metrics aggregation is enabled but Fastify instance is not available. Metrics worker will not start.",
+			);
+
+			const status = getBackgroundWorkerStatus();
+			expect(status.metricsSchedule).toBe("disabled");
+
+			await stopBackgroundWorkers(mockLogger);
+		});
+
+		it("logs error when metricsTask.stop() throws during stopBackgroundWorkers", async () => {
+			const { runMaterializationWorker } = await import(
+				"~/src/workers/eventGeneration/eventGenerationPipeline"
+			);
+			const { cleanupOldInstances } = await import(
+				"~/src/workers/eventCleanupWorker"
+			);
+
+			vi.mocked(runMaterializationWorker).mockResolvedValue({
+				organizationsProcessed: 0,
+				instancesCreated: 0,
+				windowsUpdated: 0,
+				errorsEncountered: 0,
+				processingTimeMs: 1,
+			});
+
+			vi.mocked(cleanupOldInstances).mockResolvedValue({
+				organizationsProcessed: 0,
+				instancesDeleted: 0,
+				errorsEncountered: 0,
+			});
+
+			const cron = await import("node-cron");
+			const metricsTaskStop = vi.fn().mockImplementation(() => {
+				throw new Error("Metrics stop failed");
+			});
+
+			vi.mocked(cron.default.schedule)
+				.mockImplementationOnce(
+					() =>
+						({
+							start: vi.fn(),
+							stop: vi.fn(),
+						}) as unknown as ScheduledTask,
+				)
+				.mockImplementationOnce(
+					() =>
+						({
+							start: vi.fn(),
+							stop: vi.fn(),
+						}) as unknown as ScheduledTask,
+				)
+				.mockImplementationOnce(
+					() =>
+						({
+							start: vi.fn(),
+							stop: metricsTaskStop,
+						}) as unknown as ScheduledTask,
+				);
+
+			const mockFastify = {
+				envConfig: {
+					METRICS_AGGREGATION_ENABLED: true,
+					METRICS_AGGREGATION_CRON_SCHEDULE: "*/5 * * * *",
+					METRICS_AGGREGATION_WINDOW_MINUTES: 5,
+					METRICS_SNAPSHOT_RETENTION_COUNT: 1000,
+					METRICS_SLOW_THRESHOLD_MS: 200,
+				},
+				getPerformanceSnapshots: vi.fn().mockReturnValue([]),
+			} as unknown as Parameters<typeof startBackgroundWorkers>[2];
+
+			await startBackgroundWorkers(mockDrizzleClient, mockLogger, mockFastify);
+
+			await expect(stopBackgroundWorkers(mockLogger)).rejects.toThrow(
+				"Metrics stop failed",
+			);
+
+			expect(mockLogger.error).toHaveBeenCalledWith(
+				expect.any(Error),
+				"Error stopping background worker service:",
+			);
+		});
 	});
 
 	describe("getBackgroundWorkerStatus", () => {
