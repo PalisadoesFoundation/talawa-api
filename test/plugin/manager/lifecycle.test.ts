@@ -1,5 +1,12 @@
 import { type ChildProcess, spawn } from "node:child_process";
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import {
+	beforeEach,
+	describe,
+	expect,
+	it,
+	type MockInstance,
+	vi,
+} from "vitest";
 import { PluginLifecycle } from "../../../src/plugin/manager/lifecycle";
 import type { IPluginManifest } from "../../../src/plugin/types";
 import { PluginStatus } from "../../../src/plugin/types";
@@ -1648,15 +1655,22 @@ describe("PluginLifecycle", () => {
 			};
 
 			// Mock loadPluginManifest to throw an error
-			const loadPluginManifestSpy = vi
-				.spyOn(lifecycle as PluginLifecycleWithPrivate, "loadPluginManifest")
-				.mockRejectedValue(new Error("Manifest loading failed"));
+			const loadPluginManifestSpy = vi.spyOn(
+				lifecycle as PluginLifecycleWithPrivate,
+				"loadPluginManifest",
+			) as MockInstance<(pluginId: string) => Promise<IPluginManifest | null>>;
+
+			loadPluginManifestSpy.mockRejectedValue(
+				new Error("Manifest loading failed"),
+			);
 
 			// Mock handlePluginError to capture the call
 			const handlePluginErrorSpy = vi.spyOn(
 				lifecycle as PluginLifecycleWithPrivate,
 				"handlePluginError",
-			);
+			) as MockInstance<
+				(pluginId: string, error: Error, phase: string) => void
+			>;
 
 			const result = await lifecycle.installPlugin(pluginId, mockPluginManager);
 
@@ -1678,15 +1692,21 @@ describe("PluginLifecycle", () => {
 			};
 
 			// Mock callOnUninstallHook to throw an error
-			const callOnUninstallHookSpy = vi
-				.spyOn(lifecycle as PluginLifecycleWithPrivate, "callOnUninstallHook")
-				.mockRejectedValue(new Error("Uninstall hook failed"));
+			const callOnUninstallHookSpy = vi.spyOn(
+				lifecycle as PluginLifecycleWithPrivate,
+				"callOnUninstallHook",
+			) as MockInstance<(pluginId: string) => Promise<void>>;
+			callOnUninstallHookSpy.mockRejectedValue(
+				new Error("Uninstall hook failed"),
+			);
 
 			// Mock handlePluginError to capture the call
 			const handlePluginErrorSpy = vi.spyOn(
 				lifecycle as PluginLifecycleWithPrivate,
 				"handlePluginError",
-			);
+			) as MockInstance<
+				(pluginId: string, error: Error, phase: string) => void
+			>;
 
 			const result = await lifecycle.uninstallPlugin(
 				pluginId,
@@ -1726,15 +1746,21 @@ describe("PluginLifecycle", () => {
 			).loadedPlugins.set(pluginId, mockPlugin);
 
 			// Mock callOnActivateHook to throw an error
-			const callOnActivateHookSpy = vi
-				.spyOn(lifecycle as PluginLifecycleWithPrivate, "callOnActivateHook")
-				.mockRejectedValue(new Error("Activate hook failed"));
+			const callOnActivateHookSpy = vi.spyOn(
+				lifecycle as PluginLifecycleWithPrivate,
+				"callOnActivateHook",
+			) as MockInstance<(pluginId: string) => Promise<void>>;
+			callOnActivateHookSpy.mockRejectedValue(
+				new Error("Activate hook failed"),
+			);
 
 			// Mock handlePluginError to capture the call
 			const handlePluginErrorSpy = vi.spyOn(
 				lifecycle as PluginLifecycleWithPrivate,
 				"handlePluginError",
-			);
+			) as MockInstance<
+				(pluginId: string, error: Error, phase: string) => void
+			>;
 
 			const result = await lifecycle.activatePlugin(
 				pluginId,
@@ -1775,15 +1801,21 @@ describe("PluginLifecycle", () => {
 			).loadedPlugins.set(pluginId, mockPlugin);
 
 			// Mock callOnDeactivateHook to throw an error
-			const callOnDeactivateHookSpy = vi
-				.spyOn(lifecycle as PluginLifecycleWithPrivate, "callOnDeactivateHook")
-				.mockRejectedValue(new Error("Deactivate hook failed"));
+			const callOnDeactivateHookSpy = vi.spyOn(
+				lifecycle as PluginLifecycleWithPrivate,
+				"callOnDeactivateHook",
+			) as MockInstance<(pluginId: string) => Promise<void>>;
+			callOnDeactivateHookSpy.mockRejectedValue(
+				new Error("Deactivate hook failed"),
+			);
 
 			// Mock handlePluginError to capture the call
 			const handlePluginErrorSpy = vi.spyOn(
 				lifecycle as PluginLifecycleWithPrivate,
 				"handlePluginError",
-			);
+			) as MockInstance<
+				(pluginId: string, error: Error, phase: string) => void
+			>;
 
 			const result = await lifecycle.deactivatePlugin(
 				pluginId,
@@ -1824,15 +1856,19 @@ describe("PluginLifecycle", () => {
 			).loadedPlugins.set(pluginId, mockPlugin);
 
 			// Mock callOnUnloadHook to throw an error
-			const callOnUnloadHookSpy = vi
-				.spyOn(lifecycle as PluginLifecycleWithPrivate, "callOnUnloadHook")
-				.mockRejectedValue(new Error("Unload hook failed"));
+			const callOnUnloadHookSpy = vi.spyOn(
+				lifecycle as PluginLifecycleWithPrivate,
+				"callOnUnloadHook",
+			) as MockInstance<(pluginId: string) => Promise<void>>;
+			callOnUnloadHookSpy.mockRejectedValue(new Error("Unload hook failed"));
 
 			// Mock handlePluginError to capture the call
 			const handlePluginErrorSpy = vi.spyOn(
 				lifecycle as PluginLifecycleWithPrivate,
 				"handlePluginError",
-			);
+			) as MockInstance<
+				(pluginId: string, error: Error, phase: string) => void
+			>;
 
 			const result = await lifecycle.unloadPlugin(pluginId, mockPluginManager);
 
@@ -1854,15 +1890,19 @@ describe("PluginLifecycle", () => {
 			};
 
 			// Mock loadPluginManifest to return null (manifest loading failure)
-			const loadPluginManifestSpy = vi
-				.spyOn(lifecycle as PluginLifecycleWithPrivate, "loadPluginManifest")
-				.mockResolvedValue(null);
+			const loadPluginManifestSpy = vi.spyOn(
+				lifecycle as PluginLifecycleWithPrivate,
+				"loadPluginManifest",
+			) as MockInstance<(pluginId: string) => Promise<IPluginManifest | null>>;
+			loadPluginManifestSpy.mockResolvedValue(null);
 
 			// Mock handlePluginError to capture the call
 			const handlePluginErrorSpy = vi.spyOn(
 				lifecycle as PluginLifecycleWithPrivate,
 				"handlePluginError",
-			);
+			) as MockInstance<
+				(pluginId: string, error: Error, phase: string) => void
+			>;
 
 			const result = await lifecycle.installPlugin(pluginId, mockPluginManager);
 
@@ -1884,15 +1924,21 @@ describe("PluginLifecycle", () => {
 			};
 
 			// Mock loadPluginManifest to throw an error (manifest loading failure)
-			const loadPluginManifestSpy = vi
-				.spyOn(lifecycle as PluginLifecycleWithPrivate, "loadPluginManifest")
-				.mockRejectedValue(new Error("Manifest loading failed"));
+			const loadPluginManifestSpy = vi.spyOn(
+				lifecycle as PluginLifecycleWithPrivate,
+				"loadPluginManifest",
+			) as MockInstance<(pluginId: string) => Promise<IPluginManifest | null>>;
+			loadPluginManifestSpy.mockRejectedValue(
+				new Error("Manifest loading failed"),
+			);
 
 			// Mock handlePluginError to capture the call
 			const handlePluginErrorSpy = vi.spyOn(
 				lifecycle as PluginLifecycleWithPrivate,
 				"handlePluginError",
-			);
+			) as MockInstance<
+				(pluginId: string, error: Error, phase: string) => void
+			>;
 
 			const result = await lifecycle.uninstallPlugin(
 				pluginId,

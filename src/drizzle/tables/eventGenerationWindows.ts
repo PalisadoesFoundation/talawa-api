@@ -232,17 +232,17 @@ export const eventGenerationWindowsTableInsertSchema = createInsertSchema(
 	eventGenerationWindowsTable,
 	{
 		organizationId: z.string().uuid(),
-		hotWindowMonthsAhead: z.number().min(1).max(60), // 1 month to 5 years
-		historyRetentionMonths: z.number().min(0).max(60),
+		hotWindowMonthsAhead: z.number().int().min(1).max(60).default(12),
+		historyRetentionMonths: z.number().int().min(0).max(60).default(3),
 		currentWindowEndDate: z.date(),
 		retentionStartDate: z.date(),
-		lastProcessedInstanceCount: z.number().min(0),
-		isEnabled: z.boolean().optional(),
-		processingPriority: z.number().min(1).max(10),
-		maxInstancesPerRun: z.number().min(10).max(10000),
+		lastProcessedInstanceCount: z.number().int().min(0).default(0),
+		isEnabled: z.boolean().default(true),
+		processingPriority: z.number().int().min(1).max(10).default(5),
+		maxInstancesPerRun: z.number().int().min(10).max(10000).default(1000),
 		configurationNotes: z.string().max(1024).optional(),
 		createdById: z.string().uuid(),
-		lastUpdatedById: z.string().uuid().optional(),
+		lastUpdatedById: z.string().uuid().nullable().optional(),
 	},
 );
 

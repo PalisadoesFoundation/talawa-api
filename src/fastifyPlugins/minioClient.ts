@@ -62,9 +62,18 @@ export const minioClient = fastifyPlugin(async (fastify) => {
 		};
 	}
 
+	let endPoint = fastify.envConfig.API_MINIO_END_POINT;
+	// Strip port if present, handling both IPv4 (host:port) and IPv6 ([::1]:port)
+	try {
+		const parsed = new URL(`http://${endPoint}`);
+		endPoint = parsed.hostname;
+	} catch {
+		// If parsing fails, use as-is (may already be a plain hostname)
+	}
+
 	const client = new ClientClass({
 		accessKey: fastify.envConfig.API_MINIO_ACCESS_KEY,
-		endPoint: fastify.envConfig.API_MINIO_END_POINT,
+		endPoint,
 		port: fastify.envConfig.API_MINIO_PORT,
 		secretKey: fastify.envConfig.API_MINIO_SECRET_KEY,
 		useSSL: fastify.envConfig.API_MINIO_USE_SSL,
@@ -77,9 +86,10 @@ export const minioClient = fastifyPlugin(async (fastify) => {
 		isBucketExists = await client.bucketExists("talawa");
 		fastify.log.info("Successfully connected to the minio server.");
 	} catch (error) {
-		throw new Error("Failed to connect to the minio server.", {
-			cause: error,
-		});
+		fastify.log.warn(
+			{ error },
+			"Failed to connect to the minio server. Minio features may not work.",
+		);
 	}
 
 	fastify.log.info(
@@ -90,7 +100,7 @@ export const minioClient = fastifyPlugin(async (fastify) => {
 		fastify.log.info(
 			`"talawa" bucket already exists in the minio server. Skipping, the bucket creation.`,
 		);
-	} else {
+	} else if (isBucketExists === false) {
 		try {
 			fastify.log.info(`Creating the "talawa" bucket in the minio server.`);
 			await client.makeBucket("talawa");

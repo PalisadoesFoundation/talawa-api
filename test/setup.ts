@@ -1,5 +1,5 @@
 import { reset } from "drizzle-seed";
-import type { GlobalSetupContext } from "vitest/node";
+import type { TestProject } from "vitest/node";
 import * as schema from "~/src/drizzle/schema";
 import { notificationEventBus } from "~/src/graphql/types/Notification/EventBus/eventBus";
 import { stopEmailQueue } from "~/src/services/email/emailServiceInstance";
@@ -7,7 +7,7 @@ import { server } from "./server";
 /**
  * Function that runs before all tests are ran. It re-runs each time one or more tests or javascript modules used within them are mutated in watch mode. More information at this link: {@link https://vitest.dev/config/#globalsetup}
  */
-export const setup = async (_ctx: GlobalSetupContext) => {
+export const setup = async (_ctx: TestProject) => {
 	await server.ready();
 };
 
