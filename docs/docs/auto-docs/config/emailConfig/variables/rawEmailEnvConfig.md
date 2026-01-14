@@ -6,7 +6,7 @@
 
 > `const` **rawEmailEnvConfig**: `object`
 
-Defined in: [src/config/emailConfig.ts:16](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/config/emailConfig.ts#L16)
+Defined in: [src/config/emailConfig.ts:23](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/config/emailConfig.ts#L23)
 
 ## Type Declaration
 
@@ -33,3 +33,31 @@ Defined in: [src/config/emailConfig.ts:16](https://github.com/PalisadoesFoundati
 ### AWS\_SES\_REGION?
 
 > `optional` **AWS\_SES\_REGION**: `string`
+
+### SMTP\_FROM\_EMAIL?
+
+> `optional` **SMTP\_FROM\_EMAIL**: `string`
+
+### SMTP\_FROM\_NAME?
+
+> `optional` **SMTP\_FROM\_NAME**: `string`
+
+### SMTP\_HOST?
+
+> `optional` **SMTP\_HOST**: `string`
+
+### SMTP\_PASSWORD?
+
+> `optional` **SMTP\_PASSWORD**: `string`
+
+### SMTP\_PORT?
+
+> `optional` **SMTP\_PORT**: `number`
+
+### SMTP\_SECURE?
+
+> `optional` **SMTP\_SECURE**: `boolean`
+
+### SMTP\_USER?
+
+> `optional` **SMTP\_USER**: `string`
