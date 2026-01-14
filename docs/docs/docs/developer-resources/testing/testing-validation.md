@@ -7,6 +7,23 @@ sidebar_position: 70
 
 This section covers important tests to validate the operation of the API.
 
+## Introduction
+
+It is important to test our code. If you are a contributor, please follow the guidance on this page.
+
+### Developers Using Microsoft Windows
+
+All our workflows use Linux based commands, therefore if you are a developer who codes in Microsoft Windows then we strongly suggest that you use the Windows Subsystem for Linux (WSL) as your command line interface (CLI).
+
+### The `tests/` Directory
+
+The `tests/` directory contains the code for performing api tests against Talawa API. The tests in this directory and its various subdirectories must follow the practices of black box testing and most of them should be written to be able to run concurrently.
+
+1. Tests for files in the `src/` directory must only be placed in the equivalent subdirectory under the `tests/` directory.
+2. Test files must have a `.test.ts` extension.
+
+The rest of this page will assist you in being an active contributor to the code base.
+
 ## Getting Started
 
 ### Formatting
@@ -20,26 +37,6 @@ This section covers important tests to validate the operation of the API.
   Automatically fixes formatting and lint issues using **Biome** according to the project's configured rules.
   The command fails if any warnings remain after applying fixes. Developers are encouraged to run this before committing changes.
   **Usage:** `pnpm run format:fix`
-
-### Linting
-
-- **`lint:sanitization`**
-  Runs a custom security linter that enforces XSS protection in GraphQL resolvers.
-  Ensures all string-returning resolvers use `escapeHTML()` to sanitize user-generated content before returning it, preventing Cross-Site Scripting vulnerabilities.
-  **Usage:** `pnpm run lint:sanitization`
-
-- **`lint:tsdoc`**
-  Validates TSDoc comment syntax in TypeScript files using a custom script based on `@microsoft/tsdoc`.
-  Filters out overly pedantic rules (like requiring escaped curly braces in type examples) to maintain documentation readability while ensuring TSDoc compliance.
-  **Usage:** `pnpm run lint:tsdoc`
-
-- **`lint:fix`**
-  Automatically fixes linting and formatting issues using Biome. This is a convenience alias that applies both linting and formatting fixes in a single command.
-  **Usage:** `pnpm run lint:fix`
-
-- **`lint:check`**
-  Checks code for linting and formatting issues without making any changes. This is a convenience alias that validates both linting and formatting rules. Suitable for CI validation.
-  **Usage:** `pnpm run lint:check`
 
 ### Testing
 
@@ -74,24 +71,6 @@ This section covers important tests to validate the operation of the API.
 - **`test:coverage`**
   Runs the full test suite with code coverage reporting enabled. Generates coverage reports showing which parts of the codebase are covered by tests.
   **Usage:** `pnpm run test:coverage`
-
-
-## Introduction
-
-It is important to test our code. If you are a contributor, please follow the guidance on this page.
-
-### Developers Using Microsoft Windows
-
-All our workflows use Linux based commands, therefore if you are a developer who codes in Microsoft Windows then we strongly suggest that you use the Windows Subsystem for Linux (WSL) as your command line interface (CLI).
-
-### The `tests/` Directory
-
-The `tests/` directory contains the code for performing api tests against Talawa API. The tests in this directory and its various subdirectories must follow the practices of black box testing and most of them should be written to be able to run concurrently.
-
-1. Tests for files in the `src/` directory must only be placed in the equivalent subdirectory under the `tests/` directory.
-2. Test files must have a `.test.ts` extension.
-
-The rest of this page will assist you in being an active contributor to the code base.
 
 ## Linting & Static Analysis
 
