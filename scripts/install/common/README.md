@@ -23,12 +23,14 @@ cd scripts/install/common
 ```
 Test Summary
 ========================================================================
-Total tests run:    51
-Tests passed:       51
+Total tests run:    52 (or 56 if jq is installed)
+Tests passed:       52 (or 56 if jq is installed)
 Tests failed:       0
 
 ✓ All tests passed!
 ```
+
+> **Note:** Some tests require `jq` to be installed. If `jq` is not available, parse_package_json functional tests will be skipped.
 
 ## Test Coverage
 
@@ -97,9 +99,11 @@ error() { echo -e "${RED}✗${NC} $1"; }
 source "$(dirname "$0")/../common/validation.sh"
 
 # Now you can use validation functions
-NODE_VERSION=$(jq -r '.engines.node' package.json)
+# Use parse_package_json for safe parsing with error handling
+NODE_VERSION=$(parse_package_json ".engines.node" "lts" "Node.js version" false)
+
+# Validate the parsed version
 if ! validate_version_string "$NODE_VERSION" "Node.js version"; then
-    error "Invalid version in package.json"
-    exit 1
+    handle_version_validation_error "Node.js version (engines.node)" "$NODE_VERSION" ".engines.node"
 fi
 ```

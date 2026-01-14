@@ -173,6 +173,71 @@ else
 fi
 
 ##############################################################################
+# Test: parse_package_json() - Functional tests
+##############################################################################
+
+# Check if jq is available before running parse_package_json tests
+if command -v jq &> /dev/null; then
+    test_parse_package_json_functional() {
+        local test_name="$1"
+        local expected_result="$2"
+        
+        test_start "parse_package_json: $test_name"
+        
+        # Create temporary directory and package.json for testing
+        local temp_dir=$(mktemp -d)
+        local original_dir=$(pwd)
+        
+        cd "$temp_dir"
+        
+        case "$test_name" in
+            "parses valid engines.node field")
+                echo '{"engines":{"node":"18.0.0"}}' > package.json
+                local result=$(parse_package_json ".engines.node" "" "engines.node" false 2>&1)
+                ;;
+            "parses valid packageManager field")
+                echo '{"packageManager":"pnpm@10.2.1"}' > package.json
+                local result=$(parse_package_json ".packageManager" "" "packageManager" false 2>&1)
+                ;;
+            "returns default for missing optional field")
+                echo '{}' > package.json
+                local result=$(parse_package_json ".engines.node" "lts" "engines.node" false 2>&1)
+                ;;
+            "returns default for null value")
+                echo '{"engines":{"node":null}}' > package.json
+                local result=$(parse_package_json ".engines.node" "lts" "engines.node" false 2>&1)
+                ;;
+            "handles nested fields correctly")
+                echo '{"config":{"version":"1.2.3"}}' > package.json
+                local result=$(parse_package_json ".config.version" "" "config.version" false 2>&1)
+                ;;
+        esac
+        
+        cd "$original_dir"
+        rm -rf "$temp_dir"
+        
+        # Check if result matches expected (only check first line for actual result)
+        local first_line=$(echo "$result" | head -n1)
+        if [ "$first_line" = "$expected_result" ]; then
+            test_pass
+        else
+            test_fail "Expected '$expected_result', got '$first_line'"
+        fi
+    }
+
+    test_parse_package_json_functional "parses valid engines.node field" "18.0.0"
+    test_parse_package_json_functional "parses valid packageManager field" "pnpm@10.2.1"
+    test_parse_package_json_functional "returns default for missing optional field" "lts"
+    test_parse_package_json_functional "returns default for null value" "lts"
+    test_parse_package_json_functional "handles nested fields correctly" "1.2.3"
+else
+    # Skip tests if jq is not available
+    test_start "parse_package_json: functional tests (skipped - jq not available)"
+    warn "Skipping parse_package_json functional tests: jq is not installed"
+    test_pass
+fi
+
+##############################################################################
 # Test: handle_version_validation_error() - Error formatting
 ##############################################################################
 
