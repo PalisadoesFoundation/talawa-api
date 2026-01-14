@@ -133,6 +133,11 @@ describe("PluginManager", () => {
 		await manager.initialize();
 		expect(manager.isSystemInitialized()).toBe(true);
 		expect(manager.getLoadedPluginIds()).toHaveLength(0);
+		expect(context.logger.info).toHaveBeenCalledWith(
+			expect.objectContaining({
+				msg: "No plugins found in database",
+			}),
+		);
 	});
 
 	it("should not load plugin if manifest file is missing", async () => {

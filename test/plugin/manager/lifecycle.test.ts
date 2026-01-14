@@ -2133,6 +2133,13 @@ describe("PluginLifecycle", () => {
 			).createPluginDatabases("test-plugin", mockManifest);
 
 			expect(createPluginTables).toHaveBeenCalled();
+			expect(mockPluginContext.logger.info).toHaveBeenCalledWith(
+				expect.objectContaining({
+					msg: "Loading table definition",
+					name: "TestTable",
+					file: "tables.js",
+				}),
+			);
 		});
 
 		it("should handle plugin without database tables", async () => {
