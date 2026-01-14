@@ -33,6 +33,21 @@ describe("AgendaFolder.organization resolver", () => {
 		};
 	});
 
+	it("should throw unauthenticated error when client is not authenticated", async () => {
+		const { context: unauthenticatedCtx } = createMockGraphQLContext(
+			false, // isAuthenticated = false
+			"user-123",
+		);
+
+		await expect(
+			resolveOrganization(mockAgendaFolder, {}, unauthenticatedCtx),
+		).rejects.toThrow(
+			new TalawaGraphQLError({
+				extensions: { code: "unauthenticated" },
+			}),
+		);
+	});
+
 	it("should return organization when organization exists", async () => {
 		const mockOrganization = {
 			id: "org-123",
