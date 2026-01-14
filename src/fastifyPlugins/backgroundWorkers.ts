@@ -12,7 +12,8 @@ import { startBackgroundWorkers, stopBackgroundWorkers } from "~/src/workers";
  * - Handles graceful shutdown of workers
  * - Provides worker status endpoints
  *
- * @requires performance - The performance plugin must be registered before this plugin
+ * **Dependencies:** The performance plugin must be registered before this plugin.
+ * This is enforced via the `dependencies` array in the plugin configuration.
  */
 const backgroundWorkersPlugin = async (fastify: FastifyInstance) => {
 	fastify.log.info("Initializing background workers...");

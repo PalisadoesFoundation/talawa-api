@@ -168,14 +168,14 @@ describe("envConfigSchema - Metrics Configuration", () => {
 			}).toThrow();
 		});
 
-		it("should be optional", () => {
+		it("should use default when not set", () => {
 			const config = envSchema({
 				ajv: envSchemaAjv,
 				schema: envConfigSchema,
 				data: process.env,
 			}) as Record<string, unknown>;
 
-			expect(config.API_METRICS_SNAPSHOT_RETENTION_COUNT).toBeDefined();
+			expect(config.API_METRICS_SNAPSHOT_RETENTION_COUNT).toBe(1000);
 		});
 	});
 
@@ -238,14 +238,14 @@ describe("envConfigSchema - Metrics Configuration", () => {
 			}).toThrow();
 		});
 
-		it("should be optional", () => {
+		it("should use default when not set", () => {
 			const config = envSchema({
 				ajv: envSchemaAjv,
 				schema: envConfigSchema,
 				data: process.env,
 			}) as Record<string, unknown>;
 
-			expect(config.API_METRICS_AGGREGATION_WINDOW_MINUTES).toBeDefined();
+			expect(config.API_METRICS_AGGREGATION_WINDOW_MINUTES).toBe(5);
 		});
 	});
 

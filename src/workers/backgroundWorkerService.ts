@@ -67,10 +67,15 @@ export async function startBackgroundWorkers(
 
 		// Schedule metrics aggregation worker if enabled and snapshot getter is provided
 		// Parse API_METRICS_AGGREGATION_ENABLED explicitly (case-insensitive)
-		const enabledValue = (
-			process.env.API_METRICS_AGGREGATION_ENABLED ?? ""
-		).toLowerCase();
-		metricsEnabled = ["true", "1", "yes"].includes(enabledValue);
+		// Default to true (enabled) when unset, matching envConfigSchema default
+		const enabledValue = process.env.API_METRICS_AGGREGATION_ENABLED;
+		if (enabledValue === undefined || enabledValue === "") {
+			metricsEnabled = true; // Default to enabled when unset
+		} else {
+			metricsEnabled = ["true", "1", "yes"].includes(
+				enabledValue.toLowerCase(),
+			);
+		}
 		metricsSchedule =
 			process.env.API_METRICS_AGGREGATION_CRON_SCHEDULE || "*/5 * * * *";
 

@@ -44,7 +44,7 @@ describe("Performance Plugin - Metrics Interface", () => {
 
 			const snapshots = app.getMetricsSnapshots?.();
 			expect(snapshots).toBeDefined();
-			expect(snapshots?.length).toBeGreaterThanOrEqual(3);
+			expect(snapshots?.length).toBe(3);
 		});
 
 		it("should filter snapshots by time window", async () => {

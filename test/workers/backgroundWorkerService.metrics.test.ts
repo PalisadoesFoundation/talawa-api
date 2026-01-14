@@ -84,7 +84,11 @@ describe("backgroundWorkerService - metrics integration", () => {
 	});
 
 	describe("startBackgroundWorkers with metrics", () => {
-		it("starts metrics worker when snapshot getter is provided and enabled", async () => {
+		/**
+		 * Helper function to set up worker mocks for tests.
+		 * Mocks runMaterializationWorker and cleanupOldInstances with default success values.
+		 */
+		async function setupWorkerMocks(): Promise<void> {
 			const { runMaterializationWorker } = await import(
 				"~/src/workers/eventGeneration/eventGenerationPipeline"
 			);
@@ -105,6 +109,10 @@ describe("backgroundWorkerService - metrics integration", () => {
 				instancesDeleted: 0,
 				errorsEncountered: 0,
 			});
+		}
+
+		it("starts metrics worker when snapshot getter is provided and enabled", async () => {
+			await setupWorkerMocks();
 
 			await startBackgroundWorkers(
 				mockDrizzleClient,
@@ -137,26 +145,7 @@ describe("backgroundWorkerService - metrics integration", () => {
 		});
 
 		it("does not start metrics worker when snapshot getter is not provided", async () => {
-			const { runMaterializationWorker } = await import(
-				"~/src/workers/eventGeneration/eventGenerationPipeline"
-			);
-			const { cleanupOldInstances } = await import(
-				"~/src/workers/eventCleanupWorker"
-			);
-
-			vi.mocked(runMaterializationWorker).mockResolvedValue({
-				organizationsProcessed: 0,
-				instancesCreated: 0,
-				windowsUpdated: 0,
-				errorsEncountered: 0,
-				processingTimeMs: 1,
-			});
-
-			vi.mocked(cleanupOldInstances).mockResolvedValue({
-				organizationsProcessed: 0,
-				instancesDeleted: 0,
-				errorsEncountered: 0,
-			});
+			await setupWorkerMocks();
 
 			await startBackgroundWorkers(mockDrizzleClient, mockLogger);
 
@@ -177,26 +166,7 @@ describe("backgroundWorkerService - metrics integration", () => {
 		it("does not start metrics worker when disabled via env var", async () => {
 			process.env.API_METRICS_AGGREGATION_ENABLED = "false";
 
-			const { runMaterializationWorker } = await import(
-				"~/src/workers/eventGeneration/eventGenerationPipeline"
-			);
-			const { cleanupOldInstances } = await import(
-				"~/src/workers/eventCleanupWorker"
-			);
-
-			vi.mocked(runMaterializationWorker).mockResolvedValue({
-				organizationsProcessed: 0,
-				instancesCreated: 0,
-				windowsUpdated: 0,
-				errorsEncountered: 0,
-				processingTimeMs: 1,
-			});
-
-			vi.mocked(cleanupOldInstances).mockResolvedValue({
-				organizationsProcessed: 0,
-				instancesDeleted: 0,
-				errorsEncountered: 0,
-			});
+			await setupWorkerMocks();
 
 			await startBackgroundWorkers(
 				mockDrizzleClient,
@@ -221,26 +191,7 @@ describe("backgroundWorkerService - metrics integration", () => {
 		it("warns when metrics enabled but snapshot getter not available", async () => {
 			process.env.API_METRICS_AGGREGATION_ENABLED = "true";
 
-			const { runMaterializationWorker } = await import(
-				"~/src/workers/eventGeneration/eventGenerationPipeline"
-			);
-			const { cleanupOldInstances } = await import(
-				"~/src/workers/eventCleanupWorker"
-			);
-
-			vi.mocked(runMaterializationWorker).mockResolvedValue({
-				organizationsProcessed: 0,
-				instancesCreated: 0,
-				windowsUpdated: 0,
-				errorsEncountered: 0,
-				processingTimeMs: 1,
-			});
-
-			vi.mocked(cleanupOldInstances).mockResolvedValue({
-				organizationsProcessed: 0,
-				instancesDeleted: 0,
-				errorsEncountered: 0,
-			});
+			await setupWorkerMocks();
 
 			await startBackgroundWorkers(mockDrizzleClient, mockLogger);
 
@@ -254,26 +205,7 @@ describe("backgroundWorkerService - metrics integration", () => {
 		it("uses custom cron schedule from env var", async () => {
 			process.env.API_METRICS_AGGREGATION_CRON_SCHEDULE = "*/10 * * * *";
 
-			const { runMaterializationWorker } = await import(
-				"~/src/workers/eventGeneration/eventGenerationPipeline"
-			);
-			const { cleanupOldInstances } = await import(
-				"~/src/workers/eventCleanupWorker"
-			);
-
-			vi.mocked(runMaterializationWorker).mockResolvedValue({
-				organizationsProcessed: 0,
-				instancesCreated: 0,
-				windowsUpdated: 0,
-				errorsEncountered: 0,
-				processingTimeMs: 1,
-			});
-
-			vi.mocked(cleanupOldInstances).mockResolvedValue({
-				organizationsProcessed: 0,
-				instancesDeleted: 0,
-				errorsEncountered: 0,
-			});
+			await setupWorkerMocks();
 
 			await startBackgroundWorkers(
 				mockDrizzleClient,
@@ -301,26 +233,7 @@ describe("backgroundWorkerService - metrics integration", () => {
 		it("uses custom window minutes from env var", async () => {
 			process.env.API_METRICS_AGGREGATION_WINDOW_MINUTES = "10";
 
-			const { runMaterializationWorker } = await import(
-				"~/src/workers/eventGeneration/eventGenerationPipeline"
-			);
-			const { cleanupOldInstances } = await import(
-				"~/src/workers/eventCleanupWorker"
-			);
-
-			vi.mocked(runMaterializationWorker).mockResolvedValue({
-				organizationsProcessed: 0,
-				instancesCreated: 0,
-				windowsUpdated: 0,
-				errorsEncountered: 0,
-				processingTimeMs: 1,
-			});
-
-			vi.mocked(cleanupOldInstances).mockResolvedValue({
-				organizationsProcessed: 0,
-				instancesDeleted: 0,
-				errorsEncountered: 0,
-			});
+			await setupWorkerMocks();
 
 			await startBackgroundWorkers(
 				mockDrizzleClient,
@@ -339,26 +252,7 @@ describe("backgroundWorkerService - metrics integration", () => {
 		});
 
 		it("stops metrics worker on shutdown", async () => {
-			const { runMaterializationWorker } = await import(
-				"~/src/workers/eventGeneration/eventGenerationPipeline"
-			);
-			const { cleanupOldInstances } = await import(
-				"~/src/workers/eventCleanupWorker"
-			);
-
-			vi.mocked(runMaterializationWorker).mockResolvedValue({
-				organizationsProcessed: 0,
-				instancesCreated: 0,
-				windowsUpdated: 0,
-				errorsEncountered: 0,
-				processingTimeMs: 1,
-			});
-
-			vi.mocked(cleanupOldInstances).mockResolvedValue({
-				organizationsProcessed: 0,
-				instancesDeleted: 0,
-				errorsEncountered: 0,
-			});
+			await setupWorkerMocks();
 
 			// Get the expected metrics schedule (from env var or default)
 			const expectedMetricsSchedule =
