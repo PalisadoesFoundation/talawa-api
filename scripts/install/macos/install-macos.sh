@@ -370,10 +370,12 @@ else
     if ! fnm install "$CLEAN_NODE_VERSION"; then
         error "$(cat <<EOF
 Failed to install Node.js v$CLEAN_NODE_VERSION
+
 This could be due to:
   - Network connectivity issues
   - Insufficient disk space
   - Invalid Node.js version number
+  
 Troubleshooting:
   1. Check your internet connection
   2. Verify disk space: df -h
