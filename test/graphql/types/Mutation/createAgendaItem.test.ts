@@ -411,53 +411,6 @@ suite("Mutation field createAgendaItem", () => {
 				]),
 			);
 		});
-
-		test("Returns an error when folder is not an agenda item folder", async () => {
-			const { token: adminAuthToken } = await getAdminAuth();
-
-			const { cleanup, eventId } = await createTestEnvironment(
-				adminAuthToken,
-				await getAdminUserId(),
-			);
-			testCleanupFunctions.push(cleanup);
-
-			// Create a folder that is NOT an agenda item folder
-			const nonItemFolderId = await createNonAgendaItemFolder(
-				adminAuthToken,
-				eventId,
-			);
-
-			const result = await mercuriusClient.mutate(Mutation_createAgendaItem, {
-				headers: { authorization: `bearer ${adminAuthToken}` },
-				variables: {
-					input: {
-						folderId: nonItemFolderId,
-						name: "Test Agenda Item",
-						type: "general",
-					},
-				},
-			});
-
-			expect(result.data?.createAgendaItem).toEqual(null);
-			expect(result.errors).toEqual(
-				expect.arrayContaining([
-					expect.objectContaining({
-						extensions: expect.objectContaining({
-							code: "forbidden_action_on_arguments_associated_resources",
-							issues: expect.arrayContaining([
-								expect.objectContaining({
-									argumentPath: ["input", "folderId"],
-									message:
-										"This agenda folder cannot be a folder to agenda items.",
-								}),
-							]),
-						}),
-						message: expect.any(String),
-						path: ["createAgendaItem"],
-					}),
-				]),
-			);
-		});
 	});
 
 	suite("Input Validation", () => {

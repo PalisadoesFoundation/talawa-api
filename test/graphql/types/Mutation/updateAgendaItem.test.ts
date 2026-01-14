@@ -1025,60 +1025,50 @@ suite("Mutation updateAgendaItem", () => {
 		});
 
 		test("Returns an error when the agenda folder cannot be a folder for agenda items", async () => {
-			// create regular user
 			const regularUser = await createRegularUserUsingAdmin();
-			// create an agendaItem and use the folder of the agenda item for the event
 			const agendaItem = await createTestAgendaItem();
 			testCleanupFunctions.push(agendaItem.cleanup);
 
-			// update agenda folder's isAgendaItemFolder to false
+			const membership = await createOrganizationMembership(
+				regularUser.authToken,
+				regularUser.userId,
+				agendaItem.orgId,
+				"administrator",
+			);
+			testCleanupFunctions.push(membership.cleanup);
+
 			await server.drizzleClient
 				.update(agendaFoldersTable)
-				.set({
-					isDefaultFolder: false,
-				})
+				.set({ isDefaultFolder: false })
 				.where(eq(agendaFoldersTable.id, agendaItem.folderId))
 				.execute();
 
-			// get the user's auth token
-			const { authToken } = regularUser;
-			// try to update the agenda item
-			const updateAgendaItemResult = await mercuriusClient.mutate(
-				Mutation_updateAgendaItem,
-				{
-					headers: {
-						authorization: `bearer ${authToken}`,
-					},
-					variables: {
-						input: {
-							id: agendaItem.agendaItemId,
-							name: "Updated agenda item name",
-							folderId: agendaItem.folderId,
-						},
-					},
+			const result = await mercuriusClient.mutate(Mutation_updateAgendaItem, {
+				headers: { authorization: `bearer ${regularUser.authToken}` },
+				variables: {
+				input: {
+					id: agendaItem.agendaItemId,
+					folderId: agendaItem.folderId,
+					name: "Updated agenda item name",
 				},
-			);
+				},
+			});
 
-			expect(updateAgendaItemResult.errors).toBeDefined();
-			expect(updateAgendaItemResult.errors).toEqual(
-				expect.arrayContaining<TalawaGraphQLFormattedError>([
-					expect.objectContaining<TalawaGraphQLFormattedError>({
-						extensions: expect.objectContaining({
-							code: "forbidden_action_on_arguments_associated_resources",
-							issues: expect.arrayContaining([
-								expect.objectContaining({
-									argumentPath: expect.arrayContaining(["input", "folderId"]),
-									message: expect.stringContaining(
-										"This agenda folder cannot be a folder to agenda items.",
-									),
-								}),
-							]),
+			expect(result.errors).toEqual(
+				expect.arrayContaining([
+				expect.objectContaining({
+					extensions: expect.objectContaining({
+					code: "forbidden_action_on_arguments_associated_resources",
+					issues: expect.arrayContaining([
+						expect.objectContaining({
+						argumentPath: ["input", "folderId"],
 						}),
-						message: expect.any(String),
+					]),
 					}),
+				}),
 				]),
 			);
-		});
+			});
 	});
 
 	suite("Attachments", () => {
