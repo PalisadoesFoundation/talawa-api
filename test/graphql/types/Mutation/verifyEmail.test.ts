@@ -24,6 +24,7 @@ suite("Mutation field verifyEmail", () => {
 
 	afterEach(() => {
 		vi.restoreAllMocks();
+		mercuriusClient.setHeaders({});
 	});
 
 	test("should successfully verify email with valid token", async () => {
@@ -227,10 +228,13 @@ suite("Mutation field verifyEmail", () => {
 			.set({ isEmailAddressVerified: true })
 			.where(eq(usersTable.id, userId));
 
-		// Verify with ANY token (should bypass token check)
+		// Verify with A VALID LOOKING token (schema validation requires 64 char hex usually for sha256 or similar)
+		const validLengthToken = "a".repeat(64);
+
+		// Verify (should bypass token check because user is already verified)
 		const result = await mercuriusClient.mutate(Mutation_verifyEmail, {
 			headers: { authorization: `bearer ${authToken}` },
-			variables: { input: { token: "random-invalid-token" } },
+			variables: { input: { token: validLengthToken } },
 		});
 
 		expect(result.errors).toBeUndefined();
@@ -284,9 +288,12 @@ suite("Mutation field verifyEmail", () => {
 			.delete(usersTable)
 			.where(eq(usersTable.id, userId));
 
+		// MUST use valid token format to pass argument validation
+		const validLengthToken = "a".repeat(64);
+
 		const result = await mercuriusClient.mutate(Mutation_verifyEmail, {
 			headers: { authorization: `bearer ${authToken}` },
-			variables: { input: { token: "some-token" } },
+			variables: { input: { token: validLengthToken } },
 		});
 
 		expect(result.errors).toBeDefined();
