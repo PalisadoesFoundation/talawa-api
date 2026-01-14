@@ -1191,17 +1191,19 @@ describe("backgroundServiceWorker", () => {
 			expect(initialStatus.isRunning).toBe(true);
 
 			// Now mock getBackgroundWorkerStatus to throw an error
+			// Import the module to get the same instance that healthCheck uses
+			const workerModule = await import(
+				"~/src/workers/backgroundWorkerService"
+			);
 			const statusError = new Error("Status check failed");
 			const statusSpy = vi
-				.spyOn(
-					await import("~/src/workers/backgroundWorkerService"),
-					"getBackgroundWorkerStatus",
-				)
+				.spyOn(workerModule, "getBackgroundWorkerStatus")
 				.mockImplementation(() => {
 					throw statusError;
 				});
 
-			const result = await healthCheck();
+			// Call healthCheck from the same module instance
+			const result = await workerModule.healthCheck();
 
 			expect(result.status).toBe("unhealthy");
 			expect(result.details.reason).toBe("Health check failed");
@@ -1234,16 +1236,18 @@ describe("backgroundServiceWorker", () => {
 			expect(initialStatus.isRunning).toBe(true);
 
 			// Now mock getBackgroundWorkerStatus to throw a non-Error
+			// Import the module to get the same instance that healthCheck uses
+			const workerModule = await import(
+				"~/src/workers/backgroundWorkerService"
+			);
 			const statusSpy = vi
-				.spyOn(
-					await import("~/src/workers/backgroundWorkerService"),
-					"getBackgroundWorkerStatus",
-				)
+				.spyOn(workerModule, "getBackgroundWorkerStatus")
 				.mockImplementation(() => {
 					throw "String error";
 				});
 
-			const result = await healthCheck();
+			// Call healthCheck from the same module instance
+			const result = await workerModule.healthCheck();
 
 			expect(result.status).toBe("unhealthy");
 			expect(result.details.reason).toBe("Health check failed");
