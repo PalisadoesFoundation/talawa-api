@@ -14,14 +14,15 @@ interface PerformancePluginTestEnvConfig {
 }
 
 /**
- * Test fixture providing the minimal envConfig required by the performance plugin.
+ * Factory function that creates a fresh test envConfig for each test.
+ * This prevents test pollution when tests modify config values.
  * The plugin only accesses METRICS_SNAPSHOT_RETENTION_COUNT and API_SLOW_REQUEST_MS,
  * both with optional chaining and default values, so this minimal config is sufficient.
  */
-const performancePluginTestEnvConfig: PerformancePluginTestEnvConfig = {
+const createTestEnvConfig = (): PerformancePluginTestEnvConfig => ({
 	METRICS_SNAPSHOT_RETENTION_COUNT: 1000,
 	API_SLOW_REQUEST_MS: 500,
-};
+});
 
 describe("perfPlugin – slow request logging", () => {
 	let warn: ReturnType<typeof vi.spyOn>;
@@ -34,8 +35,8 @@ describe("perfPlugin – slow request logging", () => {
 		// The plugin depends on envConfig for configuration values
 		// Using a type-safe minimal mock that includes only the properties the plugin accesses
 		// The plugin uses optional chaining (app.envConfig?.PROPERTY), so this is safe
-		const testEnvConfig: PerformancePluginTestEnvConfig =
-			performancePluginTestEnvConfig;
+		// Using a factory function ensures each test gets a fresh config object
+		const testEnvConfig = createTestEnvConfig();
 		app.decorate("envConfig", testEnvConfig as unknown as EnvConfig);
 
 		vi.spyOn(app.log, "child").mockReturnValue(app.log);

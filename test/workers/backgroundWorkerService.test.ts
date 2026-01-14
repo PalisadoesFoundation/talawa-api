@@ -1248,7 +1248,7 @@ describe("backgroundServiceWorker", () => {
 
 			// Verify the warning was logged (line 107-108)
 			expect(mockLogger.warn).toHaveBeenCalledWith(
-				"Metrics aggregation is enabled but Fastify instance is not available. Metrics worker will not start.",
+				"Fastify instance is not available. Metrics aggregation worker cannot start (metrics configuration cannot be determined without Fastify instance).",
 			);
 
 			const status = getBackgroundWorkerStatus();
