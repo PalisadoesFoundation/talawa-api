@@ -541,11 +541,52 @@ jobs:
         run: |
           set -e
           echo "Fetching base branch: ${{ github.base_ref }}"
-          if ! git fetch origin ${{ github.base_ref }} 2>&1; then
-            echo "ERROR: Failed to fetch base branch '${{ github.base_ref }}' from origin"
-            exit 1
+          
+          # For PRs from forks, origin points to the fork, not the base repo
+          # Add the base repository as a remote and fetch from there
+          BASE_REPO="${{ github.event.pull_request.base.repo.full_name }}"
+          if [ -n "$BASE_REPO" ]; then
+            echo "Adding base repository as upstream remote: $BASE_REPO"
+            git remote add upstream "https://github.com/${BASE_REPO}.git" || git remote set-url upstream "https://github.com/${BASE_REPO}.git"
+            
+            max_attempts=3
+            attempt=1
+            while [ $attempt -le $max_attempts ]; do
+              echo "Attempt $attempt of $max_attempts: Fetching ${{ github.base_ref }} from upstream"
+              if git fetch upstream ${{ github.base_ref }} 2>&1; then
+                echo "Successfully fetched base branch from upstream"
+                exit 0
+              else
+                if [ $attempt -eq $max_attempts ]; then
+                  echo "ERROR: Failed to fetch base branch '${{ github.base_ref }}' from upstream after $max_attempts attempts"
+                  exit 1
+                fi
+                echo "Fetch failed, retrying in 5 seconds..."
+                sleep 5
+                attempt=$((attempt + 1))
+              fi
+            done
+          else
+            # Fallback: try fetching from origin (works for same-repo PRs)
+            echo "No base repo info, trying origin..."
+            max_attempts=3
+            attempt=1
+            while [ $attempt -le $max_attempts ]; do
+              echo "Attempt $attempt of $max_attempts: Fetching ${{ github.base_ref }} from origin"
+              if git fetch origin ${{ github.base_ref }} 2>&1; then
+                echo "Successfully fetched base branch from origin"
+                exit 0
+              else
+                if [ $attempt -eq $max_attempts ]; then
+                  echo "ERROR: Failed to fetch base branch '${{ github.base_ref }}' from origin after $max_attempts attempts"
+                  exit 1
+                fi
+                echo "Fetch failed, retrying in 5 seconds..."
+                sleep 5
+                attempt=$((attempt + 1))
+              fi
+            done
           fi
-          echo "Successfully fetched base branch"
 
       - name: Install pnpm
         uses: pnpm/action-setup@v4
