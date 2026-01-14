@@ -150,7 +150,11 @@ describe("GraphQL Tracing Hooks", () => {
 			const tracingPreExecutionHook = preExecutionHooks[0];
 			expect(tracingPreExecutionHook).toBeDefined();
 
-			await tracingPreExecutionHook!({} as GraphQLSchema, mockDocument, context);
+			await tracingPreExecutionHook?.(
+				{} as GraphQLSchema,
+				mockDocument,
+				context,
+			);
 
 			expect(mockTracer.startSpan).toHaveBeenCalledWith("graphql:GetUser");
 		});
@@ -169,7 +173,11 @@ describe("GraphQL Tracing Hooks", () => {
 			const context: Record<string, unknown> = {};
 			const tracingPreExecutionHook = preExecutionHooks[0];
 
-			await tracingPreExecutionHook!({} as GraphQLSchema, mockDocument, context);
+			await tracingPreExecutionHook?.(
+				{} as GraphQLSchema,
+				mockDocument,
+				context,
+			);
 
 			expect(mockSpan.setAttribute).toHaveBeenCalledWith(
 				"graphql.operation.name",
@@ -191,7 +199,11 @@ describe("GraphQL Tracing Hooks", () => {
 			const context: Record<string, unknown> = {};
 			const tracingPreExecutionHook = preExecutionHooks[0];
 
-			await tracingPreExecutionHook!({} as GraphQLSchema, mockDocument, context);
+			await tracingPreExecutionHook?.(
+				{} as GraphQLSchema,
+				mockDocument,
+				context,
+			);
 
 			expect(mockSpan.setAttribute).toHaveBeenCalledWith(
 				"graphql.operation.type",
@@ -213,7 +225,11 @@ describe("GraphQL Tracing Hooks", () => {
 			const context: Record<string, unknown> = {};
 			const tracingPreExecutionHook = preExecutionHooks[0];
 
-			await tracingPreExecutionHook!({} as GraphQLSchema, mockDocument, context);
+			await tracingPreExecutionHook?.(
+				{} as GraphQLSchema,
+				mockDocument,
+				context,
+			);
 
 			expect(mockTracer.startSpan).toHaveBeenCalledWith("graphql:anonymous");
 			expect(mockSpan.setAttribute).toHaveBeenCalledWith(
@@ -236,7 +252,11 @@ describe("GraphQL Tracing Hooks", () => {
 			const context: Record<string, unknown> = {};
 			const tracingPreExecutionHook = preExecutionHooks[0];
 
-			await tracingPreExecutionHook!({} as GraphQLSchema, mockDocument, context);
+			await tracingPreExecutionHook?.(
+				{} as GraphQLSchema,
+				mockDocument,
+				context,
+			);
 
 			expect(context._tracingSpan).toBe(mockSpan);
 		});
@@ -251,7 +271,7 @@ describe("GraphQL Tracing Hooks", () => {
 			const onResolutionHook = onResolutionHooks[0];
 			expect(onResolutionHook).toBeDefined();
 
-			await onResolutionHook!({ errors: [] }, context);
+			await onResolutionHook?.({ errors: [] }, context);
 
 			expect(mockSpan.end).toHaveBeenCalled();
 		});
@@ -264,7 +284,7 @@ describe("GraphQL Tracing Hooks", () => {
 			const errors = [new Error("Error 1"), new Error("Error 2")];
 			const onResolutionHook = onResolutionHooks[0];
 
-			await onResolutionHook!({ errors }, context);
+			await onResolutionHook?.({ errors }, context);
 
 			expect(mockSpan.setAttribute).toHaveBeenCalledWith(
 				"graphql.errors.count",
@@ -281,7 +301,7 @@ describe("GraphQL Tracing Hooks", () => {
 			mockSpan.setAttribute.mockClear();
 
 			const onResolutionHook = onResolutionHooks[0];
-			await onResolutionHook!({ errors: [] }, context);
+			await onResolutionHook?.({ errors: [] }, context);
 
 			// Should not call setAttribute for errors.count
 			expect(mockSpan.setAttribute).not.toHaveBeenCalledWith(
@@ -296,7 +316,7 @@ describe("GraphQL Tracing Hooks", () => {
 
 			// Should not throw
 			await expect(
-				onResolutionHook!({ errors: [] }, context),
+				onResolutionHook?.({ errors: [] }, context),
 			).resolves.toBeUndefined();
 		});
 	});
@@ -316,7 +336,11 @@ describe("GraphQL Tracing Hooks", () => {
 			const context: Record<string, unknown> = {};
 			const tracingPreExecutionHook = preExecutionHooks[0];
 
-			await tracingPreExecutionHook!({} as GraphQLSchema, mockDocument, context);
+			await tracingPreExecutionHook?.(
+				{} as GraphQLSchema,
+				mockDocument,
+				context,
+			);
 
 			const setAttributeCalls = mockSpan.setAttribute.mock.calls;
 			const attributeNames = setAttributeCalls.map((call) => call[0]);
@@ -342,7 +366,7 @@ describe("GraphQL Tracing Hooks", () => {
 			];
 
 			const onResolutionHook = onResolutionHooks[0];
-			await onResolutionHook!({ errors }, context);
+			await onResolutionHook?.({ errors }, context);
 
 			const setAttributeCalls = mockSpan.setAttribute.mock.calls;
 			const attributeValues = setAttributeCalls.flatMap((call) =>
@@ -353,5 +377,142 @@ describe("GraphQL Tracing Hooks", () => {
 			expect(attributeValues).not.toContain("User email@secret.com not found");
 			expect(attributeValues).not.toContain("Password validation failed");
 		});
+	});
+});
+
+describe("GraphQL Tracing Hooks - disabled observability", () => {
+	let mockFastifyInstance: Partial<FastifyInstance>;
+	let preExecutionHooks: Array<
+		(
+			schema: GraphQLSchema,
+			document: {
+				definitions: Array<{
+					kind: string;
+					operation?: string;
+					name?: { value: string };
+				}>;
+			},
+			context: Record<string, unknown>,
+		) => Promise<void>
+	>;
+	let onResolutionHooks: Array<
+		(
+			execution: { errors?: Array<unknown> },
+			context: Record<string, unknown>,
+		) => Promise<void>
+	>;
+
+	beforeEach(async () => {
+		vi.resetModules();
+
+		// Mock observability as disabled
+		vi.doMock("~/src/config/observability", () => ({
+			observabilityConfig: {
+				enabled: false,
+				environment: "test",
+				serviceName: "talawa-api-test",
+				samplingRatio: 1,
+				otlpEndpoint: "http://localhost:4318/v1/traces",
+			},
+		}));
+
+		// Re-mock other dependencies after module reset
+		vi.doMock("@opentelemetry/api", () => ({
+			trace: {
+				getTracer: vi.fn(() => ({
+					startSpan: vi.fn(),
+					startActiveSpan: vi.fn(),
+				})),
+			},
+		}));
+
+		vi.doMock("@pothos/plugin-complexity", () => ({
+			complexityFromQuery: vi.fn().mockReturnValue({ complexity: 10 }),
+		}));
+
+		vi.doMock("~/src/graphql/schemaManager", () => ({
+			default: {
+				buildInitialSchema: vi.fn().mockResolvedValue({}),
+				onSchemaUpdate: vi.fn(),
+			},
+		}));
+
+		vi.doMock("~/src/utilities/leakyBucket", () => ({
+			default: vi.fn().mockResolvedValue(true),
+		}));
+
+		vi.doMock("mercurius", () => ({
+			mercurius: vi.fn().mockImplementation(async () => {}),
+		}));
+
+		vi.doMock("mercurius-upload", () => ({
+			mercuriusUpload: vi.fn().mockImplementation(async () => {}),
+		}));
+
+		preExecutionHooks = [];
+		onResolutionHooks = [];
+
+		mockFastifyInstance = {
+			register: vi.fn(),
+			log: {
+				info: vi.fn(),
+				error: vi.fn(),
+				warn: vi.fn(),
+			} as unknown as FastifyInstance["log"],
+			graphql: {
+				addHook: vi
+					.fn()
+					.mockImplementation((hookName: string, hookFn: unknown) => {
+						if (hookName === "preExecution") {
+							preExecutionHooks.push(hookFn as (typeof preExecutionHooks)[0]);
+						} else if (hookName === "onResolution") {
+							onResolutionHooks.push(hookFn as (typeof onResolutionHooks)[0]);
+						}
+					}),
+				replaceSchema: vi.fn(),
+			} as unknown as FastifyInstance["graphql"],
+			envConfig: {
+				API_IS_GRAPHIQL: false,
+				API_GRAPHQL_MUTATION_BASE_COST: 10,
+				API_RATE_LIMIT_BUCKET_CAPACITY: 100,
+				API_RATE_LIMIT_REFILL_RATE: 1,
+			} as unknown as FastifyInstance["envConfig"],
+			drizzleClient: {} as FastifyInstance["drizzleClient"],
+			cache: null as unknown as FastifyInstance["cache"],
+			minio: {} as FastifyInstance["minio"],
+			jwt: {
+				sign: vi.fn(),
+				verify: vi.fn(),
+			} as unknown as FastifyInstance["jwt"],
+		};
+
+		// Import and execute the graphql plugin with disabled observability
+		const { graphql } = await import("~/src/routes/graphql");
+		await graphql(mockFastifyInstance as FastifyInstance);
+	});
+
+	afterEach(() => {
+		vi.doUnmock("~/src/config/observability");
+		vi.doUnmock("@opentelemetry/api");
+		vi.doUnmock("@pothos/plugin-complexity");
+		vi.doUnmock("~/src/graphql/schemaManager");
+		vi.doUnmock("~/src/utilities/leakyBucket");
+		vi.doUnmock("mercurius");
+		vi.doUnmock("mercurius-upload");
+		vi.clearAllMocks();
+	});
+
+	it("should not register tracing hooks when observability is disabled", async () => {
+		// When observability is disabled, only the complexity/rate-limiting preExecution hook
+		// should be registered (1 hook), not the tracing hooks
+		// The tracing hooks add: 1 preExecution + 1 onResolution
+		// So with tracing enabled: 2 preExecution hooks, 1 onResolution hook
+		// With tracing disabled: 1 preExecution hook (complexity), 0 onResolution hooks
+
+		// Verify no onResolution hooks are registered (tracing adds this)
+		expect(onResolutionHooks).toHaveLength(0);
+
+		// Verify only 1 preExecution hook (complexity/rate-limiting, not tracing)
+		expect(preExecutionHooks).toHaveLength(1);
 	});
 });

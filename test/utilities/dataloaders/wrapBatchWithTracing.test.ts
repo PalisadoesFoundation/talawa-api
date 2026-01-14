@@ -160,6 +160,7 @@ describe("wrapBatchWithTracing", () => {
 describe("wrapBatchWithTracing - disabled observability", () => {
 	beforeEach(async () => {
 		vi.clearAllMocks();
+		vi.resetModules();
 
 		// Reset module to test disabled config
 		vi.doMock("~/src/config/observability", () => ({
@@ -175,6 +176,7 @@ describe("wrapBatchWithTracing - disabled observability", () => {
 
 	afterEach(() => {
 		vi.doUnmock("~/src/config/observability");
+		vi.resetModules();
 	});
 
 	it("should return batch function as-is when tracing is disabled", async () => {
@@ -186,10 +188,16 @@ describe("wrapBatchWithTracing - disabled observability", () => {
 		const mockBatchFn = vi.fn().mockResolvedValue(["result1"]);
 		const wrappedBatch = wrapBatchDisabled("users", mockBatchFn);
 
+		// Clear any previous calls to mockTracer
+		mockTracer.startActiveSpan.mockClear();
+
 		// When disabled, should not create spans
 		await wrappedBatch(["key1"]);
 
 		// The original function should still be called
 		expect(mockBatchFn).toHaveBeenCalledWith(["key1"]);
+
+		// Verify no spans were started when tracing is disabled
+		expect(mockTracer.startActiveSpan).not.toHaveBeenCalled();
 	});
 });
