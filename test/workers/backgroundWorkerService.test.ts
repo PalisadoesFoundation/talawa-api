@@ -1169,118 +1169,29 @@ describe("backgroundServiceWorker", () => {
 		});
 
 		it("returns unhealthy when getBackgroundWorkerStatus throws Error", async () => {
-			// Test lines 470-479: catch block handles when getBackgroundWorkerStatus throws
-			// Note: Testing error handling by directly testing the catch block logic
-			// Since mocking internal function calls is unreliable, we verify the error handling
-			// by ensuring the catch block structure is correct and returns the expected format
-			const { runMaterializationWorker } = await import(
-				"~/src/workers/eventGeneration/eventGenerationPipeline"
-			);
+			// Use dependency injection to pass a mock function that throws
+			const mockStatusFn = (): ReturnType<typeof getBackgroundWorkerStatus> => {
+				throw new Error("Status check failed");
+			};
 
-			vi.mocked(runMaterializationWorker).mockResolvedValue({
-				organizationsProcessed: 0,
-				instancesCreated: 0,
-				windowsUpdated: 0,
-				errorsEncountered: 0,
-				processingTimeMs: 1,
-			});
+			const result = await healthCheck(mockStatusFn);
 
-			await startBackgroundWorkers(mockDrizzleClient, mockLogger);
-
-			// Verify workers are running
-			const initialStatus = getBackgroundWorkerStatus();
-			expect(initialStatus.isRunning).toBe(true);
-
-			// Create a wrapper that throws to test the error handling path
-			// We test the error handling logic by creating a scenario where an error would occur
-			const workerModule = await import(
-				"~/src/workers/backgroundWorkerService"
-			);
-			const originalGetStatus = workerModule.getBackgroundWorkerStatus;
-
-			// Temporarily replace the function to throw
-			const statusError = new Error("Status check failed");
-			Object.defineProperty(workerModule, "getBackgroundWorkerStatus", {
-				value: () => {
-					throw statusError;
-				},
-				configurable: true,
-				writable: true,
-			});
-
-			try {
-				const result = await workerModule.healthCheck();
-
-				expect(result.status).toBe("unhealthy");
-				expect(result.details.reason).toBe("Health check failed");
-				expect(result.details.error).toBe("Status check failed");
-			} finally {
-				// Restore original function
-				Object.defineProperty(workerModule, "getBackgroundWorkerStatus", {
-					value: originalGetStatus,
-					configurable: true,
-					writable: true,
-				});
-			}
-
-			await stopBackgroundWorkers(mockLogger);
+			expect(result.status).toBe("unhealthy");
+			expect(result.details.reason).toBe("Health check failed");
+			expect(result.details.error).toBe("Status check failed");
 		});
 
 		it("returns unhealthy when getBackgroundWorkerStatus throws non-Error", async () => {
-			// Test lines 470-479: catch block handles when getBackgroundWorkerStatus throws non-Error
-			// Note: Testing error handling by directly testing the catch block logic
-			// Since mocking internal function calls is unreliable, we verify the error handling
-			// by ensuring the catch block structure is correct and returns the expected format
-			const { runMaterializationWorker } = await import(
-				"~/src/workers/eventGeneration/eventGenerationPipeline"
-			);
+			// Use dependency injection to pass a mock function that throws a string
+			const mockStatusFn = (): ReturnType<typeof getBackgroundWorkerStatus> => {
+				throw "String error";
+			};
 
-			vi.mocked(runMaterializationWorker).mockResolvedValue({
-				organizationsProcessed: 0,
-				instancesCreated: 0,
-				windowsUpdated: 0,
-				errorsEncountered: 0,
-				processingTimeMs: 1,
-			});
+			const result = await healthCheck(mockStatusFn);
 
-			await startBackgroundWorkers(mockDrizzleClient, mockLogger);
-
-			// Verify workers are running
-			const initialStatus = getBackgroundWorkerStatus();
-			expect(initialStatus.isRunning).toBe(true);
-
-			// Create a wrapper that throws to test the error handling path
-			// We test the error handling logic by creating a scenario where an error would occur
-			const workerModule = await import(
-				"~/src/workers/backgroundWorkerService"
-			);
-			const originalGetStatus = workerModule.getBackgroundWorkerStatus;
-
-			// Temporarily replace the function to throw a non-Error
-			Object.defineProperty(workerModule, "getBackgroundWorkerStatus", {
-				value: () => {
-					throw "String error";
-				},
-				configurable: true,
-				writable: true,
-			});
-
-			try {
-				const result = await workerModule.healthCheck();
-
-				expect(result.status).toBe("unhealthy");
-				expect(result.details.reason).toBe("Health check failed");
-				expect(result.details.error).toBe("String error");
-			} finally {
-				// Restore original function
-				Object.defineProperty(workerModule, "getBackgroundWorkerStatus", {
-					value: originalGetStatus,
-					configurable: true,
-					writable: true,
-				});
-			}
-
-			await stopBackgroundWorkers(mockLogger);
+			expect(result.status).toBe("unhealthy");
+			expect(result.details.reason).toBe("Health check failed");
+			expect(result.details.error).toBe("String error");
 		});
 	});
 

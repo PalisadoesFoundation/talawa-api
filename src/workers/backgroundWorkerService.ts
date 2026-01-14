@@ -430,15 +430,19 @@ export function getBackgroundWorkerStatus(): {
 /**
  * Performs a health check of the background worker service, suitable for use by monitoring systems.
  *
+ * @param statusFn - Optional function to get background worker status (for testing). Defaults to getBackgroundWorkerStatus.
  * @returns - A promise that resolves to an object indicating the health status and any relevant details.
  */
-export async function healthCheck(): Promise<{
+export async function healthCheck(
+	statusFn: () => ReturnType<
+		typeof getBackgroundWorkerStatus
+	> = getBackgroundWorkerStatus,
+): Promise<{
 	status: "healthy" | "unhealthy";
 	details: Record<string, unknown>;
 }> {
 	try {
-		// Call getBackgroundWorkerStatus - tests can spy on this export to mock it
-		const status = getBackgroundWorkerStatus();
+		const status = statusFn();
 
 		// Check if workers are running
 		if (!status.isRunning) {
