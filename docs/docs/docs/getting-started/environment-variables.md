@@ -106,6 +106,10 @@ When talawa api debugger is run within a container environment this variable mus
 
 This environment variable is used to configure the email provider to be used by the talawa api. Currently supports `ses` and `smtp` (future). The default value is `ses`.
 
+### API_EMAIL_VERIFICATION_TOKEN_EXPIRES_SECONDS
+
+This environment variable is used to configure the time in seconds for which an email verification token remains valid. The default value is `86400` (24 hours).
+
 ### API_HOST
 
 This environment variable is used to configure the host ip that can access the host port on which talawa api listens to at runtime.
