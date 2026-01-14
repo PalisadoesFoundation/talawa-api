@@ -1,10 +1,7 @@
 import { faker } from "@faker-js/faker";
 import { eq } from "drizzle-orm";
 import { afterEach, expect, suite, test } from "vitest";
-import {
-	agendaItemsTable,
-	usersTable,
-} from "~/src/drizzle/schema";
+import { agendaItemsTable, usersTable } from "~/src/drizzle/schema";
 import type {
 	TalawaGraphQLFormattedError,
 	UnauthenticatedExtensions,
