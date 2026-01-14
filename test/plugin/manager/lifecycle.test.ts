@@ -2554,6 +2554,57 @@ describe("PluginLifecycle", () => {
 			);
 		});
 
+		it("should log warning when docker compose command fails (covers catch block)", async () => {
+			const pluginId = "test-plugin";
+			const manifest = {
+				docker: {
+					enabled: true,
+					composeFile: "docker-compose.yml",
+					buildOnInstall: true,
+				},
+			};
+
+			const { spawn } = await import("node:child_process");
+			const EventEmitter = (await import("node:events")).EventEmitter;
+
+			let callCount = 0;
+			// First 2 calls (docker --version, docker compose version) succeed,
+			// third call (docker compose build) fails
+			(spawn as unknown as ReturnType<typeof vi.fn>).mockImplementation(() => {
+				const proc = new EventEmitter();
+				callCount++;
+				setImmediate(() => {
+					if (callCount <= 2) {
+						// docker --version and docker compose version checks succeed
+						proc.emit("close", 0);
+					} else {
+						// docker compose build command fails with non-zero exit code
+						proc.emit("close", 1);
+					}
+				});
+				return proc;
+			});
+
+			await (
+				lifecycle as unknown as {
+					manageDocker: (
+						pluginId: string,
+						manifest: unknown,
+						action: string,
+					) => Promise<void>;
+				}
+			).manageDocker(pluginId, manifest, "install");
+
+			// Verify the warning log for docker lifecycle step failure
+			expect(mockPluginContext.logger.warn).toHaveBeenCalledWith(
+				expect.objectContaining({
+					msg: expect.stringContaining(
+						"Docker lifecycle step 'install' failed",
+					),
+				}),
+			);
+		});
+
 		it("should skip buildOnInstall when explicitly set to false", async () => {
 			const pluginId = "test-plugin";
 			const manifest = {

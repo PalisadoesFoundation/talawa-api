@@ -140,6 +140,23 @@ describe("PluginManager", () => {
 		);
 	});
 
+	it("should log error and call handlePluginError when loadPlugin throws (covers lines 122-128)", async () => {
+		// Make isValidPluginId return false, which causes loadPlugin to throw
+		(isValidPluginId as ReturnType<typeof vi.fn>).mockReturnValue(false);
+
+		const context = createPluginContext();
+		const manager = new PluginManager(context, "/plugins");
+		await manager.initialize();
+
+		// loadPlugin throws, which triggers the catch block that logs error
+		expect(context.logger.error).toHaveBeenCalledWith(
+			expect.objectContaining({
+				msg: expect.stringContaining("Failed to load plugin"),
+			}),
+		);
+		expect(manager.getLoadedPluginIds()).toHaveLength(0);
+	});
+
 	it("should not load plugin if manifest file is missing", async () => {
 		(safeRequire as ReturnType<typeof vi.fn>).mockImplementationOnce(() => {
 			throw new Error("File missing");
