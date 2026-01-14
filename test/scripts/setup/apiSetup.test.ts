@@ -23,6 +23,29 @@ import {
 	vi,
 } from "vitest";
 
+/**
+ * Helper function to wait for a condition to become true by polling
+ * @param condition - A function that returns true when the condition is met
+ * @param timeout - Maximum time to wait in milliseconds (default: 5000)
+ * @param pollInterval - Interval between checks in milliseconds (default: 10)
+ * @throws {Error} If the timeout elapses before the condition becomes true
+ */
+async function waitFor(
+	condition: () => boolean,
+	timeout = 5000,
+	pollInterval = 10,
+): Promise<void> {
+	const startTime = Date.now();
+	while (!condition() && Date.now() - startTime < timeout) {
+		await new Promise((resolve) => setTimeout(resolve, pollInterval));
+	}
+	if (!condition()) {
+		throw new Error(
+			`waitFor: timeout waiting for condition after ${timeout}ms`,
+		);
+	}
+}
+
 describe("Setup -> apiSetup", () => {
 	const originalEnv = { ...process.env };
 	beforeAll(() => {
@@ -560,6 +583,14 @@ describe("generateJwtSecret", () => {
 });
 
 describe("Error handling without backup", () => {
+	afterEach(() => {
+		// Remove SIGINT listeners to prevent interference with other tests
+		process.removeAllListeners("SIGINT");
+		// Restore and clear all mocks
+		vi.restoreAllMocks();
+		vi.clearAllMocks();
+	});
+
 	it("should handle prompt errors when backup doesn't exist", async () => {
 		const processExitSpy = vi
 			.spyOn(process, "exit")
@@ -588,22 +619,56 @@ describe("Error handling without backup", () => {
 		const processExitSpy = vi
 			.spyOn(process, "exit")
 			.mockImplementation(() => undefined as never);
-		const fsExistsSyncSpy = vi.spyOn(fs, "existsSync").mockReturnValue(false);
-		const fsCopyFileSyncSpy = vi
-			.spyOn(fs, "copyFileSync")
-			.mockImplementation(() => undefined);
+		const consoleLogSpy = vi.spyOn(console, "log").mockImplementation(() => {});
 
-		const consoleLogSpy = vi.spyOn(console, "log");
+		// Mock file system to indicate no .env file exists (so no backup will be created)
+		vi.spyOn(fs, "existsSync").mockReturnValue(false);
 
+		// Mock prompts sequentially to match the order setup() calls them
+		// Order: CI -> useDefaultMinio -> useDefaultCloudbeaver (if CI=false) -> useDefaultPostgres -> useDefaultCaddy -> useDefaultApi -> API_ADMINISTRATOR_USER_EMAIL_ADDRESS
+		const promptMock = vi.spyOn(inquirer, "prompt");
+		promptMock
+			.mockResolvedValueOnce({ CI: "false" }) // From setCI()
+			.mockResolvedValueOnce({ useDefaultMinio: true }) // Line 913
+			.mockResolvedValueOnce({ useDefaultCloudbeaver: true }) // Line 922 (only if CI === "false")
+			.mockResolvedValueOnce({ useDefaultPostgres: true }) // Line 931
+			.mockResolvedValueOnce({ useDefaultCaddy: true }) // Line 939
+			.mockResolvedValueOnce({ useDefaultApi: true }) // Line 947
+			.mockResolvedValueOnce({
+				API_ADMINISTRATOR_USER_EMAIL_ADDRESS: "test@email.com",
+			}); // From administratorEmail()
+
+		// Start setup() which will register the SIGINT handler
+		// Don't await it - we'll interrupt it
+		// Attach catch handler immediately to prevent unhandled promise rejections
+		setup().catch(() => {
+			// Expected - setup will be interrupted by SIGINT
+		});
+
+		// Wait deterministically for SIGINT handler to be registered
+		await waitFor(() => process.listenerCount("SIGINT") > 0);
+
+		// Verify handler was registered
+		expect(process.listenerCount("SIGINT")).toBeGreaterThan(0);
+
+		// Emit SIGINT to trigger the handler
 		process.emit("SIGINT");
 
-		expect(consoleLogSpy).toHaveBeenCalledWith(
-			"\nProcess interrupted! Undoing changes...",
-		);
-		expect(fsExistsSyncSpy).toHaveBeenCalledWith(".backup");
-		expect(fsCopyFileSyncSpy).not.toHaveBeenCalled();
-		expect(processExitSpy).toHaveBeenCalledWith(1);
+		// Wait for async handler to complete by polling for process.exit call
+		// The handler calls process.exit, so we wait for that to be called
+		await waitFor(() => processExitSpy.mock.calls.length > 0);
 
-		vi.clearAllMocks();
+		// Verify process.exit was called
+		expect(processExitSpy.mock.calls.length).toBeGreaterThan(0);
+
+		// Check that the new SIGINT handler messages are present
+		expect(consoleLogSpy).toHaveBeenCalledWith(
+			"\n\n⚠️  Setup interrupted by user (CTRL+C)",
+		);
+		expect(consoleLogSpy).toHaveBeenCalledWith(
+			"📋 No backup was created yet, nothing to restore",
+		);
+		// When no backup exists, it should exit with 0 (success, nothing to restore)
+		expect(processExitSpy).toHaveBeenCalledWith(0);
 	});
 });

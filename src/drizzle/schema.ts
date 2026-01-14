@@ -30,6 +30,10 @@ export {
 	agendaFoldersTableRelations,
 } from "./tables/agendaFolders";
 export {
+	agendaItemAttachmentsTable,
+	agendaItemAttachmentsTableRelations,
+} from "./tables/agendaItemAttachments";
+export {
 	agendaItemsTable,
 	agendaItemsTableRelations,
 } from "./tables/agendaItems";
@@ -130,6 +134,10 @@ export {
 	notificationTemplatesTable,
 	notificationTemplatesTableRelations,
 } from "./tables/NotificationTemplate";
+export {
+	oauthAccountsTable,
+	oauthAccountsTableRelations,
+} from "./tables/oauthAccount";
 export {
 	organizationMembershipsTable,
 	organizationMembershipsTableRelations,
