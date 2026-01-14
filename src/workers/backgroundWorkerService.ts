@@ -321,6 +321,11 @@ export async function runMetricsAggregationWorkerSafely(
 		// Values are already validated and typed by the schema
 		// Note: windowMinutes is deprecated and currently non-functional because PerfSnapshot doesn't include timestamps,
 		// but retained for forward compatibility when timestamps are added in a future PR
+		// TODO: Implement timestamp-based filtering when PerfSnapshot timestamps are added
+		//       - Add timestamp field to PerfSnapshot type (see src/utilities/metrics/performanceTracker.ts)
+		//       - Update metrics aggregation to filter snapshots by windowMinutes using timestamps
+		//       - Re-enable windowMinutes functionality in aggregateMetrics (see src/workers/metrics/metricsAggregationWorker.ts)
+		//       Tracking: [Add issue/PR number or URL when available]
 		const options: MetricsAggregationOptions = {
 			windowMinutes: fastify.envConfig.METRICS_AGGREGATION_WINDOW_MINUTES ?? 5,
 			maxSnapshots: fastify.envConfig.METRICS_SNAPSHOT_RETENTION_COUNT ?? 1000,

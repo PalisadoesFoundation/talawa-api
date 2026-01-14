@@ -649,6 +649,7 @@ describe("backgroundServiceWorker", () => {
 			expect(mockLogger.info).toHaveBeenCalledWith(
 				"Manually triggering metrics aggregation worker",
 			);
+			expect(vi.mocked(runMetricsAggregationWorker)).toHaveBeenCalled();
 
 			await stopBackgroundWorkers(mockLogger);
 		});
