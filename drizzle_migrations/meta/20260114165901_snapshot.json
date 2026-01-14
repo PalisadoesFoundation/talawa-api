@@ -1,6 +1,6 @@
 {
-  "id": "01ff925e-6d27-4dd4-abd5-04b2a7df7985",
-  "prevId": "d52bf89a-0880-4bb2-8b5e-0d6aea3ae16b",
+  "id": "6a9c353b-5ec1-4bf2-9f6f-88fc279f153e",
+  "prevId": "ae792d6c-ec99-4dd7-8cb4-3edf5f487940",
   "version": "7",
   "dialect": "postgresql",
   "tables": {
@@ -1313,6 +1313,12 @@
           "primaryKey": false,
           "notNull": false
         },
+        "description": {
+          "name": "description",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
         "event_id": {
           "name": "event_id",
           "type": "uuid",
@@ -1325,11 +1331,12 @@
           "primaryKey": true,
           "notNull": true
         },
-        "is_agenda_item_folder": {
-          "name": "is_agenda_item_folder",
+        "is_default_folder": {
+          "name": "is_default_folder",
           "type": "boolean",
           "primaryKey": false,
-          "notNull": true
+          "notNull": true,
+          "default": false
         },
         "name": {
           "name": "name",
@@ -1337,9 +1344,15 @@
           "primaryKey": false,
           "notNull": true
         },
-        "parent_folder_id": {
-          "name": "parent_folder_id",
+        "organization_id": {
+          "name": "organization_id",
           "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "sequence": {
+          "name": "sequence",
+          "type": "integer",
           "primaryKey": false,
           "notNull": false
         },
@@ -1402,21 +1415,6 @@
           "method": "btree",
           "with": {}
         },
-        "agenda_folders_is_agenda_item_folder_index": {
-          "name": "agenda_folders_is_agenda_item_folder_index",
-          "columns": [
-            {
-              "expression": "is_agenda_item_folder",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        },
         "agenda_folders_name_index": {
           "name": "agenda_folders_name_index",
           "columns": [
@@ -1432,11 +1430,11 @@
           "method": "btree",
           "with": {}
         },
-        "agenda_folders_parent_folder_id_index": {
-          "name": "agenda_folders_parent_folder_id_index",
+        "agenda_folders_organization_id_index": {
+          "name": "agenda_folders_organization_id_index",
           "columns": [
             {
-              "expression": "parent_folder_id",
+              "expression": "organization_id",
               "isExpression": false,
               "asc": true,
               "nulls": "last"
@@ -1475,12 +1473,12 @@
           "onDelete": "cascade",
           "onUpdate": "cascade"
         },
-        "agenda_folders_parent_folder_id_agenda_folders_id_fk": {
-          "name": "agenda_folders_parent_folder_id_agenda_folders_id_fk",
+        "agenda_folders_organization_id_organizations_id_fk": {
+          "name": "agenda_folders_organization_id_organizations_id_fk",
           "tableFrom": "agenda_folders",
-          "tableTo": "agenda_folders",
+          "tableTo": "organizations",
           "columnsFrom": [
-            "parent_folder_id"
+            "organization_id"
           ],
           "columnsTo": [
             "id"
