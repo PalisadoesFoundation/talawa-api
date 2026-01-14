@@ -185,31 +185,35 @@ if command -v jq &> /dev/null; then
         test_start "parse_package_json: $test_name"
         
         # Create temporary directory and package.json for testing
-        local temp_dir=$(mktemp -d)
-        local original_dir=$(pwd)
+        # Separate declaration from assignment to avoid masking return values (SC2155)
+        local temp_dir
+        temp_dir=$(mktemp -d)
+        local original_dir
+        original_dir=$(pwd)
         
         cd "$temp_dir"
         
+        local result
         case "$test_name" in
             "parses valid engines.node field")
                 echo '{"engines":{"node":"18.0.0"}}' > package.json
-                local result=$(parse_package_json ".engines.node" "" "engines.node" false 2>&1)
+                result=$(parse_package_json ".engines.node" "" "engines.node" false 2>&1)
                 ;;
             "parses valid packageManager field")
                 echo '{"packageManager":"pnpm@10.2.1"}' > package.json
-                local result=$(parse_package_json ".packageManager" "" "packageManager" false 2>&1)
+                result=$(parse_package_json ".packageManager" "" "packageManager" false 2>&1)
                 ;;
             "returns default for missing optional field")
                 echo '{}' > package.json
-                local result=$(parse_package_json ".engines.node" "lts" "engines.node" false 2>&1)
+                result=$(parse_package_json ".engines.node" "lts" "engines.node" false 2>&1)
                 ;;
             "returns default for null value")
                 echo '{"engines":{"node":null}}' > package.json
-                local result=$(parse_package_json ".engines.node" "lts" "engines.node" false 2>&1)
+                result=$(parse_package_json ".engines.node" "lts" "engines.node" false 2>&1)
                 ;;
             "handles nested fields correctly")
                 echo '{"config":{"version":"1.2.3"}}' > package.json
-                local result=$(parse_package_json ".config.version" "" "config.version" false 2>&1)
+                result=$(parse_package_json ".config.version" "" "config.version" false 2>&1)
                 ;;
         esac
         
@@ -217,7 +221,8 @@ if command -v jq &> /dev/null; then
         rm -rf "$temp_dir"
         
         # Check if result matches expected (only check first line for actual result)
-        local first_line=$(echo "$result" | head -n1)
+        local first_line
+        first_line=$(echo "$result" | head -n1)
         if [ "$first_line" = "$expected_result" ]; then
             test_pass
         else
