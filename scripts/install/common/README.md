@@ -23,8 +23,8 @@ cd scripts/install/common
 ```
 Test Summary
 ========================================================================
-Total tests run:    44
-Tests passed:       44
+Total tests run:    51
+Tests passed:       51
 Tests failed:       0
 
 ✓ All tests passed!

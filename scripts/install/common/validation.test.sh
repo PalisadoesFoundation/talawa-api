@@ -66,8 +66,8 @@ test_valid_version() {
     
     test_start "Valid version: $description ($version)"
     
-    # Capture output to suppress error messages during tests
-    if validate_version_string "$version" "test-field" 2>/dev/null; then
+    # Suppress all output (stdout and stderr) during validation tests
+    if validate_version_string "$version" "test-field" &>/dev/null; then
         test_pass
     else
         test_fail "Expected version '$version' to be valid"
@@ -101,8 +101,8 @@ test_invalid_version() {
     
     test_start "Invalid version (should reject): $description"
     
-    # These should fail validation - suppress output
-    if validate_version_string "$version" "test-field" 2>/dev/null; then
+    # Suppress all output (stdout and stderr) during validation tests
+    if validate_version_string "$version" "test-field" &>/dev/null; then
         test_fail "Expected version '$version' to be rejected (security risk)"
     else
         test_pass
@@ -123,8 +123,8 @@ test_invalid_version "18.0.0 & background" "background process"
 # Test invalid characters
 test_invalid_version "18.0.0 " "trailing space"
 test_invalid_version " 18.0.0" "leading space"
-test_invalid_version "18.0.0\t" "tab character"
-test_invalid_version "18.0.0\n" "newline character"
+test_invalid_version $'18.0.0\t' "tab character"
+test_invalid_version $'18.0.0\n' "newline character"
 test_invalid_version "18.0.0#comment" "hash/comment"
 test_invalid_version "18.0.0*" "glob asterisk"
 test_invalid_version "18.0.0?" "glob question mark"
@@ -148,7 +148,7 @@ test_invalid_version "not-a-version" "no numbers"
 test_invalid_version "abc" "alphabetic only"
 
 ##############################################################################
-# Test: parse_package_json() - Basic functionality
+# Test: Helper functions - Basic functionality
 ##############################################################################
 
 test_start "parse_package_json helper exists and is callable"
@@ -156,6 +156,70 @@ if declare -F parse_package_json >/dev/null 2>&1; then
     test_pass
 else
     test_fail "parse_package_json function not found"
+fi
+
+test_start "handle_version_validation_error helper exists and is callable"
+if declare -F handle_version_validation_error >/dev/null 2>&1; then
+    test_pass
+else
+    test_fail "handle_version_validation_error function not found"
+fi
+
+test_start "retry_command helper exists and is callable"
+if declare -F retry_command >/dev/null 2>&1; then
+    test_pass
+else
+    test_fail "retry_command function not found"
+fi
+
+##############################################################################
+# Test: handle_version_validation_error() - Error formatting
+##############################################################################
+
+test_start "handle_version_validation_error formats error with jq_path"
+# Run in subshell to prevent exit
+if (handle_version_validation_error "test field" "bad value" ".test.path" 2>&1 | grep -q "jq '.test.path' package.json"); then
+    test_pass
+else
+    test_fail "Expected jq command with provided path"
+fi
+
+test_start "handle_version_validation_error formats error without jq_path"
+# Run in subshell to prevent exit
+if (handle_version_validation_error "test field" "bad value" 2>&1 | grep -q "Check the relevant field manually"); then
+    test_pass
+else
+    test_fail "Expected generic message when no jq_path provided"
+fi
+
+##############################################################################
+# Test: retry_command() - Retry logic
+##############################################################################
+
+test_start "retry_command succeeds on first attempt"
+if retry_command 3 true &>/dev/null; then
+    test_pass
+else
+    test_fail "Expected retry_command to succeed with passing command"
+fi
+
+test_start "retry_command fails after max retries"
+if ! retry_command 2 false &>/dev/null; then
+    test_pass
+else
+    test_fail "Expected retry_command to fail with failing command"
+fi
+
+test_start "retry_command returns success after initial failure"
+# Create a command that fails first time, succeeds second time
+TEST_FILE="/tmp/retry_test_$$"
+rm -f "$TEST_FILE"
+if retry_command 3 bash -c "[ -f '$TEST_FILE' ] || { touch '$TEST_FILE'; false; }" &>/dev/null; then
+    test_pass
+    rm -f "$TEST_FILE"
+else
+    test_fail "Expected retry_command to succeed on second attempt"
+    rm -f "$TEST_FILE"
 fi
 
 ##############################################################################

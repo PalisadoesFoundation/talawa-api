@@ -287,11 +287,15 @@ retry_command() {
             sleep "$delay"
         fi
         
-        if "$@"; then
+        # Run command and capture exit code immediately
+        "$@"
+        exit_code=$?
+        
+        if [ "$exit_code" -eq 0 ]; then
             return 0
         fi
-        exit_code=$?
-        ((attempt++))
+        
+        attempt=$((attempt + 1))
     done
     
     error "Command failed after $max_attempts attempts: $*"
