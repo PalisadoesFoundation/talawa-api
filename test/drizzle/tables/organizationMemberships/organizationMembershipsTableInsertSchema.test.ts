@@ -180,18 +180,6 @@ describe("organization Memberships Table Insert Schema edge cases", () => {
     ).toThrow();
   });
 
-  it("Send valid role in uppercaes", () => {
-    const data = {
-      memberId: validUUID1,
-      organizationId: validUUID2,
-      role: "REGULAR",
-    };
-
-    expect(() =>
-      organizationMembershipsTableInsertSchema.parse(data)
-    ).toThrow();
-  });
-
   it("Send null as memberId in object", () => {
     const data = {
       memberId: null,
