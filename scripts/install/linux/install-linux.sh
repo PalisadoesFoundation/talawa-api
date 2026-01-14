@@ -286,16 +286,27 @@ validate_repository() {
     fi
 
     # Verify this is the talawa-api repository
-    PACKAGE_NAME=$(jq -r '.name // empty' package.json 2>/dev/null)
-    if [ -z "$PACKAGE_NAME" ]; then
-        error "Could not read 'name' field from package.json. The file may be corrupted or jq is not installed."
-        info "Try installing jq: sudo apt install jq (Debian/Ubuntu) or sudo dnf install jq (Fedora)"
+    # Verify jq is available for JSON parsing
+    if ! command_exists jq; then
+        error "jq is required but not installed."
+        echo ""
+        info "jq is a lightweight JSON processor needed to validate package.json"
+        echo ""
+        info "Install jq using your package manager:"
+        echo "  • Ubuntu/Debian:  sudo apt-get install jq"
+        echo "  • Fedora/RHEL:    sudo dnf install jq"
+        echo "  • Arch/Manjaro:   sudo pacman -S jq"
+        echo ""
+        info "After installing jq, re-run this script"
         exit 1
     fi
+        PACKAGE_NAME=$(jq -r '.name // empty' package.json)
+
+
 
     if [ "$PACKAGE_NAME" != "talawa-api" ]; then
         error "This script must be run from the talawa-api repository."
-        echo "  Found p ackage name: '$PACKAGE_NAME'"
+        echo "  Found package name: '$PACKAGE_NAME'"
         echo "  Expected: 'talawa-api'"
         echo ""
         info "Remediation: Ensure you are in the correct directory and try again."
@@ -304,6 +315,12 @@ validate_repository() {
 
     # Check 3: Validate required package.json fields exist
     MISSING_FIELDS=""
+
+    PKG_VERSION=$(jq -r '.version // empty' package.json 2>/dev/null)
+    if [ -z "$PKG_VERSION" ]; then
+        MISSING_FIELDS="$MISSING_FIELDS version"
+    fi
+
 
     NODE_ENGINE=$(jq -r '.engines.node // empty' package.json 2>/dev/null)
     if [ -z "$NODE_ENGINE" ]; then
@@ -330,7 +347,13 @@ validate_repository() {
 validate_disk_space() {
     # Verify available disk space (minimum 2GB)
     AVAILABLE_SPACE_KB=$(df -k "$REPO_ROOT" | awk 'NR==2 {print $4}')
-    if [ -n "$AVAILABLE_SPACE_KB" ] && [ "$AVAILABLE_SPACE_KB" -lt "$MIN_DISK_SPACE_KB" ]; then
+    if [ -z "$AVAILABLE_SPACE_KB" ]; then
+        warn "Could not determine available disk space. Proceeding with installation."
+        info "Manually verify at least 2GB is available: df -h $REPO_ROOT"
+        return 0
+    fi
+
+    if [ "$AVAILABLE_SPACE_KB" -lt "$MIN_DISK_SPACE_KB" ]; then
         AVAILABLE_SPACE_MB=$((AVAILABLE_SPACE_KB / 1024))
         REQUIRED_SPACE_MB=$((MIN_DISK_SPACE_KB / 1024))
         error "Insufficient disk space. Available: ${AVAILABLE_SPACE_MB}MB, Required: ${REQUIRED_SPACE_MB}MB (2GB)"
