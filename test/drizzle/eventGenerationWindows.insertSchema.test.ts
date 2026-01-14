@@ -45,9 +45,6 @@ describe("eventGenerationWindows insert schema numeric bounds", () => {
 			createdById: "3f738d7f-22e7-4bda-b47f-61f0a9c9c9a1",
 		};
 		const result = eventGenerationWindowsTableInsertSchema.safeParse(validObj);
-		if (!result.success) {
-			console.log("VALIDATION ERROR:", JSON.stringify(result.error.issues, null, 2));
-		}
 		expect(result.success).toBe(true);
 	});
 
@@ -511,6 +508,14 @@ describe("eventGenerationWindows insert schema numeric bounds", () => {
 		expect(
 			eventGenerationWindowsTableInsertSchema.safeParse({
 				...base,
+			}).success,
+		).toBe(true);
+
+		// Valid: null value (nullable field)
+		expect(
+			eventGenerationWindowsTableInsertSchema.safeParse({
+				...base,
+				lastUpdatedById: null,
 			}).success,
 		).toBe(true);
 
