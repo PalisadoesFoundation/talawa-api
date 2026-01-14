@@ -816,21 +816,31 @@ describe("Performance Plugin", () => {
 			// Save the original structuredClone
 			const originalStructuredClone = global.structuredClone;
 
-			// Import the module and set up spy before removing structuredClone
-			const performanceModule = await import(
-				"../../src/fastifyPlugins/performance"
-			);
-			const manualCopySpy = vi.spyOn(
-				performanceModule,
-				"manualDeepCopySnapshot",
-			);
-
 			let testApp: ReturnType<typeof createTestFastifyInstance> | undefined;
 
 			try {
-				testApp = createTestFastifyInstance();
+				// STEP 1: Remove structuredClone FIRST, before any imports
+				delete (global as { structuredClone?: typeof structuredClone })
+					.structuredClone;
 
-				await testApp.register(performancePlugin);
+				// Verify it's actually deleted
+				expect(typeof global.structuredClone).toBe("undefined");
+
+				// STEP 2: Clear module cache and re-import to pick up the change
+				vi.resetModules();
+				const performanceModule = await import(
+					"../../src/fastifyPlugins/performance"
+				);
+
+				// STEP 3: Set up spy AFTER re-importing
+				const manualCopySpy = vi.spyOn(
+					performanceModule,
+					"manualDeepCopySnapshot",
+				);
+
+				// STEP 4: Create test app and make request
+				testApp = createTestFastifyInstance();
+				await testApp.register(performanceModule.default);
 
 				testApp.get(
 					"/test-fallback-integration",
@@ -843,8 +853,7 @@ describe("Performance Plugin", () => {
 
 				await testApp.ready();
 
-				// Make a request to create a snapshot BEFORE removing structuredClone
-				// This ensures we have a snapshot to test with
+				// Make a request to create a snapshot
 				const initialResponse = await testApp.inject({
 					method: "GET",
 					url: "/test-fallback-integration",
@@ -852,17 +861,7 @@ describe("Performance Plugin", () => {
 
 				expect(initialResponse.statusCode).toBe(200);
 
-				// Remove structuredClone to force fallback path
-				// Use delete to actually remove it from global scope
-				delete (global as { structuredClone?: typeof structuredClone })
-					.structuredClone;
-
-				// Verify it's actually deleted - typeof should be "undefined"
-				expect(typeof global.structuredClone).toBe("undefined");
-
-				// The snapshot should be stored after the request completes
-				// getPerformanceSnapshots uses deepCopySnapshot which handles the fallback internally
-				// With structuredClone deleted, it should use manualDeepCopySnapshot (line 87)
+				// Get snapshots - this should trigger the fallback
 				const snapshots = testApp.getPerformanceSnapshots(1);
 
 				// Verify we got snapshots
@@ -872,13 +871,12 @@ describe("Performance Plugin", () => {
 					throw new Error("Snapshot should be defined");
 				}
 
-				// Verify the fallback was used - manualDeepCopySnapshot should have been called
-				// when getPerformanceSnapshots used deepCopySnapshot with structuredClone undefined
+				// Verify the fallback was used
 				expect(manualCopySpy).toHaveBeenCalled();
 
 				expect(snapshots[0]).toHaveProperty("ops");
 				expect(snapshots[0]).toHaveProperty("cacheHits");
-				expect(snapshots[0].cacheHits).toBe(1);
+				expect(snapshots[0]?.cacheHits).toBe(1);
 
 				// Verify the snapshot is a deep copy (independent from internal storage)
 				// This verifies that manualDeepCopySnapshot was used (fallback path)
@@ -893,25 +891,24 @@ describe("Performance Plugin", () => {
 				expect(snapshots2[0].ops).not.toEqual({});
 				expect(snapshots2[0].ops).toEqual(originalOps);
 
-				await testApp.close();
+				manualCopySpy.mockRestore();
 			} catch (error) {
-				// If there's an error, log it for debugging
 				console.error("Test error:", error);
 				throw error;
 			} finally {
-				// Restore original structuredClone
-				manualCopySpy.mockRestore();
 				if (testApp) {
 					await testApp.close().catch(() => {
 						// Ignore close errors
 					});
 				}
-				// Restore original structuredClone
+				// Restore structuredClone
 				if (originalStructuredClone !== undefined) {
 					(
 						global as { structuredClone?: typeof structuredClone }
 					).structuredClone = originalStructuredClone;
 				}
+				// Reset modules to restore normal behavior for other tests
+				vi.resetModules();
 			}
 		});
 	});
