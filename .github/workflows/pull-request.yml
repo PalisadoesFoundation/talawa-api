@@ -318,6 +318,9 @@ jobs:
             'ISSUE_GUIDELINES.md$'
             'PR_GUIDELINES.md$'
             'README.md$'
+            '^./*md'
+            '^./*txt'
+            '^./*TXT'
           )
 
           # Check for changes in sensitive files

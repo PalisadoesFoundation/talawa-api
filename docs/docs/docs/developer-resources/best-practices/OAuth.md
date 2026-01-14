@@ -200,6 +200,158 @@ This flexible structure allows storing provider-specific profile information whi
 - **Indexing**: Optimized queries for user lookups and provider-based searches
 - **Timezone Support**: All timestamps include timezone information for accurate tracking across regions
 
+## OAuth Configuration Functions
+
+The OAuth configuration system provides utility functions for loading and validating OAuth provider configurations from environment variables.
+
+### loadOAuthConfig
+
+The `loadOAuthConfig` function loads and validates OAuth configuration from environment variables, automatically enabling or disabling providers based on the availability of required credentials.
+
+```typescript
+function loadOAuthConfig(env = process.env): OAuthProvidersConfig
+```
+
+#### Parameters
+- **`env`** (optional): Environment variables object. Defaults to `process.env`
+
+#### Returns
+- **`OAuthProvidersConfig`**: Configuration object containing Google and GitHub provider settings
+
+#### Behavior
+- **Provider Enablement**: Providers are automatically enabled only when all required environment variables are present
+- **Timeout Handling**: Uses `API_OAUTH_REQUEST_TIMEOUT_MS` with fallback to 10000ms (10 seconds)
+- **Error Recovery**: Invalid timeout values (NaN) automatically fall back to the default timeout
+
+#### Environment Variables
+- **Google Provider**: `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `GOOGLE_REDIRECT_URI`
+- **GitHub Provider**: `GITHUB_CLIENT_ID`, `GITHUB_CLIENT_SECRET`, `GITHUB_REDIRECT_URI`
+- **Request Timeout**: `API_OAUTH_REQUEST_TIMEOUT_MS` (optional, defaults to 10000)
+
+#### Usage Example
+
+```typescript
+import { loadOAuthConfig } from '~/src/config/oauth';
+
+// Load configuration from process.env
+const config = loadOAuthConfig();
+
+if (config.google.enabled) {
+  console.log('Google OAuth is configured');
+  console.log('Timeout:', config.google.requestTimeoutMs);
+}
+
+// Load configuration from custom environment
+const customEnv = {
+  GOOGLE_CLIENT_ID: 'your-google-client-id',
+  GOOGLE_CLIENT_SECRET: 'your-google-secret',
+  GOOGLE_REDIRECT_URI: 'http://localhost:4000/auth/google/callback',
+  API_OAUTH_REQUEST_TIMEOUT_MS: '15000',
+};
+
+const customConfig = loadOAuthConfig(customEnv);
+```
+
+#### Return Structure
+
+```typescript
+interface OAuthProvidersConfig {
+  google: {
+    enabled: boolean;
+    clientId: string;
+    clientSecret: string;
+    redirectUri: string;
+    requestTimeoutMs: number;
+  };
+  github: {
+    enabled: boolean;
+    clientId: string;
+    clientSecret: string;
+    redirectUri: string;
+    requestTimeoutMs: number;
+  };
+}
+```
+
+### getProviderConfig
+
+The `getProviderConfig` function retrieves a specific provider's configuration and validates that it's properly configured and enabled.
+
+```typescript
+function getProviderConfig(
+  provider: ProviderKey,
+  env = process.env
+): Required<OAuthProviderConfig>
+```
+
+#### Parameters
+- **`provider`**: Provider key (`"google"` or `"github"`)
+- **`env`** (optional): Environment variables object. Defaults to `process.env`
+
+#### Returns
+- **`Required<OAuthProviderConfig>`**: Complete provider configuration with all required fields
+
+#### Throws
+- **`Error`**: When the provider is not properly configured or disabled
+
+#### Behavior
+- **Validation**: Ensures the provider is enabled and has all required configuration
+- **Fallback Timeout**: Provides 10000ms fallback if timeout is falsy (defensive programming)
+- **Type Safety**: Returns a configuration object with all fields guaranteed to be present
+
+#### Usage Example
+
+```typescript
+import { getProviderConfig } from '~/src/config/oauth';
+
+try {
+  // Get Google provider configuration
+  const googleConfig = getProviderConfig('google');
+  
+  // Safe to use - all fields are guaranteed to be present
+  console.log('Client ID:', googleConfig.clientId);
+  console.log('Timeout:', googleConfig.requestTimeoutMs);
+  
+  // Initialize OAuth provider
+  const provider = new GoogleOAuthProvider(googleConfig);
+} catch (error) {
+  console.error('Google OAuth is not configured:', error.message);
+}
+
+// Custom environment example
+try {
+  const githubConfig = getProviderConfig('github', customEnvironment);
+  // Use configuration...
+} catch (error) {
+  console.error('GitHub OAuth configuration error:', error.message);
+}
+```
+
+#### Error Handling
+
+The function throws descriptive errors for various configuration issues:
+
+```typescript
+// Missing environment variables
+throw new Error('OAuth provider "google" is not properly configured');
+
+// This covers scenarios where:
+// - Provider is disabled (missing required credentials)
+// - clientId is missing or empty
+// - clientSecret is missing or empty  
+// - redirectUri is missing or empty
+```
+
+#### Provider Keys
+
+```typescript
+type ProviderKey = "google" | "github";
+```
+
+Currently supported providers:
+- **`"google"`**: Google OAuth 2.0
+- **`"github"`**: GitHub OAuth Apps
+
 ## BaseOAuthProvider
 
 The `BaseOAuthProvider` is an abstract base class that provides common functionality for all OAuth providers.
