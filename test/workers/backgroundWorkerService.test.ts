@@ -1499,4 +1499,260 @@ describe("backgroundServiceWorker", () => {
 			);
 		});
 	});
+
+	describe("Coverage for missing lines", () => {
+		it("getMetricsSchedule uses fastifyInstance when fastify parameter is undefined", async () => {
+			// Test line 34: const instance = fastify ?? fastifyInstance;
+			// When fastify is undefined, it should use fastifyInstance
+			const { runMaterializationWorker } = await import(
+				"~/src/workers/eventGeneration/eventGenerationPipeline"
+			);
+
+			vi.mocked(runMaterializationWorker).mockResolvedValue({
+				organizationsProcessed: 0,
+				instancesCreated: 0,
+				windowsUpdated: 0,
+				errorsEncountered: 0,
+				processingTimeMs: 1,
+			});
+
+			const mockFastify = {
+				envConfig: {
+					METRICS_AGGREGATION_ENABLED: true,
+					METRICS_AGGREGATION_CRON_SCHEDULE: "*/10 * * * *",
+				},
+				getPerformanceSnapshots: vi.fn().mockReturnValue([]),
+			} as unknown as Parameters<typeof startBackgroundWorkers>[2];
+
+			// Start with fastify to set fastifyInstance
+			await startBackgroundWorkers(mockDrizzleClient, mockLogger, mockFastify);
+
+			// Now getMetricsSchedule() called without parameter should use fastifyInstance
+			const status = getBackgroundWorkerStatus();
+			expect(status.metricsSchedule).toBe("*/10 * * * *");
+
+			await stopBackgroundWorkers(mockLogger);
+		});
+
+		it("startBackgroundWorkers catch block handles errors", async () => {
+			// Test lines 129-132: catch block in startBackgroundWorkers
+			const cron = await import("node-cron");
+
+			// Make cron.schedule throw an error
+			vi.mocked(cron.default.schedule).mockImplementation(() => {
+				throw new Error("Failed to schedule task");
+			});
+
+			await expect(
+				startBackgroundWorkers(mockDrizzleClient, mockLogger),
+			).rejects.toThrow("Failed to schedule task");
+
+			expect(mockLogger.error).toHaveBeenCalledWith(
+				expect.any(Error),
+				"Failed to start background worker service",
+			);
+		});
+
+		it("stopBackgroundWorkers handles cleanupTask.stop() error", async () => {
+			// Test lines 170-181: cleanupTask.stop() error handling
+			const { runMaterializationWorker } = await import(
+				"~/src/workers/eventGeneration/eventGenerationPipeline"
+			);
+
+			vi.mocked(runMaterializationWorker).mockResolvedValue({
+				organizationsProcessed: 0,
+				instancesCreated: 0,
+				windowsUpdated: 0,
+				errorsEncountered: 0,
+				processingTimeMs: 1,
+			});
+
+			const cron = await import("node-cron");
+			const cleanupTaskStop = vi.fn().mockImplementation(() => {
+				throw new Error("Cleanup stop failed");
+			});
+
+			vi.mocked(cron.default.schedule)
+				.mockImplementationOnce(
+					() =>
+						({
+							start: vi.fn(),
+							stop: vi.fn(),
+						}) as unknown as ScheduledTask,
+				)
+				.mockImplementationOnce(
+					() =>
+						({
+							start: vi.fn(),
+							stop: cleanupTaskStop,
+						}) as unknown as ScheduledTask,
+				);
+
+			await startBackgroundWorkers(mockDrizzleClient, mockLogger);
+
+			await expect(stopBackgroundWorkers(mockLogger)).rejects.toThrow(
+				"Cleanup stop failed",
+			);
+
+			expect(mockLogger.error).toHaveBeenCalledWith(
+				expect.any(Error),
+				"Error stopping cleanup task:",
+			);
+		});
+
+		it("stopBackgroundWorkers handles materializationTask.stop() error", async () => {
+			// Test lines 157-168: materializationTask.stop() error handling
+			const { runMaterializationWorker } = await import(
+				"~/src/workers/eventGeneration/eventGenerationPipeline"
+			);
+
+			vi.mocked(runMaterializationWorker).mockResolvedValue({
+				organizationsProcessed: 0,
+				instancesCreated: 0,
+				windowsUpdated: 0,
+				errorsEncountered: 0,
+				processingTimeMs: 1,
+			});
+
+			const cron = await import("node-cron");
+			const materializationTaskStop = vi.fn().mockImplementation(() => {
+				throw new Error("Materialization stop failed");
+			});
+
+			vi.mocked(cron.default.schedule)
+				.mockImplementationOnce(
+					() =>
+						({
+							start: vi.fn(),
+							stop: materializationTaskStop,
+						}) as unknown as ScheduledTask,
+				)
+				.mockImplementationOnce(
+					() =>
+						({
+							start: vi.fn(),
+							stop: vi.fn(),
+						}) as unknown as ScheduledTask,
+				);
+
+			await startBackgroundWorkers(mockDrizzleClient, mockLogger);
+
+			await expect(stopBackgroundWorkers(mockLogger)).rejects.toThrow(
+				"Materialization stop failed",
+			);
+
+			expect(mockLogger.error).toHaveBeenCalledWith(
+				expect.any(Error),
+				"Error stopping materialization task:",
+			);
+		});
+
+		it("runMetricsAggregationWorkerSafely handles undefined aggregationDurationMs in error result", async () => {
+			// Test lines 385-387: when result.aggregationDurationMs is undefined in error path
+			const { runMetricsAggregationWorker } = await import(
+				"~/src/workers/metrics/metricsAggregationWorker"
+			);
+
+			const mockFastify = {
+				envConfig: {
+					METRICS_AGGREGATION_WINDOW_MINUTES: 5,
+					METRICS_SNAPSHOT_RETENTION_COUNT: 1000,
+					METRICS_SLOW_THRESHOLD_MS: 200,
+				},
+				getPerformanceSnapshots: vi.fn().mockReturnValue([]),
+			} as unknown as Parameters<typeof startBackgroundWorkers>[2];
+
+			await startBackgroundWorkers(mockDrizzleClient, mockLogger, mockFastify);
+
+			const aggregationError = new Error("Aggregation error");
+			vi.mocked(runMetricsAggregationWorker).mockReturnValue({
+				metrics: {
+					timestamp: Date.now(),
+					windowMinutes: 5,
+					snapshotCount: 0,
+					operations: {},
+					cache: {
+						totalHits: 0,
+						totalMisses: 0,
+						totalOps: 0,
+						hitRate: 0,
+					},
+					slowOperationCount: 0,
+					avgTotalMs: 0,
+					minTotalMs: 0,
+					maxTotalMs: 0,
+					medianTotalMs: 0,
+					p95TotalMs: 0,
+					p99TotalMs: 0,
+				},
+				snapshotsProcessed: 5,
+				// aggregationDurationMs is undefined to test the fallback
+				aggregationDurationMs: undefined,
+				error: aggregationError,
+			} as unknown as ReturnType<typeof runMetricsAggregationWorker>);
+
+			await runMetricsAggregationWorkerSafely(mockLogger);
+
+			expect(mockLogger.error).toHaveBeenCalledWith(
+				expect.objectContaining({
+					duration: expect.stringMatching(/^\d+ms$/),
+					snapshotsProcessed: 5,
+					aggregationDuration: expect.stringMatching(/^\d+ms$/), // Should use duration fallback
+					error: "Aggregation error",
+				}),
+				"Metrics aggregation worker failed",
+			);
+
+			await stopBackgroundWorkers(mockLogger);
+		});
+
+		it("runMetricsAggregationWorkerSafely catch block handles undefined aggregationDurationMs when result exists", async () => {
+			// Test lines 437-439: when result?.aggregationDurationMs is undefined in catch block
+			// This tests the scenario where result is undefined when exception occurs
+			const getPerformanceSnapshotsMock = vi.fn().mockImplementation(() => {
+				throw new Error("Failed to get snapshots");
+			});
+
+			const mockFastify = {
+				envConfig: {
+					METRICS_AGGREGATION_WINDOW_MINUTES: 5,
+					METRICS_SNAPSHOT_RETENTION_COUNT: 1000,
+					METRICS_SLOW_THRESHOLD_MS: 200,
+				},
+				getPerformanceSnapshots: getPerformanceSnapshotsMock,
+			} as unknown as Parameters<typeof startBackgroundWorkers>[2];
+
+			await startBackgroundWorkers(mockDrizzleClient, mockLogger, mockFastify);
+
+			// getPerformanceSnapshots will throw to trigger catch block
+			// The catch block will use result?.aggregationDurationMs ?? duration
+			// Since result is undefined when exception occurs, it will use duration fallback
+			await runMetricsAggregationWorkerSafely(mockLogger);
+
+			expect(mockLogger.error).toHaveBeenCalledWith(
+				expect.objectContaining({
+					duration: expect.stringMatching(/^\d+ms$/),
+					snapshotsProcessed: 0, // result is undefined when exception occurs, so ?? 0
+					aggregationDuration: expect.stringMatching(/^\d+ms$/), // Should use duration fallback when result?.aggregationDurationMs is undefined
+					error: "Failed to get snapshots",
+				}),
+				"Metrics aggregation worker failed",
+			);
+
+			await stopBackgroundWorkers(mockLogger);
+		});
+
+		it("healthCheck catch block handles getBackgroundWorkerStatus throwing", async () => {
+			// Test lines 515-524: catch block in healthCheck
+			const statusFn = vi.fn().mockImplementation(() => {
+				throw new Error("Status check failed");
+			});
+
+			const result = await healthCheck(statusFn);
+
+			expect(result.status).toBe("unhealthy");
+			expect(result.details.reason).toBe("Health check failed");
+			expect(result.details.error).toBe("Status check failed");
+		});
+	});
 });
