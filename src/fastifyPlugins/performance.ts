@@ -111,12 +111,10 @@ export default fp(
 			const authHeader = request.headers.authorization;
 
 			if (!authHeader) {
-				reply
-					.code(401)
-					.send({
-						error: "Unauthorized",
-						message: "Missing authorization header",
-					});
+				reply.code(401).send({
+					error: "Unauthorized",
+					message: "Missing authorization header",
+				});
 				return;
 			}
 
@@ -124,12 +122,10 @@ export default fp(
 			const [scheme, token] = authHeader.split(" ");
 
 			if (scheme?.toLowerCase() !== "bearer" || !token) {
-				reply
-					.code(401)
-					.send({
-						error: "Unauthorized",
-						message: "Invalid authorization format. Expected: Bearer <token>",
-					});
+				reply.code(401).send({
+					error: "Unauthorized",
+					message: "Invalid authorization format. Expected: Bearer <token>",
+				});
 				return;
 			}
 
