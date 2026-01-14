@@ -182,7 +182,7 @@ async function createTestEnvironment(
 					eventId,
 					description: "desc",
 					sequence: 1,
-					organizationId: "org-id",
+					organizationId,
 				},
 			},
 		},
@@ -220,7 +220,7 @@ async function createNonAgendaItemFolder(
 				eventId,
 				description: "desc",
 				sequence: 1,
-				organizationId: "org-id",
+				organizationId: faker.string.uuid(),
 			},
 		},
 	});
@@ -811,9 +811,9 @@ suite("Mutation field createAgendaItem", () => {
 						input: {
 							name: "Folder",
 							eventId,
-							description: "desc",
+							description: "Super admin test folder",
 							sequence: 1,
-							organizationId: "org-id",
+							organizationId
 						},
 					},
 				},

@@ -188,30 +188,31 @@ describe("AgendaFolder.creator resolver", () => {
 	});
 
 	it("should allow access if user is organization administrator", async () => {
-		mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValue({
+		const currentUser = {
 			id: "user-123",
 			role: "member",
-		});
-		mocks.drizzleClient.query.eventsTable.findFirst.mockResolvedValue({
-			startAt: new Date(),
-			organization: {
-				countryCode: "US",
-				membershipsWhereOrganization: [{ role: "administrator" }],
-			},
-		});
+		};
 
 		const creatorUser = {
 			id: "creator-123",
 			role: "member",
 		};
 
-		mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValueOnce(
-			creatorUser,
-		);
+		mocks.drizzleClient.query.usersTable.findFirst
+			.mockResolvedValueOnce(currentUser)   // current user
+			.mockResolvedValueOnce(creatorUser);  // creator user
 
-		const result = await resolveCreator(mockAgendaFolder, {}, ctx);
-		expect(result).toEqual(creatorUser);
-	});
+		mocks.drizzleClient.query.eventsTable.findFirst.mockResolvedValue({
+			startAt: new Date(),
+			organization: {
+			countryCode: "US",
+			membershipsWhereOrganization: [{ role: "administrator" }],
+			},
+		});
+
+  const result = await resolveCreator(mockAgendaFolder, {}, ctx);
+  expect(result).toEqual(creatorUser);
+});
 
 	it("should propagate database errors", async () => {
 		const dbError = new Error("Database failure");

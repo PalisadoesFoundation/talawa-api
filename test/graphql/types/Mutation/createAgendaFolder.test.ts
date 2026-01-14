@@ -142,7 +142,8 @@ suite("Mutation field createAgendaFolder", () => {
 			try {
 				await cleanup();
 			} catch {
-				// swallow cleanup errors
+				// Cleanup errors are intentionally swallowed to prevent cascading failures
+				// during teardown. The test result is already determined at this point.
 			}
 		}
 		testCleanupFunctions.length = 0;

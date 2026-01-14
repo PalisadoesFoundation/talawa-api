@@ -46,7 +46,7 @@ describe("MutationDeleteAgendaFolderInput Schema", () => {
 	});
 
 	describe("schema strictness", () => {
-		it("should reject additional unexpected fields", () => {
+		it("should allow (and strip) additional unexpected fields", () => {
 			const result = mutationDeleteAgendaFolderInputSchema.safeParse({
 				id: validInput.id,
 				extraField: "not-allowed",

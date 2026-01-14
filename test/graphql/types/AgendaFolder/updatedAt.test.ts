@@ -150,7 +150,6 @@ async function createOrgEventFolder(
 				input: {
 					name: `Folder ${faker.string.uuid()}`,
 					eventId,
-					isAgendaItemFolder: true,
 					organizationId: orgId,
 					sequence: 1,
 					description: "Test agenda folder",

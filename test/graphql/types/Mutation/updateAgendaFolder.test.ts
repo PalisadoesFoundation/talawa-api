@@ -21,6 +21,8 @@ let cachedAdminAuth: { token: string; userId: string } | null = null;
 async function getAdminAuth() {
 	if (cachedAdminAuth) return cachedAdminAuth;
 
+	mercuriusClient.setHeaders({});
+
 	const result = await mercuriusClient.query(Query_signIn, {
 		variables: {
 			input: {
@@ -111,7 +113,11 @@ suite("Mutation field updateAgendaFolder", () => {
 	afterEach(async () => {
 		vi.restoreAllMocks();
 		for (const fn of cleanupFns.reverse()) {
-			await fn();
+			try {
+				await fn();
+			} catch {
+				// Cleanup errors intentionally swallowed
+			}
 		}
 		cleanupFns.length = 0;
 	});

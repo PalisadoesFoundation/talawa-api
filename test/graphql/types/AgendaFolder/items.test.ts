@@ -84,8 +84,6 @@ describe("resolveItems", () => {
 			description: null,
 			organizationId: "org-1",
 			eventId: "event-1",
-			isAgendaItemFolder: true,
-			parentFolderId: null,
 			sequence: 1,
 			createdAt: new Date(),
 			updatedAt: new Date(),
