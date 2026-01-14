@@ -6,7 +6,7 @@
 
 > **\_\_resetBackgroundWorkerServiceForTesting**(): `void`
 
-Defined in: [src/workers/backgroundWorkerService.ts:528](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/workers/backgroundWorkerService.ts#L528)
+Defined in: [src/workers/backgroundWorkerService.ts:548](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/workers/backgroundWorkerService.ts#L548)
 
 Resets the background worker service state.
 FOR TESTING PURPOSES ONLY - resets all internal state.

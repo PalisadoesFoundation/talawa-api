@@ -134,12 +134,13 @@ export async function startBackgroundWorkers(
 
 /**
  * Stops all running background workers and releases any associated resources.
- * This function is idempotent and will reset all module-level state even if errors occur.
+ * This function throws an error if any task fails to stop.
  */
 export async function stopBackgroundWorkers(
 	logger: FastifyBaseLogger,
 ): Promise<void> {
 	if (!isRunning) {
+		logger.warn("Background workers are not running");
 		// Even if not running, ensure all state is cleared for idempotency
 		materializationTask = undefined;
 		cleanupTask = undefined;
@@ -150,13 +151,18 @@ export async function stopBackgroundWorkers(
 
 	logger.info("Stopping background worker service...");
 
-	// Stop each task individually, catching errors but continuing to reset state
-	// This ensures all state is cleared even if individual stops fail
+	let stopError: Error | undefined;
+
+	// Stop each task individually, catching errors to ensure we attempt all stops
 	if (materializationTask) {
 		try {
 			materializationTask.stop();
 		} catch (error) {
-			logger.error(error, "Error stopping materialization task:");
+			const err = error instanceof Error ? error : new Error(String(error));
+			logger.error(err, "Error stopping materialization task:");
+			if (!stopError) {
+				stopError = err;
+			}
 		}
 		materializationTask = undefined;
 	}
@@ -165,7 +171,11 @@ export async function stopBackgroundWorkers(
 		try {
 			cleanupTask.stop();
 		} catch (error) {
-			logger.error(error, "Error stopping cleanup task:");
+			const err = error instanceof Error ? error : new Error(String(error));
+			logger.error(err, "Error stopping cleanup task:");
+			if (!stopError) {
+				stopError = err;
+			}
 		}
 		cleanupTask = undefined;
 	}
@@ -174,7 +184,11 @@ export async function stopBackgroundWorkers(
 		try {
 			metricsTask.stop();
 		} catch (error) {
-			logger.error(error, "Error stopping metrics task:");
+			const err = error instanceof Error ? error : new Error(String(error));
+			logger.error(err, "Error stopping metrics task:");
+			if (!stopError) {
+				stopError = err;
+			}
 		}
 		metricsTask = undefined;
 	}
@@ -182,6 +196,12 @@ export async function stopBackgroundWorkers(
 	// Always reset module-level state, regardless of errors
 	fastifyInstance = undefined;
 	isRunning = false;
+
+	// If any stop operation failed, throw the first error after resetting state
+	if (stopError) {
+		throw stopError;
+	}
+
 	logger.info("Background worker service stopped successfully");
 }
 

@@ -1,10 +1,15 @@
-import { describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import {
 	createPerformanceTracker,
 	isPerformanceTracker,
 } from "~/src/utilities/metrics/performanceTracker";
 
 describe("Performance Tracker", () => {
+	beforeEach(() => {
+		// Ensure clean state between tests
+		// Each test creates its own tracker, but this ensures no shared state
+		vi.clearAllMocks();
+	});
 	it("should create a performance tracker with initial empty snapshot", () => {
 		const tracker = createPerformanceTracker();
 		const snapshot = tracker.snapshot();
@@ -310,11 +315,18 @@ describe("Performance Tracker", () => {
 	});
 
 	it("should track slow operations", async () => {
+		// Create a fresh tracker instance to ensure no state leakage from previous tests
 		const tracker = createPerformanceTracker({ slowMs: 10 });
+
+		// Verify tracker starts with empty slow array
+		expect(tracker.snapshot().slow.length).toBe(0);
 
 		// Use trackDb to directly set a fast operation timing (below threshold)
 		// This avoids timing variance from setTimeout
 		tracker.trackDb(5);
+
+		// Verify fast operation (5ms) is not added to slow array (threshold is 10ms)
+		expect(tracker.snapshot().slow.length).toBe(0);
 
 		// Use tracker.time for slow operation with sufficient delay to ensure it's slow
 		// Using 20ms delay which should reliably be >= 10ms threshold even with timing variance
@@ -324,6 +336,7 @@ describe("Performance Tracker", () => {
 
 		const snapshot = tracker.snapshot();
 
+		// Should have exactly 1 slow operation (the "slow-op" that took ~20ms)
 		expect(snapshot.slow.length).toBe(1);
 		expect(snapshot.slow[0]?.op).toBe("slow-op");
 		expect(snapshot.slow[0]?.ms).toBeGreaterThanOrEqual(10);

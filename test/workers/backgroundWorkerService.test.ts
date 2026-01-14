@@ -1320,9 +1320,10 @@ describe("backgroundServiceWorker", () => {
 
 			await startBackgroundWorkers(mockDrizzleClient, mockLogger, mockFastify);
 
-			// stopBackgroundWorkers now handles errors internally and doesn't throw
-			// It logs the error but continues to reset all state
-			await stopBackgroundWorkers(mockLogger);
+			// stopBackgroundWorkers now throws errors after resetting state
+			await expect(stopBackgroundWorkers(mockLogger)).rejects.toThrow(
+				"Metrics stop failed",
+			);
 
 			// Verify the error was logged
 			expect(mockLogger.error).toHaveBeenCalledWith(
