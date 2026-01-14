@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { eventGenerationWindowsTableInsertSchema } from "~/src/drizzle/tables/eventGenerationWindows";
 
-describe("eventGenerationWindows insert schema numeric bounds", () => {
+describe("eventGenerationWindows insert schema validation (UUIDs, dates, booleans, strings, numeric bounds)", () => {
 	// Base object with minimal valid required fields
 	const base = {
 		organizationId: "3f738d7f-22e7-4bda-b47f-61f0a9c9c9a1",
