@@ -1,0 +1,133 @@
+import axios, { type AxiosRequestConfig } from "axios";
+import { OAuthError, ProfileFetchError, TokenExchangeError } from "../errors";
+import type { IOAuthProvider } from "../interfaces/IOAuthProvider";
+import type {
+	OAuthConfig,
+	OAuthProviderTokenResponse,
+	OAuthUserProfile,
+} from "../types";
+
+/**
+ * Abstract base class for OAuth providers
+ * Implements common HTTP logic and error handling
+ */
+export abstract class BaseOAuthProvider implements IOAuthProvider {
+	/**
+	 * OAuth provider configuration.
+	 *
+	 * SECURITY WARNING:
+	 * - Contains sensitive credentials (e.g. clientSecret)
+	 * - MUST be used server-side only
+	 * - MUST NOT be logged or exposed in error messages
+	 */
+	protected config: OAuthConfig;
+	protected providerName: string;
+
+	constructor(providerName: string, config: OAuthConfig) {
+		this.providerName = providerName;
+		this.config = config;
+		this.validateConfig();
+	}
+
+	getProviderName(): string {
+		return this.providerName;
+	}
+
+	abstract exchangeCodeForTokens(
+		code: string,
+		redirectUri: string,
+	): Promise<OAuthProviderTokenResponse>;
+	abstract getUserProfile(accessToken: string): Promise<OAuthUserProfile>;
+
+	/**
+	 * Make HTTP POST request with error handling
+	 * @param url - Target URL
+	 * @param data - Request body data
+	 * @param headers - Optional headers
+	 * @returns Response data
+	 * @throws {TokenExchangeError} If request fails
+	 */
+	protected async post<T>(
+		url: string,
+		data: Record<string, string> | URLSearchParams,
+		headers?: Record<string, string>,
+	): Promise<T> {
+		try {
+			// Ensure data is URL-encoded for form submission
+			const formData =
+				data instanceof URLSearchParams ? data : new URLSearchParams(data);
+
+			const config: AxiosRequestConfig = {
+				headers: {
+					"Content-Type": "application/x-www-form-urlencoded",
+					...headers,
+				},
+				timeout: this.config.requestTimeoutMs || 10000, // fallback to 10 second timeout
+			};
+
+			const response = await axios.post<T>(url, formData, config);
+			return response.data;
+		} catch (error) {
+			if (axios.isAxiosError(error)) {
+				const errorData = error.response?.data as
+					| { error_description?: string; error?: string }
+					| undefined;
+				const errorMessage =
+					errorData?.error_description || errorData?.error || error.message;
+
+				throw new TokenExchangeError("Token exchange failed", errorMessage);
+			}
+			// Wrap non-Axios errors in OAuth error for consistent error handling
+			throw new TokenExchangeError(
+				"Token exchange failed",
+				error instanceof Error ? error.message : "Unknown error",
+			);
+		}
+	}
+
+	/**
+	 * Make HTTP GET request with error handling
+	 * @param url - Target URL
+	 * @param headers - Optional headers
+	 * @returns Response data
+	 * @throws {ProfileFetchError} If request fails
+	 */
+	protected async get<T>(
+		url: string,
+		headers?: Record<string, string>,
+	): Promise<T> {
+		try {
+			const config: AxiosRequestConfig = {
+				headers,
+				timeout: this.config.requestTimeoutMs || 10000, // fallback to 10 second timeout
+			};
+
+			const response = await axios.get<T>(url, config);
+			return response.data;
+		} catch (error) {
+			if (axios.isAxiosError(error)) {
+				throw new ProfileFetchError(
+					`Failed to fetch user profile: ${error.message}`,
+				);
+			}
+			// Wrap non-Axios errors in OAuth error for consistent error handling
+			throw new ProfileFetchError(
+				`Failed to fetch user profile: ${error instanceof Error ? error.message : "Unknown error"}`,
+			);
+		}
+	}
+
+	/**
+	 * Validate that required configuration is present
+	 * @throws {OAuthError} If configuration is invalid
+	 */
+	protected validateConfig(): void {
+		if (!this.config.clientId || !this.config.clientSecret) {
+			throw new OAuthError(
+				`Invalid OAuth configuration for ${this.providerName}`,
+				"INVALID_CONFIG",
+				500,
+			);
+		}
+	}
+}

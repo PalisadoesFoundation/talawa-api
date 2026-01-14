@@ -17,7 +17,6 @@ reviews:
     drafts: false
     base_branches:
       - develop
-      - develop
       - main
   path_filters:
     - "!**/docs/docs/**"

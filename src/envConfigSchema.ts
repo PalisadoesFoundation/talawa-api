@@ -1,6 +1,6 @@
-import { type Static, Type } from "@sinclair/typebox";
 import ajvFormats from "ajv-formats";
 import type { EnvSchemaOpt } from "env-schema";
+import { type Static, Type } from "typebox";
 
 /**
  * JSON schema of a record of environment variables accessible to the talawa api at runtime.
@@ -137,21 +137,21 @@ export const envConfigSchema = Type.Object({
 		}),
 	),
 	/**
+	 * Email provider selection.
+	 * Supported values: 'ses' (Amazon SES) and 'smtp'.
+	 * Defaults to 'ses' if not specified.
+	 */
+	API_EMAIL_PROVIDER: Type.Optional(
+		Type.Union([Type.Literal("ses"), Type.Literal("smtp")], { default: "ses" }),
+	),
+	/**
 	 * AWS access key ID for SES email service.
 	 */
-	AWS_ACCESS_KEY_ID: Type.Optional(
-		Type.String({
-			minLength: 1,
-		}),
-	),
+	AWS_ACCESS_KEY_ID: Type.Optional(Type.String({ minLength: 1 })),
 	/**
 	 * AWS secret access key for SES email service.
 	 */
-	AWS_SECRET_ACCESS_KEY: Type.Optional(
-		Type.String({
-			minLength: 1,
-		}),
-	),
+	AWS_SECRET_ACCESS_KEY: Type.Optional(Type.String({ minLength: 1 })),
 	/**
 	 * AWS region for SES email service.
 	 */
@@ -173,6 +173,45 @@ export const envConfigSchema = Type.Object({
 	 * Display name for the sender in emails.
 	 */
 	AWS_SES_FROM_NAME: Type.Optional(
+		Type.String({
+			minLength: 1,
+			default: "Talawa",
+		}),
+	),
+	/**
+	 * SMTP server hostname for email service.
+	 */
+	SMTP_HOST: Type.Optional(Type.String({ minLength: 1 })),
+	/**
+	 * SMTP server port for email service.
+	 * Common values: 587 (TLS), 465 (SSL), 25 (unsecured)
+	 */
+	SMTP_PORT: Type.Optional(Type.Integer({ minimum: 1, maximum: 65535 })),
+	/**
+	 * SMTP username for authentication.
+	 */
+	SMTP_USER: Type.Optional(Type.String({ minLength: 1 })),
+	/**
+	 * SMTP password for authentication.
+	 */
+	SMTP_PASSWORD: Type.Optional(Type.String({ minLength: 1 })),
+	/**
+	 * Whether to use SSL/TLS for SMTP connection.
+	 * Set to true for port 465, false for port 587 with STARTTLS.
+	 */
+	SMTP_SECURE: Type.Optional(Type.Boolean()),
+	/**
+	 * Verified email address to send emails from via SMTP.
+	 */
+	SMTP_FROM_EMAIL: Type.Optional(
+		Type.String({
+			format: "email",
+		}),
+	),
+	/**
+	 * Display name for the sender in emails via SMTP.
+	 */
+	SMTP_FROM_NAME: Type.Optional(
 		Type.String({
 			minLength: 1,
 			default: "Talawa",
@@ -283,6 +322,51 @@ export const envConfigSchema = Type.Object({
 	 * Defaults to true in production environments. Set explicitly for testing.
 	 */
 	API_IS_SECURE_COOKIES: Type.Optional(Type.Boolean()),
+	/**
+	 * Sampling ratio for OpenTelemetry traces.
+	 * Value between 0 (no traces) and 1 (all traces).
+	 * Default: 1 (sample all traces)
+	 */
+	API_OTEL_SAMPLING_RATIO: Type.Optional(
+		Type.Number({
+			minimum: 0,
+			maximum: 1,
+			default: 1,
+		}),
+	),
+	/**
+	 * The threshold in milliseconds for a request to be considered slow.
+	 */
+	API_SLOW_REQUEST_MS: Type.Optional(
+		Type.Number({
+			minimum: 0,
+			default: 500,
+		}),
+	),
+	/**
+	 * Enabled state for OpenTelemetry tracing.
+	 */
+	API_OTEL_ENABLED: Type.Boolean({
+		default: false,
+		description: "Enable or disable OpenTelemetry tracing",
+	}),
+	/**
+	 * Environment name for OpenTelemetry (e.g. 'production', 'development').
+	 */
+	API_OTEL_ENVIRONMENT: Type.Optional(Type.String({ minLength: 1 })),
+	/**
+	 * OTLP Exporter Endpoint URL.
+	 */
+	API_OTEL_EXPORTER_OTLP_ENDPOINT: Type.Optional(
+		Type.String({
+			minLength: 1,
+			format: "uri", // Using format: uri for validation
+		}),
+	),
+	/**
+	 * Service name for OpenTelemetry.
+	 */
+	API_OTEL_SERVICE_NAME: Type.Optional(Type.String({ minLength: 1 })),
 	/**
 	 * Used for providing the log level for the logger used in talawa api.
 	 *
@@ -484,6 +568,74 @@ export const envConfigSchema = Type.Object({
 	RECAPTCHA_SECRET_KEY: Type.Optional(
 		Type.String({
 			minLength: 1,
+		}),
+	),
+
+	/**
+	 * Google OAuth Client ID for authentication.
+	 */
+	GOOGLE_CLIENT_ID: Type.Optional(
+		Type.String({
+			minLength: 1,
+		}),
+	),
+
+	/**
+	 * Google OAuth Client Secret for authentication.
+	 */
+	GOOGLE_CLIENT_SECRET: Type.Optional(
+		Type.String({
+			minLength: 1,
+		}),
+	),
+
+	/**
+	 * Google OAuth Redirect URI for authentication callback.
+	 */
+	GOOGLE_REDIRECT_URI: Type.Optional(
+		Type.String({
+			minLength: 1,
+			format: "uri",
+		}),
+	),
+
+	/**
+	 * GitHub OAuth Client ID for authentication.
+	 */
+	GITHUB_CLIENT_ID: Type.Optional(
+		Type.String({
+			minLength: 1,
+		}),
+	),
+
+	/**
+	 * GitHub OAuth Client Secret for authentication.
+	 */
+	GITHUB_CLIENT_SECRET: Type.Optional(
+		Type.String({
+			minLength: 1,
+		}),
+	),
+
+	/**
+	 * GitHub OAuth Redirect URI for authentication callback.
+	 */
+	GITHUB_REDIRECT_URI: Type.Optional(
+		Type.String({
+			minLength: 1,
+			format: "uri",
+		}),
+	),
+
+	/**
+	 * Request timeout in milliseconds for OAuth provider API calls.
+	 * Default: 10000 (10 seconds)
+	 */
+	API_OAUTH_REQUEST_TIMEOUT_MS: Type.Optional(
+		Type.Integer({
+			minimum: 1000,
+			maximum: 60000,
+			default: 10000,
 		}),
 	),
 });

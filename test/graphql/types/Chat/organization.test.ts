@@ -201,7 +201,7 @@ describe("Chat.organization integration test", () => {
 		const ctx = {
 			currentClient: { isAuthenticated: true, user: { id: creatorId } },
 			drizzleClient: server.drizzleClient,
-			dataloaders: createDataloaders(server.drizzleClient),
+			dataloaders: createDataloaders(server.drizzleClient, null),
 			log: {
 				...server.log,
 				error: mockLogError,

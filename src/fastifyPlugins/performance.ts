@@ -42,6 +42,17 @@ export default fp(async function perfPlugin(app: FastifyInstance) {
 	app.addHook("onSend", async (req, reply) => {
 		const snap = req.perf?.snapshot?.();
 		const total = Date.now() - (req._t0 ?? Date.now());
+		const slowMs = Number(process.env.API_SLOW_REQUEST_MS ?? 500);
+
+		if (total >= slowMs) {
+			req.log.warn({
+				msg: "Slow request",
+				method: req.method,
+				path: req.url,
+				totalMs: total,
+				slowThresholdMs: slowMs,
+			});
+		}
 
 		// Extract metrics from snapshot
 		const dbMs = Math.round(snap?.ops?.db?.ms ?? 0);

@@ -6,6 +6,6 @@
 
 > **OrganizationRow** = *typeof* `organizationsTable.$inferSelect`
 
-Defined in: [src/utilities/dataloaders/organizationLoader.ts:9](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/utilities/dataloaders/organizationLoader.ts#L9)
+Defined in: [src/utilities/dataloaders/organizationLoader.ts:16](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/utilities/dataloaders/organizationLoader.ts#L16)
 
 Type representing an organization row from the database.

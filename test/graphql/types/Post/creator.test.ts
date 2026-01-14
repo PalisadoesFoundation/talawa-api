@@ -54,20 +54,6 @@ describe("Post Resolver - Creator Field", () => {
 	});
 
 	describe("Authorization", () => {
-		it("should throw unauthorized_action error if user is not an administrator and not an org admin", async () => {
-			mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValue({
-				id: "user-123",
-				role: "member",
-				organizationMembershipsWhereMember: [{ role: "member" }],
-			});
-
-			await expect(resolveCreator(mockPost, {}, ctx)).rejects.toThrow(
-				new TalawaGraphQLError({
-					extensions: { code: "unauthorized_action" },
-				}),
-			);
-		});
-
 		it("should throw unauthorized_action error if user has no organization membership", async () => {
 			mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValue({
 				id: "user-123",
@@ -81,7 +67,27 @@ describe("Post Resolver - Creator Field", () => {
 				}),
 			);
 		});
+		it("should allow organization member access", async () => {
+			const currentUser = {
+				id: "user-123",
+				role: "member",
+				organizationMembershipsWhereMember: [{ role: "member" }],
+			};
 
+			const creatorUser = {
+				id: "user-456",
+				role: "member",
+			};
+
+			mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValueOnce(
+				currentUser,
+			);
+			ctx.dataloaders.user.load = vi.fn().mockResolvedValue(creatorUser);
+
+			const result = await resolveCreator(mockPost, {}, ctx);
+			expect(result).toEqual(creatorUser);
+			expect(ctx.dataloaders.user.load).toHaveBeenCalledWith("user-456");
+		});
 		it("should throw unauthorized_action error when organization membership is undefined", async () => {
 			mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValue({
 				id: "user-123",

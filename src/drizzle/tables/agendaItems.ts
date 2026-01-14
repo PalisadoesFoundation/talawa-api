@@ -4,6 +4,7 @@ import { createInsertSchema } from "drizzle-zod";
 import { uuidv7 } from "uuidv7";
 import { agendaItemTypeEnum } from "~/src/drizzle/enums/agendaItemType";
 import { agendaFoldersTable } from "./agendaFolders";
+import { agendaItemAttachmentsTable } from "./agendaItemAttachments";
 import { usersTable } from "./users";
 
 /**
@@ -93,7 +94,13 @@ export const agendaItemsTable = pgTable(
 
 export const agendaItemsTableRelations = relations(
 	agendaItemsTable,
-	({ one }) => ({
+	({ one, many }) => ({
+		/**
+		 * One to many relationship from `agenda_items` table to `agenda_item_attachments` table.
+		 */
+		attachmentsWhereAgendaItem: many(agendaItemAttachmentsTable, {
+			relationName: "agenda_item_attachments.agenda_item_id:agenda_items.id",
+		}),
 		/**
 		 * Many to one relationship from `agenda_items` table to `users` table.
 		 */

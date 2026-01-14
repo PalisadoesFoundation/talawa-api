@@ -277,6 +277,7 @@ jobs:
             '^Dockerfile.*'
             '^docker-compose.*'
             '^drizzle_migrations/.*'
+            '^scripts/.*'
             '.dockerignore$'
             '.env.sample$'
             '.env_test$'
@@ -287,7 +288,7 @@ jobs:
             '.prettierignore$'
             '.prettierrc.json$'
             '.pylintrc$'
-            '^.github/.*'
+            '^.github/.*'            
             'biome.jsonc$'
             'renovate.json$'
             'requirements.txt$'
@@ -317,6 +318,9 @@ jobs:
             'ISSUE_GUIDELINES.md$'
             'PR_GUIDELINES.md$'
             'README.md$'
+            '^./*md'
+            '^./*txt'
+            '^./*TXT'
           )
 
           # Check for changes in sensitive files

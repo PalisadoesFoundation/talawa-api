@@ -798,3 +798,4 @@ FodyWeavers.xsd
 .pnpm-store
 package-lock.json
 yarn.lock
+venv

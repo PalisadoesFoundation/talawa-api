@@ -184,7 +184,7 @@ suite("Mutation field requestPasswordReset", () => {
 		test("returns success even when email send fails (logs error)", async () => {
 			// Import the emailService singleton to spy on it
 			const { emailService } = await import(
-				"~/src/services/ses/emailServiceInstance"
+				"~/src/services/email/emailServiceInstance"
 			);
 			const sendEmailSpy = vi
 				.spyOn(emailService, "sendEmail")
@@ -225,7 +225,7 @@ suite("Mutation field requestPasswordReset", () => {
 		 */
 		test("returns success even when email send throws exception (logs error)", async () => {
 			const { emailService } = await import(
-				"~/src/services/ses/emailServiceInstance"
+				"~/src/services/email/emailServiceInstance"
 			);
 			const sendEmailSpy = vi
 				.spyOn(emailService, "sendEmail")
@@ -260,7 +260,7 @@ suite("Mutation field requestPasswordReset", () => {
 		 */
 		test("handles non-Error exceptions gracefully", async () => {
 			const { emailService } = await import(
-				"~/src/services/ses/emailServiceInstance"
+				"~/src/services/email/emailServiceInstance"
 			);
 			const sendEmailSpy = vi
 				.spyOn(emailService, "sendEmail")

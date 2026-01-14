@@ -7,7 +7,7 @@ import { Post } from "./Post";
 
 /**
  * Resolves the creator user for a Post.
- * Requires authentication and administrator permissions (global or organization-level).
+ * Requires authentication and either global administrator privileges or organization membership.
  * Uses DataLoader for batched user queries to prevent N+1 behavior.
  *
  * @param parent - The Post parent object
@@ -56,16 +56,12 @@ export const resolveCreator = async (
 
 	const currentUserOrganizationMembership =
 		currentUser.organizationMembershipsWhereMember?.[0];
-
 	if (
 		currentUser.role !== "administrator" &&
-		(currentUserOrganizationMembership === undefined ||
-			currentUserOrganizationMembership.role !== "administrator")
+		currentUserOrganizationMembership === undefined
 	) {
 		throw new TalawaGraphQLError({
-			extensions: {
-				code: "unauthorized_action",
-			},
+			extensions: { code: "unauthorized_action" },
 		});
 	}
 

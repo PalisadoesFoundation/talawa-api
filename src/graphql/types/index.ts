@@ -37,3 +37,4 @@ import "./VenueAttachment/index";
 import "./Notification/index";
 import "./EventVolunteerMembership/index";
 import "./EventInvitation/index";
+import "./AgendaCategory/index";

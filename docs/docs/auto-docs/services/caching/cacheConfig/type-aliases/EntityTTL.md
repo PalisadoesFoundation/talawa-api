@@ -12,6 +12,14 @@ TTL configuration for different entity types (in seconds).
 
 ## Properties
 
+### actionItem
+
+> **actionItem**: `number`
+
+Defined in: [src/services/caching/cacheConfig.ts:15](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/caching/cacheConfig.ts#L15)
+
+***
+
 ### event
 
 > **event**: `number`

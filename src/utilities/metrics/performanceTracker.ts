@@ -20,12 +20,20 @@ export type OpStats = {
 export type PerfSnapshot = {
 	/** Total time spent across all operations in milliseconds */
 	totalMs: number;
+	/** Total number of operations tracked */
+	totalOps: number;
 	/** Number of cache hits */
 	cacheHits: number;
 	/** Number of cache misses */
 	cacheMisses: number;
+	/** Cache hit rate (hits / (hits + misses)) */
+	hitRate: number;
 	/** Statistics for each operation type */
 	ops: Record<string, OpStats>;
+	/** Slow operations that exceeded the threshold */
+	slow: Array<{ op: string; ms: number }>;
+	/** GraphQL query complexity score (if tracked) */
+	complexityScore?: number;
 };
 
 /**
@@ -64,6 +72,12 @@ export interface PerformanceTracker {
 	trackCacheMiss(): void;
 
 	/**
+	 * Record a GraphQL query complexity score.
+	 * @param score - Complexity score for the query
+	 */
+	trackComplexity(score: number): void;
+
+	/**
 	 * Get a snapshot of current performance metrics.
 	 * @returns Performance snapshot
 	 */
@@ -71,14 +85,46 @@ export interface PerformanceTracker {
 }
 
 /**
+ * Options for creating a performance tracker.
+ */
+export interface PerformanceTrackerOptions {
+	/**
+	 * Threshold in milliseconds for considering an operation as slow.
+	 * Operations exceeding this threshold will be added to the slow array.
+	 * Defaults to 200ms if not provided.
+	 */
+	slowMs?: number;
+	/**
+	 * Optional custom slow array for testing purposes.
+	 * If provided, this array will be used instead of creating a new one.
+	 * @internal - For testing only
+	 */
+	__slowArray?: Array<{ op: string; ms: number }>;
+}
+
+/**
+ * Maximum number of slow operations to retain in memory.
+ * When this limit is reached, only operations slower than the current minimum are added.
+ */
+const MAX_SLOW = 50;
+
+/**
  * Creates a performance tracker for request-level metrics.
  * Tracks operations, cache hits/misses, and provides snapshots.
+ *
+ * @param opts - Optional configuration for the tracker
+ * @returns A new performance tracker instance
  */
-export function createPerformanceTracker(): PerformanceTracker {
+export function createPerformanceTracker(
+	opts?: PerformanceTrackerOptions,
+): PerformanceTracker {
+	const slowMs = opts?.slowMs ?? 200;
 	const ops: Record<string, OpStats> = {};
+	const slow: Array<{ op: string; ms: number }> = opts?.__slowArray ?? [];
 	let cacheHits = 0;
 	let cacheMisses = 0;
-	let totalMs = 0;
+	let totalOps = 0;
+	let complexityScore: number | undefined;
 
 	/**
 	 * Ensure an operation entry exists in the ops record.
@@ -107,7 +153,49 @@ export function createPerformanceTracker(): PerformanceTracker {
 		o.count++;
 		o.ms += ms;
 		o.max = Math.max(o.max, ms);
-		totalMs += ms;
+		totalOps++;
+		// Track slow operations with bounded insertion
+		if (ms >= slowMs) {
+			const roundedMs = Math.ceil(ms);
+			if (slow.length < MAX_SLOW) {
+				// Still have room, just push
+				slow.push({ op: k, ms: roundedMs });
+			} else {
+				// Find the minimum slow operation using the same rounding convention
+				// Defensive: handle sparse arrays and invalid entries
+				let minIdx = -1;
+				let minMs = Infinity;
+
+				for (let i = 0; i < slow.length; i++) {
+					const cur = slow[i];
+					// Skip sparse/invalid entries
+					if (!cur || typeof cur.ms !== "number") {
+						continue;
+					}
+					// Use same rounding for comparison (values are already rounded when stored,
+					// but we ensure consistency by using the stored rounded value)
+					const curMs = cur.ms;
+					if (curMs < minMs) {
+						minMs = curMs;
+						minIdx = i;
+					}
+				}
+
+				// If we couldn't find a valid entry, do nothing (defensive)
+				if (minIdx === -1 || minMs === Infinity) {
+					return;
+				}
+
+				// Only replace when the new duration is strictly greater than the current minimum.
+				// If roundedMs <= minMs, do not add/replace.
+				if (roundedMs <= minMs) {
+					return;
+				}
+
+				// Replace the minimum entry with the new slow op
+				slow[minIdx] = { op: k, ms: roundedMs };
+			}
+		}
 	};
 
 	return {
@@ -142,13 +230,55 @@ export function createPerformanceTracker(): PerformanceTracker {
 			cacheMisses++;
 		},
 
+		trackComplexity(score: number): void {
+			if (!Number.isFinite(score) || score < 0) {
+				return; // Ignore invalid values
+			}
+			// Store the complexity score separately from timing metrics
+			complexityScore = score;
+		},
+
 		snapshot(): PerfSnapshot {
+			const totalCacheOps = cacheHits + cacheMisses;
+			const hitRate = totalCacheOps > 0 ? cacheHits / totalCacheOps : 0;
+
+			// Calculate totalMs from ops to ensure accuracy (sum of all operation durations)
+			const calculatedTotalMs = Object.values(ops).reduce(
+				(sum, op) => sum + op.ms,
+				0,
+			);
+
 			return {
-				totalMs,
+				totalMs: Math.ceil(calculatedTotalMs),
+				totalOps,
 				cacheHits,
 				cacheMisses,
+				hitRate,
 				ops: structuredClone(ops),
+				slow: slow.slice(), // Already bounded to MAX_SLOW during accumulation
+				...(complexityScore !== undefined && { complexityScore }),
 			};
 		},
 	};
+}
+
+/**
+ * Type guard to verify an unknown value is a PerformanceTracker.
+ * @param value - Value to check
+ * @returns True if value is a PerformanceTracker
+ */
+export function isPerformanceTracker(
+	value: unknown,
+): value is PerformanceTracker {
+	return (
+		typeof value === "object" &&
+		value !== null &&
+		"time" in value &&
+		"start" in value &&
+		"trackComplexity" in value &&
+		"snapshot" in value &&
+		"trackDb" in value &&
+		"trackCacheHit" in value &&
+		"trackCacheMiss" in value
+	);
 }

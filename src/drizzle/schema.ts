@@ -22,9 +22,17 @@ export {
 	advertisementsTableRelations,
 } from "./tables/advertisements";
 export {
+	agendaCategoriesTable,
+	agendaCategoriesTableRelations,
+} from "./tables/agendaCategories";
+export {
 	agendaFoldersTable,
 	agendaFoldersTableRelations,
 } from "./tables/agendaFolders";
+export {
+	agendaItemAttachmentsTable,
+	agendaItemAttachmentsTableRelations,
+} from "./tables/agendaItemAttachments";
 export {
 	agendaItemsTable,
 	agendaItemsTableRelations,
@@ -126,6 +134,10 @@ export {
 	notificationTemplatesTable,
 	notificationTemplatesTableRelations,
 } from "./tables/NotificationTemplate";
+export {
+	oauthAccountsTable,
+	oauthAccountsTableRelations,
+} from "./tables/oauthAccount";
 export {
 	organizationMembershipsTable,
 	organizationMembershipsTableRelations,

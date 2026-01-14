@@ -10,7 +10,8 @@
 	"ignore": [
 		"src/plugins/**",
 		"src/graphql/inputs/**/*.ts",
-		"src/graphql/schemaImportWorker.ts"
+		"src/graphql/schemaImportWorker.ts",
+		"src/types/oauthAccount.ts"
 	],
 	"project": ["src/**/*.ts", "scripts/**/*.ts"],
 	"ignoreDependencies": [],
