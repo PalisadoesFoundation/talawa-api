@@ -238,6 +238,32 @@ describe("GraphQL Tracing Hooks", () => {
 			);
 		});
 
+		it("should use 'unknown' for operations without an operation type", async () => {
+			const mockDocument = {
+				definitions: [
+					{
+						kind: "OperationDefinition",
+						name: { value: "TestOperation" },
+						// No operation property
+					},
+				],
+			};
+
+			const context: Record<string, unknown> = {};
+			const tracingPreExecutionHook = preExecutionHooks[0];
+
+			await tracingPreExecutionHook?.(
+				{} as GraphQLSchema,
+				mockDocument,
+				context,
+			);
+
+			expect(mockSpan.setAttribute).toHaveBeenCalledWith(
+				"graphql.operation.type",
+				"unknown",
+			);
+		});
+
 		it("should store span on context for later cleanup", async () => {
 			const mockDocument = {
 				definitions: [
