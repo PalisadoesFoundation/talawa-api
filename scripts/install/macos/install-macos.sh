@@ -293,7 +293,19 @@ if [ "$CLEAN_NODE_VERSION" = "lts" ]; then
     # Install LTS and capture output to determine version
     if ! OUTPUT=$(fnm install --lts 2>&1); then
         echo "$OUTPUT"
-        error "Failed to install LTS version of Node.js"
+        error "$(cat <<EOF
+Failed to install LTS version of Node.js
+
+This could be due to:
+  - Network connectivity issues
+  - Insufficient disk space
+
+Troubleshooting:
+  1. Check your internet connection
+  2. Verify disk space: df -h
+  3. Try installing manually: fnm install --lts
+EOF
+)"
         exit 1
     fi
     echo "$OUTPUT"
@@ -321,26 +333,64 @@ elif [ "$CLEAN_NODE_VERSION" = "latest" ]; then
         exit 1
     fi
     if ! fnm use latest; then
-        error "Failed to activate latest version of Node.js"
+        error "$(cat <<EOF
+Failed to activate latest Node.js version
+
+The installation succeeded but activation failed.
+
+Troubleshooting:
+  1. Verify the version was installed: fnm list
+  2. Try running manually: fnm use latest
+  3. If needed, reinstall: fnm install --latest
+EOF
+)"
         exit 1
     fi
     VERSION="$(fnm current | awk '{sub(/^v/, "", $1); print $1}')"
     fnm default "$VERSION" || echo "Warning: Failed to set latest as default Node.js version. Current session has correct version but future shells may not." >&2
 else
+    # Install the specified Node.js version
+    info "Installing Node.js v$CLEAN_NODE_VERSION..."
     if ! fnm install "$CLEAN_NODE_VERSION"; then
-        error "Failed to install Node.js v$CLEAN_NODE_VERSION"
+        error "$(cat <<EOF
+Failed to install Node.js v$CLEAN_NODE_VERSION
+
+This could be due to:
+  - Network connectivity issues
+  - Insufficient disk space
+  - Invalid Node.js version number
+  
+Troubleshooting:
+  1. Check your internet connection
+  2. Verify disk space: df -h
+  3. Try installing manually: fnm install $CLEAN_NODE_VERSION
+EOF
+)"
         exit 1
     fi
+
+    success "Node.js v$CLEAN_NODE_VERSION installed successfully"
+
+    # Activate the installed version
+    info "Activating Node.js v$CLEAN_NODE_VERSION..."
     if ! fnm use "$CLEAN_NODE_VERSION"; then
-        error "Failed to activate Node.js v$CLEAN_NODE_VERSION"
+        error "$(cat <<EOF
+Failed to activate Node.js v$CLEAN_NODE_VERSION
+The installation succeeded but activation failed.
+Try running: fnm use $CLEAN_NODE_VERSION
+EOF
+)"
         exit 1
     fi
+
+    success "Node.js v$CLEAN_NODE_VERSION activated"
     fnm default "$(fnm current | awk '{sub(/^v/, "", $1); print $1}')" || echo "Warning: Failed to set Node.js v$CLEAN_NODE_VERSION as default. Current session has correct version but future shells may not." >&2
 fi
 
 # Verify Node.js is available
 if ! command_exists node; then
-    error "Node.js installation succeeded but node command not found. You may need to restart your shell."
+    error "Node.js was installed but is not available in PATH"
+    error "Try restarting your terminal or running: eval \"\$(fnm env)\""
     exit 1
 fi
 
@@ -351,6 +401,37 @@ success "Node.js installed: $(node --version)"
 ##############################################################################
 : $((CURRENT_STEP++))
 step $CURRENT_STEP $TOTAL_STEPS "Installing pnpm v$PNPM_VERSION..."
+
+# Verify npm is available before installing pnpm
+if ! command_exists npm; then
+    error "npm is not available. Node.js installation may have failed."
+    echo ""
+    error "Troubleshooting:"
+    error "  1. Verify Node.js is installed: node --version"
+    error "  2. Check if fnm environment is loaded: fnm env"
+    error "  3. Try loading fnm manually: eval \"\$(fnm env)\""
+    error "  4. Restart your terminal"
+    echo ""
+    error "If Node.js is installed but npm is missing:"
+    error "  - Node.js installation may be corrupted"
+    if [ "$CLEAN_NODE_VERSION" = "lts" ]; then
+        error "  - Try reinstalling: fnm install --lts"
+    elif [ "$CLEAN_NODE_VERSION" = "latest" ]; then
+        error "  - Try reinstalling: fnm install --latest"
+    else
+        error "  - Try reinstalling: fnm install $CLEAN_NODE_VERSION"
+    fi
+    exit 1
+fi
+
+# Verify npm is working correctly
+NPM_VERSION=$(npm --version 2>/dev/null || true)
+if [ -z "$NPM_VERSION" ]; then
+    error "npm is found but not functioning correctly"
+    exit 1
+fi
+
+success "npm is available (v$NPM_VERSION)"
 
 if command_exists pnpm; then
     CURRENT_PNPM=$(pnpm --version)
