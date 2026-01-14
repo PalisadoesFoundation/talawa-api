@@ -1170,8 +1170,9 @@ describe("backgroundServiceWorker", () => {
 
 		it("returns unhealthy when getBackgroundWorkerStatus throws Error", async () => {
 			// Test lines 470-479: catch block handles when getBackgroundWorkerStatus throws
-			// First, ensure workers are started so isRunning is true
-			// This ensures we're testing the error path, not the "not running" path
+			// Note: Testing error handling by directly testing the catch block logic
+			// Since mocking internal function calls is unreliable, we verify the error handling
+			// by ensuring the catch block structure is correct and returns the expected format
 			const { runMaterializationWorker } = await import(
 				"~/src/workers/eventGeneration/eventGenerationPipeline"
 			);
@@ -1190,36 +1191,46 @@ describe("backgroundServiceWorker", () => {
 			const initialStatus = getBackgroundWorkerStatus();
 			expect(initialStatus.isRunning).toBe(true);
 
-			// Spy on the imported function - this will intercept the internal call
-			// from healthCheck since they share the same module reference
-			const statusError = new Error("Status check failed");
-			const statusSpy = vi
-				.spyOn(
-					await import("~/src/workers/backgroundWorkerService"),
-					"getBackgroundWorkerStatus",
-				)
-				.mockImplementation(() => {
-					throw statusError;
-				});
-
-			// Import healthCheck from the same module to ensure it uses the mocked function
-			const { healthCheck: healthCheckFn } = await import(
+			// Create a wrapper that throws to test the error handling path
+			// We test the error handling logic by creating a scenario where an error would occur
+			const workerModule = await import(
 				"~/src/workers/backgroundWorkerService"
 			);
-			const result = await healthCheckFn();
+			const originalGetStatus = workerModule.getBackgroundWorkerStatus;
 
-			expect(result.status).toBe("unhealthy");
-			expect(result.details.reason).toBe("Health check failed");
-			expect(result.details.error).toBe("Status check failed");
+			// Temporarily replace the function to throw
+			const statusError = new Error("Status check failed");
+			Object.defineProperty(workerModule, "getBackgroundWorkerStatus", {
+				value: () => {
+					throw statusError;
+				},
+				configurable: true,
+				writable: true,
+			});
 
-			statusSpy.mockRestore();
+			try {
+				const result = await workerModule.healthCheck();
+
+				expect(result.status).toBe("unhealthy");
+				expect(result.details.reason).toBe("Health check failed");
+				expect(result.details.error).toBe("Status check failed");
+			} finally {
+				// Restore original function
+				Object.defineProperty(workerModule, "getBackgroundWorkerStatus", {
+					value: originalGetStatus,
+					configurable: true,
+					writable: true,
+				});
+			}
+
 			await stopBackgroundWorkers(mockLogger);
 		});
 
 		it("returns unhealthy when getBackgroundWorkerStatus throws non-Error", async () => {
 			// Test lines 470-479: catch block handles when getBackgroundWorkerStatus throws non-Error
-			// First, ensure workers are started so isRunning is true
-			// This ensures we're testing the error path, not the "not running" path
+			// Note: Testing error handling by directly testing the catch block logic
+			// Since mocking internal function calls is unreliable, we verify the error handling
+			// by ensuring the catch block structure is correct and returns the expected format
 			const { runMaterializationWorker } = await import(
 				"~/src/workers/eventGeneration/eventGenerationPipeline"
 			);
@@ -1238,28 +1249,37 @@ describe("backgroundServiceWorker", () => {
 			const initialStatus = getBackgroundWorkerStatus();
 			expect(initialStatus.isRunning).toBe(true);
 
-			// Spy on the imported function - this will intercept the internal call
-			// from healthCheck since they share the same module reference
-			const statusSpy = vi
-				.spyOn(
-					await import("~/src/workers/backgroundWorkerService"),
-					"getBackgroundWorkerStatus",
-				)
-				.mockImplementation(() => {
-					throw "String error";
-				});
-
-			// Import healthCheck from the same module to ensure it uses the mocked function
-			const { healthCheck: healthCheckFn } = await import(
+			// Create a wrapper that throws to test the error handling path
+			// We test the error handling logic by creating a scenario where an error would occur
+			const workerModule = await import(
 				"~/src/workers/backgroundWorkerService"
 			);
-			const result = await healthCheckFn();
+			const originalGetStatus = workerModule.getBackgroundWorkerStatus;
 
-			expect(result.status).toBe("unhealthy");
-			expect(result.details.reason).toBe("Health check failed");
-			expect(result.details.error).toBe("String error");
+			// Temporarily replace the function to throw a non-Error
+			Object.defineProperty(workerModule, "getBackgroundWorkerStatus", {
+				value: () => {
+					throw "String error";
+				},
+				configurable: true,
+				writable: true,
+			});
 
-			statusSpy.mockRestore();
+			try {
+				const result = await workerModule.healthCheck();
+
+				expect(result.status).toBe("unhealthy");
+				expect(result.details.reason).toBe("Health check failed");
+				expect(result.details.error).toBe("String error");
+			} finally {
+				// Restore original function
+				Object.defineProperty(workerModule, "getBackgroundWorkerStatus", {
+					value: originalGetStatus,
+					configurable: true,
+					writable: true,
+				});
+			}
+
 			await stopBackgroundWorkers(mockLogger);
 		});
 	});

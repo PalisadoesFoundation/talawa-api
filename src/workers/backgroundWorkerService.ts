@@ -437,6 +437,7 @@ export async function healthCheck(): Promise<{
 	details: Record<string, unknown>;
 }> {
 	try {
+		// Call getBackgroundWorkerStatus - tests can spy on this export to mock it
 		const status = getBackgroundWorkerStatus();
 
 		// Check if workers are running
