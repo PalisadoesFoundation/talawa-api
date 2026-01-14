@@ -226,11 +226,16 @@ parse_package_json() {
 # This function provides standardized error output when version validation fails.
 # Used to avoid code duplication across Linux and macOS installation scripts.
 #
-# Usage: handle_version_validation_error "field_name" "current_value"
+# Usage: handle_version_validation_error "field_name" "current_value" ["jq_path"]
+# Arguments:
+#   field_name:    Descriptive name shown to user (e.g., "Node.js version (engines.node)")
+#   current_value: The invalid value that failed validation
+#   jq_path:       (Optional) Valid jq path for the field (e.g., ".engines.node")
 ##############################################################################
 handle_version_validation_error() {
     local field_name="$1"
     local current_value="$2"
+    local jq_path="${3:-}"
     
     error "Security validation failed for $field_name"
     echo ""
@@ -245,7 +250,11 @@ handle_version_validation_error() {
     echo ""
     info "Troubleshooting steps:"
     echo "  1. Check the field in package.json:"
-    echo "     jq '${field_name}' package.json"
+    if [ -n "$jq_path" ]; then
+        echo "     jq '${jq_path}' package.json"
+    else
+        echo "     Check the relevant field manually in package.json"
+    fi
     echo ""
     echo "  2. Restore package.json if corrupted:"
     echo "     git checkout package.json"

@@ -411,13 +411,57 @@ success "pnpm installed: v$(pnpm --version)"
 : $((CURRENT_STEP++))
 step $CURRENT_STEP $TOTAL_STEPS "Installing project dependencies..."
 
-# Run pnpm install with retry logic
-if ! retry_command "$MAX_RETRY_ATTEMPTS" pnpm install; then
-    error "Failed to install dependencies after $MAX_RETRY_ATTEMPTS attempts"
-    exit 1
-fi
+# Make pnpm install idempotent by tracking lockfile hash (outside node_modules to survive deletion)
+LOCKFILE_HASH_CACHE=".talawa-pnpm-lock-hash"
+NEEDS_INSTALL=true
 
-success "Project dependencies installed"
+if [ -f "pnpm-lock.yaml" ]; then
+    CURRENT_LOCKFILE_HASH=$(shasum -a 256 pnpm-lock.yaml 2>/dev/null | cut -d ' ' -f 1)
+    if [ -z "$CURRENT_LOCKFILE_HASH" ]; then
+        warn "Failed to compute lockfile hash, proceeding with install"
+        CURRENT_LOCKFILE_HASH="unknown"
+    fi    
+
+    if [ -d "node_modules" ] && [ -f "$LOCKFILE_HASH_CACHE" ]; then
+        CACHED_HASH=$(cat "$LOCKFILE_HASH_CACHE" 2>/dev/null) || CACHED_HASH=""
+        if [ "$CURRENT_LOCKFILE_HASH" = "$CACHED_HASH" ]; then
+            NEEDS_INSTALL=false
+            success "Dependencies already up-to-date (lockfile unchanged)"
+        fi
+    fi
+    
+    if [ "$NEEDS_INSTALL" = true ]; then
+        info "Installing dependencies..."
+        if ! retry_command "$MAX_RETRY_ATTEMPTS" pnpm install; then
+             error "Failed to install dependencies after $MAX_RETRY_ATTEMPTS attempts"
+             info "Possible causes:"
+             info "  - Network connectivity issues"
+             info "  - Package registry temporarily unavailable"
+             info "  - Corrupted pnpm cache (try: pnpm store prune)"
+             exit 1
+        fi
+        # Cache the lockfile hash after successful install
+        if [ "$CURRENT_LOCKFILE_HASH" != "unknown" ]; then
+            echo "$CURRENT_LOCKFILE_HASH" > "$LOCKFILE_HASH_CACHE" 2>/dev/null || warn "Failed to cache lockfile hash"
+        fi
+        success "Project dependencies installed"
+    fi
+else
+    # No lockfile exists, run install to generate it
+    info "No pnpm-lock.yaml found, running fresh install..."
+    if ! retry_command "$MAX_RETRY_ATTEMPTS" pnpm install; then
+         error "Failed to install dependencies."
+         exit 1
+    fi
+    # Cache the new lockfile hash
+    if [ -f "pnpm-lock.yaml" ]; then
+        NEW_HASH=$(shasum -a 256 pnpm-lock.yaml 2>/dev/null | cut -d ' ' -f 1)
+        if [ -n "$NEW_HASH" ]; then
+            echo "$NEW_HASH" > "$LOCKFILE_HASH_CACHE" 2>/dev/null || warn "Failed to cache lockfile hash"
+        fi
+    fi
+    success "Project dependencies installed"
+fi
 
 ##############################################################################
 # Complete
