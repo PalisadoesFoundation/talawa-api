@@ -10,14 +10,17 @@ interface RateLimitEntry {
 	windowStart: number;
 }
 
-const EMAIL_VERIFICATION_RATE_LIMITS = new Map<string, RateLimitEntry>();
+export const EMAIL_VERIFICATION_RATE_LIMITS = new Map<string, RateLimitEntry>();
 
 const RATE_LIMIT_WINDOW_MS = 60 * 60 * 1000; // 1 hour
 const MAX_REQUESTS_PER_WINDOW = 3;
+const CLEANUP_INTERVAL_MS = 5 * 60 * 1000; // 5 minutes
+
+let lastCleanupAt = 0;
 
 /**
  * Checks if a user has exceeded the rate limit for email verification requests.
- * Uses a sliding window approach with automatic cleanup of old entries.
+ * Uses a fixed window approach (entire window resets when it expires).
  *
  * @param userId - The user ID to check
  * @returns true if request is allowed, false if rate limit exceeded
@@ -26,9 +29,10 @@ export function checkEmailVerificationRateLimit(userId: string): boolean {
 	const now = Date.now();
 	const entry = EMAIL_VERIFICATION_RATE_LIMITS.get(userId);
 
-	// Clean up old entries periodically (every 100 checks)
-	if (Math.random() < 0.01) {
+	// Perform time-based cleanup every CLEANUP_INTERVAL_MS
+	if (now - lastCleanupAt >= CLEANUP_INTERVAL_MS) {
 		cleanupOldEntries(now);
+		lastCleanupAt = now;
 	}
 
 	if (!entry) {

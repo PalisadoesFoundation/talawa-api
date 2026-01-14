@@ -84,46 +84,48 @@ builder.mutationField("verifyEmail", (t) =>
 				};
 			}
 
-			// Hash the provided token
+			// Hash the token to search in database
 			const tokenHash = hashEmailVerificationToken(parsedArgs.input.token);
 
-			// Find valid token
-			const validToken = await findValidEmailVerificationToken(
-				ctx.drizzleClient,
-				tokenHash,
-			);
+			// Use transaction to ensure atomicity
+			const result = await ctx.drizzleClient.transaction(async (tx) => {
+				// Find and validate token inside transaction
+				const tokenRecord = await findValidEmailVerificationToken(
+					tx,
+					tokenHash,
+				);
 
-			if (!validToken) {
-				throw new TalawaGraphQLError({
-					extensions: {
-						code: "invalid_arguments",
-						issues: [
-							{
-								argumentPath: ["input", "token"],
-								message:
-									"Invalid, expired, or already used verification token. Please request a new verification email.",
-							},
-						],
-					},
-				});
-			}
+				// Validate token exists
+				if (!tokenRecord) {
+					throw new TalawaGraphQLError({
+						extensions: {
+							code: "invalid_arguments",
+							issues: [
+								{
+									argumentPath: ["input", "token"],
+									message:
+										"Invalid, expired, or already used email verification token.",
+								},
+							],
+						},
+					});
+				}
 
-			// Validate token belongs to the authenticated user
-			if (validToken.userId !== userId) {
-				throw new TalawaGraphQLError({
-					extensions: {
-						code: "forbidden_action",
-					},
-				});
-			}
+				// Validate token belongs to current user
+				if (tokenRecord.userId !== userId) {
+					throw new TalawaGraphQLError({
+						extensions: {
+							code: "forbidden_action",
+						},
+						message: "This verification token does not belong to you.",
+					});
+				}
 
-			// Mark token as used and update user's verified status in a transaction
-			await ctx.drizzleClient.transaction(async (tx) => {
-				// Mark token as used
+				// Mark token as used (still check return value)
 				const wasMarked = await markEmailVerificationTokenAsUsed(tx, tokenHash);
 
 				if (!wasMarked) {
-					// Token was marked as used between our check and now
+					// This shouldn't happen if token was found, but check anyway
 					throw new TalawaGraphQLError({
 						extensions: {
 							code: "invalid_arguments",
@@ -143,12 +145,14 @@ builder.mutationField("verifyEmail", (t) =>
 					.update(usersTable)
 					.set({ isEmailAddressVerified: true })
 					.where(eq(usersTable.id, userId));
+
+				return {
+					success: true,
+					message: "Your email address has been successfully verified!",
+				};
 			});
 
-			return {
-				success: true,
-				message: "Your email address has been successfully verified!",
-			};
+			return result;
 		},
 		type: VerifyEmailPayload,
 	}),

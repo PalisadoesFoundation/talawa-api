@@ -211,6 +211,8 @@ suite("emailVerificationTokenUtils", () => {
 		});
 
 		test("should return undefined if token is expired", async () => {
+			// Mock returns an expired token so the application-layer expiry check
+			// in findValidEmailVerificationToken will detect it and return undefined
 			const mockToken = {
 				id: "token-id",
 				userId: "user-id",
@@ -229,6 +231,25 @@ suite("emailVerificationTokenUtils", () => {
 				"expired-token-hash",
 			);
 
+			expect(result).toBeUndefined();
+		});
+
+		test("should return undefined if token has been used (usedAt is set)", async () => {
+			// Mock simulates the real WHERE clause filtering out used tokens
+			// (WHERE usedAt IS NULL would exclude this token in the real query)
+			const mockLimit = vi.fn().mockReturnValue(Promise.resolve([])); // Empty array = filtered out
+			const mockWhere = vi.fn().mockReturnValue({ limit: mockLimit });
+			const mockFrom = vi.fn().mockReturnValue({ where: mockWhere });
+			mockDrizzleClient.select.mockReturnValue({ from: mockFrom });
+
+			const result = await findValidEmailVerificationToken(
+				mockDrizzleClient as unknown as Parameters<
+					typeof findValidEmailVerificationToken
+				>[0],
+				"used-token-hash",
+			);
+
+			// Token filtered by WHERE clause, so undefined returned
 			expect(result).toBeUndefined();
 		});
 	});

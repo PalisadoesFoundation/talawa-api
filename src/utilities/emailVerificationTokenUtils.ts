@@ -97,20 +97,19 @@ export async function storeEmailVerificationToken(
  * @returns - The email verification token record if found and valid, undefined otherwise
  */
 export async function findValidEmailVerificationToken(
-	drizzleClient: PostgresJsDatabase<typeof schema>,
+	db: PostgresJsDatabase<typeof schema>,
 	tokenHash: string,
 ): Promise<
 	| {
 			id: string;
 			userId: string;
 			expiresAt: Date;
-			usedAt: Date | null;
 	  }
 	| undefined
 > {
 	// Combine all conditions in a single query to prevent timing attacks
 	// from revealing token state (exists vs expired vs used)
-	const token = await drizzleClient
+	const token = await db
 		.select()
 		.from(emailVerificationTokensTable)
 		.where(

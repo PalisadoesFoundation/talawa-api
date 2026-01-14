@@ -8,6 +8,7 @@ CREATE TABLE "email_verification_tokens" (
 	CONSTRAINT "email_verification_tokens_token_hash_unique" UNIQUE("token_hash")
 );
 --> statement-breakpoint
-ALTER TABLE "email_verification_tokens" ADD CONSTRAINT "email_verification_tokens_user_id_users_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."users"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
-CREATE INDEX "email_verification_tokens_user_id_idx" ON "email_verification_tokens" USING btree ("user_id");--> statement-breakpoint
-CREATE INDEX "email_verification_tokens_expires_at_idx" ON "email_verification_tokens" USING btree ("expires_at");
+ALTER TABLE "email_verification_tokens" ADD CONSTRAINT "email_verification_tokens_user_id_users_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."users"("id") ON DELETE cascade ON UPDATE no action;-->statement-breakpoint
+CREATE INDEX "email_verification_tokens_user_id_idx" ON "email_verification_tokens" USING btree ("user_id");-->statement-breakpoint
+CREATE INDEX "email_verification_tokens_expires_at_idx" ON "email_verification_tokens" USING btree ("expires_at");-->statement-breakpoint
+CREATE INDEX "email_verification_tokens_active_lookup_idx" ON "email_verification_tokens" USING btree ("token_hash") WHERE "used_at" IS NULL;

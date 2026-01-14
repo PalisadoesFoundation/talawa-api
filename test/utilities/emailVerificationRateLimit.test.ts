@@ -1,13 +1,16 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+// Import the rate limit map for testing cleanup
 import {
 	checkEmailVerificationRateLimit,
+	EMAIL_VERIFICATION_RATE_LIMITS,
 	resetEmailVerificationRateLimit,
 } from "~/src/utilities/emailVerificationRateLimit";
 
 describe("emailVerificationRateLimit", () => {
 	beforeEach(() => {
-		// Reset all rate limits before each test
 		vi.clearAllMocks();
+		// Clear rate limit state between tests for isolation
+		EMAIL_VERIFICATION_RATE_LIMITS.clear();
 	});
 
 	afterEach(() => {
@@ -60,13 +63,11 @@ describe("emailVerificationRateLimit", () => {
 
 		it("should reset window after expiry", () => {
 			const userId = "user-6";
-
-			// Mock Date.now for time control
-			const originalDateNow = Date.now;
 			const startTime = 1000000000;
 
-			// Set initial time
-			Date.now = vi.fn(() => startTime);
+			// Use fake timers for deterministic time control
+			vi.useFakeTimers();
+			vi.setSystemTime(startTime);
 
 			// Make 3 requests
 			checkEmailVerificationRateLimit(userId);
@@ -77,13 +78,39 @@ describe("emailVerificationRateLimit", () => {
 			expect(checkEmailVerificationRateLimit(userId)).toBe(false);
 
 			// Advance time by 1 hour + 1ms (window expired)
-			Date.now = vi.fn(() => startTime + 60 * 60 * 1000 + 1);
+			vi.advanceTimersByTime(60 * 60 * 1000 + 1);
 
 			// Should be allowed again (new window)
 			expect(checkEmailVerificationRateLimit(userId)).toBe(true);
 
-			// Restore original Date.now
-			Date.now = originalDateNow;
+			// Restore real timers
+			vi.useRealTimers();
+		});
+
+		it("should test exact window boundary at expiry time", () => {
+			const userId = "user-boundary";
+			const startTime = 2000000000;
+
+			vi.useFakeTimers();
+			vi.setSystemTime(startTime);
+
+			// Make 3 requests
+			checkEmailVerificationRateLimit(userId);
+			checkEmailVerificationRateLimit(userId);
+			checkEmailVerificationRateLimit(userId);
+
+			// 4th blocked
+			expect(checkEmailVerificationRateLimit(userId)).toBe(false);
+
+			// Exactly at expiry (edge: still within window)
+			vi.setSystemTime(startTime + 60 * 60 * 1000);
+			expect(checkEmailVerificationRateLimit(userId)).toBe(false);
+
+			// 1ms after expiry (new window starts)
+			vi.setSystemTime(startTime + 60 * 60 * 1000 + 1);
+			expect(checkEmailVerificationRateLimit(userId)).toBe(true);
+
+			vi.useRealTimers();
 		});
 	});
 

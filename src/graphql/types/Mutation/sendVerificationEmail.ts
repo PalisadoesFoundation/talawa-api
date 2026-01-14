@@ -16,6 +16,7 @@ import {
 	storeEmailVerificationToken,
 } from "~/src/utilities/emailVerificationTokenUtils";
 import envConfig from "~/src/utilities/graphqLimits";
+import { maskEmail } from "~/src/utilities/maskEmail";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 
 builder.mutationField("sendVerificationEmail", (t) =>
@@ -122,7 +123,8 @@ builder.mutationField("sendVerificationEmail", (t) =>
 					ctx.log.error(
 						{
 							error: emailResult.error,
-							toEmail: existingUser.emailAddress,
+							maskedEmail: maskEmail(existingUser.emailAddress),
+							userId: existingUser.id,
 						},
 						"Failed to send email verification email",
 					);
@@ -149,7 +151,7 @@ builder.mutationField("sendVerificationEmail", (t) =>
 				);
 			}
 
-			//Always return the same response
+			// Always return the same response
 			return {
 				success: true,
 				message:

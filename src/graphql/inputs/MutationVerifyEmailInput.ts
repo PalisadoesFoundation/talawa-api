@@ -25,5 +25,5 @@ export const mutationVerifyEmailInputSchema = z.object({
 	/**
 	 * The raw email verification token from the email link.
 	 */
-	token: z.string().min(64).max(64),
+	token: z.string().length(64, "Invalid token length: expected 64 characters"),
 });
