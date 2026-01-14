@@ -323,7 +323,7 @@ describe("backgroundWorkerService - metrics integration", () => {
 				"Starting metrics aggregation worker run",
 			);
 
-			expect(mockLogger.debug).toHaveBeenCalledWith(
+			expect(mockLogger.info).toHaveBeenCalledWith(
 				expect.objectContaining({
 					duration: expect.stringMatching(/^\d+ms$/),
 				}),
