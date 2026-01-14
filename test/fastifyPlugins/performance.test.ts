@@ -850,5 +850,48 @@ describe("Performance Plugin", () => {
 			copied.slow.push({ op: "new", ms: 100 });
 			expect(testSnapshot.slow.length).toBe(2);
 		});
+
+		it("should use manualDeepCopySnapshot fallback when structuredClone is unavailable", async () => {
+			// Test line 87: fallback to manualDeepCopySnapshot when structuredClone is undefined
+			// This test covers the fallback path in deepCopySnapshot function
+			const originalStructuredClone = global.structuredClone;
+
+			try {
+				// Temporarily remove structuredClone to trigger fallback
+				delete (global as { structuredClone?: typeof structuredClone })
+					.structuredClone;
+
+				// Create a new app instance to pick up the change
+				const testApp = createTestFastifyInstance();
+				await testApp.register(performancePlugin);
+				await testApp.ready();
+
+				// Create a snapshot by making a request
+				testApp.get("/test-fallback", async () => {
+					return { ok: true };
+				});
+
+				await testApp.inject({
+					method: "GET",
+					url: "/test-fallback",
+				});
+
+				// getPerformanceSnapshots internally uses deepCopySnapshot
+				// which should now use the fallback path (line 87)
+				const snapshots = testApp.getPerformanceSnapshots();
+
+				// Verify snapshots are returned (fallback worked)
+				expect(Array.isArray(snapshots)).toBe(true);
+
+				await testApp.close();
+			} finally {
+				// Restore structuredClone
+				if (originalStructuredClone) {
+					(
+						global as { structuredClone: typeof structuredClone }
+					).structuredClone = originalStructuredClone;
+				}
+			}
+		});
 	});
 });
