@@ -1,4 +1,4 @@
-import { eq, asc } from "drizzle-orm";
+import { asc, eq } from "drizzle-orm";
 import { z } from "zod";
 import { agendaFoldersTable } from "~/src/drizzle/tables/agendaFolders";
 import { eventsTable } from "~/src/drizzle/tables/events";
@@ -111,7 +111,10 @@ builder.queryField("agendaFoldersByEventId", (t) =>
 			const eventAgendas =
 				await ctx.drizzleClient.query.agendaFoldersTable.findMany({
 					where: eq(agendaFoldersTable.eventId, parsedArgs.eventId),
-					orderBy: [asc(agendaFoldersTable.sequence), asc(agendaFoldersTable.name)],
+					orderBy: [
+						asc(agendaFoldersTable.sequence),
+						asc(agendaFoldersTable.name),
+					],
 				});
 
 			return eventAgendas;

@@ -813,7 +813,7 @@ suite("Mutation field createAgendaItem", () => {
 							eventId,
 							description: "Super admin test folder",
 							sequence: 1,
-							organizationId
+							organizationId,
 						},
 					},
 				},

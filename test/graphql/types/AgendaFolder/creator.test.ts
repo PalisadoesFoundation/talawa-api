@@ -199,20 +199,20 @@ describe("AgendaFolder.creator resolver", () => {
 		};
 
 		mocks.drizzleClient.query.usersTable.findFirst
-			.mockResolvedValueOnce(currentUser)   // current user
-			.mockResolvedValueOnce(creatorUser);  // creator user
+			.mockResolvedValueOnce(currentUser) // current user
+			.mockResolvedValueOnce(creatorUser); // creator user
 
 		mocks.drizzleClient.query.eventsTable.findFirst.mockResolvedValue({
 			startAt: new Date(),
 			organization: {
-			countryCode: "US",
-			membershipsWhereOrganization: [{ role: "administrator" }],
+				countryCode: "US",
+				membershipsWhereOrganization: [{ role: "administrator" }],
 			},
 		});
 
-  const result = await resolveCreator(mockAgendaFolder, {}, ctx);
-  expect(result).toEqual(creatorUser);
-});
+		const result = await resolveCreator(mockAgendaFolder, {}, ctx);
+		expect(result).toEqual(creatorUser);
+	});
 
 	it("should propagate database errors", async () => {
 		const dbError = new Error("Database failure");
