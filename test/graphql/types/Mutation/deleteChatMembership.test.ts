@@ -436,7 +436,7 @@ describe("Mutation: deleteChatMembership", () => {
 		);
 	});
 
-	test("returns unauthorized_action_on_arguments_associated_resources when regular user without org membership tries to delete another user", async () => {
+	test("returns unauthorized_action_on_arguments_associated_resources when regular chat member tries to delete another member", async () => {
 		const admin = await mercuriusClient.query(Query_signIn, {
 			variables: {
 				input: {
@@ -546,6 +546,17 @@ describe("Mutation: deleteChatMembership", () => {
 			variables: {
 				input: {
 					memberId: targetId,
+					organizationId: orgId,
+					role: "regular",
+				},
+			},
+		});
+
+		await mercuriusClient.mutate(Mutation_createOrganizationMembership, {
+			headers: { authorization: `bearer ${adminToken}` },
+			variables: {
+				input: {
+					memberId: actorId,
 					organizationId: orgId,
 					role: "regular",
 				},
