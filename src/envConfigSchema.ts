@@ -179,6 +179,45 @@ export const envConfigSchema = Type.Object({
 		}),
 	),
 	/**
+	 * SMTP server hostname for email service.
+	 */
+	SMTP_HOST: Type.Optional(Type.String({ minLength: 1 })),
+	/**
+	 * SMTP server port for email service.
+	 * Common values: 587 (TLS), 465 (SSL), 25 (unsecured)
+	 */
+	SMTP_PORT: Type.Optional(Type.Integer({ minimum: 1, maximum: 65535 })),
+	/**
+	 * SMTP username for authentication.
+	 */
+	SMTP_USER: Type.Optional(Type.String({ minLength: 1 })),
+	/**
+	 * SMTP password for authentication.
+	 */
+	SMTP_PASSWORD: Type.Optional(Type.String({ minLength: 1 })),
+	/**
+	 * Whether to use SSL/TLS for SMTP connection.
+	 * Set to true for port 465, false for port 587 with STARTTLS.
+	 */
+	SMTP_SECURE: Type.Optional(Type.Boolean()),
+	/**
+	 * Verified email address to send emails from via SMTP.
+	 */
+	SMTP_FROM_EMAIL: Type.Optional(
+		Type.String({
+			format: "email",
+		}),
+	),
+	/**
+	 * Display name for the sender in emails via SMTP.
+	 */
+	SMTP_FROM_NAME: Type.Optional(
+		Type.String({
+			minLength: 1,
+			default: "Talawa",
+		}),
+	),
+	/**
 	 * URL to the youtube account of the community.
 	 */
 	API_COMMUNITY_YOUTUBE_URL: Type.Optional(

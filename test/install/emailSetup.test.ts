@@ -7,6 +7,8 @@ import type { SetupAnswers } from "../../scripts/setup/setup";
 const mocks = vi.hoisted(() => ({
 	mockSendEmail: vi.fn(),
 	mockSESProviderConstructor: vi.fn(),
+	mockSMTPSendEmail: vi.fn(),
+	mockSMTPProviderConstructor: vi.fn(),
 }));
 
 // Mock the prompt helpers
@@ -17,12 +19,19 @@ vi.mock("../../scripts/setup/promptHelpers", () => ({
 	promptPassword: vi.fn(),
 }));
 
-// Mock SESProvider at module level
+// Mock SESProvider and SMTPProvider at module level
 vi.mock("../../src/services/email", () => ({
 	SESProvider: vi.fn().mockImplementation((...args) => {
 		mocks.mockSESProviderConstructor(...args);
 		return {
 			sendEmail: (...callArgs: unknown[]) => mocks.mockSendEmail(...callArgs),
+		};
+	}),
+	SMTPProvider: vi.fn().mockImplementation((...args) => {
+		mocks.mockSMTPProviderConstructor(...args);
+		return {
+			sendEmail: (...callArgs: unknown[]) =>
+				mocks.mockSMTPSendEmail(...callArgs),
 		};
 	}),
 }));
@@ -49,6 +58,13 @@ describe("emailSetup", () => {
 			messageId: "test-message-id",
 		});
 		mocks.mockSESProviderConstructor.mockReset();
+
+		// Reset SMTP mocks as well
+		mocks.mockSMTPSendEmail.mockReset().mockResolvedValue({
+			success: true,
+			messageId: "test-smtp-message-id",
+		});
+		mocks.mockSMTPProviderConstructor.mockReset();
 	});
 
 	afterEach(() => {
@@ -499,5 +515,180 @@ describe("emailSetup", () => {
 		vi.mocked(promptHelpers.promptConfirm).mockRejectedValueOnce(error);
 
 		await expect(emailSetup(answers)).rejects.toThrow("Prompt failed");
+	});
+
+	// SMTP Provider Tests
+	describe("SMTP Provider", () => {
+		it("should configure SMTP and send test email successfully", async () => {
+			vi.mocked(promptHelpers.promptConfirm)
+				.mockResolvedValueOnce(true) // Configure email? Yes
+				.mockResolvedValueOnce(true) // Requires auth? Yes
+				.mockResolvedValueOnce(false) // Use SSL/TLS? No (port 587)
+				.mockResolvedValueOnce(true); // Send test email? Yes
+
+			vi.mocked(promptHelpers.promptList).mockResolvedValueOnce("smtp"); // Provider: SMTP
+
+			// SMTP Prompts
+			vi.mocked(promptHelpers.promptInput)
+				.mockResolvedValueOnce("smtp.gmail.com") // Host
+				.mockResolvedValueOnce("587") // Port
+				.mockResolvedValueOnce("user@gmail.com") // User
+				.mockResolvedValueOnce("from@example.com") // From Email
+				.mockResolvedValueOnce("Test App") // From Name
+				.mockResolvedValueOnce("recipient@example.com"); // Test recipient
+
+			vi.mocked(promptHelpers.promptPassword).mockResolvedValueOnce(
+				"app-password",
+			); // Password
+
+			mocks.mockSMTPSendEmail.mockResolvedValueOnce({
+				success: true,
+				messageId: "smtp-test-id",
+			});
+
+			const result = await emailSetup(answers);
+
+			// Assert credentials preserved
+			expect(result.API_EMAIL_PROVIDER).toBe("smtp");
+			expect(result.SMTP_HOST).toBe("smtp.gmail.com");
+			expect(result.SMTP_PORT).toBe("587");
+			expect(result.SMTP_USER).toBe("user@gmail.com");
+			expect(result.SMTP_PASSWORD).toBe("app-password");
+			expect(result.SMTP_SECURE).toBe("false");
+			expect(result.SMTP_FROM_EMAIL).toBe("from@example.com");
+			expect(result.SMTP_FROM_NAME).toBe("Test App");
+
+			// Assert successful mock usage
+			expect(mocks.mockSMTPSendEmail).toHaveBeenCalledWith(
+				expect.objectContaining({
+					email: "recipient@example.com",
+					subject: expect.stringContaining("Test Email"),
+				}),
+			);
+		});
+
+		it("should configure SMTP without authentication", async () => {
+			vi.mocked(promptHelpers.promptConfirm)
+				.mockResolvedValueOnce(true) // Configure email? Yes
+				.mockResolvedValueOnce(false) // Requires auth? No
+				.mockResolvedValueOnce(false) // Use SSL/TLS? No
+				.mockResolvedValueOnce(false); // Send test email? No
+
+			vi.mocked(promptHelpers.promptList).mockResolvedValueOnce("smtp");
+
+			vi.mocked(promptHelpers.promptInput)
+				.mockResolvedValueOnce("localhost") // Host
+				.mockResolvedValueOnce("25") // Port
+				.mockResolvedValueOnce("from@localhost") // From Email
+				.mockResolvedValueOnce("Local"); // From Name
+
+			const result = await emailSetup(answers);
+
+			expect(result.API_EMAIL_PROVIDER).toBe("smtp");
+			expect(result.SMTP_HOST).toBe("localhost");
+			expect(result.SMTP_USER).toBeUndefined();
+			expect(result.SMTP_PASSWORD).toBeUndefined();
+		});
+
+		it("should retry SMTP setup when test fails", async () => {
+			vi.mocked(promptHelpers.promptConfirm)
+				.mockResolvedValueOnce(true) // Configure email? Yes
+				.mockResolvedValueOnce(true) // Requires auth? Yes (first)
+				.mockResolvedValueOnce(false) // Use SSL? No
+				.mockResolvedValueOnce(true) // Send test? Yes (first)
+				.mockResolvedValueOnce(true) // Requires auth? Yes (retry)
+				.mockResolvedValueOnce(false) // Use SSL? No (retry)
+				.mockResolvedValueOnce(true); // Send test? Yes (retry)
+
+			vi.mocked(promptHelpers.promptList)
+				.mockResolvedValueOnce("smtp") // Provider (first)
+				.mockResolvedValueOnce("Retry with different credentials") // Action after failure
+				.mockResolvedValueOnce("smtp"); // Provider (retry)
+
+			vi.mocked(promptHelpers.promptInput)
+				// First attempt
+				.mockResolvedValueOnce("smtp.bad.com")
+				.mockResolvedValueOnce("587")
+				.mockResolvedValueOnce("bad@example.com")
+				.mockResolvedValueOnce("from@example.com")
+				.mockResolvedValueOnce("App")
+				.mockResolvedValueOnce("test@example.com")
+				// Retry attempt
+				.mockResolvedValueOnce("smtp.good.com")
+				.mockResolvedValueOnce("587")
+				.mockResolvedValueOnce("good@example.com")
+				.mockResolvedValueOnce("from@example.com")
+				.mockResolvedValueOnce("App")
+				.mockResolvedValueOnce("test@example.com");
+
+			vi.mocked(promptHelpers.promptPassword)
+				.mockResolvedValueOnce("bad-pass")
+				.mockResolvedValueOnce("good-pass");
+
+			mocks.mockSMTPSendEmail
+				.mockResolvedValueOnce({
+					success: false,
+					error: "Connection refused",
+				})
+				.mockResolvedValueOnce({
+					success: true,
+					messageId: "success-id",
+				});
+
+			const result = await emailSetup(answers);
+
+			expect(result.SMTP_HOST).toBe("smtp.good.com");
+			expect(result.SMTP_USER).toBe("good@example.com");
+			expect(mocks.mockSMTPSendEmail).toHaveBeenCalledTimes(2);
+		});
+
+		it("should verify SMTPProvider instantiation parameters", async () => {
+			vi.mocked(promptHelpers.promptConfirm)
+				.mockResolvedValueOnce(true) // Configure
+				.mockResolvedValueOnce(true) // Auth
+				.mockResolvedValueOnce(true) // SSL (port 465)
+				.mockResolvedValueOnce(true); // Test email
+
+			vi.mocked(promptHelpers.promptList).mockResolvedValueOnce("smtp");
+
+			vi.mocked(promptHelpers.promptInput)
+				.mockResolvedValueOnce("smtp.example.com")
+				.mockResolvedValueOnce("465")
+				.mockResolvedValueOnce("user@example.com")
+				.mockResolvedValueOnce("from@example.com")
+				.mockResolvedValueOnce("App Name")
+				.mockResolvedValueOnce("recipient@example.com");
+
+			vi.mocked(promptHelpers.promptPassword).mockResolvedValueOnce(
+				"password123",
+			);
+
+			mocks.mockSMTPSendEmail.mockResolvedValueOnce({
+				success: true,
+				messageId: "test-id",
+			});
+
+			await emailSetup(answers);
+
+			// Verify constructor was called with correct config
+			expect(mocks.mockSMTPProviderConstructor).toHaveBeenCalledWith({
+				host: "smtp.example.com",
+				port: 465,
+				user: "user@example.com",
+				password: "password123",
+				secure: true,
+				fromEmail: "from@example.com",
+				fromName: "App Name",
+			});
+
+			// Verify sendEmail was called
+			expect(mocks.mockSMTPSendEmail).toHaveBeenCalledWith({
+				id: expect.any(String),
+				email: "recipient@example.com",
+				subject: "Talawa API - Test Email",
+				htmlBody: expect.stringContaining("It Works!"),
+				userId: null,
+			});
+		});
 	});
 });
