@@ -1,9 +1,6 @@
 # Rootless Docker devcontainer compose configuration
 # This file is used instead of compose.devcontainer.yaml when running Docker in rootless mode
 # Key difference: Docker socket path uses XDG_RUNTIME_DIR instead of /var/run/docker.sock
-# https://docs.docker.com/reference/compose-file/networks/
-networks:
-  cloudbeaver:
 # https://docs.docker.com/reference/compose-file/services
 services:
   api:
