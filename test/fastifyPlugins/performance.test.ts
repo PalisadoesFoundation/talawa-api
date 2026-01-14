@@ -811,15 +811,22 @@ describe("Performance Plugin", () => {
 		});
 
 		it("should use manualDeepCopySnapshot when structuredClone is unavailable", async () => {
-			// Test the fallback path by temporarily stubbing structuredClone as undefined
+			// Test the fallback path by temporarily replacing structuredClone
 			// This ensures line 87 (the fallback return) is covered
+			// We use a spy on manualDeepCopySnapshot to verify the fallback is used
+			const performanceModule = await import(
+				"../../src/fastifyPlugins/performance"
+			);
+			const manualCopySpy = vi.spyOn(
+				performanceModule,
+				"manualDeepCopySnapshot",
+			);
+
 			const originalStructuredClone = global.structuredClone;
+			let testApp: ReturnType<typeof createTestFastifyInstance> | undefined;
 
 			try {
-				// Stub structuredClone as undefined to force the fallback path
-				vi.stubGlobal("structuredClone", undefined);
-
-				const testApp = createTestFastifyInstance();
+				testApp = createTestFastifyInstance();
 
 				await testApp.register(performancePlugin);
 
@@ -834,24 +841,39 @@ describe("Performance Plugin", () => {
 
 				await testApp.ready();
 
-				// Make a request to create a snapshot
-				const response = await testApp.inject({
+				// Make a request to create a snapshot BEFORE stubbing structuredClone
+				// This ensures we have a snapshot to test with
+				const initialResponse = await testApp.inject({
 					method: "GET",
 					url: "/test-fallback-integration",
 				});
 
-				expect(response.statusCode).toBe(200);
+				expect(initialResponse.statusCode).toBe(200);
+
+				// Now stub structuredClone as undefined to test the fallback path
+				// This ensures the typeof check in deepCopySnapshot will return "undefined"
+				// and trigger the fallback path (line 87) when we call getPerformanceSnapshots
+				vi.stubGlobal("structuredClone", undefined);
+
+				// Verify the stub worked
+				expect(typeof global.structuredClone).toBe("undefined");
 
 				// The snapshot should be stored after the request completes
 				// getPerformanceSnapshots uses deepCopySnapshot which handles the fallback internally
-				// With structuredClone undefined, it should use manualDeepCopySnapshot (line 87)
+				// With structuredClone stubbed as undefined, it should use manualDeepCopySnapshot (line 87)
 				const snapshots = testApp.getPerformanceSnapshots(1);
 
+				// Verify we got snapshots
 				expect(snapshots.length).toBe(1);
 				expect(snapshots[0]).toBeDefined();
 				if (!snapshots[0]) {
 					throw new Error("Snapshot should be defined");
 				}
+
+				// Verify the fallback was used - manualDeepCopySnapshot should have been called
+				// when getPerformanceSnapshots used deepCopySnapshot with structuredClone undefined
+				expect(manualCopySpy).toHaveBeenCalled();
+
 				expect(snapshots[0]).toHaveProperty("ops");
 				expect(snapshots[0]).toHaveProperty("cacheHits");
 				expect(snapshots[0].cacheHits).toBe(1);
@@ -870,12 +892,22 @@ describe("Performance Plugin", () => {
 				expect(snapshots2[0].ops).toEqual(originalOps);
 
 				await testApp.close();
+			} catch (error) {
+				// If there's an error, log it for debugging
+				console.error("Test error:", error);
+				throw error;
 			} finally {
 				// Restore original structuredClone
+				manualCopySpy.mockRestore();
+				if (testApp) {
+					await testApp.close().catch(() => {
+						// Ignore close errors
+					});
+				}
+				// Restore using vi.unstubAllGlobals or restore the original
+				vi.unstubAllGlobals();
 				if (originalStructuredClone !== undefined) {
-					vi.stubGlobal("structuredClone", originalStructuredClone);
-				} else {
-					vi.unstubAllGlobals();
+					global.structuredClone = originalStructuredClone;
 				}
 			}
 		});
