@@ -1,3 +1,4 @@
+import crypto from "node:crypto";
 import { promises as fs } from "node:fs";
 import path, { resolve } from "node:path";
 import process from "node:process";
@@ -268,6 +269,31 @@ async function restoreLatestBackup(): Promise<void> {
 	} catch (readError) {
 		console.error("❌ Error reading backup directory:", readError);
 		throw readError;
+	}
+}
+/**
+ * Generates a cryptographically secure random password
+ * Uses URL-safe base64 encoding, suitable for .env files
+ *
+ * @param length - Length in bytes (default 32, produces ~43 characters)
+ * @returns Secure random password string (minimum 32 characters)
+ */
+export function generateSecurePassword(length: number = 32): string {
+	try {
+		const password = crypto.randomBytes(length).toString("base64");
+		// Make it env- and URL-safe by replacing special characters
+		const replacements: Record<string, string> = {
+			"+": "-",
+			"/": "_",
+			"=": "",
+		};
+		return password.replace(/[+/=]/g, (char) => replacements[char] as string);
+	} catch (err) {
+		console.error(
+			"⚠️ Warning: Permission denied while generating secure password. Ensure the process has sufficient filesystem access.",
+			err,
+		);
+		throw new Error("Failed to generate secure password");
 	}
 }
 
@@ -745,7 +771,7 @@ export async function apiSetup(answers: SetupAnswers): Promise<SetupAnswers> {
 		answers.API_MINIO_SECRET_KEY = await promptInput(
 			"API_MINIO_SECRET_KEY",
 			"Minio secret key:",
-			existingMinioPassword ?? "password",
+			existingMinioPassword ?? generateSecurePassword(),
 		);
 		if (existingMinioPassword !== undefined) {
 			// Configured password found (including empty string), validate against it
@@ -795,7 +821,7 @@ export async function apiSetup(answers: SetupAnswers): Promise<SetupAnswers> {
 		answers.API_POSTGRES_PASSWORD = await promptInput(
 			"API_POSTGRES_PASSWORD",
 			"Postgres password:",
-			postgresPassword ?? "password",
+			postgresPassword ?? generateSecurePassword(),
 		);
 		if (postgresPassword !== undefined) {
 			// Configured password found (including empty string), validate against it
@@ -858,7 +884,7 @@ export async function cloudbeaverSetup(
 		answers.CLOUDBEAVER_ADMIN_PASSWORD = await promptInput(
 			"CLOUDBEAVER_ADMIN_PASSWORD",
 			"CloudBeaver admin password:",
-			"password",
+			generateSecurePassword(),
 			validateCloudBeaverPassword,
 		);
 		answers.CLOUDBEAVER_MAPPED_HOST_IP = await promptInput(
@@ -940,7 +966,7 @@ export async function minioSetup(answers: SetupAnswers): Promise<SetupAnswers> {
 		answers.MINIO_ROOT_PASSWORD = await promptInput(
 			"MINIO_ROOT_PASSWORD",
 			"Minio root password:",
-			"password",
+			answers.MINIO_ROOT_PASSWORD ?? generateSecurePassword(),
 		);
 		answers.MINIO_ROOT_USER = await promptInput(
 			"MINIO_ROOT_USER",
@@ -977,7 +1003,7 @@ export async function postgresSetup(
 		answers.POSTGRES_PASSWORD = await promptInput(
 			"POSTGRES_PASSWORD",
 			"Postgres password:",
-			"password",
+			answers.POSTGRES_PASSWORD ?? generateSecurePassword(),
 		);
 		answers.POSTGRES_USER = await promptInput(
 			"POSTGRES_USER",
@@ -1098,6 +1124,15 @@ export async function setup(): Promise<SetupAnswers> {
 	}
 	answers = await setCI(answers);
 	await initializeEnvFile(answers);
+
+	// Security notice for generated passwords
+	console.log("\n🔐 Security Note:");
+	console.log(
+		"   Secure random passwords have been generated for your services.",
+	);
+	console.log("   Press Enter to accept them or provide your own.");
+	console.log("   These passwords are unique and cryptographically secure.\n");
+
 	const useDefaultApi = await promptConfirm(
 		"useDefaultApi",
 		"Use recommended default API settings?",

@@ -8,6 +8,7 @@ import {
 	apiSetup,
 	checkEnvFile,
 	generateJwtSecret,
+	generateSecurePassword,
 	type SetupAnswers,
 	setup,
 	validatePort,
@@ -685,6 +686,56 @@ describe("generateJwtSecret", () => {
 		expect(() => generateJwtSecret()).toThrow("Failed to generate JWT secret");
 		expect(consoleErrorSpy).toHaveBeenCalledWith(
 			"⚠️ Warning: Failed to generate random bytes for JWT secret. This may indicate a system entropy issue.",
+			expect.any(Error),
+		);
+
+		randomBytesSpy.mockRestore();
+		consoleErrorSpy.mockRestore();
+	});
+});
+
+describe("generateSecurePassword", () => {
+	it("should generate a password with default 32-byte length (43+ characters)", () => {
+		const password = generateSecurePassword();
+		// 32 bytes in base64 = ~43 characters (after removing = padding)
+		expect(password.length).toBeGreaterThanOrEqual(43);
+	});
+
+	it("should generate a password with custom length", () => {
+		const password = generateSecurePassword(16);
+		// 16 bytes in base64 = ~22 characters (after removing = padding)
+		expect(password.length).toBeGreaterThanOrEqual(22);
+	});
+
+	it("should generate URL-safe passwords (no +, /, or = characters)", () => {
+		for (let i = 0; i < 10; i++) {
+			const password = generateSecurePassword();
+			expect(password).not.toMatch(/[+/=]/);
+			expect(password).toMatch(/^[a-zA-Z0-9_-]+$/);
+		}
+	});
+
+	it("should generate unique passwords", () => {
+		const password1 = generateSecurePassword();
+		const password2 = generateSecurePassword();
+		expect(password1).not.toBe(password2);
+	});
+
+	it("should log a warning and throw an error if randomBytes fails", () => {
+		const randomBytesSpy = vi
+			.spyOn(crypto, "randomBytes")
+			.mockImplementation(() => {
+				throw new Error("Permission denied");
+			});
+		const consoleErrorSpy = vi
+			.spyOn(console, "error")
+			.mockImplementation(() => {});
+
+		expect(() => generateSecurePassword()).toThrow(
+			"Failed to generate secure password",
+		);
+		expect(consoleErrorSpy).toHaveBeenCalledWith(
+			"⚠️ Warning: Permission denied while generating secure password. Ensure the process has sufficient filesystem access.",
 			expect.any(Error),
 		);
 
