@@ -472,9 +472,11 @@ describe("SMTPProvider", () => {
 
 		try {
 			const nodemailer = await import("nodemailer");
-			const mockSendMail = vi
-				.fn()
-				.mockResolvedValue({ messageId: "msg-delay" });
+			const callTimes: number[] = [];
+			const mockSendMail = vi.fn().mockImplementation(() => {
+				callTimes.push(Date.now()); // Record current time
+				return Promise.resolve({ messageId: "msg-delay" });
+			});
 			(nodemailer.default.createTransport as Mock).mockReturnValue({
 				sendMail: mockSendMail,
 			});
@@ -506,6 +508,16 @@ describe("SMTPProvider", () => {
 			expect(mockSendMail).toHaveBeenCalledTimes(2);
 			expect(results).toHaveLength(2);
 			expect(results.every((r) => r.success)).toBe(true);
+
+			// Verify delay between calls (should be ~100ms)
+			expect(callTimes).toHaveLength(2);
+			const firstCall = callTimes[0];
+			const secondCall = callTimes[1];
+			if (!firstCall || !secondCall) {
+				throw new Error("Expected callTimes to have 2 elements");
+			}
+			const delay = secondCall - firstCall;
+			expect(delay).toBeGreaterThanOrEqual(100);
 		} finally {
 			vi.useRealTimers();
 		}
