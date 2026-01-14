@@ -1,10 +1,14 @@
-import { expect, suite, test, vi } from "vitest";
+import { afterEach, expect, suite, test, vi } from "vitest";
 import { assertToBeNonNullish } from "../../../helpers";
 import { mercuriusClient } from "../client";
 import { createRegularUserUsingAdmin } from "../createRegularUserUsingAdmin";
 import { Mutation_sendVerificationEmail } from "../documentNodes";
 
 suite("Mutation field sendVerificationEmail", () => {
+	afterEach(() => {
+		vi.restoreAllMocks();
+	});
+
 	test("should return success when authenticated", async () => {
 		const { authToken } = await createRegularUserUsingAdmin();
 
@@ -68,7 +72,6 @@ suite("Mutation field sendVerificationEmail", () => {
 
 		// Should NOT send email
 		expect(sendEmailSpy).not.toHaveBeenCalled();
-		sendEmailSpy.mockRestore();
 	});
 
 	test("should fail when rate limit exceeded", async () => {
@@ -92,7 +95,7 @@ suite("Mutation field sendVerificationEmail", () => {
 
 		expect(result.errors).toBeDefined();
 		assertToBeNonNullish(result.errors);
-		expect(result.errors[0].extensions?.code).toBe("too_many_requests");
+		expect(result.errors?.[0]?.extensions?.code).toBe("too_many_requests");
 
 		// Cleanup
 		EMAIL_VERIFICATION_RATE_LIMITS.delete(userId);
@@ -120,6 +123,6 @@ suite("Mutation field sendVerificationEmail", () => {
 		expect(result.errors).toBeDefined();
 		assertToBeNonNullish(result.errors);
 		// Assuming the resolver throws an error when user is missing from context or DB lookup fails
-		expect(result.errors[0].extensions?.code).toBe("unexpected");
+		expect(result.errors?.[0]?.extensions?.code).toBe("unexpected");
 	});
 });

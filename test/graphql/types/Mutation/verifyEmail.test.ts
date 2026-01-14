@@ -66,7 +66,17 @@ suite("Mutation field verifyEmail", () => {
 	});
 
 	test("should fail with invalid token", async () => {
-		const { authToken } = await createRegularUserUsingAdmin();
+		const { authToken, userId } = await createRegularUserUsingAdmin();
+
+		// Manually ensure user is NOT verified (idempotency override)
+		const { eq } = await import("drizzle-orm");
+		const { usersTable } = await import("~/src/drizzle/tables/users");
+		const { server } = await import("../../../../test/server");
+
+		await server.drizzleClient
+			.update(usersTable)
+			.set({ isEmailAddressVerified: false })
+			.where(eq(usersTable.id, userId));
 
 		const result = await mercuriusClient.mutate(Mutation_verifyEmail, {
 			headers: { authorization: `bearer ${authToken}` },
@@ -79,5 +89,127 @@ suite("Mutation field verifyEmail", () => {
 		const error = errors[0];
 		assertToBeNonNullish(error);
 		expect(error.extensions?.code).toBe("invalid_arguments");
+	});
+
+	test("should fail with expired token", async () => {
+		const { authToken, userId } = await createRegularUserUsingAdmin();
+
+		const { eq } = await import("drizzle-orm");
+		const { server } = await import("../../../../test/server");
+
+		// Spy on email provider to capture token
+		const sendEmailSpy = vi.spyOn(emailService, "sendEmail").mockResolvedValue({
+			id: "mock-id",
+			success: true,
+			messageId: "mock-message-id",
+		});
+
+		// 1. Send verification email
+		await mercuriusClient.mutate(Mutation_sendVerificationEmail, {
+			headers: { authorization: `bearer ${authToken}` },
+		});
+
+		const calls = sendEmailSpy.mock.calls;
+		expect(calls.length).toBeGreaterThan(0);
+		const args = calls[0][0] as { htmlBody?: string; textBody?: string };
+		const emailContent = args.htmlBody || args.textBody;
+		const match = emailContent?.match(/token=([a-zA-Z0-9_-]+)/);
+		const token = match?.[1];
+		assertToBeNonNullish(token);
+
+		// 2. EXPIRE the token in DB
+		const { emailVerificationTokensTable } = await import(
+			"~/src/drizzle/tables/emailVerificationTokens"
+		);
+
+		// Set expiresAt to 25 hours ago (or just 1 second ago)
+		const expiredDate = new Date(Date.now() - 10000);
+
+		await server.drizzleClient
+			.update(emailVerificationTokensTable)
+			.set({ expiresAt: expiredDate })
+			.where(eq(emailVerificationTokensTable.userId, userId));
+
+		// Manually ensure user is NOT verified (idempotency override)
+		const { usersTable } = await import("~/src/drizzle/tables/users");
+		await server.drizzleClient
+			.update(usersTable)
+			.set({ isEmailAddressVerified: false })
+			.where(eq(usersTable.id, userId));
+
+		// 3. Attempt to verify
+		const result = await mercuriusClient.mutate(Mutation_verifyEmail, {
+			headers: { authorization: `bearer ${authToken}` },
+			variables: { input: { token } },
+		});
+
+		expect(result.errors).toBeDefined();
+		assertToBeNonNullish(result.errors);
+		expect(result.errors?.[0]?.extensions?.code).toBe("invalid_arguments");
+	});
+
+	test("should fail with already used verify token (replay attack)", async () => {
+		const { authToken, userId } = await createRegularUserUsingAdmin();
+
+		// Spy on email provider
+		const sendEmailSpy = vi.spyOn(emailService, "sendEmail").mockResolvedValue({
+			id: "mock-id",
+			success: true,
+			messageId: "mock-message-id",
+		});
+
+		// 1. Send verification email
+		await mercuriusClient.mutate(Mutation_sendVerificationEmail, {
+			headers: { authorization: `bearer ${authToken}` },
+		});
+
+		const calls = sendEmailSpy.mock.calls;
+		const args = calls[0][0] as { htmlBody?: string; textBody?: string };
+		const emailContent = args.htmlBody || args.textBody;
+		const match = emailContent?.match(/token=([a-zA-Z0-9_-]+)/);
+		const token = match?.[1];
+		assertToBeNonNullish(token);
+
+		// 2. First Verification (Success)
+		const result1 = await mercuriusClient.mutate(Mutation_verifyEmail, {
+			headers: { authorization: `bearer ${authToken}` },
+			variables: { input: { token } },
+		});
+		expect(result1.errors).toBeUndefined();
+		assertToBeNonNullish(result1.data?.verifyEmail);
+		expect(result1.data.verifyEmail.success).toBe(true);
+
+		// Manually revert verification status to test token reuse
+		const { eq } = await import("drizzle-orm");
+		const { usersTable } = await import("~/src/drizzle/tables/users");
+		const { server } = await import("../../../../test/server");
+
+		await server.drizzleClient
+			.update(usersTable)
+			.set({ isEmailAddressVerified: false })
+			.where(eq(usersTable.id, userId));
+
+		// 3. Second Verification (Fail)
+		const result2 = await mercuriusClient.mutate(Mutation_verifyEmail, {
+			headers: { authorization: `bearer ${authToken}` },
+			variables: { input: { token } },
+		});
+
+		expect(result2.errors).toBeDefined();
+		assertToBeNonNullish(result2.errors);
+		expect(result2.errors?.[0]?.extensions?.code).toBe("invalid_arguments");
+	});
+
+	test("should fail when unauthenticated", async () => {
+		// Clear headers
+		mercuriusClient.setHeaders({});
+
+		const result = await mercuriusClient.mutate(Mutation_verifyEmail, {
+			variables: { input: { token: "some-token" } },
+		});
+
+		expect(result.errors).toBeDefined();
+		assertToBeNonNullish(result.errors);
+		expect(result.errors?.[0]?.extensions?.code).toBe("unauthenticated");
 	});
 });
