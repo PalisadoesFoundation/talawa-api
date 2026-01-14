@@ -1,57 +1,81 @@
 import { expect, suite, test, vi } from "vitest";
-import { assertToBeNonNullish } from "../../../helpers";
 import { emailService } from "~/src/services/email/emailServiceInstance";
+import { assertToBeNonNullish } from "../../../helpers";
+import { mercuriusClient } from "../client";
 import { createRegularUserUsingAdmin } from "../createRegularUserUsingAdmin";
 import {
-    Mutation_sendVerificationEmail,
-    Mutation_verifyEmail,
+	Mutation_sendVerificationEmail,
+	Mutation_verifyEmail,
 } from "../documentNodes";
-import { mercuriusClient } from "../client";
 
 suite("Mutation field verifyEmail", () => {
-    test("should successfully verify email with valid token", async () => {
-        const { authToken } = await createRegularUserUsingAdmin();
+	test("should successfully verify email with valid token", async () => {
+		const { authToken } = await createRegularUserUsingAdmin();
 
-        // Spy on email provider and mock implementation to prevent actual sending
-        const sendEmailSpy = vi.spyOn(emailService, "sendEmail").mockResolvedValue(undefined);
+		// Spy on email provider and mock implementation to prevent actual sending
+		const sendEmailSpy = vi.spyOn(emailService, "sendEmail").mockResolvedValue({
+			id: "mock-id",
+			success: true,
+			messageId: "mock-message-id",
+		});
 
-        // 1. Send verification email
-        await mercuriusClient.mutate(Mutation_sendVerificationEmail, {
-            headers: { authorization: `bearer ${authToken}` },
-        });
+		// 1. Send verification email
+		await mercuriusClient.mutate(Mutation_sendVerificationEmail, {
+			headers: { authorization: `bearer ${authToken}` },
+		});
 
-        // 2. Extract token from email
-        expect(sendEmailSpy).toHaveBeenCalled();
-        const args = sendEmailSpy.mock.calls[0][0] as any;
-        const emailContent = args.htmlBody || args.textBody;
+		// 2. Extract token from email
+		expect(sendEmailSpy).toHaveBeenCalled();
+		const calls = sendEmailSpy.mock.calls;
+		// Ensure we have at least one call
+		expect(calls.length).toBeGreaterThan(0);
+		const firstCall = calls[0];
+		assertToBeNonNullish(firstCall);
 
-        const match = emailContent?.match(/token=([a-zA-Z0-9_\-]+)/);
-        expect(match).toBeDefined();
-        const token = match![1];
+		const args = firstCall[0] as
+			| {
+					htmlBody?: string;
+					textBody?: string;
+			  }
+			| undefined;
 
-        // 3. Verify Email
-        const result = await mercuriusClient.mutate(Mutation_verifyEmail, {
-            headers: { authorization: `bearer ${authToken}` },
-            variables: { input: { token } },
-        });
+		assertToBeNonNullish(args);
 
-        expect(result.errors).toBeUndefined();
-        assertToBeNonNullish(result.data?.verifyEmail);
-        expect(result.data.verifyEmail.success).toBe(true);
-        expect(result.data.verifyEmail.message).toBeDefined();
+		const emailContent = args.htmlBody || args.textBody;
 
-        sendEmailSpy.mockRestore();
-    });
+		const match = emailContent?.match(/token=([a-zA-Z0-9_-]+)/);
+		expect(match).toBeDefined();
+		assertToBeNonNullish(match);
+		const token = match[1];
+		assertToBeNonNullish(token);
 
-    test("should fail with invalid token", async () => {
-        const { authToken } = await createRegularUserUsingAdmin();
+		// 3. Verify Email
+		const result = await mercuriusClient.mutate(Mutation_verifyEmail, {
+			headers: { authorization: `bearer ${authToken}` },
+			variables: { input: { token } },
+		});
 
-        const result = await mercuriusClient.mutate(Mutation_verifyEmail, {
-            headers: { authorization: `bearer ${authToken}` },
-            variables: { input: { token: "invalid-token" } },
-        });
+		expect(result.errors).toBeUndefined();
+		assertToBeNonNullish(result.data?.verifyEmail);
+		expect(result.data.verifyEmail.success).toBe(true);
+		expect(result.data.verifyEmail.message).toBeDefined();
 
-        expect(result.errors).toBeDefined();
-        expect(result.errors![0].extensions?.code).toBe("invalid_arguments");
-    });
+		sendEmailSpy.mockRestore();
+	});
+
+	test("should fail with invalid token", async () => {
+		const { authToken } = await createRegularUserUsingAdmin();
+
+		const result = await mercuriusClient.mutate(Mutation_verifyEmail, {
+			headers: { authorization: `bearer ${authToken}` },
+			variables: { input: { token: "invalid-token" } },
+		});
+
+		expect(result.errors).toBeDefined();
+		const errors = result.errors;
+		assertToBeNonNullish(errors);
+		const error = errors[0];
+		assertToBeNonNullish(error);
+		expect(error.extensions?.code).toBe("invalid_arguments");
+	});
 });
