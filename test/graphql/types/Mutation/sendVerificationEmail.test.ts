@@ -144,4 +144,49 @@ suite("Mutation field sendVerificationEmail", () => {
 		// Assuming the resolver throws an error when user is missing from context or DB lookup fails
 		expect(result.errors?.[0]?.extensions?.code).toBe("unexpected");
 	});
+	test("should return success even if email service fails (success: false)", async () => {
+		const { authToken } = await createRegularUserUsingAdmin();
+
+		// Mock email failure
+		sendEmailSpy.mockResolvedValue({
+			id: "mock-id",
+			success: false,
+			error: "Mock Provider Error",
+		});
+
+		const result = await mercuriusClient.mutate(
+			Mutation_sendVerificationEmail,
+			{
+				headers: { authorization: `bearer ${authToken}` },
+			},
+		);
+
+		expect(result.errors).toBeUndefined();
+		assertToBeNonNullish(result.data?.sendVerificationEmail);
+		expect(result.data.sendVerificationEmail.success).toBe(true);
+		expect(result.data.sendVerificationEmail.message).toBeDefined();
+
+		expect(sendEmailSpy).toHaveBeenCalled();
+	});
+
+	test("should return success even if email service throws exception", async () => {
+		const { authToken } = await createRegularUserUsingAdmin();
+
+		// Mock email exception
+		sendEmailSpy.mockRejectedValue(new Error("Network Error"));
+
+		const result = await mercuriusClient.mutate(
+			Mutation_sendVerificationEmail,
+			{
+				headers: { authorization: `bearer ${authToken}` },
+			},
+		);
+
+		expect(result.errors).toBeUndefined();
+		assertToBeNonNullish(result.data?.sendVerificationEmail);
+		expect(result.data.sendVerificationEmail.success).toBe(true);
+		expect(result.data.sendVerificationEmail.message).toBeDefined();
+
+		expect(sendEmailSpy).toHaveBeenCalled();
+	});
 });
