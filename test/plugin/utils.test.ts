@@ -206,6 +206,17 @@ describe("deepClone", () => {
 		expect(clone.d).not.toBe(obj.d);
 		expect(clone.d[2]).not.toBe(obj.d[2]);
 	});
+
+	it("returns primitives unchanged (covers line 218)", () => {
+		// Test various primitive types that should be returned as-is
+		expect(utils.deepClone(42)).toBe(42);
+		expect(utils.deepClone("hello")).toBe("hello");
+		expect(utils.deepClone(true)).toBe(true);
+		expect(utils.deepClone(undefined)).toBe(undefined);
+		// Symbol and function edge cases
+		const sym = Symbol("test");
+		expect(utils.deepClone(sym)).toBe(sym);
+	});
 });
 
 // --- generateCreateTableSQL & generateCreateIndexSQL ---
