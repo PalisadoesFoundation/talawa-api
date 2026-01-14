@@ -37,6 +37,15 @@ describe("eventGenerationWindows insert schema numeric bounds", () => {
 			}).success,
 		).toBe(false);
 
+		// Missing createdById
+		expect(
+			eventGenerationWindowsTableInsertSchema.safeParse({
+				organizationId: "3f738d7f-22e7-4bda-b47f-61f0a9c9c9a1",
+				currentWindowEndDate: new Date(),
+				retentionStartDate: new Date(),
+			}).success,
+		).toBe(false);
+
 		// All required fields present (should succeed)
 		const validObj = {
 			organizationId: "3f738d7f-22e7-4bda-b47f-61f0a9c9c9a1",
