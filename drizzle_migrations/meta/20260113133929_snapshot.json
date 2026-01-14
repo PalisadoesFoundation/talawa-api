@@ -1,5 +1,5 @@
 {
-  "id": "ae792d6c-ec99-4dd7-8cb4-3edf5f487940",
+  "id": "01ff925e-6d27-4dd4-abd5-04b2a7df7985",
   "prevId": "d52bf89a-0880-4bb2-8b5e-0d6aea3ae16b",
   "version": "7",
   "dialect": "postgresql",
@@ -1313,12 +1313,6 @@
           "primaryKey": false,
           "notNull": false
         },
-        "description": {
-          "name": "description",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
         "event_id": {
           "name": "event_id",
           "type": "uuid",
@@ -1331,12 +1325,11 @@
           "primaryKey": true,
           "notNull": true
         },
-        "is_default_folder": {
-          "name": "is_default_folder",
+        "is_agenda_item_folder": {
+          "name": "is_agenda_item_folder",
           "type": "boolean",
           "primaryKey": false,
-          "notNull": true,
-          "default": false
+          "notNull": true
         },
         "name": {
           "name": "name",
@@ -1344,15 +1337,9 @@
           "primaryKey": false,
           "notNull": true
         },
-        "organization_id": {
-          "name": "organization_id",
+        "parent_folder_id": {
+          "name": "parent_folder_id",
           "type": "uuid",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "sequence": {
-          "name": "sequence",
-          "type": "integer",
           "primaryKey": false,
           "notNull": false
         },
@@ -1415,6 +1402,21 @@
           "method": "btree",
           "with": {}
         },
+        "agenda_folders_is_agenda_item_folder_index": {
+          "name": "agenda_folders_is_agenda_item_folder_index",
+          "columns": [
+            {
+              "expression": "is_agenda_item_folder",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
         "agenda_folders_name_index": {
           "name": "agenda_folders_name_index",
           "columns": [
@@ -1430,11 +1432,11 @@
           "method": "btree",
           "with": {}
         },
-        "agenda_folders_organization_id_index": {
-          "name": "agenda_folders_organization_id_index",
+        "agenda_folders_parent_folder_id_index": {
+          "name": "agenda_folders_parent_folder_id_index",
           "columns": [
             {
-              "expression": "organization_id",
+              "expression": "parent_folder_id",
               "isExpression": false,
               "asc": true,
               "nulls": "last"
@@ -1473,12 +1475,12 @@
           "onDelete": "cascade",
           "onUpdate": "cascade"
         },
-        "agenda_folders_organization_id_organizations_id_fk": {
-          "name": "agenda_folders_organization_id_organizations_id_fk",
+        "agenda_folders_parent_folder_id_agenda_folders_id_fk": {
+          "name": "agenda_folders_parent_folder_id_agenda_folders_id_fk",
           "tableFrom": "agenda_folders",
-          "tableTo": "organizations",
+          "tableTo": "agenda_folders",
           "columnsFrom": [
-            "organization_id"
+            "parent_folder_id"
           ],
           "columnsTo": [
             "id"
@@ -1489,6 +1491,197 @@
         "agenda_folders_updater_id_users_id_fk": {
           "name": "agenda_folders_updater_id_users_id_fk",
           "tableFrom": "agenda_folders",
+          "tableTo": "users",
+          "columnsFrom": [
+            "updater_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "set null",
+          "onUpdate": "cascade"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.agenda_item_attachments": {
+      "name": "agenda_item_attachments",
+      "schema": "",
+      "columns": {
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp (3) with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "creator_id": {
+          "name": "creator_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "agenda_item_id": {
+          "name": "agenda_item_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "mime_type": {
+          "name": "mime_type",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "name": {
+          "name": "name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "object_name": {
+          "name": "object_name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "file_hash": {
+          "name": "file_hash",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp (3) with time zone",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "null"
+        },
+        "updater_id": {
+          "name": "updater_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {
+        "agenda_item_attachments_created_at_index": {
+          "name": "agenda_item_attachments_created_at_index",
+          "columns": [
+            {
+              "expression": "created_at",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "agenda_item_attachments_creator_id_index": {
+          "name": "agenda_item_attachments_creator_id_index",
+          "columns": [
+            {
+              "expression": "creator_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "agenda_item_attachments_agenda_item_id_index": {
+          "name": "agenda_item_attachments_agenda_item_id_index",
+          "columns": [
+            {
+              "expression": "agenda_item_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "agenda_item_attachments_file_hash_index": {
+          "name": "agenda_item_attachments_file_hash_index",
+          "columns": [
+            {
+              "expression": "file_hash",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "agenda_item_attachments_object_name_index": {
+          "name": "agenda_item_attachments_object_name_index",
+          "columns": [
+            {
+              "expression": "object_name",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "agenda_item_attachments_creator_id_users_id_fk": {
+          "name": "agenda_item_attachments_creator_id_users_id_fk",
+          "tableFrom": "agenda_item_attachments",
+          "tableTo": "users",
+          "columnsFrom": [
+            "creator_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "set null",
+          "onUpdate": "cascade"
+        },
+        "agenda_item_attachments_agenda_item_id_agenda_items_id_fk": {
+          "name": "agenda_item_attachments_agenda_item_id_agenda_items_id_fk",
+          "tableFrom": "agenda_item_attachments",
+          "tableTo": "agenda_items",
+          "columnsFrom": [
+            "agenda_item_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "cascade"
+        },
+        "agenda_item_attachments_updater_id_users_id_fk": {
+          "name": "agenda_item_attachments_updater_id_users_id_fk",
+          "tableFrom": "agenda_item_attachments",
           "tableTo": "users",
           "columnsFrom": [
             "updater_id"
