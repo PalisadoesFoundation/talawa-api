@@ -276,9 +276,10 @@ export class PluginLifecycle {
 			manifest.extensionPoints?.database &&
 			manifest.extensionPoints.database.length > 0
 		) {
-			this.pluginContext.logger.info?.(
-				`Creating plugin-defined tables for: ${pluginId}`,
-			);
+			this.pluginContext.logger.info?.({
+				msg: "Creating plugin-defined tables",
+				pluginId,
+			});
 
 			const tableDefinitions: Record<string, Record<string, unknown>> = {};
 			const pluginPath = path.join(
@@ -672,30 +673,38 @@ export class PluginLifecycle {
 			};
 
 			if (action === "install" && (cfg.buildOnInstall ?? true)) {
-				this.pluginContext.logger.info?.(
-					`Building docker container for plugin ${pluginId}...`,
-				);
+				this.pluginContext.logger.info?.({
+					msg: "Building docker container",
+					pluginId,
+					action,
+				});
 				await runCompose(["-f", fullComposePath, "build", ...serviceArg]);
 			}
 
 			if (action === "activate" && (cfg.upOnActivate ?? true)) {
-				this.pluginContext.logger.info?.(
-					`Starting docker container for plugin ${pluginId}...`,
-				);
+				this.pluginContext.logger.info?.({
+					msg: "Starting docker container",
+					pluginId,
+					action,
+				});
 				await runCompose(["-f", fullComposePath, "up", "-d", ...serviceArg]);
 			}
 
 			if (action === "deactivate" && (cfg.downOnDeactivate ?? true)) {
-				this.pluginContext.logger.info?.(
-					`Stopping docker container for plugin ${pluginId}...`,
-				);
+				this.pluginContext.logger.info?.({
+					msg: "Stopping docker container",
+					pluginId,
+					action,
+				});
 				await runCompose(["-f", fullComposePath, "down", ...serviceArg]);
 			}
 
 			if (action === "uninstall" && (cfg.removeOnUninstall ?? true)) {
-				this.pluginContext.logger.info?.(
-					`Removing docker container for plugin ${pluginId}...`,
-				);
+				this.pluginContext.logger.info?.({
+					msg: "Removing docker container",
+					pluginId,
+					action,
+				});
 				await runCompose(["-f", fullComposePath, "down", "-v", ...serviceArg]);
 			}
 		} catch (error) {

@@ -90,7 +90,7 @@ Deactivate a plugin - trigger schema rebuild
 
 > **getPluginModule**(`pluginId`): `Promise`\<[`IPluginLifecycle`](../../../types/interfaces/IPluginLifecycle.md) \| `null`\>
 
-Defined in: [src/plugin/manager/lifecycle.ts:396](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/plugin/manager/lifecycle.ts#L396)
+Defined in: [src/plugin/manager/lifecycle.ts:397](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/plugin/manager/lifecycle.ts#L397)
 
 Get plugin module for lifecycle hooks
 
@@ -134,7 +134,7 @@ Install a plugin - install dependencies and create plugin-defined databases
 
 > **removeFromExtensionRegistry**(`pluginId`): `void`
 
-Defined in: [src/plugin/manager/lifecycle.ts:416](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/plugin/manager/lifecycle.ts#L416)
+Defined in: [src/plugin/manager/lifecycle.ts:417](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/plugin/manager/lifecycle.ts#L417)
 
 Remove plugin from extension registry
 
@@ -178,7 +178,7 @@ Uninstall a plugin - remove tables and cleanup
 
 > **unloadPlugin**(`pluginId`, `pluginManager`): `Promise`\<`boolean`\>
 
-Defined in: [src/plugin/manager/lifecycle.ts:545](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/plugin/manager/lifecycle.ts#L545)
+Defined in: [src/plugin/manager/lifecycle.ts:546](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/plugin/manager/lifecycle.ts#L546)
 
 Unload a plugin - remove from memory without database changes
 

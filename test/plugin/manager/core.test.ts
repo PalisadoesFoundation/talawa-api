@@ -1127,7 +1127,9 @@ describe("PluginManager", () => {
 
 			expect(context.logger.info).toHaveBeenCalledWith(
 				expect.objectContaining({
-					msg: expect.stringContaining("loaded"),
+					msg: expect.stringMatching(
+						/Plugin system initialized: \d+ loaded, \d+ failed/,
+					),
 				}),
 			);
 		});
