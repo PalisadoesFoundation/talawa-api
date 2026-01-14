@@ -36,7 +36,7 @@ builder.mutationField("verifyEmail", (t) =>
 			if (!ctx.currentClient.isAuthenticated) {
 				throw new TalawaGraphQLError({
 					extensions: {
-						code: "forbidden_action",
+						code: "unauthenticated",
 					},
 				});
 			}

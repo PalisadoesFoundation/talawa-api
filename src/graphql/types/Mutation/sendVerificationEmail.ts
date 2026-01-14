@@ -28,11 +28,11 @@ builder.mutationField("sendVerificationEmail", (t) =>
 			// Track start time for timing attack mitigation
 			const startTime = Date.now();
 
-			// Must be authenticated to request verification email
+			// Must be authenticated to send verification email
 			if (!ctx.currentClient.isAuthenticated) {
 				throw new TalawaGraphQLError({
 					extensions: {
-						code: "forbidden_action",
+						code: "unauthenticated",
 					},
 				});
 			}

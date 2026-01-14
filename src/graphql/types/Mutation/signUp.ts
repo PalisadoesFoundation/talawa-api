@@ -167,7 +167,7 @@ builder.mutationField("signUp", (t) =>
 				avatarMimeType = parsedArgs.input.avatar.mimetype;
 			}
 
-			return await ctx.drizzleClient.transaction(async (tx) => {
+			const result = await ctx.drizzleClient.transaction(async (tx) => {
 				const [createdUser] = await tx
 					.insert(usersTable)
 					.values({
@@ -222,49 +222,6 @@ builder.mutationField("signUp", (t) =>
 							"content-type": parsedArgs.input.avatar.mimetype,
 						},
 					);
-				}
-
-				// Send email verification token (non-blocking, signup succeeds even if this fails)
-				try {
-					const rawToken = generateEmailVerificationToken();
-					const tokenHash = hashEmailVerificationToken(rawToken);
-					const tokenExpiresInSeconds =
-						ctx.envConfig.API_EMAIL_VERIFICATION_TOKEN_EXPIRES_SECONDS ??
-						DEFAULT_EMAIL_VERIFICATION_TOKEN_EXPIRES_SECONDS;
-					const expiresAt = new Date(Date.now() + tokenExpiresInSeconds * 1000);
-
-					await storeEmailVerificationToken(
-						tx,
-						createdUser.id,
-						tokenHash,
-						expiresAt,
-					);
-
-					const verificationLink = `${ctx.envConfig.FRONTEND_URL}/verify-email?token=${rawToken}`;
-					const emailContext = {
-						userName: createdUser.name,
-						communityName: ctx.envConfig.API_COMMUNITY_NAME,
-						verificationLink,
-						expiryText: formatExpiryTime(tokenExpiresInSeconds),
-					};
-
-					emailService
-						.sendEmail({
-							id: ulid(),
-							email: createdUser.emailAddress,
-							subject: `Verify Your Email - ${ctx.envConfig.API_COMMUNITY_NAME}`,
-							htmlBody: getEmailVerificationEmailHtml(emailContext),
-							textBody: getEmailVerificationEmailText(emailContext),
-							userId: createdUser.id,
-						})
-						.catch((err) =>
-							ctx.log.error(
-								{ error: err },
-								"Failed to send verification email",
-							),
-						);
-				} catch (err) {
-					ctx.log.error({ error: err }, "Failed to create verification token");
 				}
 
 				// If the organization does not require user registration, create a membership for the user in the organization.
@@ -354,6 +311,50 @@ builder.mutationField("signUp", (t) =>
 					user: createdUser,
 				};
 			});
+
+			// Send email verification token AFTER transaction completes (non-blocking)
+			// This ensures email failures don't abort the signup
+			try {
+				const rawToken = generateEmailVerificationToken();
+				const tokenHash = hashEmailVerificationToken(rawToken);
+				const tokenExpiresInSeconds =
+					ctx.envConfig.API_EMAIL_VERIFICATION_TOKEN_EXPIRES_SECONDS ??
+					DEFAULT_EMAIL_VERIFICATION_TOKEN_EXPIRES_SECONDS;
+				const expiresAt = new Date(Date.now() + tokenExpiresInSeconds * 1000);
+
+				// Use non-transactional DB client to store token
+				await storeEmailVerificationToken(
+					ctx.drizzleClient,
+					result.user.id,
+					tokenHash,
+					expiresAt,
+				);
+
+				const verificationLink = `${ctx.envConfig.FRONTEND_URL}/verify-email?token=${rawToken}`;
+				const emailContext = {
+					userName: result.user.name,
+					communityName: ctx.envConfig.API_COMMUNITY_NAME,
+					verificationLink,
+					expiryText: formatExpiryTime(tokenExpiresInSeconds),
+				};
+
+				emailService
+					.sendEmail({
+						id: ulid(),
+						email: result.user.emailAddress,
+						subject: `Verify Your Email - ${ctx.envConfig.API_COMMUNITY_NAME}`,
+						htmlBody: getEmailVerificationEmailHtml(emailContext),
+						textBody: getEmailVerificationEmailText(emailContext),
+						userId: result.user.id,
+					})
+					.catch((err) =>
+						ctx.log.error({ error: err }, "Failed to send verification email"),
+					);
+			} catch (err) {
+				ctx.log.error({ error: err }, "Failed to create verification token");
+			}
+
+			return result;
 		},
 		type: AuthenticationPayload,
 	}),

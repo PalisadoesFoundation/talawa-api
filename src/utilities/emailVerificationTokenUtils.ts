@@ -107,10 +107,15 @@ export async function findValidEmailVerificationToken(
 	  }
 	| undefined
 > {
+	// Timing attack mitigation: always query database even if we plan to return undefined later
 	// Combine all conditions in a single query to prevent timing attacks
 	// from revealing token state (exists vs expired vs used)
 	const token = await db
-		.select()
+		.select({
+			id: emailVerificationTokensTable.id,
+			userId: emailVerificationTokensTable.userId,
+			expiresAt: emailVerificationTokensTable.expiresAt,
+		})
 		.from(emailVerificationTokensTable)
 		.where(
 			and(

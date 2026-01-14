@@ -14,8 +14,8 @@
 export function maskEmail(email: string): string {
 	const atIndex = email.indexOf("@");
 
-	if (atIndex === -1) {
-		// Invalid email format - mask entire string
+	if (atIndex === -1 || atIndex === 0) {
+		// Invalid email format or empty local part - mask entire string
 		return "***";
 	}
 

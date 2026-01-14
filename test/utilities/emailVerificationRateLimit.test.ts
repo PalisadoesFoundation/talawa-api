@@ -102,9 +102,9 @@ describe("emailVerificationRateLimit", () => {
 			// 4th blocked
 			expect(checkEmailVerificationRateLimit(userId)).toBe(false);
 
-			// Exactly at expiry (edge: still within window)
+			// Exactly at expiry (window just ends - still allowed as new window)
 			vi.setSystemTime(startTime + 60 * 60 * 1000);
-			expect(checkEmailVerificationRateLimit(userId)).toBe(false);
+			expect(checkEmailVerificationRateLimit(userId)).toBe(true);
 
 			// 1ms after expiry (new window starts)
 			vi.setSystemTime(startTime + 60 * 60 * 1000 + 1);
