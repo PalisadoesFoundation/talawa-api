@@ -850,13 +850,24 @@ describe("Performance Plugin", () => {
 
 				expect(initialResponse.statusCode).toBe(200);
 
-				// Now stub structuredClone as undefined to test the fallback path
-				// This ensures the typeof check in deepCopySnapshot will return "undefined"
-				// and trigger the fallback path (line 87) when we call getPerformanceSnapshots
-				vi.stubGlobal("structuredClone", undefined);
+				// Now stub structuredClone to test the fallback path
+				// Use Object.defineProperty with a getter that returns undefined
+				// This ensures typeof check will see it as undefined
+				try {
+					// Try to override with a getter that returns undefined
+					Object.defineProperty(global, "structuredClone", {
+						get: () => undefined,
+						configurable: true,
+						enumerable: true,
+					});
+				} catch (_e) {
+					// If that fails, try vi.stubGlobal
+					vi.stubGlobal("structuredClone", undefined);
+				}
 
-				// Verify the stub worked
-				expect(typeof global.structuredClone).toBe("undefined");
+				// Verify the stub worked - typeof should be "undefined"
+				const checkBefore = typeof structuredClone;
+				expect(checkBefore).toBe("undefined");
 
 				// The snapshot should be stored after the request completes
 				// getPerformanceSnapshots uses deepCopySnapshot which handles the fallback internally
@@ -904,10 +915,20 @@ describe("Performance Plugin", () => {
 						// Ignore close errors
 					});
 				}
-				// Restore using vi.unstubAllGlobals or restore the original
+				// Restore original structuredClone
 				vi.unstubAllGlobals();
 				if (originalStructuredClone !== undefined) {
-					global.structuredClone = originalStructuredClone;
+					try {
+						Object.defineProperty(global, "structuredClone", {
+							value: originalStructuredClone,
+							configurable: true,
+							writable: true,
+							enumerable: true,
+						});
+					} catch (_e) {
+						// If restore fails, the original should still be there
+						// or it will be restored by unstubAllGlobals
+					}
 				}
 			}
 		});
