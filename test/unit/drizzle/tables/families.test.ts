@@ -1,4 +1,4 @@
-import { getTableName, Many, One } from "drizzle-orm";
+import { getTableName } from "drizzle-orm";
 import { getTableConfig } from "drizzle-orm/pg-core";
 import { describe, expect, it } from "vitest";
 import {
@@ -172,6 +172,11 @@ describe("src/drizzle/tables/families.ts", () => {
 				);
 				expect(uniqueIndex).toBeDefined();
 				expect(uniqueIndex?.config.columns).toHaveLength(2);
+				const columnNames = uniqueIndex?.config.columns.map((col) =>
+					"name" in col ? col.name : undefined,
+				);
+				expect(columnNames).toContain("name");
+				expect(columnNames).toContain("organization_id");
 			});
 		});
 	});
@@ -192,34 +197,49 @@ describe("src/drizzle/tables/families.ts", () => {
 		});
 
 		describe("relation definitions", () => {
-			// Helper to create one relation builder
-			const createOne = (
-				sourceTable: unknown,
-				table: unknown,
-				config: unknown,
-			) => {
-				return new One(
-					sourceTable as Parameters<typeof One>[0],
-					table as Parameters<typeof One>[1],
-					config as Parameters<typeof One>[2],
-					false,
-				);
+			// Type for tracking relation calls
+			type RelationCall = {
+				type: "one" | "many";
+				table: unknown;
+				config: unknown;
+				withFieldName: (fieldName: string) => RelationCall;
 			};
 
-			// Helper to create many relation builder
-			const createMany = (sourceTable: unknown, config: unknown) => {
-				return new Many(
-					sourceTable as Parameters<typeof Many>[0],
-					config as Parameters<typeof Many>[1],
-				);
+			// Helper to create mock builders that track calls
+			const createMockBuilders = () => {
+				const one = (table: unknown, config: unknown): RelationCall => {
+					const result: RelationCall = {
+						type: "one" as const,
+						table,
+						config,
+						withFieldName: () => result,
+					};
+					return result;
+				};
+
+				const many = (table: unknown, config: unknown): RelationCall => {
+					const result: RelationCall = {
+						type: "many" as const,
+						table,
+						config,
+						withFieldName: () => result,
+					};
+					return result;
+				};
+
+				return {
+					one: one as unknown as Parameters<
+						typeof familiesTableRelations.config
+					>[0]["one"],
+					many: many as unknown as Parameters<
+						typeof familiesTableRelations.config
+					>[0]["many"],
+				};
 			};
 
 			it("should define four relations", () => {
-				// Call the config function with proper builders to exercise the callback
-				const relationsResult = familiesTableRelations.config({
-					one: (table, config) => createOne(familiesTable, table, config),
-					many: (config) => createMany(familiesTable, config),
-				});
+				const { one, many } = createMockBuilders();
+				const relationsResult = familiesTableRelations.config({ one, many });
 
 				// Verify all four relations are defined
 				expect(relationsResult.creator).toBeDefined();
@@ -229,46 +249,40 @@ describe("src/drizzle/tables/families.ts", () => {
 			});
 
 			it("should define creator as a one-to-one relation with usersTable", () => {
-				const relationsResult = familiesTableRelations.config({
-					one: (table, config) => createOne(familiesTable, table, config),
-					many: (config) => createMany(familiesTable, config),
-				});
+				const { one, many } = createMockBuilders();
+				const relationsResult = familiesTableRelations.config({ one, many });
 
-				expect(relationsResult.creator).toBeInstanceOf(One);
-				expect(relationsResult.creator.referencedTable).toBe(usersTable);
+				const creator = relationsResult.creator as unknown as RelationCall;
+				expect(creator.type).toBe("one");
+				expect(creator.table).toBe(usersTable);
 			});
 
 			it("should define organization as a one-to-one relation with organizationsTable", () => {
-				const relationsResult = familiesTableRelations.config({
-					one: (table, config) => createOne(familiesTable, table, config),
-					many: (config) => createMany(familiesTable, config),
-				});
+				const { one, many } = createMockBuilders();
+				const relationsResult = familiesTableRelations.config({ one, many });
 
-				expect(relationsResult.organization).toBeInstanceOf(One);
-				expect(relationsResult.organization.referencedTable).toBe(
-					organizationsTable,
-				);
+				const organization =
+					relationsResult.organization as unknown as RelationCall;
+				expect(organization.type).toBe("one");
+				expect(organization.table).toBe(organizationsTable);
 			});
 
 			it("should define updater as a one-to-one relation with usersTable", () => {
-				const relationsResult = familiesTableRelations.config({
-					one: (table, config) => createOne(familiesTable, table, config),
-					many: (config) => createMany(familiesTable, config),
-				});
+				const { one, many } = createMockBuilders();
+				const relationsResult = familiesTableRelations.config({ one, many });
 
-				expect(relationsResult.updater).toBeInstanceOf(One);
-				expect(relationsResult.updater.referencedTable).toBe(usersTable);
+				const updater = relationsResult.updater as unknown as RelationCall;
+				expect(updater.type).toBe("one");
+				expect(updater.table).toBe(usersTable);
 			});
 
 			it("should define familyMembershipsWhereFamily as a one-to-many relation", () => {
-				const relationsResult = familiesTableRelations.config({
-					one: (table, config) => createOne(familiesTable, table, config),
-					many: (config) => createMany(familiesTable, config),
-				});
+				const { one, many } = createMockBuilders();
+				const relationsResult = familiesTableRelations.config({ one, many });
 
-				expect(relationsResult.familyMembershipsWhereFamily).toBeInstanceOf(
-					Many,
-				);
+				const familyMembershipsWhereFamily =
+					relationsResult.familyMembershipsWhereFamily as unknown as RelationCall;
+				expect(familyMembershipsWhereFamily.type).toBe("many");
 			});
 		});
 	});
