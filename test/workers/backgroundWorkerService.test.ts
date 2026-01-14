@@ -664,6 +664,65 @@ describe("backgroundServiceWorker", () => {
 			);
 		});
 
+		it("uses default values when env config options are undefined", async () => {
+			const { runMetricsAggregationWorker } = await import(
+				"~/src/workers/metrics/metricsAggregationWorker"
+			);
+
+			// Test that fallback values are used when env config values are undefined
+			// This tests the ?? fallback operators on lines 330-332
+			const mockFastify = {
+				envConfig: {
+					METRICS_AGGREGATION_WINDOW_MINUTES: undefined as unknown as number,
+					METRICS_SNAPSHOT_RETENTION_COUNT: undefined as unknown as number,
+					METRICS_SLOW_THRESHOLD_MS: undefined as unknown as number,
+				},
+				getPerformanceSnapshots: vi.fn().mockReturnValue([]),
+			} as unknown as Parameters<typeof startBackgroundWorkers>[2];
+
+			await startBackgroundWorkers(mockDrizzleClient, mockLogger, mockFastify);
+
+			vi.mocked(runMetricsAggregationWorker).mockReturnValue({
+				metrics: {
+					timestamp: Date.now(),
+					windowMinutes: 5, // Default value
+					snapshotCount: 0,
+					operations: {},
+					cache: {
+						totalHits: 0,
+						totalMisses: 0,
+						totalOps: 0,
+						hitRate: 0,
+					},
+					slowOperationCount: 0,
+					avgTotalMs: 0,
+					minTotalMs: 0,
+					maxTotalMs: 0,
+					medianTotalMs: 0,
+					p95TotalMs: 0,
+					p99TotalMs: 0,
+				},
+				snapshotsProcessed: 0,
+				aggregationDurationMs: 10,
+				error: undefined,
+			});
+
+			await runMetricsAggregationWorkerSafely(mockLogger);
+
+			// Verify that runMetricsAggregationWorker was called with default values
+			expect(vi.mocked(runMetricsAggregationWorker)).toHaveBeenCalledWith(
+				expect.any(Function),
+				mockLogger,
+				expect.objectContaining({
+					windowMinutes: 5, // Default fallback
+					maxSnapshots: 1000, // Default fallback
+					slowThresholdMs: 200, // Default fallback
+				}),
+			);
+
+			await stopBackgroundWorkers(mockLogger);
+		});
+
 		it("logs successful metrics aggregation run", async () => {
 			const { runMetricsAggregationWorker } = await import(
 				"~/src/workers/metrics/metricsAggregationWorker"
@@ -1144,6 +1203,12 @@ describe("backgroundServiceWorker", () => {
 			expect(result.status).toBe("unhealthy");
 			expect(result.details.reason).toBe("Background workers not running");
 			expect(result.details.isRunning).toBe(false);
+			expect(result.details.materializationSchedule).toBeDefined();
+			expect(result.details.cleanupSchedule).toBeDefined();
+			expect(result.details.metricsSchedule).toBeDefined();
+			// Optional fields may be undefined
+			expect(result.details).toHaveProperty("nextMaterializationRun");
+			expect(result.details).toHaveProperty("nextCleanupRun");
 		});
 
 		it("returns healthy when workers are running", async () => {
@@ -1165,8 +1230,42 @@ describe("backgroundServiceWorker", () => {
 
 			expect(result.status).toBe("healthy");
 			expect(result.details.isRunning).toBe(true);
+			expect(result.details.materializationSchedule).toBeDefined();
+			expect(result.details.cleanupSchedule).toBeDefined();
+			expect(result.details.metricsSchedule).toBeDefined();
+			// Optional fields may be undefined
+			expect(result.details).toHaveProperty("nextMaterializationRun");
+			expect(result.details).toHaveProperty("nextCleanupRun");
 
 			await stopBackgroundWorkers(mockLogger);
+		});
+
+		it("returns healthy with all fields including optional dates when provided", async () => {
+			// Test that optional fields are passed through when provided
+			const mockNextMaterialization = new Date("2024-01-01T10:00:00Z");
+			const mockNextCleanup = new Date("2024-01-02T02:00:00Z");
+			const mockStatusFn = (): ReturnType<
+				typeof getBackgroundWorkerStatus
+			> => ({
+				isRunning: true,
+				materializationSchedule: "0 * * * *",
+				cleanupSchedule: "0 2 * * *",
+				metricsSchedule: "*/5 * * * *",
+				nextMaterializationRun: mockNextMaterialization,
+				nextCleanupRun: mockNextCleanup,
+			});
+
+			const result = await healthCheck(mockStatusFn);
+
+			expect(result.status).toBe("healthy");
+			expect(result.details.isRunning).toBe(true);
+			expect(result.details.materializationSchedule).toBe("0 * * * *");
+			expect(result.details.cleanupSchedule).toBe("0 2 * * *");
+			expect(result.details.metricsSchedule).toBe("*/5 * * * *");
+			expect(result.details.nextMaterializationRun).toEqual(
+				mockNextMaterialization,
+			);
+			expect(result.details.nextCleanupRun).toEqual(mockNextCleanup);
 		});
 
 		it("returns unhealthy when getBackgroundWorkerStatus throws Error", async () => {

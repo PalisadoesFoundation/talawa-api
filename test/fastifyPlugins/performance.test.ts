@@ -1,5 +1,5 @@
 import Fastify, { type FastifyRequest } from "fastify";
-import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { EnvConfig } from "../../src/envConfigSchema";
 import performancePlugin from "../../src/fastifyPlugins/performance";
 import type { PerfSnapshot } from "../../src/utilities/metrics/performanceTracker";
@@ -811,67 +811,73 @@ describe("Performance Plugin", () => {
 		});
 
 		it("should use manualDeepCopySnapshot when structuredClone is unavailable", async () => {
-			// This test verifies that the fallback path works correctly.
-			// Since mocking structuredClone globally is unreliable in vitest,
-			// we test the integration by ensuring snapshots are created and retrieved
-			// correctly. The manualDeepCopySnapshot function is already tested directly above.
-			//
-			// The actual fallback behavior is verified through:
-			// 1. The direct test of manualDeepCopySnapshot (ensures fallback implementation works)
-			// 2. All other tests that verify snapshots are deep-copied (verifies deepCopySnapshot works)
-			//
-			// This test serves as an integration test to ensure the plugin works end-to-end
-			// even when structuredClone might not be available in some environments.
+			// Test the fallback path by temporarily stubbing structuredClone as undefined
+			// This ensures line 87 (the fallback return) is covered
+			const originalStructuredClone = global.structuredClone;
 
-			const testApp = createTestFastifyInstance();
+			try {
+				// Stub structuredClone as undefined to force the fallback path
+				vi.stubGlobal("structuredClone", undefined);
 
-			await testApp.register(performancePlugin);
+				const testApp = createTestFastifyInstance();
 
-			testApp.get(
-				"/test-fallback-integration",
-				async (request: FastifyRequest) => {
-					request.perf?.trackDb(50);
-					request.perf?.trackCacheHit();
-					return { ok: true };
-				},
-			);
+				await testApp.register(performancePlugin);
 
-			await testApp.ready();
+				testApp.get(
+					"/test-fallback-integration",
+					async (request: FastifyRequest) => {
+						request.perf?.trackDb(50);
+						request.perf?.trackCacheHit();
+						return { ok: true };
+					},
+				);
 
-			// Make a request to create a snapshot
-			const response = await testApp.inject({
-				method: "GET",
-				url: "/test-fallback-integration",
-			});
+				await testApp.ready();
 
-			expect(response.statusCode).toBe(200);
+				// Make a request to create a snapshot
+				const response = await testApp.inject({
+					method: "GET",
+					url: "/test-fallback-integration",
+				});
 
-			// The snapshot should be stored after the request completes
-			// getPerformanceSnapshots uses deepCopySnapshot which handles the fallback internally
-			const snapshots = testApp.getPerformanceSnapshots(1);
+				expect(response.statusCode).toBe(200);
 
-			expect(snapshots.length).toBe(1);
-			expect(snapshots[0]).toBeDefined();
-			if (!snapshots[0]) {
-				throw new Error("Snapshot should be defined");
+				// The snapshot should be stored after the request completes
+				// getPerformanceSnapshots uses deepCopySnapshot which handles the fallback internally
+				// With structuredClone undefined, it should use manualDeepCopySnapshot (line 87)
+				const snapshots = testApp.getPerformanceSnapshots(1);
+
+				expect(snapshots.length).toBe(1);
+				expect(snapshots[0]).toBeDefined();
+				if (!snapshots[0]) {
+					throw new Error("Snapshot should be defined");
+				}
+				expect(snapshots[0]).toHaveProperty("ops");
+				expect(snapshots[0]).toHaveProperty("cacheHits");
+				expect(snapshots[0].cacheHits).toBe(1);
+
+				// Verify the snapshot is a deep copy (independent from internal storage)
+				// This verifies that manualDeepCopySnapshot was used (fallback path)
+				const originalOps = snapshots[0].ops;
+				snapshots[0].ops = {};
+
+				const snapshots2 = testApp.getPerformanceSnapshots(1);
+				expect(snapshots2[0]).toBeDefined();
+				if (!snapshots2[0]) {
+					throw new Error("Snapshot2 should be defined");
+				}
+				expect(snapshots2[0].ops).not.toEqual({});
+				expect(snapshots2[0].ops).toEqual(originalOps);
+
+				await testApp.close();
+			} finally {
+				// Restore original structuredClone
+				if (originalStructuredClone !== undefined) {
+					vi.stubGlobal("structuredClone", originalStructuredClone);
+				} else {
+					vi.unstubAllGlobals();
+				}
 			}
-			expect(snapshots[0]).toHaveProperty("ops");
-			expect(snapshots[0]).toHaveProperty("cacheHits");
-			expect(snapshots[0].cacheHits).toBe(1);
-
-			// Verify the snapshot is a deep copy (independent from internal storage)
-			const originalOps = snapshots[0].ops;
-			snapshots[0].ops = {};
-
-			const snapshots2 = testApp.getPerformanceSnapshots(1);
-			expect(snapshots2[0]).toBeDefined();
-			if (!snapshots2[0]) {
-				throw new Error("Snapshot2 should be defined");
-			}
-			expect(snapshots2[0].ops).not.toEqual({});
-			expect(snapshots2[0].ops).toEqual(originalOps);
-
-			await testApp.close();
 		});
 	});
 });
