@@ -7,6 +7,75 @@ sidebar_position: 70
 
 This section covers important tests to validate the operation of the API.
 
+## Getting Started
+
+### Formatting
+
+- **`format:check`**
+  Checks code formatting and lint rules using **Biome** without modifying any files.
+  The command fails if formatting issues or warnings are detected, making it suitable for CI validation.
+  **Usage:** `pnpm run format:check`
+
+- **`format:fix`**
+  Automatically fixes formatting and lint issues using **Biome** according to the project's configured rules.
+  The command fails if any warnings remain after applying fixes. Developers are encouraged to run this before committing changes.
+  **Usage:** `pnpm run format:fix`
+
+### Linting
+
+- **`lint:sanitization`**
+  Runs a custom security linter that enforces XSS protection in GraphQL resolvers.
+  Ensures all string-returning resolvers use `escapeHTML()` to sanitize user-generated content before returning it, preventing Cross-Site Scripting vulnerabilities.
+  **Usage:** `pnpm run lint:sanitization`
+
+- **`lint:tsdoc`**
+  Validates TSDoc comment syntax in TypeScript files using a custom script based on `@microsoft/tsdoc`.
+  Filters out overly pedantic rules (like requiring escaped curly braces in type examples) to maintain documentation readability while ensuring TSDoc compliance.
+  **Usage:** `pnpm run lint:tsdoc`
+
+- **`lint:fix`**
+  Automatically fixes linting and formatting issues using Biome. This is a convenience alias that applies both linting and formatting fixes in a single command.
+  **Usage:** `pnpm run lint:fix`
+
+- **`lint:check`**
+  Checks code for linting and formatting issues without making any changes. This is a convenience alias that validates both linting and formatting rules. Suitable for CI validation.
+  **Usage:** `pnpm run lint:check`
+
+### Testing
+
+- **`run_tests`**
+  Runs the full test suite with coverage reporting using Vitest.
+  Executes all tests with a single worker to ensure consistent execution order and complete coverage metrics.
+  **Usage:** `pnpm run run_tests`
+
+- **`check_tests`**
+  Runs the test suite without coverage reporting for faster execution.
+  Useful for quick validation during development without the overhead of coverage collection.
+  **Usage:** `pnpm run check_tests`
+
+- **`test:shard`**
+  Runs tests in parallel shards for faster CI execution using environment variables `SHARD_INDEX` and `SHARD_COUNT`.
+  Splits the test suite across multiple workers, enabling parallel test execution in CI pipelines. Requires shard configuration in CI; defaults to single shard locally.
+  **Usage:** `pnpm run test:shard` (with `SHARD_INDEX` and `SHARD_COUNT` environment variables)
+
+- **`test:shard:coverage`**
+  Runs tests in parallel shards with code coverage reporting enabled.
+  Combines sharded test execution with coverage metrics. Configure using `SHARD_INDEX` and `SHARD_COUNT` environment variables.
+  **Usage:** `pnpm run test:shard:coverage`
+
+- **`test`**
+  Runs all tests using Vitest. This is a convenience alias that executes the test suite.
+  **Usage:** `pnpm run test`
+
+- **`test /path/to/test/file`**
+  Runs a specific test file or matches tests by file path pattern. Useful for running individual test files during development.
+  **Usage:** `pnpm run test /path/to/test/file`
+
+- **`test:coverage`**
+  Runs the full test suite with code coverage reporting enabled. Generates coverage reports showing which parts of the codebase are covered by tests.
+  **Usage:** `pnpm run test:coverage`
+
+
 ## Introduction
 
 It is important to test our code. If you are a contributor, please follow the guidance on this page.
