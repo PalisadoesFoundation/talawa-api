@@ -1,4 +1,4 @@
-import { expect, suite, test, vi } from "vitest";
+import { afterEach, expect, suite, test, vi } from "vitest";
 import { emailService } from "~/src/services/email/emailServiceInstance";
 import { assertToBeNonNullish } from "../../../helpers";
 import { mercuriusClient } from "../client";
@@ -9,6 +9,10 @@ import {
 } from "../documentNodes";
 
 suite("Mutation field verifyEmail", () => {
+	afterEach(() => {
+		vi.restoreAllMocks();
+	});
+
 	test("should successfully verify email with valid token", async () => {
 		const { authToken } = await createRegularUserUsingAdmin();
 
@@ -34,9 +38,9 @@ suite("Mutation field verifyEmail", () => {
 
 		const args = firstCall[0] as
 			| {
-					htmlBody?: string;
-					textBody?: string;
-			  }
+				htmlBody?: string;
+				textBody?: string;
+			}
 			| undefined;
 
 		assertToBeNonNullish(args);
@@ -59,8 +63,6 @@ suite("Mutation field verifyEmail", () => {
 		assertToBeNonNullish(result.data?.verifyEmail);
 		expect(result.data.verifyEmail.success).toBe(true);
 		expect(result.data.verifyEmail.message).toBeDefined();
-
-		sendEmailSpy.mockRestore();
 	});
 
 	test("should fail with invalid token", async () => {

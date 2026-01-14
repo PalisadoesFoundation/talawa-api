@@ -90,9 +90,9 @@ export class SMTPProvider implements IEmailProvider {
 				auth:
 					this.config.user && this.config.password
 						? {
-								user: this.config.user,
-								pass: this.config.password,
-							}
+							user: this.config.user,
+							pass: this.config.password,
+						}
 						: undefined,
 			}) as {
 				sendMail: (options: unknown) => Promise<{ messageId?: string }>;
@@ -127,6 +127,14 @@ export class SMTPProvider implements IEmailProvider {
 			const safeFromEmail = this.sanitizeHeader(this.config.fromEmail);
 			const safeFromName = this.sanitizeHeader(this.config.fromName);
 			const safeSubject = this.sanitizeHeader(job.subject);
+
+			// Validate that the recipient email is not empty/invalid
+			// We explicitly check for CR/LF in the original input to prevent injection
+			if (!safeTo || !safeTo.trim() || /[\r\n]/.test(job.email)) {
+				throw new Error(
+					"Recipient email is invalid or contains forbidden characters (CR/LF)",
+				);
+			}
 
 			// Validate that the sender email is not empty/invalid after sanitization
 			if (!safeFromEmail) {
