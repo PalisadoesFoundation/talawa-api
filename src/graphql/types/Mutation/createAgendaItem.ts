@@ -63,9 +63,6 @@ builder.mutationField("createAgendaItem", (t) =>
 					where: (fields, operators) => operators.eq(fields.id, currentUserId),
 				}),
 				ctx.drizzleClient.query.agendaFoldersTable.findFirst({
-					columns: {
-						isAgendaItemFolder: true,
-					},
 					with: {
 						event: {
 							columns: {
@@ -109,21 +106,6 @@ builder.mutationField("createAgendaItem", (t) =>
 						issues: [
 							{
 								argumentPath: ["input", "id"],
-							},
-						],
-					},
-				});
-			}
-
-			if (!existingAgendaFolder.isAgendaItemFolder) {
-				throw new TalawaGraphQLError({
-					extensions: {
-						code: "forbidden_action_on_arguments_associated_resources",
-						issues: [
-							{
-								argumentPath: ["input", "folderId"],
-								message:
-									"This agenda folder cannot be a folder to agenda items.",
 							},
 						],
 					},
