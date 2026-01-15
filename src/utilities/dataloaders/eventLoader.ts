@@ -10,6 +10,7 @@ import {
 import { traceable } from "~/src/utilities/db/traceableQuery";
 import type { PerformanceTracker } from "~/src/utilities/metrics/performanceTracker";
 import { wrapBatchWithMetrics } from "~/src/utilities/metrics/withMetrics";
+import { wrapBatchWithTracing } from "./wrapBatchWithTracing";
 
 /**
  * Type representing an event row from the database.
@@ -66,9 +67,12 @@ export function createEventLoader(
 	// Since wrapBatchWithMetrics("events.byId", perf, cacheWrappedBatch) wraps cacheWrappedBatch,
 	// metrics include cache layer time (cache hits/misses) rather than only DB time.
 	// The ordering (cache first, then metrics) causes metrics to measure the full execution path.
-	const wrappedBatch = perf
+	const metricsWrappedBatch = perf
 		? wrapBatchWithMetrics("events.byId", perf, cacheWrappedBatch)
 		: cacheWrappedBatch;
+
+	// Apply tracing wrapper last to create spans for each batch operation
+	const wrappedBatch = wrapBatchWithTracing("events", metricsWrappedBatch);
 
 	return new DataLoader<string, EventRow | null>(wrappedBatch, {
 		// Coalesce loads triggered within the same event loop tick

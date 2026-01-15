@@ -192,16 +192,14 @@ type AgendaCategory {
 }
 
 type AgendaFolder {
-  """
-  GraphQL connection to traverse through the agenda folders that have the agenda folder as a parent folder.
-  """
-  childFolders(after: String, before: String, first: Int, last: Int): AgendaFolderChildFoldersConnection
-
   """Date time at the time the agenda folder was created."""
   createdAt: DateTime
 
   """User who created the agenda folder."""
   creator: User
+
+  """Custom information about the agenda folder."""
+  description: String
 
   """
   Event for which the agenda folder contains agenda items constituting a part of the agenda.
@@ -211,51 +209,23 @@ type AgendaFolder {
   """Global identifier of the agenda folder."""
   id: ID!
 
-  """
-  Boolean to tell if the agenda folder is meant to be a folder for agenda items or a parent for agenda folders.
-  """
-  isAgendaItemFolder: Boolean
-
-  """
-  GraphQL connection to traverse through the agenda items contained within the agenda folder.
-  """
-  items(after: String, before: String, first: Int, last: Int): AgendaFolderItemsConnection
+  """Boolean to tell if agenda folder is default or not"""
+  isDefaultFolder: Boolean!
 
   """Name of the agenda folder."""
   name: String
 
-  """Agenda folder that is a parent folder to the agenda folder."""
-  parentFolder: AgendaFolder
+  """Organization which the agenda folder belongs to."""
+  organization: Organization
+
+  """Sequence of agenda folder."""
+  sequence: Int
 
   """Date time at the time the agenda folder was last updated."""
   updatedAt: DateTime
 
   """User who last updated the agenda folder."""
   updater: User
-}
-
-""""""
-type AgendaFolderChildFoldersConnection {
-  edges: [AgendaFolderChildFoldersConnectionEdge]
-  pageInfo: PageInfo!
-}
-
-""""""
-type AgendaFolderChildFoldersConnectionEdge {
-  cursor: String!
-  node: AgendaFolder
-}
-
-""""""
-type AgendaFolderItemsConnection {
-  edges: [AgendaFolderItemsConnectionEdge]
-  pageInfo: PageInfo!
-}
-
-""""""
-type AgendaFolderItemsConnectionEdge {
-  cursor: String!
-  node: AgendaItem
 }
 
 type AgendaItem {
@@ -2683,23 +2653,22 @@ input MutationCreateAgendaCategoryInput {
   name: String!
 }
 
-""""""
+"""Input type for creating a new agenda folder."""
 input MutationCreateAgendaFolderInput {
+  """Description of Agenda Folder"""
+  description: String
+
   """Global identifier of the event the agenda folder is associated to."""
   eventId: ID!
-
-  """
-  Boolean to tell if the agenda folder is meant to be a folder for agenda items or a parent folder for other agenda folders.
-  """
-  isAgendaItemFolder: Boolean!
 
   """Name of the agenda folder."""
   name: String!
 
-  """
-  Global identifier of the agenda folder the agenda folder is contained within.
-  """
-  parentFolderId: ID
+  """ID of the organization this folder belongs to."""
+  organizationId: ID!
+
+  """Sequence of the Agenda Folder."""
+  sequence: Int
 }
 
 """"""
@@ -3519,18 +3488,19 @@ input MutationUpdateAgendaCategoryInput {
   name: String
 }
 
-""""""
+"""Input type for updating an agenda folder."""
 input MutationUpdateAgendaFolderInput {
+  """Description of the agenda folder."""
+  description: String
+
   """Global identifier of the agenda folder."""
   id: ID!
 
   """Name of the agenda folder."""
   name: String
 
-  """
-  Global identifier of the agenda folder the agenda folder is contained within.
-  """
-  parentFolderId: ID
+  """Sequence number of folder"""
+  sequence: Int
 }
 
 """"""
@@ -4716,6 +4686,12 @@ type Query {
 
   """Query field to read an agenda folder."""
   agendaFolder(input: QueryAgendaFolderInput!): AgendaFolder
+
+  """Query field to get all Agenda Folders for a specific event."""
+  agendaFoldersByEventId(
+    """ID of the standalone event"""
+    eventId: ID!
+  ): [AgendaFolder!]
 
   """Query field to read an agenda item."""
   agendaItem(input: QueryAgendaItemInput!): AgendaItem
