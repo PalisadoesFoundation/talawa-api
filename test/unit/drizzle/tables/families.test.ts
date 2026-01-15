@@ -1,12 +1,27 @@
-import { getTableName } from "drizzle-orm";
-import { getTableConfig } from "drizzle-orm/pg-core";
+import { getTableName, SQL } from "drizzle-orm";
+import { getTableConfig, type PgColumn } from "drizzle-orm/pg-core";
 import { describe, expect, it } from "vitest";
 import {
 	familiesTable,
 	familiesTableRelations,
 } from "~/src/drizzle/tables/families";
+import { familyMembershipsTable } from "~/src/drizzle/tables/familyMemberships";
 import { organizationsTable } from "~/src/drizzle/tables/organizations";
 import { usersTable } from "~/src/drizzle/tables/users";
+
+/**
+ * Type for columns with defaultFn
+ */
+type ColumnWithDefaultFn = PgColumn & {
+	defaultFn?: () => unknown;
+};
+
+/**
+ * Type for columns with onUpdateFn
+ */
+type ColumnWithOnUpdateFn = PgColumn & {
+	onUpdateFn?: () => unknown;
+};
 
 /**
  * Tests for familiesTable - validates the table schema, relations, and indexes.
@@ -39,6 +54,17 @@ describe("src/drizzle/tables/families.ts", () => {
 
 				it("should have a default value function", () => {
 					expect(familiesTable.id.hasDefault).toBe(true);
+				});
+
+				it("should generate a valid UUIDv7 when defaultFn is called", () => {
+					const idColumn = familiesTable.id as ColumnWithDefaultFn;
+					expect(idColumn.defaultFn).toBeDefined();
+					const generatedId = idColumn.defaultFn?.();
+					expect(typeof generatedId).toBe("string");
+					// UUIDv7 format: 8-4-4-4-12 hex characters
+					expect(generatedId).toMatch(
+						/^[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i,
+					);
 				});
 			});
 
@@ -110,6 +136,84 @@ describe("src/drizzle/tables/families.ts", () => {
 				it("should be nullable", () => {
 					expect(familiesTable.updatedAt.notNull).toBe(false);
 				});
+
+				it("should have a defaultFn that returns SQL null", () => {
+					const updatedAtColumn =
+						familiesTable.updatedAt as ColumnWithDefaultFn;
+					expect(updatedAtColumn.defaultFn).toBeDefined();
+					const defaultValue = updatedAtColumn.defaultFn?.();
+					// The defaultFn returns sql`${null}` which is a SQL object
+					expect(defaultValue).toBeInstanceOf(SQL);
+				});
+
+				it("should have an onUpdateFn that returns a Date", () => {
+					const updatedAtColumn =
+						familiesTable.updatedAt as ColumnWithOnUpdateFn;
+					expect(updatedAtColumn.onUpdateFn).toBeDefined();
+					const beforeCall = new Date();
+					const updateValue = updatedAtColumn.onUpdateFn?.();
+					const afterCall = new Date();
+					expect(updateValue).toBeInstanceOf(Date);
+					// Verify the date is within the expected range
+					expect((updateValue as Date).getTime()).toBeGreaterThanOrEqual(
+						beforeCall.getTime(),
+					);
+					expect((updateValue as Date).getTime()).toBeLessThanOrEqual(
+						afterCall.getTime(),
+					);
+				});
+			});
+		});
+
+		describe("foreign keys", () => {
+			it("should have three foreign keys defined", () => {
+				const tableConfig = getTableConfig(familiesTable);
+				expect(tableConfig.foreignKeys).toHaveLength(3);
+			});
+
+			it("should have creatorId referencing usersTable.id", () => {
+				const tableConfig = getTableConfig(familiesTable);
+				const creatorFk = tableConfig.foreignKeys.find((fk) => {
+					const ref = fk.reference();
+					return ref.columns.some((col) => col.name === "creator_id");
+				});
+				expect(creatorFk).toBeDefined();
+				expect(creatorFk?.onDelete).toBe("set null");
+				expect(creatorFk?.onUpdate).toBe("cascade");
+				// Execute the reference function to cover the callback
+				const ref = creatorFk?.reference();
+				expect(ref?.foreignTable).toBe(usersTable);
+				expect(ref?.foreignColumns[0]?.name).toBe("id");
+			});
+
+			it("should have organizationId referencing organizationsTable.id", () => {
+				const tableConfig = getTableConfig(familiesTable);
+				const orgFk = tableConfig.foreignKeys.find((fk) => {
+					const ref = fk.reference();
+					return ref.columns.some((col) => col.name === "organization_id");
+				});
+				expect(orgFk).toBeDefined();
+				expect(orgFk?.onDelete).toBe("cascade");
+				expect(orgFk?.onUpdate).toBe("cascade");
+				// Execute the reference function to cover the callback
+				const ref = orgFk?.reference();
+				expect(ref?.foreignTable).toBe(organizationsTable);
+				expect(ref?.foreignColumns[0]?.name).toBe("id");
+			});
+
+			it("should have updaterId referencing usersTable.id", () => {
+				const tableConfig = getTableConfig(familiesTable);
+				const updaterFk = tableConfig.foreignKeys.find((fk) => {
+					const ref = fk.reference();
+					return ref.columns.some((col) => col.name === "updater_id");
+				});
+				expect(updaterFk).toBeDefined();
+				expect(updaterFk?.onDelete).toBe("set null");
+				expect(updaterFk?.onUpdate).toBe("cascade");
+				// Execute the reference function to cover the callback
+				const ref = updaterFk?.reference();
+				expect(ref?.foreignTable).toBe(usersTable);
+				expect(ref?.foreignColumns[0]?.name).toBe("id");
 			});
 		});
 
@@ -283,6 +387,7 @@ describe("src/drizzle/tables/families.ts", () => {
 				const familyMembershipsWhereFamily =
 					relationsResult.familyMembershipsWhereFamily as unknown as RelationCall;
 				expect(familyMembershipsWhereFamily.type).toBe("many");
+				expect(familyMembershipsWhereFamily.table).toBe(familyMembershipsTable);
 			});
 		});
 	});
