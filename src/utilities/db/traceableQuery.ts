@@ -1,4 +1,4 @@
-import { type Span, trace } from "@opentelemetry/api";
+import { type Span, SpanStatusCode, trace } from "@opentelemetry/api";
 import { observabilityConfig } from "~/src/config/observability";
 
 /**
@@ -42,7 +42,10 @@ export async function traceable<T>(
 			span.recordException(
 				error instanceof Error ? error : new Error(String(error)),
 			);
-			
+			span.setStatus({
+				code: SpanStatusCode.ERROR,
+				message: error instanceof Error ? error.message : String(error),
+			});
 			throw error;
 		} finally {
 			span.end();

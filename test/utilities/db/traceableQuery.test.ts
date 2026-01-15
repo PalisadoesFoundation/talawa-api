@@ -145,8 +145,7 @@ describe("traceableQuery", () => {
 	});
 
 	describe("when observability is disabled", () => {
-		// biome-ignore lint/suspicious/noExplicitAny: SpyInstance type is complex for trace.getTracer
-		let getTracerSpy: any;
+		let getTracerSpy: Mock | undefined;
 
 		beforeEach(async () => {
 			vi.doMock("~/src/config/observability", () => ({
@@ -157,7 +156,7 @@ describe("traceableQuery", () => {
 
 			// Spy on the OpenTelemetry entry point to verify it's not called when disabled
 			const otelApi = await import("@opentelemetry/api");
-			getTracerSpy = vi.spyOn(otelApi.trace, "getTracer");
+			getTracerSpy = vi.spyOn(otelApi.trace, "getTracer") as Mock;
 		});
 
 		it("should execute the function without creating spans", async () => {
