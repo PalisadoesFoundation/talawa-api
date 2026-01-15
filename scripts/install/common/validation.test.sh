@@ -236,18 +236,22 @@ if command -v jq &> /dev/null; then
     test_parse_package_json_functional "returns default for null value" "lts"
     test_parse_package_json_functional "handles nested fields correctly" "1.2.3"
 
-    test_start "parse_package_json: required field missing triggers error"
-    local temp_dir=$(mktemp -d)
-    local original_dir=$(pwd)
-    cd "$temp_dir"
-    echo '{}' > package.json
-    if (parse_package_json ".engines.node" "" "engines.node" true 2>&1 | grep -q "engines.node not found in package.json (required field)"); then
-        test_pass
-    else
-        test_fail "Expected required field error when engines.node is missing"
-    fi
-    cd "$original_dir"
-    rm -rf "$temp_dir"
+    test_parse_package_json_required_field_error() {
+        test_start "parse_package_json: required field missing triggers error"
+        local temp_dir=$(mktemp -d)
+        local original_dir=$(pwd)
+        cd "$temp_dir"
+        echo '{}' > package.json
+        if (parse_package_json ".engines.node" "" "engines.node" true 2>&1 | grep -q "engines.node not found in package.json (required field)"); then
+            test_pass
+        else
+            test_fail "Expected required field error when engines.node is missing"
+        fi
+        cd "$original_dir"
+        rm -rf "$temp_dir"
+    }
+
+    test_parse_package_json_required_field_error
 else
     # Skip tests if jq is not available
     test_start "parse_package_json: functional tests (skipped - jq not available)"
