@@ -63,7 +63,7 @@ export default defineConfig({
 			"drizzle_migrations/**",
 			"envFiles/**",
 			"scripts/**",
-			// "**/scripts/**",
+			"**/scripts/**",
 		],
 		coverage: {
 			provider: "v8", // or 'istanbul' if you prefer
