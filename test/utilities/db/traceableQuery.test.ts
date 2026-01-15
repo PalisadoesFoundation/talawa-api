@@ -52,9 +52,10 @@ describe("traceableQuery", () => {
 				},
 			}));
 			const mockGetTracer = vi.fn().mockReturnValue(mockTracer);
-			const originalOtel = await vi.importActual<
-				typeof import("@opentelemetry/api")
-			>("@opentelemetry/api");
+			const originalOtel =
+				await vi.importActual<typeof import("@opentelemetry/api")>(
+					"@opentelemetry/api",
+				);
 			vi.doMock("@opentelemetry/api", () => ({
 				trace: {
 					getTracer: mockGetTracer,
@@ -90,13 +91,11 @@ describe("traceableQuery", () => {
 		it("should record exception on failure", async () => {
 			const { traceable } = await import("~/src/utilities/db/traceableQuery");
 			const testError = new Error("Database connection failed");
-
 			await expect(
 				traceable("organizations", "findById", async () => {
 					throw testError;
 				}),
 			).rejects.toThrow("Database connection failed");
-
 			expect(mockTracer.startActiveSpan).toHaveBeenCalledWith(
 				"db:organizations.findById",
 				expect.any(Function),
@@ -106,12 +105,15 @@ describe("traceableQuery", () => {
 				code: SpanStatusCode.ERROR,
 				message: testError.message,
 			});
+			expect(mockSpan.end).toHaveBeenCalled();
+		});
 
+		it("should handle async operations correctly", async () => {
+			const { traceable } = await import("~/src/utilities/db/traceableQuery");
 			const result = await traceable("events", "create", async () => {
 				await new Promise((resolve) => setTimeout(resolve, 10));
 				return { id: "event-1", title: "Test Event" };
 			});
-
 			expect(result).toEqual({ id: "event-1", title: "Test Event" });
 			expect(mockSpan.end).toHaveBeenCalled();
 		});
@@ -146,10 +148,12 @@ describe("traceableQuery", () => {
 				}),
 			).rejects.toThrow("string error");
 
-			expect(mockSpan.recordException).toHaveBeenCalledWith(expect.any(Error));		expect(mockSpan.setStatus).toHaveBeenCalledWith({
-			code: SpanStatusCode.ERROR,
-			message: "string error",
-		});		});
+			expect(mockSpan.recordException).toHaveBeenCalledWith(expect.any(Error));
+			expect(mockSpan.setStatus).toHaveBeenCalledWith({
+				code: SpanStatusCode.ERROR,
+				message: "string error",
+			});
+		});
 	});
 
 	describe("when observability is disabled", () => {
