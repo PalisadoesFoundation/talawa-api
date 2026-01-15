@@ -476,7 +476,7 @@ NODE_VERSION=$(parse_package_json '.engines.node' "lts" "Node.js version (engine
 # SECURITY: Validate raw NODE_VERSION before any processing
 # This prevents command injection via malicious package.json
 if ! validate_version_string "$NODE_VERSION" "Node.js version (engines.node)"; then
-    handle_version_validation_error "engines.node" "$NODE_VERSION"
+    handle_version_validation_error "engines.node" "$NODE_VERSION" ".engines.node"
 fi
 
 # Clean version string (handle >=, ^, etc.)
@@ -513,7 +513,7 @@ fi
 # SECURITY: Validate cleaned Node.js version before use in commands
 # This is the final check before the version is passed to fnm
 if ! validate_version_string "$CLEAN_NODE_VERSION" "cleaned Node.js version"; then
-    handle_version_validation_error "cleaned Node.js version" "$CLEAN_NODE_VERSION"
+    handle_version_validation_error "cleaned Node.js version" "$CLEAN_NODE_VERSION" ".engines.node"
 fi
 
 # Extract pnpm version using safe parsing
@@ -531,8 +531,8 @@ if [[ "$PNPM_FULL" == pnpm@* ]]; then
     fi
     
     # SECURITY: Validate pnpm version before use in commands
-    if ! validate_version_string "$PNPM_VERSION" "pnpm version (packageManager)"; then
-        handle_version_validation_error "packageManager" "$PNPM_VERSION"
+if ! validate_version_string "$PNPM_VERSION" "pnpm version (packageManager)"; then
+    handle_version_validation_error "packageManager" "$PNPM_VERSION" ".packageManager"
     fi
 elif [ -n "$PNPM_FULL" ]; then
     # packageManager field exists but doesn't match expected pnpm format
@@ -829,4 +829,3 @@ echo ""
 info "To complete setup, run:"
 echo "  pnpm run setup"
 echo ""
-
