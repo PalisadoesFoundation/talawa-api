@@ -7,6 +7,7 @@ import {
 	getTTL,
 	wrapWithCache,
 } from "~/src/services/caching";
+import { traceable } from "~/src/utilities/db/traceableQuery";
 import type { PerformanceTracker } from "~/src/utilities/metrics/performanceTracker";
 import { wrapBatchWithMetrics } from "~/src/utilities/metrics/withMetrics";
 
@@ -39,10 +40,12 @@ export function createEventLoader(
 	const batchFn = async (
 		ids: readonly string[],
 	): Promise<(EventRow | null)[]> => {
-		const rows = await db
-			.select()
-			.from(eventsTable)
-			.where(inArray(eventsTable.id, ids as string[]));
+		const rows = await traceable("events", "batchLoad", async () =>
+			db
+				.select()
+				.from(eventsTable)
+				.where(inArray(eventsTable.id, ids as string[])),
+		);
 
 		const map = new Map<string, EventRow>(rows.map((r: EventRow) => [r.id, r]));
 

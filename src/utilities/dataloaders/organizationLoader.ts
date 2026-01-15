@@ -7,6 +7,7 @@ import {
 	getTTL,
 	wrapWithCache,
 } from "~/src/services/caching";
+import { traceable } from "~/src/utilities/db/traceableQuery";
 import type { PerformanceTracker } from "~/src/utilities/metrics/performanceTracker";
 import { wrapBatchWithMetrics } from "~/src/utilities/metrics/withMetrics";
 
@@ -39,10 +40,12 @@ export function createOrganizationLoader(
 	const batchFn = async (
 		ids: readonly string[],
 	): Promise<(OrganizationRow | null)[]> => {
-		const rows = await db
-			.select()
-			.from(organizationsTable)
-			.where(inArray(organizationsTable.id, ids as string[]));
+		const rows = await traceable("organizations", "batchLoad", async () =>
+			db
+				.select()
+				.from(organizationsTable)
+				.where(inArray(organizationsTable.id, ids as string[])),
+		);
 
 		const map = new Map<string, OrganizationRow>(
 			rows.map((r: OrganizationRow) => [r.id, r]),
