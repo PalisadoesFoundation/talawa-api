@@ -1,10 +1,20 @@
 import { relations, sql } from "drizzle-orm";
-import { index, pgTable, text, timestamp, uuid } from "drizzle-orm/pg-core";
+import {
+	index,
+	integer,
+	pgTable,
+	text,
+	timestamp,
+	uuid,
+} from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { uuidv7 } from "uuidv7";
 import { agendaItemTypeEnum } from "~/src/drizzle/enums/agendaItemType";
+import { agendaCategoriesTable } from "./agendaCategories";
 import { agendaFoldersTable } from "./agendaFolders";
 import { agendaItemAttachmentsTable } from "./agendaItemAttachments";
+import { agendaItemUrlTable } from "./agendaItemUrls";
+import { eventsTable } from "./events";
 import { usersTable } from "./users";
 
 /**
@@ -31,6 +41,15 @@ export const agendaItemsTable = pgTable(
 			onUpdate: "cascade",
 		}),
 		/**
+		 * Foreign key reference to the id of the agenda category the agenda item belongs
+		 */
+		categoryId: uuid("category_id")
+			.notNull()
+			.references(() => agendaCategoriesTable.id, {
+				onDelete: "cascade",
+				onUpdate: "cascade",
+			}),
+		/**
 		 * Custom information about the agenda item.
 		 */
 		description: text("description"),
@@ -38,6 +57,15 @@ export const agendaItemsTable = pgTable(
 		 * Duration of the agenda item.
 		 */
 		duration: text("duration"),
+		/**
+		 * Foreign key reference to the id of the event the agenda item is associated to.
+		 */
+		eventId: uuid("event_id")
+			.notNull()
+			.references(() => eventsTable.id, {
+				onDelete: "cascade",
+				onUpdate: "cascade",
+			}),
 		/**
 		 * Foreign key reference to the id of the agenda folder the agenda item is associated to.
 		 */
@@ -59,6 +87,14 @@ export const agendaItemsTable = pgTable(
 		 * Name of the agenda item.
 		 */
 		name: text("name", {}).notNull(),
+		/**
+		 * Additional notes for the agenda item.
+		 */
+		notes: text("notes"),
+		/**
+		 * Sequence of the agenda item.
+		 */
+		sequence: integer("sequence").notNull(),
 		/**
 		 * Type of the agenda item.
 		 */
@@ -86,6 +122,8 @@ export const agendaItemsTable = pgTable(
 	(self) => [
 		index().on(self.createdAt),
 		index().on(self.creatorId),
+		index().on(self.categoryId),
+		index().on(self.eventId),
 		index().on(self.folderId),
 		index().on(self.name),
 		index().on(self.type),
@@ -96,18 +134,40 @@ export const agendaItemsTableRelations = relations(
 	agendaItemsTable,
 	({ one, many }) => ({
 		/**
-		 * One to many relationship from `agenda_items` table to `agenda_item_attachments` table.
-		 */
-		attachmentsWhereAgendaItem: many(agendaItemAttachmentsTable, {
-			relationName: "agenda_item_attachments.agenda_item_id:agenda_items.id",
-		}),
-		/**
 		 * Many to one relationship from `agenda_items` table to `users` table.
 		 */
 		creator: one(usersTable, {
 			fields: [agendaItemsTable.creatorId],
 			references: [usersTable.id],
 			relationName: "agenda_items.creator_id:users.id",
+		}),
+		/**
+		 * Many to one relationship from `agenda_items` table to `agenda_category` table.
+		 */
+		category: one(agendaCategoriesTable, {
+			fields: [agendaItemsTable.categoryId],
+			references: [agendaCategoriesTable.id],
+			relationName: "agenda_items.category_id:agenda_categories.id",
+		}),
+		/**
+		 * One to many relationship from `agenda_items` table to `agenda_item_attachments` table.
+		 */
+		attachmentsWhereAgendaItem: many(agendaItemAttachmentsTable, {
+			relationName: "agenda_item_attachments.agenda_item_id:agenda_items.id",
+		}),
+		/**
+		 * One to many relationship from `agenda_items` table to `agenda_item_url` table.
+		 */
+		urlsWhereAgendaItem: many(agendaItemUrlTable, {
+			relationName: "agenda_item_url.agenda_item_id:agenda_items.id",
+		}),
+		/**
+		 * Many to one relationship from `agenda_items` table to `events` table.
+		 */
+		event: one(eventsTable, {
+			fields: [agendaItemsTable.eventId],
+			references: [eventsTable.id],
+			relationName: "agenda_items.event_id:events.id",
 		}),
 		/**
 		 * Many to one relationship from `agenda_items` table to `agenda_folders` table.
@@ -137,5 +197,6 @@ export const agendaItemsTableInsertSchema = createInsertSchema(
 		description: (schema) =>
 			schema.min(1).max(AGENDA_ITEM_DESCRIPTION_MAX_LENGTH).optional(),
 		name: (schema) => schema.min(1).max(AGENDA_ITEM_NAME_MAX_LENGTH),
+		sequence: (schema) => schema.int().min(1),
 	},
 );
