@@ -278,6 +278,76 @@ while True:
     time.sleep(10)
 ```
 
+## Metrics Configuration
+
+### Environment Variables
+
+The metrics aggregation system is configurable through the following environment variables:
+
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `API_METRICS_AGGREGATION_ENABLED` | `true` | Enable or disable the metrics aggregation background worker |
+| `API_METRICS_AGGREGATION_CRON_SCHEDULE` | `*/5 * * * *` | Cron schedule for running metrics aggregation (default: every 5 minutes) |
+| `API_METRICS_AGGREGATION_WINDOW_MINUTES` | `5` | Time window in minutes for aggregating snapshots |
+| `API_METRICS_SNAPSHOT_RETENTION_COUNT` | `1000` | Maximum number of performance snapshots to retain in memory |
+| `API_METRICS_API_KEY` | (none) | API key to protect the `/metrics/perf` endpoint. When set, requests require `Authorization: Bearer <key>` header |
+
+### Example Configuration
+
+```bash
+# Enable metrics aggregation (default: true)
+API_METRICS_AGGREGATION_ENABLED=true
+
+# Run aggregation every 10 minutes
+API_METRICS_AGGREGATION_CRON_SCHEDULE="*/10 * * * *"
+
+# Aggregate last 10 minutes of snapshots
+API_METRICS_AGGREGATION_WINDOW_MINUTES=10
+
+# Keep last 2000 snapshots in memory
+API_METRICS_SNAPSHOT_RETENTION_COUNT=2000
+
+# Protect metrics endpoint with API key (recommended for production)
+API_METRICS_API_KEY=your-secure-api-key-here
+```
+
+### Accessing Protected Metrics
+
+When `API_METRICS_API_KEY` is set, access the metrics endpoint with:
+
+```bash
+curl -H "Authorization: Bearer your-secure-api-key-here" \
+  http://localhost:4000/metrics/perf
+```
+
+### Metrics Aggregation Output
+
+The background worker aggregates performance snapshots and logs the results to the standard output. This provides a periodic summary of system performance without needing to query the API.
+
+**Example Log Output:**
+
+```json
+{
+  "level": 30,
+  "time": 1705234567890,
+  "msg": "Metrics aggregation completed successfully",
+  "duration": "15ms",
+  "windowMinutes": 5,
+  "snapshotCount": 120,
+  "requestCount": 120,
+  "operationCount": 4,
+  "slowOperationCount": 2,
+  "cacheHitRate": "85.50%"
+}
+```
+
+**Key Fields:**
+- `windowMinutes`: Time window used for aggregation
+- `snapshotCount`: Number of snapshots processed
+- `requestCount`: Total requests in the window
+- `slowOperationCount`: Number of operations potentially needing optimization
+- `cacheHitRate`: Global cache efficiency for the period
+
 ## Production Considerations
 
 ### Security
