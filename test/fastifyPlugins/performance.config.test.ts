@@ -1,47 +1,17 @@
-import Fastify, { type FastifyRequest } from "fastify";
+import Fastify, { type FastifyInstance, type FastifyRequest } from "fastify";
+import fp from "fastify-plugin";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { EnvConfig } from "~/src/envConfigSchema";
 import performancePlugin from "~/src/fastifyPlugins/performance";
 import type { CacheService } from "~/src/services/caching/CacheService";
 import { MetricsCacheService } from "~/src/services/metrics";
-
-/**
- * Mock CacheService for testing.
- */
-class MockCacheService implements CacheService {
-	store = new Map<string, unknown>();
-
-	async get<T>(key: string): Promise<T | null> {
-		return (this.store.get(key) as T) ?? null;
-	}
-
-	async set<T>(key: string, value: T, _ttlSeconds: number): Promise<void> {
-		this.store.set(key, value);
-	}
-
-	async del(_keys: string | string[]): Promise<void> {
-		// No-op for tests
-	}
-
-	async clearByPattern(_pattern: string): Promise<void> {
-		// No-op for tests
-	}
-
-	async mget<T>(keys: string[]): Promise<(T | null)[]> {
-		return keys.map((k) => (this.store.get(k) as T) ?? null);
-	}
-
-	async mset<T>(
-		entries: Array<{ key: string; value: T; ttlSeconds: number }>,
-	): Promise<void> {
-		for (const entry of entries) {
-			await this.set(entry.key, entry.value, entry.ttlSeconds);
-		}
-	}
-}
+import {
+	createTestApp,
+	MockCacheService,
+} from "../helpers/performanceTestUtils";
 
 describe("Performance Plugin - Environment Configuration", () => {
-	let app: ReturnType<typeof Fastify>;
+	let app: FastifyInstance;
 	let mockCache: MockCacheService;
 
 	beforeEach(() => {
@@ -61,15 +31,7 @@ describe("Performance Plugin - Environment Configuration", () => {
 				API_METRICS_SLOW_REQUEST_MS: 1000,
 			};
 
-			app = Fastify({
-				logger: {
-					level: "silent",
-				},
-			});
-
-			// Mock envConfig
-			app.decorate("envConfig", customEnvConfig as EnvConfig);
-			app.decorate("cache", mockCache);
+			app = createTestApp({ envConfig: customEnvConfig, cache: mockCache });
 
 			const warnSpy = vi.spyOn(app.log, "warn");
 
@@ -99,15 +61,8 @@ describe("Performance Plugin - Environment Configuration", () => {
 		});
 
 		it("should use default value (500) when env config not set", async () => {
-			app = Fastify({
-				logger: {
-					level: "silent",
-				},
-			});
-
 			const customEnvConfig: Partial<EnvConfig> = {};
-			app.decorate("envConfig", customEnvConfig as EnvConfig);
-			app.decorate("cache", mockCache);
+			app = createTestApp({ envConfig: customEnvConfig, cache: mockCache });
 
 			const warnSpy = vi.spyOn(app.log, "warn");
 
@@ -137,19 +92,11 @@ describe("Performance Plugin - Environment Configuration", () => {
 		});
 
 		it("should validate and fallback to default for invalid values", async () => {
-			app = Fastify({
-				logger: {
-					level: "silent",
-				},
-			});
-
-			// Invalid value (0 or negative should fallback)
 			const customEnvConfig: Partial<EnvConfig> = {
 				API_METRICS_SLOW_REQUEST_MS: 0,
 			};
 
-			app.decorate("envConfig", customEnvConfig as EnvConfig);
-			app.decorate("cache", mockCache);
+			app = createTestApp({ envConfig: customEnvConfig, cache: mockCache });
 
 			const warnSpy = vi.spyOn(app.log, "warn");
 
@@ -180,18 +127,11 @@ describe("Performance Plugin - Environment Configuration", () => {
 
 	describe("API_METRICS_SLOW_OPERATION_MS", () => {
 		it("should pass slow operation threshold to performance tracker", async () => {
-			app = Fastify({
-				logger: {
-					level: "silent",
-				},
-			});
-
 			const customEnvConfig: Partial<EnvConfig> = {
 				API_METRICS_SLOW_OPERATION_MS: 300,
 			};
 
-			app.decorate("envConfig", customEnvConfig as EnvConfig);
-			app.decorate("cache", mockCache);
+			app = createTestApp({ envConfig: customEnvConfig, cache: mockCache });
 
 			await app.register(performancePlugin);
 			await app.ready();
@@ -219,15 +159,8 @@ describe("Performance Plugin - Environment Configuration", () => {
 		});
 
 		it("should use default value (200) when env config not set", async () => {
-			app = Fastify({
-				logger: {
-					level: "silent",
-				},
-			});
-
 			const customEnvConfig: Partial<EnvConfig> = {};
-			app.decorate("envConfig", customEnvConfig as EnvConfig);
-			app.decorate("cache", mockCache);
+			app = createTestApp({ envConfig: customEnvConfig, cache: mockCache });
 
 			await app.register(performancePlugin);
 			await app.ready();
@@ -254,18 +187,11 @@ describe("Performance Plugin - Environment Configuration", () => {
 		});
 
 		it("should validate and fallback to default for invalid values", async () => {
-			app = Fastify({
-				logger: {
-					level: "silent",
-				},
-			});
-
 			const customEnvConfig: Partial<EnvConfig> = {
 				API_METRICS_SLOW_OPERATION_MS: 0,
 			};
 
-			app.decorate("envConfig", customEnvConfig as EnvConfig);
-			app.decorate("cache", mockCache);
+			app = createTestApp({ envConfig: customEnvConfig, cache: mockCache });
 
 			await app.register(performancePlugin);
 			await app.ready();
@@ -294,18 +220,11 @@ describe("Performance Plugin - Environment Configuration", () => {
 
 	describe("API_METRICS_SNAPSHOT_RETENTION_COUNT", () => {
 		it("should use env config value for snapshot retention", async () => {
-			app = Fastify({
-				logger: {
-					level: "silent",
-				},
-			});
-
 			const customEnvConfig: Partial<EnvConfig> = {
 				API_METRICS_SNAPSHOT_RETENTION_COUNT: 500,
 			};
 
-			app.decorate("envConfig", customEnvConfig as EnvConfig);
-			app.decorate("cache", mockCache);
+			app = createTestApp({ envConfig: customEnvConfig, cache: mockCache });
 
 			await app.register(performancePlugin);
 			await app.ready();
@@ -325,15 +244,8 @@ describe("Performance Plugin - Environment Configuration", () => {
 		});
 
 		it("should use default value (1000) when env config not set", async () => {
-			app = Fastify({
-				logger: {
-					level: "silent",
-				},
-			});
-
 			const customEnvConfig: Partial<EnvConfig> = {};
-			app.decorate("envConfig", customEnvConfig as EnvConfig);
-			app.decorate("cache", mockCache);
+			app = createTestApp({ envConfig: customEnvConfig, cache: mockCache });
 
 			await app.register(performancePlugin);
 			await app.ready();
@@ -355,18 +267,11 @@ describe("Performance Plugin - Environment Configuration", () => {
 
 	describe("Metrics Cache Service Integration", () => {
 		it("should initialize metrics cache service", async () => {
-			app = Fastify({
-				logger: {
-					level: "silent",
-				},
-			});
-
 			const customEnvConfig: Partial<EnvConfig> = {
 				API_METRICS_CACHE_TTL_SECONDS: 600,
 			};
 
-			app.decorate("envConfig", customEnvConfig as EnvConfig);
-			app.decorate("cache", mockCache);
+			app = createTestApp({ envConfig: customEnvConfig, cache: mockCache });
 
 			await app.register(performancePlugin);
 			await app.ready();
@@ -376,18 +281,11 @@ describe("Performance Plugin - Environment Configuration", () => {
 		});
 
 		it("should use env config TTL for metrics cache", async () => {
-			app = Fastify({
-				logger: {
-					level: "silent",
-				},
-			});
-
 			const customEnvConfig: Partial<EnvConfig> = {
 				API_METRICS_CACHE_TTL_SECONDS: 900,
 			};
 
-			app.decorate("envConfig", customEnvConfig as EnvConfig);
-			app.decorate("cache", mockCache);
+			app = createTestApp({ envConfig: customEnvConfig, cache: mockCache });
 
 			await app.register(performancePlugin);
 			await app.ready();
@@ -398,15 +296,8 @@ describe("Performance Plugin - Environment Configuration", () => {
 		});
 
 		it("should use default TTL (300) when env config not set", async () => {
-			app = Fastify({
-				logger: {
-					level: "silent",
-				},
-			});
-
 			const customEnvConfig: Partial<EnvConfig> = {};
-			app.decorate("envConfig", customEnvConfig as EnvConfig);
-			app.decorate("cache", mockCache);
+			app = createTestApp({ envConfig: customEnvConfig, cache: mockCache });
 
 			await app.register(performancePlugin);
 			await app.ready();
@@ -416,16 +307,19 @@ describe("Performance Plugin - Environment Configuration", () => {
 		});
 
 		it("should handle null cache service gracefully", async () => {
+			// This test needs direct Fastify construction to test null cache scenario
+			const customEnvConfig: Partial<EnvConfig> = {};
 			app = Fastify({
 				logger: {
 					level: "silent",
 				},
 			});
 
-			const customEnvConfig: Partial<EnvConfig> = {};
 			app.decorate("envConfig", customEnvConfig as EnvConfig);
 			// Decorate with null cache to test defensive code
 			app.decorate("cache", null as unknown as CacheService);
+			// Register a fake cacheService plugin to satisfy the dependency
+			await app.register(fp(async () => {}, { name: "cacheService" }));
 
 			const warnSpy = vi.spyOn(app.log, "warn").mockImplementation(() => {});
 
@@ -464,15 +358,8 @@ describe("Performance Plugin - Environment Configuration", () => {
 			);
 			const mockedPerformancePlugin = performanceModule.default;
 
-			app = Fastify({
-				logger: {
-					level: "silent",
-				},
-			});
-
 			const customEnvConfig: Partial<EnvConfig> = {};
-			app.decorate("envConfig", customEnvConfig as EnvConfig);
-			app.decorate("cache", mockCache);
+			app = createTestApp({ envConfig: customEnvConfig, cache: mockCache });
 
 			const warnSpy = vi.spyOn(app.log, "warn").mockImplementation(() => {});
 
@@ -505,19 +392,12 @@ describe("Performance Plugin - Environment Configuration", () => {
 			// Set process.env to a different value
 			process.env.API_METRICS_SLOW_REQUEST_MS = "2000";
 
-			app = Fastify({
-				logger: {
-					level: "silent",
-				},
-			});
-
 			// Use different value in envConfig
 			const customEnvConfig: Partial<EnvConfig> = {
 				API_METRICS_SLOW_REQUEST_MS: 1000,
 			};
 
-			app.decorate("envConfig", customEnvConfig as EnvConfig);
-			app.decorate("cache", mockCache);
+			app = createTestApp({ envConfig: customEnvConfig, cache: mockCache });
 
 			const warnSpy = vi.spyOn(app.log, "warn");
 

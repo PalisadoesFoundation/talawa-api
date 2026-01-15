@@ -395,6 +395,30 @@ describe("MetricsCacheService", () => {
 			);
 			cache.get = originalGet;
 		});
+
+		it("should log debug message on successful retrieval", async () => {
+			const metrics = createSampleMetrics();
+			await cache.set(
+				"talawa:v1:metrics:aggregated:hourly:2024-01-15-14",
+				metrics,
+				3600,
+			);
+
+			const result = await metricsCache.getCachedMetricsByWindow(
+				"hourly",
+				"2024-01-15-14",
+			);
+
+			expect(result).toEqual(metrics);
+			expect(mockLogger.debug).toHaveBeenCalledWith(
+				expect.objectContaining({
+					key: "talawa:v1:metrics:aggregated:hourly:2024-01-15-14",
+					windowType: "hourly",
+					date: "2024-01-15-14",
+				}),
+				"Windowed metrics retrieved from cache",
+			);
+		});
 	});
 
 	describe("cacheWindowedMetrics", () => {
@@ -497,6 +521,25 @@ describe("MetricsCacheService", () => {
 				"Skipping cache operation due to invalid input",
 			);
 		});
+
+		it("should log debug message on successful caching", async () => {
+			const metrics = createSampleMetrics();
+
+			await metricsCache.cacheWindowedMetrics(
+				metrics,
+				"hourly",
+				"2024-01-15-14",
+			);
+
+			expect(mockLogger.debug).toHaveBeenCalledWith(
+				expect.objectContaining({
+					key: "talawa:v1:metrics:aggregated:hourly:2024-01-15-14",
+					windowType: "hourly",
+					date: "2024-01-15-14",
+				}),
+				"Windowed metrics cached successfully",
+			);
+		});
 	});
 
 	describe("invalidateMetricsCache", () => {
@@ -581,10 +624,18 @@ describe("MetricsCacheService", () => {
 	});
 
 	describe("constructor", () => {
-		it("should use default TTL when not provided", () => {
-			const service = new MetricsCacheService(cache);
-			// Default TTL is 300 seconds
-			expect(service).toBeInstanceOf(MetricsCacheService);
+		it("should use default TTL when not provided", async () => {
+			const service = new MetricsCacheService(cache, mockLogger);
+			const metrics = createSampleMetrics();
+
+			// Perform an operation that uses the default TTL
+			await service.cacheAggregatedMetrics(metrics, "1705320000000");
+
+			// Verify the default TTL (300 seconds) is used
+			expect(cache.operations[0]).toMatchObject({
+				op: "set",
+				ttl: 300,
+			});
 		});
 
 		it("should use custom default TTL when provided", async () => {

@@ -1,53 +1,17 @@
 import type { NodePgDatabase } from "drizzle-orm/node-postgres";
-import Fastify, { type FastifyInstance } from "fastify";
+import type { FastifyInstance } from "fastify";
 import fp from "fastify-plugin";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type * as schema from "~/src/drizzle/schema";
-import type { EnvConfig } from "../../src/envConfigSchema";
 import backgroundWorkersPlugin from "../../src/fastifyPlugins/backgroundWorkers";
 import performancePlugin from "../../src/fastifyPlugins/performance";
-import type { CacheService } from "../../src/services/caching/CacheService";
+import { createTestApp } from "../helpers/performanceTestUtils";
 
 // Mock background worker service
 vi.mock("~/src/workers", () => ({
 	startBackgroundWorkers: vi.fn(),
 	stopBackgroundWorkers: vi.fn(),
 }));
-
-/**
- * Mock CacheService for testing.
- */
-class MockCacheService implements CacheService {
-	store = new Map<string, unknown>();
-
-	async get<T>(key: string): Promise<T | null> {
-		return (this.store.get(key) as T) ?? null;
-	}
-
-	async set<T>(key: string, value: T, _ttlSeconds: number): Promise<void> {
-		this.store.set(key, value);
-	}
-
-	async del(_keys: string | string[]): Promise<void> {
-		// No-op for tests
-	}
-
-	async clearByPattern(_pattern: string): Promise<void> {
-		// No-op for tests
-	}
-
-	async mget<T>(keys: string[]): Promise<(T | null)[]> {
-		return keys.map((k) => (this.store.get(k) as T) ?? null);
-	}
-
-	async mset<T>(
-		entries: Array<{ key: string; value: T; ttlSeconds: number }>,
-	): Promise<void> {
-		for (const entry of entries) {
-			await this.set(entry.key, entry.value, entry.ttlSeconds);
-		}
-	}
-}
 
 // Create a mock drizzleClient plugin to satisfy the dependency
 const mockDrizzleClientPlugin = fp(
@@ -60,27 +24,8 @@ const mockDrizzleClientPlugin = fp(
 	{ name: "drizzleClient" },
 );
 
-/**
- * Creates a properly configured Fastify test app with required decorators.
- * Includes envConfig and cache decorators that performancePlugin depends on.
- */
-function createTestApp(): FastifyInstance {
-	const app = Fastify({
-		logger: {
-			level: "silent",
-		},
-	});
-
-	// Add required decorators for performancePlugin
-	const envConfig: Partial<EnvConfig> = {};
-	app.decorate("envConfig", envConfig as EnvConfig);
-	app.decorate("cache", new MockCacheService());
-
-	return app;
-}
-
 describe("Background Workers Plugin - Metrics Integration", () => {
-	let app: ReturnType<typeof Fastify>;
+	let app: FastifyInstance;
 
 	beforeEach(async () => {
 		vi.clearAllMocks();
