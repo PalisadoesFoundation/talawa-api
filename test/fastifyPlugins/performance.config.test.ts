@@ -35,14 +35,14 @@ describe("Performance Plugin - Environment Configuration", () => {
 
 			const warnSpy = vi.spyOn(app.log, "warn");
 
-			await app.register(performancePlugin);
-			await app.ready();
-
 			// Make a slow request (over 1000ms)
 			app.get("/slow-request", async () => {
 				await new Promise((resolve) => setTimeout(resolve, 1100));
 				return { ok: true };
 			});
+
+			await app.register(performancePlugin);
+			await app.ready();
 
 			await app.inject({
 				method: "GET",
@@ -66,14 +66,14 @@ describe("Performance Plugin - Environment Configuration", () => {
 
 			const warnSpy = vi.spyOn(app.log, "warn");
 
-			await app.register(performancePlugin);
-			await app.ready();
-
 			// Make a slow request (over 500ms but under 1000ms)
 			app.get("/slow-request-default", async () => {
 				await new Promise((resolve) => setTimeout(resolve, 600));
 				return { ok: true };
 			});
+
+			await app.register(performancePlugin);
+			await app.ready();
 
 			await app.inject({
 				method: "GET",
@@ -100,13 +100,13 @@ describe("Performance Plugin - Environment Configuration", () => {
 
 			const warnSpy = vi.spyOn(app.log, "warn");
 
-			await app.register(performancePlugin);
-			await app.ready();
-
 			app.get("/test-invalid", async () => {
 				await new Promise((resolve) => setTimeout(resolve, 600));
 				return { ok: true };
 			});
+
+			await app.register(performancePlugin);
+			await app.ready();
 
 			await app.inject({
 				method: "GET",
@@ -133,9 +133,6 @@ describe("Performance Plugin - Environment Configuration", () => {
 
 			app = createTestApp({ envConfig: customEnvConfig, cache: mockCache });
 
-			await app.register(performancePlugin);
-			await app.ready();
-
 			app.get("/test-slow-op", async (request: FastifyRequest) => {
 				// Track a slow operation (over 300ms)
 				await request.perf?.time("slow-op", async () => {
@@ -144,6 +141,9 @@ describe("Performance Plugin - Environment Configuration", () => {
 				const snapshot = request.perf?.snapshot();
 				return { slowOps: snapshot?.slow ?? [] };
 			});
+
+			await app.register(performancePlugin);
+			await app.ready();
 
 			const response = await app.inject({
 				method: "GET",
@@ -162,9 +162,6 @@ describe("Performance Plugin - Environment Configuration", () => {
 			const customEnvConfig: Partial<EnvConfig> = {};
 			app = createTestApp({ envConfig: customEnvConfig, cache: mockCache });
 
-			await app.register(performancePlugin);
-			await app.ready();
-
 			app.get("/test-default-op", async (request: FastifyRequest) => {
 				// Track an operation that's slow for default (200ms) but not for custom (300ms)
 				await request.perf?.time("medium-op", async () => {
@@ -173,6 +170,9 @@ describe("Performance Plugin - Environment Configuration", () => {
 				const snapshot = request.perf?.snapshot();
 				return { slowOps: snapshot?.slow ?? [] };
 			});
+
+			await app.register(performancePlugin);
+			await app.ready();
 
 			const response = await app.inject({
 				method: "GET",
@@ -193,9 +193,6 @@ describe("Performance Plugin - Environment Configuration", () => {
 
 			app = createTestApp({ envConfig: customEnvConfig, cache: mockCache });
 
-			await app.register(performancePlugin);
-			await app.ready();
-
 			app.get("/test-invalid-op", async (request: FastifyRequest) => {
 				// Track an operation that's slow for default (200ms)
 				await request.perf?.time("test-op", async () => {
@@ -204,6 +201,9 @@ describe("Performance Plugin - Environment Configuration", () => {
 				const snapshot = request.perf?.snapshot();
 				return { slowOps: snapshot?.slow ?? [] };
 			});
+
+			await app.register(performancePlugin);
+			await app.ready();
 
 			const response = await app.inject({
 				method: "GET",
@@ -226,12 +226,16 @@ describe("Performance Plugin - Environment Configuration", () => {
 
 			app = createTestApp({ envConfig: customEnvConfig, cache: mockCache });
 
+			// Register all routes before app.ready()
+			for (let i = 0; i < 600; i++) {
+				app.get(`/test-${i}`, async () => ({ ok: true }));
+			}
+
 			await app.register(performancePlugin);
 			await app.ready();
 
 			// Make multiple requests to exceed retention count
 			for (let i = 0; i < 600; i++) {
-				app.get(`/test-${i}`, async () => ({ ok: true }));
 				await app.inject({
 					method: "GET",
 					url: `/test-${i}`,
@@ -247,12 +251,16 @@ describe("Performance Plugin - Environment Configuration", () => {
 			const customEnvConfig: Partial<EnvConfig> = {};
 			app = createTestApp({ envConfig: customEnvConfig, cache: mockCache });
 
+			// Register all routes before app.ready()
+			for (let i = 0; i < 1100; i++) {
+				app.get(`/test-default-${i}`, async () => ({ ok: true }));
+			}
+
 			await app.register(performancePlugin);
 			await app.ready();
 
 			// Make multiple requests
 			for (let i = 0; i < 1100; i++) {
-				app.get(`/test-default-${i}`, async () => ({ ok: true }));
 				await app.inject({
 					method: "GET",
 					url: `/test-default-${i}`,
@@ -401,13 +409,13 @@ describe("Performance Plugin - Environment Configuration", () => {
 
 			const warnSpy = vi.spyOn(app.log, "warn");
 
-			await app.register(performancePlugin);
-			await app.ready();
-
 			app.get("/test-env-config", async () => {
 				await new Promise((resolve) => setTimeout(resolve, 1500));
 				return { ok: true };
 			});
+
+			await app.register(performancePlugin);
+			await app.ready();
 
 			await app.inject({
 				method: "GET",

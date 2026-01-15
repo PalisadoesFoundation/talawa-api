@@ -93,10 +93,12 @@ describe("Performance Plugin - Metrics Interface", () => {
 		});
 
 		it("should respect snapshot retention count from env var", async () => {
-			process.env.API_METRICS_SNAPSHOT_RETENTION_COUNT = "5";
-
-			// Create a new app instance to pick up the env var
-			const testApp = createTestApp();
+			// Create a new app instance with custom retention count via envConfig
+			const testApp = createTestApp({
+				envConfig: {
+					API_METRICS_SNAPSHOT_RETENTION_COUNT: 5,
+				},
+			});
 
 			await testApp.register(performancePlugin);
 			await testApp.ready();
@@ -233,9 +235,11 @@ describe("Performance Plugin - Metrics Interface", () => {
 		});
 
 		it("should enforce retention limit when exceeded", async () => {
-			process.env.API_METRICS_SNAPSHOT_RETENTION_COUNT = "3";
-
-			const testApp = createTestApp();
+			const testApp = createTestApp({
+				envConfig: {
+					API_METRICS_SNAPSHOT_RETENTION_COUNT: 3,
+				},
+			});
 
 			await testApp.register(performancePlugin);
 			await testApp.ready();

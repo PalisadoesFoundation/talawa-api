@@ -553,10 +553,12 @@ describe("Performance Plugin", () => {
 
 	describe("Authentication - /metrics/perf Endpoint", () => {
 		it("should return 401 when API key is configured but no auth header provided", async () => {
-			// Set API key to enable authentication
-			process.env.API_METRICS_API_KEY = "test-api-key-32-chars-minimum!!!!";
-
-			const testApp = createTestApp();
+			// Set API key via envConfig to enable authentication
+			const testApp = createTestApp({
+				envConfig: {
+					API_METRICS_API_KEY: "test-api-key-32-chars-minimum!!!!",
+				},
+			});
 
 			await testApp.register(performancePlugin);
 			await testApp.ready();
@@ -572,14 +574,15 @@ describe("Performance Plugin", () => {
 			expect(body.error).toBe("Unauthorized");
 			expect(body.message).toBe("Missing authorization header");
 
-			delete process.env.API_METRICS_API_KEY;
 			await testApp.close();
 		});
 
 		it("should return 401 when authorization format is invalid (not Bearer)", async () => {
-			process.env.API_METRICS_API_KEY = "test-api-key-32-chars-minimum!!!!";
-
-			const testApp = createTestApp();
+			const testApp = createTestApp({
+				envConfig: {
+					API_METRICS_API_KEY: "test-api-key-32-chars-minimum!!!!",
+				},
+			});
 
 			await testApp.register(performancePlugin);
 			await testApp.ready();
@@ -597,14 +600,15 @@ describe("Performance Plugin", () => {
 			expect(body.error).toBe("Unauthorized");
 			expect(body.message).toContain("Invalid authorization format");
 
-			delete process.env.API_METRICS_API_KEY;
 			await testApp.close();
 		});
 
 		it("should return 401 when Bearer token is missing", async () => {
-			process.env.API_METRICS_API_KEY = "test-api-key-32-chars-minimum!!!!";
-
-			const testApp = createTestApp();
+			const testApp = createTestApp({
+				envConfig: {
+					API_METRICS_API_KEY: "test-api-key-32-chars-minimum!!!!",
+				},
+			});
 
 			await testApp.register(performancePlugin);
 			await testApp.ready();
@@ -621,14 +625,15 @@ describe("Performance Plugin", () => {
 			const body = response.json();
 			expect(body.error).toBe("Unauthorized");
 
-			delete process.env.API_METRICS_API_KEY;
 			await testApp.close();
 		});
 
 		it("should return 403 when API key is invalid", async () => {
-			process.env.API_METRICS_API_KEY = "test-api-key-32-chars-minimum!!!!";
-
-			const testApp = createTestApp();
+			const testApp = createTestApp({
+				envConfig: {
+					API_METRICS_API_KEY: "test-api-key-32-chars-minimum!!!!",
+				},
+			});
 
 			await testApp.register(performancePlugin);
 			await testApp.ready();
@@ -646,15 +651,16 @@ describe("Performance Plugin", () => {
 			expect(body.error).toBe("Forbidden");
 			expect(body.message).toBe("Invalid API key");
 
-			delete process.env.API_METRICS_API_KEY;
 			await testApp.close();
 		});
 
 		it("should return 200 when valid API key is provided", async () => {
 			const validKey = "test-api-key-32-chars-minimum!!!!";
-			process.env.API_METRICS_API_KEY = validKey;
-
-			const testApp = createTestApp();
+			const testApp = createTestApp({
+				envConfig: {
+					API_METRICS_API_KEY: validKey,
+				},
+			});
 
 			await testApp.register(performancePlugin);
 			await testApp.ready();
@@ -671,7 +677,6 @@ describe("Performance Plugin", () => {
 			const body = response.json();
 			expect(body).toHaveProperty("recent");
 
-			delete process.env.API_METRICS_API_KEY;
 			await testApp.close();
 		});
 
