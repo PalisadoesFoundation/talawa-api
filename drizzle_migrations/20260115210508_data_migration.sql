@@ -1,6 +1,6 @@
 -- Data Migration: Mark existing users as verified
 -- This prevents existing test users from being locked out
--- Run this AFTER running the schema migration (20260114012055_swift_maginty.sql)
+-- Run this AFTER running the schema migration (20260115210507_black_stardust.sql)
 
 UPDATE users 
 SET is_email_address_verified = true 
