@@ -141,7 +141,7 @@ suite("Query field agendaFoldersByEventId", () => {
 		expect(result.data?.agendaFoldersByEventId ?? null).toEqual(null);
 		expect(
 			result.errors?.some((e) => e.extensions?.code === "unauthenticated"),
-		).toBe(false);
+		).toBe(true);
 	});
 
 	test("Returns an error when an authenticated non-administrator user queries agenda folders by eventId", async () => {
