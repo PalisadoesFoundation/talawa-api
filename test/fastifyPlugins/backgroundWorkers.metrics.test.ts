@@ -79,10 +79,9 @@ describe("Background Workers Plugin - Metrics Integration", () => {
 
 			// Verify the function works
 			const snapshotGetter = callArgs?.[2];
-			if (snapshotGetter) {
-				const snapshots = snapshotGetter(5);
-				expect(Array.isArray(snapshots)).toBe(true);
-			}
+			expect(snapshotGetter).toBeDefined();
+			const snapshots = snapshotGetter?.(5);
+			expect(Array.isArray(snapshots)).toBe(true);
 		});
 
 		it("should reject registration when performance plugin dependency is not registered", async () => {

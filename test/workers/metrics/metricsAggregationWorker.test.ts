@@ -257,7 +257,7 @@ describe("metricsAggregationWorker", () => {
 			const dbOp = result?.operations.find((op) => op.operation === "db");
 			expect(dbOp).toBeDefined();
 			expect(dbOp?.count).toBe(3); // 2 + 1
-			expect(dbOp?.totalMs).toBeGreaterThan(0);
+			expect(dbOp?.totalMs).toBe(230); // 80 + 150
 
 			const httpOp = result?.operations.find((op) => op.operation === "http");
 			expect(httpOp).toBeDefined();
@@ -732,9 +732,8 @@ describe("metricsAggregationWorker", () => {
 			);
 
 			expect(result).toBeDefined();
-			// With 2 values, p50 should be exactly between them or one of them
-			expect(result?.requests.medianTotalMs).toBeGreaterThanOrEqual(50);
-			expect(result?.requests.medianTotalMs).toBeLessThanOrEqual(100);
+			// With 2 values [50, 100], median is exactly (50 + 100) / 2 = 75
+			expect(result?.requests.medianTotalMs).toBe(75);
 		});
 
 		it("handles cache with all hits", async () => {
