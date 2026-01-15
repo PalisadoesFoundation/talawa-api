@@ -3,6 +3,7 @@ import { postAttachmentMimeTypeEnum } from "~/src/drizzle/enums/postAttachmentMi
 import { agendaItemsTableInsertSchema } from "~/src/drizzle/tables/agendaItems";
 import { builder } from "~/src/graphql/builder";
 import { AgendaItemType } from "~/src/graphql/enums/AgendaItemType";
+import { PostAttachmentMimeType } from "../enums/PostAttachmentMimeType";
 
 export const mutationCreateAgendaItemInputSchema = agendaItemsTableInsertSchema
 	.pick({
@@ -90,8 +91,11 @@ const AgendaItemAttachmentInput = builder.inputType(
 	{
 		description: "Attachment data for an agenda item",
 		fields: (t) => ({
-			name: t.string({ required: false }),
-			mimeType: t.string({ required: true }),
+			name: t.string({ required: true }),
+			mimeType: t.field({
+				required: true,
+				type: PostAttachmentMimeType,
+			}),
 			objectName: t.string({ required: true }),
 			fileHash: t.string({ required: true }),
 		}),
@@ -105,7 +109,7 @@ export const MutationCreateAgendaItemInput = builder
 	.implement({
 		description: "",
 		fields: (t) => ({
-			attachment: t.field({
+			attachments: t.field({
 				description: "Attachments for the agenda items.",
 				required: false,
 				type: [AgendaItemAttachmentInput],

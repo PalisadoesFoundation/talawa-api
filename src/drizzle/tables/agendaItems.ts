@@ -159,7 +159,7 @@ export const agendaItemsTableRelations = relations(
 		 * One to many relationship from `agenda_items` table to `agenda_item_url` table.
 		 */
 		urlsWhereAgendaItem: many(agendaItemUrlTable, {
-			relationName: "agenda_item_url.agenda_item_id:agenda_item.id",
+			relationName: "agenda_item_url.agenda_item_id:agenda_items.id",
 		}),
 		/**
 		 * Many to one relationship from `agenda_items` table to `events` table.
