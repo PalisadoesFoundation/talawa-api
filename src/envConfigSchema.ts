@@ -293,6 +293,28 @@ export const envConfigSchema = Type.Object({
 		}),
 	),
 	/**
+	 * Email verification token expiry in seconds.
+	 * Default: 86400 (24 hours)
+	 */
+	API_EMAIL_VERIFICATION_TOKEN_EXPIRES_SECONDS: Type.Optional(
+		Type.Integer({
+			minimum: 1,
+			default: 86400,
+		}),
+	),
+	/**
+	 * HMAC secret key for hashing email verification tokens.
+	 * Used for defense-in-depth; tokens already have 256 bits of entropy.
+	 * Should be at least 32 characters for security best practices.
+	 * Defaults to a static value if not provided (upgrade to custom secret is recommended).
+	 */
+	API_EMAIL_VERIFICATION_TOKEN_HMAC_SECRET: Type.Optional(
+		Type.String({
+			minLength: 32,
+			default: "talawa-email-verification-token-hmac-default-secret-key",
+		}),
+	),
+	/**
 	 * Used for providing the secret for signing and verifying authentication json web tokens created by talawa api.
 	 */
 	API_JWT_SECRET: Type.String({

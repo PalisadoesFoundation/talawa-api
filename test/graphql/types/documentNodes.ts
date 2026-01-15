@@ -2758,3 +2758,19 @@ export const Mutation_updateChat = gql(`
     }
   }
 `);
+
+export const Mutation_sendVerificationEmail =
+	gql(`mutation Mutation_sendVerificationEmail {
+    sendVerificationEmail {
+        success
+        message
+    }
+}`);
+
+export const Mutation_verifyEmail =
+	gql(`mutation Mutation_verifyEmail($input: MutationVerifyEmailInput!) {
+    verifyEmail(input: $input) {
+        success
+        message
+    }
+}`);
