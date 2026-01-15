@@ -41,6 +41,8 @@ export type SetupKey =
 	| "API_IS_PINO_PRETTY"
 	| "API_JWT_EXPIRES_IN"
 	| "API_JWT_SECRET"
+	| "API_EMAIL_VERIFICATION_TOKEN_EXPIRES_SECONDS"
+	| "API_EMAIL_VERIFICATION_TOKEN_HMAC_SECRET"
 	| "API_LOG_LEVEL"
 	| "API_MINIO_ACCESS_KEY"
 	| "API_MINIO_END_POINT"
@@ -689,6 +691,34 @@ export async function apiSetup(answers: SetupAnswers): Promise<SetupAnswers> {
 				return true;
 			},
 		);
+
+		answers.API_EMAIL_VERIFICATION_TOKEN_EXPIRES_SECONDS = await promptInput(
+			"API_EMAIL_VERIFICATION_TOKEN_EXPIRES_SECONDS",
+			"Email verification token expiration (seconds):",
+			"86400",
+			(input: string) => {
+				const seconds = Number.parseInt(input, 10);
+				if (Number.isNaN(seconds) || seconds < 60) {
+					return "Expiration must be at least 60 seconds.";
+				}
+				return true;
+			},
+		);
+
+		const emailVerificationSecret = generateJwtSecret();
+		answers.API_EMAIL_VERIFICATION_TOKEN_HMAC_SECRET = await promptInput(
+			"API_EMAIL_VERIFICATION_TOKEN_HMAC_SECRET",
+			"Email verification HMAC secret:",
+			emailVerificationSecret,
+			(input: string) => {
+				const trimmed = input.trim();
+				if (trimmed.length < 32) {
+					return "HMAC secret must be at least 32 characters long.";
+				}
+				return true;
+			},
+		);
+
 		answers.API_LOG_LEVEL = await promptList(
 			"API_LOG_LEVEL",
 			"Log level:",
