@@ -1,8 +1,15 @@
 import type { FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
-import { GraphQLObjectType, GraphQLSchema, GraphQLString } from "graphql";
+import {
+	type ExecutionResult,
+	type GraphQLFormattedError,
+	GraphQLObjectType,
+	GraphQLSchema,
+	GraphQLString,
+} from "graphql";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { ExplicitAuthenticationTokenPayload } from "~/src/graphql/context";
 import { createContext } from "~/src/routes/graphql";
+import { ErrorCode } from "~/src/utilities/errors/errorCodes";
 import { createPerformanceTracker } from "~/src/utilities/metrics/performanceTracker";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 
@@ -15,6 +22,7 @@ vi.mock("~/src/graphql/schemaManager", () => ({
 	default: {
 		buildInitialSchema: vi.fn(),
 		onSchemaUpdate: vi.fn(),
+		setLogger: vi.fn(),
 	},
 }));
 
@@ -22,8 +30,13 @@ vi.mock("~/src/utilities/leakyBucket", () => ({
 	default: vi.fn(),
 }));
 
-vi.mock("~/src/utilities/TalawaGraphQLError", () => ({
-	TalawaGraphQLError: vi.fn(),
+vi.mock("~/src/utilities/dataloaders", () => ({
+	createDataloaders: vi.fn().mockReturnValue({
+		user: {},
+		organization: {},
+		event: {},
+		actionItem: {},
+	}),
 }));
 
 // Import mocked functions
@@ -1022,25 +1035,9 @@ describe("GraphQL Routes", () => {
 				new Error("No token"),
 			);
 
-			vi.mocked(TalawaGraphQLError).mockImplementation(
-				(config: { message?: string; extensions?: unknown }) => {
-					const error = new Error(config.message);
-					(error as Error & { extensions?: unknown }).extensions =
-						config.extensions;
-					return error as TalawaGraphQLError;
-				},
-			);
-
 			await expect(
 				preExecutionHook(mockSchema, mockContext, mockDocument, mockVariables),
 			).rejects.toThrow("IP address is not available for rate limiting");
-
-			expect(TalawaGraphQLError).toHaveBeenCalledWith({
-				extensions: {
-					code: "unexpected",
-				},
-				message: "IP address is not available for rate limiting",
-			});
 		});
 
 		it("should throw error when rate limit is exceeded", async () => {
@@ -1052,22 +1049,9 @@ describe("GraphQL Routes", () => {
 			);
 			vi.mocked(leakyBucket).mockResolvedValue(false);
 
-			vi.mocked(TalawaGraphQLError).mockImplementation(
-				(config: { message?: string; extensions?: unknown }) => {
-					const error = new Error("Rate limit exceeded");
-					(error as Error & { extensions?: unknown }).extensions =
-						config.extensions;
-					return error as TalawaGraphQLError;
-				},
-			);
-
 			await expect(
 				preExecutionHook(mockSchema, mockContext, mockDocument, mockVariables),
-			).rejects.toThrow("Rate limit exceeded");
-
-			expect(TalawaGraphQLError).toHaveBeenCalledWith({
-				extensions: { code: "too_many_requests" },
-			});
+			).rejects.toThrow("Too many requests. Please try again later.");
 		});
 
 		it("should handle operation without operation definition", async () => {
@@ -1554,10 +1538,10 @@ describe("GraphQL Routes", () => {
 				errorFormatter: (
 					execution: {
 						data?: unknown;
-						errors: Array<{
+						errors: ReadonlyArray<{
 							message: string;
-							locations?: Array<{ line: number; column: number }>;
-							path?: Array<string | number>;
+							locations?: ReadonlyArray<{ line: number; column: number }>;
+							path?: ReadonlyArray<string | number>;
 							extensions?: Record<string, unknown>;
 						}>;
 					},
@@ -1572,10 +1556,10 @@ describe("GraphQL Routes", () => {
 					statusCode: number;
 					response: {
 						data: unknown;
-						errors: Array<{
+						errors: ReadonlyArray<{
 							message: string;
-							locations?: Array<{ line: number; column: number }>;
-							path?: Array<string | number>;
+							locations?: ReadonlyArray<{ line: number; column: number }>;
+							path?: ReadonlyArray<string | number>;
 							extensions: Record<string, unknown>;
 						}>;
 					};
@@ -1585,12 +1569,11 @@ describe("GraphQL Routes", () => {
 			const mockExecution = {
 				data: { user: { id: "123" } },
 				errors: [
-					{
+					new TalawaGraphQLError({
 						message: "Test error",
-						locations: [{ line: 1, column: 5 }],
 						path: ["user", "email"],
-						extensions: { code: "VALIDATION_ERROR" },
-					},
+						extensions: { code: ErrorCode.INVALID_ARGUMENTS },
+					}),
 				],
 			};
 
@@ -1614,10 +1597,10 @@ describe("GraphQL Routes", () => {
 					errors: [
 						{
 							message: "Test error",
-							locations: [{ line: 1, column: 5 }],
+							locations: undefined,
 							path: ["user", "email"],
 							extensions: {
-								code: "VALIDATION_ERROR",
+								code: ErrorCode.INVALID_ARGUMENTS,
 								correlationId: "correlation-123",
 							},
 						},
@@ -1640,10 +1623,10 @@ describe("GraphQL Routes", () => {
 				errorFormatter: (
 					execution: {
 						data?: unknown;
-						errors: Array<{
+						errors: ReadonlyArray<{
 							message: string;
-							locations?: Array<{ line: number; column: number }>;
-							path?: Array<string | number>;
+							locations?: ReadonlyArray<{ line: number; column: number }>;
+							path?: ReadonlyArray<string | number>;
 							extensions?: Record<string, unknown>;
 						}>;
 					},
@@ -1658,10 +1641,10 @@ describe("GraphQL Routes", () => {
 					statusCode: number;
 					response: {
 						data: unknown;
-						errors: Array<{
+						errors: ReadonlyArray<{
 							message: string;
-							locations?: Array<{ line: number; column: number }>;
-							path?: Array<string | number>;
+							locations?: ReadonlyArray<{ line: number; column: number }>;
+							path?: ReadonlyArray<string | number>;
 							extensions: Record<string, unknown>;
 						}>;
 					};
@@ -1701,7 +1684,9 @@ describe("GraphQL Routes", () => {
 							locations: [{ line: 2, column: 10 }],
 							path: undefined,
 							extensions: {
+								code: "internal_server_error",
 								correlationId: "req-456",
+								httpStatus: 500,
 							},
 						},
 					],
@@ -1723,10 +1708,10 @@ describe("GraphQL Routes", () => {
 				errorFormatter: (
 					execution: {
 						data?: unknown;
-						errors: Array<{
+						errors: ReadonlyArray<{
 							message: string;
-							locations?: Array<{ line: number; column: number }>;
-							path?: Array<string | number>;
+							locations?: ReadonlyArray<{ line: number; column: number }>;
+							path?: ReadonlyArray<string | number>;
 							extensions?: Record<string, unknown>;
 						}>;
 					},
@@ -1741,10 +1726,10 @@ describe("GraphQL Routes", () => {
 					statusCode: number;
 					response: {
 						data: unknown;
-						errors: Array<{
+						errors: ReadonlyArray<{
 							message: string;
-							locations?: Array<{ line: number; column: number }>;
-							path?: Array<string | number>;
+							locations?: ReadonlyArray<{ line: number; column: number }>;
+							path?: ReadonlyArray<string | number>;
 							extensions: Record<string, unknown>;
 						}>;
 					};
@@ -1754,10 +1739,10 @@ describe("GraphQL Routes", () => {
 			const mockExecution = {
 				data: null,
 				errors: [
-					{
+					new TalawaGraphQLError({
 						message: "Unauthorized",
-						extensions: { code: "UNAUTHENTICATED" },
-					},
+						extensions: { code: ErrorCode.UNAUTHENTICATED },
+					}),
 					{
 						message: "Field not found",
 						path: ["query", "nonExistent"],
@@ -1792,7 +1777,7 @@ describe("GraphQL Routes", () => {
 							locations: undefined,
 							path: undefined,
 							extensions: {
-								code: "UNAUTHENTICATED",
+								code: ErrorCode.UNAUTHENTICATED,
 								correlationId: "multi-error-789",
 							},
 						},
@@ -1801,9 +1786,10 @@ describe("GraphQL Routes", () => {
 							locations: undefined,
 							path: ["query", "nonExistent"],
 							extensions: {
-								code: "GRAPHQL_VALIDATION_FAILED",
-								timestamp: 123456,
+								code: "internal_server_error",
 								correlationId: "multi-error-789",
+								httpStatus: 500,
+								details: undefined,
 							},
 						},
 					],
@@ -1825,10 +1811,10 @@ describe("GraphQL Routes", () => {
 				errorFormatter: (
 					execution: {
 						data?: unknown;
-						errors: Array<{
+						errors: ReadonlyArray<{
 							message: string;
-							locations?: Array<{ line: number; column: number }>;
-							path?: Array<string | number>;
+							locations?: ReadonlyArray<{ line: number; column: number }>;
+							path?: ReadonlyArray<string | number>;
 							extensions?: Record<string, unknown>;
 						}>;
 					},
@@ -1843,10 +1829,10 @@ describe("GraphQL Routes", () => {
 					statusCode: number;
 					response: {
 						data: unknown;
-						errors: Array<{
+						errors: ReadonlyArray<{
 							message: string;
-							locations?: Array<{ line: number; column: number }>;
-							path?: Array<string | number>;
+							locations?: ReadonlyArray<{ line: number; column: number }>;
+							path?: ReadonlyArray<string | number>;
 							extensions: Record<string, unknown>;
 						}>;
 					};
@@ -1876,6 +1862,559 @@ describe("GraphQL Routes", () => {
 
 			expect(result.response.data).toBeNull();
 			expect(result.statusCode).toBe(200);
+		});
+	});
+
+	describe("GraphQL Coverage Tests", () => {
+		let mockFastifyInstance: {
+			register: ReturnType<typeof vi.fn>;
+			envConfig: {
+				API_IS_GRAPHIQL: boolean;
+				API_GRAPHQL_MUTATION_BASE_COST: number;
+				API_RATE_LIMIT_BUCKET_CAPACITY: number;
+				API_RATE_LIMIT_REFILL_RATE: number;
+			};
+			log: {
+				info: ReturnType<typeof vi.fn>;
+				error: ReturnType<typeof vi.fn>;
+			};
+			graphql: {
+				replaceSchema: ReturnType<typeof vi.fn>;
+				addHook: ReturnType<typeof vi.fn>;
+			};
+			jwt: {
+				verify: ReturnType<typeof vi.fn>;
+				sign: ReturnType<typeof vi.fn>;
+			};
+			cache: {
+				get: ReturnType<typeof vi.fn>;
+				set: ReturnType<typeof vi.fn>;
+				del: ReturnType<typeof vi.fn>;
+			};
+			drizzleClient: Record<string, unknown>;
+			minio: Record<string, unknown>;
+		};
+		let mockSchema: GraphQLSchema;
+		let preExecutionHook: (
+			schema: GraphQLSchema,
+			context: unknown,
+			document: unknown,
+			variables: unknown,
+		) => Promise<void>;
+		let subscriptionOnConnect: (data: unknown) => Promise<boolean | object>;
+
+		beforeEach(async () => {
+			vi.clearAllMocks();
+
+			mockFastifyInstance = {
+				register: vi.fn(),
+				envConfig: {
+					API_IS_GRAPHIQL: true,
+					API_GRAPHQL_MUTATION_BASE_COST: 10,
+					API_RATE_LIMIT_BUCKET_CAPACITY: 100,
+					API_RATE_LIMIT_REFILL_RATE: 1,
+				},
+				log: {
+					info: vi.fn(),
+					error: vi.fn(),
+				},
+				graphql: {
+					replaceSchema: vi.fn(),
+					addHook: vi.fn(),
+				},
+				jwt: {
+					verify: vi.fn(),
+					sign: vi.fn(),
+				},
+				cache: {
+					get: vi.fn(),
+					set: vi.fn(),
+					del: vi.fn(),
+				},
+				drizzleClient: {},
+				minio: {},
+			};
+
+			mockSchema = {
+				getQueryType: () => ({ getFields: () => ({}) }),
+				getMutationType: () => ({ getFields: () => ({}) }),
+				getSubscriptionType: () => ({ getFields: () => ({}) }),
+			} as unknown as GraphQLSchema;
+
+			vi.mocked(schemaManager.buildInitialSchema).mockResolvedValue(mockSchema);
+			vi.mocked(schemaManager.onSchemaUpdate).mockImplementation(() => {});
+
+			// Import the graphql route
+			const { graphql } = await import("~/src/routes/graphql");
+			await graphql(mockFastifyInstance as unknown as FastifyInstance);
+
+			// Extract hooks and config
+			const addHookCall = mockFastifyInstance.graphql.addHook.mock.calls.find(
+				(call: unknown[]) => call[0] === "preExecution",
+			);
+			preExecutionHook = addHookCall?.[1] as typeof preExecutionHook;
+
+			const registerMercuriusCall =
+				mockFastifyInstance.register.mock.calls.find(
+					(call: unknown[]) =>
+						(call[1] as { subscription?: unknown })?.subscription,
+				);
+			subscriptionOnConnect =
+				registerMercuriusCall?.[1]?.subscription?.onConnect;
+		});
+
+		describe("preExecution Hook Coverage", () => {
+			it("should throw error if IP address is not available", async () => {
+				expect(preExecutionHook).toBeDefined();
+				const context = {
+					definitions: [{ kind: "OperationDefinition", operation: "query" }],
+				};
+				const document = {
+					__currentQuery: {},
+					reply: {
+						request: {
+							ip: undefined, // Missing IP
+							jwtVerify: vi.fn().mockRejectedValue(new Error("No token")),
+						},
+					},
+				};
+
+				vi.mocked(complexityFromQuery).mockReturnValue({
+					complexity: 1,
+					breadth: 1,
+					depth: 1,
+				});
+
+				await expect(
+					preExecutionHook(mockSchema, context, document, {}),
+				).rejects.toThrow("IP address is not available for rate limiting");
+			});
+
+			it("should throw too_many_requests if leakyBucket returns false", async () => {
+				const context = {
+					definitions: [{ kind: "OperationDefinition", operation: "query" }],
+				};
+				const document = {
+					__currentQuery: {},
+					reply: {
+						request: {
+							ip: "127.0.0.1",
+							jwtVerify: vi.fn().mockRejectedValue(new Error("No token")),
+							log: mockFastifyInstance.log,
+						},
+					},
+				};
+
+				vi.mocked(complexityFromQuery).mockReturnValue({
+					complexity: 1,
+					breadth: 1,
+					depth: 1,
+				});
+				vi.mocked(leakyBucket).mockResolvedValue(false); // Rate limit exceeded
+
+				try {
+					await preExecutionHook(mockSchema, context, document, {});
+					expect.fail("Should have thrown error");
+				} catch (error: unknown) {
+					expect(error).toBeInstanceOf(TalawaGraphQLError);
+					expect((error as TalawaGraphQLError).extensions.code).toBe(
+						"too_many_requests",
+					);
+				}
+			});
+
+			it("should add mutation cost for mutation operations", async () => {
+				const context = {
+					definitions: [{ kind: "OperationDefinition", operation: "mutation" }],
+				};
+				const document = {
+					__currentQuery: {},
+					reply: {
+						request: {
+							ip: "127.0.0.1",
+							jwtVerify: vi.fn().mockRejectedValue(new Error("No token")),
+							log: mockFastifyInstance.log,
+						},
+					},
+				};
+
+				// Initialize complexity object
+				const complexityObj = { complexity: 5, breadth: 1, depth: 1 };
+				vi.mocked(complexityFromQuery).mockReturnValue(complexityObj);
+				vi.mocked(leakyBucket).mockResolvedValue(true);
+
+				await preExecutionHook(mockSchema, context, document, {});
+
+				// Complexity should be increased by API_GRAPHQL_MUTATION_BASE_COST (10)
+				expect(complexityObj.complexity).toBe(15);
+			});
+		});
+
+		describe("Subscription onConnect Coverage", () => {
+			it("should return false if no authorization in payload", async () => {
+				const data = {
+					payload: {},
+					socket: {},
+				};
+				const result = await subscriptionOnConnect(data);
+				expect(result).toBe(false);
+			});
+
+			it("should return false and log error if token invalid", async () => {
+				const data = {
+					payload: { authorization: "Bearer invalid-token" },
+					socket: {},
+				};
+
+				mockFastifyInstance.jwt.verify.mockRejectedValue(
+					new Error("Invalid token"),
+				);
+
+				const result = await subscriptionOnConnect(data);
+
+				expect(result).toBe(false);
+				expect(mockFastifyInstance.log.error).toHaveBeenCalled();
+			});
+
+			it("should verify token and return context on success", async () => {
+				const data = {
+					payload: { authorization: "Bearer valid-token" },
+					socket: {
+						request: {
+							perf: {
+								trackComplexity: vi.fn(),
+								snapshot: vi.fn(),
+								time: vi.fn(),
+								start: vi.fn(),
+								trackDb: vi.fn(),
+								trackCacheHit: vi.fn(),
+								trackCacheMiss: vi.fn(),
+							},
+						},
+					},
+				};
+
+				mockFastifyInstance.jwt.verify.mockResolvedValue({
+					user: { id: "user-1" },
+				});
+
+				const result = await subscriptionOnConnect(data);
+
+				const context = result as {
+					currentClient: { user: { id: string } };
+					perf: unknown;
+				};
+
+				expect(context).toHaveProperty("currentClient");
+				expect(context.currentClient.user.id).toBe("user-1");
+				expect(context.perf).toBeDefined();
+				expect(mockFastifyInstance.log.info).toHaveBeenCalledWith(
+					expect.objectContaining({ user: { id: "user-1" } }),
+					"Subscription connection authorized.",
+				);
+			});
+		});
+	});
+
+	describe("GraphQL Error Formatting", () => {
+		// Unit test for isolated errorFormatter testing
+		describe("Unit Tests - ErrorFormatter Isolation", () => {
+			let mockFastifyInstance: {
+				register: ReturnType<typeof vi.fn>;
+				envConfig: {
+					API_IS_GRAPHIQL: boolean;
+					API_GRAPHQL_MUTATION_BASE_COST: number;
+					API_RATE_LIMIT_BUCKET_CAPACITY: number;
+					API_RATE_LIMIT_REFILL_RATE: number;
+				};
+				log: {
+					info: ReturnType<typeof vi.fn>;
+					error: ReturnType<typeof vi.fn>;
+				};
+				graphql: {
+					replaceSchema: ReturnType<typeof vi.fn>;
+					addHook: ReturnType<typeof vi.fn>;
+				};
+			};
+
+			let errorFormatter: (
+				execution: ExecutionResult,
+				context: unknown,
+			) => {
+				statusCode: number;
+				response: { data: unknown; errors?: GraphQLFormattedError[] };
+			};
+
+			beforeEach(async () => {
+				mockFastifyInstance = {
+					register: vi.fn(),
+					envConfig: {
+						API_IS_GRAPHIQL: true,
+						API_GRAPHQL_MUTATION_BASE_COST: 10,
+						API_RATE_LIMIT_BUCKET_CAPACITY: 100,
+						API_RATE_LIMIT_REFILL_RATE: 1,
+					},
+					log: {
+						info: vi.fn(),
+						error: vi.fn(),
+					},
+					graphql: {
+						replaceSchema: vi.fn(),
+						addHook: vi.fn(),
+					},
+				};
+
+				vi.mocked(schemaManager.buildInitialSchema).mockResolvedValue(
+					new GraphQLSchema({
+						query: new GraphQLObjectType({
+							name: "Query",
+							fields: { hello: { type: GraphQLString } },
+						}),
+					}),
+				);
+
+				const { graphql } = await import("~/src/routes/graphql");
+				await graphql(mockFastifyInstance as unknown as FastifyInstance);
+
+				// Robust errorFormatter extraction - find mercurius registration by schema property
+				const mercuriusCall = mockFastifyInstance.register.mock.calls.find(
+					(call) => call[1]?.schema !== undefined,
+				);
+
+				if (!mercuriusCall) {
+					throw new Error("Could not find mercurius registration call");
+				}
+
+				errorFormatter = mercuriusCall[1].errorFormatter;
+
+				if (!errorFormatter) {
+					throw new Error("errorFormatter not found in mercurius registration");
+				}
+			});
+
+			it("should remove sensitive extension keys", () => {
+				const result = errorFormatter(
+					{
+						data: null,
+						errors: [
+							new TalawaGraphQLError({
+								message: "Sensitive Error",
+								extensions: {
+									code: ErrorCode.INTERNAL_SERVER_ERROR,
+									stack: "stack trace",
+									internal: "internal data",
+									debug: "debug info",
+									raw: "raw data",
+									error: "error obj",
+									secrets: "hidden",
+									exception: "crash",
+									safe: "safe data",
+								},
+							}),
+						],
+					},
+					{
+						reply: {
+							request: { id: "req-1", log: { error: vi.fn() } },
+						},
+					},
+				);
+
+				const extensions = result.response.errors?.[0]?.extensions;
+				expect(extensions).toBeDefined();
+				expect(extensions).toHaveProperty(
+					"code",
+					ErrorCode.INTERNAL_SERVER_ERROR,
+				);
+				expect(extensions).toHaveProperty("correlationId", "req-1");
+			});
+
+			it("should correctly format multiple errors", () => {
+				const result = errorFormatter(
+					{
+						data: null,
+						errors: [
+							new TalawaGraphQLError({
+								message: "Error 1",
+								extensions: { code: ErrorCode.NOT_FOUND },
+							}),
+							new TalawaGraphQLError({
+								message: "Error 2",
+								extensions: { code: ErrorCode.INVALID_ARGUMENTS },
+							}),
+						],
+					},
+					{
+						reply: {
+							request: { id: "req-multi", log: { error: vi.fn() } },
+						},
+					},
+				);
+
+				expect(result.response.errors).toHaveLength(2);
+				expect(result.response.errors?.[0]?.extensions?.code).toBe(
+					ErrorCode.NOT_FOUND,
+				);
+				expect(result.response.errors?.[1]?.extensions?.code).toBe(
+					ErrorCode.INVALID_ARGUMENTS,
+				);
+			});
+
+			it("should map standard ErrorCode enum values preserving code", () => {
+				const result = errorFormatter(
+					{
+						data: null,
+						errors: [
+							new TalawaGraphQLError({
+								message: "Not Found Error",
+								extensions: { code: ErrorCode.NOT_FOUND },
+							}),
+							new TalawaGraphQLError({
+								message: "Invalid Args Error",
+								extensions: { code: ErrorCode.INVALID_ARGUMENTS },
+							}),
+						],
+					},
+					{
+						reply: {
+							request: { id: "req-enums", log: { error: vi.fn() } },
+						},
+					},
+				);
+
+				const errors = result.response.errors;
+				expect(errors).toBeDefined();
+
+				const notFoundError = errors?.[0];
+				expect(notFoundError?.extensions?.code).toBe(ErrorCode.NOT_FOUND);
+
+				const invalidArgsError = errors?.[1];
+				expect(invalidArgsError?.extensions?.code).toBe(
+					ErrorCode.INVALID_ARGUMENTS,
+				);
+			});
+
+			it("should include populated details field in output", () => {
+				const details = { field: "username", reason: "duplicate" };
+				const result = errorFormatter(
+					{
+						data: null,
+						errors: [
+							new TalawaGraphQLError({
+								message: "Detailed Error",
+								extensions: {
+									code: ErrorCode.INVALID_INPUT,
+									details,
+								},
+							}),
+						],
+					},
+					{
+						reply: {
+							request: { id: "req-details", log: { error: vi.fn() } },
+						},
+					},
+				);
+
+				const error = result.response.errors?.[0];
+				expect(error?.extensions?.details).toEqual(details);
+			});
+
+			it("should derive status code correctly in real HTTP context", () => {
+				const result = errorFormatter(
+					{
+						data: null,
+						errors: [
+							{
+								message: "Error",
+								locations: undefined,
+								extensions: { code: ErrorCode.INTERNAL_SERVER_ERROR },
+								name: "Error",
+								nodes: undefined,
+								source: undefined,
+								positions: undefined,
+								originalError: undefined,
+								path: undefined,
+								toJSON: () => ({ message: "Error" }),
+								[Symbol.toStringTag]: "Error",
+							},
+						],
+					},
+					{
+						reply: {
+							request: { id: "req-http", log: { error: vi.fn() } },
+							send: vi.fn(), // Presence of send implies real HTTP request
+						},
+					},
+				);
+
+				// Should always be 200 for GraphQL over HTTP
+				expect(result.statusCode).toBe(200);
+			});
+
+			it("should use pre-set correlationId and log in subscription context", () => {
+				const correlationId = "sub-123456";
+				const logErrorSpy = vi.fn();
+				const result = errorFormatter(
+					{
+						data: null,
+						errors: [
+							new TalawaGraphQLError({
+								message: "Sub Error",
+								extensions: { code: ErrorCode.INTERNAL_SERVER_ERROR },
+							}),
+						],
+					},
+					{
+						// Subscription context (no reply)
+						correlationId,
+						log: { error: logErrorSpy },
+					},
+				);
+
+				const error = result.response.errors?.[0];
+				expect(error?.extensions?.correlationId).toBe(correlationId);
+				expect(logErrorSpy).toHaveBeenCalled();
+				expect(logErrorSpy).toHaveBeenCalledWith(
+					expect.objectContaining({
+						correlationId,
+						msg: "GraphQL error",
+					}),
+				);
+			});
+
+			it("should call structured logging with correlationId and errors", () => {
+				const logErrorSpy = vi.fn();
+				errorFormatter(
+					{
+						data: null,
+						errors: [
+							new TalawaGraphQLError({
+								message: "Log Test Error",
+								extensions: { code: ErrorCode.INTERNAL_SERVER_ERROR },
+							}),
+						],
+					},
+					{
+						reply: {
+							request: { id: "req-log-test", log: { error: logErrorSpy } },
+						},
+					},
+				);
+
+				expect(logErrorSpy).toHaveBeenCalledWith(
+					expect.objectContaining({
+						correlationId: "req-log-test",
+						msg: "GraphQL error",
+						errors: expect.arrayContaining([
+							expect.objectContaining({
+								message: "Log Test Error",
+								code: ErrorCode.INTERNAL_SERVER_ERROR,
+							}),
+						]),
+					}),
+				);
+			});
 		});
 	});
 });

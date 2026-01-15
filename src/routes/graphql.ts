@@ -19,6 +19,11 @@ import {
 	getRefreshTokenCookieOptions,
 } from "../utilities/cookieConfig";
 import { createDataloaders } from "../utilities/dataloaders";
+import {
+	ERROR_CODE_TO_HTTP_STATUS,
+	type ErrorCode,
+} from "../utilities/errors/errorCodes";
+import { normalizeError } from "../utilities/errors/errorTransformer";
 import leakyBucket from "../utilities/leakyBucket";
 import { type AppLogger, withFields } from "../utilities/logging/logger";
 import {
@@ -252,21 +257,101 @@ export const graphql = fastifyPlugin(async (fastify) => {
 		path: "/graphql",
 		schema: initialSchema,
 		errorFormatter: (execution, context) => {
-			const correlationId = context.reply.request.id;
+			const { errors, data } = execution;
 
-			return {
-				statusCode: 200,
-				response: {
-					data: execution.data ?? null,
-					errors: execution.errors.map((err) => ({
-						message: err.message,
-						locations: err.locations,
-						path: err.path,
+			// Helper to extract correlation ID safely from various context shapes
+			const extractCorrelationId = (ctx: unknown): string => {
+				if (!ctx || typeof ctx !== "object") return "unknown";
+
+				// Check for reply.request.id (HTTP context)
+				if ("reply" in ctx) {
+					const replyCtx = ctx as {
+						reply?: { request?: { id?: string } };
+					};
+					if (replyCtx.reply?.request?.id) return replyCtx.reply.request.id;
+				}
+
+				// Check for correlationId (Subscription context or direct property)
+				if ("correlationId" in ctx) {
+					const correlationCtx = ctx as { correlationId?: string };
+					if (correlationCtx.correlationId) return correlationCtx.correlationId;
+				}
+
+				return "unknown";
+			};
+
+			const correlationId = extractCorrelationId(context);
+
+			// Transform each error to ensure consistent format
+			const formattedErrors = errors.map((error) => {
+				// If it's already a TalawaGraphQLError (or wraps one), preserve its structure
+				const originalError = error.originalError;
+				if (
+					error instanceof TalawaGraphQLError ||
+					originalError instanceof TalawaGraphQLError
+				) {
+					const targetError =
+						error instanceof TalawaGraphQLError
+							? error
+							: (originalError as TalawaGraphQLError);
+
+					return {
+						message: targetError.message,
+						locations: error.locations,
+						path: error.path,
 						extensions: {
-							...err.extensions,
+							...targetError.extensions,
 							correlationId,
 						},
+					};
+				}
+
+				// For other GraphQL errors, normalize them using the unified system
+				const normalized = normalizeError(error);
+
+				// Map normalized error to GraphQL error format
+				const code: ErrorCode = normalized.code;
+				const httpStatus = ERROR_CODE_TO_HTTP_STATUS[code] ?? 500;
+
+				return {
+					message: error.message || normalized.message,
+					locations: error.locations,
+					path: error.path,
+					extensions: {
+						code,
+						details: normalized.details,
+						correlationId,
+						httpStatus,
+					},
+				};
+			});
+
+			// Log errors with structured context for monitoring
+			type Logger = { error: (obj: Record<string, unknown>) => void };
+			const contextWithLogger = context as {
+				reply?: { request?: { log?: Logger } };
+				log?: Logger;
+			};
+			const logger =
+				contextWithLogger.reply?.request?.log || contextWithLogger.log;
+			if (logger?.error) {
+				logger.error({
+					msg: "GraphQL error",
+					correlationId,
+					errors: formattedErrors.map((fe) => ({
+						message: fe.message,
+						code: fe.extensions?.code,
+						details: fe.extensions?.details,
+						path: fe.path,
 					})),
+				});
+			}
+
+			return {
+				statusCode: 200, // GraphQL always returns 200 OK with errors in body
+				response: {
+					data: data ?? null,
+					errors: formattedErrors,
 				},
 			};
 		},

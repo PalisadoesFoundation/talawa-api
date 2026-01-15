@@ -2,6 +2,8 @@ import type { Readable } from "node:stream";
 import type { FastifyPluginAsyncTypebox } from "@fastify/type-provider-typebox";
 import { type BucketItemStat, S3Error } from "minio";
 import { Type } from "typebox";
+import { ErrorCode } from "../utilities/errors/errorCodes";
+import { TalawaRestError } from "../utilities/errors/TalawaRestError";
 
 /**
  * This fastify route plugin is used to initialize a `/objects/:name` endpoint on the fastify server for clients to fetch objects from the minio server.
@@ -42,12 +44,15 @@ export const objects: FastifyPluginAsyncTypebox = async (fastify) => {
 					error instanceof S3Error &&
 					(error.code === "NoSuchKey" || error.code === "NotFound")
 				) {
-					return reply.status(404).send({
+					throw new TalawaRestError({
+						code: ErrorCode.NOT_FOUND,
 						message: `No object found with the name "${name}".`,
+						details: { objectName: name },
 					});
 				}
 
-				return reply.status(500).send({
+				throw new TalawaRestError({
+					code: ErrorCode.INTERNAL_SERVER_ERROR,
 					message: "Something went wrong. Please try again later.",
 				});
 			}

@@ -3,6 +3,7 @@ import {
 	type GraphQLErrorOptions,
 	type GraphQLFormattedError,
 } from "graphql";
+import type { ErrorCode } from "./errors/errorCodes";
 
 // The term action used below is used to refer to read and write operations triggered by the clients. In the context of graphql query, mutation and subscription are the three possible ways to perform these actions.
 
@@ -255,11 +256,15 @@ export type TalawaGraphQLErrorExtensions =
 	| UnauthorizedActionOnArgumentsAssociatedResourcesExtensions
 	| UnauthorizedArgumentsExtensions
 	| UnexpectedExtensions
-	| TooManyRequestsExtensions;
+	| TooManyRequestsExtensions
+	| {
+			code: ErrorCode;
+			details?: unknown;
+			httpStatus?: number;
+	  };
 
-export const defaultTalawaGraphQLErrorMessages: {
-	[Key in TalawaGraphQLErrorExtensions["code"]]: string;
-} = {
+export const defaultTalawaGraphQLErrorMessages: Record<string, string> = {
+	// Legacy error codes (for backward compatibility)
 	account_locked:
 		"Account temporarily locked due to too many failed login attempts. Please try again later.",
 	arguments_associated_resources_not_found:
@@ -277,38 +282,94 @@ export const defaultTalawaGraphQLErrorMessages: {
 		"You are not authorized to perform this action with the provided arguments.",
 	unexpected: "Something went wrong. Please try again later.",
 	too_many_requests: "Too many requests. Please try again later.",
+
+	// ErrorCode enum values (unified error handling)
+	token_expired: "Authentication token has expired.",
+	token_invalid: "Authentication token is invalid.",
+	unauthorized: "Unauthorized access.",
+	insufficient_permissions: "Insufficient permissions.",
+	invalid_input: "Invalid input provided.",
+	not_found: "Requested resource not found.",
+	already_exists: "Resource already exists.",
+	conflict: "Conflict with existing resource.",
+	rate_limit_exceeded: "Rate limit exceeded.",
+	deprecated: "Requested resource or operation is deprecated.",
+	internal_server_error: "Something went wrong. Please try again later.",
+	database_error: "Database operation failed. Please try again later.",
+	external_service_error:
+		"External service unavailable. Please try again later.",
 };
 
 /**
- * This class extends the `GraphQLError` class and is used to create graphql error instances with strict typescript assertion on providing the error metadata within the `extensions` field. This assertion prevents talawa api contributers from returning arbitrary, undocumented errors to the talawa api graphql clients.
+ * Custom GraphQL error class that provides structured error handling with typed extensions.
  *
- * This also standardizes the errors that the client developers using talawa api can expect in the graphql responses, helping them design better UI experiences for end users. If necessary, the localization of the error messages(i18n) can be done within the graphql resolvers where this function is used.
+ * This class extends the standard GraphQLError and enforces strict TypeScript typing
+ * on error metadata within the `extensions` field. It prevents arbitrary, undocumented
+ * errors from being returned to GraphQL clients and standardizes error responses.
  *
- * The following example shows the usage of `createTalawaGraphQLError` function within a graphql resolver for resolving the user record of the best friend of a user:
+ * The class integrates with the unified error handling system by supporting ErrorCode
+ * enum values and providing consistent error shapes across REST and GraphQL endpoints.
+ *
  * @example
+ * ```ts
+ * // Basic authentication error
+ * throw new TalawaGraphQLError({
+ *   extensions: {
+ *     code: ErrorCode.UNAUTHENTICATED
+ *   }
+ * });
+ *
+ * // Error with details and custom message
+ * throw new TalawaGraphQLError({
+ *   message: "Organization not found",
+ *   extensions: {
+ *     code: ErrorCode.NOT_FOUND,
+ *     details: { organizationId: "123" }
+ *   }
+ * });
+ *
+ * // Legacy typed extension (for backward compatibility)
+ * throw new TalawaGraphQLError({
+ *   extensions: {
+ *     code: "arguments_associated_resources_not_found",
+ *     issues: [
+ *       { argumentPath: ["input", "id"] }
+ *     ]
+ *   }
+ * });
+ * ```
+ *
+ * The following example shows usage within a GraphQL resolver:
+ * ```ts
  * export const user = async (parent, args, ctx) => {
- *  const existingUser = await ctx.drizzleClient.query.user.findFirst({
- *      where: (fields, operators) => operators.eq(fields.id, args.input.id),
- *  });
+ *   const existingUser = await ctx.drizzleClient.query.user.findFirst({
+ *     where: (fields, operators) => operators.eq(fields.id, args.input.id),
+ *   });
  *
- *	if (user === undefined) {
- *		throw new TalawaGraphQLError({
- *			extensions: {
- *				code: "arguments_associated_resources_not_found",
- * 				issues: [
- * 					{
- * 						argumentPath: ["input", "id"],
- * 					},
- * 				],
- *			},
+ *   if (existingUser === undefined) {
+ *     throw new TalawaGraphQLError({
+ *       extensions: {
+ *         code: ErrorCode.NOT_FOUND,
+ *         details: { userId: args.input.id }
+ *       }
+ *     });
+ *   }
  *
- *      })
- *	}
- *
- *  return user;
+ *   return user;
  * }
+ * ```
  */
 export class TalawaGraphQLError extends GraphQLError {
+	/**
+	 * Creates a new TalawaGraphQLError instance.
+	 *
+	 * @param options - Error configuration object containing:
+	 *   - message: Optional custom error message (uses default if not provided)
+	 *   - extensions: Typed error extensions containing error code and details
+	 *   - extensions.code: Error code (ErrorCode enum or legacy string codes)
+	 *   - extensions.details: Optional additional error context
+	 *   - extensions.httpStatus: Optional HTTP status code override
+	 */
 	constructor({
 		message,
 		...options
@@ -317,15 +378,35 @@ export class TalawaGraphQLError extends GraphQLError {
 		message?: string;
 	}) {
 		if (message === undefined) {
-			message = defaultTalawaGraphQLErrorMessages[options.extensions.code];
+			message =
+				defaultTalawaGraphQLErrorMessages[options.extensions.code] ??
+				"An error occurred";
 		}
 		super(message, options);
 	}
 }
 
 /**
- * Type of the error returned by talawa api's graphql implementation in the root "errors" field of the graphql responses.
+ * Formatted error type returned by Talawa API's GraphQL implementation.
+ *
+ * This type extends the standard GraphQLFormattedError with typed extensions
+ * that include structured error metadata for consistent client-side error handling.
+ *
+ * @example
+ * ```json
+ * {
+ *   "message": "User not found",
+ *   "path": ["user"],
+ *   "extensions": {
+ *     "code": "not_found",
+ *     "details": { "userId": "123" },
+ *     "correlationId": "req-abc123",
+ *     "httpStatus": 404
+ *   }
+ * }
+ * ```
  */
 export type TalawaGraphQLFormattedError = GraphQLFormattedError & {
+	/** Typed error extensions with structured metadata */
 	extensions: TalawaGraphQLErrorExtensions;
 };

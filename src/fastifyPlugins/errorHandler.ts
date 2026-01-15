@@ -4,46 +4,107 @@ import type {
 	FastifyReply,
 	FastifyRequest,
 } from "fastify";
-import fp from "fastify-plugin";
+import fastifyPlugin from "fastify-plugin";
+import { normalizeError } from "~/src/utilities/errors/errorTransformer";
+import { TalawaRestError } from "~/src/utilities/errors/TalawaRestError";
 
 /**
- * Fastify error handler plugin for centralized error handling.
+ * Global Fastify error handler plugin that provides unified error responses.
  *
- * This plugin sets up a global error handler that:
- * - Captures all errors thrown during request processing
- * - Logs errors with correlation ID for request tracing
- * - Returns appropriate HTTP status codes (500 for server errors, original status for client errors)
- * - Masks sensitive error details for 5xx errors
- * - Includes correlation ID in error responses for client reference
+ * This plugin registers a global error handler that:
+ * - Transforms all errors into standardized response format
+ * - Adds correlation IDs for request tracing
+ * - Maps error codes to appropriate HTTP status codes
+ * - Provides structured logging with error context
+ * - Handles various error types (TalawaRestError, validation errors, generic errors)
  *
- * @param app - The Fastify application instance
- * @returns Resolves when the error handler is registered
+ * The error handler ensures consistent error responses across all REST endpoints
+ * and integrates with the error transformation system.
  *
  * @example
  * ```ts
- * await app.register(errorHandlerPlugin);
+ * // Register the plugin
+ * await fastify.register(errorHandlerPlugin);
+ *
+ * // Now all routes can throw structured errors
+ * fastify.get('/users/:id', async (request) => {
+ *   const user = await findUser(request.params.id);
+ *   if (!user) {
+ *     throw new TalawaRestError({
+ *       code: ErrorCode.NOT_FOUND,
+ *       message: 'User not found',
+ *       details: { userId: request.params.id }
+ *     });
+ *   }
+ *   return user;
+ * });
  * ```
  *
- * @remarks
- * - The correlation ID is extracted from the request object (Fastify assigns a unique ID to each request)
- * - Server errors (5xx) return a generic message to prevent information leakage
- * - Client errors (4xx) return the original error message
- * - All errors are logged with full error details for debugging purposes
+ * @param fastify - The Fastify instance to register the error handler on
  */
-export default fp(async function errorHandlerPlugin(app: FastifyInstance) {
-	app.setErrorHandler(
-		(error: FastifyError, request: FastifyRequest, reply: FastifyReply) => {
-			const cid = request.id as string;
-			const statusCode = error.statusCode || 500;
+export const errorHandlerPlugin = fastifyPlugin(
+	async (fastify: FastifyInstance) => {
+		fastify.setErrorHandler(
+			(error: FastifyError, request: FastifyRequest, reply: FastifyReply) => {
+				// Extract correlation ID from request for tracing
+				const correlationId = request.id as string;
 
-			request.log.error({ error, correlationId: cid });
+				// Transform error to standardized format
+				const normalized = normalizeError(error);
 
-			reply.status(statusCode).send({
-				error: {
-					message: statusCode >= 500 ? "Internal Server Error" : error.message,
-					correlationId: cid,
-				},
-			});
-		},
-	);
-});
+				// Log error with structured context for monitoring
+				request.log.error({
+					msg: "Request error",
+					correlationId,
+					error: {
+						message: normalized.message,
+						code: normalized.code,
+						details: normalized.details,
+						stack: error?.stack || null,
+					},
+				});
+
+				// Check if it's a GraphQL request (POST /graphql)
+				// If so, we should return 200 OK because GraphQL handles errors in the body
+				const pathname = request.url.split("?")[0];
+				if (pathname === "/graphql" && request.method === "POST") {
+					return reply.status(200).send({
+						errors: [
+							{
+								message: normalized.message,
+								extensions: {
+									code: normalized.code,
+									correlationId,
+									httpStatus: normalized.statusCode,
+									...(normalized.details
+										? { details: normalized.details }
+										: {}),
+								},
+							},
+						],
+						data: null,
+					});
+				}
+
+				// Prefer original TalawaRestError JSON format for consistency
+				if (error instanceof TalawaRestError) {
+					return reply
+						.status(normalized.statusCode)
+						.send(error.toJSON(correlationId));
+				}
+
+				// Send standardized error response for all other error types
+				return reply.status(normalized.statusCode).send({
+					error: {
+						code: normalized.code,
+						message: normalized.message,
+						correlationId,
+						details: normalized.details || null,
+					},
+				});
+			},
+		);
+	},
+);
+
+export default errorHandlerPlugin;
