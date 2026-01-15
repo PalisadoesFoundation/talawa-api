@@ -46,7 +46,7 @@ if (isCI) {
 // Skip global setup for pure unit tests that don't need server/db
 // Skip global setup for pure unit tests that don't need server/db
 const isUnitTest = process.argv.some((arg) =>
-	/test[\\/](unit|install)[\\/]/.test(arg),
+	/test[\\/](unit|install|scripts)[\\/]/.test(arg),
 );
 
 export default defineConfig({
@@ -63,7 +63,7 @@ export default defineConfig({
 			"drizzle_migrations/**",
 			"envFiles/**",
 			"scripts/**",
-			"**/scripts/**",
+			// "**/scripts/**",
 		],
 		coverage: {
 			provider: "v8", // or 'istanbul' if you prefer
