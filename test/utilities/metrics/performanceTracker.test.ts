@@ -310,21 +310,24 @@ describe("Performance Tracker", () => {
 	});
 
 	it("should track slow operations", async () => {
-		const tracker = createPerformanceTracker({ slowMs: 10 });
+		// Use a higher threshold (50ms) to avoid timing-related flakiness in CI
+		const tracker = createPerformanceTracker({ slowMs: 50 });
 
+		// Fast operation - well under threshold
 		await tracker.time("fast-op", async () => {
 			await new Promise((resolve) => setTimeout(resolve, 5));
 		});
 
+		// Slow operation - clearly over threshold
 		await tracker.time("slow-op", async () => {
-			await new Promise((resolve) => setTimeout(resolve, 20));
+			await new Promise((resolve) => setTimeout(resolve, 100));
 		});
 
 		const snapshot = tracker.snapshot();
 
 		expect(snapshot.slow.length).toBe(1);
 		expect(snapshot.slow[0]?.op).toBe("slow-op");
-		expect(snapshot.slow[0]?.ms).toBeGreaterThanOrEqual(10);
+		expect(snapshot.slow[0]?.ms).toBeGreaterThanOrEqual(50);
 	});
 
 	it("should calculate hit rate correctly", () => {
