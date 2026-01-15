@@ -1,0 +1,2 @@
+CREATE INDEX "agenda_items_category_id_index" ON "agenda_items" USING btree ("category_id");--> statement-breakpoint
+CREATE INDEX "agenda_items_event_id_index" ON "agenda_items" USING btree ("event_id");

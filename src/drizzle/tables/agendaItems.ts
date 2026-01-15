@@ -12,6 +12,8 @@ import { uuidv7 } from "uuidv7";
 import { agendaItemTypeEnum } from "~/src/drizzle/enums/agendaItemType";
 import { agendaCategoriesTable } from "./agendaCategories";
 import { agendaFoldersTable } from "./agendaFolders";
+import { agendaItemAttachmentsTable } from "./agendaItemAttachments";
+import { agendaItemUrlTable } from "./agendaItemUrls";
 import { eventsTable } from "./events";
 import { usersTable } from "./users";
 
@@ -120,6 +122,8 @@ export const agendaItemsTable = pgTable(
 	(self) => [
 		index().on(self.createdAt),
 		index().on(self.creatorId),
+		index().on(self.categoryId),
+		index().on(self.eventId),
 		index().on(self.folderId),
 		index().on(self.name),
 		index().on(self.type),
@@ -128,7 +132,7 @@ export const agendaItemsTable = pgTable(
 
 export const agendaItemsTableRelations = relations(
 	agendaItemsTable,
-	({ one }) => ({
+	({ one, many }) => ({
 		/**
 		 * Many to one relationship from `agenda_items` table to `users` table.
 		 */
@@ -144,6 +148,18 @@ export const agendaItemsTableRelations = relations(
 			fields: [agendaItemsTable.categoryId],
 			references: [agendaCategoriesTable.id],
 			relationName: "agenda_items.category_id:agenda_categories.id",
+		}),
+		/**
+		 * One to many relationship from `agenda_items` table to `agenda_item_attachments` table.
+		 */
+		attachmentsWhereAgendaItem: many(agendaItemAttachmentsTable, {
+			relationName: "agenda_item_attachments.agenda_item_id:agenda_items.id",
+		}),
+		/**
+		 * One to many relationship from `agenda_items` table to `agenda_item_url` table.
+		 */
+		urlsWhereAgendaItem: many(agendaItemUrlTable, {
+			relationName: "agenda_item_url.agenda_item_id:agenda_item.id",
 		}),
 		/**
 		 * Many to one relationship from `agenda_items` table to `events` table.
@@ -181,6 +197,6 @@ export const agendaItemsTableInsertSchema = createInsertSchema(
 		description: (schema) =>
 			schema.min(1).max(AGENDA_ITEM_DESCRIPTION_MAX_LENGTH).optional(),
 		name: (schema) => schema.min(1).max(AGENDA_ITEM_NAME_MAX_LENGTH),
-		sequence: (schema) => schema.int().min(1).optional(),
+		sequence: (schema) => schema.int().min(1),
 	},
 );
