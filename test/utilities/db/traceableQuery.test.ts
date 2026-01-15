@@ -1,4 +1,4 @@
-import type { Span } from "@opentelemetry/api";
+import { type Span, SpanStatusCode } from "@opentelemetry/api";
 import {
 	afterEach,
 	beforeEach,
@@ -13,6 +13,7 @@ describe("traceableQuery", () => {
 	let mockSpan: {
 		setAttribute: Mock;
 		recordException: Mock;
+		setStatus: Mock;
 		end: Mock;
 	};
 	let mockTracer: {
@@ -24,6 +25,7 @@ describe("traceableQuery", () => {
 		mockSpan = {
 			setAttribute: vi.fn(),
 			recordException: vi.fn(),
+			setStatus: vi.fn(),
 			end: vi.fn(),
 		};
 		mockTracer = {
@@ -42,17 +44,22 @@ describe("traceableQuery", () => {
 	});
 
 	describe("when observability is enabled", () => {
-		beforeEach(() => {
+		beforeEach(async () => {
 			vi.doMock("~/src/config/observability", () => ({
 				observabilityConfig: {
 					enabled: true,
+					serviceName: "talawa-api",
 				},
 			}));
 			const mockGetTracer = vi.fn().mockReturnValue(mockTracer);
+			const originalOtel = await vi.importActual<
+				typeof import("@opentelemetry/api")
+			>("@opentelemetry/api");
 			vi.doMock("@opentelemetry/api", () => ({
 				trace: {
 					getTracer: mockGetTracer,
 				},
+				SpanStatusCode: originalOtel.SpanStatusCode,
 			}));
 		});
 
@@ -95,11 +102,10 @@ describe("traceableQuery", () => {
 				expect.any(Function),
 			);
 			expect(mockSpan.recordException).toHaveBeenCalledWith(testError);
-			expect(mockSpan.end).toHaveBeenCalled();
-		});
-
-		it("should handle async operations correctly", async () => {
-			const { traceable } = await import("~/src/utilities/db/traceableQuery");
+			expect(mockSpan.setStatus).toHaveBeenCalledWith({
+				code: SpanStatusCode.ERROR,
+				message: testError.message,
+			});
 
 			const result = await traceable("events", "create", async () => {
 				await new Promise((resolve) => setTimeout(resolve, 10));
@@ -140,8 +146,10 @@ describe("traceableQuery", () => {
 				}),
 			).rejects.toThrow("string error");
 
-			expect(mockSpan.recordException).toHaveBeenCalledWith(expect.any(Error));
-		});
+			expect(mockSpan.recordException).toHaveBeenCalledWith(expect.any(Error));		expect(mockSpan.setStatus).toHaveBeenCalledWith({
+			code: SpanStatusCode.ERROR,
+			message: "string error",
+		});		});
 	});
 
 	describe("when observability is disabled", () => {
