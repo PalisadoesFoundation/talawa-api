@@ -251,6 +251,90 @@ describe("backgroundWorkerService - metrics integration", () => {
 			await stopBackgroundWorkers(mockLogger);
 		});
 
+		it("falls back to default window minutes for non-numeric values", async () => {
+			process.env.API_METRICS_AGGREGATION_WINDOW_MINUTES = "invalid";
+
+			await setupWorkerMocks();
+
+			await startBackgroundWorkers(
+				mockDrizzleClient,
+				mockLogger,
+				mockGetMetricsSnapshots,
+			);
+
+			expect(mockLogger.info).toHaveBeenCalledWith(
+				expect.objectContaining({
+					metricsWindowMinutes: 5,
+				}),
+				"Metrics aggregation worker scheduled",
+			);
+
+			await stopBackgroundWorkers(mockLogger);
+		});
+
+		it("falls back to default window minutes for negative values", async () => {
+			process.env.API_METRICS_AGGREGATION_WINDOW_MINUTES = "-5";
+
+			await setupWorkerMocks();
+
+			await startBackgroundWorkers(
+				mockDrizzleClient,
+				mockLogger,
+				mockGetMetricsSnapshots,
+			);
+
+			expect(mockLogger.info).toHaveBeenCalledWith(
+				expect.objectContaining({
+					metricsWindowMinutes: 5,
+				}),
+				"Metrics aggregation worker scheduled",
+			);
+
+			await stopBackgroundWorkers(mockLogger);
+		});
+
+		it("falls back to default window minutes for zero value", async () => {
+			process.env.API_METRICS_AGGREGATION_WINDOW_MINUTES = "0";
+
+			await setupWorkerMocks();
+
+			await startBackgroundWorkers(
+				mockDrizzleClient,
+				mockLogger,
+				mockGetMetricsSnapshots,
+			);
+
+			expect(mockLogger.info).toHaveBeenCalledWith(
+				expect.objectContaining({
+					metricsWindowMinutes: 5,
+				}),
+				"Metrics aggregation worker scheduled",
+			);
+
+			await stopBackgroundWorkers(mockLogger);
+		});
+
+		it("truncates float values for window minutes", async () => {
+			process.env.API_METRICS_AGGREGATION_WINDOW_MINUTES = "10.9";
+
+			await setupWorkerMocks();
+
+			await startBackgroundWorkers(
+				mockDrizzleClient,
+				mockLogger,
+				mockGetMetricsSnapshots,
+			);
+
+			expect(mockLogger.info).toHaveBeenCalledWith(
+				expect.objectContaining({
+					metricsWindowMinutes: 10,
+				}),
+				"Metrics aggregation worker scheduled",
+			);
+
+			await stopBackgroundWorkers(mockLogger);
+		});
+
 		it("stops metrics worker on shutdown", async () => {
 			await setupWorkerMocks();
 
