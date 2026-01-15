@@ -470,7 +470,7 @@ suite("Mutation field updateAgendaFolder", () => {
 		);
 	});
 
-	test("Updates only description successfully", async () => {
+	test("Updates only name successfully", async () => {
 		const { userId: adminUserId, token } = await getAdminAuth();
 
 		const env = await createOrganizationEventAndFolder({ adminUserId });
@@ -481,7 +481,7 @@ suite("Mutation field updateAgendaFolder", () => {
 			variables: {
 				input: {
 					id: env.folderId,
-					description: "Description only update",
+					name: "Name Only Update",
 				},
 			},
 		});
@@ -490,7 +490,7 @@ suite("Mutation field updateAgendaFolder", () => {
 		expect(result.data?.updateAgendaFolder).toEqual(
 			expect.objectContaining({
 				id: env.folderId,
-				description: "Description only update",
+				name: "Name Only Update",
 			}),
 		);
 	});

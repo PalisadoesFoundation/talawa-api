@@ -210,6 +210,36 @@ suite("Mutation field createAgendaFolder", () => {
 	});
 
 	suite("Input Validation", () => {
+		test("Returns error for empty name", async () => {
+			const { token } = await getAdminAuth();
+			const { cleanup, eventId, organizationId } =
+				await createOrganizationAndEvent(token, await getAdminUserId());
+			testCleanupFunctions.push(cleanup);
+
+			const result = await mercuriusClient.mutate(Mutation_createAgendaFolder, {
+				headers: { authorization: `bearer ${token}` },
+				variables: {
+					input: {
+						eventId,
+						organizationId,
+						name: "",
+						sequence: 1,
+					},
+				},
+			});
+
+			expect(result.data?.createAgendaFolder ?? null).toEqual(null);
+			expect(result.errors).toEqual(
+				expect.arrayContaining([
+					expect.objectContaining({
+						extensions: expect.objectContaining({
+							code: "invalid_arguments",
+						}),
+					}),
+				]),
+			);
+		});
+
 		test("Returns error for invalid arguments", async () => {
 			const { token } = await getAdminAuth();
 
@@ -396,57 +426,59 @@ suite("Mutation field createAgendaFolder", () => {
 		});
 	});
 
-	test("Returns unexpected error when insert returns empty array", async () => {
-		const { token } = await getAdminAuth();
+	suite("Error Handling", () => {
+		test("Returns unexpected error when insert returns empty array", async () => {
+			const { token } = await getAdminAuth();
 
-		const { cleanup, eventId, organizationId } =
-			await createOrganizationAndEvent(token, await getAdminUserId());
-		testCleanupFunctions.push(cleanup);
+			const { cleanup, eventId, organizationId } =
+				await createOrganizationAndEvent(token, await getAdminUserId());
+			testCleanupFunctions.push(cleanup);
 
-		const originalInsert = server.drizzleClient.insert.bind(
-			server.drizzleClient,
-		);
+			const originalInsert = server.drizzleClient.insert.bind(
+				server.drizzleClient,
+			);
 
-		vi.spyOn(server.drizzleClient, "insert").mockImplementationOnce(
-			(table: unknown) => {
-				const tableName =
-					typeof table === "object" &&
-					table !== null &&
-					(table as Record<symbol, unknown>)[Symbol.for("drizzle:Name")];
+			vi.spyOn(server.drizzleClient, "insert").mockImplementationOnce(
+				(table: unknown) => {
+					const tableName =
+						typeof table === "object" &&
+						table !== null &&
+						(table as Record<symbol, unknown>)[Symbol.for("drizzle:Name")];
 
-				if (tableName === "agenda_folders") {
-					return {
-						values: () => ({
-							returning: async () => [],
-						}),
-					} as unknown as ReturnType<typeof server.drizzleClient.insert>;
-				}
+					if (tableName === "agenda_folders") {
+						return {
+							values: () => ({
+								returning: async () => [],
+							}),
+						} as unknown as ReturnType<typeof server.drizzleClient.insert>;
+					}
 
-				return originalInsert(table as never);
-			},
-		);
-
-		const result = await mercuriusClient.mutate(Mutation_createAgendaFolder, {
-			headers: { authorization: `bearer ${token}` },
-			variables: {
-				input: {
-					eventId,
-					organizationId,
-					name: "Folder",
-					sequence: 1,
+					return originalInsert(table as never);
 				},
-			},
-		});
+			);
 
-		expect(result.data?.createAgendaFolder ?? null).toEqual(null);
-		expect(result.errors).toEqual(
-			expect.arrayContaining([
-				expect.objectContaining({
-					extensions: expect.objectContaining({
-						code: "unexpected",
+			const result = await mercuriusClient.mutate(Mutation_createAgendaFolder, {
+				headers: { authorization: `bearer ${token}` },
+				variables: {
+					input: {
+						eventId,
+						organizationId,
+						name: "Folder",
+						sequence: 1,
+					},
+				},
+			});
+
+			expect(result.data?.createAgendaFolder ?? null).toEqual(null);
+			expect(result.errors).toEqual(
+				expect.arrayContaining([
+					expect.objectContaining({
+						extensions: expect.objectContaining({
+							code: "unexpected",
+						}),
 					}),
-				}),
-			]),
-		);
+				]),
+			);
+		});
 	});
 });

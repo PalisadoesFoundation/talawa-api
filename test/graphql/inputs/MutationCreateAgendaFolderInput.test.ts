@@ -134,7 +134,7 @@ describe("MutationCreateAgendaFolderInput Schema", () => {
 				...validBaseInput,
 				sequence: 0,
 			});
-			expect(result.success).toBe(true); // or false, depending on requirements
+			expect(result.success).toBe(true);
 		});
 
 		it("should accept negative sequence", () => {
@@ -142,7 +142,7 @@ describe("MutationCreateAgendaFolderInput Schema", () => {
 				...validBaseInput,
 				sequence: -1,
 			});
-			expect(result.success).toBe(true); // or false, depending on requirements
+			expect(result.success).toBe(false);
 		});
 
 		it("should accept a valid integer sequence", () => {
@@ -170,19 +170,19 @@ describe("MutationCreateAgendaFolderInput Schema", () => {
 
 	describe("required fields validation", () => {
 		it("should reject missing eventId", () => {
-			const { eventId, ...input } = validBaseInput;
+			const { eventId: _eventId, ...input } = validBaseInput;
 			const result = mutationCreateAgendaFolderInputSchema.safeParse(input);
 			expect(result.success).toBe(false);
 		});
 
 		it("should reject missing name", () => {
-			const { name, ...input } = validBaseInput;
+			const { name: _name, ...input } = validBaseInput;
 			const result = mutationCreateAgendaFolderInputSchema.safeParse(input);
 			expect(result.success).toBe(false);
 		});
 
 		it("should reject missing organizationId", () => {
-			const { organizationId, ...input } = validBaseInput;
+			const { organizationId: _organizationId, ...input } = validBaseInput;
 			const result = mutationCreateAgendaFolderInputSchema.safeParse(input);
 			expect(result.success).toBe(false);
 		});

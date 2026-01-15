@@ -108,7 +108,7 @@ builder.queryField("agendaFoldersByEventId", (t) =>
 			}
 
 			// Get all AgendaFolders for the event
-			const eventAgendas =
+			const agendaFolders =
 				await ctx.drizzleClient.query.agendaFoldersTable.findMany({
 					where: eq(agendaFoldersTable.eventId, parsedArgs.eventId),
 					orderBy: [
@@ -117,7 +117,7 @@ builder.queryField("agendaFoldersByEventId", (t) =>
 					],
 				});
 
-			return eventAgendas;
+			return agendaFolders;
 		},
 		type: [AgendaFolder],
 	}),
