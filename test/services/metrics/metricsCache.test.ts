@@ -249,6 +249,7 @@ describe("MetricsCacheService", () => {
 				metrics,
 				300,
 			);
+			cache.operations = []; // Clear setup operations
 
 			const result = await metricsCache.getCachedMetrics(timestamp);
 
@@ -322,6 +323,7 @@ describe("MetricsCacheService", () => {
 				metrics,
 				3600,
 			);
+			cache.operations = []; // Clear setup operations
 
 			const result = await metricsCache.getCachedMetricsByWindow(
 				"hourly",
@@ -342,6 +344,7 @@ describe("MetricsCacheService", () => {
 				metrics,
 				86400,
 			);
+			cache.operations = []; // Clear setup operations
 
 			const result = await metricsCache.getCachedMetricsByWindow(
 				"daily",
@@ -636,13 +639,19 @@ describe("MetricsCacheService", () => {
 		it("should handle undefined cache service gracefully", async () => {
 			// This test verifies the service can be constructed with undefined cache
 			// In practice, this shouldn't happen due to dependency injection,
-			// but we test the constructor accepts it
+			// but we test the constructor accepts it and methods handle it gracefully
 			const service = new MetricsCacheService(
 				null as unknown as CacheService,
 				mockLogger,
 				300,
 			);
 			expect(service).toBeInstanceOf(MetricsCacheService);
+
+			// Exercise behavior: call getCachedMetrics and verify it handles null cache gracefully
+			const result = await service.getCachedMetrics("test");
+
+			// Should return null (or handle gracefully) rather than throwing
+			expect(result).toBeNull();
 		});
 
 		it("should handle very large metrics payloads", async () => {

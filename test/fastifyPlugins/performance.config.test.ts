@@ -446,6 +446,24 @@ describe("Performance Plugin - Environment Configuration", () => {
 		});
 
 		it("should handle cache service initialization failures gracefully", async () => {
+			// Reset module registry to ensure fresh imports for this test only
+			vi.resetModules();
+
+			// Use doMock (NOT hoisted) to mock MetricsCacheService for this test only
+			vi.doMock("~/src/services/metrics", () => ({
+				MetricsCacheService: class {
+					constructor() {
+						throw new Error("Mock cache initialization failure");
+					}
+				},
+			}));
+
+			// Dynamically import the plugin AFTER the mock is set up
+			const performanceModule = await import(
+				"~/src/fastifyPlugins/performance"
+			);
+			const mockedPerformancePlugin = performanceModule.default;
+
 			app = Fastify({
 				logger: {
 					level: "silent",
@@ -458,22 +476,27 @@ describe("Performance Plugin - Environment Configuration", () => {
 
 			const warnSpy = vi.spyOn(app.log, "warn").mockImplementation(() => {});
 
-			await app.register(performancePlugin);
+			await app.register(mockedPerformancePlugin);
 			await app.ready();
 
-			// Plugin should work and cache should be initialized
+			// Plugin should still work but cache should NOT be initialized
 			expect(app).toBeDefined();
 			expect(app.getMetricsSnapshots).toBeDefined();
-			expect(app.metricsCache).toBeDefined();
-			// Should not have logged a warning
-			expect(warnSpy).not.toHaveBeenCalledWith(
+			// metricsCache should be undefined due to constructor failure
+			expect(app.metricsCache).toBeUndefined();
+			// Should have logged a warning about the failure
+			expect(warnSpy).toHaveBeenCalledWith(
 				expect.objectContaining({
-					error: expect.any(String),
+					error: "Mock cache initialization failure",
 				}),
 				"Failed to initialize metrics cache service (continuing without cache)",
 			);
 
 			warnSpy.mockRestore();
+
+			// Clean up: unmock and reset modules for subsequent tests
+			vi.doUnmock("~/src/services/metrics");
+			vi.resetModules();
 		});
 	});
 

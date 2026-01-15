@@ -1,16 +1,68 @@
-import Fastify, { type FastifyRequest } from "fastify";
+import Fastify, { type FastifyInstance, type FastifyRequest } from "fastify";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import type { EnvConfig } from "../../src/envConfigSchema";
 import performancePlugin from "../../src/fastifyPlugins/performance";
+import type { CacheService } from "../../src/services/caching/CacheService";
+
+/**
+ * Mock CacheService for testing.
+ */
+class MockCacheService implements CacheService {
+	store = new Map<string, unknown>();
+
+	async get<T>(key: string): Promise<T | null> {
+		return (this.store.get(key) as T) ?? null;
+	}
+
+	async set<T>(key: string, value: T, _ttlSeconds: number): Promise<void> {
+		this.store.set(key, value);
+	}
+
+	async del(_keys: string | string[]): Promise<void> {
+		// No-op for tests
+	}
+
+	async clearByPattern(_pattern: string): Promise<void> {
+		// No-op for tests
+	}
+
+	async mget<T>(keys: string[]): Promise<(T | null)[]> {
+		return keys.map((k) => (this.store.get(k) as T) ?? null);
+	}
+
+	async mset<T>(
+		entries: Array<{ key: string; value: T; ttlSeconds: number }>,
+	): Promise<void> {
+		for (const entry of entries) {
+			await this.set(entry.key, entry.value, entry.ttlSeconds);
+		}
+	}
+}
+
+/**
+ * Creates a properly configured Fastify test app with required decorators.
+ * Includes envConfig and cache decorators that performancePlugin depends on.
+ */
+function createTestApp(): FastifyInstance {
+	const app = Fastify({
+		logger: {
+			level: "silent",
+		},
+	});
+
+	// Add required decorators for performancePlugin
+	const envConfig: Partial<EnvConfig> = {};
+	app.decorate("envConfig", envConfig as EnvConfig);
+	app.decorate("cache", new MockCacheService());
+
+	return app;
+}
 
 describe("Performance Plugin", () => {
 	let app: ReturnType<typeof Fastify>;
 
 	beforeEach(async () => {
-		app = Fastify({
-			logger: {
-				level: "silent",
-			},
-		});
+		app = createTestApp();
 
 		await app.register(performancePlugin);
 		await app.ready();
@@ -40,11 +92,7 @@ describe("Performance Plugin", () => {
 	describe("onRequest Hook", () => {
 		it("should attach perf tracker to request", async () => {
 			// Create fresh instance for this test since we're adding a route
-			const testApp = Fastify({
-				logger: {
-					level: "silent",
-				},
-			});
+			const testApp = createTestApp();
 
 			await testApp.register(performancePlugin);
 
@@ -74,11 +122,7 @@ describe("Performance Plugin", () => {
 
 		it("should attach _t0 timestamp to request", async () => {
 			// Create fresh instance for this test since we're adding a route
-			const testApp = Fastify({
-				logger: {
-					level: "silent",
-				},
-			});
+			const testApp = createTestApp();
 
 			await testApp.register(performancePlugin);
 
@@ -107,11 +151,7 @@ describe("Performance Plugin", () => {
 	describe("onSend Hook", () => {
 		it("should add Server-Timing header to response", async () => {
 			// Create fresh instance for this test since we're adding a route
-			const testApp = Fastify({
-				logger: {
-					level: "silent",
-				},
-			});
+			const testApp = createTestApp();
 
 			await testApp.register(performancePlugin);
 
@@ -136,11 +176,7 @@ describe("Performance Plugin", () => {
 
 		it("should format Server-Timing header correctly", async () => {
 			// Create fresh instance for this test since we're adding a route
-			const testApp = Fastify({
-				logger: {
-					level: "silent",
-				},
-			});
+			const testApp = createTestApp();
 
 			await testApp.register(performancePlugin);
 
@@ -173,11 +209,7 @@ describe("Performance Plugin", () => {
 
 		it("should store snapshot in recent buffer", async () => {
 			// Create fresh instance for this test since we're adding a route
-			const testApp = Fastify({
-				logger: {
-					level: "silent",
-				},
-			});
+			const testApp = createTestApp();
 
 			await testApp.register(performancePlugin);
 
@@ -217,11 +249,7 @@ describe("Performance Plugin", () => {
 
 		it("should limit recent buffer to 200 snapshots", async () => {
 			// Create fresh instance for this test since we're adding a route
-			const testApp = Fastify({
-				logger: {
-					level: "silent",
-				},
-			});
+			const testApp = createTestApp();
 
 			await testApp.register(performancePlugin);
 
@@ -255,11 +283,7 @@ describe("Performance Plugin", () => {
 	describe("/metrics/perf Endpoint", () => {
 		it("should return JSON response with recent snapshots", async () => {
 			// Create fresh instance for this test since we're adding a route
-			const testApp = Fastify({
-				logger: {
-					level: "silent",
-				},
-			});
+			const testApp = createTestApp();
 
 			await testApp.register(performancePlugin);
 
@@ -286,11 +310,7 @@ describe("Performance Plugin", () => {
 
 		it("should return at most 50 snapshots", async () => {
 			// Create fresh instance for this test since we're adding a route
-			const testApp = Fastify({
-				logger: {
-					level: "silent",
-				},
-			});
+			const testApp = createTestApp();
 
 			await testApp.register(performancePlugin);
 
@@ -318,11 +338,7 @@ describe("Performance Plugin", () => {
 
 		it("should return snapshots in correct format", async () => {
 			// Create fresh instance for this test since we're adding a route
-			const testApp = Fastify({
-				logger: {
-					level: "silent",
-				},
-			});
+			const testApp = createTestApp();
 
 			await testApp.register(performancePlugin);
 
@@ -378,11 +394,7 @@ describe("Performance Plugin", () => {
 
 		it("should return most recent snapshots first", async () => {
 			// Create fresh instance for this test since we're adding routes
-			const testApp = Fastify({
-				logger: {
-					level: "silent",
-				},
-			});
+			const testApp = createTestApp();
 
 			await testApp.register(performancePlugin);
 
@@ -426,11 +438,7 @@ describe("Performance Plugin", () => {
 	describe("Edge Cases", () => {
 		it("should handle missing perf tracker gracefully", async () => {
 			// Create fresh instance for this test since we're adding hooks and routes
-			const testApp = Fastify({
-				logger: {
-					level: "silent",
-				},
-			});
+			const testApp = createTestApp();
 
 			await testApp.register(performancePlugin);
 
@@ -462,11 +470,7 @@ describe("Performance Plugin", () => {
 
 		it("should handle missing _t0 timestamp gracefully", async () => {
 			// Create fresh instance for this test since we're adding hooks and routes
-			const testApp = Fastify({
-				logger: {
-					level: "silent",
-				},
-			});
+			const testApp = createTestApp();
 
 			await testApp.register(performancePlugin);
 
@@ -496,11 +500,7 @@ describe("Performance Plugin", () => {
 
 		it("should handle concurrent requests", async () => {
 			// Create fresh instance for this test since we're adding a route
-			const testApp = Fastify({
-				logger: {
-					level: "silent",
-				},
-			});
+			const testApp = createTestApp();
 
 			await testApp.register(performancePlugin);
 
@@ -533,11 +533,7 @@ describe("Performance Plugin", () => {
 
 		it("should handle requests with no cache operations", async () => {
 			// Create fresh instance for this test since we're adding a route
-			const testApp = Fastify({
-				logger: {
-					level: "silent",
-				},
-			});
+			const testApp = createTestApp();
 
 			await testApp.register(performancePlugin);
 
@@ -560,11 +556,7 @@ describe("Performance Plugin", () => {
 
 		it("should handle requests with no database operations", async () => {
 			// Create fresh instance for this test since we're adding a route
-			const testApp = Fastify({
-				logger: {
-					level: "silent",
-				},
-			});
+			const testApp = createTestApp();
 
 			await testApp.register(performancePlugin);
 
@@ -594,11 +586,7 @@ describe("Performance Plugin", () => {
 			// Set invalid retention count
 			process.env.API_METRICS_SNAPSHOT_RETENTION_COUNT = "invalid";
 
-			const testApp = Fastify({
-				logger: {
-					level: "silent",
-				},
-			});
+			const testApp = createTestApp();
 
 			await testApp.register(performancePlugin);
 			await testApp.ready();
@@ -623,11 +611,7 @@ describe("Performance Plugin", () => {
 			// Set API key to enable authentication
 			process.env.API_METRICS_API_KEY = "test-api-key-32-chars-minimum!!!!";
 
-			const testApp = Fastify({
-				logger: {
-					level: "silent",
-				},
-			});
+			const testApp = createTestApp();
 
 			await testApp.register(performancePlugin);
 			await testApp.ready();
@@ -650,11 +634,7 @@ describe("Performance Plugin", () => {
 		it("should return 401 when authorization format is invalid (not Bearer)", async () => {
 			process.env.API_METRICS_API_KEY = "test-api-key-32-chars-minimum!!!!";
 
-			const testApp = Fastify({
-				logger: {
-					level: "silent",
-				},
-			});
+			const testApp = createTestApp();
 
 			await testApp.register(performancePlugin);
 			await testApp.ready();
@@ -679,11 +659,7 @@ describe("Performance Plugin", () => {
 		it("should return 401 when Bearer token is missing", async () => {
 			process.env.API_METRICS_API_KEY = "test-api-key-32-chars-minimum!!!!";
 
-			const testApp = Fastify({
-				logger: {
-					level: "silent",
-				},
-			});
+			const testApp = createTestApp();
 
 			await testApp.register(performancePlugin);
 			await testApp.ready();
@@ -707,11 +683,7 @@ describe("Performance Plugin", () => {
 		it("should return 403 when API key is invalid", async () => {
 			process.env.API_METRICS_API_KEY = "test-api-key-32-chars-minimum!!!!";
 
-			const testApp = Fastify({
-				logger: {
-					level: "silent",
-				},
-			});
+			const testApp = createTestApp();
 
 			await testApp.register(performancePlugin);
 			await testApp.ready();
@@ -737,11 +709,7 @@ describe("Performance Plugin", () => {
 			const validKey = "test-api-key-32-chars-minimum!!!!";
 			process.env.API_METRICS_API_KEY = validKey;
 
-			const testApp = Fastify({
-				logger: {
-					level: "silent",
-				},
-			});
+			const testApp = createTestApp();
 
 			await testApp.register(performancePlugin);
 			await testApp.ready();
@@ -766,11 +734,7 @@ describe("Performance Plugin", () => {
 			// Ensure no API key is set
 			delete process.env.API_METRICS_API_KEY;
 
-			const testApp = Fastify({
-				logger: {
-					level: "silent",
-				},
-			});
+			const testApp = createTestApp();
 
 			await testApp.register(performancePlugin);
 			await testApp.ready();

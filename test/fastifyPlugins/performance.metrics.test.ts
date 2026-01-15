@@ -1,6 +1,62 @@
-import Fastify from "fastify";
+import Fastify, { type FastifyInstance } from "fastify";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import type { EnvConfig } from "../../src/envConfigSchema";
 import performancePlugin from "../../src/fastifyPlugins/performance";
+import type { CacheService } from "../../src/services/caching/CacheService";
+
+/**
+ * Mock CacheService for testing.
+ */
+class MockCacheService implements CacheService {
+	store = new Map<string, unknown>();
+
+	async get<T>(key: string): Promise<T | null> {
+		return (this.store.get(key) as T) ?? null;
+	}
+
+	async set<T>(key: string, value: T, _ttlSeconds: number): Promise<void> {
+		this.store.set(key, value);
+	}
+
+	async del(_keys: string | string[]): Promise<void> {
+		// No-op for tests
+	}
+
+	async clearByPattern(_pattern: string): Promise<void> {
+		// No-op for tests
+	}
+
+	async mget<T>(keys: string[]): Promise<(T | null)[]> {
+		return keys.map((k) => (this.store.get(k) as T) ?? null);
+	}
+
+	async mset<T>(
+		entries: Array<{ key: string; value: T; ttlSeconds: number }>,
+	): Promise<void> {
+		for (const entry of entries) {
+			await this.set(entry.key, entry.value, entry.ttlSeconds);
+		}
+	}
+}
+
+/**
+ * Creates a properly configured Fastify test app with required decorators.
+ * Includes envConfig and cache decorators that performancePlugin depends on.
+ */
+function createTestApp(): FastifyInstance {
+	const app = Fastify({
+		logger: {
+			level: "silent",
+		},
+	});
+
+	// Add required decorators for performancePlugin
+	const envConfig: Partial<EnvConfig> = {};
+	app.decorate("envConfig", envConfig as EnvConfig);
+	app.decorate("cache", new MockCacheService());
+
+	return app;
+}
 
 describe("Performance Plugin - Metrics Interface", () => {
 	let app: ReturnType<typeof Fastify>;
@@ -9,11 +65,7 @@ describe("Performance Plugin - Metrics Interface", () => {
 		vi.clearAllMocks();
 		delete process.env.API_METRICS_SNAPSHOT_RETENTION_COUNT;
 
-		app = Fastify({
-			logger: {
-				level: "silent",
-			},
-		});
+		app = createTestApp();
 
 		await app.register(performancePlugin);
 		await app.ready();
@@ -99,11 +151,7 @@ describe("Performance Plugin - Metrics Interface", () => {
 			process.env.API_METRICS_SNAPSHOT_RETENTION_COUNT = "5";
 
 			// Create a new app instance to pick up the env var
-			const testApp = Fastify({
-				logger: {
-					level: "silent",
-				},
-			});
+			const testApp = createTestApp();
 
 			await testApp.register(performancePlugin);
 			await testApp.ready();
@@ -242,11 +290,7 @@ describe("Performance Plugin - Metrics Interface", () => {
 		it("should enforce retention limit when exceeded", async () => {
 			process.env.API_METRICS_SNAPSHOT_RETENTION_COUNT = "3";
 
-			const testApp = Fastify({
-				logger: {
-					level: "silent",
-				},
-			});
+			const testApp = createTestApp();
 
 			await testApp.register(performancePlugin);
 			await testApp.ready();
