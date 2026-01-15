@@ -416,7 +416,7 @@ suite("User field updater", () => {
 				// This forces the code path where updaterId != currentUserId, triggering the DB lookup
 				// We use a simple query requesting only 'id' to avoid authorization errors that would occur
 				// when a regular user tries to fetch sensitive fields of the admin user.
-				const userUpdaterResult = await mercuriusClient.mutate(
+				const userUpdaterResult = await mercuriusClient.query(
 					Query_user_updater_simple,
 					{
 						headers: {
@@ -517,35 +517,37 @@ suite("User field updater", () => {
 						);
 					});
 
-				// 4. The regular user queries their own updater
-				const userUpdaterResult = await mercuriusClient.mutate(
-					Query_user_updater_simple,
-					{
-						headers: {
-							authorization: `bearer ${createUserResult.data.createUser.authenticationToken}`,
-						},
-						variables: {
-							input: {
-								id: updateUserResult.data.updateUser.id,
+				try {
+					// 4. The regular user queries their own updater
+					const userUpdaterResult = await mercuriusClient.query(
+						Query_user_updater_simple,
+						{
+							headers: {
+								authorization: `bearer ${createUserResult.data.createUser.authenticationToken}`,
+							},
+							variables: {
+								input: {
+									id: updateUserResult.data.updateUser.id,
+								},
 							},
 						},
-					},
-				);
+					);
 
-				// 5. Restore the spy
-				spy.mockRestore();
+					// 6. Verify correct error response
+					expect(userUpdaterResult.data.user?.updater).toBeNull();
+					const errors = userUpdaterResult.errors;
+					expect(errors).toBeDefined();
+					expect(errors?.length).toBeGreaterThan(0);
 
-				// 6. Verify correct error response
-				expect(userUpdaterResult.data.user?.updater).toBeNull();
-				const errors = userUpdaterResult.errors;
-				expect(errors).toBeDefined();
-				expect(errors?.length).toBeGreaterThan(0);
-
-				const firstError = errors?.[0];
-				expect(firstError).toBeDefined();
-				expect(firstError?.message).toContain(
-					"Something went wrong. Please try again later.",
-				);
+					const firstError = errors?.[0];
+					expect(firstError).toBeDefined();
+					expect(firstError?.message).toContain(
+						"Something went wrong. Please try again later.",
+					);
+				} finally {
+					// 5. Restore the spy
+					spy.mockRestore();
+				}
 			});
 		},
 	);

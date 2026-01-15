@@ -319,7 +319,9 @@ describe("ExtensionLoader basic", () => {
 				manifest,
 				pluginModule,
 			),
-		).rejects.toThrow(/Plugin .* not found/);
+		).rejects.toThrow(
+			"Failed to load extension points: Plugin non-existent not found in loaded plugins",
+		);
 	});
 
 	it("should initialize databaseTables if not present", async () => {
@@ -435,7 +437,9 @@ describe("ExtensionLoader basic", () => {
 				manifest,
 				pluginModule,
 			),
-		).rejects.toThrow(/Plugin .* not found/);
+		).rejects.toThrow(
+			"Failed to load extension points: Plugin non-existent not found in loaded plugins",
+		);
 	});
 
 	it("should initialize hooks if not present", async () => {
@@ -1458,7 +1462,9 @@ describe("ExtensionLoader basic", () => {
 					manifest,
 					pluginModule,
 				),
-			).rejects.toThrow(/Plugin .* not found/);
+			).rejects.toThrow(
+				"Failed to load extension points: Plugin non-existent not found in loaded plugins",
+			);
 		});
 
 		it("should initialize webhooks if not present", async () => {
