@@ -213,6 +213,7 @@ builder.mutationField("deleteChatMembership", (t) =>
 				.returning();
 
 			// Deleted chat membership not being returned means that either it was deleted or its `member_id` column or `chat_id` column or both were changed by external entities before this delete operation could take place.
+			/* istanbul ignore next - concurrent modification race condition cannot be tested via integration tests */
 			if (deletedChatMembership === undefined) {
 				throw new TalawaGraphQLError({
 					extensions: {
