@@ -29,8 +29,6 @@ interface MockQuestion {
 	default?: unknown;
 }
 
-
-
 describe("Setup -> apiSetup", () => {
 	const originalEnv = { ...process.env };
 	beforeAll(() => {
@@ -74,10 +72,10 @@ describe("Setup -> apiSetup", () => {
 			{ API_POSTGRES_SSL_MODE: "true" },
 			{ API_POSTGRES_TEST_HOST: "mocked-test-host" },
 			{ API_POSTGRES_USER: "mocked-user" },
-			{ API_ADMINISTRATOR_USER_EMAIL_ADDRESS: "test@email.com" },
 			{ useDefaultMinio: true },
 			{ useDefaultPostgres: true },
 			{ useDefaultCaddy: true },
+			{ API_ADMINISTRATOR_USER_EMAIL_ADDRESS: "test@email.com" },
 		];
 
 		const promptMock = vi.spyOn(inquirer, "prompt");
@@ -724,6 +722,4 @@ describe("Error handling without backup", () => {
 
 		vi.clearAllMocks();
 	});
-
-
 });
