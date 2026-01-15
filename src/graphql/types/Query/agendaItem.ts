@@ -62,9 +62,6 @@ builder.queryField("agendaItem", (t) =>
 				ctx.drizzleClient.query.agendaItemsTable.findFirst({
 					with: {
 						folder: {
-							columns: {
-								isAgendaItemFolder: true,
-							},
 							with: {
 								event: {
 									columns: {

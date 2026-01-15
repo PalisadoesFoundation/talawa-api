@@ -150,7 +150,9 @@ async function createOrgEventFolder(
 				input: {
 					name: `Folder ${faker.string.uuid()}`,
 					eventId,
-					isAgendaItemFolder: true,
+					organizationId: orgId,
+					sequence: 1,
+					description: "Test agenda folder",
 				},
 			},
 		},
@@ -439,13 +441,15 @@ describe("AgendaFolder.updatedAt resolver - Unit tests for branch coverage", () 
 	const mockParent: AgendaFolder = {
 		id: "folder-123",
 		name: "Test Folder",
+		description: null,
 		eventId: "event-123",
+		organizationId: "org-123",
+		sequence: 1,
+		isDefaultFolder: false,
 		createdAt: new Date("2024-01-01T00:00:00.000Z"),
 		updatedAt: new Date("2024-01-02T00:00:00.000Z"),
 		creatorId: "creator-123",
 		updaterId: "updater-123",
-		parentFolderId: null,
-		isAgendaItemFolder: true,
 	};
 
 	// Note: We test the actual resolver function imported from the source file
