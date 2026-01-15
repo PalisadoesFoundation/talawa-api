@@ -588,4 +588,201 @@ describe("Performance Plugin", () => {
 			await testApp.close();
 		});
 	});
+
+	describe("Plugin Configuration", () => {
+		it("should use default retention count when env var is invalid", async () => {
+			// Set invalid retention count
+			process.env.API_METRICS_SNAPSHOT_RETENTION_COUNT = "invalid";
+
+			const testApp = Fastify({
+				logger: {
+					level: "silent",
+				},
+			});
+
+			await testApp.register(performancePlugin);
+			await testApp.ready();
+
+			// Make requests and verify the plugin works with default
+			await testApp.inject({ method: "GET", url: "/metrics/perf" });
+
+			const response = await testApp.inject({
+				method: "GET",
+				url: "/metrics/perf",
+			});
+
+			expect(response.statusCode).toBe(200);
+
+			delete process.env.API_METRICS_SNAPSHOT_RETENTION_COUNT;
+			await testApp.close();
+		});
+	});
+
+	describe("Authentication - /metrics/perf Endpoint", () => {
+		it("should return 401 when API key is configured but no auth header provided", async () => {
+			// Set API key to enable authentication
+			process.env.API_METRICS_API_KEY = "test-api-key-32-chars-minimum!!!!";
+
+			const testApp = Fastify({
+				logger: {
+					level: "silent",
+				},
+			});
+
+			await testApp.register(performancePlugin);
+			await testApp.ready();
+
+			const response = await testApp.inject({
+				method: "GET",
+				url: "/metrics/perf",
+				// No authorization header
+			});
+
+			expect(response.statusCode).toBe(401);
+			const body = response.json();
+			expect(body.error).toBe("Unauthorized");
+			expect(body.message).toBe("Missing authorization header");
+
+			delete process.env.API_METRICS_API_KEY;
+			await testApp.close();
+		});
+
+		it("should return 401 when authorization format is invalid (not Bearer)", async () => {
+			process.env.API_METRICS_API_KEY = "test-api-key-32-chars-minimum!!!!";
+
+			const testApp = Fastify({
+				logger: {
+					level: "silent",
+				},
+			});
+
+			await testApp.register(performancePlugin);
+			await testApp.ready();
+
+			const response = await testApp.inject({
+				method: "GET",
+				url: "/metrics/perf",
+				headers: {
+					authorization: "Basic sometoken",
+				},
+			});
+
+			expect(response.statusCode).toBe(401);
+			const body = response.json();
+			expect(body.error).toBe("Unauthorized");
+			expect(body.message).toContain("Invalid authorization format");
+
+			delete process.env.API_METRICS_API_KEY;
+			await testApp.close();
+		});
+
+		it("should return 401 when Bearer token is missing", async () => {
+			process.env.API_METRICS_API_KEY = "test-api-key-32-chars-minimum!!!!";
+
+			const testApp = Fastify({
+				logger: {
+					level: "silent",
+				},
+			});
+
+			await testApp.register(performancePlugin);
+			await testApp.ready();
+
+			const response = await testApp.inject({
+				method: "GET",
+				url: "/metrics/perf",
+				headers: {
+					authorization: "Bearer",
+				},
+			});
+
+			expect(response.statusCode).toBe(401);
+			const body = response.json();
+			expect(body.error).toBe("Unauthorized");
+
+			delete process.env.API_METRICS_API_KEY;
+			await testApp.close();
+		});
+
+		it("should return 403 when API key is invalid", async () => {
+			process.env.API_METRICS_API_KEY = "test-api-key-32-chars-minimum!!!!";
+
+			const testApp = Fastify({
+				logger: {
+					level: "silent",
+				},
+			});
+
+			await testApp.register(performancePlugin);
+			await testApp.ready();
+
+			const response = await testApp.inject({
+				method: "GET",
+				url: "/metrics/perf",
+				headers: {
+					authorization: "Bearer wrong-api-key",
+				},
+			});
+
+			expect(response.statusCode).toBe(403);
+			const body = response.json();
+			expect(body.error).toBe("Forbidden");
+			expect(body.message).toBe("Invalid API key");
+
+			delete process.env.API_METRICS_API_KEY;
+			await testApp.close();
+		});
+
+		it("should return 200 when valid API key is provided", async () => {
+			const validKey = "test-api-key-32-chars-minimum!!!!";
+			process.env.API_METRICS_API_KEY = validKey;
+
+			const testApp = Fastify({
+				logger: {
+					level: "silent",
+				},
+			});
+
+			await testApp.register(performancePlugin);
+			await testApp.ready();
+
+			const response = await testApp.inject({
+				method: "GET",
+				url: "/metrics/perf",
+				headers: {
+					authorization: `Bearer ${validKey}`,
+				},
+			});
+
+			expect(response.statusCode).toBe(200);
+			const body = response.json();
+			expect(body).toHaveProperty("recent");
+
+			delete process.env.API_METRICS_API_KEY;
+			await testApp.close();
+		});
+
+		it("should allow access when API key is not configured (unprotected)", async () => {
+			// Ensure no API key is set
+			delete process.env.API_METRICS_API_KEY;
+
+			const testApp = Fastify({
+				logger: {
+					level: "silent",
+				},
+			});
+
+			await testApp.register(performancePlugin);
+			await testApp.ready();
+
+			const response = await testApp.inject({
+				method: "GET",
+				url: "/metrics/perf",
+			});
+
+			expect(response.statusCode).toBe(200);
+
+			await testApp.close();
+		});
+	});
 });

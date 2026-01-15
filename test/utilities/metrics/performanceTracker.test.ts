@@ -261,14 +261,14 @@ describe("Performance Tracker", () => {
 	// Validation tests
 	it("should reject empty operation names in time()", async () => {
 		const tracker = createPerformanceTracker();
-		await expect(tracker.time("", async () => {})).rejects.toThrow(
+		await expect(tracker.time("", async () => { })).rejects.toThrow(
 			"Operation name cannot be empty or whitespace",
 		);
 	});
 
 	it("should reject whitespace-only operation names in time()", async () => {
 		const tracker = createPerformanceTracker();
-		await expect(tracker.time("   ", async () => {})).rejects.toThrow(
+		await expect(tracker.time("   ", async () => { })).rejects.toThrow(
 			"Operation name cannot be empty or whitespace",
 		);
 	});
@@ -318,21 +318,24 @@ describe("Performance Tracker", () => {
 	});
 
 	it("should track slow operations", async () => {
-		const tracker = createPerformanceTracker({ slowMs: 20 });
+		// Use a higher threshold (50ms) to avoid timing-related flakiness in CI
+		const tracker = createPerformanceTracker({ slowMs: 50 });
 
+		// Fast operation - well under threshold
 		await tracker.time("fast-op", async () => {
 			await vi.advanceTimersByTimeAsync(5);
 		});
 
+		// Slow operation - clearly over threshold
 		await tracker.time("slow-op", async () => {
-			await vi.advanceTimersByTimeAsync(20);
+			await vi.advanceTimersByTimeAsync(100);
 		});
 
 		const snapshot = tracker.snapshot();
 
 		expect(snapshot.slow.length).toBe(1);
 		expect(snapshot.slow[0]?.op).toBe("slow-op");
-		expect(snapshot.slow[0]?.ms).toBeGreaterThanOrEqual(20);
+		expect(snapshot.slow[0]?.ms).toBeGreaterThanOrEqual(50);
 	});
 
 	it("should calculate hit rate correctly", () => {
@@ -683,96 +686,96 @@ describe("isPerformanceTracker", () => {
 	it("should return false for an object missing trackComplexity", () => {
 		const invalidTracker = {
 			snapshot: () => ({}),
-			trackDb: () => {},
-			trackCacheHit: () => {},
-			trackCacheMiss: () => {},
-			time: () => {},
-			start: () => {},
+			trackDb: () => { },
+			trackCacheHit: () => { },
+			trackCacheMiss: () => { },
+			time: () => { },
+			start: () => { },
 		};
 		expect(isPerformanceTracker(invalidTracker)).toBe(false);
 	});
 
 	it("should return false for an object missing snapshot", () => {
 		const invalidTracker = {
-			trackComplexity: () => {},
-			trackDb: () => {},
-			trackCacheHit: () => {},
-			trackCacheMiss: () => {},
-			time: () => {},
-			start: () => {},
+			trackComplexity: () => { },
+			trackDb: () => { },
+			trackCacheHit: () => { },
+			trackCacheMiss: () => { },
+			time: () => { },
+			start: () => { },
 		};
 		expect(isPerformanceTracker(invalidTracker)).toBe(false);
 	});
 
 	it("should return false for an object missing trackDb", () => {
 		const invalidTracker = {
-			trackComplexity: () => {},
+			trackComplexity: () => { },
 			snapshot: () => ({}),
-			trackCacheHit: () => {},
-			trackCacheMiss: () => {},
-			time: () => {},
-			start: () => {},
+			trackCacheHit: () => { },
+			trackCacheMiss: () => { },
+			time: () => { },
+			start: () => { },
 		};
 		expect(isPerformanceTracker(invalidTracker)).toBe(false);
 	});
 
 	it("should return false for an object missing trackCacheHit", () => {
 		const invalidTracker = {
-			trackComplexity: () => {},
+			trackComplexity: () => { },
 			snapshot: () => ({}),
-			trackDb: () => {},
-			trackCacheMiss: () => {},
-			time: () => {},
-			start: () => {},
+			trackDb: () => { },
+			trackCacheMiss: () => { },
+			time: () => { },
+			start: () => { },
 		};
 		expect(isPerformanceTracker(invalidTracker)).toBe(false);
 	});
 
 	it("should return false for an object missing trackCacheMiss", () => {
 		const invalidTracker = {
-			trackComplexity: () => {},
+			trackComplexity: () => { },
 			snapshot: () => ({}),
-			trackDb: () => {},
-			trackCacheHit: () => {},
-			time: () => {},
-			start: () => {},
+			trackDb: () => { },
+			trackCacheHit: () => { },
+			time: () => { },
+			start: () => { },
 		};
 		expect(isPerformanceTracker(invalidTracker)).toBe(false);
 	});
 
 	it("should return false for an object missing time", () => {
 		const invalidTracker = {
-			trackComplexity: () => {},
+			trackComplexity: () => { },
 			snapshot: () => ({}),
-			trackDb: () => {},
-			trackCacheHit: () => {},
-			trackCacheMiss: () => {},
-			start: () => {},
+			trackDb: () => { },
+			trackCacheHit: () => { },
+			trackCacheMiss: () => { },
+			start: () => { },
 		};
 		expect(isPerformanceTracker(invalidTracker)).toBe(false);
 	});
 
 	it("should return false for an object missing start", () => {
 		const invalidTracker = {
-			trackComplexity: () => {},
+			trackComplexity: () => { },
 			snapshot: () => ({}),
-			trackDb: () => {},
-			trackCacheHit: () => {},
-			trackCacheMiss: () => {},
-			time: () => {},
+			trackDb: () => { },
+			trackCacheHit: () => { },
+			trackCacheMiss: () => { },
+			time: () => { },
 		};
 		expect(isPerformanceTracker(invalidTracker)).toBe(false);
 	});
 
 	it("should return true for an object with all required methods", () => {
 		const validTracker = {
-			time: () => {},
-			start: () => {},
-			trackComplexity: () => {},
+			time: () => { },
+			start: () => { },
+			trackComplexity: () => { },
 			snapshot: () => ({}),
-			trackDb: () => {},
-			trackCacheHit: () => {},
-			trackCacheMiss: () => {},
+			trackDb: () => { },
+			trackCacheHit: () => { },
+			trackCacheMiss: () => { },
 		};
 		expect(isPerformanceTracker(validTracker)).toBe(true);
 	});

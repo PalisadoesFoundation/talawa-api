@@ -163,6 +163,26 @@ This environment variable is used to configure the [log level](https://github.co
 
 This environment variable is used to configure the threshold in milliseconds for identifying slow requests in talawa api. Requests that exceed this duration will be logged and tracked for performance monitoring purposes.
 
+### API_METRICS_AGGREGATION_CRON_SCHEDULE
+
+This environment variable is used to configure the cron schedule for the metrics aggregation worker. The worker periodically aggregates in-memory performance snapshots into meaningful statistics. Default value is `*/5 * * * *` (every 5 minutes).
+
+### API_METRICS_AGGREGATION_ENABLED
+
+This environment variable is used to enable or disable the metrics aggregation background worker. When enabled, performance snapshots are aggregated on a schedule defined by `API_METRICS_AGGREGATION_CRON_SCHEDULE`. Default value is `true`.
+
+### API_METRICS_AGGREGATION_WINDOW_MINUTES
+
+This environment variable is used to configure the time window in minutes for metrics aggregation. The worker will aggregate snapshots from this time window. Default value is `5` minutes.
+
+### API_METRICS_SNAPSHOT_RETENTION_COUNT
+
+This environment variable is used to configure the maximum number of performance snapshots to retain in memory. When the limit is reached, older snapshots are automatically removed. Default value is `1000`.
+
+### API_METRICS_API_KEY
+
+This environment variable is used to configure the API key for protecting the `/metrics/perf` endpoint. When set, requests to this endpoint must include a valid `Authorization: Bearer <API_KEY>` header. If not set, the endpoint is unprotected.
+
 ### API_MINIO_ACCESS_KEY
 
 This environment variable is used to configure the access key to the minio server for talawa api's minio client to connect with.
