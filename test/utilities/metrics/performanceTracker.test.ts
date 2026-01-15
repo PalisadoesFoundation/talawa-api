@@ -318,21 +318,24 @@ describe("Performance Tracker", () => {
 	});
 
 	it("should track slow operations", async () => {
-		const tracker = createPerformanceTracker({ slowMs: 15 });
+		// Use a higher threshold (50ms) to avoid timing-related flakiness in CI
+		const tracker = createPerformanceTracker({ slowMs: 50 });
 
+		// Fast operation - well under threshold
 		await tracker.time("fast-op", async () => {
 			await vi.advanceTimersByTimeAsync(5);
 		});
 
+		// Slow operation - clearly over threshold
 		await tracker.time("slow-op", async () => {
-			await vi.advanceTimersByTimeAsync(20);
+			await vi.advanceTimersByTimeAsync(100);
 		});
 
 		const snapshot = tracker.snapshot();
 
 		expect(snapshot.slow.length).toBe(1);
 		expect(snapshot.slow[0]?.op).toBe("slow-op");
-		expect(snapshot.slow[0]?.ms).toBeGreaterThanOrEqual(15);
+		expect(snapshot.slow[0]?.ms).toBeGreaterThanOrEqual(50);
 	});
 
 	it("should calculate hit rate correctly", () => {

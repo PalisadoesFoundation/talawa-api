@@ -51,6 +51,7 @@ class PluginManager extends EventEmitter {
 	private pluginContext: IPluginContext;
 	private pluginsDirectory: string;
 	private isInitialized = false;
+	private initializationAttempted = false;
 	private errors: IPluginError[] = [];
 
 	// Component instances
@@ -76,17 +77,12 @@ class PluginManager extends EventEmitter {
 			this.extensionRegistry,
 		);
 		this.registry = new PluginRegistry(this.pluginContext);
-
-		// Initialize plugin system
-		this.initializePlugins().catch((error) => {
-			console.error("Plugin system initialization failed:", error);
-		});
 	}
 
 	/**
 	 * Initialize the plugin system
 	 */
-	private async initializePlugins(): Promise<void> {
+	public async initialize(): Promise<void> {
 		try {
 			this.emit("plugins:initializing");
 
@@ -98,7 +94,10 @@ class PluginManager extends EventEmitter {
 						fs.mkdir(this.pluginsDirectory, { recursive: true }),
 					);
 				} catch (error) {
-					console.error("Failed to create plugins directory:", error);
+					this.pluginContext.logger.error?.({
+						msg: "Failed to create plugins directory",
+						err: error,
+					});
 				}
 			}
 
@@ -106,7 +105,9 @@ class PluginManager extends EventEmitter {
 			const installedPlugins = await this.getInstalledPlugins();
 
 			if (installedPlugins.length === 0) {
-				console.log("No plugins found in database");
+				this.pluginContext.logger.info?.({
+					msg: "No plugins found in database",
+				});
 				this.markAsInitialized();
 				return;
 			}
@@ -118,10 +119,10 @@ class PluginManager extends EventEmitter {
 						const success = await this.loadPlugin(dbPlugin.pluginId);
 						return { pluginId: dbPlugin.pluginId, success };
 					} catch (error) {
-						console.error(
-							`❌ Failed to load plugin ${dbPlugin.pluginId}:`,
-							error,
-						);
+						this.pluginContext.logger.error?.({
+							msg: `Failed to load plugin ${dbPlugin.pluginId}`,
+							err: error,
+						});
 						this.handlePluginError(dbPlugin.pluginId, error as Error, "load");
 						return { pluginId: dbPlugin.pluginId, success: false, error };
 					}
@@ -135,16 +136,21 @@ class PluginManager extends EventEmitter {
 			const failed = loadResults.length - successful;
 
 			if (successful > 0 || failed > 0) {
-				console.log(
-					`Plugin system initialized: ${successful} loaded, ${failed} failed`,
-				);
+				this.pluginContext.logger.info?.({
+					msg: `Plugin system initialized: ${successful} loaded, ${failed} failed`,
+				});
 			}
 
 			this.markAsInitialized();
 			this.emit("plugins:initialized", this.getLoadedPluginIds());
 		} catch (error) {
-			console.error("Plugin system initialization failed:", error);
-			this.markAsInitialized();
+			this.pluginContext.logger.error?.({
+				msg: "Plugin system initialization failed",
+				err: error,
+			});
+			// Mark initialization as attempted but not successful
+			this.initializationAttempted = true;
+			throw error;
 		}
 	}
 
@@ -169,10 +175,10 @@ class PluginManager extends EventEmitter {
 
 			return results as Array<typeof pluginsTable.$inferSelect>;
 		} catch (error) {
-			console.error(
-				"❌ Error fetching installed plugins from database:",
-				error,
-			);
+			this.pluginContext.logger.error?.({
+				msg: "Error fetching installed plugins from database",
+				err: error,
+			});
 			return [];
 		}
 	}
@@ -200,9 +206,11 @@ class PluginManager extends EventEmitter {
 			try {
 				await import("node:fs/promises").then((fs) => fs.access(manifestPath));
 			} catch (_error) {
-				console.warn(
-					`⚠️  Plugin ${pluginId} is in database but files are missing at ${pluginPath}`,
-				);
+				this.pluginContext.logger.warn?.({
+					msg: "Plugin is in database but files are missing",
+					pluginId,
+					pluginPath,
+				});
 				return false;
 			}
 
@@ -211,10 +219,10 @@ class PluginManager extends EventEmitter {
 			try {
 				manifest = await loadPluginManifest(pluginPath);
 			} catch (error) {
-				console.error(
-					`❌ Failed to load manifest for plugin ${pluginId}:`,
-					error,
-				);
+				this.pluginContext.logger.error?.({
+					msg: `Failed to load manifest for plugin ${pluginId}`,
+					err: error,
+				});
 				return false;
 			}
 
@@ -223,10 +231,10 @@ class PluginManager extends EventEmitter {
 			try {
 				pluginModule = await this.loadPluginModule(pluginPath, manifest);
 			} catch (error) {
-				console.error(
-					`❌ Failed to load module for plugin ${pluginId}:`,
-					error,
-				);
+				this.pluginContext.logger.error?.({
+					msg: `Failed to load module for plugin ${pluginId}`,
+					err: error,
+				});
 				return false;
 			}
 
@@ -259,10 +267,10 @@ class PluginManager extends EventEmitter {
 			} catch (error) {
 				// Remove from loaded plugins if extension loading fails
 				this.loadedPlugins.delete(pluginId);
-				console.error(
-					`❌ Failed to load extension points for plugin ${pluginId}:`,
-					error,
-				);
+				this.pluginContext.logger.error?.({
+					msg: `Failed to load extension points for plugin ${pluginId}`,
+					err: error,
+				});
 				return false;
 			}
 
@@ -275,10 +283,10 @@ class PluginManager extends EventEmitter {
 					await this.activatePlugin(pluginId);
 				} catch (error) {
 					// Don't return false here - plugin is loaded but not activated
-					console.error(
-						`❌ Failed to activate plugin ${pluginId} during load:`,
-						error,
-					);
+					this.pluginContext.logger.error?.({
+						msg: `Failed to activate plugin ${pluginId} during load`,
+						err: error,
+					});
 				}
 			}
 
@@ -447,7 +455,10 @@ class PluginManager extends EventEmitter {
 			try {
 				result = await hook(result, this.pluginContext);
 			} catch (error) {
-				console.error(`Error executing pre hook for event ${event}:`, error);
+				this.pluginContext.logger.error?.({
+					msg: `Error executing pre hook for event ${event}`,
+					err: error,
+				});
 			}
 		}
 
@@ -465,10 +476,10 @@ class PluginManager extends EventEmitter {
 				try {
 					await hook(data, this.pluginContext);
 				} catch (error) {
-					console.error(
-						`❌ Error executing post hook for event ${event}:`,
-						error,
-					);
+					this.pluginContext.logger.error?.({
+						msg: `Error executing post hook for event ${event}`,
+						err: error,
+					});
 				}
 			}),
 		);
@@ -489,10 +500,17 @@ class PluginManager extends EventEmitter {
 	}
 
 	/**
-	 * Check if system is initialized
+	 * Check if system is initialized (successfully)
 	 */
 	public isSystemInitialized(): boolean {
 		return this.isInitialized;
+	}
+
+	/**
+	 * Check if initialization was attempted (regardless of success/failure)
+	 */
+	public hasInitializationBeenAttempted(): boolean {
+		return this.initializationAttempted || this.isInitialized;
 	}
 
 	/**
@@ -539,10 +557,10 @@ class PluginManager extends EventEmitter {
 
 						this.emit("plugin:unloaded", pluginId);
 					} catch (error) {
-						console.error(
-							`Error during graceful shutdown of plugin ${pluginId}:`,
-							error,
-						);
+						this.pluginContext.logger.error?.({
+							msg: `Error during graceful shutdown of plugin ${pluginId}`,
+							err: error,
+						});
 					}
 				}),
 			);
@@ -569,7 +587,10 @@ class PluginManager extends EventEmitter {
 			// Remove all listeners
 			this.removeAllListeners();
 		} catch (error) {
-			console.error("Error during graceful plugin system shutdown:", error);
+			this.pluginContext.logger.error?.({
+				msg: "Error during graceful plugin system shutdown",
+				err: error,
+			});
 		}
 	}
 }

@@ -2,6 +2,7 @@ import type { NodePgDatabase } from "drizzle-orm/node-postgres";
 import type { FastifyBaseLogger } from "fastify";
 import cron from "node-cron";
 import type * as schema from "~/src/drizzle/schema";
+import type { PerfSnapshot } from "~/src/utilities/metrics/performanceTracker";
 import { cleanupOldInstances } from "./eventCleanupWorker";
 import {
 	createDefaultWorkerConfig,
@@ -9,18 +10,28 @@ import {
 	type WorkerConfig,
 	type WorkerResult,
 } from "./eventGeneration/eventGenerationPipeline";
+import { runMetricsAggregationWorker } from "./metrics/metricsAggregationWorker";
 
 let materializationTask: cron.ScheduledTask | undefined;
 let cleanupTask: cron.ScheduledTask | undefined;
+let metricsTask: cron.ScheduledTask | undefined;
 let isRunning = false;
 let materializationConfig: WorkerConfig = createDefaultWorkerConfig();
+// Store metrics configuration at startup for status reporting
+let metricsEnabled: boolean | undefined;
+let metricsSchedule: string | undefined;
 
 /**
  * Initializes and starts all background workers, scheduling them to run at their configured intervals.
+ *
+ * @param drizzleClient - Drizzle database client
+ * @param logger - Fastify logger instance
+ * @param getMetricsSnapshots - Optional function to retrieve performance snapshots for metrics aggregation
  */
 export async function startBackgroundWorkers(
 	drizzleClient: NodePgDatabase<typeof schema>,
 	logger: FastifyBaseLogger,
+	getMetricsSnapshots?: (windowMinutes?: number) => PerfSnapshot[],
 ): Promise<void> {
 	if (isRunning) {
 		logger.warn("Background workers are already running");
@@ -54,12 +65,64 @@ export async function startBackgroundWorkers(
 		materializationTask.start();
 		cleanupTask.start();
 
+		// Schedule metrics aggregation worker if enabled and snapshot getter is provided
+		// Parse API_METRICS_AGGREGATION_ENABLED explicitly (case-insensitive)
+		// Default to true (enabled) when unset, matching envConfigSchema default
+		const enabledValue = process.env.API_METRICS_AGGREGATION_ENABLED;
+		if (enabledValue === undefined || enabledValue === "") {
+			metricsEnabled = true; // Default to enabled when unset
+		} else {
+			metricsEnabled = ["true", "1", "yes"].includes(
+				enabledValue.toLowerCase(),
+			);
+		}
+		metricsSchedule =
+			process.env.API_METRICS_AGGREGATION_CRON_SCHEDULE || "*/5 * * * *";
+
+		const rawWindowMinutes = Number(
+			process.env.API_METRICS_AGGREGATION_WINDOW_MINUTES ?? 5,
+		);
+		const metricsWindowMinutes =
+			Number.isFinite(rawWindowMinutes) && rawWindowMinutes > 0
+				? Math.floor(rawWindowMinutes)
+				: 5;
+
+		if (metricsEnabled && getMetricsSnapshots) {
+			metricsTask = cron.schedule(
+				metricsSchedule,
+				() =>
+					runMetricsAggregationWorkerSafely(
+						getMetricsSnapshots,
+						metricsWindowMinutes,
+						logger,
+					),
+				{
+					scheduled: false,
+					timezone: "UTC",
+				},
+			);
+
+			metricsTask.start();
+			logger.info(
+				{
+					metricsSchedule,
+					metricsWindowMinutes,
+				},
+				"Metrics aggregation worker scheduled",
+			);
+		} else if (metricsEnabled && !getMetricsSnapshots) {
+			logger.warn(
+				"Metrics aggregation is enabled but snapshot getter is not available. Metrics worker will not start.",
+			);
+		}
+
 		isRunning = true;
 		logger.info(
 			{
 				materializationSchedule:
 					process.env.EVENT_GENERATION_CRON_SCHEDULE || "0 * * * *",
 				cleanupSchedule: process.env.CLEANUP_CRON_SCHEDULE || "0 2 * * *",
+				metricsEnabled: metricsEnabled && !!getMetricsSnapshots,
 			},
 			"Background worker service started successfully",
 		);
@@ -94,6 +157,11 @@ export async function stopBackgroundWorkers(
 		if (cleanupTask) {
 			cleanupTask.stop();
 			cleanupTask = undefined;
+		}
+
+		if (metricsTask) {
+			metricsTask.stop();
+			metricsTask = undefined;
 		}
 
 		isRunning = false;
@@ -182,6 +250,44 @@ export async function runCleanupWorkerSafely(
 }
 
 /**
+ * Executes the metrics aggregation worker with robust error handling to prevent crashes.
+ */
+export async function runMetricsAggregationWorkerSafely(
+	getMetricsSnapshots: (windowMinutes?: number) => PerfSnapshot[],
+	windowMinutes: number,
+	logger: FastifyBaseLogger,
+): Promise<void> {
+	const startTime = Date.now();
+	logger.info("Starting metrics aggregation worker run");
+
+	try {
+		await runMetricsAggregationWorker(
+			getMetricsSnapshots,
+			windowMinutes,
+			logger,
+		);
+
+		const duration = Date.now() - startTime;
+		logger.info(
+			{
+				duration: `${duration}ms`,
+			},
+			"Metrics aggregation worker completed successfully",
+		);
+	} catch (error) {
+		const duration = Date.now() - startTime;
+		logger.error(
+			{
+				duration: `${duration}ms`,
+				error: error instanceof Error ? error.message : "Unknown error",
+				stack: error instanceof Error ? error.stack : undefined,
+			},
+			"Metrics aggregation worker failed",
+		);
+	}
+}
+
+/**
  * Manually triggers a run of the materialization worker, useful for testing or administrative purposes.
  */
 export async function triggerMaterializationWorker(
@@ -220,14 +326,38 @@ export function getBackgroundWorkerStatus(): {
 	isRunning: boolean;
 	materializationSchedule: string;
 	cleanupSchedule: string;
+	metricsSchedule?: string;
+	metricsEnabled?: boolean;
 	nextMaterializationRun?: Date;
 	nextCleanupRun?: Date;
 } {
+	// Read metrics configuration directly from env vars for accurate status reporting
+	// Use the same parsing logic as startBackgroundWorkers for consistency
+	const enabledValue = process.env.API_METRICS_AGGREGATION_ENABLED;
+
+	// Parse metrics enabled: default to true when unset (matching startBackgroundWorkers)
+	let currentMetricsEnabled: boolean;
+	if (enabledValue === undefined || enabledValue === "") {
+		currentMetricsEnabled = true; // Default to enabled when unset (matches startBackgroundWorkers)
+	} else {
+		currentMetricsEnabled = ["true", "1", "yes"].includes(
+			enabledValue.toLowerCase(),
+		);
+	}
+
+	const currentMetricsSchedule =
+		process.env.API_METRICS_AGGREGATION_CRON_SCHEDULE || "*/5 * * * *";
+
 	return {
 		isRunning,
 		materializationSchedule:
 			process.env.EVENT_GENERATION_CRON_SCHEDULE || "0 * * * *",
 		cleanupSchedule: process.env.CLEANUP_CRON_SCHEDULE || "0 2 * * *",
+		// Include metrics fields when enabled (default or explicit)
+		...(currentMetricsEnabled && {
+			metricsSchedule: currentMetricsSchedule,
+			metricsEnabled: currentMetricsEnabled,
+		}),
 	};
 }
 

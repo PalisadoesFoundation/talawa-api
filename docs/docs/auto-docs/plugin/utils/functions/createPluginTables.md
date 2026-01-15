@@ -6,7 +6,7 @@
 
 > **createPluginTables**(`db`, `pluginId`, `tableDefinitions`, `logger?`): `Promise`\<`void`\>
 
-Defined in: [src/plugin/utils.ts:455](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/plugin/utils.ts#L455)
+Defined in: [src/plugin/utils.ts:462](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/plugin/utils.ts#L462)
 
 Dynamically creates database tables from plugin table definitions
 
@@ -28,9 +28,7 @@ Dynamically creates database tables from plugin table definitions
 
 ### logger?
 
-#### info?
-
-(`message`) => `void`
+[`ILogger`](../../types/interfaces/ILogger.md)
 
 ## Returns
 

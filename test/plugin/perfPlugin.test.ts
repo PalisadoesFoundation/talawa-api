@@ -9,6 +9,9 @@ describe("perfPlugin – slow request logging", () => {
 	beforeEach(() => {
 		app = Fastify({ logger: true });
 
+		// Set API key to prevent the "unprotected endpoint" warning from interfering with test assertions
+		process.env.API_METRICS_API_KEY = "test-api-key-for-slow-request-tests";
+
 		vi.spyOn(app.log, "child").mockReturnValue(app.log);
 		warn = vi.spyOn(app.log, "warn");
 	});
@@ -16,6 +19,7 @@ describe("perfPlugin – slow request logging", () => {
 	afterEach(async () => {
 		await app.close();
 		delete process.env.API_SLOW_REQUEST_MS;
+		delete process.env.API_METRICS_API_KEY;
 	});
 
 	it("logs a warning when request duration exceeds slow threshold", async () => {

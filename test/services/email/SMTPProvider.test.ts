@@ -467,11 +467,13 @@ describe("SMTPProvider", () => {
 		);
 	});
 
-	it("should wait ~100ms between bulk emails", async () => {
-		vi.useFakeTimers();
-
+	it("should enforce rate limiting delay between bulk emails (>=50ms)", async () => {
 		const nodemailer = await import("nodemailer");
-		const mockSendMail = vi.fn().mockResolvedValue({ messageId: "msg-delay" });
+		const sendTimes: number[] = [];
+		const mockSendMail = vi.fn().mockImplementation(() => {
+			sendTimes.push(Date.now());
+			return Promise.resolve({ messageId: "msg-delay" });
+		});
 		(nodemailer.default.createTransport as Mock).mockReturnValue({
 			sendMail: mockSendMail,
 		});
@@ -479,16 +481,18 @@ describe("SMTPProvider", () => {
 		const jobs = [
 			{ id: "1", email: "e1@x.com", subject: "s", htmlBody: "b", userId: "u1" },
 			{ id: "2", email: "e2@x.com", subject: "s", htmlBody: "b", userId: "u2" },
+			{ id: "3", email: "e3@x.com", subject: "s", htmlBody: "b", userId: "u3" },
 		];
 
-		const bulkPromise = smtpProvider.sendBulkEmails(jobs);
-		// Run all pending timers to completion
-		await vi.runAllTimersAsync();
-		await bulkPromise;
+		await smtpProvider.sendBulkEmails(jobs);
 
-		expect(mockSendMail).toHaveBeenCalledTimes(2);
+		expect(mockSendMail).toHaveBeenCalledTimes(3);
 
-		vi.useRealTimers();
+		// Since mockSendMail was called 3 times, sendTimes has 3 entries
+		const firstDelay = (sendTimes[1] as number) - (sendTimes[0] as number);
+		const secondDelay = (sendTimes[2] as number) - (sendTimes[1] as number);
+		expect(firstDelay).toBeGreaterThanOrEqual(50);
+		expect(secondDelay).toBeGreaterThanOrEqual(50);
 	});
 
 	it("should sanitize fromName and subject to prevent SMTP header injection", async () => {
