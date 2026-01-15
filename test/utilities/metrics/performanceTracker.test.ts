@@ -328,7 +328,7 @@ describe("Performance Tracker", () => {
 
 		// Slow operation - clearly over threshold
 		await tracker.time("slow-op", async () => {
-			await vi.advanceTimersByTimeAsync(20);
+			await vi.advanceTimersByTimeAsync(100);
 		});
 
 		const snapshot = tracker.snapshot();
