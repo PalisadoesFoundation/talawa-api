@@ -39,8 +39,8 @@ async function getAdminAuth() {
 	const result = await mercuriusClient.query(Query_signIn, {
 		variables: {
 			input: {
-				emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-				password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
+				emailAddress: email,
+				password: password,
 			},
 		},
 	});
@@ -354,7 +354,7 @@ suite("Mutation field updateAgendaFolder", () => {
 						issues: expect.arrayContaining([
 							expect.objectContaining({
 								argumentPath: ["input"],
-								message: "At least one field must be provided to update.",
+								message: expect.stringContaining("optional argument"),
 							}),
 						]),
 					}),

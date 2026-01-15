@@ -27,6 +27,19 @@ async function getAdminAuth() {
 
 	mercuriusClient.setHeaders({});
 
+	const {
+		API_ADMINISTRATOR_USER_EMAIL_ADDRESS: email,
+		API_ADMINISTRATOR_USER_PASSWORD: password,
+	} = server.envConfig;
+
+	if (!email || !password) {
+		throw new Error(
+			"Missing admin credentials for tests. " +
+				"Please set API_ADMINISTRATOR_USER_EMAIL_ADDRESS and " +
+				"API_ADMINISTRATOR_USER_PASSWORD in your environment.",
+		);
+	}
+
 	const result = await mercuriusClient.query(Query_signIn, {
 		variables: {
 			input: {

@@ -149,6 +149,12 @@ suite("Query field agendaFoldersByEventId", () => {
 		const regularUser = await createRegularUserUsingAdmin();
 		const { authToken } = regularUser;
 
+		cleanupFns.push(async () => {
+			await server.drizzleClient
+				.delete(usersTable)
+				.where(eq(usersTable.id, regularUser.userId));
+		});
+
 		// Create organization
 		const createOrgResult = await mercuriusClient.mutate(
 			Mutation_createOrganization,

@@ -137,7 +137,7 @@ describe("MutationCreateAgendaFolderInput Schema", () => {
 			expect(result.success).toBe(false);
 		});
 
-		it("should accept negative sequence", () => {
+		it("should reject negative sequence", () => {
 			const result = mutationCreateAgendaFolderInputSchema.safeParse({
 				...validBaseInput,
 				sequence: -1,

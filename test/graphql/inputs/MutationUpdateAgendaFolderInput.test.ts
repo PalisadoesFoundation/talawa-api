@@ -171,7 +171,7 @@ describe("MutationUpdateAgendaFolderInput Schema", () => {
 			expect(result.success).toBe(false);
 		});
 
-		it("should accept zero sequence", () => {
+		it("should reject zero sequence", () => {
 			const result = mutationUpdateAgendaFolderInputSchema.safeParse({
 				id: validId,
 				sequence: 0,
