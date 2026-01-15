@@ -533,7 +533,7 @@ suite("User field updater", () => {
 						},
 					);
 
-					// 6. Verify correct error response
+					// 5. Verify correct error response
 					expect(userUpdaterResult.data.user?.updater).toBeNull();
 					const errors = userUpdaterResult.errors;
 					expect(errors).toBeDefined();
@@ -545,7 +545,7 @@ suite("User field updater", () => {
 						"Something went wrong. Please try again later.",
 					);
 				} finally {
-					// 5. Restore the spy
+					// 6. Restore the spy
 					spy.mockRestore();
 				}
 			});
