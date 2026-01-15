@@ -77,7 +77,7 @@ describe("Setup -> apiSetup", () => {
 			{ useDefaultCaddy: true },
 			{ API_ADMINISTRATOR_USER_EMAIL_ADDRESS: "test@email.com" },
 			{ setupReCaptcha: false },
-			{ useDefaultEmail: true },
+			{ configureEmail: false },
 			{ setupOAuth: false },
 		];
 
