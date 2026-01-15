@@ -171,6 +171,9 @@ builder.mutationField("updateAgendaFolder", (t) =>
 				updateData.sequence = parsedArgs.input.sequence;
 			}
 
+			// Defensive check: unreachable via GraphQL because the input schema
+			// enforces at least one updatable field. Kept as a safety guard.
+			/* istanbul ignore next */
 			if (Object.keys(updateData).length === 1) {
 				throw new TalawaGraphQLError({
 					extensions: {
