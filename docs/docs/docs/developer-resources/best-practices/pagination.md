@@ -1,6 +1,6 @@
 ---
 id: pagination
-title: GraphQL Filtering & Pagination
+title: GraphQL Filters & Pagination
 slug: /developer-resources/graphql-filtering
 sidebar_position: 40
 ---
