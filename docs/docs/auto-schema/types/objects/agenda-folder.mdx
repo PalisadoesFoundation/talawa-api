@@ -75,43 +75,21 @@ No description
 
 ```graphql
 type AgendaFolder {
-  childFolders(
-    after: String
-    before: String
-    first: Int
-    last: Int
-  ): AgendaFolderChildFoldersConnection
   createdAt: DateTime
   creator: User
+  description: String
   event: Event
   id: ID!
-  isAgendaItemFolder: Boolean
-  items(
-    after: String
-    before: String
-    first: Int
-    last: Int
-  ): AgendaFolderItemsConnection
+  isDefaultFolder: Boolean
   name: String
-  parentFolder: AgendaFolder
+  organization: Organization
+  sequence: Int
   updatedAt: DateTime
   updater: User
 }
 ```
 
 ### Fields
-
-#### [<code style={{ fontWeight: 'normal' }}>AgendaFolder.<b>childFolders</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>AgendaFolderChildFoldersConnection</b></code>](/auto-schema/types/objects/agenda-folder-child-folders-connection.mdx) <Badge class="badge badge--secondary " text="object"/>
-
-GraphQL connection to traverse through the agenda folders that have the agenda folder as a parent folder.
-
-##### [<code style={{ fontWeight: 'normal' }}>AgendaFolder.childFolders.<b>after</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>String</b></code>](/auto-schema/types/scalars/string.mdx) <Badge class="badge badge--secondary " text="scalar"/>
-
-##### [<code style={{ fontWeight: 'normal' }}>AgendaFolder.childFolders.<b>before</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>String</b></code>](/auto-schema/types/scalars/string.mdx) <Badge class="badge badge--secondary " text="scalar"/>
-
-##### [<code style={{ fontWeight: 'normal' }}>AgendaFolder.childFolders.<b>first</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>Int</b></code>](/auto-schema/types/scalars/int.mdx) <Badge class="badge badge--secondary " text="scalar"/>
-
-##### [<code style={{ fontWeight: 'normal' }}>AgendaFolder.childFolders.<b>last</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>Int</b></code>](/auto-schema/types/scalars/int.mdx) <Badge class="badge badge--secondary " text="scalar"/>
 
 #### [<code style={{ fontWeight: 'normal' }}>AgendaFolder.<b>createdAt</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>DateTime</b></code>](/auto-schema/types/scalars/date-time.mdx) <Badge class="badge badge--secondary " text="scalar"/>
 
@@ -121,6 +99,10 @@ Date time at the time the agenda folder was created.
 
 User who created the agenda folder.
 
+#### [<code style={{ fontWeight: 'normal' }}>AgendaFolder.<b>description</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>String</b></code>](/auto-schema/types/scalars/string.mdx) <Badge class="badge badge--secondary " text="scalar"/>
+
+Custom information about the agenda folder.
+
 #### [<code style={{ fontWeight: 'normal' }}>AgendaFolder.<b>event</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>Event</b></code>](/auto-schema/types/objects/event.mdx) <Badge class="badge badge--secondary " text="object"/>
 
 Event for which the agenda folder contains agenda items constituting a part of the agenda.
@@ -129,29 +111,21 @@ Event for which the agenda folder contains agenda items constituting a part of t
 
 Global identifier of the agenda folder.
 
-#### [<code style={{ fontWeight: 'normal' }}>AgendaFolder.<b>isAgendaItemFolder</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>Boolean</b></code>](/auto-schema/types/scalars/boolean.mdx) <Badge class="badge badge--secondary " text="scalar"/>
+#### [<code style={{ fontWeight: 'normal' }}>AgendaFolder.<b>isDefaultFolder</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>Boolean</b></code>](/auto-schema/types/scalars/boolean.mdx) <Badge class="badge badge--secondary " text="scalar"/>
 
-Boolean to tell if the agenda folder is meant to be a folder for agenda items or a parent for agenda folders.
-
-#### [<code style={{ fontWeight: 'normal' }}>AgendaFolder.<b>items</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>AgendaFolderItemsConnection</b></code>](/auto-schema/types/objects/agenda-folder-items-connection.mdx) <Badge class="badge badge--secondary " text="object"/>
-
-GraphQL connection to traverse through the agenda items contained within the agenda folder.
-
-##### [<code style={{ fontWeight: 'normal' }}>AgendaFolder.items.<b>after</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>String</b></code>](/auto-schema/types/scalars/string.mdx) <Badge class="badge badge--secondary " text="scalar"/>
-
-##### [<code style={{ fontWeight: 'normal' }}>AgendaFolder.items.<b>before</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>String</b></code>](/auto-schema/types/scalars/string.mdx) <Badge class="badge badge--secondary " text="scalar"/>
-
-##### [<code style={{ fontWeight: 'normal' }}>AgendaFolder.items.<b>first</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>Int</b></code>](/auto-schema/types/scalars/int.mdx) <Badge class="badge badge--secondary " text="scalar"/>
-
-##### [<code style={{ fontWeight: 'normal' }}>AgendaFolder.items.<b>last</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>Int</b></code>](/auto-schema/types/scalars/int.mdx) <Badge class="badge badge--secondary " text="scalar"/>
+Boolean to tell if agenda folder is default or not
 
 #### [<code style={{ fontWeight: 'normal' }}>AgendaFolder.<b>name</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>String</b></code>](/auto-schema/types/scalars/string.mdx) <Badge class="badge badge--secondary " text="scalar"/>
 
 Name of the agenda folder.
 
-#### [<code style={{ fontWeight: 'normal' }}>AgendaFolder.<b>parentFolder</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>AgendaFolder</b></code>](/auto-schema/types/objects/agenda-folder.mdx) <Badge class="badge badge--secondary " text="object"/>
+#### [<code style={{ fontWeight: 'normal' }}>AgendaFolder.<b>organization</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>Organization</b></code>](/auto-schema/types/objects/organization.mdx) <Badge class="badge badge--secondary " text="object"/>
 
-Agenda folder that is a parent folder to the agenda folder.
+Organization which the agenda folder belongs to.
+
+#### [<code style={{ fontWeight: 'normal' }}>AgendaFolder.<b>sequence</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>Int</b></code>](/auto-schema/types/scalars/int.mdx) <Badge class="badge badge--secondary " text="scalar"/>
+
+Sequence of agenda folder.
 
 #### [<code style={{ fontWeight: 'normal' }}>AgendaFolder.<b>updatedAt</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>DateTime</b></code>](/auto-schema/types/scalars/date-time.mdx) <Badge class="badge badge--secondary " text="scalar"/>
 
@@ -163,8 +137,8 @@ User who last updated the agenda folder.
 
 ### Returned By
 
-[`agendaFolder`](/auto-schema/operations/queries/agenda-folder.mdx) <Badge class="badge badge--secondary badge--relation" text="query"/><Bullet />[`createAgendaFolder`](/auto-schema/operations/mutations/create-agenda-folder.mdx) <Badge class="badge badge--secondary badge--relation" text="mutation"/><Bullet />[`deleteAgendaFolder`](/auto-schema/operations/mutations/delete-agenda-folder.mdx) <Badge class="badge badge--secondary badge--relation" text="mutation"/><Bullet />[`updateAgendaFolder`](/auto-schema/operations/mutations/update-agenda-folder.mdx) <Badge class="badge badge--secondary badge--relation" text="mutation"/>
+[`agendaFolder`](/auto-schema/operations/queries/agenda-folder.mdx) <Badge class="badge badge--secondary badge--relation" text="query"/><Bullet />[`agendaFoldersByEventId`](/auto-schema/operations/queries/agenda-folders-by-event-id.mdx) <Badge class="badge badge--secondary badge--relation" text="query"/><Bullet />[`createAgendaFolder`](/auto-schema/operations/mutations/create-agenda-folder.mdx) <Badge class="badge badge--secondary badge--relation" text="mutation"/><Bullet />[`deleteAgendaFolder`](/auto-schema/operations/mutations/delete-agenda-folder.mdx) <Badge class="badge badge--secondary badge--relation" text="mutation"/><Bullet />[`updateAgendaFolder`](/auto-schema/operations/mutations/update-agenda-folder.mdx) <Badge class="badge badge--secondary badge--relation" text="mutation"/>
 
 ### Member Of
 
-[`AgendaFolder`](/auto-schema/types/objects/agenda-folder.mdx) <Badge class="badge badge--secondary badge--relation" text="object"/><Bullet />[`AgendaFolderChildFoldersConnectionEdge`](/auto-schema/types/objects/agenda-folder-child-folders-connection-edge.mdx) <Badge class="badge badge--secondary badge--relation" text="object"/><Bullet />[`AgendaItem`](/auto-schema/types/objects/agenda-item.mdx) <Badge class="badge badge--secondary badge--relation" text="object"/><Bullet />[`EventAgendaFoldersConnectionEdge`](/auto-schema/types/objects/event-agenda-folders-connection-edge.mdx) <Badge class="badge badge--secondary badge--relation" text="object"/>
+[`AgendaItem`](/auto-schema/types/objects/agenda-item.mdx) <Badge class="badge badge--secondary badge--relation" text="object"/><Bullet />[`EventAgendaFoldersConnectionEdge`](/auto-schema/types/objects/event-agenda-folders-connection-edge.mdx) <Badge class="badge badge--secondary badge--relation" text="object"/>
