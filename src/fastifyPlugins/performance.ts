@@ -217,35 +217,8 @@ export default fp(
 		// Expose snapshot getter for background workers
 		app.getMetricsSnapshots = getRecentSnapshots;
 
-		// Initialize metrics cache service (optional - failures should not break anything)
-		try {
-			// Check if cache service is available (it should be due to dependency, but be defensive)
-			if (!app.cache) {
-				app.log.warn(
-					"Cache service not available - metrics cache will not be initialized",
-				);
-				return;
-			}
-
-			const cacheTtlSeconds =
-				app.envConfig.API_METRICS_CACHE_TTL_SECONDS ?? 300;
-			const metricsCache = new MetricsCacheService(
-				app.cache,
-				app.log,
-				cacheTtlSeconds,
-			);
-			app.metricsCache = metricsCache;
-			app.log.debug("Metrics cache service initialized");
-		} catch (error) {
-			app.log.warn(
-				{
-					error: error instanceof Error ? error.message : "Unknown error",
-				},
-				"Failed to initialize metrics cache service (continuing without cache)",
-			);
-		}
-
 		// Endpoint to retrieve recent performance snapshots (protected)
+		// Registered before cache init to ensure route is always available
 		app.get(
 			"/metrics/perf",
 			{
@@ -255,6 +228,34 @@ export default fp(
 				recent: recent.slice(0, 50).map((item) => item.snapshot),
 			}),
 		);
+
+		// Initialize metrics cache service (optional - failures should not break anything)
+		try {
+			// Check if cache service is available (it should be due to dependency, but be defensive)
+			if (!app.cache) {
+				app.log.warn(
+					"Cache service not available - metrics cache will not be initialized",
+				);
+				// Don't return - route is already registered above
+			} else {
+				const cacheTtlSeconds =
+					app.envConfig.API_METRICS_CACHE_TTL_SECONDS ?? 300;
+				const metricsCache = new MetricsCacheService(
+					app.cache,
+					app.log,
+					cacheTtlSeconds,
+				);
+				app.metricsCache = metricsCache;
+				app.log.debug("Metrics cache service initialized");
+			}
+		} catch (error) {
+			app.log.warn(
+				{
+					error: error instanceof Error ? error.message : "Unknown error",
+				},
+				"Failed to initialize metrics cache service (continuing without cache)",
+			);
+		}
 	},
 	{
 		name: "performance",

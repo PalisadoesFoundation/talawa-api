@@ -1,10 +1,7 @@
-import { afterEach, describe, expect, it, vi } from "vitest";
+import { describe, expect, it } from "vitest";
 import { MetricsCacheService, metricsCacheProxy } from "~/src/services/metrics";
 
 describe("metrics/index exports", () => {
-	afterEach(() => {
-		vi.clearAllMocks();
-	});
 	it("should export MetricsCacheService", () => {
 		expect(MetricsCacheService).toBeDefined();
 		expect(typeof MetricsCacheService).toBe("function");
@@ -29,12 +26,11 @@ describe("metrics/index exports", () => {
 		expect(ImportedProxy).toBe(metricsCacheProxy);
 	});
 
-	it("should export all expected items", () => {
-		// Verify no circular dependencies by checking imports work
-		expect(() => {
-			// Verify both exports are accessible (this test verifies imports don't throw)
-			expect(MetricsCacheService).toBeDefined();
-			expect(metricsCacheProxy).toBeDefined();
-		}).not.toThrow();
+	it("should have no circular dependency issues with dynamic import", async () => {
+		// Verify module can be dynamically imported without circular dependency errors
+		const metricsModule = await import("~/src/services/metrics");
+		expect(metricsModule).toBeDefined();
+		expect(metricsModule.MetricsCacheService).toBeDefined();
+		expect(metricsModule.metricsCacheProxy).toBeDefined();
 	});
 });

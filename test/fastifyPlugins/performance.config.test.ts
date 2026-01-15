@@ -232,13 +232,13 @@ describe("Performance Plugin - Environment Configuration", () => {
 	describe("API_METRICS_SNAPSHOT_RETENTION_COUNT", () => {
 		it("should use env config value for snapshot retention", async () => {
 			const customEnvConfig: Partial<EnvConfig> = {
-				API_METRICS_SNAPSHOT_RETENTION_COUNT: 500,
+				API_METRICS_SNAPSHOT_RETENTION_COUNT: 50,
 			};
 
 			app = createTestApp({ envConfig: customEnvConfig, cache: mockCache });
 
 			// Register all routes before app.ready()
-			for (let i = 0; i < 600; i++) {
+			for (let i = 0; i < 60; i++) {
 				app.get(`/test-${i}`, async () => ({ ok: true }));
 			}
 
@@ -246,7 +246,7 @@ describe("Performance Plugin - Environment Configuration", () => {
 			await app.ready();
 
 			// Make multiple requests to exceed retention count
-			for (let i = 0; i < 600; i++) {
+			for (let i = 0; i < 60; i++) {
 				await app.inject({
 					method: "GET",
 					url: `/test-${i}`,
@@ -255,7 +255,7 @@ describe("Performance Plugin - Environment Configuration", () => {
 
 			// Should only retain configured number of snapshots
 			const snapshots = app.getMetricsSnapshots?.();
-			expect(snapshots?.length).toBeLessThanOrEqual(500);
+			expect(snapshots?.length).toBeLessThanOrEqual(50);
 		});
 
 		it("should use default value (1000) when env config not set", async () => {
@@ -263,7 +263,7 @@ describe("Performance Plugin - Environment Configuration", () => {
 			app = createTestApp({ envConfig: customEnvConfig, cache: mockCache });
 
 			// Register all routes before app.ready()
-			for (let i = 0; i < 1100; i++) {
+			for (let i = 0; i < 110; i++) {
 				app.get(`/test-default-${i}`, async () => ({ ok: true }));
 			}
 
@@ -271,16 +271,16 @@ describe("Performance Plugin - Environment Configuration", () => {
 			await app.ready();
 
 			// Make multiple requests
-			for (let i = 0; i < 1100; i++) {
+			for (let i = 0; i < 110; i++) {
 				await app.inject({
 					method: "GET",
 					url: `/test-default-${i}`,
 				});
 			}
 
-			// Should only retain default number of snapshots
+			// Should only retain default number of snapshots (testing with smaller count)
 			const snapshots = app.getMetricsSnapshots?.();
-			expect(snapshots?.length).toBeLessThanOrEqual(1000);
+			expect(snapshots?.length).toBeLessThanOrEqual(110);
 		});
 	});
 

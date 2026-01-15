@@ -258,6 +258,22 @@ export class MetricsCacheService {
 	 */
 	async invalidateMetricsCache(pattern?: string): Promise<void> {
 		try {
+			// Validate pattern if provided - only allow safe characters
+			if (pattern) {
+				// Allow alphanumeric, dashes, underscores, colons, and asterisks (for wildcards)
+				const safePatternRegex = /^[a-zA-Z0-9_\-:*]+$/;
+				if (!safePatternRegex.test(pattern)) {
+					this.logger?.warn(
+						{
+							msg: "metrics cache: invalid pattern",
+							pattern,
+						},
+						"Pattern contains invalid characters, skipping invalidation",
+					);
+					return;
+				}
+			}
+
 			// Construct cache pattern efficiently
 			const cachePattern = pattern
 				? `${CacheNamespace}:metrics:${pattern}`
