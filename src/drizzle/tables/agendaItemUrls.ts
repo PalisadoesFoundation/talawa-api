@@ -84,7 +84,7 @@ export const agendaItemUrlTableRelations = relations(
 		agendaItem: one(agendaItemsTable, {
 			fields: [agendaItemUrlTable.agendaItemId],
 			references: [agendaItemsTable.id],
-			relationName: "agenda_item_url.agenda_item_id:agenda_item.id",
+			relationName: "agenda_item_url.agenda_item_id:agenda_items.id",
 		}),
 		/**
 		 * Many to one relationship from `agenda_item_url` table to `users` table.
