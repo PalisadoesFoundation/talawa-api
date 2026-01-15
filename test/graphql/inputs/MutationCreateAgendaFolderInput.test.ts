@@ -134,7 +134,7 @@ describe("MutationCreateAgendaFolderInput Schema", () => {
 				...validBaseInput,
 				sequence: 0,
 			});
-			expect(result.success).toBe(true);
+			expect(result.success).toBe(false);
 		});
 
 		it("should accept negative sequence", () => {

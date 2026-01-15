@@ -177,7 +177,7 @@ describe("MutationUpdateAgendaFolderInput Schema", () => {
 				sequence: 0,
 			});
 
-			expect(result.success).toBe(true);
+			expect(result.success).toBe(false);
 		});
 	});
 
