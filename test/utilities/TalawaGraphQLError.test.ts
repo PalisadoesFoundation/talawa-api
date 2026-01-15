@@ -310,6 +310,19 @@ describe("TalawaGraphQLError", () => {
 				expectedMessage:
 					"This action is forbidden on the resources associated to the provided arguments.",
 			},
+			{
+				code: ErrorCode.FORBIDDEN_ACTION,
+				expectedMessage: "This action is forbidden.",
+			},
+			{
+				code: ErrorCode.UNAUTHORIZED_ACTION_ON_ARGUMENTS_ASSOCIATED_RESOURCES,
+				expectedMessage:
+					"You are not authorized to perform this action on the resources associated to the provided arguments.",
+			},
+			{
+				code: ErrorCode.UNEXPECTED,
+				expectedMessage: "Something went wrong. Please try again later.",
+			},
 		];
 
 		testCases.forEach(({ code, expectedMessage }) => {
@@ -377,7 +390,10 @@ describe("defaultTalawaGraphQLErrorMessages", () => {
 		];
 
 		legacyCodes.forEach((code) => {
-			const message = defaultTalawaGraphQLErrorMessages[code];
+			const message =
+				defaultTalawaGraphQLErrorMessages[
+					code as keyof typeof defaultTalawaGraphQLErrorMessages
+				];
 			expect(message).toBeDefined();
 			expect(typeof message).toBe("string");
 			expect(message?.length).toBeGreaterThan(0);

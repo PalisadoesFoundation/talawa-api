@@ -69,7 +69,7 @@ builder.mutationField("joinPublicOrganization", (t) =>
 			if (!user) {
 				throw new TalawaGraphQLError({
 					message: "User not found",
-					extensions: { code: ErrorCode.UNAUTHENTICATED },
+					extensions: { code: ErrorCode.NOT_FOUND },
 				});
 			}
 

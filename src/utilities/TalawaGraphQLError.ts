@@ -263,42 +263,49 @@ export type TalawaGraphQLErrorExtensions =
 			httpStatus?: number;
 	  };
 
-export const defaultTalawaGraphQLErrorMessages: Record<string, string> = {
-	// Legacy error codes (for backward compatibility)
-	account_locked:
-		"Account temporarily locked due to too many failed login attempts. Please try again later.",
-	arguments_associated_resources_not_found:
-		"No associated resources found for the provided arguments.",
-	forbidden_action: "This action is forbidden.",
-	forbidden_action_on_arguments_associated_resources:
-		"This action is forbidden on the resources associated to the provided arguments.",
-	invalid_arguments: "You have provided invalid arguments for this action.",
-	invalid_credentials: "Invalid email address or password.",
-	unauthenticated: "You must be authenticated to perform this action.",
-	unauthorized_action: "You are not authorized to perform this action.",
-	unauthorized_action_on_arguments_associated_resources:
-		"You are not authorized to perform this action on the resources associated to the provided arguments.",
-	unauthorized_arguments:
-		"You are not authorized to perform this action with the provided arguments.",
-	unexpected: "Something went wrong. Please try again later.",
-	too_many_requests: "Too many requests. Please try again later.",
+type LegacyErrorCode = Exclude<
+	TalawaGraphQLErrorExtensions,
+	{ code: ErrorCode }
+>["code"];
+type AllErrorCodes = LegacyErrorCode | ErrorCode;
 
-	// ErrorCode enum values (unified error handling)
-	token_expired: "Authentication token has expired.",
-	token_invalid: "Authentication token is invalid.",
-	unauthorized: "Unauthorized access.",
-	insufficient_permissions: "Insufficient permissions.",
-	invalid_input: "Invalid input provided.",
-	not_found: "Requested resource not found.",
-	already_exists: "Resource already exists.",
-	conflict: "Conflict with existing resource.",
-	rate_limit_exceeded: "Rate limit exceeded.",
-	deprecated: "Requested resource or operation is deprecated.",
-	internal_server_error: "Something went wrong. Please try again later.",
-	database_error: "Database operation failed. Please try again later.",
-	external_service_error:
-		"External service unavailable. Please try again later.",
-};
+export const defaultTalawaGraphQLErrorMessages: Record<AllErrorCodes, string> =
+	{
+		// Legacy error codes (for backward compatibility)
+		account_locked:
+			"Account temporarily locked due to too many failed login attempts. Please try again later.",
+		arguments_associated_resources_not_found:
+			"No associated resources found for the provided arguments.",
+		forbidden_action: "This action is forbidden.",
+		forbidden_action_on_arguments_associated_resources:
+			"This action is forbidden on the resources associated to the provided arguments.",
+		invalid_arguments: "You have provided invalid arguments for this action.",
+		invalid_credentials: "Invalid email address or password.",
+		unauthenticated: "You must be authenticated to perform this action.",
+		unauthorized_action: "You are not authorized to perform this action.",
+		unauthorized_action_on_arguments_associated_resources:
+			"You are not authorized to perform this action on the resources associated to the provided arguments.",
+		unauthorized_arguments:
+			"You are not authorized to perform this action with the provided arguments.",
+		unexpected: "Something went wrong. Please try again later.",
+		too_many_requests: "Too many requests. Please try again later.",
+
+		// ErrorCode enum values (unified error handling)
+		token_expired: "Authentication token has expired.",
+		token_invalid: "Authentication token is invalid.",
+		unauthorized: "Unauthorized access.",
+		insufficient_permissions: "Insufficient permissions.",
+		invalid_input: "Invalid input provided.",
+		not_found: "Requested resource not found.",
+		already_exists: "Resource already exists.",
+		conflict: "Conflict with existing resource.",
+		rate_limit_exceeded: "Rate limit exceeded.",
+		deprecated: "Requested resource or operation is deprecated.",
+		internal_server_error: "Something went wrong. Please try again later.",
+		database_error: "Database operation failed. Please try again later.",
+		external_service_error:
+			"External service unavailable. Please try again later.",
+	};
 
 /**
  * Custom GraphQL error class that provides structured error handling with typed extensions.

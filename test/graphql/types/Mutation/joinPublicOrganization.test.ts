@@ -225,8 +225,8 @@ suite("Mutation joinPublicOrganization", () => {
 			expect(joinPublicOrganizationResult.errors).toEqual(
 				expect.arrayContaining<TalawaGraphQLFormattedError>([
 					expect.objectContaining<TalawaGraphQLFormattedError>({
-						extensions: expect.objectContaining<UnauthenticatedExtensions>({
-							code: "unauthenticated",
+						extensions: expect.objectContaining({
+							code: "not_found",
 						}),
 						message: expect.any(String),
 						path: ["joinPublicOrganization"],

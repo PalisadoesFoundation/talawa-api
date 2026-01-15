@@ -91,9 +91,9 @@ describe("TalawaRestError", () => {
 					code: ErrorCode.INTERNAL_SERVER_ERROR,
 					message: "Server error",
 					correlationId,
-					details: undefined, // details should be undefined if not provided
 				},
 			});
+			expect(json.error).not.toHaveProperty("details");
 		});
 
 		it("should handle empty details", () => {
@@ -134,6 +134,12 @@ describe("TalawaRestError", () => {
 				code: ErrorCode.ARGUMENTS_ASSOCIATED_RESOURCES_NOT_FOUND,
 				expectedStatus: 404,
 			},
+			{ code: ErrorCode.FORBIDDEN_ACTION, expectedStatus: 403 },
+			{
+				code: ErrorCode.UNAUTHORIZED_ACTION_ON_ARGUMENTS_ASSOCIATED_RESOURCES,
+				expectedStatus: 403,
+			},
+			{ code: ErrorCode.UNEXPECTED, expectedStatus: 500 },
 		];
 
 		testCases.forEach(({ code, expectedStatus }) => {

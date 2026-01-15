@@ -63,6 +63,12 @@ describe("ERROR_CODE_TO_HTTP_STATUS mapping", () => {
 				ErrorCode.FORBIDDEN_ACTION_ON_ARGUMENTS_ASSOCIATED_RESOURCES
 			],
 		).toBe(403);
+		expect(ERROR_CODE_TO_HTTP_STATUS[ErrorCode.FORBIDDEN_ACTION]).toBe(403);
+		expect(
+			ERROR_CODE_TO_HTTP_STATUS[
+				ErrorCode.UNAUTHORIZED_ACTION_ON_ARGUMENTS_ASSOCIATED_RESOURCES
+			],
+		).toBe(403);
 	});
 
 	it("should map validation errors to 400", () => {
@@ -94,6 +100,7 @@ describe("ERROR_CODE_TO_HTTP_STATUS mapping", () => {
 		expect(ERROR_CODE_TO_HTTP_STATUS[ErrorCode.EXTERNAL_SERVICE_ERROR]).toBe(
 			502,
 		);
+		expect(ERROR_CODE_TO_HTTP_STATUS[ErrorCode.UNEXPECTED]).toBe(500);
 	});
 
 	it("should have mappings for all error codes", () => {

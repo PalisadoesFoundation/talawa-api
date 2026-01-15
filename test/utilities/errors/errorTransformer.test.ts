@@ -117,6 +117,7 @@ describe("normalizeError", () => {
 			code: ErrorCode.INTERNAL_SERVER_ERROR,
 			message: "Internal Server Error",
 			statusCode: 500,
+			details: "Something went wrong",
 		});
 	});
 
@@ -129,6 +130,7 @@ describe("normalizeError", () => {
 			code: ErrorCode.INTERNAL_SERVER_ERROR,
 			message: "Internal Server Error",
 			statusCode: 500,
+			details: "[object Object]",
 		});
 	});
 
@@ -140,12 +142,14 @@ describe("normalizeError", () => {
 			code: ErrorCode.INTERNAL_SERVER_ERROR,
 			message: "Internal Server Error",
 			statusCode: 500,
+			details: "null",
 		});
 
 		expect(normalizedUndefined).toEqual({
 			code: ErrorCode.INTERNAL_SERVER_ERROR,
 			message: "Internal Server Error",
 			statusCode: 500,
+			details: "undefined",
 		});
 	});
 
@@ -158,6 +162,7 @@ describe("normalizeError", () => {
 			code: ErrorCode.INTERNAL_SERVER_ERROR,
 			message: "Internal Server Error",
 			statusCode: 500,
+			details: "Something bad happened",
 		});
 	});
 

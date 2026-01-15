@@ -441,7 +441,7 @@ describe("errorHandlerPlugin", () => {
 					code: ErrorCode.INTERNAL_SERVER_ERROR,
 					message: expect.any(String),
 					correlationId: "generated-correlation-id",
-					details: null,
+					details: "Generic error message",
 				},
 			});
 		});

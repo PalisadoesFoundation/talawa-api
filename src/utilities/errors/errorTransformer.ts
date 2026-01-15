@@ -99,5 +99,8 @@ export function normalizeError(err: unknown): NormalizedError {
 		code: ErrorCode.INTERNAL_SERVER_ERROR,
 		message: "Internal Server Error",
 		statusCode: 500,
+		...(process.env.NODE_ENV !== "production"
+			? { details: String((err as Error)?.message ?? err) }
+			: {}),
 	};
 }
