@@ -9,8 +9,8 @@ import { usersTable } from "~/src/drizzle/tables/users";
 import { createTestOrganization, loginAdminUser } from "./GlobalFunctions";
 
 let testOrg: string;
-let testUser: {userId:string, authToken:string};
-let creatorUser: {adminId:string, authToken:string};
+let testUser: { userId: string; authToken: string };
+let creatorUser: { adminId: string; authToken: string };
 
 describe("organizationMembershipsTable database operations", () => {
 	beforeAll(async () => {
