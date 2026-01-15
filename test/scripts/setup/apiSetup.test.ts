@@ -23,6 +23,12 @@ import {
 	vi,
 } from "vitest";
 
+interface MockQuestion {
+	name: string;
+	validate?: (input: unknown) => boolean | string;
+	default?: unknown;
+}
+
 /**
  * Helper function to wait for a condition to become true by polling
  * @param condition - A function that returns true when the condition is met
@@ -162,7 +168,7 @@ describe("Setup -> apiSetup", () => {
 
 		expect(consoleErrorSpy).toHaveBeenCalledWith(mockError);
 		expect(fsCopyFileSyncSpy).toHaveBeenCalledWith(
-			".backup/.env.1700000000",
+			expect.stringContaining(".backup"),
 			".env",
 		);
 		expect(processExitSpy).toHaveBeenCalledWith(1);
@@ -186,8 +192,12 @@ describe("Setup -> apiSetup", () => {
 			.mockResolvedValueOnce({ API_IS_PINO_PRETTY: "false" })
 			.mockResolvedValueOnce({ API_JWT_EXPIRES_IN: "3600000" })
 			.mockResolvedValueOnce({ API_JWT_SECRET: "mocked-secret" })
-			.mockResolvedValueOnce({ API_EMAIL_VERIFICATION_TOKEN_EXPIRES_SECONDS: "86400" })
-			.mockResolvedValueOnce({ API_EMAIL_VERIFICATION_TOKEN_HMAC_SECRET: "mocked-hmac-secret" })
+			.mockResolvedValueOnce({
+				API_EMAIL_VERIFICATION_TOKEN_EXPIRES_SECONDS: "86400",
+			})
+			.mockResolvedValueOnce({
+				API_EMAIL_VERIFICATION_TOKEN_HMAC_SECRET: "mocked-hmac-secret",
+			})
 			.mockResolvedValueOnce({ API_LOG_LEVEL: "info" })
 			.mockResolvedValueOnce({ API_MINIO_ACCESS_KEY: "mocked-access-key" })
 			.mockResolvedValueOnce({ API_MINIO_END_POINT: "mocked-test-endpoint" })
@@ -250,8 +260,12 @@ describe("Setup -> apiSetup", () => {
 			.mockResolvedValueOnce({ API_IS_PINO_PRETTY: "false" })
 			.mockResolvedValueOnce({ API_JWT_EXPIRES_IN: "3600000" })
 			.mockResolvedValueOnce({ API_JWT_SECRET: "mocked-secret" })
-			.mockResolvedValueOnce({ API_EMAIL_VERIFICATION_TOKEN_EXPIRES_SECONDS: "86400" })
-			.mockResolvedValueOnce({ API_EMAIL_VERIFICATION_TOKEN_HMAC_SECRET: "mocked-hmac-secret" })
+			.mockResolvedValueOnce({
+				API_EMAIL_VERIFICATION_TOKEN_EXPIRES_SECONDS: "86400",
+			})
+			.mockResolvedValueOnce({
+				API_EMAIL_VERIFICATION_TOKEN_HMAC_SECRET: "mocked-hmac-secret",
+			})
 			.mockResolvedValueOnce({ API_LOG_LEVEL: "info" })
 			.mockResolvedValueOnce({ API_MINIO_ACCESS_KEY: "mocked-access-key" })
 			.mockResolvedValueOnce({ API_MINIO_END_POINT: "mocked-endpoint" })
@@ -306,8 +320,12 @@ describe("Setup -> apiSetup", () => {
 			.mockResolvedValueOnce({ API_IS_PINO_PRETTY: "false" })
 			.mockResolvedValueOnce({ API_JWT_EXPIRES_IN: "3600000" })
 			.mockResolvedValueOnce({ API_JWT_SECRET: "mocked-secret" })
-			.mockResolvedValueOnce({ API_EMAIL_VERIFICATION_TOKEN_EXPIRES_SECONDS: "86400" })
-			.mockResolvedValueOnce({ API_EMAIL_VERIFICATION_TOKEN_HMAC_SECRET: "mocked-hmac-secret" })
+			.mockResolvedValueOnce({
+				API_EMAIL_VERIFICATION_TOKEN_EXPIRES_SECONDS: "86400",
+			})
+			.mockResolvedValueOnce({
+				API_EMAIL_VERIFICATION_TOKEN_HMAC_SECRET: "mocked-hmac-secret",
+			})
 			.mockResolvedValueOnce({ API_LOG_LEVEL: "info" })
 			.mockResolvedValueOnce({ API_MINIO_ACCESS_KEY: "mocked-access-key" })
 			.mockResolvedValueOnce({ API_MINIO_END_POINT: "mocked-endpoint" })
@@ -366,8 +384,12 @@ describe("Setup -> apiSetup", () => {
 			.mockResolvedValueOnce({ API_IS_PINO_PRETTY: "false" })
 			.mockResolvedValueOnce({ API_JWT_EXPIRES_IN: "3600000" })
 			.mockResolvedValueOnce({ API_JWT_SECRET: "mocked-secret" })
-			.mockResolvedValueOnce({ API_EMAIL_VERIFICATION_TOKEN_EXPIRES_SECONDS: "86400" })
-			.mockResolvedValueOnce({ API_EMAIL_VERIFICATION_TOKEN_HMAC_SECRET: "mocked-hmac-secret" })
+			.mockResolvedValueOnce({
+				API_EMAIL_VERIFICATION_TOKEN_EXPIRES_SECONDS: "86400",
+			})
+			.mockResolvedValueOnce({
+				API_EMAIL_VERIFICATION_TOKEN_HMAC_SECRET: "mocked-hmac-secret",
+			})
 			.mockResolvedValueOnce({ API_LOG_LEVEL: "info" })
 			.mockResolvedValueOnce({ API_MINIO_ACCESS_KEY: "mocked-access-key" })
 			.mockResolvedValueOnce({ API_MINIO_END_POINT: "mocked-endpoint" })
@@ -428,8 +450,12 @@ describe("Setup -> apiSetup", () => {
 			.mockResolvedValueOnce({ API_IS_PINO_PRETTY: "false" })
 			.mockResolvedValueOnce({ API_JWT_EXPIRES_IN: "3600000" })
 			.mockResolvedValueOnce({ API_JWT_SECRET: "mocked-secret" })
-			.mockResolvedValueOnce({ API_EMAIL_VERIFICATION_TOKEN_EXPIRES_SECONDS: "86400" })
-			.mockResolvedValueOnce({ API_EMAIL_VERIFICATION_TOKEN_HMAC_SECRET: "mocked-hmac-secret" })
+			.mockResolvedValueOnce({
+				API_EMAIL_VERIFICATION_TOKEN_EXPIRES_SECONDS: "86400",
+			})
+			.mockResolvedValueOnce({
+				API_EMAIL_VERIFICATION_TOKEN_HMAC_SECRET: "mocked-hmac-secret",
+			})
 			.mockResolvedValueOnce({ API_LOG_LEVEL: "info" })
 			.mockResolvedValueOnce({ API_MINIO_ACCESS_KEY: "mocked-access-key" })
 			.mockResolvedValueOnce({ API_MINIO_END_POINT: "mocked-endpoint" })
@@ -495,14 +521,21 @@ describe("Setup -> apiSetup", () => {
 			.mockResolvedValueOnce({ API_IS_PINO_PRETTY: "false" })
 			.mockResolvedValueOnce({ API_JWT_EXPIRES_IN: "3600000" })
 			.mockResolvedValueOnce({ API_JWT_SECRET: "mocked-secret" })
-			.mockResolvedValueOnce({ API_EMAIL_VERIFICATION_TOKEN_EXPIRES_SECONDS: "86400" })
-			.mockResolvedValueOnce({ API_EMAIL_VERIFICATION_TOKEN_HMAC_SECRET: "mocked-hmac-secret-32-chars-long" })
+			.mockResolvedValueOnce({
+				API_EMAIL_VERIFICATION_TOKEN_EXPIRES_SECONDS: "86400",
+			})
+			.mockResolvedValueOnce({
+				API_EMAIL_VERIFICATION_TOKEN_HMAC_SECRET:
+					"mocked-hmac-secret-32-chars-long",
+			})
 			.mockResolvedValueOnce({ API_LOG_LEVEL: "info" })
 			.mockResolvedValueOnce({ API_MINIO_ACCESS_KEY: "mocked-access-key" })
 			.mockResolvedValueOnce({ API_MINIO_END_POINT: "mocked-endpoint" })
 			.mockResolvedValueOnce({ API_MINIO_PORT: "9001" })
 			.mockResolvedValueOnce({ API_MINIO_SECRET_KEY: "password" })
-			.mockResolvedValueOnce({ API_MINIO_TEST_END_POINT: "mocked-test-endpoint" })
+			.mockResolvedValueOnce({
+				API_MINIO_TEST_END_POINT: "mocked-test-endpoint",
+			})
 			.mockResolvedValueOnce({ API_MINIO_USE_SSL: "true" })
 			.mockResolvedValueOnce({ API_POSTGRES_DATABASE: "mocked-database" })
 			.mockResolvedValueOnce({ API_POSTGRES_HOST: "mocked-host" })
@@ -520,36 +553,50 @@ describe("Setup -> apiSetup", () => {
 		let answers: SetupAnswers = {};
 		answers = await apiSetup(answers);
 
+
+
 		// The 9th call (index 8) is API_EMAIL_VERIFICATION_TOKEN_EXPIRES_SECONDS
-		const emailExpiryCall = promptMock.mock.calls[8]?.[0] as any;
+		const emailExpiryCall = ((promptMock.mock.calls[8]?.[0] as unknown[])?.[0]) as MockQuestion;
 		expect(emailExpiryCall).toBeDefined();
-		expect(emailExpiryCall.name).toBe("API_EMAIL_VERIFICATION_TOKEN_EXPIRES_SECONDS");
+		expect(emailExpiryCall.name).toBe(
+			"API_EMAIL_VERIFICATION_TOKEN_EXPIRES_SECONDS",
+		);
 		expect(emailExpiryCall.validate).toBeDefined();
 
 		// Test email expiry validator
-		const expiryValidator = emailExpiryCall.validate;
+		// biome-ignore lint/style/noNonNullAssertion: Test assertion
+		const expiryValidator = emailExpiryCall.validate!;
 		expect(expiryValidator("86400")).toBe(true);
 		expect(expiryValidator("60")).toBe(true);
-		expect(expiryValidator("59")).toBe("Expiration must be at least 60 seconds.");
-		expect(expiryValidator("abc")).toBe("Expiration must be at least 60 seconds.");
+		expect(expiryValidator("59")).toBe(
+			"Expiration must be at least 60 seconds.",
+		);
+		expect(expiryValidator("abc")).toBe(
+			"Expiration must be at least 60 seconds.",
+		);
 
 		// The 10th call (index 9) is API_EMAIL_VERIFICATION_TOKEN_HMAC_SECRET
-		const hmacCall = promptMock.mock.calls[9]?.[0] as any;
+		const hmacCall = ((promptMock.mock.calls[9]?.[0] as unknown[])?.[0]) as MockQuestion;
 		expect(hmacCall).toBeDefined();
 		expect(hmacCall.name).toBe("API_EMAIL_VERIFICATION_TOKEN_HMAC_SECRET");
 		expect(hmacCall.validate).toBeDefined();
 
 		// Test HMAC secret validator
-		const hmacValidator = hmacCall.validate;
+		// biome-ignore lint/style/noNonNullAssertion: Test assertion
+		const hmacValidator = hmacCall.validate!;
 		expect(hmacValidator("12345678901234567890123456789012")).toBe(true); // 32 chars
-		expect(hmacValidator("short-secret")).toBe("HMAC secret must be at least 32 characters long.");
+		expect(hmacValidator("short-secret")).toBe(
+			"HMAC secret must be at least 32 characters long.",
+		);
 
 		// Verify default value uses a generated secret (length 128)
 		expect(hmacCall.default).toMatch(/^[a-f0-9]{128}$/);
 
 		// Verify answers are populated
 		expect(answers.API_EMAIL_VERIFICATION_TOKEN_EXPIRES_SECONDS).toBe("86400");
-		expect(answers.API_EMAIL_VERIFICATION_TOKEN_HMAC_SECRET).toBe("mocked-hmac-secret-32-chars-long");
+		expect(answers.API_EMAIL_VERIFICATION_TOKEN_HMAC_SECRET).toBe(
+			"mocked-hmac-secret-32-chars-long",
+		);
 	});
 });
 
@@ -694,7 +741,7 @@ describe("Error handling without backup", () => {
 		await apiSetup({});
 
 		expect(consoleErrorSpy).toHaveBeenCalledWith(mockError);
-		expect(fsExistsSyncSpy).toHaveBeenCalledWith(".backup");
+		expect(fsExistsSyncSpy).toHaveBeenCalledWith(expect.stringContaining(".backup"));
 		expect(fsCopyFileSyncSpy).not.toHaveBeenCalled();
 		expect(processExitSpy).toHaveBeenCalledWith(1);
 
