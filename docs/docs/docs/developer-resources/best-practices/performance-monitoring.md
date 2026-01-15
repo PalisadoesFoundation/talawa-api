@@ -320,6 +320,34 @@ curl -H "Authorization: Bearer your-secure-api-key-here" \
   http://localhost:4000/metrics/perf
 ```
 
+### Metrics Aggregation Output
+
+The background worker aggregates performance snapshots and logs the results to the standard output. This provides a periodic summary of system performance without needing to query the API.
+
+**Example Log Output:**
+
+```json
+{
+  "level": 30,
+  "time": 1705234567890,
+  "msg": "Metrics aggregation completed successfully",
+  "duration": "15ms",
+  "windowMinutes": 5,
+  "snapshotCount": 120,
+  "requestCount": 120,
+  "operationCount": 4,
+  "slowOperationCount": 2,
+  "cacheHitRate": "85.50%"
+}
+```
+
+**Key Fields:**
+- `windowMinutes`: Time window used for aggregation
+- `snapshotCount`: Number of snapshots processed
+- `requestCount`: Total requests in the window
+- `slowOperationCount`: Number of operations potentially needing optimization
+- `cacheHitRate`: Global cache efficiency for the period
+
 ## Production Considerations
 
 ### Security
