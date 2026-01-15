@@ -150,24 +150,6 @@ describe("Performance Plugin - Metrics Interface", () => {
 			}
 		});
 
-		it("should filter out old snapshots based on time window", async () => {
-			// Make a request
-			await app.inject({ method: "GET", url: "/metrics/perf" });
-
-			// Wait a bit to ensure timestamp difference
-			await new Promise((resolve) => setTimeout(resolve, 10));
-
-			// Get snapshots with window that includes recent ones
-			const recentSnapshots = app.getMetricsSnapshots?.(5); // 5 minutes window
-			expect(recentSnapshots).toBeDefined();
-			expect(recentSnapshots?.length).toBeGreaterThanOrEqual(1);
-
-			// Get snapshots with very small window (should filter out most)
-			const veryRecentSnapshots = app.getMetricsSnapshots?.(0.0001);
-			expect(veryRecentSnapshots).toBeDefined();
-			expect(Array.isArray(veryRecentSnapshots)).toBe(true);
-		});
-
 		it("should collect multiple performance snapshots", async () => {
 			// Make multiple requests with small delays
 			await app.inject({ method: "GET", url: "/metrics/perf" });

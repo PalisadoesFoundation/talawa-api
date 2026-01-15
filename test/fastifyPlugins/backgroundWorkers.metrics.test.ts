@@ -138,9 +138,12 @@ describe("Background Workers Plugin - Metrics Integration", () => {
 			await app.register(backgroundWorkersPlugin);
 			await app.ready();
 
+			// Capture logger reference before closing the app
+			const logger = app.log;
+
 			await app.close();
 
-			expect(stopBackgroundWorkers).toHaveBeenCalledWith(app.log);
+			expect(stopBackgroundWorkers).toHaveBeenCalledWith(logger);
 		});
 	});
 
