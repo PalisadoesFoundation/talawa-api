@@ -6,7 +6,7 @@
 
 > **validatePluginManifest**(`manifest`): `manifest is IPluginManifest`
 
-Defined in: [src/plugin/utils.ts:12](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/plugin/utils.ts#L12)
+Defined in: [src/plugin/utils.ts:13](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/plugin/utils.ts#L13)
 
 Validates a plugin manifest structure
 
