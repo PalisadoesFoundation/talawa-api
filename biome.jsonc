@@ -43,7 +43,6 @@
 				"src/tracing.ts",
 				"src/observability/**",
 				"src/services/caching/cacheConfig.ts",
-				"src/utilities/recaptchaUtils.ts",
 				"scripts/**",
 				"vitest.config.ts",
 				"vite.config.ts",

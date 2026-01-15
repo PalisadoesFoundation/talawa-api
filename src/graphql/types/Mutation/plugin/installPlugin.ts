@@ -109,7 +109,7 @@ builder.mutationField("installPlugin", (t) =>
 						}
 					} catch (error) {
 						ctx.log.error(
-							{ err: error },
+							{ pluginId, err: error },
 							"Error during plugin lifecycle installation",
 						);
 						// Don't throw error here - plugin is installed but lifecycle failed

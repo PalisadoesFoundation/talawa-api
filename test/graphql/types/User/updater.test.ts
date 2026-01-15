@@ -539,14 +539,13 @@ suite("User field updater", () => {
 				expect(userUpdaterResult.data.user?.updater).toBeNull();
 				const errors = userUpdaterResult.errors;
 				expect(errors).toBeDefined();
+				expect(errors?.length).toBeGreaterThan(0);
 
-				if (errors && errors.length > 0) {
-					const firstError = errors[0];
-					expect(firstError).toBeDefined();
-					expect(firstError?.message).toContain(
-						"Something went wrong. Please try again later.",
-					);
-				}
+				const firstError = errors?.[0];
+				expect(firstError).toBeDefined();
+				expect(firstError?.message).toContain(
+					"Something went wrong. Please try again later.",
+				);
 			});
 		},
 	);

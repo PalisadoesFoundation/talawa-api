@@ -134,6 +134,11 @@ describe("installPlugin mutation", () => {
 		const result = (await resolver({}, args, ctx)) as typeof existingPlugin;
 		expect(result.isInstalled).toBe(true);
 		expect(fakeManager.installPlugin).toHaveBeenCalledWith(validInput.pluginId);
+		// Verify structured logging
+		expect(ctx.log.info).toHaveBeenCalledWith(
+			expect.objectContaining({ pluginId: "test_plugin" }),
+			expect.any(String),
+		);
 	});
 
 	it("throws on invalid input schema", async () => {
@@ -221,6 +226,14 @@ describe("installPlugin mutation", () => {
 		const result = (await resolver({}, args, ctx)) as typeof existingPlugin;
 		expect(result.isInstalled).toBe(true);
 		expect(fakeManager.installPlugin).toHaveBeenCalledWith(validInput.pluginId);
+		// Verify structured logging for error
+		expect(ctx.log.error).toHaveBeenCalledWith(
+			expect.objectContaining({
+				pluginId: "test_plugin",
+				err: expect.anything(),
+			}),
+			expect.any(String),
+		);
 	});
 
 	it("handles database update error", async () => {

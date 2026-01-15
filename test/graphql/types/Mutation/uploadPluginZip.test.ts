@@ -264,6 +264,11 @@ describe("uploadPluginZip mutation", () => {
 			const ctx = makeCtx();
 			const args = { input: validInput };
 			await expect(resolver({}, args, ctx)).rejects.toThrow(TalawaGraphQLError);
+			// Verify error was logged
+			expect(ctx.log.error).toHaveBeenCalledWith(
+				expect.objectContaining({ err: expect.anything() }),
+				expect.any(String),
+			);
 		});
 
 		it("handles non-Error objects from installPluginFromZip", async () => {
@@ -273,6 +278,8 @@ describe("uploadPluginZip mutation", () => {
 			const ctx = makeCtx();
 			const args = { input: validInput };
 			await expect(resolver({}, args, ctx)).rejects.toThrow(TalawaGraphQLError);
+			// Verify error was logged
+			expect(ctx.log.error).toHaveBeenCalled();
 		});
 
 		it("handles null/undefined errors from installPluginFromZip", async () => {
@@ -282,6 +289,8 @@ describe("uploadPluginZip mutation", () => {
 			const ctx = makeCtx();
 			const args = { input: validInput };
 			await expect(resolver({}, args, ctx)).rejects.toThrow(TalawaGraphQLError);
+			// Verify error was logged
+			expect(ctx.log.error).toHaveBeenCalled();
 		});
 
 		it("handles database query errors", async () => {
