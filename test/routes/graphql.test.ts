@@ -2181,15 +2181,13 @@ describe("GraphQL Routes", () => {
 					(call) => call[1]?.schema !== undefined,
 				);
 
-				if (!mercuriusCall) {
-					throw new Error("Could not find mercurius registration call");
-				}
+				expect(mercuriusCall).toBeDefined();
+				if (!mercuriusCall) return;
 
 				errorFormatter = mercuriusCall[1].errorFormatter;
 
-				if (!errorFormatter) {
-					throw new Error("errorFormatter not found in mercurius registration");
-				}
+				expect(errorFormatter).toBeDefined();
+				if (!errorFormatter) return;
 			});
 
 			it("should remove sensitive extension keys", () => {
@@ -2414,6 +2412,23 @@ describe("GraphQL Routes", () => {
 						]),
 					}),
 				);
+			});
+			it("should return 'unknown' correlationId when context is empty", () => {
+				const result = errorFormatter(
+					{
+						data: null,
+						errors: [
+							new TalawaGraphQLError({
+								message: "Error",
+								extensions: { code: ErrorCode.INTERNAL_SERVER_ERROR },
+							}),
+						],
+					},
+					{}, // Empty context
+				);
+
+				const error = result.response.errors?.[0];
+				expect(error?.extensions?.correlationId).toBe("unknown");
 			});
 		});
 	});

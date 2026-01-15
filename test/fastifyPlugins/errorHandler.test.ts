@@ -66,7 +66,15 @@ describe("errorHandlerPlugin", () => {
 		});
 
 		// Add GraphQL route that throws an error
-		app.post("/graphql", async () => {
+		app.post("/graphql", async (request: FastifyRequest) => {
+			const query = request.query as { errorType?: string };
+			if (query?.errorType === "details") {
+				throw new TalawaRestError({
+					code: ErrorCode.INVALID_ARGUMENTS,
+					message: "Invalid args",
+					details: { invalidField: "foo" },
+				});
+			}
 			throw new TalawaRestError({
 				code: ErrorCode.UNAUTHENTICATED,
 				message: "Not authenticated",
@@ -289,7 +297,7 @@ describe("errorHandlerPlugin", () => {
 		it("includes details in GraphQL error response when present", async () => {
 			const res = await app.inject({
 				method: "POST",
-				url: "/graphql",
+				url: "/graphql?errorType=details",
 				headers: {
 					"content-type": "application/json",
 				},
@@ -300,7 +308,10 @@ describe("errorHandlerPlugin", () => {
 
 			expect(res.statusCode).toBe(200);
 			const body = res.json();
-			expect(body.errors[0].extensions.code).toBe("unauthenticated");
+			expect(body.errors[0].extensions.code).toBe("invalid_arguments");
+			expect(body.errors[0].extensions.details).toEqual({
+				invalidField: "foo",
+			});
 		});
 	});
 
