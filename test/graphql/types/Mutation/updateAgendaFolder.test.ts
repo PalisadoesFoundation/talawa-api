@@ -426,7 +426,7 @@ suite("Mutation field updateAgendaFolder", () => {
 		);
 	});
 
-	test("Updates only name successfully", async () => {
+	test("Updates only description successfully", async () => {
 		const { userId: adminUserId, token } = await getAdminAuth();
 
 		const env = await createOrganizationEventAndFolder({ adminUserId });
@@ -437,7 +437,7 @@ suite("Mutation field updateAgendaFolder", () => {
 			variables: {
 				input: {
 					id: env.folderId,
-					name: "Name Only Update",
+					description: "Description only update",
 				},
 			},
 		});
@@ -446,9 +446,61 @@ suite("Mutation field updateAgendaFolder", () => {
 		expect(result.data?.updateAgendaFolder).toEqual(
 			expect.objectContaining({
 				id: env.folderId,
-				name: "Name Only Update",
+				description: "Description only update",
 			}),
 		);
+	});
+
+	test("Updates only sequence for non-default folder", async () => {
+		const { userId: adminUserId, token } = await getAdminAuth();
+
+		const env = await createOrganizationEventAndFolder({ adminUserId });
+		cleanupFns.push(env.cleanup);
+
+		const result = await mercuriusClient.mutate(Mutation_updateAgendaFolder, {
+			headers: { authorization: `bearer ${token}` },
+			variables: {
+				input: {
+					id: env.folderId,
+					sequence: 99,
+				},
+			},
+		});
+
+		expect(result.errors).toBeUndefined();
+		expect(result.data?.updateAgendaFolder).toEqual(
+			expect.objectContaining({
+				id: env.folderId,
+				sequence: 99,
+			}),
+		);
+	});
+
+	test("Allows global admin to update folder without organization membership", async () => {
+		const { userId: adminUserId, token } = await getAdminAuth();
+
+		const env = await createOrganizationEventAndFolder({ adminUserId });
+		cleanupFns.push(env.cleanup);
+
+		// Delete admin membership explicitly
+		await server.drizzleClient
+			.delete(organizationMembershipsTable)
+			.where(
+				eq(organizationMembershipsTable.organizationId, env.organizationId),
+			);
+
+		const result = await mercuriusClient.mutate(Mutation_updateAgendaFolder, {
+			headers: { authorization: `bearer ${token}` },
+			variables: {
+				input: {
+					id: env.folderId,
+					name: "Global Admin Update",
+				},
+			},
+		});
+
+		expect(result.errors).toBeUndefined();
+		expect(result.data?.updateAgendaFolder?.name).toBe("Global Admin Update");
 	});
 
 	test("Returns unexpected when update returns empty array", async () => {
