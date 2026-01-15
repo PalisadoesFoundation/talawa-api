@@ -1,7 +1,31 @@
 import type { FastifyBaseLogger } from "fastify";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { PerfSnapshot } from "~/src/utilities/metrics/performanceTracker";
-import { runMetricsAggregationWorker } from "~/src/workers/metrics/metricsAggregationWorker";
+import {
+	calculatePercentile,
+	runMetricsAggregationWorker,
+} from "~/src/workers/metrics/metricsAggregationWorker";
+
+describe("calculatePercentile", () => {
+	it("returns 0 for empty array", () => {
+		const result = calculatePercentile([], 50);
+		expect(result).toBe(0);
+	});
+
+	it("returns the single value for single-element array", () => {
+		const result = calculatePercentile([42], 50);
+		expect(result).toBe(42);
+	});
+
+	it("calculates percentile correctly for multiple values", () => {
+		const values = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
+		// Median (50th percentile) of [1,2,3,4,5,6,7,8,9,10] with linear interpolation
+		// index = 0.5 * 9 = 4.5, interpolate between values[4]=5 and values[5]=6
+		// result = 5 + 0.5 * (6 - 5) = 5.5
+		const median = calculatePercentile(values, 50);
+		expect(median).toBeCloseTo(5.5, 1);
+	});
+});
 
 describe("metricsAggregationWorker", () => {
 	let mockLogger: FastifyBaseLogger;

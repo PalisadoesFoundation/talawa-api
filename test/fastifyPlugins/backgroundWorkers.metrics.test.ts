@@ -103,6 +103,35 @@ describe("Background Workers Plugin - Metrics Integration", () => {
 			await testApp.close();
 		});
 
+		it("should throw error when getMetricsSnapshots is not provided by performance plugin", async () => {
+			// Create app with a fake "performance" plugin that doesn't provide getMetricsSnapshots
+			const testApp = Fastify({
+				logger: {
+					level: "silent",
+				},
+			});
+
+			// Register drizzleClient as a proper named plugin
+			await testApp.register(mockDrizzleClientPlugin);
+
+			// Create a mock performance plugin that satisfies dependency but doesn't provide getMetricsSnapshots
+			const brokenPerformancePlugin = fp(
+				async () => {
+					// Don't decorate the app with getMetricsSnapshots
+				},
+				{ name: "performance" },
+			);
+
+			await testApp.register(brokenPerformancePlugin);
+
+			// Register background workers - should throw due to runtime guard
+			await expect(testApp.register(backgroundWorkersPlugin)).rejects.toThrow(
+				"Required dependency 'getMetricsSnapshots' from performance plugin is not available",
+			);
+
+			await testApp.close();
+		});
+
 		it("should register shutdown hook to stop workers", async () => {
 			const { stopBackgroundWorkers } = await import("~/src/workers");
 

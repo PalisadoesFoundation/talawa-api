@@ -188,6 +188,49 @@ describe("backgroundWorkerService - metrics integration", () => {
 			await stopBackgroundWorkers(mockLogger);
 		});
 
+		it.each([
+			"1",
+			"yes",
+			"YES",
+		])("starts metrics worker when API_METRICS_AGGREGATION_ENABLED is '%s'", async (enabledValue) => {
+			process.env.API_METRICS_AGGREGATION_ENABLED = enabledValue;
+
+			await setupWorkerMocks();
+
+			await startBackgroundWorkers(
+				mockDrizzleClient,
+				mockLogger,
+				mockGetMetricsSnapshots,
+			);
+
+			const cron = await import("node-cron");
+			// Should schedule 3 workers: materialization, cleanup, and metrics
+			expect(vi.mocked(cron.default.schedule)).toHaveBeenCalledTimes(3);
+
+			await stopBackgroundWorkers(mockLogger);
+		});
+
+		it.each([
+			"0",
+			"no",
+		])("does not start metrics worker when API_METRICS_AGGREGATION_ENABLED is '%s'", async (disabledValue) => {
+			process.env.API_METRICS_AGGREGATION_ENABLED = disabledValue;
+
+			await setupWorkerMocks();
+
+			await startBackgroundWorkers(
+				mockDrizzleClient,
+				mockLogger,
+				mockGetMetricsSnapshots,
+			);
+
+			const cron = await import("node-cron");
+			// Should schedule only 2 workers: materialization and cleanup
+			expect(vi.mocked(cron.default.schedule)).toHaveBeenCalledTimes(2);
+
+			await stopBackgroundWorkers(mockLogger);
+		});
+
 		it("warns when metrics enabled but snapshot getter not available", async () => {
 			process.env.API_METRICS_AGGREGATION_ENABLED = "true";
 
@@ -463,7 +506,7 @@ describe("backgroundWorkerService - metrics integration", () => {
 	});
 
 	describe("getBackgroundWorkerStatus", () => {
-		it("includes metrics schedule when metrics is enabled", async () => {
+		it("includes metrics schedule when metrics is enabled", () => {
 			process.env.API_METRICS_AGGREGATION_ENABLED = "true";
 			process.env.API_METRICS_AGGREGATION_CRON_SCHEDULE = "*/10 * * * *";
 
@@ -486,6 +529,17 @@ describe("backgroundWorkerService - metrics integration", () => {
 			// When API_METRICS_AGGREGATION_ENABLED is not set, it defaults to true
 			// (matching startBackgroundWorkers behavior)
 			delete process.env.API_METRICS_AGGREGATION_ENABLED;
+			delete process.env.API_METRICS_AGGREGATION_CRON_SCHEDULE;
+
+			const status = getBackgroundWorkerStatus();
+
+			expect(status.metricsSchedule).toBe("*/5 * * * *");
+			expect(status.metricsEnabled).toBe(true);
+		});
+
+		it("defaults to enabled when API_METRICS_AGGREGATION_ENABLED is empty string", () => {
+			// Empty string should also default to true
+			process.env.API_METRICS_AGGREGATION_ENABLED = "";
 			delete process.env.API_METRICS_AGGREGATION_CRON_SCHEDULE;
 
 			const status = getBackgroundWorkerStatus();

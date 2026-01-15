@@ -13,7 +13,7 @@ import type {
  * @param percentile - Percentile to calculate (0-100)
  * @returns The percentile value
  */
-function calculatePercentile(
+export function calculatePercentile(
 	sortedValues: number[],
 	percentile: number,
 ): number {
