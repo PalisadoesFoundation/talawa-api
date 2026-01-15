@@ -26,19 +26,19 @@ export type ExplicitAuthenticationTokenPayload = {
  */
 export type CurrentClient =
 	| ({
-			/**
-			 * Type union discriminator field when the current client is unauthenticated.
-			 */
-			isAuthenticated: false;
-	  } & {
-			[K in keyof ExplicitAuthenticationTokenPayload]?: never;
-	  })
+		/**
+		 * Type union discriminator field when the current client is unauthenticated.
+		 */
+		isAuthenticated: false;
+	} & {
+		[K in keyof ExplicitAuthenticationTokenPayload]?: never;
+	})
 	| ({
-			/**
-			 * Type union discriminator field when the current client is authenticated.
-			 */
-			isAuthenticated: true;
-	  } & ExplicitAuthenticationTokenPayload);
+		/**
+		 * Type union discriminator field when the current client is authenticated.
+		 */
+		isAuthenticated: true;
+	} & ExplicitAuthenticationTokenPayload);
 
 /**
  * Type of the transport protocol agnostic explicit context object that is merged with the implcit mercurius context object and passed to the graphql resolvers each time they resolve a graphql operation at runtime.
@@ -64,6 +64,7 @@ export type ExplicitGraphQLContext = {
 		| "API_PASSWORD_RESET_USER_TOKEN_EXPIRES_SECONDS"
 		| "API_PASSWORD_RESET_ADMIN_TOKEN_EXPIRES_SECONDS"
 		| "API_EMAIL_VERIFICATION_TOKEN_EXPIRES_SECONDS"
+		| "API_EMAIL_VERIFICATION_TOKEN_HMAC_SECRET"
 		| "API_COOKIE_DOMAIN"
 		| "API_IS_SECURE_COOKIES"
 		| "API_JWT_EXPIRES_IN"

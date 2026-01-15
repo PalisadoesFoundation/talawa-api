@@ -110,6 +110,10 @@ This environment variable is used to configure the email provider to be used by 
 
 This environment variable is used to configure the time in seconds for which an email verification token remains valid. The default value is `86400` (24 hours).
 
+### API_EMAIL_VERIFICATION_TOKEN_HMAC_SECRET
+
+This environment variable is used to configure the secret key for hashing email verification tokens. Used for defense-in-depth; tokens already have 256 bits of entropy. Should be at least 32 characters for security best practices. Defaults to a static value if not provided.
+
 ### API_HOST
 
 This environment variable is used to configure the host ip that can access the host port on which talawa api listens to at runtime.
