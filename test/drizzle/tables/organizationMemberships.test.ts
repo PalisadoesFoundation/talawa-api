@@ -12,6 +12,7 @@ import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import {
 	organizationMembershipsTable,
 	organizationMembershipsTableInsertSchema,
+	organizationMembershipsTableRelations,
 } from "~/src/drizzle/tables/organizationMemberships";
 import { organizationsTable } from "~/src/drizzle/tables/organizations";
 import { usersTable } from "~/src/drizzle/tables/users";
@@ -245,10 +246,9 @@ describe("organizationMembershipsTable database operations", () => {
 				memberId: testUser.userId,
 				organizationId: testOrg,
 				role: "regular",
+				createdAt: new Date(Date.now() - 1000),
 			})
 			.returning();
-
-		await new Promise((resolve) => setTimeout(resolve, 10));
 
 		const [updated] = await server.drizzleClient
 			.update(organizationMembershipsTable)
@@ -943,6 +943,10 @@ describe("organizationMembershipsTableRelations Operations", () => {
 				.delete(usersTable)
 				.where(eq(usersTable.id, userId));
 		}
+	});
+
+	it("exports organizationMembershipsTableRelations", () => {
+		expect(organizationMembershipsTableRelations).toBeDefined();
 	});
 
 	it("resolves creator relation", async () => {
