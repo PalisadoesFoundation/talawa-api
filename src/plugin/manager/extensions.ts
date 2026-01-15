@@ -34,9 +34,6 @@ export class ExtensionLoader {
 		manifest: IPluginManifest,
 		pluginModule: Record<string, unknown>,
 	): Promise<void> {
-		const plugin = this.loadedPlugins.get(pluginId);
-		if (!plugin) return;
-
 		try {
 			// Load GraphQL extensions (builder-first approach only)
 			if (manifest.extensionPoints?.graphql) {

@@ -319,7 +319,7 @@ describe("ExtensionLoader basic", () => {
 				manifest,
 				pluginModule,
 			),
-		).resolves.toBeUndefined(); // Should return early without error
+		).rejects.toThrow(/Plugin .* not found/);
 	});
 
 	it("should initialize databaseTables if not present", async () => {
@@ -435,7 +435,7 @@ describe("ExtensionLoader basic", () => {
 				manifest,
 				pluginModule,
 			),
-		).resolves.toBeUndefined(); // Should return early without error
+		).rejects.toThrow(/Plugin .* not found/);
 	});
 
 	it("should initialize hooks if not present", async () => {
@@ -1308,7 +1308,7 @@ describe("ExtensionLoader basic", () => {
 				manifest,
 				pluginModule,
 			),
-		).resolves.toBeUndefined(); // Should return early without error
+		).rejects.toThrow(/Failed to load GraphQL builder extension/);
 	});
 
 	describe("Webhook Extensions", () => {
@@ -1458,7 +1458,7 @@ describe("ExtensionLoader basic", () => {
 					manifest,
 					pluginModule,
 				),
-			).resolves.toBeUndefined(); // Should return early without error
+			).rejects.toThrow(/Plugin .* not found/);
 		});
 
 		it("should initialize webhooks if not present", async () => {
@@ -1900,5 +1900,244 @@ describe("ExtensionLoader basic", () => {
 			).toBe(true);
 			expect(mockExtensionRegistry.graphql.builderExtensions).toHaveLength(1);
 		});
+	});
+});
+
+describe("Webhook Extensions", () => {
+	let extensionLoader: ExtensionLoader;
+	let mockLoadedPlugins: Map<string, ILoadedPlugin>;
+	let mockExtensionRegistry: IExtensionRegistry;
+
+	beforeEach(() => {
+		vi.clearAllMocks();
+		(safeRequire as ReturnType<typeof vi.fn>).mockReset();
+		mockLoadedPlugins = new Map();
+		mockLoadedPlugins.set("test-plugin", {
+			id: "test-plugin",
+			manifest: {
+				pluginId: "test-plugin",
+				name: "Test Plugin",
+				version: "1.0.0",
+				description: "desc",
+				author: "author",
+				main: "index.js",
+			},
+			graphqlResolvers: {},
+			databaseTables: {},
+			hooks: {},
+			webhooks: {},
+			status: PluginStatus.ACTIVE,
+		});
+		mockExtensionRegistry = {
+			graphql: {
+				builderExtensions: [],
+			},
+			database: {
+				tables: {},
+				enums: {},
+				relations: {},
+			},
+			hooks: {
+				pre: {},
+				post: {},
+			},
+			webhooks: {
+				handlers: {},
+			},
+		};
+		extensionLoader = new ExtensionLoader(
+			"/test/plugins",
+			mockLoadedPlugins,
+			mockExtensionRegistry,
+		);
+	});
+
+	it("should load webhook extension successfully", async () => {
+		const manifest: IPluginManifest = {
+			pluginId: "test-plugin",
+			name: "Test Plugin",
+			version: "1.0.0",
+			description: "desc",
+			author: "author",
+			main: "index.js",
+			extensionPoints: {
+				webhooks: [
+					{
+						path: "/webhook/test",
+						handler: "handleWebhook",
+						method: "POST",
+					},
+				],
+			},
+		};
+		const pluginModule = {
+			handleWebhook: vi.fn(async () => ({ success: true })),
+		};
+		await extensionLoader.loadExtensionPoints(
+			"test-plugin",
+			manifest,
+			pluginModule,
+		);
+		expect(
+			mockExtensionRegistry.webhooks.handlers["test-plugin:/webhook/test"],
+		).toBeDefined();
+		expect(
+			mockLoadedPlugins.get("test-plugin")?.webhooks[
+				"test-plugin:/webhook/test"
+			],
+		).toBeDefined();
+	});
+
+	it("should throw when webhook extension plugin not found in loaded plugins", async () => {
+		const manifest: IPluginManifest = {
+			pluginId: "non-existent-plugin",
+			name: "Non Existent",
+			version: "1.0.0",
+			description: "desc",
+			author: "author",
+			main: "index.js",
+			extensionPoints: {
+				webhooks: [
+					{
+						path: "/webhook/test",
+						handler: "handleWebhook",
+						method: "POST",
+					},
+				],
+			},
+		};
+		const pluginModule = {
+			handleWebhook: vi.fn(async () => ({ success: true })),
+		};
+		await expect(
+			extensionLoader.loadExtensionPoints(
+				"non-existent-plugin",
+				manifest,
+				pluginModule,
+			),
+		).rejects.toThrow(
+			"Failed to load extension points: Plugin non-existent-plugin not found in loaded plugins",
+		);
+	});
+
+	it("should initialize webhooks object if not present", async () => {
+		const plugin = mockLoadedPlugins.get("test-plugin");
+		if (plugin) {
+			plugin.webhooks = undefined as unknown as Record<
+				string,
+				(request: unknown, reply: unknown) => Promise<unknown>
+			>;
+		}
+
+		const manifest: IPluginManifest = {
+			pluginId: "test-plugin",
+			name: "Test Plugin",
+			version: "1.0.0",
+			description: "desc",
+			author: "author",
+			main: "index.js",
+			extensionPoints: {
+				webhooks: [
+					{
+						path: "/webhook/test",
+						handler: "handleWebhook",
+						method: "GET",
+					},
+				],
+			},
+		};
+		const pluginModule = {
+			handleWebhook: vi.fn(async () => ({ success: true })),
+		};
+		await extensionLoader.loadExtensionPoints(
+			"test-plugin",
+			manifest,
+			pluginModule,
+		);
+		expect(mockLoadedPlugins.get("test-plugin")?.webhooks).toBeDefined();
+	});
+});
+
+describe("Hook Extension Plugin Not Found", () => {
+	let extensionLoader: ExtensionLoader;
+	let mockLoadedPlugins: Map<string, ILoadedPlugin>;
+	let mockExtensionRegistry: IExtensionRegistry;
+
+	beforeEach(() => {
+		vi.clearAllMocks();
+		(safeRequire as ReturnType<typeof vi.fn>).mockReset();
+		mockLoadedPlugins = new Map();
+		mockLoadedPlugins.set("test-plugin", {
+			id: "test-plugin",
+			manifest: {
+				pluginId: "test-plugin",
+				name: "Test Plugin",
+				version: "1.0.0",
+				description: "desc",
+				author: "author",
+				main: "index.js",
+			},
+			graphqlResolvers: {},
+			databaseTables: {},
+			hooks: {},
+			webhooks: {},
+			status: PluginStatus.ACTIVE,
+		});
+		mockExtensionRegistry = {
+			graphql: {
+				builderExtensions: [],
+			},
+			database: {
+				tables: {},
+				enums: {},
+				relations: {},
+			},
+			hooks: {
+				pre: {},
+				post: {},
+			},
+			webhooks: {
+				handlers: {},
+			},
+		};
+		extensionLoader = new ExtensionLoader(
+			"/test/plugins",
+			mockLoadedPlugins,
+			mockExtensionRegistry,
+		);
+	});
+
+	it("should throw when hook extension plugin not found after file load", async () => {
+		const manifest: IPluginManifest = {
+			pluginId: "non-existent-plugin",
+			name: "Non Existent",
+			version: "1.0.0",
+			description: "desc",
+			author: "author",
+			main: "index.js",
+			extensionPoints: {
+				hooks: [
+					{
+						type: "pre",
+						event: "test.event",
+						handler: "testHandler",
+						file: "hooks.js",
+					},
+				],
+			},
+		};
+		(safeRequire as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
+			testHandler: () => {},
+		});
+		const pluginModule: Record<string, unknown> = {};
+		await expect(
+			extensionLoader.loadExtensionPoints(
+				"non-existent-plugin",
+				manifest,
+				pluginModule,
+			),
+		).rejects.toThrow(
+			"Failed to load extension points: Plugin non-existent-plugin not found in loaded plugins",
+		);
 	});
 });

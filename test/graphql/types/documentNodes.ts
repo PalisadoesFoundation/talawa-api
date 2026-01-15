@@ -402,6 +402,15 @@ export const Query_user_updater =
     }
 }`);
 
+export const Query_user_updater_simple =
+	gql(`query Query_user_updater_simple($input: QueryUserInput!) {
+    user(input: $input) {
+        updater {
+            id
+        }
+    }
+}`);
+
 export const Query_fund = gql(`query Query_fund($input: QueryFundInput!) {
     fund(input: $input) {
       id
