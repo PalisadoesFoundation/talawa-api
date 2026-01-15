@@ -27,7 +27,7 @@ export async function traceable<T>(
 		return fn();
 	}
 
-	const tracer = trace.getTracer("talawa-api");
+	const tracer = trace.getTracer(observabilityConfig.serviceName);
 
 	return tracer.startActiveSpan(`db:${model}.${op}`, async (span: Span) => {
 		// Set safe semantic attributes - no SQL queries or PII
@@ -42,6 +42,7 @@ export async function traceable<T>(
 			span.recordException(
 				error instanceof Error ? error : new Error(String(error)),
 			);
+			
 			throw error;
 		} finally {
 			span.end();

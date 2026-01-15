@@ -48,9 +48,10 @@ describe("traceableQuery", () => {
 					enabled: true,
 				},
 			}));
+			const mockGetTracer = vi.fn().mockReturnValue(mockTracer);
 			vi.doMock("@opentelemetry/api", () => ({
 				trace: {
-					getTracer: vi.fn().mockReturnValue(mockTracer),
+					getTracer: mockGetTracer,
 				},
 			}));
 		});
@@ -144,12 +145,19 @@ describe("traceableQuery", () => {
 	});
 
 	describe("when observability is disabled", () => {
-		beforeEach(() => {
+		// biome-ignore lint/suspicious/noExplicitAny: SpyInstance type is complex for trace.getTracer
+		let getTracerSpy: any;
+
+		beforeEach(async () => {
 			vi.doMock("~/src/config/observability", () => ({
 				observabilityConfig: {
 					enabled: false,
 				},
 			}));
+
+			// Spy on the OpenTelemetry entry point to verify it's not called when disabled
+			const otelApi = await import("@opentelemetry/api");
+			getTracerSpy = vi.spyOn(otelApi.trace, "getTracer");
 		});
 
 		it("should execute the function without creating spans", async () => {
@@ -160,8 +168,8 @@ describe("traceableQuery", () => {
 			});
 
 			expect(result).toEqual([{ id: "1", name: "Test User" }]);
-			// mockTracer.startActiveSpan should not be called when disabled
-			expect(mockTracer.startActiveSpan).not.toHaveBeenCalled();
+			// Verify OpenTelemetry tracer is never obtained when observability is disabled
+			expect(getTracerSpy).not.toHaveBeenCalled();
 		});
 
 		it("should propagate errors without span handling", async () => {
@@ -174,6 +182,8 @@ describe("traceableQuery", () => {
 				}),
 			).rejects.toThrow("DB error");
 
+			// Verify no tracing infrastructure is used when disabled
+			expect(getTracerSpy).not.toHaveBeenCalled();
 			expect(mockSpan.recordException).not.toHaveBeenCalled();
 			expect(mockSpan.end).not.toHaveBeenCalled();
 		});
