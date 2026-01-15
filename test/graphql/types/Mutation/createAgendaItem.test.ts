@@ -180,7 +180,9 @@ async function createTestEnvironment(
 				input: {
 					name: "Test Agenda Folder",
 					eventId,
-					isAgendaItemFolder: true,
+					description: "desc",
+					sequence: 1,
+					organizationId,
 				},
 			},
 		},
@@ -203,25 +205,6 @@ async function createTestEnvironment(
 			});
 		},
 	};
-}
-
-// Helper function to create a non-agenda-item folder (for forbidden action test)
-async function createNonAgendaItemFolder(
-	adminAuthToken: string,
-	eventId: string,
-) {
-	const result = await mercuriusClient.mutate(Mutation_createAgendaFolder, {
-		headers: { authorization: `bearer ${adminAuthToken}` },
-		variables: {
-			input: {
-				name: "Non-Item Folder",
-				eventId,
-				isAgendaItemFolder: false,
-			},
-		},
-	});
-	assertToBeNonNullish(result.data?.createAgendaFolder);
-	return result.data.createAgendaFolder.id;
 }
 
 suite("Mutation field createAgendaItem", () => {
@@ -400,53 +383,6 @@ suite("Mutation field createAgendaItem", () => {
 					expect.objectContaining({
 						extensions: expect.objectContaining({
 							code: "arguments_associated_resources_not_found",
-						}),
-						message: expect.any(String),
-						path: ["createAgendaItem"],
-					}),
-				]),
-			);
-		});
-
-		test("Returns an error when folder is not an agenda item folder", async () => {
-			const { token: adminAuthToken } = await getAdminAuth();
-
-			const { cleanup, eventId } = await createTestEnvironment(
-				adminAuthToken,
-				await getAdminUserId(),
-			);
-			testCleanupFunctions.push(cleanup);
-
-			// Create a folder that is NOT an agenda item folder
-			const nonItemFolderId = await createNonAgendaItemFolder(
-				adminAuthToken,
-				eventId,
-			);
-
-			const result = await mercuriusClient.mutate(Mutation_createAgendaItem, {
-				headers: { authorization: `bearer ${adminAuthToken}` },
-				variables: {
-					input: {
-						folderId: nonItemFolderId,
-						name: "Test Agenda Item",
-						type: "general",
-					},
-				},
-			});
-
-			expect(result.data?.createAgendaItem).toEqual(null);
-			expect(result.errors).toEqual(
-				expect.arrayContaining([
-					expect.objectContaining({
-						extensions: expect.objectContaining({
-							code: "forbidden_action_on_arguments_associated_resources",
-							issues: expect.arrayContaining([
-								expect.objectContaining({
-									argumentPath: ["input", "folderId"],
-									message:
-										"This agenda folder cannot be a folder to agenda items.",
-								}),
-							]),
 						}),
 						message: expect.any(String),
 						path: ["createAgendaItem"],
@@ -807,7 +743,9 @@ suite("Mutation field createAgendaItem", () => {
 						input: {
 							name: "Folder",
 							eventId,
-							isAgendaItemFolder: true,
+							description: "Super admin test folder",
+							sequence: 1,
+							organizationId,
 						},
 					},
 				},

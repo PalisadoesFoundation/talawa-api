@@ -1,11 +1,7 @@
 import { faker } from "@faker-js/faker";
 import { eq } from "drizzle-orm";
 import { afterEach, expect, suite, test } from "vitest";
-import {
-	agendaFoldersTable,
-	agendaItemsTable,
-	usersTable,
-} from "~/src/drizzle/schema";
+import { agendaItemsTable, usersTable } from "~/src/drizzle/schema";
 import type {
 	TalawaGraphQLFormattedError,
 	UnauthenticatedExtensions,
@@ -184,7 +180,9 @@ async function createTestAgendaItem(): Promise<TestAgendaItem> {
 				input: {
 					name: `Folder ${faker.string.uuid()}`,
 					eventId: eventId,
-					isAgendaItemFolder: true,
+					description: "desc",
+					sequence: 1,
+					organizationId: orgId,
 				},
 			},
 		},
@@ -1012,62 +1010,6 @@ suite("Mutation updateAgendaItem", () => {
 									argumentPath: expect.arrayContaining(["input", "folderId"]),
 									message: expect.stringContaining(
 										"This agenda folder does not belong to the event to the agenda item.",
-									),
-								}),
-							]),
-						}),
-						message: expect.any(String),
-					}),
-				]),
-			);
-		});
-
-		test("Returns an error when the agenda folder cannot be a folder for agenda items", async () => {
-			// create regular user
-			const regularUser = await createRegularUserUsingAdmin();
-			// create an agendaItem and use the folder of the agenda item for the event
-			const agendaItem = await createTestAgendaItem();
-			testCleanupFunctions.push(agendaItem.cleanup);
-
-			// update agenda folder's isAgendaItemFolder to false
-			await server.drizzleClient
-				.update(agendaFoldersTable)
-				.set({
-					isAgendaItemFolder: false,
-				})
-				.where(eq(agendaFoldersTable.id, agendaItem.folderId))
-				.execute();
-
-			// get the user's auth token
-			const { authToken } = regularUser;
-			// try to update the agenda item
-			const updateAgendaItemResult = await mercuriusClient.mutate(
-				Mutation_updateAgendaItem,
-				{
-					headers: {
-						authorization: `bearer ${authToken}`,
-					},
-					variables: {
-						input: {
-							id: agendaItem.agendaItemId,
-							name: "Updated agenda item name",
-							folderId: agendaItem.folderId,
-						},
-					},
-				},
-			);
-
-			expect(updateAgendaItemResult.errors).toBeDefined();
-			expect(updateAgendaItemResult.errors).toEqual(
-				expect.arrayContaining<TalawaGraphQLFormattedError>([
-					expect.objectContaining<TalawaGraphQLFormattedError>({
-						extensions: expect.objectContaining({
-							code: "forbidden_action_on_arguments_associated_resources",
-							issues: expect.arrayContaining([
-								expect.objectContaining({
-									argumentPath: expect.arrayContaining(["input", "folderId"]),
-									message: expect.stringContaining(
-										"This agenda folder cannot be a folder to agenda items.",
 									),
 								}),
 							]),
