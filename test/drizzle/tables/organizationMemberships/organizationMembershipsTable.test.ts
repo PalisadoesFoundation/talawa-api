@@ -2,16 +2,22 @@ import { faker } from "@faker-js/faker";
 import { and, eq } from "drizzle-orm";
 import { createRegularUserUsingAdmin } from "test/graphql/types/createRegularUserUsingAdmin";
 import { server } from "test/server";
-import { afterAll, describe, expect, it } from "vitest";
+import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { organizationMembershipsTable } from "~/src/drizzle/tables/organizationMemberships";
 import { organizationsTable } from "~/src/drizzle/tables/organizations";
 import { usersTable } from "~/src/drizzle/tables/users";
 import { createTestOrganization, loginAdminUser } from "./GlobalFunctions";
 
-describe("organizationMembershipsTable database operations", async () => {
-	const testOrg = await createTestOrganization();
-	const testUser = await createRegularUserUsingAdmin();
-	const creatorUser = await loginAdminUser();
+let testOrg: string;
+let testUser: {userId:string, authToken:string};
+let creatorUser: {adminId:string, authToken:string};
+
+describe("organizationMembershipsTable database operations", () => {
+	beforeAll(async () => {
+		testOrg = await createTestOrganization();
+		testUser = await createRegularUserUsingAdmin();
+		creatorUser = await loginAdminUser();
+	});
 
 	afterAll(async () => {
 		await server.drizzleClient
@@ -282,6 +288,51 @@ describe("organizationMembershipsTable database operations", async () => {
 			);
 
 		expect(updated?.creatorId).toBeNull();
+	});
+
+	it("sets updaterId to null when updater is deleted", async () => {
+		const updater = await createRegularUserUsingAdmin();
+
+		await server.drizzleClient
+			.delete(organizationMembershipsTable)
+			.where(
+				and(
+					eq(organizationMembershipsTable.memberId, testUser.userId),
+					eq(organizationMembershipsTable.organizationId, testOrg),
+				),
+			);
+
+		const [membership] = await server.drizzleClient
+			.insert(organizationMembershipsTable)
+			.values({
+				memberId: testUser.userId,
+				organizationId: testOrg,
+				role: "regular",
+				updaterId: updater.userId,
+			})
+			.returning();
+
+		await server.drizzleClient
+			.delete(usersTable)
+			.where(eq(usersTable.id, updater.userId));
+
+		const [updated] = await server.drizzleClient
+			.select()
+			.from(organizationMembershipsTable)
+			.where(
+				and(
+					eq(
+						organizationMembershipsTable.memberId,
+						membership?.memberId as string,
+					),
+					eq(
+						organizationMembershipsTable.organizationId,
+						membership?.organizationId as string,
+					),
+				),
+			);
+
+		expect(updated?.updaterId).toBeNull();
 	});
 
 	it("accepts all valid role values", async () => {
