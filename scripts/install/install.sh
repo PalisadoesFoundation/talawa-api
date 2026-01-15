@@ -226,7 +226,8 @@ print_banner() {
 detect_os() {
     # First try OS environment variable (works on many systems)
     if [ -n "${OS:-}" ]; then
-        case "$OS" in
+        local os_env="${OS,,}"
+        case "$os_env" in
             linux*)
                 printf "linux"
                 return 0
