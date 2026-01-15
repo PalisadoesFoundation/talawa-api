@@ -222,6 +222,81 @@ suite("Mutation field createAgendaItem", () => {
 	});
 
 	suite("Authentication and Authorization", () => {
+		test("Returns unauthenticated error when client is not authenticated", async () => {
+			const result = await mercuriusClient.mutate(Mutation_createAgendaFolder, {
+				variables: {
+					input: {
+						name: "Folder",
+						eventId: faker.string.uuid(),
+						organizationId: faker.string.uuid(),
+						sequence: 1,
+					},
+				},
+			});
+
+			expect(result.data?.createAgendaFolder).toBeNull();
+			expect(result.errors?.[0]?.extensions?.code).toBe("unauthenticated");
+		});
+
+		test("Returns unauthorized for non-admin organization member", async () => {
+			const [{ token: adminAuthToken }, regularUser] = await Promise.all([
+				getAdminAuth(),
+				createRegularUserUsingAdmin(),
+			]);
+
+			const { eventId, organizationId, cleanup } = await createTestEnvironment(
+				adminAuthToken,
+				await getAdminUserId(),
+			);
+
+			await addOrganizationMembership({
+				adminAuthToken,
+				memberId: regularUser.userId,
+				organizationId,
+				role: "regular",
+			});
+
+			const result = await mercuriusClient.mutate(Mutation_createAgendaFolder, {
+				headers: { authorization: `bearer ${regularUser.authToken}` },
+				variables: {
+					input: {
+						name: "Folder",
+						eventId,
+						organizationId,
+						sequence: 1,
+					},
+				},
+			});
+
+			expect(result.errors?.[0]?.extensions?.code).toBe(
+				"unauthorized_action_on_arguments_associated_resources",
+			);
+
+			await cleanup();
+		});
+
+		test("Returns unauthenticated when user is deleted after authentication", async () => {
+			const regularUser = await createRegularUserUsingAdmin();
+
+			await server.drizzleClient
+				.delete(usersTable)
+				.where(eq(usersTable.id, regularUser.userId));
+
+			const result = await mercuriusClient.mutate(Mutation_createAgendaFolder, {
+				headers: { authorization: `bearer ${regularUser.authToken}` },
+				variables: {
+					input: {
+						name: "Folder",
+						eventId: faker.string.uuid(),
+						organizationId: faker.string.uuid(),
+						sequence: 1,
+					},
+				},
+			});
+
+			expect(result.errors?.[0]?.extensions?.code).toBe("unauthenticated");
+		});
+
 		test("Returns an error if the client is not authenticated", async () => {
 			const result = await mercuriusClient.mutate(Mutation_createAgendaItem, {
 				variables: {
@@ -363,6 +438,53 @@ suite("Mutation field createAgendaItem", () => {
 	});
 
 	suite("Resource Existence", () => {
+		test("Returns not_found when event does not exist", async () => {
+			const { token: adminAuthToken } = await getAdminAuth();
+
+			const result = await mercuriusClient.mutate(Mutation_createAgendaFolder, {
+				headers: { authorization: `bearer ${adminAuthToken}` },
+				variables: {
+					input: {
+						name: "Folder",
+						eventId: faker.string.uuid(),
+						organizationId: faker.string.uuid(),
+						sequence: 1,
+					},
+				},
+			});
+
+			expect(result.errors?.[0]?.extensions?.code).toBe(
+				"arguments_associated_resources_not_found",
+			);
+		});
+
+		test("Returns invalid_arguments when organizationId does not match event organization", async () => {
+			const { token: adminAuthToken, userId } = await getAdminAuth();
+
+			const { eventId, cleanup } = await createTestEnvironment(
+				adminAuthToken,
+				userId,
+			);
+
+			const wrongOrgId = faker.string.uuid();
+
+			const result = await mercuriusClient.mutate(Mutation_createAgendaFolder, {
+				headers: { authorization: `bearer ${adminAuthToken}` },
+				variables: {
+					input: {
+						name: "Folder",
+						eventId,
+						organizationId: wrongOrgId,
+						sequence: 1,
+					},
+				},
+			});
+
+			expect(result.errors?.[0]?.extensions?.code).toBe("invalid_arguments");
+
+			await cleanup();
+		});
+
 		test("Returns an error when folder does not exist", async () => {
 			const { token: adminAuthToken } = await getAdminAuth();
 
@@ -393,6 +515,25 @@ suite("Mutation field createAgendaItem", () => {
 	});
 
 	suite("Input Validation", () => {
+		test("Returns invalid_arguments for invalid eventId", async () => {
+			const { token: adminAuthToken } = await getAdminAuth();
+
+			const result = await mercuriusClient.mutate(Mutation_createAgendaFolder, {
+				headers: { authorization: `bearer ${adminAuthToken}` },
+				variables: {
+					input: {
+						name: "Folder",
+						eventId: "invalid-uuid",
+						organizationId: faker.string.uuid(),
+						sequence: 1,
+					},
+				},
+			});
+
+			expect(result.data?.createAgendaFolder).toBeNull();
+			expect(result.errors?.[0]?.extensions?.code).toBe("invalid_arguments");
+		});
+
 		test("Returns error when note type has duration", async () => {
 			const { token: adminAuthToken } = await getAdminAuth();
 
