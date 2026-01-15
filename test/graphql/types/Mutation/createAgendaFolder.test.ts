@@ -171,7 +171,7 @@ async function createTestEnvironment(
 	assertToBeNonNullish(createEventResult.data?.createEvent);
 	const eventId = createEventResult.data.createEvent.id;
 
-	// Create agenda folder (must be isAgendaItemFolder: true for agenda items)
+	// Create agenda folder for agenda items
 	const createFolderResult = await mercuriusClient.mutate(
 		Mutation_createAgendaFolder,
 		{

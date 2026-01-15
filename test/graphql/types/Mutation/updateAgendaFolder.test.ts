@@ -426,6 +426,31 @@ suite("Mutation field updateAgendaFolder", () => {
 		);
 	});
 
+	test("Updates only name successfully", async () => {
+		const { userId: adminUserId, token } = await getAdminAuth();
+
+		const env = await createOrganizationEventAndFolder({ adminUserId });
+		cleanupFns.push(env.cleanup);
+
+		const result = await mercuriusClient.mutate(Mutation_updateAgendaFolder, {
+			headers: { authorization: `bearer ${token}` },
+			variables: {
+				input: {
+					id: env.folderId,
+					name: "Name Only Update",
+				},
+			},
+		});
+
+		expect(result.errors).toBeUndefined();
+		expect(result.data?.updateAgendaFolder).toEqual(
+			expect.objectContaining({
+				id: env.folderId,
+				name: "Name Only Update",
+			}),
+		);
+	});
+
 	test("Returns unexpected when update returns empty array", async () => {
 		const { userId: adminUserId, token } = await getAdminAuth();
 
