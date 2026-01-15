@@ -76,6 +76,9 @@ describe("Setup -> apiSetup", () => {
 			{ useDefaultPostgres: true },
 			{ useDefaultCaddy: true },
 			{ API_ADMINISTRATOR_USER_EMAIL_ADDRESS: "test@email.com" },
+			{ setupReCaptcha: false },
+			{ useDefaultEmail: true },
+			{ setupOAuth: false },
 		];
 
 		const promptMock = vi.spyOn(inquirer, "prompt");
@@ -677,7 +680,7 @@ describe("generateJwtSecret", () => {
 			});
 		const consoleErrorSpy = vi
 			.spyOn(console, "error")
-			.mockImplementation(() => { });
+			.mockImplementation(() => {});
 
 		expect(() => generateJwtSecret()).toThrow("Failed to generate JWT secret");
 		expect(consoleErrorSpy).toHaveBeenCalledWith(
