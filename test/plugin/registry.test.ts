@@ -1,5 +1,17 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+
+// Mock rootLogger
+vi.mock("~/src/utilities/logging/logger", () => ({
+	rootLogger: {
+		info: vi.fn(),
+		error: vi.fn(),
+		warn: vi.fn(),
+		debug: vi.fn(),
+	},
+}));
+
 import type { IPluginContext } from "~/src/plugin/types";
+import { rootLogger } from "~/src/utilities/logging/logger";
 import {
 	createPluginContext,
 	destroyPluginSystem,
@@ -263,6 +275,44 @@ describe("Plugin Registry", () => {
 
 			// The actual implementation doesn't throw errors during destruction
 			await expect(destroyPluginSystem()).resolves.not.toThrow();
+		});
+
+		it("should throw and log error when gracefulShutdown fails", async () => {
+			// Initialize the system first
+			const context = createPluginContext({
+				db: mockDb,
+				graphql: mockGraphQL,
+				pubsub: mockPubSub,
+				logger: mockLogger,
+			});
+
+			await initializePluginSystem(context);
+
+			// Get the plugin manager and mock gracefulShutdown to throw
+			const manager = getPluginManagerInstance();
+			expect(manager).not.toBeNull();
+
+			const shutdownError = new Error("Shutdown failed");
+			const spy = vi
+				.spyOn(manager as NonNullable<typeof manager>, "gracefulShutdown")
+				.mockRejectedValue(shutdownError);
+
+			// Should throw the error
+			await expect(destroyPluginSystem()).rejects.toThrow("Shutdown failed");
+
+			// Restore the mock so afterEach cleanup works
+			spy.mockRestore();
+
+			// Assert logging - using new Pino pattern: { err }, "message"
+			expect(rootLogger.error).toHaveBeenCalledWith(
+				expect.objectContaining({
+					err: shutdownError,
+				}),
+				"Error destroying plugin system",
+			);
+
+			// Now clean up properly for subsequent tests
+			await destroyPluginSystem();
 		});
 	});
 
