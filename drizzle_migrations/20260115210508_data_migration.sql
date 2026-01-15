@@ -4,8 +4,7 @@
 
 UPDATE users 
 SET is_email_address_verified = true 
-WHERE created_at < '2026-01-14 00:00:00+00' 
-  AND is_email_address_verified = false;
+WHERE is_email_address_verified = false;
 
 -- Optional: Add comment explaining why these users are pre-verified
 -- This is safe because they are existing users who registered before

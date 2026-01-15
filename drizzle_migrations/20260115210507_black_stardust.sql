@@ -1,5 +1,5 @@
 CREATE TABLE "email_verification_tokens" (
-	"id" uuid PRIMARY KEY NOT NULL,
+	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"token_hash" text NOT NULL,
 	"user_id" uuid NOT NULL,
 	"expires_at" timestamp (3) with time zone NOT NULL,
