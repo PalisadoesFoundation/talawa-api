@@ -52,7 +52,7 @@ check_bash_version() {
         printf "\n" >&2
         printf "You are currently running: %s\n" "${SHELL:-unknown}" >&2
         printf "Please run this script with bash:\n" >&2
-        printf "  bash %s %s\n" "$0" "$*" >&2
+        printf "  bash %s\n" "$0" >&2
         printf "\n" >&2
         exit "$ERR_BASH_VERSION"
     fi
@@ -104,7 +104,7 @@ check_bash_version() {
 
 # Check if essential tools are available
 check_essential_tools() {
-    local required_tools=("grep" "dirname" "basename" "uname" "curl" "git" "awk" "sed")
+    local required_tools=("grep" "dirname" "basename" "uname" "curl" "git" "awk" "sed" "bash")
     local missing_tools=()
     
     # Check each required tool
@@ -132,13 +132,13 @@ check_essential_tools() {
                 if command -v apt-get >/dev/null 2>&1; then
                     printf "  Ubuntu/Debian:\n" >&2
                     printf "    sudo apt-get update\n" >&2
-                    printf "    sudo apt-get install coreutils curl git gawk sed\n" >&2
+                    printf "    sudo apt-get install coreutils curl git gawk sed bash\n" >&2
                 elif command -v yum >/dev/null 2>&1; then
                     printf "  RHEL/CentOS:\n" >&2
-                    printf "    sudo yum install coreutils curl git gawk sed\n" >&2
+                    printf "    sudo yum install coreutils curl git gawk sed bash\n" >&2
                 elif command -v dnf >/dev/null 2>&1; then
                     printf "  Fedora:\n" >&2
-                    printf "    sudo dnf install coreutils curl git gawk sed\n" >&2
+                    printf "    sudo dnf install coreutils curl git gawk sed bash\n" >&2
                 else
                     printf "  Use your package manager to install: %s\n" "${missing_tools[*]}" >&2
                 fi
@@ -321,28 +321,6 @@ is_wsl() {
     return 1
 }
 
-validate_basic_tools() {
-    local missing_tools=()
-    
-    command -v bash >/dev/null 2>&1 || missing_tools+=("bash")
-    command -v grep >/dev/null 2>&1 || missing_tools+=("grep")
-    command -v awk >/dev/null 2>&1 || missing_tools+=("awk")
-    command -v sed >/dev/null 2>&1 || missing_tools+=("sed")
-    
-    if [ ${#missing_tools[@]} -gt 0 ]; then
-        error_with_guidance "Missing required system tools" \
-            "Missing: ${missing_tools[*]}" \
-            "These tools are required for the installation script to run" \
-            "Install missing tools using your package manager:" \
-            "  Debian/Ubuntu: sudo apt-get install ${missing_tools[*]}" \
-            "  RHEL/CentOS: sudo yum install ${missing_tools[*]}" \
-            "  macOS: brew install ${missing_tools[*]}"
-        return "$ERR_MISSING_TOOLS"
-    fi
-    
-    return 0
-}
-
 check_disk_space() {
     local required_mb=$1
     local mode=$2
@@ -351,6 +329,11 @@ check_disk_space() {
     local available_mb
     if command -v df >/dev/null 2>&1; then
         available_mb=$(df -m . 2>/dev/null | awk 'NR==2 {print $4}' || echo "0")
+        
+        # Normalize available_mb: ensure it's numeric, default to 0 if empty or non-numeric
+        if ! [[ "$available_mb" =~ ^[0-9]+$ ]]; then
+            available_mb=0
+        fi
         
         if [ "$available_mb" -lt "$required_mb" ]; then
             warn "Low disk space detected"
@@ -613,9 +596,6 @@ main() {
     
     # Validate environment before anything else
     validate_environment
-    
-    # Validate basic tools (redundant but kept for backwards compatibility)
-    validate_basic_tools || exit $?
     
     local OS
     OS=$(detect_os)
