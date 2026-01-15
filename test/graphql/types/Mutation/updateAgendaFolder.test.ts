@@ -263,6 +263,29 @@ suite("Mutation field updateAgendaFolder", () => {
 		);
 	});
 
+	test("Returns invalid_arguments when id is not a valid UUID", async () => {
+		const { token } = await getAdminAuth();
+
+		const result = await mercuriusClient.mutate(Mutation_updateAgendaFolder, {
+			headers: { authorization: `bearer ${token}` },
+			variables: {
+				input: {
+					id: "invalid-uuid",
+					name: "Updated",
+				},
+			},
+		});
+
+		expect(result.data?.updateAgendaFolder ?? null).toEqual(null);
+		expect(result.errors).toEqual(
+			expect.arrayContaining([
+				expect.objectContaining({
+					extensions: expect.objectContaining({ code: "invalid_arguments" }),
+				}),
+			]),
+		);
+	});
+
 	test("Returns invalid_arguments when no updatable field is provided", async () => {
 		const { userId: adminUserId, token } = await getAdminAuth();
 

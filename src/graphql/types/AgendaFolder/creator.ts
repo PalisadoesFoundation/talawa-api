@@ -26,15 +26,9 @@ export const resolveCreator = async (
 			where: (fields, operators) => operators.eq(fields.id, currentUserId),
 		}),
 		ctx.drizzleClient.query.eventsTable.findFirst({
-			columns: {
-				startAt: true,
-			},
 			where: (fields, operators) => operators.eq(fields.id, parent.eventId),
 			with: {
 				organization: {
-					columns: {
-						countryCode: true,
-					},
 					with: {
 						membershipsWhereOrganization: {
 							columns: {

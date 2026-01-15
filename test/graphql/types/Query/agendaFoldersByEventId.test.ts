@@ -144,6 +144,107 @@ suite("Query field agendaFoldersByEventId", () => {
 		).toBe(true);
 	});
 
+	test("Returns an error when an authenticated non-administrator user queries agenda folders by eventId", async () => {
+		// Create a regular user
+		const regularUser = await createRegularUserUsingAdmin();
+		const { authToken } = regularUser;
+
+		// Create organization
+		const createOrgResult = await mercuriusClient.mutate(
+			Mutation_createOrganization,
+			{
+				headers: {
+					authorization: `bearer ${adminAuthToken}`,
+				},
+				variables: {
+					input: {
+						name: `Org ${faker.string.uuid()}`,
+						countryCode: "us",
+					},
+				},
+			},
+		);
+
+		assertToBeNonNullish(createOrgResult.data?.createOrganization);
+		const organizationId = createOrgResult.data.createOrganization.id;
+
+		// Make admin user org administrator (required to create event)
+		await mercuriusClient.mutate(Mutation_createOrganizationMembership, {
+			headers: { authorization: `bearer ${adminAuthToken}` },
+			variables: {
+				input: {
+					memberId: adminUserId,
+					organizationId,
+					role: "administrator",
+				},
+			},
+		});
+
+		// Create event
+		const createEventResult = await mercuriusClient.mutate(
+			Mutation_createEvent,
+			{
+				headers: {
+					authorization: `bearer ${adminAuthToken}`,
+				},
+				variables: {
+					input: {
+						name: `Event ${faker.string.uuid()}`,
+						organizationId,
+						startAt: new Date(Date.now() + 86400000).toISOString(),
+						endAt: new Date(Date.now() + 90000000).toISOString(),
+						description: "Auth test event",
+					},
+				},
+			},
+		);
+
+		assertToBeNonNullish(createEventResult.data?.createEvent);
+		const eventId = createEventResult.data.createEvent.id;
+
+		// Regular user is NOT a member of the organization
+
+		// Attempt to query agenda folders
+		const result = await mercuriusClient.query(Query_agendaFoldersByEventId, {
+			headers: {
+				authorization: `bearer ${authToken}`,
+			},
+			variables: {
+				eventId,
+			},
+		});
+
+		// Assert authorization failure
+		expect(result.data?.agendaFoldersByEventId).toBeNull();
+		expect(result.errors).toEqual(
+			expect.arrayContaining([
+				expect.objectContaining({
+					extensions: expect.objectContaining({
+						code: "unauthorized_action_on_arguments_associated_resources",
+						issues: expect.arrayContaining([
+							expect.objectContaining({
+								argumentPath: ["eventId"],
+							}),
+						]),
+					}),
+					message: expect.any(String),
+					path: ["agendaFoldersByEventId"],
+				}),
+			]),
+		);
+
+		// Cleanup
+		await mercuriusClient.mutate(Mutation_deleteStandaloneEvent, {
+			headers: { authorization: `bearer ${adminAuthToken}` },
+			variables: { input: { id: eventId } },
+		});
+
+		await mercuriusClient.mutate(Mutation_deleteOrganization, {
+			headers: { authorization: `bearer ${adminAuthToken}` },
+			variables: { input: { id: organizationId } },
+		});
+	});
+
 	test("Returns invalid_arguments for invalid eventId UUID", async () => {
 		const result = await mercuriusClient.query(Query_agendaFoldersByEventId, {
 			headers: { authorization: `bearer ${adminAuthToken}` },

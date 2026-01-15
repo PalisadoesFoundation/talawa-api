@@ -212,11 +212,6 @@ type AgendaFolder {
   """Boolean to tell if agenda folder is default or not"""
   isDefaultFolder: Boolean
 
-  """
-  GraphQL connection to traverse through the agenda items contained within the agenda folder.
-  """
-  items(after: String, before: String, first: Int, last: Int): AgendaFolderItemsConnection
-
   """Name of the agenda folder."""
   name: String
 
@@ -231,18 +226,6 @@ type AgendaFolder {
 
   """User who last updated the agenda folder."""
   updater: User
-}
-
-""""""
-type AgendaFolderItemsConnection {
-  edges: [AgendaFolderItemsConnectionEdge]
-  pageInfo: PageInfo!
-}
-
-""""""
-type AgendaFolderItemsConnectionEdge {
-  cursor: String!
-  node: AgendaItem
 }
 
 type AgendaItem {
@@ -2685,7 +2668,7 @@ input MutationCreateAgendaFolderInput {
   organizationId: ID!
 
   """Sequence of the Agenda Folder."""
-  sequence: Int!
+  sequence: Int
 }
 
 """"""
@@ -3505,7 +3488,7 @@ input MutationUpdateAgendaCategoryInput {
   name: String
 }
 
-""""""
+"""Input type for updating an agenda folder."""
 input MutationUpdateAgendaFolderInput {
   """Description of the agenda folder."""
   description: String

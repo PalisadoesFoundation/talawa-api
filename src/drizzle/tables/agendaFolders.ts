@@ -149,5 +149,6 @@ export const agendaFoldersTableInsertSchema = createInsertSchema(
 	{
 		description: (schema) => schema.min(1).max(2048).optional(),
 		name: (schema) => schema.min(1).max(256),
+		sequence: (schema) => schema.int().min(1).optional(),
 	},
 );

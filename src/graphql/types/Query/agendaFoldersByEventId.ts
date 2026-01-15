@@ -87,7 +87,8 @@ builder.queryField("agendaFoldersByEventId", (t) =>
 
 			if (!currentUser) {
 				throw new TalawaGraphQLError({
-					extensions: { code: "unauthenticated" },
+					extensions: { code: "unexpected" },
+					message: "User record not found for authenticated client",
 				});
 			}
 

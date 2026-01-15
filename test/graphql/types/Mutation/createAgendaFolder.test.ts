@@ -386,6 +386,13 @@ suite("Mutation field createAgendaFolder", () => {
 
 			expect(result.errors).toBeUndefined();
 			assertToBeNonNullish(result.data?.createAgendaFolder);
+			expect(result.data.createAgendaFolder).toMatchObject({
+				name: "Agenda Folder",
+				description: "Test folder",
+				sequence: 1,
+			});
+			expect(result.data.createAgendaFolder.id).toBeDefined();
+			expect(result.data.createAgendaFolder.event?.id).toBe(eventId);
 		});
 	});
 

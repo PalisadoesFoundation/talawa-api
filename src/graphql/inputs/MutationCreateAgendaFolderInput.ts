@@ -36,7 +36,6 @@ export const MutationCreateAgendaFolderInput = builder
 			}),
 			sequence: t.int({
 				description: "Sequence of the Agenda Folder.",
-				required: true,
 			}),
 		}),
 	});

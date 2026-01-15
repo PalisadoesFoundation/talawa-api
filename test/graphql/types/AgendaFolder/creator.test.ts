@@ -44,14 +44,6 @@ describe("AgendaFolder.creator resolver", () => {
 	it("should throw unauthenticated error if current user is not found", async () => {
 		mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValue(undefined);
 
-		mocks.drizzleClient.query.eventsTable.findFirst.mockResolvedValue({
-			startAt: new Date(),
-			organization: {
-				countryCode: "US",
-				membershipsWhereOrganization: [{ role: "administrator" }],
-			},
-		});
-
 		await expect(resolveCreator(mockAgendaFolder, {}, ctx)).rejects.toThrow(
 			new TalawaGraphQLError({ extensions: { code: "unauthenticated" } }),
 		);

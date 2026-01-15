@@ -42,6 +42,19 @@ describe("MutationUpdateAgendaFolderInput Schema", () => {
 	});
 
 	describe("refinement rule", () => {
+		it("should reject when only id is provided without any update fields", () => {
+			const result = mutationUpdateAgendaFolderInputSchema.safeParse({
+				id: validId,
+			});
+
+			expect(result.success).toBe(false);
+			if (!result.success) {
+				expect(result.error.issues[0]?.message).toBe(
+					"At least one optional argument must be provided.",
+				);
+			}
+		});
+
 		it("should accept when name is provided", () => {
 			const result = mutationUpdateAgendaFolderInputSchema.safeParse({
 				id: validId,

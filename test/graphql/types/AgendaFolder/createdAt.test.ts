@@ -185,6 +185,22 @@ describe("AgendaFolder CreatedAt Resolver Tests", () => {
 		);
 	});
 
+	it("should handle corrupted event data with missing organization", async () => {
+		mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValue({
+			id: "user-123",
+			role: "member",
+		} satisfies MockUser);
+
+		mocks.drizzleClient.query.eventsTable.findFirst.mockResolvedValue({
+			id: "event-123",
+			startAt: new Date(),
+			organization: undefined, // Corrupted data
+		});
+
+		// Verify appropriate error handling
+		await expect(resolveCreatedAt(mockAgendaFolder, {}, ctx)).rejects.toThrow();
+	});
+
 	it("should verify usersTable query structure", async () => {
 		const mockUser: MockUser = {
 			id: "user-123",

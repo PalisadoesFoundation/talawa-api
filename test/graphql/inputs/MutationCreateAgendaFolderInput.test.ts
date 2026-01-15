@@ -145,7 +145,7 @@ describe("MutationCreateAgendaFolderInput Schema", () => {
 			expect(result.success).toBe(false);
 		});
 
-		it("should reject missing sequence (optional field)", () => {
+		it("should accept missing sequence (optional field)", () => {
 			const { sequence, ...input } = validBaseInput;
 			const result = mutationCreateAgendaFolderInputSchema.safeParse(input);
 			expect(result.success).toBe(true);
