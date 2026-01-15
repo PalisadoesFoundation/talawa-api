@@ -34,6 +34,8 @@ describe("Performance Plugin - Environment Configuration", () => {
 
 			app = createTestApp({ envConfig: customEnvConfig, cache: mockCache });
 
+			// Mock child logger to return app.log so req.log.warn calls are captured
+			vi.spyOn(app.log, "child").mockReturnValue(app.log);
 			const warnSpy = vi.spyOn(app.log, "warn");
 
 			// Make a slow request (well over 1000ms threshold with generous buffer)
@@ -67,6 +69,8 @@ describe("Performance Plugin - Environment Configuration", () => {
 			};
 			app = createTestApp({ envConfig: customEnvConfig, cache: mockCache });
 
+			// Mock child logger to return app.log so req.log.warn calls are captured
+			vi.spyOn(app.log, "child").mockReturnValue(app.log);
 			const warnSpy = vi.spyOn(app.log, "warn");
 
 			// Make a slow request (well over 500ms default threshold with generous buffer)
@@ -102,6 +106,8 @@ describe("Performance Plugin - Environment Configuration", () => {
 
 			app = createTestApp({ envConfig: customEnvConfig, cache: mockCache });
 
+			// Mock child logger to return app.log so req.log.warn calls are captured
+			vi.spyOn(app.log, "child").mockReturnValue(app.log);
 			const warnSpy = vi.spyOn(app.log, "warn");
 
 			app.get("/test-invalid", async () => {
@@ -413,6 +419,8 @@ describe("Performance Plugin - Environment Configuration", () => {
 
 			app = createTestApp({ envConfig: customEnvConfig, cache: mockCache });
 
+			// Mock child logger to return app.log so req.log.warn calls are captured
+			vi.spyOn(app.log, "child").mockReturnValue(app.log);
 			const warnSpy = vi.spyOn(app.log, "warn");
 
 			app.get("/test-env-config", async () => {
