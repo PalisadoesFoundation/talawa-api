@@ -4,8 +4,8 @@
 <meta charset="UTF-8">
 <meta name="generator" content="Docusaurus v3.9.2">
 <title data-rh="true">default | Talawa API Documentation</title><meta data-rh="true" name="viewport" content="width=device-width,initial-scale=1"><meta data-rh="true" name="twitter:card" content="summary_large_image"><meta data-rh="true" property="og:url" content="https://docs-api.talawa.io/docs/auto-docs/fastifyPlugins/performance/variables/default"><meta data-rh="true" property="og:locale" content="en"><meta data-rh="true" name="docusaurus_locale" content="en"><meta data-rh="true" name="docsearch:language" content="en"><meta data-rh="true" name="docusaurus_version" content="current"><meta data-rh="true" name="docusaurus_tag" content="docs-default-current"><meta data-rh="true" name="docsearch:version" content="current"><meta data-rh="true" name="docsearch:docusaurus_tag" content="docs-default-current"><meta data-rh="true" property="og:title" content="default | Talawa API Documentation"><meta data-rh="true" name="description" content="API Docs"><meta data-rh="true" property="og:description" content="API Docs"><link data-rh="true" rel="icon" href="/img/favicon.ico"><link data-rh="true" rel="canonical" href="https://docs-api.talawa.io/docs/auto-docs/fastifyPlugins/performance/variables/default"><link data-rh="true" rel="alternate" href="https://docs-api.talawa.io/docs/auto-docs/fastifyPlugins/performance/variables/default" hreflang="en"><link data-rh="true" rel="alternate" href="https://docs-api.talawa.io/docs/auto-docs/fastifyPlugins/performance/variables/default" hreflang="x-default"><script data-rh="true" type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"default","item":"https://docs-api.talawa.io/docs/auto-docs/fastifyPlugins/performance/variables/default"}]}</script><link rel="stylesheet" href="https://docs.talawa.io/css/styles-latest.css"><link rel="stylesheet" href="/assets/css/styles.ebf53daf.css">
-<script src="/assets/js/runtime~main.d0ee99bc.js" defer="defer"></script>
-<script src="/assets/js/main.c1c3dd8c.js" defer="defer"></script>
+<script src="/assets/js/runtime~main.be8c33b7.js" defer="defer"></script>
+<script src="/assets/js/main.407efc8c.js" defer="defer"></script>
 </head>
 <body class="navigation-with-keyboard">
 <svg style="display: none;"><defs>
@@ -17,12 +17,13 @@
 <blockquote>
 <p><strong>default</strong>: (<code>app</code>) =&gt; <code>Promise</code>&lt;<code>void</code>&gt;</p>
 </blockquote>
-<p>Defined in: <a href="https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/fastifyPlugins/performance.ts#L31" target="_blank" rel="noopener noreferrer" class="">src/fastifyPlugins/performance.ts:31</a></p>
+<p>Defined in: <a href="https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/fastifyPlugins/performance.ts#L50" target="_blank" rel="noopener noreferrer" class="">src/fastifyPlugins/performance.ts:50</a></p>
 <p>Fastify plugin that adds performance tracking to all requests.</p>
 <ul>
 <li class="">Attaches a performance tracker to each request</li>
 <li class="">Adds Server-Timing headers to responses</li>
-<li class="">Provides /metrics/perf endpoint for recent performance snapshots</li>
+<li class="">Provides /metrics/perf endpoint for recent performance snapshots (requires authentication)</li>
+<li class="">Exposes getMetricsSnapshots for background worker metrics aggregation</li>
 </ul>
 <h2 class="anchor anchorTargetStickyNavbar_vRzG" id="parameters">Parameters<a href="#parameters" class="hash-link" aria-label="Direct link to Parameters" title="Direct link to Parameters" translate="no">​</a></h2>
 <h3 class="anchor anchorTargetStickyNavbar_vRzG" id="app">app<a href="#app" class="hash-link" aria-label="Direct link to app" title="Direct link to app" translate="no">​</a></h3>
