@@ -12,6 +12,7 @@ import {
 	mutationCreateEventInputSchema,
 } from "~/src/graphql/inputs/MutationCreateEventInput";
 import { Event } from "~/src/graphql/types/Event/Event";
+import { invalidateEntityLists } from "~/src/services/caching";
 import {
 	generateInstancesForRecurringEvent,
 	initializeGenerationWindow,
@@ -473,6 +474,16 @@ builder.mutationField("createEvent", (t) =>
 				ctx.log.error(
 					{ error },
 					"Failed to flush notifications after event create",
+				);
+			}
+
+			// Invalidate event list caches (graceful degradation - don't break mutation on cache errors)
+			try {
+				await invalidateEntityLists(ctx.cache, "event");
+			} catch (error) {
+				ctx.log.warn(
+					{ error: error instanceof Error ? error.message : "Unknown error" },
+					"Failed to invalidate event list caches (non-fatal)",
 				);
 			}
 

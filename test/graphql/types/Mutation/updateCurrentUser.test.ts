@@ -1694,7 +1694,7 @@ suite("Mutation field updateCurrentUser", () => {
 				.mockResolvedValue({ etag: "mock-etag" } as UploadedObjectInfo);
 
 			const comprehensiveTestData = {
-				addressLine1: faker.location.streetAddress(),
+				addressLine1: faker.location.streetAddress().replace(/'/g, ""), // Remove apostrophes to avoid HTML encoding
 				addressLine2: faker.location.secondaryAddress(),
 				birthDate: faker.date.birthdate().toISOString().split("T")[0],
 				city: faker.location.city().replace(/'/g, ""), // Remove apostrophes to avoid HTML encoding

@@ -465,8 +465,16 @@ export const Mutation_createOrganization =
     createOrganization(input: $input) {
       id
       name
+      description
       countryCode
+      state
+      city
+      postalCode
+      addressLine1
+      addressLine2
       isUserRegistrationRequired
+      avatarMimeType
+      avatarURL
     }
   }`);
 
