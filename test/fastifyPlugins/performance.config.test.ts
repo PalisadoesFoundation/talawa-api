@@ -29,6 +29,7 @@ describe("Performance Plugin - Environment Configuration", () => {
 		it("should use env config value for slow request threshold", async () => {
 			const customEnvConfig: Partial<EnvConfig> = {
 				API_METRICS_SLOW_REQUEST_MS: 1000,
+				API_METRICS_API_KEY: "test-key-to-prevent-warning",
 			};
 
 			app = createTestApp({ envConfig: customEnvConfig, cache: mockCache });
@@ -61,7 +62,9 @@ describe("Performance Plugin - Environment Configuration", () => {
 		});
 
 		it("should use default value (500) when env config not set", async () => {
-			const customEnvConfig: Partial<EnvConfig> = {};
+			const customEnvConfig: Partial<EnvConfig> = {
+				API_METRICS_API_KEY: "test-key-to-prevent-warning",
+			};
 			app = createTestApp({ envConfig: customEnvConfig, cache: mockCache });
 
 			const warnSpy = vi.spyOn(app.log, "warn");
@@ -94,6 +97,7 @@ describe("Performance Plugin - Environment Configuration", () => {
 		it("should validate and fallback to default for invalid values", async () => {
 			const customEnvConfig: Partial<EnvConfig> = {
 				API_METRICS_SLOW_REQUEST_MS: 0,
+				API_METRICS_API_KEY: "test-key-to-prevent-warning",
 			};
 
 			app = createTestApp({ envConfig: customEnvConfig, cache: mockCache });
@@ -403,6 +407,7 @@ describe("Performance Plugin - Environment Configuration", () => {
 			// Use different value in envConfig
 			const customEnvConfig: Partial<EnvConfig> = {
 				API_METRICS_SLOW_REQUEST_MS: 1000,
+				API_METRICS_API_KEY: "test-key-to-prevent-warning",
 			};
 
 			app = createTestApp({ envConfig: customEnvConfig, cache: mockCache });
