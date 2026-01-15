@@ -51,3 +51,12 @@ export type {
 	ResourceUsage,
 	WorkerDependencies,
 } from "./eventGeneration/types";
+
+// Metrics aggregation worker exports
+export { runMetricsAggregationWorker } from "./metrics/metricsAggregationWorker";
+export type {
+	AggregatedMetrics,
+	CacheMetrics,
+	OperationMetrics,
+	TimeSeriesMetrics,
+} from "./metrics/types";
