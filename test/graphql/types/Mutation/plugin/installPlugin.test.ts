@@ -46,6 +46,12 @@ type TestCtx = {
 		where: ReturnType<typeof vi.fn>;
 		returning: ReturnType<typeof vi.fn>;
 	};
+	log: {
+		info: ReturnType<typeof vi.fn>;
+		error: ReturnType<typeof vi.fn>;
+		warn: ReturnType<typeof vi.fn>;
+		debug: ReturnType<typeof vi.fn>;
+	};
 	[key: string]: unknown;
 };
 
@@ -67,6 +73,12 @@ function makeCtx(overrides: Partial<TestCtx> = {}): TestCtx {
 			set: setMock,
 			where: whereMock,
 			returning: returningMock,
+		},
+		log: {
+			info: vi.fn(),
+			error: vi.fn(),
+			warn: vi.fn(),
+			debug: vi.fn(),
 		},
 		...overrides,
 	};

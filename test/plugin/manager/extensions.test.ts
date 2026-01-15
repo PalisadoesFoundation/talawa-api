@@ -13,6 +13,15 @@ vi.mock("../../../src/plugin/utils", () => ({
 	safeRequire: vi.fn(),
 }));
 
+vi.mock("../../../src/utilities/logging/logger", () => ({
+	rootLogger: {
+		info: vi.fn(),
+		error: vi.fn(),
+		warn: vi.fn(),
+		debug: vi.fn(),
+	},
+}));
+
 import { safeRequire } from "../../../src/plugin/utils";
 
 describe("ExtensionLoader basic", () => {

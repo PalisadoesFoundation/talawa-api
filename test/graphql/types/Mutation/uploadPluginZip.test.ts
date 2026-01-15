@@ -78,6 +78,12 @@ type TestCtx = {
 	currentClient: {
 		user: { id: string } | undefined;
 	};
+	log: {
+		info: ReturnType<typeof vi.fn>;
+		error: ReturnType<typeof vi.fn>;
+		warn: ReturnType<typeof vi.fn>;
+		debug: ReturnType<typeof vi.fn>;
+	};
 	[key: string]: unknown;
 };
 
@@ -95,6 +101,12 @@ function makeCtx(isAdmin = true, userId = "1"): TestCtx {
 			},
 		},
 		currentClient: { user: userId ? { id: userId } : undefined },
+		log: {
+			info: vi.fn(),
+			error: vi.fn(),
+			warn: vi.fn(),
+			debug: vi.fn(),
+		},
 	};
 }
 

@@ -6,6 +6,7 @@
  */
 
 import path from "node:path";
+import { rootLogger } from "~/src/utilities/logging/logger";
 import type {
 	IDatabaseExtension,
 	IExtensionRegistry,
@@ -53,9 +54,9 @@ export class ExtensionLoader {
 							pluginModule,
 						);
 					} catch (error) {
-						console.error(
-							`Failed to load GraphQL extension ${extension.name} for plugin ${pluginId}:`,
-							error,
+						rootLogger.error(
+							{ pluginId, extension: extension.name, err: error },
+							"Failed to load GraphQL extension",
 						);
 						throw error;
 					}
@@ -83,9 +84,9 @@ export class ExtensionLoader {
 				}
 			}
 		} catch (error) {
-			console.error(
-				`Extension points loading failed for plugin ${pluginId}:`,
-				error,
+			rootLogger.error(
+				{ pluginId, err: error },
+				"Extension points loading failed",
 			);
 			throw new Error(
 				`Failed to load extension points: ${
@@ -162,8 +163,9 @@ export class ExtensionLoader {
 
 		this.extensionRegistry.graphql.builderExtensions.push(builderExtension);
 
-		console.log(
-			`Registered builder-first GraphQL extension: ${pluginId}.${extension.name}`,
+		rootLogger.info(
+			{ pluginId, extension: extension.name },
+			"Registered builder-first GraphQL extension",
 		);
 	}
 
@@ -339,8 +341,9 @@ export class ExtensionLoader {
 		) => Promise<unknown>;
 
 		// Log webhook registration
-		console.log(
-			`🔗 Webhook registered: ${extension.method || "POST"} /api/plugins/${pluginId}/webhook${extension.path} (${extension.description || "No description"})`,
+		rootLogger.info(
+			{ pluginId, method: extension.method || "POST", path: extension.path },
+			"Webhook registered",
 		);
 	}
 
