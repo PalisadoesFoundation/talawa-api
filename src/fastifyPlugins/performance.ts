@@ -1,6 +1,7 @@
 import crypto from "node:crypto";
 import type { FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
 import fp from "fastify-plugin";
+import { MetricsCacheService } from "../services/metrics";
 import {
 	createPerformanceTracker,
 	type PerformanceTracker,
@@ -29,6 +30,12 @@ declare module "fastify" {
 		 * @returns Array of performance snapshots
 		 */
 		getMetricsSnapshots?: (windowMinutes?: number) => PerfSnapshot[];
+
+		/**
+		 * Metrics cache service for caching aggregated metrics data.
+		 * Available after cache service plugin is registered.
+		 */
+		metricsCache?: MetricsCacheService;
 	}
 }
 
@@ -49,22 +56,31 @@ interface SnapshotWithTimestamp {
  */
 export default fp(
 	async function perfPlugin(app: FastifyInstance) {
-		// Get configurable snapshot retention count from env var (default: 1000)
-		const rawRetentionCount = Number(
-			process.env.API_METRICS_SNAPSHOT_RETENTION_COUNT ?? 1000,
-		);
+		// Get configurable snapshot retention count from env config (default: 1000)
+		const rawRetentionCount =
+			app.envConfig.API_METRICS_SNAPSHOT_RETENTION_COUNT ?? 1000;
 		const retentionCount =
 			Number.isFinite(rawRetentionCount) && rawRetentionCount > 0
 				? Math.floor(rawRetentionCount)
 				: 1000;
 
 		// Cache slow request threshold at plugin initialization (default: 500ms)
-		const rawSlowMs = Number(process.env.API_SLOW_REQUEST_MS ?? 500);
+		const rawSlowRequestMs = app.envConfig.API_METRICS_SLOW_REQUEST_MS ?? 500;
 		const slowRequestThresholdMs =
-			Number.isFinite(rawSlowMs) && rawSlowMs > 0 ? Math.floor(rawSlowMs) : 500;
+			Number.isFinite(rawSlowRequestMs) && rawSlowRequestMs > 0
+				? Math.floor(rawSlowRequestMs)
+				: 500;
+
+		// Get slow operation threshold from env config (default: 200ms)
+		const rawSlowOperationMs =
+			app.envConfig.API_METRICS_SLOW_OPERATION_MS ?? 200;
+		const slowOperationThresholdMs =
+			Number.isFinite(rawSlowOperationMs) && rawSlowOperationMs > 0
+				? Math.floor(rawSlowOperationMs)
+				: 200;
 
 		// Get API key for metrics endpoint authentication (optional)
-		const metricsApiKey = process.env.API_METRICS_API_KEY;
+		const metricsApiKey = app.envConfig.API_METRICS_API_KEY;
 
 		// Warn once at plugin init if API key is not configured
 		if (!metricsApiKey) {
@@ -154,7 +170,9 @@ export default fp(
 
 		// Attach performance tracker to each request
 		app.addHook("onRequest", async (req) => {
-			req.perf = createPerformanceTracker();
+			req.perf = createPerformanceTracker({
+				slowMs: slowOperationThresholdMs,
+			});
 			req._t0 = Date.now();
 		});
 
@@ -199,6 +217,34 @@ export default fp(
 		// Expose snapshot getter for background workers
 		app.getMetricsSnapshots = getRecentSnapshots;
 
+		// Initialize metrics cache service (optional - failures should not break anything)
+		try {
+			// Check if cache service is available (it should be due to dependency, but be defensive)
+			if (!app.cache) {
+				app.log.warn(
+					"Cache service not available - metrics cache will not be initialized",
+				);
+				return;
+			}
+
+			const cacheTtlSeconds =
+				app.envConfig.API_METRICS_CACHE_TTL_SECONDS ?? 300;
+			const metricsCache = new MetricsCacheService(
+				app.cache,
+				app.log,
+				cacheTtlSeconds,
+			);
+			app.metricsCache = metricsCache;
+			app.log.debug("Metrics cache service initialized");
+		} catch (error) {
+			app.log.warn(
+				{
+					error: error instanceof Error ? error.message : "Unknown error",
+				},
+				"Failed to initialize metrics cache service (continuing without cache)",
+			);
+		}
+
 		// Endpoint to retrieve recent performance snapshots (protected)
 		app.get(
 			"/metrics/perf",
@@ -210,5 +256,8 @@ export default fp(
 			}),
 		);
 	},
-	{ name: "performance" },
+	{
+		name: "performance",
+		dependencies: ["cacheService"],
+	},
 );

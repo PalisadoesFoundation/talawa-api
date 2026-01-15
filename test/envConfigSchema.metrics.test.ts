@@ -9,6 +9,10 @@ describe("envConfigSchema - Metrics Configuration", () => {
 		delete process.env.API_METRICS_AGGREGATION_ENABLED;
 		delete process.env.API_METRICS_SNAPSHOT_RETENTION_COUNT;
 		delete process.env.API_METRICS_AGGREGATION_WINDOW_MINUTES;
+		delete process.env.API_METRICS_ENABLED;
+		delete process.env.API_METRICS_SLOW_OPERATION_MS;
+		delete process.env.API_METRICS_SLOW_REQUEST_MS;
+		delete process.env.API_METRICS_CACHE_TTL_SECONDS;
 	});
 
 	describe("API_METRICS_AGGREGATION_CRON_SCHEDULE", () => {
@@ -229,12 +233,232 @@ describe("envConfigSchema - Metrics Configuration", () => {
 		});
 	});
 
+	describe("API_METRICS_ENABLED", () => {
+		it("should accept true", () => {
+			process.env.API_METRICS_ENABLED = "true";
+
+			const config = envSchema({
+				ajv: envSchemaAjv,
+				schema: envConfigSchema,
+				data: process.env,
+			}) as Record<string, unknown>;
+
+			expect(config.API_METRICS_ENABLED).toBe(true);
+		});
+
+		it("should accept false", () => {
+			process.env.API_METRICS_ENABLED = "false";
+
+			const config = envSchema({
+				ajv: envSchemaAjv,
+				schema: envConfigSchema,
+				data: process.env,
+			}) as Record<string, unknown>;
+
+			expect(config.API_METRICS_ENABLED).toBe(false);
+		});
+
+		it("should default to true when not set", () => {
+			const config = envSchema({
+				ajv: envSchemaAjv,
+				schema: envConfigSchema,
+				data: process.env,
+			}) as Record<string, unknown>;
+
+			expect(config.API_METRICS_ENABLED).toBe(true);
+		});
+	});
+
+	describe("API_METRICS_SLOW_OPERATION_MS", () => {
+		it("should accept valid integer", () => {
+			process.env.API_METRICS_SLOW_OPERATION_MS = "300";
+
+			const config = envSchema({
+				ajv: envSchemaAjv,
+				schema: envConfigSchema,
+				data: process.env,
+			}) as Record<string, unknown>;
+
+			expect(config.API_METRICS_SLOW_OPERATION_MS).toBe(300);
+		});
+
+		it("should default to 200 when not set", () => {
+			const config = envSchema({
+				ajv: envSchemaAjv,
+				schema: envConfigSchema,
+				data: process.env,
+			}) as Record<string, unknown>;
+
+			expect(config.API_METRICS_SLOW_OPERATION_MS).toBe(200);
+		});
+
+		it("should reject values less than 1", () => {
+			process.env.API_METRICS_SLOW_OPERATION_MS = "0";
+
+			expect(() => {
+				envSchema({
+					ajv: envSchemaAjv,
+					schema: envConfigSchema,
+					data: process.env,
+				});
+			}).toThrow();
+		});
+
+		it("should reject negative values", () => {
+			process.env.API_METRICS_SLOW_OPERATION_MS = "-1";
+
+			expect(() => {
+				envSchema({
+					ajv: envSchemaAjv,
+					schema: envConfigSchema,
+					data: process.env,
+				});
+			}).toThrow();
+		});
+
+		it("should reject non-numeric values", () => {
+			process.env.API_METRICS_SLOW_OPERATION_MS = "invalid";
+
+			expect(() => {
+				envSchema({
+					ajv: envSchemaAjv,
+					schema: envConfigSchema,
+					data: process.env,
+				});
+			}).toThrow();
+		});
+	});
+
+	describe("API_METRICS_SLOW_REQUEST_MS", () => {
+		it("should accept valid integer", () => {
+			process.env.API_METRICS_SLOW_REQUEST_MS = "1000";
+
+			const config = envSchema({
+				ajv: envSchemaAjv,
+				schema: envConfigSchema,
+				data: process.env,
+			}) as Record<string, unknown>;
+
+			expect(config.API_METRICS_SLOW_REQUEST_MS).toBe(1000);
+		});
+
+		it("should default to 500 when not set", () => {
+			const config = envSchema({
+				ajv: envSchemaAjv,
+				schema: envConfigSchema,
+				data: process.env,
+			}) as Record<string, unknown>;
+
+			expect(config.API_METRICS_SLOW_REQUEST_MS).toBe(500);
+		});
+
+		it("should reject values less than 1", () => {
+			process.env.API_METRICS_SLOW_REQUEST_MS = "0";
+
+			expect(() => {
+				envSchema({
+					ajv: envSchemaAjv,
+					schema: envConfigSchema,
+					data: process.env,
+				});
+			}).toThrow();
+		});
+
+		it("should reject negative values", () => {
+			process.env.API_METRICS_SLOW_REQUEST_MS = "-1";
+
+			expect(() => {
+				envSchema({
+					ajv: envSchemaAjv,
+					schema: envConfigSchema,
+					data: process.env,
+				});
+			}).toThrow();
+		});
+
+		it("should reject non-numeric values", () => {
+			process.env.API_METRICS_SLOW_REQUEST_MS = "invalid";
+
+			expect(() => {
+				envSchema({
+					ajv: envSchemaAjv,
+					schema: envConfigSchema,
+					data: process.env,
+				});
+			}).toThrow();
+		});
+	});
+
+	describe("API_METRICS_CACHE_TTL_SECONDS", () => {
+		it("should accept valid integer", () => {
+			process.env.API_METRICS_CACHE_TTL_SECONDS = "600";
+
+			const config = envSchema({
+				ajv: envSchemaAjv,
+				schema: envConfigSchema,
+				data: process.env,
+			}) as Record<string, unknown>;
+
+			expect(config.API_METRICS_CACHE_TTL_SECONDS).toBe(600);
+		});
+
+		it("should default to 300 when not set", () => {
+			const config = envSchema({
+				ajv: envSchemaAjv,
+				schema: envConfigSchema,
+				data: process.env,
+			}) as Record<string, unknown>;
+
+			expect(config.API_METRICS_CACHE_TTL_SECONDS).toBe(300);
+		});
+
+		it("should reject values less than 1", () => {
+			process.env.API_METRICS_CACHE_TTL_SECONDS = "0";
+
+			expect(() => {
+				envSchema({
+					ajv: envSchemaAjv,
+					schema: envConfigSchema,
+					data: process.env,
+				});
+			}).toThrow();
+		});
+
+		it("should reject negative values", () => {
+			process.env.API_METRICS_CACHE_TTL_SECONDS = "-1";
+
+			expect(() => {
+				envSchema({
+					ajv: envSchemaAjv,
+					schema: envConfigSchema,
+					data: process.env,
+				});
+			}).toThrow();
+		});
+
+		it("should reject non-numeric values", () => {
+			process.env.API_METRICS_CACHE_TTL_SECONDS = "invalid";
+
+			expect(() => {
+				envSchema({
+					ajv: envSchemaAjv,
+					schema: envConfigSchema,
+					data: process.env,
+				});
+			}).toThrow();
+		});
+	});
+
 	describe("All metrics env vars together", () => {
 		it("should accept all metrics configuration variables", () => {
 			process.env.API_METRICS_AGGREGATION_CRON_SCHEDULE = "*/10 * * * *";
 			process.env.API_METRICS_AGGREGATION_ENABLED = "true";
 			process.env.API_METRICS_SNAPSHOT_RETENTION_COUNT = "2000";
 			process.env.API_METRICS_AGGREGATION_WINDOW_MINUTES = "15";
+			process.env.API_METRICS_ENABLED = "true";
+			process.env.API_METRICS_SLOW_OPERATION_MS = "300";
+			process.env.API_METRICS_SLOW_REQUEST_MS = "1000";
+			process.env.API_METRICS_CACHE_TTL_SECONDS = "600";
 
 			const config = envSchema({
 				ajv: envSchemaAjv,
@@ -246,6 +470,10 @@ describe("envConfigSchema - Metrics Configuration", () => {
 			expect(config.API_METRICS_AGGREGATION_ENABLED).toBe(true);
 			expect(config.API_METRICS_SNAPSHOT_RETENTION_COUNT).toBe(2000);
 			expect(config.API_METRICS_AGGREGATION_WINDOW_MINUTES).toBe(15);
+			expect(config.API_METRICS_ENABLED).toBe(true);
+			expect(config.API_METRICS_SLOW_OPERATION_MS).toBe(300);
+			expect(config.API_METRICS_SLOW_REQUEST_MS).toBe(1000);
+			expect(config.API_METRICS_CACHE_TTL_SECONDS).toBe(600);
 		});
 
 		it("should use defaults when all metrics vars are not set", () => {
@@ -259,6 +487,10 @@ describe("envConfigSchema - Metrics Configuration", () => {
 			expect(config.API_METRICS_AGGREGATION_ENABLED).toBe(true);
 			expect(config.API_METRICS_SNAPSHOT_RETENTION_COUNT).toBe(1000);
 			expect(config.API_METRICS_AGGREGATION_WINDOW_MINUTES).toBe(5);
+			expect(config.API_METRICS_ENABLED).toBe(true);
+			expect(config.API_METRICS_SLOW_OPERATION_MS).toBe(200);
+			expect(config.API_METRICS_SLOW_REQUEST_MS).toBe(500);
+			expect(config.API_METRICS_CACHE_TTL_SECONDS).toBe(300);
 		});
 	});
 });
