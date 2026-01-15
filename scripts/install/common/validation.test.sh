@@ -237,8 +237,8 @@ if command -v jq &> /dev/null; then
     test_parse_package_json_functional "handles nested fields correctly" "1.2.3"
 
     test_start "parse_package_json: required field missing triggers error"
-    temp_dir=$(mktemp -d)
-    original_dir=$(pwd)
+    local temp_dir=$(mktemp -d)
+    local original_dir=$(pwd)
     cd "$temp_dir"
     echo '{}' > package.json
     if (parse_package_json ".engines.node" "" "engines.node" true 2>&1 | grep -q "engines.node not found in package.json (required field)"); then

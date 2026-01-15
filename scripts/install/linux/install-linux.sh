@@ -531,8 +531,8 @@ if [[ "$PNPM_FULL" == pnpm@* ]]; then
     fi
     
     # SECURITY: Validate pnpm version before use in commands
-if ! validate_version_string "$PNPM_VERSION" "pnpm version (packageManager)"; then
-    handle_version_validation_error "packageManager" "$PNPM_VERSION" ".packageManager"
+    if ! validate_version_string "$PNPM_VERSION" "pnpm version (packageManager)"; then
+        handle_version_validation_error "packageManager" "$PNPM_VERSION" ".packageManager"
     fi
 elif [ -n "$PNPM_FULL" ]; then
     # packageManager field exists but doesn't match expected pnpm format
