@@ -332,13 +332,13 @@ export function getBackgroundWorkerStatus(): {
 	nextCleanupRun?: Date;
 } {
 	// Read metrics configuration directly from env vars for accurate status reporting
-	// This ensures tests and status checks always reflect current configuration
+	// Use the same parsing logic as startBackgroundWorkers for consistency
 	const enabledValue = process.env.API_METRICS_AGGREGATION_ENABLED;
 
-	// Parse metrics enabled: only true if explicitly set to truthy value
+	// Parse metrics enabled: default to true when unset (matching startBackgroundWorkers)
 	let currentMetricsEnabled: boolean;
 	if (enabledValue === undefined || enabledValue === "") {
-		currentMetricsEnabled = false; // Not explicitly configured, treat as disabled for status
+		currentMetricsEnabled = true; // Default to enabled when unset (matches startBackgroundWorkers)
 	} else {
 		currentMetricsEnabled = ["true", "1", "yes"].includes(
 			enabledValue.toLowerCase(),
@@ -353,7 +353,7 @@ export function getBackgroundWorkerStatus(): {
 		materializationSchedule:
 			process.env.EVENT_GENERATION_CRON_SCHEDULE || "0 * * * *",
 		cleanupSchedule: process.env.CLEANUP_CRON_SCHEDULE || "0 2 * * *",
-		// Only include metrics fields when explicitly enabled
+		// Include metrics fields when enabled (default or explicit)
 		...(currentMetricsEnabled && {
 			metricsSchedule: currentMetricsSchedule,
 			metricsEnabled: currentMetricsEnabled,

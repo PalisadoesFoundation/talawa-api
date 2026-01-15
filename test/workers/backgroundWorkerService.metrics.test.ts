@@ -399,7 +399,9 @@ describe("backgroundWorkerService - metrics integration", () => {
 		});
 
 		it("uses default metrics schedule when not set", () => {
-			process.env.API_METRICS_AGGREGATION_ENABLED = "true";
+			// When API_METRICS_AGGREGATION_ENABLED is not set, it defaults to true
+			// (matching startBackgroundWorkers behavior)
+			delete process.env.API_METRICS_AGGREGATION_ENABLED;
 			delete process.env.API_METRICS_AGGREGATION_CRON_SCHEDULE;
 
 			const status = getBackgroundWorkerStatus();

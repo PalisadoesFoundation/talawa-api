@@ -1,3 +1,4 @@
+import crypto from "node:crypto";
 import type { FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
 import fp from "fastify-plugin";
 import {
@@ -65,6 +66,13 @@ export default fp(
 		// Get API key for metrics endpoint authentication (optional)
 		const metricsApiKey = process.env.API_METRICS_API_KEY;
 
+		// Warn once at plugin init if API key is not configured
+		if (!metricsApiKey) {
+			app.log.warn(
+				"API_METRICS_API_KEY not configured - metrics endpoint is unprotected",
+			);
+		}
+
 		// Store recent performance snapshots with timestamps in memory
 		const recent: SnapshotWithTimestamp[] = [];
 
@@ -101,10 +109,8 @@ export default fp(
 			reply: FastifyReply,
 		): Promise<void> {
 			// If no API key is configured, allow access (for development/testing)
+			// Warning is logged once at plugin init, not per-request
 			if (!metricsApiKey) {
-				request.log.warn(
-					"API_METRICS_API_KEY not configured - metrics endpoint is unprotected",
-				);
 				return;
 			}
 
@@ -129,8 +135,16 @@ export default fp(
 				return;
 			}
 
-			// Validate token against configured API key
-			if (token !== metricsApiKey) {
+			// Validate token using timing-safe comparison to prevent timing attacks
+			const tokenBuffer = Buffer.from(token);
+			const apiKeyBuffer = Buffer.from(metricsApiKey);
+
+			// Check lengths first, then use timing-safe comparison
+			const isValid =
+				tokenBuffer.length === apiKeyBuffer.length &&
+				crypto.timingSafeEqual(tokenBuffer, apiKeyBuffer);
+
+			if (!isValid) {
 				reply
 					.code(403)
 					.send({ error: "Forbidden", message: "Invalid API key" });
