@@ -40,12 +40,25 @@ export class MockCacheService implements CacheService {
 		this.store.set(key, value);
 	}
 
-	async del(_keys: string | string[]): Promise<void> {
-		// No-op for tests
+	async del(keys: string | string[]): Promise<void> {
+		const keysArray = Array.isArray(keys) ? keys : [keys];
+		for (const key of keysArray) {
+			this.store.delete(key);
+		}
 	}
 
-	async clearByPattern(_pattern: string): Promise<void> {
-		// No-op for tests
+	async clearByPattern(pattern: string): Promise<void> {
+		// Convert glob pattern to regex (supports * as wildcard)
+		const regexPattern = pattern
+			.replace(/[.+^${}()|[\]\\]/g, "\\$&") // Escape special regex chars except *
+			.replace(/\*/g, ".*"); // Convert * to .*
+		const regex = new RegExp(`^${regexPattern}$`);
+
+		for (const key of this.store.keys()) {
+			if (regex.test(key)) {
+				this.store.delete(key);
+			}
+		}
 	}
 
 	async mget<T>(keys: string[]): Promise<(T | null)[]> {

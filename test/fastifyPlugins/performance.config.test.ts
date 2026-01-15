@@ -36,9 +36,9 @@ describe("Performance Plugin - Environment Configuration", () => {
 
 			const warnSpy = vi.spyOn(app.log, "warn");
 
-			// Make a slow request (over 1000ms)
+			// Make a slow request (well over 1000ms threshold with generous buffer)
 			app.get("/slow-request", async () => {
-				await new Promise((resolve) => setTimeout(resolve, 1100));
+				await new Promise((resolve) => setTimeout(resolve, 1500));
 				return { ok: true };
 			});
 
@@ -69,9 +69,9 @@ describe("Performance Plugin - Environment Configuration", () => {
 
 			const warnSpy = vi.spyOn(app.log, "warn");
 
-			// Make a slow request (over 500ms but under 1000ms)
+			// Make a slow request (well over 500ms default threshold with generous buffer)
 			app.get("/slow-request-default", async () => {
-				await new Promise((resolve) => setTimeout(resolve, 600));
+				await new Promise((resolve) => setTimeout(resolve, 1000));
 				return { ok: true };
 			});
 
@@ -105,7 +105,8 @@ describe("Performance Plugin - Environment Configuration", () => {
 			const warnSpy = vi.spyOn(app.log, "warn");
 
 			app.get("/test-invalid", async () => {
-				await new Promise((resolve) => setTimeout(resolve, 600));
+				// Sleep well over 500ms default threshold with generous buffer
+				await new Promise((resolve) => setTimeout(resolve, 1000));
 				return { ok: true };
 			});
 
@@ -138,9 +139,9 @@ describe("Performance Plugin - Environment Configuration", () => {
 			app = createTestApp({ envConfig: customEnvConfig, cache: mockCache });
 
 			app.get("/test-slow-op", async (request: FastifyRequest) => {
-				// Track a slow operation (over 300ms)
+				// Track a slow operation (well over 300ms threshold with generous buffer)
 				await request.perf?.time("slow-op", async () => {
-					await new Promise((resolve) => setTimeout(resolve, 350));
+					await new Promise((resolve) => setTimeout(resolve, 600));
 				});
 				const snapshot = request.perf?.snapshot();
 				return { slowOps: snapshot?.slow ?? [] };
@@ -167,9 +168,9 @@ describe("Performance Plugin - Environment Configuration", () => {
 			app = createTestApp({ envConfig: customEnvConfig, cache: mockCache });
 
 			app.get("/test-default-op", async (request: FastifyRequest) => {
-				// Track an operation that's slow for default (200ms) but not for custom (300ms)
+				// Track an operation that's slow for default (200ms) with generous buffer
 				await request.perf?.time("medium-op", async () => {
-					await new Promise((resolve) => setTimeout(resolve, 250));
+					await new Promise((resolve) => setTimeout(resolve, 500));
 				});
 				const snapshot = request.perf?.snapshot();
 				return { slowOps: snapshot?.slow ?? [] };
@@ -198,9 +199,9 @@ describe("Performance Plugin - Environment Configuration", () => {
 			app = createTestApp({ envConfig: customEnvConfig, cache: mockCache });
 
 			app.get("/test-invalid-op", async (request: FastifyRequest) => {
-				// Track an operation that's slow for default (200ms)
+				// Track an operation that's slow for default (200ms) with generous buffer
 				await request.perf?.time("test-op", async () => {
-					await new Promise((resolve) => setTimeout(resolve, 250));
+					await new Promise((resolve) => setTimeout(resolve, 500));
 				});
 				const snapshot = request.perf?.snapshot();
 				return { slowOps: snapshot?.slow ?? [] };
@@ -422,21 +423,23 @@ describe("Performance Plugin - Environment Configuration", () => {
 			await app.register(performancePlugin);
 			await app.ready();
 
-			await app.inject({
-				method: "GET",
-				url: "/test-env-config",
-			});
+			try {
+				await app.inject({
+					method: "GET",
+					url: "/test-env-config",
+				});
 
-			// Should use envConfig value (1000), not process.env value (2000)
-			expect(warnSpy).toHaveBeenCalledWith(
-				expect.objectContaining({
-					msg: "Slow request",
-					slowThresholdMs: 1000, // From envConfig, not process.env
-				}),
-			);
-
-			warnSpy.mockRestore();
-			delete process.env.API_METRICS_SLOW_REQUEST_MS;
+				// Should use envConfig value (1000), not process.env value (2000)
+				expect(warnSpy).toHaveBeenCalledWith(
+					expect.objectContaining({
+						msg: "Slow request",
+						slowThresholdMs: 1000, // From envConfig, not process.env
+					}),
+				);
+			} finally {
+				warnSpy.mockRestore();
+				delete process.env.API_METRICS_SLOW_REQUEST_MS;
+			}
 		});
 	});
 });
