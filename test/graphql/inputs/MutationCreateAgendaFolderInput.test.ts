@@ -129,7 +129,7 @@ describe("MutationCreateAgendaFolderInput Schema", () => {
 	});
 
 	describe("sequence field validation", () => {
-		it("should accept zero sequence", () => {
+		it("should reject zero sequence", () => {
 			const result = mutationCreateAgendaFolderInputSchema.safeParse({
 				...validBaseInput,
 				sequence: 0,
