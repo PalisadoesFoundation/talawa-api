@@ -69,7 +69,7 @@ suite("Query field agendaFoldersByEventId", () => {
 		);
 	});
 
-	test("Returns unauthenticated error when user is deleted after authentication", async () => {
+	test("Returns unexpected error when user is deleted after authentication", async () => {
 		const regularUser = await createRegularUserUsingAdmin();
 		let eventId: string | undefined;
 
@@ -202,6 +202,17 @@ suite("Query field agendaFoldersByEventId", () => {
 		assertToBeNonNullish(createEventResult.data?.createEvent);
 		const eventId = createEventResult.data.createEvent.id;
 
+		cleanupFns.push(async () => {
+			await mercuriusClient.mutate(Mutation_deleteStandaloneEvent, {
+				headers: { authorization: `bearer ${adminAuthToken}` },
+				variables: { input: { id: eventId } },
+			});
+			await mercuriusClient.mutate(Mutation_deleteOrganization, {
+				headers: { authorization: `bearer ${adminAuthToken}` },
+				variables: { input: { id: organizationId } },
+			});
+		});
+
 		// Regular user is NOT a member of the organization
 
 		// Attempt to query agenda folders
@@ -232,17 +243,6 @@ suite("Query field agendaFoldersByEventId", () => {
 				}),
 			]),
 		);
-
-		// Cleanup
-		await mercuriusClient.mutate(Mutation_deleteStandaloneEvent, {
-			headers: { authorization: `bearer ${adminAuthToken}` },
-			variables: { input: { id: eventId } },
-		});
-
-		await mercuriusClient.mutate(Mutation_deleteOrganization, {
-			headers: { authorization: `bearer ${adminAuthToken}` },
-			variables: { input: { id: organizationId } },
-		});
 	});
 
 	test("Returns invalid_arguments for invalid eventId UUID", async () => {
@@ -462,11 +462,14 @@ suite("Query field agendaFoldersByEventId", () => {
 
 		expect(result.errors).toBeUndefined();
 		expect(result.data?.agendaFoldersByEventId).toHaveLength(2);
-		expect(result.data?.agendaFoldersByEventId).toEqual(
-			expect.arrayContaining([
-				expect.objectContaining({ name: "Folder 1" }),
-				expect.objectContaining({ name: "Folder 2" }),
-			]),
-		);
+		// Verify folders are returned in sequence order
+		expect(result.data?.agendaFoldersByEventId?.[0]).toMatchObject({
+			name: "Folder 1",
+			sequence: 1,
+		});
+		expect(result.data?.agendaFoldersByEventId?.[1]).toMatchObject({
+			name: "Folder 2",
+			sequence: 2,
+		});
 	});
 });

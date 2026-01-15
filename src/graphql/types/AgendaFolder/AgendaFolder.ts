@@ -26,6 +26,7 @@ AgendaFolder.implement({
 		}),
 		isDefaultFolder: t.exposeBoolean("isDefaultFolder", {
 			description: "Boolean to tell if agenda folder is default or not",
+			nullable: false,
 		}),
 	}),
 });

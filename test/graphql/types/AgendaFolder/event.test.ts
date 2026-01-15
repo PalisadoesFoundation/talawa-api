@@ -13,7 +13,16 @@ describe("AgendaFolder Resolver - event field", () => {
 	beforeEach(() => {
 		mockAgendaFolder = {
 			id: "folder-123",
+			name: "Test Folder",
+			description: null,
+			organizationId: "org-123",
 			eventId: "event-123",
+			sequence: 1,
+			isDefaultFolder: false,
+			createdAt: new Date("2024-01-01T00:00:00.000Z"),
+			updatedAt: new Date("2024-01-02T00:00:00.000Z"),
+			creatorId: "creator-123",
+			updaterId: "updater-123",
 		} as AgendaFolderType;
 
 		const { context, mocks: newMocks } = createMockGraphQLContext(true);

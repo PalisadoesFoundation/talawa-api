@@ -210,7 +210,7 @@ type AgendaFolder {
   id: ID!
 
   """Boolean to tell if agenda folder is default or not"""
-  isDefaultFolder: Boolean
+  isDefaultFolder: Boolean!
 
   """Name of the agenda folder."""
   name: String

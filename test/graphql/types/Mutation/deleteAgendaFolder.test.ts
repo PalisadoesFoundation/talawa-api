@@ -46,6 +46,9 @@ let cachedAdminAuth: { token: string; userId: string } | null = null;
 async function getAdminAuth() {
 	if (cachedAdminAuth) return cachedAdminAuth;
 
+	// Ensure clean client state before authentication
+	mercuriusClient.setHeaders({});
+
 	const result = await mercuriusClient.query(Query_signIn, {
 		variables: {
 			input: {
@@ -170,7 +173,12 @@ suite("Mutation field deleteAgendaFolder", () => {
 	afterEach(async () => {
 		vi.restoreAllMocks();
 		for (const fn of cleanupFns.reverse()) {
-			await fn();
+			try {
+				await fn();
+			} catch {
+				// Cleanup errors are intentionally swallowed to prevent cascading failures.
+				// The test result is already determined at this point.
+			}
 		}
 		cleanupFns.length = 0;
 		mercuriusClient.setHeaders({});

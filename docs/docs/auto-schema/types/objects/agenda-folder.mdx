@@ -80,7 +80,7 @@ type AgendaFolder {
   description: String
   event: Event
   id: ID!
-  isDefaultFolder: Boolean
+  isDefaultFolder: Boolean!
   name: String
   organization: Organization
   sequence: Int
@@ -111,7 +111,7 @@ Event for which the agenda folder contains agenda items constituting a part of t
 
 Global identifier of the agenda folder.
 
-#### [<code style={{ fontWeight: 'normal' }}>AgendaFolder.<b>isDefaultFolder</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>Boolean</b></code>](/auto-schema/types/scalars/boolean.mdx) <Badge class="badge badge--secondary " text="scalar"/>
+#### [<code style={{ fontWeight: 'normal' }}>AgendaFolder.<b>isDefaultFolder</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>Boolean!</b></code>](/auto-schema/types/scalars/boolean.mdx) <Badge class="badge badge--secondary badge--non_null" text="non-null"/> <Badge class="badge badge--secondary " text="scalar"/>
 
 Boolean to tell if agenda folder is default or not
 

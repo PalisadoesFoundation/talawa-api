@@ -31,9 +31,10 @@ export const resolveEvent = async (
 		});
 	}
 
-	return Object.assign(existingEvent, {
+	return {
+		...existingEvent,
 		attachments: existingEvent.attachmentsWhereEvent,
-	});
+	};
 };
 
 AgendaFolder.implement({

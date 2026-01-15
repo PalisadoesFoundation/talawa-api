@@ -23,6 +23,19 @@ async function getAdminAuth() {
 
 	mercuriusClient.setHeaders({});
 
+	const {
+		API_ADMINISTRATOR_USER_EMAIL_ADDRESS: email,
+		API_ADMINISTRATOR_USER_PASSWORD: password,
+	} = server.envConfig;
+
+	if (!email || !password) {
+		throw new Error(
+			"Missing admin credentials for tests. " +
+				"Please set API_ADMINISTRATOR_USER_EMAIL_ADDRESS and " +
+				"API_ADMINISTRATOR_USER_PASSWORD in your environment.",
+		);
+	}
+
 	const result = await mercuriusClient.query(Query_signIn, {
 		variables: {
 			input: {
@@ -263,6 +276,37 @@ suite("Mutation field updateAgendaFolder", () => {
 		);
 	});
 
+	test("Blocks updating description of default folder", async () => {
+		const { userId: adminUserId, token } = await getAdminAuth();
+
+		const env = await createOrganizationEventAndFolder({
+			adminUserId,
+			isDefaultFolder: true,
+		});
+		cleanupFns.push(env.cleanup);
+
+		const result = await mercuriusClient.mutate(Mutation_updateAgendaFolder, {
+			headers: { authorization: `bearer ${token}` },
+			variables: {
+				input: {
+					id: env.folderId,
+					description: "New Description",
+				},
+			},
+		});
+
+		expect(result.data?.updateAgendaFolder ?? null).toEqual(null);
+		expect(result.errors).toEqual(
+			expect.arrayContaining([
+				expect.objectContaining({
+					extensions: expect.objectContaining({
+						code: "forbidden_action_on_arguments_associated_resources",
+					}),
+				}),
+			]),
+		);
+	});
+
 	test("Returns invalid_arguments when id is not a valid UUID", async () => {
 		const { token } = await getAdminAuth();
 
@@ -401,7 +445,7 @@ suite("Mutation field updateAgendaFolder", () => {
 		expect(result.data?.updateAgendaFolder?.name).toBe("Org Admin Update");
 	});
 
-	test("Updates only name successfully", async () => {
+	test("Updates only description successfully", async () => {
 		const { userId: adminUserId, token } = await getAdminAuth();
 
 		const env = await createOrganizationEventAndFolder({ adminUserId });
@@ -412,7 +456,7 @@ suite("Mutation field updateAgendaFolder", () => {
 			variables: {
 				input: {
 					id: env.folderId,
-					name: "Name Only Update",
+					description: "Description Only Update",
 				},
 			},
 		});
@@ -421,7 +465,7 @@ suite("Mutation field updateAgendaFolder", () => {
 		expect(result.data?.updateAgendaFolder).toEqual(
 			expect.objectContaining({
 				id: env.folderId,
-				name: "Name Only Update",
+				description: "Description Only Update",
 			}),
 		);
 	});
@@ -509,13 +553,15 @@ suite("Mutation field updateAgendaFolder", () => {
 		const env = await createOrganizationEventAndFolder({ adminUserId });
 		cleanupFns.push(env.cleanup);
 
-		vi.spyOn(server.drizzleClient, "update").mockReturnValueOnce({
-			set: () => ({
-				where: () => ({
-					returning: async () => [],
+		const updateSpy = vi
+			.spyOn(server.drizzleClient, "update")
+			.mockReturnValueOnce({
+				set: () => ({
+					where: () => ({
+						returning: async () => [],
+					}),
 				}),
-			}),
-		} as unknown as ReturnType<typeof server.drizzleClient.update>);
+			} as unknown as ReturnType<typeof server.drizzleClient.update>);
 
 		const result = await mercuriusClient.mutate(Mutation_updateAgendaFolder, {
 			headers: { authorization: `bearer ${token}` },
@@ -526,6 +572,8 @@ suite("Mutation field updateAgendaFolder", () => {
 				},
 			},
 		});
+
+		expect(updateSpy).toHaveBeenCalledWith(agendaFoldersTable);
 
 		expect(result.data?.updateAgendaFolder ?? null).toEqual(null);
 		expect(result.errors).toEqual(

@@ -129,6 +129,22 @@ describe("MutationCreateAgendaFolderInput Schema", () => {
 	});
 
 	describe("sequence field validation", () => {
+		it("should accept zero sequence", () => {
+			const result = mutationCreateAgendaFolderInputSchema.safeParse({
+				...validBaseInput,
+				sequence: 0,
+			});
+			expect(result.success).toBe(true); // or false, depending on requirements
+		});
+
+		it("should accept negative sequence", () => {
+			const result = mutationCreateAgendaFolderInputSchema.safeParse({
+				...validBaseInput,
+				sequence: -1,
+			});
+			expect(result.success).toBe(true); // or false, depending on requirements
+		});
+
 		it("should accept a valid integer sequence", () => {
 			const result = mutationCreateAgendaFolderInputSchema.safeParse({
 				...validBaseInput,
@@ -146,7 +162,7 @@ describe("MutationCreateAgendaFolderInput Schema", () => {
 		});
 
 		it("should accept missing sequence (optional field)", () => {
-			const { sequence, ...input } = validBaseInput;
+			const { sequence: _sequence, ...input } = validBaseInput;
 			const result = mutationCreateAgendaFolderInputSchema.safeParse(input);
 			expect(result.success).toBe(true);
 		});

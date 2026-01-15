@@ -34,6 +34,8 @@ describe("AgendaFolder CreatedAt Resolver Tests", () => {
 			updatedAt: null,
 			creatorId: "user-123",
 			updaterId: null,
+			isDefaultFolder: false,
+			sequence: 1,
 		} as AgendaFolderType;
 	});
 

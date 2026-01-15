@@ -170,6 +170,15 @@ describe("MutationUpdateAgendaFolderInput Schema", () => {
 
 			expect(result.success).toBe(false);
 		});
+
+		it("should accept zero sequence", () => {
+			const result = mutationUpdateAgendaFolderInputSchema.safeParse({
+				id: validId,
+				sequence: 0,
+			});
+
+			expect(result.success).toBe(true);
+		});
 	});
 
 	describe("GraphQL Builder Type", () => {
