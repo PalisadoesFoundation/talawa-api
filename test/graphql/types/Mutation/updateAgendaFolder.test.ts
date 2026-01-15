@@ -351,6 +351,12 @@ suite("Mutation field updateAgendaFolder", () => {
 				expect.objectContaining({
 					extensions: expect.objectContaining({
 						code: "invalid_arguments",
+						issues: expect.arrayContaining([
+							expect.objectContaining({
+								argumentPath: ["input"],
+								message: "At least one field must be provided to update.",
+							}),
+						]),
 					}),
 				}),
 			]),
