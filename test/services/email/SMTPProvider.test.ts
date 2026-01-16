@@ -535,6 +535,26 @@ describe("SMTPProvider", () => {
 		expect(callArgs.subject).not.toContain("\n");
 	});
 
+	it("should throw error if recipient email contains CR/LF (injection attempt)", async () => {
+		const provider = new SMTPProvider(mockConfig);
+
+		const result = await provider.sendEmail({
+			id: "1",
+			email: "recipient@example.com\r\nBcc: hacker@evil.com",
+			subject: "Subject",
+			htmlBody: "Body",
+			userId: "123",
+		});
+
+		expect(result).toEqual(
+			expect.objectContaining({
+				success: false,
+				error:
+					"Recipient email is invalid or contains forbidden characters (CR/LF)",
+			}),
+		);
+	});
+
 	it("should use secure=true when configured", async () => {
 		const provider = new SMTPProvider({
 			...mockConfig,

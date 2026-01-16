@@ -11,6 +11,9 @@ reviews:
   request_changes_workflow: false
   high_level_summary: true
   review_status: true
+  review_details: false
+  auto_apply_labels: false
+  suggested_labels: false
   collapse_walkthrough: false
   auto_review:
     enabled: true
