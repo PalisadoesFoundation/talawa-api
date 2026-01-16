@@ -230,13 +230,13 @@ describe("MutationCreateAgendaItemInput Schema", () => {
 			expect(result.success).toBe(false);
 		});
 
-		it("should reject missing folderId (optional)", () => {
+		it("should accept missing folderId (optional)", () => {
 			const { folderId: _folderId, ...input } = validBaseInput;
 			const result = mutationCreateAgendaItemInputSchema.safeParse(input);
 			expect(result.success).toBe(true);
 		});
 
-		it("should reject missing categoryId (optional)", () => {
+		it("should accept missing categoryId (optional)", () => {
 			const { categoryId: _categoryId, ...input } = validBaseInput;
 			const result = mutationCreateAgendaItemInputSchema.safeParse(input);
 			expect(result.success).toBe(true);
