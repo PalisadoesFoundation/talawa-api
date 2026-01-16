@@ -6,7 +6,7 @@
 
 > **resolveUrl**(`parent`, `_args`, `ctx`): `Promise`\<`object`[]\>
 
-Defined in: src/graphql/types/AgendaItem/url.ts:10
+Defined in: [src/graphql/types/AgendaItem/url.ts:10](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/graphql/types/AgendaItem/url.ts#L10)
 
 ## Parameters
 
