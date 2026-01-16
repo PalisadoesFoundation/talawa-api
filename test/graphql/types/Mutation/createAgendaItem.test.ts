@@ -589,13 +589,21 @@ suite("Mutation field createAgendaItem", () => {
 		const spy = vi
 			.spyOn(server.drizzleClient, "transaction")
 			.mockImplementationOnce(async (cb) => {
-				return cb({
+				const tx = {
 					insert: () => ({
 						values: () => ({
-							returning: async () => [], // ← force empty insert
+							returning: async () => [],
 						}),
 					}),
-				} as any);
+				};
+
+				return cb(
+					tx as unknown as Parameters<
+						typeof server.drizzleClient.transaction
+					>[0] extends (arg: infer T) => unknown
+						? T
+						: never,
+				);
 			});
 
 		const result = await mercuriusClient.mutate(Mutation_createAgendaItem, {
