@@ -242,6 +242,19 @@ You will need to update the `.env` file with the following information.
 5. `AWS_SES_FROM_EMAIL` - The email address you have verified in SES
 6. `AWS_SES_FROM_NAME` - (Optional) The name to display as the sender (default: "Talawa")
 
+**Alternatively, for SMTP Provider:**
+
+1. `API_EMAIL_PROVIDER` - Set to `smtp`
+2. `SMTP_HOST` - SMTP server hostname (required)
+3. `SMTP_PORT` - SMTP server port (required, e.g., 587 or 465)
+4. `SMTP_USER` - SMTP username (optional)
+5. `SMTP_PASSWORD` - SMTP password (optional)
+6. `SMTP_SECURE` - `true` for SSL, `false` for TLS (required)
+7. `SMTP_FROM_EMAIL` - Sender email address (required)
+8. `SMTP_FROM_NAME` - Sender display name (optional)
+9. `SMTP_NAME` - Client hostname for HELO/EHLO (optional)
+10. `SMTP_LOCAL_ADDRESS` - Local interface IP to bind to (optional)
+
 **Required IAM Permissions:**
 Your AWS IAM user needs the following permissions:
 - `ses:SendEmail`
