@@ -163,6 +163,7 @@ describe("traceableQuery", () => {
 			vi.doMock("~/src/config/observability", () => ({
 				observabilityConfig: {
 					enabled: false,
+					serviceName: "talawa-api",
 				},
 			}));
 
