@@ -12,8 +12,10 @@ import {
 	validateCloudBeaverAdmin,
 	validateCloudBeaverPassword,
 	validateCloudBeaverURL,
+	validateCronExpression,
 	validateEmail,
 	validatePort,
+	validatePositiveInteger,
 	validateURL,
 } from "./validators";
 
@@ -23,8 +25,10 @@ export {
 	validateCloudBeaverAdmin,
 	validateCloudBeaverPassword,
 	validateCloudBeaverURL,
+	validateCronExpression,
 	validateEmail,
 	validatePort,
+	validatePositiveInteger,
 	validateURL,
 } from "./validators";
 
@@ -423,26 +427,14 @@ export async function metricsSetup(
 				"API_METRICS_SLOW_REQUEST_MS",
 				"Slow request threshold in milliseconds:",
 				"500",
-				(input: string) => {
-					const ms = Number.parseInt(input, 10);
-					if (Number.isNaN(ms) || ms < 1) {
-						return "Please enter a valid positive integer.";
-					}
-					return true;
-				},
+				validatePositiveInteger,
 			);
 
 			answers.API_METRICS_SLOW_OPERATION_MS = await promptInput(
 				"API_METRICS_SLOW_OPERATION_MS",
 				"Slow operation threshold in milliseconds:",
 				"200",
-				(input: string) => {
-					const ms = Number.parseInt(input, 10);
-					if (Number.isNaN(ms) || ms < 1) {
-						return "Please enter a valid positive integer.";
-					}
-					return true;
-				},
+				validatePositiveInteger,
 			);
 
 			answers.API_METRICS_AGGREGATION_ENABLED = await promptList(
@@ -457,32 +449,21 @@ export async function metricsSetup(
 					"API_METRICS_AGGREGATION_CRON_SCHEDULE",
 					"Aggregation cron schedule (default: every 5 minutes):",
 					"*/5 * * * *",
+					validateCronExpression,
 				);
 
 				answers.API_METRICS_AGGREGATION_WINDOW_MINUTES = await promptInput(
 					"API_METRICS_AGGREGATION_WINDOW_MINUTES",
 					"Aggregation window in minutes:",
 					"5",
-					(input: string) => {
-						const mins = Number.parseInt(input, 10);
-						if (Number.isNaN(mins) || mins < 1) {
-							return "Please enter a valid positive integer.";
-						}
-						return true;
-					},
+					validatePositiveInteger,
 				);
 
 				answers.API_METRICS_CACHE_TTL_SECONDS = await promptInput(
 					"API_METRICS_CACHE_TTL_SECONDS",
 					"Cache TTL for aggregated metrics in seconds:",
 					"300",
-					(input: string) => {
-						const secs = Number.parseInt(input, 10);
-						if (Number.isNaN(secs) || secs < 1) {
-							return "Please enter a valid positive integer.";
-						}
-						return true;
-					},
+					validatePositiveInteger,
 				);
 			}
 
@@ -490,13 +471,7 @@ export async function metricsSetup(
 				"API_METRICS_SNAPSHOT_RETENTION_COUNT",
 				"Maximum snapshots to retain in memory:",
 				"1000",
-				(input: string) => {
-					const count = Number.parseInt(input, 10);
-					if (Number.isNaN(count) || count < 1) {
-						return "Please enter a valid positive integer.";
-					}
-					return true;
-				},
+				validatePositiveInteger,
 			);
 		}
 

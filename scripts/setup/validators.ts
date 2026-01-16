@@ -138,3 +138,44 @@ export function validateCloudBeaverURL(input: string): true | string {
 		return "Invalid URL format";
 	}
 }
+
+/**
+ * Validates that the input is a positive integer (>= 1).
+ * @param input - The string to validate.
+ * @returns `true` if valid, or an error message string if invalid.
+ */
+export function validatePositiveInteger(input: string): true | string {
+	const value = Number.parseInt(input, 10);
+	if (Number.isNaN(value) || value < 1) {
+		return "Please enter a valid positive integer.";
+	}
+	return true;
+}
+
+/**
+ * Validates that the input is a valid cron expression.
+ * Supports standard 5-field cron format: minute hour day-of-month month day-of-week
+ * @param input - The cron expression string to validate.
+ * @returns `true` if valid, or an error message string if invalid.
+ */
+export function validateCronExpression(input: string): true | string {
+	const trimmed = input.trim();
+	if (!trimmed) {
+		return "Cron expression cannot be empty.";
+	}
+
+	// Standard 5-field cron regex pattern
+	// minute (0-59), hour (0-23), day-of-month (1-31), month (1-12), day-of-week (0-6)
+	// Supports: numbers, *, /, -, and comma separated values
+	const cronFieldPattern =
+		"(\\*|\\d+|\\d+-\\d+|\\d+/\\d+|\\*/\\d+)(,(\\*|\\d+|\\d+-\\d+|\\d+/\\d+|\\*/\\d+))*";
+	const cronRegex = new RegExp(
+		`^${cronFieldPattern}\\s+${cronFieldPattern}\\s+${cronFieldPattern}\\s+${cronFieldPattern}\\s+${cronFieldPattern}$`,
+	);
+
+	if (!cronRegex.test(trimmed)) {
+		return "Please enter a valid cron expression (e.g., '*/5 * * * *' for every 5 minutes).";
+	}
+
+	return true;
+}
