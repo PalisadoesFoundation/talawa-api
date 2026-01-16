@@ -179,7 +179,7 @@ describe("emailSetup", () => {
 		vi.mocked(promptHelpers.promptPassword).mockResolvedValueOnce(""); // Secret Key (Missing)
 
 		// Mock error logging
-		consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => { });
+		consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
 
 		const result = await emailSetup(answers);
 
@@ -306,7 +306,7 @@ describe("emailSetup", () => {
 
 		mocks.mockSendEmail.mockRejectedValueOnce(awsError);
 
-		consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => { });
+		consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
 
 		await emailSetup(answers);
 
