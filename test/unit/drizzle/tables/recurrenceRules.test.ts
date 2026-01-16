@@ -12,6 +12,21 @@ import {
 import { usersTable } from "~/src/drizzle/tables/users";
 
 describe("src/drizzle/tables/recurrenceRules.ts", () => {
+	/**
+	 * Unit tests for recurrenceFrequencyEnum (Drizzle pgEnum).
+	 *
+	 * JUSTIFICATION FOR UNIT TEST APPROACH:
+	 * The recurrenceFrequencyEnum is a Drizzle pgEnum used for database schema definition.
+	 * While the Frequency GraphQL enum (exposed via src/graphql/enums/RecurrenceFrequency.ts)
+	 * derives its values from the Zod enum in src/drizzle/enums/recurrenceFrequency.ts,
+	 * this pgEnum is a separate database-level construct. Testing it via mercuriusClient
+	 * integration tests would require:
+	 * 1. Creating a full event with recurrence rules (complex setup with auth, org, etc.)
+	 * 2. The test would be testing GraphQL mutation behavior, not the pgEnum schema itself
+	 *
+	 * These unit tests directly validate the pgEnum's structure (enumValues, enumName)
+	 * which is the appropriate level of testing for database schema definitions.
+	 */
 	describe("recurrenceFrequencyEnum", () => {
 		it.each([
 			["DAILY"],
@@ -117,70 +132,85 @@ describe("src/drizzle/tables/recurrenceRules.ts", () => {
 
 		it("should have four foreign keys defined", () => {
 			const { foreignKeys } = getTableConfig(recurrenceRulesTable);
-			expect(foreignKeys).toBeDefined();
-			expect(foreignKeys.length).toBe(4);
+			expect(foreignKeys).toHaveLength(4);
 		});
 
-		it("should have baseRecurringEventId referencing eventsTable.id", () => {
-			const tableConfig = getTableConfig(recurrenceRulesTable);
-			const baseEventFk = tableConfig.foreignKeys.find((fk) => {
+		it("should have baseRecurringEventId referencing eventsTable.id with correct actions", () => {
+			const { foreignKeys } = getTableConfig(recurrenceRulesTable);
+			const baseEventFk = foreignKeys.find((fk) => {
 				const ref = fk.reference();
 				return ref.columns.some(
 					(col) => col.name === "base_recurring_event_id",
 				);
 			});
+
 			expect(baseEventFk).toBeDefined();
+			const ref = baseEventFk?.reference();
+			expect(ref).toBeDefined();
+			expect(ref?.foreignTable).toBe(eventsTable);
+			expect(ref?.foreignColumns).toHaveLength(1);
+			expect(ref?.foreignColumns[0]?.name).toBe("id");
+			expect(ref?.columns).toHaveLength(1);
+			expect(ref?.columns[0]?.name).toBe("base_recurring_event_id");
 			expect(baseEventFk?.onDelete).toBe("cascade");
 			expect(baseEventFk?.onUpdate).toBe("cascade");
-			// Execute the reference function to cover the callback
-			const ref = baseEventFk?.reference();
-			expect(ref?.foreignTable).toBe(eventsTable);
-			expect(ref?.foreignColumns[0]?.name).toBe("id");
 		});
 
-		it("should have organizationId referencing organizationsTable.id", () => {
-			const tableConfig = getTableConfig(recurrenceRulesTable);
-			const orgFk = tableConfig.foreignKeys.find((fk) => {
+		it("should have organizationId referencing organizationsTable.id with correct actions", () => {
+			const { foreignKeys } = getTableConfig(recurrenceRulesTable);
+			const orgFk = foreignKeys.find((fk) => {
 				const ref = fk.reference();
 				return ref.columns.some((col) => col.name === "organization_id");
 			});
+
 			expect(orgFk).toBeDefined();
+			const ref = orgFk?.reference();
+			expect(ref).toBeDefined();
+			expect(ref?.foreignTable).toBe(organizationsTable);
+			expect(ref?.foreignColumns).toHaveLength(1);
+			expect(ref?.foreignColumns[0]?.name).toBe("id");
+			expect(ref?.columns).toHaveLength(1);
+			expect(ref?.columns[0]?.name).toBe("organization_id");
 			expect(orgFk?.onDelete).toBe("cascade");
 			expect(orgFk?.onUpdate).toBe("cascade");
-			// Execute the reference function to cover the callback
-			const ref = orgFk?.reference();
-			expect(ref?.foreignTable).toBe(organizationsTable);
-			expect(ref?.foreignColumns[0]?.name).toBe("id");
 		});
 
-		it("should have creatorId referencing usersTable.id", () => {
-			const tableConfig = getTableConfig(recurrenceRulesTable);
-			const creatorFk = tableConfig.foreignKeys.find((fk) => {
+		it("should have creatorId referencing usersTable.id with correct actions", () => {
+			const { foreignKeys } = getTableConfig(recurrenceRulesTable);
+			const creatorFk = foreignKeys.find((fk) => {
 				const ref = fk.reference();
 				return ref.columns.some((col) => col.name === "creator_id");
 			});
+
 			expect(creatorFk).toBeDefined();
+			const ref = creatorFk?.reference();
+			expect(ref).toBeDefined();
+			expect(ref?.foreignTable).toBe(usersTable);
+			expect(ref?.foreignColumns).toHaveLength(1);
+			expect(ref?.foreignColumns[0]?.name).toBe("id");
+			expect(ref?.columns).toHaveLength(1);
+			expect(ref?.columns[0]?.name).toBe("creator_id");
 			expect(creatorFk?.onDelete).toBe("set null");
 			expect(creatorFk?.onUpdate).toBe("cascade");
-			// Execute the reference function to cover the callback
-			const ref = creatorFk?.reference();
-			expect(ref?.foreignTable).toBe(usersTable);
-			expect(ref?.foreignColumns[0]?.name).toBe("id");
 		});
 
-		it("should have updaterId referencing usersTable.id", () => {
-			const tableConfig = getTableConfig(recurrenceRulesTable);
-			const updaterFk = tableConfig.foreignKeys.find((fk) => {
+		it("should have updaterId referencing usersTable.id with correct actions", () => {
+			const { foreignKeys } = getTableConfig(recurrenceRulesTable);
+			const updaterFk = foreignKeys.find((fk) => {
 				const ref = fk.reference();
 				return ref.columns.some((col) => col.name === "updater_id");
 			});
+
 			expect(updaterFk).toBeDefined();
+			const ref = updaterFk?.reference();
+			expect(ref).toBeDefined();
+			expect(ref?.foreignTable).toBe(usersTable);
+			expect(ref?.foreignColumns).toHaveLength(1);
+			expect(ref?.foreignColumns[0]?.name).toBe("id");
+			expect(ref?.columns).toHaveLength(1);
+			expect(ref?.columns[0]?.name).toBe("updater_id");
 			expect(updaterFk?.onDelete).toBe("set null");
 			expect(updaterFk?.onUpdate).toBe("cascade");
-			// Execute the reference function to cover the callback
-			const ref = updaterFk?.reference();
-			expect(ref?.foreignTable).toBe(usersTable);
-			expect(ref?.foreignColumns[0]?.name).toBe("id");
 		});
 
 		it("should have all required indexes defined", () => {
@@ -553,6 +583,28 @@ describe("src/drizzle/tables/recurrenceRules.ts", () => {
 				const result = recurrenceRulesTableInsertSchema.safeParse({
 					...validInput,
 					byMonthDay: [32],
+				});
+				expect(result.success).toBe(false);
+			});
+
+			// RFC 5545 compliance: BYMONTHDAY must not include 0
+			it("should reject byMonthDay value of 0 per RFC 5545", () => {
+				const result = recurrenceRulesTableInsertSchema.safeParse({
+					...validInput,
+					byMonthDay: [0],
+				});
+				expect(result.success).toBe(false);
+				if (!result.success) {
+					expect(result.error.issues[0]?.message).toBe(
+						"BYMONTHDAY value cannot be 0 per RFC 5545",
+					);
+				}
+			});
+
+			it("should reject byMonthDay array containing 0 among valid values", () => {
+				const result = recurrenceRulesTableInsertSchema.safeParse({
+					...validInput,
+					byMonthDay: [1, 0, 15],
 				});
 				expect(result.success).toBe(false);
 			});
