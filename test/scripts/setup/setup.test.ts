@@ -1361,6 +1361,10 @@ describe("Validation Helpers", () => {
 			expect(validateCronExpression("* *")).toContain(
 				"Please enter a valid cron expression",
 			);
+			// Regression test: reversed ranges should be rejected
+			expect(validateCronExpression("5-1 * * * *")).toContain(
+				"Please enter a valid cron expression",
+			);
 		});
 	});
 });

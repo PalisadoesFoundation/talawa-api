@@ -215,6 +215,8 @@ export function validateCronExpression(input: string): true | string {
 			if (!/^\d+$/.test(startStr) || !/^\d+$/.test(endStr)) return false;
 			const start = Number.parseInt(startStr, 10);
 			const end = Number.parseInt(endStr, 10);
+			// Reject reversed ranges (start > end)
+			if (start > end) return false;
 			return start >= min && start <= max && end >= min && end <= max;
 		}
 
