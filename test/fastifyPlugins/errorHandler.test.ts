@@ -274,7 +274,7 @@ describe("errorHandlerPlugin", () => {
 			expect(body.data).toBeNull();
 		});
 
-		it("handles GraphQL requests with generic errors", async () => {
+		it("handles non-GraphQL requests (pseudo-endpoint) with generic errors", async () => {
 			const res = await app.inject({
 				method: "POST",
 				url: "/graphql-generic",

@@ -95,12 +95,26 @@ export function normalizeError(err: unknown): NormalizedError {
 	}
 
 	// Fallback for all other error types (generic Error, unknown objects, etc.)
+	let details: string;
+	if (err instanceof Error) {
+		details = err.message;
+	} else if (err === null) {
+		details = "null";
+	} else if (err === undefined) {
+		details = "undefined";
+	} else if (typeof err === "string") {
+		details = err;
+	} else if (typeof err === "object" && err !== null && "message" in err) {
+		// Handle objects with a message property (like GraphQL errors)
+		details = String(err.message);
+	} else {
+		details = String(err);
+	}
+
 	return {
 		code: ErrorCode.INTERNAL_SERVER_ERROR,
 		message: "Internal Server Error",
 		statusCode: 500,
-		...(process.env.NODE_ENV !== "production"
-			? { details: String((err as Error)?.message ?? err) }
-			: {}),
+		details,
 	};
 }

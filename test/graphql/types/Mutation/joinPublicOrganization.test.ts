@@ -190,7 +190,7 @@ suite("Mutation joinPublicOrganization", () => {
 			);
 		});
 
-		test("Returns an error when the user is present in the token but not found in the database", async () => {
+		test("Returns not_found when the user is present in the token but not found in the database", async () => {
 			// Create a regular user
 			const regularUser = await createRegularUserUsingAdmin();
 			// Get the user's auth token
