@@ -31,10 +31,10 @@ AgendaItem.implement({
 			resolve: (parent) => escapeHTML(parent.name),
 		}),
 		notes: t.exposeString("notes", {
-			description: "Notes for the Items",
+			description: "Notes for the agenda item.",
 		}),
 		sequence: t.exposeInt("sequence", {
-			description: "Sequence of agenda item.",
+			description: "Sequence order of the agenda item.",
 		}),
 		type: t.expose("type", {
 			description: "Type of the agenda item.",

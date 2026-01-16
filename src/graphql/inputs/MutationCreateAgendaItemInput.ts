@@ -109,7 +109,7 @@ export const MutationCreateAgendaItemInput = builder
 		"MutationCreateAgendaItemInput",
 	)
 	.implement({
-		description: "",
+		description: "Input type for creating a new agenda item.",
 		fields: (t) => ({
 			attachments: t.field({
 				description: "Attachments for the agenda items.",

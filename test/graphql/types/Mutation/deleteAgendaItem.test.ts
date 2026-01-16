@@ -4,6 +4,7 @@ import { initGraphQLTada } from "gql.tada";
 import { afterEach, expect, suite, test, vi } from "vitest";
 
 import { usersTable } from "~/src/drizzle/schema";
+import { agendaItemsTable } from "~/src/drizzle/tables/agendaItems";
 import type { ClientCustomScalars } from "~/src/graphql/scalars";
 import type {
 	ArgumentsAssociatedResourcesNotFoundExtensions,
@@ -89,6 +90,7 @@ async function addOrganizationMembership(params: {
 	);
 
 	expect(result.errors).toBeUndefined();
+	assertToBeNonNullish(result.data?.createOrganizationMembership);
 }
 
 async function createAgendaItemEnv(adminToken: string) {
@@ -312,24 +314,18 @@ suite("Mutation field deleteAgendaItem", () => {
 			server.drizzleClient,
 		);
 
-		vi.spyOn(server.drizzleClient, "delete").mockImplementationOnce(
-			(table: unknown) => {
-				const tableName =
-					typeof table === "object" &&
-					table !== null &&
-					(table as Record<symbol, unknown>)[Symbol.for("drizzle:Name")];
+		vi.spyOn(server.drizzleClient, "delete").mockImplementationOnce((table) => {
+			if (table === agendaItemsTable) {
+				// 👇 Intentional partial mock – escape typing safely
+				return {
+					where: () => ({
+						returning: async () => [],
+					}),
+				} as unknown as ReturnType<typeof server.drizzleClient.delete>;
+			}
 
-				if (tableName === "agenda_items") {
-					return {
-						where: () => ({
-							returning: async () => [],
-						}),
-					} as unknown as ReturnType<typeof server.drizzleClient.delete>;
-				}
-
-				return originalDelete(table as never);
-			},
-		);
+			return originalDelete(table);
+		});
 
 		const result = await mercuriusClient.mutate(Mutation_deleteAgendaItem, {
 			headers: { authorization: `bearer ${token}` },
