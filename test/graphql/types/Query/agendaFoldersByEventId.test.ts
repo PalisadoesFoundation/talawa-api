@@ -302,7 +302,7 @@ suite("Query field agendaFoldersByEventId", () => {
 		);
 	});
 
-	test("Returns empty array when event has no agenda folders", async () => {
+	test("Returns default agenda folder when no custom folders exist", async () => {
 		let eventId: string | undefined;
 
 		const createOrgResult = await mercuriusClient.mutate(
@@ -370,7 +370,17 @@ suite("Query field agendaFoldersByEventId", () => {
 		});
 
 		expect(result.errors).toBeUndefined();
-		expect(result.data?.agendaFoldersByEventId).toEqual([]);
+		expect(result.errors).toBeUndefined();
+		expect(result.data?.agendaFoldersByEventId).toHaveLength(1);
+		expect(result.data?.agendaFoldersByEventId).toEqual(
+			expect.arrayContaining([
+				expect.objectContaining({
+					name: "Default",
+					description: "Default agenda folder",
+					sequence: 1,
+				}),
+			]),
+		);
 	});
 
 	test("Returns agenda folders for event", async () => {
