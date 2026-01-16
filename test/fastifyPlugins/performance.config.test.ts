@@ -309,9 +309,13 @@ describe("Performance Plugin - Environment Configuration", () => {
 			await app.register(performancePlugin);
 			await app.ready();
 
-			// The cache service should be initialized with the custom TTL
-			// We can't directly test the TTL, but we can verify the service exists
+			// Verify the cache service was initialized with the custom TTL
 			expect(app.metricsCache).toBeDefined();
+			// Access the private defaultTtlSeconds via casting (for test verification only)
+			const metricsCache = app.metricsCache as unknown as {
+				defaultTtlSeconds: number;
+			};
+			expect(metricsCache.defaultTtlSeconds).toBe(900);
 		});
 
 		it("should use default TTL (300) when env config not set", async () => {
@@ -321,8 +325,63 @@ describe("Performance Plugin - Environment Configuration", () => {
 			await app.register(performancePlugin);
 			await app.ready();
 
-			// Cache service should still be initialized with default TTL
+			// Verify default TTL (300) is used when not configured
 			expect(app.metricsCache).toBeDefined();
+			const metricsCache = app.metricsCache as unknown as {
+				defaultTtlSeconds: number;
+			};
+			expect(metricsCache.defaultTtlSeconds).toBe(300);
+		});
+
+		it("should fallback to 300 when API_METRICS_CACHE_TTL_SECONDS is invalid string", async () => {
+			const customEnvConfig: Partial<EnvConfig> = {
+				API_METRICS_CACHE_TTL_SECONDS: "invalid" as unknown as number,
+			};
+
+			app = createTestApp({ envConfig: customEnvConfig, cache: mockCache });
+
+			await app.register(performancePlugin);
+			await app.ready();
+
+			expect(app.metricsCache).toBeDefined();
+			const metricsCache = app.metricsCache as unknown as {
+				defaultTtlSeconds: number;
+			};
+			expect(metricsCache.defaultTtlSeconds).toBe(300);
+		});
+
+		it("should fallback to 300 when API_METRICS_CACHE_TTL_SECONDS is zero", async () => {
+			const customEnvConfig: Partial<EnvConfig> = {
+				API_METRICS_CACHE_TTL_SECONDS: 0,
+			};
+
+			app = createTestApp({ envConfig: customEnvConfig, cache: mockCache });
+
+			await app.register(performancePlugin);
+			await app.ready();
+
+			expect(app.metricsCache).toBeDefined();
+			const metricsCache = app.metricsCache as unknown as {
+				defaultTtlSeconds: number;
+			};
+			expect(metricsCache.defaultTtlSeconds).toBe(300);
+		});
+
+		it("should fallback to 300 when API_METRICS_CACHE_TTL_SECONDS is negative", async () => {
+			const customEnvConfig: Partial<EnvConfig> = {
+				API_METRICS_CACHE_TTL_SECONDS: -1,
+			};
+
+			app = createTestApp({ envConfig: customEnvConfig, cache: mockCache });
+
+			await app.register(performancePlugin);
+			await app.ready();
+
+			expect(app.metricsCache).toBeDefined();
+			const metricsCache = app.metricsCache as unknown as {
+				defaultTtlSeconds: number;
+			};
+			expect(metricsCache.defaultTtlSeconds).toBe(300);
 		});
 
 		it("should handle null cache service gracefully", async () => {

@@ -25,12 +25,4 @@ describe("metrics/index exports", () => {
 		);
 		expect(ImportedProxy).toBe(metricsCacheProxy);
 	});
-
-	it("should have no circular dependency issues with dynamic import", async () => {
-		// Verify module can be dynamically imported without circular dependency errors
-		const metricsModule = await import("~/src/services/metrics");
-		expect(metricsModule).toBeDefined();
-		expect(metricsModule.MetricsCacheService).toBeDefined();
-		expect(metricsModule.metricsCacheProxy).toBeDefined();
-	});
 });

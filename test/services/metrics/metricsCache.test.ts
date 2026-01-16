@@ -37,7 +37,10 @@ class MockCacheService implements CacheService {
 
 	async clearByPattern(pattern: string): Promise<void> {
 		this.operations.push({ op: "clearByPattern", key: pattern });
-		const regex = new RegExp(`^${pattern.replace(/\*/g, ".*")}$`);
+		// Escape regex metacharacters except *, then convert * to .*
+		const escaped = pattern.replace(/[.+?^${}()|[\]\\]/g, "\\$&");
+		const regexPattern = escaped.replace(/\*/g, ".*");
+		const regex = new RegExp(`^${regexPattern}$`);
 		for (const key of this.store.keys()) {
 			if (regex.test(key)) {
 				this.store.delete(key);

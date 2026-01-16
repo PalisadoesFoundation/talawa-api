@@ -681,7 +681,8 @@ describe("Performance Plugin", () => {
 		});
 
 		it("should allow access when API key is not configured (unprotected)", async () => {
-			// Ensure no API key is set
+			// Capture original value before deleting
+			const prevApiKey = process.env.API_METRICS_API_KEY;
 			delete process.env.API_METRICS_API_KEY;
 
 			const testApp = createTestApp();
@@ -697,6 +698,11 @@ describe("Performance Plugin", () => {
 			expect(response.statusCode).toBe(200);
 
 			await testApp.close();
+
+			// Restore original value
+			if (prevApiKey !== undefined) {
+				process.env.API_METRICS_API_KEY = prevApiKey;
+			}
 		});
 	});
 });

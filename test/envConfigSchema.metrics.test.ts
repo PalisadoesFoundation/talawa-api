@@ -267,6 +267,21 @@ describe("envConfigSchema - Metrics Configuration", () => {
 
 			expect(config.API_METRICS_ENABLED).toBe(true);
 		});
+
+		it("should reject non-boolean values", () => {
+			process.env.API_METRICS_ENABLED = "not-boolean";
+
+			expect(() => {
+				envSchema({
+					ajv: envSchemaAjv,
+					schema: envConfigSchema,
+					data: process.env,
+				});
+			}).toThrow();
+
+			// Cleanup
+			delete process.env.API_METRICS_ENABLED;
+		});
 	});
 
 	describe("API_METRICS_SLOW_OPERATION_MS", () => {
