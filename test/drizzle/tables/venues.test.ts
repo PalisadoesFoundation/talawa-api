@@ -1,6 +1,6 @@
 import { getTableName, type Table } from "drizzle-orm";
 import { getTableConfig } from "drizzle-orm/pg-core";
-import { describe, expect, it } from "vitest";
+import { beforeAll, describe, expect, it } from "vitest";
 import {
 	VENUE_DESCRIPTION_MAX_LENGTH,
 	VENUE_NAME_MAX_LENGTH,
@@ -502,36 +502,37 @@ describe("venuesTable", () => {
 		}
 
 		// Capture all relations by invoking the config function with mock helpers
-		const capturedRelations: Record<string, CapturedRelation> = {};
+		let capturedRelations: Record<string, CapturedRelation> = {};
 
-		(
-			venuesTableRelations.config as unknown as (
-				helpers: MockRelationHelpers,
-			) => unknown
-		)({
-			one: (table: Table, config?: CapturedRelation["config"]) => {
-				if (config?.relationName?.includes("creator")) {
-					capturedRelations.creator = { table, config };
-				}
-				if (config?.relationName?.includes("organization")) {
-					capturedRelations.organization = { table, config };
-				}
-				if (config?.relationName?.includes("updater")) {
-					capturedRelations.updater = { table, config };
-				}
-				// Return mock with withFieldName method required by drizzle
-				return { withFieldName: () => ({}) };
-			},
-			many: (table: Table, config?: CapturedRelation["config"]) => {
-				if (config?.relationName?.includes("attachments")) {
-					capturedRelations.attachmentsWhereVenue = { table, config };
-				}
-				if (config?.relationName?.includes("bookings")) {
-					capturedRelations.venueBookingsWhereVenue = { table, config };
-				}
-				// Return mock with withFieldName method required by drizzle
-				return { withFieldName: () => ({}) };
-			},
+		beforeAll(() => {
+			capturedRelations = {};
+			(
+				venuesTableRelations.config as unknown as (
+					helpers: MockRelationHelpers,
+				) => unknown
+			)({
+				one: (table: Table, config?: CapturedRelation["config"]) => {
+					if (config?.relationName?.includes("creator")) {
+						capturedRelations.creator = { table, config };
+					}
+					if (config?.relationName?.includes("organization")) {
+						capturedRelations.organization = { table, config };
+					}
+					if (config?.relationName?.includes("updater")) {
+						capturedRelations.updater = { table, config };
+					}
+					return { withFieldName: () => ({}) };
+				},
+				many: (table: Table, config?: CapturedRelation["config"]) => {
+					if (config?.relationName?.includes("attachments")) {
+						capturedRelations.attachmentsWhereVenue = { table, config };
+					}
+					if (config?.relationName?.includes("bookings")) {
+						capturedRelations.venueBookingsWhereVenue = { table, config };
+					}
+					return { withFieldName: () => ({}) };
+				},
+			});
 		});
 
 		it("should be defined", () => {
