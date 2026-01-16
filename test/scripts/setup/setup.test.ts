@@ -1273,6 +1273,8 @@ describe("Validation Helpers", () => {
 
 			expect(promptMock).toHaveBeenCalledTimes(6);
 			expect(result.API_METRICS_ENABLED).toBe("true");
+			// Empty API key should not be persisted (undefined for schema validation)
+			expect(result.API_METRICS_API_KEY).toBeUndefined();
 			expect(result.API_METRICS_AGGREGATION_ENABLED).toBe("false");
 			expect(result.API_METRICS_AGGREGATION_CRON_SCHEDULE).toBeUndefined();
 			expect(result.API_METRICS_AGGREGATION_WINDOW_MINUTES).toBeUndefined();
