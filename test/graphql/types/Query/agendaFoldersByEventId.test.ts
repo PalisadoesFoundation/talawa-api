@@ -370,7 +370,6 @@ suite("Query field agendaFoldersByEventId", () => {
 		});
 
 		expect(result.errors).toBeUndefined();
-		expect(result.errors).toBeUndefined();
 		expect(result.data?.agendaFoldersByEventId).toHaveLength(1);
 		expect(result.data?.agendaFoldersByEventId).toEqual(
 			expect.arrayContaining([

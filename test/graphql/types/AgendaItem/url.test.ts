@@ -144,7 +144,11 @@ describe("AgendaItem.url resolver", () => {
 
 		expect(
 			ctx.drizzleClient.query.agendaItemUrlTable.findMany,
-		).toHaveBeenCalledTimes(1);
+		).toHaveBeenCalledWith(
+			expect.objectContaining({
+				where: expect.anything(),
+			}),
+		);
 
 		expect(result).toEqual(mockUrls);
 	});
