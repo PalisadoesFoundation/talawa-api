@@ -416,7 +416,7 @@ suite("Mutation field createAgendaItem", () => {
 			expect.arrayContaining([
 				expect.objectContaining({
 					name: "file.pdf",
-					mimeType: "IMAGE_PNG",
+					mimeType: "image/png",
 					objectName: "obj",
 					fileHash: "hash",
 				}),
