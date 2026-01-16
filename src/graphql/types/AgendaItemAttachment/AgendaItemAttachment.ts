@@ -19,7 +19,7 @@ AgendaItemAttachment.implement({
 			nullable: true,
 		}),
 		fileHash: t.exposeString("fileHash", {
-			description: "File hash for deduplication purposes.",
+			description: "Unique file hash identifier for the attachment.",
 			nullable: true,
 		}),
 		id: t.exposeID("id", {

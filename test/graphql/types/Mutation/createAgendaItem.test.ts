@@ -41,6 +41,7 @@ async function getAdminAuth() {
 		},
 	});
 
+	expect(result.errors).toBeUndefined();
 	assertToBeNonNullish(result.data?.signIn?.authenticationToken);
 	assertToBeNonNullish(result.data?.signIn?.user?.id);
 
@@ -89,6 +90,7 @@ async function createOrgEventFolderCategory(adminToken: string) {
 		},
 	});
 
+	expect(orgRes.errors).toBeUndefined();
 	assertToBeNonNullish(orgRes.data?.createOrganization);
 	const organizationId = orgRes.data.createOrganization.id;
 
@@ -111,6 +113,7 @@ async function createOrgEventFolderCategory(adminToken: string) {
 		},
 	});
 
+	expect(eventRes.errors).toBeUndefined();
 	assertToBeNonNullish(eventRes.data?.createEvent);
 	const eventId = eventRes.data.createEvent.id;
 
@@ -126,6 +129,7 @@ async function createOrgEventFolderCategory(adminToken: string) {
 		},
 	});
 
+	expect(folderRes.errors).toBeUndefined();
 	assertToBeNonNullish(folderRes.data?.createAgendaFolder);
 	const folderId = folderRes.data.createAgendaFolder.id;
 
@@ -142,6 +146,7 @@ async function createOrgEventFolderCategory(adminToken: string) {
 		},
 	);
 
+	expect(categoryRes.errors).toBeUndefined();
 	assertToBeNonNullish(categoryRes.data?.createAgendaCategory);
 	const categoryId = categoryRes.data.createAgendaCategory.id;
 
@@ -402,5 +407,20 @@ suite("Mutation field createAgendaItem", () => {
 			name: "Agenda Item",
 			type: "song",
 		});
+		expect(result.data.createAgendaItem.url).toEqual(
+			expect.arrayContaining([
+				expect.objectContaining({ url: "https://example.com" }),
+			]),
+		);
+		expect(result.data.createAgendaItem.attachments).toEqual(
+			expect.arrayContaining([
+				expect.objectContaining({
+					name: "file.pdf",
+					mimeType: "IMAGE_PNG",
+					objectName: "obj",
+					fileHash: "hash",
+				}),
+			]),
+		);
 	});
 });

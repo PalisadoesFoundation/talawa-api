@@ -925,6 +925,12 @@ export const Mutation_createAgendaItem = gql(`
       description
       duration
       notes
+      attachments {
+        name
+        fileHash
+        mimeType
+        objectName
+      }
       category {
         id
         name
@@ -938,7 +944,7 @@ export const Mutation_createAgendaItem = gql(`
         id
         url
       }
-        creator {
+      creator {
         id
         name
       }

@@ -29,14 +29,8 @@ export const resolveCreator = async (
 			where: (fields, operators) => operators.eq(fields.id, parent.folderId),
 			with: {
 				event: {
-					columns: {
-						startAt: true,
-					},
 					with: {
 						organization: {
-							columns: {
-								countryCode: true,
-							},
 							with: {
 								membershipsWhereOrganization: {
 									columns: {

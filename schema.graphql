@@ -279,13 +279,13 @@ type AgendaItem {
   """User who last updated the agenda item."""
   updater: User
 
-  """Url for the agenda item"""
+  """URLs associated with the agenda item"""
   url: [AgendaItemUrl!]
 }
 
 """Attachment of the agenda items."""
 type AgendaItemAttachment {
-  """File hash for deduplication purposes."""
+  """Unique file hash identifier for the attachment."""
   fileHash: String
 
   """Global identifier of the attachment."""

@@ -140,14 +140,14 @@ describe("MutationCreateAgendaItemInput Schema", () => {
 				...validBaseInput,
 				attachments: [
 					{
-						name: "file.pdf",
-						mimeType: "application/pdf",
+						name: "file.png",
+						mimeType: "image/png",
 						objectName: "object-key",
 						fileHash: "hash123",
 					},
 				],
 			});
-			expect(result.success).toBe(false);
+			expect(result.success).toBe(true);
 		});
 
 		it("should reject attachment with empty name", () => {

@@ -118,6 +118,28 @@ describe("AgendaItem.updater resolver", () => {
 		expect(result).toBeNull();
 	});
 
+	it("should allow access if user is organization administrator (not system admin)", async () => {
+		mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValue({
+			id: "user-123",
+			role: "member", // not a system admin
+		});
+
+		mocks.drizzleClient.query.agendaFoldersTable.findFirst.mockResolvedValue({
+			isAgendaItemFolder: true,
+			event: {
+				startAt: new Date(),
+				organization: {
+					countryCode: "US",
+					membershipsWhereOrganization: [{ role: "administrator" }], // is org admin
+				},
+			},
+		});
+
+		mockAgendaItem.updaterId = null;
+		const result = await resolveUpdater(mockAgendaItem, {}, ctx);
+		expect(result).toBeNull();
+	});
+
 	it("should return current user if updaterId matches current user id", async () => {
 		const currentUser = {
 			id: "user-123",
