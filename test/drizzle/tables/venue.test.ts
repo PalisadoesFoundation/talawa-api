@@ -136,6 +136,14 @@ describe("venuesTable", () => {
 				});
 				expect(result.success).toBe(false);
 			});
+
+			it("should accept null description (nullable field)", () => {
+				const result = venuesTableInsertSchema.safeParse({
+					...validVenueData,
+					description: null,
+				});
+				expect(result.success).toBe(true);
+			});
 		});
 
 		describe("capacity field", () => {
@@ -182,6 +190,14 @@ describe("venuesTable", () => {
 					capacity: "100",
 				});
 				expect(result.success).toBe(false);
+			});
+
+			it("should accept negative capacity (schema does not constrain to non-negative)", () => {
+				const result = venuesTableInsertSchema.safeParse({
+					...validVenueData,
+					capacity: -10,
+				});
+				expect(result.success).toBe(true);
 			});
 		});
 
