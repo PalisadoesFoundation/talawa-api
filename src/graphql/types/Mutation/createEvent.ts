@@ -3,6 +3,8 @@ import { ulid } from "ulidx";
 import { uuidv7 } from "uuidv7";
 import { z } from "zod";
 import { eventAttachmentMimeTypeEnum } from "~/src/drizzle/enums/eventAttachmentMimeType";
+import { agendaCategoriesTable } from "~/src/drizzle/tables/agendaCategories";
+import { agendaFoldersTable } from "~/src/drizzle/tables/agendaFolders";
 import { eventAttachmentsTable } from "~/src/drizzle/tables/eventAttachments";
 import { eventsTable } from "~/src/drizzle/tables/events";
 import { recurrenceRulesTable } from "~/src/drizzle/tables/recurrenceRules";
@@ -22,6 +24,17 @@ import {
 	validateRecurrenceInput,
 } from "~/src/utilities/recurringEvent";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
+
+const DEFAULT_AGENDA_FOLDER_CONFIG = {
+	name: "Default",
+	description: "Default agenda folder",
+	sequence: 1,
+} as const;
+
+const DEFAULT_AGENDA_CATEGORY_CONFIG = {
+	name: "Default",
+	description: "Default agenda category",
+} as const;
 
 export const mutationCreateEventArgumentsSchema = z.object({
 	input: mutationCreateEventInputSchema.transform(async (arg, ctx) => {
@@ -257,6 +270,27 @@ builder.mutationField("createEvent", (t) =>
 							},
 						});
 					}
+
+					// Creates default agenda folder
+					await tx.insert(agendaFoldersTable).values({
+						name: DEFAULT_AGENDA_FOLDER_CONFIG.name,
+						description: DEFAULT_AGENDA_FOLDER_CONFIG.description,
+						eventId: createdEvent.id,
+						organizationId: parsedArgs.input.organizationId,
+						isDefaultFolder: true,
+						sequence: DEFAULT_AGENDA_FOLDER_CONFIG.sequence,
+						creatorId: currentUserId,
+					});
+
+					// Creates default agenda category
+					await tx.insert(agendaCategoriesTable).values({
+						name: DEFAULT_AGENDA_CATEGORY_CONFIG.name,
+						description: DEFAULT_AGENDA_CATEGORY_CONFIG.description,
+						eventId: createdEvent.id,
+						organizationId: parsedArgs.input.organizationId,
+						isDefaultCategory: true,
+						creatorId: currentUserId,
+					});
 
 					// Handle recurring event: Create recurrence rule AND immediately generate instances
 					if (parsedArgs.input.recurrence) {

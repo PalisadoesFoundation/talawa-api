@@ -18,6 +18,8 @@ export const mutationCreateAgendaItemInputSchema = agendaItemsTableInsertSchema
 		type: true,
 	})
 	.extend({
+		folderId: z.string().uuid().optional(),
+		categoryId: z.string().uuid().optional(),
 		url: z
 			.array(
 				z.object({
@@ -119,7 +121,6 @@ export const MutationCreateAgendaItemInput = builder
 			}),
 			categoryId: t.id({
 				description: "Category id",
-				required: true,
 			}),
 			duration: t.string({
 				description: "Duration of the agenda item.",
@@ -132,7 +133,6 @@ export const MutationCreateAgendaItemInput = builder
 			folderId: t.id({
 				description:
 					"Global identifier of the agenda folder the agenda item is associated to.",
-				required: true,
 			}),
 			key: t.string({
 				description: `Key of the agenda item if it's of a "song" type. More information at [this](https://en.wikipedia.org/wiki/Key_(music)) link.`,

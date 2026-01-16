@@ -6,6 +6,7 @@ import { usersTable } from "~/src/drizzle/schema";
 import { assertToBeNonNullish } from "../../../helpers";
 import { server } from "../../../server";
 import { mercuriusClient } from "../client";
+import { agendaCategoriesTable } from "~/src/drizzle/tables/agendaCategories";
 import { createRegularUserUsingAdmin } from "../createRegularUserUsingAdmin";
 import {
 	Mutation_createAgendaCategory,
@@ -423,4 +424,86 @@ suite("Mutation field createAgendaItem", () => {
 			]),
 		);
 	});
+	
+	test("Uses default agenda folder when folderId is not provided", async () => {
+		const { token } = await getAdminAuth();
+		const data = await createOrgEventFolderCategory(token);
+		cleanupFns.push(data.cleanup);
+
+		const result = await mercuriusClient.mutate(Mutation_createAgendaItem, {
+			headers: { authorization: `bearer ${token}` },
+			variables: {
+				input: {
+					eventId: data.eventId,
+					// folderId omitted
+					categoryId: data.categoryId,
+					name: "Item using default folder",
+					sequence: 1,
+					type: "general",
+				},
+			},
+		});
+
+		expect(result.errors).toBeUndefined();
+		assertToBeNonNullish(result.data?.createAgendaItem);
+	});
+
+	test("Uses default agenda category when categoryId is not provided", async () => {
+		const { token } = await getAdminAuth();
+		const data = await createOrgEventFolderCategory(token);
+		cleanupFns.push(data.cleanup);
+
+		const result = await mercuriusClient.mutate(Mutation_createAgendaItem, {
+			headers: { authorization: `bearer ${token}` },
+			variables: {
+				input: {
+					eventId: data.eventId,
+					folderId: data.folderId,
+					//  categoryId omitted
+					name: "Item using default category",
+					sequence: 1,
+					type: "general",
+				},
+			},
+		});
+
+		expect(result.errors).toBeUndefined();
+		assertToBeNonNullish(result.data?.createAgendaItem);
+	});
+
+	test("Returns error when default category does not exist", async () => {
+		const { token } = await getAdminAuth();
+		const data = await createOrgEventFolderCategory(token);
+		cleanupFns.push(data.cleanup);
+
+		// Delete default category manually
+		await server.drizzleClient
+			.delete(agendaCategoriesTable)
+			.where(eq(agendaCategoriesTable.eventId, data.eventId));
+
+		const result = await mercuriusClient.mutate(Mutation_createAgendaItem, {
+			headers: { authorization: `bearer ${token}` },
+			variables: {
+				input: {
+					eventId: data.eventId,
+					folderId: data.folderId,
+					//  categoryId omitted → forces default lookup
+					name: "Item",
+					sequence: 1,
+					type: "general",
+				},
+			},
+		});
+
+		expect(result.errors).toEqual(
+			expect.arrayContaining([
+				expect.objectContaining({
+					extensions: expect.objectContaining({
+						code: "arguments_associated_resources_not_found",
+					}),
+				}),
+			]),
+		);
+	});
+
 });

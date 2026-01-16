@@ -235,7 +235,7 @@ type AgendaItem {
   """Agenda category"""
   category: AgendaCategory
 
-  """Date time at the time the agenda item was last created."""
+  """Date time when the agenda item was created."""
   createdAt: DateTime
 
   """User who created the agenda item."""
@@ -2755,7 +2755,7 @@ input MutationCreateAgendaItemInput {
   attachments: [AgendaItemAttachmentInput!]
 
   """Category id"""
-  categoryId: ID!
+  categoryId: ID
 
   """Custom information about the agenda item."""
   description: String
@@ -2769,7 +2769,7 @@ input MutationCreateAgendaItemInput {
   """
   Global identifier of the agenda folder the agenda item is associated to.
   """
-  folderId: ID!
+  folderId: ID
 
   """
   Key of the agenda item if it's of a "song" type. More information at [this](https://en.wikipedia.org/wiki/Key_(music)) link.
