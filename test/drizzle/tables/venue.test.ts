@@ -469,12 +469,31 @@ describe("venuesTable", () => {
 			};
 		}
 
+		// Type for the mock relation helpers
+		interface MockRelationHelpers {
+			one: (
+				table: Table,
+				config?: CapturedRelation["config"],
+			) => {
+				withFieldName: () => object;
+			};
+			many: (
+				table: Table,
+				config?: CapturedRelation["config"],
+			) => {
+				withFieldName: () => object;
+			};
+		}
+
 		// Capture all relations by invoking the config function with mock helpers
 		const capturedRelations: Record<string, CapturedRelation> = {};
 
-		// biome-ignore lint/suspicious/noExplicitAny: Test helper needs flexible typing
-		(venuesTableRelations.config as any)({
-			one: (table: Table, config: CapturedRelation["config"]) => {
+		(
+			venuesTableRelations.config as unknown as (
+				helpers: MockRelationHelpers,
+			) => unknown
+		)({
+			one: (table: Table, config?: CapturedRelation["config"]) => {
 				if (config?.relationName?.includes("creator")) {
 					capturedRelations.creator = { table, config };
 				}
@@ -487,7 +506,7 @@ describe("venuesTable", () => {
 				// Return mock with withFieldName method required by drizzle
 				return { withFieldName: () => ({}) };
 			},
-			many: (table: Table, config: CapturedRelation["config"]) => {
+			many: (table: Table, config?: CapturedRelation["config"]) => {
 				if (config?.relationName?.includes("attachments")) {
 					capturedRelations.attachmentsWhereVenue = { table, config };
 				}
