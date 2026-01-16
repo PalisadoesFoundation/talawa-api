@@ -91,7 +91,7 @@ export const resolveCreatedAt = async (
 AgendaItem.implement({
 	fields: (t) => ({
 		createdAt: t.field({
-			description: "Date time at the time the agenda item was last created.",
+			description: "Date time when the agenda item was created.",
 			complexity: envConfig.API_GRAPHQL_SCALAR_RESOLVER_FIELD_COST,
 			resolve: resolveCreatedAt,
 			type: "DateTime",

@@ -43,6 +43,80 @@ describe("AgendaItem.url resolver", () => {
 		} as unknown as GraphQLContext;
 	});
 
+	it("throws unauthenticated when client is not authenticated", async () => {
+		ctx.currentClient.isAuthenticated = false;
+
+		const parent: AgendaItemType = {
+			id: "agenda-item-1",
+			folderId: "folder-1",
+		} as AgendaItemType;
+
+		await expect(resolveUrl(parent, {}, ctx)).rejects.toMatchObject({
+			extensions: { code: "unauthenticated" },
+		});
+	});
+
+	it("throws unauthenticated when user does not exist", async () => {
+		ctx.drizzleClient.query.usersTable.findFirst = vi
+			.fn()
+			.mockResolvedValue(undefined);
+
+		const parent: AgendaItemType = {
+			id: "agenda-item-1",
+			folderId: "folder-1",
+		} as AgendaItemType;
+
+		await expect(resolveUrl(parent, {}, ctx)).rejects.toMatchObject({
+			extensions: { code: "unauthenticated" },
+		});
+	});
+
+	it("throws unexpected when agenda folder does not exist", async () => {
+		ctx.drizzleClient.query.agendaFoldersTable.findFirst = vi
+			.fn()
+			.mockResolvedValue(undefined);
+
+		const parent: AgendaItemType = {
+			id: "agenda-item-1",
+			folderId: "missing-folder",
+		} as AgendaItemType;
+
+		await expect(resolveUrl(parent, {}, ctx)).rejects.toMatchObject({
+			extensions: { code: "unexpected" },
+		});
+
+		expect(ctx.log.error).toHaveBeenCalled();
+	});
+
+	it("throws unauthorized_action when user is not an administrator", async () => {
+		ctx.drizzleClient.query.usersTable.findFirst = vi.fn().mockResolvedValue({
+			id: "user-1",
+			role: "regular",
+		});
+
+		ctx.drizzleClient.query.agendaFoldersTable.findFirst = vi.fn().mockResolvedValue(
+			{
+				id: "folder-1",
+				event: {
+					organization: {
+						membershipsWhereOrganization: [
+							{ role: "regular" }, // not admin
+						],
+					},
+				},
+			},
+		);
+
+		const parent: AgendaItemType = {
+			id: "agenda-item-1",
+			folderId: "folder-1",
+		} as AgendaItemType;
+
+		await expect(resolveUrl(parent, {}, ctx)).rejects.toMatchObject({
+			extensions: { code: "unauthorized_action" },
+		});
+	});
+
 	it("should return urls for the agenda item", async () => {
 		const parent: AgendaItemType = {
 			id: "agenda-item-1",

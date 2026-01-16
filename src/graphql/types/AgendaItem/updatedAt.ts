@@ -22,6 +22,9 @@ export const resolveUpdatedAt = async (
 
 	const [currentUser, existingAgendaFolder] = await Promise.all([
 		ctx.drizzleClient.query.usersTable.findFirst({
+			columns: {
+				role: true,
+			},
 			where: (fields, operators) => operators.eq(fields.id, currentUserId),
 		}),
 		ctx.drizzleClient.query.agendaFoldersTable.findFirst({
