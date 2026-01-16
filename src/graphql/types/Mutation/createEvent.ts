@@ -272,25 +272,53 @@ builder.mutationField("createEvent", (t) =>
 					}
 
 					// Creates default agenda folder
-					await tx.insert(agendaFoldersTable).values({
-						name: DEFAULT_AGENDA_FOLDER_CONFIG.name,
-						description: DEFAULT_AGENDA_FOLDER_CONFIG.description,
-						eventId: createdEvent.id,
-						organizationId: parsedArgs.input.organizationId,
-						isDefaultFolder: true,
-						sequence: DEFAULT_AGENDA_FOLDER_CONFIG.sequence,
-						creatorId: currentUserId,
-					});
+					const [createdAgendaFolder] = await tx
+						.insert(agendaFoldersTable)
+						.values({
+							name: DEFAULT_AGENDA_FOLDER_CONFIG.name,
+							description: DEFAULT_AGENDA_FOLDER_CONFIG.description,
+							eventId: createdEvent.id,
+							organizationId: parsedArgs.input.organizationId,
+							isDefaultFolder: true,
+							sequence: DEFAULT_AGENDA_FOLDER_CONFIG.sequence,
+							creatorId: currentUserId,
+						})
+						.returning();
+
+					if (createdAgendaFolder === undefined) {
+						ctx.log.error(
+							"Postgres insert operation for agenda folder unexpectedly returned an empty array.",
+						);
+						throw new TalawaGraphQLError({
+							extensions: {
+								code: "unexpected",
+							},
+						});
+					}
 
 					// Creates default agenda category
-					await tx.insert(agendaCategoriesTable).values({
-						name: DEFAULT_AGENDA_CATEGORY_CONFIG.name,
-						description: DEFAULT_AGENDA_CATEGORY_CONFIG.description,
-						eventId: createdEvent.id,
-						organizationId: parsedArgs.input.organizationId,
-						isDefaultCategory: true,
-						creatorId: currentUserId,
-					});
+					const [createdAgendaCategory] = await tx
+						.insert(agendaCategoriesTable)
+						.values({
+							name: DEFAULT_AGENDA_CATEGORY_CONFIG.name,
+							description: DEFAULT_AGENDA_CATEGORY_CONFIG.description,
+							eventId: createdEvent.id,
+							organizationId: parsedArgs.input.organizationId,
+							isDefaultCategory: true,
+							creatorId: currentUserId,
+						})
+						.returning();
+
+					if (createdAgendaCategory === undefined) {
+						ctx.log.error(
+							"Postgres insert operation for agenda category unexpectedly returned an empty array.",
+						);
+						throw new TalawaGraphQLError({
+							extensions: {
+								code: "unexpected",
+							},
+						});
+					}
 
 					// Handle recurring event: Create recurrence rule AND immediately generate instances
 					if (parsedArgs.input.recurrence) {

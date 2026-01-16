@@ -177,12 +177,13 @@ suite("Mutation field createAgendaItem", () => {
 		for (const fn of cleanupFns.reverse()) {
 			try {
 				await fn();
-			} catch {}
+			} catch {
+				// Cleanup errors are intentionally swallowed to prevent cascading failures
+				// during teardown. The test result is already determined at this point.
+			}
 		}
 		cleanupFns.length = 0;
 	});
-
-	/* ---------------- Authentication ---------------- */
 
 	test("Returns error when unauthenticated", async () => {
 		const result = await mercuriusClient.mutate(Mutation_createAgendaItem, {
