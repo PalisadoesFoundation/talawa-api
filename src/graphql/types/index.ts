@@ -5,6 +5,8 @@ import "./AdvertisementAttachment/index";
 import "./RecurrenceRule/index";
 import "./AgendaFolder/index";
 import "./AgendaItem/index";
+import "./AgendaItemAttachment/index";
+import "./AgendaItemUrl/index";
 import "./AssignUserTag/index";
 import "./AuthenticationPayload";
 import "./BlockedUser";

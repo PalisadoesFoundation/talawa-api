@@ -4,3 +4,7 @@ import "./creator";
 import "./folder";
 import "./updatedAt";
 import "./updater";
+import "./event";
+import "./url";
+import "./attachment";
+import "./agendaCategory";
