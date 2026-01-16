@@ -358,7 +358,7 @@ suite("Query field agendaCategoriesByEventId", () => {
 			expect.arrayContaining([
 				expect.objectContaining({
 					name: "Default",
-					isDefaultCategory: true,
+					description: "Default agenda category",
 				}),
 			]),
 		);
