@@ -924,6 +924,24 @@ export const Mutation_createAgendaItem = gql(`
       name
       description
       duration
+      notes
+      category {
+        id
+        name
+      }
+      event {
+        id
+        name
+        startAt
+      }
+      url {
+        id
+        url
+      }
+        creator {
+        id
+        name
+      }
       type
     }
   }

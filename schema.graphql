@@ -229,6 +229,12 @@ type AgendaFolder {
 }
 
 type AgendaItem {
+  """Attachments for the agenda item"""
+  attachments: [AgendaItemAttachment!]
+
+  """Agenda category"""
+  category: AgendaCategory
+
   """Date time at the time the agenda item was last created."""
   createdAt: DateTime
 
@@ -241,8 +247,11 @@ type AgendaItem {
   """Duration of the agenda item."""
   duration: String
 
+  """Event for which the agenda item constituting a part of the agenda."""
+  event: Event
+
   """Agenda folder within which the agenda item in contained."""
-  event: AgendaFolder
+  folder: AgendaFolder
 
   """Global identifier of the agenda item."""
   id: ID!
@@ -255,6 +264,12 @@ type AgendaItem {
   """Name of the agenda item."""
   name: String
 
+  """Notes for the Items"""
+  notes: String
+
+  """Sequence of agenda item."""
+  sequence: Int
+
   """Type of the agenda item."""
   type: AgendaItemType
 
@@ -263,6 +278,35 @@ type AgendaItem {
 
   """User who last updated the agenda item."""
   updater: User
+
+  """Url for the agenda item"""
+  url: [AgendaItemUrl!]
+}
+
+"""Attachment of the agenda items."""
+type AgendaItemAttachment {
+  """File hash for deduplication purposes."""
+  fileHash: String
+
+  """Global identifier of the attachment."""
+  id: ID!
+
+  """Mime type of the attachment."""
+  mimeType: String
+
+  """Identifier name of the attachment."""
+  name: String
+
+  """Object name used when creating presigned URLs."""
+  objectName: String
+}
+
+"""Attachment data for an agenda item"""
+input AgendaItemAttachmentInput {
+  fileHash: String!
+  mimeType: PostAttachmentMimeType!
+  name: String!
+  objectName: String!
 }
 
 """Possible variants of the type of an agenda item."""
@@ -271,6 +315,27 @@ enum AgendaItemType {
   note
   scripture
   song
+}
+
+"""URLs associated with an agenda item."""
+type AgendaItemUrl {
+  """Date time at which the URL was created."""
+  createdAt: DateTime!
+
+  """Global identifier of the agenda item URL."""
+  id: ID!
+
+  """Date time at which the URL was last updated."""
+  updatedAt: DateTime
+
+  """URL associated with the agenda item."""
+  url: String
+}
+
+"""URL associated with an agenda item"""
+input AgendaItemUrlInput {
+  """URL of the agenda item"""
+  url: String!
 }
 
 """Represents a tag assigned to a user."""
@@ -2686,14 +2751,20 @@ input MutationCreateAgendaFolderInput {
 
 """"""
 input MutationCreateAgendaItemInput {
-  """File metadata for attachments uploaded via MinIO presigned URLs."""
-  attachments: [FileMetadataInput!]
+  """Attachments for the agenda items."""
+  attachments: [AgendaItemAttachmentInput!]
+
+  """Category id"""
+  categoryId: ID!
 
   """Custom information about the agenda item."""
   description: String
 
   """Duration of the agenda item."""
   duration: String
+
+  """Global identifier of the event the agenda item is associated to."""
+  eventId: ID!
 
   """
   Global identifier of the agenda folder the agenda item is associated to.
@@ -2708,8 +2779,14 @@ input MutationCreateAgendaItemInput {
   """Name of the agenda item."""
   name: String!
 
+  """Sequence of the AgendaItem."""
+  sequence: Int!
+
   """Type of the agenda item."""
   type: AgendaItemType!
+
+  """URLs associated with the agenda item."""
+  url: [AgendaItemUrlInput!]
 }
 
 """"""

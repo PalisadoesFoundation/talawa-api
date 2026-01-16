@@ -75,21 +75,35 @@ No description
 
 ```graphql
 type AgendaItem {
+  attachments: [AgendaItemAttachment!]
+  category: AgendaCategory
   createdAt: DateTime
   creator: User
   description: String
   duration: String
-  event: AgendaFolder
+  event: Event
+  folder: AgendaFolder
   id: ID!
   key: String
   name: String
+  notes: String
+  sequence: Int
   type: AgendaItemType
   updatedAt: DateTime
   updater: User
+  url: [AgendaItemUrl!]
 }
 ```
 
 ### Fields
+
+#### [<code style={{ fontWeight: 'normal' }}>AgendaItem.<b>attachments</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>[AgendaItemAttachment!]</b></code>](/auto-schema/types/objects/agenda-item-attachment.mdx) <Badge class="badge badge--secondary " text="list"/> <Badge class="badge badge--secondary " text="object"/>
+
+Attachments for the agenda item
+
+#### [<code style={{ fontWeight: 'normal' }}>AgendaItem.<b>category</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>AgendaCategory</b></code>](/auto-schema/types/objects/agenda-category.mdx) <Badge class="badge badge--secondary " text="object"/>
+
+Agenda category
 
 #### [<code style={{ fontWeight: 'normal' }}>AgendaItem.<b>createdAt</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>DateTime</b></code>](/auto-schema/types/scalars/date-time.mdx) <Badge class="badge badge--secondary " text="scalar"/>
 
@@ -107,7 +121,11 @@ Custom information about the agenda item.
 
 Duration of the agenda item.
 
-#### [<code style={{ fontWeight: 'normal' }}>AgendaItem.<b>event</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>AgendaFolder</b></code>](/auto-schema/types/objects/agenda-folder.mdx) <Badge class="badge badge--secondary " text="object"/>
+#### [<code style={{ fontWeight: 'normal' }}>AgendaItem.<b>event</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>Event</b></code>](/auto-schema/types/objects/event.mdx) <Badge class="badge badge--secondary " text="object"/>
+
+Event for which the agenda item constituting a part of the agenda.
+
+#### [<code style={{ fontWeight: 'normal' }}>AgendaItem.<b>folder</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>AgendaFolder</b></code>](/auto-schema/types/objects/agenda-folder.mdx) <Badge class="badge badge--secondary " text="object"/>
 
 Agenda folder within which the agenda item in contained.
 
@@ -123,6 +141,14 @@ Key of the agenda item if it's of a "song" type. More information at [this](<htt
 
 Name of the agenda item.
 
+#### [<code style={{ fontWeight: 'normal' }}>AgendaItem.<b>notes</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>String</b></code>](/auto-schema/types/scalars/string.mdx) <Badge class="badge badge--secondary " text="scalar"/>
+
+Notes for the Items
+
+#### [<code style={{ fontWeight: 'normal' }}>AgendaItem.<b>sequence</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>Int</b></code>](/auto-schema/types/scalars/int.mdx) <Badge class="badge badge--secondary " text="scalar"/>
+
+Sequence of agenda item.
+
 #### [<code style={{ fontWeight: 'normal' }}>AgendaItem.<b>type</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>AgendaItemType</b></code>](/auto-schema/types/enums/agenda-item-type.mdx) <Badge class="badge badge--secondary " text="enum"/>
 
 Type of the agenda item.
@@ -134,6 +160,10 @@ Date time at the time the agenda item was last updated.
 #### [<code style={{ fontWeight: 'normal' }}>AgendaItem.<b>updater</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>User</b></code>](/auto-schema/types/objects/user.mdx) <Badge class="badge badge--secondary " text="object"/>
 
 User who last updated the agenda item.
+
+#### [<code style={{ fontWeight: 'normal' }}>AgendaItem.<b>url</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>[AgendaItemUrl!]</b></code>](/auto-schema/types/objects/agenda-item-url.mdx) <Badge class="badge badge--secondary " text="list"/> <Badge class="badge badge--secondary " text="object"/>
+
+Url for the agenda item
 
 ### Returned By
 
