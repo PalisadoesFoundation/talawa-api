@@ -366,15 +366,6 @@ export const envConfigSchema = Type.Object({
 		}),
 	),
 	/**
-	 * The threshold in milliseconds for a request to be considered slow.
-	 */
-	API_SLOW_REQUEST_MS: Type.Optional(
-		Type.Number({
-			minimum: 0,
-			default: 500,
-		}),
-	),
-	/**
 	 * Enabled state for OpenTelemetry tracing.
 	 */
 	API_OTEL_ENABLED: Type.Boolean({
@@ -749,6 +740,8 @@ export const envConfigSchema = Type.Object({
 
 	/**
 	 * Threshold in milliseconds for considering a request as slow.
+	 * This is the single source of truth for slow request detection.
+	 * Used for both performance metrics tracking and request logging.
 	 * Requests exceeding this threshold will be logged as warnings.
 	 * Default: 500
 	 */
