@@ -8,12 +8,37 @@ describe("AgendaItem.url resolver", () => {
 
 	beforeEach(() => {
 		ctx = {
+			currentClient: {
+				isAuthenticated: true,
+				user: {
+					id: "user-1",
+				},
+			},
 			drizzleClient: {
 				query: {
+					usersTable: {
+						findFirst: vi.fn().mockResolvedValue({
+							id: "user-1",
+							role: "administrator",
+						}),
+					},
+					agendaFoldersTable: {
+						findFirst: vi.fn().mockResolvedValue({
+							id: "folder-1",
+							event: {
+								organization: {
+									membershipsWhereOrganization: [{ role: "administrator" }],
+								},
+							},
+						}),
+					},
 					agendaItemUrlTable: {
 						findMany: vi.fn(),
 					},
 				},
+			},
+			log: {
+				error: vi.fn(),
 			},
 		} as unknown as GraphQLContext;
 	});
