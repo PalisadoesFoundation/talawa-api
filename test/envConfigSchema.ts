@@ -16,6 +16,14 @@ export const testEnvConfigSchema = Type.Object({
 		envConfigSchema.properties.API_MINIO_PUBLIC_BASE_URL,
 	),
 	API_POSTGRES_TEST_HOST: envConfigSchema.properties.API_POSTGRES_HOST,
+	/**
+	 * Port for the test Postgres database (defaults to 5433 for test containers).
+	 */
+	API_POSTGRES_TEST_PORT: Type.Number({
+		minimum: 1,
+		maximum: 65535,
+		default: 5433,
+	}),
 	API_REDIS_TEST_HOST: envConfigSchema.properties.API_REDIS_HOST,
 	API_ENABLE_EMAIL_QUEUE: Type.Optional(
 		envConfigSchema.properties.API_ENABLE_EMAIL_QUEUE,
