@@ -551,7 +551,6 @@ suite("Mutation field createAgendaItem", () => {
 		const data = await createOrgEventFolderCategory(token);
 		cleanupFns.push(data.cleanup);
 
-		// Delete default category manually
 		await server.drizzleClient
 			.delete(agendaCategoriesTable)
 			.where(eq(agendaCategoriesTable.eventId, data.eventId));
@@ -562,7 +561,7 @@ suite("Mutation field createAgendaItem", () => {
 				input: {
 					eventId: data.eventId,
 					folderId: data.folderId,
-					//  categoryId omitted → forces default lookup
+					// categoryId omitted
 					name: "Item",
 					sequence: 1,
 					type: "general",
@@ -575,6 +574,11 @@ suite("Mutation field createAgendaItem", () => {
 				expect.objectContaining({
 					extensions: expect.objectContaining({
 						code: "arguments_associated_resources_not_found",
+						issues: expect.arrayContaining([
+							expect.objectContaining({
+								argumentPath: ["input", "eventId"],
+							}),
+						]),
 					}),
 				}),
 			]),
