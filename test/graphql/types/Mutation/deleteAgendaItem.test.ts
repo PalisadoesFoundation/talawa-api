@@ -58,6 +58,7 @@ async function getAdminAuth() {
 		},
 	});
 
+	expect(result.errors).toBeUndefined();
 	assertToBeNonNullish(result.data?.signIn?.authenticationToken);
 	assertToBeNonNullish(result.data?.signIn?.user?.id);
 
@@ -102,6 +103,7 @@ async function createAgendaItemEnv(adminToken: string) {
 			input: { name: `Org ${faker.string.uuid()}`, countryCode: "us" },
 		},
 	});
+	expect(orgRes.errors).toBeUndefined();
 	assertToBeNonNullish(orgRes.data?.createOrganization);
 	const organizationId = orgRes.data.createOrganization.id;
 
@@ -123,6 +125,7 @@ async function createAgendaItemEnv(adminToken: string) {
 			},
 		},
 	});
+	expect(eventRes.errors).toBeUndefined();
 	assertToBeNonNullish(eventRes.data?.createEvent);
 	const eventId = eventRes.data.createEvent.id;
 
@@ -137,6 +140,7 @@ async function createAgendaItemEnv(adminToken: string) {
 			},
 		},
 	});
+	expect(itemRes.errors).toBeUndefined();
 	assertToBeNonNullish(itemRes.data?.createAgendaItem);
 	const itemId = itemRes.data.createAgendaItem.id;
 
@@ -165,7 +169,10 @@ suite("Mutation field deleteAgendaItem", () => {
 		for (const fn of cleanupFns.reverse()) {
 			try {
 				await fn();
-			} catch {}
+			} catch {
+				// Cleanup errors are intentionally swallowed to prevent cascading failures
+				// during teardown. The test result is already determined at this point.
+			}
 		}
 		cleanupFns.length = 0;
 		mercuriusClient.setHeaders({});
