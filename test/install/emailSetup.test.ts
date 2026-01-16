@@ -179,7 +179,7 @@ describe("emailSetup", () => {
 		vi.mocked(promptHelpers.promptPassword).mockResolvedValueOnce(""); // Secret Key (Missing)
 
 		// Mock error logging
-		consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+		consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => { });
 
 		const result = await emailSetup(answers);
 
@@ -306,7 +306,7 @@ describe("emailSetup", () => {
 
 		mocks.mockSendEmail.mockRejectedValueOnce(awsError);
 
-		consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+		consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => { });
 
 		await emailSetup(answers);
 
@@ -559,6 +559,8 @@ describe("emailSetup", () => {
 			expect(result.SMTP_SECURE).toBe("false");
 			expect(result.SMTP_FROM_EMAIL).toBe("from@example.com");
 			expect(result.SMTP_FROM_NAME).toBe("Test App");
+			expect(result.SMTP_NAME).toBe("client.hostname");
+			expect(result.SMTP_LOCAL_ADDRESS).toBe("192.168.1.100");
 
 			// Assert successful mock usage
 			expect(mocks.mockSMTPSendEmail).toHaveBeenCalledWith(
@@ -582,7 +584,9 @@ describe("emailSetup", () => {
 				.mockResolvedValueOnce("localhost") // Host
 				.mockResolvedValueOnce("25") // Port
 				.mockResolvedValueOnce("from@localhost") // From Email
-				.mockResolvedValueOnce("Local"); // From Name
+				.mockResolvedValueOnce("Local") // From Name
+				.mockResolvedValueOnce("") // SMTP Name
+				.mockResolvedValueOnce(""); // Local Address
 
 			const result = await emailSetup(answers);
 

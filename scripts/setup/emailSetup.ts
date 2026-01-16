@@ -35,6 +35,8 @@ function clearEmailCredentials(answers: SetupAnswers): void {
 	delete answers.SMTP_SECURE;
 	delete answers.SMTP_FROM_EMAIL;
 	delete answers.SMTP_FROM_NAME;
+	delete answers.SMTP_NAME;
+	delete answers.SMTP_LOCAL_ADDRESS;
 }
 
 export async function emailSetup(answers: SetupAnswers): Promise<SetupAnswers> {
@@ -72,6 +74,8 @@ export async function emailSetup(answers: SetupAnswers): Promise<SetupAnswers> {
 				delete answers.SMTP_SECURE;
 				delete answers.SMTP_FROM_EMAIL;
 				delete answers.SMTP_FROM_NAME;
+				delete answers.SMTP_NAME;
+				delete answers.SMTP_LOCAL_ADDRESS;
 				answers.AWS_SES_REGION = await promptInput(
 					"AWS_SES_REGION",
 					"AWS SES Region:",
