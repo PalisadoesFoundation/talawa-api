@@ -1,12 +1,15 @@
 import { faker } from "@faker-js/faker";
 import { getTableConfig } from "drizzle-orm/pg-core";
 import { describe, expect, it, vi } from "vitest";
+import { eventsTable } from "~/src/drizzle/tables/events";
+import { organizationsTable } from "~/src/drizzle/tables/organizations";
 import {
 	recurrenceFrequencyEnum,
 	recurrenceRulesTable,
 	recurrenceRulesTableInsertSchema,
 	recurrenceRulesTableRelations,
 } from "~/src/drizzle/tables/recurrenceRules";
+import { usersTable } from "~/src/drizzle/tables/users";
 
 describe("src/drizzle/tables/recurrenceRules.ts", () => {
 	describe("recurrenceFrequencyEnum", () => {
@@ -112,20 +115,72 @@ describe("src/drizzle/tables/recurrenceRules.ts", () => {
 			expect(recurrenceRulesTable.createdAt.hasDefault).toBe(true);
 		});
 
-		it("should have foreign key references configured", () => {
+		it("should have four foreign keys defined", () => {
 			const { foreignKeys } = getTableConfig(recurrenceRulesTable);
 			expect(foreignKeys).toBeDefined();
 			expect(foreignKeys.length).toBe(4);
+		});
 
-			// Verify specific FK targets and actions
-			const fkNames = foreignKeys.map((fk) => fk.getName());
-			expect(fkNames.length).toBe(4);
+		it("should have baseRecurringEventId referencing eventsTable.id", () => {
+			const tableConfig = getTableConfig(recurrenceRulesTable);
+			const baseEventFk = tableConfig.foreignKeys.find((fk) => {
+				const ref = fk.reference();
+				return ref.columns.some(
+					(col) => col.name === "base_recurring_event_id",
+				);
+			});
+			expect(baseEventFk).toBeDefined();
+			expect(baseEventFk?.onDelete).toBe("cascade");
+			expect(baseEventFk?.onUpdate).toBe("cascade");
+			// Execute the reference function to cover the callback
+			const ref = baseEventFk?.reference();
+			expect(ref?.foreignTable).toBe(eventsTable);
+			expect(ref?.foreignColumns[0]?.name).toBe("id");
+		});
 
-			// Verify FK columns exist
-			expect(recurrenceRulesTable.baseRecurringEventId).toBeDefined();
-			expect(recurrenceRulesTable.organizationId).toBeDefined();
-			expect(recurrenceRulesTable.creatorId).toBeDefined();
-			expect(recurrenceRulesTable.updaterId).toBeDefined();
+		it("should have organizationId referencing organizationsTable.id", () => {
+			const tableConfig = getTableConfig(recurrenceRulesTable);
+			const orgFk = tableConfig.foreignKeys.find((fk) => {
+				const ref = fk.reference();
+				return ref.columns.some((col) => col.name === "organization_id");
+			});
+			expect(orgFk).toBeDefined();
+			expect(orgFk?.onDelete).toBe("cascade");
+			expect(orgFk?.onUpdate).toBe("cascade");
+			// Execute the reference function to cover the callback
+			const ref = orgFk?.reference();
+			expect(ref?.foreignTable).toBe(organizationsTable);
+			expect(ref?.foreignColumns[0]?.name).toBe("id");
+		});
+
+		it("should have creatorId referencing usersTable.id", () => {
+			const tableConfig = getTableConfig(recurrenceRulesTable);
+			const creatorFk = tableConfig.foreignKeys.find((fk) => {
+				const ref = fk.reference();
+				return ref.columns.some((col) => col.name === "creator_id");
+			});
+			expect(creatorFk).toBeDefined();
+			expect(creatorFk?.onDelete).toBe("set null");
+			expect(creatorFk?.onUpdate).toBe("cascade");
+			// Execute the reference function to cover the callback
+			const ref = creatorFk?.reference();
+			expect(ref?.foreignTable).toBe(usersTable);
+			expect(ref?.foreignColumns[0]?.name).toBe("id");
+		});
+
+		it("should have updaterId referencing usersTable.id", () => {
+			const tableConfig = getTableConfig(recurrenceRulesTable);
+			const updaterFk = tableConfig.foreignKeys.find((fk) => {
+				const ref = fk.reference();
+				return ref.columns.some((col) => col.name === "updater_id");
+			});
+			expect(updaterFk).toBeDefined();
+			expect(updaterFk?.onDelete).toBe("set null");
+			expect(updaterFk?.onUpdate).toBe("cascade");
+			// Execute the reference function to cover the callback
+			const ref = updaterFk?.reference();
+			expect(ref?.foreignTable).toBe(usersTable);
+			expect(ref?.foreignColumns[0]?.name).toBe("id");
 		});
 
 		it("should have all required indexes defined", () => {
