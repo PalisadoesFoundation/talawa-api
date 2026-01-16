@@ -25,7 +25,7 @@ describe("AgendaItem.event resolver", () => {
 		updaterId: "user-1",
 		key: null,
 		notes: null,
-	} as AgendaItemType;
+	};
 
 	beforeEach(() => {
 		const result = createMockGraphQLContext(true, "user-1");
