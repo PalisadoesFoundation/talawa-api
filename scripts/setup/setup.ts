@@ -96,7 +96,16 @@ export type SetupKey =
 	| "GITHUB_CLIENT_ID"
 	| "GITHUB_CLIENT_SECRET"
 	| "GITHUB_REDIRECT_URI"
-	| "API_OAUTH_REQUEST_TIMEOUT_MS";
+	| "API_OAUTH_REQUEST_TIMEOUT_MS"
+	| "API_METRICS_ENABLED"
+	| "API_METRICS_API_KEY"
+	| "API_METRICS_SLOW_REQUEST_MS"
+	| "API_METRICS_SLOW_OPERATION_MS"
+	| "API_METRICS_CACHE_TTL_SECONDS"
+	| "API_METRICS_AGGREGATION_ENABLED"
+	| "API_METRICS_AGGREGATION_CRON_SCHEDULE"
+	| "API_METRICS_AGGREGATION_WINDOW_MINUTES"
+	| "API_METRICS_SNAPSHOT_RETENTION_COUNT";
 
 // Replace the index signature with a constrained mapping
 // Allow string indexing so tests and dynamic access are permitted
@@ -376,6 +385,122 @@ export async function observabilitySetup(
 				validateSamplingRatio,
 			);
 		}
+	} catch (err) {
+		await handlePromptError(err);
+	}
+	return answers;
+}
+
+/**
+ * Sets up metrics configuration.
+ * Prompts user to configure performance monitoring settings.
+ * @param answers - Current setup answers object
+ * @returns Updated answers object with metrics configuration
+ */
+export async function metricsSetup(
+	answers: SetupAnswers,
+): Promise<SetupAnswers> {
+	try {
+		console.log("\n--- Performance Metrics Configuration ---");
+		console.log("Configure performance monitoring for your API.");
+		console.log();
+
+		answers.API_METRICS_ENABLED = await promptList(
+			"API_METRICS_ENABLED",
+			"Enable performance metrics collection?",
+			["true", "false"],
+			"true",
+		);
+
+		if (answers.API_METRICS_ENABLED === "true") {
+			answers.API_METRICS_API_KEY = await promptInput(
+				"API_METRICS_API_KEY",
+				"API key for /metrics/perf endpoint (leave empty for no auth):",
+				"",
+			);
+
+			answers.API_METRICS_SLOW_REQUEST_MS = await promptInput(
+				"API_METRICS_SLOW_REQUEST_MS",
+				"Slow request threshold in milliseconds:",
+				"500",
+				(input: string) => {
+					const ms = Number.parseInt(input, 10);
+					if (Number.isNaN(ms) || ms < 1) {
+						return "Please enter a valid positive integer.";
+					}
+					return true;
+				},
+			);
+
+			answers.API_METRICS_SLOW_OPERATION_MS = await promptInput(
+				"API_METRICS_SLOW_OPERATION_MS",
+				"Slow operation threshold in milliseconds:",
+				"200",
+				(input: string) => {
+					const ms = Number.parseInt(input, 10);
+					if (Number.isNaN(ms) || ms < 1) {
+						return "Please enter a valid positive integer.";
+					}
+					return true;
+				},
+			);
+
+			answers.API_METRICS_AGGREGATION_ENABLED = await promptList(
+				"API_METRICS_AGGREGATION_ENABLED",
+				"Enable background metrics aggregation?",
+				["true", "false"],
+				"true",
+			);
+
+			if (answers.API_METRICS_AGGREGATION_ENABLED === "true") {
+				answers.API_METRICS_AGGREGATION_CRON_SCHEDULE = await promptInput(
+					"API_METRICS_AGGREGATION_CRON_SCHEDULE",
+					"Aggregation cron schedule (default: every 5 minutes):",
+					"*/5 * * * *",
+				);
+
+				answers.API_METRICS_AGGREGATION_WINDOW_MINUTES = await promptInput(
+					"API_METRICS_AGGREGATION_WINDOW_MINUTES",
+					"Aggregation window in minutes:",
+					"5",
+					(input: string) => {
+						const mins = Number.parseInt(input, 10);
+						if (Number.isNaN(mins) || mins < 1) {
+							return "Please enter a valid positive integer.";
+						}
+						return true;
+					},
+				);
+
+				answers.API_METRICS_CACHE_TTL_SECONDS = await promptInput(
+					"API_METRICS_CACHE_TTL_SECONDS",
+					"Cache TTL for aggregated metrics in seconds:",
+					"300",
+					(input: string) => {
+						const secs = Number.parseInt(input, 10);
+						if (Number.isNaN(secs) || secs < 1) {
+							return "Please enter a valid positive integer.";
+						}
+						return true;
+					},
+				);
+			}
+
+			answers.API_METRICS_SNAPSHOT_RETENTION_COUNT = await promptInput(
+				"API_METRICS_SNAPSHOT_RETENTION_COUNT",
+				"Maximum snapshots to retain in memory:",
+				"1000",
+				(input: string) => {
+					const count = Number.parseInt(input, 10);
+					if (Number.isNaN(count) || count < 1) {
+						return "Please enter a valid positive integer.";
+					}
+					return true;
+				},
+			);
+		}
+
+		console.log("\nMetrics configuration completed!");
 	} catch (err) {
 		await handlePromptError(err);
 	}
@@ -1157,6 +1282,14 @@ export async function setup(): Promise<SetupAnswers> {
 	);
 	if (setupOAuth) {
 		answers = await oauthSetup(answers);
+	}
+	const setupMetrics = await promptConfirm(
+		"setupMetrics",
+		"Do you want to configure performance metrics settings now?",
+		false,
+	);
+	if (setupMetrics) {
+		answers = await metricsSetup(answers);
 	}
 	await updateEnvVariable(answers);
 	console.log("Configuration complete.");
