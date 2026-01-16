@@ -241,6 +241,45 @@ describe("MetricsCacheService", () => {
 				"Metrics cached successfully",
 			);
 		});
+
+		it("should warn and use default when ttl is zero", async () => {
+			const metrics = createSampleMetrics();
+			const timestamp = "1705320000000";
+
+			await metricsCache.cacheAggregatedMetrics(metrics, timestamp, 0);
+
+			expect(mockLogger.warn).toHaveBeenCalledWith(
+				expect.objectContaining({
+					msg: "metrics cache: invalid ttl",
+					providedTtl: 0,
+					usingDefault: 300,
+				}),
+				"Non-positive TTL provided, using default",
+			);
+			// Should still cache with default TTL
+			expect(cache.operations).toContainEqual(
+				expect.objectContaining({
+					op: "set",
+					ttl: 300,
+				}),
+			);
+		});
+
+		it("should warn and use default when ttl is negative", async () => {
+			const metrics = createSampleMetrics();
+			const timestamp = "1705320000001";
+
+			await metricsCache.cacheAggregatedMetrics(metrics, timestamp, -100);
+
+			expect(mockLogger.warn).toHaveBeenCalledWith(
+				expect.objectContaining({
+					msg: "metrics cache: invalid ttl",
+					providedTtl: -100,
+					usingDefault: 300,
+				}),
+				"Non-positive TTL provided, using default",
+			);
+		});
 	});
 
 	describe("getCachedMetrics", () => {
@@ -541,6 +580,53 @@ describe("MetricsCacheService", () => {
 					date: "2024-01-15-14",
 				}),
 				"Windowed metrics cached successfully",
+			);
+		});
+
+		it("should warn and use default when ttl is zero", async () => {
+			const metrics = createSampleMetrics();
+
+			await metricsCache.cacheWindowedMetrics(
+				metrics,
+				"hourly",
+				"2024-01-15-15",
+				0,
+			);
+
+			expect(mockLogger.warn).toHaveBeenCalledWith(
+				expect.objectContaining({
+					msg: "metrics cache: invalid windowed ttl",
+					providedTtl: 0,
+					usingDefault: 3600, // hourly default
+				}),
+				"Non-positive TTL provided, using default",
+			);
+			// Should still cache with default TTL
+			expect(cache.operations).toContainEqual(
+				expect.objectContaining({
+					op: "set",
+					ttl: 3600,
+				}),
+			);
+		});
+
+		it("should warn and use default when ttl is negative", async () => {
+			const metrics = createSampleMetrics();
+
+			await metricsCache.cacheWindowedMetrics(
+				metrics,
+				"daily",
+				"2024-01-15",
+				-50,
+			);
+
+			expect(mockLogger.warn).toHaveBeenCalledWith(
+				expect.objectContaining({
+					msg: "metrics cache: invalid windowed ttl",
+					providedTtl: -50,
+					usingDefault: 86400, // daily default
+				}),
+				"Non-positive TTL provided, using default",
 			);
 		});
 	});
