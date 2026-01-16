@@ -24,6 +24,54 @@ The `tests/` directory contains the code for performing api tests against Talawa
 
 The rest of this page will assist you in being an active contributor to the code base.
 
+## Getting Started
+
+### Formatting
+
+- **`format:check`**
+  Checks code formatting and lint rules using **Biome** without modifying any files.
+  The command fails if formatting issues or warnings are detected, making it suitable for CI validation.
+  **Usage:** `pnpm run format:check`
+
+- **`format:fix`**
+  Automatically fixes formatting and lint issues using **Biome** according to the project's configured rules.
+  The command fails if any warnings remain after applying fixes. Developers are encouraged to run this before committing changes.
+  **Usage:** `pnpm run format:fix`
+
+### Testing
+
+- **`run_tests`**
+  Runs the full test suite with coverage reporting using Vitest.
+  Executes all tests with a single worker to ensure consistent execution order and complete coverage metrics.
+  **Usage:** `pnpm run run_tests`
+
+- **`check_tests`**
+  Runs the test suite without coverage reporting for faster execution.
+  Useful for quick validation during development without the overhead of coverage collection.
+  **Usage:** `pnpm run check_tests`
+
+- **`test:shard`**
+  Runs tests in parallel shards for faster CI execution using environment variables `SHARD_INDEX` and `SHARD_COUNT`.
+  Splits the test suite across multiple workers, enabling parallel test execution in CI pipelines. Requires shard configuration in CI; defaults to single shard locally.
+  **Usage:** `pnpm run test:shard` (with `SHARD_INDEX` and `SHARD_COUNT` environment variables)
+
+- **`test:shard:coverage`**
+  Runs tests in parallel shards with code coverage reporting enabled.
+  Combines sharded test execution with coverage metrics. Configure using `SHARD_INDEX` and `SHARD_COUNT` environment variables.
+  **Usage:** `pnpm run test:shard:coverage`
+
+- **`test`**
+  Runs all tests using Vitest. This is a convenience alias that executes the test suite.
+  **Usage:** `pnpm run test`
+
+- **`test /path/to/test/file`**
+  Runs a specific test file or matches tests by file path pattern. Useful for running individual test files during development.
+  **Usage:** `pnpm run test /path/to/test/file`
+
+- **`test:coverage`**
+  Runs the full test suite with code coverage reporting enabled. Generates coverage reports showing which parts of the codebase are covered by tests.
+  **Usage:** `pnpm run test:coverage`
+
 ## Linting & Static Analysis
 
 We use [Biome](https://biomejs.dev/) for linting and formatting. In addition to standard rules, we have custom plugins enabled to enforce security best practices.
@@ -83,9 +131,9 @@ This pattern is a heuristic and may flag safe code:
 
 If you are certain a field is safe (e.g., it returns a database ID), you can suppress the warning.
 
-Since this is a custom GritQL plugin, standard `// biome-ignore` comments might not work depending on the Biome version and integration.
+Since this is a custom GritQL plugin, standard Biome ignore comments might not work depending on the Biome version and integration.
 
-If `// biome-ignore` does not work, you can exclude specific files in `biome.jsonc` or refactor the code to make the safety explicit (e.g., using a helper function that includes `escapeHTML` in its name, or just adding a comment explaining why it's safe if the warning is non-blocking).
+If Biome ignore comments do not work, you can exclude specific files in `biome.jsonc` or refactor the code to make the safety explicit (e.g., using a helper function that includes `escapeHTML` in its name, or just adding a comment explaining why it's safe if the warning is non-blocking)..
 
 ## Testing Philosophy
 
