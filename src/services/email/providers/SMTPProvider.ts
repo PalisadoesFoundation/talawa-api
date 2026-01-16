@@ -23,6 +23,10 @@ export interface SMTPProviderConfig {
 	fromEmail?: string;
 	/** Default sender display name. */
 	fromName?: string;
+	/** Client hostname to greet the SMTP server with. */
+	name?: string;
+	/** Local IP address to bind to for outgoing SMTP connections. */
+	localAddress?: string;
 }
 
 // TODO: Consider batching/parallelizing sendBulkEmails for performance in future updates.
@@ -87,6 +91,8 @@ export class SMTPProvider implements IEmailProvider {
 				host: this.config.host,
 				port: this.config.port,
 				secure: this.config.secure ?? false,
+				name: this.config.name,
+				localAddress: this.config.localAddress,
 				auth:
 					this.config.user && this.config.password
 						? {

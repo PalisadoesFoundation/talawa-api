@@ -220,6 +220,18 @@ export async function emailSetup(answers: SetupAnswers): Promise<SetupAnswers> {
 					"From Display Name:",
 					"Talawa",
 				);
+
+				answers.SMTP_NAME = await promptInput(
+					"SMTP_NAME",
+					"Client Hostname (optional, e.g., for HELO/EHLO):",
+					"",
+				);
+
+				answers.SMTP_LOCAL_ADDRESS = await promptInput(
+					"SMTP_LOCAL_ADDRESS",
+					"Local Bind IP Address (optional):",
+					"",
+				);
 			}
 
 			const sendTest = await promptConfirm(
@@ -325,6 +337,8 @@ export async function emailSetup(answers: SetupAnswers): Promise<SetupAnswers> {
 								secure: answers.SMTP_SECURE === "true",
 								fromEmail: answers.SMTP_FROM_EMAIL,
 								fromName: answers.SMTP_FROM_NAME,
+								name: answers.SMTP_NAME,
+								localAddress: answers.SMTP_LOCAL_ADDRESS,
 							});
 
 							const result = await service.sendEmail({

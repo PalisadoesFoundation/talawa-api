@@ -218,6 +218,15 @@ export const envConfigSchema = Type.Object({
 		}),
 	),
 	/**
+	 * Client hostname to greet the SMTP server with.
+	 * Default: machine hostname
+	 */
+	SMTP_NAME: Type.Optional(Type.String({ minLength: 1 })),
+	/**
+	 * Local IP address to bind to for outgoing SMTP connections.
+	 */
+	SMTP_LOCAL_ADDRESS: Type.Optional(Type.String({ minLength: 1 })),
+	/**
 	 * URL to the youtube account of the community.
 	 */
 	API_COMMUNITY_YOUTUBE_URL: Type.Optional(

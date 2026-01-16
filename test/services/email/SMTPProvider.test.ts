@@ -147,7 +147,38 @@ describe("SMTPProvider", () => {
 		);
 	});
 
-	it("should initialize nodemailer transporter with correct config", async () => {
+	it("should initialize nodemailer transporter with correct config including advanced options", async () => {
+		const advancedConfig = {
+			...mockConfig,
+			name: "client.hostname.com",
+			localAddress: "192.168.1.10",
+		};
+		const provider = new SMTPProvider(advancedConfig);
+		const job = {
+			id: "1",
+			email: "recipient@example.com",
+			subject: "Subject",
+			htmlBody: "Body",
+			userId: "123",
+		};
+
+		await provider.sendEmail(job);
+
+		const nodemailer = await import("nodemailer");
+		expect(nodemailer.default.createTransport).toHaveBeenCalledWith({
+			host: "smtp.example.com",
+			port: 587,
+			secure: false,
+			name: "client.hostname.com",
+			localAddress: "192.168.1.10",
+			auth: {
+				user: "test@example.com",
+				pass: "test-password",
+			},
+		});
+	});
+
+	it("should initialize nodemailer transporter with correct config (standard)", async () => {
 		const job = {
 			id: "1",
 			email: "recipient@example.com",

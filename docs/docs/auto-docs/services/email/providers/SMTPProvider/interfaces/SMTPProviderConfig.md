@@ -40,6 +40,26 @@ SMTP server hostname. Required.
 
 ***
 
+### localAddress?
+
+> `optional` **localAddress**: `string`
+
+Defined in: [src/services/email/providers/SMTPProvider.ts:29](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/email/providers/SMTPProvider.ts#L29)
+
+Local IP address to bind to for outgoing SMTP connections.
+
+***
+
+### name?
+
+> `optional` **name**: `string`
+
+Defined in: [src/services/email/providers/SMTPProvider.ts:27](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/email/providers/SMTPProvider.ts#L27)
+
+Client hostname to greet the SMTP server with.
+
+***
+
 ### password?
 
 > `optional` **password**: `string`

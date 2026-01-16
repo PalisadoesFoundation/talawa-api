@@ -535,6 +535,8 @@ describe("emailSetup", () => {
 				.mockResolvedValueOnce("user@gmail.com") // User
 				.mockResolvedValueOnce("from@example.com") // From Email
 				.mockResolvedValueOnce("Test App") // From Name
+				.mockResolvedValueOnce("client.hostname") // SMTP Name
+				.mockResolvedValueOnce("192.168.1.100") // Local Address
 				.mockResolvedValueOnce("recipient@example.com"); // Test recipient
 
 			vi.mocked(promptHelpers.promptPassword).mockResolvedValueOnce(
@@ -612,6 +614,8 @@ describe("emailSetup", () => {
 				.mockResolvedValueOnce("bad@example.com")
 				.mockResolvedValueOnce("from@example.com")
 				.mockResolvedValueOnce("App")
+				.mockResolvedValueOnce("my-hostname")
+				.mockResolvedValueOnce("10.0.0.5")
 				.mockResolvedValueOnce("test@example.com")
 				// Retry attempt
 				.mockResolvedValueOnce("smtp.good.com")
@@ -619,6 +623,8 @@ describe("emailSetup", () => {
 				.mockResolvedValueOnce("good@example.com")
 				.mockResolvedValueOnce("from@example.com")
 				.mockResolvedValueOnce("App")
+				.mockResolvedValueOnce("my-hostname")
+				.mockResolvedValueOnce("10.0.0.5")
 				.mockResolvedValueOnce("test@example.com");
 
 			vi.mocked(promptHelpers.promptPassword)
@@ -657,6 +663,8 @@ describe("emailSetup", () => {
 				.mockResolvedValueOnce("user@example.com")
 				.mockResolvedValueOnce("from@example.com")
 				.mockResolvedValueOnce("App Name")
+				.mockResolvedValueOnce("client.hostname") // SMTP Name
+				.mockResolvedValueOnce("192.168.1.100") // Local Address
 				.mockResolvedValueOnce("recipient@example.com");
 
 			vi.mocked(promptHelpers.promptPassword).mockResolvedValueOnce(
@@ -679,6 +687,8 @@ describe("emailSetup", () => {
 				secure: true,
 				fromEmail: "from@example.com",
 				fromName: "App Name",
+				name: "client.hostname",
+				localAddress: "192.168.1.100",
 			});
 
 			// Verify sendEmail was called
