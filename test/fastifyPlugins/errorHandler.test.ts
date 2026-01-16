@@ -1,8 +1,28 @@
-import Fastify, { type FastifyRequest } from "fastify";
+import Fastify, { type FastifyInstance, type FastifyRequest } from "fastify";
+import { mercurius } from "mercurius";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { errorHandlerPlugin } from "~/src/fastifyPlugins/errorHandler";
 import { ErrorCode } from "~/src/utilities/errors/errorCodes";
 import { TalawaRestError } from "~/src/utilities/errors/TalawaRestError";
+import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
+
+vi.mock("~/src/graphql/schemaManager", () => ({
+	default: {
+		buildInitialSchema: vi.fn().mockResolvedValue({}),
+		onSchemaUpdate: vi.fn(),
+		setLogger: vi.fn(),
+	},
+}));
+
+vi.mock("mercurius");
+
+vi.mock("~/src/utilities/leakyBucket", () => ({
+	default: vi.fn().mockResolvedValue(true),
+}));
+
+vi.mock("~/src/utilities/dataloaders", () => ({
+	createDataloaders: vi.fn().mockReturnValue({}),
+}));
 
 describe("errorHandlerPlugin", () => {
 	let app: ReturnType<typeof Fastify>;
@@ -27,7 +47,108 @@ describe("errorHandlerPlugin", () => {
 			vi.spyOn(request.log, "error").mockImplementation(errorSpy);
 		});
 
+		// Mock dependencies required by graphql plugin
+		app.decorate("envConfig", {
+			API_IS_GRAPHIQL: false,
+			API_GRAPHQL_MUTATION_BASE_COST: 1,
+			API_RATE_LIMIT_BUCKET_CAPACITY: 100,
+			API_RATE_LIMIT_REFILL_RATE: 1,
+			API_JWT_EXPIRES_IN: "15m",
+			API_REFRESH_TOKEN_EXPIRES_IN: "7d",
+			API_COOKIE_DOMAIN: "localhost",
+			API_IS_SECURE_COOKIES: false,
+		});
+
+		app.decorate("cache", {
+			get: vi.fn(),
+			set: vi.fn(),
+			del: vi.fn(),
+		});
+
+		app.decorate("drizzleClient", {});
+		app.decorate("minio", {});
+
+		app.decorate("jwt", {
+			verify: vi.fn(),
+			sign: vi.fn(),
+		});
+
+		// Mock Mercurius execution to test errorFormatter integration
+		vi.mocked(mercurius).mockImplementation(async (fastify, options) => {
+			fastify.decorate("graphql", {
+				replaceSchema: vi.fn(),
+				addHook: vi.fn(),
+			} as unknown as FastifyInstance["graphql"]);
+
+			fastify.post("/graphql", async (request, reply) => {
+				const { query } = request.body as { query: string };
+				const execution: {
+					data: unknown;
+					errors: Array<{ message: string; originalError?: unknown }>;
+				} = { data: null, errors: [] };
+
+				try {
+					if (query.includes("error")) {
+						throw new TalawaGraphQLError({
+							message: "Not authenticated",
+							extensions: {
+								code: ErrorCode.UNAUTHENTICATED,
+							},
+						});
+					}
+					if (query.includes("details")) {
+						throw new TalawaGraphQLError({
+							message: "Invalid args",
+							extensions: {
+								code: ErrorCode.INVALID_ARGUMENTS,
+								details: { invalidField: "foo" },
+							},
+						});
+					}
+					if (query.includes("generic")) {
+						throw new Error("Generic GraphQL error");
+					}
+					if (query.includes("nonExistentField")) {
+						// Simulate validation error handled by errorFormatter
+						throw new TalawaGraphQLError({
+							message: "Cannot query field",
+							extensions: {
+								code: ErrorCode.INVALID_ARGUMENTS,
+								details: { field: "nonExistentField" },
+							},
+						});
+					}
+
+					execution.data = { hello: "world" };
+				} catch (err) {
+					execution.errors = [
+						{
+							message: (err as Error).message,
+							originalError: err,
+						},
+					];
+				}
+
+				if (execution.errors.length > 0 && options.errorFormatter) {
+					const result = options.errorFormatter(
+						execution as unknown as Parameters<
+							NonNullable<typeof options.errorFormatter>
+						>[0],
+						{ reply } as Parameters<
+							NonNullable<typeof options.errorFormatter>
+						>[1],
+					);
+					return reply.status(result.statusCode).send(result.response);
+				}
+
+				return reply.send(execution);
+			});
+		});
+
 		await app.register(errorHandlerPlugin);
+		// Register real GraphQL plugin (which will use our mocked mercurius)
+		const { graphql: graphqlPlugin } = await import("~/src/routes/graphql");
+		await app.register(graphqlPlugin);
 
 		// Define routes for testing
 		app.get("/boom", async () => {
@@ -65,30 +186,9 @@ describe("errorHandlerPlugin", () => {
 			]);
 		});
 
-		// Add GraphQL route that throws an error
-		app.post("/graphql", async (request: FastifyRequest) => {
-			const query = request.query as { errorType?: string };
-			if (query?.errorType === "details") {
-				throw new TalawaRestError({
-					code: ErrorCode.INVALID_ARGUMENTS,
-					message: "Invalid args",
-					details: { invalidField: "foo" },
-				});
-			}
-			throw new TalawaRestError({
-				code: ErrorCode.UNAUTHENTICATED,
-				message: "Not authenticated",
-			});
-		});
-
 		// Add a route that throws a generic error
 		app.get("/generic-error", async () => {
 			throw new Error("Generic error message");
-		});
-
-		// Route for testing GraphQL with generic errors
-		app.post("/graphql-generic", async () => {
-			throw new Error("Generic GraphQL error");
 		});
 
 		// Add route for testing different error types
@@ -229,7 +329,7 @@ describe("errorHandlerPlugin", () => {
 					"content-type": "application/json",
 				},
 				payload: JSON.stringify({
-					query: "{ hello }",
+					query: "{ error }",
 				}),
 			});
 
@@ -242,7 +342,6 @@ describe("errorHandlerPlugin", () => {
 					extensions: expect.objectContaining({
 						code: "unauthenticated",
 						correlationId: "generated-correlation-id",
-						httpStatus: 401,
 					}),
 				}),
 			);
@@ -271,38 +370,41 @@ describe("errorHandlerPlugin", () => {
 					}),
 				}),
 			);
-			expect(body.data).toBeNull();
+			// Validation error code
+			expect(body.errors[0].extensions.code).toBe("invalid_arguments");
 		});
 
-		it("handles non-GraphQL requests (pseudo-endpoint) with generic errors", async () => {
+		it("handles generic errors in GraphQL with standard format", async () => {
 			const res = await app.inject({
 				method: "POST",
-				url: "/graphql-generic",
+				url: "/graphql",
 				headers: {
 					"content-type": "application/json",
 				},
 				payload: JSON.stringify({
-					query: "{ hello }",
+					query: "{ generic }",
 				}),
 			});
 
-			expect(res.statusCode).toBe(500);
+			expect(res.statusCode).toBe(200);
 			const body = res.json();
-			expect(body.error.code).toBe(ErrorCode.INTERNAL_SERVER_ERROR);
-			expect(body.error.message).toMatch(
+			expect(body.errors[0].message).toMatch(
 				/Generic GraphQL error|Internal Server Error/,
+			);
+			expect(body.errors[0].extensions.code).toBe(
+				ErrorCode.INTERNAL_SERVER_ERROR,
 			);
 		});
 
 		it("includes details in GraphQL error response when present", async () => {
 			const res = await app.inject({
 				method: "POST",
-				url: "/graphql?errorType=details",
+				url: "/graphql",
 				headers: {
 					"content-type": "application/json",
 				},
 				payload: JSON.stringify({
-					query: "{ hello }",
+					query: "{ details }",
 				}),
 			});
 

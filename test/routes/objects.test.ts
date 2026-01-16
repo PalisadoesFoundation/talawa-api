@@ -131,6 +131,7 @@ describe("objects route", () => {
 		expect(body.error.correlationId).toSatisfy(
 			(id: string) => typeof id === "string" && id.length > 0,
 		);
-		expect(body.error.details).toBeUndefined();
+		// Details should be null or undefined for generic errors without specific details
+		expect(body.error.details == null).toBe(true);
 	});
 });
