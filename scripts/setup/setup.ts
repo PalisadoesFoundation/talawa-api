@@ -417,11 +417,16 @@ export async function metricsSetup(
 		);
 
 		if (answers.API_METRICS_ENABLED === "true") {
-			answers.API_METRICS_API_KEY = await promptInput(
+			const apiKeyInput = await promptInput(
 				"API_METRICS_API_KEY",
 				"API key for /metrics/perf endpoint (leave empty for no auth):",
 				"",
 			);
+			// Only set if non-empty (empty = no auth)
+			if (apiKeyInput.trim()) {
+				answers.API_METRICS_API_KEY = apiKeyInput.trim();
+			}
+			// If empty, do not set the property - undefined means no auth
 
 			answers.API_METRICS_SLOW_REQUEST_MS = await promptInput(
 				"API_METRICS_SLOW_REQUEST_MS",
