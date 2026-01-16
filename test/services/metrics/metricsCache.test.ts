@@ -621,6 +621,68 @@ describe("MetricsCacheService", () => {
 				"Metrics cache invalidated",
 			);
 		});
+
+		it("should warn and skip invalidation for invalid pattern with special characters", async () => {
+			// Pattern with invalid characters (parentheses, semicolons, etc.)
+			await metricsCache.invalidateMetricsCache("aggregated:($test);");
+
+			expect(mockLogger.warn).toHaveBeenCalledWith(
+				expect.objectContaining({
+					msg: "metrics cache: invalid pattern",
+					pattern: "aggregated:($test);",
+				}),
+				"Pattern contains invalid characters, skipping invalidation",
+			);
+			// Verify clearByPattern was NOT called
+			const clearOps = cache.operations.filter(
+				(op) => op.op === "clearByPattern",
+			);
+			expect(clearOps).toHaveLength(0);
+		});
+
+		it("should normalize pattern by stripping full namespace prefix", async () => {
+			// Set up cache entry
+			await cache.set(
+				"talawa:v1:metrics:aggregated:hourly:2024-01-15",
+				{},
+				3600,
+			);
+			cache.operations = [];
+
+			// Pattern with full namespace prefix should be normalized
+			await metricsCache.invalidateMetricsCache(
+				"talawa:v1:metrics:aggregated:hourly:*",
+			);
+
+			// Should have stripped the prefix and constructed correct pattern
+			expect(mockLogger.debug).toHaveBeenCalledWith(
+				expect.objectContaining({
+					pattern: "talawa:v1:metrics:aggregated:hourly:*",
+				}),
+				"Metrics cache invalidated",
+			);
+		});
+
+		it("should normalize pattern by stripping leading metrics: prefix", async () => {
+			// Set up cache entry
+			await cache.set(
+				"talawa:v1:metrics:aggregated:daily:2024-01-15",
+				{},
+				86400,
+			);
+			cache.operations = [];
+
+			// Pattern with "metrics:" prefix should be normalized
+			await metricsCache.invalidateMetricsCache("metrics:aggregated:daily:*");
+
+			// Should have stripped the metrics: prefix
+			expect(mockLogger.debug).toHaveBeenCalledWith(
+				expect.objectContaining({
+					pattern: "talawa:v1:metrics:aggregated:daily:*",
+				}),
+				"Metrics cache invalidated",
+			);
+		});
 	});
 
 	describe("constructor", () => {
