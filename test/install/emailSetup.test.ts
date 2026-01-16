@@ -594,6 +594,31 @@ describe("emailSetup", () => {
 			expect(result.SMTP_HOST).toBe("localhost");
 			expect(result.SMTP_USER).toBeUndefined();
 			expect(result.SMTP_PASSWORD).toBeUndefined();
+			expect(result.SMTP_NAME).toBeUndefined();
+			expect(result.SMTP_LOCAL_ADDRESS).toBeUndefined();
+		});
+
+		it("should treat whitespace-only SMTP optional fields as undefined", async () => {
+			vi.mocked(promptHelpers.promptConfirm)
+				.mockResolvedValueOnce(true) // Configure email
+				.mockResolvedValueOnce(false) // Auth
+				.mockResolvedValueOnce(false) // SSL
+				.mockResolvedValueOnce(false); // Test email
+
+			vi.mocked(promptHelpers.promptList).mockResolvedValueOnce("smtp");
+
+			vi.mocked(promptHelpers.promptInput)
+				.mockResolvedValueOnce("localhost")
+				.mockResolvedValueOnce("25")
+				.mockResolvedValueOnce("from@localhost")
+				.mockResolvedValueOnce("Local")
+				.mockResolvedValueOnce("   ") // Whitespace SMTP Name
+				.mockResolvedValueOnce("\t"); // Whitespace Local Address
+
+			const result = await emailSetup(answers);
+
+			expect(result.SMTP_NAME).toBeUndefined();
+			expect(result.SMTP_LOCAL_ADDRESS).toBeUndefined();
 		});
 
 		it("should retry SMTP setup when test fails", async () => {

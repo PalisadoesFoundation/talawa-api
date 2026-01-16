@@ -225,17 +225,27 @@ export async function emailSetup(answers: SetupAnswers): Promise<SetupAnswers> {
 					"Talawa",
 				);
 
-				answers.SMTP_NAME = await promptInput(
+				const smtpName = await promptInput(
 					"SMTP_NAME",
 					"Client Hostname (optional, e.g., for HELO/EHLO):",
 					"",
 				);
+				if (smtpName.trim()) {
+					answers.SMTP_NAME = smtpName.trim();
+				} else {
+					delete answers.SMTP_NAME;
+				}
 
-				answers.SMTP_LOCAL_ADDRESS = await promptInput(
+				const localAddress = await promptInput(
 					"SMTP_LOCAL_ADDRESS",
 					"Local Bind IP Address (optional):",
 					"",
 				);
+				if (localAddress.trim()) {
+					answers.SMTP_LOCAL_ADDRESS = localAddress.trim();
+				} else {
+					delete answers.SMTP_LOCAL_ADDRESS;
+				}
 			}
 
 			const sendTest = await promptConfirm(
