@@ -51,7 +51,9 @@ export class SMTPProvider implements IEmailProvider {
 		sendMail: (options: unknown) => Promise<{ messageId?: string }>;
 	}> {
 		if (!this.transporter) {
-			const nodemailer = await import("nodemailer");
+			// Normalize the namespace to handle ESM/CommonJS interop
+			const ns = await import("nodemailer");
+			const nodemailer = ns.default ?? ns;
 
 			// Validate host
 			if (!this.config.host) {
@@ -120,17 +122,34 @@ export class SMTPProvider implements IEmailProvider {
 
 			const transporter = await this.getTransporter();
 
-			// Sanitize fromName and subject to prevent SMTP header injection
+			// Sanitize all header fields to prevent SMTP header injection
+			const safeTo = this.sanitizeHeader(job.email);
+			const safeFromEmail = this.sanitizeHeader(this.config.fromEmail);
 			const safeFromName = this.sanitizeHeader(this.config.fromName);
 			const safeSubject = this.sanitizeHeader(job.subject);
 
+			// Validate that the recipient email is not empty/invalid
+			// We explicitly check for CR/LF in the original input to prevent injection
+			if (!safeTo || !safeTo.trim() || /[\r\n]/.test(job.email)) {
+				throw new Error(
+					"Recipient email is invalid or contains forbidden characters (CR/LF)",
+				);
+			}
+
+			// Validate that the sender email is not empty/invalid after sanitization
+			if (!safeFromEmail) {
+				throw new Error(
+					"SMTP_FROM_EMAIL is invalid or contains forbidden characters (CR/LF)",
+				);
+			}
+
 			const fromAddress = safeFromName
-				? `${safeFromName} <${this.config.fromEmail}>`
-				: this.config.fromEmail;
+				? `${safeFromName} <${safeFromEmail}>`
+				: safeFromEmail;
 
 			const mailOptions = {
 				from: fromAddress,
-				to: job.email,
+				to: safeTo,
 				subject: safeSubject,
 				html: job.htmlBody,
 				...(job.textBody ? { text: job.textBody } : {}),

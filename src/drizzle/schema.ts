@@ -68,6 +68,10 @@ export {
 	emailNotificationsTableRelations,
 } from "./tables/EmailNotification";
 export {
+	emailVerificationTokensTable,
+	emailVerificationTokensTableRelations,
+} from "./tables/emailVerificationTokens";
+export {
 	eventAttachmentsTable,
 	eventAttachmentsTableRelations,
 } from "./tables/eventAttachments";

@@ -192,16 +192,14 @@ type AgendaCategory {
 }
 
 type AgendaFolder {
-  """
-  GraphQL connection to traverse through the agenda folders that have the agenda folder as a parent folder.
-  """
-  childFolders(after: String, before: String, first: Int, last: Int): AgendaFolderChildFoldersConnection
-
   """Date time at the time the agenda folder was created."""
   createdAt: DateTime
 
   """User who created the agenda folder."""
   creator: User
+
+  """Custom information about the agenda folder."""
+  description: String
 
   """
   Event for which the agenda folder contains agenda items constituting a part of the agenda.
@@ -211,51 +209,23 @@ type AgendaFolder {
   """Global identifier of the agenda folder."""
   id: ID!
 
-  """
-  Boolean to tell if the agenda folder is meant to be a folder for agenda items or a parent for agenda folders.
-  """
-  isAgendaItemFolder: Boolean
-
-  """
-  GraphQL connection to traverse through the agenda items contained within the agenda folder.
-  """
-  items(after: String, before: String, first: Int, last: Int): AgendaFolderItemsConnection
+  """Boolean to tell if agenda folder is default or not"""
+  isDefaultFolder: Boolean!
 
   """Name of the agenda folder."""
   name: String
 
-  """Agenda folder that is a parent folder to the agenda folder."""
-  parentFolder: AgendaFolder
+  """Organization which the agenda folder belongs to."""
+  organization: Organization
+
+  """Sequence of agenda folder."""
+  sequence: Int
 
   """Date time at the time the agenda folder was last updated."""
   updatedAt: DateTime
 
   """User who last updated the agenda folder."""
   updater: User
-}
-
-""""""
-type AgendaFolderChildFoldersConnection {
-  edges: [AgendaFolderChildFoldersConnectionEdge]
-  pageInfo: PageInfo!
-}
-
-""""""
-type AgendaFolderChildFoldersConnectionEdge {
-  cursor: String!
-  node: AgendaFolder
-}
-
-""""""
-type AgendaFolderItemsConnection {
-  edges: [AgendaFolderItemsConnectionEdge]
-  pageInfo: PageInfo!
-}
-
-""""""
-type AgendaFolderItemsConnectionEdge {
-  cursor: String!
-  node: AgendaItem
 }
 
 type AgendaItem {
@@ -2436,6 +2406,11 @@ type Mutation {
     input: MutationSendMembershipRequestInput!
   ): MembershipRequest
 
+  """
+  Send a verification email to the authenticated user. Returns same response whether email was sent or not.
+  """
+  sendVerificationEmail: SendEmailVerificationPayload
+
   """Mutation field to sign up to talawa."""
   signUp(input: MutationSignUpInput!): AuthenticationPayload
 
@@ -2601,6 +2576,14 @@ type Mutation {
   uploadPluginZip(input: UploadPluginZipInput!): Plugin
 
   """
+  Verify a user's email address using the token sent to their email. Returns success even if already verified (idempotent).
+  """
+  verifyEmail(
+    """Input for verifying an email address with a token."""
+    input: MutationVerifyEmailInput!
+  ): VerifyEmailPayload
+
+  """
   Public preview of an event invitation. Returns masked email and minimal event/org info. Rate-limited.
   """
   verifyEventInvitation(input: VerifyEventInvitationInput!): VerifyEventInvitationPreview
@@ -2683,23 +2666,22 @@ input MutationCreateAgendaCategoryInput {
   name: String!
 }
 
-""""""
+"""Input type for creating a new agenda folder."""
 input MutationCreateAgendaFolderInput {
+  """Description of Agenda Folder"""
+  description: String
+
   """Global identifier of the event the agenda folder is associated to."""
   eventId: ID!
-
-  """
-  Boolean to tell if the agenda folder is meant to be a folder for agenda items or a parent folder for other agenda folders.
-  """
-  isAgendaItemFolder: Boolean!
 
   """Name of the agenda folder."""
   name: String!
 
-  """
-  Global identifier of the agenda folder the agenda folder is contained within.
-  """
-  parentFolderId: ID
+  """ID of the organization this folder belongs to."""
+  organizationId: ID!
+
+  """Sequence of the Agenda Folder."""
+  sequence: Int
 }
 
 """"""
@@ -3519,18 +3501,19 @@ input MutationUpdateAgendaCategoryInput {
   name: String
 }
 
-""""""
+"""Input type for updating an agenda folder."""
 input MutationUpdateAgendaFolderInput {
+  """Description of the agenda folder."""
+  description: String
+
   """Global identifier of the agenda folder."""
   id: ID!
 
   """Name of the agenda folder."""
   name: String
 
-  """
-  Global identifier of the agenda folder the agenda folder is contained within.
-  """
-  parentFolderId: ID
+  """Sequence number of folder"""
+  sequence: Int
 }
 
 """"""
@@ -4083,6 +4066,11 @@ input MutationUpdateVenueInput {
 
   """Name of the venue."""
   name: String
+}
+
+input MutationVerifyEmailInput {
+  """The email verification token received in the verification email."""
+  token: String!
 }
 
 """Minimal notification data for user interfaces."""
@@ -4717,6 +4705,12 @@ type Query {
   """Query field to read an agenda folder."""
   agendaFolder(input: QueryAgendaFolderInput!): AgendaFolder
 
+  """Query field to get all Agenda Folders for a specific event."""
+  agendaFoldersByEventId(
+    """ID of the standalone event"""
+    eventId: ID!
+  ): [AgendaFolder!]
+
   """Query field to read an agenda item."""
   agendaItem(input: QueryAgendaItemInput!): AgendaItem
 
@@ -5214,6 +5208,17 @@ type RejectMembershipResponse {
   success: Boolean
 }
 
+"""
+Response payload for sendVerificationEmail mutation. Returns same response whether email was sent or not to prevent email enumeration.
+"""
+type SendEmailVerificationPayload {
+  """User-friendly message about the request."""
+  message: String
+
+  """Indicates if the request was processed successfully."""
+  success: Boolean
+}
+
 input SendEventInvitationsInput {
   emails: [String!]
   eventId: ID
@@ -5655,6 +5660,17 @@ type VenueEventsConnection {
 type VenueEventsConnectionEdge {
   cursor: String!
   node: Event
+}
+
+"""Response payload for verifyEmail mutation."""
+type VerifyEmailPayload {
+  """User-friendly message about the verification result."""
+  message: String
+
+  """
+  Indicates if the email was successfully verified. Returns true even if already verified (idempotent).
+  """
+  success: Boolean
 }
 
 input VerifyEventInvitationInput {
