@@ -253,7 +253,7 @@ export class MetricsCacheService {
 	 * await metricsCache.invalidateMetricsCache();
 	 *
 	 * // Invalidate only hourly metrics
-	 * await metricsCache.invalidateMetricsCache("metrics:aggregated:hourly:*");
+	 * await metricsCache.invalidateMetricsCache("aggregated:hourly:*");
 	 * ```
 	 */
 	async invalidateMetricsCache(pattern?: string): Promise<void> {
@@ -274,9 +274,22 @@ export class MetricsCacheService {
 				}
 			}
 
+			// Normalize pattern by stripping any leading namespace:metrics: or metrics: prefix
+			let normalizedPattern = pattern;
+			if (normalizedPattern) {
+				// Strip leading CacheNamespace:metrics: if present
+				const fullPrefix = `${CacheNamespace}:metrics:`;
+				if (normalizedPattern.startsWith(fullPrefix)) {
+					normalizedPattern = normalizedPattern.slice(fullPrefix.length);
+				} else if (normalizedPattern.startsWith("metrics:")) {
+					// Strip leading metrics: if present
+					normalizedPattern = normalizedPattern.slice("metrics:".length);
+				}
+			}
+
 			// Construct cache pattern efficiently
-			const cachePattern = pattern
-				? `${CacheNamespace}:metrics:${pattern}`
+			const cachePattern = normalizedPattern
+				? `${CacheNamespace}:metrics:${normalizedPattern}`
 				: `${CacheNamespace}:metrics:*`;
 			await this.cache.clearByPattern(cachePattern);
 			this.logger?.debug(

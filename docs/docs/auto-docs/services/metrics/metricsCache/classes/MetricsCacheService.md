@@ -237,5 +237,5 @@ Promise that resolves when invalidation is complete (or fails silently)
 await metricsCache.invalidateMetricsCache();
 
 // Invalidate only hourly metrics
-await metricsCache.invalidateMetricsCache("metrics:aggregated:hourly:*");
+await metricsCache.invalidateMetricsCache("aggregated:hourly:*");
 ```

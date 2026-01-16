@@ -278,9 +278,9 @@ describe("Performance Plugin - Environment Configuration", () => {
 				});
 			}
 
-			// Should only retain default number of snapshots (testing with smaller count)
+			// Should retain all snapshots since 110 < default retention (1000)
 			const snapshots = app.getMetricsSnapshots?.();
-			expect(snapshots?.length).toBeLessThanOrEqual(110);
+			expect(snapshots?.length).toBe(110);
 		});
 	});
 
