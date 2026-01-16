@@ -69,7 +69,7 @@ builder.mutationField("deletePlugin", (t) =>
 					}
 				} catch (error) {
 					ctx.log.error(
-						{ err: error },
+						{ pluginId: existingPlugin.pluginId, err: error },
 						"Error during plugin lifecycle uninstallation",
 					);
 					// Continue with deletion even if lifecycle fails
