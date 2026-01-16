@@ -238,8 +238,11 @@ export default fp(
 				);
 				// Don't return - route is already registered above
 			} else {
+				// Normalize and validate cache TTL - use safe default if invalid
+				const rawTtl = app.envConfig.API_METRICS_CACHE_TTL_SECONDS;
+				const parsedTtl = Number(rawTtl);
 				const cacheTtlSeconds =
-					app.envConfig.API_METRICS_CACHE_TTL_SECONDS ?? 300;
+					Number.isNaN(parsedTtl) || parsedTtl <= 0 ? 300 : parsedTtl;
 				const metricsCache = new MetricsCacheService(
 					app.cache,
 					app.log,

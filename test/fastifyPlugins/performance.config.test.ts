@@ -253,9 +253,9 @@ describe("Performance Plugin - Environment Configuration", () => {
 				});
 			}
 
-			// Should only retain configured number of snapshots
+			// Should only retain configured number of snapshots (exactly 50)
 			const snapshots = app.getMetricsSnapshots?.();
-			expect(snapshots?.length).toBeLessThanOrEqual(50);
+			expect(snapshots?.length).toBe(50);
 		});
 
 		it("should use default value (1000) when env config not set", async () => {

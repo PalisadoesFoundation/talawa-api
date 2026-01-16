@@ -1331,6 +1331,21 @@ describe("Validation Helpers", () => {
 				"Please enter a valid positive integer.",
 			);
 		});
+
+		it("returns error message for decimal numbers", () => {
+			expect(validatePositiveInteger("1.5")).toBe(
+				"Please enter a valid positive integer.",
+			);
+		});
+
+		it("returns error message for trailing characters", () => {
+			expect(validatePositiveInteger("1abc")).toBe(
+				"Please enter a valid positive integer.",
+			);
+			expect(validatePositiveInteger("123a")).toBe(
+				"Please enter a valid positive integer.",
+			);
+		});
 	});
 
 	describe("validateCronExpression", () => {
