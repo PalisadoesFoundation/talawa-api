@@ -1,3 +1,4 @@
+import { Readable } from "node:stream";
 import Fastify, { type FastifyInstance } from "fastify";
 import fastifyPlugin from "fastify-plugin";
 import { type Client, S3Error } from "minio";
@@ -47,7 +48,7 @@ describe("objects route", () => {
 	});
 
 	it("should return the object stream when found", async () => {
-		const mockStream = "readable-stream";
+		const mockStream = Readable.from(["readable-stream"]);
 		const mockStat = {
 			metaData: { "content-type": "image/png" },
 		};
@@ -65,7 +66,7 @@ describe("objects route", () => {
 		expect(res.headers["content-disposition"]).toBe(
 			"inline; filename=test-image.png",
 		);
-		expect(res.payload).toBe(mockStream);
+		expect(res.payload).toBe("readable-stream");
 
 		expect(mockGetObject).toHaveBeenCalledWith("talawa", "test-image.png");
 		expect(mockStatObject).toHaveBeenCalledWith("talawa", "test-image.png");

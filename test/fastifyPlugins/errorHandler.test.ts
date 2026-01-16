@@ -1,5 +1,6 @@
 import Fastify, { type FastifyInstance, type FastifyRequest } from "fastify";
-import { mercurius } from "mercurius";
+import { GraphQLError } from "graphql";
+import mercurius from "mercurius";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { errorHandlerPlugin } from "~/src/fastifyPlugins/errorHandler";
 import { ErrorCode } from "~/src/utilities/errors/errorCodes";
@@ -82,9 +83,22 @@ describe("errorHandlerPlugin", () => {
 
 			fastify.post("/graphql", async (request, reply) => {
 				const { query } = request.body as { query: string };
+
+				if (query.includes("unhandled-error")) {
+					throw new Error("Unhandled system error");
+				}
+
+				if (query.includes("unhandled-details")) {
+					throw new TalawaRestError({
+						code: ErrorCode.INVALID_ARGUMENTS,
+						message: "Detailed failure",
+						details: { reason: "bad luck" },
+					});
+				}
+
 				const execution: {
 					data: unknown;
-					errors: Array<{ message: string; originalError?: unknown }>;
+					errors: Array<GraphQLError>;
 				} = { data: null, errors: [] };
 
 				try {
@@ -121,12 +135,13 @@ describe("errorHandlerPlugin", () => {
 
 					execution.data = { hello: "world" };
 				} catch (err) {
-					execution.errors = [
-						{
-							message: (err as Error).message,
-							originalError: err,
-						},
-					];
+					const gqlError =
+						err instanceof GraphQLError
+							? err
+							: new GraphQLError((err as Error).message, {
+									originalError: err as Error,
+								});
+					execution.errors = [gqlError];
 				}
 
 				if (execution.errors.length > 0 && options.errorFormatter) {
@@ -232,6 +247,146 @@ describe("errorHandlerPlugin", () => {
 			throw new TalawaRestError({
 				code: ErrorCode.NOT_FOUND,
 				message: "Resource not found",
+			});
+		});
+
+		// Route with schema validation for Fastify validation errors
+		app.post("/validate", {
+			schema: {
+				body: {
+					type: "object",
+					required: ["name"],
+					properties: {
+						name: { type: "string" },
+						age: { type: "number" },
+					},
+				},
+			},
+			handler: async () => ({ success: true }),
+		});
+
+		// Edge case routes for different error types
+		app.get("/null-error", async () => {
+			throw null;
+		});
+
+		app.get("/undefined-error", async () => {
+			throw undefined;
+		});
+
+		app.get("/string-error", async () => {
+			throw "String error message";
+		});
+
+		app.get("/object-error", async () => {
+			throw { message: "Object error message", someField: "value" };
+		});
+
+		app.get("/arbitrary-object", async () => {
+			throw { someField: "value", anotherField: 123 };
+		});
+
+		app.get("/number-error", async () => {
+			throw 42;
+		});
+
+		// Additional error code routes
+		app.get("/token-expired", async () => {
+			throw new TalawaRestError({
+				code: ErrorCode.TOKEN_EXPIRED,
+				message: "Token has expired",
+			});
+		});
+
+		app.get("/token-invalid", async () => {
+			throw new TalawaRestError({
+				code: ErrorCode.TOKEN_INVALID,
+				message: "Token is invalid",
+			});
+		});
+
+		app.get("/insufficient-permissions", async () => {
+			throw new TalawaRestError({
+				code: ErrorCode.INSUFFICIENT_PERMISSIONS,
+				message: "Insufficient permissions",
+			});
+		});
+
+		app.get("/already-exists", async () => {
+			throw new TalawaRestError({
+				code: ErrorCode.ALREADY_EXISTS,
+				message: "Resource already exists",
+			});
+		});
+
+		app.get("/invalid-input", async () => {
+			throw new TalawaRestError({
+				code: ErrorCode.INVALID_INPUT,
+				message: "Invalid input provided",
+			});
+		});
+
+		app.get("/database-error", async () => {
+			throw new TalawaRestError({
+				code: ErrorCode.DATABASE_ERROR,
+				message: "Database operation failed",
+			});
+		});
+
+		app.get("/external-service-error", async () => {
+			throw new TalawaRestError({
+				code: ErrorCode.EXTERNAL_SERVICE_ERROR,
+				message: "External service unavailable",
+			});
+		});
+
+		app.get("/deprecated", async () => {
+			throw new TalawaRestError({
+				code: ErrorCode.DEPRECATED,
+				message: "This endpoint is deprecated",
+			});
+		});
+
+		app.get("/args-resources-not-found", async () => {
+			throw new TalawaRestError({
+				code: ErrorCode.ARGUMENTS_ASSOCIATED_RESOURCES_NOT_FOUND,
+				message: "Associated resources not found",
+			});
+		});
+
+		app.get("/forbidden-action-args", async () => {
+			throw new TalawaRestError({
+				code: ErrorCode.FORBIDDEN_ACTION_ON_ARGUMENTS_ASSOCIATED_RESOURCES,
+				message: "Forbidden action on associated resources",
+			});
+		});
+
+		app.get("/forbidden-action", async () => {
+			throw new TalawaRestError({
+				code: ErrorCode.FORBIDDEN_ACTION,
+				message: "Forbidden action",
+			});
+		});
+
+		app.get("/unauthorized-action-args", async () => {
+			throw new TalawaRestError({
+				code: ErrorCode.UNAUTHORIZED_ACTION_ON_ARGUMENTS_ASSOCIATED_RESOURCES,
+				message: "Unauthorized action on associated resources",
+			});
+		});
+
+		app.get("/unexpected", async () => {
+			throw new TalawaRestError({
+				code: ErrorCode.UNEXPECTED,
+				message: "Unexpected error occurred",
+			});
+		});
+
+		app.get("/custom-status", async () => {
+			throw new TalawaRestError({
+				code: ErrorCode.NOT_FOUND,
+				message: "Custom status",
+				statusCodeOverride: 418,
 			});
 		});
 
@@ -415,6 +570,53 @@ describe("errorHandlerPlugin", () => {
 				invalidField: "foo",
 			});
 		});
+
+		it("handles unhandled errors caught by global handler", async () => {
+			const res = await app.inject({
+				method: "POST",
+				url: "/graphql",
+				headers: {
+					"content-type": "application/json",
+				},
+				payload: JSON.stringify({
+					query: "{ unhandled-error }",
+				}),
+			});
+
+			// Should be 200 OK as per GraphQL spec/errorHandler logic
+			expect(res.statusCode).toBe(200);
+			const body = res.json();
+			expect(body.errors[0].message).toBe("Internal Server Error");
+			expect(body.errors[0].extensions.code).toBe(
+				ErrorCode.INTERNAL_SERVER_ERROR,
+			);
+			expect(body.errors[0].extensions.httpStatus).toBe(500);
+			expect(body.errors[0].extensions.details).toBe("Unhandled system error");
+			expect(body.errors[0].extensions.correlationId).toBe(
+				"generated-correlation-id",
+			);
+		});
+
+		it("handles unhandled errors with details caught by global handler", async () => {
+			const res = await app.inject({
+				method: "POST",
+				url: "/graphql",
+				headers: {
+					"content-type": "application/json",
+				},
+				payload: JSON.stringify({
+					query: "{ unhandled-details }",
+				}),
+			});
+
+			expect(res.statusCode).toBe(200);
+			const body = res.json();
+			expect(body.errors[0].message).toBe("Detailed failure");
+			expect(body.errors[0].extensions.code).toBe(ErrorCode.INVALID_ARGUMENTS);
+			// TalawaRestError status is preserved
+			expect(body.errors[0].extensions.httpStatus).toBe(400);
+			expect(body.errors[0].extensions.details).toEqual({ reason: "bad luck" });
+		});
 	});
 
 	describe("Correlation ID Handling", () => {
@@ -557,6 +759,237 @@ describe("errorHandlerPlugin", () => {
 			expect(body.error.code).toBe(ErrorCode.INVALID_ARGUMENTS);
 			expect(body.error.message).toBe("Invalid input");
 			expect(body.error.details).toBeDefined();
+		});
+
+		it("handles Fastify validation errors", async () => {
+			const res = await app.inject({
+				method: "POST",
+				url: "/validate",
+				headers: {
+					"content-type": "application/json",
+				},
+				payload: JSON.stringify({ age: "not-a-number" }),
+			});
+
+			expect(res.statusCode).toBe(400);
+			const body = res.json();
+			expect(body.error.code).toBe(ErrorCode.INVALID_ARGUMENTS);
+			expect(body.error.message).toBe("Validation failed");
+			expect(body.error.details).toBeDefined();
+		});
+	});
+
+	describe("Edge Cases and Error Types", () => {
+		it("handles null error", async () => {
+			const res = await app.inject({ method: "GET", url: "/null-error" });
+			expect(res.statusCode).toBe(500);
+			const body = res.json();
+			expect(body.error.code).toBe(ErrorCode.INTERNAL_SERVER_ERROR);
+			expect(body.error.details).toBe("null");
+		});
+
+		it("handles undefined error", async () => {
+			const res = await app.inject({ method: "GET", url: "/undefined-error" });
+			expect(res.statusCode).toBe(500);
+			const body = res.json();
+			expect(body.error.code).toBe(ErrorCode.INTERNAL_SERVER_ERROR);
+			expect(body.error.details).toBe("undefined");
+		});
+
+		it("handles string error", async () => {
+			const res = await app.inject({ method: "GET", url: "/string-error" });
+			expect(res.statusCode).toBe(500);
+			const body = res.json();
+			expect(body.error.code).toBe(ErrorCode.INTERNAL_SERVER_ERROR);
+			expect(body.error.details).toBe("String error message");
+		});
+
+		it("handles object with message property", async () => {
+			const res = await app.inject({ method: "GET", url: "/object-error" });
+			expect(res.statusCode).toBe(500);
+			const body = res.json();
+			expect(body.error.code).toBe(ErrorCode.INTERNAL_SERVER_ERROR);
+			expect(body.error.details).toBe("Object error message");
+		});
+
+		it("handles arbitrary object without message", async () => {
+			const res = await app.inject({
+				method: "GET",
+				url: "/arbitrary-object",
+			});
+			expect(res.statusCode).toBe(500);
+			const body = res.json();
+			expect(body.error.code).toBe(ErrorCode.INTERNAL_SERVER_ERROR);
+			expect(body.error.details).toBeDefined();
+		});
+
+		it("handles number error", async () => {
+			const res = await app.inject({ method: "GET", url: "/number-error" });
+			expect(res.statusCode).toBe(500);
+			const body = res.json();
+			expect(body.error.code).toBe(ErrorCode.INTERNAL_SERVER_ERROR);
+			expect(body.error.details).toBe("42");
+		});
+	});
+
+	describe("Additional Error Codes", () => {
+		it("handles TOKEN_EXPIRED error (401)", async () => {
+			const res = await app.inject({ method: "GET", url: "/token-expired" });
+			expect(res.statusCode).toBe(401);
+			const body = res.json();
+			expect(body.error.code).toBe(ErrorCode.TOKEN_EXPIRED);
+		});
+
+		it("handles TOKEN_INVALID error (401)", async () => {
+			const res = await app.inject({ method: "GET", url: "/token-invalid" });
+			expect(res.statusCode).toBe(401);
+			const body = res.json();
+			expect(body.error.code).toBe(ErrorCode.TOKEN_INVALID);
+		});
+
+		it("handles INSUFFICIENT_PERMISSIONS error (403)", async () => {
+			const res = await app.inject({
+				method: "GET",
+				url: "/insufficient-permissions",
+			});
+			expect(res.statusCode).toBe(403);
+			const body = res.json();
+			expect(body.error.code).toBe(ErrorCode.INSUFFICIENT_PERMISSIONS);
+		});
+
+		it("handles ALREADY_EXISTS error (409)", async () => {
+			const res = await app.inject({ method: "GET", url: "/already-exists" });
+			expect(res.statusCode).toBe(409);
+			const body = res.json();
+			expect(body.error.code).toBe(ErrorCode.ALREADY_EXISTS);
+		});
+
+		it("handles INVALID_INPUT error (400)", async () => {
+			const res = await app.inject({ method: "GET", url: "/invalid-input" });
+			expect(res.statusCode).toBe(400);
+			const body = res.json();
+			expect(body.error.code).toBe(ErrorCode.INVALID_INPUT);
+		});
+
+		it("handles DATABASE_ERROR error (500)", async () => {
+			const res = await app.inject({ method: "GET", url: "/database-error" });
+			expect(res.statusCode).toBe(500);
+			const body = res.json();
+			expect(body.error.code).toBe(ErrorCode.DATABASE_ERROR);
+		});
+
+		it("handles EXTERNAL_SERVICE_ERROR error (502)", async () => {
+			const res = await app.inject({
+				method: "GET",
+				url: "/external-service-error",
+			});
+			expect(res.statusCode).toBe(502);
+			const body = res.json();
+			expect(body.error.code).toBe(ErrorCode.EXTERNAL_SERVICE_ERROR);
+		});
+
+		it("handles DEPRECATED error (400)", async () => {
+			const res = await app.inject({ method: "GET", url: "/deprecated" });
+			expect(res.statusCode).toBe(400);
+			const body = res.json();
+			expect(body.error.code).toBe(ErrorCode.DEPRECATED);
+		});
+
+		it("handles ARGUMENTS_ASSOCIATED_RESOURCES_NOT_FOUND error (404)", async () => {
+			const res = await app.inject({
+				method: "GET",
+				url: "/args-resources-not-found",
+			});
+			expect(res.statusCode).toBe(404);
+			const body = res.json();
+			expect(body.error.code).toBe(
+				ErrorCode.ARGUMENTS_ASSOCIATED_RESOURCES_NOT_FOUND,
+			);
+		});
+
+		it("handles FORBIDDEN_ACTION_ON_ARGUMENTS_ASSOCIATED_RESOURCES error (403)", async () => {
+			const res = await app.inject({
+				method: "GET",
+				url: "/forbidden-action-args",
+			});
+			expect(res.statusCode).toBe(403);
+			const body = res.json();
+			expect(body.error.code).toBe(
+				ErrorCode.FORBIDDEN_ACTION_ON_ARGUMENTS_ASSOCIATED_RESOURCES,
+			);
+		});
+
+		it("handles FORBIDDEN_ACTION error (403)", async () => {
+			const res = await app.inject({
+				method: "GET",
+				url: "/forbidden-action",
+			});
+			expect(res.statusCode).toBe(403);
+			const body = res.json();
+			expect(body.error.code).toBe(ErrorCode.FORBIDDEN_ACTION);
+		});
+
+		it("handles UNAUTHORIZED_ACTION_ON_ARGUMENTS_ASSOCIATED_RESOURCES error (403)", async () => {
+			const res = await app.inject({
+				method: "GET",
+				url: "/unauthorized-action-args",
+			});
+			expect(res.statusCode).toBe(403);
+			const body = res.json();
+			expect(body.error.code).toBe(
+				ErrorCode.UNAUTHORIZED_ACTION_ON_ARGUMENTS_ASSOCIATED_RESOURCES,
+			);
+		});
+
+		it("handles UNEXPECTED error (500)", async () => {
+			const res = await app.inject({ method: "GET", url: "/unexpected" });
+			expect(res.statusCode).toBe(500);
+			const body = res.json();
+			expect(body.error.code).toBe(ErrorCode.UNEXPECTED);
+		});
+
+		it("handles custom status code override", async () => {
+			const res = await app.inject({ method: "GET", url: "/custom-status" });
+			expect(res.statusCode).toBe(418);
+			const body = res.json();
+			expect(body.error.code).toBe(ErrorCode.NOT_FOUND);
+		});
+	});
+
+	describe("GraphQL Error Edge Cases", () => {
+		it("handles GraphQL request with query parameters", async () => {
+			const res = await app.inject({
+				method: "POST",
+				url: "/graphql?debug=true",
+				headers: {
+					"content-type": "application/json",
+				},
+				payload: JSON.stringify({
+					query: "{ error }",
+				}),
+			});
+
+			expect(res.statusCode).toBe(200);
+			const body = res.json();
+			expect(body.errors).toBeDefined();
+			expect(body.errors[0].extensions.code).toBe("unauthenticated");
+		});
+
+		it("handles GraphQL error without details field", async () => {
+			const res = await app.inject({
+				method: "POST",
+				url: "/graphql",
+				headers: {
+					"content-type": "application/json",
+				},
+				payload: JSON.stringify({
+					query: "{ error }",
+				}),
+			});
+
+			expect(res.statusCode).toBe(200);
+			const body = res.json();
+			expect(body.errors[0].extensions.details).toBeUndefined();
 		});
 	});
 });
