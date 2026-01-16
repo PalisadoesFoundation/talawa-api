@@ -94,8 +94,9 @@ describe("AgendaItem.url resolver", () => {
 			role: "regular",
 		});
 
-		ctx.drizzleClient.query.agendaFoldersTable.findFirst = vi.fn().mockResolvedValue(
-			{
+		ctx.drizzleClient.query.agendaFoldersTable.findFirst = vi
+			.fn()
+			.mockResolvedValue({
 				id: "folder-1",
 				event: {
 					organization: {
@@ -104,8 +105,7 @@ describe("AgendaItem.url resolver", () => {
 						],
 					},
 				},
-			},
-		);
+			});
 
 		const parent: AgendaItemType = {
 			id: "agenda-item-1",
@@ -151,6 +151,7 @@ describe("AgendaItem.url resolver", () => {
 	it("should return an empty array when no urls exist", async () => {
 		const parent: AgendaItemType = {
 			id: "agenda-item-2",
+			folderId: "folder-1",
 		} as AgendaItemType;
 
 		ctx.drizzleClient.query.agendaItemUrlTable.findMany = vi

@@ -156,7 +156,7 @@ describe("MutationCreateAgendaItemInput Schema", () => {
 				attachments: [
 					{
 						name: "",
-						mimeType: "application/pdf",
+						mimeType: "image/png",
 						objectName: "object-key",
 						fileHash: "hash123",
 					},

@@ -3,10 +3,10 @@ import { eq } from "drizzle-orm";
 import { afterEach, expect, suite, test, vi } from "vitest";
 
 import { usersTable } from "~/src/drizzle/schema";
+import { agendaCategoriesTable } from "~/src/drizzle/tables/agendaCategories";
 import { assertToBeNonNullish } from "../../../helpers";
 import { server } from "../../../server";
 import { mercuriusClient } from "../client";
-import { agendaCategoriesTable } from "~/src/drizzle/tables/agendaCategories";
 import { createRegularUserUsingAdmin } from "../createRegularUserUsingAdmin";
 import {
 	Mutation_createAgendaCategory,
@@ -424,7 +424,7 @@ suite("Mutation field createAgendaItem", () => {
 			]),
 		);
 	});
-	
+
 	test("Uses default agenda folder when folderId is not provided", async () => {
 		const { token } = await getAdminAuth();
 		const data = await createOrgEventFolderCategory(token);
@@ -505,5 +505,4 @@ suite("Mutation field createAgendaItem", () => {
 			]),
 		);
 	});
-
 });
