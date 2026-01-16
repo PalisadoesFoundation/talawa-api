@@ -120,6 +120,7 @@ describe("AgendaItem.url resolver", () => {
 	it("should return urls for the agenda item", async () => {
 		const parent: AgendaItemType = {
 			id: "agenda-item-1",
+			folderId: "folder-1",
 		} as AgendaItemType;
 
 		const mockUrls = [
