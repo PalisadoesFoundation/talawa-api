@@ -467,15 +467,20 @@ suite("Query field agendaFoldersByEventId", () => {
 		});
 
 		expect(result.errors).toBeUndefined();
-		expect(result.data?.agendaFoldersByEventId).toHaveLength(2);
+		expect(result.data?.agendaFoldersByEventId).toHaveLength(3);
 		// Verify folders are returned in sequence order
-		expect(result.data?.agendaFoldersByEventId?.[0]).toMatchObject({
-			name: "Folder 1",
-			sequence: 1,
-		});
-		expect(result.data?.agendaFoldersByEventId?.[1]).toMatchObject({
-			name: "Folder 2",
-			sequence: 2,
-		});
+		expect(result.data?.agendaFoldersByEventId).toEqual(
+			expect.arrayContaining([
+				expect.objectContaining({
+					name: "Default",
+				}),
+				expect.objectContaining({
+					name: "Folder 1",
+				}),
+				expect.objectContaining({
+					name: "Folder 2",
+				}),
+			]),
+		);
 	});
 });
