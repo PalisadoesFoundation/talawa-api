@@ -306,31 +306,54 @@ describe("Performance Plugin - Environment Configuration", () => {
 
 			app = createTestApp({ envConfig: customEnvConfig, cache: mockCache });
 
+			// Spy on cache.set to capture TTL argument
+			const setSpy = vi.spyOn(mockCache, "set");
+
 			await app.register(performancePlugin);
 			await app.ready();
 
-			// Verify the cache service was initialized with the custom TTL
+			// Verify the cache service was initialized
 			expect(app.metricsCache).toBeDefined();
-			// Access the private defaultTtlSeconds via casting (for test verification only)
-			const metricsCache = app.metricsCache as unknown as {
-				defaultTtlSeconds: number;
-			};
-			expect(metricsCache.defaultTtlSeconds).toBe(900);
+
+			// Trigger a cache operation to verify TTL is passed correctly
+			await app.metricsCache?.cacheAggregatedMetrics(
+				{ timestamp: Date.now(), windowMinutes: 5, snapshotCount: 1 } as never,
+				"test-timestamp",
+			);
+
+			// Verify cache.set was called with the expected TTL (900)
+			expect(setSpy).toHaveBeenCalledWith(
+				expect.any(String),
+				expect.anything(),
+				900,
+			);
 		});
 
 		it("should use default TTL (300) when env config not set", async () => {
 			const customEnvConfig: Partial<EnvConfig> = {};
 			app = createTestApp({ envConfig: customEnvConfig, cache: mockCache });
 
+			// Spy on cache.set to capture TTL argument
+			const setSpy = vi.spyOn(mockCache, "set");
+
 			await app.register(performancePlugin);
 			await app.ready();
 
-			// Verify default TTL (300) is used when not configured
+			// Verify the cache service was initialized
 			expect(app.metricsCache).toBeDefined();
-			const metricsCache = app.metricsCache as unknown as {
-				defaultTtlSeconds: number;
-			};
-			expect(metricsCache.defaultTtlSeconds).toBe(300);
+
+			// Trigger a cache operation to verify TTL is passed correctly
+			await app.metricsCache?.cacheAggregatedMetrics(
+				{ timestamp: Date.now(), windowMinutes: 5, snapshotCount: 1 } as never,
+				"test-timestamp",
+			);
+
+			// Verify cache.set was called with the default TTL (300)
+			expect(setSpy).toHaveBeenCalledWith(
+				expect.any(String),
+				expect.anything(),
+				300,
+			);
 		});
 
 		it("should fallback to 300 when API_METRICS_CACHE_TTL_SECONDS is invalid string", async () => {
@@ -340,14 +363,26 @@ describe("Performance Plugin - Environment Configuration", () => {
 
 			app = createTestApp({ envConfig: customEnvConfig, cache: mockCache });
 
+			// Spy on cache.set to capture TTL argument
+			const setSpy = vi.spyOn(mockCache, "set");
+
 			await app.register(performancePlugin);
 			await app.ready();
 
 			expect(app.metricsCache).toBeDefined();
-			const metricsCache = app.metricsCache as unknown as {
-				defaultTtlSeconds: number;
-			};
-			expect(metricsCache.defaultTtlSeconds).toBe(300);
+
+			// Trigger a cache operation to verify TTL is passed correctly
+			await app.metricsCache?.cacheAggregatedMetrics(
+				{ timestamp: Date.now(), windowMinutes: 5, snapshotCount: 1 } as never,
+				"test-timestamp",
+			);
+
+			// Verify cache.set was called with fallback TTL (300)
+			expect(setSpy).toHaveBeenCalledWith(
+				expect.any(String),
+				expect.anything(),
+				300,
+			);
 		});
 
 		it("should fallback to 300 when API_METRICS_CACHE_TTL_SECONDS is zero", async () => {
@@ -357,14 +392,26 @@ describe("Performance Plugin - Environment Configuration", () => {
 
 			app = createTestApp({ envConfig: customEnvConfig, cache: mockCache });
 
+			// Spy on cache.set to capture TTL argument
+			const setSpy = vi.spyOn(mockCache, "set");
+
 			await app.register(performancePlugin);
 			await app.ready();
 
 			expect(app.metricsCache).toBeDefined();
-			const metricsCache = app.metricsCache as unknown as {
-				defaultTtlSeconds: number;
-			};
-			expect(metricsCache.defaultTtlSeconds).toBe(300);
+
+			// Trigger a cache operation to verify TTL is passed correctly
+			await app.metricsCache?.cacheAggregatedMetrics(
+				{ timestamp: Date.now(), windowMinutes: 5, snapshotCount: 1 } as never,
+				"test-timestamp",
+			);
+
+			// Verify cache.set was called with fallback TTL (300)
+			expect(setSpy).toHaveBeenCalledWith(
+				expect.any(String),
+				expect.anything(),
+				300,
+			);
 		});
 
 		it("should fallback to 300 when API_METRICS_CACHE_TTL_SECONDS is negative", async () => {
@@ -374,14 +421,26 @@ describe("Performance Plugin - Environment Configuration", () => {
 
 			app = createTestApp({ envConfig: customEnvConfig, cache: mockCache });
 
+			// Spy on cache.set to capture TTL argument
+			const setSpy = vi.spyOn(mockCache, "set");
+
 			await app.register(performancePlugin);
 			await app.ready();
 
 			expect(app.metricsCache).toBeDefined();
-			const metricsCache = app.metricsCache as unknown as {
-				defaultTtlSeconds: number;
-			};
-			expect(metricsCache.defaultTtlSeconds).toBe(300);
+
+			// Trigger a cache operation to verify TTL is passed correctly
+			await app.metricsCache?.cacheAggregatedMetrics(
+				{ timestamp: Date.now(), windowMinutes: 5, snapshotCount: 1 } as never,
+				"test-timestamp",
+			);
+
+			// Verify cache.set was called with fallback TTL (300)
+			expect(setSpy).toHaveBeenCalledWith(
+				expect.any(String),
+				expect.anything(),
+				300,
+			);
 		});
 
 		it("should handle null cache service gracefully", async () => {

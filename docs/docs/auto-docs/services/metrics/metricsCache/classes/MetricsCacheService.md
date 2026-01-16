@@ -86,7 +86,7 @@ await metricsCache.cacheAggregatedMetrics(metrics, "1705320000000", 600);
 
 > **cacheWindowedMetrics**(`metrics`, `windowType`, `date`, `ttlSeconds?`): `Promise`\<`void`\>
 
-Defined in: [src/services/metrics/metricsCache.ts:197](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/metrics/metricsCache.ts#L197)
+Defined in: [src/services/metrics/metricsCache.ts:209](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/metrics/metricsCache.ts#L209)
 
 Cache aggregated metrics for a time window (hourly or daily).
 
@@ -138,7 +138,7 @@ await metricsCache.cacheWindowedMetrics(metrics, 'daily', '2024-01-15', 86400);
 
 > **getCachedMetrics**(`timestamp`): `Promise`\<[`AggregatedMetrics`](../../../../workers/metrics/types/interfaces/AggregatedMetrics.md) \| `null`\>
 
-Defined in: [src/services/metrics/metricsCache.ts:96](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/metrics/metricsCache.ts#L96)
+Defined in: [src/services/metrics/metricsCache.ts:108](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/metrics/metricsCache.ts#L108)
 
 Retrieve cached aggregated metrics by timestamp.
 
@@ -171,7 +171,7 @@ if (metrics) {
 
 > **getCachedMetricsByWindow**(`windowType`, `date`): `Promise`\<[`AggregatedMetrics`](../../../../workers/metrics/types/interfaces/AggregatedMetrics.md) \| `null`\>
 
-Defined in: [src/services/metrics/metricsCache.ts:143](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/metrics/metricsCache.ts#L143)
+Defined in: [src/services/metrics/metricsCache.ts:155](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/metrics/metricsCache.ts#L155)
 
 Retrieve cached aggregated metrics by time window (hourly or daily).
 
@@ -211,7 +211,7 @@ const metrics = await metricsCache.getCachedMetricsByWindow('daily', '2024-01-15
 
 > **invalidateMetricsCache**(`pattern?`): `Promise`\<`void`\>
 
-Defined in: [src/services/metrics/metricsCache.ts:259](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/metrics/metricsCache.ts#L259)
+Defined in: [src/services/metrics/metricsCache.ts:283](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/metrics/metricsCache.ts#L283)
 
 Invalidate metrics cache entries matching a pattern.
 

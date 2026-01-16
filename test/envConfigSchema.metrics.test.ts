@@ -278,9 +278,6 @@ describe("envConfigSchema - Metrics Configuration", () => {
 					data: process.env,
 				});
 			}).toThrow();
-
-			// Cleanup
-			delete process.env.API_METRICS_ENABLED;
 		});
 	});
 
