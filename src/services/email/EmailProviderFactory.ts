@@ -50,6 +50,8 @@ export const EmailProviderFactory = {
 					secure: config.SMTP_SECURE,
 					fromEmail: config.SMTP_FROM_EMAIL,
 					fromName: config.SMTP_FROM_NAME,
+					name: config.SMTP_NAME,
+					localAddress: config.SMTP_LOCAL_ADDRESS,
 				});
 			}
 			default:

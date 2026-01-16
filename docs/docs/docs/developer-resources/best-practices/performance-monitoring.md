@@ -670,3 +670,116 @@ When disabled:
 - SDK is not initialized
 - No instrumentation is registered
 - No performance impact is introduced
+
+---
+
+### Database Operation Tracing
+
+Talawa API instruments database operations using the `traceable` utility, providing visibility into database queries through DataLoaders.
+
+#### Trace Hierarchy
+
+Database operations create child spans under their parent context:
+
+```
+HTTP Request → GraphQL Resolver → DataLoader → db:users.batchLoad
+```
+
+This enables end-to-end tracing, bottleneck identification, and N+1 query detection.
+
+#### Usage
+
+**Import:**
+```typescript
+import { traceable } from "~/src/utilities/db/traceableQuery";
+```
+
+**Basic Usage:**
+```typescript
+const users = await traceable("users", "batchLoad", async () => {
+  return await db.select().from(usersTable).where(inArray(usersTable.id, userIds));
+});
+```
+
+**DataLoader Example:**
+```typescript
+export const createUserLoader = (): DataLoader<string, User | null> => {
+  return new DataLoader(async (userIds) => {
+    const rows = await traceable("users", "batchLoad", async () => {
+      return await db.select().from(usersTable).where(inArray(usersTable.id, [...userIds]));
+    });
+    const userMap = new Map(rows.map((user) => [user.id, user]));
+    return userIds.map((id) => userMap.get(id) ?? null);
+  });
+};
+```
+
+**Span Attributes:**
+- `db.system`: `"postgresql"`
+- `db.operation`: Operation type (e.g., `"batchLoad"`)
+- `db.model`: Table name (e.g., `"users"`)
+
+#### Error Handling
+
+Errors are automatically captured with stack traces and marked with ERROR status. The error is then re-thrown for normal application handling.
+
+#### Sample Output
+
+**Local Console Output:**
+```json
+{
+  "name": "db:users.batchLoad",
+  "traceId": "347cb51fc1fd41662d768bb1142acff1",
+  "parentId": "a8f3d9e2c1b4a567",
+  "duration": 45238.125,
+  "attributes": {
+    "db.system": "postgresql",
+    "db.operation": "batchLoad",
+    "db.model": "users"
+  },
+  "status": { "code": 0 }
+}
+```
+
+**Production Visualization:**
+```
+Trace: 347cb51fc1fd41662d768bb1142acff1
+├─ POST /graphql (125ms)
+   ├─ db:users.batchLoad (45ms)
+   ├─ db:organizations.batchLoad (32ms)
+   └─ db:events.batchLoad (28ms)
+```
+
+#### Best Practices
+
+1. **Use descriptive operation names**: `"findByEmail"` not `"query"`
+2. **Wrap only DB operations**: Exclude business logic from traced functions
+3. **Match model names to tables**: Use `"users"` for `usersTable`
+4. **Primary use case**: DataLoaders batch loading
+
+#### Security
+
+**⚠️ Never include sensitive data in model/operation names**
+
+What is captured:
+- ✅ Table names, operation types, timing
+- ❌ Query parameters, result data (not captured)
+
+For production, use TLS/HTTPS for OTLP endpoints and consider sampling (`API_OTEL_SAMPLING_RATIO=0.1`).
+
+#### Contributor Guidelines
+
+**When to use `traceable`:**
+- ✅ DataLoader batch functions (required)
+- ✅ Complex multi-table queries
+- ❌ Simple single-row lookups
+
+Verify spans locally: Set `API_OTEL_ENABLED=true` and `API_OTEL_ENVIRONMENT=local`
+
+**Tests:** `test/utilities/db/traceableQuery.test.ts`
+
+#### Further Reading
+
+- Implementation: `src/utilities/db/traceableQuery.ts`
+- DataLoader examples: `src/utilities/dataloaders/`
+- OpenTelemetry: https://opentelemetry.io/docs/instrumentation/js/

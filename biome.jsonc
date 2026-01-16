@@ -29,8 +29,36 @@
 	// https://biomejs.dev/reference/configuration/#linter
 	"linter": {
 		// https://biomejs.dev/reference/configuration/#linterenabled
-		"enabled": true
+		"enabled": true,
+		"rules": {
+			"suspicious": {
+				"noConsole": "error"
+			}
+		}
 	},
+	"overrides": [
+		{
+			"includes": [
+				"src/install/**",
+				"src/tracing.ts",
+				"src/observability/**",
+				"src/services/caching/cacheConfig.ts",
+				"scripts/**",
+				"vitest.config.ts",
+				"vite.config.ts",
+				"test/**",
+				"docker/**",
+				"setup.ts"
+			],
+			"linter": {
+				"rules": {
+					"suspicious": {
+						"noConsole": "off"
+					}
+				}
+			}
+		}
+	],
 	// https://biomejs.dev/reference/configuration/#vcs
 	"assist": {
 		"actions": {

@@ -157,6 +157,16 @@ vi.mock("../../src/utilities/TalawaGraphQLError", () => {
 	};
 });
 
+// Mock rootLogger for logging coverage
+vi.mock("../../src/utilities/logging/logger", () => ({
+	rootLogger: {
+		info: vi.fn(),
+		error: vi.fn(),
+		warn: vi.fn(),
+		debug: vi.fn(),
+	},
+}));
+
 // Import after mocks
 import * as yauzl from "yauzl";
 import * as pluginUtils from "../../src/plugin/utils";

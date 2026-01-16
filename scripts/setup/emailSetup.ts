@@ -35,6 +35,8 @@ function clearEmailCredentials(answers: SetupAnswers): void {
 	delete answers.SMTP_SECURE;
 	delete answers.SMTP_FROM_EMAIL;
 	delete answers.SMTP_FROM_NAME;
+	delete answers.SMTP_NAME;
+	delete answers.SMTP_LOCAL_ADDRESS;
 }
 
 export async function emailSetup(answers: SetupAnswers): Promise<SetupAnswers> {
@@ -72,6 +74,8 @@ export async function emailSetup(answers: SetupAnswers): Promise<SetupAnswers> {
 				delete answers.SMTP_SECURE;
 				delete answers.SMTP_FROM_EMAIL;
 				delete answers.SMTP_FROM_NAME;
+				delete answers.SMTP_NAME;
+				delete answers.SMTP_LOCAL_ADDRESS;
 				answers.AWS_SES_REGION = await promptInput(
 					"AWS_SES_REGION",
 					"AWS SES Region:",
@@ -220,6 +224,28 @@ export async function emailSetup(answers: SetupAnswers): Promise<SetupAnswers> {
 					"From Display Name:",
 					"Talawa",
 				);
+
+				const smtpName = await promptInput(
+					"SMTP_NAME",
+					"Client Hostname (optional, e.g., for HELO/EHLO):",
+					"",
+				);
+				if (smtpName.trim()) {
+					answers.SMTP_NAME = smtpName.trim();
+				} else {
+					delete answers.SMTP_NAME;
+				}
+
+				const localAddress = await promptInput(
+					"SMTP_LOCAL_ADDRESS",
+					"Local Bind IP Address (optional):",
+					"",
+				);
+				if (localAddress.trim()) {
+					answers.SMTP_LOCAL_ADDRESS = localAddress.trim();
+				} else {
+					delete answers.SMTP_LOCAL_ADDRESS;
+				}
 			}
 
 			const sendTest = await promptConfirm(
@@ -325,6 +351,8 @@ export async function emailSetup(answers: SetupAnswers): Promise<SetupAnswers> {
 								secure: answers.SMTP_SECURE === "true",
 								fromEmail: answers.SMTP_FROM_EMAIL,
 								fromName: answers.SMTP_FROM_NAME,
+								name: answers.SMTP_NAME,
+								localAddress: answers.SMTP_LOCAL_ADDRESS,
 							});
 
 							const result = await service.sendEmail({
