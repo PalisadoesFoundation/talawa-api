@@ -2,7 +2,7 @@ import { faker } from "@faker-js/faker";
 import { eq } from "drizzle-orm";
 import { afterEach, expect, suite, test, vi } from "vitest";
 
-import { usersTable } from "~/src/drizzle/schema";
+import { agendaFoldersTable, usersTable } from "~/src/drizzle/schema";
 import { agendaCategoriesTable } from "~/src/drizzle/tables/agendaCategories";
 import { assertToBeNonNullish } from "../../../helpers";
 import { server } from "../../../server";
@@ -471,6 +471,81 @@ suite("Mutation field createAgendaItem", () => {
 		assertToBeNonNullish(result.data?.createAgendaItem);
 	});
 
+	test("Returns error when default agenda folder does not exist", async () => {
+		const { token } = await getAdminAuth();
+		const data = await createOrgEventFolderCategory(token);
+		cleanupFns.push(data.cleanup);
+
+		// Delete ALL agenda folders for the event (including default)
+		await server.drizzleClient
+			.delete(agendaFoldersTable)
+			.where(eq(agendaFoldersTable.eventId, data.eventId));
+
+		const result = await mercuriusClient.mutate(Mutation_createAgendaItem, {
+			headers: { authorization: `bearer ${token}` },
+			variables: {
+				input: {
+					eventId: data.eventId,
+					// folderId omitted → forces default lookup
+					categoryId: data.categoryId,
+					name: "Item",
+					sequence: 1,
+					type: "general",
+				},
+			},
+		});
+
+		expect(result.errors).toEqual(
+			expect.arrayContaining([
+				expect.objectContaining({
+					extensions: expect.objectContaining({
+						code: "arguments_associated_resources_not_found",
+						issues: expect.arrayContaining([
+							expect.objectContaining({
+								argumentPath: ["input", "eventId"],
+							}),
+						]),
+					}),
+				}),
+			]),
+		);
+	});
+
+	test("Returns error when provided categoryId does not exist", async () => {
+		const { token } = await getAdminAuth();
+		const data = await createOrgEventFolderCategory(token);
+		cleanupFns.push(data.cleanup);
+
+		const result = await mercuriusClient.mutate(Mutation_createAgendaItem, {
+			headers: { authorization: `bearer ${token}` },
+			variables: {
+				input: {
+					eventId: data.eventId,
+					folderId: data.folderId,
+					categoryId: faker.string.uuid(), // invalid category
+					name: "Item",
+					sequence: 1,
+					type: "general",
+				},
+			},
+		});
+
+		expect(result.errors).toEqual(
+			expect.arrayContaining([
+				expect.objectContaining({
+					extensions: expect.objectContaining({
+						code: "arguments_associated_resources_not_found",
+						issues: expect.arrayContaining([
+							expect.objectContaining({
+								argumentPath: ["input", "categoryId"],
+							}),
+						]),
+					}),
+				}),
+			]),
+		);
+	});
+
 	test("Returns error when default category does not exist", async () => {
 		const { token } = await getAdminAuth();
 		const data = await createOrgEventFolderCategory(token);
@@ -504,5 +579,54 @@ suite("Mutation field createAgendaItem", () => {
 				}),
 			]),
 		);
+	});
+
+	test("Returns error when agenda item creation returns empty result", async () => {
+		const { token } = await getAdminAuth();
+		const data = await createOrgEventFolderCategory(token);
+		cleanupFns.push(data.cleanup);
+
+		const spy = vi
+			.spyOn(server.drizzleClient, "transaction")
+			.mockImplementationOnce(async (cb) => {
+				return cb({
+					insert: () => ({
+						values: () => ({
+							returning: async () => [], // ← force empty insert
+						}),
+					}),
+				} as any);
+			});
+
+		const result = await mercuriusClient.mutate(Mutation_createAgendaItem, {
+			headers: { authorization: `bearer ${token}` },
+			variables: {
+				input: {
+					eventId: data.eventId,
+					folderId: data.folderId,
+					categoryId: data.categoryId,
+					name: "Item",
+					sequence: 1,
+					type: "general",
+				},
+			},
+		});
+
+		expect(result.errors).toEqual(
+			expect.arrayContaining([
+				expect.objectContaining({
+					extensions: expect.objectContaining({
+						code: "arguments_associated_resources_not_found",
+						issues: expect.arrayContaining([
+							expect.objectContaining({
+								argumentPath: ["input", "folderId"],
+							}),
+						]),
+					}),
+				}),
+			]),
+		);
+
+		spy.mockRestore();
 	});
 });
