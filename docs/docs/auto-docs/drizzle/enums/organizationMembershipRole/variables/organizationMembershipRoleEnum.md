@@ -4,7 +4,7 @@
 
 # Variable: organizationMembershipRoleEnum
 
-> `const` **organizationMembershipRoleEnum**: `ZodEnum`\<\[`"administrator"`, `"regular"`\]\>
+> `const` **organizationMembershipRoleEnum**: `ZodEnum`\<\{ `administrator`: `"administrator"`; `regular`: `"regular"`; \}\>
 
 Defined in: [src/drizzle/enums/organizationMembershipRole.ts:6](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/drizzle/enums/organizationMembershipRole.ts#L6)
 
