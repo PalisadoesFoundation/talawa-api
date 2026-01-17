@@ -54,14 +54,6 @@ describe("membershipRequestsTable", () => {
 				organizationId: "00000000-0000-0000-0000-000000000000",
 			}),
 		).not.toThrow();
-
-		expect(() =>
-			membershipRequestsTableInsertSchema.parse({
-				userId: "00000000-0000-0000-0000-000000000000",
-				organizationId: "00000000-0000-0000-0000-000000000000",
-				status: MembershipRequestStatusValues[0],
-			}),
-		).not.toThrow();
 	});
 
 	it("should accept all valid status values", () => {
