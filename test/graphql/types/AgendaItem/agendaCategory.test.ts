@@ -1,8 +1,8 @@
+import { createMockGraphQLContext } from "test/_Mocks_/mockContextCreator/mockContextCreator";
 import { describe, expect, it } from "vitest";
 import type { AgendaItem as AgendaItemType } from "~/src/graphql/types/AgendaItem/AgendaItem";
 import { resolveCategory } from "~/src/graphql/types/AgendaItem/agendaCategory";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
-import { createMockGraphQLContext } from "test/_Mocks_/mockContextCreator/mockContextCreator";
 
 describe("AgendaItem.category resolver (resolveCategory)", () => {
 	const baseAgendaItem = {
@@ -37,9 +37,7 @@ describe("AgendaItem.category resolver (resolveCategory)", () => {
 			undefined,
 		);
 
-		await expect(
-			resolveCategory(baseAgendaItem, {}, context),
-		).rejects.toThrow(
+		await expect(resolveCategory(baseAgendaItem, {}, context)).rejects.toThrow(
 			new TalawaGraphQLError({
 				extensions: { code: "unexpected" },
 			}),
