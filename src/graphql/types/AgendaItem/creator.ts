@@ -68,8 +68,21 @@ export const resolveCreator = async (
 		});
 	}
 
+	const existingEvent = existingAgendaFolder.event;
+	if (existingEvent === undefined) {
+		ctx.log.error(
+			"Postgres select operation returned an empty array for an agenda item's event id that isn't null.",
+		);
+
+		throw new TalawaGraphQLError({
+			extensions: {
+				code: "unexpected",
+			},
+		});
+	}
+
 	const currentUserOrganizationMembership =
-		existingAgendaFolder.event.organization.membershipsWhereOrganization[0];
+		existingEvent.organization.membershipsWhereOrganization[0];
 
 	if (
 		currentUser.role !== "administrator" &&
@@ -100,7 +113,7 @@ export const resolveCreator = async (
 	// Creator id existing but the associated user not existing is a business logic error and probably means that the corresponding data in the database is in a corrupted state. It must be investigated and fixed as soon as possible to prevent additional data corruption.
 	if (existingUser === undefined) {
 		ctx.log.error(
-			"Postgres select operation returned an empty array for an agenda folder's creator id that isn't null.",
+			"Postgres select operation returned an empty array for an agenda item's creator id that isn't null.",
 		);
 
 		throw new TalawaGraphQLError({

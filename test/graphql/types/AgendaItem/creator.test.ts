@@ -5,6 +5,37 @@ import type { AgendaItem as AgendaItemType } from "~/src/graphql/types/AgendaIte
 import { resolveCreator } from "~/src/graphql/types/AgendaItem/creator";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 
+/* -------------------------------------------------------------------------- */
+/*                            Local typed mock helpers                         */
+/* -------------------------------------------------------------------------- */
+
+interface MockAgendaFolder {
+	isAgendaItemFolder: true;
+	event: {
+		organization: {
+			membershipsWhereOrganization: Array<{
+				role: "administrator" | "member";
+			}>;
+		};
+	};
+}
+
+const createMockAgendaFolder = (
+	overrides?: Partial<MockAgendaFolder>,
+): MockAgendaFolder => ({
+	isAgendaItemFolder: true,
+	event: {
+		organization: {
+			membershipsWhereOrganization: [],
+		},
+	},
+	...overrides,
+});
+
+/* -------------------------------------------------------------------------- */
+/*                                   Tests                                    */
+/* -------------------------------------------------------------------------- */
+
 describe("AgendaItem.creator resolver", () => {
 	let ctx: GraphQLContext;
 	let mockAgendaItem: AgendaItemType;
@@ -37,7 +68,7 @@ describe("AgendaItem.creator resolver", () => {
 	it("throws unauthenticated when current user does not exist", async () => {
 		mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValue(undefined);
 		mocks.drizzleClient.query.agendaFoldersTable.findFirst.mockResolvedValue(
-			{} as never,
+			createMockAgendaFolder() as unknown as Record<string, unknown>,
 		);
 
 		await expect(resolveCreator(mockAgendaItem, {}, ctx)).rejects.toThrow(
@@ -45,38 +76,24 @@ describe("AgendaItem.creator resolver", () => {
 		);
 	});
 
-	it("allows access when user is organization administrator but not system administrator", async () => {
-		const creatorUser = {
-			id: "creator-123",
-			role: "member",
-		};
+	it("allows access when user is org admin but not system admin", async () => {
+		const creatorUser = { id: "creator-123", role: "member" };
 
-		// current user is NOT system admin
 		mocks.drizzleClient.query.usersTable.findFirst
-			// first call → current user
-			.mockResolvedValueOnce({
-				id: "user-123",
-				role: "member",
-			})
-			// second call → creator user
+			.mockResolvedValueOnce({ id: "user-123", role: "member" })
 			.mockResolvedValueOnce(creatorUser);
 
-		// user IS org admin
-		mocks.drizzleClient.query.agendaFoldersTable.findFirst.mockResolvedValue({
-			isAgendaItemFolder: true,
-			event: {
-				organization: {
-					membershipsWhereOrganization: [
-						{
-							role: "administrator",
-						},
-					],
+		mocks.drizzleClient.query.agendaFoldersTable.findFirst.mockResolvedValue(
+			createMockAgendaFolder({
+				event: {
+					organization: {
+						membershipsWhereOrganization: [{ role: "administrator" }],
+					},
 				},
-			},
-		} as never);
+			}) as unknown as Record<string, unknown>,
+		);
 
 		const result = await resolveCreator(mockAgendaItem, {}, ctx);
-
 		expect(result).toEqual(creatorUser);
 	});
 
@@ -98,38 +115,20 @@ describe("AgendaItem.creator resolver", () => {
 		);
 	});
 
-	it("throws unauthorized_action when user is not admin and not org admin", async () => {
+	it("throws unauthorized_action when user is neither system nor org admin", async () => {
 		mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValue({
 			id: "user-123",
 			role: "member",
 		});
-		mocks.drizzleClient.query.agendaFoldersTable.findFirst.mockResolvedValue({
-			isAgendaItemFolder: true,
-			event: {
-				organization: {
-					membershipsWhereOrganization: [{ role: "member" }],
+		mocks.drizzleClient.query.agendaFoldersTable.findFirst.mockResolvedValue(
+			createMockAgendaFolder({
+				event: {
+					organization: {
+						membershipsWhereOrganization: [{ role: "member" }],
+					},
 				},
-			},
-		} as never);
-
-		await expect(resolveCreator(mockAgendaItem, {}, ctx)).rejects.toThrow(
-			new TalawaGraphQLError({ extensions: { code: "unauthorized_action" } }),
+			}) as unknown as Record<string, unknown>,
 		);
-	});
-
-	it("throws unauthorized_action when user is not admin and has no org membership", async () => {
-		mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValue({
-			id: "user-123",
-			role: "member",
-		});
-		mocks.drizzleClient.query.agendaFoldersTable.findFirst.mockResolvedValue({
-			isAgendaItemFolder: true,
-			event: {
-				organization: {
-					membershipsWhereOrganization: [],
-				},
-			},
-		} as never);
 
 		await expect(resolveCreator(mockAgendaItem, {}, ctx)).rejects.toThrow(
 			new TalawaGraphQLError({ extensions: { code: "unauthorized_action" } }),
@@ -143,14 +142,9 @@ describe("AgendaItem.creator resolver", () => {
 			id: "user-123",
 			role: "administrator",
 		});
-		mocks.drizzleClient.query.agendaFoldersTable.findFirst.mockResolvedValue({
-			isAgendaItemFolder: true,
-			event: {
-				organization: {
-					membershipsWhereOrganization: [],
-				},
-			},
-		} as never);
+		mocks.drizzleClient.query.agendaFoldersTable.findFirst.mockResolvedValue(
+			createMockAgendaFolder() as unknown as Record<string, unknown>,
+		);
 
 		const result = await resolveCreator(mockAgendaItem, {}, ctx);
 		expect(result).toBeNull();
@@ -159,22 +153,14 @@ describe("AgendaItem.creator resolver", () => {
 	it("returns current user when creatorId matches current user", async () => {
 		mockAgendaItem.creatorId = "user-123";
 
-		const currentUser = {
-			id: "user-123",
-			role: "administrator",
-		};
+		const currentUser = { id: "user-123", role: "administrator" };
 
 		mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValue(
 			currentUser,
 		);
-		mocks.drizzleClient.query.agendaFoldersTable.findFirst.mockResolvedValue({
-			isAgendaItemFolder: true,
-			event: {
-				organization: {
-					membershipsWhereOrganization: [],
-				},
-			},
-		} as never);
+		mocks.drizzleClient.query.agendaFoldersTable.findFirst.mockResolvedValue(
+			createMockAgendaFolder() as unknown as Record<string, unknown>,
+		);
 
 		const result = await resolveCreator(mockAgendaItem, {}, ctx);
 		expect(result).toEqual(currentUser);
@@ -184,51 +170,32 @@ describe("AgendaItem.creator resolver", () => {
 		mockAgendaItem.creatorId = "creator-456";
 
 		mocks.drizzleClient.query.usersTable.findFirst
-			.mockResolvedValueOnce({
-				id: "user-123",
-				role: "administrator",
-			})
+			.mockResolvedValueOnce({ id: "user-123", role: "administrator" })
 			.mockResolvedValueOnce(undefined);
 
-		mocks.drizzleClient.query.agendaFoldersTable.findFirst.mockResolvedValue({
-			isAgendaItemFolder: true,
-			event: {
-				organization: {
-					membershipsWhereOrganization: [],
-				},
-			},
-		} as never);
+		mocks.drizzleClient.query.agendaFoldersTable.findFirst.mockResolvedValue(
+			createMockAgendaFolder() as unknown as Record<string, unknown>,
+		);
 
 		await expect(resolveCreator(mockAgendaItem, {}, ctx)).rejects.toThrow(
 			new TalawaGraphQLError({ extensions: { code: "unexpected" } }),
 		);
 
 		expect(ctx.log.error).toHaveBeenCalledWith(
-			"Postgres select operation returned an empty array for an agenda folder's creator id that isn't null.",
+			"Postgres select operation returned an empty array for an agenda item's creator id that isn't null.",
 		);
 	});
 
 	it("returns creator user when authorized and creator differs from current user", async () => {
-		const creatorUser = {
-			id: "creator-123",
-			role: "member",
-		};
+		const creatorUser = { id: "creator-123", role: "member" };
 
 		mocks.drizzleClient.query.usersTable.findFirst
-			.mockResolvedValueOnce({
-				id: "user-123",
-				role: "administrator",
-			})
+			.mockResolvedValueOnce({ id: "user-123", role: "administrator" })
 			.mockResolvedValueOnce(creatorUser);
 
-		mocks.drizzleClient.query.agendaFoldersTable.findFirst.mockResolvedValue({
-			isAgendaItemFolder: true,
-			event: {
-				organization: {
-					membershipsWhereOrganization: [],
-				},
-			},
-		} as never);
+		mocks.drizzleClient.query.agendaFoldersTable.findFirst.mockResolvedValue(
+			createMockAgendaFolder() as unknown as Record<string, unknown>,
+		);
 
 		const result = await resolveCreator(mockAgendaItem, {}, ctx);
 		expect(result).toEqual(creatorUser);
