@@ -52,7 +52,7 @@ const Mutation_createVenue = graphql(`
  * - Achieves 100% statement coverage with all business logic tested.
  *
  * Known Validation Gaps:
- * - Negative capacity values (e.g., -10) are currently accepted by the API
+ * - Negative capacity values (e.g., -10) are rejected by the API
  * - Whitespace-only names (e.g., " ") are currently accepted by the API
  * - Consider adding validation in createVenue.ts resolver for these edge cases
  *
