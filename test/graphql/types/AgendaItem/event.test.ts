@@ -1,5 +1,5 @@
 import { createMockGraphQLContext } from "test/_Mocks_/mockContextCreator/mockContextCreator";
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it } from "vitest";
 import type { GraphQLContext } from "~/src/graphql/context";
 import type { AgendaItem as AgendaItemType } from "~/src/graphql/types/AgendaItem/AgendaItem";
 import { resolveEvent } from "~/src/graphql/types/AgendaItem/event";
@@ -59,15 +59,13 @@ describe("AgendaItem.event resolver", () => {
 			undefined,
 		);
 
-		const logSpy = vi.spyOn(ctx.log, "error");
-
 		await expect(resolveEvent(mockAgendaItem, {}, ctx)).rejects.toThrow(
 			new TalawaGraphQLError({
 				extensions: { code: "unexpected" },
 			}),
 		);
 
-		expect(logSpy).toHaveBeenCalledWith(
+		expect(ctx.log.error).toHaveBeenCalledWith(
 			"Postgres select operation returned an empty array for an agenda item's event id that isn't null.",
 		);
 	});

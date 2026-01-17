@@ -81,9 +81,6 @@ describe("AgendaItem.folder resolver", () => {
 	it("returns agenda folder when it exists", async () => {
 		const { context, mocks } = createMockGraphQLContext(true, "user-1");
 
-		context.currentClient.isAuthenticated = true;
-		context.currentClient.user = { id: "user-1" };
-
 		const agendaFolder = {
 			id: "folder-1",
 			event: {
@@ -109,12 +106,34 @@ describe("AgendaItem.folder resolver", () => {
 		expect(result).toBe(agendaFolder);
 	});
 
-	it("throws unexpected error when agenda folder does not exist", async () => {
+	it("returns agenda folder when org membership grants admin access", async () => {
 		const { context, mocks } = createMockGraphQLContext(true, "user-1");
 
-		// ensure authenticated
-		context.currentClient.isAuthenticated = true;
-		context.currentClient.user = { id: "user-1" };
+		mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValueOnce({
+			id: "user-1",
+			role: "user", // NOT administrator
+		} as never);
+
+		const agendaFolder = {
+			id: "folder-1",
+			event: {
+				organization: {
+					membershipsWhereOrganization: [{ role: "administrator" }], // org admin
+				},
+			},
+		};
+
+		mocks.drizzleClient.query.agendaFoldersTable.findFirst.mockResolvedValueOnce(
+			agendaFolder as never,
+		);
+
+		const result = await resolveFolder(mockParent, {}, context);
+
+		expect(result).toBe(agendaFolder);
+	});
+
+	it("throws unexpected error when agenda folder does not exist", async () => {
+		const { context, mocks } = createMockGraphQLContext(true, "user-1");
 
 		// user exists
 		mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValueOnce({

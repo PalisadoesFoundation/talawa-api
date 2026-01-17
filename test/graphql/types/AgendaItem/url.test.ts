@@ -1,3 +1,4 @@
+import { createMockGraphQLContext } from "test/_Mocks_/mockContextCreator/mockContextCreator";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { GraphQLContext } from "~/src/graphql/context";
 import type { AgendaItem as AgendaItemType } from "~/src/graphql/types/AgendaItem/AgendaItem";
@@ -5,42 +6,26 @@ import { resolveUrl } from "~/src/graphql/types/AgendaItem/url";
 
 describe("AgendaItem.url resolver", () => {
 	let ctx: GraphQLContext;
+	let mocks: ReturnType<typeof createMockGraphQLContext>["mocks"];
 
 	beforeEach(() => {
-		ctx = {
-			currentClient: {
-				isAuthenticated: true,
-				user: {
-					id: "user-1",
+		const result = createMockGraphQLContext(true, "user-1");
+		ctx = result.context;
+		mocks = result.mocks;
+
+		// Set up default mocks for URL resolver
+		mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValue({
+			id: "user-1",
+			role: "administrator",
+		});
+		mocks.drizzleClient.query.agendaFoldersTable.findFirst.mockResolvedValue({
+			id: "folder-1",
+			event: {
+				organization: {
+					membershipsWhereOrganization: [{ role: "administrator" }],
 				},
 			},
-			drizzleClient: {
-				query: {
-					usersTable: {
-						findFirst: vi.fn().mockResolvedValue({
-							id: "user-1",
-							role: "administrator",
-						}),
-					},
-					agendaFoldersTable: {
-						findFirst: vi.fn().mockResolvedValue({
-							id: "folder-1",
-							event: {
-								organization: {
-									membershipsWhereOrganization: [{ role: "administrator" }],
-								},
-							},
-						}),
-					},
-					agendaItemUrlTable: {
-						findMany: vi.fn(),
-					},
-				},
-			},
-			log: {
-				error: vi.fn(),
-			},
-		} as unknown as GraphQLContext;
+		});
 	});
 
 	it("throws unauthenticated when client is not authenticated", async () => {

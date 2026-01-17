@@ -3,6 +3,7 @@ import {
 	MutationCreateAgendaItemInput,
 	mutationCreateAgendaItemInputSchema,
 } from "~/src/graphql/inputs/MutationCreateAgendaItemInput";
+import { AGENDA_ITEM_NOTES_MAX_LENGTH } from "~/src/drizzle/tables/agendaItems";
 
 /**
  * Tests for MutationCreateAgendaItemInput schema validation.
@@ -68,7 +69,7 @@ describe("MutationCreateAgendaItemInput Schema", () => {
 		it("should accept notes within max length", () => {
 			const result = mutationCreateAgendaItemInputSchema.safeParse({
 				...validBaseInput,
-				notes: "a".repeat(2048),
+				notes: "a".repeat(AGENDA_ITEM_NOTES_MAX_LENGTH),
 			});
 			expect(result.success).toBe(true);
 		});
@@ -76,7 +77,7 @@ describe("MutationCreateAgendaItemInput Schema", () => {
 		it("should reject notes exceeding max length", () => {
 			const result = mutationCreateAgendaItemInputSchema.safeParse({
 				...validBaseInput,
-				notes: "a".repeat(2049),
+				notes: "a".repeat(AGENDA_ITEM_NOTES_MAX_LENGTH + 1),
 			});
 			expect(result.success).toBe(false);
 		});
