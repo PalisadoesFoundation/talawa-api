@@ -5,8 +5,14 @@ describe("metricsCacheProxy", () => {
 	let mockCache: {
 		get: ReturnType<typeof vi.fn<(key: string) => Promise<unknown>>>;
 		mget?: ReturnType<typeof vi.fn<(keys: string[]) => Promise<unknown[]>>>;
-		set: ReturnType<typeof vi.fn<(key: string, value: unknown, ttl: number) => Promise<unknown>>>;
-		del: ReturnType<typeof vi.fn<(keys: string | string[]) => Promise<unknown>>>;
+		set: ReturnType<
+			typeof vi.fn<
+				(key: string, value: unknown, ttl: number) => Promise<unknown>
+			>
+		>;
+		del: ReturnType<
+			typeof vi.fn<(keys: string | string[]) => Promise<unknown>>
+		>;
 	};
 	let mockPerf: {
 		trackCacheHit: ReturnType<typeof vi.fn<() => void>>;
