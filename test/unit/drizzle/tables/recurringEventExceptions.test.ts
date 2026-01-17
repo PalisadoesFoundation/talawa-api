@@ -113,8 +113,8 @@ describe("src/drizzle/tables/recurringEventExceptions.ts", () => {
 					expect(eventExceptionsTable.creatorId.columnType).toBe("PgUUID");
 				});
 
-				it("should be not null", () => {
-					expect(eventExceptionsTable.creatorId.notNull).toBe(true);
+				it("should be nullable", () => {
+					expect(eventExceptionsTable.creatorId.notNull).toBe(false);
 				});
 			});
 
