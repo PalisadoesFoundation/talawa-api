@@ -222,8 +222,7 @@ Event.implement({
 				"A boolean flag indicating if this event was generated from a recurrence template.",
 			resolve: (event) => {
 				if ("isGenerated" in event) {
-					// biome-ignore lint/suspicious/noExplicitAny: Type assertion needed for dynamic property
-					return (event as any).isGenerated ?? false;
+					return (event as { isGenerated?: boolean }).isGenerated ?? false;
 				}
 				return false;
 			},
