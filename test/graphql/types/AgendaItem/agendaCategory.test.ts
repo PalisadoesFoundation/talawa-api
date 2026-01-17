@@ -1,10 +1,13 @@
 import { createMockGraphQLContext } from "test/_Mocks_/mockContextCreator/mockContextCreator";
-import { describe, expect, it } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { AgendaItem as AgendaItemType } from "~/src/graphql/types/AgendaItem/AgendaItem";
 import { resolveCategory } from "~/src/graphql/types/AgendaItem/agendaCategory";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 
 describe("AgendaItem.category resolver (resolveCategory)", () => {
+	beforeEach(() => {
+		vi.clearAllMocks();
+	});
 	const baseAgendaItem = {
 		categoryId: "123e4567-e89b-12d3-a456-426614174000",
 	} as AgendaItemType;
