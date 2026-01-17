@@ -1,9 +1,9 @@
 import { describe, expect, it } from "vitest";
+import { AGENDA_ITEM_NOTES_MAX_LENGTH } from "~/src/drizzle/tables/agendaItems";
 import {
 	MutationCreateAgendaItemInput,
 	mutationCreateAgendaItemInputSchema,
 } from "~/src/graphql/inputs/MutationCreateAgendaItemInput";
-import { AGENDA_ITEM_NOTES_MAX_LENGTH } from "~/src/drizzle/tables/agendaItems";
 
 /**
  * Tests for MutationCreateAgendaItemInput schema validation.
