@@ -254,7 +254,7 @@ describe("MetricsCacheService", () => {
 					providedTtl: 0,
 					usingDefault: 300,
 				}),
-				"Non-positive TTL provided, using default",
+				"Invalid TTL provided (non-finite or non-positive), using default",
 			);
 			// Should still cache with default TTL
 			expect(cache.operations).toContainEqual(
@@ -277,7 +277,7 @@ describe("MetricsCacheService", () => {
 					providedTtl: -100,
 					usingDefault: 300,
 				}),
-				"Non-positive TTL provided, using default",
+				"Invalid TTL provided (non-finite or non-positive), using default",
 			);
 		});
 	});
@@ -599,7 +599,7 @@ describe("MetricsCacheService", () => {
 					providedTtl: 0,
 					usingDefault: 3600, // hourly default
 				}),
-				"Non-positive TTL provided, using default",
+				"Invalid TTL provided (non-finite or non-positive), using default",
 			);
 			// Should still cache with default TTL
 			expect(cache.operations).toContainEqual(
@@ -626,7 +626,7 @@ describe("MetricsCacheService", () => {
 					providedTtl: -50,
 					usingDefault: 86400, // daily default
 				}),
-				"Non-positive TTL provided, using default",
+				"Invalid TTL provided (non-finite or non-positive), using default",
 			);
 		});
 	});
