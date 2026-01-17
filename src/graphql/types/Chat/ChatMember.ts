@@ -1,5 +1,5 @@
 import type { z } from "zod";
-import { chatMembershipRoleEnum } from "~/src/drizzle/enums/chatMembershipRole";
+import type { chatMembershipRoleEnum } from "~/src/drizzle/enums/chatMembershipRole";
 import { builder } from "~/src/graphql/builder";
 import { ChatMembershipRole } from "~/src/graphql/enums/ChatMembershipRole";
 import type { User } from "~/src/graphql/types/User/User";

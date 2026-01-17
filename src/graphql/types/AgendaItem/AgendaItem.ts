@@ -34,8 +34,7 @@ AgendaItem.implement({
 		}),
 		type: t.field({
 			description: "Type of the agenda item.",
-			resolve: (parent) =>
-				parent.type as z.infer<typeof agendaItemTypeEnum>,
+			resolve: (parent) => parent.type as z.infer<typeof agendaItemTypeEnum>,
 			type: AgendaItemType,
 		}),
 	}),
