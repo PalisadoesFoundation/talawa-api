@@ -243,6 +243,24 @@ describe("MutationCreateAgendaItemInput Schema", () => {
 	});
 
 	describe("required fields validation", () => {
+		it("should accept duration for type general", () => {
+			const result = mutationCreateAgendaItemInputSchema.safeParse({
+				...validBaseInput,
+				type: "general",
+				duration: "10m",
+			});
+			expect(result.success).toBe(true);
+		});
+
+		it("should accept duration for type song", () => {
+			const result = mutationCreateAgendaItemInputSchema.safeParse({
+				...validBaseInput,
+				type: "song",
+				duration: "10m",
+			});
+			expect(result.success).toBe(true);
+		});
+
 		it("should reject missing eventId", () => {
 			const { eventId: _eventId, ...input } = validBaseInput;
 			const result = mutationCreateAgendaItemInputSchema.safeParse(input);

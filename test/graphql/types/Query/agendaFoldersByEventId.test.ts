@@ -371,15 +371,11 @@ suite("Query field agendaFoldersByEventId", () => {
 
 		expect(result.errors).toBeUndefined();
 		expect(result.data?.agendaFoldersByEventId).toHaveLength(1);
-		expect(result.data?.agendaFoldersByEventId).toEqual(
-			expect.arrayContaining([
-				expect.objectContaining({
-					name: "Default",
-					description: "Default agenda folder",
-					sequence: 1,
-				}),
-			]),
-		);
+		expect(result.data?.agendaFoldersByEventId?.[0]).toMatchObject({
+			name: "Default",
+			description: "Default agenda folder",
+			sequence: 1,
+		});
 	});
 
 	test("Returns agenda folders for event", async () => {

@@ -1,132 +1,160 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
-import { escapeHTML } from "~/src/utilities/sanitizer";
+import { beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
+import type { AgendaItem } from "~/src/graphql/types/AgendaItem/AgendaItem";
 
-// Mock the escapeHTML function
+// 1. Hoisted mocks (same pattern as Advertisement)
+const { implementSpy, objectRefSpy } = vi.hoisted(() => {
+	const implement = vi.fn();
+	const objectRef = vi.fn(() => ({ implement }));
+	return { implementSpy: implement, objectRefSpy: objectRef };
+});
+
+vi.mock("~/src/graphql/builder", () => ({
+	builder: {
+		objectRef: objectRefSpy,
+	},
+}));
+
 vi.mock("~/src/utilities/sanitizer", () => ({
 	escapeHTML: vi.fn((str: string) => `escaped_${str}`),
 }));
 
-// Mock the builder - simplified approach without capturing resolvers
-vi.mock("~/src/graphql/builder", () => ({
-	builder: {
-		objectRef: vi.fn(() => ({
-			implement: vi.fn(),
-		})),
-	},
-}));
-
-// Mock AgendaItemType enum
 vi.mock("~/src/graphql/enums/AgendaItemType", () => ({
 	AgendaItemType: {},
 }));
 
-/**
- * Test for output-level HTML escaping in AgendaItem resolver.
- *
- * API Contract: Raw HTML strings are stored in the database as-is.
- * HTML escaping is applied at resolver output time (not at input/storage time).
- * This prevents XSS while avoiding data corruption and double-escaping issues.
- *
- * The AgendaItem resolver in src/graphql/types/AgendaItem/AgendaItem.ts
- * applies escapeHTML() to the name and description fields when resolving.
- */
+// Import mocked function AFTER vi.mock
+import { escapeHTML } from "~/src/utilities/sanitizer";
 
-describe("AgendaItem output-level HTML escaping", () => {
-	// Clear mocks between tests to isolate mock state
+describe("AgendaItem GraphQL Type", () => {
+	/**
+	 * Strongly-typed resolver map
+	 * (this is what fixes the TS18048 error)
+	 */
+	interface FieldResolvers {
+		name: {
+			resolve: (parent: AgendaItem) => string;
+		};
+		description: {
+			resolve: (parent: AgendaItem) => string | null;
+		};
+		notes: {
+			resolve: (parent: AgendaItem) => string | null;
+		};
+		[key: string]: unknown;
+	}
+
+	let fieldResolvers: FieldResolvers;
+
+	beforeAll(async () => {
+		// Import the module AFTER mocks are ready
+		await import("~/src/graphql/types/AgendaItem/AgendaItem");
+
+		if (implementSpy.mock.calls.length === 0) {
+			throw new Error(
+				"AgendaItem.implement was not called. Module mocking issue?",
+			);
+		}
+
+		const implementCall = implementSpy.mock.calls[0]?.[0];
+		const fieldsFactory = implementCall.fields;
+
+		// Stub `t` to capture resolver configs
+		const tStub = {
+			string: vi.fn((opts) => opts),
+			exposeString: vi.fn((_name, opts) => opts),
+			exposeID: vi.fn((_name, opts) => opts),
+			exposeInt: vi.fn((_name, opts) => opts),
+			expose: vi.fn((_name, opts) => opts),
+		};
+
+		fieldResolvers = fieldsFactory(tStub) as FieldResolvers;
+	});
+
 	beforeEach(() => {
 		vi.clearAllMocks();
 	});
 
+	/* -------------------- name -------------------- */
+
 	describe("name field resolver", () => {
-		it("should escape HTML in name field", () => {
+		it("escapes HTML in name", () => {
 			const agendaItem = {
-				id: "test-id",
-				name: '<script>alert("XSS")</script>',
-				description: null,
-				type: "regular",
-			};
+				id: "id-1",
+				name: "<script>alert(1)</script>",
+			} as AgendaItem;
 
-			// Test the resolver logic directly - name is always escaped
-			const result = escapeHTML(agendaItem.name);
+			const result = fieldResolvers.name.resolve(agendaItem);
 
-			expect(result).toBe('escaped_<script>alert("XSS")</script>');
-			expect(escapeHTML).toHaveBeenCalledWith('<script>alert("XSS")</script>');
-			expect(escapeHTML).toHaveBeenCalledTimes(1);
+			expect(result).toBe("escaped_<script>alert(1)</script>");
+			expect(escapeHTML).toHaveBeenCalledWith("<script>alert(1)</script>");
+		});
+
+		it("handles empty string name", () => {
+			const agendaItem = {
+				id: "id-1",
+				name: "",
+			} as AgendaItem;
+
+			const result = fieldResolvers.name.resolve(agendaItem);
+
+			expect(result).toBe("escaped_");
+			expect(escapeHTML).toHaveBeenCalledWith("");
 		});
 	});
+
+	/* -------------------- description -------------------- */
 
 	describe("description field resolver", () => {
-		it("should return null when description is null", () => {
+		it("returns null when description is null", () => {
 			const agendaItem = {
-				id: "test-id",
-				name: "Test Agenda Item",
+				id: "id-1",
 				description: null,
-				type: "regular",
-			};
+			} as AgendaItem;
 
-			// Test the resolver logic directly - mimics the ternary in AgendaItem.ts
-			const result = agendaItem.description
-				? escapeHTML(agendaItem.description)
-				: null;
+			const result = fieldResolvers.description.resolve(agendaItem);
 
-			expect(result).toBe(null);
-			// escapeHTML should not be called for null description
+			expect(result).toBeNull();
 			expect(escapeHTML).not.toHaveBeenCalled();
 		});
 
-		it("should escape HTML in description when provided", () => {
+		it("escapes HTML when description exists", () => {
 			const agendaItem = {
-				id: "test-id",
-				name: "Test Agenda Item",
-				description: '<img src="x" onerror="alert(1)">',
-				type: "regular",
-			};
+				id: "id-1",
+				description: "<b>bold</b>",
+			} as AgendaItem;
 
-			// Test the resolver logic directly
-			const result = agendaItem.description
-				? escapeHTML(agendaItem.description)
-				: null;
+			const result = fieldResolvers.description.resolve(agendaItem);
 
-			expect(result).toBe('escaped_<img src="x" onerror="alert(1)">');
-			expect(escapeHTML).toHaveBeenCalledWith(
-				'<img src="x" onerror="alert(1)">',
-			);
-			expect(escapeHTML).toHaveBeenCalledTimes(1);
-		});
-
-		it("should handle empty string description", () => {
-			const agendaItem = {
-				id: "test-id",
-				name: "Test Agenda Item",
-				description: "",
-				type: "regular",
-			};
-
-			// Empty string is falsy, so should return null
-			const result = agendaItem.description
-				? escapeHTML(agendaItem.description)
-				: null;
-
-			expect(result).toBe(null);
-			// escapeHTML should not be called for empty string
-			expect(escapeHTML).not.toHaveBeenCalled();
+			expect(result).toBe("escaped_<b>bold</b>");
+			expect(escapeHTML).toHaveBeenCalledWith("<b>bold</b>");
 		});
 	});
 
-	describe("ampersand escaping", () => {
-		it("should handle ampersand escaping correctly", () => {
+	/* -------------------- notes -------------------- */
+
+	describe("notes field resolver", () => {
+		it("returns null when notes are null", () => {
 			const agendaItem = {
-				id: "test-id",
-				name: "Tom & Jerry <3 Programming",
-				description: null,
-				type: "regular",
-			};
+				id: "id-1",
+				notes: null,
+			} as AgendaItem;
 
-			const result = escapeHTML(agendaItem.name);
+			const result = fieldResolvers.notes.resolve(agendaItem);
 
-			expect(result).toBe("escaped_Tom & Jerry <3 Programming");
-			expect(escapeHTML).toHaveBeenCalledWith("Tom & Jerry <3 Programming");
-			expect(escapeHTML).toHaveBeenCalledTimes(1);
+			expect(result).toBeNull();
+			expect(escapeHTML).not.toHaveBeenCalled();
+		});
+
+		it("escapes HTML when notes exist", () => {
+			const agendaItem = {
+				id: "id-1",
+				notes: "Tom & Jerry <3",
+			} as AgendaItem;
+
+			const result = fieldResolvers.notes.resolve(agendaItem);
+
+			expect(result).toBe("escaped_Tom & Jerry <3");
+			expect(escapeHTML).toHaveBeenCalledWith("Tom & Jerry <3");
 		});
 	});
 });

@@ -248,6 +248,7 @@ builder.mutationField("createAgendaItem", (t) =>
 						folderId: resolvedFolderId,
 						key: parsedArgs.input.key,
 						name: parsedArgs.input.name,
+						notes: parsedArgs.input.notes,
 						sequence: parsedArgs.input.sequence,
 						type: parsedArgs.input.type,
 					})

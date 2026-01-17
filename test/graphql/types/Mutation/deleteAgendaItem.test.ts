@@ -304,7 +304,7 @@ suite("Mutation field deleteAgendaItem", () => {
 			server.drizzleClient,
 		);
 
-		vi.spyOn(server.drizzleClient, "delete").mockImplementationOnce((table) => {
+		vi.spyOn(server.drizzleClient, "delete").mockImplementation((table) => {
 			if (table === agendaItemsTable) {
 				// 👇 Intentional partial mock – escape typing safely
 				return {

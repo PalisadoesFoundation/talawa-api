@@ -45,6 +45,41 @@ describe("AgendaItem.creator resolver", () => {
 		);
 	});
 
+	it("allows access when user is organization administrator but not system administrator", async () => {
+		const creatorUser = {
+			id: "creator-123",
+			role: "member",
+		};
+
+		// current user is NOT system admin
+		mocks.drizzleClient.query.usersTable.findFirst
+			// first call → current user
+			.mockResolvedValueOnce({
+				id: "user-123",
+				role: "member",
+			})
+			// second call → creator user
+			.mockResolvedValueOnce(creatorUser);
+
+		// user IS org admin
+		mocks.drizzleClient.query.agendaFoldersTable.findFirst.mockResolvedValue({
+			isAgendaItemFolder: true,
+			event: {
+				organization: {
+					membershipsWhereOrganization: [
+						{
+							role: "administrator",
+						},
+					],
+				},
+			},
+		} as never);
+
+		const result = await resolveCreator(mockAgendaItem, {}, ctx);
+
+		expect(result).toEqual(creatorUser);
+	});
+
 	it("throws unexpected when agenda folder does not exist", async () => {
 		mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValue({
 			id: "user-123",
