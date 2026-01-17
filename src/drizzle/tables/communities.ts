@@ -44,12 +44,12 @@ export const communitiesTable = pgTable("communities", {
 	 * URL to the linkedin account of the community.
 	 */
 	linkedinURL: text("linkedin_url"),
-		/**
-		 * Mime type of the logo of the community.
-		 */
-		logoMimeType: text("logo_mime_type", {
-			enum: imageMimeTypeEnum.options as [string, ...string[]],
-		}),
+	/**
+	 * Mime type of the logo of the community.
+	 */
+	logoMimeType: text("logo_mime_type", {
+		enum: imageMimeTypeEnum.options as [string, ...string[]],
+	}),
 	/**
 	 * Primary unique identifier of the community's logo.
 	 */

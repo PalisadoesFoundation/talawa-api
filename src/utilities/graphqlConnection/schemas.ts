@@ -33,14 +33,12 @@ export const defaultGraphQLConnectionArgumentsSchema = z.object({
  * @param whereSchema - The Zod schema for the where clause
  * @returns - A Zod schema for connection arguments with the where clause
  */
-export const createGraphQLConnectionWithWhereSchema = <
-	T extends z.ZodTypeAny,
->(
+export const createGraphQLConnectionWithWhereSchema = <T extends z.ZodTypeAny>(
 	whereSchema: T,
 ) => {
 	return defaultGraphQLConnectionArgumentsSchema.extend({
-		where: (whereSchema.nullable().optional() as unknown as z.ZodTypeAny).default(
-			{},
-		),
+		where: (
+			whereSchema.nullable().optional() as unknown as z.ZodTypeAny
+		).default({}),
 	});
 };
