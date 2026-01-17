@@ -165,9 +165,81 @@ describe("src/drizzle/tables/chats.ts - Table Definition Tests", () => {
 			expect(typeof chatsTableRelations).toBe("object");
 		});
 
-		it("should have relations configured for chats table", () => {
-			// Relations are defined and accessible through the relations object
-			expect(chatsTableRelations).toBeDefined();
+		it("should have all expected relation entries with correct types", () => {
+			// Verify all five expected relations exist
+			// Drizzle relations are accessed via the relations object
+			// We check that the relations object has the expected structure
+			const relationsObj = chatsTableRelations as unknown as Record<
+				string,
+				unknown
+			>;
+			const expectedRelations = [
+				"creator",
+				"organization",
+				"updater",
+				"chatMembershipsWhereChat",
+				"chatMessagesWhereChat",
+			];
+
+			for (const relationKey of expectedRelations) {
+				expect(relationsObj).toHaveProperty(relationKey);
+				expect(Object.hasOwn(relationsObj, relationKey)).toBe(true);
+				// Relations are objects containing relation configuration
+				const relation = relationsObj[relationKey];
+				expect(relation).toBeDefined();
+				expect(typeof relation).toBe("object");
+				expect(relation).not.toBeNull();
+			}
+		});
+
+		it("should have creator relation configured correctly", () => {
+			const relationsObj = chatsTableRelations as unknown as Record<
+				string,
+				unknown
+			>;
+			expect(relationsObj.creator).toBeDefined();
+			expect(typeof relationsObj.creator).toBe("object");
+			expect(relationsObj.creator).not.toBeNull();
+		});
+
+		it("should have organization relation configured correctly", () => {
+			const relationsObj = chatsTableRelations as unknown as Record<
+				string,
+				unknown
+			>;
+			expect(relationsObj.organization).toBeDefined();
+			expect(typeof relationsObj.organization).toBe("object");
+			expect(relationsObj.organization).not.toBeNull();
+		});
+
+		it("should have updater relation configured correctly", () => {
+			const relationsObj = chatsTableRelations as unknown as Record<
+				string,
+				unknown
+			>;
+			expect(relationsObj.updater).toBeDefined();
+			expect(typeof relationsObj.updater).toBe("object");
+			expect(relationsObj.updater).not.toBeNull();
+		});
+
+		it("should have chatMembershipsWhereChat relation configured correctly", () => {
+			const relationsObj = chatsTableRelations as unknown as Record<
+				string,
+				unknown
+			>;
+			expect(relationsObj.chatMembershipsWhereChat).toBeDefined();
+			expect(typeof relationsObj.chatMembershipsWhereChat).toBe("object");
+			expect(relationsObj.chatMembershipsWhereChat).not.toBeNull();
+		});
+
+		it("should have chatMessagesWhereChat relation configured correctly", () => {
+			const relationsObj = chatsTableRelations as unknown as Record<
+				string,
+				unknown
+			>;
+			expect(relationsObj.chatMessagesWhereChat).toBeDefined();
+			expect(typeof relationsObj.chatMessagesWhereChat).toBe("object");
+			expect(relationsObj.chatMessagesWhereChat).not.toBeNull();
 		});
 	});
 
@@ -609,14 +681,15 @@ describe("src/drizzle/tables/chats.ts - Table Definition Tests", () => {
 	});
 
 	describe("Index Configuration", () => {
-		it("should have indexes defined on creatorId, name, organizationId, and updaterId", () => {
-			// Verify indexes are defined by checking the table definition structure
-			// Indexes are defined in the second parameter of pgTable
+		it("should have indexed columns present (creatorId, name, organizationId, updaterId)", () => {
+			// Verify that columns that should be indexed exist in the table definition
+			// Note: This test verifies column presence, not actual index metadata
+			// Drizzle doesn't expose index metadata directly, but indexes are defined
+			// in the table definition's second parameter
 			const tableDefinition = chatsTable;
 			expect(tableDefinition).toBeDefined();
 
-			// Test index effectiveness by querying with indexed columns
-			// This ensures the indexes are properly configured
+			// Assert that the columns that should be indexed are present
 			expect(tableDefinition.creatorId).toBeDefined();
 			expect(tableDefinition.name).toBeDefined();
 			expect(tableDefinition.organizationId).toBeDefined();
