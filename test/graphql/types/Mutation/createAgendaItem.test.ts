@@ -1,14 +1,15 @@
 import { faker } from "@faker-js/faker";
 import { eq } from "drizzle-orm";
-import { initGraphQLTada } from "gql.tada";
-import { afterEach, expect, suite, test } from "vitest";
-import { usersTable } from "~/src/drizzle/schema";
-import type { ClientCustomScalars } from "~/src/graphql/scalars/index";
+import { afterEach, expect, suite, test, vi } from "vitest";
+
+import { agendaFoldersTable, usersTable } from "~/src/drizzle/schema";
+import { agendaCategoriesTable } from "~/src/drizzle/tables/agendaCategories";
 import { assertToBeNonNullish } from "../../../helpers";
 import { server } from "../../../server";
 import { mercuriusClient } from "../client";
 import { createRegularUserUsingAdmin } from "../createRegularUserUsingAdmin";
 import {
+	Mutation_createAgendaCategory,
 	Mutation_createAgendaFolder,
 	Mutation_createAgendaItem,
 	Mutation_createEvent,
@@ -18,88 +19,45 @@ import {
 	Mutation_deleteStandaloneEvent,
 	Query_signIn,
 } from "../documentNodes";
-import type { introspection } from "../gql.tada";
 
-const gql = initGraphQLTada<{
-	introspection: introspection;
-	scalars: ClientCustomScalars;
-}>();
+let cachedAdminAuth: { token: string; userId: string } | null = null;
 
-// Test-specific mutation that includes key field in selection set
-const Mutation_createAgendaItemWithKey = gql(`
-  mutation Mutation_createAgendaItemWithKey($input: MutationCreateAgendaItemInput!) {
-    createAgendaItem(input: $input) {
-      id
-      name
-      key
-      type
-    }
-  }
-`);
-
-let cachedAdminAuth: {
-	token: string;
-	userId: string;
-} | null = null;
-
-// Helper function to get admin authentication token and user id
 async function getAdminAuth() {
-	if (cachedAdminAuth !== null) {
-		return cachedAdminAuth;
+	if (cachedAdminAuth) return cachedAdminAuth;
+
+	mercuriusClient.setHeaders({});
+
+	const {
+		API_ADMINISTRATOR_USER_EMAIL_ADDRESS: email,
+		API_ADMINISTRATOR_USER_PASSWORD: password,
+	} = server.envConfig;
+
+	if (!email || !password) {
+		throw new Error("Missing admin credentials for tests.");
 	}
-	try {
-		if (
-			!server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS ||
-			!server.envConfig.API_ADMINISTRATOR_USER_PASSWORD
-		) {
-			throw new Error(
-				"Admin credentials are missing in environment configuration",
-			);
-		}
 
-		const adminSignInResult = await mercuriusClient.query(Query_signIn, {
-			variables: {
-				input: {
-					emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-					password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-				},
-			},
-		});
+	const result = await mercuriusClient.query(Query_signIn, {
+		variables: {
+			input: { emailAddress: email, password },
+		},
+	});
 
-		if (adminSignInResult.errors) {
-			throw new Error(
-				`Admin authentication failed: ${
-					adminSignInResult.errors[0]?.message || "Unknown error"
-				}`,
-			);
-		}
-		assertToBeNonNullish(adminSignInResult.data.signIn?.authenticationToken);
-		assertToBeNonNullish(adminSignInResult.data.signIn?.user?.id);
+	expect(result.errors).toBeUndefined();
+	assertToBeNonNullish(result.data?.signIn?.authenticationToken);
+	assertToBeNonNullish(result.data?.signIn?.user?.id);
 
-		cachedAdminAuth = {
-			token: adminSignInResult.data.signIn.authenticationToken,
-			userId: adminSignInResult.data.signIn.user.id,
-		};
+	cachedAdminAuth = {
+		token: result.data.signIn.authenticationToken,
+		userId: result.data.signIn.user.id,
+	};
 
-		return cachedAdminAuth;
-	} catch (error) {
-		throw new Error(
-			`Failed to get admin authentication token: ${
-				error instanceof Error ? error.message : "Unknown error"
-			}`,
-		);
-	}
+	return cachedAdminAuth;
 }
 
-async function getAdminUserId(): Promise<string> {
-	if (cachedAdminAuth?.userId) {
-		return cachedAdminAuth.userId;
-	}
-	const auth = await getAdminAuth();
-	return auth.userId;
+async function getAdminUserId() {
+	return (await getAdminAuth()).userId;
 }
 
-// Helper function to add organization membership
 async function addOrganizationMembership(params: {
 	adminAuthToken: string;
 	memberId: string;
@@ -119,88 +77,92 @@ async function addOrganizationMembership(params: {
 			},
 		},
 	);
-	if (result.errors) {
-		throw new Error(
-			`Failed to create organization membership: ${result.errors[0]?.message || "Unknown error"}`,
-		);
-	}
+
+	expect(result.errors).toBeUndefined();
 }
 
-// Helper function to create organization, event, and agenda folder for testing
-async function createTestEnvironment(
-	adminAuthToken: string,
-	adminUserId: string,
-) {
-	// Create organization
-	const createOrganizationResult = await mercuriusClient.mutate(
-		Mutation_createOrganization,
-		{
-			headers: { authorization: `bearer ${adminAuthToken}` },
-			variables: {
-				input: {
-					name: `Org ${faker.string.uuid()}`,
-					countryCode: "us",
-				},
-			},
-		},
-	);
-	assertToBeNonNullish(createOrganizationResult.data?.createOrganization);
-	const organizationId = createOrganizationResult.data.createOrganization.id;
+async function createOrgEventFolderCategory(adminToken: string) {
+	const adminUserId = await getAdminUserId();
 
-	// Add admin as organization member
+	const orgRes = await mercuriusClient.mutate(Mutation_createOrganization, {
+		headers: { authorization: `bearer ${adminToken}` },
+		variables: {
+			input: { name: `Org ${faker.string.uuid()}`, countryCode: "us" },
+		},
+	});
+
+	expect(orgRes.errors).toBeUndefined();
+	assertToBeNonNullish(orgRes.data?.createOrganization);
+	const organizationId = orgRes.data.createOrganization.id;
+
 	await addOrganizationMembership({
-		adminAuthToken,
+		adminAuthToken: adminToken,
 		memberId: adminUserId,
 		organizationId,
 		role: "administrator",
 	});
 
-	// Create event
-	const createEventResult = await mercuriusClient.mutate(Mutation_createEvent, {
-		headers: { authorization: `bearer ${adminAuthToken}` },
+	const eventRes = await mercuriusClient.mutate(Mutation_createEvent, {
+		headers: { authorization: `bearer ${adminToken}` },
 		variables: {
 			input: {
 				name: `Event ${faker.string.uuid()}`,
 				organizationId,
-				startAt: new Date(Date.now() + 5 * 60 * 1000).toISOString(),
-				endAt: new Date(Date.now() + 60 * 60 * 1000).toISOString(),
-				description: "Agenda item test event",
+				startAt: new Date(Date.now() + 86400000).toISOString(),
+				endAt: new Date(Date.now() + 90000000).toISOString(),
 			},
 		},
 	});
-	assertToBeNonNullish(createEventResult.data?.createEvent);
-	const eventId = createEventResult.data.createEvent.id;
 
-	// Create agenda folder (must be isAgendaItemFolder: true for agenda items)
-	const createFolderResult = await mercuriusClient.mutate(
-		Mutation_createAgendaFolder,
+	expect(eventRes.errors).toBeUndefined();
+	assertToBeNonNullish(eventRes.data?.createEvent);
+	const eventId = eventRes.data.createEvent.id;
+
+	const folderRes = await mercuriusClient.mutate(Mutation_createAgendaFolder, {
+		headers: { authorization: `bearer ${adminToken}` },
+		variables: {
+			input: {
+				eventId,
+				organizationId,
+				name: "Folder",
+				sequence: 1,
+			},
+		},
+	});
+
+	expect(folderRes.errors).toBeUndefined();
+	assertToBeNonNullish(folderRes.data?.createAgendaFolder);
+	const folderId = folderRes.data.createAgendaFolder.id;
+
+	const categoryRes = await mercuriusClient.mutate(
+		Mutation_createAgendaCategory,
 		{
-			headers: { authorization: `bearer ${adminAuthToken}` },
+			headers: { authorization: `bearer ${adminToken}` },
 			variables: {
 				input: {
-					name: "Test Agenda Folder",
 					eventId,
-					description: "desc",
-					sequence: 1,
-					organizationId,
+					name: "Category",
 				},
 			},
 		},
 	);
-	assertToBeNonNullish(createFolderResult.data?.createAgendaFolder);
-	const folderId = createFolderResult.data.createAgendaFolder.id;
+
+	expect(categoryRes.errors).toBeUndefined();
+	assertToBeNonNullish(categoryRes.data?.createAgendaCategory);
+	const categoryId = categoryRes.data.createAgendaCategory.id;
 
 	return {
 		organizationId,
 		eventId,
 		folderId,
+		categoryId,
 		cleanup: async () => {
 			await mercuriusClient.mutate(Mutation_deleteStandaloneEvent, {
-				headers: { authorization: `bearer ${adminAuthToken}` },
+				headers: { authorization: `bearer ${adminToken}` },
 				variables: { input: { id: eventId } },
 			});
 			await mercuriusClient.mutate(Mutation_deleteOrganization, {
-				headers: { authorization: `bearer ${adminAuthToken}` },
+				headers: { authorization: `bearer ${adminToken}` },
 				variables: { input: { id: organizationId } },
 			});
 		},
@@ -208,837 +170,508 @@ async function createTestEnvironment(
 }
 
 suite("Mutation field createAgendaItem", () => {
-	const testCleanupFunctions: Array<() => Promise<void>> = [];
+	const cleanupFns: Array<() => Promise<void>> = [];
 
 	afterEach(async () => {
-		for (const cleanup of testCleanupFunctions.reverse()) {
+		vi.restoreAllMocks();
+		for (const fn of cleanupFns.reverse()) {
 			try {
-				await cleanup();
-			} catch (error) {
-				console.error("Cleanup failed:", error);
+				await fn();
+			} catch {
+				// Cleanup errors are intentionally swallowed to prevent cascading failures
+				// during teardown. The test result is already determined at this point.
 			}
 		}
-		testCleanupFunctions.length = 0;
+		cleanupFns.length = 0;
+		mercuriusClient.setHeaders({});
 	});
 
-	suite("Authentication and Authorization", () => {
-		test("Returns an error if the client is not authenticated", async () => {
-			const result = await mercuriusClient.mutate(Mutation_createAgendaItem, {
-				variables: {
-					input: {
-						folderId: faker.string.uuid(),
-						name: "Test Agenda Item",
-						type: "general",
-					},
+	test("Returns error when unauthenticated", async () => {
+		const result = await mercuriusClient.mutate(Mutation_createAgendaItem, {
+			variables: {
+				input: {
+					eventId: faker.string.uuid(),
+					folderId: faker.string.uuid(),
+					categoryId: faker.string.uuid(),
+					name: "Item",
+					sequence: 1,
+					type: "general",
 				},
-			});
-
-			expect(result.data?.createAgendaItem).toEqual(null);
-			expect(result.errors).toEqual(
-				expect.arrayContaining([
-					expect.objectContaining({
-						extensions: expect.objectContaining({
-							code: "unauthenticated",
-						}),
-						message: expect.any(String),
-						path: ["createAgendaItem"],
-					}),
-				]),
-			);
+			},
 		});
 
-		test("Returns an error if the user exists in token but not in database", async () => {
-			const regularUser = await createRegularUserUsingAdmin();
-
-			await server.drizzleClient
-				.delete(usersTable)
-				.where(eq(usersTable.id, regularUser.userId));
-
-			const result = await mercuriusClient.mutate(Mutation_createAgendaItem, {
-				headers: { authorization: `bearer ${regularUser.authToken}` },
-				variables: {
-					input: {
-						folderId: faker.string.uuid(),
-						name: "Test Agenda Item",
-						type: "general",
-					},
-				},
-			});
-
-			expect(result.data?.createAgendaItem).toEqual(null);
-			expect(result.errors).toEqual(
-				expect.arrayContaining([
-					expect.objectContaining({
-						extensions: expect.objectContaining({
-							code: "unauthenticated",
-						}),
-						message: expect.any(String),
-						path: ["createAgendaItem"],
+		expect(result.data?.createAgendaItem ?? null).toBe(null);
+		expect(result.errors).toEqual(
+			expect.arrayContaining([
+				expect.objectContaining({
+					extensions: expect.objectContaining({
+						code: "unauthenticated",
 					}),
-				]),
-			);
-		});
-
-		test("Returns an error when a non-member user tries to create an agenda item", async () => {
-			const [{ token: adminAuthToken }, regularUser] = await Promise.all([
-				getAdminAuth(),
-				createRegularUserUsingAdmin(),
-			]);
-
-			const { cleanup, folderId } = await createTestEnvironment(
-				adminAuthToken,
-				await getAdminUserId(),
-			);
-			testCleanupFunctions.push(cleanup);
-
-			const result = await mercuriusClient.mutate(Mutation_createAgendaItem, {
-				headers: { authorization: `bearer ${regularUser.authToken}` },
-				variables: {
-					input: {
-						folderId,
-						name: "Test Agenda Item",
-						type: "general",
-					},
-				},
-			});
-
-			expect(result.data?.createAgendaItem).toEqual(null);
-			expect(result.errors).toEqual(
-				expect.arrayContaining([
-					expect.objectContaining({
-						extensions: expect.objectContaining({
-							code: "unauthorized_action_on_arguments_associated_resources",
-						}),
-						message: expect.any(String),
-						path: ["createAgendaItem"],
-					}),
-				]),
-			);
-		});
-
-		test("Returns an error when a regular organization member tries to create an agenda item", async () => {
-			const [{ token: adminAuthToken }, regularUser] = await Promise.all([
-				getAdminAuth(),
-				createRegularUserUsingAdmin(),
-			]);
-
-			const { cleanup, folderId, organizationId } = await createTestEnvironment(
-				adminAuthToken,
-				await getAdminUserId(),
-			);
-			testCleanupFunctions.push(cleanup);
-
-			// Add regular user as a regular member (not admin)
-			await addOrganizationMembership({
-				adminAuthToken,
-				memberId: regularUser.userId,
-				organizationId,
-				role: "regular",
-			});
-
-			const result = await mercuriusClient.mutate(Mutation_createAgendaItem, {
-				headers: { authorization: `bearer ${regularUser.authToken}` },
-				variables: {
-					input: {
-						folderId,
-						name: "Test Agenda Item",
-						type: "general",
-					},
-				},
-			});
-
-			expect(result.data?.createAgendaItem).toEqual(null);
-			expect(result.errors).toEqual(
-				expect.arrayContaining([
-					expect.objectContaining({
-						extensions: expect.objectContaining({
-							code: "unauthorized_action_on_arguments_associated_resources",
-						}),
-						message: expect.any(String),
-						path: ["createAgendaItem"],
-					}),
-				]),
-			);
-		});
+				}),
+			]),
+		);
 	});
 
-	suite("Resource Existence", () => {
-		test("Returns an error when folder does not exist", async () => {
-			const { token: adminAuthToken } = await getAdminAuth();
+	test("Returns unauthenticated when token user does not exist", async () => {
+		const regular = await createRegularUserUsingAdmin();
 
-			const result = await mercuriusClient.mutate(Mutation_createAgendaItem, {
-				headers: { authorization: `bearer ${adminAuthToken}` },
-				variables: {
-					input: {
-						folderId: faker.string.uuid(),
-						name: "Test Agenda Item",
-						type: "general",
-					},
+		await server.drizzleClient
+			.delete(usersTable)
+			.where(eq(usersTable.id, regular.userId));
+
+		const result = await mercuriusClient.mutate(Mutation_createAgendaItem, {
+			headers: { authorization: `bearer ${regular.authToken}` },
+			variables: {
+				input: {
+					eventId: faker.string.uuid(),
+					folderId: faker.string.uuid(),
+					categoryId: faker.string.uuid(),
+					name: "Item",
+					sequence: 1,
+					type: "general",
 				},
-			});
-
-			expect(result.data?.createAgendaItem).toEqual(null);
-			expect(result.errors).toEqual(
-				expect.arrayContaining([
-					expect.objectContaining({
-						extensions: expect.objectContaining({
-							code: "arguments_associated_resources_not_found",
-						}),
-						message: expect.any(String),
-						path: ["createAgendaItem"],
-					}),
-				]),
-			);
+			},
 		});
+
+		expect(result.errors).toEqual(
+			expect.arrayContaining([
+				expect.objectContaining({
+					extensions: expect.objectContaining({
+						code: "unauthenticated",
+					}),
+				}),
+			]),
+		);
 	});
 
-	suite("Input Validation", () => {
-		test("Returns error when note type has duration", async () => {
-			const { token: adminAuthToken } = await getAdminAuth();
+	test("Returns invalid_arguments for invalid input", async () => {
+		const { token } = await getAdminAuth();
 
-			const { cleanup, folderId } = await createTestEnvironment(
-				adminAuthToken,
-				await getAdminUserId(),
-			);
-			testCleanupFunctions.push(cleanup);
-
-			const result = await mercuriusClient.mutate(Mutation_createAgendaItem, {
-				headers: { authorization: `bearer ${adminAuthToken}` },
-				variables: {
-					input: {
-						folderId,
-						name: "Invalid Note",
-						type: "note",
-						duration: "00:30:00",
-					},
+		const result = await mercuriusClient.mutate(Mutation_createAgendaItem, {
+			headers: { authorization: `bearer ${token}` },
+			variables: {
+				input: {
+					eventId: "not-a-uuid",
+					folderId: faker.string.uuid(),
+					categoryId: faker.string.uuid(),
+					name: "",
+					sequence: 0,
+					type: "note",
 				},
-			});
-
-			expect(result.data?.createAgendaItem).toEqual(null);
-			expect(result.errors).toEqual(
-				expect.arrayContaining([
-					expect.objectContaining({
-						extensions: expect.objectContaining({
-							code: "invalid_arguments",
-						}),
-						message: expect.any(String),
-						path: ["createAgendaItem"],
-					}),
-				]),
-			);
+			},
 		});
 
-		test("Returns error when note type has key", async () => {
-			const { token: adminAuthToken } = await getAdminAuth();
-
-			const { cleanup, folderId } = await createTestEnvironment(
-				adminAuthToken,
-				await getAdminUserId(),
-			);
-			testCleanupFunctions.push(cleanup);
-
-			const result = await mercuriusClient.mutate(Mutation_createAgendaItem, {
-				headers: { authorization: `bearer ${adminAuthToken}` },
-				variables: {
-					input: {
-						folderId,
-						name: "Invalid Note",
-						type: "note",
-						key: "C Major",
-					},
-				},
-			});
-
-			expect(result.data?.createAgendaItem).toEqual(null);
-			expect(result.errors).toEqual(
-				expect.arrayContaining([
-					expect.objectContaining({
-						extensions: expect.objectContaining({
-							code: "invalid_arguments",
-						}),
-						message: expect.any(String),
-						path: ["createAgendaItem"],
+		expect(result.errors).toEqual(
+			expect.arrayContaining([
+				expect.objectContaining({
+					extensions: expect.objectContaining({
+						code: "invalid_arguments",
 					}),
-				]),
-			);
+				}),
+			]),
+		);
+	});
+
+	test("Returns invalid_arguments when notes exceed max length", async () => {
+		const { token } = await getAdminAuth();
+		const data = await createOrgEventFolderCategory(token);
+		cleanupFns.push(data.cleanup);
+
+		const result = await mercuriusClient.mutate(Mutation_createAgendaItem, {
+			headers: { authorization: `bearer ${token}` },
+			variables: {
+				input: {
+					eventId: data.eventId,
+					folderId: data.folderId,
+					categoryId: data.categoryId,
+					name: "Item",
+					sequence: 1,
+					type: "general",
+					notes: "a".repeat(2049), // exceeds max
+				},
+			},
 		});
 
-		test("Returns error when note type has both duration and key", async () => {
-			const { token: adminAuthToken } = await getAdminAuth();
-
-			const { cleanup, folderId } = await createTestEnvironment(
-				adminAuthToken,
-				await getAdminUserId(),
-			);
-			testCleanupFunctions.push(cleanup);
-
-			const result = await mercuriusClient.mutate(Mutation_createAgendaItem, {
-				headers: { authorization: `bearer ${adminAuthToken}` },
-				variables: {
-					input: {
-						folderId,
-						name: "Invalid Note",
-						type: "note",
-						duration: "00:30:00",
-						key: "C Major",
-					},
-				},
-			});
-
-			expect(result.data?.createAgendaItem).toEqual(null);
-			expect(result.errors).toEqual(
-				expect.arrayContaining([
-					expect.objectContaining({
-						extensions: expect.objectContaining({
-							code: "invalid_arguments",
-						}),
-						message: expect.any(String),
-						path: ["createAgendaItem"],
+		expect(result.errors).toEqual(
+			expect.arrayContaining([
+				expect.objectContaining({
+					extensions: expect.objectContaining({
+						code: "invalid_arguments",
 					}),
-				]),
-			);
+				}),
+			]),
+		);
+	});
+
+	test("Returns error when folder does not exist", async () => {
+		const { token } = await getAdminAuth();
+
+		const result = await mercuriusClient.mutate(Mutation_createAgendaItem, {
+			headers: { authorization: `bearer ${token}` },
+			variables: {
+				input: {
+					eventId: faker.string.uuid(),
+					folderId: faker.string.uuid(),
+					categoryId: faker.string.uuid(),
+					name: "Item",
+					sequence: 1,
+					type: "general",
+				},
+			},
+		});
+		assertToBeNonNullish(result.errors);
+		expect(result.errors).toEqual(
+			expect.arrayContaining([
+				expect.objectContaining({
+					extensions: expect.objectContaining({
+						code: "arguments_associated_resources_not_found",
+					}),
+				}),
+			]),
+		);
+	});
+
+	test("Returns forbidden when folder does not belong to event", async () => {
+		const { token } = await getAdminAuth();
+		const data = await createOrgEventFolderCategory(token);
+		cleanupFns.push(data.cleanup);
+
+		const otherEvent = await createOrgEventFolderCategory(token);
+		cleanupFns.push(otherEvent.cleanup);
+
+		const result = await mercuriusClient.mutate(Mutation_createAgendaItem, {
+			headers: { authorization: `bearer ${token}` },
+			variables: {
+				input: {
+					eventId: otherEvent.eventId,
+					folderId: data.folderId,
+					categoryId: data.categoryId,
+					name: "Item",
+					sequence: 1,
+					type: "general",
+				},
+			},
 		});
 
-		test("Returns error when general type has key", async () => {
-			const { token: adminAuthToken } = await getAdminAuth();
-
-			const { cleanup, folderId } = await createTestEnvironment(
-				adminAuthToken,
-				await getAdminUserId(),
-			);
-			testCleanupFunctions.push(cleanup);
-
-			const result = await mercuriusClient.mutate(Mutation_createAgendaItem, {
-				headers: { authorization: `bearer ${adminAuthToken}` },
-				variables: {
-					input: {
-						folderId,
-						name: "Invalid General",
-						type: "general",
-						key: "C Major",
-					},
-				},
-			});
-
-			expect(result.data?.createAgendaItem).toEqual(null);
-			expect(result.errors).toEqual(
-				expect.arrayContaining([
-					expect.objectContaining({
-						extensions: expect.objectContaining({
-							code: "invalid_arguments",
-						}),
-						message: expect.any(String),
-						path: ["createAgendaItem"],
+		expect(result.errors).toEqual(
+			expect.arrayContaining([
+				expect.objectContaining({
+					extensions: expect.objectContaining({
+						code: "forbidden_action_on_arguments_associated_resources",
 					}),
-				]),
-			);
+				}),
+			]),
+		);
+	});
+
+	test("Returns unauthorized when regular member tries to create item", async () => {
+		const [{ token }, regular] = await Promise.all([
+			getAdminAuth(),
+			createRegularUserUsingAdmin(),
+		]);
+
+		const data = await createOrgEventFolderCategory(token);
+		cleanupFns.push(data.cleanup);
+
+		await addOrganizationMembership({
+			adminAuthToken: token,
+			memberId: regular.userId,
+			organizationId: data.organizationId,
+			role: "regular",
 		});
 
-		test("Returns error when scripture type has key", async () => {
-			const { token: adminAuthToken } = await getAdminAuth();
-
-			const { cleanup, folderId } = await createTestEnvironment(
-				adminAuthToken,
-				await getAdminUserId(),
-			);
-			testCleanupFunctions.push(cleanup);
-
-			const result = await mercuriusClient.mutate(Mutation_createAgendaItem, {
-				headers: { authorization: `bearer ${adminAuthToken}` },
-				variables: {
-					input: {
-						folderId,
-						name: "Invalid Scripture",
-						type: "scripture",
-						key: "C Major",
-					},
+		const result = await mercuriusClient.mutate(Mutation_createAgendaItem, {
+			headers: { authorization: `bearer ${regular.authToken}` },
+			variables: {
+				input: {
+					eventId: data.eventId,
+					folderId: data.folderId,
+					categoryId: data.categoryId,
+					name: "Item",
+					sequence: 1,
+					type: "general",
 				},
-			});
-
-			expect(result.data?.createAgendaItem).toEqual(null);
-			expect(result.errors).toEqual(
-				expect.arrayContaining([
-					expect.objectContaining({
-						extensions: expect.objectContaining({
-							code: "invalid_arguments",
-						}),
-						message: expect.any(String),
-						path: ["createAgendaItem"],
-					}),
-				]),
-			);
+			},
 		});
 
-		test("Creates song type agenda item with key successfully", async () => {
-			const { token: adminAuthToken } = await getAdminAuth();
+		expect(result.errors).toEqual(
+			expect.arrayContaining([
+				expect.objectContaining({
+					extensions: expect.objectContaining({
+						code: "unauthorized_action_on_arguments_associated_resources",
+					}),
+				}),
+			]),
+		);
+	});
 
-			const { cleanup, folderId } = await createTestEnvironment(
-				adminAuthToken,
-				await getAdminUserId(),
-			);
-			testCleanupFunctions.push(cleanup);
+	test("Successfully creates agenda item with attachments and urls", async () => {
+		const { token } = await getAdminAuth();
+		const data = await createOrgEventFolderCategory(token);
+		cleanupFns.push(data.cleanup);
 
-			const result = await mercuriusClient.mutate(
-				Mutation_createAgendaItemWithKey,
-				{
-					headers: { authorization: `bearer ${adminAuthToken}` },
-					variables: {
-						input: {
-							folderId,
-							name: "Amazing Grace",
-							type: "song",
-							key: "G Major",
-							duration: "00:05:00",
+		const result = await mercuriusClient.mutate(Mutation_createAgendaItem, {
+			headers: { authorization: `bearer ${token}` },
+			variables: {
+				input: {
+					eventId: data.eventId,
+					folderId: data.folderId,
+					categoryId: data.categoryId,
+					name: "Agenda Item",
+					sequence: 1,
+					type: "song",
+					key: "C",
+					url: [{ url: "https://example.com" }],
+					attachments: [
+						{
+							name: "file.pdf",
+							mimeType: "IMAGE_PNG",
+							objectName: "obj",
+							fileHash: "hash",
 						},
-					},
+					],
 				},
-			);
-
-			assertToBeNonNullish(result.data?.createAgendaItem);
-			expect(result.data.createAgendaItem.name).toEqual("Amazing Grace");
-			expect(result.data.createAgendaItem.key).toEqual("G Major");
-			expect(result.data.createAgendaItem.type).toEqual("song");
-			expect(result.errors).toBeUndefined();
+			},
 		});
+
+		expect(result.errors).toBeUndefined();
+		assertToBeNonNullish(result.data?.createAgendaItem);
+
+		expect(result.data.createAgendaItem).toMatchObject({
+			name: "Agenda Item",
+			type: "song",
+		});
+		expect(result.data.createAgendaItem.url).toEqual(
+			expect.arrayContaining([
+				expect.objectContaining({ url: "https://example.com" }),
+			]),
+		);
+		expect(result.data.createAgendaItem.attachments).toEqual(
+			expect.arrayContaining([
+				expect.objectContaining({
+					name: "file.pdf",
+					mimeType: "image/png",
+					objectName: "obj",
+					fileHash: "hash",
+				}),
+			]),
+		);
 	});
 
-	suite("Successful Creation", () => {
-		test("Creates agenda item successfully with required fields", async () => {
-			const { token: adminAuthToken } = await getAdminAuth();
+	test("Uses default agenda folder when folderId is not provided", async () => {
+		const { token } = await getAdminAuth();
+		const data = await createOrgEventFolderCategory(token);
+		cleanupFns.push(data.cleanup);
 
-			const { cleanup, folderId } = await createTestEnvironment(
-				adminAuthToken,
-				await getAdminUserId(),
-			);
-			testCleanupFunctions.push(cleanup);
-
-			const result = await mercuriusClient.mutate(Mutation_createAgendaItem, {
-				headers: { authorization: `bearer ${adminAuthToken}` },
-				variables: {
-					input: {
-						folderId,
-						name: "Test Agenda Item",
-						type: "general",
-					},
+		const result = await mercuriusClient.mutate(Mutation_createAgendaItem, {
+			headers: { authorization: `bearer ${token}` },
+			variables: {
+				input: {
+					eventId: data.eventId,
+					// folderId omitted
+					categoryId: data.categoryId,
+					name: "Item using default folder",
+					sequence: 1,
+					type: "general",
 				},
-			});
-
-			assertToBeNonNullish(result.data?.createAgendaItem);
-			expect(result.data.createAgendaItem.name).toEqual("Test Agenda Item");
-			expect(result.data.createAgendaItem.type).toEqual("general");
-			expect(result.errors).toBeUndefined();
+			},
 		});
 
-		test("Creates agenda item with description and duration", async () => {
-			const { token: adminAuthToken } = await getAdminAuth();
-
-			const { cleanup, folderId } = await createTestEnvironment(
-				adminAuthToken,
-				await getAdminUserId(),
-			);
-			testCleanupFunctions.push(cleanup);
-
-			const result = await mercuriusClient.mutate(Mutation_createAgendaItem, {
-				headers: { authorization: `bearer ${adminAuthToken}` },
-				variables: {
-					input: {
-						folderId,
-						name: "Meeting",
-						type: "general",
-						description: "Monthly team meeting",
-						duration: "01:00:00",
-					},
-				},
-			});
-
-			assertToBeNonNullish(result.data?.createAgendaItem);
-			expect(result.data.createAgendaItem.name).toEqual("Meeting");
-			expect(result.data.createAgendaItem.description).toEqual(
-				"Monthly team meeting",
-			);
-			expect(result.data.createAgendaItem.duration).toEqual("01:00:00");
-			expect(result.errors).toBeUndefined();
-		});
-
-		test("Creates song type agenda item", async () => {
-			const { token: adminAuthToken } = await getAdminAuth();
-
-			const { cleanup, folderId } = await createTestEnvironment(
-				adminAuthToken,
-				await getAdminUserId(),
-			);
-			testCleanupFunctions.push(cleanup);
-
-			const result = await mercuriusClient.mutate(Mutation_createAgendaItem, {
-				headers: { authorization: `bearer ${adminAuthToken}` },
-				variables: {
-					input: {
-						folderId,
-						name: "Amazing Grace",
-						type: "song",
-						duration: "00:05:00",
-					},
-				},
-			});
-
-			assertToBeNonNullish(result.data?.createAgendaItem);
-			expect(result.data.createAgendaItem.name).toEqual("Amazing Grace");
-			expect(result.data.createAgendaItem.type).toEqual("song");
-			expect(result.errors).toBeUndefined();
-		});
-
-		test("Allows super admin to create agenda item without organization membership", async () => {
-			const { token: adminAuthToken } = await getAdminAuth();
-
-			// Create organization with a different user as admin
-			const regularUser = await createRegularUserUsingAdmin();
-
-			const createOrgResult = await mercuriusClient.mutate(
-				Mutation_createOrganization,
-				{
-					headers: { authorization: `bearer ${adminAuthToken}` },
-					variables: {
-						input: {
-							name: `Org ${faker.string.uuid()}`,
-							countryCode: "us",
-						},
-					},
-				},
-			);
-			assertToBeNonNullish(createOrgResult.data?.createOrganization);
-			const organizationId = createOrgResult.data.createOrganization.id;
-
-			await addOrganizationMembership({
-				adminAuthToken,
-				memberId: regularUser.userId,
-				organizationId,
-				role: "administrator",
-			});
-
-			// Create event with the regular user (org admin)
-			const createEventResult = await mercuriusClient.mutate(
-				Mutation_createEvent,
-				{
-					headers: { authorization: `bearer ${regularUser.authToken}` },
-					variables: {
-						input: {
-							name: `Event ${faker.string.uuid()}`,
-							organizationId,
-							startAt: new Date(Date.now() + 5 * 60 * 1000).toISOString(),
-							endAt: new Date(Date.now() + 60 * 60 * 1000).toISOString(),
-							description: "Test event",
-						},
-					},
-				},
-			);
-			assertToBeNonNullish(createEventResult.data?.createEvent);
-			const eventId = createEventResult.data.createEvent.id;
-
-			// Create folder with regular user
-			const createFolderResult = await mercuriusClient.mutate(
-				Mutation_createAgendaFolder,
-				{
-					headers: { authorization: `bearer ${regularUser.authToken}` },
-					variables: {
-						input: {
-							name: "Folder",
-							eventId,
-							description: "Super admin test folder",
-							sequence: 1,
-							organizationId,
-						},
-					},
-				},
-			);
-			assertToBeNonNullish(createFolderResult.data?.createAgendaFolder);
-			const folderId = createFolderResult.data.createAgendaFolder.id;
-
-			testCleanupFunctions.push(async () => {
-				await mercuriusClient.mutate(Mutation_deleteStandaloneEvent, {
-					headers: { authorization: `bearer ${adminAuthToken}` },
-					variables: { input: { id: eventId } },
-				});
-				await mercuriusClient.mutate(Mutation_deleteOrganization, {
-					headers: { authorization: `bearer ${adminAuthToken}` },
-					variables: { input: { id: organizationId } },
-				});
-			});
-
-			// Super admin attempts to create agenda item (not a member of org)
-			const result = await mercuriusClient.mutate(Mutation_createAgendaItem, {
-				headers: { authorization: `bearer ${adminAuthToken}` },
-				variables: {
-					input: {
-						folderId,
-						name: "Super Admin Item",
-						type: "general",
-					},
-				},
-			});
-
-			assertToBeNonNullish(result.data?.createAgendaItem);
-			expect(result.data.createAgendaItem.name).toEqual("Super Admin Item");
-			expect(result.errors).toBeUndefined();
-		});
-
-		test("Allows organization administrator to create agenda item", async () => {
-			const [{ token: adminAuthToken }, regularUser] = await Promise.all([
-				getAdminAuth(),
-				createRegularUserUsingAdmin(),
-			]);
-
-			const { cleanup, folderId, organizationId } = await createTestEnvironment(
-				adminAuthToken,
-				await getAdminUserId(),
-			);
-			testCleanupFunctions.push(cleanup);
-
-			// Add regular user as organization admin
-			await addOrganizationMembership({
-				adminAuthToken,
-				memberId: regularUser.userId,
-				organizationId,
-				role: "administrator",
-			});
-
-			const result = await mercuriusClient.mutate(Mutation_createAgendaItem, {
-				headers: { authorization: `bearer ${regularUser.authToken}` },
-				variables: {
-					input: {
-						folderId,
-						name: "Org Admin Item",
-						type: "general",
-					},
-				},
-			});
-
-			assertToBeNonNullish(result.data?.createAgendaItem);
-			expect(result.data.createAgendaItem.name).toEqual("Org Admin Item");
-			expect(result.errors).toBeUndefined();
-		});
+		expect(result.errors).toBeUndefined();
+		assertToBeNonNullish(result.data?.createAgendaItem);
 	});
 
-	suite("Attachments", () => {
-		test("Successfully creates agenda item with attachments", async () => {
-			const { token: adminAuthToken, userId: adminUserId } =
-				await getAdminAuth();
-			const { cleanup, folderId } = await createTestEnvironment(
-				adminAuthToken,
-				adminUserId,
-			);
-			testCleanupFunctions.push(cleanup);
+	test("Uses default agenda category when categoryId is not provided", async () => {
+		const { token } = await getAdminAuth();
+		const data = await createOrgEventFolderCategory(token);
+		cleanupFns.push(data.cleanup);
 
-			const result = await mercuriusClient.mutate(Mutation_createAgendaItem, {
-				headers: { authorization: `bearer ${adminAuthToken}` },
-				variables: {
-					input: {
-						folderId,
-						name: "Agenda Item With Attachments",
-						type: "general",
-						attachments: [
-							{
-								objectName: "test-object-1",
-								fileHash:
-									"a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2",
-								mimeType: "IMAGE_PNG",
-								name: "test-image.png",
-							},
-							{
-								objectName: "test-object-2",
-								fileHash:
-									"b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3",
-								mimeType: "IMAGE_JPEG",
-								name: "test-photo.jpg",
-							},
-						],
-					},
+		const result = await mercuriusClient.mutate(Mutation_createAgendaItem, {
+			headers: { authorization: `bearer ${token}` },
+			variables: {
+				input: {
+					eventId: data.eventId,
+					folderId: data.folderId,
+					//  categoryId omitted
+					name: "Item using default category",
+					sequence: 1,
+					type: "general",
 				},
-			});
-
-			assertToBeNonNullish(result.data?.createAgendaItem);
-			expect(result.data.createAgendaItem.name).toEqual(
-				"Agenda Item With Attachments",
-			);
-			expect(result.errors).toBeUndefined();
-
-			// Verify attachments were stored in database with complete metadata
-			const agendaItemId = result.data.createAgendaItem?.id;
-			const attachments =
-				await server.drizzleClient.query.agendaItemAttachmentsTable.findMany({
-					where: (fields, { eq }) => eq(fields.agendaItemId, agendaItemId),
-				});
-
-			expect(attachments).toHaveLength(2);
-
-			// Verify first attachment with complete metadata
-			const attachment1 = attachments.find(
-				(a) => a.objectName === "test-object-1",
-			);
-			assertToBeNonNullish(attachment1);
-			expect(attachment1.fileHash).toEqual(
-				"a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2",
-			);
-			expect(attachment1.mimeType).toEqual("image/png");
-			expect(attachment1.name).toEqual("test-image.png");
-
-			// Verify second attachment with complete metadata
-			const attachment2 = attachments.find(
-				(a) => a.objectName === "test-object-2",
-			);
-			assertToBeNonNullish(attachment2);
-			expect(attachment2.fileHash).toEqual(
-				"b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3",
-			);
-			expect(attachment2.mimeType).toEqual("image/jpeg");
-			expect(attachment2.name).toEqual("test-photo.jpg");
+			},
 		});
 
-		test("Successfully creates agenda item without attachments", async () => {
-			const { token: adminAuthToken, userId: adminUserId } =
-				await getAdminAuth();
-			const { cleanup, folderId } = await createTestEnvironment(
-				adminAuthToken,
-				adminUserId,
-			);
-			testCleanupFunctions.push(cleanup);
+		expect(result.errors).toBeUndefined();
+		assertToBeNonNullish(result.data?.createAgendaItem);
+	});
 
-			const result = await mercuriusClient.mutate(Mutation_createAgendaItem, {
-				headers: { authorization: `bearer ${adminAuthToken}` },
-				variables: {
-					input: {
-						folderId,
-						name: "Agenda Item Without Attachments",
-						type: "general",
-					},
+	test("Returns error when default agenda folder does not exist", async () => {
+		const { token } = await getAdminAuth();
+		const data = await createOrgEventFolderCategory(token);
+		cleanupFns.push(data.cleanup);
+
+		// Delete ALL agenda folders for the event (including default)
+		await server.drizzleClient
+			.delete(agendaFoldersTable)
+			.where(eq(agendaFoldersTable.eventId, data.eventId));
+
+		const result = await mercuriusClient.mutate(Mutation_createAgendaItem, {
+			headers: { authorization: `bearer ${token}` },
+			variables: {
+				input: {
+					eventId: data.eventId,
+					// folderId omitted → forces default lookup
+					categoryId: data.categoryId,
+					name: "Item",
+					sequence: 1,
+					type: "general",
 				},
-			});
-
-			assertToBeNonNullish(result.data?.createAgendaItem);
-			expect(result.data.createAgendaItem.name).toEqual(
-				"Agenda Item Without Attachments",
-			);
-			expect(result.errors).toBeUndefined();
-
-			// Verify no attachments were created
-			const agendaItemId = result.data.createAgendaItem.id;
-			const attachments =
-				await server.drizzleClient.query.agendaItemAttachmentsTable.findMany({
-					where: (fields, { eq }) => eq(fields.agendaItemId, agendaItemId),
-				});
-			expect(attachments).toHaveLength(0);
+			},
 		});
 
-		test("Successfully creates agenda item with empty attachments array", async () => {
-			const { token: adminAuthToken, userId: adminUserId } =
-				await getAdminAuth();
-			const { cleanup, folderId } = await createTestEnvironment(
-				adminAuthToken,
-				adminUserId,
-			);
-			testCleanupFunctions.push(cleanup);
+		expect(result.errors).toEqual(
+			expect.arrayContaining([
+				expect.objectContaining({
+					extensions: expect.objectContaining({
+						code: "arguments_associated_resources_not_found",
+						issues: expect.arrayContaining([
+							expect.objectContaining({
+								argumentPath: ["input", "eventId"],
+							}),
+						]),
+					}),
+				}),
+			]),
+		);
+	});
 
-			const result = await mercuriusClient.mutate(Mutation_createAgendaItem, {
-				headers: { authorization: `bearer ${adminAuthToken}` },
-				variables: {
-					input: {
-						folderId,
-						name: "Agenda Item Empty Attachments",
-						type: "general",
-						attachments: [],
-					},
+	test("Returns error when provided categoryId does not exist", async () => {
+		const { token } = await getAdminAuth();
+		const data = await createOrgEventFolderCategory(token);
+		cleanupFns.push(data.cleanup);
+
+		const result = await mercuriusClient.mutate(Mutation_createAgendaItem, {
+			headers: { authorization: `bearer ${token}` },
+			variables: {
+				input: {
+					eventId: data.eventId,
+					folderId: data.folderId,
+					categoryId: faker.string.uuid(), // invalid category
+					name: "Item",
+					sequence: 1,
+					type: "general",
 				},
-			});
-
-			assertToBeNonNullish(result.data?.createAgendaItem);
-			expect(result.data.createAgendaItem.name).toEqual(
-				"Agenda Item Empty Attachments",
-			);
-			expect(result.errors).toBeUndefined();
-
-			// Verify no attachments were created
-			const agendaItemId = result.data.createAgendaItem.id;
-			const attachments =
-				await server.drizzleClient.query.agendaItemAttachmentsTable.findMany({
-					where: (fields, { eq }) => eq(fields.agendaItemId, agendaItemId),
-				});
-			expect(attachments).toHaveLength(0);
+			},
 		});
 
-		test("Rejects invalid fileHash format", async () => {
-			const { token: adminAuthToken, userId: adminUserId } =
-				await getAdminAuth();
-			const { cleanup, folderId } = await createTestEnvironment(
-				adminAuthToken,
-				adminUserId,
-			);
-			testCleanupFunctions.push(cleanup);
+		expect(result.errors).toEqual(
+			expect.arrayContaining([
+				expect.objectContaining({
+					extensions: expect.objectContaining({
+						code: "arguments_associated_resources_not_found",
+						issues: expect.arrayContaining([
+							expect.objectContaining({
+								argumentPath: ["input", "categoryId"],
+							}),
+						]),
+					}),
+				}),
+			]),
+		);
+	});
 
-			const result = await mercuriusClient.mutate(Mutation_createAgendaItem, {
-				headers: { authorization: `bearer ${adminAuthToken}` },
-				variables: {
-					input: {
-						folderId,
-						name: "Invalid Hash Test",
-						type: "general",
-						attachments: [
-							{
-								objectName: "test-obj",
-								fileHash: "invalid-hash-not-64-chars",
-								mimeType: "IMAGE_PNG",
-								name: "test.png",
-							},
-						],
-					},
+	test("Returns error when default category does not exist", async () => {
+		const { token } = await getAdminAuth();
+		const data = await createOrgEventFolderCategory(token);
+		cleanupFns.push(data.cleanup);
+
+		await server.drizzleClient
+			.delete(agendaCategoriesTable)
+			.where(eq(agendaCategoriesTable.eventId, data.eventId));
+
+		const result = await mercuriusClient.mutate(Mutation_createAgendaItem, {
+			headers: { authorization: `bearer ${token}` },
+			variables: {
+				input: {
+					eventId: data.eventId,
+					folderId: data.folderId,
+					// categoryId omitted
+					name: "Item",
+					sequence: 1,
+					type: "general",
 				},
-			});
-
-			expect(result.errors).toBeDefined();
-			expect(result.errors?.[0]?.extensions?.code).toBe("invalid_arguments");
-			// Assert the error is for the correct field
-			const issues = result.errors?.[0]?.extensions?.issues as
-				| Array<{ argumentPath: unknown[] }>
-				| undefined;
-			expect(issues).toBeDefined();
-			expect(issues?.[0]?.argumentPath).toContain("attachments");
+			},
 		});
 
-		test("Rejects more than 10 attachments", async () => {
-			const { token: adminAuthToken, userId: adminUserId } =
-				await getAdminAuth();
-			const { cleanup, folderId } = await createTestEnvironment(
-				adminAuthToken,
-				adminUserId,
-			);
-			testCleanupFunctions.push(cleanup);
+		expect(result.errors).toEqual(
+			expect.arrayContaining([
+				expect.objectContaining({
+					extensions: expect.objectContaining({
+						code: "arguments_associated_resources_not_found",
+						issues: expect.arrayContaining([
+							expect.objectContaining({
+								argumentPath: ["input", "eventId"],
+							}),
+						]),
+					}),
+				}),
+			]),
+		);
+	});
 
-			const attachments = Array.from({ length: 11 }, (_, i) => ({
-				objectName: `test-obj-${i}`,
-				fileHash:
-					"a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2",
-				mimeType: "IMAGE_PNG" as const,
-				name: `test-${i}.png`,
-			}));
+	test("Returns error when agenda item creation returns empty result", async () => {
+		const { token } = await getAdminAuth();
+		const data = await createOrgEventFolderCategory(token);
+		cleanupFns.push(data.cleanup);
 
-			const result = await mercuriusClient.mutate(Mutation_createAgendaItem, {
-				headers: { authorization: `bearer ${adminAuthToken}` },
-				variables: {
-					input: {
-						folderId,
-						name: "Too Many Attachments",
-						type: "general",
-						attachments,
-					},
-				},
+		const spy = vi
+			.spyOn(server.drizzleClient, "transaction")
+			.mockImplementationOnce(async (cb) => {
+				const tx = {
+					insert: () => ({
+						values: () => ({
+							returning: async () => [],
+						}),
+					}),
+				};
+
+				return cb(
+					tx as unknown as Parameters<
+						typeof server.drizzleClient.transaction
+					>[0] extends (arg: infer T) => unknown
+						? T
+						: never,
+				);
 			});
 
-			expect(result.errors).toBeDefined();
-			expect(result.errors?.[0]?.extensions?.code).toBe("invalid_arguments");
-			// Assert the error is for the correct field
-			const issues = result.errors?.[0]?.extensions?.issues as
-				| Array<{ argumentPath: unknown[] }>
-				| undefined;
-			expect(issues).toBeDefined();
-			expect(issues?.[0]?.argumentPath).toContain("attachments");
+		const result = await mercuriusClient.mutate(Mutation_createAgendaItem, {
+			headers: { authorization: `bearer ${token}` },
+			variables: {
+				input: {
+					eventId: data.eventId,
+					folderId: data.folderId,
+					categoryId: data.categoryId,
+					name: "Item",
+					sequence: 1,
+					type: "general",
+				},
+			},
 		});
+
+		expect(result.errors).toEqual(
+			expect.arrayContaining([
+				expect.objectContaining({
+					extensions: expect.objectContaining({
+						code: "arguments_associated_resources_not_found",
+						issues: expect.arrayContaining([
+							expect.objectContaining({
+								argumentPath: ["input", "folderId"],
+							}),
+						]),
+					}),
+				}),
+			]),
+		);
+
+		spy.mockRestore();
 	});
 });

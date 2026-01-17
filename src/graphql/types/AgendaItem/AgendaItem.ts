@@ -30,6 +30,14 @@ AgendaItem.implement({
 			description: "Name of the agenda item.",
 			resolve: (parent) => escapeHTML(parent.name),
 		}),
+		notes: t.string({
+			description: "Notes for the agenda item.",
+			nullable: true,
+			resolve: (parent) => (parent.notes ? escapeHTML(parent.notes) : null),
+		}),
+		sequence: t.exposeInt("sequence", {
+			description: "Sequence order of the agenda item.",
+		}),
 		type: t.expose("type", {
 			description: "Type of the agenda item.",
 			type: AgendaItemType,

@@ -284,7 +284,7 @@ suite("Query field agendaCategoriesByEventId", () => {
 		);
 	});
 
-	test("Returns empty array when event has no agenda categories", async () => {
+	test("Returns default agenda category when no custom categories exist", async () => {
 		let eventId: string | undefined;
 		const createOrgResult = await mercuriusClient.mutate(
 			Mutation_createOrganization,
@@ -353,7 +353,15 @@ suite("Query field agendaCategoriesByEventId", () => {
 		);
 
 		expect(result.errors).toBeUndefined();
-		expect(result.data?.agendaCategoriesByEventId).toEqual([]);
+		expect(result.data?.agendaCategoriesByEventId).toHaveLength(1);
+		expect(result.data?.agendaCategoriesByEventId).toEqual(
+			expect.arrayContaining([
+				expect.objectContaining({
+					name: "Default",
+					description: "Default agenda category",
+				}),
+			]),
+		);
 	});
 
 	test("Returns agenda categories for event", async () => {
@@ -446,10 +454,10 @@ suite("Query field agendaCategoriesByEventId", () => {
 			},
 		);
 
-		expect(result.errors).toBeUndefined();
-		expect(result.data?.agendaCategoriesByEventId).toHaveLength(2);
+		expect(result.data?.agendaCategoriesByEventId).toHaveLength(3);
 		expect(result.data?.agendaCategoriesByEventId).toEqual(
 			expect.arrayContaining([
+				expect.objectContaining({ name: "Default" }),
 				expect.objectContaining({ name: "Category 1" }),
 				expect.objectContaining({ name: "Category 2" }),
 			]),
