@@ -70,17 +70,20 @@ describe("membershipRequestsTable", () => {
 
 	it("should define expected relations", () => {
 		expect(membershipRequestsTableRelations).toBeDefined();
-		const relationsInternals = membershipRequestsTableRelations as unknown as {
-			config: {
-				user?: unknown;
-				organization?: unknown;
-				membership?: unknown;
-			};
-		};
 
-		expect(relationsInternals.config).toBeDefined();
-		expect(relationsInternals.config.user).toBeDefined();
-		expect(relationsInternals.config.organization).toBeDefined();
-		expect(relationsInternals.config.membership).toBeDefined();
+		const config = (
+			membershipRequestsTableRelations as unknown as {
+				config: {
+					user?: unknown;
+					organization?: unknown;
+					membership?: unknown;
+				};
+			}
+		).config;
+
+		expect(config).toBeDefined();
+		expect(config.user).toBeDefined();
+		expect(config.organization).toBeDefined();
+		expect(config.membership).toBeDefined();
 	});
 });
