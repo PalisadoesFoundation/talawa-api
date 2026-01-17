@@ -12,21 +12,17 @@ import {
 	Mutation_createOrganizationMembership,
 	Mutation_deleteCurrentUser,
 	Mutation_updateOrganizationMembership,
+	Query_signIn,
 } from "../documentNodes";
 
-const signInResult = await mercuriusClient.query(
-	`query Query_signIn($input: QuerySignInInput!) {
-    signIn(input: $input) { authenticationToken }
-  }`,
-	{
-		variables: {
-			input: {
-				emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-				password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-			},
+const signInResult = await mercuriusClient.query(Query_signIn, {
+	variables: {
+		input: {
+			emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
+			password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
 		},
 	},
-);
+});
 
 assertToBeNonNullish(signInResult.data?.signIn);
 const adminToken = signInResult.data.signIn.authenticationToken;
@@ -323,10 +319,7 @@ suite("Mutation field updateOrganizationMembership", () => {
 	});
 
 	test("unexpected update failure", async () => {
-		const user = await import("../createRegularUserUsingAdmin").then((m) =>
-			m.createRegularUserUsingAdmin(),
-		);
-
+		const user = await createRegularUserUsingAdmin();
 		const org = await mercuriusClient.mutate(Mutation_createOrganization, {
 			headers: { authorization: `bearer ${adminToken}` },
 			variables: {
