@@ -1746,7 +1746,7 @@ suite("Mutation field createVenue", () => {
 							input: {
 								organizationId:
 									createOrganizationResult.data.createOrganization.id,
-								name: "   ", // Whitespace-only name currently accepted
+								name: "   ", // Whitespace-only name accepted
 								description: faker.lorem.sentence(),
 							},
 						},
