@@ -4,7 +4,12 @@ import { eventAttendeesTable } from "~/src/drizzle/tables/eventAttendees";
 import { usersTable } from "~/src/drizzle/tables/users";
 import { builder } from "~/src/graphql/builder";
 import { Event } from "~/src/graphql/types/Event/Event";
-import { getEventsByIds } from "~/src/graphql/types/Query/eventQueries";
+import {
+	type EventWithAttachments,
+	getEventsByIds,
+} from "~/src/graphql/types/Query/eventQueries";
+import { getRecurringEventInstancesByBaseId } from "~/src/graphql/types/Query/eventQueries/recurringEventInstanceQueries";
+import { mapRecurringInstanceToEvent } from "~/src/graphql/utils/mapRecurringInstanceToEvent";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 
 const queryEventsByAttendeeArgumentsSchema = z.object({
@@ -125,11 +130,36 @@ builder.queryField("eventsByAttendee", (t) =>
 				const uniqueEventIds = [...new Set(eventIds)];
 
 				// Use existing utility to fetch events by IDs
-				const events = await getEventsByIds(
+				const initialEvents = await getEventsByIds(
 					uniqueEventIds,
 					ctx.drizzleClient,
 					ctx.log,
 				);
+
+				const events: EventWithAttachments[] = [];
+				for (const event of initialEvents) {
+					if (
+						"isRecurringEventTemplate" in event &&
+						event.isRecurringEventTemplate
+					) {
+						// It's a template, fetch all instances
+						const instances = await getRecurringEventInstancesByBaseId(
+							event.id,
+							ctx.drizzleClient,
+							ctx.log,
+						);
+						// Map instances to Event type
+						for (const instance of instances) {
+							// Check if instance is already in the list (e.g. individually registered)
+							// Although usually if registered for series, we show all.
+							// But uniqueEventIds might not have covered it if logic was separate.
+							// Just add mapped instance.
+							events.push(mapRecurringInstanceToEvent(instance));
+						}
+					} else {
+						events.push(event);
+					}
+				}
 
 				// Sort by start time
 				events.sort((a, b) => {

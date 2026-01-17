@@ -695,6 +695,11 @@ type Event {
   """The base event from which this materialized instance was generated."""
   baseEvent: Event
 
+  """
+  The ID of the base recurring event template if this is a generated instance.
+  """
+  baseRecurringEventId: String
+
   """Date time at the time the event was created."""
   createdAt: DateTime
 
@@ -720,6 +725,11 @@ type Event {
   The unique global identifier for the event. For recurring instances, this ID refers to the specific materialized instance.
   """
   id: ID!
+
+  """
+  A boolean flag indicating if this event was generated from a recurrence template.
+  """
+  isGenerated: Boolean
 
   """A boolean flag indicating if the event is invite-only."""
   isInviteOnly: Boolean

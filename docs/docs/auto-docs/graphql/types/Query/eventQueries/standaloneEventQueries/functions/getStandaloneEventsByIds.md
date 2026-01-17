@@ -4,7 +4,7 @@
 
 # Function: getStandaloneEventsByIds()
 
-> **getStandaloneEventsByIds**(`eventIds`, `drizzleClient`, `logger`): `Promise`\<`object` & `object`[]\>
+> **getStandaloneEventsByIds**(`eventIds`, `drizzleClient`, `logger`, `options?`): `Promise`\<`object` & `object`[]\>
 
 Defined in: [src/graphql/types/Query/eventQueries/standaloneEventQueries.ts:126](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/graphql/types/Query/eventQueries/standaloneEventQueries.ts#L126)
 
@@ -31,6 +31,12 @@ The Drizzle ORM client for database access.
 `FastifyBaseLogger`
 
 The logger for logging debug and error messages.
+
+### options?
+
+#### includeTemplates?
+
+`boolean`
 
 ## Returns
 

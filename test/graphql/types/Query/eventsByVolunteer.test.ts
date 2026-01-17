@@ -1,5 +1,7 @@
 import { faker } from "@faker-js/faker";
+import { eq } from "drizzle-orm";
 import { expect, suite, test, vi } from "vitest";
+import { usersTable } from "~/src/drizzle/tables/users";
 import { assertToBeNonNullish } from "../../../helpers";
 import { server } from "../../../server";
 import { mercuriusClient } from "../client";
@@ -51,13 +53,41 @@ suite("Query field eventsByVolunteer", () => {
 	});
 
 	suite("when user is not authenticated", () => {
-		test("should return an error with unauthenticated code", async () => {
+		test("should return an error with unauthenticated code when no token provided", async () => {
 			const { userId } = await createRegularUserUsingAdmin();
 			assertToBeNonNullish(userId);
 
 			const result = await mercuriusClient.query(Query_eventsByVolunteer, {
 				variables: { userId },
 			});
+			expect(result.data?.eventsByVolunteer).toBeUndefined();
+			expect(result.errors).toEqual(
+				expect.arrayContaining([
+					expect.objectContaining({
+						extensions: expect.objectContaining({
+							code: "unauthenticated",
+						}),
+					}),
+				]),
+			);
+		});
+
+		test("should return an error with unauthenticated code when user is deleted", async () => {
+			const { authToken: userAuthToken, userId } =
+				await createRegularUserUsingAdmin();
+			assertToBeNonNullish(userAuthToken);
+			assertToBeNonNullish(userId);
+
+			// Delete the user from the database
+			await server.drizzleClient
+				.delete(usersTable)
+				.where(eq(usersTable.id, userId));
+
+			const result = await mercuriusClient.query(Query_eventsByVolunteer, {
+				headers: { authorization: `bearer ${userAuthToken}` },
+				variables: { userId },
+			});
+
 			expect(result.data?.eventsByVolunteer).toBeUndefined();
 			expect(result.errors).toEqual(
 				expect.arrayContaining([
@@ -145,6 +175,36 @@ suite("Query field eventsByVolunteer", () => {
 									argumentPath: ["userId"],
 								}),
 							]),
+						}),
+					}),
+				]),
+			);
+		});
+	});
+
+	suite("when the user does not exist", () => {
+		test("should return specific error when target user is not found", async () => {
+			const { userId } = await createRegularUserUsingAdmin();
+			assertToBeNonNullish(userId);
+
+			// Delete the user to simulate "not found"
+			await server.drizzleClient
+				.delete(usersTable)
+				.where(eq(usersTable.id, userId));
+
+			const result = await mercuriusClient.query(Query_eventsByVolunteer, {
+				headers: { authorization: `bearer ${authToken}` },
+				variables: {
+					userId: userId,
+				},
+			});
+
+			expect(result.data?.eventsByVolunteer).toBeUndefined();
+			expect(result.errors).toEqual(
+				expect.arrayContaining([
+					expect.objectContaining({
+						extensions: expect.objectContaining({
+							code: "arguments_associated_resources_not_found",
 						}),
 					}),
 				]),

@@ -715,5 +715,113 @@ suite("Query field eventsByAttendee", () => {
 				spy.mockRestore();
 			}
 		});
+
+		test("should return all instances when registered for an entire recurring event series", async () => {
+			const { userId, authToken: userAuthToken } =
+				await createRegularUserUsingAdmin();
+			assertToBeNonNullish(userId);
+
+			// Create recurring event template starting tomorrow
+			const tomorrow = new Date();
+			tomorrow.setDate(tomorrow.getDate() + 1);
+			const start = tomorrow.toISOString();
+
+			const afterTomorrow = new Date(tomorrow);
+			afterTomorrow.setHours(afterTomorrow.getHours() + 1);
+			const end = afterTomorrow.toISOString();
+
+			const createOrgResult = await mercuriusClient.mutate(
+				Mutation_createOrganization,
+				{
+					headers: { authorization: `bearer ${authToken}` },
+					variables: {
+						input: {
+							name: `Recurring Test Org ${faker.string.ulid()}`,
+							description: "Organization for recurring test event",
+							countryCode: "us",
+							state: "CA",
+							city: "Test City",
+							postalCode: "12345",
+							addressLine1: "123 Test St",
+						},
+					},
+				},
+			);
+			const orgId = createOrgResult.data?.createOrganization?.id;
+			assertToBeNonNullish(orgId);
+
+			await mercuriusClient.mutate(Mutation_createOrganizationMembership, {
+				headers: { authorization: `bearer ${authToken}` },
+				variables: {
+					input: {
+						memberId: userId,
+						organizationId: orgId,
+						role: "administrator",
+					},
+				},
+			});
+
+			const eventData = {
+				name: faker.lorem.words(3),
+				description: faker.lorem.sentence(),
+				startAt: start,
+				endAt: end,
+				location: faker.location.city(),
+				allDay: false,
+				isPublic: true,
+				isInviteOnly: false,
+				isRegisterable: true,
+				organizationId: orgId,
+				recurrence: {
+					frequency: "DAILY" as const,
+					count: 3,
+					interval: 1,
+				},
+			};
+
+			// 4. Create Event (User - now an Org Admin)
+			const createEventResult = await mercuriusClient.query(
+				Mutation_createEvent,
+				{
+					headers: { authorization: `bearer ${userAuthToken}` },
+					variables: { input: eventData },
+				},
+			);
+			const eventId = createEventResult.data?.createEvent?.id;
+			assertToBeNonNullish(eventId);
+
+			// 5. Register User (User - now an Org Admin)
+			const registerResult = await mercuriusClient.mutate(
+				Mutation_registerEventAttendee,
+				{
+					headers: { authorization: `bearer ${userAuthToken}` },
+					variables: {
+						data: {
+							eventId: eventId,
+							userId,
+						},
+					},
+				},
+			);
+			assertToBeNonNullish(registerResult.data?.registerEventAttendee?.id);
+
+			// Query attendees should show instances
+			const result = await mercuriusClient.query(Query_eventsByAttendee, {
+				headers: { authorization: `bearer ${userAuthToken}` },
+				variables: { userId },
+			});
+
+			const events = result.data?.eventsByAttendee as {
+				id: string;
+				isGenerated?: boolean | null;
+				baseRecurringEventId?: string | null;
+			}[];
+			assertToBeNonNullish(events);
+
+			// Should find instances, not the template itself
+			const generatedInstances = events.filter((e) => e.isGenerated);
+			expect(generatedInstances.length).toBeGreaterThan(0);
+			expect(generatedInstances[0]?.baseRecurringEventId).toBe(eventId);
+		});
 	});
 });

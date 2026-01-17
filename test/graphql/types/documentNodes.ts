@@ -2833,6 +2833,8 @@ export const Query_eventsByAttendee = gql(`
 				id
 				name
 			}
+			isGenerated
+			baseRecurringEventId
 		}
 	}
 `);
@@ -2856,4 +2858,26 @@ export const Query_eventsByVolunteer = gql(`
 			}
 		}
 	}
+`);
+
+export const Query_eventsByAdmin = gql(`
+  query EventsByAdmin($userId: ID!) {
+    eventsByAdmin(userId: $userId) {
+      id
+      name
+      description
+      startAt
+      endAt
+      location
+      allDay
+      isPublic
+      isRegisterable
+      isInviteOnly
+      isRecurringEventTemplate
+      organization {
+        id
+        name
+      }
+    }
+  }
 `);

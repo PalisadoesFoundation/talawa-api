@@ -217,5 +217,25 @@ Event.implement({
 				return escapeHTML(formatRecurrenceDescription(recurrenceRule));
 			},
 		}),
+		isGenerated: t.boolean({
+			description:
+				"A boolean flag indicating if this event was generated from a recurrence template.",
+			resolve: (event) => {
+				if ("isGenerated" in event) {
+					// biome-ignore lint/suspicious/noExplicitAny: Type assertion needed for dynamic property
+					return (event as any).isGenerated ?? false;
+				}
+				return false;
+			},
+		}),
+		baseRecurringEventId: t.string({
+			description:
+				"The ID of the base recurring event template if this is a generated instance.",
+			nullable: true,
+			resolve: (event) =>
+				"baseRecurringEventId" in event && event.baseRecurringEventId
+					? escapeHTML(event.baseRecurringEventId)
+					: null,
+		}),
 	}),
 });

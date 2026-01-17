@@ -127,19 +127,25 @@ export async function getStandaloneEventsByIds(
 	eventIds: string[],
 	drizzleClient: ServiceDependencies["drizzleClient"],
 	logger: ServiceDependencies["logger"],
+	options?: { includeTemplates?: boolean },
 ): Promise<
 	(typeof eventsTable.$inferSelect & {
 		attachments: (typeof eventAttachmentsTable.$inferSelect)[];
 	})[]
 > {
 	try {
+		const includeTemplates = options?.includeTemplates ?? false;
+		const whereClause = includeTemplates
+			? inArray(eventsTable.id, eventIds)
+			: and(
+					inArray(eventsTable.id, eventIds),
+					eq(eventsTable.isRecurringEventTemplate, false),
+				);
+
 		const standaloneEvents: (typeof eventsTable.$inferSelect & {
 			attachmentsWhereEvent: (typeof eventAttachmentsTable.$inferSelect)[];
 		})[] = await drizzleClient.query.eventsTable.findMany({
-			where: and(
-				inArray(eventsTable.id, eventIds),
-				eq(eventsTable.isRecurringEventTemplate, false),
-			),
+			where: whereClause,
 			with: {
 				attachmentsWhereEvent: true,
 			},

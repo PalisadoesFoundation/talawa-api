@@ -8,6 +8,7 @@ import { Event } from "~/src/graphql/types/Event/Event";
 import type { EventWithAttachments } from "~/src/graphql/types/Query/eventQueries";
 import { getRecurringEventInstancesByBaseId } from "~/src/graphql/types/Query/eventQueries/recurringEventInstanceQueries";
 import { getEventsByIds } from "~/src/graphql/types/Query/eventQueries/unifiedEventQueries";
+import { mapRecurringInstanceToEvent } from "~/src/graphql/utils/mapRecurringInstanceToEvent";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 
 const queryEventsByVolunteerArgumentsSchema = z.object({
@@ -135,31 +136,7 @@ builder.queryField("eventsByVolunteer", (t) =>
 							// Transform active instances to unified format
 							const activeInstances = instances
 								.filter((instance) => !instance.isCancelled)
-								.map((instance) => ({
-									id: instance.id,
-									name: instance.name,
-									description: instance.description,
-									startAt: instance.actualStartTime,
-									endAt: instance.actualEndTime,
-									location: instance.location,
-									allDay: instance.allDay,
-									isPublic: instance.isPublic,
-									isRegisterable: instance.isRegisterable,
-									isInviteOnly: instance.isInviteOnly,
-									organizationId: instance.organizationId,
-									creatorId: instance.creatorId,
-									updaterId: instance.updaterId,
-									createdAt: instance.createdAt,
-									updatedAt: instance.updatedAt,
-									isRecurringEventTemplate: false,
-									baseRecurringEventId: instance.baseRecurringEventId,
-									sequenceNumber: instance.sequenceNumber,
-									totalCount: instance.totalCount,
-									hasExceptions: instance.hasExceptions,
-									attachments: [],
-									eventType: "generated" as const,
-									isGenerated: true,
-								}));
+								.map(mapRecurringInstanceToEvent);
 
 							allEvents.push(...activeInstances);
 							for (const instance of activeInstances) {
@@ -183,6 +160,30 @@ builder.queryField("eventsByVolunteer", (t) =>
 								};
 								allEvents.push(adaptedEvent);
 								processedEventIds.add(record.eventId);
+							}
+						}
+					} else {
+						// Case 3: Standalone event volunteer
+						// Logic for non-template, non-instance specific volunteers (standalone events)
+						const eventId = record.eventId;
+						if (eventId && !processedEventIds.has(eventId)) {
+							const events = await getEventsByIds(
+								[eventId],
+								ctx.drizzleClient,
+								ctx.log,
+							);
+
+							if (events.length > 0) {
+								const event = events[0];
+								if (event) {
+									allEvents.push({
+										...event,
+										description: event.description ?? null,
+										attachments: [], // Attachments not fetched by default in this flow
+										eventType: "standalone",
+									});
+									processedEventIds.add(eventId);
+								}
 							}
 						}
 					}

@@ -367,11 +367,13 @@ export async function getEventsByIds(
 	try {
 		const events: EventWithAttachments[] = [];
 
-		// Step 1: Try to get standalone events
+		// Step 1: Try to get standalone events (and templates if they are requested by ID)
+		// We include templates here so that we can expand them later or display them if needed
 		const standaloneEvents = await getStandaloneEventsByIds(
 			eventIds,
 			drizzleClient,
 			logger,
+			{ includeTemplates: true },
 		);
 
 		// Add standalone events to results

@@ -8,23 +8,9 @@ import {
 	Mutation_createEvent,
 	Mutation_createOrganization,
 	Mutation_createOrganizationMembership,
+	Query_eventsByAdmin,
 	Query_signIn,
 } from "../documentNodes";
-
-const Query_eventsByAdmin = `
-    query eventsByAdmin($userId: ID!) {
-        eventsByAdmin(userId: $userId) {
-            id
-            name
-            startAt
-            endAt
-            organization {
-                id
-                name
-            }
-        }
-    }
-`;
 
 const signInResult = await mercuriusClient.query(Query_signIn, {
 	variables: {
