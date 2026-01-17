@@ -3,13 +3,13 @@ import { hash } from "@node-rs/argon2";
 import { eq, getTableName } from "drizzle-orm";
 import { describe, expect, it } from "vitest";
 import { imageMimeTypeEnum } from "~/src/drizzle/enums/imageMimeType";
+import { chatMembershipsTable } from "~/src/drizzle/tables/chatMemberships";
+import { chatMessagesTable } from "~/src/drizzle/tables/chatMessages";
 import {
 	chatsTable,
 	chatsTableInsertSchema,
 	chatsTableRelations,
 } from "~/src/drizzle/tables/chats";
-import { chatMembershipsTable } from "~/src/drizzle/tables/chatMemberships";
-import { chatMessagesTable } from "~/src/drizzle/tables/chatMessages";
 import { organizationsTable } from "~/src/drizzle/tables/organizations";
 import { usersTable } from "~/src/drizzle/tables/users";
 import { server } from "../../server";
