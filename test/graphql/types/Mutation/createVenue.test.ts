@@ -368,6 +368,84 @@ suite("Mutation field createVenue", () => {
 				);
 			});
 
+			test("rejects negative capacity value", async () => {
+				const administratorUserSignInResult = await mercuriusClient.query(
+					Query_signIn,
+					{
+						variables: {
+							input: {
+								emailAddress:
+									server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
+								password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
+							},
+						},
+					},
+				);
+
+				assertToBeNonNullish(
+					administratorUserSignInResult.data.signIn?.authenticationToken,
+				);
+
+				const createOrganizationResult = await mercuriusClient.mutate(
+					Mutation_createOrganization,
+					{
+						headers: {
+							authorization: `bearer ${administratorUserSignInResult.data.signIn.authenticationToken}`,
+						},
+						variables: {
+							input: {
+								name: `TestOrg_${faker.string.ulid()}`,
+								description: faker.lorem.sentence(),
+							},
+						},
+					},
+				);
+
+				assertToBeNonNullish(
+					createOrganizationResult.data.createOrganization?.id,
+				);
+				createdResources.organizationIds.push(
+					createOrganizationResult.data.createOrganization.id,
+				);
+
+				const createVenueResult = await mercuriusClient.mutate(
+					Mutation_createVenue,
+					{
+						headers: {
+							authorization: `bearer ${administratorUserSignInResult.data.signIn.authenticationToken}`,
+						},
+						variables: {
+							input: {
+								organizationId:
+									createOrganizationResult.data.createOrganization.id,
+								name: `Venue_${faker.string.ulid()}`,
+								description: faker.lorem.sentence(),
+								capacity: -10,
+							},
+						},
+					},
+				);
+
+				// Negative capacity should be rejected by the schema
+				expect(createVenueResult.data?.createVenue).toEqual(null);
+				expect(createVenueResult.errors).toEqual(
+					expect.arrayContaining<TalawaGraphQLFormattedError>([
+						expect.objectContaining<TalawaGraphQLFormattedError>({
+							message: expect.any(String),
+							extensions: expect.objectContaining<InvalidArgumentsExtensions>({
+								code: "invalid_arguments",
+								issues: expect.arrayContaining([
+									expect.objectContaining({
+										argumentPath: ["input", "capacity"],
+									}),
+								]),
+							}),
+							path: ["createVenue"],
+						}),
+					]),
+				);
+			});
+
 			/**
 			 * Tests validation of empty venue name.
 			 *
@@ -1616,84 +1694,6 @@ suite("Mutation field createVenue", () => {
 				assertToBeNonNullish(createVenueResult.data.createVenue?.id);
 
 				expect(createVenueResult.data.createVenue?.capacity).toBe(1000000);
-			});
-
-			test("rejects negative capacity value", async () => {
-				const administratorUserSignInResult = await mercuriusClient.query(
-					Query_signIn,
-					{
-						variables: {
-							input: {
-								emailAddress:
-									server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-								password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-							},
-						},
-					},
-				);
-
-				assertToBeNonNullish(
-					administratorUserSignInResult.data.signIn?.authenticationToken,
-				);
-
-				const createOrganizationResult = await mercuriusClient.mutate(
-					Mutation_createOrganization,
-					{
-						headers: {
-							authorization: `bearer ${administratorUserSignInResult.data.signIn.authenticationToken}`,
-						},
-						variables: {
-							input: {
-								name: `TestOrg_${faker.string.ulid()}`,
-								description: faker.lorem.sentence(),
-							},
-						},
-					},
-				);
-
-				assertToBeNonNullish(
-					createOrganizationResult.data.createOrganization?.id,
-				);
-				createdResources.organizationIds.push(
-					createOrganizationResult.data.createOrganization.id,
-				);
-
-				const createVenueResult = await mercuriusClient.mutate(
-					Mutation_createVenue,
-					{
-						headers: {
-							authorization: `bearer ${administratorUserSignInResult.data.signIn.authenticationToken}`,
-						},
-						variables: {
-							input: {
-								organizationId:
-									createOrganizationResult.data.createOrganization.id,
-								name: `Venue_${faker.string.ulid()}`,
-								description: faker.lorem.sentence(),
-								capacity: -10,
-							},
-						},
-					},
-				);
-
-				// Negative capacity should be rejected by the schema
-				expect(createVenueResult.data?.createVenue).toEqual(null);
-				expect(createVenueResult.errors).toEqual(
-					expect.arrayContaining<TalawaGraphQLFormattedError>([
-						expect.objectContaining<TalawaGraphQLFormattedError>({
-							message: expect.any(String),
-							extensions: expect.objectContaining<InvalidArgumentsExtensions>({
-								code: "invalid_arguments",
-								issues: expect.arrayContaining([
-									expect.objectContaining({
-										argumentPath: ["input", "capacity"],
-									}),
-								]),
-							}),
-							path: ["createVenue"],
-						}),
-					]),
-				);
 			});
 
 			test("accepts whitespace-only venue name (documents current API behavior)", async () => {
