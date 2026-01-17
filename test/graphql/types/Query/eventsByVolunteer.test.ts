@@ -1,0 +1,647 @@
+import { faker } from "@faker-js/faker";
+import { expect, suite, test } from "vitest";
+import { assertToBeNonNullish } from "../../../helpers";
+import { server } from "../../../server";
+import { mercuriusClient } from "../client";
+import { createRegularUserUsingAdmin } from "../createRegularUserUsingAdmin";
+import {
+	Mutation_createEvent,
+	Mutation_createEventVolunteer,
+	Mutation_createOrganization,
+	Mutation_createOrganizationMembership,
+	Mutation_updateEventVolunteer,
+	Query_eventsByVolunteer,
+	Query_signIn,
+} from "../documentNodes";
+
+const signInResult = await mercuriusClient.query(Query_signIn, {
+	variables: {
+		input: {
+			emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
+			password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
+		},
+	},
+});
+assertToBeNonNullish(signInResult.data?.signIn);
+const authToken = signInResult.data.signIn.authenticationToken;
+const adminUserId = signInResult.data.signIn.user?.id;
+assertToBeNonNullish(authToken);
+assertToBeNonNullish(adminUserId);
+
+suite("Query field eventsByVolunteer", () => {
+	suite("when input validation fails", () => {
+		test("should return an error with invalid_arguments code when userId is not a valid UUID", async () => {
+			const result = await mercuriusClient.query(Query_eventsByVolunteer, {
+				headers: { authorization: `bearer ${authToken}` },
+				variables: {
+					userId: "invalid-uuid",
+				},
+			});
+			expect(result.data?.eventsByVolunteer).toBeUndefined();
+			expect(result.errors).toEqual(
+				expect.arrayContaining([
+					expect.objectContaining({
+						extensions: expect.objectContaining({
+							code: "invalid_arguments",
+						}),
+					}),
+				]),
+			);
+		});
+	});
+
+	suite("when user is not authenticated", () => {
+		test("should return an error with unauthenticated code", async () => {
+			const { userId } = await createRegularUserUsingAdmin();
+			assertToBeNonNullish(userId);
+
+			const result = await mercuriusClient.query(Query_eventsByVolunteer, {
+				variables: { userId },
+			});
+			expect(result.data?.eventsByVolunteer).toBeUndefined();
+			expect(result.errors).toEqual(
+				expect.arrayContaining([
+					expect.objectContaining({
+						extensions: expect.objectContaining({
+							code: "unauthenticated",
+						}),
+					}),
+				]),
+			);
+		});
+	});
+
+	suite("authorization", () => {
+		test("should allow querying own volunteer events", async () => {
+			const { authToken: userToken, userId } =
+				await createRegularUserUsingAdmin();
+			assertToBeNonNullish(userToken);
+			assertToBeNonNullish(userId);
+
+			const result = await mercuriusClient.query(Query_eventsByVolunteer, {
+				headers: { authorization: `bearer ${userToken}` },
+				variables: { userId },
+			});
+			expect(result.errors).toBeUndefined();
+			expect(result.data?.eventsByVolunteer).toBeDefined();
+		});
+
+		test("should not allow querying other user's volunteer events as regular user", async () => {
+			const { authToken: userToken } = await createRegularUserUsingAdmin();
+			const { userId: otherUserId } = await createRegularUserUsingAdmin();
+			assertToBeNonNullish(userToken);
+			assertToBeNonNullish(otherUserId);
+
+			const result = await mercuriusClient.query(Query_eventsByVolunteer, {
+				headers: { authorization: `bearer ${userToken}` },
+				variables: { userId: otherUserId },
+			});
+			expect(result.data?.eventsByVolunteer).toBeUndefined();
+			expect(result.errors).toEqual(
+				expect.arrayContaining([
+					expect.objectContaining({
+						extensions: expect.objectContaining({
+							code: "unauthorized_action_on_arguments_associated_resources",
+							issues: expect.arrayContaining([
+								expect.objectContaining({
+									argumentPath: ["userId"],
+								}),
+							]),
+						}),
+					}),
+				]),
+			);
+		});
+
+		test("should allow admin to query any user's volunteer events", async () => {
+			const { userId } = await createRegularUserUsingAdmin();
+			assertToBeNonNullish(userId);
+
+			const result = await mercuriusClient.query(Query_eventsByVolunteer, {
+				headers: { authorization: `bearer ${authToken}` },
+				variables: { userId },
+			});
+			expect(result.errors).toBeUndefined();
+			expect(result.data?.eventsByVolunteer).toBeDefined();
+		});
+	});
+
+	suite("when user does not exist", () => {
+		test("should return an error with arguments_associated_resources_not_found code", async () => {
+			const result = await mercuriusClient.query(Query_eventsByVolunteer, {
+				headers: { authorization: `bearer ${authToken}` },
+				variables: {
+					userId: faker.string.uuid(),
+				},
+			});
+			expect(result.data?.eventsByVolunteer).toBeUndefined();
+			expect(result.errors).toEqual(
+				expect.arrayContaining([
+					expect.objectContaining({
+						extensions: expect.objectContaining({
+							code: "arguments_associated_resources_not_found",
+							issues: expect.arrayContaining([
+								expect.objectContaining({
+									argumentPath: ["userId"],
+								}),
+							]),
+						}),
+					}),
+				]),
+			);
+		});
+	});
+
+	suite("when getting events by volunteer", () => {
+		test("should return empty array when user has not volunteered for any events", async () => {
+			const { userId } = await createRegularUserUsingAdmin();
+			assertToBeNonNullish(userId);
+
+			const result = await mercuriusClient.query(Query_eventsByVolunteer, {
+				headers: { authorization: `bearer ${authToken}` },
+				variables: { userId },
+			});
+			expect(result.errors).toBeUndefined();
+			expect(result.data?.eventsByVolunteer).toEqual([]);
+		});
+
+		test("should return events user is volunteering for", async () => {
+			const createOrgResult = await mercuriusClient.mutate(
+				Mutation_createOrganization,
+				{
+					headers: { authorization: `bearer ${authToken}` },
+					variables: {
+						input: {
+							name: `Volunteer Test Org ${faker.string.ulid()}`,
+							description: "Test org",
+							countryCode: "us",
+							state: "CA",
+							city: "Los Angeles",
+							postalCode: "90001",
+							addressLine1: "123 Test St",
+							addressLine2: null,
+						},
+					},
+				},
+			);
+			const orgId = createOrgResult.data?.createOrganization?.id;
+			assertToBeNonNullish(orgId);
+
+			await mercuriusClient.mutate(Mutation_createOrganizationMembership, {
+				headers: { authorization: `bearer ${authToken}` },
+				variables: {
+					input: {
+						memberId: adminUserId,
+						organizationId: orgId,
+						role: "administrator",
+					},
+				},
+			});
+
+			const createEventResult = await mercuriusClient.mutate(
+				Mutation_createEvent,
+				{
+					headers: { authorization: `bearer ${authToken}` },
+					variables: {
+						input: {
+							name: "Volunteer Test Event",
+							description: "Event for volunteer testing",
+							organizationId: orgId,
+							startAt: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
+							endAt: new Date(Date.now() + 25 * 60 * 60 * 1000).toISOString(),
+						},
+					},
+				},
+			);
+			const eventId = createEventResult.data?.createEvent?.id;
+			assertToBeNonNullish(eventId);
+
+			// Admin volunteers for their own event
+			const volunteerResult = await mercuriusClient.mutate(
+				Mutation_createEventVolunteer,
+				{
+					headers: { authorization: `bearer ${authToken}` },
+					variables: {
+						input: {
+							userId: adminUserId,
+							eventId,
+						},
+					},
+				},
+			);
+			expect(volunteerResult.errors).toBeUndefined();
+			const volunteerId = volunteerResult.data?.createEventVolunteer?.id;
+			assertToBeNonNullish(volunteerId);
+
+			// Accept the volunteer invitation
+			const updateResult = await mercuriusClient.mutate(
+				Mutation_updateEventVolunteer,
+				{
+					headers: { authorization: `bearer ${authToken}` },
+					variables: {
+						id: volunteerId,
+						data: {
+							hasAccepted: true,
+						},
+					},
+				},
+			);
+			expect(updateResult.errors).toBeUndefined();
+
+			const result = await mercuriusClient.query(Query_eventsByVolunteer, {
+				headers: { authorization: `bearer ${authToken}` },
+				variables: { userId: adminUserId },
+			});
+
+			expect(result.errors).toBeUndefined();
+			const events = result.data?.eventsByVolunteer as
+				| Array<{ id: string; name: string }>
+				| undefined;
+			expect(events).toBeDefined();
+			expect(Array.isArray(events)).toBe(true);
+
+			const testEvent = events?.find((e) => e.id === eventId);
+			expect(testEvent).toBeDefined();
+			expect(testEvent).toMatchObject({
+				id: eventId,
+				name: "Volunteer Test Event",
+			});
+		});
+
+		test("should return all instances when volunteering for an entire recurring event series", async () => {
+			const createOrgResult = await mercuriusClient.mutate(
+				Mutation_createOrganization,
+				{
+					headers: { authorization: `bearer ${authToken}` },
+					variables: {
+						input: {
+							name: `Recurring Org ${faker.string.ulid()}`,
+							description: "Test org",
+							countryCode: "us",
+							state: "CA",
+							city: "Los Angeles",
+							postalCode: "90001",
+							addressLine1: "123 Test St",
+							addressLine2: null,
+						},
+					},
+				},
+			);
+			const orgId = createOrgResult.data?.createOrganization?.id;
+			assertToBeNonNullish(orgId);
+
+			await mercuriusClient.mutate(Mutation_createOrganizationMembership, {
+				headers: { authorization: `bearer ${authToken}` },
+				variables: {
+					input: {
+						memberId: adminUserId,
+						organizationId: orgId,
+						role: "administrator",
+					},
+				},
+			});
+
+			const createEventResult = await mercuriusClient.mutate(
+				Mutation_createEvent,
+				{
+					headers: { authorization: `bearer ${authToken}` },
+					variables: {
+						input: {
+							name: "Recurring Event Series",
+							description: "Test recurring event",
+							organizationId: orgId,
+							startAt: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
+							endAt: new Date(Date.now() + 25 * 60 * 60 * 1000).toISOString(),
+							recurrence: {
+								frequency: "DAILY",
+								count: 3,
+							},
+						},
+					},
+				},
+			);
+			const eventId = createEventResult.data?.createEvent?.id;
+			assertToBeNonNullish(eventId);
+
+			// Admin volunteers for the entire series
+			const volunteerResult = await mercuriusClient.mutate(
+				Mutation_createEventVolunteer,
+				{
+					headers: { authorization: `bearer ${authToken}` },
+					variables: {
+						input: {
+							userId: adminUserId,
+							eventId,
+							scope: "ENTIRE_SERIES",
+						},
+					},
+				},
+			);
+			expect(volunteerResult.errors).toBeUndefined();
+			const volunteerId = volunteerResult.data?.createEventVolunteer?.id;
+			assertToBeNonNullish(volunteerId);
+
+			// Accept the volunteer invitation
+			const updateResult = await mercuriusClient.mutate(
+				Mutation_updateEventVolunteer,
+				{
+					headers: { authorization: `bearer ${authToken}` },
+					variables: {
+						id: volunteerId,
+						data: {
+							hasAccepted: true,
+						},
+					},
+				},
+			);
+			expect(updateResult.errors).toBeUndefined();
+
+			const result = await mercuriusClient.query(Query_eventsByVolunteer, {
+				headers: { authorization: `bearer ${authToken}` },
+				variables: { userId: adminUserId },
+			});
+
+			expect(result.errors).toBeUndefined();
+			const events = result.data?.eventsByVolunteer as
+				| Array<{ id: string; name: string }>
+				| undefined;
+			expect(events).toBeDefined();
+			expect(Array.isArray(events)).toBe(true);
+
+			// Should return multiple instances (at least 3 generated ones)
+			// Filter for our specific event name in case other tests run properly
+			const recurringEvents = events?.filter(
+				(e) => e.name === "Recurring Event Series",
+			);
+			expect(recurringEvents?.length).toBeGreaterThanOrEqual(1);
+		});
+
+		test("should return specific instance when volunteering for a single instance", async () => {
+			const createOrgResult = await mercuriusClient.mutate(
+				Mutation_createOrganization,
+				{
+					headers: { authorization: `bearer ${authToken}` },
+					variables: {
+						input: {
+							name: `Recurring Instance Org ${faker.string.ulid()}`,
+							description: "Test org",
+							countryCode: "us",
+							state: "CA",
+							city: "Los Angeles",
+							postalCode: "90001",
+							addressLine1: "123 Test St",
+							addressLine2: null,
+						},
+					},
+				},
+			);
+			const orgId = createOrgResult.data?.createOrganization?.id;
+			assertToBeNonNullish(orgId);
+
+			await mercuriusClient.mutate(Mutation_createOrganizationMembership, {
+				headers: { authorization: `bearer ${authToken}` },
+				variables: {
+					input: {
+						memberId: adminUserId,
+						organizationId: orgId,
+						role: "administrator",
+					},
+				},
+			});
+
+			const createEventResult = await mercuriusClient.mutate(
+				Mutation_createEvent,
+				{
+					headers: { authorization: `bearer ${authToken}` },
+					variables: {
+						input: {
+							name: "Recurring Instance Event",
+							description: "Test recurring instance",
+							organizationId: orgId,
+							startAt: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
+							endAt: new Date(Date.now() + 25 * 60 * 60 * 1000).toISOString(),
+							recurrence: {
+								frequency: "DAILY",
+								count: 3,
+							},
+						},
+					},
+				},
+			);
+			const baseEventId = createEventResult.data?.createEvent?.id;
+			assertToBeNonNullish(baseEventId);
+
+			// Step 1: Admin volunteers for ENTIRE_SERIES to force instance generation and discovery
+			const adminVolunteerResult = await mercuriusClient.mutate(
+				Mutation_createEventVolunteer,
+				{
+					headers: { authorization: `bearer ${authToken}` },
+					variables: {
+						input: {
+							userId: adminUserId,
+							eventId: baseEventId,
+							scope: "ENTIRE_SERIES",
+						},
+					},
+				},
+			);
+			const adminVolunteerId =
+				adminVolunteerResult.data?.createEventVolunteer?.id;
+			assertToBeNonNullish(adminVolunteerId);
+
+			await mercuriusClient.mutate(Mutation_updateEventVolunteer, {
+				headers: { authorization: `bearer ${authToken}` },
+				variables: {
+					id: adminVolunteerId,
+					data: { hasAccepted: true },
+				},
+			});
+
+			const adminEventsResult = await mercuriusClient.query(
+				Query_eventsByVolunteer,
+				{
+					headers: { authorization: `bearer ${authToken}` },
+					variables: { userId: adminUserId },
+				},
+			);
+			const adminEvents = adminEventsResult.data?.eventsByVolunteer as Array<{
+				id: string;
+				name: string;
+			}>;
+			assertToBeNonNullish(adminEvents);
+			const instance = adminEvents.find(
+				(e) => e.name === "Recurring Instance Event",
+			);
+			assertToBeNonNullish(instance);
+			const instanceId = instance.id;
+
+			// Step 2: proper regular user volunteers for THAT specific instance
+			const { userId: regularUserId, authToken: regularAuthToken } =
+				await createRegularUserUsingAdmin();
+
+			// Add user to org so they can volunteer? Or is it open?
+			// Default event create was inviteOnly: false, public: false?
+			// createEvent setup: isPublic: false (default), isInviteOnly: false (default).
+			// Usually need to be org member or it's public?
+			// Let's make the user an org member to be safe.
+			await mercuriusClient.mutate(Mutation_createOrganizationMembership, {
+				headers: { authorization: `bearer ${authToken}` },
+				variables: {
+					input: {
+						memberId: regularUserId,
+						organizationId: orgId,
+						role: "regular",
+					},
+				},
+			});
+
+			const volunteerResult = await mercuriusClient.mutate(
+				Mutation_createEventVolunteer,
+				{
+					headers: { authorization: `bearer ${authToken}` },
+					variables: {
+						input: {
+							userId: regularUserId,
+							eventId: baseEventId,
+							recurringEventInstanceId: instanceId,
+							scope: "THIS_INSTANCE_ONLY",
+						},
+					},
+				},
+			);
+			expect(volunteerResult.errors).toBeUndefined();
+			const volunteerId = volunteerResult.data?.createEventVolunteer?.id;
+			assertToBeNonNullish(volunteerId);
+
+			// Accept
+			await mercuriusClient.mutate(Mutation_updateEventVolunteer, {
+				headers: { authorization: `bearer ${authToken}` }, // Admin accepts? Or user? usually admin/creator accepts.
+				variables: {
+					id: volunteerId,
+					data: { hasAccepted: true },
+				},
+			});
+
+			// Step 3: Query
+			const result = await mercuriusClient.query(Query_eventsByVolunteer, {
+				headers: { authorization: `bearer ${regularAuthToken}` },
+				variables: { userId: regularUserId },
+			});
+
+			expect(result.errors).toBeUndefined();
+			const events = result.data?.eventsByVolunteer as Array<{
+				id: string;
+				name: string;
+			}>;
+			assertToBeNonNullish(events);
+
+			// Should return EXACTLY ONE instance
+			expect(events.length).toBe(1);
+			const event = events[0];
+			assertToBeNonNullish(event);
+			expect(event.id).toBe(instanceId);
+			expect(event.name).toBe("Recurring Instance Event");
+		});
+
+		test("should return base event for recurring series with no material instances (future event)", async () => {
+			const createOrgResult = await mercuriusClient.mutate(
+				Mutation_createOrganization,
+				{
+					headers: { authorization: `bearer ${authToken}` },
+					variables: {
+						input: {
+							name: `Future Org ${faker.string.ulid()}`,
+							description: "Test org",
+							countryCode: "us",
+							state: "CA",
+							city: "Los Angeles",
+							postalCode: "90001",
+							addressLine1: "123 Test St",
+							addressLine2: null,
+						},
+					},
+				},
+			);
+			const orgId = createOrgResult.data?.createOrganization?.id;
+			assertToBeNonNullish(orgId);
+
+			await mercuriusClient.mutate(Mutation_createOrganizationMembership, {
+				headers: { authorization: `bearer ${authToken}` },
+				variables: {
+					input: {
+						memberId: adminUserId,
+						organizationId: orgId,
+						role: "administrator",
+					},
+				},
+			});
+
+			const futureDate = new Date();
+			futureDate.setFullYear(futureDate.getFullYear() + 5);
+			const futureEndDate = new Date(futureDate);
+			futureEndDate.setDate(futureEndDate.getDate() + 1);
+
+			const createEventResult = await mercuriusClient.mutate(
+				Mutation_createEvent,
+				{
+					headers: { authorization: `bearer ${authToken}` },
+					variables: {
+						input: {
+							name: "Future Recurring Event",
+							description: "Test future recurring",
+							organizationId: orgId,
+							startAt: futureDate.toISOString(),
+							endAt: futureEndDate.toISOString(),
+							recurrence: {
+								frequency: "DAILY",
+								count: 3,
+							},
+						},
+					},
+				},
+			);
+			const baseEventId = createEventResult.data?.createEvent?.id;
+			assertToBeNonNullish(baseEventId);
+
+			const volunteerResult = await mercuriusClient.mutate(
+				Mutation_createEventVolunteer,
+				{
+					headers: { authorization: `bearer ${authToken}` },
+					variables: {
+						input: {
+							userId: adminUserId,
+							eventId: baseEventId,
+							scope: "ENTIRE_SERIES",
+						},
+					},
+				},
+			);
+			expect(volunteerResult.errors).toBeUndefined();
+			const volunteerId = volunteerResult.data?.createEventVolunteer?.id;
+			assertToBeNonNullish(volunteerId);
+
+			await mercuriusClient.mutate(Mutation_updateEventVolunteer, {
+				headers: { authorization: `bearer ${authToken}` },
+				variables: {
+					id: volunteerId,
+					data: { hasAccepted: true },
+				},
+			});
+
+			const result = await mercuriusClient.query(Query_eventsByVolunteer, {
+				headers: { authorization: `bearer ${authToken}` },
+				variables: { userId: adminUserId },
+			});
+
+			expect(result.errors).toBeUndefined();
+			const events = result.data?.eventsByVolunteer as
+				| Array<{ id: string; name: string }>
+				| undefined;
+			expect(events).toBeDefined();
+			// Should return the base event since no instances are generated for far future
+			const futureEvent = events?.find((e) => e.id === baseEventId);
+			expect(futureEvent).toBeDefined();
+			expect(futureEvent?.name).toBe("Future Recurring Event");
+		});
+	});
+});
