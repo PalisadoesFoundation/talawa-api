@@ -68,7 +68,7 @@ export const errorHandlerPlugin = fastifyPlugin(
 				// If so, we should return 200 OK because GraphQL handles errors in the body
 				const pathname = request.url.split("?")[0];
 				if (pathname === "/graphql" && request.method === "POST") {
-					return reply.status(200).send({
+					return reply.status(normalized.statusCode).send({
 						errors: [
 							{
 								message: normalized.message,

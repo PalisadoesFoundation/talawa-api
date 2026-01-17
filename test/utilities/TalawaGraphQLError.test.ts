@@ -411,10 +411,26 @@ describe("defaultTalawaGraphQLErrorMessages", () => {
 
 	it("should have unique messages for different error codes", () => {
 		const messages = Object.values(defaultTalawaGraphQLErrorMessages);
-		const uniqueMessages = new Set(messages);
+		const messageCounts = new Map<string, number>();
 
-		// Most messages should be unique (some may be intentionally similar)
-		expect(uniqueMessages.size).toBeGreaterThan(messages.length * 0.8);
+		messages.forEach((msg) => {
+			messageCounts.set(msg, (messageCounts.get(msg) || 0) + 1);
+		});
+
+		// Identify messages that appear more than once
+		const duplicates = Array.from(messageCounts.entries())
+			.filter(([_, count]) => count > 1)
+			.map(([msg]) => msg);
+
+		// Define allowed duplicates (e.g. generic error messages)
+		const allowedDuplicates = ["Something went wrong. Please try again later."];
+
+		// Assert that only allowed duplicates are present
+		const unexpectedDuplicates = duplicates.filter(
+			(msg) => !allowedDuplicates.includes(msg),
+		);
+
+		expect(unexpectedDuplicates).toEqual([]);
 	});
 });
 

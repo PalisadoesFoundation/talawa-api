@@ -6,9 +6,17 @@ import {
 	GraphQLSchema,
 	GraphQLString,
 } from "graphql";
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import {
+	afterEach,
+	beforeAll,
+	beforeEach,
+	describe,
+	expect,
+	it,
+	vi,
+} from "vitest";
 import type { ExplicitAuthenticationTokenPayload } from "~/src/graphql/context";
-import { createContext } from "~/src/routes/graphql";
+import { createContext, graphql } from "~/src/routes/graphql";
 import { ErrorCode } from "~/src/utilities/errors/errorCodes";
 import { createPerformanceTracker } from "~/src/utilities/metrics/performanceTracker";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
@@ -450,6 +458,32 @@ describe("GraphQL Routes", () => {
 					}),
 				);
 			});
+
+			it("should use default refresh token expires when not configured", async () => {
+				// Remove the refresh token expires config to test the fallback
+				if (mockFastify.envConfig) {
+					delete (mockFastify.envConfig as Record<string, unknown>)
+						.API_REFRESH_TOKEN_EXPIRES_IN;
+				}
+
+				const context = await createContext({
+					fastify: mockFastify as FastifyInstance,
+					request: mockRequest as FastifyRequest,
+					isSubscription: false,
+					reply: mockReply as FastifyReply,
+				});
+
+				context.cookie?.setAuthCookies("access", "refresh");
+
+				// Should use the default value (604800 seconds = 7 days)
+				expect(mockReply.setCookie).toHaveBeenCalledWith(
+					COOKIE_NAMES.REFRESH_TOKEN,
+					"refresh",
+					expect.objectContaining({
+						maxAge: 604800, // Default value from DEFAULT_REFRESH_TOKEN_EXPIRES_MS / 1000
+					}),
+				);
+			});
 		});
 
 		describe("Performance Tracker Integration", () => {
@@ -523,6 +557,9 @@ describe("GraphQL Routes", () => {
 	});
 
 	describe("GraphQL Plugin Registration", () => {
+		beforeAll(() => {
+			vi.stubEnv("NODE_ENV", "test");
+		});
 		let mockFastifyInstance: {
 			register: ReturnType<typeof vi.fn>;
 			envConfig: {
@@ -593,8 +630,6 @@ describe("GraphQL Routes", () => {
 		});
 
 		it("should register mercurius upload with correct configuration", async () => {
-			const { graphql } = await import("~/src/routes/graphql");
-
 			await graphql(mockFastifyInstance as unknown as FastifyInstance);
 
 			// Check that the first register call is for mercurius upload
@@ -608,8 +643,6 @@ describe("GraphQL Routes", () => {
 		});
 
 		it("should register mercurius with correct configuration", async () => {
-			const { graphql } = await import("~/src/routes/graphql");
-
 			await graphql(mockFastifyInstance as unknown as FastifyInstance);
 
 			// Check that the second register call is for mercurius
@@ -635,8 +668,6 @@ describe("GraphQL Routes", () => {
 		});
 
 		it("should handle schema updates successfully", async () => {
-			const { graphql } = await import("~/src/routes/graphql");
-
 			await graphql(mockFastifyInstance as unknown as FastifyInstance);
 
 			const newSchema = new GraphQLSchema({
@@ -671,8 +702,6 @@ describe("GraphQL Routes", () => {
 		});
 
 		it("should handle non-Error objects in schema update", async () => {
-			const { graphql } = await import("~/src/routes/graphql");
-
 			await graphql(mockFastifyInstance as unknown as FastifyInstance);
 
 			mockFastifyInstance.graphql.replaceSchema.mockImplementation(() => {
@@ -703,9 +732,44 @@ describe("GraphQL Routes", () => {
 			);
 		});
 
-		it("should log fields for schema with mutations/subscriptions but no query", async () => {
-			const { graphql } = await import("~/src/routes/graphql");
+		it("should handle Error objects in schema update failure", async () => {
+			await graphql(mockFastifyInstance as unknown as FastifyInstance);
 
+			const testError = new Error("Schema replacement failed");
+			testError.stack = "Error stack trace";
+			mockFastifyInstance.graphql.replaceSchema.mockImplementation(() => {
+				throw testError;
+			});
+
+			const newSchema = new GraphQLSchema({
+				query: new GraphQLObjectType({
+					name: "Query",
+					fields: {
+						test: {
+							type: GraphQLString,
+							resolve: () => "test",
+						},
+					},
+				}),
+			});
+
+			// Trigger schema update
+			mockFastifyInstance.schemaUpdateCallback?.(newSchema);
+
+			expect(mockFastifyInstance.log.error).toHaveBeenCalledWith(
+				expect.objectContaining({
+					error: {
+						message: "Schema replacement failed",
+						stack: "Error stack trace",
+						name: "Error",
+					},
+					timestamp: expect.any(String),
+				}),
+				"❌ Failed to Update GraphQL Schema",
+			);
+		});
+
+		it("should log fields for schema with mutations/subscriptions but no query", async () => {
 			await graphql(mockFastifyInstance as unknown as FastifyInstance);
 
 			const newSchema = new GraphQLSchema({
@@ -843,7 +907,6 @@ describe("GraphQL Routes", () => {
 			vi.mocked(schemaManager.onSchemaUpdate).mockImplementation(() => {});
 
 			// Import and register the plugin to capture the hook
-			const { graphql } = await import("~/src/routes/graphql");
 			await graphql(mockFastifyInstance as unknown as FastifyInstance);
 
 			// Extract the preExecution hook
@@ -1049,9 +1112,20 @@ describe("GraphQL Routes", () => {
 			);
 			vi.mocked(leakyBucket).mockResolvedValue(false);
 
-			await expect(
-				preExecutionHook(mockSchema, mockContext, mockDocument, mockVariables),
-			).rejects.toThrow("Too many requests. Please try again later.");
+			try {
+				await preExecutionHook(
+					mockSchema,
+					mockContext,
+					mockDocument,
+					mockVariables,
+				);
+				expect.fail("Should have thrown error");
+			} catch (error: unknown) {
+				expect(error).toBeInstanceOf(TalawaGraphQLError);
+				expect((error as TalawaGraphQLError).extensions.code).toBe(
+					ErrorCode.RATE_LIMIT_EXCEEDED,
+				);
+			}
 		});
 
 		it("should handle operation without operation definition", async () => {
@@ -1170,8 +1244,6 @@ describe("GraphQL Routes", () => {
 		});
 
 		it("should configure subscription onConnect to reject connections without authorization", async () => {
-			const { graphql } = await import("~/src/routes/graphql");
-
 			await graphql(mockFastifyInstance as unknown as FastifyInstance);
 
 			const mercuriusCall = mockFastifyInstance.register.mock.calls.find(
@@ -1192,8 +1264,6 @@ describe("GraphQL Routes", () => {
 		});
 
 		it("should authorize subscription connections with valid Bearer token", async () => {
-			const { graphql } = await import("~/src/routes/graphql");
-
 			// Prepare a fake token and decoded payload
 			const fakeToken = "signed-jwt-token";
 			const decoded = {
@@ -1240,8 +1310,6 @@ describe("GraphQL Routes", () => {
 		});
 
 		it("should extract perf tracker from socket.request.perf in subscription onConnect", async () => {
-			const { graphql } = await import("~/src/routes/graphql");
-
 			const perfTracker = createPerformanceTracker();
 			const fakeToken = "signed-jwt-token";
 			const decoded = {
@@ -1287,6 +1355,61 @@ describe("GraphQL Routes", () => {
 				expect.objectContaining({
 					currentClient: { isAuthenticated: true, user: decoded.user },
 					perf: perfTracker,
+				}),
+			);
+
+			// Verify that perf was passed to createDataloaders
+			expect(result).toHaveProperty("dataloaders");
+
+			// Explicitly check that the perf property is set in the result
+			expect((result as { perf: unknown }).perf).toBe(perfTracker);
+		});
+
+		it("should handle subscription onConnect without perf tracker", async () => {
+			const fakeToken = "signed-jwt-token";
+			const decoded = {
+				user: { id: "user-456" },
+			} as ExplicitAuthenticationTokenPayload;
+
+			vi.mocked(schemaManager.buildInitialSchema).mockResolvedValue(
+				new GraphQLSchema({
+					query: new GraphQLObjectType({
+						name: "Query",
+						fields: {
+							hello: { type: GraphQLString, resolve: () => "Hello" },
+						},
+					}),
+				}),
+			);
+
+			mockFastifyInstance.jwt = { verify: vi.fn().mockResolvedValue(decoded) };
+
+			await graphql(mockFastifyInstance as unknown as FastifyInstance);
+
+			const mercuriusCall = mockFastifyInstance.register.mock.calls.find(
+				(call: unknown[]) =>
+					(call?.[1] as { subscription?: unknown })?.subscription,
+			);
+
+			const subscriptionConfig = mercuriusCall?.[1] as {
+				subscription: {
+					onConnect: (data: unknown) => Promise<boolean | object>;
+				};
+			};
+
+			const result = await subscriptionConfig.subscription.onConnect({
+				payload: { authorization: `Bearer ${fakeToken}` },
+				socket: {
+					request: {
+						// No perf property
+					},
+				},
+			});
+
+			expect(result).toEqual(
+				expect.objectContaining({
+					currentClient: { isAuthenticated: true, user: decoded.user },
+					perf: undefined,
 				}),
 			);
 		});
@@ -1353,8 +1476,6 @@ describe("GraphQL Routes", () => {
 			description: string;
 			socket: unknown;
 		}) => {
-			const { graphql } = await import("~/src/routes/graphql");
-
 			const fakeToken = "signed-jwt-token";
 			const decoded = {
 				user: { id: "user-789" },
@@ -1400,8 +1521,6 @@ describe("GraphQL Routes", () => {
 		});
 
 		it("should reject subscription connections with invalid Bearer token and log error", async () => {
-			const { graphql } = await import("~/src/routes/graphql");
-
 			// Make fastify.jwt.verify throw to simulate invalid token
 			mockFastifyInstance.jwt = {
 				verify: vi.fn().mockRejectedValue(new Error("Invalid token")),
@@ -1429,8 +1548,6 @@ describe("GraphQL Routes", () => {
 		});
 
 		it("should configure subscription onDisconnect as no-op", async () => {
-			const { graphql } = await import("~/src/routes/graphql");
-
 			await graphql(mockFastifyInstance as unknown as FastifyInstance);
 
 			const mercuriusCall = mockFastifyInstance.register.mock.calls.find(
@@ -1452,8 +1569,6 @@ describe("GraphQL Routes", () => {
 		});
 
 		it("should configure subscription verifyClient to accept all connections", async () => {
-			const { graphql } = await import("~/src/routes/graphql");
-
 			await graphql(mockFastifyInstance as unknown as FastifyInstance);
 
 			const mercuriusCall = mockFastifyInstance.register.mock.calls.find(
@@ -1525,8 +1640,6 @@ describe("GraphQL Routes", () => {
 		});
 
 		it("should format errors with correlation ID from request", async () => {
-			const { graphql } = await import("~/src/routes/graphql");
-
 			await graphql(mockFastifyInstance as unknown as FastifyInstance);
 
 			const mercuriusCall = mockFastifyInstance.register.mock.calls.find(
@@ -1591,7 +1704,7 @@ describe("GraphQL Routes", () => {
 			);
 
 			expect(result).toEqual({
-				statusCode: 200,
+				statusCode: 400,
 				response: {
 					data: { user: { id: "123" } },
 					errors: [
@@ -1602,6 +1715,7 @@ describe("GraphQL Routes", () => {
 							extensions: {
 								code: ErrorCode.INVALID_ARGUMENTS,
 								correlationId: "correlation-123",
+								httpStatus: 400,
 							},
 						},
 					],
@@ -1610,8 +1724,6 @@ describe("GraphQL Routes", () => {
 		});
 
 		it("should handle errors without extensions", async () => {
-			const { graphql } = await import("~/src/routes/graphql");
-
 			await graphql(mockFastifyInstance as unknown as FastifyInstance);
 
 			const mercuriusCall = mockFastifyInstance.register.mock.calls.find(
@@ -1675,12 +1787,12 @@ describe("GraphQL Routes", () => {
 			);
 
 			expect(result).toEqual({
-				statusCode: 200,
+				statusCode: 500,
 				response: {
 					data: null,
 					errors: [
 						{
-							message: "Syntax error",
+							message: "Internal Server Error",
 							locations: [{ line: 2, column: 10 }],
 							path: undefined,
 							extensions: {
@@ -1696,8 +1808,6 @@ describe("GraphQL Routes", () => {
 		});
 
 		it("should handle multiple errors with different extensions", async () => {
-			const { graphql } = await import("~/src/routes/graphql");
-
 			await graphql(mockFastifyInstance as unknown as FastifyInstance);
 
 			const mercuriusCall = mockFastifyInstance.register.mock.calls.find(
@@ -1769,7 +1879,7 @@ describe("GraphQL Routes", () => {
 			);
 
 			expect(result).toEqual({
-				statusCode: 200,
+				statusCode: 401,
 				response: {
 					data: null,
 					errors: [
@@ -1780,10 +1890,11 @@ describe("GraphQL Routes", () => {
 							extensions: {
 								code: ErrorCode.UNAUTHENTICATED,
 								correlationId: "multi-error-789",
+								httpStatus: 401,
 							},
 						},
 						{
-							message: "Field not found",
+							message: "Internal Server Error",
 							locations: undefined,
 							path: ["query", "nonExistent"],
 							extensions: {
@@ -1799,8 +1910,6 @@ describe("GraphQL Routes", () => {
 		});
 
 		it("should return null data when execution data is undefined", async () => {
-			const { graphql } = await import("~/src/routes/graphql");
-
 			await graphql(mockFastifyInstance as unknown as FastifyInstance);
 
 			const mercuriusCall = mockFastifyInstance.register.mock.calls.find(
@@ -1862,258 +1971,7 @@ describe("GraphQL Routes", () => {
 			);
 
 			expect(result.response.data).toBeNull();
-			expect(result.statusCode).toBe(200);
-		});
-	});
-
-	describe("GraphQL Coverage Tests", () => {
-		let mockFastifyInstance: {
-			register: ReturnType<typeof vi.fn>;
-			envConfig: {
-				API_IS_GRAPHIQL: boolean;
-				API_GRAPHQL_MUTATION_BASE_COST: number;
-				API_RATE_LIMIT_BUCKET_CAPACITY: number;
-				API_RATE_LIMIT_REFILL_RATE: number;
-			};
-			log: {
-				info: ReturnType<typeof vi.fn>;
-				error: ReturnType<typeof vi.fn>;
-			};
-			graphql: {
-				replaceSchema: ReturnType<typeof vi.fn>;
-				addHook: ReturnType<typeof vi.fn>;
-			};
-			jwt: {
-				verify: ReturnType<typeof vi.fn>;
-				sign: ReturnType<typeof vi.fn>;
-			};
-			cache: {
-				get: ReturnType<typeof vi.fn>;
-				set: ReturnType<typeof vi.fn>;
-				del: ReturnType<typeof vi.fn>;
-			};
-			drizzleClient: Record<string, unknown>;
-			minio: Record<string, unknown>;
-		};
-		let mockSchema: GraphQLSchema;
-		let preExecutionHook: (
-			schema: GraphQLSchema,
-			context: unknown,
-			document: unknown,
-			variables: unknown,
-		) => Promise<void>;
-		let subscriptionOnConnect: (data: unknown) => Promise<boolean | object>;
-
-		beforeEach(async () => {
-			vi.clearAllMocks();
-
-			mockFastifyInstance = {
-				register: vi.fn(),
-				envConfig: {
-					API_IS_GRAPHIQL: true,
-					API_GRAPHQL_MUTATION_BASE_COST: 10,
-					API_RATE_LIMIT_BUCKET_CAPACITY: 100,
-					API_RATE_LIMIT_REFILL_RATE: 1,
-				},
-				log: {
-					info: vi.fn(),
-					error: vi.fn(),
-				},
-				graphql: {
-					replaceSchema: vi.fn(),
-					addHook: vi.fn(),
-				},
-				jwt: {
-					verify: vi.fn(),
-					sign: vi.fn(),
-				},
-				cache: {
-					get: vi.fn(),
-					set: vi.fn(),
-					del: vi.fn(),
-				},
-				drizzleClient: {},
-				minio: {},
-			};
-
-			mockSchema = {
-				getQueryType: () => ({ getFields: () => ({}) }),
-				getMutationType: () => ({ getFields: () => ({}) }),
-				getSubscriptionType: () => ({ getFields: () => ({}) }),
-			} as unknown as GraphQLSchema;
-
-			vi.mocked(schemaManager.buildInitialSchema).mockResolvedValue(mockSchema);
-			vi.mocked(schemaManager.onSchemaUpdate).mockImplementation(() => {});
-
-			// Import the graphql route
-			const { graphql } = await import("~/src/routes/graphql");
-			await graphql(mockFastifyInstance as unknown as FastifyInstance);
-
-			// Extract hooks and config
-			const addHookCall = mockFastifyInstance.graphql.addHook.mock.calls.find(
-				(call: unknown[]) => call[0] === "preExecution",
-			);
-			preExecutionHook = addHookCall?.[1] as typeof preExecutionHook;
-
-			const registerMercuriusCall =
-				mockFastifyInstance.register.mock.calls.find(
-					(call: unknown[]) =>
-						(call[1] as { subscription?: unknown })?.subscription,
-				);
-			subscriptionOnConnect =
-				registerMercuriusCall?.[1]?.subscription?.onConnect;
-		});
-
-		describe("preExecution Hook Coverage", () => {
-			it("should throw error if IP address is not available", async () => {
-				expect(preExecutionHook).toBeDefined();
-				const context = {
-					definitions: [{ kind: "OperationDefinition", operation: "query" }],
-				};
-				const document = {
-					__currentQuery: {},
-					reply: {
-						request: {
-							ip: undefined, // Missing IP
-							jwtVerify: vi.fn().mockRejectedValue(new Error("No token")),
-						},
-					},
-				};
-
-				vi.mocked(complexityFromQuery).mockReturnValue({
-					complexity: 1,
-					breadth: 1,
-					depth: 1,
-				});
-
-				await expect(
-					preExecutionHook(mockSchema, context, document, {}),
-				).rejects.toThrow("IP address is not available for rate limiting");
-			});
-
-			it("should throw too_many_requests if leakyBucket returns false", async () => {
-				const context = {
-					definitions: [{ kind: "OperationDefinition", operation: "query" }],
-				};
-				const document = {
-					__currentQuery: {},
-					reply: {
-						request: {
-							ip: "127.0.0.1",
-							jwtVerify: vi.fn().mockRejectedValue(new Error("No token")),
-							log: mockFastifyInstance.log,
-						},
-					},
-				};
-
-				vi.mocked(complexityFromQuery).mockReturnValue({
-					complexity: 1,
-					breadth: 1,
-					depth: 1,
-				});
-				vi.mocked(leakyBucket).mockResolvedValue(false); // Rate limit exceeded
-
-				try {
-					await preExecutionHook(mockSchema, context, document, {});
-					expect.fail("Should have thrown error");
-				} catch (error: unknown) {
-					expect(error).toBeInstanceOf(TalawaGraphQLError);
-					expect((error as TalawaGraphQLError).extensions.code).toBe(
-						"too_many_requests",
-					);
-				}
-			});
-
-			it("should add mutation cost for mutation operations", async () => {
-				const context = {
-					definitions: [{ kind: "OperationDefinition", operation: "mutation" }],
-				};
-				const document = {
-					__currentQuery: {},
-					reply: {
-						request: {
-							ip: "127.0.0.1",
-							jwtVerify: vi.fn().mockRejectedValue(new Error("No token")),
-							log: mockFastifyInstance.log,
-						},
-					},
-				};
-
-				// Initialize complexity object
-				const complexityObj = { complexity: 5, breadth: 1, depth: 1 };
-				vi.mocked(complexityFromQuery).mockReturnValue(complexityObj);
-				vi.mocked(leakyBucket).mockResolvedValue(true);
-
-				await preExecutionHook(mockSchema, context, document, {});
-
-				// Complexity should be increased by API_GRAPHQL_MUTATION_BASE_COST (10)
-				expect(complexityObj.complexity).toBe(15);
-			});
-		});
-
-		describe("Subscription onConnect Coverage", () => {
-			it("should return false if no authorization in payload", async () => {
-				const data = {
-					payload: {},
-					socket: {},
-				};
-				const result = await subscriptionOnConnect(data);
-				expect(result).toBe(false);
-			});
-
-			it("should return false and log error if token invalid", async () => {
-				const data = {
-					payload: { authorization: "Bearer invalid-token" },
-					socket: {},
-				};
-
-				mockFastifyInstance.jwt.verify.mockRejectedValue(
-					new Error("Invalid token"),
-				);
-
-				const result = await subscriptionOnConnect(data);
-
-				expect(result).toBe(false);
-				expect(mockFastifyInstance.log.error).toHaveBeenCalled();
-			});
-
-			it("should verify token and return context on success", async () => {
-				const data = {
-					payload: { authorization: "Bearer valid-token" },
-					socket: {
-						request: {
-							perf: {
-								trackComplexity: vi.fn(),
-								snapshot: vi.fn(),
-								time: vi.fn(),
-								start: vi.fn(),
-								trackDb: vi.fn(),
-								trackCacheHit: vi.fn(),
-								trackCacheMiss: vi.fn(),
-							},
-						},
-					},
-				};
-
-				mockFastifyInstance.jwt.verify.mockResolvedValue({
-					user: { id: "user-1" },
-				});
-
-				const result = await subscriptionOnConnect(data);
-
-				const context = result as {
-					currentClient: { user: { id: string } };
-					perf: unknown;
-				};
-
-				expect(context).toHaveProperty("currentClient");
-				expect(context.currentClient.user.id).toBe("user-1");
-				expect(context.perf).toBeDefined();
-				expect(mockFastifyInstance.log.info).toHaveBeenCalledWith(
-					expect.objectContaining({ user: { id: "user-1" } }),
-					"Subscription connection authorized.",
-				);
-			});
+			expect(result.statusCode).toBe(500);
 		});
 	});
 
@@ -2174,7 +2032,6 @@ describe("GraphQL Routes", () => {
 					}),
 				);
 
-				const { graphql } = await import("~/src/routes/graphql");
 				await graphql(mockFastifyInstance as unknown as FastifyInstance);
 
 				// Robust errorFormatter extraction - find mercurius registration by schema property
@@ -2348,7 +2205,7 @@ describe("GraphQL Routes", () => {
 				);
 
 				// Should always be 200 for GraphQL over HTTP
-				expect(result.statusCode).toBe(200);
+				expect(result.statusCode).toBe(500);
 			});
 
 			it("should use pre-set correlationId and log in subscription context", () => {
@@ -2431,6 +2288,573 @@ describe("GraphQL Routes", () => {
 				const error = result.response.errors?.[0];
 				expect(error?.extensions?.correlationId).toBe("unknown");
 			});
+
+			it("should return status code 200 when there are no errors", () => {
+				const result = errorFormatter(
+					{
+						data: { user: { id: "123" } },
+						errors: [], // No errors
+					},
+					{
+						reply: {
+							request: { id: "success-req", log: { error: vi.fn() } },
+						},
+					},
+				);
+
+				expect(result.statusCode).toBe(200);
+				expect(result.response.data).toEqual({ user: { id: "123" } });
+				expect(result.response.errors).toEqual([]);
+			});
+
+			it("should handle GraphQL error with TalawaGraphQLError as originalError", () => {
+				const originalTalawaError = new TalawaGraphQLError({
+					message: "Original Talawa Error",
+					extensions: { code: ErrorCode.NOT_FOUND },
+				});
+
+				// Create a GraphQL error that wraps the TalawaGraphQLError
+				const graphqlError = {
+					message: "GraphQL wrapper error",
+					locations: undefined,
+					path: ["test"],
+					originalError: originalTalawaError,
+					extensions: {},
+					name: "GraphQLError",
+					nodes: undefined,
+					source: undefined,
+					positions: undefined,
+					toJSON: () => ({ message: "GraphQL wrapper error" }),
+					[Symbol.toStringTag]: "GraphQLError",
+				};
+
+				const result = errorFormatter(
+					{
+						data: null,
+						errors: [graphqlError],
+					},
+					{
+						reply: {
+							request: { id: "wrapped-error-req", log: { error: vi.fn() } },
+						},
+					},
+				);
+
+				const formattedError = result.response.errors?.[0];
+				expect(formattedError?.message).toBe("Original Talawa Error");
+				expect(formattedError?.extensions?.code).toBe(ErrorCode.NOT_FOUND);
+				expect(formattedError?.path).toEqual(["test"]);
+			});
+
+			it("should handle error with unknown code and use default 500 status", () => {
+				const errorWithUnknownCode = new TalawaGraphQLError({
+					message: "Unknown error",
+					extensions: {
+						code: "UNKNOWN_ERROR_CODE" as ErrorCode,
+						// No httpStatus provided
+					},
+				});
+
+				const result = errorFormatter(
+					{
+						data: null,
+						errors: [errorWithUnknownCode],
+					},
+					{
+						reply: {
+							request: { id: "unknown-error-req", log: { error: vi.fn() } },
+						},
+					},
+				);
+
+				expect(result.statusCode).toBe(500);
+				const formattedError = result.response.errors?.[0];
+				expect(formattedError?.extensions?.httpStatus).toBe(500);
+			});
+		});
+	});
+
+	describe("Additional Coverage Tests", () => {
+		it("should cover error handling in schema update with non-Error objects", async () => {
+			const mockFastifyInstance = {
+				register: vi.fn(),
+				envConfig: {
+					API_IS_GRAPHIQL: true,
+				},
+				log: {
+					info: vi.fn(),
+					error: vi.fn(),
+				},
+				graphql: {
+					replaceSchema: vi.fn().mockImplementation(() => {
+						throw "String error"; // Non-Error object
+					}),
+					addHook: vi.fn(),
+				},
+				schemaUpdateCallback: undefined as
+					| ((schema: GraphQLSchema) => void)
+					| undefined,
+			};
+
+			vi.mocked(schemaManager.buildInitialSchema).mockResolvedValue(
+				new GraphQLSchema({
+					query: new GraphQLObjectType({
+						name: "Query",
+						fields: {
+							hello: {
+								type: GraphQLString,
+								resolve: () => "Hello",
+							},
+						},
+					}),
+				}),
+			);
+
+			vi.mocked(schemaManager.onSchemaUpdate).mockImplementation(
+				(callback: (schema: GraphQLSchema) => void) => {
+					mockFastifyInstance.schemaUpdateCallback = callback;
+				},
+			);
+
+			await graphql(mockFastifyInstance as unknown as FastifyInstance);
+
+			// Trigger schema update with error
+			const newSchema = new GraphQLSchema({
+				query: new GraphQLObjectType({
+					name: "Query",
+					fields: {
+						test: {
+							type: GraphQLString,
+							resolve: () => "test",
+						},
+					},
+				}),
+			});
+
+			mockFastifyInstance.schemaUpdateCallback?.(newSchema);
+
+			expect(mockFastifyInstance.log.error).toHaveBeenCalledWith(
+				expect.objectContaining({
+					error: "String error",
+					timestamp: expect.any(String),
+				}),
+				"❌ Failed to Update GraphQL Schema",
+			);
+		});
+
+		it("should cover error handling in schema update with Error objects", async () => {
+			const mockFastifyInstance = {
+				register: vi.fn(),
+				envConfig: {
+					API_IS_GRAPHIQL: true,
+				},
+				log: {
+					info: vi.fn(),
+					error: vi.fn(),
+				},
+				graphql: {
+					replaceSchema: vi.fn().mockImplementation(() => {
+						const error = new Error("Schema replacement failed");
+						error.stack = "Error stack trace";
+						throw error;
+					}),
+					addHook: vi.fn(),
+				},
+				schemaUpdateCallback: undefined as
+					| ((schema: GraphQLSchema) => void)
+					| undefined,
+			};
+
+			vi.mocked(schemaManager.buildInitialSchema).mockResolvedValue(
+				new GraphQLSchema({
+					query: new GraphQLObjectType({
+						name: "Query",
+						fields: {
+							hello: {
+								type: GraphQLString,
+								resolve: () => "Hello",
+							},
+						},
+					}),
+				}),
+			);
+
+			vi.mocked(schemaManager.onSchemaUpdate).mockImplementation(
+				(callback: (schema: GraphQLSchema) => void) => {
+					mockFastifyInstance.schemaUpdateCallback = callback;
+				},
+			);
+
+			await graphql(mockFastifyInstance as unknown as FastifyInstance);
+
+			// Trigger schema update with error
+			const newSchema = new GraphQLSchema({
+				query: new GraphQLObjectType({
+					name: "Query",
+					fields: {
+						test: {
+							type: GraphQLString,
+							resolve: () => "test",
+						},
+					},
+				}),
+			});
+
+			mockFastifyInstance.schemaUpdateCallback?.(newSchema);
+
+			expect(mockFastifyInstance.log.error).toHaveBeenCalledWith(
+				expect.objectContaining({
+					error: {
+						message: "Schema replacement failed",
+						stack: "Error stack trace",
+						name: "Error",
+					},
+					timestamp: expect.any(String),
+				}),
+				"❌ Failed to Update GraphQL Schema",
+			);
+		});
+	});
+
+	describe("Observability Code Coverage", () => {
+		it("should execute observability code paths when enabled", async () => {
+			// Temporarily enable observability
+			const originalEnv = process.env.API_OTEL_ENABLED;
+			process.env.API_OTEL_ENABLED = "true";
+
+			// Mock the OpenTelemetry API to avoid actual tracing
+			const mockSpan = {
+				setAttribute: vi.fn(),
+				end: vi.fn(),
+			};
+			const mockTracer = {
+				startSpan: vi.fn().mockReturnValue(mockSpan),
+			};
+
+			// Create a simple mock for the trace module
+			const originalTrace = await import("@opentelemetry/api");
+			const mockTrace = {
+				...originalTrace,
+				trace: {
+					getTracer: vi.fn().mockReturnValue(mockTracer),
+				},
+			};
+
+			// Mock the module
+			vi.doMock("@opentelemetry/api", () => mockTrace);
+
+			// Force re-import of the observability config
+			vi.resetModules();
+
+			try {
+				// Import the graphql module which should now have observability enabled
+				const { graphql } = await import("~/src/routes/graphql");
+
+				const mockFastifyInstance = {
+					register: vi.fn(),
+					envConfig: {
+						API_IS_GRAPHIQL: false,
+					},
+					log: {
+						info: vi.fn(),
+						error: vi.fn(),
+					},
+					graphql: {
+						replaceSchema: vi.fn(),
+						addHook: vi.fn(),
+					},
+				};
+
+				vi.mocked(schemaManager.buildInitialSchema).mockResolvedValue(
+					new GraphQLSchema({
+						query: new GraphQLObjectType({
+							name: "Query",
+							fields: {
+								hello: {
+									type: GraphQLString,
+									resolve: () => "Hello",
+								},
+							},
+						}),
+					}),
+				);
+
+				// This should execute the observability code paths
+				await graphql(mockFastifyInstance as unknown as FastifyInstance);
+
+				// Verify that hooks were added (this means the observability code ran)
+				expect(mockFastifyInstance.graphql.addHook).toHaveBeenCalled();
+
+				// Test the hooks that were registered
+				const addHookCalls = mockFastifyInstance.graphql.addHook.mock.calls;
+
+				// Find preExecution hooks
+				const preExecutionHooks = addHookCalls.filter(
+					(call: unknown[]) => call?.[0] === "preExecution",
+				);
+
+				// Find onResolution hooks
+				const onResolutionHooks = addHookCalls.filter(
+					(call: unknown[]) => call?.[0] === "onResolution",
+				);
+
+				// If observability is enabled, we should have tracing hooks
+				if (preExecutionHooks.length > 1) {
+					// Test the tracing preExecution hook
+					const tracingHook = preExecutionHooks[0]?.[1] as (
+						...args: unknown[]
+					) => unknown;
+					if (tracingHook) {
+						// Test different operation scenarios to cover all branches
+						const scenarios = [
+							// Named operation
+							{
+								definitions: [
+									{
+										kind: "OperationDefinition",
+										operation: "query",
+										name: { value: "TestQuery" },
+									},
+								],
+							},
+							// Anonymous operation
+							{
+								definitions: [
+									{
+										kind: "OperationDefinition",
+										operation: "mutation",
+									},
+								],
+							},
+							// Non-operation definition
+							{
+								definitions: [
+									{
+										kind: "FragmentDefinition",
+										name: { value: "TestFragment" },
+									},
+								],
+							},
+						];
+
+						for (const document of scenarios) {
+							const context = {};
+							await tracingHook(null, document, context);
+							expect(mockTracer.startSpan).toHaveBeenCalled();
+							expect(mockSpan.setAttribute).toHaveBeenCalled();
+						}
+					}
+				}
+
+				if (onResolutionHooks.length > 0) {
+					// Test the onResolution hook
+					const onResolutionHook = onResolutionHooks[0]?.[1] as (
+						...args: unknown[]
+					) => unknown;
+					if (onResolutionHook) {
+						// Test with errors
+						const executionWithErrors = {
+							errors: [{ message: "Test error" }],
+						};
+						const contextWithSpan = { _tracingSpan: mockSpan };
+						await onResolutionHook(executionWithErrors, contextWithSpan);
+						expect(mockSpan.setAttribute).toHaveBeenCalledWith(
+							"graphql.errors.count",
+							1,
+						);
+						expect(mockSpan.end).toHaveBeenCalled();
+
+						// Test without errors
+						vi.clearAllMocks();
+						const executionWithoutErrors = {
+							data: { test: "success" },
+						};
+						await onResolutionHook(executionWithoutErrors, contextWithSpan);
+						expect(mockSpan.end).toHaveBeenCalled();
+
+						// Test without span
+						vi.clearAllMocks();
+						const contextWithoutSpan = {};
+						await onResolutionHook(executionWithErrors, contextWithoutSpan);
+						// Should not throw
+					}
+				}
+			} finally {
+				// Restore environment
+				process.env.API_OTEL_ENABLED = originalEnv;
+				vi.doUnmock("@opentelemetry/api");
+				vi.resetModules();
+			}
+		});
+	});
+
+	describe("Mercurius Context Function Coverage", () => {
+		it("should call the mercurius context function", async () => {
+			let contextFunction: ((...args: unknown[]) => unknown) | undefined;
+
+			const mockFastifyInstance = {
+				register: vi.fn().mockImplementation((_plugin, options) => {
+					// Capture the context function from mercurius registration
+					if (options && typeof options === "object" && "context" in options) {
+						contextFunction = options.context as (
+							...args: unknown[]
+						) => unknown;
+					}
+					return Promise.resolve();
+				}),
+				envConfig: {
+					API_IS_GRAPHIQL: false,
+				},
+				log: {
+					info: vi.fn(),
+					error: vi.fn(),
+				},
+				graphql: {
+					replaceSchema: vi.fn(),
+					addHook: vi.fn(),
+				},
+			};
+
+			vi.mocked(schemaManager.buildInitialSchema).mockResolvedValue(
+				new GraphQLSchema({
+					query: new GraphQLObjectType({
+						name: "Query",
+						fields: {
+							hello: {
+								type: GraphQLString,
+								resolve: () => "Hello",
+							},
+						},
+					}),
+				}),
+			);
+
+			await graphql(mockFastifyInstance as unknown as FastifyInstance);
+
+			// Verify the context function was captured
+			expect(contextFunction).toBeDefined();
+
+			if (contextFunction) {
+				// Create mock request and reply
+				const mockRequest = {
+					jwtVerify: vi.fn().mockRejectedValue(new Error("No token")),
+					ip: "127.0.0.1",
+					cookies: {},
+					log: { child: vi.fn().mockReturnThis() },
+					body: { operationName: "TestOperation" },
+				};
+
+				const mockReply = {
+					setCookie: vi.fn(),
+				};
+
+				// Call the context function to cover lines 249-254
+				const context = await contextFunction(mockRequest, mockReply);
+
+				// Verify the context was created
+				expect(context).toBeDefined();
+				expect(context).toHaveProperty("currentClient");
+				expect(context).toHaveProperty("dataloaders");
+				expect(context).toHaveProperty("drizzleClient");
+			}
+		});
+	});
+
+	describe("Final Coverage - Perf Line", () => {
+		it("should cover the perf property in subscription onConnect return", async () => {
+			// Create a real performance tracker
+			const perfTracker = createPerformanceTracker();
+
+			// Verify it passes the type guard
+			expect(perfTracker).toHaveProperty("time");
+			expect(perfTracker).toHaveProperty("start");
+			expect(perfTracker).toHaveProperty("trackComplexity");
+			expect(perfTracker).toHaveProperty("snapshot");
+			expect(perfTracker).toHaveProperty("trackDb");
+			expect(perfTracker).toHaveProperty("trackCacheHit");
+			expect(perfTracker).toHaveProperty("trackCacheMiss");
+
+			const fakeToken = "signed-jwt-token";
+			const decoded = {
+				user: { id: "user-perf-test" },
+			} as ExplicitAuthenticationTokenPayload;
+
+			const mockFastifyInstance = {
+				register: vi.fn(),
+				envConfig: {
+					API_IS_GRAPHIQL: false,
+				},
+				log: {
+					info: vi.fn(),
+					error: vi.fn(),
+				},
+				graphql: {
+					replaceSchema: vi.fn(),
+					addHook: vi.fn(),
+				},
+				jwt: { verify: vi.fn().mockResolvedValue(decoded) },
+				cache: {},
+				drizzleClient: {},
+				minio: {},
+			};
+
+			vi.mocked(schemaManager.buildInitialSchema).mockResolvedValue(
+				new GraphQLSchema({
+					query: new GraphQLObjectType({
+						name: "Query",
+						fields: {
+							hello: { type: GraphQLString, resolve: () => "Hello" },
+						},
+					}),
+				}),
+			);
+
+			await graphql(mockFastifyInstance as unknown as FastifyInstance);
+
+			// Find the subscription configuration
+			const mercuriusCall = mockFastifyInstance.register.mock.calls.find(
+				(call: unknown[]) =>
+					call?.[1] && typeof call[1] === "object" && "subscription" in call[1],
+			);
+
+			expect(mercuriusCall).toBeDefined();
+
+			const subscriptionConfig = mercuriusCall?.[1] as {
+				subscription: {
+					onConnect: (data: {
+						payload?: { authorization?: string };
+						socket?: {
+							request?: {
+								perf?: unknown;
+							};
+						};
+					}) => Promise<boolean | object>;
+				};
+			};
+
+			expect(subscriptionConfig.subscription.onConnect).toBeDefined();
+
+			// Call onConnect with a proper perf tracker
+			const result = await subscriptionConfig.subscription.onConnect({
+				payload: { authorization: `Bearer ${fakeToken}` },
+				socket: {
+					request: {
+						perf: perfTracker,
+					},
+				},
+			});
+
+			// Verify the result includes the perf tracker
+			expect(result).not.toBe(false);
+			expect(typeof result).toBe("object");
+
+			const contextResult = result as {
+				perf?: unknown;
+				currentClient: { isAuthenticated: boolean; user: unknown };
+			};
+
+			expect(contextResult.perf).toBe(perfTracker);
+			expect(contextResult.currentClient.isAuthenticated).toBe(true);
 		});
 	});
 });

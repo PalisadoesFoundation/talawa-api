@@ -1,5 +1,6 @@
 import type { FastifyError } from "fastify";
 import { ZodError } from "zod";
+import { rootLogger } from "../logging/logger";
 import { ErrorCode } from "./errorCodes";
 import { TalawaRestError } from "./TalawaRestError";
 
@@ -95,20 +96,40 @@ export function normalizeError(err: unknown): NormalizedError {
 	}
 
 	// Fallback for all other error types (generic Error, unknown objects, etc.)
-	let details: string;
+	let detailsString: string;
 	if (err instanceof Error) {
-		details = err.message;
+		detailsString = err.message;
 	} else if (err === null) {
-		details = "null";
+		detailsString = "null";
 	} else if (err === undefined) {
-		details = "undefined";
+		detailsString = "undefined";
 	} else if (typeof err === "string") {
-		details = err;
+		detailsString = err;
 	} else if (typeof err === "object" && err !== null && "message" in err) {
 		// Handle objects with a message property (like GraphQL errors)
-		details = String(err.message);
+		detailsString = String((err as { message: unknown }).message);
 	} else {
-		details = String(err);
+		detailsString = String(err);
+	}
+
+	let details: string | undefined;
+	if (process.env.NODE_ENV === "production") {
+		details = undefined;
+		// Log the original error so we don't lose visibility
+		rootLogger.error({
+			msg: "Internal Server Error (details suppressed)",
+			originalError:
+				err instanceof Error
+					? {
+							message: err.message,
+							stack: err.stack,
+							name: err.name,
+						}
+					: err,
+			details: detailsString,
+		});
+	} else {
+		details = detailsString;
 	}
 
 	return {

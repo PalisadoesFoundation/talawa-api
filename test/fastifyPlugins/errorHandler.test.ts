@@ -96,6 +96,13 @@ describe("errorHandlerPlugin", () => {
 					});
 				}
 
+				if (query.includes("unhandled-no-details")) {
+					throw new TalawaRestError({
+						code: ErrorCode.NOT_FOUND,
+						message: "Resource not found",
+					});
+				}
+
 				const execution: {
 					data: unknown;
 					errors: Array<GraphQLError>;
@@ -488,7 +495,7 @@ describe("errorHandlerPlugin", () => {
 				}),
 			});
 
-			expect(res.statusCode).toBe(200);
+			expect(res.statusCode).toBe(401);
 			const body = res.json();
 			expect(body.errors).toBeDefined();
 			expect(body.errors[0]).toEqual(
@@ -515,7 +522,7 @@ describe("errorHandlerPlugin", () => {
 				}),
 			});
 
-			expect(res.statusCode).toBe(200);
+			expect(res.statusCode).toBe(400);
 			const body = res.json();
 			expect(body.errors).toBeDefined();
 			expect(body.errors[0]).toEqual(
@@ -541,7 +548,7 @@ describe("errorHandlerPlugin", () => {
 				}),
 			});
 
-			expect(res.statusCode).toBe(200);
+			expect(res.statusCode).toBe(500);
 			const body = res.json();
 			expect(body.errors[0].message).toMatch(
 				/Generic GraphQL error|Internal Server Error/,
@@ -563,7 +570,7 @@ describe("errorHandlerPlugin", () => {
 				}),
 			});
 
-			expect(res.statusCode).toBe(200);
+			expect(res.statusCode).toBe(400);
 			const body = res.json();
 			expect(body.errors[0].extensions.code).toBe("invalid_arguments");
 			expect(body.errors[0].extensions.details).toEqual({
@@ -572,6 +579,7 @@ describe("errorHandlerPlugin", () => {
 		});
 
 		it("handles unhandled errors caught by global handler", async () => {
+			vi.stubEnv("NODE_ENV", "production");
 			const res = await app.inject({
 				method: "POST",
 				url: "/graphql",
@@ -583,18 +591,19 @@ describe("errorHandlerPlugin", () => {
 				}),
 			});
 
-			// Should be 200 OK as per GraphQL spec/errorHandler logic
-			expect(res.statusCode).toBe(200);
+			// Should be 500 Internal Server Error
+			expect(res.statusCode).toBe(500);
 			const body = res.json();
 			expect(body.errors[0].message).toBe("Internal Server Error");
 			expect(body.errors[0].extensions.code).toBe(
 				ErrorCode.INTERNAL_SERVER_ERROR,
 			);
 			expect(body.errors[0].extensions.httpStatus).toBe(500);
-			expect(body.errors[0].extensions.details).toBe("Unhandled system error");
+			expect(body.errors[0].extensions.details).toBeUndefined();
 			expect(body.errors[0].extensions.correlationId).toBe(
 				"generated-correlation-id",
 			);
+			vi.stubEnv("NODE_ENV", "test");
 		});
 
 		it("handles unhandled errors with details caught by global handler", async () => {
@@ -609,13 +618,34 @@ describe("errorHandlerPlugin", () => {
 				}),
 			});
 
-			expect(res.statusCode).toBe(200);
+			expect(res.statusCode).toBe(400);
 			const body = res.json();
 			expect(body.errors[0].message).toBe("Detailed failure");
 			expect(body.errors[0].extensions.code).toBe(ErrorCode.INVALID_ARGUMENTS);
 			// TalawaRestError status is preserved
 			expect(body.errors[0].extensions.httpStatus).toBe(400);
 			expect(body.errors[0].extensions.details).toEqual({ reason: "bad luck" });
+		});
+
+		it("handles unhandled errors without details caught by global handler", async () => {
+			const res = await app.inject({
+				method: "POST",
+				url: "/graphql",
+				headers: {
+					"content-type": "application/json",
+				},
+				payload: JSON.stringify({
+					query: "{ unhandled-no-details }",
+				}),
+			});
+
+			expect(res.statusCode).toBe(404);
+			const body = res.json();
+			expect(body.errors[0].message).toBe("Resource not found");
+			expect(body.errors[0].extensions.code).toBe(ErrorCode.NOT_FOUND);
+			expect(body.errors[0].extensions.httpStatus).toBe(404);
+			// This should NOT have details in extensions
+			expect(body.errors[0].extensions.details).toBeUndefined();
 		});
 	});
 
@@ -736,6 +766,7 @@ describe("errorHandlerPlugin", () => {
 		});
 
 		it("standardizes non-TalawaRestError responses", async () => {
+			vi.stubEnv("NODE_ENV", "production");
 			const res = await app.inject({ method: "GET", url: "/generic-error" });
 			expect(res.statusCode).toBe(500);
 			const body = res.json();
@@ -745,9 +776,9 @@ describe("errorHandlerPlugin", () => {
 					code: ErrorCode.INTERNAL_SERVER_ERROR,
 					message: expect.any(String),
 					correlationId: "generated-correlation-id",
-					details: "Generic error message",
 				},
 			});
+			vi.stubEnv("NODE_ENV", "test");
 		});
 	});
 
@@ -969,7 +1000,7 @@ describe("errorHandlerPlugin", () => {
 				}),
 			});
 
-			expect(res.statusCode).toBe(200);
+			expect(res.statusCode).toBe(401);
 			const body = res.json();
 			expect(body.errors).toBeDefined();
 			expect(body.errors[0].extensions.code).toBe("unauthenticated");
@@ -987,7 +1018,7 @@ describe("errorHandlerPlugin", () => {
 				}),
 			});
 
-			expect(res.statusCode).toBe(200);
+			expect(res.statusCode).toBe(401);
 			const body = res.json();
 			expect(body.errors[0].extensions.details).toBeUndefined();
 		});

@@ -23,7 +23,7 @@ import {
 import { createDataloaders } from "../utilities/dataloaders";
 import {
 	ERROR_CODE_TO_HTTP_STATUS,
-	type ErrorCode,
+	ErrorCode,
 } from "../utilities/errors/errorCodes";
 import { normalizeError } from "../utilities/errors/errorTransformer";
 import leakyBucket from "../utilities/leakyBucket";
@@ -297,12 +297,19 @@ export const graphql = fastifyPlugin(async (fastify) => {
 							? error
 							: (originalError as TalawaGraphQLError);
 
+					const code = targetError.extensions.code as ErrorCode;
+					const httpStatus =
+						targetError.extensions.httpStatus ??
+						ERROR_CODE_TO_HTTP_STATUS[code] ??
+						500;
+
 					return {
 						message: targetError.message,
 						locations: error.locations,
 						path: error.path,
 						extensions: {
 							...targetError.extensions,
+							httpStatus,
 							correlationId,
 						},
 					};
@@ -316,7 +323,7 @@ export const graphql = fastifyPlugin(async (fastify) => {
 				const httpStatus = ERROR_CODE_TO_HTTP_STATUS[code] ?? 500;
 
 				return {
-					message: error.message || normalized.message,
+					message: normalized.message,
 					locations: error.locations,
 					path: error.path,
 					extensions: {
@@ -349,8 +356,17 @@ export const graphql = fastifyPlugin(async (fastify) => {
 				});
 			}
 
+			// Determine status code from the first error if present, defaulting to 200 for success
+			// If there are errors but no status is set, default to 500
+			const codeFromError = formattedErrors[0]?.extensions?.httpStatus as
+				| number
+				| undefined;
+			const statusCode: number = formattedErrors.length
+				? (codeFromError ?? 500)
+				: 200;
+
 			return {
-				statusCode: 200, // GraphQL always returns 200 OK with errors in body
+				statusCode,
 				response: {
 					data: data ?? null,
 					errors: formattedErrors,
@@ -590,7 +606,7 @@ export const graphql = fastifyPlugin(async (fastify) => {
 			// If the request exceeds rate limits, reject it
 			if (!isRequestAllowed) {
 				throw new TalawaGraphQLError({
-					extensions: { code: "too_many_requests" },
+					extensions: { code: ErrorCode.RATE_LIMIT_EXCEEDED },
 				});
 			}
 		},

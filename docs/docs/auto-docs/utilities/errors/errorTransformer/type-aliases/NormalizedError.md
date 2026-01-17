@@ -6,7 +6,7 @@
 
 > **NormalizedError** = `object`
 
-Defined in: [src/utilities/errors/errorTransformer.ts:12](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/utilities/errors/errorTransformer.ts#L12)
+Defined in: [src/utilities/errors/errorTransformer.ts:13](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/utilities/errors/errorTransformer.ts#L13)
 
 Normalized error structure used internally by the error handling system.
 
@@ -19,7 +19,7 @@ into before being sent as responses.
 
 > **code**: [`ErrorCode`](../../errorCodes/enumerations/ErrorCode.md)
 
-Defined in: [src/utilities/errors/errorTransformer.ts:14](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/utilities/errors/errorTransformer.ts#L14)
+Defined in: [src/utilities/errors/errorTransformer.ts:15](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/utilities/errors/errorTransformer.ts#L15)
 
 Standardized error code
 
@@ -29,7 +29,7 @@ Standardized error code
 
 > `optional` **details**: `unknown`
 
-Defined in: [src/utilities/errors/errorTransformer.ts:20](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/utilities/errors/errorTransformer.ts#L20)
+Defined in: [src/utilities/errors/errorTransformer.ts:21](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/utilities/errors/errorTransformer.ts#L21)
 
 Optional additional error context
 
@@ -39,7 +39,7 @@ Optional additional error context
 
 > **message**: `string`
 
-Defined in: [src/utilities/errors/errorTransformer.ts:16](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/utilities/errors/errorTransformer.ts#L16)
+Defined in: [src/utilities/errors/errorTransformer.ts:17](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/utilities/errors/errorTransformer.ts#L17)
 
 Human-readable error message
 
@@ -49,6 +49,6 @@ Human-readable error message
 
 > **statusCode**: `number`
 
-Defined in: [src/utilities/errors/errorTransformer.ts:18](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/utilities/errors/errorTransformer.ts#L18)
+Defined in: [src/utilities/errors/errorTransformer.ts:19](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/utilities/errors/errorTransformer.ts#L19)
 
 HTTP status code
