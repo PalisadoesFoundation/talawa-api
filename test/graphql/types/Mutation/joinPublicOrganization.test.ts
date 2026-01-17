@@ -190,7 +190,7 @@ suite("Mutation joinPublicOrganization", () => {
 			);
 		});
 
-		test("Returns an error when the user is present in the token but not found in the database", async () => {
+		test("Returns not_found when the user is present in the token but not found in the database", async () => {
 			// Create a regular user
 			const regularUser = await createRegularUserUsingAdmin();
 			// Get the user's auth token
@@ -225,8 +225,8 @@ suite("Mutation joinPublicOrganization", () => {
 			expect(joinPublicOrganizationResult.errors).toEqual(
 				expect.arrayContaining<TalawaGraphQLFormattedError>([
 					expect.objectContaining<TalawaGraphQLFormattedError>({
-						extensions: expect.objectContaining<UnauthenticatedExtensions>({
-							code: "unauthenticated",
+						extensions: expect.objectContaining({
+							code: "not_found",
 						}),
 						message: expect.any(String),
 						path: ["joinPublicOrganization"],
