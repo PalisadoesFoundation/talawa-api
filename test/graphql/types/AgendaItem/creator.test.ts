@@ -117,6 +117,25 @@ describe("AgendaItem.creator resolver", () => {
 		);
 	});
 
+	it("throws unauthorized_action when user is not admin and has no org membership", async () => {
+		mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValue({
+			id: "user-123",
+			role: "member",
+		});
+		mocks.drizzleClient.query.agendaFoldersTable.findFirst.mockResolvedValue({
+			isAgendaItemFolder: true,
+			event: {
+				organization: {
+					membershipsWhereOrganization: [],
+				},
+			},
+		} as never);
+
+		await expect(resolveCreator(mockAgendaItem, {}, ctx)).rejects.toThrow(
+			new TalawaGraphQLError({ extensions: { code: "unauthorized_action" } }),
+		);
+	});
+
 	it("returns null when creatorId is null", async () => {
 		mockAgendaItem.creatorId = null;
 
