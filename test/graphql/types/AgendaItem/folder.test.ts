@@ -113,7 +113,7 @@ describe("AgendaItem.folder resolver", () => {
 		await expect(resolveFolder(mockParent, {}, context)).rejects.toThrow(
 			new TalawaGraphQLError({
 				extensions: {
-					code: "unexpected",
+					code: "unauthenticated",
 				},
 			}),
 		);
