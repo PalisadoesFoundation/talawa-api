@@ -2526,7 +2526,7 @@ export const Mutation_updateChatMembership = gql(`
 `);
 
 export const Mutation_updateOrganizationMembership = gql(` 
-  mutation Mutation_updateOganizationMembership($input: MutationUpdateOrganizationMembershipInput!) {
+  mutation Mutation_updateOrganizationMembership($input: MutationUpdateOrganizationMembershipInput!) {
     updateOrganizationMembership(input: $input) {
       id
     }

@@ -33,12 +33,7 @@ const adminToken = signInResult.data.signIn.authenticationToken;
 assertToBeNonNullish(adminToken);
 
 suite("Mutation field updateOrganizationMembership", () => {
-	const cleanup: Array<() => Promise<void>> = [];
-
 	afterEach(async () => {
-		while (cleanup.length) {
-			await cleanup.pop()?.();
-		}
 		vi.restoreAllMocks();
 	});
 
@@ -328,6 +323,40 @@ suite("Mutation field updateOrganizationMembership", () => {
 	});
 
 	test("unexpected update failure", async () => {
+		const user = await import("../createRegularUserUsingAdmin").then((m) =>
+			m.createRegularUserUsingAdmin(),
+		);
+
+		const org = await mercuriusClient.mutate(Mutation_createOrganization, {
+			headers: { authorization: `bearer ${adminToken}` },
+			variables: {
+				input: {
+					name: "Org Unexpected",
+					description: "Test",
+					countryCode: "us",
+					state: "CA",
+					city: "LA",
+					postalCode: "11111",
+					addressLine1: "x",
+					addressLine2: "y",
+				},
+			},
+		});
+
+		const orgId = org.data?.createOrganization?.id;
+		assertToBeNonNullish(orgId);
+
+		await mercuriusClient.mutate(Mutation_createOrganizationMembership, {
+			headers: { authorization: `bearer ${adminToken}` },
+			variables: {
+				input: {
+					memberId: user.userId,
+					organizationId: orgId,
+				},
+			},
+		});
+
+		// Mock update to return empty result
 		const spy = vi
 			.spyOn(server.drizzleClient, "update")
 			.mockImplementationOnce(() => {
@@ -346,8 +375,8 @@ suite("Mutation field updateOrganizationMembership", () => {
 				headers: { authorization: `bearer ${adminToken}` },
 				variables: {
 					input: {
-						memberId: faker.string.uuid(),
-						organizationId: faker.string.uuid(),
+						memberId: user.userId,
+						organizationId: orgId,
 						role: "administrator",
 					},
 				},
