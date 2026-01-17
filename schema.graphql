@@ -2779,6 +2779,9 @@ input MutationCreateAgendaItemInput {
   """Name of the agenda item."""
   name: String!
 
+  """Notes for the agenda item"""
+  notes: String
+
   """Sequence of the AgendaItem."""
   sequence: Int!
 

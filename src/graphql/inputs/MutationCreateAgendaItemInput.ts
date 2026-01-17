@@ -12,6 +12,7 @@ export const mutationCreateAgendaItemInputSchema = agendaItemsTableInsertSchema
 		eventId: true,
 		folderId: true,
 		categoryId: true,
+		notes: true,
 		key: true,
 		name: true,
 		sequence: true,
@@ -140,6 +141,10 @@ export const MutationCreateAgendaItemInput = builder
 			name: t.string({
 				description: "Name of the agenda item.",
 				required: true,
+			}),
+			notes: t.string({
+				description: "Notes for the agenda item",
+				required: false,
 			}),
 			sequence: t.int({
 				description: "Sequence of the AgendaItem.",
