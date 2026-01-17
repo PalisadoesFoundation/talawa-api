@@ -59,12 +59,6 @@ describe("AgendaItem.folder resolver", () => {
 			undefined,
 		);
 
-		const logSpy = vi.fn();
-		context.log = {
-			...context.log,
-			error: logSpy,
-		};
-
 		await expect(resolveFolder(mockParent, {}, context)).rejects.toThrow(
 			new TalawaGraphQLError({
 				extensions: {
@@ -73,7 +67,7 @@ describe("AgendaItem.folder resolver", () => {
 			}),
 		);
 
-		expect(logSpy).toHaveBeenCalledWith(
+		expect(context.log.error).toHaveBeenCalledWith(
 			"Postgres select operation returned an empty array for an agenda item's folder id that isn't null.",
 		);
 	});

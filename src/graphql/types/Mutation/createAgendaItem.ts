@@ -300,7 +300,7 @@ builder.mutationField("createAgendaItem", (t) =>
 				return {
 					...createdAgendaItem,
 					url: createdUrls,
-					attachment: createdAttachments,
+					attachments: createdAttachments,
 				};
 			});
 		},
