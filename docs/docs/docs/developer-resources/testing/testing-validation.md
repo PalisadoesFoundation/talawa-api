@@ -24,6 +24,59 @@ The `tests/` directory contains the code for performing api tests against Talawa
 
 The rest of this page will assist you in being an active contributor to the code base.
 
+## Quick Start
+
+### Running Tests
+
+**Run all tests:**
+```bash
+pnpm run check_tests
+```
+
+**Run specific test file:**
+```bash
+pnpm run check_tests -- /path/to/test/file
+```
+
+**Run with coverage:**
+```bash
+pnpm run run_tests
+```
+
+**Run with test sharding:**
+```bash
+pnpm run test:shard
+```
+
+### Linting and Formatting
+
+**Fix linting & formatting issues:**
+```bash
+pnpm run format:fix
+```
+
+**Check linting & formatting:**
+```bash
+pnpm run format:check
+```
+
+**Check for sanitization issues:**
+```bash
+pnpm run lint:sanitization
+```
+
+**Check TSDoc comments:**
+```bash
+pnpm run lint:tsdoc
+```
+
+### Type Checking
+
+**Run TypeScript type checker:**
+```bash
+pnpm run typecheck
+```
+
 ## Code Coverage Flags
 
 We use Codecov flags to separate and track coverage metrics for different types of tests:
