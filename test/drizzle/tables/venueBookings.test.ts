@@ -1,4 +1,4 @@
-import { getTableName, type Table } from "drizzle-orm";
+import type { Table } from "drizzle-orm";
 import { getTableConfig } from "drizzle-orm/pg-core";
 import { beforeAll, describe, expect, it } from "vitest";
 import {
