@@ -1,4 +1,3 @@
-import crypto from "node:crypto";
 import { promises as fs } from "node:fs";
 import path, { resolve } from "node:path";
 import process from "node:process";
@@ -13,11 +12,8 @@ import {
 	validateCloudBeaverAdmin,
 	validateCloudBeaverPassword,
 	validateCloudBeaverURL,
-	validateCronExpression,
 	validateEmail,
 	validatePort,
-	validatePositiveInteger,
-	validateSecurePassword,
 	validateURL,
 } from "./validators";
 
@@ -27,11 +23,8 @@ export {
 	validateCloudBeaverAdmin,
 	validateCloudBeaverPassword,
 	validateCloudBeaverURL,
-	validateCronExpression,
 	validateEmail,
 	validatePort,
-	validatePositiveInteger,
-	validateSecurePassword,
 	validateURL,
 } from "./validators";
 
@@ -286,77 +279,6 @@ async function restoreLatestBackup(): Promise<void> {
 		throw readError;
 	}
 }
-/**
- * Generates a cryptographically secure random password
- * Ensures password meets security requirements: uppercase, lowercase, numbers, special characters
- *
- * @param length - Desired password length (default 32, minimum 8)
- * @returns Secure random password string meeting all validation requirements
- */
-export function generateSecurePassword(length: number = 32): string {
-	try {
-		// Ensure minimum length of 8 characters
-		const passwordLength = Math.max(length, 8);
-
-		// Character sets for password generation
-		const specialChars = "!@#$%^&*()";
-		const uppercase = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-		const lowercase = "abcdefghijklmnopqrstuvwxyz";
-		const numbers = "0123456789";
-		const allChars = uppercase + lowercase + numbers + specialChars;
-
-		// Use crypto.randomInt for cryptographically secure random selection
-		const getSecureRandomChar = (chars: string): string =>
-			chars[crypto.randomInt(0, chars.length)] as string;
-
-		// Guarantee at least one character from each required set
-		const guaranteed = [
-			getSecureRandomChar(uppercase),
-			getSecureRandomChar(lowercase),
-			getSecureRandomChar(numbers),
-			getSecureRandomChar(specialChars),
-		];
-
-		// Fill remaining length with random characters from all sets
-		const remaining: string[] = [];
-		for (let i = 0; i < passwordLength - 4; i++) {
-			remaining.push(getSecureRandomChar(allChars));
-		}
-
-		// Combine and shuffle to avoid predictable positions
-		const combined = [...guaranteed, ...remaining];
-		for (let i = combined.length - 1; i > 0; i--) {
-			const j = crypto.randomInt(0, i + 1);
-			[combined[i], combined[j]] = [
-				combined[j] as string,
-				combined[i] as string,
-			];
-		}
-
-		return combined.join("");
-	} catch (err) {
-		// Log error and throw so caller can handle (e.g., prompt for manual entry)
-		console.error(
-			"⚠️ Warning: Failed to generate secure password automatically.",
-		);
-		console.error(`   Error: ${(err as Error).message}`);
-		console.error("   Please enter a password manually when prompted.");
-		throw new Error(
-			"Password generation failed. Please enter a password manually.",
-		);
-	}
-}
-
-/**
- * Safely generates a password, returning empty string on failure to force manual entry
- */
-function getSecurePasswordOrPrompt(): string {
-	try {
-		return generateSecurePassword();
-	} catch {
-		return ""; // Return empty to force user to enter password manually
-	}
-}
 
 export function isBooleanString(input: unknown): input is "true" | "false" {
 	return typeof input === "string" && (input === "true" || input === "false");
@@ -491,29 +413,36 @@ export async function metricsSetup(
 		);
 
 		if (answers.API_METRICS_ENABLED === "true") {
-			const apiKeyInput = await promptInput(
+			answers.API_METRICS_API_KEY = await promptInput(
 				"API_METRICS_API_KEY",
 				"API key for /metrics/perf endpoint (leave empty for no auth):",
 				"",
 			);
-			// Only set if non-empty (empty = no auth)
-			if (apiKeyInput.trim()) {
-				answers.API_METRICS_API_KEY = apiKeyInput.trim();
-			}
-			// If empty, do not set the property - undefined means no auth
 
 			answers.API_METRICS_SLOW_REQUEST_MS = await promptInput(
 				"API_METRICS_SLOW_REQUEST_MS",
 				"Slow request threshold in milliseconds:",
 				"500",
-				validatePositiveInteger,
+				(input: string) => {
+					const ms = Number.parseInt(input, 10);
+					if (Number.isNaN(ms) || ms < 1) {
+						return "Please enter a valid positive integer.";
+					}
+					return true;
+				},
 			);
 
 			answers.API_METRICS_SLOW_OPERATION_MS = await promptInput(
 				"API_METRICS_SLOW_OPERATION_MS",
 				"Slow operation threshold in milliseconds:",
 				"200",
-				validatePositiveInteger,
+				(input: string) => {
+					const ms = Number.parseInt(input, 10);
+					if (Number.isNaN(ms) || ms < 1) {
+						return "Please enter a valid positive integer.";
+					}
+					return true;
+				},
 			);
 
 			answers.API_METRICS_AGGREGATION_ENABLED = await promptList(
@@ -528,21 +457,32 @@ export async function metricsSetup(
 					"API_METRICS_AGGREGATION_CRON_SCHEDULE",
 					"Aggregation cron schedule (default: every 5 minutes):",
 					"*/5 * * * *",
-					validateCronExpression,
 				);
 
 				answers.API_METRICS_AGGREGATION_WINDOW_MINUTES = await promptInput(
 					"API_METRICS_AGGREGATION_WINDOW_MINUTES",
 					"Aggregation window in minutes:",
 					"5",
-					validatePositiveInteger,
+					(input: string) => {
+						const mins = Number.parseInt(input, 10);
+						if (Number.isNaN(mins) || mins < 1) {
+							return "Please enter a valid positive integer.";
+						}
+						return true;
+					},
 				);
 
 				answers.API_METRICS_CACHE_TTL_SECONDS = await promptInput(
 					"API_METRICS_CACHE_TTL_SECONDS",
 					"Cache TTL for aggregated metrics in seconds:",
 					"300",
-					validatePositiveInteger,
+					(input: string) => {
+						const secs = Number.parseInt(input, 10);
+						if (Number.isNaN(secs) || secs < 1) {
+							return "Please enter a valid positive integer.";
+						}
+						return true;
+					},
 				);
 			}
 
@@ -550,7 +490,13 @@ export async function metricsSetup(
 				"API_METRICS_SNAPSHOT_RETENTION_COUNT",
 				"Maximum snapshots to retain in memory:",
 				"1000",
-				validatePositiveInteger,
+				(input: string) => {
+					const count = Number.parseInt(input, 10);
+					if (Number.isNaN(count) || count < 1) {
+						return "Please enter a valid positive integer.";
+					}
+					return true;
+				},
 			);
 		}
 
@@ -919,8 +865,35 @@ export async function apiSetup(answers: SetupAnswers): Promise<SetupAnswers> {
 			"Minio port:",
 			"9000",
 		);
-		// API_MINIO_SECRET_KEY is set in minioSetup() after MINIO_ROOT_PASSWORD is prompted
-		// Both values must match, so we set it there to avoid duplicate prompts
+		const existingMinioPassword =
+			answers.MINIO_ROOT_PASSWORD ?? process.env.MINIO_ROOT_PASSWORD;
+		answers.API_MINIO_SECRET_KEY = await promptInput(
+			"API_MINIO_SECRET_KEY",
+			"Minio secret key:",
+			existingMinioPassword ?? "password",
+		);
+		if (existingMinioPassword !== undefined) {
+			// Configured password found (including empty string), validate against it
+			const minioPassword = existingMinioPassword;
+			while (answers.API_MINIO_SECRET_KEY !== minioPassword) {
+				console.warn("⚠️ API_MINIO_SECRET_KEY must match MINIO_ROOT_PASSWORD.");
+				answers.API_MINIO_SECRET_KEY = await promptInput(
+					"API_MINIO_SECRET_KEY",
+					"Minio secret key:",
+					minioPassword, // Use configured password as default
+				);
+			}
+			console.log("✅ API_MINIO_SECRET_KEY matches MINIO_ROOT_PASSWORD");
+		} else {
+			// No configured value: set both answers.MINIO_ROOT_PASSWORD and
+			// process.env.MINIO_ROOT_PASSWORD to answers.API_MINIO_SECRET_KEY
+			// so the chosen API_MINIO_SECRET_KEY becomes the stored Minio password
+			answers.MINIO_ROOT_PASSWORD = answers.API_MINIO_SECRET_KEY;
+			process.env.MINIO_ROOT_PASSWORD = answers.API_MINIO_SECRET_KEY;
+			console.log(
+				"ℹ️  MINIO_ROOT_PASSWORD will be set to match API_MINIO_SECRET_KEY",
+			);
+		}
 		answers.API_MINIO_TEST_END_POINT = await promptInput(
 			"API_MINIO_TEST_END_POINT",
 			"Minio test endpoint:",
@@ -932,8 +905,66 @@ export async function apiSetup(answers: SetupAnswers): Promise<SetupAnswers> {
 			["true", "false"],
 			"false",
 		);
-		// All API_POSTGRES_* values are set in postgresSetup() to consolidate PostgreSQL prompts
-		// This avoids prompting for PostgreSQL details twice
+		answers.API_POSTGRES_DATABASE = await promptInput(
+			"API_POSTGRES_DATABASE",
+			"Postgres database:",
+			"talawa",
+		);
+		answers.API_POSTGRES_HOST = await promptInput(
+			"API_POSTGRES_HOST",
+			"Postgres host:",
+			"postgres",
+		);
+		const postgresPassword =
+			answers.POSTGRES_PASSWORD ?? process.env.POSTGRES_PASSWORD;
+		answers.API_POSTGRES_PASSWORD = await promptInput(
+			"API_POSTGRES_PASSWORD",
+			"Postgres password:",
+			postgresPassword ?? "password",
+		);
+		if (postgresPassword !== undefined) {
+			// Configured password found (including empty string), validate against it
+			const postgresPasswordLocal = postgresPassword;
+			while (answers.API_POSTGRES_PASSWORD !== postgresPasswordLocal) {
+				console.warn("⚠️ API_POSTGRES_PASSWORD must match POSTGRES_PASSWORD.");
+				answers.API_POSTGRES_PASSWORD = await promptInput(
+					"API_POSTGRES_PASSWORD",
+					"Postgres password:",
+					postgresPasswordLocal, // Use configured password as default
+				);
+			}
+			console.log("✅ API_POSTGRES_PASSWORD matches POSTGRES_PASSWORD");
+		} else {
+			// No configured value: set both answers.POSTGRES_PASSWORD and
+			// process.env.POSTGRES_PASSWORD to answers.API_POSTGRES_PASSWORD
+			// so the chosen API_POSTGRES_PASSWORD becomes the stored Postgres password
+			answers.POSTGRES_PASSWORD = answers.API_POSTGRES_PASSWORD;
+			process.env.POSTGRES_PASSWORD = answers.API_POSTGRES_PASSWORD;
+			console.log(
+				"ℹ️  POSTGRES_PASSWORD will be set to match API_POSTGRES_PASSWORD",
+			);
+		}
+		answers.API_POSTGRES_PORT = await promptInput(
+			"API_POSTGRES_PORT",
+			"Postgres port:",
+			"5432",
+		);
+		answers.API_POSTGRES_SSL_MODE = await promptList(
+			"API_POSTGRES_SSL_MODE",
+			"Use Postgres SSL?",
+			["true", "false"],
+			"false",
+		);
+		answers.API_POSTGRES_TEST_HOST = await promptInput(
+			"API_POSTGRES_TEST_HOST",
+			"Postgres test host:",
+			"postgres-test",
+		);
+		answers.API_POSTGRES_USER = await promptInput(
+			"API_POSTGRES_USER",
+			"Postgres user:",
+			"talawa",
+		);
 	} catch (err) {
 		await handlePromptError(err);
 	}
@@ -952,7 +983,7 @@ export async function cloudbeaverSetup(
 		answers.CLOUDBEAVER_ADMIN_PASSWORD = await promptInput(
 			"CLOUDBEAVER_ADMIN_PASSWORD",
 			"CloudBeaver admin password:",
-			getSecurePasswordOrPrompt(),
+			"password",
 			validateCloudBeaverPassword,
 		);
 		answers.CLOUDBEAVER_MAPPED_HOST_IP = await promptInput(
@@ -1034,11 +1065,8 @@ export async function minioSetup(answers: SetupAnswers): Promise<SetupAnswers> {
 		answers.MINIO_ROOT_PASSWORD = await promptInput(
 			"MINIO_ROOT_PASSWORD",
 			"Minio root password:",
-			answers.MINIO_ROOT_PASSWORD ?? getSecurePasswordOrPrompt(),
-			validateSecurePassword,
+			"password",
 		);
-		// API_MINIO_SECRET_KEY must match MINIO_ROOT_PASSWORD per documentation
-		answers.API_MINIO_SECRET_KEY = answers.MINIO_ROOT_PASSWORD;
 		answers.MINIO_ROOT_USER = await promptInput(
 			"MINIO_ROOT_USER",
 			"Minio root user:",
@@ -1074,43 +1102,13 @@ export async function postgresSetup(
 		answers.POSTGRES_PASSWORD = await promptInput(
 			"POSTGRES_PASSWORD",
 			"Postgres password:",
-			answers.POSTGRES_PASSWORD ?? getSecurePasswordOrPrompt(),
-			validateSecurePassword,
+			"password",
 		);
-		// API_POSTGRES_PASSWORD must match POSTGRES_PASSWORD per documentation
-		answers.API_POSTGRES_PASSWORD = answers.POSTGRES_PASSWORD;
 		answers.POSTGRES_USER = await promptInput(
 			"POSTGRES_USER",
 			"Postgres user:",
 			"talawa",
 		);
-
-		// API PostgreSQL configuration (consolidated here with service PostgreSQL config)
-		// Auto-set API_POSTGRES_DATABASE to match POSTGRES_DB
-		answers.API_POSTGRES_DATABASE = answers.POSTGRES_DB;
-		answers.API_POSTGRES_HOST = await promptInput(
-			"API_POSTGRES_HOST",
-			"Postgres host (for API connection):",
-			"postgres",
-		);
-		answers.API_POSTGRES_PORT = await promptInput(
-			"API_POSTGRES_PORT",
-			"Postgres port (for API connection):",
-			"5432",
-		);
-		answers.API_POSTGRES_SSL_MODE = await promptList(
-			"API_POSTGRES_SSL_MODE",
-			"Use Postgres SSL (for API connection)?",
-			["true", "false"],
-			"false",
-		);
-		answers.API_POSTGRES_TEST_HOST = await promptInput(
-			"API_POSTGRES_TEST_HOST",
-			"Postgres test host:",
-			"postgres-test",
-		);
-		// Auto-set API_POSTGRES_USER to match POSTGRES_USER
-		answers.API_POSTGRES_USER = answers.POSTGRES_USER;
 	} catch (err) {
 		await handlePromptError(err);
 	}
@@ -1225,7 +1223,6 @@ export async function setup(): Promise<SetupAnswers> {
 	}
 	answers = await setCI(answers);
 	await initializeEnvFile(answers);
-
 	const useDefaultApi = await promptConfirm(
 		"useDefaultApi",
 		"Use recommended default API settings?",

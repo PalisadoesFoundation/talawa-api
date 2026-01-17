@@ -1303,10 +1303,10 @@ describe("Validation Helpers", () => {
 	});
 
 	describe("validatePositiveInteger", () => {
-		let validatePositiveInteger: typeof import("scripts/setup/setup").validatePositiveInteger;
+		let validatePositiveInteger: typeof import("scripts/setup/validators").validatePositiveInteger;
 
 		beforeAll(async () => {
-			const module = await import("scripts/setup/setup");
+			const module = await import("scripts/setup/validators");
 			validatePositiveInteger = module.validatePositiveInteger;
 		});
 
@@ -1351,10 +1351,10 @@ describe("Validation Helpers", () => {
 	});
 
 	describe("validateCronExpression", () => {
-		let validateCronExpression: typeof import("scripts/setup/setup").validateCronExpression;
+		let validateCronExpression: typeof import("scripts/setup/validators").validateCronExpression;
 
 		beforeAll(async () => {
-			const module = await import("scripts/setup/setup");
+			const module = await import("scripts/setup/validators");
 			validateCronExpression = module.validateCronExpression;
 		});
 
