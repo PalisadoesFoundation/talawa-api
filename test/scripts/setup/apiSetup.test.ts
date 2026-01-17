@@ -8,13 +8,12 @@ import {
 	apiSetup,
 	checkEnvFile,
 	generateJwtSecret,
-	generateSecurePassword,
 	type SetupAnswers,
 	setup,
 	validatePort,
-	validateSecurePassword,
 	validateURL,
 } from "scripts/setup/setup";
+import { validateSecurePassword } from "scripts/setup/validators";
 import {
 	afterEach,
 	beforeAll,
@@ -297,67 +296,6 @@ describe("generateJwtSecret", () => {
 
 		randomBytesSpy.mockRestore();
 		consoleErrorSpy.mockRestore();
-	});
-});
-
-describe("generateSecurePassword", () => {
-	it("should generate a password with default length (32 characters)", () => {
-		const password = generateSecurePassword();
-		expect(password.length).toBe(32);
-	});
-
-	it("should generate a password with custom length", () => {
-		const password = generateSecurePassword(24);
-		expect(password.length).toBe(24);
-	});
-
-	it("should enforce minimum length of 8", () => {
-		const password = generateSecurePassword(4);
-		expect(password.length).toBe(8);
-	});
-
-	it("should generate passwords with required character types", () => {
-		for (let i = 0; i < 10; i++) {
-			const password = generateSecurePassword();
-			expect(password).toMatch(/[A-Z]/);
-			expect(password).toMatch(/[a-z]/);
-			expect(password).toMatch(/[0-9]/);
-			expect(password).toMatch(/[!@#$%^&*()]/);
-		}
-	});
-
-	it("should generate unique passwords", () => {
-		const password1 = generateSecurePassword();
-		const password2 = generateSecurePassword();
-		expect(password1).not.toBe(password2);
-	});
-
-	it("should log a warning and throw an error if randomInt fails", () => {
-		const randomIntSpy = vi
-			.spyOn(crypto, "randomInt")
-			.mockImplementation(() => {
-				throw new Error("Permission denied");
-			});
-		const consoleErrorSpy = vi
-			.spyOn(console, "error")
-			.mockImplementation(() => {});
-
-		expect(() => generateSecurePassword()).toThrow(
-			"Password generation failed. Please enter a password manually.",
-		);
-		expect(consoleErrorSpy).toHaveBeenCalledWith(
-			"⚠️ Warning: Failed to generate secure password automatically.",
-		);
-
-		randomIntSpy.mockRestore();
-		consoleErrorSpy.mockRestore();
-	});
-
-	it("should generate passwords that pass validation", () => {
-		for (let i = 0; i < 10; i++) {
-			const password = generateSecurePassword();
-			expect(validateSecurePassword(password)).toBe(true);
-		}
 	});
 });
 

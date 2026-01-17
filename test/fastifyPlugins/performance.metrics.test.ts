@@ -1,19 +1,16 @@
-import Fastify from "fastify";
+import type { FastifyInstance } from "fastify";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import performancePlugin from "../../src/fastifyPlugins/performance";
+import { createTestApp } from "../helpers/performanceTestUtils";
 
 describe("Performance Plugin - Metrics Interface", () => {
-	let app: ReturnType<typeof Fastify>;
+	let app: FastifyInstance;
 
 	beforeEach(async () => {
 		vi.clearAllMocks();
-		delete process.env.API_METRICS_SNAPSHOT_RETENTION_COUNT;
+		// createTestApp uses envConfig as source of truth, no need to modify process.env
 
-		app = Fastify({
-			logger: {
-				level: "silent",
-			},
-		});
+		app = createTestApp();
 
 		await app.register(performancePlugin);
 		await app.ready();
@@ -96,12 +93,10 @@ describe("Performance Plugin - Metrics Interface", () => {
 		});
 
 		it("should respect snapshot retention count from env var", async () => {
-			process.env.API_METRICS_SNAPSHOT_RETENTION_COUNT = "5";
-
-			// Create a new app instance to pick up the env var
-			const testApp = Fastify({
-				logger: {
-					level: "silent",
+			// Create a new app instance with custom retention count via envConfig
+			const testApp = createTestApp({
+				envConfig: {
+					API_METRICS_SNAPSHOT_RETENTION_COUNT: 5,
 				},
 			});
 
@@ -240,11 +235,9 @@ describe("Performance Plugin - Metrics Interface", () => {
 		});
 
 		it("should enforce retention limit when exceeded", async () => {
-			process.env.API_METRICS_SNAPSHOT_RETENTION_COUNT = "3";
-
-			const testApp = Fastify({
-				logger: {
-					level: "silent",
+			const testApp = createTestApp({
+				envConfig: {
+					API_METRICS_SNAPSHOT_RETENTION_COUNT: 3,
 				},
 			});
 

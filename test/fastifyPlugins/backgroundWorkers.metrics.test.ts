@@ -1,10 +1,11 @@
 import type { NodePgDatabase } from "drizzle-orm/node-postgres";
-import Fastify from "fastify";
+import type { FastifyInstance } from "fastify";
 import fp from "fastify-plugin";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type * as schema from "~/src/drizzle/schema";
 import backgroundWorkersPlugin from "../../src/fastifyPlugins/backgroundWorkers";
 import performancePlugin from "../../src/fastifyPlugins/performance";
+import { createTestApp } from "../helpers/performanceTestUtils";
 
 // Mock background worker service
 vi.mock("~/src/workers", () => ({
@@ -24,16 +25,12 @@ const mockDrizzleClientPlugin = fp(
 );
 
 describe("Background Workers Plugin - Metrics Integration", () => {
-	let app: ReturnType<typeof Fastify>;
+	let app: FastifyInstance;
 
 	beforeEach(async () => {
 		vi.clearAllMocks();
 
-		app = Fastify({
-			logger: {
-				level: "silent",
-			},
-		});
+		app = createTestApp();
 
 		// Register drizzle client mock as a named plugin (required dependency)
 		await app.register(mockDrizzleClientPlugin);
@@ -86,11 +83,7 @@ describe("Background Workers Plugin - Metrics Integration", () => {
 
 		it("should reject registration when performance plugin dependency is not registered", async () => {
 			// Create app without performance plugin
-			const testApp = Fastify({
-				logger: {
-					level: "silent",
-				},
-			});
+			const testApp = createTestApp();
 
 			// Register drizzleClient as a proper named plugin
 			await testApp.register(mockDrizzleClientPlugin);
@@ -104,11 +97,7 @@ describe("Background Workers Plugin - Metrics Integration", () => {
 
 		it("should throw error when getMetricsSnapshots is not provided by performance plugin", async () => {
 			// Create app with a fake "performance" plugin that doesn't provide getMetricsSnapshots
-			const testApp = Fastify({
-				logger: {
-					level: "silent",
-				},
-			});
+			const testApp = createTestApp();
 
 			// Register drizzleClient as a proper named plugin
 			await testApp.register(mockDrizzleClientPlugin);

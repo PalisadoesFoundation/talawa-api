@@ -1180,4 +1180,286 @@ describe("Validation Helpers", () => {
 			);
 		});
 	});
+
+	describe("metricsSetup", () => {
+		let metricsSetup: typeof import("scripts/setup/setup").metricsSetup;
+		type SetupAnswers = import("scripts/setup/setup").SetupAnswers;
+
+		beforeAll(async () => {
+			const module = await import("scripts/setup/setup");
+			metricsSetup = module.metricsSetup;
+		});
+
+		afterEach(() => {
+			vi.restoreAllMocks();
+		});
+
+		it("returns answers immediately when metrics is disabled", async () => {
+			const promptMock = vi.spyOn(inquirer, "prompt");
+
+			promptMock.mockResolvedValueOnce({
+				API_METRICS_ENABLED: "false",
+			});
+
+			const answers: SetupAnswers = {};
+
+			const result = await metricsSetup(answers);
+
+			expect(promptMock).toHaveBeenCalledTimes(1);
+			expect(result.API_METRICS_ENABLED).toBe("false");
+			expect(result.API_METRICS_SLOW_REQUEST_MS).toBeUndefined();
+		});
+
+		it("prompts for all settings when metrics and aggregation are enabled", async () => {
+			const promptMock = vi.spyOn(inquirer, "prompt");
+
+			promptMock.mockResolvedValueOnce({ API_METRICS_ENABLED: "true" });
+			promptMock.mockResolvedValueOnce({ API_METRICS_API_KEY: "test-key" });
+			promptMock.mockResolvedValueOnce({ API_METRICS_SLOW_REQUEST_MS: "500" });
+			promptMock.mockResolvedValueOnce({
+				API_METRICS_SLOW_OPERATION_MS: "200",
+			});
+			promptMock.mockResolvedValueOnce({
+				API_METRICS_AGGREGATION_ENABLED: "true",
+			});
+			promptMock.mockResolvedValueOnce({
+				API_METRICS_AGGREGATION_CRON_SCHEDULE: "*/5 * * * *",
+			});
+			promptMock.mockResolvedValueOnce({
+				API_METRICS_AGGREGATION_WINDOW_MINUTES: "5",
+			});
+			promptMock.mockResolvedValueOnce({
+				API_METRICS_CACHE_TTL_SECONDS: "300",
+			});
+			promptMock.mockResolvedValueOnce({
+				API_METRICS_SNAPSHOT_RETENTION_COUNT: "1000",
+			});
+
+			const answers: SetupAnswers = {};
+
+			const result = await metricsSetup(answers);
+
+			expect(promptMock).toHaveBeenCalledTimes(9);
+			expect(result.API_METRICS_ENABLED).toBe("true");
+			expect(result.API_METRICS_API_KEY).toBe("test-key");
+			expect(result.API_METRICS_SLOW_REQUEST_MS).toBe("500");
+			expect(result.API_METRICS_SLOW_OPERATION_MS).toBe("200");
+			expect(result.API_METRICS_AGGREGATION_ENABLED).toBe("true");
+			expect(result.API_METRICS_AGGREGATION_CRON_SCHEDULE).toBe("*/5 * * * *");
+			expect(result.API_METRICS_AGGREGATION_WINDOW_MINUTES).toBe("5");
+			expect(result.API_METRICS_CACHE_TTL_SECONDS).toBe("300");
+			expect(result.API_METRICS_SNAPSHOT_RETENTION_COUNT).toBe("1000");
+		});
+
+		it("skips aggregation settings when aggregation is disabled", async () => {
+			const promptMock = vi.spyOn(inquirer, "prompt");
+
+			promptMock.mockResolvedValueOnce({ API_METRICS_ENABLED: "true" });
+			promptMock.mockResolvedValueOnce({ API_METRICS_API_KEY: "" });
+			promptMock.mockResolvedValueOnce({ API_METRICS_SLOW_REQUEST_MS: "500" });
+			promptMock.mockResolvedValueOnce({
+				API_METRICS_SLOW_OPERATION_MS: "200",
+			});
+			promptMock.mockResolvedValueOnce({
+				API_METRICS_AGGREGATION_ENABLED: "false",
+			});
+			promptMock.mockResolvedValueOnce({
+				API_METRICS_SNAPSHOT_RETENTION_COUNT: "1000",
+			});
+
+			const answers: SetupAnswers = {};
+
+			const result = await metricsSetup(answers);
+
+			expect(promptMock).toHaveBeenCalledTimes(6);
+			expect(result.API_METRICS_ENABLED).toBe("true");
+			// Empty API key should not be persisted (undefined for schema validation)
+			expect(result.API_METRICS_API_KEY).toBeUndefined();
+			expect(result.API_METRICS_AGGREGATION_ENABLED).toBe("false");
+			expect(result.API_METRICS_AGGREGATION_CRON_SCHEDULE).toBeUndefined();
+			expect(result.API_METRICS_AGGREGATION_WINDOW_MINUTES).toBeUndefined();
+			expect(result.API_METRICS_CACHE_TTL_SECONDS).toBeUndefined();
+			expect(result.API_METRICS_SNAPSHOT_RETENTION_COUNT).toBe("1000");
+		});
+
+		it("preserves existing answers", async () => {
+			const promptMock = vi.spyOn(inquirer, "prompt");
+
+			promptMock.mockResolvedValueOnce({
+				API_METRICS_ENABLED: "false",
+			});
+
+			const answers: SetupAnswers = {
+				CI: "true",
+				API_PORT: "4000",
+			};
+
+			const result = await metricsSetup(answers);
+
+			expect(result.CI).toBe("true");
+			expect(result.API_PORT).toBe("4000");
+			expect(result.API_METRICS_ENABLED).toBe("false");
+		});
+	});
+
+	describe("validatePositiveInteger", () => {
+		let validatePositiveInteger: typeof import("scripts/setup/validators").validatePositiveInteger;
+
+		beforeAll(async () => {
+			const module = await import("scripts/setup/validators");
+			validatePositiveInteger = module.validatePositiveInteger;
+		});
+
+		it("returns true for valid positive integers", () => {
+			expect(validatePositiveInteger("1")).toBe(true);
+			expect(validatePositiveInteger("100")).toBe(true);
+			expect(validatePositiveInteger("999999")).toBe(true);
+		});
+
+		it("returns error message for zero", () => {
+			expect(validatePositiveInteger("0")).toBe(
+				"Please enter a valid positive integer.",
+			);
+		});
+
+		it("returns error message for negative numbers", () => {
+			expect(validatePositiveInteger("-1")).toBe(
+				"Please enter a valid positive integer.",
+			);
+		});
+
+		it("returns error message for non-numeric input", () => {
+			expect(validatePositiveInteger("abc")).toBe(
+				"Please enter a valid positive integer.",
+			);
+		});
+
+		it("returns error message for decimal numbers", () => {
+			expect(validatePositiveInteger("1.5")).toBe(
+				"Please enter a valid positive integer.",
+			);
+		});
+
+		it("returns error message for trailing characters", () => {
+			expect(validatePositiveInteger("1abc")).toBe(
+				"Please enter a valid positive integer.",
+			);
+			expect(validatePositiveInteger("123a")).toBe(
+				"Please enter a valid positive integer.",
+			);
+		});
+	});
+
+	describe("validateCronExpression", () => {
+		let validateCronExpression: typeof import("scripts/setup/validators").validateCronExpression;
+
+		beforeAll(async () => {
+			const module = await import("scripts/setup/validators");
+			validateCronExpression = module.validateCronExpression;
+		});
+
+		it("returns true for valid cron expressions", () => {
+			expect(validateCronExpression("*/5 * * * *")).toBe(true);
+			expect(validateCronExpression("0 */2 * * *")).toBe(true);
+			expect(validateCronExpression("0 0 * * *")).toBe(true);
+			expect(validateCronExpression("30 4 1 * 0")).toBe(true);
+		});
+
+		it("returns error message for empty cron expression", () => {
+			expect(validateCronExpression("")).toBe(
+				"Cron expression cannot be empty.",
+			);
+		});
+
+		it("returns error message for invalid cron expressions", () => {
+			expect(validateCronExpression("not a cron")).toContain(
+				"Please enter a valid cron expression",
+			);
+			expect(validateCronExpression("* *")).toContain(
+				"Please enter a valid cron expression",
+			);
+			// Regression test: reversed ranges should be rejected
+			expect(validateCronExpression("5-1 * * * *")).toContain(
+				"Please enter a valid cron expression",
+			);
+		});
+
+		it("returns true for valid comma-separated cron tokens", () => {
+			expect(validateCronExpression("1,2,3 * * * *")).toBe(true);
+			expect(validateCronExpression("0,30 * * * *")).toBe(true);
+			expect(validateCronExpression("0 0,12 * * *")).toBe(true);
+			expect(validateCronExpression("0 0 1,15 * *")).toBe(true);
+		});
+
+		it("returns error message for invalid comma-separated cron tokens", () => {
+			// Out of range minute
+			expect(validateCronExpression("61,1 * * * *")).toContain(
+				"Please enter a valid cron expression",
+			);
+			// Negative value
+			expect(validateCronExpression("1,-2 * * * *")).toContain(
+				"Please enter a valid cron expression",
+			);
+			// Out of range hour
+			expect(validateCronExpression("0 24,1 * * *")).toContain(
+				"Please enter a valid cron expression",
+			);
+		});
+
+		it("returns true for valid range (start-end) tokens", () => {
+			expect(validateCronExpression("2-5 * * * *")).toBe(true);
+			expect(validateCronExpression("0 0-12 * * *")).toBe(true);
+			expect(validateCronExpression("0 0 1-31 * *")).toBe(true);
+			expect(validateCronExpression("0 0 * 1-12 *")).toBe(true);
+			expect(validateCronExpression("0 0 * * 0-6")).toBe(true);
+		});
+
+		it("returns error message for invalid range tokens", () => {
+			// Reversed range (start > end)
+			expect(validateCronExpression("5-2 * * * *")).toContain(
+				"Please enter a valid cron expression",
+			);
+			// Non-numeric range parts
+			expect(validateCronExpression("a-3 * * * *")).toContain(
+				"Please enter a valid cron expression",
+			);
+			expect(validateCronExpression("2-b * * * *")).toContain(
+				"Please enter a valid cron expression",
+			);
+			// Out of bounds range
+			expect(validateCronExpression("60-65 * * * *")).toContain(
+				"Please enter a valid cron expression",
+			);
+			// Range exceeding max for hour field
+			expect(validateCronExpression("0 20-25 * * *")).toContain(
+				"Please enter a valid cron expression",
+			);
+		});
+
+		it("returns true for valid number/step tokens", () => {
+			expect(validateCronExpression("3/2 * * * *")).toBe(true);
+			expect(validateCronExpression("0/15 * * * *")).toBe(true);
+			expect(validateCronExpression("0 0/6 * * *")).toBe(true);
+			expect(validateCronExpression("0 0 1/5 * *")).toBe(true);
+		});
+
+		it("returns error message for invalid number/step tokens", () => {
+			// Step of 0 (invalid, step must be >= 1)
+			expect(validateCronExpression("3/0 * * * *")).toContain(
+				"Please enter a valid cron expression",
+			);
+			// Non-numeric step
+			expect(validateCronExpression("3/x * * * *")).toContain(
+				"Please enter a valid cron expression",
+			);
+			// Non-numeric number
+			expect(validateCronExpression("x/2 * * * *")).toContain(
+				"Please enter a valid cron expression",
+			);
+			// Number out of bounds for minute field
+			expect(validateCronExpression("60/5 * * * *")).toContain(
+				"Please enter a valid cron expression",
+			);
+		});
+	});
 });
