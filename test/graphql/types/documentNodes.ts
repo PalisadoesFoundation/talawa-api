@@ -2790,3 +2790,70 @@ export const Mutation_verifyEmail =
         message
     }
 }`);
+
+export const Query_eventsByCreator = gql(`
+	query Query_eventsByCreator($userId: ID!) {
+		eventsByCreator(userId: $userId) {
+			id
+			name
+			description
+			startAt
+			endAt
+			location
+			allDay
+			isPublic
+			isRegisterable
+			isInviteOnly
+			isRecurringEventTemplate
+			organization {
+				id
+				name
+			}
+			creator {
+				id
+			}
+		}
+	}
+`);
+
+export const Query_eventsByAttendee = gql(`
+	query Query_eventsByAttendee($userId: ID!) {
+		eventsByAttendee(userId: $userId) {
+			id
+			name
+			description
+			startAt
+			endAt
+			location
+			allDay
+			isPublic
+			isRegisterable
+			isInviteOnly
+			organization {
+				id
+				name
+			}
+		}
+	}
+`);
+
+export const Query_eventsByVolunteer = gql(`
+	query Query_eventsByVolunteer($userId: ID!) {
+		eventsByVolunteer(userId: $userId) {
+			id
+			name
+			description
+			startAt
+			endAt
+			location
+			allDay
+			isPublic
+			isRegisterable
+			isInviteOnly
+			organization {
+				id
+				name
+			}
+		}
+	}
+`);

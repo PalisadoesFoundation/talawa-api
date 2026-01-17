@@ -4747,12 +4747,40 @@ type Query {
   ): Event
 
   """
+  Query field to fetch all events where a user is an administrator (via organization role).
+  """
+  eventsByAdmin(
+    """ID of the user whose admin events to fetch"""
+    userId: ID!
+  ): [Event!]!
+
+  """
+  Query field to fetch all events a user is registered for or has attended.
+  """
+  eventsByAttendee(
+    """ID of the user whose attended events to fetch"""
+    userId: ID!
+  ): [Event!]!
+
+  """Query field to fetch all events created by a specific user."""
+  eventsByCreator(
+    """ID of the user whose created events to fetch"""
+    userId: ID!
+  ): [Event!]!
+
+  """
   Fetches multiple events by their IDs, supporting both standalone events and materialized recurring instances.
   """
   eventsByIds(input: QueryEventsByIdsInput!): [Event!]
 
   """Fetch all events that belong to a given organization."""
   eventsByOrganizationId(input: EventsByOrganizationIdInput!): [Event!]
+
+  """Query field to fetch all events a user is volunteering for."""
+  eventsByVolunteer(
+    """ID of the user whose volunteer events to fetch"""
+    userId: ID!
+  ): [Event!]!
 
   """Query field to read a fund."""
   fund(input: QueryFundInput!): Fund
