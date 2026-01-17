@@ -133,8 +133,10 @@ export const VENUE_DESCRIPTION_MAX_LENGTH = 2048;
 export const VENUE_NAME_MAX_LENGTH = 256;
 
 export const venuesTableInsertSchema = createInsertSchema(venuesTable, {
-	capacity: (schema) => schema.nonnegative().optional(),
+	capacity: (schema) => schema.nonnegative().nullable().optional(),
 	description: (schema) =>
-		schema.min(1).max(VENUE_DESCRIPTION_MAX_LENGTH).optional(),
+		schema.min(1).max(VENUE_DESCRIPTION_MAX_LENGTH).nullable().optional(),
 	name: (schema) => schema.min(1).max(VENUE_NAME_MAX_LENGTH),
+	creatorId: (schema) => schema.nullable().optional(),
+	updaterId: (schema) => schema.nullable().optional(),
 });
