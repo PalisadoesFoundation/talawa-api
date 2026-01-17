@@ -109,6 +109,7 @@
     "typecheck": "tsc",
     "disable_git_hooks": "lefthook uninstall",
     "drop_drizzle_migrations": "drizzle-kit drop",
+    
     "enable_git_hooks": "lefthook install",
     "format:fix": "biome check --error-on-warnings --write",
     "lint:sanitization": "tsx scripts/check_sanitization.ts",
