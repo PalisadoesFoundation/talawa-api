@@ -64,6 +64,24 @@ describe("MutationCreateAgendaItemInput Schema", () => {
 		});
 	});
 
+	describe("notes field validation", () => {
+		it("should accept notes within max length", () => {
+			const result = mutationCreateAgendaItemInputSchema.safeParse({
+				...validBaseInput,
+				notes: "a".repeat(2048),
+			});
+			expect(result.success).toBe(true);
+		});
+
+		it("should reject notes exceeding max length", () => {
+			const result = mutationCreateAgendaItemInputSchema.safeParse({
+				...validBaseInput,
+				notes: "a".repeat(2049),
+			});
+			expect(result.success).toBe(false);
+		});
+	});
+
 	describe("sequence field validation", () => {
 		it("should accept a valid sequence", () => {
 			const result = mutationCreateAgendaItemInputSchema.safeParse({

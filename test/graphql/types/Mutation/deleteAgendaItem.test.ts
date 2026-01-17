@@ -1,11 +1,9 @@
 import { faker } from "@faker-js/faker";
 import { eq } from "drizzle-orm";
-import { initGraphQLTada } from "gql.tada";
 import { afterEach, expect, suite, test, vi } from "vitest";
 
 import { usersTable } from "~/src/drizzle/schema";
 import { agendaItemsTable } from "~/src/drizzle/tables/agendaItems";
-import type { ClientCustomScalars } from "~/src/graphql/scalars";
 import type {
 	ArgumentsAssociatedResourcesNotFoundExtensions,
 	TalawaGraphQLFormattedError,
@@ -21,26 +19,11 @@ import {
 	Mutation_createEvent,
 	Mutation_createOrganization,
 	Mutation_createOrganizationMembership,
+	Mutation_deleteAgendaItem,
 	Mutation_deleteOrganization,
 	Mutation_deleteStandaloneEvent,
 	Query_signIn,
 } from "../documentNodes";
-import type { introspection } from "../gql.tada";
-
-const gql = initGraphQLTada<{
-	introspection: introspection;
-	scalars: ClientCustomScalars;
-}>();
-
-const Mutation_deleteAgendaItem = gql(`
-  mutation Mutation_deleteAgendaItem($input: MutationDeleteAgendaItemInput!) {
-    deleteAgendaItem(input: $input) {
-      id
-      name
-      description
-    }
-  }
-`);
 
 let cachedAdminAuth: { token: string; userId: string } | null = null;
 

@@ -995,6 +995,7 @@ export const Mutation_deleteAgendaItem = gql(`
     deleteAgendaItem(input: $input) {
       id
       name
+      description
     }
   }
 `);

@@ -271,6 +271,37 @@ suite("Mutation field createAgendaItem", () => {
 		);
 	});
 
+	test("Returns invalid_arguments when notes exceed max length", async () => {
+		const { token } = await getAdminAuth();
+		const data = await createOrgEventFolderCategory(token);
+		cleanupFns.push(data.cleanup);
+
+		const result = await mercuriusClient.mutate(Mutation_createAgendaItem, {
+			headers: { authorization: `bearer ${token}` },
+			variables: {
+				input: {
+					eventId: data.eventId,
+					folderId: data.folderId,
+					categoryId: data.categoryId,
+					name: "Item",
+					sequence: 1,
+					type: "general",
+					notes: "a".repeat(2049), // exceeds max
+				},
+			},
+		});
+
+		expect(result.errors).toEqual(
+			expect.arrayContaining([
+				expect.objectContaining({
+					extensions: expect.objectContaining({
+						code: "invalid_arguments",
+					}),
+				}),
+			]),
+		);
+	});
+
 	test("Returns error when folder does not exist", async () => {
 		const { token } = await getAdminAuth();
 
