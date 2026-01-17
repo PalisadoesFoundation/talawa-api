@@ -839,15 +839,17 @@ export async function apiSetup(answers: SetupAnswers): Promise<SetupAnswers> {
 			"Minio port:",
 			"9000",
 		);
-		const existingMinioPassword =
+		// Treat empty string as unset so users can supply a new secret
+		const rawMinioPassword =
 			answers.MINIO_ROOT_PASSWORD ?? process.env.MINIO_ROOT_PASSWORD;
+		const existingMinioPassword = rawMinioPassword || undefined;
 		answers.API_MINIO_SECRET_KEY = await promptInput(
 			"API_MINIO_SECRET_KEY",
 			"Minio secret key:",
 			existingMinioPassword ?? "password",
 		);
 		if (existingMinioPassword !== undefined) {
-			// Configured password found (including empty string), validate against it
+			// Configured non-empty password found, validate against it
 			const minioPassword = existingMinioPassword;
 			while (answers.API_MINIO_SECRET_KEY !== minioPassword) {
 				console.warn("⚠️ API_MINIO_SECRET_KEY must match MINIO_ROOT_PASSWORD.");
@@ -859,7 +861,7 @@ export async function apiSetup(answers: SetupAnswers): Promise<SetupAnswers> {
 			}
 			console.log("✅ API_MINIO_SECRET_KEY matches MINIO_ROOT_PASSWORD");
 		} else {
-			// No configured value: set both answers.MINIO_ROOT_PASSWORD and
+			// No configured value (or empty): set both answers.MINIO_ROOT_PASSWORD and
 			// process.env.MINIO_ROOT_PASSWORD to answers.API_MINIO_SECRET_KEY
 			// so the chosen API_MINIO_SECRET_KEY becomes the stored Minio password
 			answers.MINIO_ROOT_PASSWORD = answers.API_MINIO_SECRET_KEY;
@@ -889,15 +891,17 @@ export async function apiSetup(answers: SetupAnswers): Promise<SetupAnswers> {
 			"Postgres host:",
 			"postgres",
 		);
-		const postgresPassword =
+		// Treat empty string as unset so users can supply a new secret
+		const rawPostgresPassword =
 			answers.POSTGRES_PASSWORD ?? process.env.POSTGRES_PASSWORD;
+		const postgresPassword = rawPostgresPassword || undefined;
 		answers.API_POSTGRES_PASSWORD = await promptInput(
 			"API_POSTGRES_PASSWORD",
 			"Postgres password:",
 			postgresPassword ?? "password",
 		);
 		if (postgresPassword !== undefined) {
-			// Configured password found (including empty string), validate against it
+			// Configured non-empty password found, validate against it
 			const postgresPasswordLocal = postgresPassword;
 			while (answers.API_POSTGRES_PASSWORD !== postgresPasswordLocal) {
 				console.warn("⚠️ API_POSTGRES_PASSWORD must match POSTGRES_PASSWORD.");
@@ -909,7 +913,7 @@ export async function apiSetup(answers: SetupAnswers): Promise<SetupAnswers> {
 			}
 			console.log("✅ API_POSTGRES_PASSWORD matches POSTGRES_PASSWORD");
 		} else {
-			// No configured value: set both answers.POSTGRES_PASSWORD and
+			// No configured value (or empty): set both answers.POSTGRES_PASSWORD and
 			// process.env.POSTGRES_PASSWORD to answers.API_POSTGRES_PASSWORD
 			// so the chosen API_POSTGRES_PASSWORD becomes the stored Postgres password
 			answers.POSTGRES_PASSWORD = answers.API_POSTGRES_PASSWORD;
