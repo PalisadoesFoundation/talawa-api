@@ -1,3 +1,5 @@
+import type { z } from "zod";
+import type { iso639Set1LanguageCodeEnum } from "~/src/drizzle/enums/iso639Set1LanguageCode";
 import { Iso639Set1LanguageCode } from "~/src/graphql/enums/Iso639Set1LanguageCode";
 import envConfig from "~/src/utilities/graphqLimits";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
@@ -8,6 +10,7 @@ User.implement({
 		naturalLanguageCode: t.field({
 			description: "Language code of the user's preferred natural language.",
 			complexity: envConfig.API_GRAPHQL_SCALAR_RESOLVER_FIELD_COST,
+			nullable: true,
 			resolve: async (parent, _args, ctx) => {
 				if (!ctx.currentClient.isAuthenticated) {
 					throw new TalawaGraphQLError({
@@ -45,7 +48,9 @@ User.implement({
 					});
 				}
 
-				return parent.naturalLanguageCode;
+				return parent.naturalLanguageCode as z.infer<
+					typeof iso639Set1LanguageCodeEnum
+				> | null;
 			},
 			type: Iso639Set1LanguageCode,
 		}),

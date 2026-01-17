@@ -14,7 +14,7 @@ Defined in: [src/graphql/types/Chat/updatedAt.ts:9](https://github.com/Palisadoe
 
 #### avatarMimeType
 
-`"image/avif"` \| `"image/jpeg"` \| `"image/png"` \| `"image/webp"` \| `null`
+`string` \| `null`
 
 #### avatarName
 

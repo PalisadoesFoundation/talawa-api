@@ -76,7 +76,7 @@ export const passwordResetTokensTableInsertSchema = createInsertSchema(
 	{
 		// SHA-256 produces 64-character hex string
 		tokenHash: (schema) => schema.length(64),
-		userId: (schema) => schema.uuid(),
+		userId: (schema) => schema,
 		expiresAt: (schema) => schema,
 	},
 );

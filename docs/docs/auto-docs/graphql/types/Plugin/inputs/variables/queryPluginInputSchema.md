@@ -4,7 +4,7 @@
 
 # Variable: queryPluginInputSchema
 
-> `const` **queryPluginInputSchema**: `ZodObject`\<\{ `id`: `ZodString`; \}, `"strip"`, `ZodTypeAny`, \{ `id`: `string`; \}, \{ `id`: `string`; \}\>
+> `const` **queryPluginInputSchema**: `ZodObject`\<\{ `id`: `ZodString`; \}, `$strip`\>
 
 Defined in: [src/graphql/types/Plugin/inputs.ts:24](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/graphql/types/Plugin/inputs.ts#L24)
 

@@ -57,7 +57,7 @@ Post.implement({
 					};
 				}
 				return {
-					voteType: existingPostVote.type,
+					voteType: existingPostVote.type as z.infer<typeof postVoteTypeEnum>,
 					hasVoted: true,
 				};
 			},

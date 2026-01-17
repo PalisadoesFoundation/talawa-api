@@ -26,6 +26,6 @@ Defined in: [src/plugin/types.ts:50](https://github.com/PalisadoesFoundation/tal
 
 ### type
 
-> **type**: `"enum"` \| `"table"` \| `"relation"`
+> **type**: `"table"` \| `"enum"` \| `"relation"`
 
 Defined in: [src/plugin/types.ts:49](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/plugin/types.ts#L49)

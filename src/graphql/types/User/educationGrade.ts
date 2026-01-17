@@ -1,3 +1,5 @@
+import type { z } from "zod";
+import type { userEducationGradeEnum } from "~/src/drizzle/enums/userEducationGrade";
 import { UserEducationGrade } from "~/src/graphql/enums/UserEducationGrade";
 import envConfig from "~/src/utilities/graphqLimits";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
@@ -8,6 +10,7 @@ User.implement({
 		educationGrade: t.field({
 			description: "Primary education grade of the user.",
 			complexity: envConfig.API_GRAPHQL_SCALAR_RESOLVER_FIELD_COST,
+			nullable: true,
 			resolve: async (parent, _args, ctx) => {
 				if (!ctx.currentClient.isAuthenticated) {
 					throw new TalawaGraphQLError({
@@ -45,7 +48,9 @@ User.implement({
 					});
 				}
 
-				return parent.educationGrade;
+				return parent.educationGrade as z.infer<
+					typeof userEducationGradeEnum
+				> | null;
 			},
 			type: UserEducationGrade,
 		}),

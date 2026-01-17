@@ -4,6 +4,8 @@ import {
 	type GraphQLFormattedError,
 } from "graphql";
 
+type JSONArgumentPathKey = PropertyKey;
+
 // The term action used below is used to refer to read and write operations triggered by the clients. In the context of graphql query, mutation and subscription are the three possible ways to perform these actions.
 
 // The term resource used below is used to refer to any entity that the client can perform an action on. These can be both coarse and fine grained entities. One example for a coarse grained entity would be the account of a user and one example for a fine grained entity would be the email address of a user.
@@ -32,7 +34,7 @@ import {
 export type ArgumentsAssociatedResourcesNotFoundExtensions = {
 	code: "arguments_associated_resources_not_found";
 	issues: {
-		argumentPath: (string | number)[];
+		argumentPath: JSONArgumentPathKey[];
 	}[];
 };
 
@@ -92,7 +94,7 @@ export type ForbiddenActionExtensions = {
 export type ForbiddenActionOnArgumentsAssociatedResourcesExtensions = {
 	code: "forbidden_action_on_arguments_associated_resources";
 	issues: {
-		argumentPath: (string | number)[];
+		argumentPath: JSONArgumentPathKey[];
 		message: string;
 	}[];
 };
@@ -138,7 +140,7 @@ export type UnauthenticatedExtensions = {
 export type InvalidArgumentsExtensions = {
 	code: "invalid_arguments";
 	issues: {
-		argumentPath: (string | number)[];
+		argumentPath: JSONArgumentPathKey[];
 		message: string;
 	}[];
 };
@@ -163,7 +165,7 @@ export type InvalidArgumentsExtensions = {
 export type InvalidCredentialsExtensions = {
 	code: "invalid_credentials";
 	issues: {
-		argumentPath: (string | number)[];
+		argumentPath: JSONArgumentPathKey[];
 		message: string;
 	}[];
 };
@@ -199,7 +201,7 @@ export type UnauthorizedActionExtensions = {
  */
 export type UnauthorizedActionOnArgumentsAssociatedResourcesExtensions = {
 	issues: {
-		argumentPath: (string | number)[];
+		argumentPath: JSONArgumentPathKey[];
 	}[];
 	code: "unauthorized_action_on_arguments_associated_resources";
 };
@@ -222,7 +224,7 @@ export type UnauthorizedActionOnArgumentsAssociatedResourcesExtensions = {
  */
 export type UnauthorizedArgumentsExtensions = {
 	issues: {
-		argumentPath: (string | number)[];
+		argumentPath: JSONArgumentPathKey[];
 	}[];
 	code: "unauthorized_arguments";
 };
