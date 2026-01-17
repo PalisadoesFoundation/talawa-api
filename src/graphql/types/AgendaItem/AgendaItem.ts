@@ -1,3 +1,5 @@
+import type { z } from "zod";
+import type { agendaItemTypeEnum } from "~/src/drizzle/enums/agendaItemType";
 import type { agendaItemsTable } from "~/src/drizzle/tables/agendaItems";
 import { builder } from "~/src/graphql/builder";
 import { AgendaItemType } from "~/src/graphql/enums/AgendaItemType";
@@ -30,8 +32,10 @@ AgendaItem.implement({
 			description: "Name of the agenda item.",
 			resolve: (parent) => escapeHTML(parent.name),
 		}),
-		type: t.expose("type", {
+		type: t.field({
 			description: "Type of the agenda item.",
+			resolve: (parent) =>
+				parent.type as z.infer<typeof agendaItemTypeEnum>,
 			type: AgendaItemType,
 		}),
 	}),

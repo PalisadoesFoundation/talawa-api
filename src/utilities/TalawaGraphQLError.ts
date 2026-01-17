@@ -32,7 +32,7 @@ import {
 export type ArgumentsAssociatedResourcesNotFoundExtensions = {
 	code: "arguments_associated_resources_not_found";
 	issues: {
-		argumentPath: (string | number)[];
+		argumentPath: PropertyKey[];
 	}[];
 };
 
@@ -92,7 +92,7 @@ export type ForbiddenActionExtensions = {
 export type ForbiddenActionOnArgumentsAssociatedResourcesExtensions = {
 	code: "forbidden_action_on_arguments_associated_resources";
 	issues: {
-		argumentPath: (string | number)[];
+		argumentPath: PropertyKey[];
 		message: string;
 	}[];
 };
@@ -138,7 +138,7 @@ export type UnauthenticatedExtensions = {
 export type InvalidArgumentsExtensions = {
 	code: "invalid_arguments";
 	issues: {
-		argumentPath: (string | number)[];
+		argumentPath: PropertyKey[];
 		message: string;
 	}[];
 };
@@ -163,7 +163,7 @@ export type InvalidArgumentsExtensions = {
 export type InvalidCredentialsExtensions = {
 	code: "invalid_credentials";
 	issues: {
-		argumentPath: (string | number)[];
+		argumentPath: PropertyKey[];
 		message: string;
 	}[];
 };
@@ -199,7 +199,7 @@ export type UnauthorizedActionExtensions = {
  */
 export type UnauthorizedActionOnArgumentsAssociatedResourcesExtensions = {
 	issues: {
-		argumentPath: (string | number)[];
+		argumentPath: PropertyKey[];
 	}[];
 	code: "unauthorized_action_on_arguments_associated_resources";
 };
@@ -222,7 +222,7 @@ export type UnauthorizedActionOnArgumentsAssociatedResourcesExtensions = {
  */
 export type UnauthorizedArgumentsExtensions = {
 	issues: {
-		argumentPath: (string | number)[];
+		argumentPath: PropertyKey[];
 	}[];
 	code: "unauthorized_arguments";
 };

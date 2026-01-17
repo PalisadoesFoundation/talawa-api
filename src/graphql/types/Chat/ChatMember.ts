@@ -1,11 +1,15 @@
+import type { z } from "zod";
+import { chatMembershipRoleEnum } from "~/src/drizzle/enums/chatMembershipRole";
 import { builder } from "~/src/graphql/builder";
 import { ChatMembershipRole } from "~/src/graphql/enums/ChatMembershipRole";
 import type { User } from "~/src/graphql/types/User/User";
 import { User as UserRef } from "~/src/graphql/types/User/User";
 
-interface ChatMemberType {
+export type ChatMemberRole = z.infer<typeof chatMembershipRoleEnum>;
+
+export interface ChatMemberType {
 	member: User;
-	role: "administrator" | "regular";
+	role: ChatMemberRole;
 }
 
 export const ChatMember = builder.objectRef<ChatMemberType>("ChatMember");
