@@ -9,7 +9,6 @@ import {
 	venuesTableRelations,
 } from "~/src/drizzle/tables/venues";
 
-
 describe("venuesTable", () => {
 	describe("constants", () => {
 		it("should have VENUE_DESCRIPTION_MAX_LENGTH set to 2048", () => {
