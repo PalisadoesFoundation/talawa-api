@@ -310,19 +310,25 @@ describe("src/drizzle/tables/chats.ts - Table Definition Tests", () => {
 		});
 
 		it("should accept valid name within length constraints", () => {
-			const validData = { name: faker.lorem.words(5) };
+			const validData = {
+				name: faker.lorem.words(5),
+				organizationId: faker.string.uuid(),
+			};
 			const result = chatsTableInsertSchema.safeParse(validData);
 			expect(result.success).toBe(true);
 		});
 
 		it("should accept name with exactly minimum length (1 character)", () => {
-			const validData = { name: "a" };
+			const validData = { name: "a", organizationId: faker.string.uuid() };
 			const result = chatsTableInsertSchema.safeParse(validData);
 			expect(result.success).toBe(true);
 		});
 
 		it("should accept name with exactly maximum length (256 characters)", () => {
-			const validData = { name: "a".repeat(256) };
+			const validData = {
+				name: "a".repeat(256),
+				organizationId: faker.string.uuid(),
+			};
 			const result = chatsTableInsertSchema.safeParse(validData);
 			expect(result.success).toBe(true);
 		});
@@ -359,6 +365,7 @@ describe("src/drizzle/tables/chats.ts - Table Definition Tests", () => {
 		it("should accept valid description within length constraints", () => {
 			const validData = {
 				name: faker.lorem.words(3),
+				organizationId: faker.string.uuid(),
 				description: faker.lorem.paragraph(),
 			};
 			const result = chatsTableInsertSchema.safeParse(validData);
@@ -366,13 +373,20 @@ describe("src/drizzle/tables/chats.ts - Table Definition Tests", () => {
 		});
 
 		it("should accept description as optional", () => {
-			const validData = { name: faker.lorem.words(3) };
+			const validData = {
+				name: faker.lorem.words(3),
+				organizationId: faker.string.uuid(),
+			};
 			const result = chatsTableInsertSchema.safeParse(validData);
 			expect(result.success).toBe(true);
 		});
 
 		it("should accept description with exactly minimum length (1 character)", () => {
-			const validData = { name: faker.lorem.words(3), description: "a" };
+			const validData = {
+				name: faker.lorem.words(3),
+				organizationId: faker.string.uuid(),
+				description: "a",
+			};
 			const result = chatsTableInsertSchema.safeParse(validData);
 			expect(result.success).toBe(true);
 		});
@@ -380,6 +394,7 @@ describe("src/drizzle/tables/chats.ts - Table Definition Tests", () => {
 		it("should accept description with exactly maximum length (2048 characters)", () => {
 			const validData = {
 				name: faker.lorem.words(3),
+				organizationId: faker.string.uuid(),
 				description: "a".repeat(2048),
 			};
 			const result = chatsTableInsertSchema.safeParse(validData);
@@ -402,6 +417,7 @@ describe("src/drizzle/tables/chats.ts - Table Definition Tests", () => {
 		it("should accept valid avatarName", () => {
 			const validData = {
 				name: faker.lorem.words(3),
+				organizationId: faker.string.uuid(),
 				avatarName: faker.string.alphanumeric(10),
 			};
 			const result = chatsTableInsertSchema.safeParse(validData);
@@ -409,7 +425,10 @@ describe("src/drizzle/tables/chats.ts - Table Definition Tests", () => {
 		});
 
 		it("should accept avatarName as optional", () => {
-			const validData = { name: faker.lorem.words(3) };
+			const validData = {
+				name: faker.lorem.words(3),
+				organizationId: faker.string.uuid(),
+			};
 			const result = chatsTableInsertSchema.safeParse(validData);
 			expect(result.success).toBe(true);
 		});
