@@ -12,7 +12,7 @@ import {
 } from "~/src/utilities/graphqlConnection";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import { Chat } from "./Chat";
-import { ChatMember } from "./ChatMember";
+import { ChatMember, type ChatMemberRole, type ChatMemberType } from "./ChatMember";
 
 const membersArgumentsSchema = defaultGraphQLConnectionArgumentsSchema
 	.transform(transformDefaultGraphQLConnectionArguments)
@@ -179,12 +179,19 @@ Chat.implement({
 						});
 					}
 
-					return transformToDefaultGraphQLConnection({
+					return transformToDefaultGraphQLConnection<
+						(typeof chatMemberships)[number],
+						ChatMemberType,
+						{ createdAt: Date; memberId: string }
+					>({
 						createCursor: (chatMembership) => ({
 							createdAt: chatMembership.createdAt,
 							memberId: chatMembership.memberId,
 						}),
-						createNode: (chatMembership) => chatMembership,
+						createNode: (chatMembership): ChatMemberType => ({
+							member: chatMembership.member,
+							role: chatMembership.role as ChatMemberRole,
+						}),
 						parsedArgs,
 						rawNodes: chatMemberships,
 					});

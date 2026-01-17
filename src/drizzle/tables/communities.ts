@@ -2,6 +2,7 @@ import { relations, sql } from "drizzle-orm";
 import { integer, pgTable, text, timestamp, uuid } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { uuidv7 } from "uuidv7";
+import { z } from "zod";
 import { imageMimeTypeEnum } from "~/src/drizzle/enums/imageMimeType";
 import { usersTable } from "./users";
 
@@ -43,12 +44,12 @@ export const communitiesTable = pgTable("communities", {
 	 * URL to the linkedin account of the community.
 	 */
 	linkedinURL: text("linkedin_url"),
-	/**
-	 * Mime type of the logo of the community.
-	 */
-	logoMimeType: text("logo_mime_type", {
-		enum: imageMimeTypeEnum.options,
-	}),
+		/**
+		 * Mime type of the logo of the community.
+		 */
+		logoMimeType: text("logo_mime_type", {
+			enum: imageMimeTypeEnum.options as [string, ...string[]],
+		}),
 	/**
 	 * Primary unique identifier of the community's logo.
 	 */
@@ -113,17 +114,17 @@ export const communitiesTableRelations = relations(
 export const communitiesTableInsertSchema = createInsertSchema(
 	communitiesTable,
 	{
-		facebookURL: (schema) => schema.url().optional(),
-		githubURL: (schema) => schema.url().optional(),
+		facebookURL: () => z.string().url().optional(),
+		githubURL: () => z.string().url().optional(),
 		inactivityTimeoutDuration: (schema) => schema.min(1).optional(),
-		instagramURL: (schema) => schema.url().optional(),
-		linkedinURL: (schema) => schema.url().optional(),
+		instagramURL: () => z.string().url().optional(),
+		linkedinURL: () => z.string().url().optional(),
 		logoName: (schema) => schema.min(1).optional(),
 		name: (schema) => schema.min(1).max(256),
-		redditURL: (schema) => schema.url().optional(),
-		slackURL: (schema) => schema.url().optional(),
-		websiteURL: (schema) => schema.url().optional(),
-		xURL: (schema) => schema.url().optional(),
-		youtubeURL: (schema) => schema.url().optional(),
+		redditURL: () => z.string().url().optional(),
+		slackURL: () => z.string().url().optional(),
+		websiteURL: () => z.string().url().optional(),
+		xURL: () => z.string().url().optional(),
+		youtubeURL: () => z.string().url().optional(),
 	},
 );
