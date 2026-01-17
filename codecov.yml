@@ -4,3 +4,15 @@ coverage:
       default:
         target: 90%
         threshold: 1%
+
+flags:
+  unit:
+    paths:
+      - test/unit/
+      - src/utilities/
+      - src/services/
+  integration:
+    paths:
+      - test/drizzle/
+      - test/graphql/
+      - test/install/
