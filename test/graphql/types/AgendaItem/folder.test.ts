@@ -27,6 +27,57 @@ describe("AgendaItem.folder resolver", () => {
 		notes: null,
 	};
 
+	it("throws unauthenticated error when not authenticated", async () => {
+		const { context } = createMockGraphQLContext(false, "user-1");
+
+		await expect(resolveFolder(mockParent, {}, context)).rejects.toThrow(
+			new TalawaGraphQLError({
+				extensions: { code: "unauthenticated" },
+			}),
+		);
+	});
+
+	it("throws unauthenticated error when user not found", async () => {
+		const { context, mocks } = createMockGraphQLContext(true, "user-1");
+
+		mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValueOnce(
+			undefined,
+		);
+		mocks.drizzleClient.query.agendaFoldersTable.findFirst.mockResolvedValueOnce(
+			{
+				id: "folder-1",
+				event: { organization: { membershipsWhereOrganization: [] } },
+			} as never,
+		);
+
+		await expect(resolveFolder(mockParent, {}, context)).rejects.toThrow(
+			new TalawaGraphQLError({
+				extensions: { code: "unauthenticated" },
+			}),
+		);
+	});
+
+	it("throws unauthorized error when user lacks admin access", async () => {
+		const { context, mocks } = createMockGraphQLContext(true, "user-1");
+
+		mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValueOnce({
+			id: "user-1",
+			role: "user",
+		} as never);
+		mocks.drizzleClient.query.agendaFoldersTable.findFirst.mockResolvedValueOnce(
+			{
+				id: "folder-1",
+				event: { organization: { membershipsWhereOrganization: [] } },
+			} as never,
+		);
+
+		await expect(resolveFolder(mockParent, {}, context)).rejects.toThrow(
+			new TalawaGraphQLError({
+				extensions: { code: "unauthorized_action" },
+			}),
+		);
+	});
+
 	it("returns agenda folder when it exists", async () => {
 		const { context, mocks } = createMockGraphQLContext(true, "user-1");
 
