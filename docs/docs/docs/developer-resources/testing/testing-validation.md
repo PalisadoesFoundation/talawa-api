@@ -83,9 +83,9 @@ This pattern is a heuristic and may flag safe code:
 
 If you are certain a field is safe (e.g., it returns a database ID), you can suppress the warning.
 
-Since this is a custom GritQL plugin, standard `// biome-ignore` comments might not work depending on the Biome version and integration.
+Since this is a custom GritQL plugin, standard `biome-ignore` comments might not work depending on the Biome version and integration.
 
-If `// biome-ignore` does not work, you can exclude specific files in `biome.jsonc` or refactor the code to make the safety explicit (e.g., using a helper function that includes `escapeHTML` in its name, or just adding a comment explaining why it's safe if the warning is non-blocking).
+If `biome-ignore` does not work, you can exclude specific files in `biome.jsonc` or refactor the code to make the safety explicit (e.g., using a helper function that includes `escapeHTML` in its name, or just adding a comment explaining why it's safe if the warning is non-blocking).
 
 ## Testing Philosophy
 
@@ -105,7 +105,10 @@ The GraphQL schema cannot be tested without running the graphql server itself be
 
 The end users will be interacting with the graphql schema and not the typescript graphql resolvers. So, the tests should be written in a way that asserts against the runtime behavior of that graphql schema.
 
-This does mean that code coverage is not possible because vitest cannot know what typescript module paths are being traversed inside the tests because at runtime those typescript modules are compiled into node.js(v8) internal implementation of byte code.
+#### Code Coverage Flags
+We use Codecov flags to categorize coverage:
+- **`unit`**: Covers `test/unit/`, `src/utilities/`, and `src/services/`.
+- **`integration`**: Covers `test/drizzle/`, `test/graphql/`, and `test/install/`.
 
 #### Integration Testing
 
