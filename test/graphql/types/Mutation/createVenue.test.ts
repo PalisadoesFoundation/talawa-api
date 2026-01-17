@@ -1677,8 +1677,23 @@ suite("Mutation field createVenue", () => {
 				);
 
 				// Negative capacity should be rejected by the schema
-				expect(createVenueResult.errors).toBeDefined();
-				expect(createVenueResult.data.createVenue).toBeNull();
+				expect(createVenueResult.data?.createVenue).toEqual(null);
+				expect(createVenueResult.errors).toEqual(
+					expect.arrayContaining<TalawaGraphQLFormattedError>([
+						expect.objectContaining<TalawaGraphQLFormattedError>({
+							message: expect.any(String),
+							extensions: expect.objectContaining<InvalidArgumentsExtensions>({
+								code: "invalid_arguments",
+								issues: expect.arrayContaining([
+									expect.objectContaining({
+										argumentPath: ["input", "capacity"],
+									}),
+								]),
+							}),
+							path: ["createVenue"],
+						}),
+					]),
+				);
 			});
 
 			test("accepts whitespace-only venue name (documents current API behavior)", async () => {
