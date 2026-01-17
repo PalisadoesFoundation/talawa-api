@@ -83,6 +83,7 @@ input MutationCreateAgendaItemInput {
   folderId: ID
   key: String
   name: String!
+  notes: String
   sequence: Int!
   type: AgendaItemType!
   url: [AgendaItemUrlInput!]
@@ -122,6 +123,10 @@ Key of the agenda item if it's of a "song" type. More information at [this](<htt
 #### [<code style={{ fontWeight: 'normal' }}>MutationCreateAgendaItemInput.<b>name</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>String!</b></code>](/auto-schema/types/scalars/string.mdx) <Badge class="badge badge--secondary badge--non_null" text="non-null"/> <Badge class="badge badge--secondary " text="scalar"/>
 
 Name of the agenda item.
+
+#### [<code style={{ fontWeight: 'normal' }}>MutationCreateAgendaItemInput.<b>notes</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>String</b></code>](/auto-schema/types/scalars/string.mdx) <Badge class="badge badge--secondary " text="scalar"/>
+
+Notes for the agenda item
 
 #### [<code style={{ fontWeight: 'normal' }}>MutationCreateAgendaItemInput.<b>sequence</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>Int!</b></code>](/auto-schema/types/scalars/int.mdx) <Badge class="badge badge--secondary badge--non_null" text="non-null"/> <Badge class="badge badge--secondary " text="scalar"/>
 
