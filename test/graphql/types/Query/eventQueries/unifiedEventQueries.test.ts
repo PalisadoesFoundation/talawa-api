@@ -857,6 +857,7 @@ describe("getEventsByIds", () => {
 				[],
 				mockDrizzleClient,
 				mockLogger,
+				{ includeTemplates: true },
 			);
 		});
 

@@ -6,7 +6,7 @@ import { usersTable } from "~/src/drizzle/tables/users";
 import { builder } from "~/src/graphql/builder";
 import { Event } from "~/src/graphql/types/Event/Event";
 import type { EventWithAttachments } from "~/src/graphql/types/Query/eventQueries";
-import { getRecurringEventInstancesByBaseId } from "~/src/graphql/types/Query/eventQueries/recurringEventInstanceQueries";
+import { getRecurringEventInstancesByBaseIds } from "~/src/graphql/types/Query/eventQueries/recurringEventInstanceQueries";
 import { mapRecurringInstanceToEvent } from "~/src/graphql/utils/mapRecurringInstanceToEvent";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 
@@ -146,21 +146,20 @@ builder.queryField("eventsByAdmin", (t) =>
 					});
 
 				// Step 4: For each template, get all non-cancelled instances
-				for (const template of recurringTemplates) {
-					const instances = await getRecurringEventInstancesByBaseId(
-						template.id,
-						ctx.drizzleClient,
-						ctx.log,
-					);
+				const baseRecurringEventIds = recurringTemplates.map((t) => t.id);
 
-					// Filter out cancelled instances and transform to unified format
-					// Filter out cancelled instances and transform to unified format
-					const activeInstances = instances
-						.filter((instance) => !instance.isCancelled)
-						.map(mapRecurringInstanceToEvent);
+				const instances = await getRecurringEventInstancesByBaseIds(
+					baseRecurringEventIds,
+					ctx.drizzleClient,
+					ctx.log,
+				);
 
-					allEvents.push(...activeInstances);
-				}
+				// Filter out cancelled instances and transform to unified format
+				const activeInstances = instances
+					.filter((instance) => !instance.isCancelled)
+					.map(mapRecurringInstanceToEvent);
+
+				allEvents.push(...activeInstances);
 
 				// Sort by start time
 				allEvents.sort((a, b) => {

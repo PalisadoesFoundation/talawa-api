@@ -8,7 +8,7 @@ import {
 	type EventWithAttachments,
 	getEventsByIds,
 } from "~/src/graphql/types/Query/eventQueries";
-import { getRecurringEventInstancesByBaseId } from "~/src/graphql/types/Query/eventQueries/recurringEventInstanceQueries";
+import { getRecurringEventInstancesByBaseIds } from "~/src/graphql/types/Query/eventQueries/recurringEventInstanceQueries";
 import { mapRecurringInstanceToEvent } from "~/src/graphql/utils/mapRecurringInstanceToEvent";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 
@@ -137,28 +137,37 @@ builder.queryField("eventsByAttendee", (t) =>
 				);
 
 				const events: EventWithAttachments[] = [];
+				const recurringTemplateIds: string[] = [];
+
+				// First pass: Collect standalone events and template IDs
 				for (const event of initialEvents) {
 					if (
 						"isRecurringEventTemplate" in event &&
 						event.isRecurringEventTemplate
 					) {
-						// It's a template, fetch all instances
-						const instances = await getRecurringEventInstancesByBaseId(
-							event.id,
-							ctx.drizzleClient,
-							ctx.log,
-						);
-						// Map instances to Event type
-						for (const instance of instances) {
-							// Check if instance is already in the list (e.g. individually registered)
-							// Although usually if registered for series, we show all.
-							// But uniqueEventIds might not have covered it if logic was separate.
-							// Just add mapped instance.
-							events.push(mapRecurringInstanceToEvent(instance));
-						}
+						recurringTemplateIds.push(event.id);
 					} else {
 						events.push(event);
 					}
+				}
+
+				// Batch fetch instances for all templates
+				const instances = await getRecurringEventInstancesByBaseIds(
+					recurringTemplateIds,
+					ctx.drizzleClient,
+					ctx.log,
+				);
+
+				// Process instances: filter cancelled and deduplicate
+				const existingEventIds = new Set(events.map((e) => e.id));
+
+				for (const instance of instances) {
+					if (instance.isCancelled) continue;
+
+					// Avoid duplicates if user is also registered for this specific instance
+					if (existingEventIds.has(instance.id)) continue;
+
+					events.push(mapRecurringInstanceToEvent(instance));
 				}
 
 				// Sort by start time

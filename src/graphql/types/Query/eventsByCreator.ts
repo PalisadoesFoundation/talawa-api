@@ -5,7 +5,7 @@ import { usersTable } from "~/src/drizzle/tables/users";
 import { builder } from "~/src/graphql/builder";
 import { Event } from "~/src/graphql/types/Event/Event";
 import type { EventWithAttachments } from "~/src/graphql/types/Query/eventQueries";
-import { getRecurringEventInstancesByBaseId } from "~/src/graphql/types/Query/eventQueries/recurringEventInstanceQueries";
+import { getRecurringEventInstancesByBaseIds } from "~/src/graphql/types/Query/eventQueries/recurringEventInstanceQueries";
 import { mapRecurringInstanceToEvent } from "~/src/graphql/utils/mapRecurringInstanceToEvent";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 
@@ -24,6 +24,14 @@ builder.queryField("eventsByCreator", (t) =>
 			userId: t.arg.id({
 				required: true,
 				description: "ID of the user whose created events to fetch",
+			}),
+			limit: t.arg.int({
+				description: "Number of events to return",
+				required: false,
+			}),
+			offset: t.arg.int({
+				description: "Number of events to skip",
+				required: false,
 			}),
 		},
 		description: "Query field to fetch all events created by a specific user.",
@@ -53,6 +61,8 @@ builder.queryField("eventsByCreator", (t) =>
 
 			const currentUserId = ctx.currentClient.user.id;
 			const targetUserId = parsedArgs.data.userId;
+			const limit = args.limit ?? 100;
+			const offset = args.offset ?? 0;
 
 			// Get current user for authorization
 			const currentUser = await ctx.drizzleClient.query.usersTable.findFirst({
@@ -127,21 +137,34 @@ builder.queryField("eventsByCreator", (t) =>
 						),
 					});
 
-				// Step 3: For each template, get all non-cancelled instances
-				for (const template of recurringTemplates) {
-					const instances = await getRecurringEventInstancesByBaseId(
-						template.id,
-						ctx.drizzleClient,
-						ctx.log,
-					);
+				// Step 3: Fetch all instances for these templates in batch
+				const baseRecurringEventIds = recurringTemplates.map((t) => t.id);
 
-					// Filter out cancelled instances and transform to unified format
-					const activeInstances = instances
-						.filter((instance) => !instance.isCancelled)
-						.map(mapRecurringInstanceToEvent);
+				// We need to import getRecurringEventInstancesByBaseIds at the top,
+				// but since we are replacing the block we can just use it if it was imported.
+				// However, the import was:
+				// import { getRecurringEventInstancesByBaseId } from "~/src/graphql/types/Query/eventQueries/recurringEventInstanceQueries";
+				// We need to update the import separately or assume it will be fixed.
+				// I will fix the import in a separate step or just use the existing function if I hadn't updated imports.
+				// Wait, I haven't updated the imports yet.
+				// I should do that first or include imports change.
+				// The tool replace_file_content works on a block.
 
-					allEvents.push(...activeInstances);
-				}
+				// I will assume I need to update the import as well.
+				// But this block is the builder.queryField(...)
+
+				const instances = await getRecurringEventInstancesByBaseIds(
+					baseRecurringEventIds,
+					ctx.drizzleClient,
+					ctx.log,
+				);
+
+				// Filter out cancelled instances and transform to unified format
+				const activeInstances = instances
+					.filter((instance) => !instance.isCancelled)
+					.map(mapRecurringInstanceToEvent);
+
+				allEvents.push(...activeInstances);
 
 				// Sort by start time
 				allEvents.sort((a, b) => {
@@ -153,17 +176,21 @@ builder.queryField("eventsByCreator", (t) =>
 					return aTime - bTime;
 				});
 
+				// Apply pagination
+				const paginatedEvents = allEvents.slice(offset, offset + limit);
+
 				ctx.log.debug(
 					{
 						userId: targetUserId,
 						totalEvents: allEvents.length,
+						paginatedCount: paginatedEvents.length,
 						standalone: standaloneEvents.length,
-						recurringInstances: allEvents.length - standaloneEvents.length,
+						recurringInstances: activeInstances.length,
 					},
 					"Retrieved events by creator",
 				);
 
-				return allEvents;
+				return paginatedEvents;
 			} catch (error) {
 				ctx.log.error(
 					{

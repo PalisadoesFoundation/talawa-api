@@ -156,7 +156,7 @@ suite("Query field eventsByVolunteer", () => {
 		});
 	});
 
-	suite("when user does not exist", () => {
+	suite("when userId is a random UUID (does not exist)", () => {
 		test("should return an error with arguments_associated_resources_not_found code", async () => {
 			const result = await mercuriusClient.query(Query_eventsByVolunteer, {
 				headers: { authorization: `bearer ${authToken}` },
@@ -182,7 +182,7 @@ suite("Query field eventsByVolunteer", () => {
 		});
 	});
 
-	suite("when the user does not exist", () => {
+	suite("when the user record was deleted", () => {
 		test("should return specific error when target user is not found", async () => {
 			const { userId } = await createRegularUserUsingAdmin();
 			assertToBeNonNullish(userId);
