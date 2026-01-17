@@ -1618,7 +1618,7 @@ suite("Mutation field createVenue", () => {
 				expect(createVenueResult.data.createVenue?.capacity).toBe(1000000);
 			});
 
-			test("accepts negative capacity value (documents current API behavior)", async () => {
+			test("rejects negative capacity value", async () => {
 				const administratorUserSignInResult = await mercuriusClient.query(
 					Query_signIn,
 					{
@@ -1670,16 +1670,15 @@ suite("Mutation field createVenue", () => {
 									createOrganizationResult.data.createOrganization.id,
 								name: `Venue_${faker.string.ulid()}`,
 								description: faker.lorem.sentence(),
-								capacity: -10, // Negative capacity currently accepted
+								capacity: -10,
 							},
 						},
 					},
 				);
 
-				// Documents that API currently accepts negative capacity
-				expect(createVenueResult.errors).toBeUndefined();
-				assertToBeNonNullish(createVenueResult.data.createVenue?.id);
-				expect(createVenueResult.data.createVenue.capacity).toBe(-10);
+				// Negative capacity should be rejected by the schema
+				expect(createVenueResult.errors).toBeDefined();
+				expect(createVenueResult.data.createVenue).toBeNull();
 			});
 
 			test("accepts whitespace-only venue name (documents current API behavior)", async () => {
