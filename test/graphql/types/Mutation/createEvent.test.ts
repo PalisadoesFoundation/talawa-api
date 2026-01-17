@@ -955,6 +955,9 @@ suite("Mutation field createEvent", () => {
 });
 
 suite("Default Agenda Folder and Category Creation", () => {
+	afterEach(() => {
+		vi.restoreAllMocks();
+	});
 	test("creates default agenda folder and category for standalone events", async () => {
 		const organizationId = await createTestOrganization();
 
@@ -1046,7 +1049,18 @@ suite("Default Agenda Folder and Category Creation", () => {
 								returning: vi.fn().mockResolvedValue([]),
 							};
 						}
-						return server.drizzleClient.insert(table);
+						// Return a mock for all other tables to avoid real database writes
+						return {
+							values: vi.fn().mockReturnThis(),
+							returning: vi.fn().mockResolvedValue([
+								{
+									id: faker.string.uuid(),
+									name: "Test Event",
+									organizationId,
+									creatorId: adminUserId,
+								},
+							]),
+						};
 					}),
 				};
 
@@ -1076,7 +1090,18 @@ suite("Default Agenda Folder and Category Creation", () => {
 								returning: vi.fn().mockResolvedValue([]),
 							};
 						}
-						return server.drizzleClient.insert(table);
+						// Return a mock for all other tables to avoid real database writes
+						return {
+							values: vi.fn().mockReturnThis(),
+							returning: vi.fn().mockResolvedValue([
+								{
+									id: faker.string.uuid(),
+									name: "Test Event",
+									organizationId,
+									creatorId: adminUserId,
+								},
+							]),
+						};
 					}),
 				};
 
