@@ -18,8 +18,10 @@ describe("membershipRequestsTable", () => {
 	});
 
 	it("should define indexes and unique constraints", () => {
-		// biome-ignore lint/suspicious/noExplicitAny: Accessing internal Drizzle relations metadata for testing
-		const tableInternals = membershipRequestsTable._ as any;
+		const tableInternals = membershipRequestsTable._ as unknown as {
+			indexes: Array<{ name: string }>;
+			constraints: Array<{ name: string }>;
+		};
 
 		const indexNames = tableInternals.indexes.map(
 			(idx: { name: string }) => idx.name,
