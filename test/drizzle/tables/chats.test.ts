@@ -556,7 +556,6 @@ describe("src/drizzle/tables/chats.ts - Table Definition Tests", () => {
 			}
 			const chatId = inserted.id;
 
-
 			const [updated] = await server.drizzleClient
 				.update(chatsTable)
 				.set({
