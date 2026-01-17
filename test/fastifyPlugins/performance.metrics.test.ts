@@ -8,7 +8,7 @@ describe("Performance Plugin - Metrics Interface", () => {
 
 	beforeEach(async () => {
 		vi.clearAllMocks();
-		delete process.env.API_METRICS_SNAPSHOT_RETENTION_COUNT;
+		// createTestApp uses envConfig as source of truth, no need to modify process.env
 
 		app = createTestApp();
 
