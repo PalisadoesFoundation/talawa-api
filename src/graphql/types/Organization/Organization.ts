@@ -26,10 +26,11 @@ Organization.implement({
 		}),
 		countryCode: t.field({
 			description: "Country code of the country the organization exists in.",
+			nullable: true,
 			resolve: (organization) =>
 				organization.countryCode as z.infer<
 					typeof iso3166Alpha2CountryCodeEnum
-				>,
+				> | null,
 			type: Iso3166Alpha2CountryCode,
 		}),
 		createdAt: t.expose("createdAt", {

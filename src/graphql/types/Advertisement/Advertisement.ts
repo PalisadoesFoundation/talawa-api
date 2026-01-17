@@ -1,5 +1,4 @@
-import type { z } from "zod";
-import type { advertisementTypeEnum } from "~/src/drizzle/enums/advertisementType";
+import { advertisementTypeEnum } from "~/src/drizzle/enums/advertisementType";
 import type { advertisementsTable } from "~/src/drizzle/tables/advertisements";
 import { builder } from "~/src/graphql/builder";
 import { AdvertisementType } from "~/src/graphql/enums/AdvertisementType";
@@ -49,7 +48,7 @@ Advertisement.implement({
 		type: t.field({
 			description: "Type of the advertisement.",
 			resolve: (advertisement) =>
-				advertisement.type as z.infer<typeof advertisementTypeEnum>,
+				advertisementTypeEnum.parse(advertisement.type),
 			type: AdvertisementType,
 		}),
 	}),
