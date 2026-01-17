@@ -413,11 +413,13 @@ export async function metricsSetup(
 		);
 
 		if (answers.API_METRICS_ENABLED === "true") {
-			answers.API_METRICS_API_KEY = await promptInput(
+			const apiKeyInput = await promptInput(
 				"API_METRICS_API_KEY",
 				"API key for /metrics/perf endpoint (leave empty for no auth):",
 				"",
 			);
+			// Normalize empty string to undefined so schema treats it as truly optional
+			answers.API_METRICS_API_KEY = apiKeyInput.trim() || undefined;
 
 			answers.API_METRICS_SLOW_REQUEST_MS = await promptInput(
 				"API_METRICS_SLOW_REQUEST_MS",
