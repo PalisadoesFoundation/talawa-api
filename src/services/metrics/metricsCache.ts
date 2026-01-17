@@ -57,18 +57,23 @@ export class MetricsCacheService {
 
 		try {
 			const key = this.getAggregatedMetricsKey(timestamp);
-			// Validate and normalize TTL - use default if not provided or non-positive
-			let ttl = ttlSeconds ?? this.defaultTtlSeconds;
-			if (ttl <= 0) {
+			// Validate and normalize TTL - use default if not provided, non-positive, or non-finite
+			let ttl = this.defaultTtlSeconds;
+			if (
+				ttlSeconds !== undefined &&
+				Number.isFinite(ttlSeconds) &&
+				ttlSeconds > 0
+			) {
+				ttl = ttlSeconds;
+			} else if (ttlSeconds !== undefined) {
 				this.logger?.warn(
 					{
 						msg: "metrics cache: invalid ttl",
 						providedTtl: ttlSeconds,
 						usingDefault: this.defaultTtlSeconds,
 					},
-					"Non-positive TTL provided, using default",
+					"Invalid TTL provided (non-finite or non-positive), using default",
 				);
-				ttl = this.defaultTtlSeconds;
 			}
 			await this.cache.set(key, metrics, ttl);
 			this.logger?.debug(
@@ -228,18 +233,23 @@ export class MetricsCacheService {
 			const key = this.getWindowedMetricsKey(windowType, date);
 			// Use longer TTL for windowed metrics: hourly = 3600s, daily = 86400s
 			const defaultWindowTtl = windowType === "hourly" ? 3600 : 86400;
-			// Validate and normalize TTL - use default if not provided or non-positive
-			let ttl = ttlSeconds ?? defaultWindowTtl;
-			if (ttl <= 0) {
+			// Validate and normalize TTL - use default if not provided, non-positive, or non-finite
+			let ttl = defaultWindowTtl;
+			if (
+				ttlSeconds !== undefined &&
+				Number.isFinite(ttlSeconds) &&
+				ttlSeconds > 0
+			) {
+				ttl = ttlSeconds;
+			} else if (ttlSeconds !== undefined) {
 				this.logger?.warn(
 					{
 						msg: "metrics cache: invalid windowed ttl",
 						providedTtl: ttlSeconds,
 						usingDefault: defaultWindowTtl,
 					},
-					"Non-positive TTL provided, using default",
+					"Invalid TTL provided (non-finite or non-positive), using default",
 				);
-				ttl = defaultWindowTtl;
 			}
 			await this.cache.set(key, metrics, ttl);
 			this.logger?.debug(
