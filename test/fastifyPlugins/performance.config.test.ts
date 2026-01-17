@@ -489,43 +489,48 @@ describe("Performance Plugin - Environment Configuration", () => {
 				},
 			}));
 
-			// Dynamically import the plugin AFTER the mock is set up
-			const performanceModule = await import(
-				"~/src/fastifyPlugins/performance"
-			);
-			const mockedPerformancePlugin = performanceModule.default;
+			let warnSpy: ReturnType<typeof vi.spyOn> | undefined;
+			try {
+				// Dynamically import the plugin AFTER the mock is set up
+				const performanceModule = await import(
+					"~/src/fastifyPlugins/performance"
+				);
+				const mockedPerformancePlugin = performanceModule.default;
 
-			const customEnvConfig: Partial<EnvConfig> = {};
-			app = createTestApp({ envConfig: customEnvConfig, cache: mockCache });
+				const customEnvConfig: Partial<EnvConfig> = {};
+				app = createTestApp({ envConfig: customEnvConfig, cache: mockCache });
 
-			const warnSpy = vi.spyOn(app.log, "warn").mockImplementation(() => {});
+				warnSpy = vi.spyOn(app.log, "warn").mockImplementation(() => {});
 
-			await app.register(mockedPerformancePlugin);
-			await app.ready();
+				await app.register(mockedPerformancePlugin);
+				await app.ready();
 
-			// Plugin should still work but cache should NOT be initialized
-			expect(app).toBeDefined();
-			expect(app.getMetricsSnapshots).toBeDefined();
-			// metricsCache should be undefined due to constructor failure
-			expect(app.metricsCache).toBeUndefined();
-			// Should have logged a warning about the failure
-			expect(warnSpy).toHaveBeenCalledWith(
-				expect.objectContaining({
-					error: "Mock cache initialization failure",
-				}),
-				"Failed to initialize metrics cache service (continuing without cache)",
-			);
-
-			warnSpy.mockRestore();
-
-			// Clean up: unmock and reset modules for subsequent tests
-			vi.doUnmock("~/src/services/metrics");
-			vi.resetModules();
+				// Plugin should still work but cache should NOT be initialized
+				expect(app).toBeDefined();
+				expect(app.getMetricsSnapshots).toBeDefined();
+				// metricsCache should be undefined due to constructor failure
+				expect(app.metricsCache).toBeUndefined();
+				// Should have logged a warning about the failure
+				expect(warnSpy).toHaveBeenCalledWith(
+					expect.objectContaining({
+						error: "Mock cache initialization failure",
+					}),
+					"Failed to initialize metrics cache service (continuing without cache)",
+				);
+			} finally {
+				// Always clean up mock and module registry even if assertions fail
+				warnSpy?.mockRestore();
+				vi.doUnmock("~/src/services/metrics");
+				vi.resetModules();
+			}
 		});
 	});
 
 	describe("Environment variable usage from fastify.envConfig", () => {
 		it("should read from fastify.envConfig, not process.env", async () => {
+			// Save original value to restore later
+			const originalSlowRequestMs = process.env.API_METRICS_SLOW_REQUEST_MS;
+
 			// Set process.env to a different value
 			process.env.API_METRICS_SLOW_REQUEST_MS = "2000";
 
@@ -564,7 +569,12 @@ describe("Performance Plugin - Environment Configuration", () => {
 				);
 			} finally {
 				warnSpy.mockRestore();
-				delete process.env.API_METRICS_SLOW_REQUEST_MS;
+				// Restore original value or delete if it was undefined
+				if (originalSlowRequestMs !== undefined) {
+					process.env.API_METRICS_SLOW_REQUEST_MS = originalSlowRequestMs;
+				} else {
+					delete process.env.API_METRICS_SLOW_REQUEST_MS;
+				}
 			}
 		});
 	});

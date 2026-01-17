@@ -1405,5 +1405,61 @@ describe("Validation Helpers", () => {
 				"Please enter a valid cron expression",
 			);
 		});
+
+		it("returns true for valid range (start-end) tokens", () => {
+			expect(validateCronExpression("2-5 * * * *")).toBe(true);
+			expect(validateCronExpression("0 0-12 * * *")).toBe(true);
+			expect(validateCronExpression("0 0 1-31 * *")).toBe(true);
+			expect(validateCronExpression("0 0 * 1-12 *")).toBe(true);
+			expect(validateCronExpression("0 0 * * 0-6")).toBe(true);
+		});
+
+		it("returns error message for invalid range tokens", () => {
+			// Reversed range (start > end)
+			expect(validateCronExpression("5-2 * * * *")).toContain(
+				"Please enter a valid cron expression",
+			);
+			// Non-numeric range parts
+			expect(validateCronExpression("a-3 * * * *")).toContain(
+				"Please enter a valid cron expression",
+			);
+			expect(validateCronExpression("2-b * * * *")).toContain(
+				"Please enter a valid cron expression",
+			);
+			// Out of bounds range
+			expect(validateCronExpression("60-65 * * * *")).toContain(
+				"Please enter a valid cron expression",
+			);
+			// Range exceeding max for hour field
+			expect(validateCronExpression("0 20-25 * * *")).toContain(
+				"Please enter a valid cron expression",
+			);
+		});
+
+		it("returns true for valid number/step tokens", () => {
+			expect(validateCronExpression("3/2 * * * *")).toBe(true);
+			expect(validateCronExpression("0/15 * * * *")).toBe(true);
+			expect(validateCronExpression("0 0/6 * * *")).toBe(true);
+			expect(validateCronExpression("0 0 1/5 * *")).toBe(true);
+		});
+
+		it("returns error message for invalid number/step tokens", () => {
+			// Step of 0 (invalid, step must be >= 1)
+			expect(validateCronExpression("3/0 * * * *")).toContain(
+				"Please enter a valid cron expression",
+			);
+			// Non-numeric step
+			expect(validateCronExpression("3/x * * * *")).toContain(
+				"Please enter a valid cron expression",
+			);
+			// Non-numeric number
+			expect(validateCronExpression("x/2 * * * *")).toContain(
+				"Please enter a valid cron expression",
+			);
+			// Number out of bounds for minute field
+			expect(validateCronExpression("60/5 * * * *")).toContain(
+				"Please enter a valid cron expression",
+			);
+		});
 	});
 });
