@@ -3,14 +3,14 @@ import { metricsCacheProxy } from "../../../src/services/metrics/metricsCachePro
 
 describe("metricsCacheProxy", () => {
 	let mockCache: {
-		get: ReturnType<typeof vi.fn>;
-		mget?: ReturnType<typeof vi.fn>;
-		set: ReturnType<typeof vi.fn>;
-		del: ReturnType<typeof vi.fn>;
+		get: ReturnType<typeof vi.fn<(key: string) => Promise<unknown>>>;
+		mget?: ReturnType<typeof vi.fn<(keys: string[]) => Promise<unknown[]>>>;
+		set: ReturnType<typeof vi.fn<(key: string, value: unknown, ttl: number) => Promise<unknown>>>;
+		del: ReturnType<typeof vi.fn<(keys: string | string[]) => Promise<unknown>>>;
 	};
 	let mockPerf: {
-		trackCacheHit: ReturnType<typeof vi.fn>;
-		trackCacheMiss: ReturnType<typeof vi.fn>;
+		trackCacheHit: ReturnType<typeof vi.fn<() => void>>;
+		trackCacheMiss: ReturnType<typeof vi.fn<() => void>>;
 	};
 
 	beforeEach(() => {

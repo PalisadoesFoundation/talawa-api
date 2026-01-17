@@ -80,7 +80,7 @@ describe("GraphQL Routes", () => {
 			log: {
 				info: vi.fn(),
 				error: vi.fn(),
-				warn: () => { },
+				warn: () => {},
 				child: vi.fn().mockReturnThis(),
 				level: "info",
 				fatal: vi.fn(),
@@ -848,7 +848,7 @@ describe("GraphQL Routes", () => {
 			mockVariables = {};
 
 			vi.mocked(schemaManager.buildInitialSchema).mockResolvedValue(mockSchema);
-			vi.mocked(schemaManager.onSchemaUpdate).mockImplementation(() => { });
+			vi.mocked(schemaManager.onSchemaUpdate).mockImplementation(() => {});
 
 			// Make TalawaGraphQLError throw a real Error so that `throw` statements reject the promise
 			vi.mocked(TalawaGraphQLError).mockImplementation((config) => {
@@ -1052,12 +1052,7 @@ describe("GraphQL Routes", () => {
 			);
 
 			await expect(
-				preExecutionHook(
-					mockSchema,
-					mockContext,
-					mockDocument,
-					mockVariables,
-				),
+				preExecutionHook(mockSchema, mockContext, mockDocument, mockVariables),
 			).rejects.toThrow();
 
 			expect(TalawaGraphQLError).toHaveBeenCalledWith({
