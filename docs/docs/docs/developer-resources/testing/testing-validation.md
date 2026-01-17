@@ -24,6 +24,26 @@ The `tests/` directory contains the code for performing api tests against Talawa
 
 The rest of this page will assist you in being an active contributor to the code base.
 
+## Code Coverage Flags
+
+We use Codecov flags to separate and track coverage metrics for different types of tests:
+
+### Unit Flag
+
+The `unit` flag tracks coverage for:
+- `test/unit/`: Unit tests for isolated logic
+- `src/utilities/`: Utility functions
+- `src/services/`: Service layer code
+
+### Integration Flag
+
+The `integration` flag tracks coverage for:
+- `test/drizzle/`: Database integration tests
+- `test/graphql/`: GraphQL API integration tests
+- `test/install/`: Installation and setup tests
+
+These flags allow us to monitor coverage separately on the Codecov dashboard, helping identify gaps in either unit or integration test coverage.
+
 ## Linting & Static Analysis
 
 We use [Biome](https://biomejs.dev/) for linting and formatting. In addition to standard rules, we have custom plugins enabled to enforce security best practices.
@@ -105,10 +125,6 @@ The GraphQL schema cannot be tested without running the graphql server itself be
 
 The end users will be interacting with the graphql schema and not the typescript graphql resolvers. So, the tests should be written in a way that asserts against the runtime behavior of that graphql schema.
 
-#### Code Coverage Flags
-We use Codecov flags to categorize coverage:
-- **`unit`**: Covers `test/unit/`, `src/utilities/`, and `src/services/`.
-- **`integration`**: Covers `test/drizzle/`, `test/graphql/`, and `test/install/`.
 
 #### Integration Testing
 
