@@ -1383,5 +1383,27 @@ describe("Validation Helpers", () => {
 				"Please enter a valid cron expression",
 			);
 		});
+
+		it("returns true for valid comma-separated cron tokens", () => {
+			expect(validateCronExpression("1,2,3 * * * *")).toBe(true);
+			expect(validateCronExpression("0,30 * * * *")).toBe(true);
+			expect(validateCronExpression("0 0,12 * * *")).toBe(true);
+			expect(validateCronExpression("0 0 1,15 * *")).toBe(true);
+		});
+
+		it("returns error message for invalid comma-separated cron tokens", () => {
+			// Out of range minute
+			expect(validateCronExpression("61,1 * * * *")).toContain(
+				"Please enter a valid cron expression",
+			);
+			// Negative value
+			expect(validateCronExpression("1,-2 * * * *")).toContain(
+				"Please enter a valid cron expression",
+			);
+			// Out of range hour
+			expect(validateCronExpression("0 24,1 * * *")).toContain(
+				"Please enter a valid cron expression",
+			);
+		});
 	});
 });

@@ -948,6 +948,7 @@ export async function apiSetup(answers: SetupAnswers): Promise<SetupAnswers> {
 			"API_POSTGRES_PORT",
 			"Postgres port:",
 			"5432",
+			validatePort,
 		);
 		answers.API_POSTGRES_SSL_MODE = await promptList(
 			"API_POSTGRES_SSL_MODE",
