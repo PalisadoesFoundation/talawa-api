@@ -16,13 +16,16 @@ describe("venueBookingsTable", () => {
 
 		describe("eventId field", () => {
 			it("should accept a valid UUID", () => {
-				const result = venueBookingsTableInsertSchema.safeParse(validVenueBookingData);
+				const result = venueBookingsTableInsertSchema.safeParse(
+					validVenueBookingData,
+				);
 				expect(result.success).toBe(true);
 			});
 
 			it("should reject missing eventId", () => {
 				const { eventId, ...dataWithoutEventId } = validVenueBookingData;
-				const result = venueBookingsTableInsertSchema.safeParse(dataWithoutEventId);
+				const result =
+					venueBookingsTableInsertSchema.safeParse(dataWithoutEventId);
 				expect(result.success).toBe(false);
 			});
 
@@ -53,13 +56,16 @@ describe("venueBookingsTable", () => {
 
 		describe("venueId field", () => {
 			it("should accept a valid UUID", () => {
-				const result = venueBookingsTableInsertSchema.safeParse(validVenueBookingData);
+				const result = venueBookingsTableInsertSchema.safeParse(
+					validVenueBookingData,
+				);
 				expect(result.success).toBe(true);
 			});
 
 			it("should reject missing venueId", () => {
 				const { venueId, ...dataWithoutVenueId } = validVenueBookingData;
-				const result = venueBookingsTableInsertSchema.safeParse(dataWithoutVenueId);
+				const result =
+					venueBookingsTableInsertSchema.safeParse(dataWithoutVenueId);
 				expect(result.success).toBe(false);
 			});
 
@@ -98,7 +104,9 @@ describe("venueBookingsTable", () => {
 			});
 
 			it("should accept undefined creatorId (optional field)", () => {
-				const result = venueBookingsTableInsertSchema.safeParse(validVenueBookingData);
+				const result = venueBookingsTableInsertSchema.safeParse(
+					validVenueBookingData,
+				);
 				expect(result.success).toBe(true);
 			});
 
@@ -129,7 +137,9 @@ describe("venueBookingsTable", () => {
 			});
 
 			it("should accept undefined createdAt (auto-generated)", () => {
-				const result = venueBookingsTableInsertSchema.safeParse(validVenueBookingData);
+				const result = venueBookingsTableInsertSchema.safeParse(
+					validVenueBookingData,
+				);
 				expect(result.success).toBe(true);
 			});
 
@@ -158,12 +168,16 @@ describe("venueBookingsTable", () => {
 					creatorId: "11111111-1111-1111-1111-111111111111",
 					createdAt: new Date(),
 				};
-				const result = venueBookingsTableInsertSchema.safeParse(completeVenueBookingData);
+				const result = venueBookingsTableInsertSchema.safeParse(
+					completeVenueBookingData,
+				);
 				expect(result.success).toBe(true);
 			});
 
 			it("should accept minimal valid venue booking data", () => {
-				const result = venueBookingsTableInsertSchema.safeParse(validVenueBookingData);
+				const result = venueBookingsTableInsertSchema.safeParse(
+					validVenueBookingData,
+				);
 				expect(result.success).toBe(true);
 			});
 
