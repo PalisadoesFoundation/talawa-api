@@ -106,6 +106,17 @@ describe("AgendaItem.folder resolver", () => {
 	it("throws unexpected error when agenda folder does not exist", async () => {
 		const { context, mocks } = createMockGraphQLContext(true, "user-1");
 
+		// ensure authenticated
+		context.currentClient.isAuthenticated = true;
+		context.currentClient.user = { id: "user-1" };
+
+		// user exists
+		mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValueOnce({
+			id: "user-1",
+			role: "administrator",
+		});
+
+		// agenda folder does not exist
 		mocks.drizzleClient.query.agendaFoldersTable.findFirst.mockResolvedValueOnce(
 			undefined,
 		);
@@ -113,7 +124,7 @@ describe("AgendaItem.folder resolver", () => {
 		await expect(resolveFolder(mockParent, {}, context)).rejects.toThrow(
 			new TalawaGraphQLError({
 				extensions: {
-					code: "unauthenticated",
+					code: "unexpected",
 				},
 			}),
 		);
