@@ -18,6 +18,7 @@ describe("membershipRequestsTable", () => {
 	});
 
 	it("should define indexes and unique constraints", () => {
+		// biome-ignore lint/suspicious/noExplicitAny: Accessing internal Drizzle relations metadata for testing
 		const tableInternals = membershipRequestsTable._ as any;
 
 		const indexNames = tableInternals.indexes.map(
@@ -77,7 +78,7 @@ describe("membershipRequestsTable", () => {
 
 	it("should define expected relations", () => {
 		expect(membershipRequestsTableRelations).toBeDefined();
-
+		// biome-ignore lint/suspicious/noExplicitAny: Accessing internal Drizzle relations metadata for testing
 		const relationsInternals = membershipRequestsTableRelations as any;
 
 		expect(relationsInternals.config).toBeDefined();
