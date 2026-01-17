@@ -984,7 +984,7 @@ export async function cloudbeaverSetup(
 		answers.CLOUDBEAVER_ADMIN_PASSWORD = await promptInput(
 			"CLOUDBEAVER_ADMIN_PASSWORD",
 			"CloudBeaver admin password:",
-			"password",
+			process.env.CLOUDBEAVER_ADMIN_PASSWORD ?? "",
 			validateCloudBeaverPassword,
 		);
 		answers.CLOUDBEAVER_MAPPED_HOST_IP = await promptInput(
@@ -1063,11 +1063,32 @@ export async function minioSetup(answers: SetupAnswers): Promise<SetupAnswers> {
 				}
 			}
 		}
+		// Use already-synced API_MINIO_SECRET_KEY as default if available
+		const minioPasswordDefault =
+			answers.API_MINIO_SECRET_KEY ??
+			answers.MINIO_ROOT_PASSWORD ??
+			process.env.MINIO_ROOT_PASSWORD ??
+			"password";
 		answers.MINIO_ROOT_PASSWORD = await promptInput(
 			"MINIO_ROOT_PASSWORD",
 			"Minio root password:",
-			"password",
+			minioPasswordDefault,
 		);
+		// Sync back to API_MINIO_SECRET_KEY if it was set
+		if (answers.API_MINIO_SECRET_KEY !== undefined) {
+			if (answers.MINIO_ROOT_PASSWORD !== answers.API_MINIO_SECRET_KEY) {
+				// User changed MINIO_ROOT_PASSWORD, update API_MINIO_SECRET_KEY to match
+				answers.API_MINIO_SECRET_KEY = answers.MINIO_ROOT_PASSWORD;
+				process.env.MINIO_ROOT_PASSWORD = answers.MINIO_ROOT_PASSWORD;
+				console.log(
+					"ℹ️  API_MINIO_SECRET_KEY updated to match MINIO_ROOT_PASSWORD",
+				);
+			}
+		} else {
+			// No API_MINIO_SECRET_KEY set yet, set it now
+			answers.API_MINIO_SECRET_KEY = answers.MINIO_ROOT_PASSWORD;
+			process.env.MINIO_ROOT_PASSWORD = answers.MINIO_ROOT_PASSWORD;
+		}
 		answers.MINIO_ROOT_USER = await promptInput(
 			"MINIO_ROOT_USER",
 			"Minio root user:",
@@ -1100,11 +1121,32 @@ export async function postgresSetup(
 				validatePort,
 			);
 		}
+		// Use already-synced API_POSTGRES_PASSWORD as default if available
+		const postgresPasswordDefault =
+			answers.API_POSTGRES_PASSWORD ??
+			answers.POSTGRES_PASSWORD ??
+			process.env.POSTGRES_PASSWORD ??
+			"password";
 		answers.POSTGRES_PASSWORD = await promptInput(
 			"POSTGRES_PASSWORD",
 			"Postgres password:",
-			"password",
+			postgresPasswordDefault,
 		);
+		// Sync back to API_POSTGRES_PASSWORD if it was set
+		if (answers.API_POSTGRES_PASSWORD !== undefined) {
+			if (answers.POSTGRES_PASSWORD !== answers.API_POSTGRES_PASSWORD) {
+				// User changed POSTGRES_PASSWORD, update API_POSTGRES_PASSWORD to match
+				answers.API_POSTGRES_PASSWORD = answers.POSTGRES_PASSWORD;
+				process.env.POSTGRES_PASSWORD = answers.POSTGRES_PASSWORD;
+				console.log(
+					"ℹ️  API_POSTGRES_PASSWORD updated to match POSTGRES_PASSWORD",
+				);
+			}
+		} else {
+			// No API_POSTGRES_PASSWORD set yet, set it now
+			answers.API_POSTGRES_PASSWORD = answers.POSTGRES_PASSWORD;
+			process.env.POSTGRES_PASSWORD = answers.POSTGRES_PASSWORD;
+		}
 		answers.POSTGRES_USER = await promptInput(
 			"POSTGRES_USER",
 			"Postgres user:",
