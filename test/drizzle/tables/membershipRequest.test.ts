@@ -78,8 +78,13 @@ describe("membershipRequestsTable", () => {
 
 	it("should define expected relations", () => {
 		expect(membershipRequestsTableRelations).toBeDefined();
-		// biome-ignore lint/suspicious/noExplicitAny: Accessing internal Drizzle relations metadata for testing
-		const relationsInternals = membershipRequestsTableRelations as any;
+		const relationsInternals = membershipRequestsTableRelations as unknown as {
+			config: {
+				user?: unknown;
+				organization?: unknown;
+				membership?: unknown;
+			};
+		};
 
 		expect(relationsInternals.config).toBeDefined();
 		expect(relationsInternals.config.user).toBeDefined();
