@@ -192,12 +192,12 @@ describe("venuesTable", () => {
 				expect(result.success).toBe(false);
 			});
 
-			it("should accept negative capacity (schema does not constrain to non-negative)", () => {
+			it("should reject negative capacity", () => {
 				const result = venuesTableInsertSchema.safeParse({
 					...validVenueData,
 					capacity: -10,
 				});
-				expect(result.success).toBe(true);
+				expect(result.success).toBe(false);
 			});
 		});
 
