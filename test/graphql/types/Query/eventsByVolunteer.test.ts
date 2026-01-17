@@ -1,5 +1,5 @@
 import { faker } from "@faker-js/faker";
-import { expect, suite, test } from "vitest";
+import { expect, suite, test, vi } from "vitest";
 import { assertToBeNonNullish } from "../../../helpers";
 import { server } from "../../../server";
 import { mercuriusClient } from "../client";
@@ -642,6 +642,43 @@ suite("Query field eventsByVolunteer", () => {
 			const futureEvent = events?.find((e) => e.id === baseEventId);
 			expect(futureEvent).toBeDefined();
 			expect(futureEvent?.name).toBe("Future Recurring Event");
+		});
+	});
+
+	suite("error handling", () => {
+		test("should handle database errors gracefully", async () => {
+			const { userId, authToken: userToken } =
+				await createRegularUserUsingAdmin();
+			assertToBeNonNullish(userId);
+			assertToBeNonNullish(userToken);
+
+			// Mock the drizzle client to throw an error
+			const spy = vi.spyOn(
+				server.drizzleClient.query.eventVolunteersTable,
+				"findMany",
+			);
+			spy.mockRejectedValueOnce(new Error("Database connection failed"));
+
+			try {
+				const result = await mercuriusClient.query(Query_eventsByVolunteer, {
+					headers: { authorization: `bearer ${userToken}` },
+					variables: { userId },
+				});
+
+				// Should return an error with unexpected code
+				expect(result.errors).toBeDefined();
+				expect(result.errors).toEqual(
+					expect.arrayContaining([
+						expect.objectContaining({
+							extensions: expect.objectContaining({
+								code: "unexpected",
+							}),
+						}),
+					]),
+				);
+			} finally {
+				spy.mockRestore();
+			}
 		});
 	});
 });
