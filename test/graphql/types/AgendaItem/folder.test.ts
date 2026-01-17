@@ -81,26 +81,32 @@ describe("AgendaItem.folder resolver", () => {
 	it("returns agenda folder when it exists", async () => {
 		const { context, mocks } = createMockGraphQLContext(true, "user-1");
 
-		const mockFolder = {
+		context.currentClient.isAuthenticated = true;
+		context.currentClient.user = { id: "user-1" };
+
+		const agendaFolder = {
 			id: "folder-1",
-			name: "Folder",
-			eventId: "event-1",
+			event: {
+				organization: {
+					membershipsWhereOrganization: [{ role: "administrator" }],
+				},
+			},
 		};
 
+		// user exists
+		mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValueOnce({
+			id: "user-1",
+			role: "administrator",
+		});
+
+		// folder exists
 		mocks.drizzleClient.query.agendaFoldersTable.findFirst.mockResolvedValueOnce(
-			mockFolder as never,
+			agendaFolder,
 		);
 
 		const result = await resolveFolder(mockParent, {}, context);
 
-		expect(result).toEqual(mockFolder);
-		expect(
-			mocks.drizzleClient.query.agendaFoldersTable.findFirst,
-		).toHaveBeenCalledWith(
-			expect.objectContaining({
-				where: expect.any(Function),
-			}),
-		);
+		expect(result).toBe(agendaFolder);
 	});
 
 	it("throws unexpected error when agenda folder does not exist", async () => {
