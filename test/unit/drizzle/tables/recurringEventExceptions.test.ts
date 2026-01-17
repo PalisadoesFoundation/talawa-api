@@ -159,7 +159,13 @@ describe("src/drizzle/tables/recurringEventExceptions.ts", () => {
 						eventExceptionsTable.updatedAt as ColumnWithDefaultFn;
 					expect(updatedAtColumn.defaultFn).toBeDefined();
 					const defaultValue = updatedAtColumn.defaultFn?.();
+
 					expect(defaultValue).toBeInstanceOf(SQL);
+					// Verify it represents valid SQL NULL (params/chunks check)
+					// Based on inspection, it produces a structure containing null in chunks
+					expect(
+						(defaultValue as unknown as { queryChunks: unknown[] }).queryChunks,
+					).toEqual(expect.arrayContaining([null]));
 				});
 
 				it("should have an onUpdateFn that returns a Date", () => {
@@ -298,7 +304,11 @@ describe("src/drizzle/tables/recurringEventExceptions.ts", () => {
 			type RelationCall = {
 				type: "one" | "many";
 				table: unknown;
-				config: unknown;
+				config: {
+					fields: PgColumn[];
+					references: PgColumn[];
+					relationName?: string;
+				};
 				withFieldName: (fieldName: string) => RelationCall;
 			};
 
@@ -307,7 +317,7 @@ describe("src/drizzle/tables/recurringEventExceptions.ts", () => {
 					const result: RelationCall = {
 						type: "one" as const,
 						table,
-						config,
+						config: config as RelationCall["config"],
 						withFieldName: () => result,
 					};
 					return result;
@@ -317,7 +327,7 @@ describe("src/drizzle/tables/recurringEventExceptions.ts", () => {
 					const result: RelationCall = {
 						type: "many" as const,
 						table,
-						config,
+						config: config as RelationCall["config"],
 						withFieldName: () => result,
 					};
 					return result;
@@ -356,6 +366,12 @@ describe("src/drizzle/tables/recurringEventExceptions.ts", () => {
 					relationsResult.recurringEventInstance as unknown as RelationCall;
 				expect(rel.type).toBe("one");
 				expect(rel.table).toBe(recurringEventInstancesTable);
+				expect(rel.config.fields).toEqual([
+					eventExceptionsTable.recurringEventInstanceId,
+				]);
+				expect(rel.config.references).toEqual([
+					recurringEventInstancesTable.id,
+				]);
 			});
 
 			it("should define organization as a one-to-one relation", () => {
@@ -367,6 +383,10 @@ describe("src/drizzle/tables/recurringEventExceptions.ts", () => {
 				const rel = relationsResult.organization as unknown as RelationCall;
 				expect(rel.type).toBe("one");
 				expect(rel.table).toBe(organizationsTable);
+				expect(rel.config.fields).toEqual([
+					eventExceptionsTable.organizationId,
+				]);
+				expect(rel.config.references).toEqual([organizationsTable.id]);
 			});
 
 			it("should define creator as a one-to-one relation", () => {
@@ -378,6 +398,8 @@ describe("src/drizzle/tables/recurringEventExceptions.ts", () => {
 				const rel = relationsResult.creator as unknown as RelationCall;
 				expect(rel.type).toBe("one");
 				expect(rel.table).toBe(usersTable);
+				expect(rel.config.fields).toEqual([eventExceptionsTable.creatorId]);
+				expect(rel.config.references).toEqual([usersTable.id]);
 			});
 
 			it("should define updater as a one-to-one relation", () => {
@@ -389,6 +411,8 @@ describe("src/drizzle/tables/recurringEventExceptions.ts", () => {
 				const rel = relationsResult.updater as unknown as RelationCall;
 				expect(rel.type).toBe("one");
 				expect(rel.table).toBe(usersTable);
+				expect(rel.config.fields).toEqual([eventExceptionsTable.updaterId]);
+				expect(rel.config.references).toEqual([usersTable.id]);
 			});
 		});
 	});
