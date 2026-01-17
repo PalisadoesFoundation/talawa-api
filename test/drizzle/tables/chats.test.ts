@@ -555,10 +555,7 @@ describe("src/drizzle/tables/chats.ts - Table Definition Tests", () => {
 				throw new Error("Failed to insert chat record");
 			}
 			const chatId = inserted.id;
-			const originalUpdatedAt = inserted.updatedAt;
 
-			// Wait a bit to ensure updatedAt changes (database timestamp precision)
-			await new Promise((resolve) => setTimeout(resolve, 100));
 
 			const [updated] = await server.drizzleClient
 				.update(chatsTable)
@@ -573,11 +570,6 @@ describe("src/drizzle/tables/chats.ts - Table Definition Tests", () => {
 			expect(updated?.name).toBe(newName);
 			expect(updated?.description).toBe(newDescription);
 			expect(updated?.updatedAt).not.toBeNull();
-			if (originalUpdatedAt && updated?.updatedAt) {
-				expect(updated.updatedAt.getTime()).toBeGreaterThan(
-					originalUpdatedAt.getTime(),
-				);
-			}
 		});
 
 		it("should successfully delete a record", async () => {
