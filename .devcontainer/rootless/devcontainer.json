@@ -1,0 +1,86 @@
+// https://containers.dev/implementors/json_reference/
+// https://github.com/orgs/devcontainers/discussions/4
+// Rootless Docker devcontainer configuration
+// Use this configuration when running Docker in rootless mode
+// See: https://docs.docker.com/engine/security/rootless/
+{
+	"$schema": "https://raw.githubusercontent.com/devcontainers/spec/main/schemas/devContainer.schema.json",
+	// NOTE: containerUser is intentionally NOT set for rootless Docker mode.
+	// In rootless mode, "root" inside the container maps to the non-root host user
+	// due to user namespace remapping, which allows proper bind mount permissions.
+	"customizations": {
+		"vscode": {
+			"extensions": [
+				"biomejs.biome",
+				"esbenp.prettier-vscode",
+				"GraphQL.vscode-graphql",
+				"GraphQL.vscode-graphql-syntax",
+				"redhat.vscode-yaml"
+			],
+			"settings": {
+				"editor.codeActionsOnSave": {
+					"quickfix.biome": "explicit",
+					"source.organizeImports.biome": "explicit"
+				},
+				"editor.formatOnSave": true,
+				"editor.lineNumbers": "relative",
+				"editor.mouseWheelZoom": true,
+				"editor.wordWrap": "on",
+				"typescript.enablePromptUseWorkspaceTsdk": true,
+				"typescript.tsdk": "./node_modules/typescript/lib",
+				"[graphql]": {
+					"editor.defaultFormatter": "biomejs.biome"
+				},
+				"[javascript]": {
+					"editor.defaultFormatter": "biomejs.biome"
+				},
+				"[json]": {
+					"editor.defaultFormatter": "biomejs.biome"
+				},
+				"[jsonc]": {
+					"editor.defaultFormatter": "biomejs.biome"
+				},
+				"[markdown]": {
+					"editor.defaultFormatter": "esbenp.prettier-vscode"
+				},
+				"[typescript]": {
+					"editor.defaultFormatter": "biomejs.biome"
+				},
+				"[yaml]": {
+					"editor.defaultFormatter": "redhat.vscode-yaml"
+				}
+			}
+		}
+	},
+	"dockerComposeFile": [
+		"../../compose.yaml",
+		"../../docker/compose.testing.yaml",
+		"../../docker/compose.rootless.devcontainer.yaml"
+	],
+	"features": {
+		// https://github.com/devcontainers/features/tree/main/src/common-utils
+		"ghcr.io/devcontainers/features/common-utils": {
+			"installZsh": false,
+			"installOhMyZsh": false,
+			"installOhMyZshConfig": false,
+			"nonFreePackages": true,
+			"username": "talawa"
+		},
+		// https://github.com/devcontainers/features/tree/main/src/git
+		"ghcr.io/devcontainers/features/git": {},
+		// https://github.com/devcontainers/features/tree/main/src/github-cli
+		"ghcr.io/devcontainers/features/github-cli": {}
+		// Note: docker-outside-of-docker feature is NOT included for rootless mode
+		// The host's rootless Docker socket is mounted directly via compose
+	},
+	"init": true,
+	"initializeCommand": "/bin/sh -c '[ ! -f .env ] && cp ./envFiles/.env.rootless.devcontainer ./.env || true'",
+	"name": "talawa_api_rootless",
+	"overrideCommand": true,
+	"postCreateCommand": "./.devcontainer/rootless/post-create.sh",
+	// NOTE: remoteUser is set to root for rootless Docker mode - root inside container maps to host user
+	"remoteUser": "root",
+	"service": "api",
+	"shutdownAction": "stopCompose",
+	"workspaceFolder": "/home/talawa/api"
+}
