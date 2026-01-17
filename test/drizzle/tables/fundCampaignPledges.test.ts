@@ -61,7 +61,7 @@ describe("fundCampaignPledgesTable", () => {
 			});
 
 			it("should reject missing amount", () => {
-				const { amount, ...dataWithoutAmount } = validPledgeData;
+				const { amount: _amount, ...dataWithoutAmount } = validPledgeData;
 				const result =
 					fundCampaignPledgesTableInsertSchema.safeParse(dataWithoutAmount);
 				expect(result.success).toBe(false);
@@ -148,7 +148,8 @@ describe("fundCampaignPledgesTable", () => {
 			});
 
 			it("should reject missing campaignId", () => {
-				const { campaignId, ...dataWithoutCampaignId } = validPledgeData;
+				const { campaignId: _campaignId, ...dataWithoutCampaignId } =
+					validPledgeData;
 				const result = fundCampaignPledgesTableInsertSchema.safeParse(
 					dataWithoutCampaignId,
 				);
@@ -180,7 +181,8 @@ describe("fundCampaignPledgesTable", () => {
 			});
 
 			it("should reject missing pledgerId", () => {
-				const { pledgerId, ...dataWithoutPledgerId } = validPledgeData;
+				const { pledgerId: _pledgerId, ...dataWithoutPledgerId } =
+					validPledgeData;
 				const result =
 					fundCampaignPledgesTableInsertSchema.safeParse(dataWithoutPledgerId);
 				expect(result.success).toBe(false);
