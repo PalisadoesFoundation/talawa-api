@@ -198,8 +198,7 @@ export const agendaItemsTableInsertSchema = createInsertSchema(
 		description: (schema) =>
 			schema.min(1).max(AGENDA_ITEM_DESCRIPTION_MAX_LENGTH).optional(),
 		name: (schema) => schema.min(1).max(AGENDA_ITEM_NAME_MAX_LENGTH),
-		notes: (schema) =>
-			schema.max(AGENDA_ITEM_NOTES_MAX_LENGTH).optional(),
+		notes: (schema) => schema.max(AGENDA_ITEM_NOTES_MAX_LENGTH).optional(),
 		sequence: (schema) => schema.int().min(1),
 	},
 );

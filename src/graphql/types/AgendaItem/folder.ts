@@ -33,7 +33,8 @@ export const resolveFolder = async (
 									columns: { role: true },
 									where: (fields, operators) =>
 										operators.eq(fields.memberId, currentUserId),
-								},							},
+								},
+							},
 						},
 					},
 				},
