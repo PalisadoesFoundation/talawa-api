@@ -1,5 +1,4 @@
-import type { z } from "zod";
-import type { iso4217CurrencyCodeEnum } from "~/src/drizzle/enums/iso4217CurrencyCode";
+import { iso4217CurrencyCodeEnum } from "~/src/drizzle/enums/iso4217CurrencyCode";
 import type { fundCampaignsTable } from "~/src/drizzle/tables/fundCampaigns";
 import { builder } from "~/src/graphql/builder";
 import { Iso4217CurrencyCode } from "~/src/graphql/enums/Iso4217CurrencyCode";
@@ -15,7 +14,7 @@ FundCampaign.implement({
 		currencyCode: t.field({
 			description: "Currency code of the fund campaign.",
 			resolve: (fundCampaign) =>
-				fundCampaign.currencyCode as z.infer<typeof iso4217CurrencyCodeEnum>,
+				iso4217CurrencyCodeEnum.parse(fundCampaign.currencyCode),
 			type: Iso4217CurrencyCode,
 		}),
 		endAt: t.expose("endAt", {

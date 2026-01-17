@@ -2,6 +2,7 @@ import { relations, sql } from "drizzle-orm";
 import { index, jsonb, pgTable, timestamp, uuid } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { uuidv7 } from "uuidv7";
+import { z } from "zod";
 import { organizationsTable } from "./organizations";
 import { recurringEventInstancesTable } from "./recurringEventInstances";
 import { usersTable } from "./users";
@@ -146,5 +147,9 @@ export const eventExceptionsTableRelations = relations(
 	}),
 );
 
-export const recurringEventExceptionsTableInsertSchema =
-	createInsertSchema(eventExceptionsTable);
+export const recurringEventExceptionsTableInsertSchema = createInsertSchema(
+	eventExceptionsTable,
+	{
+		exceptionData: z.record(z.string(), z.unknown()),
+	},
+);
