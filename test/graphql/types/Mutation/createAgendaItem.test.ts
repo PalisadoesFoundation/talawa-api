@@ -183,6 +183,7 @@ suite("Mutation field createAgendaItem", () => {
 			}
 		}
 		cleanupFns.length = 0;
+		mercuriusClient.setHeaders({});
 	});
 
 	test("Returns error when unauthenticated", async () => {
