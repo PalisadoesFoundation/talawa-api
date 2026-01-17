@@ -9,10 +9,7 @@ import {
 	venuesTableRelations,
 } from "~/src/drizzle/tables/venues";
 
-/**
- * Tests for venuesTable and venuesTableInsertSchema.
- * Validates schema constraints for venue creation.
- */
+
 describe("venuesTable", () => {
 	describe("constants", () => {
 		it("should have VENUE_DESCRIPTION_MAX_LENGTH set to 2048", () => {
