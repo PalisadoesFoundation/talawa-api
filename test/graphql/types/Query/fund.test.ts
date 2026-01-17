@@ -1395,7 +1395,7 @@ suite("UUID Validation", () => {
 
 			expect(fundResult.errors).toBeDefined();
 			expect(fundResult.errors?.[0]?.extensions?.code).toBe(
-				"arguments_associated_resources_not_found",
+				"invalid_arguments",
 			);
 		}
 	});

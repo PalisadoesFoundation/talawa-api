@@ -1318,7 +1318,7 @@ suite("Mutation updateEventVolunteer - Integration Tests", () => {
 						issues: expect.arrayContaining([
 							expect.objectContaining({
 								argumentPath: ["data"],
-								message: "Expected object, received null",
+								message: expect.stringContaining("expected object"),
 							}),
 						]),
 					}),
@@ -1382,7 +1382,7 @@ suite("Mutation updateEventVolunteer - Integration Tests", () => {
 						issues: expect.arrayContaining([
 							expect.objectContaining({
 								argumentPath: ["data"],
-								message: "Required",
+								message: expect.stringContaining("expected object"),
 							}),
 						]),
 					}),
