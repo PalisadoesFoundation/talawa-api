@@ -1,5 +1,5 @@
-import { describe, it, expect } from "vitest";
 import { getTableConfig } from "drizzle-orm/pg-core";
+import { describe, expect, it } from "vitest";
 import { pluginsTable } from "~/src/drizzle/tables/plugins";
 
 describe("drizzle table: plugins", () => {
@@ -13,7 +13,6 @@ describe("drizzle table: plugins", () => {
 		const columnNames = table.columns.map((c) => c.name);
 
 		expect(columnNames.length).toBe(7);
-
 		expect(columnNames).toEqual(
 			expect.arrayContaining([
 				"id",
@@ -28,15 +27,9 @@ describe("drizzle table: plugins", () => {
 	});
 
 	it("should enforce constraints on boolean flag columns", () => {
-		const isActivated = table.columns.find(
-			(c) => c.name === "is_activated",
-		);
-		const isInstalled = table.columns.find(
-			(c) => c.name === "is_installed",
-		);
-		const backup = table.columns.find(
-			(c) => c.name === "backup",
-		);
+		const isActivated = table.columns.find((c) => c.name === "is_activated");
+		const isInstalled = table.columns.find((c) => c.name === "is_installed");
+		const backup = table.columns.find((c) => c.name === "backup");
 
 		expect(isActivated?.notNull).toBe(true);
 		expect(isActivated?.hasDefault).toBe(true);
@@ -57,9 +50,7 @@ describe("drizzle table: plugins", () => {
 	});
 
 	it("should enforce uniqueness and not-null on plugin_id", () => {
-		const pluginIdColumn = table.columns.find(
-			(c) => c.name === "plugin_id",
-		);
+		const pluginIdColumn = table.columns.find((c) => c.name === "plugin_id");
 
 		expect(pluginIdColumn).toBeDefined();
 		expect(pluginIdColumn?.isUnique).toBe(true);
@@ -67,16 +58,11 @@ describe("drizzle table: plugins", () => {
 	});
 
 	it("should define timestamp columns with defaults", () => {
-		const createdAt = table.columns.find(
-			(c) => c.name === "created_at",
-		);
-		const updatedAt = table.columns.find(
-			(c) => c.name === "updated_at",
-		);
+		const createdAt = table.columns.find((c) => c.name === "created_at");
+		const updatedAt = table.columns.find((c) => c.name === "updated_at");
 
 		expect(createdAt?.notNull).toBe(true);
 		expect(createdAt?.hasDefault).toBe(true);
-
 		expect(updatedAt?.hasDefault).toBe(true);
 	});
 
