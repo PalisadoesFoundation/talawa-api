@@ -94,7 +94,7 @@ Defined in: [src/services/eventGeneration/types.ts:59](https://github.com/Palisa
 
 #### creatorId
 
-> **creatorId**: `string`
+> **creatorId**: `string` \| `null`
 
 #### exceptionData
 

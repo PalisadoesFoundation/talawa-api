@@ -366,15 +366,6 @@ export const envConfigSchema = Type.Object({
 		}),
 	),
 	/**
-	 * The threshold in milliseconds for a request to be considered slow.
-	 */
-	API_SLOW_REQUEST_MS: Type.Optional(
-		Type.Number({
-			minimum: 0,
-			default: 500,
-		}),
-	),
-	/**
 	 * Enabled state for OpenTelemetry tracing.
 	 */
 	API_OTEL_ENABLED: Type.Boolean({
@@ -721,6 +712,55 @@ export const envConfigSchema = Type.Object({
 	API_METRICS_API_KEY: Type.Optional(
 		Type.String({
 			minLength: 32,
+		}),
+	),
+
+	/**
+	 * Master switch to enable or disable metrics collection and aggregation.
+	 * When disabled, metrics collection is skipped entirely.
+	 * Default: true
+	 */
+	API_METRICS_ENABLED: Type.Optional(
+		Type.Boolean({
+			default: true,
+		}),
+	),
+
+	/**
+	 * Threshold in milliseconds for considering an operation as slow.
+	 * Operations exceeding this threshold will be tracked in slow operations metrics.
+	 * Default: 200
+	 */
+	API_METRICS_SLOW_OPERATION_MS: Type.Optional(
+		Type.Integer({
+			minimum: 1,
+			default: 200,
+		}),
+	),
+
+	/**
+	 * Threshold in milliseconds for considering a request as slow.
+	 * This is the single source of truth for slow request detection.
+	 * Used for both performance metrics tracking and request logging.
+	 * Requests exceeding this threshold will be logged as warnings.
+	 * Default: 500
+	 */
+	API_METRICS_SLOW_REQUEST_MS: Type.Optional(
+		Type.Integer({
+			minimum: 1,
+			default: 500,
+		}),
+	),
+
+	/**
+	 * Time-to-live in seconds for cached aggregated metrics.
+	 * Determines how long metrics remain in cache before expiration.
+	 * Default: 300 (5 minutes)
+	 */
+	API_METRICS_CACHE_TTL_SECONDS: Type.Optional(
+		Type.Integer({
+			minimum: 1,
+			default: 300,
 		}),
 	),
 });

@@ -92,7 +92,7 @@ type Event {
   attendees: [User!]
   attendeesCheckInStatus: [CheckInStatus!]!
   baseEvent: Event
-  baseRecurringEventId: ID
+  baseRecurringEventId: String
   createdAt: DateTime
   creator: User
   description: String
@@ -175,7 +175,7 @@ Check-in status for all attendees of the event.
 
 The base event from which this materialized instance was generated.
 
-#### [<code style={{ fontWeight: 'normal' }}>Event.<b>baseRecurringEventId</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>ID</b></code>](/auto-schema/types/scalars/id.mdx) <Badge class="badge badge--secondary " text="scalar"/>
+#### [<code style={{ fontWeight: 'normal' }}>Event.<b>baseRecurringEventId</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>String</b></code>](/auto-schema/types/scalars/string.mdx) <Badge class="badge badge--secondary " text="scalar"/>
 
 The ID of the base recurring event template if this is a generated instance.
 
