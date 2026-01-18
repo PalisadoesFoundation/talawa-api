@@ -1118,7 +1118,6 @@ suite("Default Agenda Folder and Category Creation", () => {
 	});
 
 	test("creates separate default folder and category for multiple events", async () => {
-		vi.restoreAllMocks();
 		const organizationId = await createTestOrganization();
 
 		const event1 = await createEvent({
