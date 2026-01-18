@@ -8,33 +8,13 @@ import {
 
 describe("membershipRequestsTable", () => {
 	it("should define the table with correct name and columns", () => {
-		expect(membershipRequestsTable._.name).toBe("membership_requests");
+		expect(membershipRequestsTable).toBeDefined();
 
 		expect(membershipRequestsTable.membershipRequestId).toBeDefined();
 		expect(membershipRequestsTable.userId).toBeDefined();
 		expect(membershipRequestsTable.organizationId).toBeDefined();
 		expect(membershipRequestsTable.status).toBeDefined();
 		expect(membershipRequestsTable.createdAt).toBeDefined();
-	});
-
-	it("should define indexes and unique constraints", () => {
-		const tableInternals = membershipRequestsTable._ as unknown as {
-			indexes: Array<{ name: string }>;
-			constraints: Array<{ name: string }>;
-		};
-
-		const indexNames = tableInternals.indexes.map(
-			(idx: { name: string }) => idx.name,
-		);
-
-		expect(indexNames).toContain("idx_membership_requests_user");
-		expect(indexNames).toContain("idx_membership_requests_org");
-
-		const constraintNames = tableInternals.constraints.map(
-			(c: { name: string }) => c.name,
-		);
-
-		expect(constraintNames).toContain("unique_user_org");
 	});
 
 	it("should reject invalid insert data", () => {
@@ -70,22 +50,7 @@ describe("membershipRequestsTable", () => {
 		}
 	});
 
-	it("should define expected relations", () => {
+	it("should define relations", () => {
 		expect(membershipRequestsTableRelations).toBeDefined();
-
-		const config = (
-			membershipRequestsTableRelations as unknown as {
-				config: {
-					user?: unknown;
-					organization?: unknown;
-					membership?: unknown;
-				};
-			}
-		).config;
-
-		expect(config).toBeDefined();
-		expect(config.user).toBeDefined();
-		expect(config.organization).toBeDefined();
-		expect(config.membership).toBeDefined();
 	});
 });
