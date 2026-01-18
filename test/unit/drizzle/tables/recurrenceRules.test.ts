@@ -279,6 +279,13 @@ describe("src/drizzle/tables/recurrenceRules.ts", () => {
 
 			// Verify one() was called 4 times (once for each relation)
 			expect(mockOne).toHaveBeenCalledTimes(4);
+
+			// Verify relations reference the correct target tables
+			const calls = mockOne.mock.calls;
+			expect(calls[0]?.[0]).toBe(eventsTable); // baseRecurringEvent -> eventsTable
+			expect(calls[1]?.[0]).toBe(organizationsTable); // organization -> organizationsTable
+			expect(calls[2]?.[0]).toBe(usersTable); // creator -> usersTable
+			expect(calls[3]?.[0]).toBe(usersTable); // updater -> usersTable
 		});
 	});
 
