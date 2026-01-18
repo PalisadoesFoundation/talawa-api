@@ -751,21 +751,17 @@ Google Docstring 'Args' and 'Returns' sections.""",
             print("")
             for file, issues in sorted(violations.items()):
                 for issue in issues:
-                    print(
-                        f"""\
+                    print(f"""\
 File Docstring Error: {file}
 Line : {issue.line}
 Function: {issue.function}
 Issue: {issue.issue}
 Corrective Action: {issue.action}
-"""
-                    )
-            print(
-                f"""\
+""")
+            print(f"""\
 Follow the online 'Google Python Style Guide' for our docstring expectations.
-There are {total_violations} docstring violations
-"""
-            )
+There are {len(violations)} docstring violations
+""")
 
             sys.exit(1)
 
