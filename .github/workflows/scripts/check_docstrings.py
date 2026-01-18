@@ -760,7 +760,7 @@ Corrective Action: {issue.action}
 """)
             print(f"""\
 Follow the online 'Google Python Style Guide' for our docstring expectations.
-There are {len(violations)} docstring violations
+There are {len(violations)} file(s) with {total_violations} total docstring violations
 """)
 
             sys.exit(1)
