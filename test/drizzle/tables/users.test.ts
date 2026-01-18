@@ -1,6 +1,7 @@
 import { faker } from "@faker-js/faker";
 import { hash } from "@node-rs/argon2";
 import { eq, getTableName } from "drizzle-orm";
+import { getTableConfig } from "drizzle-orm/pg-core";
 import { describe, expect, it } from "vitest";
 import { imageMimeTypeEnum } from "~/src/drizzle/enums/imageMimeType";
 import { iso639Set1LanguageCodeEnum } from "~/src/drizzle/enums/iso639Set1LanguageCode";
@@ -1754,13 +1755,43 @@ describe("src/drizzle/tables/users.ts - Table Definition Tests", () => {
 	});
 
 	describe("Index Configuration", () => {
-		it("should have indexed columns present (creatorId, name, updaterId)", () => {
-			const tableDefinition = usersTable;
-			expect(tableDefinition).toBeDefined();
+		it("should have three indexes defined for creatorId, name, and updaterId", () => {
+			const tableConfig = getTableConfig(usersTable);
+			expect(tableConfig.indexes).toBeDefined();
+			expect(tableConfig.indexes.length).toBeGreaterThanOrEqual(3);
+		});
 
-			expect(tableDefinition.creatorId).toBeDefined();
-			expect(tableDefinition.name).toBeDefined();
-			expect(tableDefinition.updaterId).toBeDefined();
+		it("should have an index on creatorId column", () => {
+			const tableConfig = getTableConfig(usersTable);
+			const creatorIdIndex = tableConfig.indexes.find((idx) =>
+				idx.config.columns.some(
+					(col) => "name" in col && col.name === "creator_id",
+				),
+			);
+			expect(creatorIdIndex).toBeDefined();
+			expect(creatorIdIndex?.config.unique).toBeFalsy();
+		});
+
+		it("should have an index on name column", () => {
+			const tableConfig = getTableConfig(usersTable);
+			const nameIndex = tableConfig.indexes.find((idx) =>
+				idx.config.columns.some(
+					(col) => "name" in col && col.name === "name",
+				),
+			);
+			expect(nameIndex).toBeDefined();
+			expect(nameIndex?.config.unique).toBeFalsy();
+		});
+
+		it("should have an index on updaterId column", () => {
+			const tableConfig = getTableConfig(usersTable);
+			const updaterIdIndex = tableConfig.indexes.find((idx) =>
+				idx.config.columns.some(
+					(col) => "name" in col && col.name === "updater_id",
+				),
+			);
+			expect(updaterIdIndex).toBeDefined();
+			expect(updaterIdIndex?.config.unique).toBeFalsy();
 		});
 
 		it("should efficiently query using indexed creatorId column", async () => {
