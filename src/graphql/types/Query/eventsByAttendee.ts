@@ -14,6 +14,8 @@ import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 
 const queryEventsByAttendeeArgumentsSchema = z.object({
 	userId: z.string().uuid(),
+	limit: z.number().int().min(1).max(100).optional(),
+	offset: z.number().int().min(0).optional(),
 });
 
 /**
@@ -27,6 +29,12 @@ builder.queryField("eventsByAttendee", (t) =>
 			userId: t.arg.id({
 				required: true,
 				description: "ID of the user whose attended events to fetch",
+			}),
+			limit: t.arg.int({
+				description: "Number of events to return",
+			}),
+			offset: t.arg.int({
+				description: "Number of events to skip",
 			}),
 		},
 		description:
@@ -57,6 +65,8 @@ builder.queryField("eventsByAttendee", (t) =>
 
 			const currentUserId = ctx.currentClient.user.id;
 			const targetUserId = parsedArgs.data.userId;
+			const limit = parsedArgs.data.limit ?? 50; // Use 50 as default per instructions
+			const offset = parsedArgs.data.offset ?? 0;
 
 			// Get current user for authorization
 			const currentUser = await ctx.drizzleClient.query.usersTable.findFirst({
@@ -184,16 +194,21 @@ builder.queryField("eventsByAttendee", (t) =>
 					return aTime - bTime;
 				});
 
+				const slicedEvents = events.slice(offset, offset + limit);
+
 				ctx.log.debug(
 					{
 						userId: targetUserId,
 						totalEvents: events.length,
+						returnedEvents: slicedEvents.length,
 						attendeeRecords: attendeeRecords.length,
+						limit,
+						offset,
 					},
 					"Retrieved events by attendee",
 				);
 
-				return events;
+				return slicedEvents;
 			} catch (error) {
 				ctx.log.error(
 					{

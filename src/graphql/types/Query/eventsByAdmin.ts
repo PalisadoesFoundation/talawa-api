@@ -12,6 +12,8 @@ import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 
 const queryEventsByAdminArgumentsSchema = z.object({
 	userId: z.string().uuid(),
+	limit: z.number().int().min(1).max(100).optional(),
+	offset: z.number().int().min(0).optional(),
 });
 
 /**
@@ -25,6 +27,12 @@ builder.queryField("eventsByAdmin", (t) =>
 			userId: t.arg.id({
 				required: true,
 				description: "ID of the user whose admin events to fetch",
+			}),
+			limit: t.arg.int({
+				description: "Number of events to return",
+			}),
+			offset: t.arg.int({
+				description: "Number of events to skip",
 			}),
 		},
 		description:
@@ -55,6 +63,8 @@ builder.queryField("eventsByAdmin", (t) =>
 
 			const currentUserId = ctx.currentClient.user.id;
 			const targetUserId = parsedArgs.data.userId;
+			const limit = parsedArgs.data.limit ?? 100;
+			const offset = parsedArgs.data.offset ?? 0;
 
 			// Get current user for authorization
 			const currentUser = await ctx.drizzleClient.query.usersTable.findFirst({
@@ -171,16 +181,21 @@ builder.queryField("eventsByAdmin", (t) =>
 					return aTime - bTime;
 				});
 
+				const slicedEvents = allEvents.slice(offset, offset + limit);
+
 				ctx.log.debug(
 					{
 						userId: targetUserId,
 						adminOrgCount: organizationIds.length,
 						totalEvents: allEvents.length,
+						returnedEvents: slicedEvents.length,
+						limit,
+						offset,
 					},
 					"Retrieved events by admin",
 				);
 
-				return allEvents;
+				return slicedEvents;
 			} catch (error) {
 				ctx.log.error(
 					{

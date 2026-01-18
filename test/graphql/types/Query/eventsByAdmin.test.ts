@@ -20,8 +20,8 @@ const gql = initGraphQLTada<{
 }>();
 
 const Query_eventsByAdmin = gql(`
-  query Query_eventsByAdmin($userId: ID!) {
-    eventsByAdmin(userId: $userId) {
+  query Query_eventsByAdmin($userId: ID!, $limit: Int, $offset: Int) {
+    eventsByAdmin(userId: $userId, limit: $limit, offset: $offset) {
       id
       name
       description
@@ -532,6 +532,91 @@ suite("Query field eventsByAdmin", () => {
 			} finally {
 				spy.mockRestore();
 			}
+		});
+	});
+	suite("pagination", () => {
+		test("should respect limit and offset", async () => {
+			const { userId: adminUserArgVal, authToken: adminUserToken } =
+				await createRegularUserUsingAdmin();
+			assertToBeNonNullish(adminUserArgVal);
+
+			// Create Org
+			const createOrgResult = await mercuriusClient.mutate(
+				Mutation_createOrganization,
+				{
+					headers: { authorization: `bearer ${authToken}` },
+					variables: {
+						input: {
+							name: `Admin Pagination Org ${faker.string.ulid()}`,
+							description: "Test org",
+							countryCode: "us",
+							state: "CA",
+							city: "Los Angeles",
+							postalCode: "90001",
+							addressLine1: "123 Test St",
+							addressLine2: null,
+						},
+					},
+				},
+			);
+			const orgId = createOrgResult.data?.createOrganization?.id;
+			assertToBeNonNullish(orgId);
+
+			// Make user an admin
+			await mercuriusClient.mutate(Mutation_createOrganizationMembership, {
+				headers: { authorization: `bearer ${authToken}` },
+				variables: {
+					input: {
+						memberId: adminUserArgVal,
+						organizationId: orgId,
+						role: "administrator",
+					},
+				},
+			});
+
+			// Create 3 events
+			for (let i = 0; i < 3; i++) {
+				await mercuriusClient.mutate(Mutation_createEvent, {
+					headers: { authorization: `bearer ${adminUserToken}` },
+					variables: {
+						input: {
+							name: `Event ${i}`,
+							description: `Description ${i}`,
+							organizationId: orgId,
+							startAt: new Date(
+								Date.now() + (i + 1) * 24 * 60 * 60 * 1000,
+							).toISOString(),
+							endAt: new Date(
+								Date.now() + (i + 1) * 25 * 60 * 60 * 1000,
+							).toISOString(),
+						},
+					},
+				});
+			}
+
+			// Test limit
+			const limitResult = await mercuriusClient.query(Query_eventsByAdmin, {
+				headers: { authorization: `bearer ${adminUserToken}` },
+				variables: { userId: adminUserArgVal, limit: 2 },
+			});
+			expect(limitResult.data?.eventsByAdmin).toHaveLength(2);
+
+			// Test offset
+			const offsetResult = await mercuriusClient.query(Query_eventsByAdmin, {
+				headers: { authorization: `bearer ${adminUserToken}` },
+				variables: { userId: adminUserArgVal, limit: 2, offset: 1 },
+			});
+			expect(offsetResult.data?.eventsByAdmin).toHaveLength(2);
+			const events = offsetResult.data?.eventsByAdmin as Array<{
+				name: string;
+			}>;
+			assertToBeNonNullish(events);
+			// Events are sorted by startAt, so order should be Event 0, Event 1, Event 2
+			// Offset 1 should return Event 1, Event 2
+			assertToBeNonNullish(events[0]);
+			assertToBeNonNullish(events[1]);
+			expect(events[0].name).toBe("Event 1");
+			expect(events[1].name).toBe("Event 2");
 		});
 	});
 });

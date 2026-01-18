@@ -75,11 +75,21 @@ Query field to fetch all events where a user is an administrator (via organizati
 
 ```graphql
 eventsByAdmin(
+  limit: Int
+  offset: Int
   userId: ID!
 ): [Event!]!
 ```
 
 ### Arguments
+
+#### [<code style={{ fontWeight: 'normal' }}>eventsByAdmin.<b>limit</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>Int</b></code>](/auto-schema/types/scalars/int.mdx) <Badge class="badge badge--secondary " text="scalar"/>
+
+Number of events to return
+
+#### [<code style={{ fontWeight: 'normal' }}>eventsByAdmin.<b>offset</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>Int</b></code>](/auto-schema/types/scalars/int.mdx) <Badge class="badge badge--secondary " text="scalar"/>
+
+Number of events to skip
 
 #### [<code style={{ fontWeight: 'normal' }}>eventsByAdmin.<b>userId</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>ID!</b></code>](/auto-schema/types/scalars/id.mdx) <Badge class="badge badge--secondary badge--non_null" text="non-null"/> <Badge class="badge badge--secondary " text="scalar"/>
 

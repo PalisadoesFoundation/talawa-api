@@ -4760,6 +4760,12 @@ type Query {
   Query field to fetch all events where a user is an administrator (via organization role).
   """
   eventsByAdmin(
+    """Number of events to return"""
+    limit: Int
+
+    """Number of events to skip"""
+    offset: Int
+
     """ID of the user whose admin events to fetch"""
     userId: ID!
   ): [Event!]!
@@ -4768,6 +4774,12 @@ type Query {
   Query field to fetch all events a user is registered for or has attended.
   """
   eventsByAttendee(
+    """Number of events to return"""
+    limit: Int
+
+    """Number of events to skip"""
+    offset: Int
+
     """ID of the user whose attended events to fetch"""
     userId: ID!
   ): [Event!]!
