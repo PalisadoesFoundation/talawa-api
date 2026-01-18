@@ -8,6 +8,7 @@ import {
 	uuid,
 } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
+import { z } from "zod";
 import { organizationMembershipRoleEnum } from "~/src/drizzle/enums/organizationMembershipRole";
 import { organizationsTable } from "./organizations";
 import { usersTable } from "./users";
@@ -129,4 +130,10 @@ export const organizationMembershipsTableRelations = relations(
 
 export const organizationMembershipsTableInsertSchema = createInsertSchema(
 	organizationMembershipsTable,
+	{
+		creatorId: (_schema) => z.string().uuid().nullable().optional(),
+		memberId: (_schema) => z.string().uuid(),
+		organizationId: (_schema) => z.string().uuid(),
+		updaterId: (_schema) => z.string().uuid().nullable().optional(),
+	},
 );

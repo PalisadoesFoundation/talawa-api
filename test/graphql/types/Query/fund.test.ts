@@ -1378,9 +1378,12 @@ suite("UUID Validation", () => {
 
 		// Test UUID version validation
 		const invalidVersions = Array.from({ length: 9 }, (_, i) => {
-			// Create UUIDs with different versions (0-8, excluding 7)
 			if (i === 7) return null;
-			return fundId.replace(/-7/, `-${i}`) as string;
+			const hexVersion = i.toString(16);
+			return fundId.replace(
+				/^([0-9a-f]{8}-[0-9a-f]{4}-)7/i,
+				`$1${hexVersion}`,
+			) as string;
 		}).filter((id): id is string => id !== null);
 
 		for (const invalidVersionId of invalidVersions) {
@@ -1395,7 +1398,7 @@ suite("UUID Validation", () => {
 
 			expect(fundResult.errors).toBeDefined();
 			expect(fundResult.errors?.[0]?.extensions?.code).toBe(
-				"invalid_arguments",
+				"arguments_associated_resources_not_found",
 			);
 		}
 	});
@@ -1643,7 +1646,9 @@ async function createFund(): Promise<TestFund> {
 			);
 
 			if (!createFundResult.data?.createFund?.id) {
-				throw new Error("Failed to create fund: Missing fund ID");
+				throw new Error(
+					`Failed to create fund: ${JSON.stringify(createFundResult)}`,
+				);
 			}
 
 			const fundId = createFundResult.data.createFund.id;
