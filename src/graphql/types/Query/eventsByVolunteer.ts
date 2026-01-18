@@ -143,12 +143,19 @@ builder.queryField("eventsByVolunteer", (t) =>
 
 				// Check "potential" template IDs and standalone IDs against eventsTable
 				// to determine if they are truly recurring templates or standalone events.
+				// to determine if they are truly recurring templates or standalone events.
 				const baseEventIdsToCheck = [
 					...new Set([...templateIds, ...possiblyStandaloneEventIds]),
 				];
 
-				const baseEventsInfo =
-					await ctx.drizzleClient.query.eventsTable.findMany({
+				let baseEventsInfo: {
+					id: string;
+					startAt: Date;
+					isRecurringEventTemplate: boolean;
+				}[] = [];
+
+				if (baseEventIdsToCheck.length > 0) {
+					baseEventsInfo = await ctx.drizzleClient.query.eventsTable.findMany({
 						columns: {
 							id: true,
 							startAt: true,
@@ -156,6 +163,7 @@ builder.queryField("eventsByVolunteer", (t) =>
 						},
 						where: inArray(eventsTable.id, baseEventIdsToCheck),
 					});
+				}
 
 				const realTemplateIds: string[] = [];
 
@@ -203,9 +211,9 @@ builder.queryField("eventsByVolunteer", (t) =>
 						await ctx.drizzleClient.query.recurringEventInstancesTable.findMany(
 							{
 								columns: { id: true, actualStartTime: true },
-								where: inArray(
-									recurringEventInstancesTable.id,
-									specificInstanceIds,
+								where: and(
+									inArray(recurringEventInstancesTable.id, specificInstanceIds),
+									eq(recurringEventInstancesTable.isCancelled, false),
 								),
 							},
 						);

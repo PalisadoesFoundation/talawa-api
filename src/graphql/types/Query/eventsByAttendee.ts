@@ -166,21 +166,21 @@ builder.queryField("eventsByAttendee", (t) =>
 				}
 
 				// Batch fetch instances for all templates
+				const windowSize = offset + limit;
+				const existingEventIds = new Set(events.map((e) => e.id));
+
 				const instances = await getRecurringEventInstancesByBaseIds(
 					recurringTemplateIds,
 					ctx.drizzleClient,
 					ctx.log,
+					{
+						limit: windowSize,
+						includeCancelled: false,
+						excludeInstanceIds: Array.from(existingEventIds),
+					},
 				);
 
-				// Process instances: filter cancelled and deduplicate
-				const existingEventIds = new Set(events.map((e) => e.id));
-
 				for (const instance of instances) {
-					if (instance.isCancelled) continue;
-
-					// Avoid duplicates if user is also registered for this specific instance
-					if (existingEventIds.has(instance.id)) continue;
-
 					events.push(mapRecurringInstanceToEvent(instance));
 				}
 

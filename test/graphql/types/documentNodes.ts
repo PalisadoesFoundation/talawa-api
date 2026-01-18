@@ -2790,3 +2790,24 @@ export const Mutation_verifyEmail =
         message
     }
 }`);
+
+export const Query_eventsByVolunteer = gql(`
+query Query_eventsByVolunteer($userId: ID!, $limit: Int, $offset: Int) {
+eventsByVolunteer(userId: $userId, limit: $limit, offset: $offset) {
+id
+name
+description
+startAt
+endAt
+location
+allDay
+isPublic
+isRegisterable
+isInviteOnly
+organization {
+id
+name
+}
+}
+}
+`);

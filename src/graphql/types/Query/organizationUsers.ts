@@ -180,7 +180,6 @@ builder.queryField("eventsByOrganizationId", (t) =>
 								fields.organizationId,
 								parsedArgs.data.organizationId,
 							),
-							operators.eq(fields.isRecurringEventTemplate, false),
 						),
 				});
 

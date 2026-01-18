@@ -18,6 +18,14 @@ Defined in: [src/graphql/types/Query/eventQueries/recurringEventInstanceQueries.
 
 ***
 
+### excludeInstanceIds?
+
+> `optional` **excludeInstanceIds**: `string`[]
+
+Defined in: [src/graphql/types/Query/eventQueries/recurringEventInstanceQueries.ts:26](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/graphql/types/Query/eventQueries/recurringEventInstanceQueries.ts#L26)
+
+***
+
 ### includeCancelled?
 
 > `optional` **includeCancelled**: `boolean`

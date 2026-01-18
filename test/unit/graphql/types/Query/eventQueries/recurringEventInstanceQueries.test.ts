@@ -96,7 +96,7 @@ describe("getRecurringEventInstancesByBaseIds", () => {
 			baseIds,
 			mockDrizzleClient,
 			mockLogger,
-			limit,
+			{ limit },
 		);
 
 		expect(

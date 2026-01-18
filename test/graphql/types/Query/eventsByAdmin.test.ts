@@ -535,6 +535,69 @@ suite("Query field eventsByAdmin", () => {
 		});
 	});
 	suite("pagination", () => {
+		test("should return error when limit is negative", async () => {
+			const { userId: adminUserArgVal, authToken: adminUserToken } =
+				await createRegularUserUsingAdmin();
+			assertToBeNonNullish(adminUserArgVal);
+
+			const result = await mercuriusClient.query(Query_eventsByAdmin, {
+				headers: { authorization: `bearer ${adminUserToken}` },
+				variables: { userId: adminUserArgVal, limit: -1 },
+			});
+			expect(result.data?.eventsByAdmin).toBeUndefined();
+			expect(result.errors).toEqual(
+				expect.arrayContaining([
+					expect.objectContaining({
+						extensions: expect.objectContaining({
+							code: "invalid_arguments",
+						}),
+					}),
+				]),
+			);
+		});
+
+		test("should return error when offset is negative", async () => {
+			const { userId: adminUserArgVal, authToken: adminUserToken } =
+				await createRegularUserUsingAdmin();
+			assertToBeNonNullish(adminUserArgVal);
+
+			const result = await mercuriusClient.query(Query_eventsByAdmin, {
+				headers: { authorization: `bearer ${adminUserToken}` },
+				variables: { userId: adminUserArgVal, offset: -1 },
+			});
+			expect(result.data?.eventsByAdmin).toBeUndefined();
+			expect(result.errors).toEqual(
+				expect.arrayContaining([
+					expect.objectContaining({
+						extensions: expect.objectContaining({
+							code: "invalid_arguments",
+						}),
+					}),
+				]),
+			);
+		});
+
+		test("should return error when limit exceeds max", async () => {
+			const { userId: adminUserArgVal, authToken: adminUserToken } =
+				await createRegularUserUsingAdmin();
+			assertToBeNonNullish(adminUserArgVal);
+
+			const result = await mercuriusClient.query(Query_eventsByAdmin, {
+				headers: { authorization: `bearer ${adminUserToken}` },
+				variables: { userId: adminUserArgVal, limit: 101 },
+			});
+			expect(result.data?.eventsByAdmin).toBeUndefined();
+			expect(result.errors).toEqual(
+				expect.arrayContaining([
+					expect.objectContaining({
+						extensions: expect.objectContaining({
+							code: "invalid_arguments",
+						}),
+					}),
+				]),
+			);
+		});
+
 		test("should respect limit and offset", async () => {
 			const { userId: adminUserArgVal, authToken: adminUserToken } =
 				await createRegularUserUsingAdmin();

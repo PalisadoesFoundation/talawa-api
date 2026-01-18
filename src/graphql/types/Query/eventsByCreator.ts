@@ -151,7 +151,7 @@ builder.queryField("eventsByCreator", (t) =>
 					baseRecurringEventIds,
 					ctx.drizzleClient,
 					ctx.log,
-					effectiveWindow,
+					{ limit: effectiveWindow },
 				);
 
 				// Filter out cancelled instances and transform to unified format

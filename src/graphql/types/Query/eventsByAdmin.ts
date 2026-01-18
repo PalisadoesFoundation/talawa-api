@@ -162,6 +162,7 @@ builder.queryField("eventsByAdmin", (t) =>
 					baseRecurringEventIds,
 					ctx.drizzleClient,
 					ctx.log,
+					{},
 				);
 
 				// Filter out cancelled instances and transform to unified format

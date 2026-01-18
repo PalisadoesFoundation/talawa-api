@@ -1,6 +1,8 @@
 import { faker } from "@faker-js/faker";
+import { and, eq } from "drizzle-orm";
 import { initGraphQLTada } from "gql.tada";
 import { expect, suite, test, vi } from "vitest";
+import { eventAttendeesTable } from "~/src/drizzle/tables/eventAttendees";
 import type { ClientCustomScalars } from "~/src/graphql/scalars/index";
 import { assertToBeNonNullish } from "../../../helpers";
 import { server } from "../../../server";
@@ -13,6 +15,7 @@ import {
 	Mutation_createOrganizationMembership,
 	Mutation_registerEventAttendee,
 	Mutation_updateEventVolunteer,
+	Query_eventsByVolunteer,
 	Query_signIn,
 } from "../documentNodes";
 import type { introspection } from "../gql.tada";
@@ -41,27 +44,6 @@ const Query_eventsByAttendee = gql(`
 			}
 			isGenerated
 			baseRecurringEventId
-		}
-	}
-`);
-
-const Query_eventsByVolunteer = gql(`
-	query Query_eventsByVolunteer($userId: ID!, $limit: Int, $offset: Int) {
-		eventsByVolunteer(userId: $userId, limit: $limit, offset: $offset) {
-			id
-			name
-			description
-			startAt
-			endAt
-			location
-			allDay
-			isPublic
-			isRegisterable
-			isInviteOnly
-			organization {
-				id
-				name
-			}
 		}
 	}
 `);
@@ -366,11 +348,7 @@ suite("Query field eventsByAttendee", () => {
 			});
 
 			// Manually update the record to simulate a walk-in (checked in but not registered)
-			// We need to import eventAttendeesTable and eq to do this update
-			const { eventAttendeesTable } = await import(
-				"../../../../src/drizzle/tables/eventAttendees"
-			);
-			const { eq, and } = await import("drizzle-orm");
+			// We import eventAttendeesTable and eq statically now
 
 			await server.drizzleClient
 				.update(eventAttendeesTable)
@@ -788,17 +766,17 @@ suite("Query field eventsByAttendee", () => {
 			});
 
 			// Also register for recurring instance if one exists (uses recurringEventInstanceId branch)
-			if (instance) {
-				await mercuriusClient.mutate(Mutation_registerEventAttendee, {
-					headers: { authorization: `bearer ${authToken}` },
-					variables: {
-						data: {
-							userId,
-							recurringEventInstanceId: instance.id,
-						},
+			assertToBeNonNullish(instance);
+
+			await mercuriusClient.mutate(Mutation_registerEventAttendee, {
+				headers: { authorization: `bearer ${authToken}` },
+				variables: {
+					data: {
+						userId,
+						recurringEventInstanceId: instance.id,
 					},
-				});
-			}
+				},
+			});
 
 			// Query attended events
 			const result = await mercuriusClient.query(Query_eventsByAttendee, {
