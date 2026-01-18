@@ -21,7 +21,6 @@ import {
  * - Test endTime ≤ startTime validation through GraphQL layer
  * - Test minDuration ≥ maxDuration validation through GraphQL layer
  * - Verify error messages contain proper timestamps and validation details
- * @see https://github.com/PalisadoesFoundation/talawa-api/issues/XXXX (follow-up issue)
  */
 describe("MetricsInput Schema", () => {
 	const validInput: MetricsInput = {

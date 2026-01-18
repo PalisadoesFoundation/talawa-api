@@ -22,7 +22,6 @@ import {
  * - Test operationNames validation through GraphQL layer
  * - Test complexityRange min/max validation through GraphQL layer
  * - Verify error messages contain proper validation details
- * @see https://github.com/PalisadoesFoundation/talawa-api/issues/XXXX (follow-up issue)
  */
 describe("MetricsFilterInput Schema", () => {
 	// operationNames field tests
