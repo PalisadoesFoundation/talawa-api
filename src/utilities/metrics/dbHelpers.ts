@@ -105,7 +105,7 @@ export function calculateMedian(values: number[]): number {
  * @example
  * ```typescript
  * const p95 = calculatePercentile([10, 20, 30, 40, 50, 60, 70, 80, 90, 100], 95);
- * // Returns: 95
+ * // Returns: 95.5 (linear interpolation between 90 and 100)
  *
  * const p50 = calculatePercentile([10, 20, 30, 40, 50], 50);
  * // Returns: 30 (median)

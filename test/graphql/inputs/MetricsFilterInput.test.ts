@@ -8,6 +8,16 @@ import {
 /**
  * Tests for MetricsFilterInput schema validation.
  * Validates operation names, slow operations, cache hit rate, and complexity range filtering.
+ *
+ * Testing Approach:
+ * These tests validate the Zod schema directly using .safeParse() rather than GraphQL
+ * integration tests with mercuriusClient. This approach is preferred because:
+ * 1. These input schemas are not yet wired to GraphQL resolvers (resolvers will be added in PR 6b)
+ * 2. Unit testing the schema ensures validation logic is correct before integration
+ * 3. GraphQL integration tests will be added when resolvers are implemented to test end-to-end
+ *
+ * Once resolvers are added, integration tests using mercuriusClient should be added to
+ * verify the full GraphQL layer validation including error message formatting.
  */
 describe("MetricsFilterInput Schema", () => {
 	// operationNames field tests
