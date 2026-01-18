@@ -263,6 +263,9 @@ type AgendaItem {
 
   """User who last updated the agenda item."""
   updater: User
+
+  """URLs associated with the agenda item"""
+  url: [AgendaItemUrl!]
 }
 
 """Possible variants of the type of an agenda item."""

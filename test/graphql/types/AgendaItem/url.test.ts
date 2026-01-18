@@ -140,6 +140,54 @@ describe("AgendaItem.url resolver", () => {
 		expect(result).toEqual(mockUrls);
 	});
 
+	it("allows access when user is system administrator regardless of org membership", async () => {
+		mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValue({
+			id: "user-1",
+			role: "administrator", // system admin
+		});
+		mocks.drizzleClient.query.agendaFoldersTable.findFirst.mockResolvedValue({
+			id: "folder-1",
+			event: {
+				organization: {
+					membershipsWhereOrganization: [], // no org membership
+				},
+			},
+		});
+		mocks.drizzleClient.query.agendaItemUrlTable.findMany.mockResolvedValue([]);
+
+		const parent: AgendaItemType = {
+			id: "agenda-item-1",
+			folderId: "folder-1",
+		} as AgendaItemType;
+
+		const result = await resolveUrl(parent, {}, ctx);
+		expect(result).toEqual([]);
+	});
+
+	it("allows access when user is organization administrator but not system admin", async () => {
+		mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValue({
+			id: "user-1",
+			role: "regular", // not system admin
+		});
+		mocks.drizzleClient.query.agendaFoldersTable.findFirst.mockResolvedValue({
+			id: "folder-1",
+			event: {
+				organization: {
+					membershipsWhereOrganization: [{ role: "administrator" }], // org admin
+				},
+			},
+		});
+		mocks.drizzleClient.query.agendaItemUrlTable.findMany.mockResolvedValue([]);
+
+		const parent: AgendaItemType = {
+			id: "agenda-item-1",
+			folderId: "folder-1",
+		} as AgendaItemType;
+
+		const result = await resolveUrl(parent, {}, ctx);
+		expect(result).toEqual([]);
+	});
+
 	it("should return an empty array when no urls exist", async () => {
 		const parent: AgendaItemType = {
 			id: "agenda-item-2",
