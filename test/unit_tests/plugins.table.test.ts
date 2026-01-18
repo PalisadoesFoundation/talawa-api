@@ -39,13 +39,13 @@ describe("drizzle table: plugins", () => {
 	);
 
 	expect(isActivated?.notNull).toBe(true);
-	expect(isActivated?.default).toBeDefined();
+	expect(isActivated?.hasDefault).toBe(true);
 
 	expect(isInstalled?.notNull).toBe(true);
-	expect(isInstalled?.default).toBeDefined();
+	expect(isInstalled?.hasDefault).toBe(true);
 
 	expect(backup?.notNull).toBe(true);
-	expect(backup?.default).toBeDefined();
+	expect(backup?.hasDefault).toBe(true);
 	});
 
 
@@ -76,9 +76,9 @@ describe("drizzle table: plugins", () => {
 	);
 
 	expect(createdAt?.notNull).toBe(true);
-	expect(createdAt?.default).toBeDefined();
+	expect(createdAt?.hasDefault).toBe(true);
 
-	expect(updatedAt?.default).toBeDefined();
+	expect(updatedAt?.hasDefault).toBe(true);
 	});
 
 	it("should define indexes on activation and installation flags", () => {
