@@ -12,7 +12,7 @@ describe("drizzle table: plugins", () => {
 	it("should define all expected columns", () => {
 		const columnNames = table.columns.map((c) => c.name);
 
-		expect(columnNames.length).toBe(7);
+		expect(columnNames).toHaveLength(7);
 		expect(columnNames).toEqual(
 			expect.arrayContaining([
 				"id",
@@ -67,9 +67,13 @@ describe("drizzle table: plugins", () => {
 	});
 
 	it("should define indexes on activation and installation flags", () => {
-		// We intentionally assert index count only.
-		// Index structure is considered an implementation detail
-		// and may change across Drizzle versions.
-		expect(table.indexes.length).toBe(2);
+		expect(table.indexes).toHaveLength(2);
+
+		const indexedColumns = ["is_activated", "is_installed"];
+
+		indexedColumns.forEach((columnName) => {
+			const column = table.columns.find((c) => c.name === columnName);
+			expect(column).toBeDefined();
+		});
 	});
 });
