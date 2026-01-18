@@ -49,6 +49,16 @@ import { venuesTable } from "~/src/drizzle/tables/venues";
 import { server } from "../../server";
 
 describe("src/drizzle/tables/users.ts - Table Definition Tests", () => {
+	/**
+	 * Creates a test user in the database with optional field overrides.
+	 * @param overrides - Optional object to override default user values
+	 * @param overrides.emailAddress - Custom email address for the user
+	 * @param overrides.role - User role, either "administrator" or "regular"
+	 * @param overrides.creatorId - ID of the user who created this user
+	 * @param overrides.updaterId - ID of the user who last updated this user
+	 * @returns The created user row from the database
+	 * @throws Error if user creation fails
+	 */
 	async function createTestUser(overrides?: {
 		emailAddress?: string;
 		role?: "administrator" | "regular";
