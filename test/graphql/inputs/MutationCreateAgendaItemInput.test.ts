@@ -185,34 +185,34 @@ describe("MutationCreateAgendaItemInput Schema", () => {
 		});
 
 		it("should reject attachment with invalid mimeType", () => {
-		const result = mutationCreateAgendaItemInputSchema.safeParse({
-			...validBaseInput,
-			attachments: [
-				{
-					name: "file.png",
-					mimeType: "application/pdf",
-					objectName: "object-key",
-					fileHash: "hash123",
-				},
-			],
+			const result = mutationCreateAgendaItemInputSchema.safeParse({
+				...validBaseInput,
+				attachments: [
+					{
+						name: "file.png",
+						mimeType: "application/pdf",
+						objectName: "object-key",
+						fileHash: "hash123",
+					},
+				],
+			});
+			expect(result.success).toBe(false);
 		});
-		expect(result.success).toBe(false);
-	});
 
-	it("should reject attachment with empty objectName or fileHash", () => {
-		const result = mutationCreateAgendaItemInputSchema.safeParse({
-			...validBaseInput,
-			attachments: [
-				{
-					name: "file.png",
-					mimeType: "image/png",
-					objectName: "",
-					fileHash: "",
-				},
-			],
+		it("should reject attachment with empty objectName or fileHash", () => {
+			const result = mutationCreateAgendaItemInputSchema.safeParse({
+				...validBaseInput,
+				attachments: [
+					{
+						name: "file.png",
+						mimeType: "image/png",
+						objectName: "",
+						fileHash: "",
+					},
+				],
+			});
+			expect(result.success).toBe(false);
 		});
-		expect(result.success).toBe(false);
-	});
 	});
 
 	describe("superRefine conditional validation", () => {
