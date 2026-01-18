@@ -698,7 +698,7 @@ type Event {
   """
   The ID of the base recurring event template if this is a generated instance.
   """
-  baseRecurringEventId: ID
+  baseRecurringEventId: String
 
   """Date time at the time the event was created."""
   createdAt: DateTime
@@ -4774,6 +4774,12 @@ type Query {
 
   """Query field to fetch all events created by a specific user."""
   eventsByCreator(
+    """Number of events to return"""
+    limit: Int
+
+    """Number of events to skip"""
+    offset: Int
+
     """ID of the user whose created events to fetch"""
     userId: ID!
   ): [Event!]!
