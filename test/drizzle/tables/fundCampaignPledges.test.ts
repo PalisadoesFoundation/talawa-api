@@ -18,22 +18,8 @@ describe("fundCampaignPledgesTable", () => {
 	describe("fundCampaignPledgesTableInsertSchema", () => {
 		const validPledgeData = {
 			amount: 100,
-			campaignId: "01234567-89ab-4def-a123-456789abcdef",
-			pledgerId: "fedcba98-7654-4210-aedc-ba9876543210",
-} from "~/src/drizzle/tables/fundCampaignPledges";
-
-/**
- * Maximum length for the note field in fund campaign pledges.
- * This value is defined in the insert schema validation.
- */
-const NOTE_MAX_LENGTH = 2048;
-
-describe("fundCampaignPledgesTable", () => {
-	describe("fundCampaignPledgesTableInsertSchema", () => {
-		const validPledgeData = {
-			amount: 100,
-			campaignId: "01234567-89ab-cdef-0123-456789abcdef",
-			pledgerId: "11111111-1111-1111-1111-111111111111",
+			campaignId: "01234567-89ab-4def-8123-456789abcdef",
+			pledgerId: "fedcba98-7654-4210-8edc-ba9876543210",
 		};
 
 		describe("amount field", () => {
@@ -232,7 +218,7 @@ describe("fundCampaignPledgesTable", () => {
 			it("should accept a valid UUID for id", () => {
 				const result = fundCampaignPledgesTableInsertSchema.safeParse({
 					...validPledgeData,
-					id: "01234567-89ab-cdef-0123-456789abcdef",
+					id: "01234567-89ab-4def-8123-456789abcdef",
 				});
 				expect(result.success).toBe(true);
 			});
@@ -256,7 +242,7 @@ describe("fundCampaignPledgesTable", () => {
 			it("should accept a valid UUID for creatorId", () => {
 				const result = fundCampaignPledgesTableInsertSchema.safeParse({
 					...validPledgeData,
-					creatorId: "01234567-89ab-cdef-0123-456789abcdef",
+					creatorId: "01234567-89ab-4def-8123-456789abcdef",
 				});
 				expect(result.success).toBe(true);
 			});
@@ -288,7 +274,7 @@ describe("fundCampaignPledgesTable", () => {
 			it("should accept a valid UUID for updaterId", () => {
 				const result = fundCampaignPledgesTableInsertSchema.safeParse({
 					...validPledgeData,
-					updaterId: "01234567-89ab-cdef-0123-456789abcdef",
+					updaterId: "01234567-89ab-4def-8123-456789abcdef",
 				});
 				expect(result.success).toBe(true);
 			});
@@ -320,11 +306,11 @@ describe("fundCampaignPledgesTable", () => {
 			it("should accept complete valid pledge data", () => {
 				const completePledgeData = {
 					amount: 500,
-					campaignId: "01234567-89ab-cdef-0123-456789abcdef",
-					pledgerId: "11111111-1111-1111-1111-111111111111",
+					campaignId: "01234567-89ab-4def-8123-456789abcdef",
+					pledgerId: "11111111-1111-4111-8111-111111111111",
 					note: "This is my pledge for the campaign.",
-					creatorId: "22222222-2222-2222-2222-222222222222",
-					updaterId: "33333333-3333-3333-3333-333333333333",
+					creatorId: "22222222-2222-4222-8222-222222222222",
+					updaterId: "33333333-3333-4333-8333-333333333333",
 				};
 				const result =
 					fundCampaignPledgesTableInsertSchema.safeParse(completePledgeData);
@@ -334,8 +320,8 @@ describe("fundCampaignPledgesTable", () => {
 			it("should accept minimal valid pledge data", () => {
 				const minimalPledgeData = {
 					amount: 1,
-					campaignId: "01234567-89ab-cdef-0123-456789abcdef",
-					pledgerId: "11111111-1111-1111-1111-111111111111",
+					campaignId: "01234567-89ab-4def-8123-456789abcdef",
+					pledgerId: "11111111-1111-4111-8111-111111111111",
 				};
 				const result =
 					fundCampaignPledgesTableInsertSchema.safeParse(minimalPledgeData);
