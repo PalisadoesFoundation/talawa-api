@@ -758,10 +758,12 @@ Function: {issue.function}
 Issue: {issue.issue}
 Corrective Action: {issue.action}
 """)
-            print(f"""\
-Follow the online 'Google Python Style Guide' for our docstring expectations.
-There are {len(violations)} file(s) with {total_violations} total docstring violations
-""")
+            print(
+                "Follow the online 'Google Python Style Guide' for our docstring "
+                "expectations.\n"
+                f"There are {len(violations)} file(s) with "
+                f"{total_violations} total docstring violations\n",
+            )
 
             sys.exit(1)
 
