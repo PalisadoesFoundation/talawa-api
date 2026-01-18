@@ -132,13 +132,14 @@ export const fundCampaignPledgesTableRelations = relations(
 	}),
 );
 
+export const NOTE_MAX_LENGTH = 2048;
+
 export const fundCampaignPledgesTableInsertSchema = createInsertSchema(
 	fundCampaignPledgesTable,
 	{
 		amount: () => z.number().int().min(1),
-		note: () => z.string().min(1).max(2048).nullable().optional(),
-		id: () => z.string().uuid().optional(),
-		creatorId: () => z.string().uuid().nullable().optional(),
-		updaterId: () => z.string().uuid().nullable().optional(),
+		note: () => z.string().min(1).max(NOTE_MAX_LENGTH).nullish(),
+		creatorId: () => z.string().uuid().nullish(),
+		updaterId: () => z.string().uuid().nullish(),
 	},
 );
