@@ -10,20 +10,44 @@ describe("drizzle table: plugins", () => {
 	});
 
 	it("should define all expected columns", () => {
-		const columnNames = table.columns.map((c) => c.name);
+	const columnNames = table.columns.map((c) => c.name);
 
-		expect(columnNames).toEqual(
-			expect.arrayContaining([
-				"id",
-				"plugin_id",
-				"is_activated",
-				"is_installed",
-				"backup",
-				"created_at",
-				"updated_at",
-			]),
-		);
+	expect(columnNames.length).toBe(7);
+
+	expect(columnNames).toEqual(
+		expect.arrayContaining([
+			"id",
+			"plugin_id",
+			"is_activated",
+			"is_installed",
+			"backup",
+			"created_at",
+			"updated_at",
+		]),
+	    );
 	});
+
+	it("should enforce constraints on boolean flag columns", () => {
+	const isActivated = table.columns.find(
+		(c) => c.name === "is_activated",
+	);
+	const isInstalled = table.columns.find(
+		(c) => c.name === "is_installed",
+	);
+	const backup = table.columns.find(
+		(c) => c.name === "backup",
+	);
+
+	expect(isActivated?.notNull).toBe(true);
+	expect(isActivated?.default).toBeDefined();
+
+	expect(isInstalled?.notNull).toBe(true);
+	expect(isInstalled?.default).toBeDefined();
+
+	expect(backup?.notNull).toBe(true);
+	expect(backup?.default).toBeDefined();
+	});
+
 
 	it("should mark id as primary key and not null", () => {
 		const idColumn = table.columns.find((c) => c.name === "id");
@@ -43,16 +67,18 @@ describe("drizzle table: plugins", () => {
 		expect(pluginIdColumn?.notNull).toBe(true);
 	});
 
-	it("should define default timestamps correctly", () => {
-		const createdAt = table.columns.find(
-			(c) => c.name === "created_at",
-		);
-		const updatedAt = table.columns.find(
-			(c) => c.name === "updated_at",
-		);
+	it("should define timestamp columns with defaults", () => {
+	const createdAt = table.columns.find(
+		(c) => c.name === "created_at",
+	);
+	const updatedAt = table.columns.find(
+		(c) => c.name === "updated_at",
+	);
 
-		expect(createdAt?.notNull).toBe(true);
-		expect(updatedAt).toBeDefined();
+	expect(createdAt?.notNull).toBe(true);
+	expect(createdAt?.default).toBeDefined();
+
+	expect(updatedAt?.default).toBeDefined();
 	});
 
 	it("should define indexes on activation and installation flags", () => {
