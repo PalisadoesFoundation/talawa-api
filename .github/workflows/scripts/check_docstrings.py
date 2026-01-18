@@ -759,8 +759,8 @@ Issue: {issue.issue}
 Corrective Action: {issue.action}
 """)
             print(
-                "Follow the online 'Google Python Style Guide' for our docstring "
-                "expectations.\n"
+                "Follow the online 'Google Python Style Guide' "
+                "for our docstring expectations.\n"
                 f"There are {len(violations)} file(s) with "
                 f"{total_violations} total docstring violations\n",
             )
