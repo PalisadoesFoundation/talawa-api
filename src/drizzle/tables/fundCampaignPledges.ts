@@ -9,8 +9,8 @@ import {
 	uuid,
 } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
-import { z } from "zod";
 import { uuidv7 } from "uuidv7";
+import { z } from "zod";
 import { fundCampaignsTable } from "./fundCampaigns";
 import { usersTable } from "./users";
 

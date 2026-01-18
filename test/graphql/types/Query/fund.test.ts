@@ -253,11 +253,11 @@ suite("Query field fund", () => {
 		);
 	});
 
-		test("with 'arguments_associated_resources_not_found' extensions code when rate limit is exceeded", async () => {
-			const adminAuthToken = await getAdminAuthToken();
-			const { fundId, cleanup } = await createFund();
+	test("with 'arguments_associated_resources_not_found' extensions code when rate limit is exceeded", async () => {
+		const adminAuthToken = await getAdminAuthToken();
+		const { fundId, cleanup } = await createFund();
 
-			await cleanup();
+		await cleanup();
 
 		const results = await Promise.all(
 			Array.from({ length: 10 }, () =>
