@@ -50,7 +50,9 @@ export const ComplexityRangeInput = builder
  */
 export const metricsFilterInputSchema = z.object({
 	operationNames: z
-		.array(z.string().min(1, "Operation names must be non-empty strings"))
+		.array(
+			z.string().trim().min(1, "Operation names must be non-empty strings"),
+		)
 		.min(1, "At least one operation name must be provided")
 		.optional(),
 	slowOperationsOnly: z.boolean().default(false),
