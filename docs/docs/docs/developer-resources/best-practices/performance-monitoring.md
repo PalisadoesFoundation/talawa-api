@@ -87,6 +87,14 @@ curl -v http://localhost:4000/graphql \
 | `cache;desc="hit:12\|miss:3"` | 12 hits, 3 misses | 80% cache hit rate | ✅ Good (> 70%) |
 | `total;dur=127` | 127ms total | End-to-end request processing time | ✅ Good (< 500ms) |
 
+**Server-Timing Header Components:**
+
+| Metric | Description | Example |
+|--------|-------------|---------|
+| `db;dur=X` | Total database operation time (ms) | `db;dur=45` |
+| `cache;desc="hit:X\|miss:Y"` | Cache hit and miss counts | `cache;desc="hit:12\|miss:3"` |
+| `total;dur=X` | Total request duration (ms) | `total;dur=127` |
+
 **Sample Browser DevTools View (Chrome):**
 ```
 Timing
@@ -106,6 +114,15 @@ db:     45.00 ms    ← Database operations
 cache:  hit:12|miss:3
 total:  127.00 ms   ← Total server time
 ```
+
+**Viewing in Browser DevTools:**
+
+1. Open your browser's **Developer Tools** (F12)
+2. Go to the **Network** tab
+3. Click on any API request
+4. View the **Timing** tab to see the Server-Timing breakdown
+
+Modern browsers (Chrome 65+, Firefox 61+, Edge 79+) automatically visualize these metrics in the Timing tab.
 
 ### `/metrics/perf` Endpoint (API)
 
@@ -171,6 +188,29 @@ curl http://localhost:4000/metrics/perf | jq '.'
 | `hitRate` | 0.8 (80%) | 0.03 (3%) | ❌ Cache not working |
 | `ops.db.max` | 28.5ms | 567.8ms | ❌ Slow database query |
 | `slow` | `[]` | 3 entries | ❌ Multiple slow operations |
+
+### Response Schema
+
+The `/metrics/perf` endpoint returns performance data with the following schema:
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `recent` | Array | Last 50 performance snapshots (limited for memory) |
+| `totalMs` | number | Total time spent in tracked operations |
+| `cacheHits` | number | Number of cache hits during request |
+| `cacheMisses` | number | Number of cache misses during request |
+| `ops` | Object | Operation-level statistics |
+| `ops[name].count` | number | Number of times operation was called |
+| `ops[name].ms` | number | Total milliseconds spent in operation |
+| `ops[name].max` | number | Maximum duration for single operation call |
+
+### Retention
+
+Performance metrics are stored in-memory with the following retention policy:
+
+- **In-Memory Storage**: Last 200 snapshots are kept in memory
+- **Endpoint Returns**: Maximum 50 most recent snapshots
+- **No Persistence**: Metrics reset on server restart
 
 ### Programmatic Access (In Code)
 
@@ -284,7 +324,9 @@ app.get('/health', async (req, reply) => {
 
 ## Diagnosing Performance Issues
 
-### Issue 1: High Response Time (`totalMs` > 1000ms)
+### High Response Time (`totalMs` > 1000ms)
+
+When response times exceed 1000ms, use the following diagnostic approach to identify the bottleneck:
 
 **Diagnostic Command:**
 ```bash
@@ -317,7 +359,7 @@ curl http://localhost:4000/metrics/perf | jq '.recent[0] | {totalMs, ops, slow}'
 3. **Use `EXPLAIN ANALYZE`** to identify slow query plans
 4. **Cache external API responses** to reduce 420ms overhead
 
-### Issue 2: Low Cache Hit Rate (`hitRate` < 0.5)
+### Low Cache Hit Rate (`hitRate` < 0.5)
 
 **Diagnostic Command:**
 ```bash
@@ -343,7 +385,7 @@ curl http://localhost:4000/metrics/perf | jq '.recent[0] | {cacheHits, cacheMiss
 3. **Implement cache warming** - pre-populate cache for frequently accessed data on startup
 4. **Check cache invalidation** - overly aggressive invalidation causes low hit rates
 
-### Issue 3: N+1 Query Pattern (`totalOps` > 50)
+### N+1 Query Pattern (`totalOps` > 50)
 
 **Diagnostic Command:**
 ```bash
@@ -368,7 +410,9 @@ curl http://localhost:4000/metrics/perf | jq '.recent[0] | {totalOps, "db_count"
 3. **Review resolver structure** - check if resolvers make individual queries for related data
 4. **Add field-level caching** for frequently accessed fields
 
-### Issue 4: Slow Operations in `slow` Array
+### Slow Operations in `slow` Array
+
+When operations appear in the `slow` array, they have exceeded the 200ms threshold and require investigation:
 
 **Diagnostic Command:**
 ```bash
@@ -675,18 +719,33 @@ API_METRICS_API_KEY=your-secure-api-key-here
 
 ### Accessing Protected Metrics
 
-When `API_METRICS_API_KEY` is set, access the metrics endpoint with:
+When the `API_METRICS_API_KEY` environment variable is set, all requests to the metrics endpoint require authentication. Use the Authorization header to access protected endpoints:
 
 ```bash
 curl -H "Authorization: Bearer your-secure-api-key-here" \
   http://localhost:4000/metrics/perf
 ```
 
+**Sample Output:**
+```json
+{
+  "recent": [
+    {
+      "totalMs": 89,
+      "totalOps": 4,
+      "cacheHits": 8,
+      "cacheMisses": 2,
+      "hitRate": 0.8
+    }
+  ]
+}
+```
+
 ### Metrics Aggregation Output
 
-The background worker aggregates performance snapshots and logs the results to the standard output. This provides a periodic summary of system performance without needing to query the API.
+The background worker automatically aggregates performance snapshots at the configured interval (default: every 5 minutes) and logs the results to standard output. This log appears in your server console without any command - it runs automatically based on the `API_METRICS_AGGREGATION_CRON_SCHEDULE` setting.
 
-**Example Log Output:**
+**Example Server Console Log:**
 
 ```json
 {
@@ -702,6 +761,8 @@ The background worker aggregates performance snapshots and logs the results to t
   "cacheHitRate": "85.50%"
 }
 ```
+
+> **Note:** This log appears automatically in your server console. To view it, simply monitor your server logs with `pnpm run dev` or check your logging system in production.
 
 **Key Fields:**
 - `windowMinutes`: Time window used for aggregation
@@ -729,6 +790,36 @@ Aggregated metrics can be cached to improve performance when accessing metrics d
 - Daily aggregations: 86400 seconds (24 hours)
 
 The metrics cache service is automatically initialized when the performance plugin starts and is available via `fastify.metricsCache`. Cache failures are handled gracefully and do not affect metrics collection.
+
+## Extending Performance Tracking
+
+You can extend the built-in performance tracking by adding custom operations and manual timing to monitor application-specific code paths.
+
+### Custom Operations
+
+Track custom operations in your code to measure specific functionality:
+
+```typescript
+// In a GraphQL resolver
+export const myResolver = async (parent, args, ctx) => {
+  // Track external API call
+  const result = await ctx.request.perf?.time('external-api', async () => {
+    return await fetch('https://api.example.com/data');
+  });
+  
+  return result;
+};
+```
+
+### Manual Timing
+
+For non-async operations, use manual timing:
+
+```typescript
+const stopTimer = ctx.request.perf?.start('computation');
+// ... expensive computation ...
+stopTimer?.();
+```
 
 ## Production Considerations
 
@@ -788,6 +879,11 @@ An empty `recent` array is normal immediately after server startup since metrics
 curl http://localhost:4000/metrics/perf | jq '.recent | length'
 ```
 
+**Sample Output:**
+```
+0
+```
+
 **If output is `0`:**
 - Normal after server restart (metrics are in-memory)
 - Make some API requests to populate snapshots:
@@ -802,8 +898,38 @@ done
 
 # Verify metrics are now available
 curl http://localhost:4000/metrics/perf | jq '.recent | length'
-# Expected output: 5
 ```
+
+**Sample Output:**
+```
+5
+```
+
+### High `totalMs` Values
+
+If `totalMs` is unexpectedly high, use the following diagnostic steps:
+
+1. **Check `ops.db.ms`** for slow database queries
+2. **Review `cacheMisses` count** - high misses mean more database hits
+3. **Inspect individual operation max times** for bottlenecks
+
+**Diagnostic Command:**
+```bash
+curl http://localhost:4000/metrics/perf | jq '.recent[0] | {totalMs, ops, cacheMisses}'
+```
+
+**Sample Output Indicating Issue:**
+```json
+{
+  "totalMs": 2450,
+  "ops": {
+    "db": { "count": 45, "ms": 2100, "max": 890 }
+  },
+  "cacheMisses": 42
+}
+```
+
+This output shows 42 cache misses causing 45 database queries totaling 2100ms - the root cause of the high response time.
 
 ### Browser Not Showing Server-Timing
 
@@ -855,6 +981,16 @@ Tracing behavior is controlled through environment variables:
 | Production (low traffic) | `true` | `0.3` | Good visibility |
 | Production (high traffic) | `true` | `0.1` | Reduce telemetry cost |
 
+**Sampling Behavior Example:**
+
+```bash
+API_OTEL_SAMPLING_RATIO=0.1
+```
+
+- ~10% of new root traces will be sampled
+- Child spans automatically inherit the parent's sampling decision
+- This allows high-volume production systems to reduce telemetry cost without losing trace continuity
+
 ### Local Development Setup
 
 Follow these steps to enable and test OpenTelemetry tracing in your local development environment.
@@ -867,11 +1003,14 @@ API_OTEL_SAMPLING_RATIO=1
 ```
 
 **Start the server and make a request:**
-```bash
-# Terminal 1: Start server
-pnpm run dev
 
-# Terminal 2: Make request
+**Terminal 1: Start server**
+```bash
+pnpm run dev
+```
+
+**Terminal 2: Make request**
+```bash
 curl http://localhost:4000/graphql \
   -H "Content-Type: application/json" \
   -d '{"query":"{ __typename }"}'
@@ -921,9 +1060,16 @@ curl -H "traceparent: 00-a1b2c3d4e5f67890abcdef1234567890-1234567890abcdef-01" \
      http://localhost:4000/graphql
 ```
 
+**Expected Behavior:**
+- The response will include `{"data":{"__typename":"Query"}}`
+- In the server console, the trace will show the provided `traceId` (`a1b2c3d4e5f67890abcdef1234567890`)
+- Child spans will inherit this trace context, enabling end-to-end distributed tracing
+
 The trace will continue with the provided `traceId`, enabling distributed tracing across services.
 
 ### Disabling Tracing
+
+To completely disable OpenTelemetry tracing with zero runtime overhead, set the following environment variable:
 
 ```bash
 API_OTEL_ENABLED=false
