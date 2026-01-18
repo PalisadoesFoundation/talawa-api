@@ -355,6 +355,7 @@ export async function getRecurringEventInstancesByBaseIds(
 	baseRecurringEventIds: string[],
 	drizzleClient: ServiceDependencies["drizzleClient"],
 	logger: ServiceDependencies["logger"],
+	limit?: number,
 ): Promise<ResolvedRecurringEventInstance[]> {
 	if (baseRecurringEventIds.length === 0) {
 		return [];
@@ -369,6 +370,7 @@ export async function getRecurringEventInstancesByBaseIds(
 					baseRecurringEventIds,
 				),
 				orderBy: asc(recurringEventInstancesTable.actualStartTime),
+				limit,
 			});
 
 		if (instances.length === 0) {

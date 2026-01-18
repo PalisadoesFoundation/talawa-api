@@ -105,10 +105,13 @@ builder.queryField("eventsByCreator", (t) =>
 				});
 			}
 
+			// Calculate effective window for fetching
+			const effectiveWindow = offset + limit;
+
 			try {
 				const allEvents: EventWithAttachments[] = [];
 
-				// Step 1: Get standalone events created by user
+				// Step 1: Get standalone events created by user (with windowed limit)
 				const standaloneEvents =
 					await ctx.drizzleClient.query.eventsTable.findMany({
 						where: and(
@@ -118,6 +121,7 @@ builder.queryField("eventsByCreator", (t) =>
 						with: {
 							attachmentsWhereEvent: true,
 						},
+						limit: effectiveWindow,
 					});
 
 				// Transform standalone events to unified format
@@ -139,13 +143,14 @@ builder.queryField("eventsByCreator", (t) =>
 						),
 					});
 
-				// Step 3: Fetch all instances for these templates in batch
+				// Step 3: Fetch instances for these templates (with windowed limit)
 				const baseRecurringEventIds = recurringTemplates.map((t) => t.id);
 
 				const instances = await getRecurringEventInstancesByBaseIds(
 					baseRecurringEventIds,
 					ctx.drizzleClient,
 					ctx.log,
+					effectiveWindow,
 				);
 
 				// Filter out cancelled instances and transform to unified format
@@ -155,7 +160,7 @@ builder.queryField("eventsByCreator", (t) =>
 
 				allEvents.push(...activeInstances);
 
-				// Sort by start time
+				// Sort by start time and ID for stable sort
 				allEvents.sort((a, b) => {
 					const aTime = new Date(a.startAt).getTime();
 					const bTime = new Date(b.startAt).getTime();
@@ -165,16 +170,17 @@ builder.queryField("eventsByCreator", (t) =>
 					return aTime - bTime;
 				});
 
-				// Apply pagination
+				// Apply final pagination slice
 				const paginatedEvents = allEvents.slice(offset, offset + limit);
 
 				ctx.log.debug(
 					{
 						userId: targetUserId,
-						totalEvents: allEvents.length,
+						totalEventsFetched: allEvents.length,
 						paginatedCount: paginatedEvents.length,
-						standalone: standaloneEvents.length,
-						recurringInstances: activeInstances.length,
+						standaloneFetched: standaloneEvents.length,
+						recurringInstancesFetched: activeInstances.length,
+						effectiveWindow,
 					},
 					"Retrieved events by creator",
 				);

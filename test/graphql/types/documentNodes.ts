@@ -2861,7 +2861,7 @@ export const Query_eventsByVolunteer = gql(`
 `);
 
 export const Query_eventsByAdmin = gql(`
-  query EventsByAdmin($userId: ID!) {
+  query Query_eventsByAdmin($userId: ID!) {
     eventsByAdmin(userId: $userId) {
       id
       name
