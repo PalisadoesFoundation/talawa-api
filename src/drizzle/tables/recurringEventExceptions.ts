@@ -59,12 +59,10 @@ export const eventExceptionsTable = pgTable(
 		/**
 		 * Foreign key reference to the user who created the exception.
 		 */
-		creatorId: uuid("creator_id")
-			.notNull()
-			.references(() => usersTable.id, {
-				onDelete: "set null",
-				onUpdate: "cascade",
-			}),
+		creatorId: uuid("creator_id").references(() => usersTable.id, {
+			onDelete: "set null",
+			onUpdate: "cascade",
+		}),
 
 		/**
 		 * Foreign key reference to the user who last updated the exception.
