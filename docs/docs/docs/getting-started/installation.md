@@ -46,12 +46,48 @@ cd talawa-api
 
 ### Installation Modes
 
-| Mode | Command (Linux/macOS) | Command (Windows) | Use Case |
-|------|----------------------|-------------------|----------|
+| Mode             | Command (Linux/macOS)                   | Command (Windows)                       | Use Case                       |
+| ---------------- | --------------------------------------- | --------------------------------------- | ------------------------------ |
 | Docker (default) | `./scripts/install/install.sh --docker` | `.\scripts\install\install.ps1 -Docker` | Production-like, containerized |
-| Local | `./scripts/install/install.sh --local` | `.\scripts\install\install.ps1 -Local` | Development with hot reloading |
+| Local            | `./scripts/install/install.sh --local`  | `.\scripts\install\install.ps1 -Local`  | Development with hot reloading |
 
 After the script completes, run `pnpm run setup` to configure the application.
+
+### Non-interactive / CI Installs
+
+The installation scripts support non-interactive mode for CI/CD pipelines and automated deployments. This mode skips confirmation prompts that would otherwise require user input.
+
+#### Environment Variables
+
+| Variable   | Values           | Description                                                         |
+| ---------- | ---------------- | ------------------------------------------------------------------- |
+| `AUTO_YES` | `true` / `false` | Explicitly enable/disable non-interactive mode                      |
+| `CI`       | `true` / `false` | Standard CI environment variable (auto-detected by most CI systems) |
+
+The script also auto-detects non-interactive environments when stdin is not a terminal.
+
+#### Example: CI Pipeline (GitHub Actions, Jenkins, etc.)
+
+```bash
+# CI=true is typically set automatically by CI systems
+CI=true ./scripts/install/linux/install-linux.sh
+```
+
+#### Example: Automated Local Install
+
+```bash
+# Skip all confirmation prompts
+AUTO_YES=true ./scripts/install/linux/install-linux.sh --docker
+```
+
+:::caution Security Note
+In non-interactive mode, the following confirmation prompts are skipped:
+
+- Docker installer execution (from https://get.docker.com)
+- fnm installer execution (from https://fnm.vercel.app)
+
+The scripts are still downloaded to temporary files first (not piped directly to shell), but you should ensure you trust the source before running in automated environments.
+:::
 
 :::tip
 The one-click scripts automatically install Git, Node.js, pnpm, and Docker if not present. For manual installation steps, continue reading below.
@@ -233,6 +269,7 @@ pip3 install -r .github/workflows/requirements.txt
 ```
 
 This installs the following packages needed for code quality checks:
+
 - `black` - Python code formatter
 - `pydocstyle` - Docstring style checker
 - `flake8` and `flake8-docstrings` - Python linter
@@ -255,22 +292,26 @@ The pre-commit hooks automatically download the latest validation scripts from t
 Most systems have `curl` or `wget` pre-installed, but you can verify and install if needed:
 
 **Check if curl is installed:**
+
 ```bash
 curl --version
 ```
 
 **Check if wget is installed:**
+
 ```bash
 wget --version
 ```
 
 **Install curl if needed:**
+
 - **Ubuntu/Debian**: `sudo apt install curl`
 - **Fedora/RHEL**: `sudo dnf install curl`
 - **macOS**: curl is pre-installed
 - **Windows 10+**: curl is pre-installed, or use `winget install curl.curl`
 
 **Alternatively, install wget:**
+
 - **Ubuntu/Debian**: `sudo apt install wget`
 - **Fedora/RHEL**: `sudo dnf install wget`
 - **macOS**: `brew install wget`
@@ -279,7 +320,6 @@ wget --version
 :::info
 The pre-commit hooks will use whichever is available (`curl` is tried first, then `wget`). You only need one of them installed.
 :::
-
 
 ### Install The Required Packages
 
