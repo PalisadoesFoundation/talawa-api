@@ -1,5 +1,14 @@
 import { faker } from "@faker-js/faker";
-import { afterAll, beforeAll, expect, suite, test } from "vitest";
+import type { Client } from "minio";
+import {
+	afterAll,
+	afterEach,
+	beforeAll,
+	expect,
+	suite,
+	test,
+	vi,
+} from "vitest";
 import type { TalawaGraphQLFormattedError } from "~/src/utilities/TalawaGraphQLError";
 import { assertToBeNonNullish } from "../../../helpers";
 import { server } from "../../../server";
@@ -14,6 +23,9 @@ import {
 	Mutation_deleteUser,
 	Query_signIn,
 } from "../documentNodes";
+
+// Extract the return type of putObject from the minio Client
+type UploadedObjectInfo = Awaited<ReturnType<Client["putObject"]>>;
 
 // Helper function to get admin auth token
 async function getAdminToken() {
@@ -104,6 +116,10 @@ async function createOrganizationMembership(
 }
 
 suite("Mutation field createChat", () => {
+	afterEach(() => {
+		vi.restoreAllMocks();
+	});
+
 	let adminAuthToken: string;
 	let regularUserAuthToken: string;
 	let regularUserId: string;
@@ -423,5 +439,261 @@ suite("Mutation field createChat", () => {
 		if (result.data?.createChat?.id) {
 			createdChatIds.push(result.data.createChat.id);
 		}
+	});
+
+	suite("Avatar handling", () => {
+		test("should handle invalid avatar mime type", async () => {
+			const boundary = `----WebKitFormBoundary${Math.random().toString(36)}`;
+
+			const operations = JSON.stringify({
+				query: `
+                mutation Mutation_createChat($input: MutationCreateChatInput!) {
+                    createChat(input: $input) {
+                        id
+                    }
+                }
+                `,
+				variables: {
+					input: {
+						name: "Invalid Avatar Chat",
+						organizationId: organizationId,
+						avatar: null,
+					},
+				},
+			});
+
+			const map = JSON.stringify({
+				"0": ["variables.input.avatar"],
+			});
+
+			const fileContent = "fake content";
+
+			const body = [
+				`--${boundary}`,
+				'Content-Disposition: form-data; name="operations"',
+				"",
+				operations,
+				`--${boundary}`,
+				'Content-Disposition: form-data; name="map"',
+				"",
+				map,
+				`--${boundary}`,
+				'Content-Disposition: form-data; name="0"; filename="test.txt"',
+				"Content-Type: text/plain",
+				"",
+				fileContent,
+				`--${boundary}--`,
+			].join("\r\n");
+
+			const response = await server.inject({
+				method: "POST",
+				url: "/graphql",
+				headers: {
+					"content-type": `multipart/form-data; boundary=${boundary}`,
+					authorization: `bearer ${regularUserAuthToken}`,
+				},
+				payload: body,
+			});
+
+			const result = JSON.parse(response.body);
+
+			expect(result.data?.createChat).toBeNull();
+			expect(result.errors).toEqual(
+				expect.arrayContaining([
+					expect.objectContaining({
+						extensions: expect.objectContaining({
+							code: "invalid_arguments",
+							issues: expect.arrayContaining([
+								expect.objectContaining({
+									argumentPath: ["input", "avatar"],
+									message: 'Mime type "text/plain" is not allowed.',
+								}),
+							]),
+						}),
+						path: ["createChat"],
+					}),
+				]),
+			);
+		});
+
+		test("should successfully create chat with valid avatar", async () => {
+			// Mock minio putObject
+			const putObjectSpy = vi
+				.spyOn(server.minio.client, "putObject")
+				.mockResolvedValue({ etag: "mock-etag" } as UploadedObjectInfo);
+
+			const chatName = `Avatar Chat ${faker.string.uuid()}`;
+			const boundary = `----WebKitFormBoundary${Math.random().toString(36)}`;
+
+			const operations = JSON.stringify({
+				query: `
+                mutation Mutation_createChat($input: MutationCreateChatInput!) {
+                    createChat(input: $input) {
+                        id
+                        name
+                        avatarMimeType
+                    }
+                }
+                `,
+				variables: {
+					input: {
+						name: chatName,
+						organizationId: organizationId,
+						avatar: null,
+					},
+				},
+			});
+
+			const map = JSON.stringify({
+				"0": ["variables.input.avatar"],
+			});
+
+			const fileContent = "test content";
+
+			const body = [
+				`--${boundary}`,
+				'Content-Disposition: form-data; name="operations"',
+				"",
+				operations,
+				`--${boundary}`,
+				'Content-Disposition: form-data; name="map"',
+				"",
+				map,
+				`--${boundary}`,
+				'Content-Disposition: form-data; name="0"; filename="test.jpg"',
+				"Content-Type: image/jpeg",
+				"",
+				fileContent,
+				`--${boundary}--`,
+			].join("\r\n");
+
+			const response = await server.inject({
+				method: "POST",
+				url: "/graphql",
+				headers: {
+					"content-type": `multipart/form-data; boundary=${boundary}`,
+					authorization: `bearer ${regularUserAuthToken}`,
+				},
+				payload: body,
+			});
+
+			const result = JSON.parse(response.body);
+
+			expect(result.errors).toBeUndefined();
+			expect(result.data.createChat).not.toBeNull();
+			expect(result.data.createChat.name).toBe(chatName);
+			expect(result.data.createChat.avatarMimeType).toBe("image/jpeg");
+			// avatarUrl can be null if not generated properly or mocked differently, but let's check basic fields
+
+			if (result.data.createChat.id) {
+				createdChatIds.push(result.data.createChat.id);
+			}
+
+			expect(putObjectSpy).toHaveBeenCalled();
+		});
+
+		test("should successfully create chat with explicitly null avatar", async () => {
+			const chatName = `Null Avatar Chat ${faker.string.uuid()}`;
+			const result = await mercuriusClient.mutate(Mutation_createChat, {
+				headers: {
+					authorization: `bearer ${regularUserAuthToken}`,
+				},
+				variables: {
+					input: {
+						name: chatName,
+						organizationId: organizationId,
+						avatar: null,
+					},
+				},
+			});
+
+			expect(result.errors).toBeUndefined();
+			expect(result.data?.createChat).not.toBeNull();
+			expect(result.data?.createChat?.name).toBe(chatName);
+			expect(result.data?.createChat?.avatarMimeType).toBeNull();
+
+			if (result.data?.createChat?.id) {
+				createdChatIds.push(result.data.createChat.id);
+			}
+		});
+	});
+
+	test("results in 'unauthenticated' error when current user is not found in database", async () => {
+		// Create a temp user
+		const tempUser = await createTestUser(adminAuthToken, "regular");
+
+		// Delete the user
+		await mercuriusClient.mutate(Mutation_deleteUser, {
+			headers: { authorization: `bearer ${adminAuthToken}` },
+			variables: { input: { id: tempUser.userId } },
+		});
+
+		// Try to create chat with deleted user's token
+		const result = await mercuriusClient.mutate(Mutation_createChat, {
+			headers: {
+				authorization: `bearer ${tempUser.authToken}`,
+			},
+			variables: {
+				input: {
+					name: "Test Chat",
+					organizationId: organizationId,
+				},
+			},
+		});
+
+		expect(result.data?.createChat).toBeNull();
+		expect(result.errors).toEqual(
+			expect.arrayContaining([
+				expect.objectContaining({
+					extensions: expect.objectContaining({
+						code: "unauthenticated",
+					}),
+					message: expect.any(String),
+					path: ["createChat"],
+				}),
+			]),
+		);
+	});
+
+	test("results in 'unexpected' error when database insert fails unexpectedly", async () => {
+		// Mock the transaction to simulate database insert failure (returning empty array)
+		vi.spyOn(server.drizzleClient, "transaction").mockImplementation(
+			async (callback) => {
+				const mockTx = {
+					...server.drizzleClient,
+					insert: vi.fn().mockReturnValue({
+						values: vi.fn().mockReturnValue({
+							returning: vi.fn().mockResolvedValue([]), // Empty array simulates failure
+						}),
+					}),
+				};
+				return callback(mockTx as unknown as Parameters<typeof callback>[0]);
+			},
+		);
+
+		const result = await mercuriusClient.mutate(Mutation_createChat, {
+			headers: {
+				authorization: `bearer ${regularUserAuthToken}`,
+			},
+			variables: {
+				input: {
+					name: "DB Fail Chat",
+					organizationId: organizationId,
+				},
+			},
+		});
+
+		expect(result.data?.createChat).toBeNull();
+		expect(result.errors).toEqual(
+			expect.arrayContaining([
+				expect.objectContaining({
+					extensions: expect.objectContaining({
+						code: "unexpected",
+					}),
+					message: expect.any(String),
+					path: ["createChat"],
+				}),
+			]),
+		);
 	});
 });
