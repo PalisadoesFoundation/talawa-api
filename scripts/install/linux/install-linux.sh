@@ -17,6 +17,10 @@ set -euo pipefail
 INSTALL_MODE="${1:-docker}"
 SKIP_PREREQS="${2:-false}"
 
+# Non-interactive mode: skip confirmation prompts
+# Set CI=true or AUTO_YES=true environment variable, or run with stdin not a terminal
+AUTO_YES="${AUTO_YES:-${CI:-false}}"
+
 # Colors for output
 RED='\033[0;31m'
 GREEN='\033[0;32m'
@@ -392,17 +396,21 @@ if [ "$INSTALL_MODE" = "docker" ]; then
         fi
         success "Docker installer downloaded to: $docker_installer"
         
-        # User confirmation before execution
-        info "You can review the script before installation:"
-        info "  less $docker_installer"
-        info "  cat $docker_installer"
-        echo ""
-        read -p "Proceed with Docker installation? (y/N): " -n 1 -r
-        echo ""
-        if [[ ! $REPLY =~ ^[Yy]$ ]]; then
-            warn "Docker installation cancelled by user."
-            rm -f "$docker_installer"
-            exit 1
+        # User confirmation before execution (skip in non-interactive mode)
+        if [ "$AUTO_YES" = "true" ] || ! test -t 0; then
+            info "Non-interactive mode detected, proceeding with Docker installation..."
+        else
+            info "You can review the script before installation:"
+            info "  less $docker_installer"
+            info "  cat $docker_installer"
+            echo ""
+            read -p "Proceed with Docker installation? (y/N): " -n 1 -r
+            echo ""
+            if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+                warn "Docker installation cancelled by user."
+                rm -f "$docker_installer"
+                exit 1
+            fi
         fi
         
         info "Executing Docker installer..."
@@ -472,17 +480,21 @@ else
     fi
     success "fnm installer downloaded to: $fnm_installer"
     
-    # User confirmation before execution
-    info "You can review the script before installation:"
-    info "  less $fnm_installer"
-    info "  cat $fnm_installer"
-    echo ""
-    read -p "Proceed with fnm installation? (y/N): " -n 1 -r
-    echo ""
-    if [[ ! $REPLY =~ ^[Yy]$ ]]; then
-        warn "fnm installation cancelled by user."
-        rm -f "$fnm_installer"
-        exit 1
+    # User confirmation before execution (skip in non-interactive mode)
+    if [ "$AUTO_YES" = "true" ] || ! test -t 0; then
+        info "Non-interactive mode detected, proceeding with fnm installation..."
+    else
+        info "You can review the script before installation:"
+        info "  less $fnm_installer"
+        info "  cat $fnm_installer"
+        echo ""
+        read -p "Proceed with fnm installation? (y/N): " -n 1 -r
+        echo ""
+        if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+            warn "fnm installation cancelled by user."
+            rm -f "$fnm_installer"
+            exit 1
+        fi
     fi
     
     info "Executing fnm installer..."
