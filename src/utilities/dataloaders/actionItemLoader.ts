@@ -7,6 +7,7 @@ import {
 	getTTL,
 	wrapWithCache,
 } from "~/src/services/caching";
+import { traceable } from "~/src/utilities/db/traceableQuery";
 import type { PerformanceTracker } from "~/src/utilities/metrics/performanceTracker";
 import { wrapBatchWithMetrics } from "~/src/utilities/metrics/withMetrics";
 import { wrapBatchWithTracing } from "./wrapBatchWithTracing";
@@ -40,10 +41,12 @@ export function createActionItemLoader(
 	const batchFn = async (
 		ids: readonly string[],
 	): Promise<(ActionItemRow | null)[]> => {
-		const rows = await db
-			.select()
-			.from(actionItemsTable)
-			.where(inArray(actionItemsTable.id, ids as string[]));
+		const rows = await traceable("actionItems", "batchLoad", async () =>
+			db
+				.select()
+				.from(actionItemsTable)
+				.where(inArray(actionItemsTable.id, ids as string[])),
+		);
 
 		const map = new Map<string, ActionItemRow>(
 			rows.map((r: ActionItemRow) => [r.id, r]),

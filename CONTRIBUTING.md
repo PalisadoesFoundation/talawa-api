@@ -23,26 +23,10 @@ Please read the [Palisadoes Contributing Guidelines](https://developer.palisadoe
 
 ## Testing and Code Quality
 
-For detailed information about testing, linting, formatting, and code coverage, please refer to our comprehensive [Testing Guide](docs/docs/docs/developer-resources/testing.md).
+Testing and code quality documentation can be found at these locations:
 
-### Quick Reference
-
-**Testing:**
-- Run all tests: `pnpm run test`
-- Run specific test: `pnpm run test /path/to/test/file`
-- Run with coverage: `pnpm run test:coverage`
-- Run with sharding: `pnpm run test:shard`
-
-**Linting and Formatting:**
-- Fix linting issues: `pnpm run lint:fix`
-- Fix formatting issues: `pnpm run format:fix`
-- Check linting: `pnpm run lint:check`
-- Check formatting: `pnpm run format:check`
-
-**Cypress E2E Testing:**
-- See the [Cypress Guide](cypress/README.md) for end-to-end testing
-
-For complete documentation including test sharding, code coverage setup, debugging, and git hooks, visit the [Testing Guide](docs/docs/docs/developer-resources/testing.md).
+1. Online at https://docs-api.talawa.io/docs/developer-resources/testing-validation
+1. In the local repository at [testing-validation.md](docs/docs/docs/developer-resources/testing/testing-validation.md) which is the source file for the web page.
 
 ## Making Contributions   
 

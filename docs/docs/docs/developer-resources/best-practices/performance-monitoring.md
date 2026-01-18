@@ -286,15 +286,22 @@ The metrics aggregation system is configurable through the following environment
 
 | Variable | Default | Description |
 |----------|---------|-------------|
+| `API_METRICS_ENABLED` | `true` | Master switch to enable or disable metrics collection and aggregation |
 | `API_METRICS_AGGREGATION_ENABLED` | `true` | Enable or disable the metrics aggregation background worker |
 | `API_METRICS_AGGREGATION_CRON_SCHEDULE` | `*/5 * * * *` | Cron schedule for running metrics aggregation (default: every 5 minutes) |
 | `API_METRICS_AGGREGATION_WINDOW_MINUTES` | `5` | Time window in minutes for aggregating snapshots |
 | `API_METRICS_SNAPSHOT_RETENTION_COUNT` | `1000` | Maximum number of performance snapshots to retain in memory |
+| `API_METRICS_SLOW_OPERATION_MS` | `200` | Threshold in milliseconds for considering an operation as slow |
+| `API_METRICS_SLOW_REQUEST_MS` | `500` | Threshold in milliseconds for considering a request as slow |
+| `API_METRICS_CACHE_TTL_SECONDS` | `300` | Time-to-live in seconds for cached aggregated metrics (5 minutes) |
 | `API_METRICS_API_KEY` | (none) | API key to protect the `/metrics/perf` endpoint. When set, requests require `Authorization: Bearer <key>` header |
 
 ### Example Configuration
 
 ```bash
+# Enable metrics collection (default: true)
+API_METRICS_ENABLED=true
+
 # Enable metrics aggregation (default: true)
 API_METRICS_AGGREGATION_ENABLED=true
 
@@ -306,6 +313,15 @@ API_METRICS_AGGREGATION_WINDOW_MINUTES=10
 
 # Keep last 2000 snapshots in memory
 API_METRICS_SNAPSHOT_RETENTION_COUNT=2000
+
+# Configure slow operation threshold (default: 200ms)
+API_METRICS_SLOW_OPERATION_MS=300
+
+# Configure slow request threshold (default: 500ms)
+API_METRICS_SLOW_REQUEST_MS=1000
+
+# Configure metrics cache TTL (default: 300 seconds)
+API_METRICS_CACHE_TTL_SECONDS=600
 
 # Protect metrics endpoint with API key (recommended for production)
 API_METRICS_API_KEY=your-secure-api-key-here
@@ -348,14 +364,34 @@ The background worker aggregates performance snapshots and logs the results to t
 - `slowOperationCount`: Number of operations potentially needing optimization
 - `cacheHitRate`: Global cache efficiency for the period
 
+### Metrics Caching
+
+Aggregated metrics can be cached to improve performance when accessing metrics data. The metrics cache service provides:
+
+- **Timestamp-based caching**: Cache metrics by timestamp identifier
+- **Time-windowed caching**: Cache hourly and daily aggregations with longer TTLs
+- **Configurable TTL**: Control cache expiration via `API_METRICS_CACHE_TTL_SECONDS`
+
+**Cache Key Patterns:**
+- Timestamp-based: `talawa:v1:metrics:aggregated:{timestamp}`
+- Hourly: `talawa:v1:metrics:aggregated:hourly:{YYYY-MM-DD-HH}`
+- Daily: `talawa:v1:metrics:aggregated:daily:{YYYY-MM-DD}`
+
+**Default TTLs:**
+- Timestamp-based metrics: 300 seconds (5 minutes)
+- Hourly aggregations: 3600 seconds (1 hour)
+- Daily aggregations: 86400 seconds (24 hours)
+
+The metrics cache service is automatically initialized when the performance plugin starts and is available via `fastify.metricsCache`. Cache failures are handled gracefully and do not affect metrics collection.
+
 ## Production Considerations
 
 ### Security
 
-> **⚠️ WARNING**: The `/metrics/perf` endpoint currently has no authentication. For production deployments:
-> - Add API key authentication, or
-> - Restrict access to admin users only, or  
-> - Use network-level controls (VPN, internal-only access)
+> **⚠️ IMPORTANT**: The `/metrics/perf` endpoint supports API key authentication via the `API_METRICS_API_KEY` environment variable. For production deployments:
+> - **Set `API_METRICS_API_KEY`** to protect the endpoint (recommended)
+> - Use network-level controls (VPN, internal-only access) as additional security
+> - If `API_METRICS_API_KEY` is not set, the endpoint is unprotected (suitable for development only)
 
 ### Performance Impact
 
@@ -634,3 +670,116 @@ When disabled:
 - SDK is not initialized
 - No instrumentation is registered
 - No performance impact is introduced
+
+---
+
+### Database Operation Tracing
+
+Talawa API instruments database operations using the `traceable` utility, providing visibility into database queries through DataLoaders.
+
+#### Trace Hierarchy
+
+Database operations create child spans under their parent context:
+
+```
+HTTP Request → GraphQL Resolver → DataLoader → db:users.batchLoad
+```
+
+This enables end-to-end tracing, bottleneck identification, and N+1 query detection.
+
+#### Usage
+
+**Import:**
+```typescript
+import { traceable } from "~/src/utilities/db/traceableQuery";
+```
+
+**Basic Usage:**
+```typescript
+const users = await traceable("users", "batchLoad", async () => {
+  return await db.select().from(usersTable).where(inArray(usersTable.id, userIds));
+});
+```
+
+**DataLoader Example:**
+```typescript
+export const createUserLoader = (): DataLoader<string, User | null> => {
+  return new DataLoader(async (userIds) => {
+    const rows = await traceable("users", "batchLoad", async () => {
+      return await db.select().from(usersTable).where(inArray(usersTable.id, [...userIds]));
+    });
+    const userMap = new Map(rows.map((user) => [user.id, user]));
+    return userIds.map((id) => userMap.get(id) ?? null);
+  });
+};
+```
+
+**Span Attributes:**
+- `db.system`: `"postgresql"`
+- `db.operation`: Operation type (e.g., `"batchLoad"`)
+- `db.model`: Table name (e.g., `"users"`)
+
+#### Error Handling
+
+Errors are automatically captured with stack traces and marked with ERROR status. The error is then re-thrown for normal application handling.
+
+#### Sample Output
+
+**Local Console Output:**
+```json
+{
+  "name": "db:users.batchLoad",
+  "traceId": "347cb51fc1fd41662d768bb1142acff1",
+  "parentId": "a8f3d9e2c1b4a567",
+  "duration": 45238.125,
+  "attributes": {
+    "db.system": "postgresql",
+    "db.operation": "batchLoad",
+    "db.model": "users"
+  },
+  "status": { "code": 0 }
+}
+```
+
+**Production Visualization:**
+```
+Trace: 347cb51fc1fd41662d768bb1142acff1
+├─ POST /graphql (125ms)
+   ├─ db:users.batchLoad (45ms)
+   ├─ db:organizations.batchLoad (32ms)
+   └─ db:events.batchLoad (28ms)
+```
+
+#### Best Practices
+
+1. **Use descriptive operation names**: `"findByEmail"` not `"query"`
+2. **Wrap only DB operations**: Exclude business logic from traced functions
+3. **Match model names to tables**: Use `"users"` for `usersTable`
+4. **Primary use case**: DataLoaders batch loading
+
+#### Security
+
+**⚠️ Never include sensitive data in model/operation names**
+
+What is captured:
+- ✅ Table names, operation types, timing
+- ❌ Query parameters, result data (not captured)
+
+For production, use TLS/HTTPS for OTLP endpoints and consider sampling (`API_OTEL_SAMPLING_RATIO=0.1`).
+
+#### Contributor Guidelines
+
+**When to use `traceable`:**
+- ✅ DataLoader batch functions (required)
+- ✅ Complex multi-table queries
+- ❌ Simple single-row lookups
+
+Verify spans locally: Set `API_OTEL_ENABLED=true` and `API_OTEL_ENVIRONMENT=local`
+
+**Tests:** `test/utilities/db/traceableQuery.test.ts`
+
+#### Further Reading
+
+- Implementation: `src/utilities/db/traceableQuery.ts`
+- DataLoader examples: `src/utilities/dataloaders/`
+- OpenTelemetry: https://opentelemetry.io/docs/instrumentation/js/

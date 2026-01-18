@@ -55,143 +55,22 @@ log_error() {
     echo "[$timestamp] ERROR: $message" >> "$INSTALLATION_LOG"
 }
 
-# Add retry utility function
-retry_command() {
-    local max_attempts="$1"
-    shift
-    local attempt=1
-    local exit_code=0
-    while [ "$attempt" -le "$max_attempts" ]; do
-        if [ "$attempt" -gt 1 ]; then
-            local delay=$((2 ** (attempt - 1)))
-            warn "Retry attempt $attempt of $max_attempts... sleeping for ${delay}s"
-            sleep "$delay"
-        fi
-        if "$@"; then
-            return 0
-        fi
-        exit_code=$?
-        ((attempt++))
-    done
-    error "Command failed after $max_attempts attempts: $*"
-    return "$exit_code"
-}
-
-
 # Check if command exists
 command_exists() {
     command -v "$1" &> /dev/null
 }
 
 ##############################################################################
-# Safe jq parsing helper function
-# 
-# This function provides robust jq parsing with:
-# - Verification that jq is installed
-# - Error handling for malformed JSON
-# - Null/empty result handling with defaults
-# - Clear error messages for debugging
+# Source common validation functions
 ##############################################################################
-parse_package_json() {
-    local jq_query="$1"
-    local default_value="$2"
-    local field_name="$3"
-    local is_required="${4:-false}"
-    
-    # Verify jq is available before attempting to parse
-    if ! command_exists jq; then
-        error "jq is required but not installed"
-        echo ""
-        info "jq is a lightweight JSON processor needed to parse package.json"
-        echo ""
-        info "Install jq using your package manager:"
-        echo "  • Ubuntu/Debian:  sudo apt-get install jq"
-        echo "  • Fedora/RHEL:    sudo dnf install jq"
-        echo "  • Arch/Manjaro:   sudo pacman -S jq"
-        echo "  • macOS:          brew install jq"
-        echo ""
-        info "After installing jq, re-run this script"
-        exit 1
-    fi
-    
-    # Verify package.json exists and is readable
-    if [ ! -r "package.json" ]; then
-        error "Cannot read package.json file"
-        echo ""
-        info "Ensure package.json exists and is readable in the current directory"
-        exit 1
-    fi
-    
-    local result
-    local jq_exit_code
-    
-    # Attempt to parse with jq, coalescing null to empty string
-    # Using '// empty' ensures null values become empty strings rather than literal "null"
-    result=$(jq -r "($jq_query) // empty" package.json 2>&1)
-    jq_exit_code=$?
-    
-    # Check if jq command failed (malformed JSON or invalid query)
-    if [ $jq_exit_code -ne 0 ]; then
-        error "Failed to parse $field_name from package.json"
-        echo ""
-        info "jq error: $result"
-        echo ""
-        info "Common causes:"
-        echo "  • Malformed JSON syntax in package.json"
-        echo "  • Invalid jq query expression"
-        echo "  • Corrupted package.json file"
-        echo ""
-        info "Troubleshooting steps:"
-        echo "  1. Validate package.json syntax:"
-        echo "     jq . package.json"
-        echo ""
-        echo "  2. Check for common JSON errors:"
-        echo "     • Missing commas between properties"
-        echo "     • Trailing commas after last property"
-        echo "     • Unmatched brackets or braces"
-        echo "     • Invalid escape sequences in strings"
-        echo ""
-        echo "  3. If package.json is corrupted, restore it:"
-        echo "     git checkout package.json"
-        echo ""
-        info "Documentation: https://github.com/PalisadoesFoundation/talawa-api/blob/develop/INSTALLATION.md"
-        exit 1
-    fi
-    
-    # Check for empty results (null values are coalesced to empty by jq)
-    if [ -z "$result" ]; then
-        if [ "$is_required" = "true" ]; then
-            error "$field_name not found in package.json (required field)"
-            echo ""
-            info "The field '$field_name' is required but was not found or is null"
-            echo ""
-            info "Expected location in package.json: $jq_query"
-            echo ""
-            info "Troubleshooting steps:"
-            echo "  1. Check if the field exists in package.json:"
-            echo "     jq '$jq_query' package.json"
-            echo ""
-            echo "  2. Ensure you have the latest version of the repository:"
-            echo "     git pull origin develop"
-            echo ""
-            info "Report issues: https://github.com/PalisadoesFoundation/talawa-api/issues"
-            exit 1
-        fi
-        
-        # Use default value if provided
-        if [ -n "$default_value" ]; then
-            echo "$default_value"
-            return 0
-        fi
-        
-        # Return empty string if no default and not required
-        echo ""
-        return 0
-    fi
-    
-    # Return the successfully parsed result
-    echo "$result"
-}
+COMMON_VALIDATION_LIB="$(dirname "${BASH_SOURCE[0]}")/../common/validation.sh"
+if [ ! -f "$COMMON_VALIDATION_LIB" ]; then
+    error "Common validation library not found: $COMMON_VALIDATION_LIB"
+    error "Please ensure the installation directory structure is intact."
+    exit 1
+fi
+# shellcheck source=../common/validation.sh
+source "$COMMON_VALIDATION_LIB"
 
 # Check Docker Compose availability and log errors
 # Returns: 0 if available, 1 if not available
@@ -594,6 +473,12 @@ step $CURRENT_STEP $TOTAL_STEPS "Reading configuration from package.json..."
 # The 'lts' default is used if engines.node is not specified
 NODE_VERSION=$(parse_package_json '.engines.node' "lts" "Node.js version (engines.node)" "false")
 
+# SECURITY: Validate raw NODE_VERSION before any processing
+# This prevents command injection via malicious package.json
+if ! validate_version_string "$NODE_VERSION" "Node.js version (engines.node)"; then
+    handle_version_validation_error "engines.node" "$NODE_VERSION" ".engines.node"
+fi
+
 # Clean version string (handle >=, ^, etc.)
 if [[ "$NODE_VERSION" =~ ^(\^|>=|~) ]]; then
     # Extract full semantic version (e.g., ">=18.0.0" -> "18.0.0")
@@ -625,6 +510,12 @@ if [ -z "$CLEAN_NODE_VERSION" ]; then
     CLEAN_NODE_VERSION="lts"
 fi
 
+# SECURITY: Validate cleaned Node.js version before use in commands
+# This is the final check before the version is passed to fnm
+if ! validate_version_string "$CLEAN_NODE_VERSION" "cleaned Node.js version"; then
+    handle_version_validation_error "cleaned Node.js version" "$CLEAN_NODE_VERSION" ".engines.node"
+fi
+
 # Extract pnpm version using safe parsing
 PNPM_FULL=$(parse_package_json '.packageManager' "" "pnpm version (packageManager)" "false")
 
@@ -637,6 +528,11 @@ if [[ "$PNPM_FULL" == pnpm@* ]]; then
     if [ -z "$PNPM_VERSION" ]; then
         warn "Could not extract pnpm version from '$PNPM_FULL', using latest"
         PNPM_VERSION="latest"
+    fi
+    
+    # SECURITY: Validate pnpm version before use in commands
+    if ! validate_version_string "$PNPM_VERSION" "pnpm version (packageManager)"; then
+        handle_version_validation_error "packageManager" "$PNPM_VERSION" ".packageManager"
     fi
 elif [ -n "$PNPM_FULL" ]; then
     # packageManager field exists but doesn't match expected pnpm format
@@ -933,4 +829,3 @@ echo ""
 info "To complete setup, run:"
 echo "  pnpm run setup"
 echo ""
-

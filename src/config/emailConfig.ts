@@ -16,6 +16,8 @@ const schema = Type.Pick(envConfigSchema, [
 	"SMTP_SECURE",
 	"SMTP_FROM_EMAIL",
 	"SMTP_FROM_NAME",
+	"SMTP_NAME",
+	"SMTP_LOCAL_ADDRESS",
 ]);
 
 export type EmailEnvConfig = Static<typeof schema>;

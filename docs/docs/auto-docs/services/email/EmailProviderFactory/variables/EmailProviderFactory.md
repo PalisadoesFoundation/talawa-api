@@ -58,6 +58,14 @@ Email environment configuration
 
 `string`
 
+###### SMTP_LOCAL_ADDRESS?
+
+`string`
+
+###### SMTP_NAME?
+
+`string`
+
 ###### SMTP_PASSWORD?
 
 `string`

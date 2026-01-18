@@ -14,6 +14,7 @@ import {
 	validateCloudBeaverURL,
 	validateEmail,
 	validatePort,
+	validatePositiveInteger,
 	validateURL,
 } from "./validators";
 
@@ -25,6 +26,7 @@ export {
 	validateCloudBeaverURL,
 	validateEmail,
 	validatePort,
+	validatePositiveInteger,
 	validateURL,
 } from "./validators";
 
@@ -96,7 +98,16 @@ export type SetupKey =
 	| "GITHUB_CLIENT_ID"
 	| "GITHUB_CLIENT_SECRET"
 	| "GITHUB_REDIRECT_URI"
-	| "API_OAUTH_REQUEST_TIMEOUT_MS";
+	| "API_OAUTH_REQUEST_TIMEOUT_MS"
+	| "API_METRICS_ENABLED"
+	| "API_METRICS_API_KEY"
+	| "API_METRICS_SLOW_REQUEST_MS"
+	| "API_METRICS_SLOW_OPERATION_MS"
+	| "API_METRICS_CACHE_TTL_SECONDS"
+	| "API_METRICS_AGGREGATION_ENABLED"
+	| "API_METRICS_AGGREGATION_CRON_SCHEDULE"
+	| "API_METRICS_AGGREGATION_WINDOW_MINUTES"
+	| "API_METRICS_SNAPSHOT_RETENTION_COUNT";
 
 // Replace the index signature with a constrained mapping
 // Allow string indexing so tests and dynamic access are permitted
@@ -376,6 +387,94 @@ export async function observabilitySetup(
 				validateSamplingRatio,
 			);
 		}
+	} catch (err) {
+		await handlePromptError(err);
+	}
+	return answers;
+}
+
+/**
+ * Sets up metrics configuration.
+ * Prompts user to configure performance monitoring settings.
+ * @param answers - Current setup answers object
+ * @returns Updated answers object with metrics configuration
+ */
+export async function metricsSetup(
+	answers: SetupAnswers,
+): Promise<SetupAnswers> {
+	try {
+		console.log("\n--- Performance Metrics Configuration ---");
+		console.log("Configure performance monitoring for your API.");
+		console.log();
+
+		answers.API_METRICS_ENABLED = await promptList(
+			"API_METRICS_ENABLED",
+			"Enable performance metrics collection?",
+			["true", "false"],
+			"true",
+		);
+
+		if (answers.API_METRICS_ENABLED === "true") {
+			const apiKeyInput = await promptInput(
+				"API_METRICS_API_KEY",
+				"API key for /metrics/perf endpoint (leave empty for no auth):",
+				"",
+			);
+			// Normalize empty string to undefined so schema treats it as truly optional
+			answers.API_METRICS_API_KEY = apiKeyInput.trim() || undefined;
+
+			answers.API_METRICS_SLOW_REQUEST_MS = await promptInput(
+				"API_METRICS_SLOW_REQUEST_MS",
+				"Slow request threshold in milliseconds:",
+				"500",
+				validatePositiveInteger,
+			);
+
+			answers.API_METRICS_SLOW_OPERATION_MS = await promptInput(
+				"API_METRICS_SLOW_OPERATION_MS",
+				"Slow operation threshold in milliseconds:",
+				"200",
+				validatePositiveInteger,
+			);
+
+			answers.API_METRICS_AGGREGATION_ENABLED = await promptList(
+				"API_METRICS_AGGREGATION_ENABLED",
+				"Enable background metrics aggregation?",
+				["true", "false"],
+				"true",
+			);
+
+			if (answers.API_METRICS_AGGREGATION_ENABLED === "true") {
+				answers.API_METRICS_AGGREGATION_CRON_SCHEDULE = await promptInput(
+					"API_METRICS_AGGREGATION_CRON_SCHEDULE",
+					"Aggregation cron schedule (default: every 5 minutes):",
+					"*/5 * * * *",
+				);
+
+				answers.API_METRICS_AGGREGATION_WINDOW_MINUTES = await promptInput(
+					"API_METRICS_AGGREGATION_WINDOW_MINUTES",
+					"Aggregation window in minutes:",
+					"5",
+					validatePositiveInteger,
+				);
+
+				answers.API_METRICS_CACHE_TTL_SECONDS = await promptInput(
+					"API_METRICS_CACHE_TTL_SECONDS",
+					"Cache TTL for aggregated metrics in seconds:",
+					"300",
+					validatePositiveInteger,
+				);
+			}
+
+			answers.API_METRICS_SNAPSHOT_RETENTION_COUNT = await promptInput(
+				"API_METRICS_SNAPSHOT_RETENTION_COUNT",
+				"Maximum snapshots to retain in memory:",
+				"1000",
+				validatePositiveInteger,
+			);
+		}
+
+		console.log("\nMetrics configuration completed!");
 	} catch (err) {
 		await handlePromptError(err);
 	}
@@ -740,15 +839,17 @@ export async function apiSetup(answers: SetupAnswers): Promise<SetupAnswers> {
 			"Minio port:",
 			"9000",
 		);
-		const existingMinioPassword =
+		// Treat empty string as unset so users can supply a new secret
+		const rawMinioPassword =
 			answers.MINIO_ROOT_PASSWORD ?? process.env.MINIO_ROOT_PASSWORD;
+		const existingMinioPassword = rawMinioPassword || undefined;
 		answers.API_MINIO_SECRET_KEY = await promptInput(
 			"API_MINIO_SECRET_KEY",
 			"Minio secret key:",
 			existingMinioPassword ?? "password",
 		);
 		if (existingMinioPassword !== undefined) {
-			// Configured password found (including empty string), validate against it
+			// Configured non-empty password found, validate against it
 			const minioPassword = existingMinioPassword;
 			while (answers.API_MINIO_SECRET_KEY !== minioPassword) {
 				console.warn("⚠️ API_MINIO_SECRET_KEY must match MINIO_ROOT_PASSWORD.");
@@ -760,7 +861,7 @@ export async function apiSetup(answers: SetupAnswers): Promise<SetupAnswers> {
 			}
 			console.log("✅ API_MINIO_SECRET_KEY matches MINIO_ROOT_PASSWORD");
 		} else {
-			// No configured value: set both answers.MINIO_ROOT_PASSWORD and
+			// No configured value (or empty): set both answers.MINIO_ROOT_PASSWORD and
 			// process.env.MINIO_ROOT_PASSWORD to answers.API_MINIO_SECRET_KEY
 			// so the chosen API_MINIO_SECRET_KEY becomes the stored Minio password
 			answers.MINIO_ROOT_PASSWORD = answers.API_MINIO_SECRET_KEY;
@@ -790,15 +891,17 @@ export async function apiSetup(answers: SetupAnswers): Promise<SetupAnswers> {
 			"Postgres host:",
 			"postgres",
 		);
-		const postgresPassword =
+		// Treat empty string as unset so users can supply a new secret
+		const rawPostgresPassword =
 			answers.POSTGRES_PASSWORD ?? process.env.POSTGRES_PASSWORD;
+		const postgresPassword = rawPostgresPassword || undefined;
 		answers.API_POSTGRES_PASSWORD = await promptInput(
 			"API_POSTGRES_PASSWORD",
 			"Postgres password:",
 			postgresPassword ?? "password",
 		);
 		if (postgresPassword !== undefined) {
-			// Configured password found (including empty string), validate against it
+			// Configured non-empty password found, validate against it
 			const postgresPasswordLocal = postgresPassword;
 			while (answers.API_POSTGRES_PASSWORD !== postgresPasswordLocal) {
 				console.warn("⚠️ API_POSTGRES_PASSWORD must match POSTGRES_PASSWORD.");
@@ -810,7 +913,7 @@ export async function apiSetup(answers: SetupAnswers): Promise<SetupAnswers> {
 			}
 			console.log("✅ API_POSTGRES_PASSWORD matches POSTGRES_PASSWORD");
 		} else {
-			// No configured value: set both answers.POSTGRES_PASSWORD and
+			// No configured value (or empty): set both answers.POSTGRES_PASSWORD and
 			// process.env.POSTGRES_PASSWORD to answers.API_POSTGRES_PASSWORD
 			// so the chosen API_POSTGRES_PASSWORD becomes the stored Postgres password
 			answers.POSTGRES_PASSWORD = answers.API_POSTGRES_PASSWORD;
@@ -823,6 +926,7 @@ export async function apiSetup(answers: SetupAnswers): Promise<SetupAnswers> {
 			"API_POSTGRES_PORT",
 			"Postgres port:",
 			"5432",
+			validatePort,
 		);
 		answers.API_POSTGRES_SSL_MODE = await promptList(
 			"API_POSTGRES_SSL_MODE",
@@ -858,7 +962,7 @@ export async function cloudbeaverSetup(
 		answers.CLOUDBEAVER_ADMIN_PASSWORD = await promptInput(
 			"CLOUDBEAVER_ADMIN_PASSWORD",
 			"CloudBeaver admin password:",
-			"password",
+			process.env.CLOUDBEAVER_ADMIN_PASSWORD ?? "",
 			validateCloudBeaverPassword,
 		);
 		answers.CLOUDBEAVER_MAPPED_HOST_IP = await promptInput(
@@ -937,11 +1041,32 @@ export async function minioSetup(answers: SetupAnswers): Promise<SetupAnswers> {
 				}
 			}
 		}
+		// Use already-synced API_MINIO_SECRET_KEY as default if available
+		const minioPasswordDefault =
+			answers.API_MINIO_SECRET_KEY ??
+			answers.MINIO_ROOT_PASSWORD ??
+			process.env.MINIO_ROOT_PASSWORD ??
+			"password";
 		answers.MINIO_ROOT_PASSWORD = await promptInput(
 			"MINIO_ROOT_PASSWORD",
 			"Minio root password:",
-			"password",
+			minioPasswordDefault,
 		);
+		// Sync back to API_MINIO_SECRET_KEY if it was set
+		if (answers.API_MINIO_SECRET_KEY !== undefined) {
+			if (answers.MINIO_ROOT_PASSWORD !== answers.API_MINIO_SECRET_KEY) {
+				// User changed MINIO_ROOT_PASSWORD, update API_MINIO_SECRET_KEY to match
+				answers.API_MINIO_SECRET_KEY = answers.MINIO_ROOT_PASSWORD;
+				process.env.MINIO_ROOT_PASSWORD = answers.MINIO_ROOT_PASSWORD;
+				console.log(
+					"ℹ️  API_MINIO_SECRET_KEY updated to match MINIO_ROOT_PASSWORD",
+				);
+			}
+		} else {
+			// No API_MINIO_SECRET_KEY set yet, set it now
+			answers.API_MINIO_SECRET_KEY = answers.MINIO_ROOT_PASSWORD;
+			process.env.MINIO_ROOT_PASSWORD = answers.MINIO_ROOT_PASSWORD;
+		}
 		answers.MINIO_ROOT_USER = await promptInput(
 			"MINIO_ROOT_USER",
 			"Minio root user:",
@@ -974,11 +1099,32 @@ export async function postgresSetup(
 				validatePort,
 			);
 		}
+		// Use already-synced API_POSTGRES_PASSWORD as default if available
+		const postgresPasswordDefault =
+			answers.API_POSTGRES_PASSWORD ??
+			answers.POSTGRES_PASSWORD ??
+			process.env.POSTGRES_PASSWORD ??
+			"password";
 		answers.POSTGRES_PASSWORD = await promptInput(
 			"POSTGRES_PASSWORD",
 			"Postgres password:",
-			"password",
+			postgresPasswordDefault,
 		);
+		// Sync back to API_POSTGRES_PASSWORD if it was set
+		if (answers.API_POSTGRES_PASSWORD !== undefined) {
+			if (answers.POSTGRES_PASSWORD !== answers.API_POSTGRES_PASSWORD) {
+				// User changed POSTGRES_PASSWORD, update API_POSTGRES_PASSWORD to match
+				answers.API_POSTGRES_PASSWORD = answers.POSTGRES_PASSWORD;
+				process.env.POSTGRES_PASSWORD = answers.POSTGRES_PASSWORD;
+				console.log(
+					"ℹ️  API_POSTGRES_PASSWORD updated to match POSTGRES_PASSWORD",
+				);
+			}
+		} else {
+			// No API_POSTGRES_PASSWORD set yet, set it now
+			answers.API_POSTGRES_PASSWORD = answers.POSTGRES_PASSWORD;
+			process.env.POSTGRES_PASSWORD = answers.POSTGRES_PASSWORD;
+		}
 		answers.POSTGRES_USER = await promptInput(
 			"POSTGRES_USER",
 			"Postgres user:",
@@ -1157,6 +1303,14 @@ export async function setup(): Promise<SetupAnswers> {
 	);
 	if (setupOAuth) {
 		answers = await oauthSetup(answers);
+	}
+	const setupMetrics = await promptConfirm(
+		"setupMetrics",
+		"Do you want to configure performance metrics settings now?",
+		false,
+	);
+	if (setupMetrics) {
+		answers = await metricsSetup(answers);
 	}
 	await updateEnvVariable(answers);
 	console.log("Configuration complete.");
