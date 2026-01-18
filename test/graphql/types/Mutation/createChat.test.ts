@@ -589,7 +589,15 @@ suite("Mutation field createChat", () => {
 				createdChatIds.push(result.data.createChat.id);
 			}
 
-			expect(putObjectSpy).toHaveBeenCalled();
+			expect(putObjectSpy).toHaveBeenCalledWith(
+				server.minio.bucketName,
+				expect.any(String),
+				expect.anything(),
+				undefined,
+				expect.objectContaining({
+					"content-type": "image/jpeg",
+				}),
+			);
 		});
 
 		test("should successfully create chat with explicitly null avatar", async () => {
