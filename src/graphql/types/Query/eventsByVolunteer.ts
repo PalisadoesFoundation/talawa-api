@@ -13,6 +13,8 @@ import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 
 const queryEventsByVolunteerArgumentsSchema = z.object({
 	userId: z.string().uuid(),
+	limit: z.number().min(0).max(100).default(100),
+	offset: z.number().min(0).default(0),
 });
 
 /**
@@ -26,6 +28,17 @@ builder.queryField("eventsByVolunteer", (t) =>
 			userId: t.arg.id({
 				required: true,
 				description: "ID of the user whose volunteer events to fetch",
+			}),
+			limit: t.arg.int({
+				description:
+					"The maximum number of events to return (default: 100, max: 100)",
+				required: false,
+				defaultValue: 100,
+			}),
+			offset: t.arg.int({
+				description: "The number of events to skip (default: 0)",
+				required: false,
+				defaultValue: 0,
 			}),
 		},
 		description: "Query field to fetch all events a user is volunteering for.",
@@ -55,6 +68,7 @@ builder.queryField("eventsByVolunteer", (t) =>
 
 			const currentUserId = ctx.currentClient.user.id;
 			const targetUserId = parsedArgs.data.userId;
+			const { limit, offset } = parsedArgs.data;
 
 			// Get current user for authorization
 			const currentUser = await ctx.drizzleClient.query.usersTable.findFirst({
@@ -179,7 +193,7 @@ builder.queryField("eventsByVolunteer", (t) =>
 									allEvents.push({
 										...event,
 										description: event.description ?? null,
-										attachments: [], // Attachments not fetched by default in this flow
+										attachments: event.attachments ?? [], // Attachments are preserved if fetched
 										eventType: "standalone",
 									});
 									processedEventIds.add(eventId);
@@ -213,16 +227,21 @@ builder.queryField("eventsByVolunteer", (t) =>
 					return aTime - bTime;
 				});
 
+				const slicedEvents = allEvents.slice(offset, offset + limit);
+
 				ctx.log.debug(
 					{
 						userId: targetUserId,
 						totalEvents: allEvents.length,
+						returnedEvents: slicedEvents.length,
 						volunteerRecords: volunteerRecords.length,
+						limit,
+						offset,
 					},
 					"Retrieved events by volunteer",
 				);
 
-				return allEvents;
+				return slicedEvents;
 			} catch (error) {
 				ctx.log.error(
 					{

@@ -1,7 +1,10 @@
 import { faker } from "@faker-js/faker";
 import { eq } from "drizzle-orm";
+import { initGraphQLTada } from "gql.tada";
 import { expect, suite, test, vi } from "vitest";
+import { eventAttachmentsTable } from "~/src/drizzle/tables/eventAttachments";
 import { usersTable } from "~/src/drizzle/tables/users";
+import type { ClientCustomScalars } from "~/src/graphql/scalars/index";
 import { assertToBeNonNullish } from "../../../helpers";
 import { server } from "../../../server";
 import { mercuriusClient } from "../client";
@@ -12,9 +15,35 @@ import {
 	Mutation_createOrganization,
 	Mutation_createOrganizationMembership,
 	Mutation_updateEventVolunteer,
-	Query_eventsByVolunteer,
 	Query_signIn,
 } from "../documentNodes";
+import type { introspection } from "../gql.tada";
+
+const gql = initGraphQLTada<{
+	introspection: introspection;
+	scalars: ClientCustomScalars;
+}>();
+
+const Query_eventsByVolunteer = gql(`
+	query Query_eventsByVolunteer($userId: ID!, $limit: Int, $offset: Int) {
+		eventsByVolunteer(userId: $userId, limit: $limit, offset: $offset) {
+			id
+			name
+			description
+			startAt
+			endAt
+			location
+			allDay
+			isPublic
+			isRegisterable
+			isInviteOnly
+			organization {
+				id
+				name
+			}
+		}
+	}
+`);
 
 const signInResult = await mercuriusClient.query(Query_signIn, {
 	variables: {
@@ -739,6 +768,321 @@ suite("Query field eventsByVolunteer", () => {
 			} finally {
 				spy.mockRestore();
 			}
+		});
+
+		suite("pagination", () => {
+			test("should return error when limit is negative", async () => {
+				const { authToken: userToken, userId } =
+					await createRegularUserUsingAdmin();
+				assertToBeNonNullish(userToken);
+				assertToBeNonNullish(userId);
+
+				const result = await mercuriusClient.query(Query_eventsByVolunteer, {
+					headers: { authorization: `bearer ${userToken}` },
+					variables: { userId, limit: -1 },
+				});
+				expect(result.data?.eventsByVolunteer).toBeUndefined();
+				expect(result.errors).toEqual(
+					expect.arrayContaining([
+						expect.objectContaining({
+							extensions: expect.objectContaining({
+								code: "invalid_arguments",
+							}),
+						}),
+					]),
+				);
+			});
+
+			test("should return error when offset is negative", async () => {
+				const { authToken: userToken, userId } =
+					await createRegularUserUsingAdmin();
+				assertToBeNonNullish(userToken);
+				assertToBeNonNullish(userId);
+
+				const result = await mercuriusClient.query(Query_eventsByVolunteer, {
+					headers: { authorization: `bearer ${userToken}` },
+					variables: { userId, offset: -1 },
+				});
+				expect(result.data?.eventsByVolunteer).toBeUndefined();
+				expect(result.errors).toEqual(
+					expect.arrayContaining([
+						expect.objectContaining({
+							extensions: expect.objectContaining({
+								code: "invalid_arguments",
+							}),
+						}),
+					]),
+				);
+			});
+
+			test("should return error when limit exceeds max", async () => {
+				const { authToken: userToken, userId } =
+					await createRegularUserUsingAdmin();
+				assertToBeNonNullish(userToken);
+				assertToBeNonNullish(userId);
+
+				const result = await mercuriusClient.query(Query_eventsByVolunteer, {
+					headers: { authorization: `bearer ${userToken}` },
+					variables: { userId, limit: 101 },
+				});
+				expect(result.data?.eventsByVolunteer).toBeUndefined();
+				expect(result.errors).toEqual(
+					expect.arrayContaining([
+						expect.objectContaining({
+							extensions: expect.objectContaining({
+								code: "invalid_arguments",
+							}),
+						}),
+					]),
+				);
+			});
+
+			test("should paginate results correctly", async () => {
+				const { authToken: userToken, userId } =
+					await createRegularUserUsingAdmin();
+				assertToBeNonNullish(userToken);
+				assertToBeNonNullish(userId);
+
+				const createOrgResult = await mercuriusClient.mutate(
+					Mutation_createOrganization,
+					{
+						headers: { authorization: `bearer ${authToken}` },
+						variables: {
+							input: {
+								name: `Pagination Org ${faker.string.ulid()}`,
+								description: "Test org",
+								countryCode: "us",
+								state: "CA",
+								city: "Los Angeles",
+								postalCode: "90001",
+								addressLine1: "123 Test St",
+								addressLine2: null,
+							},
+						},
+					},
+				);
+				const orgId = createOrgResult.data?.createOrganization?.id;
+				assertToBeNonNullish(orgId);
+
+				await mercuriusClient.mutate(Mutation_createOrganizationMembership, {
+					headers: { authorization: `bearer ${authToken}` },
+					variables: {
+						input: {
+							memberId: adminUserId,
+							organizationId: orgId,
+							role: "administrator",
+						},
+					},
+				});
+
+				// Create 3 events
+				const eventIds: string[] = [];
+				for (let i = 0; i < 3; i++) {
+					const createEventResult: {
+						data?: { createEvent?: { id: string | null } | null } | null;
+					} = await mercuriusClient.mutate(Mutation_createEvent, {
+						headers: { authorization: `bearer ${authToken}` },
+						variables: {
+							input: {
+								name: `Paged Event ${i}`,
+								description: "Event for pagination testing",
+								organizationId: orgId,
+								startAt: new Date(
+									Date.now() + (i + 1) * 24 * 60 * 60 * 1000,
+								).toISOString(), // Staggered start times
+								endAt: new Date(
+									Date.now() + (i + 1) * 25 * 60 * 60 * 1000,
+								).toISOString(),
+							},
+						},
+					});
+					const eventId = createEventResult.data?.createEvent?.id;
+					assertToBeNonNullish(eventId);
+					eventIds.push(eventId);
+
+					// Volunteer
+					const volunteerResult: {
+						data?: {
+							createEventVolunteer?: { id: string | null } | null;
+						} | null;
+					} = await mercuriusClient.mutate(Mutation_createEventVolunteer, {
+						headers: { authorization: `bearer ${authToken}` },
+						variables: {
+							input: {
+								userId: userId,
+								eventId: eventId,
+							},
+						},
+					});
+					const volunteerId = volunteerResult.data?.createEventVolunteer?.id;
+					assertToBeNonNullish(volunteerId);
+
+					await mercuriusClient.mutate(Mutation_updateEventVolunteer, {
+						headers: { authorization: `bearer ${authToken}` },
+						variables: {
+							id: volunteerId,
+							data: { hasAccepted: true },
+						},
+					});
+				}
+
+				// Test limit
+				const limitResult = await mercuriusClient.query(
+					Query_eventsByVolunteer,
+					{
+						headers: { authorization: `bearer ${userToken}` },
+						variables: { userId, limit: 2 },
+					},
+				);
+				const limitEvents = limitResult.data?.eventsByVolunteer;
+				assertToBeNonNullish(limitEvents);
+				expect(limitEvents.length).toBe(2);
+				// Should be first 2 events (sorted by start time)
+				assertToBeNonNullish(limitEvents[0]);
+				assertToBeNonNullish(limitEvents[1]);
+				expect(limitEvents[0].id).toBe(eventIds[0]);
+				expect(limitEvents[1].id).toBe(eventIds[1]);
+
+				// Test offset
+				const offsetResult = await mercuriusClient.query(
+					Query_eventsByVolunteer,
+					{
+						headers: { authorization: `bearer ${userToken}` },
+						variables: { userId, limit: 2, offset: 1 },
+					},
+				);
+				const offsetEvents = offsetResult.data?.eventsByVolunteer;
+				assertToBeNonNullish(offsetEvents);
+				expect(offsetEvents.length).toBe(2);
+				// Should be event 1 and 2
+				assertToBeNonNullish(offsetEvents[0]);
+				assertToBeNonNullish(offsetEvents[1]);
+				expect(offsetEvents[0].id).toBe(eventIds[1]);
+				expect(offsetEvents[1].id).toBe(eventIds[2]);
+			});
+		});
+	});
+
+	suite("when event has attachments", () => {
+		test("should return event with attachments", async () => {
+			const { authToken: userToken, userId } =
+				await createRegularUserUsingAdmin();
+			assertToBeNonNullish(userToken);
+			assertToBeNonNullish(userId);
+
+			const createOrgResult = await mercuriusClient.mutate(
+				Mutation_createOrganization,
+				{
+					headers: { authorization: `bearer ${authToken}` },
+					variables: {
+						input: {
+							name: `Attachment Org ${faker.string.ulid()}`,
+							description: "Test org",
+							countryCode: "us",
+							state: "CA",
+							city: "Los Angeles",
+							postalCode: "90001",
+							addressLine1: "123 Test St",
+							addressLine2: null,
+						},
+					},
+				},
+			);
+			const orgId = createOrgResult.data?.createOrganization?.id;
+			assertToBeNonNullish(orgId);
+
+			await mercuriusClient.mutate(Mutation_createOrganizationMembership, {
+				headers: { authorization: `bearer ${authToken}` },
+				variables: {
+					input: {
+						memberId: adminUserId,
+						organizationId: orgId,
+						role: "administrator",
+					},
+				},
+			});
+
+			const createEventResult = await mercuriusClient.mutate(
+				Mutation_createEvent,
+				{
+					headers: { authorization: `bearer ${authToken}` },
+					variables: {
+						input: {
+							name: "Event with Attachment",
+							description: "Event with attachment",
+							organizationId: orgId,
+							startAt: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
+							endAt: new Date(Date.now() + 25 * 60 * 60 * 1000).toISOString(),
+						},
+					},
+				},
+			);
+			const eventId = createEventResult.data?.createEvent?.id;
+			assertToBeNonNullish(eventId);
+
+			await server.drizzleClient.insert(eventAttachmentsTable).values({
+				eventId: eventId,
+				name: "Test Attachment",
+				mimeType: "image/jpeg",
+			});
+
+			// Volunteer for event
+			const volunteerResult = await mercuriusClient.mutate(
+				Mutation_createEventVolunteer,
+				{
+					headers: { authorization: `bearer ${authToken}` },
+					variables: {
+						input: {
+							userId: userId,
+							eventId: eventId,
+						},
+					},
+				},
+			);
+			const volunteerId = volunteerResult.data?.createEventVolunteer?.id;
+			assertToBeNonNullish(volunteerId);
+
+			await mercuriusClient.mutate(Mutation_updateEventVolunteer, {
+				headers: { authorization: `bearer ${authToken}` },
+				variables: {
+					id: volunteerId,
+					data: { hasAccepted: true },
+				},
+			});
+
+			// Local query to fetch attachments
+			// Only mimeType is exposed in EventAttachment currently
+			const Query_eventsByVolunteerWithAttachments = `
+				query eventsByVolunteer($userId: ID!) {
+					eventsByVolunteer(userId: $userId) {
+						id
+						name
+						attachments {
+							mimeType
+						}
+					}
+				}
+			`;
+
+			const result = await mercuriusClient.query(
+				Query_eventsByVolunteerWithAttachments,
+				{
+					headers: { authorization: `bearer ${userToken}` },
+					variables: { userId },
+				},
+			);
+
+			expect(result.errors).toBeUndefined();
+			const events = result.data?.eventsByVolunteer;
+			assertToBeNonNullish(events);
+			const event = events.find(
+				(e: { id: string; attachments: { mimeType: string }[] }) =>
+					e.id === eventId,
+			);
+			assertToBeNonNullish(event);
+			expect(event.attachments).toBeDefined();
+			expect(event.attachments.length).toBe(1);
+			expect(event.attachments[0].mimeType).toBe("image/jpeg");
 		});
 	});
 });

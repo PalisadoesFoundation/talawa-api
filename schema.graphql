@@ -4794,6 +4794,12 @@ type Query {
 
   """Query field to fetch all events a user is volunteering for."""
   eventsByVolunteer(
+    """The maximum number of events to return (default: 100, max: 100)"""
+    limit: Int = 100
+
+    """The number of events to skip (default: 0)"""
+    offset: Int = 0
+
     """ID of the user whose volunteer events to fetch"""
     userId: ID!
   ): [Event!]!

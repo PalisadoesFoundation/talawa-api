@@ -1,4 +1,4 @@
-import { and, eq } from "drizzle-orm";
+import { and, asc, eq } from "drizzle-orm";
 import { z } from "zod";
 import { eventsTable } from "~/src/drizzle/tables/events";
 import { usersTable } from "~/src/drizzle/tables/users";
@@ -121,6 +121,7 @@ builder.queryField("eventsByCreator", (t) =>
 						with: {
 							attachmentsWhereEvent: true,
 						},
+						orderBy: [asc(eventsTable.startAt), asc(eventsTable.id)],
 						limit: effectiveWindow,
 					});
 

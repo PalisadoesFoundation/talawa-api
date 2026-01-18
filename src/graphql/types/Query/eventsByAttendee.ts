@@ -1,4 +1,4 @@
-import { and, eq } from "drizzle-orm";
+import { and, eq, or } from "drizzle-orm";
 import { z } from "zod";
 import { eventAttendeesTable } from "~/src/drizzle/tables/eventAttendees";
 import { usersTable } from "~/src/drizzle/tables/users";
@@ -98,7 +98,7 @@ builder.queryField("eventsByAttendee", (t) =>
 			}
 
 			try {
-				// Get all attendee records where user is registered
+				// Get all attendee records where user is registered OR checked in OR checked out
 				const attendeeRecords =
 					await ctx.drizzleClient.query.eventAttendeesTable.findMany({
 						columns: {
@@ -107,7 +107,11 @@ builder.queryField("eventsByAttendee", (t) =>
 						},
 						where: and(
 							eq(eventAttendeesTable.userId, targetUserId),
-							eq(eventAttendeesTable.isRegistered, true),
+							or(
+								eq(eventAttendeesTable.isRegistered, true),
+								eq(eventAttendeesTable.isCheckedIn, true),
+								eq(eventAttendeesTable.isCheckedOut, true),
+							),
 						),
 					});
 

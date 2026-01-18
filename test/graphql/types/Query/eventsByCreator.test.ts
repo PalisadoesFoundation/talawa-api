@@ -1,7 +1,9 @@
 import { faker } from "@faker-js/faker";
 import type { ResultOf } from "gql.tada";
+import { initGraphQLTada } from "gql.tada";
 import type { ExecutionResult } from "graphql";
 import { expect, suite, test, vi } from "vitest";
+import type { ClientCustomScalars } from "~/src/graphql/scalars/index";
 import { assertToBeNonNullish } from "../../../helpers";
 import { server } from "../../../server";
 import { mercuriusClient } from "../client";
@@ -10,9 +12,39 @@ import {
 	Mutation_createEvent,
 	Mutation_createOrganization,
 	Mutation_createOrganizationMembership,
-	Query_eventsByCreator,
 	Query_signIn,
 } from "../documentNodes";
+import type { introspection } from "../gql.tada";
+
+const gql = initGraphQLTada<{
+	introspection: introspection;
+	scalars: ClientCustomScalars;
+}>();
+
+const Query_eventsByCreator = gql(`
+	query Query_eventsByCreator($userId: ID!, $limit: Int, $offset: Int) {
+		eventsByCreator(userId: $userId, limit: $limit, offset: $offset) {
+			id
+			name
+			description
+			startAt
+			endAt
+			location
+			allDay
+			isPublic
+			isRegisterable
+			isInviteOnly
+			isRecurringEventTemplate
+			organization {
+				id
+				name
+				}
+			creator {
+				id
+			}
+		}
+	}
+`);
 
 const signInResult = await mercuriusClient.query(Query_signIn, {
 	variables: {

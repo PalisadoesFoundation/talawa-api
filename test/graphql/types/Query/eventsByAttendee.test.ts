@@ -1,5 +1,7 @@
 import { faker } from "@faker-js/faker";
+import { initGraphQLTada } from "gql.tada";
 import { expect, suite, test, vi } from "vitest";
+import type { ClientCustomScalars } from "~/src/graphql/scalars/index";
 import { assertToBeNonNullish } from "../../../helpers";
 import { server } from "../../../server";
 import { mercuriusClient } from "../client";
@@ -11,10 +13,58 @@ import {
 	Mutation_createOrganizationMembership,
 	Mutation_registerEventAttendee,
 	Mutation_updateEventVolunteer,
-	Query_eventsByAttendee,
-	Query_eventsByVolunteer,
 	Query_signIn,
 } from "../documentNodes";
+import type { introspection } from "../gql.tada";
+
+const gql = initGraphQLTada<{
+	introspection: introspection;
+	scalars: ClientCustomScalars;
+}>();
+
+const Query_eventsByAttendee = gql(`
+	query Query_eventsByAttendee($userId: ID!) {
+		eventsByAttendee(userId: $userId) {
+			id
+			name
+			description
+			startAt
+			endAt
+			location
+			allDay
+			isPublic
+			isRegisterable
+			isInviteOnly
+			organization {
+				id
+				name
+			}
+			isGenerated
+			baseRecurringEventId
+		}
+	}
+`);
+
+const Query_eventsByVolunteer = gql(`
+	query Query_eventsByVolunteer($userId: ID!, $limit: Int, $offset: Int) {
+		eventsByVolunteer(userId: $userId, limit: $limit, offset: $offset) {
+			id
+			name
+			description
+			startAt
+			endAt
+			location
+			allDay
+			isPublic
+			isRegisterable
+			isInviteOnly
+			organization {
+				id
+				name
+			}
+		}
+	}
+`);
 
 const signInResult = await mercuriusClient.query(Query_signIn, {
 	variables: {
@@ -249,6 +299,104 @@ suite("Query field eventsByAttendee", () => {
 				id: eventId,
 				name: "Attendee Test Event",
 			});
+		});
+
+		test("should return event when user is checked in but not registered", async () => {
+			const { userId } = await createRegularUserUsingAdmin();
+			assertToBeNonNullish(userId);
+
+			const createOrgResult = await mercuriusClient.mutate(
+				Mutation_createOrganization,
+				{
+					headers: { authorization: `bearer ${authToken}` },
+					variables: {
+						input: {
+							name: `Walk-in Org ${faker.string.ulid()}`,
+							description: "Test org",
+							countryCode: "us",
+							state: "CA",
+							city: "Los Angeles",
+							postalCode: "90001",
+							addressLine1: "123 Test St",
+						},
+					},
+				},
+			);
+			const orgId = createOrgResult.data?.createOrganization?.id;
+			assertToBeNonNullish(orgId);
+
+			await mercuriusClient.mutate(Mutation_createOrganizationMembership, {
+				headers: { authorization: `bearer ${authToken}` },
+				variables: {
+					input: {
+						memberId: adminUserId,
+						organizationId: orgId,
+						role: "administrator",
+					},
+				},
+			});
+
+			const createEventResult = await mercuriusClient.mutate(
+				Mutation_createEvent,
+				{
+					headers: { authorization: `bearer ${authToken}` },
+					variables: {
+						input: {
+							name: "Walk-in Event",
+							description: "Event for walk-in testing",
+							organizationId: orgId,
+							startAt: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
+							endAt: new Date(Date.now() + 25 * 60 * 60 * 1000).toISOString(),
+						},
+					},
+				},
+			);
+			const eventId = createEventResult.data?.createEvent?.id;
+			assertToBeNonNullish(eventId);
+
+			// Register first to create the record
+			await mercuriusClient.mutate(Mutation_registerEventAttendee, {
+				headers: { authorization: `bearer ${authToken}` },
+				variables: {
+					data: {
+						userId,
+						eventId,
+					},
+				},
+			});
+
+			// Manually update the record to simulate a walk-in (checked in but not registered)
+			// We need to import eventAttendeesTable and eq to do this update
+			const { eventAttendeesTable } = await import(
+				"../../../../src/drizzle/tables/eventAttendees"
+			);
+			const { eq, and } = await import("drizzle-orm");
+
+			await server.drizzleClient
+				.update(eventAttendeesTable)
+				.set({ isRegistered: false, isCheckedIn: true })
+				.where(
+					and(
+						eq(eventAttendeesTable.userId, userId),
+						eq(eventAttendeesTable.eventId, eventId),
+					),
+				);
+
+			const result = await mercuriusClient.query(Query_eventsByAttendee, {
+				headers: { authorization: `bearer ${authToken}` },
+				variables: { userId },
+			});
+
+			expect(result.errors).toBeUndefined();
+			const events = result.data?.eventsByAttendee as Array<{
+				id: string;
+				name: string;
+			}>;
+			expect(events).toBeDefined();
+
+			const walkInEvent = events?.find((e) => e.id === eventId);
+			expect(walkInEvent).toBeDefined();
+			expect(walkInEvent?.name).toBe("Walk-in Event");
 		});
 
 		test("should return specific instance when registered for a single instance", async () => {
@@ -739,7 +887,7 @@ suite("Query field eventsByAttendee", () => {
 			};
 
 			// 4. Create Event (User - now an Org Admin)
-			const createEventResult = await mercuriusClient.query(
+			const createEventResult = await mercuriusClient.mutate(
 				Mutation_createEvent,
 				{
 					headers: { authorization: `bearer ${userAuthToken}` },
