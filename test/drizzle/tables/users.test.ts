@@ -3,8 +3,8 @@ import { hash } from "@node-rs/argon2";
 import { eq, getTableName } from "drizzle-orm";
 import { describe, expect, it } from "vitest";
 import { imageMimeTypeEnum } from "~/src/drizzle/enums/imageMimeType";
-import { iso3166Alpha2CountryCodeEnum } from "~/src/drizzle/enums/iso3166Alpha2CountryCode";
 import { iso639Set1LanguageCodeEnum } from "~/src/drizzle/enums/iso639Set1LanguageCode";
+import { iso3166Alpha2CountryCodeEnum } from "~/src/drizzle/enums/iso3166Alpha2CountryCode";
 import { userEducationGradeEnum } from "~/src/drizzle/enums/userEducationGrade";
 import { userEmploymentStatusEnum } from "~/src/drizzle/enums/userEmploymentStatus";
 import { userMaritalStatusEnum } from "~/src/drizzle/enums/userMaritalStatus";
@@ -324,8 +324,12 @@ describe("src/drizzle/tables/users.ts - Table Definition Tests", () => {
 			expect(relationsResult.actionItemCategoriesWhereUpdater).toBeDefined();
 
 			// Advertisement relations
-			expect(relationsResult.advertisementAttachmentsWhereCreator).toBeDefined();
-			expect(relationsResult.advertisementAttachmentsWhereUpdater).toBeDefined();
+			expect(
+				relationsResult.advertisementAttachmentsWhereCreator,
+			).toBeDefined();
+			expect(
+				relationsResult.advertisementAttachmentsWhereUpdater,
+			).toBeDefined();
 			expect(relationsResult.advertisementsWhereCreator).toBeDefined();
 			expect(relationsResult.advertisementsWhereUpdater).toBeDefined();
 
