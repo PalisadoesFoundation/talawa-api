@@ -1144,9 +1144,11 @@ suite("Default Agenda Folder and Category Creation", () => {
 			});
 
 		expect(defaultFolders.filter((f) => f.isDefaultFolder)).toHaveLength(2);
+		expect(new Set(defaultFolders.map((f) => f.eventId)).size).toBe(2);
 
 		expect(defaultCategories.filter((c) => c.isDefaultCategory)).toHaveLength(
 			2,
 		);
+		expect(new Set(defaultCategories.map((c) => c.eventId)).size).toBe(2);
 	});
 });
