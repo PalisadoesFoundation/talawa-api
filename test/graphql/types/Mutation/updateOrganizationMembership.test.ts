@@ -1,7 +1,7 @@
 import { faker } from "@faker-js/faker";
 import { and, eq } from "drizzle-orm";
 import { afterEach, expect, suite, test, vi } from "vitest";
-
+import { usersTable } from "~/src/drizzle/schema";
 import { organizationMembershipsTable } from "~/src/drizzle/tables/organizationMemberships";
 import { assertToBeNonNullish } from "../../../helpers";
 import { server } from "../../../server";
@@ -27,6 +27,19 @@ const signInResult = await mercuriusClient.query(Query_signIn, {
 assertToBeNonNullish(signInResult.data?.signIn);
 const adminToken = signInResult.data.signIn.authenticationToken;
 assertToBeNonNullish(adminToken);
+
+const [adminUser] = await server.drizzleClient
+	.select({ id: usersTable.id })
+	.from(usersTable)
+	.where(
+		eq(
+			usersTable.emailAddress,
+			server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
+		),
+	);
+
+assertToBeNonNullish(adminUser);
+const adminUserId = adminUser.id;
 
 suite("Mutation field updateOrganizationMembership", () => {
 	afterEach(async () => {
@@ -285,7 +298,22 @@ suite("Mutation field updateOrganizationMembership", () => {
 
 		await mercuriusClient.mutate(Mutation_createOrganizationMembership, {
 			headers: { authorization: `bearer ${adminToken}` },
-			variables: { input: { memberId: user.userId, organizationId: orgId } },
+			variables: {
+				input: {
+					memberId: adminUserId,
+					organizationId: orgId,
+				},
+			},
+		});
+
+		await mercuriusClient.mutate(Mutation_createOrganizationMembership, {
+			headers: { authorization: `bearer ${adminToken}` },
+			variables: {
+				input: {
+					memberId: user.userId,
+					organizationId: orgId,
+				},
+			},
 		});
 
 		const result = await mercuriusClient.mutate(
@@ -318,6 +346,84 @@ suite("Mutation field updateOrganizationMembership", () => {
 		expect(membership.role).toBe("administrator");
 	});
 
+	test("admin successfully downgrades role from administrator to regular", async () => {
+		const user = await createRegularUserUsingAdmin();
+
+		const org = await mercuriusClient.mutate(Mutation_createOrganization, {
+			headers: { authorization: `bearer ${adminToken}` },
+			variables: {
+				input: {
+					name: "Org Downgrade",
+					description: "E",
+					countryCode: "us",
+					state: "CA",
+					city: "LA",
+					postalCode: "11111",
+					addressLine1: "x",
+					addressLine2: "y",
+				},
+			},
+		});
+
+		const orgId = org.data?.createOrganization?.id;
+		assertToBeNonNullish(orgId);
+
+		await mercuriusClient.mutate(Mutation_createOrganizationMembership, {
+			headers: { authorization: `bearer ${adminToken}` },
+			variables: {
+				input: {
+					memberId: adminUserId,
+					organizationId: orgId,
+				},
+			},
+		});
+
+		await mercuriusClient.mutate(Mutation_createOrganizationMembership, {
+			headers: { authorization: `bearer ${adminToken}` },
+			variables: { input: { memberId: user.userId, organizationId: orgId } },
+		});
+
+		await mercuriusClient.mutate(Mutation_updateOrganizationMembership, {
+			headers: { authorization: `bearer ${adminToken}` },
+			variables: {
+				input: {
+					memberId: user.userId,
+					organizationId: orgId,
+					role: "administrator",
+				},
+			},
+		});
+
+		const result = await mercuriusClient.mutate(
+			Mutation_updateOrganizationMembership,
+			{
+				headers: { authorization: `bearer ${adminToken}` },
+				variables: {
+					input: {
+						memberId: user.userId,
+						organizationId: orgId,
+						role: "regular",
+					},
+				},
+			},
+		);
+
+		expect(result.errors).toBeUndefined();
+
+		const [membership] = await server.drizzleClient
+			.select()
+			.from(organizationMembershipsTable)
+			.where(
+				and(
+					eq(organizationMembershipsTable.memberId, user.userId),
+					eq(organizationMembershipsTable.organizationId, orgId),
+				),
+			);
+
+		assertToBeNonNullish(membership);
+		expect(membership.role).toBe("regular");
+	});
+
 	test("unexpected update failure", async () => {
 		const user = await createRegularUserUsingAdmin();
 		const org = await mercuriusClient.mutate(Mutation_createOrganization, {
@@ -339,6 +445,18 @@ suite("Mutation field updateOrganizationMembership", () => {
 		const orgId = org.data?.createOrganization?.id;
 		assertToBeNonNullish(orgId);
 
+		// ADD ADMIN
+		await mercuriusClient.mutate(Mutation_createOrganizationMembership, {
+			headers: { authorization: `bearer ${adminToken}` },
+			variables: {
+				input: {
+					memberId: adminUserId,
+					organizationId: orgId,
+				},
+			},
+		});
+
+		// ADD USER
 		await mercuriusClient.mutate(Mutation_createOrganizationMembership, {
 			headers: { authorization: `bearer ${adminToken}` },
 			variables: {
