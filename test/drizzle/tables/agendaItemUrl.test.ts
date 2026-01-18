@@ -94,6 +94,22 @@ describe("agendaItemUrlTable", () => {
 				expect(result.success).toBe(true);
 			});
 
+			it("should accept undefined updaterId", () => {
+				const result = agendaItemUrlTableInsertSchema.safeParse({
+					...validData,
+					updaterId: undefined,
+				});
+				expect(result.success).toBe(true);
+			});
+
+			it("should accept null updaterId", () => {
+				const result = agendaItemUrlTableInsertSchema.safeParse({
+					...validData,
+					updaterId: null,
+				});
+				expect(result.success).toBe(true);
+			});
+
 			it("should accept explicit createdAt", () => {
 				const result = agendaItemUrlTableInsertSchema.safeParse({
 					...validData,
@@ -167,6 +183,20 @@ describe("agendaItemUrlTable", () => {
 		it("should have index on agendaItemId", () => {
 			const idx = tableConfig.indexes.find(
 				(i) => getColumnName(i.config.columns[0]) === "agenda_item_id",
+			);
+			expect(idx).toBeDefined();
+		});
+
+		it("should have index on creatorId", () => {
+			const idx = tableConfig.indexes.find(
+				(i) => getColumnName(i.config.columns[0]) === "creator_id",
+			);
+			expect(idx).toBeDefined();
+		});
+
+		it("should have index on updaterId", () => {
+			const idx = tableConfig.indexes.find(
+				(i) => getColumnName(i.config.columns[0]) === "updater_id",
 			);
 			expect(idx).toBeDefined();
 		});
