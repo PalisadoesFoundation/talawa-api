@@ -16,8 +16,13 @@ import {
  * 2. Unit testing the schema ensures validation logic is correct before integration
  * 3. GraphQL integration tests will be added when resolvers are implemented to test end-to-end
  *
- * Once resolvers are added, integration tests using mercuriusClient should be added to
- * verify the full GraphQL layer validation including error message formatting.
+ * TODO: Add mercuriusClient integration tests when GraphQL resolvers are implemented (PR 6b).
+ * These tests should:
+ * - Create GraphQL document nodes for queries/mutations accepting MetricsFilterInput
+ * - Test operationNames validation through GraphQL layer
+ * - Test complexityRange min/max validation through GraphQL layer
+ * - Verify error messages contain proper validation details
+ * @see https://github.com/PalisadoesFoundation/talawa-api/issues/XXXX (follow-up issue)
  */
 describe("MetricsFilterInput Schema", () => {
 	// operationNames field tests

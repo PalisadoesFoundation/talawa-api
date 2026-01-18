@@ -15,8 +15,13 @@ import {
  * 2. Unit testing the schema ensures validation logic is correct before integration
  * 3. GraphQL integration tests will be added when resolvers are implemented to test end-to-end
  *
- * Once resolvers are added, integration tests using mercuriusClient should be added to
- * verify the full GraphQL layer validation including error message formatting.
+ * TODO: Add mercuriusClient integration tests when GraphQL resolvers are implemented (PR 6b).
+ * These tests should:
+ * - Create GraphQL document nodes for queries/mutations accepting MetricsInput
+ * - Test endTime ≤ startTime validation through GraphQL layer
+ * - Test minDuration ≥ maxDuration validation through GraphQL layer
+ * - Verify error messages contain proper timestamps and validation details
+ * @see https://github.com/PalisadoesFoundation/talawa-api/issues/XXXX (follow-up issue)
  */
 describe("MetricsInput Schema", () => {
 	const validInput: MetricsInput = {
@@ -320,7 +325,11 @@ describe("MetricsInput Schema", () => {
 
 	// includeCacheMetrics field tests
 	it("should default includeCacheMetrics to true when not provided", () => {
-		const result = metricsInputSchema.safeParse(validInput);
+		// Create input without includeCacheMetrics to exercise the default path
+		const result = metricsInputSchema.safeParse({
+			startTime: validInput.startTime,
+			endTime: validInput.endTime,
+		});
 		expect(result.success).toBe(true);
 		if (result.success) {
 			expect(result.data.includeCacheMetrics).toBe(true);
