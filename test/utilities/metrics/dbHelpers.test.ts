@@ -167,7 +167,7 @@ describe("dbHelpers", () => {
 		it("should calculate p95 percentile", () => {
 			const values = [10, 20, 30, 40, 50, 60, 70, 80, 90, 100];
 			const result = calculatePercentile(values, 95);
-			expect(result).toBe(95);
+			expect(result).toBe(95.5);
 		});
 
 		it("should calculate p99 percentile", () => {
