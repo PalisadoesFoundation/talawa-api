@@ -6,7 +6,7 @@
 
 > **getTimeWindows**(`startTime`, `endTime`, `options?`): [`TimeWindow`](../interfaces/TimeWindow.md)[]
 
-Defined in: [src/utilities/metrics/dbHelpers.ts:236](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/utilities/metrics/dbHelpers.ts#L236)
+Defined in: [src/utilities/metrics/dbHelpers.ts:245](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/utilities/metrics/dbHelpers.ts#L245)
 
 Generates an array of time windows for a given time range.
 Windows are non-overlapping and cover the entire range.
@@ -30,12 +30,21 @@ End time of the range
 [`TimeWindowOptions`](../interfaces/TimeWindowOptions.md)
 
 Optional configuration for window generation
+  - `windowSizeMs`: Size of each window in milliseconds (default: 60000 = 1 minute)
+  - `alignToBoundaries`: When true, aligns windows to fixed time boundaries
+    (e.g., minute or hour boundaries) by flooring the startTime to the nearest
+    windowSizeMs multiple. This ensures consistent bucketing but may cause the
+    first window's start time to precede the requested startTime.
 
 ## Returns
 
 [`TimeWindow`](../interfaces/TimeWindow.md)[]
 
 Array of time windows
+
+## Throws
+
+If startTime or endTime is invalid
 
 ## Throws
 
@@ -54,4 +63,7 @@ const windows = getTimeWindows(
   { windowSizeMs: 15 * 60 * 1000 } // 15 minutes
 );
 // Returns 4 windows of 15 minutes each
+
+// With alignToBoundaries: true, if startTime is 10:00:15,
+// the first window will start at 10:00:00 (aligned to minute boundary)
 ```

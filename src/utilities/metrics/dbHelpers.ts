@@ -219,7 +219,13 @@ export interface TimeWindow {
  * @param startTime - Start time of the range
  * @param endTime - End time of the range
  * @param options - Optional configuration for window generation
+ *   - `windowSizeMs`: Size of each window in milliseconds (default: 60000 = 1 minute)
+ *   - `alignToBoundaries`: When true, aligns windows to fixed time boundaries
+ *     (e.g., minute or hour boundaries) by flooring the startTime to the nearest
+ *     windowSizeMs multiple. This ensures consistent bucketing but may cause the
+ *     first window's start time to precede the requested startTime.
  * @returns Array of time windows
+ * @throws {Error} If startTime or endTime is invalid
  * @throws {Error} If startTime is after endTime
  * @throws {Error} If windowSizeMs is invalid
  *
@@ -231,6 +237,9 @@ export interface TimeWindow {
  *   { windowSizeMs: 15 * 60 * 1000 } // 15 minutes
  * );
  * // Returns 4 windows of 15 minutes each
+ *
+ * // With alignToBoundaries: true, if startTime is 10:00:15,
+ * // the first window will start at 10:00:00 (aligned to minute boundary)
  * ```
  */
 export function getTimeWindows(
