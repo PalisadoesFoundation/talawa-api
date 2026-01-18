@@ -1,4 +1,6 @@
 import { faker } from "@faker-js/faker";
+import type { ResultOf } from "gql.tada";
+import type { ExecutionResult } from "graphql";
 import { expect, suite, test, vi } from "vitest";
 import { assertToBeNonNullish } from "../../../helpers";
 import { server } from "../../../server";
@@ -49,6 +51,90 @@ suite("Query field eventsByCreator", () => {
 							]),
 						}),
 						path: ["eventsByCreator"],
+					}),
+				]),
+			);
+		});
+
+		test("should return an error when limit is negative", async () => {
+			const { userId } = await createRegularUserUsingAdmin();
+			assertToBeNonNullish(userId);
+
+			const result = await mercuriusClient.query(Query_eventsByCreator, {
+				headers: { authorization: `bearer ${authToken}` },
+				variables: {
+					userId,
+					limit: -1,
+				},
+			});
+			expect(result.data?.eventsByCreator).toBeUndefined();
+			expect(result.errors).toEqual(
+				expect.arrayContaining([
+					expect.objectContaining({
+						extensions: expect.objectContaining({
+							code: "invalid_arguments",
+							issues: expect.arrayContaining([
+								expect.objectContaining({
+									argumentPath: ["limit"],
+								}),
+							]),
+						}),
+					}),
+				]),
+			);
+		});
+
+		test("should return an error when limit is greater than 100", async () => {
+			const { userId } = await createRegularUserUsingAdmin();
+			assertToBeNonNullish(userId);
+
+			const result = await mercuriusClient.query(Query_eventsByCreator, {
+				headers: { authorization: `bearer ${authToken}` },
+				variables: {
+					userId,
+					limit: 101,
+				},
+			});
+			expect(result.data?.eventsByCreator).toBeUndefined();
+			expect(result.errors).toEqual(
+				expect.arrayContaining([
+					expect.objectContaining({
+						extensions: expect.objectContaining({
+							code: "invalid_arguments",
+							issues: expect.arrayContaining([
+								expect.objectContaining({
+									argumentPath: ["limit"],
+								}),
+							]),
+						}),
+					}),
+				]),
+			);
+		});
+
+		test("should return an error when offset is negative", async () => {
+			const { userId } = await createRegularUserUsingAdmin();
+			assertToBeNonNullish(userId);
+
+			const result = await mercuriusClient.query(Query_eventsByCreator, {
+				headers: { authorization: `bearer ${authToken}` },
+				variables: {
+					userId,
+					offset: -1,
+				},
+			});
+			expect(result.data?.eventsByCreator).toBeUndefined();
+			expect(result.errors).toEqual(
+				expect.arrayContaining([
+					expect.objectContaining({
+						extensions: expect.objectContaining({
+							code: "invalid_arguments",
+							issues: expect.arrayContaining([
+								expect.objectContaining({
+									argumentPath: ["offset"],
+								}),
+							]),
+						}),
 					}),
 				]),
 			);
@@ -507,6 +593,107 @@ suite("Query field eventsByCreator", () => {
 		// See issue #4018 - recurring event instances are not being materialized correctly.
 		// Tracking issue for re-enabling this test: #4018
 		// test("should return instances of recurring events created by user", async () => { ... });
+	});
+
+	suite("pagination", () => {
+		test("should correctly paginate events with limit and offset", async () => {
+			const { userId: creatorId, authToken: creatorToken } =
+				await createRegularUserUsingAdmin();
+			assertToBeNonNullish(creatorId);
+			assertToBeNonNullish(creatorToken);
+
+			const createOrgResult = await mercuriusClient.mutate(
+				Mutation_createOrganization,
+				{
+					headers: { authorization: `bearer ${authToken}` },
+					variables: {
+						input: {
+							name: `Pagination Test Org ${faker.string.ulid()}`,
+							description: "Organization for testing",
+							countryCode: "us",
+							state: "CA",
+							city: "Los Angeles",
+							postalCode: "90001",
+							addressLine1: "123 Test St",
+							addressLine2: null,
+						},
+					},
+				},
+			);
+			const orgId = createOrgResult.data?.createOrganization?.id;
+			assertToBeNonNullish(orgId);
+
+			await mercuriusClient.mutate(Mutation_createOrganizationMembership, {
+				headers: { authorization: `bearer ${authToken}` },
+				variables: {
+					input: {
+						memberId: creatorId,
+						organizationId: orgId,
+						role: "administrator",
+					},
+				},
+			});
+
+			// Create 5 events
+			const events: string[] = [];
+			const baseTime = Date.now() + 24 * 60 * 60 * 1000;
+			for (let i = 0; i < 5; i++) {
+				const startAt = new Date(baseTime + i * 1000).toISOString();
+				const endAt = new Date(baseTime + i * 1000 + 3600000).toISOString();
+				const res: ExecutionResult<ResultOf<typeof Mutation_createEvent>> =
+					await mercuriusClient.mutate(Mutation_createEvent, {
+						headers: { authorization: `bearer ${creatorToken}` },
+						variables: {
+							input: {
+								name: `Event ${i}`,
+								description: `Event ${i} description`,
+								organizationId: orgId,
+								startAt,
+								endAt,
+							},
+						},
+					});
+				assertToBeNonNullish(res.data?.createEvent?.id);
+				events.push(res.data.createEvent.id);
+			}
+
+			// Page 1: Limit 2, Offset 0 -> Events 0, 1
+			const page1 = await mercuriusClient.query(Query_eventsByCreator, {
+				headers: { authorization: `bearer ${creatorToken}` },
+				variables: { userId: creatorId, limit: 2, offset: 0 },
+			});
+			expect(page1.errors).toBeUndefined();
+			const eventsPage1 = page1.data?.eventsByCreator as Array<{ id: string }>;
+			expect(eventsPage1).toHaveLength(2);
+			assertToBeNonNullish(eventsPage1[0]);
+			assertToBeNonNullish(eventsPage1[1]);
+			expect(eventsPage1[0].id).toBe(events[0]);
+			expect(eventsPage1[1].id).toBe(events[1]);
+
+			// Page 2: Limit 2, Offset 2 -> Events 2, 3
+			const page2 = await mercuriusClient.query(Query_eventsByCreator, {
+				headers: { authorization: `bearer ${creatorToken}` },
+				variables: { userId: creatorId, limit: 2, offset: 2 },
+			});
+			expect(page2.errors).toBeUndefined();
+			const eventsPage2 = page2.data?.eventsByCreator as Array<{ id: string }>;
+			expect(eventsPage2).toHaveLength(2);
+			assertToBeNonNullish(eventsPage2[0]);
+			assertToBeNonNullish(eventsPage2[1]);
+			expect(eventsPage2[0].id).toBe(events[2]);
+			expect(eventsPage2[1].id).toBe(events[3]);
+
+			// Page 3: Limit 2, Offset 4 -> Event 4
+			const page3 = await mercuriusClient.query(Query_eventsByCreator, {
+				headers: { authorization: `bearer ${creatorToken}` },
+				variables: { userId: creatorId, limit: 2, offset: 4 },
+			});
+			expect(page3.errors).toBeUndefined();
+			const eventsPage3 = page3.data?.eventsByCreator as Array<{ id: string }>;
+			expect(eventsPage3).toHaveLength(1);
+			assertToBeNonNullish(eventsPage3[0]);
+			expect(eventsPage3[0].id).toBe(events[4]);
+		});
 	});
 
 	suite("error handling", () => {

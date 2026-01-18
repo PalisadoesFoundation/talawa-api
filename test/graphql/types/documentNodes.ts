@@ -2792,8 +2792,8 @@ export const Mutation_verifyEmail =
 }`);
 
 export const Query_eventsByCreator = gql(`
-	query Query_eventsByCreator($userId: ID!) {
-		eventsByCreator(userId: $userId) {
+	query Query_eventsByCreator($userId: ID!, $limit: Int, $offset: Int) {
+		eventsByCreator(userId: $userId, limit: $limit, offset: $offset) {
 			id
 			name
 			description
@@ -2808,7 +2808,7 @@ export const Query_eventsByCreator = gql(`
 			organization {
 				id
 				name
-			}
+				}
 			creator {
 				id
 			}
