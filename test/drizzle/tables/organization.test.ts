@@ -8,6 +8,7 @@ import {
 } from "test/graphql/types/documentNodes";
 import { assertToBeNonNullish } from "test/helpers";
 import { describe, expect, it } from "vitest";
+import { iso3166Alpha2CountryCodeEnum } from "~/src/drizzle/enums/iso3166Alpha2CountryCode";
 import {
 	actionItemCategoriesTable,
 	actionItemsTable,
@@ -779,6 +780,15 @@ describe("src/drizzle/tables/organizations.ts", () => {
 			expect(result.updatedAt).toBeNull();
 		});
 
+		it("should reject duplicate organization names", async () => {
+			const name = faker.company.name();
+			await server.drizzleClient.insert(organizationsTable).values({ name });
+
+			await expect(
+				server.drizzleClient.insert(organizationsTable).values({ name }),
+			).rejects.toThrow();
+		});
+
 		it("should successfully insert a record with all optional fields", async () => {
 			const testUser = await createRegularUserUsingAdmin();
 			const orgName = faker.internet.displayName();
@@ -812,7 +822,7 @@ describe("src/drizzle/tables/organizations.ts", () => {
 
 			expect(result).toBeDefined();
 			if (!result) {
-				throw new Error("Failed to insert chat record");
+				throw new Error("Failed to insert organization record");
 			}
 
 			expect(result.name).toBe(orgName);
@@ -937,7 +947,7 @@ describe("src/drizzle/tables/organizations.ts", () => {
 			expect(verifyDeleted).toBeUndefined();
 		});
 
-		it("should cascade delete when user is deleted", async () => {
+		it("should not find organization by old creatorId after user deletion", async () => {
 			const orgName = faker.internet.displayName();
 			const testUser = await createRegularUserUsingAdmin();
 
@@ -1135,6 +1145,21 @@ describe("src/drizzle/tables/organizations.ts", () => {
 			if (result) {
 				expect(result.avatarMimeType).toBeNull();
 			}
+		});
+
+		it("should accept valid ISO 3166-1 alpha-2 country codes", () => {
+			const result = iso3166Alpha2CountryCodeEnum.safeParse("in");
+			expect(result.success).toBe(true);
+		});
+
+		it("should reject invalid ISO 3166-1 alpha-2 country codes", () => {
+			const result = iso3166Alpha2CountryCodeEnum.safeParse("xyz");
+			expect(result.success).toBe(false);
+		});
+
+		it("should reject uppercase country codes", () => {
+			const result = iso3166Alpha2CountryCodeEnum.safeParse("IN");
+			expect(result.success).toBe(false);
 		});
 	});
 });
