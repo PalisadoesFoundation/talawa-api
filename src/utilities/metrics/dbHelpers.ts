@@ -62,13 +62,15 @@ export function calculateMedian(values: number[]): number {
 		return 0;
 	}
 
-	// Create a sorted copy to avoid mutating the original array
-	const sorted = [...values].sort((a, b) => {
-		if (!Number.isFinite(a) || !Number.isFinite(b)) {
+	// Pre-validate all values before sorting
+	for (const value of values) {
+		if (!Number.isFinite(value)) {
 			throw new Error("All values must be finite numbers");
 		}
-		return a - b;
-	});
+	}
+
+	// Create a sorted copy to avoid mutating the original array
+	const sorted = [...values].sort((a, b) => a - b);
 
 	const mid = Math.floor(sorted.length / 2);
 
@@ -129,13 +131,15 @@ export function calculatePercentile(
 		);
 	}
 
-	// Create a sorted copy to avoid mutating the original array
-	const sorted = [...values].sort((a, b) => {
-		if (!Number.isFinite(a) || !Number.isFinite(b)) {
+	// Pre-validate all values before sorting
+	for (const value of values) {
+		if (!Number.isFinite(value)) {
 			throw new Error("All values must be finite numbers");
 		}
-		return a - b;
-	});
+	}
+
+	// Create a sorted copy to avoid mutating the original array
+	const sorted = [...values].sort((a, b) => a - b);
 
 	// Handle edge cases
 	if (percentile === 0) {

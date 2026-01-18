@@ -155,6 +155,18 @@ describe("dbHelpers", () => {
 				calculateMedian([1, 2, Number.NaN]);
 			}).toThrow("All values must be finite numbers");
 		});
+
+		it("should throw error for single-element array containing Infinity", () => {
+			expect(() => {
+				calculateMedian([Infinity]);
+			}).toThrow("All values must be finite numbers");
+		});
+
+		it("should throw error for single-element array containing NaN", () => {
+			expect(() => {
+				calculateMedian([Number.NaN]);
+			}).toThrow("All values must be finite numbers");
+		});
 	});
 
 	describe("calculatePercentile", () => {
@@ -268,6 +280,18 @@ describe("dbHelpers", () => {
 		it("should throw error for array containing NaN", () => {
 			expect(() => {
 				calculatePercentile([1, 2, Number.NaN], 50);
+			}).toThrow("All values must be finite numbers");
+		});
+
+		it("should throw error for single-element array containing Infinity", () => {
+			expect(() => {
+				calculatePercentile([Infinity], 50);
+			}).toThrow("All values must be finite numbers");
+		});
+
+		it("should throw error for single-element array containing NaN", () => {
+			expect(() => {
+				calculatePercentile([Number.NaN], 50);
 			}).toThrow("All values must be finite numbers");
 		});
 	});
