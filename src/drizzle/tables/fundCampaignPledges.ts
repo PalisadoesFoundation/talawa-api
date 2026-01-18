@@ -9,6 +9,7 @@ import {
 	uuid,
 } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
+import { z } from "zod";
 import { uuidv7 } from "uuidv7";
 import { fundCampaignsTable } from "./fundCampaigns";
 import { usersTable } from "./users";
@@ -134,7 +135,10 @@ export const fundCampaignPledgesTableRelations = relations(
 export const fundCampaignPledgesTableInsertSchema = createInsertSchema(
 	fundCampaignPledgesTable,
 	{
-		amount: (schema) => schema.min(1),
-		note: (schema) => schema.min(1).max(2048).optional(),
+		amount: () => z.number().int().min(1),
+		note: () => z.string().min(1).max(2048).nullable().optional(),
+		id: () => z.string().uuid().optional(),
+		creatorId: () => z.string().uuid().nullable().optional(),
+		updaterId: () => z.string().uuid().nullable().optional(),
 	},
 );

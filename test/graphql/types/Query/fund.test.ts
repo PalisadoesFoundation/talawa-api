@@ -106,24 +106,18 @@ suite("Query field fund", () => {
 		});
 
 		test("with 'arguments_associated_resources_not_found' extensions code if fund not found", async () => {
-			const adminSignInResult = await mercuriusClient.query(Query_signIn, {
-				variables: {
-					input: {
-						emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-						password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-					},
-				},
-			});
+			const adminAuthToken = await getAdminAuthToken();
+			const { fundId, cleanup } = await createFund();
 
-			assertToBeNonNullish(adminSignInResult.data.signIn?.authenticationToken);
+			await cleanup();
 
 			const fundResult = await mercuriusClient.query(Query_fund, {
 				headers: {
-					authorization: `bearer ${adminSignInResult.data.signIn.authenticationToken}`,
+					authorization: `bearer ${adminAuthToken}`,
 				},
 				variables: {
 					input: {
-						id: faker.string.uuid(),
+						id: fundId,
 					},
 				},
 			});
@@ -259,9 +253,11 @@ suite("Query field fund", () => {
 		);
 	});
 
-	test("with 'arguments_associated_resources_not_found' extensions code when rate limit is exceeded", async () => {
-		const fundId = faker.string.uuid();
-		const adminAuthToken = await getAdminAuthToken();
+		test("with 'arguments_associated_resources_not_found' extensions code when rate limit is exceeded", async () => {
+			const adminAuthToken = await getAdminAuthToken();
+			const { fundId, cleanup } = await createFund();
+
+			await cleanup();
 
 		const results = await Promise.all(
 			Array.from({ length: 10 }, () =>
@@ -1398,7 +1394,7 @@ suite("UUID Validation", () => {
 
 			expect(fundResult.errors).toBeDefined();
 			expect(fundResult.errors?.[0]?.extensions?.code).toBe(
-				"arguments_associated_resources_not_found",
+				"invalid_arguments",
 			);
 		}
 	});
