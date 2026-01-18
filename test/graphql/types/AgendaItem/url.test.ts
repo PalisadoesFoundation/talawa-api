@@ -114,12 +114,12 @@ describe("AgendaItem.url resolver", () => {
 			{
 				id: "url-1",
 				agendaItemId: "agenda-item-1",
-				agendaItemURL: "https://example.com/1",
+				url: "https://example.com/1",
 			},
 			{
 				id: "url-2",
 				agendaItemId: "agenda-item-1",
-				agendaItemURL: "https://example.com/2",
+				url: "https://example.com/2",
 			},
 		];
 

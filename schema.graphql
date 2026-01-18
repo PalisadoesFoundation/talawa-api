@@ -273,6 +273,21 @@ enum AgendaItemType {
   song
 }
 
+"""URLs associated with an agenda item."""
+type AgendaItemUrl {
+  """Date time at which the URL was created."""
+  createdAt: DateTime!
+
+  """Global identifier of the agenda item URL."""
+  id: ID!
+
+  """Date time at which the URL was last updated."""
+  updatedAt: DateTime
+
+  """URL associated with the agenda item."""
+  url: String
+}
+
 """Represents a tag assigned to a user."""
 type AssignUserTag {
   """Unique identifier of the assigned user."""
