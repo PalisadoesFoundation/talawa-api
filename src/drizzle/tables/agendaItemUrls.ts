@@ -71,6 +71,7 @@ export const agendaItemUrlTable = pgTable(
 		index().on(self.createdAt),
 		index().on(self.creatorId),
 		index().on(self.agendaItemId),
+		index().on(self.updaterId),
 		uniqueIndex().on(self.agendaItemId, self.url),
 	],
 );
@@ -105,5 +106,9 @@ export const agendaItemUrlTableRelations = relations(
 	}),
 );
 
-export const agendaItemUrlTableInsertSchema =
-	createInsertSchema(agendaItemUrlTable);
+export const agendaItemUrlTableInsertSchema = createInsertSchema(
+	agendaItemUrlTable,
+	{
+		url: (schema) => schema.url(),
+	},
+);
