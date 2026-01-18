@@ -173,7 +173,7 @@ describe("dbHelpers", () => {
 		it("should calculate p99 percentile", () => {
 			const values = [10, 20, 30, 40, 50, 60, 70, 80, 90, 100];
 			const result = calculatePercentile(values, 99);
-			expect(result).toBeCloseTo(99, 0);
+			expect(result).toBeCloseTo(99.1, 1);
 		});
 
 		it("should return minimum value for p0", () => {

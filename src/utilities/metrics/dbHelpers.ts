@@ -76,6 +76,7 @@ export function calculateMedian(values: number[]): number {
 		// Even number of elements: return average of two middle values
 		const lower = sorted[mid - 1];
 		const upper = sorted[mid];
+		/* v8 ignore next 3 */
 		if (lower === undefined || upper === undefined) {
 			throw new Error("Unexpected error: array index out of bounds");
 		}
@@ -84,6 +85,7 @@ export function calculateMedian(values: number[]): number {
 
 	// Odd number of elements: return middle value
 	const middle = sorted[mid];
+	/* v8 ignore next 3 */
 	if (middle === undefined) {
 		throw new Error("Unexpected error: array index out of bounds");
 	}
@@ -138,6 +140,7 @@ export function calculatePercentile(
 	// Handle edge cases
 	if (percentile === 0) {
 		const first = sorted[0];
+		/* v8 ignore next 3 */
 		if (first === undefined) {
 			throw new Error("Unexpected error: array index out of bounds");
 		}
@@ -146,6 +149,7 @@ export function calculatePercentile(
 
 	if (percentile === 100) {
 		const last = sorted[sorted.length - 1];
+		/* v8 ignore next 3 */
 		if (last === undefined) {
 			throw new Error("Unexpected error: array index out of bounds");
 		}
@@ -161,6 +165,7 @@ export function calculatePercentile(
 	// If lower and upper are the same, return that value
 	if (lowerIndex === upperIndex) {
 		const value = sorted[lowerIndex];
+		/* v8 ignore next 3 */
 		if (value === undefined) {
 			throw new Error("Unexpected error: array index out of bounds");
 		}
@@ -170,6 +175,7 @@ export function calculatePercentile(
 	// Linear interpolation between lower and upper values
 	const lowerValue = sorted[lowerIndex];
 	const upperValue = sorted[upperIndex];
+	/* v8 ignore next 3 */
 	if (lowerValue === undefined || upperValue === undefined) {
 		throw new Error("Unexpected error: array index out of bounds");
 	}
