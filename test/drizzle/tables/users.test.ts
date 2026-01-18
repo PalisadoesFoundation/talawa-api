@@ -1785,9 +1785,7 @@ describe("src/drizzle/tables/users.ts - Table Definition Tests", () => {
 		it("should have an index on name column", () => {
 			const tableConfig = getTableConfig(usersTable);
 			const nameIndex = tableConfig.indexes.find((idx) =>
-				idx.config.columns.some(
-					(col) => "name" in col && col.name === "name",
-				),
+				idx.config.columns.some((col) => "name" in col && col.name === "name"),
 			);
 			expect(nameIndex).toBeDefined();
 			expect(nameIndex?.config.unique).toBeFalsy();
