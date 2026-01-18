@@ -219,6 +219,9 @@ describe("agendaItemUrlTable", () => {
 	});
 
 	describe("agendaItemUrlTableRelations", () => {
+		const getColumnName = (col?: { name?: string }) =>
+			col && "name" in col ? (col.name as string) : undefined;
+
 		interface CapturedRelation {
 			table: Table;
 			config: {
@@ -265,6 +268,16 @@ describe("agendaItemUrlTable", () => {
 			const table = captured.agendaItem?.table;
 			expect(table).toBeDefined();
 			expect(getTableName(table as Table)).toBe("agenda_items");
+			expect(
+				getColumnName(
+					captured.agendaItem?.config.fields?.[0] as { name?: string },
+				),
+			).toBe("agenda_item_id");
+			expect(
+				getColumnName(
+					captured.agendaItem?.config.references?.[0] as { name?: string },
+				),
+			).toBe("id");
 		});
 
 		it("should define creator relation", () => {
@@ -273,6 +286,16 @@ describe("agendaItemUrlTable", () => {
 			const table = captured.creator?.table;
 			expect(table).toBeDefined();
 			expect(getTableName(table as Table)).toBe("users");
+			expect(
+				getColumnName(
+					captured.creator?.config.fields?.[0] as { name?: string },
+				),
+			).toBe("creator_id");
+			expect(
+				getColumnName(
+					captured.creator?.config.references?.[0] as { name?: string },
+				),
+			).toBe("id");
 		});
 
 		it("should define updater relation", () => {
@@ -281,6 +304,16 @@ describe("agendaItemUrlTable", () => {
 			const table = captured.updater?.table;
 			expect(table).toBeDefined();
 			expect(getTableName(table as Table)).toBe("users");
+			expect(
+				getColumnName(
+					captured.updater?.config.fields?.[0] as { name?: string },
+				),
+			).toBe("updater_id");
+			expect(
+				getColumnName(
+					captured.updater?.config.references?.[0] as { name?: string },
+				),
+			).toBe("id");
 		});
 	});
 });
