@@ -445,7 +445,6 @@ suite("Mutation field updateOrganizationMembership", () => {
 		const orgId = org.data?.createOrganization?.id;
 		assertToBeNonNullish(orgId);
 
-		// ADD ADMIN
 		await mercuriusClient.mutate(Mutation_createOrganizationMembership, {
 			headers: { authorization: `bearer ${adminToken}` },
 			variables: {
@@ -456,7 +455,6 @@ suite("Mutation field updateOrganizationMembership", () => {
 			},
 		});
 
-		// ADD USER
 		await mercuriusClient.mutate(Mutation_createOrganizationMembership, {
 			headers: { authorization: `bearer ${adminToken}` },
 			variables: {
@@ -467,7 +465,6 @@ suite("Mutation field updateOrganizationMembership", () => {
 			},
 		});
 
-		// Mock update to return empty result
 		const spy = vi
 			.spyOn(server.drizzleClient, "update")
 			.mockImplementationOnce(() => {
