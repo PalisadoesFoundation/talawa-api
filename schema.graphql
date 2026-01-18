@@ -2077,7 +2077,7 @@ input MetricsFilterInput {
   """
   If true, only return metrics for operations that exceeded the slow threshold. Defaults to false.
   """
-  slowOperationsOnly: Boolean
+  slowOperationsOnly: Boolean! = false
 }
 
 """
@@ -2090,7 +2090,7 @@ input MetricsInput {
   """
   Whether to include cache-related metrics (hits, misses, hit rate). Defaults to true.
   """
-  includeCacheMetrics: Boolean
+  includeCacheMetrics: Boolean! = true
 
   """
   Optional maximum duration filter in milliseconds. Must be positive and greater than minDuration if both are provided.

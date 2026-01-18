@@ -85,7 +85,8 @@ export const MetricsFilterInput = builder
 			slowOperationsOnly: t.boolean({
 				description:
 					"If true, only return metrics for operations that exceeded the slow threshold. Defaults to false.",
-				required: false,
+				required: true,
+				defaultValue: false,
 			}),
 			minCacheHitRate: t.float({
 				description:

@@ -99,7 +99,8 @@ export const MetricsInput = builder
 			includeCacheMetrics: t.boolean({
 				description:
 					"Whether to include cache-related metrics (hits, misses, hit rate). Defaults to true.",
-				required: false,
+				required: true,
+				defaultValue: true,
 			}),
 		}),
 	});

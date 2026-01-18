@@ -12,6 +12,7 @@ describe("MetricsInput Schema", () => {
 	const validInput: MetricsInput = {
 		startTime: new Date("2024-01-01T10:00:00Z"),
 		endTime: new Date("2024-01-01T12:00:00Z"),
+		includeCacheMetrics: true,
 	};
 
 	// Required fields tests

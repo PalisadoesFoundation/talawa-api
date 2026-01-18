@@ -76,7 +76,7 @@ Input type for querying metrics data. Supports time range filtering, operation t
 ```graphql
 input MetricsInput {
   endTime: DateTime!
-  includeCacheMetrics: Boolean
+  includeCacheMetrics: Boolean!
   maxDuration: Float
   minDuration: Float
   operationType: String
@@ -90,7 +90,7 @@ input MetricsInput {
 
 The end time for the metrics query. Must be after startTime.
 
-#### [<code style={{ fontWeight: 'normal' }}>MetricsInput.<b>includeCacheMetrics</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>Boolean</b></code>](/auto-schema/types/scalars/boolean.mdx) <Badge class="badge badge--secondary " text="scalar"/>
+#### [<code style={{ fontWeight: 'normal' }}>MetricsInput.<b>includeCacheMetrics</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>Boolean!</b></code>](/auto-schema/types/scalars/boolean.mdx) <Badge class="badge badge--secondary badge--non_null" text="non-null"/> <Badge class="badge badge--secondary " text="scalar"/>
 
 Whether to include cache-related metrics (hits, misses, hit rate). Defaults to true.
 

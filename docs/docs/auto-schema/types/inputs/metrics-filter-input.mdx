@@ -78,7 +78,7 @@ input MetricsFilterInput {
   complexityRange: ComplexityRangeInput
   minCacheHitRate: Float
   operationNames: [String!]
-  slowOperationsOnly: Boolean
+  slowOperationsOnly: Boolean!
 }
 ```
 
@@ -96,6 +96,6 @@ Optional minimum cache hit rate filter (0-1). Only metrics with a cache hit rate
 
 Optional array of operation names to filter by. If provided, only metrics for these operations will be returned.
 
-#### [<code style={{ fontWeight: 'normal' }}>MetricsFilterInput.<b>slowOperationsOnly</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>Boolean</b></code>](/auto-schema/types/scalars/boolean.mdx) <Badge class="badge badge--secondary " text="scalar"/>
+#### [<code style={{ fontWeight: 'normal' }}>MetricsFilterInput.<b>slowOperationsOnly</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>Boolean!</b></code>](/auto-schema/types/scalars/boolean.mdx) <Badge class="badge badge--secondary badge--non_null" text="non-null"/> <Badge class="badge badge--secondary " text="scalar"/>
 
 If true, only return metrics for operations that exceeded the slow threshold. Defaults to false.
