@@ -698,7 +698,7 @@ type Event {
   """
   The ID of the base recurring event template if this is a generated instance.
   """
-  baseRecurringEventId: String
+  baseRecurringEventId: ID
 
   """Date time at the time the event was created."""
   createdAt: DateTime

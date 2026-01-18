@@ -504,7 +504,8 @@ suite("Query field eventsByCreator", () => {
 		});
 
 		// TODO: Test for recurring events skipped - instance generation system not generating instances
-		// See issue #4018 - recurring event instances are not being materialized correctly
+		// See issue #4018 - recurring event instances are not being materialized correctly.
+		// Tracking issue for re-enabling this test: #4018
 		// test("should return instances of recurring events created by user", async () => { ... });
 	});
 

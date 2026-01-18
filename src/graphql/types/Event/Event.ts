@@ -224,7 +224,14 @@ Event.implement({
 				if ("isGenerated" in event) {
 					return (event as { isGenerated?: boolean }).isGenerated ?? false;
 				}
-				return false;
+				return Boolean(
+					(
+						event as {
+							isGenerated?: boolean;
+							baseRecurringEventId?: string | null;
+						}
+					).baseRecurringEventId,
+				);
 			},
 		}),
 		baseRecurringEventId: t.string({

@@ -140,19 +140,6 @@ builder.queryField("eventsByCreator", (t) =>
 				// Step 3: Fetch all instances for these templates in batch
 				const baseRecurringEventIds = recurringTemplates.map((t) => t.id);
 
-				// We need to import getRecurringEventInstancesByBaseIds at the top,
-				// but since we are replacing the block we can just use it if it was imported.
-				// However, the import was:
-				// import { getRecurringEventInstancesByBaseId } from "~/src/graphql/types/Query/eventQueries/recurringEventInstanceQueries";
-				// We need to update the import separately or assume it will be fixed.
-				// I will fix the import in a separate step or just use the existing function if I hadn't updated imports.
-				// Wait, I haven't updated the imports yet.
-				// I should do that first or include imports change.
-				// The tool replace_file_content works on a block.
-
-				// I will assume I need to update the import as well.
-				// But this block is the builder.queryField(...)
-
 				const instances = await getRecurringEventInstancesByBaseIds(
 					baseRecurringEventIds,
 					ctx.drizzleClient,
