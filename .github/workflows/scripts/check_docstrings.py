@@ -38,6 +38,7 @@ def validate_docstring(file_path):
 
     # Evaluate each line
     for line_number, line in enumerate(lines):
+
         # Identify sections of the file that are functions or methods
         if re.match(r"^\s*def ", line):
             # Get the function name and its arguments
@@ -62,7 +63,9 @@ def validate_docstring(file_path):
             # Evaluate the relationship between the
             # declared variables and the docstring
             if bool(docstring.fatal) is False:
-                bad = match_arguments_to_docstring(function, docstring, line_number)
+                bad = match_arguments_to_docstring(
+                    function, docstring, line_number
+                )
                 if bool(bad):
                     violations.extend(bad)
 
@@ -296,7 +299,9 @@ def extract_docstring(func_name, line_number, lines):
     violations = []
     parser = None
     fatal = False
-    Docstring = namedtuple("Docstring", "violations docstring parser arguments fatal")
+    Docstring = namedtuple(
+        "Docstring", "violations docstring parser arguments fatal"
+    )
     docstring = ""
     arguments = []
     found_start = False
@@ -337,6 +342,7 @@ Single line docstring without 'Args:' or 'Results:' sections defined.""",
 
         # Extract lines within the docstring area
         if found_start and found_end:
+
             # Get the lines of the Docstring, strip hard returns
             valid_lines = lines[docstring_start : docstring_end + 1]
 
@@ -475,7 +481,9 @@ def evaluate_docstring_args(func_name, docstring_start, docstring, parser):
 
     """
     # Initialize key variables
-    DocstringEvaluation = namedtuple("DocstringEvaluation", "violations arguments")
+    DocstringEvaluation = namedtuple(
+        "DocstringEvaluation", "violations arguments"
+    )
     violations = []
     arguments = []
     docstring_no_multiple_white_space = " ".join(docstring.split())
@@ -571,6 +579,7 @@ Add a 'Returns:' section describing the return value.""",
             )
         )
     elif "Returns: None " not in docstring_no_multiple_white_space:
+
         # The parser fails if the 'Args:' section is set to None AND there
         # is a valid 'Returns:' section
         # This is a workaround where we search for 'Returns: VARIABLE: '
@@ -657,7 +666,9 @@ def is_docstring_delimiter(line):
 
     """
     # Return
-    result = bool(line.strip().startswith('"""') or line.strip().startswith("'''"))
+    result = bool(
+        line.strip().startswith('"""') or line.strip().startswith("'''")
+    )
     return result
 
 
@@ -680,7 +691,9 @@ def check_directory(directory, exclude_dirs=None):
     # Recursive directory search for files
     for root, dirs, files in os.walk(directory):
         # Skip excluded directories
-        dirs[:] = [d for d in dirs if os.path.join(root, d) not in _exclude_dirs]
+        dirs[:] = [
+            d for d in dirs if os.path.join(root, d) not in _exclude_dirs
+        ]
 
         # Process files in each directory
         for file in files:
