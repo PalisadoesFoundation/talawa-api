@@ -5,13 +5,8 @@ import {
 	fundCampaignPledgesTable,
 	fundCampaignPledgesTableInsertSchema,
 	fundCampaignPledgesTableRelations,
+	NOTE_MAX_LENGTH,
 } from "~/src/drizzle/tables/fundCampaignPledges";
-
-/**
- * Maximum length for the note field in fund campaign pledges.
- * This value is defined in the insert schema validation.
- */
-const NOTE_MAX_LENGTH = 2048;
 
 describe("fundCampaignPledgesTable", () => {
 	describe("constants", () => {
@@ -23,8 +18,8 @@ describe("fundCampaignPledgesTable", () => {
 	describe("fundCampaignPledgesTableInsertSchema", () => {
 		const validPledgeData = {
 			amount: 100,
-			campaignId: "01234567-89ab-cdef-0123-456789abcdef",
-			pledgerId: "11111111-1111-1111-1111-111111111111",
+			campaignId: "01234567-89ab-4def-8123-456789abcdef",
+			pledgerId: "fedcba98-7654-4210-8edc-ba9876543210",
 		};
 
 		describe("amount field", () => {
