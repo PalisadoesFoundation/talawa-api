@@ -1,15 +1,14 @@
 import type { FastifyBaseLogger } from "fastify";
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import { calculatePercentile } from "~/src/utilities/metrics/dbHelpers";
 import type { PerfSnapshot } from "~/src/utilities/metrics/performanceTracker";
-import {
-	calculatePercentile,
-	runMetricsAggregationWorker,
-} from "~/src/workers/metrics/metricsAggregationWorker";
+import { runMetricsAggregationWorker } from "~/src/workers/metrics/metricsAggregationWorker";
 
 describe("calculatePercentile", () => {
-	it("returns 0 for empty array", () => {
-		const result = calculatePercentile([], 50);
-		expect(result).toBe(0);
+	it("throws for empty array", () => {
+		expect(() => calculatePercentile([], 50)).toThrow(
+			"Values array cannot be empty for percentile calculation",
+		);
 	});
 
 	it("returns the single value for single-element array", () => {
