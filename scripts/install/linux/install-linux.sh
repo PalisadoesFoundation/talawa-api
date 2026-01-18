@@ -17,8 +17,38 @@ set -euo pipefail
 INSTALL_MODE="${1:-docker}"
 SKIP_PREREQS="${2:-false}"
 
-# Non-interactive mode: skip confirmation prompts
-# Set CI=true or AUTO_YES=true environment variable, or run with stdin not a terminal
+##############################################################################
+# Non-interactive Mode Configuration
+##############################################################################
+# AUTO_YES controls whether the script runs in non-interactive mode.
+# When enabled, confirmation prompts for downloading and executing external
+# scripts (Docker installer, fnm installer) are skipped automatically.
+#
+# Acceptable values:
+#   - "true"  : Skip all confirmation prompts (non-interactive mode)
+#   - "false" : Prompt user for confirmation (interactive mode, default)
+#
+# The script automatically detects non-interactive environments:
+#   1. If AUTO_YES=true is set explicitly
+#   2. If CI=true is set (common in CI/CD pipelines like GitHub Actions)
+#   3. If stdin is not a terminal (piped input or background execution)
+#
+# Example usage:
+#   # For CI pipelines (GitHub Actions, Jenkins, etc.)
+#   CI=true ./scripts/install/linux/install-linux.sh
+#
+#   # For automated local installs
+#   AUTO_YES=true ./scripts/install/linux/install-linux.sh
+#
+#   # Interactive mode (default) - will prompt before running external scripts
+#   ./scripts/install/linux/install-linux.sh
+#
+# Safety note: In non-interactive mode, the following prompts are skipped:
+#   - Docker installer execution confirmation (downloads from https://get.docker.com)
+#   - fnm installer execution confirmation (downloads from https://fnm.vercel.app)
+#   The scripts are still downloaded to temporary files first (not piped directly
+#   to shell), providing some protection against partial/corrupted downloads.
+##############################################################################
 AUTO_YES="${AUTO_YES:-${CI:-false}}"
 
 # Colors for output
