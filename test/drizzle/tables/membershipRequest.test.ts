@@ -7,14 +7,12 @@ import {
 } from "~/src/drizzle/tables/membershipRequests";
 
 describe("membershipRequestsTable", () => {
-	it("should define the table with correct name and columns", () => {
-		expect(membershipRequestsTable).toBeDefined();
-
-		expect(membershipRequestsTable.membershipRequestId).toBeDefined();
-		expect(membershipRequestsTable.userId).toBeDefined();
-		expect(membershipRequestsTable.organizationId).toBeDefined();
-		expect(membershipRequestsTable.status).toBeDefined();
-		expect(membershipRequestsTable.createdAt).toBeDefined();
+	it("should expose expected columns", () => {
+		expect(membershipRequestsTable).toHaveProperty("membershipRequestId");
+		expect(membershipRequestsTable).toHaveProperty("userId");
+		expect(membershipRequestsTable).toHaveProperty("organizationId");
+		expect(membershipRequestsTable).toHaveProperty("status");
+		expect(membershipRequestsTable).toHaveProperty("createdAt");
 	});
 
 	it("should reject invalid insert data", () => {
