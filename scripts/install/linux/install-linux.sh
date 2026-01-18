@@ -378,19 +378,38 @@ if [ "$INSTALL_MODE" = "docker" ]; then
         warn "Skipping Docker installation (--skip-prereqs)"
     else
         info "Installing Docker..."
-        # Security Note: This uses Docker's official convenience script over HTTPS.
-        # The script is from a trusted source (get.docker.com) but piping to shell
-        # carries inherent risk. Users can review the script first by visiting:
-        # https://get.docker.com or using: curl -fsSL https://get.docker.com | less
-        # curl -fsSL --connect-timeout $CURL_CONNECT_TIMEOUT --max-time $CURL_MAX_TIME_DOCKER https://get.docker.com | sh
+        # Security Note: Docker's official convenience script is downloaded to a temporary file
+        # for review before execution. This prevents direct pipe-to-shell vulnerabilities.
         docker_installer="$(mktemp /tmp/get-docker.XXXXXX.sh)"
         trap 'rm -f "$docker_installer"' EXIT
+        
+        info "Downloading Docker installation script from https://get.docker.com..."
         if ! retry_command "$MAX_RETRY_ATTEMPTS" curl -fsSL --connect-timeout "$CURL_CONNECT_TIMEOUT" --max-time "$CURL_MAX_TIME_DOCKER" -o "$docker_installer" https://get.docker.com; then
             error "Failed to download Docker installer after multiple attempts."
+            error "Check your internet connection and try again."
+            rm -f "$docker_installer"
             exit 1
         fi
+        success "Docker installer downloaded to: $docker_installer"
+        
+        # User confirmation before execution
+        info "You can review the script before installation:"
+        info "  less $docker_installer"
+        info "  cat $docker_installer"
+        echo ""
+        read -p "Proceed with Docker installation? (y/N): " -n 1 -r
+        echo ""
+        if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+            warn "Docker installation cancelled by user."
+            rm -f "$docker_installer"
+            exit 1
+        fi
+        
+        info "Executing Docker installer..."
         if ! sh "$docker_installer"; then
             error "Docker installer script failed."
+            error "Check the error messages above for details."
+            rm -f "$docker_installer"
             exit 1
         fi
         rm -f "$docker_installer"
@@ -438,19 +457,39 @@ if command_exists fnm; then
     success "fnm is already installed"
     eval "$(fnm env)"
 else
-    info "Installing fnm..."
-    # Security Note: This uses fnm's official installer over HTTPS.
-    # Users can review the script first at: https://fnm.vercel.app/install
-    # curl -fsSL --connect-timeout $CURL_CONNECT_TIMEOUT --max-time $CURL_MAX_TIME_FNM https://fnm.vercel.app/install | bash -s -- --skip-shell
-
+    info "Installing fnm (Fast Node Manager)..."
+    # Security Note: fnm's official installer is downloaded to a temporary file
+    # for review before execution. This prevents direct pipe-to-shell vulnerabilities.
     fnm_installer="$(mktemp /tmp/fnm-install.XXXXXX.sh)"
     trap 'rm -f "$fnm_installer"' EXIT
+    
+    info "Downloading fnm installation script from https://fnm.vercel.app/install..."
     if ! retry_command "$MAX_RETRY_ATTEMPTS" curl -fsSL --connect-timeout "$CURL_CONNECT_TIMEOUT" --max-time "$CURL_MAX_TIME_FNM" -o "$fnm_installer" https://fnm.vercel.app/install; then
-        error "Failed to download fnm installer."
+        error "Failed to download fnm installer after multiple attempts."
+        error "Check your internet connection and try again."
+        rm -f "$fnm_installer"
         exit 1
     fi
+    success "fnm installer downloaded to: $fnm_installer"
+    
+    # User confirmation before execution
+    info "You can review the script before installation:"
+    info "  less $fnm_installer"
+    info "  cat $fnm_installer"
+    echo ""
+    read -p "Proceed with fnm installation? (y/N): " -n 1 -r
+    echo ""
+    if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+        warn "fnm installation cancelled by user."
+        rm -f "$fnm_installer"
+        exit 1
+    fi
+    
+    info "Executing fnm installer..."
     if ! bash "$fnm_installer" --skip-shell; then
         error "fnm installer script failed."
+        error "Check the error messages above for details."
+        rm -f "$fnm_installer"
         exit 1
     fi
     rm -f "$fnm_installer"
