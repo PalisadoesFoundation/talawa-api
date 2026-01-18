@@ -239,7 +239,7 @@ describe("src/drizzle/tables/organizations.ts", () => {
 			expect(creator.type).toBe("one");
 			expect(creator.table).toBe(usersTable);
 		});
-		
+
 		it("should define updater as a one-to-one relation with usersTable", () => {
 			const { one, many } = createMockBuilders();
 			const relationsResult = organizationsTableRelations.config({ one, many });
