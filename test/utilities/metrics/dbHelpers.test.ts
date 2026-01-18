@@ -420,6 +420,36 @@ describe("dbHelpers", () => {
 				});
 			}).toThrow("windowSizeMs must be a positive finite number");
 		});
+
+		it("should throw error for invalid startTime (NaN)", () => {
+			const invalidDate = new Date("invalid");
+			const endTime = new Date("2024-01-01T11:00:00Z");
+			expect(() => {
+				getTimeWindows(invalidDate, endTime);
+			}).toThrow("startTime must be a valid Date");
+		});
+
+		it("should throw error for invalid endTime (NaN)", () => {
+			const startTime = new Date("2024-01-01T10:00:00Z");
+			const invalidDate = new Date("invalid");
+			expect(() => {
+				getTimeWindows(startTime, invalidDate);
+			}).toThrow("endTime must be a valid Date");
+		});
+
+		it("should throw error for null startTime", () => {
+			const endTime = new Date("2024-01-01T11:00:00Z");
+			expect(() => {
+				getTimeWindows(null as unknown as Date, endTime);
+			}).toThrow("startTime must be a valid Date");
+		});
+
+		it("should throw error for null endTime", () => {
+			const startTime = new Date("2024-01-01T10:00:00Z");
+			expect(() => {
+				getTimeWindows(startTime, null as unknown as Date);
+			}).toThrow("endTime must be a valid Date");
+		});
 	});
 
 	describe("normalizeTimeRange", () => {

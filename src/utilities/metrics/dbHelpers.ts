@@ -238,6 +238,14 @@ export function getTimeWindows(
 	endTime: Date,
 	options?: TimeWindowOptions,
 ): TimeWindow[] {
+	if (!(startTime instanceof Date) || Number.isNaN(startTime.getTime())) {
+		throw new Error(`startTime must be a valid Date. Got: ${startTime}`);
+	}
+
+	if (!(endTime instanceof Date) || Number.isNaN(endTime.getTime())) {
+		throw new Error(`endTime must be a valid Date. Got: ${endTime}`);
+	}
+
 	if (startTime >= endTime) {
 		throw new Error(
 			`startTime must be before endTime. startTime: ${startTime.toISOString()}, endTime: ${endTime.toISOString()}`,
