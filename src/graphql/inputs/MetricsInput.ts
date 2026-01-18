@@ -18,7 +18,10 @@ export const metricsInputSchema = z
 		}),
 		operationType: z
 			.string()
-			.min(1, "operationType must be a non-empty string")
+			.trim()
+			.refine((val) => val.length >= 1, {
+				message: "operationType must be a non-empty string",
+			})
 			.optional(),
 		minDuration: z
 			.number()

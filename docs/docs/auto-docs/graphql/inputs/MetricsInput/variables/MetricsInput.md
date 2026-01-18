@@ -6,7 +6,7 @@
 
 > **MetricsInput**: `InputObjectRef`\<`ExtendDefaultTypes`\<\{ `Context`: [`GraphQLContext`](../../../context/type-aliases/GraphQLContext.md); `Scalars`: [`CustomScalars`](../../../scalars/type-aliases/CustomScalars.md); \}\>, \{ `endTime`: `Date`; `includeCacheMetrics`: `boolean`; `maxDuration?`: `number` \| `null`; `minDuration?`: `number` \| `null`; `operationType?`: `string` \| `null`; `startTime`: `Date`; \}\>
 
-Defined in: [src/graphql/inputs/MetricsInput.ts:60](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/graphql/inputs/MetricsInput.ts#L60)
+Defined in: [src/graphql/inputs/MetricsInput.ts:63](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/graphql/inputs/MetricsInput.ts#L63)
 
 GraphQL input type for querying metrics data.
 Provides time range filtering and optional operation type and duration filtering.
