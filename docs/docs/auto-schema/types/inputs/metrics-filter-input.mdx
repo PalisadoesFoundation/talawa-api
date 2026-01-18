@@ -1,0 +1,101 @@
+---
+id: metrics-filter-input
+title: MetricsFilterInput
+---
+
+export const Bullet = () => (
+  <>
+    <span
+      style={{
+        fontWeight: "normal",
+        fontSize: ".5em",
+        color: "var(--ifm-color-secondary-darkest)",
+      }}
+    >
+      &nbsp;●&nbsp;
+    </span>
+  </>
+);
+
+export const SpecifiedBy = (props) => (
+  <>
+    Specification
+    <a
+      className="link"
+      style={{ fontSize: "1.5em", paddingLeft: "4px" }}
+      target="_blank"
+      href={props.url}
+      title={"Specified by " + props.url}
+    >
+      ⎘
+    </a>
+  </>
+);
+
+export const Badge = (props) => (
+  <>
+    <span className={props.class}>{props.text}</span>
+  </>
+);
+
+import { useState } from "react";
+
+export const Details = ({
+  dataOpen,
+  dataClose,
+  children,
+  startOpen = false,
+}) => {
+  const [open, setOpen] = useState(startOpen);
+  return (
+    <details
+      {...(open ? { open: true } : {})}
+      className="details"
+      style={{
+        border: "none",
+        boxShadow: "none",
+        background: "var(--ifm-background-color)",
+      }}
+    >
+      <summary
+        onClick={(e) => {
+          e.preventDefault();
+          setOpen((open) => !open);
+        }}
+        style={{ listStyle: "none" }}
+      >
+        {open ? dataOpen : dataClose}
+      </summary>
+      {open && children}
+    </details>
+  );
+};
+
+Input type for advanced metrics filtering. Supports filtering by operation names, slow operations, cache hit rate, and complexity range.
+
+```graphql
+input MetricsFilterInput {
+  complexityRange: ComplexityRangeInput
+  minCacheHitRate: Float
+  operationNames: [String!]
+  slowOperationsOnly: Boolean
+}
+```
+
+### Fields
+
+#### [<code style={{ fontWeight: 'normal' }}>MetricsFilterInput.<b>complexityRange</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>ComplexityRangeInput</b></code>](/auto-schema/types/inputs/complexity-range-input.mdx) <Badge class="badge badge--secondary " text="input"/>
+
+Optional complexity range filter. Only metrics with complexity scores within this range will be returned.
+
+#### [<code style={{ fontWeight: 'normal' }}>MetricsFilterInput.<b>minCacheHitRate</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>Float</b></code>](/auto-schema/types/scalars/float.mdx) <Badge class="badge badge--secondary " text="scalar"/>
+
+Optional minimum cache hit rate filter (0-1). Only metrics with a cache hit rate greater than or equal to this value will be returned.
+
+#### [<code style={{ fontWeight: 'normal' }}>MetricsFilterInput.<b>operationNames</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>[String!]</b></code>](/auto-schema/types/scalars/string.mdx) <Badge class="badge badge--secondary " text="list"/> <Badge class="badge badge--secondary " text="scalar"/>
+
+Optional array of operation names to filter by. If provided, only metrics for these operations will be returned.
+
+#### [<code style={{ fontWeight: 'normal' }}>MetricsFilterInput.<b>slowOperationsOnly</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>Boolean</b></code>](/auto-schema/types/scalars/boolean.mdx) <Badge class="badge badge--secondary " text="scalar"/>
+
+If true, only return metrics for operations that exceeded the slow threshold. Defaults to false.
