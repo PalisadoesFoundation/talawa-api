@@ -10,7 +10,7 @@ import {
 	vi,
 } from "vitest";
 import type { TalawaGraphQLFormattedError } from "~/src/utilities/TalawaGraphQLError";
-import { assertToBeNonNullish } from "../../../helpers";
+import { assertToBeNonNullish, createMultipartPayload } from "../../../helpers";
 import { server } from "../../../server";
 import { mercuriusClient } from "../client";
 import {
@@ -23,6 +23,16 @@ import {
 	Mutation_deleteUser,
 	Query_signIn,
 } from "../documentNodes";
+
+export const createChatMutation = `
+mutation Mutation_createChat($input: MutationCreateChatInput!) {
+	createChat(input: $input) {
+		id
+		name
+		avatarMimeType
+	}
+}
+`;
 
 // Extract the return type of putObject from the minio Client
 type UploadedObjectInfo = Awaited<ReturnType<Client["putObject"]>>;
@@ -443,47 +453,24 @@ suite("Mutation field createChat", () => {
 
 	suite("Avatar handling", () => {
 		test("should handle invalid avatar mime type", async () => {
-			const boundary = `----WebKitFormBoundary${Math.random().toString(36)}`;
-
-			const operations = JSON.stringify({
-				query: `
-                mutation Mutation_createChat($input: MutationCreateChatInput!) {
-                    createChat(input: $input) {
-                        id
-                    }
-                }
-                `,
-				variables: {
-					input: {
-						name: "Invalid Avatar Chat",
-						organizationId: organizationId,
-						avatar: null,
+			const { body, boundary } = createMultipartPayload({
+				operations: {
+					query: createChatMutation,
+					variables: {
+						input: {
+							name: "Invalid Avatar Chat",
+							organizationId: organizationId,
+							avatar: null,
+						},
 					},
 				},
+				map: {
+					"0": ["variables.input.avatar"],
+				},
+				fileContent: "fake content",
+				fileType: "text/plain",
+				fileName: "test.txt",
 			});
-
-			const map = JSON.stringify({
-				"0": ["variables.input.avatar"],
-			});
-
-			const fileContent = "fake content";
-
-			const body = [
-				`--${boundary}`,
-				'Content-Disposition: form-data; name="operations"',
-				"",
-				operations,
-				`--${boundary}`,
-				'Content-Disposition: form-data; name="map"',
-				"",
-				map,
-				`--${boundary}`,
-				'Content-Disposition: form-data; name="0"; filename="test.txt"',
-				"Content-Type: text/plain",
-				"",
-				fileContent,
-				`--${boundary}--`,
-			].join("\r\n");
 
 			const response = await server.inject({
 				method: "POST",
@@ -523,49 +510,25 @@ suite("Mutation field createChat", () => {
 				.mockResolvedValue({ etag: "mock-etag" } as UploadedObjectInfo);
 
 			const chatName = `Avatar Chat ${faker.string.uuid()}`;
-			const boundary = `----WebKitFormBoundary${Math.random().toString(36)}`;
 
-			const operations = JSON.stringify({
-				query: `
-                mutation Mutation_createChat($input: MutationCreateChatInput!) {
-                    createChat(input: $input) {
-                        id
-                        name
-                        avatarMimeType
-                    }
-                }
-                `,
-				variables: {
-					input: {
-						name: chatName,
-						organizationId: organizationId,
-						avatar: null,
+			const { body, boundary } = createMultipartPayload({
+				operations: {
+					query: createChatMutation,
+					variables: {
+						input: {
+							name: chatName,
+							organizationId: organizationId,
+							avatar: null,
+						},
 					},
 				},
+				map: {
+					"0": ["variables.input.avatar"],
+				},
+				fileContent: "test content",
+				fileType: "image/jpeg",
+				fileName: "test.jpg",
 			});
-
-			const map = JSON.stringify({
-				"0": ["variables.input.avatar"],
-			});
-
-			const fileContent = "test content";
-
-			const body = [
-				`--${boundary}`,
-				'Content-Disposition: form-data; name="operations"',
-				"",
-				operations,
-				`--${boundary}`,
-				'Content-Disposition: form-data; name="map"',
-				"",
-				map,
-				`--${boundary}`,
-				'Content-Disposition: form-data; name="0"; filename="test.jpg"',
-				"Content-Type: image/jpeg",
-				"",
-				fileContent,
-				`--${boundary}--`,
-			].join("\r\n");
 
 			const response = await server.inject({
 				method: "POST",
