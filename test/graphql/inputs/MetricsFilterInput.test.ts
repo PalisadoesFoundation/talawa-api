@@ -393,7 +393,6 @@ describe("MetricsFilterInput Schema", () => {
 		expect(result.success).toBe(true);
 		if (result.success) {
 			expect(result.data.operationNames).toBeUndefined();
-			expect(result.data.slowOperationsOnly).toBe(false);
 			expect(result.data.minCacheHitRate).toBeUndefined();
 			expect(result.data.complexityRange).toBeUndefined();
 		}

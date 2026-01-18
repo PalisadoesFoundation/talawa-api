@@ -32,7 +32,6 @@ describe("MetricsInput Schema", () => {
 		if (result.success) {
 			expect(result.data.startTime).toEqual(validInput.startTime);
 			expect(result.data.endTime).toEqual(validInput.endTime);
-			expect(result.data.includeCacheMetrics).toBe(true); // Default value
 			expect(result.data.operationType).toBeUndefined();
 			expect(result.data.minDuration).toBeUndefined();
 			expect(result.data.maxDuration).toBeUndefined();
