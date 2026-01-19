@@ -106,6 +106,39 @@ suite("Query field eventsByAttendee", () => {
 		});
 	});
 
+	suite("when user is authenticated but user record is missing", () => {
+		test("should return an error with unauthenticated code", async () => {
+			const { authToken: userToken, userId } =
+				await createRegularUserUsingAdmin();
+			assertToBeNonNullish(userToken);
+			assertToBeNonNullish(userId);
+
+			// Mock findFirst to return undefined (simulate deleted user or database inconsistency)
+			const spy = vi
+				.spyOn(server.drizzleClient.query.usersTable, "findFirst")
+				.mockResolvedValue(undefined);
+
+			try {
+				const result = await mercuriusClient.query(Query_eventsByAttendee, {
+					headers: { authorization: `bearer ${userToken}` },
+					variables: { userId },
+				});
+				expect(result.data?.eventsByAttendee).toBeUndefined();
+				expect(result.errors).toEqual(
+					expect.arrayContaining([
+						expect.objectContaining({
+							extensions: expect.objectContaining({
+								code: "unauthenticated",
+							}),
+						}),
+					]),
+				);
+			} finally {
+				spy.mockRestore();
+			}
+		});
+	});
+
 	suite("authorization", () => {
 		test("should allow querying own attended events", async () => {
 			const { authToken: userToken, userId } =
@@ -1255,6 +1288,78 @@ suite("Query field eventsByAttendee", () => {
 					}),
 				]),
 			);
+		});
+		test("should return empty array when offset is beyond total events", async () => {
+			const { userId } = await createRegularUserUsingAdmin();
+			assertToBeNonNullish(userId);
+
+			const createOrgResult = await mercuriusClient.mutate(
+				Mutation_createOrganization,
+				{
+					headers: { authorization: `bearer ${authToken}` },
+					variables: {
+						input: {
+							name: `Pagination Empty Org ${faker.string.ulid()}`,
+							description: "Test org",
+							countryCode: "us",
+							state: "CA",
+							city: "Los Angeles",
+							postalCode: "90001",
+							addressLine1: "123 Test St",
+						},
+					},
+				},
+			);
+			const orgId = createOrgResult.data?.createOrganization?.id;
+			assertToBeNonNullish(orgId);
+
+			await mercuriusClient.mutate(Mutation_createOrganizationMembership, {
+				headers: { authorization: `bearer ${authToken}` },
+				variables: {
+					input: {
+						memberId: adminUserId,
+						organizationId: orgId,
+						role: "administrator",
+					},
+				},
+			});
+
+			// Create 1 event and register
+			const createEventResult = await mercuriusClient.mutate(
+				Mutation_createEvent,
+				{
+					headers: { authorization: `bearer ${authToken}` },
+					variables: {
+						input: {
+							name: "Pagination Empty Event",
+							description: "Event",
+							organizationId: orgId,
+							startAt: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
+							endAt: new Date(Date.now() + 25 * 60 * 60 * 1000).toISOString(),
+						},
+					},
+				},
+			);
+			const eventId = createEventResult.data?.createEvent?.id;
+			assertToBeNonNullish(eventId);
+
+			await mercuriusClient.mutate(Mutation_registerEventAttendee, {
+				headers: { authorization: `bearer ${authToken}` },
+				variables: {
+					data: {
+						userId,
+						eventId,
+					},
+				},
+			});
+
+			// Offset 2 (beyond 1 event)
+			const result = await mercuriusClient.query(Query_eventsByAttendee, {
+				headers: { authorization: `bearer ${authToken}` },
+				variables: { userId, offset: 2 },
+			});
+			expect(result.errors).toBeUndefined();
+			expect(result.data?.eventsByAttendee).toEqual([]);
 		});
 	});
 });

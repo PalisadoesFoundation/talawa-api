@@ -21,8 +21,8 @@ const queryEventsByAttendeeArgumentsSchema = z.object({
 
 /**
  * GraphQL query to get all events a user is registered for.
- * Returns events where the user is marked as registered in the event_attendees table.
- * Handles both standalone events and recurring instances.
+ * Returns events where the user is marked as registered, checked-in, or checked-out in the event_attendees table.
+ * Expands event templates and includes recurring instances/instances resolution.
  */
 builder.queryField("eventsByAttendee", (t) =>
 	t.field({
