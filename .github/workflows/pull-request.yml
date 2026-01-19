@@ -751,6 +751,7 @@ jobs:
           gcov_ignore: "docs/"
           files: ./coverage/vitest/lcov.info
           commit_parent: ${{ steps.get-merge-base.outputs.merge_base }}
+          flags: unit,integration
 
       - name: Test acceptable level of code coverage
         if: steps.check-artifacts.outputs.artifacts_found == 'true'

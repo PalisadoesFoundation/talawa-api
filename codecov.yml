@@ -16,3 +16,12 @@ flags:
       - test/drizzle/
       - test/graphql/
       - test/install/
+
+flag_management:
+  default_rules:
+    carryforward: true
+    statuses:
+      - type: patch
+        target: 80%
+        threshold: 1%
+
