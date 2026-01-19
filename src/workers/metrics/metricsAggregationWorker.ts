@@ -1,40 +1,11 @@
 import type { FastifyBaseLogger } from "fastify";
+import { calculatePercentile } from "~/src/utilities/metrics/dbHelpers";
 import type { PerfSnapshot } from "~/src/utilities/metrics/performanceTracker";
 import type {
 	AggregatedMetrics,
 	CacheMetrics,
 	OperationMetrics,
 } from "./types";
-
-/**
- * Calculates percentile value from a sorted array of numbers.
- *
- * @param sortedValues - Array of numbers sorted in ascending order
- * @param percentile - Percentile to calculate (0-100)
- * @returns The percentile value
- */
-export function calculatePercentile(
-	sortedValues: number[],
-	percentile: number,
-): number {
-	if (sortedValues.length === 0) {
-		return 0;
-	}
-
-	if (sortedValues.length === 1) {
-		return sortedValues[0] ?? 0;
-	}
-
-	const index = (percentile / 100) * (sortedValues.length - 1);
-	const lower = Math.floor(index);
-	const upper = Math.ceil(index);
-	const weight = index - lower;
-
-	const lowerValue = sortedValues[lower] ?? 0;
-	const upperValue = sortedValues[upper] ?? 0;
-
-	return lowerValue + weight * (upperValue - lowerValue);
-}
 
 /**
  * Aggregates metrics for a specific operation type from multiple snapshots.

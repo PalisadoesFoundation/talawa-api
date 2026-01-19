@@ -138,14 +138,12 @@ describe("MutationUpdateVenueInput Schema", () => {
 			expect(result.success).toBe(true);
 		});
 
-		it("should accept negative capacity (if schema allows integers)", () => {
-			// Note: DB schema is just integer, so negative might be allowed by Zod unless refined.
-			// Assuming basic integer validation for now.
+		it("should reject negative capacity", () => {
 			const result = mutationUpdateVenueInputSchema.safeParse({
 				...validInput,
 				capacity: -1,
 			});
-			expect(result.success).toBe(true);
+			expect(result.success).toBe(false);
 		});
 	});
 

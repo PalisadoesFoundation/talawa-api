@@ -286,15 +286,22 @@ The metrics aggregation system is configurable through the following environment
 
 | Variable | Default | Description |
 |----------|---------|-------------|
+| `API_METRICS_ENABLED` | `true` | Master switch to enable or disable metrics collection and aggregation |
 | `API_METRICS_AGGREGATION_ENABLED` | `true` | Enable or disable the metrics aggregation background worker |
 | `API_METRICS_AGGREGATION_CRON_SCHEDULE` | `*/5 * * * *` | Cron schedule for running metrics aggregation (default: every 5 minutes) |
 | `API_METRICS_AGGREGATION_WINDOW_MINUTES` | `5` | Time window in minutes for aggregating snapshots |
 | `API_METRICS_SNAPSHOT_RETENTION_COUNT` | `1000` | Maximum number of performance snapshots to retain in memory |
+| `API_METRICS_SLOW_OPERATION_MS` | `200` | Threshold in milliseconds for considering an operation as slow |
+| `API_METRICS_SLOW_REQUEST_MS` | `500` | Threshold in milliseconds for considering a request as slow |
+| `API_METRICS_CACHE_TTL_SECONDS` | `300` | Time-to-live in seconds for cached aggregated metrics (5 minutes) |
 | `API_METRICS_API_KEY` | (none) | API key to protect the `/metrics/perf` endpoint. When set, requests require `Authorization: Bearer <key>` header |
 
 ### Example Configuration
 
 ```bash
+# Enable metrics collection (default: true)
+API_METRICS_ENABLED=true
+
 # Enable metrics aggregation (default: true)
 API_METRICS_AGGREGATION_ENABLED=true
 
@@ -306,6 +313,15 @@ API_METRICS_AGGREGATION_WINDOW_MINUTES=10
 
 # Keep last 2000 snapshots in memory
 API_METRICS_SNAPSHOT_RETENTION_COUNT=2000
+
+# Configure slow operation threshold (default: 200ms)
+API_METRICS_SLOW_OPERATION_MS=300
+
+# Configure slow request threshold (default: 500ms)
+API_METRICS_SLOW_REQUEST_MS=1000
+
+# Configure metrics cache TTL (default: 300 seconds)
+API_METRICS_CACHE_TTL_SECONDS=600
 
 # Protect metrics endpoint with API key (recommended for production)
 API_METRICS_API_KEY=your-secure-api-key-here
@@ -348,14 +364,34 @@ The background worker aggregates performance snapshots and logs the results to t
 - `slowOperationCount`: Number of operations potentially needing optimization
 - `cacheHitRate`: Global cache efficiency for the period
 
+### Metrics Caching
+
+Aggregated metrics can be cached to improve performance when accessing metrics data. The metrics cache service provides:
+
+- **Timestamp-based caching**: Cache metrics by timestamp identifier
+- **Time-windowed caching**: Cache hourly and daily aggregations with longer TTLs
+- **Configurable TTL**: Control cache expiration via `API_METRICS_CACHE_TTL_SECONDS`
+
+**Cache Key Patterns:**
+- Timestamp-based: `talawa:v1:metrics:aggregated:{timestamp}`
+- Hourly: `talawa:v1:metrics:aggregated:hourly:{YYYY-MM-DD-HH}`
+- Daily: `talawa:v1:metrics:aggregated:daily:{YYYY-MM-DD}`
+
+**Default TTLs:**
+- Timestamp-based metrics: 300 seconds (5 minutes)
+- Hourly aggregations: 3600 seconds (1 hour)
+- Daily aggregations: 86400 seconds (24 hours)
+
+The metrics cache service is automatically initialized when the performance plugin starts and is available via `fastify.metricsCache`. Cache failures are handled gracefully and do not affect metrics collection.
+
 ## Production Considerations
 
 ### Security
 
-> **⚠️ WARNING**: The `/metrics/perf` endpoint currently has no authentication. For production deployments:
-> - Add API key authentication, or
-> - Restrict access to admin users only, or  
-> - Use network-level controls (VPN, internal-only access)
+> **⚠️ IMPORTANT**: The `/metrics/perf` endpoint supports API key authentication via the `API_METRICS_API_KEY` environment variable. For production deployments:
+> - **Set `API_METRICS_API_KEY`** to protect the endpoint (recommended)
+> - Use network-level controls (VPN, internal-only access) as additional security
+> - If `API_METRICS_API_KEY` is not set, the endpoint is unprotected (suitable for development only)
 
 ### Performance Impact
 
