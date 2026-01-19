@@ -195,9 +195,12 @@ builder.queryField("eventsByAttendee", (t) =>
 									id: true,
 									actualStartTime: true,
 								},
-								where: inArray(
-									recurringEventInstancesTable.baseRecurringEventId,
-									recurringTemplateIds,
+								where: and(
+									inArray(
+										recurringEventInstancesTable.baseRecurringEventId,
+										recurringTemplateIds,
+									),
+									eq(recurringEventInstancesTable.isCancelled, false),
 								),
 							},
 						);

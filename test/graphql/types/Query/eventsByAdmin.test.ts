@@ -96,6 +96,38 @@ suite("Query field eventsByAdmin", () => {
 				]),
 			);
 		});
+
+		test("should return error when authenticated user record is not found", async () => {
+			const { userId } = await createRegularUserUsingAdmin();
+			assertToBeNonNullish(userId);
+
+			// Mock findFirst to return null for the current user lookup
+			// This simulates the case where the authentication token is valid but the user record is missing
+			// We need to target the specific call where it looks up the current user
+			const spy = vi.spyOn(server.drizzleClient.query.usersTable, "findFirst");
+			spy.mockResolvedValueOnce(undefined);
+
+			try {
+				const result = await mercuriusClient.query(Query_eventsByAdmin, {
+					headers: { authorization: `bearer ${authToken}` },
+					variables: { userId },
+				});
+
+				expect(result.data?.eventsByAdmin).toBeUndefined();
+				expect(result.errors).toEqual(
+					expect.arrayContaining([
+						expect.objectContaining({
+							extensions: expect.objectContaining({
+								code: "unauthenticated",
+							}),
+							path: ["eventsByAdmin"],
+						}),
+					]),
+				);
+			} finally {
+				spy.mockRestore();
+			}
+		});
 	});
 
 	suite("authorization", () => {

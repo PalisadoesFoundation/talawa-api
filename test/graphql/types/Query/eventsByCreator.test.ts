@@ -35,6 +35,8 @@ const Query_eventsByCreator = gql(`
 			isRegisterable
 			isInviteOnly
 			isRecurringEventTemplate
+			isGenerated
+			baseRecurringEventId
 			organization {
 				id
 				name
