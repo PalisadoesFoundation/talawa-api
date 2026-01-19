@@ -143,7 +143,6 @@ builder.queryField("eventsByVolunteer", (t) =>
 
 				// Check "potential" template IDs and standalone IDs against eventsTable
 				// to determine if they are truly recurring templates or standalone events.
-				// to determine if they are truly recurring templates or standalone events.
 				const baseEventIdsToCheck = [
 					...new Set([...templateIds, ...possiblyStandaloneEventIds]),
 				];

@@ -151,13 +151,11 @@ builder.queryField("eventsByCreator", (t) =>
 					baseRecurringEventIds,
 					ctx.drizzleClient,
 					ctx.log,
-					{ limit: effectiveWindow },
+					{ limit: effectiveWindow, includeCancelled: false },
 				);
 
 				// Filter out cancelled instances and transform to unified format
-				const activeInstances = instances
-					.filter((instance) => !instance.isCancelled)
-					.map(mapRecurringInstanceToEvent);
+				const activeInstances = instances.map(mapRecurringInstanceToEvent);
 
 				allEvents.push(...activeInstances);
 

@@ -1439,6 +1439,8 @@ export const Query_eventsByOrganizationId = gql(`
       attachments {
         mimeType
       }
+      isGenerated
+      baseRecurringEventId
     }
   }
 `);

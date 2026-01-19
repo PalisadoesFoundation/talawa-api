@@ -790,5 +790,16 @@ suite("Query: eventsByOrganizationId", () => {
 		expect(events).toBeInstanceOf(Array);
 		const eventIds = (events as Array<{ id: string }>).map((e) => e.id);
 		expect(eventIds).toContain(templateId);
+
+		const matched = (
+			events as Array<{
+				id: string;
+				isGenerated: boolean;
+				baseRecurringEventId: string | null;
+			}>
+		).find((e) => e.id === templateId);
+		assertToBeNonNullish(matched);
+		expect(matched.isGenerated).toBe(false);
+		expect(matched.baseRecurringEventId).toBeNull();
 	});
 });

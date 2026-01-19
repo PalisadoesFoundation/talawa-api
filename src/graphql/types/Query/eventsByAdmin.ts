@@ -162,13 +162,11 @@ builder.queryField("eventsByAdmin", (t) =>
 					baseRecurringEventIds,
 					ctx.drizzleClient,
 					ctx.log,
-					{},
+					{ includeCancelled: false },
 				);
 
 				// Filter out cancelled instances and transform to unified format
-				const activeInstances = instances
-					.filter((instance) => !instance.isCancelled)
-					.map(mapRecurringInstanceToEvent);
+				const activeInstances = instances.map(mapRecurringInstanceToEvent);
 
 				allEvents.push(...activeInstances);
 

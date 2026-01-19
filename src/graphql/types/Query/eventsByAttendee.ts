@@ -65,7 +65,7 @@ builder.queryField("eventsByAttendee", (t) =>
 
 			const currentUserId = ctx.currentClient.user.id;
 			const targetUserId = parsedArgs.data.userId;
-			const limit = parsedArgs.data.limit ?? 50; // Use 50 as default per instructions
+			const limit = parsedArgs.data.limit ?? 100;
 			const offset = parsedArgs.data.offset ?? 0;
 
 			// Get current user for authorization

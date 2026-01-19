@@ -1039,5 +1039,65 @@ suite("Query field eventsByAttendee", () => {
 			expect(events[0].name).toBe("Event 1");
 			expect(events[1].name).toBe("Event 2");
 		});
+
+		test("should return an error when limit is negative", async () => {
+			const { userId } = await createRegularUserUsingAdmin();
+			assertToBeNonNullish(userId);
+
+			const result = await mercuriusClient.query(Query_eventsByAttendee, {
+				headers: { authorization: `bearer ${authToken}` },
+				variables: { userId, limit: -1 },
+			});
+			expect(result.data?.eventsByAttendee).toBeUndefined();
+			expect(result.errors).toEqual(
+				expect.arrayContaining([
+					expect.objectContaining({
+						extensions: expect.objectContaining({
+							code: "invalid_arguments",
+						}),
+					}),
+				]),
+			);
+		});
+
+		test("should return an error when offset is negative", async () => {
+			const { userId } = await createRegularUserUsingAdmin();
+			assertToBeNonNullish(userId);
+
+			const result = await mercuriusClient.query(Query_eventsByAttendee, {
+				headers: { authorization: `bearer ${authToken}` },
+				variables: { userId, offset: -1 },
+			});
+			expect(result.data?.eventsByAttendee).toBeUndefined();
+			expect(result.errors).toEqual(
+				expect.arrayContaining([
+					expect.objectContaining({
+						extensions: expect.objectContaining({
+							code: "invalid_arguments",
+						}),
+					}),
+				]),
+			);
+		});
+
+		test("should return an error when limit is greater than 100", async () => {
+			const { userId } = await createRegularUserUsingAdmin();
+			assertToBeNonNullish(userId);
+
+			const result = await mercuriusClient.query(Query_eventsByAttendee, {
+				headers: { authorization: `bearer ${authToken}` },
+				variables: { userId, limit: 101 },
+			});
+			expect(result.data?.eventsByAttendee).toBeUndefined();
+			expect(result.errors).toEqual(
+				expect.arrayContaining([
+					expect.objectContaining({
+						extensions: expect.objectContaining({
+							code: "invalid_arguments",
+						}),
+					}),
+				]),
+			);
+		});
 	});
 });
