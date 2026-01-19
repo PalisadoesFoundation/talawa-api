@@ -759,7 +759,7 @@ Corrective Action: {issue.action}
 """)
             print(f"""\
 Follow the online 'Google Python Style Guide' for our docstring expectations.
-There are {len(violations)} docstring violations
+There are {sum(len(v) for v in violations.values())} docstring violations
 """)
 
             sys.exit(1)
