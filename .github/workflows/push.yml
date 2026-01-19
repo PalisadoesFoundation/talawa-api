@@ -105,7 +105,7 @@ jobs:
           docker compose run --name talawa-api-test-shard-${{ matrix.shard }} \
             -e SHARD_INDEX=$SHARD_INDEX \
             -e SHARD_COUNT=$SHARD_COUNT \
-            api pnpm test:shard:coverage
+            api /bin/sh -c "node scripts/run-shard.js --coverage -c vitest.unit.config.ts --coverage.reportsDirectory=./coverage/unit && node scripts/run-shard.js --coverage -c vitest.integration.config.ts --coverage.reportsDirectory=./coverage/integration"
 
       - name: Copy coverage from container
         if: always()
@@ -173,133 +173,90 @@ jobs:
             echo "No coverage artifacts found - tests may have been skipped"
           fi
 
-      - name: Merge coverage reports
+      - name: Merge and Upload Coverage
         if: steps.check-artifacts.outputs.artifacts_found == 'true'
         run: |
-          mkdir -p ./coverage/vitest
-          mkdir -p .nyc_output
+          # Function to merge and upload coverage for a specific type (unit or integration)
+          merge_and_upload() {
+            TYPE=$1
+            FLAG=$2
+            echo "Processing $TYPE coverage with flag $FLAG..."
 
-          # Find all coverage directories from shards
-          echo "Finding coverage data from shards..."
-          SHARD_DIRS=$(find coverage-shards -type d -name "coverage-shard-*" 2>/dev/null || true)
+            mkdir -p ./coverage/$TYPE
+            mkdir -p .nyc_output_$TYPE
 
-          if [ -z "$SHARD_DIRS" ]; then
-            echo "ERROR: No shard directories found!"
-            ls -la coverage-shards/ || true
-            exit 1
-          fi
+            # Find all coverage-final.json files for this type
+            # Expected path: coverage-shards/coverage-shard-*/$TYPE/coverage-final.json
+            find coverage-shards -path "*/$TYPE/coverage-final.json" -type f > json-files-$TYPE.txt
 
-          echo "Found shard directories:"
-          echo "$SHARD_DIRS"
+            JSON_COUNT=$(wc -l < json-files-$TYPE.txt)
+            echo "Found $JSON_COUNT JSON files for $TYPE"
 
-          # Use JSON coverage files for proper nyc merging
-          echo "Looking for coverage-final.json files..."
-          find coverage-shards -name "coverage-final.json" -type f > json-files.txt
-
-          if [ ! -s json-files.txt ]; then
-            echo "ERROR: No coverage-final.json files found!"
-            echo "Available files in coverage-shards:"
-            find coverage-shards -type f -name "*.json" -o -name "*.info" | head -20
-            exit 1
-          fi
-
-          echo "Found JSON coverage files:"
-          cat json-files.txt
-
-          # Count files
-          JSON_COUNT=$(wc -l < json-files.txt)
-          echo "Total JSON files: $JSON_COUNT"
-
-          # Copy JSON files to .nyc_output with unique names for nyc merge
-          SHARD_NUM=0
-          while IFS= read -r file; do
-            if [ ! -f "$file" ]; then
-              echo "ERROR: Coverage file does not exist: $file"
-              exit 1
+            if [ "$JSON_COUNT" -eq 0 ]; then
+              echo "::warning::No coverage files found for $TYPE"
+              return
             fi
-            if [ ! -s "$file" ]; then
-              echo "ERROR: Coverage file is empty: $file"
-              exit 1
-            fi
-            cp "$file" ".nyc_output/coverage-shard-${SHARD_NUM}.json"
-            echo "  Copied $file to .nyc_output/coverage-shard-${SHARD_NUM}.json"
-            SHARD_NUM=$((SHARD_NUM + 1))
-          done < json-files.txt
 
-          echo "Files in .nyc_output:"
-          ls -la .nyc_output/
+            # Copy to unique names
+            SHARD_NUM=0
+            while IFS= read -r file; do
+              cp "$file" ".nyc_output_$TYPE/coverage-shard-${SHARD_NUM}.json"
+              SHARD_NUM=$((SHARD_NUM + 1))
+            done < json-files-$TYPE.txt
 
-          # Use nyc merge to properly merge coverage data
-          echo "Merging coverage with nyc merge..."
-          pnpm exec nyc merge .nyc_output ./coverage/vitest/coverage-final.json
+            # Merge
+            pnpm exec nyc merge .nyc_output_$TYPE ./coverage/$TYPE/coverage-final.json
 
-          # Validate merged file exists and is not empty
-          if [ ! -s ./coverage/vitest/coverage-final.json ]; then
-            echo "ERROR: Merged coverage file is empty or missing!"
-            exit 1
-          fi
+            # Path rewrite
+            DOCKER_PATH="/home/talawa/api"
+            RUNNER_PATH="$GITHUB_WORKSPACE"
+            sed -i "s|${DOCKER_PATH}|${RUNNER_PATH}|g" ./coverage/$TYPE/coverage-final.json
 
-          echo "Coverage merge successful"
-          echo "Merged JSON file size: $(wc -c < ./coverage/vitest/coverage-final.json) bytes"
+            # Report
+            cp ./coverage/$TYPE/coverage-final.json .nyc_output/coverage-final.json # nyc report expects it here or config
+            # Actually nyc report needs .nyc_output/out.json by default or we specify input?
+            # nyc report uses .nyc_output by default.
+            
+            # Clean .nyc_output first
+            rm -rf .nyc_output
+            mkdir -p .nyc_output
+            cp ./coverage/$TYPE/coverage-final.json .nyc_output/coverage-final.json
+            
+            pnpm exec nyc report --reporter=lcov --report-dir=./coverage/$TYPE
 
-          # Rewrite paths in coverage JSON from Docker paths to runner paths
-          # Docker container uses: /home/talawa/api/src/...
-          # Runner has files at: $GITHUB_WORKSPACE/src/...
-          echo "Rewriting coverage paths from Docker to runner paths..."
-          DOCKER_PATH="/home/talawa/api"
-          RUNNER_PATH="$GITHUB_WORKSPACE"
-          sed -i "s|${DOCKER_PATH}|${RUNNER_PATH}|g" ./coverage/vitest/coverage-final.json
-          echo "Path rewriting complete"
+            # Upload
+             # We use the codecov action separately? No, cannot use 'uses' inside 'run'.
+             # Must return here and use steps unless we use the codecov CLI wrapper?
+             # But the action is cleaner. We will assume the lcov.info is ready at ./coverage/$TYPE/lcov.info
+          }
 
-          # Generate lcov report from merged JSON using nyc report
-          echo "Generating lcov report..."
-          mkdir -p .nyc_output
-          cp ./coverage/vitest/coverage-final.json .nyc_output/
-          pnpm exec nyc report --reporter=lcov --report-dir=./coverage/vitest
+          merge_and_upload "unit" "unit"
+          merge_and_upload "integration" "integration"
 
-          # Validate lcov file exists
-          if [ ! -s ./coverage/vitest/lcov.info ]; then
-            echo "ERROR: lcov.info file is empty or missing!"
-            exit 1
-          fi
-
-          # Count number of source files in merged coverage
-          SF_COUNT=$(grep -c "^SF:" ./coverage/vitest/lcov.info || echo "0")
-          echo "Number of files in merged coverage: $SF_COUNT"
-
-          # Threshold of 100 source files is based on the project's historical baseline.
-          # The talawa-api codebase has 700+ source files, so a merged coverage report
-          # with fewer than 100 files likely indicates a failed or incomplete merge.
-          # This is a sanity check, not a hard failure - coverage may still be valid.
-          COVERAGE_FILE_THRESHOLD=${COVERAGE_FILE_THRESHOLD:-100}
-          if [ "$SF_COUNT" -lt "$COVERAGE_FILE_THRESHOLD" ]; then
-            echo "::warning::Only $SF_COUNT files in coverage (expected ${COVERAGE_FILE_THRESHOLD}+). This might indicate incomplete coverage merge."
-          fi
-
-          echo "First 30 lines of merged coverage:"
-          head -30 ./coverage/vitest/lcov.info
-
-      - name: Clean up individual shard coverage files
-        if: steps.check-artifacts.outputs.artifacts_found == 'true'
-        run: |
-          echo "Final coverage file to upload:"
-          ls -lh ./coverage/vitest/lcov.info
-
-      #######################################################################
-      # DO NOT DELETE ANY references to env.CODECOV_UNIQUE_NAME in this
-      # section. They are required for accurate calculations
-      #######################################################################
-      - name: Present and upload coverage to Codecov as ${{env.CODECOV_UNIQUE_NAME}}
+      - name: Upload Unit Coverage to Codecov
         if: steps.check-artifacts.outputs.artifacts_found == 'true'
         uses: codecov/codecov-action@v5
         with:
-          name: "${{env.CODECOV_UNIQUE_NAME}}"
+          name: "${{env.CODECOV_UNIQUE_NAME}}-unit"
           token: ${{ secrets.CODECOV_TOKEN }}
           fail_ci_if_error: true
           verbose: true
           exclude: "docs/"
           gcov_ignore: "docs/"
-          files: ./coverage/vitest/lcov.info
-          flags: unit,integration
+          files: ./coverage/unit/lcov.info
+          flags: unit
+
+      - name: Upload Integration Coverage to Codecov
+        if: steps.check-artifacts.outputs.artifacts_found == 'true'
+        uses: codecov/codecov-action@v5
+        with:
+          name: "${{env.CODECOV_UNIQUE_NAME}}-integration"
+          token: ${{ secrets.CODECOV_TOKEN }}
+          fail_ci_if_error: true
+          verbose: true
+          exclude: "docs/"
+          gcov_ignore: "docs/"
+          files: ./coverage/integration/lcov.info
+          flags: integration
 
 

@@ -42,7 +42,12 @@ if (
 }
 
 const args = ["vitest", "run"];
-if (withCoverage) args.push("--coverage");
+
+// Forward remaining arguments (excluding --coverage which we handle explicitly if needed, but vitest handles it too)
+// We need to pass arguments from process.argv that are not node or script path
+const extraArgs = process.argv.slice(2);
+args.push(...extraArgs);
+
 args.push("--shard", `${shardIndex}/${shardCount}`);
 
 // Ensure SHARD_INDEX is set for vitest.config.ts to detect sharded runs
