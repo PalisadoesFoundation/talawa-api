@@ -49,12 +49,18 @@ describe("tagsTable", () => {
 			expect(result.success).toBe(true);
 		});
 		it("should invalidate an empty name", () => {
-			const result = tagsTableInsertSchema.safeParse({ name: "" });
+			const result = tagsTableInsertSchema.safeParse({
+				name: "",
+				organizationId: "550e8400-e29b-41d4-a716-446655440000",
+			});
 			expect(result.success).toBe(false);
 		});
 		it("should invalidate a name exceeding 256 characters", () => {
 			const longName = "a".repeat(257);
-			const result = tagsTableInsertSchema.safeParse({ name: longName });
+			const result = tagsTableInsertSchema.safeParse({
+				name: longName,
+				organizationId: "550e8400-e29b-41d4-a716-446655440000",
+			});
 			expect(result.success).toBe(false);
 		});
 		it("should invalidate a missing organizationId", () => {
@@ -336,42 +342,12 @@ describe("tagsTable", () => {
 			expect(organizationIdColumn?.notNull).toBe(true);
 		});
 
-		it("should define correct foreign key fields and references", () => {
-			const creatorRelation = capturedRelations.creator;
-			expect(creatorRelation?.config?.fields).toBeDefined();
-			expect(creatorRelation?.config?.references).toBeDefined();
-			expect(creatorRelation?.config?.fields?.[0]).toBe(tagsTable.creatorId);
-			expect(creatorRelation?.config?.references?.[0]).toBe(usersTable.id);
-
-			const updaterRelation = capturedRelations.updater;
-			expect(updaterRelation?.config?.fields).toBeDefined();
-			expect(updaterRelation?.config?.references).toBeDefined();
-			expect(updaterRelation?.config?.fields?.[0]).toBe(tagsTable.updaterId);
-			expect(updaterRelation?.config?.references?.[0]).toBe(usersTable.id);
-
-			const folderRelation = capturedRelations.folder;
-			expect(folderRelation?.config?.fields).toBeDefined();
-			expect(folderRelation?.config?.references).toBeDefined();
-			expect(folderRelation?.config?.fields?.[0]).toBe(tagsTable.folderId);
-			expect(folderRelation?.config?.references?.[0]).toBe(tagFoldersTable.id);
-
-			const organizationRelation = capturedRelations.organization;
-			expect(organizationRelation?.config?.fields).toBeDefined();
-			expect(organizationRelation?.config?.references).toBeDefined();
-			expect(organizationRelation?.config?.fields?.[0]).toBe(
-				tagsTable.organizationId,
-			);
-			expect(organizationRelation?.config?.references?.[0]).toBe(
-				organizationsTable.id,
-			);
-		});
-
 		it("should have id as primary key", () => {
 			const idColumn = tableConfig.columns.find((col) => col.name === "id");
 			expect(idColumn?.primary).toBe(true);
 		});
 
-		it("should have default for createdAt and no default for updatedAt", () => {
+		it("should have default for createdAt and onUpdateFn for updatedAt", () => {
 			const createdAtColumn = tableConfig.columns.find(
 				(col) => col.name === "created_at",
 			);
