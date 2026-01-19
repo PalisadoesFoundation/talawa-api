@@ -1,6 +1,6 @@
 import { getTableName } from "drizzle-orm";
 import { getTableConfig, type PgColumn } from "drizzle-orm/pg-core";
-import { describe, expect, it } from "vitest";
+import { beforeEach, describe, expect, it } from "vitest";
 import {
 	eventVolunteerExceptionsTable,
 	eventVolunteerExceptionsTableRelations,
@@ -248,6 +248,16 @@ describe("src/drizzle/tables/eventVolunteerExceptions.ts", () => {
 				withFieldName: (fieldName: string) => RelationCall;
 			};
 
+			let one: Parameters<
+				typeof eventVolunteerExceptionsTableRelations.config
+			>[0]["one"];
+			let many: Parameters<
+				typeof eventVolunteerExceptionsTableRelations.config
+			>[0]["many"];
+			let relationsResult: ReturnType<
+				typeof eventVolunteerExceptionsTableRelations.config
+			>;
+
 			const createMockBuilders = () => {
 				const one = (table: unknown, config: unknown): RelationCall => {
 					const result: RelationCall = {
@@ -279,13 +289,17 @@ describe("src/drizzle/tables/eventVolunteerExceptions.ts", () => {
 				};
 			};
 
-			it("should define four relations", () => {
-				const { one, many } = createMockBuilders();
-				const relationsResult = eventVolunteerExceptionsTableRelations.config({
+			beforeEach(() => {
+				const builders = createMockBuilders();
+				one = builders.one;
+				many = builders.many;
+				relationsResult = eventVolunteerExceptionsTableRelations.config({
 					one,
 					many,
 				});
+			});
 
+			it("should define four relations", () => {
 				expect(relationsResult.volunteer).toBeDefined();
 				expect(relationsResult.recurringEventInstance).toBeDefined();
 				expect(relationsResult.createdByUser).toBeDefined();
@@ -293,11 +307,6 @@ describe("src/drizzle/tables/eventVolunteerExceptions.ts", () => {
 			});
 
 			it("should define volunteer as a one-to-one relation", () => {
-				const { one, many } = createMockBuilders();
-				const relationsResult = eventVolunteerExceptionsTableRelations.config({
-					one,
-					many,
-				});
 				const rel = relationsResult.volunteer as unknown as RelationCall;
 				expect(rel.type).toBe("one");
 				expect(rel.table).toBe(eventVolunteersTable);
@@ -308,11 +317,6 @@ describe("src/drizzle/tables/eventVolunteerExceptions.ts", () => {
 			});
 
 			it("should define recurringEventInstance as a one-to-one relation", () => {
-				const { one, many } = createMockBuilders();
-				const relationsResult = eventVolunteerExceptionsTableRelations.config({
-					one,
-					many,
-				});
 				const rel =
 					relationsResult.recurringEventInstance as unknown as RelationCall;
 				expect(rel.type).toBe("one");
@@ -326,11 +330,6 @@ describe("src/drizzle/tables/eventVolunteerExceptions.ts", () => {
 			});
 
 			it("should define createdByUser as a one-to-one relation", () => {
-				const { one, many } = createMockBuilders();
-				const relationsResult = eventVolunteerExceptionsTableRelations.config({
-					one,
-					many,
-				});
 				const rel = relationsResult.createdByUser as unknown as RelationCall;
 				expect(rel.type).toBe("one");
 				expect(rel.table).toBe(usersTable);
@@ -341,11 +340,6 @@ describe("src/drizzle/tables/eventVolunteerExceptions.ts", () => {
 			});
 
 			it("should define updatedByUser as a one-to-one relation", () => {
-				const { one, many } = createMockBuilders();
-				const relationsResult = eventVolunteerExceptionsTableRelations.config({
-					one,
-					many,
-				});
 				const rel = relationsResult.updatedByUser as unknown as RelationCall;
 				expect(rel.type).toBe("one");
 				expect(rel.table).toBe(usersTable);
