@@ -314,6 +314,8 @@ suite("Query field eventsByAttendee", () => {
 			expect(testEvent).toMatchObject({
 				id: eventId,
 				name: "Attendee Test Event",
+				isGenerated: false,
+				baseRecurringEventId: null,
 			});
 		});
 
@@ -1243,7 +1245,7 @@ suite("Query field eventsByAttendee", () => {
 
 			// Should find instances, not the template itself
 			const generatedInstances = events.filter((e) => e.isGenerated);
-			expect(generatedInstances.length).toBeGreaterThan(0);
+			expect(generatedInstances.length).toBe(3);
 			expect(generatedInstances[0]?.baseRecurringEventId).toBe(eventId);
 		});
 	});
