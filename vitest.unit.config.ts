@@ -27,19 +27,19 @@ const localThreads = Math.min(MAX_LOCAL_THREADS, Math.max(4, cpuCount));
 
 // Runtime observability for CI rollout
 if (isCI) {
-	const shardId = process.env.SHARD_INDEX || "unknown";
-	console.log(
-		`[Vitest Config] Shard ${shardId}: cpuCount=${cpuCount}, computedCiThreads=${computedCiThreads}, ciThreads=${ciThreads}`,
-	);
+	// const shardId = process.env.SHARD_INDEX || "unknown";
+	// console.log(
+	// 	`[Vitest Config] Shard ${shardId}: cpuCount=${cpuCount}, computedCiThreads=${computedCiThreads}, ciThreads=${ciThreads}`,
+	// );
 	if (ciThreads < cpuCount) {
-		console.warn(
-			`[Vitest Config] Thread count reduced from ${cpuCount} to ${ciThreads} to prevent over-subscription`,
-		);
+		// console.warn(
+		// 	`[Vitest Config] Thread count reduced from ${cpuCount} to ${ciThreads} to prevent over-subscription`,
+		// );
 	}
 	if (envCiThreads) {
-		console.log(
-			`[Vitest Config] Using VITEST_CI_THREADS override: ${ciThreads}`,
-		);
+		// console.log(
+		// 	`[Vitest Config] Using VITEST_CI_THREADS override: ${ciThreads}`,
+		// );
 	}
 }
 
@@ -89,7 +89,6 @@ export default defineConfig({
 				"**/scripts/**", // Mirror test exclusion to exclude nested scripts
 			],
 		},
-
 
 		// https://vitest.dev/config/#globalsetup
 		globalSetup: [],
