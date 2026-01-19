@@ -1,3 +1,5 @@
+import type { z } from "zod";
+import type { userEmploymentStatusEnum } from "~/src/drizzle/enums/userEmploymentStatus";
 import { UserEmploymentStatus } from "~/src/graphql/enums/UserEmploymentStatus";
 import envConfig from "~/src/utilities/graphqLimits";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
@@ -8,6 +10,7 @@ User.implement({
 		employmentStatus: t.field({
 			description: "Employment status of the user.",
 			complexity: envConfig.API_GRAPHQL_SCALAR_RESOLVER_FIELD_COST,
+			nullable: true,
 			resolve: async (parent, _args, ctx) => {
 				if (!ctx.currentClient.isAuthenticated) {
 					throw new TalawaGraphQLError({
@@ -45,7 +48,9 @@ User.implement({
 					});
 				}
 
-				return parent.employmentStatus;
+				return parent.employmentStatus as z.infer<
+					typeof userEmploymentStatusEnum
+				> | null;
 			},
 			type: UserEmploymentStatus,
 		}),

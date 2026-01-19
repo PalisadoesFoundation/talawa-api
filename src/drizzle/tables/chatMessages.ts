@@ -9,6 +9,7 @@ import {
 } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { uuidv7 } from "uuidv7";
+import { z } from "zod";
 import { chatsTable } from "./chats";
 import { usersTable } from "./users";
 
@@ -121,5 +122,9 @@ export const chatMessagesTableInsertSchema = createInsertSchema(
 	chatMessagesTable,
 	{
 		body: (schema) => schema.min(1).max(2048),
+		chatId: (_schema) => z.string().uuid(),
+		creatorId: (_schema) => z.string().uuid().nullable().optional(),
+		id: (_schema) => z.string().uuid().optional(),
+		parentMessageId: (_schema) => z.string().uuid().nullable().optional(),
 	},
 );
