@@ -293,7 +293,14 @@ describe("src/drizzle/tables/postAttachments", () => {
 		});
 
 		it("should accept name with exactly minimum length (1 character)", () => {
-			const validData = { name: "a" };
+			const validData = {
+				name: "a",
+				mimeType: "image/png",
+				postId: crypto.randomUUID(),
+				objectName: "obj",
+				fileHash: "hash",
+				creatorId: crypto.randomUUID(),
+			};
 			const result = postAttachmentsTableInsertSchema.safeParse(validData);
 			expect(result.success).toBe(true);
 		});
