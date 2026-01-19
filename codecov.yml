@@ -9,6 +9,14 @@ flags:
   unit:
     paths:
       - test/unit/
+      - test/utilities/
+      - test/services/
+      - test/routes/
+      - test/observability/
+      - test/workers/
+      - test/config/
+      - test/fastifyPlugins/
+      - test/plugin/
       - src/utilities/
       - src/services/
       - src/routes/
@@ -37,4 +45,3 @@ flag_management:
       - type: patch
         target: 80%
         threshold: 1%
-
