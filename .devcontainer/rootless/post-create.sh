@@ -6,15 +6,20 @@ set -eu
 
 # Source fnm from talawa user's installation
 export PATH="/home/talawa/.local/share/fnm:$PATH"
+
+# Preflight check for fnm (must run before eval to avoid hard failure)
+if ! command -v fnm >/dev/null 2>&1; then
+  echo "Error: Required command 'fnm' is not installed." >&2
+  exit 1
+fi
+
 eval "$(fnm env --corepack-enabled --resolve-engines --use-on-cd --version-file-strategy=recursive)"
 
-# Preflight checks for fnm and corepack (pnpm checked after corepack enable)
-for cmd in fnm corepack; do
-  if ! command -v "$cmd" >/dev/null 2>&1; then
-    echo "Error: Required command '$cmd' is not installed." >&2
-    exit 1
-  fi
-done
+# Preflight check for corepack (pnpm checked after corepack enable)
+if ! command -v corepack >/dev/null 2>&1; then
+  echo "Error: Required command 'corepack' is not installed." >&2
+  exit 1
+fi
 
 # Create directories if they don't exist
 mkdir -p .pnpm-store node_modules
