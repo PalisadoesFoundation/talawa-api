@@ -434,6 +434,7 @@ jobs:
 
   Run-Tests:
     name: Run tests for talawa api (Shard ${{ matrix.shard }})
+    timeout-minutes: 10
     runs-on: ubuntu-latest
     needs: [Pre-Test-Checks-Pass]
     env:
