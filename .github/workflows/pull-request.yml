@@ -639,7 +639,34 @@ jobs:
           process_coverage "unit"
           process_coverage "integration"
 
-
+          # Create a combined report for local VeryGoodCoverage check
+          echo "Merging ALL coverage for local check..."
+          mkdir -p .nyc_output_all
+          mkdir -p ./coverage/vitest
+          
+          find coverage-shards -name "coverage-final.json" -type f > json-files-all.txt
+          
+          SHARD_NUM=0
+          while IFS= read -r file; do
+             cp "$file" ".nyc_output_all/coverage-shard-${SHARD_NUM}.json"
+             SHARD_NUM=$((SHARD_NUM + 1))
+          done < json-files-all.txt
+          
+          pnpm exec nyc merge .nyc_output_all ./coverage/vitest/coverage-final.json
+          
+          # Path rewrite
+          DOCKER_PATH="/home/talawa/api"
+          RUNNER_PATH="$GITHUB_WORKSPACE"
+          sed -i "s|${DOCKER_PATH}|${RUNNER_PATH}|g" ./coverage/vitest/coverage-final.json
+          
+          # Report
+          rm -rf .nyc_output
+          mkdir -p .nyc_output
+          cp ./coverage/vitest/coverage-final.json .nyc_output/coverage-final.json
+          pnpm exec nyc report --reporter=lcov --report-dir=./coverage/vitest
+          
+          rm -rf .nyc_output_all .nyc_output
+          
       - name: Calculate merge base for Codecov
         if: steps.check-artifacts.outputs.artifacts_found == 'true'
         id: get-merge-base
@@ -665,7 +692,6 @@ jobs:
           exclude: "docs/"
           gcov_ignore: "docs/"
           files: ./coverage/unit/lcov.info
-          commit_parent: ${{ steps.get-merge-base.outputs.merge_base }}
           flags: unit
 
       - name: Upload Integration Coverage to Codecov
@@ -679,7 +705,6 @@ jobs:
           exclude: "docs/"
           gcov_ignore: "docs/"
           files: ./coverage/integration/lcov.info
-          commit_parent: ${{ steps.get-merge-base.outputs.merge_base }}
           flags: integration
 
       - name: Test acceptable level of code coverage
