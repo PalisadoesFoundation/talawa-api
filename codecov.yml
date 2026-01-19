@@ -11,11 +11,21 @@ flags:
       - test/unit/
       - src/utilities/
       - src/services/
+      - src/routes/
+      - src/observability/
+      - src/workers/
+      - src/config/
+      - src/fastifyPlugins/
+      - src/plugin/
+      - src/plugins/
   integration:
     paths:
       - test/drizzle/
       - test/graphql/
       - test/install/
+      - src/drizzle/
+      - src/graphql/
+      - src/install/
 
 flag_management:
   default_rules:
