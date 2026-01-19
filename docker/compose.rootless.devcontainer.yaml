@@ -183,6 +183,7 @@ services:
         name: redis
         published: ${REDIS_MAPPED_PORT:?error}
         target: 6379
+    # No volume: Redis is used for caching/ephemeral data in dev, persistence not required.
   redis-test:
     ports:
       - host_ip: ${REDIS_MAPPED_HOST_IP:?error}
@@ -203,3 +204,4 @@ volumes:
   postgres_data:
   postgres_test_data:
   redis_test_data:
+

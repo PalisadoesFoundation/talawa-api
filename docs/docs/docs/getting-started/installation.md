@@ -380,6 +380,20 @@ This project supports running the devcontainer in Docker Rootless mode. This all
 *   The `DOCKER_HOST` environment variable must be set.
     *   Example: `export DOCKER_HOST=unix:///run/user/$UID/docker.sock`
     *   It is recommended to add this to your shell configuration (e.g., `.bashrc` or `.zshrc`).
+*   **Environment Variables**: Ensure `UID` and `XDG_RUNTIME_DIR` are set.
+    *   **Bash/Zsh**:
+        ```bash
+        export UID=$(id -u)
+        export XDG_RUNTIME_DIR=/run/user/$UID
+        ```
+    *   These are used to locate the correct Docker socket.
+
+#### Technical Details
+
+The rootless configuration uses a specific `compose.rootless.devcontainer.yaml` file.
+
+*   **Socket Mounting**: It mounts the host Docker socket from `${XDG_RUNTIME_DIR:-/run/user/${UID}}/docker.sock` to `/var/run/docker.sock` inside the container. This ensures the container can communicate with the host's rootless Docker daemon.
+*   **User Mapping**: The container is configured to run as `root` internally, but due to **User Namespace Remapping** in rootless Docker, this maps to your non-root host user. This allows the container to write to bind-mounted directories (like the workspace) with the correct permissions for your host user.
 
 #### Usage
 
@@ -391,7 +405,15 @@ This project supports running the devcontainer in Docker Rootless mode. This all
     ```
 4.  Verify the container starts and the API is accessible at [http://localhost:4000](http://localhost:4000).
 
-**Note:** The rootless configuration uses a specific `compose.rootless.devcontainer.yaml` file to handle socket mounting and permissions correctly. The user inside the container will be mapped to your host user.
+#### Troubleshooting
+
+*   **Permission Errors**: If you encounter permission errors accessing the Docker socket:
+    *   Verify the socket exists at `$XDG_RUNTIME_DIR/docker.sock` or `/run/user/$UID/docker.sock`.
+    *   Ensure your user has read/write access to this socket file.
+*   **Socket Not Found**:
+    *   Check your `DOCKER_HOST` variable.
+    *   Ensure the `XDG_RUNTIME_DIR` variable is set correctly on your host machine before starting VS Code or the devcontainer CLI.
+
 
 **Note:** Restart the docker if you are getting this error `Cannot connect to the Docker daemon `
 
