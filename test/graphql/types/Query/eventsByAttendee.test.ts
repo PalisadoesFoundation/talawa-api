@@ -812,6 +812,17 @@ suite("Query field eventsByAttendee", () => {
 				},
 			});
 
+			// Register user for the recurring event TEMPLATE as well (deduplication check)
+			await mercuriusClient.mutate(Mutation_registerEventAttendee, {
+				headers: { authorization: `bearer ${authToken}` },
+				variables: {
+					data: {
+						userId,
+						eventId: baseEventId,
+					},
+				},
+			});
+
 			// Query attended events
 			const result = await mercuriusClient.query(Query_eventsByAttendee, {
 				headers: { authorization: `bearer ${authToken}` },
@@ -834,11 +845,11 @@ suite("Query field eventsByAttendee", () => {
 			);
 			expect(hasStandalone).toBe(true);
 
-			// Check that recurring instance is present
-			const hasRecurring = events.some(
+			// Check that recurring instance is present AND unique (deduped)
+			const recurringInstances = events.filter(
 				(e) => e.name === "Mixed Test Recurring Event" && e.id === instance.id,
 			);
-			expect(hasRecurring).toBe(true);
+			expect(recurringInstances.length).toBe(1);
 		});
 
 		test("should exclude cancelled template instances", async () => {

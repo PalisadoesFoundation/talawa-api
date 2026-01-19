@@ -277,7 +277,9 @@ builder.queryField("eventsByAttendee", (t) =>
 				}
 
 				for (const instance of recurringInstances) {
-					eventMap.set(instance.id, mapRecurringInstanceToEvent(instance));
+					if (!instance.isCancelled) {
+						eventMap.set(instance.id, mapRecurringInstanceToEvent(instance));
+					}
 				}
 
 				// Reorder based on pagedReferenceEvents to maintain sort order
