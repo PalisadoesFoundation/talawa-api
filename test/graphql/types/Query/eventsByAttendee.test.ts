@@ -799,6 +799,12 @@ suite("Query field eventsByAttendee", () => {
 				(e) => e.name === "Mixed Test Standalone Event",
 			);
 			expect(hasStandalone).toBe(true);
+
+			// Check that recurring instance is present
+			const hasRecurring = events.some(
+				(e) => e.name === "Mixed Test Recurring Event" && e.id === instance.id,
+			);
+			expect(hasRecurring).toBe(true);
 		});
 
 		test("should return all instances when registered for an entire recurring event series", async () => {

@@ -1,6 +1,7 @@
-import { and, eq, or } from "drizzle-orm";
+import { and, eq, inArray, or } from "drizzle-orm";
 import { z } from "zod";
 import { eventAttendeesTable } from "~/src/drizzle/tables/eventAttendees";
+import { recurringEventInstancesTable } from "~/src/drizzle/tables/recurringEventInstances";
 import { usersTable } from "~/src/drizzle/tables/users";
 import { builder } from "~/src/graphql/builder";
 import { Event } from "~/src/graphql/types/Event/Event";
@@ -8,7 +9,7 @@ import {
 	type EventWithAttachments,
 	getEventsByIds,
 } from "~/src/graphql/types/Query/eventQueries";
-import { getRecurringEventInstancesByBaseIds } from "~/src/graphql/types/Query/eventQueries/recurringEventInstanceQueries";
+import { getRecurringEventInstancesByIds } from "~/src/graphql/types/Query/eventQueries/recurringEventInstanceQueries";
 import { mapRecurringInstanceToEvent } from "~/src/graphql/utils/mapRecurringInstanceToEvent";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 
@@ -109,6 +110,7 @@ builder.queryField("eventsByAttendee", (t) =>
 
 			try {
 				// Get all attendee records where user is registered OR checked in OR checked out
+				// Use relations to fetch start times for sorting
 				const attendeeRecords =
 					await ctx.drizzleClient.query.eventAttendeesTable.findMany({
 						columns: {
@@ -123,92 +125,179 @@ builder.queryField("eventsByAttendee", (t) =>
 								eq(eventAttendeesTable.isCheckedOut, true),
 							),
 						),
+						with: {
+							event: {
+								columns: {
+									startAt: true,
+									isRecurringEventTemplate: true,
+								},
+							},
+							recurringEventInstance: {
+								columns: {
+									actualStartTime: true,
+								},
+							},
+						},
 					});
 
 				if (attendeeRecords.length === 0) {
 					return [];
 				}
 
-				// Separate standalone event IDs and recurring instance IDs
-				const eventIds: string[] = [];
-				for (const record of attendeeRecords) {
-					// Check recurringEventInstanceId first (takes priority)
-					if (record.recurringEventInstanceId) {
-						eventIds.push(record.recurringEventInstanceId);
-					} else if (record.eventId) {
-						eventIds.push(record.eventId);
-					}
-				}
+				// Build lightweight list for sorting and pagination
+				const allReferenceEvents: {
+					id: string;
+					startAt: number;
+					isRecurringInstance: boolean;
+				}[] = [];
 
-				// Remove duplicates
-				const uniqueEventIds = [...new Set(eventIds)];
-
-				// Use existing utility to fetch events by IDs
-				const initialEvents = await getEventsByIds(
-					uniqueEventIds,
-					ctx.drizzleClient,
-					ctx.log,
-				);
-
-				const events: EventWithAttachments[] = [];
 				const recurringTemplateIds: string[] = [];
 
-				// First pass: Collect standalone events and template IDs
-				for (const event of initialEvents) {
+				for (const record of attendeeRecords) {
 					if (
-						"isRecurringEventTemplate" in event &&
-						event.isRecurringEventTemplate
+						record.recurringEventInstanceId &&
+						record.recurringEventInstance
 					) {
-						recurringTemplateIds.push(event.id);
-					} else {
-						events.push(event);
+						allReferenceEvents.push({
+							id: record.recurringEventInstanceId,
+							startAt: new Date(
+								record.recurringEventInstance.actualStartTime,
+							).getTime(),
+							isRecurringInstance: true,
+						});
+					} else if (record.eventId && record.event) {
+						// Check if this "event" is actually a template
+						// We need to check isRecurringEventTemplate.
+						// Note: We need to ensure we fetched this column in `with`.
+						// Since we modify the query above to fetch it, we can check it here.
+						const isTemplate = (
+							record.event as { isRecurringEventTemplate: boolean }
+						).isRecurringEventTemplate;
+
+						if (isTemplate) {
+							recurringTemplateIds.push(record.eventId);
+						} else {
+							allReferenceEvents.push({
+								id: record.eventId,
+								startAt: new Date(record.event.startAt).getTime(),
+								isRecurringInstance: false,
+							});
+						}
 					}
 				}
 
-				// Batch fetch instances for all templates
-				const windowSize = offset + limit;
-				const existingEventIds = new Set(events.map((e) => e.id));
+				// If we have templates, fetch their instance references
+				if (recurringTemplateIds.length > 0) {
+					const templateInstances =
+						await ctx.drizzleClient.query.recurringEventInstancesTable.findMany(
+							{
+								columns: {
+									id: true,
+									actualStartTime: true,
+								},
+								where: inArray(
+									recurringEventInstancesTable.baseRecurringEventId,
+									recurringTemplateIds,
+								),
+							},
+						);
 
-				const instances = await getRecurringEventInstancesByBaseIds(
-					recurringTemplateIds,
-					ctx.drizzleClient,
-					ctx.log,
-					{
-						limit: windowSize,
-						includeCancelled: false,
-						excludeInstanceIds: Array.from(existingEventIds),
-					},
-				);
-
-				for (const instance of instances) {
-					events.push(mapRecurringInstanceToEvent(instance));
+					for (const instance of templateInstances) {
+						allReferenceEvents.push({
+							id: instance.id,
+							startAt: new Date(instance.actualStartTime).getTime(),
+							isRecurringInstance: true,
+						});
+					}
 				}
+
+				// Remove duplicates (though ID should be unique per record, logic ensures one or the other)
+				// Using Map to ensure uniqueness by ID
+				const uniqueEventsMap = new Map<
+					string,
+					{ id: string; startAt: number; isRecurringInstance: boolean }
+				>();
+				for (const evt of allReferenceEvents) {
+					uniqueEventsMap.set(evt.id, evt);
+				}
+				const uniqueReferenceEvents = Array.from(uniqueEventsMap.values());
 
 				// Sort by start time
-				events.sort((a, b) => {
-					const aTime = new Date(a.startAt).getTime();
-					const bTime = new Date(b.startAt).getTime();
-					if (aTime === bTime) {
+				uniqueReferenceEvents.sort((a, b) => {
+					if (a.startAt === b.startAt) {
 						return a.id.localeCompare(b.id);
 					}
-					return aTime - bTime;
+					return a.startAt - b.startAt;
 				});
 
-				const slicedEvents = events.slice(offset, offset + limit);
+				// Apply pagination
+				const pagedReferenceEvents = uniqueReferenceEvents.slice(
+					offset,
+					offset + limit,
+				);
+
+				if (pagedReferenceEvents.length === 0) {
+					return [];
+				}
+
+				// Separate IDs for fetching
+				const standaloneEventIds: string[] = [];
+				const recurringInstanceIds: string[] = [];
+
+				for (const ref of pagedReferenceEvents) {
+					if (ref.isRecurringInstance) {
+						recurringInstanceIds.push(ref.id);
+					} else {
+						standaloneEventIds.push(ref.id);
+					}
+				}
+
+				// Fetch full data in parallel
+				const [standaloneEvents, recurringInstances] = await Promise.all([
+					standaloneEventIds.length > 0
+						? getEventsByIds(standaloneEventIds, ctx.drizzleClient, ctx.log)
+						: Promise.resolve([]),
+					recurringInstanceIds.length > 0
+						? getRecurringEventInstancesByIds(
+								recurringInstanceIds,
+								ctx.drizzleClient,
+								ctx.log,
+							)
+						: Promise.resolve([]),
+				]);
+
+				// Combine and map
+				const eventMap = new Map<string, EventWithAttachments>();
+
+				for (const event of standaloneEvents) {
+					eventMap.set(event.id, event);
+				}
+
+				for (const instance of recurringInstances) {
+					eventMap.set(instance.id, mapRecurringInstanceToEvent(instance));
+				}
+
+				// Reorder based on pagedReferenceEvents to maintain sort order
+				const resultEvents: EventWithAttachments[] = [];
+				for (const ref of pagedReferenceEvents) {
+					const event = eventMap.get(ref.id);
+					if (event) {
+						resultEvents.push(event);
+					}
+				}
 
 				ctx.log.debug(
 					{
 						userId: targetUserId,
-						totalEvents: events.length,
-						returnedEvents: slicedEvents.length,
-						attendeeRecords: attendeeRecords.length,
+						totalFound: uniqueReferenceEvents.length,
+						returnedEvents: resultEvents.length,
 						limit,
 						offset,
 					},
-					"Retrieved events by attendee",
+					"Retrieved events by attendee (optimized)",
 				);
 
-				return slicedEvents;
+				return resultEvents;
 			} catch (error) {
 				ctx.log.error(
 					{

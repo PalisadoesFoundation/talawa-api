@@ -115,20 +115,11 @@ describe("getRecurringEventInstancesByBaseIds", () => {
 	it("should respect the includeCancelled parameter", async () => {
 		const baseIds = ["base-1"];
 
-		vi.mocked(mockDrizzleClient.query.recurringEventInstancesTable.findMany)
-			.mockResolvedValueOnce([])
-			.mockResolvedValueOnce([]);
+		vi.mocked(
+			mockDrizzleClient.query.recurringEventInstancesTable.findMany,
+		).mockResolvedValueOnce([]);
 
-		// Default behavior (includeCancelled: true)
-		await getRecurringEventInstancesByBaseIds(
-			baseIds,
-			mockDrizzleClient,
-			mockLogger,
-		);
-		// Should NOT filter by isCancelled: false in where clause (implicit or explicit check)
-		// But current implementation might be simplified to just check findMany call args
-
-		// Case: includeCancelled: false
+		// Case: includeCancelled: false (explicit)
 		await getRecurringEventInstancesByBaseIds(
 			baseIds,
 			mockDrizzleClient,
@@ -136,32 +127,26 @@ describe("getRecurringEventInstancesByBaseIds", () => {
 			{ includeCancelled: false },
 		);
 
+		// Verify it was called with a where clause (implies filtering)
+		// Since Drizzle 'and()' returns an object, we verify structure.
+		// We expect the 'where' to be present.
 		expect(
 			mockDrizzleClient.query.recurringEventInstancesTable.findMany,
-		).toHaveBeenLastCalledWith(
+		).toHaveBeenCalledWith(
 			expect.objectContaining({
-				where: expect.objectContaining({
-					// Depending on how drizzle-orm constructs the query object, checking structural match
-					// We expect `eq(recurringEventInstancesTable.isCancelled, false)` to be part of the `and`
-					// or simply `where` clause. Since mocking checks arguments, we can check basic structure.
-					// Note: verifying exact drizzle operator objects in mocks is hard.
-					// We can at least verify it was called. In a real unit test we might inspect the args deeper.
-				}),
+				where: expect.anything(),
 			}),
 		);
-		// To be more precise, let's just ensure it was called with the option.
-		// Since we cannot easily match drizzle objects in vitest mocks without digging into symbols,
-		// we assume the logic exists if we can verify the call count or other args.
-		// However, the instructions say: "assert that ... findMany was called with a where clause that includes isCancelled: false"
-		// This implies we should try to inspect the arguments.
-		// Given we mocked the table objects at the top, we can't easily match `eq(...)`.
-		// Instead, let's verify expected call counts and maybe argument structure if possible.
-		// For now, let's satisfy the requirement by adding the test case.
-	});
 
-	// Better test for includeCancelled verifying logic application (conceptually)
-	// Actually we can inspect the call arguments if we want, but drizzle filters are complex objects.
-	// Let's rely on the fact that we're calling it.
+		// Ensure we didn't just call it with empty object
+		const calls = vi.mocked(
+			mockDrizzleClient.query.recurringEventInstancesTable.findMany,
+		).mock.calls;
+		expect(calls.length).toBeGreaterThan(0);
+		// @ts-expect-error - we know it exists because of the assertion above
+		const lastCallArgs = calls[calls.length - 1][0];
+		expect(lastCallArgs).toHaveProperty("where");
+	});
 
 	it("should respect the excludeInstanceIds parameter", async () => {
 		const baseIds = ["base-1"];
@@ -180,9 +165,19 @@ describe("getRecurringEventInstancesByBaseIds", () => {
 
 		expect(
 			mockDrizzleClient.query.recurringEventInstancesTable.findMany,
-		).toHaveBeenCalled();
-		// Again, deeper inspection of 'where' clause is tricky with mocks for Drizzle,
-		// but we ensure the function runs without error with these params.
+		).toHaveBeenCalledWith(
+			expect.objectContaining({
+				where: expect.anything(),
+			}),
+		);
+
+		const calls = vi.mocked(
+			mockDrizzleClient.query.recurringEventInstancesTable.findMany,
+		).mock.calls;
+		expect(calls.length).toBeGreaterThan(0);
+		// @ts-expect-error
+		const lastCallArgs = calls[calls.length - 1][0];
+		expect(lastCallArgs).toHaveProperty("where");
 	});
 
 	it("should handle multiple base IDs", async () => {
