@@ -852,6 +852,143 @@ suite("Query field eventsByAttendee", () => {
 			expect(recurringInstances.length).toBe(1);
 		});
 
+		test("should exclude cancelled recurring instances when registered directly", async () => {
+			const { userId } = await createRegularUserUsingAdmin();
+			assertToBeNonNullish(userId);
+
+			const createOrgResult = await mercuriusClient.mutate(
+				Mutation_createOrganization,
+				{
+					headers: { authorization: `bearer ${authToken}` },
+					variables: {
+						input: {
+							name: `Direct Cancelled Instance Org ${faker.string.ulid()}`,
+							description: "Test org",
+							countryCode: "us",
+							state: "CA",
+							city: "Los Angeles",
+							postalCode: "90001",
+							addressLine1: "123 Test St",
+						},
+					},
+				},
+			);
+			const orgId = createOrgResult.data?.createOrganization?.id;
+			assertToBeNonNullish(orgId);
+
+			await mercuriusClient.mutate(Mutation_createOrganizationMembership, {
+				headers: { authorization: `bearer ${authToken}` },
+				variables: {
+					input: {
+						memberId: adminUserId,
+						organizationId: orgId,
+						role: "administrator",
+					},
+				},
+			});
+
+			// Create a recurring event
+			const recurringEventResult = await mercuriusClient.mutate(
+				Mutation_createEvent,
+				{
+					headers: { authorization: `bearer ${authToken}` },
+					variables: {
+						input: {
+							name: "Direct Cancelled Test Event",
+							description: "Recurring event for cancelled instance test",
+							organizationId: orgId,
+							startAt: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
+							endAt: new Date(Date.now() + 25 * 60 * 60 * 1000).toISOString(),
+							recurrence: {
+								frequency: "DAILY",
+								count: 3,
+							},
+						},
+					},
+				},
+			);
+			const baseEventId = recurringEventResult.data?.createEvent?.id;
+			assertToBeNonNullish(baseEventId);
+
+			// Volunteer to generate instances
+			const adminVolunteerResult = await mercuriusClient.mutate(
+				Mutation_createEventVolunteer,
+				{
+					headers: { authorization: `bearer ${authToken}` },
+					variables: {
+						input: {
+							userId: adminUserId,
+							eventId: baseEventId,
+							scope: "ENTIRE_SERIES",
+						},
+					},
+				},
+			);
+			const adminVolunteerId =
+				adminVolunteerResult.data?.createEventVolunteer?.id;
+			assertToBeNonNullish(adminVolunteerId);
+
+			await mercuriusClient.mutate(Mutation_updateEventVolunteer, {
+				headers: { authorization: `bearer ${authToken}` },
+				variables: {
+					id: adminVolunteerId,
+					data: { hasAccepted: true },
+				},
+			});
+
+			// Get an instance ID
+			const adminEventsResult = await mercuriusClient.query(
+				Query_eventsByVolunteer,
+				{
+					headers: { authorization: `bearer ${authToken}` },
+					variables: { userId: adminUserId },
+				},
+			);
+			const adminEvents = adminEventsResult.data?.eventsByVolunteer as Array<{
+				id: string;
+				name: string;
+			}>;
+			const instance = adminEvents?.find(
+				(e) => e.name === "Direct Cancelled Test Event",
+			);
+			assertToBeNonNullish(instance);
+			const instanceId = instance.id;
+
+			// Register user for that specific instance
+			await mercuriusClient.mutate(Mutation_registerEventAttendee, {
+				headers: { authorization: `bearer ${authToken}` },
+				variables: {
+					data: {
+						userId,
+						recurringEventInstanceId: instanceId,
+					},
+				},
+			});
+
+			// Mark the instance as cancelled directly in DB
+			await server.drizzleClient
+				.update(recurringEventInstancesTable)
+				.set({ isCancelled: true })
+				.where(eq(recurringEventInstancesTable.id, instanceId));
+
+			// Query events
+			const result = await mercuriusClient.query(Query_eventsByAttendee, {
+				headers: { authorization: `bearer ${authToken}` },
+				variables: { userId },
+			});
+
+			expect(result.errors).toBeUndefined();
+			const events = result.data?.eventsByAttendee as Array<{
+				id: string;
+				name: string;
+			}>;
+			assertToBeNonNullish(events);
+
+			// Should NOT contain the cancelled instance
+			const hasCancelled = events.some((e) => e.id === instanceId);
+			expect(hasCancelled).toBe(false);
+		});
+
 		test("should exclude cancelled template instances", async () => {
 			const { userId } = await createRegularUserUsingAdmin();
 			assertToBeNonNullish(userId);
