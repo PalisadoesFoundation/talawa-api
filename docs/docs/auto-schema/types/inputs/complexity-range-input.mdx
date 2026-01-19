@@ -1,6 +1,6 @@
 ---
-id: float
-title: Float
+id: complexity-range-input
+title: ComplexityRangeInput
 ---
 
 export const Bullet = () => (
@@ -71,12 +71,25 @@ export const Details = ({
   );
 };
 
-The `Float` scalar type represents signed double-precision fractional values as specified by [IEEE 754](https://en.wikipedia.org/wiki/IEEE_floating_point).
+Input type for defining a complexity range filter. Both min and max must be non-negative numbers, and min must be less than or equal to max.
 
 ```graphql
-scalar Float
+input ComplexityRangeInput {
+  max: Float!
+  min: Float!
+}
 ```
+
+### Fields
+
+#### [<code style={{ fontWeight: 'normal' }}>ComplexityRangeInput.<b>max</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>Float!</b></code>](/auto-schema/types/scalars/float.mdx) <Badge class="badge badge--secondary badge--non_null" text="non-null"/> <Badge class="badge badge--secondary " text="scalar"/>
+
+Maximum complexity score (inclusive). Must be non-negative and greater than or equal to min.
+
+#### [<code style={{ fontWeight: 'normal' }}>ComplexityRangeInput.<b>min</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>Float!</b></code>](/auto-schema/types/scalars/float.mdx) <Badge class="badge badge--secondary badge--non_null" text="non-null"/> <Badge class="badge badge--secondary " text="scalar"/>
+
+Minimum complexity score (inclusive). Must be non-negative and less than or equal to max.
 
 ### Member Of
 
-[`ComplexityRangeInput`](/auto-schema/types/inputs/complexity-range-input.mdx) <Badge class="badge badge--secondary badge--relation" text="input"/><Bullet />[`EventVolunteer`](/auto-schema/types/objects/event-volunteer.mdx) <Badge class="badge badge--secondary badge--relation" text="object"/><Bullet />[`MetricsFilterInput`](/auto-schema/types/inputs/metrics-filter-input.mdx) <Badge class="badge badge--secondary badge--relation" text="input"/><Bullet />[`MetricsInput`](/auto-schema/types/inputs/metrics-input.mdx) <Badge class="badge badge--secondary badge--relation" text="input"/>
+[`MetricsFilterInput`](/auto-schema/types/inputs/metrics-filter-input.mdx) <Badge class="badge badge--secondary badge--relation" text="input"/>
