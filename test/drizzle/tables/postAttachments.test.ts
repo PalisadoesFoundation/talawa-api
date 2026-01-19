@@ -82,7 +82,7 @@ async function createTestPost(): Promise<string> {
 
 describe("src/drizzle/tables/postAttachments", () => {
 	describe("PostAttachments Table Schema", () => {
-		it("hould have the correct schema", () => {
+		it("should have the correct schema", () => {
 			const columns = Object.keys(postAttachmentsTable);
 			expect(columns).toContain("createdAt");
 			expect(columns).toContain("id");
@@ -623,6 +623,45 @@ describe("src/drizzle/tables/postAttachments", () => {
 			expect(updated).toBeDefined();
 			expect(updated?.updaterId).toBeNull();
 		});
+
+		it("should delete attachment when post is deleted (cascade)", async () => {
+			const { userId } = await createRegularUserUsingAdmin();
+			const postId = await createTestPost();
+
+			const [inserted] = await server.drizzleClient
+				.insert(postAttachmentsTable)
+				.values({
+					name: faker.system.fileName(),
+					creatorId: userId,
+					mimeType: "image/png",
+					postId: postId,
+					objectName: faker.system.fileName(),
+					fileHash: faker.string.hexadecimal({ length: 64 }),
+				})
+				.returning();
+
+			expect(inserted).toBeDefined();
+			if (!inserted) {
+				throw new Error("Failed to insert PostAttachment record");
+			}
+			expect(inserted.updaterId).toBe(userId);
+
+			const postAttachmentId = inserted.id;
+
+			// Delete the post
+			await server.drizzleClient
+				.delete(postsTable)
+				.where(eq(postsTable.id, postId));
+
+			// Verify attachment was cascade deleted
+			const [verifyDeleted] = await server.drizzleClient
+				.select()
+				.from(postAttachmentsTable)
+				.where(eq(postAttachmentsTable.id, postAttachmentId))
+				.limit(1);
+
+			expect(verifyDeleted).toBeUndefined();
+		});
 	});
 
 	describe("Index Configuration", () => {
@@ -738,7 +777,7 @@ describe("src/drizzle/tables/postAttachments", () => {
 			expect(results.length).toBeGreaterThan(0);
 		});
 
-		it("should efficiently query using indexed fileHash column", async () => {
+		it("should efficiently query using indexed createdAt column", async () => {
 			const { userId } = await createRegularUserUsingAdmin();
 			const postId = await createTestPost();
 			const name = faker.system.fileName();
@@ -796,6 +835,22 @@ describe("src/drizzle/tables/postAttachments", () => {
 			if (result) {
 				expect(result.mimeType).toBe(validMimeType);
 			}
+		});
+
+		it("should reject invalid MIME type", async () => {
+			const { userId } = await createRegularUserUsingAdmin();
+			const postId = await createTestPost();
+
+			await expect(
+				server.drizzleClient.insert(postAttachmentsTable).values({
+					name: "test.pdf",
+					creatorId: userId,
+					mimeType: "application/pdf" as any,
+					objectName: "testobj",
+					fileHash: "hash123",
+					postId: postId,
+				}),
+			).rejects.toThrow();
 		});
 	});
 });
