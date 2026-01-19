@@ -5,35 +5,6 @@ coverage:
         target: 90%
         threshold: 1%
 
-flags:
-  unit:
-    paths:
-      - test/unit/
-      - test/utilities/
-      - test/services/
-      - test/routes/
-      - test/observability/
-      - test/workers/
-      - test/config/
-      - test/fastifyPlugins/
-      - test/plugin/
-      - src/utilities/
-      - src/services/
-      - src/routes/
-      - src/observability/
-      - src/workers/
-      - src/config/
-      - src/fastifyPlugins/
-      - src/plugin/
-      - src/plugins/
-  integration:
-    paths:
-      - test/drizzle/
-      - test/graphql/
-      - test/install/
-      - src/drizzle/
-      - src/graphql/
-      - src/install/
 
 flag_management:
   default_rules:
