@@ -43,8 +43,7 @@ if (isCI) {
 	}
 }
 
-// Skip global setup for pure unit tests that don't need server/db
-// Skip global setup for pure unit tests that don't need server/db
+// Integration tests: includes global setup for server/db
 
 export default defineConfig({
 	plugins: [tsconfigPaths()],

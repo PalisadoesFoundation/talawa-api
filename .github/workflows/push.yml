@@ -213,8 +213,6 @@ jobs:
             sed -i "s|${DOCKER_PATH}|${RUNNER_PATH}|g" ./coverage/$TYPE/coverage-final.json
 
             # Report
-            cp ./coverage/$TYPE/coverage-final.json .nyc_output/coverage-final.json # nyc report expects it here or config
-            # Actually nyc report needs .nyc_output/out.json by default or we specify input?
             # nyc report uses .nyc_output by default.
             
             # Clean .nyc_output first
