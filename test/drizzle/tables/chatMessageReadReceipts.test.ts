@@ -165,15 +165,18 @@ describe("src/drizzle/tables/chatMessageReadReceipts.ts - Table Definition Tests
 
 		// Capture all relations by invoking the config function with mock helpers
 		let capturedRelations: Record<string, CapturedRelation> = {};
+		let totalRelationCount = 0;
 
 		beforeAll(() => {
 			capturedRelations = {};
+			totalRelationCount = 0;
 			(
 				chatMessageReadReceiptsRelations.config as unknown as (
 					helpers: MockRelationHelpers,
 				) => unknown
 			)({
 				one: (table: Table, config?: CapturedRelation["config"]) => {
+					totalRelationCount++;
 					if (config?.relationName?.includes("message_id:chat_messages")) {
 						capturedRelations.message = { table, config };
 					}
@@ -183,6 +186,7 @@ describe("src/drizzle/tables/chatMessageReadReceipts.ts - Table Definition Tests
 					return { withFieldName: () => ({}) };
 				},
 				many: (_table: Table, _config?: CapturedRelation["config"]) => {
+					totalRelationCount++;
 					return { withFieldName: () => ({}) };
 				},
 			});
@@ -287,6 +291,9 @@ describe("src/drizzle/tables/chatMessageReadReceipts.ts - Table Definition Tests
 		});
 
 		it("should define exactly two relations (message and reader)", () => {
+			// Verify total number of relations defined equals 2
+			expect(totalRelationCount).toBe(2);
+			// Verify the captured relations map has exactly 2 entries
 			expect(Object.keys(capturedRelations)).toHaveLength(2);
 			expect(capturedRelations.message).toBeDefined();
 			expect(capturedRelations.reader).toBeDefined();
