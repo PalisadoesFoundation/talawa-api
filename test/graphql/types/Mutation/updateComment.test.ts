@@ -290,7 +290,7 @@ suite("Mutation field updateComment", () => {
 
 		const issueMessages = ext.issues.map((i) => i.message).join(" ");
 		// Use simple assertions for message matching (avoid dynamic RegExp)
-		expect(issueMessages).toContain("at most");
+		expect(issueMessages).toContain("Too big");
 		expect(issueMessages).toContain(String(COMMENT_BODY_MAX_LENGTH));
 	});
 

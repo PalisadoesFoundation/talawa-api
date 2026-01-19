@@ -610,6 +610,21 @@ type Community {
   youtubeURL: String
 }
 
+"""
+Input type for defining a complexity range filter. Both min and max must be non-negative numbers, and min must be less than or equal to max.
+"""
+input ComplexityRangeInput {
+  """
+  Maximum complexity score (inclusive). Must be non-negative and greater than or equal to min.
+  """
+  max: Float!
+
+  """
+  Minimum complexity score (inclusive). Must be non-negative and less than or equal to max.
+  """
+  min: Float!
+}
+
 input CreateActionItemInput {
   assignedAt: String
   categoryId: ID!
@@ -2038,6 +2053,60 @@ enum MembershipRequestStatus {
 input MembershipRequestWhereInput {
   """Filter criteria for user"""
   user: UserWhereInput
+}
+
+"""
+Input type for advanced metrics filtering. Supports filtering by operation names, slow operations, cache hit rate, and complexity range.
+"""
+input MetricsFilterInput {
+  """
+  Optional complexity range filter. Only metrics with complexity scores within this range will be returned.
+  """
+  complexityRange: ComplexityRangeInput
+
+  """
+  Optional minimum cache hit rate filter (0-1). Only metrics with a cache hit rate greater than or equal to this value will be returned.
+  """
+  minCacheHitRate: Float
+
+  """
+  Optional array of operation names to filter by. If provided, only metrics for these operations will be returned.
+  """
+  operationNames: [String!]
+
+  """
+  If true, only return metrics for operations that exceeded the slow threshold. Defaults to false.
+  """
+  slowOperationsOnly: Boolean! = false
+}
+
+"""
+Input type for querying metrics data. Supports time range filtering, operation type filtering, and duration-based filtering.
+"""
+input MetricsInput {
+  """The end time for the metrics query. Must be after startTime."""
+  endTime: DateTime!
+
+  """
+  Whether to include cache-related metrics (hits, misses, hit rate). Defaults to true.
+  """
+  includeCacheMetrics: Boolean! = true
+
+  """
+  Optional maximum duration filter in milliseconds. Must be positive and greater than minDuration if both are provided.
+  """
+  maxDuration: Float
+
+  """
+  Optional minimum duration filter in milliseconds. Must be positive and less than maxDuration if both are provided.
+  """
+  minDuration: Float
+
+  """Optional filter to limit results to a specific operation type."""
+  operationType: String
+
+  """The start time for the metrics query. Must be a valid DateTime."""
+  startTime: DateTime!
 }
 
 type Mutation {

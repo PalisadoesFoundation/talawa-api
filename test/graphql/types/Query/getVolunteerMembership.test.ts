@@ -398,7 +398,7 @@ suite("Query field getVolunteerMembership", () => {
 							issues: expect.arrayContaining([
 								expect.objectContaining({
 									argumentPath: ["where", "userId"],
-									message: "Invalid uuid",
+									message: expect.stringContaining("Invalid UUID"),
 								}),
 							]),
 						}),
