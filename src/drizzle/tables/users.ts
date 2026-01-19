@@ -580,7 +580,7 @@ export const usersTableRelations = relations(usersTable, ({ many, one }) => ({
 	updater: one(usersTable, {
 		fields: [usersTable.updaterId],
 		references: [usersTable.id],
-		relationName: "users.id:users.updater_id",
+		relationName: "users.updater_id:users.id",
 	}),
 	/**
 	 * One to many relationship from `users` table to `venues` table.
