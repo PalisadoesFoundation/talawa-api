@@ -287,6 +287,26 @@ describe("src/drizzle/tables/posts.ts - Table Definition Tests", () => {
 						.success,
 				).toBe(true);
 			});
+
+			it("should reject body exceeding max length", () => {
+				const longBody = "a".repeat(POST_BODY_MAX_LENGTH + 1);
+				expect(
+					postsTableInsertSchema.safeParse({
+						...validPostData,
+						body: longBody,
+					}).success,
+				).toBe(false);
+			});
+
+			it("should accept body at max length", () => {
+				const maxBody = "a".repeat(POST_BODY_MAX_LENGTH);
+				expect(
+					postsTableInsertSchema.safeParse({
+						...validPostData,
+						body: maxBody,
+					}).success,
+				).toBe(true);
+			});
 		});
 
 		describe("organizationId field", () => {
