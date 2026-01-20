@@ -44,9 +44,7 @@ const args = ["vitest", "run"];
 
 // Forward remaining arguments (excluding --coverage which we handle explicitly if needed, but vitest handles it too)
 // Filter out direct --coverage flags if they are passed, as this script manages coverage flags
-const extraArgs = process.argv
-	.slice(2)
-	.filter((arg) => !arg.startsWith("--coverage"));
+const extraArgs = process.argv.slice(2);
 args.push(...extraArgs);
 
 args.push("--shard", `${shardIndex}/${shardCount}`);
