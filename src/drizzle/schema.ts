@@ -38,6 +38,10 @@ export {
 	agendaItemsTableRelations,
 } from "./tables/agendaItems";
 export {
+	agendaItemUrlTable,
+	agendaItemUrlTableRelations,
+} from "./tables/agendaItemUrls";
+export {
 	blockedUsersTable,
 	blockedUsersTableRelations,
 } from "./tables/blockedUsers";

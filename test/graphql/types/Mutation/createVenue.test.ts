@@ -357,7 +357,7 @@ suite("Mutation field createVenue", () => {
 								issues: expect.arrayContaining([
 									expect.objectContaining({
 										argumentPath: ["input", "organizationId"],
-										message: expect.stringContaining("uuid"),
+										message: "Invalid UUID",
 									}),
 								]),
 							}),
