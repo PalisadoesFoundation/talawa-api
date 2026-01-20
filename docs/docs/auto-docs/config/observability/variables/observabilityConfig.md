@@ -6,7 +6,7 @@
 
 > `const` **observabilityConfig**: `object`
 
-Defined in: src/config/observability.ts:5
+Defined in: [src/config/observability.ts:5](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/config/observability.ts#L5)
 
 ## Type Declaration
 

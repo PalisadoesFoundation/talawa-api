@@ -6,7 +6,7 @@
 
 > **setVerbose**(`enabled`): `void`
 
-Defined in: src/install/utils/logger.ts:27
+Defined in: [src/install/utils/logger.ts:27](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/install/utils/logger.ts#L27)
 
 Set verbose mode for logging
 

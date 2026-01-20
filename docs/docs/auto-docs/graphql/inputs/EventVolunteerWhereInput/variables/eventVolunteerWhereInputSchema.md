@@ -6,7 +6,7 @@
 
 > `const` **eventVolunteerWhereInputSchema**: `ZodObject`\<\{ `eventId`: `ZodOptional`\<`ZodString`\>; `groupId`: `ZodOptional`\<`ZodString`\>; `hasAccepted`: `ZodOptional`\<`ZodBoolean`\>; `id`: `ZodOptional`\<`ZodString`\>; `name_contains`: `ZodOptional`\<`ZodString`\>; \}, `$strip`\>
 
-Defined in: src/graphql/inputs/EventVolunteerWhereInput.ts:8
+Defined in: [src/graphql/inputs/EventVolunteerWhereInput.ts:8](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/graphql/inputs/EventVolunteerWhereInput.ts#L8)
 
 Zod schema for EventVolunteerWhereInput validation.
 Based on the old Talawa API EventVolunteerWhereInput structure.

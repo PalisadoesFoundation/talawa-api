@@ -6,7 +6,7 @@
 
 > **updateMaterializationConfig**(`config`, `logger`): `void`
 
-Defined in: src/workers/backgroundWorkerService.ts:406
+Defined in: [src/workers/backgroundWorkerService.ts:406](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/workers/backgroundWorkerService.ts#L406)
 
 Updates the configuration for the materialization worker at runtime.
 

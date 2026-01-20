@@ -4,7 +4,7 @@
 
 # Interface: PerformanceTracker
 
-Defined in: src/utilities/metrics/performanceTracker.ts:42
+Defined in: [src/utilities/metrics/performanceTracker.ts:42](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/utilities/metrics/performanceTracker.ts#L42)
 
 Performance tracker for monitoring request-level performance.
 
@@ -14,7 +14,7 @@ Performance tracker for monitoring request-level performance.
 
 > **snapshot**(): [`PerfSnapshot`](../type-aliases/PerfSnapshot.md)
 
-Defined in: src/utilities/metrics/performanceTracker.ts:84
+Defined in: [src/utilities/metrics/performanceTracker.ts:84](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/utilities/metrics/performanceTracker.ts#L84)
 
 Get a snapshot of current performance metrics.
 
@@ -30,7 +30,7 @@ Performance snapshot
 
 > **start**(`op`): () => `void`
 
-Defined in: src/utilities/metrics/performanceTracker.ts:56
+Defined in: [src/utilities/metrics/performanceTracker.ts:56](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/utilities/metrics/performanceTracker.ts#L56)
 
 Start timing an operation manually. Returns a function to call when the operation completes.
 
@@ -58,7 +58,7 @@ Function to call when the operation completes
 
 > **time**\<`T`\>(`op`, `fn`): `Promise`\<`T`\>
 
-Defined in: src/utilities/metrics/performanceTracker.ts:49
+Defined in: [src/utilities/metrics/performanceTracker.ts:49](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/utilities/metrics/performanceTracker.ts#L49)
 
 Time an async operation and record its duration.
 
@@ -94,7 +94,7 @@ The result of the async function
 
 > **trackCacheHit**(): `void`
 
-Defined in: src/utilities/metrics/performanceTracker.ts:67
+Defined in: [src/utilities/metrics/performanceTracker.ts:67](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/utilities/metrics/performanceTracker.ts#L67)
 
 Record a cache hit.
 
@@ -108,7 +108,7 @@ Record a cache hit.
 
 > **trackCacheMiss**(): `void`
 
-Defined in: src/utilities/metrics/performanceTracker.ts:72
+Defined in: [src/utilities/metrics/performanceTracker.ts:72](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/utilities/metrics/performanceTracker.ts#L72)
 
 Record a cache miss.
 
@@ -122,7 +122,7 @@ Record a cache miss.
 
 > **trackComplexity**(`score`): `void`
 
-Defined in: src/utilities/metrics/performanceTracker.ts:78
+Defined in: [src/utilities/metrics/performanceTracker.ts:78](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/utilities/metrics/performanceTracker.ts#L78)
 
 Record a GraphQL query complexity score.
 
@@ -144,7 +144,7 @@ Complexity score for the query
 
 > **trackDb**(`ms`): `void`
 
-Defined in: src/utilities/metrics/performanceTracker.ts:62
+Defined in: [src/utilities/metrics/performanceTracker.ts:62](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/utilities/metrics/performanceTracker.ts#L62)
 
 Record a database operation duration.
 

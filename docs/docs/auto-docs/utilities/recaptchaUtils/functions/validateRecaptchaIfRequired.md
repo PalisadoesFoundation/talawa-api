@@ -6,7 +6,7 @@
 
 > **validateRecaptchaIfRequired**(`recaptchaToken`, `recaptchaSecretKey`, `argumentPath`): `Promise`\<`boolean` \| `undefined`\>
 
-Defined in: src/utilities/recaptchaUtils.ts:55
+Defined in: [src/utilities/recaptchaUtils.ts:55](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/utilities/recaptchaUtils.ts#L55)
 
 Validates reCAPTCHA token if required based on environment configuration.
 

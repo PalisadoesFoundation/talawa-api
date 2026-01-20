@@ -6,7 +6,7 @@
 
 > **GenerationWindowConfig** = `object`
 
-Defined in: src/drizzle/tables/eventGenerationWindows.ts:252
+Defined in: [src/drizzle/tables/eventGenerationWindows.ts:252](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/drizzle/tables/eventGenerationWindows.ts#L252)
 
 Type for window configuration with calculated dates.
 
@@ -16,7 +16,7 @@ Type for window configuration with calculated dates.
 
 > **configurationNotes**: `string` \| `null`
 
-Defined in: src/drizzle/tables/eventGenerationWindows.ts:264
+Defined in: [src/drizzle/tables/eventGenerationWindows.ts:264](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/drizzle/tables/eventGenerationWindows.ts#L264)
 
 ***
 
@@ -24,7 +24,7 @@ Defined in: src/drizzle/tables/eventGenerationWindows.ts:264
 
 > **createdAt**: `Date`
 
-Defined in: src/drizzle/tables/eventGenerationWindows.ts:267
+Defined in: [src/drizzle/tables/eventGenerationWindows.ts:267](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/drizzle/tables/eventGenerationWindows.ts#L267)
 
 ***
 
@@ -32,7 +32,7 @@ Defined in: src/drizzle/tables/eventGenerationWindows.ts:267
 
 > **createdById**: `string`
 
-Defined in: src/drizzle/tables/eventGenerationWindows.ts:265
+Defined in: [src/drizzle/tables/eventGenerationWindows.ts:265](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/drizzle/tables/eventGenerationWindows.ts#L265)
 
 ***
 
@@ -40,7 +40,7 @@ Defined in: src/drizzle/tables/eventGenerationWindows.ts:265
 
 > **currentWindowEndDate**: `Date`
 
-Defined in: src/drizzle/tables/eventGenerationWindows.ts:257
+Defined in: [src/drizzle/tables/eventGenerationWindows.ts:257](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/drizzle/tables/eventGenerationWindows.ts#L257)
 
 ***
 
@@ -48,7 +48,7 @@ Defined in: src/drizzle/tables/eventGenerationWindows.ts:257
 
 > **historyRetentionMonths**: `number`
 
-Defined in: src/drizzle/tables/eventGenerationWindows.ts:256
+Defined in: [src/drizzle/tables/eventGenerationWindows.ts:256](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/drizzle/tables/eventGenerationWindows.ts#L256)
 
 ***
 
@@ -56,7 +56,7 @@ Defined in: src/drizzle/tables/eventGenerationWindows.ts:256
 
 > **hotWindowMonthsAhead**: `number`
 
-Defined in: src/drizzle/tables/eventGenerationWindows.ts:255
+Defined in: [src/drizzle/tables/eventGenerationWindows.ts:255](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/drizzle/tables/eventGenerationWindows.ts#L255)
 
 ***
 
@@ -64,7 +64,7 @@ Defined in: src/drizzle/tables/eventGenerationWindows.ts:255
 
 > **id**: `string`
 
-Defined in: src/drizzle/tables/eventGenerationWindows.ts:253
+Defined in: [src/drizzle/tables/eventGenerationWindows.ts:253](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/drizzle/tables/eventGenerationWindows.ts#L253)
 
 ***
 
@@ -72,7 +72,7 @@ Defined in: src/drizzle/tables/eventGenerationWindows.ts:253
 
 > **isEnabled**: `boolean`
 
-Defined in: src/drizzle/tables/eventGenerationWindows.ts:261
+Defined in: [src/drizzle/tables/eventGenerationWindows.ts:261](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/drizzle/tables/eventGenerationWindows.ts#L261)
 
 ***
 
@@ -80,7 +80,7 @@ Defined in: src/drizzle/tables/eventGenerationWindows.ts:261
 
 > **lastProcessedAt**: `Date`
 
-Defined in: src/drizzle/tables/eventGenerationWindows.ts:259
+Defined in: [src/drizzle/tables/eventGenerationWindows.ts:259](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/drizzle/tables/eventGenerationWindows.ts#L259)
 
 ***
 
@@ -88,7 +88,7 @@ Defined in: src/drizzle/tables/eventGenerationWindows.ts:259
 
 > **lastProcessedInstanceCount**: `number`
 
-Defined in: src/drizzle/tables/eventGenerationWindows.ts:260
+Defined in: [src/drizzle/tables/eventGenerationWindows.ts:260](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/drizzle/tables/eventGenerationWindows.ts#L260)
 
 ***
 
@@ -96,7 +96,7 @@ Defined in: src/drizzle/tables/eventGenerationWindows.ts:260
 
 > **lastUpdatedById**: `string` \| `null`
 
-Defined in: src/drizzle/tables/eventGenerationWindows.ts:266
+Defined in: [src/drizzle/tables/eventGenerationWindows.ts:266](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/drizzle/tables/eventGenerationWindows.ts#L266)
 
 ***
 
@@ -104,7 +104,7 @@ Defined in: src/drizzle/tables/eventGenerationWindows.ts:266
 
 > **maxInstancesPerRun**: `number`
 
-Defined in: src/drizzle/tables/eventGenerationWindows.ts:263
+Defined in: [src/drizzle/tables/eventGenerationWindows.ts:263](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/drizzle/tables/eventGenerationWindows.ts#L263)
 
 ***
 
@@ -112,7 +112,7 @@ Defined in: src/drizzle/tables/eventGenerationWindows.ts:263
 
 > **organizationId**: `string`
 
-Defined in: src/drizzle/tables/eventGenerationWindows.ts:254
+Defined in: [src/drizzle/tables/eventGenerationWindows.ts:254](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/drizzle/tables/eventGenerationWindows.ts#L254)
 
 ***
 
@@ -120,7 +120,7 @@ Defined in: src/drizzle/tables/eventGenerationWindows.ts:254
 
 > **processingPriority**: `number`
 
-Defined in: src/drizzle/tables/eventGenerationWindows.ts:262
+Defined in: [src/drizzle/tables/eventGenerationWindows.ts:262](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/drizzle/tables/eventGenerationWindows.ts#L262)
 
 ***
 
@@ -128,7 +128,7 @@ Defined in: src/drizzle/tables/eventGenerationWindows.ts:262
 
 > **retentionStartDate**: `Date`
 
-Defined in: src/drizzle/tables/eventGenerationWindows.ts:258
+Defined in: [src/drizzle/tables/eventGenerationWindows.ts:258](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/drizzle/tables/eventGenerationWindows.ts#L258)
 
 ***
 
@@ -136,4 +136,4 @@ Defined in: src/drizzle/tables/eventGenerationWindows.ts:258
 
 > **updatedAt**: `Date` \| `null`
 
-Defined in: src/drizzle/tables/eventGenerationWindows.ts:268
+Defined in: [src/drizzle/tables/eventGenerationWindows.ts:268](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/drizzle/tables/eventGenerationWindows.ts#L268)

@@ -4,7 +4,7 @@
 
 # Interface: EmailVerificationContext
 
-Defined in: src/utilities/emailTemplates.ts:113
+Defined in: [src/utilities/emailTemplates.ts:113](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/utilities/emailTemplates.ts#L113)
 
 ## Properties
 
@@ -12,7 +12,7 @@ Defined in: src/utilities/emailTemplates.ts:113
 
 > **communityName**: `string`
 
-Defined in: src/utilities/emailTemplates.ts:115
+Defined in: [src/utilities/emailTemplates.ts:115](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/utilities/emailTemplates.ts#L115)
 
 ***
 
@@ -20,7 +20,7 @@ Defined in: src/utilities/emailTemplates.ts:115
 
 > **expiryText**: `string`
 
-Defined in: src/utilities/emailTemplates.ts:117
+Defined in: [src/utilities/emailTemplates.ts:117](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/utilities/emailTemplates.ts#L117)
 
 ***
 
@@ -28,7 +28,7 @@ Defined in: src/utilities/emailTemplates.ts:117
 
 > **userName**: `string`
 
-Defined in: src/utilities/emailTemplates.ts:114
+Defined in: [src/utilities/emailTemplates.ts:114](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/utilities/emailTemplates.ts#L114)
 
 ***
 
@@ -36,4 +36,4 @@ Defined in: src/utilities/emailTemplates.ts:114
 
 > **verificationLink**: `string`
 
-Defined in: src/utilities/emailTemplates.ts:116
+Defined in: [src/utilities/emailTemplates.ts:116](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/utilities/emailTemplates.ts#L116)

@@ -6,7 +6,7 @@
 
 > **getBackgroundWorkerStatus**(): `object`
 
-Defined in: src/workers/backgroundWorkerService.ts:325
+Defined in: [src/workers/backgroundWorkerService.ts:325](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/workers/backgroundWorkerService.ts#L325)
 
 Retrieves the current status of the background worker service, including scheduling information.
 

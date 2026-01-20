@@ -6,7 +6,7 @@
 
 > **normalizeTimeRange**(`startTime`, `endTime`): `object`
 
-Defined in: src/utilities/metrics/dbHelpers.ts:319
+Defined in: [src/utilities/metrics/dbHelpers.ts:319](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/utilities/metrics/dbHelpers.ts#L319)
 
 Normalizes a time range to ensure valid start and end times.
 If startTime is after endTime, they are swapped.

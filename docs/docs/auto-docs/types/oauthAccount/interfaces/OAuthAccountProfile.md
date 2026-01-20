@@ -4,7 +4,7 @@
 
 # Interface: OAuthAccountProfile
 
-Defined in: src/types/oauthAccount.ts:17
+Defined in: [src/types/oauthAccount.ts:17](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/types/oauthAccount.ts#L17)
 
 OAuth account profile data structure
 
@@ -18,7 +18,7 @@ OAuth account profile data structure
 
 > `optional` **emailVerified**: `boolean`
 
-Defined in: src/types/oauthAccount.ts:20
+Defined in: [src/types/oauthAccount.ts:20](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/types/oauthAccount.ts#L20)
 
 ***
 
@@ -26,7 +26,7 @@ Defined in: src/types/oauthAccount.ts:20
 
 > `optional` **name**: `string`
 
-Defined in: src/types/oauthAccount.ts:18
+Defined in: [src/types/oauthAccount.ts:18](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/types/oauthAccount.ts#L18)
 
 ***
 
@@ -34,4 +34,4 @@ Defined in: src/types/oauthAccount.ts:18
 
 > `optional` **picture**: `string`
 
-Defined in: src/types/oauthAccount.ts:19
+Defined in: [src/types/oauthAccount.ts:19](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/types/oauthAccount.ts#L19)

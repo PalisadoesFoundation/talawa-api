@@ -6,7 +6,7 @@
 
 > **PasswordResetPayload** = `object`
 
-Defined in: src/graphql/types/PasswordResetPayload.ts:3
+Defined in: [src/graphql/types/PasswordResetPayload.ts:3](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/graphql/types/PasswordResetPayload.ts#L3)
 
 ## Properties
 
@@ -14,7 +14,7 @@ Defined in: src/graphql/types/PasswordResetPayload.ts:3
 
 > **authenticationToken**: `string` \| `null`
 
-Defined in: src/graphql/types/PasswordResetPayload.ts:5
+Defined in: [src/graphql/types/PasswordResetPayload.ts:5](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/graphql/types/PasswordResetPayload.ts#L5)
 
 ***
 
@@ -22,7 +22,7 @@ Defined in: src/graphql/types/PasswordResetPayload.ts:5
 
 > **refreshToken**: `string` \| `null`
 
-Defined in: src/graphql/types/PasswordResetPayload.ts:6
+Defined in: [src/graphql/types/PasswordResetPayload.ts:6](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/graphql/types/PasswordResetPayload.ts#L6)
 
 ***
 
@@ -30,4 +30,4 @@ Defined in: src/graphql/types/PasswordResetPayload.ts:6
 
 > **success**: `boolean`
 
-Defined in: src/graphql/types/PasswordResetPayload.ts:4
+Defined in: [src/graphql/types/PasswordResetPayload.ts:4](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/graphql/types/PasswordResetPayload.ts#L4)

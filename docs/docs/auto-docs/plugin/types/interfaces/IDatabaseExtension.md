@@ -4,7 +4,7 @@
 
 # Interface: IDatabaseExtension
 
-Defined in: src/plugin/types.ts:48
+Defined in: [src/plugin/types.ts:48](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/plugin/types.ts#L48)
 
 ## Properties
 
@@ -12,7 +12,7 @@ Defined in: src/plugin/types.ts:48
 
 > **file**: `string`
 
-Defined in: src/plugin/types.ts:51
+Defined in: [src/plugin/types.ts:51](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/plugin/types.ts#L51)
 
 ***
 
@@ -20,7 +20,7 @@ Defined in: src/plugin/types.ts:51
 
 > **name**: `string`
 
-Defined in: src/plugin/types.ts:50
+Defined in: [src/plugin/types.ts:50](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/plugin/types.ts#L50)
 
 ***
 
@@ -28,4 +28,4 @@ Defined in: src/plugin/types.ts:50
 
 > **type**: `"table"` \| `"enum"` \| `"relation"`
 
-Defined in: src/plugin/types.ts:49
+Defined in: [src/plugin/types.ts:49](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/plugin/types.ts#L49)

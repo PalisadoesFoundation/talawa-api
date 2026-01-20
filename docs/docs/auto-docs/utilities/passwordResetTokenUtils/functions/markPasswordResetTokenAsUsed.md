@@ -6,7 +6,7 @@
 
 > **markPasswordResetTokenAsUsed**(`drizzleClient`, `tokenHash`): `Promise`\<`boolean`\>
 
-Defined in: src/utilities/passwordResetTokenUtils.ts:152
+Defined in: [src/utilities/passwordResetTokenUtils.ts:152](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/utilities/passwordResetTokenUtils.ts#L152)
 
 Marks a password reset token as used by setting its usedAt timestamp.
 

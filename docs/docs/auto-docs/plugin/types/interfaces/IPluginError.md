@@ -4,7 +4,7 @@
 
 # Interface: IPluginError
 
-Defined in: src/plugin/types.ts:155
+Defined in: [src/plugin/types.ts:155](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/plugin/types.ts#L155)
 
 ## Properties
 
@@ -12,7 +12,7 @@ Defined in: src/plugin/types.ts:155
 
 > **error**: `Error`
 
-Defined in: src/plugin/types.ts:157
+Defined in: [src/plugin/types.ts:157](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/plugin/types.ts#L157)
 
 ***
 
@@ -20,7 +20,7 @@ Defined in: src/plugin/types.ts:157
 
 > **phase**: `"activate"` \| `"install"` \| `"deactivate"` \| `"uninstall"` \| `"unload"` \| `"load"`
 
-Defined in: src/plugin/types.ts:158
+Defined in: [src/plugin/types.ts:158](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/plugin/types.ts#L158)
 
 ***
 
@@ -28,7 +28,7 @@ Defined in: src/plugin/types.ts:158
 
 > **pluginId**: `string`
 
-Defined in: src/plugin/types.ts:156
+Defined in: [src/plugin/types.ts:156](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/plugin/types.ts#L156)
 
 ***
 
@@ -36,4 +36,4 @@ Defined in: src/plugin/types.ts:156
 
 > **timestamp**: `Date`
 
-Defined in: src/plugin/types.ts:165
+Defined in: [src/plugin/types.ts:165](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/plugin/types.ts#L165)

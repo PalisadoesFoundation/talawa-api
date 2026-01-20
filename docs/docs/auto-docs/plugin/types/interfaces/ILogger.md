@@ -4,7 +4,7 @@
 
 # Interface: ILogger
 
-Defined in: src/plugin/types.ts:129
+Defined in: [src/plugin/types.ts:129](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/plugin/types.ts#L129)
 
 ## Properties
 
@@ -12,7 +12,7 @@ Defined in: src/plugin/types.ts:129
 
 > `optional` **debug**: (`messageOrObj`, ...`args`) => `void`
 
-Defined in: src/plugin/types.ts:133
+Defined in: [src/plugin/types.ts:133](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/plugin/types.ts#L133)
 
 #### Parameters
 
@@ -34,7 +34,7 @@ Defined in: src/plugin/types.ts:133
 
 > `optional` **error**: (`messageOrObj`, ...`args`) => `void`
 
-Defined in: src/plugin/types.ts:131
+Defined in: [src/plugin/types.ts:131](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/plugin/types.ts#L131)
 
 #### Parameters
 
@@ -56,7 +56,7 @@ Defined in: src/plugin/types.ts:131
 
 > `optional` **info**: (`messageOrObj`, ...`args`) => `void`
 
-Defined in: src/plugin/types.ts:130
+Defined in: [src/plugin/types.ts:130](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/plugin/types.ts#L130)
 
 #### Parameters
 
@@ -78,7 +78,7 @@ Defined in: src/plugin/types.ts:130
 
 > `optional` **warn**: (`messageOrObj`, ...`args`) => `void`
 
-Defined in: src/plugin/types.ts:132
+Defined in: [src/plugin/types.ts:132](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/plugin/types.ts#L132)
 
 #### Parameters
 

@@ -6,7 +6,7 @@
 
 > **resolveActionItemCategories**(`parent`, `args`, `ctx`): `Promise`\<[`DefaultGraphQLConnection`](../../../../../utilities/graphqlConnection/types/type-aliases/DefaultGraphQLConnection.md)\<\{ `createdAt`: `Date`; `creatorId`: `string` \| `null`; `description`: `string` \| `null`; `id`: `string`; `isDisabled`: `boolean`; `name`: `string`; `organizationId`: `string`; `updatedAt`: `Date` \| `null`; `updaterId`: `string` \| `null`; \}\>\>
 
-Defined in: src/graphql/types/Organization/actionItemCategories.ts:56
+Defined in: [src/graphql/types/Organization/actionItemCategories.ts:56](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/graphql/types/Organization/actionItemCategories.ts#L56)
 
 ## Parameters
 

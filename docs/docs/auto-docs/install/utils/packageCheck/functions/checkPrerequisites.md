@@ -6,7 +6,7 @@
 
 > **checkPrerequisites**(`packageJsonPath`): [`PrereqCheck`](../../../types/interfaces/PrereqCheck.md)[]
 
-Defined in: src/install/utils/packageCheck.ts:217
+Defined in: [src/install/utils/packageCheck.ts:217](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/install/utils/packageCheck.ts#L217)
 
 Check all prerequisites for installation
 

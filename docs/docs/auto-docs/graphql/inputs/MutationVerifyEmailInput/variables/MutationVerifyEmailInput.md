@@ -6,6 +6,6 @@
 
 > `const` **MutationVerifyEmailInput**: `InputObjectRef`\<`ExtendDefaultTypes`\<\{ `Context`: [`GraphQLContext`](../../../context/type-aliases/GraphQLContext.md); `Scalars`: [`CustomScalars`](../../../scalars/type-aliases/CustomScalars.md); \}\>, \{ `token`: `string`; \}\>
 
-Defined in: src/graphql/inputs/MutationVerifyEmailInput.ts:7
+Defined in: [src/graphql/inputs/MutationVerifyEmailInput.ts:7](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/graphql/inputs/MutationVerifyEmailInput.ts#L7)
 
 GraphQL input type for verifyEmail mutation.

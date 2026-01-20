@@ -6,7 +6,7 @@
 
 > **resolveUpdatedAt**(`parent`, `_args`, `ctx`): `Promise`\<`Date`\>
 
-Defined in: src/graphql/types/ActionItemCategory/updatedAt.ts:7
+Defined in: [src/graphql/types/ActionItemCategory/updatedAt.ts:7](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/graphql/types/ActionItemCategory/updatedAt.ts#L7)
 
 ## Parameters
 

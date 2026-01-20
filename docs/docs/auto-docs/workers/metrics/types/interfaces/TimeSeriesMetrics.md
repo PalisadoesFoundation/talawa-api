@@ -4,7 +4,7 @@
 
 # Interface: TimeSeriesMetrics
 
-Defined in: src/workers/metrics/types.ts:49
+Defined in: [src/workers/metrics/types.ts:49](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/workers/metrics/types.ts#L49)
 
 Time series metrics for tracking trends over time.
 
@@ -18,7 +18,7 @@ Time series metrics for tracking trends over time.
 
 > **snapshotCount**: `number`
 
-Defined in: src/workers/metrics/types.ts:55
+Defined in: [src/workers/metrics/types.ts:55](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/workers/metrics/types.ts#L55)
 
 Number of snapshots included in this aggregation
 
@@ -28,7 +28,7 @@ Number of snapshots included in this aggregation
 
 > **timestamp**: `number`
 
-Defined in: src/workers/metrics/types.ts:51
+Defined in: [src/workers/metrics/types.ts:51](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/workers/metrics/types.ts#L51)
 
 Timestamp when metrics were aggregated
 
@@ -38,6 +38,6 @@ Timestamp when metrics were aggregated
 
 > **windowMinutes**: `number`
 
-Defined in: src/workers/metrics/types.ts:53
+Defined in: [src/workers/metrics/types.ts:53](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/workers/metrics/types.ts#L53)
 
 Time window in minutes for this aggregation

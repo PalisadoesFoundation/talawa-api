@@ -4,7 +4,7 @@
 
 # Interface: IPluginContext
 
-Defined in: src/plugin/types.ts:136
+Defined in: [src/plugin/types.ts:136](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/plugin/types.ts#L136)
 
 ## Properties
 
@@ -12,7 +12,7 @@ Defined in: src/plugin/types.ts:136
 
 > **db**: `unknown`
 
-Defined in: src/plugin/types.ts:137
+Defined in: [src/plugin/types.ts:137](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/plugin/types.ts#L137)
 
 ***
 
@@ -20,7 +20,7 @@ Defined in: src/plugin/types.ts:137
 
 > **graphql**: `unknown`
 
-Defined in: src/plugin/types.ts:138
+Defined in: [src/plugin/types.ts:138](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/plugin/types.ts#L138)
 
 ***
 
@@ -28,7 +28,7 @@ Defined in: src/plugin/types.ts:138
 
 > **logger**: [`ILogger`](ILogger.md)
 
-Defined in: src/plugin/types.ts:140
+Defined in: [src/plugin/types.ts:140](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/plugin/types.ts#L140)
 
 ***
 
@@ -36,7 +36,7 @@ Defined in: src/plugin/types.ts:140
 
 > `optional` **pluginManager**: `unknown`
 
-Defined in: src/plugin/types.ts:141
+Defined in: [src/plugin/types.ts:141](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/plugin/types.ts#L141)
 
 ***
 
@@ -44,4 +44,4 @@ Defined in: src/plugin/types.ts:141
 
 > **pubsub**: `unknown`
 
-Defined in: src/plugin/types.ts:139
+Defined in: [src/plugin/types.ts:139](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/plugin/types.ts#L139)

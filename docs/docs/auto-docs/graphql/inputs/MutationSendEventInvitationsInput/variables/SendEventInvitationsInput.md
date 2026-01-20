@@ -6,4 +6,4 @@
 
 > **SendEventInvitationsInput**: `InputObjectRef`\<`ExtendDefaultTypes`\<\{ `Context`: [`GraphQLContext`](../../../context/type-aliases/GraphQLContext.md); `Scalars`: [`CustomScalars`](../../../scalars/type-aliases/CustomScalars.md); \}\>, \{ `emails?`: `string`[] \| `null`; `eventId?`: `string` \| `null`; `expiresInDays?`: `number` \| `null`; `message?`: `string` \| `null`; `recipients?`: `object`[] \| `null`; `recurringEventInstanceId?`: `string` \| `null`; \}\>
 
-Defined in: src/graphql/inputs/MutationSendEventInvitationsInput.ts:32
+Defined in: [src/graphql/inputs/MutationSendEventInvitationsInput.ts:32](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/graphql/inputs/MutationSendEventInvitationsInput.ts#L32)

@@ -6,7 +6,7 @@
 
 > **normalizeRecurrenceRule**(`rule`): `object`
 
-Defined in: src/utilities/recurringEvent/calculation.ts:150
+Defined in: [src/utilities/recurringEvent/calculation.ts:150](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/utilities/recurringEvent/calculation.ts#L150)
 
 Normalizes a recurrence rule by converting a `count`-based rule to an `endDate`-based one.
 This allows for uniform processing of events that have a defined end, whether specified

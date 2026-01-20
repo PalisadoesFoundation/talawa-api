@@ -6,7 +6,7 @@
 
 > **PubSub** = `object`
 
-Defined in: src/graphql/pubsub.ts:8
+Defined in: [src/graphql/pubsub.ts:8](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/graphql/pubsub.ts#L8)
 
 Type of the publish and subscribe module used for publishing and subscribing to talawa events.
 
@@ -16,7 +16,7 @@ Type of the publish and subscribe module used for publishing and subscribing to 
 
 > **publish**\<`TKey`\>(`event`, `callback?`): `void`
 
-Defined in: src/graphql/pubsub.ts:12
+Defined in: [src/graphql/pubsub.ts:12](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/graphql/pubsub.ts#L12)
 
 This method is used to publish an event.
 
@@ -52,7 +52,7 @@ This method is used to publish an event.
 
 > **subscribe**\<`TKey`\>(`topics`): `Promise`\<`Readable` & `AsyncIterableIterator`\<[`PubSubPublishArgsByKey`](PubSubPublishArgsByKey.md)\[`TKey`\], `any`, `any`\>\>
 
-Defined in: src/graphql/pubsub.ts:22
+Defined in: [src/graphql/pubsub.ts:22](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/graphql/pubsub.ts#L22)
 
 This method is used to subscribe to events.
 

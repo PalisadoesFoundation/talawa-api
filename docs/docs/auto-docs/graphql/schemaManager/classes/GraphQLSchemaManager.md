@@ -4,7 +4,7 @@
 
 # Class: GraphQLSchemaManager
 
-Defined in: src/graphql/schemaManager.ts:16
+Defined in: [src/graphql/schemaManager.ts:16](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/graphql/schemaManager.ts#L16)
 
 ## Constructors
 
@@ -22,7 +22,7 @@ Defined in: src/graphql/schemaManager.ts:16
 
 > **buildInitialSchema**(): `Promise`\<`GraphQLSchema`\>
 
-Defined in: src/graphql/schemaManager.ts:42
+Defined in: [src/graphql/schemaManager.ts:42](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/graphql/schemaManager.ts#L42)
 
 Build the initial schema
 
@@ -36,7 +36,7 @@ Build the initial schema
 
 > **getCurrentSchema**(): `GraphQLSchema` \| `null`
 
-Defined in: src/graphql/schemaManager.ts:266
+Defined in: [src/graphql/schemaManager.ts:266](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/graphql/schemaManager.ts#L266)
 
 Get the current schema
 
@@ -50,7 +50,7 @@ Get the current schema
 
 > **onSchemaUpdate**(`callback`): `void`
 
-Defined in: src/graphql/schemaManager.ts:237
+Defined in: [src/graphql/schemaManager.ts:237](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/graphql/schemaManager.ts#L237)
 
 Register a callback to be notified when the schema is updated
 
@@ -70,7 +70,7 @@ Register a callback to be notified when the schema is updated
 
 > **rebuildSchema**(): `Promise`\<`GraphQLSchema`\>
 
-Defined in: src/graphql/schemaManager.ts:62
+Defined in: [src/graphql/schemaManager.ts:62](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/graphql/schemaManager.ts#L62)
 
 Dynamically rebuild the GraphQL schema
 
@@ -84,7 +84,7 @@ Dynamically rebuild the GraphQL schema
 
 > **removeSchemaUpdateCallback**(`callback`): `void`
 
-Defined in: src/graphql/schemaManager.ts:244
+Defined in: [src/graphql/schemaManager.ts:244](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/graphql/schemaManager.ts#L244)
 
 Remove a schema update callback
 

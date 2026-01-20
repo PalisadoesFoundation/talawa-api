@@ -4,7 +4,7 @@
 
 # Enumeration: PluginStatus
 
-Defined in: src/plugin/types.ts:115
+Defined in: [src/plugin/types.ts:115](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/plugin/types.ts#L115)
 
 ## Enumeration Members
 
@@ -12,7 +12,7 @@ Defined in: src/plugin/types.ts:115
 
 > **ACTIVE**: `"active"`
 
-Defined in: src/plugin/types.ts:116
+Defined in: [src/plugin/types.ts:116](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/plugin/types.ts#L116)
 
 ***
 
@@ -20,7 +20,7 @@ Defined in: src/plugin/types.ts:116
 
 > **ERROR**: `"error"`
 
-Defined in: src/plugin/types.ts:118
+Defined in: [src/plugin/types.ts:118](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/plugin/types.ts#L118)
 
 ***
 
@@ -28,7 +28,7 @@ Defined in: src/plugin/types.ts:118
 
 > **INACTIVE**: `"inactive"`
 
-Defined in: src/plugin/types.ts:117
+Defined in: [src/plugin/types.ts:117](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/plugin/types.ts#L117)
 
 ***
 
@@ -36,4 +36,4 @@ Defined in: src/plugin/types.ts:117
 
 > **LOADING**: `"loading"`
 
-Defined in: src/plugin/types.ts:119
+Defined in: [src/plugin/types.ts:119](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/plugin/types.ts#L119)

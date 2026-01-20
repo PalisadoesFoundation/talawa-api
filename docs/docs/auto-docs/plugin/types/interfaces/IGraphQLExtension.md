@@ -4,7 +4,7 @@
 
 # Interface: IGraphQLExtension
 
-Defined in: src/plugin/types.ts:39
+Defined in: [src/plugin/types.ts:39](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/plugin/types.ts#L39)
 
 ## Properties
 
@@ -12,7 +12,7 @@ Defined in: src/plugin/types.ts:39
 
 > **builderDefinition**: `string`
 
-Defined in: src/plugin/types.ts:45
+Defined in: [src/plugin/types.ts:45](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/plugin/types.ts#L45)
 
 ***
 
@@ -20,7 +20,7 @@ Defined in: src/plugin/types.ts:45
 
 > `optional` **description**: `string`
 
-Defined in: src/plugin/types.ts:43
+Defined in: [src/plugin/types.ts:43](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/plugin/types.ts#L43)
 
 ***
 
@@ -28,7 +28,7 @@ Defined in: src/plugin/types.ts:43
 
 > **file**: `string`
 
-Defined in: src/plugin/types.ts:42
+Defined in: [src/plugin/types.ts:42](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/plugin/types.ts#L42)
 
 ***
 
@@ -36,7 +36,7 @@ Defined in: src/plugin/types.ts:42
 
 > **name**: `string`
 
-Defined in: src/plugin/types.ts:41
+Defined in: [src/plugin/types.ts:41](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/plugin/types.ts#L41)
 
 ***
 
@@ -44,4 +44,4 @@ Defined in: src/plugin/types.ts:41
 
 > **type**: `"query"` \| `"mutation"` \| `"subscription"`
 
-Defined in: src/plugin/types.ts:40
+Defined in: [src/plugin/types.ts:40](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/plugin/types.ts#L40)

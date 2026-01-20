@@ -6,4 +6,4 @@
 
 > `const` **mutationDeleteChatMessageInputSchema**: `ZodObject`\<\{ `id`: `ZodString`; \}, `$strip`\>
 
-Defined in: src/graphql/inputs/MutationDeleteChatMessageInput.ts:5
+Defined in: [src/graphql/inputs/MutationDeleteChatMessageInput.ts:5](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/graphql/inputs/MutationDeleteChatMessageInput.ts#L5)

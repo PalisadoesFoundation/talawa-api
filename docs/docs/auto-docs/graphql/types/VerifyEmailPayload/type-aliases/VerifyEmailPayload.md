@@ -6,7 +6,7 @@
 
 > **VerifyEmailPayload** = `object`
 
-Defined in: src/graphql/types/VerifyEmailPayload.ts:3
+Defined in: [src/graphql/types/VerifyEmailPayload.ts:3](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/graphql/types/VerifyEmailPayload.ts#L3)
 
 ## Properties
 
@@ -14,7 +14,7 @@ Defined in: src/graphql/types/VerifyEmailPayload.ts:3
 
 > **message**: `string`
 
-Defined in: src/graphql/types/VerifyEmailPayload.ts:5
+Defined in: [src/graphql/types/VerifyEmailPayload.ts:5](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/graphql/types/VerifyEmailPayload.ts#L5)
 
 ***
 
@@ -22,4 +22,4 @@ Defined in: src/graphql/types/VerifyEmailPayload.ts:5
 
 > **success**: `boolean`
 
-Defined in: src/graphql/types/VerifyEmailPayload.ts:4
+Defined in: [src/graphql/types/VerifyEmailPayload.ts:4](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/graphql/types/VerifyEmailPayload.ts#L4)

@@ -4,7 +4,7 @@
 
 # Interface: ChatMemberType
 
-Defined in: src/graphql/types/Chat/ChatMember.ts:10
+Defined in: [src/graphql/types/Chat/ChatMember.ts:10](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/graphql/types/Chat/ChatMember.ts#L10)
 
 ## Properties
 
@@ -12,7 +12,7 @@ Defined in: src/graphql/types/Chat/ChatMember.ts:10
 
 > **member**: `object`
 
-Defined in: src/graphql/types/Chat/ChatMember.ts:11
+Defined in: [src/graphql/types/Chat/ChatMember.ts:11](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/graphql/types/Chat/ChatMember.ts#L11)
 
 #### addressLine1
 
@@ -144,4 +144,4 @@ Defined in: src/graphql/types/Chat/ChatMember.ts:11
 
 > **role**: `"administrator"` \| `"regular"`
 
-Defined in: src/graphql/types/Chat/ChatMember.ts:12
+Defined in: [src/graphql/types/Chat/ChatMember.ts:12](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/graphql/types/Chat/ChatMember.ts#L12)

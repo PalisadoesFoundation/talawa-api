@@ -6,7 +6,7 @@
 
 > **validateRecurrenceRule**(`rule`): `object`
 
-Defined in: src/utilities/recurringEvent/validation.ts:97
+Defined in: [src/utilities/recurringEvent/validation.ts:97](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/utilities/recurringEvent/validation.ts#L97)
 
 Validates a recurrence rule from the database to ensure its configuration is valid.
 This function checks for the presence of a valid frequency, ensures that the interval

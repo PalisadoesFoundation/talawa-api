@@ -4,7 +4,7 @@
 
 # Class: MetricsCacheService
 
-Defined in: src/services/metrics/metricsCache.ts:21
+Defined in: [src/services/metrics/metricsCache.ts:21](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/metrics/metricsCache.ts#L21)
 
 Service for caching aggregated metrics data.
 Provides methods to cache and retrieve metrics snapshots with configurable TTL.
@@ -18,7 +18,7 @@ Cache failures should not break metrics collection or request handling.
 
 > **new MetricsCacheService**(`cache`, `logger?`, `defaultTtlSeconds?`): `MetricsCacheService`
 
-Defined in: src/services/metrics/metricsCache.ts:22
+Defined in: [src/services/metrics/metricsCache.ts:22](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/metrics/metricsCache.ts#L22)
 
 #### Parameters
 
@@ -44,7 +44,7 @@ Defined in: src/services/metrics/metricsCache.ts:22
 
 > **cacheAggregatedMetrics**(`metrics`, `timestamp`, `ttlSeconds?`): `Promise`\<`void`\>
 
-Defined in: src/services/metrics/metricsCache.ts:41
+Defined in: [src/services/metrics/metricsCache.ts:41](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/metrics/metricsCache.ts#L41)
 
 Cache aggregated metrics with a timestamp identifier.
 
@@ -86,7 +86,7 @@ await metricsCache.cacheAggregatedMetrics(metrics, "1705320000000", 600);
 
 > **cacheWindowedMetrics**(`metrics`, `windowType`, `date`, `ttlSeconds?`): `Promise`\<`void`\>
 
-Defined in: src/services/metrics/metricsCache.ts:214
+Defined in: [src/services/metrics/metricsCache.ts:214](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/metrics/metricsCache.ts#L214)
 
 Cache aggregated metrics for a time window (hourly or daily).
 
@@ -138,7 +138,7 @@ await metricsCache.cacheWindowedMetrics(metrics, 'daily', '2024-01-15', 86400);
 
 > **getCachedMetrics**(`timestamp`): `Promise`\<[`AggregatedMetrics`](../../../../workers/metrics/types/interfaces/AggregatedMetrics.md) \| `null`\>
 
-Defined in: src/services/metrics/metricsCache.ts:113
+Defined in: [src/services/metrics/metricsCache.ts:113](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/metrics/metricsCache.ts#L113)
 
 Retrieve cached aggregated metrics by timestamp.
 
@@ -171,7 +171,7 @@ if (metrics) {
 
 > **getCachedMetricsByWindow**(`windowType`, `date`): `Promise`\<[`AggregatedMetrics`](../../../../workers/metrics/types/interfaces/AggregatedMetrics.md) \| `null`\>
 
-Defined in: src/services/metrics/metricsCache.ts:160
+Defined in: [src/services/metrics/metricsCache.ts:160](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/metrics/metricsCache.ts#L160)
 
 Retrieve cached aggregated metrics by time window (hourly or daily).
 
@@ -211,7 +211,7 @@ const metrics = await metricsCache.getCachedMetricsByWindow('daily', '2024-01-15
 
 > **invalidateMetricsCache**(`pattern?`): `Promise`\<`void`\>
 
-Defined in: src/services/metrics/metricsCache.ts:293
+Defined in: [src/services/metrics/metricsCache.ts:293](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/metrics/metricsCache.ts#L293)
 
 Invalidate metrics cache entries matching a pattern.
 

@@ -4,7 +4,7 @@
 
 # Interface: BatchProcessingConfig
 
-Defined in: src/workers/eventGeneration/types.ts:30
+Defined in: [src/workers/eventGeneration/types.ts:30](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/workers/eventGeneration/types.ts#L30)
 
 ## Properties
 
@@ -12,7 +12,7 @@ Defined in: src/workers/eventGeneration/types.ts:30
 
 > **batchSize**: `number`
 
-Defined in: src/workers/eventGeneration/types.ts:31
+Defined in: [src/workers/eventGeneration/types.ts:31](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/workers/eventGeneration/types.ts#L31)
 
 ***
 
@@ -20,7 +20,7 @@ Defined in: src/workers/eventGeneration/types.ts:31
 
 > **maxConcurrentBatches**: `number`
 
-Defined in: src/workers/eventGeneration/types.ts:32
+Defined in: [src/workers/eventGeneration/types.ts:32](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/workers/eventGeneration/types.ts#L32)
 
 ***
 
@@ -28,7 +28,7 @@ Defined in: src/workers/eventGeneration/types.ts:32
 
 > **retryAttempts**: `number`
 
-Defined in: src/workers/eventGeneration/types.ts:34
+Defined in: [src/workers/eventGeneration/types.ts:34](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/workers/eventGeneration/types.ts#L34)
 
 ***
 
@@ -36,4 +36,4 @@ Defined in: src/workers/eventGeneration/types.ts:34
 
 > **timeoutMs**: `number`
 
-Defined in: src/workers/eventGeneration/types.ts:33
+Defined in: [src/workers/eventGeneration/types.ts:33](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/workers/eventGeneration/types.ts#L33)

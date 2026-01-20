@@ -4,7 +4,7 @@
 
 # Interface: OAuthConfig
 
-Defined in: src/utilities/auth/oauth/types.ts:27
+Defined in: [src/utilities/auth/oauth/types.ts:27](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/utilities/auth/oauth/types.ts#L27)
 
 Configuration for OAuth provider
 
@@ -14,7 +14,7 @@ Configuration for OAuth provider
 
 > **clientId**: `string`
 
-Defined in: src/utilities/auth/oauth/types.ts:28
+Defined in: [src/utilities/auth/oauth/types.ts:28](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/utilities/auth/oauth/types.ts#L28)
 
 ***
 
@@ -22,7 +22,7 @@ Defined in: src/utilities/auth/oauth/types.ts:28
 
 > **clientSecret**: `string`
 
-Defined in: src/utilities/auth/oauth/types.ts:29
+Defined in: [src/utilities/auth/oauth/types.ts:29](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/utilities/auth/oauth/types.ts#L29)
 
 ***
 
@@ -30,7 +30,7 @@ Defined in: src/utilities/auth/oauth/types.ts:29
 
 > `optional` **redirectUri**: `string`
 
-Defined in: src/utilities/auth/oauth/types.ts:30
+Defined in: [src/utilities/auth/oauth/types.ts:30](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/utilities/auth/oauth/types.ts#L30)
 
 ***
 
@@ -38,4 +38,4 @@ Defined in: src/utilities/auth/oauth/types.ts:30
 
 > `optional` **requestTimeoutMs**: `number`
 
-Defined in: src/utilities/auth/oauth/types.ts:31
+Defined in: [src/utilities/auth/oauth/types.ts:31](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/utilities/auth/oauth/types.ts#L31)

@@ -4,7 +4,7 @@
 
 # Interface: UpdateOAuthAccountInput
 
-Defined in: src/types/oauthAccount.ts:39
+Defined in: [src/types/oauthAccount.ts:39](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/types/oauthAccount.ts#L39)
 
 OAuth account update input
 
@@ -14,7 +14,7 @@ OAuth account update input
 
 > `optional` **email**: `string`
 
-Defined in: src/types/oauthAccount.ts:40
+Defined in: [src/types/oauthAccount.ts:40](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/types/oauthAccount.ts#L40)
 
 ***
 
@@ -22,7 +22,7 @@ Defined in: src/types/oauthAccount.ts:40
 
 > `optional` **lastUsedAt**: `Date`
 
-Defined in: src/types/oauthAccount.ts:42
+Defined in: [src/types/oauthAccount.ts:42](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/types/oauthAccount.ts#L42)
 
 ***
 
@@ -30,4 +30,4 @@ Defined in: src/types/oauthAccount.ts:42
 
 > `optional` **profile**: [`OAuthAccountProfile`](OAuthAccountProfile.md)
 
-Defined in: src/types/oauthAccount.ts:41
+Defined in: [src/types/oauthAccount.ts:41](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/types/oauthAccount.ts#L41)

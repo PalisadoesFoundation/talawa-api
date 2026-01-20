@@ -6,7 +6,7 @@
 
 > `const` **pluginIdSchema**: `ZodString`
 
-Defined in: src/utilities/validators.ts:9
+Defined in: [src/utilities/validators.ts:9](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/utilities/validators.ts#L9)
 
 Shared Zod schema for validating Plugin IDs.
 Ensures that the ID is alphanumeric (plus underscores and hyphens), starts with a letter,

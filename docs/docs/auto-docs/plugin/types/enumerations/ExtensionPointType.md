@@ -4,7 +4,7 @@
 
 # Enumeration: ExtensionPointType
 
-Defined in: src/plugin/types.ts:122
+Defined in: [src/plugin/types.ts:122](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/plugin/types.ts#L122)
 
 ## Enumeration Members
 
@@ -12,7 +12,7 @@ Defined in: src/plugin/types.ts:122
 
 > **DATABASE**: `"database"`
 
-Defined in: src/plugin/types.ts:124
+Defined in: [src/plugin/types.ts:124](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/plugin/types.ts#L124)
 
 ***
 
@@ -20,7 +20,7 @@ Defined in: src/plugin/types.ts:124
 
 > **GRAPHQL**: `"graphql"`
 
-Defined in: src/plugin/types.ts:123
+Defined in: [src/plugin/types.ts:123](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/plugin/types.ts#L123)
 
 ***
 
@@ -28,4 +28,4 @@ Defined in: src/plugin/types.ts:123
 
 > **HOOKS**: `"hooks"`
 
-Defined in: src/plugin/types.ts:125
+Defined in: [src/plugin/types.ts:125](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/plugin/types.ts#L125)

@@ -4,7 +4,7 @@
 
 # Interface: DependencyInstallationResult
 
-Defined in: src/utilities/pluginDependencyInstaller.ts:14
+Defined in: [src/utilities/pluginDependencyInstaller.ts:14](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/utilities/pluginDependencyInstaller.ts#L14)
 
 ## Properties
 
@@ -12,7 +12,7 @@ Defined in: src/utilities/pluginDependencyInstaller.ts:14
 
 > `optional` **error**: `string`
 
-Defined in: src/utilities/pluginDependencyInstaller.ts:16
+Defined in: [src/utilities/pluginDependencyInstaller.ts:16](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/utilities/pluginDependencyInstaller.ts#L16)
 
 ***
 
@@ -20,7 +20,7 @@ Defined in: src/utilities/pluginDependencyInstaller.ts:16
 
 > `optional` **output**: `string`
 
-Defined in: src/utilities/pluginDependencyInstaller.ts:17
+Defined in: [src/utilities/pluginDependencyInstaller.ts:17](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/utilities/pluginDependencyInstaller.ts#L17)
 
 ***
 
@@ -28,4 +28,4 @@ Defined in: src/utilities/pluginDependencyInstaller.ts:17
 
 > **success**: `boolean`
 
-Defined in: src/utilities/pluginDependencyInstaller.ts:15
+Defined in: [src/utilities/pluginDependencyInstaller.ts:15](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/utilities/pluginDependencyInstaller.ts#L15)

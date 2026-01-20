@@ -4,7 +4,7 @@
 
 # Interface: IExtensionRegistry
 
-Defined in: src/plugin/types.ts:92
+Defined in: [src/plugin/types.ts:92](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/plugin/types.ts#L92)
 
 ## Properties
 
@@ -12,7 +12,7 @@ Defined in: src/plugin/types.ts:92
 
 > **database**: `object`
 
-Defined in: src/plugin/types.ts:97
+Defined in: [src/plugin/types.ts:97](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/plugin/types.ts#L97)
 
 #### enums
 
@@ -32,7 +32,7 @@ Defined in: src/plugin/types.ts:97
 
 > **graphql**: `object`
 
-Defined in: src/plugin/types.ts:93
+Defined in: [src/plugin/types.ts:93](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/plugin/types.ts#L93)
 
 #### builderExtensions
 
@@ -44,7 +44,7 @@ Defined in: src/plugin/types.ts:93
 
 > **hooks**: `object`
 
-Defined in: src/plugin/types.ts:102
+Defined in: [src/plugin/types.ts:102](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/plugin/types.ts#L102)
 
 #### post
 
@@ -60,7 +60,7 @@ Defined in: src/plugin/types.ts:102
 
 > **webhooks**: `object`
 
-Defined in: src/plugin/types.ts:106
+Defined in: [src/plugin/types.ts:106](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/plugin/types.ts#L106)
 
 #### handlers
 

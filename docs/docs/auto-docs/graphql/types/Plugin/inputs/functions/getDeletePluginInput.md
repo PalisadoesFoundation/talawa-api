@@ -6,7 +6,7 @@
 
 > **getDeletePluginInput**(): `object`
 
-Defined in: src/graphql/types/Plugin/inputs.ts:145
+Defined in: [src/graphql/types/Plugin/inputs.ts:145](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/graphql/types/Plugin/inputs.ts#L145)
 
 ## Returns
 

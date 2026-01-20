@@ -6,7 +6,7 @@
 
 > **findValidEmailVerificationToken**(`db`, `tokenHash`): `Promise`\<\{ `expiresAt`: `Date`; `id`: `string`; `userId`: `string`; \} \| `undefined`\>
 
-Defined in: src/utilities/emailVerificationTokenUtils.ts:99
+Defined in: [src/utilities/emailVerificationTokenUtils.ts:99](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/utilities/emailVerificationTokenUtils.ts#L99)
 
 Finds a valid (non-expired, non-used) email verification token by its hash.
 

@@ -6,7 +6,7 @@
 
 > **getPasswordResetEmailText**(`ctx`): `string`
 
-Defined in: src/utilities/emailTemplates.ts:17
+Defined in: [src/utilities/emailTemplates.ts:17](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/utilities/emailTemplates.ts#L17)
 
 Generates plain text email content for password reset.
 Non-branded, uses configured community name.

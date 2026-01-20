@@ -4,7 +4,7 @@
 
 # Class: PluginRegistry
 
-Defined in: src/plugin/manager/registry.ts:13
+Defined in: [src/plugin/manager/registry.ts:13](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/plugin/manager/registry.ts#L13)
 
 ## Constructors
 
@@ -12,7 +12,7 @@ Defined in: src/plugin/manager/registry.ts:13
 
 > **new PluginRegistry**(`pluginContext`): `PluginRegistry`
 
-Defined in: src/plugin/manager/registry.ts:14
+Defined in: [src/plugin/manager/registry.ts:14](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/plugin/manager/registry.ts#L14)
 
 #### Parameters
 
@@ -30,7 +30,7 @@ Defined in: src/plugin/manager/registry.ts:14
 
 > **getPluginFromDatabase**(`pluginId`): `Promise`\<\{ `backup`: `boolean`; `createdAt`: `Date`; `id`: `string`; `isActivated`: `boolean`; `isInstalled`: `boolean`; `pluginId`: `string`; `updatedAt`: `Date` \| `null`; \} \| `null`\>
 
-Defined in: src/plugin/manager/registry.ts:19
+Defined in: [src/plugin/manager/registry.ts:19](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/plugin/manager/registry.ts#L19)
 
 Get plugin from database
 
@@ -50,7 +50,7 @@ Get plugin from database
 
 > **updatePluginInDatabase**(`pluginId`, `updates`): `Promise`\<`void`\>
 
-Defined in: src/plugin/manager/registry.ts:43
+Defined in: [src/plugin/manager/registry.ts:43](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/plugin/manager/registry.ts#L43)
 
 Update plugin in database
 

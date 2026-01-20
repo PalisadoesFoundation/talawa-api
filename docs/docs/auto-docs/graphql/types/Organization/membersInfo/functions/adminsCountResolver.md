@@ -6,7 +6,7 @@
 
 > **adminsCountResolver**(`parent`, `_args`, `ctx`): `Promise`\<`number`\>
 
-Defined in: src/graphql/types/Organization/membersInfo.ts:59
+Defined in: [src/graphql/types/Organization/membersInfo.ts:59](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/graphql/types/Organization/membersInfo.ts#L59)
 
 ## Parameters
 
