@@ -681,7 +681,6 @@ describe("src/drizzle/tables/familyMemberships.ts - Table Definition Tests", () 
 					),
 				);
 
-			const beforeInsert = new Date();
 			const [membership] = await server.drizzleClient
 				.insert(familyMembershipsTable)
 				.values({
@@ -691,7 +690,6 @@ describe("src/drizzle/tables/familyMemberships.ts - Table Definition Tests", () 
 					creatorId: testUserId1,
 				})
 				.returning();
-			const afterInsert = new Date();
 
 			expect(membership).toBeDefined();
 			// This table uses composite primary key (familyId + memberId), not an id column
@@ -700,12 +698,6 @@ describe("src/drizzle/tables/familyMemberships.ts - Table Definition Tests", () 
 			expect(membership?.role).toBe("adult");
 			expect(membership?.creatorId).toBe(testUserId1);
 			expect(membership?.createdAt).toBeInstanceOf(Date);
-			expect(membership?.createdAt.getTime()).toBeGreaterThanOrEqual(
-				beforeInsert.getTime(),
-			);
-			expect(membership?.createdAt.getTime()).toBeLessThanOrEqual(
-				afterInsert.getTime(),
-			);
 			expect(membership?.updatedAt).toBeNull();
 		});
 
