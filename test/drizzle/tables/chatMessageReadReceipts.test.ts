@@ -8,6 +8,17 @@ import {
 } from "~/src/drizzle/tables/chatMessageReadReceipts";
 
 /**
+ * Helper function to get column name from a column object.
+ * Used across multiple test suites to extract column names from Drizzle column definitions.
+ */
+const getColumnName = (col: unknown): string | undefined => {
+	if (col && typeof col === "object" && "name" in col) {
+		return col.name as string;
+	}
+	return undefined;
+};
+
+/**
  * Tests for chatMessageReadReceiptsTable definition - validates table schema, relations,
  * insert schema validation, database constraints, indexes, and primary key configuration.
  * This ensures the chatMessageReadReceipts table is properly configured and all code paths are covered.
@@ -66,14 +77,6 @@ describe("src/drizzle/tables/chatMessageReadReceipts.ts - Table Definition Tests
 
 	describe("Primary Key Configuration", () => {
 		const tableConfig = getTableConfig(chatMessageReadReceiptsTable);
-
-		// Helper function to get column name
-		const getColumnName = (col: unknown): string | undefined => {
-			if (col && typeof col === "object" && "name" in col) {
-				return col.name as string;
-			}
-			return undefined;
-		};
 
 		it("should have a composite primary key defined", () => {
 			expect(tableConfig.primaryKeys).toBeDefined();
@@ -262,14 +265,11 @@ describe("src/drizzle/tables/chatMessageReadReceipts.ts - Table Definition Tests
 				expect(references).toBeDefined();
 				expect(Array.isArray(references)).toBe(true);
 				expect(references?.length).toBe(1);
-				// Verify it references chatMessagesTable.id
-				if (
-					references?.[0] &&
-					typeof references[0] === "object" &&
-					"name" in references[0]
-				) {
-					expect(references[0].name).toBe("id");
-				}
+				/// Verify it references chatMessagesTable.id
+				const ref = references?.[0];
+				expect(ref).toBeDefined();
+				expect(typeof ref).toBe("object");
+				expect(ref).toHaveProperty("name", "id");
 			});
 		});
 
@@ -305,13 +305,10 @@ describe("src/drizzle/tables/chatMessageReadReceipts.ts - Table Definition Tests
 				expect(Array.isArray(references)).toBe(true);
 				expect(references?.length).toBe(1);
 				// Verify it references usersTable.id
-				if (
-					references?.[0] &&
-					typeof references[0] === "object" &&
-					"name" in references[0]
-				) {
-					expect(references[0].name).toBe("id");
-				}
+				const ref = references?.[0];
+				expect(ref).toBeDefined();
+				expect(typeof ref).toBe("object");
+				expect(ref).toHaveProperty("name", "id");
 			});
 		});
 
@@ -556,14 +553,6 @@ describe("src/drizzle/tables/chatMessageReadReceipts.ts - Table Definition Tests
 
 	describe("Table Indexes", () => {
 		const tableConfig = getTableConfig(chatMessageReadReceiptsTable);
-
-		// Helper function to get column name from indexed column
-		const getColumnName = (col: unknown): string | undefined => {
-			if (col && typeof col === "object" && "name" in col) {
-				return col.name as string;
-			}
-			return undefined;
-		};
 
 		it("should have indexes defined", () => {
 			expect(tableConfig.indexes).toBeDefined();
