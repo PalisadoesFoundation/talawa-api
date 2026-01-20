@@ -1,5 +1,5 @@
 import "./AgendaItem";
-import "./attachment"
+import "./attachment";
 import "./createdAt";
 import "./creator";
 import "./folder";
