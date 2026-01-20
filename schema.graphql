@@ -277,6 +277,24 @@ type AgendaItem {
   updater: User
 }
 
+"""Attachment of the agenda items."""
+type AgendaItemAttachment {
+  """Unique file hash identifier for the attachment."""
+  fileHash: String
+
+  """Global identifier of the attachment."""
+  id: ID!
+
+  """Mime type of the attachment."""
+  mimeType: String
+
+  """Identifier name of the attachment."""
+  name: String
+
+  """Object name used when creating presigned URLs."""
+  objectName: String
+}
+
 """Attachment data for an agenda item"""
 input AgendaItemAttachmentInput {
   fileHash: String!
@@ -291,6 +309,21 @@ enum AgendaItemType {
   note
   scripture
   song
+}
+
+"""URLs associated with an agenda item."""
+type AgendaItemUrl {
+  """Date time at which the URL was created."""
+  createdAt: DateTime!
+
+  """Global identifier of the agenda item URL."""
+  id: ID!
+
+  """Date time at which the URL was last updated."""
+  updatedAt: DateTime
+
+  """URL associated with the agenda item."""
+  url: String
 }
 
 """URL associated with an agenda item"""
