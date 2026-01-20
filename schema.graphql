@@ -4917,9 +4917,6 @@ type Query {
     eventId: ID!
   ): [AgendaFolder!]
 
-  """Query field to read an agenda item."""
-  agendaItem(input: QueryAgendaItemInput!): AgendaItem
-
   """Query field to read all Users."""
   allUsers(after: String, before: String, first: Int, last: Int, where: QueryAllUsersWhereInput): QueryAllUsersConnection
 
@@ -5166,12 +5163,6 @@ input QueryAdvertisementInput {
 """"""
 input QueryAgendaFolderInput {
   """Global id of the agenda folder."""
-  id: String!
-}
-
-""""""
-input QueryAgendaItemInput {
-  """Global id of the agenda item."""
   id: String!
 }
 
