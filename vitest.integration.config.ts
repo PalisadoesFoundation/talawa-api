@@ -81,6 +81,7 @@ export default defineConfig({
 				"drizzle_migrations/**",
 				"envFiles/**",
 				"**/scripts/**", // Mirror test exclusion to exclude nested scripts
+				"vitest.*.config.ts",
 			],
 		},
 
