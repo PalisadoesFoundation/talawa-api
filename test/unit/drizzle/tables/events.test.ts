@@ -4,6 +4,9 @@ import { describe, expect, it } from "vitest";
 import { agendaFoldersTable } from "~/src/drizzle/tables/agendaFolders";
 import { eventAttachmentsTable } from "~/src/drizzle/tables/eventAttachments";
 import {
+	EVENT_DESCRIPTION_MAX_LENGTH,
+	EVENT_LOCATION_MAX_LENGTH,
+	EVENT_NAME_MAX_LENGTH,
 	eventsTable,
 	eventsTableInsertSchema,
 	eventsTableRelations,
@@ -503,16 +506,48 @@ describe("src/drizzle/tables/events.ts", () => {
 			expect(result.success).toBe(false);
 		});
 
-		it("should validate string lengths", () => {
-			const longName = "a".repeat(300); // Max is 256
+		it("should validate name max length", () => {
 			const invalidEvent = {
-				name: longName,
+				name: "a".repeat(EVENT_NAME_MAX_LENGTH + 1),
 				startAt: new Date(),
 				endAt: new Date(),
 				organizationId: "00000000-0000-0000-0000-000000000000",
 			};
 			const result = eventsTableInsertSchema.safeParse(invalidEvent);
 			expect(result.success).toBe(false);
+			if (!result.success) {
+				expect(result.error.issues[0]?.path).toContain("name");
+			}
+		});
+
+		it("should validate description max length", () => {
+			const invalidEvent = {
+				name: "Valid Name",
+				startAt: new Date(),
+				endAt: new Date(),
+				organizationId: "00000000-0000-0000-0000-000000000000",
+				description: "a".repeat(EVENT_DESCRIPTION_MAX_LENGTH + 1),
+			};
+			const result = eventsTableInsertSchema.safeParse(invalidEvent);
+			expect(result.success).toBe(false);
+			if (!result.success) {
+				expect(result.error.issues[0]?.path).toContain("description");
+			}
+		});
+
+		it("should validate location max length", () => {
+			const invalidEvent = {
+				name: "Valid Name",
+				startAt: new Date(),
+				endAt: new Date(),
+				organizationId: "00000000-0000-0000-0000-000000000000",
+				location: "a".repeat(EVENT_LOCATION_MAX_LENGTH + 1),
+			};
+			const result = eventsTableInsertSchema.safeParse(invalidEvent);
+			expect(result.success).toBe(false);
+			if (!result.success) {
+				expect(result.error.issues[0]?.path).toContain("location");
+			}
 		});
 	});
 });

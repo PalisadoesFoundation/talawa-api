@@ -1,6 +1,5 @@
 import { faker } from "@faker-js/faker";
-import { getTableName, sql } from "drizzle-orm";
-import { getTableConfig } from "drizzle-orm/pg-core";
+import { sql } from "drizzle-orm";
 import { mercuriusClient } from "test/graphql/types/client";
 import { createRegularUserUsingAdmin } from "test/graphql/types/createRegularUserUsingAdmin";
 import {
@@ -12,10 +11,6 @@ import { describe, expect, it } from "vitest";
 
 import { eventsTable } from "~/src/drizzle/schema";
 
-import {
-	eventsTableInsertSchema,
-	eventsTableRelations,
-} from "~/src/drizzle/tables/events";
 import { server } from "../../server";
 
 /**
@@ -65,101 +60,6 @@ async function createTestOrganization(): Promise<string> {
 }
 
 describe("src/drizzle/tables/events.ts", () => {
-	describe("eventsTable schema", () => {
-		it("should have the correct table name", () => {
-			expect(getTableName(eventsTable)).toBe("events");
-		});
-
-		describe("columns", () => {
-			it("should have all required columns defined", () => {
-				const columns = Object.keys(eventsTable);
-				expect(columns).toContain("allDay");
-				expect(columns).toContain("createdAt");
-				expect(columns).toContain("creatorId");
-				expect(columns).toContain("description");
-				expect(columns).toContain("endAt");
-				expect(columns).toContain("id");
-				expect(columns).toContain("isInviteOnly");
-				expect(columns).toContain("isPublic");
-				expect(columns).toContain("isRegisterable");
-				expect(columns).toContain("isRecurringEventTemplate");
-				expect(columns).toContain("location");
-				expect(columns).toContain("name");
-				expect(columns).toContain("organizationId");
-				expect(columns).toContain("startAt");
-				expect(columns).toContain("updatedAt");
-				expect(columns).toContain("updaterId");
-			});
-
-			describe("id column", () => {
-				it("should be a uuid primary key", () => {
-					expect(eventsTable.id.dataType).toBe("string");
-					expect(eventsTable.id.columnType).toBe("PgUUID");
-					expect(eventsTable.id.primary).toBe(true);
-				});
-			});
-		});
-
-		describe("foreign keys", () => {
-			it("should have correct FK configurations", () => {
-				const tableConfig = getTableConfig(eventsTable);
-
-				// Creator FK
-				const creatorFk = tableConfig.foreignKeys.find((fk) => {
-					const ref = fk.reference();
-					return ref.columns.some((col) => col.name === "creator_id");
-				});
-				expect(creatorFk).toBeDefined();
-				expect(creatorFk?.onDelete).toBe("set null");
-				expect(creatorFk?.onUpdate).toBe("cascade");
-
-				// Organization FK
-				const orgFk = tableConfig.foreignKeys.find((fk) => {
-					const ref = fk.reference();
-					return ref.columns.some((col) => col.name === "organization_id");
-				});
-				expect(orgFk).toBeDefined();
-				expect(orgFk?.onDelete).toBe("cascade");
-			});
-		});
-	});
-
-	describe("eventsTableRelations", () => {
-		it("should be defined", () => {
-			expect(eventsTableRelations).toBeDefined();
-		});
-
-		it("should be associated with eventsTable", () => {
-			expect(eventsTableRelations.table).toBe(eventsTable);
-		});
-	});
-
-	describe("eventsTableInsertSchema", () => {
-		it("should validate a valid event object", () => {
-			const validEvent = {
-				name: "Test Event",
-				startAt: new Date(),
-				endAt: new Date(),
-				organizationId: "00000000-0000-0000-0000-000000000000",
-				allDay: false,
-				isInviteOnly: false,
-				isPublic: true,
-				isRegisterable: true,
-				isRecurringEventTemplate: false,
-			};
-			const result = eventsTableInsertSchema.safeParse(validEvent);
-			expect(result.success).toBe(true);
-		});
-
-		it("should fail on missing required fields", () => {
-			const invalidEvent = {
-				name: "Test Event",
-			};
-			const result = eventsTableInsertSchema.safeParse(invalidEvent);
-			expect(result.success).toBe(false);
-		});
-	});
-
 	describe("Database Operations", () => {
 		it("should successfully insert a record with required fields", async () => {
 			const testUser = await createRegularUserUsingAdmin();
