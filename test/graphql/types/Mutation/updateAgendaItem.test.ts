@@ -207,7 +207,7 @@ async function createTestAgendaItem(): Promise<TestAgendaItem> {
 					duration: "30m",
 					description: "Test agenda item description",
 					eventId: `${faker.string.uuid()}`,
-					sequence: 1
+					sequence: 1,
 				},
 			},
 		},
