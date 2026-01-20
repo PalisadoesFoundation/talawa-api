@@ -1118,15 +1118,16 @@ describe("src/drizzle/tables/familyMemberships.ts - Table Definition Tests", () 
 			const testOrgId = await createTestOrganization();
 			const testUserId = await createTestUser();
 			const testFamilyId = await createTestFamily(testOrgId, testUserId);
-			const beforeInsert = new Date();
+			const [inserted] = await server.drizzleClient
+				.insert(familyMembershipsTable)
+				.values({
+					familyId: testFamilyId,
+					memberId: testUserId,
+					role: "head_of_household",
+				})
+				.returning({ createdAt: familyMembershipsTable.createdAt });
 
-			await server.drizzleClient.insert(familyMembershipsTable).values({
-				familyId: testFamilyId,
-				memberId: testUserId,
-				role: "head_of_household",
-			});
-
-			const afterInsert = new Date();
+			const insertedCreatedAt = inserted?.createdAt ?? new Date();
 
 			// Query using createdAt range (indexed column)
 			const results = await server.drizzleClient
@@ -1135,8 +1136,8 @@ describe("src/drizzle/tables/familyMemberships.ts - Table Definition Tests", () 
 				.where(
 					and(
 						eq(familyMembershipsTable.familyId, testFamilyId),
-						gte(familyMembershipsTable.createdAt, beforeInsert),
-						lte(familyMembershipsTable.createdAt, afterInsert),
+						gte(familyMembershipsTable.createdAt, insertedCreatedAt),
+						lte(familyMembershipsTable.createdAt, insertedCreatedAt),
 					),
 				);
 
@@ -1144,12 +1145,7 @@ describe("src/drizzle/tables/familyMemberships.ts - Table Definition Tests", () 
 			// Verify createdAt is within expected range (indexed column was used)
 			expect(results[0]?.createdAt).toBeInstanceOf(Date);
 			if (results[0]?.createdAt) {
-				expect(results[0].createdAt.getTime()).toBeGreaterThanOrEqual(
-					beforeInsert.getTime(),
-				);
-				expect(results[0].createdAt.getTime()).toBeLessThanOrEqual(
-					afterInsert.getTime(),
-				);
+				expect(results[0].createdAt.getTime()).toBe(insertedCreatedAt.getTime());
 			}
 
 			// Cleanup
