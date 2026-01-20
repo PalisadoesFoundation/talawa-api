@@ -1145,7 +1145,9 @@ describe("src/drizzle/tables/familyMemberships.ts - Table Definition Tests", () 
 			// Verify createdAt is within expected range (indexed column was used)
 			expect(results[0]?.createdAt).toBeInstanceOf(Date);
 			if (results[0]?.createdAt) {
-				expect(results[0].createdAt.getTime()).toBe(insertedCreatedAt.getTime());
+				expect(results[0].createdAt.getTime()).toBe(
+					insertedCreatedAt.getTime(),
+				);
 			}
 
 			// Cleanup
