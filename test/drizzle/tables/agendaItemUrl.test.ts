@@ -10,7 +10,7 @@ import {
 describe("agendaItemUrlTable", () => {
 	describe("agendaItemUrlTableInsertSchema", () => {
 		const validData = {
-			agendaItemId: "01234567-89ab-cdef-0123-456789abcdef",
+			agendaItemId: "01234567-89ab-4def-8123-456789abcdef", // RFC 4122 compliant UUID (version 4)
 			url: "https://example.com",
 		};
 
