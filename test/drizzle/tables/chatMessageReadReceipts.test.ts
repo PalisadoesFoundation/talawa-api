@@ -324,8 +324,8 @@ describe("src/drizzle/tables/chatMessageReadReceipts.ts - Table Definition Tests
 
 	describe("Insert Schema Validation", () => {
 		const validReceiptData = {
-			messageId: "01234567-89ab-cdef-0123-456789abcdef",
-			readerId: "11111111-1111-1111-1111-111111111111",
+			messageId: "01234567-89ab-4def-8123-456789abcdef", // RFC 4122 compliant UUID (version 4)
+			readerId: "11111111-1111-4111-8111-111111111111", // RFC 4122 compliant UUID (version 4)
 		};
 
 		describe("messageId field", () => {
@@ -492,8 +492,8 @@ describe("src/drizzle/tables/chatMessageReadReceipts.ts - Table Definition Tests
 		describe("complete receipt data", () => {
 			it("should accept complete valid receipt data", () => {
 				const completeData = {
-					messageId: "01234567-89ab-cdef-0123-456789abcdef",
-					readerId: "11111111-1111-1111-1111-111111111111",
+					messageId: "01234567-89ab-4def-8123-456789abcdef",
+					readerId: "11111111-1111-4111-8111-111111111111",
 					readAt: new Date(),
 				};
 				const result =
@@ -503,8 +503,8 @@ describe("src/drizzle/tables/chatMessageReadReceipts.ts - Table Definition Tests
 
 			it("should accept minimal valid receipt data", () => {
 				const minimalData = {
-					messageId: "01234567-89ab-cdef-0123-456789abcdef",
-					readerId: "11111111-1111-1111-1111-111111111111",
+					messageId: "01234567-89ab-4def-8123-456789abcdef",
+					readerId: "11111111-1111-4111-8111-111111111111",
 				};
 				const result =
 					chatMessageReadReceiptsInsertSchema.safeParse(minimalData);
