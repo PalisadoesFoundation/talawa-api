@@ -229,7 +229,10 @@ type AgendaFolder {
 }
 
 type AgendaItem {
-  """Date time at the time the agenda item was last created."""
+  """Agenda category"""
+  category: AgendaCategory
+
+  """Date time when the agenda item was created."""
   createdAt: DateTime
 
   """User who created the agenda item."""
@@ -241,8 +244,11 @@ type AgendaItem {
   """Duration of the agenda item."""
   duration: String
 
+  """Event for which the agenda item constituting a part of the agenda."""
+  event: Event
+
   """Agenda folder within which the agenda item in contained."""
-  event: AgendaFolder
+  folder: AgendaFolder
 
   """Global identifier of the agenda item."""
   id: ID!
@@ -255,6 +261,12 @@ type AgendaItem {
   """Name of the agenda item."""
   name: String
 
+  """Notes for the agenda item."""
+  notes: String
+
+  """Sequence order of the agenda item."""
+  sequence: Int
+
   """Type of the agenda item."""
   type: AgendaItemType
 
@@ -265,12 +277,26 @@ type AgendaItem {
   updater: User
 }
 
+"""Attachment data for an agenda item"""
+input AgendaItemAttachmentInput {
+  fileHash: String!
+  mimeType: PostAttachmentMimeType!
+  name: String!
+  objectName: String!
+}
+
 """Possible variants of the type of an agenda item."""
 enum AgendaItemType {
   general
   note
   scripture
   song
+}
+
+"""URL associated with an agenda item"""
+input AgendaItemUrlInput {
+  """URL of the agenda item"""
+  url: String!
 }
 
 """Represents a tag assigned to a user."""
@@ -2773,10 +2799,13 @@ input MutationCreateAgendaFolderInput {
   sequence: Int
 }
 
-""""""
+"""Input type for creating a new agenda item."""
 input MutationCreateAgendaItemInput {
-  """File metadata for attachments uploaded via MinIO presigned URLs."""
-  attachments: [FileMetadataInput!]
+  """Attachments for the agenda items."""
+  attachments: [AgendaItemAttachmentInput!]
+
+  """Category id"""
+  categoryId: ID
 
   """Custom information about the agenda item."""
   description: String
@@ -2784,10 +2813,13 @@ input MutationCreateAgendaItemInput {
   """Duration of the agenda item."""
   duration: String
 
+  """Global identifier of the event the agenda item is associated to."""
+  eventId: ID!
+
   """
   Global identifier of the agenda folder the agenda item is associated to.
   """
-  folderId: ID!
+  folderId: ID
 
   """
   Key of the agenda item if it's of a "song" type. More information at [this](https://en.wikipedia.org/wiki/Key_(music)) link.
@@ -2797,8 +2829,17 @@ input MutationCreateAgendaItemInput {
   """Name of the agenda item."""
   name: String!
 
+  """Notes for the agenda item"""
+  notes: String
+
+  """Sequence of the AgendaItem."""
+  sequence: Int!
+
   """Type of the agenda item."""
   type: AgendaItemType!
+
+  """URLs associated with the agenda item."""
+  url: [AgendaItemUrlInput!]
 }
 
 """"""

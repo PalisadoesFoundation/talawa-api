@@ -70,7 +70,7 @@
 		}
 	},
 	"init": true,
-	"initializeCommand": "/bin/sh -c '[ ! -f .env ] && cp ./envFiles/.env.devcontainer ./.env || true'",
+	"initializeCommand": "powershell.exe -Command Copy-Item -Path envFiles/.env.devcontainer -Destination .env -Force",
 	"name": "talawa_api",
 	"overrideCommand": true,
 	"postCreateCommand": "./.devcontainer/post-create.sh",

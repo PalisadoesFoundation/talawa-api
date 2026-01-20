@@ -1,4 +1,3 @@
-import { agendaItemTypeEnum } from "~/src/drizzle/enums/agendaItemType";
 import type { agendaItemsTable } from "~/src/drizzle/tables/agendaItems";
 import { builder } from "~/src/graphql/builder";
 import { AgendaItemType } from "~/src/graphql/enums/AgendaItemType";
@@ -31,9 +30,16 @@ AgendaItem.implement({
 			description: "Name of the agenda item.",
 			resolve: (parent) => escapeHTML(parent.name),
 		}),
-		type: t.field({
+		notes: t.string({
+			description: "Notes for the agenda item.",
+			nullable: true,
+			resolve: (parent) => (parent.notes ? escapeHTML(parent.notes) : null),
+		}),
+		sequence: t.exposeInt("sequence", {
+			description: "Sequence order of the agenda item.",
+		}),
+		type: t.expose("type", {
 			description: "Type of the agenda item.",
-			resolve: (parent) => agendaItemTypeEnum.parse(parent.type),
 			type: AgendaItemType,
 		}),
 	}),

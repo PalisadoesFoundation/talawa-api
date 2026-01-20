@@ -4,7 +4,7 @@
 
 # Variable: eventVolunteersOrderByInputEnum
 
-> `const` **eventVolunteersOrderByInputEnum**: `ZodEnum`\<\{ `hoursVolunteered_ASC`: `"hoursVolunteered_ASC"`; `hoursVolunteered_DESC`: `"hoursVolunteered_DESC"`; \}\>
+> `const` **eventVolunteersOrderByInputEnum**: `ZodEnum`\<\[`"hoursVolunteered_ASC"`, `"hoursVolunteered_DESC"`\]\>
 
 Defined in: [src/graphql/inputs/EventVolunteersOrderByInput.ts:8](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/graphql/inputs/EventVolunteersOrderByInput.ts#L8)
 

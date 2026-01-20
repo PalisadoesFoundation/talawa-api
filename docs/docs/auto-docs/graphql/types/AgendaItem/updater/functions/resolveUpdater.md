@@ -12,6 +12,10 @@ Defined in: [src/graphql/types/AgendaItem/updater.ts:7](https://github.com/Palis
 
 ### parent
 
+#### categoryId
+
+`string`
+
 #### createdAt
 
 `Date`
@@ -27,6 +31,10 @@ Defined in: [src/graphql/types/AgendaItem/updater.ts:7](https://github.com/Palis
 #### duration
 
 `string` \| `null`
+
+#### eventId
+
+`string`
 
 #### folderId
 
@@ -44,9 +52,17 @@ Defined in: [src/graphql/types/AgendaItem/updater.ts:7](https://github.com/Palis
 
 `string`
 
+#### notes
+
+`string` \| `null`
+
+#### sequence
+
+`number`
+
 #### type
 
-`string`
+`"general"` \| `"note"` \| `"scripture"` \| `"song"`
 
 #### updatedAt
 
