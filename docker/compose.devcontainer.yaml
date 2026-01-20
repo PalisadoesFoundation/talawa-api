@@ -11,6 +11,9 @@ services:
         - API_DEBUGGER_PORT=${API_DEBUGGER_PORT:?error}
       # https://docs.docker.com/reference/compose-file/build/#target
       target: devcontainer
+    # Override the default command to run the development server in devcontainer
+    # Using bash -i to ensure interactive shell loads environment properly
+    command: bash -i -c "pnpm run start_development_server"
     depends_on:
       minio:
         condition: service_healthy
