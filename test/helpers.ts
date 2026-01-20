@@ -64,6 +64,14 @@ export function createMultipartPayload({
 	fileName = "blob",
 	boundary = `----WebKitFormBoundary${Math.random().toString(36)}`,
 }: MultipartPayloadOptions) {
+	const mapKeys = Object.keys(map);
+	if (mapKeys.length !== 1) {
+		throw new Error(
+			`createMultipartPayload expects exactly one file mapping, but got ${mapKeys.length} keys: ${mapKeys.join(", ")}`,
+		);
+	}
+	const fileField = mapKeys[0];
+
 	const body = [
 		`--${boundary}`,
 		'Content-Disposition: form-data; name="operations"',
@@ -74,7 +82,7 @@ export function createMultipartPayload({
 		"",
 		JSON.stringify(map),
 		`--${boundary}`,
-		`Content-Disposition: form-data; name="0"; filename="${fileName}"`,
+		`Content-Disposition: form-data; name="${fileField}"; filename="${fileName}"`,
 		`Content-Type: ${fileType}`,
 		"",
 		fileContent,
