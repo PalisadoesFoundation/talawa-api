@@ -823,18 +823,6 @@ export const Query_agendaCategoriesByEventId =
   }
 }`);
 
-export const Query_agendaItem =
-	gql(`query Query_agendaItem($input: QueryAgendaItemInput!) {
-  agendaItem(input: $input) {
-    id
-    name
-    description
-    duration
-    key
-    type
-  }
-}`);
-
 export const Query_agendaFoldersByEventId = gql(`
     query Query_agendaFoldersByEventId($eventId: ID!) {
       agendaFoldersByEventId(eventId: $eventId) {
