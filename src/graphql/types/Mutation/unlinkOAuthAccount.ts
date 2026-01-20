@@ -18,7 +18,15 @@ builder.mutationField("unlinkOAuthAccount", (t) =>
 				description: "The OAuth provider to unlink from the user account.",
 			}),
 		},
-		resolve: () => {
+		resolve: (_parent, _args, ctx) => {
+			if (!ctx.currentClient.isAuthenticated) {
+				throw new TalawaGraphQLError({
+					extensions: {
+						code: "unauthenticated",
+					},
+				});
+			}
+
 			// Placeholder resolver - Phase 3 will implement actual resolver
 			throw new TalawaGraphQLError({
 				extensions: {

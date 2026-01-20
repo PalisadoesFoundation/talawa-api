@@ -18,7 +18,15 @@ builder.mutationField("linkOAuthAccount", (t) =>
 					"Input containing OAuth provider details and authorization code.",
 			}),
 		},
-		resolve: () => {
+		resolve: (_parent, _args, ctx) => {
+			if (!ctx.currentClient.isAuthenticated) {
+				throw new TalawaGraphQLError({
+					extensions: {
+						code: "unauthenticated",
+					},
+				});
+			}
+
 			// Placeholder resolver - Phase 3 will implement actual resolver
 			throw new TalawaGraphQLError({
 				extensions: {

@@ -13,7 +13,7 @@ describe("fundsTable", () => {
 	describe("fundsTableInsertSchema", () => {
 		const validFundData = {
 			name: "Community Fund",
-			organizationId: "01234567-89ab-cdef-0123-456789abcdef",
+			organizationId: "01234567-89ab-4def-9123-456789abcdef",
 			isTaxDeductible: true,
 		};
 
@@ -222,7 +222,7 @@ describe("fundsTable", () => {
 			it("should accept a valid UUID for id", () => {
 				const result = fundsTableInsertSchema.safeParse({
 					...validFundData,
-					id: "01234567-89ab-cdef-0123-456789abcdef",
+					id: "01234567-89ab-4def-9123-456789abcdef",
 				});
 				expect(result.success).toBe(true);
 			});
@@ -245,7 +245,7 @@ describe("fundsTable", () => {
 			it("should accept a valid UUID for creatorId", () => {
 				const result = fundsTableInsertSchema.safeParse({
 					...validFundData,
-					creatorId: "01234567-89ab-cdef-0123-456789abcdef",
+					creatorId: "01234567-89ab-4def-9123-456789abcdef",
 				});
 				expect(result.success).toBe(true);
 			});
@@ -276,7 +276,7 @@ describe("fundsTable", () => {
 			it("should accept a valid UUID for updaterId", () => {
 				const result = fundsTableInsertSchema.safeParse({
 					...validFundData,
-					updaterId: "01234567-89ab-cdef-0123-456789abcdef",
+					updaterId: "01234567-89ab-4def-9123-456789abcdef",
 				});
 				expect(result.success).toBe(true);
 			});
@@ -307,7 +307,7 @@ describe("fundsTable", () => {
 			it("should accept complete valid fund data", () => {
 				const completeFundData = {
 					name: "Annual Community Fund",
-					organizationId: "01234567-89ab-cdef-0123-456789abcdef",
+					organizationId: "01234567-89ab-4def-9123-456789abcdef",
 					isTaxDeductible: true,
 					isDefault: false,
 					isArchived: false,
@@ -322,7 +322,7 @@ describe("fundsTable", () => {
 			it("should accept minimal valid fund data", () => {
 				const minimalFundData = {
 					name: "A",
-					organizationId: "01234567-89ab-cdef-0123-456789abcdef",
+					organizationId: "01234567-89ab-4def-9123-456789abcdef",
 					isTaxDeductible: false,
 				};
 				const result = fundsTableInsertSchema.safeParse(minimalFundData);
