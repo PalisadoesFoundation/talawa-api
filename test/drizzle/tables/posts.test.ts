@@ -72,7 +72,7 @@ describe("src/drizzle/tables/posts.ts - Table Definition Tests", () => {
 		// Helper type for captured relation data
 		interface CapturedRelation {
 			table: Table;
-			config: {
+			config?: {
 				relationName?: string;
 				fields?: unknown[];
 				references?: unknown[];
