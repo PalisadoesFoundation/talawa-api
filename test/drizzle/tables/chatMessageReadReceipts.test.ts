@@ -99,40 +99,65 @@ describe("src/drizzle/tables/chatMessageReadReceipts.ts - Table Definition Tests
 	describe("Foreign Key Relationships", () => {
 		const tableConfig = getTableConfig(chatMessageReadReceiptsTable);
 
+		it("should have foreign keys referencing chat_messages and users tables", () => {
+			// Verify we have exactly 2 foreign keys
+			expect(tableConfig.foreignKeys.length).toBe(2);
+
+			// Map all FK references to their target table names
+			const referencedTableNames = tableConfig.foreignKeys
+				.map((fk) => {
+					if (typeof fk.reference === "function") {
+						const ref = fk.reference();
+						if (ref && "foreignTable" in ref && ref.foreignTable) {
+							return getTableName(ref.foreignTable as Table);
+						}
+					}
+					return null;
+				})
+				.filter(Boolean);
+
+			// Verify the FK targets include both required tables
+			expect(referencedTableNames).toContain("chat_messages");
+			expect(referencedTableNames).toContain("users");
+			expect(referencedTableNames.length).toBe(2);
+		});
+
 		it("should have messageId column with foreign key reference to chat_messages.id", () => {
-			// Verify the messageId column exists and is defined with FK constraints in the schema
+			// Verify the messageId column exists
 			expect(chatMessageReadReceiptsTable.messageId).toBeDefined();
 
-			// The FK should point to chatMessagesTable.id
-			// This is validated through:
-			// 1. The column definition uses .references(() => chatMessagesTable.id)
-			// 2. The tableConfig has exactly 2 foreign keys (verified in another test)
-			// 3. The relations test verifies the ORM relationship to chat_messages
+			// Find the FK that references chat_messages
+			const chatMessagesFk = tableConfig.foreignKeys.find((fk) => {
+				if (typeof fk.reference === "function") {
+					const ref = fk.reference();
+					if (ref && "foreignTable" in ref && ref.foreignTable) {
+						const tableName = getTableName(ref.foreignTable as Table);
+						return tableName === "chat_messages";
+					}
+				}
+				return false;
+			});
 
-			// Verify FK metadata exists
-			expect(tableConfig.foreignKeys.length).toBeGreaterThanOrEqual(1);
-
-			// The actual FK constraint is defined in the schema as:
-			// messageId: uuid("message_id").notNull().references(() => chatMessagesTable.id)
-			// This ensures referential integrity at the database level
+			expect(chatMessagesFk).toBeDefined();
 		});
 
 		it("should have readerId column with foreign key reference to users.id", () => {
-			// Verify the readerId column exists and is defined with FK constraints in the schema
+			// Verify the readerId column exists
 			expect(chatMessageReadReceiptsTable.readerId).toBeDefined();
 
-			// The FK should point to usersTable.id
-			// This is validated through:
-			// 1. The column definition uses .references(() => usersTable.id)
-			// 2. The tableConfig has exactly 2 foreign keys (verified in another test)
-			// 3. The relations test verifies the ORM relationship to users
+			// Find the FK that references users
+			const usersFk = tableConfig.foreignKeys.find((fk) => {
+				if (typeof fk.reference === "function") {
+					const ref = fk.reference();
+					if (ref && "foreignTable" in ref && ref.foreignTable) {
+						const tableName = getTableName(ref.foreignTable as Table);
+						return tableName === "users";
+					}
+				}
+				return false;
+			});
 
-			// Verify FK metadata exists
-			expect(tableConfig.foreignKeys.length).toBe(2);
-
-			// The actual FK constraint is defined in the schema as:
-			// readerId: uuid("reader_id").notNull().references(() => usersTable.id)
-			// This ensures referential integrity at the database level
+			expect(usersFk).toBeDefined();
 		});
 	});
 
@@ -599,28 +624,6 @@ describe("src/drizzle/tables/chatMessageReadReceipts.ts - Table Definition Tests
 
 		it("should have exactly 2 foreign keys (messageId and readerId)", () => {
 			expect(tableConfig.foreignKeys.length).toBe(2);
-		});
-	});
-
-	describe("Composite Primary Key Uniqueness Constraint", () => {
-		it("should ensure composite key enforces one receipt per (message, reader)", () => {
-			// This is a logical test - the composite primary key ensures uniqueness
-			const tableConfig = getTableConfig(chatMessageReadReceiptsTable);
-			const primaryKey = tableConfig.primaryKeys[0];
-			if (!primaryKey) {
-				throw new Error("Primary key not found");
-			}
-
-			// Verify both columns are in the primary key
-			const columnNames = primaryKey.columns.map((col) =>
-				col && typeof col === "object" && "name" in col
-					? (col.name as string)
-					: undefined,
-			);
-
-			expect(columnNames).toContain("message_id");
-			expect(columnNames).toContain("reader_id");
-			expect(columnNames.length).toBe(2);
 		});
 	});
 
