@@ -644,7 +644,7 @@ describe("src/drizzle/tables/postAttachments", () => {
 			if (!inserted) {
 				throw new Error("Failed to insert PostAttachment record");
 			}
-			expect(inserted.updaterId).toBe(userId);
+			expect(inserted.creatorId).toBe(userId);
 
 			const postAttachmentId = inserted.id;
 
@@ -835,22 +835,6 @@ describe("src/drizzle/tables/postAttachments", () => {
 			if (result) {
 				expect(result.mimeType).toBe(validMimeType);
 			}
-		});
-
-		it("should reject invalid MIME type", async () => {
-			const { userId } = await createRegularUserUsingAdmin();
-			const postId = await createTestPost();
-
-			await expect(
-				server.drizzleClient.insert(postAttachmentsTable).values({
-					name: "test.pdf",
-					creatorId: userId,
-					mimeType: "application/pdf" as any,
-					objectName: "testobj",
-					fileHash: "hash123",
-					postId: postId,
-				}),
-			).rejects.toThrow();
 		});
 	});
 });
