@@ -4,6 +4,6 @@
 
 # Variable: queryAgendaItemInputSchema
 
-> `const` **queryAgendaItemInputSchema**: `ZodObject`\<\{ `id`: `ZodString`; \}, `"strip"`, `ZodTypeAny`, \{ `id`: `string`; \}, \{ `id`: `string`; \}\>
+> `const` **queryAgendaItemInputSchema**: `ZodObject`\<\{ `id`: `ZodUUID`; \}, `$strip`\>
 
 Defined in: src/graphql/inputs/QueryAgendaItemInput.ts:5

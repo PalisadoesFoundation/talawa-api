@@ -4,6 +4,6 @@
 
 # Variable: mutationDeleteEntireRecurringEventSeriesInputSchema
 
-> `const` **mutationDeleteEntireRecurringEventSeriesInputSchema**: `ZodObject`\<\{ `id`: `ZodString`; \}, `"strip"`, `ZodTypeAny`, \{ `id`: `string`; \}, \{ `id`: `string`; \}\>
+> `const` **mutationDeleteEntireRecurringEventSeriesInputSchema**: `ZodObject`\<\{ `id`: `ZodUUID`; \}, `$strip`\>
 
 Defined in: src/graphql/inputs/MutationDeleteEntireRecurringEventSeriesInput.ts:5

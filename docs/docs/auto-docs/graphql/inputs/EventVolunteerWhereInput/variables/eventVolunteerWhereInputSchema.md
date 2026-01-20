@@ -4,7 +4,7 @@
 
 # Variable: eventVolunteerWhereInputSchema
 
-> `const` **eventVolunteerWhereInputSchema**: `ZodObject`\<\{ `eventId`: `ZodOptional`\<`ZodString`\>; `groupId`: `ZodOptional`\<`ZodString`\>; `hasAccepted`: `ZodOptional`\<`ZodBoolean`\>; `id`: `ZodOptional`\<`ZodString`\>; `name_contains`: `ZodOptional`\<`ZodString`\>; \}, `"strip"`, `ZodTypeAny`, \{ `eventId?`: `string`; `groupId?`: `string`; `hasAccepted?`: `boolean`; `id?`: `string`; `name_contains?`: `string`; \}, \{ `eventId?`: `string`; `groupId?`: `string`; `hasAccepted?`: `boolean`; `id?`: `string`; `name_contains?`: `string`; \}\>
+> `const` **eventVolunteerWhereInputSchema**: `ZodObject`\<\{ `eventId`: `ZodOptional`\<`ZodString`\>; `groupId`: `ZodOptional`\<`ZodString`\>; `hasAccepted`: `ZodOptional`\<`ZodBoolean`\>; `id`: `ZodOptional`\<`ZodString`\>; `name_contains`: `ZodOptional`\<`ZodString`\>; \}, `$strip`\>
 
 Defined in: src/graphql/inputs/EventVolunteerWhereInput.ts:8
 

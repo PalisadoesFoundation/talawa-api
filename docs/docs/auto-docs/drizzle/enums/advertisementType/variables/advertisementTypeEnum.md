@@ -4,7 +4,7 @@
 
 # Variable: advertisementTypeEnum
 
-> `const` **advertisementTypeEnum**: `ZodEnum`\<\[`"banner"`, `"menu"`, `"pop_up"`\]\>
+> `const` **advertisementTypeEnum**: `ZodEnum`\<\{ `banner`: `"banner"`; `menu`: `"menu"`; `pop_up`: `"pop_up"`; \}\>
 
 Defined in: src/drizzle/enums/advertisementType.ts:6
 

@@ -4,6 +4,6 @@
 
 # Variable: mutationDeleteStandaloneEventInputSchema
 
-> `const` **mutationDeleteStandaloneEventInputSchema**: `ZodObject`\<\{ `id`: `ZodString`; \}, `"strip"`, `ZodTypeAny`, \{ `id`: `string`; \}, \{ `id`: `string`; \}\>
+> `const` **mutationDeleteStandaloneEventInputSchema**: `ZodObject`\<\{ `id`: `ZodUUID`; \}, `$strip`\>
 
 Defined in: src/graphql/inputs/MutationDeleteStandaloneEventInput.ts:5

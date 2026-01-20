@@ -4,7 +4,7 @@
 
 # Variable: familyMembershipRoleEnum
 
-> `const` **familyMembershipRoleEnum**: `ZodEnum`\<\[`"adult"`, `"child"`, `"head_of_household"`, `"spouse"`\]\>
+> `const` **familyMembershipRoleEnum**: `ZodEnum`\<\{ `adult`: `"adult"`; `child`: `"child"`; `head_of_household`: `"head_of_household"`; `spouse`: `"spouse"`; \}\>
 
 Defined in: src/drizzle/enums/familyMembershipRole.ts:6
 

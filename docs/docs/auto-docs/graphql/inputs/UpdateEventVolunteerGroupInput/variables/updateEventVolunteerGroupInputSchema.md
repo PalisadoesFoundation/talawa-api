@@ -4,7 +4,7 @@
 
 # Variable: updateEventVolunteerGroupInputSchema
 
-> `const` **updateEventVolunteerGroupInputSchema**: `ZodObject`\<\{ `description`: `ZodOptional`\<`ZodString`\>; `eventId`: `ZodString`; `name`: `ZodOptional`\<`ZodString`\>; `volunteersRequired`: `ZodOptional`\<`ZodNumber`\>; \}, `"strip"`, `ZodTypeAny`, \{ `description?`: `string`; `eventId`: `string`; `name?`: `string`; `volunteersRequired?`: `number`; \}, \{ `description?`: `string`; `eventId`: `string`; `name?`: `string`; `volunteersRequired?`: `number`; \}\>
+> `const` **updateEventVolunteerGroupInputSchema**: `ZodObject`\<\{ `description`: `ZodOptional`\<`ZodString`\>; `eventId`: `ZodString`; `name`: `ZodOptional`\<`ZodString`\>; `volunteersRequired`: `ZodOptional`\<`ZodNumber`\>; \}, `$strip`\>
 
 Defined in: src/graphql/inputs/UpdateEventVolunteerGroupInput.ts:8
 

@@ -4,6 +4,6 @@
 
 # Variable: acceptEventInvitationInputSchema
 
-> `const` **acceptEventInvitationInputSchema**: `ZodObject`\<\{ `invitationToken`: `ZodString`; \}, `"strip"`, `ZodTypeAny`, \{ `invitationToken`: `string`; \}, \{ `invitationToken`: `string`; \}\>
+> `const` **acceptEventInvitationInputSchema**: `ZodObject`\<\{ `invitationToken`: `ZodString`; \}, `$strip`\>
 
 Defined in: src/graphql/inputs/MutationAcceptEventInvitationInput.ts:4

@@ -4,6 +4,6 @@
 
 # Variable: mutationDeletePostInputSchema
 
-> `const` **mutationDeletePostInputSchema**: `ZodObject`\<\{ `id`: `ZodString`; \}, `"strip"`, `ZodTypeAny`, \{ `id`: `string`; \}, \{ `id`: `string`; \}\>
+> `const` **mutationDeletePostInputSchema**: `ZodObject`\<\{ `id`: `ZodUUID`; \}, `$strip`\>
 
 Defined in: src/graphql/inputs/MutationDeletePostInput.ts:5

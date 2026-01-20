@@ -4,6 +4,6 @@
 
 # Variable: mutationDeleteOrganizationMembershipInputSchema
 
-> `const` **mutationDeleteOrganizationMembershipInputSchema**: `ZodObject`\<`Pick`\<\{ `createdAt`: `ZodOptional`\<`ZodDate`\>; `creatorId`: `ZodNullable`\<`ZodOptional`\<`ZodNullable`\<`ZodString`\>\>\>; `memberId`: `ZodString`; `organizationId`: `ZodString`; `role`: `ZodString`; `updatedAt`: `ZodOptional`\<`ZodNullable`\<`ZodDate`\>\>; `updaterId`: `ZodNullable`\<`ZodOptional`\<`ZodNullable`\<`ZodString`\>\>\>; \}, `"organizationId"` \| `"memberId"`\>, `"strip"`, `ZodTypeAny`, \{ `memberId`: `string`; `organizationId`: `string`; \}, \{ `memberId`: `string`; `organizationId`: `string`; \}\>
+> `const` **mutationDeleteOrganizationMembershipInputSchema**: `ZodObject`\<\{ `memberId`: `ZodString`; `organizationId`: `ZodString`; \}, \{ \}\>
 
 Defined in: src/graphql/inputs/MutationDeleteOrganizationMembershipInput.ts:5

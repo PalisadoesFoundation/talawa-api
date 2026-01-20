@@ -4,6 +4,6 @@
 
 # Variable: mutationReadNotificationInputSchema
 
-> `const` **mutationReadNotificationInputSchema**: `ZodObject`\<\{ `notificationIds`: `ZodArray`\<`ZodString`, `"many"`\>; \}, `"strip"`, `ZodTypeAny`, \{ `notificationIds`: `string`[]; \}, \{ `notificationIds`: `string`[]; \}\>
+> `const` **mutationReadNotificationInputSchema**: `ZodObject`\<\{ `notificationIds`: `ZodArray`\<`ZodString`\>; \}, `$strip`\>
 
 Defined in: src/graphql/inputs/MutationReadNotificationinput.ts:4

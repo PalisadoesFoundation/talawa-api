@@ -24,6 +24,6 @@ Transform function for the basic connection arguments.
 
 ### ctx
 
-`RefinementCtx`
+`$RefinementCtx`
 
 ## Returns

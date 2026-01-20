@@ -4,7 +4,7 @@
 
 # Variable: userNatalSexEnum
 
-> `const` **userNatalSexEnum**: `ZodEnum`\<\[`"female"`, `"intersex"`, `"male"`\]\>
+> `const` **userNatalSexEnum**: `ZodEnum`\<\{ `female`: `"female"`; `intersex`: `"intersex"`; `male`: `"male"`; \}\>
 
 Defined in: src/drizzle/enums/userNatalSex.ts:6
 

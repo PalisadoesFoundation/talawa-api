@@ -14,7 +14,7 @@ Defined in: src/graphql/types/Plugin/inputs.ts:120
 
 ### schema
 
-> **schema**: `ZodObject`\<\{ `id`: `ZodString`; \}, `"strip"`, `ZodTypeAny`, \{ `id`: `string`; \}, \{ `id`: `string`; \}\> = `queryPluginInputSchema`
+> **schema**: `ZodObject`\<\{ `id`: `ZodString`; \}, `$strip`\> = `queryPluginInputSchema`
 
 ### type
 

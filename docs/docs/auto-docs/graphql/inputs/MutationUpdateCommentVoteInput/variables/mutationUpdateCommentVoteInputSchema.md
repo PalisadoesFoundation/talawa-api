@@ -4,6 +4,6 @@
 
 # Variable: mutationUpdateCommentVoteInputSchema
 
-> `const` **mutationUpdateCommentVoteInputSchema**: `ZodObject`\<`object` & `object`, `"strip"`, `ZodTypeAny`, \{ `commentId`: `string`; `type`: `string` \| `null`; \}, \{ `commentId`: `string`; `type`: `string` \| `null`; \}\>
+> `const` **mutationUpdateCommentVoteInputSchema**: `ZodObject`\<\{ `commentId`: `ZodUUID`; `type`: `ZodNullable`\<`ZodString`\>; \}, \{ \}\>
 
 Defined in: src/graphql/inputs/MutationUpdateCommentVoteInput.ts:6

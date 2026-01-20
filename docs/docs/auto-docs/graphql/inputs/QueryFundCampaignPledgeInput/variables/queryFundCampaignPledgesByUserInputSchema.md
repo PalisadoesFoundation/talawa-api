@@ -4,7 +4,7 @@
 
 # Variable: queryFundCampaignPledgesByUserInputSchema
 
-> `const` **queryFundCampaignPledgesByUserInputSchema**: `ZodObject`\<\{ `userId`: `ZodString`; \}, `"strip"`, `ZodTypeAny`, \{ `userId`: `string`; \}, \{ `userId`: `string`; \}\>
+> `const` **queryFundCampaignPledgesByUserInputSchema**: `ZodObject`\<\{ `userId`: `ZodUUID`; \}, `$strip`\>
 
 Defined in: src/graphql/inputs/QueryFundCampaignPledgeInput.ts:56
 
