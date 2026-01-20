@@ -62,7 +62,7 @@ Defined in: [src/graphql/types/AgendaItem/updatedAt.ts:8](https://github.com/Pal
 
 #### type
 
-`"general"` \| `"note"` \| `"scripture"` \| `"song"`
+`string`
 
 #### updatedAt
 

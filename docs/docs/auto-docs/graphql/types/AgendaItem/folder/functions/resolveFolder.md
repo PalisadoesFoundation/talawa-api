@@ -62,7 +62,7 @@ Defined in: [src/graphql/types/AgendaItem/folder.ts:9](https://github.com/Palisa
 
 #### type
 
-`"general"` \| `"note"` \| `"scripture"` \| `"song"`
+`string`
 
 #### updatedAt
 
