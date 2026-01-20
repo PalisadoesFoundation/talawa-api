@@ -63,6 +63,7 @@ export default defineConfig({
 			"test/unit_tests/**/*.{test,spec}.ts",
 			"test/helpers/**/*.{test,spec}.ts",
 			"test/*.{test,spec}.ts",
+			"src/**/*.{test,spec}.ts",
 		],
 		exclude: [
 			...configDefaults.exclude,
