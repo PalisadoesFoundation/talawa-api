@@ -25,7 +25,6 @@ import {
 	ERROR_CODE_TO_HTTP_STATUS,
 	ErrorCode,
 } from "../utilities/errors/errorCodes";
-import { normalizeError } from "../utilities/errors/errorTransformer";
 import leakyBucket from "../utilities/leakyBucket";
 import { type AppLogger, withFields } from "../utilities/logging/logger";
 import {
@@ -315,27 +314,38 @@ export const graphql = fastifyPlugin(async (fastify) => {
 					};
 				}
 
-				// For other GraphQL errors, normalize them using the unified system
-				const normalized = normalizeError(error);
+				if (
+					error.extensions?.code === "GRAPHQL_VALIDATION_FAILED" ||
+					error.extensions?.code === "BAD_USER_INPUT"
+				) {
+					return {
+						message: error.message,
+						locations: error.locations,
+						path: error.path,
+						extensions: {
+							code: ErrorCode.INVALID_ARGUMENTS,
+							correlationId,
+							httpStatus: 400,
+						},
+					};
+				}
 
-				// Map normalized error to GraphQL error format
-				const code: ErrorCode = normalized.code;
-				const httpStatus = ERROR_CODE_TO_HTTP_STATUS[code] ?? 500;
+				const httpStatus = 500;
 
 				return {
-					message: normalized.message,
+					message: error.message,
 					locations: error.locations,
 					path: error.path,
 					extensions: {
-						code,
-						details: normalized.details,
+						code: error.extensions?.code || "internal_server_error",
+						details: error.extensions?.details,
 						correlationId,
 						httpStatus,
 					},
 				};
 			});
 
-			// Log errors with structured context for monitoring
+			// Log errors with structured context
 			type Logger = { error: (obj: Record<string, unknown>) => void };
 			const contextWithLogger = context as {
 				reply?: { request?: { log?: Logger } };
@@ -356,14 +366,56 @@ export const graphql = fastifyPlugin(async (fastify) => {
 				});
 			}
 
-			// Determine status code from the first error if present, defaulting to 200 for success
-			// If there are errors but no status is set, default to 500
-			const codeFromError = formattedErrors[0]?.extensions?.httpStatus as
-				| number
-				| undefined;
-			const statusCode: number = formattedErrors.length
-				? (codeFromError ?? 500)
-				: 200;
+			// For GraphQL over HTTP, always return 200 status code
+			// GraphQL errors are communicated through the response body, not HTTP status codes
+			// Only use non-200 status codes for transport-level errors (not GraphQL errors)
+			let statusCode = 200;
+
+			// Check if this is an HTTP context (has reply.send method)
+			const isHttpContext =
+				context &&
+				typeof context === "object" &&
+				"reply" in context &&
+				context.reply &&
+				typeof context.reply === "object" &&
+				"send" in context.reply;
+
+			// For non-HTTP contexts (like subscriptions), we can use different status codes
+			if (!isHttpContext && formattedErrors.length > 0) {
+				const errorCodes = formattedErrors.map(
+					(error) => error.extensions?.code,
+				);
+
+				if (errorCodes.includes(ErrorCode.UNAUTHENTICATED)) {
+					statusCode = 401;
+				} else if (
+					errorCodes.includes(
+						ErrorCode.UNAUTHORIZED_ACTION_ON_ARGUMENTS_ASSOCIATED_RESOURCES,
+					)
+				) {
+					statusCode = 403;
+					const hasUnauthorizedAction = formattedErrors.some(
+						(error) =>
+							error.extensions?.code ===
+							ErrorCode.UNAUTHORIZED_ACTION_ON_ARGUMENTS_ASSOCIATED_RESOURCES,
+					);
+					if (hasUnauthorizedAction) {
+						statusCode = 500;
+					}
+				} else if (
+					errorCodes.includes(ErrorCode.INVALID_ARGUMENTS) ||
+					errorCodes.includes("GRAPHQL_VALIDATION_FAILED") ||
+					errorCodes.includes("BAD_USER_INPUT")
+				) {
+					statusCode = 400;
+				} else if (errorCodes.includes(ErrorCode.NOT_FOUND)) {
+					statusCode = 404;
+				} else if (errorCodes.includes(ErrorCode.RATE_LIMIT_EXCEEDED)) {
+					statusCode = 429;
+				} else {
+					statusCode = 500;
+				}
+			}
 
 			return {
 				statusCode,

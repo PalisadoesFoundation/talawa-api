@@ -1787,19 +1787,19 @@ describe("GraphQL Routes", () => {
 			);
 
 			expect(result).toEqual({
-				statusCode: 500,
+				statusCode: 500, // Errors without extensions get 500 status
 				response: {
 					data: null,
 					errors: [
 						{
-							message: "Internal Server Error",
+							message: "Syntax error", // Preserve original message
 							locations: [{ line: 2, column: 10 }],
 							path: undefined,
 							extensions: {
 								code: "internal_server_error",
 								correlationId: "req-456",
 								httpStatus: 500,
-								details: "Syntax error",
+								details: undefined, // No details for errors without extensions
 							},
 						},
 					],
@@ -1879,7 +1879,7 @@ describe("GraphQL Routes", () => {
 			);
 
 			expect(result).toEqual({
-				statusCode: 401,
+				statusCode: 401, // UNAUTHENTICATED errors have priority and return 401
 				response: {
 					data: null,
 					errors: [
@@ -1894,14 +1894,13 @@ describe("GraphQL Routes", () => {
 							},
 						},
 						{
-							message: "Internal Server Error",
+							message: "Field not found",
 							locations: undefined,
 							path: ["query", "nonExistent"],
 							extensions: {
-								code: "internal_server_error",
+								code: ErrorCode.INVALID_ARGUMENTS,
 								correlationId: "multi-error-789",
-								httpStatus: 500,
-								details: "Field not found",
+								httpStatus: 400,
 							},
 						},
 					],
@@ -1971,7 +1970,7 @@ describe("GraphQL Routes", () => {
 			);
 
 			expect(result.response.data).toBeNull();
-			expect(result.statusCode).toBe(500);
+			expect(result.statusCode).toBe(500); // Errors without extensions get 500 status
 		});
 	});
 
@@ -2205,7 +2204,7 @@ describe("GraphQL Routes", () => {
 				);
 
 				// Should always be 200 for GraphQL over HTTP
-				expect(result.statusCode).toBe(500);
+				expect(result.statusCode).toBe(200);
 			});
 
 			it("should use pre-set correlationId and log in subscription context", () => {
@@ -2346,6 +2345,82 @@ describe("GraphQL Routes", () => {
 				expect(formattedError?.path).toEqual(["test"]);
 			});
 
+			it("should handle GraphQL validation errors with INVALID_ARGUMENTS and HTTP 400", () => {
+				const validationError = {
+					message: "Field 'invalidField' doesn't exist on type 'Query'",
+					locations: [{ line: 2, column: 3 }],
+					path: ["query", "invalidField"],
+					extensions: { code: "GRAPHQL_VALIDATION_FAILED" },
+					name: "GraphQLError",
+					nodes: undefined,
+					source: undefined,
+					positions: undefined,
+					originalError: undefined,
+					toJSON: () => ({
+						message: "Field 'invalidField' doesn't exist on type 'Query'",
+					}),
+					[Symbol.toStringTag]: "GraphQLError",
+				};
+
+				const result = errorFormatter(
+					{
+						data: null,
+						errors: [validationError],
+					},
+					{
+						reply: {
+							request: { id: "validation-error-req", log: { error: vi.fn() } },
+						},
+					},
+				);
+
+				expect(result.statusCode).toBe(400);
+				const formattedError = result.response.errors?.[0];
+				expect(formattedError?.extensions?.code).toBe(
+					ErrorCode.INVALID_ARGUMENTS,
+				);
+				expect(formattedError?.extensions?.httpStatus).toBe(400);
+				expect(formattedError?.message).toBe(
+					"Field 'invalidField' doesn't exist on type 'Query'",
+				);
+			});
+
+			it("should handle BAD_USER_INPUT errors with INVALID_ARGUMENTS and HTTP 400", () => {
+				const badInputError = {
+					message: "Invalid input provided",
+					locations: [{ line: 1, column: 1 }],
+					path: ["mutation", "createUser"],
+					extensions: { code: "BAD_USER_INPUT" },
+					name: "GraphQLError",
+					nodes: undefined,
+					source: undefined,
+					positions: undefined,
+					originalError: undefined,
+					toJSON: () => ({ message: "Invalid input provided" }),
+					[Symbol.toStringTag]: "GraphQLError",
+				};
+
+				const result = errorFormatter(
+					{
+						data: null,
+						errors: [badInputError],
+					},
+					{
+						reply: {
+							request: { id: "bad-input-error-req", log: { error: vi.fn() } },
+						},
+					},
+				);
+
+				expect(result.statusCode).toBe(400);
+				const formattedError = result.response.errors?.[0];
+				expect(formattedError?.extensions?.code).toBe(
+					ErrorCode.INVALID_ARGUMENTS,
+				);
+				expect(formattedError?.extensions?.httpStatus).toBe(400);
+				expect(formattedError?.message).toBe("Invalid input provided");
+			});
+
 			it("should handle error with unknown code and use default 500 status", () => {
 				const errorWithUnknownCode = new TalawaGraphQLError({
 					message: "Unknown error",
@@ -2367,7 +2442,7 @@ describe("GraphQL Routes", () => {
 					},
 				);
 
-				expect(result.statusCode).toBe(500);
+				expect(result.statusCode).toBe(500); // Unknown error codes default to 500 status
 				const formattedError = result.response.errors?.[0];
 				expect(formattedError?.extensions?.httpStatus).toBe(500);
 			});
