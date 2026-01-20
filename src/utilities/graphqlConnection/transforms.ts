@@ -88,7 +88,7 @@ export const transformDefaultGraphQLConnectionArguments = <
  */
 export const transformGraphQLConnectionArgumentsWithWhere = <
 	Arg extends z.infer<typeof defaultGraphQLConnectionArgumentsSchema> & {
-		where: unknown;
+		where?: unknown;
 	},
 	_Where = Arg["where"],
 >(

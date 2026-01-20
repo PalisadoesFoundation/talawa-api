@@ -4,7 +4,7 @@
 
 # Variable: eventVolunteerGroupOrderByInputEnum
 
-> `const` **eventVolunteerGroupOrderByInputEnum**: `ZodEnum`\<\{ `assignments_ASC`: `"assignments_ASC"`; `assignments_DESC`: `"assignments_DESC"`; `volunteers_ASC`: `"volunteers_ASC"`; `volunteers_DESC`: `"volunteers_DESC"`; \}\>
+> `const` **eventVolunteerGroupOrderByInputEnum**: `ZodEnum`\<\[`"volunteers_ASC"`, `"volunteers_DESC"`, `"assignments_ASC"`, `"assignments_DESC"`\]\>
 
 Defined in: [src/graphql/enums/EventVolunteerGroupOrderByInput.ts:8](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/graphql/enums/EventVolunteerGroupOrderByInput.ts#L8)
 

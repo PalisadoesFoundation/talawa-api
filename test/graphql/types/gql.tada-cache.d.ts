@@ -309,6 +309,8 @@ declare module 'gql.tada' {
       TadaDocumentNode<{ markChatAsRead: boolean | null; }, { input: { messageId: string; chatId: string; }; }, void>;
     "\n  mutation Mutation_updateChatMembership($input: MutationUpdateChatMembershipInput!) {\n    updateChatMembership(input: $input) {\n      id\n    }\n  }\n":
       TadaDocumentNode<{ updateChatMembership: { id: string; } | null; }, { input: { role: "administrator" | "regular"; memberId: string; chatId: string; }; }, void>;
+    " \n  mutation Mutation_updateOrganizationMembership($input: MutationUpdateOrganizationMembershipInput!) {\n    updateOrganizationMembership(input: $input) {\n      id\n    }\n  }\n":
+      TadaDocumentNode<{ updateOrganizationMembership: { id: string; } | null; }, { input: { role?: "administrator" | "regular" | null | undefined; organizationId: string; memberId: string; }; }, void>;
     "\n  mutation Mutation_registerEventAttendee($data: EventAttendeeInput!) {\n    registerEventAttendee(data: $data) {\n      id\n      isInvited\n      isRegistered\n      isCheckedIn\n      isCheckedOut\n      createdAt\n      updatedAt\n    }\n  }\n":
       TadaDocumentNode<{ registerEventAttendee: { id: string; isInvited: boolean; isRegistered: boolean; isCheckedIn: boolean; isCheckedOut: boolean; createdAt: string; updatedAt: string | null; } | null; }, { data: { userId: string; recurringEventInstanceId?: string | null | undefined; eventId?: string | null | undefined; }; }, void>;
     "\n  mutation Mutation_inviteEventAttendee($data: EventAttendeeInput!) {\n    inviteEventAttendee(data: $data) {\n      id\n      isInvited\n      isRegistered\n      isCheckedIn\n      isCheckedOut\n      createdAt\n      updatedAt\n    }\n  }\n":

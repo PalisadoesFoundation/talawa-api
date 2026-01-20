@@ -9,10 +9,12 @@ import { isNotNullish } from "~/src/utilities/isNotNullish";
 export const metricsInputSchema = z
 	.object({
 		startTime: z.date({
-			error: "startTime is required and must be a valid DateTime",
+			required_error: "startTime is required and must be a valid DateTime",
+			invalid_type_error: "startTime is required and must be a valid DateTime",
 		}),
 		endTime: z.date({
-			error: "endTime is required and must be a valid DateTime",
+			required_error: "endTime is required and must be a valid DateTime",
+			invalid_type_error: "endTime is required and must be a valid DateTime",
 		}),
 		operationType: z
 			.string()
