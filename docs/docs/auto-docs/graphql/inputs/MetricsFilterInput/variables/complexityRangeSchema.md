@@ -4,7 +4,7 @@
 
 # Variable: complexityRangeSchema
 
-> `const` **complexityRangeSchema**: `ZodObject`\<\{ `max`: `ZodNumber`; `min`: `ZodNumber`; \}, `$strip`\>
+> `const` **complexityRangeSchema**: `ZodEffects`\<`ZodObject`\<\{ `max`: `ZodNumber`; `min`: `ZodNumber`; \}, `"strip"`, `ZodTypeAny`, \{ `max`: `number`; `min`: `number`; \}, \{ `max`: `number`; `min`: `number`; \}\>, \{ `max`: `number`; `min`: `number`; \}, \{ `max`: `number`; `min`: `number`; \}\>
 
 Defined in: [src/graphql/inputs/MetricsFilterInput.ts:8](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/graphql/inputs/MetricsFilterInput.ts#L8)
 
