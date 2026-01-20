@@ -135,7 +135,7 @@ describe("src/drizzle/tables/postAttachments", () => {
 				server.drizzleClient.insert(postVotesTable).values({
 					type: "up_vote",
 					postId: validPostId,
-                    creatorId:""
+					creatorId: "",
 				}),
 			).rejects.toThrow();
 		});
