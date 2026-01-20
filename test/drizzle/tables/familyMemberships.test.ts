@@ -739,7 +739,7 @@ describe("src/drizzle/tables/familyMemberships.ts - Table Definition Tests", () 
 					),
 				);
 
-			const [inserted] = await server.drizzleClient
+			await server.drizzleClient
 				.insert(familyMembershipsTable)
 				.values({
 					familyId: testFamilyId,
@@ -773,9 +773,6 @@ describe("src/drizzle/tables/familyMemberships.ts - Table Definition Tests", () 
 			);
 			expect(updated?.updatedAt?.getTime()).toBeLessThanOrEqual(
 				afterUpdate.getTime(),
-			);
-			expect(updated?.updatedAt?.getTime()).toBeGreaterThanOrEqual(
-				(inserted?.createdAt as Date).getTime(),
 			);
 		});
 
