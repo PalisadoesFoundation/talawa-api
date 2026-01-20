@@ -6,7 +6,7 @@
 
 > **EventVolunteerGroupCreatedAtResolver**(`parent`, `_args`, `ctx`): `Promise`\<`Date`\>
 
-Defined in: [src/graphql/types/EventVolunteerGroup/createdAt.ts:7](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/graphql/types/EventVolunteerGroup/createdAt.ts#L7)
+Defined in: src/graphql/types/EventVolunteerGroup/createdAt.ts:7
 
 ## Parameters
 

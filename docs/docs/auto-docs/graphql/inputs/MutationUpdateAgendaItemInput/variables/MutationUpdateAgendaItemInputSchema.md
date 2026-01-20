@@ -6,4 +6,4 @@
 
 > `const` **MutationUpdateAgendaItemInputSchema**: `ZodEffects`\<`ZodObject`\<`object` & `object`, `"strip"`, `ZodTypeAny`, \{ `attachments?`: `object`[]; `description?`: `string`; `duration?`: `string` \| `null`; `folderId?`: `string`; `id`: `string`; `key?`: `string` \| `null`; `name?`: `string`; \}, \{ `attachments?`: `object`[]; `description?`: `string`; `duration?`: `string` \| `null`; `folderId?`: `string`; `id`: `string`; `key?`: `string` \| `null`; `name?`: `string`; \}\>, \{ `attachments?`: `object`[]; `description?`: `string`; `duration?`: `string` \| `null`; `folderId?`: `string`; `id`: `string`; `key?`: `string` \| `null`; `name?`: `string`; \}, \{ `attachments?`: `object`[]; `description?`: `string`; `duration?`: `string` \| `null`; `folderId?`: `string`; `id`: `string`; `key?`: `string` \| `null`; `name?`: `string`; \}\>
 
-Defined in: [src/graphql/inputs/MutationUpdateAgendaItemInput.ts:14](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/graphql/inputs/MutationUpdateAgendaItemInput.ts#L14)
+Defined in: src/graphql/inputs/MutationUpdateAgendaItemInput.ts:14

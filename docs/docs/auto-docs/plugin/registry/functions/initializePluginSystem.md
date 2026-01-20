@@ -6,7 +6,7 @@
 
 > **initializePluginSystem**(`context`, `pluginsDirectory?`): `Promise`\<[`PluginManager`](../../classes/PluginManager.md)\>
 
-Defined in: [src/plugin/registry.ts:35](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/plugin/registry.ts#L35)
+Defined in: src/plugin/registry.ts:35
 
 Initializes the plugin system with the provided context
 

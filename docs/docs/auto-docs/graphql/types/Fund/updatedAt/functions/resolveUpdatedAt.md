@@ -6,7 +6,7 @@
 
 > **resolveUpdatedAt**(`parent`, `_args`, `ctx`): `Promise`\<`Date` \| `null`\>
 
-Defined in: [src/graphql/types/Fund/updatedAt.ts:6](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/graphql/types/Fund/updatedAt.ts#L6)
+Defined in: src/graphql/types/Fund/updatedAt.ts:6
 
 ## Parameters
 

@@ -6,7 +6,7 @@
 
 > **ClientCustomScalars** = `object`
 
-Defined in: [src/graphql/scalars/index.ts:30](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/graphql/scalars/index.ts#L30)
+Defined in: src/graphql/scalars/index.ts:30
 
 Map of custom scalar types used in talawa api used to annotate the type of those scalars to the clients consuming talawa api for type-safe usage of those scalars in the graphql operations.
 
@@ -16,7 +16,7 @@ Map of custom scalar types used in talawa api used to annotate the type of those
 
 > **BigInt**: `string`
 
-Defined in: [src/graphql/scalars/index.ts:31](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/graphql/scalars/index.ts#L31)
+Defined in: src/graphql/scalars/index.ts:31
 
 ***
 
@@ -24,7 +24,7 @@ Defined in: [src/graphql/scalars/index.ts:31](https://github.com/PalisadoesFound
 
 > **Date**: `string`
 
-Defined in: [src/graphql/scalars/index.ts:32](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/graphql/scalars/index.ts#L32)
+Defined in: src/graphql/scalars/index.ts:32
 
 ***
 
@@ -32,7 +32,7 @@ Defined in: [src/graphql/scalars/index.ts:32](https://github.com/PalisadoesFound
 
 > **DateTime**: `string`
 
-Defined in: [src/graphql/scalars/index.ts:33](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/graphql/scalars/index.ts#L33)
+Defined in: src/graphql/scalars/index.ts:33
 
 ***
 
@@ -40,7 +40,7 @@ Defined in: [src/graphql/scalars/index.ts:33](https://github.com/PalisadoesFound
 
 > **EmailAddress**: `string`
 
-Defined in: [src/graphql/scalars/index.ts:35](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/graphql/scalars/index.ts#L35)
+Defined in: src/graphql/scalars/index.ts:35
 
 ***
 
@@ -48,4 +48,4 @@ Defined in: [src/graphql/scalars/index.ts:35](https://github.com/PalisadoesFound
 
 > **PhoneNumber**: `string`
 
-Defined in: [src/graphql/scalars/index.ts:34](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/graphql/scalars/index.ts#L34)
+Defined in: src/graphql/scalars/index.ts:34

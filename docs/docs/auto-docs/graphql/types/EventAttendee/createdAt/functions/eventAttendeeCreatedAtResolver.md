@@ -6,7 +6,7 @@
 
 > **eventAttendeeCreatedAtResolver**(`parent`, `_args`, `ctx`): `Promise`\<`Date`\>
 
-Defined in: [src/graphql/types/EventAttendee/createdAt.ts:9](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/graphql/types/EventAttendee/createdAt.ts#L9)
+Defined in: src/graphql/types/EventAttendee/createdAt.ts:9
 
 ## Parameters
 

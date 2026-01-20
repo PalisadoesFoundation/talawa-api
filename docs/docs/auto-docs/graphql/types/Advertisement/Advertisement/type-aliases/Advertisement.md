@@ -6,7 +6,7 @@
 
 > **Advertisement** = *typeof* `advertisementsTable.$inferSelect` & `object`
 
-Defined in: [src/graphql/types/Advertisement/Advertisement.ts:11](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/graphql/types/Advertisement/Advertisement.ts#L11)
+Defined in: src/graphql/types/Advertisement/Advertisement.ts:11
 
 ## Type Declaration
 

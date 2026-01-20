@@ -6,7 +6,7 @@
 
 > **createdAtResolver**(`parent`, `_args`, `ctx`): `Promise`\<`Date`\>
 
-Defined in: [src/graphql/types/FundCampaignPledge/createdAt.ts:6](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/graphql/types/FundCampaignPledge/createdAt.ts#L6)
+Defined in: src/graphql/types/FundCampaignPledge/createdAt.ts:6
 
 ## Parameters
 

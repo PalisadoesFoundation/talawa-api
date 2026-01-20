@@ -6,7 +6,7 @@
 
 > **PasswordResetTokenVerification** = `object`
 
-Defined in: [src/graphql/types/PasswordResetTokenVerification.ts:3](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/graphql/types/PasswordResetTokenVerification.ts#L3)
+Defined in: src/graphql/types/PasswordResetTokenVerification.ts:3
 
 ## Properties
 
@@ -14,7 +14,7 @@ Defined in: [src/graphql/types/PasswordResetTokenVerification.ts:3](https://gith
 
 > **expiresAt**: `Date` \| `null`
 
-Defined in: [src/graphql/types/PasswordResetTokenVerification.ts:5](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/graphql/types/PasswordResetTokenVerification.ts#L5)
+Defined in: src/graphql/types/PasswordResetTokenVerification.ts:5
 
 ***
 
@@ -22,4 +22,4 @@ Defined in: [src/graphql/types/PasswordResetTokenVerification.ts:5](https://gith
 
 > **valid**: `boolean`
 
-Defined in: [src/graphql/types/PasswordResetTokenVerification.ts:4](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/graphql/types/PasswordResetTokenVerification.ts#L4)
+Defined in: src/graphql/types/PasswordResetTokenVerification.ts:4

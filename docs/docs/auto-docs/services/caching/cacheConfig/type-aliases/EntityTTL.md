@@ -6,7 +6,7 @@
 
 > **EntityTTL** = `object`
 
-Defined in: [src/services/caching/cacheConfig.ts:10](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/caching/cacheConfig.ts#L10)
+Defined in: src/services/caching/cacheConfig.ts:10
 
 TTL configuration for different entity types (in seconds).
 
@@ -16,7 +16,7 @@ TTL configuration for different entity types (in seconds).
 
 > **actionItem**: `number`
 
-Defined in: [src/services/caching/cacheConfig.ts:15](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/caching/cacheConfig.ts#L15)
+Defined in: src/services/caching/cacheConfig.ts:15
 
 ***
 
@@ -24,7 +24,7 @@ Defined in: [src/services/caching/cacheConfig.ts:15](https://github.com/Palisado
 
 > **event**: `number`
 
-Defined in: [src/services/caching/cacheConfig.ts:13](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/caching/cacheConfig.ts#L13)
+Defined in: src/services/caching/cacheConfig.ts:13
 
 ***
 
@@ -32,7 +32,7 @@ Defined in: [src/services/caching/cacheConfig.ts:13](https://github.com/Palisado
 
 > **organization**: `number`
 
-Defined in: [src/services/caching/cacheConfig.ts:12](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/caching/cacheConfig.ts#L12)
+Defined in: src/services/caching/cacheConfig.ts:12
 
 ***
 
@@ -40,7 +40,7 @@ Defined in: [src/services/caching/cacheConfig.ts:12](https://github.com/Palisado
 
 > **post**: `number`
 
-Defined in: [src/services/caching/cacheConfig.ts:14](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/caching/cacheConfig.ts#L14)
+Defined in: src/services/caching/cacheConfig.ts:14
 
 ***
 
@@ -48,4 +48,4 @@ Defined in: [src/services/caching/cacheConfig.ts:14](https://github.com/Palisado
 
 > **user**: `number`
 
-Defined in: [src/services/caching/cacheConfig.ts:11](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/caching/cacheConfig.ts#L11)
+Defined in: src/services/caching/cacheConfig.ts:11
