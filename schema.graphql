@@ -229,6 +229,9 @@ type AgendaFolder {
 }
 
 type AgendaItem {
+  """Attachments for the agenda item"""
+  attachments: [AgendaItemAttachment!]
+
   """Agenda category"""
   category: AgendaCategory
 
@@ -275,6 +278,9 @@ type AgendaItem {
 
   """User who last updated the agenda item."""
   updater: User
+
+  """URLs associated with the agenda item"""
+  url: [AgendaItemUrl!]
 }
 
 """Attachment of the agenda items."""

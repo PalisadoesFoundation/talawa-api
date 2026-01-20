@@ -75,6 +75,7 @@ No description
 
 ```graphql
 type AgendaItem {
+  attachments: [AgendaItemAttachment!]
   category: AgendaCategory
   createdAt: DateTime
   creator: User
@@ -90,10 +91,15 @@ type AgendaItem {
   type: AgendaItemType
   updatedAt: DateTime
   updater: User
+  url: [AgendaItemUrl!]
 }
 ```
 
 ### Fields
+
+#### [<code style={{ fontWeight: 'normal' }}>AgendaItem.<b>attachments</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>[AgendaItemAttachment!]</b></code>](/auto-schema/types/objects/agenda-item-attachment.mdx) <Badge class="badge badge--secondary " text="list"/> <Badge class="badge badge--secondary " text="object"/>
+
+Attachments for the agenda item
 
 #### [<code style={{ fontWeight: 'normal' }}>AgendaItem.<b>category</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>AgendaCategory</b></code>](/auto-schema/types/objects/agenda-category.mdx) <Badge class="badge badge--secondary " text="object"/>
 
@@ -154,6 +160,10 @@ Date time at the time the agenda item was last updated.
 #### [<code style={{ fontWeight: 'normal' }}>AgendaItem.<b>updater</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>User</b></code>](/auto-schema/types/objects/user.mdx) <Badge class="badge badge--secondary " text="object"/>
 
 User who last updated the agenda item.
+
+#### [<code style={{ fontWeight: 'normal' }}>AgendaItem.<b>url</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>[AgendaItemUrl!]</b></code>](/auto-schema/types/objects/agenda-item-url.mdx) <Badge class="badge badge--secondary " text="list"/> <Badge class="badge badge--secondary " text="object"/>
+
+URLs associated with the agenda item
 
 ### Returned By
 
