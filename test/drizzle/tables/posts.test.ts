@@ -109,32 +109,32 @@ describe("src/drizzle/tables/posts.ts - Table Definition Tests", () => {
 			)({
 				one: (table: Table, config?: CapturedRelation["config"]) => {
 					totalRelationCount++;
-					if (config?.relationName?.includes("posts.creator_id:users.id")) {
+					if (
+						getTableName(table) === "users" &&
+						config?.fields?.[0] === postsTable.creatorId
+					) {
 						capturedRelations.creator = { table, config };
 					}
-					if (config?.relationName?.includes("posts.updater_id:users.id")) {
+					if (
+						getTableName(table) === "users" &&
+						config?.fields?.[0] === postsTable.updaterId
+					) {
 						capturedRelations.updater = { table, config };
 					}
-					if (
-						config?.relationName?.includes(
-							"organizations.id:posts.organization_id",
-						)
-					) {
+					if (getTableName(table) === "organizations") {
 						capturedRelations.organization = { table, config };
 					}
 					return { withFieldName: () => ({}) };
 				},
 				many: (table: Table, config?: CapturedRelation["config"]) => {
 					totalRelationCount++;
-					if (config?.relationName?.includes("comments.post_id:posts.id")) {
+					if (getTableName(table) === "comments") {
 						capturedRelations.commentsWherePost = { table, config };
 					}
-					if (
-						config?.relationName?.includes("post_attachments.post_id:posts.id")
-					) {
+					if (getTableName(table) === "post_attachments") {
 						capturedRelations.attachmentsWherePost = { table, config };
 					}
-					if (config?.relationName?.includes("post_votes.post_id:posts.id")) {
+					if (getTableName(table) === "post_votes") {
 						capturedRelations.votesWherePost = { table, config };
 					}
 					return { withFieldName: () => ({}) };
