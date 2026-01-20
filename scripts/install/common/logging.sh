@@ -31,7 +31,7 @@ info()    { _log_write "[INFO] $*"; }
 warn()    { _log_write "WARNING: $*" "stderr"; }
 error()   { _log_write "✗ ERROR: $*" "stderr"; }
 success() { _log_write "✓ $*"; }
-debug()   { [ "$DEBUG" = "1" ] && _log_write "[DEBUG] $*"; }
+debug()   { [ "$DEBUG" = "1" ] && _log_write "[DEBUG] $*" || true; }
 
 print_banner() {
   _log_write ""
@@ -58,6 +58,8 @@ print_section() {
 print_log_location() {
   info "Installation log saved to: ${LOG_FILE}"
 }
+
+export LOG_FILE
 
 export -f \
   info warn error success debug \
