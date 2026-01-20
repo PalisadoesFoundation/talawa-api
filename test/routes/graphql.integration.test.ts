@@ -1,25 +1,25 @@
 vi.mock("~/src/fastifyPlugins/backgroundWorkers", () => ({
-	default: async () => { },
+	default: async () => {},
 }));
 
 vi.mock("~/src/fastifyPlugins/drizzleClient", () => ({
-	default: async () => { },
+	default: async () => {},
 }));
 
 vi.mock("~/src/fastifyPlugins/minioClient", () => ({
-	default: async () => { },
+	default: async () => {},
 }));
 
 vi.mock("~/src/fastifyPlugins/seedInitialData", () => ({
-	default: async () => { },
+	default: async () => {},
 }));
 
 vi.mock("~/src/fastifyPlugins/pluginSystem", () => ({
-	default: async () => { },
+	default: async () => {},
 }));
 
 vi.mock("~/src/fastifyPlugins/performance", () => ({
-	default: async () => { },
+	default: async () => {},
 }));
 
 import type { FastifyInstance } from "fastify";
@@ -317,7 +317,7 @@ describe("GraphQL Correlation ID Integration", () => {
 		const correlationIds = responses.map(
 			(r: unknown) =>
 				(r as { headers: { [key: string]: string } }).headers[
-				"x-correlation-id"
+					"x-correlation-id"
 				],
 		);
 
