@@ -5,6 +5,7 @@ import { uuidv7 } from "uuidv7";
 import { agendaItemTypeEnum } from "~/src/drizzle/enums/agendaItemType";
 import { agendaFoldersTable } from "./agendaFolders";
 import { agendaItemAttachmentsTable } from "./agendaItemAttachments";
+import { agendaItemUrlTable } from "./agendaItemUrls";
 import { usersTable } from "./users";
 
 /**
@@ -63,7 +64,7 @@ export const agendaItemsTable = pgTable(
 		 * Type of the agenda item.
 		 */
 		type: text("type", {
-			enum: agendaItemTypeEnum.options,
+			enum: agendaItemTypeEnum.options as [string, ...string[]],
 		}).notNull(),
 		/**
 		 * Date time at the time the agenda item was last updated.
@@ -108,6 +109,12 @@ export const agendaItemsTableRelations = relations(
 			fields: [agendaItemsTable.creatorId],
 			references: [usersTable.id],
 			relationName: "agenda_items.creator_id:users.id",
+		}),
+		/**
+		 * One to many relationship from `agenda_items` table to `agenda_item_url` table.
+		 */
+		urlsWhereAgendaItem: many(agendaItemUrlTable, {
+			relationName: "agenda_item_url.agenda_item_id:agenda_items.id",
 		}),
 		/**
 		 * Many to one relationship from `agenda_items` table to `agenda_folders` table.

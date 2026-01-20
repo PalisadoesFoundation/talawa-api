@@ -7,12 +7,17 @@ import {
 	timestamp,
 	uniqueIndex,
 	uuid,
+	varchar,
 } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { uuidv7 } from "uuidv7";
+import { z } from "zod";
 import { fundCampaignsTable } from "./fundCampaigns";
 import { organizationsTable } from "./organizations";
 import { usersTable } from "./users";
+
+const uuidRegex =
+	/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 /**
  * Drizzle orm postgres table definition for funds.
@@ -60,7 +65,7 @@ export const fundsTable = pgTable(
 		/**
 		 * Name of the fund.
 		 */
-		name: text("name", {}).notNull(),
+		name: varchar("name", { length: 256 }).notNull(),
 		/**
 		 * Foreign key reference to the id of the organization to which the fund is associated to.
 		 */
@@ -88,13 +93,13 @@ export const fundsTable = pgTable(
 			onUpdate: "cascade",
 		}),
 	},
-	(self) => [
-		index().on(self.createdAt),
-		index().on(self.creatorId),
-		index().on(self.name),
-		index().on(self.organizationId),
-		uniqueIndex().on(self.name, self.organizationId),
-	],
+	(table) => ({
+		createdAtIndex: index().on(table.createdAt),
+		creatorIdIndex: index().on(table.creatorId),
+		nameIndex: index().on(table.name),
+		organizationIdIndex: index().on(table.organizationId),
+		uniqueNameOrgIndex: uniqueIndex().on(table.name, table.organizationId),
+	}),
 );
 
 export const fundsTableRelations = relations(fundsTable, ({ one, many }) => ({
@@ -131,5 +136,15 @@ export const fundsTableRelations = relations(fundsTable, ({ one, many }) => ({
 }));
 
 export const fundsTableInsertSchema = createInsertSchema(fundsTable, {
-	name: (schema) => schema.min(1).max(256),
+	name: () => z.string().min(1).max(256),
+	organizationId: () => z.string().regex(uuidRegex),
+	isTaxDeductible: () => z.boolean(),
+	isDefault: () => z.boolean().optional(),
+	isArchived: () => z.boolean().optional(),
+	referenceNumber: () => z.string().min(1).nullish(),
+	id: () => z.string().regex(uuidRegex).optional(),
+	creatorId: () => z.string().regex(uuidRegex).nullish(),
+	updaterId: () => z.string().regex(uuidRegex).nullish(),
+	createdAt: () => z.date().optional(),
+	updatedAt: () => z.date().optional(),
 });

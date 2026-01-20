@@ -150,10 +150,6 @@ export const eventExceptionsTableRelations = relations(
 export const recurringEventExceptionsTableInsertSchema = createInsertSchema(
 	eventExceptionsTable,
 	{
-		exceptionData: z.record(z.any()), // JSON object with any structure
-		recurringEventInstanceId: z.string().uuid(),
-		organizationId: z.string().uuid(),
-		creatorId: z.string().uuid(),
-		updaterId: z.string().uuid().optional(),
+		exceptionData: z.record(z.string(), z.unknown()),
 	},
 );

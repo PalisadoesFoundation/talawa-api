@@ -47,7 +47,7 @@ export const agendaItemAttachmentsTable = pgTable(
 		 * Mime type of the attachment.
 		 */
 		mimeType: text("mime_type", {
-			enum: postAttachmentMimeTypeEnum.options,
+			enum: postAttachmentMimeTypeEnum.options as [string, ...string[]],
 		}).notNull(),
 		/**
 		 * Identifier name of the attachment.
