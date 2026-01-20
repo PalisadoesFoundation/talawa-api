@@ -613,6 +613,8 @@ SMTP_USER=user@example.com          # SMTP username (optional)
 SMTP_PASSWORD=password              # SMTP password (optional)
 SMTP_FROM_EMAIL=noreply@talawa.io   # Sender email (required)
 SMTP_FROM_NAME=Talawa               # Sender name (optional)
+SMTP_NAME=client.hostname.com       # Client hostname for HELO/EHLO (optional)
+SMTP_LOCAL_ADDRESS=192.168.1.10     # Local bind IP address (optional)
 ```
 
 **Queue Processing**

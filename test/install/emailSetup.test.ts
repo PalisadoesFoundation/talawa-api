@@ -535,6 +535,8 @@ describe("emailSetup", () => {
 				.mockResolvedValueOnce("user@gmail.com") // User
 				.mockResolvedValueOnce("from@example.com") // From Email
 				.mockResolvedValueOnce("Test App") // From Name
+				.mockResolvedValueOnce("client.hostname") // SMTP Name
+				.mockResolvedValueOnce("192.168.1.100") // Local Address
 				.mockResolvedValueOnce("recipient@example.com"); // Test recipient
 
 			vi.mocked(promptHelpers.promptPassword).mockResolvedValueOnce(
@@ -557,6 +559,8 @@ describe("emailSetup", () => {
 			expect(result.SMTP_SECURE).toBe("false");
 			expect(result.SMTP_FROM_EMAIL).toBe("from@example.com");
 			expect(result.SMTP_FROM_NAME).toBe("Test App");
+			expect(result.SMTP_NAME).toBe("client.hostname");
+			expect(result.SMTP_LOCAL_ADDRESS).toBe("192.168.1.100");
 
 			// Assert successful mock usage
 			expect(mocks.mockSMTPSendEmail).toHaveBeenCalledWith(
@@ -580,7 +584,9 @@ describe("emailSetup", () => {
 				.mockResolvedValueOnce("localhost") // Host
 				.mockResolvedValueOnce("25") // Port
 				.mockResolvedValueOnce("from@localhost") // From Email
-				.mockResolvedValueOnce("Local"); // From Name
+				.mockResolvedValueOnce("Local") // From Name
+				.mockResolvedValueOnce("") // SMTP Name
+				.mockResolvedValueOnce(""); // Local Address
 
 			const result = await emailSetup(answers);
 
@@ -588,6 +594,31 @@ describe("emailSetup", () => {
 			expect(result.SMTP_HOST).toBe("localhost");
 			expect(result.SMTP_USER).toBeUndefined();
 			expect(result.SMTP_PASSWORD).toBeUndefined();
+			expect(result.SMTP_NAME).toBeUndefined();
+			expect(result.SMTP_LOCAL_ADDRESS).toBeUndefined();
+		});
+
+		it("should treat whitespace-only SMTP optional fields as undefined", async () => {
+			vi.mocked(promptHelpers.promptConfirm)
+				.mockResolvedValueOnce(true) // Configure email
+				.mockResolvedValueOnce(false) // Auth
+				.mockResolvedValueOnce(false) // SSL
+				.mockResolvedValueOnce(false); // Test email
+
+			vi.mocked(promptHelpers.promptList).mockResolvedValueOnce("smtp");
+
+			vi.mocked(promptHelpers.promptInput)
+				.mockResolvedValueOnce("localhost")
+				.mockResolvedValueOnce("25")
+				.mockResolvedValueOnce("from@localhost")
+				.mockResolvedValueOnce("Local")
+				.mockResolvedValueOnce("   ") // Whitespace SMTP Name
+				.mockResolvedValueOnce("\t"); // Whitespace Local Address
+
+			const result = await emailSetup(answers);
+
+			expect(result.SMTP_NAME).toBeUndefined();
+			expect(result.SMTP_LOCAL_ADDRESS).toBeUndefined();
 		});
 
 		it("should retry SMTP setup when test fails", async () => {
@@ -612,6 +643,8 @@ describe("emailSetup", () => {
 				.mockResolvedValueOnce("bad@example.com")
 				.mockResolvedValueOnce("from@example.com")
 				.mockResolvedValueOnce("App")
+				.mockResolvedValueOnce("my-hostname")
+				.mockResolvedValueOnce("10.0.0.5")
 				.mockResolvedValueOnce("test@example.com")
 				// Retry attempt
 				.mockResolvedValueOnce("smtp.good.com")
@@ -619,6 +652,8 @@ describe("emailSetup", () => {
 				.mockResolvedValueOnce("good@example.com")
 				.mockResolvedValueOnce("from@example.com")
 				.mockResolvedValueOnce("App")
+				.mockResolvedValueOnce("my-hostname")
+				.mockResolvedValueOnce("10.0.0.5")
 				.mockResolvedValueOnce("test@example.com");
 
 			vi.mocked(promptHelpers.promptPassword)
@@ -657,6 +692,8 @@ describe("emailSetup", () => {
 				.mockResolvedValueOnce("user@example.com")
 				.mockResolvedValueOnce("from@example.com")
 				.mockResolvedValueOnce("App Name")
+				.mockResolvedValueOnce("client.hostname") // SMTP Name
+				.mockResolvedValueOnce("192.168.1.100") // Local Address
 				.mockResolvedValueOnce("recipient@example.com");
 
 			vi.mocked(promptHelpers.promptPassword).mockResolvedValueOnce(
@@ -679,6 +716,8 @@ describe("emailSetup", () => {
 				secure: true,
 				fromEmail: "from@example.com",
 				fromName: "App Name",
+				name: "client.hostname",
+				localAddress: "192.168.1.100",
 			});
 
 			// Verify sendEmail was called

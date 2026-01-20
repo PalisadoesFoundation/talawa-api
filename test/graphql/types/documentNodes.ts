@@ -366,6 +366,13 @@ export const Query_user_updatedAt =
     }
 }`);
 
+export const Query_user_city =
+	gql(`query Query_user_city($input: QueryUserInput!) {
+    user(input: $input) {
+        city
+    }
+}`);
+
 export const Query_user_updater =
 	gql(`query Query_user_updater($input: QueryUserInput!) {
     user(input: $input) {
@@ -391,6 +398,15 @@ export const Query_user_updater =
             role
             state
             workPhoneNumber
+        }
+    }
+}`);
+
+export const Query_user_updater_simple =
+	gql(`query Query_user_updater_simple($input: QueryUserInput!) {
+    user(input: $input) {
+        updater {
+            id
         }
     }
 }`);
@@ -2504,6 +2520,14 @@ export const Mutation_markChatAsRead = gql(`
 export const Mutation_updateChatMembership = gql(`
   mutation Mutation_updateChatMembership($input: MutationUpdateChatMembershipInput!) {
     updateChatMembership(input: $input) {
+      id
+    }
+  }
+`);
+
+export const Mutation_updateOrganizationMembership = gql(` 
+  mutation Mutation_updateOrganizationMembership($input: MutationUpdateOrganizationMembershipInput!) {
+    updateOrganizationMembership(input: $input) {
       id
     }
   }

@@ -7,6 +7,7 @@ import {
 	getTTL,
 	wrapWithCache,
 } from "~/src/services/caching";
+import { traceable } from "~/src/utilities/db/traceableQuery";
 import type { PerformanceTracker } from "~/src/utilities/metrics/performanceTracker";
 import { wrapBatchWithMetrics } from "~/src/utilities/metrics/withMetrics";
 import { wrapBatchWithTracing } from "./wrapBatchWithTracing";
@@ -40,10 +41,12 @@ export function createUserLoader(
 	const batchFn = async (
 		ids: readonly string[],
 	): Promise<(UserRow | null)[]> => {
-		const rows = await db
-			.select()
-			.from(usersTable)
-			.where(inArray(usersTable.id, ids as string[]));
+		const rows = await traceable("users", "batchLoad", async () =>
+			db
+				.select()
+				.from(usersTable)
+				.where(inArray(usersTable.id, ids as string[])),
+		);
 
 		const map = new Map<string, UserRow>(rows.map((r: UserRow) => [r.id, r]));
 

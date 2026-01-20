@@ -90,7 +90,7 @@ builder.mutationField("uploadPluginZip", (t) =>
 
 				return result.plugin as typeof Plugin.$inferType;
 			} catch (error) {
-				console.error("Plugin installation failed:", error);
+				ctx.log.error({ err: error }, "Plugin installation failed");
 
 				if (error instanceof TalawaGraphQLError) {
 					throw error;

@@ -434,6 +434,7 @@ jobs:
 
   Run-Tests:
     name: Run tests for talawa api (Shard ${{ matrix.shard }})
+    timeout-minutes: 10
     runs-on: ubuntu-latest
     needs: [Pre-Test-Checks-Pass]
     env:
@@ -750,7 +751,6 @@ jobs:
           exclude: "docs/"
           gcov_ignore: "docs/"
           files: ./coverage/vitest/lcov.info
-          flags: vitest
           commit_parent: ${{ steps.get-merge-base.outputs.merge_base }}
 
       - name: Test acceptable level of code coverage

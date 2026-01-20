@@ -24,6 +24,7 @@ In an environment where one capability is needed but the other is not, using a s
 
 Environment variables should be named using uppercase letters, numbers, and underscores. They should also be prefixed with `API_` to indicate that they are specific to the talawa-api application. For example `API_BASE_URL` and `API_PORT`.
 
+
 ## talawa api (standalone)
 
 At runtime, talawa api requires certain environment variables to be defined in its execution context. Some of these environment variables must be provided by you and some are optional to be provided because they might be using a default value or their requirement is dependent on the environment in which talawa api is running.
@@ -159,9 +160,21 @@ This environment variable is used to configure the [log level](https://github.co
 
 - More information can be found at [this](https://github.com/pinojs/pino/blob/main/docs/api.md##logger-level) link.
 
-### API_SLOW_REQUEST_MS
+### API_METRICS_ENABLED
 
-This environment variable is used to configure the threshold in milliseconds for identifying slow requests in talawa api. Requests that exceed this duration will be logged and tracked for performance monitoring purposes.
+This environment variable is used as a master switch to enable or disable metrics collection and aggregation in talawa api. When disabled, metrics collection is skipped entirely. Default value is `true`.
+
+### API_METRICS_SLOW_OPERATION_MS
+
+This environment variable is used to configure the threshold in milliseconds for considering an operation as slow. Operations exceeding this threshold will be tracked in slow operations metrics. Default value is `200` milliseconds.
+
+### API_METRICS_SLOW_REQUEST_MS
+
+This environment variable is used to configure the threshold in milliseconds for identifying slow requests in talawa api. Requests that exceed this duration will be logged and tracked for performance monitoring purposes. Default value is `500` milliseconds.
+
+### API_METRICS_CACHE_TTL_SECONDS
+
+This environment variable is used to configure the time-to-live in seconds for cached aggregated metrics. Determines how long metrics remain in cache before expiration. Default value is `300` seconds (5 minutes).
 
 ### API_METRICS_AGGREGATION_CRON_SCHEDULE
 

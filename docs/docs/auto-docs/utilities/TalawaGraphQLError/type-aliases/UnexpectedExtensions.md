@@ -6,7 +6,7 @@
 
 > **UnexpectedExtensions** = `object`
 
-Defined in: [src/utilities/TalawaGraphQLError.ts:241](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/utilities/TalawaGraphQLError.ts#L241)
+Defined in: [src/utilities/TalawaGraphQLError.ts:242](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/utilities/TalawaGraphQLError.ts#L242)
 
 When an error that doesn't fit one of the error types listed above occurs. One example would be a database request failure.
 
@@ -26,4 +26,4 @@ throw new TalawaGraphQLError({
 
 > **code**: `"unexpected"`
 
-Defined in: [src/utilities/TalawaGraphQLError.ts:242](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/utilities/TalawaGraphQLError.ts#L242)
+Defined in: [src/utilities/TalawaGraphQLError.ts:243](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/utilities/TalawaGraphQLError.ts#L243)

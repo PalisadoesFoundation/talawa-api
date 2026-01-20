@@ -1216,7 +1216,7 @@ suite("Query field allUsers", () => {
 						issues: expect.arrayContaining([
 							expect.objectContaining({
 								argumentPath: ["where", "name"],
-								message: "Expected string, received null",
+								message: "Invalid input: expected string, received null",
 							}),
 						]),
 					}),
