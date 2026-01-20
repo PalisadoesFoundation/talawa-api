@@ -59,6 +59,9 @@ export default defineConfig({
 			"test/config/**/*.{test,spec}.ts",
 			"test/fastifyPlugins/**/*.{test,spec}.ts",
 			"test/plugin/**/*.{test,spec}.ts",
+			"test/scripts/**/*.{test,spec}.ts",
+			"test/unit_tests/**/*.{test,spec}.ts",
+			"test/helpers/**/*.{test,spec}.ts",
 		],
 		exclude: [
 			...configDefaults.exclude,
