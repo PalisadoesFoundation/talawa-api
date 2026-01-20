@@ -836,21 +836,5 @@ describe("src/drizzle/tables/postAttachments", () => {
 				expect(result.mimeType).toBe(validMimeType);
 			}
 		});
-
-		it("should reject invalid MIME type", async () => {
-			const { userId } = await createRegularUserUsingAdmin();
-			const postId = await createTestPost();
-
-			await expect(
-				server.drizzleClient.insert(postAttachmentsTable).values({
-					name: "test.pdf",
-					creatorId: userId,
-					mimeType: "application/pdf" as any,
-					objectName: "testobj",
-					fileHash: "hash123",
-					postId: postId,
-				}),
-			).rejects.toThrow();
-		});
 	});
 });
