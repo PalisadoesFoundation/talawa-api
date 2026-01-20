@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { agendaItemAttachmentsTable } from "~/src/drizzle/tables/agendaItemAttachments";
 import { agendaItemsTable } from "~/src/drizzle/tables/agendaItems";
 import { builder } from "~/src/graphql/builder";
 import {
@@ -7,6 +8,7 @@ import {
 } from "~/src/graphql/inputs/MutationCreateAgendaItemInput";
 import { AgendaItem } from "~/src/graphql/types/AgendaItem/AgendaItem";
 import envConfig from "~/src/utilities/graphqLimits";
+import { isNotNullish } from "~/src/utilities/isNotNullish";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 
 const mutationCreateAgendaItemArgumentsSchema = z.object({
@@ -61,9 +63,6 @@ builder.mutationField("createAgendaItem", (t) =>
 					where: (fields, operators) => operators.eq(fields.id, currentUserId),
 				}),
 				ctx.drizzleClient.query.agendaFoldersTable.findFirst({
-					columns: {
-						isAgendaItemFolder: true,
-					},
 					with: {
 						event: {
 							columns: {
@@ -113,21 +112,6 @@ builder.mutationField("createAgendaItem", (t) =>
 				});
 			}
 
-			if (!existingAgendaFolder.isAgendaItemFolder) {
-				throw new TalawaGraphQLError({
-					extensions: {
-						code: "forbidden_action_on_arguments_associated_resources",
-						issues: [
-							{
-								argumentPath: ["input", "folderId"],
-								message:
-									"This agenda folder cannot be a folder to agenda items.",
-							},
-						],
-					},
-				});
-			}
-
 			const currentUserOrganizationMembership =
 				existingAgendaFolder.event.organization.membershipsWhereOrganization[0];
 
@@ -148,33 +132,56 @@ builder.mutationField("createAgendaItem", (t) =>
 				});
 			}
 
-			const [createdAgendaItem] = await ctx.drizzleClient
-				.insert(agendaItemsTable)
-				.values({
-					creatorId: currentUserId,
-					description: parsedArgs.input.description,
-					duration: parsedArgs.input.duration,
-					folderId: parsedArgs.input.folderId,
-					key: parsedArgs.input.key,
-					name: parsedArgs.input.name,
-					type: parsedArgs.input.type,
-				})
-				.returning();
+			// Use transaction to atomically insert agenda item and attachments
+			return await ctx.drizzleClient.transaction(async (tx) => {
+				const [createdAgendaItem] = await tx
+					.insert(agendaItemsTable)
+					.values({
+						creatorId: currentUserId,
+						description: parsedArgs.input.description,
+						duration: parsedArgs.input.duration,
+						folderId: parsedArgs.input.folderId,
+						key: parsedArgs.input.key,
+						name: parsedArgs.input.name,
+						type: parsedArgs.input.type,
+					})
+					.returning();
 
-			// Inserted agenda item not being returned is an external defect unrelated to this code. It is very unlikely for this error to occur.
-			if (createdAgendaItem === undefined) {
-				ctx.log.error(
-					"Postgres insert operation unexpectedly returned an empty array instead of throwing an error.",
-				);
+				// Inserted agenda item not being returned is an external defect unrelated to this code.
+				/* c8 ignore start */
+				if (createdAgendaItem === undefined) {
+					ctx.log.error(
+						"Postgres insert operation unexpectedly returned an empty array instead of throwing an error.",
+					);
 
-				throw new TalawaGraphQLError({
-					extensions: {
-						code: "unexpected",
-					},
-				});
-			}
+					throw new TalawaGraphQLError({
+						extensions: {
+							code: "unexpected",
+						},
+					});
+				}
 
-			return createdAgendaItem;
+				/* c8 ignore stop */
+
+				// Insert attachments if provided
+				if (
+					isNotNullish(parsedArgs.input.attachments) &&
+					parsedArgs.input.attachments.length > 0
+				) {
+					await tx.insert(agendaItemAttachmentsTable).values(
+						parsedArgs.input.attachments.map((attachment) => ({
+							agendaItemId: createdAgendaItem.id,
+							creatorId: currentUserId,
+							fileHash: attachment.fileHash,
+							mimeType: attachment.mimeType,
+							name: attachment.name,
+							objectName: attachment.objectName,
+						})),
+					);
+				}
+
+				return createdAgendaItem;
+			});
 		},
 		type: AgendaItem,
 	}),

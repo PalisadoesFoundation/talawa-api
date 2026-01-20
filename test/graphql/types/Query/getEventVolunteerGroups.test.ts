@@ -337,7 +337,7 @@ suite("Query field getEventVolunteerGroups", () => {
 		});
 
 		test("should throw error for non-existent eventId", async () => {
-			const fakeEventId = "01234567-89ab-cdef-0123-456789abcdef";
+			const fakeEventId = faker.string.uuid();
 
 			const result = await mercuriusClient.query(
 				Query_getEventVolunteerGroups,
@@ -401,7 +401,7 @@ suite("Query field getEventVolunteerGroups", () => {
 							issues: expect.arrayContaining([
 								expect.objectContaining({
 									argumentPath: ["where", "eventId"],
-									message: "Invalid uuid",
+									message: expect.stringContaining("Invalid UUID"),
 								}),
 							]),
 						}),

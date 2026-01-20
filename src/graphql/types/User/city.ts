@@ -38,9 +38,6 @@ User.implement({
 					currentUser.role !== "administrator" &&
 					parent.id !== currentUserId
 				) {
-					console.log("=============================");
-					console.log(currentUser.role);
-					console.log("=============================");
 					throw new TalawaGraphQLError({
 						extensions: {
 							code: "unauthorized_action",

@@ -180,7 +180,9 @@ async function createTestEnvironment(
 				input: {
 					name: "Test Agenda Folder",
 					eventId,
-					isAgendaItemFolder: true,
+					description: "desc",
+					sequence: 1,
+					organizationId,
 				},
 			},
 		},
@@ -203,25 +205,6 @@ async function createTestEnvironment(
 			});
 		},
 	};
-}
-
-// Helper function to create a non-agenda-item folder (for forbidden action test)
-async function createNonAgendaItemFolder(
-	adminAuthToken: string,
-	eventId: string,
-) {
-	const result = await mercuriusClient.mutate(Mutation_createAgendaFolder, {
-		headers: { authorization: `bearer ${adminAuthToken}` },
-		variables: {
-			input: {
-				name: "Non-Item Folder",
-				eventId,
-				isAgendaItemFolder: false,
-			},
-		},
-	});
-	assertToBeNonNullish(result.data?.createAgendaFolder);
-	return result.data.createAgendaFolder.id;
 }
 
 suite("Mutation field createAgendaItem", () => {
@@ -400,53 +383,6 @@ suite("Mutation field createAgendaItem", () => {
 					expect.objectContaining({
 						extensions: expect.objectContaining({
 							code: "arguments_associated_resources_not_found",
-						}),
-						message: expect.any(String),
-						path: ["createAgendaItem"],
-					}),
-				]),
-			);
-		});
-
-		test("Returns an error when folder is not an agenda item folder", async () => {
-			const { token: adminAuthToken } = await getAdminAuth();
-
-			const { cleanup, eventId } = await createTestEnvironment(
-				adminAuthToken,
-				await getAdminUserId(),
-			);
-			testCleanupFunctions.push(cleanup);
-
-			// Create a folder that is NOT an agenda item folder
-			const nonItemFolderId = await createNonAgendaItemFolder(
-				adminAuthToken,
-				eventId,
-			);
-
-			const result = await mercuriusClient.mutate(Mutation_createAgendaItem, {
-				headers: { authorization: `bearer ${adminAuthToken}` },
-				variables: {
-					input: {
-						folderId: nonItemFolderId,
-						name: "Test Agenda Item",
-						type: "general",
-					},
-				},
-			});
-
-			expect(result.data?.createAgendaItem).toEqual(null);
-			expect(result.errors).toEqual(
-				expect.arrayContaining([
-					expect.objectContaining({
-						extensions: expect.objectContaining({
-							code: "forbidden_action_on_arguments_associated_resources",
-							issues: expect.arrayContaining([
-								expect.objectContaining({
-									argumentPath: ["input", "folderId"],
-									message:
-										"This agenda folder cannot be a folder to agenda items.",
-								}),
-							]),
 						}),
 						message: expect.any(String),
 						path: ["createAgendaItem"],
@@ -807,7 +743,9 @@ suite("Mutation field createAgendaItem", () => {
 						input: {
 							name: "Folder",
 							eventId,
-							isAgendaItemFolder: true,
+							description: "Super admin test folder",
+							sequence: 1,
+							organizationId,
 						},
 					},
 				},
@@ -877,6 +815,230 @@ suite("Mutation field createAgendaItem", () => {
 			assertToBeNonNullish(result.data?.createAgendaItem);
 			expect(result.data.createAgendaItem.name).toEqual("Org Admin Item");
 			expect(result.errors).toBeUndefined();
+		});
+	});
+
+	suite("Attachments", () => {
+		test("Successfully creates agenda item with attachments", async () => {
+			const { token: adminAuthToken, userId: adminUserId } =
+				await getAdminAuth();
+			const { cleanup, folderId } = await createTestEnvironment(
+				adminAuthToken,
+				adminUserId,
+			);
+			testCleanupFunctions.push(cleanup);
+
+			const result = await mercuriusClient.mutate(Mutation_createAgendaItem, {
+				headers: { authorization: `bearer ${adminAuthToken}` },
+				variables: {
+					input: {
+						folderId,
+						name: "Agenda Item With Attachments",
+						type: "general",
+						attachments: [
+							{
+								objectName: "test-object-1",
+								fileHash:
+									"a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2",
+								mimeType: "IMAGE_PNG",
+								name: "test-image.png",
+							},
+							{
+								objectName: "test-object-2",
+								fileHash:
+									"b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3",
+								mimeType: "IMAGE_JPEG",
+								name: "test-photo.jpg",
+							},
+						],
+					},
+				},
+			});
+
+			assertToBeNonNullish(result.data?.createAgendaItem);
+			expect(result.data.createAgendaItem.name).toEqual(
+				"Agenda Item With Attachments",
+			);
+			expect(result.errors).toBeUndefined();
+
+			// Verify attachments were stored in database with complete metadata
+			const agendaItemId = result.data.createAgendaItem?.id;
+			const attachments =
+				await server.drizzleClient.query.agendaItemAttachmentsTable.findMany({
+					where: (fields, { eq }) => eq(fields.agendaItemId, agendaItemId),
+				});
+
+			expect(attachments).toHaveLength(2);
+
+			// Verify first attachment with complete metadata
+			const attachment1 = attachments.find(
+				(a) => a.objectName === "test-object-1",
+			);
+			assertToBeNonNullish(attachment1);
+			expect(attachment1.fileHash).toEqual(
+				"a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2",
+			);
+			expect(attachment1.mimeType).toEqual("image/png");
+			expect(attachment1.name).toEqual("test-image.png");
+
+			// Verify second attachment with complete metadata
+			const attachment2 = attachments.find(
+				(a) => a.objectName === "test-object-2",
+			);
+			assertToBeNonNullish(attachment2);
+			expect(attachment2.fileHash).toEqual(
+				"b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3",
+			);
+			expect(attachment2.mimeType).toEqual("image/jpeg");
+			expect(attachment2.name).toEqual("test-photo.jpg");
+		});
+
+		test("Successfully creates agenda item without attachments", async () => {
+			const { token: adminAuthToken, userId: adminUserId } =
+				await getAdminAuth();
+			const { cleanup, folderId } = await createTestEnvironment(
+				adminAuthToken,
+				adminUserId,
+			);
+			testCleanupFunctions.push(cleanup);
+
+			const result = await mercuriusClient.mutate(Mutation_createAgendaItem, {
+				headers: { authorization: `bearer ${adminAuthToken}` },
+				variables: {
+					input: {
+						folderId,
+						name: "Agenda Item Without Attachments",
+						type: "general",
+					},
+				},
+			});
+
+			assertToBeNonNullish(result.data?.createAgendaItem);
+			expect(result.data.createAgendaItem.name).toEqual(
+				"Agenda Item Without Attachments",
+			);
+			expect(result.errors).toBeUndefined();
+
+			// Verify no attachments were created
+			const agendaItemId = result.data.createAgendaItem.id;
+			const attachments =
+				await server.drizzleClient.query.agendaItemAttachmentsTable.findMany({
+					where: (fields, { eq }) => eq(fields.agendaItemId, agendaItemId),
+				});
+			expect(attachments).toHaveLength(0);
+		});
+
+		test("Successfully creates agenda item with empty attachments array", async () => {
+			const { token: adminAuthToken, userId: adminUserId } =
+				await getAdminAuth();
+			const { cleanup, folderId } = await createTestEnvironment(
+				adminAuthToken,
+				adminUserId,
+			);
+			testCleanupFunctions.push(cleanup);
+
+			const result = await mercuriusClient.mutate(Mutation_createAgendaItem, {
+				headers: { authorization: `bearer ${adminAuthToken}` },
+				variables: {
+					input: {
+						folderId,
+						name: "Agenda Item Empty Attachments",
+						type: "general",
+						attachments: [],
+					},
+				},
+			});
+
+			assertToBeNonNullish(result.data?.createAgendaItem);
+			expect(result.data.createAgendaItem.name).toEqual(
+				"Agenda Item Empty Attachments",
+			);
+			expect(result.errors).toBeUndefined();
+
+			// Verify no attachments were created
+			const agendaItemId = result.data.createAgendaItem.id;
+			const attachments =
+				await server.drizzleClient.query.agendaItemAttachmentsTable.findMany({
+					where: (fields, { eq }) => eq(fields.agendaItemId, agendaItemId),
+				});
+			expect(attachments).toHaveLength(0);
+		});
+
+		test("Rejects invalid fileHash format", async () => {
+			const { token: adminAuthToken, userId: adminUserId } =
+				await getAdminAuth();
+			const { cleanup, folderId } = await createTestEnvironment(
+				adminAuthToken,
+				adminUserId,
+			);
+			testCleanupFunctions.push(cleanup);
+
+			const result = await mercuriusClient.mutate(Mutation_createAgendaItem, {
+				headers: { authorization: `bearer ${adminAuthToken}` },
+				variables: {
+					input: {
+						folderId,
+						name: "Invalid Hash Test",
+						type: "general",
+						attachments: [
+							{
+								objectName: "test-obj",
+								fileHash: "invalid-hash-not-64-chars",
+								mimeType: "IMAGE_PNG",
+								name: "test.png",
+							},
+						],
+					},
+				},
+			});
+
+			expect(result.errors).toBeDefined();
+			expect(result.errors?.[0]?.extensions?.code).toBe("invalid_arguments");
+			// Assert the error is for the correct field
+			const issues = result.errors?.[0]?.extensions?.issues as
+				| Array<{ argumentPath: unknown[] }>
+				| undefined;
+			expect(issues).toBeDefined();
+			expect(issues?.[0]?.argumentPath).toContain("attachments");
+		});
+
+		test("Rejects more than 10 attachments", async () => {
+			const { token: adminAuthToken, userId: adminUserId } =
+				await getAdminAuth();
+			const { cleanup, folderId } = await createTestEnvironment(
+				adminAuthToken,
+				adminUserId,
+			);
+			testCleanupFunctions.push(cleanup);
+
+			const attachments = Array.from({ length: 11 }, (_, i) => ({
+				objectName: `test-obj-${i}`,
+				fileHash:
+					"a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2",
+				mimeType: "IMAGE_PNG" as const,
+				name: `test-${i}.png`,
+			}));
+
+			const result = await mercuriusClient.mutate(Mutation_createAgendaItem, {
+				headers: { authorization: `bearer ${adminAuthToken}` },
+				variables: {
+					input: {
+						folderId,
+						name: "Too Many Attachments",
+						type: "general",
+						attachments,
+					},
+				},
+			});
+
+			expect(result.errors).toBeDefined();
+			expect(result.errors?.[0]?.extensions?.code).toBe("invalid_arguments");
+			// Assert the error is for the correct field
+			const issues = result.errors?.[0]?.extensions?.issues as
+				| Array<{ argumentPath: unknown[] }>
+				| undefined;
+			expect(issues).toBeDefined();
+			expect(issues?.[0]?.argumentPath).toContain("attachments");
 		});
 	});
 });

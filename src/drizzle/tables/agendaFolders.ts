@@ -1,8 +1,8 @@
 import { relations, sql } from "drizzle-orm";
 import {
-	type AnyPgColumn,
 	boolean,
 	index,
+	integer,
 	pgTable,
 	text,
 	timestamp,
@@ -12,6 +12,7 @@ import { createInsertSchema } from "drizzle-zod";
 import { uuidv7 } from "uuidv7";
 import { agendaItemsTable } from "./agendaItems";
 import { eventsTable } from "./events";
+import { organizationsTable } from "./organizations";
 import { usersTable } from "./users";
 
 /**
@@ -38,6 +39,10 @@ export const agendaFoldersTable = pgTable(
 			onUpdate: "cascade",
 		}),
 		/**
+		 * Description about the agenda folder.
+		 */
+		description: text("description"),
+		/**
 		 * Foreign key reference to the id of the event the agenda folder is associated to.
 		 */
 		eventId: uuid("event_id")
@@ -51,23 +56,26 @@ export const agendaFoldersTable = pgTable(
 		 */
 		id: uuid("id").primaryKey().$default(uuidv7),
 		/**
-		 * Boolean to tell if the agenda folder is meant to be a folder for agenda items or a parent folder for other agenda folders.
+		 * Boolean to tell if the agenda folder is default or not.
 		 */
-		isAgendaItemFolder: boolean("is_agenda_item_folder").notNull(),
+		isDefaultFolder: boolean("is_default_folder").notNull().default(false),
 		/**
 		 * Name of the agenda folder.
 		 */
 		name: text("name", {}).notNull(),
 		/**
-		 * Foreign key reference to the id of the agenda folder the agenda folder is contained within.
+		 * Many to one relationship from `agenda_folders` table to `organizations` table.
 		 */
-		parentFolderId: uuid("parent_folder_id").references(
-			(): AnyPgColumn => agendaFoldersTable.id,
-			{
+		organizationId: uuid("organization_id")
+			.notNull()
+			.references(() => organizationsTable.id, {
 				onDelete: "cascade",
 				onUpdate: "cascade",
-			},
-		),
+			}),
+		/**
+		 * Sequence of the agenda folder.
+		 */
+		sequence: integer("sequence"),
 		/**
 		 * Date time at the time the agenda folder was last updated.
 		 */
@@ -90,9 +98,8 @@ export const agendaFoldersTable = pgTable(
 		index().on(self.createdAt),
 		index().on(self.creatorId),
 		index().on(self.eventId),
-		index().on(self.isAgendaItemFolder),
 		index().on(self.name),
-		index().on(self.parentFolderId),
+		index().on(self.organizationId),
 	],
 );
 
@@ -104,12 +111,6 @@ export const agendaFoldersTableRelations = relations(
 		 */
 		agendaItemsWhereFolder: many(agendaItemsTable, {
 			relationName: "agenda_items.folder_id:agenda_folders.id",
-		}),
-		/**
-		 * One to many relationship from `agenda_folders` table to `agenda_folders` table.
-		 */
-		agendaFoldersWhereParentFolder: many(agendaFoldersTable, {
-			relationName: "agenda_folders.id:agenda_folders.parent_folder_id",
 		}),
 		/**
 		 * Many to one relationship from `agenda_folders` table to `users` table.
@@ -127,13 +128,10 @@ export const agendaFoldersTableRelations = relations(
 			references: [eventsTable.id],
 			relationName: "agenda_folders.event_id:events.id",
 		}),
-		/**
-		 * Many to one relationship from `agenda_folders` table to `agenda_folders` table.
-		 */
-		parentFolder: one(agendaFoldersTable, {
-			fields: [agendaFoldersTable.parentFolderId],
-			references: [agendaFoldersTable.id],
-			relationName: "agenda_folders.id:agenda_folders.parent_folder_id",
+		organization: one(organizationsTable, {
+			fields: [agendaFoldersTable.organizationId],
+			references: [organizationsTable.id],
+			relationName: "agenda_folders.organization_id:organizations.id",
 		}),
 		/**
 		 * Many to one relationship from `agenda_folders` table to `users` table.
@@ -149,6 +147,8 @@ export const agendaFoldersTableRelations = relations(
 export const agendaFoldersTableInsertSchema = createInsertSchema(
 	agendaFoldersTable,
 	{
+		description: (schema) => schema.min(1).max(2048).optional(),
 		name: (schema) => schema.min(1).max(256),
+		sequence: (schema) => schema.int().min(1).optional(),
 	},
 );

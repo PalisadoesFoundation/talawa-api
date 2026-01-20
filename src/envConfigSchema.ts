@@ -1,6 +1,6 @@
-import { type Static, Type } from "@sinclair/typebox";
 import ajvFormats from "ajv-formats";
 import type { EnvSchemaOpt } from "env-schema";
+import { type Static, Type } from "typebox";
 
 /**
  * JSON schema of a record of environment variables accessible to the talawa api at runtime.
@@ -137,21 +137,21 @@ export const envConfigSchema = Type.Object({
 		}),
 	),
 	/**
+	 * Email provider selection.
+	 * Supported values: 'ses' (Amazon SES) and 'smtp'.
+	 * Defaults to 'ses' if not specified.
+	 */
+	API_EMAIL_PROVIDER: Type.Optional(
+		Type.Union([Type.Literal("ses"), Type.Literal("smtp")], { default: "ses" }),
+	),
+	/**
 	 * AWS access key ID for SES email service.
 	 */
-	AWS_ACCESS_KEY_ID: Type.Optional(
-		Type.String({
-			minLength: 1,
-		}),
-	),
+	AWS_ACCESS_KEY_ID: Type.Optional(Type.String({ minLength: 1 })),
 	/**
 	 * AWS secret access key for SES email service.
 	 */
-	AWS_SECRET_ACCESS_KEY: Type.Optional(
-		Type.String({
-			minLength: 1,
-		}),
-	),
+	AWS_SECRET_ACCESS_KEY: Type.Optional(Type.String({ minLength: 1 })),
 	/**
 	 * AWS region for SES email service.
 	 */
@@ -178,6 +178,54 @@ export const envConfigSchema = Type.Object({
 			default: "Talawa",
 		}),
 	),
+	/**
+	 * SMTP server hostname for email service.
+	 */
+	SMTP_HOST: Type.Optional(Type.String({ minLength: 1 })),
+	/**
+	 * SMTP server port for email service.
+	 * Common values: 587 (TLS), 465 (SSL), 25 (unsecured)
+	 */
+	SMTP_PORT: Type.Optional(Type.Integer({ minimum: 1, maximum: 65535 })),
+	/**
+	 * SMTP username for authentication.
+	 */
+	SMTP_USER: Type.Optional(Type.String({ minLength: 1 })),
+	/**
+	 * SMTP password for authentication.
+	 */
+	SMTP_PASSWORD: Type.Optional(Type.String({ minLength: 1 })),
+	/**
+	 * Whether to use SSL/TLS for SMTP connection.
+	 * Set to true for port 465, false for port 587 with STARTTLS.
+	 */
+	SMTP_SECURE: Type.Optional(Type.Boolean()),
+	/**
+	 * Verified email address to send emails from via SMTP.
+	 */
+	SMTP_FROM_EMAIL: Type.Optional(
+		Type.String({
+			format: "email",
+		}),
+	),
+	/**
+	 * Display name for the sender in emails via SMTP.
+	 */
+	SMTP_FROM_NAME: Type.Optional(
+		Type.String({
+			minLength: 1,
+			default: "Talawa",
+		}),
+	),
+	/**
+	 * Client hostname to greet the SMTP server with.
+	 * Default: machine hostname
+	 */
+	SMTP_NAME: Type.Optional(Type.String({ minLength: 1 })),
+	/**
+	 * Local IP address to bind to for outgoing SMTP connections.
+	 */
+	SMTP_LOCAL_ADDRESS: Type.Optional(Type.String({ minLength: 1 })),
 	/**
 	 * URL to the youtube account of the community.
 	 */
@@ -254,6 +302,28 @@ export const envConfigSchema = Type.Object({
 		}),
 	),
 	/**
+	 * Email verification token expiry in seconds.
+	 * Default: 86400 (24 hours)
+	 */
+	API_EMAIL_VERIFICATION_TOKEN_EXPIRES_SECONDS: Type.Optional(
+		Type.Integer({
+			minimum: 1,
+			default: 86400,
+		}),
+	),
+	/**
+	 * HMAC secret key for hashing email verification tokens.
+	 * Used for defense-in-depth; tokens already have 256 bits of entropy.
+	 * Should be at least 32 characters for security best practices.
+	 * Defaults to a static value if not provided (upgrade to custom secret is recommended).
+	 */
+	API_EMAIL_VERIFICATION_TOKEN_HMAC_SECRET: Type.Optional(
+		Type.String({
+			minLength: 32,
+			default: "talawa-email-verification-token-hmac-default-secret-key",
+		}),
+	),
+	/**
 	 * Used for providing the secret for signing and verifying authentication json web tokens created by talawa api.
 	 */
 	API_JWT_SECRET: Type.String({
@@ -283,6 +353,42 @@ export const envConfigSchema = Type.Object({
 	 * Defaults to true in production environments. Set explicitly for testing.
 	 */
 	API_IS_SECURE_COOKIES: Type.Optional(Type.Boolean()),
+	/**
+	 * Sampling ratio for OpenTelemetry traces.
+	 * Value between 0 (no traces) and 1 (all traces).
+	 * Default: 1 (sample all traces)
+	 */
+	API_OTEL_SAMPLING_RATIO: Type.Optional(
+		Type.Number({
+			minimum: 0,
+			maximum: 1,
+			default: 1,
+		}),
+	),
+	/**
+	 * Enabled state for OpenTelemetry tracing.
+	 */
+	API_OTEL_ENABLED: Type.Boolean({
+		default: false,
+		description: "Enable or disable OpenTelemetry tracing",
+	}),
+	/**
+	 * Environment name for OpenTelemetry (e.g. 'production', 'development').
+	 */
+	API_OTEL_ENVIRONMENT: Type.Optional(Type.String({ minLength: 1 })),
+	/**
+	 * OTLP Exporter Endpoint URL.
+	 */
+	API_OTEL_EXPORTER_OTLP_ENDPOINT: Type.Optional(
+		Type.String({
+			minLength: 1,
+			format: "uri", // Using format: uri for validation
+		}),
+	),
+	/**
+	 * Service name for OpenTelemetry.
+	 */
+	API_OTEL_SERVICE_NAME: Type.Optional(Type.String({ minLength: 1 })),
 	/**
 	 * Used for providing the log level for the logger used in talawa api.
 	 *
@@ -484,6 +590,177 @@ export const envConfigSchema = Type.Object({
 	RECAPTCHA_SECRET_KEY: Type.Optional(
 		Type.String({
 			minLength: 1,
+		}),
+	),
+
+	/**
+	 * Google OAuth Client ID for authentication.
+	 */
+	GOOGLE_CLIENT_ID: Type.Optional(
+		Type.String({
+			minLength: 1,
+		}),
+	),
+
+	/**
+	 * Google OAuth Client Secret for authentication.
+	 */
+	GOOGLE_CLIENT_SECRET: Type.Optional(
+		Type.String({
+			minLength: 1,
+		}),
+	),
+
+	/**
+	 * Google OAuth Redirect URI for authentication callback.
+	 */
+	GOOGLE_REDIRECT_URI: Type.Optional(
+		Type.String({
+			minLength: 1,
+			format: "uri",
+		}),
+	),
+
+	/**
+	 * GitHub OAuth Client ID for authentication.
+	 */
+	GITHUB_CLIENT_ID: Type.Optional(
+		Type.String({
+			minLength: 1,
+		}),
+	),
+
+	/**
+	 * GitHub OAuth Client Secret for authentication.
+	 */
+	GITHUB_CLIENT_SECRET: Type.Optional(
+		Type.String({
+			minLength: 1,
+		}),
+	),
+
+	/**
+	 * GitHub OAuth Redirect URI for authentication callback.
+	 */
+	GITHUB_REDIRECT_URI: Type.Optional(
+		Type.String({
+			minLength: 1,
+			format: "uri",
+		}),
+	),
+
+	/**
+	 * Request timeout in milliseconds for OAuth provider API calls.
+	 * Default: 10000 (10 seconds)
+	 */
+	API_OAUTH_REQUEST_TIMEOUT_MS: Type.Optional(
+		Type.Integer({
+			minimum: 1000,
+			maximum: 60000,
+			default: 10000,
+		}),
+	),
+
+	/**
+	 * Cron schedule for the metrics aggregation background worker.
+	 * Default: "*\/5 * * * *" (every 5 minutes)
+	 */
+	API_METRICS_AGGREGATION_CRON_SCHEDULE: Type.Optional(
+		Type.String({
+			minLength: 9, // Minimum valid cron: "* * * * *"
+		}),
+	),
+
+	/**
+	 * Enable or disable metrics aggregation background worker.
+	 * Default: true
+	 */
+	API_METRICS_AGGREGATION_ENABLED: Type.Optional(
+		Type.Boolean({
+			default: true,
+		}),
+	),
+
+	/**
+	 * Maximum number of performance snapshots to retain in memory.
+	 * Default: 1000
+	 */
+	API_METRICS_SNAPSHOT_RETENTION_COUNT: Type.Optional(
+		Type.Integer({
+			minimum: 1,
+			default: 1000,
+		}),
+	),
+
+	/**
+	 * Time window in minutes for metrics aggregation.
+	 * Only snapshots within this window will be included in aggregation.
+	 * Default: 5
+	 */
+	API_METRICS_AGGREGATION_WINDOW_MINUTES: Type.Optional(
+		Type.Integer({
+			minimum: 1,
+			default: 5,
+		}),
+	),
+
+	/**
+	 * API key for authenticating requests to the /metrics/perf endpoint.
+	 * If not set, the endpoint is unprotected (suitable for development).
+	 * In production, set this to a secure random string.
+	 */
+	API_METRICS_API_KEY: Type.Optional(
+		Type.String({
+			minLength: 32,
+		}),
+	),
+
+	/**
+	 * Master switch to enable or disable metrics collection and aggregation.
+	 * When disabled, metrics collection is skipped entirely.
+	 * Default: true
+	 */
+	API_METRICS_ENABLED: Type.Optional(
+		Type.Boolean({
+			default: true,
+		}),
+	),
+
+	/**
+	 * Threshold in milliseconds for considering an operation as slow.
+	 * Operations exceeding this threshold will be tracked in slow operations metrics.
+	 * Default: 200
+	 */
+	API_METRICS_SLOW_OPERATION_MS: Type.Optional(
+		Type.Integer({
+			minimum: 1,
+			default: 200,
+		}),
+	),
+
+	/**
+	 * Threshold in milliseconds for considering a request as slow.
+	 * This is the single source of truth for slow request detection.
+	 * Used for both performance metrics tracking and request logging.
+	 * Requests exceeding this threshold will be logged as warnings.
+	 * Default: 500
+	 */
+	API_METRICS_SLOW_REQUEST_MS: Type.Optional(
+		Type.Integer({
+			minimum: 1,
+			default: 500,
+		}),
+	),
+
+	/**
+	 * Time-to-live in seconds for cached aggregated metrics.
+	 * Determines how long metrics remain in cache before expiration.
+	 * Default: 300 (5 minutes)
+	 */
+	API_METRICS_CACHE_TTL_SECONDS: Type.Optional(
+		Type.Integer({
+			minimum: 1,
+			default: 300,
 		}),
 	),
 });

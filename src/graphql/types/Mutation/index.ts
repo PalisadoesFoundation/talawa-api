@@ -124,3 +124,8 @@ import "./acceptEventInvitation";
 import "./verifyEventInvitation";
 import "./requestPasswordReset";
 import "./resetPassword";
+import "./sendVerificationEmail";
+import "./verifyEmail";
+import "./createAgendaCategory";
+import "./deleteAgendaCategory";
+import "./updateAgendaCategory";

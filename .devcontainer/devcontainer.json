@@ -65,7 +65,6 @@
 		"ghcr.io/devcontainers/features/git": {},
 		// https://github.com/devcontainers/features/tree/main/src/github-cli
 		"ghcr.io/devcontainers/features/github-cli": {},
-
 		"ghcr.io/devcontainers/features/docker-outside-of-docker:1": {
 			"ENABLENONROOTDOCKER": "true"
 		}
@@ -74,8 +73,7 @@
 	"initializeCommand": "/bin/sh -c '[ ! -f .env ] && cp ./envFiles/.env.devcontainer ./.env || true'",
 	"name": "talawa_api",
 	"overrideCommand": true,
-	"postCreateCommand": "sudo chown talawa:talawa ./.pnpm-store ./node_modules && fnm install && fnm use && corepack enable npm && corepack enable && corepack install && pnpm install",
-	"postStartCommand": "pnpm install",
+	"postCreateCommand": "./.devcontainer/post-create.sh",
 	"remoteUser": "talawa",
 	"service": "api",
 	"shutdownAction": "stopCompose",

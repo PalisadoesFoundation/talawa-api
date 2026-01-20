@@ -5,11 +5,11 @@ import {
 	filterInviteOnlyEvents,
 	getUnifiedEventsInDateRange,
 } from "~/src/graphql/types/Query/eventQueries";
+import envConfig from "~/src/utilities/graphqLimits";
 import {
 	type ParsedDefaultGraphQLConnectionArguments,
 	transformToDefaultGraphQLConnection,
-} from "~/src/utilities/defaultGraphQLConnection";
-import envConfig from "~/src/utilities/graphqLimits";
+} from "~/src/utilities/graphqlConnection";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import { Organization } from "./Organization";
 
@@ -446,13 +446,10 @@ Organization.implement({
 
 					// Transform to GraphQL connection format
 					return transformToDefaultGraphQLConnection({
-						createCursor: (event) =>
-							Buffer.from(
-								JSON.stringify({
-									id: event.id,
-									startAt: new Date(event.startAt).toISOString(),
-								}),
-							).toString("base64url"),
+						createCursor: (event) => ({
+							id: event.id,
+							startAt: new Date(event.startAt),
+						}),
 						createNode: (event) => event,
 						parsedArgs: { cursor, isInversed, limit },
 						rawNodes: allEvents,

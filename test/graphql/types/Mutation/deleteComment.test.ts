@@ -19,19 +19,12 @@ import {
 	Mutation_createOrganizationMembership,
 	Mutation_createPost,
 	Mutation_createUser,
+	Mutation_deleteComment,
 	Mutation_signUp,
 	Query_signIn,
 } from "../documentNodes";
 
 /* ---------- sign in once (administrator) ---------- */
-
-const DeleteCommentMutation = `
-  mutation DeleteComment($input: MutationDeleteCommentInput!) {
-    deleteComment(input: $input) {
-      id
-    }
-  }
-`;
 
 const signInResult = await mercuriusClient.query(Query_signIn, {
 	variables: {
@@ -52,7 +45,7 @@ suite("Mutation deleteComment", () => {
 	//// 1. Unauthenticated
 	suite("when the user is not authenticated", () => {
 		test("should return unauthenticated error", async () => {
-			const result = await mercuriusClient.mutate(DeleteCommentMutation, {
+			const result = await mercuriusClient.mutate(Mutation_deleteComment, {
 				variables: {
 					input: { id: faker.string.uuid() },
 				},
@@ -75,7 +68,7 @@ suite("Mutation deleteComment", () => {
 	//// 2. Invalid arguments
 	suite("when invalid arguments are provided", () => {
 		test("should return invalid_arguments error", async () => {
-			const result = await mercuriusClient.mutate(DeleteCommentMutation, {
+			const result = await mercuriusClient.mutate(Mutation_deleteComment, {
 				headers: { authorization: `bearer ${adminToken}` },
 				variables: {
 					input: { id: "not-a-valid-uuid" },
@@ -99,7 +92,7 @@ suite("Mutation deleteComment", () => {
 	//// 3. Comment not found
 	suite("when the comment does not exist", () => {
 		test("should return arguments_associated_resources_not_found error", async () => {
-			const result = await mercuriusClient.mutate(DeleteCommentMutation, {
+			const result = await mercuriusClient.mutate(Mutation_deleteComment, {
 				headers: { authorization: `bearer ${adminToken}` },
 				variables: {
 					input: { id: faker.string.uuid() },
@@ -180,7 +173,7 @@ suite("Mutation deleteComment", () => {
 			assertToBeNonNullish(comment.data?.createComment);
 			const commentId = comment.data.createComment.id;
 
-			const result = await mercuriusClient.mutate(DeleteCommentMutation, {
+			const result = await mercuriusClient.mutate(Mutation_deleteComment, {
 				headers: { authorization: `bearer ${userToken}` },
 				variables: {
 					input: { id: commentId },
@@ -244,7 +237,7 @@ suite("Mutation deleteComment", () => {
 			assertToBeNonNullish(comment.data?.createComment);
 			const commentId = comment.data.createComment.id;
 
-			const result = await mercuriusClient.mutate(DeleteCommentMutation, {
+			const result = await mercuriusClient.mutate(Mutation_deleteComment, {
 				headers: { authorization: `bearer ${adminToken}` },
 				variables: {
 					input: { id: commentId },
@@ -329,7 +322,7 @@ suite("Mutation deleteComment", () => {
 			assertToBeNonNullish(comment.data?.createComment);
 			const commentId = comment.data.createComment.id;
 
-			const result = await mercuriusClient.mutate(DeleteCommentMutation, {
+			const result = await mercuriusClient.mutate(Mutation_deleteComment, {
 				headers: { authorization: `bearer ${userToken}` },
 				variables: {
 					input: { id: commentId },
@@ -411,7 +404,7 @@ suite("Mutation deleteComment", () => {
 			const commentId = comment.data.createComment.id;
 
 			/* ---------- SYSTEM ADMIN deletes comment ---------- */
-			const result = await mercuriusClient.mutate(DeleteCommentMutation, {
+			const result = await mercuriusClient.mutate(Mutation_deleteComment, {
 				headers: { authorization: `bearer ${adminToken}` },
 				variables: {
 					input: { id: commentId },
@@ -497,7 +490,7 @@ suite("Mutation deleteComment", () => {
 				.where(eq(usersTable.id, userId));
 
 			// Try to delete comment with deleted user's token
-			const result = await mercuriusClient.mutate(DeleteCommentMutation, {
+			const result = await mercuriusClient.mutate(Mutation_deleteComment, {
 				headers: { authorization: `bearer ${userToken}` },
 				variables: { input: { id: commentId } },
 			});
@@ -568,7 +561,7 @@ suite("Mutation deleteComment", () => {
 		});
 
 		test("should return unexpected error", async () => {
-			const result = await mercuriusClient.mutate(DeleteCommentMutation, {
+			const result = await mercuriusClient.mutate(Mutation_deleteComment, {
 				headers: { authorization: `bearer ${adminToken}` },
 				variables: { input: { id: commentId } },
 			});

@@ -8,15 +8,17 @@ chat:
 reviews:
   profile: "assertive"
   poem: false
-  request_changes_workflow: true
+  request_changes_workflow: false
   high_level_summary: true
   review_status: true
+  review_details: false
+  auto_apply_labels: false
+  suggested_labels: false
   collapse_walkthrough: false
   auto_review:
     enabled: true
     drafts: false
     base_branches:
-      - develop
       - develop
       - main
   path_filters:
@@ -29,7 +31,7 @@ reviews:
       instructions: |
         Full review
 
-        Perform a comprehensive analysis and reevaluate all resolved items with the following criteria:
+        Perform a comprehensive analysis and reevaluate all resolved and dismissed items with the following criteria:
 
         1. **Test Coverage Analysis:**
             1. For each modified or new test file, verify:

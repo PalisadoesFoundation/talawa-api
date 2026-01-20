@@ -1,27 +1,16 @@
-import {
-	and,
-	asc,
-	desc,
-	eq,
-	exists,
-	gt,
-	isNull,
-	lt,
-	or,
-	type SQL,
-} from "drizzle-orm";
+import { and, asc, desc, eq, exists, gt, lt, or, type SQL } from "drizzle-orm";
 import type { z } from "zod";
 import {
 	agendaFoldersTable,
 	agendaFoldersTableInsertSchema,
 } from "~/src/drizzle/tables/agendaFolders";
 import { AgendaFolder } from "~/src/graphql/types/AgendaFolder/AgendaFolder";
+import envConfig from "~/src/utilities/graphqLimits";
 import {
 	defaultGraphQLConnectionArgumentsSchema,
 	transformDefaultGraphQLConnectionArguments,
 	transformToDefaultGraphQLConnection,
-} from "~/src/utilities/defaultGraphQLConnection";
-import envConfig from "~/src/utilities/graphqLimits";
+} from "~/src/utilities/graphqlConnection";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import { Event } from "./Event";
 
@@ -104,12 +93,10 @@ Event.implement({
 												eq(agendaFoldersTable.eventId, parent.id),
 												eq(agendaFoldersTable.id, cursor.id),
 												eq(agendaFoldersTable.name, cursor.name),
-												isNull(agendaFoldersTable.parentFolderId),
 											),
 										),
 								),
 								eq(agendaFoldersTable.eventId, parent.id),
-								isNull(agendaFoldersTable.parentFolderId),
 								or(
 									and(
 										eq(agendaFoldersTable.name, cursor.name),
@@ -119,10 +106,7 @@ Event.implement({
 								),
 							);
 						} else {
-							where = and(
-								eq(agendaFoldersTable.eventId, parent.id),
-								isNull(agendaFoldersTable.parentFolderId),
-							);
+							where = eq(agendaFoldersTable.eventId, parent.id);
 						}
 					} else {
 						if (cursor !== undefined) {
@@ -136,12 +120,10 @@ Event.implement({
 												eq(agendaFoldersTable.eventId, parent.id),
 												eq(agendaFoldersTable.id, cursor.id),
 												eq(agendaFoldersTable.name, cursor.name),
-												isNull(agendaFoldersTable.parentFolderId),
 											),
 										),
 								),
 								eq(agendaFoldersTable.eventId, parent.id),
-								isNull(agendaFoldersTable.parentFolderId),
 								or(
 									and(
 										eq(agendaFoldersTable.name, cursor.name),
@@ -151,10 +133,7 @@ Event.implement({
 								),
 							);
 						} else {
-							where = and(
-								eq(agendaFoldersTable.eventId, parent.id),
-								isNull(agendaFoldersTable.parentFolderId),
-							);
+							where = eq(agendaFoldersTable.eventId, parent.id);
 						}
 					}
 
@@ -179,13 +158,10 @@ Event.implement({
 					}
 
 					return transformToDefaultGraphQLConnection({
-						createCursor: (agendaFolder) =>
-							Buffer.from(
-								JSON.stringify({
-									id: agendaFolder.id,
-									name: agendaFolder.name,
-								}),
-							).toString("base64url"),
+						createCursor: (agendaFolder) => ({
+							id: agendaFolder.id,
+							name: agendaFolder.name,
+						}),
 						createNode: (agendaFolder) => agendaFolder,
 						parsedArgs,
 						rawNodes: agendaFolders,

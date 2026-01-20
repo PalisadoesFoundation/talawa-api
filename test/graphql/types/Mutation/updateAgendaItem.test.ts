@@ -1,11 +1,7 @@
 import { faker } from "@faker-js/faker";
 import { eq } from "drizzle-orm";
 import { afterEach, expect, suite, test } from "vitest";
-import {
-	agendaFoldersTable,
-	agendaItemsTable,
-	usersTable,
-} from "~/src/drizzle/schema";
+import { agendaItemsTable, usersTable } from "~/src/drizzle/schema";
 import type {
 	TalawaGraphQLFormattedError,
 	UnauthenticatedExtensions,
@@ -184,7 +180,9 @@ async function createTestAgendaItem(): Promise<TestAgendaItem> {
 				input: {
 					name: `Folder ${faker.string.uuid()}`,
 					eventId: eventId,
-					isAgendaItemFolder: true,
+					description: "desc",
+					sequence: 1,
+					organizationId: orgId,
 				},
 			},
 		},
@@ -1021,61 +1019,309 @@ suite("Mutation updateAgendaItem", () => {
 				]),
 			);
 		});
+	});
 
-		test("Returns an error when the agenda folder cannot be a folder for agenda items", async () => {
-			// create regular user
-			const regularUser = await createRegularUserUsingAdmin();
-			// create an agendaItem and use the folder of the agenda item for the event
+	suite("Attachments", () => {
+		const testCleanupFunctions: Array<() => Promise<void>> = [];
+
+		afterEach(async () => {
+			for (const cleanup of testCleanupFunctions.reverse()) {
+				try {
+					await cleanup();
+				} catch (error) {
+					console.error("Cleanup failed:", error);
+				}
+			}
+			testCleanupFunctions.length = 0;
+		});
+
+		test("Successfully updates agenda item with new attachments", async () => {
+			const { cachedAdminToken: adminAuthToken } =
+				await getAdminAuthTokenAndId();
 			const agendaItem = await createTestAgendaItem();
 			testCleanupFunctions.push(agendaItem.cleanup);
 
-			// update agenda folder's isAgendaItemFolder to false
-			await server.drizzleClient
-				.update(agendaFoldersTable)
-				.set({
-					isAgendaItemFolder: false,
-				})
-				.where(eq(agendaFoldersTable.id, agendaItem.folderId))
-				.execute();
-
-			// get the user's auth token
-			const { authToken } = regularUser;
-			// try to update the agenda item
-			const updateAgendaItemResult = await mercuriusClient.mutate(
+			const updateResult = await mercuriusClient.mutate(
 				Mutation_updateAgendaItem,
 				{
-					headers: {
-						authorization: `bearer ${authToken}`,
-					},
+					headers: { authorization: `bearer ${adminAuthToken}` },
 					variables: {
 						input: {
 							id: agendaItem.agendaItemId,
-							name: "Updated agenda item name",
-							folderId: agendaItem.folderId,
+							name: "Updated With Attachments",
+							attachments: [
+								{
+									objectName: "update-object-1",
+									fileHash:
+										"c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4",
+									mimeType: "IMAGE_PNG",
+									name: "update-image.png",
+								},
+							],
 						},
 					},
 				},
 			);
 
-			expect(updateAgendaItemResult.errors).toBeDefined();
-			expect(updateAgendaItemResult.errors).toEqual(
-				expect.arrayContaining<TalawaGraphQLFormattedError>([
-					expect.objectContaining<TalawaGraphQLFormattedError>({
-						extensions: expect.objectContaining({
-							code: "forbidden_action_on_arguments_associated_resources",
-							issues: expect.arrayContaining([
-								expect.objectContaining({
-									argumentPath: expect.arrayContaining(["input", "folderId"]),
-									message: expect.stringContaining(
-										"This agenda folder cannot be a folder to agenda items.",
-									),
-								}),
-							]),
-						}),
-						message: expect.any(String),
-					}),
-				]),
+			expect(updateResult.errors).toBeUndefined();
+			assertToBeNonNullish(updateResult.data?.updateAgendaItem);
+			expect(updateResult.data.updateAgendaItem.name).toEqual(
+				"Updated With Attachments",
 			);
+
+			// Verify attachment stored with complete metadata
+			const attachments =
+				await server.drizzleClient.query.agendaItemAttachmentsTable.findMany({
+					where: (fields, { eq }) =>
+						eq(fields.agendaItemId, agendaItem.agendaItemId),
+				});
+			expect(attachments).toHaveLength(1);
+			expect(attachments[0]?.objectName).toEqual("update-object-1");
+			expect(attachments[0]?.fileHash).toEqual(
+				"c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4",
+			);
+			expect(attachments[0]?.mimeType).toEqual("image/png");
+			expect(attachments[0]?.name).toEqual("update-image.png");
+		});
+
+		test("Successfully replaces existing attachments", async () => {
+			const { cachedAdminToken: adminAuthToken } =
+				await getAdminAuthTokenAndId();
+			const agendaItem = await createTestAgendaItem();
+			testCleanupFunctions.push(agendaItem.cleanup);
+
+			// First update - add initial attachment
+			const firstUpdateResult = await mercuriusClient.mutate(
+				Mutation_updateAgendaItem,
+				{
+					headers: { authorization: `bearer ${adminAuthToken}` },
+					variables: {
+						input: {
+							id: agendaItem.agendaItemId,
+							name: "First Update",
+							attachments: [
+								{
+									objectName: "initial-object",
+									fileHash:
+										"d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5",
+									mimeType: "IMAGE_PNG",
+									name: "initial.png",
+								},
+							],
+						},
+					},
+				},
+			);
+
+			// Assert first update succeeded before proceeding
+			expect(firstUpdateResult.errors).toBeUndefined();
+
+			// Second update - replace with new attachment
+			const updateResult = await mercuriusClient.mutate(
+				Mutation_updateAgendaItem,
+				{
+					headers: { authorization: `bearer ${adminAuthToken}` },
+					variables: {
+						input: {
+							id: agendaItem.agendaItemId,
+							name: "Second Update",
+							attachments: [
+								{
+									objectName: "replaced-object",
+									fileHash:
+										"e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6",
+									mimeType: "IMAGE_JPEG",
+									name: "replaced.jpg",
+								},
+							],
+						},
+					},
+				},
+			);
+
+			expect(updateResult.errors).toBeUndefined();
+
+			// Verify only new attachment exists
+			const attachments =
+				await server.drizzleClient.query.agendaItemAttachmentsTable.findMany({
+					where: (fields, { eq }) =>
+						eq(fields.agendaItemId, agendaItem.agendaItemId),
+				});
+			expect(attachments).toHaveLength(1);
+			expect(attachments[0]?.objectName).toEqual("replaced-object");
+		});
+
+		test("Successfully removes all attachments with empty array", async () => {
+			const { cachedAdminToken: adminAuthToken } =
+				await getAdminAuthTokenAndId();
+			const agendaItem = await createTestAgendaItem();
+			testCleanupFunctions.push(agendaItem.cleanup);
+
+			// First add an attachment
+			await mercuriusClient.mutate(Mutation_updateAgendaItem, {
+				headers: { authorization: `bearer ${adminAuthToken}` },
+				variables: {
+					input: {
+						id: agendaItem.agendaItemId,
+						name: "Has Attachment",
+						attachments: [
+							{
+								objectName: "to-be-removed",
+								fileHash:
+									"f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1",
+								mimeType: "IMAGE_PNG",
+								name: "remove.png",
+							},
+						],
+					},
+				},
+			});
+
+			// Then remove all attachments
+			const removeResult = await mercuriusClient.mutate(
+				Mutation_updateAgendaItem,
+				{
+					headers: { authorization: `bearer ${adminAuthToken}` },
+					variables: {
+						input: {
+							id: agendaItem.agendaItemId,
+							name: "No Attachments",
+							attachments: [],
+						},
+					},
+				},
+			);
+
+			expect(removeResult.errors).toBeUndefined();
+
+			// Verify no attachments remain
+			const attachments =
+				await server.drizzleClient.query.agendaItemAttachmentsTable.findMany({
+					where: (fields, { eq }) =>
+						eq(fields.agendaItemId, agendaItem.agendaItemId),
+				});
+			expect(attachments).toHaveLength(0);
+		});
+
+		test("Preserves existing attachments when attachments field is omitted", async () => {
+			const { cachedAdminToken: adminAuthToken } =
+				await getAdminAuthTokenAndId();
+			const agendaItem = await createTestAgendaItem();
+			testCleanupFunctions.push(agendaItem.cleanup);
+
+			// First add an attachment
+			await mercuriusClient.mutate(Mutation_updateAgendaItem, {
+				headers: { authorization: `bearer ${adminAuthToken}` },
+				variables: {
+					input: {
+						id: agendaItem.agendaItemId,
+						name: "Has Attachment",
+						attachments: [
+							{
+								objectName: "preserve-test",
+								fileHash:
+									"a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2",
+								mimeType: "IMAGE_PNG",
+								name: "preserve.png",
+							},
+						],
+					},
+				},
+			});
+
+			// Update without attachments field - should preserve existing
+			const updateResult = await mercuriusClient.mutate(
+				Mutation_updateAgendaItem,
+				{
+					headers: { authorization: `bearer ${adminAuthToken}` },
+					variables: {
+						input: {
+							id: agendaItem.agendaItemId,
+							name: "Updated Name Only",
+						},
+					},
+				},
+			);
+
+			expect(updateResult.errors).toBeUndefined();
+
+			// Verify attachment is preserved
+			const attachmentsAfterUpdate =
+				await server.drizzleClient.query.agendaItemAttachmentsTable.findMany({
+					where: (fields, { eq }) =>
+						eq(fields.agendaItemId, agendaItem.agendaItemId),
+				});
+			expect(attachmentsAfterUpdate).toHaveLength(1);
+			expect(attachmentsAfterUpdate[0]?.objectName).toEqual("preserve-test");
+		});
+
+		test("Rejects invalid fileHash format on update", async () => {
+			const { cachedAdminToken: adminAuthToken } =
+				await getAdminAuthTokenAndId();
+			const agendaItem = await createTestAgendaItem();
+			testCleanupFunctions.push(agendaItem.cleanup);
+
+			const result = await mercuriusClient.mutate(Mutation_updateAgendaItem, {
+				headers: { authorization: `bearer ${adminAuthToken}` },
+				variables: {
+					input: {
+						id: agendaItem.agendaItemId,
+						name: "Invalid Hash Update",
+						attachments: [
+							{
+								objectName: "test",
+								fileHash: "INVALID-NOT-64-CHARS",
+								mimeType: "IMAGE_PNG",
+								name: "test.png",
+							},
+						],
+					},
+				},
+			});
+
+			expect(result.errors).toBeDefined();
+			expect(result.errors?.[0]?.extensions?.code).toBe("invalid_arguments");
+			// Assert the error is for the correct field
+			const issues = result.errors?.[0]?.extensions?.issues as
+				| Array<{ argumentPath: unknown[] }>
+				| undefined;
+			expect(issues).toBeDefined();
+			expect(issues?.[0]?.argumentPath).toContain("attachments");
+		});
+
+		test("Rejects more than 10 attachments on update", async () => {
+			const { cachedAdminToken: adminAuthToken } =
+				await getAdminAuthTokenAndId();
+			const agendaItem = await createTestAgendaItem();
+			testCleanupFunctions.push(agendaItem.cleanup);
+
+			const attachments = Array.from({ length: 11 }, (_, i) => ({
+				objectName: `test-obj-${i}`,
+				fileHash:
+					"a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2",
+				mimeType: "IMAGE_PNG" as const,
+				name: `test-${i}.png`,
+			}));
+
+			const result = await mercuriusClient.mutate(Mutation_updateAgendaItem, {
+				headers: { authorization: `bearer ${adminAuthToken}` },
+				variables: {
+					input: {
+						id: agendaItem.agendaItemId,
+						name: "Too Many Attachments Update",
+						attachments,
+					},
+				},
+			});
+
+			expect(result.errors).toBeDefined();
+			expect(result.errors?.[0]?.extensions?.code).toBe("invalid_arguments");
+			// Assert the error is for the correct field
+			const issues = result.errors?.[0]?.extensions?.issues as
+				| Array<{ argumentPath: unknown[] }>
+				| undefined;
+			expect(issues).toBeDefined();
+			expect(issues?.[0]?.argumentPath).toContain("attachments");
 		});
 	});
 });

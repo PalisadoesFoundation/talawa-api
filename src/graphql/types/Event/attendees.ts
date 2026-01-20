@@ -28,12 +28,20 @@ export const eventAttendeesResolver = async (
 					// For standalone events
 					and(
 						eq(eventAttendeesTable.eventId, parent.id),
-						eq(eventAttendeesTable.isCheckedIn, true),
+						or(
+							eq(eventAttendeesTable.isCheckedIn, true),
+							eq(eventAttendeesTable.isRegistered, true),
+							eq(eventAttendeesTable.isInvited, true),
+						),
 					),
 					// For recurring event instances
 					and(
 						eq(eventAttendeesTable.recurringEventInstanceId, parent.id),
-						eq(eventAttendeesTable.isCheckedIn, true),
+						or(
+							eq(eventAttendeesTable.isCheckedIn, true),
+							eq(eventAttendeesTable.isRegistered, true),
+							eq(eventAttendeesTable.isInvited, true),
+						),
 					),
 				),
 				with: {

@@ -1,0 +1,95 @@
+---
+id: complexity-range-input
+title: ComplexityRangeInput
+---
+
+export const Bullet = () => (
+  <>
+    <span
+      style={{
+        fontWeight: "normal",
+        fontSize: ".5em",
+        color: "var(--ifm-color-secondary-darkest)",
+      }}
+    >
+      &nbsp;●&nbsp;
+    </span>
+  </>
+);
+
+export const SpecifiedBy = (props) => (
+  <>
+    Specification
+    <a
+      className="link"
+      style={{ fontSize: "1.5em", paddingLeft: "4px" }}
+      target="_blank"
+      href={props.url}
+      title={"Specified by " + props.url}
+    >
+      ⎘
+    </a>
+  </>
+);
+
+export const Badge = (props) => (
+  <>
+    <span className={props.class}>{props.text}</span>
+  </>
+);
+
+import { useState } from "react";
+
+export const Details = ({
+  dataOpen,
+  dataClose,
+  children,
+  startOpen = false,
+}) => {
+  const [open, setOpen] = useState(startOpen);
+  return (
+    <details
+      {...(open ? { open: true } : {})}
+      className="details"
+      style={{
+        border: "none",
+        boxShadow: "none",
+        background: "var(--ifm-background-color)",
+      }}
+    >
+      <summary
+        onClick={(e) => {
+          e.preventDefault();
+          setOpen((open) => !open);
+        }}
+        style={{ listStyle: "none" }}
+      >
+        {open ? dataOpen : dataClose}
+      </summary>
+      {open && children}
+    </details>
+  );
+};
+
+Input type for defining a complexity range filter. Both min and max must be non-negative numbers, and min must be less than or equal to max.
+
+```graphql
+input ComplexityRangeInput {
+  max: Float!
+  min: Float!
+}
+```
+
+### Fields
+
+#### [<code style={{ fontWeight: 'normal' }}>ComplexityRangeInput.<b>max</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>Float!</b></code>](/auto-schema/types/scalars/float.mdx) <Badge class="badge badge--secondary badge--non_null" text="non-null"/> <Badge class="badge badge--secondary " text="scalar"/>
+
+Maximum complexity score (inclusive). Must be non-negative and greater than or equal to min.
+
+#### [<code style={{ fontWeight: 'normal' }}>ComplexityRangeInput.<b>min</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>Float!</b></code>](/auto-schema/types/scalars/float.mdx) <Badge class="badge badge--secondary badge--non_null" text="non-null"/> <Badge class="badge badge--secondary " text="scalar"/>
+
+Minimum complexity score (inclusive). Must be non-negative and less than or equal to max.
+
+### Member Of
+
+[`MetricsFilterInput`](/auto-schema/types/inputs/metrics-filter-input.mdx) <Badge class="badge badge--secondary badge--relation" text="input"/>

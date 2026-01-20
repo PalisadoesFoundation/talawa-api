@@ -5,12 +5,12 @@ import {
 	fundCampaignPledgesTableInsertSchema,
 } from "~/src/drizzle/tables/fundCampaignPledges";
 import { FundCampaignPledge } from "~/src/graphql/types/FundCampaignPledge/FundCampaignPledge";
+import envConfig from "~/src/utilities/graphqLimits";
 import {
 	defaultGraphQLConnectionArgumentsSchema,
 	transformDefaultGraphQLConnectionArguments,
 	transformToDefaultGraphQLConnection,
-} from "~/src/utilities/defaultGraphQLConnection";
-import envConfig from "~/src/utilities/graphqLimits";
+} from "~/src/utilities/graphqlConnection";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import { FundCampaign } from "./FundCampaign";
 
@@ -146,12 +146,9 @@ FundCampaign.implement({
 					}
 
 					return transformToDefaultGraphQLConnection({
-						createCursor: (pledge) =>
-							Buffer.from(
-								JSON.stringify({
-									id: pledge.id,
-								}),
-							).toString("base64url"),
+						createCursor: (pledge) => ({
+							id: pledge.id,
+						}),
 						createNode: (pledge) => pledge,
 						parsedArgs,
 						rawNodes: fundCampaignPledges,

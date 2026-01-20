@@ -6,7 +6,7 @@ import {
 	mutationRequestPasswordResetInputSchema,
 } from "~/src/graphql/inputs/MutationRequestPasswordResetInput";
 import { PasswordResetRequestPayload } from "~/src/graphql/types/PasswordResetRequestPayload";
-import { emailService } from "~/src/services/ses/emailServiceInstance";
+import { emailService } from "~/src/services/email/emailServiceInstance";
 import {
 	formatExpiryTime,
 	getPasswordResetEmailHtml,

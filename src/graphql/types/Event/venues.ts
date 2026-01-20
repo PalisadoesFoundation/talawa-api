@@ -5,12 +5,12 @@ import {
 	venueBookingsTableInsertSchema,
 } from "~/src/drizzle/tables/venueBookings";
 import { Venue } from "~/src/graphql/types/Venue/Venue";
+import envConfig from "~/src/utilities/graphqLimits";
 import {
 	defaultGraphQLConnectionArgumentsSchema,
 	transformDefaultGraphQLConnectionArguments,
 	transformToDefaultGraphQLConnection,
-} from "~/src/utilities/defaultGraphQLConnection";
-import envConfig from "~/src/utilities/graphqLimits";
+} from "~/src/utilities/graphqlConnection";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import { Event } from "./Event";
 
@@ -179,13 +179,10 @@ Event.implement({
 					}
 
 					return transformToDefaultGraphQLConnection({
-						createCursor: (booking) =>
-							Buffer.from(
-								JSON.stringify({
-									createdAt: booking.createdAt,
-									venueId: booking.venueId,
-								}),
-							).toString("base64url"),
+						createCursor: (booking) => ({
+							createdAt: booking.createdAt,
+							venueId: booking.venueId,
+						}),
 						createNode: ({ venue: { attachmentsWhereVenue, ...venue } }) =>
 							Object.assign(venue, {
 								attachments: attachmentsWhereVenue,

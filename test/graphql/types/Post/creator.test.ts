@@ -1,29 +1,9 @@
 import { createMockGraphQLContext } from "test/_Mocks_/mockContextCreator/mockContextCreator";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { GraphQLContext } from "~/src/graphql/context";
-import "~/src/graphql/scalars";
-import "~/src/graphql/types/PostAttachment/PostAttachment";
-import "~/src/graphql/types/Post/Post";
+import { resolveCreator } from "~/src/graphql/types/Post/creator";
 import type { Post as PostType } from "~/src/graphql/types/Post/Post";
-import "~/src/graphql/types/Post/creator";
-import type {
-	GraphQLFieldResolver,
-	GraphQLObjectType,
-	GraphQLResolveInfo,
-} from "graphql";
-import { schema } from "~/src/graphql/schema";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
-
-// Get the creator resolver from the schema
-const postType = schema.getType("Post") as GraphQLObjectType;
-const creatorField = postType.getFields().creator;
-if (!creatorField?.resolve) {
-	throw new Error("Creator field or resolver not found in schema");
-}
-const resolveCreator = creatorField.resolve as GraphQLFieldResolver<
-	PostType,
-	GraphQLContext
->;
 
 describe("Post Resolver - Creator Field", () => {
 	let mockPost: PostType;
@@ -41,7 +21,7 @@ describe("Post Resolver - Creator Field", () => {
 			id: "post-123",
 			caption: "Test Caption",
 			createdAt: new Date(),
-			creatorId: "user-123",
+			creatorId: "user-456",
 			body: "Test Body",
 			title: "Test Title",
 			updaterId: "user-123",
@@ -52,77 +32,428 @@ describe("Post Resolver - Creator Field", () => {
 		} as PostType;
 	});
 
-	it("should return the creator user if they exist", async () => {
-		const mockUser = {
-			id: "user-123",
-			name: "Test User",
-			emailAddress: "test@example.com",
-		};
+	describe("Authentication", () => {
+		it("should throw unauthenticated error if user is not logged in", async () => {
+			ctx.currentClient.isAuthenticated = false;
 
-		mocks.drizzleClient.query.usersTable.findFirst.mockImplementation(
-			(options?: { where?: (...args: unknown[]) => unknown }) => {
-				const whereClause = options?.where;
-				expect(whereClause).toBeDefined();
+			await expect(resolveCreator(mockPost, {}, ctx)).rejects.toThrow(
+				new TalawaGraphQLError({ extensions: { code: "unauthenticated" } }),
+			);
+		});
 
-				if (whereClause) {
-					const mockFields = { id: "mock-field-id" };
+		it("should throw unauthenticated error if current user is not found", async () => {
+			ctx.currentClient.isAuthenticated = true;
+			mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValue(
+				undefined,
+			);
 
-					const mockEq = vi.fn((field: unknown, value: unknown) => {
-						expect(field).toBe(mockFields.id);
-						expect(value).toBe(mockPost.creatorId);
-						return true;
-					});
-
-					const mockOperators = { eq: mockEq };
-
-					const conditionResult = whereClause(mockFields, mockOperators);
-
-					expect(mockEq).toHaveBeenCalledTimes(1);
-					expect(conditionResult).toBe(true);
-				}
-
-				return Promise.resolve(mockUser);
-			},
-		);
-
-		const result = await resolveCreator(
-			mockPost,
-			{},
-			ctx,
-			{} as GraphQLResolveInfo,
-		);
-
-		expect(result).toEqual(mockUser);
-		expect(
-			mocks.drizzleClient.query.usersTable.findFirst,
-		).toHaveBeenCalledTimes(1);
+			await expect(resolveCreator(mockPost, {}, ctx)).rejects.toThrow(
+				new TalawaGraphQLError({ extensions: { code: "unauthenticated" } }),
+			);
+		});
 	});
 
-	it("should throw unexpected error if creator user does not exist", async () => {
-		mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValueOnce(
-			undefined,
-		);
-		try {
-			await resolveCreator(mockPost, {}, ctx, {} as GraphQLResolveInfo);
-			throw new Error("Expected resolver to throw");
-		} catch (err) {
-			expect(err).toBeInstanceOf(TalawaGraphQLError);
-			expect(err).toMatchObject({ extensions: { code: "unexpected" } });
-		}
+	describe("Authorization", () => {
+		it("should throw unauthorized_action error if user has no organization membership", async () => {
+			mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValue({
+				id: "user-123",
+				role: "member",
+				organizationMembershipsWhereMember: [],
+			});
+
+			await expect(resolveCreator(mockPost, {}, ctx)).rejects.toThrow(
+				new TalawaGraphQLError({
+					extensions: { code: "unauthorized_action" },
+				}),
+			);
+		});
+		it("should allow organization member access", async () => {
+			const currentUser = {
+				id: "user-123",
+				role: "member",
+				organizationMembershipsWhereMember: [{ role: "member" }],
+			};
+
+			const creatorUser = {
+				id: "user-456",
+				role: "member",
+			};
+
+			mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValueOnce(
+				currentUser,
+			);
+			ctx.dataloaders.user.load = vi.fn().mockResolvedValue(creatorUser);
+
+			const result = await resolveCreator(mockPost, {}, ctx);
+			expect(result).toEqual(creatorUser);
+			expect(ctx.dataloaders.user.load).toHaveBeenCalledWith("user-456");
+		});
+		it("should throw unauthorized_action error when organization membership is undefined", async () => {
+			mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValue({
+				id: "user-123",
+				role: "member",
+				organizationMembershipsWhereMember: undefined,
+			});
+
+			await expect(resolveCreator(mockPost, {}, ctx)).rejects.toThrow(
+				new TalawaGraphQLError({
+					extensions: { code: "unauthorized_action" },
+				}),
+			);
+		});
+
+		it("should allow global administrator access", async () => {
+			const currentUser = {
+				id: "user-123",
+				role: "administrator",
+				organizationMembershipsWhereMember: [{ role: "member" }],
+			};
+
+			const creatorUser = {
+				id: "user-456",
+				role: "member",
+			};
+
+			mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValueOnce(
+				currentUser,
+			);
+			ctx.dataloaders.user.load = vi.fn().mockResolvedValue(creatorUser);
+
+			const result = await resolveCreator(mockPost, {}, ctx);
+			expect(result).toEqual(creatorUser);
+		});
+
+		it("should allow organization administrator access", async () => {
+			const currentUser = {
+				id: "user-123",
+				role: "member",
+				organizationMembershipsWhereMember: [{ role: "administrator" }],
+			};
+
+			const creatorUser = {
+				id: "user-456",
+				role: "member",
+			};
+
+			mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValueOnce(
+				currentUser,
+			);
+			ctx.dataloaders.user.load = vi.fn().mockResolvedValue(creatorUser);
+
+			const result = await resolveCreator(mockPost, {}, ctx);
+			expect(result).toEqual(creatorUser);
+		});
 	});
-	it("should return null when creatorId is null", async () => {
-		mockPost.creatorId = null as unknown as string;
 
-		const result = await resolveCreator(
-			mockPost,
-			{},
-			ctx,
-			{} as GraphQLResolveInfo,
-		);
+	describe("Creator Logic", () => {
+		beforeEach(() => {
+			mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValue({
+				id: "user-123",
+				role: "administrator",
+				organizationMembershipsWhereMember: [{ role: "administrator" }],
+			});
+		});
 
-		expect(result).toBeNull();
-		expect(
-			mocks.drizzleClient.query.usersTable.findFirst,
-		).not.toHaveBeenCalled();
+		it("should return null if creatorId is null", async () => {
+			mockPost.creatorId = null;
+
+			const result = await resolveCreator(mockPost, {}, ctx);
+			expect(result).toBeNull();
+		});
+
+		it("should return current user if creatorId matches current user", async () => {
+			const currentUser = {
+				id: "user-123",
+				role: "administrator",
+				organizationMembershipsWhereMember: [{ role: "administrator" }],
+			};
+
+			mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValue(
+				currentUser,
+			);
+			mockPost.creatorId = "user-123";
+
+			const result = await resolveCreator(mockPost, {}, ctx);
+			expect(result).toEqual(currentUser);
+		});
+
+		it("should return creator user when creatorId is different from current user", async () => {
+			const currentUser = {
+				id: "user-123",
+				role: "administrator",
+				organizationMembershipsWhereMember: [{ role: "administrator" }],
+			};
+
+			const creatorUser = {
+				id: "user-456",
+				role: "member",
+				name: "Creator User",
+			};
+
+			mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValueOnce(
+				currentUser,
+			);
+			ctx.dataloaders.user.load = vi.fn().mockResolvedValue(creatorUser);
+
+			const result = await resolveCreator(mockPost, {}, ctx);
+			expect(result).toEqual(creatorUser);
+		});
+
+		it("should throw unexpected error if creator user does not exist", async () => {
+			const currentUser = {
+				id: "user-123",
+				role: "administrator",
+				organizationMembershipsWhereMember: [{ role: "administrator" }],
+			};
+
+			mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValueOnce(
+				currentUser,
+			);
+			ctx.dataloaders.user.load = vi.fn().mockResolvedValue(null);
+
+			mockPost.creatorId = "user-456";
+
+			await expect(resolveCreator(mockPost, {}, ctx)).rejects.toThrow(
+				new TalawaGraphQLError({
+					extensions: { code: "unexpected" },
+				}),
+			);
+
+			expect(ctx.log.error).toHaveBeenCalledWith(
+				"Postgres select operation returned an empty array for a post's creator id that isn't null.",
+			);
+		});
+	});
+
+	describe("Database Query Verification", () => {
+		it("should query current user with correct organization ID filter", async () => {
+			const currentUser = {
+				id: "user-123",
+				role: "administrator",
+				organizationMembershipsWhereMember: [{ role: "administrator" }],
+			};
+
+			mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValue(
+				currentUser,
+			);
+			mockPost.creatorId = "user-123";
+
+			await resolveCreator(mockPost, {}, ctx);
+
+			expect(
+				mocks.drizzleClient.query.usersTable.findFirst,
+			).toHaveBeenCalledWith({
+				with: {
+					organizationMembershipsWhereMember: {
+						columns: {
+							role: true,
+						},
+						where: expect.any(Function),
+					},
+				},
+				where: expect.any(Function),
+			});
+		});
+
+		it("should query creator user with correct parameters when different from current user", async () => {
+			const currentUser = {
+				id: "user-123",
+				role: "administrator",
+				organizationMembershipsWhereMember: [{ role: "administrator" }],
+			};
+
+			const creatorUser = {
+				id: "user-456",
+				role: "member",
+			};
+
+			mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValueOnce(
+				currentUser,
+			);
+			ctx.dataloaders.user.load = vi.fn().mockResolvedValue(creatorUser);
+
+			await resolveCreator(mockPost, {}, ctx);
+
+			expect(
+				mocks.drizzleClient.query.usersTable.findFirst,
+			).toHaveBeenCalledTimes(1);
+
+			expect(ctx.dataloaders.user.load).toHaveBeenCalledWith("user-456");
+		});
+	});
+
+	describe("Edge Cases", () => {
+		it("should handle mixed authorization scenarios", async () => {
+			const orgAdminUser = {
+				id: "user-789",
+				role: "member",
+				organizationMembershipsWhereMember: [{ role: "administrator" }],
+			};
+
+			const creatorUser = {
+				id: "user-456",
+				role: "member",
+			};
+
+			const { context: newCtx, mocks: newMocks } = createMockGraphQLContext(
+				true,
+				"user-789",
+			);
+
+			newMocks.drizzleClient.query.usersTable.findFirst.mockResolvedValueOnce(
+				orgAdminUser,
+			);
+			newCtx.dataloaders.user.load = vi.fn().mockResolvedValue(creatorUser);
+
+			const result = await resolveCreator(mockPost, {}, newCtx);
+			expect(result).toEqual(creatorUser);
+		});
+
+		it("should handle creatorId as empty string", async () => {
+			const currentUser = {
+				id: "user-123",
+				role: "administrator",
+				organizationMembershipsWhereMember: [{ role: "administrator" }],
+			};
+
+			mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValueOnce(
+				currentUser,
+			);
+			ctx.dataloaders.user.load = vi.fn().mockResolvedValue(null);
+
+			mockPost.creatorId = "";
+
+			await expect(resolveCreator(mockPost, {}, ctx)).rejects.toThrow(
+				new TalawaGraphQLError({
+					extensions: { code: "unexpected" },
+				}),
+			);
+		});
+
+		it("should handle database errors gracefully", async () => {
+			const dbError = new Error("Database connection failed");
+			mocks.drizzleClient.query.usersTable.findFirst.mockRejectedValue(dbError);
+
+			await expect(resolveCreator(mockPost, {}, ctx)).rejects.toThrow(dbError);
+		});
+
+		it("should handle null organization memberships with global admin", async () => {
+			const globalAdminUser = {
+				id: "user-123",
+				role: "administrator",
+				organizationMembershipsWhereMember: null,
+			};
+
+			const creatorUser = {
+				id: "user-456",
+				role: "member",
+			};
+
+			mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValueOnce(
+				globalAdminUser,
+			);
+			ctx.dataloaders.user.load = vi.fn().mockResolvedValue(creatorUser);
+
+			const result = await resolveCreator(mockPost, {}, ctx);
+			expect(result).toEqual(creatorUser);
+		});
+	});
+
+	describe("Logging", () => {
+		it("should log error when creator user is not found", async () => {
+			const currentUser = {
+				id: "user-123",
+				role: "administrator",
+				organizationMembershipsWhereMember: [{ role: "administrator" }],
+			};
+
+			mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValue(
+				currentUser,
+			);
+			ctx.dataloaders.user.load = vi.fn().mockResolvedValue(null);
+
+			mockPost.creatorId = "non-existent-user";
+
+			const promise = resolveCreator(mockPost, {}, ctx);
+
+			await expect(promise).rejects.toMatchObject({
+				extensions: { code: "unexpected" },
+			});
+			expect(ctx.log.error).toHaveBeenCalledWith(
+				"Postgres select operation returned an empty array for a post's creator id that isn't null.",
+			);
+		});
+
+		it("should not log any errors for successful operations", async () => {
+			const currentUser = {
+				id: "user-123",
+				role: "administrator",
+				organizationMembershipsWhereMember: [{ role: "administrator" }],
+			};
+
+			const creatorUser = {
+				id: "user-456",
+				role: "member",
+			};
+
+			mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValueOnce(
+				currentUser,
+			);
+			ctx.dataloaders.user.load = vi.fn().mockResolvedValue(creatorUser);
+
+			await resolveCreator(mockPost, {}, ctx);
+
+			expect(ctx.log.error).not.toHaveBeenCalled();
+		});
+	});
+
+	describe("Return Values", () => {
+		it("should return user object with all expected properties", async () => {
+			const currentUser = {
+				id: "user-123",
+				role: "administrator",
+				organizationMembershipsWhereMember: [{ role: "administrator" }],
+			};
+
+			const creatorUser = {
+				id: "user-456",
+				role: "member",
+				name: "Jane Doe",
+				avatarMimeType: "image/png",
+				description: "Creator user",
+				createdAt: new Date("2024-01-01"),
+			};
+
+			mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValueOnce(
+				currentUser,
+			);
+			ctx.dataloaders.user.load = vi.fn().mockResolvedValue(creatorUser);
+
+			const result = await resolveCreator(mockPost, {}, ctx);
+
+			expect(result).toEqual(creatorUser);
+			expect(result).toHaveProperty("id", "user-456");
+			expect(result).toHaveProperty("name", "Jane Doe");
+			expect(result).toHaveProperty("role", "member");
+		});
+
+		it("should return exact same object reference for current user", async () => {
+			const currentUser = {
+				id: "user-123",
+				role: "administrator",
+				organizationMembershipsWhereMember: [{ role: "administrator" }],
+				name: "Current User",
+			};
+
+			mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValue(
+				currentUser,
+			);
+			mockPost.creatorId = "user-123";
+
+			const result = await resolveCreator(mockPost, {}, ctx);
+
+			expect(result).toBe(currentUser);
+			expect(result).toHaveProperty("name", "Current User");
+		});
 	});
 });

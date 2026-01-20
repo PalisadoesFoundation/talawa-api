@@ -24,9 +24,6 @@ export const resolveUpdater = async (
 			where: (fields, operators) => operators.eq(fields.id, currentUserId),
 		}),
 		ctx.drizzleClient.query.agendaFoldersTable.findFirst({
-			columns: {
-				isAgendaItemFolder: true,
-			},
 			where: (fields, operators) => operators.eq(fields.id, parent.folderId),
 			with: {
 				event: {

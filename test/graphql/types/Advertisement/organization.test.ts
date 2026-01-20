@@ -271,7 +271,7 @@ describe("Advertisement Resolver - Organization Field", () => {
 
 	describe("Edge Cases", () => {
 		it("should handle organizationId with UUID format", async () => {
-			const uuidOrgId = "01234567-89ab-cdef-0123-456789abcdef";
+			const uuidOrgId = "01234567-89ab-4def-a123-456789abcdef";
 			const uuidOrganization = {
 				id: uuidOrgId,
 				name: "UUID Organization",
