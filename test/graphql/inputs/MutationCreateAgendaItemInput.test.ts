@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { postAttachmentMimeTypeEnum } from "~/src/drizzle/enums/postAttachmentMimeType";
 import {
 	MutationCreateAgendaItemInput,
 	mutationCreateAgendaItemInputSchema,
@@ -100,14 +101,29 @@ describe("MutationCreateAgendaItemInput Schema", () => {
 				...validBaseInput,
 				attachments: [
 					{
-						name: "file.jpeg",
-						mimeType: "IMAGE_JPEG",
+						name: "file",
+						mimeType: postAttachmentMimeTypeEnum.options[0],
 						objectName: "object-name",
 						fileHash: "hash",
 					},
 				],
 			});
 			expect(result.success).toBe(true);
+		});
+
+		it("should reject invalid mimeType enum values", () => {
+			const result = mutationCreateAgendaItemInputSchema.safeParse({
+				...validBaseInput,
+				attachments: [
+					{
+						name: "file.pdf",
+						mimeType: "INVALID_MIME_TYPE",
+						objectName: "object-name",
+						fileHash: "hash",
+					},
+				],
+			});
+			expect(result.success).toBe(false);
 		});
 
 		it("should reject attachments with empty required fields", () => {

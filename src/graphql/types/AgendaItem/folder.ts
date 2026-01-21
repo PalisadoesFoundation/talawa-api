@@ -71,7 +71,7 @@ export const resolveFolder = async (
 	}
 
 	const currentUserOrganizationMembership =
-		existingAgendaFolder.event.organization.membershipsWhereOrganization[0];
+		existingEvent.organization.membershipsWhereOrganization[0];
 
 	if (
 		currentUser.role !== "administrator" &&
