@@ -115,6 +115,8 @@ describe("createEvent mutation performance tracking", () => {
 	});
 
 	it("should track metrics for recurring event creation", async () => {
+		const initialSnapshots = server.getMetricsSnapshots?.(1) ?? [];
+
 		const result = await mercuriusClient.mutate(Mutation_createEvent, {
 			headers: { authorization: `bearer ${authToken}` },
 			variables: {
@@ -140,6 +142,7 @@ describe("createEvent mutation performance tracking", () => {
 
 		// Verify performance metrics
 		const snapshots = server.getMetricsSnapshots?.(1) ?? [];
+		expect(snapshots.length).toBeGreaterThan(initialSnapshots.length);
 		const latestSnapshot = snapshots[0];
 		assertToBeNonNullish(latestSnapshot);
 
