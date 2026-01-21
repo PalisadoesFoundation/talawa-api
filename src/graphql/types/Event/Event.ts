@@ -234,13 +234,13 @@ Event.implement({
 				);
 			},
 		}),
-		baseRecurringEventId: t.string({
+		baseRecurringEventId: t.id({
 			description:
 				"The ID of the base recurring event template if this is a generated instance.",
 			nullable: true,
 			resolve: (event) =>
 				"baseRecurringEventId" in event && event.baseRecurringEventId
-					? escapeHTML(event.baseRecurringEventId)
+					? event.baseRecurringEventId
 					: null,
 		}),
 	}),

@@ -73,15 +73,12 @@ suite("Query field eventsByAttendee", () => {
 				},
 			});
 			expect(result.data?.eventsByAttendee).toBeUndefined();
-			expect(result.errors).toEqual(
-				expect.arrayContaining([
-					expect.objectContaining({
-						extensions: expect.objectContaining({
-							code: "invalid_arguments",
-						}),
-					}),
-				]),
-			);
+			expect(result.errors).toBeDefined();
+			expect(
+				result.errors?.some(
+					(err) => err.extensions?.code === "invalid_arguments",
+				),
+			).toBe(true);
 		});
 	});
 

@@ -217,35 +217,12 @@ export async function getRecurringEventInstancesByBaseId(
 	logger: ServiceDependencies["logger"],
 ): Promise<ResolvedRecurringEventInstance[]> {
 	try {
-		// Step 1: Get all recurring event instances for this base event
-		const instances =
-			await drizzleClient.query.recurringEventInstancesTable.findMany({
-				where: eq(
-					recurringEventInstancesTable.baseRecurringEventId,
-					baseRecurringEventId,
-				),
-				orderBy: asc(recurringEventInstancesTable.actualStartTime),
-			});
-
-		if (instances.length === 0) {
-			return [];
-		}
-
-		// Step 2: Get base templates and exceptions for the found instances
-		const [templatesMap, exceptionsMap] = await Promise.all([
-			fetchBaseTemplates(instances, drizzleClient),
-			fetchExceptions(instances, drizzleClient),
-		]);
-
-		// Step 3: Resolve instances with inheritance + exceptions
-		const resolvedInstances = resolveMultipleInstances(
-			instances,
-			templatesMap,
-			exceptionsMap,
+		// Delegate to the batch helper to avoid code duplication
+		return await getRecurringEventInstancesByBaseIds(
+			[baseRecurringEventId],
+			drizzleClient,
 			logger,
 		);
-
-		return resolvedInstances;
 	} catch (error) {
 		logger.error(
 			error,
@@ -274,7 +251,7 @@ export async function getRecurringEventInstancesByBaseIds(
 		excludeInstanceIds?: string[];
 	} = {},
 ): Promise<ResolvedRecurringEventInstance[]> {
-	const { limit, includeCancelled = true, excludeInstanceIds } = options;
+	const { limit, includeCancelled = false, excludeInstanceIds } = options;
 
 	if (baseRecurringEventIds.length === 0) {
 		return [];
@@ -302,7 +279,10 @@ export async function getRecurringEventInstancesByBaseIds(
 		const instances =
 			await drizzleClient.query.recurringEventInstancesTable.findMany({
 				where: and(...whereConditions),
-				orderBy: asc(recurringEventInstancesTable.actualStartTime),
+				orderBy: [
+					asc(recurringEventInstancesTable.actualStartTime),
+					asc(recurringEventInstancesTable.id),
+				],
 				limit,
 			});
 

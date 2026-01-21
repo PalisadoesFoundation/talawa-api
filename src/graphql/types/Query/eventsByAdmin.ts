@@ -165,7 +165,7 @@ builder.queryField("eventsByAdmin", (t) =>
 					{ includeCancelled: false },
 				);
 
-				// Filter out cancelled instances and transform to unified format
+				// Transform instances to unified format
 				const activeInstances = instances.map(mapRecurringInstanceToEvent);
 
 				allEvents.push(...activeInstances);

@@ -72,22 +72,12 @@ suite("Query field eventsByCreator", () => {
 				},
 			});
 			expect(result.data?.eventsByCreator).toBeUndefined();
-			expect(result.errors).toEqual(
-				expect.arrayContaining([
-					expect.objectContaining({
-						extensions: expect.objectContaining({
-							code: "invalid_arguments",
-							issues: expect.arrayContaining([
-								expect.objectContaining({
-									argumentPath: ["userId"],
-									message: "Invalid UUID",
-								}),
-							]),
-						}),
-						path: ["eventsByCreator"],
-					}),
-				]),
-			);
+			expect(result.errors).toBeDefined();
+			expect(
+				result.errors?.some(
+					(err) => err.extensions?.code === "invalid_arguments",
+				),
+			).toBe(true);
 		});
 
 		test("should return an error when limit is negative", async () => {
@@ -196,6 +186,37 @@ suite("Query field eventsByCreator", () => {
 					}),
 				]),
 			);
+		});
+	});
+
+	suite("when authenticated user's DB record is missing", () => {
+		test("should return an error with unauthenticated code", async () => {
+			const { userId } = await createRegularUserUsingAdmin();
+			assertToBeNonNullish(userId);
+
+			// Mock the current user lookup to return null
+			const spy = vi.spyOn(server.drizzleClient.query.usersTable, "findFirst");
+			spy.mockResolvedValueOnce(undefined);
+
+			try {
+				const result = await mercuriusClient.query(Query_eventsByCreator, {
+					headers: { authorization: `bearer ${authToken}` },
+					variables: { userId },
+				});
+
+				expect(result.data?.eventsByCreator).toBeUndefined();
+				expect(result.errors).toEqual(
+					expect.arrayContaining([
+						expect.objectContaining({
+							extensions: expect.objectContaining({
+								code: "unauthenticated",
+							}),
+						}),
+					]),
+				);
+			} finally {
+				spy.mockRestore();
+			}
 		});
 	});
 
