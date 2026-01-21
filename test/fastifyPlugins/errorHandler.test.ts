@@ -829,54 +829,123 @@ describe("errorHandlerPlugin", () => {
 
 	describe("Edge Cases and Error Types", () => {
 		it("handles null error", async () => {
-			const res = await app.inject({ method: "GET", url: "/null-error" });
-			expect(res.statusCode).toBe(500);
-			const body = res.json();
-			expect(body.error.code).toBe(ErrorCode.INTERNAL_SERVER_ERROR);
-			expect(body.error.details).toBe("null");
+			const originalEnv = process.env.NODE_ENV;
+			vi.stubEnv("NODE_ENV", "development");
+
+			try {
+				const res = await app.inject({ method: "GET", url: "/null-error" });
+				expect(res.statusCode).toBe(500);
+				const body = res.json();
+				expect(body.error.code).toBe(ErrorCode.INTERNAL_SERVER_ERROR);
+				expect(body.error.details).toBe("null");
+			} finally {
+				if (originalEnv !== undefined) {
+					vi.stubEnv("NODE_ENV", originalEnv);
+				} else {
+					vi.unstubAllEnvs();
+				}
+			}
 		});
 
 		it("handles undefined error", async () => {
-			const res = await app.inject({ method: "GET", url: "/undefined-error" });
-			expect(res.statusCode).toBe(500);
-			const body = res.json();
-			expect(body.error.code).toBe(ErrorCode.INTERNAL_SERVER_ERROR);
-			expect(body.error.details).toBe("undefined");
+			const originalEnv = process.env.NODE_ENV;
+			vi.stubEnv("NODE_ENV", "development");
+
+			try {
+				const res = await app.inject({
+					method: "GET",
+					url: "/undefined-error",
+				});
+				expect(res.statusCode).toBe(500);
+				const body = res.json();
+				expect(body.error.code).toBe(ErrorCode.INTERNAL_SERVER_ERROR);
+				expect(body.error.details).toBe("undefined");
+			} finally {
+				if (originalEnv !== undefined) {
+					vi.stubEnv("NODE_ENV", originalEnv);
+				} else {
+					vi.unstubAllEnvs();
+				}
+			}
 		});
 
 		it("handles string error", async () => {
-			const res = await app.inject({ method: "GET", url: "/string-error" });
-			expect(res.statusCode).toBe(500);
-			const body = res.json();
-			expect(body.error.code).toBe(ErrorCode.INTERNAL_SERVER_ERROR);
-			expect(body.error.details).toBe("String error message");
+			const originalEnv = process.env.NODE_ENV;
+			vi.stubEnv("NODE_ENV", "development");
+
+			try {
+				const res = await app.inject({ method: "GET", url: "/string-error" });
+				expect(res.statusCode).toBe(500);
+				const body = res.json();
+				expect(body.error.code).toBe(ErrorCode.INTERNAL_SERVER_ERROR);
+				expect(body.error.details).toBe("String error message");
+			} finally {
+				if (originalEnv !== undefined) {
+					vi.stubEnv("NODE_ENV", originalEnv);
+				} else {
+					vi.unstubAllEnvs();
+				}
+			}
 		});
 
 		it("handles object with message property", async () => {
-			const res = await app.inject({ method: "GET", url: "/object-error" });
-			expect(res.statusCode).toBe(500);
-			const body = res.json();
-			expect(body.error.code).toBe(ErrorCode.INTERNAL_SERVER_ERROR);
-			expect(body.error.details).toBe("Object error message");
+			const originalEnv = process.env.NODE_ENV;
+			vi.stubEnv("NODE_ENV", "development");
+
+			try {
+				const res = await app.inject({ method: "GET", url: "/object-error" });
+				expect(res.statusCode).toBe(500);
+				const body = res.json();
+				expect(body.error.code).toBe(ErrorCode.INTERNAL_SERVER_ERROR);
+				expect(body.error.details).toBe("Object error message");
+			} finally {
+				if (originalEnv !== undefined) {
+					vi.stubEnv("NODE_ENV", originalEnv);
+				} else {
+					vi.unstubAllEnvs();
+				}
+			}
 		});
 
 		it("handles arbitrary object without message", async () => {
-			const res = await app.inject({
-				method: "GET",
-				url: "/arbitrary-object",
-			});
-			expect(res.statusCode).toBe(500);
-			const body = res.json();
-			expect(body.error.code).toBe(ErrorCode.INTERNAL_SERVER_ERROR);
-			expect(body.error.details).toBeDefined();
+			const originalEnv = process.env.NODE_ENV;
+			vi.stubEnv("NODE_ENV", "development");
+
+			try {
+				const res = await app.inject({
+					method: "GET",
+					url: "/arbitrary-object",
+				});
+				expect(res.statusCode).toBe(500);
+				const body = res.json();
+				expect(body.error.code).toBe(ErrorCode.INTERNAL_SERVER_ERROR);
+				expect(body.error.details).toBeDefined();
+			} finally {
+				if (originalEnv !== undefined) {
+					vi.stubEnv("NODE_ENV", originalEnv);
+				} else {
+					vi.unstubAllEnvs();
+				}
+			}
 		});
 
 		it("handles number error", async () => {
-			const res = await app.inject({ method: "GET", url: "/number-error" });
-			expect(res.statusCode).toBe(500);
-			const body = res.json();
-			expect(body.error.code).toBe(ErrorCode.INTERNAL_SERVER_ERROR);
-			expect(body.error.details).toBe("42");
+			const originalEnv = process.env.NODE_ENV;
+			vi.stubEnv("NODE_ENV", "development");
+
+			try {
+				const res = await app.inject({ method: "GET", url: "/number-error" });
+				expect(res.statusCode).toBe(500);
+				const body = res.json();
+				expect(body.error.code).toBe(ErrorCode.INTERNAL_SERVER_ERROR);
+				expect(body.error.details).toBe("42");
+			} finally {
+				if (originalEnv !== undefined) {
+					vi.stubEnv("NODE_ENV", originalEnv);
+				} else {
+					vi.unstubAllEnvs();
+				}
+			}
 		});
 	});
 
