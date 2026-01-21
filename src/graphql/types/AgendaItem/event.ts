@@ -13,57 +13,62 @@ export const resolveEvent = async (
 ) => {
 	if (!ctx.currentClient.isAuthenticated) {
 		throw new TalawaGraphQLError({
-			extensions: {
-				code: "unauthenticated",
-			},
+			extensions: { code: "unauthenticated" },
 		});
 	}
 
 	const currentUserId = ctx.currentClient.user.id;
 
-	const [currentUser, existingEvent] = await Promise.all([
+	const [currentUser, existingAgendaFolder] = await Promise.all([
 		ctx.drizzleClient.query.usersTable.findFirst({
-			columns: {
-				role: true,
-			},
+			columns: { role: true },
 			where: (fields, operators) => operators.eq(fields.id, currentUserId),
 		}),
-		ctx.drizzleClient.query.eventsTable.findFirst({
-			where: (fields, operators) => operators.eq(fields.id, parent.eventId),
+		ctx.drizzleClient.query.agendaFoldersTable.findFirst({
+			where: (fields, operators) => operators.eq(fields.id, parent.folderId),
 			with: {
-				organization: {
+				event: {
 					with: {
-						membershipsWhereOrganization: {
-							columns: {
-								role: true,
+						organization: {
+							with: {
+								membershipsWhereOrganization: {
+									columns: { role: true },
+									where: (fields, operators) =>
+										operators.eq(fields.memberId, currentUserId),
+								},
 							},
-							where: (fields, operators) =>
-								operators.eq(fields.memberId, currentUserId),
 						},
+						attachmentsWhereEvent: true,
 					},
 				},
-				attachmentsWhereEvent: true,
 			},
 		}),
 	]);
 
 	if (currentUser === undefined) {
 		throw new TalawaGraphQLError({
-			extensions: {
-				code: "unauthenticated",
-			},
+			extensions: { code: "unauthenticated" },
 		});
 	}
 
+	if (existingAgendaFolder === undefined) {
+		ctx.log.error(
+			"Postgres select operation returned an empty array for an agenda item's folder id that isn't null.",
+		);
+
+		throw new TalawaGraphQLError({
+			extensions: { code: "unexpected" },
+		});
+	}
+
+	const existingEvent = existingAgendaFolder.event;
 	if (existingEvent === undefined) {
 		ctx.log.error(
 			"Postgres select operation returned an empty array for an agenda item's event id that isn't null.",
 		);
 
 		throw new TalawaGraphQLError({
-			extensions: {
-				code: "unexpected",
-			},
+			extensions: { code: "unexpected" },
 		});
 	}
 
@@ -76,9 +81,7 @@ export const resolveEvent = async (
 			currentUserOrganizationMembership.role !== "administrator")
 	) {
 		throw new TalawaGraphQLError({
-			extensions: {
-				code: "unauthorized_action",
-			},
+			extensions: { code: "unauthorized_action" },
 		});
 	}
 

@@ -70,6 +70,17 @@ export const resolveUpdatedAt = async (
 		});
 	}
 
+	const existingEvent = existingAgendaFolder.event;
+	if (existingEvent === undefined) {
+		ctx.log.error(
+			"Postgres select operation returned an empty array for an agenda item's event id that isn't null.",
+		);
+
+		throw new TalawaGraphQLError({
+			extensions: { code: "unexpected" },
+		});
+	}
+
 	const currentUserOrganizationMembership =
 		existingAgendaFolder.event.organization.membershipsWhereOrganization[0];
 

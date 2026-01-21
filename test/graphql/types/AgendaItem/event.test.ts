@@ -46,7 +46,7 @@ describe("AgendaItem.event resolver", () => {
 		);
 
 		expect(
-			unauth.mocks.drizzleClient.query.eventsTable.findFirst,
+			unauth.mocks.drizzleClient.query.agendaFoldersTable.findFirst,
 		).not.toHaveBeenCalled();
 	});
 
@@ -62,14 +62,40 @@ describe("AgendaItem.event resolver", () => {
 		);
 	});
 
-	it("throws unexpected when event does not exist", async () => {
+	it("throws unexpected when agenda folder does not exist", async () => {
 		mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValueOnce({
 			id: "user-1",
 			role: "administrator",
 		} as never);
 
-		mocks.drizzleClient.query.eventsTable.findFirst.mockResolvedValueOnce(
+		mocks.drizzleClient.query.agendaFoldersTable.findFirst.mockResolvedValueOnce(
 			undefined,
+		);
+
+		const logSpy = vi.spyOn(ctx.log, "error");
+
+		await expect(resolveEvent(mockAgendaItem, {}, ctx)).rejects.toThrow(
+			new TalawaGraphQLError({
+				extensions: { code: "unexpected" },
+			}),
+		);
+
+		expect(logSpy).toHaveBeenCalledWith(
+			"Postgres select operation returned an empty array for an agenda item's folder id that isn't null.",
+		);
+	});
+
+	it("throws unexpected when event does not exist on folder", async () => {
+		mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValueOnce({
+			id: "user-1",
+			role: "administrator",
+		} as never);
+
+		mocks.drizzleClient.query.agendaFoldersTable.findFirst.mockResolvedValueOnce(
+			{
+				id: "folder-1",
+				event: undefined,
+			} as never,
 		);
 
 		const logSpy = vi.spyOn(ctx.log, "error");
@@ -91,13 +117,18 @@ describe("AgendaItem.event resolver", () => {
 			role: "regular",
 		} as never);
 
-		mocks.drizzleClient.query.eventsTable.findFirst.mockResolvedValueOnce({
-			id: "event-1",
-			attachmentsWhereEvent: [],
-			organization: {
-				membershipsWhereOrganization: [],
-			},
-		} as never);
+		mocks.drizzleClient.query.agendaFoldersTable.findFirst.mockResolvedValueOnce(
+			{
+				id: "folder-1",
+				event: {
+					id: "event-1",
+					attachmentsWhereEvent: [],
+					organization: {
+						membershipsWhereOrganization: [],
+					},
+				},
+			} as never,
+		);
 
 		await expect(resolveEvent(mockAgendaItem, {}, ctx)).rejects.toThrow(
 			new TalawaGraphQLError({
@@ -106,7 +137,7 @@ describe("AgendaItem.event resolver", () => {
 		);
 	});
 
-	it("returns event for super administrator", async () => {
+	it("returns event for system administrator", async () => {
 		const mockEvent = {
 			id: "event-1",
 			name: "Event",
@@ -121,8 +152,11 @@ describe("AgendaItem.event resolver", () => {
 			role: "administrator",
 		} as never);
 
-		mocks.drizzleClient.query.eventsTable.findFirst.mockResolvedValueOnce(
-			mockEvent as never,
+		mocks.drizzleClient.query.agendaFoldersTable.findFirst.mockResolvedValueOnce(
+			{
+				id: "folder-1",
+				event: mockEvent,
+			} as never,
 		);
 
 		const result = await resolveEvent(mockAgendaItem, {}, ctx);
@@ -148,8 +182,11 @@ describe("AgendaItem.event resolver", () => {
 			role: "regular",
 		} as never);
 
-		mocks.drizzleClient.query.eventsTable.findFirst.mockResolvedValueOnce(
-			mockEvent as never,
+		mocks.drizzleClient.query.agendaFoldersTable.findFirst.mockResolvedValueOnce(
+			{
+				id: "folder-1",
+				event: mockEvent,
+			} as never,
 		);
 
 		const result = await resolveEvent(mockAgendaItem, {}, ctx);
