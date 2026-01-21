@@ -81,7 +81,7 @@ async function createTestPost(): Promise<string> {
 	return postId;
 }
 
-describe("src/drizzle/tables/postAttachments", () => {
+describe("src/drizzle/tables/postVotes", () => {
 	describe("PostVotes Table Schema", () => {
 		it("should have the correct schema", () => {
 			const columns = Object.keys(postVotesTable);
@@ -322,7 +322,7 @@ describe("src/drizzle/tables/postAttachments", () => {
 			}
 		});
 
-		it("should accept aata with valid data", () => {
+		it("should accept data with valid data", () => {
 			const validData = {
 				type: "down_vote",
 				postId: faker.string.uuid(),
@@ -477,7 +477,7 @@ describe("src/drizzle/tables/postAttachments", () => {
 			expect(verifyDeleted).toBeUndefined();
 		});
 
-		it("should not find postAttachments by old creatorId after user deletion", async () => {
+		it("should not find postVotes by old creatorId after user deletion", async () => {
 			const { userId } = await createRegularUserUsingAdmin();
 			const postId = await createTestPost();
 			const type = "down_vote";
