@@ -38,3 +38,4 @@ import "./Notification/index";
 import "./EventVolunteerMembership/index";
 import "./EventInvitation/index";
 import "./AgendaCategory/index";
+import "./OAuthAccountInfo/index";
