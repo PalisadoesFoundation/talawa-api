@@ -92,7 +92,9 @@ describe("AgendaItem.category resolver (resolveCategory)", () => {
 			new TalawaGraphQLError({ extensions: { code: "unexpected" } }),
 		);
 
-		expect(logSpy).toHaveBeenCalled();
+		expect(logSpy).toHaveBeenCalledWith(
+			"Postgres select operation returned an empty array for an agenda item's folder or event id that isn't null.",
+		);
 	});
 
 	it("throws unauthorized_action when user is not admin", async () => {

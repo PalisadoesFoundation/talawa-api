@@ -1,6 +1,6 @@
 import { faker } from "@faker-js/faker";
 import { eq } from "drizzle-orm";
-import { afterEach, expect, suite, test, vi } from "vitest";
+import { afterEach, beforeAll, expect, suite, test, vi } from "vitest";
 import { agendaItemsTable } from "~/src/drizzle/tables/agendaItems";
 import { assertToBeNonNullish } from "../../../helpers";
 import { server } from "../../../server";
@@ -17,19 +17,28 @@ import {
 	Query_signIn,
 } from "../documentNodes";
 
-const signInResult = await mercuriusClient.query(Query_signIn, {
-	variables: {
-		input: {
-			emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-			password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-		},
-	},
-});
+let authToken: string;
+let adminUser: { id: string };
 
-assertToBeNonNullish(signInResult.data?.signIn);
-const authToken = signInResult.data.signIn.authenticationToken;
-assertToBeNonNullish(authToken);
-const adminUser = signInResult.data.signIn.user;
+beforeAll(async () => {
+	const signInResult = await mercuriusClient.query(Query_signIn, {
+		variables: {
+			input: {
+				emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
+				password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
+			},
+		},
+	});
+
+	assertToBeNonNullish(signInResult.data?.signIn);
+
+	const token = signInResult.data.signIn.authenticationToken;
+	assertToBeNonNullish(token);
+	authToken = token;
+
+	assertToBeNonNullish(signInResult.data.signIn.user);
+	adminUser = signInResult.data.signIn.user;
+});
 
 async function createOrganizationAndEvent() {
 	const orgRes = await mercuriusClient.mutate(Mutation_createOrganization, {

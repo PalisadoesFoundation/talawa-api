@@ -621,6 +621,9 @@ suite("Mutation field createAgendaItem", () => {
 		const data = await createOrgEventFolderCategory(token);
 		cleanupFns.push(data.cleanup);
 
+		// Mock required: This edge case (insert returning empty array) cannot be
+		// reproduced with real DB constraints. The mock ensures branch coverage
+		// for the defensive check after agenda item insertion.
 		const spy = vi
 			.spyOn(server.drizzleClient, "transaction")
 			.mockImplementationOnce(async (cb) => {
@@ -659,12 +662,7 @@ suite("Mutation field createAgendaItem", () => {
 			expect.arrayContaining([
 				expect.objectContaining({
 					extensions: expect.objectContaining({
-						code: "arguments_associated_resources_not_found",
-						issues: expect.arrayContaining([
-							expect.objectContaining({
-								argumentPath: ["input", "folderId"],
-							}),
-						]),
+						code: "unexpected",
 					}),
 				}),
 			]),

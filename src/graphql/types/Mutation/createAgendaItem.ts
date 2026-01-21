@@ -255,14 +255,13 @@ builder.mutationField("createAgendaItem", (t) =>
 					.returning();
 
 				if (!createdAgendaItem) {
+					ctx.log.error(
+						"Postgres insert operation unexpectedly returned an empty array instead of throwing an error.",
+					);
+
 					throw new TalawaGraphQLError({
 						extensions: {
-							code: "arguments_associated_resources_not_found",
-							issues: [
-								{
-									argumentPath: ["input", "folderId"],
-								},
-							],
+							code: "unexpected",
 						},
 					});
 				}
