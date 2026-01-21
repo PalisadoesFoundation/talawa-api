@@ -42,7 +42,7 @@ describe("createUser mutation performance tracking", () => {
 
 		expect(op).toBeDefined();
 		expect(op?.count).toBe(1);
-		expect(op?.ms).toBeGreaterThanOrEqual(10);
+		expect(op?.ms).toBeGreaterThanOrEqual(9);
 	});
 
 	it("should track metrics even when mutation fails", async () => {

@@ -1,4 +1,4 @@
-import { relations, sql } from "drizzle-orm";
+import { relations } from "drizzle-orm";
 import {
 	boolean,
 	index,
@@ -162,7 +162,6 @@ export const eventGenerationWindowsTable = pgTable(
 			precision: 3,
 			withTimezone: true,
 		})
-			.$defaultFn(() => sql`${null}`)
 			.$onUpdate(() => new Date()),
 	},
 	(self) => ({
