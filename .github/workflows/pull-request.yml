@@ -434,6 +434,7 @@ jobs:
 
   Run-Tests:
     name: Run tests for talawa api (Shard ${{ matrix.shard }})
+    timeout-minutes: 10
     runs-on: ubuntu-latest
     needs: [Pre-Test-Checks-Pass]
     env:
@@ -508,7 +509,7 @@ jobs:
           docker compose run --name talawa-api-test-shard-${{ matrix.shard }} \
             -e SHARD_INDEX=$SHARD_INDEX \
             -e SHARD_COUNT=$SHARD_COUNT \
-            api pnpm test:shard:coverage
+            api /bin/sh -c "node scripts/run-shard.js --coverage -c vitest.unit.config.ts --coverage.reportsDirectory=./coverage/unit && node scripts/run-shard.js --coverage -c vitest.integration.config.ts --coverage.reportsDirectory=./coverage/integration"
 
       - name: Copy coverage from container
         if: always()
@@ -588,143 +589,85 @@ jobs:
             echo "No coverage artifacts found - tests may have been skipped"
           fi
 
-      - name: Merge coverage reports
+      - name: Prepare Split Coverage Reports
         if: steps.check-artifacts.outputs.artifacts_found == 'true'
         run: |
-          mkdir -p ./coverage/vitest
-          mkdir -p ./coverage/tmp
+          # Function to merge and generate report for a specific type (unit or integration)
+          process_coverage() {
+            TYPE=$1
+            echo "Processing $TYPE coverage..."
 
-          # Find all coverage directories from shards
-          echo "Finding coverage data from shards..."
-          SHARD_DIRS=$(find coverage-shards -type d -name "coverage-shard-*" 2>/dev/null || true)
+            mkdir -p ./coverage/$TYPE
+            mkdir -p .nyc_output_$TYPE
 
-          if [ -z "$SHARD_DIRS" ]; then
-            echo "ERROR: No shard directories found!"
-            ls -la coverage-shards/ || true
-            exit 1
-          fi
+            # Find all coverage-final.json files for this type
+            # Expected path: coverage-shards/coverage-shard-*/$TYPE/coverage-final.json
+            find coverage-shards -path "*/$TYPE/coverage-final.json" -type f > json-files-$TYPE.txt
 
-          echo "Found shard directories:"
-          echo "$SHARD_DIRS"
+            JSON_COUNT=$(wc -l < json-files-$TYPE.txt)
+            echo "Found $JSON_COUNT JSON files for $TYPE"
 
-          # Check if we have JSON coverage files (better for merging)
-          JSON_FILES=$(find coverage-shards -name "coverage-final.json" -type f 2>/dev/null || true)
-
-          if [ -n "$JSON_FILES" ]; then
-            echo "Using JSON coverage files for accurate merging..."
-            
-            # Copy all JSON files to a temp directory for nyc merge
-            for shard_dir in coverage-shards/coverage-shard-*/; do
-              if [ -f "${shard_dir}coverage-final.json" ]; then
-                echo "Found JSON coverage in: $shard_dir"
-                cp "${shard_dir}coverage-final.json" "./coverage/tmp/coverage-shard-$(basename $shard_dir).json"
-              fi
-            done
-            
-            # Validate JSON files before merging
-            echo "Validating JSON coverage files..."
-            JSON_COUNT=$(find ./coverage/tmp -name "*.json" -type f | wc -l)
-            echo "Found $JSON_COUNT JSON files to merge"
             if [ "$JSON_COUNT" -eq 0 ]; then
-              echo "ERROR: No JSON coverage files found!"
-              exit 1
+              echo "::warning::No coverage files found for $TYPE"
+              return
             fi
-              
-            # Show sample of file count in each JSON
-            for json_file in ./coverage/tmp/*.json; do
-              FILE_COUNT=$(jq 'keys | length' "$json_file" 2>/dev/null || echo "0")
-              echo "  $(basename $json_file): $FILE_COUNT files"
-            done
-            # Merge using nyc (more accurate than lcov merge)
-            echo "Merging coverage with nyc..."
 
-            pnpm exec nyc merge ./coverage/tmp ./.nyc_output/coverage-final.json
-            # Validate merged JSON
-            MERGED_FILE_COUNT=$(jq 'keys | length' ./.nyc_output/coverage-final.json 2>/dev/null || echo "0")
-            echo "Merged coverage contains $MERGED_FILE_COUNT files"
-          else
-            echo "ERROR: No JSON coverage files found! We expect coverage-final.json from shards."
-            exit 1
-          fi
+            # Copy to unique names
+            SHARD_NUM=0
+            while IFS= read -r file; do
+              cp "$file" ".nyc_output_$TYPE/coverage-shard-${SHARD_NUM}.json"
+              SHARD_NUM=$((SHARD_NUM + 1))
+            done < json-files-$TYPE.txt
 
-      - name: Validate merged coverage integrity
-        if: steps.check-artifacts.outputs.artifacts_found == 'true'
-        run: |
-          echo "Validating merged coverage JSON..."
-          if [ ! -f ./.nyc_output/coverage-final.json ]; then
-            echo "ERROR: Merged coverage JSON not found at ./.nyc_output/coverage-final.json"
-            exit 1
-          fi
+            # Merge
+            pnpm exec nyc merge .nyc_output_$TYPE ./coverage/$TYPE/coverage-final.json
 
-          MERGED_FILE_COUNT=$(jq 'keys | length' ./.nyc_output/coverage-final.json 2>/dev/null || echo "0")
-          echo "Merged coverage contains $MERGED_FILE_COUNT files"
+            # Path rewrite
+            DOCKER_PATH="/home/talawa/api"
+            RUNNER_PATH="$GITHUB_WORKSPACE"
+            sed -i "s|${DOCKER_PATH}|${RUNNER_PATH}|g" ./coverage/$TYPE/coverage-final.json
 
-          if [ "$MERGED_FILE_COUNT" -eq 0 ]; then
-             echo "ERROR: Merged coverage JSON is empty!"
-             exit 1
-          fi
+            # Report
+            rm -rf .nyc_output
+            mkdir -p .nyc_output
+            cp ./coverage/$TYPE/coverage-final.json .nyc_output/coverage-final.json
+            
+            pnpm exec nyc report --reporter=lcov --report-dir=./coverage/$TYPE
 
-      - name: Generate lcov report
-        if: steps.check-artifacts.outputs.artifacts_found == 'true'
-        run: |
-          echo "Generating lcov report from merged coverage..."
+            rm -rf .nyc_output_$TYPE
+          }
 
-          echo "Rewriting coverage paths from Docker to runner paths..."
+          process_coverage "unit"
+          process_coverage "integration"
+
+          # Create a combined report for local VeryGoodCoverage check
+          echo "Merging ALL coverage for local check..."
+          mkdir -p .nyc_output_all
+          mkdir -p ./coverage/vitest
+          
+          find coverage-shards -name "coverage-final.json" -type f > json-files-all.txt
+          
+          SHARD_NUM=0
+          while IFS= read -r file; do
+             cp "$file" ".nyc_output_all/coverage-shard-${SHARD_NUM}.json"
+             SHARD_NUM=$((SHARD_NUM + 1))
+          done < json-files-all.txt
+          
+          pnpm exec nyc merge .nyc_output_all ./coverage/vitest/coverage-final.json
+          
+          # Path rewrite
           DOCKER_PATH="/home/talawa/api"
           RUNNER_PATH="$GITHUB_WORKSPACE"
-          sed -i "s|${DOCKER_PATH}|${RUNNER_PATH}|g" ./.nyc_output/coverage-final.json
-          echo "Path rewriting complete"
-
+          sed -i "s|${DOCKER_PATH}|${RUNNER_PATH}|g" ./coverage/vitest/coverage-final.json
+          
+          # Report
+          rm -rf .nyc_output
+          mkdir -p .nyc_output
+          cp ./coverage/vitest/coverage-final.json .nyc_output/coverage-final.json
           pnpm exec nyc report --reporter=lcov --report-dir=./coverage/vitest
-
-          if [ ! -s ./coverage/vitest/lcov.info ]; then
-            echo "ERROR: lcov.info file is empty or missing after generation!"
-            exit 1
-          fi
-
-          echo "lcov.info generated successfully"
-          ls -lh ./coverage/vitest/lcov.info
-
-      - name: Analyze lcov structure
-        if: steps.check-artifacts.outputs.artifacts_found == 'true'
-        run: |
-          echo "Analyzing lcov.info structure..."
-          LCOV_FILE="./coverage/vitest/lcov.info"
-
-          if [ ! -s "$LCOV_FILE" ]; then
-            echo "ERROR: lcov.info is empty or missing"
-            exit 1
-          fi
-
-          # Check source paths
-          echo "Checking source paths in lcov file (first 10 unique paths):"
-          grep "^SF:" "$LCOV_FILE" | head -10
-
-          if grep -q "^SF:/" "$LCOV_FILE"; then
-            echo "WARNING: Found absolute paths in lcov file. This might confuse Codecov."
-            grep "^SF:/" "$LCOV_FILE" | head -5
-          else
-            echo "Good: All source paths appear to be relative."
-          fi
-
-          SF_COUNT=$(grep -c "^SF:" "$LCOV_FILE" || echo "0")
-          echo "Total source files in lcov: $SF_COUNT"
-
-      - name: Clean up individual shard coverage files
-        if: steps.check-artifacts.outputs.artifacts_found == 'true'
-        run: |
-          echo "Cleaning up individual shard coverage files..."
-          find ./coverage -name "coverage-*.json" -type f -delete
-          find ./coverage -name "coverage-final.json" -type f -delete
-          rm -rf ./coverage/tmp ./.nyc_output 2>/dev/null || true
-
-          echo "Cleanup complete. Remaining coverage files:"
-          find ./coverage -type f \( -name "*.info" -o -name "*.json" \)
-
-          echo ""
-          echo "Final coverage file to upload:"
-          ls -lh ./coverage/vitest/lcov.info
-
+          
+          rm -rf .nyc_output_all .nyc_output
+          
       - name: Calculate merge base for Codecov
         if: steps.check-artifacts.outputs.artifacts_found == 'true'
         id: get-merge-base
@@ -739,18 +682,31 @@ jobs:
       # DO NOT DELETE ANY references to env.CODECOV_UNIQUE_NAME in this
       # section. They are required for accurate calculations
       #######################################################################
-      - name: Present and upload merged coverage to Codecov
+      - name: Upload Unit Coverage to Codecov
         if: steps.check-artifacts.outputs.artifacts_found == 'true'
         uses: codecov/codecov-action@v5
         with:
-          name: "${{env.CODECOV_UNIQUE_NAME}}-merged"
+          name: "${{env.CODECOV_UNIQUE_NAME}}-unit"
           token: ${{ secrets.CODECOV_TOKEN }}
           fail_ci_if_error: true
           verbose: true
           exclude: "docs/"
           gcov_ignore: "docs/"
-          files: ./coverage/vitest/lcov.info
-          commit_parent: ${{ steps.get-merge-base.outputs.merge_base }}
+          files: ./coverage/unit/lcov.info
+          flags: unit
+
+      - name: Upload Integration Coverage to Codecov
+        if: steps.check-artifacts.outputs.artifacts_found == 'true'
+        uses: codecov/codecov-action@v5
+        with:
+          name: "${{env.CODECOV_UNIQUE_NAME}}-integration"
+          token: ${{ secrets.CODECOV_TOKEN }}
+          fail_ci_if_error: true
+          verbose: true
+          exclude: "docs/"
+          gcov_ignore: "docs/"
+          files: ./coverage/integration/lcov.info
+          flags: integration
 
       - name: Test acceptable level of code coverage
         if: steps.check-artifacts.outputs.artifacts_found == 'true'

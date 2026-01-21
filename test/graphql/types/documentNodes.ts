@@ -2527,6 +2527,14 @@ export const Mutation_updateChatMembership = gql(`
   }
 `);
 
+export const Mutation_updateOrganizationMembership = gql(` 
+  mutation Mutation_updateOrganizationMembership($input: MutationUpdateOrganizationMembershipInput!) {
+    updateOrganizationMembership(input: $input) {
+      id
+    }
+  }
+`);
+
 export const Mutation_registerEventAttendee = gql(`
   mutation Mutation_registerEventAttendee($data: EventAttendeeInput!) {
     registerEventAttendee(data: $data) {
@@ -2791,7 +2799,8 @@ export const Mutation_verifyEmail =
         success
         message
     }
-}`);
+}
+`);
 
 export const Query_eventsByVolunteer = gql(`
 query Query_eventsByVolunteer($userId: ID!, $limit: Int, $offset: Int) {
@@ -2813,3 +2822,46 @@ name
 }
 }
 `);
+
+export const Mutation_signInWithOAuth =
+	gql(`mutation Mutation_signInWithOAuth($input: OAuthLoginInput!) {
+    signInWithOAuth(input: $input) {
+        authenticationToken
+        refreshToken
+        user {
+            id
+            name
+            emailAddress
+        }
+    }
+}`);
+
+export const Mutation_linkOAuthAccount =
+	gql(`mutation Mutation_linkOAuthAccount($input: OAuthLoginInput!) {
+    linkOAuthAccount(input: $input) {
+        id
+        name
+        emailAddress
+        oauthAccounts {
+            provider
+            email
+            linkedAt
+            lastUsedAt
+        }
+    }
+}`);
+
+export const Mutation_unlinkOAuthAccount =
+	gql(`mutation Mutation_unlinkOAuthAccount($provider: OAuthProvider!) {
+    unlinkOAuthAccount(provider: $provider) {
+        id
+        name
+        emailAddress
+        oauthAccounts {
+            provider
+            email
+            linkedAt
+            lastUsedAt
+        }
+    }
+}`);

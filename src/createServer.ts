@@ -38,14 +38,13 @@ export const createServer = async (options?: {
 	envConfig?: Partial<EnvConfig>;
 }) => {
 	// Configuration environment variables used by talawa api.
+	// The `data` option has highest precedence, allowing tests to override required env vars.
 	const envConfig = envSchema<EnvConfig>({
 		ajv: envSchemaAjv,
+		data: options?.envConfig,
 		dotenv: true,
 		schema: envConfigSchema,
 	});
-
-	// Merge or override default configuration environment variables with custom configuration environment variables passed by this function's caller.
-	Object.assign(envConfig, options?.envConfig);
 
 	/**
 	 * The root fastify instance or we could say the talawa api server itself. It could be considered as the root node of a directed acyclic graph(DAG) of fastify plugins.

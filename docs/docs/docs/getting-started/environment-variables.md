@@ -705,4 +705,34 @@ This environment variable is used to configure the prefix for identifiers of all
 
 - More information can be found at [this](https://docs.docker.com/compose/environment-variables/envvars/##compose_project_name) link.
 
+## OAuth Configuration
+
+### GOOGLE_CLIENT_ID
+
+This environment variable is used to configure the OAuth Client ID for Google authentication.
+
+### GOOGLE_CLIENT_SECRET
+
+This environment variable is used to configure the OAuth Client Secret for Google authentication.
+
+### GOOGLE_REDIRECT_URI
+
+This environment variable is used to configure the OAuth Redirect URI for Google authentication.
+
+### GITHUB_CLIENT_ID
+
+This environment variable is used to configure the OAuth Client ID for GitHub authentication.
+
+### GITHUB_CLIENT_SECRET
+
+This environment variable is used to configure the OAuth Client Secret for GitHub authentication.
+
+### GITHUB_REDIRECT_URI
+
+This environment variable is used to configure the OAuth Redirect URI for GitHub authentication.
+
+### API_OAUTH_REQUEST_TIMEOUT_MS
+
+This environment variable is used to configure the request timeout in milliseconds for OAuth provider API calls. Default value is `10000` milliseconds (10 seconds).
+
 

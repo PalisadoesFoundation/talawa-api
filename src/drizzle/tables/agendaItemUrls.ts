@@ -1,0 +1,119 @@
+import { relations, sql } from "drizzle-orm";
+import {
+	index,
+	pgTable,
+	text,
+	timestamp,
+	uniqueIndex,
+	uuid,
+} from "drizzle-orm/pg-core";
+import { createInsertSchema } from "drizzle-zod";
+import { uuidv7 } from "uuidv7";
+import { agendaItemsTable } from "./agendaItems";
+import { usersTable } from "./users";
+
+export const agendaItemUrlTable = pgTable(
+	"agenda_item_url",
+	{
+		/**
+		 * Foreign key reference to the id of the agenda item that the url is associated to.
+		 */
+		agendaItemId: uuid("agenda_item_id")
+			.notNull()
+			.references(() => agendaItemsTable.id, {
+				onDelete: "cascade",
+				onUpdate: "cascade",
+			}),
+		/**
+		 * URL to the agenda item.
+		 */
+		url: text("url").notNull(),
+		/**
+		 * Date time at the time the agenda item URL was created.
+		 */
+		createdAt: timestamp("created_at", {
+			mode: "date",
+			precision: 3,
+			withTimezone: true,
+		})
+			.notNull()
+			.defaultNow(),
+		/**
+		 * Foreign key reference to the id of the user who created the agenda item URL.
+		 */
+		creatorId: uuid("creator_id").references(() => usersTable.id, {
+			onDelete: "set null",
+			onUpdate: "cascade",
+		}),
+		/**
+		 * Primary unique identifier of the agenda item url.
+		 */
+		id: uuid("id").primaryKey().$default(uuidv7),
+		/**
+		 * Date time at the time the url was last updated.
+		 */
+		updatedAt: timestamp("updated_at", {
+			mode: "date",
+			precision: 3,
+			withTimezone: true,
+		})
+			.$defaultFn(() => sql`${null}`)
+			.$onUpdate(() => new Date()),
+		/**
+		 * Foreign key reference to the id of the user who last updated the url.
+		 */
+		updaterId: uuid("updater_id").references(() => usersTable.id, {
+			onDelete: "set null",
+			onUpdate: "cascade",
+		}),
+	},
+	(self) => [
+		index().on(self.createdAt),
+		index().on(self.creatorId),
+		index().on(self.agendaItemId),
+		index().on(self.updaterId),
+		uniqueIndex().on(self.agendaItemId, self.url),
+	],
+);
+
+export const agendaItemUrlTableRelations = relations(
+	agendaItemUrlTable,
+	({ one }) => ({
+		/**
+		 * Many to one relationship from `agenda_item_url` table to `users` table.
+		 */
+		creator: one(usersTable, {
+			fields: [agendaItemUrlTable.creatorId],
+			references: [usersTable.id],
+			relationName: "agenda_item_url.creator_id:users.id",
+		}),
+		/**
+		 * Many to one relationship from `agenda_item_url` table to `agenda_items` table.
+		 */
+		agendaItem: one(agendaItemsTable, {
+			fields: [agendaItemUrlTable.agendaItemId],
+			references: [agendaItemsTable.id],
+			relationName: "agenda_item_url.agenda_item_id:agenda_items.id",
+		}),
+		/**
+		 * Many to one relationship from `agenda_item_url` table to `users` table.
+		 */
+		updater: one(usersTable, {
+			fields: [agendaItemUrlTable.updaterId],
+			references: [usersTable.id],
+			relationName: "agenda_item_url.updater_id:users.id",
+		}),
+	}),
+);
+
+import { z } from "zod";
+
+export const agendaItemUrlTableInsertSchema = createInsertSchema(
+	agendaItemUrlTable,
+	{
+		agendaItemId: z.string().uuid(),
+		creatorId: z.string().uuid().optional().nullable(),
+		updaterId: z.string().uuid().optional().nullable(),
+		url: (schema) => schema.url(),
+	},
+);

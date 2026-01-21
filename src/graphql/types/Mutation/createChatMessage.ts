@@ -113,7 +113,10 @@ builder.mutationField("createChatMessage", (t) =>
 				});
 			}
 
-			if (parsedArgs.input.parentMessageId !== undefined) {
+			if (
+				parsedArgs.input.parentMessageId !== undefined &&
+				parsedArgs.input.parentMessageId !== null
+			) {
 				const parentMessageId = parsedArgs.input.parentMessageId;
 
 				const existingChatMessage =
