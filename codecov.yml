@@ -10,11 +10,27 @@ flags:
   unit:
     carryforward: false
     paths:
-      - src/
+      - src/config/
+      - src/fastifyPlugins/
+      - src/helpers/
+      - src/observability/
+      - src/plugin/
+      - src/plugins/
+      - src/routes/
+      - src/school/
+      - src/services/
+      - src/setup/
+      - src/types/
+      - src/unit_tests/
+      - src/utilities/
+      - src/workers/
+      - src/*.ts
   integration:
     carryforward: false
     paths:
-      - src/
+      - src/drizzle/
+      - src/graphql/
+      - src/install/
 flag_management:
   default_rules:
     carryforward: true
