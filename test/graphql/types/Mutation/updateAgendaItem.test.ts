@@ -289,7 +289,7 @@ suite("Mutation field updateAgendaItem", () => {
 			expect.arrayContaining([
 				expect.objectContaining({
 					name: "file.jpeg",
-					mimeType: "IMAGE_JPEG",
+					mimeType: "image/jpeg",
 				}),
 			]),
 		);
