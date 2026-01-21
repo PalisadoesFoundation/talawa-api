@@ -104,7 +104,6 @@ describe("createUser mutation performance tracking", () => {
 		// Verify performance metrics were still collected even on error
 		const snapshots = server.getMetricsSnapshots?.(1) ?? [];
 		expect(snapshots.length).toBeGreaterThan(initialSnapshots.length);
-
 	});
 
 	it("should track sub-operation metrics including avatar upload", async () => {

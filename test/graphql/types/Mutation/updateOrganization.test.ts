@@ -1,7 +1,7 @@
 import { faker } from "@faker-js/faker";
 import { eq } from "drizzle-orm";
-import { print } from "graphql";
 import type { FastifyInstance } from "fastify";
+import { print } from "graphql";
 import { afterEach, expect, suite, test, vi } from "vitest";
 import { organizationsTable } from "~/src/drizzle/tables/organizations";
 import { assertToBeNonNullish } from "../../../helpers";

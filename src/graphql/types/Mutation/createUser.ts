@@ -24,8 +24,8 @@ const mutationCreateUserArgumentsSchema = z.object({
 	input: mutationCreateUserInputSchema.transform(async (arg, ctx) => {
 		let avatar:
 			| (FileUpload & {
-				mimetype: z.infer<typeof imageMimeTypeEnum>;
-			})
+					mimetype: z.infer<typeof imageMimeTypeEnum>;
+			  })
 			| null
 			| undefined;
 
