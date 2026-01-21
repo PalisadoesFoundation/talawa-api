@@ -546,7 +546,6 @@ suite("Mutation field createChat", () => {
 			expect(result.data.createChat).not.toBeNull();
 			expect(result.data.createChat.name).toBe(chatName);
 			expect(result.data.createChat.avatarMimeType).toBe("image/jpeg");
-			// avatarUrl can be null if not generated properly or mocked differently, but let's check basic fields
 
 			if (result.data.createChat.id) {
 				createdChatIds.push(result.data.createChat.id);
