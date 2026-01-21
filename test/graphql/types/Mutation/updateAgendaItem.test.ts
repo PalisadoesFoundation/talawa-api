@@ -1,590 +1,333 @@
 import { faker } from "@faker-js/faker";
 import { eq } from "drizzle-orm";
-import { uuidv7 } from "uuidv7";
 import { afterEach, expect, suite, test, vi } from "vitest";
-
-import {
-	eventsTable,
-	organizationMembershipsTable,
-	organizationsTable,
-	usersTable,
-} from "~/src/drizzle/schema";
-import { agendaFoldersTable } from "~/src/drizzle/tables/agendaFolders";
+import { agendaItemsTable } from "~/src/drizzle/tables/agendaItems";
 import { assertToBeNonNullish } from "../../../helpers";
 import { server } from "../../../server";
 import { mercuriusClient } from "../client";
-import { createRegularUserUsingAdmin } from "../createRegularUserUsingAdmin";
-import { Mutation_updateAgendaFolder, Query_signIn } from "../documentNodes";
+import {
+	Mutation_createAgendaCategory,
+	Mutation_createAgendaFolder,
+	Mutation_createAgendaItem,
+	Mutation_createEvent,
+	Mutation_createOrganization,
+	Mutation_createOrganizationMembership,
+	Mutation_createUser,
+	Mutation_updateAgendaItem,
+	Query_signIn,
+} from "../documentNodes";
 
-let cachedAdminAuth: { token: string; userId: string } | null = null;
+const signInResult = await mercuriusClient.query(Query_signIn, {
+	variables: {
+		input: {
+			emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
+			password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
+		},
+	},
+});
 
-async function getAdminAuth() {
-	if (cachedAdminAuth) return cachedAdminAuth;
+assertToBeNonNullish(signInResult.data?.signIn);
+const authToken = signInResult.data.signIn.authenticationToken;
+assertToBeNonNullish(authToken);
+const adminUser = signInResult.data.signIn.user;
 
-	mercuriusClient.setHeaders({});
-
-	const {
-		API_ADMINISTRATOR_USER_EMAIL_ADDRESS: email,
-		API_ADMINISTRATOR_USER_PASSWORD: password,
-	} = server.envConfig;
-
-	if (!email || !password) {
-		throw new Error(
-			"Missing admin credentials for tests. " +
-				"Please set API_ADMINISTRATOR_USER_EMAIL_ADDRESS and " +
-				"API_ADMINISTRATOR_USER_PASSWORD in your environment.",
-		);
-	}
-
-	const result = await mercuriusClient.query(Query_signIn, {
+async function createOrganizationAndEvent() {
+	const orgRes = await mercuriusClient.mutate(Mutation_createOrganization, {
+		headers: { authorization: `bearer ${authToken}` },
 		variables: {
 			input: {
-				emailAddress: email,
-				password,
+				name: `Org ${faker.string.uuid()}`,
+				countryCode: "us",
+			},
+		},
+	});
+	const orgId = orgRes.data?.createOrganization?.id;
+	assertToBeNonNullish(orgId);
+	assertToBeNonNullish(adminUser);
+	await mercuriusClient.mutate(Mutation_createOrganizationMembership, {
+		headers: { authorization: `bearer ${authToken}` },
+		variables: {
+			input: {
+				organizationId: orgId,
+				memberId: adminUser.id,
+				role: "administrator",
 			},
 		},
 	});
 
-	assertToBeNonNullish(result.data?.signIn?.authenticationToken);
-	assertToBeNonNullish(result.data?.signIn?.user?.id);
-
-	cachedAdminAuth = {
-		token: result.data.signIn.authenticationToken,
-		userId: result.data.signIn.user.id,
-	};
-
-	return cachedAdminAuth;
-}
-
-async function createOrganizationEventAndFolder(params: {
-	adminUserId: string;
-	isDefaultFolder?: boolean;
-}) {
-	const organizationId = uuidv7();
-	const eventId = uuidv7();
-	const folderId = uuidv7();
-
-	await server.drizzleClient.insert(organizationsTable).values({
-		id: organizationId,
-		name: `Org ${faker.string.uuid()}`,
-		countryCode: "us",
-		creatorId: params.adminUserId,
-	});
-
-	await server.drizzleClient.insert(organizationMembershipsTable).values({
-		memberId: params.adminUserId,
-		organizationId,
-		role: "administrator",
-		creatorId: params.adminUserId,
-	});
-
-	await server.drizzleClient.insert(eventsTable).values({
-		id: eventId,
-		name: `Event ${faker.string.uuid()}`,
-		organizationId,
-		creatorId: params.adminUserId,
-		startAt: new Date(),
-		endAt: new Date(Date.now() + 3600000),
-		description: "Agenda folder test event",
-	});
-
-	await server.drizzleClient.insert(agendaFoldersTable).values({
-		id: folderId,
-		eventId,
-		organizationId,
-		name: "Original Folder",
-		description: "Original description",
-		sequence: 1,
-		isDefaultFolder: params.isDefaultFolder ?? false,
-		creatorId: params.adminUserId,
-	});
-
-	return {
-		folderId,
-		organizationId,
-		eventId,
-		cleanup: async () => {
-			await server.drizzleClient
-				.delete(agendaFoldersTable)
-				.where(eq(agendaFoldersTable.id, folderId));
-			await server.drizzleClient
-				.delete(eventsTable)
-				.where(eq(eventsTable.id, eventId));
-			await server.drizzleClient
-				.delete(organizationMembershipsTable)
-				.where(eq(organizationMembershipsTable.organizationId, organizationId));
-			await server.drizzleClient
-				.delete(organizationsTable)
-				.where(eq(organizationsTable.id, organizationId));
+	const eventRes = await mercuriusClient.mutate(Mutation_createEvent, {
+		headers: { authorization: `bearer ${authToken}` },
+		variables: {
+			input: {
+				organizationId: orgId,
+				name: "Test Event",
+				description: "Agenda Event",
+				startAt: new Date(Date.now() + 60000).toISOString(),
+				endAt: new Date(Date.now() + 3600000).toISOString(),
+				location: "Test Location",
+			},
 		},
-	};
+	});
+
+	const eventId = eventRes.data?.createEvent?.id;
+	assertToBeNonNullish(eventId);
+
+	return { orgId, eventId };
 }
 
-suite("Mutation field updateAgendaFolder", () => {
-	const cleanupFns: Array<() => Promise<void>> = [];
+async function createCategoryFolderAgendaItem() {
+	const { orgId, eventId } = await createOrganizationAndEvent();
+	assertToBeNonNullish(adminUser);
+	await mercuriusClient.mutate(Mutation_createOrganizationMembership, {
+		headers: { authorization: `bearer ${authToken}` },
+		variables: {
+			input: {
+				organizationId: orgId,
+				memberId: adminUser.id,
+				role: "administrator",
+			},
+		},
+	});
 
-	afterEach(async () => {
+	const categoryRes = await mercuriusClient.mutate(
+		Mutation_createAgendaCategory,
+		{
+			headers: { authorization: `bearer ${authToken}` },
+			variables: {
+				input: {
+					eventId,
+					name: "Category",
+					description: "Agenda Category",
+				},
+			},
+		},
+	);
+
+	const categoryId = categoryRes.data?.createAgendaCategory?.id;
+	assertToBeNonNullish(categoryId);
+
+	const folderRes = await mercuriusClient.mutate(Mutation_createAgendaFolder, {
+		headers: { authorization: `bearer ${authToken}` },
+		variables: {
+			input: {
+				eventId,
+				organizationId: orgId,
+				name: "Folder",
+				sequence: 1,
+			},
+		},
+	});
+
+	const folderId = folderRes.data?.createAgendaFolder?.id;
+	assertToBeNonNullish(folderId);
+
+	const agendaItemRes = await mercuriusClient.mutate(
+		Mutation_createAgendaItem,
+		{
+			headers: { authorization: `bearer ${authToken}` },
+			variables: {
+				input: {
+					name: "Agenda Item",
+					type: "general",
+					eventId,
+					folderId,
+					categoryId,
+					sequence: 1,
+				},
+			},
+		},
+	);
+
+	const agendaItemId = agendaItemRes.data?.createAgendaItem?.id;
+	assertToBeNonNullish(agendaItemId);
+
+	return { orgId, eventId, folderId, categoryId, agendaItemId };
+}
+
+suite("Mutation field updateAgendaItem", () => {
+	afterEach(() => {
 		vi.restoreAllMocks();
-		for (const fn of cleanupFns.reverse()) {
-			try {
-				await fn();
-			} catch {
-				// Cleanup errors intentionally swallowed
-			}
-		}
-		cleanupFns.length = 0;
 	});
 
-	test("Returns unauthenticated when client is not authenticated", async () => {
-		const result = await mercuriusClient.mutate(Mutation_updateAgendaFolder, {
+	test("should update agenda item successfully", async () => {
+		const { agendaItemId } = await createCategoryFolderAgendaItem();
+
+		const result = await mercuriusClient.mutate(Mutation_updateAgendaItem, {
+			headers: { authorization: `bearer ${authToken}` },
 			variables: {
 				input: {
-					id: faker.string.uuid(),
-					name: "Updated",
-				},
-			},
-		});
-
-		expect(result.data?.updateAgendaFolder ?? null).toEqual(null);
-		expect(result.errors).toEqual(
-			expect.arrayContaining([
-				expect.objectContaining({
-					extensions: expect.objectContaining({ code: "unauthenticated" }),
-				}),
-			]),
-		);
-	});
-
-	test("Returns unauthenticated when token user no longer exists", async () => {
-		const user = await createRegularUserUsingAdmin();
-
-		await server.drizzleClient
-			.delete(usersTable)
-			.where(eq(usersTable.id, user.userId));
-
-		const result = await mercuriusClient.mutate(Mutation_updateAgendaFolder, {
-			headers: { authorization: `bearer ${user.authToken}` },
-			variables: {
-				input: {
-					id: faker.string.uuid(),
-					name: "Updated",
-				},
-			},
-		});
-
-		expect(result.data?.updateAgendaFolder ?? null).toEqual(null);
-		expect(result.errors).toEqual(
-			expect.arrayContaining([
-				expect.objectContaining({
-					extensions: expect.objectContaining({ code: "unauthenticated" }),
-				}),
-			]),
-		);
-	});
-
-	test("Returns not found when agenda folder does not exist", async () => {
-		const { token } = await getAdminAuth();
-
-		const result = await mercuriusClient.mutate(Mutation_updateAgendaFolder, {
-			headers: { authorization: `bearer ${token}` },
-			variables: {
-				input: {
-					id: faker.string.uuid(),
-					name: "Updated",
-				},
-			},
-		});
-
-		expect(result.data?.updateAgendaFolder ?? null).toEqual(null);
-		expect(result.errors).toEqual(
-			expect.arrayContaining([
-				expect.objectContaining({
-					extensions: expect.objectContaining({
-						code: "arguments_associated_resources_not_found",
-					}),
-				}),
-			]),
-		);
-	});
-
-	test("Returns unauthorized for regular org member", async () => {
-		const [{ userId: adminUserId }, regularUser] = await Promise.all([
-			getAdminAuth(),
-			createRegularUserUsingAdmin(),
-		]);
-
-		const env = await createOrganizationEventAndFolder({ adminUserId });
-		cleanupFns.push(env.cleanup);
-
-		await server.drizzleClient.insert(organizationMembershipsTable).values({
-			memberId: regularUser.userId,
-			organizationId: env.organizationId,
-			role: "regular",
-			creatorId: adminUserId,
-		});
-
-		const result = await mercuriusClient.mutate(Mutation_updateAgendaFolder, {
-			headers: { authorization: `bearer ${regularUser.authToken}` },
-			variables: {
-				input: {
-					id: env.folderId,
-					name: "Updated",
-				},
-			},
-		});
-
-		expect(result.data?.updateAgendaFolder ?? null).toEqual(null);
-		expect(result.errors).toEqual(
-			expect.arrayContaining([
-				expect.objectContaining({
-					extensions: expect.objectContaining({
-						code: "unauthorized_action_on_arguments_associated_resources",
-					}),
-				}),
-			]),
-		);
-	});
-
-	test("Blocks updating name/description of default folder", async () => {
-		const { userId: adminUserId, token } = await getAdminAuth();
-
-		const env = await createOrganizationEventAndFolder({
-			adminUserId,
-			isDefaultFolder: true,
-		});
-		cleanupFns.push(env.cleanup);
-
-		const result = await mercuriusClient.mutate(Mutation_updateAgendaFolder, {
-			headers: { authorization: `bearer ${token}` },
-			variables: {
-				input: {
-					id: env.folderId,
-					name: "New Name",
-				},
-			},
-		});
-
-		expect(result.data?.updateAgendaFolder ?? null).toEqual(null);
-		expect(result.errors).toEqual(
-			expect.arrayContaining([
-				expect.objectContaining({
-					extensions: expect.objectContaining({
-						code: "forbidden_action_on_arguments_associated_resources",
-					}),
-				}),
-			]),
-		);
-	});
-
-	test("Blocks updating description of default folder", async () => {
-		const { userId: adminUserId, token } = await getAdminAuth();
-
-		const env = await createOrganizationEventAndFolder({
-			adminUserId,
-			isDefaultFolder: true,
-		});
-		cleanupFns.push(env.cleanup);
-
-		const result = await mercuriusClient.mutate(Mutation_updateAgendaFolder, {
-			headers: { authorization: `bearer ${token}` },
-			variables: {
-				input: {
-					id: env.folderId,
-					description: "New Description",
-				},
-			},
-		});
-
-		expect(result.data?.updateAgendaFolder ?? null).toEqual(null);
-		expect(result.errors).toEqual(
-			expect.arrayContaining([
-				expect.objectContaining({
-					extensions: expect.objectContaining({
-						code: "forbidden_action_on_arguments_associated_resources",
-					}),
-				}),
-			]),
-		);
-	});
-
-	test("Returns invalid_arguments when id is not a valid UUID", async () => {
-		const { token } = await getAdminAuth();
-
-		const result = await mercuriusClient.mutate(Mutation_updateAgendaFolder, {
-			headers: { authorization: `bearer ${token}` },
-			variables: {
-				input: {
-					id: "invalid-uuid",
-					name: "Updated",
-				},
-			},
-		});
-
-		expect(result.data?.updateAgendaFolder ?? null).toEqual(null);
-		expect(result.errors).toEqual(
-			expect.arrayContaining([
-				expect.objectContaining({
-					extensions: expect.objectContaining({ code: "invalid_arguments" }),
-				}),
-			]),
-		);
-	});
-
-	test("Returns invalid_arguments when no updatable field is provided", async () => {
-		const { userId: adminUserId, token } = await getAdminAuth();
-
-		const env = await createOrganizationEventAndFolder({ adminUserId });
-		cleanupFns.push(env.cleanup);
-
-		const result = await mercuriusClient.mutate(Mutation_updateAgendaFolder, {
-			headers: { authorization: `bearer ${token}` },
-			variables: {
-				input: {
-					id: env.folderId,
-				},
-			},
-		});
-
-		expect(result.data?.updateAgendaFolder ?? null).toEqual(null);
-		expect(result.errors).toEqual(
-			expect.arrayContaining([
-				expect.objectContaining({
-					extensions: expect.objectContaining({
-						code: "invalid_arguments",
-						issues: expect.arrayContaining([
-							expect.objectContaining({
-								argumentPath: ["input"],
-								message: expect.stringContaining("optional argument"),
-							}),
-						]),
-					}),
-				}),
-			]),
-		);
-	});
-
-	test("Updates name, description and sequence successfully", async () => {
-		const { userId: adminUserId, token } = await getAdminAuth();
-
-		const env = await createOrganizationEventAndFolder({ adminUserId });
-		cleanupFns.push(env.cleanup);
-
-		const result = await mercuriusClient.mutate(Mutation_updateAgendaFolder, {
-			headers: { authorization: `bearer ${token}` },
-			variables: {
-				input: {
-					id: env.folderId,
-					name: "Updated Folder",
+					id: agendaItemId,
+					name: "Updated Name",
 					description: "Updated description",
-					sequence: 5,
 				},
 			},
 		});
 
 		expect(result.errors).toBeUndefined();
-		expect(result.data?.updateAgendaFolder).toEqual(
+		expect(result.data?.updateAgendaItem).toEqual(
 			expect.objectContaining({
-				id: env.folderId,
-				name: "Updated Folder",
-				description: "Updated description",
-				sequence: 5,
+				id: agendaItemId,
+				name: "Updated Name",
 			}),
 		);
 	});
 
-	test("Allows updating only sequence for default folder", async () => {
-		const { userId: adminUserId, token } = await getAdminAuth();
-
-		const env = await createOrganizationEventAndFolder({
-			adminUserId,
-			isDefaultFolder: true,
-		});
-		cleanupFns.push(env.cleanup);
-
-		const result = await mercuriusClient.mutate(Mutation_updateAgendaFolder, {
-			headers: { authorization: `bearer ${token}` },
+	test("should throw unauthenticated error when not authenticated", async () => {
+		const result = await mercuriusClient.mutate(Mutation_updateAgendaItem, {
 			variables: {
 				input: {
-					id: env.folderId,
-					sequence: 10,
+					id: faker.string.uuid(),
+					name: "Fail",
 				},
 			},
 		});
 
-		expect(result.errors).toBeUndefined();
-		expect(result.data?.updateAgendaFolder).toEqual(
-			expect.objectContaining({
-				id: env.folderId,
-				sequence: 10,
-			}),
+		expect(result.errors?.[0]?.extensions?.code).toBe("unauthenticated");
+	});
+
+	test("should throw invalid_arguments error for invalid input", async () => {
+		const result = await mercuriusClient.mutate(Mutation_updateAgendaItem, {
+			headers: { authorization: `bearer ${authToken}` },
+			variables: {
+				input: {
+					id: "invalid-id",
+					name: "Fail",
+				},
+			},
+		});
+
+		expect(result.errors?.[0]?.extensions?.code).toBe("invalid_arguments");
+	});
+
+	test("should throw not found error when agenda item does not exist", async () => {
+		const result = await mercuriusClient.mutate(Mutation_updateAgendaItem, {
+			headers: { authorization: `bearer ${authToken}` },
+			variables: {
+				input: {
+					id: faker.string.uuid(),
+					name: "Fail",
+				},
+			},
+		});
+
+		expect(result.errors?.[0]?.extensions?.code).toBe(
+			"arguments_associated_resources_not_found",
 		);
 	});
 
-	test("Allows organization administrator to update agenda folder", async () => {
-		const [{ userId: adminUserId }, regularUser] = await Promise.all([
-			getAdminAuth(),
-			createRegularUserUsingAdmin(),
-		]);
+	test("should throw forbidden error when updating note type with duration", async () => {
+		const { agendaItemId } = await createCategoryFolderAgendaItem();
 
-		const env = await createOrganizationEventAndFolder({ adminUserId });
-		cleanupFns.push(env.cleanup);
-
-		await server.drizzleClient.insert(organizationMembershipsTable).values({
-			memberId: regularUser.userId,
-			organizationId: env.organizationId,
-			role: "administrator",
-			creatorId: adminUserId,
-		});
-
-		const result = await mercuriusClient.mutate(Mutation_updateAgendaFolder, {
-			headers: { authorization: `bearer ${regularUser.authToken}` },
-			variables: {
-				input: {
-					id: env.folderId,
-					name: "Org Admin Update",
-				},
-			},
-		});
-
-		expect(result.errors).toBeUndefined();
-		expect(result.data?.updateAgendaFolder?.name).toBe("Org Admin Update");
-	});
-
-	test("Updates only description successfully", async () => {
-		const { userId: adminUserId, token } = await getAdminAuth();
-
-		const env = await createOrganizationEventAndFolder({ adminUserId });
-		cleanupFns.push(env.cleanup);
-
-		const result = await mercuriusClient.mutate(Mutation_updateAgendaFolder, {
-			headers: { authorization: `bearer ${token}` },
-			variables: {
-				input: {
-					id: env.folderId,
-					description: "Description Only Update",
-				},
-			},
-		});
-
-		expect(result.errors).toBeUndefined();
-		expect(result.data?.updateAgendaFolder).toEqual(
-			expect.objectContaining({
-				id: env.folderId,
-				description: "Description Only Update",
-			}),
-		);
-	});
-
-	test("Updates only name successfully", async () => {
-		const { userId: adminUserId, token } = await getAdminAuth();
-
-		const env = await createOrganizationEventAndFolder({ adminUserId });
-		cleanupFns.push(env.cleanup);
-
-		const result = await mercuriusClient.mutate(Mutation_updateAgendaFolder, {
-			headers: { authorization: `bearer ${token}` },
-			variables: {
-				input: {
-					id: env.folderId,
-					name: "Name Only Update",
-				},
-			},
-		});
-
-		expect(result.errors).toBeUndefined();
-		expect(result.data?.updateAgendaFolder).toEqual(
-			expect.objectContaining({
-				id: env.folderId,
-				name: "Name Only Update",
-			}),
-		);
-	});
-
-	test("Updates only sequence for non-default folder", async () => {
-		const { userId: adminUserId, token } = await getAdminAuth();
-
-		const env = await createOrganizationEventAndFolder({ adminUserId });
-		cleanupFns.push(env.cleanup);
-
-		const result = await mercuriusClient.mutate(Mutation_updateAgendaFolder, {
-			headers: { authorization: `bearer ${token}` },
-			variables: {
-				input: {
-					id: env.folderId,
-					sequence: 99,
-				},
-			},
-		});
-
-		expect(result.errors).toBeUndefined();
-		expect(result.data?.updateAgendaFolder).toEqual(
-			expect.objectContaining({
-				id: env.folderId,
-				sequence: 99,
-			}),
-		);
-	});
-
-	test("Allows global admin to update folder without organization membership", async () => {
-		const { userId: adminUserId, token } = await getAdminAuth();
-
-		const env = await createOrganizationEventAndFolder({ adminUserId });
-		cleanupFns.push(env.cleanup);
-
+		// Force type to "note" directly
 		await server.drizzleClient
-			.delete(organizationMembershipsTable)
-			.where(
-				eq(organizationMembershipsTable.organizationId, env.organizationId),
-			);
+			.update(agendaItemsTable)
+			.set({ type: "note" })
+			.where(eq(agendaItemsTable.id, agendaItemId));
 
-		const result = await mercuriusClient.mutate(Mutation_updateAgendaFolder, {
-			headers: { authorization: `bearer ${token}` },
+		const result = await mercuriusClient.mutate(Mutation_updateAgendaItem, {
+			headers: { authorization: `bearer ${authToken}` },
 			variables: {
 				input: {
-					id: env.folderId,
-					name: "Global Admin Update",
+					id: agendaItemId,
+					duration: "10m",
+				},
+			},
+		});
+
+		expect(result.errors?.[0]?.extensions?.code).toBe(
+			"forbidden_action_on_arguments_associated_resources",
+		);
+	});
+
+	test("should throw unauthorized error for non-admin user", async () => {
+		const { agendaItemId } = await createCategoryFolderAgendaItem();
+
+		const userRes = await mercuriusClient.mutate(Mutation_createUser, {
+			headers: { authorization: `bearer ${authToken}` },
+			variables: {
+				input: {
+					emailAddress: `user${faker.string.ulid()}@x.com`,
+					password: "password",
+					name: "User",
+					role: "regular",
+					isEmailAddressVerified: true,
+				},
+			},
+		});
+
+		const userToken = userRes.data?.createUser?.authenticationToken;
+		assertToBeNonNullish(userToken);
+
+		const result = await mercuriusClient.mutate(Mutation_updateAgendaItem, {
+			headers: { authorization: `bearer ${userToken}` },
+			variables: {
+				input: {
+					id: agendaItemId,
+					name: "Fail",
+				},
+			},
+		});
+
+		expect(result.errors?.[0]?.extensions?.code).toBe(
+			"unauthorized_action_on_arguments_associated_resources",
+		);
+	});
+
+	test("should replace attachments when provided", async () => {
+		const { agendaItemId } = await createCategoryFolderAgendaItem();
+
+		const result = await mercuriusClient.mutate(Mutation_updateAgendaItem, {
+			headers: { authorization: `bearer ${authToken}` },
+			variables: {
+				input: {
+					id: agendaItemId,
+					attachments: [
+						{
+							name: "file.png",
+							fileHash:
+								"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+							mimeType: "IMAGE_JPEG",
+							objectName: "file.png",
+						},
+					],
 				},
 			},
 		});
 
 		expect(result.errors).toBeUndefined();
-		expect(result.data?.updateAgendaFolder?.name).toBe("Global Admin Update");
 	});
 
-	test("Returns unexpected when update returns empty array", async () => {
-		const { userId: adminUserId, token } = await getAdminAuth();
+	test("should throw unexpected error when update returns nothing", async () => {
+		const { agendaItemId } = await createCategoryFolderAgendaItem();
 
-		const env = await createOrganizationEventAndFolder({ adminUserId });
-		cleanupFns.push(env.cleanup);
+		const transactionSpy = vi
+			.spyOn(server.drizzleClient, "transaction")
+			.mockImplementation(async (callback) => {
+				const mockTx = {
+					...server.drizzleClient,
+					update: vi.fn().mockImplementation(() => ({
+						set: vi.fn().mockReturnThis(),
+						where: vi.fn().mockReturnThis(),
+						returning: vi.fn().mockResolvedValue([]),
+					})),
+					delete: vi.fn().mockReturnThis(),
+					insert: vi.fn().mockReturnThis(),
+				};
 
-		const updateSpy = vi
-			.spyOn(server.drizzleClient, "update")
-			.mockReturnValueOnce({
-				set: () => ({
-					where: () => ({
-						returning: async () => [],
-					}),
-				}),
-			} as unknown as ReturnType<typeof server.drizzleClient.update>);
+				return callback(mockTx as unknown as Parameters<typeof callback>[0]);
+			});
 
-		const result = await mercuriusClient.mutate(Mutation_updateAgendaFolder, {
-			headers: { authorization: `bearer ${token}` },
+		const result = await mercuriusClient.mutate(Mutation_updateAgendaItem, {
+			headers: { authorization: `bearer ${authToken}` },
 			variables: {
 				input: {
-					id: env.folderId,
-					name: "Updated",
+					id: agendaItemId,
+					name: "Fail",
 				},
 			},
 		});
 
-		expect(updateSpy).toHaveBeenCalledWith(agendaFoldersTable);
-		expect(result.data?.updateAgendaFolder ?? null).toEqual(null);
-		expect(result.errors).toEqual(
-			expect.arrayContaining([
-				expect.objectContaining({
-					extensions: expect.objectContaining({ code: "unexpected" }),
-				}),
-			]),
-		);
+		expect(transactionSpy).toHaveBeenCalled();
+		expect(result.errors?.[0]?.extensions?.code).toBe("unexpected");
 	});
 });
