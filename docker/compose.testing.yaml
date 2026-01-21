@@ -28,6 +28,8 @@ services:
       - API_POSTGRES_TEST_HOST=${API_POSTGRES_TEST_HOST:?error}
       - API_REDIS_TEST_HOST=${API_REDIS_TEST_HOST:?error}
       - MINIO_ROOT_USER=${MINIO_ROOT_USER:?error}
+      - API_PORT=${API_PORT:?error}
+      - API_COOKIE_SECRET=${API_COOKIE_SECRET:?error}
     # https://docs.docker.com/reference/dockerfile/#healthcheck
     # https://docs.docker.com/reference/compose-file/services/#healthcheck
     healthcheck:
