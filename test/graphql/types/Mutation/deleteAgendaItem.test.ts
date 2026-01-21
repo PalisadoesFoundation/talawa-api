@@ -152,9 +152,12 @@ suite("Mutation field deleteAgendaItem", () => {
 		for (const fn of cleanupFns.reverse()) {
 			try {
 				await fn();
-			} catch {
-				// Cleanup errors are intentionally swallowed to prevent cascading failures
-				// during teardown. The test result is already determined at this point.
+			} catch (err) {
+				// Cleanup errors are swallowed to prevent cascading failures during teardown.
+				// Log in development for debugging visibility.
+				if (process.env.DEBUG) {
+					console.warn("Cleanup error (non-fatal):", err);
+				}
 			}
 		}
 		cleanupFns.length = 0;
@@ -278,6 +281,33 @@ suite("Mutation field deleteAgendaItem", () => {
 				}),
 			]),
 		);
+	});
+
+	test("Deletes agenda item successfully as organization administrator", async () => {
+		const [{ token }, regular] = await Promise.all([
+			getAdminAuth(),
+			createRegularUserUsingAdmin(),
+		]);
+
+		const env = await createAgendaItemEnv(token);
+		cleanupFns.push(env.cleanup);
+
+		// Make regular user an ORG ADMIN (not system admin)
+		await addOrganizationMembership({
+			adminAuthToken: token,
+			memberId: regular.userId,
+			organizationId: env.organizationId,
+			role: "administrator",
+		});
+
+		const result = await mercuriusClient.mutate(Mutation_deleteAgendaItem, {
+			headers: { authorization: `bearer ${regular.authToken}` },
+			variables: { input: { id: env.itemId } },
+		});
+
+		expect(result.errors).toBeUndefined();
+		assertToBeNonNullish(result.data?.deleteAgendaItem);
+		expect(result.data.deleteAgendaItem.id).toBe(env.itemId);
 	});
 
 	test("Deletes agenda item successfully as admin", async () => {

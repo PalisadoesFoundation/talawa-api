@@ -201,6 +201,22 @@ describe("MutationCreateAgendaItemInput Schema", () => {
 			expect(result.success).toBe(true);
 		});
 
+		it("should accept empty url array", () => {
+			const result = mutationCreateAgendaItemInputSchema.safeParse({
+				...validBaseInput,
+				url: [],
+			});
+			expect(result.success).toBe(true);
+		});
+
+		it("should accept valid notes string", () => {
+			const result = mutationCreateAgendaItemInputSchema.safeParse({
+				...validBaseInput,
+				notes: "Some notes for the agenda item",
+			});
+			expect(result.success).toBe(true);
+		});
+
 		it('should reject key for type "general"', () => {
 			const result = mutationCreateAgendaItemInputSchema.safeParse({
 				...validBaseInput,

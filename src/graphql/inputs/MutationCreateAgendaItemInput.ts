@@ -27,6 +27,7 @@ export const mutationCreateAgendaItemInputSchema = agendaItemsTableInsertSchema
 					url: z.string().url(),
 				}),
 			)
+			.max(10)
 			.optional(),
 		attachments: z
 			.array(

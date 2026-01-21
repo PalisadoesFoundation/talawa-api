@@ -329,7 +329,7 @@ type AgendaItemUrl {
   updatedAt: DateTime
 
   """URL associated with the agenda item."""
-  url: String
+  url: String!
 }
 
 """URL associated with an agenda item"""
