@@ -84,14 +84,33 @@ describe("createUser mutation performance tracking", () => {
 		// Get initial snapshot count
 		const initialSnapshots = server.getMetricsSnapshots?.(1) ?? [];
 
-		// Use invalid input (invalid email)
+		// First create a user
+		const firstResult = await mercuriusClient.mutate(Mutation_createUser, {
+			headers: { authorization: `bearer ${authToken}` },
+			variables: {
+				input: {
+					emailAddress: `duplicate-test-${faker.string.ulid()}@example.com`,
+					isEmailAddressVerified: false,
+					name: "First User",
+					password: "password",
+					role: "regular",
+				},
+			},
+		});
+
+		expect(firstResult.errors).toBeUndefined();
+		assertToBeNonNullish(firstResult.data?.createUser);
+		assertToBeNonNullish(firstResult.data.createUser.user);
+		assertToBeNonNullish(firstResult.data.createUser.user.emailAddress);
+
+		// Try to create another user with the same email (will fail in resolver)
 		const result = await mercuriusClient.mutate(Mutation_createUser, {
 			headers: { authorization: `bearer ${authToken}` },
 			variables: {
 				input: {
-					emailAddress: "invalid-email",
+					emailAddress: firstResult.data.createUser.user.emailAddress,
 					isEmailAddressVerified: false,
-					name: "Test User",
+					name: "Duplicate User",
 					password: "password",
 					role: "regular",
 				},
