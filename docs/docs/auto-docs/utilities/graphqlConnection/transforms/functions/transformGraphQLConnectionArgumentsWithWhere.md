@@ -31,7 +31,7 @@ The arguments to transform
 
 ### ctx
 
-`$RefinementCtx`
+`RefinementCtx`
 
 The Zod refinement context
 

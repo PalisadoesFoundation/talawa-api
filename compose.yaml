@@ -21,8 +21,8 @@ services:
       # https://docs.docker.com/reference/compose-file/build/#target
       target: non_production
     # Override the default command to run the development server
-    # Using bash -i to ensure interactive shell loads environment properly
-    command: bash -i -c "pnpm run start_development_server"
+    # Using bash -l to ensure login shell loads environment properly
+    command: bash -l -c "pnpm run start_development_server"
     # https://docs.docker.com/reference/compose-file/services/#depends_on
     depends_on:
       minio:

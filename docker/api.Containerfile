@@ -67,8 +67,8 @@ RUN userdel -r node \
 USER talawa
 WORKDIR /home/talawa/api
 
-# Enable corepack and explicitly install pnpm for talawa user
-RUN corepack enable && corepack install -g pnpm@latest
+# Install pnpm for talawa user (corepack already enabled at system level)
+RUN corepack install -g pnpm@10.26.1
 
 FROM base AS non_production
 COPY --chown=talawa:talawa ./pnpm-lock.yaml ./pnpm-lock.yaml
@@ -76,8 +76,8 @@ RUN pnpm fetch --frozen-lockfile
 COPY --chown=talawa:talawa ./ ./
 RUN pnpm install --frozen-lockfile --offline
 # Default command for development - automatically starts the development server
-# Using bash -i to ensure interactive shell loads environment properly
-CMD ["bash", "-i", "-c", "pnpm run start_development_server"]
+# Using bash -l to ensure login shell loads environment properly
+CMD ["bash", "-l", "-c", "pnpm run start_development_server"]
 
 # This build stage is used to build the codebase used in production environment of talawa api. 
 FROM base AS production_code
