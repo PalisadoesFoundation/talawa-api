@@ -1,3 +1,4 @@
+import { Readable } from "node:stream";
 import { describe, expect, it } from "vitest";
 import { mutationCreateEventInputSchema } from "~/src/graphql/inputs/MutationCreateEventInput";
 
@@ -49,6 +50,7 @@ describe("MutationCreateEventInput - Attachment Validation", () => {
 			expect(result.success).toBe(false);
 		});
 	});
+
 	describe("MIME type validation (arguments schema transform)", () => {
 		// Helper to create FileUpload-like objects
 		function createMockFileUpload(filename: string, mimetype: string) {
@@ -56,8 +58,7 @@ describe("MutationCreateEventInput - Attachment Validation", () => {
 				filename,
 				mimetype,
 				encoding: "7bit",
-				createReadStream: () =>
-					require("stream").Readable.from(Buffer.from("test")),
+				createReadStream: () => Readable.from(Buffer.from("test")),
 			});
 		}
 
@@ -65,9 +66,14 @@ describe("MutationCreateEventInput - Attachment Validation", () => {
 			const { mutationCreateEventArgumentsSchema } = await import(
 				"~/src/graphql/types/Mutation/createEvent"
 			);
+			// Use future dates to pass startAt validation
+			const startAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000); // 30 days from now
+			const endAt = new Date(startAt.getTime() + 2 * 60 * 60 * 1000); // 2 hours after start
 			const result = await mutationCreateEventArgumentsSchema.safeParseAsync({
 				input: {
 					...validInput,
+					startAt,
+					endAt,
 					attachments: [createMockFileUpload("test.png", "image/png")],
 				},
 			});
@@ -78,9 +84,14 @@ describe("MutationCreateEventInput - Attachment Validation", () => {
 			const { mutationCreateEventArgumentsSchema } = await import(
 				"~/src/graphql/types/Mutation/createEvent"
 			);
+			// Use future dates to pass startAt validation
+			const startAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000); // 30 days from now
+			const endAt = new Date(startAt.getTime() + 2 * 60 * 60 * 1000); // 2 hours after start
 			const result = await mutationCreateEventArgumentsSchema.safeParseAsync({
 				input: {
 					...validInput,
+					startAt,
+					endAt,
 					attachments: [createMockFileUpload("test.jpg", "image/jpeg")],
 				},
 			});
@@ -91,9 +102,14 @@ describe("MutationCreateEventInput - Attachment Validation", () => {
 			const { mutationCreateEventArgumentsSchema } = await import(
 				"~/src/graphql/types/Mutation/createEvent"
 			);
+			// Use future dates to pass startAt validation
+			const startAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000); // 30 days from now
+			const endAt = new Date(startAt.getTime() + 2 * 60 * 60 * 1000); // 2 hours after start
 			const result = await mutationCreateEventArgumentsSchema.safeParseAsync({
 				input: {
 					...validInput,
+					startAt,
+					endAt,
 					attachments: [createMockFileUpload("test.pdf", "application/pdf")],
 				},
 			});
@@ -114,9 +130,14 @@ describe("MutationCreateEventInput - Attachment Validation", () => {
 			const { mutationCreateEventArgumentsSchema } = await import(
 				"~/src/graphql/types/Mutation/createEvent"
 			);
+			// Use future dates to pass startAt validation
+			const startAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000); // 30 days from now
+			const endAt = new Date(startAt.getTime() + 2 * 60 * 60 * 1000); // 2 hours after start
 			const result = await mutationCreateEventArgumentsSchema.safeParseAsync({
 				input: {
 					...validInput,
+					startAt,
+					endAt,
 					attachments: [createMockFileUpload("test.txt", "text/plain")],
 				},
 			});
@@ -137,9 +158,14 @@ describe("MutationCreateEventInput - Attachment Validation", () => {
 			const { mutationCreateEventArgumentsSchema } = await import(
 				"~/src/graphql/types/Mutation/createEvent"
 			);
+			// Use future dates to pass startAt validation
+			const startAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000); // 30 days from now
+			const endAt = new Date(startAt.getTime() + 2 * 60 * 60 * 1000); // 2 hours after start
 			const result = await mutationCreateEventArgumentsSchema.safeParseAsync({
 				input: {
 					...validInput,
+					startAt,
+					endAt,
 					attachments: [
 						createMockFileUpload("valid.png", "image/png"),
 						createMockFileUpload("invalid.txt", "text/plain"),

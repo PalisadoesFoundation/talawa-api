@@ -451,7 +451,7 @@ suite("Mutation field createEvent", () => {
 			const errorMessage = invalidResult.errors?.[0]?.message;
 			expect(
 				errorMessage?.includes("Upload value invalid") ||
-					errorMessage?.includes("Graphql validation error"),
+				errorMessage?.includes("Graphql validation error"),
 			).toBe(true);
 		});
 
@@ -1071,19 +1071,170 @@ suite("Mutation field createEvent", () => {
 	});
 
 	suite("Attachment Handling", () => {
-		// NOTE: Attachment validation and upload logic is tested at the unit level in
-		// test/graphql/inputs/MutationCreateEventInputAttachments.test.ts
-		//
-		// Integration tests cannot properly mock file uploads because mercurius-upload's
-		// Upload scalar validates the promise structure before our resolver executes.
-		//
-		// Coverage for lines 46-71 (MIME validation) and 415-445 (MinIO upload) is
-		// provided by the unit tests which directly test the schema transform function.
+		test("rejects file upload with invalid MIME type", async () => {
+			const organizationId = await createTestOrganization();
+			const token = adminAuthToken;
 
-		test.skip("Integration tests skipped - see unit tests", () => {
-			// See test/graphql/inputs/MutationCreateEventInputAttachments.test.ts
-			// for comprehensive MIME type validation tests that cover the transform
-			// function (lines 46-71) and attachment upload logic (lines 415-445)
+			// Use Fastify's raw inject with manually constructed multipart data
+			const boundary = `----WebKitFormBoundary${Math.random().toString(36)}`;
+			const operations = JSON.stringify({
+				query: `
+					mutation Mutation_createEvent($input: MutationCreateEventInput!) {
+						createEvent(input: $input) {
+							id
+							name
+							attachments { mimeType }
+						}
+					}
+				`,
+				variables: {
+					input: {
+						organizationId,
+						name: `Event_${Date.now()}`,
+						startAt: getFutureDate(7, 10),
+						endAt: getFutureDate(7, 12),
+						attachments: [null],
+					},
+				},
+			});
+
+			const map = JSON.stringify({
+				"0": ["variables.input.attachments.0"],
+			});
+
+			const fileContent = "fake pdf content";
+
+			const body = [
+				`--${boundary}`,
+				'Content-Disposition: form-data; name="operations"',
+				"",
+				operations,
+				`--${boundary}`,
+				'Content-Disposition: form-data; name="map"',
+				"",
+				map,
+				`--${boundary}`,
+				'Content-Disposition: form-data; name="0"; filename="test.pdf"',
+				"Content-Type: application/pdf",
+				"",
+				fileContent,
+				`--${boundary}--`,
+			].join("\r\n");
+
+			const response = await server.inject({
+				method: "POST",
+				url: "/graphql",
+				headers: {
+					"content-type": `multipart/form-data; boundary=${boundary}`,
+					authorization: `bearer ${token}`,
+				},
+				payload: body,
+			});
+
+			const result = JSON.parse(response.body);
+
+			expect(result.data?.createEvent).toEqual(null);
+			expect(result.errors).toEqual(
+				expect.arrayContaining([
+					expect.objectContaining({
+						extensions: expect.objectContaining({
+							code: "invalid_arguments",
+							issues: expect.arrayContaining([
+								expect.objectContaining({
+									argumentPath: expect.arrayContaining(["attachments"]),
+									message: expect.stringContaining("Mime type"),
+								}),
+							]),
+						}),
+					}),
+				]),
+			);
+		});
+
+		test("successfully creates event with valid image attachment", async () => {
+			const organizationId = await createTestOrganization();
+			const token = adminAuthToken;
+
+			// Mock MinIO to avoid actual file upload
+			const putObjectSpy = vi
+				.spyOn(server.minio.client, "putObject")
+				.mockResolvedValue({ etag: "test-etag", versionId: "test-version" });
+
+			try {
+				const boundary = `----WebKitFormBoundary${Math.random().toString(36)}`;
+				const operations = JSON.stringify({
+					query: `
+						mutation Mutation_createEvent($input: MutationCreateEventInput!) {
+							createEvent(input: $input) {
+								id
+								name
+								attachments { mimeType }
+							}
+						}
+					`,
+					variables: {
+						input: {
+							organizationId,
+							name: `Event_${Date.now()}`,
+							startAt: getFutureDate(7, 10),
+							endAt: getFutureDate(7, 12),
+							attachments: [null],
+						},
+					},
+				});
+
+				const map = JSON.stringify({
+					"0": ["variables.input.attachments.0"],
+				});
+
+				const fileContent = "fake jpeg content";
+
+				const body = [
+					`--${boundary}`,
+					'Content-Disposition: form-data; name="operations"',
+					"",
+					operations,
+					`--${boundary}`,
+					'Content-Disposition: form-data; name="map"',
+					"",
+					map,
+					`--${boundary}`,
+					'Content-Disposition: form-data; name="0"; filename="test.jpg"',
+					"Content-Type: image/jpeg",
+					"",
+					fileContent,
+					`--${boundary}--`,
+				].join("\r\n");
+
+				const response = await server.inject({
+					method: "POST",
+					url: "/graphql",
+					headers: {
+						"content-type": `multipart/form-data; boundary=${boundary}`,
+						authorization: `bearer ${token}`,
+					},
+					payload: body,
+				});
+
+				const result = JSON.parse(response.body);
+
+				expect(result.errors).toBeUndefined();
+				expect(result.data?.createEvent).toEqual(
+					expect.objectContaining({
+						id: expect.any(String),
+						attachments: expect.arrayContaining([
+							expect.objectContaining({
+								mimeType: "image/jpeg",
+							}),
+						]),
+					}),
+				);
+
+				// Verify MinIO upload was called
+				expect(putObjectSpy).toHaveBeenCalled();
+			} finally {
+				putObjectSpy.mockRestore();
+			}
 		});
 	});
 
@@ -1293,6 +1444,7 @@ suite("Mutation field createEvent", () => {
 			}
 		});
 	});
+
 });
 
 suite("Default Agenda Folder and Category Creation", () => {
