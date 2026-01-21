@@ -793,7 +793,7 @@ describe("errorHandlerPlugin", () => {
 				if (originalNodeEnv === undefined) {
 					vi.unstubAllEnvs();
 				} else {
-					process.env.NODE_ENV = originalNodeEnv;
+					vi.stubEnv("NODE_ENV", originalNodeEnv);
 				}
 			}
 		});
