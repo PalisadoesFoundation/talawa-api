@@ -106,9 +106,14 @@ export const agendaItemUrlTableRelations = relations(
 	}),
 );
 
+import { z } from "zod";
+
 export const agendaItemUrlTableInsertSchema = createInsertSchema(
 	agendaItemUrlTable,
 	{
+		agendaItemId: z.string().uuid(),
+		creatorId: z.string().uuid().optional().nullable(),
+		updaterId: z.string().uuid().optional().nullable(),
 		url: (schema) => schema.url(),
 	},
 );

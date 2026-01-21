@@ -9,6 +9,7 @@ describe("Server-Timing header", () => {
 				API_POSTGRES_HOST: testEnvConfig.API_POSTGRES_TEST_HOST,
 				API_REDIS_HOST: testEnvConfig.API_REDIS_TEST_HOST,
 				API_MINIO_END_POINT: testEnvConfig.API_MINIO_TEST_END_POINT,
+				API_COOKIE_SECRET: testEnvConfig.API_COOKIE_SECRET,
 			},
 		});
 
@@ -32,6 +33,7 @@ describe("Server-Timing header", () => {
 				API_POSTGRES_HOST: testEnvConfig.API_POSTGRES_TEST_HOST,
 				API_REDIS_HOST: testEnvConfig.API_REDIS_TEST_HOST,
 				API_MINIO_END_POINT: testEnvConfig.API_MINIO_TEST_END_POINT,
+				API_COOKIE_SECRET: testEnvConfig.API_COOKIE_SECRET,
 			},
 		});
 
@@ -58,6 +60,7 @@ describe("Server-Timing header", () => {
 				API_POSTGRES_HOST: testEnvConfig.API_POSTGRES_TEST_HOST,
 				API_REDIS_HOST: testEnvConfig.API_REDIS_TEST_HOST,
 				API_MINIO_END_POINT: testEnvConfig.API_MINIO_TEST_END_POINT,
+				API_COOKIE_SECRET: testEnvConfig.API_COOKIE_SECRET,
 			},
 		});
 
@@ -87,6 +90,7 @@ describe("Server-Timing header", () => {
 				API_POSTGRES_HOST: testEnvConfig.API_POSTGRES_TEST_HOST,
 				API_REDIS_HOST: testEnvConfig.API_REDIS_TEST_HOST,
 				API_MINIO_END_POINT: testEnvConfig.API_MINIO_TEST_END_POINT,
+				API_COOKIE_SECRET: testEnvConfig.API_COOKIE_SECRET,
 			},
 		});
 
@@ -131,6 +135,7 @@ describe("Server-Timing header", () => {
 				API_POSTGRES_HOST: testEnvConfig.API_POSTGRES_TEST_HOST,
 				API_REDIS_HOST: testEnvConfig.API_REDIS_TEST_HOST,
 				API_MINIO_END_POINT: testEnvConfig.API_MINIO_TEST_END_POINT,
+				API_COOKIE_SECRET: testEnvConfig.API_COOKIE_SECRET,
 			},
 		});
 
@@ -160,6 +165,7 @@ describe("Server-Timing header", () => {
 				API_POSTGRES_HOST: testEnvConfig.API_POSTGRES_TEST_HOST,
 				API_REDIS_HOST: testEnvConfig.API_REDIS_TEST_HOST,
 				API_MINIO_END_POINT: testEnvConfig.API_MINIO_TEST_END_POINT,
+				API_COOKIE_SECRET: testEnvConfig.API_COOKIE_SECRET,
 			},
 		});
 

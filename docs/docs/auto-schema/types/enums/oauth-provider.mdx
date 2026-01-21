@@ -1,0 +1,91 @@
+---
+id: oauth-provider
+title: OAuthProvider
+---
+
+export const Bullet = () => (
+  <>
+    <span
+      style={{
+        fontWeight: "normal",
+        fontSize: ".5em",
+        color: "var(--ifm-color-secondary-darkest)",
+      }}
+    >
+      &nbsp;●&nbsp;
+    </span>
+  </>
+);
+
+export const SpecifiedBy = (props) => (
+  <>
+    Specification
+    <a
+      className="link"
+      style={{ fontSize: "1.5em", paddingLeft: "4px" }}
+      target="_blank"
+      href={props.url}
+      title={"Specified by " + props.url}
+    >
+      ⎘
+    </a>
+  </>
+);
+
+export const Badge = (props) => (
+  <>
+    <span className={props.class}>{props.text}</span>
+  </>
+);
+
+import { useState } from "react";
+
+export const Details = ({
+  dataOpen,
+  dataClose,
+  children,
+  startOpen = false,
+}) => {
+  const [open, setOpen] = useState(startOpen);
+  return (
+    <details
+      {...(open ? { open: true } : {})}
+      className="details"
+      style={{
+        border: "none",
+        boxShadow: "none",
+        background: "var(--ifm-background-color)",
+      }}
+    >
+      <summary
+        onClick={(e) => {
+          e.preventDefault();
+          setOpen((open) => !open);
+        }}
+        style={{ listStyle: "none" }}
+      >
+        {open ? dataOpen : dataClose}
+      </summary>
+      {open && children}
+    </details>
+  );
+};
+
+OAuth providers supported by the platform.
+
+```graphql
+enum OAuthProvider {
+  GITHUB
+  GOOGLE
+}
+```
+
+### Values
+
+#### [<code style={{ fontWeight: 'normal' }}>OAuthProvider.<b>GITHUB</b></code>](#)
+
+#### [<code style={{ fontWeight: 'normal' }}>OAuthProvider.<b>GOOGLE</b></code>](#)
+
+### Member Of
+
+[`OAuthAccountInfo`](/auto-schema/types/objects/oauth-account-info.mdx) <Badge class="badge badge--secondary badge--relation" text="object"/><Bullet />[`OAuthLoginInput`](/auto-schema/types/inputs/oauth-login-input.mdx) <Badge class="badge badge--secondary badge--relation" text="input"/><Bullet />[`unlinkOAuthAccount`](/auto-schema/operations/mutations/unlink-oauth-account.mdx) <Badge class="badge badge--secondary badge--relation" text="mutation"/>

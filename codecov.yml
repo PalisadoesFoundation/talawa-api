@@ -5,14 +5,16 @@ coverage:
         target: 90%
         threshold: 1%
 
-flags:
-  unit:
-    paths:
-      - test/unit/
-      - src/utilities/
-      - src/services/
-  integration:
-    paths:
-      - test/drizzle/
-      - test/graphql/
-      - test/install/
+
+flag_management:
+  default_rules:
+    carryforward: true
+    statuses:
+      - type: project
+        target: auto
+        threshold: 1%
+        name_prefix: project-
+      - type: patch
+        target: 80%
+        threshold: 1%
+        name_prefix: patch-

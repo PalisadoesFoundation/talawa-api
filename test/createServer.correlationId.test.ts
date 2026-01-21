@@ -28,8 +28,9 @@ describe("Correlation ID behavior", () => {
 			envConfig: {
 				API_IS_PINO_PRETTY: false,
 				API_IS_GRAPHIQL: false,
-				API_COOKIE_SECRET: "test",
-				API_JWT_SECRET: "test",
+				API_COOKIE_SECRET: "12345678901234567890123456789012",
+				API_JWT_SECRET:
+					"1234567890123456789012345678901212345678901234567890123456789012",
 				API_REDIS_HOST: "redis-test",
 				API_REDIS_PORT: 6379,
 				FRONTEND_URL: "http://localhost:4321",
@@ -154,8 +155,9 @@ describe("Correlation ID logger integration", () => {
 			envConfig: {
 				API_IS_PINO_PRETTY: false,
 				API_IS_GRAPHIQL: false,
-				API_COOKIE_SECRET: "test",
-				API_JWT_SECRET: "test",
+				API_COOKIE_SECRET: "12345678901234567890123456789012",
+				API_JWT_SECRET:
+					"1234567890123456789012345678901212345678901234567890123456789012",
 				API_REDIS_HOST: "redis-test",
 				API_REDIS_PORT: 6379,
 				FRONTEND_URL: "http://localhost:4321",
@@ -190,8 +192,9 @@ describe("Correlation ID logger integration", () => {
 			envConfig: {
 				API_IS_PINO_PRETTY: false,
 				API_IS_GRAPHIQL: false,
-				API_COOKIE_SECRET: "test",
-				API_JWT_SECRET: "test",
+				API_COOKIE_SECRET: "12345678901234567890123456789012",
+				API_JWT_SECRET:
+					"1234567890123456789012345678901212345678901234567890123456789012",
 				API_REDIS_HOST: "redis-test",
 				API_REDIS_PORT: 6379,
 				FRONTEND_URL: "http://localhost:4321",
@@ -230,8 +233,9 @@ describe("Correlation ID logger integration", () => {
 			envConfig: {
 				API_IS_PINO_PRETTY: false,
 				API_IS_GRAPHIQL: false,
-				API_COOKIE_SECRET: "test",
-				API_JWT_SECRET: "test",
+				API_COOKIE_SECRET: "12345678901234567890123456789012",
+				API_JWT_SECRET:
+					"1234567890123456789012345678901212345678901234567890123456789012",
 				API_REDIS_HOST: "redis-test",
 				API_REDIS_PORT: 6379,
 				FRONTEND_URL: "http://localhost:4321",
