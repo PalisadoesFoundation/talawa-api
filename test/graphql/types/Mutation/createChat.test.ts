@@ -24,7 +24,7 @@ import {
 	Query_signIn,
 } from "../documentNodes";
 
-export const createChatMutation = `
+const createChatMutation = `
 mutation Mutation_createChat($input: MutationCreateChatInput!) {
 	createChat(input: $input) {
 		id

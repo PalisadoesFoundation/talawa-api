@@ -71,6 +71,7 @@ export function createMultipartPayload({
 		);
 	}
 	const fileField = mapKeys[0];
+	assertToBeNonNullish(fileField);
 
 	const body = [
 		`--${boundary}`,
