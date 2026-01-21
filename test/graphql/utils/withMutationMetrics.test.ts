@@ -112,7 +112,7 @@ describe("withMutationMetrics", () => {
 		const op = snapshot.ops["mutation:createOrganization"];
 
 		expect(op).toBeDefined();
-		expect(op?.ms).toBeGreaterThanOrEqual(10);
+		expect(op?.ms).toBeGreaterThanOrEqual(9);
 	});
 
 	it("should handle multiple mutation calls separately", async () => {

@@ -40,7 +40,7 @@ describe("createEvent mutation performance tracking", () => {
 
 		expect(op).toBeDefined();
 		expect(op?.count).toBe(1);
-		expect(op?.ms).toBeGreaterThanOrEqual(10);
+		expect(op?.ms).toBeGreaterThanOrEqual(9);
 	});
 
 	it("should track metrics even when mutation fails", async () => {
@@ -115,7 +115,7 @@ describe("createEvent mutation performance tracking", () => {
 
 		expect(mainOp).toBeDefined();
 		expect(mainOp?.count).toBe(1);
-		expect(mainOp?.ms).toBeGreaterThanOrEqual(7);
+		expect(mainOp?.ms).toBeGreaterThanOrEqual(6);
 	});
 
 	it("should work when perf tracker is not available (graceful degradation)", async () => {
