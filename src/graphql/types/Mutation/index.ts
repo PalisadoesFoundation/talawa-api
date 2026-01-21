@@ -129,3 +129,6 @@ import "./verifyEmail";
 import "./createAgendaCategory";
 import "./deleteAgendaCategory";
 import "./updateAgendaCategory";
+import "./signInWithOAuth";
+import "./linkOAuthAccount";
+import "./unlinkOAuthAccount";

@@ -1,0 +1,100 @@
+---
+id: oauth-login-input
+title: OAuthLoginInput
+---
+
+export const Bullet = () => (
+  <>
+    <span
+      style={{
+        fontWeight: "normal",
+        fontSize: ".5em",
+        color: "var(--ifm-color-secondary-darkest)",
+      }}
+    >
+      &nbsp;●&nbsp;
+    </span>
+  </>
+);
+
+export const SpecifiedBy = (props) => (
+  <>
+    Specification
+    <a
+      className="link"
+      style={{ fontSize: "1.5em", paddingLeft: "4px" }}
+      target="_blank"
+      href={props.url}
+      title={"Specified by " + props.url}
+    >
+      ⎘
+    </a>
+  </>
+);
+
+export const Badge = (props) => (
+  <>
+    <span className={props.class}>{props.text}</span>
+  </>
+);
+
+import { useState } from "react";
+
+export const Details = ({
+  dataOpen,
+  dataClose,
+  children,
+  startOpen = false,
+}) => {
+  const [open, setOpen] = useState(startOpen);
+  return (
+    <details
+      {...(open ? { open: true } : {})}
+      className="details"
+      style={{
+        border: "none",
+        boxShadow: "none",
+        background: "var(--ifm-background-color)",
+      }}
+    >
+      <summary
+        onClick={(e) => {
+          e.preventDefault();
+          setOpen((open) => !open);
+        }}
+        style={{ listStyle: "none" }}
+      >
+        {open ? dataOpen : dataClose}
+      </summary>
+      {open && children}
+    </details>
+  );
+};
+
+Input for OAuth login and account linking.
+
+```graphql
+input OAuthLoginInput {
+  authorizationCode: String!
+  provider: OAuthProvider!
+  redirectUri: String!
+}
+```
+
+### Fields
+
+#### [<code style={{ fontWeight: 'normal' }}>OAuthLoginInput.<b>authorizationCode</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>String!</b></code>](/auto-schema/types/scalars/string.mdx) <Badge class="badge badge--secondary badge--non_null" text="non-null"/> <Badge class="badge badge--secondary " text="scalar"/>
+
+The authorization code received from the OAuth provider after user authorization.
+
+#### [<code style={{ fontWeight: 'normal' }}>OAuthLoginInput.<b>provider</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>OAuthProvider!</b></code>](/auto-schema/types/enums/oauth-provider.mdx) <Badge class="badge badge--secondary badge--non_null" text="non-null"/> <Badge class="badge badge--secondary " text="enum"/>
+
+The OAuth provider to authenticate with.
+
+#### [<code style={{ fontWeight: 'normal' }}>OAuthLoginInput.<b>redirectUri</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>String!</b></code>](/auto-schema/types/scalars/string.mdx) <Badge class="badge badge--secondary badge--non_null" text="non-null"/> <Badge class="badge badge--secondary " text="scalar"/>
+
+The redirect URI used in the OAuth flow. Must match the URI registered with the provider.
+
+### Member Of
+
+[`linkOAuthAccount`](/auto-schema/operations/mutations/link-oauth-account.mdx) <Badge class="badge badge--secondary badge--relation" text="mutation"/><Bullet />[`signInWithOAuth`](/auto-schema/operations/mutations/sign-in-with-oauth.mdx) <Badge class="badge badge--secondary badge--relation" text="mutation"/>
