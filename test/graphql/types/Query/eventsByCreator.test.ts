@@ -80,7 +80,7 @@ suite("Query field eventsByCreator", () => {
 							issues: expect.arrayContaining([
 								expect.objectContaining({
 									argumentPath: ["userId"],
-									message: "Invalid uuid",
+									message: "Invalid UUID",
 								}),
 							]),
 						}),
