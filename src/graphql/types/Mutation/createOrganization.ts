@@ -184,7 +184,7 @@ builder.mutationField("createOrganization", (t) =>
 						});
 					}
 
-					if (isNotNullish(parsedArgs.input.avatar)) {
+					if (isNotNullish(parsedArgs.input.avatar) && avatarName !== null) {
 						const fileUploadStop = ctx.perf?.start("file:avatar-upload");
 						try {
 							await ctx.minio.client.putObject(

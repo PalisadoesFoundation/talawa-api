@@ -90,7 +90,7 @@ describe("deleteOrganization mutation performance tracking", () => {
 
 		// Check the most recent snapshot for the mutation operation
 		const latestSnapshot = snapshots[0];
-		expect(latestSnapshot).toBeDefined();
+		assertToBeNonNullish(latestSnapshot);
 		const op = latestSnapshot.ops["mutation:deleteOrganization"];
 
 		expect(op).toBeDefined();
@@ -161,6 +161,7 @@ describe("deleteOrganization mutation performance tracking", () => {
 		// Verify operation name format
 		const snapshots = server.getMetricsSnapshots?.(1) ?? [];
 		const latestSnapshot = snapshots[0];
+		assertToBeNonNullish(latestSnapshot);
 		expect(latestSnapshot.ops).toHaveProperty("mutation:deleteOrganization");
 	});
 
@@ -203,6 +204,7 @@ describe("deleteOrganization mutation performance tracking", () => {
 		// Verify performance metrics including sub-operations
 		const snapshots = server.getMetricsSnapshots?.(1) ?? [];
 		const latestSnapshot = snapshots[0];
+		assertToBeNonNullish(latestSnapshot);
 		const mainOp = latestSnapshot.ops["mutation:deleteOrganization"];
 
 		expect(mainOp).toBeDefined();
@@ -255,6 +257,7 @@ describe("deleteOrganization mutation performance tracking", () => {
 		// Verify performance metrics including sub-operations
 		const snapshots = server.getMetricsSnapshots?.(1) ?? [];
 		const latestSnapshot = snapshots[0];
+		assertToBeNonNullish(latestSnapshot);
 		const mainOp = latestSnapshot.ops["mutation:deleteOrganization"];
 
 		expect(mainOp).toBeDefined();

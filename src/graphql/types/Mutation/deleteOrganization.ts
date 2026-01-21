@@ -181,9 +181,7 @@ builder.mutationField("deleteOrganization", (t) =>
 					async (tx) => {
 						// Track cascade deletion time
 						const cascadeDeletionStop = ctx.perf?.start("db:cascade-deletion");
-						let deletedOrg:
-							| typeof organizationsTable.$inferSelect
-							| undefined;
+						let deletedOrg: typeof organizationsTable.$inferSelect | undefined;
 						try {
 							[deletedOrg] = await tx
 								.delete(organizationsTable)

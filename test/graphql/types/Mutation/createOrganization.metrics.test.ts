@@ -69,7 +69,7 @@ describe("createOrganization mutation performance tracking", () => {
 
 		// Check the most recent snapshot for the mutation operation
 		const latestSnapshot = snapshots[0];
-		expect(latestSnapshot).toBeDefined();
+		assertToBeNonNullish(latestSnapshot);
 		const op = latestSnapshot.ops["mutation:createOrganization"];
 
 		expect(op).toBeDefined();
@@ -131,6 +131,7 @@ describe("createOrganization mutation performance tracking", () => {
 		// Verify operation name format
 		const snapshots = server.getMetricsSnapshots?.(1) ?? [];
 		const latestSnapshot = snapshots[0];
+		assertToBeNonNullish(latestSnapshot);
 		expect(latestSnapshot.ops).toHaveProperty("mutation:createOrganization");
 	});
 
@@ -155,11 +156,14 @@ describe("createOrganization mutation performance tracking", () => {
 		expect(result.errors).toBeUndefined();
 		assertToBeNonNullish(result.data?.createOrganization);
 		expect(result.data.createOrganization.id).toBeDefined();
-		expect(result.data.createOrganization.isUserRegistrationRequired).toBe(true);
+		expect(result.data.createOrganization.isUserRegistrationRequired).toBe(
+			true,
+		);
 
 		// Verify metrics were collected for complex operation
 		const snapshots = server.getMetricsSnapshots?.(1) ?? [];
 		const latestSnapshot = snapshots[0];
+		assertToBeNonNullish(latestSnapshot);
 		const op = latestSnapshot.ops["mutation:createOrganization"];
 
 		expect(op).toBeDefined();

@@ -85,7 +85,9 @@ describe("updateOrganization mutation performance tracking", () => {
 		expect(result.errors).toBeUndefined();
 		assertToBeNonNullish(result.data?.updateOrganization);
 		expect(result.data.updateOrganization.id).toBe(orgId);
-		expect(result.data.updateOrganization.name).toBe("Updated Organization Name");
+		expect(result.data.updateOrganization.name).toBe(
+			"Updated Organization Name",
+		);
 
 		// Verify performance metrics were collected
 		const snapshots = server.getMetricsSnapshots?.(1) ?? [];
@@ -93,7 +95,7 @@ describe("updateOrganization mutation performance tracking", () => {
 
 		// Check the most recent snapshot for the mutation operation
 		const latestSnapshot = snapshots[0];
-		expect(latestSnapshot).toBeDefined();
+		assertToBeNonNullish(latestSnapshot);
 		const op = latestSnapshot.ops["mutation:updateOrganization"];
 
 		expect(op).toBeDefined();
@@ -166,6 +168,7 @@ describe("updateOrganization mutation performance tracking", () => {
 		// Verify operation name format
 		const snapshots = server.getMetricsSnapshots?.(1) ?? [];
 		const latestSnapshot = snapshots[0];
+		assertToBeNonNullish(latestSnapshot);
 		expect(latestSnapshot.ops).toHaveProperty("mutation:updateOrganization");
 	});
 
@@ -210,6 +213,7 @@ describe("updateOrganization mutation performance tracking", () => {
 		// Verify performance metrics including sub-operations
 		const snapshots = server.getMetricsSnapshots?.(1) ?? [];
 		const latestSnapshot = snapshots[0];
+		assertToBeNonNullish(latestSnapshot);
 		const mainOp = latestSnapshot.ops["mutation:updateOrganization"];
 
 		expect(mainOp).toBeDefined();
@@ -217,7 +221,7 @@ describe("updateOrganization mutation performance tracking", () => {
 		expect(mainOp?.ms).toBeGreaterThan(0);
 
 		// Verify validation sub-operation was tracked
-		const validationOp = latestSnapshot.ops["validation"];
+		const validationOp = latestSnapshot.ops.validation;
 		expect(validationOp).toBeDefined();
 		expect(validationOp?.count).toBe(1);
 		expect(validationOp?.ms).toBeGreaterThan(0);
