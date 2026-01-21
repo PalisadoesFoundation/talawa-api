@@ -21,7 +21,6 @@ flags:
       - src/services/
       - src/setup/
       - src/types/
-      - src/unit_tests/
       - src/utilities/
       - src/workers/
       - src/*.ts
