@@ -8,9 +8,9 @@ coverage:
 
 flags:
   unit:
-    carryforward: true
+    carryforward: false
   integration:
-    carryforward: true
+    carryforward: false
 flag_management:
   default_rules:
     carryforward: true
