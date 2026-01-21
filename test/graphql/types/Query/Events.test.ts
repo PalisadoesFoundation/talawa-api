@@ -1,5 +1,5 @@
 import { faker } from "@faker-js/faker";
-import { expect, suite, test } from "vitest";
+import { afterEach, expect, suite, test } from "vitest";
 import type {
 	InvalidArgumentsExtensions,
 	TalawaGraphQLFormattedError,
@@ -29,6 +29,9 @@ import {
  */
 
 suite("Query eventsByIds", () => {
+	afterEach(() => {
+		mercuriusClient.setHeaders({});
+	});
 	// 1. UNAUTHENTICATED
 	test("returns 'unauthenticated' if the user is not signed in", async () => {
 		// Clear token

@@ -910,7 +910,7 @@ CREATE INDEX "event_attendees_created_at_idx" ON "event_attendees" USING btree (
 CREATE INDEX "ee_recurring_event_instance_id_idx" ON "event_exceptions" USING btree ("recurring_event_instance_id");--> statement-breakpoint
 CREATE INDEX "ee_organization_id_idx" ON "event_exceptions" USING btree ("organization_id");--> statement-breakpoint
 CREATE INDEX "ee_creator_id_idx" ON "event_exceptions" USING btree ("creator_id");--> statement-breakpoint
-CREATE INDEX "egw_organization_id_unique_idx" ON "event_generation_windows" USING btree ("organization_id");--> statement-breakpoint
+CREATE UNIQUE INDEX "egw_organization_id_unique" ON "event_generation_windows" USING btree ("organization_id");--> statement-breakpoint
 CREATE INDEX "egw_enabled_windows_idx" ON "event_generation_windows" USING btree ("is_enabled","processing_priority");--> statement-breakpoint
 CREATE INDEX "egw_last_processed_at_idx" ON "event_generation_windows" USING btree ("last_processed_at");--> statement-breakpoint
 CREATE INDEX "egw_current_window_end_date_idx" ON "event_generation_windows" USING btree ("current_window_end_date");--> statement-breakpoint
