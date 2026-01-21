@@ -1,5 +1,6 @@
 import { faker } from "@faker-js/faker";
-import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { print } from "graphql";
+import { beforeEach, describe, expect, it } from "vitest";
 import { assertToBeNonNullish } from "../../../helpers";
 import { server } from "../../../server";
 import { mercuriusClient } from "../client";
@@ -33,10 +34,6 @@ describe("createOrganization mutation performance tracking", () => {
 		assertToBeNonNullish(signInResult.data?.signIn);
 		assertToBeNonNullish(signInResult.data.signIn.authenticationToken);
 		authToken = signInResult.data.signIn.authenticationToken;
-	});
-
-	afterEach(() => {
-		// Clear any test state if needed
 	});
 
 	it("should track mutation execution time when perf tracker is available", async () => {
@@ -169,5 +166,90 @@ describe("createOrganization mutation performance tracking", () => {
 		expect(op).toBeDefined();
 		expect(op?.count).toBe(1);
 		expect(op?.ms).toBeGreaterThanOrEqual(0);
+
+		// Verify database insert sub-operation was tracked
+		const dbInsertOp = latestSnapshot.ops["db:organization-insert"];
+		expect(dbInsertOp).toBeDefined();
+		expect(dbInsertOp?.count).toBe(1);
+		expect(dbInsertOp?.ms).toBeGreaterThanOrEqual(0);
+	});
+
+	it("should track sub-operation metrics including avatar upload", async () => {
+		const boundary = `----WebKitFormBoundary${Math.random().toString(36)}`;
+		const operations = JSON.stringify({
+			query: print(Mutation_createOrganization),
+			variables: {
+				input: {
+					name: `Avatar Org ${faker.string.ulid()}`,
+					description: "Organization with avatar",
+					countryCode: "us",
+					state: "CA",
+					city: "San Francisco",
+					postalCode: "94101",
+					addressLine1: "123 Avatar St",
+					avatar: null,
+				},
+			},
+		});
+
+		const map = JSON.stringify({
+			"0": ["variables.input.avatar"],
+		});
+
+		const fileContent = "fake png content";
+
+		const body = [
+			`--${boundary}`,
+			'Content-Disposition: form-data; name="operations"',
+			"",
+			operations,
+			`--${boundary}`,
+			'Content-Disposition: form-data; name="map"',
+			"",
+			map,
+			`--${boundary}`,
+			'Content-Disposition: form-data; name="0"; filename="org-avatar.png"',
+			"Content-Type: image/png",
+			"",
+			fileContent,
+			`--${boundary}--`,
+		].join("\r\n");
+
+		const response = await server.inject({
+			method: "POST",
+			url: "/graphql",
+			headers: {
+				"content-type": `multipart/form-data; boundary=${boundary}`,
+				authorization: `bearer ${authToken}`,
+			},
+			payload: body,
+		});
+
+		const result = JSON.parse(response.body);
+		expect(result.errors).toBeUndefined();
+		assertToBeNonNullish(result.data?.createOrganization);
+		expect(result.data.createOrganization.id).toBeDefined();
+
+		// Verify performance metrics including sub-operations
+		const snapshots = server.getMetricsSnapshots?.(1) ?? [];
+		const latestSnapshot = snapshots[0];
+		assertToBeNonNullish(latestSnapshot);
+		const mainOp = latestSnapshot.ops["mutation:createOrganization"];
+
+		expect(mainOp).toBeDefined();
+		expect(mainOp?.count).toBe(1);
+		expect(mainOp?.ms).toBeGreaterThanOrEqual(0);
+
+		// Verify database insert sub-operation was tracked
+		const dbInsertOp = latestSnapshot.ops["db:organization-insert"];
+		expect(dbInsertOp).toBeDefined();
+		expect(dbInsertOp?.count).toBe(1);
+		expect(dbInsertOp?.ms).toBeGreaterThanOrEqual(0);
+
+		// Verify avatar upload sub-operation was tracked
+		const avatarUploadOp = latestSnapshot.ops["file:avatar-upload"];
+		expect(avatarUploadOp).toBeDefined();
+		expect(avatarUploadOp?.count).toBe(1);
+		expect(avatarUploadOp?.ms).toBeGreaterThanOrEqual(0);
 	});
 });

@@ -77,7 +77,9 @@ suite("windowManager", () => {
 
 			const mockInsertChain = {
 				values: vi.fn(() => ({
-					returning: vi.fn().mockResolvedValue([mockInsertedConfig]),
+					onConflictDoNothing: vi.fn(() => ({
+						returning: vi.fn().mockResolvedValue([mockInsertedConfig]),
+					})),
 				})),
 			};
 
@@ -111,7 +113,66 @@ suite("windowManager", () => {
 			);
 		});
 
-		test("throws error when insertion fails", async () => {
+		test("returns existing config when insert conflicts (idempotent behavior)", async () => {
+			const input: CreateGenerationWindowInput = {
+				organizationId: mockOrganizationId,
+				createdById: mockUserId,
+			};
+
+			const mockExistingConfig = {
+				id: faker.string.uuid(),
+				organizationId: mockOrganizationId,
+				hotWindowMonthsAhead: 12,
+				historyRetentionMonths: 3,
+				currentWindowEndDate: new Date("2026-01-01T00:00:00Z"),
+				retentionStartDate: new Date("2024-10-01T00:00:00Z"),
+				processingPriority: 5,
+				maxInstancesPerRun: 1000,
+				createdAt: new Date(),
+				updatedAt: new Date(),
+			};
+
+			const mockInsertChain = {
+				values: vi.fn(() => ({
+					onConflictDoNothing: vi.fn(() => ({
+						returning: vi.fn().mockResolvedValue([]),
+					})),
+				})),
+			};
+
+			(mockDrizzleClient.insert as Mock).mockReturnValue(mockInsertChain);
+			(
+				mockDrizzleClient.query.eventGenerationWindowsTable.findFirst as Mock
+			).mockResolvedValue(mockExistingConfig);
+
+			const result = await initializeGenerationWindow(
+				input,
+				mockDrizzleClient,
+				mockLogger,
+			);
+
+			expect(result).toEqual(mockExistingConfig);
+			expect(mockDrizzleClient.insert).toHaveBeenCalledWith(
+				eventGenerationWindowsTable,
+			);
+			expect(
+				mockDrizzleClient.query.eventGenerationWindowsTable.findFirst,
+			).toHaveBeenCalledWith({
+				where: eq(
+					eventGenerationWindowsTable.organizationId,
+					mockOrganizationId,
+				),
+			});
+			expect(mockLogger.info).toHaveBeenCalledWith(
+				expect.objectContaining({
+					hotWindowMonthsAhead: 12,
+					historyRetentionMonths: 3,
+				}),
+				`Using existing Generation window for organization ${mockOrganizationId}`,
+			);
+		});
+
+		test("throws error when insertion fails and no existing config found", async () => {
 			const input: CreateGenerationWindowInput = {
 				organizationId: mockOrganizationId,
 				createdById: mockUserId,
@@ -119,11 +180,16 @@ suite("windowManager", () => {
 
 			const mockInsertChain = {
 				values: vi.fn(() => ({
-					returning: vi.fn().mockResolvedValue([]),
+					onConflictDoNothing: vi.fn(() => ({
+						returning: vi.fn().mockResolvedValue([]),
+					})),
 				})),
 			};
 
 			(mockDrizzleClient.insert as Mock).mockReturnValue(mockInsertChain);
+			(
+				mockDrizzleClient.query.eventGenerationWindowsTable.findFirst as Mock
+			).mockResolvedValue(null);
 
 			await expect(
 				initializeGenerationWindow(input, mockDrizzleClient, mockLogger),

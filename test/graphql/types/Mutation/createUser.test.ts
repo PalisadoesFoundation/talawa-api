@@ -1,5 +1,6 @@
 import { faker } from "@faker-js/faker";
 import type { ResultOf, VariablesOf } from "gql.tada";
+import { print } from "graphql";
 import { afterEach, beforeEach, expect, suite, test, vi } from "vitest";
 import type {
 	ForbiddenActionOnArgumentsAssociatedResourcesExtensions,
@@ -796,17 +797,7 @@ suite("Mutation field createUser", () => {
 
 			const boundary = `----WebKitFormBoundary${Math.random().toString(36)}`;
 			const operations = JSON.stringify({
-				query: `
-          mutation Mutation_createUser($input: MutationCreateUserInput!) {
-            createUser(input: $input) {
-              user {
-                id
-                emailAddress
-              }
-              authenticationToken
-            }
-          }
-        `,
+				query: print(Mutation_createUser),
 				variables: {
 					input: {
 						emailAddress: `email${faker.string.ulid()}@email.com`,
@@ -873,15 +864,7 @@ suite("Mutation field createUser", () => {
 
 			const boundary = `----WebKitFormBoundary${Math.random().toString(36)}`;
 			const operations = JSON.stringify({
-				query: `
-          mutation Mutation_createUser($input: MutationCreateUserInput!) {
-            createUser(input: $input) {
-              user {
-                id
-              }
-            }
-          }
-        `,
+				query: print(Mutation_createUser),
 				variables: {
 					input: {
 						emailAddress: `email${faker.string.ulid()}@email.com`,
@@ -932,7 +915,6 @@ suite("Mutation field createUser", () => {
 		});
 
 		test("should return unexpected error when tx.insert returns no createdUser", async () => {
-			const originalTransaction = server.drizzleClient.transaction;
 			const fakeTransaction = async <T>(
 				fn: (tx: unknown) => Promise<T>,
 			): Promise<T> => {
@@ -948,10 +930,13 @@ suite("Mutation field createUser", () => {
 				});
 			};
 
-			try {
-				server.drizzleClient.transaction =
-					fakeTransaction as typeof server.drizzleClient.transaction;
+			const transactionSpy = vi
+				.spyOn(server.drizzleClient, "transaction")
+				.mockImplementationOnce(
+					fakeTransaction as typeof server.drizzleClient.transaction,
+				);
 
+			try {
 				const result = await mercuriusClient.mutate(Mutation_createUser, {
 					headers: { authorization: `bearer ${authToken}` },
 					variables: {
@@ -978,7 +963,7 @@ suite("Mutation field createUser", () => {
 					]),
 				);
 			} finally {
-				server.drizzleClient.transaction = originalTransaction;
+				transactionSpy.mockRestore();
 			}
 		});
 

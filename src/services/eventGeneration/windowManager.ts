@@ -21,16 +21,45 @@ export async function initializeGenerationWindow(
 	try {
 		const windowConfig = buildWindowConfiguration(input);
 
+		// Attempt idempotent insert: if a window config already exists for this organization,
+		// onConflictDoNothing will silently skip the insert and return an empty array.
 		const [insertedConfig] = await drizzleClient
 			.insert(eventGenerationWindowsTable)
 			.values(windowConfig)
+			.onConflictDoNothing({
+				target: eventGenerationWindowsTable.organizationId,
+			})
 			.returning();
 
+		// If insert was skipped due to conflict, fetch the existing config
 		if (!insertedConfig) {
-			logger.error(
-				`Failed to insert and return Generation window for organization ${input.organizationId}`,
+			const existingConfig =
+				await drizzleClient.query.eventGenerationWindowsTable.findFirst({
+					where: eq(
+						eventGenerationWindowsTable.organizationId,
+						input.organizationId,
+					),
+				});
+
+			if (!existingConfig) {
+				logger.error(
+					`Failed to insert and return Generation window for organization ${input.organizationId}`,
+				);
+				throw new Error("Failed to initialize Generation window.");
+			}
+
+			logger.info(
+				{
+					hotWindowMonthsAhead: existingConfig.hotWindowMonthsAhead,
+					historyRetentionMonths: existingConfig.historyRetentionMonths,
+					currentWindowEndDate:
+						existingConfig.currentWindowEndDate.toISOString(),
+					retentionStartDate: existingConfig.retentionStartDate.toISOString(),
+				},
+				`Using existing Generation window for organization ${input.organizationId}`,
 			);
-			throw new Error("Failed to initialize Generation window.");
+
+			return existingConfig;
 		}
 
 		logger.info(

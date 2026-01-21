@@ -6,6 +6,7 @@ import {
 	pgTable,
 	text,
 	timestamp,
+	unique,
 	uuid,
 } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
@@ -166,7 +167,7 @@ export const eventGenerationWindowsTable = pgTable(
 	},
 	(self) => ({
 		// Unique constraint: one window config per organization
-		organizationIdIdx: index("egw_organization_id_unique_idx").on(
+		organizationIdUnique: unique("egw_organization_id_unique").on(
 			self.organizationId,
 		),
 

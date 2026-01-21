@@ -1,5 +1,5 @@
 import { faker } from "@faker-js/faker";
-import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { beforeEach, describe, expect, it } from "vitest";
 import { assertToBeNonNullish } from "../../../helpers";
 import { server } from "../../../server";
 import { mercuriusClient } from "../client";
@@ -37,10 +37,6 @@ describe("deleteOrganization mutation performance tracking", () => {
 		assertToBeNonNullish(signInResult.data?.signIn);
 		assertToBeNonNullish(signInResult.data.signIn.authenticationToken);
 		authToken = signInResult.data.signIn.authenticationToken;
-	});
-
-	afterEach(() => {
-		// Clear any test state if needed
 	});
 
 	it("should track mutation execution time when perf tracker is available", async () => {
