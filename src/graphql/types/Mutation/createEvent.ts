@@ -25,13 +25,17 @@ import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 
 /**
  * Computes the default materialization window end date.
- * Returns a date that is the specified number of months from the current date.
+ * Returns a date that is the specified number of months from the base date.
  *
- * @param months - Number of months to add to the current date. Defaults to 12.
+ * @param baseDate - The base date to calculate from. Defaults to current date.
+ * @param months - Number of months to add to the base date. Defaults to 12.
  * @returns A Date object representing the window end date.
  */
-function computeMaterializationWindow(months: number = 12): Date {
-	const windowEnd = new Date();
+function computeMaterializationWindow(
+	baseDate: Date = new Date(),
+	months: number = 12,
+): Date {
+	const windowEnd = new Date(baseDate);
 	windowEnd.setMonth(windowEnd.getMonth() + months);
 	return windowEnd;
 }
@@ -377,18 +381,23 @@ builder.mutationField("createEvent", (t) =>
 							//  Determine materialization window based on recurrence pattern
 							// Window should start from event start time, not current time
 							const windowStartDate = new Date(parsedArgs.input.startAt);
+							// Use max(now, startAt) as base to ensure windowEndDate is never before windowStartDate
+							const baseDate = new Date(
+								Math.max(Date.now(), parsedArgs.input.startAt.getTime()),
+							);
 							let windowEndDate: Date;
 
 							ctx.log.debug(
 								{
 									eventStartAt: parsedArgs.input.startAt.toISOString(),
 									windowStartDate: windowStartDate.toISOString(),
+									baseDate: baseDate.toISOString(),
 									currentTime: new Date().toISOString(),
 								},
-								"FIXED: Window calculation",
+								"Window calculation",
 							);
 
-							const defaultWindowEnd = computeMaterializationWindow();
+							const defaultWindowEnd = computeMaterializationWindow(baseDate);
 
 							if (parsedArgs.input.recurrence.endDate) {
 								// For events with end dates, materialize up to the end date

@@ -1,155 +1,270 @@
-import { createMockGraphQLContext } from "test/_Mocks_/mockContextCreator/mockContextCreator";
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import type { GraphQLContext } from "~/src/graphql/context";
-import { createPerformanceTracker } from "~/src/utilities/metrics/performanceTracker";
+import { faker } from "@faker-js/faker";
+import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { assertToBeNonNullish } from "../../../helpers";
+import { server } from "../../../server";
+import { mercuriusClient } from "../client";
+import {
+	Mutation_createOrganization,
+	Mutation_deleteOrganization,
+	Query_signIn,
+} from "../documentNodes";
 
 /**
  * Test suite for deleteOrganization mutation performance tracking.
- * Verifies that performance metrics are properly collected for the deleteOrganization mutation.
+ * Verifies that performance metrics are properly collected for the deleteOrganization mutation
+ * using end-to-end Mercurius integration tests.
  */
 describe("deleteOrganization mutation performance tracking", () => {
-	let perf: ReturnType<typeof createPerformanceTracker>;
-	let ctx: GraphQLContext;
+	let authToken: string;
 
-	beforeEach(() => {
-		perf = createPerformanceTracker();
-		const { context } = createMockGraphQLContext(true, "admin-user-id");
-		ctx = context;
-		ctx.perf = perf;
+	beforeEach(async () => {
+		// Sign in as admin to get auth token
+		const signInResult = await mercuriusClient.query(Query_signIn, {
+			variables: {
+				input: {
+					emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
+					password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
+				},
+			},
+		});
+
+		if (signInResult.errors) {
+			throw new Error(
+				`Admin sign-in failed: ${JSON.stringify(signInResult.errors)}`,
+			);
+		}
+
+		assertToBeNonNullish(signInResult.data?.signIn);
+		assertToBeNonNullish(signInResult.data.signIn.authenticationToken);
+		authToken = signInResult.data.signIn.authenticationToken;
 	});
 
 	afterEach(() => {
-		vi.clearAllMocks();
+		// Clear any test state if needed
 	});
 
 	it("should track mutation execution time when perf tracker is available", async () => {
-		const executeMutation = async () => {
-			return (
-				(await ctx.perf?.time("mutation:deleteOrganization", async () => {
-					await new Promise((resolve) => setTimeout(resolve, 10));
-					return { id: "org-123", name: "Deleted Org" };
-				})) ?? { id: "org-123", name: "Deleted Org" }
-			);
-		};
+		// Get initial snapshot count to verify new snapshot is created
+		const initialSnapshots = server.getMetricsSnapshots?.(1) ?? [];
 
-		const result = await executeMutation();
+		// Create an organization to delete
+		const createResult = await mercuriusClient.mutate(
+			Mutation_createOrganization,
+			{
+				headers: { authorization: `bearer ${authToken}` },
+				variables: {
+					input: {
+						name: `Test Org ${faker.string.ulid()}`,
+						description: "Test organization for deletion",
+						countryCode: "us",
+						state: "CA",
+						city: "San Francisco",
+						postalCode: "94101",
+						addressLine1: "123 Test St",
+					},
+				},
+			},
+		);
 
-		expect(result).toBeDefined();
-		const snapshot = perf.snapshot();
-		const op = snapshot.ops["mutation:deleteOrganization"];
+		expect(createResult.errors).toBeUndefined();
+		assertToBeNonNullish(createResult.data?.createOrganization);
+		const orgId = createResult.data.createOrganization.id;
+
+		// Delete the organization
+		const result = await mercuriusClient.mutate(Mutation_deleteOrganization, {
+			headers: { authorization: `bearer ${authToken}` },
+			variables: {
+				input: {
+					id: orgId,
+				},
+			},
+		});
+
+		expect(result.errors).toBeUndefined();
+		assertToBeNonNullish(result.data?.deleteOrganization);
+		expect(result.data.deleteOrganization.id).toBe(orgId);
+
+		// Verify performance metrics were collected
+		const snapshots = server.getMetricsSnapshots?.(1) ?? [];
+		expect(snapshots.length).toBeGreaterThan(initialSnapshots.length);
+
+		// Check the most recent snapshot for the mutation operation
+		const latestSnapshot = snapshots[0];
+		expect(latestSnapshot).toBeDefined();
+		const op = latestSnapshot.ops["mutation:deleteOrganization"];
 
 		expect(op).toBeDefined();
 		expect(op?.count).toBe(1);
-		expect(op?.ms).toBeGreaterThanOrEqual(9);
+		expect(op?.ms).toBeGreaterThan(0);
 	});
 
 	it("should track metrics even when mutation fails", async () => {
-		const executeMutation = async () => {
-			return (
-				(await ctx.perf?.time("mutation:deleteOrganization", async () => {
-					throw new Error("Organization deletion failed");
-				})) ??
-				(() => {
-					throw new Error("Organization deletion failed");
-				})()
-			);
-		};
+		// Get initial snapshot count
+		const initialSnapshots = server.getMetricsSnapshots?.(1) ?? [];
 
-		await expect(executeMutation()).rejects.toThrow(
-			"Organization deletion failed",
-		);
+		// Try to delete non-existent organization
+		const result = await mercuriusClient.mutate(Mutation_deleteOrganization, {
+			headers: { authorization: `bearer ${authToken}` },
+			variables: {
+				input: {
+					id: faker.string.uuid(),
+				},
+			},
+		});
 
-		const snapshot = perf.snapshot();
-		const op = snapshot.ops["mutation:deleteOrganization"];
+		expect(result.errors).toBeDefined();
+		expect(result.data?.deleteOrganization).toBeNull();
 
-		expect(op).toBeDefined();
-		expect(op?.count).toBe(1);
+		// Verify error has proper structure
+		expect(result.errors?.[0]?.extensions?.code).toBeDefined();
+
+		// Verify performance metrics were still collected even on error
+		const snapshots = server.getMetricsSnapshots?.(1) ?? [];
+		expect(snapshots.length).toBeGreaterThan(initialSnapshots.length);
 	});
 
 	it("should use correct operation name format", async () => {
-		const executeMutation = async () => {
-			return (
-				(await ctx.perf?.time("mutation:deleteOrganization", async () => {
-					return { id: "org-456", name: "Deleted Org 2" };
-				})) ?? { id: "org-456", name: "Deleted Org 2" }
-			);
-		};
+		// Create an organization to delete
+		const createResult = await mercuriusClient.mutate(
+			Mutation_createOrganization,
+			{
+				headers: { authorization: `bearer ${authToken}` },
+				variables: {
+					input: {
+						name: `Test Org 2 ${faker.string.ulid()}`,
+						description: "Test organization",
+						countryCode: "us",
+						state: "NY",
+						city: "New York",
+						postalCode: "10001",
+						addressLine1: "456 Test Ave",
+					},
+				},
+			},
+		);
 
-		await executeMutation();
+		assertToBeNonNullish(createResult.data?.createOrganization);
+		const orgId = createResult.data.createOrganization.id;
 
-		const snapshot = perf.snapshot();
-		const op = snapshot.ops["mutation:deleteOrganization"];
+		const result = await mercuriusClient.mutate(Mutation_deleteOrganization, {
+			headers: { authorization: `bearer ${authToken}` },
+			variables: {
+				input: {
+					id: orgId,
+				},
+			},
+		});
 
-		expect(op).toBeDefined();
-		expect(op?.count).toBe(1);
-		expect(snapshot.ops).toHaveProperty("mutation:deleteOrganization");
+		expect(result.errors).toBeUndefined();
+		assertToBeNonNullish(result.data?.deleteOrganization);
+
+		// Verify operation name format
+		const snapshots = server.getMetricsSnapshots?.(1) ?? [];
+		const latestSnapshot = snapshots[0];
+		expect(latestSnapshot.ops).toHaveProperty("mutation:deleteOrganization");
 	});
 
 	it("should track cascade deletion timing", async () => {
-		const executeMutation = async () => {
-			return (
-				(await ctx.perf?.time("mutation:deleteOrganization", async () => {
-					// Simulate cascade deletion
-					const cascadeStop = ctx.perf?.start("cascade-deletion");
-					await new Promise((resolve) => setTimeout(resolve, 5));
-					cascadeStop?.();
+		// Create an organization to delete
+		const createResult = await mercuriusClient.mutate(
+			Mutation_createOrganization,
+			{
+				headers: { authorization: `bearer ${authToken}` },
+				variables: {
+					input: {
+						name: `Cascade Test Org ${faker.string.ulid()}`,
+						description: "Organization for cascade deletion test",
+						countryCode: "us",
+						state: "TX",
+						city: "Austin",
+						postalCode: "78701",
+						addressLine1: "789 Cascade Blvd",
+					},
+				},
+			},
+		);
 
-					return { id: "org-789", name: "Cascade Deleted Org" };
-				})) ?? { id: "org-789", name: "Cascade Deleted Org" }
-			);
-		};
+		assertToBeNonNullish(createResult.data?.createOrganization);
+		const orgId = createResult.data.createOrganization.id;
 
-		const result = await executeMutation();
+		// Delete the organization
+		const result = await mercuriusClient.mutate(Mutation_deleteOrganization, {
+			headers: { authorization: `bearer ${authToken}` },
+			variables: {
+				input: {
+					id: orgId,
+				},
+			},
+		});
 
-		expect(result).toBeDefined();
-		const snapshot = perf.snapshot();
-		const mainOp = snapshot.ops["mutation:deleteOrganization"];
+		expect(result.errors).toBeUndefined();
+		assertToBeNonNullish(result.data?.deleteOrganization);
+
+		// Verify performance metrics including sub-operations
+		const snapshots = server.getMetricsSnapshots?.(1) ?? [];
+		const latestSnapshot = snapshots[0];
+		const mainOp = latestSnapshot.ops["mutation:deleteOrganization"];
 
 		expect(mainOp).toBeDefined();
 		expect(mainOp?.count).toBe(1);
-		expect(mainOp?.ms).toBeGreaterThanOrEqual(4);
+		expect(mainOp?.ms).toBeGreaterThan(0);
+
+		// Verify cascade deletion sub-operation was tracked
+		const cascadeOp = latestSnapshot.ops["db:cascade-deletion"];
+		expect(cascadeOp).toBeDefined();
+		expect(cascadeOp?.count).toBe(1);
+		expect(cascadeOp?.ms).toBeGreaterThan(0);
 	});
 
 	it("should track cleanup operations timing", async () => {
-		const executeMutation = async () => {
-			return (
-				(await ctx.perf?.time("mutation:deleteOrganization", async () => {
-					// Simulate cleanup operations
-					const cleanupStop = ctx.perf?.start("cleanup");
-					await new Promise((resolve) => setTimeout(resolve, 4));
-					cleanupStop?.();
+		// Create an organization with attachments to trigger cleanup
+		const createResult = await mercuriusClient.mutate(
+			Mutation_createOrganization,
+			{
+				headers: { authorization: `bearer ${authToken}` },
+				variables: {
+					input: {
+						name: `Cleanup Test Org ${faker.string.ulid()}`,
+						description: "Organization for cleanup test",
+						countryCode: "us",
+						state: "FL",
+						city: "Miami",
+						postalCode: "33101",
+						addressLine1: "321 Cleanup St",
+					},
+				},
+			},
+		);
 
-					return { id: "org-999", name: "Cleaned Up Org" };
-				})) ?? { id: "org-999", name: "Cleaned Up Org" }
-			);
-		};
+		assertToBeNonNullish(createResult.data?.createOrganization);
+		const orgId = createResult.data.createOrganization.id;
 
-		const result = await executeMutation();
+		// Delete the organization (cleanup will be triggered even if no files exist)
+		const result = await mercuriusClient.mutate(Mutation_deleteOrganization, {
+			headers: { authorization: `bearer ${authToken}` },
+			variables: {
+				input: {
+					id: orgId,
+				},
+			},
+		});
 
-		expect(result).toBeDefined();
-		const snapshot = perf.snapshot();
-		const mainOp = snapshot.ops["mutation:deleteOrganization"];
+		expect(result.errors).toBeUndefined();
+		assertToBeNonNullish(result.data?.deleteOrganization);
+
+		// Verify performance metrics including sub-operations
+		const snapshots = server.getMetricsSnapshots?.(1) ?? [];
+		const latestSnapshot = snapshots[0];
+		const mainOp = latestSnapshot.ops["mutation:deleteOrganization"];
 
 		expect(mainOp).toBeDefined();
 		expect(mainOp?.count).toBe(1);
-		expect(mainOp?.ms).toBeGreaterThanOrEqual(3);
-	});
+		expect(mainOp?.ms).toBeGreaterThan(0);
 
-	it("should work when perf tracker is not available (graceful degradation)", async () => {
-		ctx.perf = undefined;
-
-		const executeMutation = async () => {
-			return (
-				(await ctx.perf?.time("mutation:deleteOrganization", async () => {
-					return { id: "org-000", name: "No Metrics Deleted Org" };
-				})) ?? { id: "org-000", name: "No Metrics Deleted Org" }
-			);
-		};
-
-		const result = await executeMutation();
-
-		expect(result).toEqual({ id: "org-000", name: "No Metrics Deleted Org" });
-		const snapshot = perf.snapshot();
-		expect(snapshot.ops["mutation:deleteOrganization"]).toBeUndefined();
+		// Verify cleanup sub-operation was tracked
+		const cleanupOp = latestSnapshot.ops["cleanup:file-removal"];
+		expect(cleanupOp).toBeDefined();
+		expect(cleanupOp?.count).toBe(1);
+		expect(cleanupOp?.ms).toBeGreaterThan(0);
 	});
 });

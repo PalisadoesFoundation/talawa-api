@@ -1,6 +1,6 @@
 import { faker } from "@faker-js/faker";
 import type { ResultOf, VariablesOf } from "gql.tada";
-import { expect, suite, test } from "vitest";
+import { afterEach, expect, suite, test, vi } from "vitest";
 import type {
 	ForbiddenActionOnArgumentsAssociatedResourcesExtensions,
 	InvalidArgumentsExtensions,
@@ -740,4 +740,273 @@ suite("Mutation field createUser", () => {
 			});
 		},
 	);
+
+	suite("Integration tests for createUser mutation branches", () => {
+		let authToken: string;
+
+		beforeEach(async () => {
+			const administratorUserSignInResult = await mercuriusClient.query(
+				Query_signIn,
+				{
+					variables: {
+						input: {
+							emailAddress:
+								server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
+							password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
+						},
+					},
+				},
+			);
+
+			assertToBeNonNullish(
+				administratorUserSignInResult.data.signIn?.authenticationToken,
+			);
+			authToken = administratorUserSignInResult.data.signIn.authenticationToken;
+		});
+
+		afterEach(() => {
+			vi.restoreAllMocks();
+		});
+
+		test("should handle naturalLanguageCode in mutation variables", async () => {
+			const result = await mercuriusClient.mutate(Mutation_createUser, {
+				headers: { authorization: `bearer ${authToken}` },
+				variables: {
+					input: {
+						emailAddress: `email${faker.string.ulid()}@email.com`,
+						isEmailAddressVerified: false,
+						name: "Test User",
+						password: "password",
+						role: "regular",
+						naturalLanguageCode: "en",
+					},
+				},
+			});
+
+			expect(result.errors).toBeUndefined();
+			assertToBeNonNullish(result.data?.createUser);
+			assertToBeNonNullish(result.data.createUser.user);
+			expect(result.data.createUser.user.naturalLanguageCode).toBe("en");
+		});
+
+		test("should upload avatar when provided and verify putObject is called", async () => {
+			const putObjectSpy = vi.spyOn(server.minio.client, "putObject");
+
+			const boundary = `----WebKitFormBoundary${Math.random().toString(36)}`;
+			const operations = JSON.stringify({
+				query: `
+          mutation Mutation_createUser($input: MutationCreateUserInput!) {
+            createUser(input: $input) {
+              user {
+                id
+                emailAddress
+              }
+              authenticationToken
+            }
+          }
+        `,
+				variables: {
+					input: {
+						emailAddress: `email${faker.string.ulid()}@email.com`,
+						isEmailAddressVerified: false,
+						name: "Test User with Avatar",
+						password: "password",
+						role: "regular",
+						avatar: null,
+					},
+				},
+			});
+
+			const map = JSON.stringify({
+				"0": ["variables.input.avatar"],
+			});
+
+			const uploadBody = [
+				`--${boundary}`,
+				'Content-Disposition: form-data; name="operations"',
+				"",
+				operations,
+				`--${boundary}`,
+				'Content-Disposition: form-data; name="map"',
+				"",
+				map,
+				`--${boundary}`,
+				'Content-Disposition: form-data; name="0"; filename="test.png"',
+				"Content-Type: image/png",
+				"",
+				"mock file content",
+				`--${boundary}--`,
+			].join("\r\n");
+
+			const response = await server.inject({
+				method: "POST",
+				url: "/graphql",
+				headers: {
+					"content-type": `multipart/form-data; boundary=${boundary}`,
+					authorization: `bearer ${authToken}`,
+				},
+				payload: uploadBody,
+			});
+
+			const result = JSON.parse(response.body);
+			expect(result.errors).toBeUndefined();
+			assertToBeNonNullish(result.data?.createUser);
+			expect(putObjectSpy).toHaveBeenCalledTimes(1);
+			expect(putObjectSpy).toHaveBeenCalledWith(
+				server.minio.bucketName,
+				expect.any(String), // avatarName (ulid)
+				expect.any(Object), // stream
+				undefined,
+				expect.objectContaining({
+					"content-type": "image/png",
+				}),
+			);
+		});
+
+		test("should surface error when putObject throws", async () => {
+			const putObjectError = new Error("MinIO upload failed");
+			vi.spyOn(server.minio.client, "putObject").mockRejectedValue(
+				putObjectError,
+			);
+
+			const boundary = `----WebKitFormBoundary${Math.random().toString(36)}`;
+			const operations = JSON.stringify({
+				query: `
+          mutation Mutation_createUser($input: MutationCreateUserInput!) {
+            createUser(input: $input) {
+              user {
+                id
+              }
+            }
+          }
+        `,
+				variables: {
+					input: {
+						emailAddress: `email${faker.string.ulid()}@email.com`,
+						isEmailAddressVerified: false,
+						name: "Test User",
+						password: "password",
+						role: "regular",
+						avatar: null,
+					},
+				},
+			});
+
+			const map = JSON.stringify({
+				"0": ["variables.input.avatar"],
+			});
+
+			const uploadBody = [
+				`--${boundary}`,
+				'Content-Disposition: form-data; name="operations"',
+				"",
+				operations,
+				`--${boundary}`,
+				'Content-Disposition: form-data; name="map"',
+				"",
+				map,
+				`--${boundary}`,
+				'Content-Disposition: form-data; name="0"; filename="test.png"',
+				"Content-Type: image/png",
+				"",
+				"mock file content",
+				`--${boundary}--`,
+			].join("\r\n");
+
+			const response = await server.inject({
+				method: "POST",
+				url: "/graphql",
+				headers: {
+					"content-type": `multipart/form-data; boundary=${boundary}`,
+					authorization: `bearer ${authToken}`,
+				},
+				payload: uploadBody,
+			});
+
+			const result = JSON.parse(response.body);
+			expect(result.errors).toBeDefined();
+			expect(result.data?.createUser).toBeNull();
+			expect(result.errors?.[0]?.message).toContain("MinIO upload failed");
+		});
+
+		test("should return unexpected error when tx.insert returns no createdUser", async () => {
+			const originalTransaction = server.drizzleClient.transaction;
+			const fakeTransaction = async <T>(
+				fn: (tx: unknown) => Promise<T>,
+			): Promise<T> => {
+				return await fn({
+					insert: () => ({
+						values: () => ({
+							returning: async () => {
+								return []; // Return empty array to simulate no user created
+							},
+						}),
+					}),
+					query: server.drizzleClient.query,
+				});
+			};
+
+			try {
+				server.drizzleClient.transaction =
+					fakeTransaction as typeof server.drizzleClient.transaction;
+
+				const result = await mercuriusClient.mutate(Mutation_createUser, {
+					headers: { authorization: `bearer ${authToken}` },
+					variables: {
+						input: {
+							emailAddress: `email${faker.string.ulid()}@email.com`,
+							isEmailAddressVerified: false,
+							name: "Test User",
+							password: "password",
+							role: "regular",
+						},
+					},
+				});
+
+				expect(result.data?.createUser).toBeNull();
+				expect(result.errors).toEqual(
+					expect.arrayContaining<TalawaGraphQLFormattedError>([
+						expect.objectContaining<TalawaGraphQLFormattedError>({
+							extensions: expect.objectContaining({
+								code: "unexpected",
+							}),
+							path: ["createUser"],
+						}),
+					]),
+				);
+			} finally {
+				server.drizzleClient.transaction = originalTransaction;
+			}
+		});
+
+		test("should surface error when storeRefreshToken throws", async () => {
+			const refreshTokenUtils = await import(
+				"~/src/utilities/refreshTokenUtils"
+			);
+
+			const storeRefreshTokenError = new Error("Failed to store refresh token");
+			vi.spyOn(refreshTokenUtils, "storeRefreshToken").mockRejectedValue(
+				storeRefreshTokenError,
+			);
+
+			const result = await mercuriusClient.mutate(Mutation_createUser, {
+				headers: { authorization: `bearer ${authToken}` },
+				variables: {
+					input: {
+						emailAddress: `email${faker.string.ulid()}@email.com`,
+						isEmailAddressVerified: false,
+						name: "Test User",
+						password: "password",
+						role: "regular",
+					},
+				},
+			});
+
+			expect(result.errors).toBeDefined();
+			expect(result.data?.createUser).toBeNull();
+			expect(result.errors?.[0]?.message).toContain(
+				"Failed to store refresh token",
+			);
+		});
+	});
 });

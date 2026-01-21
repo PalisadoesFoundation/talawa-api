@@ -1,128 +1,169 @@
-import { createMockGraphQLContext } from "test/_Mocks_/mockContextCreator/mockContextCreator";
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import type { GraphQLContext } from "~/src/graphql/context";
-import { createPerformanceTracker } from "~/src/utilities/metrics/performanceTracker";
+import { faker } from "@faker-js/faker";
+import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { assertToBeNonNullish } from "../../../helpers";
+import { server } from "../../../server";
+import { mercuriusClient } from "../client";
+import { Mutation_createOrganization, Query_signIn } from "../documentNodes";
 
 /**
  * Test suite for createOrganization mutation performance tracking.
- * Verifies that performance metrics are properly collected for the createOrganization mutation.
+ * Verifies that performance metrics are properly collected for the createOrganization mutation
+ * using end-to-end Mercurius integration tests.
  */
 describe("createOrganization mutation performance tracking", () => {
-	let perf: ReturnType<typeof createPerformanceTracker>;
-	let ctx: GraphQLContext;
+	let authToken: string;
 
-	beforeEach(() => {
-		perf = createPerformanceTracker();
-		const { context } = createMockGraphQLContext(true, "admin-user-id");
-		ctx = context;
-		ctx.perf = perf;
+	beforeEach(async () => {
+		// Sign in as admin to get auth token
+		const signInResult = await mercuriusClient.query(Query_signIn, {
+			variables: {
+				input: {
+					emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
+					password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
+				},
+			},
+		});
+
+		if (signInResult.errors) {
+			throw new Error(
+				`Admin sign-in failed: ${JSON.stringify(signInResult.errors)}`,
+			);
+		}
+
+		assertToBeNonNullish(signInResult.data?.signIn);
+		assertToBeNonNullish(signInResult.data.signIn.authenticationToken);
+		authToken = signInResult.data.signIn.authenticationToken;
 	});
 
 	afterEach(() => {
-		vi.clearAllMocks();
+		// Clear any test state if needed
 	});
 
 	it("should track mutation execution time when perf tracker is available", async () => {
-		const executeMutation = async () => {
-			return (
-				(await ctx.perf?.time("mutation:createOrganization", async () => {
-					await new Promise((resolve) => setTimeout(resolve, 10));
-					return { id: "org-123", name: "Test Org" };
-				})) ?? { id: "org-123", name: "Test Org" }
-			);
-		};
+		// Get initial snapshot count to verify new snapshot is created
+		const initialSnapshots = server.getMetricsSnapshots?.(1) ?? [];
 
-		const result = await executeMutation();
+		const result = await mercuriusClient.mutate(Mutation_createOrganization, {
+			headers: { authorization: `bearer ${authToken}` },
+			variables: {
+				input: {
+					name: `Test Org ${faker.string.ulid()}`,
+					description: "Test organization for metrics",
+					countryCode: "us",
+					state: "CA",
+					city: "San Francisco",
+					postalCode: "94101",
+					addressLine1: "123 Test St",
+				},
+			},
+		});
 
-		expect(result).toBeDefined();
-		const snapshot = perf.snapshot();
-		const op = snapshot.ops["mutation:createOrganization"];
+		expect(result.errors).toBeUndefined();
+		assertToBeNonNullish(result.data?.createOrganization);
+		expect(result.data.createOrganization.id).toBeDefined();
+		expect(result.data.createOrganization.name).toBeDefined();
+
+		// Verify performance metrics were collected
+		const snapshots = server.getMetricsSnapshots?.(1) ?? [];
+		expect(snapshots.length).toBeGreaterThan(initialSnapshots.length);
+
+		// Check the most recent snapshot for the mutation operation
+		const latestSnapshot = snapshots[0];
+		expect(latestSnapshot).toBeDefined();
+		const op = latestSnapshot.ops["mutation:createOrganization"];
 
 		expect(op).toBeDefined();
 		expect(op?.count).toBe(1);
-		expect(op?.ms).toBeGreaterThanOrEqual(10);
+		expect(op?.ms).toBeGreaterThanOrEqual(0);
 	});
 
 	it("should track metrics even when mutation fails", async () => {
-		const executeMutation = async () => {
-			return (
-				(await ctx.perf?.time("mutation:createOrganization", async () => {
-					throw new Error("Organization creation failed");
-				})) ??
-				(() => {
-					throw new Error("Organization creation failed");
-				})()
-			);
-		};
+		// Get initial snapshot count
+		const initialSnapshots = server.getMetricsSnapshots?.(1) ?? [];
 
-		await expect(executeMutation()).rejects.toThrow(
-			"Organization creation failed",
-		);
+		// Use invalid input to cause validation error
+		const result = await mercuriusClient.mutate(Mutation_createOrganization, {
+			headers: { authorization: `bearer ${authToken}` },
+			variables: {
+				input: {
+					name: "", // Invalid: empty name
+					description: "Test",
+					countryCode: "us",
+					state: "CA",
+					city: "San Francisco",
+					postalCode: "94101",
+					addressLine1: "123 Test St",
+				},
+			},
+		});
 
-		const snapshot = perf.snapshot();
-		const op = snapshot.ops["mutation:createOrganization"];
+		expect(result.errors).toBeDefined();
+		expect(result.data?.createOrganization).toBeNull();
 
-		expect(op).toBeDefined();
-		expect(op?.count).toBe(1);
+		// Verify error has proper structure
+		expect(result.errors?.[0]?.extensions?.code).toBeDefined();
+
+		// Verify performance metrics were still collected even on error
+		const snapshots = server.getMetricsSnapshots?.(1) ?? [];
+		expect(snapshots.length).toBeGreaterThan(initialSnapshots.length);
 	});
 
 	it("should use correct operation name format", async () => {
-		const executeMutation = async () => {
-			return (
-				(await ctx.perf?.time("mutation:createOrganization", async () => {
-					return { id: "org-456", name: "Test Org 2" };
-				})) ?? { id: "org-456", name: "Test Org 2" }
-			);
-		};
+		const result = await mercuriusClient.mutate(Mutation_createOrganization, {
+			headers: { authorization: `bearer ${authToken}` },
+			variables: {
+				input: {
+					name: `Test Org 2 ${faker.string.ulid()}`,
+					description: "Test organization",
+					countryCode: "us",
+					state: "NY",
+					city: "New York",
+					postalCode: "10001",
+					addressLine1: "456 Test Ave",
+				},
+			},
+		});
 
-		await executeMutation();
+		expect(result.errors).toBeUndefined();
+		assertToBeNonNullish(result.data?.createOrganization);
+		expect(result.data.createOrganization.id).toBeDefined();
 
-		const snapshot = perf.snapshot();
-		const op = snapshot.ops["mutation:createOrganization"];
-
-		expect(op).toBeDefined();
-		expect(op?.count).toBe(1);
-		expect(snapshot.ops).toHaveProperty("mutation:createOrganization");
+		// Verify operation name format
+		const snapshots = server.getMetricsSnapshots?.(1) ?? [];
+		const latestSnapshot = snapshots[0];
+		expect(latestSnapshot.ops).toHaveProperty("mutation:createOrganization");
 	});
 
 	it("should track complex mutation execution timing", async () => {
-		const executeMutation = async () => {
-			return (
-				(await ctx.perf?.time("mutation:createOrganization", async () => {
-					// Simulate complex operations (validation, DB writes, etc.)
-					await new Promise((resolve) => setTimeout(resolve, 5));
-					await new Promise((resolve) => setTimeout(resolve, 5));
-					return { id: "org-789", name: "Complex Org" };
-				})) ?? { id: "org-789", name: "Complex Org" }
-			);
-		};
+		const result = await mercuriusClient.mutate(Mutation_createOrganization, {
+			headers: { authorization: `bearer ${authToken}` },
+			variables: {
+				input: {
+					name: `Complex Org ${faker.string.ulid()}`,
+					description: "Complex organization with all fields",
+					countryCode: "us",
+					state: "TX",
+					city: "Austin",
+					postalCode: "78701",
+					addressLine1: "789 Complex Blvd",
+					addressLine2: "Suite 100",
+					isUserRegistrationRequired: true,
+				},
+			},
+		});
 
-		const result = await executeMutation();
+		expect(result.errors).toBeUndefined();
+		assertToBeNonNullish(result.data?.createOrganization);
+		expect(result.data.createOrganization.id).toBeDefined();
+		expect(result.data.createOrganization.isUserRegistrationRequired).toBe(true);
 
-		expect(result).toBeDefined();
-		const snapshot = perf.snapshot();
-		const op = snapshot.ops["mutation:createOrganization"];
+		// Verify metrics were collected for complex operation
+		const snapshots = server.getMetricsSnapshots?.(1) ?? [];
+		const latestSnapshot = snapshots[0];
+		const op = latestSnapshot.ops["mutation:createOrganization"];
 
 		expect(op).toBeDefined();
 		expect(op?.count).toBe(1);
-		expect(op?.ms).toBeGreaterThanOrEqual(10);
-	});
-
-	it("should work when perf tracker is not available (graceful degradation)", async () => {
-		ctx.perf = undefined;
-
-		const executeMutation = async () => {
-			return (
-				(await ctx.perf?.time("mutation:createOrganization", async () => {
-					return { id: "org-999", name: "No Metrics Org" };
-				})) ?? { id: "org-999", name: "No Metrics Org" }
-			);
-		};
-
-		const result = await executeMutation();
-
-		expect(result).toEqual({ id: "org-999", name: "No Metrics Org" });
-		const snapshot = perf.snapshot();
-		expect(snapshot.ops["mutation:createOrganization"]).toBeUndefined();
+		expect(op?.ms).toBeGreaterThanOrEqual(0);
 	});
 });

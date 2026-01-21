@@ -38,5 +38,9 @@ export async function withMutationMetrics<TArgs, TResult>(
 ): Promise<TResult> {
 	const operationName = `mutation:${mutationName}`;
 
-	return (await ctx.perf?.time(operationName, resolver)) ?? resolver();
+	if (ctx.perf) {
+		return await ctx.perf.time(operationName, resolver);
+	}
+
+	return await resolver();
 }

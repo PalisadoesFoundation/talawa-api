@@ -175,6 +175,7 @@ describe("withMutationMetrics", () => {
 		);
 
 		expect(result).toBeNull();
+		expect(resolver).toHaveBeenCalledTimes(1);
 	});
 
 	it("should handle undefined return values", async () => {
@@ -193,6 +194,7 @@ describe("withMutationMetrics", () => {
 		);
 
 		expect(result).toBeUndefined();
+		expect(resolver).toHaveBeenCalledTimes(1);
 	});
 
 	it("should work with different mutation names", async () => {

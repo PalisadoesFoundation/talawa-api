@@ -638,4 +638,69 @@ suite("Mutation field deleteOrganization", () => {
 			SUITE_TIMEOUT,
 		);
 	});
+
+	suite("when minio removal fails", () => {
+		test(
+			"should bubble up an error from the minio removal but DB delete should not be rolled back",
+			async () => {
+				const orgId = await createTestOrganization(authToken);
+
+				// Insert a venue with attachment directly into DB to ensure there are files to remove
+				const [venue] = await server.drizzleClient
+					.insert(venuesTable)
+					.values({
+						organizationId: orgId,
+						name: "Test Venue",
+						creatorId: adminUserId,
+					})
+					.returning({ id: venuesTable.id });
+
+				assertToBeNonNullish(venue);
+
+				await server.drizzleClient.insert(venueAttachmentsTable).values({
+					venueId: venue.id,
+					name: "test-venue-file.png",
+					mimeType: "image/png",
+					creatorId: adminUserId,
+				});
+
+				const originalRemoveObjects = server.minio.client.removeObjects;
+				try {
+					server.minio.client.removeObjects = async () => {
+						throw new Error("Minio removal error");
+					};
+
+					const result = await mercuriusClient.mutate(
+						Mutation_deleteOrganization,
+						{
+							headers: { authorization: `bearer ${authToken}` },
+							variables: {
+								input: {
+									id: orgId,
+								},
+							},
+						},
+					);
+
+					// Error should be surfaced
+					expect(result.data?.deleteOrganization ?? null).toBeNull();
+					expect(result.errors).toBeDefined();
+					expect(result.errors?.[0]?.message).toContain("Minio removal error");
+
+					// Verify organization WAS deleted (DB transaction committed before removeObjects)
+					// Since removeObjects is now outside the transaction, the DB delete succeeds
+					const orgExists = await server.drizzleClient
+						.select()
+						.from(organizationsTable)
+						.where(eq(organizationsTable.id, orgId))
+						.limit(1);
+
+					expect(orgExists.length).toBe(0);
+				} finally {
+					server.minio.client.removeObjects = originalRemoveObjects;
+				}
+			},
+			SUITE_TIMEOUT,
+		);
+	});
 });

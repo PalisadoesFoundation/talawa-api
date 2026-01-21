@@ -134,8 +134,8 @@ builder.mutationField("createOrganization", (t) =>
 					});
 				}
 
-				let avatarMimeType: z.infer<typeof imageMimeTypeEnum>;
-				let avatarName: string;
+				let avatarMimeType: z.infer<typeof imageMimeTypeEnum> | null = null;
+				let avatarName: string | null = null;
 
 				if (isNotNullish(parsedArgs.input.avatar)) {
 					avatarName = ulid();
