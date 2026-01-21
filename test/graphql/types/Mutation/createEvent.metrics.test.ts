@@ -6,7 +6,6 @@ import { mercuriusClient } from "../client";
 import {
 	Mutation_createEvent,
 	Mutation_createOrganization,
-	Mutation_createOrganizationMembership,
 	Query_signIn,
 } from "../documentNodes";
 
@@ -18,7 +17,6 @@ import {
 describe("createEvent mutation performance tracking", () => {
 	let authToken: string;
 	let organizationId: string;
-	let adminId: string;
 
 	beforeEach(async () => {
 		// Sign in as admin
@@ -35,7 +33,6 @@ describe("createEvent mutation performance tracking", () => {
 		assertToBeNonNullish(signInResult.data.signIn.authenticationToken);
 		authToken = signInResult.data.signIn.authenticationToken;
 		assertToBeNonNullish(signInResult.data.signIn.user?.id);
-		adminId = signInResult.data.signIn.user.id;
 
 		// Create an organization to attach events to
 		const orgResult = await mercuriusClient.mutate(
@@ -94,7 +91,7 @@ describe("createEvent mutation performance tracking", () => {
 		expect(mainOp?.ms).toBeGreaterThanOrEqual(0);
 
 		// Sub-operations
-		const validationOp = latestSnapshot.ops["validation"];
+		const validationOp = latestSnapshot.ops.validation;
 		expect(validationOp).toBeDefined();
 		expect(validationOp?.count).toBe(1);
 
@@ -104,8 +101,6 @@ describe("createEvent mutation performance tracking", () => {
 	});
 
 	it("should track metrics for recurring event creation", async () => {
-		const initialSnapshots = server.getMetricsSnapshots?.(1) ?? [];
-
 		const result = await mercuriusClient.mutate(Mutation_createEvent, {
 			headers: { authorization: `bearer ${authToken}` },
 			variables: {
@@ -143,7 +138,8 @@ describe("createEvent mutation performance tracking", () => {
 		expect(ruleInsertOp).toBeDefined();
 		expect(ruleInsertOp?.count).toBe(1);
 
-		const instanceGenOp = latestSnapshot.ops["db:recurrence-instance-generation"];
+		const instanceGenOp =
+			latestSnapshot.ops["db:recurrence-instance-generation"];
 		expect(instanceGenOp).toBeDefined();
 		expect(instanceGenOp?.count).toBe(1);
 	});
