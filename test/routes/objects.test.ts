@@ -108,6 +108,7 @@ describe("objects route", () => {
 		expect(res.statusCode).toBe(404);
 		const body = res.json();
 		expect(body.error.code).toBe(ErrorCode.NOT_FOUND);
+		expect(body.error.details).toEqual({ objectName: "missing.png" });
 		expect(body.error.correlationId).toSatisfy(
 			(id: string) => typeof id === "string" && id.length > 0,
 		);

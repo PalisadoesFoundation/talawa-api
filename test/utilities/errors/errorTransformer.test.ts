@@ -1,4 +1,4 @@
-import { beforeAll, describe, expect, it, vi } from "vitest";
+import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 import { ZodError, ZodIssueCode } from "zod";
 import { ErrorCode } from "~/src/utilities/errors/errorCodes";
 import { normalizeError } from "~/src/utilities/errors/errorTransformer";
@@ -7,6 +7,10 @@ import { TalawaRestError } from "~/src/utilities/errors/TalawaRestError";
 describe("normalizeError", () => {
 	beforeAll(() => {
 		vi.stubEnv("NODE_ENV", "test");
+	});
+
+	afterAll(() => {
+		vi.unstubAllEnvs();
 	});
 	it("should return TalawaRestError as-is", () => {
 		const originalError = new TalawaRestError({

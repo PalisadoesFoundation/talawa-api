@@ -77,7 +77,7 @@ export const errorHandlerPlugin = fastifyPlugin(
 									code: normalized.code,
 									correlationId,
 									httpStatus: normalized.statusCode,
-									...(normalized.details
+									...(normalized.details !== undefined
 										? { details: normalized.details }
 										: {}),
 								},
@@ -100,7 +100,9 @@ export const errorHandlerPlugin = fastifyPlugin(
 						code: normalized.code,
 						message: normalized.message,
 						correlationId,
-						...(normalized.details ? { details: normalized.details } : {}),
+						...(normalized.details !== undefined
+							? { details: normalized.details }
+							: {}),
 					},
 				});
 			},
