@@ -2054,7 +2054,7 @@ describe("GraphQL Routes", () => {
 				if (!errorFormatter) return;
 			});
 
-			it("should remove sensitive extension keys", () => {
+			it("should preserve TalawaGraphQLError extensions and add correlationId", () => {
 				const result = errorFormatter(
 					{
 						data: null,
@@ -2210,7 +2210,7 @@ describe("GraphQL Routes", () => {
 					},
 				);
 
-				// INTERNAL_SERVER_ERROR returns 200 for subscription context (no reply.send)
+				// INTERNAL_SERVER_ERROR returns 200 for HTTP context (reply.send present), subscriptions derive status when reply.send is absent
 				expect(result.statusCode).toBe(200);
 			});
 
@@ -2921,250 +2921,259 @@ describe("GraphQL Routes", () => {
 
 	describe("Observability Coverage", () => {
 		it("should execute observability tracing code when enabled", async () => {
-			// Temporarily enable observability
-			vi.doMock("~/src/config/observability", () => ({
-				observabilityConfig: { enabled: true },
-			}));
+			try {
+				vi.doMock("~/src/config/observability", () => ({
+					observabilityConfig: { enabled: true },
+				}));
 
-			// Mock OpenTelemetry
-			const mockSpan = {
-				setAttribute: vi.fn(),
-				end: vi.fn(),
-			};
-			const mockTracer = {
-				startSpan: vi.fn().mockReturnValue(mockSpan),
-			};
+				// Mock OpenTelemetry
+				const mockSpan = {
+					setAttribute: vi.fn(),
+					end: vi.fn(),
+				};
+				const mockTracer = {
+					startSpan: vi.fn().mockReturnValue(mockSpan),
+				};
 
-			vi.doMock("@opentelemetry/api", () => ({
-				trace: {
-					getTracer: vi.fn().mockReturnValue(mockTracer),
-				},
-			}));
+				vi.doMock("@opentelemetry/api", () => ({
+					trace: {
+						getTracer: vi.fn().mockReturnValue(mockTracer),
+					},
+				}));
 
-			// Re-import the module to get the mocked version
-			vi.resetModules();
-			const { graphql: graphqlWithObservability } = await import(
-				"~/src/routes/graphql"
-			);
+				// Re-import the module to get the mocked version
+				vi.resetModules();
+				const { graphql: graphqlWithObservability } = await import(
+					"~/src/routes/graphql"
+				);
 
-			const mockFastifyInstance = {
-				register: vi.fn(),
-				envConfig: {
-					API_IS_GRAPHIQL: false,
-				},
-				log: {
-					info: vi.fn(),
-					error: vi.fn(),
-				},
-				graphql: {
-					replaceSchema: vi.fn(),
-					addHook: vi.fn(),
-				},
-			};
+				const mockFastifyInstance = {
+					register: vi.fn(),
+					envConfig: {
+						API_IS_GRAPHIQL: false,
+					},
+					log: {
+						info: vi.fn(),
+						error: vi.fn(),
+					},
+					graphql: {
+						replaceSchema: vi.fn(),
+						addHook: vi.fn(),
+					},
+				};
 
-			vi.mocked(schemaManager.buildInitialSchema).mockResolvedValue(
-				new GraphQLSchema({
-					query: new GraphQLObjectType({
-						name: "Query",
-						fields: {
-							hello: { type: GraphQLString, resolve: () => "Hello" },
-						},
+				vi.mocked(schemaManager.buildInitialSchema).mockResolvedValue(
+					new GraphQLSchema({
+						query: new GraphQLObjectType({
+							name: "Query",
+							fields: {
+								hello: { type: GraphQLString, resolve: () => "Hello" },
+							},
+						}),
 					}),
-				}),
-			);
-
-			await graphqlWithObservability(
-				mockFastifyInstance as unknown as FastifyInstance,
-			);
-
-			// Verify observability hooks were added
-			expect(mockFastifyInstance.graphql.addHook).toHaveBeenCalledWith(
-				"preExecution",
-				expect.any(Function),
-			);
-			expect(mockFastifyInstance.graphql.addHook).toHaveBeenCalledWith(
-				"onResolution",
-				expect.any(Function),
-			);
-
-			// Test the tracing hooks
-			const addHookCalls = mockFastifyInstance.graphql.addHook.mock.calls;
-			const preExecutionHook = addHookCalls.find(
-				(call: unknown[]) =>
-					call?.[0] === "preExecution" && call?.[1] !== undefined,
-			)?.[1] as (...args: unknown[]) => unknown;
-
-			const onResolutionHook = addHookCalls.find(
-				(call: unknown[]) =>
-					call?.[0] === "onResolution" && call?.[1] !== undefined,
-			)?.[1] as (...args: unknown[]) => unknown;
-
-			// Test preExecution hook
-			if (preExecutionHook) {
-				const mockDocument = {
-					definitions: [
-						{
-							kind: "OperationDefinition",
-							operation: "query",
-							name: { value: "TestQuery" },
-						},
-					],
-				};
-				const mockContext = {};
-
-				await preExecutionHook(null, mockDocument, mockContext);
-
-				expect(mockTracer.startSpan).toHaveBeenCalledWith("graphql:TestQuery");
-				expect(mockSpan.setAttribute).toHaveBeenCalledWith(
-					"graphql.operation.name",
-					"TestQuery",
 				);
-				expect(mockSpan.setAttribute).toHaveBeenCalledWith(
-					"graphql.operation.type",
-					"query",
+
+				await graphqlWithObservability(
+					mockFastifyInstance as unknown as FastifyInstance,
 				);
+
+				// Verify observability hooks were added
+				expect(mockFastifyInstance.graphql.addHook).toHaveBeenCalledWith(
+					"preExecution",
+					expect.any(Function),
+				);
+				expect(mockFastifyInstance.graphql.addHook).toHaveBeenCalledWith(
+					"onResolution",
+					expect.any(Function),
+				);
+
+				// Test the tracing hooks
+				const addHookCalls = mockFastifyInstance.graphql.addHook.mock.calls;
+				const preExecutionHook = addHookCalls.find(
+					(call: unknown[]) =>
+						call?.[0] === "preExecution" && call?.[1] !== undefined,
+				)?.[1] as (...args: unknown[]) => unknown;
+
+				const onResolutionHook = addHookCalls.find(
+					(call: unknown[]) =>
+						call?.[0] === "onResolution" && call?.[1] !== undefined,
+				)?.[1] as (...args: unknown[]) => unknown;
+
+				// Test preExecution hook
+				if (preExecutionHook) {
+					const mockDocument = {
+						definitions: [
+							{
+								kind: "OperationDefinition",
+								operation: "query",
+								name: { value: "TestQuery" },
+							},
+						],
+					};
+					const mockContext = {};
+
+					await preExecutionHook(null, mockDocument, mockContext);
+
+					expect(mockTracer.startSpan).toHaveBeenCalledWith(
+						"graphql:TestQuery",
+					);
+					expect(mockSpan.setAttribute).toHaveBeenCalledWith(
+						"graphql.operation.name",
+						"TestQuery",
+					);
+					expect(mockSpan.setAttribute).toHaveBeenCalledWith(
+						"graphql.operation.type",
+						"query",
+					);
+				}
+
+				// Test onResolution hook
+				if (onResolutionHook) {
+					const mockExecution = {
+						errors: [{ message: "Test error" }],
+					};
+					const mockContext = { _tracingSpan: mockSpan };
+
+					await onResolutionHook(mockExecution, mockContext);
+
+					expect(mockSpan.setAttribute).toHaveBeenCalledWith(
+						"graphql.errors.count",
+						1,
+					);
+					expect(mockSpan.end).toHaveBeenCalled();
+				}
+			} finally {
+				// Restore mocks
+				vi.doUnmock("~/src/config/observability");
+				vi.doUnmock("@opentelemetry/api");
+				vi.resetModules();
 			}
-
-			// Test onResolution hook
-			if (onResolutionHook) {
-				const mockExecution = {
-					errors: [{ message: "Test error" }],
-				};
-				const mockContext = { _tracingSpan: mockSpan };
-
-				await onResolutionHook(mockExecution, mockContext);
-
-				expect(mockSpan.setAttribute).toHaveBeenCalledWith(
-					"graphql.errors.count",
-					1,
-				);
-				expect(mockSpan.end).toHaveBeenCalled();
-			}
-
-			// Restore mocks
-			vi.doUnmock("~/src/config/observability");
-			vi.doUnmock("@opentelemetry/api");
-			vi.resetModules();
 		});
 
 		it("should handle anonymous operations and unknown operation types in tracing", async () => {
-			// Mock observabilityConfig to be enabled
-			vi.doMock("~/src/config/observability", () => ({
-				observabilityConfig: { enabled: true },
-			}));
+			try {
+				// Mock observabilityConfig to be enabled
+				vi.doMock("~/src/config/observability", () => ({
+					observabilityConfig: { enabled: true },
+				}));
 
-			// Mock OpenTelemetry
-			const mockSpan = {
-				setAttribute: vi.fn(),
-				end: vi.fn(),
-			};
-			const mockTracer = {
-				startSpan: vi.fn().mockReturnValue(mockSpan),
-			};
+				// Mock OpenTelemetry
+				const mockSpan = {
+					setAttribute: vi.fn(),
+					end: vi.fn(),
+				};
+				const mockTracer = {
+					startSpan: vi.fn().mockReturnValue(mockSpan),
+				};
 
-			vi.doMock("@opentelemetry/api", () => ({
-				trace: {
-					getTracer: vi.fn().mockReturnValue(mockTracer),
-				},
-			}));
+				vi.doMock("@opentelemetry/api", () => ({
+					trace: {
+						getTracer: vi.fn().mockReturnValue(mockTracer),
+					},
+				}));
 
-			// Re-import the module to get the mocked version
-			vi.resetModules();
-			const { graphql: graphqlWithObservability } = await import(
-				"~/src/routes/graphql"
-			);
+				// Re-import the module to get the mocked version
+				vi.resetModules();
+				const { graphql: graphqlWithObservability } = await import(
+					"~/src/routes/graphql"
+				);
 
-			const mockFastifyInstance = {
-				register: vi.fn(),
-				envConfig: {
-					API_IS_GRAPHIQL: false,
-				},
-				log: {
-					info: vi.fn(),
-					error: vi.fn(),
-				},
-				graphql: {
-					replaceSchema: vi.fn(),
-					addHook: vi.fn(),
-				},
-			};
+				const mockFastifyInstance = {
+					register: vi.fn(),
+					envConfig: {
+						API_IS_GRAPHIQL: false,
+					},
+					log: {
+						info: vi.fn(),
+						error: vi.fn(),
+					},
+					graphql: {
+						replaceSchema: vi.fn(),
+						addHook: vi.fn(),
+					},
+				};
 
-			vi.mocked(schemaManager.buildInitialSchema).mockResolvedValue(
-				new GraphQLSchema({
-					query: new GraphQLObjectType({
-						name: "Query",
-						fields: {
-							hello: { type: GraphQLString, resolve: () => "Hello" },
-						},
+				vi.mocked(schemaManager.buildInitialSchema).mockResolvedValue(
+					new GraphQLSchema({
+						query: new GraphQLObjectType({
+							name: "Query",
+							fields: {
+								hello: { type: GraphQLString, resolve: () => "Hello" },
+							},
+						}),
 					}),
-				}),
-			);
-
-			await graphqlWithObservability(
-				mockFastifyInstance as unknown as FastifyInstance,
-			);
-
-			// Get the preExecution hook
-			const addHookCalls = mockFastifyInstance.graphql.addHook.mock.calls;
-			const preExecutionHook = addHookCalls.find(
-				(call: unknown[]) =>
-					call?.[0] === "preExecution" && call?.[1] !== undefined,
-			)?.[1] as (...args: unknown[]) => unknown;
-
-			if (preExecutionHook) {
-				// Test with operation definition that has no name (anonymous)
-				const mockDocumentAnonymous = {
-					definitions: [
-						{
-							kind: "OperationDefinition",
-							operation: "query",
-							// No name property - should fallback to "anonymous"
-						},
-					],
-				};
-
-				await preExecutionHook(null, mockDocumentAnonymous, {});
-
-				expect(mockTracer.startSpan).toHaveBeenCalledWith("graphql:anonymous");
-				expect(mockSpan.setAttribute).toHaveBeenCalledWith(
-					"graphql.operation.name",
-					"anonymous",
-				);
-				expect(mockSpan.setAttribute).toHaveBeenCalledWith(
-					"graphql.operation.type",
-					"query",
 				);
 
-				// Reset mocks for next test
-				vi.clearAllMocks();
-
-				// Test with non-operation definition (should fallback to "unknown")
-				const mockDocumentUnknown = {
-					definitions: [
-						{
-							kind: "FragmentDefinition", // Not an OperationDefinition
-							name: { value: "TestFragment" },
-						},
-					],
-				};
-
-				await preExecutionHook(null, mockDocumentUnknown, {});
-
-				expect(mockTracer.startSpan).toHaveBeenCalledWith("graphql:anonymous");
-				expect(mockSpan.setAttribute).toHaveBeenCalledWith(
-					"graphql.operation.name",
-					"anonymous",
+				await graphqlWithObservability(
+					mockFastifyInstance as unknown as FastifyInstance,
 				);
-				expect(mockSpan.setAttribute).toHaveBeenCalledWith(
-					"graphql.operation.type",
-					"unknown",
-				);
+
+				// Get the preExecution hook
+				const addHookCalls = mockFastifyInstance.graphql.addHook.mock.calls;
+				const preExecutionHook = addHookCalls.find(
+					(call: unknown[]) =>
+						call?.[0] === "preExecution" && call?.[1] !== undefined,
+				)?.[1] as (...args: unknown[]) => unknown;
+
+				if (preExecutionHook) {
+					// Test with operation definition that has no name (anonymous)
+					const mockDocumentAnonymous = {
+						definitions: [
+							{
+								kind: "OperationDefinition",
+								operation: "query",
+								// No name property - should fallback to "anonymous"
+							},
+						],
+					};
+
+					await preExecutionHook(null, mockDocumentAnonymous, {});
+
+					expect(mockTracer.startSpan).toHaveBeenCalledWith(
+						"graphql:anonymous",
+					);
+					expect(mockSpan.setAttribute).toHaveBeenCalledWith(
+						"graphql.operation.name",
+						"anonymous",
+					);
+					expect(mockSpan.setAttribute).toHaveBeenCalledWith(
+						"graphql.operation.type",
+						"query",
+					);
+
+					// Reset mocks for next test
+					vi.clearAllMocks();
+
+					// Test with non-operation definition (should fallback to "unknown")
+					const mockDocumentUnknown = {
+						definitions: [
+							{
+								kind: "FragmentDefinition", // Not an OperationDefinition
+								name: { value: "TestFragment" },
+							},
+						],
+					};
+
+					await preExecutionHook(null, mockDocumentUnknown, {});
+
+					expect(mockTracer.startSpan).toHaveBeenCalledWith(
+						"graphql:anonymous",
+					);
+					expect(mockSpan.setAttribute).toHaveBeenCalledWith(
+						"graphql.operation.name",
+						"anonymous",
+					);
+					expect(mockSpan.setAttribute).toHaveBeenCalledWith(
+						"graphql.operation.type",
+						"unknown",
+					);
+				}
+			} finally {
+				// Restore mocks
+				vi.doUnmock("~/src/config/observability");
+				vi.doUnmock("@opentelemetry/api");
+				vi.resetModules();
 			}
-
-			// Restore mocks
-			vi.doUnmock("~/src/config/observability");
-			vi.doUnmock("@opentelemetry/api");
-			vi.resetModules();
 		});
 	});
 });
