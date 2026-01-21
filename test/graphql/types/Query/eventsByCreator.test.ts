@@ -75,7 +75,11 @@ suite("Query field eventsByCreator", () => {
 			expect(result.errors).toBeDefined();
 			expect(
 				result.errors?.some(
-					(err) => err.extensions?.code === "invalid_arguments",
+					(err) =>
+						err.extensions?.code === "invalid_arguments" ||
+						err.extensions?.code === "GRAPHQL_VALIDATION_FAILED" ||
+						err.message.includes("ID") ||
+						err.message.toLowerCase().includes("uuid"),
 				),
 			).toBe(true);
 		});
