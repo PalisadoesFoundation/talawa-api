@@ -100,8 +100,8 @@ describe("MutationCreateAgendaItemInput Schema", () => {
 				...validBaseInput,
 				attachments: [
 					{
-						name: "file.pdf",
-						mimeType: "application/pdf",
+						name: "file.jpeg",
+						mimeType: "IMAGE_JPEG",
 						objectName: "object-name",
 						fileHash: "hash",
 					},
