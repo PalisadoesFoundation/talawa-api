@@ -31,6 +31,14 @@ describe("MutationCreateAgendaItemInput Schema", () => {
 			expect(result.success).toBe(false);
 		});
 
+		it("should reject invalid eventId UUID", () => {
+			const result = mutationCreateAgendaItemInputSchema.safeParse({
+				...validBaseInput,
+				eventId: "invalid-uuid",
+			});
+			expect(result.success).toBe(false);
+		});
+
 		it("should reject missing name", () => {
 			const { name: _name, ...input } = validBaseInput;
 			const result = mutationCreateAgendaItemInputSchema.safeParse(input);
@@ -183,6 +191,14 @@ describe("MutationCreateAgendaItemInput Schema", () => {
 				key: "C",
 			});
 			expect(result.success).toBe(false);
+		});
+
+		it('should accept type "note" with no duration or key', () => {
+			const result = mutationCreateAgendaItemInputSchema.safeParse({
+				...validBaseInput,
+				type: "note",
+			});
+			expect(result.success).toBe(true);
 		});
 
 		it('should reject key for type "general"', () => {
