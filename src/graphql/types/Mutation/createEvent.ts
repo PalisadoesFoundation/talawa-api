@@ -547,10 +547,11 @@ builder.mutationField("createEvent", (t) =>
 				return createdEventResult;
 			};
 
-			return (
-				(await ctx.perf?.time("mutation:createEvent", executeMutation)) ??
-				executeMutation()
-			);
+			if (ctx.perf) {
+				return await ctx.perf.time("mutation:createEvent", executeMutation);
+			}
+
+			return await executeMutation();
 		},
 		type: Event,
 	}),
