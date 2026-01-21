@@ -273,7 +273,7 @@ suite("Mutation field updateAgendaItem", () => {
 					id: agendaItemId,
 					attachments: [
 						{
-							name: "file.png",
+							name: "file.jpeg",
 							fileHash:
 								"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
 							mimeType: "IMAGE_JPEG",
@@ -288,8 +288,8 @@ suite("Mutation field updateAgendaItem", () => {
 		expect(result.data?.updateAgendaItem?.attachments).toEqual(
 			expect.arrayContaining([
 				expect.objectContaining({
-					name: "file.png",
-					mimeType: "IMAGE_PNG",
+					name: "file.jpeg",
+					mimeType: "IMAGE_JPEG",
 				}),
 			]),
 		);
