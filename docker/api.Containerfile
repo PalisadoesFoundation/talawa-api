@@ -47,6 +47,8 @@ RUN curl -fsSL --proto '=https' --tlsv1.2 https://fnm.vercel.app/install | bash 
 ENV PATH=/home/talawa/.local/share/fnm:${PATH}
 # Install Node.js 24.12.0 LTS using fnm
 RUN /home/talawa/.local/share/fnm/fnm install 24.12.0 && /home/talawa/.local/share/fnm/fnm default 24.12.0
+# Add Node.js bin directory to PATH to ensure pnpm is available in non-interactive shells
+ENV PATH="/home/talawa/.local/share/fnm/node-versions/v24.12.0/installation/bin:${PATH}"
 WORKDIR /home/talawa/api
 
 FROM node:24.12.0-bookworm-slim AS base
