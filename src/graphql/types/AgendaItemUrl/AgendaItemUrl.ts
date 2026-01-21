@@ -23,7 +23,6 @@ AgendaItemUrl.implement({
 
 		url: t.exposeString("url", {
 			description: "URL associated with the agenda item.",
-			nullable: true,
 		}),
 
 		createdAt: t.expose("createdAt", {

@@ -11,10 +11,49 @@ export const resolveCategory = async (
 	_args: Record<string, never>,
 	ctx: GraphQLContext,
 ) => {
-	const existingAgendaCategory =
-		await ctx.drizzleClient.query.agendaCategoriesTable.findFirst({
-			where: (fields, operators) => operators.eq(fields.id, parent.categoryId),
+	if (!ctx.currentClient.isAuthenticated) {
+		throw new TalawaGraphQLError({
+			extensions: { code: "unauthenticated" },
 		});
+	}
+
+	const currentUserId = ctx.currentClient.user.id;
+
+	const [currentUser, existingAgendaCategory, existingAgendaFolder] =
+		await Promise.all([
+			ctx.drizzleClient.query.usersTable.findFirst({
+				columns: { role: true },
+				where: (fields, operators) => operators.eq(fields.id, currentUserId),
+			}),
+			ctx.drizzleClient.query.agendaCategoriesTable.findFirst({
+				where: (fields, operators) =>
+					operators.eq(fields.id, parent.categoryId),
+			}),
+			ctx.drizzleClient.query.agendaFoldersTable.findFirst({
+				where: (fields, operators) => operators.eq(fields.id, parent.folderId),
+				with: {
+					event: {
+						with: {
+							organization: {
+								with: {
+									membershipsWhereOrganization: {
+										columns: { role: true },
+										where: (fields, operators) =>
+											operators.eq(fields.memberId, currentUserId),
+									},
+								},
+							},
+						},
+					},
+				},
+			}),
+		]);
+
+	if (currentUser === undefined) {
+		throw new TalawaGraphQLError({
+			extensions: { code: "unauthenticated" },
+		});
+	}
 
 	if (existingAgendaCategory === undefined) {
 		ctx.log.error(
@@ -22,9 +61,33 @@ export const resolveCategory = async (
 		);
 
 		throw new TalawaGraphQLError({
-			extensions: {
-				code: "unexpected",
-			},
+			extensions: { code: "unexpected" },
+		});
+	}
+
+	if (
+		existingAgendaFolder === undefined ||
+		existingAgendaFolder.event === undefined
+	) {
+		ctx.log.error(
+			"Postgres select operation returned an empty array for an agenda item's folder or event id that isn't null.",
+		);
+
+		throw new TalawaGraphQLError({
+			extensions: { code: "unexpected" },
+		});
+	}
+
+	const currentUserOrganizationMembership =
+		existingAgendaFolder.event.organization.membershipsWhereOrganization[0];
+
+	if (
+		currentUser.role !== "administrator" &&
+		(currentUserOrganizationMembership === undefined ||
+			currentUserOrganizationMembership.role !== "administrator")
+	) {
+		throw new TalawaGraphQLError({
+			extensions: { code: "unauthorized_action" },
 		});
 	}
 

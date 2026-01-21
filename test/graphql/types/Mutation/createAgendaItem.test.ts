@@ -25,8 +25,6 @@ let cachedAdminAuth: { token: string; userId: string } | null = null;
 async function getAdminAuth() {
 	if (cachedAdminAuth) return cachedAdminAuth;
 
-	mercuriusClient.setHeaders({});
-
 	const {
 		API_ADMINISTRATOR_USER_EMAIL_ADDRESS: email,
 		API_ADMINISTRATOR_USER_PASSWORD: password,
@@ -37,6 +35,7 @@ async function getAdminAuth() {
 	}
 
 	const result = await mercuriusClient.query(Query_signIn, {
+		headers: { authorization: "" },
 		variables: {
 			input: { emailAddress: email, password },
 		},
@@ -183,7 +182,6 @@ suite("Mutation field createAgendaItem", () => {
 			}
 		}
 		cleanupFns.length = 0;
-		mercuriusClient.setHeaders({});
 	});
 
 	test("Returns error when unauthenticated", async () => {

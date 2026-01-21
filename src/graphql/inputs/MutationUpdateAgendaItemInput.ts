@@ -29,7 +29,10 @@ export const MutationUpdateAgendaItemInputSchema = agendaItemsTableInsertSchema
 			.min(1)
 			.max(AGENDA_ITEM_NAME_MAX_LENGTH)
 			.optional(),
-		url: z.array(z.object({ url: z.string().url() })).optional(),
+		url: z
+			.array(z.object({ url: z.string().url() }))
+			.max(5)
+			.optional(),
 	})
 	.refine(
 		({ id, ...remainingArg }) =>

@@ -138,6 +138,29 @@ describe("AgendaItem.createdAt resolver", () => {
 		expect(result).toEqual(mockAgendaItem.createdAt);
 	});
 
+	it("should throw unexpected error if agenda folder exists but event is undefined", async () => {
+		mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValue({
+			id: "user-123",
+			role: "administrator",
+		});
+
+		mocks.drizzleClient.query.agendaFoldersTable.findFirst.mockResolvedValue({
+			id: "folder-123",
+			isAgendaItemFolder: true,
+			event: undefined,
+		} as never);
+
+		const logSpy = vi.spyOn(ctx.log, "error");
+
+		await expect(resolveCreatedAt(mockAgendaItem, {}, ctx)).rejects.toThrow(
+			new TalawaGraphQLError({ extensions: { code: "unexpected" } }),
+		);
+
+		expect(logSpy).toHaveBeenCalledWith(
+			"Postgres select operation returned an empty array for an agenda item's event id that isn't null.",
+		);
+	});
+
 	it("should return exact Date instance from parent", async () => {
 		const specificDate = new Date("2023-12-31T23:59:59.999Z");
 		mockAgendaItem.createdAt = specificDate;

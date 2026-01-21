@@ -37,6 +37,7 @@ export const mutationCreateAgendaItemInputSchema = agendaItemsTableInsertSchema
 					fileHash: z.string().min(1),
 				}),
 			)
+			.max(10)
 			.optional(),
 	})
 	.superRefine((arg, ctx) => {

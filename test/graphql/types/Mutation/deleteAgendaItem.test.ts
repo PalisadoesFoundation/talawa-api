@@ -103,8 +103,8 @@ async function createAgendaItemEnv(adminToken: string) {
 			input: {
 				name: `Event ${faker.string.uuid()}`,
 				organizationId,
-				startAt: new Date().toISOString(),
-				endAt: new Date(Date.now() + 3600000).toISOString(),
+				startAt: new Date(Date.now() + 5_000).toISOString(),
+				endAt: new Date(Date.now() + 3_600_000 + 5_000).toISOString(),
 			},
 		},
 	});

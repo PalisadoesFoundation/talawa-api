@@ -448,7 +448,7 @@ suite("Query field agendaFoldersByEventId", () => {
 					organizationId,
 					name: "Folder 1",
 					description: "Desc 1",
-					sequence: 1,
+					sequence: 2,
 				},
 			},
 		});
@@ -461,7 +461,7 @@ suite("Query field agendaFoldersByEventId", () => {
 					organizationId,
 					name: "Folder 2",
 					description: "Desc 2",
-					sequence: 2,
+					sequence: 3,
 				},
 			},
 		});

@@ -1,5 +1,5 @@
 import { createMockGraphQLContext } from "test/_Mocks_/mockContextCreator/mockContextCreator";
-import { beforeEach, describe, expect, it } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { GraphQLContext } from "~/src/graphql/context";
 import type { AgendaItem as AgendaItemType } from "~/src/graphql/types/AgendaItem/AgendaItem";
 import { resolveEvent } from "~/src/graphql/types/AgendaItem/event";
@@ -31,16 +31,97 @@ describe("AgendaItem.event resolver", () => {
 		const result = createMockGraphQLContext(true, "user-1");
 		ctx = result.context;
 		mocks = result.mocks;
+		vi.clearAllMocks();
 	});
 
-	it("should return event with attachments when event exists", async () => {
+	it("throws unauthenticated when client is not authenticated", async () => {
+		const unauth = createMockGraphQLContext(false, "user-1");
+
+		await expect(
+			resolveEvent(mockAgendaItem, {}, unauth.context),
+		).rejects.toThrow(
+			new TalawaGraphQLError({
+				extensions: { code: "unauthenticated" },
+			}),
+		);
+
+		expect(
+			unauth.mocks.drizzleClient.query.eventsTable.findFirst,
+		).not.toHaveBeenCalled();
+	});
+
+	it("throws unauthenticated when current user is not found", async () => {
+		mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValueOnce(
+			undefined,
+		);
+
+		await expect(resolveEvent(mockAgendaItem, {}, ctx)).rejects.toThrow(
+			new TalawaGraphQLError({
+				extensions: { code: "unauthenticated" },
+			}),
+		);
+	});
+
+	it("throws unexpected when event does not exist", async () => {
+		mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValueOnce({
+			id: "user-1",
+			role: "administrator",
+		} as never);
+
+		mocks.drizzleClient.query.eventsTable.findFirst.mockResolvedValueOnce(
+			undefined,
+		);
+
+		const logSpy = vi.spyOn(ctx.log, "error");
+
+		await expect(resolveEvent(mockAgendaItem, {}, ctx)).rejects.toThrow(
+			new TalawaGraphQLError({
+				extensions: { code: "unexpected" },
+			}),
+		);
+
+		expect(logSpy).toHaveBeenCalledWith(
+			"Postgres select operation returned an empty array for an agenda item's event id that isn't null.",
+		);
+	});
+
+	it("throws unauthorized_action when user is not admin", async () => {
+		mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValueOnce({
+			id: "user-1",
+			role: "regular",
+		} as never);
+
+		mocks.drizzleClient.query.eventsTable.findFirst.mockResolvedValueOnce({
+			id: "event-1",
+			attachmentsWhereEvent: [],
+			organization: {
+				membershipsWhereOrganization: [],
+			},
+		} as never);
+
+		await expect(resolveEvent(mockAgendaItem, {}, ctx)).rejects.toThrow(
+			new TalawaGraphQLError({
+				extensions: { code: "unauthorized_action" },
+			}),
+		);
+	});
+
+	it("returns event for super administrator", async () => {
 		const mockEvent = {
 			id: "event-1",
 			name: "Event",
-			attachmentsWhereEvent: [{ id: "att-1" }, { id: "att-2" }],
+			attachmentsWhereEvent: [{ id: "att-1" }],
+			organization: {
+				membershipsWhereOrganization: [],
+			},
 		};
 
-		mocks.drizzleClient.query.eventsTable.findFirst.mockResolvedValue(
+		mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValueOnce({
+			id: "admin-1",
+			role: "administrator",
+		} as never);
+
+		mocks.drizzleClient.query.eventsTable.findFirst.mockResolvedValueOnce(
 			mockEvent as never,
 		);
 
@@ -50,23 +131,32 @@ describe("AgendaItem.event resolver", () => {
 			...mockEvent,
 			attachments: mockEvent.attachmentsWhereEvent,
 		});
-
-		expect(mocks.drizzleClient.query.eventsTable.findFirst).toHaveBeenCalled();
 	});
 
-	it("should throw unexpected error when event does not exist", async () => {
-		mocks.drizzleClient.query.eventsTable.findFirst.mockResolvedValue(
-			undefined,
+	it("returns event for organization administrator", async () => {
+		const mockEvent = {
+			id: "event-1",
+			name: "Event",
+			attachmentsWhereEvent: [{ id: "att-1" }, { id: "att-2" }],
+			organization: {
+				membershipsWhereOrganization: [{ role: "administrator" }],
+			},
+		};
+
+		mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValueOnce({
+			id: "user-1",
+			role: "regular",
+		} as never);
+
+		mocks.drizzleClient.query.eventsTable.findFirst.mockResolvedValueOnce(
+			mockEvent as never,
 		);
 
-		await expect(resolveEvent(mockAgendaItem, {}, ctx)).rejects.toThrow(
-			new TalawaGraphQLError({
-				extensions: { code: "unexpected" },
-			}),
-		);
+		const result = await resolveEvent(mockAgendaItem, {}, ctx);
 
-		expect(ctx.log.error).toHaveBeenCalledWith(
-			"Postgres select operation returned an empty array for an agenda item's event id that isn't null.",
-		);
+		expect(result).toEqual({
+			...mockEvent,
+			attachments: mockEvent.attachmentsWhereEvent,
+		});
 	});
 });

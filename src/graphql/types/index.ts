@@ -5,7 +5,7 @@ import "./AdvertisementAttachment/index";
 import "./RecurrenceRule/index";
 import "./AgendaFolder/index";
 import "./AgendaItem/index";
-import "./AgendaItemAttachemnt/index";
+import "./AgendaItemAttachement/index";
 import "./AgendaItemUrl/index";
 import "./AssignUserTag/index";
 import "./AuthenticationPayload";
