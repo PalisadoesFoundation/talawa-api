@@ -9,8 +9,12 @@ coverage:
 flags:
   unit:
     carryforward: false
+    paths:
+      - src/
   integration:
     carryforward: false
+    paths:
+      - src/
 flag_management:
   default_rules:
     carryforward: true
