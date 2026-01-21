@@ -12,12 +12,10 @@ flags:
     paths:
       - src/config/
       - src/fastifyPlugins/
-      - src/helpers/
       - src/observability/
       - src/plugin/
       - src/plugins/
       - src/routes/
-      - src/school/
       - src/services/
       - src/setup/
       - src/types/
