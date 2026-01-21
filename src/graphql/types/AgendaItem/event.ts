@@ -11,6 +11,13 @@ export const resolveEvent = async (
 	_args: Record<string, never>,
 	ctx: GraphQLContext,
 ) => {
+	if (!ctx.currentClient.isAuthenticated) {
+		throw new TalawaGraphQLError({
+			extensions: {
+				code: "unauthenticated",
+			},
+		});
+	}
 	const existingEvent = await ctx.drizzleClient.query.eventsTable.findFirst({
 		where: (fields, operators) => operators.eq(fields.id, parent.eventId),
 		with: {
