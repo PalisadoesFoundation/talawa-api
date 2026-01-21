@@ -1060,7 +1060,7 @@ suite("Mutation field updateOrganization", () => {
 
 			const result = JSON.parse(response.body);
 			expect(result.errors).toBeDefined();
-			expect(result.data?.updateOrganization).toBeFalsy();
+			expect(result.data?.updateOrganization).toBeNull();
 			expect(result.errors?.[0]?.message).toContain("MinIO upload failed");
 		});
 
@@ -1121,7 +1121,7 @@ suite("Mutation field updateOrganization", () => {
 			});
 
 			expect(result.errors).toBeDefined();
-			expect(result.data?.updateOrganization).toBeFalsy();
+			expect(result.data?.updateOrganization).toBeNull();
 			expect(result.errors?.[0]?.message).toContain("MinIO remove failed");
 		});
 	});

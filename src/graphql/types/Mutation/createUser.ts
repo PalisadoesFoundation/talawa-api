@@ -27,7 +27,7 @@ const mutationCreateUserArgumentsSchema = z.object({
 					mimetype: z.infer<typeof imageMimeTypeEnum>;
 			  })
 			| null
-			| undefined;
+			| undefined = null;
 
 		if (isNotNullish(arg.avatar)) {
 			const rawAvatar = await arg.avatar;
@@ -143,8 +143,8 @@ builder.mutationField("createUser", (t) =>
 					});
 				}
 
-				let avatarMimeType: z.infer<typeof imageMimeTypeEnum>;
-				let avatarName: string;
+				let avatarMimeType: z.infer<typeof imageMimeTypeEnum> | null = null;
+				let avatarName: string | null = null;
 
 				if (isNotNullish(parsedArgs.input.avatar)) {
 					avatarMimeType = parsedArgs.input.avatar.mimetype;
@@ -204,7 +204,7 @@ builder.mutationField("createUser", (t) =>
 						});
 					}
 
-					if (isNotNullish(parsedArgs.input.avatar)) {
+					if (isNotNullish(parsedArgs.input.avatar) && avatarName) {
 						const fileUploadStop = ctx.perf?.start("file:avatar-upload");
 						try {
 							await ctx.minio.client.putObject(
@@ -259,10 +259,11 @@ builder.mutationField("createUser", (t) =>
 				});
 			};
 
-			return (
-				(await ctx.perf?.time("mutation:createUser", executeMutation)) ??
-				executeMutation()
-			);
+			if (ctx.perf) {
+				return await ctx.perf.time("mutation:createUser", executeMutation);
+			}
+
+			return await executeMutation();
 		},
 		type: AuthenticationPayload,
 	}),
