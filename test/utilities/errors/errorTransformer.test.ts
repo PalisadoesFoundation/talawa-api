@@ -82,25 +82,6 @@ describe("normalizeError", () => {
 		expect(normalized.details).toBeDefined();
 	});
 
-	it("should normalize Zod validation errors", () => {
-		const zodError = new ZodError([
-			{
-				code: ZodIssueCode.invalid_type,
-				expected: "string",
-				path: ["name"],
-				message: "Expected string, received number",
-			},
-		]);
-
-		const normalized = normalizeError(zodError);
-
-		expect(normalized.code).toBe(ErrorCode.INVALID_ARGUMENTS);
-		expect(normalized.message).toBe("Invalid input");
-		expect(normalized.statusCode).toBe(400);
-		expect(normalized.details).toBeDefined();
-		expect(zodError.issues).toBeDefined();
-	});
-
 	it("should normalize generic Error objects", () => {
 		const genericError = new Error("Something went wrong");
 

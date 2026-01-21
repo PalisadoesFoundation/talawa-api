@@ -2592,177 +2592,102 @@ describe("GraphQL Routes", () => {
 	});
 
 	describe("Observability Code Coverage", () => {
-		it("should execute observability code paths when enabled", async () => {
-			// Temporarily enable observability
-			const originalEnv = process.env.API_OTEL_ENABLED;
-			process.env.API_OTEL_ENABLED = "true";
-
-			// Mock the OpenTelemetry API to avoid actual tracing
-			const mockSpan = {
-				setAttribute: vi.fn(),
-				end: vi.fn(),
-			};
-			const mockTracer = {
-				startSpan: vi.fn().mockReturnValue(mockSpan),
-			};
-
-			// Create a simple mock for the trace module
-			const originalTrace = await import("@opentelemetry/api");
-			const mockTrace = {
-				...originalTrace,
-				trace: {
-					getTracer: vi.fn().mockReturnValue(mockTracer),
+		it("should register hooks and execute without throwing", async () => {
+			const mockFastifyInstance = {
+				register: vi.fn(),
+				envConfig: {
+					API_IS_GRAPHIQL: false,
+					API_GRAPHQL_MUTATION_BASE_COST: 10,
+					API_RATE_LIMIT_BUCKET_CAPACITY: 100,
+					API_RATE_LIMIT_REFILL_RATE: 1,
+				},
+				log: {
+					info: vi.fn(),
+					error: vi.fn(),
+				},
+				graphql: {
+					replaceSchema: vi.fn(),
+					addHook: vi.fn(),
 				},
 			};
 
-			// Mock the module
-			vi.doMock("@opentelemetry/api", () => mockTrace);
-
-			// Force re-import of the observability config
-			vi.resetModules();
-
-			try {
-				// Import the graphql module which should now have observability enabled
-				const { graphql } = await import("~/src/routes/graphql");
-
-				const mockFastifyInstance = {
-					register: vi.fn(),
-					envConfig: {
-						API_IS_GRAPHIQL: false,
+			const mockSchema = new GraphQLSchema({
+				query: new GraphQLObjectType({
+					name: "Query",
+					fields: {
+						hello: {
+							type: GraphQLString,
+							resolve: () => "Hello",
+						},
 					},
-					log: {
-						info: vi.fn(),
-						error: vi.fn(),
+				}),
+			});
+
+			vi.mocked(schemaManager.buildInitialSchema).mockResolvedValue(mockSchema);
+
+			await graphql(mockFastifyInstance as unknown as FastifyInstance);
+
+			expect(mockFastifyInstance.graphql.addHook).toHaveBeenCalled();
+
+			const addHookCalls = mockFastifyInstance.graphql.addHook.mock.calls;
+
+			const preExecutionHooks = addHookCalls.filter(
+				(call: unknown[]) => call?.[0] === "preExecution",
+			);
+
+			for (const hookCall of preExecutionHooks) {
+				const hook = hookCall[1] as (
+					schema: GraphQLSchema,
+					context: { definitions: Array<{ kind: string; operation?: string }> },
+					document: {
+						__currentQuery: Record<string, unknown>;
+						reply: {
+							request: { ip?: string; jwtVerify?: () => Promise<unknown> };
+						};
 					},
-					graphql: {
-						replaceSchema: vi.fn(),
-						addHook: vi.fn(),
+					variables: Record<string, unknown>,
+				) => Promise<void>;
+
+				// Mock leakyBucket to return true (allow request)
+				vi.mocked(leakyBucket).mockResolvedValue(true);
+
+				const mockContext = {
+					definitions: [{ kind: "OperationDefinition", operation: "query" }],
+				};
+
+				const mockDocument = {
+					__currentQuery: {},
+					reply: {
+						request: {
+							ip: "127.0.0.1",
+							jwtVerify: vi.fn().mockRejectedValue(new Error("No token")),
+						},
 					},
 				};
 
-				vi.mocked(schemaManager.buildInitialSchema).mockResolvedValue(
-					new GraphQLSchema({
-						query: new GraphQLObjectType({
-							name: "Query",
-							fields: {
-								hello: {
-									type: GraphQLString,
-									resolve: () => "Hello",
-								},
-							},
-						}),
-					}),
-				);
+				await expect(
+					hook(mockSchema, mockContext, mockDocument, {}),
+				).resolves.not.toThrow();
+			}
 
-				// This should execute the observability code paths
-				await graphql(mockFastifyInstance as unknown as FastifyInstance);
+			const onResolutionHooks = addHookCalls.filter(
+				(call: unknown[]) => call?.[0] === "onResolution",
+			);
 
-				// Verify that hooks were added (this means the observability code ran)
-				expect(mockFastifyInstance.graphql.addHook).toHaveBeenCalled();
+			for (const hookCall of onResolutionHooks) {
+				const hook = hookCall[1] as (
+					execution: { errors?: Array<{ message: string }> },
+					context: Record<string, unknown>,
+				) => Promise<void>;
 
-				// Test the hooks that were registered
-				const addHookCalls = mockFastifyInstance.graphql.addHook.mock.calls;
+				await expect(
+					hook({ errors: [{ message: "test" }] }, {}),
+				).resolves.not.toThrow();
 
-				// Find preExecution hooks
-				const preExecutionHooks = addHookCalls.filter(
-					(call: unknown[]) => call?.[0] === "preExecution",
-				);
-
-				// Find onResolution hooks
-				const onResolutionHooks = addHookCalls.filter(
-					(call: unknown[]) => call?.[0] === "onResolution",
-				);
-
-				// If observability is enabled, we should have tracing hooks
-				if (preExecutionHooks.length > 1) {
-					// Test the tracing preExecution hook
-					const tracingHook = preExecutionHooks[0]?.[1] as (
-						...args: unknown[]
-					) => unknown;
-					if (tracingHook) {
-						// Test different operation scenarios to cover all branches
-						const scenarios = [
-							// Named operation
-							{
-								definitions: [
-									{
-										kind: "OperationDefinition",
-										operation: "query",
-										name: { value: "TestQuery" },
-									},
-								],
-							},
-							// Anonymous operation
-							{
-								definitions: [
-									{
-										kind: "OperationDefinition",
-										operation: "mutation",
-									},
-								],
-							},
-							// Non-operation definition
-							{
-								definitions: [
-									{
-										kind: "FragmentDefinition",
-										name: { value: "TestFragment" },
-									},
-								],
-							},
-						];
-
-						for (const document of scenarios) {
-							const context = {};
-							await tracingHook(null, document, context);
-							expect(mockTracer.startSpan).toHaveBeenCalled();
-							expect(mockSpan.setAttribute).toHaveBeenCalled();
-						}
-					}
-				}
-
-				if (onResolutionHooks.length > 0) {
-					// Test the onResolution hook
-					const onResolutionHook = onResolutionHooks[0]?.[1] as (
-						...args: unknown[]
-					) => unknown;
-					if (onResolutionHook) {
-						// Test with errors
-						const executionWithErrors = {
-							errors: [{ message: "Test error" }],
-						};
-						const contextWithSpan = { _tracingSpan: mockSpan };
-						await onResolutionHook(executionWithErrors, contextWithSpan);
-						expect(mockSpan.setAttribute).toHaveBeenCalledWith(
-							"graphql.errors.count",
-							1,
-						);
-						expect(mockSpan.end).toHaveBeenCalled();
-
-						// Test without errors
-						vi.clearAllMocks();
-						const executionWithoutErrors = {
-							data: { test: "success" },
-						};
-						await onResolutionHook(executionWithoutErrors, contextWithSpan);
-						expect(mockSpan.end).toHaveBeenCalled();
-
-						// Test without span
-						vi.clearAllMocks();
-						const contextWithoutSpan = {};
-						await onResolutionHook(executionWithErrors, contextWithoutSpan);
-						// Should not throw
-					}
-				}
-			} finally {
-				// Restore environment
-				process.env.API_OTEL_ENABLED = originalEnv;
-				vi.doUnmock("@opentelemetry/api");
-				vi.resetModules();
+				await expect(hook({}, {})).resolves.not.toThrow();
 			}
 		});
 	});
-
 	describe("Mercurius Context Function Coverage", () => {
 		it("should call the mercurius context function", async () => {
 			let contextFunction: ((...args: unknown[]) => unknown) | undefined;
@@ -2930,6 +2855,451 @@ describe("GraphQL Routes", () => {
 
 			expect(contextResult.perf).toBe(perfTracker);
 			expect(contextResult.currentClient.isAuthenticated).toBe(true);
+		});
+
+		it("should cover JWT sign function in subscription onConnect", async () => {
+			const fakeToken = "signed-jwt-token";
+			const decoded = {
+				user: { id: "user-jwt-test" },
+			} as ExplicitAuthenticationTokenPayload;
+
+			const mockJwtSign = vi.fn().mockReturnValue("new-signed-token");
+			const mockFastifyInstance = {
+				register: vi.fn(),
+				envConfig: {
+					API_IS_GRAPHIQL: false,
+				},
+				log: {
+					info: vi.fn(),
+					error: vi.fn(),
+				},
+				graphql: {
+					replaceSchema: vi.fn(),
+					addHook: vi.fn(),
+				},
+				jwt: {
+					verify: vi.fn().mockResolvedValue(decoded),
+					sign: mockJwtSign,
+				},
+				cache: {},
+				drizzleClient: {},
+				minio: {},
+			};
+
+			vi.mocked(schemaManager.buildInitialSchema).mockResolvedValue(
+				new GraphQLSchema({
+					query: new GraphQLObjectType({
+						name: "Query",
+						fields: {
+							hello: { type: GraphQLString, resolve: () => "Hello" },
+						},
+					}),
+				}),
+			);
+
+			await graphql(mockFastifyInstance as unknown as FastifyInstance);
+
+			// Find the subscription configuration
+			const mercuriusCall = mockFastifyInstance.register.mock.calls.find(
+				(call: unknown[]) =>
+					call?.[1] && typeof call[1] === "object" && "subscription" in call[1],
+			);
+
+			const subscriptionConfig = mercuriusCall?.[1] as {
+				subscription: {
+					onConnect: (data: {
+						payload?: { authorization?: string };
+					}) => Promise<boolean | object>;
+				};
+			};
+
+			// Call onConnect to get the context
+			const result = await subscriptionConfig.subscription.onConnect({
+				payload: { authorization: `Bearer ${fakeToken}` },
+			});
+
+			expect(result).not.toBe(false);
+			const contextResult = result as {
+				jwt: { sign: (payload: ExplicitAuthenticationTokenPayload) => string };
+			};
+
+			// Call the JWT sign function to cover the uncovered line
+			const signedToken = contextResult.jwt.sign(decoded);
+			expect(signedToken).toBe("new-signed-token");
+			expect(mockJwtSign).toHaveBeenCalledWith(decoded);
+		});
+	});
+
+	describe("Error Formatter Status Code Coverage", () => {
+		it("should return 403 status code for UNAUTHORIZED_ACTION_ON_ARGUMENTS_ASSOCIATED_RESOURCES in non-HTTP context", async () => {
+			const mockFastifyInstance = {
+				register: vi.fn(),
+				envConfig: {
+					API_IS_GRAPHIQL: false,
+				},
+				log: {
+					info: vi.fn(),
+					error: vi.fn(),
+				},
+				graphql: {
+					replaceSchema: vi.fn(),
+					addHook: vi.fn(),
+				},
+			};
+
+			vi.mocked(schemaManager.buildInitialSchema).mockResolvedValue(
+				new GraphQLSchema({
+					query: new GraphQLObjectType({
+						name: "Query",
+						fields: {
+							hello: { type: GraphQLString, resolve: () => "Hello" },
+						},
+					}),
+				}),
+			);
+
+			await graphql(mockFastifyInstance as unknown as FastifyInstance);
+
+			// Find the mercurius registration call
+			const mercuriusCall = mockFastifyInstance.register.mock.calls.find(
+				(call: unknown[]) =>
+					call?.[1] &&
+					typeof call[1] === "object" &&
+					"errorFormatter" in call[1],
+			);
+
+			const mercuriusConfig = mercuriusCall?.[1] as {
+				errorFormatter: (
+					execution: { errors: Array<{ extensions?: { code?: string } }> },
+					context: unknown,
+				) => { statusCode: number };
+			};
+
+			// Test with UNAUTHORIZED_ACTION_ON_ARGUMENTS_ASSOCIATED_RESOURCES error in non-HTTP context
+			const result = mercuriusConfig.errorFormatter(
+				{
+					errors: [
+						{
+							extensions: {
+								code: ErrorCode.UNAUTHORIZED_ACTION_ON_ARGUMENTS_ASSOCIATED_RESOURCES,
+							},
+						},
+					],
+				},
+				{}, // Non-HTTP context (no reply.send method)
+			);
+
+			expect(result.statusCode).toBe(403);
+		});
+
+		it("should return 429 status code for RATE_LIMIT_EXCEEDED in non-HTTP context", async () => {
+			const mockFastifyInstance = {
+				register: vi.fn(),
+				envConfig: {
+					API_IS_GRAPHIQL: false,
+				},
+				log: {
+					info: vi.fn(),
+					error: vi.fn(),
+				},
+				graphql: {
+					replaceSchema: vi.fn(),
+					addHook: vi.fn(),
+				},
+			};
+
+			vi.mocked(schemaManager.buildInitialSchema).mockResolvedValue(
+				new GraphQLSchema({
+					query: new GraphQLObjectType({
+						name: "Query",
+						fields: {
+							hello: { type: GraphQLString, resolve: () => "Hello" },
+						},
+					}),
+				}),
+			);
+
+			await graphql(mockFastifyInstance as unknown as FastifyInstance);
+
+			// Find the mercurius registration call
+			const mercuriusCall = mockFastifyInstance.register.mock.calls.find(
+				(call: unknown[]) =>
+					call?.[1] &&
+					typeof call[1] === "object" &&
+					"errorFormatter" in call[1],
+			);
+
+			const mercuriusConfig = mercuriusCall?.[1] as {
+				errorFormatter: (
+					execution: { errors: Array<{ extensions?: { code?: string } }> },
+					context: unknown,
+				) => { statusCode: number };
+			};
+
+			// Test with RATE_LIMIT_EXCEEDED error in non-HTTP context
+			const result = mercuriusConfig.errorFormatter(
+				{
+					errors: [
+						{
+							extensions: {
+								code: ErrorCode.RATE_LIMIT_EXCEEDED,
+							},
+						},
+					],
+				},
+				{}, // Non-HTTP context (no reply.send method)
+			);
+
+			expect(result.statusCode).toBe(429);
+		});
+	});
+
+	describe("Observability Coverage", () => {
+		it("should execute observability tracing code when enabled", async () => {
+			// Temporarily enable observability
+			vi.doMock("~/src/config/observability", () => ({
+				observabilityConfig: { enabled: true },
+			}));
+
+			// Mock OpenTelemetry
+			const mockSpan = {
+				setAttribute: vi.fn(),
+				end: vi.fn(),
+			};
+			const mockTracer = {
+				startSpan: vi.fn().mockReturnValue(mockSpan),
+			};
+
+			vi.doMock("@opentelemetry/api", () => ({
+				trace: {
+					getTracer: vi.fn().mockReturnValue(mockTracer),
+				},
+			}));
+
+			// Re-import the module to get the mocked version
+			vi.resetModules();
+			const { graphql: graphqlWithObservability } = await import(
+				"~/src/routes/graphql"
+			);
+
+			const mockFastifyInstance = {
+				register: vi.fn(),
+				envConfig: {
+					API_IS_GRAPHIQL: false,
+				},
+				log: {
+					info: vi.fn(),
+					error: vi.fn(),
+				},
+				graphql: {
+					replaceSchema: vi.fn(),
+					addHook: vi.fn(),
+				},
+			};
+
+			vi.mocked(schemaManager.buildInitialSchema).mockResolvedValue(
+				new GraphQLSchema({
+					query: new GraphQLObjectType({
+						name: "Query",
+						fields: {
+							hello: { type: GraphQLString, resolve: () => "Hello" },
+						},
+					}),
+				}),
+			);
+
+			await graphqlWithObservability(
+				mockFastifyInstance as unknown as FastifyInstance,
+			);
+
+			// Verify observability hooks were added
+			expect(mockFastifyInstance.graphql.addHook).toHaveBeenCalledWith(
+				"preExecution",
+				expect.any(Function),
+			);
+			expect(mockFastifyInstance.graphql.addHook).toHaveBeenCalledWith(
+				"onResolution",
+				expect.any(Function),
+			);
+
+			// Test the tracing hooks
+			const addHookCalls = mockFastifyInstance.graphql.addHook.mock.calls;
+			const preExecutionHook = addHookCalls.find(
+				(call: unknown[]) =>
+					call?.[0] === "preExecution" && call?.[1] !== undefined,
+			)?.[1] as (...args: unknown[]) => unknown;
+
+			const onResolutionHook = addHookCalls.find(
+				(call: unknown[]) =>
+					call?.[0] === "onResolution" && call?.[1] !== undefined,
+			)?.[1] as (...args: unknown[]) => unknown;
+
+			// Test preExecution hook
+			if (preExecutionHook) {
+				const mockDocument = {
+					definitions: [
+						{
+							kind: "OperationDefinition",
+							operation: "query",
+							name: { value: "TestQuery" },
+						},
+					],
+				};
+				const mockContext = {};
+
+				await preExecutionHook(null, mockDocument, mockContext);
+
+				expect(mockTracer.startSpan).toHaveBeenCalledWith("graphql:TestQuery");
+				expect(mockSpan.setAttribute).toHaveBeenCalledWith(
+					"graphql.operation.name",
+					"TestQuery",
+				);
+				expect(mockSpan.setAttribute).toHaveBeenCalledWith(
+					"graphql.operation.type",
+					"query",
+				);
+			}
+
+			// Test onResolution hook
+			if (onResolutionHook) {
+				const mockExecution = {
+					errors: [{ message: "Test error" }],
+				};
+				const mockContext = { _tracingSpan: mockSpan };
+
+				await onResolutionHook(mockExecution, mockContext);
+
+				expect(mockSpan.setAttribute).toHaveBeenCalledWith(
+					"graphql.errors.count",
+					1,
+				);
+				expect(mockSpan.end).toHaveBeenCalled();
+			}
+
+			// Restore mocks
+			vi.doUnmock("~/src/config/observability");
+			vi.doUnmock("@opentelemetry/api");
+			vi.resetModules();
+		});
+
+		it("should handle anonymous operations and unknown operation types in tracing", async () => {
+			// Mock observabilityConfig to be enabled
+			vi.doMock("~/src/config/observability", () => ({
+				observabilityConfig: { enabled: true },
+			}));
+
+			// Mock OpenTelemetry
+			const mockSpan = {
+				setAttribute: vi.fn(),
+				end: vi.fn(),
+			};
+			const mockTracer = {
+				startSpan: vi.fn().mockReturnValue(mockSpan),
+			};
+
+			vi.doMock("@opentelemetry/api", () => ({
+				trace: {
+					getTracer: vi.fn().mockReturnValue(mockTracer),
+				},
+			}));
+
+			// Re-import the module to get the mocked version
+			vi.resetModules();
+			const { graphql: graphqlWithObservability } = await import(
+				"~/src/routes/graphql"
+			);
+
+			const mockFastifyInstance = {
+				register: vi.fn(),
+				envConfig: {
+					API_IS_GRAPHIQL: false,
+				},
+				log: {
+					info: vi.fn(),
+					error: vi.fn(),
+				},
+				graphql: {
+					replaceSchema: vi.fn(),
+					addHook: vi.fn(),
+				},
+			};
+
+			vi.mocked(schemaManager.buildInitialSchema).mockResolvedValue(
+				new GraphQLSchema({
+					query: new GraphQLObjectType({
+						name: "Query",
+						fields: {
+							hello: { type: GraphQLString, resolve: () => "Hello" },
+						},
+					}),
+				}),
+			);
+
+			await graphqlWithObservability(
+				mockFastifyInstance as unknown as FastifyInstance,
+			);
+
+			// Get the preExecution hook
+			const addHookCalls = mockFastifyInstance.graphql.addHook.mock.calls;
+			const preExecutionHook = addHookCalls.find(
+				(call: unknown[]) =>
+					call?.[0] === "preExecution" && call?.[1] !== undefined,
+			)?.[1] as (...args: unknown[]) => unknown;
+
+			if (preExecutionHook) {
+				// Test with operation definition that has no name (anonymous)
+				const mockDocumentAnonymous = {
+					definitions: [
+						{
+							kind: "OperationDefinition",
+							operation: "query",
+							// No name property - should fallback to "anonymous"
+						},
+					],
+				};
+
+				await preExecutionHook(null, mockDocumentAnonymous, {});
+
+				expect(mockTracer.startSpan).toHaveBeenCalledWith("graphql:anonymous");
+				expect(mockSpan.setAttribute).toHaveBeenCalledWith(
+					"graphql.operation.name",
+					"anonymous",
+				);
+				expect(mockSpan.setAttribute).toHaveBeenCalledWith(
+					"graphql.operation.type",
+					"query",
+				);
+
+				// Reset mocks for next test
+				vi.clearAllMocks();
+
+				// Test with non-operation definition (should fallback to "unknown")
+				const mockDocumentUnknown = {
+					definitions: [
+						{
+							kind: "FragmentDefinition", // Not an OperationDefinition
+							name: { value: "TestFragment" },
+						},
+					],
+				};
+
+				await preExecutionHook(null, mockDocumentUnknown, {});
+
+				expect(mockTracer.startSpan).toHaveBeenCalledWith("graphql:anonymous");
+				expect(mockSpan.setAttribute).toHaveBeenCalledWith(
+					"graphql.operation.name",
+					"anonymous",
+				);
+				expect(mockSpan.setAttribute).toHaveBeenCalledWith(
+					"graphql.operation.type",
+					"unknown",
+				);
+			}
+
+			// Restore mocks
+			vi.doUnmock("~/src/config/observability");
+			vi.doUnmock("@opentelemetry/api");
+			vi.resetModules();
 		});
 	});
 });

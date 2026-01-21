@@ -263,6 +263,7 @@ export type TalawaGraphQLErrorExtensions =
 			code: ErrorCode;
 			details?: unknown;
 			httpStatus?: number;
+			correlationId?: string;
 	  };
 
 type LegacyErrorCode = Exclude<
