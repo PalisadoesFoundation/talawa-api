@@ -136,4 +136,29 @@ describe("objects route", () => {
 		// Details should be null or undefined for generic errors without specific details
 		expect(body.error.details == null).toBe(true);
 	});
+
+	it("should use default content-type when metaData content-type is missing", async () => {
+		const mockStream = Readable.from(["data"]);
+		const mockStat = {
+			metaData: {},
+		};
+
+		mockGetObject.mockResolvedValue(mockStream);
+		mockStatObject.mockResolvedValue(mockStat);
+
+		const res = await app.inject({
+			method: "GET",
+			url: "/objects/default.png",
+		});
+
+		expect(res.statusCode).toBe(200);
+		expect(res.headers["content-type"]).toBe("application/octet-stream");
+		expect(res.headers["content-disposition"]).toBe(
+			"inline; filename=default.png",
+		);
+		expect(res.payload).toBe("data");
+
+		expect(mockGetObject).toHaveBeenCalledWith("talawa", "default.png");
+		expect(mockStatObject).toHaveBeenCalledWith("talawa", "default.png");
+	});
 });
