@@ -17,8 +17,8 @@ const mutationCreateOrganizationArgumentsSchema = z.object({
 	input: mutationCreateOrganizationInputSchema.transform(async (arg, ctx) => {
 		let avatar:
 			| (FileUpload & {
-					mimetype: z.infer<typeof imageMimeTypeEnum>;
-			  })
+				mimetype: z.infer<typeof imageMimeTypeEnum>;
+			})
 			| null
 			| undefined;
 
@@ -205,12 +205,11 @@ builder.mutationField("createOrganization", (t) =>
 				});
 			};
 
-			return (
-				(await ctx.perf?.time(
-					"mutation:createOrganization",
-					executeMutation,
-				)) ?? executeMutation()
-			);
+			if (ctx.perf) {
+				return await ctx.perf.time("mutation:createOrganization", executeMutation);
+			}
+
+			return await executeMutation();
 		},
 		type: Organization,
 	}),

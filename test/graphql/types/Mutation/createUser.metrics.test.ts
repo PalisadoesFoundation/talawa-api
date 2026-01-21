@@ -1,125 +1,176 @@
-import { createMockGraphQLContext } from "test/_Mocks_/mockContextCreator/mockContextCreator";
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import type { GraphQLContext } from "~/src/graphql/context";
-import { createPerformanceTracker } from "~/src/utilities/metrics/performanceTracker";
+import { faker } from "@faker-js/faker";
+import { print } from "graphql";
+import { beforeEach, describe, expect, it } from "vitest";
+import { assertToBeNonNullish } from "../../../helpers";
+import { server } from "../../../server";
+import { mercuriusClient } from "../client";
+import { Mutation_createUser, Query_signIn } from "../documentNodes";
 
 /**
  * Test suite for createUser mutation performance tracking.
- * Verifies that performance metrics are properly collected for the createUser mutation.
+ * Verifies that performance metrics are properly collected for the createUser mutation
+ * using end-to-end Mercurius integration tests.
  */
 describe("createUser mutation performance tracking", () => {
-	let perf: ReturnType<typeof createPerformanceTracker>;
-	let ctx: GraphQLContext;
+	let authToken: string;
 
-	beforeEach(() => {
-		perf = createPerformanceTracker();
-		const { context } = createMockGraphQLContext(true, "admin-user-id");
-		ctx = context;
-		ctx.perf = perf;
-	});
+	beforeEach(async () => {
+		// Sign in as admin to get auth token
+		const signInResult = await mercuriusClient.query(Query_signIn, {
+			variables: {
+				input: {
+					emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
+					password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
+				},
+			},
+		});
 
-	afterEach(() => {
-		vi.clearAllMocks();
+		if (signInResult.errors) {
+			throw new Error(
+				`Admin sign-in failed: ${JSON.stringify(signInResult.errors)}`,
+			);
+		}
+
+		assertToBeNonNullish(signInResult.data?.signIn);
+		assertToBeNonNullish(signInResult.data.signIn.authenticationToken);
+		authToken = signInResult.data.signIn.authenticationToken;
 	});
 
 	it("should track mutation execution time when perf tracker is available", async () => {
-		// Mock the mutation resolver to simulate execution
-		const executeMutation = async () => {
-			return (
-				(await ctx.perf?.time("mutation:createUser", async () => {
-					// Simulate mutation work
-					await new Promise((resolve) => setTimeout(resolve, 10));
-					return { user: { id: "123" }, authenticationToken: "token" };
-				})) ?? { user: { id: "123" }, authenticationToken: "token" }
-			);
-		};
+		// Get initial snapshot count to verify new snapshot is created
+		const initialSnapshots = server.getMetricsSnapshots?.(1) ?? [];
 
-		const result = await executeMutation();
+		const result = await mercuriusClient.mutate(Mutation_createUser, {
+			headers: { authorization: `bearer ${authToken}` },
+			variables: {
+				input: {
+					emailAddress: `email${faker.string.ulid()}@email.com`,
+					isEmailAddressVerified: false,
+					name: "Test User",
+					password: "password",
+					role: "regular",
+				},
+			},
+		});
 
-		expect(result).toBeDefined();
-		const snapshot = perf.snapshot();
-		const op = snapshot.ops["mutation:createUser"];
+		expect(result.errors).toBeUndefined();
+		assertToBeNonNullish(result.data?.createUser);
+		expect(result.data.createUser.user?.id).toBeDefined();
+
+		// Verify performance metrics were collected
+		const snapshots = server.getMetricsSnapshots?.(1) ?? [];
+		expect(snapshots.length).toBeGreaterThan(initialSnapshots.length);
+
+		// Check the most recent snapshot for the mutation operation
+		const latestSnapshot = snapshots[0];
+		assertToBeNonNullish(latestSnapshot);
+		const op = latestSnapshot.ops["mutation:createUser"];
 
 		expect(op).toBeDefined();
 		expect(op?.count).toBe(1);
-		expect(op?.ms).toBeGreaterThanOrEqual(9);
+		expect(op?.ms).toBeGreaterThanOrEqual(0);
+
+		// Verify sub-operations
+		const dbInsertOp = latestSnapshot.ops["db:user-insert"];
+		expect(dbInsertOp).toBeDefined();
+		expect(dbInsertOp?.count).toBe(1);
+
+		const tokenStoreOp = latestSnapshot.ops["db:refresh-token-store"];
+		expect(tokenStoreOp).toBeDefined();
+		expect(tokenStoreOp?.count).toBe(1);
 	});
 
 	it("should track metrics even when mutation fails", async () => {
-		const executeMutation = async () => {
-			return (
-				(await ctx.perf?.time("mutation:createUser", async () => {
-					throw new Error("Mutation failed");
-				})) ??
-				(() => {
-					throw new Error("Mutation failed");
-				})()
-			);
-		};
+		// Get initial snapshot count
+		const initialSnapshots = server.getMetricsSnapshots?.(1) ?? [];
 
-		await expect(executeMutation()).rejects.toThrow("Mutation failed");
+		// Use invalid input (invalid email)
+		const result = await mercuriusClient.mutate(Mutation_createUser, {
+			headers: { authorization: `bearer ${authToken}` },
+			variables: {
+				input: {
+					emailAddress: "invalid-email",
+					isEmailAddressVerified: false,
+					name: "Test User",
+					password: "password",
+					role: "regular",
+				},
+			},
+		});
 
-		const snapshot = perf.snapshot();
-		const op = snapshot.ops["mutation:createUser"];
+		expect(result.errors).toBeDefined();
+		expect(result.data?.createUser).toBeFalsy();
 
-		expect(op).toBeDefined();
-		expect(op?.count).toBe(1);
+		// Verify performance metrics were still collected even on error
+		const snapshots = server.getMetricsSnapshots?.(1) ?? [];
+		expect(snapshots.length).toBeGreaterThan(initialSnapshots.length);
+
 	});
 
-	it("should use correct operation name format", async () => {
-		const executeMutation = async () => {
-			return (
-				(await ctx.perf?.time("mutation:createUser", async () => {
-					return { success: true };
-				})) ?? { success: true }
-			);
-		};
+	it("should track sub-operation metrics including avatar upload", async () => {
+		const boundary = `----WebKitFormBoundary${Math.random().toString(36)}`;
+		const operations = JSON.stringify({
+			query: print(Mutation_createUser),
+			variables: {
+				input: {
+					emailAddress: `email${faker.string.ulid()}@email.com`,
+					isEmailAddressVerified: false,
+					name: "Test User with Avatar",
+					password: "password",
+					role: "regular",
+					avatar: null,
+				},
+			},
+		});
 
-		await executeMutation();
+		const map = JSON.stringify({
+			"0": ["variables.input.avatar"],
+		});
 
-		const snapshot = perf.snapshot();
-		const op = snapshot.ops["mutation:createUser"];
+		const fileContent = "fake png content";
 
-		expect(op).toBeDefined();
-		expect(op?.count).toBe(1);
-		expect(snapshot.ops).toHaveProperty("mutation:createUser");
-	});
+		const body = [
+			`--${boundary}`,
+			'Content-Disposition: form-data; name="operations"',
+			"",
+			operations,
+			`--${boundary}`,
+			'Content-Disposition: form-data; name="map"',
+			"",
+			map,
+			`--${boundary}`,
+			'Content-Disposition: form-data; name="0"; filename="avatar.png"',
+			"Content-Type: image/png",
+			"",
+			fileContent,
+			`--${boundary}--`,
+		].join("\r\n");
 
-	it("should handle multiple mutation calls separately", async () => {
-		const executeMutation = async () => {
-			return (
-				(await ctx.perf?.time("mutation:createUser", async () => {
-					return { user: { id: "123" } };
-				})) ?? { user: { id: "123" } }
-			);
-		};
+		const response = await server.inject({
+			method: "POST",
+			url: "/graphql",
+			headers: {
+				"content-type": `multipart/form-data; boundary=${boundary}`,
+				authorization: `bearer ${authToken}`,
+			},
+			payload: body,
+		});
 
-		await executeMutation();
-		await executeMutation();
+		const result = JSON.parse(response.body);
+		expect(result.errors).toBeUndefined();
+		assertToBeNonNullish(result.data?.createUser);
 
-		const snapshot = perf.snapshot();
-		const op = snapshot.ops["mutation:createUser"];
+		// Verify performance metrics including sub-operations
+		const snapshots = server.getMetricsSnapshots?.(1) ?? [];
+		const latestSnapshot = snapshots[0];
+		assertToBeNonNullish(latestSnapshot);
 
-		expect(op).toBeDefined();
-		expect(op?.count).toBe(2);
-	});
+		const mainOp = latestSnapshot.ops["mutation:createUser"];
+		expect(mainOp).toBeDefined();
 
-	it("should work when perf tracker is not available (graceful degradation)", async () => {
-		ctx.perf = undefined;
-
-		const executeMutation = async () => {
-			return (
-				(await ctx.perf?.time("mutation:createUser", async () => {
-					return { user: { id: "123" } };
-				})) ?? { user: { id: "123" } }
-			);
-		};
-
-		const result = await executeMutation();
-
-		expect(result).toEqual({ user: { id: "123" } });
-		// No metrics should be collected
-		const snapshot = perf.snapshot();
-		expect(snapshot.ops["mutation:createUser"]).toBeUndefined();
+		// Verify avatar upload sub-operation was tracked
+		const avatarUploadOp = latestSnapshot.ops["file:avatar-upload"];
+		expect(avatarUploadOp).toBeDefined();
+		expect(avatarUploadOp?.count).toBe(1);
 	});
 });

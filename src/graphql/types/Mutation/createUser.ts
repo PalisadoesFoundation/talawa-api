@@ -24,8 +24,8 @@ const mutationCreateUserArgumentsSchema = z.object({
 	input: mutationCreateUserInputSchema.transform(async (arg, ctx) => {
 		let avatar:
 			| (FileUpload & {
-					mimetype: z.infer<typeof imageMimeTypeEnum>;
-			  })
+				mimetype: z.infer<typeof imageMimeTypeEnum>;
+			})
 			| null
 			| undefined;
 
@@ -151,6 +151,8 @@ builder.mutationField("createUser", (t) =>
 					avatarName = ulid();
 				}
 
+				const passwordHash = await hash(parsedArgs.input.password);
+
 				return await ctx.drizzleClient.transaction(async (tx) => {
 					// Track database insert operation
 					const dbInsertStop = ctx.perf?.start("db:user-insert");
@@ -178,7 +180,7 @@ builder.mutationField("createUser", (t) =>
 								name: parsedArgs.input.name,
 								natalSex: parsedArgs.input.natalSex,
 								naturalLanguageCode: parsedArgs.input.naturalLanguageCode,
-								passwordHash: await hash(parsedArgs.input.password),
+								passwordHash,
 								postalCode: parsedArgs.input.postalCode,
 								role: parsedArgs.input.role,
 								state: parsedArgs.input.state,

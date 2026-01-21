@@ -1,7 +1,8 @@
 import { faker } from "@faker-js/faker";
 import { eq } from "drizzle-orm";
+import { print } from "graphql";
 import type { FastifyInstance } from "fastify";
-import { afterEach, expect, suite, test } from "vitest";
+import { afterEach, expect, suite, test, vi } from "vitest";
 import { organizationsTable } from "~/src/drizzle/tables/organizations";
 import { assertToBeNonNullish } from "../../../helpers";
 import { server } from "../../../server";
@@ -725,72 +726,403 @@ suite("Mutation field updateOrganization", () => {
 		expect(result.errors).toBeUndefined();
 		expect(result.data?.updateOrganization?.name).toBe("Whitespace Org ");
 	});
-	test("should remove avatar when avatar is set to null", async () => {
-		// Create organization
-		const createOrgResult = await mercuriusClient.mutate(
-			Mutation_createOrganization,
-			{
+	suite("Avatar operations", () => {
+		test("should upload avatar when provided", async () => {
+			// Create organization
+			const createOrgResult = await mercuriusClient.mutate(
+				Mutation_createOrganization,
+				{
+					headers: { authorization: `bearer ${authToken}` },
+					variables: {
+						input: {
+							name: "Avatar Upload Org",
+							description: "Organization for avatar upload test",
+							countryCode: "us",
+							state: "CA",
+							city: "San Francisco",
+							postalCode: "94101",
+							addressLine1: "123 Avatar St",
+							addressLine2: "Suite 100",
+						},
+					},
+				},
+			);
+			const orgId = createOrgResult.data?.createOrganization?.id;
+			assertToBeNonNullish(orgId);
+
+			testCleanupFunctions.push(async () => {
+				await mercuriusClient.mutate(Mutation_deleteOrganization, {
+					headers: { authorization: `bearer ${authToken}` },
+					variables: { input: { id: orgId } },
+				});
+			});
+
+			const putObjectSpy = vi.spyOn(server.minio.client, "putObject");
+
+			const boundary = `----WebKitFormBoundary${Math.random().toString(36)}`;
+			const operations = JSON.stringify({
+				query: print(Mutation_updateOrganization),
+				variables: {
+					input: {
+						id: orgId,
+						avatar: null, // Placeholder, will be mapped
+					},
+				},
+			});
+
+			const map = JSON.stringify({
+				"0": ["variables.input.avatar"],
+			});
+
+			const uploadBody = [
+				`--${boundary}`,
+				'Content-Disposition: form-data; name="operations"',
+				"",
+				operations,
+				`--${boundary}`,
+				'Content-Disposition: form-data; name="map"',
+				"",
+				map,
+				`--${boundary}`,
+				'Content-Disposition: form-data; name="0"; filename="test.png"',
+				"Content-Type: image/png",
+				"",
+				"mock file content",
+				`--${boundary}--`,
+			].join("\r\n");
+
+			const response = await server.inject({
+				method: "POST",
+				url: "/graphql",
+				headers: {
+					"content-type": `multipart/form-data; boundary=${boundary}`,
+					authorization: `bearer ${authToken}`,
+				},
+				payload: uploadBody,
+			});
+
+			const result = JSON.parse(response.body);
+			expect(result.errors).toBeUndefined();
+			expect(result.data?.updateOrganization?.avatarMimeType).toBe("image/png");
+
+			expect(putObjectSpy).toHaveBeenCalledTimes(1);
+			expect(putObjectSpy).toHaveBeenCalledWith(
+				server.minio.bucketName,
+				expect.any(String), // avatarName (ulid)
+				expect.any(Object), // stream
+				undefined,
+				expect.objectContaining({
+					"content-type": "image/png",
+				}),
+			);
+		});
+
+		test("should replace avatar and reuse existing avatarName", async () => {
+			// Create organization
+			const createOrgResult = await mercuriusClient.mutate(
+				Mutation_createOrganization,
+				{
+					headers: { authorization: `bearer ${authToken}` },
+					variables: {
+						input: {
+							name: "Avatar Replace Org",
+							description: "Organization for avatar replace test",
+							countryCode: "us",
+							state: "CA",
+							city: "San Francisco",
+							postalCode: "94101",
+							addressLine1: "123 Avatar St",
+							addressLine2: "Suite 100",
+						},
+					},
+				},
+			);
+			const orgId = createOrgResult.data?.createOrganization?.id;
+			assertToBeNonNullish(orgId);
+
+			testCleanupFunctions.push(async () => {
+				await mercuriusClient.mutate(Mutation_deleteOrganization, {
+					headers: { authorization: `bearer ${authToken}` },
+					variables: { input: { id: orgId } },
+				});
+			});
+
+			// Manually seed an avatar in the database
+			const existingAvatarName = "existing-avatar.png";
+			await (server as FastifyInstance).drizzleClient
+				.update(organizationsTable)
+				.set({
+					avatarName: existingAvatarName,
+					avatarMimeType: "image/jpeg",
+				})
+				.where(eq(organizationsTable.id, orgId));
+
+			const putObjectSpy = vi.spyOn(server.minio.client, "putObject");
+
+			const boundary = `----WebKitFormBoundary${Math.random().toString(36)}`;
+			const operations = JSON.stringify({
+				query: print(Mutation_updateOrganization),
+				variables: {
+					input: {
+						id: orgId,
+						avatar: null,
+					},
+				},
+			});
+
+			const map = JSON.stringify({
+				"0": ["variables.input.avatar"],
+			});
+
+			const uploadBody = [
+				`--${boundary}`,
+				'Content-Disposition: form-data; name="operations"',
+				"",
+				operations,
+				`--${boundary}`,
+				'Content-Disposition: form-data; name="map"',
+				"",
+				map,
+				`--${boundary}`,
+				'Content-Disposition: form-data; name="0"; filename="new.png"',
+				"Content-Type: image/png",
+				"",
+				"new file content",
+				`--${boundary}--`,
+			].join("\r\n");
+
+			const response = await server.inject({
+				method: "POST",
+				url: "/graphql",
+				headers: {
+					"content-type": `multipart/form-data; boundary=${boundary}`,
+					authorization: `bearer ${authToken}`,
+				},
+				payload: uploadBody,
+			});
+
+			const result = JSON.parse(response.body);
+			expect(result.errors).toBeUndefined();
+			expect(result.data?.updateOrganization?.avatarMimeType).toBe("image/png");
+			// Should reuse the existing avatar name
+
+			expect(putObjectSpy).toHaveBeenCalledTimes(1);
+			expect(putObjectSpy).toHaveBeenCalledWith(
+				server.minio.bucketName,
+				existingAvatarName, // Should match existing
+				expect.any(Object),
+				undefined,
+				expect.objectContaining({
+					"content-type": "image/png",
+				}),
+			);
+		});
+
+		test("should remove avatar when avatar is set to null", async () => {
+			// Create organization
+			const createOrgResult = await mercuriusClient.mutate(
+				Mutation_createOrganization,
+				{
+					headers: { authorization: `bearer ${authToken}` },
+					variables: {
+						input: {
+							name: "Avatar Removal Org",
+							description: "Organization for avatar removal test",
+							countryCode: "us",
+							state: "CA",
+							city: "San Francisco",
+							postalCode: "94101",
+							addressLine1: "123 Avatar St",
+							addressLine2: "Suite 100",
+						},
+					},
+				},
+			);
+			const orgId = createOrgResult.data?.createOrganization?.id;
+			assertToBeNonNullish(orgId);
+
+			testCleanupFunctions.push(async () => {
+				await mercuriusClient.mutate(Mutation_deleteOrganization, {
+					headers: { authorization: `bearer ${authToken}` },
+					variables: { input: { id: orgId } },
+				});
+			});
+
+			// Manually seed an avatar in the database
+			const existingAvatarName = "test-avatar.png";
+			await (server as FastifyInstance).drizzleClient
+				.update(organizationsTable)
+				.set({
+					avatarName: existingAvatarName,
+					avatarMimeType: "image/png",
+				})
+				.where(eq(organizationsTable.id, orgId));
+
+			const removeObjectSpy = vi.spyOn(server.minio.client, "removeObject");
+
+			// Call updateOrganization with avatar: null
+			const result = await mercuriusClient.mutate(Mutation_updateOrganization, {
 				headers: { authorization: `bearer ${authToken}` },
 				variables: {
 					input: {
-						name: "Avatar Removal Org",
-						description: "Organization for avatar removal test",
-						countryCode: "us",
-						state: "CA",
-						city: "San Francisco",
-						postalCode: "94101",
-						addressLine1: "123 Avatar St",
-						addressLine2: "Suite 100",
+						id: orgId,
+						avatar: null,
 					},
 				},
-			},
-		);
-		const orgId = createOrgResult.data?.createOrganization?.id;
-		assertToBeNonNullish(orgId);
-
-		testCleanupFunctions.push(async () => {
-			await mercuriusClient.mutate(Mutation_deleteOrganization, {
-				headers: { authorization: `bearer ${authToken}` },
-				variables: { input: { id: orgId } },
 			});
+
+			expect(result.errors).toBeUndefined();
+			expect(result.data?.updateOrganization?.avatarMimeType).toBeNull();
+
+			expect(removeObjectSpy).toHaveBeenCalledTimes(1);
+			expect(removeObjectSpy).toHaveBeenCalledWith(
+				server.minio.bucketName,
+				existingAvatarName,
+			);
 		});
 
-		// Manually set an avatar in the database
-		await (server as FastifyInstance).drizzleClient
-			.update(organizationsTable)
-			.set({
-				avatarName: "test-avatar.png",
-				avatarMimeType: "image/png",
-			})
-			.where(eq(organizationsTable.id, orgId));
-
-		// Call updateOrganization with avatar: null
-		const result = await mercuriusClient.mutate(Mutation_updateOrganization, {
-			headers: { authorization: `bearer ${authToken}` },
-			variables: {
-				input: {
-					id: orgId,
-					avatar: null,
+		test("should handle minio upload errors", async () => {
+			// Create organization
+			const createOrgResult = await mercuriusClient.mutate(
+				Mutation_createOrganization,
+				{
+					headers: { authorization: `bearer ${authToken}` },
+					variables: {
+						input: {
+							name: "Minio Error Org",
+							description: "Organization for minio error test",
+							countryCode: "us",
+							state: "CA",
+							city: "San Francisco",
+							postalCode: "94101",
+							addressLine1: "123 Error St",
+							addressLine2: "Suite 100",
+						},
+					},
 				},
-			},
+			);
+			const orgId = createOrgResult.data?.createOrganization?.id;
+			assertToBeNonNullish(orgId);
+
+			testCleanupFunctions.push(async () => {
+				await mercuriusClient.mutate(Mutation_deleteOrganization, {
+					headers: { authorization: `bearer ${authToken}` },
+					variables: { input: { id: orgId } },
+				});
+			});
+
+			const putObjectError = new Error("MinIO upload failed");
+			vi.spyOn(server.minio.client, "putObject").mockRejectedValue(
+				putObjectError,
+			);
+
+			const boundary = `----WebKitFormBoundary${Math.random().toString(36)}`;
+			const operations = JSON.stringify({
+				query: print(Mutation_updateOrganization),
+				variables: {
+					input: {
+						id: orgId,
+						avatar: null,
+					},
+				},
+			});
+
+			const map = JSON.stringify({
+				"0": ["variables.input.avatar"],
+			});
+
+			const uploadBody = [
+				`--${boundary}`,
+				'Content-Disposition: form-data; name="operations"',
+				"",
+				operations,
+				`--${boundary}`,
+				'Content-Disposition: form-data; name="map"',
+				"",
+				map,
+				`--${boundary}`,
+				'Content-Disposition: form-data; name="0"; filename="test.png"',
+				"Content-Type: image/png",
+				"",
+				"mock file content",
+				`--${boundary}--`,
+			].join("\r\n");
+
+			const response = await server.inject({
+				method: "POST",
+				url: "/graphql",
+				headers: {
+					"content-type": `multipart/form-data; boundary=${boundary}`,
+					authorization: `bearer ${authToken}`,
+				},
+				payload: uploadBody,
+			});
+
+			const result = JSON.parse(response.body);
+			expect(result.errors).toBeDefined();
+			expect(result.data?.updateOrganization).toBeFalsy();
+			expect(result.errors?.[0]?.message).toContain("MinIO upload failed");
 		});
 
-		expect(result.errors).toBeUndefined();
-		// Verify returned object has null avatar
-		expect(result.data?.updateOrganization?.avatarMimeType).toBeNull();
+		test("should handle minio removal errors", async () => {
+			// Create organization
+			const createOrgResult = await mercuriusClient.mutate(
+				Mutation_createOrganization,
+				{
+					headers: { authorization: `bearer ${authToken}` },
+					variables: {
+						input: {
+							name: "Minio Remove Error Org",
+							description: "Organization for remove error test",
+							countryCode: "us",
+							state: "CA",
+							city: "San Francisco",
+							postalCode: "94101",
+							addressLine1: "123 Error St",
+							addressLine2: "Suite 100",
+						},
+					},
+				},
+			);
+			const orgId = createOrgResult.data?.createOrganization?.id;
+			assertToBeNonNullish(orgId);
 
-		// Verify database state
-		const updatedOrg = await (
-			server as FastifyInstance
-		).drizzleClient.query.organizationsTable.findFirst({
-			where: eq(organizationsTable.id, orgId),
-			columns: {
-				avatarName: true,
-				avatarMimeType: true,
-			},
+			testCleanupFunctions.push(async () => {
+				await mercuriusClient.mutate(Mutation_deleteOrganization, {
+					headers: { authorization: `bearer ${authToken}` },
+					variables: { input: { id: orgId } },
+				});
+			});
+
+			// Manually seed an avatar
+			const existingAvatarName = "test-avatar.png";
+			await (server as FastifyInstance).drizzleClient
+				.update(organizationsTable)
+				.set({
+					avatarName: existingAvatarName,
+					avatarMimeType: "image/png",
+				})
+				.where(eq(organizationsTable.id, orgId));
+
+			const removeObjectError = new Error("MinIO remove failed");
+			vi.spyOn(server.minio.client, "removeObject").mockRejectedValue(
+				removeObjectError,
+			);
+
+			// Call updateOrganization with avatar: null
+			const result = await mercuriusClient.mutate(Mutation_updateOrganization, {
+				headers: { authorization: `bearer ${authToken}` },
+				variables: {
+					input: {
+						id: orgId,
+						avatar: null,
+					},
+				},
+			});
+
+			expect(result.errors).toBeDefined();
+			expect(result.data?.updateOrganization).toBeFalsy();
+			expect(result.errors?.[0]?.message).toContain("MinIO remove failed");
 		});
-
-		expect(updatedOrg?.avatarName).toBeNull();
-		expect(updatedOrg?.avatarMimeType).toBeNull();
 	});
 });

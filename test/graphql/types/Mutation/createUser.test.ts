@@ -539,6 +539,7 @@ suite("Mutation field createUser", () => {
 						postalCode: "postalCode",
 						state: "state",
 						workPhoneNumber: "+11111111",
+						naturalLanguageCode: "en",
 					},
 				};
 
@@ -587,6 +588,7 @@ suite("Mutation field createUser", () => {
 							role: variables.input.role,
 							state: variables.input.state,
 							workPhoneNumber: variables.input.workPhoneNumber,
+							naturalLanguageCode: variables.input.naturalLanguageCode,
 						}),
 					}),
 				);
