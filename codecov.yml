@@ -6,6 +6,12 @@ coverage:
         threshold: 1%
 
 
+flags:
+  unit:
+    carryforward: true
+  integration:
+    carryforward: true
+
 flag_management:
   default_rules:
     carryforward: true
