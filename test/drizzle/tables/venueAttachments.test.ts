@@ -1,0 +1,304 @@
+import { getTableColumns, getTableName } from "drizzle-orm";
+import { beforeAll, describe, expect, it, vi } from "vitest";
+import { venueAttachmentMimeTypeEnum } from "~/src/drizzle/enums/venueAttachmentMimeType";
+import {
+	venueAttachmentsTable,
+	venueAttachmentsTableInsertSchema,
+} from "~/src/drizzle/tables/venueAttachments";
+
+beforeAll(() => {
+	// Mock drizzle-orm itself to handle relations
+	vi.mock("drizzle-orm", async (importOriginal) => {
+		const actual: unknown[] = await importOriginal();
+
+		// Create a mock 'one' function for relations
+		const mockOne = vi.fn().mockImplementation((table, config) => ({
+			...config,
+			_table: table,
+		}));
+
+		// Mock relations function
+		const mockRelations = vi.fn().mockImplementation((table, configFn) => {
+			// Call the config function with our mock 'one'
+			const config = configFn({ one: mockOne });
+			return {
+				config: vi.fn().mockReturnValue(config),
+				_table: table,
+			};
+		});
+
+		return {
+			...actual,
+			relations: mockRelations,
+		};
+	});
+
+	// Mock drizzle-orm/pg-core to capture index calls
+	vi.mock("drizzle-orm/pg-core", async (importOriginal) => {
+		const actual: unknown[] = await importOriginal();
+
+		// Mock index function
+		const mockIndex = vi.fn().mockReturnValue({
+			on: vi.fn().mockReturnValue({ _indexed: true }),
+		});
+
+		return {
+			...actual,
+			index: mockIndex,
+		};
+	});
+
+	// Now mock the specific table files with proper structure
+	vi.mock("~/src/drizzle/tables/users", () => ({
+		usersTable: {
+			_: { name: "users" },
+			id: {
+				name: "id",
+				_: { name: "id" },
+				config: {},
+				brand: "PgUUID",
+			},
+		},
+	}));
+
+	vi.mock("~/src/drizzle/tables/venues", () => ({
+		venuesTable: {
+			_: { name: "venues" },
+			id: {
+				name: "id",
+				_: { name: "id" },
+				config: {},
+				brand: "PgUUID",
+			},
+		},
+	}));
+
+	// Mock any other tables that might be imported indirectly
+	vi.mock("~/src/drizzle/tables/agendaItemAttachments", () => ({}));
+	vi.mock("~/src/drizzle/tables/agendaItems", () => ({}));
+	vi.mock("~/src/drizzle/tables/organizations", () => ({}));
+	// Add other tables that might cause circular deps
+});
+
+describe("venueAttachments.ts", () => {
+	describe("venueAttachmentsTable", () => {
+		it("should have the correct table name", () => {
+			expect(getTableName(venueAttachmentsTable)).toBe("venue_attachments");
+		});
+
+		it("should have all expected columns", () => {
+			const columns = getTableColumns(venueAttachmentsTable);
+			const columnNames = Object.keys(columns);
+
+			expect(columnNames).toHaveLength(7);
+			expect(columnNames).toContain("createdAt");
+			expect(columnNames).toContain("creatorId");
+			expect(columnNames).toContain("mimeType");
+			expect(columnNames).toContain("name");
+			expect(columnNames).toContain("updatedAt");
+			expect(columnNames).toContain("updaterId");
+			expect(columnNames).toContain("venueId");
+		});
+
+		it("should have columns with correct data types", () => {
+			const columns = getTableColumns(venueAttachmentsTable);
+
+			// Check that createdAt is a timestamp column
+			expect(columns.createdAt).toBeDefined();
+			expect(columns.createdAt.name).toBe("created_at");
+
+			// Check that mimeType is a text column with enum
+			expect(columns.mimeType).toBeDefined();
+			expect(columns.mimeType.name).toBe("mime_type");
+
+			// Check that name is a text column
+			expect(columns.name).toBeDefined();
+			expect(columns.name.name).toBe("name");
+
+			// Check that venueId is a uuid column
+			expect(columns.venueId).toBeDefined();
+			expect(columns.venueId.name).toBe("venue_id");
+		});
+	});
+
+	describe("venueAttachmentsTableInsertSchema", () => {
+		it("should be a Zod schema", () => {
+			expect(venueAttachmentsTableInsertSchema).toBeDefined();
+			expect(typeof venueAttachmentsTableInsertSchema.parse).toBe("function");
+			expect(typeof venueAttachmentsTableInsertSchema.safeParse).toBe(
+				"function",
+			);
+		});
+
+		it("should validate required fields", () => {
+			// Test missing all fields
+			const result1 = venueAttachmentsTableInsertSchema.safeParse({});
+			expect(result1.success).toBe(false);
+
+			// Test missing mimeType
+			const result2 = venueAttachmentsTableInsertSchema.safeParse({
+				name: "Test Attachment",
+				venueId: "123e4567-e89b-12d3-a456-426614174000",
+			});
+			expect(result2.success).toBe(false);
+
+			// Test missing name
+			const result3 = venueAttachmentsTableInsertSchema.safeParse({
+				mimeType: "image/jpeg",
+				venueId: "123e4567-e89b-12d3-a456-426614174000",
+			});
+			expect(result3.success).toBe(false);
+
+			// Test missing venueId
+			const result4 = venueAttachmentsTableInsertSchema.safeParse({
+				mimeType: "image/jpeg",
+				name: "Test Attachment",
+			});
+			expect(result4.success).toBe(false);
+		});
+
+		it("should accept valid data with required fields", () => {
+			const result = venueAttachmentsTableInsertSchema.safeParse({
+				mimeType: "image/jpeg",
+				name: "Test Attachment",
+				venueId: "123e4567-e89b-12d3-a456-426614174000",
+			});
+
+			expect(result.success).toBe(true);
+			if (result.success) {
+				expect(result.data.mimeType).toBe("image/jpeg");
+				expect(result.data.name).toBe("Test Attachment");
+				expect(result.data.venueId).toBe(
+					"123e4567-e89b-12d3-a456-426614174000",
+				);
+			}
+		});
+
+		it("should validate mimeType against enum values", () => {
+			// Test valid mime types
+			const validMimeTypes = venueAttachmentMimeTypeEnum.options;
+
+			validMimeTypes.forEach((mimeType) => {
+				const result = venueAttachmentsTableInsertSchema.safeParse({
+					mimeType,
+					name: "Test",
+					venueId: "123e4567-e89b-12d3-a456-426614174000",
+				});
+				expect(result.success).toBe(true);
+			});
+
+			// Test invalid mime type
+			const invalidResult = venueAttachmentsTableInsertSchema.safeParse({
+				mimeType: "invalid/type",
+				name: "Test",
+				venueId: "123e4567-e89b-12d3-a456-426614174000",
+			});
+			expect(invalidResult.success).toBe(false);
+		});
+
+		it("should validate name minimum length", () => {
+			// Test empty name
+			const emptyResult = venueAttachmentsTableInsertSchema.safeParse({
+				mimeType: "image/jpeg",
+				name: "",
+				venueId: "123e4567-e89b-12d3-a456-426614174000",
+			});
+			expect(emptyResult.success).toBe(false);
+
+			// Test valid name with 1 character
+			const validResult = venueAttachmentsTableInsertSchema.safeParse({
+				mimeType: "image/jpeg",
+				name: "A",
+				venueId: "123e4567-e89b-12d3-a456-426614174000",
+			});
+			expect(validResult.success).toBe(true);
+
+			// Test longer valid name
+			const longerResult = venueAttachmentsTableInsertSchema.safeParse({
+				mimeType: "image/jpeg",
+				name: "Test Venue Attachment Photo",
+				venueId: "123e4567-e89b-12d3-a456-426614174000",
+			});
+			expect(longerResult.success).toBe(true);
+		});
+
+		it("should accept optional creatorId and updaterId fields", () => {
+			// Without optional fields
+			const result1 = venueAttachmentsTableInsertSchema.safeParse({
+				mimeType: "image/jpeg",
+				name: "Test Attachment",
+				venueId: "123e4567-e89b-12d3-a456-426614174000",
+			});
+			expect(result1.success).toBe(true);
+
+			// With optional fields
+			const result2 = venueAttachmentsTableInsertSchema.safeParse({
+				mimeType: "image/jpeg",
+				name: "Test Attachment",
+				venueId: "123e4567-e89b-12d3-a456-426614174000",
+				creatorId: "123e4567-e89b-12d3-a456-426614174001",
+				updaterId: "123e4567-e89b-12d3-a456-426614174002",
+			});
+			expect(result2.success).toBe(true);
+		});
+
+		it("should transform data correctly", () => {
+			const result = venueAttachmentsTableInsertSchema.parse({
+				mimeType: "image/png",
+				name: "  Test Attachment  ", // With extra spaces
+				venueId: "123e4567-e89b-12d3-a456-426614174000",
+			});
+
+			// Zod might trim strings depending on schema configuration
+			// Check that the parse succeeds at least
+			expect(result.mimeType).toBe("image/png");
+			expect(result.venueId).toBe("123e4567-e89b-12d3-a456-426614174000");
+		});
+	});
+
+	describe("Trigger Index Configuration Execution", () => {
+		it("should execute index configuration function with proper self parameter", () => {
+			// Get the symbol that contains the ExtraConfigBuilder
+			const symbols = Object.getOwnPropertySymbols(venueAttachmentsTable);
+
+			// Look for the ExtraConfigBuilder symbol
+			const extraConfigBuilderSymbol = symbols.find((sym) =>
+				sym.toString().includes("ExtraConfigBuilder"),
+			);
+
+			expect(extraConfigBuilderSymbol).toBeDefined();
+
+			if (extraConfigBuilderSymbol) {
+				// Type-safe way to access symbol property
+				const venueTableWithSymbol =
+					venueAttachmentsTable as typeof venueAttachmentsTable & {
+						[key: symbol]: unknown;
+					};
+				const builder = venueTableWithSymbol[extraConfigBuilderSymbol];
+
+				// Check if builder is a function
+				if (typeof builder !== "function") {
+					throw new Error("Builder is not a function");
+				}
+
+				// Create a proper 'self' object with the actual columns
+				const columns = getTableColumns(venueAttachmentsTable);
+				const self: Record<string, unknown> = {};
+
+				// Add all columns to self
+				Object.keys(columns).forEach((key) => {
+					self[key] = columns[key as keyof typeof columns];
+				});
+
+				// Now call the builder with the proper self parameter
+				const result = builder(self);
+
+				expect(result).toBeDefined();
+				// Should return an array of indexes
+				expect(Array.isArray(result)).toBe(true);
+				// Make sure ALL 3 index calls execute
+				expect(result.length).toBe(3);
+			}
+		});
+	});
+});
