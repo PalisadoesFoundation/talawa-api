@@ -1,138 +1,182 @@
-import { createMockGraphQLContext } from "test/_Mocks_/mockContextCreator/mockContextCreator";
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import type { GraphQLContext } from "~/src/graphql/context";
-import { createPerformanceTracker } from "~/src/utilities/metrics/performanceTracker";
+import { faker } from "@faker-js/faker";
+import { beforeEach, describe, expect, it } from "vitest";
+import { assertToBeNonNullish } from "../../../helpers";
+import { server } from "../../../server";
+import { mercuriusClient } from "../client";
+import {
+	Mutation_createEvent,
+	Mutation_createOrganization,
+	Mutation_createOrganizationMembership,
+	Query_signIn,
+} from "../documentNodes";
 
 /**
  * Test suite for createEvent mutation performance tracking.
- * Verifies that performance metrics are properly collected for the createEvent mutation.
+ * Verifies that performance metrics are properly collected for the createEvent mutation
+ * using end-to-end Mercurius integration tests.
  */
 describe("createEvent mutation performance tracking", () => {
-	let perf: ReturnType<typeof createPerformanceTracker>;
-	let ctx: GraphQLContext;
+	let authToken: string;
+	let organizationId: string;
+	let adminId: string;
 
-	beforeEach(() => {
-		perf = createPerformanceTracker();
-		const { context } = createMockGraphQLContext(true, "user-id");
-		ctx = context;
-		ctx.perf = perf;
+	beforeEach(async () => {
+		// Sign in as admin
+		const signInResult = await mercuriusClient.query(Query_signIn, {
+			variables: {
+				input: {
+					emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
+					password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
+				},
+			},
+		});
+
+		assertToBeNonNullish(signInResult.data?.signIn);
+		assertToBeNonNullish(signInResult.data.signIn.authenticationToken);
+		authToken = signInResult.data.signIn.authenticationToken;
+		assertToBeNonNullish(signInResult.data.signIn.user?.id);
+		adminId = signInResult.data.signIn.user.id;
+
+		// Create an organization to attach events to
+		const orgResult = await mercuriusClient.mutate(
+			Mutation_createOrganization,
+			{
+				headers: { authorization: `bearer ${authToken}` },
+				variables: {
+					input: {
+						name: `Test Org ${faker.string.ulid()}`,
+						description: "Test organization for event metrics",
+						countryCode: "us",
+					},
+				},
+			},
+		);
+		assertToBeNonNullish(orgResult.data?.createOrganization?.id);
+		organizationId = orgResult.data.createOrganization.id;
+
+		// Ensure admin is a member (should be auto-added, but good to be safe/consistent if explicit logic changes)
+		// Usually createOrganization adds creator as admin.
 	});
 
-	afterEach(() => {
-		vi.clearAllMocks();
+	it("should track metrics for standard event creation", async () => {
+		const initialSnapshots = server.getMetricsSnapshots?.(1) ?? [];
+
+		const result = await mercuriusClient.mutate(Mutation_createEvent, {
+			headers: { authorization: `bearer ${authToken}` },
+			variables: {
+				input: {
+					name: `Standard Event ${faker.string.ulid()}`,
+					description: "Standard event description",
+					organizationId: organizationId,
+					startAt: new Date(Date.now() + 10000).toISOString(),
+					endAt: new Date(Date.now() + 3600000).toISOString(),
+					isPublic: true,
+					location: "Test Location",
+				},
+			},
+		});
+
+		expect(result.errors).toBeUndefined();
+		assertToBeNonNullish(result.data?.createEvent);
+		expect(result.data.createEvent.id).toBeDefined();
+
+		// Verify performance metrics
+		const snapshots = server.getMetricsSnapshots?.(1) ?? [];
+		expect(snapshots.length).toBeGreaterThan(initialSnapshots.length);
+
+		const latestSnapshot = snapshots[0];
+		assertToBeNonNullish(latestSnapshot);
+
+		// Main operation
+		const mainOp = latestSnapshot.ops["mutation:createEvent"];
+		expect(mainOp).toBeDefined();
+		expect(mainOp?.count).toBe(1);
+		expect(mainOp?.ms).toBeGreaterThanOrEqual(0);
+
+		// Sub-operations
+		const validationOp = latestSnapshot.ops["validation"];
+		expect(validationOp).toBeDefined();
+		expect(validationOp?.count).toBe(1);
+
+		const dbInsertOp = latestSnapshot.ops["db:event-insert"];
+		expect(dbInsertOp).toBeDefined();
+		expect(dbInsertOp?.count).toBe(1);
 	});
 
-	it("should track mutation execution time when perf tracker is available", async () => {
-		const executeMutation = async () => {
-			return (
-				(await ctx.perf?.time("mutation:createEvent", async () => {
-					await new Promise((resolve) => setTimeout(resolve, 10));
-					return { id: "event-123", name: "Test Event" };
-				})) ?? { id: "event-123", name: "Test Event" }
-			);
-		};
+	it("should track metrics for recurring event creation", async () => {
+		const initialSnapshots = server.getMetricsSnapshots?.(1) ?? [];
 
-		const result = await executeMutation();
+		const result = await mercuriusClient.mutate(Mutation_createEvent, {
+			headers: { authorization: `bearer ${authToken}` },
+			variables: {
+				input: {
+					name: `Recurring Event ${faker.string.ulid()}`,
+					description: "Recurring event description",
+					organizationId: organizationId,
+					startAt: new Date(Date.now() + 10000).toISOString(),
+					endAt: new Date(Date.now() + 3600000).toISOString(),
+					isPublic: true,
+					location: "Test Location",
+					recurrence: {
+						frequency: "DAILY",
+						interval: 1,
+						count: 2,
+					},
+				},
+			},
+		});
 
-		expect(result).toBeDefined();
-		const snapshot = perf.snapshot();
-		const op = snapshot.ops["mutation:createEvent"];
+		expect(result.errors).toBeUndefined();
+		assertToBeNonNullish(result.data?.createEvent);
 
-		expect(op).toBeDefined();
-		expect(op?.count).toBe(1);
-		expect(op?.ms).toBeGreaterThanOrEqual(9);
+		// Verify performance metrics
+		const snapshots = server.getMetricsSnapshots?.(1) ?? [];
+		const latestSnapshot = snapshots[0];
+		assertToBeNonNullish(latestSnapshot);
+
+		// Main operation
+		const mainOp = latestSnapshot.ops["mutation:createEvent"];
+		expect(mainOp).toBeDefined();
+
+		// Sub-operations specific to recurrence
+		const ruleInsertOp = latestSnapshot.ops["db:recurrence-rule-insert"];
+		expect(ruleInsertOp).toBeDefined();
+		expect(ruleInsertOp?.count).toBe(1);
+
+		const instanceGenOp = latestSnapshot.ops["db:recurrence-instance-generation"];
+		expect(instanceGenOp).toBeDefined();
+		expect(instanceGenOp?.count).toBe(1);
 	});
 
 	it("should track metrics even when mutation fails", async () => {
-		const executeMutation = async () => {
-			return (
-				(await ctx.perf?.time("mutation:createEvent", async () => {
-					throw new Error("Event creation failed");
-				})) ??
-				(() => {
-					throw new Error("Event creation failed");
-				})()
-			);
-		};
+		const initialSnapshots = server.getMetricsSnapshots?.(1) ?? [];
 
-		await expect(executeMutation()).rejects.toThrow("Event creation failed");
+		// Try to create event with invalid data (e.g. non-existent organization)
+		const result = await mercuriusClient.mutate(Mutation_createEvent, {
+			headers: { authorization: `bearer ${authToken}` },
+			variables: {
+				input: {
+					name: "Fail Event",
+					description: "This should fail",
+					organizationId: faker.string.uuid(), // Non-existent ID
+					startAt: new Date(Date.now() + 10000).toISOString(),
+					endAt: new Date(Date.now() + 3600000).toISOString(),
+				},
+			},
+		});
 
-		const snapshot = perf.snapshot();
-		const op = snapshot.ops["mutation:createEvent"];
+		expect(result.errors).toBeDefined();
+		expect(result.data?.createEvent).toBeNull();
 
-		expect(op).toBeDefined();
-		expect(op?.count).toBe(1);
-	});
+		// Verify performance metrics were still collected
+		const snapshots = server.getMetricsSnapshots?.(1) ?? [];
+		expect(snapshots.length).toBeGreaterThan(initialSnapshots.length);
 
-	it("should use correct operation name format", async () => {
-		const executeMutation = async () => {
-			return (
-				(await ctx.perf?.time("mutation:createEvent", async () => {
-					return { id: "event-456", name: "Test Event 2" };
-				})) ?? { id: "event-456", name: "Test Event 2" }
-			);
-		};
+		const latestSnapshot = snapshots[0];
+		assertToBeNonNullish(latestSnapshot);
 
-		await executeMutation();
-
-		const snapshot = perf.snapshot();
-		const op = snapshot.ops["mutation:createEvent"];
-
-		expect(op).toBeDefined();
-		expect(op?.count).toBe(1);
-		expect(snapshot.ops).toHaveProperty("mutation:createEvent");
-	});
-
-	it("should track sub-operations (validation, DB writes, related entities)", async () => {
-		const executeMutation = async () => {
-			return (
-				(await ctx.perf?.time("mutation:createEvent", async () => {
-					// Simulate validation
-					const validationStop = ctx.perf?.start("validation");
-					await new Promise((resolve) => setTimeout(resolve, 2));
-					validationStop?.();
-
-					// Simulate DB writes
-					const dbStop = ctx.perf?.start("db-write");
-					await new Promise((resolve) => setTimeout(resolve, 3));
-					dbStop?.();
-
-					// Simulate related entity creation
-					const relatedStop = ctx.perf?.start("related-entities");
-					await new Promise((resolve) => setTimeout(resolve, 2));
-					relatedStop?.();
-
-					return { id: "event-789", name: "Complex Event" };
-				})) ?? { id: "event-789", name: "Complex Event" }
-			);
-		};
-
-		const result = await executeMutation();
-
-		expect(result).toBeDefined();
-		const snapshot = perf.snapshot();
-		const mainOp = snapshot.ops["mutation:createEvent"];
-
+		const mainOp = latestSnapshot.ops["mutation:createEvent"];
 		expect(mainOp).toBeDefined();
 		expect(mainOp?.count).toBe(1);
-		expect(mainOp?.ms).toBeGreaterThanOrEqual(6);
-	});
-
-	it("should work when perf tracker is not available (graceful degradation)", async () => {
-		ctx.perf = undefined;
-
-		const executeMutation = async () => {
-			return (
-				(await ctx.perf?.time("mutation:createEvent", async () => {
-					return { id: "event-999", name: "No Metrics Event" };
-				})) ?? { id: "event-999", name: "No Metrics Event" }
-			);
-		};
-
-		const result = await executeMutation();
-
-		expect(result).toEqual({ id: "event-999", name: "No Metrics Event" });
-		const snapshot = perf.snapshot();
-		expect(snapshot.ops["mutation:createEvent"]).toBeUndefined();
 	});
 });
