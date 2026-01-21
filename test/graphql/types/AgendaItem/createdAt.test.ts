@@ -161,6 +161,28 @@ describe("AgendaItem.createdAt resolver", () => {
 		);
 	});
 
+	it("should throw unauthorized_action if user is not admin and has no org membership", async () => {
+		mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValue({
+			id: "user-123",
+			role: "member",
+		});
+
+		mocks.drizzleClient.query.agendaFoldersTable.findFirst.mockResolvedValue({
+			isAgendaItemFolder: true,
+			event: {
+				startAt: new Date(),
+				organization: {
+					countryCode: "US",
+					membershipsWhereOrganization: [], // User not in org
+				},
+			},
+		});
+
+		await expect(resolveCreatedAt(mockAgendaItem, {}, ctx)).rejects.toThrow(
+			new TalawaGraphQLError({ extensions: { code: "unauthorized_action" } }),
+		);
+	});
+
 	it("should return exact Date instance from parent", async () => {
 		const specificDate = new Date("2023-12-31T23:59:59.999Z");
 		mockAgendaItem.createdAt = specificDate;
