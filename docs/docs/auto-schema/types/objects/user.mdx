@@ -99,6 +99,7 @@ type User {
   natalSex: UserNatalSex
   naturalLanguageCode: Iso639Set1LanguageCode
   notifications(input: QueryNotificationInput): [Notification!]
+  oauthAccounts: [OAuthAccountInfo!]!
   orgIdWhereMembershipRequested: [String!]!
   organizationsWhereMember(
     after: String
@@ -226,6 +227,10 @@ Notifications for this user
 
 Input for querying notifications
 
+#### [<code style={{ fontWeight: 'normal' }}>User.<b>oauthAccounts</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>[OAuthAccountInfo!]!</b></code>](/auto-schema/types/objects/oauth-account-info.mdx) <Badge class="badge badge--secondary badge--non_null" text="non-null"/> <Badge class="badge badge--secondary " text="object"/>
+
+Linked OAuth accounts for this user. Only visible to the authenticated user.
+
 #### [<code style={{ fontWeight: 'normal' }}>User.<b>orgIdWhereMembershipRequested</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>[String!]!</b></code>](/auto-schema/types/scalars/string.mdx) <Badge class="badge badge--secondary badge--non_null" text="non-null"/> <Badge class="badge badge--secondary " text="scalar"/>
 
 The organization ID where the user requested membership.
@@ -282,7 +287,7 @@ The phone number to use to communicate with the user while they're at work.
 
 ### Returned By
 
-[`addEventAttendee`](/auto-schema/operations/mutations/add-event-attendee.mdx) <Badge class="badge badge--secondary badge--relation" text="mutation"/><Bullet />[`currentUser`](/auto-schema/operations/queries/current-user.mdx) <Badge class="badge badge--secondary badge--relation" text="query"/><Bullet />[`deleteCurrentUser`](/auto-schema/operations/mutations/delete-current-user.mdx) <Badge class="badge badge--secondary badge--relation" text="mutation"/><Bullet />[`deleteUser`](/auto-schema/operations/mutations/delete-user.mdx) <Badge class="badge badge--secondary badge--relation" text="mutation"/><Bullet />[`removeEventAttendee`](/auto-schema/operations/mutations/remove-event-attendee.mdx) <Badge class="badge badge--secondary badge--relation" text="mutation"/><Bullet />[`updateCurrentUser`](/auto-schema/operations/mutations/update-current-user.mdx) <Badge class="badge badge--secondary badge--relation" text="mutation"/><Bullet />[`updateUser`](/auto-schema/operations/mutations/update-user.mdx) <Badge class="badge badge--secondary badge--relation" text="mutation"/><Bullet />[`user`](/auto-schema/operations/queries/user.mdx) <Badge class="badge badge--secondary badge--relation" text="query"/><Bullet />[`usersByIds`](/auto-schema/operations/queries/users-by-ids.mdx) <Badge class="badge badge--secondary badge--relation" text="query"/><Bullet />[`usersByOrganizationId`](/auto-schema/operations/queries/users-by-organization-id.mdx) <Badge class="badge badge--secondary badge--relation" text="query"/>
+[`addEventAttendee`](/auto-schema/operations/mutations/add-event-attendee.mdx) <Badge class="badge badge--secondary badge--relation" text="mutation"/><Bullet />[`currentUser`](/auto-schema/operations/queries/current-user.mdx) <Badge class="badge badge--secondary badge--relation" text="query"/><Bullet />[`deleteCurrentUser`](/auto-schema/operations/mutations/delete-current-user.mdx) <Badge class="badge badge--secondary badge--relation" text="mutation"/><Bullet />[`deleteUser`](/auto-schema/operations/mutations/delete-user.mdx) <Badge class="badge badge--secondary badge--relation" text="mutation"/><Bullet />[`linkOAuthAccount`](/auto-schema/operations/mutations/link-oauth-account.mdx) <Badge class="badge badge--secondary badge--relation" text="mutation"/><Bullet />[`removeEventAttendee`](/auto-schema/operations/mutations/remove-event-attendee.mdx) <Badge class="badge badge--secondary badge--relation" text="mutation"/><Bullet />[`unlinkOAuthAccount`](/auto-schema/operations/mutations/unlink-oauth-account.mdx) <Badge class="badge badge--secondary badge--relation" text="mutation"/><Bullet />[`updateCurrentUser`](/auto-schema/operations/mutations/update-current-user.mdx) <Badge class="badge badge--secondary badge--relation" text="mutation"/><Bullet />[`updateUser`](/auto-schema/operations/mutations/update-user.mdx) <Badge class="badge badge--secondary badge--relation" text="mutation"/><Bullet />[`user`](/auto-schema/operations/queries/user.mdx) <Badge class="badge badge--secondary badge--relation" text="query"/><Bullet />[`usersByIds`](/auto-schema/operations/queries/users-by-ids.mdx) <Badge class="badge badge--secondary badge--relation" text="query"/><Bullet />[`usersByOrganizationId`](/auto-schema/operations/queries/users-by-organization-id.mdx) <Badge class="badge badge--secondary badge--relation" text="query"/>
 
 ### Member Of
 
