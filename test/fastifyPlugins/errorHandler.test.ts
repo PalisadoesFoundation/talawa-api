@@ -578,31 +578,40 @@ describe("errorHandlerPlugin", () => {
 		});
 
 		it("handles unhandled errors caught by global handler", async () => {
+			const originalEnv = process.env.NODE_ENV;
 			vi.stubEnv("NODE_ENV", "production");
-			const res = await app.inject({
-				method: "POST",
-				url: "/graphql",
-				headers: {
-					"content-type": "application/json",
-				},
-				payload: JSON.stringify({
-					query: "{ unhandled-error }",
-				}),
-			});
 
-			// Should be 500 Internal Server Error
-			expect(res.statusCode).toBe(500);
-			const body = res.json();
-			expect(body.errors[0].message).toBe("Internal Server Error");
-			expect(body.errors[0].extensions.code).toBe(
-				ErrorCode.INTERNAL_SERVER_ERROR,
-			);
-			expect(body.errors[0].extensions.httpStatus).toBe(500);
-			expect(body.errors[0].extensions.details).toBeUndefined();
-			expect(body.errors[0].extensions.correlationId).toBe(
-				"generated-correlation-id",
-			);
-			vi.stubEnv("NODE_ENV", "test");
+			try {
+				const res = await app.inject({
+					method: "POST",
+					url: "/graphql",
+					headers: {
+						"content-type": "application/json",
+					},
+					payload: JSON.stringify({
+						query: "{ unhandled-error }",
+					}),
+				});
+
+				// Should be 500 Internal Server Error
+				expect(res.statusCode).toBe(500);
+				const body = res.json();
+				expect(body.errors[0].message).toBe("Internal Server Error");
+				expect(body.errors[0].extensions.code).toBe(
+					ErrorCode.INTERNAL_SERVER_ERROR,
+				);
+				expect(body.errors[0].extensions.httpStatus).toBe(500);
+				expect(body.errors[0].extensions.details).toBeUndefined();
+				expect(body.errors[0].extensions.correlationId).toBe(
+					"generated-correlation-id",
+				);
+			} finally {
+				if (originalEnv !== undefined) {
+					vi.stubEnv("NODE_ENV", originalEnv);
+				} else {
+					vi.unstubAllEnvs();
+				}
+			}
 		});
 
 		it("handles unhandled errors with details caught by global handler", async () => {
@@ -765,19 +774,28 @@ describe("errorHandlerPlugin", () => {
 		});
 
 		it("standardizes non-TalawaRestError responses", async () => {
+			const originalNodeEnv = process.env.NODE_ENV;
 			vi.stubEnv("NODE_ENV", "production");
-			const res = await app.inject({ method: "GET", url: "/generic-error" });
-			expect(res.statusCode).toBe(500);
-			const body = res.json();
 
-			expect(body).toEqual({
-				error: {
-					code: ErrorCode.INTERNAL_SERVER_ERROR,
-					message: expect.any(String),
-					correlationId: "generated-correlation-id",
-				},
-			});
-			vi.stubEnv("NODE_ENV", "test");
+			try {
+				const res = await app.inject({ method: "GET", url: "/generic-error" });
+				expect(res.statusCode).toBe(500);
+				const body = res.json();
+
+				expect(body).toEqual({
+					error: {
+						code: ErrorCode.INTERNAL_SERVER_ERROR,
+						message: expect.any(String),
+						correlationId: "generated-correlation-id",
+					},
+				});
+			} finally {
+				if (originalNodeEnv === undefined) {
+					vi.unstubAllEnvs();
+				} else {
+					process.env.NODE_ENV = originalNodeEnv;
+				}
+			}
 		});
 	});
 

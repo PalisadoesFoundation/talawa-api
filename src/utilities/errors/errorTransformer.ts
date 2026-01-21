@@ -1,5 +1,5 @@
 import type { FastifyError } from "fastify";
-import { ZodError } from "zod";
+import { flattenError, ZodError } from "zod";
 import { rootLogger } from "../logging/logger";
 import { ErrorCode } from "./errorCodes";
 import { TalawaRestError } from "./TalawaRestError";
@@ -91,7 +91,7 @@ export function normalizeError(err: unknown): NormalizedError {
 			code: ErrorCode.INVALID_ARGUMENTS,
 			message: "Invalid input",
 			statusCode: 400,
-			details: err.flatten ? err.flatten() : err.issues,
+			details: flattenError(err),
 		};
 	}
 
