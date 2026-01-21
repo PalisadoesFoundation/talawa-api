@@ -77,6 +77,9 @@ export default defineConfig({
 			"envFiles/**",
 			"scripts/**",
 			"**/scripts/**",
+			"test/drizzle/**",
+			"test/graphql/**",
+			"test/install/**",
 		],
 		coverage: {
 			provider: "v8", // or 'istanbul' if you prefer
