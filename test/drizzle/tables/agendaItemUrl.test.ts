@@ -10,7 +10,7 @@ import {
 describe("agendaItemUrlTable", () => {
 	describe("agendaItemUrlTableInsertSchema", () => {
 		const validData = {
-			agendaItemId: "01234567-89ab-cdef-0123-456789abcdef",
+			agendaItemId: "606ac5cd-d1da-40b1-ba18-9d1862bda9fb",
 			url: "https://example.com",
 		};
 

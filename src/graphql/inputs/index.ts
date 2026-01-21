@@ -121,5 +121,6 @@ import "./MutationResetPasswordInput";
 import "./MutationCreateAgendaCategoryInput";
 import "./MutationDeleteAgendaCategoryInput";
 import "./MutationUpdateAgendaCategoryInput";
+import "./MutationOAuthLoginInput";
 import "./MetricsInput";
 import "./MetricsFilterInput";
