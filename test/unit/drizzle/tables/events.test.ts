@@ -498,6 +498,41 @@ describe("src/drizzle/tables/events.ts", () => {
 			expect(result.success).toBe(false);
 		});
 
+		it("should accept name with exact max length", () => {
+			const maxName = "a".repeat(EVENT_NAME_MAX_LENGTH);
+			const result = eventsTableInsertSchema.safeParse({
+				name: maxName,
+				organizationId: "123e4567-e89b-12d3-a456-426614174000",
+				startAt: new Date(),
+				endAt: new Date(),
+			});
+			expect(result.success).toBe(true);
+		});
+
+		it("should accept description with exact max length", () => {
+			const maxDescription = "a".repeat(EVENT_DESCRIPTION_MAX_LENGTH);
+			const result = eventsTableInsertSchema.safeParse({
+				name: "Test",
+				organizationId: "123e4567-e89b-12d3-a456-426614174000",
+				startAt: new Date(),
+				endAt: new Date(),
+				description: maxDescription,
+			});
+			expect(result.success).toBe(true);
+		});
+
+		it("should accept location with exact max length", () => {
+			const maxLocation = "a".repeat(EVENT_LOCATION_MAX_LENGTH);
+			const result = eventsTableInsertSchema.safeParse({
+				name: "Test",
+				organizationId: "123e4567-e89b-12d3-a456-426614174000",
+				startAt: new Date(),
+				endAt: new Date(),
+				location: maxLocation,
+			});
+			expect(result.success).toBe(true);
+		});
+
 		it("should enforce max length on location", () => {
 			const longLocation = "a".repeat(EVENT_LOCATION_MAX_LENGTH + 1);
 			const result = eventsTableInsertSchema.safeParse({
