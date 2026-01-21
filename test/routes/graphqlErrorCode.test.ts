@@ -10,6 +10,14 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { ErrorCode } from "~/src/utilities/errors/errorCodes";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 
+vi.mock("~/src/graphql/schemaManager", () => ({
+	default: {
+		buildInitialSchema: vi.fn(),
+		onSchemaUpdate: vi.fn(),
+		setLogger: vi.fn(),
+	},
+}));
+
 describe("GraphQL Error Formatting", () => {
 	// Unit test for isolated errorFormatter testing
 	describe("Unit Tests - ErrorFormatter Isolation", () => {
@@ -40,15 +48,7 @@ describe("GraphQL Error Formatting", () => {
 		};
 
 		beforeEach(async () => {
-			// Isolated unit test for errorFormatter internal logic
-			// This is needed to test specific error formatting behavior without full GraphQL execution
-			vi.mock("~/src/graphql/schemaManager", () => ({
-				default: {
-					buildInitialSchema: vi.fn(),
-					onSchemaUpdate: vi.fn(),
-					setLogger: vi.fn(),
-				},
-			}));
+			vi.resetAllMocks();
 
 			mockFastifyInstance = {
 				register: vi.fn(),

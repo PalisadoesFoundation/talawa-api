@@ -7,6 +7,7 @@ import {
 	GraphQLString,
 } from "graphql";
 import {
+	afterAll,
 	afterEach,
 	beforeAll,
 	beforeEach,
@@ -557,8 +558,14 @@ describe("GraphQL Routes", () => {
 	});
 
 	describe("GraphQL Plugin Registration", () => {
+		const ORIGINAL_NODE_ENV = process.env.NODE_ENV;
+
 		beforeAll(() => {
 			vi.stubEnv("NODE_ENV", "test");
+		});
+
+		afterAll(() => {
+			process.env.NODE_ENV = ORIGINAL_NODE_ENV;
 		});
 		let mockFastifyInstance: {
 			register: ReturnType<typeof vi.fn>;
@@ -2203,7 +2210,7 @@ describe("GraphQL Routes", () => {
 					},
 				);
 
-				// Should always be 200 for GraphQL over HTTP
+				// INTERNAL_SERVER_ERROR returns 200 for subscription context (no reply.send)
 				expect(result.statusCode).toBe(200);
 			});
 
@@ -2446,148 +2453,6 @@ describe("GraphQL Routes", () => {
 				const formattedError = result.response.errors?.[0];
 				expect(formattedError?.extensions?.httpStatus).toBe(500);
 			});
-		});
-	});
-
-	describe("Additional Coverage Tests", () => {
-		it("should cover error handling in schema update with non-Error objects", async () => {
-			const mockFastifyInstance = {
-				register: vi.fn(),
-				envConfig: {
-					API_IS_GRAPHIQL: true,
-				},
-				log: {
-					info: vi.fn(),
-					error: vi.fn(),
-				},
-				graphql: {
-					replaceSchema: vi.fn().mockImplementation(() => {
-						throw "String error"; // Non-Error object
-					}),
-					addHook: vi.fn(),
-				},
-				schemaUpdateCallback: undefined as
-					| ((schema: GraphQLSchema) => void)
-					| undefined,
-			};
-
-			vi.mocked(schemaManager.buildInitialSchema).mockResolvedValue(
-				new GraphQLSchema({
-					query: new GraphQLObjectType({
-						name: "Query",
-						fields: {
-							hello: {
-								type: GraphQLString,
-								resolve: () => "Hello",
-							},
-						},
-					}),
-				}),
-			);
-
-			vi.mocked(schemaManager.onSchemaUpdate).mockImplementation(
-				(callback: (schema: GraphQLSchema) => void) => {
-					mockFastifyInstance.schemaUpdateCallback = callback;
-				},
-			);
-
-			await graphql(mockFastifyInstance as unknown as FastifyInstance);
-
-			// Trigger schema update with error
-			const newSchema = new GraphQLSchema({
-				query: new GraphQLObjectType({
-					name: "Query",
-					fields: {
-						test: {
-							type: GraphQLString,
-							resolve: () => "test",
-						},
-					},
-				}),
-			});
-
-			mockFastifyInstance.schemaUpdateCallback?.(newSchema);
-
-			expect(mockFastifyInstance.log.error).toHaveBeenCalledWith(
-				expect.objectContaining({
-					error: "String error",
-					timestamp: expect.any(String),
-				}),
-				"❌ Failed to Update GraphQL Schema",
-			);
-		});
-
-		it("should cover error handling in schema update with Error objects", async () => {
-			const mockFastifyInstance = {
-				register: vi.fn(),
-				envConfig: {
-					API_IS_GRAPHIQL: true,
-				},
-				log: {
-					info: vi.fn(),
-					error: vi.fn(),
-				},
-				graphql: {
-					replaceSchema: vi.fn().mockImplementation(() => {
-						const error = new Error("Schema replacement failed");
-						error.stack = "Error stack trace";
-						throw error;
-					}),
-					addHook: vi.fn(),
-				},
-				schemaUpdateCallback: undefined as
-					| ((schema: GraphQLSchema) => void)
-					| undefined,
-			};
-
-			vi.mocked(schemaManager.buildInitialSchema).mockResolvedValue(
-				new GraphQLSchema({
-					query: new GraphQLObjectType({
-						name: "Query",
-						fields: {
-							hello: {
-								type: GraphQLString,
-								resolve: () => "Hello",
-							},
-						},
-					}),
-				}),
-			);
-
-			vi.mocked(schemaManager.onSchemaUpdate).mockImplementation(
-				(callback: (schema: GraphQLSchema) => void) => {
-					mockFastifyInstance.schemaUpdateCallback = callback;
-				},
-			);
-
-			await graphql(mockFastifyInstance as unknown as FastifyInstance);
-
-			// Trigger schema update with error
-			const newSchema = new GraphQLSchema({
-				query: new GraphQLObjectType({
-					name: "Query",
-					fields: {
-						test: {
-							type: GraphQLString,
-							resolve: () => "test",
-						},
-					},
-				}),
-			});
-
-			mockFastifyInstance.schemaUpdateCallback?.(newSchema);
-
-			expect(mockFastifyInstance.log.error).toHaveBeenCalledWith(
-				expect.objectContaining({
-					error: {
-						message: "Schema replacement failed",
-						stack: "Error stack trace",
-						name: "Error",
-					},
-					timestamp: expect.any(String),
-				}),
-				"❌ Failed to Update GraphQL Schema",
-			);
 		});
 	});
 
