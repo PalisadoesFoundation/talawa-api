@@ -394,14 +394,6 @@ export const graphql = fastifyPlugin(async (fastify) => {
 					)
 				) {
 					statusCode = 403;
-					const hasUnauthorizedAction = formattedErrors.some(
-						(error) =>
-							error.extensions?.code ===
-							ErrorCode.UNAUTHORIZED_ACTION_ON_ARGUMENTS_ASSOCIATED_RESOURCES,
-					);
-					if (hasUnauthorizedAction) {
-						statusCode = 500;
-					}
 				} else if (
 					errorCodes.includes(ErrorCode.INVALID_ARGUMENTS) ||
 					errorCodes.includes("GRAPHQL_VALIDATION_FAILED") ||
