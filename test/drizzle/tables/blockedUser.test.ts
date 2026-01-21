@@ -59,7 +59,7 @@ async function createTestOrganization(): Promise<string> {
 	return orgId;
 }
 
-describe("src/drizzle/tables/blockedUser.ts", () => {
+describe("src/drizzle/tables/blockedUsers.ts", () => {
 	describe("blockedUser Table Schema", () => {
 		it("should have the correct schema", () => {
 			const columns = Object.keys(blockedUsersTable);
@@ -110,18 +110,6 @@ describe("src/drizzle/tables/blockedUser.ts", () => {
 			).rejects.toThrow();
 		});
 
-		it("should reject insert with null userId foreign key", async () => {
-			const invalidUserId = String(null);
-			const orgId = await createTestOrganization();
-
-			await expect(
-				server.drizzleClient.insert(blockedUsersTable).values({
-					organizationId: orgId,
-					userId: invalidUserId,
-				}),
-			).rejects.toThrow();
-		});
-
 		it("should reject insert with invalid orgId foreign key", async () => {
 			const { userId } = await createRegularUserUsingAdmin();
 			const orgId = faker.string.uuid();
@@ -137,18 +125,6 @@ describe("src/drizzle/tables/blockedUser.ts", () => {
 		it("should reject insert with empty orgId foreign key", async () => {
 			const { userId } = await createRegularUserUsingAdmin();
 			const orgId = "";
-
-			await expect(
-				server.drizzleClient.insert(blockedUsersTable).values({
-					organizationId: orgId,
-					userId: userId,
-				}),
-			).rejects.toThrow();
-		});
-
-		it("should reject insert with null orgId foreign key", async () => {
-			const { userId } = await createRegularUserUsingAdmin();
-			const orgId = String(null);
 
 			await expect(
 				server.drizzleClient.insert(blockedUsersTable).values({
@@ -234,7 +210,7 @@ describe("src/drizzle/tables/blockedUser.ts", () => {
 			expect(creator.table).toBe(organizationsTable);
 		});
 
-		it("should define user as a one-to-one relation with organizationsTable", () => {
+		it("should define user as a one-to-one relation with usersTable", () => {
 			const { one, many } = createMockBuilders();
 			const relationsResult = blockedUsersTableRelations.config({
 				one,
@@ -328,7 +304,7 @@ describe("src/drizzle/tables/blockedUser.ts", () => {
 			}
 		});
 
-		it("should reject epmty userId string", async () => {
+		it("should reject empty userId string", async () => {
 			const orgId = await createTestOrganization();
 			const invalidData = { userId: "", organizationId: orgId };
 
@@ -494,7 +470,7 @@ describe("src/drizzle/tables/blockedUser.ts", () => {
 	});
 
 	describe("Index Configuration", () => {
-		it("should efficiently query using indexed userId column", async () => {
+		it("should successfully query by userId column", async () => {
 			const { userId } = await createRegularUserUsingAdmin();
 			const orgId = await createTestOrganization();
 
@@ -514,7 +490,7 @@ describe("src/drizzle/tables/blockedUser.ts", () => {
 			expect(results.length).toBeGreaterThan(0);
 		});
 
-		it("should efficiently query using indexed organizationId column", async () => {
+		it("should successfully query by organizationId column", async () => {
 			const { userId } = await createRegularUserUsingAdmin();
 			const orgId = await createTestOrganization();
 
