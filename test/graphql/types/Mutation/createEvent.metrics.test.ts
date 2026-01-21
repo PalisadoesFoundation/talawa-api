@@ -6,6 +6,7 @@ import { mercuriusClient } from "../client";
 import {
 	Mutation_createEvent,
 	Mutation_createOrganization,
+	Mutation_createOrganizationMembership,
 	Query_signIn,
 } from "../documentNodes";
 
@@ -51,8 +52,21 @@ describe("createEvent mutation performance tracking", () => {
 		assertToBeNonNullish(orgResult.data?.createOrganization?.id);
 		organizationId = orgResult.data.createOrganization.id;
 
-		// Ensure admin is a member (should be auto-added, but good to be safe/consistent if explicit logic changes)
-		// Usually createOrganization adds creator as admin.
+		// Explicitly add admin as a member of the organization
+		const memberResult = await mercuriusClient.mutate(
+			Mutation_createOrganizationMembership,
+			{
+				headers: { authorization: `bearer ${authToken}` },
+				variables: {
+					input: {
+						organizationId,
+						memberId: signInResult.data.signIn.user.id,
+						role: "administrator",
+					},
+				},
+			},
+		);
+		assertToBeNonNullish(memberResult.data?.createOrganizationMembership?.id);
 	});
 
 	it("should track metrics for standard event creation", async () => {
