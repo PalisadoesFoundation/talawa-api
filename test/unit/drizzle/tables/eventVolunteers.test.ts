@@ -1,12 +1,12 @@
 import { faker } from "@faker-js/faker";
 import { getTableConfig } from "drizzle-orm/pg-core";
 import { describe, expect, it, vi } from "vitest";
+import { eventsTable } from "~/src/drizzle/tables/events";
 import {
 	eventVolunteersTable,
 	eventVolunteersTableInsertSchema,
 	eventVolunteersTableRelations,
 } from "~/src/drizzle/tables/eventVolunteers";
-import { eventsTable } from "~/src/drizzle/tables/events";
 import { recurringEventInstancesTable } from "~/src/drizzle/tables/recurringEventInstances";
 import { usersTable } from "~/src/drizzle/tables/users";
 
@@ -216,7 +216,8 @@ describe("src/drizzle/tables/eventVolunteers.ts", () => {
 			const tableConfig = getTableConfig(eventVolunteersTable);
 			const createdAtIndex = tableConfig.indexes.find((idx) =>
 				idx.config.columns.some(
-					(col) => col.name === "created_at" && !idx.config.unique,
+					(col) =>
+						"name" in col && col.name === "created_at" && !idx.config.unique,
 				),
 			);
 			expect(createdAtIndex).toBeDefined();
@@ -226,7 +227,8 @@ describe("src/drizzle/tables/eventVolunteers.ts", () => {
 			const tableConfig = getTableConfig(eventVolunteersTable);
 			const eventIdIndex = tableConfig.indexes.find((idx) =>
 				idx.config.columns.some(
-					(col) => col.name === "event_id" && !idx.config.unique,
+					(col) =>
+						"name" in col && col.name === "event_id" && !idx.config.unique,
 				),
 			);
 			expect(eventIdIndex).toBeDefined();
@@ -236,7 +238,8 @@ describe("src/drizzle/tables/eventVolunteers.ts", () => {
 			const tableConfig = getTableConfig(eventVolunteersTable);
 			const userIdIndex = tableConfig.indexes.find((idx) =>
 				idx.config.columns.some(
-					(col) => col.name === "user_id" && !idx.config.unique,
+					(col) =>
+						"name" in col && col.name === "user_id" && !idx.config.unique,
 				),
 			);
 			expect(userIdIndex).toBeDefined();
@@ -246,7 +249,8 @@ describe("src/drizzle/tables/eventVolunteers.ts", () => {
 			const tableConfig = getTableConfig(eventVolunteersTable);
 			const hasAcceptedIndex = tableConfig.indexes.find((idx) =>
 				idx.config.columns.some(
-					(col) => col.name === "has_accepted" && !idx.config.unique,
+					(col) =>
+						"name" in col && col.name === "has_accepted" && !idx.config.unique,
 				),
 			);
 			expect(hasAcceptedIndex).toBeDefined();
@@ -256,7 +260,8 @@ describe("src/drizzle/tables/eventVolunteers.ts", () => {
 			const tableConfig = getTableConfig(eventVolunteersTable);
 			const isTemplateIndex = tableConfig.indexes.find((idx) =>
 				idx.config.columns.some(
-					(col) => col.name === "is_template" && !idx.config.unique,
+					(col) =>
+						"name" in col && col.name === "is_template" && !idx.config.unique,
 				),
 			);
 			expect(isTemplateIndex).toBeDefined();
@@ -326,8 +331,7 @@ describe("src/drizzle/tables/eventVolunteers.ts", () => {
 
 		describe("required fields validation", () => {
 			it("should accept valid input with only required fields", () => {
-				const result =
-					eventVolunteersTableInsertSchema.safeParse(validInput);
+				const result = eventVolunteersTableInsertSchema.safeParse(validInput);
 				expect(result.success).toBe(true);
 			});
 
