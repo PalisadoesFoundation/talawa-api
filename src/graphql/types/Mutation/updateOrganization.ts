@@ -271,12 +271,14 @@ builder.mutationField("updateOrganization", (t) =>
 				});
 			};
 
-			return (
-				(await ctx.perf?.time(
+			if (ctx.perf) {
+				return await ctx.perf.time(
 					"mutation:updateOrganization",
 					executeMutation,
-				)) ?? executeMutation()
-			);
+				);
+			}
+
+			return await executeMutation();
 		},
 		type: Organization,
 	}),

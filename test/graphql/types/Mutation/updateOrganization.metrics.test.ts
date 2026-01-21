@@ -123,6 +123,13 @@ describe("updateOrganization mutation performance tracking", () => {
 		// Verify performance metrics were still collected even on error
 		const snapshots = server.getMetricsSnapshots?.(1) ?? [];
 		expect(snapshots.length).toBeGreaterThan(initialSnapshots.length);
+
+		// Verify the specific mutation:updateOrganization metric was recorded
+		const latestSnapshot = snapshots[0];
+		assertToBeNonNullish(latestSnapshot);
+		const mutationOp = latestSnapshot.ops["mutation:updateOrganization"];
+		expect(mutationOp).toBeDefined();
+		expect(mutationOp?.count).toBeGreaterThanOrEqual(1);
 	});
 
 	it("should use correct operation name format", async () => {

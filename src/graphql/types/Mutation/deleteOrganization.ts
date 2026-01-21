@@ -226,12 +226,14 @@ builder.mutationField("deleteOrganization", (t) =>
 				return deletedOrganization;
 			};
 
-			return (
-				(await ctx.perf?.time(
+			if (ctx.perf) {
+				return await ctx.perf.time(
 					"mutation:deleteOrganization",
 					executeMutation,
-				)) ?? executeMutation()
-			);
+				);
+			}
+
+			return await executeMutation();
 		},
 		type: Organization,
 	}),

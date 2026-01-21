@@ -54,6 +54,9 @@ suite("Mutation field updateOrganization", () => {
 			}
 		}
 
+		// Restore all mocks/spies to prevent cross-test contamination
+		vi.restoreAllMocks();
+
 		if (firstError !== undefined) {
 			throw firstError;
 		}
