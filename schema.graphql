@@ -3709,6 +3709,7 @@ input MutationUpdateAgendaItemInput {
 
   """Name of the agenda item."""
   name: String
+  url: [UpdateAgendaItemUrlInput!]
 }
 
 """"""
@@ -5548,6 +5549,12 @@ type UnassignUserTag {
 
   """Global identifier of the tag."""
   tagId: ID
+}
+
+"""URL associated with an agenda item"""
+input UpdateAgendaItemUrlInput {
+  """URL of the agenda item"""
+  url: String!
 }
 
 """Input for updating an event volunteer group."""

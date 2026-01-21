@@ -963,7 +963,29 @@ export const Mutation_updateAgendaItem = gql(`
       name
       description
       duration
-      type
+    	attachments {
+        name
+        fileHash
+        objectName
+        mimeType
+      }
+    	category {
+        id
+        name
+      }
+      url {
+        id
+        url
+      }
+      folder {
+        id
+        name
+      }
+      updater {
+        id
+        name
+      }
+      updatedAt
     }
   }
 `);
@@ -983,6 +1005,7 @@ export const Mutation_deleteAgendaItem = gql(`
     deleteAgendaItem(input: $input) {
       id
       name
+      description
     }
   }
 `);
