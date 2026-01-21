@@ -149,7 +149,7 @@ describe("src/drizzle/tables/postAttachments", () => {
 					postId: validPostId,
 					creatorId: null,
 				}),
-			).rejects.not.toThrow();
+			).resolves.toBeDefined();
 		});
 
 		it("should reject insert with invalid postId foreign key", async () => {
