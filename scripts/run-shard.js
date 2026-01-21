@@ -19,7 +19,6 @@ if (isCI && (!process.env.SHARD_INDEX || !process.env.SHARD_COUNT)) {
 
 const shardIndex = process.env.SHARD_INDEX || "1";
 const shardCount = process.env.SHARD_COUNT || "1";
-const withCoverage = process.argv.includes("--coverage");
 
 // Validate shard values
 const idx = Number.parseInt(shardIndex, 10);
@@ -42,7 +41,12 @@ if (
 }
 
 const args = ["vitest", "run"];
-if (withCoverage) args.push("--coverage");
+
+// Forward remaining arguments (excluding --coverage which we handle explicitly if needed, but vitest handles it too)
+// Filter out direct --coverage flags if they are passed, as this script manages coverage flags
+const extraArgs = process.argv.slice(2);
+args.push(...extraArgs);
+
 args.push("--shard", `${shardIndex}/${shardCount}`);
 
 // Ensure SHARD_INDEX is set for vitest.config.ts to detect sharded runs
