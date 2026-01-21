@@ -565,7 +565,11 @@ describe("GraphQL Routes", () => {
 		});
 
 		afterAll(() => {
-			process.env.NODE_ENV = ORIGINAL_NODE_ENV;
+			if (ORIGINAL_NODE_ENV !== undefined) {
+				vi.stubEnv("NODE_ENV", ORIGINAL_NODE_ENV);
+			} else {
+				vi.unstubAllEnvs();
+			}
 		});
 		let mockFastifyInstance: {
 			register: ReturnType<typeof vi.fn>;
@@ -1803,7 +1807,7 @@ describe("GraphQL Routes", () => {
 							locations: [{ line: 2, column: 10 }],
 							path: undefined,
 							extensions: {
-								code: "internal_server_error",
+								code: ErrorCode.INTERNAL_SERVER_ERROR,
 								correlationId: "req-456",
 								httpStatus: 500,
 								details: undefined, // No details for errors without extensions
