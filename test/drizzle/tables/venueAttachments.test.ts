@@ -1,84 +1,82 @@
 import { getTableColumns, getTableName } from "drizzle-orm";
-import { beforeAll, describe, expect, it, vi } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { venueAttachmentMimeTypeEnum } from "~/src/drizzle/enums/venueAttachmentMimeType";
+
+// Mock drizzle-orm itself to handle relations
+vi.mock("drizzle-orm", async (importOriginal) => {
+	const actual = await importOriginal<typeof import("drizzle-orm")>();
+
+	// Create a mock 'one' function for relations
+	const mockOne = vi.fn().mockImplementation((table, config) => ({
+		...config,
+		_table: table,
+	}));
+
+	// Mock relations function
+	const mockRelations = vi.fn().mockImplementation((table, configFn) => {
+		// Call the config function with our mock 'one'
+		const config = configFn({ one: mockOne });
+		return {
+			config: vi.fn().mockReturnValue(config),
+			_table: table,
+		};
+	});
+
+	return {
+		...actual,
+		relations: mockRelations,
+	};
+});
+
+// Mock drizzle-orm/pg-core to capture index calls
+vi.mock("drizzle-orm/pg-core", async (importOriginal) => {
+	const actual = await importOriginal<typeof import("drizzle-orm")>();
+
+	// Mock index function
+	const mockIndex = vi.fn().mockReturnValue({
+		on: vi.fn().mockReturnValue({ _indexed: true }),
+	});
+
+	return {
+		...actual,
+		index: mockIndex,
+	};
+});
+
+// Now mock the specific table files with proper structure
+vi.mock("~/src/drizzle/tables/users", () => ({
+	usersTable: {
+		_: { name: "users" },
+		id: {
+			name: "id",
+			_: { name: "id" },
+			config: {},
+			brand: "PgUUID",
+		},
+	},
+}));
+
+vi.mock("~/src/drizzle/tables/venues", () => ({
+	venuesTable: {
+		_: { name: "venues" },
+		id: {
+			name: "id",
+			_: { name: "id" },
+			config: {},
+			brand: "PgUUID",
+		},
+	},
+}));
+
+// Mock any other tables that might be imported indirectly
+vi.mock("~/src/drizzle/tables/agendaItemAttachments", () => ({}));
+vi.mock("~/src/drizzle/tables/agendaItems", () => ({}));
+vi.mock("~/src/drizzle/tables/organizations", () => ({}));
+
 import {
 	venueAttachmentsTable,
 	venueAttachmentsTableInsertSchema,
 } from "~/src/drizzle/tables/venueAttachments";
-
-beforeAll(() => {
-	// Mock drizzle-orm itself to handle relations
-	vi.mock("drizzle-orm", async (importOriginal) => {
-		const actual: unknown[] = await importOriginal();
-
-		// Create a mock 'one' function for relations
-		const mockOne = vi.fn().mockImplementation((table, config) => ({
-			...config,
-			_table: table,
-		}));
-
-		// Mock relations function
-		const mockRelations = vi.fn().mockImplementation((table, configFn) => {
-			// Call the config function with our mock 'one'
-			const config = configFn({ one: mockOne });
-			return {
-				config: vi.fn().mockReturnValue(config),
-				_table: table,
-			};
-		});
-
-		return {
-			...actual,
-			relations: mockRelations,
-		};
-	});
-
-	// Mock drizzle-orm/pg-core to capture index calls
-	vi.mock("drizzle-orm/pg-core", async (importOriginal) => {
-		const actual: unknown[] = await importOriginal();
-
-		// Mock index function
-		const mockIndex = vi.fn().mockReturnValue({
-			on: vi.fn().mockReturnValue({ _indexed: true }),
-		});
-
-		return {
-			...actual,
-			index: mockIndex,
-		};
-	});
-
-	// Now mock the specific table files with proper structure
-	vi.mock("~/src/drizzle/tables/users", () => ({
-		usersTable: {
-			_: { name: "users" },
-			id: {
-				name: "id",
-				_: { name: "id" },
-				config: {},
-				brand: "PgUUID",
-			},
-		},
-	}));
-
-	vi.mock("~/src/drizzle/tables/venues", () => ({
-		venuesTable: {
-			_: { name: "venues" },
-			id: {
-				name: "id",
-				_: { name: "id" },
-				config: {},
-				brand: "PgUUID",
-			},
-		},
-	}));
-
-	// Mock any other tables that might be imported indirectly
-	vi.mock("~/src/drizzle/tables/agendaItemAttachments", () => ({}));
-	vi.mock("~/src/drizzle/tables/agendaItems", () => ({}));
-	vi.mock("~/src/drizzle/tables/organizations", () => ({}));
-	// Add other tables that might cause circular deps
-});
 
 describe("venueAttachments.ts", () => {
 	describe("venueAttachmentsTable", () => {
@@ -155,6 +153,15 @@ describe("venueAttachments.ts", () => {
 				name: "Test Attachment",
 			});
 			expect(result4.success).toBe(false);
+		});
+
+		it("should reject invalid UUID format for venueId", () => {
+			const result = venueAttachmentsTableInsertSchema.safeParse({
+				mimeType: "image/jpeg",
+				name: "Test Attachment",
+				venueId: "not-a-valid-uuid",
+			});
+			expect(result.success).toBe(false);
 		});
 
 		it("should accept valid data with required fields", () => {
@@ -242,16 +249,33 @@ describe("venueAttachments.ts", () => {
 			expect(result2.success).toBe(true);
 		});
 
+		it("should reject invalid UUID format for creatorId and updaterId", () => {
+			const result1 = venueAttachmentsTableInsertSchema.safeParse({
+				mimeType: "image/jpeg",
+				name: "Test Attachment",
+				venueId: "123e4567-e89b-12d3-a456-426614174000",
+				creatorId: "invalid-uuid",
+			});
+			expect(result1.success).toBe(false);
+
+			const result2 = venueAttachmentsTableInsertSchema.safeParse({
+				mimeType: "image/jpeg",
+				name: "Test Attachment",
+				venueId: "123e4567-e89b-12d3-a456-426614174000",
+				updaterId: "invalid-uuid",
+			});
+			expect(result2.success).toBe(false);
+		});
+
 		it("should transform data correctly", () => {
 			const result = venueAttachmentsTableInsertSchema.parse({
 				mimeType: "image/png",
-				name: "  Test Attachment  ", // With extra spaces
+				name: "Test Attachment",
 				venueId: "123e4567-e89b-12d3-a456-426614174000",
 			});
 
-			// Zod might trim strings depending on schema configuration
-			// Check that the parse succeeds at least
 			expect(result.mimeType).toBe("image/png");
+			expect(result.name).toBe("Test Attachment");
 			expect(result.venueId).toBe("123e4567-e89b-12d3-a456-426614174000");
 		});
 	});
@@ -276,10 +300,13 @@ describe("venueAttachments.ts", () => {
 					};
 				const builder = venueTableWithSymbol[extraConfigBuilderSymbol];
 
-				// Check if builder is a function
-				if (typeof builder !== "function") {
-					throw new Error("Builder is not a function");
-				}
+				// Use Vitest assertion instead of throwing
+				expect(typeof builder).toBe("function");
+
+				// Type guard or assertion for the function
+				const configBuilder = builder as (
+					self: Record<string, unknown>,
+				) => unknown[];
 
 				// Create a proper 'self' object with the actual columns
 				const columns = getTableColumns(venueAttachmentsTable);
@@ -291,7 +318,7 @@ describe("venueAttachments.ts", () => {
 				});
 
 				// Now call the builder with the proper self parameter
-				const result = builder(self);
+				const result = configBuilder(self);
 
 				expect(result).toBeDefined();
 				// Should return an array of indexes
