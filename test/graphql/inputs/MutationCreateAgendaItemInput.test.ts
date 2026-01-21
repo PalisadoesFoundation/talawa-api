@@ -132,7 +132,7 @@ describe("MutationCreateAgendaItemInput Schema", () => {
 				attachments: [
 					{
 						name: "",
-						mimeType: "application/pdf",
+						mimeType: postAttachmentMimeTypeEnum.options[0],
 						objectName: "",
 						fileHash: "",
 					},
@@ -146,7 +146,7 @@ describe("MutationCreateAgendaItemInput Schema", () => {
 				...validBaseInput,
 				attachments: Array.from({ length: 11 }).map((_, i) => ({
 					name: `file-${i}`,
-					mimeType: "application/pdf",
+					mimeType: postAttachmentMimeTypeEnum.options[0],
 					objectName: `object-${i}`,
 					fileHash: `hash-${i}`,
 				})),
