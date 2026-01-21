@@ -509,5 +509,37 @@ describe("src/drizzle/tables/events.ts", () => {
 			});
 			expect(result.success).toBe(false);
 		});
+
+		it("should reject empty name", () => {
+			const result = eventsTableInsertSchema.safeParse({
+				name: "",
+				organizationId: "uuid",
+				startAt: new Date(),
+				endAt: new Date(),
+			});
+			expect(result.success).toBe(false);
+		});
+
+		it("should reject empty description when provided", () => {
+			const result = eventsTableInsertSchema.safeParse({
+				name: "Test",
+				organizationId: "uuid",
+				startAt: new Date(),
+				endAt: new Date(),
+				description: "",
+			});
+			expect(result.success).toBe(false);
+		});
+
+		it("should reject empty location when provided", () => {
+			const result = eventsTableInsertSchema.safeParse({
+				name: "Test",
+				organizationId: "uuid",
+				startAt: new Date(),
+				endAt: new Date(),
+				location: "",
+			});
+			expect(result.success).toBe(false);
+		});
 	});
 });
