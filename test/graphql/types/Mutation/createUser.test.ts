@@ -1,18 +1,18 @@
 import { faker } from "@faker-js/faker";
+import type { ResultOf, VariablesOf } from "gql.tada";
+import { print } from "graphql";
+import { afterEach, beforeEach, expect, suite, test, vi } from "vitest";
 import { storeRefreshToken } from "~/src/utilities/refreshTokenUtils";
 
 vi.mock("~/src/utilities/refreshTokenUtils", async (importOriginal) => {
-	const actual = await importOriginal<
-		typeof import("~/src/utilities/refreshTokenUtils")
-	>();
+	const actual =
+		await importOriginal<typeof import("~/src/utilities/refreshTokenUtils")>();
 	return {
 		...actual,
 		storeRefreshToken: vi.fn(actual.storeRefreshToken),
 	};
 });
-import type { ResultOf, VariablesOf } from "gql.tada";
-import { print } from "graphql";
-import { afterEach, beforeEach, expect, suite, test, vi } from "vitest";
+
 import type {
 	ForbiddenActionOnArgumentsAssociatedResourcesExtensions,
 	InvalidArgumentsExtensions,
@@ -980,7 +980,9 @@ suite("Mutation field createUser", () => {
 
 		test("should surface error when storeRefreshToken throws", async () => {
 			const storeRefreshTokenError = new Error("Failed to store refresh token");
-			vi.mocked(storeRefreshToken).mockRejectedValueOnce(storeRefreshTokenError);
+			vi.mocked(storeRefreshToken).mockRejectedValueOnce(
+				storeRefreshTokenError,
+			);
 
 			const result = await mercuriusClient.mutate(Mutation_createUser, {
 				headers: { authorization: `bearer ${authToken}` },

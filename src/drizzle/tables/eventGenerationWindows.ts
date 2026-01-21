@@ -161,8 +161,7 @@ export const eventGenerationWindowsTable = pgTable(
 			mode: "date",
 			precision: 3,
 			withTimezone: true,
-		})
-			.$onUpdate(() => new Date()),
+		}).$onUpdate(() => new Date()),
 	},
 	(self) => ({
 		// Unique constraint: one window config per organization
