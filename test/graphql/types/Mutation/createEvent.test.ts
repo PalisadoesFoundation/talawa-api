@@ -451,7 +451,7 @@ suite("Mutation field createEvent", () => {
 			const errorMessage = invalidResult.errors?.[0]?.message;
 			expect(
 				errorMessage?.includes("Upload value invalid") ||
-				errorMessage?.includes("Graphql validation error"),
+					errorMessage?.includes("Graphql validation error"),
 			).toBe(true);
 		});
 
@@ -496,122 +496,124 @@ suite("Mutation field createEvent", () => {
 				}),
 			);
 		});
-        	test("rejects yearly never-ending recurring events", async () => {
-		const organizationId = await createTestOrganization();
-		const result = await createEvent({
-			input: {
-				...baseEventInput(organizationId),
-				recurrence: {
-					frequency: "YEARLY",
-					interval: 1,
-					never: true,
-				},
-			},
-		});
-
-		expectSpecificError(result, {
-			extensions: expect.objectContaining<InvalidArgumentsExtensions>({
-				code: "invalid_arguments",
-				issues: expect.arrayContaining([
-					{
-						argumentPath: ["input", "recurrence"],
-						message: expect.stringContaining("Yearly events cannot be never-ending"),
+		test("rejects yearly never-ending recurring events", async () => {
+			const organizationId = await createTestOrganization();
+			const result = await createEvent({
+				input: {
+					...baseEventInput(organizationId),
+					recurrence: {
+						frequency: "YEARLY",
+						interval: 1,
+						never: true,
 					},
-				]),
-			}),
-			message: expect.any(String),
-			path: ["createEvent"],
-		});
-	});
-
-	test("rejects invalid day codes in byDay", async () => {
-		const organizationId = await createTestOrganization();
-		const result = await createEvent({
-			input: {
-				...baseEventInput(organizationId),
-				recurrence: {
-					frequency: "WEEKLY",
-					interval: 1,
-					count: 5,
-					byDay: ["MO", "INVALID"], // Invalid day code
 				},
-			},
+			});
+
+			expectSpecificError(result, {
+				extensions: expect.objectContaining<InvalidArgumentsExtensions>({
+					code: "invalid_arguments",
+					issues: expect.arrayContaining([
+						{
+							argumentPath: ["input", "recurrence"],
+							message: expect.stringContaining(
+								"Yearly events cannot be never-ending",
+							),
+						},
+					]),
+				}),
+				message: expect.any(String),
+				path: ["createEvent"],
+			});
 		});
 
-		expectSpecificError(result, {
-			extensions: expect.objectContaining<InvalidArgumentsExtensions>({
-				code: "invalid_arguments",
-				issues: expect.arrayContaining([
-					{
-						argumentPath: ["input", "recurrence"],
-						message: expect.stringContaining("Invalid day code"),
+		test("rejects invalid day codes in byDay", async () => {
+			const organizationId = await createTestOrganization();
+			const result = await createEvent({
+				input: {
+					...baseEventInput(organizationId),
+					recurrence: {
+						frequency: "WEEKLY",
+						interval: 1,
+						count: 5,
+						byDay: ["MO", "INVALID"], // Invalid day code
 					},
-				]),
-			}),
-			message: expect.any(String),
-			path: ["createEvent"],
+				},
+			});
+
+			expectSpecificError(result, {
+				extensions: expect.objectContaining<InvalidArgumentsExtensions>({
+					code: "invalid_arguments",
+					issues: expect.arrayContaining([
+						{
+							argumentPath: ["input", "recurrence"],
+							message: expect.stringContaining("Invalid day code"),
+						},
+					]),
+				}),
+				message: expect.any(String),
+				path: ["createEvent"],
+			});
 		});
-	});
 
 		test("rejects invalid months in byMonth", async () => {
-		const organizationId = await createTestOrganization();
-		const result = await createEvent({
-			input: {
-				...baseEventInput(organizationId),
-				recurrence: {
-					frequency: "YEARLY",
-					interval: 1,
-					count: 3,
-					byMonth: [1, 13], // 13 is invalid (must be 1-12)
-				},
-			},
-		});
-
-		expectSpecificError(result, {
-			extensions: expect.objectContaining<InvalidArgumentsExtensions>({
-				code: "invalid_arguments",
-				issues: expect.arrayContaining([
-					{
-						argumentPath: ["input", "recurrence", "byMonth", 1],
-						message: expect.stringContaining("Too big"),
+			const organizationId = await createTestOrganization();
+			const result = await createEvent({
+				input: {
+					...baseEventInput(organizationId),
+					recurrence: {
+						frequency: "YEARLY",
+						interval: 1,
+						count: 3,
+						byMonth: [1, 13], // 13 is invalid (must be 1-12)
 					},
-				]),
-			}),
-			message: expect.any(String),
-			path: ["createEvent"],
-		});
-	});
-
-	test("rejects recurrence end date before start date", async () => {
-		const organizationId = await createTestOrganization();
-		const pastDate = new Date();
-		pastDate.setDate(pastDate.getDate() - 10); // 10 days ago
-
-		const result = await createEvent({
-			input: {
-				...baseEventInput(organizationId),
-				recurrence: {
-					frequency: "WEEKLY",
-					interval: 1,
-					endDate: pastDate.toISOString(),
 				},
-			},
+			});
+
+			expectSpecificError(result, {
+				extensions: expect.objectContaining<InvalidArgumentsExtensions>({
+					code: "invalid_arguments",
+					issues: expect.arrayContaining([
+						{
+							argumentPath: ["input", "recurrence", "byMonth", 1],
+							message: expect.stringContaining("Too big"),
+						},
+					]),
+				}),
+				message: expect.any(String),
+				path: ["createEvent"],
+			});
 		});
 
-		expectSpecificError(result, {
-			extensions: expect.objectContaining<InvalidArgumentsExtensions>({
-				code: "invalid_arguments",
-				issues: expect.arrayContaining([
-					{
-						argumentPath: ["input", "recurrence"],
-						message: expect.stringContaining("end date must be after"),
+		test("rejects recurrence end date before start date", async () => {
+			const organizationId = await createTestOrganization();
+			const pastDate = new Date();
+			pastDate.setDate(pastDate.getDate() - 10); // 10 days ago
+
+			const result = await createEvent({
+				input: {
+					...baseEventInput(organizationId),
+					recurrence: {
+						frequency: "WEEKLY",
+						interval: 1,
+						endDate: pastDate.toISOString(),
 					},
-				]),
-			}),
-			message: expect.any(String),
-			path: ["createEvent"],
+				},
+			});
+
+			expectSpecificError(result, {
+				extensions: expect.objectContaining<InvalidArgumentsExtensions>({
+					code: "invalid_arguments",
+					issues: expect.arrayContaining([
+						{
+							argumentPath: ["input", "recurrence"],
+							message: expect.stringContaining("end date must be after"),
+						},
+					]),
+				}),
+				message: expect.any(String),
+				path: ["createEvent"],
+			});
 		});
-	});
 		test("rejects events with both isPublic and isInviteOnly set to true", async () => {
 			const organizationId = await createTestOrganization();
 			const result = await createEvent({
@@ -1068,16 +1070,16 @@ suite("Mutation field createEvent", () => {
 		});
 	});
 
-		suite("Attachment Handling", () => {
+	suite("Attachment Handling", () => {
 		// NOTE: Attachment validation and upload logic is tested at the unit level in
 		// test/graphql/inputs/MutationCreateEventInputAttachments.test.ts
-		// 
+		//
 		// Integration tests cannot properly mock file uploads because mercurius-upload's
 		// Upload scalar validates the promise structure before our resolver executes.
-		// 
+		//
 		// Coverage for lines 46-71 (MIME validation) and 415-445 (MinIO upload) is
 		// provided by the unit tests which directly test the schema transform function.
-		
+
 		test.skip("Integration tests skipped - see unit tests", () => {
 			// See test/graphql/inputs/MutationCreateEventInputAttachments.test.ts
 			// for comprehensive MIME type validation tests that cover the transform
@@ -1090,9 +1092,10 @@ suite("Mutation field createEvent", () => {
 			const organizationId = await createTestOrganization();
 
 			// Mock the user query to return undefined
-			vi.spyOn(server.drizzleClient.query.usersTable, "findFirst").mockResolvedValue(
-				undefined,
-			);
+			vi.spyOn(
+				server.drizzleClient.query.usersTable,
+				"findFirst",
+			).mockResolvedValue(undefined);
 
 			try {
 				const result = await createEvent({

@@ -49,14 +49,15 @@ describe("MutationCreateEventInput - Attachment Validation", () => {
 			expect(result.success).toBe(false);
 		});
 	});
-		describe("MIME type validation (arguments schema transform)", () => {
+	describe("MIME type validation (arguments schema transform)", () => {
 		// Helper to create FileUpload-like objects
 		function createMockFileUpload(filename: string, mimetype: string) {
 			return Promise.resolve({
 				filename,
 				mimetype,
 				encoding: "7bit",
-				createReadStream: () => require("stream").Readable.from(Buffer.from("test")),
+				createReadStream: () =>
+					require("stream").Readable.from(Buffer.from("test")),
 			});
 		}
 
@@ -159,6 +160,3 @@ describe("MutationCreateEventInput - Attachment Validation", () => {
 		});
 	});
 });
-
-
-
