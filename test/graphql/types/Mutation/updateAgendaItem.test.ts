@@ -78,16 +78,6 @@ async function createOrganizationAndEvent() {
 async function createCategoryFolderAgendaItem() {
 	const { orgId, eventId } = await createOrganizationAndEvent();
 	assertToBeNonNullish(adminUser);
-	await mercuriusClient.mutate(Mutation_createOrganizationMembership, {
-		headers: { authorization: `bearer ${authToken}` },
-		variables: {
-			input: {
-				organizationId: orgId,
-				memberId: adminUser.id,
-				role: "administrator",
-			},
-		},
-	});
 
 	const categoryRes = await mercuriusClient.mutate(
 		Mutation_createAgendaCategory,
@@ -287,7 +277,7 @@ suite("Mutation field updateAgendaItem", () => {
 							fileHash:
 								"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
 							mimeType: "IMAGE_JPEG",
-							objectName: "file.png",
+							objectName: "file.jpeg",
 						},
 					],
 				},
@@ -295,6 +285,14 @@ suite("Mutation field updateAgendaItem", () => {
 		});
 
 		expect(result.errors).toBeUndefined();
+		expect(result.data?.updateAgendaItem?.attachments).toEqual(
+			expect.arrayContaining([
+				expect.objectContaining({
+					name: "file.png",
+					mimeType: "IMAGE_PNG",
+				}),
+			]),
+		);
 	});
 
 	test("should throw unexpected error when update returns nothing", async () => {
