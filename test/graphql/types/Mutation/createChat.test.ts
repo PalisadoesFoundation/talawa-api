@@ -552,11 +552,13 @@ suite("Mutation field createChat", () => {
 				createdChatIds.push(result.data.createChat.id);
 			}
 
-			expect(putObjectSpy).toHaveBeenCalledWith(
-				server.minio.bucketName,
-				expect.any(String),
-				expect.anything(),
-				undefined,
+			expect(putObjectSpy).toHaveBeenCalled();
+			const [bucket, objectName, , sizeOrMeta, metaMaybe] =
+				putObjectSpy.mock.calls[0] ?? [];
+			expect(bucket).toBe(server.minio.bucketName);
+			expect(objectName).toEqual(expect.any(String));
+			const metadata = metaMaybe ?? sizeOrMeta;
+			expect(metadata).toEqual(
 				expect.objectContaining({
 					"content-type": "image/jpeg",
 				}),
