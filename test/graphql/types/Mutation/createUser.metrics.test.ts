@@ -195,7 +195,10 @@ describe("createUser mutation performance tracking", () => {
 		expect(snapshots.length).toBeGreaterThan(initialSnapshots.length);
 
 		// Compute new snapshots added since initialSnapshots
-		const newSnapshots = snapshots.slice(initialSnapshots.length);
+		const newSnapshots = snapshots.slice(
+			0,
+			snapshots.length - initialSnapshots.length,
+		);
 
 		// Find a snapshot that has BOTH mutation:createUser AND file:avatar-upload
 		const latestSnapshot = newSnapshots.find(
