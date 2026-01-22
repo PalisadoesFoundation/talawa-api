@@ -61,18 +61,23 @@ const cursorSchema = z
 		creatorId: arg.creatorId,
 	}));
 
+export const upVotersComplexity = (args: {
+	first?: number | null | undefined;
+	last?: number | null | undefined;
+}) => {
+	return {
+		field: envConfig.API_GRAPHQL_OBJECT_FIELD_COST,
+		multiplier: args.first || args.last || 1,
+	};
+};
+
 Post.implement({
 	fields: (t) => ({
 		upVoters: t.connection(
 			{
 				description:
 					"GraphQL connection to traverse through the user that up voted the post.",
-				complexity: (args) => {
-					return {
-						field: envConfig.API_GRAPHQL_OBJECT_FIELD_COST,
-						multiplier: args.first || args.last || 1,
-					};
-				},
+				complexity: upVotersComplexity,
 				resolve: async (parent, args, ctx) => {
 					const {
 						data: parsedArgs,
