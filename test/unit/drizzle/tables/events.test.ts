@@ -479,7 +479,7 @@ describe("src/drizzle/tables/events.ts", () => {
 			const longDescription = "a".repeat(EVENT_DESCRIPTION_MAX_LENGTH + 1);
 			const result = eventsTableInsertSchema.safeParse({
 				name: "Test",
-				organizationId: "uuid",
+				organizationId: "123e4567-e89b-12d3-a456-426614174000",
 				startAt: new Date(),
 				endAt: new Date(),
 				description: longDescription,
@@ -491,7 +491,7 @@ describe("src/drizzle/tables/events.ts", () => {
 			const longName = "a".repeat(EVENT_NAME_MAX_LENGTH + 1);
 			const result = eventsTableInsertSchema.safeParse({
 				name: longName,
-				organizationId: "uuid",
+				organizationId: "123e4567-e89b-12d3-a456-426614174000",
 				startAt: new Date(),
 				endAt: new Date(),
 			});
@@ -537,7 +537,7 @@ describe("src/drizzle/tables/events.ts", () => {
 			const longLocation = "a".repeat(EVENT_LOCATION_MAX_LENGTH + 1);
 			const result = eventsTableInsertSchema.safeParse({
 				name: "Test",
-				organizationId: "uuid",
+				organizationId: "123e4567-e89b-12d3-a456-426614174000",
 				startAt: new Date(),
 				endAt: new Date(),
 				location: longLocation,
@@ -548,7 +548,7 @@ describe("src/drizzle/tables/events.ts", () => {
 		it("should reject empty name", () => {
 			const result = eventsTableInsertSchema.safeParse({
 				name: "",
-				organizationId: "uuid",
+				organizationId: "123e4567-e89b-12d3-a456-426614174000",
 				startAt: new Date(),
 				endAt: new Date(),
 			});
@@ -558,7 +558,7 @@ describe("src/drizzle/tables/events.ts", () => {
 		it("should reject empty description when provided", () => {
 			const result = eventsTableInsertSchema.safeParse({
 				name: "Test",
-				organizationId: "uuid",
+				organizationId: "123e4567-e89b-12d3-a456-426614174000",
 				startAt: new Date(),
 				endAt: new Date(),
 				description: "",
@@ -569,7 +569,7 @@ describe("src/drizzle/tables/events.ts", () => {
 		it("should reject empty location when provided", () => {
 			const result = eventsTableInsertSchema.safeParse({
 				name: "Test",
-				organizationId: "uuid",
+				organizationId: "123e4567-e89b-12d3-a456-426614174000",
 				startAt: new Date(),
 				endAt: new Date(),
 				location: "",
