@@ -3,7 +3,7 @@ set -euo pipefail
 
 # Guard against multiple sourcing to preserve the stack and state
 if [ -z "${__TALAWA_ERROR_HANDLING_SOURCED:-}" ]; then
-    export __TALAWA_ERROR_HANDLING_SOURCED=1
+    __TALAWA_ERROR_HANDLING_SOURCED=1
 
     declare -a __CLEANUP_STACK=()
     # Use a user-specific state directory to avoid permission issues and collisions
