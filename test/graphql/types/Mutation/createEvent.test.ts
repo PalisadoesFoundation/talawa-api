@@ -1222,9 +1222,10 @@ suite("Post-transaction attachment upload behavior", () => {
 	test("cleans up DB rows and MinIO objects when attachment upload fails", async () => {
 		const organizationId = await createTestOrganization();
 
-		vi.spyOn(server.minio.client, "putObject").mockRejectedValue(
-			new Error("upload failed"),
-		);
+		const putObjectSpy = vi.spyOn(server.minio.client, "putObject");
+		putObjectSpy
+			.mockResolvedValueOnce({} as never) // first upload succeeds
+			.mockRejectedValueOnce(new Error("upload failed")); // second fails
 
 		const removeObjectSpy = vi.spyOn(server.minio.client, "removeObject");
 		const deleteSpy = vi.spyOn(server.drizzleClient, "delete");
@@ -1233,22 +1234,23 @@ suite("Post-transaction attachment upload behavior", () => {
 
 		const operations = JSON.stringify({
 			query: `
-		mutation CreateEvent($input: MutationCreateEventInput!) {
-			createEvent(input: $input) {
-			id
+			mutation CreateEvent($input: MutationCreateEventInput!) {
+				createEvent(input: $input) {
+					id
+				}
 			}
-		}
 		`,
 			variables: {
 				input: {
 					...baseEventInput(organizationId),
-					attachments: [null],
+					attachments: [null, null],
 				},
 			},
 		});
 
 		const map = JSON.stringify({
 			"0": ["variables.input.attachments.0"],
+			"1": ["variables.input.attachments.1"],
 		});
 
 		const body = [
@@ -1265,6 +1267,11 @@ suite("Post-transaction attachment upload behavior", () => {
 			"Content-Type: image/png",
 			"",
 			"fake-content",
+			`--${boundary}`,
+			'Content-Disposition: form-data; name="1"; filename="file-2.png"',
+			"Content-Type: image/png",
+			"",
+			"fake-content-2",
 			`--${boundary}--`,
 		].join("\r\n");
 
@@ -1283,17 +1290,22 @@ suite("Post-transaction attachment upload behavior", () => {
 		expect(result.errors).toBeUndefined();
 		expect(result.data.createEvent.id).toBeDefined();
 
-		// post-transaction cleanup checks
-		// Verify the correct cleanup operations occurred
-		expect(deleteSpy).toHaveBeenCalled();
-		expect(removeObjectSpy).toHaveBeenCalled();
+		// Two upload attempts: first success, second failure
+		expect(putObjectSpy).toHaveBeenCalledTimes(2);
 
-		// Verify event exists but has no attachments
+		// DB cleanup triggered
+		expect(deleteSpy).toHaveBeenCalledTimes(1);
+
+		// Only the successfully uploaded object is removed
+		expect(removeObjectSpy).toHaveBeenCalledTimes(1);
+
+		// Verify DB rows are cleared
 		const eventAttachments =
 			await server.drizzleClient.query.eventAttachmentsTable.findMany({
 				where: (fields, operators) =>
 					operators.eq(fields.eventId, result.data.createEvent.id),
 			});
+
 		expect(eventAttachments).toHaveLength(0);
 	});
 
