@@ -447,7 +447,7 @@ suite("Mutation field createEvent", () => {
 			const errorMessage = invalidResult.errors?.[0]?.message;
 			expect(
 				errorMessage?.includes("Upload value invalid") ||
-				errorMessage?.includes("Graphql validation error"),
+					errorMessage?.includes("Graphql validation error"),
 			).toBe(true);
 		});
 
