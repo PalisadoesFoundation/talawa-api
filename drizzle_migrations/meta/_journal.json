@@ -134,13 +134,6 @@
       "when": 1768734526090,
       "tag": "20260118110846_shallow_stephen_strange",
       "breakpoints": true
-    },
-    {
-      "idx": 26,
-      "version": "7",
-      "when": 1769032323100,
-      "tag": "20260122030428_fix_unique_index",
-      "breakpoints": true
     }
   ]
 }

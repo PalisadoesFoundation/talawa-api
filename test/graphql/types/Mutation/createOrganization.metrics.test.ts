@@ -268,7 +268,7 @@ describe("createOrganization mutation performance tracking", () => {
 		expect(avatarUploadOp?.ms).toBeGreaterThanOrEqual(0);
 	});
 
-	it("should track metrics even when mutation fails", async () => {
+	it("should track metrics when mutation fails due to authentication", async () => {
 		const initialSnapshots = server.getMetricsSnapshots?.() ?? [];
 
 		// Simulate authentication failure by not providing token
