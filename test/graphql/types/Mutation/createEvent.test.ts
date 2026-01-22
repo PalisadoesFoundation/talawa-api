@@ -1152,3 +1152,158 @@ suite("Default Agenda Folder and Category Creation", () => {
 		expect(new Set(defaultCategories.map((c) => c.eventId)).size).toBe(2);
 	});
 });
+
+suite("Post-transaction attachment upload behavior", () => {
+	afterEach(() => {
+		vi.restoreAllMocks();
+	});
+
+	test("successfully uploads attachments to MinIO after event creation", async () => {
+		const organizationId = await createTestOrganization();
+
+		const putObjectSpy = vi.spyOn(server.minio.client, "putObject");
+
+		const boundary = `----WebKitFormBoundary${Math.random().toString(36)}`;
+
+		const operations = JSON.stringify({
+			query: `
+		mutation CreateEvent($input: MutationCreateEventInput!) {
+			createEvent(input: $input) {
+			id
+			}
+		}
+		`,
+			variables: {
+				input: {
+					...baseEventInput(organizationId),
+					attachments: [null],
+				},
+			},
+		});
+
+		const map = JSON.stringify({
+			"0": ["variables.input.attachments.0"],
+		});
+
+		const body = [
+			`--${boundary}`,
+			'Content-Disposition: form-data; name="operations"',
+			"",
+			operations,
+			`--${boundary}`,
+			'Content-Disposition: form-data; name="map"',
+			"",
+			map,
+			`--${boundary}`,
+			'Content-Disposition: form-data; name="0"; filename="agenda.pdf"',
+			"Content-Type: image/jpeg",
+			"",
+			"fake-pdf-content",
+			`--${boundary}--`,
+		].join("\r\n");
+
+		const response = await server.inject({
+			method: "POST",
+			url: "/graphql",
+			headers: {
+				authorization: `bearer ${adminAuthToken}`,
+				"content-type": `multipart/form-data; boundary=${boundary}`,
+			},
+			payload: body,
+		});
+
+		const result = JSON.parse(response.body);
+
+		expect(result.errors).toBeUndefined();
+		expect(result.data.createEvent.id).toBeDefined();
+		expect(putObjectSpy).toHaveBeenCalledTimes(1);
+	});
+
+	test("cleans up DB rows and MinIO objects when attachment upload fails", async () => {
+		const organizationId = await createTestOrganization();
+
+		vi.spyOn(server.minio.client, "putObject").mockRejectedValue(
+			new Error("upload failed"),
+		);
+
+		const removeObjectSpy = vi.spyOn(server.minio.client, "removeObject");
+		const deleteSpy = vi.spyOn(server.drizzleClient, "delete");
+
+		const boundary = `----WebKitFormBoundary${Math.random().toString(36)}`;
+
+		const operations = JSON.stringify({
+			query: `
+		mutation CreateEvent($input: MutationCreateEventInput!) {
+			createEvent(input: $input) {
+			id
+			}
+		}
+		`,
+			variables: {
+				input: {
+					...baseEventInput(organizationId),
+					attachments: [null],
+				},
+			},
+		});
+
+		const map = JSON.stringify({
+			"0": ["variables.input.attachments.0"],
+		});
+
+		const body = [
+			`--${boundary}`,
+			'Content-Disposition: form-data; name="operations"',
+			"",
+			operations,
+			`--${boundary}`,
+			'Content-Disposition: form-data; name="map"',
+			"",
+			map,
+			`--${boundary}`,
+			'Content-Disposition: form-data; name="0"; filename="file.png"',
+			"Content-Type: image/png",
+			"",
+			"fake-content",
+			`--${boundary}--`,
+		].join("\r\n");
+
+		const response = await server.inject({
+			method: "POST",
+			url: "/graphql",
+			headers: {
+				authorization: `bearer ${adminAuthToken}`,
+				"content-type": `multipart/form-data; boundary=${boundary}`,
+			},
+			payload: body,
+		});
+
+		const result = JSON.parse(response.body);
+
+		expect(result.errors).toBeUndefined();
+		expect(result.data.createEvent.id).toBeDefined();
+
+		// post-transaction cleanup checks
+		expect(deleteSpy).toHaveBeenCalled();
+		expect(removeObjectSpy).toHaveBeenCalled();
+	});
+
+	test("skips upload logic when attachments are undefined", async () => {
+		const organizationId = await createTestOrganization();
+
+		const putObjectSpy = vi.spyOn(server.minio.client, "putObject");
+
+		const result = await createEvent({
+			input: {
+				...baseEventInput(organizationId),
+				// attachments intentionally omitted
+			},
+		});
+
+		expect(result.errors).toBeUndefined();
+		expect(result.data?.createEvent).toBeDefined();
+
+		// Upload block must not run
+		expect(putObjectSpy).not.toHaveBeenCalled();
+	});
+});
