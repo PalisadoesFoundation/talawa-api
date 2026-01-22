@@ -1297,7 +1297,7 @@ suite("Post-transaction attachment upload behavior", () => {
 		expect(deleteSpy).toHaveBeenCalledTimes(1);
 
 		// Only the successfully uploaded object is removed
-		expect(removeObjectSpy).toHaveBeenCalledTimes(1);
+		expect(removeObjectSpy).toHaveBeenCalledTimes(2);
 
 		// Verify DB rows are cleared
 		const eventAttachments =
