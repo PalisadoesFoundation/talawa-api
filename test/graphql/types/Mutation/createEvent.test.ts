@@ -2,6 +2,10 @@ import { faker } from "@faker-js/faker";
 import type { ResultOf, VariablesOf } from "gql.tada";
 import type { ExecutionResult } from "graphql";
 import { afterEach, expect, suite, test, vi } from "vitest";
+import {
+	agendaCategoriesTable,
+	agendaFoldersTable,
+} from "~/src/drizzle/schema";
 import { recurrenceRulesTable } from "~/src/drizzle/tables/recurrenceRules";
 import type {
 	ArgumentsAssociatedResourcesNotFoundExtensions,
@@ -978,5 +982,204 @@ suite("Mutation field createEvent", () => {
 			expect(result.data.createEvent.id).toBeDefined();
 			expect(result.data.createEvent.startAt).toBe(input.startAt);
 		});
+	});
+});
+
+suite("Default Agenda Folder and Category Creation", () => {
+	afterEach(() => {
+		vi.restoreAllMocks();
+	});
+	test("creates default agenda folder and category for standalone events", async () => {
+		const organizationId = await createTestOrganization();
+
+		const result = await createEvent({
+			input: baseEventInput(organizationId),
+		});
+
+		expect(result.errors).toBeUndefined();
+		assertToBeNonNullish(result.data?.createEvent);
+
+		const eventId = result.data.createEvent.id;
+
+		const defaultFolder =
+			await server.drizzleClient.query.agendaFoldersTable.findFirst({
+				where: (fields, operators) => operators.eq(fields.eventId, eventId),
+			});
+
+		const defaultCategory =
+			await server.drizzleClient.query.agendaCategoriesTable.findFirst({
+				where: (fields, operators) => operators.eq(fields.eventId, eventId),
+			});
+
+		expect(defaultFolder).toEqual(
+			expect.objectContaining({
+				eventId,
+				organizationId,
+				isDefaultFolder: true,
+				sequence: 1,
+				name: "Default",
+				creatorId: adminUserId,
+			}),
+		);
+
+		expect(defaultCategory).toEqual(
+			expect.objectContaining({
+				eventId,
+				organizationId,
+				isDefaultCategory: true,
+				name: "Default",
+				creatorId: adminUserId,
+			}),
+		);
+	});
+
+	test("creates default agenda folder and category for recurring events", async () => {
+		const organizationId = await createTestOrganization();
+
+		const result = await createEvent({
+			input: {
+				...baseEventInput(organizationId),
+				recurrence: {
+					frequency: "WEEKLY",
+					interval: 1,
+					count: 3,
+				},
+			},
+		});
+
+		expect(result.errors).toBeUndefined();
+		assertToBeNonNullish(result.data?.createEvent);
+
+		const eventId = result.data.createEvent.id;
+
+		const defaultFolder =
+			await server.drizzleClient.query.agendaFoldersTable.findFirst({
+				where: (fields, operators) => operators.eq(fields.eventId, eventId),
+			});
+
+		const defaultCategory =
+			await server.drizzleClient.query.agendaCategoriesTable.findFirst({
+				where: (fields, operators) => operators.eq(fields.eventId, eventId),
+			});
+
+		expect(defaultFolder?.isDefaultFolder).toBe(true);
+		expect(defaultCategory?.isDefaultCategory).toBe(true);
+	});
+
+	test("rolls back transaction if default agenda folder insert fails", async () => {
+		const organizationId = await createTestOrganization();
+
+		vi.spyOn(server.drizzleClient, "transaction").mockImplementation(
+			async (callback) => {
+				const mockTx = {
+					...server.drizzleClient,
+					insert: vi.fn().mockImplementation((table) => {
+						if (table === agendaFoldersTable) {
+							return {
+								values: vi.fn().mockReturnThis(),
+								returning: vi.fn().mockResolvedValue([]),
+							};
+						}
+						// Return a mock for all other tables to avoid real database writes
+						return {
+							values: vi.fn().mockReturnThis(),
+							returning: vi.fn().mockResolvedValue([
+								{
+									id: faker.string.uuid(),
+									name: "Test Event",
+									organizationId,
+									creatorId: adminUserId,
+								},
+							]),
+						};
+					}),
+				};
+
+				return callback(mockTx as unknown as Parameters<typeof callback>[0]);
+			},
+		);
+
+		const result = await createEvent({
+			input: baseEventInput(organizationId),
+		});
+
+		expect(result.data?.createEvent).toBeNull();
+		expect(result.errors?.[0]?.extensions?.code).toBe("unexpected");
+	});
+
+	test("rolls back transaction if default agenda category insert fails", async () => {
+		const organizationId = await createTestOrganization();
+
+		vi.spyOn(server.drizzleClient, "transaction").mockImplementation(
+			async (callback) => {
+				const mockTx = {
+					...server.drizzleClient,
+					insert: vi.fn().mockImplementation((table) => {
+						if (table === agendaCategoriesTable) {
+							return {
+								values: vi.fn().mockReturnThis(),
+								returning: vi.fn().mockResolvedValue([]),
+							};
+						}
+						// Return a mock for all other tables to avoid real database writes
+						return {
+							values: vi.fn().mockReturnThis(),
+							returning: vi.fn().mockResolvedValue([
+								{
+									id: faker.string.uuid(),
+									name: "Test Event",
+									organizationId,
+									creatorId: adminUserId,
+								},
+							]),
+						};
+					}),
+				};
+
+				return callback(mockTx as unknown as Parameters<typeof callback>[0]);
+			},
+		);
+
+		const result = await createEvent({
+			input: baseEventInput(organizationId),
+		});
+
+		expect(result.data?.createEvent).toBeNull();
+		expect(result.errors?.[0]?.extensions?.code).toBe("unexpected");
+	});
+
+	test("creates separate default folder and category for multiple events", async () => {
+		const organizationId = await createTestOrganization();
+
+		const event1 = await createEvent({
+			input: baseEventInput(organizationId),
+		});
+
+		const event2 = await createEvent({
+			input: { ...baseEventInput(organizationId), name: "Second Event" },
+		});
+
+		assertToBeNonNullish(event1.data?.createEvent);
+		assertToBeNonNullish(event2.data?.createEvent);
+
+		const defaultFolders =
+			await server.drizzleClient.query.agendaFoldersTable.findMany({
+				where: (fields, operators) =>
+					operators.eq(fields.organizationId, organizationId),
+			});
+
+		const defaultCategories =
+			await server.drizzleClient.query.agendaCategoriesTable.findMany({
+				where: (fields, operators) =>
+					operators.eq(fields.organizationId, organizationId),
+			});
+
+		expect(defaultFolders.filter((f) => f.isDefaultFolder)).toHaveLength(2);
+		expect(new Set(defaultFolders.map((f) => f.eventId)).size).toBe(2);
+
+		expect(defaultCategories.filter((c) => c.isDefaultCategory)).toHaveLength(
+			2,
+		);
+		expect(new Set(defaultCategories.map((c) => c.eventId)).size).toBe(2);
 	});
 });
