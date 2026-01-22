@@ -1198,7 +1198,7 @@ suite("Post-transaction attachment upload behavior", () => {
 			'Content-Disposition: form-data; name="0"; filename="test.jpg"',
 			"Content-Type: image/jpeg",
 			"",
-			"fake-pdf-content",
+			"fake-image-content",
 			`--${boundary}--`,
 		].join("\r\n");
 
@@ -1286,6 +1286,17 @@ suite("Post-transaction attachment upload behavior", () => {
 		// post-transaction cleanup checks
 		expect(deleteSpy).toHaveBeenCalled();
 		expect(removeObjectSpy).toHaveBeenCalled();
+		// Verify the correct cleanup operations occurred
+		expect(deleteSpy).toHaveBeenCalled();
+		expect(removeObjectSpy).toHaveBeenCalled();
+
+		// Verify event exists but has no attachments
+		const eventAttachments =
+			await server.drizzleClient.query.eventAttachmentsTable.findMany({
+				where: (fields, operators) =>
+					operators.eq(fields.eventId, result.data.createEvent.id),
+			});
+		expect(eventAttachments).toHaveLength(0);
 	});
 
 	test("skips upload logic when attachments are undefined", async () => {
