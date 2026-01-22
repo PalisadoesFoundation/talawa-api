@@ -1284,8 +1284,6 @@ suite("Post-transaction attachment upload behavior", () => {
 		expect(result.data.createEvent.id).toBeDefined();
 
 		// post-transaction cleanup checks
-		expect(deleteSpy).toHaveBeenCalled();
-		expect(removeObjectSpy).toHaveBeenCalled();
 		// Verify the correct cleanup operations occurred
 		expect(deleteSpy).toHaveBeenCalled();
 		expect(removeObjectSpy).toHaveBeenCalled();
