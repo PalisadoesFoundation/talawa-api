@@ -4,7 +4,7 @@ import { venueAttachmentMimeTypeEnum } from "~/src/drizzle/enums/venueAttachment
 
 // Mock drizzle-orm itself to handle relations
 vi.mock("drizzle-orm", async (importOriginal) => {
-	const actual = await importOriginal<typeof import("drizzle-orm")>();
+	const actual = await importOriginal<typeof import("drizzle-orm/pg-core")>();
 
 	// Create a mock 'one' function for relations
 	const mockOne = vi.fn().mockImplementation((table, config) => ({
@@ -30,7 +30,7 @@ vi.mock("drizzle-orm", async (importOriginal) => {
 
 // Mock drizzle-orm/pg-core to capture index calls
 vi.mock("drizzle-orm/pg-core", async (importOriginal) => {
-	const actual = await importOriginal<typeof import("drizzle-orm")>();
+	const actual = await importOriginal<typeof import("drizzle-orm/pg-core")>();
 
 	// Mock index function
 	const mockIndex = vi.fn().mockReturnValue({
@@ -351,22 +351,23 @@ describe("venueAttachments.ts", () => {
 
 	describe("Relation Configuration Verification", () => {
 		describe("venueAttachmentsTableRelations", () => {
-			it("should verify that three relations are defined", async () => {
-				// Access the mocked drizzle-orm to check what happened during module load
+			// Helper function to get the relation configuration
+			async function getVenueAttachmentsRelationConfig() {
 				const drizzle = await import("drizzle-orm");
 				const mockedRelations = drizzle.relations as ReturnType<typeof vi.fn>;
 
-				// Find the call where relations() was called with venueAttachmentsTable
 				const venueAttachmentsCall = mockedRelations.mock.calls.find(
 					(call) => call[0] === venueAttachmentsTable,
 				);
 
-				expect(venueAttachmentsCall).toBeDefined();
-				if (!venueAttachmentsCall) return;
+				if (!venueAttachmentsCall) {
+					throw new Error(
+						"venueAttachmentsTable not found in relations() calls",
+					);
+				}
 
 				const configFn = venueAttachmentsCall[1];
 
-				// Execute the config function with spies to capture relation definitions
 				const capturedRelations: Array<{
 					config: {
 						fields: unknown[];
@@ -382,8 +383,14 @@ describe("venueAttachments.ts", () => {
 
 				const spyMany = vi.fn();
 
-				// Run the original config function
 				configFn({ one: spyOne, many: spyMany });
+
+				return { capturedRelations, spyOne };
+			}
+
+			it("should verify that three relations are defined", async () => {
+				const { spyOne, capturedRelations } =
+					await getVenueAttachmentsRelationConfig();
 
 				// Should have created exactly 3 relations
 				expect(spyOne).toHaveBeenCalledTimes(3);
@@ -391,34 +398,7 @@ describe("venueAttachments.ts", () => {
 			});
 
 			it("should have creator relation mapping creatorId to users.id", async () => {
-				const drizzle = await import("drizzle-orm");
-				const mockedRelations = drizzle.relations as ReturnType<typeof vi.fn>;
-
-				const venueAttachmentsCall = mockedRelations.mock.calls.find(
-					(call) => call[0] === venueAttachmentsTable,
-				);
-
-				expect(venueAttachmentsCall).toBeDefined();
-				if (!venueAttachmentsCall) return;
-
-				const configFn = venueAttachmentsCall[1];
-
-				const capturedRelations: Array<{
-					config: {
-						fields: unknown[];
-						references: unknown[];
-						relationName?: string;
-					};
-				}> = [];
-
-				const spyOne = vi.fn().mockImplementation((table, config) => {
-					capturedRelations.push({ config });
-					return { ...config, _table: table };
-				});
-
-				const spyMany = vi.fn();
-
-				configFn({ one: spyOne, many: spyMany });
+				const { capturedRelations } = await getVenueAttachmentsRelationConfig();
 
 				// Find the creator relation by its field
 				const creatorRelation = capturedRelations.find((rel) => {
@@ -448,34 +428,7 @@ describe("venueAttachments.ts", () => {
 			});
 
 			it("should have updater relation mapping updaterId to users.id", async () => {
-				const drizzle = await import("drizzle-orm");
-				const mockedRelations = drizzle.relations as ReturnType<typeof vi.fn>;
-
-				const venueAttachmentsCall = mockedRelations.mock.calls.find(
-					(call) => call[0] === venueAttachmentsTable,
-				);
-
-				expect(venueAttachmentsCall).toBeDefined();
-				if (!venueAttachmentsCall) return;
-
-				const configFn = venueAttachmentsCall[1];
-
-				const capturedRelations: Array<{
-					config: {
-						fields: unknown[];
-						references: unknown[];
-						relationName?: string;
-					};
-				}> = [];
-
-				const spyOne = vi.fn().mockImplementation((table, config) => {
-					capturedRelations.push({ config });
-					return { ...config, _table: table };
-				});
-
-				const spyMany = vi.fn();
-
-				configFn({ one: spyOne, many: spyMany });
+				const { capturedRelations } = await getVenueAttachmentsRelationConfig();
 
 				// Find the updater relation
 				const updaterRelation = capturedRelations.find((rel) => {
@@ -502,34 +455,7 @@ describe("venueAttachments.ts", () => {
 			});
 
 			it("should have venue relation mapping venueId to venues.id", async () => {
-				const drizzle = await import("drizzle-orm");
-				const mockedRelations = drizzle.relations as ReturnType<typeof vi.fn>;
-
-				const venueAttachmentsCall = mockedRelations.mock.calls.find(
-					(call) => call[0] === venueAttachmentsTable,
-				);
-
-				expect(venueAttachmentsCall).toBeDefined();
-				if (!venueAttachmentsCall) return;
-
-				const configFn = venueAttachmentsCall[1];
-
-				const capturedRelations: Array<{
-					config: {
-						fields: unknown[];
-						references: unknown[];
-						relationName?: string;
-					};
-				}> = [];
-
-				const spyOne = vi.fn().mockImplementation((table, config) => {
-					capturedRelations.push({ config });
-					return { ...config, _table: table };
-				});
-
-				const spyMany = vi.fn();
-
-				configFn({ one: spyOne, many: spyMany });
+				const { capturedRelations } = await getVenueAttachmentsRelationConfig();
 
 				// Find the venue relation
 				const venueRelation = capturedRelations.find((rel) => {
