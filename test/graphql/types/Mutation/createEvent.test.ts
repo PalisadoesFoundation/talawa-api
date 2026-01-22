@@ -1,5 +1,6 @@
 import { Readable } from "node:stream";
 import { faker } from "@faker-js/faker";
+import { eq } from "drizzle-orm";
 import type { ResultOf, VariablesOf } from "gql.tada";
 import type { ExecutionResult } from "graphql";
 import type { FileUpload } from "graphql-upload-minimal";
@@ -8,6 +9,7 @@ import {
 	agendaCategoriesTable,
 	agendaFoldersTable,
 } from "~/src/drizzle/schema";
+import { eventsTable } from "~/src/drizzle/tables/events";
 import { recurrenceRulesTable } from "~/src/drizzle/tables/recurrenceRules";
 import type {
 	ArgumentsAssociatedResourcesNotFoundExtensions,
@@ -1238,7 +1240,6 @@ suite("Default Agenda Folder and Category Creation", () => {
 
 		// Spy on rollback and cleanup methods
 
-		const logErrorSpy = vi.spyOn(server.log, "error");
 		const logInfoSpy = vi.spyOn(server.log, "info");
 
 		const fileUpload = new Promise((resolve) => {
@@ -1265,11 +1266,18 @@ suite("Default Agenda Folder and Category Creation", () => {
 		expect(result.errors).toBeDefined();
 		expect(result.errors?.length).toBeGreaterThan(0);
 
-		// Verify expected error was logged (upload failure)
-		expect(logErrorSpy).toHaveBeenCalledWith(
-			expect.objectContaining({ error: uploadError }),
-			expect.stringContaining("Failed to upload event attachments"),
-		);
+		// Verify rollback: Event should be deleted from DB
+		const rollbackEvents = await server.drizzleClient
+			.select()
+			.from(eventsTable)
+			.where(eq(eventsTable.organizationId, orgId));
+		expect(rollbackEvents.length).toBe(0);
+
+		// Verify expected error was returned
+		const error = result.errors?.[0];
+		expect(error).toBeDefined();
+		expect(error?.message).toBe("Failed to upload event attachments");
+		expect(error?.extensions?.code).toBe("upload_failed");
 
 		// Verify rollback success log
 		expect(logInfoSpy).toHaveBeenCalledWith(
