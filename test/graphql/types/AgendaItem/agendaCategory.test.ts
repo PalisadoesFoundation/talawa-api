@@ -70,11 +70,10 @@ describe("AgendaItem.category resolver (resolveCategory)", () => {
 		);
 	});
 
-	it("throws unexpected when agenda folder or event is missing", async () => {
+	it("throws unexpected when agenda folder, event, or organization is missing", async () => {
 		const { context, mocks } = createMockGraphQLContext(true, "admin-1");
 
 		mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValueOnce({
-			id: "admin-1",
 			role: "administrator",
 		} as never);
 
@@ -83,7 +82,9 @@ describe("AgendaItem.category resolver (resolveCategory)", () => {
 		);
 
 		mocks.drizzleClient.query.agendaFoldersTable.findFirst.mockResolvedValueOnce(
-			undefined,
+			{
+				event: undefined,
+			} as never,
 		);
 
 		const logSpy = vi.spyOn(context.log, "error");
@@ -93,7 +94,65 @@ describe("AgendaItem.category resolver (resolveCategory)", () => {
 		);
 
 		expect(logSpy).toHaveBeenCalledWith(
-			"Postgres select operation returned an empty array for an agenda item's folder or event id that isn't null.",
+			"Postgres select operation returned an empty array for an agenda item's folder, event, or organization id that isn't null.",
+		);
+	});
+
+	it("throws unexpected when agenda folder exists but event is missing", async () => {
+		const { context, mocks } = createMockGraphQLContext(true, "admin-1");
+
+		mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValueOnce({
+			role: "administrator",
+		} as never);
+
+		mocks.drizzleClient.query.agendaCategoriesTable.findFirst.mockResolvedValueOnce(
+			{ id: "category-1", name: "Category" } as never,
+		);
+
+		mocks.drizzleClient.query.agendaFoldersTable.findFirst.mockResolvedValueOnce(
+			{
+				event: undefined,
+			} as never,
+		);
+
+		const logSpy = vi.spyOn(context.log, "error");
+
+		await expect(resolveCategory(baseAgendaItem, {}, context)).rejects.toThrow(
+			new TalawaGraphQLError({ extensions: { code: "unexpected" } }),
+		);
+
+		expect(logSpy).toHaveBeenCalledWith(
+			"Postgres select operation returned an empty array for an agenda item's folder, event, or organization id that isn't null.",
+		);
+	});
+
+	it("throws unexpected when agenda event exists but organization is missing", async () => {
+		const { context, mocks } = createMockGraphQLContext(true, "admin-1");
+
+		mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValueOnce({
+			role: "administrator",
+		} as never);
+
+		mocks.drizzleClient.query.agendaCategoriesTable.findFirst.mockResolvedValueOnce(
+			{ id: "category-1", name: "Category" } as never,
+		);
+
+		mocks.drizzleClient.query.agendaFoldersTable.findFirst.mockResolvedValueOnce(
+			{
+				event: {
+					organization: undefined,
+				},
+			} as never,
+		);
+
+		const logSpy = vi.spyOn(context.log, "error");
+
+		await expect(resolveCategory(baseAgendaItem, {}, context)).rejects.toThrow(
+			new TalawaGraphQLError({ extensions: { code: "unexpected" } }),
+		);
+
+		expect(logSpy).toHaveBeenCalledWith(
+			"Postgres select operation returned an empty array for an agenda item's folder, event, or organization id that isn't null.",
 		);
 	});
 

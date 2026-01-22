@@ -107,7 +107,57 @@ describe("AgendaItem.url resolver", () => {
 		);
 
 		expect(logSpy).toHaveBeenCalledWith(
-			"Postgres select operation returned an empty array for an agenda item's event id that isn't null.",
+			"Postgres select operation returned an empty array for an agenda item's event or organization id that isn't null.",
+		);
+	});
+
+	it("throws unexpected when event exists but organization is missing", async () => {
+		mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValueOnce({
+			id: "user-1",
+			role: "administrator",
+		} as never);
+
+		mocks.drizzleClient.query.agendaFoldersTable.findFirst.mockResolvedValueOnce(
+			{
+				id: "folder-1",
+				event: {
+					organization: undefined,
+				},
+			} as never,
+		);
+
+		const logSpy = vi.spyOn(ctx.log, "error");
+
+		await expect(resolveUrl(mockAgendaItem, {}, ctx)).rejects.toThrow(
+			new TalawaGraphQLError({ extensions: { code: "unexpected" } }),
+		);
+
+		expect(logSpy).toHaveBeenCalledWith(
+			"Postgres select operation returned an empty array for an agenda item's event or organization id that isn't null.",
+		);
+	});
+
+	it("throws unauthorized_action when user has non-admin organization membership", async () => {
+		mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValueOnce({
+			id: "user-1",
+			role: "regular",
+		} as never);
+
+		mocks.drizzleClient.query.agendaFoldersTable.findFirst.mockResolvedValueOnce(
+			{
+				id: "folder-1",
+				event: {
+					organization: {
+						membershipsWhereOrganization: [{ role: "regular" }],
+					},
+				},
+			} as never,
+		);
+
+		await expect(resolveUrl(mockAgendaItem, {}, ctx)).rejects.toThrow(
+			new TalawaGraphQLError({
+				extensions: { code: "unauthorized_action" },
+			}),
 		);
 	});
 
