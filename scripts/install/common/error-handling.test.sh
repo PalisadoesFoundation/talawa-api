@@ -116,6 +116,8 @@ test_trap_int() {
     
     # Create a script that waits for SIGINT and registers a cleanup task
     local test_script=$(mktemp)
+    local output_file=$(mktemp)
+    
     cat <<EOF > "$test_script"
 source '$LIB_PATH'
 setup_error_handling
@@ -125,8 +127,8 @@ echo "Waiting..."
 while true; do sleep 0.1; done
 EOF
     
-    # Run in background
-    bash "$test_script" > /dev/null 2>&1 &
+    # Run in background and redirect stdout/stderr to output file
+    bash "$test_script" > "$output_file" 2>&1 &
     local pid=$!
     
     # Wait briefly for it to start
@@ -139,23 +141,22 @@ EOF
     wait $pid 2>/dev/null
     local exit_code=$?
     
+    # Read output
+    local output=$(cat "$output_file")
+    
     rm "$test_script"
+    rm "$output_file"
     
-    # Note: On Windows/Git Bash, exit codes for signals can vary or be 128+signal
-    # For robust testing, we primarily check if the cleanup happened (via output log if we captured it)
-    # But since we're not capturing output easily from background, checking exit code is the standard way.
-    # CodeRabbit suggested 130 (128+2). 
-    # If it fails with 149 (128+21?), it might be platform specific behavior.
-    # However, strict compliance with the library code `exit 130` means it SHOULD be 130.
+    # Verify both cleanup execution AND exit code
+    local cleanup_executed=0
+    if echo "$output" | grep -q "INT Cleanup Executed"; then
+        cleanup_executed=1
+    fi
     
-    if [ $exit_code -eq 130 ]; then
+    if [ $cleanup_executed -eq 1 ] && [ $exit_code -eq 130 ]; then
         test_pass
     else
-        # Allow fallback for Windows/Git Bash specific quirks if necessary, 
-        # but let's try to enforce strictness first.
-        # If the trap is executed, 'exit 130' should run.
-        # If it returns something else, maybe the trap wasn't executed or 'kill' behavior differs?
-        test_fail "Expected exit code 130 for SIGINT, got $exit_code"
+        test_fail "Cleanup Executed: $cleanup_executed, Exit Code: $exit_code (Expected 130). Output:\n$output"
     fi
 }
 
@@ -164,6 +165,8 @@ test_trap_term() {
     
     # Create a script that waits for SIGTERM and registers a cleanup task
     local test_script=$(mktemp)
+    local output_file=$(mktemp)
+    
     cat <<EOF > "$test_script"
 source '$LIB_PATH'
 setup_error_handling
@@ -173,7 +176,7 @@ while true; do sleep 0.1; done
 EOF
     
     # Run in background
-    bash "$test_script" > /dev/null 2>&1 &
+    bash "$test_script" > "$output_file" 2>&1 &
     local pid=$!
     
     sleep 0.5
@@ -184,13 +187,22 @@ EOF
     wait $pid 2>/dev/null
     local exit_code=$?
     
-    rm "$test_script"
+    # Read output
+    local output=$(cat "$output_file")
     
-    # Exit code should be 143 for SIGTERM
-    if [ $exit_code -eq 143 ]; then
+    rm "$test_script"
+    rm "$output_file"
+    
+    # Verify both cleanup execution AND exit code
+    local cleanup_executed=0
+    if echo "$output" | grep -q "TERM Cleanup Executed"; then
+        cleanup_executed=1
+    fi
+    
+    if [ $cleanup_executed -eq 1 ] && [ $exit_code -eq 143 ]; then
         test_pass
     else
-        test_fail "Expected exit code 143 for SIGTERM, got $exit_code"
+        test_fail "Cleanup Executed: $cleanup_executed, Exit Code: $exit_code (Expected 143). Output:\n$output"
     fi
 }
 
