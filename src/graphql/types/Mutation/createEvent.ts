@@ -518,8 +518,8 @@ builder.mutationField("createEvent", (t) =>
 				const createdEventAttachments = createdEventResult.attachments ?? [];
 
 				try {
-					await Promise.all(
-						createdEventAttachments.map((attachment, index) => {
+					const uploadPromises = createdEventAttachments.map(
+						(attachment, index) => {
 							const file = attachments[index];
 							if (!file) return undefined;
 
@@ -532,8 +532,10 @@ builder.mutationField("createEvent", (t) =>
 									"content-type": attachment.mimeType,
 								},
 							);
-						}),
+						},
 					);
+
+					await Promise.all(uploadPromises.filter(Boolean));
 				} catch (error) {
 					ctx.log.error(
 						{ error, eventId: createdEventResult.id },
@@ -547,7 +549,11 @@ builder.mutationField("createEvent", (t) =>
 							.where(eq(eventAttachmentsTable.eventId, createdEventResult.id));
 					} catch (cleanupError) {
 						ctx.log.error(
-							{ cleanupError, eventId: createdEventResult.id },
+							{
+								cleanupError,
+								eventId: createdEventResult.id,
+								attachmentNames: createdEventAttachments.map((a) => a.name),
+							},
 							"Failed to clean up attachment records after upload failure",
 						);
 					}
