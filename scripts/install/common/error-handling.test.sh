@@ -117,7 +117,7 @@ test_idempotency_failure() {
 }
 
 test_idempotency_args() {
-    test_start "run_idempotent validates arguments"
+    test_start "run_idempotent validates missing arguments"
     
     local output
     # Run with missing args
@@ -128,6 +128,21 @@ test_idempotency_args() {
         test_pass
     else
         test_fail "Expected argument validation error. Output:\n$output"
+    fi
+}
+
+test_idempotency_empty_key() {
+    test_start "run_idempotent validates empty key"
+
+    local output
+    # Run with empty key
+    output=$(bash -c "source '$LIB_PATH'; \
+        run_idempotent '' 'some_command'" 2>&1 || true)
+        
+    if echo "$output" | grep -q "requires at least 2 arguments"; then
+        test_pass
+    else
+        test_fail "Expected validation error for empty key. Output:\n$output"
     fi
 }
 
@@ -289,7 +304,7 @@ test_dir_perms() {
         test_pass
     else
         # On Windows (Git Bash), chmod might not work as expected or stat might report differently (e.g. 755 or 777)
-        if [[ "$OSTYPE" == "msys" || "$OSTYPE" == "cygwin" || "$OS" == "Windows_NT" ]]; then
+        if [[ "${OSTYPE:-}" == "msys" || "${OSTYPE:-}" == "cygwin" || "${OS:-}" == "Windows_NT" ]]; then
              echo -e "${YELLOW}⚠ WARN: Permissions are $perms (Expected 700). Ignoring on Windows.${NC}"
              test_pass
         else
@@ -303,10 +318,11 @@ test_cleanup_lifo
 test_idempotency
 test_idempotency_failure
 test_idempotency_args
+test_idempotency_empty_key
 test_trap_err
 # Skip INT/TERM tests on Windows if they are unreliable in this environment
 # or make them warn-only if we suspect environmental issues with 'kill' and 'trap' in Git Bash
-if [[ "$OSTYPE" == "msys" || "$OSTYPE" == "cygwin" || "$OS" == "Windows_NT" ]]; then
+if [[ "${OSTYPE:-}" == "msys" || "${OSTYPE:-}" == "cygwin" || "${OS:-}" == "Windows_NT" ]]; then
     echo -e "${YELLOW}⚠ WARN: Skipping signal tests on Windows (unreliable in CI/GitBash environment).${NC}"
 else
     test_trap_int

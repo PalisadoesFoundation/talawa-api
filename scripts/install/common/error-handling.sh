@@ -47,8 +47,8 @@ if [ -z "${__TALAWA_ERROR_HANDLING_SOURCED:-}" ]; then
     }
 
     run_idempotent() {
-      if [ $# -lt 2 ]; then
-          printf "✗ ERROR: run_idempotent requires at least 2 arguments (key and command)\n" >&2
+      if [ $# -lt 2 ] || [ -z "$1" ]; then
+          printf "✗ ERROR: run_idempotent requires at least 2 arguments (non-empty key and command)\n" >&2
           return 1
       fi
 
