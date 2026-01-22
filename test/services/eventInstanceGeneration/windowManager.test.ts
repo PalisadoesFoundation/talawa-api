@@ -221,6 +221,68 @@ suite("windowManager", () => {
 				`Failed to initialize Generation window for organization ${mockOrganizationId}:`,
 			);
 		});
+
+		test("returns fallback config and logs warning when insert throws but existing config is found", async () => {
+			const input: CreateGenerationWindowInput = {
+				organizationId: mockOrganizationId,
+				createdById: mockUserId,
+			};
+
+			const insertError = new Error("Unique constraint violation");
+
+			const mockFallbackConfig = {
+				id: faker.string.uuid(),
+				organizationId: mockOrganizationId,
+				hotWindowMonthsAhead: 12,
+				historyRetentionMonths: 3,
+				currentWindowEndDate: new Date("2026-01-01T00:00:00Z"),
+				retentionStartDate: new Date("2024-10-01T00:00:00Z"),
+				processingPriority: 5,
+				maxInstancesPerRun: 1000,
+				createdAt: new Date(),
+				updatedAt: new Date(),
+			};
+
+			// First findFirst call returns undefined (no existing config found initially)
+			// This allows us to proceed to the insert path
+			(mockDrizzleClient.query.eventGenerationWindowsTable.findFirst as Mock)
+				.mockResolvedValueOnce(undefined) // First call: no existing config
+				.mockResolvedValueOnce(mockFallbackConfig); // Second call in catch block: fallback config found
+
+			// Mock insert to throw an error
+			const mockInsertChain = {
+				values: vi.fn(() => ({
+					onConflictDoNothing: vi.fn(() => ({
+						returning: vi.fn().mockRejectedValue(insertError),
+					})),
+				})),
+			};
+			(mockDrizzleClient.insert as Mock).mockReturnValue(mockInsertChain);
+
+			const result = await initializeGenerationWindow(
+				input,
+				mockDrizzleClient,
+				mockLogger,
+			);
+
+			// Assert the function returns the fallback config
+			expect(result).toEqual(mockFallbackConfig);
+
+			// Assert logger.warn was called with correct message and payload
+			expect(mockLogger.warn).toHaveBeenCalledWith(
+				{
+					error: insertError,
+					hotWindowMonthsAhead: mockFallbackConfig.hotWindowMonthsAhead,
+					historyRetentionMonths: mockFallbackConfig.historyRetentionMonths,
+				},
+				`Insert failed but found existing Generation window for organization ${mockOrganizationId}`,
+			);
+
+			// Verify findFirst was called twice (initial check + fallback in catch)
+			expect(
+				mockDrizzleClient.query.eventGenerationWindowsTable.findFirst,
+			).toHaveBeenCalledTimes(2);
+		});
 	});
 
 	suite("extendGenerationWindow", () => {
