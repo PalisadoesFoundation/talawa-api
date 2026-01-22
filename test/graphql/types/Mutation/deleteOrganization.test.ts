@@ -1,6 +1,6 @@
 import { faker } from "@faker-js/faker";
 import { eq } from "drizzle-orm";
-import { expect, suite, test } from "vitest";
+import { expect, suite, test, vi } from "vitest";
 import { advertisementAttachmentsTable } from "~/src/drizzle/tables/advertisementAttachments";
 import { advertisementsTable } from "~/src/drizzle/tables/advertisements";
 import { chatsTable } from "~/src/drizzle/tables/chats";
@@ -664,41 +664,40 @@ suite("Mutation field deleteOrganization", () => {
 					creatorId: adminUserId,
 				});
 
-				const originalRemoveObjects = server.minio.client.removeObjects;
-				try {
-					server.minio.client.removeObjects = async () => {
+				const removeObjectsSpy = vi
+					.spyOn(server.minio.client, "removeObjects")
+					.mockImplementation(async () => {
 						throw new Error("Minio removal error");
-					};
+					});
 
-					const result = await mercuriusClient.mutate(
-						Mutation_deleteOrganization,
-						{
-							headers: { authorization: `bearer ${authToken}` },
-							variables: {
-								input: {
-									id: orgId,
-								},
+				const result = await mercuriusClient.mutate(
+					Mutation_deleteOrganization,
+					{
+						headers: { authorization: `bearer ${authToken}` },
+						variables: {
+							input: {
+								id: orgId,
 							},
 						},
-					);
+					},
+				);
 
-					// Error should be surfaced
-					expect(result.data?.deleteOrganization ?? null).toBeNull();
-					expect(result.errors).toBeDefined();
-					expect(result.errors?.[0]?.message).toContain("Minio removal error");
+				// Error should be surfaced
+				expect(result.data?.deleteOrganization ?? null).toBeNull();
+				expect(result.errors).toBeDefined();
+				expect(result.errors?.[0]?.message).toContain("Minio removal error");
 
-					// Verify organization WAS deleted (DB transaction committed before removeObjects)
-					// Since removeObjects is now outside the transaction, the DB delete succeeds
-					const orgExists = await server.drizzleClient
-						.select()
-						.from(organizationsTable)
-						.where(eq(organizationsTable.id, orgId))
-						.limit(1);
+				// Verify organization WAS deleted (DB transaction committed before removeObjects)
+				// Since removeObjects is now outside the transaction, the DB delete succeeds
+				const orgExists = await server.drizzleClient
+					.select()
+					.from(organizationsTable)
+					.where(eq(organizationsTable.id, orgId))
+					.limit(1);
 
-					expect(orgExists.length).toBe(0);
-				} finally {
-					server.minio.client.removeObjects = originalRemoveObjects;
-				}
+				expect(orgExists.length).toBe(0);
+
+				removeObjectsSpy.mockRestore();
 			},
 			SUITE_TIMEOUT,
 		);

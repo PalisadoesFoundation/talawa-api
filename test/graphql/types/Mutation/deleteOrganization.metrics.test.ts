@@ -115,8 +115,13 @@ describe("deleteOrganization mutation performance tracking", () => {
 		expect(result.errors?.[0]?.extensions?.code).toBeDefined();
 
 		// Verify performance metrics were still collected even on error
-		const snapshots = server.getMetricsSnapshots?.(1) ?? [];
+		const snapshots = server.getMetricsSnapshots?.(100) ?? [];
 		expect(snapshots.length).toBeGreaterThan(initialSnapshots.length);
+
+		// Verify the specific mutation metric is present
+		const latestSnapshot = snapshots[0];
+		assertToBeNonNullish(latestSnapshot);
+		expect(latestSnapshot.ops["mutation:deleteOrganization"]).toBeDefined();
 	});
 
 	it("should use correct operation name format", async () => {
