@@ -68,8 +68,10 @@ export default defineConfig({
 			"**/scripts/**",
 		],
 		coverage: {
-			provider: "v8", // or 'istanbul' if you prefer
+			provider: "v8",
 			reporter: ["text", "lcov", "html", "json"],
+			// Only include files that are actually touched by tests
+			all: false,
 			exclude: [
 				...(configDefaults.coverage?.exclude ?? []),
 				"dist/**",
@@ -80,7 +82,7 @@ export default defineConfig({
 				"docker/**",
 				"drizzle_migrations/**",
 				"envFiles/**",
-				"**/scripts/**", // Mirror test exclusion to exclude nested scripts
+				"**/scripts/**",
 				"vitest.*.config.ts",
 			],
 		},
