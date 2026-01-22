@@ -506,10 +506,15 @@ suite("Query field eventsByAttendee", () => {
 			const adminEvents = adminEventsResult.data?.eventsByVolunteer as Array<{
 				id: string;
 				name: string;
+				isGenerated?: boolean | null;
+				baseRecurringEventId?: string | null;
 			}>;
 			assertToBeNonNullish(adminEvents);
 			const instance = adminEvents.find(
-				(e) => e.name === "Attendee Recurring Instance",
+				(e) =>
+					e.name === "Attendee Recurring Instance" &&
+					e.isGenerated === true &&
+					e.baseRecurringEventId === baseEventId,
 			);
 			assertToBeNonNullish(instance);
 			const instanceId = instance.id;
@@ -784,9 +789,14 @@ suite("Query field eventsByAttendee", () => {
 			const adminEvents = adminEventsResult.data?.eventsByVolunteer as Array<{
 				id: string;
 				name: string;
+				isGenerated?: boolean | null;
+				baseRecurringEventId?: string | null;
 			}>;
 			const instance = adminEvents?.find(
-				(e) => e.name === "Mixed Test Recurring Event",
+				(e) =>
+					e.name === "Mixed Test Recurring Event" &&
+					e.isGenerated === true &&
+					e.baseRecurringEventId === baseEventId,
 			);
 
 			// Register user for the standalone event (uses eventId branch)
@@ -948,9 +958,14 @@ suite("Query field eventsByAttendee", () => {
 			const adminEvents = adminEventsResult.data?.eventsByVolunteer as Array<{
 				id: string;
 				name: string;
+				isGenerated?: boolean | null;
+				baseRecurringEventId?: string | null;
 			}>;
 			const instance = adminEvents?.find(
-				(e) => e.name === "Direct Cancelled Test Event",
+				(e) =>
+					e.name === "Direct Cancelled Test Event" &&
+					e.isGenerated === true &&
+					e.baseRecurringEventId === baseEventId,
 			);
 			assertToBeNonNullish(instance);
 			const instanceId = instance.id;
