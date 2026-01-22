@@ -5,6 +5,6 @@ DELETE FROM "event_generation_windows"
 WHERE "id" NOT IN (
   SELECT DISTINCT ON ("organization_id") "id"
   FROM "event_generation_windows"
-  ORDER BY "organization_id", "created_at" ASC
+  ORDER BY "organization_id", "created_at" ASC NULLS FIRST, "id"
 );--> statement-breakpoint
 CREATE UNIQUE INDEX "egw_organization_id_unique" ON "event_generation_windows" USING btree ("organization_id");--> statement-breakpoint
