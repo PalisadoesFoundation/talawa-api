@@ -98,14 +98,50 @@ describe("recurringEventInstancesTableInsertSchema", () => {
 		expect(result.success).toBe(true);
 	});
 
-	it("should reject invalid payloads", () => {
+	it("should allow optional and nullable fields", () => {
+		const payload = {
+			baseRecurringEventId: crypto.randomUUID(),
+			recurrenceRuleId: crypto.randomUUID(),
+			originalSeriesId: crypto.randomUUID(),
+			originalInstanceStartTime: new Date(),
+			actualStartTime: new Date(),
+			actualEndTime: new Date(),
+			organizationId: crypto.randomUUID(),
+			sequenceNumber: 1,
+			isCancelled: true,
+			totalCount: null,
+			version: "2",
+		};
+
+		const result = recurringEventInstancesTableInsertSchema.safeParse(payload);
+
+		expect(result.success).toBe(true);
+	});
+
+	it("should reject payload with invalid sequenceNumber (min constraint)", () => {
 		const invalidPayload = {
-			sequenceNumber: 0, // invalid: must be >= 1
+			baseRecurringEventId: crypto.randomUUID(),
+			recurrenceRuleId: crypto.randomUUID(),
+			originalSeriesId: crypto.randomUUID(),
+			originalInstanceStartTime: new Date(),
+			actualStartTime: new Date(),
+			actualEndTime: new Date(),
+			organizationId: crypto.randomUUID(),
+			sequenceNumber: 0, // violates min(1)
 		};
 
 		const result =
 			recurringEventInstancesTableInsertSchema.safeParse(invalidPayload);
 
 		expect(result.success).toBe(false);
+
+		if (!result.success) {
+			const issue = result.error.issues.find(
+				(i) => i.path[0] === "sequenceNumber",
+			);
+
+			expect(issue).toBeDefined();
+			expect(issue?.code).toBe("too_small");
+		}
 	});
 });
