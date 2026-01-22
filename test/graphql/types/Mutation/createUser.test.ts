@@ -800,9 +800,7 @@ suite("Mutation field createUser", () => {
 			expect(result.errors).toBeUndefined();
 			assertToBeNonNullish(result.data?.createUser);
 			assertToBeNonNullish(result.data.createUser.user);
-			// Note: naturalLanguageCode is not in the Mutation_createUser query selection,
-			// so we verify the mutation succeeded with the input instead
-			expect(result.data.createUser.user.id).toBeDefined();
+			expect(result.data.createUser.user.naturalLanguageCode).toBe("en");
 		});
 
 		test("should upload avatar when provided and verify putObject is called", async () => {
@@ -943,41 +941,35 @@ suite("Mutation field createUser", () => {
 				});
 			};
 
-			const transactionSpy = vi
-				.spyOn(server.drizzleClient, "transaction")
-				.mockImplementationOnce(
-					fakeTransaction as typeof server.drizzleClient.transaction,
-				);
+			vi.spyOn(server.drizzleClient, "transaction").mockImplementationOnce(
+				fakeTransaction as typeof server.drizzleClient.transaction,
+			);
 
-			try {
-				const result = await mercuriusClient.mutate(Mutation_createUser, {
-					headers: { authorization: `bearer ${authToken}` },
-					variables: {
-						input: {
-							emailAddress: `email${faker.string.ulid()}@email.com`,
-							isEmailAddressVerified: false,
-							name: "Test User",
-							password: "password",
-							role: "regular",
-						},
+			const result = await mercuriusClient.mutate(Mutation_createUser, {
+				headers: { authorization: `bearer ${authToken}` },
+				variables: {
+					input: {
+						emailAddress: `email${faker.string.ulid()}@email.com`,
+						isEmailAddressVerified: false,
+						name: "Test User",
+						password: "password",
+						role: "regular",
 					},
-				});
+				},
+			});
 
-				expect(result.data?.createUser).toBeNull();
-				expect(result.errors).toEqual(
-					expect.arrayContaining<TalawaGraphQLFormattedError>([
-						expect.objectContaining<TalawaGraphQLFormattedError>({
-							message: expect.any(String),
-							extensions: expect.objectContaining({
-								code: "unexpected",
-							}),
-							path: ["createUser"],
+			expect(result.data?.createUser).toBeNull();
+			expect(result.errors).toEqual(
+				expect.arrayContaining<TalawaGraphQLFormattedError>([
+					expect.objectContaining<TalawaGraphQLFormattedError>({
+						message: expect.any(String),
+						extensions: expect.objectContaining({
+							code: "unexpected",
 						}),
-					]),
-				);
-			} finally {
-				transactionSpy.mockRestore();
-			}
+						path: ["createUser"],
+					}),
+				]),
+			);
 		});
 
 		test("should surface error when storeRefreshToken throws", async () => {
