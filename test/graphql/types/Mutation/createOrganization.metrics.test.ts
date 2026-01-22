@@ -65,7 +65,9 @@ describe("createOrganization mutation performance tracking", () => {
 		expect(snapshots.length).toBeGreaterThan(initialSnapshots.length);
 
 		// Check the most recent snapshot for the mutation operation
-		const latestSnapshot = snapshots[0];
+		const latestSnapshot = snapshots.find(
+			(s) => s.ops["mutation:createOrganization"] !== undefined,
+		);
 		assertToBeNonNullish(latestSnapshot);
 		const op = latestSnapshot.ops["mutation:createOrganization"];
 

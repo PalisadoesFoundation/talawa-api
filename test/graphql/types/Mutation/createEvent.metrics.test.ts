@@ -83,7 +83,7 @@ describe("createEvent mutation performance tracking", () => {
 					startAt: new Date(Date.now() + 86400000).toISOString(),
 					endAt: new Date(Date.now() + 90000000).toISOString(),
 					allDay: false,
-					recurrence: null,
+
 					location: "Test Location",
 				},
 			},
@@ -165,12 +165,12 @@ describe("createEvent mutation performance tracking", () => {
 			headers: { authorization: `bearer ${authToken}` },
 			variables: {
 				input: {
-					name: "", // invalid
-					description: "Invalid event",
-					organizationId, // non-existent org would be better but simple valid check
-					startAt: "invalid-date",
-					endAt: "invalid-date",
-					isAllDay: false,
+					name: "Fail Event",
+					description: "This should fail due to invalid org",
+					organizationId: faker.string.uuid(), // Non-existent ID causing logic failure
+					startAt: new Date(Date.now() + 86400000).toISOString(),
+					endAt: new Date(Date.now() + 90000000).toISOString(),
+					allDay: false,
 					recurrence: null,
 					location: "Test Location",
 				},
