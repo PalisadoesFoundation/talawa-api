@@ -52,8 +52,8 @@ export const mutationCreateEventArgumentsSchema = z.object({
 
 		let attachments:
 			| (FileUpload & {
-					mimetype: z.infer<typeof eventAttachmentMimeTypeEnum>;
-			  })[]
+				mimetype: z.infer<typeof eventAttachmentMimeTypeEnum>;
+			})[]
 			| undefined;
 
 		if (arg.attachments !== undefined) {
@@ -69,9 +69,8 @@ export const mutationCreateEventArgumentsSchema = z.object({
 						ctx.addIssue({
 							code: "custom",
 							path: ["attachments", issue.path[0]],
-							message: `Mime type "${
-								rawAttachments[issue.path[0]]?.mimetype
-							}" is not allowed.`,
+							message: `Mime type "${rawAttachments[issue.path[0]]?.mimetype
+								}" is not allowed.`,
 						});
 					}
 				}
@@ -488,6 +487,20 @@ builder.mutationField("createEvent", (t) =>
 								})),
 							)
 							.returning();
+
+						await Promise.all(
+							createdEventAttachments.map((attachment, index) =>
+								ctx.minio.client.putObject(
+									ctx.minio.bucketName,
+									attachment.name,
+									attachments[index]!.createReadStream(),
+									undefined,
+									{
+										"content-type": attachment.mimeType,
+									},
+								),
+							),
+						);
 					}
 
 					const finalEvent = Object.assign(createdEvent, {

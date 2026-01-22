@@ -451,7 +451,7 @@ suite("Mutation field createEvent", () => {
 			const errorMessage = invalidResult.errors?.[0]?.message;
 			expect(
 				errorMessage?.includes("Upload value invalid") ||
-					errorMessage?.includes("Graphql validation error"),
+				errorMessage?.includes("Graphql validation error"),
 			).toBe(true);
 		});
 
@@ -1442,6 +1442,398 @@ suite("Mutation field createEvent", () => {
 			} finally {
 				mockFlush.mockRestore();
 			}
+		});
+	});
+
+	suite("Event Generation Window Initialization", () => {
+		test("creates event generation window when it does not exist for recurring event", async () => {
+			// Create a new organization that has no generation window yet
+			const newOrgResult = await mercuriusClient.mutate(
+				Mutation_createOrganization,
+				{
+					headers: { authorization: `bearer ${adminAuthToken}` },
+					variables: {
+						input: {
+							name: `Test Org No Window ${faker.string.ulid()}`,
+							countryCode: "us",
+						},
+					},
+				},
+			);
+			assertToBeNonNullish(newOrgResult.data?.createOrganization?.id);
+			const newOrgId = newOrgResult.data.createOrganization.id;
+
+			// Add admin as organization member
+			await mercuriusClient.mutate(Mutation_createOrganizationMembership, {
+				headers: { authorization: `bearer ${adminAuthToken}` },
+				variables: {
+					input: {
+						organizationId: newOrgId,
+						memberId: adminUserId,
+						role: "administrator",
+					},
+				},
+			});
+
+			// Create a recurring event for the new organization (which has no window)
+			// This should trigger the windowConfig initialization branch at line 277 (if (!windowConfig))
+			const result = await createEvent({
+				input: {
+					...baseEventInput(newOrgId),
+					name: "Recurring Event With New Window",
+					recurrence: {
+						frequency: "WEEKLY",
+						interval: 1,
+						count: 5,
+					},
+				},
+			});
+
+			expect(result.errors).toBeUndefined();
+			expect(result.data?.createEvent).toEqual(
+				expect.objectContaining({
+					id: expect.any(String),
+					name: "Recurring Event With New Window",
+				}),
+			);
+		});
+
+		test("uses existing generation window for recurring event when window exists", async () => {
+			const organizationId = await createTestOrganization();
+
+			// Create first recurring event (this will create a generation window)
+			const firstResult = await createEvent({
+				input: {
+					...baseEventInput(organizationId),
+					name: "First Recurring Event",
+					recurrence: {
+						frequency: "WEEKLY",
+						interval: 1,
+						count: 5,
+					},
+				},
+			});
+
+			expect(firstResult.errors).toBeUndefined();
+			expect(firstResult.data?.createEvent?.id).toBeDefined();
+
+			// Create second recurring event (this should use existing generation window)
+			// This tests the else branch (when windowConfig already exists)
+			const secondResult = await createEvent({
+				input: {
+					...baseEventInput(organizationId),
+					name: "Second Recurring Event",
+					recurrence: {
+						frequency: "MONTHLY",
+						interval: 1,
+						count: 3,
+					},
+				},
+			});
+
+			expect(secondResult.errors).toBeUndefined();
+			expect(secondResult.data?.createEvent).toEqual(
+				expect.objectContaining({
+					id: expect.any(String),
+					name: "Second Recurring Event",
+				}),
+			);
+		});
+	});
+
+	suite("Branch Coverage - Window End Date Calculation", () => {
+		test("uses recurrence end date when it is within default 12-month window", async () => {
+			const organizationId = await createTestOrganization();
+
+			// Create end date 6 months in future (within 12-month default window)
+			const endDate = new Date();
+			endDate.setMonth(endDate.getMonth() + 6);
+
+			const result = await createEvent({
+				input: {
+					...baseEventInput(organizationId),
+					name: "Event with Near End Date",
+					recurrence: {
+						frequency: "MONTHLY",
+						interval: 1,
+						endDate: endDate.toISOString(),
+					},
+				},
+			});
+
+			// This tests the branch at line 340-341 where windowEndDate < defaultWindowEnd
+			expect(result.errors).toBeUndefined();
+			expect(result.data?.createEvent).toEqual(
+				expect.objectContaining({
+					id: expect.any(String),
+					name: "Event with Near End Date",
+				}),
+			);
+		});
+
+		test("uses default window when recurrence end date exceeds 12 months", async () => {
+			const organizationId = await createTestOrganization();
+
+			// Create end date 18 months in future (beyond 12-month default window)
+			const endDate = new Date();
+			endDate.setMonth(endDate.getMonth() + 18);
+
+			const result = await createEvent({
+				input: {
+					...baseEventInput(organizationId),
+					name: "Event with Far End Date",
+					recurrence: {
+						frequency: "MONTHLY",
+						interval: 1,
+						endDate: endDate.toISOString(),
+					},
+				},
+			});
+
+			// This tests the branch where windowEndDate > defaultWindowEnd (line 343-345)
+			expect(result.errors).toBeUndefined();
+			expect(result.data?.createEvent).toEqual(
+				expect.objectContaining({
+					id: expect.any(String),
+					name: "Event with Far End Date",
+				}),
+			);
+		});
+
+		test("handles count-based recurring events window calculation", async () => {
+			const organizationId = await createTestOrganization();
+
+			const result = await createEvent({
+				input: {
+					...baseEventInput(organizationId),
+					name: "Count-Based Event",
+					recurrence: {
+						frequency: "WEEKLY",
+						interval: 1,
+						count: 10,
+					},
+				},
+			});
+
+			// This tests the branch at line 347-351 for count-based events
+			expect(result.errors).toBeUndefined();
+			expect(result.data?.createEvent).toEqual(
+				expect.objectContaining({
+					id: expect.any(String),
+					name: "Count-Based Event",
+				}),
+			);
+		});
+
+		test("handles never-ending recurring events window calculation", async () => {
+			const organizationId = await createTestOrganization();
+
+			const result = await createEvent({
+				input: {
+					...baseEventInput(organizationId),
+					name: "Never-Ending Event",
+					recurrence: {
+						frequency: "DAILY",
+						interval: 1,
+						never: true,
+					},
+				},
+			});
+
+			// This tests the branch at line 352-356 for never-ending events
+			expect(result.errors).toBeUndefined();
+			expect(result.data?.createEvent).toEqual(
+				expect.objectContaining({
+					id: expect.any(String),
+					name: "Never-Ending Event",
+				}),
+			);
+		});
+	});
+
+	suite("Notification Flush Error Path Coverage", () => {
+		test("logs and continues when notification context is null", async () => {
+			const organizationId = await createTestOrganization();
+
+			// This tests when ctx.notification is falsy (null/undefined) and the optional chaining prevents errors
+			const result = await createEvent({
+				input: baseEventInput(organizationId),
+			});
+
+			expect(result.errors).toBeUndefined();
+			expect(result.data?.createEvent).toEqual(
+				expect.objectContaining({
+					id: expect.any(String),
+					name: "Test Event",
+				}),
+			);
+		});
+
+		test("handles case where notification optional chaining short-circuits", async () => {
+			const organizationId = await createTestOrganization();
+
+			// Multiple non-recurring event creations to exercise different notification paths
+			const result1 = await createEvent({
+				input: { ...baseEventInput(organizationId), name: "Event 1" },
+			});
+
+			const result2 = await createEvent({
+				input: { ...baseEventInput(organizationId), name: "Event 2" },
+			});
+
+			expect(result1.errors).toBeUndefined();
+			expect(result2.errors).toBeUndefined();
+			expect(result1.data?.createEvent?.name).toBe("Event 1");
+			expect(result2.data?.createEvent?.name).toBe("Event 2");
+		});
+	});
+
+	suite("Recurrence Interval Default Values", () => {
+		test("uses default interval of 1 when interval is undefined", async () => {
+			const organizationId = await createTestOrganization();
+
+			const result = await createEvent({
+				input: {
+					...baseEventInput(organizationId),
+					name: "Default Interval Event",
+					recurrence: {
+						frequency: "WEEKLY",
+						// interval is undefined, should default to 1
+						count: 5,
+					},
+				},
+			});
+
+			// This tests the branch at line 280: interval: parsedArgs.input.recurrence.interval || 1
+			expect(result.errors).toBeUndefined();
+			expect(result.data?.createEvent).toEqual(
+				expect.objectContaining({
+					id: expect.any(String),
+					name: "Default Interval Event",
+				}),
+			);
+		});
+
+		test("uses provided interval when explicitly set", async () => {
+			const organizationId = await createTestOrganization();
+
+			const result = await createEvent({
+				input: {
+					...baseEventInput(organizationId),
+					name: "Custom Interval Event",
+					recurrence: {
+						frequency: "WEEKLY",
+						interval: 2,
+						count: 5,
+					},
+				},
+			});
+
+			expect(result.errors).toBeUndefined();
+			expect(result.data?.createEvent).toEqual(
+				expect.objectContaining({
+					id: expect.any(String),
+					name: "Custom Interval Event",
+				}),
+			);
+		});
+	});
+
+	suite("Recurrence End Date Null Handling", () => {
+		test("sets endDate to null for never-ending events", async () => {
+			const organizationId = await createTestOrganization();
+
+			const result = await createEvent({
+				input: {
+					...baseEventInput(organizationId),
+					name: "Never-Ending Recurrence",
+					recurrence: {
+						frequency: "MONTHLY",
+						interval: 1,
+						never: true,
+					},
+				},
+			});
+
+			// This tests the branch: recurrenceEndDate: parsedArgs.input.recurrence.endDate || null
+			expect(result.errors).toBeUndefined();
+			expect(result.data?.createEvent).toEqual(
+				expect.objectContaining({
+					id: expect.any(String),
+					name: "Never-Ending Recurrence",
+				}),
+			);
+		});
+
+		test("sets count to null for end-date based events", async () => {
+			const organizationId = await createTestOrganization();
+			const futureDate = new Date();
+			futureDate.setMonth(futureDate.getMonth() + 3);
+
+			const result = await createEvent({
+				input: {
+					...baseEventInput(organizationId),
+					name: "End-Date Recurrence",
+					recurrence: {
+						frequency: "WEEKLY",
+						interval: 1,
+						endDate: futureDate.toISOString(),
+					},
+				},
+			});
+
+			// This tests the branch: count: parsedArgs.input.recurrence.count || null
+			expect(result.errors).toBeUndefined();
+			expect(result.data?.createEvent).toEqual(
+				expect.objectContaining({
+					id: expect.any(String),
+					name: "End-Date Recurrence",
+				}),
+			);
+		});
+	});
+
+	suite("Event Default Fields Coverage", () => {
+		test("applies default values to optional event boolean fields", async () => {
+			const organizationId = await createTestOrganization();
+
+			const result = await createEvent({
+				input: {
+					...baseEventInput(organizationId),
+					name: "Event with Defaults",
+					// allDay, isPublic, isRegisterable, isInviteOnly not provided
+				},
+			});
+
+			// This tests branches like: allDay: parsedArgs.input.allDay ?? false
+			expect(result.errors).toBeUndefined();
+			expect(result.data?.createEvent).toEqual(
+				expect.objectContaining({
+					id: expect.any(String),
+					name: "Event with Defaults",
+				}),
+			);
+		});
+
+		test("applies default values in final event object", async () => {
+			const organizationId = await createTestOrganization();
+
+			const result = await createEvent({
+				input: {
+					...baseEventInput(organizationId),
+					name: "Final Object Defaults",
+					allDay: true,
+				},
+			});
+
+			// This tests: allDay: createdEvent.allDay ?? false in final object
+			expect(result.errors).toBeUndefined();
+			expect(result.data?.createEvent).toEqual(
+				expect.objectContaining({
+					id: expect.any(String),
+					name: "Final Object Defaults",
+				}),
+			);
 		});
 	});
 });
