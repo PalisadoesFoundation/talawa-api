@@ -191,4 +191,41 @@ describe("createEvent mutation performance tracking", () => {
 		expect(op).toBeDefined();
 		expect(op?.count).toBe(1);
 	});
+
+	it("should track metrics even when authentication/authorization fails", async () => {
+		const initialSnapshots = server.getMetricsSnapshots?.() ?? [];
+
+		// Call mutation without authorization header
+		const result = await mercuriusClient.mutate(Mutation_createEvent, {
+			variables: {
+				input: {
+					name: `Unauthorized Event ${faker.string.ulid()}`,
+					description: "This should fail due to missing auth",
+					organizationId,
+					startAt: new Date(Date.now() + 86400000).toISOString(),
+					endAt: new Date(Date.now() + 90000000).toISOString(),
+					allDay: false,
+					location: "Test Location",
+				},
+			},
+		});
+
+		// Verify GraphQL call returns authentication/authorization error
+		expect(result.errors).toBeDefined();
+		expect(result.data?.createEvent).toBeNull();
+
+		// Verify performance metrics were still collected
+		const snapshots = server.getMetricsSnapshots?.() ?? [];
+		expect(snapshots.length).toBeGreaterThan(initialSnapshots.length);
+
+		// Verify a snapshot exists with ops["mutation:createEvent"] recorded
+		const latestSnapshot = snapshots.find(
+			(s) => s.ops["mutation:createEvent"] !== undefined,
+		);
+		assertToBeNonNullish(latestSnapshot);
+		const op = latestSnapshot.ops["mutation:createEvent"];
+
+		expect(op).toBeDefined();
+		expect(op?.count).toBe(1);
+	});
 });

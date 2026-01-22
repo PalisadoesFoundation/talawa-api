@@ -41,7 +41,7 @@ describe("deleteOrganization mutation performance tracking", () => {
 
 	it("should track mutation execution time when perf tracker is available", async () => {
 		// Get initial snapshot count to verify new snapshot is created
-		const initialSnapshots = server.getMetricsSnapshots?.(1) ?? [];
+		const initialSnapshots = server.getMetricsSnapshots?.() ?? [];
 
 		// Create an organization to delete
 		const createResult = await mercuriusClient.mutate(
@@ -98,7 +98,7 @@ describe("deleteOrganization mutation performance tracking", () => {
 
 	it("should track metrics even when mutation fails", async () => {
 		// Get initial snapshot count
-		const initialSnapshots = server.getMetricsSnapshots?.(1) ?? [];
+		const initialSnapshots = server.getMetricsSnapshots?.() ?? [];
 
 		// Try to delete non-existent organization
 		const result = await mercuriusClient.mutate(Mutation_deleteOrganization, {
@@ -126,6 +126,64 @@ describe("deleteOrganization mutation performance tracking", () => {
 		);
 		assertToBeNonNullish(latestSnapshot);
 		expect(latestSnapshot.ops["mutation:deleteOrganization"]).toBeDefined();
+	});
+
+	it("should track metrics even when authentication/authorization fails", async () => {
+		// Create an organization to delete
+		const createResult = await mercuriusClient.mutate(
+			Mutation_createOrganization,
+			{
+				headers: { authorization: `bearer ${authToken}` },
+				variables: {
+					input: {
+						name: `Unauthorized Delete Org ${faker.string.ulid()}`,
+						description: "Organization for unauthorized deletion test",
+						countryCode: "us",
+						state: "CA",
+						city: "San Francisco",
+						postalCode: "94101",
+						addressLine1: "123 Test St",
+					},
+				},
+			},
+		);
+
+		expect(createResult.errors).toBeUndefined();
+		assertToBeNonNullish(createResult.data?.createOrganization);
+		const orgId = createResult.data.createOrganization.id;
+
+		// Get initial snapshot count
+		const initialSnapshots = server.getMetricsSnapshots?.() ?? [];
+
+		// Call mutation without authorization header
+		const result = await mercuriusClient.mutate(Mutation_deleteOrganization, {
+			variables: {
+				input: {
+					id: orgId,
+				},
+			},
+		});
+
+		// Verify response contains errors and deleteOrganization is null
+		expect(result.errors).toBeDefined();
+		expect(result.data?.deleteOrganization).toBeNull();
+
+		// Verify error has proper structure
+		expect(result.errors?.[0]?.extensions?.code).toBeDefined();
+
+		// Verify server.getMetricsSnapshots still increases
+		const snapshots = server.getMetricsSnapshots?.() ?? [];
+		expect(snapshots.length).toBeGreaterThan(initialSnapshots.length);
+
+		// Verify snapshot contains an ops entry for "mutation:deleteOrganization"
+		const latestSnapshot = snapshots.find(
+			(s) => s.ops["mutation:deleteOrganization"] !== undefined,
+		);
+		assertToBeNonNullish(latestSnapshot);
+		const op = latestSnapshot.ops["mutation:deleteOrganization"];
+
+		expect(op).toBeDefined();
+		expect(op?.count).toBe(1);
 	});
 
 	it("should use correct operation name format", async () => {

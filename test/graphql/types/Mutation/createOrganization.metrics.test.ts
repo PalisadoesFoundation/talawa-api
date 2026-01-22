@@ -107,7 +107,9 @@ describe("createOrganization mutation performance tracking", () => {
 		expect(snapshots.length).toBeGreaterThan(initialSnapshots.length);
 
 		// Verify the specific mutation metric is present
-		const latestSnapshot = snapshots[0];
+		const latestSnapshot = snapshots.find(
+			(s) => s.ops?.["mutation:createOrganization"],
+		);
 		assertToBeNonNullish(latestSnapshot);
 		expect(latestSnapshot.ops["mutation:createOrganization"]).toBeDefined();
 	});
@@ -134,7 +136,9 @@ describe("createOrganization mutation performance tracking", () => {
 
 		// Verify operation name format
 		const snapshots = server.getMetricsSnapshots?.() ?? [];
-		const latestSnapshot = snapshots[0];
+		const latestSnapshot = snapshots.find(
+			(s) => s.ops?.["mutation:createOrganization"],
+		);
 		assertToBeNonNullish(latestSnapshot);
 		expect(latestSnapshot.ops).toHaveProperty("mutation:createOrganization");
 	});
