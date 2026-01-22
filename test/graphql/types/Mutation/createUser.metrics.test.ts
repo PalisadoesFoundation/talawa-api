@@ -62,7 +62,9 @@ describe("createUser mutation performance tracking", () => {
 		expect(snapshots.length).toBeGreaterThan(initialSnapshots.length);
 
 		// Check the most recent snapshot for the mutation operation
-		const latestSnapshot = snapshots[0];
+		const latestSnapshot = snapshots.find(
+			(s) => s.ops["mutation:createUser"] !== undefined,
+		);
 		assertToBeNonNullish(latestSnapshot);
 		const op = latestSnapshot.ops["mutation:createUser"];
 
@@ -82,7 +84,7 @@ describe("createUser mutation performance tracking", () => {
 
 	it("should track metrics even when mutation fails", async () => {
 		// Get initial snapshot count
-		const initialSnapshots = server.getMetricsSnapshots?.(1) ?? [];
+		const initialSnapshots = server.getMetricsSnapshots?.() ?? [];
 
 		// First create a user
 		const firstResult = await mercuriusClient.mutate(Mutation_createUser, {
@@ -121,11 +123,13 @@ describe("createUser mutation performance tracking", () => {
 		expect(result.data?.createUser).toBeFalsy();
 
 		// Verify performance metrics were still collected even on error
-		const snapshots = server.getMetricsSnapshots?.(1) ?? [];
+		const snapshots = server.getMetricsSnapshots?.() ?? [];
 		expect(snapshots.length).toBeGreaterThan(initialSnapshots.length);
 
 		// Verify the specific mutation:createUser metric was recorded
-		const latestSnapshot = snapshots[0];
+		const latestSnapshot = snapshots.find(
+			(s) => s.ops["mutation:createUser"] !== undefined,
+		);
 		assertToBeNonNullish(latestSnapshot);
 		const mutationOp = latestSnapshot.ops["mutation:createUser"];
 		expect(mutationOp).toBeDefined();
@@ -187,7 +191,9 @@ describe("createUser mutation performance tracking", () => {
 
 		// Verify performance metrics including sub-operations
 		const snapshots = server.getMetricsSnapshots?.() ?? [];
-		const latestSnapshot = snapshots[snapshots.length - 1];
+
+		// Check the most recent snapshot for the mutation operation
+		const latestSnapshot = snapshots[0];
 		assertToBeNonNullish(latestSnapshot);
 
 		const mainOp = latestSnapshot.ops["mutation:createUser"];

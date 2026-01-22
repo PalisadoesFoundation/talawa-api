@@ -1,7 +1,7 @@
 import { faker } from "@faker-js/faker";
 import type { ResultOf, VariablesOf } from "gql.tada";
 import type { ExecutionResult } from "graphql";
-import { afterEach, expect, suite, test, vi } from "vitest";
+import { afterEach, beforeAll, expect, suite, test, vi } from "vitest";
 
 import type {
 	ForbiddenActionOnArgumentsAssociatedResourcesExtensions,
@@ -46,7 +46,8 @@ const expectSpecificError = (
 suite("Mutation field createOrganization", () => {
 	let adminAuthToken: string;
 	// Setup admin auth before tests
-	test("setup admin auth", async () => {
+	// Setup admin auth before tests
+	beforeAll(async () => {
 		const adminSignInResult = await mercuriusClient.query(Query_signIn, {
 			variables: {
 				input: {
@@ -135,7 +136,7 @@ suite("Mutation field createOrganization", () => {
 						{
 							code: "forbidden_action_on_arguments_associated_resources",
 							issues: expect.arrayContaining([
-								{ argumentPath: ["input", "name"] },
+								expect.objectContaining({ argumentPath: ["input", "name"] }),
 							]),
 						},
 					),
@@ -205,9 +206,9 @@ suite("Mutation field createOrganization", () => {
 		});
 
 		test("should handle avatar upload failure", async () => {
-			const putObjectSpy = vi
-				.spyOn(server.minio.client, "putObject")
-				.mockRejectedValue(new Error("Upload Failed"));
+			vi.spyOn(server.minio.client, "putObject").mockRejectedValue(
+				new Error("Upload Failed"),
+			);
 
 			// We need to trigger the upload path
 			const boundary = `----WebKitFormBoundary${Math.random().toString(36)}`;
@@ -257,11 +258,10 @@ suite("Mutation field createOrganization", () => {
 				});
 
 				const result = JSON.parse(response.body);
-				// Expecting an error, likely "unexpected" or specific upload error depending on implementation
-				// Checking if it threw TalawaGraphQLError or generic
 				expect(result.errors).toBeDefined();
+				expect(result.errors[0].message).toContain("Upload Failed");
 			} finally {
-				putObjectSpy.mockRestore();
+				// No manual restore needed, afterEach handles it
 			}
 		});
 	});
