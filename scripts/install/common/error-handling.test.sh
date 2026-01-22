@@ -92,6 +92,45 @@ test_idempotency() {
     fi
 }
 
+test_idempotency_failure() {
+    test_start "run_idempotent does not mark failed tasks as done"
+    
+    local tmp_home=$(mktemp -d)
+    
+    # Run a failing command
+    # We expect it to fail, so we ignore the exit code of bash -c with || true
+    TMPDIR="$tmp_home" bash -c "source '$LIB_PATH'; \
+        run_idempotent 'step_fail' false" > /dev/null 2>&1 || true
+    
+    # Check if the marker file exists (it should NOT)
+    # The user-specific directory might vary, so we find it
+    local state_dirs=$(find "$tmp_home" -name "talawa-install-state*")
+    local marker="$state_dirs/step_fail.done"
+    
+    if [ ! -f "$marker" ]; then
+        test_pass
+    else
+        test_fail "Marker file created for failed step: $marker"
+    fi
+    
+    rm -rf "$tmp_home"
+}
+
+test_idempotency_args() {
+    test_start "run_idempotent validates arguments"
+    
+    local output
+    # Run with missing args
+    output=$(bash -c "source '$LIB_PATH'; \
+        run_idempotent 'only_one_arg'" 2>&1 || true)
+        
+    if echo "$output" | grep -q "requires at least 2 arguments"; then
+        test_pass
+    else
+        test_fail "Expected argument validation error. Output:\n$output"
+    fi
+}
+
 ##############################################################################
 # Test: Signal Trapping (ERR, INT, TERM)
 ##############################################################################
@@ -262,6 +301,8 @@ test_dir_perms() {
 # Run Tests
 test_cleanup_lifo
 test_idempotency
+test_idempotency_failure
+test_idempotency_args
 test_trap_err
 # Skip INT/TERM tests on Windows if they are unreliable in this environment
 # or make them warn-only if we suspect environmental issues with 'kill' and 'trap' in Git Bash
