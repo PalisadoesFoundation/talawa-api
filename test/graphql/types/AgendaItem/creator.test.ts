@@ -122,7 +122,7 @@ describe("AgendaItem.creator resolver", () => {
 		);
 
 		expect(ctx.log.error).toHaveBeenCalledWith(
-			"Postgres select operation returned an empty array for an agenda item's event id that isn't null.",
+			"Postgres select operation returned an empty array for an agenda item's event or organization id that isn't null.",
 		);
 	});
 
