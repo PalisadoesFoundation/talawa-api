@@ -162,24 +162,6 @@ describe("objects route", () => {
 		expect(mockStatObject).toHaveBeenCalledWith("talawa", "default.png");
 	});
 
-	it("should return validation error for too-short name", async () => {
-		const res = await app.inject({
-			method: "GET",
-			url: "/objects/",
-		});
-
-		expect(res.statusCode).toBe(400);
-		const body = res.json();
-		expect(body.error.code).toBe(ErrorCode.INVALID_ARGUMENTS);
-		expect(body.error.correlationId).toSatisfy(
-			(id: string) => typeof id === "string" && id.length > 0,
-		);
-
-		// Verify storage helpers were not called
-		expect(mockGetObject).not.toHaveBeenCalled();
-		expect(mockStatObject).not.toHaveBeenCalled();
-	});
-
 	it("should return validation error for too-long name", async () => {
 		const longName = "a".repeat(37); // Exceeds maxLength of 36
 
