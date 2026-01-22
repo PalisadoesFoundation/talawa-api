@@ -1,11 +1,11 @@
-import { describe, it, expect } from "vitest";
+import { getTableColumns, getTableName } from "drizzle-orm";
+import { describe, expect, it } from "vitest";
 import { z } from "zod";
-import { getTableName, getTableColumns } from "drizzle-orm";
 
 import {
 	recurringEventInstancesTable,
-	recurringEventInstancesTableRelations,
 	recurringEventInstancesTableInsertSchema,
+	recurringEventInstancesTableRelations,
 } from "../../../../src/drizzle/tables/recurringEventInstances";
 
 /**
@@ -93,9 +93,7 @@ describe("recurringEventInstancesTableInsertSchema", () => {
 		};
 
 		const result =
-			recurringEventInstancesTableInsertSchema.safeParse(
-				validPayload,
-			);
+			recurringEventInstancesTableInsertSchema.safeParse(validPayload);
 
 		expect(result.success).toBe(true);
 	});
@@ -106,9 +104,7 @@ describe("recurringEventInstancesTableInsertSchema", () => {
 		};
 
 		const result =
-			recurringEventInstancesTableInsertSchema.safeParse(
-				invalidPayload,
-			);
+			recurringEventInstancesTableInsertSchema.safeParse(invalidPayload);
 
 		expect(result.success).toBe(false);
 	});
