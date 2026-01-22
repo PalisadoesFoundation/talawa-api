@@ -14,6 +14,35 @@ import { Mutation_createOrganization, Query_signIn } from "../documentNodes";
 describe("createOrganization mutation performance tracking", () => {
 	let authToken: string;
 
+	// Helper to wait for metrics to be recorded (avoids race conditions with onSend hook)
+	const waitForSnapshot = async (
+		operationName: string,
+		initialSnapshotsLength: number,
+		timeoutMs = 2000,
+	) => {
+		const startTime = Date.now();
+		while (Date.now() - startTime < timeoutMs) {
+			const snapshots = server.getMetricsSnapshots?.() ?? [];
+			if (snapshots.length > initialSnapshotsLength) {
+				// Metrics are unshifted (newest first), so we take all new snapshots
+				// The correct logic is simply to search the available snapshots,
+				// or if strict about "new", take the first (N - initial) items.
+				// However, given the user request: "compute the slice from the start (i.e., take the first snapshots.length - initialSnapshots.length entries)"
+				const newCount = snapshots.length - initialSnapshotsLength;
+				// Take the 'newCount' most recent snapshots (which are at the start of the array)
+				const newSnapshots = snapshots.slice(0, newCount);
+				const found = newSnapshots.find(
+					(s) => s.ops[operationName] !== undefined,
+				);
+				if (found) return found;
+			}
+			await new Promise((resolve) => setTimeout(resolve, 50));
+		}
+		throw new Error(
+			`Timed out waiting for metric '${operationName}' after ${timeoutMs}ms`,
+		);
+	};
+
 	beforeEach(async () => {
 		// Sign in as admin to get auth token
 		const signInResult = await mercuriusClient.query(Query_signIn, {
@@ -65,9 +94,9 @@ describe("createOrganization mutation performance tracking", () => {
 		expect(snapshots.length).toBeGreaterThan(initialSnapshots.length);
 
 		// Check the most recent snapshot for the mutation operation
-		const newSnapshots = snapshots.slice(initialSnapshots.length);
-		const latestSnapshot = newSnapshots.find(
-			(s) => s.ops["mutation:createOrganization"] !== undefined,
+		const latestSnapshot = await waitForSnapshot(
+			"mutation:createOrganization",
+			initialSnapshots.length,
 		);
 		assertToBeNonNullish(latestSnapshot);
 		const op = latestSnapshot.ops["mutation:createOrganization"];
@@ -108,9 +137,9 @@ describe("createOrganization mutation performance tracking", () => {
 		expect(snapshots.length).toBeGreaterThan(initialSnapshots.length);
 
 		// Verify the specific mutation metric is present
-		const newSnapshots = snapshots.slice(initialSnapshots.length);
-		const latestSnapshot = newSnapshots.find(
-			(s) => s.ops?.["mutation:createOrganization"],
+		const latestSnapshot = await waitForSnapshot(
+			"mutation:createOrganization",
+			initialSnapshots.length,
 		);
 		assertToBeNonNullish(latestSnapshot);
 		expect(latestSnapshot.ops["mutation:createOrganization"]).toBeDefined();
@@ -138,10 +167,9 @@ describe("createOrganization mutation performance tracking", () => {
 		expect(result.data.createOrganization.id).toBeDefined();
 
 		// Verify operation name format
-		const snapshots = server.getMetricsSnapshots?.() ?? [];
-		const newSnapshots = snapshots.slice(initialSnapshots.length);
-		const latestSnapshot = newSnapshots.find(
-			(s) => s.ops?.["mutation:createOrganization"],
+		const latestSnapshot = await waitForSnapshot(
+			"mutation:createOrganization",
+			initialSnapshots.length,
 		);
 		assertToBeNonNullish(latestSnapshot);
 		expect(latestSnapshot.ops).toHaveProperty("mutation:createOrganization");
@@ -174,10 +202,9 @@ describe("createOrganization mutation performance tracking", () => {
 		);
 
 		// Verify metrics were collected for complex operation
-		const snapshots = server.getMetricsSnapshots?.() ?? [];
-		const newSnapshots = snapshots.slice(initialSnapshots.length);
-		const latestSnapshot = newSnapshots.find(
-			(s) => s.ops["mutation:createOrganization"] !== undefined,
+		const latestSnapshot = await waitForSnapshot(
+			"mutation:createOrganization",
+			initialSnapshots.length,
 		);
 		assertToBeNonNullish(latestSnapshot);
 		const op = latestSnapshot.ops["mutation:createOrganization"];
@@ -264,10 +291,9 @@ describe("createOrganization mutation performance tracking", () => {
 		expect(result.data.createOrganization.id).toBeDefined();
 
 		// Verify performance metrics including sub-operations
-		const snapshots = server.getMetricsSnapshots?.() ?? [];
-		const newSnapshots = snapshots.slice(initialSnapshots.length);
-		const latestSnapshot = newSnapshots.find(
-			(s) => s.ops["mutation:createOrganization"] !== undefined,
+		const latestSnapshot = await waitForSnapshot(
+			"mutation:createOrganization",
+			initialSnapshots.length,
 		);
 		assertToBeNonNullish(latestSnapshot);
 		const mainOp = latestSnapshot.ops["mutation:createOrganization"];
@@ -310,9 +336,9 @@ describe("createOrganization mutation performance tracking", () => {
 		expect(snapshots.length).toBeGreaterThan(initialSnapshots.length);
 
 		// Find the snapshot that contains our mutation operation
-		const newSnapshots = snapshots.slice(initialSnapshots.length);
-		const latestSnapshot = newSnapshots.find(
-			(s) => s.ops["mutation:createOrganization"] !== undefined,
+		const latestSnapshot = await waitForSnapshot(
+			"mutation:createOrganization",
+			initialSnapshots.length,
 		);
 		assertToBeNonNullish(latestSnapshot);
 		const op = latestSnapshot.ops["mutation:createOrganization"];

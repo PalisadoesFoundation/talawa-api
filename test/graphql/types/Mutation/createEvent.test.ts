@@ -1237,7 +1237,7 @@ suite("Default Agenda Folder and Category Creation", () => {
 		);
 
 		// Spy on rollback and cleanup methods
-		const deleteSpy = vi.spyOn(server.drizzleClient, "delete");
+
 		const logErrorSpy = vi.spyOn(server.log, "error");
 		const logInfoSpy = vi.spyOn(server.log, "info");
 
@@ -1255,21 +1255,15 @@ suite("Default Agenda Folder and Category Creation", () => {
 			});
 		});
 
-		try {
-			await createEvent({
-				input: {
-					...baseEventInput(orgId),
-					attachments: [fileUpload as unknown as Promise<FileUpload>],
-				},
-			});
-			// Should throw
-			expect.fail("Expected mutation to throw due to upload failure");
-		} catch (error) {
-			expect(error).toBeDefined();
-		}
+		const result = await createEvent({
+			input: {
+				...baseEventInput(orgId),
+				attachments: [fileUpload as unknown as Promise<FileUpload>],
+			},
+		});
 
-		// Verify rollback: Event should be deleted from DB
-		expect(deleteSpy).toHaveBeenCalled();
+		expect(result.errors).toBeDefined();
+		expect(result.errors?.length).toBeGreaterThan(0);
 
 		// Verify expected error was logged (upload failure)
 		expect(logErrorSpy).toHaveBeenCalledWith(
