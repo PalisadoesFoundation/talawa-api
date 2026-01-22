@@ -1,3 +1,4 @@
+import { eq } from "drizzle-orm";
 import type { FileUpload } from "graphql-upload-minimal";
 import { ulid } from "ulidx";
 import { uuidv7 } from "uuidv7";
@@ -516,22 +517,57 @@ builder.mutationField("createEvent", (t) =>
 				const attachments = parsedArgs.input.attachments;
 				const createdEventAttachments = createdEventResult.attachments ?? [];
 
-				await Promise.all(
-					createdEventAttachments.map((attachment, index) => {
-						if (attachments[index] !== undefined) {
+				try {
+					await Promise.all(
+						createdEventAttachments.map((attachment, index) => {
+							const file = attachments[index];
+							if (!file) return undefined;
+
 							return ctx.minio.client.putObject(
 								ctx.minio.bucketName,
 								attachment.name,
-								attachments[index].createReadStream(),
+								file.createReadStream(),
 								undefined,
 								{
 									"content-type": attachment.mimeType,
 								},
 							);
-						}
-						return undefined;
-					}),
-				);
+						}),
+					);
+				} catch (error) {
+					ctx.log.error(
+						{ error, eventId: createdEventResult.id },
+						"Failed to upload one or more event attachments",
+					);
+
+					// Cleanup-remove attachment DB rows
+					try {
+						await ctx.drizzleClient
+							.delete(eventAttachmentsTable)
+							.where(eq(eventAttachmentsTable.eventId, createdEventResult.id));
+					} catch (cleanupError) {
+						ctx.log.error(
+							{ cleanupError, eventId: createdEventResult.id },
+							"Failed to clean up attachment records after upload failure",
+						);
+					}
+
+					// cleanup of any uploaded objects
+					await Promise.allSettled(
+						createdEventAttachments.map((attachment) =>
+							ctx.minio.client.removeObject(
+								ctx.minio.bucketName,
+								attachment.name,
+							),
+						),
+					);
+
+					throw new TalawaGraphQLError({
+						extensions: {
+							code: "unexpected",
+						},
+					});
+				}
 			}
 			try {
 				await ctx.notification?.flush(ctx);
