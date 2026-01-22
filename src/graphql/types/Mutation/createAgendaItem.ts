@@ -309,6 +309,18 @@ builder.mutationField("createAgendaItem", (t) =>
 								)
 								.returning()
 						: [];
+				if (
+					parsedArgs.input.url &&
+					parsedArgs.input.url.length > 0 &&
+					createdUrls.length !== parsedArgs.input.url.length
+				) {
+					ctx.log.error(
+						"Postgres insert operation returned fewer rows than expected for URLs.",
+					);
+					throw new TalawaGraphQLError({
+						extensions: { code: "unexpected" },
+					});
+				}
 				return {
 					...createdAgendaItem,
 					url: createdUrls,
