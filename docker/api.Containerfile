@@ -56,21 +56,26 @@ ARG API_GID
 ARG API_UID
 # For the subsequent shell commands makes the shell exit immediately if any command exits with a non zero exit code, makes the shell consider the exit code of the first command amongst the commands connected using the pipe operator `|` that exits with a non zero exit code for it to exit immediately(by default the shell considers the exit code of the last command amongst the commands connected with a pipe operator `|` for it to determine whether the operation was successful), tells the shell that following strings passed to it are commands to be executed and not paths to script files. 
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
+# Enable corepack globally before creating user
+RUN corepack enable
 # Deletes the pre-included "node" user along with its home directory.
 RUN userdel -r node \
     # Adds the "talawa" group with id equal to the value of argument "${API_GID}".
     && groupadd -g ${API_GID} talawa \
     # Adds the "talawa" user with id equal to the value of argument "${API_UID}", assigns it to "talawa" group, creates the home directory for "talawa" user, sets bash as the "talawa" user's login shell.
-    && useradd -g talawa -l -m -s "$(which bash)" -u ${API_UID} talawa \
-    && corepack enable
+    && useradd -g talawa -l -m -s "$(which bash)" -u ${API_UID} talawa
 USER talawa
 WORKDIR /home/talawa/api
+
+# Install pnpm for talawa user (corepack already enabled at system level)
+RUN corepack install -g pnpm@10.26.1
 
 FROM base AS non_production
 COPY --chown=talawa:talawa ./pnpm-lock.yaml ./pnpm-lock.yaml
 RUN pnpm fetch --frozen-lockfile
 COPY --chown=talawa:talawa ./ ./
 RUN pnpm install --frozen-lockfile --offline
+# No CMD specified - command is provided via compose file overrides
 
 # This build stage is used to build the codebase used in production environment of talawa api. 
 FROM base AS production_code
