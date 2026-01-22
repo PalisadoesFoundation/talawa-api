@@ -501,6 +501,59 @@ describe("fundsTable", () => {
 		});
 	});
 
+	describe("fundsTable foreign keys", () => {
+		const tableConfig = getTableConfig(fundsTable);
+
+		it("should have 3 foreign keys", () => {
+			expect(tableConfig.foreignKeys.length).toBe(3);
+		});
+
+		it("should have foreign key to users table (creator)", () => {
+			const fk = tableConfig.foreignKeys.find(
+				(fk) => fk.getName() === "funds_creator_id_users_id_fk",
+			);
+			expect(fk).toBeDefined();
+			// this manually triggers the reference function if not already triggered
+			expect(fk?.reference().foreignTable).toBeDefined();
+		});
+
+		it("should have foreign key to organizations table", () => {
+			const fk = tableConfig.foreignKeys.find(
+				(fk) => fk.getName() === "funds_organization_id_organizations_id_fk",
+			);
+			expect(fk).toBeDefined();
+			expect(fk?.reference().foreignTable).toBeDefined();
+		});
+
+		it("should have foreign key to users table (updater)", () => {
+			const fk = tableConfig.foreignKeys.find(
+				(fk) => fk.getName() === "funds_updater_id_users_id_fk",
+			);
+			expect(fk).toBeDefined();
+			expect(fk?.reference().foreignTable).toBeDefined();
+		});
+	});
+
+	describe("fundsTable defaults and updates", () => {
+		it("should have defaultFn for updatedAt", () => {
+			// accessing internal property to verify function existence for coverage
+			const defaultFn = fundsTable.updatedAt.defaultFn;
+			expect(defaultFn).toBeDefined();
+			if (typeof defaultFn === "function") {
+				expect(defaultFn()).toBeDefined();
+			}
+		});
+
+		it("should have onUpdateFn for updatedAt", () => {
+			// accessing internal property to verify function existence for coverage
+			const onUpdateFn = fundsTable.updatedAt.onUpdateFn;
+			expect(onUpdateFn).toBeDefined();
+			if (typeof onUpdateFn === "function") {
+				expect(onUpdateFn()).toBeInstanceOf(Date);
+			}
+		});
+	});
+
 	describe("fundsTableRelations", () => {
 		// Helper type for captured relation data
 		interface CapturedRelation {
