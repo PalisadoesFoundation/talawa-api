@@ -237,7 +237,7 @@ builder.mutationField("createEvent", (t) =>
 				});
 			}
 
-			const createdEventResult = await ctx.drizzleClient.transaction(
+			let createdEventResult = await ctx.drizzleClient.transaction(
 				async (tx) => {
 					// Create the base event (template for recurring, or standalone event)
 					const [createdEvent] = await tx
@@ -562,11 +562,14 @@ builder.mutationField("createEvent", (t) =>
 						),
 					);
 
-					throw new TalawaGraphQLError({
-						extensions: {
-							code: "unexpected",
-						},
-					});
+					createdEventResult = {
+						...createdEventResult,
+						attachments: [],
+					};
+					ctx.log.warn(
+						{ eventId: createdEventResult.id },
+						"Attachment uploads failed; returning event without attachments",
+					);
 				}
 			}
 			try {
