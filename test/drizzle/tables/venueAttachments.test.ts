@@ -30,7 +30,7 @@ vi.mock("drizzle-orm", async (importOriginal) => {
 
 // Mock drizzle-orm/pg-core to capture index calls
 vi.mock("drizzle-orm/pg-core", async (importOriginal) => {
-	const actual = await importOriginal<typeof import("drizzle-orm")>();
+	const actual = await importOriginal<typeof import("drizzle-orm/pg-core")>();
 
 	// Mock index function
 	const mockIndex = vi.fn().mockReturnValue({
