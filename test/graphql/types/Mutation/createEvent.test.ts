@@ -1195,7 +1195,7 @@ suite("Post-transaction attachment upload behavior", () => {
 			"",
 			map,
 			`--${boundary}`,
-			'Content-Disposition: form-data; name="0"; filename="agenda.pdf"',
+			'Content-Disposition: form-data; name="0"; filename="test.jpg"',
 			"Content-Type: image/jpeg",
 			"",
 			"fake-pdf-content",
