@@ -209,7 +209,14 @@ describe("src/drizzle/tables/eventVolunteers.ts", () => {
 
 			expect(uniqueIndex).toBeDefined();
 			expect(uniqueIndex?.config.unique).toBe(true);
-			expect(uniqueIndex?.config.columns).toHaveLength(3);
+			const uniqueColumns = uniqueIndex?.config.columns.map((col) =>
+				"name" in col ? col.name : col,
+			);
+			expect(uniqueColumns).toEqual([
+				"user_id",
+				"event_id",
+				"recurring_event_instance_id",
+			]);
 		});
 
 		it("should have index on createdAt", () => {
