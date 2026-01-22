@@ -67,10 +67,11 @@ export const resolveCategory = async (
 
 	if (
 		existingAgendaFolder === undefined ||
-		existingAgendaFolder.event === undefined
+		existingAgendaFolder.event === undefined ||
+		existingAgendaFolder.event.organization === undefined
 	) {
 		ctx.log.error(
-			"Postgres select operation returned an empty array for an agenda item's folder or event id that isn't null.",
+			"Postgres select operation returned an empty array for an agenda item's folder, event, or organization id that isn't null.",
 		);
 
 		throw new TalawaGraphQLError({

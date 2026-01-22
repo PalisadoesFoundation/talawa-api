@@ -20,6 +20,9 @@ export const resolveFolder = async (
 
 	const [currentUser, existingAgendaFolder] = await Promise.all([
 		ctx.drizzleClient.query.usersTable.findFirst({
+			columns: {
+				role: true,
+			},
 			where: (fields, operators) => operators.eq(fields.id, currentUserId),
 		}),
 		ctx.drizzleClient.query.agendaFoldersTable.findFirst({
@@ -63,9 +66,9 @@ export const resolveFolder = async (
 	}
 
 	const existingEvent = existingAgendaFolder.event;
-	if (existingEvent === undefined) {
+	if (existingEvent === undefined || existingEvent.organization === undefined) {
 		ctx.log.error(
-			"Postgres select operation returned an empty array for an agenda item's event id that isn't null.",
+			"Postgres select operation returned an empty array for an agenda item's event or organization id that isn't null.",
 		);
 		throw new TalawaGraphQLError({ extensions: { code: "unexpected" } });
 	}
