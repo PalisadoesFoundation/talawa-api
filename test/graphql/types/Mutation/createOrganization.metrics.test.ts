@@ -38,7 +38,7 @@ describe("createOrganization mutation performance tracking", () => {
 
 	it("should track mutation execution time when perf tracker is available", async () => {
 		// Get initial snapshot count to verify new snapshot is created
-		const initialSnapshots = server.getMetricsSnapshots?.(1) ?? [];
+		const initialSnapshots = server.getMetricsSnapshots?.() ?? [];
 
 		const result = await mercuriusClient.mutate(Mutation_createOrganization, {
 			headers: { authorization: `bearer ${authToken}` },
@@ -61,7 +61,7 @@ describe("createOrganization mutation performance tracking", () => {
 		expect(result.data.createOrganization.name).toBeDefined();
 
 		// Verify performance metrics were collected
-		const snapshots = server.getMetricsSnapshots?.(1) ?? [];
+		const snapshots = server.getMetricsSnapshots?.() ?? [];
 		expect(snapshots.length).toBeGreaterThan(initialSnapshots.length);
 
 		// Check the most recent snapshot for the mutation operation
@@ -76,7 +76,7 @@ describe("createOrganization mutation performance tracking", () => {
 
 	it("should track metrics even when mutation fails", async () => {
 		// Get initial snapshot count
-		const initialSnapshots = server.getMetricsSnapshots?.(1) ?? [];
+		const initialSnapshots = server.getMetricsSnapshots?.() ?? [];
 
 		// Use invalid input to cause validation error
 		const result = await mercuriusClient.mutate(Mutation_createOrganization, {
@@ -101,7 +101,7 @@ describe("createOrganization mutation performance tracking", () => {
 		expect(result.errors?.[0]?.extensions?.code).toBeDefined();
 
 		// Verify performance metrics were still collected even on error
-		const snapshots = server.getMetricsSnapshots?.(1) ?? [];
+		const snapshots = server.getMetricsSnapshots?.() ?? [];
 		expect(snapshots.length).toBeGreaterThan(initialSnapshots.length);
 
 		// Verify the specific mutation metric is present
@@ -131,7 +131,7 @@ describe("createOrganization mutation performance tracking", () => {
 		expect(result.data.createOrganization.id).toBeDefined();
 
 		// Verify operation name format
-		const snapshots = server.getMetricsSnapshots?.(1) ?? [];
+		const snapshots = server.getMetricsSnapshots?.() ?? [];
 		const latestSnapshot = snapshots[0];
 		assertToBeNonNullish(latestSnapshot);
 		expect(latestSnapshot.ops).toHaveProperty("mutation:createOrganization");
@@ -163,7 +163,7 @@ describe("createOrganization mutation performance tracking", () => {
 		);
 
 		// Verify metrics were collected for complex operation
-		const snapshots = server.getMetricsSnapshots?.(1) ?? [];
+		const snapshots = server.getMetricsSnapshots?.() ?? [];
 		const latestSnapshot = snapshots[0];
 		assertToBeNonNullish(latestSnapshot);
 		const op = latestSnapshot.ops["mutation:createOrganization"];
@@ -236,7 +236,7 @@ describe("createOrganization mutation performance tracking", () => {
 		expect(result.data.createOrganization.id).toBeDefined();
 
 		// Verify performance metrics including sub-operations
-		const snapshots = server.getMetricsSnapshots?.(1) ?? [];
+		const snapshots = server.getMetricsSnapshots?.() ?? [];
 		const latestSnapshot = snapshots[0];
 		assertToBeNonNullish(latestSnapshot);
 		const mainOp = latestSnapshot.ops["mutation:createOrganization"];

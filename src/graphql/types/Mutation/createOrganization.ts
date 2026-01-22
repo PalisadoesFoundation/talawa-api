@@ -17,8 +17,8 @@ const mutationCreateOrganizationArgumentsSchema = z.object({
 	input: mutationCreateOrganizationInputSchema.transform(async (arg, ctx) => {
 		let avatar:
 			| (FileUpload & {
-				mimetype: z.infer<typeof imageMimeTypeEnum>;
-			})
+					mimetype: z.infer<typeof imageMimeTypeEnum>;
+			  })
 			| null
 			| undefined;
 
@@ -184,12 +184,12 @@ builder.mutationField("createOrganization", (t) =>
 						});
 					}
 
-					if (isNotNullish(parsedArgs.input.avatar)) {
+					if (isNotNullish(parsedArgs.input.avatar) && avatarName) {
 						const fileUploadStop = ctx.perf?.start("file:avatar-upload");
 						try {
 							await ctx.minio.client.putObject(
 								ctx.minio.bucketName,
-								avatarName!,
+								avatarName,
 								parsedArgs.input.avatar.createReadStream(),
 								undefined,
 								{
