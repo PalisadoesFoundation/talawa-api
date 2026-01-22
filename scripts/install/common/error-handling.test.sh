@@ -10,11 +10,11 @@
 
 set -u # Don't set -e globally to allow testing failure scenarios
 
-# Colors
-RED='\033[0;31m'
-GREEN='\033[0;32m'
-YELLOW='\033[1;33m'
-NC='\033[0m'
+# Colors (Variables kept for structure but set to empty for plain text)
+RED=''
+GREEN=''
+YELLOW=''
+NC=''
 
 TESTS_RUN=0
 TESTS_PASSED=0
@@ -28,14 +28,14 @@ test_start() {
 
 test_pass() {
     TESTS_PASSED=$((TESTS_PASSED + 1))
-    echo -e "${GREEN}✓ PASS${NC}"
+    echo "✓ PASS"
 }
 
 test_fail() {
     local message="$1"
     TESTS_FAILED=$((TESTS_FAILED + 1))
-    echo -e "${RED}✗ FAIL${NC}"
-    echo -e "  ${RED}Reason: $message${NC}"
+    echo "✗ FAIL"
+    echo "  Reason: $message"
 }
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -326,7 +326,7 @@ test_dir_perms() {
     else
         # On Windows (Git Bash), chmod might not work as expected or stat might report differently (e.g. 755 or 777)
         if [[ "${OSTYPE:-}" == "msys" || "${OSTYPE:-}" == "cygwin" || "${OS:-}" == "Windows_NT" ]]; then
-             echo -e "${YELLOW}⚠ WARN: Permissions are $perms (Expected 700). Ignoring on Windows.${NC}"
+             echo "⚠ WARN: Permissions are $perms (Expected 700). Ignoring on Windows."
              test_pass
         else
              test_fail "Expected permissions 700, got $perms"
@@ -344,7 +344,7 @@ test_trap_err
 # Skip INT/TERM tests on Windows if they are unreliable in this environment
 # or make them warn-only if we suspect environmental issues with 'kill' and 'trap' in Git Bash
 if [[ "${OSTYPE:-}" == "msys" || "${OSTYPE:-}" == "cygwin" || "${OS:-}" == "Windows_NT" ]]; then
-    echo -e "${YELLOW}⚠ WARN: Skipping signal tests on Windows (unreliable in CI/GitBash environment).${NC}"
+    echo "⚠ WARN: Skipping signal tests on Windows (unreliable in CI/GitBash environment)."
 else
     test_trap_int
     test_trap_term
@@ -357,8 +357,8 @@ echo "========================================================================"
 echo "Test Summary"
 echo "========================================================================"
 echo "Total tests run:    $TESTS_RUN"
-echo -e "Tests passed:       ${GREEN}$TESTS_PASSED${NC}"
-echo -e "Tests failed:       ${RED}$TESTS_FAILED${NC}"
+echo "Tests passed:       $TESTS_PASSED"
+echo "Tests failed:       $TESTS_FAILED"
 
 if [ $TESTS_FAILED -eq 0 ]; then
     exit 0
