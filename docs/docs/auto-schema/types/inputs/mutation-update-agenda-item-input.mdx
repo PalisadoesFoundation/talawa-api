@@ -80,6 +80,7 @@ input MutationUpdateAgendaItemInput {
   id: ID!
   key: String
   name: String
+  url: [UpdateAgendaItemUrlInput!]
 }
 ```
 
@@ -112,6 +113,8 @@ Key of the agenda item if it's of a "song" type. More information at [this](<htt
 #### [<code style={{ fontWeight: 'normal' }}>MutationUpdateAgendaItemInput.<b>name</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>String</b></code>](/auto-schema/types/scalars/string.mdx) <Badge class="badge badge--secondary " text="scalar"/>
 
 Name of the agenda item.
+
+#### [<code style={{ fontWeight: 'normal' }}>MutationUpdateAgendaItemInput.<b>url</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>[UpdateAgendaItemUrlInput!]</b></code>](/auto-schema/types/inputs/update-agenda-item-url-input.mdx) <Badge class="badge badge--secondary " text="list"/> <Badge class="badge badge--secondary " text="input"/>
 
 ### Member Of
 
