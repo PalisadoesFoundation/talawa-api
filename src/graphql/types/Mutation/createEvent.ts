@@ -487,23 +487,6 @@ builder.mutationField("createEvent", (t) =>
 								})),
 							)
 							.returning();
-
-						await Promise.all(
-							createdEventAttachments.map((attachment, index) => {
-								if (attachments[index] !== undefined) {
-									return ctx.minio.client.putObject(
-										ctx.minio.bucketName,
-										attachment.name,
-										attachments[index].createReadStream(),
-										undefined,
-										{
-											"content-type": attachment.mimeType,
-										},
-									);
-								}
-								return undefined;
-							}),
-						);
 					}
 
 					const finalEvent = Object.assign(createdEvent, {
@@ -529,6 +512,27 @@ builder.mutationField("createEvent", (t) =>
 					return finalEvent;
 				},
 			);
+			if (parsedArgs.input.attachments !== undefined) {
+				const attachments = parsedArgs.input.attachments;
+				const createdEventAttachments = createdEventResult.attachments ?? [];
+
+				await Promise.all(
+					createdEventAttachments.map((attachment, index) => {
+						if (attachments[index] !== undefined) {
+							return ctx.minio.client.putObject(
+								ctx.minio.bucketName,
+								attachment.name,
+								attachments[index].createReadStream(),
+								undefined,
+								{
+									"content-type": attachment.mimeType,
+								},
+							);
+						}
+						return undefined;
+					}),
+				);
+			}
 			try {
 				await ctx.notification?.flush(ctx);
 			} catch (error) {
