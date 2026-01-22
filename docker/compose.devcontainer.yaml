@@ -11,6 +11,9 @@ services:
         - API_DEBUGGER_PORT=${API_DEBUGGER_PORT:?error}
       # https://docs.docker.com/reference/compose-file/build/#target
       target: devcontainer
+    # Override the default command to run the development server in devcontainer
+    # Using bash -l to ensure login shell loads environment properly
+    command: bash -l -c "pnpm run start_development_server"
     depends_on:
       minio:
         condition: service_healthy
@@ -177,7 +180,6 @@ services:
         name: redis
         published: ${REDIS_MAPPED_PORT:?error}
         target: 6379
-# https://docs.docker.com/reference/compose-file/volumes/
   redis-test:
     ports:
       - host_ip: ${REDIS_MAPPED_HOST_IP:?error}
@@ -188,6 +190,7 @@ services:
       - source: redis_test_data
         target: /data
         type: volume
+# https://docs.docker.com/reference/compose-file/volumes/
 volumes:
   api_bash_history:
   api_node_modules:

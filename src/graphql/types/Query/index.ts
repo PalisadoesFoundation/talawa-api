@@ -1,7 +1,6 @@
 import "./Query";
 import "./advertisement";
 import "./agendaFolder";
-import "./agendaItem";
 import "./chat";
 import "./chatMessage";
 import "./comment";

@@ -29,6 +29,10 @@ export const MutationUpdateAgendaItemInputSchema = agendaItemsTableInsertSchema
 			.min(1)
 			.max(AGENDA_ITEM_NAME_MAX_LENGTH)
 			.optional(),
+		url: z
+			.array(z.object({ url: z.string().url() }))
+			.max(5)
+			.optional(),
 	})
 	.refine(
 		({ id, ...remainingArg }) =>
@@ -37,6 +41,16 @@ export const MutationUpdateAgendaItemInputSchema = agendaItemsTableInsertSchema
 			message: "At least one optional argument must be provided.",
 		},
 	);
+
+const UpdateAgendaItemUrlInput = builder.inputType("UpdateAgendaItemUrlInput", {
+	description: "URL associated with an agenda item",
+	fields: (t) => ({
+		url: t.string({
+			description: "URL of the agenda item",
+			required: true,
+		}),
+	}),
+});
 
 export const MutationUpdateAgendaItemInput = builder
 	.inputRef<z.infer<typeof MutationUpdateAgendaItemInputSchema>>(
@@ -73,6 +87,10 @@ export const MutationUpdateAgendaItemInput = builder
 			}),
 			name: t.string({
 				description: "Name of the agenda item.",
+				required: false,
+			}),
+			url: t.field({
+				type: [UpdateAgendaItemUrlInput],
 				required: false,
 			}),
 		}),
