@@ -297,6 +297,8 @@ jobs:
             'LICENSE$'
             'tsconfig.json$'
             'vitest.config.ts$'
+            'vitest.*.config.ts$'
+            'codecov.yml$'
             'pnpm-lock.yaml$'
             'package.json$'
             'package-lock.json$'

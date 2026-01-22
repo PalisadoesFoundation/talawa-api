@@ -6,6 +6,28 @@ coverage:
         threshold: 1%
 
 
+flags:
+  unit:
+    carryforward: false
+    paths:
+      - src/config/
+      - src/fastifyPlugins/
+      - src/observability/
+      - src/plugin/
+      - src/plugins/
+      - src/routes/
+      - src/services/
+      - src/setup/
+      - src/types/
+      - src/utilities/
+      - src/workers/
+      - src/*.ts
+  integration:
+    carryforward: false
+    paths:
+      - src/drizzle/
+      - src/graphql/
+      - src/install/
 flag_management:
   default_rules:
     carryforward: true
