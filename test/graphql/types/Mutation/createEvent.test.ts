@@ -447,7 +447,7 @@ suite("Mutation field createEvent", () => {
 			const errorMessage = invalidResult.errors?.[0]?.message;
 			expect(
 				errorMessage?.includes("Upload value invalid") ||
-					errorMessage?.includes("Graphql validation error"),
+				errorMessage?.includes("Graphql validation error"),
 			).toBe(true);
 		});
 
@@ -952,20 +952,22 @@ suite("Mutation field createEvent", () => {
 			const orgId = await createTestOrganization();
 			assertToBeNonNullish(orgId);
 
-			const futureStartAt = new Date();
-			futureStartAt.setDate(futureStartAt.getDate() + 405); // > 400 days
-			const futureEndAt = new Date(futureStartAt);
-			futureEndAt.setHours(futureEndAt.getHours() + 1);
+			// Use deterministic future dates
+			const futureStartAt = getFutureDate(405); // > 400 days
+			// Calculate end date based on future start date (adding 1 hour)
+			const startDate = new Date(futureStartAt);
+			const endDate = new Date(startDate.getTime() + 60 * 60 * 1000); // Add 1 hour
+			const futureEndAt = endDate.toISOString();
 
 			const input: VariablesOf<typeof Mutation_createEvent>["input"] = {
 				description: faker.lorem.paragraph(),
-				endAt: futureEndAt.toISOString(),
+				endAt: futureEndAt,
 				recurrence: {
 					frequency: "DAILY",
 					count: 5,
 				},
 				organizationId: orgId,
-				startAt: futureStartAt.toISOString(),
+				startAt: futureStartAt,
 				name: faker.lorem.sentence(),
 			};
 

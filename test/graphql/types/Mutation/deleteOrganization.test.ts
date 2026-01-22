@@ -641,7 +641,7 @@ suite("Mutation field deleteOrganization", () => {
 
 	suite("when minio removal fails", () => {
 		test(
-			"should bubble up an error from the minio removal but DB delete should not be rolled back",
+			"should not bubble up an error from the minio removal; DB delete should not be rolled back",
 			async () => {
 				const orgId = await createTestOrganization(authToken);
 

@@ -212,7 +212,14 @@ builder.mutationField("deleteOrganization", (t) =>
 								objectNames,
 							);
 						} catch (error) {
-							ctx.log.error({ error }, "Failed to remove objects from minio");
+							ctx.log.error(
+								{
+									error,
+									orgId: parsedArgs.input.id,
+									objectCount: objectNames.length,
+								},
+								`Failed to remove ${objectNames.length} objects from minio for organization ${parsedArgs.input.id}`,
+							);
 						}
 					}
 				} finally {
