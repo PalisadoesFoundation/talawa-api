@@ -4,7 +4,7 @@ import { venueAttachmentMimeTypeEnum } from "~/src/drizzle/enums/venueAttachment
 
 // Mock drizzle-orm itself to handle relations
 vi.mock("drizzle-orm", async (importOriginal) => {
-	const actual = await importOriginal<typeof import("drizzle-orm/pg-core")>();
+	const actual = await importOriginal<typeof import("drizzle-orm")>();
 
 	// Create a mock 'one' function for relations
 	const mockOne = vi.fn().mockImplementation((table, config) => ({
@@ -30,7 +30,7 @@ vi.mock("drizzle-orm", async (importOriginal) => {
 
 // Mock drizzle-orm/pg-core to capture index calls
 vi.mock("drizzle-orm/pg-core", async (importOriginal) => {
-	const actual = await importOriginal<typeof import("drizzle-orm/pg-core")>();
+	const actual = await importOriginal<typeof import("drizzle-orm")>();
 
 	// Mock index function
 	const mockIndex = vi.fn().mockReturnValue({
