@@ -38,7 +38,7 @@ describe("createUser mutation performance tracking", () => {
 
 	it("should track mutation execution time when perf tracker is available", async () => {
 		// Get initial snapshot count to verify new snapshot is created
-		const initialSnapshots = server.getMetricsSnapshots?.(1) ?? [];
+		const initialSnapshots = server.getMetricsSnapshots?.() ?? [];
 
 		const result = await mercuriusClient.mutate(Mutation_createUser, {
 			headers: { authorization: `bearer ${authToken}` },
@@ -58,7 +58,7 @@ describe("createUser mutation performance tracking", () => {
 		expect(result.data.createUser.user?.id).toBeDefined();
 
 		// Verify performance metrics were collected
-		const snapshots = server.getMetricsSnapshots?.(1) ?? [];
+		const snapshots = server.getMetricsSnapshots?.() ?? [];
 		expect(snapshots.length).toBeGreaterThan(initialSnapshots.length);
 
 		// Check the most recent snapshot for the mutation operation
@@ -186,8 +186,8 @@ describe("createUser mutation performance tracking", () => {
 		assertToBeNonNullish(result.data?.createUser);
 
 		// Verify performance metrics including sub-operations
-		const snapshots = server.getMetricsSnapshots?.(1) ?? [];
-		const latestSnapshot = snapshots[0];
+		const snapshots = server.getMetricsSnapshots?.() ?? [];
+		const latestSnapshot = snapshots[snapshots.length - 1];
 		assertToBeNonNullish(latestSnapshot);
 
 		const mainOp = latestSnapshot.ops["mutation:createUser"];
