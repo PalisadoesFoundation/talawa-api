@@ -46,7 +46,7 @@ const expectSpecificError = (
 suite("Mutation field createOrganization", () => {
 	let adminAuthToken: string;
 	// Setup admin auth before tests
-	// Setup admin auth before tests
+
 	beforeAll(async () => {
 		const adminSignInResult = await mercuriusClient.query(Query_signIn, {
 			variables: {

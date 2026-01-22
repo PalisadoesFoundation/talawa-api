@@ -214,8 +214,11 @@ describe("updateOrganization mutation performance tracking", () => {
 		assertToBeNonNullish(result.data?.updateOrganization);
 
 		// Verify performance metrics including sub-operations
-		const snapshots = server.getMetricsSnapshots?.(1) ?? [];
-		const latestSnapshot = snapshots[0];
+		const snapshots = server.getMetricsSnapshots?.() ?? [];
+
+		const latestSnapshot = snapshots.find(
+			(s) => s.ops["mutation:updateOrganization"] !== undefined,
+		);
 		assertToBeNonNullish(latestSnapshot);
 		const mainOp = latestSnapshot.ops["mutation:updateOrganization"];
 

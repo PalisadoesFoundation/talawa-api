@@ -257,4 +257,35 @@ describe("createOrganization mutation performance tracking", () => {
 		expect(avatarUploadOp?.count).toBe(1);
 		expect(avatarUploadOp?.ms).toBeGreaterThanOrEqual(0);
 	});
+
+	it("should track metrics even when mutation fails", async () => {
+		const initialSnapshots = server.getMetricsSnapshots?.() ?? [];
+
+		// Simulate authentication failure by not providing token
+		const result = await mercuriusClient.mutate(Mutation_createOrganization, {
+			headers: { authorization: "" },
+			variables: {
+				input: {
+					name: "Unauthorized Org",
+					countryCode: "us",
+				},
+			},
+		});
+
+		expect(result.errors).toBeDefined();
+		expect(result.data?.createOrganization).toBeNull();
+
+		const snapshots = server.getMetricsSnapshots?.() ?? [];
+		expect(snapshots.length).toBeGreaterThan(initialSnapshots.length);
+
+		// Find the snapshot that contains our mutation operation
+		const latestSnapshot = snapshots.find(
+			(s) => s.ops["mutation:createOrganization"] !== undefined,
+		);
+		assertToBeNonNullish(latestSnapshot);
+		const op = latestSnapshot.ops["mutation:createOrganization"];
+
+		expect(op).toBeDefined();
+		expect(op?.count).toBeGreaterThanOrEqual(1);
+	});
 });
