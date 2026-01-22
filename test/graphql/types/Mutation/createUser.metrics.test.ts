@@ -83,9 +83,6 @@ describe("createUser mutation performance tracking", () => {
 	});
 
 	it("should track metrics even when mutation fails", async () => {
-		// Get initial snapshot count
-		const initialSnapshots = server.getMetricsSnapshots?.() ?? [];
-
 		// First create a user
 		const firstResult = await mercuriusClient.mutate(Mutation_createUser, {
 			headers: { authorization: `bearer ${authToken}` },
@@ -104,6 +101,8 @@ describe("createUser mutation performance tracking", () => {
 		assertToBeNonNullish(firstResult.data?.createUser);
 		assertToBeNonNullish(firstResult.data.createUser.user);
 		assertToBeNonNullish(firstResult.data.createUser.user.emailAddress);
+
+		const baselineAfterFirst = server.getMetricsSnapshots?.() ?? [];
 
 		// Try to create another user with the same email (will fail in resolver)
 		const result = await mercuriusClient.mutate(Mutation_createUser, {
@@ -124,10 +123,11 @@ describe("createUser mutation performance tracking", () => {
 
 		// Verify performance metrics were still collected even on error
 		const snapshots = server.getMetricsSnapshots?.() ?? [];
-		expect(snapshots.length).toBeGreaterThan(initialSnapshots.length);
+		expect(snapshots.length).toBeGreaterThan(baselineAfterFirst.length);
 
+		const newSnapshots = snapshots.slice(baselineAfterFirst.length);
 		// Verify the specific mutation:createUser metric was recorded
-		const latestSnapshot = snapshots.find(
+		const latestSnapshot = newSnapshots.find(
 			(s) => s.ops["mutation:createUser"] !== undefined,
 		);
 		assertToBeNonNullish(latestSnapshot);
@@ -189,11 +189,16 @@ describe("createUser mutation performance tracking", () => {
 		expect(result.errors).toBeUndefined();
 		assertToBeNonNullish(result.data?.createUser);
 
+		const initialSnapshots = server.getMetricsSnapshots?.() ?? [];
+
 		// Verify performance metrics including sub-operations
 		const snapshots = server.getMetricsSnapshots?.() ?? [];
 
+		const newSnapshots = snapshots.slice(initialSnapshots.length);
 		// Check the most recent snapshot for the mutation operation
-		const latestSnapshot = snapshots[0];
+		const latestSnapshot = newSnapshots.find(
+			(s) => s.ops["mutation:createUser"] !== undefined,
+		);
 		assertToBeNonNullish(latestSnapshot);
 
 		const mainOp = latestSnapshot.ops["mutation:createUser"];

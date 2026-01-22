@@ -40,9 +40,6 @@ describe("deleteOrganization mutation performance tracking", () => {
 	});
 
 	it("should track mutation execution time when perf tracker is available", async () => {
-		// Get initial snapshot count to verify new snapshot is created
-		const initialSnapshots = server.getMetricsSnapshots?.() ?? [];
-
 		// Create an organization to delete
 		const createResult = await mercuriusClient.mutate(
 			Mutation_createOrganization,
@@ -66,6 +63,8 @@ describe("deleteOrganization mutation performance tracking", () => {
 		assertToBeNonNullish(createResult.data?.createOrganization);
 		const orgId = createResult.data.createOrganization.id;
 
+		const initialSnapshots = server.getMetricsSnapshots?.() ?? [];
+
 		// Delete the organization
 		const result = await mercuriusClient.mutate(Mutation_deleteOrganization, {
 			headers: { authorization: `bearer ${authToken}` },
@@ -84,8 +83,9 @@ describe("deleteOrganization mutation performance tracking", () => {
 		const snapshots = server.getMetricsSnapshots?.() ?? [];
 		expect(snapshots.length).toBeGreaterThan(initialSnapshots.length);
 
+		const newSnapshots = snapshots.slice(initialSnapshots.length);
 		// Check the most recent snapshot for the mutation operation
-		const latestSnapshot = snapshots.find(
+		const latestSnapshot = newSnapshots.find(
 			(s) => s.ops["mutation:deleteOrganization"] !== undefined,
 		);
 		assertToBeNonNullish(latestSnapshot);
@@ -120,8 +120,9 @@ describe("deleteOrganization mutation performance tracking", () => {
 		const snapshots = server.getMetricsSnapshots?.() ?? [];
 		expect(snapshots.length).toBeGreaterThan(initialSnapshots.length);
 
+		const newSnapshots = snapshots.slice(initialSnapshots.length);
 		// Verify the specific mutation metric is present
-		const latestSnapshot = snapshots.find(
+		const latestSnapshot = newSnapshots.find(
 			(s) => s.ops["mutation:deleteOrganization"] !== undefined,
 		);
 		assertToBeNonNullish(latestSnapshot);
@@ -175,8 +176,9 @@ describe("deleteOrganization mutation performance tracking", () => {
 		const snapshots = server.getMetricsSnapshots?.() ?? [];
 		expect(snapshots.length).toBeGreaterThan(initialSnapshots.length);
 
+		const newSnapshots = snapshots.slice(initialSnapshots.length);
 		// Verify snapshot contains an ops entry for "mutation:deleteOrganization"
-		const latestSnapshot = snapshots.find(
+		const latestSnapshot = newSnapshots.find(
 			(s) => s.ops["mutation:deleteOrganization"] !== undefined,
 		);
 		assertToBeNonNullish(latestSnapshot);
@@ -209,6 +211,8 @@ describe("deleteOrganization mutation performance tracking", () => {
 		assertToBeNonNullish(createResult.data?.createOrganization);
 		const orgId = createResult.data.createOrganization.id;
 
+		const initialSnapshots = server.getMetricsSnapshots?.() ?? [];
+
 		const result = await mercuriusClient.mutate(Mutation_deleteOrganization, {
 			headers: { authorization: `bearer ${authToken}` },
 			variables: {
@@ -223,7 +227,8 @@ describe("deleteOrganization mutation performance tracking", () => {
 
 		// Verify operation name format
 		const snapshots = server.getMetricsSnapshots?.() ?? [];
-		const latestSnapshot = snapshots.find(
+		const newSnapshots = snapshots.slice(initialSnapshots.length);
+		const latestSnapshot = newSnapshots.find(
 			(s) => s.ops["mutation:deleteOrganization"] !== undefined,
 		);
 		assertToBeNonNullish(latestSnapshot);
@@ -253,6 +258,8 @@ describe("deleteOrganization mutation performance tracking", () => {
 		assertToBeNonNullish(createResult.data?.createOrganization);
 		const orgId = createResult.data.createOrganization.id;
 
+		const initialSnapshots = server.getMetricsSnapshots?.() ?? [];
+
 		// Delete the organization
 		const result = await mercuriusClient.mutate(Mutation_deleteOrganization, {
 			headers: { authorization: `bearer ${authToken}` },
@@ -268,7 +275,8 @@ describe("deleteOrganization mutation performance tracking", () => {
 
 		// Verify performance metrics including sub-operations
 		const snapshots = server.getMetricsSnapshots?.() ?? [];
-		const latestSnapshot = snapshots.find(
+		const newSnapshots = snapshots.slice(initialSnapshots.length);
+		const latestSnapshot = newSnapshots.find(
 			(s) => s.ops["mutation:deleteOrganization"] !== undefined,
 		);
 		assertToBeNonNullish(latestSnapshot);
@@ -308,6 +316,8 @@ describe("deleteOrganization mutation performance tracking", () => {
 		assertToBeNonNullish(createResult.data?.createOrganization);
 		const orgId = createResult.data.createOrganization.id;
 
+		const initialSnapshots = server.getMetricsSnapshots?.() ?? [];
+
 		// Delete the organization (cleanup will be triggered even if no files exist)
 		const result = await mercuriusClient.mutate(Mutation_deleteOrganization, {
 			headers: { authorization: `bearer ${authToken}` },
@@ -323,7 +333,8 @@ describe("deleteOrganization mutation performance tracking", () => {
 
 		// Verify performance metrics including sub-operations
 		const snapshots = server.getMetricsSnapshots?.() ?? [];
-		const latestSnapshot = snapshots.find(
+		const newSnapshots = snapshots.slice(initialSnapshots.length);
+		const latestSnapshot = newSnapshots.find(
 			(s) => s.ops["mutation:deleteOrganization"] !== undefined,
 		);
 		assertToBeNonNullish(latestSnapshot);

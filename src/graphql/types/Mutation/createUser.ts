@@ -153,7 +153,7 @@ builder.mutationField("createUser", (t) =>
 
 				const passwordHash = await hash(parsedArgs.input.password);
 
-				return await ctx.drizzleClient.transaction(async (tx) => {
+				const result = await ctx.drizzleClient.transaction(async (tx) => {
 					// Track database insert operation
 					const dbInsertStop = ctx.perf?.start("db:user-insert");
 					let createdUser: typeof usersTable.$inferSelect | undefined;
@@ -204,23 +204,6 @@ builder.mutationField("createUser", (t) =>
 						});
 					}
 
-					if (isNotNullish(parsedArgs.input.avatar) && avatarName) {
-						const fileUploadStop = ctx.perf?.start("file:avatar-upload");
-						try {
-							await ctx.minio.client.putObject(
-								ctx.minio.bucketName,
-								avatarName,
-								parsedArgs.input.avatar.createReadStream(),
-								undefined,
-								{
-									"content-type": parsedArgs.input.avatar.mimetype,
-								},
-							);
-						} finally {
-							fileUploadStop?.();
-						}
-					}
-
 					// Generate refresh token
 					const rawRefreshToken = generateRefreshToken();
 					const refreshTokenHash = hashRefreshToken(rawRefreshToken);
@@ -257,6 +240,26 @@ builder.mutationField("createUser", (t) =>
 						user: createdUser,
 					};
 				});
+
+				// Upload avatar after successful transaction completion
+				if (isNotNullish(parsedArgs.input.avatar) && avatarName) {
+					const fileUploadStop = ctx.perf?.start("file:avatar-upload");
+					try {
+						await ctx.minio.client.putObject(
+							ctx.minio.bucketName,
+							avatarName,
+							parsedArgs.input.avatar.createReadStream(),
+							undefined,
+							{
+								"content-type": parsedArgs.input.avatar.mimetype,
+							},
+						);
+					} finally {
+						fileUploadStop?.();
+					}
+				}
+
+				return result;
 			};
 
 			if (ctx.perf) {

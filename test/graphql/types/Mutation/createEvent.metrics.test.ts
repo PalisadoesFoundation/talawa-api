@@ -96,8 +96,9 @@ describe("createEvent mutation performance tracking", () => {
 		const snapshots = server.getMetricsSnapshots?.() ?? [];
 		expect(snapshots.length).toBeGreaterThan(initialSnapshots.length);
 
+		const newSnapshots = snapshots.slice(initialSnapshots.length);
 		// Verify the specific mutation:createEvent metric was recorded
-		const latestSnapshot = snapshots.find(
+		const latestSnapshot = newSnapshots.find(
 			(s) => s.ops["mutation:createEvent"] !== undefined,
 		);
 		assertToBeNonNullish(latestSnapshot);
@@ -146,7 +147,8 @@ describe("createEvent mutation performance tracking", () => {
 		const snapshots = server.getMetricsSnapshots?.() ?? [];
 		expect(snapshots.length).toBeGreaterThan(initialSnapshots.length);
 
-		const latestSnapshot = snapshots.find(
+		const newSnapshots = snapshots.slice(initialSnapshots.length);
+		const latestSnapshot = newSnapshots.find(
 			(s) => s.ops["mutation:createEvent"] !== undefined,
 		);
 		assertToBeNonNullish(latestSnapshot);
@@ -182,7 +184,8 @@ describe("createEvent mutation performance tracking", () => {
 		const snapshots = server.getMetricsSnapshots?.() ?? [];
 		expect(snapshots.length).toBeGreaterThan(initialSnapshots.length);
 
-		const latestSnapshot = snapshots.find(
+		const newSnapshots = snapshots.slice(initialSnapshots.length);
+		const latestSnapshot = newSnapshots.find(
 			(s) => s.ops["mutation:createEvent"] !== undefined,
 		);
 		assertToBeNonNullish(latestSnapshot);
@@ -218,8 +221,9 @@ describe("createEvent mutation performance tracking", () => {
 		const snapshots = server.getMetricsSnapshots?.() ?? [];
 		expect(snapshots.length).toBeGreaterThan(initialSnapshots.length);
 
+		const newSnapshots = snapshots.slice(initialSnapshots.length);
 		// Verify a snapshot exists with ops["mutation:createEvent"] recorded
-		const latestSnapshot = snapshots.find(
+		const latestSnapshot = newSnapshots.find(
 			(s) => s.ops["mutation:createEvent"] !== undefined,
 		);
 		assertToBeNonNullish(latestSnapshot);
