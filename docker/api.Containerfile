@@ -75,9 +75,7 @@ COPY --chown=talawa:talawa ./pnpm-lock.yaml ./pnpm-lock.yaml
 RUN pnpm fetch --frozen-lockfile
 COPY --chown=talawa:talawa ./ ./
 RUN pnpm install --frozen-lockfile --offline
-# Default command for development - automatically starts the development server
-# Using bash -l to ensure login shell loads environment properly
-CMD ["bash", "-l", "-c", "pnpm run start_development_server"]
+# No CMD specified - command is provided via compose file overrides
 
 # This build stage is used to build the codebase used in production environment of talawa api. 
 FROM base AS production_code
