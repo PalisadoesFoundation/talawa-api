@@ -85,6 +85,31 @@ describe("AgendaItem.attachments resolver", () => {
 		);
 	});
 
+	it("returns empty array when no attachments exist", async () => {
+		mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValueOnce({
+			id: "admin-1",
+			role: "administrator",
+		} as never);
+
+		mocks.drizzleClient.query.agendaFoldersTable.findFirst.mockResolvedValueOnce({
+			id: "folder-1",
+			event: {
+			id: "event-1",
+			organization: {
+				membershipsWhereOrganization: [],
+			},
+			},
+		} as never);
+
+		mocks.drizzleClient.query.agendaItemAttachmentsTable.findMany.mockResolvedValueOnce(
+			[] as never,
+		);
+
+		const result = await resolveAttachments(mockAgendaItem, {}, ctx);
+
+		expect(result).toEqual([]);
+	});
+
 	it("throws unexpected when event does not exist on folder", async () => {
 		mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValueOnce({
 			id: "user-1",

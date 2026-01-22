@@ -306,7 +306,7 @@ builder.mutationField("updateAgendaItem", (t) =>
 					if (parsedArgs.input.url.length > 0) {
 						await tx.insert(agendaItemUrlTable).values(
 							parsedArgs.input.url.map((u) => ({
-								agendaItemId: parsedArgs.input.id,
+								agendaItemId: updatedAgendaItem.id,
 								url: u.url,
 								creatorId: currentUserId,
 								updaterId: currentUserId,

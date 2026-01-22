@@ -16,6 +16,7 @@ import {
 	Mutation_updateAgendaItem,
 	Query_signIn,
 } from "../documentNodes";
+import { agendaItemUrlTable } from "~/src/drizzle/tables/agendaItemUrls";
 
 let authToken: string;
 let adminUser: { id: string };
@@ -39,6 +40,21 @@ beforeAll(async () => {
 	assertToBeNonNullish(signInResult.data.signIn.user);
 	adminUser = signInResult.data.signIn.user;
 });
+
+async function insertAgendaItemUrls(
+	agendaItemId: string,
+	urls: string[],
+) {
+	await server.drizzleClient.insert(agendaItemUrlTable).values(
+		urls.map((url) => ({
+			agendaItemId,
+			url,
+			creatorId: adminUser.id,
+			updaterId: adminUser.id,
+		})),
+	);
+}
+
 
 async function createOrganizationAndEvent() {
 	const orgRes = await mercuriusClient.mutate(Mutation_createOrganization, {
@@ -71,8 +87,8 @@ async function createOrganizationAndEvent() {
 				organizationId: orgId,
 				name: "Test Event",
 				description: "Agenda Event",
-				startAt: new Date(Date.now() + 60000).toISOString(),
-				endAt: new Date(Date.now() + 3600000).toISOString(),
+				startAt: new Date(Date.now() + 5_000).toISOString(),
+				endAt: new Date(Date.now() + 3_600_000 + 5_000).toISOString(),
 				location: "Test Location",
 			},
 		},
@@ -307,6 +323,9 @@ suite("Mutation field updateAgendaItem", () => {
 	test("should throw unexpected error when update returns nothing", async () => {
 		const { agendaItemId } = await createCategoryFolderAgendaItem();
 
+		// Mock required: This edge case (update returning empty array) cannot be
+		// reproduced with real DB constraints. The mock ensures branch coverage
+		// for the defensive check after agenda item update.
 		const transactionSpy = vi
 			.spyOn(server.drizzleClient, "transaction")
 			.mockImplementation(async (callback) => {
@@ -336,5 +355,98 @@ suite("Mutation field updateAgendaItem", () => {
 
 		expect(transactionSpy).toHaveBeenCalled();
 		expect(result.errors?.[0]?.extensions?.code).toBe("unexpected");
+	});
+
+	test("should delete all URLs when url is provided as empty array", async () => {
+		const { agendaItemId } = await createCategoryFolderAgendaItem();
+
+		await insertAgendaItemUrls(agendaItemId, [
+			"https://example.com/1",
+			"https://example.com/2",
+		]);
+
+		const result = await mercuriusClient.mutate(Mutation_updateAgendaItem, {
+			headers: { authorization: `bearer ${authToken}` },
+			variables: {
+				input: {
+					id: agendaItemId,
+					url: [],
+				},
+			},
+		});
+
+		expect(result.errors).toBeUndefined();
+
+		const urlsAfter = await server.drizzleClient
+			.select()
+			.from(agendaItemUrlTable)
+			.where(eq(agendaItemUrlTable.agendaItemId, agendaItemId));
+
+		expect(urlsAfter).toHaveLength(0);
+	});
+
+	test("should replace URLs when non-empty url array is provided", async () => {
+		const { agendaItemId } = await createCategoryFolderAgendaItem();
+
+		await insertAgendaItemUrls(agendaItemId, [
+			"https://old.com/1",
+			"https://old.com/2",
+		]);
+
+		const newUrls = [
+			"https://new.com/a",
+			"https://new.com/b",
+		];
+
+		const result = await mercuriusClient.mutate(Mutation_updateAgendaItem, {
+			headers: { authorization: `bearer ${authToken}` },
+			variables: {
+				input: {
+					id: agendaItemId,
+					url: newUrls.map((url) => ({ url })),
+				},
+			},
+		});
+
+		expect(result.errors).toBeUndefined();
+
+		const urlsAfter = await server.drizzleClient
+			.select()
+			.from(agendaItemUrlTable)
+			.where(eq(agendaItemUrlTable.agendaItemId, agendaItemId));
+
+		expect(urlsAfter).toHaveLength(2);
+		expect(urlsAfter.map((u) => u.url).sort()).toEqual(newUrls.sort());
+	});
+
+	test("should not modify URLs when url input is omitted", async () => {
+		const { agendaItemId } = await createCategoryFolderAgendaItem();
+
+		const initialUrls = [
+			"https://keep.com/1",
+			"https://keep.com/2",
+		];
+
+		await insertAgendaItemUrls(agendaItemId, initialUrls);
+
+		const result = await mercuriusClient.mutate(Mutation_updateAgendaItem, {
+			headers: { authorization: `bearer ${authToken}` },
+			variables: {
+				input: {
+					id: agendaItemId,
+					name: "Updated name only",
+				},
+			},
+		});
+
+		expect(result.errors).toBeUndefined();
+
+		const urlsAfter = await server.drizzleClient
+			.select()
+			.from(agendaItemUrlTable)
+			.where(eq(agendaItemUrlTable.agendaItemId, agendaItemId));
+
+		expect(urlsAfter).toHaveLength(2);
+		expect(urlsAfter.map((u) => u.url).sort()).toEqual(initialUrls.sort());
 	});
 });
