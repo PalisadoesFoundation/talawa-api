@@ -2815,6 +2815,8 @@ allDay
 isPublic
 isRegisterable
 isInviteOnly
+isGenerated
+baseRecurringEventId
 organization {
 id
 name

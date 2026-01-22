@@ -710,7 +710,10 @@ suite("Query field eventsByVolunteer", () => {
 			const adminEvents = adminResult.data?.eventsByVolunteer;
 			assertToBeNonNullish(adminEvents);
 			const instance = adminEvents.find(
-				(e) => e.name === "Base Event for Cancelled Instance",
+				(e) =>
+					e.name === "Base Event for Cancelled Instance" &&
+					e.isGenerated === true &&
+					e.baseRecurringEventId === baseEventId,
 			);
 			assertToBeNonNullish(instance);
 			const instanceId = instance.id;

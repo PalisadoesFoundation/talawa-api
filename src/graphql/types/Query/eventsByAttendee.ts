@@ -15,8 +15,8 @@ import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 
 const queryEventsByAttendeeArgumentsSchema = z.object({
 	userId: z.string().uuid(),
-	limit: z.number().int().min(1).max(100).optional(),
-	offset: z.number().int().min(0).optional(),
+	limit: z.number().int().nonnegative().max(100).default(100),
+	offset: z.number().int().nonnegative().default(0),
 });
 
 /**
@@ -66,8 +66,7 @@ builder.queryField("eventsByAttendee", (t) =>
 
 			const currentUserId = ctx.currentClient.user.id;
 			const targetUserId = parsedArgs.data.userId;
-			const limit = parsedArgs.data.limit ?? 100;
-			const offset = parsedArgs.data.offset ?? 0;
+			const { limit, offset } = parsedArgs.data;
 
 			// Get current user for authorization
 			const currentUser = await ctx.drizzleClient.query.usersTable.findFirst({

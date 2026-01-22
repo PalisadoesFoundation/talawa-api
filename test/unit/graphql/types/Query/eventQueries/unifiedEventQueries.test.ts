@@ -15,7 +15,11 @@ const mockLogger = {
 	debug: vi.fn(),
 } as unknown as ServiceDependencies["logger"];
 
-// Mock sibling modules
+// NOTE: Unit mocks are intentionally used here instead of mercuriusClient integration tests
+// because getEventsByIds is a utility function that orchestrates calls to getStandaloneEventsByIds
+// and getRecurringEventInstancesByIds. Testing the orchestration logic in isolation allows us to
+// verify the coordination behavior without depending on database state. Integration tests for the
+// full GraphQL stack are covered in test/graphql/types/Query/*.test.ts files.
 vi.mock(
 	"~/src/graphql/types/Query/eventQueries/standaloneEventQueries",
 	() => ({

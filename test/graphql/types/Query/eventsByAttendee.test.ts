@@ -110,7 +110,9 @@ suite("Query field eventsByAttendee", () => {
 			assertToBeNonNullish(userToken);
 			assertToBeNonNullish(userId);
 
-			// Mock findFirst to return undefined (simulate deleted user or database inconsistency)
+			// Using vi.spyOn to simulate a mid-request race condition where the user
+			// is deleted between authentication and the database lookup. This tests
+			// the resolver's handling of a "ghost" authentication token scenario.
 			const spy = vi
 				.spyOn(server.drizzleClient.query.usersTable, "findFirst")
 				.mockResolvedValue(undefined);

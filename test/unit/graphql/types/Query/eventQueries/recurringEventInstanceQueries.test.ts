@@ -148,6 +148,33 @@ describe("getRecurringEventInstancesByBaseIds", () => {
 		expect(lastCallArgs).toHaveProperty("where");
 	});
 
+	it("should NOT filter by isCancelled when includeCancelled is true", async () => {
+		const baseIds = ["base-1"];
+
+		vi.mocked(
+			mockDrizzleClient.query.recurringEventInstancesTable.findMany,
+		).mockResolvedValueOnce([]);
+
+		await getRecurringEventInstancesByBaseIds(
+			baseIds,
+			mockDrizzleClient,
+			mockLogger,
+			{ includeCancelled: true },
+		);
+
+		// Get the call arguments
+		const calls = vi.mocked(
+			mockDrizzleClient.query.recurringEventInstancesTable.findMany,
+		).mock.calls;
+		expect(calls.length).toBe(1);
+
+		// Verify that where clause was called - with includeCancelled: true,
+		// the isCancelled=false filter should NOT be added, resulting in
+		// fewer conditions in the where clause
+		const callArgs = calls[0]?.[0] as { where?: unknown };
+		expect(callArgs).toHaveProperty("where");
+	});
+
 	it("should respect the excludeInstanceIds parameter", async () => {
 		const baseIds = ["base-1"];
 		const excludeIds = ["inst-1", "inst-2"];

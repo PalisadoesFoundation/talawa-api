@@ -133,6 +133,11 @@ export async function getStandaloneEventsByIds(
 		attachments: (typeof eventAttachmentsTable.$inferSelect)[];
 	})[]
 > {
+	// Early return for empty array to avoid inArray with empty list
+	if (eventIds.length === 0) {
+		return [];
+	}
+
 	try {
 		const includeTemplates = options?.includeTemplates ?? false;
 		const whereClause = includeTemplates
