@@ -1,3 +1,4 @@
+import { eq } from "drizzle-orm";
 import type { FileUpload } from "graphql-upload-minimal";
 import { ulid } from "ulidx";
 import { uuidv7 } from "uuidv7";
@@ -652,7 +653,24 @@ builder.mutationField("createEvent", (t) =>
 							}
 						}
 
-						// Re-throw to propagate the error (the DB records remain, can be retried)
+						// Rollback: Delete the persisted event to undo the committed transaction
+						try {
+							await ctx.drizzleClient
+								.delete(eventsTable)
+								.where(eq(eventsTable.id, createdEventResult.event.id));
+
+							ctx.log.info(
+								{ eventId: createdEventResult.event.id },
+								"Rolled back event creation due to attachment upload failure",
+							);
+						} catch (rollbackError) {
+							ctx.log.error(
+								{ error: rollbackError, eventId: createdEventResult.event.id },
+								"Failed to rollback event creation after attachment upload failure",
+							);
+						}
+
+						// Re-throw to propagate the error
 						throw uploadError;
 					} finally {
 						attachmentUploadStop?.();

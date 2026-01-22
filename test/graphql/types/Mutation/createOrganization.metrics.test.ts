@@ -65,7 +65,8 @@ describe("createOrganization mutation performance tracking", () => {
 		expect(snapshots.length).toBeGreaterThan(initialSnapshots.length);
 
 		// Check the most recent snapshot for the mutation operation
-		const latestSnapshot = snapshots.find(
+		const newSnapshots = snapshots.slice(initialSnapshots.length);
+		const latestSnapshot = newSnapshots.find(
 			(s) => s.ops["mutation:createOrganization"] !== undefined,
 		);
 		assertToBeNonNullish(latestSnapshot);
@@ -107,7 +108,8 @@ describe("createOrganization mutation performance tracking", () => {
 		expect(snapshots.length).toBeGreaterThan(initialSnapshots.length);
 
 		// Verify the specific mutation metric is present
-		const latestSnapshot = snapshots.find(
+		const newSnapshots = snapshots.slice(initialSnapshots.length);
+		const latestSnapshot = newSnapshots.find(
 			(s) => s.ops?.["mutation:createOrganization"],
 		);
 		assertToBeNonNullish(latestSnapshot);
@@ -115,6 +117,7 @@ describe("createOrganization mutation performance tracking", () => {
 	});
 
 	it("should use correct operation name format", async () => {
+		const initialSnapshots = server.getMetricsSnapshots?.() ?? [];
 		const result = await mercuriusClient.mutate(Mutation_createOrganization, {
 			headers: { authorization: `bearer ${authToken}` },
 			variables: {
@@ -136,7 +139,8 @@ describe("createOrganization mutation performance tracking", () => {
 
 		// Verify operation name format
 		const snapshots = server.getMetricsSnapshots?.() ?? [];
-		const latestSnapshot = snapshots.find(
+		const newSnapshots = snapshots.slice(initialSnapshots.length);
+		const latestSnapshot = newSnapshots.find(
 			(s) => s.ops?.["mutation:createOrganization"],
 		);
 		assertToBeNonNullish(latestSnapshot);
@@ -144,6 +148,7 @@ describe("createOrganization mutation performance tracking", () => {
 	});
 
 	it("should track complex mutation execution timing", async () => {
+		const initialSnapshots = server.getMetricsSnapshots?.() ?? [];
 		const result = await mercuriusClient.mutate(Mutation_createOrganization, {
 			headers: { authorization: `bearer ${authToken}` },
 			variables: {
@@ -170,7 +175,8 @@ describe("createOrganization mutation performance tracking", () => {
 
 		// Verify metrics were collected for complex operation
 		const snapshots = server.getMetricsSnapshots?.() ?? [];
-		const latestSnapshot = snapshots.find(
+		const newSnapshots = snapshots.slice(initialSnapshots.length);
+		const latestSnapshot = newSnapshots.find(
 			(s) => s.ops["mutation:createOrganization"] !== undefined,
 		);
 		assertToBeNonNullish(latestSnapshot);
@@ -188,6 +194,7 @@ describe("createOrganization mutation performance tracking", () => {
 	});
 
 	it("should track sub-operation metrics including avatar upload", async () => {
+		const initialSnapshots = server.getMetricsSnapshots?.() ?? [];
 		const boundary = `----WebKitFormBoundary${Math.random().toString(36)}`;
 		const operations = JSON.stringify({
 			query: print(Mutation_createOrganization),
@@ -214,6 +221,7 @@ describe("createOrganization mutation performance tracking", () => {
 			// PNG signature
 			0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a,
 			// IHDR chunk (13 bytes): width=1, height=1, bit depth=8, color type=6 (RGBA)
+			// ... (rest of bytes)
 			0x00,
 			0x00, 0x00, 0x0d, 0x49, 0x48, 0x44, 0x52, 0x00, 0x00, 0x00, 0x01, 0x00,
 			0x00, 0x00, 0x01, 0x08, 0x06, 0x00, 0x00, 0x00, 0x1f, 0x15, 0xc4, 0x89,
@@ -224,22 +232,21 @@ describe("createOrganization mutation performance tracking", () => {
 			0x00, 0x00, 0x00, 0x00, 0x49, 0x45, 0x4e, 0x44, 0xae, 0x42, 0x60, 0x82,
 		]);
 
-		const body = [
-			`--${boundary}`,
-			'Content-Disposition: form-data; name="operations"',
-			"",
-			operations,
-			`--${boundary}`,
-			'Content-Disposition: form-data; name="map"',
-			"",
-			map,
-			`--${boundary}`,
-			'Content-Disposition: form-data; name="0"; filename="org-avatar.png"',
-			"Content-Type: image/png",
-			"",
+		const body = Buffer.concat([
+			Buffer.from(`--${boundary}\r\n`),
+			Buffer.from('Content-Disposition: form-data; name="operations"\r\n\r\n'),
+			Buffer.from(operations),
+			Buffer.from(`\r\n--${boundary}\r\n`),
+			Buffer.from('Content-Disposition: form-data; name="map"\r\n\r\n'),
+			Buffer.from(map),
+			Buffer.from(`\r\n--${boundary}\r\n`),
+			Buffer.from(
+				'Content-Disposition: form-data; name="0"; filename="org-avatar.png"\r\n',
+			),
+			Buffer.from("Content-Type: image/png\r\n\r\n"),
 			fileContent,
-			`--${boundary}--`,
-		].join("\r\n");
+			Buffer.from(`\r\n--${boundary}--`),
+		]);
 
 		const response = await server.inject({
 			method: "POST",
@@ -258,7 +265,8 @@ describe("createOrganization mutation performance tracking", () => {
 
 		// Verify performance metrics including sub-operations
 		const snapshots = server.getMetricsSnapshots?.() ?? [];
-		const latestSnapshot = snapshots.find(
+		const newSnapshots = snapshots.slice(initialSnapshots.length);
+		const latestSnapshot = newSnapshots.find(
 			(s) => s.ops["mutation:createOrganization"] !== undefined,
 		);
 		assertToBeNonNullish(latestSnapshot);
@@ -302,7 +310,8 @@ describe("createOrganization mutation performance tracking", () => {
 		expect(snapshots.length).toBeGreaterThan(initialSnapshots.length);
 
 		// Find the snapshot that contains our mutation operation
-		const latestSnapshot = snapshots.find(
+		const newSnapshots = snapshots.slice(initialSnapshots.length);
+		const latestSnapshot = newSnapshots.find(
 			(s) => s.ops["mutation:createOrganization"] !== undefined,
 		);
 		assertToBeNonNullish(latestSnapshot);

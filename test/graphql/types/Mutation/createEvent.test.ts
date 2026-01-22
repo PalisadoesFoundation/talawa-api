@@ -1,6 +1,8 @@
+import { Readable } from "node:stream";
 import { faker } from "@faker-js/faker";
 import type { ResultOf, VariablesOf } from "gql.tada";
 import type { ExecutionResult } from "graphql";
+import type { FileUpload } from "graphql-upload-minimal";
 import { afterEach, expect, suite, test, vi } from "vitest";
 import {
 	agendaCategoriesTable,
@@ -1221,5 +1223,70 @@ suite("Default Agenda Folder and Category Creation", () => {
 			2,
 		);
 		expect(new Set(defaultCategories.map((c) => c.eventId)).size).toBe(2);
+	});
+
+	test("should rollback event creation and clean up files when MinIO upload fails", async () => {
+		const orgId = await createTestOrganization();
+		assertToBeNonNullish(orgId);
+
+		const uploadError = new Error("Simulated MinIO upload failure");
+
+		// Mock putObject to fail
+		vi.spyOn(server.minio.client, "putObject").mockRejectedValueOnce(
+			uploadError,
+		);
+
+		// Spy on rollback and cleanup methods
+		const deleteSpy = vi.spyOn(server.drizzleClient, "delete");
+		const logErrorSpy = vi.spyOn(server.log, "error");
+		const logInfoSpy = vi.spyOn(server.log, "info");
+
+		const fileUpload = new Promise((resolve) => {
+			resolve({
+				filename: "test.png",
+				mimetype: "image/png",
+				encoding: "7bit",
+				createReadStream: () => {
+					const stream = new Readable();
+					stream.push("test-content");
+					stream.push(null);
+					return stream;
+				},
+			});
+		});
+
+		try {
+			await createEvent({
+				input: {
+					...baseEventInput(orgId),
+					attachments: [fileUpload as unknown as Promise<FileUpload>],
+				},
+			});
+			// Should throw
+			expect.fail("Expected mutation to throw due to upload failure");
+		} catch (error) {
+			expect(error).toBeDefined();
+		}
+
+		// Verify rollback: Event should be deleted from DB
+		expect(deleteSpy).toHaveBeenCalled();
+
+		// Verify expected error was logged (upload failure)
+		expect(logErrorSpy).toHaveBeenCalledWith(
+			expect.objectContaining({ error: uploadError }),
+			expect.stringContaining("Failed to upload event attachments"),
+		);
+
+		// Verify rollback success log
+		expect(logInfoSpy).toHaveBeenCalledWith(
+			expect.objectContaining({ eventId: expect.any(String) }),
+			expect.stringContaining("Rolled back event creation"),
+		);
+
+		// Verify event is actually gone from DB
+		const events = await server.drizzleClient.query.eventsTable.findMany({
+			where: (fields, operators) => operators.eq(fields.organizationId, orgId),
+		});
+		expect(events.length).toBe(0);
 	});
 });
