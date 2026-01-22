@@ -3180,4 +3180,1115 @@ describe("GraphQL Routes", () => {
 			}
 		});
 	});
+
+	describe("Error Formatter covering Edge Cases and Normalization", () => {
+		it("should handle errors with extensions but invalid codes using normalizeError", async () => {
+			const mockFastifyInstance = {
+				register: vi.fn(),
+				envConfig: {
+					API_IS_GRAPHIQL: false,
+				},
+				log: {
+					info: vi.fn(),
+					error: vi.fn(),
+				},
+				graphql: {
+					replaceSchema: vi.fn(),
+					addHook: vi.fn(),
+				},
+			};
+
+			vi.mocked(schemaManager.buildInitialSchema).mockResolvedValue(
+				new GraphQLSchema({
+					query: new GraphQLObjectType({
+						name: "Query",
+						fields: {
+							hello: { type: GraphQLString, resolve: () => "Hello" },
+						},
+					}),
+				}),
+			);
+
+			await graphql(mockFastifyInstance as unknown as FastifyInstance);
+
+			// Find the mercurius registration call
+			const mercuriusCall = mockFastifyInstance.register.mock.calls.find(
+				(call: unknown[]) =>
+					call?.[1] &&
+					typeof call[1] === "object" &&
+					"errorFormatter" in call[1],
+			);
+
+			const mercuriusConfig = mercuriusCall?.[1] as {
+				errorFormatter: (
+					execution: {
+						errors: Array<{
+							message: string;
+							locations?: Array<{ line: number; column: number }>;
+							path?: Array<string | number>;
+							extensions?: { code?: string; someOtherField?: string };
+						}>;
+					},
+					context: {
+						reply?: {
+							request?: {
+								id?: string;
+								log?: { error: (obj: unknown) => void };
+							};
+						};
+					},
+				) => {
+					statusCode: number;
+					response: {
+						errors?: Array<{ message: string; extensions?: { code?: string } }>;
+					};
+				};
+			};
+
+			// Test with error that has extensions but invalid code (not in ErrorCode enum)
+			const result = mercuriusConfig.errorFormatter(
+				{
+					errors: [
+						{
+							message: "Custom error with invalid code",
+							locations: [{ line: 1, column: 1 }],
+							path: ["test"],
+							extensions: {
+								code: "INVALID_CUSTOM_CODE", // Not a valid ErrorCode
+								someOtherField: "value",
+							},
+						},
+					],
+				},
+				{
+					reply: {
+						request: {
+							id: "test-req",
+							log: { error: vi.fn() },
+						},
+					},
+				},
+			);
+
+			// Should use normalizeError and preserve meaningful message
+			expect(result.response.errors?.[0]?.message).toBe(
+				"Custom error with invalid code",
+			);
+			expect(result.response.errors?.[0]?.extensions?.code).toBe(
+				ErrorCode.INTERNAL_SERVER_ERROR,
+			); // normalizeError default
+		});
+
+		it("should use normalized message when original message contains Internal Server Error", async () => {
+			const mockFastifyInstance = {
+				register: vi.fn(),
+				envConfig: {
+					API_IS_GRAPHIQL: false,
+				},
+				log: {
+					info: vi.fn(),
+					error: vi.fn(),
+				},
+				graphql: {
+					replaceSchema: vi.fn(),
+					addHook: vi.fn(),
+				},
+			};
+
+			vi.mocked(schemaManager.buildInitialSchema).mockResolvedValue(
+				new GraphQLSchema({
+					query: new GraphQLObjectType({
+						name: "Query",
+						fields: {
+							hello: { type: GraphQLString, resolve: () => "Hello" },
+						},
+					}),
+				}),
+			);
+
+			await graphql(mockFastifyInstance as unknown as FastifyInstance);
+
+			// Find the mercurius registration call
+			const mercuriusCall = mockFastifyInstance.register.mock.calls.find(
+				(call: unknown[]) =>
+					call?.[1] &&
+					typeof call[1] === "object" &&
+					"errorFormatter" in call[1],
+			);
+
+			const mercuriusConfig = mercuriusCall?.[1] as {
+				errorFormatter: (
+					execution: {
+						errors: Array<{
+							message: string;
+							locations?: Array<{ line: number; column: number }>;
+							path?: Array<string | number>;
+							extensions?: { code?: string };
+						}>;
+					},
+					context: {
+						reply?: {
+							request?: {
+								id?: string;
+								log?: { error: (obj: unknown) => void };
+							};
+						};
+					},
+				) => {
+					statusCode: number;
+					response: { errors?: Array<{ message: string }> };
+				};
+			};
+
+			// Test with error that has extensions but invalid code and contains "Internal Server Error"
+			const result = mercuriusConfig.errorFormatter(
+				{
+					errors: [
+						{
+							message: "Internal Server Error occurred", // Contains "Internal Server Error"
+							extensions: {
+								code: "INVALID_CUSTOM_CODE", // Not a valid ErrorCode
+							},
+						},
+					],
+				},
+				{
+					reply: {
+						request: {
+							id: "test-req",
+							log: { error: vi.fn() },
+						},
+					},
+				},
+			);
+
+			// Should use normalized message instead of original
+			expect(result.response.errors?.[0]?.message).not.toBe(
+				"Internal Server Error occurred",
+			);
+		});
+
+		it("should handle error with empty message using normalizeError", async () => {
+			const mockFastifyInstance = {
+				register: vi.fn(),
+				envConfig: {
+					API_IS_GRAPHIQL: false,
+				},
+				log: {
+					info: vi.fn(),
+					error: vi.fn(),
+				},
+				graphql: {
+					replaceSchema: vi.fn(),
+					addHook: vi.fn(),
+				},
+			};
+
+			vi.mocked(schemaManager.buildInitialSchema).mockResolvedValue(
+				new GraphQLSchema({
+					query: new GraphQLObjectType({
+						name: "Query",
+						fields: {
+							hello: { type: GraphQLString, resolve: () => "Hello" },
+						},
+					}),
+				}),
+			);
+
+			await graphql(mockFastifyInstance as unknown as FastifyInstance);
+
+			// Find the mercurius registration call
+			const mercuriusCall = mockFastifyInstance.register.mock.calls.find(
+				(call: unknown[]) =>
+					call?.[1] &&
+					typeof call[1] === "object" &&
+					"errorFormatter" in call[1],
+			);
+
+			const mercuriusConfig = mercuriusCall?.[1] as {
+				errorFormatter: (
+					execution: {
+						errors: Array<{
+							message: string;
+							extensions?: { code?: string };
+						}>;
+					},
+					context: {
+						reply?: {
+							request?: {
+								id?: string;
+								log?: { error: (obj: unknown) => void };
+							};
+						};
+					},
+				) => {
+					statusCode: number;
+					response: { errors?: Array<{ message: string }> };
+				};
+			};
+
+			// Test with error that has empty message
+			const result = mercuriusConfig.errorFormatter(
+				{
+					errors: [
+						{
+							message: "", // Empty message - should not preserve
+							extensions: {
+								code: "INVALID_CUSTOM_CODE", // Not a valid ErrorCode
+							},
+						},
+					],
+				},
+				{
+					reply: {
+						request: {
+							id: "test-req",
+							log: { error: vi.fn() },
+						},
+					},
+				},
+			);
+
+			// Should use normalized message instead of empty original
+			expect(result.response.errors?.[0]?.message).not.toBe("");
+		});
+
+		it("should handle error with valid ErrorCode in extensions", async () => {
+			const mockFastifyInstance = {
+				register: vi.fn(),
+				envConfig: {
+					API_IS_GRAPHIQL: false,
+				},
+				log: {
+					info: vi.fn(),
+					error: vi.fn(),
+				},
+				graphql: {
+					replaceSchema: vi.fn(),
+					addHook: vi.fn(),
+				},
+			};
+
+			vi.mocked(schemaManager.buildInitialSchema).mockResolvedValue(
+				new GraphQLSchema({
+					query: new GraphQLObjectType({
+						name: "Query",
+						fields: {
+							hello: { type: GraphQLString, resolve: () => "Hello" },
+						},
+					}),
+				}),
+			);
+
+			await graphql(mockFastifyInstance as unknown as FastifyInstance);
+
+			// Find the mercurius registration call
+			const mercuriusCall = mockFastifyInstance.register.mock.calls.find(
+				(call: unknown[]) =>
+					call?.[1] &&
+					typeof call[1] === "object" &&
+					"errorFormatter" in call[1],
+			);
+
+			const mercuriusConfig = mercuriusCall?.[1] as {
+				errorFormatter: (
+					execution: {
+						errors: Array<{
+							message?: string;
+							extensions?: { code?: string; details?: unknown };
+						}>;
+					},
+					context: {
+						reply?: {
+							request?: {
+								id?: string;
+								log?: { error: (obj: unknown) => void };
+							};
+						};
+					},
+				) => {
+					statusCode: number;
+					response: {
+						errors?: Array<{ message: string; extensions?: { code?: string } }>;
+					};
+				};
+			};
+
+			// Test with error that has valid ErrorCode in extensions but no message
+			const result = mercuriusConfig.errorFormatter(
+				{
+					errors: [
+						{
+							// No message property - should use fallback
+							extensions: {
+								code: ErrorCode.NOT_FOUND, // Valid ErrorCode
+								details: { field: "test" },
+							},
+						},
+					],
+				},
+				{
+					reply: {
+						request: {
+							id: "test-req",
+							log: { error: vi.fn() },
+						},
+					},
+				},
+			);
+
+			// Should use fallback message "An error occurred"
+			expect(result.response.errors?.[0]?.message).toBe("An error occurred");
+			expect(result.response.errors?.[0]?.extensions?.code).toBe(
+				ErrorCode.NOT_FOUND,
+			);
+		});
+
+		it("should handle error without extensions and no message", async () => {
+			const mockFastifyInstance = {
+				register: vi.fn(),
+				envConfig: {
+					API_IS_GRAPHIQL: false,
+				},
+				log: {
+					info: vi.fn(),
+					error: vi.fn(),
+				},
+				graphql: {
+					replaceSchema: vi.fn(),
+					addHook: vi.fn(),
+				},
+			};
+
+			vi.mocked(schemaManager.buildInitialSchema).mockResolvedValue(
+				new GraphQLSchema({
+					query: new GraphQLObjectType({
+						name: "Query",
+						fields: {
+							hello: { type: GraphQLString, resolve: () => "Hello" },
+						},
+					}),
+				}),
+			);
+
+			await graphql(mockFastifyInstance as unknown as FastifyInstance);
+
+			// Find the mercurius registration call
+			const mercuriusCall = mockFastifyInstance.register.mock.calls.find(
+				(call: unknown[]) =>
+					call?.[1] &&
+					typeof call[1] === "object" &&
+					"errorFormatter" in call[1],
+			);
+
+			const mercuriusConfig = mercuriusCall?.[1] as {
+				errorFormatter: (
+					execution: {
+						errors: Array<{
+							message?: string;
+						}>;
+					},
+					context: {
+						reply?: {
+							request?: {
+								id?: string;
+								log?: { error: (obj: unknown) => void };
+							};
+						};
+					},
+				) => {
+					statusCode: number;
+					response: { errors?: Array<{ message: string }> };
+				};
+			};
+
+			// Test with error that has no extensions and no message
+			const result = mercuriusConfig.errorFormatter(
+				{
+					errors: [
+						{
+							// No message property and no extensions
+						},
+					],
+				},
+				{
+					reply: {
+						request: {
+							id: "test-req",
+							log: { error: vi.fn() },
+						},
+					},
+				},
+			);
+
+			// Should use fallback message "An error occurred"
+			expect(result.response.errors?.[0]?.message).toBe("An error occurred");
+		});
+
+		it("should use first error httpStatus when no specific error codes match", async () => {
+			const mockFastifyInstance = {
+				register: vi.fn(),
+				envConfig: {
+					API_IS_GRAPHIQL: false,
+				},
+				log: {
+					info: vi.fn(),
+					error: vi.fn(),
+				},
+				graphql: {
+					replaceSchema: vi.fn(),
+					addHook: vi.fn(),
+				},
+			};
+
+			vi.mocked(schemaManager.buildInitialSchema).mockResolvedValue(
+				new GraphQLSchema({
+					query: new GraphQLObjectType({
+						name: "Query",
+						fields: {
+							hello: { type: GraphQLString, resolve: () => "Hello" },
+						},
+					}),
+				}),
+			);
+
+			await graphql(mockFastifyInstance as unknown as FastifyInstance);
+
+			// Find the mercurius registration call
+			const mercuriusCall = mockFastifyInstance.register.mock.calls.find(
+				(call: unknown[]) =>
+					call?.[1] &&
+					typeof call[1] === "object" &&
+					"errorFormatter" in call[1],
+			);
+
+			const mercuriusConfig = mercuriusCall?.[1] as {
+				errorFormatter: (
+					execution: {
+						errors: Array<{
+							message: string;
+							extensions?: { code?: string; httpStatus?: number };
+						}>;
+					},
+					context: {
+						reply?: {
+							request?: {
+								id?: string;
+								log?: { error: (obj: unknown) => void };
+							};
+						};
+					},
+				) => { statusCode: number };
+			};
+
+			// Test with TalawaGraphQLError that has custom httpStatus but no matching error codes
+			const result = mercuriusConfig.errorFormatter(
+				{
+					errors: [
+						new TalawaGraphQLError({
+							message: "Custom error",
+							extensions: {
+								code: "CUSTOM_ERROR_CODE" as ErrorCode, // Not in the specific error code checks
+								httpStatus: 418, // Custom status code
+							},
+						}),
+					],
+				},
+				{
+					reply: {
+						request: {
+							id: "test-req",
+							log: { error: vi.fn() },
+						},
+					},
+				},
+			);
+
+			// Should use the first error's httpStatus
+			expect(result.statusCode).toBe(418);
+		});
+
+		it("should fallback to 500 when first error has no httpStatus", async () => {
+			const mockFastifyInstance = {
+				register: vi.fn(),
+				envConfig: {
+					API_IS_GRAPHIQL: false,
+				},
+				log: {
+					info: vi.fn(),
+					error: vi.fn(),
+				},
+				graphql: {
+					replaceSchema: vi.fn(),
+					addHook: vi.fn(),
+				},
+			};
+
+			vi.mocked(schemaManager.buildInitialSchema).mockResolvedValue(
+				new GraphQLSchema({
+					query: new GraphQLObjectType({
+						name: "Query",
+						fields: {
+							hello: { type: GraphQLString, resolve: () => "Hello" },
+						},
+					}),
+				}),
+			);
+
+			await graphql(mockFastifyInstance as unknown as FastifyInstance);
+
+			// Find the mercurius registration call
+			const mercuriusCall = mockFastifyInstance.register.mock.calls.find(
+				(call: unknown[]) =>
+					call?.[1] &&
+					typeof call[1] === "object" &&
+					"errorFormatter" in call[1],
+			);
+
+			const mercuriusConfig = mercuriusCall?.[1] as {
+				errorFormatter: (
+					execution: {
+						errors: Array<{
+							message: string;
+							extensions?: { code?: string };
+						}>;
+					},
+					context: {
+						reply?: {
+							request?: {
+								id?: string;
+								log?: { error: (obj: unknown) => void };
+							};
+						};
+					},
+				) => { statusCode: number };
+			};
+
+			// Test with error that has no httpStatus in extensions
+			const result = mercuriusConfig.errorFormatter(
+				{
+					errors: [
+						{
+							message: "Custom error",
+							extensions: {
+								code: "CUSTOM_ERROR_CODE", // Not in the specific error code checks
+								// No httpStatus property
+							},
+						},
+					],
+				},
+				{
+					reply: {
+						request: {
+							id: "test-req",
+							log: { error: vi.fn() },
+						},
+					},
+				},
+			);
+
+			// Should fallback to 500
+			expect(result.statusCode).toBe(500);
+		});
+
+		it("should handle context with reply but no request.id", async () => {
+			const mockFastifyInstance = {
+				register: vi.fn(),
+				envConfig: {
+					API_IS_GRAPHIQL: false,
+				},
+				log: {
+					info: vi.fn(),
+					error: vi.fn(),
+				},
+				graphql: {
+					replaceSchema: vi.fn(),
+					addHook: vi.fn(),
+				},
+			};
+
+			vi.mocked(schemaManager.buildInitialSchema).mockResolvedValue(
+				new GraphQLSchema({
+					query: new GraphQLObjectType({
+						name: "Query",
+						fields: {
+							hello: { type: GraphQLString, resolve: () => "Hello" },
+						},
+					}),
+				}),
+			);
+
+			await graphql(mockFastifyInstance as unknown as FastifyInstance);
+
+			// Find the mercurius registration call
+			const mercuriusCall = mockFastifyInstance.register.mock.calls.find(
+				(call: unknown[]) =>
+					call?.[1] &&
+					typeof call[1] === "object" &&
+					"errorFormatter" in call[1],
+			);
+
+			const mercuriusConfig = mercuriusCall?.[1] as {
+				errorFormatter: (
+					execution: {
+						errors: Array<{
+							message: string;
+							extensions?: { code?: string };
+						}>;
+					},
+					context: { reply?: { request?: { id?: string } } },
+				) => {
+					statusCode: number;
+					response: {
+						errors?: Array<{ extensions?: { correlationId?: string } }>;
+					};
+				};
+			};
+
+			// Test with context that has reply but no request.id
+			const result = mercuriusConfig.errorFormatter(
+				{
+					errors: [
+						{
+							message: "Test error",
+							extensions: {
+								code: ErrorCode.INTERNAL_SERVER_ERROR,
+							},
+						},
+					],
+				},
+				{
+					reply: {
+						request: {
+							// No id property
+						},
+					},
+				},
+			);
+
+			// Should use "unknown" as correlationId
+			expect(result.response.errors?.[0]?.extensions?.correlationId).toBe(
+				"unknown",
+			);
+		});
+
+		it("should handle error with valid ErrorCode but no httpStatus mapping", async () => {
+			const mockFastifyInstance = {
+				register: vi.fn(),
+				envConfig: {
+					API_IS_GRAPHIQL: false,
+				},
+				log: {
+					info: vi.fn(),
+					error: vi.fn(),
+				},
+				graphql: {
+					replaceSchema: vi.fn(),
+					addHook: vi.fn(),
+				},
+			};
+
+			vi.mocked(schemaManager.buildInitialSchema).mockResolvedValue(
+				new GraphQLSchema({
+					query: new GraphQLObjectType({
+						name: "Query",
+						fields: {
+							hello: { type: GraphQLString, resolve: () => "Hello" },
+						},
+					}),
+				}),
+			);
+
+			await graphql(mockFastifyInstance as unknown as FastifyInstance);
+
+			// Find the mercurius registration call
+			const mercuriusCall = mockFastifyInstance.register.mock.calls.find(
+				(call: unknown[]) =>
+					call?.[1] &&
+					typeof call[1] === "object" &&
+					"errorFormatter" in call[1],
+			);
+
+			const mercuriusConfig = mercuriusCall?.[1] as {
+				errorFormatter: (
+					execution: {
+						errors: Array<{
+							message?: string;
+							extensions?: { code?: string; details?: unknown };
+						}>;
+					},
+					context: {
+						reply?: {
+							request?: {
+								id?: string;
+								log?: { error: (obj: unknown) => void };
+							};
+						};
+					},
+				) => {
+					statusCode: number;
+					response: {
+						errors?: Array<{ extensions?: { httpStatus?: number } }>;
+					};
+				};
+			};
+
+			// Test with error that has valid ErrorCode but no httpStatus mapping (fallback to 500)
+			const result = mercuriusConfig.errorFormatter(
+				{
+					errors: [
+						{
+							// No message - should use fallback
+							extensions: {
+								code: ErrorCode.INTERNAL_SERVER_ERROR, // Valid ErrorCode but maps to 500 by default
+								details: { test: "value" },
+							},
+						},
+					],
+				},
+				{
+					reply: {
+						request: {
+							id: "test-req",
+							log: { error: vi.fn() },
+						},
+					},
+				},
+			);
+
+			// Should use 500 as httpStatus (default fallback)
+			expect(result.response.errors?.[0]?.extensions?.httpStatus).toBe(500);
+		});
+
+		it("should handle context with non-object type", async () => {
+			const mockFastifyInstance = {
+				register: vi.fn(),
+				envConfig: {
+					API_IS_GRAPHIQL: false,
+				},
+				log: {
+					info: vi.fn(),
+					error: vi.fn(),
+				},
+				graphql: {
+					replaceSchema: vi.fn(),
+					addHook: vi.fn(),
+				},
+			};
+
+			vi.mocked(schemaManager.buildInitialSchema).mockResolvedValue(
+				new GraphQLSchema({
+					query: new GraphQLObjectType({
+						name: "Query",
+						fields: {
+							hello: { type: GraphQLString, resolve: () => "Hello" },
+						},
+					}),
+				}),
+			);
+
+			await graphql(mockFastifyInstance as unknown as FastifyInstance);
+
+			// Find the mercurius registration call
+			const mercuriusCall = mockFastifyInstance.register.mock.calls.find(
+				(call: unknown[]) =>
+					call?.[1] &&
+					typeof call[1] === "object" &&
+					"errorFormatter" in call[1],
+			);
+
+			const mercuriusConfig = mercuriusCall?.[1] as {
+				errorFormatter: (
+					execution: {
+						errors: Array<{
+							message: string;
+							extensions?: { code?: string };
+						}>;
+					},
+					context: unknown,
+				) => {
+					statusCode: number;
+					response: {
+						errors?: Array<{ extensions?: { correlationId?: string } }>;
+					};
+				};
+			};
+
+			// Test with context that is not an object
+			const result = mercuriusConfig.errorFormatter(
+				{
+					errors: [
+						{
+							message: "Test error",
+							extensions: {
+								code: ErrorCode.INTERNAL_SERVER_ERROR,
+							},
+						},
+					],
+				},
+				"not-an-object", // Non-object context
+			);
+
+			// Should use "unknown" as correlationId
+			expect(result.response.errors?.[0]?.extensions?.correlationId).toBe(
+				"unknown",
+			);
+		});
+
+		it("should handle error with extensions.code that exists but is not in ErrorCode enum", async () => {
+			const mockFastifyInstance = {
+				register: vi.fn(),
+				envConfig: {
+					API_IS_GRAPHIQL: false,
+				},
+				log: {
+					info: vi.fn(),
+					error: vi.fn(),
+				},
+				graphql: {
+					replaceSchema: vi.fn(),
+					addHook: vi.fn(),
+				},
+			};
+
+			vi.mocked(schemaManager.buildInitialSchema).mockResolvedValue(
+				new GraphQLSchema({
+					query: new GraphQLObjectType({
+						name: "Query",
+						fields: {
+							hello: { type: GraphQLString, resolve: () => "Hello" },
+						},
+					}),
+				}),
+			);
+
+			await graphql(mockFastifyInstance as unknown as FastifyInstance);
+
+			// Find the mercurius registration call
+			const mercuriusCall = mockFastifyInstance.register.mock.calls.find(
+				(call: unknown[]) =>
+					call?.[1] &&
+					typeof call[1] === "object" &&
+					"errorFormatter" in call[1],
+			);
+
+			const mercuriusConfig = mercuriusCall?.[1] as {
+				errorFormatter: (
+					execution: {
+						errors: Array<{
+							message: string;
+							extensions?: { code?: string };
+						}>;
+					},
+					context: {
+						reply?: {
+							request?: {
+								id?: string;
+								log?: { error: (obj: unknown) => void };
+							};
+						};
+					},
+				) => {
+					statusCode: number;
+					response: { errors?: Array<{ extensions?: { code?: string } }> };
+				};
+			};
+
+			// Test with error that has extensions.code but it's not a valid ErrorCode enum value
+			const result = mercuriusConfig.errorFormatter(
+				{
+					errors: [
+						{
+							message: "Test error",
+							extensions: {
+								code: "NOT_A_VALID_ERROR_CODE", // Not in ErrorCode enum
+							},
+						},
+					],
+				},
+				{
+					reply: {
+						request: {
+							id: "test-req",
+							log: { error: vi.fn() },
+						},
+					},
+				},
+			);
+
+			// Should use normalizeError and get INTERNAL_SERVER_ERROR
+			expect(result.response.errors?.[0]?.extensions?.code).toBe(
+				ErrorCode.INTERNAL_SERVER_ERROR,
+			);
+		});
+
+		it("should handle formattedErrors with undefined httpStatus", async () => {
+			const mockFastifyInstance = {
+				register: vi.fn(),
+				envConfig: {
+					API_IS_GRAPHIQL: false,
+				},
+				log: {
+					info: vi.fn(),
+					error: vi.fn(),
+				},
+				graphql: {
+					replaceSchema: vi.fn(),
+					addHook: vi.fn(),
+				},
+			};
+
+			vi.mocked(schemaManager.buildInitialSchema).mockResolvedValue(
+				new GraphQLSchema({
+					query: new GraphQLObjectType({
+						name: "Query",
+						fields: {
+							hello: { type: GraphQLString, resolve: () => "Hello" },
+						},
+					}),
+				}),
+			);
+
+			await graphql(mockFastifyInstance as unknown as FastifyInstance);
+
+			// Find the mercurius registration call
+			const mercuriusCall = mockFastifyInstance.register.mock.calls.find(
+				(call: unknown[]) =>
+					call?.[1] &&
+					typeof call[1] === "object" &&
+					"errorFormatter" in call[1],
+			);
+
+			const mercuriusConfig = mercuriusCall?.[1] as {
+				errorFormatter: (
+					execution: {
+						errors: Array<{
+							message: string;
+							extensions?: { code?: string };
+						}>;
+					},
+					context: {
+						reply?: {
+							request?: {
+								id?: string;
+								log?: { error: (obj: unknown) => void };
+							};
+						};
+					},
+				) => { statusCode: number };
+			};
+
+			// Test with error that results in formattedError with undefined httpStatus
+			const result = mercuriusConfig.errorFormatter(
+				{
+					errors: [
+						{
+							message: "Test error",
+							extensions: {
+								code: "CUSTOM_CODE_NO_STATUS", // Will go through normalizeError path
+							},
+						},
+					],
+				},
+				{
+					reply: {
+						request: {
+							id: "test-req",
+							log: { error: vi.fn() },
+						},
+					},
+				},
+			);
+
+			// Should fallback to 500 when httpStatus is undefined
+			expect(result.statusCode).toBe(500);
+		});
+
+		it("should handle error with extensions but no code property", async () => {
+			const mockFastifyInstance = {
+				register: vi.fn(),
+				envConfig: {
+					API_IS_GRAPHIQL: false,
+				},
+				log: {
+					info: vi.fn(),
+					error: vi.fn(),
+				},
+				graphql: {
+					replaceSchema: vi.fn(),
+					addHook: vi.fn(),
+				},
+			};
+
+			vi.mocked(schemaManager.buildInitialSchema).mockResolvedValue(
+				new GraphQLSchema({
+					query: new GraphQLObjectType({
+						name: "Query",
+						fields: {
+							hello: { type: GraphQLString, resolve: () => "Hello" },
+						},
+					}),
+				}),
+			);
+
+			await graphql(mockFastifyInstance as unknown as FastifyInstance);
+
+			// Find the mercurius registration call
+			const mercuriusCall = mockFastifyInstance.register.mock.calls.find(
+				(call: unknown[]) =>
+					call?.[1] &&
+					typeof call[1] === "object" &&
+					"errorFormatter" in call[1],
+			);
+
+			const mercuriusConfig = mercuriusCall?.[1] as {
+				errorFormatter: (
+					execution: {
+						errors: Array<{
+							message: string;
+							extensions?: { someOtherField?: string };
+						}>;
+					},
+					context: {
+						reply?: {
+							request?: {
+								id?: string;
+								log?: { error: (obj: unknown) => void };
+							};
+						};
+					},
+				) => {
+					statusCode: number;
+					response: { errors?: Array<{ extensions?: { code?: string } }> };
+				};
+			};
+
+			// Test with error that has extensions but no code property
+			const result = mercuriusConfig.errorFormatter(
+				{
+					errors: [
+						{
+							message: "Test error",
+							extensions: {
+								someOtherField: "value", // Has extensions but no code
+							},
+						},
+					],
+				},
+				{
+					reply: {
+						request: {
+							id: "test-req",
+							log: { error: vi.fn() },
+						},
+					},
+				},
+			);
+
+			// Should use normalizeError path
+			expect(result.response.errors?.[0]?.extensions?.code).toBe(
+				ErrorCode.INTERNAL_SERVER_ERROR,
+			);
+		});
+	});
 });

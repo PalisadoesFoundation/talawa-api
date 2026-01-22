@@ -25,6 +25,7 @@ import {
 	ERROR_CODE_TO_HTTP_STATUS,
 	ErrorCode,
 } from "../utilities/errors/errorCodes";
+import { normalizeError } from "../utilities/errors/errorTransformer";
 import leakyBucket from "../utilities/leakyBucket";
 import { type AppLogger, withFields } from "../utilities/logging/logger";
 import {
@@ -351,17 +352,64 @@ export const graphql = fastifyPlugin(async (fastify) => {
 					};
 				}
 
-				const httpStatus = 500;
+				// Fallback for all other errors
+				// First check if the error already has a valid ErrorCode in extensions
+				if (
+					error.extensions?.code &&
+					Object.values(ErrorCode).includes(error.extensions.code as ErrorCode)
+				) {
+					const existingCode = error.extensions.code as ErrorCode;
+					const httpStatus = ERROR_CODE_TO_HTTP_STATUS[existingCode] ?? 500;
+
+					return {
+						message: error.message || "An error occurred",
+						locations: error.locations,
+						path: error.path,
+						extensions: {
+							code: existingCode,
+							details: error.extensions.details,
+							correlationId,
+							httpStatus,
+						},
+					};
+				}
+
+				// Handle errors without extensions specially
+				// preserve message but don't add details
+				if (!error.extensions) {
+					return {
+						message: error.message || "An error occurred",
+						locations: error.locations,
+						path: error.path,
+						extensions: {
+							code: ErrorCode.INTERNAL_SERVER_ERROR,
+							details: undefined,
+							correlationId,
+							httpStatus: 500,
+						},
+					};
+				}
+
+				// For errors with extensions but invalid codes, use normalizeError
+				const normalized = normalizeError(error);
+
+				// For GraphQL errors, preserve the original message if it's meaningful
+				// but use normalized error codes and status codes
+				const shouldPreserveMessage =
+					error.message &&
+					typeof error.message === "string" &&
+					error.message.length > 0 &&
+					!error.message.includes("Internal Server Error");
 
 				return {
-					message: error.message,
+					message: shouldPreserveMessage ? error.message : normalized.message,
 					locations: error.locations,
 					path: error.path,
 					extensions: {
-						code: error.extensions?.code || "internal_server_error",
-						details: error.extensions?.details,
+						code: normalized.code,
+						details: normalized.details,
 						correlationId,
-						httpStatus,
+						httpStatus: normalized.statusCode,
 					},
 				};
 			});
@@ -391,7 +439,7 @@ export const graphql = fastifyPlugin(async (fastify) => {
 			let statusCode = 200;
 			if (formattedErrors.length > 0) {
 				const errorCodes = formattedErrors.map(
-					(error) => error.extensions?.code,
+					(error) => error.extensions?.code as string,
 				);
 
 				// Check for specific error types and set appropriate status codes

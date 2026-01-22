@@ -177,6 +177,34 @@ describe("objects route", () => {
 			(id: string) => typeof id === "string" && id.length > 0,
 		);
 
+		// Assert standardized error message and structured details
+		expect(body.error.message).toSatisfy(
+			(msg: string) => typeof msg === "string" && msg.length > 0,
+		);
+		expect(body.error.details).toSatisfy((details: unknown) => {
+			return (
+				Array.isArray(details) &&
+				details.some((item: unknown) => {
+					return (
+						typeof item === "object" &&
+						item !== null &&
+						("field" in item || "instancePath" in item) &&
+						(("field" in item &&
+							(item as { field: unknown }).field === "name") ||
+							("instancePath" in item &&
+								(item as { instancePath: unknown }).instancePath ===
+									"/name")) &&
+						"message" in item &&
+						typeof (item as { message: unknown }).message === "string" &&
+						((item as { message: string }).message.includes("too long") ||
+							(item as { message: string }).message.includes("length") ||
+							(item as { message: string }).message.includes("36") ||
+							(item as { message: string }).message.includes("more than"))
+					);
+				})
+			);
+		});
+
 		// Verify storage helpers were not called
 		expect(mockGetObject).not.toHaveBeenCalled();
 		expect(mockStatObject).not.toHaveBeenCalled();

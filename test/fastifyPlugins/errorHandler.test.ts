@@ -482,7 +482,7 @@ describe("errorHandlerPlugin", () => {
 	});
 
 	describe("GraphQL Error Handling", () => {
-		it("handles GraphQL requests with special 200 OK response", async () => {
+		it("handles GraphQL unauthenticated errors with 401 response", async () => {
 			const res = await app.inject({
 				method: "POST",
 				url: "/graphql",
