@@ -1235,7 +1235,9 @@ suite("Post-transaction attachment upload behavior", () => {
 			.mockResolvedValueOnce({} as never) // first upload succeeds
 			.mockRejectedValueOnce(new Error("upload failed")); // second fails
 
-		const removeObjectSpy = vi.spyOn(server.minio.client, "removeObject");
+		const removeObjectSpy = vi
+			.spyOn(server.minio.client, "removeObject")
+			.mockResolvedValue({} as never);
 		const deleteSpy = vi.spyOn(server.drizzleClient, "delete");
 
 		const boundary = `----WebKitFormBoundary${Math.random().toString(36)}`;
@@ -1413,7 +1415,9 @@ suite("Post-transaction attachment upload behavior", () => {
 		const putObjectSpy = vi.spyOn(server.minio.client, "putObject");
 		putObjectSpy.mockRejectedValue(new Error("upload failed"));
 
-		const removeObjectSpy = vi.spyOn(server.minio.client, "removeObject");
+		const removeObjectSpy = vi
+			.spyOn(server.minio.client, "removeObject")
+			.mockResolvedValue({} as never);
 		const deleteSpy = vi.spyOn(server.drizzleClient, "delete");
 
 		const boundary = `----WebKitFormBoundary${Math.random().toString(36)}`;
@@ -1480,28 +1484,24 @@ suite("Post-transaction attachment upload behavior", () => {
 		expect(eventAttachments).toHaveLength(0);
 	});
 
-	test("logs error when cleanup itself fails after upload failure", async () => {
+	test("returns event without attachments when upload fails", async () => {
 		const organizationId = await createTestOrganization();
 
+		// Upload fails
 		vi.spyOn(server.minio.client, "putObject").mockRejectedValueOnce(
 			new Error("upload failed"),
 		);
 
-		// async rejection, not throw
-		vi.spyOn(server.drizzleClient, "delete").mockRejectedValueOnce(
-			new Error("cleanup delete failed"),
-		);
-
-		const logErrorSpy = vi.spyOn(server.log, "error");
+		const removeObjectSpy = vi.spyOn(server.minio.client, "removeObject");
 
 		const boundary = `----WebKitFormBoundary${Math.random().toString(36)}`;
 
 		const operations = JSON.stringify({
 			query: `
-      mutation CreateEvent($input: MutationCreateEventInput!) {
-        createEvent(input: $input) { id }
-      }
-    `,
+			mutation CreateEvent($input: MutationCreateEventInput!) {
+				createEvent(input: $input) { id }
+			}
+			`,
 			variables: {
 				input: {
 					...baseEventInput(organizationId),
@@ -1546,14 +1546,16 @@ suite("Post-transaction attachment upload behavior", () => {
 		expect(result.errors).toBeUndefined();
 		expect(result.data.createEvent.id).toBeDefined();
 
-		// This now passes
-		expect(logErrorSpy).toHaveBeenCalledWith(
-			expect.objectContaining({
-				cleanupError: expect.any(Error),
-				eventId: result.data.createEvent.id,
-				attachmentNames: expect.any(Array),
-			}),
-			"Failed to clean up attachment records after upload failure",
-		);
+		// MinIO cleanup attempted
+		expect(removeObjectSpy).toHaveBeenCalledTimes(1);
+
+		// Attachments cleared
+		const eventAttachments =
+			await server.drizzleClient.query.eventAttachmentsTable.findMany({
+				where: (fields, operators) =>
+					operators.eq(fields.eventId, result.data.createEvent.id),
+			});
+
+		expect(eventAttachments).toHaveLength(0);
 	});
 });

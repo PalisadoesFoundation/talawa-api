@@ -543,22 +543,11 @@ builder.mutationField("createEvent", (t) =>
 					);
 
 					// Cleanup-remove attachment DB rows
-					try {
-						await ctx.drizzleClient
-							.delete(eventAttachmentsTable)
-							.where(eq(eventAttachmentsTable.eventId, createdEventResult.id));
-					} catch (cleanupError) {
-						ctx.log.error(
-							{
-								cleanupError,
-								eventId: createdEventResult.id,
-								attachmentNames: createdEventAttachments.map((a) => a.name),
-							},
-							"Failed to clean up attachment records after upload failure",
-						);
-					}
+					await ctx.drizzleClient
+						.delete(eventAttachmentsTable)
+						.where(eq(eventAttachmentsTable.eventId, createdEventResult.id));
 
-					// cleanup of any uploaded objects
+					// MinIO cleanup
 					await Promise.allSettled(
 						createdEventAttachments.map((attachment) =>
 							ctx.minio.client.removeObject(
@@ -567,7 +556,6 @@ builder.mutationField("createEvent", (t) =>
 							),
 						),
 					);
-
 					createdEventResult = {
 						...createdEventResult,
 						attachments: [],
