@@ -1260,6 +1260,7 @@ suite("Default Agenda Folder and Category Creation", () => {
 		// Verify an error was returned
 		expect(result.errors).toBeDefined();
 		expect(result.errors?.length).toBeGreaterThan(0);
+		expect(result.data?.createEvent).toBeNull();
 
 		// The most important assertion: verify no event persists in DB
 		// This proves the mutation either failed before creation or was rolled back
