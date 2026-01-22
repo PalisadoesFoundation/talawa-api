@@ -128,30 +128,32 @@ describe("AgendaItem.updatedAt resolver", () => {
 		expect(result).toEqual(mockParent.updatedAt);
 	});
 
-		it("throws unexpected when agenda folder event is missing", async () => {
-			const { context, mocks } = createMockGraphQLContext(true, "user-1");
+	it("throws unexpected when agenda folder event is missing", async () => {
+		const { context, mocks } = createMockGraphQLContext(true, "user-1");
 
-			mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValueOnce({
-				id: "user-1",
-				role: "administrator",
-			} as never);
+		mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValueOnce({
+			id: "user-1",
+			role: "administrator",
+		} as never);
 
-			mocks.drizzleClient.query.agendaFoldersTable.findFirst.mockResolvedValueOnce({
+		mocks.drizzleClient.query.agendaFoldersTable.findFirst.mockResolvedValueOnce(
+			{
 				id: "folder-1",
 				isAgendaItemFolder: true,
 				event: undefined,
-			} as never);
+			} as never,
+		);
 
-			const logSpy = vi.spyOn(context.log, "error");
+		const logSpy = vi.spyOn(context.log, "error");
 
-			await expect(resolveUpdatedAt(mockParent, {}, context)).rejects.toThrow(
-				new TalawaGraphQLError({ extensions: { code: "unexpected" } }),
-			);
+		await expect(resolveUpdatedAt(mockParent, {}, context)).rejects.toThrow(
+			new TalawaGraphQLError({ extensions: { code: "unexpected" } }),
+		);
 
-			expect(logSpy).toHaveBeenCalledWith(
-				"Postgres select operation returned an empty array for an agenda item's event id that isn't null.",
-			);
-		});
+		expect(logSpy).toHaveBeenCalledWith(
+			"Postgres select operation returned an empty array for an agenda item's event id that isn't null.",
+		);
+	});
 
 	it("returns updatedAt for organization administrator", async () => {
 		const { context, mocks } = createMockGraphQLContext(true, "user-1");

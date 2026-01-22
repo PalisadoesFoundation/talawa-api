@@ -2,6 +2,7 @@ import { faker } from "@faker-js/faker";
 import { eq } from "drizzle-orm";
 import { afterEach, beforeAll, expect, suite, test, vi } from "vitest";
 import { agendaItemsTable } from "~/src/drizzle/tables/agendaItems";
+import { agendaItemUrlTable } from "~/src/drizzle/tables/agendaItemUrls";
 import { assertToBeNonNullish } from "../../../helpers";
 import { server } from "../../../server";
 import { mercuriusClient } from "../client";
@@ -16,7 +17,6 @@ import {
 	Mutation_updateAgendaItem,
 	Query_signIn,
 } from "../documentNodes";
-import { agendaItemUrlTable } from "~/src/drizzle/tables/agendaItemUrls";
 
 let authToken: string;
 let adminUser: { id: string };
@@ -41,10 +41,7 @@ beforeAll(async () => {
 	adminUser = signInResult.data.signIn.user;
 });
 
-async function insertAgendaItemUrls(
-	agendaItemId: string,
-	urls: string[],
-) {
+async function insertAgendaItemUrls(agendaItemId: string, urls: string[]) {
 	await server.drizzleClient.insert(agendaItemUrlTable).values(
 		urls.map((url) => ({
 			agendaItemId,
@@ -54,7 +51,6 @@ async function insertAgendaItemUrls(
 		})),
 	);
 }
-
 
 async function createOrganizationAndEvent() {
 	const orgRes = await mercuriusClient.mutate(Mutation_createOrganization, {
@@ -393,10 +389,7 @@ suite("Mutation field updateAgendaItem", () => {
 			"https://old.com/2",
 		]);
 
-		const newUrls = [
-			"https://new.com/a",
-			"https://new.com/b",
-		];
+		const newUrls = ["https://new.com/a", "https://new.com/b"];
 
 		const result = await mercuriusClient.mutate(Mutation_updateAgendaItem, {
 			headers: { authorization: `bearer ${authToken}` },
@@ -422,10 +415,7 @@ suite("Mutation field updateAgendaItem", () => {
 	test("should not modify URLs when url input is omitted", async () => {
 		const { agendaItemId } = await createCategoryFolderAgendaItem();
 
-		const initialUrls = [
-			"https://keep.com/1",
-			"https://keep.com/2",
-		];
+		const initialUrls = ["https://keep.com/1", "https://keep.com/2"];
 
 		await insertAgendaItemUrls(agendaItemId, initialUrls);
 

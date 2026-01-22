@@ -287,14 +287,14 @@ builder.mutationField("createAgendaItem", (t) =>
 					parsedArgs.input.attachments &&
 					parsedArgs.input.attachments.length > 0 &&
 					createdAttachments.length !== parsedArgs.input.attachments.length
-					) {
+				) {
 					ctx.log.error(
 						"Postgres insert operation returned fewer rows than expected for attachments.",
 					);
 					throw new TalawaGraphQLError({
 						extensions: { code: "unexpected" },
 					});
-					}
+				}
 
 				const createdUrls =
 					parsedArgs.input.url && parsedArgs.input.url.length > 0

@@ -91,15 +91,17 @@ describe("AgendaItem.attachments resolver", () => {
 			role: "administrator",
 		} as never);
 
-		mocks.drizzleClient.query.agendaFoldersTable.findFirst.mockResolvedValueOnce({
-			id: "folder-1",
-			event: {
-			id: "event-1",
-			organization: {
-				membershipsWhereOrganization: [],
-			},
-			},
-		} as never);
+		mocks.drizzleClient.query.agendaFoldersTable.findFirst.mockResolvedValueOnce(
+			{
+				id: "folder-1",
+				event: {
+					id: "event-1",
+					organization: {
+						membershipsWhereOrganization: [],
+					},
+				},
+			} as never,
+		);
 
 		mocks.drizzleClient.query.agendaItemAttachmentsTable.findMany.mockResolvedValueOnce(
 			[] as never,
