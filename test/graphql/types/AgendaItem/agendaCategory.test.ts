@@ -42,6 +42,17 @@ describe("AgendaItem.category resolver (resolveCategory)", () => {
 			undefined,
 		);
 
+		mocks.drizzleClient.query.agendaCategoriesTable.findFirst.mockResolvedValueOnce(
+			{ id: "category-1" } as never,
+		);
+		mocks.drizzleClient.query.agendaFoldersTable.findFirst.mockResolvedValueOnce(
+			{
+				event: {
+					organization: { membershipsWhereOrganization: [] },
+				},
+			} as never,
+		);
+
 		await expect(resolveCategory(baseAgendaItem, {}, context)).rejects.toThrow(
 			new TalawaGraphQLError({ extensions: { code: "unauthenticated" } }),
 		);
