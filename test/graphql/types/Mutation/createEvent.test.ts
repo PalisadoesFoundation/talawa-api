@@ -1296,7 +1296,7 @@ suite("Post-transaction attachment upload behavior", () => {
 		// DB cleanup triggered
 		expect(deleteSpy).toHaveBeenCalledTimes(1);
 
-		// Only the successfully uploaded object is removed
+		// All attachment objects are removed during cleanup when upload fails
 		expect(removeObjectSpy).toHaveBeenCalledTimes(2);
 
 		// Verify DB rows are cleared
@@ -1326,5 +1326,76 @@ suite("Post-transaction attachment upload behavior", () => {
 
 		// Upload block must not run
 		expect(putObjectSpy).not.toHaveBeenCalled();
+	});
+
+	test("successfully uploads multiple attachments to MinIO after event creation", async () => {
+		const organizationId = await createTestOrganization();
+		const putObjectSpy = vi.spyOn(server.minio.client, "putObject");
+
+		const boundary = `----WebKitFormBoundary${Math.random().toString(36)}`;
+		const operations = JSON.stringify({
+			query: `
+			mutation CreateEvent($input: MutationCreateEventInput!) {
+				createEvent(input: $input) { id }
+			}
+		`,
+			variables: {
+				input: {
+					...baseEventInput(organizationId),
+					attachments: [null, null],
+				},
+			},
+		});
+
+		const map = JSON.stringify({
+			"0": ["variables.input.attachments.0"],
+			"1": ["variables.input.attachments.1"],
+		});
+
+		const body = [
+			`--${boundary}`,
+			'Content-Disposition: form-data; name="operations"',
+			"",
+			operations,
+			`--${boundary}`,
+			'Content-Disposition: form-data; name="map"',
+			"",
+			map,
+			`--${boundary}`,
+			'Content-Disposition: form-data; name="0"; filename="file1.png"',
+			"Content-Type: image/png",
+			"",
+			"fake-content-1",
+			`--${boundary}`,
+			'Content-Disposition: form-data; name="1"; filename="file2.png"',
+			"Content-Type: image/png",
+			"",
+			"fake-content-2",
+			`--${boundary}--`,
+		].join("\r\n");
+
+		const response = await server.inject({
+			method: "POST",
+			url: "/graphql",
+			headers: {
+				authorization: `bearer ${adminAuthToken}`,
+				"content-type": `multipart/form-data; boundary=${boundary}`,
+			},
+			payload: body,
+		});
+
+		const result = JSON.parse(response.body);
+
+		expect(result.errors).toBeUndefined();
+		expect(result.data.createEvent.id).toBeDefined();
+		expect(putObjectSpy).toHaveBeenCalledTimes(2);
+
+		// Verify both attachments are stored in DB
+		const eventAttachments =
+			await server.drizzleClient.query.eventAttachmentsTable.findMany({
+				where: (fields, operators) =>
+					operators.eq(fields.eventId, result.data.createEvent.id),
+			});
+		expect(eventAttachments).toHaveLength(2);
 	});
 });
