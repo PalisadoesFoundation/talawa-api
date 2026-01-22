@@ -1407,7 +1407,7 @@ suite("Post-transaction attachment upload behavior", () => {
 		expect(eventAttachments).toHaveLength(2);
 	});
 
-	test("cleans up DB rows when first attachment upload fails (no MinIO objects to remove)", async () => {
+	test("cleans up DB rows and attempts MinIO removal when first attachment upload fails", async () => {
 		const organizationId = await createTestOrganization();
 
 		const putObjectSpy = vi.spyOn(server.minio.client, "putObject");
@@ -1469,7 +1469,7 @@ suite("Post-transaction attachment upload behavior", () => {
 		expect(result.data.createEvent.id).toBeDefined();
 		expect(putObjectSpy).toHaveBeenCalledTimes(1);
 		expect(deleteSpy).toHaveBeenCalledTimes(1);
-		// No successful uploads means no objects to remove from MinIO
+		// Cleanup attempts to remove all attachment objects regardless of upload success
 		expect(removeObjectSpy).toHaveBeenCalledTimes(1);
 
 		const eventAttachments =
