@@ -6,7 +6,7 @@
 
 > **cleanupOldGeneratedInstances**(`organizationId`, `drizzleClient`, `logger`): `Promise`\<`number`\>
 
-Defined in: [src/services/eventGeneration/windowManager.ts:187](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/eventGeneration/windowManager.ts#L187)
+Defined in: [src/services/eventGeneration/windowManager.ts:255](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/eventGeneration/windowManager.ts#L255)
 
 Deletes old Generated instances that fall outside the defined retention window
 for a given organization.

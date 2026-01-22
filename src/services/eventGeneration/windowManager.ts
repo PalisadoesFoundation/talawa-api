@@ -5,6 +5,22 @@ import { recurringEventInstancesTable } from "~/src/drizzle/tables/recurringEven
 import type { ServiceDependencies, WindowManagerConfig } from "./types";
 
 /**
+ * Finds a window configuration by organization ID.
+ *
+ * @param drizzleClient - The Drizzle ORM client for database access.
+ * @param organizationId - The organization ID to search for.
+ * @returns - A promise that resolves to the window configuration or undefined if not found.
+ */
+async function findWindowConfigByOrganizationId(
+	drizzleClient: ServiceDependencies["drizzleClient"],
+	organizationId: string,
+): Promise<typeof eventGenerationWindowsTable.$inferSelect | undefined> {
+	return drizzleClient.query.eventGenerationWindowsTable.findFirst({
+		where: eq(eventGenerationWindowsTable.organizationId, organizationId),
+	});
+}
+
+/**
  * Initializes the Generation window for a given organization, setting up the time frame
  * for which event instances will be generated and retained.
  *
@@ -20,13 +36,10 @@ export async function initializeGenerationWindow(
 ): Promise<typeof eventGenerationWindowsTable.$inferSelect> {
 	try {
 		// Check if a window config already exists for this organization
-		const existingConfig =
-			await drizzleClient.query.eventGenerationWindowsTable.findFirst({
-				where: eq(
-					eventGenerationWindowsTable.organizationId,
-					input.organizationId,
-				),
-			});
+		const existingConfig = await findWindowConfigByOrganizationId(
+			drizzleClient,
+			input.organizationId,
+		);
 
 		if (existingConfig) {
 			logger.info(
@@ -61,13 +74,10 @@ export async function initializeGenerationWindow(
 
 			// If insert was skipped due to conflict (race condition), fetch the existing config
 			if (!insertedConfig) {
-				const raceConditionConfig =
-					await drizzleClient.query.eventGenerationWindowsTable.findFirst({
-						where: eq(
-							eventGenerationWindowsTable.organizationId,
-							input.organizationId,
-						),
-					});
+				const raceConditionConfig = await findWindowConfigByOrganizationId(
+					drizzleClient,
+					input.organizationId,
+				);
 
 				if (!raceConditionConfig) {
 					logger.error(
@@ -106,13 +116,10 @@ export async function initializeGenerationWindow(
 		} catch (insertError: unknown) {
 			// If the insert fails (e.g., due to missing unique constraint or duplicate),
 			// check if a config was created by another process
-			const fallbackConfig =
-				await drizzleClient.query.eventGenerationWindowsTable.findFirst({
-					where: eq(
-						eventGenerationWindowsTable.organizationId,
-						input.organizationId,
-					),
-				});
+			const fallbackConfig = await findWindowConfigByOrganizationId(
+				drizzleClient,
+				input.organizationId,
+			);
 
 			if (fallbackConfig) {
 				logger.warn(
