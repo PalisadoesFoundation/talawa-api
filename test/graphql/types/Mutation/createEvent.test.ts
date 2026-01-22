@@ -447,7 +447,7 @@ suite("Mutation field createEvent", () => {
 			const errorMessage = invalidResult.errors?.[0]?.message;
 			expect(
 				errorMessage?.includes("Upload value invalid") ||
-					errorMessage?.includes("Graphql validation error"),
+				errorMessage?.includes("Graphql validation error"),
 			).toBe(true);
 		});
 
@@ -946,6 +946,35 @@ suite("Mutation field createEvent", () => {
 			});
 
 			expectSuccessfulEvent(result, "Midnight Launch Event");
+		});
+
+		test("should successfully create a recurring event when startAt is more than 400 days in the future", async () => {
+			const orgId = await createTestOrganization();
+			assertToBeNonNullish(orgId);
+
+			const futureStartAt = new Date();
+			futureStartAt.setDate(futureStartAt.getDate() + 405); // > 400 days
+			const futureEndAt = new Date(futureStartAt);
+			futureEndAt.setHours(futureEndAt.getHours() + 1);
+
+			const input: VariablesOf<typeof Mutation_createEvent>["input"] = {
+				description: faker.lorem.paragraph(),
+				endAt: futureEndAt.toISOString(),
+				recurrence: {
+					frequency: "DAILY",
+					count: 5,
+				},
+				organizationId: orgId,
+				startAt: futureStartAt.toISOString(),
+				name: faker.lorem.sentence(),
+			};
+
+			const result = await createEvent({ input });
+
+			assertToBeNonNullish(result.data?.createEvent);
+			expect(result.errors).toBeUndefined();
+			expect(result.data.createEvent.id).toBeDefined();
+			expect(result.data.createEvent.startAt).toBe(input.startAt);
 		});
 	});
 });

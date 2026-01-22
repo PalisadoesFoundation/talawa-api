@@ -683,13 +683,11 @@ suite("Mutation field deleteOrganization", () => {
 						},
 					);
 
-					// Error should be surfaced
-					expect(result.data?.deleteOrganization ?? null).toBeNull();
-					expect(result.errors).toBeDefined();
-					expect(result.errors?.[0]?.message).toContain("Minio removal error");
+					// Error should NOT be surfaced (logged instead)
+					expect(result.errors).toBeUndefined();
+					expect(result.data?.deleteOrganization).toBe(orgId);
 
-					// Verify organization WAS deleted (DB transaction committed before removeObjects)
-					// Since removeObjects is now outside the transaction, the DB delete succeeds
+					// Verify organization WAS deleted
 					const orgExists = await server.drizzleClient
 						.select()
 						.from(organizationsTable)

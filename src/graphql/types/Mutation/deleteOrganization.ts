@@ -206,10 +206,14 @@ builder.mutationField("deleteOrganization", (t) =>
 				try {
 					// Only call removeObjects if there are objects to remove
 					if (objectNames.length > 0) {
-						await ctx.minio.client.removeObjects(
-							ctx.minio.bucketName,
-							objectNames,
-						);
+						try {
+							await ctx.minio.client.removeObjects(
+								ctx.minio.bucketName,
+								objectNames,
+							);
+						} catch (error) {
+							ctx.log.error({ error }, "Failed to remove objects from minio");
+						}
 					}
 				} finally {
 					cleanupStop?.();

@@ -18,8 +18,8 @@ const mutationUpdateOrganizationArgumentsSchema = z.object({
 	input: mutationUpdateOrganizationInputSchema.transform(async (arg, ctx) => {
 		let avatar:
 			| (FileUpload & {
-					mimetype: z.infer<typeof imageMimeTypeEnum>;
-			  })
+				mimetype: z.infer<typeof imageMimeTypeEnum>;
+			})
 			| null
 			| undefined;
 
@@ -239,7 +239,7 @@ builder.mutationField("updateOrganization", (t) =>
 
 					if (
 						isNotNullish(parsedArgs.input.avatar) &&
-						avatarName !== undefined
+						avatarName
 					) {
 						const fileUploadStop = ctx.perf?.start("file:avatar-upload");
 						try {
