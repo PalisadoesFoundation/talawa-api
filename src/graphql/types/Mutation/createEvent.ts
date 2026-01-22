@@ -672,7 +672,13 @@ builder.mutationField("createEvent", (t) =>
 						}
 
 						// Re-throw to propagate the error
-						throw uploadError;
+						throw new TalawaGraphQLError({
+							message: "Failed to upload event attachments",
+							extensions: {
+								code: "upload_failed",
+							},
+							originalError: uploadError as Error,
+						});
 					} finally {
 						attachmentUploadStop?.();
 					}

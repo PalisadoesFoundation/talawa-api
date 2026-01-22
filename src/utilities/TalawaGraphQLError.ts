@@ -245,6 +245,11 @@ export type UnexpectedExtensions = {
 export type TooManyRequestsExtensions = {
 	code: "too_many_requests";
 };
+
+export type UploadFailedExtensions = {
+	code: "upload_failed";
+};
+
 export type TalawaGraphQLErrorExtensions =
 	| AccountLockedExtensions
 	| ArgumentsAssociatedResourcesNotFoundExtensions
@@ -257,7 +262,8 @@ export type TalawaGraphQLErrorExtensions =
 	| UnauthorizedActionOnArgumentsAssociatedResourcesExtensions
 	| UnauthorizedArgumentsExtensions
 	| UnexpectedExtensions
-	| TooManyRequestsExtensions;
+	| TooManyRequestsExtensions
+	| UploadFailedExtensions;
 
 export const defaultTalawaGraphQLErrorMessages: {
 	[Key in TalawaGraphQLErrorExtensions["code"]]: string;
@@ -279,6 +285,7 @@ export const defaultTalawaGraphQLErrorMessages: {
 		"You are not authorized to perform this action with the provided arguments.",
 	unexpected: "Something went wrong. Please try again later.",
 	too_many_requests: "Too many requests. Please try again later.",
+	upload_failed: "Failed to upload files. Please try again later.",
 };
 
 /**

@@ -24,12 +24,8 @@ describe("createOrganization mutation performance tracking", () => {
 		while (Date.now() - startTime < timeoutMs) {
 			const snapshots = server.getMetricsSnapshots?.() ?? [];
 			if (snapshots.length > initialSnapshotsLength) {
-				// Metrics are unshifted (newest first), so we take all new snapshots
-				// The correct logic is simply to search the available snapshots,
-				// or if strict about "new", take the first (N - initial) items.
-				// However, given the user request: "compute the slice from the start (i.e., take the first snapshots.length - initialSnapshots.length entries)"
+				// Metrics are stored newest-first, take the most recent snapshots
 				const newCount = snapshots.length - initialSnapshotsLength;
-				// Take the 'newCount' most recent snapshots (which are at the start of the array)
 				const newSnapshots = snapshots.slice(0, newCount);
 				const found = newSnapshots.find(
 					(s) => s.ops[operationName] !== undefined,
@@ -90,15 +86,16 @@ describe("createOrganization mutation performance tracking", () => {
 		expect(result.data.createOrganization.name).toBeDefined();
 
 		// Verify performance metrics were collected
-		const snapshots = server.getMetricsSnapshots?.() ?? [];
-		expect(snapshots.length).toBeGreaterThan(initialSnapshots.length);
-
 		// Check the most recent snapshot for the mutation operation
 		const latestSnapshot = await waitForSnapshot(
 			"mutation:createOrganization",
 			initialSnapshots.length,
 		);
 		assertToBeNonNullish(latestSnapshot);
+
+		const snapshots = server.getMetricsSnapshots?.() ?? [];
+		expect(snapshots.length).toBeGreaterThan(initialSnapshots.length);
+
 		const op = latestSnapshot.ops["mutation:createOrganization"];
 
 		expect(op).toBeDefined();
@@ -133,15 +130,16 @@ describe("createOrganization mutation performance tracking", () => {
 		expect(result.errors?.[0]?.extensions?.code).toBeDefined();
 
 		// Verify performance metrics were still collected even on error
-		const snapshots = server.getMetricsSnapshots?.() ?? [];
-		expect(snapshots.length).toBeGreaterThan(initialSnapshots.length);
-
 		// Verify the specific mutation metric is present
 		const latestSnapshot = await waitForSnapshot(
 			"mutation:createOrganization",
 			initialSnapshots.length,
 		);
 		assertToBeNonNullish(latestSnapshot);
+
+		const snapshots = server.getMetricsSnapshots?.() ?? [];
+		expect(snapshots.length).toBeGreaterThan(initialSnapshots.length);
+
 		expect(latestSnapshot.ops["mutation:createOrganization"]).toBeDefined();
 	});
 
@@ -172,6 +170,10 @@ describe("createOrganization mutation performance tracking", () => {
 			initialSnapshots.length,
 		);
 		assertToBeNonNullish(latestSnapshot);
+
+		const snapshots = server.getMetricsSnapshots?.() ?? [];
+		expect(snapshots.length).toBeGreaterThan(initialSnapshots.length);
+
 		expect(latestSnapshot.ops).toHaveProperty("mutation:createOrganization");
 	});
 
@@ -207,6 +209,10 @@ describe("createOrganization mutation performance tracking", () => {
 			initialSnapshots.length,
 		);
 		assertToBeNonNullish(latestSnapshot);
+
+		const snapshots = server.getMetricsSnapshots?.() ?? [];
+		expect(snapshots.length).toBeGreaterThan(initialSnapshots.length);
+
 		const op = latestSnapshot.ops["mutation:createOrganization"];
 
 		expect(op).toBeDefined();
@@ -331,15 +337,16 @@ describe("createOrganization mutation performance tracking", () => {
 		expect(result.errors).toBeDefined();
 		expect(result.data?.createOrganization).toBeNull();
 
-		const snapshots = server.getMetricsSnapshots?.() ?? [];
-		expect(snapshots.length).toBeGreaterThan(initialSnapshots.length);
-
 		// Find the snapshot that contains our mutation operation
 		const latestSnapshot = await waitForSnapshot(
 			"mutation:createOrganization",
 			initialSnapshots.length,
 		);
 		assertToBeNonNullish(latestSnapshot);
+
+		const snapshots = server.getMetricsSnapshots?.() ?? [];
+		expect(snapshots.length).toBeGreaterThan(initialSnapshots.length);
+
 		const op = latestSnapshot.ops["mutation:createOrganization"];
 
 		expect(op).toBeDefined();
