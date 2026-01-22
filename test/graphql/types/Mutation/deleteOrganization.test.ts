@@ -685,7 +685,11 @@ suite("Mutation field deleteOrganization", () => {
 
 					// Error should NOT be surfaced (logged instead)
 					expect(result.errors).toBeUndefined();
-					expect(result.data?.deleteOrganization).toBe(orgId);
+					expect(result.data?.deleteOrganization).toEqual(
+						expect.objectContaining({
+							id: orgId,
+						}),
+					);
 
 					// Verify organization WAS deleted
 					const orgExists = await server.drizzleClient
