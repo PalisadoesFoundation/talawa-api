@@ -126,6 +126,25 @@ describe("AgendaItem.creator resolver", () => {
 		);
 	});
 
+	it("throws unexpected when agenda folder event organization does not exist", async () => {
+		mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValue({
+			id: "user-123",
+			role: "administrator",
+		});
+		mocks.drizzleClient.query.agendaFoldersTable.findFirst.mockResolvedValue({
+			...createMockAgendaFolder(),
+			event: { organization: undefined },
+		} as unknown as Record<string, unknown>);
+
+		await expect(resolveCreator(mockAgendaItem, {}, ctx)).rejects.toThrow(
+			new TalawaGraphQLError({ extensions: { code: "unexpected" } }),
+		);
+
+		expect(ctx.log.error).toHaveBeenCalledWith(
+			"Postgres select operation returned an empty array for an agenda item's event or organization id that isn't null.",
+		);
+	});
+
 	it("throws unauthorized_action when user is neither system nor org admin", async () => {
 		mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValue({
 			id: "user-123",

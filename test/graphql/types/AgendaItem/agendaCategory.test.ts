@@ -70,7 +70,7 @@ describe("AgendaItem.category resolver (resolveCategory)", () => {
 		);
 	});
 
-	it("throws unexpected when agenda folder, event, or organization is missing", async () => {
+	it("throws unexpected when agenda folder is missing", async () => {
 		const { context, mocks } = createMockGraphQLContext(true, "admin-1");
 
 		mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValueOnce({
@@ -82,9 +82,7 @@ describe("AgendaItem.category resolver (resolveCategory)", () => {
 		);
 
 		mocks.drizzleClient.query.agendaFoldersTable.findFirst.mockResolvedValueOnce(
-			{
-				event: undefined,
-			} as never,
+			undefined,
 		);
 
 		const logSpy = vi.spyOn(context.log, "error");

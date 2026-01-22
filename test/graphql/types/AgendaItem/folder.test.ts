@@ -159,6 +159,30 @@ describe("AgendaItem.folder resolver", () => {
 		);
 	});
 
+	it("throws unexpected error when agenda folder event organization is missing", async () => {
+		const { context, mocks } = createMockGraphQLContext(true, "user-1");
+
+		mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValueOnce({
+			id: "user-1",
+			role: "administrator",
+		});
+
+		mocks.drizzleClient.query.agendaFoldersTable.findFirst.mockResolvedValueOnce(
+			{
+				id: "folder-1",
+				event: { organization: undefined },
+			} as never,
+		);
+
+		await expect(resolveFolder(mockParent, {}, context)).rejects.toThrow(
+			new TalawaGraphQLError({ extensions: { code: "unexpected" } }),
+		);
+
+		expect(context.log.error).toHaveBeenCalledWith(
+			"Postgres select operation returned an empty array for an agenda item's event or organization id that isn't null.",
+		);
+	});
+
 	it("throws unexpected error when agenda folder event is missing", async () => {
 		const { context, mocks } = createMockGraphQLContext(true, "user-1");
 
