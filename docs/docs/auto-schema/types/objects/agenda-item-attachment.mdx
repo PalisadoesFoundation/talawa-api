@@ -1,0 +1,110 @@
+---
+id: agenda-item-attachment
+title: AgendaItemAttachment
+---
+
+export const Bullet = () => (
+  <>
+    <span
+      style={{
+        fontWeight: "normal",
+        fontSize: ".5em",
+        color: "var(--ifm-color-secondary-darkest)",
+      }}
+    >
+      &nbsp;●&nbsp;
+    </span>
+  </>
+);
+
+export const SpecifiedBy = (props) => (
+  <>
+    Specification
+    <a
+      className="link"
+      style={{ fontSize: "1.5em", paddingLeft: "4px" }}
+      target="_blank"
+      href={props.url}
+      title={"Specified by " + props.url}
+    >
+      ⎘
+    </a>
+  </>
+);
+
+export const Badge = (props) => (
+  <>
+    <span className={props.class}>{props.text}</span>
+  </>
+);
+
+import { useState } from "react";
+
+export const Details = ({
+  dataOpen,
+  dataClose,
+  children,
+  startOpen = false,
+}) => {
+  const [open, setOpen] = useState(startOpen);
+  return (
+    <details
+      {...(open ? { open: true } : {})}
+      className="details"
+      style={{
+        border: "none",
+        boxShadow: "none",
+        background: "var(--ifm-background-color)",
+      }}
+    >
+      <summary
+        onClick={(e) => {
+          e.preventDefault();
+          setOpen((open) => !open);
+        }}
+        style={{ listStyle: "none" }}
+      >
+        {open ? dataOpen : dataClose}
+      </summary>
+      {open && children}
+    </details>
+  );
+};
+
+Attachment of the agenda items.
+
+```graphql
+type AgendaItemAttachment {
+  fileHash: String
+  id: ID!
+  mimeType: String
+  name: String
+  objectName: String
+}
+```
+
+### Fields
+
+#### [<code style={{ fontWeight: 'normal' }}>AgendaItemAttachment.<b>fileHash</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>String</b></code>](/auto-schema/types/scalars/string.mdx) <Badge class="badge badge--secondary " text="scalar"/>
+
+Unique file hash identifier for the attachment.
+
+#### [<code style={{ fontWeight: 'normal' }}>AgendaItemAttachment.<b>id</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>ID!</b></code>](/auto-schema/types/scalars/id.mdx) <Badge class="badge badge--secondary badge--non_null" text="non-null"/> <Badge class="badge badge--secondary " text="scalar"/>
+
+Global identifier of the attachment.
+
+#### [<code style={{ fontWeight: 'normal' }}>AgendaItemAttachment.<b>mimeType</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>String</b></code>](/auto-schema/types/scalars/string.mdx) <Badge class="badge badge--secondary " text="scalar"/>
+
+Mime type of the attachment.
+
+#### [<code style={{ fontWeight: 'normal' }}>AgendaItemAttachment.<b>name</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>String</b></code>](/auto-schema/types/scalars/string.mdx) <Badge class="badge badge--secondary " text="scalar"/>
+
+Identifier name of the attachment.
+
+#### [<code style={{ fontWeight: 'normal' }}>AgendaItemAttachment.<b>objectName</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>String</b></code>](/auto-schema/types/scalars/string.mdx) <Badge class="badge badge--secondary " text="scalar"/>
+
+Object name used when creating presigned URLs.
+
+### Member Of
+
+[`AgendaItem`](/auto-schema/types/objects/agenda-item.mdx) <Badge class="badge badge--secondary badge--relation" text="object"/>
