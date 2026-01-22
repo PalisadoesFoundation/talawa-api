@@ -68,8 +68,8 @@ export const mutationCreateEventArgumentsSchema = z.object({
 
 		let attachments:
 			| (FileUpload & {
-				mimetype: z.infer<typeof eventAttachmentMimeTypeEnum>;
-			})[]
+					mimetype: z.infer<typeof eventAttachmentMimeTypeEnum>;
+			  })[]
 			| undefined;
 
 		if (arg.attachments !== undefined) {
@@ -85,8 +85,9 @@ export const mutationCreateEventArgumentsSchema = z.object({
 						ctx.addIssue({
 							code: "custom",
 							path: ["attachments", issue.path[0]],
-							message: `Mime type "${rawAttachments[issue.path[0]]?.mimetype
-								}" is not allowed.`,
+							message: `Mime type "${
+								rawAttachments[issue.path[0]]?.mimetype
+							}" is not allowed.`,
 						});
 					}
 				}

@@ -143,9 +143,7 @@ suite("windowManager", () => {
 			(mockDrizzleClient.insert as Mock).mockReturnValue(mockInsertChain);
 			// First call: no existing config (so we proceed to insert)
 			// Second call: config found (race condition - another process created it)
-			(
-				mockDrizzleClient.query.eventGenerationWindowsTable.findFirst as Mock
-			)
+			(mockDrizzleClient.query.eventGenerationWindowsTable.findFirst as Mock)
 				.mockResolvedValueOnce(undefined)
 				.mockResolvedValueOnce(mockExistingConfig);
 
