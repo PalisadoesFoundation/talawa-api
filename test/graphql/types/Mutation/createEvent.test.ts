@@ -962,13 +962,14 @@ suite("Mutation field createEvent", () => {
 			const startDate = new Date(futureStartAt);
 			const endDate = new Date(startDate.getTime() + 60 * 60 * 1000); // Add 1 hour
 			const futureEndAt = endDate.toISOString();
+			const recurrenceCount = 5;
 
 			const input: VariablesOf<typeof Mutation_createEvent>["input"] = {
 				description: faker.lorem.paragraph(),
 				endAt: futureEndAt,
 				recurrence: {
 					frequency: "DAILY",
-					count: 5,
+					count: recurrenceCount,
 				},
 				organizationId: orgId,
 				startAt: futureStartAt,
@@ -981,6 +982,45 @@ suite("Mutation field createEvent", () => {
 			expect(result.errors).toBeUndefined();
 			expect(result.data.createEvent.id).toBeDefined();
 			expect(result.data.createEvent.startAt).toBe(input.startAt);
+
+			const createdEventId = result.data.createEvent.id;
+
+			// Verify recurrence rule was created for the event
+			const recurrenceRule =
+				await server.drizzleClient.query.recurrenceRulesTable.findFirst({
+					where: (fields, operators) =>
+						operators.eq(fields.baseRecurringEventId, createdEventId),
+				});
+
+			assertToBeNonNullish(recurrenceRule);
+			expect(recurrenceRule.frequency).toBe("DAILY");
+			expect(recurrenceRule.count).toBe(recurrenceCount);
+			expect(recurrenceRule.recurrenceRuleString).toContain("FREQ=DAILY");
+			expect(recurrenceRule.recurrenceRuleString).toContain(
+				`COUNT=${recurrenceCount}`,
+			);
+
+			// Verify that instances were materialized
+			const instances =
+				await server.drizzleClient.query.recurringEventInstancesTable.findMany({
+					where: (fields, operators) =>
+						operators.eq(fields.baseRecurringEventId, createdEventId),
+				});
+
+			// Instances should be generated for count-based recurrence
+			expect(instances.length).toBe(recurrenceCount);
+
+			// Verify instances have correct base event reference
+			for (const instance of instances) {
+				expect(instance.baseRecurringEventId).toBe(createdEventId);
+				expect(instance.organizationId).toBe(orgId);
+			}
+
+			// Verify latestInstanceDate was updated on the recurrence rule
+			expect(recurrenceRule.latestInstanceDate).toBeDefined();
+			expect(
+				new Date(recurrenceRule.latestInstanceDate).getTime(),
+			).toBeGreaterThanOrEqual(startDate.getTime());
 		});
 	});
 });

@@ -304,18 +304,26 @@ builder.mutationField("createEvent", (t) =>
 						}
 
 						// Creates default agenda folder
-						const [createdAgendaFolder] = await tx
-							.insert(agendaFoldersTable)
-							.values({
-								name: DEFAULT_AGENDA_FOLDER_CONFIG.name,
-								description: DEFAULT_AGENDA_FOLDER_CONFIG.description,
-								eventId: createdEvent.id,
-								organizationId: parsedArgs.input.organizationId,
-								isDefaultFolder: true,
-								sequence: DEFAULT_AGENDA_FOLDER_CONFIG.sequence,
-								creatorId: currentUserId,
-							})
-							.returning();
+						let createdAgendaFolder:
+							| typeof agendaFoldersTable.$inferSelect
+							| undefined;
+						const agendaFolderStop = ctx.perf?.start("db:agenda-folder-insert");
+						try {
+							[createdAgendaFolder] = await tx
+								.insert(agendaFoldersTable)
+								.values({
+									name: DEFAULT_AGENDA_FOLDER_CONFIG.name,
+									description: DEFAULT_AGENDA_FOLDER_CONFIG.description,
+									eventId: createdEvent.id,
+									organizationId: parsedArgs.input.organizationId,
+									isDefaultFolder: true,
+									sequence: DEFAULT_AGENDA_FOLDER_CONFIG.sequence,
+									creatorId: currentUserId,
+								})
+								.returning();
+						} finally {
+							agendaFolderStop?.();
+						}
 
 						if (createdAgendaFolder === undefined) {
 							ctx.log.error(
@@ -329,17 +337,27 @@ builder.mutationField("createEvent", (t) =>
 						}
 
 						// Creates default agenda category
-						const [createdAgendaCategory] = await tx
-							.insert(agendaCategoriesTable)
-							.values({
-								name: DEFAULT_AGENDA_CATEGORY_CONFIG.name,
-								description: DEFAULT_AGENDA_CATEGORY_CONFIG.description,
-								eventId: createdEvent.id,
-								organizationId: parsedArgs.input.organizationId,
-								isDefaultCategory: true,
-								creatorId: currentUserId,
-							})
-							.returning();
+						let createdAgendaCategory:
+							| typeof agendaCategoriesTable.$inferSelect
+							| undefined;
+						const agendaCategoryStop = ctx.perf?.start(
+							"db:agenda-category-insert",
+						);
+						try {
+							[createdAgendaCategory] = await tx
+								.insert(agendaCategoriesTable)
+								.values({
+									name: DEFAULT_AGENDA_CATEGORY_CONFIG.name,
+									description: DEFAULT_AGENDA_CATEGORY_CONFIG.description,
+									eventId: createdEvent.id,
+									organizationId: parsedArgs.input.organizationId,
+									isDefaultCategory: true,
+									creatorId: currentUserId,
+								})
+								.returning();
+						} finally {
+							agendaCategoryStop?.();
+						}
 
 						if (createdAgendaCategory === undefined) {
 							ctx.log.error(
@@ -514,13 +532,13 @@ builder.mutationField("createEvent", (t) =>
 							);
 						}
 
-						// Handle attachments (same logic for both recurring and standalone events)
+						// Handle attachments - DB insert inside transaction, MinIO upload outside
 						let createdEventAttachments: (typeof eventAttachmentsTable.$inferSelect)[] =
 							[];
 						if (parsedArgs.input.attachments !== undefined) {
 							const attachments = parsedArgs.input.attachments;
 
-							// Track related entity creation (attachments)
+							// Track related entity creation (attachments) - stays inside transaction
 							const attachmentCreationStop = ctx.perf?.start(
 								"db:event-attachment-insert",
 							);
@@ -538,42 +556,6 @@ builder.mutationField("createEvent", (t) =>
 									.returning();
 							} finally {
 								attachmentCreationStop?.();
-							}
-
-							const attachmentUploadStop = ctx.perf?.start(
-								"file:event-attachment-upload",
-							);
-							try {
-								await Promise.all(
-									createdEventAttachments
-										.map((attachment, index) => {
-											const inputAttachment = attachments[index];
-											return inputAttachment !== undefined
-												? { attachment, inputAttachment }
-												: null;
-										})
-										.filter(
-											(
-												pair,
-											): pair is {
-												attachment: (typeof createdEventAttachments)[number];
-												inputAttachment: (typeof attachments)[number];
-											} => pair !== null,
-										)
-										.map(({ attachment, inputAttachment }) =>
-											ctx.minio.client.putObject(
-												ctx.minio.bucketName,
-												attachment.name,
-												inputAttachment.createReadStream(),
-												undefined,
-												{
-													"content-type": attachment.mimeType,
-												},
-											),
-										),
-								);
-							} finally {
-								attachmentUploadStop?.();
 							}
 						}
 
@@ -594,9 +576,89 @@ builder.mutationField("createEvent", (t) =>
 							ctx.log.error({ error }, "Failed to enqueue event notification");
 						}
 
-						return finalEvent;
+						return {
+							event: finalEvent,
+							attachmentsToUpload: parsedArgs.input.attachments,
+						};
 					},
 				);
+
+				// MinIO uploads happen OUTSIDE the transaction to avoid long locks
+				if (
+					createdEventResult.attachmentsToUpload !== undefined &&
+					createdEventResult.event.attachments.length > 0
+				) {
+					const attachments = createdEventResult.attachmentsToUpload;
+					const createdAttachments = createdEventResult.event.attachments;
+					const uploadedObjectNames: string[] = [];
+
+					const attachmentUploadStop = ctx.perf?.start(
+						"file:event-attachment-upload",
+					);
+					try {
+						await Promise.all(
+							createdAttachments
+								.map((attachment, index) => {
+									const inputAttachment = attachments[index];
+									return inputAttachment !== undefined
+										? { attachment, inputAttachment }
+										: null;
+								})
+								.filter(
+									(
+										pair,
+									): pair is {
+										attachment: (typeof createdAttachments)[number];
+										inputAttachment: (typeof attachments)[number];
+									} => pair !== null,
+								)
+								.map(async ({ attachment, inputAttachment }) => {
+									await ctx.minio.client.putObject(
+										ctx.minio.bucketName,
+										attachment.name,
+										inputAttachment.createReadStream(),
+										undefined,
+										{
+											"content-type": attachment.mimeType,
+										},
+									);
+									uploadedObjectNames.push(attachment.name);
+								}),
+						);
+					} catch (uploadError) {
+						// Compensation: clean up any partially uploaded objects
+						ctx.log.error(
+							{
+								error: uploadError,
+								eventId: createdEventResult.event.id,
+								uploadedCount: uploadedObjectNames.length,
+								totalCount: createdAttachments.length,
+							},
+							"Failed to upload event attachments, cleaning up uploaded objects",
+						);
+
+						// Best-effort cleanup of uploaded objects
+						if (uploadedObjectNames.length > 0) {
+							try {
+								await ctx.minio.client.removeObjects(
+									ctx.minio.bucketName,
+									uploadedObjectNames,
+								);
+							} catch (cleanupError) {
+								ctx.log.error(
+									{ error: cleanupError, objectNames: uploadedObjectNames },
+									"Failed to cleanup partially uploaded objects",
+								);
+							}
+						}
+
+						// Re-throw to propagate the error (the DB records remain, can be retried)
+						throw uploadError;
+					} finally {
+						attachmentUploadStop?.();
+					}
+				}
+
 				try {
 					await ctx.notification?.flush(ctx);
 				} catch (error) {
@@ -606,7 +668,7 @@ builder.mutationField("createEvent", (t) =>
 					);
 				}
 
-				return createdEventResult;
+				return createdEventResult.event;
 			};
 
 			if (ctx.perf) {
