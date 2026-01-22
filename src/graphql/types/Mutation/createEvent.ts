@@ -42,6 +42,17 @@ function computeMaterializationWindow(
 	return windowEnd;
 }
 
+const DEFAULT_AGENDA_FOLDER_CONFIG = {
+	name: "Default",
+	description: "Default agenda folder",
+	sequence: 1,
+} as const;
+
+const DEFAULT_AGENDA_CATEGORY_CONFIG = {
+	name: "Default",
+	description: "Default agenda category",
+} as const;
+
 export const mutationCreateEventArgumentsSchema = z.object({
 	input: mutationCreateEventInputSchema.transform(async (arg, ctx) => {
 		const now = new Date();
@@ -57,8 +68,8 @@ export const mutationCreateEventArgumentsSchema = z.object({
 
 		let attachments:
 			| (FileUpload & {
-					mimetype: z.infer<typeof eventAttachmentMimeTypeEnum>;
-			  })[]
+				mimetype: z.infer<typeof eventAttachmentMimeTypeEnum>;
+			})[]
 			| undefined;
 
 		if (arg.attachments !== undefined) {
@@ -74,9 +85,8 @@ export const mutationCreateEventArgumentsSchema = z.object({
 						ctx.addIssue({
 							code: "custom",
 							path: ["attachments", issue.path[0]],
-							message: `Mime type "${
-								rawAttachments[issue.path[0]]?.mimetype
-							}" is not allowed.`,
+							message: `Mime type "${rawAttachments[issue.path[0]]?.mimetype
+								}" is not allowed.`,
 						});
 					}
 				}
@@ -285,6 +295,55 @@ builder.mutationField("createEvent", (t) =>
 								"Postgres insert operation unexpectedly returned an empty array instead of throwing an error.",
 							);
 
+							throw new TalawaGraphQLError({
+								extensions: {
+									code: "unexpected",
+								},
+							});
+						}
+
+						// Creates default agenda folder
+						const [createdAgendaFolder] = await tx
+							.insert(agendaFoldersTable)
+							.values({
+								name: DEFAULT_AGENDA_FOLDER_CONFIG.name,
+								description: DEFAULT_AGENDA_FOLDER_CONFIG.description,
+								eventId: createdEvent.id,
+								organizationId: parsedArgs.input.organizationId,
+								isDefaultFolder: true,
+								sequence: DEFAULT_AGENDA_FOLDER_CONFIG.sequence,
+								creatorId: currentUserId,
+							})
+							.returning();
+
+						if (createdAgendaFolder === undefined) {
+							ctx.log.error(
+								"Postgres insert operation for agenda folder unexpectedly returned an empty array.",
+							);
+							throw new TalawaGraphQLError({
+								extensions: {
+									code: "unexpected",
+								},
+							});
+						}
+
+						// Creates default agenda category
+						const [createdAgendaCategory] = await tx
+							.insert(agendaCategoriesTable)
+							.values({
+								name: DEFAULT_AGENDA_CATEGORY_CONFIG.name,
+								description: DEFAULT_AGENDA_CATEGORY_CONFIG.description,
+								eventId: createdEvent.id,
+								organizationId: parsedArgs.input.organizationId,
+								isDefaultCategory: true,
+								creatorId: currentUserId,
+							})
+							.returning();
+
+						if (createdAgendaCategory === undefined) {
+							ctx.log.error(
+								"Postgres insert operation for agenda category unexpectedly returned an empty array.",
+							);
 							throw new TalawaGraphQLError({
 								extensions: {
 									code: "unexpected",
