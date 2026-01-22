@@ -19,35 +19,16 @@ export async function initializeGenerationWindow(
 	logger: ServiceDependencies["logger"],
 ): Promise<typeof eventGenerationWindowsTable.$inferSelect> {
 	try {
-		const windowConfig = buildWindowConfiguration(input);
+		// Check if a window config already exists for this organization
+		const existingConfig =
+			await drizzleClient.query.eventGenerationWindowsTable.findFirst({
+				where: eq(
+					eventGenerationWindowsTable.organizationId,
+					input.organizationId,
+				),
+			});
 
-		// Attempt idempotent insert: if a window config already exists for this organization,
-		// onConflictDoNothing will silently skip the insert and return an empty array.
-		const [insertedConfig] = await drizzleClient
-			.insert(eventGenerationWindowsTable)
-			.values(windowConfig)
-			.onConflictDoNothing({
-				target: eventGenerationWindowsTable.organizationId,
-			})
-			.returning();
-
-		// If insert was skipped due to conflict, fetch the existing config
-		if (!insertedConfig) {
-			const existingConfig =
-				await drizzleClient.query.eventGenerationWindowsTable.findFirst({
-					where: eq(
-						eventGenerationWindowsTable.organizationId,
-						input.organizationId,
-					),
-				});
-
-			if (!existingConfig) {
-				logger.error(
-					`Failed to insert and return Generation window for organization ${input.organizationId}`,
-				);
-				throw new Error("Failed to initialize Generation window.");
-			}
-
+		if (existingConfig) {
 			logger.info(
 				{
 					hotWindowMonthsAhead: existingConfig.hotWindowMonthsAhead,
@@ -62,17 +43,97 @@ export async function initializeGenerationWindow(
 			return existingConfig;
 		}
 
-		logger.info(
-			{
-				hotWindowMonthsAhead: insertedConfig.hotWindowMonthsAhead,
-				historyRetentionMonths: insertedConfig.historyRetentionMonths,
-				currentWindowEndDate: insertedConfig.currentWindowEndDate.toISOString(),
-				retentionStartDate: insertedConfig.retentionStartDate.toISOString(),
-			},
-			`Generation window initialized for organization ${input.organizationId}`,
-		);
+		// No existing config found, create a new one
+		const windowConfig = buildWindowConfiguration(input);
 
-		return insertedConfig;
+		// Attempt idempotent insert: if a window config already exists for this organization,
+		// onConflictDoNothing will silently skip the insert and return an empty array.
+		// This handles race conditions where another process might have created the config
+		// between our check and this insert.
+		try {
+			const [insertedConfig] = await drizzleClient
+				.insert(eventGenerationWindowsTable)
+				.values(windowConfig)
+				.onConflictDoNothing({
+					target: eventGenerationWindowsTable.organizationId,
+				})
+				.returning();
+
+			// If insert was skipped due to conflict (race condition), fetch the existing config
+			if (!insertedConfig) {
+				const raceConditionConfig =
+					await drizzleClient.query.eventGenerationWindowsTable.findFirst({
+						where: eq(
+							eventGenerationWindowsTable.organizationId,
+							input.organizationId,
+						),
+					});
+
+				if (!raceConditionConfig) {
+					logger.error(
+						`Failed to insert and return Generation window for organization ${input.organizationId}`,
+					);
+					throw new Error("Failed to initialize Generation window.");
+				}
+
+				logger.info(
+					{
+						hotWindowMonthsAhead: raceConditionConfig.hotWindowMonthsAhead,
+						historyRetentionMonths: raceConditionConfig.historyRetentionMonths,
+						currentWindowEndDate:
+							raceConditionConfig.currentWindowEndDate.toISOString(),
+						retentionStartDate:
+							raceConditionConfig.retentionStartDate.toISOString(),
+					},
+					`Using existing Generation window for organization ${input.organizationId} (race condition)`,
+				);
+
+				return raceConditionConfig;
+			}
+
+			logger.info(
+				{
+					hotWindowMonthsAhead: insertedConfig.hotWindowMonthsAhead,
+					historyRetentionMonths: insertedConfig.historyRetentionMonths,
+					currentWindowEndDate:
+						insertedConfig.currentWindowEndDate.toISOString(),
+					retentionStartDate: insertedConfig.retentionStartDate.toISOString(),
+				},
+				`Generation window initialized for organization ${input.organizationId}`,
+			);
+
+			return insertedConfig;
+		} catch (insertError: unknown) {
+			// If the insert fails (e.g., due to missing unique constraint or duplicate),
+			// check if a config was created by another process
+			const fallbackConfig =
+				await drizzleClient.query.eventGenerationWindowsTable.findFirst({
+					where: eq(
+						eventGenerationWindowsTable.organizationId,
+						input.organizationId,
+					),
+				});
+
+			if (fallbackConfig) {
+				logger.warn(
+					{
+						error: insertError,
+						hotWindowMonthsAhead: fallbackConfig.hotWindowMonthsAhead,
+						historyRetentionMonths: fallbackConfig.historyRetentionMonths,
+					},
+					`Insert failed but found existing Generation window for organization ${input.organizationId}`,
+				);
+
+				return fallbackConfig;
+			}
+
+			// Re-throw if we couldn't find an existing config
+			logger.error(
+				{ error: insertError },
+				`Failed to insert Generation window for organization ${input.organizationId}`,
+			);
+			throw insertError;
+		}
 	} catch (error) {
 		logger.error(
 			{ error },
