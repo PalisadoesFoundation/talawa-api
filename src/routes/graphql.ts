@@ -360,30 +360,31 @@ export const graphql = fastifyPlugin(async (fastify) => {
 				) {
 					const existingCode = error.extensions.code as ErrorCode;
 					const httpStatus = ERROR_CODE_TO_HTTP_STATUS[existingCode] ?? 500;
+					const normalized = normalizeError(error);
 
 					return {
-						message: error.message || "An error occurred",
+						message: normalized.message,
 						locations: error.locations,
 						path: error.path,
 						extensions: {
 							code: existingCode,
-							details: error.extensions.details,
+							details: normalized.details,
 							correlationId,
 							httpStatus,
 						},
 					};
 				}
 
-				// Handle errors without extensions specially
-				// preserve message but don't add details
+				// Handle errors without extensions using normalized, sanitized output
 				if (!error.extensions) {
+					const normalized = normalizeError(error);
 					return {
-						message: error.message || "An error occurred",
+						message: normalized.message,
 						locations: error.locations,
 						path: error.path,
 						extensions: {
 							code: ErrorCode.INTERNAL_SERVER_ERROR,
-							details: undefined,
+							details: normalized.details,
 							correlationId,
 							httpStatus: 500,
 						},

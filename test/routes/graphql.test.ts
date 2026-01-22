@@ -1803,14 +1803,14 @@ describe("GraphQL Routes", () => {
 					data: null,
 					errors: [
 						{
-							message: "Syntax error", // Preserve original message
+							message: "Internal Server Error",
 							locations: [{ line: 2, column: 10 }],
 							path: undefined,
 							extensions: {
 								code: ErrorCode.INTERNAL_SERVER_ERROR,
 								correlationId: "req-456",
 								httpStatus: 500,
-								details: undefined, // No details for errors without extensions
+								details: "Syntax error",
 							},
 						},
 					],
@@ -2456,6 +2456,82 @@ describe("GraphQL Routes", () => {
 				expect(result.statusCode).toBe(500); // Unknown error codes default to 500 status
 				const formattedError = result.response.errors?.[0];
 				expect(formattedError?.extensions?.httpStatus).toBe(500);
+			});
+
+			it("should handle GRAPHQL_PARSE_FAILED errors with INVALID_ARGUMENTS and HTTP 400", () => {
+				const parseFailedError = {
+					message: "Syntax Error: Expected Name, found }",
+					locations: [{ line: 1, column: 15 }],
+					path: undefined,
+					extensions: { code: "GRAPHQL_PARSE_FAILED" },
+					name: "GraphQLError",
+					nodes: undefined,
+					source: undefined,
+					positions: undefined,
+					originalError: undefined,
+					toJSON: () => ({ message: "Syntax Error: Expected Name, found }" }),
+					[Symbol.toStringTag]: "GraphQLError",
+				};
+
+				const result = errorFormatter(
+					{
+						data: null,
+						errors: [parseFailedError],
+					},
+					{
+						reply: {
+							request: { id: "parse-failed-req", log: { error: vi.fn() } },
+						},
+					},
+				);
+
+				expect(result.statusCode).toBe(400);
+				const formattedError = result.response.errors?.[0];
+				expect(formattedError?.extensions?.code).toBe(
+					ErrorCode.INVALID_ARGUMENTS,
+				);
+				expect(formattedError?.extensions?.httpStatus).toBe(400);
+				expect(formattedError?.message).toBe(
+					"Syntax Error: Expected Name, found }",
+				);
+			});
+
+			it("should handle Syntax Error messages with INVALID_ARGUMENTS and HTTP 400", () => {
+				const syntaxError = {
+					message: "Syntax Error: Unexpected character '{'",
+					locations: [{ line: 2, column: 5 }],
+					path: undefined,
+					extensions: { code: "GRAPHQL_SYNTAX_ERROR" },
+					name: "GraphQLError",
+					nodes: undefined,
+					source: undefined,
+					positions: undefined,
+					originalError: undefined,
+					toJSON: () => ({ message: "Syntax Error: Unexpected character '{'" }),
+					[Symbol.toStringTag]: "GraphQLError",
+				};
+
+				const result = errorFormatter(
+					{
+						data: null,
+						errors: [syntaxError],
+					},
+					{
+						reply: {
+							request: { id: "syntax-error-req", log: { error: vi.fn() } },
+						},
+					},
+				);
+
+				expect(result.statusCode).toBe(400);
+				const formattedError = result.response.errors?.[0];
+				expect(formattedError?.extensions?.code).toBe(
+					ErrorCode.INVALID_ARGUMENTS,
+				);
+				expect(formattedError?.extensions?.httpStatus).toBe(400);
+				expect(formattedError?.message).toBe(
+					"Syntax Error: Unexpected character '{'",
+				);
 			});
 		});
 	});
@@ -3537,8 +3613,10 @@ describe("GraphQL Routes", () => {
 				},
 			);
 
-			// Should use fallback message "An error occurred"
-			expect(result.response.errors?.[0]?.message).toBe("An error occurred");
+			// Should use normalized message "Internal Server Error" for security
+			expect(result.response.errors?.[0]?.message).toBe(
+				"Internal Server Error",
+			);
 			expect(result.response.errors?.[0]?.extensions?.code).toBe(
 				ErrorCode.NOT_FOUND,
 			);
@@ -3621,8 +3699,10 @@ describe("GraphQL Routes", () => {
 				},
 			);
 
-			// Should use fallback message "An error occurred"
-			expect(result.response.errors?.[0]?.message).toBe("An error occurred");
+			// Should use normalized message "Internal Server Error" for security
+			expect(result.response.errors?.[0]?.message).toBe(
+				"Internal Server Error",
+			);
 		});
 
 		it("should use first error httpStatus when no specific error codes match", async () => {
