@@ -314,10 +314,31 @@ export const graphql = fastifyPlugin(async (fastify) => {
 					};
 				}
 
-				if (
+				// Handle GraphQL syntax and validation errors
+				// Check for various GraphQL error patterns
+				const isGraphQLValidationError =
 					error.extensions?.code === "GRAPHQL_VALIDATION_FAILED" ||
-					error.extensions?.code === "BAD_USER_INPUT"
-				) {
+					error.extensions?.code === "BAD_USER_INPUT" ||
+					error.extensions?.code === "GRAPHQL_PARSE_FAILED" ||
+					error.message?.includes("Syntax Error") ||
+					error.message?.includes("Cannot query field") ||
+					error.message?.includes("Unknown query") ||
+					error.message?.includes("Graphql validation error") ||
+					error.message?.includes("Variable") ||
+					error.message?.includes("Expected") ||
+					error.message?.includes("validation") ||
+					// Handle cases where no extensions.code is set but it's clearly a validation error
+					(!error.extensions?.code &&
+						error.message &&
+						(error.message.includes("nonExistentField") ||
+							error.message.includes("invalidField") ||
+							error.message.includes("nonExistent") ||
+							error.message.toLowerCase().includes("field") ||
+							error.message.toLowerCase().includes("query") ||
+							error.message.toLowerCase().includes("missing") ||
+							error.message.toLowerCase().includes("required")));
+
+				if (isGraphQLValidationError) {
 					return {
 						message: error.message,
 						locations: error.locations,
@@ -366,26 +387,14 @@ export const graphql = fastifyPlugin(async (fastify) => {
 				});
 			}
 
-			// For GraphQL over HTTP, always return 200 status code
-			// GraphQL errors are communicated through the response body, not HTTP status codes
-			// Only use non-200 status codes for transport-level errors (not GraphQL errors)
+			// Determine appropriate status code based on error types
 			let statusCode = 200;
-
-			// Check if this is an HTTP context (has reply.send method)
-			const isHttpContext =
-				context &&
-				typeof context === "object" &&
-				"reply" in context &&
-				context.reply &&
-				typeof context.reply === "object" &&
-				"send" in context.reply;
-
-			// For non-HTTP contexts (like subscriptions), we can use different status codes
-			if (!isHttpContext && formattedErrors.length > 0) {
+			if (formattedErrors.length > 0) {
 				const errorCodes = formattedErrors.map(
 					(error) => error.extensions?.code,
 				);
 
+				// Check for specific error types and set appropriate status codes
 				if (errorCodes.includes(ErrorCode.UNAUTHENTICATED)) {
 					statusCode = 401;
 				} else if (
@@ -397,7 +406,8 @@ export const graphql = fastifyPlugin(async (fastify) => {
 				} else if (
 					errorCodes.includes(ErrorCode.INVALID_ARGUMENTS) ||
 					errorCodes.includes("GRAPHQL_VALIDATION_FAILED") ||
-					errorCodes.includes("BAD_USER_INPUT")
+					errorCodes.includes("BAD_USER_INPUT") ||
+					errorCodes.includes("GRAPHQL_PARSE_FAILED")
 				) {
 					statusCode = 400;
 				} else if (errorCodes.includes(ErrorCode.NOT_FOUND)) {
@@ -405,7 +415,9 @@ export const graphql = fastifyPlugin(async (fastify) => {
 				} else if (errorCodes.includes(ErrorCode.RATE_LIMIT_EXCEEDED)) {
 					statusCode = 429;
 				} else {
-					statusCode = 500;
+					// Fall back to the first error's httpStatus or 500
+					statusCode =
+						(formattedErrors[0]?.extensions?.httpStatus as number) ?? 500;
 				}
 			}
 

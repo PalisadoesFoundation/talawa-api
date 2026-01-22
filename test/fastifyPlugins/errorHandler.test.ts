@@ -494,7 +494,7 @@ describe("errorHandlerPlugin", () => {
 				}),
 			});
 
-			expect(res.statusCode).toBe(200);
+			expect(res.statusCode).toBe(401);
 			const body = res.json();
 			expect(body.errors).toBeDefined();
 			expect(body.errors[0]).toEqual(
@@ -521,7 +521,7 @@ describe("errorHandlerPlugin", () => {
 				}),
 			});
 
-			expect(res.statusCode).toBe(200);
+			expect(res.statusCode).toBe(400);
 			const body = res.json();
 			expect(body.errors).toBeDefined();
 			expect(body.errors[0]).toEqual(
@@ -547,7 +547,7 @@ describe("errorHandlerPlugin", () => {
 				}),
 			});
 
-			expect(res.statusCode).toBe(200);
+			expect(res.statusCode).toBe(500);
 			const body = res.json();
 			expect(body.errors[0].message).toMatch(
 				/Generic GraphQL error|Internal Server Error/,
@@ -569,7 +569,7 @@ describe("errorHandlerPlugin", () => {
 				}),
 			});
 
-			expect(res.statusCode).toBe(200);
+			expect(res.statusCode).toBe(400);
 			const body = res.json();
 			expect(body.errors[0].extensions.code).toBe("invalid_arguments");
 			expect(body.errors[0].extensions.details).toEqual({
@@ -1086,7 +1086,7 @@ describe("errorHandlerPlugin", () => {
 				}),
 			});
 
-			expect(res.statusCode).toBe(200);
+			expect(res.statusCode).toBe(401);
 			const body = res.json();
 			expect(body.errors).toBeDefined();
 			expect(body.errors[0].extensions.code).toBe("unauthenticated");
@@ -1104,7 +1104,7 @@ describe("errorHandlerPlugin", () => {
 				}),
 			});
 
-			expect(res.statusCode).toBe(200);
+			expect(res.statusCode).toBe(401);
 			const body = res.json();
 			expect(body.errors[0].extensions.details).toBeUndefined();
 		});

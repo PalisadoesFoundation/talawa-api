@@ -2214,8 +2214,8 @@ describe("GraphQL Routes", () => {
 					},
 				);
 
-				// INTERNAL_SERVER_ERROR returns 200 for HTTP context (reply.send present), subscriptions derive status when reply.send is absent
-				expect(result.statusCode).toBe(200);
+				// INTERNAL_SERVER_ERROR returns 500 for HTTP context (reply.send present), subscriptions derive status when reply.send is absent
+				expect(result.statusCode).toBe(500);
 			});
 
 			it("should use pre-set correlationId and log in subscription context", () => {
