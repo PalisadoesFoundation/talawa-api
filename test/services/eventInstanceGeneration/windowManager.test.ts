@@ -141,9 +141,13 @@ suite("windowManager", () => {
 			};
 
 			(mockDrizzleClient.insert as Mock).mockReturnValue(mockInsertChain);
+			// First call: no existing config (so we proceed to insert)
+			// Second call: config found (race condition - another process created it)
 			(
 				mockDrizzleClient.query.eventGenerationWindowsTable.findFirst as Mock
-			).mockResolvedValue(mockExistingConfig);
+			)
+				.mockResolvedValueOnce(undefined)
+				.mockResolvedValueOnce(mockExistingConfig);
 
 			const result = await initializeGenerationWindow(
 				input,
@@ -157,18 +161,13 @@ suite("windowManager", () => {
 			);
 			expect(
 				mockDrizzleClient.query.eventGenerationWindowsTable.findFirst,
-			).toHaveBeenCalledWith({
-				where: eq(
-					eventGenerationWindowsTable.organizationId,
-					mockOrganizationId,
-				),
-			});
+			).toHaveBeenCalledTimes(2);
 			expect(mockLogger.info).toHaveBeenCalledWith(
 				expect.objectContaining({
 					hotWindowMonthsAhead: 12,
 					historyRetentionMonths: 3,
 				}),
-				`Using existing Generation window for organization ${mockOrganizationId}`,
+				`Using existing Generation window for organization ${mockOrganizationId} (race condition)`,
 			);
 		});
 
