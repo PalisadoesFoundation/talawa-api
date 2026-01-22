@@ -54,8 +54,10 @@ test_cleanup_lifo() {
         cleanup_on_error" 2>&1)
     
     # Check if Task 2 appears before Task 1
-    local t1_pos=$(echo "$output" | grep -n "Task 1" | cut -d: -f1)
-    local t2_pos=$(echo "$output" | grep -n "Task 2" | cut -d: -f1)
+    local t1_pos
+    t1_pos=$(echo "$output" | grep -n "Task 1" | cut -d: -f1)
+    local t2_pos
+    t2_pos=$(echo "$output" | grep -n "Task 2" | cut -d: -f1)
     
     if [ -n "$t1_pos" ] && [ -n "$t2_pos" ] && [ "$t2_pos" -lt "$t1_pos" ]; then
         test_pass
@@ -71,7 +73,8 @@ test_idempotency() {
     test_start "run_idempotent skips completed tasks"
     
     # We need a temporary directory for state to avoid messing with real state
-    local tmp_home=$(mktemp -d)
+    local tmp_home
+    tmp_home=$(mktemp -d)
     
     local output
     output=$(TMPDIR="$tmp_home" bash -c "source '$LIB_PATH'; \
@@ -95,7 +98,8 @@ test_idempotency() {
 test_idempotency_failure() {
     test_start "run_idempotent does not mark failed tasks as done"
     
-    local tmp_home=$(mktemp -d)
+    local tmp_home
+    tmp_home=$(mktemp -d)
     
     # Run a failing command
     # We expect it to fail, so we ignore the exit code of bash -c with || true
@@ -104,7 +108,18 @@ test_idempotency_failure() {
     
     # Check if the marker file exists (it should NOT)
     # The user-specific directory might vary, so we find it
-    local state_dirs=$(find "$tmp_home" -name "talawa-install-state*")
+    local state_dirs
+    state_dirs=$(find "$tmp_home" -name "talawa-install-state*")
+    
+    local state_dir_count
+    state_dir_count=$(echo "$state_dirs" | grep -c "^")
+    
+    if [ "$state_dir_count" -ne 1 ]; then
+        test_fail "Expected exactly 1 state directory, found $state_dir_count: $state_dirs"
+        rm -rf "$tmp_home"
+        return
+    fi
+    
     local marker="$state_dirs/step_fail.done"
     
     if [ ! -f "$marker" ]; then
@@ -169,8 +184,10 @@ test_trap_int() {
     test_start "INT signal (Ctrl+C) triggers cleanup"
     
     # Create a script that waits for SIGINT and registers a cleanup task
-    local test_script=$(mktemp)
-    local output_file=$(mktemp)
+    local test_script
+    test_script=$(mktemp)
+    local output_file
+    output_file=$(mktemp)
     
     cat <<EOF > "$test_script"
 source '$LIB_PATH'
@@ -218,8 +235,10 @@ test_trap_term() {
     test_start "TERM signal triggers cleanup"
     
     # Create a script that waits for SIGTERM and registers a cleanup task
-    local test_script=$(mktemp)
-    local output_file=$(mktemp)
+    local test_script
+    test_script=$(mktemp)
+    local output_file
+    output_file=$(mktemp)
     
     cat <<EOF > "$test_script"
 source '$LIB_PATH'
@@ -266,14 +285,16 @@ EOF
 test_dir_perms() {
     test_start "State directory has secure permissions (700)"
     
-    local tmp_home=$(mktemp -d)
+    local tmp_home
+    tmp_home=$(mktemp -d)
     # Run source to trigger dir creation
     TMPDIR="$tmp_home" bash -c "source '$LIB_PATH'"
     
     # Robustly find the state directory
     local state_dirs
     state_dirs=$(find "$tmp_home" -name "talawa-install-state*")
-    local state_dir_count=$(echo "$state_dirs" | grep -c "^")
+    local state_dir_count
+    state_dir_count=$(echo "$state_dirs" | grep -c "^")
     
     if [ "$state_dir_count" -eq 0 ]; then
         test_fail "State directory not created"
