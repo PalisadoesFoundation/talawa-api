@@ -249,7 +249,8 @@ describe("venueAttachments.ts", () => {
 			expect(result2.success).toBe(true);
 		});
 
-		it("should reject invalid UUID format for creatorId and updaterId", () => {
+		it("should validate creatorId and updaterId as UUIDs when provided", () => {
+			// Test invalid UUID for creatorId
 			const result1 = venueAttachmentsTableInsertSchema.safeParse({
 				mimeType: "image/jpeg",
 				name: "Test Attachment",
@@ -258,6 +259,7 @@ describe("venueAttachments.ts", () => {
 			});
 			expect(result1.success).toBe(false);
 
+			// Test invalid UUID for updaterId
 			const result2 = venueAttachmentsTableInsertSchema.safeParse({
 				mimeType: "image/jpeg",
 				name: "Test Attachment",
@@ -265,6 +267,24 @@ describe("venueAttachments.ts", () => {
 				updaterId: "invalid-uuid",
 			});
 			expect(result2.success).toBe(false);
+
+			// Test valid UUIDs for both
+			const result3 = venueAttachmentsTableInsertSchema.safeParse({
+				mimeType: "image/jpeg",
+				name: "Test Attachment",
+				venueId: "123e4567-e89b-12d3-a456-426614174000",
+				creatorId: "123e4567-e89b-12d3-a456-426614174001",
+				updaterId: "123e4567-e89b-12d3-a456-426614174002",
+			});
+			expect(result3.success).toBe(true);
+
+			// Test that they're optional (can be omitted)
+			const result4 = venueAttachmentsTableInsertSchema.safeParse({
+				mimeType: "image/jpeg",
+				name: "Test Attachment",
+				venueId: "123e4567-e89b-12d3-a456-426614174000",
+			});
+			expect(result4.success).toBe(true);
 		});
 
 		it("should transform data correctly", () => {
@@ -326,6 +346,214 @@ describe("venueAttachments.ts", () => {
 				// Make sure ALL 3 index calls execute
 				expect(result.length).toBe(3);
 			}
+		});
+	});
+
+	describe("Relation Configuration Verification", () => {
+		describe("venueAttachmentsTableRelations", () => {
+			it("should verify that three relations are defined", async () => {
+				// Access the mocked drizzle-orm to check what happened during module load
+				const drizzle = await import("drizzle-orm");
+				const mockedRelations = drizzle.relations as ReturnType<typeof vi.fn>;
+
+				// Find the call where relations() was called with venueAttachmentsTable
+				const venueAttachmentsCall = mockedRelations.mock.calls.find(
+					(call) => call[0] === venueAttachmentsTable,
+				);
+
+				expect(venueAttachmentsCall).toBeDefined();
+				if (!venueAttachmentsCall) return;
+
+				const configFn = venueAttachmentsCall[1];
+
+				// Execute the config function with spies to capture relation definitions
+				const capturedRelations: Array<{
+					config: {
+						fields: unknown[];
+						references: unknown[];
+						relationName?: string;
+					};
+				}> = [];
+
+				const spyOne = vi.fn().mockImplementation((table, config) => {
+					capturedRelations.push({ config });
+					return { ...config, _table: table };
+				});
+
+				const spyMany = vi.fn();
+
+				// Run the original config function
+				configFn({ one: spyOne, many: spyMany });
+
+				// Should have created exactly 3 relations
+				expect(spyOne).toHaveBeenCalledTimes(3);
+				expect(capturedRelations).toHaveLength(3);
+			});
+
+			it("should have creator relation mapping creatorId to users.id", async () => {
+				const drizzle = await import("drizzle-orm");
+				const mockedRelations = drizzle.relations as ReturnType<typeof vi.fn>;
+
+				const venueAttachmentsCall = mockedRelations.mock.calls.find(
+					(call) => call[0] === venueAttachmentsTable,
+				);
+
+				expect(venueAttachmentsCall).toBeDefined();
+				if (!venueAttachmentsCall) return;
+
+				const configFn = venueAttachmentsCall[1];
+
+				const capturedRelations: Array<{
+					config: {
+						fields: unknown[];
+						references: unknown[];
+						relationName?: string;
+					};
+				}> = [];
+
+				const spyOne = vi.fn().mockImplementation((table, config) => {
+					capturedRelations.push({ config });
+					return { ...config, _table: table };
+				});
+
+				const spyMany = vi.fn();
+
+				configFn({ one: spyOne, many: spyMany });
+
+				// Find the creator relation by its field
+				const creatorRelation = capturedRelations.find((rel) => {
+					const fields = rel.config.fields as Array<{ name?: string }>;
+					return fields.some((field) => field?.name === "creator_id");
+				});
+
+				expect(creatorRelation).toBeDefined();
+				if (!creatorRelation) return;
+
+				// Verify creatorId field exists
+				const hasCreatorId = (
+					creatorRelation.config.fields as Array<{ name?: string }>
+				).some((field) => field?.name === "creator_id");
+				expect(hasCreatorId).toBe(true);
+
+				// Verify references users.id
+				const referencesId = (
+					creatorRelation.config.references as Array<{ name?: string }>
+				).some((ref) => ref?.name === "id");
+				expect(referencesId).toBe(true);
+
+				// Verify relation name
+				expect(creatorRelation.config.relationName).toBe(
+					"users.id:venue_attachments.creator_id",
+				);
+			});
+
+			it("should have updater relation mapping updaterId to users.id", async () => {
+				const drizzle = await import("drizzle-orm");
+				const mockedRelations = drizzle.relations as ReturnType<typeof vi.fn>;
+
+				const venueAttachmentsCall = mockedRelations.mock.calls.find(
+					(call) => call[0] === venueAttachmentsTable,
+				);
+
+				expect(venueAttachmentsCall).toBeDefined();
+				if (!venueAttachmentsCall) return;
+
+				const configFn = venueAttachmentsCall[1];
+
+				const capturedRelations: Array<{
+					config: {
+						fields: unknown[];
+						references: unknown[];
+						relationName?: string;
+					};
+				}> = [];
+
+				const spyOne = vi.fn().mockImplementation((table, config) => {
+					capturedRelations.push({ config });
+					return { ...config, _table: table };
+				});
+
+				const spyMany = vi.fn();
+
+				configFn({ one: spyOne, many: spyMany });
+
+				// Find the updater relation
+				const updaterRelation = capturedRelations.find((rel) => {
+					const fields = rel.config.fields as Array<{ name?: string }>;
+					return fields.some((field) => field?.name === "updater_id");
+				});
+
+				expect(updaterRelation).toBeDefined();
+				if (!updaterRelation) return;
+
+				const hasUpdaterId = (
+					updaterRelation.config.fields as Array<{ name?: string }>
+				).some((field) => field?.name === "updater_id");
+				expect(hasUpdaterId).toBe(true);
+
+				const referencesId = (
+					updaterRelation.config.references as Array<{ name?: string }>
+				).some((ref) => ref?.name === "id");
+				expect(referencesId).toBe(true);
+
+				expect(updaterRelation.config.relationName).toBe(
+					"users.id:venue_attachments.updater_id",
+				);
+			});
+
+			it("should have venue relation mapping venueId to venues.id", async () => {
+				const drizzle = await import("drizzle-orm");
+				const mockedRelations = drizzle.relations as ReturnType<typeof vi.fn>;
+
+				const venueAttachmentsCall = mockedRelations.mock.calls.find(
+					(call) => call[0] === venueAttachmentsTable,
+				);
+
+				expect(venueAttachmentsCall).toBeDefined();
+				if (!venueAttachmentsCall) return;
+
+				const configFn = venueAttachmentsCall[1];
+
+				const capturedRelations: Array<{
+					config: {
+						fields: unknown[];
+						references: unknown[];
+						relationName?: string;
+					};
+				}> = [];
+
+				const spyOne = vi.fn().mockImplementation((table, config) => {
+					capturedRelations.push({ config });
+					return { ...config, _table: table };
+				});
+
+				const spyMany = vi.fn();
+
+				configFn({ one: spyOne, many: spyMany });
+
+				// Find the venue relation
+				const venueRelation = capturedRelations.find((rel) => {
+					const fields = rel.config.fields as Array<{ name?: string }>;
+					return fields.some((field) => field?.name === "venue_id");
+				});
+
+				expect(venueRelation).toBeDefined();
+				if (!venueRelation) return;
+
+				const hasVenueId = (
+					venueRelation.config.fields as Array<{ name?: string }>
+				).some((field) => field?.name === "venue_id");
+				expect(hasVenueId).toBe(true);
+
+				const referencesId = (
+					venueRelation.config.references as Array<{ name?: string }>
+				).some((ref) => ref?.name === "id");
+				expect(referencesId).toBe(true);
+
+				expect(venueRelation.config.relationName).toBe(
+					"venue_attachments.venue_id:venues.id",
+				);
+			});
 		});
 	});
 });
