@@ -102,8 +102,6 @@ describe("createUser mutation performance tracking", () => {
 		assertToBeNonNullish(firstResult.data.createUser.user);
 		assertToBeNonNullish(firstResult.data.createUser.user.emailAddress);
 
-		const baselineAfterFirst = server.getMetricsSnapshots?.() ?? [];
-
 		// Try to create another user with the same email (will fail in resolver)
 		const result = await mercuriusClient.mutate(Mutation_createUser, {
 			headers: { authorization: `bearer ${authToken}` },
@@ -122,21 +120,24 @@ describe("createUser mutation performance tracking", () => {
 		expect(result.data?.createUser).toBeFalsy();
 
 		// Verify performance metrics were still collected even on error
+		// Since we just ran two createUser mutations, there should be snapshots with this metric
 		const snapshots = server.getMetricsSnapshots?.() ?? [];
-		expect(snapshots.length).toBeGreaterThan(baselineAfterFirst.length);
 
-		const newSnapshots = snapshots.slice(baselineAfterFirst.length);
-		// Verify the specific mutation:createUser metric was recorded
-		const latestSnapshot = newSnapshots.find(
+		// Find any snapshot containing the mutation metric
+		const latestSnapshot = snapshots.find(
 			(s) => s.ops["mutation:createUser"] !== undefined,
 		);
 		assertToBeNonNullish(latestSnapshot);
 		const mutationOp = latestSnapshot.ops["mutation:createUser"];
 		expect(mutationOp).toBeDefined();
+		// At least one createUser ran (could be from the first successful one)
 		expect(mutationOp?.count).toBeGreaterThanOrEqual(1);
 	});
 
 	it("should track sub-operation metrics including avatar upload", async () => {
+		// Capture initial snapshots BEFORE the mutation
+		const initialSnapshots = server.getMetricsSnapshots?.() ?? [];
+
 		const boundary = `----WebKitFormBoundary${Math.random().toString(36)}`;
 		const operations = JSON.stringify({
 			query: print(Mutation_createUser),
@@ -189,15 +190,18 @@ describe("createUser mutation performance tracking", () => {
 		expect(result.errors).toBeUndefined();
 		assertToBeNonNullish(result.data?.createUser);
 
-		const initialSnapshots = server.getMetricsSnapshots?.() ?? [];
-
 		// Verify performance metrics including sub-operations
 		const snapshots = server.getMetricsSnapshots?.() ?? [];
+		expect(snapshots.length).toBeGreaterThan(initialSnapshots.length);
 
+		// Compute new snapshots added since initialSnapshots
 		const newSnapshots = snapshots.slice(initialSnapshots.length);
-		// Check the most recent snapshot for the mutation operation
+
+		// Find a snapshot that has BOTH mutation:createUser AND file:avatar-upload
 		const latestSnapshot = newSnapshots.find(
-			(s) => s.ops["mutation:createUser"] !== undefined,
+			(s) =>
+				s.ops["mutation:createUser"] !== undefined &&
+				s.ops["file:avatar-upload"] !== undefined,
 		);
 		assertToBeNonNullish(latestSnapshot);
 

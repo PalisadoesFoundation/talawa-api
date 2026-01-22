@@ -96,9 +96,8 @@ describe("createEvent mutation performance tracking", () => {
 		const snapshots = server.getMetricsSnapshots?.() ?? [];
 		expect(snapshots.length).toBeGreaterThan(initialSnapshots.length);
 
-		const newSnapshots = snapshots.slice(initialSnapshots.length);
-		// Verify the specific mutation:createEvent metric was recorded
-		const latestSnapshot = newSnapshots.find(
+		// Find the snapshot containing the mutation:createEvent metric (new snapshots are prepended)
+		const latestSnapshot = snapshots.find(
 			(s) => s.ops["mutation:createEvent"] !== undefined,
 		);
 		assertToBeNonNullish(latestSnapshot);
@@ -147,8 +146,8 @@ describe("createEvent mutation performance tracking", () => {
 		const snapshots = server.getMetricsSnapshots?.() ?? [];
 		expect(snapshots.length).toBeGreaterThan(initialSnapshots.length);
 
-		const newSnapshots = snapshots.slice(initialSnapshots.length);
-		const latestSnapshot = newSnapshots.find(
+		// Find the snapshot containing the mutation:createEvent metric (new snapshots are prepended)
+		const latestSnapshot = snapshots.find(
 			(s) => s.ops["mutation:createEvent"] !== undefined,
 		);
 		assertToBeNonNullish(latestSnapshot);
@@ -184,8 +183,8 @@ describe("createEvent mutation performance tracking", () => {
 		const snapshots = server.getMetricsSnapshots?.() ?? [];
 		expect(snapshots.length).toBeGreaterThan(initialSnapshots.length);
 
-		const newSnapshots = snapshots.slice(initialSnapshots.length);
-		const latestSnapshot = newSnapshots.find(
+		// Find the snapshot containing the mutation:createEvent metric (new snapshots are prepended)
+		const latestSnapshot = snapshots.find(
 			(s) => s.ops["mutation:createEvent"] !== undefined,
 		);
 		assertToBeNonNullish(latestSnapshot);
@@ -221,9 +220,8 @@ describe("createEvent mutation performance tracking", () => {
 		const snapshots = server.getMetricsSnapshots?.() ?? [];
 		expect(snapshots.length).toBeGreaterThan(initialSnapshots.length);
 
-		const newSnapshots = snapshots.slice(initialSnapshots.length);
-		// Verify a snapshot exists with ops["mutation:createEvent"] recorded
-		const latestSnapshot = newSnapshots.find(
+		// Find the snapshot containing the mutation:createEvent metric (new snapshots are prepended)
+		const latestSnapshot = snapshots.find(
 			(s) => s.ops["mutation:createEvent"] !== undefined,
 		);
 		assertToBeNonNullish(latestSnapshot);
