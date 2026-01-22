@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="generator" content="Docusaurus v3.9.2">
 <title data-rh="true">Operation | Talawa API Documentation</title><meta data-rh="true" name="viewport" content="width=device-width,initial-scale=1"><meta data-rh="true" name="twitter:card" content="summary_large_image"><meta data-rh="true" property="og:url" content="https://docs-api.talawa.io/docs/operation"><meta data-rh="true" property="og:locale" content="en"><meta data-rh="true" name="docusaurus_locale" content="en"><meta data-rh="true" name="docsearch:language" content="en"><meta data-rh="true" name="docusaurus_version" content="current"><meta data-rh="true" name="docusaurus_tag" content="docs-default-current"><meta data-rh="true" name="docsearch:version" content="current"><meta data-rh="true" name="docsearch:docusaurus_tag" content="docs-default-current"><meta data-rh="true" property="og:title" content="Operation | Talawa API Documentation"><meta data-rh="true" name="description" content="Introduction"><meta data-rh="true" property="og:description" content="Introduction"><link data-rh="true" rel="icon" href="/img/favicon.ico"><link data-rh="true" rel="canonical" href="https://docs-api.talawa.io/docs/operation"><link data-rh="true" rel="alternate" href="https://docs-api.talawa.io/docs/operation" hreflang="en"><link data-rh="true" rel="alternate" href="https://docs-api.talawa.io/docs/operation" hreflang="x-default"><script data-rh="true" type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Operation","item":"https://docs-api.talawa.io/docs/operation"}]}</script><link rel="stylesheet" href="https://docs.talawa.io/css/styles-latest.css"><link rel="stylesheet" href="/assets/css/styles.ebf53daf.css">
-<script src="/assets/js/runtime~main.e9d2839e.js" defer="defer"></script>
+<script src="/assets/js/runtime~main.32d69928.js" defer="defer"></script>
 <script src="/assets/js/main.4f8dbd96.js" defer="defer"></script>
 </head>
 <body class="navigation-with-keyboard">
@@ -115,9 +115,14 @@
 </ol>
 <p>All done!</p>
 <h3 class="anchor anchorTargetStickyNavbar_vRzG" id="development-server-startup">Development Server Startup<a href="#development-server-startup" class="hash-link" aria-label="Direct link to Development Server Startup" title="Direct link to Development Server Startup" translate="no">​</a></h3>
-<p>The Development Server startup methodology depends on your environment.</p>
-<h4 class="anchor anchorTargetStickyNavbar_vRzG" id="from-the-cli">From the CLI<a href="#from-the-cli" class="hash-link" aria-label="Direct link to From the CLI" title="Direct link to From the CLI" translate="no">​</a></h4>
-<p>After a successful installation of the DevContainer environment, use these commands to start the application&#x27;s Docker container.</p>
+<p>The development server starts automatically when the <code>talawa-api</code> container is launched. You don&#x27;t need to run any additional commands.</p>
+<h4 class="anchor anchorTargetStickyNavbar_vRzG" id="automatic-startup">Automatic Startup<a href="#automatic-startup" class="hash-link" aria-label="Direct link to Automatic Startup" title="Direct link to Automatic Startup" translate="no">​</a></h4>
+<p>When you start the Docker container using:</p>
+<div class="language-bash codeBlockContainer_f_eT theme-code-block" style="--prism-color:#393A34;--prism-background-color:#f6f8fa"><div class="codeBlockContent_FfVB"><pre tabindex="0" class="prism-code language-bash codeBlock_mODg thin-scrollbar" style="color:#393A34;background-color:#f6f8fa"><code class="codeBlockLines_GP3H"><span class="token-line" style="color:#393A34"><span class="token plain">docker compose up</span><br></span></code></pre></div></div>
+<p>The development server will automatically start and be accessible on port 4000.</p>
+<h4 class="anchor anchorTargetStickyNavbar_vRzG" id="manual-server-control-optional">Manual Server Control (Optional)<a href="#manual-server-control-optional" class="hash-link" aria-label="Direct link to Manual Server Control (Optional)" title="Direct link to Manual Server Control (Optional)" translate="no">​</a></h4>
+<p>If you need to manually start or restart the server for debugging purposes:</p>
+<h5 class="anchor anchorTargetStickyNavbar_vRzG" id="from-the-cli">From the CLI<a href="#from-the-cli" class="hash-link" aria-label="Direct link to From the CLI" title="Direct link to From the CLI" translate="no">​</a></h5>
 <ol>
 <li class="">
 <p>To run in attached Mode</p>
@@ -128,8 +133,8 @@
 <div class="language-text codeBlockContainer_f_eT theme-code-block" style="--prism-color:#393A34;--prism-background-color:#f6f8fa"><div class="codeBlockContent_FfVB"><pre tabindex="0" class="prism-code language-text codeBlock_mODg thin-scrollbar" style="color:#393A34;background-color:#f6f8fa"><code class="codeBlockLines_GP3H"><span class="token-line" style="color:#393A34"><span class="token plain">docker exec talawa-api-1 /bin/bash -c &#x27;nohup pnpm run start_development_server &gt; /dev/null 2&gt;&amp;1 &amp;&#x27;</span><br></span></code></pre></div></div>
 </li>
 </ol>
-<h4 class="anchor anchorTargetStickyNavbar_vRzG" id="within-vscode">Within VScode<a href="#within-vscode" class="hash-link" aria-label="Direct link to Within VScode" title="Direct link to Within VScode" translate="no">​</a></h4>
-<p>You can run the app after closing the terminal or restating the vscode using these commands:</p>
+<h5 class="anchor anchorTargetStickyNavbar_vRzG" id="within-vscode">Within VScode<a href="#within-vscode" class="hash-link" aria-label="Direct link to Within VScode" title="Direct link to Within VScode" translate="no">​</a></h5>
+<p>You can run the app manually after closing the terminal or restarting vscode using these commands:</p>
 <ol>
 <li class="">
 <p>for normal mode</p>
@@ -140,7 +145,7 @@
 <div class="language-bash codeBlockContainer_f_eT theme-code-block" style="--prism-color:#393A34;--prism-background-color:#f6f8fa"><div class="codeBlockContent_FfVB"><pre tabindex="0" class="prism-code language-bash codeBlock_mODg thin-scrollbar" style="color:#393A34;background-color:#f6f8fa"><code class="codeBlockLines_GP3H"><span class="token-line" style="color:#393A34"><span class="token plain">   pnpm run start_development_server_with_debugger</span><br></span></code></pre></div></div>
 </li>
 </ol>
-<p><strong>Note:</strong> These commands will start the server in development mode.</p>
+<p><strong>Note:</strong> The server automatically starts in development mode when the container launches.</p>
 <h3 class="anchor anchorTargetStickyNavbar_vRzG" id="development-server-shutdown">Development Server Shutdown<a href="#development-server-shutdown" class="hash-link" aria-label="Direct link to Development Server Shutdown" title="Direct link to Development Server Shutdown" translate="no">​</a></h3>
 <p>Use the command <code>docker compose</code> command to cleanly shut down the dev container</p>
 <div class="language-text codeBlockContainer_f_eT theme-code-block" style="--prism-color:#393A34;--prism-background-color:#f6f8fa"><div class="codeBlockContent_FfVB"><pre tabindex="0" class="prism-code language-text codeBlock_mODg thin-scrollbar" style="color:#393A34;background-color:#f6f8fa"><code class="codeBlockLines_GP3H"><span class="token-line" style="color:#393A34"><span class="token plain">docker compose down</span><br></span></code></pre></div></div>
