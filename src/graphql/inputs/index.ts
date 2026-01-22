@@ -91,7 +91,6 @@ import "./MutationUpdateUserInput";
 import "./MutationUpdateVenueInput";
 import "./QueryAdvertisementInput";
 import "./QueryAgendaFolderInput";
-import "./QueryAgendaItemInput";
 import "./QueryChatInput";
 import "./QueryChatMessageInput";
 import "./QueryCommentInput";
