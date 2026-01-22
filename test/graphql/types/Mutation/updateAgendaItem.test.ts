@@ -124,7 +124,7 @@ async function createCategoryFolderAgendaItem() {
 				eventId,
 				organizationId: orgId,
 				name: "Folder",
-				sequence: 1,
+				sequence: 2,
 			},
 		},
 	});
@@ -143,7 +143,7 @@ async function createCategoryFolderAgendaItem() {
 					eventId,
 					folderId,
 					categoryId,
-					sequence: 1,
+					sequence: 2,
 				},
 			},
 		},

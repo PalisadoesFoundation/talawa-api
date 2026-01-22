@@ -112,6 +112,31 @@ describe("AgendaItem.attachments resolver", () => {
 		expect(result).toEqual([]);
 	});
 
+	it("throws unauthorized_action when user is org member but not org admin", async () => {
+		mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValueOnce({
+			id: "user-1",
+			role: "regular",
+		} as never);
+
+		mocks.drizzleClient.query.agendaFoldersTable.findFirst.mockResolvedValueOnce(
+			{
+				id: "folder-1",
+				event: {
+					id: "event-1",
+					organization: {
+						membershipsWhereOrganization: [{ role: "member" }],
+					},
+				},
+			} as never,
+		);
+
+		await expect(resolveAttachments(mockAgendaItem, {}, ctx)).rejects.toThrow(
+			new TalawaGraphQLError({
+				extensions: { code: "unauthorized_action" },
+			}),
+		);
+	});
+
 	it("throws unexpected when event does not exist on folder", async () => {
 		mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValueOnce({
 			id: "user-1",

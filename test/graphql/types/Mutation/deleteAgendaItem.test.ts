@@ -96,14 +96,16 @@ async function createAgendaItemEnv(adminToken: string) {
 		role: "administrator",
 	});
 
+	const startAt = new Date(Date.now() + 5_000);
+	const endAt = new Date(startAt.getTime() + 3_600_000);
 	const eventRes = await mercuriusClient.mutate(Mutation_createEvent, {
 		headers: { authorization: `bearer ${adminToken}` },
 		variables: {
 			input: {
 				name: `Event ${faker.string.uuid()}`,
 				organizationId,
-				startAt: new Date(Date.now() + 5_000).toISOString(),
-				endAt: new Date(Date.now() + 3_600_000 + 5_000).toISOString(),
+				startAt: startAt.toISOString(),
+				endAt: endAt.toISOString(),
 			},
 		},
 	});
@@ -265,6 +267,34 @@ suite("Mutation field deleteAgendaItem", () => {
 			role: "regular",
 		});
 
+		const result = await mercuriusClient.mutate(Mutation_deleteAgendaItem, {
+			headers: { authorization: `bearer ${regular.authToken}` },
+			variables: { input: { id: env.itemId } },
+		});
+
+		expect(result.errors).toEqual(
+			expect.arrayContaining([
+				expect.objectContaining({
+					extensions: expect.objectContaining({
+						code: "unauthorized_action_on_arguments_associated_resources",
+					}),
+				}),
+			]),
+		);
+	});
+
+	test("Returns unauthorized for user not in organization", async () => {
+		const [{ token }, regular] = await Promise.all([
+			getAdminAuth(),
+			createRegularUserUsingAdmin(),
+		]);
+
+		// Admin creates org + agenda item
+		const env = await createAgendaItemEnv(token);
+		cleanupFns.push(env.cleanup);
+
+		// Do NOT add organization membership for `regular`
+		// This user is NOT part of the org at all
 		const result = await mercuriusClient.mutate(Mutation_deleteAgendaItem, {
 			headers: { authorization: `bearer ${regular.authToken}` },
 			variables: { input: { id: env.itemId } },
