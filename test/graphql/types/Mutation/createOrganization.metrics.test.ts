@@ -166,7 +166,9 @@ describe("createOrganization mutation performance tracking", () => {
 
 		// Verify metrics were collected for complex operation
 		const snapshots = server.getMetricsSnapshots?.() ?? [];
-		const latestSnapshot = snapshots[0];
+		const latestSnapshot = snapshots.find(
+			(s) => s.ops["mutation:createOrganization"] !== undefined,
+		);
 		assertToBeNonNullish(latestSnapshot);
 		const op = latestSnapshot.ops["mutation:createOrganization"];
 
@@ -239,7 +241,9 @@ describe("createOrganization mutation performance tracking", () => {
 
 		// Verify performance metrics including sub-operations
 		const snapshots = server.getMetricsSnapshots?.() ?? [];
-		const latestSnapshot = snapshots[0];
+		const latestSnapshot = snapshots.find(
+			(s) => s.ops["mutation:createOrganization"] !== undefined,
+		);
 		assertToBeNonNullish(latestSnapshot);
 		const mainOp = latestSnapshot.ops["mutation:createOrganization"];
 

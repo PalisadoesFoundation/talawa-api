@@ -209,8 +209,10 @@ describe("deleteOrganization mutation performance tracking", () => {
 		assertToBeNonNullish(result.data?.deleteOrganization);
 
 		// Verify performance metrics including sub-operations
-		const snapshots = server.getMetricsSnapshots?.(1) ?? [];
-		const latestSnapshot = snapshots[0];
+		const snapshots = server.getMetricsSnapshots?.() ?? [];
+		const latestSnapshot = snapshots.find(
+			(s) => s.ops["mutation:deleteOrganization"] !== undefined,
+		);
 		assertToBeNonNullish(latestSnapshot);
 		const mainOp = latestSnapshot.ops["mutation:deleteOrganization"];
 
@@ -262,8 +264,10 @@ describe("deleteOrganization mutation performance tracking", () => {
 		assertToBeNonNullish(result.data?.deleteOrganization);
 
 		// Verify performance metrics including sub-operations
-		const snapshots = server.getMetricsSnapshots?.(1) ?? [];
-		const latestSnapshot = snapshots[0];
+		const snapshots = server.getMetricsSnapshots?.() ?? [];
+		const latestSnapshot = snapshots.find(
+			(s) => s.ops["mutation:deleteOrganization"] !== undefined,
+		);
 		assertToBeNonNullish(latestSnapshot);
 		const mainOp = latestSnapshot.ops["mutation:deleteOrganization"];
 
