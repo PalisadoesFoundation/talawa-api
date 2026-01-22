@@ -1479,4 +1479,81 @@ suite("Post-transaction attachment upload behavior", () => {
 			});
 		expect(eventAttachments).toHaveLength(0);
 	});
+
+	test("logs error when cleanup itself fails after upload failure", async () => {
+		const organizationId = await createTestOrganization();
+
+		vi.spyOn(server.minio.client, "putObject").mockRejectedValueOnce(
+			new Error("upload failed"),
+		);
+
+		// async rejection, not throw
+		vi.spyOn(server.drizzleClient, "delete").mockRejectedValueOnce(
+			new Error("cleanup delete failed"),
+		);
+
+		const logErrorSpy = vi.spyOn(server.log, "error");
+
+		const boundary = `----WebKitFormBoundary${Math.random().toString(36)}`;
+
+		const operations = JSON.stringify({
+			query: `
+      mutation CreateEvent($input: MutationCreateEventInput!) {
+        createEvent(input: $input) { id }
+      }
+    `,
+			variables: {
+				input: {
+					...baseEventInput(organizationId),
+					attachments: [null],
+				},
+			},
+		});
+
+		const map = JSON.stringify({
+			"0": ["variables.input.attachments.0"],
+		});
+
+		const body = [
+			`--${boundary}`,
+			'Content-Disposition: form-data; name="operations"',
+			"",
+			operations,
+			`--${boundary}`,
+			'Content-Disposition: form-data; name="map"',
+			"",
+			map,
+			`--${boundary}`,
+			'Content-Disposition: form-data; name="0"; filename="file.png"',
+			"Content-Type: image/png",
+			"",
+			"fake-content",
+			`--${boundary}--`,
+		].join("\r\n");
+
+		const response = await server.inject({
+			method: "POST",
+			url: "/graphql",
+			headers: {
+				authorization: `bearer ${adminAuthToken}`,
+				"content-type": `multipart/form-data; boundary=${boundary}`,
+			},
+			payload: body,
+		});
+
+		const result = JSON.parse(response.body);
+
+		expect(result.errors).toBeUndefined();
+		expect(result.data.createEvent.id).toBeDefined();
+
+		// This now passes
+		expect(logErrorSpy).toHaveBeenCalledWith(
+			expect.objectContaining({
+				cleanupError: expect.any(Error),
+				eventId: result.data.createEvent.id,
+				attachmentNames: expect.any(Array),
+			}),
+			"Failed to clean up attachment records after upload failure",
+		);
+	});
 });
