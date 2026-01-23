@@ -78,21 +78,21 @@ async function createTestPost(): Promise<string> {
 
 async function createTestComment(): Promise<string> {
 	const { userId } = await createRegularUserUsingAdmin();
-	const PostId = await createTestPost();
+	const postId = await createTestPost();
 
 	const commentResult = await server.drizzleClient
 		.insert(commentsTable)
 		.values({
 			body: faker.lorem.paragraph(),
 			creatorId: userId,
-			postId: PostId,
+			postId: postId,
 		})
 		.returning({ id: commentsTable.id });
 
 	const commentId = commentResult[0]?.id;
 	assertToBeNonNullish(
 		commentId,
-		"Commit ID is missing from creation response",
+		"Comment ID is missing from creation response",
 	);
 	return commentId;
 }
@@ -168,7 +168,7 @@ describe("src/drizzle/tables/commentVotes.test.ts", () => {
 			).resolves.toBeDefined();
 		});
 
-		it("should reject insert with invalid postId foreign key", async () => {
+		it("should reject insert with invalid commentId foreign key", async () => {
 			const invalidCommitId = faker.string.uuid();
 			const { userId } = await createRegularUserUsingAdmin();
 
@@ -181,7 +181,7 @@ describe("src/drizzle/tables/commentVotes.test.ts", () => {
 			).rejects.toThrow();
 		});
 
-		it("should reject insert with empty postId foreign key", async () => {
+		it("should reject insert with empty commentId foreign key", async () => {
 			const { userId } = await createRegularUserUsingAdmin();
 
 			await expect(
@@ -283,7 +283,7 @@ describe("src/drizzle/tables/commentVotes.test.ts", () => {
 	});
 
 	describe("Insert Schema Validation", () => {
-		it("should validate required type field", async () => {
+		it("should validate required type field", () => {
 			const invalidData = {};
 			const result = commentVotesTableInsertSchema.safeParse(invalidData);
 			expect(result.success).toBe(false);
@@ -294,7 +294,7 @@ describe("src/drizzle/tables/commentVotes.test.ts", () => {
 			}
 		});
 
-		it("should reject empty type string", async () => {
+		it("should reject empty type string", () => {
 			const invalidData = { type: "" };
 			const result = commentVotesTableInsertSchema.safeParse(invalidData);
 			expect(result.success).toBe(false);
@@ -305,7 +305,7 @@ describe("src/drizzle/tables/commentVotes.test.ts", () => {
 			}
 		});
 
-		it("should reject null type", async () => {
+		it("should reject null type", () => {
 			const invalidData = { type: null };
 			const result = commentVotesTableInsertSchema.safeParse(invalidData);
 			expect(result.success).toBe(false);
@@ -440,18 +440,18 @@ describe("src/drizzle/tables/commentVotes.test.ts", () => {
 				throw new Error("Failed to insert record");
 			}
 
-			const updatetype = "down_vote";
+			const updateType = "down_vote";
 
 			const [updated] = await server.drizzleClient
 				.update(commentVotesTable)
 				.set({
-					type: updatetype,
+					type: updateType,
 				})
 				.where(eq(commentVotesTable.id, inserted.id))
 				.returning();
 
 			expect(updated).toBeDefined();
-			expect(updated?.type).toBe(updatetype);
+			expect(updated?.type).toBe(updateType);
 			expect(updated?.updatedAt).not.toBeNull();
 		});
 
@@ -474,20 +474,20 @@ describe("src/drizzle/tables/commentVotes.test.ts", () => {
 				throw new Error("Failed to insert record");
 			}
 
-			const postVoteId = inserted.id;
+			const commentVoteId = inserted.id;
 
 			const [deleted] = await server.drizzleClient
 				.delete(commentVotesTable)
-				.where(eq(commentVotesTable.id, postVoteId))
+				.where(eq(commentVotesTable.id, commentVoteId))
 				.returning();
 
 			expect(deleted).toBeDefined();
-			expect(deleted?.id).toBe(postVoteId);
+			expect(deleted?.id).toBe(commentVoteId);
 
 			const [verifyDeleted] = await server.drizzleClient
 				.select()
 				.from(commentVotesTable)
-				.where(eq(commentVotesTable.id, postVoteId))
+				.where(eq(commentVotesTable.id, commentVoteId))
 				.limit(1);
 
 			expect(verifyDeleted).toBeUndefined();
@@ -545,7 +545,7 @@ describe("src/drizzle/tables/commentVotes.test.ts", () => {
 			}
 
 			expect(inserted.creatorId).toBe(userId);
-			const postVoteId = inserted.id;
+			const commentVoteId = inserted.id;
 
 			await server.drizzleClient
 				.delete(usersTable)
@@ -554,7 +554,7 @@ describe("src/drizzle/tables/commentVotes.test.ts", () => {
 			const [updated] = await server.drizzleClient
 				.select()
 				.from(commentVotesTable)
-				.where(eq(commentVotesTable.id, postVoteId))
+				.where(eq(commentVotesTable.id, commentVoteId))
 				.limit(1);
 
 			expect(updated).toBeDefined();
@@ -581,7 +581,7 @@ describe("src/drizzle/tables/commentVotes.test.ts", () => {
 			}
 
 			expect(inserted.commentId).toBe(commentId);
-			const postVoteId = inserted.id;
+			const commentVoteId = inserted.id;
 
 			await server.drizzleClient
 				.delete(commentsTable)
@@ -590,7 +590,7 @@ describe("src/drizzle/tables/commentVotes.test.ts", () => {
 			const [verifyDeleted] = await server.drizzleClient
 				.select()
 				.from(commentVotesTable)
-				.where(eq(commentVotesTable.id, postVoteId))
+				.where(eq(commentVotesTable.id, commentVoteId))
 				.limit(1);
 
 			expect(verifyDeleted).toBeUndefined();
@@ -710,6 +710,22 @@ describe("src/drizzle/tables/commentVotes.test.ts", () => {
 			if (result) {
 				expect(result.type).toBe(type);
 			}
+		});
+
+		it("should reject invalid enum values at database level", async () => {
+			const { userId } = await createRegularUserUsingAdmin();
+			const commentId = await createTestComment();
+
+			await expect(
+				server.drizzleClient
+					.insert(commentVotesTable)
+					.values({
+						type: "invalid_vote_type" as "up_vote", // Type assertion to bypass TS
+						commentId,
+						creatorId: userId,
+					})
+					.returning(),
+			).rejects.toThrow();
 		});
 	});
 });
