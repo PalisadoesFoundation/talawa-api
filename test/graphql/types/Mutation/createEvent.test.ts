@@ -1,4 +1,3 @@
-import { Readable } from "node:stream";
 import { faker } from "@faker-js/faker";
 import { PgDeleteBase } from "drizzle-orm/pg-core";
 import type { ResultOf, VariablesOf } from "gql.tada";
@@ -1620,14 +1619,7 @@ suite("Post-transaction attachment upload behavior", () => {
 			variables: {
 				input: {
 					...baseEventInput(organizationId),
-					attachments: [
-						Promise.resolve({
-							filename: "file.png",
-							mimetype: "image/png",
-							encoding: "7bit",
-							createReadStream: () => Readable.from(Buffer.from("fake")),
-						}),
-					],
+					attachments: [null],
 				},
 			},
 		});
