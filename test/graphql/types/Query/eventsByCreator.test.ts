@@ -781,6 +781,18 @@ suite("Query field eventsByCreator", () => {
 			expect(eventsPage3).toHaveLength(1);
 			assertToBeNonNullish(eventsPage3[0]);
 			expect(eventsPage3[0].id).toBe(events[4]);
+
+			// Page Beyond: Limit 2, Offset 10 -> No events
+			const pageBeyond = await mercuriusClient.query(Query_eventsByCreator, {
+				headers: { authorization: `bearer ${creatorToken}` },
+				variables: { userId: creatorId, limit: 2, offset: 10 },
+			});
+			expect(pageBeyond.errors).toBeUndefined();
+			const eventsPageBeyond = pageBeyond.data?.eventsByCreator as Array<{
+				id: string;
+			}>;
+			expect(eventsPageBeyond).toBeDefined();
+			expect(eventsPageBeyond).toHaveLength(0);
 		});
 	});
 

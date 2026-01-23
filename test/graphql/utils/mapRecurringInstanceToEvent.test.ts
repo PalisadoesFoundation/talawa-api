@@ -25,9 +25,17 @@ describe("mapRecurringInstanceToEvent", () => {
 			sequenceNumber: 1,
 			totalCount: 5,
 			hasExceptions: false,
-			// These might not be in ResolvedRecurringEventInstance strictly depending on type defs,
-			// but assuming based on usage in other files
-		} as unknown as ResolvedRecurringEventInstance;
+			// Added missing required fields to match ResolvedRecurringEventInstance type
+			recurrenceRuleId: "rule-1",
+			originalSeriesId: "series-1",
+			originalInstanceStartTime: new Date("2023-10-01T10:00:00Z"),
+			generatedAt: new Date("2023-09-01T10:00:00Z"),
+			lastUpdatedAt: null,
+			version: "1",
+			appliedExceptionData: null,
+			exceptionCreatedBy: null,
+			exceptionCreatedAt: null,
+		};
 
 		const result = mapRecurringInstanceToEvent(instance);
 

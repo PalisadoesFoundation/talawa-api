@@ -858,6 +858,7 @@ describe("getRecurringEventInstancesByBaseId", () => {
 		).toHaveBeenCalledWith({
 			where: expect.any(Object),
 			orderBy: expect.any(Object),
+			limit: 1000,
 		});
 
 		// Check that templates and exceptions were fetched

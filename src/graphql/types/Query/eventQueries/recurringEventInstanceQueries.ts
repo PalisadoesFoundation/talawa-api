@@ -257,6 +257,10 @@ export async function getRecurringEventInstancesByBaseIds(
 		return [];
 	}
 
+	// Enforce default limit if not provided to prevent unbounded queries
+	const DEFAULT_LIMIT = 1000;
+	const effectiveLimit = limit ?? DEFAULT_LIMIT;
+
 	try {
 		// Step 1: Get all recurring event instances for these base events
 		const whereConditions = [
@@ -283,7 +287,7 @@ export async function getRecurringEventInstancesByBaseIds(
 					asc(recurringEventInstancesTable.actualStartTime),
 					asc(recurringEventInstancesTable.id),
 				],
-				limit,
+				limit: effectiveLimit,
 			});
 
 		if (instances.length === 0) {
