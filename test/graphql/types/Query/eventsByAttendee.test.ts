@@ -872,8 +872,8 @@ suite("Query field eventsByAttendee", () => {
 			}>;
 			assertToBeNonNullish(events);
 
-			// Should have at least the standalone event
-			expect(events.length).toBeGreaterThanOrEqual(1);
+			// Should have at least the standalone event AND the recurring instance
+			expect(events.length).toBeGreaterThanOrEqual(2);
 
 			// Check that standalone event is present
 			const hasStandalone = events.some(

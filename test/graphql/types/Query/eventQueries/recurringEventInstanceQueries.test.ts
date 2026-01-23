@@ -931,73 +931,61 @@ describe("getRecurringEventInstancesByBaseIds", () => {
 		);
 	});
 
-	it("should exclude cancelled instances by default", async () => {
+	it("should apply different filters when includeCancelled is explicitly true", async () => {
+		// 1. Call with default (includeCancelled: false)
+		vi.mocked(
+			mockDrizzleClient.query.recurringEventInstancesTable.findMany,
+		).mockClear();
 		await getRecurringEventInstancesByBaseIds(
 			["base-event-1"],
 			mockDrizzleClient,
 			mockLogger,
+			{ includeCancelled: false },
 		);
-
-		const calls = vi.mocked(
+		const defaultCallArgs = vi.mocked(
 			mockDrizzleClient.query.recurringEventInstancesTable.findMany,
-		).mock.calls;
-		const lastCallArgs = calls[calls.length - 1]?.[0];
+		).mock.calls[0]?.[0];
 
-		// Should have an isCancelled: false check in the where clause
-		expect(lastCallArgs).toBeDefined();
-		expect(lastCallArgs?.where).toBeDefined();
-
-		// Verify the function was called and where clause exists.
-		// The where clause structure is an opaque Drizzle object.
-		// We trust the implementation adds isCancelled filter when includeCancelled is false (default).
-		// This is validated by comparing call count and argument structure between
-		// includeCancelled=false vs includeCancelled=true scenarios.
-		expect(
-			mockDrizzleClient.query.recurringEventInstancesTable.findMany,
-		).toHaveBeenCalledWith(
-			expect.objectContaining({
-				where: expect.anything(),
-				limit: 1000,
-			}),
-		);
-	});
-
-	it("should include cancelled instances when includeCancelled is true", async () => {
-		// Clear previous mock calls to ensure isolation
+		// 2. Call with includeCancelled: true
 		vi.mocked(
 			mockDrizzleClient.query.recurringEventInstancesTable.findMany,
 		).mockClear();
-
 		await getRecurringEventInstancesByBaseIds(
 			["base-event-1"],
 			mockDrizzleClient,
 			mockLogger,
 			{ includeCancelled: true },
 		);
-
-		const calls = vi.mocked(
+		const includeCancelledArgs = vi.mocked(
 			mockDrizzleClient.query.recurringEventInstancesTable.findMany,
-		).mock.calls;
-		const lastCallArgs = calls[calls.length - 1]?.[0];
+		).mock.calls[0]?.[0];
 
-		expect(lastCallArgs).toBeDefined();
-		expect(lastCallArgs?.where).toBeDefined();
-
-		// When includeCancelled is true, the where clause structure differs from default.
-		// We verify the function was called with expected structure.
-		// The actual isCancelled filter omission is verified by the fact that
-		// implementation conditionally adds it only when includeCancelled is false.
-		expect(
-			mockDrizzleClient.query.recurringEventInstancesTable.findMany,
-		).toHaveBeenCalledWith(
-			expect.objectContaining({
-				where: expect.anything(),
-				limit: 1000,
-			}),
-		);
+		// Verify the 'where' clause is structurally different
+		// (The implementation removes the `isCancelled: false` filter when includeCancelled is true)
+		expect(defaultCallArgs?.where).toBeDefined();
+		expect(includeCancelledArgs?.where).toBeDefined();
+		// Since we can't easily deepEqual complex Drizzle objects, we check strict inequality
+		expect(defaultCallArgs?.where).not.toEqual(includeCancelledArgs?.where);
 	});
 
-	it("should exclude specified instance IDs", async () => {
+	it("should apply different filters when excludeInstanceIds is provided", async () => {
+		// 1. Call without exclusions
+		vi.mocked(
+			mockDrizzleClient.query.recurringEventInstancesTable.findMany,
+		).mockClear();
+		await getRecurringEventInstancesByBaseIds(
+			["base-event-1"],
+			mockDrizzleClient,
+			mockLogger,
+		);
+		const noExclusionArgs = vi.mocked(
+			mockDrizzleClient.query.recurringEventInstancesTable.findMany,
+		).mock.calls[0]?.[0];
+
+		// 2. Call with exclusions
+		vi.mocked(
+			mockDrizzleClient.query.recurringEventInstancesTable.findMany,
+		).mockClear();
 		const excludeIds = ["instance-to-exclude-1", "instance-to-exclude-2"];
 		await getRecurringEventInstancesByBaseIds(
 			["base-event-1"],
@@ -1005,30 +993,15 @@ describe("getRecurringEventInstancesByBaseIds", () => {
 			mockLogger,
 			{ excludeInstanceIds: excludeIds },
 		);
-
-		expect(
+		const withExclusionArgs = vi.mocked(
 			mockDrizzleClient.query.recurringEventInstancesTable.findMany,
-		).toHaveBeenCalledTimes(1);
+		).mock.calls[0]?.[0];
 
-		const calls = vi.mocked(
-			mockDrizzleClient.query.recurringEventInstancesTable.findMany,
-		).mock.calls;
-		const lastCallArgs = calls[calls.length - 1]?.[0];
-		expect(lastCallArgs).toBeDefined();
-
-		// Verify exclusion is present in where clause.
-		// The where clause is an opaque Drizzle SQL object that cannot be JSON stringified.
-		// We verify the function was called with a where clause that includes the exclusion
-		// by checking the call was made and trusting the implementation's correctness.
-		// The implementation adds `not(inArray(..., excludeIds))` when excludeInstanceIds is provided.
-		expect(lastCallArgs?.where).toBeDefined();
-		expect(
-			mockDrizzleClient.query.recurringEventInstancesTable.findMany,
-		).toHaveBeenCalledWith(
-			expect.objectContaining({
-				where: expect.anything(),
-			}),
-		);
+		// Verify the 'where' clause is structurally different
+		// (The implementation adds a `NOT IN` clause)
+		expect(noExclusionArgs?.where).toBeDefined();
+		expect(withExclusionArgs?.where).toBeDefined();
+		expect(noExclusionArgs?.where).not.toEqual(withExclusionArgs?.where);
 	});
 
 	it("should return empty array when no instances found after query", async () => {
