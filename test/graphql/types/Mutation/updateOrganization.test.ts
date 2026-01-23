@@ -92,11 +92,12 @@ suite("Mutation field updateOrganization", () => {
 		const boundary = "----WebKitFormBoundarySafeToAutoRun";
 		const operations = {
 			query: `mutation UpdateOrg($input: MutationUpdateOrganizationInput!) {
-                updateOrganization(input: $input) { id avatarName }
+                updateOrganization(input: $input) { id }
             }`,
 			variables: {
 				input: {
 					id: orgId,
+					avatar: null,
 				},
 			},
 		};
@@ -934,6 +935,8 @@ suite("Mutation field updateOrganization", () => {
 				},
 			},
 		});
+
+		console.log("DEBUG: Full Result:", JSON.stringify(result, null, 2));
 
 		expect(result.errors).toBeUndefined();
 		// Verify returned object has null avatar
