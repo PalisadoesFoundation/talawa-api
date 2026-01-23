@@ -176,7 +176,10 @@ builder.mutationField("createOrganization", (t) =>
 						});
 					}
 
-					if (isNotNullish(parsedArgs.input.avatar)) {
+					if (
+						isNotNullish(parsedArgs.input.avatar) &&
+						avatarName !== undefined
+					) {
 						await ctx.minio.client.putObject(
 							ctx.minio.bucketName,
 							avatarName,
