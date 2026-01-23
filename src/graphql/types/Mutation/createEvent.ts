@@ -489,12 +489,19 @@ builder.mutationField("createEvent", (t) =>
 							)
 							.returning();
 
+						const pairs = createdEventAttachments.map((attachment, index) => ({
+							attachment,
+							fileUpload: attachments[index],
+						}));
+
+						if (pairs.some((pair) => pair.fileUpload == null)) {
+							throw new TalawaGraphQLError({
+								extensions: { code: "unexpected" },
+							});
+						}
+
 						await Promise.all(
-							createdEventAttachments
-								.map((attachment, index) => ({
-									attachment,
-									fileUpload: attachments[index],
-								}))
+							pairs
 								.filter(
 									(
 										item,
