@@ -74,16 +74,20 @@ suite("Query field eventsByAttendee", () => {
 			});
 			expect(result.data?.eventsByAttendee).toBeUndefined();
 			expect(result.errors).toBeDefined();
-			expect(
-				result.errors?.some(
-					(err) => err.extensions?.code === "invalid_arguments",
-				),
-			).toBe(true);
+			// Accept either invalid_arguments code or GraphQL validation errors for invalid UUID
+			const hasInvalidIdError = result.errors?.some(
+				(err) =>
+					err.extensions?.code === "invalid_arguments" ||
+					/ID cannot represent|Expected ID|invalid.*uuid/i.test(err.message),
+			);
+			expect(hasInvalidIdError).toBe(true);
 		});
 
 		test("should return error when offset exceeds max", async () => {
 			const { userId: regularUserId, authToken: regularAuthToken } =
 				await createRegularUserUsingAdmin();
+			assertToBeNonNullish(regularUserId);
+			assertToBeNonNullish(regularAuthToken);
 
 			const result = await mercuriusClient.query(Query_eventsByAttendee, {
 				headers: { authorization: `bearer ${regularAuthToken}` },

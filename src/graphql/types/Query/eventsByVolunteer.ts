@@ -299,6 +299,8 @@ builder.queryField("eventsByVolunteer", (t) =>
 									),
 									eq(recurringEventInstancesTable.isCancelled, false),
 								),
+								// Limit to at most one per template for existence check
+								limit: remainingTemplateIds.length,
 							},
 						);
 					for (const i of activeInstances) {
