@@ -275,6 +275,7 @@ jobs:
             'Caddyfile$'
             'codegen.ts$'
             '^Dockerfile.*'
+            '^docker/.*'
             '^docker-compose.*'
             '^drizzle_migrations/.*'
             '^scripts/.*'
