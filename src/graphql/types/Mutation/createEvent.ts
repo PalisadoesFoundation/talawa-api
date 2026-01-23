@@ -511,6 +511,15 @@ builder.mutationField("createEvent", (t) =>
 					},
 				);
 
+				try {
+					await ctx.notification?.flush(ctx);
+				} catch (error) {
+					ctx.log.error(
+						{ error },
+						"Failed to flush notifications after event create",
+					);
+				}
+
 				// Upload attachments to MinIO AFTER transaction commits
 				if (
 					parsedArgs.input.attachments !== undefined &&
@@ -581,30 +590,24 @@ builder.mutationField("createEvent", (t) =>
 						}
 
 						// Cleanup successfully uploaded objects
-						if (uploadedObjectKeys.length > 0) {
-							try {
-								await ctx.minio.client.removeObjects(
-									ctx.minio.bucketName,
-									uploadedObjectKeys,
-								);
-							} catch (cleanupError) {
-								ctx.log.error(
-									{ cleanupError, uploadedObjectKeys },
-									"Failed to cleanup uploaded objects after upload failure",
-								);
-							}
+						try {
+							await ctx.minio.client.removeObjects(
+								ctx.minio.bucketName,
+								uploadedObjectKeys,
+							);
+							ctx.log.info(
+								{ uploadedObjectKeys },
+								"Cleaned up uploaded objects after rollback",
+							);
+						} catch (cleanupError) {
+							ctx.log.error(
+								{ cleanupError },
+								"Failed to cleanup MinIO objects after rollback",
+							);
 						}
+
 						throw uploadError;
 					}
-				}
-
-				try {
-					await ctx.notification?.flush(ctx);
-				} catch (error) {
-					ctx.log.error(
-						{ error },
-						"Failed to flush notifications after event create",
-					);
 				}
 
 				return createdEventResult;
