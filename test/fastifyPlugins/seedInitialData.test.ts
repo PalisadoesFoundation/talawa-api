@@ -119,11 +119,11 @@ describe("seedInitialData Plugin - Notification Templates", () => {
 			await seedInitialDataPlugin(mockFastify as FastifyInstance, {});
 
 			// Verify insert was called for each template
-			expect(mockInsert).toHaveBeenCalledTimes(13);
+			expect(mockInsert).toHaveBeenCalledTimes(12);
 			expect(mockInsert).toHaveBeenCalledWith(notificationTemplatesTable);
 
 			// Verify onConflictDoNothing was called for each template with correct target
-			expect(mockOnConflictDoNothing).toHaveBeenCalledTimes(13);
+			expect(mockOnConflictDoNothing).toHaveBeenCalledTimes(12);
 			expect(mockOnConflictDoNothing).toHaveBeenCalledWith({
 				target: [
 					notificationTemplatesTable.eventType,
@@ -148,10 +148,10 @@ describe("seedInitialData Plugin - Notification Templates", () => {
 			await seedInitialDataPlugin(mockFastify as FastifyInstance, {});
 
 			// Verify insert was called for each template
-			expect(mockInsert).toHaveBeenCalledTimes(13);
+			expect(mockInsert).toHaveBeenCalledTimes(12);
 
 			// Verify onConflictDoNothing was called for each template
-			expect(mockOnConflictDoNothing).toHaveBeenCalledTimes(13);
+			expect(mockOnConflictDoNothing).toHaveBeenCalledTimes(12);
 
 			// Second run: should still attempt inserts (onConflictDoNothing handles conflicts)
 			vi.clearAllMocks();
@@ -163,8 +163,8 @@ describe("seedInitialData Plugin - Notification Templates", () => {
 			await seedInitialDataPlugin(mockFastify as FastifyInstance, {});
 
 			// Verify insert was still called (onConflictDoNothing prevents duplicates)
-			expect(mockInsert).toHaveBeenCalledTimes(13);
-			expect(mockOnConflictDoNothing).toHaveBeenCalledTimes(13);
+			expect(mockInsert).toHaveBeenCalledTimes(12);
+			expect(mockOnConflictDoNothing).toHaveBeenCalledTimes(12);
 		});
 
 		it("should handle missing notificationTemplatesTable gracefully", async () => {
@@ -261,7 +261,7 @@ describe("seedInitialData Plugin - Notification Templates", () => {
 			await seedInitialDataPlugin(mockFastify as FastifyInstance, {});
 
 			// Verify all templates were inserted
-			expect(insertedValues).toHaveLength(13);
+			expect(insertedValues).toHaveLength(12);
 
 			// Verify each template matches expected structure
 			for (let i = 0; i < expectedTemplates.length; i++) {
@@ -289,12 +289,12 @@ describe("seedInitialData Plugin - Notification Templates", () => {
 
 			await seedInitialDataPlugin(mockFastify as FastifyInstance, {});
 
-			// Should attempt to insert all 13 templates
-			expect(insertedValues).toHaveLength(13);
-			expect(mockInsert).toHaveBeenCalledTimes(13);
+			// Should attempt to insert all 12 templates
+			expect(insertedValues).toHaveLength(12);
+			expect(mockInsert).toHaveBeenCalledTimes(12);
 
 			// Verify onConflictDoNothing was called with correct target for conflict handling
-			expect(mockOnConflictDoNothing).toHaveBeenCalledTimes(13);
+			expect(mockOnConflictDoNothing).toHaveBeenCalledTimes(12);
 			for (const call of mockOnConflictDoNothing.mock.calls) {
 				expect(call[0]).toEqual({
 					target: [

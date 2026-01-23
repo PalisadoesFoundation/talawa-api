@@ -1315,14 +1315,32 @@ suite("Mutation field createEvent", () => {
 		test("should handle empty insert result for createdEvent", async () => {
 			const organizationId = await createTestOrganization();
 
-			// Mock insert to return empty array
-			const originalInsert = server.drizzleClient.insert;
-			const mockReturning = vi.fn().mockResolvedValue([]);
-			server.drizzleClient.insert = vi.fn().mockReturnValue({
-				values: vi.fn().mockReturnValue({
-					returning: mockReturning,
-				}),
-			}) as never;
+			// Mock transaction to return empty array for event insert
+			const originalTransaction = server.drizzleClient.transaction;
+			server.drizzleClient.transaction = vi
+				.fn()
+				.mockImplementation(async (callback) => {
+					const mockTx = {
+						insert: vi.fn().mockImplementation((table) => {
+							// Return empty array for eventsTable insert
+							if (table === eventsTable) {
+								return {
+									values: vi.fn().mockReturnThis(),
+									returning: vi.fn().mockResolvedValue([]),
+								};
+							}
+							// For other tables, return normal mock
+							return {
+								values: vi.fn().mockReturnThis(),
+								returning: vi
+									.fn()
+									.mockResolvedValue([{ id: faker.string.uuid() }]),
+							};
+						}),
+						query: server.drizzleClient.query,
+					};
+					return callback(mockTx as unknown as Parameters<typeof callback>[0]);
+				});
 
 			try {
 				const result = await createEvent({
@@ -1333,7 +1351,7 @@ suite("Mutation field createEvent", () => {
 				expect(result.errors?.[0]?.extensions?.code).toBe("unexpected");
 				expect(result.data?.createEvent).toBeNull();
 			} finally {
-				server.drizzleClient.insert = originalInsert;
+				server.drizzleClient.transaction = originalTransaction;
 			}
 		});
 
@@ -1354,6 +1372,7 @@ suite("Mutation field createEvent", () => {
 						recurrence: {
 							frequency: "WEEKLY",
 							interval: 1,
+							never: true, // Required: must specify exactly one of endDate, count, or never
 						},
 					},
 				});
