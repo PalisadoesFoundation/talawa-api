@@ -134,6 +134,7 @@ builder.queryField("eventsByAttendee", (t) =>
 							recurringEventInstance: {
 								columns: {
 									actualStartTime: true,
+									isCancelled: true,
 								},
 							},
 						},
@@ -157,6 +158,11 @@ builder.queryField("eventsByAttendee", (t) =>
 						record.recurringEventInstanceId &&
 						record.recurringEventInstance
 					) {
+						// Skip cancelled instances
+						if (record.recurringEventInstance.isCancelled) {
+							continue;
+						}
+
 						allReferenceEvents.push({
 							id: record.recurringEventInstanceId,
 							startAt: new Date(

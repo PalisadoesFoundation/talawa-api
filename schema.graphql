@@ -4964,10 +4964,10 @@ type Query {
   Query field to fetch all events where a user is an administrator (via organization role).
   """
   eventsByAdmin(
-    """Number of events to return"""
+    """Number of events to return (Max limit: 100)"""
     limit: Int
 
-    """Number of events to skip"""
+    """Number of events to skip (Max offset: 10000)"""
     offset: Int
 
     """ID of the user whose admin events to fetch"""

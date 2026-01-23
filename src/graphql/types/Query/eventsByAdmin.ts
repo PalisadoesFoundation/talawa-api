@@ -1,4 +1,4 @@
-import { and, eq, inArray } from "drizzle-orm";
+import { and, asc, eq, inArray } from "drizzle-orm";
 import { z } from "zod";
 import { eventsTable } from "~/src/drizzle/tables/events";
 import { organizationMembershipsTable } from "~/src/drizzle/tables/organizationMemberships";
@@ -10,10 +10,12 @@ import { getRecurringEventInstancesByBaseIds } from "~/src/graphql/types/Query/e
 import { mapRecurringInstanceToEvent } from "~/src/graphql/utils/mapRecurringInstanceToEvent";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 
+const MAX_OFFSET = 10000;
+
 const queryEventsByAdminArgumentsSchema = z.object({
 	userId: z.string().uuid(),
 	limit: z.number().int().min(1).max(100).optional(),
-	offset: z.number().int().min(0).optional(),
+	offset: z.number().int().min(0).max(MAX_OFFSET).optional(),
 });
 
 /**
@@ -29,10 +31,10 @@ builder.queryField("eventsByAdmin", (t) =>
 				description: "ID of the user whose admin events to fetch",
 			}),
 			limit: t.arg.int({
-				description: "Number of events to return",
+				description: "Number of events to return (Max limit: 100)",
 			}),
 			offset: t.arg.int({
-				description: "Number of events to skip",
+				description: `Number of events to skip (Max offset: ${MAX_OFFSET})`,
 			}),
 		},
 		description:
@@ -124,6 +126,9 @@ builder.queryField("eventsByAdmin", (t) =>
 
 				const organizationIds = adminMemberships.map((m) => m.organizationId);
 
+				// Calculate effective window for fetching
+				const effectiveWindow = limit + offset;
+
 				// Step 2: Get standalone events from these organizations
 				const standaloneEvents =
 					await ctx.drizzleClient.query.eventsTable.findMany({
@@ -134,6 +139,9 @@ builder.queryField("eventsByAdmin", (t) =>
 						with: {
 							attachmentsWhereEvent: true,
 						},
+						// Deterministic ordering
+						orderBy: [asc(eventsTable.startAt), asc(eventsTable.id)],
+						limit: effectiveWindow,
 					});
 
 				// Transform standalone events to unified format
@@ -155,14 +163,17 @@ builder.queryField("eventsByAdmin", (t) =>
 						),
 					});
 
-				// Step 4: For each template, get all non-cancelled instances
+				// Step 4: For each template, get active instances up to effective window
 				const baseRecurringEventIds = recurringTemplates.map((t) => t.id);
 
 				const instances = await getRecurringEventInstancesByBaseIds(
 					baseRecurringEventIds,
 					ctx.drizzleClient,
 					ctx.log,
-					{ includeCancelled: false },
+					{
+						limit: effectiveWindow,
+						includeCancelled: false,
+					},
 				);
 
 				// Transform instances to unified format
@@ -170,7 +181,7 @@ builder.queryField("eventsByAdmin", (t) =>
 
 				allEvents.push(...activeInstances);
 
-				// Sort by start time
+				// Sort by start time (and ID for ties)
 				allEvents.sort((a, b) => {
 					const aTime = new Date(a.startAt).getTime();
 					const bTime = new Date(b.startAt).getTime();
@@ -186,10 +197,11 @@ builder.queryField("eventsByAdmin", (t) =>
 					{
 						userId: targetUserId,
 						adminOrgCount: organizationIds.length,
-						totalEvents: allEvents.length,
+						totalEventsBeforeSlice: allEvents.length,
 						returnedEvents: slicedEvents.length,
 						limit,
 						offset,
+						effectiveWindow,
 					},
 					"Retrieved events by admin",
 				);
