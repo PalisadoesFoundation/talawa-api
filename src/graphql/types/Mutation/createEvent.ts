@@ -490,17 +490,30 @@ builder.mutationField("createEvent", (t) =>
 							.returning();
 
 						await Promise.all(
-							createdEventAttachments.map((attachment, index) =>
-								ctx.minio.client.putObject(
-									ctx.minio.bucketName,
-									attachment.name,
-									attachments[index]!.createReadStream(),
-									undefined,
-									{
-										"content-type": attachment.mimeType,
-									},
+							createdEventAttachments
+								.map((attachment, index) => ({
+									attachment,
+									fileUpload: attachments[index],
+								}))
+								.filter(
+									(
+										item,
+									): item is {
+										attachment: typeof item.attachment;
+										fileUpload: NonNullable<typeof item.fileUpload>;
+									} => item.fileUpload !== undefined,
+								)
+								.map(({ attachment, fileUpload }) =>
+									ctx.minio.client.putObject(
+										ctx.minio.bucketName,
+										attachment.name,
+										fileUpload.createReadStream(),
+										undefined,
+										{
+											"content-type": attachment.mimeType,
+										},
+									),
 								),
-							),
 						);
 					}
 
