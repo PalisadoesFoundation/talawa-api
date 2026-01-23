@@ -555,19 +555,24 @@ builder.mutationField("createEvent", (t) =>
 					}
 
 					// MinIO cleanup
-					try {
-						await Promise.allSettled(
-							createdEventAttachments.map((attachment) =>
-								ctx.minio.client.removeObject(
-									ctx.minio.bucketName,
-									attachment.name,
-								),
+					const removalResults = await Promise.allSettled(
+						createdEventAttachments.map((attachment) =>
+							ctx.minio.client.removeObject(
+								ctx.minio.bucketName,
+								attachment.name,
 							),
-						);
-					} catch (cleanupError) {
+						),
+					);
+					const failedRemovals = removalResults.filter(
+						(r) => r.status === "rejected",
+					);
+					if (failedRemovals.length > 0) {
 						ctx.log.error(
-							{ cleanupError, eventId: createdEventResult.id },
-							"Failed to clean up attachment objects after upload failure",
+							{
+								eventId: createdEventResult.id,
+								failedCount: failedRemovals.length,
+							},
+							"Failed to clean up some attachment objects after upload failure",
 						);
 					}
 					createdEventResult = {
