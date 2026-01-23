@@ -144,4 +144,29 @@ describe("recurringEventInstancesTableInsertSchema", () => {
 			expect(issue?.code).toBe("too_small");
 		}
 	});
+	it("should reject payload with invalid totalCount (min constraint)", () => {
+		const invalidPayload = {
+			baseRecurringEventId: crypto.randomUUID(),
+			recurrenceRuleId: crypto.randomUUID(),
+			originalSeriesId: crypto.randomUUID(),
+			originalInstanceStartTime: new Date(),
+			actualStartTime: new Date(),
+			actualEndTime: new Date(),
+			organizationId: crypto.randomUUID(),
+			sequenceNumber: 1,
+			totalCount: 0, // invalid: must be >= 1 when non-null
+		};
+
+		const result =
+			recurringEventInstancesTableInsertSchema.safeParse(invalidPayload);
+
+		expect(result.success).toBe(false);
+
+		if (!result.success) {
+			const issue = result.error.issues.find((i) => i.path[0] === "totalCount");
+
+			expect(issue).toBeDefined();
+			expect(issue?.code).toBe("too_small");
+		}
+	});
 });
