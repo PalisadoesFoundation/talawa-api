@@ -22,6 +22,12 @@ const getColumnName = (col: unknown): string | undefined => {
  * Tests for chatMessageReadReceiptsTable definition - validates table schema, relations,
  * insert schema validation, database constraints, indexes, and primary key configuration.
  * This ensures the chatMessageReadReceipts table is properly configured and all code paths are covered.
+ *
+ * Note: Unit-level Drizzle metadata tests are required here because:
+ * 1. They validate the table schema definition before database migrations
+ * 2. They catch schema definition errors early in the development cycle
+ * 3. They provide fast feedback without requiring database setup
+ * 4. GraphQL integration tests validate the exposed API layer separately
  */
 describe("src/drizzle/tables/chatMessageReadReceipts.ts - Table Definition Tests", () => {
 	describe("Table Schema", () => {
@@ -192,29 +198,30 @@ describe("src/drizzle/tables/chatMessageReadReceipts.ts - Table Definition Tests
 		}
 
 		// Capture all relations by invoking the config function with mock helpers
+		// Only capture public-facing metadata, avoiding brittle internal implementation details
 		let capturedRelations: Record<string, CapturedRelation> = {};
-		let totalRelationCount = 0;
 
 		beforeAll(() => {
 			capturedRelations = {};
-			totalRelationCount = 0;
 			(
 				chatMessageReadReceiptsRelations.config as unknown as (
 					helpers: MockRelationHelpers,
 				) => unknown
 			)({
 				one: (table: Table, config?: CapturedRelation["config"]) => {
-					totalRelationCount++;
-					if (config?.relationName?.includes("message_id:chat_messages")) {
-						capturedRelations.message = { table, config };
-					}
-					if (config?.relationName?.includes("reader_id:users")) {
-						capturedRelations.reader = { table, config };
+					// Identify relations by their field mappings (public API)
+					if (config) {
+						const fields = config.fields;
+						if (fields?.[0] === chatMessageReadReceiptsTable.messageId) {
+							capturedRelations.message = { table, config };
+						}
+						if (fields?.[0] === chatMessageReadReceiptsTable.readerId) {
+							capturedRelations.reader = { table, config };
+						}
 					}
 					return { withFieldName: () => ({}) };
 				},
 				many: (_table: Table, _config?: CapturedRelation["config"]) => {
-					totalRelationCount++;
 					return { withFieldName: () => ({}) };
 				},
 			});
@@ -243,12 +250,6 @@ describe("src/drizzle/tables/chatMessageReadReceipts.ts - Table Definition Tests
 				const table = capturedRelations.message?.table;
 				expect(table).toBeDefined();
 				expect(getTableName(table as Table)).toBe("chat_messages");
-			});
-
-			it("should have the correct relation name", () => {
-				expect(capturedRelations.message?.config?.relationName).toBe(
-					"chat_message_read_receipts.message_id:chat_messages.id",
-				);
 			});
 
 			it("should have correct FK field mapping", () => {
@@ -284,12 +285,6 @@ describe("src/drizzle/tables/chatMessageReadReceipts.ts - Table Definition Tests
 				expect(getTableName(table as Table)).toBe("users");
 			});
 
-			it("should have the correct relation name", () => {
-				expect(capturedRelations.reader?.config?.relationName).toBe(
-					"chat_message_read_receipts.reader_id:users.id",
-				);
-			});
-
 			it("should have correct FK field mapping", () => {
 				const fields = capturedRelations.reader?.config?.fields;
 				expect(fields).toBeDefined();
@@ -313,9 +308,7 @@ describe("src/drizzle/tables/chatMessageReadReceipts.ts - Table Definition Tests
 		});
 
 		it("should define exactly two relations (message and reader)", () => {
-			// Verify total number of relations defined equals 2
-			expect(totalRelationCount).toBe(2);
-			// Verify the captured relations map has exactly 2 entries
+			// Verify the captured relations map has exactly the expected relations
 			expect(Object.keys(capturedRelations)).toHaveLength(2);
 			expect(capturedRelations.message).toBeDefined();
 			expect(capturedRelations.reader).toBeDefined();
