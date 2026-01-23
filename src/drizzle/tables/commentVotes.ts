@@ -16,7 +16,6 @@ export const commentVoteTypeEnum = pgEnum("comment_vote_type", [
 	"down_vote",
 	"up_vote",
 ]);
-
 /**
  * Drizzle orm postgres table definition for comment votes.
  */
