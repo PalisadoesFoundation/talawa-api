@@ -492,22 +492,52 @@ builder.mutationField("createEvent", (t) =>
 								)
 								.returning();
 
-							await Promise.all(
-								createdEventAttachments.map((attachment, index) => {
-									if (attachments[index] !== undefined) {
-										return ctx.minio.client.putObject(
+							// Filter valid upload pairs and track successfully uploaded objects for rollback
+							const uploadPairs = createdEventAttachments
+								.map((attachment, index) => ({
+									attachment,
+									inputAttachment: attachments[index],
+								}))
+								.filter(
+									(
+										pair,
+									): pair is {
+										attachment: typeof pair.attachment;
+										inputAttachment: NonNullable<typeof pair.inputAttachment>;
+									} => pair.inputAttachment !== undefined,
+								);
+
+							const uploadedObjectKeys: string[] = [];
+							try {
+								for (const { attachment, inputAttachment } of uploadPairs) {
+									await ctx.minio.client.putObject(
+										ctx.minio.bucketName,
+										attachment.name,
+										inputAttachment.createReadStream(),
+										undefined,
+										{
+											"content-type": attachment.mimeType,
+										},
+									);
+									uploadedObjectKeys.push(attachment.name);
+								}
+							} catch (uploadError) {
+								// Cleanup successfully uploaded objects on failure
+								if (uploadedObjectKeys.length > 0) {
+									try {
+										await ctx.minio.client.removeObjects(
 											ctx.minio.bucketName,
-											attachment.name,
-											attachments[index].createReadStream(),
-											undefined,
-											{
-												"content-type": attachment.mimeType,
-											},
+											uploadedObjectKeys,
+										);
+									} catch (cleanupError) {
+										ctx.log.error(
+											{ cleanupError, uploadedObjectKeys },
+											"Failed to cleanup uploaded objects after upload failure",
 										);
 									}
-									return undefined;
-								}),
-							);
+								}
+								throw uploadError;
+							}
 						}
 
 						const finalEvent = Object.assign(createdEvent, {

@@ -52,22 +52,21 @@ describe("Mutation createUser - Performance Metrics", () => {
 			expect(result.errors).toBeUndefined();
 			assertToBeNonNullish(result.data.createUser?.user?.id);
 
-			// Get snapshots after mutation
+			// Get snapshots after mutation and only search new ones
 			const snapshots = server.getMetricsSnapshots?.() ?? [];
-			expect(snapshots.length).toBeGreaterThan(initialSnapshotCount);
+			const newSnapshots = snapshots.slice(initialSnapshotCount);
+			expect(newSnapshots.length).toBeGreaterThan(0);
 
-			// Find snapshot with our mutation metric
-			const mutationSnapshot = snapshots.find(
+			// Find snapshot with our mutation metric in new snapshots only
+			const mutationSnapshot = newSnapshots.find(
 				(s) => s.ops["mutation:createUser"] !== undefined,
 			);
 
-			expect(mutationSnapshot).toBeDefined();
-			if (mutationSnapshot) {
-				const op = mutationSnapshot.ops["mutation:createUser"];
-				expect(op).toBeDefined();
-				expect(op?.count).toBeGreaterThanOrEqual(1);
-				expect(op?.ms).toBeGreaterThanOrEqual(0);
-			}
+			assertToBeNonNullish(mutationSnapshot);
+			const op = mutationSnapshot.ops["mutation:createUser"];
+			assertToBeNonNullish(op);
+			expect(op.count).toBeGreaterThanOrEqual(1);
+			expect(op.ms).toBeGreaterThanOrEqual(0);
 		});
 
 		it("should record mutation:createUser metric even on authentication failure", async () => {
@@ -92,22 +91,21 @@ describe("Mutation createUser - Performance Metrics", () => {
 			expect(result.data.createUser).toBeNull();
 			expect(result.errors).toBeDefined();
 
-			// Get snapshots after mutation
+			// Get snapshots after mutation and only search new ones
 			const snapshots = server.getMetricsSnapshots?.() ?? [];
-			expect(snapshots.length).toBeGreaterThan(initialSnapshotCount);
+			const newSnapshots = snapshots.slice(initialSnapshotCount);
+			expect(newSnapshots.length).toBeGreaterThan(0);
 
-			// Find snapshot with our mutation metric
-			const mutationSnapshot = snapshots.find(
+			// Find snapshot with our mutation metric in new snapshots only
+			const mutationSnapshot = newSnapshots.find(
 				(s) => s.ops["mutation:createUser"] !== undefined,
 			);
 
 			// Even on failure, metrics should be recorded
-			expect(mutationSnapshot).toBeDefined();
-			if (mutationSnapshot) {
-				const op = mutationSnapshot.ops["mutation:createUser"];
-				expect(op).toBeDefined();
-				expect(op?.count).toBeGreaterThanOrEqual(1);
-			}
+			assertToBeNonNullish(mutationSnapshot);
+			const op = mutationSnapshot.ops["mutation:createUser"];
+			assertToBeNonNullish(op);
+			expect(op.count).toBeGreaterThanOrEqual(1);
 		});
 	});
 });

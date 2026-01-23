@@ -68,22 +68,21 @@ describe("Mutation createOrganization - Performance Metrics", () => {
 			assertToBeNonNullish(result.data.createOrganization?.id);
 			createdOrgId = result.data.createOrganization.id;
 
-			// Get snapshots after mutation
+			// Get snapshots after mutation and only search new ones
 			const snapshots = server.getMetricsSnapshots?.() ?? [];
-			expect(snapshots.length).toBeGreaterThan(initialSnapshotCount);
+			const newSnapshots = snapshots.slice(initialSnapshotCount);
+			expect(newSnapshots.length).toBeGreaterThan(0);
 
-			// Find snapshot with our mutation metric
-			const mutationSnapshot = snapshots.find(
+			// Find snapshot with our mutation metric in new snapshots only
+			const mutationSnapshot = newSnapshots.find(
 				(s) => s.ops["mutation:createOrganization"] !== undefined,
 			);
 
-			expect(mutationSnapshot).toBeDefined();
-			if (mutationSnapshot) {
-				const op = mutationSnapshot.ops["mutation:createOrganization"];
-				expect(op).toBeDefined();
-				expect(op?.count).toBeGreaterThanOrEqual(1);
-				expect(op?.ms).toBeGreaterThanOrEqual(0);
-			}
+			assertToBeNonNullish(mutationSnapshot);
+			const op = mutationSnapshot.ops["mutation:createOrganization"];
+			assertToBeNonNullish(op);
+			expect(op.count).toBeGreaterThanOrEqual(1);
+			expect(op.ms).toBeGreaterThanOrEqual(0);
 		});
 
 		it("should record mutation:createOrganization metric on authentication failure", async () => {
@@ -105,22 +104,21 @@ describe("Mutation createOrganization - Performance Metrics", () => {
 			expect(result.data.createOrganization).toBeNull();
 			expect(result.errors).toBeDefined();
 
-			// Get snapshots after mutation
+			// Get snapshots after mutation and only search new ones
 			const snapshots = server.getMetricsSnapshots?.() ?? [];
-			expect(snapshots.length).toBeGreaterThan(initialSnapshotCount);
+			const newSnapshots = snapshots.slice(initialSnapshotCount);
+			expect(newSnapshots.length).toBeGreaterThan(0);
 
-			// Find snapshot with our mutation metric
-			const mutationSnapshot = snapshots.find(
+			// Find snapshot with our mutation metric in new snapshots only
+			const mutationSnapshot = newSnapshots.find(
 				(s) => s.ops["mutation:createOrganization"] !== undefined,
 			);
 
 			// Even on failure, metrics should be recorded
-			expect(mutationSnapshot).toBeDefined();
-			if (mutationSnapshot) {
-				const op = mutationSnapshot.ops["mutation:createOrganization"];
-				expect(op).toBeDefined();
-				expect(op?.count).toBeGreaterThanOrEqual(1);
-			}
+			assertToBeNonNullish(mutationSnapshot);
+			const op = mutationSnapshot.ops["mutation:createOrganization"];
+			assertToBeNonNullish(op);
+			expect(op.count).toBeGreaterThanOrEqual(1);
 		});
 	});
 });

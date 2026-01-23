@@ -144,8 +144,8 @@ builder.mutationField("createUser", (t) =>
 					});
 				}
 
-				let avatarMimeType: z.infer<typeof imageMimeTypeEnum>;
-				let avatarName: string;
+				let avatarMimeType: z.infer<typeof imageMimeTypeEnum> | undefined;
+				let avatarName: string | undefined;
 
 				if (isNotNullish(parsedArgs.input.avatar)) {
 					avatarMimeType = parsedArgs.input.avatar.mimetype;
