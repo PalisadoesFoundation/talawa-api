@@ -822,7 +822,7 @@ suite("Mutation field createUser", () => {
 			expect(result.errors?.[0]?.extensions?.code).toBe("unexpected");
 
 			// Verify deletion
-			const user = server.drizzleClient.query.usersTable.findFirst({
+			const user = await server.drizzleClient.query.usersTable.findFirst({
 				where: eq(usersTable.emailAddress, email),
 			});
 

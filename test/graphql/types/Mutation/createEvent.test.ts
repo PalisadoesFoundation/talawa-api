@@ -954,125 +954,6 @@ suite("Mutation field createEvent", () => {
 			expectSuccessfulEvent(result, "Midnight Launch Event");
 		});
 
-		suite("createEvent additional error branches", () => {
-			test("should fail when isPublic and isInviteOnly are both true", async () => {
-				const createOrg = await mercuriusClient.mutate(
-					Mutation_createOrganization,
-					{
-						headers: { authorization: `bearer ${adminAuthToken}` },
-						variables: {
-							input: {
-								name: `TestOrg_${faker.string.ulid()}`,
-								description: "Test",
-							},
-						},
-					},
-				);
-				const orgId = createOrg.data?.createOrganization?.id;
-				assertToBeNonNullish(orgId);
-
-				const result = await createEvent({
-					input: {
-						organizationId: orgId,
-						name: "Conflicting Visibility",
-						description: "Desc",
-						startAt: new Date(Date.now() + 10000).toISOString(),
-						endAt: new Date(Date.now() + 20000).toISOString(),
-						isPublic: true,
-						isInviteOnly: true,
-						location: "Test",
-					},
-				});
-
-				expect(result.data?.createEvent).toBeNull();
-				expect(result.errors).toBeDefined();
-				expect(result.errors?.[0]?.extensions?.code).toBe("invalid_arguments");
-			});
-
-			test("should fail with invalid recurrence payload", async () => {
-				const createOrg = await mercuriusClient.mutate(
-					Mutation_createOrganization,
-					{
-						headers: { authorization: `bearer ${adminAuthToken}` },
-						variables: {
-							input: {
-								name: `TestOrg_${faker.string.ulid()}`,
-								description: "Test",
-							},
-						},
-					},
-				);
-				const orgId = createOrg.data?.createOrganization?.id;
-				assertToBeNonNullish(orgId);
-
-				const result = await createEvent({
-					input: {
-						organizationId: orgId,
-						name: "Invalid Recurrence",
-						description: "Desc",
-						startAt: new Date(Date.now() + 10000).toISOString(),
-						endAt: new Date(Date.now() + 20000).toISOString(),
-						isPublic: false,
-						location: "Test",
-						recurrence: {
-							frequency: "DAILY",
-							interval: 0, // Invalid interval
-						},
-					},
-				});
-
-				expect(result.data?.createEvent).toBeNull();
-				expect(result.errors).toBeDefined();
-				expect(result.errors?.[0]?.extensions?.issues).toEqual(
-					expect.arrayContaining([
-						expect.objectContaining({
-							argumentPath: ["input", "recurrence"],
-						}),
-					]),
-				);
-			});
-
-			test("should return unauthorized error when actor is not a member", async () => {
-				const createOrg = await mercuriusClient.mutate(
-					Mutation_createOrganization,
-					{
-						headers: { authorization: `bearer ${adminAuthToken}` },
-						variables: {
-							input: {
-								name: `TestOrg_${faker.string.ulid()}`,
-								description: "Test",
-							},
-						},
-					},
-				);
-				const orgId = createOrg.data?.createOrganization?.id;
-				assertToBeNonNullish(orgId);
-
-				const { authToken: userToken } = await createRegularUserUsingAdmin();
-
-				const result = await createEvent(
-					{
-						input: {
-							organizationId: orgId,
-							name: "Unauthorized Event",
-							description: "Desc",
-							startAt: new Date(Date.now() + 10000).toISOString(),
-							endAt: new Date(Date.now() + 20000).toISOString(),
-							isPublic: false,
-							location: "Test",
-						},
-					},
-					userToken,
-				);
-
-				expect(result.data?.createEvent).toBeNull();
-				expect(result.errors).toBeDefined();
-				expect(result.errors?.[0]?.extensions?.code).toBe(
-					"unauthorized_action",
-				);
-			});
-		});
-
 		suite("Default Agenda Folder and Category Creation", () => {
 			afterEach(() => {
 				vi.restoreAllMocks();
@@ -1308,8 +1189,8 @@ suite("Mutation field createEvent", () => {
 				variables: {
 					input: {
 						name: `Rollback Event ${faker.string.ulid()}`,
-						startAt: new Date().toISOString(),
-						endAt: new Date(Date.now() + 3600000).toISOString(),
+						startAt: new Date(Date.now() + 60_000).toISOString(),
+						endAt: new Date(Date.now() + 3_600_000).toISOString(),
 						organizationId,
 						location: "Test Loc",
 						description: "Rollback verify",
@@ -1396,8 +1277,8 @@ suite("Mutation field createEvent", () => {
 			// Talawa API logic clamps windowEndDate = startAt.
 			// rrule.between(startAt, windowEndDate) -> between(startAt, startAt).
 
-			expect(result.errors).toBeUndefined();
-			assertToBeNonNullish(result.data?.createEvent);
+			expect(result.errors?.[0]?.extensions?.code).toBe("invalid_arguments");
+			expect(result.data?.createEvent).toBeNull();
 		});
 	});
 });

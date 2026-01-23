@@ -177,7 +177,7 @@ describe("Mutation createOrganization", () => {
 		expect(result.errors?.[0]?.extensions?.code).toBe("unexpected");
 
 		// Verify deletion
-		const org = server.drizzleClient.query.organizationsTable.findFirst({
+		const org = await server.drizzleClient.query.organizationsTable.findFirst({
 			where: eq(organizationsTable.name, name),
 		});
 

@@ -103,8 +103,18 @@ builder.mutationField("updateOrganization", (t) =>
 					}),
 					ctx.drizzleClient.query.organizationsTable.findFirst({
 						columns: {
+							addressLine1: true,
+							addressLine2: true,
 							avatarMimeType: true,
 							avatarName: true,
+							city: true,
+							countryCode: true,
+							description: true,
+							name: true,
+							postalCode: true,
+							state: true,
+							updaterId: true,
+							userRegistrationRequired: true,
 						},
 						where: (fields, operators) =>
 							operators.eq(fields.id, parsedArgs.input.id),
@@ -140,20 +150,72 @@ builder.mutationField("updateOrganization", (t) =>
 					});
 				}
 
-				if (parsedArgs.input.name !== undefined) {
-					const name = parsedArgs.input.name;
+				let avatarMimeType: z.infer<typeof imageMimeTypeEnum> | undefined;
+				let avatarName: string | undefined;
 
-					const duplicateOrganizationName =
-						await ctx.drizzleClient.query.organizationsTable.findFirst({
-							columns: { id: true },
-							where: (fields, operators) =>
-								operators.and(
-									operators.eq(fields.name, name),
-									operators.ne(fields.id, parsedArgs.input.id),
-								),
-						});
+				if (isNotNullish(parsedArgs.input.avatar)) {
+					avatarName =
+						existingOrganization.avatarName === null
+							? ulid()
+							: existingOrganization.avatarName;
+					avatarMimeType = parsedArgs.input.avatar.mimetype;
+				}
 
-					if (duplicateOrganizationName !== undefined) {
+				let updatedOrganization: typeof organizationsTable.$inferSelect;
+
+				try {
+					updatedOrganization = await ctx.drizzleClient.transaction(
+						async (tx) => {
+							const [updatedOrganization] = await tx
+								.update(organizationsTable)
+								.set({
+									addressLine1: parsedArgs.input.addressLine1,
+									addressLine2: parsedArgs.input.addressLine2,
+									...(parsedArgs.input.avatar !== undefined && {
+										avatarMimeType: isNotNullish(parsedArgs.input.avatar)
+											? avatarMimeType
+											: null,
+										avatarName: isNotNullish(parsedArgs.input.avatar)
+											? avatarName
+											: null,
+									}),
+									city: parsedArgs.input.city,
+									countryCode: parsedArgs.input.countryCode,
+									description: parsedArgs.input.description,
+									name: parsedArgs.input.name,
+									postalCode: parsedArgs.input.postalCode,
+									state: parsedArgs.input.state,
+									updaterId: currentUserId,
+									userRegistrationRequired:
+										parsedArgs.input.isUserRegistrationRequired,
+								})
+								.where(eq(organizationsTable.id, parsedArgs.input.id))
+								.returning();
+
+							// Updated organization not being returned means that either it doesn't exist or it was deleted or its `id` column was changed by external entities before this update operation could take place.
+							if (updatedOrganization === undefined) {
+								throw new TalawaGraphQLError({
+									extensions: {
+										code: "arguments_associated_resources_not_found",
+										issues: [
+											{
+												argumentPath: ["input", "id"],
+											},
+										],
+									},
+								});
+							}
+
+							return updatedOrganization;
+						},
+					);
+				} catch (error) {
+					if (
+						typeof error === "object" &&
+						error !== null &&
+						"code" in error &&
+						(error as { code: unknown }).code === "23505"
+					) {
 						throw new TalawaGraphQLError({
 							message: "Organization name already exists",
 							extensions: {
@@ -167,64 +229,8 @@ builder.mutationField("updateOrganization", (t) =>
 							},
 						});
 					}
+					throw error;
 				}
-
-				let avatarMimeType: z.infer<typeof imageMimeTypeEnum> | undefined;
-				let avatarName: string | undefined;
-
-				if (isNotNullish(parsedArgs.input.avatar)) {
-					avatarName =
-						existingOrganization.avatarName === null
-							? ulid()
-							: existingOrganization.avatarName;
-					avatarMimeType = parsedArgs.input.avatar.mimetype;
-				}
-
-				const updatedOrganization = await ctx.drizzleClient.transaction(
-					async (tx) => {
-						const [updatedOrganization] = await tx
-							.update(organizationsTable)
-							.set({
-								addressLine1: parsedArgs.input.addressLine1,
-								addressLine2: parsedArgs.input.addressLine2,
-								...(parsedArgs.input.avatar !== undefined && {
-									avatarMimeType: isNotNullish(parsedArgs.input.avatar)
-										? avatarMimeType
-										: null,
-									avatarName: isNotNullish(parsedArgs.input.avatar)
-										? avatarName
-										: null,
-								}),
-								city: parsedArgs.input.city,
-								countryCode: parsedArgs.input.countryCode,
-								description: parsedArgs.input.description,
-								name: parsedArgs.input.name,
-								postalCode: parsedArgs.input.postalCode,
-								state: parsedArgs.input.state,
-								updaterId: currentUserId,
-								userRegistrationRequired:
-									parsedArgs.input.isUserRegistrationRequired,
-							})
-							.where(eq(organizationsTable.id, parsedArgs.input.id))
-							.returning();
-
-						// Updated organization not being returned means that either it doesn't exist or it was deleted or its `id` column was changed by external entities before this update operation could take place.
-						if (updatedOrganization === undefined) {
-							throw new TalawaGraphQLError({
-								extensions: {
-									code: "arguments_associated_resources_not_found",
-									issues: [
-										{
-											argumentPath: ["input", "id"],
-										},
-									],
-								},
-							});
-						}
-
-						return updatedOrganization;
-					},
-				);
 
 				if (isNotNullish(parsedArgs.input.avatar) && avatarName !== undefined) {
 					try {
@@ -246,8 +252,19 @@ builder.mutationField("updateOrganization", (t) =>
 						await ctx.drizzleClient
 							.update(organizationsTable)
 							.set({
+								addressLine1: existingOrganization.addressLine1,
+								addressLine2: existingOrganization.addressLine2,
 								avatarMimeType: existingOrganization.avatarMimeType,
 								avatarName: existingOrganization.avatarName,
+								city: existingOrganization.city,
+								countryCode: existingOrganization.countryCode,
+								description: existingOrganization.description,
+								name: existingOrganization.name,
+								postalCode: existingOrganization.postalCode,
+								state: existingOrganization.state,
+								updaterId: existingOrganization.updaterId,
+								userRegistrationRequired:
+									existingOrganization.userRegistrationRequired,
 							})
 							.where(eq(organizationsTable.id, updatedOrganization.id));
 
@@ -275,8 +292,19 @@ builder.mutationField("updateOrganization", (t) =>
 						await ctx.drizzleClient
 							.update(organizationsTable)
 							.set({
+								addressLine1: existingOrganization.addressLine1,
+								addressLine2: existingOrganization.addressLine2,
 								avatarMimeType: existingOrganization.avatarMimeType,
 								avatarName: existingOrganization.avatarName,
+								city: existingOrganization.city,
+								countryCode: existingOrganization.countryCode,
+								description: existingOrganization.description,
+								name: existingOrganization.name,
+								postalCode: existingOrganization.postalCode,
+								state: existingOrganization.state,
+								updaterId: existingOrganization.updaterId,
+								userRegistrationRequired:
+									existingOrganization.userRegistrationRequired,
 							})
 							.where(eq(organizationsTable.id, updatedOrganization.id));
 

@@ -353,7 +353,7 @@ builder.mutationField("createEvent", (t) =>
 									originalSeriesId: ruleId, // For new events, originalSeriesId is the rule's own ID
 									organizationId: parsedArgs.input.organizationId,
 									creatorId: currentUserId,
-								})
+								} as unknown as typeof recurrenceRulesTable.$inferSelect)
 								.returning();
 
 							if (createdRecurrenceRule === undefined) {
@@ -484,53 +484,6 @@ builder.mutationField("createEvent", (t) =>
 									})),
 								)
 								.returning();
-
-							// Filter valid upload pairs and track successfully uploaded objects for rollback
-							const uploadPairs = createdEventAttachments
-								.map((attachment, index) => ({
-									attachment,
-									inputAttachment: attachments[index],
-								}))
-								.filter(
-									(
-										pair,
-									): pair is {
-										attachment: typeof pair.attachment;
-										inputAttachment: NonNullable<typeof pair.inputAttachment>;
-									} => pair.inputAttachment !== undefined,
-								);
-
-							const uploadedObjectKeys: string[] = [];
-							try {
-								for (const { attachment, inputAttachment } of uploadPairs) {
-									await ctx.minio.client.putObject(
-										ctx.minio.bucketName,
-										attachment.name,
-										inputAttachment.createReadStream(),
-										undefined,
-										{
-											"content-type": attachment.mimeType,
-										},
-									);
-									uploadedObjectKeys.push(attachment.name);
-								}
-							} catch (uploadError) {
-								// Cleanup successfully uploaded objects on failure
-								if (uploadedObjectKeys.length > 0) {
-									try {
-										await ctx.minio.client.removeObjects(
-											ctx.minio.bucketName,
-											uploadedObjectKeys,
-										);
-									} catch (cleanupError) {
-										ctx.log.error(
-											{ cleanupError, uploadedObjectKeys },
-											"Failed to cleanup uploaded objects after upload failure",
-										);
-									}
-								}
-								throw uploadError;
-							}
 						}
 
 						const finalEvent = Object.assign(createdEvent, {
@@ -556,6 +509,83 @@ builder.mutationField("createEvent", (t) =>
 						return finalEvent;
 					},
 				);
+
+				// Upload attachments to MinIO AFTER transaction commits
+				if (
+					parsedArgs.input.attachments !== undefined &&
+					createdEventResult.attachments.length > 0
+				) {
+					const attachments = parsedArgs.input.attachments;
+					const createdEventAttachments = createdEventResult.attachments;
+
+					// Filter valid upload pairs and track successfully uploaded objects for rollback
+					const uploadPairs = createdEventAttachments
+						.map((attachment, index) => ({
+							attachment,
+							inputAttachment: attachments[index],
+						}))
+						.filter(
+							(
+								pair,
+							): pair is {
+								attachment: typeof pair.attachment;
+								inputAttachment: NonNullable<typeof pair.inputAttachment>;
+							} => pair.inputAttachment !== undefined,
+						);
+
+					const uploadedObjectKeys: string[] = [];
+					try {
+						for (const { attachment, inputAttachment } of uploadPairs) {
+							await ctx.minio.client.putObject(
+								ctx.minio.bucketName,
+								attachment.name,
+								inputAttachment.createReadStream(),
+								undefined,
+								{
+									"content-type": attachment.mimeType,
+								},
+							);
+							uploadedObjectKeys.push(attachment.name);
+						}
+					} catch (uploadError) {
+						// ROLLBACK: Delete event (cascades to attachments) and cleanup MinIO
+						ctx.log.error(
+							{ uploadError },
+							"Attachment upload failed, rolling back event creation",
+						);
+
+						// Delete event from DB
+						try {
+							await ctx.drizzleClient.delete(eventsTable).where(
+								// @ts-expect-error
+								(fields, operators) =>
+									operators.eq(fields.id, createdEventResult.id),
+							);
+						} catch (dbDeleteError) {
+							ctx.log.error(
+								{ dbDeleteError },
+								"CRITICAL: Failed to delete event during rollback",
+							);
+						}
+
+						// Cleanup successfully uploaded objects
+						if (uploadedObjectKeys.length > 0) {
+							try {
+								await ctx.minio.client.removeObjects(
+									ctx.minio.bucketName,
+									uploadedObjectKeys,
+								);
+							} catch (cleanupError) {
+								ctx.log.error(
+									{ cleanupError, uploadedObjectKeys },
+									"Failed to cleanup uploaded objects after upload failure",
+								);
+							}
+						}
+						throw uploadError;
+					}
+				}
+
 				try {
 					await ctx.notification?.flush(ctx);
 				} catch (error) {
