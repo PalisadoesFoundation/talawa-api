@@ -112,7 +112,7 @@ test_idempotency_failure() {
     state_dirs=$(find "$tmp_home" -name "talawa-install-state*")
     
     local state_dir_count
-    state_dir_count=$(echo "$state_dirs" | grep -c "^")
+    state_dir_count=$(echo "$state_dirs" | grep -c .)
     
     if [ "$state_dir_count" -ne 1 ]; then
         test_fail "Expected exactly 1 state directory, found $state_dir_count: $state_dirs"
@@ -213,7 +213,8 @@ EOF
     local exit_code=$?
     
     # Read output
-    local output=$(cat "$output_file")
+    local output
+    output=$(cat "$output_file")
     
     rm "$test_script"
     rm "$output_file"
@@ -261,7 +262,8 @@ EOF
     local exit_code=$?
     
     # Read output
-    local output=$(cat "$output_file")
+    local output
+    output=$(cat "$output_file")
     
     rm "$test_script"
     rm "$output_file"
@@ -294,7 +296,7 @@ test_dir_perms() {
     local state_dirs
     state_dirs=$(find "$tmp_home" -name "talawa-install-state*")
     local state_dir_count
-    state_dir_count=$(echo "$state_dirs" | grep -c "^")
+    state_dir_count=$(echo "$state_dirs" | grep -c .)
     
     if [ "$state_dir_count" -eq 0 ]; then
         test_fail "State directory not created"

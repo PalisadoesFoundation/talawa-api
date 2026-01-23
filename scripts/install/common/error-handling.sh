@@ -17,11 +17,39 @@ if [ -z "${__TALAWA_ERROR_HANDLING_SOURCED:-}" ]; then
         chmod 700 "$__STATE_DIR"
     fi
 
+    # register_cleanup_task
+    #
+    # Adds a command to the cleanup stack to be executed on failure.
+    # The stack operates in LIFO (Last In, First Out) order.
+    #
+    # Arguments:
+    #   $1 - The command string to execute during cleanup.
+    #
+    # Security Note:
+    #   The command string is executed using 'eval'. Callers must ensure that
+    #   the input does not contain untrusted user input or malicious shell metacharacters.
+    #   Basic validation is performed to reject obvious shell injection patterns.
     register_cleanup_task() { 
+        local cmd="$*"
+        
+        # Basic validation to reject obvious shell injection patterns if the input is meant to be simple
+        # This checks for common metacharacters that might indicate injection attempts
+        if [[ "$cmd" =~ [\|\&] ]]; then
+             printf "✗ ERROR: Cleanup task contains potentially unsafe characters (|&): %s\n" "$cmd" >&2
+             return 1
+        fi
+
         # Store the command as a single string in the cleanup stack
-        __CLEANUP_STACK+=("$*"); 
+        __CLEANUP_STACK+=("$cmd"); 
     }
 
+    # cleanup_on_error
+    #
+    # Executes all registered cleanup tasks in reverse order (LIFO).
+    # This function is typically called by signal traps (ERR, INT, TERM).
+    #
+    # Usage:
+    #   cleanup_on_error
     cleanup_on_error() {
       printf "✗ ERROR: Installation failed; running cleanup...\n" >&2
       local i=$(( ${#__CLEANUP_STACK[@]} - 1 ))
@@ -35,6 +63,14 @@ if [ -z "${__TALAWA_ERROR_HANDLING_SOURCED:-}" ]; then
       done
     }
 
+    # setup_error_handling
+    #
+    # Sets up signal traps to ensure cleanup_on_error is called when:
+    # - A command fails (ERR)
+    # - The script is interrupted (INT, TERM)
+    #
+    # Usage:
+    #   setup_error_handling
     setup_error_handling() {
       # Trap ERR signal to catch command failures
       trap 'cleanup_on_error' ERR
@@ -46,8 +82,20 @@ if [ -z "${__TALAWA_ERROR_HANDLING_SOURCED:-}" ]; then
       trap 'true' EXIT
     }
 
+    # run_idempotent
+    #
+    # Executes a command only if it hasn't been successfully completed before.
+    # Uses a marker file in the state directory to track completion.
+    #
+    # Arguments:
+    #   $1 - A unique key identifying the step (must not be empty).
+    #   $@ - The command to execute.
+    #
+    # Returns:
+    #   0 if the step was skipped or completed successfully.
+    #   Non-zero if the command failed.
     run_idempotent() {
-      if [ $# -lt 2 ] || [ -z "$1" ]; then
+      if [ $# -lt 2 ] || [ -z "${1:-}" ]; then
           printf "✗ ERROR: run_idempotent requires at least 2 arguments (non-empty key and command)\n" >&2
           return 1
       fi
