@@ -134,9 +134,6 @@ suite("Mutation field updateOrganization", () => {
 
 		const result = response.json();
 
-		expect(result.errors).toBeDefined();
-		expect(result.errors[0].extensions?.code).toBe("unexpected");
-
 		// Verify DB still has NO avatar
 		const updatedOrg =
 			await server.drizzleClient.query.organizationsTable.findFirst({
@@ -145,6 +142,11 @@ suite("Mutation field updateOrganization", () => {
 			});
 
 		expect(updatedOrg?.avatarName).toBeNull();
+		// Ensure the upload was actually attempted
+		expect(putObjectSpy).toHaveBeenCalled();
+
+		expect(result.errors).toBeDefined();
+		expect(result.errors?.[0]?.extensions?.code).toBe("unexpected");
 
 		putObjectSpy.mockRestore();
 	});
