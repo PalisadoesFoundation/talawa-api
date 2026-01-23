@@ -1,6 +1,8 @@
 import { faker } from "@faker-js/faker";
+import { eq } from "drizzle-orm";
 import { initGraphQLTada } from "gql.tada";
 import { expect, suite, test, vi } from "vitest";
+import { usersTable } from "~/src/drizzle/tables/users";
 import type { ClientCustomScalars } from "~/src/graphql/scalars/index";
 import { assertToBeNonNullish } from "../../../helpers";
 import { server } from "../../../server";
@@ -33,6 +35,8 @@ const Query_eventsByAdmin = gql(`
       isRegisterable
       isInviteOnly
       isRecurringEventTemplate
+      isGenerated
+      baseRecurringEventId
       organization {
         id
         name
@@ -95,35 +99,31 @@ suite("Query field eventsByAdmin", () => {
 		});
 
 		test("should return error when authenticated user record is not found", async () => {
-			const { userId } = await createRegularUserUsingAdmin();
+			const { userId, authToken } = await createRegularUserUsingAdmin();
 			assertToBeNonNullish(userId);
+			assertToBeNonNullish(authToken);
 
-			// Mock findFirst to return null for the current user lookup
-			// This simulates the case where the authentication token is valid but the user record is missing
-			// We need to target the specific call where it looks up the current user
-			const spy = vi.spyOn(server.drizzleClient.query.usersTable, "findFirst");
-			spy.mockResolvedValueOnce(undefined);
+			// Delete the user to simulate missing record while keeping a valid token
+			await server.drizzleClient
+				.delete(usersTable)
+				.where(eq(usersTable.id, userId));
 
-			try {
-				const result = await mercuriusClient.query(Query_eventsByAdmin, {
-					headers: { authorization: `bearer ${authToken}` },
-					variables: { userId },
-				});
+			const result = await mercuriusClient.query(Query_eventsByAdmin, {
+				headers: { authorization: `bearer ${authToken}` },
+				variables: { userId },
+			});
 
-				expect(result.data?.eventsByAdmin).toBeUndefined();
-				expect(result.errors).toEqual(
-					expect.arrayContaining([
-						expect.objectContaining({
-							extensions: expect.objectContaining({
-								code: "unauthenticated",
-							}),
-							path: ["eventsByAdmin"],
+			expect(result.data?.eventsByAdmin).toBeUndefined();
+			expect(result.errors).toEqual(
+				expect.arrayContaining([
+					expect.objectContaining({
+						extensions: expect.objectContaining({
+							code: "unauthenticated",
 						}),
-					]),
-				);
-			} finally {
-				spy.mockRestore();
-			}
+						path: ["eventsByAdmin"],
+					}),
+				]),
+			);
 		});
 	});
 
@@ -524,7 +524,30 @@ suite("Query field eventsByAdmin", () => {
 
 			expect(result.errors).toBeUndefined();
 			expect(result.data?.eventsByAdmin).toBeDefined();
-			expect(Array.isArray(result.data?.eventsByAdmin)).toBe(true);
+			const events = result.data?.eventsByAdmin as Array<{
+				id: string;
+				name: string;
+				isGenerated?: boolean | null;
+				baseRecurringEventId?: string | null;
+				isRecurringEventTemplate?: boolean | null;
+			}>;
+			expect(Array.isArray(events)).toBe(true);
+			expect(events.length).toBeGreaterThan(0);
+
+			// Verify that correct events are returned
+			const recurringEvents = events.filter(
+				(e) => e.name === "Admin Recurring Tomorrow Event",
+			);
+			expect(recurringEvents.length).toBeGreaterThanOrEqual(1);
+
+			// Should have at least the base template or generated instances
+			const hasTemplateOrInstance = recurringEvents.some(
+				(e) =>
+					e.baseRecurringEventId ||
+					e.isGenerated === true ||
+					e.isRecurringEventTemplate === true,
+			);
+			expect(hasTemplateOrInstance).toBe(true);
 		});
 	});
 
