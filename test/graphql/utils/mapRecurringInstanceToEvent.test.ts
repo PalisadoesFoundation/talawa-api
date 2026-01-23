@@ -65,4 +65,50 @@ describe("mapRecurringInstanceToEvent", () => {
 			isGenerated: true,
 		});
 	});
+
+	it("correctly handles nullable fields when set to null", () => {
+		const instance: ResolvedRecurringEventInstance = {
+			id: "instance-2",
+			name: "Minimal Event",
+			description: null,
+			actualStartTime: new Date("2023-10-01T10:00:00Z"),
+			actualEndTime: new Date("2023-10-01T11:00:00Z"),
+			location: null,
+			allDay: false,
+			isPublic: true,
+			isRegisterable: true,
+			isInviteOnly: false,
+			organizationId: "org-1",
+			creatorId: null,
+			updaterId: null,
+			createdAt: new Date("2023-09-01T10:00:00Z"),
+			updatedAt: null,
+			isCancelled: false,
+			baseRecurringEventId: "base-2",
+			sequenceNumber: 1,
+			totalCount: null,
+			hasExceptions: false,
+			recurrenceRuleId: "rule-2",
+			originalSeriesId: "series-2",
+			originalInstanceStartTime: new Date("2023-10-01T10:00:00Z"),
+			generatedAt: new Date("2023-09-01T10:00:00Z"),
+			lastUpdatedAt: null,
+			version: "1",
+			appliedExceptionData: null,
+			exceptionCreatedBy: null,
+			exceptionCreatedAt: null,
+		};
+
+		const result = mapRecurringInstanceToEvent(instance);
+
+		expect(result.description).toBeNull();
+		expect(result.location).toBeNull();
+		expect(result.creatorId).toBeNull();
+		expect(result.updaterId).toBeNull();
+		expect(result.updatedAt).toBeNull();
+		expect(result.totalCount).toBeNull();
+		expect(result.eventType).toBe("generated");
+		expect(result.isGenerated).toBe(true);
+		expect(result.attachments).toEqual([]);
+	});
 });
