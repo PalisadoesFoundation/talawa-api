@@ -11,10 +11,6 @@
 set -u # Don't set -e globally to allow testing failure scenarios
 
 # Colors (Variables kept for structure but set to empty for plain text)
-RED=''
-GREEN=''
-YELLOW=''
-NC=''
 
 TESTS_RUN=0
 TESTS_PASSED=0
@@ -63,6 +59,21 @@ test_cleanup_lifo() {
         test_pass
     else
         test_fail "Expected Task 2 before Task 1. Output:\n$output"
+    fi
+}
+
+test_cleanup_validation() {
+    test_start "register_cleanup_task rejects unsafe characters"
+
+    local output
+    # Try to register a task with unsafe characters
+    output=$(bash -c "source '$LIB_PATH'; \
+        register_cleanup_task 'echo \"unsafe\" | rm -rf /'" 2>&1 || true)
+        
+    if echo "$output" | grep -q "contains potentially unsafe characters"; then
+        test_pass
+    else
+        test_fail "Expected validation error for unsafe characters. Output:\n$output"
     fi
 }
 
@@ -339,6 +350,7 @@ test_dir_perms() {
 
 # Run Tests
 test_cleanup_lifo
+test_cleanup_validation
 test_idempotency
 test_idempotency_failure
 test_idempotency_args
