@@ -1236,6 +1236,99 @@ suite("Mutation field createEvent", () => {
 				putObjectSpy.mockRestore();
 			}
 		});
+
+		test("successfully creates event with multiple image attachments", async () => {
+			const organizationId = await createTestOrganization();
+			const token = adminAuthToken;
+
+			// Mock MinIO to avoid actual file upload
+			const putObjectSpy = vi
+				.spyOn(server.minio.client, "putObject")
+				.mockResolvedValue({ etag: "test-etag", versionId: "test-version" });
+
+			try {
+				const boundary = `----WebKitFormBoundary${Math.random().toString(36)}`;
+				const operations = JSON.stringify({
+					query: `
+						mutation Mutation_createEvent($input: MutationCreateEventInput!) {
+							createEvent(input: $input) {
+								id
+								name
+								attachments { mimeType }
+							}
+						}
+					`,
+					variables: {
+						input: {
+							organizationId,
+							name: `Event_${Date.now()}`,
+							startAt: getFutureDate(7, 10),
+							endAt: getFutureDate(7, 12),
+							attachments: [null, null],
+						},
+					},
+				});
+
+				const map = JSON.stringify({
+					"0": ["variables.input.attachments.0"],
+					"1": ["variables.input.attachments.1"],
+				});
+
+				const body = [
+					`--${boundary}`,
+					'Content-Disposition: form-data; name="operations"',
+					"",
+					operations,
+					`--${boundary}`,
+					'Content-Disposition: form-data; name="map"',
+					"",
+					map,
+					`--${boundary}`,
+					'Content-Disposition: form-data; name="0"; filename="test1.jpg"',
+					"Content-Type: image/jpeg",
+					"",
+					"fake jpeg content 1",
+					`--${boundary}`,
+					'Content-Disposition: form-data; name="1"; filename="test2.jpg"',
+					"Content-Type: image/jpeg",
+					"",
+					"fake jpeg content 2",
+					`--${boundary}--`,
+				].join("\r\n");
+
+				const response = await server.inject({
+					method: "POST",
+					url: "/graphql",
+					headers: {
+						"content-type": `multipart/form-data; boundary=${boundary}`,
+						authorization: `bearer ${token}`,
+					},
+					payload: body,
+				});
+
+				const result = JSON.parse(response.body);
+
+				expect(result.errors).toBeUndefined();
+				expect(result.data?.createEvent).toEqual(
+					expect.objectContaining({
+						id: expect.any(String),
+						attachments: expect.arrayContaining([
+							expect.objectContaining({
+								mimeType: "image/jpeg",
+							}),
+							expect.objectContaining({
+								mimeType: "image/jpeg",
+							}),
+						]),
+					}),
+				);
+
+				// Verify MinIO upload was called twice
+				expect(putObjectSpy).toHaveBeenCalledTimes(2);
+			} finally {
+				putObjectSpy.mockRestore();
+			}
+		});
 	});
 
 	suite("Database Error Handling", () => {

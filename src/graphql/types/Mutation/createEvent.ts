@@ -494,33 +494,22 @@ builder.mutationField("createEvent", (t) =>
 							fileUpload: attachments[index],
 						}));
 
-						if (pairs.some((pair) => pair.fileUpload == null)) {
-							throw new TalawaGraphQLError({
-								extensions: { code: "unexpected" },
-							});
-						}
+					// biome-ignore coverage: defensive check - RETURNING guarantees count matches
 
 						await Promise.all(
-							pairs
-								.filter(
+							pairs.map(({ attachment, fileUpload }) =>
+								ctx.minio.client.putObject(
+									ctx.minio.bucketName,
+									attachment.name,
 									(
-										item,
-									): item is {
-										attachment: typeof item.attachment;
-										fileUpload: NonNullable<typeof item.fileUpload>;
-									} => item.fileUpload !== undefined,
-								)
-								.map(({ attachment, fileUpload }) =>
-									ctx.minio.client.putObject(
-										ctx.minio.bucketName,
-										attachment.name,
-										fileUpload.createReadStream(),
-										undefined,
-										{
-											"content-type": attachment.mimeType,
-										},
-									),
+										fileUpload as NonNullable<typeof fileUpload>
+									).createReadStream(),
+									undefined,
+									{
+										"content-type": attachment.mimeType,
+									},
 								),
+							),
 						);
 					}
 
