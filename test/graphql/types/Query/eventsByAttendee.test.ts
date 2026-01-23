@@ -1101,10 +1101,17 @@ suite("Query field eventsByAttendee", () => {
 			const adminEvents = adminEventsResult.data?.eventsByVolunteer as Array<{
 				id: string;
 				name: string;
+				isGenerated?: boolean | null;
+				baseRecurringEventId?: string | null;
 			}>;
-			const instances = adminEvents?.filter(
-				(e) => e.name === "Cancelled Instance Test Event",
-			);
+			const instances = adminEvents
+				?.filter(
+					(e) =>
+						e.name === "Cancelled Instance Test Event" &&
+						e.isGenerated === true &&
+						e.baseRecurringEventId === baseEventId,
+				)
+				.sort((a, b) => a.id.localeCompare(b.id));
 			expect(instances?.length).toBeGreaterThanOrEqual(2);
 
 			const instanceToCancel = instances[0];

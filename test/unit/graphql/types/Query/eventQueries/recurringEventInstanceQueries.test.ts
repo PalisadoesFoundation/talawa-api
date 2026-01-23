@@ -88,6 +88,39 @@ describe("getRecurringEventInstancesByBaseIds", () => {
 		).toHaveBeenCalled();
 	});
 
+	it("should skip instances when base template is not found", async () => {
+		const mockInstances = [
+			{
+				id: "inst-1",
+				baseRecurringEventId: "base-missing",
+				actualStartTime: new Date(),
+				actualEndTime: new Date(),
+			},
+		];
+
+		vi.mocked(
+			mockDrizzleClient.query.recurringEventInstancesTable.findMany,
+		).mockResolvedValueOnce(
+			mockInstances as unknown as (typeof recurringEventInstancesTable.$inferSelect)[],
+		);
+		vi.mocked(
+			mockDrizzleClient.query.eventsTable.findMany,
+		).mockResolvedValueOnce([]); // No matching templates
+		vi.mocked(
+			mockDrizzleClient.query.eventExceptionsTable.findMany,
+		).mockResolvedValueOnce([]);
+
+		const result = await getRecurringEventInstancesByBaseIds(
+			["base-missing"],
+			mockDrizzleClient,
+			mockLogger,
+		);
+
+		// Instance should be skipped because template not found
+		expect(result).toHaveLength(0);
+		expect(mockLogger.warn).toHaveBeenCalled();
+	});
+
 	it("should respect the limit parameter", async () => {
 		const baseIds = ["base-1"];
 		const limit = 5;

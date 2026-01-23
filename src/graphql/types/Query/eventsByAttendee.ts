@@ -169,9 +169,7 @@ builder.queryField("eventsByAttendee", (t) =>
 						// We need to check isRecurringEventTemplate.
 						// Note: We need to ensure we fetched this column in `with`.
 						// Since we modify the query above to fetch it, we can check it here.
-						const isTemplate = (
-							record.event as { isRecurringEventTemplate: boolean }
-						).isRecurringEventTemplate;
+						const isTemplate = record.event.isRecurringEventTemplate === true;
 
 						if (isTemplate) {
 							recurringTemplateIds.push(record.eventId);

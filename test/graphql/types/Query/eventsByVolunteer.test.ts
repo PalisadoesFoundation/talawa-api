@@ -537,10 +537,15 @@ suite("Query field eventsByVolunteer", () => {
 			const adminEvents = adminEventsResult.data?.eventsByVolunteer as Array<{
 				id: string;
 				name: string;
+				isGenerated?: boolean | null;
+				baseRecurringEventId?: string | null;
 			}>;
 			assertToBeNonNullish(adminEvents);
 			const instance = adminEvents.find(
-				(e) => e.name === "Recurring Instance Event",
+				(e) =>
+					e.name === "Recurring Instance Event" &&
+					e.isGenerated === true &&
+					e.baseRecurringEventId === baseEventId,
 			);
 			assertToBeNonNullish(instance);
 			const instanceId = instance.id;
