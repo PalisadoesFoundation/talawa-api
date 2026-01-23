@@ -59,7 +59,7 @@ detect_distro() {
       return 0
     fi
 
-    if printf '%s\n' "$id_like_lc" | grep -q 'rhel\|fedora\|centos'; then
+     if printf '%s\n' "$id_like_lc" | grep -qE 'rhel|fedora|centos'; then
       # prefer rhel for RHEL-family
       if printf '%s\n' "$id_lc" | grep -q 'fedora'; then
         echo "fedora"
@@ -104,8 +104,10 @@ detect_distro() {
 
   # As last resort, try to parse /etc/*release-like files
   if [ -r /etc/lsb-release ]; then
+    # shellcheck disable=SC1091
     . /etc/lsb-release 2>/dev/null || true
-    local distro_from_lsb="$(_lower "${DISTRIB_ID:-}")"
+    local distro_from_lsb
+    distro_from_lsb="$(_lower "${DISTRIB_ID:-}")"
     case "$distro_from_lsb" in
       ubuntu|debian) echo "$distro_from_lsb"; return 0 ;;
     esac
@@ -177,10 +179,12 @@ get_os_version() {
       uname -r 2>/dev/null || echo "unknown"
       ;;
     windows)
-      # Running under MSYS/MINGW — try to query cmd.exe ver and sanitize output
+        # Running under MSYS/MINGW — try to query cmd.exe ver and sanitize output
       if command -v cmd.exe >/dev/null 2>&1; then
         # cmd.exe outputs something like: "Microsoft Windows [Version 10.0.19041.1165]"
-        cmd.exe /c ver 2>/dev/null | tr -d '\r' | sed -n '1p' || echo "unknown"
+        local win_ver
+        win_ver="$(cmd.exe /c ver 2>/dev/null | tr -d '\r' | sed -n '1p')" || true
+        echo "${win_ver:-unknown}"
       else
         echo "unknown"
       fi
