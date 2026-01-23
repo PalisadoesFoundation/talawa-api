@@ -10,8 +10,6 @@
 
 set -u # Don't set -e globally to allow testing failure scenarios
 
-# Colors (Variables kept for structure but set to empty for plain text)
-
 TESTS_RUN=0
 TESTS_PASSED=0
 TESTS_FAILED=0
@@ -121,7 +119,7 @@ test_idempotency_failure() {
     # Check if the marker file exists (it should NOT)
     # The user-specific directory might vary, so we find it
     local state_dirs
-    state_dirs=$(find "$tmp_home" -name "talawa-install-state*")
+    state_dirs=$(find "$tmp_home" -type d -name "talawa-install-state*")
     
     local state_dir_count
     state_dir_count=$(echo "$state_dirs" | grep -c .)
@@ -219,7 +217,7 @@ EOF
     sleep 0.5
     
     # Send SIGINT
-    kill -INT $pid
+    kill -INT "$pid"
     
     # Wait for process to finish (with timeout guard)
     local exit_code=""
@@ -284,7 +282,7 @@ EOF
     sleep 0.5
     
     # Send SIGTERM
-    kill -TERM $pid
+    kill -TERM "$pid"
     
     # Wait for process to finish (with timeout guard)
     local exit_code=""
@@ -338,7 +336,7 @@ test_dir_perms() {
     
     # Robustly find the state directory
     local state_dirs
-    state_dirs=$(find "$tmp_home" -name "talawa-install-state*")
+    state_dirs=$(find "$tmp_home" -type d -name "talawa-install-state*")
     local state_dir_count
     state_dir_count=$(echo "$state_dirs" | grep -c .)
     
