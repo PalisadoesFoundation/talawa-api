@@ -122,7 +122,10 @@ describe("Mutation createEvent - Performance Metrics", () => {
 
 			for (let i = 0; i < 100; i++) {
 				snapshots = server.getMetricsSnapshots?.() ?? [];
-				const newSnapshots = snapshots.slice(initialSnapshotCount);
+				const newSnapshots = snapshots.slice(
+					0,
+					snapshots.length - initialSnapshotCount,
+				);
 				mutationSnapshot = newSnapshots.find(
 					(s) => s.ops["mutation:createEvent"] !== undefined,
 				);
@@ -171,7 +174,10 @@ describe("Mutation createEvent - Performance Metrics", () => {
 
 			for (let i = 0; i < 100; i++) {
 				snapshots = server.getMetricsSnapshots?.() ?? [];
-				const newSnapshots = snapshots.slice(initialSnapshotCount);
+				const newSnapshots = snapshots.slice(
+					0,
+					snapshots.length - initialSnapshotCount,
+				);
 				mutationSnapshot = newSnapshots.find(
 					(s) => s.ops["mutation:createEvent"] !== undefined,
 				);
