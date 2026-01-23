@@ -278,9 +278,16 @@ builder.queryField("eventsByVolunteer", (t) =>
 				// Fallback: If a template has NO active instances (even across all pages),
 				// and it was requested as a template volunteer, we return the Base Event itself.
 				// This ensures users see the event they volunteered for if no instances are generated yet.
-				const templatesWithInstances = new Set<string>();
-				if (realTemplateIds.length > 0) {
-					// Check for existence of ANY non-cancelled instances for these templates
+				// Seed templatesWithInstances from foundBaseIds already populated from the windowed fetch.
+				const templatesWithInstances = new Set<string>(foundBaseIds);
+
+				// Only query for remaining templates that weren't found in the windowed fetch
+				const remainingTemplateIds = realTemplateIds.filter(
+					(id) => !foundBaseIds.has(id),
+				);
+
+				if (remainingTemplateIds.length > 0) {
+					// Check for existence of ANY non-cancelled instances for remaining templates
 					const activeInstances =
 						await ctx.drizzleClient.query.recurringEventInstancesTable.findMany(
 							{
@@ -288,13 +295,10 @@ builder.queryField("eventsByVolunteer", (t) =>
 								where: and(
 									inArray(
 										recurringEventInstancesTable.baseRecurringEventId,
-										realTemplateIds,
+										remainingTemplateIds,
 									),
 									eq(recurringEventInstancesTable.isCancelled, false),
 								),
-								// distinct on base event ID to just check existence
-								// Note: Drizzle's `distinct` might vary by driver.
-								// For simple existence check, fetching ID is enough.
 							},
 						);
 					for (const i of activeInstances) {

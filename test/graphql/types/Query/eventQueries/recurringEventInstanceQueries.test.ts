@@ -921,15 +921,20 @@ describe("getRecurringEventInstancesByBaseIds", () => {
 		// Should have an isCancelled: false check in the where clause
 		expect(lastCallArgs).toBeDefined();
 		expect(lastCallArgs?.where).toBeDefined();
-		// Note: Since we use 'and(...)', inspecting structure deeply depends on Drizzle internals or mock accuracy.
-		// We assert that the call arguments include the expected structure.
-		// For 'drizzle-orm', 'and' combines conditions. We expect 'eq(isCancelled, false)' to be part of it.
-		// A simple way with mocks is verifying the argument object structure or checking if 'isCancelled' is referenced if possible.
-		// However, with 'expect.any(Object)' strict checking is hard on exact equality of opaque objects.
-		// We rely on verifying that we didn't pass includeCancelled: true logic.
+
+		// Verify the where clause structure contains conditions for isCancelled filter.
+		// The where clause symbol structure includes the query config. We can stringify
+		// to verify the presence of isCancelled in the condition.
+		const whereClauseStr = JSON.stringify(lastCallArgs?.where);
+		expect(whereClauseStr).toContain("isCancelled");
 	});
 
 	it("should include cancelled instances when includeCancelled is true", async () => {
+		// Clear previous mock calls to ensure isolation
+		vi.mocked(
+			mockDrizzleClient.query.recurringEventInstancesTable.findMany,
+		).mockClear();
+
 		await getRecurringEventInstancesByBaseIds(
 			["base-event-1"],
 			mockDrizzleClient,
@@ -937,8 +942,17 @@ describe("getRecurringEventInstancesByBaseIds", () => {
 			{ includeCancelled: true },
 		);
 
-		// When includeCancelled is true, we should NOT see the explicit isCancelled=false filter
-		// added by the default branch.
+		const calls = vi.mocked(
+			mockDrizzleClient.query.recurringEventInstancesTable.findMany,
+		).mock.calls;
+		const lastCallArgs = calls[calls.length - 1]?.[0];
+
+		expect(lastCallArgs).toBeDefined();
+		expect(lastCallArgs?.where).toBeDefined();
+
+		// When includeCancelled is true, the where clause should NOT contain isCancelled filter.
+		const whereClauseStr = JSON.stringify(lastCallArgs?.where);
+		expect(whereClauseStr).not.toContain("isCancelled");
 	});
 
 	it("should exclude specified instance IDs", async () => {
@@ -960,9 +974,12 @@ describe("getRecurringEventInstancesByBaseIds", () => {
 		const lastCallArgs = calls[calls.length - 1]?.[0];
 		expect(lastCallArgs).toBeDefined();
 
-		// Verify exclusion is present in where clause
-		// In a real integration test we'd check SQL. Here we trust the function uses 'notInArray' if logic is correct.
-		// We can assert that the where clause is updated relative to a call without exclusions.
+		// Verify exclusion is present in where clause.
+		// The where clause should contain a NOT IN condition for the excluded IDs.
+		const whereClauseStr = JSON.stringify(lastCallArgs?.where);
+		// The 'not' + 'inArray' produces a structure that should reference the excluded values.
+		expect(whereClauseStr).toContain("instance-to-exclude-1");
+		expect(whereClauseStr).toContain("instance-to-exclude-2");
 	});
 
 	it("should return empty array when no instances found after query", async () => {

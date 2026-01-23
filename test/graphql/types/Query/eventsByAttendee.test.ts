@@ -1187,6 +1187,7 @@ suite("Query field eventsByAttendee", () => {
 			const { userId, authToken: userAuthToken } =
 				await createRegularUserUsingAdmin();
 			assertToBeNonNullish(userId);
+			assertToBeNonNullish(userAuthToken);
 
 			// Create recurring event template starting tomorrow
 			const tomorrow = new Date();
