@@ -15,7 +15,7 @@ import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 
 const queryEventsByAttendeeArgumentsSchema = z.object({
 	userId: z.string().uuid(),
-	limit: z.number().int().nonnegative().max(100).default(100),
+	limit: z.number().int().min(1).max(100).default(100),
 	offset: z.number().int().nonnegative().default(0),
 });
 

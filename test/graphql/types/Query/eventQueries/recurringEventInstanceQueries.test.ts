@@ -9,6 +9,7 @@ import {
 	type GetRecurringEventInstancesInput,
 	getRecurringEventInstanceById,
 	getRecurringEventInstancesByBaseId,
+	getRecurringEventInstancesByBaseIds,
 	getRecurringEventInstancesByIds,
 	getRecurringEventInstancesInDateRange,
 } from "~/src/graphql/types/Query/eventQueries/recurringEventInstanceQueries";
@@ -667,6 +668,44 @@ describe("getRecurringEventInstancesByIds", () => {
 
 		expect(result).toHaveLength(3);
 		expect(result.map((r) => r.id)).toEqual(instanceIds);
+	});
+
+	describe("getRecurringEventInstancesByBaseIds", () => {
+		it("should map recurring instance to event correctly", async () => {
+			const result = await getRecurringEventInstancesByBaseIds(
+				["base-event-1"],
+				mockDrizzleClient,
+				mockLogger,
+			);
+
+			expect(
+				mockDrizzleClient.query.recurringEventInstancesTable.findMany,
+			).toHaveBeenCalledWith({
+				where: expect.any(Object),
+				orderBy: expect.any(Array),
+				limit: 1000,
+			});
+			expect(result).toHaveLength(1);
+		});
+
+		it("should use default limit of 1000 when no limit is provided", async () => {
+			await getRecurringEventInstancesByBaseIds(
+				["base-event-1"],
+				mockDrizzleClient,
+				mockLogger,
+				{
+					// no limit provided
+				},
+			);
+
+			expect(
+				mockDrizzleClient.query.recurringEventInstancesTable.findMany,
+			).toHaveBeenCalledWith(
+				expect.objectContaining({
+					limit: 1000,
+				}),
+			);
+		});
 	});
 
 	it("should handle empty database results and skip processing", async () => {

@@ -608,6 +608,27 @@ suite("Query field eventsByAdmin", () => {
 			);
 		});
 
+		test("should return error when offset exceeds max", async () => {
+			const { userId: adminUserArgVal, authToken: adminUserToken } =
+				await createRegularUserUsingAdmin();
+			assertToBeNonNullish(adminUserArgVal);
+
+			const result = await mercuriusClient.query(Query_eventsByAdmin, {
+				headers: { authorization: `bearer ${adminUserToken}` },
+				variables: { userId: adminUserArgVal, offset: 10001 },
+			});
+			expect(result.data?.eventsByAdmin).toBeUndefined();
+			expect(result.errors).toEqual(
+				expect.arrayContaining([
+					expect.objectContaining({
+						extensions: expect.objectContaining({
+							code: "invalid_arguments",
+						}),
+					}),
+				]),
+			);
+		});
+
 		test("should return error when offset is negative", async () => {
 			const { userId: adminUserArgVal, authToken: adminUserToken } =
 				await createRegularUserUsingAdmin();

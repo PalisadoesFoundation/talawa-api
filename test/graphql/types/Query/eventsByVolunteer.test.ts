@@ -604,11 +604,7 @@ suite("Query field eventsByVolunteer", () => {
 			const { userId: regularUserId, authToken: regularAuthToken } =
 				await createRegularUserUsingAdmin();
 
-			// Add user to org so they can volunteer? Or is it open?
-			// Default event create was inviteOnly: false, public: false?
-			// createEvent setup: isPublic: false (default), isInviteOnly: false (default).
-			// Usually need to be org member or it's public?
-			// Let's make the user an org member to be safe.
+			// Make test user an org member so they can volunteer for the non-public event
 			await mercuriusClient.mutate(Mutation_createOrganizationMembership, {
 				headers: { authorization: `bearer ${authToken}` },
 				variables: {
