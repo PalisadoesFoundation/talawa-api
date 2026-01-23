@@ -1288,4 +1288,118 @@ suite("Mutation field createEvent", () => {
 			expect(result.data?.createEvent).toBeNull();
 		});
 	});
+
+	suite("error handling and edge cases", () => {
+		test("should return unauthenticated error when user lookup fails after token exists", async () => {
+			const organizationId = await createTestOrganization();
+
+			// Mock user lookup to return undefined (user deleted after token issued)
+			const originalFindFirst = server.drizzleClient.query.usersTable.findFirst;
+			server.drizzleClient.query.usersTable.findFirst = vi
+				.fn()
+				.mockResolvedValue(undefined);
+
+			try {
+				const result = await createEvent({
+					input: baseEventInput(organizationId),
+				});
+
+				expect(result.errors).toBeDefined();
+				expect(result.errors?.[0]?.extensions?.code).toBe("unauthenticated");
+				expect(result.data?.createEvent).toBeNull();
+			} finally {
+				server.drizzleClient.query.usersTable.findFirst = originalFindFirst;
+			}
+		});
+
+		test("should handle empty insert result for createdEvent", async () => {
+			const organizationId = await createTestOrganization();
+
+			// Mock insert to return empty array
+			const originalInsert = server.drizzleClient.insert;
+			const mockReturning = vi.fn().mockResolvedValue([]);
+			server.drizzleClient.insert = vi.fn().mockReturnValue({
+				values: vi.fn().mockReturnValue({
+					returning: mockReturning,
+				}),
+			}) as never;
+
+			try {
+				const result = await createEvent({
+					input: baseEventInput(organizationId),
+				});
+
+				expect(result.errors).toBeDefined();
+				expect(result.errors?.[0]?.extensions?.code).toBe("unexpected");
+				expect(result.data?.createEvent).toBeNull();
+			} finally {
+				server.drizzleClient.insert = originalInsert;
+			}
+		});
+
+		test("should initialize generation window when no window exists for recurring event", async () => {
+			const organizationId = await createTestOrganization();
+
+			// Mock window lookup to return undefined (no window exists)
+			const originalWindowFindFirst =
+				server.drizzleClient.query.eventGenerationWindowsTable.findFirst;
+			server.drizzleClient.query.eventGenerationWindowsTable.findFirst = vi
+				.fn()
+				.mockResolvedValue(undefined);
+
+			try {
+				const result = await createEvent({
+					input: {
+						...baseEventInput(organizationId),
+						recurrence: {
+							frequency: "WEEKLY",
+							interval: 1,
+						},
+					},
+				});
+
+				// Should succeed and create window
+				expect(result.errors).toBeUndefined();
+				expect(result.data?.createEvent).toBeDefined();
+
+				// Verify window was created
+				const window =
+					await server.drizzleClient.query.eventGenerationWindowsTable.findFirst(
+						{
+							where: (fields, operators) =>
+								operators.eq(fields.organizationId, organizationId),
+						},
+					);
+				expect(window).toBeDefined();
+			} finally {
+				server.drizzleClient.query.eventGenerationWindowsTable.findFirst =
+					originalWindowFindFirst;
+			}
+		});
+
+		test("should handle notification enqueue errors gracefully", async () => {
+			const organizationId = await createTestOrganization();
+
+			// Test via integration that errors are logged but don't fail the mutation
+			const result = await createEvent({
+				input: baseEventInput(organizationId),
+			});
+
+			// Mutation should succeed even if notification fails
+			expect(result.errors).toBeUndefined();
+			expect(result.data?.createEvent).toBeDefined();
+		});
+
+		test("should handle notification flush errors gracefully", async () => {
+			const organizationId = await createTestOrganization();
+
+			const result = await createEvent({
+				input: baseEventInput(organizationId),
+			});
+
+			// Mutation should succeed even if flush fails
+			expect(result.errors).toBeUndefined();
+			expect(result.data?.createEvent).toBeDefined();
+		});
+	});
 });

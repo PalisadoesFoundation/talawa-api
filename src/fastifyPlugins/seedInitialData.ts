@@ -1,5 +1,5 @@
 import { hash } from "@node-rs/argon2";
-import { and, eq } from "drizzle-orm";
+import { eq } from "drizzle-orm";
 import type { FastifyPluginAsync } from "fastify";
 import fastifyPlugin from "fastify-plugin";
 import { uuidv7 } from "uuidv7";
@@ -183,6 +183,14 @@ const plugin: FastifyPluginAsync = async (fastify) => {
 
 	fastify.log.info("Checking and seeding notification templates.");
 
+	// Check if notification templates table exists before iterating
+	if (fastify.drizzleClient.query.notificationTemplatesTable === undefined) {
+		fastify.log.warn(
+			"Notification templates table not found in drizzle schema. Skipping seeding.",
+		);
+		return;
+	}
+
 	const templates = [
 		{
 			name: "Post Created",
@@ -280,30 +288,18 @@ const plugin: FastifyPluginAsync = async (fastify) => {
 	];
 
 	for (const template of templates) {
-		if (fastify.drizzleClient.query.notificationTemplatesTable === undefined) {
-			fastify.log.warn(
-				"Notification templates table not found in drizzle schema. Skipping seeding.",
-			);
-			break;
-		}
-		const existing =
-			await fastify.drizzleClient.query.notificationTemplatesTable.findFirst({
-				columns: { id: true },
-				where: (fields, operators) =>
-					and(
-						operators.eq(fields.eventType, template.eventType),
-						operators.eq(fields.channelType, template.channelType),
-					),
+		await fastify.drizzleClient
+			.insert(notificationTemplatesTable)
+			.values(notificationTemplatesTableInsertSchema.parse(template))
+			.onConflictDoNothing({
+				target: [
+					notificationTemplatesTable.eventType,
+					notificationTemplatesTable.channelType,
+				],
 			});
-
-		if (!existing) {
-			await fastify.drizzleClient
-				.insert(notificationTemplatesTable)
-				.values(notificationTemplatesTableInsertSchema.parse(template));
-			fastify.log.info(
-				`Seeded template: ${template.eventType} (${template.channelType})`,
-			);
-		}
+		fastify.log.info(
+			`Seeded template: ${template.eventType} (${template.channelType})`,
+		);
 	}
 	fastify.log.info("Finished seeding notification templates.");
 };

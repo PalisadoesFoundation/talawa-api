@@ -121,10 +121,7 @@ describe("Mutation createUser - Performance Metrics", () => {
 
 			for (let i = 0; i < 30; i++) {
 				snapshots = server.getMetricsSnapshots?.() ?? [];
-				const newSnapshots = snapshots.slice(
-					0,
-					snapshots.length - initialSnapshotCount,
-				);
+				const newSnapshots = snapshots.slice(initialSnapshotCount);
 				mutationSnapshot = newSnapshots.find(
 					(s) => s.ops["mutation:createUser"] !== undefined,
 				);

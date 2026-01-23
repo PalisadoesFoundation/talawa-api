@@ -613,7 +613,12 @@ suite("Mutation field updateOrganization", () => {
 			expect.arrayContaining([
 				expect.objectContaining({
 					extensions: expect.objectContaining({
-						code: expect.stringMatching(/not_found|invalid_arguments/),
+						code: "arguments_associated_resources_not_found",
+						issues: expect.arrayContaining([
+							expect.objectContaining({
+								argumentPath: ["input", "id"],
+							}),
+						]),
 					}),
 					path: ["updateOrganization"],
 				}),
@@ -935,8 +940,6 @@ suite("Mutation field updateOrganization", () => {
 				},
 			},
 		});
-
-		console.log("DEBUG: Full Result:", JSON.stringify(result, null, 2));
 
 		expect(result.errors).toBeUndefined();
 		// Verify returned object has null avatar

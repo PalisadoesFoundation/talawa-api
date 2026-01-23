@@ -769,66 +769,68 @@ suite("Mutation field createUser", () => {
 				.spyOn(minioClient, "putObject")
 				.mockRejectedValue(new Error("Simulated Upload Failure"));
 
-			const email = `rollback${faker.string.ulid()}@email.com`;
+			try {
+				const email = `rollback${faker.string.ulid()}@email.com`;
 
-			// Construct multipart request
-			const boundary = "----Boundary";
-			const operations = {
-				query: `mutation CreateUser($input: MutationCreateUserInput!) {
-                    createUser(input: $input) { user { id } }
-                }`,
-				variables: {
-					input: {
-						emailAddress: email,
-						isEmailAddressVerified: false,
-						name: "Rollback User",
-						password: "password",
-						role: "regular",
-						avatar: null, // Mapped
+				// Construct multipart request
+				const boundary = "----Boundary";
+				const operations = {
+					query: `mutation CreateUser($input: MutationCreateUserInput!) {
+                        createUser(input: $input) { user { id } }
+                    }`,
+					variables: {
+						input: {
+							emailAddress: email,
+							isEmailAddressVerified: false,
+							name: "Rollback User",
+							password: "password",
+							role: "regular",
+							avatar: null, // Mapped
+						},
 					},
-				},
-			};
-			const map = { "0": ["variables.input.avatar"] };
-			const fileContent = "fake-content";
+				};
+				const map = { "0": ["variables.input.avatar"] };
+				const fileContent = "fake-content";
 
-			const body = [
-				`--${boundary}`,
-				'Content-Disposition: form-data; name="operations"',
-				"",
-				JSON.stringify(operations),
-				`--${boundary}`,
-				'Content-Disposition: form-data; name="map"',
-				"",
-				JSON.stringify(map),
-				`--${boundary}`,
-				'Content-Disposition: form-data; name="0"; filename="test.png"',
-				"Content-Type: image/png",
-				"",
-				fileContent,
-				`--${boundary}--`,
-			].join("\r\n");
+				const body = [
+					`--${boundary}`,
+					'Content-Disposition: form-data; name="operations"',
+					"",
+					JSON.stringify(operations),
+					`--${boundary}`,
+					'Content-Disposition: form-data; name="map"',
+					"",
+					JSON.stringify(map),
+					`--${boundary}`,
+					'Content-Disposition: form-data; name="0"; filename="test.png"',
+					"Content-Type: image/png",
+					"",
+					fileContent,
+					`--${boundary}--`,
+				].join("\r\n");
 
-			const response = await server.inject({
-				method: "POST",
-				url: "/graphql",
-				headers: {
-					"content-type": `multipart/form-data; boundary=${boundary}`,
-					authorization: `bearer ${adminToken}`,
-				},
-				payload: body,
-			});
+				const response = await server.inject({
+					method: "POST",
+					url: "/graphql",
+					headers: {
+						"content-type": `multipart/form-data; boundary=${boundary}`,
+						authorization: `bearer ${adminToken}`,
+					},
+					payload: body,
+				});
 
-			const result = response.json();
-			expect(result.errors?.[0]?.extensions?.code).toBe("unexpected");
+				const result = response.json();
+				expect(result.errors?.[0]?.extensions?.code).toBe("unexpected");
 
-			// Verify deletion
-			const user = await server.drizzleClient.query.usersTable.findFirst({
-				where: eq(usersTable.emailAddress, email),
-			});
+				// Verify deletion
+				const user = await server.drizzleClient.query.usersTable.findFirst({
+					where: eq(usersTable.emailAddress, email),
+				});
 
-			expect(user).toBeUndefined();
-
-			putObjectSpy.mockRestore();
+				expect(user).toBeUndefined();
+			} finally {
+				putObjectSpy.mockRestore();
+			}
 		});
 	});
 });

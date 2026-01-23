@@ -1,0 +1,1 @@
+CREATE UNIQUE INDEX "notification_templates_event_type_channel_type_index" ON "notification_templates" USING btree ("event_type","channel_type");

@@ -354,7 +354,7 @@ builder.mutationField("createEvent", (t) =>
 									originalSeriesId: ruleId, // For new events, originalSeriesId is the rule's own ID
 									organizationId: parsedArgs.input.organizationId,
 									creatorId: currentUserId,
-								} as unknown as typeof recurrenceRulesTable.$inferSelect)
+								} satisfies typeof recurrenceRulesTable.$inferInsert)
 								.returning();
 
 							if (createdRecurrenceRule === undefined) {
@@ -494,22 +494,23 @@ builder.mutationField("createEvent", (t) =>
 							isRegisterable: createdEvent.isRegisterable ?? false,
 						});
 
-						try {
-							ctx.notification?.enqueueEventCreated({
-								eventId: finalEvent.id,
-								eventName: finalEvent.name,
-								organizationId: finalEvent.organizationId,
-								organizationName: existingOrganization.name,
-								startDate: finalEvent.startAt.toISOString(),
-								creatorName: currentUser.name,
-							});
-						} catch (error) {
-							ctx.log.error({ error }, "Failed to enqueue event notification");
-						}
-
 						return finalEvent;
 					},
 				);
+
+				// Enqueue notification after transaction commits to avoid side-effects on rollback
+				try {
+					ctx.notification?.enqueueEventCreated({
+						eventId: createdEventResult.id,
+						eventName: createdEventResult.name,
+						organizationId: createdEventResult.organizationId,
+						organizationName: existingOrganization.name,
+						startDate: createdEventResult.startAt.toISOString(),
+						creatorName: currentUser.name,
+					});
+				} catch (error) {
+					ctx.log.error({ error }, "Failed to enqueue event notification");
+				}
 
 				try {
 					await ctx.notification?.flush(ctx);
