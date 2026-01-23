@@ -15,6 +15,7 @@ if [ "${BASH_SOURCE[0]}" != "${0}" ]; then
     echo "    ./install.sh" >&2
     echo "    bash install.sh" >&2
     echo "" >&2
+    # shellcheck disable=SC2317
     return 1 2>/dev/null || exit 1
 fi
 
