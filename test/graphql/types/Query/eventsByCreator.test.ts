@@ -1,8 +1,10 @@
 import { faker } from "@faker-js/faker";
+import { eq } from "drizzle-orm";
 import type { ResultOf } from "gql.tada";
 import { initGraphQLTada } from "gql.tada";
 import type { ExecutionResult } from "graphql";
 import { expect, suite, test, vi } from "vitest";
+import { usersTable } from "~/src/drizzle/tables/users";
 import type { ClientCustomScalars } from "~/src/graphql/scalars/index";
 import { assertToBeNonNullish } from "../../../helpers";
 import { server } from "../../../server";
@@ -223,32 +225,31 @@ suite("Query field eventsByCreator", () => {
 
 	suite("when authenticated user's DB record is missing", () => {
 		test("should return an error with unauthenticated code", async () => {
-			const { userId } = await createRegularUserUsingAdmin();
+			const { authToken: userAuthToken, userId } =
+				await createRegularUserUsingAdmin();
+			assertToBeNonNullish(userAuthToken);
 			assertToBeNonNullish(userId);
 
-			// Mock the current user lookup to return null
-			const spy = vi.spyOn(server.drizzleClient.query.usersTable, "findFirst");
-			spy.mockResolvedValueOnce(undefined);
+			// Delete the user from the database to simulate missing record
+			await server.drizzleClient
+				.delete(usersTable)
+				.where(eq(usersTable.id, userId));
 
-			try {
-				const result = await mercuriusClient.query(Query_eventsByCreator, {
-					headers: { authorization: `bearer ${authToken}` },
-					variables: { userId },
-				});
+			const result = await mercuriusClient.query(Query_eventsByCreator, {
+				headers: { authorization: `bearer ${userAuthToken}` },
+				variables: { userId },
+			});
 
-				expect(result.data?.eventsByCreator).toBeUndefined();
-				expect(result.errors).toEqual(
-					expect.arrayContaining([
-						expect.objectContaining({
-							extensions: expect.objectContaining({
-								code: "unauthenticated",
-							}),
+			expect(result.data?.eventsByCreator).toBeUndefined();
+			expect(result.errors).toEqual(
+				expect.arrayContaining([
+					expect.objectContaining({
+						extensions: expect.objectContaining({
+							code: "unauthenticated",
 						}),
-					]),
-				);
-			} finally {
-				spy.mockRestore();
-			}
+					}),
+				]),
+			);
 		});
 	});
 
