@@ -703,7 +703,6 @@ suite("Query field eventsByVolunteer", () => {
 
 			// Flatten instances to get IDs
 			// Volunteer for series to generate instances
-			// Volunteer for series to generate instances
 			const volunteerRes = await mercuriusClient.mutate(
 				Mutation_createEventVolunteer,
 				{
