@@ -62,7 +62,7 @@ export { commentsTable, commentsTableRelations } from "./tables/comments";
 export {
 	commentVotesTable,
 	commentVotesTableRelations,
-	commentVoteTypeEnum
+	commentVoteTypeEnum,
 } from "./tables/commentVotes";
 export {
 	communitiesTable,
