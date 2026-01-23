@@ -164,9 +164,10 @@ test_idempotency_empty_key() {
     local output
     # Run with empty key
     output=$(bash -c "source '$LIB_PATH'; \
-        run_idempotent '' 'some_command'" 2>&1 || true)
+        run_idempotent '' echo 'should not run'" 2>&1 || true)
         
-    if echo "$output" | grep -q "requires at least 2 arguments"; then
+    if echo "$output" | grep -q "requires at least 2 arguments" && \
+       ! echo "$output" | grep -q "should not run"; then
         test_pass
     else
         test_fail "Expected validation error for empty key. Output:\n$output"
@@ -220,9 +221,24 @@ EOF
     # Send SIGINT
     kill -INT $pid
     
-    # Wait for process to finish
-    wait $pid 2>/dev/null
-    local exit_code=$?
+    # Wait for process to finish (with timeout guard)
+    local exit_code=""
+    for _ in {1..50}; do
+        if ! kill -0 "$pid" 2>/dev/null; then
+            wait "$pid" 2>/dev/null || true
+            exit_code=$?
+            break
+        fi
+        sleep 0.1
+    done
+
+    if kill -0 "$pid" 2>/dev/null; then
+        kill -KILL "$pid" 2>/dev/null || true
+        wait "$pid" 2>/dev/null || true
+        rm "$test_script" "$output_file"
+        test_fail "Timed out waiting for signal handler to exit"
+        return
+    fi
     
     # Read output
     local output
@@ -270,8 +286,24 @@ EOF
     # Send SIGTERM
     kill -TERM $pid
     
-    wait $pid 2>/dev/null
-    local exit_code=$?
+    # Wait for process to finish (with timeout guard)
+    local exit_code=""
+    for _ in {1..50}; do
+        if ! kill -0 "$pid" 2>/dev/null; then
+            wait "$pid" 2>/dev/null || true
+            exit_code=$?
+            break
+        fi
+        sleep 0.1
+    done
+
+    if kill -0 "$pid" 2>/dev/null; then
+        kill -KILL "$pid" 2>/dev/null || true
+        wait "$pid" 2>/dev/null || true
+        rm "$test_script" "$output_file"
+        test_fail "Timed out waiting for signal handler to exit"
+        return
+    fi
     
     # Read output
     local output
