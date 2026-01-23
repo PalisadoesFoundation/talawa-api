@@ -97,6 +97,7 @@ builder.queryField("eventsByVolunteer", (t) =>
 
 			// Check if target user exists
 			const targetUser = await ctx.drizzleClient.query.usersTable.findFirst({
+				columns: { id: true },
 				where: eq(usersTable.id, targetUserId),
 			});
 
