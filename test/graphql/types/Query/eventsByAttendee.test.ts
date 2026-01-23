@@ -80,6 +80,27 @@ suite("Query field eventsByAttendee", () => {
 				),
 			).toBe(true);
 		});
+
+		test("should return error when offset exceeds max", async () => {
+			const { userId: regularUserId, authToken: regularAuthToken } =
+				await createRegularUserUsingAdmin();
+
+			const result = await mercuriusClient.query(Query_eventsByAttendee, {
+				headers: { authorization: `bearer ${regularAuthToken}` },
+				variables: { userId: regularUserId, offset: 10001 },
+			});
+
+			expect(result.data?.eventsByAttendee).toBeUndefined();
+			expect(result.errors).toEqual(
+				expect.arrayContaining([
+					expect.objectContaining({
+						extensions: expect.objectContaining({
+							code: "invalid_arguments",
+						}),
+					}),
+				]),
+			);
+		});
 	});
 
 	suite("when user is not authenticated", () => {

@@ -36,7 +36,7 @@ builder.queryField("eventsByVolunteer", (t) =>
 				defaultValue: 100,
 			}),
 			offset: t.arg.int({
-				description: "The number of events to skip (default: 0)",
+				description: `The number of events to skip (default: 0, max: ${MAX_OFFSET})`,
 				required: false,
 				defaultValue: 0,
 			}),
@@ -132,8 +132,8 @@ builder.queryField("eventsByVolunteer", (t) =>
 				const possiblyStandaloneEventIds: string[] = [];
 				const specificInstanceIds: string[] = [];
 
-				// Precedence: isTemplate takes priority—records with isTemplate=true and
-				// recurringEventInstanceId set are treated as templates.
+				// Precedence: recurringEventInstanceId takes priority—records with both set
+				// are treated as instance-specific volunteers.
 				for (const record of volunteerRecords) {
 					if (record.recurringEventInstanceId) {
 						specificInstanceIds.push(record.recurringEventInstanceId);
@@ -275,15 +275,38 @@ builder.queryField("eventsByVolunteer", (t) =>
 					}
 				}
 
-				// Fallback: If a template has NO instances found (e.g. future event, or none generated yet),
+				// Fallback: If a template has NO active instances (even across all pages),
 				// and it was requested as a template volunteer, we return the Base Event itself.
-				// This matches legacy behavior and ensures the user sees the event they volunteered for.
-				// Note: If we hit the limit, we might "miss" instances and incorrectly fall back to Base Event?
-				// If we hit limit, we likely have enough items. If Base Event sorts earlier than the items we found,
-				// it will show up. If it sorts later, it will be cut off.
-				// This seems acceptable for pagination optimization.
+				// This ensures users see the event they volunteered for if no instances are generated yet.
+				const templatesWithInstances = new Set<string>();
+				if (realTemplateIds.length > 0) {
+					// Check for existence of ANY non-cancelled instances for these templates
+					const activeInstances =
+						await ctx.drizzleClient.query.recurringEventInstancesTable.findMany(
+							{
+								columns: { baseRecurringEventId: true },
+								where: and(
+									inArray(
+										recurringEventInstancesTable.baseRecurringEventId,
+										realTemplateIds,
+									),
+									eq(recurringEventInstancesTable.isCancelled, false),
+								),
+								// distinct on base event ID to just check existence
+								// Note: Drizzle's `distinct` might vary by driver.
+								// For simple existence check, fetching ID is enough.
+							},
+						);
+					for (const i of activeInstances) {
+						if (i.baseRecurringEventId) {
+							templatesWithInstances.add(i.baseRecurringEventId);
+						}
+					}
+				}
+
 				for (const templateId of realTemplateIds) {
-					if (!foundBaseIds.has(templateId)) {
+					// Only fallback if NO active instances exist for this template at all
+					if (!templatesWithInstances.has(templateId)) {
 						// Retrieve info from baseEventsInfo
 						const info = baseEventsInfo.find((e) => e.id === templateId);
 						if (info) {

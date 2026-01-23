@@ -5013,7 +5013,7 @@ type Query {
     """The maximum number of events to return (default: 100, max: 100)"""
     limit: Int = 100
 
-    """The number of events to skip (default: 0)"""
+    """The number of events to skip (default: 0, max: 10000)"""
     offset: Int = 0
 
     """ID of the user whose volunteer events to fetch"""
