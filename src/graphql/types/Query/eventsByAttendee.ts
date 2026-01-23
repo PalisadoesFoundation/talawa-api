@@ -1,4 +1,4 @@
-import { and, eq, inArray, or } from "drizzle-orm";
+import { and, asc, eq, inArray, or } from "drizzle-orm";
 import { z } from "zod";
 import { eventAttendeesTable } from "~/src/drizzle/tables/eventAttendees";
 import { recurringEventInstancesTable } from "~/src/drizzle/tables/recurringEventInstances";
@@ -188,6 +188,7 @@ builder.queryField("eventsByAttendee", (t) =>
 
 				// If we have templates, fetch their instance references
 				if (recurringTemplateIds.length > 0) {
+					const windowSize = offset + limit;
 					const templateInstances =
 						await ctx.drizzleClient.query.recurringEventInstancesTable.findMany(
 							{
@@ -202,6 +203,11 @@ builder.queryField("eventsByAttendee", (t) =>
 									),
 									eq(recurringEventInstancesTable.isCancelled, false),
 								),
+								orderBy: [
+									asc(recurringEventInstancesTable.actualStartTime),
+									asc(recurringEventInstancesTable.id),
+								],
+								limit: windowSize,
 							},
 						);
 

@@ -670,44 +670,6 @@ describe("getRecurringEventInstancesByIds", () => {
 		expect(result.map((r) => r.id)).toEqual(instanceIds);
 	});
 
-	describe("getRecurringEventInstancesByBaseIds", () => {
-		it("should map recurring instance to event correctly", async () => {
-			const result = await getRecurringEventInstancesByBaseIds(
-				["base-event-1"],
-				mockDrizzleClient,
-				mockLogger,
-			);
-
-			expect(
-				mockDrizzleClient.query.recurringEventInstancesTable.findMany,
-			).toHaveBeenCalledWith({
-				where: expect.any(Object),
-				orderBy: expect.any(Array),
-				limit: 1000,
-			});
-			expect(result).toHaveLength(1);
-		});
-
-		it("should use default limit of 1000 when no limit is provided", async () => {
-			await getRecurringEventInstancesByBaseIds(
-				["base-event-1"],
-				mockDrizzleClient,
-				mockLogger,
-				{
-					// no limit provided
-				},
-			);
-
-			expect(
-				mockDrizzleClient.query.recurringEventInstancesTable.findMany,
-			).toHaveBeenCalledWith(
-				expect.objectContaining({
-					limit: 1000,
-				}),
-			);
-		});
-	});
-
 	it("should handle empty database results and skip processing", async () => {
 		vi.mocked(
 			mockDrizzleClient.query.recurringEventInstancesTable.findMany,
@@ -859,6 +821,148 @@ describe("getRecurringEventInstancesByIds", () => {
 		expect(mockLogger.error).toHaveBeenCalledWith(
 			error,
 			"Failed to get recurring event instances by IDs",
+		);
+	});
+});
+
+describe("getRecurringEventInstancesByBaseIds", () => {
+	let mockDrizzleClient: ServiceDependencies["drizzleClient"];
+	let mockLogger: ServiceDependencies["logger"];
+
+	beforeEach(() => {
+		vi.clearAllMocks();
+		mockDrizzleClient = setupMockDrizzleClient();
+		mockLogger = setupMockLogger();
+
+		vi.mocked(
+			mockDrizzleClient.query.recurringEventInstancesTable.findMany,
+		).mockResolvedValue([mockRawInstance]);
+		vi.mocked(mockDrizzleClient.query.eventsTable.findMany).mockResolvedValue([
+			mockBaseTemplate,
+		]);
+		vi.mocked(
+			mockDrizzleClient.query.eventExceptionsTable.findMany,
+		).mockResolvedValue([mockException]);
+		mockResolveMultipleInstances.mockReturnValue([mockResolvedInstance]);
+	});
+
+	it("should map recurring instance to event correctly", async () => {
+		const result = await getRecurringEventInstancesByBaseIds(
+			["base-event-1"],
+			mockDrizzleClient,
+			mockLogger,
+		);
+
+		expect(
+			mockDrizzleClient.query.recurringEventInstancesTable.findMany,
+		).toHaveBeenCalledWith({
+			where: expect.any(Object),
+			orderBy: expect.any(Array),
+			limit: 1000,
+		});
+		expect(result).toHaveLength(1);
+	});
+
+	it("should return empty array when baseRecurringEventIds is empty", async () => {
+		const result = await getRecurringEventInstancesByBaseIds(
+			[],
+			mockDrizzleClient,
+			mockLogger,
+		);
+
+		expect(result).toEqual([]);
+		expect(
+			mockDrizzleClient.query.recurringEventInstancesTable.findMany,
+		).not.toHaveBeenCalled();
+	});
+
+	it("should use default limit of 1000 when no limit is provided", async () => {
+		await getRecurringEventInstancesByBaseIds(
+			["base-event-1"],
+			mockDrizzleClient,
+			mockLogger,
+			{
+				// no limit provided
+			},
+		);
+
+		expect(
+			mockDrizzleClient.query.recurringEventInstancesTable.findMany,
+		).toHaveBeenCalledWith(
+			expect.objectContaining({
+				limit: 1000,
+			}),
+		);
+	});
+
+	it("should exclude cancelled instances by default", async () => {
+		await getRecurringEventInstancesByBaseIds(
+			["base-event-1"],
+			mockDrizzleClient,
+			mockLogger,
+		);
+
+		expect(
+			mockDrizzleClient.query.recurringEventInstancesTable.findMany,
+		).toHaveBeenCalled();
+	});
+
+	it("should include cancelled instances when includeCancelled is true", async () => {
+		await getRecurringEventInstancesByBaseIds(
+			["base-event-1"],
+			mockDrizzleClient,
+			mockLogger,
+			{ includeCancelled: true },
+		);
+		expect(
+			mockDrizzleClient.query.recurringEventInstancesTable.findMany,
+		).toHaveBeenCalled();
+	});
+
+	it("should exclude specified instance IDs", async () => {
+		await getRecurringEventInstancesByBaseIds(
+			["base-event-1"],
+			mockDrizzleClient,
+			mockLogger,
+			{ excludeInstanceIds: ["instance-to-exclude"] },
+		);
+		expect(
+			mockDrizzleClient.query.recurringEventInstancesTable.findMany,
+		).toHaveBeenCalled();
+	});
+
+	it("should return empty array when no instances found after query", async () => {
+		vi.mocked(
+			mockDrizzleClient.query.recurringEventInstancesTable.findMany,
+		).mockResolvedValue([]);
+
+		const result = await getRecurringEventInstancesByBaseIds(
+			["base-event-1"],
+			mockDrizzleClient,
+			mockLogger,
+		);
+
+		expect(result).toEqual([]);
+		expect(mockDrizzleClient.query.eventsTable.findMany).not.toHaveBeenCalled();
+	});
+
+	it("should log and re-throw error on failure", async () => {
+		const error = new Error("Query failed");
+		vi.mocked(
+			mockDrizzleClient.query.recurringEventInstancesTable.findMany,
+		).mockRejectedValue(error);
+
+		await expect(
+			getRecurringEventInstancesByBaseIds(
+				["base-event-1"],
+				mockDrizzleClient,
+				mockLogger,
+			),
+		).rejects.toThrow("Query failed");
+
+		expect(mockLogger.error).toHaveBeenCalledWith(
+			error,
+			"Failed to get recurring event instances by base IDs",
 		);
 	});
 });

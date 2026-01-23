@@ -135,12 +135,16 @@ builder.queryField("eventsByVolunteer", (t) =>
 				// Precedence: isTemplate takes priority—records with isTemplate=true and
 				// recurringEventInstanceId set are treated as templates.
 				for (const record of volunteerRecords) {
+					if (record.recurringEventInstanceId) {
+						specificInstanceIds.push(record.recurringEventInstanceId);
+						continue;
+					}
 					if (record.isTemplate && record.eventId) {
 						// Might be a recurring template OR a standalone event (default scope)
 						templateIds.push(record.eventId);
-					} else if (record.recurringEventInstanceId) {
-						specificInstanceIds.push(record.recurringEventInstanceId);
-					} else if (record.eventId) {
+						continue;
+					}
+					if (record.eventId) {
 						possiblyStandaloneEventIds.push(record.eventId);
 					}
 				}
