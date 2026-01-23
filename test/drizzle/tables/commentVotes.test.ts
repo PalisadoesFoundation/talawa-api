@@ -156,7 +156,7 @@ describe("src/drizzle/tables/commentVotes.test.ts", () => {
 			).rejects.toThrow();
 		});
 
-		it("should reject insert with null creatorId foreign key", async () => {
+		it("should accept insert with null creatorId (nullable field)", async () => {
 			const validCommentId = await createTestComment();
 
 			await expect(
