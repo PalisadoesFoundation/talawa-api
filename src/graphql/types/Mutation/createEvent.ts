@@ -1,3 +1,4 @@
+import { eq } from "drizzle-orm";
 import type { FileUpload } from "graphql-upload-minimal";
 import { ulid } from "ulidx";
 import { uuidv7 } from "uuidv7";
@@ -558,11 +559,7 @@ builder.mutationField("createEvent", (t) =>
 						try {
 							const deleted = await ctx.drizzleClient
 								.delete(eventsTable)
-								.where(
-									// @ts-expect-error
-									(fields, operators) =>
-										operators.eq(fields.id, createdEventResult.id),
-								)
+								.where(eq(eventsTable.id, createdEventResult.id))
 								.returning({ id: eventsTable.id });
 
 							if (deleted.length === 0) {
