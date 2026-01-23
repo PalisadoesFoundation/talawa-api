@@ -10,7 +10,7 @@ import {
 describe("venueBookingsTable", () => {
 	describe("venueBookingsTableInsertSchema", () => {
 		const validVenueBookingData = {
-			eventId: "01234567-89ab-cdef-0123-456789abcdef",
+			eventId: "01234567-89ab-4def-9123-456789abcdef",
 			venueId: "fedcba98-7654-3210-fedc-ba9876543210",
 		};
 
@@ -98,7 +98,7 @@ describe("venueBookingsTable", () => {
 			it("should accept a valid UUID for creatorId", () => {
 				const result = venueBookingsTableInsertSchema.safeParse({
 					...validVenueBookingData,
-					creatorId: "01234567-89ab-cdef-0123-456789abcdef",
+					creatorId: "01234567-89ab-4def-9123-456789abcdef",
 				});
 				expect(result.success).toBe(true);
 			});
@@ -163,7 +163,7 @@ describe("venueBookingsTable", () => {
 		describe("complete venue booking data", () => {
 			it("should accept complete valid venue booking data", () => {
 				const completeVenueBookingData = {
-					eventId: "01234567-89ab-cdef-0123-456789abcdef",
+					eventId: "01234567-89ab-4def-9123-456789abcdef",
 					venueId: "fedcba98-7654-3210-fedc-ba9876543210",
 					creatorId: "11111111-1111-1111-1111-111111111111",
 					createdAt: new Date(),

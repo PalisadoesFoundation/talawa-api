@@ -823,18 +823,6 @@ export const Query_agendaCategoriesByEventId =
   }
 }`);
 
-export const Query_agendaItem =
-	gql(`query Query_agendaItem($input: QueryAgendaItemInput!) {
-  agendaItem(input: $input) {
-    id
-    name
-    description
-    duration
-    key
-    type
-  }
-}`);
-
 export const Query_agendaFoldersByEventId = gql(`
     query Query_agendaFoldersByEventId($eventId: ID!) {
       agendaFoldersByEventId(eventId: $eventId) {
@@ -924,6 +912,30 @@ export const Mutation_createAgendaItem = gql(`
       name
       description
       duration
+      notes
+      attachments {
+        name
+        fileHash
+        mimeType
+        objectName
+      }
+      category {
+        id
+        name
+      }
+      event {
+        id
+        name
+        startAt
+      }
+      url {
+        id
+        url
+      }
+      creator {
+        id
+        name
+      }
       type
     }
   }
@@ -951,7 +963,29 @@ export const Mutation_updateAgendaItem = gql(`
       name
       description
       duration
-      type
+    	attachments {
+        name
+        fileHash
+        objectName
+        mimeType
+      }
+    	category {
+        id
+        name
+      }
+      url {
+        id
+        url
+      }
+      folder {
+        id
+        name
+      }
+      updater {
+        id
+        name
+      }
+      updatedAt
     }
   }
 `);
@@ -971,6 +1005,7 @@ export const Mutation_deleteAgendaItem = gql(`
     deleteAgendaItem(input: $input) {
       id
       name
+      description
     }
   }
 `);
@@ -2796,5 +2831,48 @@ export const Mutation_verifyEmail =
     verifyEmail(input: $input) {
         success
         message
+    }
+}`);
+
+export const Mutation_signInWithOAuth =
+	gql(`mutation Mutation_signInWithOAuth($input: OAuthLoginInput!) {
+    signInWithOAuth(input: $input) {
+        authenticationToken
+        refreshToken
+        user {
+            id
+            name
+            emailAddress
+        }
+    }
+}`);
+
+export const Mutation_linkOAuthAccount =
+	gql(`mutation Mutation_linkOAuthAccount($input: OAuthLoginInput!) {
+    linkOAuthAccount(input: $input) {
+        id
+        name
+        emailAddress
+        oauthAccounts {
+            provider
+            email
+            linkedAt
+            lastUsedAt
+        }
+    }
+}`);
+
+export const Mutation_unlinkOAuthAccount =
+	gql(`mutation Mutation_unlinkOAuthAccount($provider: OAuthProvider!) {
+    unlinkOAuthAccount(provider: $provider) {
+        id
+        name
+        emailAddress
+        oauthAccounts {
+            provider
+            email
+            linkedAt
+            lastUsedAt
+        }
     }
 }`);
