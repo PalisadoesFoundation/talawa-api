@@ -1519,14 +1519,7 @@ suite("Post-transaction attachment upload behavior", () => {
 			variables: {
 				input: {
 					...baseEventInput(organizationId),
-					attachments: [
-						Promise.resolve({
-							filename: "file.png",
-							mimetype: "image/png",
-							encoding: "7bit",
-							createReadStream: () => Readable.from(Buffer.from("fake")),
-						}),
-					],
+					attachments: [null],
 				},
 			},
 		});
@@ -1594,5 +1587,95 @@ suite("Post-transaction attachment upload behavior", () => {
 			});
 
 		expect(attachmentsInDb).toHaveLength(1);
+	});
+
+	test("logs error when some MinIO attachment cleanup operations fail", async () => {
+		const organizationId = await createTestOrganization();
+
+		// 1️⃣ Upload fails → triggers cleanup
+		vi.spyOn(server.minio.client, "putObject").mockRejectedValueOnce(
+			new Error("upload failed"),
+		);
+
+		// 2️⃣ DB cleanup succeeds (not under test here)
+		// no mock needed → real delete works
+
+		// 3️⃣ MinIO cleanup FAILS
+		vi.spyOn(server.minio.client, "removeObject").mockRejectedValueOnce(
+			new Error("minio cleanup failed"),
+		);
+
+		// Logger spy
+		vi.spyOn(server.log, "child").mockReturnValue(server.log);
+		const logErrorSpy = vi.spyOn(server.log, "error");
+
+		const boundary = `----WebKitFormBoundary${Math.random().toString(36)}`;
+
+		const operations = JSON.stringify({
+			query: `
+      mutation CreateEvent($input: MutationCreateEventInput!) {
+        createEvent(input: $input) { id }
+      }
+    `,
+			variables: {
+				input: {
+					...baseEventInput(organizationId),
+					attachments: [
+						Promise.resolve({
+							filename: "file.png",
+							mimetype: "image/png",
+							encoding: "7bit",
+							createReadStream: () => Readable.from(Buffer.from("fake")),
+						}),
+					],
+				},
+			},
+		});
+
+		const map = JSON.stringify({
+			"0": ["variables.input.attachments.0"],
+		});
+
+		const body = [
+			`--${boundary}`,
+			'Content-Disposition: form-data; name="operations"',
+			"",
+			operations,
+			`--${boundary}`,
+			'Content-Disposition: form-data; name="map"',
+			"",
+			map,
+			`--${boundary}`,
+			'Content-Disposition: form-data; name="0"; filename="file.png"',
+			"Content-Type: image/png",
+			"",
+			"fake-content",
+			`--${boundary}--`,
+		].join("\r\n");
+
+		const response = await server.inject({
+			method: "POST",
+			url: "/graphql",
+			headers: {
+				authorization: `bearer ${adminAuthToken}`,
+				"content-type": `multipart/form-data; boundary=${boundary}`,
+			},
+			payload: body,
+		});
+
+		const result = JSON.parse(response.body);
+
+		// ✅ Mutation still succeeds
+		expect(result.errors).toBeUndefined();
+		expect(result.data.createEvent.id).toBeDefined();
+
+		// ✅ MinIO cleanup failure log is emitted
+		expect(logErrorSpy).toHaveBeenCalledWith(
+			expect.objectContaining({
+				eventId: result.data.createEvent.id,
+				failedCount: 1,
+			}),
+			"Failed to clean up some attachment objects after upload failure",
+		);
 	});
 });
