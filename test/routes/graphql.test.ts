@@ -1810,7 +1810,10 @@ describe("GraphQL Routes", () => {
 								code: ErrorCode.INTERNAL_SERVER_ERROR,
 								correlationId: "req-456",
 								httpStatus: 500,
-								details: "Syntax error",
+								details:
+									process.env.NODE_ENV === "production"
+										? undefined
+										: "Syntax error",
 							},
 						},
 					],
@@ -3346,9 +3349,9 @@ describe("GraphQL Routes", () => {
 				},
 			);
 
-			// Should use normalizeError and preserve meaningful message
+			// Should use normalizeError and return secure message
 			expect(result.response.errors?.[0]?.message).toBe(
-				"Custom error with invalid code",
+				"Internal Server Error",
 			);
 			expect(result.response.errors?.[0]?.extensions?.code).toBe(
 				ErrorCode.INTERNAL_SERVER_ERROR,

@@ -304,7 +304,7 @@ export const graphql = fastifyPlugin(async (fastify) => {
 						500;
 
 					return {
-						message: targetError.message,
+						message: String(targetError.message || "An error occurred"),
 						locations: error.locations,
 						path: error.path,
 						extensions: {
@@ -316,32 +316,30 @@ export const graphql = fastifyPlugin(async (fastify) => {
 				}
 
 				// Handle GraphQL syntax and validation errors
-				// Check for various GraphQL error patterns
+				// Check for explicit GraphQL error codes and specific message patterns
 				const isGraphQLValidationError =
 					error.extensions?.code === "GRAPHQL_VALIDATION_FAILED" ||
 					error.extensions?.code === "BAD_USER_INPUT" ||
 					error.extensions?.code === "GRAPHQL_PARSE_FAILED" ||
-					error.message?.includes("Syntax Error") ||
-					error.message?.includes("Cannot query field") ||
-					error.message?.includes("Unknown query") ||
-					error.message?.includes("Graphql validation error") ||
-					error.message?.includes("Variable") ||
-					error.message?.includes("Expected") ||
-					error.message?.includes("validation") ||
-					// Handle cases where no extensions.code is set but it's clearly a validation error
-					(!error.extensions?.code &&
-						error.message &&
-						(error.message.includes("nonExistentField") ||
-							error.message.includes("invalidField") ||
-							error.message.includes("nonExistent") ||
-							error.message.toLowerCase().includes("field") ||
-							error.message.toLowerCase().includes("query") ||
-							error.message.toLowerCase().includes("missing") ||
-							error.message.toLowerCase().includes("required")));
+					// Check for Mercurius validation errors
+					(error.originalError &&
+						typeof error.originalError === "object" &&
+						"code" in error.originalError &&
+						error.originalError.code === "MER_ERR_GQL_VALIDATION") ||
+					// Check for specific error messages
+					(error.message &&
+						(error.message === "Graphql validation error" ||
+							error.message.startsWith("Syntax Error:") ||
+							error.message.startsWith("Cannot query field") ||
+							error.message.includes("Unknown query") ||
+							error.message.includes("Unknown field") ||
+							error.message.includes("Must provide query string.") ||
+							error.message?.startsWith("Unknown argument") ||
+							error.message?.startsWith('Variable "$')));
 
 				if (isGraphQLValidationError) {
 					return {
-						message: error.message,
+						message: String(error.message || "GraphQL validation error"),
 						locations: error.locations,
 						path: error.path,
 						extensions: {
@@ -360,10 +358,18 @@ export const graphql = fastifyPlugin(async (fastify) => {
 				) {
 					const existingCode = error.extensions.code as ErrorCode;
 					const httpStatus = ERROR_CODE_TO_HTTP_STATUS[existingCode] ?? 500;
+
+					// For valid ErrorCode, preserve meaningful messages but use normalizeError for details
 					const normalized = normalizeError(error);
+					const message = String(
+						error.extensions?.message ??
+							error.message ??
+							normalized.message ??
+							"An error occurred",
+					);
 
 					return {
-						message: normalized.message,
+						message,
 						locations: error.locations,
 						path: error.path,
 						extensions: {
@@ -379,7 +385,7 @@ export const graphql = fastifyPlugin(async (fastify) => {
 				if (!error.extensions) {
 					const normalized = normalizeError(error);
 					return {
-						message: normalized.message,
+						message: String(normalized.message || "An error occurred"),
 						locations: error.locations,
 						path: error.path,
 						extensions: {
@@ -394,16 +400,8 @@ export const graphql = fastifyPlugin(async (fastify) => {
 				// For errors with extensions but invalid codes, use normalizeError
 				const normalized = normalizeError(error);
 
-				// For GraphQL errors, preserve the original message if it's meaningful
-				// but use normalized error codes and status codes
-				const shouldPreserveMessage =
-					error.message &&
-					typeof error.message === "string" &&
-					error.message.length > 0 &&
-					!error.message.includes("Internal Server Error");
-
 				return {
-					message: shouldPreserveMessage ? error.message : normalized.message,
+					message: String(normalized.message || "An error occurred"),
 					locations: error.locations,
 					path: error.path,
 					extensions: {
@@ -452,12 +450,7 @@ export const graphql = fastifyPlugin(async (fastify) => {
 					)
 				) {
 					statusCode = 403;
-				} else if (
-					errorCodes.includes(ErrorCode.INVALID_ARGUMENTS) ||
-					errorCodes.includes("GRAPHQL_VALIDATION_FAILED") ||
-					errorCodes.includes("BAD_USER_INPUT") ||
-					errorCodes.includes("GRAPHQL_PARSE_FAILED")
-				) {
+				} else if (errorCodes.includes(ErrorCode.INVALID_ARGUMENTS)) {
 					statusCode = 400;
 				} else if (errorCodes.includes(ErrorCode.NOT_FOUND)) {
 					statusCode = 404;
