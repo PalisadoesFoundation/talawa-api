@@ -521,14 +521,14 @@ describe("src/drizzle/tables/chatMessageReadReceipts.ts - Table Definition Tests
 
 			it("should reject object with only messageId", () => {
 				const result = chatMessageReadReceiptsInsertSchema.safeParse({
-					messageId: "01234567-89ab-cdef-0123-456789abcdef",
+					messageId: "01234567-89ab-4def-8123-456789abcdef",
 				});
 				expect(result.success).toBe(false);
 			});
 
 			it("should reject object with only readerId", () => {
 				const result = chatMessageReadReceiptsInsertSchema.safeParse({
-					readerId: "11111111-1111-1111-1111-111111111111",
+					readerId: "11111111-1111-4111-8111-111111111111",
 				});
 				expect(result.success).toBe(false);
 			});
