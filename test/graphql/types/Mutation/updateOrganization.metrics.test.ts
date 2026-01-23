@@ -96,10 +96,10 @@ describe("Mutation updateOrganization - Performance Metrics", () => {
 			for (let i = 0; i < 30; i++) {
 				snapshots = server.getMetricsSnapshots?.() ?? [];
 				const newSnapshotsCount = snapshots.length - initialSnapshotCount;
-				const newSnapshots = snapshots.slice(
-					0,
-					newSnapshotsCount > 0 ? newSnapshotsCount : snapshots.length,
-				);
+				const newSnapshots =
+					newSnapshotsCount > 0
+						? snapshots.slice(initialSnapshotCount)
+						: snapshots;
 
 				mutationSnapshot = newSnapshots.find(
 					(s) => s.ops["mutation:updateOrganization"] !== undefined,
@@ -141,10 +141,10 @@ describe("Mutation updateOrganization - Performance Metrics", () => {
 			for (let i = 0; i < 30; i++) {
 				snapshots = server.getMetricsSnapshots?.() ?? [];
 				const newSnapshotsCount = snapshots.length - initialSnapshotCount;
-				const newSnapshots = snapshots.slice(
-					0,
-					newSnapshotsCount > 0 ? newSnapshotsCount : snapshots.length,
-				);
+				const newSnapshots =
+					newSnapshotsCount > 0
+						? snapshots.slice(initialSnapshotCount)
+						: snapshots;
 
 				mutationSnapshot = newSnapshots.find(
 					(s) => s.ops["mutation:updateOrganization"] !== undefined,

@@ -141,69 +141,87 @@ builder.mutationField("deleteOrganization", (t) =>
 					});
 				}
 
-				return await ctx.drizzleClient.transaction(async (tx) => {
-					const [deletedOrganization] = await tx
-						.delete(organizationsTable)
-						.where(eq(organizationsTable.id, parsedArgs.input.id))
-						.returning();
+				// Collect object names before transaction (from existingOrganization query)
+				const objectNames: string[] = [];
 
-					// Deleted organization not being returned means that either it doesn't exist or it was deleted or its `id` column was changed by external entities before this delete operation could take place.
-					if (deletedOrganization === undefined) {
-						throw new TalawaGraphQLError({
-							extensions: {
-								code: "arguments_associated_resources_not_found",
-								issues: [
-									{
-										argumentPath: ["input", "id"],
-									},
-								],
-							},
-						});
+				if (existingOrganization.avatarName !== null) {
+					objectNames.push(existingOrganization.avatarName);
+				}
+
+				for (const advertisement of existingOrganization.advertisementsWhereOrganization) {
+					for (const attachment of advertisement.attachmentsWhereAdvertisement) {
+						objectNames.push(attachment.name);
 					}
+				}
 
-					const objectNames: string[] = [];
-
-					if (existingOrganization.avatarName !== null) {
-						objectNames.push(existingOrganization.avatarName);
+				for (const chat of existingOrganization.chatsWhereOrganization) {
+					if (chat.avatarName !== null) {
+						objectNames.push(chat.avatarName);
 					}
+				}
 
-					for (const advertisement of existingOrganization.advertisementsWhereOrganization) {
-						for (const attachment of advertisement.attachmentsWhereAdvertisement) {
-							objectNames.push(attachment.name);
+				for (const event of existingOrganization.eventsWhereOrganization) {
+					for (const attachment of event.attachmentsWhereEvent) {
+						objectNames.push(attachment.name);
+					}
+				}
+
+				for (const post of existingOrganization.postsWhereOrganization) {
+					for (const attachment of post.attachmentsWherePost) {
+						objectNames.push(attachment.name);
+					}
+				}
+
+				for (const venue of existingOrganization.venuesWhereOrganization) {
+					for (const attachment of venue.attachmentsWhereVenue) {
+						objectNames.push(attachment.name);
+					}
+				}
+
+				// Perform DB delete inside transaction
+				const deletedOrganization = await ctx.drizzleClient.transaction(
+					async (tx) => {
+						const [deleted] = await tx
+							.delete(organizationsTable)
+							.where(eq(organizationsTable.id, parsedArgs.input.id))
+							.returning();
+
+						// Deleted organization not being returned means that either it doesn't exist or it was deleted or its `id` column was changed by external entities before this delete operation could take place.
+						if (deleted === undefined) {
+							throw new TalawaGraphQLError({
+								extensions: {
+									code: "arguments_associated_resources_not_found",
+									issues: [
+										{
+											argumentPath: ["input", "id"],
+										},
+									],
+								},
+							});
 						}
+
+						return deleted;
+					},
+				);
+
+				// Delete MinIO objects after transaction commits to avoid long DB locks
+				// and ensure DB deletion succeeded before attempting storage cleanup
+				if (objectNames.length > 0) {
+					try {
+						await ctx.minio.client.removeObjects(
+							ctx.minio.bucketName,
+							objectNames,
+						);
+					} catch (error) {
+						// Log error but don't fail the mutation - DB deletion already succeeded
+						ctx.log.error(
+							{ error, objectNames, organizationId: parsedArgs.input.id },
+							"Failed to delete MinIO objects after organization deletion",
+						);
 					}
+				}
 
-					for (const chat of existingOrganization.chatsWhereOrganization) {
-						if (chat.avatarName !== null) {
-							objectNames.push(chat.avatarName);
-						}
-					}
-
-					for (const event of existingOrganization.eventsWhereOrganization) {
-						for (const attachment of event.attachmentsWhereEvent) {
-							objectNames.push(attachment.name);
-						}
-					}
-
-					for (const post of existingOrganization.postsWhereOrganization) {
-						for (const attachment of post.attachmentsWherePost) {
-							objectNames.push(attachment.name);
-						}
-					}
-
-					for (const venue of existingOrganization.venuesWhereOrganization) {
-						for (const attachment of venue.attachmentsWhereVenue) {
-							objectNames.push(attachment.name);
-						}
-					}
-
-					await ctx.minio.client.removeObjects(
-						ctx.minio.bucketName,
-						objectNames,
-					);
-
-					return deletedOrganization;
-				});
+				return deletedOrganization;
 			});
 		},
 		type: Organization,

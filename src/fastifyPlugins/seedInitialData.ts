@@ -181,136 +181,143 @@ const plugin: FastifyPluginAsync = async (fastify) => {
 		fastify.log.info("Successfully created the community in the database.");
 	}
 
-	fastify.log.info("Checking and seeding notification templates.");
+	// Notification templates seeding is out of scope for mutation performance tracking PR
+	// Guard behind feature flag - set ENABLE_NOTIFICATION_TEMPLATE_SEEDING=true to enable
+	if (
+		(fastify.envConfig as { ENABLE_NOTIFICATION_TEMPLATE_SEEDING?: boolean })
+			.ENABLE_NOTIFICATION_TEMPLATE_SEEDING === true
+	) {
+		fastify.log.info("Checking and seeding notification templates.");
 
-	// Check if notification templates table exists before iterating
-	if (fastify.drizzleClient.query.notificationTemplatesTable === undefined) {
-		fastify.log.warn(
-			"Notification templates table not found in drizzle schema. Skipping seeding.",
-		);
-		return;
-	}
-
-	const templates = [
-		{
-			name: "Post Created",
-			eventType: "post_created",
-			title: "New Post from {organizationName}",
-			body: "{authorName} created a new post: {postCaption}",
-			channelType: "in_app",
-			linkedRouteName: "PostDetails",
-		},
-		{
-			name: "Event Created",
-			eventType: "event_created",
-			title: "New Event: {eventName}",
-			body: "{creatorName} created an event in {organizationName}",
-			channelType: "in_app",
-			linkedRouteName: "EventDetails",
-		},
-		{
-			name: "Membership Accepted",
-			eventType: "membership_request_accepted",
-			body: "Your request to join {organizationName} was accepted.",
-			title: "Membership Accepted",
-			channelType: "email",
-		},
-		{
-			name: "Membership Rejected",
-			eventType: "membership_request_rejected",
-			title: "Membership Rejected",
-			body: "Your request to join {organizationName} was rejected.",
-			channelType: "in_app",
-			linkedRouteName: "OrganizationDetails",
-		},
-		{
-			name: "Join Request Submitted",
-			eventType: "join_request_submitted",
-			title: "New Join Request",
-			body: "{userName} requested to join {organizationName}",
-			channelType: "in_app",
-			linkedRouteName: "ManageRequests",
-		},
-		{
-			name: "Join Request Submitted Email",
-			eventType: "join_request_submitted",
-			title: "New Join Request",
-			body: "{userName} requested to join {organizationName}",
-			channelType: "email",
-		},
-		{
-			name: "New Member Joined",
-			eventType: "new_member_joined",
-			title: "New Member",
-			body: "{userName} joined {organizationName}",
-			channelType: "in_app",
-			linkedRouteName: "MemberProfile",
-		},
-		{
-			name: "User Blocked",
-			eventType: "user_blocked",
-			title: "User Blocked",
-			body: "You have been blocked by {organizationName}",
-			channelType: "in_app",
-			linkedRouteName: "OrganizationDetails",
-		},
-		{
-			name: "Fund Created",
-			eventType: "fund_created",
-			title: "New Fund",
-			body: "{creatorName} created fund {fundName}",
-			channelType: "in_app",
-			linkedRouteName: "FundDetails",
-		},
-		{
-			name: "Fund Campaign Created",
-			eventType: "fund_campaign_created",
-			title: "New Campaign",
-			body: "{creatorName} created campaign {campaignName}",
-			channelType: "in_app",
-			linkedRouteName: "CampaignDetails",
-		},
-		{
-			name: "Fund Campaign Pledge Created",
-			eventType: "fund_campaign_pledge_created",
-			title: "New Pledge",
-			body: "{pledgerName} pledged {amount} {currencyCode}",
-			channelType: "in_app",
-			linkedRouteName: "CampaignDetails",
-		},
-		{
-			name: "Event Invite",
-			eventType: "send_event_invite",
-			title: "Event Invitation",
-			body: "{inviteeName}, you are invited to {eventName}. Link: {invitationUrl}",
-			channelType: "email",
-		},
-	];
-
-	for (const template of templates) {
-		const insertResult = await fastify.drizzleClient
-			.insert(notificationTemplatesTable)
-			.values(notificationTemplatesTableInsertSchema.parse(template))
-			.onConflictDoNothing({
-				target: [
-					notificationTemplatesTable.eventType,
-					notificationTemplatesTable.channelType,
-				],
-			})
-			.returning({ id: notificationTemplatesTable.id });
-
-		// Only log if an actual insert occurred (result has rows)
-		if (insertResult.length > 0) {
-			fastify.log.info(
-				`Seeded template: ${template.eventType} (${template.channelType})`,
+		// Check if notification templates table exists before iterating
+		if (fastify.drizzleClient.query.notificationTemplatesTable === undefined) {
+			fastify.log.warn(
+				"Notification templates table not found in drizzle schema. Skipping seeding.",
 			);
-		} else {
-			fastify.log.info(
-				`Template already exists: ${template.eventType} (${template.channelType})`,
-			);
+			return;
 		}
+
+		const templates = [
+			{
+				name: "Post Created",
+				eventType: "post_created",
+				title: "New Post from {organizationName}",
+				body: "{authorName} created a new post: {postCaption}",
+				channelType: "in_app",
+				linkedRouteName: "PostDetails",
+			},
+			{
+				name: "Event Created",
+				eventType: "event_created",
+				title: "New Event: {eventName}",
+				body: "{creatorName} created an event in {organizationName}",
+				channelType: "in_app",
+				linkedRouteName: "EventDetails",
+			},
+			{
+				name: "Membership Accepted",
+				eventType: "membership_request_accepted",
+				body: "Your request to join {organizationName} was accepted.",
+				title: "Membership Accepted",
+				channelType: "email",
+			},
+			{
+				name: "Membership Rejected",
+				eventType: "membership_request_rejected",
+				title: "Membership Rejected",
+				body: "Your request to join {organizationName} was rejected.",
+				channelType: "in_app",
+				linkedRouteName: "OrganizationDetails",
+			},
+			{
+				name: "Join Request Submitted",
+				eventType: "join_request_submitted",
+				title: "New Join Request",
+				body: "{userName} requested to join {organizationName}",
+				channelType: "in_app",
+				linkedRouteName: "ManageRequests",
+			},
+			{
+				name: "Join Request Submitted Email",
+				eventType: "join_request_submitted",
+				title: "New Join Request",
+				body: "{userName} requested to join {organizationName}",
+				channelType: "email",
+			},
+			{
+				name: "New Member Joined",
+				eventType: "new_member_joined",
+				title: "New Member",
+				body: "{userName} joined {organizationName}",
+				channelType: "in_app",
+				linkedRouteName: "MemberProfile",
+			},
+			{
+				name: "User Blocked",
+				eventType: "user_blocked",
+				title: "User Blocked",
+				body: "You have been blocked by {organizationName}",
+				channelType: "in_app",
+				linkedRouteName: "OrganizationDetails",
+			},
+			{
+				name: "Fund Created",
+				eventType: "fund_created",
+				title: "New Fund",
+				body: "{creatorName} created fund {fundName}",
+				channelType: "in_app",
+				linkedRouteName: "FundDetails",
+			},
+			{
+				name: "Fund Campaign Created",
+				eventType: "fund_campaign_created",
+				title: "New Campaign",
+				body: "{creatorName} created campaign {campaignName}",
+				channelType: "in_app",
+				linkedRouteName: "CampaignDetails",
+			},
+			{
+				name: "Fund Campaign Pledge Created",
+				eventType: "fund_campaign_pledge_created",
+				title: "New Pledge",
+				body: "{pledgerName} pledged {amount} {currencyCode}",
+				channelType: "in_app",
+				linkedRouteName: "CampaignDetails",
+			},
+			{
+				name: "Event Invite",
+				eventType: "send_event_invite",
+				title: "Event Invitation",
+				body: "{inviteeName}, you are invited to {eventName}. Link: {invitationUrl}",
+				channelType: "email",
+			},
+		];
+
+		for (const template of templates) {
+			const insertResult = await fastify.drizzleClient
+				.insert(notificationTemplatesTable)
+				.values(notificationTemplatesTableInsertSchema.parse(template))
+				.onConflictDoNothing({
+					target: [
+						notificationTemplatesTable.eventType,
+						notificationTemplatesTable.channelType,
+					],
+				})
+				.returning({ id: notificationTemplatesTable.id });
+
+			// Only log if an actual insert occurred (result has rows)
+			if (insertResult.length > 0) {
+				fastify.log.info(
+					`Seeded template: ${template.eventType} (${template.channelType})`,
+				);
+			} else {
+				fastify.log.info(
+					`Template already exists: ${template.eventType} (${template.channelType})`,
+				);
+			}
+		}
+		fastify.log.info("Finished seeding notification templates.");
 	}
-	fastify.log.info("Finished seeding notification templates.");
 };
 
 export default fastifyPlugin(plugin, {

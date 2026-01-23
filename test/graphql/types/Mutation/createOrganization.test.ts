@@ -1,11 +1,15 @@
 import { faker } from "@faker-js/faker";
 import { eq } from "drizzle-orm";
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { organizationsTable } from "~/src/drizzle/tables/organizations";
 import { assertToBeNonNullish } from "../../../helpers";
 import { server } from "../../../server";
 import { mercuriusClient } from "../client";
-import { Mutation_createOrganization, Query_signIn } from "../documentNodes";
+import {
+	Mutation_createOrganization,
+	Mutation_deleteOrganization,
+	Query_signIn,
+} from "../documentNodes";
 
 describe("Mutation createOrganization", () => {
 	let authToken: string;
@@ -21,6 +25,19 @@ describe("Mutation createOrganization", () => {
 		});
 		assertToBeNonNullish(signInResult.data.signIn?.authenticationToken);
 		authToken = signInResult.data.signIn.authenticationToken;
+	});
+
+	let createdOrgId: string | undefined;
+
+	afterEach(async () => {
+		// Clean up created organization
+		if (createdOrgId) {
+			await mercuriusClient.mutate(Mutation_deleteOrganization, {
+				headers: { authorization: `bearer ${authToken}` },
+				variables: { input: { id: createdOrgId } },
+			});
+			createdOrgId = undefined;
+		}
 	});
 
 	it("should return forbidden error when creating organization with duplicate name", async () => {
@@ -40,6 +57,7 @@ describe("Mutation createOrganization", () => {
 			},
 		);
 		assertToBeNonNullish(firstResult.data.createOrganization?.id);
+		createdOrgId = firstResult.data.createOrganization.id;
 
 		// Attempt to create second org with same name
 		const result = await mercuriusClient.mutate(Mutation_createOrganization, {
@@ -124,65 +142,69 @@ describe("Mutation createOrganization", () => {
 
 		const name = `Rollback Org ${faker.string.ulid()}`;
 
-		// Construct multipart request
-		const boundary = "----Boundary";
-		const operations = {
-			query: `mutation CreateOrg($input: MutationCreateOrganizationInput!) {
+		try {
+			// Construct multipart request
+			const boundary = "----Boundary";
+			const operations = {
+				query: `mutation CreateOrg($input: MutationCreateOrganizationInput!) {
                 createOrganization(input: $input) { id }
             }`,
-			variables: {
-				input: {
-					name,
-					description: "Test rollback",
-					countryCode: "us",
-					city: "Test City",
-					postalCode: "12345",
-					addressLine1: "123 St",
-					state: "NY",
-					avatar: null, // Mapped
+				variables: {
+					input: {
+						name,
+						description: "Test rollback",
+						countryCode: "us",
+						city: "Test City",
+						postalCode: "12345",
+						addressLine1: "123 St",
+						state: "NY",
+						avatar: null, // Mapped
+					},
 				},
-			},
-		};
-		const map = { "0": ["variables.input.avatar"] };
-		const fileContent = "fake-content";
+			};
+			const map = { "0": ["variables.input.avatar"] };
+			const fileContent = "fake-content";
 
-		const body = [
-			`--${boundary}`,
-			'Content-Disposition: form-data; name="operations"',
-			"",
-			JSON.stringify(operations),
-			`--${boundary}`,
-			'Content-Disposition: form-data; name="map"',
-			"",
-			JSON.stringify(map),
-			`--${boundary}`,
-			'Content-Disposition: form-data; name="0"; filename="test.png"',
-			"Content-Type: image/png",
-			"",
-			fileContent,
-			`--${boundary}--`,
-		].join("\r\n");
+			const body = [
+				`--${boundary}`,
+				'Content-Disposition: form-data; name="operations"',
+				"",
+				JSON.stringify(operations),
+				`--${boundary}`,
+				'Content-Disposition: form-data; name="map"',
+				"",
+				JSON.stringify(map),
+				`--${boundary}`,
+				'Content-Disposition: form-data; name="0"; filename="test.png"',
+				"Content-Type: image/png",
+				"",
+				fileContent,
+				`--${boundary}--`,
+			].join("\r\n");
 
-		const response = await server.inject({
-			method: "POST",
-			url: "/graphql",
-			headers: {
-				"content-type": `multipart/form-data; boundary=${boundary}`,
-				authorization: `bearer ${authToken}`,
-			},
-			payload: body,
-		});
+			const response = await server.inject({
+				method: "POST",
+				url: "/graphql",
+				headers: {
+					"content-type": `multipart/form-data; boundary=${boundary}`,
+					authorization: `bearer ${authToken}`,
+				},
+				payload: body,
+			});
 
-		const result = response.json();
-		expect(result.errors?.[0]?.extensions?.code).toBe("unexpected");
+			const result = response.json();
+			expect(result.errors?.[0]?.extensions?.code).toBe("unexpected");
 
-		// Verify deletion
-		const org = await server.drizzleClient.query.organizationsTable.findFirst({
-			where: eq(organizationsTable.name, name),
-		});
+			// Verify deletion
+			const org = await server.drizzleClient.query.organizationsTable.findFirst(
+				{
+					where: eq(organizationsTable.name, name),
+				},
+			);
 
-		expect(org).toBeUndefined();
-
-		putObjectSpy.mockRestore();
+			expect(org).toBeUndefined();
+		} finally {
+			putObjectSpy.mockRestore();
+		}
 	});
 });

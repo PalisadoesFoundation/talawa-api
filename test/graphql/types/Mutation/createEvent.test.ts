@@ -1263,7 +1263,7 @@ suite("Mutation field createEvent", () => {
 			removeObjectsSpy.mockRestore();
 		});
 
-		test("should clamp window end date to start date if calculated end is earlier", async () => {
+		test("returns invalid_arguments when recurrence endDate is before startAt", async () => {
 			const organizationId = await createTestOrganization();
 			const startAt = new Date().toISOString();
 			const pastDate = getPastDate(10); // 10 days ago
