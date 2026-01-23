@@ -138,11 +138,23 @@ All done!
 
 ### Development Server Startup
 
-The Development Server startup methodology depends on your environment.
+The development server starts automatically when the `talawa-api` container is launched. You don't need to run any additional commands.
 
-#### From the CLI
+#### Automatic Startup
 
-After a successful installation of the DevContainer environment, use these commands to start the application's Docker container.
+When you start the Docker container using:
+
+```bash
+docker compose up
+```
+
+The development server will automatically start and be accessible on port 4000.
+
+#### Manual Server Control (Optional)
+
+If you need to manually start or restart the server for debugging purposes:
+
+##### From the CLI
 
 1. To run in attached Mode
 
@@ -156,9 +168,9 @@ After a successful installation of the DevContainer environment, use these comma
    docker exec talawa-api-1 /bin/bash -c 'nohup pnpm run start_development_server > /dev/null 2>&1 &'
    ```
 
-#### Within VScode
+##### Within VScode
 
-You can run the app after closing the terminal or restating the vscode using these commands:
+You can run the app manually after closing the terminal or restarting vscode using these commands:
 
 1. for normal mode
 
@@ -172,7 +184,7 @@ You can run the app after closing the terminal or restating the vscode using the
       pnpm run start_development_server_with_debugger
    ```
 
-**Note:** These commands will start the server in development mode.
+**Note:** The server automatically starts in development mode when the container launches.
 
 ### Development Server Shutdown
 
