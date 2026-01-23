@@ -84,7 +84,8 @@ test_idempotency() {
     rm -rf "$tmp_home"
     
     # Count occurrences of "Running Step 1"
-    local count=$(echo "$output" | grep -c "Running Step 1")
+    local count
+    count=$(echo "$output" | grep -c "Running Step 1")
     
     # It should appear once (ignoring the "Again" part which shouldn't run)
     if echo "$output" | grep -q "Skipping already-completed step: step1" && \
