@@ -47,11 +47,16 @@ describe("seedInitialData Plugin - Notification Templates", () => {
 	let mockInsert: ReturnType<typeof vi.fn>;
 	let mockValues: ReturnType<typeof vi.fn>;
 	let mockOnConflictDoNothing: ReturnType<typeof vi.fn>;
+	let mockReturning: ReturnType<typeof vi.fn>;
 
 	beforeEach(() => {
 		vi.clearAllMocks();
 
-		mockOnConflictDoNothing = vi.fn().mockResolvedValue(undefined);
+		// Mock returning to return array with id (simulating successful insert)
+		mockReturning = vi.fn().mockResolvedValue([{ id: "test-id" }]);
+		mockOnConflictDoNothing = vi.fn().mockReturnValue({
+			returning: mockReturning,
+		});
 		mockValues = vi.fn().mockReturnValue({
 			onConflictDoNothing: mockOnConflictDoNothing,
 		});
@@ -130,6 +135,9 @@ describe("seedInitialData Plugin - Notification Templates", () => {
 					notificationTemplatesTable.channelType,
 				],
 			});
+
+			// Verify returning was called for each template
+			expect(mockReturning).toHaveBeenCalledTimes(12);
 
 			// Verify the first template was inserted with correct structure
 			const firstInsert = insertedValues[0] as Record<string, unknown>;
@@ -303,6 +311,47 @@ describe("seedInitialData Plugin - Notification Templates", () => {
 					],
 				});
 			}
+
+			// Verify returning was called for each template
+			expect(mockReturning).toHaveBeenCalledTimes(12);
+		});
+
+		it("should log 'already exists' when template conflicts occur", async () => {
+			// Mock returning to return empty array (simulating conflict - no insert occurred)
+			mockReturning.mockResolvedValue([]);
+
+			await seedInitialDataPlugin(mockFastify as FastifyInstance, {});
+
+			// Verify "already exists" log was called for each template
+			expect(mockFastify.log.info).toHaveBeenCalledWith(
+				expect.stringContaining("Template already exists:"),
+			);
+			// Count how many times "already exists" was logged
+			const alreadyExistsCalls = (
+				mockFastify.log.info as ReturnType<typeof vi.fn>
+			).mock.calls.filter((call) =>
+				call[0]?.toString().includes("Template already exists:"),
+			);
+			expect(alreadyExistsCalls).toHaveLength(12);
+		});
+
+		it("should log 'Seeded template' when insert succeeds", async () => {
+			// Mock returning to return array with id (simulating successful insert)
+			mockReturning.mockResolvedValue([{ id: "test-id" }]);
+
+			await seedInitialDataPlugin(mockFastify as FastifyInstance, {});
+
+			// Verify "Seeded template" log was called for each template
+			expect(mockFastify.log.info).toHaveBeenCalledWith(
+				expect.stringContaining("Seeded template:"),
+			);
+			// Count how many times "Seeded template" was logged
+			const seededCalls = (
+				mockFastify.log.info as ReturnType<typeof vi.fn>
+			).mock.calls.filter((call) =>
+				call[0]?.toString().includes("Seeded template:"),
+			);
+			expect(seededCalls).toHaveLength(12);
 		});
 	});
 });

@@ -288,7 +288,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
 	];
 
 	for (const template of templates) {
-		await fastify.drizzleClient
+		const insertResult = await fastify.drizzleClient
 			.insert(notificationTemplatesTable)
 			.values(notificationTemplatesTableInsertSchema.parse(template))
 			.onConflictDoNothing({
@@ -296,10 +296,19 @@ const plugin: FastifyPluginAsync = async (fastify) => {
 					notificationTemplatesTable.eventType,
 					notificationTemplatesTable.channelType,
 				],
-			});
-		fastify.log.info(
-			`Seeded template: ${template.eventType} (${template.channelType})`,
-		);
+			})
+			.returning({ id: notificationTemplatesTable.id });
+
+		// Only log if an actual insert occurred (result has rows)
+		if (insertResult.length > 0) {
+			fastify.log.info(
+				`Seeded template: ${template.eventType} (${template.channelType})`,
+			);
+		} else {
+			fastify.log.info(
+				`Template already exists: ${template.eventType} (${template.channelType})`,
+			);
+		}
 	}
 	fastify.log.info("Finished seeding notification templates.");
 };

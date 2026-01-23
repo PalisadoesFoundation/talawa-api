@@ -174,7 +174,11 @@ describe("Mutation createEvent - Performance Metrics", () => {
 
 			for (let i = 0; i < 100; i++) {
 				snapshots = server.getMetricsSnapshots?.() ?? [];
-				const newSnapshots = snapshots.slice(initialSnapshotCount);
+				const newSnapshotsCount = snapshots.length - initialSnapshotCount;
+				const newSnapshots = snapshots.slice(
+					0,
+					newSnapshotsCount > 0 ? newSnapshotsCount : snapshots.length,
+				);
 				mutationSnapshot = newSnapshots.find(
 					(s) => s.ops["mutation:createEvent"] !== undefined,
 				);

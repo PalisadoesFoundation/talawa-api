@@ -8,7 +8,9 @@ import {
 	agendaFoldersTable,
 	eventsTable,
 } from "~/src/drizzle/schema";
+import { eventGenerationWindowsTable } from "~/src/drizzle/tables/eventGenerationWindows";
 import { recurrenceRulesTable } from "~/src/drizzle/tables/recurrenceRules";
+import NotificationService from "~/src/services/notification/NotificationService";
 import type {
 	ArgumentsAssociatedResourcesNotFoundExtensions,
 	InvalidArgumentsExtensions,
@@ -1358,12 +1360,27 @@ suite("Mutation field createEvent", () => {
 		test("should initialize generation window when no window exists for recurring event", async () => {
 			const organizationId = await createTestOrganization();
 
+			// Ensure no window exists for this organization before the test
+			const existingWindow =
+				await server.drizzleClient.query.eventGenerationWindowsTable.findFirst({
+					where: (fields, operators) =>
+						operators.eq(fields.organizationId, organizationId),
+				});
+			if (existingWindow) {
+				// Clean up any existing window to ensure a fresh test
+				await server.drizzleClient
+					.delete(eventGenerationWindowsTable)
+					.where(
+						eq(eventGenerationWindowsTable.organizationId, organizationId),
+					);
+			}
+
 			// Mock window lookup to return undefined (no window exists)
 			const originalWindowFindFirst =
 				server.drizzleClient.query.eventGenerationWindowsTable.findFirst;
-			server.drizzleClient.query.eventGenerationWindowsTable.findFirst = vi
-				.fn()
-				.mockResolvedValue(undefined);
+			const mockFindFirst = vi.fn().mockResolvedValue(undefined);
+			server.drizzleClient.query.eventGenerationWindowsTable.findFirst =
+				mockFindFirst;
 
 			try {
 				const result = await createEvent({
@@ -1381,6 +1398,16 @@ suite("Mutation field createEvent", () => {
 				expect(result.errors).toBeUndefined();
 				expect(result.data?.createEvent).toBeDefined();
 
+				// Verify the mock was called (window lookup happened)
+				expect(mockFindFirst).toHaveBeenCalled();
+
+				// Restore findFirst before verification so we can actually query the created window
+				server.drizzleClient.query.eventGenerationWindowsTable.findFirst =
+					originalWindowFindFirst;
+
+				// Small delay to ensure transaction is fully committed
+				await new Promise((resolve) => setTimeout(resolve, 100));
+
 				// Verify window was created
 				const window =
 					await server.drizzleClient.query.eventGenerationWindowsTable.findFirst(
@@ -1390,7 +1417,9 @@ suite("Mutation field createEvent", () => {
 						},
 					);
 				expect(window).toBeDefined();
+				expect(window?.organizationId).toBe(organizationId);
 			} finally {
+				// Ensure cleanup even if test fails
 				server.drizzleClient.query.eventGenerationWindowsTable.findFirst =
 					originalWindowFindFirst;
 			}
@@ -1399,26 +1428,51 @@ suite("Mutation field createEvent", () => {
 		test("should handle notification enqueue errors gracefully", async () => {
 			const organizationId = await createTestOrganization();
 
-			// Test via integration that errors are logged but don't fail the mutation
-			const result = await createEvent({
-				input: baseEventInput(organizationId),
-			});
+			// Spy on NotificationService.prototype.enqueueEventCreated and make it throw
+			const enqueueSpy = vi
+				.spyOn(NotificationService.prototype, "enqueueEventCreated")
+				.mockImplementation(() => {
+					throw new Error("Simulated enqueue failure");
+				});
 
-			// Mutation should succeed even if notification fails
-			expect(result.errors).toBeUndefined();
-			expect(result.data?.createEvent).toBeDefined();
+			try {
+				const result = await createEvent({
+					input: baseEventInput(organizationId),
+				});
+
+				// Mutation should succeed even if notification enqueue fails
+				expect(result.errors).toBeUndefined();
+				expect(result.data?.createEvent).toBeDefined();
+
+				// Verify the error was logged (check server.log if accessible, or just verify mutation succeeded)
+				expect(enqueueSpy).toHaveBeenCalled();
+			} finally {
+				enqueueSpy.mockRestore();
+			}
 		});
 
 		test("should handle notification flush errors gracefully", async () => {
 			const organizationId = await createTestOrganization();
 
-			const result = await createEvent({
-				input: baseEventInput(organizationId),
-			});
+			// Spy on NotificationService.prototype.flush and make it throw
+			const flushSpy = vi
+				.spyOn(NotificationService.prototype, "flush")
+				.mockRejectedValue(new Error("Simulated flush failure"));
 
-			// Mutation should succeed even if flush fails
-			expect(result.errors).toBeUndefined();
-			expect(result.data?.createEvent).toBeDefined();
+			try {
+				const result = await createEvent({
+					input: baseEventInput(organizationId),
+				});
+
+				// Mutation should succeed even if flush fails
+				expect(result.errors).toBeUndefined();
+				expect(result.data?.createEvent).toBeDefined();
+
+				// Verify flush was called
+				expect(flushSpy).toHaveBeenCalled();
+			} finally {
+				flushSpy.mockRestore();
+			}
 		});
 	});
 });

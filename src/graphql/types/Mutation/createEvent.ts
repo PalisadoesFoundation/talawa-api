@@ -498,29 +498,6 @@ builder.mutationField("createEvent", (t) =>
 					},
 				);
 
-				// Enqueue notification after transaction commits to avoid side-effects on rollback
-				try {
-					ctx.notification?.enqueueEventCreated({
-						eventId: createdEventResult.id,
-						eventName: createdEventResult.name,
-						organizationId: createdEventResult.organizationId,
-						organizationName: existingOrganization.name,
-						startDate: createdEventResult.startAt.toISOString(),
-						creatorName: currentUser.name,
-					});
-				} catch (error) {
-					ctx.log.error({ error }, "Failed to enqueue event notification");
-				}
-
-				try {
-					await ctx.notification?.flush(ctx);
-				} catch (error) {
-					ctx.log.error(
-						{ error },
-						"Failed to flush notifications after event create",
-					);
-				}
-
 				// Upload attachments to MinIO AFTER transaction commits
 				if (
 					parsedArgs.input.attachments !== undefined &&
@@ -609,6 +586,30 @@ builder.mutationField("createEvent", (t) =>
 
 						throw uploadError;
 					}
+				}
+
+				// Enqueue notification after all operations complete successfully (including attachments)
+				// This ensures notifications are only sent on full success, not if uploads fail
+				try {
+					ctx.notification?.enqueueEventCreated({
+						eventId: createdEventResult.id,
+						eventName: createdEventResult.name,
+						organizationId: createdEventResult.organizationId,
+						organizationName: existingOrganization.name,
+						startDate: createdEventResult.startAt.toISOString(),
+						creatorName: currentUser.name,
+					});
+				} catch (error) {
+					ctx.log.error({ error }, "Failed to enqueue event notification");
+				}
+
+				try {
+					await ctx.notification?.flush(ctx);
+				} catch (error) {
+					ctx.log.error(
+						{ error },
+						"Failed to flush notifications after event create",
+					);
 				}
 
 				return createdEventResult;
