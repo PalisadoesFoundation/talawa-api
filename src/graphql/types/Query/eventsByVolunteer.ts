@@ -9,10 +9,12 @@ import { Event } from "~/src/graphql/types/Event/Event";
 import { getEventsByIds } from "~/src/graphql/types/Query/eventQueries/unifiedEventQueries";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 
+const MAX_OFFSET = 10_000;
+
 const queryEventsByVolunteerArgumentsSchema = z.object({
 	userId: z.string().uuid(),
 	limit: z.number().int().nonnegative().max(100).default(100),
-	offset: z.number().int().nonnegative().default(0),
+	offset: z.number().int().nonnegative().max(MAX_OFFSET).default(0),
 });
 
 /**

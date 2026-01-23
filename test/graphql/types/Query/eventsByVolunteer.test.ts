@@ -82,6 +82,34 @@ suite("Query field eventsByVolunteer", () => {
 				]),
 			);
 		});
+
+		test("should return an error when offset is greater than 10,000", async () => {
+			const { userId } = await createRegularUserUsingAdmin();
+			assertToBeNonNullish(userId);
+
+			const result = await mercuriusClient.query(Query_eventsByVolunteer, {
+				headers: { authorization: `bearer ${authToken}` },
+				variables: {
+					userId,
+					offset: 10_001,
+				},
+			});
+			expect(result.data?.eventsByVolunteer).toBeUndefined();
+			expect(result.errors).toEqual(
+				expect.arrayContaining([
+					expect.objectContaining({
+						extensions: expect.objectContaining({
+							code: "invalid_arguments",
+							issues: expect.arrayContaining([
+								expect.objectContaining({
+									argumentPath: ["offset"],
+								}),
+							]),
+						}),
+					}),
+				]),
+			);
+		});
 	});
 
 	suite("when user is not authenticated", () => {

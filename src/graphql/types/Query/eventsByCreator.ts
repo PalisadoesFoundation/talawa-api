@@ -9,10 +9,12 @@ import { getRecurringEventInstancesByBaseIds } from "~/src/graphql/types/Query/e
 import { mapRecurringInstanceToEvent } from "~/src/graphql/utils/mapRecurringInstanceToEvent";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 
+const MAX_OFFSET = 10_000;
+
 const queryEventsByCreatorArgumentsSchema = z.object({
 	userId: z.string().uuid(),
 	limit: z.number().int().nonnegative().max(100).optional(),
-	offset: z.number().int().nonnegative().optional(),
+	offset: z.number().int().nonnegative().max(MAX_OFFSET).optional(),
 });
 
 /**
