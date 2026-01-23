@@ -493,7 +493,7 @@ suite("Query field eventsByVolunteer", () => {
 			const recurringEvents = events?.filter(
 				(e) => e.name === "Recurring Event Series",
 			);
-			expect(recurringEvents?.length).toBeGreaterThanOrEqual(1);
+			expect(recurringEvents?.length).toBe(3);
 		});
 
 		test("should return specific instance when volunteering for a single instance", async () => {
@@ -779,10 +779,8 @@ suite("Query field eventsByVolunteer", () => {
 				.set({ isCancelled: true })
 				.where(eq(recurringEventInstancesTable.id, instanceId));
 
-			// Now regular user volunteers for this SPECIFIC (cancelled) instance
-			// Note: UI might prevent this, but API should handle it gracefully or returning it if they accepted?
-			// Wait, the requirement is "assert that eventsByVolunteer does NOT return that instance".
-			// If I volunteer for it, it should filter it out.
+			// Volunteer for this specific cancelled instance.
+			// The query eventsByVolunteer should filter it out even if the user has accepted it.
 
 			const volunteerResult = await mercuriusClient.mutate(
 				Mutation_createEventVolunteer,
@@ -1239,7 +1237,7 @@ suite("Query field eventsByVolunteer", () => {
 			});
 
 			// Local query to fetch attachments
-			// Only mimeType is exposed in EventAttachment currently
+			// Verify we can retrieve attachment details
 			const Query_eventsByVolunteerWithAttachments = gql(`
 				query eventsByVolunteer($userId: ID!) {
 					eventsByVolunteer(userId: $userId) {
@@ -1247,6 +1245,7 @@ suite("Query field eventsByVolunteer", () => {
 						name
 						attachments {
 							mimeType
+							url
 						}
 					}
 				}

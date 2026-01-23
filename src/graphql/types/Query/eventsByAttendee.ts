@@ -112,10 +112,6 @@ builder.queryField("eventsByAttendee", (t) =>
 				// Use relations to fetch start times for sorting
 				const attendeeRecords =
 					await ctx.drizzleClient.query.eventAttendeesTable.findMany({
-						columns: {
-							eventId: true,
-							recurringEventInstanceId: true,
-						},
 						where: and(
 							eq(eventAttendeesTable.userId, targetUserId),
 							or(
@@ -154,22 +150,23 @@ builder.queryField("eventsByAttendee", (t) =>
 				const recurringTemplateIds: string[] = [];
 
 				for (const record of attendeeRecords) {
-					if (
-						record.recurringEventInstanceId &&
-						record.recurringEventInstance
-					) {
-						// Skip cancelled instances
-						if (record.recurringEventInstance.isCancelled) {
-							continue;
-						}
+					if (record.recurringEventInstanceId) {
+						if (record.recurringEventInstance) {
+							// Skip cancelled instances
+							if (record.recurringEventInstance.isCancelled) {
+								continue;
+							}
 
-						allReferenceEvents.push({
-							id: record.recurringEventInstanceId,
-							startAt: new Date(
-								record.recurringEventInstance.actualStartTime,
-							).getTime(),
-							isRecurringInstance: true,
-						});
+							allReferenceEvents.push({
+								id: record.recurringEventInstanceId,
+								startAt: new Date(
+									record.recurringEventInstance.actualStartTime,
+								).getTime(),
+								isRecurringInstance: true,
+							});
+						}
+						// If instance ID exists but no record, it might be missing data.
+						// We do NOT fall through to the event block.
 					} else if (record.eventId && record.event) {
 						// Check if this "event" is actually a template
 						// We need to check isRecurringEventTemplate.
