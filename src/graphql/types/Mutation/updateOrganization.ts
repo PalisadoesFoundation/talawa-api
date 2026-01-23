@@ -103,6 +103,7 @@ builder.mutationField("updateOrganization", (t) =>
 					}),
 					ctx.drizzleClient.query.organizationsTable.findFirst({
 						columns: {
+							avatarMimeType: true,
 							avatarName: true,
 						},
 						where: (fields, operators) =>
@@ -179,51 +180,54 @@ builder.mutationField("updateOrganization", (t) =>
 					avatarMimeType = parsedArgs.input.avatar.mimetype;
 				}
 
-				return await ctx.drizzleClient.transaction(async (tx) => {
-					const [updatedOrganization] = await tx
-						.update(organizationsTable)
-						.set({
-							addressLine1: parsedArgs.input.addressLine1,
-							addressLine2: parsedArgs.input.addressLine2,
-							...(parsedArgs.input.avatar !== undefined && {
-								avatarMimeType: isNotNullish(parsedArgs.input.avatar)
-									? avatarMimeType
-									: null,
-								avatarName: isNotNullish(parsedArgs.input.avatar)
-									? avatarName
-									: null,
-							}),
-							city: parsedArgs.input.city,
-							countryCode: parsedArgs.input.countryCode,
-							description: parsedArgs.input.description,
-							name: parsedArgs.input.name,
-							postalCode: parsedArgs.input.postalCode,
-							state: parsedArgs.input.state,
-							updaterId: currentUserId,
-							userRegistrationRequired:
-								parsedArgs.input.isUserRegistrationRequired,
-						})
-						.where(eq(organizationsTable.id, parsedArgs.input.id))
-						.returning();
+				const updatedOrganization = await ctx.drizzleClient.transaction(
+					async (tx) => {
+						const [updatedOrganization] = await tx
+							.update(organizationsTable)
+							.set({
+								addressLine1: parsedArgs.input.addressLine1,
+								addressLine2: parsedArgs.input.addressLine2,
+								...(parsedArgs.input.avatar !== undefined && {
+									avatarMimeType: isNotNullish(parsedArgs.input.avatar)
+										? avatarMimeType
+										: null,
+									avatarName: isNotNullish(parsedArgs.input.avatar)
+										? avatarName
+										: null,
+								}),
+								city: parsedArgs.input.city,
+								countryCode: parsedArgs.input.countryCode,
+								description: parsedArgs.input.description,
+								name: parsedArgs.input.name,
+								postalCode: parsedArgs.input.postalCode,
+								state: parsedArgs.input.state,
+								updaterId: currentUserId,
+								userRegistrationRequired:
+									parsedArgs.input.isUserRegistrationRequired,
+							})
+							.where(eq(organizationsTable.id, parsedArgs.input.id))
+							.returning();
 
-					// Updated organization not being returned means that either it doesn't exist or it was deleted or its `id` column was changed by external entities before this update operation could take place.
-					if (updatedOrganization === undefined) {
-						throw new TalawaGraphQLError({
-							extensions: {
-								code: "arguments_associated_resources_not_found",
-								issues: [
-									{
-										argumentPath: ["input", "id"],
-									},
-								],
-							},
-						});
-					}
+						// Updated organization not being returned means that either it doesn't exist or it was deleted or its `id` column was changed by external entities before this update operation could take place.
+						if (updatedOrganization === undefined) {
+							throw new TalawaGraphQLError({
+								extensions: {
+									code: "arguments_associated_resources_not_found",
+									issues: [
+										{
+											argumentPath: ["input", "id"],
+										},
+									],
+								},
+							});
+						}
 
-					if (
-						isNotNullish(parsedArgs.input.avatar) &&
-						avatarName !== undefined
-					) {
+						return updatedOrganization;
+					},
+				);
+
+				if (isNotNullish(parsedArgs.input.avatar) && avatarName !== undefined) {
+					try {
 						await ctx.minio.client.putObject(
 							ctx.minio.bucketName,
 							avatarName,
@@ -233,18 +237,58 @@ builder.mutationField("updateOrganization", (t) =>
 								"content-type": parsedArgs.input.avatar.mimetype,
 							},
 						);
-					} else if (
-						parsedArgs.input.avatar !== undefined &&
-						existingOrganization.avatarName !== null
-					) {
+					} catch (error) {
+						ctx.log.error(
+							error,
+							"Avatar upload failed for updateOrganization. Reverting DB changes.",
+						);
+
+						await ctx.drizzleClient
+							.update(organizationsTable)
+							.set({
+								avatarMimeType: existingOrganization.avatarMimeType,
+								avatarName: existingOrganization.avatarName,
+							})
+							.where(eq(organizationsTable.id, updatedOrganization.id));
+
+						throw new TalawaGraphQLError({
+							extensions: {
+								code: "unexpected",
+							},
+						});
+					}
+				} else if (
+					parsedArgs.input.avatar !== undefined &&
+					existingOrganization.avatarName !== null
+				) {
+					try {
 						await ctx.minio.client.removeObject(
 							ctx.minio.bucketName,
 							existingOrganization.avatarName,
 						);
-					}
+					} catch (error) {
+						ctx.log.error(
+							error,
+							"Avatar removal failed for updateOrganization. Reverting DB changes.",
+						);
 
-					return updatedOrganization;
-				});
+						await ctx.drizzleClient
+							.update(organizationsTable)
+							.set({
+								avatarMimeType: existingOrganization.avatarMimeType,
+								avatarName: existingOrganization.avatarName,
+							})
+							.where(eq(organizationsTable.id, updatedOrganization.id));
+
+						throw new TalawaGraphQLError({
+							extensions: {
+								code: "unexpected",
+							},
+						});
+					}
+				}
+
+				return updatedOrganization;
 			});
 		},
 		type: Organization,

@@ -89,15 +89,19 @@ describe("Mutation updateOrganization - Performance Metrics", () => {
 			expect(result.errors).toBeUndefined();
 			assertToBeNonNullish(result.data.updateOrganization?.id);
 
-			// Get snapshots after mutation and only search new ones
-			const snapshots = server.getMetricsSnapshots?.() ?? [];
-			const newSnapshots = snapshots.slice(initialSnapshotCount);
-			expect(newSnapshots.length).toBeGreaterThan(0);
+			// Wait for metric to appear
+			let snapshots = server.getMetricsSnapshots?.() ?? [];
+			let mutationSnapshot: (typeof snapshots)[0] | undefined;
 
-			// Find snapshot with our mutation metric in new snapshots only
-			const mutationSnapshot = newSnapshots.find(
-				(s) => s.ops["mutation:updateOrganization"] !== undefined,
-			);
+			for (let i = 0; i < 30; i++) {
+				snapshots = server.getMetricsSnapshots?.() ?? [];
+				const newSnapshots = snapshots.slice(initialSnapshotCount);
+				mutationSnapshot = newSnapshots.find(
+					(s) => s.ops["mutation:updateOrganization"] !== undefined,
+				);
+				if (mutationSnapshot) break;
+				await new Promise((resolve) => setTimeout(resolve, 50));
+			}
 
 			assertToBeNonNullish(mutationSnapshot);
 			const op = mutationSnapshot.ops["mutation:updateOrganization"];
@@ -125,15 +129,19 @@ describe("Mutation updateOrganization - Performance Metrics", () => {
 			expect(result.data.updateOrganization).toBeNull();
 			expect(result.errors).toBeDefined();
 
-			// Get snapshots after mutation and only search new ones
-			const snapshots = server.getMetricsSnapshots?.() ?? [];
-			const newSnapshots = snapshots.slice(initialSnapshotCount);
-			expect(newSnapshots.length).toBeGreaterThan(0);
+			// Wait for metric to appear
+			let snapshots = server.getMetricsSnapshots?.() ?? [];
+			let mutationSnapshot: (typeof snapshots)[0] | undefined;
 
-			// Find snapshot with our mutation metric in new snapshots only
-			const mutationSnapshot = newSnapshots.find(
-				(s) => s.ops["mutation:updateOrganization"] !== undefined,
-			);
+			for (let i = 0; i < 30; i++) {
+				snapshots = server.getMetricsSnapshots?.() ?? [];
+				const newSnapshots = snapshots.slice(initialSnapshotCount);
+				mutationSnapshot = newSnapshots.find(
+					(s) => s.ops["mutation:updateOrganization"] !== undefined,
+				);
+				if (mutationSnapshot) break;
+				await new Promise((resolve) => setTimeout(resolve, 50));
+			}
 
 			// Even on failure, metrics should be recorded
 			assertToBeNonNullish(mutationSnapshot);

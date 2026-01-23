@@ -1,3 +1,4 @@
+import { eq } from "drizzle-orm";
 import type { FileUpload } from "graphql-upload-minimal";
 import { ulid } from "ulidx";
 import { z } from "zod";
@@ -143,43 +144,46 @@ builder.mutationField("createOrganization", (t) =>
 					avatarMimeType = parsedArgs.input.avatar.mimetype;
 				}
 
-				return await ctx.drizzleClient.transaction(async (tx) => {
-					const [createdOrganization] = await tx
-						.insert(organizationsTable)
-						.values({
-							addressLine1: parsedArgs.input.addressLine1,
-							addressLine2: parsedArgs.input.addressLine2,
-							avatarMimeType,
-							avatarName,
-							city: parsedArgs.input.city,
-							countryCode: parsedArgs.input.countryCode,
-							description: parsedArgs.input.description,
-							creatorId: currentUserId,
-							name: parsedArgs.input.name,
-							postalCode: parsedArgs.input.postalCode,
-							state: parsedArgs.input.state,
-							userRegistrationRequired:
-								parsedArgs.input.isUserRegistrationRequired,
-						})
-						.returning();
+				const createdOrganization = await ctx.drizzleClient.transaction(
+					async (tx) => {
+						const [createdOrganization] = await tx
+							.insert(organizationsTable)
+							.values({
+								addressLine1: parsedArgs.input.addressLine1,
+								addressLine2: parsedArgs.input.addressLine2,
+								avatarMimeType,
+								avatarName,
+								city: parsedArgs.input.city,
+								countryCode: parsedArgs.input.countryCode,
+								description: parsedArgs.input.description,
+								creatorId: currentUserId,
+								name: parsedArgs.input.name,
+								postalCode: parsedArgs.input.postalCode,
+								state: parsedArgs.input.state,
+								userRegistrationRequired:
+									parsedArgs.input.isUserRegistrationRequired,
+							})
+							.returning();
 
-					// Inserted organization not being returned is an external defect unrelated to this code. It is very unlikely for this error to occur.
-					if (!createdOrganization) {
-						ctx.log.error(
-							"Postgres insert operation unexpectedly returned an empty array instead of throwing an error.",
-						);
+						// Inserted organization not being returned is an external defect unrelated to this code. It is very unlikely for this error to occur.
+						if (!createdOrganization) {
+							ctx.log.error(
+								"Postgres insert operation unexpectedly returned an empty array instead of throwing an error.",
+							);
 
-						throw new TalawaGraphQLError({
-							extensions: {
-								code: "unexpected",
-							},
-						});
-					}
+							throw new TalawaGraphQLError({
+								extensions: {
+									code: "unexpected",
+								},
+							});
+						}
 
-					if (
-						isNotNullish(parsedArgs.input.avatar) &&
-						avatarName !== undefined
-					) {
+						return createdOrganization;
+					},
+				);
+
+				if (isNotNullish(parsedArgs.input.avatar) && avatarName !== undefined) {
+					try {
 						await ctx.minio.client.putObject(
 							ctx.minio.bucketName,
 							avatarName,
@@ -189,10 +193,25 @@ builder.mutationField("createOrganization", (t) =>
 								"content-type": parsedArgs.input.avatar.mimetype,
 							},
 						);
-					}
+					} catch (error) {
+						ctx.log.error(
+							error,
+							"Avatar upload failed for createOrganization. Rolling back.",
+						);
 
-					return createdOrganization;
-				});
+						await ctx.drizzleClient
+							.delete(organizationsTable)
+							.where(eq(organizationsTable.id, createdOrganization.id));
+
+						throw new TalawaGraphQLError({
+							extensions: {
+								code: "unexpected",
+							},
+						});
+					}
+				}
+
+				return createdOrganization;
 			});
 		},
 		type: Organization,

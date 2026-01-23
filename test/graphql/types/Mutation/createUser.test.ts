@@ -1,6 +1,8 @@
 import { faker } from "@faker-js/faker";
+import { eq } from "drizzle-orm";
 import type { ResultOf, VariablesOf } from "gql.tada";
-import { expect, suite, test } from "vitest";
+import { expect, suite, test, vi } from "vitest";
+import { usersTable } from "~/src/drizzle/tables/users";
 import type {
 	ForbiddenActionOnArgumentsAssociatedResourcesExtensions,
 	InvalidArgumentsExtensions,
@@ -740,4 +742,93 @@ suite("Mutation field createUser", () => {
 			});
 		},
 	);
+
+	suite("rollback scenarios", () => {
+		test("should rollback (delete user) when avatar upload fails", async () => {
+			const administratorUserSignInResult = await mercuriusClient.query(
+				Query_signIn,
+				{
+					variables: {
+						input: {
+							emailAddress:
+								server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
+							password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
+						},
+					},
+				},
+			);
+			assertToBeNonNullish(
+				administratorUserSignInResult.data.signIn?.authenticationToken,
+			);
+			const adminToken =
+				administratorUserSignInResult.data.signIn.authenticationToken;
+
+			// Mock failure
+			const minioClient = server.minio.client;
+			const putObjectSpy = vi
+				.spyOn(minioClient, "putObject")
+				.mockRejectedValue(new Error("Simulated Upload Failure"));
+
+			const email = `rollback${faker.string.ulid()}@email.com`;
+
+			// Construct multipart request
+			const boundary = "----Boundary";
+			const operations = {
+				query: `mutation CreateUser($input: MutationCreateUserInput!) {
+                    createUser(input: $input) { user { id } }
+                }`,
+				variables: {
+					input: {
+						emailAddress: email,
+						isEmailAddressVerified: false,
+						name: "Rollback User",
+						password: "password",
+						role: "regular",
+						avatar: null, // Mapped
+					},
+				},
+			};
+			const map = { "0": ["variables.input.avatar"] };
+			const fileContent = "fake-content";
+
+			const body = [
+				`--${boundary}`,
+				'Content-Disposition: form-data; name="operations"',
+				"",
+				JSON.stringify(operations),
+				`--${boundary}`,
+				'Content-Disposition: form-data; name="map"',
+				"",
+				JSON.stringify(map),
+				`--${boundary}`,
+				'Content-Disposition: form-data; name="0"; filename="test.png"',
+				"Content-Type: image/png",
+				"",
+				fileContent,
+				`--${boundary}--`,
+			].join("\r\n");
+
+			const response = await server.inject({
+				method: "POST",
+				url: "/graphql",
+				headers: {
+					"content-type": `multipart/form-data; boundary=${boundary}`,
+					authorization: `bearer ${adminToken}`,
+				},
+				payload: body,
+			});
+
+			const result = response.json();
+			expect(result.errors?.[0]?.extensions?.code).toBe("unexpected");
+
+			// Verify deletion
+			const user = server.drizzleClient.query.usersTable.findFirst({
+				where: eq(usersTable.emailAddress, email),
+			});
+
+			expect(user).toBeUndefined();
+
+			putObjectSpy.mockRestore();
+		});
+	});
 });

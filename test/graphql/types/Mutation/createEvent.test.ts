@@ -1,10 +1,12 @@
 import { faker } from "@faker-js/faker";
+import { eq } from "drizzle-orm";
 import type { ResultOf, VariablesOf } from "gql.tada";
 import type { ExecutionResult } from "graphql";
 import { afterEach, expect, suite, test, vi } from "vitest";
 import {
 	agendaCategoriesTable,
 	agendaFoldersTable,
+	eventsTable,
 } from "~/src/drizzle/schema";
 import { recurrenceRulesTable } from "~/src/drizzle/tables/recurrenceRules";
 import type {
@@ -951,204 +953,451 @@ suite("Mutation field createEvent", () => {
 
 			expectSuccessfulEvent(result, "Midnight Launch Event");
 		});
-	});
-});
 
-suite("Default Agenda Folder and Category Creation", () => {
-	afterEach(() => {
-		vi.restoreAllMocks();
-	});
-	test("creates default agenda folder and category for standalone events", async () => {
-		const organizationId = await createTestOrganization();
+		suite("createEvent additional error branches", () => {
+			test("should fail when isPublic and isInviteOnly are both true", async () => {
+				const createOrg = await mercuriusClient.mutate(
+					Mutation_createOrganization,
+					{
+						headers: { authorization: `bearer ${adminAuthToken}` },
+						variables: {
+							input: {
+								name: `TestOrg_${faker.string.ulid()}`,
+								description: "Test",
+							},
+						},
+					},
+				);
+				const orgId = createOrg.data?.createOrganization?.id;
+				assertToBeNonNullish(orgId);
 
-		const result = await createEvent({
-			input: baseEventInput(organizationId),
+				const result = await createEvent({
+					input: {
+						organizationId: orgId,
+						name: "Conflicting Visibility",
+						description: "Desc",
+						startAt: new Date(Date.now() + 10000).toISOString(),
+						endAt: new Date(Date.now() + 20000).toISOString(),
+						isPublic: true,
+						isInviteOnly: true,
+						location: "Test",
+					},
+				});
+
+				expect(result.data?.createEvent).toBeNull();
+				expect(result.errors).toBeDefined();
+				expect(result.errors?.[0]?.extensions?.code).toBe("invalid_arguments");
+			});
+
+			test("should fail with invalid recurrence payload", async () => {
+				const createOrg = await mercuriusClient.mutate(
+					Mutation_createOrganization,
+					{
+						headers: { authorization: `bearer ${adminAuthToken}` },
+						variables: {
+							input: {
+								name: `TestOrg_${faker.string.ulid()}`,
+								description: "Test",
+							},
+						},
+					},
+				);
+				const orgId = createOrg.data?.createOrganization?.id;
+				assertToBeNonNullish(orgId);
+
+				const result = await createEvent({
+					input: {
+						organizationId: orgId,
+						name: "Invalid Recurrence",
+						description: "Desc",
+						startAt: new Date(Date.now() + 10000).toISOString(),
+						endAt: new Date(Date.now() + 20000).toISOString(),
+						isPublic: false,
+						location: "Test",
+						recurrence: {
+							frequency: "DAILY",
+							interval: 0, // Invalid interval
+						},
+					},
+				});
+
+				expect(result.data?.createEvent).toBeNull();
+				expect(result.errors).toBeDefined();
+				expect(result.errors?.[0]?.extensions?.issues).toEqual(
+					expect.arrayContaining([
+						expect.objectContaining({
+							argumentPath: ["input", "recurrence"],
+						}),
+					]),
+				);
+			});
+
+			test("should return unauthorized error when actor is not a member", async () => {
+				const createOrg = await mercuriusClient.mutate(
+					Mutation_createOrganization,
+					{
+						headers: { authorization: `bearer ${adminAuthToken}` },
+						variables: {
+							input: {
+								name: `TestOrg_${faker.string.ulid()}`,
+								description: "Test",
+							},
+						},
+					},
+				);
+				const orgId = createOrg.data?.createOrganization?.id;
+				assertToBeNonNullish(orgId);
+
+				const { authToken: userToken } = await createRegularUserUsingAdmin();
+
+				const result = await createEvent(
+					{
+						input: {
+							organizationId: orgId,
+							name: "Unauthorized Event",
+							description: "Desc",
+							startAt: new Date(Date.now() + 10000).toISOString(),
+							endAt: new Date(Date.now() + 20000).toISOString(),
+							isPublic: false,
+							location: "Test",
+						},
+					},
+					userToken,
+				);
+
+				expect(result.data?.createEvent).toBeNull();
+				expect(result.errors).toBeDefined();
+				expect(result.errors?.[0]?.extensions?.code).toBe(
+					"unauthorized_action",
+				);
+			});
 		});
 
-		expect(result.errors).toBeUndefined();
-		assertToBeNonNullish(result.data?.createEvent);
+		suite("Default Agenda Folder and Category Creation", () => {
+			afterEach(() => {
+				vi.restoreAllMocks();
+			});
+			test("creates default agenda folder and category for standalone events", async () => {
+				const organizationId = await createTestOrganization();
 
-		const eventId = result.data.createEvent.id;
+				const result = await createEvent({
+					input: baseEventInput(organizationId),
+				});
 
-		const defaultFolder =
-			await server.drizzleClient.query.agendaFoldersTable.findFirst({
-				where: (fields, operators) => operators.eq(fields.eventId, eventId),
+				expect(result.errors).toBeUndefined();
+				assertToBeNonNullish(result.data?.createEvent);
+
+				const eventId = result.data.createEvent.id;
+
+				const defaultFolder =
+					await server.drizzleClient.query.agendaFoldersTable.findFirst({
+						where: (fields, operators) => operators.eq(fields.eventId, eventId),
+					});
+
+				const defaultCategory =
+					await server.drizzleClient.query.agendaCategoriesTable.findFirst({
+						where: (fields, operators) => operators.eq(fields.eventId, eventId),
+					});
+
+				expect(defaultFolder).toEqual(
+					expect.objectContaining({
+						eventId,
+						organizationId,
+						isDefaultFolder: true,
+						sequence: 1,
+						name: "Default",
+						creatorId: adminUserId,
+					}),
+				);
+
+				expect(defaultCategory).toEqual(
+					expect.objectContaining({
+						eventId,
+						organizationId,
+						isDefaultCategory: true,
+						name: "Default",
+						creatorId: adminUserId,
+					}),
+				);
 			});
 
-		const defaultCategory =
-			await server.drizzleClient.query.agendaCategoriesTable.findFirst({
-				where: (fields, operators) => operators.eq(fields.eventId, eventId),
+			test("creates default agenda folder and category for recurring events", async () => {
+				const organizationId = await createTestOrganization();
+
+				const result = await createEvent({
+					input: {
+						...baseEventInput(organizationId),
+						recurrence: {
+							frequency: "WEEKLY",
+							interval: 1,
+							count: 3,
+						},
+					},
+				});
+
+				expect(result.errors).toBeUndefined();
+				assertToBeNonNullish(result.data?.createEvent);
+
+				const eventId = result.data.createEvent.id;
+
+				const defaultFolder =
+					await server.drizzleClient.query.agendaFoldersTable.findFirst({
+						where: (fields, operators) => operators.eq(fields.eventId, eventId),
+					});
+
+				const defaultCategory =
+					await server.drizzleClient.query.agendaCategoriesTable.findFirst({
+						where: (fields, operators) => operators.eq(fields.eventId, eventId),
+					});
+
+				expect(defaultFolder?.isDefaultFolder).toBe(true);
+				expect(defaultCategory?.isDefaultCategory).toBe(true);
 			});
 
-		expect(defaultFolder).toEqual(
-			expect.objectContaining({
-				eventId,
-				organizationId,
-				isDefaultFolder: true,
-				sequence: 1,
-				name: "Default",
-				creatorId: adminUserId,
-			}),
-		);
+			test("rolls back transaction if default agenda folder insert fails", async () => {
+				const organizationId = await createTestOrganization();
 
-		expect(defaultCategory).toEqual(
-			expect.objectContaining({
-				eventId,
-				organizationId,
-				isDefaultCategory: true,
-				name: "Default",
-				creatorId: adminUserId,
-			}),
-		);
+				vi.spyOn(server.drizzleClient, "transaction").mockImplementation(
+					async (callback) => {
+						const mockTx = {
+							...server.drizzleClient,
+							insert: vi.fn().mockImplementation((table) => {
+								if (table === agendaFoldersTable) {
+									return {
+										values: vi.fn().mockReturnThis(),
+										returning: vi.fn().mockResolvedValue([]),
+									};
+								}
+								// Return a mock for all other tables to avoid real database writes
+								return {
+									values: vi.fn().mockReturnThis(),
+									returning: vi.fn().mockResolvedValue([
+										{
+											id: faker.string.uuid(),
+											name: "Test Event",
+											organizationId,
+											creatorId: adminUserId,
+										},
+									]),
+								};
+							}),
+						};
+
+						return callback(
+							mockTx as unknown as Parameters<typeof callback>[0],
+						);
+					},
+				);
+
+				const result = await createEvent({
+					input: baseEventInput(organizationId),
+				});
+
+				expect(result.data?.createEvent).toBeNull();
+				expect(result.errors?.[0]?.extensions?.code).toBe("unexpected");
+			});
+
+			test("rolls back transaction if default agenda category insert fails", async () => {
+				const organizationId = await createTestOrganization();
+
+				vi.spyOn(server.drizzleClient, "transaction").mockImplementation(
+					async (callback) => {
+						const mockTx = {
+							...server.drizzleClient,
+							insert: vi.fn().mockImplementation((table) => {
+								if (table === agendaCategoriesTable) {
+									return {
+										values: vi.fn().mockReturnThis(),
+										returning: vi.fn().mockResolvedValue([]),
+									};
+								}
+								// Return a mock for all other tables to avoid real database writes
+								return {
+									values: vi.fn().mockReturnThis(),
+									returning: vi.fn().mockResolvedValue([
+										{
+											id: faker.string.uuid(),
+											name: "Test Event",
+											organizationId,
+											creatorId: adminUserId,
+										},
+									]),
+								};
+							}),
+						};
+
+						return callback(
+							mockTx as unknown as Parameters<typeof callback>[0],
+						);
+					},
+				);
+
+				const result = await createEvent({
+					input: baseEventInput(organizationId),
+				});
+
+				expect(result.data?.createEvent).toBeNull();
+				expect(result.errors?.[0]?.extensions?.code).toBe("unexpected");
+			});
+
+			test("creates separate default folder and category for multiple events", async () => {
+				const organizationId = await createTestOrganization();
+
+				const event1 = await createEvent({
+					input: baseEventInput(organizationId),
+				});
+
+				const event2 = await createEvent({
+					input: { ...baseEventInput(organizationId), name: "Second Event" },
+				});
+
+				assertToBeNonNullish(event1.data?.createEvent);
+				assertToBeNonNullish(event2.data?.createEvent);
+
+				const defaultFolders =
+					await server.drizzleClient.query.agendaFoldersTable.findMany({
+						where: (fields, operators) =>
+							operators.eq(fields.organizationId, organizationId),
+					});
+
+				const defaultCategories =
+					await server.drizzleClient.query.agendaCategoriesTable.findMany({
+						where: (fields, operators) =>
+							operators.eq(fields.organizationId, organizationId),
+					});
+
+				expect(defaultFolders.filter((f) => f.isDefaultFolder)).toHaveLength(2);
+				expect(new Set(defaultFolders.map((f) => f.eventId)).size).toBe(2);
+
+				expect(
+					defaultCategories.filter((c) => c.isDefaultCategory),
+				).toHaveLength(2);
+				expect(new Set(defaultCategories.map((c) => c.eventId)).size).toBe(2);
+			});
+		});
 	});
 
-	test("creates default agenda folder and category for recurring events", async () => {
-		const organizationId = await createTestOrganization();
+	suite("Rollback and Edge Cases", () => {
+		test("should rollback transaction and cleanup minio on attachment upload failure", async () => {
+			const organizationId = await createTestOrganization();
 
-		const result = await createEvent({
-			input: {
-				...baseEventInput(organizationId),
-				recurrence: {
-					frequency: "WEEKLY",
-					interval: 1,
-					count: 3,
+			// Mock MinIO
+			const minioClient = server.minio.client;
+
+			let callCount = 0;
+			const putObjectSpy = vi
+				.spyOn(minioClient, "putObject")
+				.mockImplementation(async () => {
+					callCount++;
+					// Fail on the second file
+					if (callCount === 2) {
+						throw new Error("Simulated Upload Failure");
+					}
+					return Promise.resolve({ etag: "mock-etag", versionId: null });
+				});
+
+			const removeObjectsSpy = vi
+				.spyOn(minioClient, "removeObjects")
+				.mockReturnValue(Promise.resolve([]));
+
+			const boundary = "----Boundary";
+			const operations = {
+				query: `mutation CreateEvent($input: MutationCreateEventInput!) {
+                    createEvent(input: $input) { id }
+                }`,
+				variables: {
+					input: {
+						name: `Rollback Event ${faker.string.ulid()}`,
+						startAt: new Date().toISOString(),
+						endAt: new Date(Date.now() + 3600000).toISOString(),
+						organizationId,
+						location: "Test Loc",
+						description: "Rollback verify",
+						// 2 attachments
+						attachments: [null, null],
+					},
 				},
-			},
-		});
+			};
+			const map = {
+				"0": ["variables.input.attachments.0"],
+				"1": ["variables.input.attachments.1"],
+			};
 
-		expect(result.errors).toBeUndefined();
-		assertToBeNonNullish(result.data?.createEvent);
+			const body = [
+				`--${boundary}`,
+				'Content-Disposition: form-data; name="operations"',
+				"",
+				JSON.stringify(operations),
+				`--${boundary}`,
+				'Content-Disposition: form-data; name="map"',
+				"",
+				JSON.stringify(map),
+				`--${boundary}`,
+				'Content-Disposition: form-data; name="0"; filename="test1.png"',
+				"Content-Type: image/png",
+				"",
+				"content1",
+				`--${boundary}`,
+				'Content-Disposition: form-data; name="1"; filename="test2.png"',
+				"Content-Type: image/png",
+				"",
+				"content2",
+				`--${boundary}--`,
+			].join("\r\n");
 
-		const eventId = result.data.createEvent.id;
-
-		const defaultFolder =
-			await server.drizzleClient.query.agendaFoldersTable.findFirst({
-				where: (fields, operators) => operators.eq(fields.eventId, eventId),
+			const response = await server.inject({
+				method: "POST",
+				url: "/graphql",
+				headers: {
+					"content-type": `multipart/form-data; boundary=${boundary}`,
+					authorization: `bearer ${adminAuthToken}`,
+				},
+				payload: body,
 			});
 
-		const defaultCategory =
-			await server.drizzleClient.query.agendaCategoriesTable.findFirst({
-				where: (fields, operators) => operators.eq(fields.eventId, eventId),
+			const result = response.json();
+			// We expect execution error (rethrown uploadError)
+			// Depending on graphql-upload/mercurius handling, it might be in errors.
+			expect(result.errors).toBeDefined();
+
+			// Verify Rollback
+			const event = await server.drizzleClient.query.eventsTable.findFirst({
+				where: eq(eventsTable.name, operations.variables.input.name),
+			});
+			expect(event).toBeUndefined();
+
+			// Verify Cleanup (removeObjects called)
+			expect(removeObjectsSpy).toHaveBeenCalled();
+
+			putObjectSpy.mockRestore();
+			removeObjectsSpy.mockRestore();
+		});
+
+		test("should clamp window end date to start date if calculated end is earlier", async () => {
+			const organizationId = await createTestOrganization();
+			const startAt = new Date().toISOString();
+			const pastDate = getPastDate(10); // 10 days ago
+
+			const result = await createEvent({
+				input: {
+					...baseEventInput(organizationId),
+					startAt,
+					recurrence: {
+						frequency: "WEEKLY",
+						interval: 1,
+						endDate: pastDate,
+					},
+				},
 			});
 
-		expect(defaultFolder?.isDefaultFolder).toBe(true);
-		expect(defaultCategory?.isDefaultCategory).toBe(true);
-	});
+			// Should succeed but clamp window?
+			// RRule calculation with endDate in past relative to startAt might throw?
+			// Or just return 0 instances.
+			// Talawa API logic clamps windowEndDate = startAt.
+			// rrule.between(startAt, windowEndDate) -> between(startAt, startAt).
 
-	test("rolls back transaction if default agenda folder insert fails", async () => {
-		const organizationId = await createTestOrganization();
-
-		vi.spyOn(server.drizzleClient, "transaction").mockImplementation(
-			async (callback) => {
-				const mockTx = {
-					...server.drizzleClient,
-					insert: vi.fn().mockImplementation((table) => {
-						if (table === agendaFoldersTable) {
-							return {
-								values: vi.fn().mockReturnThis(),
-								returning: vi.fn().mockResolvedValue([]),
-							};
-						}
-						// Return a mock for all other tables to avoid real database writes
-						return {
-							values: vi.fn().mockReturnThis(),
-							returning: vi.fn().mockResolvedValue([
-								{
-									id: faker.string.uuid(),
-									name: "Test Event",
-									organizationId,
-									creatorId: adminUserId,
-								},
-							]),
-						};
-					}),
-				};
-
-				return callback(mockTx as unknown as Parameters<typeof callback>[0]);
-			},
-		);
-
-		const result = await createEvent({
-			input: baseEventInput(organizationId),
+			expect(result.errors).toBeUndefined();
+			assertToBeNonNullish(result.data?.createEvent);
 		});
-
-		expect(result.data?.createEvent).toBeNull();
-		expect(result.errors?.[0]?.extensions?.code).toBe("unexpected");
-	});
-
-	test("rolls back transaction if default agenda category insert fails", async () => {
-		const organizationId = await createTestOrganization();
-
-		vi.spyOn(server.drizzleClient, "transaction").mockImplementation(
-			async (callback) => {
-				const mockTx = {
-					...server.drizzleClient,
-					insert: vi.fn().mockImplementation((table) => {
-						if (table === agendaCategoriesTable) {
-							return {
-								values: vi.fn().mockReturnThis(),
-								returning: vi.fn().mockResolvedValue([]),
-							};
-						}
-						// Return a mock for all other tables to avoid real database writes
-						return {
-							values: vi.fn().mockReturnThis(),
-							returning: vi.fn().mockResolvedValue([
-								{
-									id: faker.string.uuid(),
-									name: "Test Event",
-									organizationId,
-									creatorId: adminUserId,
-								},
-							]),
-						};
-					}),
-				};
-
-				return callback(mockTx as unknown as Parameters<typeof callback>[0]);
-			},
-		);
-
-		const result = await createEvent({
-			input: baseEventInput(organizationId),
-		});
-
-		expect(result.data?.createEvent).toBeNull();
-		expect(result.errors?.[0]?.extensions?.code).toBe("unexpected");
-	});
-
-	test("creates separate default folder and category for multiple events", async () => {
-		const organizationId = await createTestOrganization();
-
-		const event1 = await createEvent({
-			input: baseEventInput(organizationId),
-		});
-
-		const event2 = await createEvent({
-			input: { ...baseEventInput(organizationId), name: "Second Event" },
-		});
-
-		assertToBeNonNullish(event1.data?.createEvent);
-		assertToBeNonNullish(event2.data?.createEvent);
-
-		const defaultFolders =
-			await server.drizzleClient.query.agendaFoldersTable.findMany({
-				where: (fields, operators) =>
-					operators.eq(fields.organizationId, organizationId),
-			});
-
-		const defaultCategories =
-			await server.drizzleClient.query.agendaCategoriesTable.findMany({
-				where: (fields, operators) =>
-					operators.eq(fields.organizationId, organizationId),
-			});
-
-		expect(defaultFolders.filter((f) => f.isDefaultFolder)).toHaveLength(2);
-		expect(new Set(defaultFolders.map((f) => f.eventId)).size).toBe(2);
-
-		expect(defaultCategories.filter((c) => c.isDefaultCategory)).toHaveLength(
-			2,
-		);
-		expect(new Set(defaultCategories.map((c) => c.eventId)).size).toBe(2);
 	});
 });

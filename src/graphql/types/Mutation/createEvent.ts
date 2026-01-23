@@ -416,33 +416,26 @@ builder.mutationField("createEvent", (t) =>
 								"FIXED: Window calculation",
 							);
 
+							// Determine window end date relative to the START date, not current time
+							const defaultWindowEnd = new Date(windowStartDate);
+							defaultWindowEnd.setMonth(
+								defaultWindowEnd.getMonth() + 12, // Fixed 12 months
+							);
+
 							if (parsedArgs.input.recurrence.endDate) {
-								// For events with end dates, materialize up to the end date
 								windowEndDate = new Date(parsedArgs.input.recurrence.endDate);
-
-								// If end date is within the default window, use the window end instead
-								const defaultWindowEnd = new Date();
-								defaultWindowEnd.setMonth(
-									defaultWindowEnd.getMonth() + 12, // Fixed 12 months
-								);
-
+								// Cap at default window
 								if (windowEndDate > defaultWindowEnd) {
 									windowEndDate = defaultWindowEnd;
 								}
-							} else if (parsedArgs.input.recurrence.count) {
-								// For count-based recurrence, estimate end date and use window
-								const defaultWindowEnd = new Date();
-								defaultWindowEnd.setMonth(
-									defaultWindowEnd.getMonth() + 12, // Fixed 12 months
-								);
-								windowEndDate = defaultWindowEnd;
 							} else {
-								// For never-ending events, use the materialization window
-								const defaultWindowEnd = new Date();
-								defaultWindowEnd.setMonth(
-									defaultWindowEnd.getMonth() + 12, // Fixed 12 months
-								);
+								// For count-based or never-ending, use the default window
 								windowEndDate = defaultWindowEnd;
+							}
+
+							// Safety clamp: end never before start
+							if (windowEndDate < windowStartDate) {
+								windowEndDate = new Date(windowStartDate);
 							}
 
 							// Immediately materialize instances for the new recurring event

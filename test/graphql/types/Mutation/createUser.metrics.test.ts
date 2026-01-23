@@ -3,10 +3,15 @@ import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { assertToBeNonNullish } from "../../../helpers";
 import { server } from "../../../server";
 import { mercuriusClient } from "../client";
-import { Mutation_createUser, Query_signIn } from "../documentNodes";
+import {
+	Mutation_createUser,
+	Mutation_deleteUser,
+	Query_signIn,
+} from "../documentNodes";
 
 describe("Mutation createUser - Performance Metrics", () => {
 	let authToken: string;
+	let createdUserId: string | undefined;
 
 	beforeEach(async () => {
 		// Sign in as admin to get auth token
@@ -24,6 +29,17 @@ describe("Mutation createUser - Performance Metrics", () => {
 
 	afterEach(async () => {
 		// Clean up any created users if needed
+		if (createdUserId) {
+			await mercuriusClient.mutate(Mutation_deleteUser, {
+				headers: {
+					authorization: `bearer ${authToken}`,
+				},
+				variables: {
+					input: { id: createdUserId },
+				},
+			});
+			createdUserId = undefined;
+		}
 	});
 
 	describe("metrics collection", () => {
@@ -51,16 +67,21 @@ describe("Mutation createUser - Performance Metrics", () => {
 			// Verify mutation succeeded
 			expect(result.errors).toBeUndefined();
 			assertToBeNonNullish(result.data.createUser?.user?.id);
+			createdUserId = result.data.createUser.user.id;
 
-			// Get snapshots after mutation and only search new ones
-			const snapshots = server.getMetricsSnapshots?.() ?? [];
-			const newSnapshots = snapshots.slice(initialSnapshotCount);
-			expect(newSnapshots.length).toBeGreaterThan(0);
+			// Wait for metric to appear
+			let snapshots = server.getMetricsSnapshots?.() ?? [];
+			let mutationSnapshot: (typeof snapshots)[0] | undefined;
 
-			// Find snapshot with our mutation metric in new snapshots only
-			const mutationSnapshot = newSnapshots.find(
-				(s) => s.ops["mutation:createUser"] !== undefined,
-			);
+			for (let i = 0; i < 30; i++) {
+				snapshots = server.getMetricsSnapshots?.() ?? [];
+				const newSnapshots = snapshots.slice(initialSnapshotCount);
+				mutationSnapshot = newSnapshots.find(
+					(s) => s.ops["mutation:createUser"] !== undefined,
+				);
+				if (mutationSnapshot) break;
+				await new Promise((resolve) => setTimeout(resolve, 50));
+			}
 
 			assertToBeNonNullish(mutationSnapshot);
 			const op = mutationSnapshot.ops["mutation:createUser"];
@@ -91,15 +112,19 @@ describe("Mutation createUser - Performance Metrics", () => {
 			expect(result.data.createUser).toBeNull();
 			expect(result.errors).toBeDefined();
 
-			// Get snapshots after mutation and only search new ones
-			const snapshots = server.getMetricsSnapshots?.() ?? [];
-			const newSnapshots = snapshots.slice(initialSnapshotCount);
-			expect(newSnapshots.length).toBeGreaterThan(0);
+			// Wait for metric to appear
+			let snapshots = server.getMetricsSnapshots?.() ?? [];
+			let mutationSnapshot: (typeof snapshots)[0] | undefined;
 
-			// Find snapshot with our mutation metric in new snapshots only
-			const mutationSnapshot = newSnapshots.find(
-				(s) => s.ops["mutation:createUser"] !== undefined,
-			);
+			for (let i = 0; i < 30; i++) {
+				snapshots = server.getMetricsSnapshots?.() ?? [];
+				const newSnapshots = snapshots.slice(initialSnapshotCount);
+				mutationSnapshot = newSnapshots.find(
+					(s) => s.ops["mutation:createUser"] !== undefined,
+				);
+				if (mutationSnapshot) break;
+				await new Promise((resolve) => setTimeout(resolve, 50));
+			}
 
 			// Even on failure, metrics should be recorded
 			assertToBeNonNullish(mutationSnapshot);

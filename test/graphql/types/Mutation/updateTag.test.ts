@@ -720,7 +720,7 @@ suite("Mutation field updateTag", () => {
 						headers: { authorization: `bearer ${authToken}` },
 						variables: {
 							input: {
-								name: faker.company.name(),
+								name: `${faker.company.name()} ${faker.string.uuid()}`,
 								description: faker.lorem.sentence(),
 								countryCode: "us",
 								state: "CA",
@@ -775,7 +775,7 @@ suite("Mutation field updateTag", () => {
 						headers: { authorization: `bearer ${authToken}` },
 						variables: {
 							input: {
-								name: faker.company.name(),
+								name: `${faker.company.name()} ${faker.string.uuid()}`,
 								description: faker.lorem.sentence(),
 								countryCode: "us",
 								state: "CA",
@@ -853,7 +853,7 @@ suite("Mutation field updateTag", () => {
 					headers: { authorization: `bearer ${authToken}` },
 					variables: {
 						input: {
-							name: faker.company.name(),
+							name: `${faker.company.name()} ${faker.string.uuid()}`,
 							description: faker.lorem.sentence(),
 							countryCode: "us",
 							state: "CA",
@@ -902,7 +902,7 @@ suite("Mutation field updateTag", () => {
 					headers: { authorization: `bearer ${authToken}` },
 					variables: {
 						input: {
-							name: faker.company.name(),
+							name: `${faker.company.name()} ${faker.string.uuid()}`,
 							description: faker.lorem.sentence(),
 							countryCode: "us",
 							state: "CA",

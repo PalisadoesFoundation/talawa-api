@@ -1,7 +1,7 @@
 import { faker } from "@faker-js/faker";
 import { eq } from "drizzle-orm";
 import type { FastifyInstance } from "fastify";
-import { afterEach, expect, suite, test } from "vitest";
+import { afterEach, expect, suite, test, vi } from "vitest";
 import { organizationsTable } from "~/src/drizzle/tables/organizations";
 import { assertToBeNonNullish } from "../../../helpers";
 import { server } from "../../../server";
@@ -56,6 +56,165 @@ suite("Mutation field updateOrganization", () => {
 		if (firstError !== undefined) {
 			throw firstError;
 		}
+	});
+
+	test("should rollback database changes when avatar upload fails", async () => {
+		// Mock MinIO putObject to fail
+		const minioClient = server.minio.client;
+		const putObjectSpy = vi
+			.spyOn(minioClient, "putObject")
+			.mockRejectedValue(new Error("Simulated Upload Failure"));
+
+		// Create org
+		const createOrgResult = await mercuriusClient.mutate(
+			Mutation_createOrganization,
+			{
+				headers: { authorization: `bearer ${authToken}` },
+				variables: {
+					input: {
+						name: `Rollback Org ${faker.string.ulid()}`,
+						description: "Test rollback",
+					},
+				},
+			},
+		);
+		const orgId = createOrgResult.data?.createOrganization?.id;
+		assertToBeNonNullish(orgId);
+
+		testCleanupFunctions.push(async () => {
+			await mercuriusClient.mutate(Mutation_deleteOrganization, {
+				headers: { authorization: `bearer ${authToken}` },
+				variables: { input: { id: orgId } },
+			});
+		});
+
+		// Construct multipart request to update avatar
+		const boundary = "----WebKitFormBoundarySafeToAutoRun";
+		const operations = {
+			query: `mutation UpdateOrg($input: MutationUpdateOrganizationInput!) {
+                updateOrganization(input: $input) { id avatarName }
+            }`,
+			variables: {
+				input: {
+					id: orgId,
+					avatar: null, // Placeholder, mapped later
+				},
+			},
+		};
+
+		const map = { "0": ["variables.input.avatar"] };
+		const fileContent = "fake-image-content";
+
+		const body = [
+			`--${boundary}`,
+			'Content-Disposition: form-data; name="operations"',
+			"",
+			JSON.stringify(operations),
+			`--${boundary}`,
+			'Content-Disposition: form-data; name="map"',
+			"",
+			JSON.stringify(map),
+			`--${boundary}`,
+			'Content-Disposition: form-data; name="0"; filename="test.png"',
+			"Content-Type: image/png",
+			"",
+			fileContent,
+			`--${boundary}--`,
+		].join("\r\n");
+
+		const response = await server.inject({
+			method: "POST",
+			url: "/graphql",
+			headers: {
+				"content-type": `multipart/form-data; boundary=${boundary}`,
+				authorization: `bearer ${authToken}`,
+			},
+			payload: body,
+		});
+
+		const result = response.json();
+
+		expect(result.errors).toBeDefined();
+		expect(result.errors[0].extensions?.code).toBe("unexpected");
+
+		// Verify DB still has NO avatar
+		const updatedOrg =
+			await server.drizzleClient.query.organizationsTable.findFirst({
+				where: eq(organizationsTable.id, orgId),
+				columns: { avatarName: true },
+			});
+
+		expect(updatedOrg?.avatarName).toBeNull();
+
+		putObjectSpy.mockRestore();
+	});
+
+	test("should rollback database changes when avatar removal fails", async () => {
+		const name = `Remove Rollback Org ${faker.string.ulid()}`;
+		// Create org
+		const createOrgResult = await mercuriusClient.mutate(
+			Mutation_createOrganization,
+			{
+				headers: { authorization: `bearer ${authToken}` },
+				variables: {
+					input: {
+						name,
+						description: "Test rollback removal",
+						countryCode: "us",
+						city: "Test City",
+					},
+				},
+			},
+		);
+		const orgId = createOrgResult.data?.createOrganization?.id;
+		assertToBeNonNullish(orgId);
+
+		testCleanupFunctions.push(async () => {
+			await mercuriusClient.mutate(Mutation_deleteOrganization, {
+				headers: { authorization: `bearer ${authToken}` },
+				variables: { input: { id: orgId } },
+			});
+		});
+
+		// Set avatar manually
+		await server.drizzleClient
+			.update(organizationsTable)
+			.set({
+				avatarName: "initial-avatar.png",
+				avatarMimeType: "image/png",
+			})
+			.where(eq(organizationsTable.id, orgId));
+
+		// Mock MinIO removeObject failure
+		const minioClient = server.minio.client;
+		const removeObjectSpy = vi
+			.spyOn(minioClient, "removeObject")
+			.mockRejectedValue(new Error("Simulated Removal Failure"));
+
+		// Update to remove avatar
+		const result = await mercuriusClient.mutate(Mutation_updateOrganization, {
+			headers: { authorization: `bearer ${authToken}` },
+			variables: {
+				input: {
+					id: orgId,
+					avatar: null, // Triggers removal
+				},
+			},
+		});
+
+		expect(result.data?.updateOrganization).toBeNull();
+		expect(result.errors?.[0]?.extensions?.code).toBe("unexpected");
+
+		// Verify DB still has avatar (Reverted)
+		const updatedOrg =
+			await server.drizzleClient.query.organizationsTable.findFirst({
+				where: eq(organizationsTable.id, orgId),
+				columns: { avatarName: true },
+			});
+
+		expect(updatedOrg?.avatarName).toBe("initial-avatar.png");
+
+		removeObjectSpy.mockRestore();
 	});
 
 	test("should return an error with unauthenticated extensions code when no auth token provided", async () => {

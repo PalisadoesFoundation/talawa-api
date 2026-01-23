@@ -1,4 +1,5 @@
 import { hash } from "@node-rs/argon2";
+import { eq } from "drizzle-orm";
 import type { FileUpload } from "graphql-upload-minimal";
 import { ulid } from "ulidx";
 import { z } from "zod";
@@ -152,54 +153,87 @@ builder.mutationField("createUser", (t) =>
 					avatarName = ulid();
 				}
 
-				return await ctx.drizzleClient.transaction(async (tx) => {
-					const [createdUser] = await tx
-						.insert(usersTable)
-						.values({
-							addressLine1: parsedArgs.input.addressLine1,
-							addressLine2: parsedArgs.input.addressLine2,
-							avatarMimeType,
-							avatarName,
-							birthDate: parsedArgs.input.birthDate,
-							city: parsedArgs.input.city,
-							countryCode: parsedArgs.input.countryCode,
-							creatorId: currentUserId,
-							description: parsedArgs.input.description,
-							educationGrade: parsedArgs.input.educationGrade,
-							emailAddress: parsedArgs.input.emailAddress,
-							employmentStatus: parsedArgs.input.employmentStatus,
-							homePhoneNumber: parsedArgs.input.homePhoneNumber,
-							isEmailAddressVerified: parsedArgs.input.isEmailAddressVerified,
-							maritalStatus: parsedArgs.input.maritalStatus,
-							mobilePhoneNumber: parsedArgs.input.mobilePhoneNumber,
-							name: parsedArgs.input.name,
-							natalSex: parsedArgs.input.natalSex,
-							naturalLanguageCode: parsedArgs.input.naturalLanguageCode,
-							passwordHash: await hash(parsedArgs.input.password),
-							postalCode: parsedArgs.input.postalCode,
-							role: parsedArgs.input.role,
-							state: parsedArgs.input.state,
-							workPhoneNumber: parsedArgs.input.workPhoneNumber,
-						})
-						.returning();
+				const passwordHash = await hash(parsedArgs.input.password);
 
-					// Inserted user not being returned is a external defect unrelated to this code. It is very unlikely for this error to occur.
-					if (!createdUser) {
-						ctx.log.error(
-							"Postgres insert operation unexpectedly returned an empty array instead of throwing an error.",
+				const transactionResult = await ctx.drizzleClient.transaction(
+					async (tx) => {
+						const [createdUser] = await tx
+							.insert(usersTable)
+							.values({
+								addressLine1: parsedArgs.input.addressLine1,
+								addressLine2: parsedArgs.input.addressLine2,
+								avatarMimeType,
+								avatarName,
+								birthDate: parsedArgs.input.birthDate,
+								city: parsedArgs.input.city,
+								countryCode: parsedArgs.input.countryCode,
+								creatorId: currentUserId,
+								description: parsedArgs.input.description,
+								educationGrade: parsedArgs.input.educationGrade,
+								emailAddress: parsedArgs.input.emailAddress,
+								employmentStatus: parsedArgs.input.employmentStatus,
+								homePhoneNumber: parsedArgs.input.homePhoneNumber,
+								isEmailAddressVerified: parsedArgs.input.isEmailAddressVerified,
+								maritalStatus: parsedArgs.input.maritalStatus,
+								mobilePhoneNumber: parsedArgs.input.mobilePhoneNumber,
+								name: parsedArgs.input.name,
+								natalSex: parsedArgs.input.natalSex,
+								naturalLanguageCode: parsedArgs.input.naturalLanguageCode,
+								passwordHash,
+								postalCode: parsedArgs.input.postalCode,
+								role: parsedArgs.input.role,
+								state: parsedArgs.input.state,
+								workPhoneNumber: parsedArgs.input.workPhoneNumber,
+							})
+							.returning();
+
+						// Inserted user not being returned is a external defect unrelated to this code. It is very unlikely for this error to occur.
+						if (!createdUser) {
+							ctx.log.error(
+								"Postgres insert operation unexpectedly returned an empty array instead of throwing an error.",
+							);
+
+							throw new TalawaGraphQLError({
+								extensions: {
+									code: "unexpected",
+								},
+							});
+						}
+
+						// Generate refresh token
+						const rawRefreshToken = generateRefreshToken();
+						const refreshTokenHash = hashRefreshToken(rawRefreshToken);
+
+						// Calculate refresh token expiry (default 7 days if not configured)
+						const refreshTokenExpiresIn =
+							ctx.envConfig.API_REFRESH_TOKEN_EXPIRES_IN ??
+							DEFAULT_REFRESH_TOKEN_EXPIRES_MS;
+						const refreshTokenExpiresAt = new Date(
+							Date.now() + refreshTokenExpiresIn,
 						);
 
-						throw new TalawaGraphQLError({
-							extensions: {
-								code: "unexpected",
-							},
-						});
-					}
+						// Store refresh token in database (use tx to stay in the transaction)
+						await storeRefreshToken(
+							tx,
+							createdUser.id,
+							refreshTokenHash,
+							refreshTokenExpiresAt,
+						);
 
-					if (
-						isNotNullish(parsedArgs.input.avatar) &&
-						avatarName !== undefined
-					) {
+						return {
+							authenticationToken: ctx.jwt.sign({
+								user: {
+									id: createdUser.id,
+								},
+							}),
+							refreshToken: rawRefreshToken,
+							user: createdUser,
+						};
+					},
+				);
+
+				if (isNotNullish(parsedArgs.input.avatar) && avatarName !== undefined) {
+					try {
 						await ctx.minio.client.putObject(
 							ctx.minio.bucketName,
 							avatarName,
@@ -209,38 +243,25 @@ builder.mutationField("createUser", (t) =>
 								"content-type": parsedArgs.input.avatar.mimetype,
 							},
 						);
-					}
+					} catch (error) {
+						ctx.log.error(
+							error,
+							"Avatar upload failed for createUser. Rolling back user creation.",
+						);
 
-					// Generate refresh token
-					const rawRefreshToken = generateRefreshToken();
-					const refreshTokenHash = hashRefreshToken(rawRefreshToken);
+						await ctx.drizzleClient
+							.delete(usersTable)
+							.where(eq(usersTable.id, transactionResult.user.id));
 
-					// Calculate refresh token expiry (default 7 days if not configured)
-					const refreshTokenExpiresIn =
-						ctx.envConfig.API_REFRESH_TOKEN_EXPIRES_IN ??
-						DEFAULT_REFRESH_TOKEN_EXPIRES_MS;
-					const refreshTokenExpiresAt = new Date(
-						Date.now() + refreshTokenExpiresIn,
-					);
-
-					// Store refresh token in database (use tx to stay in the transaction)
-					await storeRefreshToken(
-						tx,
-						createdUser.id,
-						refreshTokenHash,
-						refreshTokenExpiresAt,
-					);
-
-					return {
-						authenticationToken: ctx.jwt.sign({
-							user: {
-								id: createdUser.id,
+						throw new TalawaGraphQLError({
+							extensions: {
+								code: "unexpected",
 							},
-						}),
-						refreshToken: rawRefreshToken,
-						user: createdUser,
-					};
-				});
+						});
+					}
+				}
+
+				return transactionResult;
 			});
 		},
 		type: AuthenticationPayload,
