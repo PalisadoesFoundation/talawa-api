@@ -358,31 +358,31 @@ describe("GraphQL Error Validation Logic", () => {
 			assertPreservedError(error, "Minio removal error");
 		});
 
-		it("should preserve message when error message starts with 'Database'", () => {
+		it("should mask message when error message starts with 'Database'", () => {
 			const error = {
 				message: "Database connection error",
 				locations: [],
 				path: [],
 			};
-			assertPreservedError(error, "Database connection error");
+			assertPreservedError(error, "Internal Server Error");
 		});
 
-		it("should preserve message when error message includes 'query:'", () => {
+		it("should mask message when error message includes 'query:'", () => {
 			const error = {
 				message: "Error in query: SELECT * FROM ...",
 				locations: [],
 				path: [],
 			};
-			assertPreservedError(error, "Error in query: SELECT * FROM ...");
+			assertPreservedError(error, "Internal Server Error");
 		});
 
-		it("should preserve message when error message includes 'boom'", () => {
+		it("should mask message when error message includes 'boom'", () => {
 			const error = {
 				message: "Something went boom!",
 				locations: [],
 				path: [],
 			};
-			assertPreservedError(error, "Something went boom!");
+			assertPreservedError(error, "Internal Server Error");
 		});
 	});
 

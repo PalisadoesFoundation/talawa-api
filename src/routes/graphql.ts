@@ -42,7 +42,6 @@ const SPECIFIC_ERROR_ALLOWLIST = [
 	"Invalid UUID",
 	"uuid",
 	"database_error",
-	"internal_error",
 ] as const;
 
 function getPublicErrorMessage(
@@ -57,13 +56,13 @@ function getPublicErrorMessage(
 		return msg;
 	}
 
-	// Masking sensitive / unsafe messages
+	// Mask sensitive/unsafe messages
 	if (
 		msg.startsWith("Database") ||
 		msg.includes("query:") ||
 		msg.includes("boom")
 	) {
-		return msg;
+		return defaultMessage;
 	}
 
 	// Fallback for unknown messages those are not safe to expose

@@ -503,7 +503,7 @@ suite("updateChat mutation", () => {
 		});
 
 		expect(result.errors).toBeDefined();
-		expect(result.errors?.[0]?.message).toBe("boom");
+		expect(result.errors?.[0]?.message).toBe("Internal Server Error");
 
 		vi.restoreAllMocks();
 	});

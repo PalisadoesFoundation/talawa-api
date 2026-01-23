@@ -766,7 +766,7 @@ suite("Mutation field createEvent", () => {
 
 				expect(result.data?.createEvent).toBeNull();
 				expect(result.errors).toBeDefined();
-				expect(result.errors?.[0]?.message).toBe("Database insertion failed");
+				expect(result.errors?.[0]?.message).toBe("Internal Server Error");
 			} finally {
 				vi.restoreAllMocks();
 			}
