@@ -556,11 +556,26 @@ builder.mutationField("createEvent", (t) =>
 
 						// Delete event from DB
 						try {
-							await ctx.drizzleClient.delete(eventsTable).where(
-								// @ts-expect-error
-								(fields, operators) =>
-									operators.eq(fields.id, createdEventResult.id),
-							);
+							const deleted = await ctx.drizzleClient
+								.delete(eventsTable)
+								.where(
+									// @ts-expect-error
+									(fields, operators) =>
+										operators.eq(fields.id, createdEventResult.id),
+								)
+								.returning({ id: eventsTable.id });
+
+							if (deleted.length === 0) {
+								ctx.log.error(
+									{ eventId: createdEventResult.id },
+									"CRITICAL: Rollback failed - event not found during delete",
+								);
+							} else {
+								ctx.log.info(
+									{ eventId: createdEventResult.id },
+									"Rollback successful - event deleted",
+								);
+							}
 						} catch (dbDeleteError) {
 							ctx.log.error(
 								{ dbDeleteError },

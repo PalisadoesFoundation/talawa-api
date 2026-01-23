@@ -280,6 +280,12 @@ const plugin: FastifyPluginAsync = async (fastify) => {
 	];
 
 	for (const template of templates) {
+		if (fastify.drizzleClient.query.notificationTemplatesTable === undefined) {
+			fastify.log.warn(
+				"Notification templates table not found in drizzle schema. Skipping seeding.",
+			);
+			break;
+		}
 		const existing =
 			await fastify.drizzleClient.query.notificationTemplatesTable.findFirst({
 				columns: { id: true },

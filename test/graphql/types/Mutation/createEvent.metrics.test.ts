@@ -120,7 +120,7 @@ describe("Mutation createEvent - Performance Metrics", () => {
 			let snapshots = server.getMetricsSnapshots?.() ?? [];
 			let mutationSnapshot: (typeof snapshots)[0] | undefined;
 
-			for (let i = 0; i < 30; i++) {
+			for (let i = 0; i < 100; i++) {
 				snapshots = server.getMetricsSnapshots?.() ?? [];
 				const newSnapshots = snapshots.slice(initialSnapshotCount);
 				mutationSnapshot = newSnapshots.find(
@@ -169,7 +169,7 @@ describe("Mutation createEvent - Performance Metrics", () => {
 			let snapshots = server.getMetricsSnapshots?.() ?? [];
 			let mutationSnapshot: (typeof snapshots)[0] | undefined;
 
-			for (let i = 0; i < 30; i++) {
+			for (let i = 0; i < 100; i++) {
 				snapshots = server.getMetricsSnapshots?.() ?? [];
 				const newSnapshots = snapshots.slice(initialSnapshotCount);
 				mutationSnapshot = newSnapshots.find(

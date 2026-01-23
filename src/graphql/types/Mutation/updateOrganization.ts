@@ -213,8 +213,14 @@ builder.mutationField("updateOrganization", (t) =>
 					if (
 						typeof error === "object" &&
 						error !== null &&
-						"code" in error &&
-						(error as { code: unknown }).code === "23505"
+						(("code" in error &&
+							(error as { code: unknown }).code === "23505") ||
+							("message" in error &&
+								(error as { message: string }).message.includes(
+									"duplicate key",
+								)) ||
+							("message" in error &&
+								(error as { message: string }).message.includes("Duplicate")))
 					) {
 						throw new TalawaGraphQLError({
 							message: "Organization name already exists",
@@ -249,24 +255,31 @@ builder.mutationField("updateOrganization", (t) =>
 							"Avatar upload failed for updateOrganization. Reverting DB changes.",
 						);
 
-						await ctx.drizzleClient
-							.update(organizationsTable)
-							.set({
-								addressLine1: existingOrganization.addressLine1,
-								addressLine2: existingOrganization.addressLine2,
-								avatarMimeType: existingOrganization.avatarMimeType,
-								avatarName: existingOrganization.avatarName,
-								city: existingOrganization.city,
-								countryCode: existingOrganization.countryCode,
-								description: existingOrganization.description,
-								name: existingOrganization.name,
-								postalCode: existingOrganization.postalCode,
-								state: existingOrganization.state,
-								updaterId: existingOrganization.updaterId,
-								userRegistrationRequired:
-									existingOrganization.userRegistrationRequired,
-							})
-							.where(eq(organizationsTable.id, updatedOrganization.id));
+						try {
+							await ctx.drizzleClient
+								.update(organizationsTable)
+								.set({
+									addressLine1: existingOrganization.addressLine1,
+									addressLine2: existingOrganization.addressLine2,
+									avatarMimeType: existingOrganization.avatarMimeType,
+									avatarName: existingOrganization.avatarName,
+									city: existingOrganization.city,
+									countryCode: existingOrganization.countryCode,
+									description: existingOrganization.description,
+									name: existingOrganization.name,
+									postalCode: existingOrganization.postalCode,
+									state: existingOrganization.state,
+									updaterId: existingOrganization.updaterId,
+									userRegistrationRequired:
+										existingOrganization.userRegistrationRequired,
+								})
+								.where(eq(organizationsTable.id, updatedOrganization.id));
+						} catch (rollbackError) {
+							ctx.log.error(
+								rollbackError,
+								"Secondary failure: Failed to rollback organization update after avatar upload failure.",
+							);
+						}
 
 						throw new TalawaGraphQLError({
 							extensions: {
@@ -289,24 +302,31 @@ builder.mutationField("updateOrganization", (t) =>
 							"Avatar removal failed for updateOrganization. Reverting DB changes.",
 						);
 
-						await ctx.drizzleClient
-							.update(organizationsTable)
-							.set({
-								addressLine1: existingOrganization.addressLine1,
-								addressLine2: existingOrganization.addressLine2,
-								avatarMimeType: existingOrganization.avatarMimeType,
-								avatarName: existingOrganization.avatarName,
-								city: existingOrganization.city,
-								countryCode: existingOrganization.countryCode,
-								description: existingOrganization.description,
-								name: existingOrganization.name,
-								postalCode: existingOrganization.postalCode,
-								state: existingOrganization.state,
-								updaterId: existingOrganization.updaterId,
-								userRegistrationRequired:
-									existingOrganization.userRegistrationRequired,
-							})
-							.where(eq(organizationsTable.id, updatedOrganization.id));
+						try {
+							await ctx.drizzleClient
+								.update(organizationsTable)
+								.set({
+									addressLine1: existingOrganization.addressLine1,
+									addressLine2: existingOrganization.addressLine2,
+									avatarMimeType: existingOrganization.avatarMimeType,
+									avatarName: existingOrganization.avatarName,
+									city: existingOrganization.city,
+									countryCode: existingOrganization.countryCode,
+									description: existingOrganization.description,
+									name: existingOrganization.name,
+									postalCode: existingOrganization.postalCode,
+									state: existingOrganization.state,
+									updaterId: existingOrganization.updaterId,
+									userRegistrationRequired:
+										existingOrganization.userRegistrationRequired,
+								})
+								.where(eq(organizationsTable.id, updatedOrganization.id));
+						} catch (rollbackError) {
+							ctx.log.error(
+								rollbackError,
+								"Secondary failure: Failed to rollback organization update after avatar removal failure.",
+							);
+						}
 
 						throw new TalawaGraphQLError({
 							extensions: {

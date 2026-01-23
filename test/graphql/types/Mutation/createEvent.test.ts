@@ -1248,7 +1248,14 @@ suite("Mutation field createEvent", () => {
 			expect(event).toBeUndefined();
 
 			// Verify Cleanup (removeObjects called)
-			expect(removeObjectsSpy).toHaveBeenCalled();
+			if (!putObjectSpy.mock.calls[0]) {
+				throw new Error("putObjectSpy was not called");
+			}
+			const successfulUploadKey = putObjectSpy.mock.calls[0][1] as string;
+			expect(removeObjectsSpy).toHaveBeenCalledWith(
+				expect.any(String),
+				expect.arrayContaining([successfulUploadKey]),
+			);
 
 			putObjectSpy.mockRestore();
 			removeObjectsSpy.mockRestore();
