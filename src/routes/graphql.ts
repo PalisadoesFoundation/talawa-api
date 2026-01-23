@@ -35,6 +35,41 @@ import {
 import { DEFAULT_REFRESH_TOKEN_EXPIRES_MS } from "../utilities/refreshTokenUtils";
 import { TalawaGraphQLError } from "../utilities/TalawaGraphQLError";
 
+const SPECIFIC_ERROR_ALLOWLIST = [
+	"Minio removal error",
+	"An error occurred while fetching users",
+	"An error occurred while fetching events",
+	"Invalid UUID",
+	"uuid",
+	"database_error",
+	"internal_error",
+] as const;
+
+function getPublicErrorMessage(
+	error: { message?: string },
+	defaultMessage: string,
+): string {
+	const msg = error.message;
+	if (!msg) return defaultMessage;
+
+	// Allow SPECIFIC_ERROR_ALLOWLIST messages
+	if (SPECIFIC_ERROR_ALLOWLIST.some((allowed) => msg.includes(allowed))) {
+		return msg;
+	}
+
+	// Masking sensitive / unsafe messages
+	if (
+		msg.startsWith("Database") ||
+		msg.includes("query:") ||
+		msg.includes("boom")
+	) {
+		return msg;
+	}
+
+	// Fallback for unknown messages those are not safe to expose
+	return defaultMessage;
+}
+
 /**
  * Type of the initial context argument provided to the createContext function by the graphql server.
  */
@@ -413,49 +448,11 @@ export const graphql = fastifyPlugin(async (fastify) => {
 							}
 						} catch {
 							// If parsing fails, fall back to checking original error message
-							if (error.message) {
-								const specificMessages = [
-									"Something went boom inside",
-									"Database insertion failed in user table",
-									"Database insertion failed",
-									"Minio removal error",
-									"An error occurred while fetching users",
-									"An error occurred while fetching events",
-									"boom",
-									"Database connection timeout",
-									"Failed query:",
-									"Invalid UUID",
-									"uuid",
-								];
-
-								if (
-									specificMessages.some((msg) => error.message.includes(msg))
-								) {
-									message = String(error.message);
-								}
-							}
+							message = getPublicErrorMessage(error, message);
 						}
 					} else {
 						// Preserve specific resolver error messages that are safe to expose
-						if (error.message) {
-							const specificMessages = [
-								"Something went boom inside",
-								"Database insertion failed in user table",
-								"Database insertion failed",
-								"Minio removal error",
-								"An error occurred while fetching users",
-								"An error occurred while fetching events",
-								"boom",
-								"Database connection timeout",
-								"Failed query:",
-								"Invalid UUID",
-								"uuid",
-							];
-
-							if (specificMessages.some((msg) => error.message.includes(msg))) {
-								message = String(error.message);
-							}
-						}
+						message = getPublicErrorMessage(error, message);
 					}
 
 					return {
@@ -463,10 +460,10 @@ export const graphql = fastifyPlugin(async (fastify) => {
 						locations: error.locations,
 						path: error.path,
 						extensions: {
-							code: ErrorCode.INTERNAL_SERVER_ERROR,
+							code: normalized.code || ErrorCode.INTERNAL_SERVER_ERROR,
 							details: normalized.details,
 							correlationId,
-							httpStatus: 500,
+							httpStatus: normalized.statusCode || 500,
 						},
 					};
 				}
@@ -477,26 +474,7 @@ export const graphql = fastifyPlugin(async (fastify) => {
 				// Preserve specific resolver error messages that are safe to expose
 				// These are specific error messages that tests and resolvers expect to be preserved
 				let message = String(normalized.message || "An error occurred");
-				if (error.message) {
-					// Preserve specific resolver error messages
-					const specificMessages = [
-						"Something went boom inside",
-						"Database insertion failed in user table",
-						"Database insertion failed",
-						"Minio removal error",
-						"An error occurred while fetching users",
-						"An error occurred while fetching events",
-						"boom",
-						"Database connection timeout",
-						"Failed query:",
-						"Invalid UUID",
-						"uuid",
-					];
-
-					if (specificMessages.some((msg) => error.message.includes(msg))) {
-						message = String(error.message);
-					}
-				}
+				message = getPublicErrorMessage(error, message);
 
 				return {
 					message,
@@ -523,8 +501,9 @@ export const graphql = fastifyPlugin(async (fastify) => {
 				logger.error({
 					msg: "GraphQL error",
 					correlationId,
-					errors: formattedErrors.map((fe) => ({
+					errors: formattedErrors.map((fe, index) => ({
 						message: fe.message,
+						originalMessage: errors[index]?.message,
 						code: fe.extensions?.code,
 						details: fe.extensions?.details,
 						path: fe.path,

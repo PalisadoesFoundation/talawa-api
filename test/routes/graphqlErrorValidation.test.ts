@@ -118,8 +118,15 @@ describe("GraphQL Error Validation Logic", () => {
 		// Register the plugin to capture the errorFormatter
 		await graphql(mockFastifyInstance as unknown as FastifyInstance);
 
-		// The second register call is for mercurius
-		const mercuriusCall = mockFastifyInstance.register.mock.calls[1];
+		// Find the mercurius registration call by checking for errorFormatter
+		const mercuriusCall = mockFastifyInstance.register.mock.calls.find(
+			(call) => {
+				const options = call[1];
+				return (
+					options && typeof options === "object" && "errorFormatter" in options
+				);
+			},
+		);
 		expect(mercuriusCall).toBeDefined();
 		const mercuriusOptions = mercuriusCall?.[1];
 		errorFormatter = mercuriusOptions.errorFormatter;
@@ -332,23 +339,50 @@ describe("GraphQL Error Validation Logic", () => {
 
 		it("should preserve message when error has no extensions and message is in specific allowed list", () => {
 			const error = {
-				message: "Something went boom inside",
+				message: "Minio removal error",
 				locations: [],
 				path: [],
 			};
-			assertPreservedError(error, "Something went boom inside");
+			assertPreservedError(error, "Minio removal error");
 		});
 
 		it("should preserve message when error has extensions but invalid code and message is in specific allowed list", () => {
 			const error = {
-				message: "Database insertion failed in user table",
+				message: "Minio removal error",
 				locations: [],
 				path: [],
 				extensions: {
 					code: "SOME_RANDOM_CODE",
 				},
 			};
-			assertPreservedError(error, "Database insertion failed in user table");
+			assertPreservedError(error, "Minio removal error");
+		});
+
+		it("should preserve message when error message starts with 'Database'", () => {
+			const error = {
+				message: "Database connection error",
+				locations: [],
+				path: [],
+			};
+			assertPreservedError(error, "Database connection error");
+		});
+
+		it("should preserve message when error message includes 'query:'", () => {
+			const error = {
+				message: "Error in query: SELECT * FROM ...",
+				locations: [],
+				path: [],
+			};
+			assertPreservedError(error, "Error in query: SELECT * FROM ...");
+		});
+
+		it("should preserve message when error message includes 'boom'", () => {
+			const error = {
+				message: "Something went boom!",
+				locations: [],
+				path: [],
+			};
+			assertPreservedError(error, "Something went boom!");
 		});
 	});
 
@@ -379,7 +413,7 @@ describe("GraphQL Error Validation Logic", () => {
 			const formattedError = result.response.errors?.[0];
 			expect(formattedError?.message).toBe(zodMessage);
 			expect(formattedError?.extensions?.code).toBe(
-				ErrorCode.INTERNAL_SERVER_ERROR,
+				ErrorCode.INVALID_ARGUMENTS,
 			);
 		});
 
@@ -392,7 +426,7 @@ describe("GraphQL Error Validation Logic", () => {
 				statusCode: 400,
 			});
 
-			const specificMsg = "Something went boom inside";
+			const specificMsg = "Minio removal error";
 			const error = {
 				message: `Wrapper error: ${specificMsg}`,
 				locations: [],
