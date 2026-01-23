@@ -1,6 +1,6 @@
 import { faker } from "@faker-js/faker";
 import { getTableConfig } from "drizzle-orm/pg-core";
-import { afterEach, describe, expect, it, vi } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { advertisementAttachmentsTable } from "~/src/drizzle/tables/advertisementAttachments";
 import {
 	advertisementsTable,
@@ -11,9 +11,6 @@ import { organizationsTable } from "~/src/drizzle/tables/organizations";
 import { usersTable } from "~/src/drizzle/tables/users";
 
 describe("src/drizzle/tables/advertisements.ts", () => {
-	afterEach(() => {
-		vi.restoreAllMocks();
-	});
 	describe("advertisementsTable schema", () => {
 		it("should be defined as a pgTable", () => {
 			expect(advertisementsTable).toBeDefined();
@@ -299,31 +296,31 @@ describe("src/drizzle/tables/advertisements.ts", () => {
 			});
 
 			it("should reject missing name", () => {
-				const { name, ...input } = validInput;
+				const { name: _name, ...input } = validInput;
 				const result = advertisementsTableInsertSchema.safeParse(input);
 				expect(result.success).toBe(false);
 			});
 
 			it("should reject missing type", () => {
-				const { type, ...input } = validInput;
+				const { type: _type, ...input } = validInput;
 				const result = advertisementsTableInsertSchema.safeParse(input);
 				expect(result.success).toBe(false);
 			});
 
 			it("should reject missing startAt", () => {
-				const { startAt, ...input } = validInput;
+				const { startAt: _startAt, ...input } = validInput;
 				const result = advertisementsTableInsertSchema.safeParse(input);
 				expect(result.success).toBe(false);
 			});
 
 			it("should reject missing endAt", () => {
-				const { endAt, ...input } = validInput;
+				const { endAt: _endAt, ...input } = validInput;
 				const result = advertisementsTableInsertSchema.safeParse(input);
 				expect(result.success).toBe(false);
 			});
 
 			it("should reject missing organizationId", () => {
-				const { organizationId, ...input } = validInput;
+				const { organizationId: _organizationId, ...input } = validInput;
 				const result = advertisementsTableInsertSchema.safeParse(input);
 				expect(result.success).toBe(false);
 			});
@@ -497,7 +494,7 @@ describe("src/drizzle/tables/advertisements.ts", () => {
 				expect(result.success).toBe(true);
 			});
 
-			it("should accept date strings that can be parsed", () => {
+			it("should accept Date objects created from ISO strings", () => {
 				const result = advertisementsTableInsertSchema.safeParse({
 					...validInput,
 					startAt: new Date("2024-01-01T00:00:00Z"),
