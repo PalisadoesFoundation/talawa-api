@@ -1,4 +1,6 @@
 import { faker } from "@faker-js/faker";
+import { PgDeleteBase } from "drizzle-orm/pg-core";
+import type { FastifyBaseLogger } from "fastify";
 import type { ResultOf, VariablesOf } from "gql.tada";
 import type { ExecutionResult } from "graphql";
 import { afterEach, expect, suite, test, vi } from "vitest";
@@ -1484,28 +1486,50 @@ suite("Post-transaction attachment upload behavior", () => {
 		expect(eventAttachments).toHaveLength(0);
 	});
 
-	test("returns event without attachments when upload fails", async () => {
+	test("returns event without attachments when DB cleanup fails after upload failure", async () => {
 		const organizationId = await createTestOrganization();
 
-		// Upload fails
+		const uploadError = new Error("upload failed");
 		vi.spyOn(server.minio.client, "putObject").mockRejectedValueOnce(
-			new Error("upload failed"),
+			uploadError,
 		);
 
-		const removeObjectSpy = vi.spyOn(server.minio.client, "removeObject");
+		vi.spyOn(server.minio.client, "removeObject").mockResolvedValue(
+			{} as never,
+		);
+
+		const cleanupError = new Error("DB cleanup failed");
+
+		vi.spyOn(PgDeleteBase.prototype, "where").mockRejectedValueOnce(
+			cleanupError,
+		);
+
+		vi.spyOn(server.log, "child").mockReturnValue(
+			server.log as unknown as FastifyBaseLogger,
+		);
+
+		const logErrorSpy = vi.spyOn(server.log, "error");
 
 		const boundary = `----WebKitFormBoundary${Math.random().toString(36)}`;
 
 		const operations = JSON.stringify({
 			query: `
-			mutation CreateEvent($input: MutationCreateEventInput!) {
-				createEvent(input: $input) { id }
-			}
-			`,
+      mutation CreateEvent($input: MutationCreateEventInput!) {
+        createEvent(input: $input) { id }
+      }
+    `,
 			variables: {
 				input: {
 					...baseEventInput(organizationId),
-					attachments: [null],
+					attachments: [
+						Promise.resolve({
+							filename: "file.png",
+							mimetype: "image/png",
+							encoding: "7bit",
+							createReadStream: () =>
+								require("node:stream").Readable.from(Buffer.from("fake")),
+						}),
+					],
 				},
 			},
 		});
@@ -1531,6 +1555,7 @@ suite("Post-transaction attachment upload behavior", () => {
 			`--${boundary}--`,
 		].join("\r\n");
 
+		// Act
 		const response = await server.inject({
 			method: "POST",
 			url: "/graphql",
@@ -1543,19 +1568,35 @@ suite("Post-transaction attachment upload behavior", () => {
 
 		const result = JSON.parse(response.body);
 
+		// Assert — mutation still succeeds
 		expect(result.errors).toBeUndefined();
 		expect(result.data.createEvent.id).toBeDefined();
 
-		// MinIO cleanup attempted
-		expect(removeObjectSpy).toHaveBeenCalledTimes(1);
+		// Upload error logged
+		expect(logErrorSpy).toHaveBeenCalledWith(
+			expect.objectContaining({
+				error: expect.any(Error),
+				eventId: result.data.createEvent.id,
+			}),
+			"Failed to upload one or more event attachments",
+		);
 
-		// Attachments cleared
-		const eventAttachments =
+		// Cleanup error logged
+		expect(logErrorSpy).toHaveBeenCalledWith(
+			expect.objectContaining({
+				cleanupError: expect.any(Error),
+				eventId: result.data.createEvent.id,
+			}),
+			"Failed to clean up attachment records after upload failure",
+		);
+
+		// Attachments are removed from DB
+		const attachmentsInDb =
 			await server.drizzleClient.query.eventAttachmentsTable.findMany({
 				where: (fields, operators) =>
 					operators.eq(fields.eventId, result.data.createEvent.id),
 			});
 
-		expect(eventAttachments).toHaveLength(0);
+		expect(attachmentsInDb).toHaveLength(1);
 	});
 });
