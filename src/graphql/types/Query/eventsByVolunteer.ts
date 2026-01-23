@@ -247,7 +247,10 @@ builder.queryField("eventsByVolunteer", (t) =>
 									),
 									eq(recurringEventInstancesTable.isCancelled, false),
 								),
-								orderBy: [asc(recurringEventInstancesTable.actualStartTime)],
+								orderBy: [
+									asc(recurringEventInstancesTable.actualStartTime),
+									asc(recurringEventInstancesTable.id),
+								],
 								// We fetch up to offset + limit. Even if all standalone events are later,
 								// we have enough instances to fill the page.
 								limit: offset + limit,
