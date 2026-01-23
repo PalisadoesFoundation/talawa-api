@@ -1,4 +1,5 @@
 import { hash } from "@node-rs/argon2";
+import { eq } from "drizzle-orm";
 import type { FileUpload } from "graphql-upload-minimal";
 import { ulid } from "ulidx";
 import { z } from "zod";
@@ -254,6 +255,31 @@ builder.mutationField("createUser", (t) =>
 								"content-type": parsedArgs.input.avatar.mimetype,
 							},
 						);
+					} catch (uploadError) {
+						// Clean up the created user if avatar upload fails
+						try {
+							await ctx.drizzleClient
+								.delete(usersTable)
+								.where(eq(usersTable.id, result.user.id));
+
+							ctx.log.info(
+								{ userId: result.user.id },
+								"Rolled back user creation due to avatar upload failure",
+							);
+						} catch (rollbackError) {
+							ctx.log.error(
+								{ error: rollbackError, userId: result.user.id },
+								"Failed to rollback user creation after avatar upload failure",
+							);
+						}
+
+						throw new TalawaGraphQLError({
+							message: "Failed to upload user avatar",
+							extensions: {
+								code: "upload_failed",
+							},
+							originalError: uploadError as Error,
+						});
 					} finally {
 						fileUploadStop?.();
 					}

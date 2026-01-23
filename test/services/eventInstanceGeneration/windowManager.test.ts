@@ -113,6 +113,50 @@ suite("windowManager", () => {
 			);
 		});
 
+		test("returns existing config without inserting when config already exists", async () => {
+			const input: CreateGenerationWindowInput = {
+				organizationId: mockOrganizationId,
+				createdById: mockUserId,
+			};
+
+			const mockExistingConfig = {
+				id: faker.string.uuid(),
+				organizationId: mockOrganizationId,
+				hotWindowMonthsAhead: 12,
+				historyRetentionMonths: 3,
+				currentWindowEndDate: new Date("2026-01-01T00:00:00Z"),
+				retentionStartDate: new Date("2024-10-01T00:00:00Z"),
+				processingPriority: 5,
+				maxInstancesPerRun: 1000,
+				createdAt: new Date(),
+				updatedAt: new Date(),
+			};
+
+			// Mock findFirst to return an existing config
+			(
+				mockDrizzleClient.query.eventGenerationWindowsTable.findFirst as Mock
+			).mockResolvedValue(mockExistingConfig);
+
+			const result = await initializeGenerationWindow(
+				input,
+				mockDrizzleClient,
+				mockLogger,
+			);
+
+			expect(result).toEqual(mockExistingConfig);
+			// Verify that insert was NOT called
+			expect(mockDrizzleClient.insert).not.toHaveBeenCalled();
+			expect(mockLogger.info).toHaveBeenCalledWith(
+				expect.objectContaining({
+					hotWindowMonthsAhead: mockExistingConfig.hotWindowMonthsAhead,
+					historyRetentionMonths: mockExistingConfig.historyRetentionMonths,
+					currentWindowEndDate:
+						mockExistingConfig.currentWindowEndDate.toISOString(),
+				}),
+				`Found existing Generation window for organization ${mockOrganizationId}`,
+			);
+		});
+
 		test("returns existing config when insert conflicts (idempotent behavior)", async () => {
 			const input: CreateGenerationWindowInput = {
 				organizationId: mockOrganizationId,

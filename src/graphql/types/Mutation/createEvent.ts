@@ -614,7 +614,7 @@ builder.mutationField("createEvent", (t) =>
 									} => pair !== null,
 								)
 								.map(async ({ attachment, inputAttachment }) => {
-									const resolvedInputAttachment = await inputAttachment;
+									const resolvedInputAttachment = inputAttachment;
 									await ctx.minio.client.putObject(
 										ctx.minio.bucketName,
 										attachment.name,
