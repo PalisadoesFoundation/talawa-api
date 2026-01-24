@@ -7,8 +7,8 @@ import type {
 } from "~/src/drizzle/tables/recurringEventInstances";
 import {
 	type GetRecurringEventInstancesInput,
+	getRecurringEventInstanceByBaseId,
 	getRecurringEventInstanceById,
-	getRecurringEventInstancesByBaseId,
 	getRecurringEventInstancesByBaseIds,
 	getRecurringEventInstancesByIds,
 	getRecurringEventInstancesInDateRange,
@@ -1063,7 +1063,7 @@ describe("getRecurringEventInstancesByBaseId", () => {
 	});
 
 	it("should fetch and resolve instances for a base event ID", async () => {
-		const result = await getRecurringEventInstancesByBaseId(
+		const result = await getRecurringEventInstanceByBaseId(
 			baseEventId,
 			mockDrizzleClient,
 			mockLogger,
@@ -1098,7 +1098,7 @@ describe("getRecurringEventInstancesByBaseId", () => {
 			mockDrizzleClient.query.recurringEventInstancesTable.findMany,
 		).mockResolvedValue([]);
 
-		const result = await getRecurringEventInstancesByBaseId(
+		const result = await getRecurringEventInstanceByBaseId(
 			baseEventId,
 			mockDrizzleClient,
 			mockLogger,
@@ -1115,7 +1115,7 @@ describe("getRecurringEventInstancesByBaseId", () => {
 		).mockRejectedValue(error);
 
 		await expect(
-			getRecurringEventInstancesByBaseId(
+			getRecurringEventInstanceByBaseId(
 				baseEventId,
 				mockDrizzleClient,
 				mockLogger,

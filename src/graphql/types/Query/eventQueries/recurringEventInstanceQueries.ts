@@ -211,17 +211,23 @@ export async function getRecurringEventInstanceById(
  * @param logger - The logger for logging debug and error messages.
  * @returns - A promise that resolves to an array of fully resolved recurring event instances.
  */
-export async function getRecurringEventInstancesByBaseId(
+export async function getRecurringEventInstanceByBaseId(
 	baseRecurringEventId: string,
 	drizzleClient: ServiceDependencies["drizzleClient"],
 	logger: ServiceDependencies["logger"],
+	options: {
+		limit?: number;
+		includeCancelled?: boolean;
+		excludeInstanceIds?: string[];
+	} = {},
 ): Promise<ResolvedRecurringEventInstance[]> {
 	try {
-		// Delegate to the batch helper to avoid code duplication
+		// Delegate to the batch helper with options
 		return await getRecurringEventInstancesByBaseIds(
 			[baseRecurringEventId],
 			drizzleClient,
 			logger,
+			options,
 		);
 	} catch (error) {
 		logger.error(

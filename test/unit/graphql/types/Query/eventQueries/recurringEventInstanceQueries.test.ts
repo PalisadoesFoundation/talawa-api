@@ -161,24 +161,20 @@ describe("getRecurringEventInstancesByBaseIds", () => {
 		);
 
 		// Verify it was called with a where clause (implies filtering)
-		// Since Drizzle 'and()' returns an object, we verify structure.
-		// We expect the 'where' to be present.
-		expect(
-			mockDrizzleClient.query.recurringEventInstancesTable.findMany,
-		).toHaveBeenCalledWith(
-			expect.objectContaining({
-				where: expect.anything(),
-			}),
-		);
-
-		// Ensure we didn't just call it with empty object
 		const calls = vi.mocked(
 			mockDrizzleClient.query.recurringEventInstancesTable.findMany,
 		).mock.calls;
 		expect(calls.length).toBeGreaterThan(0);
-		// @ts-expect-error - we know it exists because of the assertion above
-		const lastCallArgs = calls[calls.length - 1][0];
+		const lastCall = calls[calls.length - 1];
+		if (!lastCall) throw new Error("lastCall is undefined");
+		const lastCallArgs = lastCall[0] as { where?: unknown };
 		expect(lastCallArgs).toHaveProperty("where");
+
+		// Stringify the where clause to check for isCancelled=false predicate
+		// This is a bit brittle if internal representation changes, but matches user request
+		const whereStr = JSON.stringify(lastCallArgs.where);
+		expect(whereStr).toContain("isCancelled");
+		expect(whereStr).toContain("false");
 	});
 
 	it("should NOT filter by isCancelled when includeCancelled is true", async () => {
@@ -201,11 +197,13 @@ describe("getRecurringEventInstancesByBaseIds", () => {
 		).mock.calls;
 		expect(calls.length).toBe(1);
 
-		// Verify that where clause was called - with includeCancelled: true,
-		// the isCancelled=false filter should NOT be added, resulting in
-		// fewer conditions in the where clause
-		const callArgs = calls[0]?.[0] as { where?: unknown };
+		const firstCall = calls[0];
+		if (!firstCall) throw new Error("firstCall is undefined");
+		const callArgs = firstCall[0] as { where?: unknown };
 		expect(callArgs).toHaveProperty("where");
+		const whereStr = JSON.stringify(callArgs.where);
+		// When includeCancelled is true, the isCancelled filter should NOT be present
+		expect(whereStr).not.toContain("isCancelled");
 	});
 
 	it("should respect the excludeInstanceIds parameter", async () => {
@@ -224,29 +222,20 @@ describe("getRecurringEventInstancesByBaseIds", () => {
 		);
 
 		// Verify the where clause contains the exclusion logic
-		expect(
-			mockDrizzleClient.query.recurringEventInstancesTable.findMany,
-		).toHaveBeenCalledWith(
-			expect.objectContaining({
-				where: expect.anything(),
-			}),
-		);
-
 		const calls = vi.mocked(
 			mockDrizzleClient.query.recurringEventInstancesTable.findMany,
 		).mock.calls;
 		expect(calls.length).toBeGreaterThan(0);
-		// @ts-expect-error - verifying call arguments
-		const lastCallArgs = calls[calls.length - 1][0];
+		const lastCall = calls[calls.length - 1];
+		if (!lastCall) throw new Error("lastCall is undefined");
+		const lastCallArgs = lastCall[0] as { where?: unknown };
 
-		// The where clause should be a composite (AND) containing the exclusion
 		expect(lastCallArgs).toHaveProperty("where");
-
-		// Since we cannot easily inspect Drizzle symbols/internals in unit tests without
-		// brittle coupling, we verify that the query was constructed with the additional
-		// constraint structure (the array of conditions in AND).
-		// In this case, we expect at least 3 conditions: baseId IN, isCancelled=false (default), and id NOT IN
-		// (or 2 if isCancelled is not default, but default is false so it is added)
+		const whereStr = JSON.stringify(lastCallArgs.where);
+		// Check that excludeIds are present in the query
+		for (const id of excludeIds) {
+			expect(whereStr).toContain(id);
+		}
 	});
 
 	it("should handle multiple base IDs", async () => {

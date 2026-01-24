@@ -2,9 +2,9 @@
 
 ***
 
-# Function: getRecurringEventInstancesByBaseId()
+# Function: getRecurringEventInstanceByBaseId()
 
-> **getRecurringEventInstancesByBaseId**(`baseRecurringEventId`, `drizzleClient`, `logger`): `Promise`\<[`ResolvedRecurringEventInstance`](../../../../../../drizzle/tables/recurringEventInstances/type-aliases/ResolvedRecurringEventInstance.md)[]\>
+> **getRecurringEventInstanceByBaseId**(`baseRecurringEventId`, `drizzleClient`, `logger`, `options`): `Promise`\<[`ResolvedRecurringEventInstance`](../../../../../../drizzle/tables/recurringEventInstances/type-aliases/ResolvedRecurringEventInstance.md)[]\>
 
 Defined in: [src/graphql/types/Query/eventQueries/recurringEventInstanceQueries.ts:214](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/graphql/types/Query/eventQueries/recurringEventInstanceQueries.ts#L214)
 
@@ -29,6 +29,20 @@ The Drizzle ORM client for database access.
 `FastifyBaseLogger`
 
 The logger for logging debug and error messages.
+
+### options
+
+#### excludeInstanceIds?
+
+`string`[]
+
+#### includeCancelled?
+
+`boolean`
+
+#### limit?
+
+`number`
 
 ## Returns
 

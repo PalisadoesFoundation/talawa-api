@@ -199,6 +199,7 @@ builder.queryField("eventsByAttendee", (t) =>
 								columns: {
 									id: true,
 									actualStartTime: true,
+									baseRecurringEventId: true,
 								},
 								where: and(
 									inArray(
@@ -215,12 +216,33 @@ builder.queryField("eventsByAttendee", (t) =>
 							},
 						);
 
+					const templatesWithInstances = new Set(
+						templateInstances.map((ti) => ti.baseRecurringEventId),
+					);
+
 					for (const instance of templateInstances) {
 						allReferenceEvents.push({
 							id: instance.id,
 							startAt: new Date(instance.actualStartTime).getTime(),
 							isRecurringInstance: true,
 						});
+					}
+
+					// Fallback for templates with no active instances
+					for (const templateId of recurringTemplateIds) {
+						if (!templatesWithInstances.has(templateId)) {
+							// Find the original template record to get its startAt
+							const record = attendeeRecords.find(
+								(r) => r.eventId === templateId && r.event,
+							);
+							if (record?.event) {
+								allReferenceEvents.push({
+									id: templateId,
+									startAt: new Date(record.event.startAt).getTime(),
+									isRecurringInstance: false,
+								});
+							}
+						}
 					}
 				}
 

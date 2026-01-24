@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { builder } from "~/src/graphql/builder";
 import { Event } from "~/src/graphql/types/Event/Event";
-import { getRecurringEventInstancesByBaseId } from "~/src/graphql/types/Query/eventQueries";
+import { getRecurringEventInstanceByBaseId } from "~/src/graphql/types/Query/eventQueries";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 
 const queryGetRecurringEventsSchema = z.object({
@@ -132,10 +132,14 @@ builder.queryField("getRecurringEvents", (t) =>
 				}
 
 				// Get all recurring event instances for this base event
-				const recurringInstances = await getRecurringEventInstancesByBaseId(
+				const recurringInstances = await getRecurringEventInstanceByBaseId(
 					baseRecurringEventId,
 					ctx.drizzleClient,
 					ctx.log,
+					{
+						limit: 1000, // Explicitly set to 1000 to match DEFAULT_LIMIT or as desired
+						includeCancelled: false,
+					},
 				);
 
 				// Transform recurring instances to include attachments (empty for instances)

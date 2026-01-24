@@ -8,7 +8,7 @@
 
 export * from "./recurringEventInstanceQueries";
 // Export the new function for getting recurring events by base ID
-export { getRecurringEventInstancesByBaseId } from "./recurringEventInstanceQueries";
+export { getRecurringEventInstanceByBaseId } from "./recurringEventInstanceQueries";
 export type { GetStandaloneEventsInput } from "./standaloneEventQueries";
 export * from "./standaloneEventQueries";
 
