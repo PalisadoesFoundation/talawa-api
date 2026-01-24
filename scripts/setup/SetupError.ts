@@ -1,16 +1,23 @@
 export enum SetupErrorCode {
+	// File operation errors
 	FILE_OP_FAILED = "FILE_OP_FAILED",
-	VALIDATION_FAILED = "VALIDATION_FAILED",
-	ENV_INIT_FAILED = "ENV_INIT_FAILED",
 	BACKUP_FAILED = "BACKUP_FAILED",
 	COMMIT_FAILED = "COMMIT_FAILED",
 	RESTORE_FAILED = "RESTORE_FAILED",
+	CLEANUP_FAILED = "CLEANUP_FAILED",
+
+	// Validation and initialization errors
+	VALIDATION_FAILED = "VALIDATION_FAILED",
+	ENV_INIT_FAILED = "ENV_INIT_FAILED",
+
+	// Generic errors
+	UNKNOWN_ERROR = "UNKNOWN_ERROR",
 }
 
 export interface SetupErrorContext {
-	operation: string;
+	operation?: string;
 	filePath?: string;
-	details?: Record<string, unknown>;
+	[key: string]: unknown;
 }
 
 export class SetupError extends Error {
@@ -21,16 +28,18 @@ export class SetupError extends Error {
 	constructor(
 		code: SetupErrorCode,
 		message: string,
-		context: SetupErrorContext,
+		context: SetupErrorContext = {},
 		cause?: Error,
 	) {
-		super(message);
+		super(message, { cause });
 		this.name = "SetupError";
 		this.code = code;
 		this.context = context;
 		this.cause = cause;
-		if ((Error as ErrorConstructor).captureStackTrace)
-			(Error as ErrorConstructor).captureStackTrace(this, SetupError);
+
+		if (Error.captureStackTrace) {
+			Error.captureStackTrace(this, SetupError);
+		}
 	}
 
 	toJSON() {
@@ -43,5 +52,26 @@ export class SetupError extends Error {
 				? { name: this.cause.name, message: this.cause.message }
 				: undefined,
 		};
+	}
+
+	getDetailedMessage(): string {
+		const contextStr = Object.entries(this.context)
+			.map(([key, value]) => {
+				const serialized =
+					typeof value === "object" && value !== null
+						? JSON.stringify(value)
+						: String(value);
+				return `${key}: ${serialized}`;
+			})
+			.join(", ");
+
+		let message = `[${this.code}] ${this.message}`;
+		if (contextStr) {
+			message += ` (${contextStr})`;
+		}
+		if (this.cause) {
+			message += `\nCaused by: ${this.cause.message}`;
+		}
+		return message;
 	}
 }
