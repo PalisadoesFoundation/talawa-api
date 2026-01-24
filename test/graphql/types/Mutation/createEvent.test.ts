@@ -2209,6 +2209,13 @@ suite("Post-transaction attachment upload behavior", () => {
 		const putObjectSpy = vi.spyOn(server.minio.client, "putObject");
 		putObjectSpy.mockRejectedValue(new Error("upload failed"));
 
+		// Count events before the test
+		const eventCountBefore =
+			await server.drizzleClient.query.eventsTable.findMany({
+				where: (fields, operators) =>
+					operators.eq(fields.organizationId, organizationId),
+			});
+
 		const boundary = `----WebKitFormBoundary${Math.random().toString(36)}`;
 
 		const operations = JSON.stringify({
@@ -2265,9 +2272,13 @@ suite("Post-transaction attachment upload behavior", () => {
 		expect(result.errors[0]?.message).toContain("upload failed");
 		expect(result.data?.createEvent).toBeNull();
 
-		// Transaction should be rolled back, no event created
-		const eventCount = await server.drizzleClient.query.eventsTable.findMany();
-		expect(eventCount.length).toBeGreaterThanOrEqual(0); // May have other events from other tests
+		// Verify no new event was created (transaction rolled back)
+		const eventCountAfter =
+			await server.drizzleClient.query.eventsTable.findMany({
+				where: (fields, operators) =>
+					operators.eq(fields.organizationId, organizationId),
+			});
+		expect(eventCountAfter.length).toBe(eventCountBefore.length);
 	});
 
 	test("skips upload logic when attachments are undefined", async () => {
