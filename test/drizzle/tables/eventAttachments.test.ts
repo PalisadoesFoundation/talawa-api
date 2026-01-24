@@ -69,8 +69,8 @@ async function createTestEvent(): Promise<string> {
 			creatorId: userId,
 			organizationId: OrgId,
 			name: faker.lorem.word(),
-			startAt: new Date("2026-01-25T10:30:00.000Z"),
-			endAt: new Date("2026-01-26T10:30:00.000Z"),
+			startAt: faker.date.recent(),
+			endAt: faker.date.recent(),
 		})
 		.returning({ id: eventsTable.id });
 
