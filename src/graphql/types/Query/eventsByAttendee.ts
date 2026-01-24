@@ -35,9 +35,11 @@ builder.queryField("eventsByAttendee", (t) =>
 			}),
 			limit: t.arg.int({
 				description: "Number of events to return",
+				defaultValue: 100,
 			}),
 			offset: t.arg.int({
 				description: "Number of events to skip",
+				defaultValue: 0,
 			}),
 		},
 		description:

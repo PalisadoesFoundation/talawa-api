@@ -16,7 +16,6 @@ import {
 	Mutation_createOrganizationMembership,
 	Mutation_registerEventAttendee,
 	Mutation_updateEventVolunteer,
-	Query_eventsByVolunteer,
 	Query_signIn,
 } from "../documentNodes";
 import type { introspection } from "../gql.tada";
@@ -47,6 +46,29 @@ const Query_eventsByAttendee = gql(`
 			baseRecurringEventId
 		}
 	}
+`);
+
+const Query_eventsByVolunteer = gql(`
+query Query_eventsByVolunteer($userId: ID!, $limit: Int, $offset: Int) {
+eventsByVolunteer(userId: $userId, limit: $limit, offset: $offset) {
+id
+name
+description
+startAt
+endAt
+location
+allDay
+isPublic
+isRegisterable
+isInviteOnly
+isGenerated
+baseRecurringEventId
+organization {
+id
+name
+}
+}
+}
 `);
 
 const signInResult = await mercuriusClient.query(Query_signIn, {

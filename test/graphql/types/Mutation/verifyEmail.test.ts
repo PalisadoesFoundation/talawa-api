@@ -1,14 +1,35 @@
+import { initGraphQLTada } from "gql.tada";
 import type { MockInstance } from "vitest";
 import { afterEach, beforeEach, expect, suite, test, vi } from "vitest";
+import type { ClientCustomScalars } from "~/src/graphql/scalars/index";
 import { emailService } from "~/src/services/email/emailServiceInstance";
 import type { EmailJob, EmailResult } from "~/src/services/email/types";
 import { assertToBeNonNullish } from "../../../helpers";
 import { mercuriusClient } from "../client";
 import { createRegularUserUsingAdmin } from "../createRegularUserUsingAdmin";
-import {
-	Mutation_sendVerificationEmail,
-	Mutation_verifyEmail,
-} from "../documentNodes";
+import type { introspection } from "../gql.tada";
+
+const gql = initGraphQLTada<{
+	introspection: introspection;
+	scalars: ClientCustomScalars;
+}>();
+
+const Mutation_sendVerificationEmail =
+	gql(`mutation Mutation_sendVerificationEmail {
+    sendVerificationEmail {
+        success
+        message
+    }
+}`);
+
+const Mutation_verifyEmail =
+	gql(`mutation Mutation_verifyEmail($input: MutationVerifyEmailInput!) {
+    verifyEmail(input: $input) {
+        success
+        message
+    }
+}
+`);
 
 suite("Mutation field verifyEmail", () => {
 	let sendEmailSpy: MockInstance<(job: EmailJob) => Promise<EmailResult>>;

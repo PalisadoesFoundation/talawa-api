@@ -221,17 +221,14 @@ Event.implement({
 			description:
 				"A boolean flag indicating if this event was generated from a recurrence template.",
 			resolve: (event) => {
-				if ("isGenerated" in event) {
-					return (event as { isGenerated?: boolean }).isGenerated ?? false;
+				const evt = event as {
+					isGenerated?: boolean;
+					baseRecurringEventId?: string | null;
+				};
+				if (typeof evt.isGenerated === "boolean") {
+					return evt.isGenerated;
 				}
-				return Boolean(
-					(
-						event as {
-							isGenerated?: boolean;
-							baseRecurringEventId?: string | null;
-						}
-					).baseRecurringEventId,
-				);
+				return Boolean(evt.baseRecurringEventId);
 			},
 		}),
 		baseRecurringEventId: t.id({

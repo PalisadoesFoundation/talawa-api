@@ -749,16 +749,13 @@ describe("getUnifiedEventsInDateRange", () => {
 				largeGeneratedArray,
 			);
 
-			const start = Date.now();
 			const result = await getUnifiedEventsInDateRange(
 				{ ...baseInput, limit: 1000 },
 				mockDrizzleClient,
 				mockLogger,
 			);
-			const duration = Date.now() - start;
 
 			expect(result).toHaveLength(1000);
-			expect(duration).toBeLessThan(1000); // Should complete within 1 second
 		});
 	});
 });

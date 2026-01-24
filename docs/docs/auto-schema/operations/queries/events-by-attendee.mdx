@@ -75,8 +75,8 @@ Query field to fetch all events a user is registered for or has attended.
 
 ```graphql
 eventsByAttendee(
-  limit: Int
-  offset: Int
+  limit: Int = 100
+  offset: Int = 0
   userId: ID!
 ): [Event!]!
 ```

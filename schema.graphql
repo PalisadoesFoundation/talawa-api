@@ -4965,10 +4965,10 @@ type Query {
   """
   eventsByAdmin(
     """Number of events to return (Max limit: 100)"""
-    limit: Int
+    limit: Int = 100
 
     """Number of events to skip (Max offset: 10000)"""
-    offset: Int
+    offset: Int = 0
 
     """ID of the user whose admin events to fetch"""
     userId: ID!
@@ -4979,10 +4979,10 @@ type Query {
   """
   eventsByAttendee(
     """Number of events to return"""
-    limit: Int
+    limit: Int = 100
 
     """Number of events to skip"""
-    offset: Int
+    offset: Int = 0
 
     """ID of the user whose attended events to fetch"""
     userId: ID!

@@ -1,6 +1,26 @@
+import { initGraphQLTada } from "gql.tada";
 import { expect, suite, test } from "vitest";
+import type { ClientCustomScalars } from "~/src/graphql/scalars/index";
 import { mercuriusClient } from "../client";
-import { Mutation_signInWithOAuth } from "../documentNodes";
+import type { introspection } from "../gql.tada";
+
+const gql = initGraphQLTada<{
+	introspection: introspection;
+	scalars: ClientCustomScalars;
+}>();
+
+export const Mutation_signInWithOAuth =
+	gql(`mutation Mutation_signInWithOAuth($input: OAuthLoginInput!) {
+    signInWithOAuth(input: $input) {
+        authenticationToken
+        refreshToken
+        user {
+            id
+            name
+            emailAddress
+        }
+    }
+}`);
 
 suite("Mutation signInWithOAuth", () => {
 	test("signInWithOAuth throws 'unexpected' error since mutation is not yet implemented", async () => {

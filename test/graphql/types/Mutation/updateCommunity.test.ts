@@ -1,6 +1,8 @@
 import { faker } from "@faker-js/faker";
+import { initGraphQLTada } from "gql.tada";
 import type { Client } from "minio";
 import { afterEach, expect, suite, test, vi } from "vitest";
+import type { ClientCustomScalars } from "~/src/graphql/scalars/index";
 import type {
 	InvalidArgumentsExtensions,
 	TalawaGraphQLFormattedError,
@@ -12,10 +14,36 @@ import { assertToBeNonNullish } from "../../../helpers";
 import { server } from "../../../server";
 import { mercuriusClient } from "../client";
 import { createRegularUserUsingAdmin } from "../createRegularUserUsingAdmin";
+import type { introspection } from "../gql.tada";
+
+const gql = initGraphQLTada<{
+	introspection: introspection;
+	scalars: ClientCustomScalars;
+}>();
+
+export const Mutation_updateCommunity = gql(`
+	mutation Mutation_updateCommunity($input: MutationUpdateCommunityInput!) {
+		updateCommunity(input: $input) {
+			id
+			name
+			facebookURL
+			githubURL
+			instagramURL
+			linkedinURL
+			logoMimeType
+			redditURL
+			slackURL
+			websiteURL
+			xURL
+			youtubeURL
+			inactivityTimeoutDuration
+		}
+	}
+`);
+
 import {
 	Mutation_deleteCurrentUser,
 	Mutation_deleteUser,
-	Mutation_updateCommunity,
 	Query_signIn,
 } from "../documentNodes";
 

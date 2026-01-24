@@ -75,8 +75,8 @@ Query field to fetch all events where a user is an administrator (via organizati
 
 ```graphql
 eventsByAdmin(
-  limit: Int
-  offset: Int
+  limit: Int = 100
+  offset: Int = 0
   userId: ID!
 ): [Event!]!
 ```

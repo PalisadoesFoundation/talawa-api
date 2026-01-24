@@ -14,8 +14,8 @@ const MAX_OFFSET = 10000;
 
 const queryEventsByAdminArgumentsSchema = z.object({
 	userId: z.string().uuid(),
-	limit: z.number().int().min(1).max(100).optional(),
-	offset: z.number().int().min(0).max(MAX_OFFSET).optional(),
+	limit: z.number().int().min(1).max(100).default(100),
+	offset: z.number().int().min(0).max(MAX_OFFSET).default(0),
 });
 
 /**
@@ -32,9 +32,11 @@ builder.queryField("eventsByAdmin", (t) =>
 			}),
 			limit: t.arg.int({
 				description: "Number of events to return (Max limit: 100)",
+				defaultValue: 100,
 			}),
 			offset: t.arg.int({
 				description: `Number of events to skip (Max offset: ${MAX_OFFSET})`,
+				defaultValue: 0,
 			}),
 		},
 		description:

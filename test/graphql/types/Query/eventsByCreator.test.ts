@@ -10,18 +10,80 @@ import { assertToBeNonNullish } from "../../../helpers";
 import { server } from "../../../server";
 import { mercuriusClient } from "../client";
 import { createRegularUserUsingAdmin } from "../createRegularUserUsingAdmin";
-import {
-	Mutation_createEvent,
-	Mutation_createOrganization,
-	Mutation_createOrganizationMembership,
-	Query_signIn,
-} from "../documentNodes";
 import type { introspection } from "../gql.tada";
 
 const gql = initGraphQLTada<{
 	introspection: introspection;
 	scalars: ClientCustomScalars;
 }>();
+
+// Inline definitions to avoid coverage issues
+const Mutation_createEvent =
+	gql(`mutation Mutation_createEvent($input: MutationCreateEventInput!) {
+    createEvent(input: $input) {
+        id
+        name
+        description
+        startAt
+        endAt
+        createdAt
+        creator{
+            id
+            name
+        }
+        organization {
+            id
+            countryCode
+        }
+    }
+}`);
+
+const Mutation_createOrganization =
+	gql(`mutation Mutation_createOrganization($input: MutationCreateOrganizationInput!) {
+    createOrganization(input: $input) {
+      id
+      name
+      countryCode
+      isUserRegistrationRequired
+    }
+  }`);
+
+const Mutation_createOrganizationMembership =
+	gql(`mutation Mutation_createOrganizationMembership($input: MutationCreateOrganizationMembershipInput!) {
+    createOrganizationMembership(input: $input) {
+      id
+    }
+  }`);
+
+const Query_signIn = gql(`query Query_signIn($input: QuerySignInInput!) {
+    signIn(input: $input) {
+        authenticationToken
+        refreshToken
+        user {
+            addressLine1
+            addressLine2
+            birthDate
+            city
+            countryCode
+            createdAt
+            description
+            educationGrade
+            emailAddress
+            employmentStatus
+            homePhoneNumber
+            id
+            isEmailAddressVerified
+            maritalStatus
+            mobilePhoneNumber
+            name
+            natalSex
+            postalCode
+            role
+            state
+            workPhoneNumber
+        }
+    }
+}`);
 
 const Query_eventsByCreator = gql(`
 	query Query_eventsByCreator($userId: ID!, $limit: Int, $offset: Int) {
