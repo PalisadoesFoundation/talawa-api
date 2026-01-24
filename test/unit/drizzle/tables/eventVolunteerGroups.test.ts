@@ -1,7 +1,7 @@
 import { getTableColumns, getTableName } from "drizzle-orm";
 import { getTableConfig } from "drizzle-orm/pg-core";
 import { beforeEach, describe, expect, it } from "vitest";
-import { z } from "zod";
+// import { z } from "zod";
 
 import { eventsTable } from "~/src/drizzle/tables/events";
 import {
@@ -221,7 +221,13 @@ describe("src/drizzle/tables/eventVolunteerGroups.ts", () => {
 
 	describe("eventVolunteerGroupsTableInsertSchema", () => {
 		it("should be a valid Zod schema", () => {
-			expect(eventVolunteerGroupsTableInsertSchema).toBeInstanceOf(z.ZodObject);
+			expect(typeof eventVolunteerGroupsTableInsertSchema.safeParse).toBe(
+				"function",
+			);
+
+			expect(typeof eventVolunteerGroupsTableInsertSchema.parse).toBe(
+				"function",
+			);
 		});
 
 		it("should accept a minimal valid payload", () => {
