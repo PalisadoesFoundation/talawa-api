@@ -81,6 +81,12 @@ type AgendaFolder {
   event: Event
   id: ID!
   isDefaultFolder: Boolean!
+  items(
+    after: String
+    before: String
+    first: Int
+    last: Int
+  ): AgendaFolderItemsConnection
   name: String
   organization: Organization
   sequence: Int
@@ -114,6 +120,18 @@ Global identifier of the agenda folder.
 #### [<code style={{ fontWeight: 'normal' }}>AgendaFolder.<b>isDefaultFolder</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>Boolean!</b></code>](/auto-schema/types/scalars/boolean.mdx) <Badge class="badge badge--secondary badge--non_null" text="non-null"/> <Badge class="badge badge--secondary " text="scalar"/>
 
 Boolean to tell if agenda folder is default or not
+
+#### [<code style={{ fontWeight: 'normal' }}>AgendaFolder.<b>items</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>AgendaFolderItemsConnection</b></code>](/auto-schema/types/objects/agenda-folder-items-connection.mdx) <Badge class="badge badge--secondary " text="object"/>
+
+GraphQL connection to traverse through the agenda items contained within the agenda folder.
+
+##### [<code style={{ fontWeight: 'normal' }}>AgendaFolder.items.<b>after</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>String</b></code>](/auto-schema/types/scalars/string.mdx) <Badge class="badge badge--secondary " text="scalar"/>
+
+##### [<code style={{ fontWeight: 'normal' }}>AgendaFolder.items.<b>before</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>String</b></code>](/auto-schema/types/scalars/string.mdx) <Badge class="badge badge--secondary " text="scalar"/>
+
+##### [<code style={{ fontWeight: 'normal' }}>AgendaFolder.items.<b>first</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>Int</b></code>](/auto-schema/types/scalars/int.mdx) <Badge class="badge badge--secondary " text="scalar"/>
+
+##### [<code style={{ fontWeight: 'normal' }}>AgendaFolder.items.<b>last</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>Int</b></code>](/auto-schema/types/scalars/int.mdx) <Badge class="badge badge--secondary " text="scalar"/>
 
 #### [<code style={{ fontWeight: 'normal' }}>AgendaFolder.<b>name</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>String</b></code>](/auto-schema/types/scalars/string.mdx) <Badge class="badge badge--secondary " text="scalar"/>
 
