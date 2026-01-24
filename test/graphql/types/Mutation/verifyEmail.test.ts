@@ -1,9 +1,13 @@
+import { eq } from "drizzle-orm";
 import { initGraphQLTada } from "gql.tada";
 import type { MockInstance } from "vitest";
 import { afterEach, beforeEach, expect, suite, test, vi } from "vitest";
+import { emailVerificationTokensTable } from "~/src/drizzle/tables/emailVerificationTokens";
+import { usersTable } from "~/src/drizzle/tables/users";
 import type { ClientCustomScalars } from "~/src/graphql/scalars/index";
 import { emailService } from "~/src/services/email/emailServiceInstance";
 import type { EmailJob, EmailResult } from "~/src/services/email/types";
+import { server } from "../../../../test/server";
 import { assertToBeNonNullish } from "../../../helpers";
 import { mercuriusClient } from "../client";
 import { createRegularUserUsingAdmin } from "../createRegularUserUsingAdmin";
@@ -97,10 +101,6 @@ suite("Mutation field verifyEmail", () => {
 		const { authToken, userId } = await createRegularUserUsingAdmin();
 
 		// Manually ensure user is NOT verified (idempotency override)
-		const { eq } = await import("drizzle-orm");
-		const { usersTable } = await import("~/src/drizzle/tables/users");
-		const { server } = await import("../../../../test/server");
-
 		await server.drizzleClient
 			.update(usersTable)
 			.set({ isEmailAddressVerified: false })
@@ -122,9 +122,6 @@ suite("Mutation field verifyEmail", () => {
 	test("should fail with expired token", async () => {
 		const { authToken, userId } = await createRegularUserUsingAdmin();
 
-		const { eq } = await import("drizzle-orm");
-		const { server } = await import("../../../../test/server");
-
 		// Clear previous calls (welcome email)
 		sendEmailSpy.mockClear();
 
@@ -144,10 +141,6 @@ suite("Mutation field verifyEmail", () => {
 		assertToBeNonNullish(token);
 
 		// 2. EXPIRE the token in DB
-		const { emailVerificationTokensTable } = await import(
-			"~/src/drizzle/tables/emailVerificationTokens"
-		);
-
 		// Set expiresAt to 10 seconds ago
 		const expiredDate = new Date(Date.now() - 10000);
 
@@ -157,7 +150,6 @@ suite("Mutation field verifyEmail", () => {
 			.where(eq(emailVerificationTokensTable.userId, userId));
 
 		// Manually ensure user is NOT verified (idempotency override)
-		const { usersTable } = await import("~/src/drizzle/tables/users");
 		await server.drizzleClient
 			.update(usersTable)
 			.set({ isEmailAddressVerified: false })
@@ -204,10 +196,6 @@ suite("Mutation field verifyEmail", () => {
 		expect(result1.data.verifyEmail.success).toBe(true);
 
 		// Manually revert verification status to test token reuse
-		const { eq } = await import("drizzle-orm");
-		const { usersTable } = await import("~/src/drizzle/tables/users");
-		const { server } = await import("../../../../test/server");
-
 		await server.drizzleClient
 			.update(usersTable)
 			.set({ isEmailAddressVerified: false })
@@ -240,10 +228,6 @@ suite("Mutation field verifyEmail", () => {
 		const { authToken, userId } = await createRegularUserUsingAdmin();
 
 		// Manually mark user as verified
-		const { eq } = await import("drizzle-orm");
-		const { usersTable } = await import("~/src/drizzle/tables/users");
-		const { server } = await import("../../../../test/server");
-
 		await server.drizzleClient
 			.update(usersTable)
 			.set({ isEmailAddressVerified: true })
@@ -301,10 +285,6 @@ suite("Mutation field verifyEmail", () => {
 		const { authToken, userId } = await createRegularUserUsingAdmin();
 
 		// Delete user
-		const { eq } = await import("drizzle-orm");
-		const { usersTable } = await import("~/src/drizzle/tables/users");
-		const { server } = await import("../../../../test/server");
-
 		await server.drizzleClient
 			.delete(usersTable)
 			.where(eq(usersTable.id, userId));

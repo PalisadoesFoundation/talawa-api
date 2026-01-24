@@ -1,5 +1,19 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
-import type { eventsTable } from "~/src/drizzle/tables/events";
+import { inspect } from "node:util";
+import { uuidv7 } from "uuidv7";
+
+import {
+	afterAll,
+	beforeAll,
+	beforeEach,
+	describe,
+	expect,
+	it,
+	vi,
+} from "vitest";
+import { eventsTable } from "~/src/drizzle/tables/events";
+import { organizationsTable } from "~/src/drizzle/tables/organizations";
+import { recurrenceRulesTable } from "~/src/drizzle/tables/recurrenceRules";
+
 import type { eventExceptionsTable } from "~/src/drizzle/tables/recurringEventExceptions";
 import type {
 	ResolvedRecurringEventInstance,
@@ -961,10 +975,18 @@ describe("getRecurringEventInstancesByBaseIds", () => {
 		).mock.calls[0]?.[0];
 
 		// Verify the 'where' clause is structurally different
-		// (The implementation removes the `isCancelled: false` filter when includeCancelled is true)
-		expect(defaultCallArgs?.where).toBeDefined();
-		expect(includeCancelledArgs?.where).toBeDefined();
-		// Since we can't easily deepEqual complex Drizzle objects, we check strict inequality
+		const whereFalse = inspect(defaultCallArgs?.where, {
+			depth: null,
+			colors: false,
+		});
+		expect(whereFalse).toContain("isCancelled");
+		expect(whereFalse).toContain("false");
+
+		const whereTrue = inspect(includeCancelledArgs?.where, {
+			depth: null,
+			colors: false,
+		});
+		expect(whereTrue).not.toEqual(whereFalse);
 		expect(defaultCallArgs?.where).not.toEqual(includeCancelledArgs?.where);
 	});
 
@@ -1125,6 +1147,244 @@ describe("getRecurringEventInstancesByBaseId", () => {
 		expect(mockLogger.error).toHaveBeenCalledWith(
 			error,
 			`Failed to get recurring event instances for base event ${baseEventId}`,
+		);
+	});
+});
+
+import Fastify, { type FastifyInstance } from "fastify";
+import mercurius from "mercurius";
+import { server } from "../../../../server";
+import { createRegularUserUsingAdmin } from "../../createRegularUserUsingAdmin";
+
+describe("Integration: getRecurringEventInstancesByBaseIds", () => {
+	let testServer: FastifyInstance;
+	let user: { id: string };
+	let baseEventId: string;
+	let organizationId: string;
+	let recurrenceRuleId: string;
+
+	// Setup a standalone Fastify server with a custom schema to test the function as a resolver
+	beforeAll(async () => {
+		// Restore real implementation for integration tests
+		const actualResolver = await vi.importActual<
+			typeof import("~/src/services/eventGeneration/instanceResolver")
+		>("~/src/services/eventGeneration/instanceResolver");
+		mockResolveMultipleInstances.mockImplementation(
+			actualResolver.resolveMultipleInstances,
+		);
+		mockCreateTemplateLookupMap.mockImplementation(
+			actualResolver.createTemplateLookupMap,
+		);
+		mockCreateExceptionLookupMap.mockImplementation(
+			actualResolver.createExceptionLookupMap,
+		);
+		mockResolveInstanceWithInheritance.mockImplementation(
+			actualResolver.resolveInstanceWithInheritance,
+		);
+
+		testServer = Fastify();
+
+		// Define specific schema for testing the function
+		const schema = `
+      type RecurringEventInstance {
+        id: ID!
+        baseRecurringEventId: ID!
+        isCancelled: Boolean!
+        actualStartTime: String!
+      }
+
+      type Query {
+        test_getRecurringEventInstances(
+          baseIds: [ID!]!
+          includeCancelled: Boolean
+          excludeInstanceIds: [ID!]
+        ): [RecurringEventInstance!]!
+      }
+    `;
+
+		const resolvers = {
+			Query: {
+				test_getRecurringEventInstances: async (
+					_: unknown,
+					args: {
+						baseIds: string[];
+						includeCancelled?: boolean;
+						excludeInstanceIds?: string[];
+					},
+					context: unknown,
+				) => {
+					const ctx = context as unknown as {
+						drizzleClient: ServiceDependencies["drizzleClient"];
+						log: ServiceDependencies["logger"];
+					};
+					// Directly call the function under test
+					return await getRecurringEventInstancesByBaseIds(
+						args.baseIds,
+						ctx.drizzleClient,
+						ctx.log,
+						{
+							includeCancelled: args.includeCancelled,
+							excludeInstanceIds: args.excludeInstanceIds,
+						},
+					);
+				},
+			},
+		};
+
+		testServer.register(mercurius, {
+			schema,
+			resolvers,
+			context: () => ({
+				drizzleClient: server.drizzleClient,
+				log: server.log,
+			}),
+		});
+
+		// Create a test user and data
+		const userData = await createRegularUserUsingAdmin();
+		user = { id: userData.userId };
+
+		// Create organization
+		const orgInfo = await server.drizzleClient
+			.insert(organizationsTable)
+			.values({
+				name: `Integration Test Org ${Date.now()}`,
+				creatorId: user.id,
+			})
+			.returning();
+
+		const firstOrg = orgInfo[0];
+		if (!firstOrg) {
+			throw new Error("Failed to create organization");
+		}
+		organizationId = firstOrg.id;
+
+		// Create a base recurring event
+		const createEventResult = await server.drizzleClient
+			.insert(eventsTable)
+			.values({
+				organizationId: organizationId,
+				name: "Test Recurring Event",
+				description: "Integration Test",
+				startAt: new Date(),
+				endAt: new Date(Date.now() + 3600000),
+				location: "Test Location",
+				allDay: false,
+				isRecurringEventTemplate: true,
+				creatorId: user.id,
+			} as typeof eventsTable.$inferInsert)
+			.returning();
+
+		const firstEvent = createEventResult[0];
+		if (!firstEvent) {
+			throw new Error("Failed to create base recurring event");
+		}
+		baseEventId = firstEvent.id;
+
+		// Create recurrence rule
+		const ruleInfo = await server.drizzleClient
+			.insert(recurrenceRulesTable)
+			.values({
+				baseRecurringEventId: baseEventId,
+				recurrenceRuleString: "RRULE:FREQ=DAILY",
+				frequency: "DAILY",
+				recurrenceStartDate: new Date(),
+				latestInstanceDate: new Date(),
+				organizationId: organizationId,
+				creatorId: user.id,
+			})
+			.returning();
+
+		const firstRule = ruleInfo[0];
+		if (!firstRule) {
+			throw new Error("Failed to create recurrence rule");
+		}
+		recurrenceRuleId = firstRule.id;
+	});
+
+	afterAll(async () => {
+		await testServer.close();
+	});
+
+	it("should fetch instances with includeCancelled=true", async () => {
+		const { recurringEventInstancesTable } = await import(
+			"~/src/drizzle/tables/recurringEventInstances"
+		);
+
+		await server.drizzleClient.insert(recurringEventInstancesTable).values([
+			{
+				baseRecurringEventId: baseEventId,
+				organizationId: organizationId,
+				originalInstanceStartTime: new Date(),
+				actualStartTime: new Date(),
+				actualEndTime: new Date(),
+				isCancelled: false,
+				recurrenceRuleId: recurrenceRuleId,
+				originalSeriesId: uuidv7(),
+				sequenceNumber: 1,
+				version: "1",
+			},
+			{
+				baseRecurringEventId: baseEventId,
+				organizationId: organizationId,
+				originalInstanceStartTime: new Date(),
+				actualStartTime: new Date(),
+				actualEndTime: new Date(),
+				isCancelled: true, // CANCELLED
+				recurrenceRuleId: recurrenceRuleId,
+				originalSeriesId: uuidv7(),
+				sequenceNumber: 2,
+				version: "1",
+			},
+		] as (typeof recurringEventInstancesTable.$inferInsert)[]);
+
+		const query = `
+      query Test($baseIds: [ID!]!, $includeCancelled: Boolean!) {
+        test_getRecurringEventInstances(
+          baseIds: $baseIds
+          includeCancelled: $includeCancelled
+        ) {
+          id
+          isCancelled
+        }
+      }
+    `;
+
+		// Test includeCancelled = true
+		const resultTrue = await testServer.inject({
+			method: "POST",
+			url: "/graphql",
+			payload: {
+				query,
+				variables: {
+					baseIds: [baseEventId],
+					includeCancelled: true,
+				},
+			},
+		});
+
+		const jsonTrue = resultTrue.json();
+		expect(jsonTrue.errors).toBeUndefined();
+		expect(jsonTrue.data.test_getRecurringEventInstances).toHaveLength(2);
+
+		// Test includeCancelled = false
+		const resultFalse = await testServer.inject({
+			method: "POST",
+			url: "/graphql",
+			payload: {
+				query,
+				variables: {
+					baseIds: [baseEventId],
+					includeCancelled: false,
+				},
+			},
+		});
+
+		const jsonFalse = resultFalse.json();
+		expect(jsonFalse.errors).toBeUndefined();
+		expect(jsonFalse.data.test_getRecurringEventInstances).toHaveLength(1);
+		expect(jsonFalse.data.test_getRecurringEventInstances[0].isCancelled).toBe(
+			false,
 		);
 	});
 });
