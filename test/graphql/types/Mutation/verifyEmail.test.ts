@@ -14,7 +14,13 @@ const gql = initGraphQLTada<{
 	scalars: ClientCustomScalars;
 }>();
 
-import { Mutation_sendVerificationEmail } from "./sendVerificationEmail.test";
+const Mutation_sendVerificationEmail =
+	gql(`mutation Mutation_sendVerificationEmail {
+    sendVerificationEmail {
+        success
+        message
+    }
+}`);
 
 const Mutation_verifyEmail =
 	gql(`mutation Mutation_verifyEmail($input: MutationVerifyEmailInput!) {
