@@ -57,10 +57,19 @@ export class SetupError extends Error {
 	getDetailedMessage(): string {
 		const contextStr = Object.entries(this.context)
 			.map(([key, value]) => {
-				const serialized =
-					typeof value === "object" && value !== null
-						? JSON.stringify(value)
-						: String(value);
+				const serialized = (() => {
+					if (value === undefined) return "undefined";
+					if (value === null) return "null";
+					if (typeof value === "bigint") return value.toString();
+					if (typeof value === "object") {
+						try {
+							return JSON.stringify(value);
+						} catch {
+							return "<unserializable>";
+						}
+					}
+					return String(value);
+				})();
 				return `${key}: ${serialized}`;
 			})
 			.join(", ");
