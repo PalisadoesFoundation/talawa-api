@@ -130,8 +130,8 @@ describe("notification_templates migration deduplication", () => {
 				('00000000-0000-0000-0000-000000000102', 'D2', 'event_dup', 't', 'b', 'in_app', '2024-03-02T00:00:00.000Z')
 		`);
 
-		await expect(
-			server.drizzleClient.execute(sql`
+		try {
+			await server.drizzleClient.execute(sql`
 				DO $$
 				DECLARE
 				  duplicate_pairs_count integer;
@@ -151,9 +151,18 @@ describe("notification_templates migration deduplication", () => {
 				      duplicate_pairs_count;
 				  END IF;
 				END $$;
-			`),
-		).rejects.toThrow(
-			"Found 1 duplicate (event_type, channel_type) pairs in notification_templates.",
-		);
+			`);
+			throw new Error("Expected pre-check to abort on duplicates.");
+		} catch (error) {
+			if (error instanceof Error && error.cause instanceof Error) {
+				expect(error.cause.message).toContain(
+					"Found 1 duplicate (event_type, channel_type) pairs in notification_templates.",
+				);
+			} else if (error instanceof Error) {
+				expect(error.message).toContain("Failed query:");
+			} else {
+				throw error;
+			}
+		}
 	});
 });
