@@ -35,6 +35,7 @@ describe("mapRecurringInstanceToEvent", () => {
 			appliedExceptionData: null,
 			exceptionCreatedBy: null,
 			exceptionCreatedAt: null,
+			attachments: [],
 		};
 
 		const result = mapRecurringInstanceToEvent(instance);
@@ -97,6 +98,7 @@ describe("mapRecurringInstanceToEvent", () => {
 			appliedExceptionData: null,
 			exceptionCreatedBy: null,
 			exceptionCreatedAt: null,
+			attachments: [],
 		};
 
 		const result = mapRecurringInstanceToEvent(instance);

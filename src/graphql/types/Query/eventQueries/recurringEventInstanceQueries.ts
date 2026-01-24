@@ -1,4 +1,5 @@
 import { and, asc, eq, gte, inArray, lte, not, or } from "drizzle-orm";
+import type { eventAttachmentsTable } from "~/src/drizzle/tables/eventAttachments";
 import { eventsTable } from "~/src/drizzle/tables/events";
 import { eventExceptionsTable } from "~/src/drizzle/tables/recurringEventExceptions";
 import type { ResolvedRecurringEventInstance } from "~/src/drizzle/tables/recurringEventInstances";
@@ -178,16 +179,26 @@ export async function getRecurringEventInstanceById(
 			return null;
 		}
 
-		// Get base template
-		const baseTemplate = await drizzleClient.query.eventsTable.findFirst({
+		// Get base template with attachments
+		const baseTemplateResult = await drizzleClient.query.eventsTable.findFirst({
 			where: eq(eventsTable.id, instance.baseRecurringEventId),
+			with: {
+				attachmentsWhereEvent: true,
+			},
 		});
 
-		if (!baseTemplate) {
+		if (!baseTemplateResult) {
 			throw new Error(
 				`Base template not found: ${instance.baseRecurringEventId}`,
 			);
 		}
+
+		// Map attachment relation to standard field
+		const { attachmentsWhereEvent, ...baseTemplateProps } = baseTemplateResult;
+		const baseTemplate = {
+			...baseTemplateProps,
+			attachments: attachmentsWhereEvent || [],
+		};
 
 		// Get exception if exists - now using direct instance ID lookup
 		const exception = await drizzleClient.query.eventExceptionsTable.findFirst({
@@ -205,6 +216,11 @@ export async function getRecurringEventInstanceById(
 		throw error;
 	}
 }
+
+// Internal type helper for handling raw query results with attachments relation
+type EventWithAttachmentsRelation = typeof eventsTable.$inferSelect & {
+	attachmentsWhereEvent: (typeof eventAttachmentsTable.$inferSelect)[];
+};
 
 /**
  * Retrieves recurring event instances for a base template, subject to the optional limit.
@@ -405,13 +421,33 @@ async function fetchRecurringEventInstances(
 async function fetchBaseTemplates(
 	instances: (typeof recurringEventInstancesTable.$inferSelect)[],
 	drizzleClient: ServiceDependencies["drizzleClient"],
-): Promise<Map<string, typeof eventsTable.$inferSelect>> {
+): Promise<
+	Map<
+		string,
+		typeof eventsTable.$inferSelect & {
+			attachments: (typeof eventAttachmentsTable.$inferSelect)[];
+		}
+	>
+> {
 	const baseEventIds = [
 		...new Set(instances.map((instance) => instance.baseRecurringEventId)),
 	];
 
-	const baseTemplates = await drizzleClient.query.eventsTable.findMany({
+	const baseTemplatesResult = await drizzleClient.query.eventsTable.findMany({
 		where: inArray(eventsTable.id, baseEventIds),
+		with: {
+			attachmentsWhereEvent: true,
+		},
+	});
+
+	// Map attachment relation to standard field
+	const baseTemplates = baseTemplatesResult.map((template) => {
+		const { attachmentsWhereEvent, ...props } =
+			template as unknown as EventWithAttachmentsRelation;
+		return {
+			...props,
+			attachments: attachmentsWhereEvent || [],
+		};
 	});
 
 	return createTemplateLookupMap(baseTemplates);

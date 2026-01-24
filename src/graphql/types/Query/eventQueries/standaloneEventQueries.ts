@@ -113,15 +113,16 @@ export async function getStandaloneEventsInDateRange(
 }
 
 /**
- * Retrieves standalone events by a list of specific IDs.
- * This function is designed for the `eventsByIds` query, ensuring that only standalone events
- * (not recurring templates or instances) are returned.
+ * Retrieves standalone events (and optionally recurring templates) by a list of specific IDs.
+ * This function is designed for the `eventsByIds` query. By default, only standalone events
+ * (not recurring templates or instances) are returned. When `options.includeTemplates` is true,
+ * recurring event templates matching the IDs are also included.
  *
  * @param eventIds - An array of event IDs to retrieve.
  * @param drizzleClient - The Drizzle ORM client for database access.
  * @param logger - The logger for logging debug and error messages.
- * @returns - A promise that resolves to an array of the requested standalone event objects,
- *          including their attachments.
+ * @param options - Optional. `includeTemplates`: when true, includes recurring event templates in the result; default false.
+ * @returns - A promise that resolves to an array of the requested event objects, including their attachments.
  */
 export async function getStandaloneEventsByIds(
 	eventIds: string[],

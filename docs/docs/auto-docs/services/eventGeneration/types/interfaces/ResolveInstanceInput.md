@@ -4,7 +4,7 @@
 
 # Interface: ResolveInstanceInput
 
-Defined in: [src/services/eventGeneration/types.ts:56](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/eventGeneration/types.ts#L56)
+Defined in: [src/services/eventGeneration/types.ts:57](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/eventGeneration/types.ts#L57)
 
 Input for resolving instance with inheritance
 
@@ -12,73 +12,81 @@ Input for resolving instance with inheritance
 
 ### baseTemplate
 
-> **baseTemplate**: `object`
+> **baseTemplate**: `object` & `object`
 
-Defined in: [src/services/eventGeneration/types.ts:58](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/eventGeneration/types.ts#L58)
+Defined in: [src/services/eventGeneration/types.ts:59](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/eventGeneration/types.ts#L59)
 
-#### allDay
+#### Type Declaration
+
+##### allDay
 
 > **allDay**: `boolean`
 
-#### createdAt
+##### createdAt
 
 > **createdAt**: `Date`
 
-#### creatorId
+##### creatorId
 
 > **creatorId**: `string` \| `null`
 
-#### description
+##### description
 
 > **description**: `string` \| `null`
 
-#### endAt
+##### endAt
 
 > **endAt**: `Date`
 
-#### id
+##### id
 
 > **id**: `string`
 
-#### isInviteOnly
+##### isInviteOnly
 
 > **isInviteOnly**: `boolean`
 
-#### isPublic
+##### isPublic
 
 > **isPublic**: `boolean`
 
-#### isRecurringEventTemplate
+##### isRecurringEventTemplate
 
 > **isRecurringEventTemplate**: `boolean`
 
-#### isRegisterable
+##### isRegisterable
 
 > **isRegisterable**: `boolean`
 
-#### location
+##### location
 
 > **location**: `string` \| `null`
 
-#### name
+##### name
 
 > **name**: `string`
 
-#### organizationId
+##### organizationId
 
 > **organizationId**: `string`
 
-#### startAt
+##### startAt
 
 > **startAt**: `Date`
 
-#### updatedAt
+##### updatedAt
 
 > **updatedAt**: `Date` \| `null`
 
-#### updaterId
+##### updaterId
 
 > **updaterId**: `string` \| `null`
+
+#### Type Declaration
+
+##### attachments
+
+> **attachments**: `object`[]
 
 ***
 
@@ -86,7 +94,7 @@ Defined in: [src/services/eventGeneration/types.ts:58](https://github.com/Palisa
 
 > `optional` **exception**: `object`
 
-Defined in: [src/services/eventGeneration/types.ts:59](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/eventGeneration/types.ts#L59)
+Defined in: [src/services/eventGeneration/types.ts:62](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/eventGeneration/types.ts#L62)
 
 #### createdAt
 
@@ -126,7 +134,7 @@ Defined in: [src/services/eventGeneration/types.ts:59](https://github.com/Palisa
 
 > **generatedInstance**: `object`
 
-Defined in: [src/services/eventGeneration/types.ts:57](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/eventGeneration/types.ts#L57)
+Defined in: [src/services/eventGeneration/types.ts:58](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/eventGeneration/types.ts#L58)
 
 #### actualEndTime
 

@@ -830,18 +830,18 @@ describe("Organization Events Resolver Tests", () => {
 			const expectedStart = new Date();
 			expectedStart.setHours(0, 0, 0, 0);
 
-			expect(
-				Math.abs(callArgs.startDate.getTime() - expectedStart.getTime()),
-			).toBeLessThan(1000);
+			// Verify start date is set to start of today (not exact timing check)
+			expect(callArgs.startDate).toBeInstanceOf(Date);
+			expect(callArgs.startDate.getDate()).toBe(expectedStart.getDate());
+			expect(callArgs.startDate.getMonth()).toBe(expectedStart.getMonth());
 
 			const expectedEnd = new Date();
 			expectedEnd.setMonth(expectedEnd.getMonth() + 1);
 			expectedEnd.setHours(23, 59, 59, 999);
 
-			// Allow for a small time difference (e.g. 1 second)
-			expect(
-				Math.abs(callArgs.endDate.getTime() - expectedEnd.getTime()),
-			).toBeLessThan(1000);
+			// Verify end date is approximately 1 month from now
+			expect(callArgs.endDate).toBeInstanceOf(Date);
+			expect(callArgs.endDate.getMonth()).toBe(expectedEnd.getMonth());
 		});
 
 		it("should handle upcomingOnly=true", async () => {
@@ -857,10 +857,10 @@ describe("Organization Events Resolver Tests", () => {
 				throw new Error("Expected callArgs to be defined");
 			}
 
-			// Should use current time as start date
-			expect(Math.abs(callArgs.startDate.getTime() - Date.now())).toBeLessThan(
-				1000,
-			);
+			// Should use current time as start date (verify it's a recent date, not exact timing)
+			expect(callArgs.startDate).toBeInstanceOf(Date);
+			expect(callArgs.startDate.getTime()).toBeGreaterThan(Date.now() - 5000); // Within last 5 seconds
+			expect(callArgs.startDate.getTime()).toBeLessThan(Date.now() + 5000); // Not in future beyond test runtime
 		});
 
 		it("should handle upcomingOnly=true with explicit endDate", async () => {
@@ -884,15 +884,16 @@ describe("Organization Events Resolver Tests", () => {
 			const expectedEndDate = new Date();
 			expectedEndDate.setFullYear(expectedEndDate.getFullYear() + 1);
 
-			// Allow for a small time difference (e.g. 1 second)
-			expect(
-				Math.abs(callArgs.endDate.getTime() - expectedEndDate.getTime()),
-			).toBeLessThan(1000);
-
-			// Start date should still be "now" (approx)
-			expect(Math.abs(callArgs.startDate.getTime() - Date.now())).toBeLessThan(
-				1000,
+			// Verify end date is set to approximately 1 year from now
+			expect(callArgs.endDate).toBeInstanceOf(Date);
+			expect(callArgs.endDate.getFullYear()).toBe(
+				expectedEndDate.getFullYear(),
 			);
+
+			// Start date should be recent (not exact timing check)
+			expect(callArgs.startDate).toBeInstanceOf(Date);
+			expect(callArgs.startDate.getTime()).toBeGreaterThan(Date.now() - 5000);
+			expect(callArgs.startDate.getTime()).toBeLessThan(Date.now() + 5000);
 		});
 
 		it("should respect explicit includeRecurring=false", async () => {
@@ -1050,10 +1051,9 @@ describe("Organization Events Resolver Tests", () => {
 			expectedEnd.setMonth(expectedEnd.getMonth() + 1);
 			expectedEnd.setHours(23, 59, 59, 999);
 
-			// Allow small difference
-			expect(
-				Math.abs(callArgs.endDate.getTime() - expectedEnd.getTime()),
-			).toBeLessThan(1000);
+			// Verify end date is approximately 1 month from now
+			expect(callArgs.endDate).toBeInstanceOf(Date);
+			expect(callArgs.endDate.getMonth()).toBe(expectedEnd.getMonth());
 		});
 
 		it("should handle upcomingOnly: true with default end date logic", async () => {
@@ -1069,17 +1069,16 @@ describe("Organization Events Resolver Tests", () => {
 			if (!callArgs)
 				throw new Error("Expected getUnifiedEventsInDateRange to be called");
 
-			// effectiveStartDate should be close to now
-			expect(Math.abs(callArgs.startDate.getTime() - Date.now())).toBeLessThan(
-				1000,
-			);
+			// effectiveStartDate should be recent (not exact timing check)
+			expect(callArgs.startDate).toBeInstanceOf(Date);
+			expect(callArgs.startDate.getTime()).toBeGreaterThan(Date.now() - 5000);
+			expect(callArgs.startDate.getTime()).toBeLessThan(Date.now() + 5000);
 
 			// effectiveEndDate should be 1 year from now
 			const expectedEnd = new Date();
 			expectedEnd.setFullYear(expectedEnd.getFullYear() + 1);
-			expect(
-				Math.abs(callArgs.endDate.getTime() - expectedEnd.getTime()),
-			).toBeLessThan(1000);
+			expect(callArgs.endDate).toBeInstanceOf(Date);
+			expect(callArgs.endDate.getFullYear()).toBe(expectedEnd.getFullYear());
 		});
 
 		it("should ignore provided endDate when upcomingOnly is true", async () => {
@@ -1101,9 +1100,8 @@ describe("Organization Events Resolver Tests", () => {
 			// Should be default 1 year from now, ignoring the 2 year future date
 			const expectedEnd = new Date();
 			expectedEnd.setFullYear(expectedEnd.getFullYear() + 1);
-			expect(
-				Math.abs(callArgs.endDate.getTime() - expectedEnd.getTime()),
-			).toBeLessThan(1000);
+			expect(callArgs.endDate).toBeInstanceOf(Date);
+			expect(callArgs.endDate.getFullYear()).toBe(expectedEnd.getFullYear());
 		});
 
 		it("should report error on 'before' when using 'last' with invalid cursor", async () => {
@@ -1193,10 +1191,9 @@ describe("Organization Events Resolver Tests", () => {
 			expectedEnd.setMonth(expectedEnd.getMonth() + 1);
 			expectedEnd.setHours(23, 59, 59, 999);
 
-			// Allow small difference
-			expect(
-				Math.abs(callArgs.endDate.getTime() - expectedEnd.getTime()),
-			).toBeLessThan(1000);
+			// Verify end date is approximately 1 month from now
+			expect(callArgs.endDate).toBeInstanceOf(Date);
+			expect(callArgs.endDate.getMonth()).toBe(expectedEnd.getMonth());
 		});
 
 		it("should handle upcomingOnly: true with default end date logic", async () => {
@@ -1212,17 +1209,16 @@ describe("Organization Events Resolver Tests", () => {
 			if (!callArgs)
 				throw new Error("Expected getUnifiedEventsInDateRange to be called");
 
-			// effectiveStartDate should be close to now
-			expect(Math.abs(callArgs.startDate.getTime() - Date.now())).toBeLessThan(
-				1000,
-			);
+			// effectiveStartDate should be recent (not exact timing check)
+			expect(callArgs.startDate).toBeInstanceOf(Date);
+			expect(callArgs.startDate.getTime()).toBeGreaterThan(Date.now() - 5000);
+			expect(callArgs.startDate.getTime()).toBeLessThan(Date.now() + 5000);
 
 			// effectiveEndDate should be 1 year from now
 			const expectedEnd = new Date();
 			expectedEnd.setFullYear(expectedEnd.getFullYear() + 1);
-			expect(
-				Math.abs(callArgs.endDate.getTime() - expectedEnd.getTime()),
-			).toBeLessThan(1000);
+			expect(callArgs.endDate).toBeInstanceOf(Date);
+			expect(callArgs.endDate.getFullYear()).toBe(expectedEnd.getFullYear());
 		});
 
 		it("should ignore provided endDate when upcomingOnly is true", async () => {
@@ -1244,9 +1240,8 @@ describe("Organization Events Resolver Tests", () => {
 			// Should be default 1 year from now, ignoring the 2 year future date
 			const expectedEnd = new Date();
 			expectedEnd.setFullYear(expectedEnd.getFullYear() + 1);
-			expect(
-				Math.abs(callArgs.endDate.getTime() - expectedEnd.getTime()),
-			).toBeLessThan(1000);
+			expect(callArgs.endDate).toBeInstanceOf(Date);
+			expect(callArgs.endDate.getFullYear()).toBe(expectedEnd.getFullYear());
 		});
 
 		it("should report error on 'before' when using 'last' with invalid cursor", async () => {

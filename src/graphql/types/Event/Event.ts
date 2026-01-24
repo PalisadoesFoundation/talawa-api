@@ -225,9 +225,11 @@ Event.implement({
 					isGenerated?: boolean;
 					baseRecurringEventId?: string | null;
 				};
-				if (typeof evt.isGenerated === "boolean") {
-					return evt.isGenerated;
+				// If explicitly true, return true
+				if (evt.isGenerated === true) {
+					return true;
 				}
+				// Otherwise, check if baseRecurringEventId is present
 				return Boolean(evt.baseRecurringEventId);
 			},
 		}),

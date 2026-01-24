@@ -58,7 +58,11 @@ const mockRawInstance: typeof recurringEventInstancesTable.$inferSelect = {
 	totalCount: 10,
 };
 
-const mockBaseTemplate: typeof eventsTable.$inferSelect = {
+import type { eventAttachmentsTable } from "~/src/drizzle/tables/eventAttachments";
+
+const mockBaseTemplate: typeof eventsTable.$inferSelect & {
+	attachments: (typeof eventAttachmentsTable.$inferSelect)[];
+} = {
 	id: "base-event-1",
 	name: "Base Recurring Event",
 	description: "A base template for recurring events",
@@ -74,7 +78,9 @@ const mockBaseTemplate: typeof eventsTable.$inferSelect = {
 	updaterId: null,
 	createdAt: new Date("2025-01-01T00:00:00.000Z"),
 	updatedAt: null,
+
 	isRecurringEventTemplate: true,
+	attachments: [],
 };
 
 const mockException: typeof eventExceptionsTable.$inferSelect = {
@@ -117,7 +123,9 @@ const mockResolvedInstance: ResolvedRecurringEventInstance = {
 	hasExceptions: true,
 	appliedExceptionData: { modified: true },
 	exceptionCreatedBy: "user-2",
+
 	exceptionCreatedAt: new Date("2025-01-03T00:00:00.000Z"),
+	attachments: [],
 };
 
 function setupMockDrizzleClient(): ServiceDependencies["drizzleClient"] {
@@ -254,6 +262,9 @@ describe("getRecurringEventInstancesInDateRange", () => {
 		// Verify parallel fetching
 		expect(mockDrizzleClient.query.eventsTable.findMany).toHaveBeenCalledWith({
 			where: expect.any(Object),
+			with: {
+				attachmentsWhereEvent: true,
+			},
 		});
 		expect(
 			mockDrizzleClient.query.eventExceptionsTable.findMany,
@@ -414,6 +425,9 @@ describe("getRecurringEventInstanceById", () => {
 		});
 		expect(mockDrizzleClient.query.eventsTable.findFirst).toHaveBeenCalledWith({
 			where: expect.any(Object), // eq(eventsTable.id, instance.baseRecurringEventId)
+			with: {
+				attachmentsWhereEvent: true,
+			},
 		});
 		expect(
 			mockDrizzleClient.query.eventExceptionsTable.findFirst,
@@ -703,6 +717,9 @@ describe("getRecurringEventInstancesByIds", () => {
 		// Verify template and exception fetching
 		expect(mockDrizzleClient.query.eventsTable.findMany).toHaveBeenCalledWith({
 			where: expect.any(Object), // inArray condition for base event IDs
+			with: {
+				attachmentsWhereEvent: true,
+			},
 		});
 		expect(
 			mockDrizzleClient.query.eventExceptionsTable.findMany,
@@ -867,6 +884,9 @@ describe("getRecurringEventInstancesByBaseIds", () => {
 		// Verify templates and exceptions were also fetched
 		expect(mockDrizzleClient.query.eventsTable.findMany).toHaveBeenCalledWith({
 			where: expect.any(Object),
+			with: {
+				attachmentsWhereEvent: true,
+			},
 		});
 		expect(
 			mockDrizzleClient.query.eventExceptionsTable.findMany,

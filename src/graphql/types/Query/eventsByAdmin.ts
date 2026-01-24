@@ -178,7 +178,6 @@ builder.queryField("eventsByAdmin", (t) =>
 					},
 				);
 
-				// Transform instances to unified format
 				const activeInstances = instances.map(mapRecurringInstanceToEvent);
 
 				allEvents.push(...activeInstances);

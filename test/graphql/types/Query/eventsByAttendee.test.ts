@@ -9,21 +9,140 @@ import { assertToBeNonNullish } from "../../../helpers";
 import { server } from "../../../server";
 import { mercuriusClient } from "../client";
 import { createRegularUserUsingAdmin } from "../createRegularUserUsingAdmin";
-import {
-	Mutation_createEvent,
-	Mutation_createEventVolunteer,
-	Mutation_createOrganization,
-	Mutation_createOrganizationMembership,
-	Mutation_registerEventAttendee,
-	Mutation_updateEventVolunteer,
-	Query_signIn,
-} from "../documentNodes";
 import type { introspection } from "../gql.tada";
 
 const gql = initGraphQLTada<{
 	introspection: introspection;
 	scalars: ClientCustomScalars;
 }>();
+
+// Inline query and mutation definitions to avoid coverage issues
+const Query_signIn = gql(`query Query_signIn($input: QuerySignInInput!) {
+    signIn(input: $input) {
+        authenticationToken
+        refreshToken
+        user {
+            addressLine1
+            addressLine2
+            birthDate
+            city
+            countryCode
+            createdAt
+            description
+            educationGrade
+            emailAddress
+            employmentStatus
+            homePhoneNumber
+            id
+            isEmailAddressVerified
+            maritalStatus
+            mobilePhoneNumber
+            name
+            natalSex
+            postalCode
+            role
+            state
+            workPhoneNumber
+        }
+    }
+}`);
+
+const Mutation_createOrganization =
+	gql(`mutation Mutation_createOrganization($input: MutationCreateOrganizationInput!) {
+    createOrganization(input: $input) {
+      id
+      name
+      countryCode
+      isUserRegistrationRequired
+    }
+  }`);
+
+const Mutation_createOrganizationMembership =
+	gql(`mutation Mutation_createOrganizationMembership($input: MutationCreateOrganizationMembershipInput!) {
+    createOrganizationMembership(input: $input) {
+      id
+    }
+  }`);
+
+const Mutation_createEvent =
+	gql(`mutation Mutation_createEvent($input: MutationCreateEventInput!) {
+    createEvent(input: $input) {
+        id
+        name
+        description
+        startAt
+        endAt
+        createdAt
+        creator{
+            id
+            name
+        }
+        organization {
+            id
+            countryCode
+        }
+    }
+}`);
+
+const Mutation_createEventVolunteer = gql(`
+  mutation Mutation_createEventVolunteer($input: EventVolunteerInput!) {
+    createEventVolunteer(data: $input) {
+      id
+      hasAccepted
+      isPublic
+      hoursVolunteered
+      user {
+        id
+      }
+      event {
+        id
+      }
+    }
+  }
+`);
+
+const Mutation_updateEventVolunteer = gql(`
+  mutation Mutation_updateEventVolunteer($id: ID!, $data: UpdateEventVolunteerInput) {
+    updateEventVolunteer(id: $id, data: $data) {
+      id
+      hasAccepted
+      isPublic
+      hoursVolunteered
+      user {
+        id
+        name
+      }
+      event {
+        id
+        name
+      }
+      creator {
+        id
+        name
+      }
+      updater {
+        id
+        name
+      }
+      createdAt
+      updatedAt
+    }
+  }
+`);
+
+const Mutation_registerEventAttendee = gql(`
+  mutation Mutation_registerEventAttendee($data: EventAttendeeInput!) {
+    registerEventAttendee(data: $data) {
+      id
+      isInvited
+      isRegistered
+      isCheckedIn
+      isCheckedOut
+      createdAt
+      updatedAt
+    }
+  }
+`);
 
 const Query_eventsByAttendee = gql(`
 	query Query_eventsByAttendee($userId: ID!, $limit: Int, $offset: Int) {
