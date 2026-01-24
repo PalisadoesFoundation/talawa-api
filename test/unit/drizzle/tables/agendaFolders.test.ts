@@ -9,7 +9,6 @@ import {
 } from "~/src/drizzle/tables/agendaFolders";
 import { agendaItemsTable } from "~/src/drizzle/tables/agendaItems";
 import { eventsTable } from "~/src/drizzle/tables/events";
-import { organizationsTable } from "~/src/drizzle/tables/organizations";
 import { usersTable } from "~/src/drizzle/tables/users";
 
 /**
@@ -40,11 +39,9 @@ describe("src/drizzle/tables/agendaFolders.ts", () => {
 				const columns = Object.keys(agendaFoldersTable);
 				expect(columns).toContain("id");
 				expect(columns).toContain("name");
-				expect(columns).toContain("description");
-				expect(columns).toContain("sequence");
-				expect(columns).toContain("isDefaultFolder");
+				expect(columns).toContain("isAgendaItemFolder");
+				expect(columns).toContain("parentFolderId");
 				expect(columns).toContain("eventId");
-				expect(columns).toContain("organizationId");
 				expect(columns).toContain("creatorId");
 				expect(columns).toContain("updaterId");
 				expect(columns).toContain("createdAt");
@@ -85,64 +82,27 @@ describe("src/drizzle/tables/agendaFolders.ts", () => {
 				});
 			});
 
-			describe("description column", () => {
-				it("should be a text column", () => {
-					expect(agendaFoldersTable.description.dataType).toBe("string");
-					expect(agendaFoldersTable.description.columnType).toBe("PgText");
-				});
-
-				it("should be nullable", () => {
-					expect(agendaFoldersTable.description.notNull).toBe(false);
-				});
-			});
-
-			describe("sequence column", () => {
-				it("should be an integer column", () => {
-					expect(agendaFoldersTable.sequence.dataType).toBe("number");
-					expect(agendaFoldersTable.sequence.columnType).toBe("PgInteger");
-				});
-
-				it("should be nullable", () => {
-					expect(agendaFoldersTable.sequence.notNull).toBe(false);
-				});
-			});
-
-			describe("isDefaultFolder column", () => {
+			describe("isAgendaItemFolder column", () => {
 				it("should be a boolean column", () => {
-					expect(agendaFoldersTable.isDefaultFolder.dataType).toBe("boolean");
-					expect(agendaFoldersTable.isDefaultFolder.columnType).toBe(
+					expect(agendaFoldersTable.isAgendaItemFolder.dataType).toBe("boolean");
+					expect(agendaFoldersTable.isAgendaItemFolder.columnType).toBe(
 						"PgBoolean",
 					);
 				});
 
 				it("should be not null", () => {
-					expect(agendaFoldersTable.isDefaultFolder.notNull).toBe(true);
-				});
-
-				it("should have a default value", () => {
-					expect(agendaFoldersTable.isDefaultFolder.hasDefault).toBe(true);
+					expect(agendaFoldersTable.isAgendaItemFolder.notNull).toBe(true);
 				});
 			});
 
-			describe("eventId column", () => {
+			describe("parentFolderId column", () => {
 				it("should be a uuid column", () => {
-					expect(agendaFoldersTable.eventId.dataType).toBe("string");
-					expect(agendaFoldersTable.eventId.columnType).toBe("PgUUID");
+					expect(agendaFoldersTable.parentFolderId.dataType).toBe("string");
+					expect(agendaFoldersTable.parentFolderId.columnType).toBe("PgUUID");
 				});
 
-				it("should be not null", () => {
-					expect(agendaFoldersTable.eventId.notNull).toBe(true);
-				});
-			});
-
-			describe("organizationId column", () => {
-				it("should be a uuid column", () => {
-					expect(agendaFoldersTable.organizationId.dataType).toBe("string");
-					expect(agendaFoldersTable.organizationId.columnType).toBe("PgUUID");
-				});
-
-				it("should be not null", () => {
-					expect(agendaFoldersTable.organizationId.notNull).toBe(true);
+				it("should be nullable", () => {
+					expect(agendaFoldersTable.parentFolderId.notNull).toBe(false);
 				});
 			});
 
@@ -257,18 +217,19 @@ describe("src/drizzle/tables/agendaFolders.ts", () => {
 				expect(ref?.foreignColumns[0]?.name).toBe("id");
 			});
 
-			it("should have organizationId referencing organizationsTable.id", () => {
+			it("should have parentFolderId referencing agendaFoldersTable.id", () => {
 				const tableConfig = getTableConfig(agendaFoldersTable);
-				const orgFk = tableConfig.foreignKeys.find((fk) => {
+				const parentFk = tableConfig.foreignKeys.find((fk) => {
 					const ref = fk.reference();
-					return ref.columns.some((col) => col.name === "organization_id");
+					return ref.columns.some((col) => col.name === "parent_folder_id");
 				});
-				expect(orgFk).toBeDefined();
-				expect(orgFk?.onDelete).toBe("cascade");
-				expect(orgFk?.onUpdate).toBe("cascade");
+				expect(parentFk).toBeDefined();
+				expect(parentFk?.onDelete).toBe("cascade");
+				expect(parentFk?.onUpdate).toBe("cascade");
 				// Execute the reference function to cover the callback
-				const ref = orgFk?.reference();
-				expect(ref?.foreignTable).toBe(organizationsTable);
+				const ref = parentFk?.reference();
+				// Use the table name check or reference equality if possible, though circular ref might be tricky
+				// In the source it returns agendaFoldersTable.id
 				expect(ref?.foreignColumns[0]?.name).toBe("id");
 			});
 
@@ -289,9 +250,9 @@ describe("src/drizzle/tables/agendaFolders.ts", () => {
 		});
 
 		describe("indexes", () => {
-			it("should have five indexes defined", () => {
+			it("should have six indexes defined", () => {
 				const tableConfig = getTableConfig(agendaFoldersTable);
-				expect(tableConfig.indexes).toHaveLength(5);
+				expect(tableConfig.indexes).toHaveLength(6);
 			});
 
 			it("should have an index on createdAt column", () => {
@@ -334,14 +295,24 @@ describe("src/drizzle/tables/agendaFolders.ts", () => {
 				expect(nameIndex).toBeDefined();
 			});
 
-			it("should have an index on organizationId column", () => {
+			it("should have an index on isAgendaItemFolder column", () => {
 				const tableConfig = getTableConfig(agendaFoldersTable);
-				const orgIdIndex = tableConfig.indexes.find((idx) =>
+				const isAgendaItemFolderIndex = tableConfig.indexes.find((idx) =>
 					idx.config.columns.some(
-						(col) => "name" in col && col.name === "organization_id",
+						(col) => "name" in col && col.name === "is_agenda_item_folder",
 					),
 				);
-				expect(orgIdIndex).toBeDefined();
+				expect(isAgendaItemFolderIndex).toBeDefined();
+			});
+
+			it("should have an index on parentFolderId column", () => {
+				const tableConfig = getTableConfig(agendaFoldersTable);
+				const parentFolderIdIndex = tableConfig.indexes.find((idx) =>
+					idx.config.columns.some(
+						(col) => "name" in col && col.name === "parent_folder_id",
+					),
+				);
+				expect(parentFolderIdIndex).toBeDefined();
 			});
 		});
 	});
@@ -400,7 +371,7 @@ describe("src/drizzle/tables/agendaFolders.ts", () => {
 				};
 			};
 
-			it("should define five relations", () => {
+			it("should define six relations", () => {
 				const { one, many } = createMockBuilders();
 				const relationsResult = agendaFoldersTableRelations.config({
 					one,
@@ -409,9 +380,10 @@ describe("src/drizzle/tables/agendaFolders.ts", () => {
 
 				// Verify all five relations are defined
 				expect(relationsResult.agendaItemsWhereFolder).toBeDefined();
+				expect(relationsResult.agendaFoldersWhereParentFolder).toBeDefined();
 				expect(relationsResult.creator).toBeDefined();
 				expect(relationsResult.event).toBeDefined();
-				expect(relationsResult.organization).toBeDefined();
+				expect(relationsResult.parentFolder).toBeDefined();
 				expect(relationsResult.updater).toBeDefined();
 			});
 
@@ -452,17 +424,30 @@ describe("src/drizzle/tables/agendaFolders.ts", () => {
 				expect(event.table).toBe(eventsTable);
 			});
 
-			it("should define organization as a one-to-one relation with organizationsTable", () => {
+			it("should define agendaFoldersWhereParentFolder as a one-to-many relation", () => {
 				const { one, many } = createMockBuilders();
 				const relationsResult = agendaFoldersTableRelations.config({
 					one,
 					many,
 				});
 
-				const organization =
-					relationsResult.organization as unknown as RelationCall;
-				expect(organization.type).toBe("one");
-				expect(organization.table).toBe(organizationsTable);
+				const agendaFoldersWhereParentFolder =
+					relationsResult.agendaFoldersWhereParentFolder as unknown as RelationCall;
+				expect(agendaFoldersWhereParentFolder.type).toBe("many");
+				expect(agendaFoldersWhereParentFolder.table).toBe(agendaFoldersTable);
+			});
+
+			it("should define parentFolder as a one-to-one relation with agendaFoldersTable", () => {
+				const { one, many } = createMockBuilders();
+				const relationsResult = agendaFoldersTableRelations.config({
+					one,
+					many,
+				});
+
+				const parentFolder =
+					relationsResult.parentFolder as unknown as RelationCall;
+				expect(parentFolder.type).toBe("one");
+				expect(parentFolder.table).toBe(agendaFoldersTable);
 			});
 
 			it("should define updater as a one-to-one relation with usersTable", () => {
@@ -483,7 +468,7 @@ describe("src/drizzle/tables/agendaFolders.ts", () => {
 		const validInput = {
 			name: "Test Agenda Folder",
 			eventId: faker.string.uuid(),
-			organizationId: faker.string.uuid(),
+			isAgendaItemFolder: true,
 		};
 
 		describe("name validation", () => {
@@ -525,121 +510,21 @@ describe("src/drizzle/tables/agendaFolders.ts", () => {
 			});
 		});
 
-		describe("description validation", () => {
-			it("should accept valid description", () => {
-				const result = agendaFoldersTableInsertSchema.safeParse({
-					...validInput,
-					description: "This is a test description",
-				});
-				expect(result.success).toBe(true);
-			});
-
-			it("should accept undefined description", () => {
-				const result = agendaFoldersTableInsertSchema.safeParse({
-					...validInput,
-					description: undefined,
-				});
-				expect(result.success).toBe(true);
-			});
-
-			it("should reject empty description", () => {
-				const result = agendaFoldersTableInsertSchema.safeParse({
-					...validInput,
-					description: "",
-				});
-				expect(result.success).toBe(false);
-			});
-
-			it("should accept description at min length (1)", () => {
-				const result = agendaFoldersTableInsertSchema.safeParse({
-					...validInput,
-					description: "a",
-				});
-				expect(result.success).toBe(true);
-			});
-
-			it("should accept description at max length (2048)", () => {
-				const result = agendaFoldersTableInsertSchema.safeParse({
-					...validInput,
-					description: "a".repeat(2048),
-				});
-				expect(result.success).toBe(true);
-			});
-
-			it("should reject description exceeding max length (2048)", () => {
-				const result = agendaFoldersTableInsertSchema.safeParse({
-					...validInput,
-					description: "a".repeat(2049),
-				});
-				expect(result.success).toBe(false);
-			});
-		});
-
-		describe("sequence validation", () => {
-			it("should accept valid sequence", () => {
-				const result = agendaFoldersTableInsertSchema.safeParse({
-					...validInput,
-					sequence: 5,
-				});
-				expect(result.success).toBe(true);
-			});
-
-			it("should accept undefined sequence", () => {
-				const result = agendaFoldersTableInsertSchema.safeParse({
-					...validInput,
-					sequence: undefined,
-				});
-				expect(result.success).toBe(true);
-			});
-
-			it("should accept sequence at min value (1)", () => {
-				const result = agendaFoldersTableInsertSchema.safeParse({
-					...validInput,
-					sequence: 1,
-				});
-				expect(result.success).toBe(true);
-			});
-
-			it("should reject sequence less than 1", () => {
-				const result = agendaFoldersTableInsertSchema.safeParse({
-					...validInput,
-					sequence: 0,
-				});
-				expect(result.success).toBe(false);
-			});
-
-			it("should reject negative sequence", () => {
-				const result = agendaFoldersTableInsertSchema.safeParse({
-					...validInput,
-					sequence: -1,
-				});
-				expect(result.success).toBe(false);
-			});
-
-			it("should reject non-integer sequence", () => {
-				const result = agendaFoldersTableInsertSchema.safeParse({
-					...validInput,
-					sequence: 1.5,
-				});
-				expect(result.success).toBe(false);
-			});
-		});
-
 		describe("required fields validation", () => {
 			it("should reject missing name", () => {
-				const { name, ...input } = validInput;
+				const { name: _name, ...input } = validInput;
 				const result = agendaFoldersTableInsertSchema.safeParse(input);
 				expect(result.success).toBe(false);
 			});
 
 			it("should reject missing eventId", () => {
-				const { eventId, ...input } = validInput;
+				const { eventId: _eventId, ...input } = validInput;
 				const result = agendaFoldersTableInsertSchema.safeParse(input);
 				expect(result.success).toBe(false);
 			});
 
-			it("should reject missing organizationId", () => {
-				const { organizationId, ...input } = validInput;
+			it("should reject missing isAgendaItemFolder", () => {
+				const { isAgendaItemFolder: _isAgendaItemFolder, ...input } = validInput;
 				const result = agendaFoldersTableInsertSchema.safeParse(input);
 				expect(result.success).toBe(false);
 			});
@@ -662,10 +547,10 @@ describe("src/drizzle/tables/agendaFolders.ts", () => {
 				expect(result.success).toBe(true);
 			});
 
-			it("should accept input with isDefaultFolder", () => {
+			it("should accept input with parentFolderId", () => {
 				const result = agendaFoldersTableInsertSchema.safeParse({
 					...validInput,
-					isDefaultFolder: true,
+					parentFolderId: faker.string.uuid(),
 				});
 				expect(result.success).toBe(true);
 			});
@@ -685,14 +570,6 @@ describe("src/drizzle/tables/agendaFolders.ts", () => {
 				expect(result.success).toBe(false);
 			});
 
-			it("should reject invalid organizationId UUID", () => {
-				const result = agendaFoldersTableInsertSchema.safeParse({
-					...validInput,
-					organizationId: "invalid-uuid",
-				});
-				expect(result.success).toBe(false);
-			});
-
 			it("should reject invalid creatorId UUID", () => {
 				const result = agendaFoldersTableInsertSchema.safeParse({
 					...validInput,
@@ -705,6 +582,14 @@ describe("src/drizzle/tables/agendaFolders.ts", () => {
 				const result = agendaFoldersTableInsertSchema.safeParse({
 					...validInput,
 					updaterId: "invalid-uuid",
+				});
+				expect(result.success).toBe(false);
+			});
+
+			it("should reject invalid parentFolderId UUID", () => {
+				const result = agendaFoldersTableInsertSchema.safeParse({
+					...validInput,
+					parentFolderId: "invalid-uuid",
 				});
 				expect(result.success).toBe(false);
 			});
@@ -727,11 +612,9 @@ describe("src/drizzle/tables/agendaFolders.ts", () => {
 			it("should accept all optional fields together", () => {
 				const result = agendaFoldersTableInsertSchema.safeParse({
 					...validInput,
-					description: "A test description",
-					sequence: 10,
-					isDefaultFolder: false,
 					creatorId: faker.string.uuid(),
 					updaterId: faker.string.uuid(),
+					parentFolderId: faker.string.uuid(),
 				});
 				expect(result.success).toBe(true);
 			});
