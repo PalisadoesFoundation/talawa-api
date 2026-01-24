@@ -4,6 +4,6 @@
 
 # Variable: mutationCreateCommentVoteInputSchema
 
-> `const` **mutationCreateCommentVoteInputSchema**: `ZodObject`\<\{ `commentId`: `ZodUUID`; `type`: `ZodString`; \}, \{ \}\>
+> `const` **mutationCreateCommentVoteInputSchema**: `ZodObject`\<\{ `commentId`: `ZodUUID`; `type`: `ZodEnum`\<\{ `downvote`: `"downvote"`; `upvote`: `"upvote"`; \}\>; \}, \{ \}\>
 
-Defined in: [src/graphql/inputs/MutationCreateCommentVoteInput.ts:6](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/graphql/inputs/MutationCreateCommentVoteInput.ts#L6)
+Defined in: src/graphql/inputs/MutationCreateCommentVoteInput.ts:6
