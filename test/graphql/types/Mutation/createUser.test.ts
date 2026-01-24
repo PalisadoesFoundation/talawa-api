@@ -852,28 +852,168 @@ suite("Mutation field createUser", () => {
 			const adminToken =
 				administratorUserSignInResult.data.signIn.authenticationToken;
 
-			// Create user - should use default refresh token expiry
+			// Mock API_REFRESH_TOKEN_EXPIRES_IN to undefined to ensure default is used
+			const originalExpiresIn = server.envConfig.API_REFRESH_TOKEN_EXPIRES_IN;
+			(
+				server.envConfig as { API_REFRESH_TOKEN_EXPIRES_IN?: number }
+			).API_REFRESH_TOKEN_EXPIRES_IN = undefined;
+
+			try {
+				// Create user - should use default refresh token expiry
+				const createUserResult = await mercuriusClient.mutate(
+					Mutation_createUser,
+					{
+						headers: { authorization: `bearer ${adminToken}` },
+						variables: {
+							input: {
+								emailAddress: `defaultToken${faker.string.ulid()}@email.com`,
+								isEmailAddressVerified: false,
+								name: "Default Token User",
+								password: "password",
+								role: "regular",
+							},
+						},
+					},
+				);
+
+				expect(createUserResult.errors).toBeUndefined();
+				expect(createUserResult.data?.createUser?.refreshToken).toBeDefined();
+				expect(
+					createUserResult.data?.createUser?.authenticationToken,
+				).toBeDefined();
+
+				// Validate refresh token expiry by querying the database
+				const refreshToken = createUserResult.data?.createUser?.refreshToken;
+				assertToBeNonNullish(refreshToken);
+				const { hashRefreshToken } = await import(
+					"~/src/utilities/refreshTokenUtils"
+				);
+				const tokenHash = hashRefreshToken(refreshToken);
+
+				const storedToken =
+					await server.drizzleClient.query.refreshTokensTable.findFirst({
+						where: (fields, operators) =>
+							operators.eq(fields.tokenHash, tokenHash),
+						columns: {
+							expiresAt: true,
+						},
+					});
+
+				assertToBeNonNullish(storedToken);
+				const { DEFAULT_REFRESH_TOKEN_EXPIRES_MS } = await import(
+					"~/src/utilities/refreshTokenUtils"
+				);
+				const expectedExpiresAt = new Date(
+					Date.now() + DEFAULT_REFRESH_TOKEN_EXPIRES_MS,
+				);
+
+				// Allow 5 second tolerance for test execution time
+				const tolerance = 5000;
+				expect(
+					Math.abs(
+						storedToken.expiresAt.getTime() - expectedExpiresAt.getTime(),
+					),
+				).toBeLessThan(tolerance);
+
+				// Cleanup
+				if (createUserResult.data?.createUser?.user?.id) {
+					await mercuriusClient.mutate(Mutation_deleteCurrentUser, {
+						headers: {
+							authorization: `bearer ${createUserResult.data.createUser.authenticationToken}`,
+						},
+					});
+				}
+			} finally {
+				// Restore original value
+				server.envConfig.API_REFRESH_TOKEN_EXPIRES_IN = originalExpiresIn;
+			}
+		});
+
+		test("should return unauthenticated error when currentUser query returns undefined", async () => {
+			const administratorUserSignInResult = await mercuriusClient.query(
+				Query_signIn,
+				{
+					variables: {
+						input: {
+							emailAddress:
+								server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
+							password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
+						},
+					},
+				},
+			);
+			assertToBeNonNullish(
+				administratorUserSignInResult.data.signIn?.authenticationToken,
+			);
+			const adminToken =
+				administratorUserSignInResult.data.signIn.authenticationToken;
+
+			// Mock usersTable.findFirst to return undefined (user not found after authentication)
+			const findFirstSpy = vi
+				.spyOn(server.drizzleClient.query.usersTable, "findFirst")
+				.mockResolvedValue(undefined);
+
+			try {
+				const result = await mercuriusClient.mutate(Mutation_createUser, {
+					headers: { authorization: `bearer ${adminToken}` },
+					variables: {
+						input: {
+							emailAddress: `userNotFound${faker.string.ulid()}@email.com`,
+							isEmailAddressVerified: false,
+							name: "User Not Found",
+							password: "password",
+							role: "regular",
+						},
+					},
+				});
+
+				expect(result.errors).toBeDefined();
+				expect(result.errors?.[0]?.extensions?.code).toBe("unauthenticated");
+				expect(result.data?.createUser).toBeNull();
+			} finally {
+				findFirstSpy.mockRestore();
+			}
+		});
+
+		test("should handle avatar set to null explicitly", async () => {
+			const administratorUserSignInResult = await mercuriusClient.query(
+				Query_signIn,
+				{
+					variables: {
+						input: {
+							emailAddress:
+								server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
+							password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
+						},
+					},
+				},
+			);
+			assertToBeNonNullish(
+				administratorUserSignInResult.data.signIn?.authenticationToken,
+			);
+			const adminToken =
+				administratorUserSignInResult.data.signIn.authenticationToken;
+
+			// Use regular GraphQL mutation (not multipart) since avatar: null is a valid GraphQL value
 			const createUserResult = await mercuriusClient.mutate(
 				Mutation_createUser,
 				{
 					headers: { authorization: `bearer ${adminToken}` },
 					variables: {
 						input: {
-							emailAddress: `defaultToken${faker.string.ulid()}@email.com`,
+							emailAddress: `nullAvatar${faker.string.ulid()}@email.com`,
 							isEmailAddressVerified: false,
-							name: "Default Token User",
+							name: "Null Avatar User",
 							password: "password",
 							role: "regular",
+							avatar: null, // Explicitly null - tests the else if (arg.avatar !== undefined) path
 						},
 					},
 				},
 			);
 
 			expect(createUserResult.errors).toBeUndefined();
-			expect(createUserResult.data?.createUser?.refreshToken).toBeDefined();
-			expect(
-				createUserResult.data?.createUser?.authenticationToken,
-			).toBeDefined();
+			expect(createUserResult.data?.createUser?.user?.id).toBeDefined();
 
 			// Cleanup
 			if (createUserResult.data?.createUser?.user?.id) {

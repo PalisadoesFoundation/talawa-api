@@ -7,6 +7,8 @@ import { server } from "../../../server";
 import { mercuriusClient } from "../client";
 import {
 	Mutation_createOrganization,
+	Mutation_createUser,
+	Mutation_deleteCurrentUser,
 	Mutation_deleteOrganization,
 	Query_signIn,
 } from "../documentNodes";
@@ -37,6 +39,66 @@ describe("Mutation createOrganization", () => {
 				variables: { input: { id: createdOrgId } },
 			});
 			createdOrgId = undefined;
+		}
+	});
+
+	it("should return unauthenticated error when client is not authenticated", async () => {
+		const result = await mercuriusClient.mutate(Mutation_createOrganization, {
+			// No authorization header
+			variables: {
+				input: {
+					name: `Unauthenticated Org ${faker.string.ulid()}`,
+					countryCode: "us",
+				},
+			},
+		});
+
+		expect(result.errors).toBeDefined();
+		expect(result.errors?.[0]?.extensions?.code).toBe("unauthenticated");
+		expect(result.data?.createOrganization).toBeNull();
+	});
+
+	it("should return unauthorized error when user is not administrator", async () => {
+		// Create a regular (non-admin) user
+		const emailAddress = `regular${faker.string.ulid()}@email.com`;
+		const createUserResult = await mercuriusClient.mutate(Mutation_createUser, {
+			headers: { authorization: `bearer ${authToken}` },
+			variables: {
+				input: {
+					emailAddress,
+					isEmailAddressVerified: false,
+					name: "Regular User",
+					password: "password",
+					role: "regular",
+				},
+			},
+		});
+		assertToBeNonNullish(
+			createUserResult.data?.createUser?.authenticationToken,
+		);
+		const regularUserToken =
+			createUserResult.data.createUser.authenticationToken;
+
+		// Try to create organization as regular user
+		const result = await mercuriusClient.mutate(Mutation_createOrganization, {
+			headers: { authorization: `bearer ${regularUserToken}` },
+			variables: {
+				input: {
+					name: `Unauthorized Org ${faker.string.ulid()}`,
+					countryCode: "us",
+				},
+			},
+		});
+
+		expect(result.errors).toBeDefined();
+		expect(result.errors?.[0]?.extensions?.code).toBe("unauthorized_action");
+		expect(result.data?.createOrganization).toBeNull();
+
+		// Cleanup: delete the created user
+		if (createUserResult.data?.createUser?.user?.id) {
+			await mercuriusClient.mutate(Mutation_deleteCurrentUser, {
+				headers: { authorization: `bearer ${regularUserToken}` },
+			});
 		}
 	});
 
@@ -183,6 +245,7 @@ describe("Mutation createOrganization", () => {
 
 			const result = response.json();
 			expect(result.errors?.[0]?.extensions?.code).toBe("unexpected");
+			expect(result.data?.createOrganization).toBeNull();
 
 			// Verify deletion
 			const org = await server.drizzleClient.query.organizationsTable.findFirst(
@@ -220,5 +283,30 @@ describe("Mutation createOrganization", () => {
 		expect(result.errors).toBeUndefined();
 		expect(result.data?.createOrganization?.id).toBeDefined();
 		createdOrgId = result.data?.createOrganization?.id;
+	});
+
+	it("should return unauthenticated error when currentUser query returns undefined", async () => {
+		// Mock usersTable.findFirst to return undefined (user not found after authentication)
+		const findFirstSpy = vi
+			.spyOn(server.drizzleClient.query.usersTable, "findFirst")
+			.mockResolvedValue(undefined);
+
+		try {
+			const result = await mercuriusClient.mutate(Mutation_createOrganization, {
+				headers: { authorization: `bearer ${authToken}` },
+				variables: {
+					input: {
+						name: `User Not Found Org ${faker.string.ulid()}`,
+						countryCode: "us",
+					},
+				},
+			});
+
+			expect(result.errors).toBeDefined();
+			expect(result.errors?.[0]?.extensions?.code).toBe("unauthenticated");
+			expect(result.data?.createOrganization).toBeNull();
+		} finally {
+			findFirstSpy.mockRestore();
+		}
 	});
 });

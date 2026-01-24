@@ -1447,6 +1447,44 @@ suite("Mutation field createEvent", () => {
 			expect(result.data?.createEvent).toBeDefined();
 		});
 
+		test("should call log.debug when creating recurring event (window calculation)", async () => {
+			const organizationId = await createTestOrganization();
+			const startAt = getFutureDate(30, 10);
+
+			// Spy on server.log.debug to verify it's called
+			const debugSpy = vi.spyOn(server.log, "debug");
+
+			try {
+				const result = await createEvent({
+					input: {
+						...baseEventInput(organizationId),
+						name: "Debug Log Event",
+						startAt,
+						recurrence: {
+							frequency: "DAILY",
+							interval: 1,
+							count: 10,
+						},
+					},
+				});
+
+				expect(result.errors).toBeUndefined();
+				expect(result.data?.createEvent).toBeDefined();
+
+				// Verify debug log was called with window calculation message
+				expect(debugSpy).toHaveBeenCalledWith(
+					expect.objectContaining({
+						eventStartAt: expect.any(String),
+						windowStartDate: expect.any(String),
+						currentTime: expect.any(String),
+					}),
+					"FIXED: Window calculation",
+				);
+			} finally {
+				debugSpy.mockRestore();
+			}
+		});
+
 		test("should handle notification enqueue errors gracefully", async () => {
 			const organizationId = await createTestOrganization();
 
@@ -1517,7 +1555,7 @@ suite("Mutation field createEvent", () => {
 			const deleteSpy = vi
 				.spyOn(server.drizzleClient, "delete")
 				.mockImplementationOnce(() => {
-					// First call succeeds (normal operation)
+					// First call: rollback delete in attachment upload error handler
 					return {
 						where: vi.fn().mockReturnValue({
 							returning: vi.fn().mockResolvedValue([]),
@@ -1525,7 +1563,7 @@ suite("Mutation field createEvent", () => {
 					} as unknown as ReturnType<typeof server.drizzleClient.delete>;
 				})
 				.mockImplementationOnce(() => {
-					// Second call fails (rollback delete)
+					// Second call: subsequent delete attempt that fails (simulating DB error)
 					return {
 						where: vi.fn().mockReturnValue({
 							returning: vi
