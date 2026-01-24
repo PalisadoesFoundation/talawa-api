@@ -218,6 +218,15 @@ export const envConfigSchema = Type.Object({
 		}),
 	),
 	/**
+	 * Client hostname to greet the SMTP server with.
+	 * Default: machine hostname
+	 */
+	SMTP_NAME: Type.Optional(Type.String({ minLength: 1 })),
+	/**
+	 * Local IP address to bind to for outgoing SMTP connections.
+	 */
+	SMTP_LOCAL_ADDRESS: Type.Optional(Type.String({ minLength: 1 })),
+	/**
 	 * URL to the youtube account of the community.
 	 */
 	API_COMMUNITY_YOUTUBE_URL: Type.Optional(
@@ -293,6 +302,28 @@ export const envConfigSchema = Type.Object({
 		}),
 	),
 	/**
+	 * Email verification token expiry in seconds.
+	 * Default: 86400 (24 hours)
+	 */
+	API_EMAIL_VERIFICATION_TOKEN_EXPIRES_SECONDS: Type.Optional(
+		Type.Integer({
+			minimum: 1,
+			default: 86400,
+		}),
+	),
+	/**
+	 * HMAC secret key for hashing email verification tokens.
+	 * Used for defense-in-depth; tokens already have 256 bits of entropy.
+	 * Should be at least 32 characters for security best practices.
+	 * Defaults to a static value if not provided (upgrade to custom secret is recommended).
+	 */
+	API_EMAIL_VERIFICATION_TOKEN_HMAC_SECRET: Type.Optional(
+		Type.String({
+			minLength: 32,
+			default: "talawa-email-verification-token-hmac-default-secret-key",
+		}),
+	),
+	/**
 	 * Used for providing the secret for signing and verifying authentication json web tokens created by talawa api.
 	 */
 	API_JWT_SECRET: Type.String({
@@ -332,15 +363,6 @@ export const envConfigSchema = Type.Object({
 			minimum: 0,
 			maximum: 1,
 			default: 1,
-		}),
-	),
-	/**
-	 * The threshold in milliseconds for a request to be considered slow.
-	 */
-	API_SLOW_REQUEST_MS: Type.Optional(
-		Type.Number({
-			minimum: 0,
-			default: 500,
 		}),
 	),
 	/**
@@ -636,6 +658,109 @@ export const envConfigSchema = Type.Object({
 			minimum: 1000,
 			maximum: 60000,
 			default: 10000,
+		}),
+	),
+
+	/**
+	 * Cron schedule for the metrics aggregation background worker.
+	 * Default: "*\/5 * * * *" (every 5 minutes)
+	 */
+	API_METRICS_AGGREGATION_CRON_SCHEDULE: Type.Optional(
+		Type.String({
+			minLength: 9, // Minimum valid cron: "* * * * *"
+		}),
+	),
+
+	/**
+	 * Enable or disable metrics aggregation background worker.
+	 * Default: true
+	 */
+	API_METRICS_AGGREGATION_ENABLED: Type.Optional(
+		Type.Boolean({
+			default: true,
+		}),
+	),
+
+	/**
+	 * Maximum number of performance snapshots to retain in memory.
+	 * Default: 1000
+	 */
+	API_METRICS_SNAPSHOT_RETENTION_COUNT: Type.Optional(
+		Type.Integer({
+			minimum: 1,
+			default: 1000,
+		}),
+	),
+
+	/**
+	 * Time window in minutes for metrics aggregation.
+	 * Only snapshots within this window will be included in aggregation.
+	 * Default: 5
+	 */
+	API_METRICS_AGGREGATION_WINDOW_MINUTES: Type.Optional(
+		Type.Integer({
+			minimum: 1,
+			default: 5,
+		}),
+	),
+
+	/**
+	 * API key for authenticating requests to the /metrics/perf endpoint.
+	 * If not set, the endpoint is unprotected (suitable for development).
+	 * In production, set this to a secure random string.
+	 */
+	API_METRICS_API_KEY: Type.Optional(
+		Type.String({
+			minLength: 32,
+		}),
+	),
+
+	/**
+	 * Master switch to enable or disable metrics collection and aggregation.
+	 * When disabled, metrics collection is skipped entirely.
+	 * Default: true
+	 */
+	API_METRICS_ENABLED: Type.Optional(
+		Type.Boolean({
+			default: true,
+		}),
+	),
+
+	/**
+	 * Threshold in milliseconds for considering an operation as slow.
+	 * Operations exceeding this threshold will be tracked in slow operations metrics.
+	 * Default: 200
+	 */
+	API_METRICS_SLOW_OPERATION_MS: Type.Optional(
+		Type.Integer({
+			minimum: 1,
+			default: 200,
+		}),
+	),
+
+	/**
+	 * Threshold in milliseconds for considering a request as slow.
+	 * This is the single source of truth for slow request detection.
+	 * Used for both performance metrics tracking and request logging.
+	 * Requests exceeding this threshold will be logged as warnings.
+	 * Default: 500
+	 */
+	API_METRICS_SLOW_REQUEST_MS: Type.Optional(
+		Type.Integer({
+			minimum: 1,
+			default: 500,
+		}),
+	),
+
+	/**
+	 * Time-to-live in seconds for cached aggregated metrics.
+	 * Determines how long metrics remain in cache before expiration.
+	 * Default: 300 (5 minutes)
+	 */
+	API_METRICS_CACHE_TTL_SECONDS: Type.Optional(
+		Type.Integer({
+			minimum: 1,
+			default: 300,
 		}),
 	),
 });

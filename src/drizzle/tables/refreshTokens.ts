@@ -74,7 +74,7 @@ export const refreshTokensTableInsertSchema = createInsertSchema(
 	refreshTokensTable,
 	{
 		tokenHash: (schema) => schema.min(1),
-		userId: (schema) => schema.uuid(),
+		userId: (schema) => schema,
 		expiresAt: (schema) => schema,
 	},
 );

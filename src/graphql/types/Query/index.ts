@@ -1,7 +1,6 @@
 import "./Query";
 import "./advertisement";
 import "./agendaFolder";
-import "./agendaItem";
 import "./chat";
 import "./chatMessage";
 import "./comment";
@@ -43,3 +42,4 @@ import "./UnreadChat";
 import "./hasSubmittedFeedback";
 import "./verifyPasswordResetToken";
 import "./agendaCategoriesByEventId";
+import "./agendaFoldersByEventId";

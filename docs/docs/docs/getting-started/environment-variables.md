@@ -24,6 +24,7 @@ In an environment where one capability is needed but the other is not, using a s
 
 Environment variables should be named using uppercase letters, numbers, and underscores. They should also be prefixed with `API_` to indicate that they are specific to the talawa-api application. For example `API_BASE_URL` and `API_PORT`.
 
+
 ## talawa api (standalone)
 
 At runtime, talawa api requires certain environment variables to be defined in its execution context. Some of these environment variables must be provided by you and some are optional to be provided because they might be using a default value or their requirement is dependent on the environment in which talawa api is running.
@@ -106,6 +107,14 @@ When talawa api debugger is run within a container environment this variable mus
 
 This environment variable is used to configure the email provider to be used by the talawa api. Currently supports `ses` and `smtp` (future). The default value is `ses`.
 
+### API_EMAIL_VERIFICATION_TOKEN_EXPIRES_SECONDS
+
+This environment variable is used to configure the time in seconds for which an email verification token remains valid. The default value is `86400` (24 hours).
+
+### API_EMAIL_VERIFICATION_TOKEN_HMAC_SECRET
+
+This environment variable is used to configure the secret key for hashing email verification tokens. Used for defense-in-depth; tokens already have 256 bits of entropy. Should be at least 32 characters for security best practices. Defaults to a static value if not provided.
+
 ### API_HOST
 
 This environment variable is used to configure the host ip that can access the host port on which talawa api listens to at runtime.
@@ -151,9 +160,41 @@ This environment variable is used to configure the [log level](https://github.co
 
 - More information can be found at [this](https://github.com/pinojs/pino/blob/main/docs/api.md##logger-level) link.
 
-### API_SLOW_REQUEST_MS
+### API_METRICS_ENABLED
 
-This environment variable is used to configure the threshold in milliseconds for identifying slow requests in talawa api. Requests that exceed this duration will be logged and tracked for performance monitoring purposes.
+This environment variable is used as a master switch to enable or disable metrics collection and aggregation in talawa api. When disabled, metrics collection is skipped entirely. Default value is `true`.
+
+### API_METRICS_SLOW_OPERATION_MS
+
+This environment variable is used to configure the threshold in milliseconds for considering an operation as slow. Operations exceeding this threshold will be tracked in slow operations metrics. Default value is `200` milliseconds.
+
+### API_METRICS_SLOW_REQUEST_MS
+
+This environment variable is used to configure the threshold in milliseconds for identifying slow requests in talawa api. Requests that exceed this duration will be logged and tracked for performance monitoring purposes. Default value is `500` milliseconds.
+
+### API_METRICS_CACHE_TTL_SECONDS
+
+This environment variable is used to configure the time-to-live in seconds for cached aggregated metrics. Determines how long metrics remain in cache before expiration. Default value is `300` seconds (5 minutes).
+
+### API_METRICS_AGGREGATION_CRON_SCHEDULE
+
+This environment variable is used to configure the cron schedule for the metrics aggregation worker. The worker periodically aggregates in-memory performance snapshots into meaningful statistics. Default value is `*/5 * * * *` (every 5 minutes).
+
+### API_METRICS_AGGREGATION_ENABLED
+
+This environment variable is used to enable or disable the metrics aggregation background worker. When enabled, performance snapshots are aggregated on a schedule defined by `API_METRICS_AGGREGATION_CRON_SCHEDULE`. Default value is `true`.
+
+### API_METRICS_AGGREGATION_WINDOW_MINUTES
+
+This environment variable is used to configure the time window in minutes for metrics aggregation. The worker will aggregate snapshots from this time window. Default value is `5` minutes.
+
+### API_METRICS_SNAPSHOT_RETENTION_COUNT
+
+This environment variable is used to configure the maximum number of performance snapshots to retain in memory. When the limit is reached, older snapshots are automatically removed. Default value is `1000`.
+
+### API_METRICS_API_KEY
+
+This environment variable is used to configure the API key for protecting the `/metrics/perf` endpoint. When set, requests to this endpoint must include a valid `Authorization: Bearer <API_KEY>` header. If not set, the endpoint is unprotected.
 
 ### API_MINIO_ACCESS_KEY
 
@@ -663,5 +704,35 @@ This environment variable is used to enable or disable container services to be 
 This environment variable is used to configure the prefix for identifiers of all the container services to be run by docker compose.
 
 - More information can be found at [this](https://docs.docker.com/compose/environment-variables/envvars/##compose_project_name) link.
+
+## OAuth Configuration
+
+### GOOGLE_CLIENT_ID
+
+This environment variable is used to configure the OAuth Client ID for Google authentication.
+
+### GOOGLE_CLIENT_SECRET
+
+This environment variable is used to configure the OAuth Client Secret for Google authentication.
+
+### GOOGLE_REDIRECT_URI
+
+This environment variable is used to configure the OAuth Redirect URI for Google authentication.
+
+### GITHUB_CLIENT_ID
+
+This environment variable is used to configure the OAuth Client ID for GitHub authentication.
+
+### GITHUB_CLIENT_SECRET
+
+This environment variable is used to configure the OAuth Client Secret for GitHub authentication.
+
+### GITHUB_REDIRECT_URI
+
+This environment variable is used to configure the OAuth Redirect URI for GitHub authentication.
+
+### API_OAUTH_REQUEST_TIMEOUT_MS
+
+This environment variable is used to configure the request timeout in milliseconds for OAuth provider API calls. Default value is `10000` milliseconds (10 seconds).
 
 

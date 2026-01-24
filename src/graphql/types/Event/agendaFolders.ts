@@ -1,15 +1,4 @@
-import {
-	and,
-	asc,
-	desc,
-	eq,
-	exists,
-	gt,
-	isNull,
-	lt,
-	or,
-	type SQL,
-} from "drizzle-orm";
+import { and, asc, desc, eq, exists, gt, lt, or, type SQL } from "drizzle-orm";
 import type { z } from "zod";
 import {
 	agendaFoldersTable,
@@ -104,12 +93,10 @@ Event.implement({
 												eq(agendaFoldersTable.eventId, parent.id),
 												eq(agendaFoldersTable.id, cursor.id),
 												eq(agendaFoldersTable.name, cursor.name),
-												isNull(agendaFoldersTable.parentFolderId),
 											),
 										),
 								),
 								eq(agendaFoldersTable.eventId, parent.id),
-								isNull(agendaFoldersTable.parentFolderId),
 								or(
 									and(
 										eq(agendaFoldersTable.name, cursor.name),
@@ -119,10 +106,7 @@ Event.implement({
 								),
 							);
 						} else {
-							where = and(
-								eq(agendaFoldersTable.eventId, parent.id),
-								isNull(agendaFoldersTable.parentFolderId),
-							);
+							where = eq(agendaFoldersTable.eventId, parent.id);
 						}
 					} else {
 						if (cursor !== undefined) {
@@ -136,12 +120,10 @@ Event.implement({
 												eq(agendaFoldersTable.eventId, parent.id),
 												eq(agendaFoldersTable.id, cursor.id),
 												eq(agendaFoldersTable.name, cursor.name),
-												isNull(agendaFoldersTable.parentFolderId),
 											),
 										),
 								),
 								eq(agendaFoldersTable.eventId, parent.id),
-								isNull(agendaFoldersTable.parentFolderId),
 								or(
 									and(
 										eq(agendaFoldersTable.name, cursor.name),
@@ -151,10 +133,7 @@ Event.implement({
 								),
 							);
 						} else {
-							where = and(
-								eq(agendaFoldersTable.eventId, parent.id),
-								isNull(agendaFoldersTable.parentFolderId),
-							);
+							where = eq(agendaFoldersTable.eventId, parent.id);
 						}
 					}
 

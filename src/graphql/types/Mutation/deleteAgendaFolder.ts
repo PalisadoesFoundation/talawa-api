@@ -62,9 +62,6 @@ builder.mutationField("deleteAgendaFolder", (t) =>
 					where: (fields, operators) => operators.eq(fields.id, currentUserId),
 				}),
 				ctx.drizzleClient.query.agendaFoldersTable.findFirst({
-					columns: {
-						isAgendaItemFolder: true,
-					},
 					with: {
 						event: {
 							columns: {

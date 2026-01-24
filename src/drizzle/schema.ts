@@ -38,6 +38,10 @@ export {
 	agendaItemsTableRelations,
 } from "./tables/agendaItems";
 export {
+	agendaItemUrlTable,
+	agendaItemUrlTableRelations,
+} from "./tables/agendaItemUrls";
+export {
 	blockedUsersTable,
 	blockedUsersTableRelations,
 } from "./tables/blockedUsers";
@@ -67,6 +71,10 @@ export {
 	emailNotificationsTable,
 	emailNotificationsTableRelations,
 } from "./tables/EmailNotification";
+export {
+	emailVerificationTokensTable,
+	emailVerificationTokensTableRelations,
+} from "./tables/emailVerificationTokens";
 export {
 	eventAttachmentsTable,
 	eventAttachmentsTableRelations,

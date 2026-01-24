@@ -20,6 +20,10 @@ Defined in: [src/graphql/types/AgendaFolder/updater.ts:8](https://github.com/Pal
 
 `string` \| `null`
 
+#### description
+
+`string` \| `null`
+
 #### eventId
 
 `string`
@@ -28,7 +32,7 @@ Defined in: [src/graphql/types/AgendaFolder/updater.ts:8](https://github.com/Pal
 
 `string`
 
-#### isAgendaItemFolder
+#### isDefaultFolder
 
 `boolean`
 
@@ -36,9 +40,13 @@ Defined in: [src/graphql/types/AgendaFolder/updater.ts:8](https://github.com/Pal
 
 `string`
 
-#### parentFolderId
+#### organizationId
 
-`string` \| `null`
+`string`
+
+#### sequence
+
+`number` \| `null`
 
 #### updatedAt
 

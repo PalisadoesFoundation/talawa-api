@@ -1,8 +1,11 @@
+import { eq } from "drizzle-orm";
 import type { FileUpload } from "graphql-upload-minimal";
 import { ulid } from "ulidx";
 import { uuidv7 } from "uuidv7";
 import { z } from "zod";
 import { eventAttachmentMimeTypeEnum } from "~/src/drizzle/enums/eventAttachmentMimeType";
+import { agendaCategoriesTable } from "~/src/drizzle/tables/agendaCategories";
+import { agendaFoldersTable } from "~/src/drizzle/tables/agendaFolders";
 import { eventAttachmentsTable } from "~/src/drizzle/tables/eventAttachments";
 import { eventsTable } from "~/src/drizzle/tables/events";
 import { recurrenceRulesTable } from "~/src/drizzle/tables/recurrenceRules";
@@ -22,6 +25,17 @@ import {
 	validateRecurrenceInput,
 } from "~/src/utilities/recurringEvent";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
+
+const DEFAULT_AGENDA_FOLDER_CONFIG = {
+	name: "Default",
+	description: "Default agenda folder",
+	sequence: 1,
+} as const;
+
+const DEFAULT_AGENDA_CATEGORY_CONFIG = {
+	name: "Default",
+	description: "Default agenda category",
+} as const;
 
 export const mutationCreateEventArgumentsSchema = z.object({
 	input: mutationCreateEventInputSchema.transform(async (arg, ctx) => {
@@ -223,7 +237,7 @@ builder.mutationField("createEvent", (t) =>
 				});
 			}
 
-			const createdEventResult = await ctx.drizzleClient.transaction(
+			let createdEventResult = await ctx.drizzleClient.transaction(
 				async (tx) => {
 					// Create the base event (template for recurring, or standalone event)
 					const [createdEvent] = await tx
@@ -251,6 +265,55 @@ builder.mutationField("createEvent", (t) =>
 							"Postgres insert operation unexpectedly returned an empty array instead of throwing an error.",
 						);
 
+						throw new TalawaGraphQLError({
+							extensions: {
+								code: "unexpected",
+							},
+						});
+					}
+
+					// Creates default agenda folder
+					const [createdAgendaFolder] = await tx
+						.insert(agendaFoldersTable)
+						.values({
+							name: DEFAULT_AGENDA_FOLDER_CONFIG.name,
+							description: DEFAULT_AGENDA_FOLDER_CONFIG.description,
+							eventId: createdEvent.id,
+							organizationId: parsedArgs.input.organizationId,
+							isDefaultFolder: true,
+							sequence: DEFAULT_AGENDA_FOLDER_CONFIG.sequence,
+							creatorId: currentUserId,
+						})
+						.returning();
+
+					if (createdAgendaFolder === undefined) {
+						ctx.log.error(
+							"Postgres insert operation for agenda folder unexpectedly returned an empty array.",
+						);
+						throw new TalawaGraphQLError({
+							extensions: {
+								code: "unexpected",
+							},
+						});
+					}
+
+					// Creates default agenda category
+					const [createdAgendaCategory] = await tx
+						.insert(agendaCategoriesTable)
+						.values({
+							name: DEFAULT_AGENDA_CATEGORY_CONFIG.name,
+							description: DEFAULT_AGENDA_CATEGORY_CONFIG.description,
+							eventId: createdEvent.id,
+							organizationId: parsedArgs.input.organizationId,
+							isDefaultCategory: true,
+							creatorId: currentUserId,
+						})
+						.returning();
+
+					if (createdAgendaCategory === undefined) {
+						ctx.log.error(
+							"Postgres insert operation for agenda category unexpectedly returned an empty array.",
+						);
 						throw new TalawaGraphQLError({
 							extensions: {
 								code: "unexpected",
@@ -425,23 +488,6 @@ builder.mutationField("createEvent", (t) =>
 								})),
 							)
 							.returning();
-
-						await Promise.all(
-							createdEventAttachments.map((attachment, index) => {
-								if (attachments[index] !== undefined) {
-									return ctx.minio.client.putObject(
-										ctx.minio.bucketName,
-										attachment.name,
-										attachments[index].createReadStream(),
-										undefined,
-										{
-											"content-type": attachment.mimeType,
-										},
-									);
-								}
-								return undefined;
-							}),
-						);
 					}
 
 					const finalEvent = Object.assign(createdEvent, {
@@ -467,6 +513,78 @@ builder.mutationField("createEvent", (t) =>
 					return finalEvent;
 				},
 			);
+			if (parsedArgs.input.attachments !== undefined) {
+				const attachments = parsedArgs.input.attachments;
+				const createdEventAttachments = createdEventResult.attachments ?? [];
+
+				try {
+					const uploadPromises = createdEventAttachments.map(
+						(attachment, index) => {
+							const file = attachments[index];
+							if (!file) return undefined;
+
+							return ctx.minio.client.putObject(
+								ctx.minio.bucketName,
+								attachment.name,
+								file.createReadStream(),
+								undefined,
+								{
+									"content-type": attachment.mimeType,
+								},
+							);
+						},
+					);
+
+					await Promise.all(uploadPromises.filter(Boolean));
+				} catch (error) {
+					ctx.log.error(
+						{ error, eventId: createdEventResult.id },
+						"Failed to upload one or more event attachments",
+					);
+
+					// Cleanup-remove attachment DB rows
+					try {
+						await ctx.drizzleClient
+							.delete(eventAttachmentsTable)
+							.where(eq(eventAttachmentsTable.eventId, createdEventResult.id));
+					} catch (cleanupError) {
+						ctx.log.error(
+							{ cleanupError, eventId: createdEventResult.id },
+							"Failed to clean up attachment records after upload failure",
+						);
+					}
+
+					// MinIO cleanup
+					const removalResults = await Promise.allSettled(
+						createdEventAttachments.map((attachment) =>
+							ctx.minio.client.removeObject(
+								ctx.minio.bucketName,
+								attachment.name,
+							),
+						),
+					);
+					const failedRemovals = removalResults.filter(
+						(r) => r.status === "rejected",
+					);
+					if (failedRemovals.length > 0) {
+						ctx.log.error(
+							{
+								eventId: createdEventResult.id,
+								failedCount: failedRemovals.length,
+							},
+							"Failed to clean up some attachment objects after upload failure",
+						);
+					}
+					createdEventResult = {
+						...createdEventResult,
+						attachments: [],
+					};
+					ctx.log.warn(
+						{ eventId: createdEventResult.id },
+						"Attachment uploads failed; returning event without attachments",
+					);
+				}
+			}
 			try {
 				await ctx.notification?.flush(ctx);
 			} catch (error) {
