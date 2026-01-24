@@ -45,70 +45,70 @@ const mockGetRecurringEventInstancesByIds = vi.mocked(
 	getRecurringEventInstancesByIds,
 );
 
+const mockStandaloneEvent: EventWithAttachments = {
+	id: "standalone-1",
+	name: "Standalone Event",
+	description: "A standalone event",
+	startAt: new Date("2025-01-15T10:00:00.000Z"),
+	endAt: new Date("2025-01-15T11:00:00.000Z"),
+	location: "Conference Room",
+	allDay: false,
+	isPublic: true,
+	isRegisterable: true,
+	isInviteOnly: false,
+	organizationId: "org-1",
+	creatorId: "user-1",
+	updaterId: null,
+	createdAt: new Date("2025-01-01T00:00:00.000Z"),
+	updatedAt: null,
+	isRecurringEventTemplate: false,
+	attachments: [],
+	eventType: "standalone" as const,
+};
+
+const mockGeneratedInstance: ResolvedRecurringEventInstance = {
+	// Core instance metadata
+	id: "generated-1",
+	baseRecurringEventId: "recurring-1",
+	recurrenceRuleId: "rule-1",
+	originalSeriesId: "series-1",
+	originalInstanceStartTime: new Date("2025-01-16T14:00:00.000Z"),
+	actualStartTime: new Date("2025-01-16T14:00:00.000Z"),
+	actualEndTime: new Date("2025-01-16T15:00:00.000Z"),
+	isCancelled: false,
+	organizationId: "org-1",
+	generatedAt: new Date("2025-01-01T00:00:00.000Z"),
+	lastUpdatedAt: new Date("2025-01-02T00:00:00.000Z"),
+	version: "1.0",
+
+	// Sequence metadata
+	sequenceNumber: 2,
+	totalCount: 10,
+
+	// Resolved event properties
+	name: "Generated Event",
+	description: "A generated event instance",
+	location: "Meeting Room",
+	allDay: false,
+	isPublic: true,
+	isRegisterable: false,
+	isInviteOnly: false,
+	creatorId: "user-1",
+	updaterId: "user-2",
+	createdAt: new Date("2025-01-01T00:00:00.000Z"),
+	updatedAt: new Date("2025-01-02T00:00:00.000Z"),
+
+	// Exception metadata
+	hasExceptions: false,
+	appliedExceptionData: null,
+	exceptionCreatedBy: null,
+	exceptionCreatedAt: null,
+};
+
 describe("getUnifiedEventsInDateRange", () => {
 	let mockDrizzleClient: ServiceDependencies["drizzleClient"];
 	let mockLogger: ServiceDependencies["logger"];
 	let baseInput: GetUnifiedEventsInput;
-
-	const mockStandaloneEvent: EventWithAttachments = {
-		id: "standalone-1",
-		name: "Standalone Event",
-		description: "A standalone event",
-		startAt: new Date("2025-01-15T10:00:00.000Z"),
-		endAt: new Date("2025-01-15T11:00:00.000Z"),
-		location: "Conference Room",
-		allDay: false,
-		isPublic: true,
-		isRegisterable: true,
-		isInviteOnly: false,
-		organizationId: "org-1",
-		creatorId: "user-1",
-		updaterId: null,
-		createdAt: new Date("2025-01-01T00:00:00.000Z"),
-		updatedAt: null,
-		isRecurringEventTemplate: false,
-		attachments: [],
-		eventType: "standalone" as const,
-	};
-
-	const mockGeneratedInstance: ResolvedRecurringEventInstance = {
-		// Core instance metadata
-		id: "generated-1",
-		baseRecurringEventId: "recurring-1",
-		recurrenceRuleId: "rule-1",
-		originalSeriesId: "series-1",
-		originalInstanceStartTime: new Date("2025-01-16T14:00:00.000Z"),
-		actualStartTime: new Date("2025-01-16T14:00:00.000Z"),
-		actualEndTime: new Date("2025-01-16T15:00:00.000Z"),
-		isCancelled: false,
-		organizationId: "org-1",
-		generatedAt: new Date("2025-01-01T00:00:00.000Z"),
-		lastUpdatedAt: new Date("2025-01-02T00:00:00.000Z"),
-		version: "1.0",
-
-		// Sequence metadata
-		sequenceNumber: 2,
-		totalCount: 10,
-
-		// Resolved event properties
-		name: "Generated Event",
-		description: "A generated event instance",
-		location: "Meeting Room",
-		allDay: false,
-		isPublic: true,
-		isRegisterable: false,
-		isInviteOnly: false,
-		creatorId: "user-1",
-		updaterId: "user-2",
-		createdAt: new Date("2025-01-01T00:00:00.000Z"),
-		updatedAt: new Date("2025-01-02T00:00:00.000Z"),
-
-		// Exception metadata
-		hasExceptions: false,
-		appliedExceptionData: null,
-		exceptionCreatedBy: null,
-		exceptionCreatedAt: null,
-	};
 
 	beforeEach(() => {
 		// Reset all mocks
@@ -143,7 +143,6 @@ describe("getUnifiedEventsInDateRange", () => {
 		mockGetRecurringEventInstancesByIds.mockResolvedValue([]);
 	});
 
-	// Helper function to create a complete ResolvedRecurringEventInstance
 	const createMockGeneratedInstance = (
 		overrides: Partial<ResolvedRecurringEventInstance> = {},
 	): ResolvedRecurringEventInstance => ({
@@ -756,6 +755,30 @@ describe("getUnifiedEventsInDateRange", () => {
 			);
 
 			expect(result).toHaveLength(1000);
+
+			// Assert that limits were correctly passed to dependencies
+			expect(mockGetStandaloneEventsInDateRange).toHaveBeenCalledWith(
+				expect.objectContaining({ limit: 1000 }),
+				mockDrizzleClient,
+				mockLogger,
+			);
+			expect(mockGetRecurringEventInstancesInDateRange).toHaveBeenCalledWith(
+				expect.objectContaining({ limit: 1000 }),
+				mockDrizzleClient,
+				mockLogger,
+			);
+
+			// Assert that limits were correctly passed to dependencies
+			expect(mockGetStandaloneEventsInDateRange).toHaveBeenCalledWith(
+				expect.objectContaining({ limit: 1000 }),
+				mockDrizzleClient,
+				mockLogger,
+			);
+			expect(mockGetRecurringEventInstancesInDateRange).toHaveBeenCalledWith(
+				expect.objectContaining({ limit: 1000 }),
+				mockDrizzleClient,
+				mockLogger,
+			);
 		});
 	});
 });
@@ -763,66 +786,6 @@ describe("getUnifiedEventsInDateRange", () => {
 describe("getEventsByIds", () => {
 	let mockDrizzleClient: ServiceDependencies["drizzleClient"];
 	let mockLogger: ServiceDependencies["logger"];
-
-	const mockStandaloneEvent: EventWithAttachments = {
-		id: "standalone-1",
-		name: "Standalone Event",
-		description: "A standalone event",
-		startAt: new Date("2025-01-15T10:00:00.000Z"),
-		endAt: new Date("2025-01-15T11:00:00.000Z"),
-		location: "Conference Room",
-		allDay: false,
-		isPublic: true,
-		isRegisterable: true,
-		isInviteOnly: false,
-		organizationId: "org-1",
-		creatorId: "user-1",
-		updaterId: null,
-		createdAt: new Date("2025-01-01T00:00:00.000Z"),
-		updatedAt: null,
-		isRecurringEventTemplate: false,
-		attachments: [],
-		eventType: "standalone" as const,
-	};
-
-	const mockResolvedInstance: ResolvedRecurringEventInstance = {
-		// Core instance metadata
-		id: "generated-1",
-		baseRecurringEventId: "recurring-1",
-		recurrenceRuleId: "rule-1",
-		originalSeriesId: "series-1",
-		originalInstanceStartTime: new Date("2025-01-16T14:00:00.000Z"),
-		actualStartTime: new Date("2025-01-16T14:00:00.000Z"),
-		actualEndTime: new Date("2025-01-16T15:00:00.000Z"),
-		isCancelled: false,
-		organizationId: "org-1",
-		generatedAt: new Date("2025-01-01T00:00:00.000Z"),
-		lastUpdatedAt: new Date("2025-01-02T00:00:00.000Z"),
-		version: "1.0",
-
-		// Sequence metadata
-		sequenceNumber: 2,
-		totalCount: 10,
-
-		// Resolved event properties
-		name: "Generated Event",
-		description: "A generated event instance",
-		location: "Meeting Room",
-		allDay: false,
-		isPublic: true,
-		isRegisterable: false,
-		isInviteOnly: false,
-		creatorId: "user-1",
-		updaterId: "user-2",
-		createdAt: new Date("2025-01-01T00:00:00.000Z"),
-		updatedAt: new Date("2025-01-02T00:00:00.000Z"),
-
-		// Exception metadata
-		hasExceptions: false,
-		appliedExceptionData: null,
-		exceptionCreatedBy: null,
-		exceptionCreatedAt: null,
-	};
 
 	beforeEach(() => {
 		vi.clearAllMocks();
@@ -873,15 +836,20 @@ describe("getEventsByIds", () => {
 			expect(result[0]?.isGenerated).toBe(false);
 			expect(result[0]?.id).toBe("standalone-1");
 
-			// Should not call recurring instance query since all IDs were found
-			expect(mockGetRecurringEventInstancesByIds).not.toHaveBeenCalled();
+			// Verify includeTemplates is true
+			expect(mockGetStandaloneEventsByIds).toHaveBeenCalledWith(
+				eventIds,
+				mockDrizzleClient,
+				mockLogger,
+				expect.objectContaining({ includeTemplates: true }),
+			);
 		});
 
 		it("should return generated events when not found as standalone", async () => {
 			const eventIds = ["generated-1"];
 			mockGetStandaloneEventsByIds.mockResolvedValue([]);
 			mockGetRecurringEventInstancesByIds.mockResolvedValue([
-				mockResolvedInstance,
+				mockGeneratedInstance, // Use shared fixture
 			]);
 
 			const result = await getEventsByIds(
@@ -902,7 +870,7 @@ describe("getEventsByIds", () => {
 			const eventIds = ["standalone-1", "generated-1"];
 			mockGetStandaloneEventsByIds.mockResolvedValue([mockStandaloneEvent]);
 			mockGetRecurringEventInstancesByIds.mockResolvedValue([
-				mockResolvedInstance,
+				mockGeneratedInstance,
 			]);
 
 			const result = await getEventsByIds(
@@ -933,7 +901,7 @@ describe("getEventsByIds", () => {
 		it("should correctly transform generated events to unified format", async () => {
 			const eventIds = ["generated-1"];
 			mockGetRecurringEventInstancesByIds.mockResolvedValue([
-				mockResolvedInstance,
+				mockGeneratedInstance,
 			]);
 
 			const result = await getEventsByIds(
@@ -945,42 +913,42 @@ describe("getEventsByIds", () => {
 			const transformedEvent = result[0];
 
 			// Core properties should be mapped correctly
-			expect(transformedEvent?.id).toBe(mockResolvedInstance.id);
-			expect(transformedEvent?.name).toBe(mockResolvedInstance.name);
+			expect(transformedEvent?.id).toBe(mockGeneratedInstance.id);
+			expect(transformedEvent?.name).toBe(mockGeneratedInstance.name);
 			expect(transformedEvent?.description).toBe(
-				mockResolvedInstance.description,
+				mockGeneratedInstance.description,
 			);
 			expect(transformedEvent?.startAt).toBe(
-				mockResolvedInstance.actualStartTime,
+				mockGeneratedInstance.actualStartTime,
 			);
-			expect(transformedEvent?.endAt).toBe(mockResolvedInstance.actualEndTime);
-			expect(transformedEvent?.location).toBe(mockResolvedInstance.location);
-			expect(transformedEvent?.allDay).toBe(mockResolvedInstance.allDay);
-			expect(transformedEvent?.isPublic).toBe(mockResolvedInstance.isPublic);
+			expect(transformedEvent?.endAt).toBe(mockGeneratedInstance.actualEndTime);
+			expect(transformedEvent?.location).toBe(mockGeneratedInstance.location);
+			expect(transformedEvent?.allDay).toBe(mockGeneratedInstance.allDay);
+			expect(transformedEvent?.isPublic).toBe(mockGeneratedInstance.isPublic);
 			expect(transformedEvent?.isRegisterable).toBe(
-				mockResolvedInstance.isRegisterable,
+				mockGeneratedInstance.isRegisterable,
 			);
 			expect(transformedEvent?.organizationId).toBe(
-				mockResolvedInstance.organizationId,
+				mockGeneratedInstance.organizationId,
 			);
-			expect(transformedEvent?.creatorId).toBe(mockResolvedInstance.creatorId);
-			expect(transformedEvent?.updaterId).toBe(mockResolvedInstance.updaterId);
-			expect(transformedEvent?.createdAt).toBe(mockResolvedInstance.createdAt);
-			expect(transformedEvent?.updatedAt).toBe(mockResolvedInstance.updatedAt);
+			expect(transformedEvent?.creatorId).toBe(mockGeneratedInstance.creatorId);
+			expect(transformedEvent?.updaterId).toBe(mockGeneratedInstance.updaterId);
+			expect(transformedEvent?.createdAt).toBe(mockGeneratedInstance.createdAt);
+			expect(transformedEvent?.updatedAt).toBe(mockGeneratedInstance.updatedAt);
 
 			// Generated event specific properties
 			expect(transformedEvent?.isRecurringEventTemplate).toBe(false);
 			expect(transformedEvent?.baseRecurringEventId).toBe(
-				mockResolvedInstance.baseRecurringEventId,
+				mockGeneratedInstance.baseRecurringEventId,
 			);
 			expect(transformedEvent?.sequenceNumber).toBe(
-				mockResolvedInstance.sequenceNumber,
+				mockGeneratedInstance.sequenceNumber,
 			);
 			expect(transformedEvent?.totalCount).toBe(
-				mockResolvedInstance.totalCount,
+				mockGeneratedInstance.totalCount,
 			);
 			expect(transformedEvent?.hasExceptions).toBe(
-				mockResolvedInstance.hasExceptions,
+				mockGeneratedInstance.hasExceptions,
 			);
 			expect(transformedEvent?.attachments).toEqual([]);
 			expect(transformedEvent?.eventType).toBe("generated");
@@ -998,7 +966,7 @@ describe("getEventsByIds", () => {
 				standaloneEvent2,
 			]);
 			mockGetRecurringEventInstancesByIds.mockResolvedValue([
-				mockResolvedInstance,
+				mockGeneratedInstance,
 			]);
 
 			await getEventsByIds(eventIds, mockDrizzleClient, mockLogger);
@@ -1023,13 +991,13 @@ describe("getEventsByIds", () => {
 			const eventIds = ["generated-1", "generated-2"];
 			mockGetStandaloneEventsByIds.mockResolvedValue([]);
 
-			const mockResolvedInstance2 = {
-				...mockResolvedInstance,
+			const mockGeneratedInstance2 = {
+				...mockGeneratedInstance, // Use shared fixture (was mockGeneratedInstance)
 				id: "generated-2",
 			};
 			mockGetRecurringEventInstancesByIds.mockResolvedValue([
-				mockResolvedInstance,
-				mockResolvedInstance2,
+				mockGeneratedInstance, // Use shared fixture (was mockGeneratedInstance)
+				mockGeneratedInstance2,
 			]);
 
 			const result = await getEventsByIds(
@@ -1052,7 +1020,7 @@ describe("getEventsByIds", () => {
 			const eventIds = ["standalone-1", "generated-1"];
 			mockGetStandaloneEventsByIds.mockResolvedValue([mockStandaloneEvent]);
 			mockGetRecurringEventInstancesByIds.mockResolvedValue([
-				mockResolvedInstance,
+				mockGeneratedInstance,
 			]);
 
 			await getEventsByIds(eventIds, mockDrizzleClient, mockLogger);
@@ -1149,7 +1117,7 @@ describe("getEventsByIds", () => {
 
 		it("should handle null/undefined properties in resolved instances", async () => {
 			const instanceWithNulls = {
-				...mockResolvedInstance,
+				...mockGeneratedInstance, // Use shared fixture (was mockResolvedInstance)
 				description: null,
 				location: null,
 				updaterId: null,
