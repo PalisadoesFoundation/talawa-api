@@ -937,6 +937,7 @@ suite("Mutation field createUser", () => {
 
 			try {
 				// Create user - should use default refresh token expiry
+				const now = Date.now();
 				const createUserResult = await mercuriusClient.mutate(
 					Mutation_createUser,
 					{
@@ -981,7 +982,7 @@ suite("Mutation field createUser", () => {
 					"~/src/utilities/refreshTokenUtils"
 				);
 				const expectedExpiresAt = new Date(
-					Date.now() + DEFAULT_REFRESH_TOKEN_EXPIRES_MS,
+					now + DEFAULT_REFRESH_TOKEN_EXPIRES_MS,
 				);
 
 				// Allow 5 second tolerance for test execution time

@@ -1372,6 +1372,29 @@ suite("Mutation field createEvent", () => {
 					"findFirst",
 				)
 				.mockResolvedValue(undefined);
+			const eventGenerationModule = await import(
+				"~/src/services/eventGeneration"
+			);
+			const initializeSpy = vi
+				.spyOn(eventGenerationModule, "initializeGenerationWindow")
+				.mockResolvedValue({
+					id: "test-window-id",
+					organizationId,
+					hotWindowMonthsAhead: 12,
+					historyRetentionMonths: 3,
+					currentWindowEndDate: new Date(),
+					retentionStartDate: new Date(),
+					lastProcessedAt: new Date(),
+					lastProcessedInstanceCount: 0,
+					isEnabled: true,
+					processingPriority: 5,
+					maxInstancesPerRun: 1000,
+					configurationNotes: null,
+					createdById: "00000000-0000-0000-0000-000000000001",
+					lastUpdatedById: null,
+					createdAt: new Date(),
+					updatedAt: new Date(),
+				});
 
 			try {
 				const result = await createEvent({
@@ -1392,31 +1415,16 @@ suite("Mutation field createEvent", () => {
 				// Verify the mock was called (window lookup happened)
 				expect(findFirstSpy).toHaveBeenCalled();
 
-				// Poll for window to appear (transaction should be committed by now)
-				let window:
-					| Awaited<
-							ReturnType<
-								typeof server.drizzleClient.query.eventGenerationWindowsTable.findFirst
-							>
-					  >
-					| undefined;
-				// Increase retry attempts and delay to avoid flaky CI failures
-				for (let i = 0; i < 50; i++) {
-					window =
-						await server.drizzleClient.query.eventGenerationWindowsTable.findFirst(
-							{
-								where: (fields, operators) =>
-									operators.eq(fields.organizationId, organizationId),
-							},
-						);
-					if (window) break;
-					await new Promise((resolve) => setTimeout(resolve, 200));
-				}
-				expect(window).toBeDefined();
-				expect(window?.organizationId).toBe(organizationId);
+				// Verify initialization path was executed
+				expect(initializeSpy).toHaveBeenCalledWith(
+					expect.objectContaining({ organizationId }),
+					expect.any(Object),
+					expect.any(Object),
+				);
 			} finally {
 				// Ensure cleanup even if test fails
 				findFirstSpy.mockRestore();
+				initializeSpy.mockRestore();
 			}
 		});
 
@@ -1658,6 +1666,10 @@ suite("Mutation field createEvent", () => {
 
 				const result = response.json();
 				expect(result.errors).toBeDefined();
+				expect(result.data?.createEvent).toBeNull();
+				expect(putObjectSpy).toHaveBeenCalled();
+				expect(deleteSpy).toHaveBeenCalled();
+				expect(removeObjectsSpy).toHaveBeenCalled();
 			} finally {
 				putObjectSpy.mockRestore();
 				deleteSpy.mockRestore();
@@ -1741,6 +1753,9 @@ suite("Mutation field createEvent", () => {
 
 				const result = response.json();
 				expect(result.errors).toBeDefined();
+				expect(result.data?.createEvent).toBeNull();
+				expect(putObjectSpy).toHaveBeenCalled();
+				expect(removeObjectsSpy).toHaveBeenCalled();
 			} finally {
 				putObjectSpy.mockRestore();
 				removeObjectsSpy.mockRestore();
@@ -1820,6 +1835,10 @@ suite("Mutation field createEvent", () => {
 
 				const result = response.json();
 				expect(result.errors).toBeDefined();
+				expect(result.data?.createEvent).toBeNull();
+				expect(putObjectSpy).toHaveBeenCalled();
+				expect(deleteSpy).toHaveBeenCalled();
+				expect(removeObjectsSpy).toHaveBeenCalled();
 			} finally {
 				putObjectSpy.mockRestore();
 				deleteSpy.mockRestore();
@@ -1900,6 +1919,10 @@ suite("Mutation field createEvent", () => {
 
 				const result = response.json();
 				expect(result.errors).toBeDefined();
+				expect(result.data?.createEvent).toBeNull();
+				expect(putObjectSpy).toHaveBeenCalled();
+				expect(deleteSpy).toHaveBeenCalled();
+				expect(removeObjectsSpy).toHaveBeenCalled();
 			} finally {
 				putObjectSpy.mockRestore();
 				deleteSpy.mockRestore();

@@ -254,6 +254,7 @@ describe("Mutation createOrganization", () => {
 			const result = response.json();
 			expect(result.errors?.[0]?.extensions?.code).toBe("unexpected");
 			expect(result.data?.createOrganization).toBeNull();
+			expect(putObjectSpy).toHaveBeenCalled();
 
 			// Verify deletion
 			const org = await server.drizzleClient.query.organizationsTable.findFirst(
