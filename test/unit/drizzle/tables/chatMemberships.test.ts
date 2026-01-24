@@ -80,6 +80,7 @@ describe("src/drizzle/tables/chatMemberships.ts", () => {
 			expect(fk).toBeDefined();
 			const ref = fk?.reference();
 			expect(ref?.foreignTable).toBe(chatsTable);
+			expect(ref?.foreignColumns[0]?.name).toBe("id");
 			expect(fk?.onDelete).toBe("cascade");
 			expect(fk?.onUpdate).toBe("cascade");
 		});
@@ -94,6 +95,7 @@ describe("src/drizzle/tables/chatMemberships.ts", () => {
 			expect(fk).toBeDefined();
 			const ref = fk?.reference();
 			expect(ref?.foreignTable).toBe(usersTable);
+			expect(ref?.foreignColumns[0]?.name).toBe("id");
 			expect(fk?.onDelete).toBe("cascade");
 			expect(fk?.onUpdate).toBe("cascade");
 		});
@@ -108,6 +110,7 @@ describe("src/drizzle/tables/chatMemberships.ts", () => {
 			expect(fk).toBeDefined();
 			const ref = fk?.reference();
 			expect(ref?.foreignTable).toBe(usersTable);
+			expect(ref?.foreignColumns[0]?.name).toBe("id");
 			expect(fk?.onDelete).toBe("set null");
 			expect(fk?.onUpdate).toBe("cascade");
 		});
@@ -122,6 +125,7 @@ describe("src/drizzle/tables/chatMemberships.ts", () => {
 			expect(fk).toBeDefined();
 			const ref = fk?.reference();
 			expect(ref?.foreignTable).toBe(usersTable);
+			expect(ref?.foreignColumns[0]?.name).toBe("id");
 			expect(fk?.onDelete).toBe("set null");
 			expect(fk?.onUpdate).toBe("cascade");
 		});
@@ -278,10 +282,34 @@ describe("src/drizzle/tables/chatMemberships.ts", () => {
 			expect(result.success).toBe(false);
 		});
 
-		it("should reject invalid UUIDs", () => {
+		it("should reject invalid chatId UUID", () => {
 			const result = chatMembershipsTableInsertSchema.safeParse({
 				...validInput,
 				chatId: "invalid-uuid",
+			});
+			expect(result.success).toBe(false);
+		});
+
+		it("should reject invalid memberId UUID", () => {
+			const result = chatMembershipsTableInsertSchema.safeParse({
+				...validInput,
+				memberId: "invalid-uuid",
+			});
+			expect(result.success).toBe(false);
+		});
+
+		it("should reject invalid creatorId UUID", () => {
+			const result = chatMembershipsTableInsertSchema.safeParse({
+				...validInput,
+				creatorId: "invalid-uuid",
+			});
+			expect(result.success).toBe(false);
+		});
+
+		it("should reject invalid updaterId UUID", () => {
+			const result = chatMembershipsTableInsertSchema.safeParse({
+				...validInput,
+				updaterId: "invalid-uuid",
 			});
 			expect(result.success).toBe(false);
 		});
