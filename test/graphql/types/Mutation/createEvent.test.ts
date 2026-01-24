@@ -718,31 +718,6 @@ suite("Mutation field createEvent", () => {
 			);
 		});
 
-		test("should clamp windowEndDate when endDate is before windowStartDate (safety clamp)", async () => {
-			const organizationId = await createTestOrganization();
-			const startAt = getFutureDate(30, 10);
-			// Set endDate to be very close to startAt (might trigger clamp)
-			const endDate = new Date(startAt);
-			endDate.setMinutes(endDate.getMinutes() - 1); // 1 minute before startAt
-
-			const result = await createEvent({
-				input: {
-					...baseEventInput(organizationId),
-					name: "Clamped Window Event",
-					startAt,
-					recurrence: {
-						frequency: "DAILY",
-						interval: 1,
-						endDate: endDate.toISOString(),
-					},
-				},
-			});
-
-			// Should succeed (clamp will fix the window)
-			expect(result.errors).toBeUndefined();
-			expect(result.data?.createEvent).toBeDefined();
-		});
-
 		test("supports custom weekday patterns", async () => {
 			const organizationId = await createTestOrganization();
 

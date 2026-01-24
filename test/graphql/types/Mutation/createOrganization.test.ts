@@ -200,13 +200,9 @@ describe("Mutation createOrganization", () => {
 	it("should handle avatar set to null explicitly", async () => {
 		const name = `Null Avatar Org ${faker.string.ulid()}`;
 
-		// Construct multipart request with avatar: null
-		const boundary = "----Boundary";
-		const CREATE_ORGANIZATION_MUTATION = `mutation CreateOrg($input: MutationCreateOrganizationInput!) {
-                createOrganization(input: $input) { id }
-            }`;
-		const operations = {
-			query: CREATE_ORGANIZATION_MUTATION,
+		// Use regular GraphQL mutation (not multipart) since avatar: null is a valid GraphQL value
+		const result = await mercuriusClient.mutate(Mutation_createOrganization, {
+			headers: { authorization: `bearer ${authToken}` },
 			variables: {
 				input: {
 					name,
@@ -216,40 +212,11 @@ describe("Mutation createOrganization", () => {
 					postalCode: "12345",
 					addressLine1: "123 St",
 					state: "NY",
-					avatar: null, // Explicitly null
+					avatar: null, // Explicitly null - tests the else if (arg.avatar !== undefined) path
 				},
 			},
-		};
-		const map = { "0": ["variables.input.avatar"] };
-
-		const body = [
-			`--${boundary}`,
-			'Content-Disposition: form-data; name="operations"',
-			"",
-			JSON.stringify(operations),
-			`--${boundary}`,
-			'Content-Disposition: form-data; name="map"',
-			"",
-			JSON.stringify(map),
-			`--${boundary}`,
-			'Content-Disposition: form-data; name="0"; filename=""',
-			"Content-Type: application/octet-stream",
-			"",
-			"",
-			`--${boundary}--`,
-		].join("\r\n");
-
-		const response = await server.inject({
-			method: "POST",
-			url: "/graphql",
-			headers: {
-				"content-type": `multipart/form-data; boundary=${boundary}`,
-				authorization: `bearer ${authToken}`,
-			},
-			payload: body,
 		});
 
-		const result = response.json();
 		expect(result.errors).toBeUndefined();
 		expect(result.data?.createOrganization?.id).toBeDefined();
 		createdOrgId = result.data?.createOrganization?.id;
