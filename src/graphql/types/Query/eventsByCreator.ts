@@ -30,11 +30,11 @@ builder.queryField("eventsByCreator", (t) =>
 				description: "ID of the user whose created events to fetch",
 			}),
 			limit: t.arg.int({
-				description: "Number of events to return",
+				description: "Number of events to return (default: 100, max: 100)",
 				required: false,
 			}),
 			offset: t.arg.int({
-				description: "Number of events to skip",
+				description: "Number of events to skip (default: 0, max: 10000)",
 				required: false,
 			}),
 		},

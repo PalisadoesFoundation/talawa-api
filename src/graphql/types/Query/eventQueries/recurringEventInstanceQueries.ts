@@ -23,6 +23,7 @@ export interface GetRecurringEventInstancesInput {
 	 * Optional maximum number of instances to return (defaults to 1000).
 	 */
 	limit?: number;
+	offset?: number;
 	excludeInstanceIds?: string[];
 }
 
@@ -47,6 +48,7 @@ export async function getRecurringEventInstancesInDateRange(
 		endDate,
 		includeCancelled = false,
 		limit = 1000,
+		offset,
 		excludeInstanceIds,
 	} = input;
 
@@ -59,6 +61,7 @@ export async function getRecurringEventInstancesInDateRange(
 				endDate,
 				includeCancelled,
 				limit,
+				offset,
 				excludeInstanceIds,
 			},
 			drizzleClient,
@@ -204,11 +207,12 @@ export async function getRecurringEventInstanceById(
 }
 
 /**
- * Retrieves all recurring event instances that belong to a specific base recurring event template.
+ * Retrieves recurring event instances for a base template, subject to the optional limit.
  *
  * @param baseRecurringEventId - The ID of the base recurring event template.
  * @param drizzleClient - The Drizzle ORM client for database access.
  * @param logger - The logger for logging debug and error messages.
+ * @param options - Optional parameters: limit (default 1000), offset, includeCancelled, excludeInstanceIds.
  * @returns - A promise that resolves to an array of fully resolved recurring event instances.
  */
 export async function getRecurringEventInstanceByBaseId(
@@ -217,6 +221,7 @@ export async function getRecurringEventInstanceByBaseId(
 	logger: ServiceDependencies["logger"],
 	options: {
 		limit?: number;
+		offset?: number;
 		includeCancelled?: boolean;
 		excludeInstanceIds?: string[];
 	} = {},
@@ -253,11 +258,17 @@ export async function getRecurringEventInstancesByBaseIds(
 	logger: ServiceDependencies["logger"],
 	options: {
 		limit?: number;
+		offset?: number;
 		includeCancelled?: boolean;
 		excludeInstanceIds?: string[];
 	} = {},
 ): Promise<ResolvedRecurringEventInstance[]> {
-	const { limit, includeCancelled = false, excludeInstanceIds } = options;
+	const {
+		limit,
+		offset,
+		includeCancelled = false,
+		excludeInstanceIds,
+	} = options;
 
 	if (baseRecurringEventIds.length === 0) {
 		return [];
@@ -294,6 +305,7 @@ export async function getRecurringEventInstancesByBaseIds(
 					asc(recurringEventInstancesTable.id),
 				],
 				limit: effectiveLimit,
+				offset,
 			});
 
 		if (instances.length === 0) {
@@ -336,6 +348,7 @@ async function fetchRecurringEventInstances(
 		endDate,
 		includeCancelled,
 		limit,
+		offset,
 		excludeInstanceIds,
 	} = input;
 
@@ -378,6 +391,7 @@ async function fetchRecurringEventInstances(
 			asc(recurringEventInstancesTable.id),
 		],
 		limit,
+		offset,
 	});
 }
 

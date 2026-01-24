@@ -5,6 +5,11 @@ import type { ClientCustomScalars } from "~/src/graphql/scalars/index";
 import { assertToBeNonNullish } from "../../../helpers";
 import { server } from "../../../server";
 import { mercuriusClient } from "../client";
+import {
+	Mutation_createUser,
+	Mutation_deleteUser,
+	Query_signIn,
+} from "../documentNodes";
 import type { introspection } from "../gql.tada";
 
 const gql = initGraphQLTada<{
@@ -26,12 +31,6 @@ export const Mutation_unlinkOAuthAccount =
         }
     }
 }`);
-
-import {
-	Mutation_createUser,
-	Mutation_deleteUser,
-	Query_signIn,
-} from "../documentNodes";
 
 suite("Mutation unlinkOAuthAccount", () => {
 	const cleanupFns: Array<() => Promise<void>> = [];

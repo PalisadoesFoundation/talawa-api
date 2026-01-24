@@ -4990,10 +4990,10 @@ type Query {
 
   """Query field to fetch all events created by a specific user."""
   eventsByCreator(
-    """Number of events to return"""
+    """Number of events to return (default: 100, max: 100)"""
     limit: Int
 
-    """Number of events to skip"""
+    """Number of events to skip (default: 0, max: 10000)"""
     offset: Int
 
     """ID of the user whose created events to fetch"""
@@ -5109,6 +5109,15 @@ type Query {
   getRecurringEvents(
     """The ID of the base recurring event template"""
     baseRecurringEventId: ID!
+
+    """Whether to include cancelled instances. Defaults to false."""
+    includeCancelled: Boolean
+
+    """Number of events to return. Defaults to 1000. Max 1000."""
+    limit: Int
+
+    """Number of events to skip. Defaults to 0."""
+    offset: Int
   ): [Event!]
 
   """Query field to get volunteer memberships."""

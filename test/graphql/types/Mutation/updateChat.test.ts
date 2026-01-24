@@ -11,6 +11,7 @@ import type { ClientCustomScalars } from "~/src/graphql/scalars/index";
 import { server } from "../../../server";
 import { mercuriusClient } from "../client";
 import { createRegularUserUsingAdmin } from "../createRegularUserUsingAdmin";
+import { Mutation_createOrganization, Query_signIn } from "../documentNodes";
 import type { introspection } from "../gql.tada";
 
 const gql = initGraphQLTada<{
@@ -28,8 +29,6 @@ export const Mutation_updateChat = gql(`
     }
   }
 `);
-
-import { Mutation_createOrganization, Query_signIn } from "../documentNodes";
 
 async function createTestOrganization(): Promise<string> {
 	const signIn = await mercuriusClient.query(Query_signIn, {

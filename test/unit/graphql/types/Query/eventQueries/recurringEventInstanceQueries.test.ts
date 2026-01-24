@@ -2,7 +2,10 @@ import { inspect } from "node:util";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { eventsTable } from "~/src/drizzle/tables/events";
 import type { recurringEventInstancesTable } from "~/src/drizzle/tables/recurringEventInstances";
-import { getRecurringEventInstancesByBaseIds } from "~/src/graphql/types/Query/eventQueries/recurringEventInstanceQueries";
+import {
+	getRecurringEventInstancesByBaseIds,
+	getRecurringEventInstancesInDateRange,
+} from "~/src/graphql/types/Query/eventQueries/recurringEventInstanceQueries";
 import type { ServiceDependencies } from "~/src/services/eventGeneration/types";
 
 // Mock dependencies
@@ -326,5 +329,62 @@ describe("getRecurringEventInstancesByBaseIds", () => {
 		expect(
 			mockDrizzleClient.query.eventExceptionsTable.findMany,
 		).toHaveBeenCalled();
+	});
+});
+
+describe("getRecurringEventInstancesInDateRange", () => {
+	beforeEach(() => {
+		vi.clearAllMocks();
+	});
+
+	it("should exclude instance IDs in date-range queries", async () => {
+		const excludedId = "instance-exclude";
+		const baseInput = {
+			organizationId: "org-1",
+			startDate: new Date(),
+			endDate: new Date(),
+		};
+
+		vi.mocked(
+			mockDrizzleClient.query.recurringEventInstancesTable.findMany,
+		).mockResolvedValue([
+			{
+				id: "instance-keep",
+				baseRecurringEventId: "base-1",
+				actualStartTime: new Date(),
+				actualEndTime: new Date(),
+			} as unknown as typeof recurringEventInstancesTable.$inferSelect,
+		]);
+
+		vi.mocked(
+			mockDrizzleClient.query.eventsTable.findMany,
+		).mockResolvedValueOnce([]);
+		vi.mocked(
+			mockDrizzleClient.query.eventExceptionsTable.findMany,
+		).mockResolvedValueOnce([]);
+
+		// This call is now expected to pass excludeInstanceIds down to findMany directly
+		// because of my changes in fetchRecurringEventInstances
+		await getRecurringEventInstancesInDateRange(
+			{ ...baseInput, excludeInstanceIds: [excludedId] },
+			mockDrizzleClient,
+			mockLogger,
+		);
+
+		// Verify the where clause contains the exclusion logic
+		const calls = vi.mocked(
+			mockDrizzleClient.query.recurringEventInstancesTable.findMany,
+		).mock.calls;
+		expect(calls.length).toBeGreaterThan(0);
+		const lastCall = calls[calls.length - 1];
+		if (!lastCall) throw new Error("lastCall is undefined");
+		const lastCallArgs = lastCall[0] as { where?: unknown };
+
+		expect(lastCallArgs).toHaveProperty("where");
+		const whereStr = inspect(lastCallArgs.where, {
+			depth: null,
+			colors: false,
+		});
+		expect(whereStr).toContain(excludedId);
 	});
 });

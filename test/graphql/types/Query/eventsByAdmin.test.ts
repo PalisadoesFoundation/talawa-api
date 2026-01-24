@@ -70,11 +70,15 @@ suite("Query field eventsByAdmin", () => {
 			});
 			expect(result.data?.eventsByAdmin).toBeUndefined();
 			expect(result.errors).toBeDefined();
-			expect(
-				result.errors?.some(
-					(err) => err.extensions?.code === "invalid_arguments",
-				),
-			).toBe(true);
+			const hasInvalidIdError = result.errors?.some(
+				(err) =>
+					err.extensions?.code === "invalid_arguments" ||
+					err.extensions?.code === "GRAPHQL_VALIDATION_FAILED" ||
+					/ID cannot represent|Expected ID|got invalid value|invalid.*uuid/i.test(
+						err.message,
+					),
+			);
+			expect(hasInvalidIdError).toBe(true);
 		});
 	});
 

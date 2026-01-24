@@ -6,7 +6,7 @@
 
 > **getRecurringEventInstancesByBaseIds**(`baseRecurringEventIds`, `drizzleClient`, `logger`, `options`): `Promise`\<[`ResolvedRecurringEventInstance`](../../../../../../drizzle/tables/recurringEventInstances/type-aliases/ResolvedRecurringEventInstance.md)[]\>
 
-Defined in: [src/graphql/types/Query/eventQueries/recurringEventInstanceQueries.ts:250](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/graphql/types/Query/eventQueries/recurringEventInstanceQueries.ts#L250)
+Defined in: [src/graphql/types/Query/eventQueries/recurringEventInstanceQueries.ts:255](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/graphql/types/Query/eventQueries/recurringEventInstanceQueries.ts#L255)
 
 Retrieves all recurring event instances for multiple base recurring event templates.
 This is a batch version of getRecurringEventInstancesByBaseId to avoid N+1 queries.
@@ -42,6 +42,10 @@ The logger.
 `boolean`
 
 #### limit?
+
+`number`
+
+#### offset?
 
 `number`
 

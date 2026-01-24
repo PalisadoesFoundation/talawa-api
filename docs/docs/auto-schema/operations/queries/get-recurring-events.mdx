@@ -76,6 +76,9 @@ Fetches all recurring event instances that belong to a specific base recurring e
 ```graphql
 getRecurringEvents(
   baseRecurringEventId: ID!
+  includeCancelled: Boolean
+  limit: Int
+  offset: Int
 ): [Event!]
 ```
 
@@ -84,6 +87,18 @@ getRecurringEvents(
 #### [<code style={{ fontWeight: 'normal' }}>getRecurringEvents.<b>baseRecurringEventId</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>ID!</b></code>](/auto-schema/types/scalars/id.mdx) <Badge class="badge badge--secondary badge--non_null" text="non-null"/> <Badge class="badge badge--secondary " text="scalar"/>
 
 The ID of the base recurring event template
+
+#### [<code style={{ fontWeight: 'normal' }}>getRecurringEvents.<b>includeCancelled</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>Boolean</b></code>](/auto-schema/types/scalars/boolean.mdx) <Badge class="badge badge--secondary " text="scalar"/>
+
+Whether to include cancelled instances. Defaults to false.
+
+#### [<code style={{ fontWeight: 'normal' }}>getRecurringEvents.<b>limit</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>Int</b></code>](/auto-schema/types/scalars/int.mdx) <Badge class="badge badge--secondary " text="scalar"/>
+
+Number of events to return. Defaults to 1000. Max 1000.
+
+#### [<code style={{ fontWeight: 'normal' }}>getRecurringEvents.<b>offset</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>Int</b></code>](/auto-schema/types/scalars/int.mdx) <Badge class="badge badge--secondary " text="scalar"/>
+
+Number of events to skip. Defaults to 0.
 
 ### Type
 

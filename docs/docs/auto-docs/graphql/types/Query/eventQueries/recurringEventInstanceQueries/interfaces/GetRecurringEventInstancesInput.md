@@ -22,7 +22,7 @@ Defined in: [src/graphql/types/Query/eventQueries/recurringEventInstanceQueries.
 
 > `optional` **excludeInstanceIds**: `string`[]
 
-Defined in: [src/graphql/types/Query/eventQueries/recurringEventInstanceQueries.ts:26](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/graphql/types/Query/eventQueries/recurringEventInstanceQueries.ts#L26)
+Defined in: [src/graphql/types/Query/eventQueries/recurringEventInstanceQueries.ts:27](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/graphql/types/Query/eventQueries/recurringEventInstanceQueries.ts#L27)
 
 ***
 
@@ -41,6 +41,14 @@ Defined in: [src/graphql/types/Query/eventQueries/recurringEventInstanceQueries.
 Defined in: [src/graphql/types/Query/eventQueries/recurringEventInstanceQueries.ts:25](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/graphql/types/Query/eventQueries/recurringEventInstanceQueries.ts#L25)
 
 Optional maximum number of instances to return (defaults to 1000).
+
+***
+
+### offset?
+
+> `optional` **offset**: `number`
+
+Defined in: [src/graphql/types/Query/eventQueries/recurringEventInstanceQueries.ts:26](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/graphql/types/Query/eventQueries/recurringEventInstanceQueries.ts#L26)
 
 ***
 

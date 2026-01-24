@@ -9,7 +9,7 @@ const gql = initGraphQLTada<{
 	scalars: ClientCustomScalars;
 }>();
 
-export const Mutation_signInWithOAuth =
+const Mutation_signInWithOAuth =
 	gql(`mutation Mutation_signInWithOAuth($input: OAuthLoginInput!) {
     signInWithOAuth(input: $input) {
         authenticationToken

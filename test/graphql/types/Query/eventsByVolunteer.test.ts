@@ -636,7 +636,7 @@ suite("Query field eventsByVolunteer", () => {
 
 			// Accept
 			await mercuriusClient.mutate(Mutation_updateEventVolunteer, {
-				headers: { authorization: `bearer ${authToken}` }, // Admin accepts? Or user? usually admin/creator accepts.
+				headers: { authorization: `bearer ${authToken}` },
 				variables: {
 					id: volunteerId,
 					data: { hasAccepted: true },
@@ -726,7 +726,6 @@ suite("Query field eventsByVolunteer", () => {
 			assertToBeNonNullish(baseEventId);
 
 			// Flatten instances to get IDs
-			// Volunteer for series to generate instances
 			const volunteerRes = await mercuriusClient.mutate(
 				Mutation_createEventVolunteer,
 				{

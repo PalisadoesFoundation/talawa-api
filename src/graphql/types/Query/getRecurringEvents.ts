@@ -6,6 +6,9 @@ import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 
 const queryGetRecurringEventsSchema = z.object({
 	baseRecurringEventId: z.string().uuid(),
+	limit: z.number().int().min(1).max(1000).optional(),
+	offset: z.number().int().min(0).optional(),
+	includeCancelled: z.boolean().optional(),
 });
 
 /**
@@ -23,6 +26,19 @@ builder.queryField("getRecurringEvents", (t) =>
 				type: "ID",
 				description: "The ID of the base recurring event template",
 			}),
+			limit: t.arg.int({
+				description: "Number of events to return. Defaults to 1000. Max 1000.",
+				required: false,
+			}),
+			offset: t.arg.int({
+				description: "Number of events to skip. Defaults to 0.",
+				required: false,
+			}),
+			includeCancelled: t.arg.boolean({
+				description:
+					"Whether to include cancelled instances. Defaults to false.",
+				required: false,
+			}),
 		},
 		description:
 			"Fetches all recurring event instances that belong to a specific base recurring event template.",
@@ -34,6 +50,7 @@ builder.queryField("getRecurringEvents", (t) =>
 			}
 
 			const parsedArgs = queryGetRecurringEventsSchema.safeParse(args);
+
 			if (!parsedArgs.success) {
 				throw new TalawaGraphQLError({
 					extensions: {
@@ -46,7 +63,17 @@ builder.queryField("getRecurringEvents", (t) =>
 				});
 			}
 
-			const { baseRecurringEventId } = parsedArgs.data;
+			const {
+				baseRecurringEventId,
+				limit: inputLimit,
+				offset: inputOffset,
+				includeCancelled: inputIncludeCancelled,
+			} = parsedArgs.data;
+
+			const limit = inputLimit ?? 1000;
+			const offset = inputOffset ?? 0;
+			const includeCancelled = inputIncludeCancelled ?? false;
+
 			const currentUserId = ctx.currentClient.user.id;
 
 			const currentUser = await ctx.drizzleClient.query.usersTable.findFirst({
@@ -137,8 +164,9 @@ builder.queryField("getRecurringEvents", (t) =>
 					ctx.drizzleClient,
 					ctx.log,
 					{
-						limit: 1000, // Explicitly set to 1000 to match DEFAULT_LIMIT or as desired
-						includeCancelled: false,
+						limit,
+						offset,
+						includeCancelled,
 					},
 				);
 
