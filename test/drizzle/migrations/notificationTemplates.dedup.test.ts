@@ -23,9 +23,9 @@ describe("notification_templates migration deduplication", () => {
 	});
 
 	it("deduplicates by created_at then id and enforces unique index", async () => {
-		const pair1CreatedAt = new Date("2024-01-01T00:00:00.000Z");
-		const pair1Later = new Date("2024-01-02T00:00:00.000Z");
-		const pair2CreatedAt = new Date("2024-02-01T00:00:00.000Z");
+		const pair1CreatedAt = "2024-01-01T00:00:00.000Z";
+		const pair1Later = "2024-01-02T00:00:00.000Z";
+		const pair2CreatedAt = "2024-02-01T00:00:00.000Z";
 
 		// Insert duplicates for (event_type, channel_type) = (event_a, in_app)
 		await server.drizzleClient.execute(sql`

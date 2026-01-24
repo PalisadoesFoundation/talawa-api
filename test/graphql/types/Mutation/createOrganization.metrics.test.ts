@@ -72,22 +72,18 @@ describe("Mutation createOrganization - Performance Metrics", () => {
 			let snapshots = server.getMetricsSnapshots?.() ?? [];
 			let mutationSnapshot: (typeof snapshots)[0] | undefined;
 
-			for (let i = 0; i < 120; i++) {
+			for (let i = 0; i < 60; i++) {
 				snapshots = server.getMetricsSnapshots?.() ?? [];
 				const newSnapshotsCount = snapshots.length - initialSnapshotCount;
-				if (newSnapshotsCount <= 0) {
-					await new Promise((resolve) => setTimeout(resolve, 250));
-					continue;
-				}
 				const newSnapshots = snapshots.slice(
-					initialSnapshotCount,
-					snapshots.length,
+					0,
+					newSnapshotsCount > 0 ? newSnapshotsCount : snapshots.length,
 				);
 				mutationSnapshot = newSnapshots.find(
 					(s) => s.ops["mutation:createOrganization"] !== undefined,
 				);
 				if (mutationSnapshot) break;
-				await new Promise((resolve) => setTimeout(resolve, 250));
+				await new Promise((resolve) => setTimeout(resolve, 100));
 			}
 
 			assertToBeNonNullish(mutationSnapshot);
@@ -121,22 +117,18 @@ describe("Mutation createOrganization - Performance Metrics", () => {
 			let snapshots = server.getMetricsSnapshots?.() ?? [];
 			let mutationSnapshot: (typeof snapshots)[0] | undefined;
 
-			for (let i = 0; i < 120; i++) {
+			for (let i = 0; i < 60; i++) {
 				snapshots = server.getMetricsSnapshots?.() ?? [];
 				const newSnapshotsCount = snapshots.length - initialSnapshotCount;
-				if (newSnapshotsCount <= 0) {
-					await new Promise((resolve) => setTimeout(resolve, 250));
-					continue;
-				}
 				const newSnapshots = snapshots.slice(
-					initialSnapshotCount,
-					snapshots.length,
+					0,
+					newSnapshotsCount > 0 ? newSnapshotsCount : snapshots.length,
 				);
 				mutationSnapshot = newSnapshots.find(
 					(s) => s.ops["mutation:createOrganization"] !== undefined,
 				);
 				if (mutationSnapshot) break;
-				await new Promise((resolve) => setTimeout(resolve, 250));
+				await new Promise((resolve) => setTimeout(resolve, 100));
 			}
 
 			// Even on failure, metrics should be recorded

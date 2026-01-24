@@ -1,12 +1,23 @@
--- Verify duplicates before enforcing uniqueness
--- (event_type, channel_type) pairs must be unique to apply the constraint.
-SELECT
-  event_type,
-  channel_type,
-  COUNT(*) AS duplicate_count
-FROM "notification_templates"
-GROUP BY event_type, channel_type
-HAVING COUNT(*) > 1;
+-- Abort migration if duplicates exist before enforcing uniqueness.
+DO $$
+DECLARE
+  duplicate_pairs_count integer;
+BEGIN
+  SELECT COUNT(*)
+  INTO duplicate_pairs_count
+  FROM (
+    SELECT event_type, channel_type
+    FROM "notification_templates"
+    GROUP BY event_type, channel_type
+    HAVING COUNT(*) > 1
+  ) AS duplicate_pairs;
+
+  IF duplicate_pairs_count > 0 THEN
+    RAISE EXCEPTION
+      'Found % duplicate (event_type, channel_type) pairs in notification_templates.',
+      duplicate_pairs_count;
+  END IF;
+END $$;
 
 -- Deduplicate deterministically: keep the earliest created row per pair.
 -- If created_at ties or is NULL, fall back to id ordering to ensure one row remains.
