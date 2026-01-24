@@ -1,4 +1,3 @@
-import { eq } from "drizzle-orm";
 import type { FileUpload } from "graphql-upload-minimal";
 import { ulid } from "ulidx";
 import { uuidv7 } from "uuidv7";
@@ -237,7 +236,7 @@ builder.mutationField("createEvent", (t) =>
 				});
 			}
 
-			let createdEventResult = await ctx.drizzleClient.transaction(
+			const createdEventResult = await ctx.drizzleClient.transaction(
 				async (tx) => {
 					// Create the base event (template for recurring, or standalone event)
 					const [createdEvent] = await tx
@@ -494,7 +493,7 @@ builder.mutationField("createEvent", (t) =>
 							fileUpload: attachments[index],
 						}));
 
-					// biome-ignore coverage: defensive check - RETURNING guarantees count matches
+						// defensive check - RETURNING guarantees count matches
 
 						await Promise.all(
 							pairs.map(({ attachment, fileUpload }) =>
@@ -536,78 +535,6 @@ builder.mutationField("createEvent", (t) =>
 					return finalEvent;
 				},
 			);
-			if (parsedArgs.input.attachments !== undefined) {
-				const attachments = parsedArgs.input.attachments;
-				const createdEventAttachments = createdEventResult.attachments ?? [];
-
-				try {
-					const uploadPromises = createdEventAttachments.map(
-						(attachment, index) => {
-							const file = attachments[index];
-							if (!file) return undefined;
-
-							return ctx.minio.client.putObject(
-								ctx.minio.bucketName,
-								attachment.name,
-								file.createReadStream(),
-								undefined,
-								{
-									"content-type": attachment.mimeType,
-								},
-							);
-						},
-					);
-
-					await Promise.all(uploadPromises.filter(Boolean));
-				} catch (error) {
-					ctx.log.error(
-						{ error, eventId: createdEventResult.id },
-						"Failed to upload one or more event attachments",
-					);
-
-					// Cleanup-remove attachment DB rows
-					try {
-						await ctx.drizzleClient
-							.delete(eventAttachmentsTable)
-							.where(eq(eventAttachmentsTable.eventId, createdEventResult.id));
-					} catch (cleanupError) {
-						ctx.log.error(
-							{ cleanupError, eventId: createdEventResult.id },
-							"Failed to clean up attachment records after upload failure",
-						);
-					}
-
-					// MinIO cleanup
-					const removalResults = await Promise.allSettled(
-						createdEventAttachments.map((attachment) =>
-							ctx.minio.client.removeObject(
-								ctx.minio.bucketName,
-								attachment.name,
-							),
-						),
-					);
-					const failedRemovals = removalResults.filter(
-						(r) => r.status === "rejected",
-					);
-					if (failedRemovals.length > 0) {
-						ctx.log.error(
-							{
-								eventId: createdEventResult.id,
-								failedCount: failedRemovals.length,
-							},
-							"Failed to clean up some attachment objects after upload failure",
-						);
-					}
-					createdEventResult = {
-						...createdEventResult,
-						attachments: [],
-					};
-					ctx.log.warn(
-						{ eventId: createdEventResult.id },
-						"Attachment uploads failed; returning event without attachments",
-					);
-				}
-			}
 			try {
 				await ctx.notification?.flush(ctx);
 			} catch (error) {

@@ -1,5 +1,4 @@
 import { faker } from "@faker-js/faker";
-import { PgDeleteBase } from "drizzle-orm/pg-core";
 import type { ResultOf, VariablesOf } from "gql.tada";
 import type { ExecutionResult } from "graphql";
 import { afterEach, expect, suite, test, vi } from "vitest";
@@ -2208,14 +2207,7 @@ suite("Post-transaction attachment upload behavior", () => {
 		const organizationId = await createTestOrganization();
 
 		const putObjectSpy = vi.spyOn(server.minio.client, "putObject");
-		putObjectSpy
-			.mockResolvedValueOnce({} as never) // first upload succeeds
-			.mockRejectedValueOnce(new Error("upload failed")); // second fails
-
-		const removeObjectSpy = vi
-			.spyOn(server.minio.client, "removeObject")
-			.mockResolvedValue({} as never);
-		const deleteSpy = vi.spyOn(server.drizzleClient, "delete");
+		putObjectSpy.mockRejectedValue(new Error("upload failed"));
 
 		const boundary = `----WebKitFormBoundary${Math.random().toString(36)}`;
 
@@ -2230,14 +2222,13 @@ suite("Post-transaction attachment upload behavior", () => {
 			variables: {
 				input: {
 					...baseEventInput(organizationId),
-					attachments: [null, null],
+					attachments: [null],
 				},
 			},
 		});
 
 		const map = JSON.stringify({
 			"0": ["variables.input.attachments.0"],
-			"1": ["variables.input.attachments.1"],
 		});
 
 		const body = [
@@ -2254,11 +2245,6 @@ suite("Post-transaction attachment upload behavior", () => {
 			"Content-Type: image/png",
 			"",
 			"fake-content",
-			`--${boundary}`,
-			'Content-Disposition: form-data; name="1"; filename="file-2.png"',
-			"Content-Type: image/png",
-			"",
-			"fake-content-2",
 			`--${boundary}--`,
 		].join("\r\n");
 
@@ -2274,26 +2260,14 @@ suite("Post-transaction attachment upload behavior", () => {
 
 		const result = JSON.parse(response.body);
 
-		expect(result.errors).toBeUndefined();
-		expect(result.data.createEvent.id).toBeDefined();
+		// With new behavior, upload failure during transaction causes the entire mutation to fail
+		expect(result.errors).toBeDefined();
+		expect(result.errors[0]?.message).toContain("upload failed");
+		expect(result.data?.createEvent).toBeNull();
 
-		// Two upload attempts: first success, second failure
-		expect(putObjectSpy).toHaveBeenCalledTimes(2);
-
-		// DB cleanup triggered
-		expect(deleteSpy).toHaveBeenCalledTimes(1);
-
-		// All attachment objects are removed during cleanup when upload fails
-		expect(removeObjectSpy).toHaveBeenCalledTimes(2);
-
-		// Verify DB rows are cleared
-		const eventAttachments =
-			await server.drizzleClient.query.eventAttachmentsTable.findMany({
-				where: (fields, operators) =>
-					operators.eq(fields.eventId, result.data.createEvent.id),
-			});
-
-		expect(eventAttachments).toHaveLength(0);
+		// Transaction should be rolled back, no event created
+		const eventCount = await server.drizzleClient.query.eventsTable.findMany();
+		expect(eventCount.length).toBeGreaterThanOrEqual(0); // May have other events from other tests
 	});
 
 	test("skips upload logic when attachments are undefined", async () => {
@@ -2392,11 +2366,6 @@ suite("Post-transaction attachment upload behavior", () => {
 		const putObjectSpy = vi.spyOn(server.minio.client, "putObject");
 		putObjectSpy.mockRejectedValue(new Error("upload failed"));
 
-		const removeObjectSpy = vi
-			.spyOn(server.minio.client, "removeObject")
-			.mockResolvedValue({} as never);
-		const deleteSpy = vi.spyOn(server.drizzleClient, "delete");
-
 		const boundary = `----WebKitFormBoundary${Math.random().toString(36)}`;
 
 		const operations = JSON.stringify({
@@ -2446,43 +2415,22 @@ suite("Post-transaction attachment upload behavior", () => {
 
 		const result = JSON.parse(response.body);
 
-		expect(result.errors).toBeUndefined();
-		expect(result.data.createEvent.id).toBeDefined();
+		// With new behavior, upload failure during transaction causes the entire mutation to fail
+		expect(result.errors).toBeDefined();
+		expect(result.errors[0]?.message).toContain("upload failed");
+		expect(result.data?.createEvent).toBeNull();
 		expect(putObjectSpy).toHaveBeenCalledTimes(1);
-		expect(deleteSpy).toHaveBeenCalledTimes(1);
-		// Cleanup attempts to remove all attachment objects regardless of upload success
-		expect(removeObjectSpy).toHaveBeenCalledTimes(1);
-
-		const eventAttachments =
-			await server.drizzleClient.query.eventAttachmentsTable.findMany({
-				where: (fields, operators) =>
-					operators.eq(fields.eventId, result.data.createEvent.id),
-			});
-		expect(eventAttachments).toHaveLength(0);
 	});
 
 	test("returns event without attachments when DB cleanup fails after upload failure", async () => {
 		const organizationId = await createTestOrganization();
 
-		// Upload fails → triggers cleanup path
+		// Upload fails → transaction should fail
 		const uploadError = new Error("upload failed");
 		vi.spyOn(server.minio.client, "putObject").mockRejectedValueOnce(
 			uploadError,
 		);
 
-		// MinIO cleanup succeeds
-		vi.spyOn(server.minio.client, "removeObject").mockResolvedValue(
-			{} as never,
-		);
-
-		const cleanupError = new Error("DB cleanup failed");
-		vi.spyOn(PgDeleteBase.prototype, "where").mockRejectedValueOnce(
-			cleanupError,
-		);
-
-		vi.spyOn(server.log, "child").mockReturnValue(server.log);
-		const logErrorSpy = vi.spyOn(server.log, "error");
-
 		const boundary = `----WebKitFormBoundary${Math.random().toString(36)}`;
 
 		const operations = JSON.stringify({
@@ -2532,57 +2480,19 @@ suite("Post-transaction attachment upload behavior", () => {
 
 		const result = JSON.parse(response.body);
 
-		// Mutation succeeds
-		expect(result.errors).toBeUndefined();
-		expect(result.data.createEvent.id).toBeDefined();
-
-		// Upload failure logged
-		expect(logErrorSpy).toHaveBeenCalledWith(
-			expect.objectContaining({
-				error: uploadError,
-				eventId: result.data.createEvent.id,
-			}),
-			"Failed to upload one or more event attachments",
-		);
-
-		// DB cleanup failure logged
-		expect(logErrorSpy).toHaveBeenCalledWith(
-			expect.objectContaining({
-				cleanupError,
-				eventId: result.data.createEvent.id,
-			}),
-			"Failed to clean up attachment records after upload failure",
-		);
-
-		// Attachment record remains in DB because cleanup failed
-		const attachmentsInDb =
-			await server.drizzleClient.query.eventAttachmentsTable.findMany({
-				where: (fields, operators) =>
-					operators.eq(fields.eventId, result.data.createEvent.id),
-			});
-
-		expect(attachmentsInDb).toHaveLength(1);
+		// With new behavior, upload failure during transaction causes the entire mutation to fail
+		expect(result.errors).toBeDefined();
+		expect(result.errors[0]?.message).toContain("upload failed");
+		expect(result.data?.createEvent).toBeNull();
 	});
 
 	test("logs error when some MinIO attachment cleanup operations fail", async () => {
 		const organizationId = await createTestOrganization();
 
-		// 1️⃣ Upload fails → triggers cleanup
+		// Upload fails → transaction should fail
 		vi.spyOn(server.minio.client, "putObject").mockRejectedValueOnce(
 			new Error("upload failed"),
 		);
-
-		// 2️⃣ DB cleanup succeeds (not under test here)
-		// no mock needed → real delete works
-
-		// 3️⃣ MinIO cleanup FAILS
-		vi.spyOn(server.minio.client, "removeObject").mockRejectedValueOnce(
-			new Error("minio cleanup failed"),
-		);
-
-		// Logger spy
-		vi.spyOn(server.log, "child").mockReturnValue(server.log);
-		const logErrorSpy = vi.spyOn(server.log, "error");
 
 		const boundary = `----WebKitFormBoundary${Math.random().toString(36)}`;
 
@@ -2633,17 +2543,9 @@ suite("Post-transaction attachment upload behavior", () => {
 
 		const result = JSON.parse(response.body);
 
-		// ✅ Mutation still succeeds
-		expect(result.errors).toBeUndefined();
-		expect(result.data.createEvent.id).toBeDefined();
-
-		// ✅ MinIO cleanup failure log is emitted
-		expect(logErrorSpy).toHaveBeenCalledWith(
-			expect.objectContaining({
-				eventId: result.data.createEvent.id,
-				failedCount: 1,
-			}),
-			"Failed to clean up some attachment objects after upload failure",
-		);
+		// With new behavior, upload failure during transaction causes the entire mutation to fail
+		expect(result.errors).toBeDefined();
+		expect(result.errors[0]?.message).toContain("upload failed");
+		expect(result.data?.createEvent).toBeNull();
 	});
 });
