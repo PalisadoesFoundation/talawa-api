@@ -99,6 +99,7 @@ describe("Mutation createUser - Performance Metrics", () => {
 			// Verify mutation failed with unauthenticated error
 			expect(result.data.createUser).toBeNull();
 			expect(result.errors).toBeDefined();
+			expect(result.errors?.[0]?.extensions?.code).toBe("unauthenticated");
 
 			// Even on failure, metrics should be recorded
 			const snapshot = await snapshotPromise;

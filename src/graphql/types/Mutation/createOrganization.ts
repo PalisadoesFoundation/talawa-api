@@ -144,43 +144,68 @@ builder.mutationField("createOrganization", (t) =>
 					avatarMimeType = parsedArgs.input.avatar.mimetype;
 				}
 
-				const createdOrganization = await ctx.drizzleClient.transaction(
-					async (tx) => {
-						const [createdOrganization] = await tx
-							.insert(organizationsTable)
-							.values({
-								addressLine1: parsedArgs.input.addressLine1,
-								addressLine2: parsedArgs.input.addressLine2,
-								avatarMimeType,
-								avatarName,
-								city: parsedArgs.input.city,
-								countryCode: parsedArgs.input.countryCode,
-								description: parsedArgs.input.description,
-								creatorId: currentUserId,
-								name: parsedArgs.input.name,
-								postalCode: parsedArgs.input.postalCode,
-								state: parsedArgs.input.state,
-								userRegistrationRequired:
-									parsedArgs.input.isUserRegistrationRequired,
-							})
-							.returning();
+				let createdOrganization: typeof organizationsTable.$inferSelect;
 
-						// Inserted organization not being returned is an external defect unrelated to this code. It is very unlikely for this error to occur.
-						if (!createdOrganization) {
-							ctx.log.error(
-								"Postgres insert operation unexpectedly returned an empty array instead of throwing an error.",
-							);
+				try {
+					createdOrganization = await ctx.drizzleClient.transaction(
+						async (tx) => {
+							const [createdOrganization] = await tx
+								.insert(organizationsTable)
+								.values({
+									addressLine1: parsedArgs.input.addressLine1,
+									addressLine2: parsedArgs.input.addressLine2,
+									avatarMimeType,
+									avatarName,
+									city: parsedArgs.input.city,
+									countryCode: parsedArgs.input.countryCode,
+									description: parsedArgs.input.description,
+									creatorId: currentUserId,
+									name: parsedArgs.input.name,
+									postalCode: parsedArgs.input.postalCode,
+									state: parsedArgs.input.state,
+									userRegistrationRequired:
+										parsedArgs.input.isUserRegistrationRequired,
+								})
+								.returning();
 
-							throw new TalawaGraphQLError({
-								extensions: {
-									code: "unexpected",
-								},
-							});
-						}
+							// Inserted organization not being returned is an external defect unrelated to this code. It is very unlikely for this error to occur.
+							if (!createdOrganization) {
+								ctx.log.error(
+									"Postgres insert operation unexpectedly returned an empty array instead of throwing an error.",
+								);
 
-						return createdOrganization;
-					},
-				);
+								throw new TalawaGraphQLError({
+									extensions: {
+										code: "unexpected",
+									},
+								});
+							}
+
+							return createdOrganization;
+						},
+					);
+				} catch (error) {
+					if (
+						typeof error === "object" &&
+						error !== null &&
+						"code" in error &&
+						(error as { code: unknown }).code === "23505"
+					) {
+						throw new TalawaGraphQLError({
+							extensions: {
+								code: "forbidden_action_on_arguments_associated_resources",
+								issues: [
+									{
+										argumentPath: ["input", "name"],
+										message: "This name is not available.",
+									},
+								],
+							},
+						});
+					}
+
+					throw error;
+				}
 
 				if (isNotNullish(parsedArgs.input.avatar) && avatarName !== undefined) {
 					try {

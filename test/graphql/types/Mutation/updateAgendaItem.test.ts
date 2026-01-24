@@ -180,8 +180,10 @@ suite("Mutation field updateAgendaItem", () => {
 		expect(updatedItem.id).toBe(agendaItemId);
 		expect(updatedItem.name).toBe("Updated Name");
 		expect(updatedItem.description).toBe("Updated description");
-		// Verify duration is present (may be null if not set)
-		expect("duration" in updatedItem).toBe(true);
+		// Verify duration is null or numeric
+		expect(
+			updatedItem.duration === null || typeof updatedItem.duration === "number",
+		).toBe(true);
 		// Verify category, folder, updater, and updatedAt are present
 		expect(updatedItem.category).toBeDefined();
 		expect(updatedItem.category?.id).toBeDefined();

@@ -3,6 +3,7 @@ import { eq } from "drizzle-orm";
 import type { ResultOf, VariablesOf } from "gql.tada";
 import { expect, suite, test, vi } from "vitest";
 import { usersTable } from "~/src/drizzle/tables/users";
+import * as refreshTokenUtils from "~/src/utilities/refreshTokenUtils";
 import type {
 	ForbiddenActionOnArgumentsAssociatedResourcesExtensions,
 	InvalidArgumentsExtensions,
@@ -768,6 +769,10 @@ suite("Mutation field createUser", () => {
 			const putObjectSpy = vi
 				.spyOn(minioClient, "putObject")
 				.mockRejectedValue(new Error("Simulated Upload Failure"));
+			const storeRefreshTokenSpy = vi.spyOn(
+				refreshTokenUtils,
+				"storeRefreshToken",
+			);
 
 			try {
 				const email = `rollback${faker.string.ulid()}@email.com`;
@@ -830,8 +835,18 @@ suite("Mutation field createUser", () => {
 				});
 
 				expect(user).toBeUndefined();
+
+				const rolledBackUserId = storeRefreshTokenSpy.mock.calls[0]?.[1];
+				assertToBeNonNullish(rolledBackUserId);
+				const refreshTokens =
+					await server.drizzleClient.query.refreshTokensTable.findMany({
+						where: (fields, operators) =>
+							operators.eq(fields.userId, rolledBackUserId),
+					});
+				expect(refreshTokens).toHaveLength(0);
 			} finally {
 				putObjectSpy.mockRestore();
+				storeRefreshTokenSpy.mockRestore();
 			}
 		});
 
