@@ -832,5 +832,57 @@ suite("Mutation field createUser", () => {
 				putObjectSpy.mockRestore();
 			}
 		});
+
+		test("should use default refresh token expiry when API_REFRESH_TOKEN_EXPIRES_IN is not configured", async () => {
+			const administratorUserSignInResult = await mercuriusClient.query(
+				Query_signIn,
+				{
+					variables: {
+						input: {
+							emailAddress:
+								server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
+							password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
+						},
+					},
+				},
+			);
+			assertToBeNonNullish(
+				administratorUserSignInResult.data.signIn?.authenticationToken,
+			);
+			const adminToken =
+				administratorUserSignInResult.data.signIn.authenticationToken;
+
+			// Create user - should use default refresh token expiry
+			const createUserResult = await mercuriusClient.mutate(
+				Mutation_createUser,
+				{
+					headers: { authorization: `bearer ${adminToken}` },
+					variables: {
+						input: {
+							emailAddress: `defaultToken${faker.string.ulid()}@email.com`,
+							isEmailAddressVerified: false,
+							name: "Default Token User",
+							password: "password",
+							role: "regular",
+						},
+					},
+				},
+			);
+
+			expect(createUserResult.errors).toBeUndefined();
+			expect(createUserResult.data?.createUser?.refreshToken).toBeDefined();
+			expect(
+				createUserResult.data?.createUser?.authenticationToken,
+			).toBeDefined();
+
+			// Cleanup
+			if (createUserResult.data?.createUser?.user?.id) {
+				await mercuriusClient.mutate(Mutation_deleteCurrentUser, {
+					headers: {
+						authorization: `bearer ${createUserResult.data.createUser.authenticationToken}`,
+					},
+				});
+			}
+		});
 	});
 });

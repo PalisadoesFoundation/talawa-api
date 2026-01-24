@@ -641,7 +641,7 @@ suite("Mutation field deleteOrganization", () => {
 
 	suite("when MinIO cleanup fails", () => {
 		test(
-			"should log error but not fail mutation when MinIO removeObjects fails",
+			"should not fail mutation when MinIO removeObjects fails",
 			async () => {
 				const orgId = await createTestOrganization(authToken);
 
@@ -690,20 +690,30 @@ suite("Mutation field deleteOrganization", () => {
 				const orgId = await createTestOrganization(authToken);
 
 				// Don't set any avatars or attachments
-				const deleteResult = await mercuriusClient.mutate(
-					Mutation_deleteOrganization,
-					{
-						headers: { authorization: `bearer ${authToken}` },
-						variables: {
-							input: {
-								id: orgId,
+				// Spy on MinIO removeObjects to verify it's not called
+				const minioClient = server.minio.client;
+				const removeObjectsSpy = vi.spyOn(minioClient, "removeObjects");
+
+				try {
+					const deleteResult = await mercuriusClient.mutate(
+						Mutation_deleteOrganization,
+						{
+							headers: { authorization: `bearer ${authToken}` },
+							variables: {
+								input: {
+									id: orgId,
+								},
 							},
 						},
-					},
-				);
+					);
 
-				expect(deleteResult.errors).toBeUndefined();
-				expect(deleteResult.data?.deleteOrganization?.id).toBe(orgId);
+					expect(deleteResult.errors).toBeUndefined();
+					expect(deleteResult.data?.deleteOrganization?.id).toBe(orgId);
+					// Verify MinIO cleanup was skipped (removeObjects not called)
+					expect(removeObjectsSpy).not.toHaveBeenCalled();
+				} finally {
+					removeObjectsSpy.mockRestore();
+				}
 			},
 			SUITE_TIMEOUT,
 		);

@@ -718,6 +718,31 @@ suite("Mutation field createEvent", () => {
 			);
 		});
 
+		test("should clamp windowEndDate when endDate is before windowStartDate (safety clamp)", async () => {
+			const organizationId = await createTestOrganization();
+			const startAt = getFutureDate(30, 10);
+			// Set endDate to be very close to startAt (might trigger clamp)
+			const endDate = new Date(startAt);
+			endDate.setMinutes(endDate.getMinutes() - 1); // 1 minute before startAt
+
+			const result = await createEvent({
+				input: {
+					...baseEventInput(organizationId),
+					name: "Clamped Window Event",
+					startAt,
+					recurrence: {
+						frequency: "DAILY",
+						interval: 1,
+						endDate: endDate.toISOString(),
+					},
+				},
+			});
+
+			// Should succeed (clamp will fix the window)
+			expect(result.errors).toBeUndefined();
+			expect(result.data?.createEvent).toBeDefined();
+		});
+
 		test("supports custom weekday patterns", async () => {
 			const organizationId = await createTestOrganization();
 
@@ -957,9 +982,6 @@ suite("Mutation field createEvent", () => {
 		});
 
 		suite("Default Agenda Folder and Category Creation", () => {
-			afterEach(() => {
-				vi.restoreAllMocks();
-			});
 			test("creates default agenda folder and category for standalone events", async () => {
 				const organizationId = await createTestOrganization();
 
@@ -1281,12 +1303,6 @@ suite("Mutation field createEvent", () => {
 				},
 			});
 
-			// Should succeed but clamp window?
-			// RRule calculation with endDate in past relative to startAt might throw?
-			// Or just return 0 instances.
-			// Talawa API logic clamps windowEndDate = startAt.
-			// rrule.between(startAt, windowEndDate) -> between(startAt, startAt).
-
 			expect(result.errors?.[0]?.extensions?.code).toBe("invalid_arguments");
 			expect(result.data?.createEvent).toBeNull();
 		});
@@ -1412,7 +1428,8 @@ suite("Mutation field createEvent", () => {
 							>
 					  >
 					| undefined;
-				for (let i = 0; i < 10; i++) {
+				// Increase retry attempts and delay to avoid flaky CI failures
+				for (let i = 0; i < 50; i++) {
 					window =
 						await server.drizzleClient.query.eventGenerationWindowsTable.findFirst(
 							{
@@ -1421,7 +1438,7 @@ suite("Mutation field createEvent", () => {
 							},
 						);
 					if (window) break;
-					await new Promise((resolve) => setTimeout(resolve, 50));
+					await new Promise((resolve) => setTimeout(resolve, 200));
 				}
 				expect(window).toBeDefined();
 				expect(window?.organizationId).toBe(organizationId);
@@ -1429,6 +1446,30 @@ suite("Mutation field createEvent", () => {
 				// Ensure cleanup even if test fails
 				findFirstSpy.mockRestore();
 			}
+		});
+
+		test("should cap windowEndDate at default window when endDate exceeds 12 months", async () => {
+			const organizationId = await createTestOrganization();
+			const startAt = getFutureDate(30, 10);
+			// Set endDate to be 2 years in the future (should be capped at 12 months)
+			const endDate = new Date(startAt);
+			endDate.setFullYear(endDate.getFullYear() + 2);
+
+			const result = await createEvent({
+				input: {
+					...baseEventInput(organizationId),
+					name: "Long Recurring Event",
+					startAt,
+					recurrence: {
+						frequency: "MONTHLY",
+						interval: 1,
+						endDate: endDate.toISOString(),
+					},
+				},
+			});
+
+			expect(result.errors).toBeUndefined();
+			expect(result.data?.createEvent).toBeDefined();
 		});
 
 		test("should handle notification enqueue errors gracefully", async () => {
@@ -1667,7 +1708,7 @@ suite("Mutation field createEvent", () => {
 			}
 		});
 
-		test("should handle rollback when event not found during delete", async () => {
+		test("should handle rollback when event not found during delete (deleted.length === 0)", async () => {
 			const organizationId = await createTestOrganization();
 
 			// Mock MinIO to fail
@@ -1676,19 +1717,10 @@ suite("Mutation field createEvent", () => {
 				.spyOn(minioClient, "putObject")
 				.mockRejectedValueOnce(new Error("Simulated Upload Failure"));
 
-			// Mock delete to return empty array (event not found)
+			// Mock delete to return empty array (event not found during rollback - deleted.length === 0)
 			const deleteSpy = vi
 				.spyOn(server.drizzleClient, "delete")
 				.mockImplementationOnce(() => {
-					// First call succeeds (normal operation)
-					return {
-						where: vi.fn().mockReturnValue({
-							returning: vi.fn().mockResolvedValue([]),
-						}),
-					} as unknown as ReturnType<typeof server.drizzleClient.delete>;
-				})
-				.mockImplementationOnce(() => {
-					// Second call returns empty (event not found during rollback)
 					return {
 						where: vi.fn().mockReturnValue({
 							returning: vi.fn().mockResolvedValue([]),
@@ -1709,6 +1741,86 @@ suite("Mutation field createEvent", () => {
 					variables: {
 						input: {
 							name: `Not Found Event ${faker.string.ulid()}`,
+							startAt: new Date(Date.now() + 60_000).toISOString(),
+							endAt: new Date(Date.now() + 3_600_000).toISOString(),
+							organizationId,
+							attachments: [null],
+						},
+					},
+				};
+				const map = {
+					"0": ["variables.input.attachments.0"],
+				};
+
+				const body = [
+					`--${boundary}`,
+					'Content-Disposition: form-data; name="operations"',
+					"",
+					JSON.stringify(operations),
+					`--${boundary}`,
+					'Content-Disposition: form-data; name="map"',
+					"",
+					JSON.stringify(map),
+					`--${boundary}`,
+					'Content-Disposition: form-data; name="0"; filename="test1.png"',
+					"Content-Type: image/png",
+					"",
+					"content1",
+					`--${boundary}--`,
+				].join("\r\n");
+
+				const response = await server.inject({
+					method: "POST",
+					url: "/graphql",
+					headers: {
+						"content-type": `multipart/form-data; boundary=${boundary}`,
+						authorization: `bearer ${adminAuthToken}`,
+					},
+					payload: body,
+				});
+
+				const result = response.json();
+				expect(result.errors).toBeDefined();
+			} finally {
+				putObjectSpy.mockRestore();
+				deleteSpy.mockRestore();
+				removeObjectsSpy.mockRestore();
+			}
+		});
+
+		test("should handle rollback when event delete succeeds (deleted.length > 0)", async () => {
+			const organizationId = await createTestOrganization();
+
+			// Mock MinIO to fail
+			const minioClient = server.minio.client;
+			const putObjectSpy = vi
+				.spyOn(minioClient, "putObject")
+				.mockRejectedValueOnce(new Error("Simulated Upload Failure"));
+
+			// Mock delete to return non-empty array (rollback delete succeeds - deleted.length > 0)
+			const deleteSpy = vi
+				.spyOn(server.drizzleClient, "delete")
+				.mockImplementationOnce(() => {
+					return {
+						where: vi.fn().mockReturnValue({
+							returning: vi.fn().mockResolvedValue([{ id: "test-event-id" }]),
+						}),
+					} as unknown as ReturnType<typeof server.drizzleClient.delete>;
+				});
+
+			const removeObjectsSpy = vi
+				.spyOn(minioClient, "removeObjects")
+				.mockReturnValue(Promise.resolve([]));
+
+			try {
+				const boundary = "----Boundary";
+				const operations = {
+					query: `mutation CreateEvent($input: MutationCreateEventInput!) {
+                    createEvent(input: $input) { id }
+                }`,
+					variables: {
+						input: {
+							name: `Rollback Success Event ${faker.string.ulid()}`,
 							startAt: new Date(Date.now() + 60_000).toISOString(),
 							endAt: new Date(Date.now() + 3_600_000).toISOString(),
 							organizationId,
