@@ -13,8 +13,8 @@ import { commentsTable } from "./comments";
 import { usersTable } from "./users";
 
 export const commentVoteTypeEnum = pgEnum("comment_vote_type", [
-	"upvote",
-	"downvote",
+	"down_vote",
+	"up_vote",
 ]);
 
 /**

@@ -6,7 +6,7 @@
 
 > **compareVersions**(`v1`, `v2`): `number`
 
-Defined in: [src/install/utils/packageCheck.ts:123](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/install/utils/packageCheck.ts#L123)
+Defined in: src/install/utils/packageCheck.ts:123
 
 Compare semantic versions
 

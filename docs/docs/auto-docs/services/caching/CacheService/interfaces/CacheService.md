@@ -4,7 +4,7 @@
 
 # Interface: CacheService
 
-Defined in: [src/services/caching/CacheService.ts:5](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/caching/CacheService.ts#L5)
+Defined in: src/services/caching/CacheService.ts:5
 
 Abstract interface for cache operations.
 Implementations should handle serialization/deserialization and graceful degradation.
@@ -15,7 +15,7 @@ Implementations should handle serialization/deserialization and graceful degrada
 
 > **clearByPattern**(`pattern`): `Promise`\<`void`\>
 
-Defined in: [src/services/caching/CacheService.ts:32](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/caching/CacheService.ts#L32)
+Defined in: src/services/caching/CacheService.ts:32
 
 Delete all keys matching a glob pattern.
 Uses SCAN internally to avoid blocking Redis.
@@ -38,7 +38,7 @@ Glob pattern (e.g., "talawa:v1:user:list:*").
 
 > **del**(`keys`): `Promise`\<`void`\>
 
-Defined in: [src/services/caching/CacheService.ts:25](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/caching/CacheService.ts#L25)
+Defined in: src/services/caching/CacheService.ts:25
 
 Delete one or more keys from the cache.
 
@@ -60,7 +60,7 @@ Single key or array of keys to delete.
 
 > **get**\<`T`\>(`key`): `Promise`\<`T` \| `null`\>
 
-Defined in: [src/services/caching/CacheService.ts:11](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/caching/CacheService.ts#L11)
+Defined in: src/services/caching/CacheService.ts:11
 
 Retrieve a cached value by key.
 
@@ -90,7 +90,7 @@ The cached value or null if not found/expired.
 
 > **mget**\<`T`\>(`keys`): `Promise`\<(`T` \| `null`)[]\>
 
-Defined in: [src/services/caching/CacheService.ts:39](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/caching/CacheService.ts#L39)
+Defined in: src/services/caching/CacheService.ts:39
 
 Batch get multiple keys.
 
@@ -120,7 +120,7 @@ Array of values in the same order as keys (null for missing).
 
 > **mset**\<`T`\>(`entries`): `Promise`\<`void`\>
 
-Defined in: [src/services/caching/CacheService.ts:45](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/caching/CacheService.ts#L45)
+Defined in: src/services/caching/CacheService.ts:45
 
 Batch set multiple key-value pairs with TTLs.
 
@@ -148,7 +148,7 @@ Array of `{ key, value, ttlSeconds }` objects.
 
 > **set**\<`T`\>(`key`, `value`, `ttlSeconds`): `Promise`\<`void`\>
 
-Defined in: [src/services/caching/CacheService.ts:19](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/caching/CacheService.ts#L19)
+Defined in: src/services/caching/CacheService.ts:19
 
 Store a value in the cache with a TTL.
 

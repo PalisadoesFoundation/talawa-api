@@ -6,6 +6,6 @@
 
 > **NewOAuthAccount** = *typeof* `oauthAccountsTable.$inferInsert`
 
-Defined in: [src/types/oauthAccount.ts:53](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/types/oauthAccount.ts#L53)
+Defined in: src/types/oauthAccount.ts:53
 
 OAuth account insert input for database operations

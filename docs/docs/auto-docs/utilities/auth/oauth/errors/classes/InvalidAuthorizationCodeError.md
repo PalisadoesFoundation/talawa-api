@@ -4,7 +4,7 @@
 
 # Class: InvalidAuthorizationCodeError
 
-Defined in: [src/utilities/auth/oauth/errors.ts:19](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/utilities/auth/oauth/errors.ts#L19)
+Defined in: src/utilities/auth/oauth/errors.ts:19
 
 Error thrown when authorization code is invalid
 
@@ -18,7 +18,7 @@ Error thrown when authorization code is invalid
 
 > **new InvalidAuthorizationCodeError**(`message`): `InvalidAuthorizationCodeError`
 
-Defined in: [src/utilities/auth/oauth/errors.ts:20](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/utilities/auth/oauth/errors.ts#L20)
+Defined in: src/utilities/auth/oauth/errors.ts:20
 
 #### Parameters
 
@@ -40,7 +40,7 @@ Defined in: [src/utilities/auth/oauth/errors.ts:20](https://github.com/Palisadoe
 
 > **code**: `string`
 
-Defined in: [src/utilities/auth/oauth/errors.ts:7](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/utilities/auth/oauth/errors.ts#L7)
+Defined in: src/utilities/auth/oauth/errors.ts:7
 
 #### Inherited from
 
@@ -52,7 +52,7 @@ Defined in: [src/utilities/auth/oauth/errors.ts:7](https://github.com/Palisadoes
 
 > `optional` **statusCode**: `number`
 
-Defined in: [src/utilities/auth/oauth/errors.ts:8](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/utilities/auth/oauth/errors.ts#L8)
+Defined in: src/utilities/auth/oauth/errors.ts:8
 
 #### Inherited from
 

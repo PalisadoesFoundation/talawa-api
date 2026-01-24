@@ -6,7 +6,7 @@
 
 > **UpdateEventAttendeeInput** = `object`
 
-Defined in: [src/drizzle/tables/eventAttendees.ts:262](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/drizzle/tables/eventAttendees.ts#L262)
+Defined in: src/drizzle/tables/eventAttendees.ts:262
 
 Type for updating an event attendee record.
 
@@ -16,7 +16,7 @@ Type for updating an event attendee record.
 
 > `optional` **checkinTime**: `Date`
 
-Defined in: [src/drizzle/tables/eventAttendees.ts:263](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/drizzle/tables/eventAttendees.ts#L263)
+Defined in: src/drizzle/tables/eventAttendees.ts:263
 
 ***
 
@@ -24,7 +24,7 @@ Defined in: [src/drizzle/tables/eventAttendees.ts:263](https://github.com/Palisa
 
 > `optional` **checkoutTime**: `Date`
 
-Defined in: [src/drizzle/tables/eventAttendees.ts:264](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/drizzle/tables/eventAttendees.ts#L264)
+Defined in: src/drizzle/tables/eventAttendees.ts:264
 
 ***
 
@@ -32,7 +32,7 @@ Defined in: [src/drizzle/tables/eventAttendees.ts:264](https://github.com/Palisa
 
 > `optional` **feedbackSubmitted**: `boolean`
 
-Defined in: [src/drizzle/tables/eventAttendees.ts:265](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/drizzle/tables/eventAttendees.ts#L265)
+Defined in: src/drizzle/tables/eventAttendees.ts:265
 
 ***
 
@@ -40,7 +40,7 @@ Defined in: [src/drizzle/tables/eventAttendees.ts:265](https://github.com/Palisa
 
 > `optional` **isCheckedIn**: `boolean`
 
-Defined in: [src/drizzle/tables/eventAttendees.ts:268](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/drizzle/tables/eventAttendees.ts#L268)
+Defined in: src/drizzle/tables/eventAttendees.ts:268
 
 ***
 
@@ -48,7 +48,7 @@ Defined in: [src/drizzle/tables/eventAttendees.ts:268](https://github.com/Palisa
 
 > `optional` **isCheckedOut**: `boolean`
 
-Defined in: [src/drizzle/tables/eventAttendees.ts:269](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/drizzle/tables/eventAttendees.ts#L269)
+Defined in: src/drizzle/tables/eventAttendees.ts:269
 
 ***
 
@@ -56,7 +56,7 @@ Defined in: [src/drizzle/tables/eventAttendees.ts:269](https://github.com/Palisa
 
 > `optional` **isInvited**: `boolean`
 
-Defined in: [src/drizzle/tables/eventAttendees.ts:266](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/drizzle/tables/eventAttendees.ts#L266)
+Defined in: src/drizzle/tables/eventAttendees.ts:266
 
 ***
 
@@ -64,4 +64,4 @@ Defined in: [src/drizzle/tables/eventAttendees.ts:266](https://github.com/Palisa
 
 > `optional` **isRegistered**: `boolean`
 
-Defined in: [src/drizzle/tables/eventAttendees.ts:267](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/drizzle/tables/eventAttendees.ts#L267)
+Defined in: src/drizzle/tables/eventAttendees.ts:267

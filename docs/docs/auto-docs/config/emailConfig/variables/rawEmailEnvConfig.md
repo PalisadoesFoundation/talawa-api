@@ -6,7 +6,7 @@
 
 > `const` **rawEmailEnvConfig**: `object`
 
-Defined in: [src/config/emailConfig.ts:25](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/config/emailConfig.ts#L25)
+Defined in: src/config/emailConfig.ts:25
 
 ## Type Declaration
 

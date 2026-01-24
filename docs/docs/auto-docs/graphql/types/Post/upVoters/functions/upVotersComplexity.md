@@ -6,7 +6,7 @@
 
 > **upVotersComplexity**(`args`): `object`
 
-Defined in: [src/graphql/types/Post/upVoters.ts:64](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/graphql/types/Post/upVoters.ts#L64)
+Defined in: src/graphql/types/Post/upVoters.ts:64
 
 ## Parameters
 

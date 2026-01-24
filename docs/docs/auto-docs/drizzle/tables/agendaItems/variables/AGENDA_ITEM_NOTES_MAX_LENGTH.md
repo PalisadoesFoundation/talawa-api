@@ -6,4 +6,4 @@
 
 > `const` **AGENDA\_ITEM\_NOTES\_MAX\_LENGTH**: `2048` = `2048`
 
-Defined in: [src/drizzle/tables/agendaItems.ts:193](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/drizzle/tables/agendaItems.ts#L193)
+Defined in: src/drizzle/tables/agendaItems.ts:193

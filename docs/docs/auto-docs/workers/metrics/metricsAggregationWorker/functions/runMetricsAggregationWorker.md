@@ -6,7 +6,7 @@
 
 > **runMetricsAggregationWorker**(`snapshotGetter`, `windowMinutes`, `logger`): `Promise`\<[`AggregatedMetrics`](../../types/interfaces/AggregatedMetrics.md) \| `undefined`\>
 
-Defined in: [src/workers/metrics/metricsAggregationWorker.ts:172](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/workers/metrics/metricsAggregationWorker.ts#L172)
+Defined in: src/workers/metrics/metricsAggregationWorker.ts:172
 
 Runs the metrics aggregation worker to collect and aggregate performance snapshots.
 

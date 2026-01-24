@@ -4,7 +4,7 @@
 
 # Interface: WrapWithCacheOptions\<K, _V\>
 
-Defined in: [src/services/caching/wrappers.ts:21](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/caching/wrappers.ts#L21)
+Defined in: src/services/caching/wrappers.ts:21
 
 Options for wrapping a batch function with caching.
 
@@ -24,7 +24,7 @@ Options for wrapping a batch function with caching.
 
 > **cache**: [`CacheService`](../../CacheService/interfaces/CacheService.md)
 
-Defined in: [src/services/caching/wrappers.ts:25](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/caching/wrappers.ts#L25)
+Defined in: src/services/caching/wrappers.ts:25
 
 The cache service instance.
 
@@ -34,7 +34,7 @@ The cache service instance.
 
 > **entity**: `string`
 
-Defined in: [src/services/caching/wrappers.ts:29](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/caching/wrappers.ts#L29)
+Defined in: src/services/caching/wrappers.ts:29
 
 Entity type for cache key generation.
 
@@ -44,7 +44,7 @@ Entity type for cache key generation.
 
 > **keyFn**: (`key`) => `string` \| `number`
 
-Defined in: [src/services/caching/wrappers.ts:35](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/caching/wrappers.ts#L35)
+Defined in: src/services/caching/wrappers.ts:35
 
 Function to convert a key to its cache key suffix.
 
@@ -68,7 +68,7 @@ String representation for the cache key.
 
 > `optional` **logger**: [`CacheWrapperLogger`](CacheWrapperLogger.md)
 
-Defined in: [src/services/caching/wrappers.ts:43](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/caching/wrappers.ts#L43)
+Defined in: src/services/caching/wrappers.ts:43
 
 Optional logger for recording cache operation failures.
 
@@ -78,7 +78,7 @@ Optional logger for recording cache operation failures.
 
 > `optional` **metrics**: [`CacheWrapperMetrics`](CacheWrapperMetrics.md)
 
-Defined in: [src/services/caching/wrappers.ts:47](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/caching/wrappers.ts#L47)
+Defined in: src/services/caching/wrappers.ts:47
 
 Optional metrics client for tracking cache operation failures.
 
@@ -88,6 +88,6 @@ Optional metrics client for tracking cache operation failures.
 
 > **ttlSeconds**: `number`
 
-Defined in: [src/services/caching/wrappers.ts:39](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/caching/wrappers.ts#L39)
+Defined in: src/services/caching/wrappers.ts:39
 
 TTL in seconds for cached values.

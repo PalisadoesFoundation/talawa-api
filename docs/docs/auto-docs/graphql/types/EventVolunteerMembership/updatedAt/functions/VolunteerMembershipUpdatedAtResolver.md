@@ -6,7 +6,7 @@
 
 > **VolunteerMembershipUpdatedAtResolver**(`parent`, `_args`, `ctx`): `Promise`\<`Date` \| `null`\>
 
-Defined in: [src/graphql/types/EventVolunteerMembership/updatedAt.ts:7](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/graphql/types/EventVolunteerMembership/updatedAt.ts#L7)
+Defined in: src/graphql/types/EventVolunteerMembership/updatedAt.ts:7
 
 ## Parameters
 

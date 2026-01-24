@@ -6,7 +6,7 @@
 
 > **meetsVersionRequirement**(`installed`, `required`): `boolean`
 
-Defined in: [src/install/utils/packageCheck.ts:143](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/install/utils/packageCheck.ts#L143)
+Defined in: src/install/utils/packageCheck.ts:143
 
 Check if installed version meets the required version
 

@@ -6,7 +6,7 @@
 
 > **resolveAttachments**(`parent`, `_args`, `ctx`): `Promise`\<`object`[]\>
 
-Defined in: [src/graphql/types/AgendaItem/attachment.ts:10](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/graphql/types/AgendaItem/attachment.ts#L10)
+Defined in: src/graphql/types/AgendaItem/attachment.ts:10
 
 ## Parameters
 

@@ -6,7 +6,7 @@
 
 > **resolveVolunteer**(`parent`, `_args`, `ctx`): `Promise`\<[`EventVolunteer`](../../../EventVolunteer/EventVolunteer/type-aliases/EventVolunteer.md) \| `null`\>
 
-Defined in: [src/graphql/types/ActionItem/eventVolunteersAndGroups.ts:7](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/graphql/types/ActionItem/eventVolunteersAndGroups.ts#L7)
+Defined in: src/graphql/types/ActionItem/eventVolunteersAndGroups.ts:7
 
 ## Parameters
 

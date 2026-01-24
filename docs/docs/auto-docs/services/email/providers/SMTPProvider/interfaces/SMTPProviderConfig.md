@@ -4,7 +4,7 @@
 
 # Interface: SMTPProviderConfig
 
-Defined in: [src/services/email/providers/SMTPProvider.ts:11](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/email/providers/SMTPProvider.ts#L11)
+Defined in: src/services/email/providers/SMTPProvider.ts:11
 
 Configuration for SMTP Email Provider.
 
@@ -14,7 +14,7 @@ Configuration for SMTP Email Provider.
 
 > `optional` **fromEmail**: `string`
 
-Defined in: [src/services/email/providers/SMTPProvider.ts:23](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/email/providers/SMTPProvider.ts#L23)
+Defined in: src/services/email/providers/SMTPProvider.ts:23
 
 Default sender email address.
 
@@ -24,7 +24,7 @@ Default sender email address.
 
 > `optional` **fromName**: `string`
 
-Defined in: [src/services/email/providers/SMTPProvider.ts:25](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/email/providers/SMTPProvider.ts#L25)
+Defined in: src/services/email/providers/SMTPProvider.ts:25
 
 Default sender display name.
 
@@ -34,7 +34,7 @@ Default sender display name.
 
 > **host**: [`NonEmptyString`](../../../types/type-aliases/NonEmptyString.md)
 
-Defined in: [src/services/email/providers/SMTPProvider.ts:13](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/email/providers/SMTPProvider.ts#L13)
+Defined in: src/services/email/providers/SMTPProvider.ts:13
 
 SMTP server hostname. Required.
 
@@ -44,7 +44,7 @@ SMTP server hostname. Required.
 
 > `optional` **localAddress**: `string`
 
-Defined in: [src/services/email/providers/SMTPProvider.ts:29](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/email/providers/SMTPProvider.ts#L29)
+Defined in: src/services/email/providers/SMTPProvider.ts:29
 
 Local IP address to bind to for outgoing SMTP connections.
 
@@ -54,7 +54,7 @@ Local IP address to bind to for outgoing SMTP connections.
 
 > `optional` **name**: `string`
 
-Defined in: [src/services/email/providers/SMTPProvider.ts:27](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/email/providers/SMTPProvider.ts#L27)
+Defined in: src/services/email/providers/SMTPProvider.ts:27
 
 Client hostname to greet the SMTP server with.
 
@@ -64,7 +64,7 @@ Client hostname to greet the SMTP server with.
 
 > `optional` **password**: `string`
 
-Defined in: [src/services/email/providers/SMTPProvider.ts:19](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/email/providers/SMTPProvider.ts#L19)
+Defined in: src/services/email/providers/SMTPProvider.ts:19
 
 SMTP password for authentication. Optional.
 
@@ -74,7 +74,7 @@ SMTP password for authentication. Optional.
 
 > **port**: `number`
 
-Defined in: [src/services/email/providers/SMTPProvider.ts:15](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/email/providers/SMTPProvider.ts#L15)
+Defined in: src/services/email/providers/SMTPProvider.ts:15
 
 SMTP server port. Required.
 
@@ -84,7 +84,7 @@ SMTP server port. Required.
 
 > `optional` **secure**: `boolean`
 
-Defined in: [src/services/email/providers/SMTPProvider.ts:21](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/email/providers/SMTPProvider.ts#L21)
+Defined in: src/services/email/providers/SMTPProvider.ts:21
 
 Whether to use SSL/TLS (true for port 465, false for port 587 with STARTTLS).
 
@@ -94,6 +94,6 @@ Whether to use SSL/TLS (true for port 465, false for port 587 with STARTTLS).
 
 > `optional` **user**: `string`
 
-Defined in: [src/services/email/providers/SMTPProvider.ts:17](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/email/providers/SMTPProvider.ts#L17)
+Defined in: src/services/email/providers/SMTPProvider.ts:17
 
 SMTP username for authentication. Optional.

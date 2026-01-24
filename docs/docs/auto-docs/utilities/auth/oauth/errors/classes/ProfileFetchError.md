@@ -4,7 +4,7 @@
 
 # Class: ProfileFetchError
 
-Defined in: [src/utilities/auth/oauth/errors.ts:45](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/utilities/auth/oauth/errors.ts#L45)
+Defined in: src/utilities/auth/oauth/errors.ts:45
 
 Error thrown when profile fetch fails
 
@@ -18,7 +18,7 @@ Error thrown when profile fetch fails
 
 > **new ProfileFetchError**(`message`): `ProfileFetchError`
 
-Defined in: [src/utilities/auth/oauth/errors.ts:46](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/utilities/auth/oauth/errors.ts#L46)
+Defined in: src/utilities/auth/oauth/errors.ts:46
 
 #### Parameters
 
@@ -40,7 +40,7 @@ Defined in: [src/utilities/auth/oauth/errors.ts:46](https://github.com/Palisadoe
 
 > **code**: `string`
 
-Defined in: [src/utilities/auth/oauth/errors.ts:7](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/utilities/auth/oauth/errors.ts#L7)
+Defined in: src/utilities/auth/oauth/errors.ts:7
 
 #### Inherited from
 
@@ -52,7 +52,7 @@ Defined in: [src/utilities/auth/oauth/errors.ts:7](https://github.com/Palisadoes
 
 > `optional` **statusCode**: `number`
 
-Defined in: [src/utilities/auth/oauth/errors.ts:8](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/utilities/auth/oauth/errors.ts#L8)
+Defined in: src/utilities/auth/oauth/errors.ts:8
 
 #### Inherited from
 
