@@ -67,6 +67,7 @@ import "./MutationSignUpInput";
 import "./MutationUpdateAdvertisementInput";
 import "./MutationUpdateAgendaFolderInput";
 import "./MutationUpdateAgendaItemInput";
+import "./MutationUpdateAgendaItemSequenceInput";
 import "./MutationUpdateChatInput";
 import "./MutationUpdateChatMembershipInput";
 import "./MutationUpdateChatMessageInput";
