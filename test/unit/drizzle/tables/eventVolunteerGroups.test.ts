@@ -2,6 +2,7 @@ import { getTableColumns, getTableName } from "drizzle-orm";
 import { getTableConfig } from "drizzle-orm/pg-core";
 import { beforeEach, describe, expect, it } from "vitest";
 import { z } from "zod";
+
 import { eventsTable } from "~/src/drizzle/tables/events";
 import {
 	eventVolunteerGroupsTable,
@@ -24,18 +25,22 @@ describe("src/drizzle/tables/eventVolunteerGroups.ts", () => {
 			it("should define all expected columns", () => {
 				const columns = Object.keys(getTableColumns(eventVolunteerGroupsTable));
 
-				expect(columns).toContain("id");
-				expect(columns).toContain("eventId");
-				expect(columns).toContain("isTemplate");
-				expect(columns).toContain("recurringEventInstanceId");
-				expect(columns).toContain("leaderId");
-				expect(columns).toContain("creatorId");
-				expect(columns).toContain("name");
-				expect(columns).toContain("description");
-				expect(columns).toContain("volunteersRequired");
-				expect(columns).toContain("createdAt");
-				expect(columns).toContain("updatedAt");
-				expect(columns).toContain("updaterId");
+				expect(columns).toEqual(
+					expect.arrayContaining([
+						"id",
+						"eventId",
+						"isTemplate",
+						"recurringEventInstanceId",
+						"leaderId",
+						"creatorId",
+						"name",
+						"description",
+						"volunteersRequired",
+						"createdAt",
+						"updatedAt",
+						"updaterId",
+					]),
+				);
 			});
 
 			it("should mark required columns as not null", () => {
@@ -103,9 +108,27 @@ describe("src/drizzle/tables/eventVolunteerGroups.ts", () => {
 		});
 
 		describe("indexes", () => {
-			it("should define expected indexes", () => {
+			it("should define expected indexes with correct columns and uniqueness", () => {
 				const tableConfig = getTableConfig(eventVolunteerGroupsTable);
-				expect(tableConfig.indexes.length).toBeGreaterThan(0);
+
+				// 1 unique + 5 normal
+				expect(tableConfig.indexes).toHaveLength(6);
+
+				const uniqueIndex = tableConfig.indexes.find(
+					(idx) => idx.config.unique === true,
+				);
+
+				expect(uniqueIndex).toBeDefined();
+
+				const columnNames = uniqueIndex?.config.columns
+					.filter((col): col is { name: string } => "name" in col)
+					.map((col) => col.name);
+
+				expect(columnNames).toEqual([
+					"event_id",
+					"name",
+					"recurring_event_instance_id",
+				]);
 			});
 		});
 	});
@@ -129,7 +152,6 @@ describe("src/drizzle/tables/eventVolunteerGroups.ts", () => {
 			const createMockBuilders = () => {
 				const one = ((table: unknown, config: unknown) => {
 					const result = {
-						type: "one" as const,
 						table,
 						config,
 						withFieldName: () => result,
@@ -141,7 +163,6 @@ describe("src/drizzle/tables/eventVolunteerGroups.ts", () => {
 
 				const many = ((table: unknown, config: unknown) => {
 					const result = {
-						type: "many" as const,
 						table,
 						config,
 						withFieldName: () => result,
@@ -162,13 +183,30 @@ describe("src/drizzle/tables/eventVolunteerGroups.ts", () => {
 				});
 			});
 
-			it("should define expected relations", () => {
-				expect(relationsResult.event).toBeDefined();
-				expect(relationsResult.recurringEventInstance).toBeDefined();
-				expect(relationsResult.leader).toBeDefined();
-				expect(relationsResult.creator).toBeDefined();
-				expect(relationsResult.updater).toBeDefined();
-				expect(relationsResult.volunteerMemberships).toBeDefined();
+			it("should define expected relations with correct targets", () => {
+				expect(
+					(relationsResult.event as unknown as { table: unknown }).table,
+				).toBe(eventsTable);
+
+				expect(
+					(
+						relationsResult.recurringEventInstance as unknown as {
+							table: unknown;
+						}
+					).table,
+				).toBe(recurringEventInstancesTable);
+
+				expect(
+					(relationsResult.leader as unknown as { table: unknown }).table,
+				).toBe(usersTable);
+
+				expect(
+					(relationsResult.creator as unknown as { table: unknown }).table,
+				).toBe(usersTable);
+
+				expect(
+					(relationsResult.updater as unknown as { table: unknown }).table,
+				).toBe(usersTable);
 
 				expect(
 					(
