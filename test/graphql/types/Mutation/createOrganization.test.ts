@@ -269,6 +269,93 @@ describe("Mutation createOrganization", () => {
 		}
 	});
 
+	it("should create organization with avatar upload success", async () => {
+		const minioClient = server.minio.client;
+		const putObjectSpy = vi.spyOn(minioClient, "putObject").mockResolvedValue({
+			etag: "test-etag",
+			versionId: "test-version",
+		} as unknown as {
+			etag: string;
+			versionId: string;
+		});
+
+		const name = `Avatar Org ${faker.string.ulid()}`;
+		const boundary = "----BoundaryAvatarSuccess";
+		const CREATE_ORGANIZATION_MUTATION = `mutation CreateOrg($input: MutationCreateOrganizationInput!) {
+                createOrganization(input: $input) { id }
+            }`;
+		const operations = {
+			query: CREATE_ORGANIZATION_MUTATION,
+			variables: {
+				input: {
+					name,
+					description: "Avatar upload success",
+					countryCode: "us",
+					city: "Test City",
+					postalCode: "12345",
+					addressLine1: "123 St",
+					state: "NY",
+					avatar: null,
+				},
+			},
+		};
+		const map = { "0": ["variables.input.avatar"] };
+		const body = [
+			`--${boundary}`,
+			'Content-Disposition: form-data; name="operations"',
+			"",
+			JSON.stringify(operations),
+			`--${boundary}`,
+			'Content-Disposition: form-data; name="map"',
+			"",
+			JSON.stringify(map),
+			`--${boundary}`,
+			'Content-Disposition: form-data; name="0"; filename="test.png"',
+			"Content-Type: image/png",
+			"",
+			"fake-image-content",
+			`--${boundary}--`,
+		].join("\r\n");
+
+		try {
+			const response = await server.inject({
+				method: "POST",
+				url: "/graphql",
+				headers: {
+					"content-type": `multipart/form-data; boundary=${boundary}`,
+					authorization: `bearer ${authToken}`,
+				},
+				payload: body,
+			});
+
+			const result = response.json();
+			expect(result.errors).toBeUndefined();
+			assertToBeNonNullish(result.data?.createOrganization?.id);
+
+			const createdOrgId = result.data.createOrganization.id;
+			const createdOrg =
+				await server.drizzleClient.query.organizationsTable.findFirst({
+					where: eq(organizationsTable.id, createdOrgId),
+				});
+			assertToBeNonNullish(createdOrg);
+			assertToBeNonNullish(createdOrg.avatarName);
+
+			expect(putObjectSpy).toHaveBeenCalledWith(
+				server.minio.bucketName,
+				createdOrg.avatarName,
+				expect.anything(),
+				undefined,
+				{ "content-type": "image/png" },
+			);
+
+			await server.drizzleClient
+				.delete(organizationsTable)
+				.where(eq(organizationsTable.id, createdOrgId));
+		} finally {
+			putObjectSpy.mockRestore();
+		}
+	});
+
 	it("should return invalid_arguments when avatar mime type is not allowed", async () => {
 		const boundary = "----BoundaryInvalidAvatar";
 		const operations = {
