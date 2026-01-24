@@ -257,4 +257,49 @@ describe("AgendaFolder.items resolver", () => {
 		expect(result.edges).toHaveLength(0);
 		expect(result.pageInfo.hasNextPage).toBe(false);
 	});
+
+	it("throws arguments_associated_resources_not_found for backward cursor when cursor not found", async () => {
+		mocks.drizzleClient.query.agendaItemsTable.findMany.mockResolvedValue([]);
+		mocks.drizzleClient.query.agendaItemsTable.findFirst.mockResolvedValue(
+			undefined,
+		);
+
+		await expect(
+			resolveItems(parent, { last: 2, before: encodeValidCursor() }, ctx),
+		).rejects.toMatchObject({
+			extensions: {
+				code: "arguments_associated_resources_not_found",
+				issues: [{ argumentPath: ["before"] }],
+			},
+		});
+	});
+
+	it("returns hasPreviousPage true when more items exist (inverse)", async () => {
+		mocks.drizzleClient.query.agendaItemsTable.findMany.mockResolvedValue([
+			{ id: "item-3", name: "Charlie" },
+			{ id: "item-2", name: "Bravo" },
+			{ id: "item-1", name: "Alpha" },
+		] as never);
+
+		const result = await resolveItems(parent, { last: 2 }, ctx);
+
+		expect(result.edges).toHaveLength(2);
+		expect(result.pageInfo.hasPreviousPage).toBe(true);
+	});
+
+	it("returns empty connection when cursor exists but no rows before cursor (inverse)", async () => {
+		mocks.drizzleClient.query.agendaItemsTable.findMany.mockResolvedValue([]);
+		mocks.drizzleClient.query.agendaItemsTable.findFirst.mockResolvedValue({
+			id: "item-1",
+		} as never);
+
+		const result = await resolveItems(
+			parent,
+			{ last: 2, before: encodeValidCursor() },
+			ctx,
+		);
+
+		expect(result.edges).toHaveLength(0);
+		expect(result.pageInfo.hasPreviousPage).toBe(false);
+	});
 });
