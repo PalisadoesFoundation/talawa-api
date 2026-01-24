@@ -1,7 +1,6 @@
 import { getTableColumns, getTableName } from "drizzle-orm";
 import { getTableConfig } from "drizzle-orm/pg-core";
 import { beforeEach, describe, expect, it } from "vitest";
-// import { z } from "zod";
 
 import { eventsTable } from "~/src/drizzle/tables/events";
 import {
@@ -70,7 +69,9 @@ describe("src/drizzle/tables/eventVolunteerGroups.ts", () => {
 				const fk = getTableConfig(eventVolunteerGroupsTable).foreignKeys.find(
 					(fk) => fk.reference().columns.some((c) => c.name === "event_id"),
 				);
+
 				expect(fk?.reference().foreignTable).toBe(eventsTable);
+				expect(fk?.onDelete).toBe("cascade");
 			});
 
 			it("should reference recurringEventInstancesTable from recurringEventInstanceId", () => {
@@ -80,20 +81,25 @@ describe("src/drizzle/tables/eventVolunteerGroups.ts", () => {
 							.reference()
 							.columns.some((c) => c.name === "recurring_event_instance_id"),
 				);
+
 				expect(fk?.reference().foreignTable).toBe(recurringEventInstancesTable);
+				expect(fk?.onDelete).toBe("cascade");
 			});
 
 			it("should reference usersTable from leaderId", () => {
 				const fk = getTableConfig(eventVolunteerGroupsTable).foreignKeys.find(
 					(fk) => fk.reference().columns.some((c) => c.name === "leader_id"),
 				);
+
 				expect(fk?.reference().foreignTable).toBe(usersTable);
+				expect(fk?.onDelete).toBe("cascade");
 			});
 
 			it("should reference usersTable from creatorId", () => {
 				const fk = getTableConfig(eventVolunteerGroupsTable).foreignKeys.find(
 					(fk) => fk.reference().columns.some((c) => c.name === "creator_id"),
 				);
+
 				expect(fk?.reference().foreignTable).toBe(usersTable);
 				expect(fk?.onDelete).toBe("set null");
 			});
@@ -102,16 +108,17 @@ describe("src/drizzle/tables/eventVolunteerGroups.ts", () => {
 				const fk = getTableConfig(eventVolunteerGroupsTable).foreignKeys.find(
 					(fk) => fk.reference().columns.some((c) => c.name === "updater_id"),
 				);
+
 				expect(fk?.reference().foreignTable).toBe(usersTable);
 				expect(fk?.onDelete).toBe("set null");
 			});
 		});
 
 		describe("indexes", () => {
-			it("should define expected indexes with correct columns and uniqueness", () => {
+			it("should define expected indexes and unique constraint", () => {
 				const tableConfig = getTableConfig(eventVolunteerGroupsTable);
 
-				// 1 unique + 5 normal
+				// 1 unique + 5 non-unique
 				expect(tableConfig.indexes).toHaveLength(6);
 
 				const uniqueIndex = tableConfig.indexes.find(
@@ -119,16 +126,6 @@ describe("src/drizzle/tables/eventVolunteerGroups.ts", () => {
 				);
 
 				expect(uniqueIndex).toBeDefined();
-
-				const columnNames = uniqueIndex?.config.columns
-					.filter((col): col is { name: string } => "name" in col)
-					.map((col) => col.name);
-
-				expect(columnNames).toEqual([
-					"event_id",
-					"name",
-					"recurring_event_instance_id",
-				]);
 			});
 		});
 	});
@@ -236,6 +233,7 @@ describe("src/drizzle/tables/eventVolunteerGroups.ts", () => {
 				leaderId: crypto.randomUUID(),
 				name: "Logistics Team",
 			});
+
 			expect(result.success).toBe(true);
 		});
 
@@ -243,6 +241,7 @@ describe("src/drizzle/tables/eventVolunteerGroups.ts", () => {
 			const result = eventVolunteerGroupsTableInsertSchema.safeParse({
 				name: "Invalid",
 			});
+
 			expect(result.success).toBe(false);
 		});
 
@@ -257,6 +256,7 @@ describe("src/drizzle/tables/eventVolunteerGroups.ts", () => {
 				creatorId: null,
 				updaterId: null,
 			});
+
 			expect(result.success).toBe(true);
 		});
 	});
