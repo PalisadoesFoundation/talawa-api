@@ -77,11 +77,12 @@ describe("notification_templates migration deduplication", () => {
 		const countRows = countsResult as unknown as Array<{
 			event_type: string;
 			channel_type: string;
-			cnt: number;
+			cnt: bigint | number | string;
 		}>;
 
 		for (const row of countRows) {
-			expect(Number(row.cnt)).toBe(1);
+			const count = typeof row.cnt === "bigint" ? row.cnt : BigInt(row.cnt);
+			expect(count).toBe(BigInt(1));
 		}
 
 		// Verify the survivor is the earliest created_at, tie broken by lowest id
@@ -118,5 +119,41 @@ describe("notification_templates migration deduplication", () => {
 					('00000000-0000-0000-0000-000000000099', 'A3', 'event_a', 't', 'b', 'in_app', NOW())
 			`),
 		).rejects.toThrow();
+	});
+
+	it("aborts migration if duplicates exist before dedup step", async () => {
+		await server.drizzleClient.execute(sql`
+			INSERT INTO "notification_templates"
+				(id, name, event_type, title, body, channel_type, created_at)
+			VALUES
+				('00000000-0000-0000-0000-000000000101', 'D1', 'event_dup', 't', 'b', 'in_app', '2024-03-01T00:00:00.000Z'),
+				('00000000-0000-0000-0000-000000000102', 'D2', 'event_dup', 't', 'b', 'in_app', '2024-03-02T00:00:00.000Z')
+		`);
+
+		await expect(
+			server.drizzleClient.execute(sql`
+				DO $$
+				DECLARE
+				  duplicate_pairs_count integer;
+				BEGIN
+				  SELECT COUNT(*)
+				  INTO duplicate_pairs_count
+				  FROM (
+				    SELECT event_type, channel_type
+				    FROM "notification_templates"
+				    GROUP BY event_type, channel_type
+				    HAVING COUNT(*) > 1
+				  ) AS duplicate_pairs;
+
+				  IF duplicate_pairs_count > 0 THEN
+				    RAISE EXCEPTION
+				      'Found % duplicate (event_type, channel_type) pairs in notification_templates.',
+				      duplicate_pairs_count;
+				  END IF;
+				END $$;
+			`),
+		).rejects.toThrow(
+			"Found 1 duplicate (event_type, channel_type) pairs in notification_templates.",
+		);
 	});
 });
