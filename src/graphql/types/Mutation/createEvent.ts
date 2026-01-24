@@ -493,7 +493,8 @@ builder.mutationField("createEvent", (t) =>
 							fileUpload: attachments[index],
 						}));
 
-						// defensive check - RETURNING guarantees count matches
+						// RETURNING guarantees createdEventAttachments.length === attachments.length,
+						// so pairs[i].fileUpload is always defined
 
 						await Promise.all(
 							pairs.map(({ attachment, fileUpload }) =>
