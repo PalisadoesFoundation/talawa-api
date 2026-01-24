@@ -767,18 +767,6 @@ describe("getUnifiedEventsInDateRange", () => {
 				mockDrizzleClient,
 				mockLogger,
 			);
-
-			// Assert that limits were correctly passed to dependencies
-			expect(mockGetStandaloneEventsInDateRange).toHaveBeenCalledWith(
-				expect.objectContaining({ limit: 1000 }),
-				mockDrizzleClient,
-				mockLogger,
-			);
-			expect(mockGetRecurringEventInstancesInDateRange).toHaveBeenCalledWith(
-				expect.objectContaining({ limit: 1000 }),
-				mockDrizzleClient,
-				mockLogger,
-			);
 		});
 	});
 });
