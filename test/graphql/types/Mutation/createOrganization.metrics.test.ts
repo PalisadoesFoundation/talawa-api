@@ -1,6 +1,6 @@
 import { faker } from "@faker-js/faker";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
-import { assertToBeNonNullish } from "../../../helpers";
+import { assertToBeNonNullish, waitForMetricsSnapshot } from "../../../helpers";
 import { server } from "../../../server";
 import { mercuriusClient } from "../client";
 import {
@@ -46,9 +46,10 @@ describe("Mutation createOrganization - Performance Metrics", () => {
 
 	describe("metrics collection", () => {
 		it("should record mutation:createOrganization metric on successful mutation", async () => {
-			// Get initial snapshot count
-			const initialSnapshots = server.getMetricsSnapshots?.() ?? [];
-			const initialSnapshotCount = initialSnapshots.length;
+			const snapshotPromise = waitForMetricsSnapshot(
+				server,
+				(snapshot) => snapshot.ops["mutation:createOrganization"] !== undefined,
+			);
 
 			// Execute mutation
 			const result = await mercuriusClient.mutate(Mutation_createOrganization, {
@@ -68,35 +69,18 @@ describe("Mutation createOrganization - Performance Metrics", () => {
 			assertToBeNonNullish(result.data.createOrganization?.id);
 			createdOrgId = result.data.createOrganization.id;
 
-			// Wait for metric to appear
-			let snapshots = server.getMetricsSnapshots?.() ?? [];
-			let mutationSnapshot: (typeof snapshots)[0] | undefined;
-
-			for (let i = 0; i < 60; i++) {
-				snapshots = server.getMetricsSnapshots?.() ?? [];
-				const newSnapshotsCount = snapshots.length - initialSnapshotCount;
-				const newSnapshots = snapshots.slice(
-					0,
-					newSnapshotsCount > 0 ? newSnapshotsCount : snapshots.length,
-				);
-				mutationSnapshot = newSnapshots.find(
-					(s) => s.ops["mutation:createOrganization"] !== undefined,
-				);
-				if (mutationSnapshot) break;
-				await new Promise((resolve) => setTimeout(resolve, 100));
-			}
-
-			assertToBeNonNullish(mutationSnapshot);
-			const op = mutationSnapshot.ops["mutation:createOrganization"];
+			const snapshot = await snapshotPromise;
+			const op = snapshot.ops["mutation:createOrganization"];
 			assertToBeNonNullish(op);
 			expect(op.count).toBeGreaterThanOrEqual(1);
 			expect(op.ms).toBeGreaterThanOrEqual(0);
 		});
 
 		it("should record mutation:createOrganization metric on authentication failure", async () => {
-			// Get initial snapshot count
-			const initialSnapshots = server.getMetricsSnapshots?.() ?? [];
-			const initialSnapshotCount = initialSnapshots.length;
+			const snapshotPromise = waitForMetricsSnapshot(
+				server,
+				(snapshot) => snapshot.ops["mutation:createOrganization"] !== undefined,
+			);
 
 			// Execute mutation without auth token (should fail)
 			const result = await mercuriusClient.mutate(Mutation_createOrganization, {
@@ -113,27 +97,9 @@ describe("Mutation createOrganization - Performance Metrics", () => {
 			expect(result.errors).toBeDefined();
 			expect(result.errors?.[0]?.extensions?.code).toBe("unauthenticated");
 
-			// Wait for metric to appear
-			let snapshots = server.getMetricsSnapshots?.() ?? [];
-			let mutationSnapshot: (typeof snapshots)[0] | undefined;
-
-			for (let i = 0; i < 60; i++) {
-				snapshots = server.getMetricsSnapshots?.() ?? [];
-				const newSnapshotsCount = snapshots.length - initialSnapshotCount;
-				const newSnapshots = snapshots.slice(
-					0,
-					newSnapshotsCount > 0 ? newSnapshotsCount : snapshots.length,
-				);
-				mutationSnapshot = newSnapshots.find(
-					(s) => s.ops["mutation:createOrganization"] !== undefined,
-				);
-				if (mutationSnapshot) break;
-				await new Promise((resolve) => setTimeout(resolve, 100));
-			}
-
 			// Even on failure, metrics should be recorded
-			assertToBeNonNullish(mutationSnapshot);
-			const op = mutationSnapshot.ops["mutation:createOrganization"];
+			const snapshot = await snapshotPromise;
+			const op = snapshot.ops["mutation:createOrganization"];
 			assertToBeNonNullish(op);
 			expect(op.count).toBeGreaterThanOrEqual(1);
 		});

@@ -1,4 +1,5 @@
 import { isDeepStrictEqual } from "node:util";
+import type { PerfSnapshot } from "~/src/utilities/metrics/performanceTracker";
 
 /**
  * This function is used to narrow the type of a value passed to it to not be equal to `null` or `undefined`. More information can be found at the following links:
@@ -46,3 +47,31 @@ export const isSubSequence = <T>(sequence: T[], subsequence: T[]) => {
 	// Return true or false depending on whether the matching for the entire subsequence has completed along with the loop exit.
 	return j === subsequence.length;
 };
+
+export type MetricsSnapshotPredicate = (snapshot: PerfSnapshot) => boolean;
+
+export async function waitForMetricsSnapshot(
+	app: { onMetricsSnapshot?: (snapshot: PerfSnapshot) => void },
+	predicate: MetricsSnapshotPredicate,
+	timeoutMs = 2000,
+): Promise<PerfSnapshot> {
+	return await new Promise((resolve, reject) => {
+		const previous = app.onMetricsSnapshot;
+		let resolved = false;
+		const timer = setTimeout(() => {
+			if (resolved) return;
+			resolved = true;
+			app.onMetricsSnapshot = previous;
+			reject(new Error("Timed out waiting for metrics snapshot."));
+		}, timeoutMs);
+
+		app.onMetricsSnapshot = (snapshot) => {
+			previous?.(snapshot);
+			if (resolved || !predicate(snapshot)) return;
+			resolved = true;
+			clearTimeout(timer);
+			app.onMetricsSnapshot = previous;
+			resolve(snapshot);
+		};
+	});
+}

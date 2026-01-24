@@ -32,6 +32,15 @@ The following thresholds help you quickly identify whether your system performan
 | `ops.db.max` | < 100ms | 100-200ms | > 200ms |
 | `slow` array | Empty | 1-5 entries | > 5 entries |
 
+## Performance Budgets
+
+Performance budgets define the acceptable ranges for latency and resource usage. Treat the thresholds above as baseline budgets and adjust them as your traffic patterns, infrastructure, or query complexity changes.
+
+Recommended budget practices:
+- Set target limits for `totalMs`, `ops.db.max`, `totalOps`, and `hitRate` per environment (staging vs production).
+- Track budget changes in PRs that materially affect performance (explain what moved and why).
+- If a change pushes metrics into warning/critical ranges, add a remediation note or follow-up task.
+
 ## Overview
 
 The Performance Metrics Foundation provides:
