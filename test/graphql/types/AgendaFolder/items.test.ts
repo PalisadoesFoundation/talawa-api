@@ -7,7 +7,6 @@ import {
 	itemsArgumentsSchema,
 	resolveItems,
 } from "~/src/graphql/types/AgendaFolder/items";
-import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 
 /**
  * IMPORTANT:
@@ -63,6 +62,23 @@ describe("itemsArgumentsSchema", () => {
 		}
 	});
 
+	it("fails with custom issue for invalid backward cursor", () => {
+		const result = itemsArgumentsSchema.safeParse({
+			last: 2,
+			before: "not-a-valid-cursor",
+		});
+
+		expect(result.success).toBe(false);
+
+		if (!result.success) {
+			const issue = result.error.issues.find(
+				(i) => i.message === "Not a valid cursor.",
+			);
+			expect(issue).toBeDefined();
+			expect(issue?.path).toEqual(["before"]);
+		}
+	});
+
 	it("fails with custom issue for invalid cursor", () => {
 		const result = itemsArgumentsSchema.safeParse({
 			first: 2,
@@ -111,14 +127,14 @@ describe("AgendaFolder.items resolver", () => {
 	it("throws invalid_arguments when cursor is invalid", async () => {
 		await expect(
 			resolveItems(parent, { first: 2, after: "bad-cursor" }, ctx),
-		).rejects.toThrow(
-			new TalawaGraphQLError({
-				extensions: {
-					code: "invalid_arguments",
-					issues: expect.any(Array),
-				},
-			}),
-		);
+		).rejects.toMatchObject({
+			extensions: {
+				code: "invalid_arguments",
+				issues: expect.arrayContaining([
+					expect.objectContaining({ argumentPath: ["after"] }),
+				]),
+			},
+		});
 	});
 
 	it("returns items without cursor (forward)", async () => {
@@ -150,14 +166,12 @@ describe("AgendaFolder.items resolver", () => {
 
 		await expect(
 			resolveItems(parent, { first: 2, after: encodeValidCursor() }, ctx),
-		).rejects.toThrow(
-			new TalawaGraphQLError({
-				extensions: {
-					code: "arguments_associated_resources_not_found",
-					issues: [{ argumentPath: ["after"] }],
-				},
-			}),
-		);
+		).rejects.toMatchObject({
+			extensions: {
+				code: "arguments_associated_resources_not_found",
+				issues: [{ argumentPath: ["after"] }],
+			},
+		});
 	});
 
 	it("supports inverse pagination (before / last)", async () => {
@@ -195,6 +209,22 @@ describe("AgendaFolder.items resolver", () => {
 		mocks.drizzleClient.query.agendaItemsTable.findMany.mockResolvedValue([]);
 
 		const result = await resolveItems(parent, { first: 5 }, ctx);
+
+		expect(result.edges).toHaveLength(0);
+		expect(result.pageInfo.hasNextPage).toBe(false);
+	});
+
+	it("returns empty connection when cursor exists but no rows after cursor", async () => {
+		mocks.drizzleClient.query.agendaItemsTable.findMany.mockResolvedValue([]);
+		mocks.drizzleClient.query.agendaItemsTable.findFirst.mockResolvedValue({
+			id: "item-1",
+		} as never);
+
+		const result = await resolveItems(
+			parent,
+			{ first: 2, after: encodeValidCursor() },
+			ctx,
+		);
 
 		expect(result.edges).toHaveLength(0);
 		expect(result.pageInfo.hasNextPage).toBe(false);

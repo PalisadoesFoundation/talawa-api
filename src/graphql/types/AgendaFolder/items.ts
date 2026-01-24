@@ -16,6 +16,14 @@ import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import type { AgendaFolder as AgendaFolderType } from "./AgendaFolder";
 import { AgendaFolder } from "./AgendaFolder";
 
+const cursorSchema = agendaItemsTableInsertSchema
+	.pick({
+		sequence: true,
+	})
+	.extend({
+		id: agendaItemsTableInsertSchema.shape.id.unwrap(),
+	});
+
 export const itemsArgumentsSchema = defaultGraphQLConnectionArgumentsSchema
 	.transform(transformDefaultGraphQLConnectionArguments)
 	.transform((arg, ctx) => {
@@ -40,14 +48,6 @@ export const itemsArgumentsSchema = defaultGraphQLConnectionArgumentsSchema
 			isInversed: arg.isInversed,
 			limit: arg.limit,
 		};
-	});
-
-const cursorSchema = agendaItemsTableInsertSchema
-	.pick({
-		sequence: true,
-	})
-	.extend({
-		id: agendaItemsTableInsertSchema.shape.id.unwrap(),
 	});
 
 type AgendaItemsArgs = z.input<typeof defaultGraphQLConnectionArgumentsSchema>;
