@@ -201,14 +201,38 @@ describe("src/drizzle/tables/chatMemberships.ts", () => {
 			const mockOne = vi.fn().mockImplementation(() => createMockRelation());
 			const mockMany = vi.fn().mockImplementation(() => createMockRelation());
 
-			const result = chatMembershipsTableRelations.config({
+			chatMembershipsTableRelations.config({
 				one: mockOne,
 				many: mockMany,
 			});
-			expect(result).toHaveProperty("chat");
-			expect(result).toHaveProperty("creator");
-			expect(result).toHaveProperty("member");
-			expect(result).toHaveProperty("updater");
+
+			// Verify 'chat' relation
+			expect(mockOne).toHaveBeenCalledWith(chatsTable, {
+				fields: [chatMembershipsTable.chatId],
+				references: [chatsTable.id],
+				relationName: "chat_memberships.chat_id:chats.id",
+			});
+
+			// Verify 'creator' relation
+			expect(mockOne).toHaveBeenCalledWith(usersTable, {
+				fields: [chatMembershipsTable.creatorId],
+				references: [usersTable.id],
+				relationName: "chat_memberships.creator_id:users.id",
+			});
+
+			// Verify 'member' relation
+			expect(mockOne).toHaveBeenCalledWith(usersTable, {
+				fields: [chatMembershipsTable.memberId],
+				references: [usersTable.id],
+				relationName: "chat_memberships.member_id:users.id",
+			});
+
+			// Verify 'updater' relation
+			expect(mockOne).toHaveBeenCalledWith(usersTable, {
+				fields: [chatMembershipsTable.updaterId],
+				references: [usersTable.id],
+				relationName: "chat_memberships.updater_id:users.id",
+			});
 		});
 
 		it("should reference the correct table", () => {
